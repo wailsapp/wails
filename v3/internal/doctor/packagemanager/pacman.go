@@ -26,10 +26,11 @@ func NewPacman(osid string) *Pacman {
 // They will potentially differ on different distributions or versions
 func (p *Pacman) Packages() Packagemap {
 	return Packagemap{
-		"libgtk-3": []*Package{
+		"gtk3": []*Package{
 			{Name: "gtk3", SystemPackage: true, Library: true},
 		},
-		"libwebkit": []*Package{
+		"webkit2gtk": []*Package{
+			{Name: "webkit2gtk-4.1", SystemPackage: true, Library: true},
 			{Name: "webkit2gtk", SystemPackage: true, Library: true},
 		},
 		"gcc": []*Package{
@@ -51,7 +52,10 @@ func (p *Pacman) Name() string {
 
 // PackageInstalled tests if the given package name is installed
 func (p *Pacman) PackageInstalled(pkg *Package) (bool, error) {
-	if pkg.SystemPackage == false {
+	if !pkg.SystemPackage {
+		if pkg.InstallCheck != nil {
+			return pkg.InstallCheck(), nil
+		}
 		return false, nil
 	}
 	stdout, err := execCmd("pacman", "-Q", pkg.Name)
@@ -103,7 +107,7 @@ func (p *Pacman) PackageAvailable(pkg *Package) (bool, error) {
 // InstallCommand returns the package manager specific command to install a package
 func (p *Pacman) InstallCommand(pkg *Package) string {
 	if pkg.SystemPackage == false {
-		return pkg.InstallCommand[p.osid]
+		return pkg.InstallCommand
 	}
 	return "sudo pacman -S " + pkg.Name
 }

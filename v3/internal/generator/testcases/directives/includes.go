@@ -1,0 +1,11 @@
+//wails:include js/test.js
+//wails:include **:js/test_all.js
+//wails:include *c:js/test_c.js
+//wails:include *i:js/test_i.js
+//wails:include j*:js/test_j.js
+//wails:include jc:js/test_jc.js
+//wails:include ji:js/test_ji.js
+//wails:include t*:js/test_t.ts
+//wails:include tc:js/test_tc.ts
+//wails:include ti:js/test_ti.ts
+package main

@@ -36,7 +36,7 @@ const (
 )
 
 func RGB(r, g, b uint8) int32 {
-	var col = int32(b)
+	col := int32(b)
 	col = col<<8 | int32(g)
 	col = col<<8 | int32(r)
 	return col
@@ -67,6 +67,8 @@ type Options struct {
 
 	IsZoomControlEnabled bool
 	ZoomFactor           float64
+
+	DisablePinchZoom bool
 
 	// Disable all window decorations in Frameless mode, which means no "Aero Shadow" and no "Rounded Corner" will be shown.
 	// "Rounded Corners" are only available on Windows 11.

@@ -18,6 +18,7 @@ struct WebviewPreferences {
     bool *TabFocusesLinks;
     bool *TextInteractionEnabled;
     bool *FullscreenEnabled;
+    bool *AllowsBackForwardNavigationGestures;
 };
 
 extern void registerListener(unsigned int event);
@@ -32,6 +33,9 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 		styleMask:styleMask
 		backing:NSBackingStoreBuffered
 		defer:NO];
+
+	// Allow fullscreen. Needed for frameless windows
+	window.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary;
 
 	// Create delegate
 	WebviewWindowDelegate* delegate = [[WebviewWindowDelegate alloc] init];
@@ -62,26 +66,31 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 		config.preferences.tabFocusesLinks = *preferences.TabFocusesLinks;
 	}
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110300
 	if (@available(macOS 11.3, *)) {
 		if (preferences.TextInteractionEnabled != NULL) {
 			config.preferences.textInteractionEnabled = *preferences.TextInteractionEnabled;
 		}
 	}
+#endif
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 120300
 	if (@available(macOS 12.3, *)) {
          if (preferences.FullscreenEnabled != NULL) {
              config.preferences.elementFullscreenEnabled = *preferences.FullscreenEnabled;
          }
      }
-
-
+#endif
 
 	config.suppressesIncrementalRendering = true;
     config.applicationNameForUserAgent = @"wails.io";
 	[config setURLSchemeHandler:delegate forURLScheme:@"wails"];
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
  	if (@available(macOS 10.15, *)) {
          config.preferences.fraudulentWebsiteWarningEnabled = fraudulentWebsiteWarningEnabled;
 	}
+#endif
 
 	// Setup user content controller
     WKUserContentController* userContentController = [WKUserContentController new];
@@ -92,6 +101,11 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 
 	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
 	[webView autorelease];
+
+    // Set allowsBackForwardNavigationGestures if specified
+    if (preferences.AllowsBackForwardNavigationGestures != NULL) {
+        webView.allowsBackForwardNavigationGestures = *preferences.AllowsBackForwardNavigationGestures;
+    }
 
 	[view addSubview:webView];
 
@@ -211,6 +225,15 @@ void windowSetAlwaysOnTop(void* nsWindow, bool alwaysOnTop) {
 	[(WebviewWindow*)nsWindow setLevel:alwaysOnTop ? NSFloatingWindowLevel : NSNormalWindowLevel];
 }
 
+void setNormalWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSNormalWindowLevel]; }
+void setFloatingWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSFloatingWindowLevel];}
+void setPopUpMenuWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSPopUpMenuWindowLevel]; }
+void setMainMenuWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSMainMenuWindowLevel]; }
+void setStatusWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSStatusWindowLevel]; }
+void setModalPanelWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSModalPanelWindowLevel]; }
+void setScreenSaverWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSScreenSaverWindowLevel]; }
+void setTornOffMenuWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSTornOffMenuWindowLevel]; }
+
 // Load URL in NSWindow
 void navigationLoadURL(void* nsWindow, char* url) {
 	// Load URL on main thread
@@ -254,13 +277,6 @@ void windowSetMaxSize(void* nsWindow, int width, int height) {
 	NSSize contentSize = [window contentRectForFrameRect:NSMakeRect(0, 0, size.width, size.height)].size;
 	[window setContentMaxSize:contentSize];
 	[window setMaxSize:size];
-}
-
-// Enable NSWindow devtools
-void windowEnableDevTools(void* nsWindow) {
-	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	// Enable devtools in webview
-	[window.webView.configuration.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
 }
 
 // windowZoomReset
@@ -450,18 +466,12 @@ void windowSetHideTitle(void* nsWindow, bool hideTitle) {
 }
 
 // Set Window use toolbar
-void windowSetUseToolbar(void* nsWindow, bool useToolbar, int toolbarStyle) {
+void windowSetUseToolbar(void* nsWindow, bool useToolbar) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
 	if( useToolbar ) {
 		NSToolbar *toolbar = [[NSToolbar alloc] initWithIdentifier:@"wails.toolbar"];
 		[toolbar autorelease];
 		[window setToolbar:toolbar];
-
-		// If macos 11 or higher, set toolbar style
-		if (@available(macOS 11.0, *)) {
-			[window setToolbarStyle:toolbarStyle];
-		}
-
 	} else {
 		[window setToolbar:nil];
 	}
@@ -469,14 +479,19 @@ void windowSetUseToolbar(void* nsWindow, bool useToolbar, int toolbarStyle) {
 
 // Set window toolbar style
 void windowSetToolbarStyle(void* nsWindow, int style) {
-	// use @available to check if the function is available
-	// if not, return
-	if (@available(macOS 11.0, *)) {
-		NSToolbar* toolbar = [(WebviewWindow*)nsWindow toolbar];
-		[toolbar setShowsBaselineSeparator:style];
-	}
-}
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
+	if (@available(macOS 11.0, *)) {
+		NSToolbar* toolbar = [window toolbar];
+		if ( toolbar == nil ) {
+			return;
+		}
+		[window setToolbarStyle:style];
+	}
+#endif
+
+}
 // Set Hide Toolbar Separator
 void windowSetHideToolbarSeparator(void* nsWindow, bool hideSeparator) {
 	NSToolbar* toolbar = [(WebviewWindow*)nsWindow toolbar];
@@ -484,6 +499,15 @@ void windowSetHideToolbarSeparator(void* nsWindow, bool hideSeparator) {
 		return;
 	}
 	[toolbar setShowsBaselineSeparator:!hideSeparator];
+}
+
+// Configure the toolbar auto-hide feature
+void windowSetShowToolbarWhenFullscreen(void* window, bool setting) {
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	// Get delegate
+	WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[nsWindow delegate];
+	// Set height
+	delegate.showToolbarWhenFullscreen = setting;
 }
 
 // Set Window appearance type
@@ -499,8 +523,21 @@ void windowSetAppearanceTypeByName(void* nsWindow, const char *appearanceName) {
 
 // Center window on current monitor
 void windowCenter(void* nsWindow) {
-	[(WebviewWindow*)nsWindow center];
+    WebviewWindow* window = (WebviewWindow*)nsWindow;
+    NSScreen* screen = [window screen];
+    if (screen == NULL) {
+        screen = [NSScreen mainScreen];
+    }
+
+    NSRect screenFrame = [screen frame];
+    NSRect windowFrame = [window frame];
+
+    CGFloat x = screenFrame.origin.x + (screenFrame.size.width - windowFrame.size.width) / 2;
+    CGFloat y = screenFrame.origin.y + (screenFrame.size.height - windowFrame.size.height) / 2;
+
+    [window setFrame:NSMakeRect(x, y, windowFrame.size.width, windowFrame.size.height) display:YES];
 }
+
 
 // Get the current size of the window
 void windowGetSize(void* nsWindow, int* width, int* height) {
@@ -535,18 +572,28 @@ void windowGetRelativePosition(void* nsWindow, int* x, int* y) {
 }
 
 // Get absolute window position
-void windowGetAbsolutePosition(void* nsWindow, int* x, int* y) {
+void windowGetPosition(void* nsWindow, int* x, int* y) {
 	NSRect frame = [(WebviewWindow*)nsWindow frame];
 	*x = frame.origin.x;
 	*y = frame.origin.y;
 }
 
-void windowSetAbsolutePosition(void* nsWindow, int x, int y) {
-	NSRect frame = [(WebviewWindow*)nsWindow frame];
-	frame.origin.x = x;
-	frame.origin.y = y;
-	[(WebviewWindow*)nsWindow setFrame:frame display:YES];
+void windowSetPosition(void* nsWindow, int x, int y) {
+    WebviewWindow* window = (WebviewWindow*)nsWindow;
+    NSScreen* screen = [window screen];
+    if (screen == NULL) {
+        screen = [NSScreen mainScreen];
+    }
+	// Get the scale of the screen
+	CGFloat scale = [screen backingScaleFactor];
+    NSRect frame = [window frame];
+	// Scale the position
+	frame.origin.x = x / scale;
+	frame.origin.y = (screen.frame.size.height - frame.size.height) - (y / scale);
+	// Set the frame
+	[window setFrame:frame display:YES];
 }
+
 
 // Destroy window
 void windowDestroy(void* nsWindow) {
@@ -557,6 +604,7 @@ void windowDestroy(void* nsWindow) {
 void windowSetShadow(void* nsWindow, bool hasShadow) {
 	[(WebviewWindow*)nsWindow setHasShadow:hasShadow];
 }
+
 
 
 // windowClose closes the current window
@@ -641,18 +689,46 @@ static void windowHide(void *window) {
 	[(WebviewWindow*)window orderOut:nil];
 }
 
+// setButtonState sets the state of the given button
+// 0 = enabled
+// 1 = disabled
+// 2 = hidden
+static void setButtonState(void *button, int state) {
+	if (button == nil) {
+		return;
+	}
+	NSButton *nsbutton = (NSButton*)button;
+	nsbutton.hidden = state == 2;
+	nsbutton.enabled = state != 1;
+}
+
+// setMinimiseButtonState sets the minimise button state
+static void setMinimiseButtonState(void *window, int state) {
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	NSButton *minimiseButton = [nsWindow standardWindowButton:NSWindowMiniaturizeButton];
+	setButtonState(minimiseButton, state);
+}
+
+// setMaximiseButtonState sets the maximise button state
+static void setMaximiseButtonState(void *window, int state) {
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	NSButton *maximiseButton = [nsWindow standardWindowButton:NSWindowZoomButton];
+	setButtonState(maximiseButton, state);
+}
+
+// setCloseButtonState sets the close button state
+static void setCloseButtonState(void *window, int state) {
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	NSButton *closeButton = [nsWindow standardWindowButton:NSWindowCloseButton];
+	setButtonState(closeButton, state);
+}
+
 // windowShowMenu opens an NSMenu at the given coordinates
 static void windowShowMenu(void *window, void *menu, int x, int y) {
 	NSMenu* nsMenu = (NSMenu*)menu;
 	WKWebView* webView = ((WebviewWindow*)window).webView;
 	NSPoint point = NSMakePoint(x, y);
 	[nsMenu popUpMenuPositioningItem:nil atLocation:point inView:webView];
-}
-
-// windowIgnoreMouseEvents makes the window ignore mouse events
-static void windowIgnoreMouseEvents(void *window, bool ignore) {
-	WebviewWindow* nsWindow = (WebviewWindow*)window;
-	[nsWindow setIgnoresMouseEvents:ignore];
 }
 
 // Make the given window frameless
@@ -678,7 +754,7 @@ static void startDrag(void *window) {
 
 // Credit: https://stackoverflow.com/q/33319295
 static void windowPrint(void *window) {
-
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
 	// Check if macOS 11.0 or newer
 	if (@available(macOS 11.0, *)) {
 		WebviewWindow* nsWindow = (WebviewWindow*)window;
@@ -710,6 +786,7 @@ static void windowPrint(void *window) {
 		// [printOperation runOperation] DOES NOT WORK WITH WKWEBVIEW, use
 		[po runOperationModalForWindow:window delegate:windowDelegate didRunSelector:nil contextInfo:nil];
 	}
+#endif
 }
 
 void setWindowEnabled(void *window, bool enabled) {
@@ -731,17 +808,41 @@ void windowFocus(void *window) {
 	[nsWindow makeKeyWindow];
 }
 
+static bool isIgnoreMouseEvents(void *nsWindow) {
+    NSWindow *window = (__bridge NSWindow *)nsWindow;
+    return [window ignoresMouseEvents];
+}
+
+static void setIgnoreMouseEvents(void *nsWindow, bool ignore) {
+    NSWindow *window = (__bridge NSWindow *)nsWindow;
+    [window setIgnoresMouseEvents:ignore];
+}
+
+static void setContentProtection(void *nsWindow, bool enabled) {
+    NSWindow *window = (__bridge NSWindow *)nsWindow;
+	if( ! [window respondsToSelector:@selector(setSharingType:)]) {
+		return;
+	}
+
+	if( enabled ) {
+		[window setSharingType:NSWindowSharingNone];
+	} else {
+		[window setSharingType:NSWindowSharingReadOnly];
+	}
+}
+
 */
 import "C"
 import (
-	"net/url"
 	"sync"
+	"sync/atomic"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v3/internal/assetserver"
+	"github.com/wailsapp/wails/v3/internal/runtime"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
-
-var showDevTools = func(window unsafe.Pointer) {}
 
 type macosWebviewWindow struct {
 	nsWindow unsafe.Pointer
@@ -752,18 +853,22 @@ func (w *macosWebviewWindow) handleKeyEvent(acceleratorString string) {
 	// Parse acceleratorString
 	accelerator, err := parseAccelerator(acceleratorString)
 	if err != nil {
-		globalApplication.error("unable to parse accelerator: %s", err.Error())
+		globalApplication.error("unable to parse accelerator: %w", err)
 		return
 	}
 	w.parent.processKeyBinding(accelerator.String())
+}
+
+func (w *macosWebviewWindow) getBorderSizes() *LRTB {
+	return &LRTB{}
 }
 
 func (w *macosWebviewWindow) isFocused() bool {
 	return bool(C.windowIsFocused(w.nsWindow))
 }
 
-func (w *macosWebviewWindow) setAbsolutePosition(x int, y int) {
-	C.windowSetAbsolutePosition(w.nsWindow, C.int(x), C.int(y))
+func (w *macosWebviewWindow) setPosition(x int, y int) {
+	C.windowSetPosition(w.nsWindow, C.int(x), C.int(y))
 }
 
 func (w *macosWebviewWindow) print() error {
@@ -823,6 +928,7 @@ func (w *macosWebviewWindow) show() {
 }
 
 func (w *macosWebviewWindow) hide() {
+	globalApplication.debug("Window hiding", "windowId", w.parent.id, "title", w.parent.options.Title)
 	C.windowHide(w.nsWindow)
 }
 
@@ -871,7 +977,12 @@ func (w *macosWebviewWindow) windowZoom() {
 }
 
 func (w *macosWebviewWindow) close() {
+	globalApplication.debug("Window close() called - setting unconditionallyClose flag", "windowId", w.parent.id, "title", w.parent.options.Title)
+	// Set the unconditionallyClose flag to allow the window to close
+	atomic.StoreUint32(&w.parent.unconditionallyClose, 1)
 	C.windowClose(w.nsWindow)
+	globalApplication.debug("Window close() completed", "windowId", w.parent.id, "title", w.parent.options.Title)
+	// TODO: Check if we need to unregister the window here or not
 }
 
 func (w *macosWebviewWindow) zoomIn() {
@@ -884,10 +995,6 @@ func (w *macosWebviewWindow) zoomOut() {
 
 func (w *macosWebviewWindow) zoomReset() {
 	C.windowZoomReset(w.nsWindow)
-}
-
-func (w *macosWebviewWindow) toggleDevTools() {
-	showDevTools(w.nsWindow)
 }
 
 func (w *macosWebviewWindow) reload() {
@@ -957,20 +1064,21 @@ func (w *macosWebviewWindow) setEnabled(enabled bool) {
 
 func (w *macosWebviewWindow) execJS(js string) {
 	InvokeAsync(func() {
+		globalApplication.shutdownLock.Lock()
+		performingShutdown := globalApplication.performingShutdown
+		globalApplication.shutdownLock.Unlock()
+
+		if performingShutdown {
+			return
+		}
+		if w.nsWindow == nil || w.parent.isDestroyed() {
+			return
+		}
 		C.windowExecJS(w.nsWindow, C.CString(js))
 	})
 }
 
 func (w *macosWebviewWindow) setURL(uri string) {
-	if uri != "" {
-		parsedURL, err := url.Parse(uri)
-		if err == nil && parsedURL.Scheme == "" && parsedURL.Host == "" {
-			// TODO handle this in a central location, the scheme and host might be platform dependant.
-			parsedURL.Scheme = "wails"
-			parsedURL.Host = "wails"
-			uri = parsedURL.String()
-		}
-	}
 	C.navigationLoadURL(w.nsWindow, C.CString(uri))
 }
 
@@ -982,6 +1090,9 @@ func newWindowImpl(parent *WebviewWindow) *macosWebviewWindow {
 	result := &macosWebviewWindow{
 		parent: parent,
 	}
+	result.parent.RegisterHook(events.Mac.WebViewDidFinishNavigation, func(event *WindowEvent) {
+		result.execJS(runtime.Core())
+	})
 	return result
 }
 
@@ -1010,9 +1121,6 @@ func (w *macosWebviewWindow) setMaxSize(width, height int) {
 func (w *macosWebviewWindow) setResizable(resizable bool) {
 	C.windowSetResizable(w.nsWindow, C.bool(resizable))
 }
-func (w *macosWebviewWindow) enableDevTools() {
-	C.windowEnableDevTools(w.nsWindow)
-}
 
 func (w *macosWebviewWindow) size() (int, int) {
 	var width, height C.int
@@ -1028,6 +1136,27 @@ func (w *macosWebviewWindow) size() (int, int) {
 
 func (w *macosWebviewWindow) setRelativePosition(x, y int) {
 	C.windowSetRelativePosition(w.nsWindow, C.int(x), C.int(y))
+}
+
+func (w *macosWebviewWindow) setWindowLevel(level MacWindowLevel) {
+	switch level {
+	case MacWindowLevelNormal:
+		C.setNormalWindowLevel(w.nsWindow)
+	case MacWindowLevelFloating:
+		C.setFloatingWindowLevel(w.nsWindow)
+	case MacWindowLevelTornOffMenu:
+		C.setTornOffMenuWindowLevel(w.nsWindow)
+	case MacWindowLevelModalPanel:
+		C.setModalPanelWindowLevel(w.nsWindow)
+	case MacWindowLevelMainMenu:
+		C.setMainMenuWindowLevel(w.nsWindow)
+	case MacWindowLevelStatus:
+		C.setStatusWindowLevel(w.nsWindow)
+	case MacWindowLevelPopUpMenu:
+		C.setPopUpMenuWindowLevel(w.nsWindow)
+	case MacWindowLevelScreenSaver:
+		C.setScreenSaverWindowLevel(w.nsWindow)
+	}
 }
 
 func (w *macosWebviewWindow) width() int {
@@ -1072,6 +1201,9 @@ func (w *macosWebviewWindow) getWebviewPreferences() C.struct_WebviewPreferences
 	if wvprefs.FullscreenEnabled.IsSet() {
 		result.FullscreenEnabled = bool2CboolPtr(wvprefs.FullscreenEnabled.Get())
 	}
+	if wvprefs.AllowsBackForwardNavigationGestures.IsSet() {
+		result.AllowsBackForwardNavigationGestures = bool2CboolPtr(wvprefs.AllowsBackForwardNavigationGestures.Get())
+	}
 
 	return result
 }
@@ -1093,7 +1225,6 @@ func (w *macosWebviewWindow) run() {
 			w.getWebviewPreferences(),
 		)
 		w.setTitle(options.Title)
-		w.setAlwaysOnTop(options.AlwaysOnTop)
 		w.setResizable(!options.DisableResize)
 		if options.MinWidth != 0 || options.MinHeight != 0 {
 			w.setMinSize(options.MinWidth, options.MinHeight)
@@ -1102,9 +1233,11 @@ func (w *macosWebviewWindow) run() {
 			w.setMaxSize(options.MaxWidth, options.MaxHeight)
 		}
 		//w.setZoom(options.Zoom)
-		if globalApplication.isDebugMode || options.DevToolsEnabled {
-			w.enableDevTools()
-		}
+		w.enableDevTools()
+
+		// Content Protection
+		w.setContentProtection(options.ContentProtectionEnabled)
+
 		w.setBackgroundColour(options.BackgroundColour)
 
 		switch macOptions.Backdrop {
@@ -1114,11 +1247,21 @@ func (w *macosWebviewWindow) run() {
 		case MacBackdropTranslucent:
 			C.windowSetTranslucent(w.nsWindow)
 			C.webviewSetTransparent(w.nsWindow)
+		case MacBackdropNormal:
 		}
 
-		if options.IgnoreMouseEvents {
-			C.windowIgnoreMouseEvents(w.nsWindow, C.bool(true))
+		if macOptions.WindowLevel == "" {
+			macOptions.WindowLevel = MacWindowLevelNormal
 		}
+		w.setWindowLevel(macOptions.WindowLevel)
+
+		// Initialise the window buttons
+		w.setMinimiseButtonState(options.MinimiseButtonState)
+		w.setMaximiseButtonState(options.MaximiseButtonState)
+		w.setCloseButtonState(options.CloseButtonState)
+
+		// Ignore mouse events if requested
+		w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
 
 		titleBarOptions := macOptions.TitleBar
 		if !w.parent.options.Frameless {
@@ -1126,11 +1269,12 @@ func (w *macosWebviewWindow) run() {
 			C.windowSetHideTitleBar(w.nsWindow, C.bool(titleBarOptions.Hide))
 			C.windowSetHideTitle(w.nsWindow, C.bool(titleBarOptions.HideTitle))
 			C.windowSetFullSizeContent(w.nsWindow, C.bool(titleBarOptions.FullSizeContent))
-			if titleBarOptions.UseToolbar {
-				C.windowSetUseToolbar(w.nsWindow, C.bool(titleBarOptions.UseToolbar), C.int(titleBarOptions.ToolbarStyle))
-			}
+			C.windowSetUseToolbar(w.nsWindow, C.bool(titleBarOptions.UseToolbar))
+			C.windowSetToolbarStyle(w.nsWindow, C.int(titleBarOptions.ToolbarStyle))
+			C.windowSetShowToolbarWhenFullscreen(w.nsWindow, C.bool(titleBarOptions.ShowToolbarWhenFullscreen))
 			C.windowSetHideToolbarSeparator(w.nsWindow, C.bool(titleBarOptions.HideToolbarSeparator))
 		}
+
 		if macOptions.Appearance != "" {
 			C.windowSetAppearanceTypeByName(w.nsWindow, C.CString(string(macOptions.Appearance)))
 		}
@@ -1146,56 +1290,60 @@ func (w *macosWebviewWindow) run() {
 			w.minimise()
 		case WindowStateFullscreen:
 			w.fullscreen()
-
+		case WindowStateNormal:
 		}
-		C.windowCenter(w.nsWindow)
-
-		if options.URL != "" {
-			w.setURL(options.URL)
+		if w.parent.options.InitialPosition == WindowCentered {
+			C.windowCenter(w.nsWindow)
+		} else {
+			w.setPosition(options.X, options.Y)
 		}
+
+		startURL, err := assetserver.GetStartURL(options.URL)
+		if err != nil {
+			globalApplication.handleFatalError(err)
+		}
+
+		w.setURL(startURL)
+
 		// We need to wait for the HTML to load before we can execute the javascript
-		w.parent.On(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEvent) {
-			if options.JS != "" {
-				w.execJS(options.JS)
-			}
-			if options.CSS != "" {
-				C.windowInjectCSS(w.nsWindow, C.CString(options.CSS))
-			}
-		})
-
-		// Translate ShouldClose to common WindowClosing event
-		w.parent.On(events.Mac.WindowShouldClose, func(_ *WindowEvent) {
-			w.parent.emit(events.Common.WindowClosing)
-		})
-
-		// Translate WindowDidResignKey to common WindowLostFocus event
-		w.parent.On(events.Mac.WindowDidResignKey, func(_ *WindowEvent) {
-			w.parent.emit(events.Common.WindowLostFocus)
-		})
-		w.parent.On(events.Mac.WindowDidResignMain, func(_ *WindowEvent) {
-			w.parent.emit(events.Common.WindowLostFocus)
+		w.parent.OnWindowEvent(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEvent) {
+			InvokeAsync(func() {
+				if options.JS != "" {
+					w.execJS(options.JS)
+				}
+				if options.CSS != "" {
+					C.windowInjectCSS(w.nsWindow, C.CString(options.CSS))
+				}
+				if !options.Hidden {
+					w.parent.Show()
+					w.setHasShadow(!options.Mac.DisableShadow)
+					w.setAlwaysOnTop(options.AlwaysOnTop)
+				} else {
+					// We have to wait until the window is shown before we can remove the shadow
+					var cancel func()
+					cancel = w.parent.OnWindowEvent(events.Mac.WindowDidBecomeKey, func(_ *WindowEvent) {
+						InvokeAsync(func() {
+							if !w.isVisible() {
+								w.parent.Show()
+							}
+							w.setHasShadow(!options.Mac.DisableShadow)
+							w.setAlwaysOnTop(options.AlwaysOnTop)
+							cancel()
+						})
+					})
+				}
+			})
 		})
 
 		if options.HTML != "" {
 			w.setHTML(options.HTML)
 		}
-		if options.Hidden == false {
-			C.windowShow(w.nsWindow)
-			w.setHasShadow(!options.Mac.DisableShadow)
-		} else {
-			// We have to wait until the window is shown before we can remove the shadow
-			var cancel func()
-			cancel = w.parent.On(events.Mac.WindowDidBecomeKey, func(_ *WindowEvent) {
-				w.setHasShadow(!options.Mac.DisableShadow)
-				cancel()
-			})
-		}
 
 	})
 }
 
-func (w *macosWebviewWindow) nativeWindowHandle() uintptr {
-	return uintptr(w.nsWindow)
+func (w *macosWebviewWindow) nativeWindow() unsafe.Pointer {
+	return w.nsWindow
 }
 
 func (w *macosWebviewWindow) setBackgroundColour(colour RGBA) {
@@ -1212,16 +1360,49 @@ func (w *macosWebviewWindow) relativePosition() (int, int) {
 	return int(x), int(y)
 }
 
-func (w *macosWebviewWindow) absolutePosition() (int, int) {
+func (w *macosWebviewWindow) position() (int, int) {
 	var x, y C.int
 	InvokeSync(func() {
-		C.windowGetAbsolutePosition(w.nsWindow, &x, &y)
+		C.windowGetPosition(w.nsWindow, &x, &y)
 	})
 
 	return int(x), int(y)
 }
 
+func (w *macosWebviewWindow) bounds() Rect {
+	// DOTO: do it in a single step + proper DPI scaling
+	var x, y, width, height C.int
+	InvokeSync(func() {
+		C.windowGetPosition(w.nsWindow, &x, &y)
+		C.windowGetSize(w.nsWindow, &width, &height)
+	})
+
+	return Rect{
+		X:      int(x),
+		Y:      int(y),
+		Width:  int(width),
+		Height: int(height),
+	}
+}
+
+func (w *macosWebviewWindow) setBounds(bounds Rect) {
+	// DOTO: do it in a single step + proper DPI scaling
+	C.windowSetPosition(w.nsWindow, C.int(bounds.X), C.int(bounds.Y))
+	C.windowSetSize(w.nsWindow, C.int(bounds.Width), C.int(bounds.Height))
+}
+
+func (w *macosWebviewWindow) physicalBounds() Rect {
+	// TODO: proper DPI scaling
+	return w.bounds()
+}
+
+func (w *macosWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
+	// TODO: proper DPI scaling
+	w.setBounds(physicalBounds)
+}
+
 func (w *macosWebviewWindow) destroy() {
+	w.parent.markAsDestroyed()
 	C.windowDestroy(w.nsWindow)
 }
 
@@ -1236,3 +1417,54 @@ func (w *macosWebviewWindow) startDrag() error {
 	C.startDrag(w.nsWindow)
 	return nil
 }
+
+func (w *macosWebviewWindow) setMinimiseButtonState(state ButtonState) {
+	C.setMinimiseButtonState(w.nsWindow, C.int(state))
+}
+
+func (w *macosWebviewWindow) setMaximiseButtonState(state ButtonState) {
+	C.setMaximiseButtonState(w.nsWindow, C.int(state))
+}
+
+func (w *macosWebviewWindow) setCloseButtonState(state ButtonState) {
+	C.setCloseButtonState(w.nsWindow, C.int(state))
+}
+
+func (w *macosWebviewWindow) isIgnoreMouseEvents() bool {
+	return bool(C.isIgnoreMouseEvents(w.nsWindow))
+}
+
+func (w *macosWebviewWindow) setIgnoreMouseEvents(ignore bool) {
+	C.setIgnoreMouseEvents(w.nsWindow, C.bool(ignore))
+}
+
+func (w *macosWebviewWindow) setContentProtection(enabled bool) {
+	C.setContentProtection(w.nsWindow, C.bool(enabled))
+}
+
+func (w *macosWebviewWindow) cut() {
+}
+
+func (w *macosWebviewWindow) paste() {
+}
+
+func (w *macosWebviewWindow) copy() {
+}
+
+func (w *macosWebviewWindow) selectAll() {
+}
+
+func (w *macosWebviewWindow) undo() {
+}
+
+func (w *macosWebviewWindow) delete() {
+}
+
+func (w *macosWebviewWindow) redo() {
+}
+
+func (w *macosWebviewWindow) showMenuBar()    {}
+func (w *macosWebviewWindow) hideMenuBar()    {}
+func (w *macosWebviewWindow) toggleMenuBar()  {}
+func (w *macosWebviewWindow) setMenu(_ *Menu) {}
+func (w *macosWebviewWindow) snapAssist()     {} // No-op on macOS

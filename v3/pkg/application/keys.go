@@ -56,7 +56,7 @@ var modifierMap = map[string]modifier{
 	"cmdorctrl":   CmdOrCtrlKey,
 	"cmd":         CmdOrCtrlKey,
 	"command":     CmdOrCtrlKey,
-	"ctrl":        CmdOrCtrlKey,
+	"ctrl":        ControlKey,
 	"optionoralt": OptionOrAltKey,
 	"alt":         OptionOrAltKey,
 	"option":      OptionOrAltKey,
@@ -70,6 +70,11 @@ type accelerator struct {
 	Modifiers []modifier
 }
 
+func (a *accelerator) clone() *accelerator {
+	result := *a
+	return &result
+}
+
 func (a *accelerator) String() string {
 	var result []string
 	// Sort modifiers
@@ -78,9 +83,9 @@ func (a *accelerator) String() string {
 	}
 	slices.Sort(result)
 	if len(a.Key) > 0 {
-		result = append(result, a.Key)
+		result = append(result, strings.ToUpper(a.Key))
 	}
-	return strings.ToLower(strings.Join(result, "+"))
+	return strings.Join(result, "+")
 }
 
 var namedKeys = map[string]struct{}{
@@ -194,7 +199,7 @@ func parseAccelerator(shortcut string) (*accelerator, error) {
 			if !validKey {
 				return nil, fmt.Errorf("'%s' is not a valid key", component)
 			}
-			result.Key = processedKey
+			result.Key = strings.ToLower(processedKey)
 			continue
 		}
 

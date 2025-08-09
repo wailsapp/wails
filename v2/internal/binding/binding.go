@@ -23,17 +23,20 @@ type Bindings struct {
 	exemptions slicer.StringSlicer
 
 	structsToGenerateTS map[string]map[string]interface{}
+	enumsToGenerateTS   map[string]map[string]interface{}
 	tsPrefix            string
 	tsSuffix            string
+	tsInterface         bool
 	obfuscate           bool
 }
 
 // NewBindings returns a new Bindings object
-func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exemptions []interface{}, obfuscate bool) *Bindings {
+func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exemptions []interface{}, obfuscate bool, enumsToBind []interface{}) *Bindings {
 	result := &Bindings{
 		db:                  newDB(),
 		logger:              logger.CustomLogger("Bindings"),
 		structsToGenerateTS: make(map[string]map[string]interface{}),
+		enumsToGenerateTS:   make(map[string]map[string]interface{}),
 		obfuscate:           obfuscate,
 	}
 
@@ -45,6 +48,10 @@ func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exem
 		// Yuk yuk yuk! Is there a better way?
 		name = strings.TrimSuffix(name, "-fm")
 		result.exemptions.Add(name)
+	}
+
+	for _, enum := range enumsToBind {
+		result.AddEnumToGenerateTS(enum)
 	}
 
 	// Add the structs to bind
@@ -60,7 +67,6 @@ func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exem
 
 // Add the given struct methods to the Bindings
 func (b *Bindings) Add(structPtr interface{}) error {
-
 	methods, err := b.getMethods(structPtr)
 	if err != nil {
 		return fmt.Errorf("cannot bind value to app: %s", err.Error())
@@ -89,16 +95,21 @@ func (b *Bindings) ToJSON() (string, error) {
 func (b *Bindings) GenerateModels() ([]byte, error) {
 	models := map[string]string{}
 	var seen slicer.StringSlicer
+	var seenEnumsPackages slicer.StringSlicer
 	allStructNames := b.getAllStructNames()
 	allStructNames.Sort()
+	allEnumNames := b.getAllEnumNames()
+	allEnumNames.Sort()
 	for packageName, structsToGenerate := range b.structsToGenerateTS {
 		thisPackageCode := ""
 		w := typescriptify.New()
 		w.WithPrefix(b.tsPrefix)
 		w.WithSuffix(b.tsSuffix)
+		w.WithInterface(b.tsInterface)
 		w.Namespace = packageName
 		w.WithBackupDir("")
 		w.KnownStructs = allStructNames
+		w.KnownEnums = allEnumNames
 		// sort the structs
 		var structNames []string
 		for structName := range structsToGenerate {
@@ -113,12 +124,55 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 			structInterface := structsToGenerate[structName]
 			w.Add(structInterface)
 		}
+
+		// if we have enums for this package, add them as well
+		var enums, enumsExist = b.enumsToGenerateTS[packageName]
+		if enumsExist {
+			for enumName, enum := range enums {
+				fqemumname := packageName + "." + enumName
+				if seen.Contains(fqemumname) {
+					continue
+				}
+				w.AddEnum(enum)
+			}
+			seenEnumsPackages.Add(packageName)
+		}
+
 		str, err := w.Convert(nil)
 		if err != nil {
 			return nil, err
 		}
 		thisPackageCode += str
 		seen.AddSlice(w.GetGeneratedStructs())
+		models[packageName] = thisPackageCode
+	}
+
+	// Add outstanding enums to the models that were not in packages with structs
+	for packageName, enumsToGenerate := range b.enumsToGenerateTS {
+		if seenEnumsPackages.Contains(packageName) {
+			continue
+		}
+
+		thisPackageCode := ""
+		w := typescriptify.New()
+		w.WithPrefix(b.tsPrefix)
+		w.WithSuffix(b.tsSuffix)
+		w.WithInterface(b.tsInterface)
+		w.Namespace = packageName
+		w.WithBackupDir("")
+
+		for enumName, enum := range enumsToGenerate {
+			fqemumname := packageName + "." + enumName
+			if seen.Contains(fqemumname) {
+				continue
+			}
+			w.AddEnum(enum)
+		}
+		str, err := w.Convert(nil)
+		if err != nil {
+			return nil, err
+		}
+		thisPackageCode += str
 		models[packageName] = thisPackageCode
 	}
 
@@ -146,7 +200,6 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 }
 
 func (b *Bindings) WriteModels(modelsDir string) error {
-
 	modelsData, err := b.GenerateModels()
 	if err != nil {
 		return err
@@ -157,12 +210,45 @@ func (b *Bindings) WriteModels(modelsDir string) error {
 	}
 
 	filename := filepath.Join(modelsDir, "models.ts")
-	err = os.WriteFile(filename, modelsData, 0755)
+	err = os.WriteFile(filename, modelsData, 0o755)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (b *Bindings) AddEnumToGenerateTS(e interface{}) {
+	enumType := reflect.TypeOf(e)
+
+	var packageName string
+	var enumName string
+	// enums should be represented as array of all possible values
+	if hasElements(enumType) {
+		enum := enumType.Elem()
+		// simple enum represented by struct with Value/TSName fields
+		if enum.Kind() == reflect.Struct {
+			_, tsNamePresented := enum.FieldByName("TSName")
+			enumT, valuePresented := enum.FieldByName("Value")
+			if tsNamePresented && valuePresented {
+				packageName = getPackageName(enumT.Type.String())
+				enumName = enumT.Type.Name()
+			} else {
+				return
+			}
+			// otherwise expecting implementation with TSName() https://github.com/tkrajina/typescriptify-golang-structs#enums-with-tsname
+		} else {
+			packageName = getPackageName(enumType.Elem().String())
+			enumName = enumType.Elem().Name()
+		}
+		if b.enumsToGenerateTS[packageName] == nil {
+			b.enumsToGenerateTS[packageName] = make(map[string]interface{})
+		}
+		if b.enumsToGenerateTS[packageName][enumName] != nil {
+			return
+		}
+		b.enumsToGenerateTS[packageName][enumName] = e
+	}
 }
 
 func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, s interface{}) {
@@ -233,11 +319,28 @@ func (b *Bindings) SetTsSuffix(postfix string) *Bindings {
 	return b
 }
 
+func (b *Bindings) SetOutputType(outputType string) *Bindings {
+	if outputType == "interfaces" {
+		b.tsInterface = true
+	}
+	return b
+}
+
 func (b *Bindings) getAllStructNames() *slicer.StringSlicer {
 	var result slicer.StringSlicer
 	for packageName, structsToGenerate := range b.structsToGenerateTS {
 		for structName := range structsToGenerate {
 			result.Add(packageName + "." + structName)
+		}
+	}
+	return &result
+}
+
+func (b *Bindings) getAllEnumNames() *slicer.StringSlicer {
+	var result slicer.StringSlicer
+	for packageName, enumsToGenerate := range b.enumsToGenerateTS {
+		for enumName := range enumsToGenerate {
+			result.Add(packageName + "." + enumName)
 		}
 	}
 	return &result

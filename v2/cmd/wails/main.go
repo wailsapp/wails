@@ -66,7 +66,6 @@ func bool2Str(b bool) string {
 var app *clir.Cli
 
 func main() {
-
 	var err error
 
 	app = clir.NewCli("Wails", "Go/HTML Appkit", internal.Version)

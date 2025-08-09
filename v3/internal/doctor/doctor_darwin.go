@@ -3,6 +3,7 @@
 package doctor
 
 import (
+	"bytes"
 	"github.com/samber/lo"
 	"os/exec"
 	"strings"
@@ -31,11 +32,16 @@ func getInfo() (map[string]string, bool) {
 	result["Apple Silicon"] = appleSilicon
 	result["CPU"] = getSysctl("machdep.cpu.brand_string")
 
+	return result, ok
+}
+
+func checkPlatformDependencies(result map[string]string, ok *bool) {
+
 	// Check for xcode command line tools
 	output, err := exec.Command("xcode-select", "-v").Output()
 	cliToolsVersion := "N/A. Install by running: `xcode-select --install`"
 	if err != nil {
-		ok = false
+		*ok = false
 	} else {
 		cliToolsVersion = strings.TrimPrefix(string(output), "xcode-select version ")
 		cliToolsVersion = strings.TrimSpace(cliToolsVersion)
@@ -43,5 +49,15 @@ func getInfo() (map[string]string, bool) {
 	}
 	result["Xcode cli tools"] = cliToolsVersion
 
-	return result, ok
+	checkCommonDependencies(result, ok)
+
+	// Check for nsis
+	nsisVersion := []byte("Not Installed. Install with `brew install makensis`.")
+	output, err = exec.Command("makensis", "-VERSION").Output()
+	if err == nil && output != nil {
+		nsisVersion = output
+	}
+	nsisVersion = bytes.TrimSpace(nsisVersion)
+
+	result["*NSIS"] = string(nsisVersion)
 }

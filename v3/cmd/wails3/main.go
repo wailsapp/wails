@@ -1,13 +1,18 @@
 package main
 
 import (
-	"github.com/pterm/pterm"
-	"github.com/samber/lo"
 	"os"
 	"runtime/debug"
 
+	"github.com/pkg/browser"
+
+	"github.com/pterm/pterm"
+	"github.com/samber/lo"
+
 	"github.com/leaanthony/clir"
 	"github.com/wailsapp/wails/v3/internal/commands"
+	"github.com/wailsapp/wails/v3/internal/flags"
+	"github.com/wailsapp/wails/v3/internal/term"
 )
 
 func init() {
@@ -25,35 +30,107 @@ func init() {
 }
 
 func main() {
-	app := clir.NewCli("wails", "The Wails CLI", "v3")
-	app.NewSubCommandFunction("build", "Build the project", commands.Build)
-	app.NewSubCommandFunction("doctor", "System status report", commands.Doctor)
+	app := clir.NewCli("wails", "The Wails3 CLI", "v3")
+	app.NewSubCommand("docs", "Open the docs").Action(openDocs)
 	app.NewSubCommandFunction("init", "Initialise a new project", commands.Init)
+	
+	build := app.NewSubCommand("build", "Build the project")
+	var buildFlags flags.Build
+	build.AddFlags(&buildFlags)
+	build.Action(func() error {
+		return commands.Build(&buildFlags, build.OtherArgs())
+	})
+	
+	app.NewSubCommandFunction("dev", "Run in Dev mode", commands.Dev)
+	
+	pkg := app.NewSubCommand("package", "Package application")
+	var pkgFlags flags.Package
+	pkg.AddFlags(&pkgFlags)
+	pkg.Action(func() error {
+		return commands.Package(&pkgFlags, pkg.OtherArgs())
+	})
+	app.NewSubCommandFunction("doctor", "System status report", commands.Doctor)
+	app.NewSubCommandFunction("releasenotes", "Show release notes", commands.ReleaseNotes)
+
 	task := app.NewSubCommand("task", "Run and list tasks")
 	var taskFlags commands.RunTaskOptions
 	task.AddFlags(&taskFlags)
 	task.Action(func() error {
 		return commands.RunTask(&taskFlags, task.OtherArgs())
 	})
-	task.LongDescription("\nUsage: wails task [taskname] [flags]\n\nTasks are defined in the `Taskfile.yaml` file. See https://taskfile.dev for more information.")
+	task.LongDescription("\nUsage: wails3 task [taskname] [flags]\n\nTasks are defined in the `Taskfile.yaml` file. See https://taskfile.dev for more information.")
+
 	generate := app.NewSubCommand("generate", "Generation tools")
 	generate.NewSubCommandFunction("build-assets", "Generate build assets", commands.GenerateBuildAssets)
 	generate.NewSubCommandFunction("icons", "Generate icons", commands.GenerateIcons)
 	generate.NewSubCommandFunction("syso", "Generate Windows .syso file", commands.GenerateSyso)
-	generate.NewSubCommandFunction("bindings", "Generate bindings + models", commands.GenerateBindings)
+	generate.NewSubCommandFunction("runtime", "Generate the pre-built version of the runtime", commands.GenerateRuntime)
+	generate.NewSubCommandFunction("webview2bootstrapper", "Generate WebView2 bootstrapper", commands.GenerateWebView2Bootstrapper)
+	generate.NewSubCommandFunction("template", "Generate a new template", commands.GenerateTemplate)
+
+	update := app.NewSubCommand("update", "Update tools")
+	update.NewSubCommandFunction("build-assets", "Updates the build assets using the given config file", commands.UpdateBuildAssets)
+	update.NewSubCommandFunction("cli", "Updates the Wails CLI", commands.UpdateCLI)
+
+	bindgen := generate.NewSubCommand("bindings", "Generate bindings + models")
+	var bindgenFlags flags.GenerateBindingsOptions
+	bindgen.AddFlags(&bindgenFlags)
+	bindgen.Action(func() error {
+		return commands.GenerateBindings(&bindgenFlags, bindgen.OtherArgs())
+	})
+	bindgen.LongDescription("\nUsage: wails3 generate bindings [flags] [patterns...]\n\nPatterns match packages to scan for bound types.\nPattern format is analogous to that of the Go build tool,\ne.g. './...' matches packages in the current directory and all descendants.\nIf no pattern is given, the tool will fall back to the current directory.")
 	generate.NewSubCommandFunction("constants", "Generate JS constants from Go", commands.GenerateConstants)
-	plugin := app.NewSubCommand("plugin", "Plugin tools")
-	//plugin.NewSubCommandFunction("list", "List plugins", commands.PluginList)
-	plugin.NewSubCommandFunction("init", "Initialise a new plugin", commands.PluginInit)
-	//plugin.NewSubCommandFunction("add", "Add a plugin", commands.PluginAdd)
+	generate.NewSubCommandFunction(".desktop", "Generate .desktop file", commands.GenerateDotDesktop)
+	generate.NewSubCommandFunction("appimage", "Generate Linux AppImage", commands.GenerateAppImage)
+
+	plugin := app.NewSubCommand("service", "Service tools")
+	plugin.NewSubCommandFunction("init", "Initialise a new service", commands.ServiceInit)
+
 	tool := app.NewSubCommand("tool", "Various tools")
 	tool.NewSubCommandFunction("checkport", "Checks if a port is open. Useful for testing if vite is running.", commands.ToolCheckPort)
+	tool.NewSubCommandFunction("watcher", "Watches files and runs a command when they change", commands.Watcher)
+	tool.NewSubCommandFunction("cp", "Copy files", commands.Cp)
+	tool.NewSubCommandFunction("buildinfo", "Show Build Info", commands.BuildInfo)
+	tool.NewSubCommandFunction("package", "Generate Linux packages (deb, rpm, archlinux)", commands.ToolPackage)
+	tool.NewSubCommandFunction("version", "Bump semantic version", commands.ToolVersion)
 
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
+	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)
+
+	defer printFooter()
 
 	err := app.Run()
 	if err != nil {
 		pterm.Error.Println(err)
 		os.Exit(1)
 	}
+}
+
+func printFooter() {
+	if !commands.DisableFooter {
+		docsLink := term.Hyperlink("https://v3.wails.io/getting-started/your-first-app/", "wails3 docs")
+
+		pterm.Println(pterm.LightGreen("\nNeed documentation? Run: ") + pterm.LightBlue(docsLink))
+		// Check if we're in a teminal
+		printer := pterm.PrefixPrinter{
+			MessageStyle: pterm.NewStyle(pterm.FgLightGreen),
+			Prefix: pterm.Prefix{
+				Style: pterm.NewStyle(pterm.FgRed, pterm.BgLightWhite),
+				Text:  "♥ ",
+			},
+		}
+
+		linkText := term.Hyperlink("https://github.com/sponsors/leaanthony", "wails3 sponsor")
+		printer.Println("If Wails is useful to you or your company, please consider sponsoring the project: " + pterm.LightBlue(linkText))
+	}
+}
+
+func openDocs() error {
+	commands.DisableFooter = true
+	return browser.OpenURL("https://v3.wails.io/getting-started/your-first-app/")
+}
+
+func openSponsor() error {
+	commands.DisableFooter = true
+	return browser.OpenURL("https://github.com/sponsors/leaanthony")
 }

@@ -3,7 +3,7 @@ package typescriptify
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -24,7 +24,7 @@ const (
 	if (!a) {
 		return a;
 	}
-	if (a.slice) {
+	if (a.slice && a.map) {
 		return (a as any[]).map(elem => this.convertValues(elem, classs));
 	} else if ("object" === typeof a) {
 		if (asMap) {
@@ -104,6 +104,7 @@ type TypeScriptify struct {
 
 	Namespace    string
 	KnownStructs *slicer.StringSlicer
+	KnownEnums   *slicer.StringSlicer
 }
 
 func New() *TypeScriptify {
@@ -156,10 +157,10 @@ func (t *TypeScriptify) deepFields(typeOf reflect.Type) []reflect.StructField {
 		kind := f.Type.Kind()
 		isPointer := kind == reflect.Ptr && f.Type.Elem().Kind() == reflect.Struct
 		if f.Anonymous && kind == reflect.Struct {
-			//fmt.Println(v.Interface())
+			// fmt.Println(v.Interface())
 			fields = append(fields, t.deepFields(f.Type)...)
 		} else if f.Anonymous && isPointer {
-			//fmt.Println(v.Interface())
+			// fmt.Println(v.Interface())
 			fields = append(fields, t.deepFields(f.Type.Elem())...)
 		} else {
 			// Check we have a json tag
@@ -393,7 +394,7 @@ func loadCustomCode(fileName string) (map[string]string, error) {
 	}
 	defer f.Close()
 
-	bytes, err := ioutil.ReadAll(f)
+	bytes, err := io.ReadAll(f)
 	if err != nil {
 		return result, err
 	}
@@ -429,7 +430,7 @@ func (t TypeScriptify) backup(fileName string) error {
 	}
 	defer fileIn.Close()
 
-	bytes, err := ioutil.ReadAll(fileIn)
+	bytes, err := io.ReadAll(fileIn)
 	if err != nil {
 		return err
 	}
@@ -439,7 +440,7 @@ func (t TypeScriptify) backup(fileName string) error {
 		backupFn = path.Join(t.BackupDir, backupFn)
 	}
 
-	return ioutil.WriteFile(backupFn, bytes, os.FileMode(0700))
+	return os.WriteFile(backupFn, bytes, os.FileMode(0o700))
 }
 
 func (t TypeScriptify) ConvertToFile(fileName string, packageName string) error {
@@ -585,9 +586,6 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 		return "", nil
 	}
 	fields := t.deepFields(typeOf)
-	if len(fields) == 0 {
-		return "", nil
-	}
 	t.logf(depth, "Converting type %s", typeOf.String())
 	if differentNamespaces(t.Namespace, typeOf) {
 		return "", nil
@@ -697,7 +695,7 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 
 			builder.AddMapField(jsonFieldName, field)
 		} else if field.Type.Kind() == reflect.Slice || field.Type.Kind() == reflect.Array { // Slice:
-			if field.Type.Elem().Kind() == reflect.Ptr { //extract ptr type
+			if field.Type.Elem().Kind() == reflect.Ptr { // extract ptr type
 				field.Type = field.Type.Elem()
 			}
 
@@ -723,7 +721,16 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 			}
 		} else { // Simple field:
 			t.logf(depth, "- simple field %s.%s", typeOf.Name(), field.Name)
-			err = builder.AddSimpleField(jsonFieldName, field, fldOpts)
+			// check if type is in known enum. If so, then replace TStype with enum name to avoid missing types
+			isKnownEnum := t.KnownEnums.Contains(getStructFQN(field.Type.String()))
+			if isKnownEnum {
+				err = builder.AddSimpleField(jsonFieldName, field, TypeOptions{
+					TSType:      getStructFQN(field.Type.String()),
+					TSTransform: fldOpts.TSTransform,
+				})
+			} else {
+				err = builder.AddSimpleField(jsonFieldName, field, fldOpts)
+			}
 		}
 		if err != nil {
 			return "", err
@@ -884,7 +891,7 @@ func (t *typeScriptClassBuilder) addField(fld, fldType string, isAnyType bool) {
 	isOptional := strings.HasSuffix(fld, "?")
 	strippedFieldName := strings.ReplaceAll(fld, "?", "")
 	if !regexp.MustCompile(jsVariableNameRegex).Match([]byte(strippedFieldName)) {
-		fld = fmt.Sprintf(`"%s"`, fld)
+		fld = fmt.Sprintf(`"%s"`, strippedFieldName)
 		if isOptional {
 			fld += "?"
 		}
@@ -935,6 +942,6 @@ func typeClashWithReservedKeyword(input string) bool {
 func warnAboutTypesClash(entity string) {
 	// TODO: Refactor logging
 	l := log.New(os.Stderr, "", 0)
-	l.Println(fmt.Sprintf("Usage of reserved keyword found and not supported: %s", entity))
+	l.Printf("Usage of reserved keyword found and not supported: %s", entity)
 	log.Println("Please rename returned type or consider adding bindings config to your wails.json")
 }

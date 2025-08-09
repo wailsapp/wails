@@ -2,11 +2,11 @@ package menumanager
 
 import (
 	"fmt"
+
 	"github.com/wailsapp/wails/v2/pkg/menu"
 )
 
 type Manager struct {
-
 	// The application menu.
 	applicationMenu          *menu.Menu
 	applicationMenuJSON      string
@@ -43,7 +43,6 @@ func (m *Manager) getMenuItemByID(menuMap *MenuItemMap, menuId string) *menu.Men
 }
 
 func (m *Manager) ProcessClick(menuID string, data string, menuType string, parentID string) error {
-
 	var menuItemMap *MenuItemMap
 
 	switch menuType {
@@ -93,7 +92,7 @@ func (m *Manager) ProcessClick(menuID string, data string, menuType string, pare
 	// Create new Callback struct
 	callbackData := &menu.CallbackData{
 		MenuItem: menuItem,
-		//ContextData: data,
+		// ContextData: data,
 	}
 
 	// Call back!

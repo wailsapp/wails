@@ -110,6 +110,7 @@ import "C"
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -227,9 +228,9 @@ func (r *requestBodyStreamReader) Read(p []byte) (n int, err error) {
 	case 0:
 		return 0, io.EOF
 	case -1:
-		return 0, fmt.Errorf("body: stream error")
+		return 0, errors.New("body: stream error")
 	case -2:
-		return 0, fmt.Errorf("body: no stream defined")
+		return 0, errors.New("body: no stream defined")
 	case -3:
 		return 0, io.ErrClosedPipe
 	default:

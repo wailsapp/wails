@@ -28,6 +28,10 @@ func main() {
 	// Create a custom menu
 	menu := app.NewMenu()
 	menu.AddRole(application.AppMenu)
+	menu.AddRole(application.EditMenu)
+	menu.AddRole(application.WindowMenu)
+	menu.AddRole(application.ServicesMenu)
+	menu.AddRole(application.HelpMenu)
 
 	// Let's make a "Demo" menu
 	infoMenu := menu.AddSubmenu("Info")
@@ -37,6 +41,7 @@ func main() {
 		dialog.SetMessage("This is a custom message")
 		dialog.Show()
 	})
+
 	infoMenu.Add("Info (Title only)").OnClick(func(ctx *application.Context) {
 		dialog := application.InfoDialog()
 		dialog.SetTitle("Custom Title")
@@ -55,7 +60,7 @@ func main() {
 		dialog.Show()
 	})
 	infoMenu.Add("About").OnClick(func(ctx *application.Context) {
-		app.ShowAboutDialog()
+		app.Menu.ShowAbout()
 	})
 
 	questionMenu := menu.AddSubmenu("Question")
@@ -68,7 +73,7 @@ func main() {
 	})
 	questionMenu.Add("Question (Attached to Window)").OnClick(func(ctx *application.Context) {
 		dialog := application.QuestionDialog()
-		dialog.AttachToWindow(app.CurrentWindow())
+		dialog.AttachToWindow(app.Window.Current())
 		dialog.SetMessage("No default button")
 		dialog.AddButton("Yes")
 		dialog.AddButton("No")
@@ -103,17 +108,22 @@ func main() {
 		dialog.SetTitle("Custom Icon Example")
 		dialog.SetMessage("Using a custom icon")
 		dialog.SetIcon(icons.WailsLogoWhiteTransparent)
-		dialog.SetDefaultButton(dialog.AddButton("I like it!"))
-		dialog.AddButton("Not so keen...")
+		likeIt := dialog.AddButton("I like it!").OnClick(func() {
+			application.InfoDialog().SetMessage("Thanks!").Show()
+		})
+		dialog.AddButton("Not so keen...").OnClick(func() {
+			application.InfoDialog().SetMessage("Too bad!").Show()
+		})
+		dialog.SetDefaultButton(likeIt)
 		dialog.Show()
 	})
 
 	warningMenu := menu.AddSubmenu("Warning")
 	warningMenu.Add("Warning").OnClick(func(ctx *application.Context) {
-		dialog := application.WarningDialog()
-		dialog.SetTitle("Custom Title")
-		dialog.SetMessage("This is a custom message")
-		dialog.Show()
+		application.WarningDialog().
+			SetTitle("Custom Title").
+			SetMessage("This is a custom message").
+			Show()
 	})
 	warningMenu.Add("Warning (Title only)").OnClick(func(ctx *application.Context) {
 		dialog := application.WarningDialog()
@@ -146,9 +156,9 @@ func main() {
 		dialog.Show()
 	})
 	errorMenu.Add("Error (Custom Message)").OnClick(func(ctx *application.Context) {
-		dialog := application.ErrorDialog()
-		dialog.SetMessage("This is a custom message")
-		dialog.Show()
+		application.ErrorDialog().
+			SetMessage("This is a custom message").
+			Show()
 	})
 	errorMenu.Add("Error (Custom Icon)").OnClick(func(ctx *application.Context) {
 		dialog := application.ErrorDialog()
@@ -186,7 +196,7 @@ func main() {
 			CanChooseFiles(true).
 			CanCreateDirectories(true).
 			ShowHiddenFiles(true).
-			AttachToWindow(app.CurrentWindow()).
+			AttachToWindow(app.Window.Current()).
 			PromptForSingleSelection()
 		if result != "" {
 			application.InfoDialog().SetMessage(result).Show()
@@ -209,6 +219,7 @@ func main() {
 	openMenu.Add("Open Directory").OnClick(func(ctx *application.Context) {
 		result, _ := application.OpenFileDialog().
 			CanChooseDirectories(true).
+			CanChooseFiles(false).
 			PromptForSingleSelection()
 		if result != "" {
 			application.InfoDialog().SetMessage(result).Show()
@@ -220,6 +231,7 @@ func main() {
 		result, _ := application.OpenFileDialog().
 			CanChooseDirectories(true).
 			CanCreateDirectories(true).
+			CanChooseFiles(false).
 			PromptForSingleSelection()
 		if result != "" {
 			application.InfoDialog().SetMessage(result).Show()
@@ -231,6 +243,7 @@ func main() {
 		result, _ := application.OpenFileDialog().
 			CanChooseDirectories(true).
 			CanCreateDirectories(true).
+			CanChooseFiles(false).
 			ResolvesAliases(true).
 			PromptForSingleSelection()
 		if result != "" {
@@ -297,7 +310,7 @@ func main() {
 	})
 	saveMenu.Add("Select File (Attach To WebviewWindow)").OnClick(func(ctx *application.Context) {
 		result, _ := application.SaveFileDialog().
-			AttachToWindow(app.CurrentWindow()).
+			AttachToWindow(app.Window.Current()).
 			PromptForSingleSelection()
 		if result != "" {
 			application.InfoDialog().SetMessage(result).Show()
@@ -337,9 +350,9 @@ func main() {
 		}
 	})
 
-	app.SetMenu(menu)
+	app.Menu.Set(menu)
 
-	app.NewWebviewWindow()
+	app.Window.New()
 
 	err := app.Run()
 

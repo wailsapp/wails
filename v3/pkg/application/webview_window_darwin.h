@@ -23,6 +23,7 @@
 @property unsigned int windowId;
 @property (retain) NSEvent* leftMouseEvent;
 @property unsigned int invisibleTitleBarHeight;
+@property BOOL showToolbarWhenFullscreen;
 @property NSWindowStyleMask previousStyleMask; // Used to restore the window style mask when using frameless
 
 - (void)handleLeftMouseUp:(NSWindow *)window;
@@ -31,5 +32,6 @@
 
 @end
 
+void windowSetScreen(void* window, void* screen, int yOffset);
 
 #endif /* WebviewWindowDelegate_h */

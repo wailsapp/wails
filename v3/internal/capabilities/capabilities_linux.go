@@ -2,8 +2,10 @@
 
 package capabilities
 
-func newCapabilities(_ string) Capabilities {
+func NewCapabilities() Capabilities {
 	c := Capabilities{}
-	c.HasNativeDrag = false
+	// For now, assume Linux has native drag support
+	// TODO: Implement proper WebKit version detection
+	c.HasNativeDrag = true
 	return c
 }

@@ -7,7 +7,8 @@ import (
 )
 
 type windowsMenu struct {
-	menu *Menu
+	menu         *Menu
+	parentWindow *windowsWebviewWindow
 
 	hWnd          w32.HWND
 	hMenu         w32.HMENU
@@ -35,12 +36,23 @@ func (w *windowsMenu) update() {
 
 func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 	for _, item := range inputMenu.items {
-		if item.Hidden() {
-			continue
-		}
 		w.currentMenuID++
 		itemID := w.currentMenuID
 		w.menuMapping[itemID] = item
+
+		menuItemImpl := newMenuItemImpl(item, parentMenu, itemID)
+		menuItemImpl.parent = inputMenu
+		item.impl = menuItemImpl
+
+		if item.Hidden() {
+			if item.accelerator != nil && item.callback != nil {
+				if w.parentWindow != nil {
+					w.parentWindow.parent.removeMenuBinding(item.accelerator)
+				} else {
+					globalApplication.KeyBinding.Remove(item.accelerator.String())
+				}
+			}
+		}
 
 		flags := uint32(w32.MF_STRING)
 		if item.disabled {
@@ -52,21 +64,9 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 		if item.IsSeparator() {
 			flags = flags | w32.MF_SEPARATOR
 		}
-		//
-		//if item.IsCheckbox() {
-		//	w.checkboxItems[item] = append(w.checkboxItems[item], itemID)
-		//}
-		//if item.IsRadio() {
-		//	currentRadioGroup.Add(itemID, item)
-		//} else {
-		//	if len(currentRadioGroup) > 0 {
-		//		for _, radioMember := range currentRadioGroup {
-		//			currentRadioGroup := currentRadioGroup
-		//			p.radioGroups[radioMember.MenuItem] = append(p.radioGroups[radioMember.MenuItem], &currentRadioGroup)
-		//		}
-		//		currentRadioGroup = RadioGroup{}
-		//	}
-		//}
+		if item.itemType == radio {
+			flags = flags | w32.MFT_RADIOCHECK
+		}
 
 		if item.submenu != nil {
 			flags = flags | w32.MF_POPUP
@@ -75,11 +75,29 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 			itemID = int(newSubmenu)
 		}
 
-		var menuText = w32.MustStringToUTF16Ptr(item.Label())
+		thisText := item.Label()
+		if item.accelerator != nil && item.callback != nil {
+			if w.parentWindow != nil {
+				w.parentWindow.parent.addMenuBinding(item.accelerator, item)
+			} else {
+				globalApplication.KeyBinding.Add(item.accelerator.String(), func(w Window) {
+					item.handleClick()
+				})
+			}
+			thisText = thisText + "\t" + item.accelerator.String()
+		}
+		var menuText = w32.MustStringToUTF16Ptr(thisText)
 
-		w32.AppendMenu(parentMenu, flags, uintptr(itemID), menuText)
+		// If the item is hidden, don't append
+		if item.Hidden() {
+			continue
+		}
+
+		w32.AppendMenu(parentMenu, flags, uintptr(itemID), menuText) 
 		if item.bitmap != nil {
-			w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil)
+			if err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil); err != nil {
+				globalApplication.fatal("error setting menu icons: %w", err)
+			}
 		}
 	}
 }
@@ -113,7 +131,7 @@ func (w *windowsMenu) ProcessCommand(cmdMsgID int) {
 	item.handleClick()
 }
 
-func defaultApplicationMenu() *Menu {
+func DefaultApplicationMenu() *Menu {
 	menu := NewMenu()
 	menu.AddRole(FileMenu)
 	menu.AddRole(EditMenu)

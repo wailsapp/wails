@@ -59,7 +59,7 @@ func TestPromises(t *testing.T) {
 
 	// setup
 	testLogger := &logger.Logger{}
-	b := binding.NewBindings(testLogger, []interface{}{&PromisesTest{}}, []interface{}{}, false)
+	b := binding.NewBindings(testLogger, []interface{}{&PromisesTest{}}, []interface{}{}, false, []interface{}{})
 
 	// then
 	err := b.GenerateGoBindings(generationDir)

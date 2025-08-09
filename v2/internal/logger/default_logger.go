@@ -84,7 +84,6 @@ func (l *Logger) Info(format string, args ...interface{}) {
 	if l.logLevel <= logger.INFO {
 		l.output.Info(fmt.Sprintf(format, args...))
 	}
-
 }
 
 // Warning level logging. Works like Sprintf.
@@ -99,7 +98,6 @@ func (l *Logger) Error(format string, args ...interface{}) {
 	if l.logLevel <= logger.ERROR {
 		l.output.Error(fmt.Sprintf(format, args...))
 	}
-
 }
 
 // Fatal level logging. Works like Sprintf.

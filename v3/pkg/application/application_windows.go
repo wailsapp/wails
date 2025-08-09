@@ -3,23 +3,27 @@
 package application
 
 import (
-	"fmt"
+	"errors"
+	"os"
+	"path/filepath"
+	"slices"
+	"strings"
+	"sync"
+	"sync/atomic"
+	"syscall"
+	"time"
+	"unsafe"
+
 	"github.com/wailsapp/go-webview2/webviewloader"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
-	"golang.org/x/sys/windows"
-	"os"
-	"strconv"
-	"sync"
-	"syscall"
-	"unsafe"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
-
-	"github.com/samber/lo"
 )
 
-var windowClassName = lo.Must(syscall.UTF16PtrFromString("WailsWebviewWindow"))
+var (
+	wmTaskbarCreated = w32.RegisterWindowMessage(w32.MustStringToUTF16Ptr("TaskbarCreated"))
+)
 
 type windowsApp struct {
 	parent *App
@@ -43,10 +47,23 @@ type windowsApp struct {
 	// system theme
 	isCurrentlyDarkMode bool
 	currentWindowID     uint
+
+	// Restart taskbar flag
+	restartingTaskbar atomic.Bool
 }
 
 func (m *windowsApp) isDarkMode() bool {
 	return w32.IsCurrentlyDarkMode()
+}
+
+func (m *windowsApp) getAccentColor() string {
+	accentColor, err := w32.GetAccentColor()
+	if err != nil {
+		m.parent.error("failed to get accent color: %w", err)
+		return "rgb(0,122,255)"
+	}
+
+	return accentColor
 }
 
 func (m *windowsApp) isOnMainThread() bool {
@@ -72,54 +89,6 @@ func (m *windowsApp) getWindowForHWND(hwnd w32.HWND) *windowsWebviewWindow {
 
 func getNativeApplication() *windowsApp {
 	return globalApplication.impl.(*windowsApp)
-}
-
-func (m *windowsApp) getPrimaryScreen() (*Screen, error) {
-	screens, err := m.getScreens()
-	if err != nil {
-		return nil, err
-	}
-	for _, screen := range screens {
-		if screen.IsPrimary {
-			return screen, nil
-		}
-	}
-	return nil, fmt.Errorf("no primary screen found")
-}
-
-func (m *windowsApp) getScreens() ([]*Screen, error) {
-	allScreens, err := w32.GetAllScreens()
-	if err != nil {
-		return nil, err
-	}
-	// Convert result to []*Screen
-	screens := make([]*Screen, len(allScreens))
-	for id, screen := range allScreens {
-		x := int(screen.MONITORINFOEX.RcMonitor.Left)
-		y := int(screen.MONITORINFOEX.RcMonitor.Top)
-		right := int(screen.MONITORINFOEX.RcMonitor.Right)
-		bottom := int(screen.MONITORINFOEX.RcMonitor.Bottom)
-		width := right - x
-		height := bottom - y
-		screens[id] = &Screen{
-			ID:     strconv.Itoa(id),
-			Name:   windows.UTF16ToString(screen.MONITORINFOEX.SzDevice[:]),
-			X:      x,
-			Y:      y,
-			Size:   Size{Width: width, Height: height},
-			Bounds: Rect{X: x, Y: y, Width: width, Height: height},
-			WorkArea: Rect{
-				X:      int(screen.MONITORINFOEX.RcWork.Left),
-				Y:      int(screen.MONITORINFOEX.RcWork.Top),
-				Width:  int(screen.MONITORINFOEX.RcWork.Right - screen.MONITORINFOEX.RcWork.Left),
-				Height: int(screen.MONITORINFOEX.RcWork.Bottom - screen.MONITORINFOEX.RcWork.Top),
-			},
-			IsPrimary: screen.IsPrimary,
-			Scale:     screen.Scale,
-			Rotation:  0,
-		}
-	}
-	return screens, nil
 }
 
 func (m *windowsApp) hide() {
@@ -168,11 +137,11 @@ func (m *windowsApp) getCurrentWindowID() uint {
 func (m *windowsApp) setApplicationMenu(menu *Menu) {
 	if menu == nil {
 		// Create a default menu for windows
-		menu = defaultApplicationMenu()
+		menu = DefaultApplicationMenu()
 	}
 	menu.Update()
 
-	m.parent.ApplicationMenu = menu
+	m.parent.applicationMenu = menu
 }
 
 func (m *windowsApp) run() error {
@@ -180,17 +149,55 @@ func (m *windowsApp) run() error {
 	for eventID := range m.parent.applicationEventListeners {
 		m.on(eventID)
 	}
-	// Emit application started event
-	applicationEvents <- &Event{
+	// EmitEvent application started event
+	applicationEvents <- &ApplicationEvent{
 		Id:  uint(events.Windows.ApplicationStarted),
 		ctx: blankApplicationEventContext,
 	}
+
+	if len(os.Args) == 2 { // Case: program + 1 argument
+		arg1 := os.Args[1]
+		// Check if the argument is likely a URL from a custom protocol invocation
+		if strings.Contains(arg1, "://") {
+			m.parent.info("Application launched with argument, potentially a URL from custom protocol", "url", arg1)
+			eventContext := newApplicationEventContext()
+			eventContext.setURL(arg1)
+			applicationEvents <- &ApplicationEvent{
+				Id:  uint(events.Common.ApplicationLaunchedWithUrl),
+				ctx: eventContext,
+			}
+		} else {
+			// If not a URL-like string, check for file association
+			if m.parent.options.FileAssociations != nil {
+				ext := filepath.Ext(arg1)
+				if slices.Contains(m.parent.options.FileAssociations, ext) {
+					m.parent.info("Application launched with file via file association", "file", arg1)
+					eventContext := newApplicationEventContext()
+					eventContext.setOpenedWithFile(arg1)
+					applicationEvents <- &ApplicationEvent{
+						Id:  uint(events.Common.ApplicationOpenedWithFile),
+						ctx: eventContext,
+					}
+				}
+			}
+		}
+	} else if len(os.Args) > 2 {
+		// Log if multiple arguments are passed, though typical protocol/file launch is a single arg.
+		m.parent.info("Application launched with multiple arguments", "args", os.Args[1:])
+	}
+
 	_ = m.runMainLoop()
 
 	return nil
 }
 
 func (m *windowsApp) destroy() {
+	if !globalApplication.shouldQuit() {
+		return
+	}
+	globalApplication.cleanup()
+	// destroy the main thread window
+	w32.DestroyWindow(m.mainThreadWindowHWND)
 	// Post a quit message to the main thread
 	w32.PostQuitMessage(0)
 }
@@ -207,7 +214,7 @@ func (m *windowsApp) init() {
 	m.windowClass.Background = w32.COLOR_BTNFACE + 1
 	m.windowClass.Icon = icon
 	m.windowClass.Cursor = w32.LoadCursorWithResourceID(0, w32.IDC_ARROW)
-	m.windowClass.ClassName = windowClassName
+	m.windowClass.ClassName = w32.MustStringToUTF16Ptr(m.parent.options.Windows.WndClass)
 	m.windowClass.MenuName = nil
 	m.windowClass.IconSm = icon
 
@@ -233,7 +240,33 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 		}
 	}
 
+	// Handle the main thread window
+	// Quit the application if requested
+	// Reprocess and cache screens when display settings change
+	if hwnd == m.mainThreadWindowHWND {
+		if msg == w32.WM_ENDSESSION || msg == w32.WM_DESTROY || msg == w32.WM_CLOSE {
+			globalApplication.Quit()
+		}
+		if msg == w32.WM_DISPLAYCHANGE || (msg == w32.WM_SETTINGCHANGE && wParam == w32.SPI_SETWORKAREA) {
+			err := m.processAndCacheScreens()
+			if err != nil {
+				m.parent.handleError(err)
+			}
+		}
+	}
+
 	switch msg {
+	case wmTaskbarCreated:
+		if m.restartingTaskbar.Load() {
+			break
+		}
+		m.restartingTaskbar.Store(true)
+		m.reshowSystrays()
+		go func() {
+			// 1 second debounce
+			time.Sleep(1000)
+			m.restartingTaskbar.Store(false)
+		}()
 	case w32.WM_SETTINGCHANGE:
 		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lParam)))
 		if settingChanged == "ImmersiveColorSet" {
@@ -241,7 +274,7 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 			if isDarkMode != m.isCurrentlyDarkMode {
 				eventContext := newApplicationEventContext()
 				eventContext.setIsDarkMode(isDarkMode)
-				applicationEvents <- &Event{
+				applicationEvents <- &ApplicationEvent{
 					Id:  uint(events.Windows.SystemThemeChanged),
 					ctx: eventContext,
 				}
@@ -252,15 +285,15 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 	case w32.WM_POWERBROADCAST:
 		switch wParam {
 		case w32.PBT_APMPOWERSTATUSCHANGE:
-			applicationEvents <- newApplicationEvent(int(events.Windows.APMPowerStatusChange))
+			applicationEvents <- newApplicationEvent(events.Windows.APMPowerStatusChange)
 		case w32.PBT_APMSUSPEND:
-			applicationEvents <- newApplicationEvent(int(events.Windows.APMSuspend))
+			applicationEvents <- newApplicationEvent(events.Windows.APMSuspend)
 		case w32.PBT_APMRESUMEAUTOMATIC:
-			applicationEvents <- newApplicationEvent(int(events.Windows.APMResumeAutomatic))
+			applicationEvents <- newApplicationEvent(events.Windows.APMResumeAutomatic)
 		case w32.PBT_APMRESUMESUSPEND:
-			applicationEvents <- newApplicationEvent(int(events.Windows.APMResumeSuspend))
+			applicationEvents <- newApplicationEvent(events.Windows.APMResumeSuspend)
 		case w32.PBT_POWERSETTINGCHANGE:
-			applicationEvents <- newApplicationEvent(int(events.Windows.APMPowerSettingChange))
+			applicationEvents <- newApplicationEvent(events.Windows.APMPowerSettingChange)
 		}
 		return 0
 	}
@@ -310,11 +343,43 @@ func (m *windowsApp) unregisterWindow(w *windowsWebviewWindow) {
 	}
 }
 
+func (m *windowsApp) reshowSystrays() {
+	m.systrayMapLock.Lock()
+	defer m.systrayMapLock.Unlock()
+	for _, systray := range m.systrayMap {
+		systray.reshow()
+	}
+}
+
+func setupDPIAwareness() error {
+	// https://learn.microsoft.com/en-us/windows/win32/hidpi/setting-the-default-dpi-awareness-for-a-process
+	// https://learn.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows
+
+	if w32.HasSetProcessDpiAwarenessContextFunc() {
+		// This is most recent version with the best results
+		// supported beginning with Windows 10, version 1703
+		return w32.SetProcessDpiAwarenessContext(w32.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2)
+	}
+
+	if w32.HasSetProcessDpiAwarenessFunc() {
+		// Supported beginning with Windows 8.1
+		return w32.SetProcessDpiAwareness(w32.PROCESS_PER_MONITOR_DPI_AWARE)
+	}
+
+	if w32.HasSetProcessDPIAwareFunc() {
+		// If none of the above is supported, fallback to SetProcessDPIAware
+		// which is supported beginning with Windows Vista
+		return w32.SetProcessDPIAware()
+	}
+
+	return errors.New("no DPI awareness method supported")
+}
+
 func newPlatformApp(app *App) *windowsApp {
-	err := w32.SetProcessDPIAware()
+
+	err := setupDPIAwareness()
 	if err != nil {
-		globalApplication.fatal("Fatal error in application initialisation: ", err.Error())
-		os.Exit(1)
+		app.handleError(err)
 	}
 
 	result := &windowsApp{
@@ -322,6 +387,11 @@ func newPlatformApp(app *App) *windowsApp {
 		instance:   w32.GetModuleHandle(""),
 		windowMap:  make(map[w32.HWND]*windowsWebviewWindow),
 		systrayMap: make(map[w32.HWND]*windowsSystemTray),
+	}
+
+	err = result.processAndCacheScreens()
+	if err != nil {
+		app.handleFatalError(err)
 	}
 
 	result.init()
@@ -333,7 +403,9 @@ func newPlatformApp(app *App) *windowsApp {
 func (a *App) logPlatformInfo() {
 	var args []any
 	args = append(args, "Go-WebView2Loader", webviewloader.UsingGoWebview2Loader)
-	webviewVersion, err := webviewloader.GetAvailableCoreWebView2BrowserVersionString(a.options.Windows.WebviewBrowserPath)
+	webviewVersion, err := webviewloader.GetAvailableCoreWebView2BrowserVersionString(
+		a.options.Windows.WebviewBrowserPath,
+	)
 	if err != nil {
 		args = append(args, "WebView2", "Error: "+err.Error())
 	} else {
@@ -344,4 +416,19 @@ func (a *App) logPlatformInfo() {
 	args = append(args, osInfo.AsLogSlice()...)
 
 	a.info("Platform Info:", args...)
+}
+
+func (a *App) platformEnvironment() map[string]any {
+	result := map[string]any{}
+	webviewVersion, _ := webviewloader.GetAvailableCoreWebView2BrowserVersionString(
+		a.options.Windows.WebviewBrowserPath,
+	)
+	result["Go-WebView2Loader"] = webviewloader.UsingGoWebview2Loader
+	result["WebView2"] = webviewVersion
+	return result
+}
+
+func fatalHandler(errFunc func(error)) {
+	w32.Fatal = errFunc
+	return
 }

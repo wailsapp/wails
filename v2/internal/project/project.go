@@ -12,7 +12,6 @@ import (
 
 // Project holds the data related to a Wails project
 type Project struct {
-
 	/*** Application Data ***/
 	Name           string `json:"name"`
 	AssetDirectory string `json:"assetdir,omitempty"`
@@ -81,7 +80,7 @@ type Project struct {
 	// The address to bind the wails dev server to. Default "localhost:34115"
 	DevServer string `json:"devServer"`
 
-	// Arguments that are forwared to the application in dev mode
+	// Arguments that are forward to the application in dev mode
 	AppArgs string `json:"appargs"`
 
 	// NSISType to be build
@@ -144,11 +143,10 @@ func (p *Project) Save() error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(p.filename, data, 0755)
+	return os.WriteFile(p.filename, data, 0o755)
 }
 
 func (p *Project) setDefaults() {
-
 	if p.Path == "" {
 		p.Path = lo.Must(os.Getwd())
 	}
@@ -216,11 +214,27 @@ type Author struct {
 }
 
 type Info struct {
-	CompanyName    string  `json:"companyName"`
-	ProductName    string  `json:"productName"`
-	ProductVersion string  `json:"productVersion"`
-	Copyright      *string `json:"copyright"`
-	Comments       *string `json:"comments"`
+	CompanyName      string            `json:"companyName"`
+	ProductName      string            `json:"productName"`
+	ProductVersion   string            `json:"productVersion"`
+	Copyright        *string           `json:"copyright"`
+	Comments         *string           `json:"comments"`
+	FileAssociations []FileAssociation `json:"fileAssociations"`
+	Protocols        []Protocol        `json:"protocols"`
+}
+
+type FileAssociation struct {
+	Ext         string `json:"ext"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	IconName    string `json:"iconName"`
+	Role        string `json:"role"`
+}
+
+type Protocol struct {
+	Scheme      string `json:"scheme"`
+	Description string `json:"description"`
+	Role        string `json:"role"`
 }
 
 type Bindings struct {
@@ -228,8 +242,9 @@ type Bindings struct {
 }
 
 type TsGeneration struct {
-	Prefix string `json:"prefix"`
-	Suffix string `json:"suffix"`
+	Prefix     string `json:"prefix"`
+	Suffix     string `json:"suffix"`
+	OutputType string `json:"outputType"`
 }
 
 // Parse the given JSON data into a Project struct

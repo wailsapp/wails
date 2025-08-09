@@ -136,6 +136,15 @@ func (fm *Form) Minimise() {
 }
 
 func (fm *Form) Restore() {
+	// SC_RESTORE param for WM_SYSCOMMAND to restore app if it is minimized
+	const SC_RESTORE = 0xF120
+	// restore the minimized window, if it is
+	w32.SendMessage(
+		fm.hwnd,
+		w32.WM_SYSCOMMAND,
+		SC_RESTORE,
+		0,
+	)
 	w32.ShowWindow(fm.hwnd, w32.SW_RESTORE)
 }
 

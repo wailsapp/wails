@@ -21,16 +21,14 @@ Wails 是一个可让您使用 Go 和 Web 技术编写桌面应用的项目。
 - 丰富的 [运行时库](/docs/reference/runtime/intro)
 - 使用 Wails 构建的应用程序兼容 Apple & Microsoft 商店
 
-这是 [varly](https://varly.app) - 一个使用 Wails 编写的 MacOS 和 Windows 桌面应用。 它不仅看起来很强，它使用原生菜单和半透明 - 你希望从现代原生应用中得到的一切
+This is varly - a desktop application for MacOS & Windows written using Wails. 它不仅看起来很强，它使用原生菜单和半透明 - 你希望从现代原生应用中得到的一切
 
 ```mdx-code-block
 <p class="text--center">
-  <a href="https://varly.app/">
     <img
       src={require("@site/static/img/showcase/varly2.webp").default}
       style={{ width: "75%", "max-width": "800px" }}
     />
-  </a>
 </p>
 ```
 
@@ -42,7 +40,7 @@ Wails 带有许多预配置的模板，可让您快速启动和运行应用程�
 
 Wails 使用专门构建的库来处理窗口、菜单、对话框等原生元素，因此您可以构建美观、功能丰富的桌面应用程序。
 
-**它不嵌入浏览器**，因此性能高。 相反，它使用平台的原生渲染引擎。 在 Windows 上，是基于 Chromium 构建的新 Microsoft Webview2 库。
+**It does not embed a browser**, so it delivers a small runtime. Instead, it reuses the native rendering engine for the platform. 在 Windows 上，是基于 Chromium 构建的新 Microsoft Webview2 库。
 
 ### Go 和 JavaScript 互操作
 

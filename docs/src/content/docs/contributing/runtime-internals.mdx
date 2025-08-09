@@ -1,0 +1,175 @@
+---
+title: Runtime Internals
+description: Deep-dive into how Wails v3 boots, runs, and talks to the OS
+sidebar:
+  order: 3
+---
+
+The **runtime** is the layer that transforms ordinary Go functions into a
+cross-platform desktop application.  
+This document explains the moving parts you will meet when tracing through the
+source code.
+
+---
+
+## 1. Application Lifecycle
+
+| Phase | Code Path | What Happens |
+|-------|-----------|--------------|
+| **Bootstrap** | `pkg/application/application.go:init()` | Registers build-time data, creates a global `application` singleton. |
+| **New()** | `application.New(...)` | Validates `Options`, spins up the **AssetServer**, initialises logging. |
+| **Run()** | `application.(*App).Run()` | 1. Calls platform `mainthread.X()` to enter the OS UI thread.<br>2. Boots the **runtime** (`internal/runtime`).<br>3. Blocks until the last window closes or `Quit()` is called. |
+| **Shutdown** | `application.(*App).Quit()` | Broadcasts `application:shutdown` event, flushes log, tears down windows & services. |
+
+The lifecycle is strictly **single-entry**: you may create many windows, but the
+application object itself is initialised once.
+
+---
+
+## 2. Window Management
+
+### Public API
+
+```go
+win := app.Window.New(&application.WebviewWindowOptions{
+    Title:  "Dashboard",
+    Width:  1280,
+    Height: 720,
+})
+win.Show()
+```
+
+`NewWebviewWindow` delegates to `internal/runtime/webview_window_*.go` where
+platform-specific constructors live:
+
+```
+internal/runtime/
+├── webview_window_darwin.go
+├── webview_window_linux.go
+└── webview_window_windows.go
+```
+
+Each file:
+
+1. Creates a native webview (WKWebView, WebKitGTK, WebView2).
+2. Registers a **Message Processor** callback.
+3. Maps Wails events (`WindowResized`, `Focus`, `DropFile`, …) to runtime
+   event IDs.
+
+Windows are tracked by `screenmanager.go` which offers **query APIs** (all
+displays, DPI, active window) and centralises resize / move bookkeeping.
+
+---
+
+## 3. Message Processing Pipeline
+
+The bridge between JavaScript and Go is implemented by the **Message
+Processor** family in `pkg/application/messageprocessor_*.go`.
+
+Flow:
+
+1. **JavaScript** calls `window.runtime.Invoke("Greet", "Alice")`.
+2. The runtime serialises the request:  
+   `{"t":"c","id":"123","m":"Greet","p":["Alice"]}`  
+   (`t` = type, `c` = call).
+3. **Go** receives this JSON via the webview callback.
+4. `messageprocessor_call.go` looks up the bound method in the
+   generated table (`application.bindings.go`) and executes it.
+5. The result or error is marshalled back to JS where a `Promise` resolves.
+
+Specialised processors:
+
+| File | Purpose |
+|------|---------|
+| `messageprocessor_window.go` | Window actions (hide, maximize, …) |
+| `messageprocessor_dialog.go` | Native dialogs (`OpenFile`, `MessageBox`, …) |
+| `messageprocessor_clipboard.go` | Clipboard read/write |
+| `messageprocessor_events.go` | Event subscribe / emit |
+| `messageprocessor_browser.go` | Browser navigation, devtools |
+
+Processors are **stateless** – they pull everything they need from the
+`ApplicationContext` passed with each message.
+
+---
+
+## 4. Events System
+
+Events are namespaced strings dispatched across three layers:
+
+1. **Application events**: global lifecycle (`application:ready`,
+   `application:shutdown`).
+2. **Window events**: per-window (`window:focus`, `window:resize`).
+3. **Custom events**: user-defined (`chat:new-message`).
+
+Implementation details:
+
+* Constants are generated from `internal/events/defaults.go`.
+* Go side:  
+  `app.On("window:focus", func(e application.WindowEvent) {...})`
+* JS side:  
+  `window.runtime.EventsOn("chat:new-message", cb)`
+
+Under the hood both map to the same **EventBus** in
+`pkg/application/events.go`.  
+Subscribers are reference-counted; when a window closes, its callbacks are
+auto-unregistered to avoid leaks.
+
+---
+
+## 5. Platform-Specific Implementations
+
+Conditional compilation keeps the public API identical while hiding OS wrinkles.
+
+| Concern | Darwin | Linux | Windows |
+|---------|--------|-------|---------|
+| Main Thread | `mainthread_darwin.go` (Cgo to Foundation) | `mainthread_linux.go` (GTK) | `mainthread_windows.go` (Win32 `AttachThreadInput`) |
+| Dialogs | `dialogs_darwin.*` (NSAlert) | `dialogs_linux.go` (GtkFileChooser) | `dialogs_windows.go` (IFileOpenDialog) |
+| Clipboard | `clipboard_darwin.go` | `clipboard_linux.go` | `clipboard_windows.go` |
+| Tray Icons | `systemtray_darwin.*` | `systemtray_linux.go` (DBus) | `systemtray_windows.go` (Shell_NotifyIcon) |
+
+Key principles:
+
+* **No Cgo on Windows/Linux** unless unavoidable (performance, portability).
+* Use **build tags** (`//go:build darwin && !production`) to keep files readable.
+* Expose **capabilities** via `internal/capabilities` so higher layers can
+  degrade gracefully.
+
+---
+
+## 6. File Guide
+
+| File | Why You’d Touch It |
+|------|--------------------|
+| `internal/runtime/runtime_*.go` | Change global startup logic, add debug hooks. |
+| `internal/runtime/webview_window_*.go` | Implement a new window hint or behaviour. |
+| `pkg/application/messageprocessor_*.go` | Add a new bridge command callable from JS. |
+| `pkg/application/events_*.go` | Extend built-in event definitions. |
+| `internal/assetserver/*` | Tweak dev/production asset handling. |
+
+---
+
+## 7. Debugging Tips
+
+* Launch with `WAILS_LOG_LEVEL=debug` to print every message crossing the bridge.
+* Use `wails3 dev -verbose` to see live reload & asset requests.
+* On macOS run under `lldb --` to catch Objective-C exceptions early.
+* For Windows Chromium issues, enable WebView2 debug logs:  
+  `set WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222`
+
+---
+
+## 8. Extending the Runtime
+
+1. Define a **capability flag** in `internal/capabilities`.
+2. Implement the feature in each platform file using build tags.
+3. Add public API in `pkg/application`.
+4. Register a new message type or event if JS needs to call it.
+5. Update at least one example in `v3/examples/` exercising the feature.
+
+Follow this checklist and you'll keep the cross-platform contract intact.
+
+---
+
+You now have a guided tour of the runtime internals. Combine this knowledge with
+the **Codebase Layout** map and the **Asset Server** docs to navigate confidently
+and make impactful contributions. Happy coding!

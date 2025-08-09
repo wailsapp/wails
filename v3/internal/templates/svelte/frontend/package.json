@@ -5,12 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build:dev": "vite build --minify false --mode development",
+    "build": "vite build --mode production",
     "preview": "vite preview"
   },
+  "dependencies": {
+    "@wailsio/runtime": "latest"
+  },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^2.0.0",
-    "svelte": "^3.54.0",
-    "vite": "^4.0.0"
+    "@sveltejs/vite-plugin-svelte": "^3.0.1",
+    "svelte": "^4.2.8",
+    "vite": "^5.0.8"
   }
 }

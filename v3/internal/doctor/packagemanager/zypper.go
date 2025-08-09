@@ -27,10 +27,11 @@ func NewZypper(osid string) *Zypper {
 // They will potentially differ on different distributions or versions
 func (z *Zypper) Packages() Packagemap {
 	return Packagemap{
-		"libgtk-3": []*Package{
+		"gtk3": []*Package{
 			{Name: "gtk3-devel", SystemPackage: true, Library: true},
 		},
-		"libwebkit": []*Package{
+		"webkit2gtk": []*Package{
+			{Name: "webkit2gtk4_1-devel", SystemPackage: true, Library: true},
 			{Name: "webkit2gtk3-soup2-devel", SystemPackage: true, Library: true},
 			{Name: "webkit2gtk3-devel", SystemPackage: true, Library: true},
 		},
@@ -54,7 +55,10 @@ func (z *Zypper) Name() string {
 
 // PackageInstalled tests if the given package name is installed
 func (z *Zypper) PackageInstalled(pkg *Package) (bool, error) {
-	if pkg.SystemPackage == false {
+	if !pkg.SystemPackage {
+		if pkg.InstallCheck != nil {
+			return pkg.InstallCheck(), nil
+		}
 		return false, nil
 	}
 	stdout, err := execCmd("zypper", "info", pkg.Name)
@@ -101,7 +105,7 @@ func (z *Zypper) PackageAvailable(pkg *Package) (bool, error) {
 // InstallCommand returns the package manager specific command to install a package
 func (z *Zypper) InstallCommand(pkg *Package) string {
 	if pkg.SystemPackage == false {
-		return pkg.InstallCommand[z.osid]
+		return pkg.InstallCommand
 	}
 	return "sudo zypper in " + pkg.Name
 }

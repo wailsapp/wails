@@ -15,6 +15,7 @@ package application
 extern void registerListener(unsigned int event);
 
 #import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
 
 static AppDelegate *appDelegate = nil;
 
@@ -56,6 +57,8 @@ static void init(void) {
 	NSDistributedNotificationCenter *center = [NSDistributedNotificationCenter defaultCenter];
 	[center addObserver:appDelegate selector:@selector(themeChanged:) name:@"AppleInterfaceThemeChangedNotification" object:nil];
 
+	// Register the custom URL scheme handler
+	StartCustomProtocolHandler();
 }
 
 static bool isDarkMode(void) {
@@ -70,6 +73,32 @@ static bool isDarkMode(void) {
 	}
 
 	return [interfaceStyle isEqualToString:@"Dark"];
+}
+
+static char* getAccentColor(void) {
+	@autoreleasepool {
+		NSColor *accentColor;
+		if (@available(macOS 10.14, *)) {
+			accentColor = [NSColor controlAccentColor];
+		} else {
+			// Fallback to system blue for older macOS versions
+			accentColor = [NSColor systemBlueColor];
+		}
+		// Convert to RGB color space
+		NSColor *rgbColor = [accentColor colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
+		if (rgbColor == nil) {
+			rgbColor = accentColor;
+		}
+		// Get RGB components
+		CGFloat red, green, blue, alpha;
+		[rgbColor getRed:&red green:&green blue:&blue alpha:&alpha];
+		// Convert to 0-255 range and format as rgb() string
+		int r = (int)(red * 255);
+		int g = (int)(green * 255);
+		int b = (int)(blue * 255);
+		NSString *colorString = [NSString stringWithFormat:@"rgb(%d,%d,%d)", r, g, b];
+		return strdup([colorString UTF8String]);
+	}
 }
 
 static void setApplicationShouldTerminateAfterLastWindowClosed(bool shouldTerminate) {
@@ -91,10 +120,11 @@ static void run(void) {
     @autoreleasepool {
         [NSApp run];
         [appDelegate release];
+		[NSApp abortModal];
     }
 }
 
-// Destroy application
+// destroyApp destroys the application
 static void destroyApp(void) {
 	[NSApp terminate:nil];
 }
@@ -156,6 +186,13 @@ static const char* serializationNSDictionary(void *dict) {
 
 	return nil;
 }
+
+static void startSingleInstanceListener(const char *uniqueID) {
+	// Convert to NSString
+	NSString *uid = [NSString stringWithUTF8String:uniqueID];
+	[[NSDistributedNotificationCenter defaultCenter] addObserver:appDelegate
+          selector:@selector(handleSecondInstanceNotification:) name:uid object:nil];
+}
 */
 import "C"
 import (
@@ -175,6 +212,12 @@ type macosApp struct {
 
 func (m *macosApp) isDarkMode() bool {
 	return bool(C.isDarkMode())
+}
+
+func (m *macosApp) getAccentColor() string {
+	accentColorC := C.getAccentColor()
+	defer C.free(unsafe.Pointer(accentColorC))
+	return C.GoString(accentColorC)
 }
 
 func getNativeApplication() *macosApp {
@@ -210,7 +253,7 @@ func (m *macosApp) getCurrentWindowID() uint {
 func (m *macosApp) setApplicationMenu(menu *Menu) {
 	if menu == nil {
 		// Create a default menu for mac
-		menu = defaultApplicationMenu()
+		menu = DefaultApplicationMenu()
 	}
 	menu.Update()
 
@@ -220,12 +263,22 @@ func (m *macosApp) setApplicationMenu(menu *Menu) {
 }
 
 func (m *macosApp) run() error {
+	if m.parent.options.SingleInstance != nil {
+		cUniqueID := C.CString(m.parent.options.SingleInstance.UniqueID)
+		defer C.free(unsafe.Pointer(cUniqueID))
+		C.startSingleInstanceListener(cUniqueID)
+	}
 	// Add a hook to the ApplicationDidFinishLaunching event
-	m.parent.On(events.Mac.ApplicationDidFinishLaunching, func(*Event) {
-		C.setApplicationShouldTerminateAfterLastWindowClosed(C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed))
-		C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
-		C.activateIgnoringOtherApps()
-	})
+	m.parent.Event.OnApplicationEvent(
+		events.Mac.ApplicationDidFinishLaunching,
+		func(*ApplicationEvent) {
+			C.setApplicationShouldTerminateAfterLastWindowClosed(
+				C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed),
+			)
+			C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
+			C.activateIgnoringOtherApps()
+		},
+	)
 	m.setupCommonEvents()
 	// setup event listeners
 	for eventID := range m.parent.applicationEventListeners {
@@ -255,7 +308,7 @@ func newPlatformApp(app *App) *macosApp {
 
 //export processApplicationEvent
 func processApplicationEvent(eventID C.uint, data unsafe.Pointer) {
-	event := newApplicationEvent(int(eventID))
+	event := newApplicationEvent(events.ApplicationEventType(eventID))
 
 	if data != nil {
 		dataCStrJSON := C.serializationNSDictionary(data)
@@ -276,7 +329,7 @@ func processApplicationEvent(eventID C.uint, data unsafe.Pointer) {
 
 	switch event.Id {
 	case uint(events.Mac.ApplicationDidChangeTheme):
-		isDark := globalApplication.IsDarkMode()
+		isDark := globalApplication.Env.IsDarkMode()
 		event.Context().setIsDarkMode(isDark)
 	}
 	applicationEvents <- event
@@ -300,10 +353,16 @@ func processMessage(windowID C.uint, message *C.char) {
 
 //export processURLRequest
 func processURLRequest(windowID C.uint, wkUrlSchemeTask unsafe.Pointer) {
+	window, ok := globalApplication.Window.GetByID(uint(windowID))
+	if !ok || window == nil {
+		globalApplication.debug("could not find window with id: %d", windowID)
+		return
+	}
+
 	webviewRequests <- &webViewAssetRequest{
 		Request:    webview.NewRequest(wkUrlSchemeTask),
 		windowId:   uint(windowID),
-		windowName: globalApplication.getWindowForID(uint(windowID)).Name(),
+		windowName: window.Name(),
 	}
 }
 
@@ -316,17 +375,35 @@ func processWindowKeyDownEvent(windowID C.uint, acceleratorString *C.char) {
 }
 
 //export processDragItems
-func processDragItems(windowID C.uint, arr **C.char, length C.int) {
+func processDragItems(windowID C.uint, arr **C.char, length C.int, x C.int, y C.int) {
 	var filenames []string
 	// Convert the C array to a Go slice
 	goSlice := (*[1 << 30]*C.char)(unsafe.Pointer(arr))[:length:length]
 	for _, str := range goSlice {
 		filenames = append(filenames, C.GoString(str))
 	}
-	windowDragAndDropBuffer <- &dragAndDropMessage{
-		windowId:  uint(windowID),
-		filenames: filenames,
+
+	globalApplication.debug(
+		"[DragDropDebug] processDragItems called",
+		"windowID",
+		windowID,
+		"fileCount",
+		len(filenames),
+		"x",
+		x,
+		"y",
+		y,
+	)
+	targetWindow, ok := globalApplication.Window.GetByID(uint(windowID))
+	if !ok || targetWindow == nil {
+		println("Error: processDragItems could not find window with ID:", uint(windowID))
+		return
 	}
+
+	globalApplication.debug(
+		"[DragDropDebug] processDragItems: Calling targetWindow.InitiateFrontendDropProcessing",
+	)
+	targetWindow.InitiateFrontendDropProcessing(filenames, int(x), int(y))
 }
 
 //export processMenuItemClick
@@ -334,13 +411,58 @@ func processMenuItemClick(menuID C.uint) {
 	menuItemClicked <- uint(menuID)
 }
 
+//export shouldQuitApplication
+func shouldQuitApplication() C.bool {
+	// TODO: This should be configurable
+	return C.bool(globalApplication.shouldQuit())
+}
+
+//export cleanup
+func cleanup() {
+	globalApplication.cleanup()
+}
+
 func (a *App) logPlatformInfo() {
 	info, err := operatingsystem.Info()
 	if err != nil {
-		a.error("Error getting OS info", "error", err.Error())
+		a.error("error getting OS info: %w", err)
 		return
 	}
 
 	a.info("Platform Info:", info.AsLogSlice()...)
 
+}
+
+func (a *App) platformEnvironment() map[string]any {
+	return map[string]any{}
+}
+
+func fatalHandler(errFunc func(error)) {
+	return
+}
+
+//export HandleOpenFile
+func HandleOpenFile(filePath *C.char) {
+	goFilepath := C.GoString(filePath)
+	// Create new application event context
+	eventContext := newApplicationEventContext()
+	eventContext.setOpenedWithFile(goFilepath)
+	// EmitEvent application started event
+	applicationEvents <- &ApplicationEvent{
+		Id:  uint(events.Common.ApplicationOpenedWithFile),
+		ctx: eventContext,
+	}
+}
+
+//export HandleCustomProtocol
+func HandleCustomProtocol(urlCString *C.char) {
+	urlString := C.GoString(urlCString)
+	eventContext := newApplicationEventContext()
+	eventContext.setURL(urlString)
+
+	// Emit the standard event with the URL string as data
+	applicationEvents <- &ApplicationEvent{
+		Id:  uint(events.Common.ApplicationLaunchedWithUrl),
+		ctx: eventContext,
+	}
 }

@@ -1,13 +1,14 @@
 package bindings
 
 import (
-	"github.com/matryer/is"
-	"github.com/wailsapp/wails/v2/pkg/templates"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/matryer/is"
+	"github.com/wailsapp/wails/v2/pkg/templates"
 )
 
 const standardBindings = `// @ts-check
@@ -80,6 +81,7 @@ func TestGenerateBindings(t *testing.T) {
 			name: "should generate standard bindings with no user tags",
 			options: Options{
 				ProjectDirectory: projectDir,
+				Compiler:         "go",
 				GoModTidy:        true,
 			},
 			expectedBindings: standardBindings,
@@ -90,6 +92,7 @@ func TestGenerateBindings(t *testing.T) {
 			name: "should generate bindings when given tags",
 			options: Options{
 				ProjectDirectory: projectDir,
+				Compiler:         "go",
 				Tags:             []string{"test"},
 				GoModTidy:        true,
 			},
@@ -101,6 +104,7 @@ func TestGenerateBindings(t *testing.T) {
 			name: "should generate obfuscated bindings",
 			options: Options{
 				ProjectDirectory: projectDir,
+				Compiler:         "go",
 				Tags:             []string{"obfuscated"},
 				GoModTidy:        true,
 			},

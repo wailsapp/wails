@@ -17,14 +17,14 @@ func main() {
 		Name:        "Frameless Demo",
 		Description: "A demo of frameless windows",
 		Assets: application.AssetOptions{
-			FS: assets,
+			Handler: application.BundledAssetFileServer(assets),
 		},
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
 
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Frameless: true,
 	})
 

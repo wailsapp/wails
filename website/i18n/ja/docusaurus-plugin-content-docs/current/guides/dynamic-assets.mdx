@@ -1,5 +1,11 @@
 # 動的アセット
 
+:::info
+
+This does not work with vite v5.0.0+ and wails v2 due to changes in vite. Changes are planned in v3 to support similar functionality under vite v5.0.0+. If you need this feature, stay with vite v4.0.0+. See [issue 3240](https://github.com/wailsapp/wails/issues/3240) for details
+
+:::
+
 [AssetsHandler](../reference/options#assetshandler)オプションを使用することで、フロントエンドアセットを動的に読み込んだり生成させることができます。 AssetsHandlerは、ジェネリックな`http.Handler`です。アセットサーバへのGET以外のすべてのリクエスト、および、アセットファイルとして存在しなかったがために転送されてきたGETリクエストに対して、ハンドラが呼び出されます。
 
 カスタムされたAssetsHandlerを導入すると、カスタムアセットサーバを使用して独自のアセットを提供することができます。

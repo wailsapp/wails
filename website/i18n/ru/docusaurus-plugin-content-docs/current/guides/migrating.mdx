@@ -91,7 +91,7 @@ func (b *Basic) startup(ctx context.Context) {
 
 ### Runtime
 
-The runtime in v2 is much richer than v1 with support for menus, window manipulation and better dialogs. The signature of the methods has changed slightly - please refer the the [Runtime Reference](../reference/runtime/intro.mdx).
+The runtime in v2 is much richer than v1 with support for menus, window manipulation and better dialogs. The signature of the methods has changed slightly - please refer to the [Runtime Reference](../reference/runtime/intro.mdx).
 
 In v1, the [runtime](../reference/runtime/intro.mdx) was available via a struct passed to `WailsInit()`. In v2, the runtime has been moved out to its own package. Each method in the runtime takes the `context.Context` that is passed to the [OnStartup](../reference/options.mdx#onstartup) method.
 

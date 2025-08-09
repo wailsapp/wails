@@ -9,9 +9,28 @@ package application
 #include "Cocoa/Cocoa.h"
 #include "menuitem_darwin.h"
 #include "systemtray_darwin.h"
+
+// Show the system tray icon
+static void systemTrayShow(void* nsStatusItem) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+		// Get the NSStatusItem
+        NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+        [statusItem setVisible:YES];
+    });
+}
+
+// Hide the system tray icon
+static void systemTrayHide(void* nsStatusItem) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+        [statusItem setVisible:NO];
+    });
+}
+
 */
 import "C"
 import (
+	"errors"
 	"unsafe"
 
 	"github.com/leaanthony/go-ansi-parser"
@@ -23,12 +42,27 @@ type macosSystemTray struct {
 	icon  []byte
 	menu  *Menu
 
-	nsStatusItem   unsafe.Pointer
-	nsImage        unsafe.Pointer
-	nsMenu         unsafe.Pointer
-	iconPosition   int
-	isTemplateIcon bool
-	parent         *SystemTray
+	nsStatusItem      unsafe.Pointer
+	nsImage           unsafe.Pointer
+	nsMenu            unsafe.Pointer
+	iconPosition      IconPosition
+	isTemplateIcon    bool
+	parent            *SystemTray
+	lastClickedScreen unsafe.Pointer
+}
+
+func (s *macosSystemTray) Show() {
+	if s.nsStatusItem == nil {
+		return
+	}
+	C.systemTrayShow(s.nsStatusItem)
+}
+
+func (s *macosSystemTray) Hide() {
+	if s.nsStatusItem == nil {
+		return
+	}
+	C.systemTrayHide(s.nsStatusItem)
 }
 
 func (s *macosSystemTray) openMenu() {
@@ -53,13 +87,13 @@ func systrayClickCallback(id C.long, buttonID C.int) {
 	// Get the system tray
 	systemTray := systemTrayMap[uint(id)]
 	if systemTray == nil {
-		globalApplication.error("system tray not found", "id", id)
+		globalApplication.error("system tray not found: %v", id)
 		return
 	}
 	systemTray.processClick(button(buttonID))
 }
 
-func (s *macosSystemTray) setIconPosition(position int) {
+func (s *macosSystemTray) setIconPosition(position IconPosition) {
 	s.iconPosition = position
 }
 
@@ -67,61 +101,52 @@ func (s *macosSystemTray) setMenu(menu *Menu) {
 	s.menu = menu
 }
 
-func (s *macosSystemTray) positionWindow(window *WebviewWindow, offset int) error {
-
-	// Get the trayBounds of this system tray
-	trayBounds, err := s.bounds()
-	if err != nil {
-		return err
+func (s *macosSystemTray) positionWindow(window Window, offset int) error {
+	// Get the platform-specific window implementation
+	nativeWindow := window.NativeWindow()
+	if nativeWindow == nil {
+		return errors.New("window native implementation unavailable")
 	}
 
-	// Get the current screen trayBounds
-	currentScreen, err := s.getScreen()
-	if err != nil {
-		return err
-	}
-	screenBounds := currentScreen.Bounds
-
-	// Get the center height of the window
-	windowWidthCenter := window.Width() / 2
-
-	// Get the center height of the system tray
-	systemTrayWidthCenter := trayBounds.Width / 2
-
-	// The Y will be 0 and the X will make the center of the window line up with the center of the system tray
-	windowX := trayBounds.X + systemTrayWidthCenter - windowWidthCenter
-
-	// If the end of the window goes off-screen, move it back enough to be on screen
-	if windowX+window.Width() > screenBounds.Width {
-		windowX = screenBounds.Width - window.Width()
-	}
-	window.SetRelativePosition(windowX, int(C.statusBarHeight())+offset)
+	// Position the window relative to the systray
+	C.systemTrayPositionWindow(s.nsStatusItem, nativeWindow, C.int(offset))
 
 	return nil
 }
 
 func (s *macosSystemTray) getScreen() (*Screen, error) {
-	return getScreenForSystray(s)
+	if s.lastClickedScreen != nil {
+		// Get the screen frame
+		frame := C.NSScreen_frame(s.lastClickedScreen)
+		result := &Screen{
+			Bounds: Rect{
+				X:      int(frame.origin.x),
+				Y:      int(frame.origin.y),
+				Width:  int(frame.size.width),
+				Height: int(frame.size.height),
+			},
+		}
+		return result, nil
+	}
+	return nil, errors.New("no screen available")
 }
 
 func (s *macosSystemTray) bounds() (*Rect, error) {
 	var rect C.NSRect
-	C.systemTrayGetBounds(s.nsStatusItem, &rect)
-	// Get the screen height for the screen that the systray is on
-	screen, err := getScreenForSystray(s)
-	if err != nil {
-		return nil, err
-	}
+	var screen unsafe.Pointer
+	C.systemTrayGetBounds(s.nsStatusItem, &rect, &screen)
 
-	// Invert Y axis based on screen height
-	rect.origin.y = C.double(screen.Bounds.Height) - rect.origin.y - rect.size.height
+	// Store the screen for use in positionWindow
+	s.lastClickedScreen = screen
 
-	return &Rect{
+	// Return the screen-relative coordinates
+	result := &Rect{
 		X:      int(rect.origin.x),
 		Y:      int(rect.origin.y),
 		Width:  int(rect.size.width),
 		Height: int(rect.size.height),
-	}, nil
+	}
+	return result, nil
 }
 
 func (s *macosSystemTray) run() {
@@ -142,14 +167,7 @@ func (s *macosSystemTray) run() {
 			s.menu.Update()
 			// Convert impl to macosMenu object
 			s.nsMenu = (s.menu.impl).(*macosMenu).nsMenu
-			// We only set the tray menu if we don't have an attached
-			// window. If we do, then we manually operate the menu using
-			// the right mouse button
-			if s.parent.attachedWindow.Window == nil {
-				C.systemTraySetMenu(s.nsStatusItem, s.nsMenu)
-			}
 		}
-
 	})
 }
 
@@ -172,6 +190,10 @@ func (s *macosSystemTray) setTemplateIcon(icon []byte) {
 		s.nsImage = unsafe.Pointer(C.imageFromBytes((*C.uchar)(&icon[0]), C.int(len(icon))))
 		C.systemTraySetIcon(s.nsStatusItem, s.nsImage, C.int(s.iconPosition), C.bool(s.isTemplateIcon))
 	})
+}
+
+func (s *macosSystemTray) setTooltip(tooltip string) {
+	// Tooltips not supported on macOS
 }
 
 func newSystemTrayImpl(s *SystemTray) systemTrayImpl {

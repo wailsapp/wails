@@ -7,9 +7,10 @@
 package w32
 
 import (
-	"github.com/wailsapp/go-webview2/pkg/combridge"
 	"syscall"
 	"unsafe"
+
+	"github.com/wailsapp/go-webview2/pkg/combridge"
 )
 
 var (
@@ -19,6 +20,7 @@ var (
 	procCoInitialize          = modole32.NewProc("CoInitialize")
 	procOleInitialize         = modole32.NewProc("OleInitialize")
 	procCoUninitialize        = modole32.NewProc("CoUninitialize")
+	procCoCreateInstance      = modole32.NewProc("CoCreateInstance")
 	procCreateStreamOnHGlobal = modole32.NewProc("CreateStreamOnHGlobal")
 	procRegisterDragDrop      = modole32.NewProc("RegisterDragDrop")
 	procRevokeDragDrop        = modole32.NewProc("RevokeDragDrop")
@@ -47,6 +49,26 @@ func CoInitialize() {
 
 func CoUninitialize() {
 	procCoUninitialize.Call()
+}
+
+func CoCreateInstance(clsid *syscall.GUID, dwClsContext uintptr, riid *syscall.GUID, ppv uintptr) HRESULT {
+	ret, _, _ := procCoCreateInstance.Call(
+		uintptr(unsafe.Pointer(clsid)),
+		0,
+		uintptr(dwClsContext),
+		uintptr(unsafe.Pointer(riid)),
+		uintptr(ppv))
+
+	switch uint32(ret) {
+	case E_INVALIDARG:
+		panic("CoCreateInstance failed with E_INVALIDARG")
+	case E_OUTOFMEMORY:
+		panic("CoCreateInstance failed with E_OUTOFMEMORY")
+	case E_UNEXPECTED:
+		panic("CoCreateInstance failed with E_UNEXPECTED")
+	}
+
+	return HRESULT(ret)
 }
 
 func CreateStreamOnHGlobal(hGlobal HGLOBAL, fDeleteOnRelease bool) *IStream {

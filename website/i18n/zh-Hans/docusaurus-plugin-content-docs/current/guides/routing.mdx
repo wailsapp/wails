@@ -30,7 +30,7 @@ RouterModule.forRoot(routes, { useHash: true });
 在 React 中推荐的路由方法是 [HashRouter](https://reactrouter.com/en/main/router-components/hash-router)：
 
 ```jsx
-import { HashRouter } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 
 ReactDOM.render(
   <HashRouter basename={"/"}>
@@ -44,4 +44,25 @@ ReactDOM.render(
   </HashRouter>,
   root
 );
+```
+
+## Svelte
+
+The recommended approach for routing in Svelte is [svelte-spa-router](https://github.com/ItalyPaleAle/svelte-spa-router):
+
+```svelte
+<script>
+    import Router from "svelte-spa-router";
+</script>
+
+<Router
+    routes={{
+        "/": Home,
+        "/products": wrap({
+            asyncComponent: () => import("./routes/Products.svelte"),
+        }),
+        "/settings": Settings,
+        "*": NotFound,
+    }}
+/>
 ```

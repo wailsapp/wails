@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <link rel="icon" type="image/svg+xml" href="/wails.png"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="/style.css"/>
+    <title>Wails App</title>
+  <script type="module" crossorigin src="/assets/index--TgUfkZn.js"></script>
+</head>
+<body>
+<div class="container">
+    <div>
+        <a data-wml-openURL="https://wails.io">
+            <img src="/wails.png" class="logo" alt="Wails logo"/>
+        </a>
+        <a data-wml-openURL="https://www.typescriptlang.org/">
+            <img src="/typescript.svg" class="logo vanilla" alt="Typescript logo"/>
+        </a>
+    </div>
+    <h1>Wails + Typescript</h1>
+    <div class="result">Set a badge label below 👇</div>
+    <div class="card">
+        <div class="input-box" id="input">
+            <input class="input" id="label" type="text" autocomplete="off"/>
+            <button class="btn" id="set-custom">Set Custom</button>
+            <button class="btn" id="set">Set</button>
+            <button class="btn" id="remove">Remove</button>
+            <button class="btn" id="set-go">Set using Go</button>
+            <button class="btn" id="remove-go">Remove using Go</button>
+        </div>
+    </div>
+    <div class="footer">
+        <div><p>Click on the Wails logo to learn more</p></div>
+        <div><p id="time">Listening for Time event...</p></div>
+    </div>
+</div>
+</body>
+</html>

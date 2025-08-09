@@ -4,35 +4,35 @@
     "description": "The label for version v2.3.1"
   },
   "sidebar.docs.category.Getting Started": {
-    "message": "Getting Started",
+    "message": "Guia de Introdução",
     "description": "The label for category Getting Started in sidebar docs"
   },
   "sidebar.docs.category.Reference": {
-    "message": "Reference",
+    "message": "Referência",
     "description": "The label for category Reference in sidebar docs"
   },
   "sidebar.docs.category.Runtime": {
-    "message": "Runtime",
+    "message": "Tempo de execução",
     "description": "The label for category Runtime in sidebar docs"
   },
   "sidebar.docs.category.Community": {
-    "message": "Community",
+    "message": "Comunidade",
     "description": "The label for category Community in sidebar docs"
   },
   "sidebar.docs.category.Showcase": {
-    "message": "Showcase",
+    "message": "Casos de sucesso",
     "description": "The label for category Showcase in sidebar docs"
   },
   "sidebar.docs.category.Guides": {
-    "message": "Guides",
+    "message": "Guias",
     "description": "The label for category Guides in sidebar docs"
   },
   "sidebar.docs.category.Tutorials": {
-    "message": "Tutorials",
+    "message": "Tutoriais",
     "description": "The label for category Tutorials in sidebar docs"
   },
   "sidebar.docs.link.Contributing": {
-    "message": "Contributing",
+    "message": "Contribuir",
     "description": "The label for link Contributing in sidebar docs, linking to /community-guide#ways-of-contributing"
   }
 }

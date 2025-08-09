@@ -3,10 +3,10 @@ Unicode true
 ####
 ## Please note: Template replacements don't work in this file. They are provided with default defines like
 ## mentioned underneath.
-## If the keyword is not defined, "wails_tools.nsh" will populate them with the values from ProjectInfo. 
-## If they are defined here, "wails_tools.nsh" will not touch them. This allows to use this project.nsi manually 
+## If the keyword is not defined, "wails_tools.nsh" will populate them with the values from ProjectInfo.
+## If they are defined here, "wails_tools.nsh" will not touch them. This allows to use this project.nsi manually
 ## from outside of Wails for debugging and development of the installer.
-## 
+##
 ## For development first make a wails nsis build to populate the "wails_tools.nsh":
 ## > wails build --target windows/amd64 --nsis
 ## Then you can call makensis on this file with specifying the path to your binary:
@@ -17,7 +17,7 @@ Unicode true
 ## For a installer with both architectures:
 ## > makensis -DARG_WAILS_AMD64_BINARY=..\..\bin\app-amd64.exe -DARG_WAILS_ARM64_BINARY=..\..\bin\app-arm64.exe
 ####
-## The following information is taken from the ProjectInfo file, but they can be overwritten here. 
+## The following information is taken from the ProjectInfo file, but they can be overwritten here.
 ####
 ## !define INFO_PROJECTNAME    "MyProject" # Default "{{.Name}}"
 ## !define INFO_COMPANYNAME    "MyCompany" # Default "{{.Info.CompanyName}}"
@@ -85,16 +85,19 @@ Section
     !insertmacro wails.webview2runtime
 
     SetOutPath $INSTDIR
-    
+
     !insertmacro wails.files
 
     CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
     CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
 
+    !insertmacro wails.associateFiles
+    !insertmacro wails.associateCustomProtocols
+
     !insertmacro wails.writeUninstaller
 SectionEnd
 
-Section "uninstall" 
+Section "uninstall"
     !insertmacro wails.setShellContext
 
     RMDir /r "$AppData\${PRODUCT_EXECUTABLE}" # Remove the WebView2 DataPath
@@ -103,6 +106,9 @@ Section "uninstall"
 
     Delete "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk"
     Delete "$DESKTOP\${INFO_PRODUCTNAME}.lnk"
+
+    !insertmacro wails.unassociateFiles
+    !insertmacro wails.unassociateCustomProtocols
 
     !insertmacro wails.deleteUninstaller
 SectionEnd

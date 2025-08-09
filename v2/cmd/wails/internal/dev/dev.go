@@ -52,7 +52,6 @@ func sliceToMap(input []string) map[string]struct{} {
 
 // Application runs the application in dev mode
 func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
-
 	cwd := lo.Must(os.Getwd())
 
 	// Update go.mod to use current wails version
@@ -61,10 +60,12 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 		return err
 	}
 
-	// Run go mod tidy to ensure we're up-to-date
-	err = runCommand(cwd, false, "go", "mod", "tidy")
-	if err != nil {
-		return err
+	if !f.SkipModTidy {
+		// Run go mod tidy to ensure we're up-to-date
+		err = runCommand(cwd, false, f.Compiler, "mod", "tidy")
+		if err != nil {
+			return err
+		}
 	}
 
 	buildOptions := f.GenerateBuildOptions()
@@ -271,7 +272,6 @@ func runFrontendDevWatcherCommand(frontendDirectory string, devCommand string, d
 
 // restartApp does the actual rebuilding of the application when files change
 func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process, f *flags.Dev, exitCodeChannel chan int, legacyUseDevServerInsteadofCustomScheme bool) (*process.Process, string, error) {
-
 	appBinary, err := build.Build(buildOptions)
 	println()
 	if err != nil {
@@ -298,7 +298,6 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 
 	// parse appargs if any
 	args, err := shlex.Split(f.AppArgs)
-
 	if err != nil {
 		buildOptions.Logger.Fatal("Unable to parse appargs: %s", err.Error())
 	}
@@ -345,7 +344,7 @@ func doWatcherLoop(cwd string, buildOptions *build.Options, debugBinaryProcess *
 	logutils.LogGreen("Watching (sub)/directory: %s", cwd)
 
 	// Main Loop
-	var extensionsThatTriggerARebuild = sliceToMap(strings.Split(f.Extensions, ","))
+	extensionsThatTriggerARebuild := sliceToMap(strings.Split(f.Extensions, ","))
 	var dirsThatTriggerAReload []string
 	for _, dir := range strings.Split(f.ReloadDirs, ",") {
 		if dir == "" {

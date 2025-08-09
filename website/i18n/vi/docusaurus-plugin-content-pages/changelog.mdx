@@ -1,0 +1,852 @@
+# Nhật Ký Phiên Bản
+
+Tất cả những thay đổi đáng chú ý sẽ được thêm vào tài liệu này.
+
+Định dạng văn bản dựa trên [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) và dự án này tuân thủ [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+- `Added` cho các tính năng mới nhất.
+- `Changed` cho các chỉnh sửa của các tính năng sẵn có.
+- `Deprecated` cho các tính năng mà sắp bị gỡ bỏ ở các phiên bản tiếp theo.
+- `Removed` các tính năng đã được gỡ bỏ.
+- `Fixed` cho các lỗi hoặc bug đã được sửa.
+- `Security` cho các trường hợp vá lỗ hổng bảo mật.
+
+## [Unreleased]
+
+## v2.9.1 - 2024-06-18
+
+### Fixed
+- Fixed build issues on Linux for some glibc versions. Fixed in [PR](https://github.com/wailsapp/wails/pull/3545) by @leaanthony.
+
+## v2.9.0 - 2024-06-16
+
+### Added
+- Added Drag & Drop (files or folders) support for Windows and Linux. Added by [@lyimmi](https://github.com/lyimmi) in [PR](https://github.com/wailsapp/wails/pull/3203). Based on the work of [@ayatkyo](https://github.com/ayatkyo) for Windows in [PR](https://github.com/wailsapp/wails/pull/2774).
+- Added Drag & Drop (files or folders) support for macOS. Added by [@APshenkin](https://github.com/APshenkin) in [PR](https://github.com/wailsapp/wails/pull/3250).
+- Support for compiling with `libwebkit2gtk-4.1` instead of `4.0` to support latest Ubuntu release by [atterpac](https://github.com/atterpac) in [#3465](https://github.com/wailsapp/wails/pull/3465)
+- Extended Routing guide with Svelte example by [@stanislav-zeman](https://github.com/stanislav-zeman) in [#3481](https://github.com/wailsapp/wails/pull/3481)
+- Unit test for fix [#3476](https://github.com/wailsapp/wails/pull/3476) by [gjergj](https://github.com/Gjergj) in [#3485](https://github.com/wailsapp/wails/pull/3485)
+- German Readme Translation by [Zeiichenfolge](https://github.com/Zeiichenfolge) in [#3483](https://github.com/wailsapp/wails/pull/3483)
+- Added support generating bindings for structs without fields. Added by [gjergj](https://github.com/Gjergj) in [PR](https://github.com/wailsapp/wails/pull/3489)
+
+### Changed
+- Updated several broken links in the "How Does It Work?" page on the website. Changed by [@oguz-yilmaz](https://github.com/oguz-yilmaz) in [PR #3469](https://github.com/wailsapp/wails/pull/3469)
+- Upgraded Go version in CI to 1.22 by [@leaanthony](https://github.com/leaanthony) in [#3473](https://github.com/wailsapp/wails/pull/3473).
+
+### Fixed
+- Fix Drag & Drop JS runtime. Added by [@jakubpeleska](https://github.com/jakubpeleska), provided by [Beam Transfer](https://beamtransfer.io) in [PR](https://github.com/wailsapp/wails/pull/3516).
+- Fixed optional type generation where an extra `?` would be placed inside the field name instead of outside the name `"field?"?` vs `"field"?`. Fixed  by [@atterpac](https://github.com/atterpac) in [#3476](https://github.com/wailsapp/wails/pull/3476)
+- Fixed an issue where `WindowGetPosition` and `WindowSetPosition` values were inconsistent on MacOS. Fixed by [@cenan](https://github.com/wailsapp/wails/pull/3479)
+- Fix scoop command usage typo. Fixed by [@fieu](https://github.com/fieu) in [#3501](https://github.com/wailsapp/wails/pull/3501)
+- Fixed macOS single instance lock reset after some time. Fixed by [@APshenkin](https://github.com/APshenkin) in [PR](https://github.com/wailsapp/wails/pull/3526)
+
+## v2.8.2 - 2024-05-08
+
+### Breaking Change
+- The `-noPackage` flag was misnamed and is being renamed to `nopackage` to match the other flags. Changed by @leaanthony in [PR](https://github.com/wailsapp/wails/issues/3421).
+
+### Added
+- Added support for proxying assets requests to an external server. Added by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/3463)
+
+### Fixed
+- Fixed an issue with missing icon for Windows. Fixed by [@APshenkin](https://github.com/wailsapp/wails/pull/3400)
+
+## v2.8.1 - 2024-04-11
+
+### Added
+
+- Added docs help to indicate that in IDE options you can choose between vscode and goland. Added by @DiegPS in [PR](https://github.com/wailsapp/wails/pull/3419)
+- Added docs to help fix NixOs/Wayland font-size css issue. Added by @atterpac in [PR](https://github.com/wailsapp/wails/pull/3268)
+- Added -m (skip `go mod tidy`) flag to dev command by @te5se in [PR](https://github.com/wailsapp/wails/pull/3275)
+- Added mac option `DisableZoom` to remove zoom button. Added by @wizzymore in [PR](https://github.com/wailsapp/wails/pull/3289)
+
+### Fixed
+
+- Fixed an issue where embed directives with patterned paths would create illegal directories. Changed by [@twonull](https://github.com/twonull) in [PR](https://github.com/wailsapp/wails/pull/3445)
+- Fixed an issue where certain calls to createFrom in TypeScript would fail. Changed by [@twonull](https://github.com/twonull) in [PR](https://github.com/wailsapp/wails/pull/3435)
+- Fixed some typos in comments. Changed by [@reallylowest](https://github.com/reallylowest) in [PR](https://github.com/wailsapp/wails/pull/3357)
+- Fixed an issue where the destination file was not properly closed after copying. Changed by [@testwill](https://github.com/testwill) in [PR](https://github.com/wailsapp/wails/pull/3384)
+- Fixed an issue where `xattr` calls were not working. Fixed by [@leaanthony](https://github.com/wailsapp/wails/pull/3328)
+- Warn in the documentation that the fixed version of the WebView 2 Runtime must be extracted before use. Documented by [@ALizarazoTellez](https://github.com/ALizarazoTellez) in [PR](https://github.com/wailsapp/wails/pull/3444).
+
+### Changed
+
+- Changed Create a project with changing the default name to the project’s name. Changed by [@Twacqwq](https://github.com/Twacqwq) in [PR](https://github.com/wailsapp/wails/pull/3303)
+
+## v2.8.0 - 2024-02-08
+
+### Added
+
+- Added windows options supports `DisablePinchZoom` configuration. Added by @tuuzed in [PR](https://github.com/wailsapp/wails/pull/3115)
+- Add Apple Silicon hardware detection to `wails doctor`. Changed by @almas1992 in [PR](https://github.com/wailsapp/wails/pull/3129)
+- Remove quarantine attribute on macOS binaries. Changed by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/3118)
+- Added documentation for a common GStreamer error on Linux systems. Changed by [@mkwsnyder](https://github.com/mkwsnyder) in [PR](https://github.com/wailsapp/wails/pull/3134)
+- Added documentation on explicity example of importing JS runtime. Changed by [@danawoodman](https://github.com/danawoodman) in [PR](https://github.com/wailsapp/wails/pull/3178)
+- Add dock icon right-click exit handling by @almas1992 in [PR](https://github.com/wailsapp/wails/pull/3157)
+
+### Fixed
+- Fixed vue-ts template build error. Fixed by @atterpac in [PR](https://github.com/wailsapp/wails/pull/3243)
+- Docs for IsZoomControlEnabled and ZoomFactor. Fixed by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/3137)
+- Fixed `-compiler` flag for `wails build`, `wails dev` and `wails generate module`. Fixed in [PR](https://github.com/wailsapp/wails/pull/3121) by [@xtrafrancyz](https://github.com/xtrafrancyz)
+- Fixed uninitialized `SecondInstanceData.WorkingDirectory` on linux and windows ([#3154](https://github.com/wailsapp/wails/pull/3154)).
+- Fixed React Routing documentation add 'Routes' and 'Route'. Fixed by @doracpphp in [PR](https://github.com/wailsapp/wails/pull/3206)
+- Fixed save file dialog not appending file extension automatically on Windows by @almas1992 in [PR](https://github.com/wailsapp/wails/pull/3205)
+- Fixed compatibility for wails cli being built with go 1.22 and later. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/3244)
+- Fixed documentation for Window API return types. Fixed by @jangler in [PR](https://github.com/wailsapp/wails/pull/3247)
+
+## v2.7.1 - 2023-12-10
+
+### Fixed
+- Segfault in `wails doctor` when GPU device information is not provided. Thanks to [@atterpac](https://github.com/atterpac) for the fix ([#3108](https://github.com/wailsapp/wails/pull/3108)).
+- Fixed building on macOS 11. Updated other build guards. Fixed in [#3111](https://github.com/wailsapp/wails/pull/3108) by [@leaanthony](https://github.com/leaanthony).
+
+### Changed
+- Go 1.20 is now the minimum supported Go version.
+
+
+## v2.7.0 - 2023-12-09
+
+### Added
+
+- Update the description of `ZoomFactor` and `IsZoomControlEnabled` attributes in the document. Added by @biuaxia in [PR](https://github.com/wailsapp/wails/pull/3013)
+- Added Single Instance Lock support with passing arguments to first instance. Added by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/2951)
+- Added support for enabling/disabling swipe gestures for Windows WebView2. Added by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/2878)
+- When building with `-devtools` flag, CMD/CTRL+SHIFT+F12 can be used to open the devtools. Added by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/2915) – Added file association support for macOS and Windows. Added by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/2918)
+- Added support for setting some of the Webview preferences, `textInteractionEnabled` and `tabFocusesLinks` on Mac. Added by @fkhadra in [PR](https://github.com/wailsapp/wails/pull/2937)
+- Added support for enabling/disabling fullscreen of the Webview on Mac. Added by @fkhadra in [PR](https://github.com/wailsapp/wails/pull/2953)
+- Added French README.fr.md page. Added by @nejos97 in [PR](https://github.com/wailsapp/wails/pull/2943)
+- New task created for linting v2 `task v2:lint`. Workflow updated to run the task. Added by @mikeee in [PR](https://github.com/wailsapp/wails/pull/2957)
+- Added new community template wails-htmx-templ-chi-tailwind. Added by [@pylotlight](https://github.com/pylotlight) in [PR](https://github.com/wailsapp/wails/pull/2984)
+- Added CPU/GPU/Memory detection for `wails doctor`. Added by @leaanthony in #d51268b8d0680430f3a614775b13e6cd2b906d1c
+- The [AssetServer](/docs/reference/options#assetserver) now injects the runtime/IPC into all index html files and into all html files returned when requesting a folder path. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2203)
+- Added Custom Protocol Schemes associations support for macOS and Windows. Added by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/3000) – Added support for TS interfaces generation as an option. Add support for Enums in TS types. Added by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/3047)
+
+### Changed
+
+- AssetServer requests are now processed asynchronously without blocking the main thread on Windows. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2926)
+- AssetServer requests are now processed concurrently by spawning a goroutine per request. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2926)
+- Now building with `-devtools` flag doesn't enable the default context-menu. Changed by @mmghv in [PR](https://github.com/wailsapp/wails/pull/2923)
+- Change Window Level. Changed by @almas1992 in [PR](https://github.com/wailsapp/wails/pull/2944)
+
+#### Fixed
+
+- Fixed typo on docs/reference/options page. Added by [@pylotlight](https://github.com/pylotlight) in [PR](https://github.com/wailsapp/wails/pull/2887)
+- Fixed issue with npm being called npm20 on openSUSE-Tumbleweed. Fixed by @TuffenDuffen in [PR](https://github.com/wailsapp/wails/pull/2941)
+- Fixed memory corruption on Windows when using accelerator keys. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/3002)
+- Fixed binding mapping for obfuscated build, when binding are in different structs. Fixed by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/3071)
+- Fixed issue with obfuscation settings in wails.json. Fixed by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/3080)
+
+## v2.6.0 - 2023-09-06
+
+### Breaking Changes
+
+- AssetServer RequestURI and URL are now RFC and Go Docs compliant for server requests. This means Scheme, Host and Fragments are not provided anymore. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2722)
+
+### Fixed
+
+- Avoid app crashing when the Linux GTK key is empty. Fixed by @aminya in [PR](https://github.com/wailsapp/wails/pull/2672)
+- Fix issue where app would exit before main() on linux if $DISPLAY env var was not set. Fixed by @phildrip in [PR](https://github.com/wailsapp/wails/pull/2841)
+- Fixed a race condition when positioning the window on Linux. Added by @lyimmi in [PR](https://github.com/wailsapp/wails/pull/2850)
+- Fixed `SetBackgroundColour` so it sets the window's background color to reduce resize flickering on Linux. Added by @lyimmi in [PR](https://github.com/wailsapp/wails/pull/2853)
+- Fixed disable window resize option and wrong initial window size when its enabled. Added by @lyimmi in [PR](https://github.com/wailsapp/wails/pull/2863)
+- Fixed build hook command parsing. Added by @smac89 in [PR](https://github.com/wailsapp/wails/pull/2836)
+- Fixed filesystem watcher from filtering top level project directory if binary name is included in .gitignore. Added by [@haukened](https://github.com/haukened) in [PR #2869](https://github.com/wailsapp/wails/pull/2869)
+- Fixed `-reloaddir` flag to watch additional directories (non-recursively). [@haukened](https://github.com/haukened) in [PR #2871](https://github.com/wailsapp/wails/pull/2871)
+- Fixed support for Go 1.21 `go.mod` files. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2876)
+
+### Added
+
+- Added correct NodeJS and Docker package names for DNF package manager of Fedora 38. Added by @aranggitoar in [PR](https://github.com/wailsapp/wails/pull/2790)
+- Added `-devtools` production build flag. Added by @mmghv in [PR](https://github.com/wailsapp/wails/pull/2725)
+- Added `EnableDefaultContextMenu` option to allow enabling the browser's default context-menu in production . Added by @mmghv in [PR](https://github.com/wailsapp/wails/pull/2733)
+- Added smart functionality for the default context-menu in production with CSS styles to control it. Added by @mmghv in [PR](https://github.com/wailsapp/wails/pull/2748)
+- Added custom error formatting to allow passing structured errors back to the frontend.
+- Added sveltekit.mdx guide. Added by @figuerom16 in [PR](https://github.com/wailsapp/wails/pull/2771)
+- Added ProgramName option to [linux.Options](/docs/reference/options#linux). Added by @lyimmi in [PR](https://github.com/wailsapp/wails/pull/2817)
+- Added new community template wails-sveltekit-ts. Added by [@haukened](https://github.com/haukened) in [PR](https://github.com/wailsapp/wails/pull/2851)
+- Added support for retrieving the logical and physical screen size in the screen api. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2856)
+- Added new community template wails-sveltekit-tailwind. Added by [@pylotlight](https://github.com/pylotlight) in [PR](https://github.com/wailsapp/wails/pull/2851)
+- Added support for print dialogs. Added by [@aangelisc](https://github.com/aangelisc) in [PR](https://github.com/wailsapp/wails/pull/2822)
+- Added new `wails dev -nogorebuild` flag to prevent restarts on back end file changes. [@haukened](https://github.com/haukened) in [PR #2870](https://github.com/wailsapp/wails/pull/2870)
+- Added a guide to describe a cross-platform build using GitHub Actions. Added by [@dennypenta](https://github.com/dennypenta) in [PR](https://github.com/wailsapp/wails/pull/2879)
+
+### Changed
+
+- Now uses new `go-webview2` module. Added by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/2687).
+- Changed styling of `doctor` command. Changed by @MarvinJWendt in [PR](https://github.com/wailsapp/wails/pull/2660)
+- Enable HiDPI option by default in windows nsis installer. Changed by @5aaee9 in [PR](https://github.com/wailsapp/wails/pull/2694)
+- Now debug builds include the un-minified version of the runtime JS with source maps . Changed by @mmghv in [PR](https://github.com/wailsapp/wails/pull/2745)
+
+## v2.5.1 - 2023-05-16
+
+### Breaking Changes
+
+- The Go WebView2Loader allowed env variable and registry overrides to change the behaviour of WebView2. This is not possible when using the native WebView2Loader with Wails and should not be possible according to [PR](https://github.com/wailsapp/wails/pull/1771). Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2668)
+- `wails dev` now uses the custom schemes `wails://` on macOS and Linux for all Vite versions. This also fixes missing reloads after multiple fast savings on Linux and Windows. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2664)
+
+### Fixed
+
+- Fixed segfaults during fast reloads of requests on macOS. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2664)
+- Fixed devserver on Linux for older WebKit2GTK versions < 2.36. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2664)
+- Fixed devserver on Windows that might have triggered the WebView2 into a hang. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2664)
+
+## v2.5.0 - 2023-05-13
+
+### Breaking Changes
+
+- `wails dev` now uses the custom schemes `wails://` on macOS and Linux if Vite >= `v3.0.0` is used. This makes the dev application consistent in behaviour with the final production application and fixes some long-standing inconsistencies. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2610)
+
+### Added
+
+- Added Nodejs version in `wails doctor`. Added by @misitebao in [PR](https://github.com/wailsapp/wails/pull/2546)
+- Added support for WebKit2GTK 2.40+ on Linux. This brings additional features for the [AssetServer](/docs/reference/options#assetserver), like support for HTTP Request Bodies. The app must be compiled with the Go build tag `webkit2_40` to activate support for this features. This also bumps the minimum requirement of WebKit2GTK to 2.40 for your app. Added by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2592)
+- macOS: Added Window menu role with well known shortcuts "Minimize, Full-Screen and Zoom". Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2586)
+- macOS: Added "Hide, Hide Others, Show All“ to appmenu. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2586)
+- Windows: Added flag to disable the WebView2 `RendererCodeIntegrity` checks, please see the comment on the flag for more information. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2627)
+- Windows: Added handling of WebView2 process crashes, for unrecoverable errors an error message is shown that the app needs to be restarted. If an error occurs that shows a chromium error page, make sure the Window and the WebView2 is visible. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2627)
+
+### Changed
+
+- [v3] Typescript model generation using `StructDef`s from new AST-based parser. Added by @ATenderholt in [PR1](https://github.com/wailsapp/wails/pull/2428/files) and [PR2](https://github.com/wailsapp/wails/pull/2485).
+
+### Fixed
+
+- Fixed console printing in `wails generate template`. Fixed by @misitebao in [PR](https://github.com/wailsapp/wails/pull/2483)
+- Fixed unicode encoding of strings for multi-rune characters. Fixed by @joshbuddy in [PR](https://github.com/wailsapp/wails/pull/2509)
+- Fixed `-skipbindings` flag in `wails dev`. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2584)
+- Fixed `runtime.MenuUpdateApplicationMenu` on macOS. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2588)
+- Fixed add package name for `libwebkit`/`pkg-config` and use shell.RunCommandWithENV instead of shell.RunCommand in `zypper.go`. Fixed by @wgjtyu in [PR](https://github.com/wailsapp/wails/pull/2593)
+- Make sure to start the CommonFileDialogs on Windows on the Main-Thread. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2606)
+- Fixed generated typescript bindings. Fixed by @dominictwlee in [PR](https://github.com/wailsapp/wails/pull/2552)
+- Fixed `StartHidden` option not working on Linux. Fixed by @LGiki in [PR](https://github.com/wailsapp/wails/pull/2624)
+
+## v2.4.1 - 2023-03-20
+
+### Changed
+
+- Support single clicks on items with `--wails-draggable: drag` again on Windows. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2482)
+
+### Fixed
+
+- Fixed panic when using `wails dev` and the AssetServer tried to log to the logger. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2481)
+- Fixed compatibility with WebView2 Runtime > `110.0.1587.69` which showed a `connection refused` html page before doing a reload of the frontend. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2496)
+
+## v2.4.0 - 2023-03-08
+
+### Added
+
+- Added Webview GPU acceleration options for [Windows](/docs/reference/options#webviewgpuisdisabled) and [Linux](/docs/reference/options#webviewgpupolicy). Added by @Lyimmi in [PR](https://github.com/wailsapp/wails/pull/2266)
+- Added `EnableFraudulentWebsiteDetection` option to opt-in to scan services for fraudulent content, such as malware or phishing attempts. Older releases had the scan services per default activated. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2269)
+- Allow an [AssetServer Middleware](/docs/reference/options#middleware) to specify the `Content-Type` of a file served by the [Assets](/docs/reference/options#assets-1) `fs.FS`. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2286)
+- The AssetServer now detects more mimetypes by extension, e.g. `.mjs`. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2391)
+
+### Changed
+
+- Improved fullscreen mode for frameless window on Windows. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2279), [PR](https://github.com/wailsapp/wails/pull/2288) and [PR](https://github.com/wailsapp/wails/pull/2299)
+- On Windows unmaximising a window has no effect anymore when the window is in fullscreen mode, this makes it consistent with e.g. macOS. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2279)
+- Frameless resize now sets the cursor on documentElement, otherwise resizing cursor won't be shown outside of the body rectangle. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2289)
+- Improved the `--wails-draggable` experience to be more reactive. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2302)
+- NSIS template now installs the shortcuts for all users and not only for the current user. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2373)
+
+### Fixed
+
+- Fixed failing build hooks when `build/bin` was missing. Fixed by @Lyimmi in [PR](https://github.com/wailsapp/wails/pull/2273)
+- Fixed fullscreen mode for frameless window on Windows to fully cover the taskbar when changing into fullscreen from maximised state. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2279)
+- Fixed set window background colour on Windows when setting the colour via runtime. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2279)
+- Fixed the showing of a white border around a fullscreen window when `DisableWindowIcon` is active on Windows. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2299)
+- Fixed the sometimes lagging drag experience with `--wails-draggable` on Windows. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2302)
+- Fixed applying the default arch to platform flag in wails cli. If only a `GOOS` has been supplied as platform flag e.g. `wails build --platform windows` the current architecture wasn't applied and the build failed. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2309)
+- Fixed a segfault on opening the inspector on older macOS versions. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2397)
+- Fixed the macos single architecture builds not respecting an output file name specified with the '-o' flag. Fixed by @gwynforthewyn in [PR](https://github.com/wailsapp/wails/pull/2358)
+- Fixed `undo`/`redo` on macOS. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2430)
+- Fixed `Events*` runtime functions in JavaScript not returning the function to cancel the watcher. Fixed by @zllovesuki in [PR](https://github.com/wailsapp/wails/pull/2434)
+- Fixed AppOptions merging defaults when a custom logger is used. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2452)
+- Fixed race condition and missing unlock of mutex in events handling. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2453)
+
+## v2.3.0 - 2022-12-29
+
+### Added
+
+- Added `OpenInspectorOnStartup` to debug options to allow opening the WebInspector during startup of the application in debug mode. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2080)
+- On macOS `wails doctor` now also shows the version of Xcode installed. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2089)
+- The [AssetServer](/docs/reference/options#assetserver) now supports handling range-requests if the [Assets](/docs/reference/options/#assets-1) `fs.FS` provides an `io.ReadSeeker`. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2091)
+- Add new property for the `wails.json` config file - `bindings`. More information on the new property can be found in the updated [schema](/schemas/config.v2.json). Properties `prefix` and `suffix` allow you to control the generated TypeScript entity name in the `model.ts` file. Added by @OlegGulevskyy in [PR](https://github.com/wailsapp/wails/pull/2101)
+- The `WindowSetAlwaysOnTop` method is now exposed in the JS runtime. Fixed by @gotid in [PR](https://github.com/wailsapp/wails/pull/2128)
+- The [AssetServer](/docs/reference/options#assetserver) now supports serving the index.html file when requesting a directory. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2110)
+- Added support for WebKit2GTK 2.36+ on Linux. This brings additional features for the [AssetServer](/docs/reference/options#assetserver), like support for HTTP methods and Headers. The app must be compiled with the Go build tag `webkit2_36` to activate support for this features. This also bumps the minimum requirement of WebKit2GTK to 2.36 for your app. Fixed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2151)
+- Added support for file input selection on macOS. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2209)
+- Added support Request/Response streaming of the AssetServer on macOS. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2219)
+- Added request path checks for the AssetServer. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2235)
+- Added new App Store guide. Added by @achhabra2 in [PR](https://github.com/wailsapp/wails/pull/2142)
+- Added extra libwebkit check for dnf package manager (required for latest Fedora). Fixed by @NullCode1337 in this [PR](https://github.com/wailsapp/wails/pull/2218)
+- Added new `-nomodsync` flag to disable the automatic syncing of the `go.mod` file. Added by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/2215)
+- Added support for adding prefix and postfix text to generated Typescript classes. Added by @OlegGulevskyy in [PR](https://github.com/wailsapp/wails/pull/2101)
+- Added reference to NSIS as optional dependency. Added by @acheong08 in [PR](https://github.com/wailsapp/wails/pull/2070)
+- Added Korean translation for the website. Added by @cybertramp in [PR](https://github.com/wailsapp/wails/pull/2093)
+
+### Fixed
+
+- The `noreload` flag in wails dev wasn't applied. Fixed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2081)
+- `build/bin` folder was duplicating itself on each reload in `wails dev` mode. Fixed by @OlegGulevskyy in this [PR](https://github.com/wailsapp/wails/pull/2103)
+- Prevent a thin white line at the bottom of a frameless window on Windows. Fixed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2111)
+- Better signal handling for Linux. Fixed by @leaanthony in this [PR](https://github.com/wailsapp/wails/pull/2152)
+- Running the docs locally was broken due to mandatory crowdin token requirement. Fixed by @OlegGulevskyy in this [PR](https://github.com/wailsapp/wails/pull/2231)
+- Generated typescript for Go functions that returned a single error was incorrect. Fixed by @ATenderholt in this [PR](https://github.com/wailsapp/wails/pull/2247)
+- The right mouse event was not being raised correctly for Linux. Fixed by @leaanthony in this [PR](https://github.com/wailsapp/wails/pull/2190)
+- Remove extra spaces in Wails version when querying `go.mod`. Fixed by @matholt in this [PR](https://github.com/wailsapp/wails/pull/2197)
+- Fix go tests failure on Mac. Fixed by @avengerweb in this [PR](https://github.com/wailsapp/wails/pull/2187)
+- Fix go test errors. Fixed by @misitebao & @avengerweb in [these](https://github.com/wailsapp/wails/pull/2169) [PRs](https://github.com/wailsapp/wails/pull/2187)
+- Added `WindowSetAlwaysOnTop` to the JS runtime. Fixed by @gotid in [PR](https://github.com/wailsapp/wails/pull/2128)
+- Fixed obfuscated flag typo in docs. Fixed by @ckilb in [PR](https://github.com/wailsapp/wails/pull/2102)
+- Fixed React Hash Router link in docs. Fixed by @marvinhosea in [PR](https://github.com/wailsapp/wails/pull/2050)
+
+### Changed
+
+- Improve error message if no `index.html` could be found in the assets and validate assetserver options. Changed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2110)
+- Promote the Go WebView2Loader from experimental to stable. This means now per default all Wails build use the new loader introduced with `v2.2.0`. The old loader remains usable with build tag `native_webview2loader` for the next few releases. Changed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2199)
+- Refactored CLI. Changed by @leaanthony in this [PR](https://github.com/wailsapp/wails/pull/2123)
+- Remove unreachable code. Changed by @tmclane in this [PR](https://github.com/wailsapp/wails/pull/2182)
+
+## v2.2.0 - 2022-11-09
+
+### Added
+
+- Wails now uses a purpose built, native Go implementation of Microsoft's webview2loader dll. This means there is no need to embed the `Webview2Loader.dll` file in your binaries, meaning filesizes will be ~130k smaller! Thanks to @stffabi for this [awesome contribution](https://github.com/wailsapp/wails/pull/1974)!
+- This release provides much more control over custom asset handling via the new [AssetServer](https://wails.io/docs/reference/options#assetserver) options. This allows you to provide your own custom asset handler and hook into the request chain through middleware. Thanks to @stffabi for this [awesome contribution](https://github.com/wailsapp/wails/pull/2016) and @mholt for the [initial idea](https://github.com/wailsapp/wails/issues/2007) and extensive testing.
+- It is now possible to customise the layout of your Wails projects using 2 new options in `wails.json`:
+  - `build:dir` can be used to specify where the build files reside
+  - `frontend:dir` can be used to specify where the frontend files reside
+  - If `go.mod` is not found in the same directory as `wails.json`, the cli will look up the parent directories to find it. Fixed by @leaanthony in this [PR](https://github.com/wailsapp/wails/pull/2009)
+- Colour output in the CLI can now be turned off by using the `--nocolor` flag. This is useful for CI/CD pipelines. Thanks to @scottopell for the [PR](https://github.com/wailsapp/wails/pull/1947)
+- A JSON schema definition for the `wails.json` file has been added. IDEs should now provide code complete when editing `wails.json`. Thanks to @binyamin for the [PR](https://github.com/wailsapp/wails/pull/1864)
+- The `EventsOn*` methods now return a function that can be called to deregister the listener. Thanks to @joshbuddy for the [PR](https://github.com/wailsapp/wails/pull/1969)
+
+### Fixed
+
+- Webview2 on Windows returns a potential whitespace when defining the style like this style="--wails-draggable: drag". Fixed by @stffabi in https://github.com/wailsapp/wails/pull/1989
+- Bound structs that had `struct{}` field types would cause the TypeScript generation to fail. Thanks to @ParkourLiu for the [PR](https://github.com/wailsapp/wails/pull/1999)
+- When maximising a frameless window on Windows with multiple monitors, the window could sometimes become blank. Thanks to @stffabi for the [fix](https://github.com/wailsapp/wails/pull/2043)
+
+### Changed
+
+- The troubleshooting guide was updated to provide guidance when [Vite fails to start](https://wails.io/docs/guides/troubleshooting#cannot-start-service-host-version-xxx-does-not-match-binary-version-xxx). Thanks to @willdot for the [PR](https://github.com/wailsapp/wails/pull/2000).
+- English, Chinese and Japanese documentation updates. Thanks to @misitebao.
+
+### Deprecated
+
+- The [AssetsHandler](https://wails.io/docs/reference/options#assetshandler) option has been deprecated. Please use the [AssetServer](https://wails.io/docs/reference/options#assetserver) option instead.
+
+### New Contributors
+
+- @willdot made their first contribution in https://github.com/wailsapp/wails/pull/2000
+- @ParkourLiu made their first contribution in https://github.com/wailsapp/wails/pull/1999
+- @binyamin made their first contribution in https://github.com/wailsapp/wails/pull/1864
+- @joshbuddy made their first contribution in https://github.com/wailsapp/wails/pull/1969
+- @sgosiaco made their first contribution in https://github.com/wailsapp/wails/pull/2062
+
+## v2.1.0 - 2022-10-18
+
+### Removed
+
+- The `RGBA` option in `options.App` has now been removed. Use `BackgroundColour` instead.
+
+### Added
+
+- [Support for defaulting to No button in Windows dialogs](https://wails.io/docs/reference/runtime/dialog/#windows) - @leaanthony in https://github.com/wailsapp/wails/pull/1875
+- Add missing resize for frameless window on Linux - @Lyimmi in https://github.com/wailsapp/wails/pull/1918
+- [Add window transparency for linux](https://wails.io/docs/reference/options#windowistranslucent-2) - @Lyimmi in https://github.com/wailsapp/wails/pull/1926
+- [Add WindowExecJS method](https://wails.io/docs/reference/runtime/window#windowexecjs) - @leaanthony in https://github.com/wailsapp/wails/pull/1927
+- [Add support for `Info.dev.plist` on macOS](https://wails.io/docs//reference/cli#dev) - @leaanthony in https://github.com/wailsapp/wails/pull/1960
+- [Add ZoomFactor get/set and add the respective windows only options](https://wails.io/docs/reference/options#zoomfactor) - @pierrejoye in https://github.com/wailsapp/wails/pull/1463
+
+### Fixed
+
+- Embed directories auto-created if they don't exist - @leaanthony in https://github.com/wailsapp/wails/pull/1983
+- Quote command arguments if they have a space - @leaanthony in https://github.com/wailsapp/wails/pull/1892
+- Fixed Linux frameless window drag - @Lyimmi in https://github.com/wailsapp/wails/pull/1916
+- Fix gtk_window_begin_resize_drag's mouse button - @Lyimmi in https://github.com/wailsapp/wails/pull/1920
+- Fix binding generation special cases - @JulioDRF in https://github.com/wailsapp/wails/pull/1902
+- Remove the `.git` directory in the template - @misitebao in https://github.com/wailsapp/wails/pull/1929
+- Fix wails dev - @JulioDRF in https://github.com/wailsapp/wails/pull/1931
+- Fix for considering new `go` files in dev filesystem watcher - @scottopell in https://github.com/wailsapp/wails/pull/1946
+- Prevent type parsing to interfere with TypeScript package name - @ValentinTrinque in https://github.com/wailsapp/wails/pull/1942
+- [dev] Do not try to infer assetdir from fs.FS when a frontend dev server is in use - @stffabi in https://github.com/wailsapp/wails/pull/1972
+- Fix init command not listed in wails help message - @lyon-lee-dev in https://github.com/wailsapp/wails/pull/1976
+
+### Changed
+
+- Add PR checks - @leaanthony in https://github.com/wailsapp/wails/pull/1879
+- Auto label project cards - @leaanthony in https://github.com/wailsapp/wails/pull/1881
+- Add issue translator - @leaanthony in https://github.com/wailsapp/wails/pull/1891
+- Update label names in the issue template - @misitebao in https://github.com/wailsapp/wails/pull/1893
+- obfuscated instead of obfuscate in the docs - @arifali123 in https://github.com/wailsapp/wails/pull/1895
+- [assetHandler] Remove redundant log prefix - @stffabi in https://github.com/wailsapp/wails/pull/1896
+- [dev] Do not generate bindings in the dev app itself - @stffabi in https://github.com/wailsapp/wails/pull/1899
+- Update Chinese translation - @almas1992 in https://github.com/wailsapp/wails/pull/1894
+- Refactor app - @leaanthony in https://github.com/wailsapp/wails/pull/1909
+- Update documents - @misitebao in https://github.com/wailsapp/wails/pull/1907 https://github.com/wailsapp/wails/pull/1936
+- Adding Tutorial link - @raguay in https://github.com/wailsapp/wails/pull/1903
+- Add react-ts-vite-tailwind template - @hotafrika in https://github.com/wailsapp/wails/pull/1930
+- Update README.zh-Hans.md - @o8x in https://github.com/wailsapp/wails/pull/1949
+- Add Elm Tailwind CSS community template - @rnice01 in https://github.com/wailsapp/wails/pull/1939
+- Chore/generate sponsors - @leaanthony in https://github.com/wailsapp/wails/pull/1965
+- Use swc + pnpm for website - @leaanthony in https://github.com/wailsapp/wails/pull/1966
+- Sort structs in models.ts - @leaanthony in https://github.com/wailsapp/wails/pull/1961
+- Update Sponsor Image - @github-actions in https://github.com/wailsapp/wails/pull/1973
+- docs: sync documents - @misitebao in https://github.com/wailsapp/wails/pull/1968
+- Update events.mdx - @cuigege in https://github.com/wailsapp/wails/pull/1979
+
+### New Contributors
+
+- @arifali123 made their first contribution in https://github.com/wailsapp/wails/pull/1895
+- @almas1992 made their first contribution in https://github.com/wailsapp/wails/pull/1894
+- @JulioDRF made their first contribution in https://github.com/wailsapp/wails/pull/1902
+- @hotafrika made their first contribution in https://github.com/wailsapp/wails/pull/1930
+- @scottopell made their first contribution in https://github.com/wailsapp/wails/pull/1946
+- @o8x made their first contribution in https://github.com/wailsapp/wails/pull/1949
+- @rnice01 made their first contribution in https://github.com/wailsapp/wails/pull/1939
+- @cuigege made their first contribution in https://github.com/wailsapp/wails/pull/1979
+- @lyon-lee-dev made their first contribution in https://github.com/wailsapp/wails/pull/1976
+
+## v2.0.0 - 2022-09-22
+
+### Fixed
+
+- Fix buildtags parsing if only one tag is specified by @stffabi in https://github.com/wailsapp/wails/pull/1858
+- Use embed all to include all files in templates by @stffabi in https://github.com/wailsapp/wails/pull/1862
+
+### Changed
+
+- Bump minimum required Go version to 1.18 by @stffabi in https://github.com/wailsapp/wails/pull/1854
+- Add check for minimum required Go version by @stffabi in https://github.com/wailsapp/wails/pull/1853
+- chore: update README and workflows by @misitebao in https://github.com/wailsapp/wails/pull/1848
+- Update introduction.mdx by @ParvinEyvazov in https://github.com/wailsapp/wails/pull/1863
+- Releasetest/release workflow by @leaanthony in https://github.com/wailsapp/wails/pull/1869
+- Optimize documentation website by @misitebao in https://github.com/wailsapp/wails/pull/1849
+
+### New Contributors
+
+- @ParvinEyvazov made their first contribution in https://github.com/wailsapp/wails/pull/1863
+
+## v2.0.0-rc.1 - 2022-09-13
+
+### Deprecated
+
+- The `-noGen` flag for the `wails dev` command has been replaced with `-skipbindings`. This is to align with the `wails build` command.
+
+### Added
+
+- Add garble support by @leaanthony in https://github.com/wailsapp/wails/pull/1793
+- Make draggable CSS property customisable by @leaanthony in https://github.com/wailsapp/wails/pull/1828
+- Add Some WindowState by @zandercodes in https://github.com/wailsapp/wails/pull/1349
+- Make EventsOff capable of removing multiple listeners by @Lyimmi in https://github.com/wailsapp/wails/pull/1822
+
+### Fixed
+
+- Use `Promise<void>` when Go routine does not output by @SheetJSDev in https://github.com/wailsapp/wails/pull/1821
+- preact-ts template build fix by @Debdut in https://github.com/wailsapp/wails/pull/1781
+- fix frontend/tsconfig.js by @Lyimmi in https://github.com/wailsapp/wails/pull/1795
+- fix: fix bugs in website by @misitebao in https://github.com/wailsapp/wails/pull/1810
+- Fix vue-ts template by @leaanthony in https://github.com/wailsapp/wails/pull/1813
+- Remove duplicate defs in win32/window.go by @AlbinoDrought in https://github.com/wailsapp/wails/pull/1832
+
+### Changed
+
+- Upgrade React to use Vite v3 by @leaanthony in https://github.com/wailsapp/wails/pull/1744
+- Upgrade Lit to use Vite v3 by @leaanthony in https://github.com/wailsapp/wails/pull/1745
+- Support vite3 for Vue by @leaanthony in https://github.com/wailsapp/wails/pull/1746
+- Preact templates for vite 3 by @leaanthony in https://github.com/wailsapp/wails/pull/1770
+- Prevent env variables and registry overrides from changing behaviour by @stffabi in https://github.com/wailsapp/wails/pull/1771
+- Use go implementation to retrieve the version of a fixed runtime by @stffabi in https://github.com/wailsapp/wails/pull/1790
+- Change contribution guide type from "doc" to "page" by @misitebao in https://github.com/wailsapp/wails/pull/1777
+- feat(website): repair document content by @misitebao in https://github.com/wailsapp/wails/pull/1775
+- chore: sort out files by @misitebao in https://github.com/wailsapp/wails/pull/1776
+- Add Korean to doc by @jaesung9507 in https://github.com/wailsapp/wails/pull/1774
+- Add README.ja.md by @shinshin86 in https://github.com/wailsapp/wails/pull/1783
+- Reorganized contribution guidelines page by @misitebao in https://github.com/wailsapp/wails/pull/1784
+- fix(website): fix link by @misitebao in https://github.com/wailsapp/wails/pull/1785
+- Update templates.mdx by @KiddoV in https://github.com/wailsapp/wails/pull/1799
+- Better watcher by @leaanthony in https://github.com/wailsapp/wails/pull/1827
+- Only set GDK_BACKEND to "x11" if GDK_BACKEND is unset and XDG_SESSION_TYPE is not "wayland" by @prurigro in https://github.com/wailsapp/wails/pull/1811
+- Optimize images by @imgbot in https://github.com/wailsapp/wails/pull/1812
+
+### New Contributors
+
+- @shinshin86 made their first contribution in https://github.com/wailsapp/wails/pull/1783
+- @Debdut made their first contribution in https://github.com/wailsapp/wails/pull/1781
+- @KiddoV made their first contribution in https://github.com/wailsapp/wails/pull/1799
+- @zandercodes made their first contribution in https://github.com/wailsapp/wails/pull/1349
+- @prurigro made their first contribution in https://github.com/wailsapp/wails/pull/1811
+- @SheetJSDev made their first contribution in https://github.com/wailsapp/wails/pull/1821
+- @AlbinoDrought made their first contribution in https://github.com/wailsapp/wails/pull/1832
+- @imgbot made their first contribution in https://github.com/wailsapp/wails/pull/1812
+
+## v2.0.0-beta.44 - 2022-08-20
+
+### Deprecated
+
+The `data-wails-drag` attribute is being deprecated in favour of the following CSS style: `style="--wails-draggable:drag"`. You can use `style="--wails-draggable:no-drag"` to disable the drag behaviour. For this release only, you can test this by setting the following application option:
+
+```go
+Experimental: &options.Experimental{
+  UseCSSDrag: true,
+},
+```
+
+### Added
+
+- Set file permissions for generated files by @leaanthony in https://github.com/wailsapp/wails/pull/1763
+- Experimental support for CSS Drag detection by @leaanthony in https://github.com/wailsapp/wails/pull/1750
+
+### Fixed
+
+- Bug fix collecting of output binaries for platforms by @stffabi in https://github.com/wailsapp/wails/pull/1715
+- Fix registration of exposed fields by @ValentinTrinque in https://github.com/wailsapp/wails/pull/1727
+- Fix column widths for doctor command's dependencies table by @ianmjones in https://github.com/wailsapp/wails/pull/1717
+- Do not generate bindings for `OnBeforeClose` method
+
+### Changed
+
+- Misc code refactors and removal by @leaanthony in https://github.com/wailsapp/wails/pull/1713
+- Add react-router to routing.mdx by @Maicarons2022 in https://github.com/wailsapp/wails/pull/1755
+- Add Japanese to doc by @RyoTagami in https://github.com/wailsapp/wails/pull/1716
+- Added EmailIt and Modal File Manager by @raguay in https://github.com/wailsapp/wails/pull/1728
+- Adding my ScriptBar program by @raguay in https://github.com/wailsapp/wails/pull/1761
+- Link to general webview2 runtime download page and not to a specific language by @stffabi in https://github.com/wailsapp/wails/pull/1764
+- Updated translations in https://github.com/wailsapp/wails/pull/1719 and https://github.com/wailsapp/wails/pull/1720
+- Remove text outside style's brackets by @DragoSpiro98 in https://github.com/wailsapp/wails/pull/1765
+
+### New Contributors
+
+- @RyoTagami made their first contribution in https://github.com/wailsapp/wails/pull/1716
+- @raguay made their first contribution in https://github.com/wailsapp/wails/pull/1728
+- @Maicarons2022 made their first contribution in https://github.com/wailsapp/wails/pull/1755
+- @DragoSpiro98 made their first contribution in https://github.com/wailsapp/wails/pull/1765
+
+## v2.0.0-beta.43 - 2022-08-08
+
+### Added
+
+- Add support for retrieving the release notes from Github by @leaanthony in https://github.com/wailsapp/wails/pull/1679
+- Add `frontend:dev:install` configuration by @LGiki in https://github.com/wailsapp/wails/pull/1666
+
+### Fixed
+
+- Fix formatting of some error messages by @stffabi in https://github.com/wailsapp/wails/pull/1665
+- Windows dialogs now work when window is not visible yet by @leaanthony in https://github.com/wailsapp/wails/pull/1662
+- Multiple fixes for MacOS asset requests by @stffabi in https://github.com/wailsapp/wails/pull/1668 and https://github.com/wailsapp/wails/pull/1681
+- Fix for Go 1.19 by @stffabi in https://github.com/wailsapp/wails/pull/1689
+- Removed Linux warnings by @leaanthony in https://github.com/wailsapp/wails/pull/1656
+- Better support for doubleclick events in drag regions by @leaanthony in https://github.com/wailsapp/wails/pull/1704
+- Allow MacOS frameless window to be miniturisable by @leaanthony in https://github.com/wailsapp/wails/pull/1705
+
+### Changed
+
+- add wails-sveltekit-template by @h8gi in https://github.com/wailsapp/wails/pull/1671
+- wails doctor now reports correct MacOS os id by @stffabi in https://github.com/wailsapp/wails/pull/1673
+- Update application-development.mdx by @SamHennessy in https://github.com/wailsapp/wails/pull/1682
+- Move SetMin/Max calls to main thread by @leaanthony in https://github.com/wailsapp/wails/pull/1684
+- Change `frontend:dev` to `frontend:dev:build` by @LGiki in https://github.com/wailsapp/wails/pull/1691
+- Build frontend only before starting the dev watcher command by @stffabi in https://github.com/wailsapp/wails/pull/1694
+- Improve error message for auto dev server discovery without a dev watcher by @stffabi in https://github.com/wailsapp/wails/pull/1711
+
+### New Contributors
+
+- @h8gi made their first contribution in https://github.com/wailsapp/wails/pull/1671
+- @SamHennessy made their first contribution in https://github.com/wailsapp/wails/pull/1682
+
+## v2.0.0-beta.42 - 2022-07-25
+
+### Added
+
+- Added `options.NewRGBA` and `options.NewRGB` functions to create `*options.RGBA` by @leaanthony
+
+### Fixed
+
+- Fixed initial build of frontend when using `wails dev` on new projects by @leaanthony in https://github.com/wailsapp/wails/pull/1650
+- Ignore empty install command when running `wails dev` by @stffabi in https://github.com/wailsapp/wails/pull/1651
+- Fixed error reporting in templates
+- BackgroundColour documentation fix
+- Generalize manual compile steps [Documentation] by @acheong08 in https://github.com/wailsapp/wails/pull/1644
+
+## v2.0.0-beta.40 - 2022-07-24
+
+### Added
+
+- Add Show() and Hide() to runtime to show/hide application by @leaanthony in https://github.com/wailsapp/wails/pull/1599
+- Override target platform/arch using GOOS and GOARCH environment variables by @leaanthony in https://github.com/wailsapp/wails/pull/1618
+- Add option to skip frontend rebuild in dev mode by @leaanthony in https://github.com/wailsapp/wails/pull/1632
+
+### Fixed
+
+- Update svelte templates to use vite 3 by @leaanthony in https://github.com/wailsapp/wails/pull/1643
+- Fix plain template by @stffabi in https://github.com/wailsapp/wails/pull/1609
+- Fix Website layout by @leaanthony in https://github.com/wailsapp/wails/pull/1616
+- Fixed typo in documentation page docs/howdoesitwork by @MyNameIsAres in https://github.com/wailsapp/wails/pull/1636
+- Use scaling when setting min/max window by @leaanthony in https://github.com/wailsapp/wails/pull/1557
+
+### Changed
+
+- Install dev dependencies before starting dev mode by @leaanthony in https://github.com/wailsapp/wails/pull/1615
+- Translate and fix website text by @misitebao in https://github.com/wailsapp/wails/pull/1525
+- docs: add MyNameIsAres as a contributor for doc by @allcontributors in https://github.com/wailsapp/wails/pull/1638
+- Deprecate Fullscreen appoption by @acheong08 in https://github.com/wailsapp/wails/pull/1640
+
+### Deprecated
+
+- The `Fullscreen` application option is deprecated. Please use [`WindowStartState`](https://wails.io/docs/reference/options#windowstartstate) instead.
+
+### New Contributors
+
+- @MyNameIsAres made their first contribution in https://github.com/wailsapp/wails/pull/1636
+
+## v2.0.0-beta.39.2 - 2022-07-20
+
+### Added
+
+- Update example for macOS Menu by @acheong08 in https://github.com/wailsapp/wails/pull/1600
+
+### Fixed
+
+- Reinstate Go 1.17 compatibility by @leaanthony in https://github.com/wailsapp/wails/pull/1605
+
+## v2.0.0-beta.39 - 2022-07-19
+
+### Added
+
+- New screen dimensions runtime API by @skamensky in https://github.com/wailsapp/wails/pull/1519
+- Auto discover vite devserver port by @leaanthony in https://github.com/wailsapp/wails/pull/1547
+- Add nixpkgs support to doctor command. by @ianmjones in https://github.com/wailsapp/wails/pull/1551
+- New pre-build hooks feature by @leaanthony in https://github.com/wailsapp/wails/pull/1578
+- New production log level option by @leaanthony in https://github.com/wailsapp/wails/pull/1555
+
+### Fixed
+
+- Fix stack corruption in Windows when using ICoreWebView2HttpHeadersCollectionIterator by @stffabi in https://github.com/wailsapp/wails/pull/1589
+- Move WindowGet\* to main thread by @leaanthony in https://github.com/wailsapp/wails/pull/1464
+- Allow -appargs flag to pass flags to binary. by @ianmjones in https://github.com/wailsapp/wails/pull/1534
+- Fix checking for installed apt package in none English session. by @ianmjones in https://github.com/wailsapp/wails/pull/1548
+- Fix OnBeforeClose code for Mac by @leaanthony in https://github.com/wailsapp/wails/pull/1558
+- Support Maps in TS conversion by @leaanthony in https://github.com/wailsapp/wails/pull/1435
+- Check for line length when scanning for local devserver url by @leaanthony in https://github.com/wailsapp/wails/pull/1566
+- Remove usage of unsafe.Pointer in winc by @stffabi and @leaanthony in https://github.com/wailsapp/wails/pull/1556
+
+### Changed
+
+- Rename WindowSetRGBA -> WindowSetBackgroundColour by @leaanthony in https://github.com/wailsapp/wails/pull/1506
+- Improvements to the dev command by @stffabi in https://github.com/wailsapp/wails/pull/1510
+- Update vscode template by @leaanthony in https://github.com/wailsapp/wails/pull/1398
+- Bump svelte from 3.42.2 to 3.49.0 in /v2/internal/frontend/runtime/dev by @dependabot in https://github.com/wailsapp/wails/pull/1572
+- Bump svelte from 3.42.5 to 3.49.0 in /v2/internal/frontend/runtime by @dependabot in https://github.com/wailsapp/wails/pull/1573
+- Add troubleshooting for `Not Found` error by @acheong08 in https://github.com/wailsapp/wails/pull/1586
+- Docs/better homepage by @leaanthony in https://github.com/wailsapp/wails/pull/1591
+
+### New Contributors
+
+- @skamensky made their first contribution in https://github.com/wailsapp/wails/pull/1519
+- @acheong08 made their first contribution in https://github.com/wailsapp/wails/pull/1586
+
+**Full Changelog**: https://github.com/wailsapp/wails/compare/v2.0.0-beta.38...v2.0.0-beta.39
+
+## v2.0.0-beta.38 - 2022-06-27
+
+### Added
+
+- Add race detector to build & dev by @Lyimmi in https://github.com/wailsapp/wails/pull/1426
+- [linux] Support `linux/arm` architecture by @Lyimmi in https://github.com/wailsapp/wails/pull/1427
+- Create gitignore when using `-g` option by @jaesung9507 in https://github.com/wailsapp/wails/pull/1430
+- [windows] Add Suspend/Resume callback support by @leaanthony in https://github.com/wailsapp/wails/pull/1474
+- Add runtime function `WindowSetAlwaysOnTop` by @chenxiao1990 in https://github.com/wailsapp/wails/pull/1442
+- [windows] Allow setting browser path by @NanoNik in https://github.com/wailsapp/wails/pull/1448
+
+### Fixed
+
+- [linux] Improve switching to main thread for callbacks by @stffabi in https://github.com/wailsapp/wails/pull/1392
+- [windows] Fix WebView2 minimum runtime version check by @stffabi in https://github.com/wailsapp/wails/pull/1456
+- [linux] Fix apt command syntax (#1458) by @abtin in https://github.com/wailsapp/wails/pull/1461
+- [windows] Set Window Background colour if provided + debounce redraw option by @leaanthony in https://github.com/wailsapp/wails/pull/1466
+- Fix small typo in docs by @LukenSkyne in https://github.com/wailsapp/wails/pull/1449
+- Fix the url to surge by @andywenk in https://github.com/wailsapp/wails/pull/1460
+- Fixed theme change at runtime by @leaanthony in https://github.com/wailsapp/wails/pull/1473
+- Fix: Don't stop if unable to remove temporary bindings build by @leaanthony in https://github.com/wailsapp/wails/pull/1465
+- [windows] Pass the correct installationStatus to the webview installation strategy by @stffabi in https://github.com/wailsapp/wails/pull/1483
+- [windows] Make `SetBackgroundColour` compatible for `windows/386` by @stffabi in https://github.com/wailsapp/wails/pull/1493
+- Fix lit-ts template by @Orijhins in https://github.com/wailsapp/wails/pull/1494
+
+### Changed
+
+- [windows] Load WebView2 loader from embedded only by @stffabi in https://github.com/wailsapp/wails/pull/1432
+- Add showcase entry for October + update homepage carousel entry for October by @marcus-crane in https://github.com/wailsapp/wails/pull/1436
+- Always use return in wrapped method by @leaanthony in https://github.com/wailsapp/wails/pull/1410
+- [windows] Unlock OSThread after native calls have been finished by @stffabi in https://github.com/wailsapp/wails/pull/1441
+- Add `BackgroundColour` and deprecate `RGBA` by @leaanthony in https://github.com/wailsapp/wails/pull/1475
+- AssetsHandler remove retry logic in dev mode by @stffabi in https://github.com/wailsapp/wails/pull/1479
+- Add Solid JS template to docs by @sidwebworks in https://github.com/wailsapp/wails/pull/1492
+- Better signal handling by @leaanthony in https://github.com/wailsapp/wails/pull/1488
+- Chore/react 18 create root by @tomanagle in https://github.com/wailsapp/wails/pull/1489
+
+### New Contributors
+
+- @jaesung9507 made their first contribution in https://github.com/wailsapp/wails/pull/1430
+- @LukenSkyne made their first contribution in https://github.com/wailsapp/wails/pull/1449
+- @andywenk made their first contribution in https://github.com/wailsapp/wails/pull/1460
+- @abtin made their first contribution in https://github.com/wailsapp/wails/pull/1461
+- @chenxiao1990 made their first contribution in https://github.com/wailsapp/wails/pull/1442
+- @NanoNik made their first contribution in https://github.com/wailsapp/wails/pull/1448
+- @sidwebworks made their first contribution in https://github.com/wailsapp/wails/pull/1492
+- @tomanagle made their first contribution in https://github.com/wailsapp/wails/pull/1489
+
+## v2.0.0-beta.37 - 2022-05-26
+
+### Added
+
+- Add `nogen` flag in wails dev command by @mondy in https://github.com/wailsapp/wails/pull/1413
+- Initial support for new native translucency in Windows Preview by @leaanthony in https://github.com/wailsapp/wails/pull/1400
+
+### Fixed
+
+- Bugfix/incorrect bindings by @leaanthony in https://github.com/wailsapp/wails/pull/1383
+- Fix runtime.js events by @polikow in https://github.com/wailsapp/wails/pull/1369
+- Fix docs formatting by @antimatter96 in https://github.com/wailsapp/wails/pull/1372
+- Events | fixes #1388 by @lambdajack in https://github.com/wailsapp/wails/pull/1390
+- bugfix: correct typo by @tmclane in https://github.com/wailsapp/wails/pull/1391
+- Fix typo in docs by @LGiki in https://github.com/wailsapp/wails/pull/1393
+- Fix typo bindings.js to ipc.js by @rayshoo in https://github.com/wailsapp/wails/pull/1406
+- Make sure to execute the menu callbacks on a new goroutine by @stffabi in https://github.com/wailsapp/wails/pull/1403
+- Update runtime.d.ts & templates by @Yz4230 in https://github.com/wailsapp/wails/pull/1421
+- Add missing className to input in React and Preact templates by @edwardbrowncross in https://github.com/wailsapp/wails/pull/1419
+
+### Changed
+
+- Improve multi-platform builds by @stffabi in https://github.com/wailsapp/wails/pull/1373
+- During wails dev only use reload logic if no AssetsHandler are in use by @stffabi in https://github.com/wailsapp/wails/pull/1385
+- Update events.mdx by @Junkher in https://github.com/wailsapp/wails/pull/1387
+- Add Next.js template by @LGiki in https://github.com/wailsapp/wails/pull/1394
+- Add docs on wails generate module by @TechplexEngineer in https://github.com/wailsapp/wails/pull/1414
+- Add macos custom menu EditMenu tips by @daodao97 in https://github.com/wailsapp/wails/pull/1423
+
+### New Contributors
+
+- @polikow made their first contribution in https://github.com/wailsapp/wails/pull/1369
+- @antimatter96 made their first contribution in https://github.com/wailsapp/wails/pull/1372
+- @Junkher made their first contribution in https://github.com/wailsapp/wails/pull/1387
+- @lambdajack made their first contribution in https://github.com/wailsapp/wails/pull/1390
+- @LGiki made their first contribution in https://github.com/wailsapp/wails/pull/1393
+- @rayshoo made their first contribution in https://github.com/wailsapp/wails/pull/1406
+- @TechplexEngineer made their first contribution in https://github.com/wailsapp/wails/pull/1414
+- @mondy made their first contribution in https://github.com/wailsapp/wails/pull/1413
+- @Yz4230 made their first contribution in https://github.com/wailsapp/wails/pull/1421
+- @daodao97 made their first contribution in https://github.com/wailsapp/wails/pull/1423
+- @edwardbrowncross made their first contribution in https://github.com/wailsapp/wails/pull/1419
+
+## v2.0.0-beta.36 - 2022-04-27
+
+### Fixed
+
+- [v2] Validate devServer property to be of the correct form by [@stffabi](https://github.com/stffabi) in https://github.com/wailsapp/wails/pull/1359
+- [v2, darwin] Initialize native variables on stack to prevent segfault by [@stffabi](https://github.com/stffabi) in https://github.com/wailsapp/wails/pull/1362
+- Vue-TS template fix
+
+### Changed
+
+- Added `OnStartup` method back to default templates
+
+## v2.0.0-beta.35 - 2022-04-27
+
+### Breaking Changes
+
+- When data was sent to the `EventsOn` callback, it was being sent as a slice of values, instead of optional parameters to the method. `EventsOn` now works as expected, but you will need to update your code if you currently use this. [More information](https://github.com/wailsapp/wails/issues/1324)
+- The broken `bindings.js` and `bindings.d.ts` files have been replaced by a new JS/TS code generation system. More details [here](https://wails.io/docs/howdoesitwork#calling-bound-go-methods)
+
+### Added
+
+- **New Templates**: Svelte, React, Vue, Preact, Lit and Vanilla templates, both JS and TS versions. `wails init -l` for more info.
+- Default templates now powered by [Vite](https://vitejs.dev). This enables lightning fast reloads when you use `wails dev`!
+- Add support for external frontend development servers. See `frontend:dev:serverUrl` in the [project config](https://wails.io/docs/reference/project-config) - [@stffabi](https://github.com/stffabi)
+- [Fully configurable dark mode](https://wails.io/docs/reference/options#theme) for Windows.
+- Hugely improved [WailsJS generation](https://wails.io/docs/howdoesitwork#calling-bound-go-methods) (both JavaScript and TypeScript)
+- Wails doctor now reports information about the wails installation - [@stffabi](https://github.com/stffabi)
+- Added docs for [code-signing](https://wails.io/docs/guides/signing) and [NSIS installer](https://wails.io/docs/guides/windows-installer) - [@gardc](https://github.com/gardc)
+- Add support for `-trimpath` [build flag](https://wails.io/docs/reference/cli#build)
+- Add support for a default AssetsHandler - [@stffabi](https://github.com/stffabi)
+
+### Fixed
+
+- Improved mimetype detection for BOM marker and comments - [@napalu](https://github.com/napalu)
+- Remove duplicate mimetype entries - [@napalu](https://github.com/napalu)
+- Remove duplicate TypeScript imports in generated definition files - [@adalessa](https://github.com/adalessa)
+- Add missing method declaration - [@adalessa](https://github.com/adalessa)
+- Fix Linux sigabrt on start - [@napalu](https://github.com/napalu)
+- Double Click event now works on elements with `data-wails-drag` attribute - [@jicg](https://github.com/jicg)
+- Suppress resizing during minimize of a frameless window - [@stffabi](https://github.com/stffabi)
+- Fixed TS/JS generation for Go methods with no returns
+- Fixed WailsJS being generated in project directory
+
+### Changed
+
+- Website docs are now versioned
+- Improved `runtime.Environment` call
+- Improve the close action for Mac
+- A bunch of dependabot security updates
+- Improved website content - [@misitebao](https://github.com/misitebao)
+- Upgrade issue template - [@misitebao](https://github.com/misitebao)
+- Convert documents that don't require version management to individual pages
+  - [@misitebao](https://github.com/misitebao)
+- Website now using Algolia search
+
+## v2.0.0-beta.34 - 2022-03-26
+
+### Added
+
+- Add support for 'DomReady' callback on linux by [@napalu](https://github.com/napalu) in #1249
+- MacOS - Show extension by default by [@leaanthony](https://github.com/leaanthony) in #1228
+
+### Fixed
+
+- [v2, nsis] Seems like / as path separator works only for some directives in a cross platform way by [@stffabi](https://github.com/stffabi) in #1227
+- import models on binding definition by [@adalessa](https://github.com/adalessa) in #123
+- Use local search on website by [@leaanthony](https://github.com/leaanthony) in #1234
+- Ensure binary resources can be served by [@napalu](https://github.com/napalu) in #1240
+- Only retry loading assets when loading from disk by [@leaanthony](https://github.com/leaanthony) in #1241
+- [v2, windows] Fix maximised start state by [@stffabi](https://github.com/stffabi) in #1243
+- Ensure Linux IsFullScreen uses GDK_WINDOW_STATE_FULLSCREEN bitmask appropriately. by [@ianmjones](https://github.com/ianmjones) in #1245
+- Fix memory leak in ExecJS for Mac by [@leaanthony](https://github.com/leaanthony) in #1230
+- Fix, or at least a workaround, for (#1232) by [@BillBuilt](https://github.com/BillBuilt) in #1247
+- [v2] Use os.Args[0] for self starting wails by [@stffabi](https://github.com/stffabi) in #1258
+- [v2, windows] Windows switch scheme: https -> http by @stefpap in #1255
+- Ensure Focus is regained by Webview2 when tabbing by [@leaanthony](https://github.com/leaanthony) in #1257
+- Try to focus window when Show() is called. by [@leaanthony](https://github.com/leaanthony) in #1212
+- Check system for user installed Linux dependencies by [@leaanthony](https://github.com/leaanthony) in #1180
+
+### Changed
+
+- feat(website): sync documents and add content by [@misitebao](https://github.com/misitebao) in #1215
+- refactor(cli): optimize default templates by [@misitebao](https://github.com/misitebao) in #1214
+- Run watcher after initial build by [@leaanthony](https://github.com/leaanthony) in #1216
+- Feature/docs update by [@leaanthony](https://github.com/leaanthony) in #1218
+- feat(website): optimize website and sync documents by [@misitebao](https://github.com/misitebao) in #1219
+- docs: sync documents by [@misitebao](https://github.com/misitebao) in #1224
+- Default index page by [@leaanthony](https://github.com/leaanthony) in #1229
+- Build added win32 compatibility by [@fengweiqiang](https://github.com/fengweiqiang) in #1238
+- docs: sync documents by [@misitebao](https://github.com/misitebao) in #1260
+
+## v2.0.0-beta.33 - 2022-03-05
+
+### Added
+
+- NSIS Installer support for creating installers for Windows applications - Thanks [@stffabi](https://github.com/stffabi) 🎉
+- New frontend:dev:watcher command to spin out 3rd party watchers when using wails dev - Thanks [@stffabi](https://github.com/stffabi)🎉
+- Remote templates now support version tags - Thanks [@misitebao](https://github.com/misitebao) 🎉
+
+### Fixed
+
+- A number of fixes for ARM Linux providing a huge improvement - Thanks [@ianmjones](https://github.com/ianmjones) 🎉
+- Fixed potential Nil reference when discovering the path to `index.html`
+- Fixed crash when using `runtime.Log` methods in a production build
+- Improvements to internal file handling meaning webworkers will now work on Windows - Thanks [@stffabi](https://github.com/stffabi)🎉
+
+### Changed
+
+- The Webview2 bootstrapper is now run as a normal user and doesn't require admin rights
+- The docs have been improved and updated
+- Added troubleshooting guide

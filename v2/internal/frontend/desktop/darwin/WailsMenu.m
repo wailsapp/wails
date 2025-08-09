@@ -184,16 +184,16 @@
         return unicode(0x001b);
     }
     if( [key isEqualToString:@"left"] ) {
-        return unicode(0x001c);
+        return unicode(0xf702);
     }
     if( [key isEqualToString:@"right"] ) {
-        return unicode(0x001d);
+        return unicode(0xf703);
     }
     if( [key isEqualToString:@"up"] ) {
-        return unicode(0x001e);
+        return unicode(0xf700);
     }
     if( [key isEqualToString:@"down"] ) {
-        return unicode(0x001f);
+        return unicode(0xf701);
     }
     if( [key isEqualToString:@"space"] ) {
         return unicode(0x0020);

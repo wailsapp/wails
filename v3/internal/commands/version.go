@@ -8,6 +8,7 @@ import (
 type VersionOptions struct{}
 
 func Version(_ *VersionOptions) error {
-	println(version.VersionString)
+	DisableFooter = true
+	println(version.String())
 	return nil
 }

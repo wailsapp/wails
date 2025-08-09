@@ -1,6 +1,7 @@
 package application
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -16,7 +17,13 @@ var applicationMethodNames = map[int]string{
 	ApplicationShow: "Show",
 }
 
-func (m *MessageProcessor) processApplicationMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
+func (m *MessageProcessor) processApplicationMethod(
+	method int,
+	rw http.ResponseWriter,
+	r *http.Request,
+	window Window,
+	params QueryParams,
+) {
 	switch method {
 	case ApplicationQuit:
 		globalApplication.Quit()
@@ -28,9 +35,9 @@ func (m *MessageProcessor) processApplicationMethod(method int, rw http.Response
 		globalApplication.Show()
 		m.ok(rw)
 	default:
-		m.httpError(rw, "Unknown application method: %d", method)
+		m.httpError(rw, "Invalid application call:", fmt.Errorf("unknown method: %d", method))
+		return
 	}
 
-	m.Info("Runtime Call:", "method", "Application."+applicationMethodNames[method])
-
+	m.Info("Runtime call:", "method", "Application."+applicationMethodNames[method])
 }

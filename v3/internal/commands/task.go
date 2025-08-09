@@ -3,23 +3,23 @@ package commands
 import (
 	"context"
 	"fmt"
-	"github.com/go-task/task/v3/errors"
-	"log"
+	"github.com/wailsapp/wails/v3/internal/term"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/pterm/pterm"
-
-	"github.com/go-task/task/v3/args"
-
-	"github.com/go-task/task/v3"
-	"github.com/go-task/task/v3/taskfile"
+	"github.com/wailsapp/task/v3"
+	"github.com/wailsapp/task/v3/taskfile/ast"
 )
 
 // BuildSettings contains the CLI build settings
 var BuildSettings = map[string]string{}
+
+func fatal(message string) {
+	term.Error(message)
+	os.Exit(1)
+}
 
 type RunTaskOptions struct {
 	Name             string `pos:"1"`
@@ -51,7 +51,7 @@ type RunTaskOptions struct {
 func RunTask(options *RunTaskOptions, otherArgs []string) error {
 
 	if options.Version {
-		ver := BuildSettings["mod.github.com/go-task/task/v3"]
+		ver := BuildSettings["mod.github.com/wailsapp/task/v3"]
 		fmt.Println("Task Version:", ver)
 		return nil
 	}
@@ -77,50 +77,43 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 		if options.OutputGroupBegin != "" {
 			return fmt.Errorf("task: You can't set --output-group-begin without --output=group")
 		}
-		if options.OutputGroupBegin != "" {
+		if options.OutputGroupEnd != "" {
 			return fmt.Errorf("task: You can't set --output-group-end without --output=group")
 		}
 	}
 
 	e := task.Executor{
-		Force:       options.Force,
-		Watch:       options.Watch,
-		Verbose:     options.Verbose,
-		Silent:      options.Silent,
-		Dir:         options.Dir,
-		Dry:         options.Dry,
-		Entrypoint:  options.EntryPoint,
-		Summary:     options.Summary,
-		Parallel:    options.Parallel,
-		Color:       options.Color,
-		Concurrency: options.Concurrency,
-		Interval:    time.Duration(options.Interval) * time.Second,
+		Force:               options.Force,
+		Watch:               options.Watch,
+		Verbose:             options.Verbose,
+		Silent:              options.Silent,
+		Dir:                 options.Dir,
+		Dry:                 options.Dry,
+		Entrypoint:          options.EntryPoint,
+		Summary:             options.Summary,
+		Parallel:            options.Parallel,
+		Color:               options.Color,
+		Concurrency:         options.Concurrency,
+		Interval:            time.Duration(options.Interval) * time.Second,
+		DisableVersionCheck: true,
 
 		Stdin:  os.Stdin,
 		Stdout: os.Stdout,
 		Stderr: os.Stderr,
-
-		OutputStyle: taskfile.Output{
-			Name: options.OutputName,
-			Group: taskfile.OutputGroup{
-				Begin: options.OutputGroupBegin,
-				End:   options.OutputGroupEnd,
-			},
-		},
 	}
 
-	var listOptions = task.NewListOptions(options.List, options.ListAll, options.ListJSON)
+	listOptions := task.NewListOptions(options.List, options.ListAll, options.ListJSON, false)
 	if err := listOptions.Validate(); err != nil {
-		log.Fatal(err)
+		fatal(err.Error())
 	}
 
-	if (listOptions.ShouldListTasks()) && options.Silent {
+	if listOptions.ShouldListTasks() && options.Silent {
 		e.ListTaskNames(options.ListAll)
 		return nil
 	}
 
 	if err := e.Setup(); err != nil {
-		log.Fatal(err)
+		fatal(err.Error())
 	}
 
 	if listOptions.ShouldListTasks() {
@@ -130,53 +123,63 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 		return nil
 	}
 
-	var (
-		calls   []taskfile.Call
-		globals *taskfile.Vars
-	)
-
+	// Parse task name and CLI variables from otherArgs or os.Args
 	var tasksAndVars []string
-	for _, taskAndVar := range os.Args[2:] {
-		if taskAndVar == "--" {
-			break
-		}
-		tasksAndVars = append(tasksAndVars, taskAndVar)
-	}
-
-	if len(tasksAndVars) > 0 && len(otherArgs) > 0 {
-		if tasksAndVars[0] == otherArgs[0] {
-			otherArgs = otherArgs[1:]
-		}
-	}
-
-	if e.Taskfile.Version.Compare(taskfile.V3) >= 0 {
-		calls, globals = args.ParseV3(tasksAndVars...)
+	
+	// Check if we have a task name specified in options
+	if options.Name != "" {
+		// If task name is provided via options, use it and treat otherArgs as CLI variables
+		tasksAndVars = append([]string{options.Name}, otherArgs...)
+	} else if len(otherArgs) > 0 {
+		// Use otherArgs directly if provided
+		tasksAndVars = otherArgs
 	} else {
-		calls, globals = args.ParseV2(tasksAndVars...)
-	}
-
-	globals.Set("CLI_ARGS", taskfile.Var{Static: strings.Join(otherArgs, " ")})
-	e.Taskfile.Vars.Merge(globals)
-
-	if !options.Watch {
-		e.InterceptInterruptSignals()
-	}
-
-	ctx := context.Background()
-
-	if options.Status {
-		return e.Status(ctx, calls...)
-	}
-
-	if err := e.Run(ctx, calls...); err != nil {
-		pterm.Error.Println(err.Error())
-
-		if options.ExitCode {
-			if err, ok := err.(*errors.TaskRunError); ok {
-				os.Exit(err.Code())
+		// Fall back to parsing os.Args for backward compatibility
+		var index int
+		var arg string
+		for index, arg = range os.Args[2:] {
+			if !strings.HasPrefix(arg, "-") {
+				break
 			}
 		}
-		os.Exit(1)
+
+		for _, taskAndVar := range os.Args[index+2:] {
+			if taskAndVar == "--" {
+				break
+			}
+			tasksAndVars = append(tasksAndVars, taskAndVar)
+		}
+	}
+
+	// Default task
+	if len(tasksAndVars) == 0 {
+		tasksAndVars = []string{"default"}
+	}
+
+	// Parse task name and CLI variables
+	taskName := tasksAndVars[0]
+	cliVars := tasksAndVars[1:]
+	
+	// Create call with CLI variables
+	call := &ast.Call{
+		Task: taskName,
+		Vars: &ast.Vars{},
+	}
+	
+	// Parse CLI variables (format: KEY=VALUE)
+	for _, v := range cliVars {
+		if strings.Contains(v, "=") {
+			parts := strings.SplitN(v, "=", 2)
+			if len(parts) == 2 {
+				call.Vars.Set(parts[0], ast.Var{
+					Value: parts[1],
+				})
+			}
+		}
+	}
+
+	if err := e.RunTask(context.Background(), call); err != nil {
+		fatal(err.Error())
 	}
 	return nil
 }

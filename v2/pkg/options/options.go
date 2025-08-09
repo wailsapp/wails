@@ -5,6 +5,8 @@ import (
 	"html"
 	"io/fs"
 	"net/http"
+	"os"
+	"path/filepath"
 	"runtime"
 
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -26,8 +28,7 @@ const (
 	Fullscreen WindowStartState = 3
 )
 
-type Experimental struct {
-}
+type Experimental struct{}
 
 // App contains options for creating the App
 type App struct {
@@ -62,6 +63,7 @@ type App struct {
 	OnShutdown         func(ctx context.Context)                `json:"-"`
 	OnBeforeClose      func(ctx context.Context) (prevent bool) `json:"-"`
 	Bind               []interface{}
+	EnumBind           []interface{}
 	WindowStartState   WindowStartState
 
 	// ErrorFormatter overrides the formatting of errors returned by backend methods
@@ -82,6 +84,8 @@ type App struct {
 	// services of Apple and Microsoft.
 	EnableFraudulentWebsiteDetection bool
 
+	SingleInstanceLock *SingleInstanceLock
+
 	Windows *windows.Options
 	Mac     *mac.Options
 	Linux   *linux.Options
@@ -91,6 +95,9 @@ type App struct {
 
 	// Debug options for debug builds. These options will be ignored in a production build.
 	Debug Debug
+
+	// DragAndDrop options for drag and drop behavior
+	DragAndDrop *DragAndDrop
 }
 
 type ErrorFormatter func(error) any
@@ -146,6 +153,15 @@ func MergeDefaults(appoptions *App) {
 	if appoptions.CSSDragValue == "" {
 		appoptions.CSSDragValue = "drag"
 	}
+	if appoptions.DragAndDrop == nil {
+		appoptions.DragAndDrop = &DragAndDrop{}
+	}
+	if appoptions.DragAndDrop.CSSDropProperty == "" {
+		appoptions.DragAndDrop.CSSDropProperty = "--wails-drop-target"
+	}
+	if appoptions.DragAndDrop.CSSDropValue == "" {
+		appoptions.DragAndDrop.CSSDropValue = "drop"
+	}
 	if appoptions.BackgroundColour == nil {
 		appoptions.BackgroundColour = &RGBA{
 			R: 255,
@@ -163,6 +179,47 @@ func MergeDefaults(appoptions *App) {
 
 	// Process Drag Options
 	processDragOptions(appoptions)
+}
+
+type SingleInstanceLock struct {
+	// uniqueId that will be used for setting up messaging between instances
+	UniqueId               string
+	OnSecondInstanceLaunch func(secondInstanceData SecondInstanceData)
+}
+
+type SecondInstanceData struct {
+	Args             []string
+	WorkingDirectory string
+}
+
+type DragAndDrop struct {
+
+	// EnableFileDrop enables wails' drag and drop functionality that returns the dropped in files' absolute paths.
+	EnableFileDrop bool
+
+	// Disable webview's drag and drop functionality.
+	//
+	// It can be used to prevent accidental file opening of dragged in files in the webview, when there is no need for drag and drop.
+	DisableWebViewDrop bool
+
+	// CSS property to test for drag and drop target elements. Default "--wails-drop-target"
+	CSSDropProperty string
+
+	// The CSS Value that the CSSDropProperty must have to be a valid drop target. Default "drop"
+	CSSDropValue string
+}
+
+func NewSecondInstanceData() (*SecondInstanceData, error) {
+	ex, err := os.Executable()
+	if err != nil {
+		return nil, err
+	}
+	workingDirectory := filepath.Dir(ex)
+
+	return &SecondInstanceData{
+		Args:             os.Args[1:],
+		WorkingDirectory: workingDirectory,
+	}, nil
 }
 
 func processMenus(appoptions *App) {

@@ -86,7 +86,6 @@ func (l *customLogger) Warning(format string, args ...interface{}) {
 func (l *customLogger) Error(format string, args ...interface{}) {
 	format = fmt.Sprintf("%s | %s", l.name, format)
 	l.logger.Error(format, args...)
-
 }
 
 // Fatal level logging. Works like Sprintf.

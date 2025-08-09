@@ -4,7 +4,9 @@
 package linux
 
 /*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0
+#cgo linux pkg-config: gtk+-3.0 
+#cgo !webkit2_41 pkg-config: webkit2gtk-4.0
+#cgo webkit2_41 pkg-config: webkit2gtk-4.1
 
 #include "gtk/gtk.h"
 #include "webkit2/webkit2.h"
@@ -101,6 +103,8 @@ import (
 var initOnce = sync.Once{}
 
 const startURL = "wails://wails/"
+
+var secondInstanceBuffer = make(chan options.SecondInstanceData, 1)
 
 type Frontend struct {
 
@@ -201,6 +205,8 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		C.free(unsafe.Pointer(prgname))
 	}
 
+	go result.startSecondInstanceProcessor()
+
 	return result
 }
 
@@ -234,6 +240,10 @@ func (f *Frontend) Run(ctx context.Context) error {
 			f.frontendOptions.OnStartup(f.ctx)
 		}
 	}()
+
+	if f.frontendOptions.SingleInstanceLock != nil {
+		SetupSingleInstance(f.frontendOptions.SingleInstanceLock.UniqueId)
+	}
 
 	f.mainWindow.Run(f.startURL.String())
 
@@ -434,12 +444,24 @@ func (f *Frontend) processMessage(message string) {
 	if message == "runtime:ready" {
 		cmd := fmt.Sprintf(
 			"window.wails.setCSSDragProperties('%s', '%s');\n"+
-				"window.wails.flags.deferDragToMouseMove = true;", f.frontendOptions.CSSDragProperty, f.frontendOptions.CSSDragValue)
+				"window.wails.setCSSDropProperties('%s', '%s');\n"+
+				"window.wails.flags.deferDragToMouseMove = true;",
+			f.frontendOptions.CSSDragProperty,
+			f.frontendOptions.CSSDragValue,
+			f.frontendOptions.DragAndDrop.CSSDropProperty,
+			f.frontendOptions.DragAndDrop.CSSDropValue,
+		)
+
 		f.ExecJS(cmd)
 
 		if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
 			f.ExecJS("window.wails.flags.enableResize = true;")
 		}
+
+		if f.frontendOptions.DragAndDrop.EnableFileDrop {
+			f.ExecJS("window.wails.flags.enableWailsDragAndDrop = true;")
+		}
+
 		return
 	}
 
@@ -504,4 +526,13 @@ func (f *Frontend) startRequestProcessor() {
 //export processURLRequest
 func processURLRequest(request unsafe.Pointer) {
 	requestBuffer <- webview.NewRequest(request)
+}
+
+func (f *Frontend) startSecondInstanceProcessor() {
+	for secondInstanceData := range secondInstanceBuffer {
+		if f.frontendOptions.SingleInstanceLock != nil &&
+			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch != nil {
+			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch(secondInstanceData)
+		}
+	}
 }

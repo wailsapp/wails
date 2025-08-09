@@ -13,8 +13,10 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/menu"
 )
 
-var trayMenuID int
-var trayMenuIDMutex sync.Mutex
+var (
+	trayMenuID      int
+	trayMenuIDMutex sync.Mutex
+)
 
 func generateTrayID() string {
 	var idStr string
@@ -51,7 +53,6 @@ func (t *TrayMenu) AsJSON() (string, error) {
 }
 
 func NewTrayMenu(trayMenu *menu.TrayMenu) *TrayMenu {
-
 	// Parse ANSI text
 	var styledLabel []*ansi.StyledText
 	tempLabel := trayMenu.Label
@@ -205,7 +206,6 @@ func (m *Manager) UpdateTrayMenuLabel(trayMenu *menu.TrayMenu) (string, error) {
 	}
 
 	return string(data), nil
-
 }
 
 func (m *Manager) GetContextMenus() ([]string, error) {

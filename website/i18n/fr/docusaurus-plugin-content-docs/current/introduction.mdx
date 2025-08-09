@@ -21,16 +21,14 @@ Considérez cela comme une alternative légère et rapide d'Electron pour Go. Vo
 - Une riche bibliothèque [runtime](/docs/reference/runtime/intro)
 - Les applications construites avec Wails sont conformes aux Stores Apple & Microsoft
 
-Ceci est [varly](https://varly.app) - une application de bureau pour MacOS & Windows écrite à l'aide de Wails. Non seulement elle est belle, elle utilise les menus natifs et la translucidité - tout ce que vous pouvez attendre d'une application native moderne.
+This is varly - a desktop application for MacOS & Windows written using Wails. Non seulement elle est belle, elle utilise les menus natifs et la translucidité - tout ce que vous pouvez attendre d'une application native moderne.
 
 ```mdx-code-block
 <p class="text--center">
-  <a href="https://varly.app/">
     <img
       src={require("@site/static/img/showcase/varly2.webp").default}
       style={{ width: "75%", "max-width": "800px" }}
     />
-  </a>
 </p>
 ```
 
@@ -42,7 +40,7 @@ Wails est livré avec un certain nombre de modèles préconfigurés qui vous per
 
 Wails utilise une bibliothèque conçue pour gérer les éléments natifs tels que les fenêtres, menus, boîtes de dialogues, etc, pour que vous puissiez construire des applications de bureau riches en fonctionnalités.
 
-**Il n'embarque pas de navigateur**, il est donc efficace sur les ressources. Au lieu de cela, il utilise le moteur de rendu natif de la plate-forme. Sous Windows, c'est la nouvelle bibliothèque Microsoft Webview2, construite sur Chromium.
+**Il n'intègre pas un navigateur**, donc il délivre un petit runtime. Au lieu de cela, il réutilise le moteur de rendu natif pour la plate-forme. Sous Windows, c'est la nouvelle bibliothèque Microsoft Webview2, construite sur Chromium.
 
 ### Interopérabilité Go & Javascript
 

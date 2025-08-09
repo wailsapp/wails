@@ -16,6 +16,7 @@ import (
 	"sync"
 	"text/template"
 	"time"
+	"unsafe"
 
 	"github.com/bep/debounce"
 	"github.com/wailsapp/go-webview2/pkg/edge"
@@ -34,6 +35,8 @@ import (
 )
 
 const startURL = "http://wails.localhost/"
+
+var secondInstanceBuffer = make(chan options.SecondInstanceData, 1)
 
 type Screen = frontend.Screen
 
@@ -113,6 +116,8 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	}
 	result.assets = assets
 
+	go result.startSecondInstanceProcessor()
+
 	return result
 }
 
@@ -136,6 +141,10 @@ func (f *Frontend) Run(ctx context.Context) error {
 	f.ctx = ctx
 
 	f.chromium = edge.NewChromium()
+
+	if f.frontendOptions.SingleInstanceLock != nil {
+		SetupSingleInstance(f.frontendOptions.SingleInstanceLock.UniqueId)
+	}
 
 	mainWindow := NewWindow(nil, f.frontendOptions, f.versionInfo, f.chromium)
 	f.mainWindow = mainWindow
@@ -211,6 +220,7 @@ func (f *Frontend) WindowCenter() {
 
 func (f *Frontend) WindowSetAlwaysOnTop(b bool) {
 	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	f.mainWindow.SetAlwaysOnTop(b)
 }
 
@@ -452,7 +462,14 @@ func (f *Frontend) setupChromium() {
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
 
+	if f.frontendOptions.DragAndDrop != nil && f.frontendOptions.DragAndDrop.DisableWebViewDrop {
+		if err := chromium.AllowExternalDrag(false); err != nil {
+			f.logger.Warning("WebView failed to set AllowExternalDrag to false!")
+		}
+	}
+
 	chromium.MessageCallback = f.processMessage
+	chromium.MessageWithAdditionalObjectsCallback = f.processMessageWithAdditionalObjects
 	chromium.WebResourceRequestedCallback = f.processRequest
 	chromium.NavigationCompletedCallback = f.navigationCompleted
 	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
@@ -531,6 +548,10 @@ func (f *Frontend) setupChromium() {
 			chromium.PutZoomFactor(opts.ZoomFactor)
 		}
 		err = settings.PutIsZoomControlEnabled(opts.IsZoomControlEnabled)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = settings.PutIsPinchZoomEnabled(!opts.DisablePinchZoom)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -660,7 +681,15 @@ func (f *Frontend) processMessage(message string) {
 	}
 
 	if message == "runtime:ready" {
-		cmd := fmt.Sprintf("window.wails.setCSSDragProperties('%s', '%s');", f.frontendOptions.CSSDragProperty, f.frontendOptions.CSSDragValue)
+		cmd := fmt.Sprintf(
+			"window.wails.setCSSDragProperties('%s', '%s');\n"+
+				"window.wails.setCSSDropProperties('%s', '%s');",
+			f.frontendOptions.CSSDragProperty,
+			f.frontendOptions.CSSDragValue,
+			f.frontendOptions.DragAndDrop.CSSDropProperty,
+			f.frontendOptions.DragAndDrop.CSSDropValue,
+		)
+
 		f.ExecJS(cmd)
 		return
 	}
@@ -681,25 +710,81 @@ func (f *Frontend) processMessage(message string) {
 		return
 	}
 
-	go func() {
-		result, err := f.dispatcher.ProcessMessage(message, f)
-		if err != nil {
-			f.logger.Error(err.Error())
-			f.Callback(result)
+	go f.dispatchMessage(message)
+}
+
+func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
+	if strings.HasPrefix(message, "file:drop") {
+		if !f.frontendOptions.DragAndDrop.EnableFileDrop {
 			return
 		}
-		if result == "" {
+		objs, err := args.GetAdditionalObjects()
+		if err != nil {
+			f.logger.Error(err.Error())
 			return
 		}
 
-		switch result[0] {
-		case 'c':
-			// Callback from a method call
-			f.Callback(result[1:])
-		default:
-			f.logger.Info("Unknown message returned from dispatcher: %+v", result)
+		defer objs.Release()
+
+		count, err := objs.GetCount()
+		if err != nil {
+			f.logger.Error(err.Error())
+			return
 		}
-	}()
+
+		files := make([]string, count)
+		for i := uint32(0); i < count; i++ {
+			_file, err := objs.GetValueAtIndex(i)
+			if err != nil {
+				f.logger.Error("cannot get value at %d : %s", i, err.Error())
+				return
+			}
+
+			file := (*edge.ICoreWebView2File)(unsafe.Pointer(_file))
+			defer file.Release()
+
+			filepath, err := file.GetPath()
+			if err != nil {
+				f.logger.Error("cannot get path for object at %d : %s", i, err.Error())
+				return
+			}
+
+			files[i] = filepath
+		}
+
+		var (
+			x = "0"
+			y = "0"
+		)
+		coords := strings.SplitN(message[10:], ":", 2)
+		if len(coords) == 2 {
+			x = coords[0]
+			y = coords[1]
+		}
+
+		go f.dispatchMessage(fmt.Sprintf("DD:%s:%s:%s", x, y, strings.Join(files, "\n")))
+		return
+	}
+}
+
+func (f *Frontend) dispatchMessage(message string) {
+	result, err := f.dispatcher.ProcessMessage(message, f)
+	if err != nil {
+		f.logger.Error(err.Error())
+		f.Callback(result)
+		return
+	}
+	if result == "" {
+		return
+	}
+
+	switch result[0] {
+	case 'c':
+		// Callback from a method call
+		f.Callback(result[1:])
+	default:
+		f.logger.Info("Unknown message returned from dispatcher: %+v", result)
+	}
 }
 
 func (f *Frontend) Callback(message string) {
@@ -743,6 +828,10 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 
 	if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
 		f.ExecJS("window.wails.flags.enableResize = true;")
+	}
+
+	if f.frontendOptions.DragAndDrop != nil && f.frontendOptions.DragAndDrop.EnableFileDrop {
+		f.ExecJS("window.wails.flags.enableWailsDragAndDrop = true;")
 	}
 
 	if f.hasStarted {
@@ -824,4 +913,13 @@ func (f *Frontend) ShowWindow() {
 
 func (f *Frontend) onFocus(arg *winc.Event) {
 	f.chromium.Focus()
+}
+
+func (f *Frontend) startSecondInstanceProcessor() {
+	for secondInstanceData := range secondInstanceBuffer {
+		if f.frontendOptions.SingleInstanceLock != nil &&
+			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch != nil {
+			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch(secondInstanceData)
+		}
+	}
 }

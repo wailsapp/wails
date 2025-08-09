@@ -1,6 +1,9 @@
 package application
 
 import (
+	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"runtime"
@@ -12,27 +15,27 @@ import (
 )
 
 type CallOptions struct {
-	MethodID    uint32 `json:"methodID"`
-	PackageName string `json:"packageName"`
-	StructName  string `json:"structName"`
-	MethodName  string `json:"methodName"`
-	Args        []any  `json:"args"`
+	MethodID   uint32            `json:"methodID"`
+	MethodName string            `json:"methodName"`
+	Args       []json.RawMessage `json:"args"`
 }
 
-func (c CallOptions) Name() string {
-	return fmt.Sprintf("%s.%s.%s", c.PackageName, c.StructName, c.MethodName)
+type ErrorKind string
+
+const (
+	ReferenceError ErrorKind = "ReferenceError"
+	TypeError      ErrorKind = "TypeError"
+	RuntimeError   ErrorKind = "RuntimeError"
+)
+
+type CallError struct {
+	Kind    ErrorKind `json:"kind"`
+	Message string    `json:"message"`
+	Cause   any       `json:"cause,omitempty"`
 }
 
-type PluginCallOptions struct {
-	Name string `json:"name"`
-	Args []any  `json:"args"`
-}
-
-var reservedPluginMethods = []string{
-	"Name",
-	"Init",
-	"Shutdown",
-	"Exported",
+func (e *CallError) Error() string {
+	return e.Message
 }
 
 // Parameter defines a Go method parameter
@@ -63,116 +66,75 @@ func (p *Parameter) IsError() bool {
 // BoundMethod defines all the data related to a Go method that is
 // bound to the Wails application
 type BoundMethod struct {
-	ID          uint32        `json:"id"`
-	Name        string        `json:"name"`
-	Inputs      []*Parameter  `json:"inputs,omitempty"`
-	Outputs     []*Parameter  `json:"outputs,omitempty"`
-	Comments    string        `json:"comments,omitempty"`
-	Method      reflect.Value `json:"-"`
-	PackageName string
-	StructName  string
-	PackagePath string
+	ID       uint32        `json:"id"`
+	Name     string        `json:"name"`
+	Inputs   []*Parameter  `json:"inputs,omitempty"`
+	Outputs  []*Parameter  `json:"outputs,omitempty"`
+	Comments string        `json:"comments,omitempty"`
+	Method   reflect.Value `json:"-"`
+	FQN      string
+
+	marshalError func(error) []byte
+	needsContext bool
 }
 
 type Bindings struct {
-	boundMethods  map[string]map[string]map[string]*BoundMethod
+	marshalError  func(error) []byte
+	boundMethods  map[string]*BoundMethod
 	boundByID     map[uint32]*BoundMethod
 	methodAliases map[uint32]uint32
 }
 
-func NewBindings(structs []any, aliases map[uint32]uint32) (*Bindings, error) {
-	b := &Bindings{
-		boundMethods:  make(map[string]map[string]map[string]*BoundMethod),
+func NewBindings(marshalError func(error) []byte, aliases map[uint32]uint32) *Bindings {
+	return &Bindings{
+		marshalError:  wrapErrorMarshaler(marshalError, defaultMarshalError),
+		boundMethods:  make(map[string]*BoundMethod),
 		boundByID:     make(map[uint32]*BoundMethod),
 		methodAliases: aliases,
 	}
-	for _, binding := range structs {
-		err := b.Add(binding)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return b, nil
 }
 
-// Add the given struct methods to the Bindings
-func (b *Bindings) Add(structPtr interface{}) error {
-
-	methods, err := b.getMethods(structPtr, false)
+// Add adds the given service to the bindings.
+func (b *Bindings) Add(service Service) error {
+	methods, err := getMethods(service.Instance())
 	if err != nil {
-		return fmt.Errorf("cannot bind value to app: %s", err.Error())
+		return err
+	}
+
+	marshalError := wrapErrorMarshaler(service.options.MarshalError, defaultMarshalError)
+
+	// Validate and log methods.
+	for _, method := range methods {
+		if _, ok := b.boundMethods[method.FQN]; ok {
+			return fmt.Errorf("bound method '%s' is already registered. Please note that you can register at most one service of each type; additional instances must be wrapped in dedicated structs", method.FQN)
+		}
+		if boundMethod, ok := b.boundByID[method.ID]; ok {
+			return fmt.Errorf("oh wow, we're sorry about this! Amazingly, a hash collision was detected for method '%s' (it generates the same hash as '%s'). To use this method, please rename it. Sorry :(", method.FQN, boundMethod.FQN)
+		}
+
+		// Log
+		attrs := []any{"fqn", method.FQN, "id", method.ID}
+		if alias, ok := lo.FindKey(b.methodAliases, method.ID); ok {
+			attrs = append(attrs, "alias", alias)
+		}
+		globalApplication.debug("Registering bound method:", attrs...)
 	}
 
 	for _, method := range methods {
-		packageName := method.PackageName
-		structName := method.StructName
-		methodName := method.Name
+		// Store composite error marshaler
+		method.marshalError = marshalError
 
-		// Add it as a regular method
-		if _, ok := b.boundMethods[packageName]; !ok {
-			b.boundMethods[packageName] = make(map[string]map[string]*BoundMethod)
-		}
-		if _, ok := b.boundMethods[packageName][structName]; !ok {
-			b.boundMethods[packageName][structName] = make(map[string]*BoundMethod)
-		}
-		b.boundMethods[packageName][structName][methodName] = method
+		// Register method
+		b.boundMethods[method.FQN] = method
 		b.boundByID[method.ID] = method
 	}
-	return nil
-}
 
-func (b *Bindings) AddPlugins(plugins map[string]Plugin) error {
-	for pluginID, plugin := range plugins {
-		methods, err := b.getMethods(plugin, true)
-		if err != nil {
-			return fmt.Errorf("cannot add plugin '%s' to app: %s", pluginID, err.Error())
-		}
-
-		exportedMethods := plugin.CallableByJS()
-
-		for _, method := range methods {
-			// Do not expose reserved methods
-			if lo.Contains(reservedPluginMethods, method.Name) {
-				continue
-			}
-			// Do not expose methods that are not in the exported list
-			if !lo.Contains(exportedMethods, method.Name) {
-				continue
-			}
-			packageName := "wails-plugins"
-			structName := pluginID
-			methodName := method.Name
-
-			// Add it as a regular method
-			if _, ok := b.boundMethods[packageName]; !ok {
-				b.boundMethods[packageName] = make(map[string]map[string]*BoundMethod)
-			}
-			if _, ok := b.boundMethods[packageName][structName]; !ok {
-				b.boundMethods[packageName][structName] = make(map[string]*BoundMethod)
-			}
-			b.boundMethods[packageName][structName][methodName] = method
-			b.boundByID[method.ID] = method
-			globalApplication.debug("Added plugin method: "+structName+"."+methodName, "id", method.ID)
-		}
-	}
 	return nil
 }
 
 // Get returns the bound method with the given name
 func (b *Bindings) Get(options *CallOptions) *BoundMethod {
-	_, ok := b.boundMethods[options.PackageName]
-	if !ok {
-		return nil
-	}
-	_, ok = b.boundMethods[options.PackageName][options.StructName]
-	if !ok {
-		return nil
-	}
-	method, ok := b.boundMethods[options.PackageName][options.StructName][options.MethodName]
-	if !ok {
-		return nil
-	}
-	return method
+	return b.boundMethods[options.MethodName]
 }
 
 // GetByID returns the bound method with the given ID
@@ -183,96 +145,84 @@ func (b *Bindings) GetByID(id uint32) *BoundMethod {
 			id = alias
 		}
 	}
-	result := b.boundByID[id]
-	return result
+
+	return b.boundByID[id]
 }
 
-// GenerateID generates a unique ID for a binding
-func (b *Bindings) GenerateID(name string) (uint32, error) {
-	id, err := hash.Fnv(name)
-	if err != nil {
-		return 0, err
-	}
-	// Check if we already have it
-	boundMethod, ok := b.boundByID[id]
-	if ok {
-		return 0, fmt.Errorf("oh wow, we're sorry about this! Amazingly, a hash collision was detected for method '%s' (it generates the same hash as '%s'). To continue, please rename it. Sorry :(", name, boundMethod.String())
-	}
-	return id, nil
+// internalServiceMethod is a set of methods
+// that are handled specially by the binding engine
+// and must not be exposed to the frontend.
+//
+// For simplicity we exclude these by name
+// without checking their signatures,
+// and so does the binding generator.
+var internalServiceMethods = map[string]bool{
+	"ServiceName":     true,
+	"ServiceStartup":  true,
+	"ServiceShutdown": true,
+	"ServeHTTP":       true,
 }
 
-func (b *BoundMethod) String() string {
-	return fmt.Sprintf("%s.%s.%s", b.PackageName, b.StructName, b.Name)
-}
+var ctxType = reflect.TypeFor[context.Context]()
 
-func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod, error) {
-
+func getMethods(value any) ([]*BoundMethod, error) {
 	// Create result placeholder
 	var result []*BoundMethod
 
 	// Check type
-	if !isStructPtr(value) {
-
-		if isStruct(value) {
-			name := reflect.ValueOf(value).Type().Name()
-			return nil, fmt.Errorf("%s is a struct, not a pointer to a struct", name)
-		}
-
+	if !isNamed(value) {
 		if isFunction(value) {
 			name := runtime.FuncForPC(reflect.ValueOf(value).Pointer()).Name()
-			return nil, fmt.Errorf("%s is a function, not a pointer to a struct. Wails v2 has deprecated the binding of functions. Please wrap your functions up in a struct and bind a pointer to that struct", name)
+			return nil, fmt.Errorf("%s is a function, not a pointer to named type. Wails v2 has deprecated the binding of functions. Please define your functions as methods on a struct and bind a pointer to that struct", name)
 		}
 
-		return nil, fmt.Errorf("not a pointer to a struct")
+		return nil, fmt.Errorf("%s is not a pointer to named type", reflect.ValueOf(value).Type().String())
+	} else if !isPtr(value) {
+		return nil, fmt.Errorf("%s is a named type, not a pointer to named type", reflect.ValueOf(value).Type().String())
 	}
 
-	// Process Struct
-	structType := reflect.TypeOf(value)
-	structValue := reflect.ValueOf(value)
-	structTypeString := structType.String()
-	baseName := structTypeString[1:]
+	// Process Named Type
+	namedValue := reflect.ValueOf(value)
+	ptrType := namedValue.Type()
+	namedType := ptrType.Elem()
+	typeName := namedType.Name()
+	packagePath := namedType.PkgPath()
+
+	if strings.Contains(namedType.String(), "[") {
+		return nil, fmt.Errorf("%s.%s is a generic type. Generic bound types are not supported", packagePath, namedType.String())
+	}
 
 	// Process Methods
-	for i := 0; i < structType.NumMethod(); i++ {
-		methodDef := structType.Method(i)
-		methodName := methodDef.Name
-		packageName, structName, _ := strings.Cut(baseName, ".")
-		method := structValue.MethodByName(methodName)
-		packagePath, _ := lo.Coalesce(structType.PkgPath(), "main")
+	for i := range ptrType.NumMethod() {
+		methodName := ptrType.Method(i).Name
+		method := namedValue.Method(i)
+
+		if internalServiceMethods[methodName] {
+			continue
+		}
+
+		fqn := fmt.Sprintf("%s.%s.%s", packagePath, typeName, methodName)
 
 		// Create new method
 		boundMethod := &BoundMethod{
-			Name:        methodName,
-			PackageName: packageName,
-			PackagePath: packagePath,
-			StructName:  structName,
-			Inputs:      nil,
-			Outputs:     nil,
-			Comments:    "",
-			Method:      method,
-		}
-		var err error
-		boundMethod.ID, err = hash.Fnv(boundMethod.String())
-		if err != nil {
-			return nil, err
+			ID:       hash.Fnv(fqn),
+			FQN:      fqn,
+			Name:     methodName,
+			Inputs:   nil,
+			Outputs:  nil,
+			Comments: "",
+			Method:   method,
 		}
 
-		if !isPlugin {
-			args := []any{"name", boundMethod, "id", boundMethod.ID}
-			if b.methodAliases != nil {
-				alias, found := lo.FindKey(b.methodAliases, boundMethod.ID)
-				if found {
-					args = append(args, "alias", alias)
-				}
-			}
-			globalApplication.debug("Adding method:", args...)
-		}
 		// Iterate inputs
 		methodType := method.Type()
 		inputParamCount := methodType.NumIn()
 		var inputs []*Parameter
 		for inputIndex := 0; inputIndex < inputParamCount; inputIndex++ {
 			input := methodType.In(inputIndex)
+			if inputIndex == 0 && input.AssignableTo(ctxType) {
+				boundMethod.needsContext = true
+			}
 			thisParam := newParameter("", input)
 			inputs = append(inputs, thisParam)
 		}
@@ -292,93 +242,143 @@ func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod,
 		result = append(result, boundMethod)
 
 	}
+
 	return result, nil
 }
 
-// Call will attempt to call this bound method with the given args
-func (b *BoundMethod) Call(args []interface{}) (returnValue interface{}, err error) {
+func (b *BoundMethod) String() string {
+	return b.FQN
+}
 
+var errorType = reflect.TypeFor[error]()
+
+// Call will attempt to call this bound method with the given args.
+// If the call succeeds, result will be either a non-error return value (if there is only one)
+// or a slice of non-error return values (if there are more than one).
+//
+// If the arguments are mistyped or the call returns one or more non-nil error values,
+// result is nil and err is an instance of *[CallError].
+func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (result any, err error) {
 	// Use a defer statement to capture panics
-	defer func() {
-		if r := recover(); r != nil {
-			if str, ok := r.(string); ok {
-				if strings.HasPrefix(str, "reflect: Call using") {
-					// Remove prefix
-					str = strings.Replace(str, "reflect: Call using ", "", 1)
-					// Split on "as"
-					parts := strings.Split(str, " as type ")
-					if len(parts) == 2 {
-						err = fmt.Errorf("invalid argument type: got '%s', expected '%s'", parts[0], parts[1])
-						return
-					}
-				}
-			}
-			err = fmt.Errorf("%v", r)
-		}
-	}()
-
-	// Check inputs
-	expectedInputLength := len(b.Inputs)
-	actualInputLength := len(args)
-
-	// If the method is variadic, we need to check the minimum number of inputs
-	if b.Method.Type().IsVariadic() {
-		if actualInputLength < expectedInputLength-1 {
-			return nil, fmt.Errorf("%s takes at least %d inputs. Received %d", b.Name, expectedInputLength, actualInputLength)
-		}
-	} else {
-		if expectedInputLength != actualInputLength {
-			return nil, fmt.Errorf("%s takes %d inputs. Received %d", b.Name, expectedInputLength, actualInputLength)
-		}
+	defer handlePanic(handlePanicOptions{skipEnd: 5})
+	argCount := len(args)
+	if b.needsContext {
+		argCount++
 	}
 
-	/** Convert inputs to reflect values **/
+	if argCount != len(b.Inputs) {
+		err = &CallError{
+			Kind:    TypeError,
+			Message: fmt.Sprintf("%s expects %d arguments, got %d", b.FQN, len(b.Inputs), argCount),
+		}
+		return
+	}
 
-	// Create slice for the input arguments to the method call
-	callArgs := make([]reflect.Value, actualInputLength)
+	// Convert inputs to values of appropriate type
+	callArgs := make([]reflect.Value, argCount)
+	base := 0
+
+	if b.needsContext {
+		callArgs[0] = reflect.ValueOf(ctx)
+		base++
+	}
 
 	// Iterate over given arguments
 	for index, arg := range args {
-		// Save the converted argument
-		if arg == nil {
-			callArgs[index] = reflect.Zero(b.Inputs[index].ReflectType)
-			continue
+		value := reflect.New(b.Inputs[base+index].ReflectType)
+		err = json.Unmarshal(arg, value.Interface())
+		if err != nil {
+			err = &CallError{
+				Kind:    TypeError,
+				Message: fmt.Sprintf("could not parse argument #%d: %s", index, err),
+				Cause:   json.RawMessage(b.marshalError(err)),
+			}
+			return
 		}
-		callArgs[index] = reflect.ValueOf(arg)
+		callArgs[base+index] = value.Elem()
 	}
 
 	// Do the call
-	callResults := b.Method.Call(callArgs)
+	var callResults []reflect.Value
+	if b.Method.Type().IsVariadic() {
+		callResults = b.Method.CallSlice(callArgs)
+	} else {
+		callResults = b.Method.Call(callArgs)
+	}
 
-	//** Check results **//
-	switch len(b.Outputs) {
-	case 1:
-		// Loop over results and determine if the result
-		// is an error or not
-		for _, result := range callResults {
-			interfac := result.Interface()
-			temp, ok := interfac.(error)
-			if ok {
-				err = temp
-			} else {
-				returnValue = interfac
+	var nonErrorOutputs = make([]any, 0, len(callResults))
+	var errorOutputs []error
+
+	for _, field := range callResults {
+		if field.Type() == errorType {
+			if field.IsNil() {
+				continue
 			}
-		}
-	case 2:
-		returnValue = callResults[0].Interface()
-		if temp, ok := callResults[1].Interface().(error); ok {
-			err = temp
+			if errorOutputs == nil {
+				errorOutputs = make([]error, 0, len(callResults)-len(nonErrorOutputs))
+				nonErrorOutputs = nil
+			}
+			errorOutputs = append(errorOutputs, field.Interface().(error))
+		} else if nonErrorOutputs != nil {
+			nonErrorOutputs = append(nonErrorOutputs, field.Interface())
 		}
 	}
 
-	return returnValue, err
+	if len(errorOutputs) > 0 {
+		info := make([]json.RawMessage, len(errorOutputs))
+		for i, err := range errorOutputs {
+			info[i] = b.marshalError(err)
+		}
+
+		cerr := &CallError{
+			Kind:    RuntimeError,
+			Message: errors.Join(errorOutputs...).Error(),
+			Cause:   info,
+		}
+		if len(info) == 1 {
+			cerr.Cause = info[0]
+		}
+
+		err = cerr
+	} else if len(nonErrorOutputs) == 1 {
+		result = nonErrorOutputs[0]
+	} else if len(nonErrorOutputs) > 1 {
+		result = nonErrorOutputs
+	}
+
+	return
 }
 
-// isStructPtr returns true if the value given is a
-// pointer to a struct
-func isStructPtr(value interface{}) bool {
-	return reflect.ValueOf(value).Kind() == reflect.Ptr &&
-		reflect.ValueOf(value).Elem().Kind() == reflect.Struct
+// wrapErrorMarshaler returns an error marshaling functions
+// that calls the primary marshaler first,
+// then falls back to the secondary one.
+func wrapErrorMarshaler(primary func(error) []byte, secondary func(error) []byte) func(error) []byte {
+	if primary == nil {
+		return secondary
+	}
+
+	return func(err error) []byte {
+		result := primary(err)
+		if result == nil {
+			result = secondary(err)
+		}
+
+		return result
+	}
+}
+
+// defaultMarshalError implements the default error marshaling mechanism.
+func defaultMarshalError(err error) []byte {
+	result, jsonErr := json.Marshal(&err)
+	if jsonErr != nil {
+		return nil
+	}
+	return result
+}
+
+// isPtr returns true if the value given is a pointer.
+func isPtr(value interface{}) bool {
+	return reflect.ValueOf(value).Kind() == reflect.Ptr
 }
 
 // isFunction returns true if the given value is a function
@@ -386,7 +386,13 @@ func isFunction(value interface{}) bool {
 	return reflect.ValueOf(value).Kind() == reflect.Func
 }
 
-// isStructPtr returns true if the value given is a struct
-func isStruct(value interface{}) bool {
-	return reflect.ValueOf(value).Kind() == reflect.Struct
+// isNamed returns true if the given value is of named type
+// or pointer to named type.
+func isNamed(value interface{}) bool {
+	rv := reflect.ValueOf(value)
+	if rv.Kind() == reflect.Ptr {
+		rv = rv.Elem()
+	}
+
+	return rv.Type().Name() != ""
 }

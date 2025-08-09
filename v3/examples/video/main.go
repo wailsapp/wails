@@ -23,11 +23,11 @@ func main() {
 			WebviewBrowserPath:            "",
 		},
 	})
-	app.On(events.Mac.ApplicationDidFinishLaunching, func(event *application.Event) {
+	app.Event.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(event *application.ApplicationEvent) {
 		log.Println("ApplicationDidFinishLaunching")
 	})
 
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		BackgroundColour: application.NewRGB(33, 37, 41),
 		Mac: application.MacWindow{
 			DisableShadow: true,

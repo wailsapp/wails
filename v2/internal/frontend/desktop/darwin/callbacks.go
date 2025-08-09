@@ -12,6 +12,7 @@ package darwin
 #include <stdlib.h>
 */
 import "C"
+
 import (
 	"errors"
 	"strconv"
@@ -20,7 +21,6 @@ import (
 )
 
 func (f *Frontend) handleCallback(menuItemID uint) error {
-
 	menuItem := getMenuItemForID(menuItemID)
 	if menuItem == nil {
 		return errors.New("unknown menuItem ID: " + strconv.Itoa(int(menuItemID)))

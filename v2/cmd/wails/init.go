@@ -3,6 +3,12 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"time"
+
 	"github.com/flytam/filenamify"
 	"github.com/leaanthony/slicer"
 	"github.com/pkg/errors"
@@ -13,15 +19,9 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 	"github.com/wailsapp/wails/v2/pkg/git"
 	"github.com/wailsapp/wails/v2/pkg/templates"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"strings"
-	"time"
 )
 
 func initProject(f *flags.Init) error {
-
 	if f.NoColour {
 		pterm.DisableColor()
 		colour.ColourEnabled = false
@@ -125,6 +125,12 @@ func initProject(f *flags.Init) error {
 		return err
 	}
 
+	// Change the module name to project name
+	err = updateModuleNameToProjectName(options, quiet)
+	if err != nil {
+		return err
+	}
+
 	if !f.CIMode {
 		// Run `go mod tidy` to ensure `go.sum` is up to date
 		cmd := exec.Command("go", "mod", "tidy")
@@ -215,7 +221,7 @@ func initGit(options *templates.Options) error {
 		"frontend/dist",
 		"frontend/node_modules",
 	}
-	err = os.WriteFile(filepath.Join(options.TargetDir, ".gitignore"), []byte(strings.Join(ignore, "\n")), 0644)
+	err = os.WriteFile(filepath.Join(options.TargetDir, ".gitignore"), []byte(strings.Join(ignore, "\n")), 0o644)
 	if err != nil {
 		return errors.Wrap(err, "Unable to create gitignore")
 	}
@@ -271,8 +277,19 @@ func updateReplaceLine(targetPath string) {
 		}
 	}
 
-	err = os.WriteFile("go.mod", []byte(strings.Join(lines, "\n")), 0644)
+	err = os.WriteFile("go.mod", []byte(strings.Join(lines, "\n")), 0o644)
 	if err != nil {
 		fatal(err.Error())
 	}
+}
+
+func updateModuleNameToProjectName(options *templates.Options, quiet bool) error {
+	cmd := exec.Command("go", "mod", "edit", "-module", options.ProjectName)
+	cmd.Dir = options.TargetDir
+	cmd.Stderr = os.Stderr
+	if !quiet {
+		cmd.Stdout = os.Stdout
+	}
+
+	return cmd.Run()
 }

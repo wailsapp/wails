@@ -3,7 +3,6 @@ package menumanager
 import "github.com/wailsapp/wails/v2/pkg/menu"
 
 func (m *Manager) SetApplicationMenu(applicationMenu *menu.Menu) error {
-
 	if applicationMenu == nil {
 		return nil
 	}
@@ -38,7 +37,6 @@ func (m *Manager) UpdateApplicationMenu() (string, error) {
 }
 
 func (m *Manager) processApplicationMenu() error {
-
 	// Process the menu
 	m.processedApplicationMenu = NewWailsMenu(m.applicationMenuItemMap, m.applicationMenu)
 	m.processRadioGroups(m.processedApplicationMenu, m.applicationMenuItemMap)

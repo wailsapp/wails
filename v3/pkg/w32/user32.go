@@ -9,10 +9,11 @@ package w32
 
 import (
 	"fmt"
-	"golang.org/x/sys/windows"
 	"runtime"
 	"syscall"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 var (
@@ -25,6 +26,7 @@ var (
 	procShowWindow                    = moduser32.NewProc("ShowWindow")
 	procGetDesktopWindow              = moduser32.NewProc("GetDesktopWindow")
 	procShowWindowAsync               = moduser32.NewProc("ShowWindowAsync")
+	procIsZoomed                      = moduser32.NewProc("IsZoomed")
 	procUpdateWindow                  = moduser32.NewProc("UpdateWindow")
 	procCreateWindowEx                = moduser32.NewProc("CreateWindowExW")
 	procAdjustWindowRect              = moduser32.NewProc("AdjustWindowRect")
@@ -105,6 +107,7 @@ var (
 	procTranslateAccelerator          = moduser32.NewProc("TranslateAcceleratorW")
 	procSetWindowPos                  = moduser32.NewProc("SetWindowPos")
 	procFillRect                      = moduser32.NewProc("FillRect")
+	procFrameRect                     = moduser32.NewProc("FrameRect")
 	procDrawText                      = moduser32.NewProc("DrawTextW")
 	procAddClipboardFormatListener    = moduser32.NewProc("AddClipboardFormatListener")
 	procRemoveClipboardFormatListener = moduser32.NewProc("RemoveClipboardFormatListener")
@@ -136,6 +139,7 @@ var (
 	procGetDpiForSystem               = moduser32.NewProc("GetDpiForSystem")
 	procGetDpiForWindow               = moduser32.NewProc("GetDpiForWindow")
 	procSetProcessDPIAware            = moduser32.NewProc("SetProcessDPIAware")
+	procSetProcessDpiAwarenessContext = moduser32.NewProc("SetProcessDpiAwarenessContext")
 	procEnumDisplayMonitors           = moduser32.NewProc("EnumDisplayMonitors")
 	procEnumDisplayDevices            = moduser32.NewProc("EnumDisplayDevicesW")
 	procEnumDisplaySettings           = moduser32.NewProc("EnumDisplaySettingsW")
@@ -143,6 +147,9 @@ var (
 	procEnumWindows                   = moduser32.NewProc("EnumWindows")
 	procEnumChildWindows              = moduser32.NewProc("EnumChildWindows")
 	procChangeDisplaySettingsEx       = moduser32.NewProc("ChangeDisplaySettingsExW")
+	procSetTimer                      = moduser32.NewProc("SetTimer")
+	procKillTimer                     = moduser32.NewProc("KillTimer")
+	procKeybdEvent                    = moduser32.NewProc("keybd_event")
 	procSendInput                     = moduser32.NewProc("SendInput")
 	procSetWindowsHookEx              = moduser32.NewProc("SetWindowsHookExW")
 	procUnhookWindowsHookEx           = moduser32.NewProc("UnhookWindowsHookEx")
@@ -160,12 +167,17 @@ var (
 	procAppendMenu       = moduser32.NewProc("AppendMenuW")
 	procSetMenuItemInfo  = moduser32.NewProc("SetMenuItemInfoW")
 	procDrawMenuBar      = moduser32.NewProc("DrawMenuBar")
+	procTrackPopupMenu   = moduser32.NewProc("TrackPopupMenu")
 	procTrackPopupMenuEx = moduser32.NewProc("TrackPopupMenuEx")
+	procGetMenuBarInfo   = moduser32.NewProc("GetMenuBarInfo")
+	procMapWindowPoints  = moduser32.NewProc("MapWindowPoints")
 	procGetKeyState      = moduser32.NewProc("GetKeyState")
 	procGetSysColorBrush = moduser32.NewProc("GetSysColorBrush")
+	procGetSysColor      = moduser32.NewProc("GetSysColor")
 
 	procGetWindowPlacement = moduser32.NewProc("GetWindowPlacement")
 	procSetWindowPlacement = moduser32.NewProc("SetWindowPlacement")
+	procGetWindowDC        = moduser32.NewProc("GetWindowDC")
 
 	procGetScrollInfo = moduser32.NewProc("GetScrollInfo")
 	procSetScrollInfo = moduser32.NewProc("SetScrollInfo")
@@ -174,12 +186,22 @@ var (
 
 	procSetMenuItemBitmaps = moduser32.NewProc("SetMenuItemBitmaps")
 
+	procRedrawWindow = moduser32.NewProc("RedrawWindow")
+
+	procRegisterWindowMessageW   = moduser32.NewProc("RegisterWindowMessageW")
+	procSetWindowDisplayAffinity = moduser32.NewProc("SetWindowDisplayAffinity")
+
 	mainThread HANDLE
 )
 
 func init() {
 	runtime.LockOSThread()
 	mainThread = GetCurrentThreadId()
+}
+
+func GetWindowDC(hwnd HWND) HDC {
+	ret, _, _ := procGetWindowDC.Call(hwnd)
+	return ret
 }
 
 func GET_X_LPARAM(lp uintptr) int32 {
@@ -261,6 +283,11 @@ func ShowWindow(hwnd HWND, cmdshow int) bool {
 	return ret != 0
 }
 
+func IsZoomed(hwnd HWND) bool {
+	ret, _, _ := procIsZoomed.Call(uintptr(hwnd))
+	return ret != 0
+}
+
 func ShowWindowAsync(hwnd HWND, cmdshow int) bool {
 	ret, _, _ := procShowWindowAsync.Call(
 		uintptr(hwnd),
@@ -295,9 +322,7 @@ func PostThreadMessage(threadID HANDLE, msg int, wp, lp uintptr) {
 }
 
 func RegisterWindowMessage(name *uint16) uint32 {
-	ret, _, _ := procRegisterWindowMessageA.Call(
-		uintptr(unsafe.Pointer(name)))
-
+	ret, _, _ := procRegisterWindowMessageW.Call(uintptr(unsafe.Pointer(name)))
 	return uint32(ret)
 }
 
@@ -360,6 +385,11 @@ func GetDpiForWindow(hwnd HWND) UINT {
 	return uint(dpi)
 }
 
+func HasSetProcessDPIAwareFunc() bool {
+	err := procSetProcessDPIAware.Find()
+	return err == nil
+}
+
 func GetClassName(hwnd HWND) string {
 	var buf [256]uint16
 	procGetClassName.Call(
@@ -374,6 +404,19 @@ func SetProcessDPIAware() error {
 	status, r, err := procSetProcessDPIAware.Call()
 	if status == 0 {
 		return fmt.Errorf("SetProcessDPIAware failed %d: %v %v", status, r, err)
+	}
+	return nil
+}
+
+func HasSetProcessDpiAwarenessContextFunc() bool {
+	err := procSetProcessDpiAwarenessContext.Find()
+	return err == nil
+}
+
+func SetProcessDpiAwarenessContext(ctx uintptr) error {
+	status, r, err := procSetProcessDpiAwarenessContext.Call(ctx)
+	if status == 0 {
+		return fmt.Errorf("SetProcessDpiAwarenessContext failed %d: %v %v", status, r, err)
 	}
 	return nil
 }
@@ -732,6 +775,13 @@ func GetSysColorBrush(nIndex int) HBRUSH {
 	return HBRUSH(ret)
 }
 
+func GetSysColor(nIndex int) COLORREF {
+	ret, _, _ := procGetSysColor.Call(
+		uintptr(nIndex))
+
+	return COLORREF(ret)
+}
+
 func CopyRect(dst, src *RECT) bool {
 	ret, _, _ := procCopyRect.Call(
 		uintptr(unsafe.Pointer(dst)),
@@ -1035,10 +1085,14 @@ func FillRect(hDC HDC, lprc *RECT, hbr HBRUSH) bool {
 	return ret != 0
 }
 
-func DrawText(hDC HDC, text string, uCount int, lpRect *RECT, uFormat uint) int {
+func DrawText(hDC HDC, text []uint16, uCount int, lpRect *RECT, uFormat uint32) int {
+
+	// Convert the string to a UTF16 pointer
+	// This is necessary because the DrawText function expects a UTF16 pointer
+
 	ret, _, _ := procDrawText.Call(
 		uintptr(hDC),
-		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(text))),
+		uintptr(unsafe.Pointer(&text[0])),
 		uintptr(uCount),
 		uintptr(unsafe.Pointer(lpRect)),
 		uintptr(uFormat))
@@ -1392,4 +1446,65 @@ func GetScrollInfo(hwnd HWND, fnBar int32, lpsi *SCROLLINFO) bool {
 		uintptr(unsafe.Pointer(lpsi)))
 
 	return ret != 0
+}
+
+func RedrawWindow(hwnd HWND, lprcUpdate *RECT, hrgnUpdate HRGN, flags uint32) bool {
+	ret, _, _ := procRedrawWindow.Call(
+		uintptr(hwnd),
+		uintptr(unsafe.Pointer(lprcUpdate)),
+		uintptr(hrgnUpdate),
+		uintptr(flags))
+	return ret != 0
+}
+
+func FrameRect(hDC HDC, lprc *RECT, hbr HBRUSH) int {
+	ret, _, _ := procFrameRect.Call(
+		uintptr(hDC),
+		uintptr(unsafe.Pointer(lprc)),
+		uintptr(hbr))
+	return int(ret)
+}
+
+func GetMenuBarInfo(hwnd HWND, idObject int32, idItem uint32, pmbi *MENUBARINFO) bool {
+	ret, _, _ := procGetMenuBarInfo.Call(
+		uintptr(hwnd),
+		uintptr(idObject),
+		uintptr(idItem),
+		uintptr(unsafe.Pointer(pmbi)))
+	return ret != 0
+}
+
+func MapWindowPoints(hwndFrom, hwndTo HWND, lpPoints *POINT, cPoints uint) int {
+	ret, _, _ := procMapWindowPoints.Call(
+		uintptr(hwndFrom),
+		uintptr(hwndTo),
+		uintptr(unsafe.Pointer(lpPoints)),
+		uintptr(cPoints))
+	return int(ret)
+}
+
+func TrackPopupMenu(hmenu HMENU, flags uint32, x, y int32, reserved int32, hwnd HWND, prcRect *RECT) bool {
+	ret, _, _ := procTrackPopupMenu.Call(
+		uintptr(hmenu),
+		uintptr(flags),
+		uintptr(x),
+		uintptr(y),
+		uintptr(reserved),
+		uintptr(hwnd),
+		uintptr(unsafe.Pointer(prcRect)))
+	return ret != 0
+}
+
+// KeybdEvent synthesizes a keystroke. The system can use such a synthesized keystroke to generate a WM_KEYUP or WM_KEYDOWN message.
+// bVk: Virtual-key code
+// bScan: Hardware scan code
+// dwFlags: Controls various aspects of function operation (KEYEVENTF_EXTENDEDKEY or KEYEVENTF_KEYUP)
+// dwExtraInfo: Additional value associated with the keystroke
+func KeybdEvent(bVk byte, bScan byte, dwFlags uint32, dwExtraInfo uintptr) {
+	procKeybdEvent.Call(
+		uintptr(bVk),
+		uintptr(bScan),
+		uintptr(dwFlags),
+		dwExtraInfo,
+	)
 }

@@ -37,5 +37,55 @@ v2/cmd/wails/internal/commands/initialise/templates/testtemplates/
 /websitev3/site/
 /v3/examples/plugins/bin/testapp
 
+# V3 Example binaries - ignore executables that match directory names
+/v3/examples/badge-custom/badge-custom
+/v3/examples/badge/badge
+/v3/examples/binding/binding
+/v3/examples/cancel-async/cancel-async
+/v3/examples/cancel-chaining/cancel-chaining
+/v3/examples/clipboard/clipboard
+/v3/examples/contextmenus/contextmenus
+/v3/examples/dev/dev
+/v3/examples/dialogs-basic/dialogs-basic
+/v3/examples/dialogs/dialogs
+/v3/examples/drag-n-drop/drag-n-drop
+/v3/examples/environment/environment
+/v3/examples/events-bug/events-bug
+/v3/examples/events/events
+/v3/examples/file-association/file-association
+/v3/examples/frameless/frameless
+/v3/examples/gin-example/gin-example
+/v3/examples/gin-routing/gin-routing
+/v3/examples/gin-service/gin-service
+/v3/examples/hide-window/hide-window
+/v3/examples/html-dnd-api/html-dnd-api
+/v3/examples/ignore-mouse/ignore-mouse
+/v3/examples/keybindings/keybindings
+/v3/examples/menu/menu
+/v3/examples/notifications/notifications
+/v3/examples/panic-handling/panic-handling
+/v3/examples/plain/plain
+/v3/examples/raw-message/raw-message
+/v3/examples/screen/screen
+/v3/examples/services/services
+/v3/examples/show-macos-toolbar/show-macos-toolbar
+/v3/examples/single-instance/single-instance
+/v3/examples/systray-basic/systray-basic
+/v3/examples/systray-custom/systray-custom
+/v3/examples/systray-menu/systray-menu
+/v3/examples/video/video
+/v3/examples/window-api/window-api
+/v3/examples/window-call/window-call
+/v3/examples/window-menu/window-menu
+/v3/examples/window/window
+/v3/examples/wml/wml
+
+# Common binary names in examples
+/v3/examples/*/main
+/v3/examples/*/app
+/v3/examples/*/changeme
+/v3/examples/*/testbuild-*
+
 # Temporary called mkdocs, should be renamed to more standard -website or similar
-/mkdocs-website/site
+/docs/site
+.aider*

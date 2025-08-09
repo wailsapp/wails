@@ -21,6 +21,14 @@ func (l linuxMenuItem) setTooltip(tooltip string) {
 	})
 }
 
+func (l linuxMenuItem) destroy() {
+	InvokeSync(func() {
+		l.blockSignal()
+		defer l.unBlockSignal()
+		menuItemDestroy(l.native)
+	})
+}
+
 func (l linuxMenuItem) blockSignal() {
 	if l.handlerId != 0 {
 		menuItemSignalBlock(l.native, l.handlerId, true)
@@ -136,13 +144,17 @@ func newSpeechMenu() *MenuItem {
 		OnClick(func(ctx *Context) {
 			//			C.stopSpeaking()
 		})
-	subMenu := newSubMenuItem("Speech")
+	subMenu := NewSubMenuItem("Speech")
 	subMenu.submenu = speechMenu
 	return subMenu
 }
 
+func newFrontMenuItem() *MenuItem {
+	panic("implement me")
+}
+
 func newHideMenuItem() *MenuItem {
-	return newMenuItem("Hide " + globalApplication.options.Name).
+	return NewMenuItem("Hide " + globalApplication.options.Name).
 		SetAccelerator("CmdOrCtrl+h").
 		OnClick(func(ctx *Context) {
 
@@ -151,7 +163,7 @@ func newHideMenuItem() *MenuItem {
 }
 
 func newHideOthersMenuItem() *MenuItem {
-	return newMenuItem("Hide Others").
+	return NewMenuItem("Hide Others").
 		SetAccelerator("CmdOrCtrl+OptionOrAlt+h").
 		OnClick(func(ctx *Context) {
 			//			C.hideOthers()
@@ -159,14 +171,14 @@ func newHideOthersMenuItem() *MenuItem {
 }
 
 func newUnhideMenuItem() *MenuItem {
-	return newMenuItem("Show All").
+	return NewMenuItem("Show All").
 		OnClick(func(ctx *Context) {
 			//			C.showAll()
 		})
 }
 
 func newUndoMenuItem() *MenuItem {
-	return newMenuItem("Undo").
+	return NewMenuItem("Undo").
 		SetAccelerator("CmdOrCtrl+z").
 		OnClick(func(ctx *Context) {
 			//			C.undo()
@@ -175,7 +187,7 @@ func newUndoMenuItem() *MenuItem {
 
 // newRedoMenuItem creates a new menu item for redoing the last action
 func newRedoMenuItem() *MenuItem {
-	return newMenuItem("Redo").
+	return NewMenuItem("Redo").
 		SetAccelerator("CmdOrCtrl+Shift+z").
 		OnClick(func(ctx *Context) {
 			//			C.redo()
@@ -183,7 +195,7 @@ func newRedoMenuItem() *MenuItem {
 }
 
 func newCutMenuItem() *MenuItem {
-	return newMenuItem("Cut").
+	return NewMenuItem("Cut").
 		SetAccelerator("CmdOrCtrl+x").
 		OnClick(func(ctx *Context) {
 			//			C.cut()
@@ -191,7 +203,7 @@ func newCutMenuItem() *MenuItem {
 }
 
 func newCopyMenuItem() *MenuItem {
-	return newMenuItem("Copy").
+	return NewMenuItem("Copy").
 		SetAccelerator("CmdOrCtrl+c").
 		OnClick(func(ctx *Context) {
 			//			C.copy()
@@ -199,7 +211,7 @@ func newCopyMenuItem() *MenuItem {
 }
 
 func newPasteMenuItem() *MenuItem {
-	return newMenuItem("Paste").
+	return NewMenuItem("Paste").
 		SetAccelerator("CmdOrCtrl+v").
 		OnClick(func(ctx *Context) {
 			//			C.paste()
@@ -207,7 +219,7 @@ func newPasteMenuItem() *MenuItem {
 }
 
 func newPasteAndMatchStyleMenuItem() *MenuItem {
-	return newMenuItem("Paste and Match Style").
+	return NewMenuItem("Paste and Match Style").
 		SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+v").
 		OnClick(func(ctx *Context) {
 			//			C.pasteAndMatchStyle()
@@ -215,7 +227,7 @@ func newPasteAndMatchStyleMenuItem() *MenuItem {
 }
 
 func newDeleteMenuItem() *MenuItem {
-	return newMenuItem("Delete").
+	return NewMenuItem("Delete").
 		SetAccelerator("backspace").
 		OnClick(func(ctx *Context) {
 			//			C.delete()
@@ -223,7 +235,7 @@ func newDeleteMenuItem() *MenuItem {
 }
 
 func newQuitMenuItem() *MenuItem {
-	return newMenuItem("Quit " + globalApplication.options.Name).
+	return NewMenuItem("Quit " + globalApplication.options.Name).
 		SetAccelerator("CmdOrCtrl+q").
 		OnClick(func(ctx *Context) {
 			globalApplication.Quit()
@@ -231,7 +243,7 @@ func newQuitMenuItem() *MenuItem {
 }
 
 func newSelectAllMenuItem() *MenuItem {
-	return newMenuItem("Select All").
+	return NewMenuItem("Select All").
 		SetAccelerator("CmdOrCtrl+a").
 		OnClick(func(ctx *Context) {
 			//			C.selectAll()
@@ -239,17 +251,17 @@ func newSelectAllMenuItem() *MenuItem {
 }
 
 func newAboutMenuItem() *MenuItem {
-	return newMenuItem("About " + globalApplication.options.Name).
+	return NewMenuItem("About " + globalApplication.options.Name).
 		OnClick(func(ctx *Context) {
-			globalApplication.ShowAboutDialog()
+			globalApplication.Menu.ShowAbout()
 		})
 }
 
 func newCloseMenuItem() *MenuItem {
-	return newMenuItem("Close").
+	return NewMenuItem("Close").
 		SetAccelerator("CmdOrCtrl+w").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Window.Current()
 			if currentWindow != nil {
 				currentWindow.Close()
 			}
@@ -257,10 +269,10 @@ func newCloseMenuItem() *MenuItem {
 }
 
 func newReloadMenuItem() *MenuItem {
-	return newMenuItem("Reload").
+	return NewMenuItem("Reload").
 		SetAccelerator("CmdOrCtrl+r").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Window.Current()
 			if currentWindow != nil {
 				currentWindow.Reload()
 			}
@@ -268,10 +280,10 @@ func newReloadMenuItem() *MenuItem {
 }
 
 func newForceReloadMenuItem() *MenuItem {
-	return newMenuItem("Force Reload").
+	return NewMenuItem("Force Reload").
 		SetAccelerator("CmdOrCtrl+Shift+r").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Window.Current()
 			if currentWindow != nil {
 				currentWindow.ForceReload()
 			}
@@ -279,9 +291,9 @@ func newForceReloadMenuItem() *MenuItem {
 }
 
 func newToggleFullscreenMenuItem() *MenuItem {
-	result := newMenuItem("Toggle Full Screen").
+	result := NewMenuItem("Toggle Full Screen").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Window.Current()
 			if currentWindow != nil {
 				currentWindow.ToggleFullscreen()
 			}
@@ -294,23 +306,12 @@ func newToggleFullscreenMenuItem() *MenuItem {
 	return result
 }
 
-func newToggleDevToolsMenuItem() *MenuItem {
-	return newMenuItem("Toggle Developer Tools").
-		SetAccelerator("Alt+Command+I").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.ToggleDevTools()
-			}
-		})
-}
-
 func newZoomResetMenuItem() *MenuItem {
 	// reset zoom menu item
-	return newMenuItem("Actual Size").
+	return NewMenuItem("Actual Size").
 		SetAccelerator("CmdOrCtrl+0").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Window.Current()
 			if currentWindow != nil {
 				currentWindow.ZoomReset()
 			}
@@ -318,10 +319,10 @@ func newZoomResetMenuItem() *MenuItem {
 }
 
 func newZoomInMenuItem() *MenuItem {
-	return newMenuItem("Zoom In").
+	return NewMenuItem("Zoom In").
 		SetAccelerator("CmdOrCtrl+plus").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Window.Current()
 			if currentWindow != nil {
 				currentWindow.ZoomIn()
 			}
@@ -329,10 +330,10 @@ func newZoomInMenuItem() *MenuItem {
 }
 
 func newZoomOutMenuItem() *MenuItem {
-	return newMenuItem("Zoom Out").
+	return NewMenuItem("Zoom Out").
 		SetAccelerator("CmdOrCtrl+-").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Window.Current()
 			if currentWindow != nil {
 				currentWindow.ZoomOut()
 			}
@@ -340,10 +341,10 @@ func newZoomOutMenuItem() *MenuItem {
 }
 
 func newMinimizeMenuItem() *MenuItem {
-	return newMenuItem("Minimize").
+	return NewMenuItem("Minimize").
 		SetAccelerator("CmdOrCtrl+M").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Window.Current()
 			if currentWindow != nil {
 				currentWindow.Minimise()
 			}
@@ -351,9 +352,9 @@ func newMinimizeMenuItem() *MenuItem {
 }
 
 func newZoomMenuItem() *MenuItem {
-	return newMenuItem("Zoom").
+	return NewMenuItem("Zoom").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Window.Current()
 			if currentWindow != nil {
 				currentWindow.Zoom()
 			}
@@ -361,11 +362,75 @@ func newZoomMenuItem() *MenuItem {
 }
 
 func newFullScreenMenuItem() *MenuItem {
-	return newMenuItem("Fullscreen").
+	return NewMenuItem("Fullscreen").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Window.Current()
 			if currentWindow != nil {
 				currentWindow.Fullscreen()
 			}
 		})
+}
+
+func newPrintMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newPageLayoutMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newShowAllMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newBringAllToFrontMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newNewFileMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newOpenMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newSaveMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newSaveAsMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newStartSpeakingMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newStopSpeakingMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newRevertMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newFindMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newFindAndReplaceMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newFindNextMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newFindPreviousMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newHelpMenuItem() *MenuItem {
+	panic("Implement me")
 }

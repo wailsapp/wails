@@ -1,0 +1,54 @@
+version: '3'
+
+includes:
+  common: ./build/Taskfile.common.yml
+  windows: ./build/Taskfile.windows.yml
+  darwin: ./build/Taskfile.darwin.yml
+  linux: ./build/Taskfile.linux.yml
+
+vars:
+  APP_NAME: "fileassoc"
+  BIN_DIR: "bin"
+  VITE_PORT: '{{.WAILS_VITE_PORT | default 9245}}'
+
+tasks:
+  build:
+    summary: Builds the application
+    cmds:
+      - task: "{{OS}}:build"
+
+  package:
+    summary: Packages a production build of the application
+    cmds:
+      - task: "{{OS}}:package"
+
+  run:
+    summary: Runs the application
+    cmds:
+      - task: "{{OS}}:run"
+
+  dev:
+    summary: Runs the application in development mode
+    cmds:
+      - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
+
+  darwin:build:universal:
+    summary: Builds darwin universal binary (arm64 + amd64)
+    cmds:
+      - task: darwin:build
+        vars:
+          ARCH: amd64
+      - mv {{.BIN_DIR}}/{{.APP_NAME}} {{.BIN_DIR}}/{{.APP_NAME}}-amd64
+      - task: darwin:build
+        vars:
+          ARCH: arm64
+      - mv {{.BIN_DIR}}/{{.APP_NAME}} {{.BIN_DIR}}/{{.APP_NAME}}-arm64
+      - lipo -create -output {{.BIN_DIR}}/{{.APP_NAME}} {{.BIN_DIR}}/{{.APP_NAME}}-amd64 {{.BIN_DIR}}/{{.APP_NAME}}-arm64
+      - rm {{.BIN_DIR}}/{{.APP_NAME}}-amd64 {{.BIN_DIR}}/{{.APP_NAME}}-arm64
+
+  darwin:package:universal:
+    summary: Packages darwin universal binary (arm64 + amd64)
+    deps:
+      - darwin:build:universal
+    cmds:
+      - task: darwin:create:app:bundle

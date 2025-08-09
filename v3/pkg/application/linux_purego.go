@@ -621,10 +621,10 @@ func getScreenByIndex(display pointer, index int) *Screen {
 	}
 
 	return &Screen{
-		IsPrimary: primary,
-		Scale:     1.0,
-		X:         int(geometry.x),
-		Y:         int(geometry.y),
+		IsPrimary:   primary,
+		ScaleFactor: 1.0,
+		X:           int(geometry.x),
+		Y:           int(geometry.y),
 		Size: Size{
 			Height: int(geometry.height),
 			Width:  int(geometry.width),
@@ -703,7 +703,7 @@ func windowFullscreen(window pointer) {
 	gtkWindowFullScreen(window)
 }
 
-func windowGetAbsolutePosition(window pointer) (int, int) {
+func windowGetPosition(window pointer) (int, int) {
 	var x, y int
 	gtkWindowGetPosition(window, &x, &y)
 	return x, y
@@ -719,7 +719,7 @@ func windowGetCurrentMonitor(window pointer) pointer {
 	return gdkDisplayGetMonitorAtWindow(display, window)
 }
 
-func windowGetCurrentMonitorGeometry(window pointer) (x int, y int, width int, height int, scale int) {
+func windowGetCurrentMonitorGeometry(window pointer) (x int, y int, width int, height int, scaleFactor int) {
 	monitor := windowGetCurrentMonitor(window)
 	if monitor == 0 {
 		return -1, -1, -1, -1, 1
@@ -736,7 +736,7 @@ func windowGetCurrentMonitorGeometry(window pointer) (x int, y int, width int, h
 }
 
 func windowGetRelativePosition(window pointer) (int, int) {
-	absX, absY := windowGetAbsolutePosition(window)
+	absX, absY := windowGetPosition(window)
 	x, y, _, _, _ := windowGetCurrentMonitorGeometry(window)
 
 	relX := absX - x
@@ -824,9 +824,14 @@ func windowNewWebview(parentId uint, gpuPolicy int) pointer {
 			"wails",
 			pointer(purego.NewCallback(func(request uintptr) {
 				webviewRequests <- &webViewAssetRequest{
-					Request:    webview.NewRequest(request),
-					windowId:   parentId,
-					windowName: globalApplication.getWindowForID(parentId).Name(),
+					Request:  webview.NewRequest(request),
+					windowId: parentId,
+					windowName: func() string {
+						if window, ok := globalApplication.Window.GetByID(parentId); ok {
+							return window.Name()
+						}
+						return ""
+					}(),
 				}
 			})),
 			0,
@@ -976,7 +981,7 @@ func windowSetupSignalHandlers(windowId uint, window, webview pointer, emit func
 	*/
 }
 
-func windowToggleDevTools(webview pointer) {
+func windowOpenDevTools(webview pointer) {
 	settings := webkitWebViewGetSettings(pointer(webview))
 	webkitSettingsSetEnableDeveloperExtras(
 		settings,
@@ -1084,10 +1089,22 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 // dialog related
 func runOpenFileDialog(dialog *OpenFileDialogStruct) ([]string, error) {
 	const GtkFileChooserActionOpen = 0
+	const GtkFileChooserActionSelectFolder = 2
+
+	var action int
+
+	if dialog.canChooseDirectories {
+		action = GtkFileChooserActionSelectFolder
+	} else {
+		action = GtkFileChooserActionOpen
+	}
 
 	window := pointer(0)
 	if dialog.window != nil {
-		window = (dialog.window.(*WebviewWindow).impl).(*linuxWebviewWindow).window
+		nativeWindow := dialog.window.NativeWindow()
+		if nativeWindow != nil {
+			window = pointer(uintptr(nativeWindow))
+		}
 	}
 
 	buttonText := dialog.buttonText
@@ -1196,4 +1213,19 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
 
 func isOnMainThread() bool {
 	return mainThreadId == gThreadSelf()
+}
+
+// linuxWebviewWindow show/hide methods for purego implementation
+func (w *linuxWebviewWindow) windowShow() {
+	if w.window == 0 {
+		return
+	}
+	windowShow(w.window)
+}
+
+func (w *linuxWebviewWindow) windowHide() {
+	if w.window == 0 {
+		return
+	}
+	windowHide(w.window)
 }
