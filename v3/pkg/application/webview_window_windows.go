@@ -1349,7 +1349,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 		w.dropTarget.OnDrop = func(files []string) {
 			w.parent.emit(events.Windows.WindowDragDrop)
 			windowDragAndDropBuffer <- &dragAndDropMessage{
-				windowId:  windowID,
+				windowId:  w.parent.id,
 				filenames: files,
 			}
 		}
