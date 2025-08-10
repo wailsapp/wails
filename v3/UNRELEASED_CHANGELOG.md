@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix SetBackgroundColour on Windows by @PPTGamer in [PR](https://github.com/wailsapp/wails/pull/4492)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
