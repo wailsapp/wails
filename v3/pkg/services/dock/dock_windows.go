@@ -5,6 +5,7 @@ package dock
 import (
 	"bytes"
 	"context"
+	"errors"
 	"image"
 	"image/color"
 	"image/png"
@@ -96,14 +97,16 @@ func (w *windowsDock) SetBadge(label string) error {
 		return nil
 	}
 
-	hwnd, err := window.NativeWindowHandle()
-	if err != nil {
-		return err
+	nativeWindow := window.NativeWindow()
+	if nativeWindow == nil {
+		return errors.New("window native handle unavailable")
 	}
+	hwnd := uintptr(nativeWindow)
 
 	w.createBadge()
 
 	var hicon w32.HICON
+	var err error
 	if label == "" {
 		hicon, err = w.createBadgeIcon()
 		if err != nil {
@@ -136,10 +139,11 @@ func (w *windowsDock) SetCustomBadge(label string, options BadgeOptions) error {
 		return nil
 	}
 
-	hwnd, err := window.NativeWindowHandle()
-	if err != nil {
-		return err
+	nativeWindow := window.NativeWindow()
+	if nativeWindow == nil {
+		return errors.New("window native handle unavailable")
 	}
+	hwnd := uintptr(nativeWindow)
 
 	const badgeSize = 32
 
@@ -161,6 +165,7 @@ func (w *windowsDock) SetCustomBadge(label string, options BadgeOptions) error {
 	}
 
 	var hicon w32.HICON
+	var err error
 	if label == "" {
 		hicon, err = createBadgeIcon(badgeSize, img, options)
 		if err != nil {
@@ -193,10 +198,11 @@ func (w *windowsDock) RemoveBadge() error {
 		return nil
 	}
 
-	hwnd, err := window.NativeWindowHandle()
-	if err != nil {
-		return err
+	nativeWindow := window.NativeWindow()
+	if nativeWindow == nil {
+		return errors.New("window native handle unavailable")
 	}
+	hwnd := uintptr(nativeWindow)
 
 	return w.taskbar.SetOverlayIcon(hwnd, 0, nil)
 }

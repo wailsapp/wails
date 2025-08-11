@@ -349,7 +349,7 @@ type App struct {
 	isDebugMode  bool
 
 	// Keybindings
-	keyBindings     map[string]func(window *WebviewWindow)
+	keyBindings     map[string]func(window Window)
 	keyBindingsLock sync.RWMutex
 
 	// Shutdown
@@ -435,7 +435,7 @@ func (a *App) init() {
 	a.windows = make(map[uint]Window)
 	a.systemTrays = make(map[uint]*SystemTray)
 	a.contextMenus = make(map[string]*ContextMenu)
-	a.keyBindings = make(map[string]func(window *WebviewWindow))
+	a.keyBindings = make(map[string]func(window Window))
 	a.Logger = a.options.Logger
 	a.pid = os.Getpid()
 	a.wailsEventListeners = make([]WailsEventListener, 0)

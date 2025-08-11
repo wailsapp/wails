@@ -123,29 +123,62 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 		return nil
 	}
 
-	var index int
-	var arg string
-	for index, arg = range os.Args[2:] {
-		if !strings.HasPrefix(arg, "-") {
-			break
-		}
-	}
-
+	// Parse task name and CLI variables from otherArgs or os.Args
 	var tasksAndVars []string
-	for _, taskAndVar := range os.Args[index+2:] {
-		if taskAndVar == "--" {
-			break
+	
+	// Check if we have a task name specified in options
+	if options.Name != "" {
+		// If task name is provided via options, use it and treat otherArgs as CLI variables
+		tasksAndVars = append([]string{options.Name}, otherArgs...)
+	} else if len(otherArgs) > 0 {
+		// Use otherArgs directly if provided
+		tasksAndVars = otherArgs
+	} else {
+		// Fall back to parsing os.Args for backward compatibility
+		var index int
+		var arg string
+		for index, arg = range os.Args[2:] {
+			if !strings.HasPrefix(arg, "-") {
+				break
+			}
 		}
-		tasksAndVars = append(tasksAndVars, taskAndVar)
+
+		for _, taskAndVar := range os.Args[index+2:] {
+			if taskAndVar == "--" {
+				break
+			}
+			tasksAndVars = append(tasksAndVars, taskAndVar)
+		}
 	}
 
-	if len(tasksAndVars) > 0 && len(otherArgs) > 0 {
-		if tasksAndVars[0] == otherArgs[0] {
-			otherArgs = otherArgs[1:]
+	// Default task
+	if len(tasksAndVars) == 0 {
+		tasksAndVars = []string{"default"}
+	}
+
+	// Parse task name and CLI variables
+	taskName := tasksAndVars[0]
+	cliVars := tasksAndVars[1:]
+	
+	// Create call with CLI variables
+	call := &ast.Call{
+		Task: taskName,
+		Vars: &ast.Vars{},
+	}
+	
+	// Parse CLI variables (format: KEY=VALUE)
+	for _, v := range cliVars {
+		if strings.Contains(v, "=") {
+			parts := strings.SplitN(v, "=", 2)
+			if len(parts) == 2 {
+				call.Vars.Set(parts[0], ast.Var{
+					Value: parts[1],
+				})
+			}
 		}
 	}
 
-	if err := e.RunTask(context.Background(), &ast.Call{Task: tasksAndVars[0]}); err != nil {
+	if err := e.RunTask(context.Background(), call); err != nil {
 		fatal(err.Error())
 	}
 	return nil

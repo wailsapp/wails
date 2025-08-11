@@ -33,8 +33,8 @@ func main() {
 		Windows: application.WindowsWindow{
 			HiddenOnTaskbar: true,
 		},
-		KeyBindings: map[string]func(window *application.WebviewWindow){
-			"F12": func(window *application.WebviewWindow) {
+		KeyBindings: map[string]func(window application.Window){
+			"F12": func(window application.Window) {
 				systemTray.OpenMenu()
 			},
 		},

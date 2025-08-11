@@ -126,7 +126,7 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 				if p.parentWindow != nil {
 					p.parentWindow.parent.addMenuBinding(item.accelerator, item)
 				} else {
-					globalApplication.KeyBinding.Add(item.accelerator.String(), func(w *WebviewWindow) {
+					globalApplication.KeyBinding.Add(item.accelerator.String(), func(w Window) {
 						item.handleClick()
 					})
 				}
@@ -143,8 +143,7 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 			globalApplication.fatal("error adding menu item '%s'", menuText)
 		}
 		if item.bitmap != nil {
-			err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil)
-			if err != nil {
+			if err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil); err != nil {
 				globalApplication.fatal("error setting menu icons: %w", err)
 			}
 		}

@@ -32,6 +32,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.80
 	github.com/samber/lo v1.49.1
+	github.com/stretchr/testify v1.10.0
 	github.com/tc-hib/winres v0.3.1
 	github.com/wailsapp/go-webview2 v1.0.21
 	github.com/wailsapp/mimetype v1.4.1
@@ -50,6 +51,7 @@ require (
 	github.com/charmbracelet/x/cellbuf v0.0.13-0.20250311204145-2c3ea96c31dd // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/ncruces/go-strftime v0.1.9 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 )
 
 require (

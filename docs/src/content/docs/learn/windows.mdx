@@ -196,11 +196,63 @@ Windows provide many methods for controlling their appearance and behavior:
 - `IsMaximised() bool` - Checks if window is maximized
 - `IsFullscreen() bool` - Checks if window is fullscreen
 
+#### Security and Privacy
+- `SetContentProtection(bool)` - Enables/disables content protection to prevent screen capture
+
 #### Platform-Specific Methods
 
 **Windows Only:**
 - `Flash(bool)` - Flashes the taskbar button
 - `SnapAssist()` - Triggers Windows 11 Snap Assist (Win+Z)
+
+## Content Protection
+
+Content Protection prevents window contents from being captured by screen recording or screen sharing software. This is useful for applications that display sensitive information.
+
+### Enabling Content Protection
+
+You can enable content protection when creating a window:
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "Secure Window",
+    ContentProtectionEnabled: true,
+})
+```
+
+Or enable/disable it dynamically at runtime:
+
+```go
+// Enable content protection
+window.SetContentProtection(true)
+
+// Disable content protection
+window.SetContentProtection(false)
+```
+
+### Platform Support
+
+- **Windows**: Uses `WDA_EXCLUDEFROMCAPTURE` on Windows 10 version 2004+ (build 19041+). Falls back to `WDA_MONITOR` on older versions (legacy mode providing partial protection that may not block all capture paths).
+- **macOS**: Sets `NSWindow.sharingType` to `NSWindowSharingNone` when enabled (prevents capture) and `NSWindowSharingReadOnly` when disabled (allows capture).
+- **Linux**: Currently not implemented (no-op).
+
+### Use Cases
+
+Content protection is ideal for:
+- Banking and financial applications
+- Password managers
+- Medical record systems
+- Document viewers with confidential information
+- Communication apps with private messages
+
+### Important Notes
+
+1. Content protection does not prevent physical photography of the screen
+2. On Windows, the fallback for older versions provides partial protection
+3. Some screen capture tools may still be able to capture protected content using low-level APIs
+4. This feature should be part of a comprehensive security strategy, not the only protection
+5. Detached DevTools or inspector windows are separate instances and will not inherit content protection automatically
+
 
 ## Advanced Window Management
 
