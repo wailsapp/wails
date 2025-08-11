@@ -28,13 +28,21 @@ func (m *MessageProcessor) processBrowserMethod(method int, rw http.ResponseWrit
 			m.Error("OpenURL: url is required")
 			return
 		}
-		err := browser.OpenURL(*url)
+		
+		sanitizedURL, err := ValidateAndSanitizeURL(*url)
+		if err != nil {
+			m.Error("OpenURL: invalid URL - %s", err.Error())
+			m.httpError(rw, "Invalid URL: %s", err.Error())
+			return
+		}
+		
+		err = browser.OpenURL(sanitizedURL)
 		if err != nil {
 			m.Error("OpenURL: %s", err.Error())
 			return
 		}
 		m.ok(rw)
-		m.Info("Runtime Call:", "method", "Browser."+browserMethods[method], "url", *url)
+		m.Info("Runtime Call:", "method", "Browser."+browserMethods[method], "url", sanitizedURL)
 	default:
 		m.httpError(rw, "Unknown browser method: %d", method)
 		return
