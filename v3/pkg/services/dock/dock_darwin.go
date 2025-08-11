@@ -2,19 +2,32 @@
 
 package dock
 
-// #cgo CFLAGS: -x objective-c
-// #import <AppKit/AppKit.h>
-//
-// void hideDockIcon() {
-//     [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
-// }
-//
-// void showDockIcon() {
-//     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-// }
+/*
+#cgo CFLAGS: -x objective-c
+#cgo LDFLAGS: -framework Cocoa
+#import <Cocoa/Cocoa.h>
+
+void hideDockIcon() {
+    [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
+}
+
+void showDockIcon() {
+    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+}
+
+static void setBadge(const char *label) {
+    NSString *nsLabel = nil;
+	if (label != NULL) {
+		nsLabel = [NSString stringWithUTF8String:label];
+	}
+	[[NSApp dockTile] setBadgeLabel:nsLabel];
+	[[NSApp dockTile] display];
+}
+*/
 import "C"
 import (
 	"context"
+	"unsafe"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -26,6 +39,12 @@ func New() *DockService {
 	return &DockService{
 		impl: &darwinDock{},
 	}
+}
+
+// NewWithOptions creates a new dock service with badge options.
+// Currently, options are not available on macOS and are ignored.
+func NewWithOptions(options BadgeOptions) *DockService {
+	return New()
 }
 
 func (d *darwinDock) Startup(ctx context.Context, options application.ServiceOptions) error {
@@ -44,4 +63,28 @@ func (d *darwinDock) HideAppIcon() {
 // ShowAppIcon shows the app icon in the macOS Dock.
 func (d *darwinDock) ShowAppIcon() {
 	C.showDockIcon()
+}
+
+// SetBadge sets the badge label on the application icon.
+func (d *darwinDock) SetBadge(label string) error {
+	var cLabel *C.char
+	if label != "" {
+		cLabel = C.CString(label)
+		defer C.free(unsafe.Pointer(cLabel))
+	} else {
+		cLabel = C.CString("●") // Default badge character
+	}
+	C.setBadge(cLabel)
+	return nil
+}
+
+// SetCustomBadge is not supported on macOS, SetBadge is called instead.
+func (d *darwinDock) SetCustomBadge(label string, options BadgeOptions) error {
+	return d.SetBadge(label)
+}
+
+// RemoveBadge removes the badge label from the application icon.
+func (d *darwinDock) RemoveBadge() error {
+	C.setBadge(nil)
+	return nil
 }
