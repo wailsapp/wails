@@ -39,24 +39,10 @@ func (collector *Collector) findDeclaration(obj types.Object) (path []ast.Node) 
 		return nil
 	}
 
-	// Perform a binary search to find the file enclosing the node.
-	// We can't use findEnclosingNode here because it is less accurate and less efficient with files.
-	fileIndex, exact := slices.BinarySearchFunc(pkg.Files, obj.Pos(), func(f *ast.File, p token.Pos) int {
-		return cmp.Compare(f.FileStart, p)
-	})
-
-	// If exact is true, pkg.Files[fileIndex] is the file we are looking for;
-	// otherwise, it is the first file whose start position is _after_ obj.Pos().
-	if !exact {
-		fileIndex--
-	}
-
-	// When exact is false, the position might lie within an empty segment in between two files.
-	if fileIndex < 0 || pkg.Files[fileIndex].FileEnd <= obj.Pos() {
+	file := findEnclosingFile(pkg.Files, obj.Pos())
+	if file == nil {
 		return nil
 	}
-
-	file := pkg.Files[fileIndex]
 
 	// Find enclosing declaration.
 	decl := findEnclosingNode(file.Decls, obj.Pos())
@@ -210,6 +196,28 @@ func (collector *Collector) findDeclaration(obj types.Object) (path []ast.Node) 
 			return nil
 		}
 	}
+}
+
+// findEnclosingFile finds the unique file in files, if any, that encloses the given position.
+func findEnclosingFile(files []*ast.File, pos token.Pos) *ast.File {
+	// Perform a binary search to find the file enclosing the node.
+	// We can't use findEnclosingNode here because it is less accurate and less efficient with files.
+	fileIndex, exact := slices.BinarySearchFunc(files, pos, func(f *ast.File, p token.Pos) int {
+		return cmp.Compare(f.FileStart, p)
+	})
+
+	// If exact is true, pkg.Files[fileIndex] is the file we are looking for;
+	// otherwise, it is the first file whose start position is _after_ obj.Pos().
+	if !exact {
+		fileIndex--
+	}
+
+	// When exact is false, the position might lie within an empty segment in between two files.
+	if fileIndex < 0 || files[fileIndex].FileEnd <= pos {
+		return nil
+	}
+
+	return files[fileIndex]
 }
 
 // findEnclosingNode finds the unique node in nodes, if any,
