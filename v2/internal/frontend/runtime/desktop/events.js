@@ -190,9 +190,9 @@ export function EventsOff(eventName, ...additionalEventNames) {
  */
  export function EventsOffAll() {
     const eventNames = Object.keys(eventListeners);
-    for (let i = 0; i !== eventNames.length; i++) {
-        removeListener(eventNames[i]);
-    }
+    eventNames.forEach(eventName => {
+        removeListener(eventName)
+    })
 }
 
 /**
