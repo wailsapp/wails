@@ -112,7 +112,7 @@ systray := app.SystemTray.New()
 systray.SetLabel("My App")
 
 // Create a window
-window := app.NewWebviewWindow()
+window := app.Window.New()
 
 // Attach the window to the system tray
 systray.AttachWindow(window)
@@ -124,7 +124,7 @@ systray.WindowOffset(10)
 systray.WindowDebounce(200 * time.Millisecond)
 
 // Add a menu (optional)
-menu := application.NewMenu()
+menu := app.Menu.New()
 menu.Add("Open").OnClick(func() {
     window.Show()
 })

@@ -131,10 +131,15 @@ type WebviewWindowOptions struct {
 	DefaultContextMenuDisabled bool
 
 	// KeyBindings is a map of key bindings to functions
-	KeyBindings map[string]func(window *WebviewWindow)
+	KeyBindings map[string]func(window Window)
 
 	// IgnoreMouseEvents will ignore mouse events in the window (Windows + Mac only)
 	IgnoreMouseEvents bool
+
+	// ContentProtectionEnabled specifies whether content protection is enabled, preventing screen capture and recording.
+	// Effective on Windows and macOS only; no-op on Linux.
+	// Best-effort protection with platform-specific caveats (see docs).
+	ContentProtectionEnabled bool
 }
 
 type RGBA struct {
@@ -292,13 +297,15 @@ type WindowsWindow struct {
 	// PasswordAutosaveEnabled enables autosaving passwords
 	PasswordAutosaveEnabled bool
 
-	// EnabledFeatures and DisabledFeatures are used to enable or disable specific features in the WebView2 browser.
+	// EnabledFeatures, DisabledFeatures and AdditionalLaunchArgs are used to enable or disable specific features in the WebView2 browser.
 	// Available flags: https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags?tabs=dotnetcsharp#available-webview2-browser-flags
 	// WARNING: Apps in production shouldn't use WebView2 browser flags,
 	// because these flags might be removed or altered at any time,
 	// and aren't necessarily supported long-term.
-	EnabledFeatures  []string
-	DisabledFeatures []string
+	// AdditionalLaunchArgs should always be preceded by "--"
+	EnabledFeatures      []string
+	DisabledFeatures     []string
+	AdditionalLaunchArgs []string
 }
 
 type Theme int
@@ -441,6 +448,8 @@ type MacWebviewPreferences struct {
 	TextInteractionEnabled u.Bool
 	// FullscreenEnabled will enable fullscreen
 	FullscreenEnabled u.Bool
+	// AllowsBackForwardNavigationGestures enables horizontal swipe gestures for back/forward navigation
+	AllowsBackForwardNavigationGestures u.Bool
 }
 
 // MacTitleBar contains options for the Mac titlebar

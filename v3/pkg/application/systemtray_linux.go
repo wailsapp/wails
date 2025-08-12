@@ -224,7 +224,7 @@ func (s *linuxSystemTray) setMenu(menu *Menu) {
 	s.menu = menu
 }
 
-func (s *linuxSystemTray) positionWindow(window *WebviewWindow, offset int) error {
+func (s *linuxSystemTray) positionWindow(window Window, offset int) error {
 	// Get the mouse location on the screen
 	mouseX, mouseY, currentScreen := getMousePosition()
 	screenBounds := currentScreen.Size

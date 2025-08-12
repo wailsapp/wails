@@ -18,6 +18,7 @@ struct WebviewPreferences {
     bool *TabFocusesLinks;
     bool *TextInteractionEnabled;
     bool *FullscreenEnabled;
+    bool *AllowsBackForwardNavigationGestures;
 };
 
 extern void registerListener(unsigned int event);
@@ -100,6 +101,11 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 
 	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
 	[webView autorelease];
+
+    // Set allowsBackForwardNavigationGestures if specified
+    if (preferences.AllowsBackForwardNavigationGestures != NULL) {
+        webView.allowsBackForwardNavigationGestures = *preferences.AllowsBackForwardNavigationGestures;
+    }
 
 	[view addSubview:webView];
 
@@ -812,6 +818,19 @@ static void setIgnoreMouseEvents(void *nsWindow, bool ignore) {
     [window setIgnoresMouseEvents:ignore];
 }
 
+static void setContentProtection(void *nsWindow, bool enabled) {
+    NSWindow *window = (__bridge NSWindow *)nsWindow;
+	if( ! [window respondsToSelector:@selector(setSharingType:)]) {
+		return;
+	}
+
+	if( enabled ) {
+		[window setSharingType:NSWindowSharingNone];
+	} else {
+		[window setSharingType:NSWindowSharingReadOnly];
+	}
+}
+
 */
 import "C"
 import (
@@ -1182,6 +1201,9 @@ func (w *macosWebviewWindow) getWebviewPreferences() C.struct_WebviewPreferences
 	if wvprefs.FullscreenEnabled.IsSet() {
 		result.FullscreenEnabled = bool2CboolPtr(wvprefs.FullscreenEnabled.Get())
 	}
+	if wvprefs.AllowsBackForwardNavigationGestures.IsSet() {
+		result.AllowsBackForwardNavigationGestures = bool2CboolPtr(wvprefs.AllowsBackForwardNavigationGestures.Get())
+	}
 
 	return result
 }
@@ -1212,6 +1234,9 @@ func (w *macosWebviewWindow) run() {
 		}
 		//w.setZoom(options.Zoom)
 		w.enableDevTools()
+
+		// Content Protection
+		w.setContentProtection(options.ContentProtectionEnabled)
 
 		w.setBackgroundColour(options.BackgroundColour)
 
@@ -1317,8 +1342,8 @@ func (w *macosWebviewWindow) run() {
 	})
 }
 
-func (w *macosWebviewWindow) nativeWindowHandle() uintptr {
-	return uintptr(w.nsWindow)
+func (w *macosWebviewWindow) nativeWindow() unsafe.Pointer {
+	return w.nsWindow
 }
 
 func (w *macosWebviewWindow) setBackgroundColour(colour RGBA) {
@@ -1413,6 +1438,10 @@ func (w *macosWebviewWindow) setIgnoreMouseEvents(ignore bool) {
 	C.setIgnoreMouseEvents(w.nsWindow, C.bool(ignore))
 }
 
+func (w *macosWebviewWindow) setContentProtection(enabled bool) {
+	C.setContentProtection(w.nsWindow, C.bool(enabled))
+}
+
 func (w *macosWebviewWindow) cut() {
 }
 
@@ -1438,3 +1467,4 @@ func (w *macosWebviewWindow) showMenuBar()    {}
 func (w *macosWebviewWindow) hideMenuBar()    {}
 func (w *macosWebviewWindow) toggleMenuBar()  {}
 func (w *macosWebviewWindow) setMenu(_ *Menu) {}
+func (w *macosWebviewWindow) snapAssist()     {} // No-op on macOS

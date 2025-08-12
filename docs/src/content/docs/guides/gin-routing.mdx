@@ -92,11 +92,10 @@ app := application.New(application.Options{
 })
 
 // Create window
-app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:    "Wails + Gin Example",
     Width:    900,
     Height:   700,
-    Centered: true,
     URL:      "/", // This will load the route handled by Gin
 })
 ```
@@ -285,7 +284,7 @@ func (s *GinService) setupRoutes() {
         }
 
         // Process the event using the Wails event system
-        s.app.EmitEvent(eventData.Name, eventData.Data)
+        s.app.Event.Emit(eventData.Name, eventData.Data)
 
         c.JSON(http.StatusOK, gin.H{
             "success": true,
@@ -364,7 +363,7 @@ must use the JavaScript API package `@wailsio/runtime`.
 
 ```go
 // Register event handler
-app.OnEvent("my-event", func(event *application.CustomEvent) {
+app.Event.On("my-event", func(event *application.CustomEvent) {
     log.Printf("Received event from frontend: %v", event.Data)
     // Process the event...
 })
@@ -548,12 +547,12 @@ func main() {
 	})
 
 	// Register event handler
-	app.OnEvent("gin-button-clicked", func(event *application.CustomEvent) {
+	app.Event.On("gin-button-clicked", func(event *application.CustomEvent) {
 		log.Printf("Received event from frontend: %v", event.Data)
 	})
 
 	// Create window
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "Wails + Gin Example",
 		Width:  900,
 		Height: 700,
