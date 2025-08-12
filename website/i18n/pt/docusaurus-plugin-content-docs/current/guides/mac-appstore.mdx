@@ -61,7 +61,7 @@ Este é um exemplo de titularidade de arquivo do aplicativo [RiftShare](https://
 </plist>
 ```
 
-**Adicionar Perfil de Provisão Embutido** O Perfil de Provisionamento criado acima precisa ser adicionado à raiz da aplicação. Precisa ser nomeado como embedded.provisionprofile.
+**Add the Embedded Provisioning Profile** The Provisioning Profile created above needs to be added to the root of the application. Precisa ser nomeado como embedded.provisionprofile.
 
 #### Construa e assine o Pacote de Aplicativos
 
@@ -80,9 +80,9 @@ wails build -platform darwin/universal -clean
 
 cp ./embedded.provisionprofile "./build/bin/$APP_NAME.app/Contents"
 
-codesign --timestamp --options=runtime -s "$APP_CERTIFICATE" -v --entitlements ./build/darwin/entitlements.plist ./build/bin/$APP_NAME.app
+codesign --timestamp --options=runtime -s "$APP_CERTIFICATE" -v --entitlements ./build/darwin/entitlements.plist "./build/bin/$APP_NAME.app"
 
-productbuild --sign "$PKG_CERTIFICATE" --component ./build/bin/$APP_NAME.app /Applications ./$APP_NAME.pkg
+productbuild --sign "$PKG_CERTIFICATE" --component "./build/bin/$APP_NAME.app" /Applications "./$APP_NAME.pkg"
 ```
 
 #### Enviar pacote de aplicativos
