@@ -1,12 +1,12 @@
-/Users/fabio/Development/wails/v3/internal/generator/testcases/complex_json/main.go:127:2: event 'collision' has one of multiple definitions here with data type map[string]int
-/Users/fabio/Development/wails/v3/internal/generator/testcases/events_only/events.go:20:2: event 'collision' has one of multiple definitions here with data type int
-/Users/fabio/Development/wails/v3/internal/generator/testcases/events_only/events.go:21:2: `application.RegisterEvent` called here with non-constant event name
-/Users/fabio/Development/wails/v3/internal/generator/testcases/events_only/other.go:10:5: `application.RegisterEvent` is instantiated here but not called
-/Users/fabio/Development/wails/v3/internal/generator/testcases/events_only/other.go:13:2: `application.RegisterEvent` called here with non-constant event name
-/Users/fabio/Development/wails/v3/internal/generator/testcases/events_only/other.go:17:2: data type []T for event 'parametric' contains unresolved type parameters and will be ignored`
-/Users/fabio/Development/wails/v3/internal/generator/testcases/events_only/other.go:22:2: event 'common:ApplicationStarted' is a known system event and cannot be overridden; this call to `application.RegisterEvent` will panic
-/Users/fabio/Development/wails/v3/internal/generator/testcases/marshalers/main.go:212:2: event 'collision' has one of multiple definitions here with data type *struct{Field []bool}
-/Users/fabio/Development/wails/v3/internal/generator/testcases/marshalers/main.go:214:2: data type encoding/json.Marshaler for event 'interface' is a non-empty interface: emitting events from the frontend with data other than `null` is not supported by encoding/json and will likely result in runtime errors
+/testcases/complex_json/main.go:127:2: event 'collision' has one of multiple definitions here with data type map[string]int
+/testcases/events_only/events.go:20:2: event 'collision' has one of multiple definitions here with data type int
+/testcases/events_only/events.go:21:2: `application.RegisterEvent` called here with non-constant event name
+/testcases/events_only/other.go:10:5: `application.RegisterEvent` is instantiated here but not called
+/testcases/events_only/other.go:13:2: `application.RegisterEvent` called here with non-constant event name
+/testcases/events_only/other.go:17:2: data type []T for event 'parametric' contains unresolved type parameters and will be ignored`
+/testcases/events_only/other.go:22:2: event 'common:ApplicationStarted' is a known system event and cannot be overridden; this call to `application.RegisterEvent` will panic
+/testcases/marshalers/main.go:212:2: event 'collision' has one of multiple definitions here with data type *struct{Field []bool}
+/testcases/marshalers/main.go:214:2: data type encoding/json.Marshaler for event 'interface' is a non-empty interface: emitting events from the frontend with data other than `null` is not supported by encoding/json and will likely result in runtime errors
 dynamically registered event names are not discoverable by the binding generator: it is recommended to invoke `application.RegisterEvent` with constant arguments only
 event 'collision' has multiple conflicting definitions and will be ignored
 events registered through indirect calls are not discoverable by the binding generator: it is recommended to invoke `application.RegisterEvent` directly
