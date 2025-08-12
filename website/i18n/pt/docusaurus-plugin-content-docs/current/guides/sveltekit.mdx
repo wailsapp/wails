@@ -2,7 +2,7 @@
 
 Este guia será para:
 
-1. Passos de instalação do Miminal - Os passos necessários para obter uma instalação mínima de Wails funcionando para o SvelteKit.
+1. Minimal Installation Steps - The steps needed to get a minimum Wails setup working for SvelteKit.
 2. Script de Instalação - Bash script para cumprir os passos de Instalação Mínima com a marca opcional de Wails.
 3. Notas importantes - Problemas que podem ser encontrados ao usar o SvelteKit + Wails e correções.
 
@@ -17,9 +17,9 @@ Este guia será para:
 - Navegue até a pasta myapp recém-criada.
 - Excluir a pasta chamada "frontend"
 
-##### Enquanto estiver na raiz do projeto Wails. Use o seu gerenciador de pacotes favorito e instale o SvelteKit como o novo frontend.  Siga as instruções.
+##### Enquanto estiver na raiz do projeto Wails. Use the Svelte CLI to create a SvelteKit project as the new frontend. Follow the prompts, nothing Wails specific is needed here.
 
-- `npm create svelte@latest frontend`
+- `npx sv create frontend`
 
 ##### Modificar o wails.json.
 
@@ -124,7 +124,7 @@ wails dev
 
 Veja https://wails.io/docs/guides/frontend para mais informações.
 
-##### Os dados de e-mail podem ser carregados e atualizados a partir de +page.ts/+page.js para +page.svelte.
+##### Initial data can be loaded and refreshed from +page.ts/+page.js to +page.svelte.
 
 - \+page.ts/+page.js funciona bem com o load() https://kit.svelte.dev/docs/load#page-data
 - invalidateAll() em +page.svelte irá chamar load() de +page.ts/+page.js https://kit.svelte.dev/docs/load#rerunning-load-functions-manual-invalidation.
