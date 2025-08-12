@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Browser URL Sanitisation by @leaanthony in [#4500](https://github.dev/wailsapp/wails/pull/4500). Based on [#4484](https://github.com/wailsapp/wails/pull/4484) by @APShenkin.
 
 ## Changed
 <!-- Changes in existing functionality -->
