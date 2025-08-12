@@ -133,6 +133,64 @@ func main() {
 }
 ```
 
+Also you might want to use Enums in your structs and have models for them on frontend. In that case you should create array that will contain all possible enum values, instrument enum type and bind it to the app:
+
+```go {16-18} title="app.go"
+type Weekday string
+
+const (
+    Sunday    Weekday = "Sunday"
+    Monday    Weekday = "Monday"
+    Tuesday   Weekday = "Tuesday"
+    Wednesday Weekday = "Wednesday"
+    Thursday  Weekday = "Thursday"
+    Friday    Weekday = "Friday"
+    Saturday  Weekday = "Saturday"
+)
+
+var AllWeekdays = []struct {
+    Value  Weekday
+    TSName string
+}{
+    {Sunday, "SUNDAY"},
+    {Monday, "MONDAY"},
+    {Tuesday, "TUESDAY"},
+    {Wednesday, "WEDNESDAY"},
+    {Thursday, "THURSDAY"},
+    {Friday, "FRIDAY"},
+    {Saturday, "SATURDAY"},
+}
+```
+
+In the main application configuration, the `EnumBind` key is where we can tell Wails what we want to bind enums as well:
+
+```go {11-13} title="main.go"
+func main() {
+
+    app := NewApp()
+
+    err := wails.Run(&options.App{
+        Title:             "My App",
+        Width:             800,
+        Height:            600,
+        OnStartup:  app.startup,
+        OnShutdown: app.shutdown,
+    Bind: []interface{}{
+        app,
+    },
+    EnumBind: []interface{}{
+        AllWeekdays,
+     },
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+
+```
+
+This will add missing enums to your `model.ts` file.
+
 바인딩에 대한 더 많은 정보는 [여기](../howdoesitwork.mdx#method-binding)에서 확인할 수 있습니다.
 
 ## Application Menu

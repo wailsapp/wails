@@ -17,8 +17,8 @@ includes:
     optional: true
 
   docs:
-    taskfile: mkdocs-website
-    dir: mkdocs-website
+    taskfile: docs
+    dir: docs
     optional: true
 
 tasks:

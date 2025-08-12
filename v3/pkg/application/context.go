@@ -32,8 +32,16 @@ func (c *Context) IsChecked() bool {
 	}
 	return result.(bool)
 }
-func (c *Context) ContextMenuData() any {
-	return c.data[contextMenuData]
+func (c *Context) ContextMenuData() string {
+	result := c.data[contextMenuData]
+	if result == nil {
+		return ""
+	}
+	str, ok := result.(string)
+	if !ok {
+		return ""
+	}
+	return str
 }
 
 func (c *Context) withClickedMenuItem(menuItem *MenuItem) *Context {

@@ -2,9 +2,10 @@ package staticanalysis
 
 import (
 	"go/ast"
-	"golang.org/x/tools/go/packages"
 	"path/filepath"
 	"strings"
+
+	"golang.org/x/tools/go/packages"
 )
 
 type EmbedDetails struct {
@@ -51,24 +52,31 @@ func GetEmbedDetailsForFile(file *ast.File, baseDir string) []*EmbedDetails {
 		for _, c := range comment.List {
 			if strings.HasPrefix(c.Text, "//go:embed") {
 				sl := strings.Split(c.Text, " ")
-				path := ""
-				all := false
 				if len(sl) == 1 {
 					continue
 				}
-				embedPath := strings.TrimSpace(sl[1])
-				switch true {
-				case strings.HasPrefix(embedPath, "all:"):
-					path = strings.TrimPrefix(embedPath, "all:")
-					all = true
-				default:
-					path = embedPath
+				// support for multiple paths in one comment
+				for _, arg := range sl[1:] {
+					embedPath := strings.TrimSpace(arg)
+					// ignores all pattern matching characters except escape sequence
+					if strings.Contains(embedPath, "*") || strings.Contains(embedPath, "?") || strings.Contains(embedPath, "[") {
+						continue
+					}
+					if strings.HasPrefix(embedPath, "all:") {
+						result = append(result, &EmbedDetails{
+							EmbedPath: strings.TrimPrefix(embedPath, "all:"),
+							All:       true,
+							BaseDir:   baseDir,
+						})
+					} else {
+						result = append(result, &EmbedDetails{
+							EmbedPath: embedPath,
+							All:       false,
+							BaseDir:   baseDir,
+						})
+					}
+
 				}
-				result = append(result, &EmbedDetails{
-					EmbedPath: path,
-					All:       all,
-					BaseDir:   baseDir,
-				})
 			}
 		}
 	}

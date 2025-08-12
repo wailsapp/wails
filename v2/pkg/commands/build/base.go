@@ -74,7 +74,6 @@ func (b *BaseBuilder) convertFileToIntegerString(filename string) (string, error
 }
 
 func (b *BaseBuilder) convertByteSliceToIntegerString(data []byte) string {
-
 	// Create string builder
 	var result strings.Builder
 
@@ -85,8 +84,7 @@ func (b *BaseBuilder) convertByteSliceToIntegerString(data []byte) string {
 			result.WriteString(fmt.Sprintf("%v,", data[i]))
 		}
 
-		result.WriteString(fmt.Sprintf("%v", data[len(data)-1]))
-
+		result.WriteString(strconv.FormatUint(uint64(data[len(data)-1]), 10))
 	}
 
 	return result.String()
@@ -94,10 +92,8 @@ func (b *BaseBuilder) convertByteSliceToIntegerString(data []byte) string {
 
 // CleanUp does post-build housekeeping
 func (b *BaseBuilder) CleanUp() {
-
 	// Delete all the files
 	b.filesToDelete.Each(func(filename string) {
-
 		// if file doesn't exist, ignore
 		if !b.fileExists(filename) {
 			return
@@ -106,7 +102,6 @@ func (b *BaseBuilder) CleanUp() {
 		// Delete file. We ignore errors because these files will be overwritten
 		// by the next build anyway.
 		_ = os.Remove(filename)
-
 	})
 }
 
@@ -159,7 +154,6 @@ func (b *BaseBuilder) OutputFilename(options *Options) string {
 
 // CompileProject compiles the project
 func (b *BaseBuilder) CompileProject(options *Options) error {
-
 	// Check if the runtime wrapper exists
 	err := generateRuntimeWrapper(options)
 	if err != nil {
@@ -402,7 +396,7 @@ Please reinstall by doing the following:
 		return nil
 	}
 
-	var args = []string{"--best", "--no-color", "--no-progress", options.CompiledBinary}
+	args := []string{"--best", "--no-color", "--no-progress", options.CompiledBinary}
 
 	if options.CompressFlags != "" {
 		args = strings.Split(options.CompressFlags, " ")
@@ -426,7 +420,6 @@ Please reinstall by doing the following:
 }
 
 func generateRuntimeWrapper(options *Options) error {
-
 	if options.WailsJSDir == "" {
 		cwd, err := os.Getwd()
 		if err != nil {
@@ -452,7 +445,6 @@ func (b *BaseBuilder) NpmInstall(sourceDir string, verbose bool) error {
 
 // NpmInstallUsingCommand runs the given install command in the specified npm project directory
 func (b *BaseBuilder) NpmInstallUsingCommand(sourceDir string, installCommand string, verbose bool) error {
-
 	packageJSON := filepath.Join(sourceDir, "package.json")
 
 	// Check package.json exists
@@ -492,7 +484,7 @@ func (b *BaseBuilder) NpmInstallUsingCommand(sourceDir string, installCommand st
 	}
 
 	// Shortcut installation
-	if install == false {
+	if !install {
 		if verbose {
 			pterm.Println("Skipping npm install")
 		}
@@ -549,7 +541,6 @@ func (b *BaseBuilder) NpmRunWithEnvironment(projectDir, buildTarget string, verb
 
 // BuildFrontend executes the `npm build` command for the frontend directory
 func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
-
 	verbose := b.options.Verbosity == VERBOSE
 
 	frontendDir := b.projectData.GetFrontendDir()

@@ -15,7 +15,6 @@ import (
 
 // AddSubcommand adds the `init` command for the Wails application
 func update(f *flags.Update) error {
-
 	if f.NoColour {
 		colour.ColourEnabled = false
 		pterm.DisableColor()
@@ -73,8 +72,7 @@ func update(f *flags.Update) error {
 }
 
 func updateToVersion(targetVersion *github.SemanticVersion, force bool, currentVersion string) error {
-
-	var targetVersionString = "v" + targetVersion.String()
+	targetVersionString := "v" + targetVersion.String()
 
 	if targetVersionString == currentVersion {
 		pterm.Println("\nLooks like you're up to date!")

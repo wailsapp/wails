@@ -5,7 +5,6 @@ package w32
 import (
 	"fmt"
 	"github.com/samber/lo"
-	"log"
 	"strconv"
 	"strings"
 	"sync"
@@ -13,12 +12,51 @@ import (
 	"unsafe"
 )
 
+var (
+	user32         = syscall.NewLazyDLL("user32.dll")
+	getSystemMenu  = user32.NewProc("GetSystemMenu")
+	getMenuProc    = user32.NewProc("GetMenu")
+	enableMenuItem = user32.NewProc("EnableMenuItem")
+	findWindow     = user32.NewProc("FindWindowW")
+	sendMessage    = user32.NewProc("SendMessageW")
+	vkKeyScan      = user32.NewProc("VkKeyScanW") // Use W version for Unicode
+)
+
+func VkKeyScan(ch uint16) uint16 {
+	ret, _, _ := syscall.SyscallN(
+		vkKeyScan.Addr(),
+		uintptr(ch),
+	)
+	return uint16(ret)
+}
+
+const (
+	WMCOPYDATA_SINGLE_INSTANCE_DATA = 1542
+)
+
+type COPYDATASTRUCT struct {
+	DwData uintptr
+	CbData uint32
+	LpData uintptr
+}
+
+var Fatal func(error)
+
 const (
 	GCLP_HBRBACKGROUND int32 = -10
 	GCLP_HICON         int32 = -14
 )
 
-func ExtendFrameIntoClientArea(hwnd uintptr, extend bool) {
+type WINDOWPOS struct {
+	HwndInsertAfter HWND
+	X               int32
+	Y               int32
+	Cx              int32
+	Cy              int32
+	Flags           uint32
+}
+
+func ExtendFrameIntoClientArea(hwnd uintptr, extend bool) error {
 	// -1: Adds the default frame styling (aero shadow and e.g. rounded corners on Windows 11)
 	//     Also shows the caption buttons if transparent ant translucent but they don't work.
 	//  0: Adds the default frame styling but no aero shadow, does not show the caption buttons.
@@ -29,8 +67,9 @@ func ExtendFrameIntoClientArea(hwnd uintptr, extend bool) {
 		margins = MARGINS{1, 1, 1, 1} // Only extend 1 pixel to have the default frame styling but no caption buttons
 	}
 	if err := dwmExtendFrameIntoClientArea(hwnd, &margins); err != nil {
-		log.Fatal(fmt.Errorf("DwmExtendFrameIntoClientArea failed: %s", err))
+		return fmt.Errorf("DwmExtendFrameIntoClientArea failed: %s", err)
 	}
+	return nil
 }
 
 func IsVisible(hwnd uintptr) bool {
@@ -136,7 +175,7 @@ func MustStringToUTF16Ptr(input string) *uint16 {
 	input = stripNulls(input)
 	result, err := syscall.UTF16PtrFromString(input)
 	if err != nil {
-		Fatal(err.Error())
+		Fatal(err)
 	}
 	return result
 }
@@ -150,6 +189,11 @@ func MustStringToUTF16uintptr(input string) uintptr {
 func MustStringToUTF16(input string) []uint16 {
 	input = stripNulls(input)
 	return lo.Must(syscall.UTF16FromString(input))
+}
+
+func StringToUTF16(input string) ([]uint16, error) {
+	input = stripNulls(input)
+	return syscall.UTF16FromString(input)
 }
 
 func CenterWindow(hwnd HWND) {
@@ -250,4 +294,69 @@ func FlashWindow(hwnd HWND, enabled bool) {
 func EnumChildWindows(hwnd HWND, callback func(hwnd HWND, lparam LPARAM) LRESULT) LRESULT {
 	r, _, _ := procEnumChildWindows.Call(hwnd, syscall.NewCallback(callback), 0)
 	return r
+}
+
+func DisableCloseButton(hwnd HWND) error {
+	hSysMenu, _, err := getSystemMenu.Call(hwnd, 0)
+	if hSysMenu == 0 {
+		return err
+	}
+
+	r1, _, err := enableMenuItem.Call(hSysMenu, SC_CLOSE, MF_BYCOMMAND|MF_DISABLED|MF_GRAYED)
+	if r1 == 0 {
+		return err
+	}
+
+	return nil
+}
+
+func EnableCloseButton(hwnd HWND) error {
+	hSysMenu, _, err := getSystemMenu.Call(hwnd, 0)
+	if hSysMenu == 0 {
+		return err
+	}
+
+	r1, _, err := enableMenuItem.Call(hSysMenu, SC_CLOSE, MF_BYCOMMAND|MF_ENABLED)
+	if r1 == 0 {
+		return err
+	}
+
+	return nil
+}
+
+func FindWindowW(className, windowName *uint16) HWND {
+	ret, _, _ := findWindow.Call(
+		uintptr(unsafe.Pointer(className)),
+		uintptr(unsafe.Pointer(windowName)),
+	)
+	return HWND(ret)
+}
+
+func SendMessageToWindow(hwnd HWND, msg string) {
+	// Convert data to UTF16 string
+	dataUTF16, err := StringToUTF16(msg)
+	if err != nil {
+		return
+	}
+
+	// Prepare COPYDATASTRUCT
+	cds := COPYDATASTRUCT{
+		DwData: WMCOPYDATA_SINGLE_INSTANCE_DATA,
+		CbData: uint32((len(dataUTF16) * 2) + 1), // +1 for null terminator
+		LpData: uintptr(unsafe.Pointer(&dataUTF16[0])),
+	}
+
+	// Send message to first instance
+	_, _, _ = procSendMessage.Call(
+		hwnd,
+		WM_COPYDATA,
+		0,
+		uintptr(unsafe.Pointer(&cds)),
+	)
+}
+
+// GetMenu retrieves a handle to the menu assigned to the specified window
+func GetMenu(hwnd HWND) HMENU {
+	ret, _, _ := getMenuProc.Call(hwnd)
+	return ret
 }

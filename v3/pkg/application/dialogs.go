@@ -1,7 +1,6 @@
 package application
 
 import (
-	"fmt"
 	"strings"
 	"sync"
 )
@@ -42,7 +41,6 @@ const (
 	QuestionDialogType
 	WarningDialogType
 	ErrorDialogType
-	OpenDirectoryDialogType
 )
 
 type Button struct {
@@ -77,7 +75,7 @@ type MessageDialogOptions struct {
 	Message    string
 	Buttons    []*Button
 	Icon       []byte
-	window     *WebviewWindow
+	window     Window
 }
 
 type MessageDialog struct {
@@ -134,7 +132,7 @@ func (d *MessageDialog) AddButtons(buttons []*Button) *MessageDialog {
 }
 
 func (d *MessageDialog) AttachToWindow(window Window) *MessageDialog {
-	d.window = window.(*WebviewWindow)
+	d.window = window
 	return d
 }
 
@@ -180,7 +178,7 @@ type OpenFileDialogOptions struct {
 	TreatsFilePackagesAsDirectories bool
 	AllowsOtherFileTypes            bool
 	Filters                         []FileFilter
-	Window                          *WebviewWindow
+	Window                          Window
 
 	Title      string
 	Message    string
@@ -206,7 +204,7 @@ type OpenFileDialogStruct struct {
 	message    string
 	buttonText string
 	directory  string
-	window     *WebviewWindow
+	window     Window
 
 	impl openFileDialogImpl
 }
@@ -247,7 +245,7 @@ func (d *OpenFileDialogStruct) TreatsFilePackagesAsDirectories(treatsFilePackage
 }
 
 func (d *OpenFileDialogStruct) AttachToWindow(window Window) *OpenFileDialogStruct {
-	d.window = window.(*WebviewWindow)
+	d.window = window
 	return d
 }
 
@@ -293,11 +291,12 @@ func (d *OpenFileDialogStruct) PromptForMultipleSelection() ([]string, error) {
 	}
 
 	selections, err := InvokeSyncWithResultAndError(d.impl.show)
+	if err != nil {
+		return nil, err
+	}
 
 	var result []string
-	fmt.Println("Waiting for results:")
 	for filename := range selections {
-		fmt.Println(filename)
 		result = append(result, filename)
 	}
 
@@ -373,7 +372,7 @@ type SaveFileDialogOptions struct {
 	Filename                        string
 	ButtonText                      string
 	Filters                         []FileFilter
-	Window                          *WebviewWindow
+	Window                          Window
 }
 
 type SaveFileDialogStruct struct {
@@ -390,7 +389,7 @@ type SaveFileDialogStruct struct {
 	buttonText                      string
 	filters                         []FileFilter
 
-	window *WebviewWindow
+	window Window
 
 	impl  saveFileDialogImpl
 	title string
@@ -452,7 +451,7 @@ func (d *SaveFileDialogStruct) SetDirectory(directory string) *SaveFileDialogStr
 }
 
 func (d *SaveFileDialogStruct) AttachToWindow(window Window) *SaveFileDialogStruct {
-	d.window = window.(*WebviewWindow)
+	d.window = window
 	return d
 }
 

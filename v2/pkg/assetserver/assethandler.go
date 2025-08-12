@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -19,9 +20,6 @@ type Logger interface {
 	Debug(message string, args ...interface{})
 	Error(message string, args ...interface{})
 }
-
-//go:embed defaultindex.html
-var defaultHTML []byte
 
 const (
 	indexHTML = "index.html"
@@ -37,7 +35,6 @@ type assetHandler struct {
 }
 
 func NewAssetHandler(options assetserver.Options, log Logger) (http.Handler, error) {
-
 	vfs := options.Assets
 	if vfs != nil {
 		if _, err := vfs.Open("."); err != nil {
@@ -110,7 +107,7 @@ func (d *assetHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// serveFile will try to load the file from the fs.FS and write it to the response
+// serveFSFile will try to load the file from the fs.FS and write it to the response
 func (d *assetHandler) serveFSFile(rw http.ResponseWriter, req *http.Request, filename string) error {
 	if d.fs == nil {
 		return os.ErrNotExist
@@ -120,7 +117,9 @@ func (d *assetHandler) serveFSFile(rw http.ResponseWriter, req *http.Request, fi
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	statInfo, err := file.Stat()
 	if err != nil {
@@ -143,7 +142,9 @@ func (d *assetHandler) serveFSFile(rw http.ResponseWriter, req *http.Request, fi
 		if err != nil {
 			return err
 		}
-		defer file.Close()
+		defer func() {
+			_ = file.Close()
+		}()
 
 		statInfo, err = file.Stat()
 		if err != nil {
@@ -178,7 +179,8 @@ func (d *assetHandler) serveFSFile(rw http.ResponseWriter, req *http.Request, fi
 		return nil
 	}
 
-	rw.Header().Set(HeaderContentLength, fmt.Sprintf("%d", statInfo.Size()))
+	size := strconv.FormatInt(statInfo.Size(), 10)
+	rw.Header().Set(HeaderContentLength, size)
 
 	// Write the first 512 bytes used for MimeType sniffing
 	_, err = io.Copy(rw, bytes.NewReader(buf[:n]))

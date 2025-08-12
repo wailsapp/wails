@@ -73,7 +73,6 @@ type Options struct {
 
 // Build the project!
 func Build(options *Options) (string, error) {
-
 	// Extract logger
 	outputLogger := options.Logger
 
@@ -170,21 +169,23 @@ func CreateEmbedDirectories(cwd string, buildOptions *Options) error {
 
 	for _, embedDetail := range embedDetails {
 		fullPath := embedDetail.GetFullPath()
-		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-			err := os.MkdirAll(fullPath, 0755)
-			if err != nil {
-				return err
+		// assumes path is directory only if it has no extension
+		if filepath.Ext(fullPath) == "" {
+			if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+				err := os.MkdirAll(fullPath, 0o755)
+				if err != nil {
+					return err
+				}
+				f, err := os.Create(filepath.Join(fullPath, "gitkeep"))
+				if err != nil {
+					return err
+				}
+				_ = f.Close()
 			}
-			f, err := os.Create(filepath.Join(fullPath, "gitkeep"))
-			if err != nil {
-				return err
-			}
-			_ = f.Close()
 		}
 	}
 
 	return nil
-
 }
 
 func fatal(message string) {
@@ -213,7 +214,6 @@ func printBulletPoint(text string, args ...any) {
 }
 
 func GenerateBindings(buildOptions *Options) error {
-
 	obfuscated := buildOptions.Obfuscated
 	if obfuscated {
 		printBulletPoint("Generating obfuscated bindings: ")
@@ -222,12 +222,18 @@ func GenerateBindings(buildOptions *Options) error {
 		printBulletPoint("Generating bindings: ")
 	}
 
+	if buildOptions.ProjectData.Bindings.TsGeneration.OutputType == "" {
+		buildOptions.ProjectData.Bindings.TsGeneration.OutputType = "classes"
+	}
+
 	// Generate Bindings
 	output, err := bindings.GenerateBindings(bindings.Options{
-		Tags:      buildOptions.UserTags,
-		GoModTidy: !buildOptions.SkipModTidy,
-		TsPrefix:  buildOptions.ProjectData.Bindings.TsGeneration.Prefix,
-		TsSuffix:  buildOptions.ProjectData.Bindings.TsGeneration.Suffix,
+		Compiler:     buildOptions.Compiler,
+		Tags:         buildOptions.UserTags,
+		GoModTidy:    !buildOptions.SkipModTidy,
+		TsPrefix:     buildOptions.ProjectData.Bindings.TsGeneration.Prefix,
+		TsSuffix:     buildOptions.ProjectData.Bindings.TsGeneration.Suffix,
+		TsOutputType: buildOptions.ProjectData.Bindings.TsGeneration.OutputType,
 	})
 	if err != nil {
 		return err
@@ -255,7 +261,7 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 
 		// When we finish, we will want to remove the syso file
 		defer func() {
-			err := os.Remove(filepath.Join(options.ProjectData.Path, options.ProjectData.Name+"-res.syso"))
+			err := os.Remove(filepath.Join(options.ProjectData.Path, strings.ReplaceAll(options.ProjectData.Name, " ", "_")+"-res.syso"))
 			if err != nil {
 				fatal(err.Error())
 			}
@@ -319,6 +325,20 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		}
 	}
 
+	if runtime.GOOS == "darwin" {
+		// Remove quarantine attribute
+		if _, err := os.Stat(options.CompiledBinary); os.IsNotExist(err) {
+			return "", fmt.Errorf("compiled binary does not exist at path: %s", options.CompiledBinary)
+		}
+		stdout, stderr, err := shell.RunCommand(options.BinDirectory, "/usr/bin/xattr", "-rc", options.CompiledBinary)
+		if err != nil {
+			return "", fmt.Errorf("%s - %s", err.Error(), stderr)
+		}
+		if options.Verbosity == VERBOSE && stdout != "" {
+			pterm.Info.Println(stdout)
+		}
+	}
+
 	pterm.Println("Done.")
 
 	// Do we need to pack the app for non-windows?
@@ -371,7 +391,6 @@ func execPostBuildHook(outputLogger *clilogger.CLILogger, options *Options, hook
 	}
 
 	return executeBuildHook(outputLogger, options, hookIdentifier, argReplacements, postBuildHook, "post")
-
 }
 
 func executeBuildHook(_ *clilogger.CLILogger, options *Options, hookIdentifier string, argReplacements map[string]string, buildHook string, hookName string) error {
@@ -407,7 +426,6 @@ func executeBuildHook(_ *clilogger.CLILogger, options *Options, hookIdentifier s
 
 	if options.Verbosity == VERBOSE {
 		pterm.Info.Println(strings.Join(args, " "))
-
 	}
 
 	if !fs.DirExists(options.BinDirectory) {

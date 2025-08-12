@@ -1,0 +1,256 @@
+name: Build + Test v3
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - v3-alpha
+    paths:
+      - 'v3/**'
+  pull_request_review:
+    types: [submitted]
+    branches:
+      - v3-alpha
+
+jobs:
+  check_approval:
+    name: Check PR Approval
+    runs-on: ubuntu-latest
+    if: github.base_ref == 'v3-alpha'
+    outputs:
+      approved: ${{ steps.check.outputs.approved }}
+    steps:
+      - name: Check if PR is approved
+        id: check
+        run: |
+          if [[ "${{ github.event.review.state }}" == "approved" || "${{ github.event.pull_request.approved }}" == "true" ]]; then
+            echo "approved=true" >> $GITHUB_OUTPUT
+          else
+            echo "approved=false" >> $GITHUB_OUTPUT
+          fi
+
+  test_js:
+    name: Run JS Tests
+    needs: check_approval
+    runs-on: ubuntu-latest
+    if: github.base_ref == 'v3-alpha'
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: |
+          npm ci
+          npx --yes esbuild@latest --version
+
+      - name: Clean build artifacts
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: npm run clean
+
+      - name: Type-check runtime
+        working-directory: v3
+        run: task runtime:check
+
+      - name: Test runtime
+        working-directory: v3
+        run: task runtime:test
+
+      - name: Check that the bundled runtime builds
+        working-directory: v3
+        run: task runtime:build
+
+      - name: Check that the npm package builds
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: npm run build
+
+      - name: Store runtime build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-build-artifacts
+          path: |
+            v3/internal/runtime/desktop/@wailsio/runtime/dist/
+            v3/internal/runtime/desktop/@wailsio/runtime/types/
+            v3/internal/runtime/desktop/@wailsio/runtime/tsconfig.tsbuildinfo
+
+  test_go:
+    name: Run Go Tests v3
+    needs: [check_approval, test_js]
+    runs-on: ${{ matrix.os }}
+    if: github.base_ref == 'v3-alpha'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        go-version: [1.24]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install linux dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          packages: libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk
+          version: 1.0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: true
+          cache-dependency-path: "v3/go.sum"
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Retrieve runtime build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: runtime-build-artifacts
+          path: v3/internal/runtime/desktop/@wailsio/runtime/
+
+      - name: Build Examples
+        working-directory: v3
+        run: |
+          echo "Starting example compilation tests..."
+          task test:examples
+          echo "Example compilation tests completed successfully"
+
+      - name: Run tests (mac)
+        if: matrix.os == 'macos-latest'
+        env:
+          CGO_LDFLAGS: -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
+        working-directory: v3
+        run: go test -v ./...
+
+      - name: Run tests (windows)
+        if: matrix.os == 'windows-latest'
+        working-directory: v3
+        run: go test -v ./...
+
+      - name: Run tests (ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: v3
+        run: >
+          xvfb-run --auto-servernum
+          sh -c '
+          dbus-update-activation-environment --systemd --all &&
+          go test -v ./...
+          '
+
+      - name: Typecheck binding generator output
+        working-directory: v3
+        run: task generator:test:check
+
+  cleanup:
+    name: Cleanup build artifacts
+    if: always()
+    needs: [test_js, test_go]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: geekyeggo/delete-artifact@v5
+        with:
+          name: runtime-build-artifacts
+          failOnError: false
+
+  test_templates:
+    name: Test Templates
+    needs: test_go
+    runs-on: ${{ matrix.os }}
+    if: github.base_ref == 'v3-alpha'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        template:
+          - svelte
+          - svelte-ts
+          - vue
+          - vue-ts
+          - react
+          - react-ts
+          - preact
+          - preact-ts
+          - lit
+          - lit-ts
+          - vanilla
+          - vanilla-ts
+        go-version: [1.24]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install linux dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          packages: libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
+          version: 1.0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: true
+          cache-dependency-path: "v3/go.sum"
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Wails3 CLI
+        working-directory: v3
+        run: |
+          task install
+          wails3 doctor
+
+      - name: Generate template '${{ matrix.template }}'
+        run: |
+          mkdir -p ./test-${{ matrix.template }}
+          cd ./test-${{ matrix.template }}
+          wails3 init -n ${{ matrix.template }} -t ${{ matrix.template }}
+          cd ${{ matrix.template }}
+          wails3 build
+
+  build_results:
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    name: v3 Build Results
+    needs: [test_go, test_js, test_templates]
+    steps:
+      - run: |
+          go_result="${{ needs.test_go.result }}"
+          js_result="${{ needs.test_js.result }}"
+          templates_result="${{ needs.test_templates.result }}"
+          
+          if [[ $go_result == "success" || $go_result == "skipped" ]] && \
+             [[ $js_result == "success" || $js_result == "skipped" ]] && \
+             [[ $templates_result == "success" || $templates_result == "skipped" ]]; then
+            echo "All required jobs succeeded or were skipped"
+            exit 0
+          else
+            echo "One or more required jobs failed"
+            exit 1
+          fi

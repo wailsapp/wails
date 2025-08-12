@@ -1,0 +1,620 @@
+---
+title: Environment
+sidebar:
+  order: 59
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails provides comprehensive environment information through the EnvironmentManager API. This allows your application to detect system properties, theme preferences, and integrate with the operating system's file manager.
+
+## Accessing the Environment Manager
+
+The environment manager is accessed through the `Env` property on your application instance:
+
+```go
+app := application.New(application.Options{
+    Name: "Environment Demo",
+})
+
+// Access the environment manager
+env := app.Env
+```
+
+## System Information
+
+### Get Environment Information
+
+Retrieve comprehensive information about the runtime environment:
+
+```go
+envInfo := app.Env.Info()
+
+app.Logger.Info("Environment information",
+    "os", envInfo.OS,           // "windows", "darwin", "linux"
+    "arch", envInfo.Arch,       // "amd64", "arm64", etc.
+    "debug", envInfo.Debug,     // Debug mode flag
+)
+
+// Operating system details
+if envInfo.OSInfo != nil {
+    app.Logger.Info("OS details",
+        "name", envInfo.OSInfo.Name,
+        "version", envInfo.OSInfo.Version,
+    )
+}
+
+// Platform-specific information
+for key, value := range envInfo.PlatformInfo {
+    app.Logger.Info("Platform info", "key", key, "value", value)
+}
+```
+
+### Environment Structure
+
+The environment information includes several important fields:
+
+```go
+type EnvironmentInfo struct {
+    OS           string                 // Operating system: "windows", "darwin", "linux"
+    Arch         string                 // Architecture: "amd64", "arm64", "386", etc.
+    Debug        bool                   // Whether running in debug mode
+    OSInfo       *operatingsystem.OS    // Detailed OS information
+    PlatformInfo map[string]any         // Platform-specific details
+}
+```
+
+## Theme Detection
+
+### Dark Mode Detection
+
+Detect whether the system is using dark mode:
+
+```go
+if app.Env.IsDarkMode() {
+    app.Logger.Info("System is in dark mode")
+    // Apply dark theme to your application
+    applyDarkTheme()
+} else {
+    app.Logger.Info("System is in light mode")
+    // Apply light theme to your application
+    applyLightTheme()
+}
+```
+
+### Theme Change Monitoring
+
+Listen for theme changes to update your application dynamically:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// Listen for theme changes
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
+    if app.Env.IsDarkMode() {
+        app.Logger.Info("Switched to dark mode")
+        updateApplicationTheme("dark")
+    } else {
+        app.Logger.Info("Switched to light mode")
+        updateApplicationTheme("light")
+    }
+})
+
+func updateApplicationTheme(theme string) {
+    // Update your application's theme
+    // This could emit an event to the frontend
+    app.Event.Emit("theme:changed", theme)
+}
+```
+
+## File Manager Integration
+
+### Open File Manager
+
+Open the system's file manager at a specific location:
+
+```go
+// Open file manager at a directory
+err := app.Env.OpenFileManager("/Users/username/Documents", false)
+if err != nil {
+    app.Logger.Error("Failed to open file manager", "error", err)
+}
+
+// Open file manager and select a specific file
+err = app.Env.OpenFileManager("/Users/username/Documents/report.pdf", true)
+if err != nil {
+    app.Logger.Error("Failed to open file manager with selection", "error", err)
+}
+```
+
+### Common Use Cases
+
+Show files or folders in the file manager from your application:
+
+```go
+func showInFileManager(app *application.App, path string) {
+    err := app.Env.OpenFileManager(path, true)
+    if err != nil {
+        // Fallback: try opening just the directory
+        dir := filepath.Dir(path)
+        err = app.Env.OpenFileManager(dir, false)
+        if err != nil {
+            app.Logger.Error("Could not open file manager", "path", path, "error", err)
+            
+            // Show error to user
+            app.Dialog.Error().
+                SetTitle("File Manager Error").
+                SetMessage("Could not open file manager").
+                Show()
+        }
+    }
+}
+
+// Usage examples
+func setupFileMenu(app *application.App) {
+    menu := app.Menu.New()
+    fileMenu := menu.AddSubmenu("File")
+    
+    fileMenu.Add("Show Downloads Folder").OnClick(func(ctx *application.Context) {
+        homeDir, _ := os.UserHomeDir()
+        downloadsDir := filepath.Join(homeDir, "Downloads")
+        showInFileManager(app, downloadsDir)
+    })
+    
+    fileMenu.Add("Show Application Data").OnClick(func(ctx *application.Context) {
+        configDir, _ := os.UserConfigDir()
+        appDir := filepath.Join(configDir, "MyApp")
+        showInFileManager(app, appDir)
+    })
+}
+```
+
+## Platform-Specific Behavior
+
+### Adaptive Application Behavior
+
+Use environment information to adapt your application's behavior:
+
+```go
+func configureForPlatform(app *application.App) {
+    envInfo := app.Env.Info()
+    
+    switch envInfo.OS {
+    case "darwin":
+        configureMacOS(app)
+    case "windows":
+        configureWindows(app)
+    case "linux":
+        configureLinux(app)
+    }
+    
+    // Adapt to architecture
+    if envInfo.Arch == "arm64" {
+        app.Logger.Info("Running on ARM architecture")
+        // Potentially optimize for ARM
+    }
+}
+
+func configureMacOS(app *application.App) {
+    app.Logger.Info("Configuring for macOS")
+    
+    // macOS-specific configuration
+    menu := app.Menu.New()
+    menu.AddRole(application.AppMenu) // Add standard macOS app menu
+    
+    // Handle dark mode
+    if app.Env.IsDarkMode() {
+        setMacOSDarkTheme()
+    }
+}
+
+func configureWindows(app *application.App) {
+    app.Logger.Info("Configuring for Windows")
+    
+    // Windows-specific configuration
+    // Set up Windows-style menus, key bindings, etc.
+}
+
+func configureLinux(app *application.App) {
+    app.Logger.Info("Configuring for Linux")
+    
+    // Linux-specific configuration
+    // Adapt to different desktop environments
+}
+```
+
+## Debug Mode Handling
+
+### Development vs Production
+
+Use debug mode information to enable development features:
+
+```go
+func setupApplicationMode(app *application.App) {
+    envInfo := app.Env.Info()
+    
+    if envInfo.Debug {
+        app.Logger.Info("Running in debug mode")
+        setupDevelopmentFeatures(app)
+    } else {
+        app.Logger.Info("Running in production mode")
+        setupProductionFeatures(app)
+    }
+}
+
+func setupDevelopmentFeatures(app *application.App) {
+    // Enable development-only features
+    menu := app.Menu.New()
+    
+    // Add development menu
+    devMenu := menu.AddSubmenu("Development")
+    devMenu.Add("Reload Application").OnClick(func(ctx *application.Context) {
+        // Reload the application
+        window := app.Window.Current()
+        if window != nil {
+            window.Reload()
+        }
+    })
+    
+    devMenu.Add("Open DevTools").OnClick(func(ctx *application.Context) {
+        window := app.Window.Current()
+        if window != nil {
+            window.OpenDevTools()
+        }
+    })
+    
+    devMenu.Add("Show Environment").OnClick(func(ctx *application.Context) {
+        showEnvironmentDialog(app)
+    })
+}
+
+func setupProductionFeatures(app *application.App) {
+    // Production-only features
+    // Disable debug logging, enable analytics, etc.
+}
+```
+
+## Environment Information Dialog
+
+### Display System Information
+
+Create a dialog showing environment information:
+
+```go
+func showEnvironmentDialog(app *application.App) {
+    envInfo := app.Env.Info()
+    
+    details := fmt.Sprintf(`Environment Information:
+
+Operating System: %s
+Architecture: %s
+Debug Mode: %t
+
+Dark Mode: %t
+
+Platform Information:`, 
+        envInfo.OS, 
+        envInfo.Arch, 
+        envInfo.Debug,
+        app.Env.IsDarkMode())
+    
+    // Add platform-specific details
+    for key, value := range envInfo.PlatformInfo {
+        details += fmt.Sprintf("\n%s: %v", key, value)
+    }
+    
+    if envInfo.OSInfo != nil {
+        details += fmt.Sprintf("\n\nOS Details:\nName: %s\nVersion: %s", 
+            envInfo.OSInfo.Name, 
+            envInfo.OSInfo.Version)
+    }
+    
+    dialog := app.Dialog.Info()
+    dialog.SetTitle("Environment Information")
+    dialog.SetMessage(details)
+    dialog.Show()
+}
+```
+
+## Platform Considerations
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    On macOS:
+    
+    - Dark mode detection uses system appearance settings
+    - File manager operations use Finder
+    - Platform info includes macOS version details
+    - Architecture may be "arm64" on Apple Silicon Macs
+    
+    ```go
+    if envInfo.OS == "darwin" {
+        // macOS-specific handling
+        if envInfo.Arch == "arm64" {
+            app.Logger.Info("Running on Apple Silicon")
+        }
+    }
+    ```
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    On Windows:
+    
+    - Dark mode detection uses Windows theme settings
+    - File manager operations use Windows Explorer
+    - Platform info includes Windows version details
+    - May include additional Windows-specific information
+    
+    ```go
+    if envInfo.OS == "windows" {
+        // Windows-specific handling
+        for key, value := range envInfo.PlatformInfo {
+            if key == "windows_version" {
+                app.Logger.Info("Windows version", "version", value)
+            }
+        }
+    }
+    ```
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    On Linux:
+    
+    - Dark mode detection varies by desktop environment
+    - File manager operations use system default file manager
+    - Platform info includes distribution details
+    - Behavior may vary between different Linux distributions
+    
+    ```go
+    if envInfo.OS == "linux" {
+        // Linux-specific handling
+        if distro, ok := envInfo.PlatformInfo["distribution"]; ok {
+            app.Logger.Info("Linux distribution", "distro", distro)
+        }
+    }
+    ```
+    
+  </TabItem>
+</Tabs>
+
+## Best Practices
+
+1. **Cache Environment Information**: Environment info rarely changes during runtime:
+   ```go
+   type App struct {
+       envInfo *application.EnvironmentInfo
+   }
+   
+   func (a *App) getEnvInfo() application.EnvironmentInfo {
+       if a.envInfo == nil {
+           info := a.app.Env.Info()
+           a.envInfo = &info
+       }
+       return *a.envInfo
+   }
+   ```
+
+2. **Handle Theme Changes**: Listen for system theme changes:
+   ```go
+   app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
+       updateTheme(app.Env.IsDarkMode())
+   })
+   ```
+
+3. **Graceful File Manager Failures**: Always handle file manager errors:
+   ```go
+   func openFileManagerSafely(app *application.App, path string) {
+       err := app.Env.OpenFileManager(path, false)
+       if err != nil {
+           // Provide fallback or user notification
+           app.Logger.Warn("Could not open file manager", "path", path)
+       }
+   }
+   ```
+
+4. **Platform-Specific Features**: Use environment info to enable platform features:
+   ```go
+   envInfo := app.Env.Info()
+   if envInfo.OS == "darwin" {
+       // Enable macOS-specific features
+   }
+   ```
+
+## Complete Example
+
+Here's a complete example demonstrating environment management:
+
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+    "path/filepath"
+    "runtime"
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Environment Demo",
+    })
+
+    // Setup application based on environment
+    setupForEnvironment(app)
+
+    // Monitor theme changes
+    monitorThemeChanges(app)
+
+    // Create menu with environment features
+    setupEnvironmentMenu(app)
+
+    // Create main window
+    window := app.Window.New()
+    window.SetTitle("Environment Demo")
+
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
+}
+
+func setupForEnvironment(app *application.App) {
+    envInfo := app.Env.Info()
+    
+    app.Logger.Info("Application environment",
+        "os", envInfo.OS,
+        "arch", envInfo.Arch,
+        "debug", envInfo.Debug,
+        "darkMode", app.Env.IsDarkMode(),
+    )
+
+    // Configure for platform
+    switch envInfo.OS {
+    case "darwin":
+        app.Logger.Info("Configuring for macOS")
+        // macOS-specific setup
+    case "windows":
+        app.Logger.Info("Configuring for Windows")
+        // Windows-specific setup
+    case "linux":
+        app.Logger.Info("Configuring for Linux")
+        // Linux-specific setup
+    }
+
+    // Apply initial theme
+    if app.Env.IsDarkMode() {
+        applyDarkTheme(app)
+    } else {
+        applyLightTheme(app)
+    }
+}
+
+func monitorThemeChanges(app *application.App) {
+    app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
+        if app.Env.IsDarkMode() {
+            app.Logger.Info("System switched to dark mode")
+            applyDarkTheme(app)
+        } else {
+            app.Logger.Info("System switched to light mode")
+            applyLightTheme(app)
+        }
+    })
+}
+
+func setupEnvironmentMenu(app *application.App) {
+    menu := app.Menu.New()
+    
+    // Add platform-specific app menu
+    if runtime.GOOS == "darwin" {
+        menu.AddRole(application.AppMenu)
+    }
+    
+    // Tools menu
+    toolsMenu := menu.AddSubmenu("Tools")
+    
+    toolsMenu.Add("Show Environment Info").OnClick(func(ctx *application.Context) {
+        showEnvironmentInfo(app)
+    })
+    
+    toolsMenu.Add("Open Downloads Folder").OnClick(func(ctx *application.Context) {
+        openDownloadsFolder(app)
+    })
+    
+    toolsMenu.Add("Toggle Theme").OnClick(func(ctx *application.Context) {
+        // This would typically be handled by the system
+        // but shown here for demonstration
+        toggleTheme(app)
+    })
+    
+    app.Menu.Set(menu)
+}
+
+func showEnvironmentInfo(app *application.App) {
+    envInfo := app.Env.Info()
+    
+    message := fmt.Sprintf(`Environment Information:
+
+Operating System: %s
+Architecture: %s
+Debug Mode: %t
+Dark Mode: %t
+
+Platform Details:`,
+        envInfo.OS,
+        envInfo.Arch,
+        envInfo.Debug,
+        app.Env.IsDarkMode())
+    
+    for key, value := range envInfo.PlatformInfo {
+        message += fmt.Sprintf("\n%s: %v", key, value)
+    }
+    
+    if envInfo.OSInfo != nil {
+        message += fmt.Sprintf("\n\nOS Information:\nName: %s\nVersion: %s",
+            envInfo.OSInfo.Name,
+            envInfo.OSInfo.Version)
+    }
+    
+    dialog := app.Dialog.Info()
+    dialog.SetTitle("Environment Information")
+    dialog.SetMessage(message)
+    dialog.Show()
+}
+
+func openDownloadsFolder(app *application.App) {
+    homeDir, err := os.UserHomeDir()
+    if err != nil {
+        app.Logger.Error("Could not get home directory", "error", err)
+        return
+    }
+    
+    downloadsDir := filepath.Join(homeDir, "Downloads")
+    err = app.Env.OpenFileManager(downloadsDir, false)
+    if err != nil {
+        app.Logger.Error("Could not open Downloads folder", "error", err)
+        
+        app.Dialog.Error().
+            SetTitle("File Manager Error").
+            SetMessage("Could not open Downloads folder").
+            Show()
+    }
+}
+
+func applyDarkTheme(app *application.App) {
+    app.Logger.Info("Applying dark theme")
+    // Emit theme change to frontend
+    app.Event.Emit("theme:apply", "dark")
+}
+
+func applyLightTheme(app *application.App) {
+    app.Logger.Info("Applying light theme")
+    // Emit theme change to frontend
+    app.Event.Emit("theme:apply", "light")
+}
+
+func toggleTheme(app *application.App) {
+    // This is just for demonstration
+    // Real theme changes should come from the system
+    currentlyDark := app.Env.IsDarkMode()
+    if currentlyDark {
+        applyLightTheme(app)
+    } else {
+        applyDarkTheme(app)
+    }
+}
+```
+
+:::tip[Pro Tip]
+Use environment information to provide platform-appropriate user experiences. For example, use Command key shortcuts on macOS and Control key shortcuts on Windows/Linux.
+:::
+
+:::danger[Warning]
+Environment information is generally stable during application runtime, but theme preferences can change. Always listen for theme change events to keep your UI synchronized.
+:::

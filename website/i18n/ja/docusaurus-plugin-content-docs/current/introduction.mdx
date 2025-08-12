@@ -21,16 +21,14 @@ Wailsは、Go言語とWeb技術を使用して、デスクトップアプリの�
 - 豊富な[ランタイムライブラリ](/docs/reference/runtime/intro)を用意しています
 - Wailsで構築されたアプリケーションは、Apple StoreおよびMicrosoft Storeに準拠しています
 
-例えば [varly](https://varly.app) は、Wailsで構築されたMacOS・Windows向けのデスクトップアプリです。 見栄えが良いだけではなく、ネイティブメニューや半透明効果を使用しています。これらは、モダンなネイティブアプリに期待されるものです。
+This is varly - a desktop application for MacOS & Windows written using Wails. 見栄えが良いだけではなく、ネイティブメニューや半透明効果を使用しています。これらは、モダンなネイティブアプリに期待されるものです。
 
 ```mdx-code-block
 <p class="text--center">
-  <a href="https://varly.app/">
     <img
       src={require("@site/static/img/showcase/varly2.webp").default}
       style={{ width: "75%", "max-width": "800px" }}
     />
-  </a>
 </p>
 ```
 
@@ -42,7 +40,7 @@ Wailsには、アプリの開発をすばやく始められるように、多数
 
 Wailsは、ウィンドウ、メニュー、ダイアログなどのネイティブ要素を処理する専用ライブラリを使用するため、見栄えが良く、リッチな機能を備えたデスクトップアプリを構築できます。
 
-**ブラウザを埋め込まないため**、無駄なリソースを割きません。 ブラウザを埋め込まない代わりに、OSプラットフォームのネイティブなレンダリングエンジンを使用します。 例えばWindowsの場合、Chromium上でビルトされているMicrosoft Webview2ライブラリを使用します。
+**It does not embed a browser**, so it delivers a small runtime. Instead, it reuses the native rendering engine for the platform. 例えばWindowsの場合、Chromium上でビルトされているMicrosoft Webview2ライブラリを使用します。
 
 ### GoとJavascriptのやり取り
 

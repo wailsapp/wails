@@ -1,0 +1,188 @@
+---
+title: Menu Reference
+sidebar:
+  order: 52
+---
+
+This reference document covers the common menu item types and properties available in Wails v3. These features are shared between application menus and context menus.
+
+## Menu Item Types
+
+### Regular Menu Items
+
+The most basic type of menu item displays text and triggers an action when clicked:
+
+```go
+menuItem := menu.Add("Click Me")
+menuItem.OnClick(func(ctx *application.Context) {
+    // Handle click
+})
+```
+
+### Checkboxes
+
+Checkbox menu items provide a toggleable state:
+
+```go
+checkbox := menu.AddCheckbox("Enable Feature", true)  // true = initially checked
+checkbox.OnClick(func(ctx *application.Context) {
+    isChecked := ctx.ClickedMenuItem().Checked()
+    // Handle state change
+})
+```
+
+### Radio Groups
+
+Radio items create mutually exclusive options. Items are grouped automatically when placed adjacently:
+
+```go
+menu.AddRadio("Option 1", true)   // true = initially selected
+menu.AddRadio("Option 2", false)
+menu.AddRadio("Option 3", false)
+```
+
+### Submenus
+
+Submenus allow you to create nested menu structures:
+
+```go
+submenu := menu.AddSubmenu("More Options")
+submenu.Add("Submenu Item 1")
+submenu.Add("Submenu Item 2")
+```
+
+### Separators
+
+Separators add visual dividers between menu items:
+
+```go
+menu.Add("Item 1")
+menu.AddSeparator()
+menu.Add("Item 2")
+```
+
+## Menu Item Properties
+
+### Label
+
+The text displayed for the menu item:
+
+```go
+menuItem := menu.Add("Initial Label")
+menuItem.SetLabel("New Label")
+```
+
+### Enabled State
+
+Control whether the menu item can be interacted with:
+
+```go
+menuItem := menu.Add("Disabled Item")
+menuItem.SetEnabled(false)
+```
+
+### Checked State
+
+For checkbox and radio items, control or query their checked state:
+
+```go
+checkbox := menu.AddCheckbox("Feature", false)
+checkbox.SetChecked(true)
+isChecked := checkbox.Checked()
+```
+
+### Accelerators
+
+Add keyboard shortcuts to menu items:
+
+```go
+menuItem := menu.Add("Save")
+menuItem.SetAccelerator("CmdOrCtrl+S")
+```
+
+Common accelerator modifiers:
+- `CmdOrCtrl`: Command on macOS, Control on Windows/Linux
+- `Shift`
+- `Alt`: Option on macOS
+- `Ctrl`: Control key on all platforms
+
+## Event Handling
+
+### Click Events
+
+Handle menu item clicks using the `OnClick` method:
+
+```go
+menuItem.OnClick(func(ctx *application.Context) {
+    // Access the clicked item
+    clickedItem := ctx.ClickedMenuItem()
+    
+    // Get current state
+    label := clickedItem.Label()
+    isChecked := clickedItem.Checked()
+    
+    // Update the item
+    clickedItem.SetLabel("New Label")
+})
+```
+
+### Shared Event Handlers
+
+Event handlers can be shared amongst multiple menu items:
+
+```go
+handleClick := func(ctx *application.Context) {
+    item := ctx.ClickedMenuItem()
+    // Common handling logic
+}
+
+menu.Add("Item 1").OnClick(handleClick)
+menu.Add("Item 2").OnClick(handleClick)
+```
+
+## Dynamic Updates
+
+Menu items can be updated dynamically during runtime:
+
+```go
+menuItem := menu.Add("Initial State")
+
+// Later, update the item
+menuItem.SetLabel("New Label")
+menuItem.SetEnabled(false)
+menuItem.SetChecked(true)
+
+// Apply changes
+menu.Update()
+```
+
+:::note[Update Required]
+After modifying menu items, call `Update()` on the parent menu to apply the changes.
+:::
+
+## Best Practices
+
+1. Use clear, concise labels that describe the action
+2. Group related items together using separators
+3. Limit submenu depth to maintain usability
+4. Provide keyboard shortcuts for common actions
+5. Keep radio groups focused on a single choice
+6. Update menu items to reflect application state
+7. Handle all possible states in click handlers
+
+:::tip[Pro Tip]
+When sharing event handlers, use the `ctx.ClickedMenuItem()` method to determine which item triggered the event and handle it accordingly.
+:::
+
+## Platform Considerations
+
+:::note[Platform Behaviour]
+Menu appearance and behaviour varies by platform:
+- macOS: Uses native menu styling and supports system roles
+- Windows: Follows Windows menu conventions
+- Linux: Adapts to the desktop environment's theme
+:::
+
+:::danger[Warning]
+Always test menu functionality across all supported platforms, as behaviour and appearance may vary significantly.
+:::

@@ -1,6 +1,7 @@
 package assetserver
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -23,9 +24,9 @@ type assetServerWebView struct {
 // ServeWebViewRequest processes the HTTP Request asynchronously by faking a golang HTTP Server.
 // The request will be finished with a StatusNotImplemented code if no handler has written to the response.
 // The AssetServer takes ownership of the request and the caller mustn't close it or access it in any other way.
-func (d *AssetServer) ServeWebViewRequest(req webview.Request) {
-	d.dispatchInit.Do(func() {
-		workers := d.dispatchWorkers
+func (a *AssetServer) ServeWebViewRequest(req webview.Request) {
+	a.dispatchInit.Do(func() {
+		workers := a.dispatchWorkers
 		if workers <= 0 {
 			return
 		}
@@ -34,7 +35,7 @@ func (d *AssetServer) ServeWebViewRequest(req webview.Request) {
 		for i := 0; i < workers; i++ {
 			go func() {
 				for req := range workerC {
-					d.processWebViewRequest(req)
+					a.processWebViewRequest(req)
 				}
 			}()
 		}
@@ -42,62 +43,66 @@ func (d *AssetServer) ServeWebViewRequest(req webview.Request) {
 		dispatchC := make(chan webview.Request)
 		go queueingDispatcher(50, dispatchC, workerC)
 
-		d.dispatchReqC = dispatchC
+		a.dispatchReqC = dispatchC
 	})
 
-	if d.dispatchReqC == nil {
-		go d.processWebViewRequest(req)
+	if a.dispatchReqC == nil {
+		go a.processWebViewRequest(req)
 	} else {
-		d.dispatchReqC <- req
+		a.dispatchReqC <- req
 	}
 }
 
-func (d *AssetServer) processWebViewRequest(r webview.Request) {
+func (a *AssetServer) processWebViewRequest(r webview.Request) {
 	uri, _ := r.URL()
-	d.processWebViewRequestInternal(r)
+	a.processWebViewRequestInternal(r)
 	if err := r.Close(); err != nil {
-		d.logError("Unable to call close for request for uri '%s'", uri)
+		a.options.Logger.Error("Unable to call close for request for uri.", "uri", uri)
 	}
 }
 
 // processHTTPRequest processes the HTTP Request by faking a golang HTTP Server.
 // The request will be finished with a StatusNotImplemented code if no handler has written to the response.
-func (d *AssetServer) processWebViewRequestInternal(r webview.Request) {
+func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 	uri := "unknown"
 	var err error
 
 	wrw := r.Response()
 	defer func() {
 		if err := wrw.Finish(); err != nil {
-			d.logError("Error finishing request '%s': %s", uri, err)
+			a.options.Logger.Error("Error finishing request.", "uri", uri, "error", err)
 		}
 	}()
 
-	var rw http.ResponseWriter = &contentTypeSniffer{rw: wrw} // Make sure we have a Content-Type sniffer
-	defer rw.WriteHeader(http.StatusNotImplemented)           // This is a NOP when a handler has already written and set the status
+	rw := newContentTypeSniffer(wrw) // Make sure we have a Content-Type sniffer
+	defer func() {
+		if _, err := rw.complete(); err != nil {
+			a.options.Logger.Error("Error writing response data.", "uri", uri, "error", err)
+		}
+	}()
+	defer rw.WriteHeader(http.StatusNotImplemented) // This is a NOP when a handler has already written and set the status
 
 	uri, err = r.URL()
 	if err != nil {
-		d.logError("Error processing request, unable to get URL: %s (HttpResponse=500)", err)
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		a.webviewRequestErrorHandler(uri, rw, fmt.Errorf("URL: %w", err))
 		return
 	}
 
 	method, err := r.Method()
 	if err != nil {
-		d.webviewRequestErrorHandler(uri, rw, fmt.Errorf("HTTP-Method: %w", err))
+		a.webviewRequestErrorHandler(uri, rw, fmt.Errorf("HTTP-Method: %w", err))
 		return
 	}
 
 	header, err := r.Header()
 	if err != nil {
-		d.webviewRequestErrorHandler(uri, rw, fmt.Errorf("HTTP-Header: %w", err))
+		a.webviewRequestErrorHandler(uri, rw, fmt.Errorf("HTTP-Header: %w", err))
 		return
 	}
 
 	body, err := r.Body()
 	if err != nil {
-		d.webviewRequestErrorHandler(uri, rw, fmt.Errorf("HTTP-Body: %w", err))
+		a.webviewRequestErrorHandler(uri, rw, fmt.Errorf("HTTP-Body: %w", err))
 		return
 	}
 
@@ -106,9 +111,12 @@ func (d *AssetServer) processWebViewRequestInternal(r webview.Request) {
 	}
 	defer body.Close()
 
-	req, err := http.NewRequest(method, uri, body)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, method, uri, body)
 	if err != nil {
-		d.webviewRequestErrorHandler(uri, rw, fmt.Errorf("HTTP-Request: %w", err))
+		a.webviewRequestErrorHandler(uri, rw, fmt.Errorf("HTTP-Request: %w", err))
 		return
 	}
 
@@ -119,8 +127,8 @@ func (d *AssetServer) processWebViewRequestInternal(r webview.Request) {
 	req.URL.Fragment = ""
 	req.URL.RawFragment = ""
 
-	if url := req.URL; req.RequestURI == "" && url != nil {
-		req.RequestURI = url.String()
+	if requestURL := req.URL; req.RequestURI == "" && requestURL != nil {
+		req.RequestURI = requestURL.String()
 	}
 
 	req.Header = header
@@ -144,21 +152,21 @@ func (d *AssetServer) processWebViewRequestInternal(r webview.Request) {
 		req.Host = host
 	}
 
-	if expectedHost := d.ExpectedWebViewHost; expectedHost != "" && expectedHost != req.Host {
-		d.webviewRequestErrorHandler(uri, rw, fmt.Errorf("expected host '%s' in request, but was '%s'", expectedHost, req.Host))
+	if expectedHost := a.ExpectedWebViewHost; expectedHost != "" && expectedHost != req.Host {
+		a.webviewRequestErrorHandler(uri, rw, fmt.Errorf("expected host '%s' in request, but was '%s'", expectedHost, req.Host))
 		return
 	}
 
-	d.ServeHTTP(rw, req)
+	a.ServeHTTP(rw, req)
 }
 
-func (d *AssetServer) webviewRequestErrorHandler(uri string, rw http.ResponseWriter, err error) {
+func (a *AssetServer) webviewRequestErrorHandler(uri string, rw http.ResponseWriter, err error) {
 	logInfo := uri
 	if uri, err := url.ParseRequestURI(uri); err == nil {
 		logInfo = strings.Replace(logInfo, fmt.Sprintf("%s://%s", uri.Scheme, uri.Host), "", 1)
 	}
 
-	d.logError("Error processing request (HttpResponse=500)", "details", logInfo, "error", err.Error())
+	a.options.Logger.Error("Error processing request (HttpResponse=500)", "details", logInfo, "error", err)
 	http.Error(rw, err.Error(), http.StatusInternalServerError)
 }
 

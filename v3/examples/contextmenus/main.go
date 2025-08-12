@@ -17,14 +17,14 @@ func main() {
 		Name:        "Context Menu Demo",
 		Description: "A demo of the Context Menu API",
 		Assets: application.AssetOptions{
-			FS: assets,
+			Handler: application.BundledAssetFileServer(assets),
 		},
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
 
-	mainWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "Context Menu Demo",
 		Width:  1024,
 		Height: 1024,
@@ -35,21 +35,17 @@ func main() {
 		},
 	})
 
-	contextMenu := app.NewMenu()
-	contextMenu.Add("Click Me").OnClick(func(data *application.Context) {
+	contextMenu := app.ContextMenu.New()
+	clickMe := contextMenu.Add("Click to set Menuitem label to Context Data")
+	contextDataMenuItem := contextMenu.Add("Current context data: No Context Data")
+	clickMe.OnClick(func(data *application.Context) {
 		app.Logger.Info("Context menu", "context data", data.ContextMenuData())
+		contextDataMenuItem.SetLabel("Current context data: " + data.ContextMenuData())
+		contextMenu.Update()
 	})
 
-	globalContextMenu := app.NewMenu()
-	globalContextMenu.Add("Default context menu item").OnClick(func(data *application.Context) {
-		app.Logger.Info("Context menu", "context data", data.ContextMenuData())
-	})
-
-	// Registering the menu with a window will make it available to that window only
-	mainWindow.RegisterContextMenu("test", contextMenu)
-
-	// Registering the menu with the app will make it available to all windows
-	app.RegisterContextMenu("test", globalContextMenu)
+	// Register the context menu
+	app.ContextMenu.Add("test", contextMenu)
 
 	err := app.Run()
 

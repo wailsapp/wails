@@ -72,6 +72,23 @@ const (
 	IMAGE_ENHMETAFILE = 3
 )
 
+// SetProcessDpiAwareness constants
+const (
+	PROCESS_DPI_UNAWARE           = 0
+	PROCESS_SYSTEM_DPI_AWARE      = 1
+	PROCESS_PER_MONITOR_DPI_AWARE = 2
+)
+
+// SetProcessDpiAwarenessContext constants
+// Credit: https://github.com/ncruces/zenity
+const (
+	DPI_AWARENESS_CONTEXT_UNAWARE              = ^uintptr(1) + 1
+	DPI_AWARENESS_CONTEXT_SYSTEM_AWARE         = ^uintptr(2) + 1
+	DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE    = ^uintptr(3) + 1
+	DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 = ^uintptr(4) + 1
+	DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED    = ^uintptr(5) + 1
+)
+
 // ShowWindow constants
 const (
 	SW_HIDE            = 0
@@ -140,6 +157,30 @@ const (
 	IDI_WARNING     = IDI_EXCLAMATION
 	IDI_ERROR       = IDI_HAND
 	IDI_INFORMATION = IDI_ASTERISK
+)
+
+const (
+	RT_CURSOR       = 1 // win32.MAKEINTRESOURCE(1)
+	RT_BITMAP       = 2
+	RT_ICON         = 3
+	RT_MENU         = 4
+	RT_DIALOG       = 5
+	RT_STRING       = 6
+	RT_FONTDIR      = 7
+	RT_FONT         = 8
+	RT_ACCELERATOR  = 9
+	RT_RCDATA       = 10
+	RT_MESSAGETABLE = 11
+	RT_GROUP_CURSOR = 12
+	RT_GROUP_ICON   = 14
+	RT_VERSION      = 16
+	RT_DLGINCLUDE   = 17
+	RT_PLUGPLAY     = 19
+	RT_VXD          = 20
+	RT_ANICURSOR    = 21
+	RT_ANIICON      = 22
+	RT_HTML         = 23
+	RT_MANIFEST     = 24
 )
 
 // Button style constants
@@ -487,6 +528,9 @@ const (
 	WM_PAINT                  = 15
 	WM_PAINTCLIPBOARD         = 777
 	WM_PAINTICON              = 38
+	WM_UAHDRAWMENU            = 0x0091
+	WM_UAHDRAWMENUITEM        = 0x0092
+	WM_UAHMEASUREMENUITEM     = 0x0094
 	WM_PALETTECHANGED         = 785
 	WM_PALETTEISCHANGING      = 784
 	WM_PARENTNOTIFY           = 528
@@ -538,6 +582,7 @@ const (
 	WM_VSCROLLCLIPBOARD       = 778
 	WM_WINDOWPOSCHANGED       = 71
 	WM_WINDOWPOSCHANGING      = 70
+	WM_SELECTALL              = 0x00B1
 	WM_WININICHANGE           = 26
 	WM_KEYFIRST               = 256
 	WM_KEYLAST                = 264
@@ -564,6 +609,36 @@ const (
 	WM_MOUSELEAVE             = 0x2A3
 	WM_CLIPBOARDUPDATE        = 0x031D
 	WM_DPICHANGED             = 0x02E0
+)
+
+const (
+	SC_SIZE         = 0xF000 // Resize the window
+	SC_MOVE         = 0xF010 // Move the window
+	SC_MINIMIZE     = 0xF020 // Minimize the window
+	SC_MAXIMIZE     = 0xF030 // Maximize the window
+	SC_NEXTWINDOW   = 0xF040 // Move to next window
+	SC_PREVWINDOW   = 0xF050 // Move to previous window
+	SC_CLOSE        = 0xF060 // Close the window
+	SC_VSCROLL      = 0xF070 // Vertical scroll
+	SC_HSCROLL      = 0xF080 // Horizontal scroll
+	SC_MOUSEMENU    = 0xF090 // Mouse menu
+	SC_KEYMENU      = 0xF100 // Key menu (triggered by Alt or F10)
+	SC_ARRANGE      = 0xF110 // Arrange windows
+	SC_RESTORE      = 0xF120 // Restore window from minimized/maximized
+	SC_TASKLIST     = 0xF130 // Task list
+	SC_SCREENSAVE   = 0xF140 // Screen saver
+	SC_HOTKEY       = 0xF150 // Hotkey
+	SC_DEFAULT      = 0xF160 // Default command
+	SC_MONITORPOWER = 0xF170 // Monitor power
+	SC_CONTEXTHELP  = 0xF180 // Context help
+	SC_SEPARATOR    = 0xF00F // Separator
+)
+
+const (
+	// Remove the Close option from the window menu
+	SC_MASK_CLOSE = ^uint16(SC_CLOSE)
+	// Mask for extracting the system command
+	SC_MASK_CMD = 0xFFF0
 )
 
 // WM_ACTIVATE
@@ -1299,6 +1374,7 @@ const (
 	SM_STARTER              = 88
 	SM_SERVERR2             = 89
 	SM_CMETRICS             = 91
+	SM_CXPADDEDBORDER       = 92
 	SM_REMOTESESSION        = 0x1000
 	SM_SHUTTINGDOWN         = 0x2000
 	SM_REMOTECONTROL        = 0x2001
@@ -2825,6 +2901,13 @@ const (
 )
 
 const (
+	KEYEVENTF_EXTENDEDKEY = 0x0001
+	KEYEVENTF_KEYUP       = 0x0002
+	KEYEVENTF_SCANCODE    = 0x0008
+	KEYEVENTF_UNICODE     = 0x0004
+)
+
+const (
 	MOUSEEVENTF_ABSOLUTE        = 0x8000
 	MOUSEEVENTF_HWHEEL          = 0x01000
 	MOUSEEVENTF_MOVE            = 0x0001
@@ -3619,3 +3702,19 @@ const ULW_COLORKEY = 1
 const ULW_ALPHA = 2
 const ULW_OPAQUE = 4
 const ULW_EX_NORESIZE = 8
+
+// RedrawWindow flags
+const (
+	RDW_INVALIDATE      = 0x0001
+	RDW_INTERNALPAINT   = 0x0002
+	RDW_ERASE           = 0x0004
+	RDW_VALIDATE        = 0x0008
+	RDW_NOINTERNALPAINT = 0x0010
+	RDW_NOERASE         = 0x0020
+	RDW_NOCHILDREN      = 0x0040
+	RDW_ALLCHILDREN     = 0x0080
+	RDW_UPDATENOW       = 0x0100
+	RDW_ERASENOW        = 0x0200
+	RDW_FRAME           = 0x0400
+	RDW_NOFRAME         = 0x0800
+)

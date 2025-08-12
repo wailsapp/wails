@@ -8,11 +8,13 @@ package darwin
 #cgo LDFLAGS: -framework Foundation -framework Cocoa -framework WebKit
 #import <Foundation/Foundation.h>
 #import "Application.h"
+#import "CustomProtocol.h"
 #import "WailsContext.h"
 
 #include <stdlib.h>
 */
 import "C"
+
 import (
 	"context"
 	"encoding/json"
@@ -21,6 +23,7 @@ import (
 	"log"
 	"net"
 	"net/url"
+	"os"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v2/pkg/assetserver"
@@ -35,12 +38,16 @@ import (
 
 const startURL = "wails://wails/"
 
-var messageBuffer = make(chan string, 100)
-var requestBuffer = make(chan webview.Request, 100)
-var callbackBuffer = make(chan uint, 10)
+var (
+	messageBuffer        = make(chan string, 100)
+	requestBuffer        = make(chan webview.Request, 100)
+	callbackBuffer       = make(chan uint, 10)
+	openFilepathBuffer   = make(chan string, 100)
+	openUrlBuffer        = make(chan string, 100)
+	secondInstanceBuffer = make(chan options.SecondInstanceData, 1)
+)
 
 type Frontend struct {
-
 	// Context
 	ctx context.Context
 
@@ -48,6 +55,9 @@ type Frontend struct {
 	logger          *logger.Logger
 	debug           bool
 	devtoolsEnabled bool
+
+	// Keep single instance lock file, so that it will not be GC and lock will exist while app is running
+	singleInstanceLockFile *os.File
 
 	// Assets
 	assets   *assetserver.AssetServer
@@ -76,6 +86,9 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		ctx:             ctx,
 	}
 	result.startURL, _ = url.Parse(startURL)
+
+	// this should be initialized as early as possible to handle first instance launch
+	C.StartCustomProtocolHandler()
 
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
@@ -107,8 +120,32 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 
 	go result.startMessageProcessor()
 	go result.startCallbackProcessor()
+	go result.startFileOpenProcessor()
+	go result.startUrlOpenProcessor()
+	go result.startSecondInstanceProcessor()
 
 	return result
+}
+
+func (f *Frontend) startFileOpenProcessor() {
+	for filePath := range openFilepathBuffer {
+		f.ProcessOpenFileEvent(filePath)
+	}
+}
+
+func (f *Frontend) startUrlOpenProcessor() {
+	for url := range openUrlBuffer {
+		f.ProcessOpenUrlEvent(url)
+	}
+}
+
+func (f *Frontend) startSecondInstanceProcessor() {
+	for secondInstanceData := range secondInstanceBuffer {
+		if f.frontendOptions.SingleInstanceLock != nil &&
+			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch != nil {
+			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch(secondInstanceData)
+		}
+	}
 }
 
 func (f *Frontend) startMessageProcessor() {
@@ -116,11 +153,13 @@ func (f *Frontend) startMessageProcessor() {
 		f.processMessage(message)
 	}
 }
+
 func (f *Frontend) startRequestProcessor() {
 	for request := range requestBuffer {
 		f.assets.ServeWebViewRequest(request)
 	}
 }
+
 func (f *Frontend) startCallbackProcessor() {
 	for callback := range callbackBuffer {
 		err := f.handleCallback(callback)
@@ -139,22 +178,23 @@ func (f *Frontend) WindowReloadApp() {
 }
 
 func (f *Frontend) WindowSetSystemDefaultTheme() {
-	return
 }
 
 func (f *Frontend) WindowSetLightTheme() {
-	return
 }
 
 func (f *Frontend) WindowSetDarkTheme() {
-	return
 }
 
 func (f *Frontend) Run(ctx context.Context) error {
 	f.ctx = ctx
 
-	var _debug = ctx.Value("debug")
-	var _devtoolsEnabled = ctx.Value("devtoolsEnabled")
+	if f.frontendOptions.SingleInstanceLock != nil {
+		f.singleInstanceLockFile = SetupSingleInstance(f.frontendOptions.SingleInstanceLock.UniqueId)
+	}
+
+	_debug := ctx.Value("debug")
+	_devtoolsEnabled := ctx.Value("devtoolsEnabled")
 
 	if _debug != nil {
 		f.debug = _debug.(bool)
@@ -179,6 +219,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 func (f *Frontend) WindowCenter() {
 	f.mainWindow.Center()
 }
+
 func (f *Frontend) WindowSetAlwaysOnTop(onTop bool) {
 	f.mainWindow.SetAlwaysOnTop(onTop)
 }
@@ -186,6 +227,7 @@ func (f *Frontend) WindowSetAlwaysOnTop(onTop bool) {
 func (f *Frontend) WindowSetPosition(x, y int) {
 	f.mainWindow.SetPosition(x, y)
 }
+
 func (f *Frontend) WindowGetPosition() (int, int) {
 	return f.mainWindow.GetPosition()
 }
@@ -217,6 +259,7 @@ func (f *Frontend) WindowShow() {
 func (f *Frontend) WindowHide() {
 	f.mainWindow.Hide()
 }
+
 func (f *Frontend) Show() {
 	f.mainWindow.ShowApplication()
 }
@@ -224,18 +267,23 @@ func (f *Frontend) Show() {
 func (f *Frontend) Hide() {
 	f.mainWindow.HideApplication()
 }
+
 func (f *Frontend) WindowMaximise() {
 	f.mainWindow.Maximise()
 }
+
 func (f *Frontend) WindowToggleMaximise() {
 	f.mainWindow.ToggleMaximise()
 }
+
 func (f *Frontend) WindowUnmaximise() {
 	f.mainWindow.UnMaximise()
 }
+
 func (f *Frontend) WindowMinimise() {
 	f.mainWindow.Minimise()
 }
+
 func (f *Frontend) WindowUnminimise() {
 	f.mainWindow.UnMinimise()
 }
@@ -243,6 +291,7 @@ func (f *Frontend) WindowUnminimise() {
 func (f *Frontend) WindowSetMinSize(width int, height int) {
 	f.mainWindow.SetMinSize(width, height)
 }
+
 func (f *Frontend) WindowSetMaxSize(width int, height int) {
 	f.mainWindow.SetMaxSize(width, height)
 }
@@ -309,7 +358,6 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 }
 
 func (f *Frontend) processMessage(message string) {
-
 	if message == "DomReady" {
 		if f.frontendOptions.OnDomReady != nil {
 			f.frontendOptions.OnDomReady(f.ctx)
@@ -320,6 +368,11 @@ func (f *Frontend) processMessage(message string) {
 	if message == "runtime:ready" {
 		cmd := fmt.Sprintf("window.wails.setCSSDragProperties('%s', '%s');", f.frontendOptions.CSSDragProperty, f.frontendOptions.CSSDragValue)
 		f.ExecJS(cmd)
+
+		if f.frontendOptions.DragAndDrop != nil && f.frontendOptions.DragAndDrop.EnableFileDrop {
+			f.ExecJS("window.wails.flags.enableWailsDragAndDrop = true;")
+		}
+
 		return
 	}
 
@@ -352,7 +405,18 @@ func (f *Frontend) processMessage(message string) {
 			f.logger.Info("Unknown message returned from dispatcher: %+v", result)
 		}
 	}()
+}
 
+func (f *Frontend) ProcessOpenFileEvent(filePath string) {
+	if f.frontendOptions.Mac != nil && f.frontendOptions.Mac.OnFileOpen != nil {
+		f.frontendOptions.Mac.OnFileOpen(filePath)
+	}
+}
+
+func (f *Frontend) ProcessOpenUrlEvent(url string) {
+	if f.frontendOptions.Mac != nil && f.frontendOptions.Mac.OnUrlOpen != nil {
+		f.frontendOptions.Mac.OnUrlOpen(url)
+	}
 }
 
 func (f *Frontend) Callback(message string) {
@@ -397,4 +461,16 @@ func processCallback(callbackID uint) {
 //export processURLRequest
 func processURLRequest(_ unsafe.Pointer, wkURLSchemeTask unsafe.Pointer) {
 	requestBuffer <- webview.NewRequest(wkURLSchemeTask)
+}
+
+//export HandleOpenFile
+func HandleOpenFile(filePath *C.char) {
+	goFilepath := C.GoString(filePath)
+	openFilepathBuffer <- goFilepath
+}
+
+//export HandleCustomProtocol
+func HandleCustomProtocol(url *C.char) {
+	goUrl := C.GoString(url)
+	openUrlBuffer <- goUrl
 }

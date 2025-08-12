@@ -16,7 +16,7 @@ const (
 	// ShiftKey represents the shift key on all systems
 	ShiftKey Modifier = "shift"
 	// SuperKey represents Command on Mac and the Windows key on the other platforms
-	//SuperKey Modifier = "super"
+	// SuperKey Modifier = "super"
 	// ControlKey represents the control key on all systems
 	ControlKey Modifier = "ctrl"
 )

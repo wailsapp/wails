@@ -13,30 +13,30 @@ func main() {
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
-		KeyBindings: map[string]func(window *application.WebviewWindow){
-			"shift+ctrl+c": func(window *application.WebviewWindow) {
+		KeyBindings: map[string]func(window application.Window){
+			"shift+ctrl+c": func(window application.Window) {
 				window.Center()
 			},
 		},
 	})
 
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Name:  "Window 1",
 		Title: "Window 1",
 		URL:   "https://wails.io",
-		KeyBindings: map[string]func(window *application.WebviewWindow){
-			"F12": func(window *application.WebviewWindow) {
-				window.ToggleDevTools()
+		KeyBindings: map[string]func(window application.Window){
+			"F12": func(window application.Window) {
+				window.OpenDevTools()
 			},
 		},
 	})
 
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Name:  "Window 2",
 		Title: "Window 2",
 		URL:   "https://google.com",
-		KeyBindings: map[string]func(window *application.WebviewWindow){
-			"F12": func(window *application.WebviewWindow) {
+		KeyBindings: map[string]func(window application.Window){
+			"F12": func(window application.Window) {
 				println("Window 2: Toggle Dev Tools")
 			},
 		},

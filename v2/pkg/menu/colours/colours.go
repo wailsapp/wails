@@ -36,7 +36,6 @@ type InputCol struct {
 var Template string
 
 func main() {
-
 	var Cols []InputCol
 
 	resp, err := http.Get("https://jonasjacek.github.io/colors/data.json")
@@ -62,5 +61,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	os.WriteFile(filepath.Join("..", "cols.go"), buffer.Bytes(), 0755)
+	err = os.WriteFile(filepath.Join("..", "cols.go"), buffer.Bytes(), 0o755)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

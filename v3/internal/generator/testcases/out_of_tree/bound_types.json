@@ -1,0 +1,7 @@
+[
+    ".GreetService",
+    ".EmbedService",
+    ".EmbedOther",
+    "/../no_bindings_here.SomeMethods",
+    "/../no_bindings_here/other.OtherMethods"
+]

@@ -2,6 +2,7 @@ package fs
 
 import (
 	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"io/fs"
@@ -27,14 +28,14 @@ func RelativeToCwd(relativePath string) (string, error) {
 
 // Mkdir will create the given directory
 func Mkdir(dirname string) error {
-	return os.Mkdir(dirname, 0755)
+	return os.Mkdir(dirname, 0o755)
 }
 
 // MkDirs creates the given nested directories.
 // Returns error on failure
 func MkDirs(fullPath string, mode ...os.FileMode) error {
 	var perms os.FileMode
-	perms = 0755
+	perms = 0o755
 	if len(mode) == 1 {
 		perms = mode[0]
 	}
@@ -111,7 +112,7 @@ func RelativePath(relativepath string, optionalpaths ...string) string {
 		// I'm allowing this for 1 reason only: It's fatal if the path
 		// supplied is wrong as it's only used internally in Wails. If we get
 		// that path wrong, we should know about it immediately. The other reason is
-		// that it cuts down a ton of unnecassary error handling.
+		// that it cuts down a ton of unnecessary error handling.
 		panic(err)
 	}
 	return result
@@ -141,7 +142,7 @@ func MD5File(filename string) (string, error) {
 		return "", err
 	}
 
-	return fmt.Sprintf("%x", h.Sum(nil)), nil
+	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
 // MustMD5File will call MD5File and abort the program on error
@@ -157,7 +158,7 @@ func MustMD5File(filename string) string {
 // MustWriteString will attempt to write the given data to the given filename
 // It will abort the program in the event of a failure
 func MustWriteString(filename string, data string) {
-	err := os.WriteFile(filename, []byte(data), 0755)
+	err := os.WriteFile(filename, []byte(data), 0o755)
 	if err != nil {
 		fatal("Unable to write file", filename, ":", err.Error())
 		os.Exit(1)
@@ -194,7 +195,6 @@ func GetSubdirectories(rootDir string) (*slicer.StringSlicer, error) {
 }
 
 func DirIsEmpty(dir string) (bool, error) {
-
 	// CREDIT: https://stackoverflow.com/a/30708914/8325411
 	f, err := os.Open(dir)
 	if err != nil {
@@ -284,7 +284,6 @@ func SetPermissions(dir string, perm os.FileMode) error {
 // Symlinks are ignored and skipped.
 // Credit: https://gist.github.com/r0l1/92462b38df26839a3ca324697c8cba04
 func CopyDirExtended(src string, dst string, ignore []string) (err error) {
-
 	ignoreList := slicer.String(ignore)
 	src = filepath.Clean(src)
 	dst = filepath.Clean(dst)
@@ -382,7 +381,6 @@ func FindPathToFile(fsys fs.FS, file string) (string, error) {
 // FindFileInParents searches for a file in the current directory and all parent directories.
 // Returns the absolute path to the file if found, otherwise an empty string
 func FindFileInParents(path string, filename string) string {
-
 	// Check for bad paths
 	if _, err := os.Stat(path); err != nil {
 		return ""

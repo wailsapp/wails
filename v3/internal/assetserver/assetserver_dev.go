@@ -2,23 +2,49 @@
 
 package assetserver
 
-/*
-The assetserver for the dev mode.
-Depending on the UserAgent it injects a websocket based IPC script into `index.html` or the default desktop IPC. The
-default desktop IPC is injected when the webview accesses the devserver.
-*/
-//func NewDevAssetServer(handler http.Handler, servingFromDisk bool, logger *slog.Logger, runtime RuntimeAssets, runtimeHandler RuntimeHandler) (*AssetServer, error) {
-//	result, err := NewAssetServerWithHandler(handler, servingFromDisk, logger, runtime, true, runtimeHandler)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	result.ipcJS = func(req *http.Request) []byte {
-//		if strings.Contains(req.UserAgent(), WailsUserAgentValue) {
-//			return runtime.DesktopIPC()
-//		}
-//		return runtime.WebsocketIPC()
-//	}
-//
-//	return result, nil
-//}
+import (
+	"embed"
+	"io"
+	iofs "io/fs"
+)
+
+//go:embed defaults
+var defaultHTML embed.FS
+
+func defaultIndexHTML(language string) []byte {
+	result := []byte("index.html not found")
+	// Create an fs.Sub in the defaults directory
+	defaults, err := iofs.Sub(defaultHTML, "defaults")
+	if err != nil {
+		return result
+	}
+	// Get the 2 character language code
+	lang := "en"
+	if len(language) >= 2 {
+		lang = language[:2]
+	}
+	// Now we can read the index.html file in the format
+	// index.<lang>.html.
+
+	indexFile, err := defaults.Open("index." + lang + ".html")
+	if err != nil {
+		return result
+	}
+
+	indexBytes, err := io.ReadAll(indexFile)
+	if err != nil {
+		return result
+	}
+	return indexBytes
+}
+
+func (a *AssetServer) LogDetails() {
+	var info = []any{
+		"middleware", a.options.Middleware != nil,
+		"handler", a.options.Handler != nil,
+	}
+	if devServerURL := GetDevServerURL(); devServerURL != "" {
+		info = append(info, "devServerURL", devServerURL)
+	}
+	a.options.Logger.Info("AssetServer Info:", info...)
+}

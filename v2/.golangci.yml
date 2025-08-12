@@ -1,0 +1,162 @@
+# Options for analysis runner.
+run:
+  # Custom concurrency value
+  concurrency: 4
+
+  # Execution timeout
+  timeout: 10m
+
+  # Exit code when an issue is found.
+  issues-exit-code: 1
+
+  # Inclusion of test files
+  tests: false
+
+  modules-download-mode: readonly
+
+  allow-parallel-runners: false
+
+  go: '1.21'
+
+
+output:
+  # Runner output format
+  format: tab
+
+  # Print line of issue code
+  print-issued-lines: false
+
+  # Append linter to the output
+  print-linter-name: true
+
+  # Separate issues by line
+  uniq-by-line: true
+
+  # Output path prefixing
+  path-prefix: ""
+
+  # Sort results
+  sort-results: true
+
+
+# Specific linter configs
+linters-settings:
+  errcheck:
+    check-type-assertions: false
+    check-blank: false
+    ignore: fmt:.*
+    disable-default-exclusions: false
+
+  gofmt:
+    simplify: true
+
+  gofumpt:
+    extra-rules: false
+
+linters:
+  fast: false
+  # Enable all available linters.
+  enable-all: true
+  # Disable specific linters
+  disable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - containedctx
+    - contextcheck
+    - cyclop
+    - deadcode
+    - decorder
+    - depguard
+    - dogsled
+    - dupl
+    - dupword
+    - durationcheck
+    - errchkjson
+    - errorlint
+    - execinquery
+    - exhaustive
+    - exhaustivestruct
+    - exhaustruct
+    - exportloopref
+    - forbidigo
+    - forcetypeassert
+    - funlen
+    - gci
+    - ginkgolinter
+    - gocheckcompilerdirectives
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - godox
+    - goerr113
+    - goheader
+    - goimports
+    - golint
+    - gomnd
+    - gomoddirectives
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - gosmopolitan
+    - govet
+    - grouper
+    - ifshort
+    - importas
+    - ineffassign
+    - interfacebloat
+    - interfacer
+    - ireturn
+    - lll
+    - loggercheck
+    - maintidx
+    - makezero
+    - maligned
+    - mirror
+    - musttag
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnil
+    - nlreturn
+    - noctx
+    - nolintlint
+    - nonamedreturns
+    - nosnakecase
+    - nosprintfhostport
+    - paralleltest
+    - prealloc
+    - predeclared
+    - promlinter
+    - reassign
+    - revive
+    - rowserrcheck
+    - scopelint
+    - sqlclosecheck
+    - staticcheck
+    - structcheck
+    - stylecheck
+    - tagalign
+    - tagliatelle
+    - tenv
+    - testableexamples
+    - testpackage
+    - thelper
+    - tparallel
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - usestdlibvars
+    - varcheck
+    - varnamelen
+    - wastedassign
+    - whitespace
+    - wrapcheck
+    - wsl
+    - zerologlint

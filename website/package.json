@@ -15,15 +15,15 @@
   },
   "engines": {
     "node": ">=18.14.0",
-    "pnpm": ">=8.0.0"
+    "pnpm": ">=8.3.1"
   },
   "dependencies": {
-    "@crowdin/crowdin-api-client": "^1.19.2",
+    "@crowdin/crowdin-api-client": "^1.33.1",
     "@docusaurus/core": "^2.4.0",
     "@docusaurus/preset-classic": "^2.4.0",
     "@docusaurus/theme-search-algolia": "^2.4.0",
     "@mdx-js/react": "^1.6.22",
-    "@swc/core": "^1.3.7",
+    "@swc/core": "^1.6.0",
     "clsx": "^1.2.1",
     "file-loader": "^6.2.0",
     "prism-react-renderer": "^1.3.5",
@@ -45,7 +45,8 @@
     ]
   },
   "devDependencies": {
-    "@crowdin/cli": "^3.10.1",
+    "@crowdin/cli": "^3.19.4",
     "prettier": "^2.8.7"
-  }
+  },
+  "packageManager": "pnpm@8.3.1+sha512.d264f6640bf4f09de7cfcc547568515bcf0613cf485a03e8ff16616fa69c4172b6f9a0a2925ee44fb060df565c9c9a8eaf061749e77af318cb77f6684a7051f3"
 }

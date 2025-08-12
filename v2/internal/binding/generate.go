@@ -15,12 +15,14 @@ import (
 	"github.com/leaanthony/slicer"
 )
 
-var mapRegex *regexp.Regexp
-var keyPackageIndex int
-var keyTypeIndex int
-var valueArrayIndex int
-var valuePackageIndex int
-var valueTypeIndex int
+var (
+	mapRegex          *regexp.Regexp
+	keyPackageIndex   int
+	keyTypeIndex      int
+	valueArrayIndex   int
+	valuePackageIndex int
+	valueTypeIndex    int
+)
 
 func init() {
 	mapRegex = regexp.MustCompile(`(?:map\[(?:(?P<keyPackage>\w+)\.)?(?P<keyType>\w+)])?(?P<valueArray>\[])?(?:\*?(?P<valuePackage>\w+)\.)?(?P<valueType>.+)`)
@@ -81,9 +83,7 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 				} else {
 					jsoutput.WriteString(fmt.Sprintf("  return window['go']['%s']['%s']['%s'](%s);", packageName, structName, methodName, argsString))
 				}
-				jsoutput.WriteString("\n")
-				jsoutput.WriteString(fmt.Sprintf("}"))
-				jsoutput.WriteString("\n")
+				jsoutput.WriteString("\n}\n")
 
 				// Generate TS
 				tsBody.WriteString(fmt.Sprintf("\nexport function %s(", methodName))
@@ -127,12 +127,12 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 			tsContent.WriteString(tsBody.String())
 
 			jsfilename := filepath.Join(packageDir, structName+".js")
-			err = os.WriteFile(jsfilename, jsoutput.Bytes(), 0755)
+			err = os.WriteFile(jsfilename, jsoutput.Bytes(), 0o755)
 			if err != nil {
 				return err
 			}
 			tsfilename := filepath.Join(packageDir, structName+".d.ts")
-			err = os.WriteFile(tsfilename, tsContent.Bytes(), 0755)
+			err = os.WriteFile(tsfilename, tsContent.Bytes(), 0o755)
 			if err != nil {
 				return err
 			}
@@ -186,7 +186,7 @@ func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) stri
 	valueArray := matches[valueArrayIndex]
 	valuePackage := matches[valuePackageIndex]
 	valueType := matches[valueTypeIndex]
-	//fmt.Printf("input=%s, keyPackage=%s, keyType=%s, valueArray=%s, valuePackage=%s, valueType=%s\n",
+	// fmt.Printf("input=%s, keyPackage=%s, keyType=%s, valueArray=%s, valuePackage=%s, valueType=%s\n",
 	//	input,
 	//	keyPackage,
 	//	keyType,

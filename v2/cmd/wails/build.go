@@ -18,7 +18,6 @@ import (
 )
 
 func buildApplication(f *flags.Build) error {
-
 	if f.NoColour {
 		pterm.DisableColor()
 		colour.ColourEnabled = false
@@ -48,6 +47,16 @@ func buildApplication(f *flags.Build) error {
 	projectOptions, err := project.Load(cwd)
 	if err != nil {
 		return err
+	}
+
+	// Set obfuscation from project file
+	if projectOptions.Obfuscated {
+		f.Obfuscated = projectOptions.Obfuscated
+	}
+
+	// Set garble args from project file
+	if projectOptions.GarbleArgs != "" {
+		f.GarbleArgs = projectOptions.GarbleArgs
 	}
 
 	// Create BuildOptions
@@ -255,5 +264,4 @@ func buildApplication(f *flags.Build) error {
 	}
 
 	return nil
-
 }

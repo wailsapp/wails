@@ -1,32 +1,32 @@
-# Obfuscated Builds
+# Builds ofuscadas
 
-Wails includes support for obfuscating your application using [garble](https://github.com/burrowers/garble).
+Wails inclui suporte para ofuscar a sua aplicação usando [garble](https://github.com/burrowers/garble).
 
-To produce an obfuscated build, you can use the `-obfuscate` flag with the `wails build` command:
+Para produzir uma compilação ofuscada, você pode usar o sinalizador `-obfuscate` com o comando `wails build`:
 
 ```bash
 wails build -obfuscated
 ```
 
-To customise the obfuscation settings, you can use the `-garbleargs` flag:
+Para personalizar a configuração de ofuscação, pode-se utilizar a flag: `-garbleargs`:
 
 ```bash
 wails build -obfuscated -garbleargs "-literals -tiny -seed=myrandomseed"
 ```
 
-These settings may be persisted in your [project config](../reference/project-config).
+These settings may be persisted in your [project config](../reference/project-config.mdx).
 
-## How it works
+## Como funciona
 
-In a standard build, all bound methods are available in the frontend under the `window.go` variable. When these methods are called, the corresponding backend method is called using the fully qualified function name. When using an obfuscated build, methods are bound using an ID instead of a name. The bindings generated in the `wailsjs` directory use these IDs to call the backend functions.
+Em uma compilação padrão, todos os métodos vinculados estão disponíveis no frontend sob a variável `window.go`. Quando esses métodos são chamados, o método backend correspondente é chamado usando o nome da função totalmente qualificada. Quando usando uma compilação ofuscada, os métodos são vinculados usando um ID em vez de um nome. Os bindings gerados no diretório `wailsjs` usam esses IDs para chamar as funções de backend.
 
 :::note
 
-To ensure that your application will work in obfuscated mode, you must use the generated bindings under the `wailsjs` directory in your application.
+Para garantir que o seu aplicativo irá funcionar no modo ofuscado, você deve usar os bindings geradas sob o diretório `wailsjs` no seu aplicativo.
 
 :::
 
-## Example
+## Exemplo
 
 Importing the "Greet" method from the bindings like this:
 
@@ -37,4 +37,4 @@ import { Greet } from "../../wailsjs/go/main/App";
 Greet("World");
 ```
 
-will ensure that the method will work correctly in obfuscated mode, as the bindings will be regenerated with IDs and the call mechanism updated.
+irá garantir que o método funcionará corretamente no modo ofuscado, como os bindings serão regenerados com IDs e o mecanismo de chamada atualizado.

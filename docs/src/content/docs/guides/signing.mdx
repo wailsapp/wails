@@ -1,0 +1,228 @@
+---
+title: Code Signing
+description: Guide for signing your Wails applications on macOS and Windows
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Steps } from '@astrojs/starlight/components';
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+# Code Signing Your Application
+
+This guide covers how to sign your Wails applications for both macOS and Windows, with a focus on automated signing using GitHub Actions.
+
+<CardGrid>
+  <Card title="Windows Signing" icon="windows">
+    Sign your Windows executables with certificates
+  </Card>
+  <Card title="macOS Signing" icon="apple">
+    Sign and notarize your macOS applications
+  </Card>
+</CardGrid>
+
+## Windows Code Signing
+
+<Steps>
+1. **Obtain a Code Signing Certificate**
+   - Get from a trusted provider listed on [Microsoft's documentation](https://docs.microsoft.com/en-us/windows-hardware/drivers/dashboard/get-a-code-signing-certificate)
+   - Standard code signing certificate is sufficient (EV not required)
+   - Test signing locally before setting up CI
+
+2. **Prepare for GitHub Actions**
+   - Convert your certificate to Base64
+   - Store in GitHub Secrets
+   - Set up signing workflow
+
+3. **Configure GitHub Actions**
+   ```yaml
+   name: Sign Windows Binary
+   
+   on:
+     workflow_dispatch:
+     release:
+       types: [created]
+   
+   jobs:
+     sign:
+       runs-on: windows-latest
+       steps:
+         - uses: actions/checkout@v3
+         
+         - name: Import Certificate
+           run: |
+             New-Item -ItemType directory -Path certificate
+             Set-Content -Path certificate\certificate.txt -Value ${{ secrets.WINDOWS_CERTIFICATE }}
+             certutil -decode certificate\certificate.txt certificate\certificate.pfx
+           
+         - name: Sign Binary
+           run: |
+             & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x86\signtool.exe' sign /f certificate\certificate.pfx /t http://timestamp.sectigo.com /p ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }} /v /fd sha256 .\build\bin\app.exe
+   ```
+</Steps>
+
+### Important Windows Parameters
+
+- **Signing Algorithm**: Usually `sha256`
+- **Timestamp Server**: Valid timestamping server URL
+- **Certificate Password**: Stored in GitHub Secrets
+- **Binary Path**: Path to your compiled executable
+
+## macOS Code Signing
+
+<Steps>
+1. **Prerequisites**
+   - Apple Developer Account
+   - Developer ID Certificate
+   - App Store Connect API Key
+   - [gon](https://github.com/mitchellh/gon) for notarization
+
+2. **Certificate Setup**
+   - Generate Developer ID Certificate
+   - Download and install certificate
+   - Export certificate for CI
+
+3. **Configure Notarization**
+   ```json title="gon-sign.json"
+   {
+     "source": ["./build/bin/app"],
+     "bundle_id": "com.company.app",
+     "apple_id": {
+       "username": "dev@company.com",
+       "password": "@env:AC_PASSWORD"
+     },
+     "sign": {
+       "application_identity": "Developer ID Application: Company Name"
+     }
+   }
+   ```
+
+4. **GitHub Actions Configuration**
+   ```yaml
+   name: Sign macOS Binary
+   
+   on:
+     workflow_dispatch:
+     release:
+       types: [created]
+   
+   jobs:
+     sign:
+       runs-on: macos-latest
+       steps:
+         - uses: actions/checkout@v3
+         
+         - name: Import Certificate
+           env:
+             MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+             MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+           run: |
+             echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+             security create-keychain -p "" build.keychain
+             security default-keychain -s build.keychain
+             security unlock-keychain -p "" build.keychain
+             security import certificate.p12 -k build.keychain -P $MACOS_CERTIFICATE_PWD -T /usr/bin/codesign
+             security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
+         
+         - name: Sign and Notarize
+           env:
+             AC_USERNAME: ${{ secrets.AC_USERNAME }}
+             AC_PASSWORD: ${{ secrets.AC_PASSWORD }}
+           run: |
+             gon -log-level=info ./build/darwin/gon-sign.json
+   ```
+</Steps>
+
+### Important macOS Parameters
+
+- **Bundle ID**: Unique identifier for your app
+- **Developer ID**: Your Developer ID Application certificate
+- **Apple ID**: Developer account credentials
+- **ASC API Key**: App Store Connect API credentials
+
+## Best Practices
+
+1. **Security**
+   - Store all credentials in GitHub Secrets
+   - Use environment variables for sensitive data
+   - Regularly rotate certificates and credentials
+
+2. **Workflow**
+   - Test signing locally first
+   - Use conditional signing based on platform
+   - Implement proper error handling
+
+3. **Verification**
+   - Verify signatures after signing
+   - Test notarization process
+   - Check timestamp validity
+
+## Troubleshooting
+
+### Windows Issues
+- Certificate not found
+- Invalid timestamp server
+- Signing tool errors
+
+### macOS Issues
+- Keychain access issues
+- Notarization failures
+- Certificate validation errors
+
+## Complete GitHub Actions Workflow
+
+```yaml
+name: Sign Binaries
+
+on:
+  workflow_dispatch:
+  release:
+    types: [created]
+
+jobs:
+  sign:
+    strategy:
+      matrix:
+        platform: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.platform }}
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      # Windows Signing
+      - name: Sign Windows Binary
+        if: matrix.platform == 'windows-latest'
+        env:
+          CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+          CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        run: |
+          New-Item -ItemType directory -Path certificate
+          Set-Content -Path certificate\certificate.txt -Value $env:CERTIFICATE
+          certutil -decode certificate\certificate.txt certificate\certificate.pfx
+          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x86\signtool.exe' sign /f certificate\certificate.pfx /t http://timestamp.sectigo.com /p $env:CERTIFICATE_PASSWORD /v /fd sha256 .\build\bin\app.exe
+      
+      # macOS Signing
+      - name: Sign macOS Binary
+        if: matrix.platform == 'macos-latest'
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+          AC_USERNAME: ${{ secrets.AC_USERNAME }}
+          AC_PASSWORD: ${{ secrets.AC_PASSWORD }}
+        run: |
+          echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security import certificate.p12 -k build.keychain -P $MACOS_CERTIFICATE_PWD -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
+          gon -log-level=info ./build/darwin/gon-sign.json
+```
+
+## Additional Resources
+
+- [Apple Code Signing Documentation](https://developer.apple.com/support/code-signing/)
+- [Microsoft Code Signing Documentation](https://docs.microsoft.com/en-us/windows-hardware/drivers/dashboard/get-a-code-signing-certificate)
+- [Gon Documentation](https://github.com/mitchellh/gon)
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)

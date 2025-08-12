@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <stdint.h>
+#include <string.h>
 #include <locale.h>
 #include "window.h"
 
@@ -245,7 +246,7 @@ void SetMinMaxSize(GtkWindow *window, int min_width, int min_height, int max_wid
     gtk_window_set_geometry_hints(window, NULL, &size, flags);
 }
 
-// function to disable the context menu but propogate the event
+// function to disable the context menu but propagate the event
 static gboolean disableContextMenu(GtkWidget *widget, WebKitContextMenu *context_menu, GdkEvent *event, WebKitHitTestResult *hit_test_result, gpointer data)
 {
     // return true to disable the context menu
@@ -254,7 +255,7 @@ static gboolean disableContextMenu(GtkWidget *widget, WebKitContextMenu *context
 
 void DisableContextMenu(void *webview)
 {
-    // Disable the context menu but propogate the event
+    // Disable the context menu but propagate the event
     g_signal_connect(WEBKIT_WEB_VIEW(webview), "context-menu", G_CALLBACK(disableContextMenu), NULL);
 }
 
@@ -429,14 +430,92 @@ gboolean close_button_pressed(GtkWidget *widget, GdkEvent *event, void *data)
     return TRUE;
 }
 
+char *droppedFiles = NULL;
+
+static void onDragDataReceived(GtkWidget *self, GdkDragContext *context, gint x, gint y, GtkSelectionData *selection_data, guint target_type, guint time, gpointer data)
+{
+    if(selection_data == NULL || (gtk_selection_data_get_length(selection_data) <= 0) || target_type != 2)
+    {
+        return;
+    }
+
+    if(droppedFiles != NULL) {
+        free(droppedFiles);
+        droppedFiles = NULL;
+    }
+
+    gchar **filenames = NULL;
+    filenames = g_uri_list_extract_uris((const gchar *)gtk_selection_data_get_data(selection_data));
+    if (filenames == NULL) // If unable to retrieve filenames:
+    {
+        g_strfreev(filenames);
+        return;
+    }
+
+    droppedFiles = calloc((size_t)gtk_selection_data_get_length(selection_data), 1);
+
+    int iter = 0;
+    while(filenames[iter] != NULL) // The last URI list element is NULL.
+    {
+        if(iter != 0)
+        {
+            strncat(droppedFiles, "\n", 1);
+        }
+        char *filename = g_filename_from_uri(filenames[iter], NULL, NULL);
+        if (filename == NULL)
+        {
+            break;
+        }
+        strncat(droppedFiles, filename, strlen(filename));
+
+        free(filename);
+        iter++;
+    }
+
+    g_strfreev(filenames);
+}
+
+static gboolean onDragDrop(GtkWidget* self, GdkDragContext* context, gint x, gint y, guint time, gpointer user_data)
+{
+    if(droppedFiles == NULL)
+    {
+        return FALSE;
+    }
+
+    size_t resLen = strlen(droppedFiles)+(sizeof(gint)*2)+6;
+    char *res = calloc(resLen, 1);
+
+    snprintf(res, resLen, "DD:%d:%d:%s", x, y, droppedFiles);
+
+    if(droppedFiles != NULL) {
+        free(droppedFiles);
+        droppedFiles = NULL;
+    }
+
+    processMessage(res);
+    return FALSE;
+}
+
 // WebView
-GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowOnClose, int gpuPolicy)
+GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowOnClose, int gpuPolicy, int disableWebViewDragAndDrop, int enableDragAndDrop)
 {
     GtkWidget *webview = webkit_web_view_new_with_user_content_manager((WebKitUserContentManager *)contentManager);
     // gtk_container_add(GTK_CONTAINER(window), webview);
     WebKitWebContext *context = webkit_web_context_get_default();
     webkit_web_context_register_uri_scheme(context, "wails", (WebKitURISchemeRequestCallback)processURLRequest, NULL, NULL);
     g_signal_connect(G_OBJECT(webview), "load-changed", G_CALLBACK(webviewLoadChanged), NULL);
+
+    if(disableWebViewDragAndDrop)
+    {
+        gtk_drag_dest_unset(webview);
+    }
+
+    if(enableDragAndDrop)
+    {
+        g_signal_connect(G_OBJECT(webview), "drag-data-received", G_CALLBACK(onDragDataReceived), NULL);
+        g_signal_connect(G_OBJECT(webview), "drag-drop", G_CALLBACK(onDragDrop), NULL);
+    }
+
     if (hideWindowOnClose)
     {
         g_signal_connect(GTK_WIDGET(window), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);

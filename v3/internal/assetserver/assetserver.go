@@ -1,149 +1,75 @@
 package assetserver
 
 import (
-	"bytes"
 	"fmt"
-	"log/slog"
-	"math/rand"
+	"net"
 	"net/http"
-	"net/http/httptest"
-	"net/http/httputil"
+	"net/url"
 	"strings"
 	"time"
-
-	"golang.org/x/net/html"
 )
 
 const (
-	runtimeJSPath    = "/wails/runtime.js"
-	ipcJSPath        = "/wails/ipc.js"
-	runtimePath      = "/wails/runtime"
-	capabilitiesPath = "/wails/capabilities"
-	flagsPath        = "/wails/flags"
+	webViewRequestHeaderWindowId   = "x-wails-window-id"
+	webViewRequestHeaderWindowName = "x-wails-window-name"
+	HeaderAcceptLanguage           = "accept-language"
 )
-
-const webViewRequestHeaderWindowId = "x-wails-window-id"
-const webViewRequestHeaderWindowName = "x-wails-window-name"
-
-type RuntimeAssets interface {
-	DesktopIPC() []byte
-	WebsocketIPC() []byte
-	RuntimeDesktopJS() []byte
-}
 
 type RuntimeHandler interface {
 	HandleRuntimeCall(w http.ResponseWriter, r *http.Request)
 }
 
+type service struct {
+	Route   string
+	Handler http.Handler
+}
+
 type AssetServer struct {
-	handler   http.Handler
-	runtimeJS []byte
-	debug     bool
-	ipcJS     func(*http.Request) []byte
-
-	logger  *slog.Logger
-	runtime RuntimeAssets
-	options *Options
-
-	servingFromDisk bool
-
-	// Use http based runtime
-	runtimeHandler RuntimeHandler
-
-	// plugin scripts
-	pluginScripts map[string]string
-
-	// GetCapabilities returns the capabilities of the runtime
-	GetCapabilities func() []byte
-
-	// GetFlags returns the application flags
-	GetFlags func() []byte
-
-	// External dev server proxy
-	wsHandler *httputil.ReverseProxy
+	options  *Options
+	handler  http.Handler
+	services []service
 
 	assetServerWebView
 }
 
-func NewAssetServer(options *Options, servingFromDisk bool, logger *slog.Logger, runtime RuntimeAssets, debug bool, runtimeHandler RuntimeHandler) (*AssetServer, error) {
-	handler, err := NewAssetHandler(options, logger)
-	if err != nil {
-		return nil, err
-	}
-
-	var buffer bytes.Buffer
-	buffer.Write(runtime.RuntimeDesktopJS())
-
+func NewAssetServer(options *Options) (*AssetServer, error) {
 	result := &AssetServer{
-		handler:        handler,
-		runtimeJS:      buffer.Bytes(),
-		runtimeHandler: runtimeHandler,
-		options:        options,
-
-		// Check if we have been given a directory to serve assets from.
-		// If so, this means we are in dev mode and are serving assets off disk.
-		// We indicate this through the `servingFromDisk` flag to ensure requests
-		// aren't cached in dev mode.
-		servingFromDisk: servingFromDisk,
-		logger:          logger,
-		runtime:         runtime,
-		debug:           debug,
+		options: options,
 	}
 
-	// Check if proxy required
-	externalURL, err := options.getExternalURL()
-	if err != nil {
-		return nil, err
+	userHandler := options.Handler
+	if userHandler == nil {
+		userHandler = http.NotFoundHandler()
 	}
-	if externalURL != nil {
-		result.wsHandler = httputil.NewSingleHostReverseProxy(externalURL)
-		err := result.checkExternalURL()
-		if err != nil {
-			return nil, err
-		}
+
+	handler := http.Handler(
+		http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				result.serveHTTP(w, r, userHandler)
+			}))
+
+	if middleware := options.Middleware; middleware != nil {
+		handler = middleware(handler)
 	}
+
+	result.handler = handler
+
 	return result, nil
 }
 
-func (d *AssetServer) checkExternalURL() error {
-	req, err := http.NewRequest("OPTIONS", "/", nil)
-	if err != nil {
-		return err
-	}
-	w := httptest.NewRecorder()
-	d.wsHandler.ServeHTTP(w, req)
-	if w.Code != http.StatusNoContent {
-		return fmt.Errorf("unable to connect to external server: %s. Please check it's running.", d.options.ExternalURL)
-	}
-	return nil
-}
-
-func (d *AssetServer) LogDetails() {
-	if d.debug {
-		d.logger.Info("AssetServer Info:",
-			"assetsFS", d.options.Assets != nil,
-			"middleware", d.options.Middleware != nil,
-			"handler", d.options.Handler != nil,
-			"externalURL", d.options.ExternalURL,
-		)
-	}
-}
-
-func (d *AssetServer) AddPluginScript(pluginName string, script string) {
-	if d.pluginScripts == nil {
-		d.pluginScripts = make(map[string]string)
-	}
-	pluginName = strings.ReplaceAll(pluginName, "/", "_")
-	pluginName = html.EscapeString(pluginName)
-	pluginScriptName := fmt.Sprintf("/plugin_%s_%d.js", pluginName, rand.Intn(100000))
-	d.pluginScripts[pluginScriptName] = script
-}
-
-func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+func (a *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	start := time.Now()
-	wrapped := &contentTypeSniffer{rw: rw}
-	d.serveHTTP(wrapped, req)
-	d.logger.Info(
+	wrapped := newContentTypeSniffer(rw)
+	defer func() {
+		if _, err := wrapped.complete(); err != nil {
+			a.options.Logger.Error("Error writing response data.", "uri", req.RequestURI, "error", err)
+		}
+	}()
+
+	req = req.WithContext(contextWithLogger(req.Context(), a.options.Logger))
+	a.handler.ServeHTTP(wrapped, req)
+
+	a.options.Logger.Info(
 		"Asset Request:",
 		"windowName", req.Header.Get(webViewRequestHeaderWindowName),
 		"windowID", req.Header.Get(webViewRequestHeaderWindowId),
@@ -154,145 +80,96 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	)
 }
 
-func (d *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request) {
-
-	if d.wsHandler != nil {
-		d.wsHandler.ServeHTTP(rw, req)
+func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userHandler http.Handler) {
+	if isWebSocket(req) {
+		// WebSockets are not supported by the AssetServer
+		rw.WriteHeader(http.StatusNotImplemented)
 		return
-	} else {
-		if isWebSocket(req) {
-			// WebSockets are not supported by the AssetServer
-			rw.WriteHeader(http.StatusNotImplemented)
-			return
-		}
 	}
 
 	header := rw.Header()
-	if d.servingFromDisk {
-		header.Add(HeaderCacheControl, "no-cache")
-	}
+	// TODO: I don't think this is needed now?
+	//if a.servingFromDisk {
+	//	header.Add(HeaderCacheControl, "no-cache")
+	//}
 
-	path := req.URL.Path
-	switch path {
+	reqPath := req.URL.Path
+	switch reqPath {
 	case "", "/", "/index.html":
-		recorder := httptest.NewRecorder()
-		d.handler.ServeHTTP(recorder, req)
-		for k, v := range recorder.Result().Header {
-			header[k] = v
+		// Cache the accept-language header
+		// before passing the request down the chain.
+		acceptLanguage := req.Header.Get(HeaderAcceptLanguage)
+		if acceptLanguage == "" {
+			acceptLanguage = "en"
 		}
 
-		switch recorder.Code {
-		case http.StatusOK:
-			content, err := d.processIndexHTML(recorder.Body.Bytes())
-			if err != nil {
-				d.serveError(rw, err, "Unable to processIndexHTML")
-				return
-			}
-			d.writeBlob(rw, indexHTML, content)
-
-		case http.StatusNotFound:
-			d.writeBlob(rw, indexHTML, defaultHTML)
-
-		default:
-			rw.WriteHeader(recorder.Code)
-
+		wrapped := &fallbackResponseWriter{
+			rw:  rw,
+			req: req,
+			fallback: http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+				// Set content type for default index.html
+				header.Set(HeaderContentType, "text/html; charset=utf-8")
+				a.writeBlob(rw, indexHTML, defaultIndexHTML(acceptLanguage))
+			}),
 		}
-		return
-
-	case runtimeJSPath:
-		d.writeBlob(rw, path, d.runtimeJS)
-
-	case capabilitiesPath:
-		var data = []byte("{}")
-		if d.GetCapabilities != nil {
-			data = d.GetCapabilities()
-		}
-		d.writeBlob(rw, path, data)
-
-	case flagsPath:
-		var data = []byte("{}")
-		if d.GetFlags != nil {
-			data = d.GetFlags()
-		}
-		d.writeBlob(rw, path, data)
-
-	case runtimePath:
-		d.runtimeHandler.HandleRuntimeCall(rw, req)
-		return
-
-	case ipcJSPath:
-		content := d.runtime.DesktopIPC()
-		if d.ipcJS != nil {
-			content = d.ipcJS(req)
-		}
-		d.writeBlob(rw, path, content)
+		userHandler.ServeHTTP(wrapped, req)
 
 	default:
-		// Check if this is a plugin script
-		if script, ok := d.pluginScripts[path]; ok {
-			d.writeBlob(rw, path, []byte(script))
-		} else {
-			d.handler.ServeHTTP(rw, req)
-			return
+		// Check if the path matches a service route
+		for _, svc := range a.services {
+			if strings.HasPrefix(reqPath, svc.Route) {
+				req.URL.Path = strings.TrimPrefix(reqPath, svc.Route)
+				svc.Handler.ServeHTTP(rw, req)
+				return
+			}
 		}
+
+		// Forward to the user-provided handler
+		userHandler.ServeHTTP(rw, req)
 	}
 }
 
-func (d *AssetServer) processIndexHTML(indexHTML []byte) ([]byte, error) {
-	htmlNode, err := getHTMLNode(indexHTML)
-	if err != nil {
-		return nil, err
-	}
-
-	if d.debug {
-		err = appendSpinnerToBody(htmlNode)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if err := insertScriptInHead(htmlNode, runtimeJSPath); err != nil {
-		return nil, err
-	}
-
-	if d.debug {
-		if err := insertScriptInHead(htmlNode, ipcJSPath); err != nil {
-			return nil, err
-		}
-	}
-
-	// Inject plugins
-	for scriptName := range d.pluginScripts {
-		if err := insertScriptInHead(htmlNode, scriptName); err != nil {
-			return nil, err
-		}
-	}
-
-	var buffer bytes.Buffer
-	err = html.Render(&buffer, htmlNode)
-	if err != nil {
-		return nil, err
-	}
-	return buffer.Bytes(), nil
+func (a *AssetServer) AttachServiceHandler(route string, handler http.Handler) {
+	a.services = append(a.services, service{route, handler})
 }
 
-func (d *AssetServer) writeBlob(rw http.ResponseWriter, filename string, blob []byte) {
-	err := serveFile(rw, filename, blob)
+func (a *AssetServer) writeBlob(rw http.ResponseWriter, filename string, blob []byte) {
+	err := ServeFile(rw, filename, blob)
 	if err != nil {
-		d.serveError(rw, err, "Unable to write content %s", filename)
+		a.serveError(rw, err, "Error writing file content.", "filename", filename)
 	}
 }
 
-func (d *AssetServer) serveError(rw http.ResponseWriter, err error, msg string, args ...interface{}) {
-	args = append(args, err)
-	d.logError(msg+": %s", args...)
+func (a *AssetServer) serveError(rw http.ResponseWriter, err error, msg string, args ...interface{}) {
+	args = append(args, "error", err)
+	a.options.Logger.Error(msg, args...)
 	rw.WriteHeader(http.StatusInternalServerError)
 }
 
-func (d *AssetServer) logInfo(message string, args ...interface{}) {
-	d.logger.Info("Asset Request: "+message, args...)
-}
+func GetStartURL(userURL string) (string, error) {
+	devServerURL := GetDevServerURL()
+	startURL := baseURL.String()
+	if devServerURL != "" {
+		// Parse the port
+		parsedURL, err := url.Parse(devServerURL)
+		if err != nil {
+			return "", fmt.Errorf("error parsing environment variable `FRONTEND_DEVSERVER_URL`: %w. Please check your `Taskfile.yml` file", err)
+		}
+		port := parsedURL.Port()
+		if port != "" {
+			baseURL.Host = net.JoinHostPort(baseURL.Hostname(), port)
+			startURL = baseURL.String()
+		}
+	}
 
-func (d *AssetServer) logError(message string, args ...interface{}) {
-	d.logger.Error("Asset Request: "+message, args...)
+	if userURL != "" {
+		parsedURL, err := baseURL.Parse(userURL)
+		if err != nil {
+			return "", fmt.Errorf("error parsing URL: %w", err)
+		}
+
+		startURL = parsedURL.String()
+	}
+
+	return startURL, nil
 }

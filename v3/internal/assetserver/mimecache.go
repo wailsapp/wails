@@ -15,8 +15,8 @@ var (
 	// The list of builtin mime-types by extension as defined by
 	// the golang standard lib package "mime"
 	// The standard lib also takes into account mime type definitions from
-	// etc files like '/etc/apache2/mime.types' but we want to have the
-	// same behavivour on all platforms and not depend on some external file.
+	// /etc files like '/etc/apache2/mime.types' but we want to have the
+	// same behaviour on all platforms and not depend on some external file.
 	mimeTypesByExt = map[string]string{
 		".avif": "image/avif",
 		".css":  "text/css; charset=utf-8",

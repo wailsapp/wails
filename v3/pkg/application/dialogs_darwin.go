@@ -14,27 +14,26 @@ package application
 extern void openFileDialogCallback(uint id, char* path);
 extern void openFileDialogCallbackEnd(uint id);
 extern void saveFileDialogCallback(uint id, char* path);
+extern void dialogCallback(int id, int buttonPressed);
 
 static void showAboutBox(char* title, char *message, void *icon, int length) {
 
 	// run on main thread
-    //	dispatch_async(dispatch_get_main_queue(), ^{
-		NSAlert *alert = [[NSAlert alloc] init];
-		if (title != NULL) {
-			[alert setMessageText:[NSString stringWithUTF8String:title]];
-			free(title);
-		}
-		if (message != NULL) {
-			[alert setInformativeText:[NSString stringWithUTF8String:message]];
-			free(message);
-		}
-		if (icon != NULL) {
-			NSImage *image = [[NSImage alloc] initWithData:[NSData dataWithBytes:icon length:length]];
-			[alert setIcon:image];
-		}
-		[alert setAlertStyle:NSAlertStyleInformational];
-		[alert runModal];
-        //	});
+	NSAlert *alert = [[NSAlert alloc] init];
+	if (title != NULL) {
+		[alert setMessageText:[NSString stringWithUTF8String:title]];
+		free(title);
+	}
+	if (message != NULL) {
+		[alert setInformativeText:[NSString stringWithUTF8String:message]];
+		free(message);
+	}
+	if (icon != NULL) {
+		NSImage *image = [[NSImage alloc] initWithData:[NSData dataWithBytes:icon length:length]];
+		[alert setIcon:image];
+	}
+	[alert setAlertStyle:NSAlertStyleInformational];
+	[alert runModal];
 }
 
 
@@ -66,42 +65,38 @@ static void* createAlert(int alertType, char* title, char *message, void *icon, 
 
 }
 
-// Run the dialog
-static int dialogRunModal(void *dialog, void *parent) {
-	NSAlert *alert = (__bridge NSAlert *)dialog;
+static int getButtonNumber(NSModalResponse response) {
+	int buttonNumber = 0;
+	if( response == NSAlertFirstButtonReturn ) {
+		buttonNumber = 0;
+	}
+	else if( response == NSAlertSecondButtonReturn ) {
+		buttonNumber = 1;
+	}
+	else if( response == NSAlertThirdButtonReturn ) {
+		buttonNumber = 2;
+	} else {
+		buttonNumber = 3;
+	}
+	return buttonNumber;
+}
 
-    __block long response;
-	//if( parent != NULL ) {
-	//	NSWindow *window = (__bridge NSWindow *)parent;
-	//	response = [alert runModalSheetForWindow:window];
-	//} else {
-	//	response = [alert runModal];
-	//}
+// Run the dialog
+static void dialogRunModal(void *dialog, void *parent, int callBackID) {
+	NSAlert *alert = (__bridge NSAlert *)dialog;
 
 	// If the parent is NULL, we are running a modal dialog, otherwise attach the alert to the parent
 	if( parent == NULL ) {
-		response = [alert runModal];
+		NSModalResponse response = [alert runModal];
+		int returnCode = getButtonNumber(response);
+		dialogCallback(callBackID, returnCode);
 	} else {
 		NSWindow *window = (__bridge NSWindow *)parent;
-		[alert beginSheetModalForWindow:window completionHandler:^(NSModalResponse returnCode) {
-			response = returnCode;
+		[alert beginSheetModalForWindow:window completionHandler:^(NSModalResponse response) {
+			int returnCode = getButtonNumber(response);
+			dialogCallback(callBackID, returnCode);
 		}];
 	}
-
-    int result;
-
-    if( response == NSAlertFirstButtonReturn ) {
-        result = 0;
-    }
-    else if( response == NSAlertSecondButtonReturn ) {
-        result = 1;
-    }
-    else if( response == NSAlertThirdButtonReturn ) {
-        result = 2;
-    } else {
-        result = 3;
-    }
-	return result;
 }
 
 // Release the dialog
@@ -163,73 +158,72 @@ static void showOpenFileDialog(unsigned int dialogID,
 	void *window) {
 
 	// run on main thread
-    dispatch_async(dispatch_get_main_queue(), ^{
+	NSOpenPanel *panel = [NSOpenPanel openPanel];
 
-		NSOpenPanel *panel = [NSOpenPanel openPanel];
+	// print out filterPatterns if length > 0
+	if (filterPatternsCount > 0) {
+		OpenPanelDelegate *delegate = [[OpenPanelDelegate alloc] init];
+		[panel setDelegate:delegate];
+		// Initialise NSString with bytes and UTF8 encoding
+		NSString *filterPatternsString = [[NSString alloc] initWithBytes:filterPatterns length:filterPatternsCount encoding:NSUTF8StringEncoding];
+		// Convert NSString to NSArray
+		delegate.allowedExtensions = [filterPatternsString componentsSeparatedByString:@";"];
 
-		// print out filterPatterns if length > 0
-		if (filterPatternsCount > 0) {
-			OpenPanelDelegate *delegate = [[OpenPanelDelegate alloc] init];
-			[panel setDelegate:delegate];
-			// Initialise NSString with bytes and UTF8 encoding
-			NSString *filterPatternsString = [[NSString alloc] initWithBytes:filterPatterns length:filterPatternsCount encoding:NSUTF8StringEncoding];
-			// Convert NSString to NSArray
-			delegate.allowedExtensions = [filterPatternsString componentsSeparatedByString:@";"];
-
-				// Use UTType if macOS 11 or higher to add file filters
-			if (@available(macOS 11, *)) {
-				NSMutableArray *filterTypes = [NSMutableArray array];
-				// Iterate the filtertypes, create uti's that are limited to the file extensions then add
-				for (NSString *filterType in delegate.allowedExtensions) {
-					[filterTypes addObject:[UTType typeWithFilenameExtension:filterType]];
-				}
-				[panel setAllowedContentTypes:filterTypes];
-			} else {
-				[panel setAllowedFileTypes:delegate.allowedExtensions];
+			// Use UTType if macOS 11 or higher to add file filters
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
+		if (@available(macOS 11, *)) {
+			NSMutableArray *filterTypes = [NSMutableArray array];
+			// Iterate the filtertypes, create uti's that are limited to the file extensions then add
+			for (NSString *filterType in delegate.allowedExtensions) {
+				[filterTypes addObject:[UTType typeWithFilenameExtension:filterType]];
 			}
-
-			// Free the memory
-			free(filterPatterns);
+			[panel setAllowedContentTypes:filterTypes];
 		}
+#else
+		[panel setAllowedFileTypes:delegate.allowedExtensions];
+#endif
+
+		// Free the memory
+		free(filterPatterns);
+	}
 
 
-		if (message != NULL) {
-			[panel setMessage:[NSString stringWithUTF8String:message]];
-			free(message);
-		}
+	if (message != NULL) {
+		[panel setMessage:[NSString stringWithUTF8String:message]];
+		free(message);
+	}
 
-		if (directory != NULL) {
-			[panel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:directory]]];
-			free(directory);
-		}
+	if (directory != NULL) {
+		[panel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:directory]]];
+		free(directory);
+	}
 
-		if (buttonText != NULL) {
-			[panel setPrompt:[NSString stringWithUTF8String:buttonText]];
-			free(buttonText);
-		}
+	if (buttonText != NULL) {
+		[panel setPrompt:[NSString stringWithUTF8String:buttonText]];
+		free(buttonText);
+	}
 
-		[panel setCanChooseFiles:canChooseFiles];
-		[panel setCanChooseDirectories:canChooseDirectories];
-		[panel setCanCreateDirectories:canCreateDirectories];
-		[panel setShowsHiddenFiles:showHiddenFiles];
-		[panel setAllowsMultipleSelection:allowsMultipleSelection];
-		[panel setResolvesAliases:resolvesAliases];
-		[panel setExtensionHidden:hideExtension];
-		[panel setTreatsFilePackagesAsDirectories:treatsFilePackagesAsDirectories];
-		[panel setAllowsOtherFileTypes:allowsOtherFileTypes];
+	[panel setCanChooseFiles:canChooseFiles];
+	[panel setCanChooseDirectories:canChooseDirectories];
+	[panel setCanCreateDirectories:canCreateDirectories];
+	[panel setShowsHiddenFiles:showHiddenFiles];
+	[panel setAllowsMultipleSelection:allowsMultipleSelection];
+	[panel setResolvesAliases:resolvesAliases];
+	[panel setExtensionHidden:hideExtension];
+	[panel setTreatsFilePackagesAsDirectories:treatsFilePackagesAsDirectories];
+	[panel setAllowsOtherFileTypes:allowsOtherFileTypes];
 
 
 
-		if (window != NULL) {
-			[panel beginSheetModalForWindow:(__bridge NSWindow *)window completionHandler:^(NSInteger result) {
-				processOpenFileDialogResults(panel, result, dialogID);
-			}];
-		} else {
-			[panel beginWithCompletionHandler:^(NSInteger result) {
-				processOpenFileDialogResults(panel, result, dialogID);
-			}];
-		}
-   });
+	if (window != NULL) {
+		[panel beginSheetModalForWindow:(__bridge NSWindow *)window completionHandler:^(NSInteger result) {
+			processOpenFileDialogResults(panel, result, dialogID);
+		}];
+	} else {
+		[panel beginWithCompletionHandler:^(NSInteger result) {
+			processOpenFileDialogResults(panel, result, dialogID);
+		}];
+	}
 }
 
 static void showSaveFileDialog(unsigned int dialogID,
@@ -245,63 +239,61 @@ static void showSaveFileDialog(unsigned int dialogID,
 	char* filename,
 	void *window) {
 
-	// run on main thread
-    dispatch_async(dispatch_get_main_queue(), ^{
-		NSSavePanel *panel = [NSSavePanel savePanel];
+	NSSavePanel *panel = [NSSavePanel savePanel];
 
-		if (message != NULL) {
-			[panel setMessage:[NSString stringWithUTF8String:message]];
-			free(message);
-		}
+	if (message != NULL) {
+		[panel setMessage:[NSString stringWithUTF8String:message]];
+		free(message);
+	}
 
-		if (directory != NULL) {
-			[panel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:directory]]];
-			free(directory);
-		}
+	if (directory != NULL) {
+		[panel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:directory]]];
+		free(directory);
+	}
 
-		if (filename != NULL) {
-			[panel setNameFieldStringValue:[NSString stringWithUTF8String:filename]];
-			free(filename);
-		}
+	if (filename != NULL) {
+		[panel setNameFieldStringValue:[NSString stringWithUTF8String:filename]];
+		free(filename);
+	}
 
-		if (buttonText != NULL) {
-			[panel setPrompt:[NSString stringWithUTF8String:buttonText]];
-			free(buttonText);
-		}
+	if (buttonText != NULL) {
+		[panel setPrompt:[NSString stringWithUTF8String:buttonText]];
+		free(buttonText);
+	}
 
-		[panel setCanCreateDirectories:canCreateDirectories];
-		[panel setShowsHiddenFiles:showHiddenFiles];
-		[panel setCanSelectHiddenExtension:canSelectHiddenExtension];
-		[panel setExtensionHidden:hideExtension];
-		[panel setTreatsFilePackagesAsDirectories:treatsFilePackagesAsDirectories];
-		[panel setAllowsOtherFileTypes:allowOtherFileTypes];
+	[panel setCanCreateDirectories:canCreateDirectories];
+	[panel setShowsHiddenFiles:showHiddenFiles];
+	[panel setCanSelectHiddenExtension:canSelectHiddenExtension];
+	[panel setExtensionHidden:hideExtension];
+	[panel setTreatsFilePackagesAsDirectories:treatsFilePackagesAsDirectories];
+	[panel setAllowsOtherFileTypes:allowOtherFileTypes];
 
-		if (window != NULL) {
-			[panel beginSheetModalForWindow:(__bridge NSWindow *)window completionHandler:^(NSInteger result) {
-				const char *path = NULL;
-				if (result == NSModalResponseOK) {
-   					NSURL *url = [panel URL];
-					path = [[url path] UTF8String];
-				}
-				saveFileDialogCallback(dialogID, (char *)path);
-			}];
-		} else {
-			[panel beginWithCompletionHandler:^(NSInteger result) {
-				const char *path = NULL;
-				if (result == NSModalResponseOK) {
-					NSURL *url = [panel URL];
-					path = [[url path] UTF8String];
-				}
-				saveFileDialogCallback(dialogID, (char *)path);
-			}];
-		}
-    });
+	if (window != NULL) {
+		[panel beginSheetModalForWindow:(__bridge NSWindow *)window completionHandler:^(NSInteger result) {
+			const char *path = NULL;
+			if (result == NSModalResponseOK) {
+				NSURL *url = [panel URL];
+				path = [[url path] UTF8String];
+			}
+			saveFileDialogCallback(dialogID, (char *)path);
+		}];
+	} else {
+		[panel beginWithCompletionHandler:^(NSInteger result) {
+			const char *path = NULL;
+			if (result == NSModalResponseOK) {
+				NSURL *url = [panel URL];
+				path = [[url path] UTF8String];
+			}
+			saveFileDialogCallback(dialogID, (char *)path);
+		}];
+	}
 }
 
 */
 import "C"
 import (
 	"strings"
+	"sync"
 	"unsafe"
 )
 
@@ -314,6 +306,53 @@ var alertTypeMap = map[DialogType]C.int{
 	InfoDialogType:     NSAlertStyleInformational,
 	ErrorDialogType:    NSAlertStyleCritical,
 	QuestionDialogType: NSAlertStyleInformational,
+}
+
+type dialogResultCallback func(int)
+
+var (
+	callbacks = make(map[int]dialogResultCallback)
+	mutex     = &sync.Mutex{}
+)
+
+func addDialogCallback(callback dialogResultCallback) int {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Find the first free integer key
+	var id int
+	for {
+		if _, exists := callbacks[id]; !exists {
+			break
+		}
+		id++
+	}
+
+	// Save the function in the map using the integer key
+	callbacks[id] = callback
+
+	// Return the key
+	return id
+}
+
+func removeDialogCallback(id int) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	delete(callbacks, id)
+}
+
+//export dialogCallback
+func dialogCallback(id C.int, buttonPressed C.int) {
+	mutex.Lock()
+	callback, exists := callbacks[int(id)]
+	mutex.Unlock()
+
+	if !exists {
+		return
+	}
+
+	// Call the function with the button number
+	callback(int(buttonPressed)) // Replace nil with the actual slice of buttons
 }
 
 func (m *macosApp) showAboutDialog(title string, message string, icon []byte) {
@@ -359,15 +398,16 @@ func (m *macosDialog) show() {
 		} else {
 			// if it's an error, use the application Icon
 			if m.dialog.DialogType == ErrorDialogType {
-				iconData = unsafe.Pointer(&globalApplication.options.Icon[0])
-				iconLength = C.int(len(globalApplication.options.Icon))
+				if globalApplication.options.Icon != nil {
+					iconData = unsafe.Pointer(&globalApplication.options.Icon[0])
+					iconLength = C.int(len(globalApplication.options.Icon))
+				}
 			}
 		}
 		var parent unsafe.Pointer
 		if m.dialog.window != nil {
 			// get NSWindow from window
-			window, _ := m.dialog.window.NativeWindowHandle()
-			parent = unsafe.Pointer(window)
+			parent = m.dialog.window.NativeWindow()
 		}
 
 		alertType, ok := alertTypeMap[m.dialog.DialogType]
@@ -387,13 +427,19 @@ func (m *macosDialog) show() {
 			count++
 		}
 
-		buttonPressed := int(C.dialogRunModal(m.nsDialog, parent))
-		if len(m.dialog.Buttons) > buttonPressed {
-			button := reversedButtons[buttonPressed]
-			if button.Callback != nil {
-				button.Callback()
+		var callBackID int
+		callBackID = addDialogCallback(func(buttonPressed int) {
+			if len(m.dialog.Buttons) > buttonPressed {
+				button := reversedButtons[buttonPressed]
+				if button.Callback != nil {
+					button.Callback()
+				}
 			}
-		}
+			removeDialogCallback(callBackID)
+		})
+
+		C.dialogRunModal(m.nsDialog, parent, C.int(callBackID))
+
 	})
 
 }
@@ -426,8 +472,7 @@ func (m *macosOpenFileDialog) show() (chan string, error) {
 	nsWindow := unsafe.Pointer(nil)
 	if m.dialog.window != nil {
 		// get NSWindow from window
-		window, _ := m.dialog.window.NativeWindowHandle()
-		nsWindow = unsafe.Pointer(window)
+		nsWindow = m.dialog.window.NativeWindow()
 	}
 
 	// Massage filter patterns into macOS format
@@ -507,8 +552,7 @@ func (m *macosSaveFileDialog) show() (chan string, error) {
 	nsWindow := unsafe.Pointer(nil)
 	if m.dialog.window != nil {
 		// get NSWindow from window
-		window, _ := m.dialog.window.NativeWindowHandle()
-		nsWindow = unsafe.Pointer(window)
+		nsWindow = m.dialog.window.NativeWindow()
 	}
 	C.showSaveFileDialog(C.uint(m.dialog.id),
 		C.bool(m.dialog.canCreateDirectories),

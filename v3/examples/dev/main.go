@@ -16,14 +16,14 @@ func main() {
 		Name:        "dev",
 		Description: "A demo of using raw HTML & CSS",
 		Assets: application.AssetOptions{
-			FS: assets,
+			Handler: application.AssetFileServerFS(assets),
 		},
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
 	// Create window
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Plain Bundle",
 		CSS:   `body { background-color: rgba(255, 255, 255, 0); } .main { color: white; margin: 20%; }`,
 		Mac: application.MacWindow{
@@ -34,14 +34,6 @@ func main() {
 
 		URL: "/",
 	})
-
-	//app.On(events.Common.ThemeChanged, func(e *application.Event) {
-	//	if app.IsDarkMode() {
-	//		log.Println("Dark mode!")
-	//	} else {
-	//		log.Println("Light mode!")
-	//	}
-	//})
 
 	err := app.Run()
 

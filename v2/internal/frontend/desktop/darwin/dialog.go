@@ -11,6 +11,7 @@ package darwin
 #import "WailsContext.h"
 */
 import "C"
+
 import (
 	"encoding/json"
 	"fmt"
@@ -23,10 +24,12 @@ import (
 )
 
 // Obj-C dialog methods send the response to this channel
-var messageDialogResponse = make(chan int)
-var openFileDialogResponse = make(chan string)
-var saveFileDialogResponse = make(chan string)
-var dialogLock sync.Mutex
+var (
+	messageDialogResponse  = make(chan int)
+	openFileDialogResponse = make(chan string)
+	saveFileDialogResponse = make(chan string)
+	dialogLock             sync.Mutex
+)
 
 // OpenDirectoryDialog prompts the user to select a directory
 func (f *Frontend) OpenDirectoryDialog(options frontend.OpenDialogOptions) (string, error) {
@@ -74,7 +77,7 @@ func (f *Frontend) openDialog(options *frontend.OpenDialogOptions, multiple bool
 	filters := filterStrings.Join(";")
 	C.OpenFileDialog(f.mainWindow.context, title, defaultFilename, defaultDirectory, allowDirectories, allowFiles, canCreateDirectories, treatPackagesAsDirectories, resolveAliases, showHiddenFiles, allowMultipleFileSelection, c.String(filters))
 
-	var result = <-openFileDialogResponse
+	result := <-openFileDialogResponse
 
 	var parsedResults []string
 	err := json.Unmarshal([]byte(result), &parsedResults)
@@ -130,7 +133,7 @@ func (f *Frontend) SaveFileDialog(options frontend.SaveDialogOptions) (string, e
 	filters := filterStrings.Join(";")
 	C.SaveFileDialog(f.mainWindow.context, title, defaultFilename, defaultDirectory, canCreateDirectories, treatPackagesAsDirectories, showHiddenFiles, c.String(filters))
 
-	var result = <-saveFileDialogResponse
+	result := <-saveFileDialogResponse
 
 	return result, nil
 }
@@ -165,7 +168,7 @@ func (f *Frontend) MessageDialog(options frontend.MessageDialogOptions) (string,
 
 	C.MessageDialog(f.mainWindow.context, dialogType, title, message, buttons[0], buttons[1], buttons[2], buttons[3], defaultButton, cancelButton, iconData, iconDataLength)
 
-	var result = <-messageDialogResponse
+	result := <-messageDialogResponse
 
 	selectedC := buttons[result]
 	var selected string

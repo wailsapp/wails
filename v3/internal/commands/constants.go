@@ -1,8 +1,9 @@
 package commands
 
 import (
-	"github.com/wailsapp/wails/v3/internal/parser"
 	"os"
+
+	"github.com/wailsapp/wails/v3/internal/generator"
 )
 
 type GenerateConstantsOptions struct {
@@ -11,12 +12,13 @@ type GenerateConstantsOptions struct {
 }
 
 func GenerateConstants(options *GenerateConstantsOptions) error {
+	DisableFooter = true
 	goData, err := os.ReadFile(options.ConstantsFilename)
 	if err != nil {
 		return err
 	}
 
-	result, err := parser.GenerateConstants(goData)
+	result, err := generator.GenerateConstants(goData)
 	if err != nil {
 		return err
 	}

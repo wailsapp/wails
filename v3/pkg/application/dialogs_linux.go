@@ -1,19 +1,24 @@
 package application
 
-func (m *linuxApp) showAboutDialog(title string, message string, icon []byte) {
-	window := globalApplication.getWindowForID(m.getCurrentWindowID())
+func (a *linuxApp) showAboutDialog(title string, message string, icon []byte) {
+	window, _ := globalApplication.Window.GetByID(a.getCurrentWindowID())
 	var parent uintptr
 	if window != nil {
-		parent, _ = window.(*WebviewWindow).NativeWindowHandle()
+		nativeWindow := window.NativeWindow()
+		if nativeWindow != nil {
+			parent = uintptr(nativeWindow)
+		}
 	}
 	about := newMessageDialog(InfoDialogType)
 	about.SetTitle(title).
 		SetMessage(message).
 		SetIcon(icon)
-	runQuestionDialog(
-		pointer(parent),
-		about,
-	)
+	InvokeAsync(func() {
+		runQuestionDialog(
+			pointer(parent),
+			about,
+		)
+	})
 }
 
 type linuxDialog struct {
@@ -22,19 +27,27 @@ type linuxDialog struct {
 
 func (m *linuxDialog) show() {
 	windowId := getNativeApplication().getCurrentWindowID()
-	window := globalApplication.getWindowForID(windowId)
+	window, _ := globalApplication.Window.GetByID(windowId)
 	var parent uintptr
 	if window != nil {
-		parent, _ = window.(*WebviewWindow).NativeWindowHandle()
-	}
-
-	response := runQuestionDialog(pointer(parent), m.dialog)
-	if response >= 0 && response < len(m.dialog.Buttons) {
-		button := m.dialog.Buttons[response]
-		if button.Callback != nil {
-			go button.Callback()
+		nativeWindow := window.NativeWindow()
+		if nativeWindow != nil {
+			parent = uintptr(nativeWindow)
 		}
 	}
+
+	InvokeAsync(func() {
+		response := runQuestionDialog(pointer(parent), m.dialog)
+		if response >= 0 && response < len(m.dialog.Buttons) {
+			button := m.dialog.Buttons[response]
+			if button.Callback != nil {
+				go func() {
+					defer handlePanic()
+					button.Callback()
+				}()
+			}
+		}
+	})
 }
 
 func newDialogImpl(d *MessageDialog) *linuxDialog {

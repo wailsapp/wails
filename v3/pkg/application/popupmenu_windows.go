@@ -1,8 +1,8 @@
 package application
 
 import (
-	"fmt"
 	"github.com/wailsapp/wails/v3/pkg/w32"
+	"unsafe"
 )
 
 const (
@@ -40,6 +40,7 @@ func (r *RadioGroup) MenuID(item *MenuItem) int {
 type Win32Menu struct {
 	isPopup       bool
 	menu          w32.HMENU
+	parentWindow  *windowsWebviewWindow
 	parent        w32.HWND
 	menuMapping   map[int]*MenuItem
 	checkboxItems map[*MenuItem][]int
@@ -58,27 +59,41 @@ func (p *Win32Menu) newMenu() w32.HMENU {
 }
 
 func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
-	var currentRadioGroup RadioGroup
+	currentRadioGroup := RadioGroup{}
 	for _, item := range inputMenu.items {
-		if item.Hidden() {
-			continue
-		}
 		p.currentMenuID++
 		itemID := p.currentMenuID
 		p.menuMapping[itemID] = item
 
 		menuItemImpl := newMenuItemImpl(item, parentMenu, itemID)
 		menuItemImpl.parent = inputMenu
+		item.impl = menuItemImpl
+
+		if item.Hidden() {
+			if item.accelerator != nil {
+				if p.parentWindow != nil {
+					// Remove the accelerator from the keybindings
+					p.parentWindow.parent.removeMenuBinding(item.accelerator)
+				} else {
+					// Remove the global keybindings
+					globalApplication.KeyBinding.Remove(item.accelerator.String())
+				}
+			}
+		}
 
 		flags := uint32(w32.MF_STRING)
 		if item.disabled {
 			flags = flags | w32.MF_GRAYED
 		}
-		if item.checked && item.IsCheckbox() {
+		if item.checked {
 			flags = flags | w32.MF_CHECKED
 		}
 		if item.IsSeparator() {
 			flags = flags | w32.MF_SEPARATOR
+		}
+
+		if item.checked && item.IsRadio() {
+			flags = flags | w32.MFT_RADIOCHECK
 		}
 
 		if item.IsCheckbox() {
@@ -105,18 +120,33 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 		}
 
 		var menuText = item.Label()
-		ok := w32.AppendMenu(parentMenu, flags, uintptr(itemID), w32.MustStringToUTF16Ptr(menuText))
-		if !ok {
-			w32.Fatal(fmt.Sprintf("Error adding menu item: %s", menuText))
-		}
-		if item.bitmap != nil {
-			err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil)
-			if err != nil {
-				w32.Fatal(fmt.Sprintf("Error setting menu icons: %s", err.Error()))
+		if item.accelerator != nil {
+			menuText = menuText + "\t" + item.accelerator.String()
+			if item.callback != nil {
+				if p.parentWindow != nil {
+					p.parentWindow.parent.addMenuBinding(item.accelerator, item)
+				} else {
+					globalApplication.KeyBinding.Add(item.accelerator.String(), func(w Window) {
+						item.handleClick()
+					})
+				}
 			}
 		}
 
-		item.impl = menuItemImpl
+		// If the item is hidden, don't append
+		if item.Hidden() {
+			continue
+		}
+
+		ok := w32.AppendMenu(parentMenu, flags, uintptr(itemID), w32.MustStringToUTF16Ptr(menuText))
+		if !ok {
+			globalApplication.fatal("error adding menu item '%s'", menuText)
+		}
+		if item.bitmap != nil {
+			if err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil); err != nil {
+				globalApplication.fatal("error setting menu icons: %w", err)
+			}
+		}
 	}
 	if len(currentRadioGroup) > 0 {
 		for _, radioMember := range currentRadioGroup {
@@ -146,9 +176,10 @@ func NewPopupMenu(parent w32.HWND, inputMenu *Menu) *Win32Menu {
 	result.Update()
 	return result
 }
-func NewApplicationMenu(parent w32.HWND, inputMenu *Menu) *Win32Menu {
+func NewApplicationMenu(parent *windowsWebviewWindow, inputMenu *Menu) *Win32Menu {
 	result := &Win32Menu{
-		parent:        parent,
+		parentWindow:  parent,
+		parent:        parent.hwnd,
 		menuData:      inputMenu,
 		checkboxItems: make(map[*MenuItem][]int),
 		radioGroups:   make(map[*MenuItem][]*RadioGroup),
@@ -165,8 +196,27 @@ func (p *Win32Menu) ShowAt(x int, y int) {
 		p.onMenuOpen()
 	}
 
-	if !w32.TrackPopupMenuEx(p.menu, w32.TPM_LEFTALIGN, int32(x), int32(y-5), p.parent, nil) {
-		w32.Fatal("TrackPopupMenu failed")
+	// Get screen dimensions to determine menu positioning
+	monitor := w32.MonitorFromWindow(p.parent, w32.MONITOR_DEFAULTTONEAREST)
+	var monitorInfo w32.MONITORINFO
+	monitorInfo.CbSize = uint32(unsafe.Sizeof(monitorInfo))
+	if !w32.GetMonitorInfo(monitor, &monitorInfo) {
+		globalApplication.fatal("GetMonitorInfo failed")
+	}
+
+	// Set flags to always position the menu above the cursor
+	menuFlags := uint32(w32.TPM_LEFTALIGN | w32.TPM_BOTTOMALIGN)
+
+	// Check if we're close to the right edge of the screen
+	// If so, right-align the menu with some padding
+	if x > int(monitorInfo.RcWork.Right)-200 { // Assuming 200px as a reasonable menu width
+		menuFlags = uint32(w32.TPM_RIGHTALIGN | w32.TPM_BOTTOMALIGN)
+		// Add a small padding (10px) from the right edge
+		x = int(monitorInfo.RcWork.Right) - 10
+	}
+
+	if !w32.TrackPopupMenuEx(p.menu, menuFlags, int32(x), int32(y), p.parent, nil) {
+		globalApplication.fatal("TrackPopupMenu failed")
 	}
 
 	if p.onMenuClose != nil {
@@ -174,7 +224,7 @@ func (p *Win32Menu) ShowAt(x int, y int) {
 	}
 
 	if !w32.PostMessage(p.parent, w32.WM_NULL, 0, 0) {
-		w32.Fatal("PostMessage failed")
+		globalApplication.fatal("PostMessage failed")
 	}
 
 }
@@ -182,7 +232,7 @@ func (p *Win32Menu) ShowAt(x int, y int) {
 func (p *Win32Menu) ShowAtCursor() {
 	x, y, ok := w32.GetCursorPos()
 	if ok == false {
-		w32.Fatal("GetCursorPos failed")
+		globalApplication.fatal("GetCursorPos failed")
 	}
 
 	p.ShowAt(x, y)
@@ -194,6 +244,9 @@ func (p *Win32Menu) ProcessCommand(cmdMsgID int) bool {
 		return false
 	}
 	if item.IsRadio() {
+		if item.checked {
+			return true
+		}
 		item.checked = true
 		p.updateRadioGroup(item)
 	}

@@ -15,7 +15,6 @@ type callMessage struct {
 }
 
 func (d *Dispatcher) processCallMessage(message string, sender frontend.Frontend) (string, error) {
-
 	var payload callMessage
 	err := json.Unmarshal([]byte(message[1:]), &payload)
 	if err != nil {

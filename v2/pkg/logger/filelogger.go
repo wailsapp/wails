@@ -19,7 +19,7 @@ func NewFileLogger(filename string) Logger {
 
 // Print works like Sprintf.
 func (l *FileLogger) Print(message string) {
-	f, err := os.OpenFile(l.filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(l.filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
 		log.Fatal(err)
 	}

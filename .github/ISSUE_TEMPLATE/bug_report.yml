@@ -8,6 +8,8 @@ body:
     attributes:
       value: |
         ***Please note: No bug reports are currently being accepted for Wails v3***
+        ***Please note: No bug reports are currently being accepted for Wails v3***
+        ***Please note: No bug reports are currently being accepted for Wails v3***
         Before submitting this issue, please do the following:
         - Do a web search for your error. This usually leads to a much better understanding of the issue.
         - Prove that the error is indeed a Wails bug and not an application bug, with a specific set of steps to reproduce. 

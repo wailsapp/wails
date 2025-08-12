@@ -2,7 +2,6 @@ package main
 
 import (
 	"embed"
-	_ "embed"
 	"log"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -13,18 +12,18 @@ var assets embed.FS
 
 func main() {
 	app := application.New(application.Options{
-		Bind: []any{
-			&GreetService{},
+		Services: []application.Service{
+			application.NewService(&GreetService{}),
 		},
 		Assets: application.AssetOptions{
-			FS: assets,
+			Handler: application.BundledAssetFileServer(assets),
 		},
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
 
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		URL:             "/",
 		DevToolsEnabled: true,
 	})

@@ -25,13 +25,13 @@ func NewDnf(osid string) *Dnf {
 // They will potentially differ on different distributions or versions
 func (y *Dnf) Packages() Packagemap {
 	return Packagemap{
-		"libgtk-3": []*Package{
+		"gtk3": []*Package{
 			{Name: "gtk3-devel", SystemPackage: true, Library: true},
 		},
-		"libwebkit": []*Package{
-			{Name: "webkit2gtk4.0-devel", SystemPackage: true, Library: true},
+		"webkit2gtk": []*Package{
+			{Name: "webkit2gtk4.1-devel", SystemPackage: true, Library: true},
 			{Name: "webkit2gtk3-devel", SystemPackage: true, Library: true},
-			// {Name: "webkitgtk3-devel", SystemPackage: true, Library: true},
+			{Name: "webkit2gtk4.0-devel", SystemPackage: true, Library: true},
 		},
 		"gcc": []*Package{
 			{Name: "gcc-c++", SystemPackage: true},
@@ -53,7 +53,10 @@ func (y *Dnf) Name() string {
 
 // PackageInstalled tests if the given package name is installed
 func (y *Dnf) PackageInstalled(pkg *Package) (bool, error) {
-	if pkg.SystemPackage == false {
+	if !pkg.SystemPackage {
+		if pkg.InstallCheck != nil {
+			return pkg.InstallCheck(), nil
+		}
 		return false, nil
 	}
 	stdout, err := execCmd("dnf", "info", "installed", pkg.Name)
@@ -103,7 +106,7 @@ func (y *Dnf) PackageAvailable(pkg *Package) (bool, error) {
 // InstallCommand returns the package manager specific command to install a package
 func (y *Dnf) InstallCommand(pkg *Package) string {
 	if pkg.SystemPackage == false {
-		return pkg.InstallCommand[y.osid]
+		return pkg.InstallCommand
 	}
 	return "sudo dnf install " + pkg.Name
 }

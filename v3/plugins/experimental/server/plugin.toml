@@ -1,9 +1,0 @@
-# This is the plugin definition file for the "server" plugin.
-
-Name = "server"
-Description = "A Simple Server for Wails Applications"
-Author = "Travis McLane <tmclane@gmail.com>"
-Version = "v1.0.0"
-Website = "https://wails.io"
-Repository = "https://github.com/wailsapp/wails/v3/plugins/server"
-License = "MIT"

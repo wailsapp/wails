@@ -5,8 +5,10 @@
 #import "../events/events_darwin.h"
 extern void processMessage(unsigned int, const char*);
 extern void processURLRequest(unsigned int, void *);
+extern void processDragItems(unsigned int windowId, char** arr, int length, int x, int y);
 extern void processWindowKeyDownEvent(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
+extern bool windowShouldUnconditionallyClose(unsigned int);
 @implementation WebviewWindow
 - (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
 {
@@ -183,6 +185,12 @@ extern bool hasListeners(unsigned int);
 - (void) setDelegate:(id<NSWindowDelegate>) delegate {
     [delegate retain];
     [super setDelegate: delegate];
+
+    // If the delegate is our WebviewWindowDelegate (which handles NSDraggingDestination)
+    if ([delegate isKindOfClass:[WebviewWindowDelegate class]]) {
+        NSLog(@"WebviewWindow: setDelegate - Registering window for dragged types (NSFilenamesPboardType) because WebviewWindowDelegate is being set.");
+        [self registerForDraggedTypes:@[NSFilenamesPboardType]]; // 'self' is the WebviewWindow instance
+    }
 }
 - (void) dealloc {
     // Remove the script handler, otherwise WebviewWindowDelegate won't get deallocated
@@ -193,10 +201,135 @@ extern bool hasListeners(unsigned int);
     }
     [super dealloc];
 }
+- (void)windowDidZoom:(NSNotification *)notification {
+    NSWindow *window = notification.object;
+    WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[window delegate];
+    if ([window isZoomed]) {
+        if (hasListeners(EventWindowMaximise)) {
+            processWindowEvent(delegate.windowId, EventWindowMaximise);
+        }
+    } else {
+        if (hasListeners(EventWindowUnMaximise)) {
+            processWindowEvent(delegate.windowId, EventWindowUnMaximise);
+        }
+    }
+}
+- (void)performZoomIn:(id)sender {
+    [super zoom:sender];
+    if (hasListeners(EventWindowZoomIn)) {
+        WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[sender delegate];
+        processWindowEvent(delegate.windowId, EventWindowZoomIn);
+    }
+}
+- (void)performZoomOut:(id)sender {
+    [super zoom:sender];
+    if (hasListeners(EventWindowZoomOut)) {
+        WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[sender delegate];
+        processWindowEvent(delegate.windowId, EventWindowZoomOut);
+    }
+}
+- (void)performZoomReset:(id)sender {
+    [self setFrame:[self frameRectForContentRect:[[self screen] visibleFrame]] display:YES];
+    if (hasListeners(EventWindowZoomReset)) {
+        WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[sender delegate];
+        processWindowEvent(delegate.windowId, EventWindowZoomReset);
+    }
+}
 @end
 @implementation WebviewWindowDelegate
+
+- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
+    NSLog(@"WebviewWindowDelegate: draggingEntered called. WindowID: %u", self.windowId);
+    NSPasteboard *pasteboard = [sender draggingPasteboard];
+    if ([[pasteboard types] containsObject:NSFilenamesPboardType]) {
+        NSLog(@"WebviewWindowDelegate: draggingEntered - Found NSFilenamesPboardType. Firing EventWindowFileDraggingEntered.");
+        // We need to ensure processWindowEvent is available or adapt this part
+        // For now, let's assume it's available globally or via an import
+        if (hasListeners(EventWindowFileDraggingEntered)) {
+             processWindowEvent(self.windowId, EventWindowFileDraggingEntered);
+        }
+        return NSDragOperationCopy;
+    }
+    NSLog(@"WebviewWindowDelegate: draggingEntered - NSFilenamesPboardType NOT found.");
+    return NSDragOperationNone;
+}
+
+- (void)draggingExited:(id<NSDraggingInfo>)sender {
+    NSLog(@"WebviewWindowDelegate: draggingExited called. WindowID: %u", self.windowId);
+    if (hasListeners(EventWindowFileDraggingExited)) {
+        processWindowEvent(self.windowId, EventWindowFileDraggingExited);
+    }
+}
+
+- (BOOL)prepareForDragOperation:(id<NSDraggingInfo>)sender {
+    NSLog(@"WebviewWindowDelegate: prepareForDragOperation called. WindowID: %u", self.windowId);
+    return YES;
+}
+
+- (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
+    NSLog(@"WebviewWindowDelegate: performDragOperation called. WindowID: %u", self.windowId);
+    NSPasteboard *pasteboard = [sender draggingPasteboard];
+    
+    if (hasListeners(EventWindowFileDraggingPerformed)) {
+        processWindowEvent(self.windowId, EventWindowFileDraggingPerformed);
+    }
+
+    if ([[pasteboard types] containsObject:NSFilenamesPboardType]) {
+        NSLog(@"WebviewWindowDelegate: performDragOperation - Found NSFilenamesPboardType.");
+        NSArray *files = [pasteboard propertyListForType:NSFilenamesPboardType];
+        NSUInteger count = [files count];
+        NSLog(@"WebviewWindowDelegate: performDragOperation - File count: %lu", (unsigned long)count);
+        if (count == 0) {
+            NSLog(@"WebviewWindowDelegate: performDragOperation - No files found in pasteboard, though type was present.");
+            return NO;
+        }
+
+        char** cArray = (char**)malloc(count * sizeof(char*));
+        if (cArray == NULL) {
+            NSLog(@"WebviewWindowDelegate: performDragOperation - Failed to allocate memory for file array.");
+            return NO;
+        }
+        for (NSUInteger i = 0; i < count; i++) {
+            NSString* str = files[i];
+            NSLog(@"WebviewWindowDelegate: performDragOperation - File %lu: %@", (unsigned long)i, str);
+            cArray[i] = (char*)[str UTF8String];
+        }
+        
+        // Get the WebviewWindow instance, which is the dragging destination
+        WebviewWindow *window = (WebviewWindow *)[sender draggingDestinationWindow];
+        WKWebView *webView = window.webView; // Get the webView from the window
+
+        NSPoint dropPointInWindow = [sender draggingLocation];
+        NSPoint dropPointInView = [webView convertPoint:dropPointInWindow fromView:nil]; // Convert to webView's coordinate system
+        
+        CGFloat viewHeight = webView.frame.size.height;
+        int x = (int)dropPointInView.x;
+        int y = (int)(viewHeight - dropPointInView.y); // Flip Y for web coordinate system
+        NSLog(@"WebviewWindowDelegate: performDragOperation - Coords: x=%d, y=%d. ViewHeight: %f", x, y, viewHeight);
+
+        NSLog(@"WebviewWindowDelegate: performDragOperation - Calling processDragItems for windowId %u.", self.windowId);
+        processDragItems(self.windowId, cArray, (int)count, x, y); // self.windowId is from the delegate
+        free(cArray);
+        NSLog(@"WebviewWindowDelegate: performDragOperation - Returned from processDragItems.");
+        return NO;
+    }
+    NSLog(@"WebviewWindowDelegate: performDragOperation - NSFilenamesPboardType NOT found. Returning NO.");
+    return NO;
+}
+
+// Original WebviewWindowDelegate methods continue here...
+
 - (BOOL)windowShouldClose:(NSWindow *)sender {
-    processWindowEvent(self.windowId, EventWindowShouldClose);
+    WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[sender delegate];
+    NSLog(@"[DEBUG] windowShouldClose called for window %d", delegate.windowId);
+    // Check if this window should close unconditionally (called from Close() method)
+    if (windowShouldUnconditionallyClose(delegate.windowId)) {
+        NSLog(@"[DEBUG] Window %d closing unconditionally (Close() method called)", delegate.windowId);
+        return true;
+    }
+    // For user-initiated closes, emit WindowClosing event and let the application decide
+    NSLog(@"[DEBUG] Window %d close requested by user - emitting WindowClosing event", delegate.windowId);
+    processWindowEvent(delegate.windowId, EventWindowShouldClose);
     return false;
 }
 - (void) dealloc {
@@ -241,474 +374,444 @@ extern bool hasListeners(unsigned int);
         }
     }
 }
-// GENERATED EVENTS START
+- (NSApplicationPresentationOptions)window:(NSWindow *)window willUseFullScreenPresentationOptions:(NSApplicationPresentationOptions)proposedOptions {
+    if (self.showToolbarWhenFullscreen) {
+        return proposedOptions;
+    } else {
+        return proposedOptions | NSApplicationPresentationAutoHideToolbar;
+    }
+}
+- (void)windowDidChangeOcclusionState:(NSNotification *)notification {
+    NSWindow *window = notification.object;
+    BOOL isVisible = ([window occlusionState] & NSWindowOcclusionStateVisible) != 0;
+    if (hasListeners(isVisible ? EventWindowShow : EventWindowHide)) {
+        processWindowEvent(self.windowId, isVisible ? EventWindowShow : EventWindowHide);
+    }
+}
 - (void)windowDidBecomeKey:(NSNotification *)notification {
     if( hasListeners(EventWindowDidBecomeKey) ) {
         processWindowEvent(self.windowId, EventWindowDidBecomeKey);
     }
 }
-
 - (void)windowDidBecomeMain:(NSNotification *)notification {
     if( hasListeners(EventWindowDidBecomeMain) ) {
         processWindowEvent(self.windowId, EventWindowDidBecomeMain);
     }
 }
-
 - (void)windowDidBeginSheet:(NSNotification *)notification {
     if( hasListeners(EventWindowDidBeginSheet) ) {
         processWindowEvent(self.windowId, EventWindowDidBeginSheet);
     }
 }
-
 - (void)windowDidChangeAlpha:(NSNotification *)notification {
     if( hasListeners(EventWindowDidChangeAlpha) ) {
         processWindowEvent(self.windowId, EventWindowDidChangeAlpha);
     }
 }
-
 - (void)windowDidChangeBackingLocation:(NSNotification *)notification {
     if( hasListeners(EventWindowDidChangeBackingLocation) ) {
         processWindowEvent(self.windowId, EventWindowDidChangeBackingLocation);
     }
 }
-
 - (void)windowDidChangeBackingProperties:(NSNotification *)notification {
     if( hasListeners(EventWindowDidChangeBackingProperties) ) {
         processWindowEvent(self.windowId, EventWindowDidChangeBackingProperties);
     }
 }
-
 - (void)windowDidChangeCollectionBehavior:(NSNotification *)notification {
     if( hasListeners(EventWindowDidChangeCollectionBehavior) ) {
         processWindowEvent(self.windowId, EventWindowDidChangeCollectionBehavior);
     }
 }
-
 - (void)windowDidChangeEffectiveAppearance:(NSNotification *)notification {
     if( hasListeners(EventWindowDidChangeEffectiveAppearance) ) {
         processWindowEvent(self.windowId, EventWindowDidChangeEffectiveAppearance);
     }
 }
-
-- (void)windowDidChangeOcclusionState:(NSNotification *)notification {
-    if( hasListeners(EventWindowDidChangeOcclusionState) ) {
-        processWindowEvent(self.windowId, EventWindowDidChangeOcclusionState);
-    }
-}
-
 - (void)windowDidChangeOrderingMode:(NSNotification *)notification {
     if( hasListeners(EventWindowDidChangeOrderingMode) ) {
         processWindowEvent(self.windowId, EventWindowDidChangeOrderingMode);
     }
 }
-
 - (void)windowDidChangeScreen:(NSNotification *)notification {
     if( hasListeners(EventWindowDidChangeScreen) ) {
         processWindowEvent(self.windowId, EventWindowDidChangeScreen);
     }
 }
-
 - (void)windowDidChangeScreenParameters:(NSNotification *)notification {
     if( hasListeners(EventWindowDidChangeScreenParameters) ) {
         processWindowEvent(self.windowId, EventWindowDidChangeScreenParameters);
     }
 }
-
 - (void)windowDidChangeScreenProfile:(NSNotification *)notification {
     if( hasListeners(EventWindowDidChangeScreenProfile) ) {
         processWindowEvent(self.windowId, EventWindowDidChangeScreenProfile);
     }
 }
-
 - (void)windowDidChangeScreenSpace:(NSNotification *)notification {
     if( hasListeners(EventWindowDidChangeScreenSpace) ) {
         processWindowEvent(self.windowId, EventWindowDidChangeScreenSpace);
     }
 }
-
 - (void)windowDidChangeScreenSpaceProperties:(NSNotification *)notification {
     if( hasListeners(EventWindowDidChangeScreenSpaceProperties) ) {
         processWindowEvent(self.windowId, EventWindowDidChangeScreenSpaceProperties);
     }
 }
-
 - (void)windowDidChangeSharingType:(NSNotification *)notification {
     if( hasListeners(EventWindowDidChangeSharingType) ) {
         processWindowEvent(self.windowId, EventWindowDidChangeSharingType);
     }
 }
-
 - (void)windowDidChangeSpace:(NSNotification *)notification {
     if( hasListeners(EventWindowDidChangeSpace) ) {
         processWindowEvent(self.windowId, EventWindowDidChangeSpace);
     }
 }
-
 - (void)windowDidChangeSpaceOrderingMode:(NSNotification *)notification {
     if( hasListeners(EventWindowDidChangeSpaceOrderingMode) ) {
         processWindowEvent(self.windowId, EventWindowDidChangeSpaceOrderingMode);
     }
 }
-
 - (void)windowDidChangeTitle:(NSNotification *)notification {
     if( hasListeners(EventWindowDidChangeTitle) ) {
         processWindowEvent(self.windowId, EventWindowDidChangeTitle);
     }
 }
-
 - (void)windowDidChangeToolbar:(NSNotification *)notification {
     if( hasListeners(EventWindowDidChangeToolbar) ) {
         processWindowEvent(self.windowId, EventWindowDidChangeToolbar);
     }
 }
-
-- (void)windowDidChangeVisibility:(NSNotification *)notification {
-    if( hasListeners(EventWindowDidChangeVisibility) ) {
-        processWindowEvent(self.windowId, EventWindowDidChangeVisibility);
-    }
-}
-
 - (void)windowDidDeminiaturize:(NSNotification *)notification {
     if( hasListeners(EventWindowDidDeminiaturize) ) {
         processWindowEvent(self.windowId, EventWindowDidDeminiaturize);
     }
 }
-
 - (void)windowDidEndSheet:(NSNotification *)notification {
     if( hasListeners(EventWindowDidEndSheet) ) {
         processWindowEvent(self.windowId, EventWindowDidEndSheet);
     }
 }
-
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
     if( hasListeners(EventWindowDidEnterFullScreen) ) {
         processWindowEvent(self.windowId, EventWindowDidEnterFullScreen);
     }
 }
-
+- (void)windowMaximise:(NSNotification *)notification {
+    if( hasListeners(EventWindowMaximise) ) {
+        processWindowEvent(self.windowId, EventWindowMaximise);
+    }
+}
+- (void)windowUnMaximise:(NSNotification *)notification {
+    if( hasListeners(EventWindowUnMaximise) ) {
+        processWindowEvent(self.windowId, EventWindowUnMaximise);
+    }
+}
 - (void)windowDidEnterVersionBrowser:(NSNotification *)notification {
     if( hasListeners(EventWindowDidEnterVersionBrowser) ) {
         processWindowEvent(self.windowId, EventWindowDidEnterVersionBrowser);
     }
 }
-
 - (void)windowDidExitFullScreen:(NSNotification *)notification {
     if( hasListeners(EventWindowDidExitFullScreen) ) {
         processWindowEvent(self.windowId, EventWindowDidExitFullScreen);
     }
 }
-
 - (void)windowDidExitVersionBrowser:(NSNotification *)notification {
     if( hasListeners(EventWindowDidExitVersionBrowser) ) {
         processWindowEvent(self.windowId, EventWindowDidExitVersionBrowser);
     }
 }
-
 - (void)windowDidExpose:(NSNotification *)notification {
     if( hasListeners(EventWindowDidExpose) ) {
         processWindowEvent(self.windowId, EventWindowDidExpose);
     }
 }
-
 - (void)windowDidFocus:(NSNotification *)notification {
     if( hasListeners(EventWindowDidFocus) ) {
         processWindowEvent(self.windowId, EventWindowDidFocus);
     }
 }
-
 - (void)windowDidMiniaturize:(NSNotification *)notification {
     if( hasListeners(EventWindowDidMiniaturize) ) {
         processWindowEvent(self.windowId, EventWindowDidMiniaturize);
     }
 }
-
 - (void)windowDidMove:(NSNotification *)notification {
     if( hasListeners(EventWindowDidMove) ) {
         processWindowEvent(self.windowId, EventWindowDidMove);
     }
 }
-
 - (void)windowDidOrderOffScreen:(NSNotification *)notification {
+    NSLog(@"[DEBUG] Window %d ordered OFF screen (hidden)", self.windowId);
     if( hasListeners(EventWindowDidOrderOffScreen) ) {
         processWindowEvent(self.windowId, EventWindowDidOrderOffScreen);
     }
 }
-
 - (void)windowDidOrderOnScreen:(NSNotification *)notification {
+    NSLog(@"[DEBUG] Window %d ordered ON screen (shown)", self.windowId);
     if( hasListeners(EventWindowDidOrderOnScreen) ) {
         processWindowEvent(self.windowId, EventWindowDidOrderOnScreen);
     }
 }
-
 - (void)windowDidResignKey:(NSNotification *)notification {
     if( hasListeners(EventWindowDidResignKey) ) {
         processWindowEvent(self.windowId, EventWindowDidResignKey);
     }
 }
-
 - (void)windowDidResignMain:(NSNotification *)notification {
     if( hasListeners(EventWindowDidResignMain) ) {
         processWindowEvent(self.windowId, EventWindowDidResignMain);
     }
 }
-
 - (void)windowDidResize:(NSNotification *)notification {
     if( hasListeners(EventWindowDidResize) ) {
         processWindowEvent(self.windowId, EventWindowDidResize);
     }
 }
-
 - (void)windowDidUpdate:(NSNotification *)notification {
     if( hasListeners(EventWindowDidUpdate) ) {
         processWindowEvent(self.windowId, EventWindowDidUpdate);
     }
 }
-
 - (void)windowDidUpdateAlpha:(NSNotification *)notification {
     if( hasListeners(EventWindowDidUpdateAlpha) ) {
         processWindowEvent(self.windowId, EventWindowDidUpdateAlpha);
     }
 }
-
 - (void)windowDidUpdateCollectionBehavior:(NSNotification *)notification {
     if( hasListeners(EventWindowDidUpdateCollectionBehavior) ) {
         processWindowEvent(self.windowId, EventWindowDidUpdateCollectionBehavior);
     }
 }
-
 - (void)windowDidUpdateCollectionProperties:(NSNotification *)notification {
     if( hasListeners(EventWindowDidUpdateCollectionProperties) ) {
         processWindowEvent(self.windowId, EventWindowDidUpdateCollectionProperties);
     }
 }
-
 - (void)windowDidUpdateShadow:(NSNotification *)notification {
     if( hasListeners(EventWindowDidUpdateShadow) ) {
         processWindowEvent(self.windowId, EventWindowDidUpdateShadow);
     }
 }
-
 - (void)windowDidUpdateTitle:(NSNotification *)notification {
     if( hasListeners(EventWindowDidUpdateTitle) ) {
         processWindowEvent(self.windowId, EventWindowDidUpdateTitle);
     }
 }
-
 - (void)windowDidUpdateToolbar:(NSNotification *)notification {
     if( hasListeners(EventWindowDidUpdateToolbar) ) {
         processWindowEvent(self.windowId, EventWindowDidUpdateToolbar);
     }
 }
-
-- (void)windowDidUpdateVisibility:(NSNotification *)notification {
-    if( hasListeners(EventWindowDidUpdateVisibility) ) {
-        processWindowEvent(self.windowId, EventWindowDidUpdateVisibility);
-    }
-}
-
 - (void)windowWillBecomeKey:(NSNotification *)notification {
     if( hasListeners(EventWindowWillBecomeKey) ) {
         processWindowEvent(self.windowId, EventWindowWillBecomeKey);
     }
 }
-
 - (void)windowWillBecomeMain:(NSNotification *)notification {
     if( hasListeners(EventWindowWillBecomeMain) ) {
         processWindowEvent(self.windowId, EventWindowWillBecomeMain);
     }
 }
-
 - (void)windowWillBeginSheet:(NSNotification *)notification {
     if( hasListeners(EventWindowWillBeginSheet) ) {
         processWindowEvent(self.windowId, EventWindowWillBeginSheet);
     }
 }
-
 - (void)windowWillChangeOrderingMode:(NSNotification *)notification {
     if( hasListeners(EventWindowWillChangeOrderingMode) ) {
         processWindowEvent(self.windowId, EventWindowWillChangeOrderingMode);
     }
 }
-
 - (void)windowWillClose:(NSNotification *)notification {
+    NSLog(@"[DEBUG] Window %d WILL close (window is actually closing)", self.windowId);
     if( hasListeners(EventWindowWillClose) ) {
         processWindowEvent(self.windowId, EventWindowWillClose);
     }
 }
-
 - (void)windowWillDeminiaturize:(NSNotification *)notification {
     if( hasListeners(EventWindowWillDeminiaturize) ) {
         processWindowEvent(self.windowId, EventWindowWillDeminiaturize);
     }
 }
-
 - (void)windowWillEnterFullScreen:(NSNotification *)notification {
     if( hasListeners(EventWindowWillEnterFullScreen) ) {
         processWindowEvent(self.windowId, EventWindowWillEnterFullScreen);
     }
 }
-
 - (void)windowWillEnterVersionBrowser:(NSNotification *)notification {
     if( hasListeners(EventWindowWillEnterVersionBrowser) ) {
         processWindowEvent(self.windowId, EventWindowWillEnterVersionBrowser);
     }
 }
-
 - (void)windowWillExitFullScreen:(NSNotification *)notification {
     if( hasListeners(EventWindowWillExitFullScreen) ) {
         processWindowEvent(self.windowId, EventWindowWillExitFullScreen);
     }
 }
-
 - (void)windowWillExitVersionBrowser:(NSNotification *)notification {
     if( hasListeners(EventWindowWillExitVersionBrowser) ) {
         processWindowEvent(self.windowId, EventWindowWillExitVersionBrowser);
     }
 }
-
 - (void)windowWillFocus:(NSNotification *)notification {
     if( hasListeners(EventWindowWillFocus) ) {
         processWindowEvent(self.windowId, EventWindowWillFocus);
     }
 }
-
 - (void)windowWillMiniaturize:(NSNotification *)notification {
     if( hasListeners(EventWindowWillMiniaturize) ) {
         processWindowEvent(self.windowId, EventWindowWillMiniaturize);
     }
 }
-
 - (void)windowWillMove:(NSNotification *)notification {
     if( hasListeners(EventWindowWillMove) ) {
         processWindowEvent(self.windowId, EventWindowWillMove);
     }
 }
-
 - (void)windowWillOrderOffScreen:(NSNotification *)notification {
+    NSLog(@"[DEBUG] Window %d WILL order off screen (about to hide)", self.windowId);
     if( hasListeners(EventWindowWillOrderOffScreen) ) {
         processWindowEvent(self.windowId, EventWindowWillOrderOffScreen);
     }
 }
-
 - (void)windowWillOrderOnScreen:(NSNotification *)notification {
+    NSLog(@"[DEBUG] Window %d WILL order on screen (about to show)", self.windowId);
     if( hasListeners(EventWindowWillOrderOnScreen) ) {
         processWindowEvent(self.windowId, EventWindowWillOrderOnScreen);
     }
 }
-
 - (void)windowWillResignMain:(NSNotification *)notification {
     if( hasListeners(EventWindowWillResignMain) ) {
         processWindowEvent(self.windowId, EventWindowWillResignMain);
     }
 }
-
 - (void)windowWillResize:(NSNotification *)notification {
     if( hasListeners(EventWindowWillResize) ) {
         processWindowEvent(self.windowId, EventWindowWillResize);
     }
 }
-
 - (void)windowWillUnfocus:(NSNotification *)notification {
     if( hasListeners(EventWindowWillUnfocus) ) {
         processWindowEvent(self.windowId, EventWindowWillUnfocus);
     }
 }
-
 - (void)windowWillUpdate:(NSNotification *)notification {
     if( hasListeners(EventWindowWillUpdate) ) {
         processWindowEvent(self.windowId, EventWindowWillUpdate);
     }
 }
-
 - (void)windowWillUpdateAlpha:(NSNotification *)notification {
     if( hasListeners(EventWindowWillUpdateAlpha) ) {
         processWindowEvent(self.windowId, EventWindowWillUpdateAlpha);
     }
 }
-
 - (void)windowWillUpdateCollectionBehavior:(NSNotification *)notification {
     if( hasListeners(EventWindowWillUpdateCollectionBehavior) ) {
         processWindowEvent(self.windowId, EventWindowWillUpdateCollectionBehavior);
     }
 }
-
 - (void)windowWillUpdateCollectionProperties:(NSNotification *)notification {
     if( hasListeners(EventWindowWillUpdateCollectionProperties) ) {
         processWindowEvent(self.windowId, EventWindowWillUpdateCollectionProperties);
     }
 }
-
 - (void)windowWillUpdateShadow:(NSNotification *)notification {
     if( hasListeners(EventWindowWillUpdateShadow) ) {
         processWindowEvent(self.windowId, EventWindowWillUpdateShadow);
     }
 }
-
 - (void)windowWillUpdateTitle:(NSNotification *)notification {
     if( hasListeners(EventWindowWillUpdateTitle) ) {
         processWindowEvent(self.windowId, EventWindowWillUpdateTitle);
     }
 }
-
 - (void)windowWillUpdateToolbar:(NSNotification *)notification {
     if( hasListeners(EventWindowWillUpdateToolbar) ) {
         processWindowEvent(self.windowId, EventWindowWillUpdateToolbar);
     }
 }
-
 - (void)windowWillUpdateVisibility:(NSNotification *)notification {
     if( hasListeners(EventWindowWillUpdateVisibility) ) {
         processWindowEvent(self.windowId, EventWindowWillUpdateVisibility);
     }
 }
-
 - (void)windowWillUseStandardFrame:(NSNotification *)notification {
     if( hasListeners(EventWindowWillUseStandardFrame) ) {
         processWindowEvent(self.windowId, EventWindowWillUseStandardFrame);
     }
 }
-
 - (void)windowFileDraggingEntered:(NSNotification *)notification {
     if( hasListeners(EventWindowFileDraggingEntered) ) {
         processWindowEvent(self.windowId, EventWindowFileDraggingEntered);
     }
 }
-
 - (void)windowFileDraggingPerformed:(NSNotification *)notification {
     if( hasListeners(EventWindowFileDraggingPerformed) ) {
         processWindowEvent(self.windowId, EventWindowFileDraggingPerformed);
     }
 }
-
 - (void)windowFileDraggingExited:(NSNotification *)notification {
     if( hasListeners(EventWindowFileDraggingExited) ) {
         processWindowEvent(self.windowId, EventWindowFileDraggingExited);
     }
 }
-
-- (void)webView:(WKWebView *)webview didStartProvisionalNavigation:(WKNavigation *)navigation {
+- (void)windowShow:(NSNotification *)notification {
+    if( hasListeners(EventWindowShow) ) {
+        processWindowEvent(self.windowId, EventWindowShow);
+    }
+}
+- (void)windowHide:(NSNotification *)notification {
+    if( hasListeners(EventWindowHide) ) {
+        processWindowEvent(self.windowId, EventWindowHide);
+    }
+}
+- (void)webView:(nonnull WKWebView *)webview didStartProvisionalNavigation:(WKNavigation *)navigation {
     if( hasListeners(EventWebViewDidStartProvisionalNavigation) ) {
         processWindowEvent(self.windowId, EventWebViewDidStartProvisionalNavigation);
     }
 }
-
-- (void)webView:(WKWebView *)webview didReceiveServerRedirectForProvisionalNavigation:(WKNavigation *)navigation {
+- (void)webView:(nonnull WKWebView *)webview didReceiveServerRedirectForProvisionalNavigation:(WKNavigation *)navigation {
     if( hasListeners(EventWebViewDidReceiveServerRedirectForProvisionalNavigation) ) {
         processWindowEvent(self.windowId, EventWebViewDidReceiveServerRedirectForProvisionalNavigation);
     }
 }
-
-- (void)webView:(WKWebView *)webview didFinishNavigation:(WKNavigation *)navigation {
+- (void)webView:(nonnull WKWebView *)webview didFinishNavigation:(WKNavigation *)navigation {
     if( hasListeners(EventWebViewDidFinishNavigation) ) {
         processWindowEvent(self.windowId, EventWebViewDidFinishNavigation);
     }
 }
-
-- (void)webView:(WKWebView *)webview didCommitNavigation:(WKNavigation *)navigation {
+- (void)webView:(nonnull WKWebView *)webview didCommitNavigation:(WKNavigation *)navigation {
     if( hasListeners(EventWebViewDidCommitNavigation) ) {
         processWindowEvent(self.windowId, EventWebViewDidCommitNavigation);
     }
 }
-
 // GENERATED EVENTS END
 @end
+void windowSetScreen(void* window, void* screen, int yOffset) {
+    WebviewWindow* nsWindow = (WebviewWindow*)window;
+    NSScreen* nsScreen = (NSScreen*)screen;
+    
+    // Get current frame
+    NSRect frame = [nsWindow frame];
+    
+    // Convert frame to screen coordinates
+    NSRect screenFrame = [nsScreen frame];
+    NSRect currentScreenFrame = [[nsWindow screen] frame];
+    
+    // Calculate the menubar height for the target screen
+    NSRect visibleFrame = [nsScreen visibleFrame];
+    CGFloat menubarHeight = screenFrame.size.height - visibleFrame.size.height;
+    
+    // Calculate the distance from the top of the current screen
+    CGFloat topOffset = currentScreenFrame.origin.y + currentScreenFrame.size.height - frame.origin.y;
+    
+    // Position relative to new screen's top, accounting for menubar
+    frame.origin.x = screenFrame.origin.x + (frame.origin.x - currentScreenFrame.origin.x);
+    frame.origin.y = screenFrame.origin.y + screenFrame.size.height - topOffset - menubarHeight - yOffset;
+    
+    // Set the frame which moves the window to the new screen
+    [nsWindow setFrame:frame display:YES];
+}

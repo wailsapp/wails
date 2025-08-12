@@ -42,7 +42,7 @@ func TestConflictingPackageName(t *testing.T) {
 
 	// setup
 	testLogger := &logger.Logger{}
-	b := binding.NewBindings(testLogger, []interface{}{&HandlerTest{}}, []interface{}{}, false)
+	b := binding.NewBindings(testLogger, []interface{}{&HandlerTest{}}, []interface{}{}, false, []interface{}{})
 
 	// then
 	err := b.GenerateGoBindings(generationDir)

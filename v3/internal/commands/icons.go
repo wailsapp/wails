@@ -23,6 +23,7 @@ type IconsOptions struct {
 }
 
 func GenerateIcons(options *IconsOptions) error {
+	DisableFooter = true
 
 	if options.Example {
 		return generateExampleIcon()
@@ -131,10 +132,11 @@ func generateWindowsIcon(iconData []byte, sizes []int, options *IconsOptions) er
 	return nil
 }
 
-func GenerateTemplateIcon(data []byte, outputFilename string) error {
+func GenerateTemplateIcon(data []byte, outputFilename string) (err error) {
 	// Decode the input file as a PNG
 	buffer := bytes.NewBuffer(data)
-	img, err := png.Decode(buffer)
+	var img image.Image
+	img, err = png.Decode(buffer)
 	if err != nil {
 		return fmt.Errorf("failed to decode input file as PNG: %w", err)
 	}
@@ -153,14 +155,17 @@ func GenerateTemplateIcon(data []byte, outputFilename string) error {
 	}
 
 	// Create the output file
-	outFile, err := os.Create(outputFilename)
+	var outFile *os.File
+	outFile, err = os.Create(outputFilename)
 	if err != nil {
 		return fmt.Errorf("failed to create output file: %w", err)
 	}
-	defer outFile.Close()
+	defer func() {
+		err = outFile.Close()
+	}()
 
 	// Encode the template icon image as a PNG and write it to the output file
-	if err := png.Encode(outFile, iconImg); err != nil {
+	if err = png.Encode(outFile, iconImg); err != nil {
 		return fmt.Errorf("failed to encode output image as PNG: %w", err)
 	}
 

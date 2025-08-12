@@ -1,7 +1,7 @@
 package application
 
 import (
-	"fmt"
+	"errors"
 	"runtime"
 	"sync"
 	"time"
@@ -25,29 +25,29 @@ const (
 
 type systemTrayImpl interface {
 	setLabel(label string)
+	setTooltip(tooltip string)
 	run()
 	setIcon(icon []byte)
 	setMenu(menu *Menu)
-	setIconPosition(position int)
+	setIconPosition(position IconPosition)
 	setTemplateIcon(icon []byte)
 	destroy()
 	setDarkModeIcon(icon []byte)
 	bounds() (*Rect, error)
 	getScreen() (*Screen, error)
-	positionWindow(window *WebviewWindow, offset int) error
+	positionWindow(window Window, offset int) error
 	openMenu()
-}
-
-type PositionOptions struct {
-	Buffer int
+	Show()
+	Hide()
 }
 
 type SystemTray struct {
 	id           uint
 	label        string
+	tooltip      string
 	icon         []byte
 	darkModeIcon []byte
-	iconPosition int
+	iconPosition IconPosition
 
 	clickHandler            func()
 	rightClickHandler       func()
@@ -69,6 +69,7 @@ func newSystemTray(id uint) *SystemTray {
 	result := &SystemTray{
 		id:           id,
 		label:        "",
+		tooltip:      "",
 		iconPosition: NSImageLeading,
 		attachedWindow: WindowAttachConfig{
 			Window:   nil,
@@ -99,7 +100,7 @@ func (s *SystemTray) Run() {
 
 	if s.attachedWindow.Window != nil {
 		// Setup listener
-		s.attachedWindow.Window.On(events.Common.WindowLostFocus, func(event *WindowEvent) {
+		s.attachedWindow.Window.OnWindowEvent(events.Common.WindowLostFocus, func(event *WindowEvent) {
 			s.attachedWindow.Window.Hide()
 			// Special handler for Windows
 			if runtime.GOOS == "windows" {
@@ -109,6 +110,7 @@ func (s *SystemTray) Run() {
 				}
 				s.attachedWindow.justClosed = true
 				go func() {
+					defer handlePanic()
 					time.Sleep(s.attachedWindow.Debounce)
 					s.attachedWindow.justClosed = false
 				}()
@@ -119,9 +121,9 @@ func (s *SystemTray) Run() {
 	InvokeSync(s.impl.run)
 }
 
-func (s *SystemTray) PositionWindow(window *WebviewWindow, offset int) error {
+func (s *SystemTray) PositionWindow(window Window, offset int) error {
 	if s.impl == nil {
-		return fmt.Errorf("system tray not running")
+		return errors.New("system tray not running")
 	}
 	return InvokeSyncWithError(func() error {
 		return s.impl.positionWindow(window, offset)
@@ -161,7 +163,7 @@ func (s *SystemTray) SetMenu(menu *Menu) *SystemTray {
 	return s
 }
 
-func (s *SystemTray) SetIconPosition(iconPosition int) *SystemTray {
+func (s *SystemTray) SetIconPosition(iconPosition IconPosition) *SystemTray {
 	if s.impl == nil {
 		s.iconPosition = iconPosition
 	} else {
@@ -184,7 +186,21 @@ func (s *SystemTray) SetTemplateIcon(icon []byte) *SystemTray {
 	return s
 }
 
+func (s *SystemTray) SetTooltip(tooltip string) {
+	if s.impl == nil {
+		s.tooltip = tooltip
+		return
+	}
+	InvokeSync(func() {
+		s.impl.setTooltip(tooltip)
+	})
+}
+
 func (s *SystemTray) Destroy() {
+	globalApplication.SystemTray.destroy(s)
+}
+
+func (s *SystemTray) destroy() {
 	if s.impl == nil {
 		return
 	}
@@ -221,9 +237,27 @@ func (s *SystemTray) OnMouseLeave(handler func()) *SystemTray {
 	return s
 }
 
+func (s *SystemTray) Show() {
+	if s.impl == nil {
+		return
+	}
+	InvokeSync(func() {
+		s.impl.Show()
+	})
+}
+
+func (s *SystemTray) Hide() {
+	if s.impl == nil {
+		return
+	}
+	InvokeSync(func() {
+		s.impl.Hide()
+	})
+}
+
 type WindowAttachConfig struct {
 	// Window is the window to attach to the system tray. If it's null, the request to attach will be ignored.
-	Window *WebviewWindow
+	Window Window
 
 	// Offset indicates the gap in pixels between the system tray and the window
 	Offset int
@@ -244,7 +278,7 @@ type WindowAttachConfig struct {
 
 // AttachWindow attaches a window to the system tray. The window will be shown when the system tray icon is clicked.
 // The window will be hidden when the system tray icon is clicked again, or when the window loses focus.
-func (s *SystemTray) AttachWindow(window *WebviewWindow) *SystemTray {
+func (s *SystemTray) AttachWindow(window Window) *SystemTray {
 	s.attachedWindow.Window = window
 	return s
 }
@@ -266,6 +300,7 @@ func (s *SystemTray) WindowDebounce(debounce time.Duration) *SystemTray {
 
 func (s *SystemTray) defaultClickHandler() {
 	if s.attachedWindow.Window == nil {
+		s.OpenMenu()
 		return
 	}
 

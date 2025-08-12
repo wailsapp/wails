@@ -1,0 +1,731 @@
+---
+title: Changelog
+---
+
+
+Legend:
+-  - macOS
+- ⊞ - Windows
+- 🐧 - Linux
+
+/*--
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+- `Added` for new features.
+- `Changed` for changes in existing functionality.
+- `Deprecated` for soon-to-be removed features.
+- `Removed` for now removed features.
+- `Fixed` for any bug fixes.
+- `Security` in case of vulnerabilities.
+
+*/
+
+## [Unreleased]
+
+## v3.0.0-alpha.22 - 2025-08-10
+
+## Added
+- Add Content Protection on Windows/Mac by [@leaanthony](https://github.com/leaanthony) based on the original work of [@Taiterbase](https://github.com/Taiterbase) in this [PR](https://github.com/wailsapp/wails/pull/4241)
+- Add support for passing CLI variables to Task commands through `wails3 build` and `wails3 package` aliases (#4422) by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/4488)
+
+## Changed
+- `window.NativeWindowHandle()` -> `window.NativeWindow()` by @leaanthony in [#4471](https://github.com/wailsapp/wails/pull/4471)
+- Refactor internal window handling by @leaanthony in [#4471](https://github.com/wailsapp/wails/pull/4471)
++ Fix extra-broad Linux package dependencies, fix outdated RPM dependencies.
+
+## v3.0.0-alpha.21 - 2025-08-07
+
+## Fixed
+- Update docs to reflect changes from Manager API Refactoring by @yulesxoxo in [PR #4476](https://github.com/wailsapp/wails/pull/4476)
+- Fix Linux .desktop file appicon variable in Linux taskfile [PR #4477](https://github.com/wailsapp/wails/pull/4477)
+
+## v3.0.0-alpha.20 - 2025-08-06
+
+## Fixed
+- Update docs to reflect changes from Manager API Refactoring by @yulesxoxo in [PR #4476](https://github.com/wailsapp/wails/pull/4476)
+
+## v3.0.0-alpha.19 - 2025-08-05
+
+## Added
+- Support for dropzones with event sourcing dropped element data [@atterpac](https://github.com/atterpac) in [#4318](https://github.com/wailsapp/wails/pull/4318)
+- Added `AdditionalLaunchArgs` to `WindowsWindow` options to allow for additional command line arguments to be passed to the WebView2 browser. in [PR](https://github.com/wailsapp/wails/pull/4467)
+- Added Run go mod tidy automatically after wails init [@triadmoko](https://github.com/triadmoko) in [PR](https://github.com/wailsapp/wails/pull/4286)
+- Windows Snapassist feature by @leaanthony in [PR](https://github.dev/wailsapp/wails/pull/4463)
+
+## Fixed
+- Fix Windows nil pointer dereference bug reported in [#4456](https://github.com/wailsapp/wails/issues/4456) by @leaanthony in [#4460](https://github.com/wailsapp/wails/pull/4460)
+- Add support for `allowsBackForwardNavigationGestures` in macOS WKWebView to enable two-finger swipe navigation gestures (#1857)
+- Fixes issue where onClick didn't work for menu items initially set as disabled by @leaanthony in [PR #4469](https://github.com/wailsapp/wails/pull/4469). Thanks to @IanVS for the initial investigation.
+- Fix Vite server not being cleaned up when build fails (#4403)
+- Fixed panic when closing or cancelling a `SaveFileDialog` on windows. Fixed in [PR](https://github.com/wailsapp/wails/pull/4284) by @hkhere
+- Fixed HTML level drag and drop on Windows by [@mbaklor](https://github.com/mbaklor) in [#4259](https://github.com/wailsapp/wails/pull/4259)
+
+## v3.0.0-alpha.18 - 2025-08-03
+
+## Added
+- Added `AdditionalLaunchArgs` to `WindowsWindow` options to allow for additional command line arguments to be passed to the WebView2 browser. in [PR](https://github.com/wailsapp/wails/pull/4467)
+- Added Run go mod tidy automatically after wails init [@triadmoko](https://github.com/triadmoko) in [PR](https://github.com/wailsapp/wails/pull/4286)
+- Windows Snapassist feature by @leaanthony in [PR](https://github.dev/wailsapp/wails/pull/4463)
+
+## Fixed
+- Add support for `allowsBackForwardNavigationGestures` in macOS WKWebView to enable two-finger swipe navigation gestures (#1857)
+- Fixes issue where onClick didn't work for menu items initially set as disabled by @leaanthony in [PR #4469](https://github.com/wailsapp/wails/pull/4469). Thanks to @IanVS for the initial investigation.
+- Fix Vite server not being cleaned up when build fails (#4403)
+
+## v3.0.0-alpha.17 - 2025-07-31
+
+## Fixed
+- Fixed notification parsing on Windows @popaprozac in [PR](https://github.com/wailsapp/wails/pull/4450)
+
+## v3.0.0-alpha.16 - 2025-07-25
+
+## Added
+- Add Windows `getAccentColor` implementation by [@almas-x](https://github.com/almas-x) in [PR](https://github.com/wailsapp/wails/pull/4427)
+
+## v3.0.0-alpha.15 - 2025-07-25
+
+## Added
+- Add Windows `getAccentColor` implementation by [@almas-x](https://github.com/almas-x) in [PR](https://github.com/wailsapp/wails/pull/4427)
+
+## v3.0.0-alpha.14 - 2025-07-25
+
+## Added
+- Windows dark theme menus + menubar. By @leaanthony in [a29b4f0861b1d0a700e9eb213c6f1076ec40efd5](https://github.com/wailsapp/wails/commit/a29b4f0861b1d0a700e9eb213c6f1076ec40efd5)
+- Rename built-in services for clearer JS/TS bindings by @popaprozac in [PR](https://github.com/wailsapp/wails/pull/4405)
+
+## v3.0.0-alpha.12 - 2025-07-15
+
+### Added
+- `app.Env.GetAccentColor` to get the accent color of a user's system. Works on MacOS. by [@etesam913](https://github.com/etesam913)
+- Add `window.ToggleFrameless()` api by [@atterpac](https://github.com/atterpac) in [#4137](https://github.com/wailsapp/wails/pull/4137)
+
+### Fixed
+- Fixed doctor command to check for Windows SDK dependencies by [@kodumulo](https://github.com/kodumulo) in [#4390](https://github.com/wailsapp/wails/issues/4390)
+
+
+## v3.0.0-alpha.11 - 2025-07-12
+
+## Added
+- Add distribution-specific build dependencies for Linux by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/4345)
+- Added bindings guide by @atterpac in [PR](https://github.com/wailsapp/wails/pull/4404)
+
+## v3.0.0-alpha.10 - 2025-07-06
+
+### Breaking Changes
+- **Manager API Refactoring**: Reorganized application API from flat structure to organized managers for better code organization and discoverability by [@leaanthony](https://github.com/leaanthony) in [#4359](https://github.com/wailsapp/wails/pull/4359)
+  - `app.NewWebviewWindow()` → `app.Window.New()`
+  - `app.CurrentWindow()` → `app.Window.Current()`
+  - `app.GetAllWindows()` → `app.Window.GetAll()`
+  - `app.WindowByName()` → `app.Window.GetByName()`
+  - `app.EmitEvent()` → `app.Event.Emit()`
+  - `app.OnApplicationEvent()` → `app.Event.OnApplicationEvent()`
+  - `app.OnWindowEvent()` → `app.Event.OnWindowEvent()`
+  - `app.SetApplicationMenu()` → `app.Menu.SetApplicationMenu()`
+  - `app.OpenFileDialog()` → `app.Dialog.OpenFile()`
+  - `app.SaveFileDialog()` → `app.Dialog.SaveFile()`
+  - `app.MessageDialog()` → `app.Dialog.Message()`
+  - `app.InfoDialog()` → `app.Dialog.Info()`
+  - `app.WarningDialog()` → `app.Dialog.Warning()`
+  - `app.ErrorDialog()` → `app.Dialog.Error()`
+  - `app.QuestionDialog()` → `app.Dialog.Question()`
+  - `app.NewSystemTray()` → `app.SystemTray.New()`
+  - `app.GetSystemTray()` → `app.SystemTray.Get()`
+  - `app.ShowContextMenu()` → `app.ContextMenu.Show()`
+  - `app.RegisterKeybinding()` → `app.KeyBinding.Register()`
+  - `app.UnregisterKeybinding()` → `app.KeyBinding.Unregister()`
+  - `app.GetPrimaryScreen()` → `app.Screen.GetPrimary()`
+  - `app.GetAllScreens()` → `app.Screen.GetAll()`
+  - `app.BrowserOpenURL()` → `app.Browser.OpenURL()`
+  - `app.Environment()` → `app.Env.GetAll()`
+  - `app.ClipboardGetText()` → `app.Clipboard.Text()`
+  - `app.ClipboardSetText()` → `app.Clipboard.SetText()`
+- Renamed Service methods: `Name` -> `ServiceName`, `OnStartup` -> `ServiceStartup`, `OnShutdown` -> `ServiceShutdown` by [@leaanthony](https://github.com/leaanthony)
+- Moved `Path` and `Paths` methods to `application` package by [@leaanthony](https://github.com/leaanthony)
+- The application menu is now macOS only by [@leaanthony](https://github.com/leaanthony)
+
+### Added
+
+- **Organized Testing Infrastructure**: Moved Docker test files to dedicated `test/docker/` directory with optimized images and enhanced build reliability by [@leaanthony](https://github.com/leaanthony) in [#4359](https://github.com/wailsapp/wails/pull/4359)
+- **Improved Resource Management Patterns**: Added proper event handler cleanup and context-aware goroutine management in examples by [@leaanthony](https://github.com/leaanthony) in [#4359](https://github.com/wailsapp/wails/pull/4359)
+- Support aarch64 AppImage builds by [@AkshayKalose](https://github.com/AkshayKalose) in [#3981](https://github.com/wailsapp/wails/pull/3981)
+- Add diagnostics section to `wails doctor` by [@leaanthony](https://github.com/leaanthony)
+- Add window to context when calling a service method by [@leaanthony](https://github.com/leaanthony)
+- Add `window-call` example to demonstrate how to know which window is calling a service by [@leaanthony](https://github.com/leaanthony)
+- New Menu guide by [@leaanthony](https://github.com/leaanthony)
+- Better panic handling by [@leaanthony](https://github.com/leaanthony)
+- New Menu guide by [@leaanthony](https://github.com/leaanthony)
+- Add doc comments for Service API by [@fbbdev](https://github.com/fbbdev) in [#4024](https://github.com/wailsapp/wails/pull/4024)
+- Add function `application.NewServiceWithOptions` to initialise services with additional configuration by [@leaanthony](https://github.com/leaanthony) in [#4024](https://github.com/wailsapp/wails/pull/4024)
+- Improved menu control by [@FalcoG](https://github.com/FalcoG) and [@leaanthony](https://github.com/leaanthony) in [#4031](https://github.com/wailsapp/wails/pull/4031)
+- More documentation by [@leaanthony](https://github.com/leaanthony)
+- Support cancellation of events in standard event listeners by [@leaanthony](https://github.com/leaanthony)
+- Systray `Hide`, `Show` and `Destroy` support by [@leaanthony](https://github.com/leaanthony)
+- Systray `SetTooltip` support by [@leaanthony](https://github.com/leaanthony). Original idea by [@lujihong](https://github.com/wailsapp/wails/issues/3487#issuecomment-2633242304)
+- Report package path in binding generator warnings about unsupported types by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Add binding generator support for generic aliases by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Add binding generator support for `omitzero` JSON flag by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Add `//wails:ignore` directive to prevent binding generation for chosen service methods by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Add `//wails:internal` directive on services and models to allow for types that are exported in Go but not in JS/TS by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Add binding generator support for constants of alias type to allow for weakly typed enums by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Add binding generator tests for Go 1.24 features by [@fbbdev](https://github.com/fbbdev) in [#4068](https://github.com/wailsapp/wails/pull/4068)
+- Add support for macOS 15 "Sequoia" to `OSInfo.Branding` for improved OS version detection in [#4065](https://github.com/wailsapp/wails/pull/4065)
+- Add `PostShutdown` hook for running custom code after the shutdown process completes by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Add `FatalError` struct to support detection of fatal errors in custom error handlers by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Standardise and document service startup and shutdown order by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Add test harness for application startup/shutdown sequence and service startup/shutdown tests by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Add `RegisterService` method for registering services after the application has been created by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Add `MarshalError` field in application and service options for custom error handling in binding calls by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Add cancellable promise wrapper that propagates cancellation requests through promise chains by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Add the ability to tie binding call cancellation to an `AbortSignal` by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Support `data-wml-*` attributes for WML alongside the usual `wml-*` attributes by [@leaanthony](https://github.com/leaanthony)
+- Add `Configure` method on all services for late configuration/dynamic reconfiguration by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- `fileserver` service sends a 503 Service Unavailable response when unconfigured by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- `kvstore` service provides an in-memory key-value store by default when unconfigured by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add `Load` method on `kvstore` service to reload data from file after config changes by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add `Clear` method on `kvstore` service to delete all keys by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add type `Level` in `log` service to provide JS-side log-level constants by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add `Log` method on `log` service to specify log-level dynamically by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- `sqlite` service provides an in-memory DB by default when unconfigured by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add method `Close` on `sqlite` service to close the DB manually by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add cancellation support for query methods on `sqlite` service by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add prepared statement support to `sqlite` service with JS bindings by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Gin support by [Lea Anthony](https://github.com/leaanthony) in [PR](https://github.com/wailsapp/wails/pull/3537) based on the original work of [@AnalogJ](https://github.com/AnalogJ) in this [PR](https://github.com/wailsapp/wails/pull/3537)
+- Fix auto save and password auto save always enabled by [@oSethoum](https://github.com/osethoum) in [#4134](https://github.com/wailsapp/wails/pull/4134)
+- Add `SetMenu()` on window to allow for setting a menu on a window by [@leaanthony](https://github.com/leaanthony)
+- Add Notification support by [@popaprozac](https://github.com/popaprozac) in [#4098](https://github.com/wailsapp/wails/pull/4098)
+-  Add File Association support for mac by [@wimaha](https://github.com/wimaha) in [#4177](https://github.com/wailsapp/wails/pull/4177)
+- Add `wails3 tool version` for semantic version bumping by [@leaanthony](https://github.com/leaanthony)
+- Add badging support for macOS and Windows by [@popaprozac](https://github.com/popaprozac) in [#](https://github.com/wailsapp/wails/pull/4234)
+
+### Fixed
+
+- Fixed nil pointer dereference in processURLRequest for Mac by [@etesam913](https://github.com/etesam913) in [#4366](https://github.com/wailsapp/wails/pull/4366)
+- Fixed a linux bug preventing filtered dialogs by [@bh90210](https://github.com/bh90210) in [#4287](https://github.com/wailsapp/wails/pull/4287)
+- Fixed Windows+Linux Edit Menu issues by [@leaanthony](https://github.com/leaanthony) in [#3f78a3a](https://github.com/wailsapp/wails/commit/3f78a3a8ce7837e8b32242c8edbbed431c68c062)
+- Updated the minimum system version in macOS .plist files from 10.13.0 to 10.15.0 by [@AkshayKalose](https://github.com/AkshayKalose) in [#3981](https://github.com/wailsapp/wails/pull/3981)
+- Window ID skip issue by [@leaanthony](https://github.com/leaanthony)
+- Fix nil menu issue when calling RegisterContextMenu by [@leaanthony](https://github.com/leaanthony)
+- Fixed dependency cycles in binding generator output by [@fbbdev](https://github.com/fbbdev) in [#4001](https://github.com/wailsapp/wails/pull/4001)
+- Fixed use-before-define errors in binding generator output by [@fbbdev](https://github.com/fbbdev) in [#4001](https://github.com/wailsapp/wails/pull/4001)
+- Pass build flags to binding generator by [@fbbdev](https://github.com/fbbdev) in [#4023](https://github.com/wailsapp/wails/pull/4023)
+- Change paths in windows Taskfile to forward slashes to ensure it works on non-Windows platforms by [@leaanthony](https://github.com/leaanthony)
+- Mac + Mac JS events now fixed by [@leaanthony](https://github.com/leaanthony)
+- Fixed event deadlock for macOS by [@leaanthony](https://github.com/leaanthony)
+- Fixed a `Parameter incorrect` error in Window initialisation on Windows when HTML provided but no JS by [@leaanthony](https://github.com/leaanthony)
+- Fixed size of response prefix used for content type sniffing in asset server by [@fbbdev](https://github.com/fbbdev) in [#4049](https://github.com/wailsapp/wails/pull/4049)
+- Fixed handling of non-404 responses on root index path in asset server by [@fbbdev](https://github.com/fbbdev) in [#4049](https://github.com/wailsapp/wails/pull/4049)
+- Fixed undefined behaviour in binding generator when testing properties of generic types by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed binding generator output for models when underlying type has not the same properties as named wrapper by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed binding generator output for map key types and preprocessing by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed binding generator output for structs that implement marshaler interfaces by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed detection of type cycles involving generic types in binding generator by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed invalid references to unexported models in binding generator output by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Moved injected code to the end of service files by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed handling of errors from file close operations in binding generator by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Suppressed warnings for services that define lifecycle or http methods but no other bound methods by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed non-React templates failing to display Hello World footer when using light system colour scheme by [@marcus-crane](https://github.com/marcus-crane) in [#4056](https://github.com/wailsapp/wails/pull/4056)
+- Fixed hidden menu items on macOS by [@leaanthony](https://github.com/leaanthony)
+- Fixed handling and formatting of errors in message processors by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+-  Fixed skipped service shutdown when quitting application by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+-  Ensure menu updates occur on the main thread by [@leaanthony](https://github.com/leaanthony)
+- The dragging and resizing mechanism is now more robust and matches expected platform behaviour more closely by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Fixed [#4097](https://github.com/wailsapp/wails/issues/4097) Webpack/angular discards runtime init code by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Fixed initially-hidden menu items by [@IanVS](https://github.com/IanVS) in [#4116](https://github.com/wailsapp/wails/pull/4116)
+- Fixed assetFileServer not serving `.html` files when non-extension request when `[request]` doesn't exist but `[request].html` does
+- Fixed icon generation paths by [@robin-samuel](https://github.com/robin-samuel) in [#4125](https://github.com/wailsapp/wails/pull/4125)
+- Fixed `fullscreen`, `unfullscreen`, `unminimise` and `unmaximise` events not being emitted by [@oSethoum](https://github.com/osethoum) in [#4130](https://github.com/wailsapp/wails/pull/4130)
+- Fixed NSIS Error because of incorrect prefix on default version in config by [@robin-samuel](https://github.com/robin-samuel) in [#4126](https://github.com/wailsapp/wails/pull/4126)
+- Fixed Dialogs runtime function returning escaped paths on Windows by [TheGB0077](https://github.com/TheGB0077) in [#4188](https://github.com/wailsapp/wails/pull/4188)
+- Fixed Webview2 detection path in HKCU by [@leaanthony](https://github.com/leaanthony).
+- Fixed input issue with macOS by [@leaanthony](https://github.com/leaanthony).
+- Fixed Windows icon generation task file name by [@yulesxoxo](https://github.com/yulesxoxo) in [#4219](https://github.com/wailsapp/wails/pull/4219).
+- Fixed transparency issue for frameless windows by [@leaanthony](https://github.com/leaanthony) based on work by @kron.
+- Fixed focus calls when window is disabled or minimised by [@leaanthony](https://github.com/leaanthony) based on work by @kron.
+- Fixed system trays not showing after taskbar restarts by [@leaanthony](https://github.com/leaanthony) based on work by @kron.
+- Fixed fallbackResponseWriter not implementing Flush() in [#4245](https://github.com/wailsapp/wails/pull/4245)
+- Fixed fallbackResponseWriter not implementing Flush() by [@superDingda] in [#4236](https://github.com/wailsapp/wails/issues/4236)
+- Fixed macOS window close with pending async Go-bound function call crashes by [@joshhardy](https://github.com/joshhardy) in [#4354](https://github.com/wailsapp/wails/pull/4354)
+- Fixed Windows Efficiency mode startup race condition by [@leaanthony](https://github.com/leaanthony)
+- Fixed Windows icon handle cleanup by [@leaanthony](https://github.com/leaanthony).
+- Fixed `OpenFileManager` on Windows by [@PPTGamer](https://github.com/PPTGamer) in [#4375](https://github.com/wailsapp/wails/pull/4375).
+
+### Changed
+
+- Removed `application.WindowIDKey` and `application.WindowNameKey` (replaced by `application.WindowKey`) by [@leaanthony](https://github.com/leaanthony)
+- ContextMenuData now returns a string instead of any by [@leaanthony](https://github.com/leaanthony)
+- In JS/TS bindings, class fields of fixed-length array types are now initialized with their expected length instead of being empty by [@fbbdev](https://github.com/fbbdev) in [#4001](https://github.com/wailsapp/wails/pull/4001)
+- ContextMenuData now returns a string instead of any by [@leaanthony](https://github.com/leaanthony)
+- `application.NewService` does not accept options as an optional parameter anymore (use `application.NewServiceWithOptions` instead) by [@leaanthony](https://github.com/leaanthony) in [#4024](https://github.com/wailsapp/wails/pull/4024)
+- Removed `nanoid` dependency by [@leaanthony](https://github.com/leaanthony)
+- Updated Window example for mica/acrylic/tabbed window styles by [@leaanthony](https://github.com/leaanthony)
+- In JS/TS bindings, `internal.js/ts` model files have been removed; all models can now be found in `models.js/ts` by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- In JS/TS bindings, named types are never rendered as aliases for other named types; the old behaviour is now restricted to aliases by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- In JS/TS bindings, in class mode, struct fields whose type is a type parameter are marked optional and never initialised automatically by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Remove ESLint from templates by by [@IanVS](https://github.com/IanVS) in [#4059](https://github.com/wailsapp/wails/pull/4059)
+- Update copyright date to 2025 by [@IanVS](https://github.com/IanVS) in [#4037](https://github.com/wailsapp/wails/pull/4037)
+- Add docs for event.Sender by [@IanVS](https://github.com/IanVS) in [#4075](https://github.com/wailsapp/wails/pull/4075)
+- Go 1.24 support by [@leaanthony](https://github.com/leaanthony)
+- `ServiceStartup` hooks are now invoked when `App.Run` is called, not in `application.New` by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- `ServiceStartup` errors are now returned from `App.Run` instead of terminating the process by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Binding and dialog calls from JS now reject with error objects instead of strings by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Improved systray menu positioning on Windows by [@leaanthony](https://github.com/leaanthony)
+- The JS runtime has been ported to TypeScript by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- The runtime initialises as soon as it is imported, no need to wait for the window to load by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- The runtime does not export an init method anymore. A side effects import can be used to initialise it by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Bound methods now return a `CancellablePromise` that rejects with a `CancelError` if cancelled. The actual result of the call is discarded by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Built-in service types are now consistently called `Service` by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Built-in service creation functions with options are now consistently called `NewWithConfig` by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- `Select` method on `sqlite` service is now named `Query` for consistency with Go APIs by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Templates: moved runtime to "dependencies", organized package.json files by [@IanVS](https://github.com/IanVS) in [#4133](https://github.com/wailsapp/wails/pull/4133)
+- Creates and ad-hoc signs app bundles in dev to enable certain macOS APIs by [@popaprozac](https://github.com/popaprozac) in [#4171](https://github.com/wailsapp/wails/pull/4171)
+
+## v3.0.0-alpha.9 - 2025-01-13
+
+### Added
+
+- `app.OpenFileManager(path string, selectFile bool)` to open the system file manager to the path `path` with optional highlighting via `selectFile` by [@Krzysztofz01](https://github.com/Krzysztofz01) [@rcalixte](https://github.com/rcalixte)
+- New `-git` flag for `wails3 init` command by [@leaanthony](https://github.com/leaanthony)
+- New `wails3 generate webview2bootstrapper` command by [@leaanthony](https://github.com/leaanthony)
+- Added `init()` method in runtime to allow manual initialisation of the runtime by [@leaanthony](https://github.com/leaanthony)
+- Added `WindowDidMoveDebounceMS` option to Window's WindowOptions by [@leaanthony](https://github.com/leaanthony)
+- Added Single Instance feature by [@leaanthony](https://github.com/leaanthony). Based on the [v2 PR](https://github.com/wailsapp/wails/pull/2951) by @APshenkin.
+- `wails3 generate template` command by [@leaanthony](https://github.com/leaanthony)
+- `wails3 releasenotes` command by [@leaanthony](https://github.com/leaanthony)
+- `wails3 update cli` command by [@leaanthony](https://github.com/leaanthony)
+- `-clean` option for `wails3 generate bindings` command by [@leaanthony](https://github.com/leaanthony)
+- Allow for aarch64 (arm64) AppImage Linux builds by [@AkshayKalose](https://github.com/AkshayKalose) in [#3981](https://github.com/wailsapp/wails/pull/3981)
+
+### Fixed
+
+- Fixed min/max width options for linux by @atterpac in [#3979](https://github.com/wailsapp/wails/pull/3979)
+- Typescript templates types definitions via npm version bump by @atterpac in [#3966](https://github.com/wailsapp/wails/pull/3966)
+- Fix Sveltekit template CSS referance by @atterpac in [#3945](https://github.com/wailsapp/wails/pull/3945)
+- Ensure key callbacks in window run() are called on the main thread by [@leaanthony](https://github.com/leaanthony)
+- Fix dialog directory chooser examples by [@leaanthony](https://github.com/leaanthony)
+- Created new Chinese error page when index.html is missing by [@leaanthony](https://github.com/leaanthony)
+-  Ensure `windowDidBecomeKey` callback is running on main thread by [@leaanthony](https://github.com/leaanthony)
+-  Support fullscreen for frameless windows by [@leaanthony](https://github.com/leaanthony)
+-  Improved window destroying logic by [@leaanthony](https://github.com/leaanthony)
+-  Fix window position logic when attached to system trays by [@leaanthony](https://github.com/leaanthony)
+-  Support fullscreen for frameless windows by [@leaanthony](https://github.com/leaanthony)
+- Fix event handling by [@leaanthony](https://github.com/leaanthony)
+- Fixed window shutdown logic by [@leaanthony](https://github.com/leaanthony)
+- Common taskfile now defaults to generating Typescript bindings for Typescript templates by [@leaanthony](https://github.com/leaanthony)
+- Fix Close application on WM_CLOSE message when no windows are open/systray only by [@mmalcek](https://github.com/mmalcek) in [#3990](https://github.com/wailsapp/wails/pull/3990)
+- Fixed garble build by @5aaee9 in [#3192](https://github.com/wailsapp/wails/pull/3192)
+- Fixed windows nsis builds by [@leaanthony](https://github.com/leaanthony)
+
+### Changed
+
+- Moved build assets to platform specific directories by [@leaanthony](https://github.com/leaanthony)
+- Moved and renamed Taskfiles to platform specific directories by [@leaanthony](https://github.com/leaanthony)
+- Created a much better experience when `index.html` is missing by [@leaanthony](https://github.com/leaanthony)
+- [Windows] Improved performance of minimise and restore by [@leaanthony](https://github.com/leaanthony). Based on original [PR](https://github.com/wailsapp/wails/pull/3955) by [562589540](https://github.com/562589540)
+- Removed `ShouldClose` option (Register a hook for events.Common.WindowClosing instead) by [@leaanthony](https://github.com/leaanthony)
+- [Windows] Reduced flicker when opening a window by [@leaanthony](https://github.com/leaanthony)
+- Removed `Window.Destroy` as this was intended to be an internal function by [@leaanthony](https://github.com/leaanthony)
+- Renamed `WindowClose` events to `WindowClosing` by [@leaanthony](https://github.com/leaanthony)
+- Frontend builds now use vite environment "development" or "production" depending on build type by [@leaanthony](https://github.com/leaanthony)
+- Update to go-webview2 v1.19 by [@leaanthony](https://github.com/leaanthony)
+
+## v3.0.0-alpha.8.3 - 2024-12-07
+
+### Changed
+
+- Ensure fork of taskfile is used by @leaanthony
+
+## v3.0.0-alpha.8.2 - 2024-12-07
+
+### Changed
+
+- Update fork of Taskfile to fix version issues when installing using
+  `go install` by @leaanthony
+
+## v3.0.0-alpha.8.1 - 2024-12-07
+
+### Changed
+
+- Using fork of Taskfile to fix version issues when installing using
+  `go install` by @leaanthony
+
+## v3.0.0-alpha.8 - 2024-12-06
+
+### Added
+
+- Added hyperlink for sponsor by @ansxuman in [#3958](https://github.com/wailsapp/wails/pull/3958)
+- Support of linux packaging of deb,rpm, and arch linux packager builds by
+  @atterpac in [#3909](https://github.com/wailsapp/wails/3909)
+- Added Support for darwin universal builds and packages by
+  [ansxuman](https://github.com/ansxuman) in
+  [#3902](https://github.com/wailsapp/wails/pull/3902)
+- Events documentation to the website by
+  [atterpac](https://github.com/atterpac) in
+  [#3867](https://github.com/wailsapp/wails/pull/3867)
+- Templates for sveltekit and sveltekit-ts that are set for non-SSR development
+  by [atterpac](https://github.com/atterpac) in
+  [#3829](https://github.com/wailsapp/wails/pull/3829)
+- Update build assets using new `wails3 update build-assets` command by
+  [leaanthony](https://github.com/leaanthony)
+- Example to test the HTML Drag and Drop API by
+  [FerroO2000](https://github.com/FerroO2000) in
+  [#3856](https://github.com/wailsapp/wails/pull/3856)
+- File Association support by [leaanthony](https://github.com/leaanthony) in
+  [#3873](https://github.com/wailsapp/wails/pull/3873)
+- New `wails3 generate runtime` command by
+  [leaanthony](https://github.com/leaanthony)
+- New `InitialPosition` option to specify if the window should be centered or
+  positioned at the given X/Y location by
+  [leaanthony](https://github.com/leaanthony) in
+  [#3885](https://github.com/wailsapp/wails/pull/3885)
+- Add `Path` & `Paths` methods to `application` package by
+  [ansxuman](https://github.com/ansxuman) and
+  [leaanthony](https://github.com/leaanthony) in
+  [#3823](https://github.com/wailsapp/wails/pull/3823)
+- Added `GeneralAutofillEnabled` and `PasswordAutosaveEnabled` Windows options
+  by [leaanthony](https://github.com/leaanthony) in
+  [#3766](https://github.com/wailsapp/wails/pull/3766)
+- Added the ability to retrieve the window calling a service method by
+  [leaanthony](https://github.com/leaanthony) in
+  [#3888](https://github.com/wailsapp/wails/pull/3888)
+- Added `EnabledFeatures` and `DisabledFeatures` options for Webview2 by
+  [leaanthony](https://github.com/leaanthony).
+-
+
+### Changed
+
+- `service.OnStartup` now shutdowns the application on error and runs
+  `service.OnShutdown`for any prior services that started by @atterpac in
+  [#3920](https://github.com/wailsapp/wails/pull/3920)
+- Refactored systray click messaging to better align with user interactions by
+  @atterpac in [#3907](https://github.com/wailsapp/wails/pull/3907)
+- Asset embed to include `all:frontend/dist` to support frameworks that generate
+  subfolders by @atterpac in
+  [#3887](https://github.com/wailsapp/wails/pull/3887)
+- Taskfile refactor by [leaanthony](https://github.com/leaanthony) in
+  [#3748](https://github.com/wailsapp/wails/pull/3748)
+- Upgrade to `go-webview2` v1.0.16 by
+  [leaanthony](https://github.com/leaanthony)
+- Fixed `Screen` type to include `ID` not `Id` by
+  [etesam913](https://github.com/etesam913) in
+  [#3778](https://github.com/wailsapp/wails/pull/3778)
+- Update `go.mod.tmpl` wails version to support `application.ServiceOptions` by
+  [northes](https://github.com/northes) in
+  [#3836](https://github.com/wailsapp/wails/pull/3836)
+- Fixed service name determination by [windom](https://github.com/windom/) in
+  [#3827](https://github.com/wailsapp/wails/pull/3827)
+- mkdocs serve now uses docker by [leaanthony](https://github.com/leaanthony)
+- Consolidated dev config into `config.yml` by
+  [leaanthony](https://github.com/leaanthony)
+- Systray dialog now defaults to the application icon if available (Windows) by
+  [@leaanthony](https://github.com/leaanthony)
+- Better reporting of GPU + Memory for macOS by
+  [@leaanthony](https://github.com/leaanthony)
+- Removed `WebviewGpuIsDisabled` and `EnableFraudulentWebsiteWarnings`
+  (superseded by `EnabledFeatures` and `DisabledFeatures` options) by
+  [leaanthony](https://github.com/leaanthony)
+
+### Fixed
+
+- Fixed deadlock in Linux dialog for multiple selections caused by unclosed
+  channel variable by @michael-freling in
+  [#3925](https://github.com/wailsapp/wails/pull/3925)
+- Fixed cross-platform cleanup for .syso files during Windows build by
+  [ansxuman](https://github.com/ansxuman) in
+  [#3924](https://github.com/wailsapp/wails/pull/3924)
+- Fixed amd64 appimage compile by @atterpac in
+  [#3898](https://github.com/wailsapp/wails/pull/3898)
+- Fixed build assets update by @ansxuman in
+  [#3901](https://github.com/wailsapp/wails/pull/3901)
+- Fixed Linux systray `OnClick` and `OnRightClick` implementation by @atterpac
+  in [#3886](https://github.com/wailsapp/wails/pull/3886)
+- Fixed `AlwaysOnTop` not working on Mac by
+  [leaanthony](https://github.com/leaanthony) in
+  [#3841](https://github.com/wailsapp/wails/pull/3841)
+-  Fixed `application.NewEditMenu` including a duplicate
+  `PasteAndMatchStyle` role in the edit menu on Darwin by
+  [johnmccabe](https://github.com/johnmccabe) in
+  [#3839](https://github.com/wailsapp/wails/pull/3839)
+- 🐧 Fixed aarch64 compilation
+  [#3840](https://github.com/wailsapp/wails/issues/3840) in
+  [#3854](https://github.com/wailsapp/wails/pull/3854) by
+  [kodflow](https://github.com/kodflow)
+- ⊞ Fixed radio group menu items by
+  [@leaanthony](https://github.com/leaanthony)
+- Fix error on building runnable .app on MacOS when 'name' and 'outputfilename'
+  are different. by @nickisworking in
+  [#3789](https://github.com/wailsapp/wails/pull/3789)
+
+## v3.0.0-alpha.7 - 2024-09-18
+
+### Added
+
+- ⊞ New DIP system for Enhanced High DPI Monitor Support by
+  [mmghv](https://github.com/mmghv) in
+  [#3665](https://github.com/wailsapp/wails/pull/3665)
+- ⊞ Window class name option by [windom](https://github.com/windom/) in
+  [#3682](https://github.com/wailsapp/wails/pull/3682)
+- Services have been expanded to provide plugin functionality. By
+  [atterpac](https://github.com/atterpac) and
+  [leaanthony](https://github.com/leaanthony) in
+  [#3570](https://github.com/wailsapp/wails/pull/3570)
+
+### Changed
+
+- Events API change: `On`/`Emit` -> user events, `OnApplicationEvent` ->
+  Application Events `OnWindowEvent` -> Window Events, by
+  [leaanthony](https://github.com/leaanthony)
+- Fix for Events API on Linux by [TheGB0077](https://github.com/TheGB0077) in
+  [#3734](https://github.com/wailsapp/wails/pull/3734)
+- [CI] improvements to actions & enable to run actions also in forks and
+  branches prefixed with `v3/` or `v3-` by
+  [stendler](https://github.com/stendler) in
+  [#3747](https://github.com/wailsapp/wails/pull/3747)
+
+### Fixed
+
+- Fixed bug with usage of customEventProcessor in drag-n-drop example by
+  [etesam913](https://github.com/etesam913) in
+  [#3742](https://github.com/wailsapp/wails/pull/3742)
+- 🐧 Fixed linux compile error introduced by IgnoreMouseEvents addition by
+  [atterpac](https://github.com/atterpac) in
+  [#3721](https://github.com/wailsapp/wails/pull/3721)
+- ⊞ Fixed syso icon file generation bug by
+  [atterpac](https://github.com/atterpac) in
+  [#3675](https://github.com/wailsapp/wails/pull/3675)
+- 🐧 Fix to run natively in wayland incorporated from
+  [#1811](https://github.com/wailsapp/wails/pull/1811) in
+  [#3614](https://github.com/wailsapp/wails/pull/3614) by
+  [@stendler](https://github.com/stendler)
+- Do not bind internal service methods in
+  [#3720](https://github.com/wailsapp/wails/pull/3720) by
+  [leaanthony](https://github.com/leaanthony)
+- ⊞ Fixed system tray startup panic in
+  [#3693](https://github.com/wailsapp/wails/issues/3693) by
+  [@DeltaLaboratory](https://github.com/DeltaLaboratory)
+- Do not bind internal service methods in
+  [#3720](https://github.com/wailsapp/wails/pull/3720) by
+  [leaanthony](https://github.com/leaanthony)
+- ⊞ Fixed system tray startup panic in
+  [#3693](https://github.com/wailsapp/wails/issues/3693) by
+  [@DeltaLaboratory](https://github.com/DeltaLaboratory)
+- Major menu item refactor and event handling. Mainly improves macOS for now. By
+  [leaanthony](https://github.com/leaanthony)
+- Fix tests after plugins and event refactor in
+  [#3746](https://github.com/wailsapp/wails/pull/3746) by
+  [@stendler](https://github.com/stendler)
+- ⊞ Fixed `Failed to unregister class Chrome_WidgetWin_0` warning. By
+  [leaanthony](https://github.com/leaanthony)
+
+## v3.0.0-alpha.6 - 2024-07-30
+
+### Fixed
+
+- Module issues
+
+## v3.0.0-alpha.5 - 2024-07-30
+
+### Added
+
+- 🐧 WindowDidMove / WindowDidResize events in
+  [#3580](https://github.com/wailsapp/wails/pull/3580)
+- ⊞ WindowDidResize event in
+  [#3580](https://github.com/wailsapp/wails/pull/3580)
+-  add Event ApplicationShouldHandleReopen to be able to handle dock
+  icon click by @5aaee9 in [#2991](https://github.com/wailsapp/wails/pull/2991)
+-  add getPrimaryScreen/getScreens to impl by @tmclane in
+  [#2618](https://github.com/wailsapp/wails/pull/2618)
+-  add option for showing the toolbar in fullscreen mode on macOS by
+  [@fbbdev](https://github.com/fbbdev) in
+  [#3282](https://github.com/wailsapp/wails/pull/3282)
+- 🐧 add onKeyPress logic to convert linux keypress into an accelerator
+  @[Atterpac](https://github.com/Atterpac)
+  in[#3022](https://github.com/wailsapp/wails/pull/3022])
+- 🐧 add task `run:linux` by
+  [@marcus-crane](https://github.com/marcus-crane) in
+  [#3146](https://github.com/wailsapp/wails/pull/3146)
+- Export `SetIcon` method by [@almas-x](https://github.com/almas-x) in
+  [PR](https://github.com/wailsapp/wails/pull/3147)
+- Improve `OnShutdown` by [@almas-x](https://github.com/almas-x) in
+  [PR](https://github.com/wailsapp/wails/pull/3189)
+- Restore `ToggleMaximise` method in `Window` interface by
+  [@fbbdev](https://github.com/fbbdev) in
+  [#3281](https://github.com/wailsapp/wails/pull/3281)
+- Added more information to `Environment()`. By @leaanthony in
+  [aba82cc](https://github.com/wailsapp/wails/commit/aba82cc52787c97fb99afa58b8b63a0004b7ff6c)
+  based on [PR](https://github.com/wailsapp/wails/pull/2044) by @Mai-Lapyst
+- Expose the `WebviewWindow.IsFocused` method on the `Window` interface by
+  [@fbbdev](https://github.com/fbbdev) in
+  [#3295](https://github.com/wailsapp/wails/pull/3295)
+- Support multiple space-separated trigger events in the WML system by
+  [@fbbdev](https://github.com/fbbdev) in
+  [#3295](https://github.com/wailsapp/wails/pull/3295)
+- Add ESM exports from the bundled JS runtime script by
+  [@fbbdev](https://github.com/fbbdev) in
+  [#3295](https://github.com/wailsapp/wails/pull/3295)
+- Add binding generator flag for using the bundled JS runtime script instead of
+  the npm package by [@fbbdev](https://github.com/fbbdev) in
+  [#3334](https://github.com/wailsapp/wails/pull/3334)
+- Implement `setIcon` on linux by [@abichinger](https://github.com/abichinger)
+  in [#3354](https://github.com/wailsapp/wails/pull/3354)
+- Add flag `-port` to dev command and support environment variable
+  `WAILS_VITE_PORT` by [@abichinger](https://github.com/abichinger) in
+  [#3429](https://github.com/wailsapp/wails/pull/3429)
+- Add tests for bound method calls by
+  [@abichinger](https://github.com/abichinger) in
+  [#3431](https://github.com/wailsapp/wails/pull/3431)
+- ⊞ add `SetIgnoreMouseEvents` for already created window by
+  [@bruxaodev](https://github.com/bruxaodev) in
+  [#3667](https://github.com/wailsapp/wails/pull/3667)
+-  Add ability to set a window's stacking level (order) by
+  [@OlegGulevskyy](https://github.com/OlegGulevskyy) in
+  [#3674](https://github.com/wailsapp/wails/pull/3674)
+
+### Fixed
+
+- Fixed resize event messaging by [atterpac](https://github.com/atterpac) in
+  [#3606](https://github.com/wailsapp/wails/pull/3606)
+- 🐧Fixed theme handling error on NixOS by
+  [tmclane](https://github.com/tmclane) in
+  [#3515](https://github.com/wailsapp/wails/pull/3515)
+- Fixed cross volume project install for windows by
+  [atterpac](https://github.com/atterac) in
+  [#3512](https://github.com/wailsapp/wails/pull/3512)
+- Fixed react template css to show footer by
+  [atterpac](https://github.com/atterpac) in
+  [#3477](https://github.com/wailsapp/wails/pull/3477)
+- Fixed zombie processes when working in devmode by updating to latest refresh
+  by [Atterpac](https://github.com/atterpac) in
+  [#3320](https://github.com/wailsapp/wails/pull/3320).
+- Fixed appimage webkit file sourcing by [Atterpac](https://github.com/atterpac)
+  in [#3306](https://github.com/wailsapp/wails/pull/3306).
+- Fixed Doctor apt package verify by [Atterpac](https://github.com/Atterpac) in
+  [#2972](https://github.com/wailsapp/wails/pull/2972).
+- Fixed application frozen when quit (Darwin) by @5aaee9 in
+  [#2982](https://github.com/wailsapp/wails/pull/2982)
+- Fixed background colours of examples on Windows by
+  [mmghv](https://github.com/mmghv) in
+  [#2750](https://github.com/wailsapp/wails/pull/2750).
+- Fixed default context menus by [mmghv](https://github.com/mmghv) in
+  [#2753](https://github.com/wailsapp/wails/pull/2753).
+- Fixed hex values for arrow keys on Darwin by
+  [jaybeecave](https://github.com/jaybeecave) in
+  [#3052](https://github.com/wailsapp/wails/pull/3052).
+- Set drag-n-drop for windows to working. Added by
+  [@pylotlight](https://github.com/pylotlight) in
+  [PR](https://github.com/wailsapp/wails/pull/3039)
+- Fixed bug for linux in doctor in the event user doesn't have proper drivers
+  installed. Added by [@pylotlight](https://github.com/pylotlight) in
+  [PR](https://github.com/wailsapp/wails/pull/3032)
+- Fix dpi scaling on start up (windows). Changed by [@almas-x](https://github.com/almas-x) in
+  [PR](https://github.com/wailsapp/wails/pull/3145)
+- Fix replace line in `go.mod` to use relative paths. Fixes Windows paths with
+  spaces - @leaanthony.
+- Fix MacOS systray click handling when no attached window by
+  [thomas-senechal](https://github.com/thomas-senechal) in PR
+  [#3207](https://github.com/wailsapp/wails/pull/3207)
+- Fix failing Windows build due to unknown option by
+  [thomas-senechal](https://github.com/thomas-senechal) in PR
+  [#3208](https://github.com/wailsapp/wails/pull/3208)
+- Fix crash on windows left clicking the systray icon when not having an
+  attached window [tw1nk](https://github.com/tw1nk) in PR
+  [#3271](https://github.com/wailsapp/wails/pull/3271)
+- Fix wrong baseURL when open window twice by @5aaee9 in PR
+  [#3273](https://github.com/wailsapp/wails/pull/3273)
+- Fix ordering of if branches in `WebviewWindow.Restore` method by
+  [@fbbdev](https://github.com/fbbdev) in
+  [#3279](https://github.com/wailsapp/wails/pull/3279)
+- Correctly compute `startURL` across multiple `GetStartURL` invocations when
+  `FRONTEND_DEVSERVER_URL` is present.
+  [#3299](https://github.com/wailsapp/wails/pull/3299)
+- Fix the JS type of the `Screen` struct to match its Go counterpart by
+  [@fbbdev](https://github.com/fbbdev) in
+  [#3295](https://github.com/wailsapp/wails/pull/3295)
+- Fix the `WML.Reload` method to ensure proper cleanup of registered event
+  listeners by [@fbbdev](https://github.com/fbbdev) in
+  [#3295](https://github.com/wailsapp/wails/pull/3295)
+- Fix custom context menu closing immediately on linux by
+  [@abichinger](https://github.com/abichinger) in
+  [#3330](https://github.com/wailsapp/wails/pull/3330)
+- Fix the output path and extension of model files produced by the binding
+  generator by [@fbbdev](https://github.com/fbbdev) in
+  [#3334](https://github.com/wailsapp/wails/pull/3334)
+- Fix the import paths of model files in JS code produced by the binding
+  generator by [@fbbdev](https://github.com/fbbdev) in
+  [#3334](https://github.com/wailsapp/wails/pull/3334)
+- Fix drag-n-drop on some linux distros by
+  [@abichinger](https://github.com/abichinger) in
+  [#3346](https://github.com/wailsapp/wails/pull/3346)
+- Fix missing task for macOS when using `wails3 task dev` by
+  [@hfoxy](https://github.com/hfoxy) in
+  [#3417](https://github.com/wailsapp/wails/pull/3417)
+- Fix registering events causing a nil map assignment by
+  [@hfoxy](https://github.com/hfoxy) in
+  [#3426](https://github.com/wailsapp/wails/pull/3426)
+- Fix unmarshaling of bound method parameters by
+  [@fbbdev](https://github.com/fbbdev) in
+  [#3431](https://github.com/wailsapp/wails/pull/3431)
+- Fix handling of multiple return values from bound methods by
+  [@fbbdev](https://github.com/fbbdev) in
+  [#3431](https://github.com/wailsapp/wails/pull/3431)
+- Fix doctor detection of npm that is not installed with system package manager
+  by [@pekim](https://github.com/pekim) in
+  [#3458](https://github.com/wailsapp/wails/pull/3458)
+- Fix missing MicrosoftEdgeWebview2Setup.exe. Thanks to
+  [@robin-samuel](https://github.com/robin-samuel).
+- Fix random crash on linux due to window ID handling by @leaanthony. Based on
+  PR [#3466](https://github.com/wailsapp/wails/pull/3622) by
+  [@5aaee9](https://github.com/5aaee9).
+- Fix systemTray.setIcon crashing on Linux by
+  [@windom](https://github.com/windom/) in
+  [#3636](https://github.com/wailsapp/wails/pull/3636).
+- Fix Ensure Window Frame is Applied on First Call in `setFrameless` Function on
+  Windows by [@bruxaodev](https://github.com/bruxaodev/) in
+  [#3691](https://github.com/wailsapp/wails/pull/3691).
+
+### Changed
+
+- Renamed `AbsolutePosition()` to `Position()` by
+  [mmghv](https://github.com/mmghv) in
+  [#3611](https://github.com/wailsapp/wails/pull/3611)
+- Update linux webkit dependency to webkit2gtk-4.1 over webkitgtk2-4.0 to
+  support Ubuntu 24.04 LTS by [atterpac](https://github.com/atterpac) in
+  [#3461](https://github.com/wailsapp/wails/pull/3461)
+- The bundled JS runtime script is now an ESM module: script tags importing it
+  must have the `type="module"` attribute. By
+  [@fbbdev](https://github.com/fbbdev) in
+  [#3295](https://github.com/wailsapp/wails/pull/3295)
+- The `@wailsio/runtime` package does not publish its API on the `window.wails`
+  object, and does not start the WML system. This has been done to improve
+  encapsulation. The WML system can be started manually if desired by calling
+  the new `WML.Enable` method. The bundled JS runtime script still performs both
+  operations automatically. By [@fbbdev](https://github.com/fbbdev) in
+  [#3295](https://github.com/wailsapp/wails/pull/3295)
+- The Window API module `@wailsio/runtime/src/window` now exposes the containing
+  window object as a default export. It is not possible anymore to import
+  individual methods through ESM named or namespace import syntax.
+- The JS window API has been updated to match the current Go `WebviewWindow`
+  API. Some methods have changed name or prototype, specifically: `Screen`
+  becomes `GetScreen`; `GetZoomLevel`/`SetZoomLevel` become `GetZoom`/`SetZoom`;
+  `GetZoom`, `Width` and `Height` now return values directly instead of wrapping
+  them within objects. By [@fbbdev](https://github.com/fbbdev) in
+  [#3295](https://github.com/wailsapp/wails/pull/3295)
+- The binding generator now uses calls by ID by default. The `-id` CLI option
+  has been removed. Use the `-names` CLI option to switch back to calls by name.
+  By [@fbbdev](https://github.com/fbbdev) in
+  [#3468](https://github.com/wailsapp/wails/pull/3468)
+- New binding code layout: output files were previously organised in folders
+  named after their containing package; now full Go import paths are used,
+  including the module path. By [@fbbdev](https://github.com/fbbdev) in
+  [#3468](https://github.com/wailsapp/wails/pull/3468)
+- The struct field `application.Options.Bind` has been renamed to
+  `application.Options.Services`. By [@fbbdev](https://github.com/fbbdev) in
+  [#3468](https://github.com/wailsapp/wails/pull/3468)
+- New syntax for binding services: service instances must now be wrapped in a
+  call to `application.NewService`. By [@fbbdev](https://github.com/fbbdev) in
+  [#3468](https://github.com/wailsapp/wails/pull/3468)
+- Disable spinner on Non-Terminal or CI Environment by
+  [@DeltaLaboratory](https://github.com/DeltaLaboratory) in
+  [#3574](https://github.com/wailsapp/wails/pull/3574)

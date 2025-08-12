@@ -8,7 +8,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/shell"
 )
 
-// StartAtLogin will either add or remove this application to/from the login
+// ShowNotification will either add or remove this application to/from the login
 // items, depending on the given boolean flag. The limitation is that the
 // currently running app must be in an app bundle.
 func ShowNotification(title string, subtitle string, message string, sound string) error {
@@ -24,7 +24,7 @@ func ShowNotification(title string, subtitle string, message string, sound strin
 	}
 	_, stde, err := shell.RunCommand("/tmp", "osascript", "-e", command)
 	if err != nil {
-		errors.Wrap(err, stde)
+		return errors.Wrap(err, stde)
 	}
 	return nil
 }

@@ -72,10 +72,17 @@
         "frontend:dev:serverUrl": {
             "type": "string",
             "description": "URL to a 3rd party dev server to be used to serve assets (eg. Vite). If this is set to 'auto', then the devServerUrl will be inferred from the Vite output",
-            "examples": [ "auto", "http://localhost:3000" ],
+            "examples": [
+                "auto",
+                "http://localhost:3000"
+            ],
             "oneOf": [
-                { "format": "uri" },
-                { "const": "auto" }
+                {
+                    "format": "uri"
+                },
+                {
+                    "const": "auto"
+                }
             ]
         },
         "wailsjsdir": {
@@ -87,7 +94,9 @@
         "version": {
             "description": "Project config version",
             "default": "2",
-            "enum": [ "2" ]
+            "enum": [
+                "2"
+            ]
         },
         "outputfilename": {
             "type": "string",
@@ -123,7 +132,9 @@
             "type": "object",
             "description": "The application author",
             "properties": {
-                "name": { "type": "string" },
+                "name": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string",
                     "format": "email"
@@ -156,6 +167,64 @@
                     "type": "string",
                     "description": "A short comment for the app",
                     "default": "Built using Wails (https://wails.io)"
+                },
+                "fileAssociations": {
+                    "type": "array",
+                    "description": "File associations for the app",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "ext": {
+                                "type": "string",
+                                "description": "The extension (minus the leading period). e.g. png"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The name. e.g. PNG File"
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Windows-only. The description. It is displayed on the `Type` column on Windows Explorer."
+                            },
+                            "iconName": {
+                                "type": "string",
+                                "description": "The icon name without extension. Icons should be located in build folder. Proper icons will be generated from .png file for both macOS and Windows)"
+                            },
+                            "role": {
+                                "description": "macOS-only. The app’s role with respect to the type. Corresponds to CFBundleTypeRole.",
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/BundleTypeRole"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "protocols": {
+                    "type": "array",
+                    "description": "Custom URI protocols that should be opened by the application",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "scheme": {
+                                "type": "string",
+                                "description": "protocol scheme. e.g. myapp"
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Windows-only. The description. It is displayed on the `Type` column on Windows Explorer."
+                            },
+                            "role": {
+                                "description": "macOS-only. The app’s role with respect to the type. Corresponds to CFBundleTypeRole.",
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/BundleTypeRole"
+                                    }
+                                ]
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -182,10 +251,39 @@
         "garbleargs": {
             "type": "string",
             "description": "The arguments to pass to the garble command when using the obfuscated flag"
+        },
+        "bindings": {
+            "type": "object",
+            "description": "Bindings configurations",
+            "properties": {
+                "ts_generation": {
+                    "type": "object",
+                    "description": "model.ts file generation config",
+                    "properties": {
+                        "prefix": {
+                            "type": "string",
+                            "description": "All generated JavaScript entities will be prefixed with this value"
+                        },
+                        "suffix": {
+                            "type": "string",
+                            "description": "All generated JavaScript entities will be suffixed with this value"
+                        },
+                        "outputType": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/BindingsOutputTypes"
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
         }
     },
     "dependencies": {
-        "garbleargs": ["obfuscated"]
+        "garbleargs": [
+            "obfuscated"
+        ]
     },
     "definitions": {
         "OsHook": {
@@ -203,11 +301,21 @@
             "description": "Build hooks for different targets.",
             "additionalProperties": false,
             "properties": {
-                "{GOOS}/{GOARCH}": { "$ref": "#/definitions/OsArchHook" },
-                "{GOOS}/*": { "$ref": "#/definitions/OsHook" },
-                "windows/*": { "$ref": "#/definitions/OsHook" },
-                "linux/*": { "$ref": "#/definitions/OsHook" },
-                "darwin/*": { "$ref": "#/definitions/OsHook" },
+                "{GOOS}/{GOARCH}": {
+                    "$ref": "#/definitions/OsArchHook"
+                },
+                "{GOOS}/*": {
+                    "$ref": "#/definitions/OsHook"
+                },
+                "windows/*": {
+                    "$ref": "#/definitions/OsHook"
+                },
+                "linux/*": {
+                    "$ref": "#/definitions/OsHook"
+                },
+                "darwin/*": {
+                    "$ref": "#/definitions/OsHook"
+                },
                 "*/*": {
                     "type": "string",
                     "description": "Executed at build level before/after a build"
@@ -225,26 +333,65 @@
                     "description": "Executed at build level before/after a build of the specific platform"
                 }
             }
+        },
+        "BundleTypeRole": {
+            "description": "macOS-only. Corresponds to CFBundleTypeRole",
+            "oneOf": [
+                {
+                    "description": "CFBundleTypeRole.Editor. Files can be read and edited.",
+                    "type": "string",
+                    "enum": [
+                        "Editor"
+                    ]
+                },
+                {
+                    "description": "CFBundleTypeRole.Viewer. Files can be read.",
+                    "type": "string",
+                    "enum": [
+                        "Viewer"
+                    ]
+                },
+                {
+                    "description": "CFBundleTypeRole.Shell",
+                    "type": "string",
+                    "enum": [
+                        "Shell"
+                    ]
+                },
+                {
+                    "description": "CFBundleTypeRole.QLGenerator",
+                    "type": "string",
+                    "enum": [
+                        "QLGenerator"
+                    ]
+                },
+                {
+                    "description": "CFBundleTypeRole.None",
+                    "type": "string",
+                    "enum": [
+                        "None"
+                    ]
+                }
+            ]
+        },
+        "BindingsOutputTypes": {
+            "description": "Type of output to generate",
+            "oneOf": [
+                {
+                    "description": "Classes",
+                    "type": "string",
+                    "enum": [
+                        "classes"
+                    ]
+                },
+                {
+                    "description": "Interfaces",
+                    "type": "string",
+                    "enum": [
+                        "interfaces"
+                    ]
+                }
+            ]
         }
-    },
-		"bindings": {
-				"type": "object",
-				"description": "Bindings configurations",
-				"properties": {
-						"ts_generation": { 
-								"type": "object",
-								"description": "model.ts file generation config",
-								"properties": {
-										"prefix": {
-												"type": "string",
-												"description": "All generated JavaScript entities will be prefixed with this value"
-										},
-										"suffix": {
-												"type": "string",
-												"description": "All generated JavaScript entities will be suffixed with this value"
-										}
-								}
-						}
-				}
-		}
+    }
 }

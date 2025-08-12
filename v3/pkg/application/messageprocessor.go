@@ -1,123 +1,116 @@
 package application
 
 import (
+	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
-	jsoniter "github.com/json-iterator/go"
 	"log/slog"
 	"net/http"
 	"strconv"
+	"sync"
+	"math"
 )
 
 // TODO maybe we could use a new struct that has the targetWindow as an attribute so we could get rid of passing the targetWindow
 // as parameter through every function call.
 
 const (
-	callRequest        int = 0
-	clipboardRequest       = 1
-	applicationRequest     = 2
-	eventsRequest          = 3
-	contextMenuRequest     = 4
-	dialogRequest          = 5
-	windowRequest          = 6
-	screensRequest         = 7
-	systemRequest          = 8
-	browserRequest         = 9
+	callRequest        = 0
+	clipboardRequest   = 1
+	applicationRequest = 2
+	eventsRequest      = 3
+	contextMenuRequest = 4
+	dialogRequest      = 5
+	windowRequest      = 6
+	screensRequest     = 7
+	systemRequest      = 8
+	browserRequest     = 9
+	cancelCallRequesst = 10
 )
 
 type MessageProcessor struct {
-	pluginManager *PluginManager
-	logger        *slog.Logger
+	logger *slog.Logger
+
+	runningCalls map[string]context.CancelFunc
+	l            sync.Mutex
 }
 
 func NewMessageProcessor(logger *slog.Logger) *MessageProcessor {
 	return &MessageProcessor{
-		logger: logger,
+		logger:       logger,
+		runningCalls: map[string]context.CancelFunc{},
 	}
 }
 
-func (m *MessageProcessor) httpError(rw http.ResponseWriter, message string, args ...any) {
-	m.Error(message, args...)
-	rw.WriteHeader(http.StatusBadRequest)
-	rw.Write([]byte(fmt.Sprintf(message, args...)))
+func (m *MessageProcessor) httpError(rw http.ResponseWriter, message string, err error) {
+	m.Error(message, "error", err)
+	rw.WriteHeader(http.StatusUnprocessableEntity)
+	_, err = rw.Write([]byte(err.Error()))
+	if err != nil {
+		m.Error("Unable to write error response:", "error", err)
+	}
 }
 
-func (m *MessageProcessor) getTargetWindow(r *http.Request) Window {
+func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
 	windowName := r.Header.Get(webViewRequestHeaderWindowName)
 	if windowName != "" {
-		return globalApplication.GetWindowByName(windowName)
+		window, _ := globalApplication.Window.GetByName(windowName)
+		return window, windowName
 	}
 	windowID := r.Header.Get(webViewRequestHeaderWindowId)
 	if windowID == "" {
-		return nil
+		return nil, windowID
 	}
 	wID, err := strconv.ParseUint(windowID, 10, 64)
 	if err != nil {
-		m.Error("Window ID '%s' not parsable: %s", windowID, err)
-		return nil
+		m.Error("Window ID not parsable:", "id", windowID, "error", err)
+		return nil, windowID
 	}
-	targetWindow := globalApplication.getWindowForID(uint(wID))
+	// Check if wID is within the valid range for uint
+	if wID > math.MaxUint32 {
+		m.Error("Window ID out of range for uint:", "id", wID)
+		return nil, windowID
+	}
+	targetWindow, _ := globalApplication.Window.GetByID(uint(wID))
 	if targetWindow == nil {
-		m.Error("Window ID %d not found", wID)
-		return nil
+		m.Error("Window ID not found:", "id", wID)
+		return nil, windowID
 	}
-	return targetWindow
+	return targetWindow, windowID
 }
 
-func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Request) {
+func (m *MessageProcessor) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	object := r.URL.Query().Get("object")
-	if object != "" {
-		m.HandleRuntimeCallWithIDs(rw, r)
+	if object == "" {
+		m.httpError(rw, "Invalid runtime call:", errors.New("missing object value"))
 		return
 	}
 
-	//// Read "method" from query string
-	//method := r.URL.Query().Get("method")
-	//if method == "" {
-	//	m.httpError(rw, "No method specified")
-	//	return
-	//}
-	//splitMethod := strings.Split(method, ".")
-	//if len(splitMethod) != 2 {
-	//	m.httpError(rw, "Invalid method format")
-	//	return
-	//}
-	//// Get the object
-	//object = splitMethod[0]
-	//// Get the method
-	//method = splitMethod[1]
-	//
-	//params := QueryParams(r.URL.Query())
-	//
-	//targetWindow := m.getTargetWindow(r)
-	//if targetWindow == nil {
-	//	m.httpError(rw, "No valid window found")
-	//	return
-	//}
-	//
-	//switch object {
-	//case "call":
-	//	m.processCallMethod(method, rw, r, targetWindow, params)
-	//default:
-	//	m.httpError(rw, "Unknown runtime call: %s", object)
-	//}
+	m.HandleRuntimeCallWithIDs(rw, r)
 }
 
 func (m *MessageProcessor) HandleRuntimeCallWithIDs(rw http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if handlePanic() {
+			rw.WriteHeader(http.StatusInternalServerError)
+		}
+	}()
 	object, err := strconv.Atoi(r.URL.Query().Get("object"))
 	if err != nil {
-		m.httpError(rw, "Error decoding object value: "+err.Error())
+		m.httpError(rw, "Invalid runtime call:", fmt.Errorf("error decoding object value: %w", err))
 		return
 	}
 	method, err := strconv.Atoi(r.URL.Query().Get("method"))
 	if err != nil {
-		m.httpError(rw, "Error decoding method value: "+err.Error())
+		m.httpError(rw, "Invalid runtime call:", fmt.Errorf("error decoding method value: %w", err))
 		return
 	}
 	params := QueryParams(r.URL.Query())
 
-	targetWindow := m.getTargetWindow(r)
+	targetWindow, nameOrID := m.getTargetWindow(r)
 	if targetWindow == nil {
-		m.httpError(rw, "No valid window found")
+		m.httpError(rw, "Invalid runtime call:", fmt.Errorf("window '%s' not found", nameOrID))
 		return
 	}
 
@@ -142,8 +135,10 @@ func (m *MessageProcessor) HandleRuntimeCallWithIDs(rw http.ResponseWriter, r *h
 		m.processSystemMethod(method, rw, r, targetWindow, params)
 	case browserRequest:
 		m.processBrowserMethod(method, rw, r, targetWindow, params)
+	case cancelCallRequesst:
+		m.processCallCancelMethod(method, rw, r, targetWindow, params)
 	default:
-		m.httpError(rw, "Unknown runtime call: %d", object)
+		m.httpError(rw, "Invalid runtime call:", fmt.Errorf("unknown object %d", object))
 	}
 }
 
@@ -161,15 +156,15 @@ func (m *MessageProcessor) json(rw http.ResponseWriter, data any) {
 	var jsonPayload = []byte("{}")
 	var err error
 	if data != nil {
-		jsonPayload, err = jsoniter.Marshal(data)
+		jsonPayload, err = json.Marshal(data)
 		if err != nil {
-			m.Error("Unable to convert data to JSON. Please report this to the Wails team! Error: %s", err)
+			m.Error("Unable to convert data to JSON. Please report this to the Wails team!", "error", err)
 			return
 		}
 	}
 	_, err = rw.Write(jsonPayload)
 	if err != nil {
-		m.Error("Unable to write json payload. Please report this to the Wails team! Error: %s", err)
+		m.Error("Unable to write json payload. Please report this to the Wails team!", "error", err)
 		return
 	}
 	m.ok(rw)
@@ -178,7 +173,7 @@ func (m *MessageProcessor) json(rw http.ResponseWriter, data any) {
 func (m *MessageProcessor) text(rw http.ResponseWriter, data string) {
 	_, err := rw.Write([]byte(data))
 	if err != nil {
-		m.Error("Unable to write json payload. Please report this to the Wails team! Error: %s", err)
+		m.Error("Unable to write json payload. Please report this to the Wails team!", "error", err)
 		return
 	}
 	rw.Header().Set("Content-Type", "text/plain")

@@ -21,16 +21,14 @@ Considere uma alternativa leve e rápida do Electron para o Go. Você pode facil
 - Uma rica [biblioteca de tempo de execução](/docs/reference/runtime/intro)
 - Aplicativos construídos com Wails são compatíveis com Apple & Microsoft Store
 
-Este é [vago](https://varly.app) - um aplicativo para desktop para MacOS & Windows escrito usando Wails. Não só parece ótimo, como também usa menus nativos e translucidez - tudo o que você esperaria de um aplicativo nativo moderno.
+This is varly - a desktop application for MacOS & Windows written using Wails. Não só parece ótimo, como também usa menus nativos e translucidez - tudo o que você esperaria de um aplicativo nativo moderno.
 
 ```mdx-code-block
 <p class="text--center">
-  <a href="https://varly.app/">
     <img
       src={require("@site/static/img/showcase/varly2.webp").default}
       style={{ width: "75%", "max-width": "800px" }}
     />
-  </a>
 </p>
 ```
 
@@ -42,7 +40,7 @@ Há uma série de modelos pré-configurados que permitem que o aplicativo entre 
 
 Wails uses a purpose built library for handling native elements such as Window, Menus, Dialogs, etc, so you can build good-looking, feature rich desktop applications.
 
-**Ele não incorpora um navegador**, então é eficiente em recursos. Ao invés disso, ele usa o mecanismo de renderização nativo para a plataforma. No Windows, esta é a nova biblioteca da Microsoft Webview2, construída no Chromium.
+**It does not embed a browser**, so it delivers a small runtime. Instead, it reuses the native rendering engine for the platform. No Windows, esta é a nova biblioteca da Microsoft Webview2, construída no Chromium.
 
 ### Go & JavaScript Interoperability
 

@@ -2,8 +2,10 @@ package menumanager
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/menu"
+	"strconv"
 	"sync"
+
+	"github.com/wailsapp/wails/v2/pkg/menu"
 )
 
 // MenuItemMap holds a mapping between menuIDs and menu items
@@ -48,14 +50,13 @@ func (m *MenuItemMap) Dump() {
 // GenerateMenuID returns a unique string ID for a menu item
 func (m *MenuItemMap) generateMenuID() string {
 	m.menuIDCounterMutex.Lock()
-	result := fmt.Sprintf("%d", m.menuIDCounter)
+	result := strconv.FormatInt(m.menuIDCounter, 10)
 	m.menuIDCounter++
 	m.menuIDCounterMutex.Unlock()
 	return result
 }
 
 func (m *MenuItemMap) processMenuItem(item *menu.MenuItem) {
-
 	if item.SubMenu != nil {
 		for _, submenuitem := range item.SubMenu.Items {
 			m.processMenuItem(submenuitem)

@@ -2,12 +2,11 @@ package main
 
 import (
 	_ "embed"
+	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/events"
+	"github.com/wailsapp/wails/v3/pkg/icons"
 	"log"
 	"runtime"
-
-	"github.com/wailsapp/wails/v3/pkg/application"
-	"github.com/wailsapp/wails/v3/pkg/icons"
-	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 func main() {
@@ -16,37 +15,35 @@ func main() {
 		Description: "A test of Hidden window and display it",
 		Assets:      application.AlphaAssets,
 		Mac: application.MacOptions{
-			// ActivationPolicy: application.ActivationPolicyAccessory,
 			ApplicationShouldTerminateAfterLastWindowClosed: false,
 		},
 	})
 
-	systemTray := app.NewSystemTray()
+	systemTray := app.SystemTray.New()
 
-	window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Width:         500,
 		Height:        800,
 		Frameless:     false,
 		AlwaysOnTop:   false,
 		Hidden:        false,
 		DisableResize: false,
-		ShouldClose: func(window *application.WebviewWindow) bool {
-			println("close")
-			window.Hide()
-			return false
-		},
 		Windows: application.WindowsWindow{
 			HiddenOnTaskbar: true,
 		},
+	})
+
+	window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+		window.Hide()
+		e.Cancel()
 	})
 
 	if runtime.GOOS == "darwin" {
 		systemTray.SetTemplateIcon(icons.SystrayMacTemplate)
 	}
 
-
 	// Click Dock icon tigger application show
-	app.On(events.Mac.ApplicationShouldHandleReopen, func(event *application.Event) {
+	app.Event.OnApplicationEvent(events.Mac.ApplicationShouldHandleReopen, func(event *application.ApplicationEvent) {
 		println("reopen")
 		window.Show()
 	})
@@ -62,7 +59,7 @@ func main() {
 
 	systemTray.SetMenu(myMenu)
 	systemTray.OnClick(func() {
-		app.CurrentWindow().Show()
+		window.Show()
 	})
 
 	err := app.Run()

@@ -91,7 +91,7 @@ func (b *Basic) startup(ctx context.Context) {
 
 ### 运行时
 
-v2 中的运行时比 v1 丰富得多，支持菜单、窗口操作和更好的对话框。 方法的签名略有变化 - 请参阅 [运行时](../reference/runtime/intro)。
+v2 中的运行时比 v1 丰富得多，支持菜单、窗口操作和更好的对话框。 The signature of the methods has changed slightly - please refer to the [Runtime Reference](../reference/runtime/intro.mdx).
 
 在 v1 中，[运行时](../reference/runtime/intro) 可通过传递给 `WailsInit()`。 在 v2 中，运行时已移出到它自己的包。 运行时中的每个方法都采用 `context.Context` 传递给了 [应用启动回调](../reference/options#应用启动回调)方法。
 

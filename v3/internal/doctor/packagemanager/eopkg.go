@@ -7,7 +7,6 @@ import (
 	"strings"
 )
 
-// Eopkg represents the Eopkg manager
 type Eopkg struct {
 	name string
 	osid string
@@ -27,10 +26,10 @@ func NewEopkg(osid string) *Eopkg {
 // They will potentially differ on different distributions or versions
 func (e *Eopkg) Packages() Packagemap {
 	return Packagemap{
-		"libgtk-3": []*Package{
+		"gtk3": []*Package{
 			{Name: "libgtk-3-devel", SystemPackage: true, Library: true},
 		},
-		"libwebkit": []*Package{
+		"webkit2gtk": []*Package{
 			{Name: "libwebkit-gtk-devel", SystemPackage: true, Library: true},
 		},
 		"gcc": []*Package{
@@ -52,7 +51,10 @@ func (e *Eopkg) Name() string {
 
 // PackageInstalled tests if the given package is installed
 func (e *Eopkg) PackageInstalled(pkg *Package) (bool, error) {
-	if pkg.SystemPackage == false {
+	if !pkg.SystemPackage {
+		if pkg.InstallCheck != nil {
+			return pkg.InstallCheck(), nil
+		}
 		return false, nil
 	}
 	stdout, err := execCmd("eopkg", "info", pkg.Name)
@@ -75,7 +77,7 @@ func (e *Eopkg) PackageAvailable(pkg *Package) (bool, error) {
 // InstallCommand returns the package manager specific command to install a package
 func (e *Eopkg) InstallCommand(pkg *Package) string {
 	if pkg.SystemPackage == false {
-		return pkg.InstallCommand[e.osid]
+		return pkg.InstallCommand
 	}
 	return "sudo eopkg it " + pkg.Name
 }

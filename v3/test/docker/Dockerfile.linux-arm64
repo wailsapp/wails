@@ -1,0 +1,185 @@
+# Build Linux binaries for Wails v3 examples using Ubuntu 24.04 (ARM64 native)
+FROM ubuntu:24.04
+
+# Avoid interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies for Wails v3 (ARM64 native)
+RUN apt-get update && apt-get install -y \
+    --no-install-recommends \
+    # Core build tools for ARM64
+    build-essential \
+    gcc \
+    g++ \
+    pkg-config \
+    # GTK and WebKit dependencies for Ubuntu 24.04
+    libgtk-3-dev \
+    libwebkit2gtk-4.1-dev \
+    # Additional dependencies that might be needed
+    libayatana-appindicator3-dev \
+    # Git for go mod operations
+    git \
+    # CA certificates for HTTPS
+    ca-certificates \
+    # wget for downloading Go
+    wget \
+    # Clean up apt cache and lists
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Install Go 1.24 ARM64 version
+ENV GO_VERSION=1.24.0
+RUN cd /tmp && \
+    wget https://go.dev/dl/go${GO_VERSION}.linux-arm64.tar.gz && \
+    wget https://go.dev/dl/go${GO_VERSION}.linux-arm64.tar.gz.sha256 && \
+    echo "$(cat go${GO_VERSION}.linux-arm64.tar.gz.sha256)  go${GO_VERSION}.linux-arm64.tar.gz" | sha256sum -c - && \
+    tar -C /usr/local -xzf go${GO_VERSION}.linux-arm64.tar.gz && \
+    rm go${GO_VERSION}.linux-arm64.tar.gz go${GO_VERSION}.linux-arm64.tar.gz.sha256
+
+# Set Go environment for ARM64 native compilation
+ENV PATH="/usr/local/go/bin:${PATH}"
+ENV GOPATH="/go"
+ENV PATH="${GOPATH}/bin:${PATH}"
+ENV CGO_ENABLED=1
+ENV GOOS=linux
+ENV GOARCH=arm64
+
+# Set working directory
+WORKDIR /build
+
+# Copy the entire v3 directory structure
+COPY . /build/
+
+# Create build script for ARM64 native compilation
+# hadolint ignore=DL1000
+RUN cat > /build/build-linux-arm64.sh << 'EOF'
+#!/bin/bash
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo "🐧 Building Wails v3 examples for Linux ARM64 (Ubuntu 24.04)"
+echo "Go version: $(go version)"
+echo "Architecture: $(uname -m)"
+echo "Build directory: $(pwd)"
+echo ""
+
+# Function to build a single example
+build_example() {
+    local example_name="$1"
+    local example_dir="/build/examples/$example_name"
+    
+    if [ ! -d "$example_dir" ]; then
+        echo -e "${RED}✗${NC} Example directory $example_name not found"
+        return 1
+    fi
+    
+    if [ ! -f "$example_dir/main.go" ]; then
+        echo -e "${YELLOW}⚠${NC} Skipping $example_name (no main.go)"
+        return 0
+    fi
+    
+    echo -e "Building ${YELLOW}$example_name${NC} for ARM64..."
+    cd "$example_dir"
+    
+    # Update go.mod for Docker environment
+    if [ -f go.mod ]; then
+        go mod edit -dropreplace github.com/wailsapp/wails/v3 2>/dev/null || true
+        go mod edit -replace github.com/wailsapp/wails/v3=/build
+    fi
+    
+    # Tidy dependencies
+    echo "  Running go mod tidy..."
+    if ! go mod tidy; then
+        echo -e "${RED}✗${NC} go mod tidy failed for $example_name"
+        return 1
+    fi
+    
+    # Build the example for ARM64
+    echo "  Compiling for ARM64..."
+    if go build -o "testbuild-$example_name-linux-arm64"; then
+        echo -e "${GREEN}✓${NC} Successfully built $example_name for ARM64"
+        ls -la "testbuild-$example_name-linux-arm64"
+        return 0
+    else
+        echo -e "${RED}✗${NC} Build failed for $example_name"
+        return 1
+    fi
+}
+
+# Main execution
+if [ $# -eq 0 ]; then
+    # Build all examples
+    echo "Building all examples for ARM64..."
+    cd /build/examples
+    
+    failed_examples=()
+    successful_examples=()
+    skipped_examples=()
+    
+    for example_dir in */; do
+        example_name=$(basename "$example_dir")
+        
+        if build_example "$example_name"; then
+            if [ -f "/build/examples/$example_name/testbuild-$example_name-linux-arm64" ]; then
+                successful_examples+=("$example_name")
+            else
+                skipped_examples+=("$example_name")
+            fi
+        else
+            failed_examples+=("$example_name")
+        fi
+        
+        echo ""
+    done
+    
+    echo "=============================="
+    echo "🏗️  ARM64 BUILD SUMMARY"
+    echo "=============================="
+    echo -e "${GREEN}✓ Successful builds (${#successful_examples[@]}):${NC}"
+    for example in "${successful_examples[@]}"; do
+        echo "    $example"
+    done
+    
+    if [ ${#skipped_examples[@]} -gt 0 ]; then
+        echo -e "${YELLOW}⚠ Skipped (${#skipped_examples[@]}):${NC}"
+        for example in "${skipped_examples[@]}"; do
+            echo "    $example (no main.go)"
+        done
+    fi
+    
+    if [ ${#failed_examples[@]} -gt 0 ]; then
+        echo -e "${RED}✗ Failed builds (${#failed_examples[@]}):${NC}"
+        for example in "${failed_examples[@]}"; do
+            echo "    $example"
+        done
+    fi
+    
+    echo ""
+    echo "Total: ${#successful_examples[@]} successful, ${#failed_examples[@]} failed, ${#skipped_examples[@]} skipped"
+    
+    if [ ${#failed_examples[@]} -eq 0 ]; then
+        echo -e "${GREEN}🎉 All buildable examples compiled successfully for ARM64!${NC}"
+        exit 0
+    else
+        echo -e "${RED}❌ Some examples failed to build for ARM64${NC}"
+        exit 1
+    fi
+    
+else
+    # Build specific example
+    example_name="$1"
+    echo "Building specific example for ARM64: $example_name"
+    build_example "$example_name"
+fi
+EOF
+
+# Make the script executable
+RUN chmod +x /build/build-linux-arm64.sh
+
+# Default command
+CMD ["/build/build-linux-arm64.sh"]

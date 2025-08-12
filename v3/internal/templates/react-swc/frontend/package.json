@@ -5,17 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build:dev": "vite build --minify false --mode development",
+    "build": "vite build --mode production",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@wailsio/runtime": "latest",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@types/react": "^18.0.26",
-    "@types/react-dom": "^18.0.9",
-    "@vitejs/plugin-react-swc": "^3.0.0",
-    "vite": "^4.0.0"
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react-swc": "^3.5.0",
+    "vite": "^5.0.8"
   }
 }
