@@ -31,14 +31,21 @@ func (m *MessageProcessor) processBrowserMethod(method int, rw http.ResponseWrit
 			return
 		}
 
-		err := browser.OpenURL(*url)
+		sanitizedURL, err := ValidateAndSanitizeURL(*url)
+		if err != nil {
+			m.Error("OpenURL: invalid URL - %s", err.Error())
+			m.httpError(rw, fmt.Sprintf("Invalid URL: %s", err.Error()), err)
+			return
+		}
+
+		err = browser.OpenURL(sanitizedURL)
 		if err != nil {
 			m.httpError(rw, "OpenURL failed:", err)
 			return
 		}
 
 		m.ok(rw)
-		m.Info("Runtime call:", "method", "Browser."+browserMethods[method], "url", *url)
+		m.Info("Runtime call:", "method", "Browser."+browserMethods[method], "url", sanitizedURL)
 	default:
 		m.httpError(rw, "Invalid browser call:", fmt.Errorf("unknown method: %d", method))
 		return
