@@ -50,7 +50,7 @@ export namespace binding_test {
 
 export namespace binding_test_import {
 	export class AMapWrapper {
-		AMap: {[key: string]: binding_test_nestedimport.A};
+		AMap: Record<string, binding_test_nestedimport.A>;
 		static createFrom(source: any = {}) {
 			return new AMapWrapper(source);
 		}

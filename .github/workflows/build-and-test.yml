@@ -12,8 +12,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04, windows-latest, macos-latest, macos-11]
-        go-version: ['1.21']
+        os: [ubuntu-22.04, ubuntu-24.04, windows-latest, macos-latest]
+        go-version: ['1.22']
 
     steps:
       - name: Checkout code
@@ -28,7 +28,7 @@ jobs:
       - uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-24.04'
         with:
-          packages: libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
+          packages: libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config libegl1
           version: 1.0
 
       - name: Setup Go
@@ -38,14 +38,14 @@ jobs:
           cache-dependency-path: ./v2/go.sum
 
       - name: Run tests (mac)
-        if: matrix.os == 'macos-latest' || matrix.os == 'macos-11'
+        if: matrix.os == 'macos-latest'
         env:
           CGO_LDFLAGS: -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
         working-directory: ./v2
         run: go test -v ./...
 
       - name: Run tests (!mac)
-        if: matrix.os != 'macos-latest' && matrix.os != 'macos-11' && matrix.os != 'ubuntu-24.04'
+        if: matrix.os != 'macos-latest' && matrix.os != 'ubuntu-24.04'
         working-directory: ./v2
         run: go test -v ./...
 
@@ -86,7 +86,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-22.04, windows-latest, macos-latest, ubuntu-24.04, macos-11]
+        os: [ubuntu-22.04, windows-latest, macos-latest, ubuntu-24.04]
         template:
           [
             svelte,
@@ -103,13 +103,13 @@ jobs:
             vanilla-ts,
             plain,
           ]
-        go-version: ['1.21']
+        go-version: ['1.22']
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
           cache-dependency-path: ./v2/go.sum
@@ -120,13 +120,25 @@ jobs:
           go install
           wails -help
 
-      - name: Install linux dependencies ( 22.04 )
+      - uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-22.04'
-        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
+        with:
+          packages: libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
+          version: 1.0
 
-      - name: Install linux dependencies ( 24.04 )
+#      - name: Install linux dependencies ( 22.04 )
+#        if: matrix.os == 'ubuntu-22.04'
+#        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
+
+      - uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-24.04'
-        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
+        with:
+          packages: libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config libegl1
+          version: 1.0
+
+#      - name: Install linux dependencies ( 24.04 )
+#        if: matrix.os == 'ubuntu-24.04'
+#        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
 
       - name: Generate & Build template '${{ matrix.template }}'
         if: matrix.os != 'ubuntu-24.04'

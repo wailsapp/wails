@@ -61,7 +61,7 @@ This is an example entitlements file from the [RiftShare](https://github.com/ach
 </plist>
 ```
 
-**Add the Embedded Provisioning Profile** The Provisioning Profile created above needs to be added to the root of the applicaton. It needs to be named embedded.provisionprofile.
+**Add the Embedded Provisioning Profile** The Provisioning Profile created above needs to be added to the root of the application. It needs to be named embedded.provisionprofile.
 
 #### Build and Sign the App Package
 
@@ -80,9 +80,9 @@ wails build -platform darwin/universal -clean
 
 cp ./embedded.provisionprofile "./build/bin/$APP_NAME.app/Contents"
 
-codesign --timestamp --options=runtime -s "$APP_CERTIFICATE" -v --entitlements ./build/darwin/entitlements.plist ./build/bin/$APP_NAME.app
+codesign --timestamp --options=runtime -s "$APP_CERTIFICATE" -v --entitlements ./build/darwin/entitlements.plist "./build/bin/$APP_NAME.app"
 
-productbuild --sign "$PKG_CERTIFICATE" --component ./build/bin/$APP_NAME.app /Applications ./$APP_NAME.pkg
+productbuild --sign "$PKG_CERTIFICATE" --component "./build/bin/$APP_NAME.app" /Applications "./$APP_NAME.pkg"
 ```
 
 #### Upload App Bundle

@@ -61,6 +61,7 @@ type ThemeSettings struct {
 
 // Options are options specific to Windows
 type Options struct {
+	ContentProtection    bool
 	WebviewIsTransparent bool
 	WindowIsTranslucent  bool
 	DisableWindowIcon    bool
@@ -118,6 +119,9 @@ type Options struct {
 
 	// Configure whether swipe gestures should be enabled
 	EnableSwipeGestures bool
+
+	// Class name for the window. If empty, 'wailsWindow' will be used.
+	WindowClassName string
 }
 
 func DefaultMessages() *Messages {

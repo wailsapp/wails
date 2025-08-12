@@ -235,7 +235,7 @@ Wails v2にアセットを処理させるための方法は複雑ではありま
 
 ### アセットハンドラ
 
-Wails v2では必要に応じて、`options.App`の中に`http.Handler`を定義することができます。これにより、アセットサーバにフックして、その場でファイルを作成したり、POST/PUTリクエストを処理したりすることができます。 GETリクエストが要求されたときは、まず初めに、`assets` FSにハンドリングされます。 リクエストされたファイルをFSが見つけられなかった場合、そのリクエストは`http.Handler`に転送されます。 GET以外のリクエストは、`AssetsHandler`が指定されていれば、当該ハンドラによって直接処理されます。 なお、`Assets`オプションに`nil`を指定することで、`AssetsHandler`のみを使用することも可能です。
+Wails v2では必要に応じて、`options.App`の中に`http.Handler`を定義することができます。これにより、アセットサーバにフックして、その場でファイルを作成したり、POST/PUTリクエストを処理したりすることができます。 GETリクエストが要求されたときは、まず初めに、`assets` FSにハンドリングされます。 リクエストされたファイルをFSが見つけられなかった場合、そのリクエストは`http.Handler`に転送されます。 GET以外のリクエストは、`AssetsHandler`が指定されていれば、当該ハンドラによって直接処理されます。 It's also possible to only use the `AssetsHandler` by specifying `nil` as the `Assets` option.
 
 ## ビルトイン開発サーバ
 

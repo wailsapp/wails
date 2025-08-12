@@ -235,7 +235,7 @@ If these 2 keys aren't given, then Wails does absolutely nothing with the fronte
 
 ### AssetsHandler
 
-A Wails v2 app can optionally define a `http.Handler` in the `options.App`, which allows hooking into the AssetServer to create files on the fly or process POST/PUT requests. GET requests are always first handled by the `assets` FS. If the FS doesn't find the requested file the request will be forwarded to the `http.Handler` for serving. Any requests other than GET will be directly processed by the `AssetsHandler` if specified. It's also possible to only use the `AssetsHandler` by specifiy `nil` as the `Assets` option.
+A Wails v2 app can optionally define a `http.Handler` in the `options.App`, which allows hooking into the AssetServer to create files on the fly or process POST/PUT requests. GET requests are always first handled by the `assets` FS. If the FS doesn't find the requested file the request will be forwarded to the `http.Handler` for serving. Any requests other than GET will be directly processed by the `AssetsHandler` if specified. It's also possible to only use the `AssetsHandler` by specifying `nil` as the `Assets` option.
 
 ## Built in Dev Server
 

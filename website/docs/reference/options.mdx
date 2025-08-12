@@ -73,8 +73,9 @@ func main() {
         Windows: &windows.Options{
             WebviewIsTransparent:              false,
             WindowIsTranslucent:               false,
+            ContentProtection:                 false,
             BackdropType:                      windows.Mica,
-            DisablePinchZoom:               false,
+            DisablePinchZoom:                  false,
             DisableWindowIcon:                 false,
             DisableFramelessWindowDecorations: false,
             WebviewUserDataPath:               "",
@@ -99,7 +100,9 @@ func main() {
             // OnResume is called when Windows resumes from low power mode
             OnResume: func(),
             // Disable GPU hardware acceleration for the webview
-			WebviewGpuDisabled: false,
+			      WebviewGpuDisabled: false,
+			      // Class name for the window. If empty, 'wailsWindow' will be used.
+			      WindowClassName: "MyWindow",
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -115,6 +118,7 @@ func main() {
 			Appearance:           mac.NSAppearanceNameDarkAqua,
             WebviewIsTransparent: true,
             WindowIsTranslucent:  false,
+            ContentProtection:    false,
             About: &mac.AboutInfo{
                 Title:   "My Application",
                 Message: "© 2021 Me",
@@ -322,7 +326,7 @@ If not defined, the result is the following in cases where the Handler would hav
 
 :::info
 
-This does not work with vite v5.0.0+ and wails v2 due to changes in vite. 
+This does not work with vite v5.0.0+ and wails v2 due to changes in vite.
 Changes are planned in v3 to support similar functionality under vite v5.0.0+.
 If you need this feature, stay with vite v4.0.0+.
 See [issue 3240](https://github.com/wailsapp/wails/issues/3240) for details
@@ -485,20 +489,12 @@ services of Apple and Microsoft.
 Name: EnableFraudulentWebsiteDetection<br/>
 Type: `bool`
 
-### ZoomFactor
+### DisablePanicRecovery
 
-Name: ZoomFactor<br/>
-Type: `float64`
+DisablePanicRecovery disables the automatic recovery from panics in message processing. By default, Wails will recover from panics in message processing and log the error. If you want to handle panics yourself, set this to `true`.
 
-This defines the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
-
-### IsZoomControlEnabled
-
-Name: IsZoomControlEnabled<br/>
+Name: DisablePanicRecovery<br/>
 Type: `bool`
-
-This enables the zoom factor to be changed by the user. Please note that the zoom factor can be set in the options while
-disallowing the user to change it at runtime (f.e. for a kiosk application or similar).
 
 ### Bind
 
@@ -619,6 +615,17 @@ by Windows. To configure this, use the [BackdropType](#BackdropType) option.
 Name: WindowIsTranslucent<br/>
 Type: `bool`
 
+#### ContentProtection
+
+Prevents window contents from being captured by other applications.
+
+On Windows it calls SetWindowDisplayAffinity with `WDA_EXCLUDEFROMCAPTURE`. 
+For Windows 10 version 2004 and later the window will be completely removed from capture. 
+Older Windows versions will call SetWindowDisplayAffinity with `WDA_MONITOR`, capturing a black window.
+
+Name: ContentProtection<br/>
+Type: `bool`
+
 #### BackdropType
 
 :::note
@@ -641,6 +648,21 @@ The value can be one of the following:
 | Acrylic | Use [Acrylic](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic) effect |
 | Mica    | Use [Mica](https://learn.microsoft.com/en-us/windows/apps/design/style/mica) effect       |
 | Tabbed  | Use Tabbed. This is a backdrop that is similar to Mica.                                   |
+
+#### ZoomFactor
+
+Name: ZoomFactor<br/>
+Type: `float64`
+
+This defines the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
+
+#### IsZoomControlEnabled
+
+Name: IsZoomControlEnabled<br/>
+Type: `bool`
+
+This enables the zoom factor to be changed by the user. Please note that the zoom factor can be set in the options while
+disallowing the user to change it at runtime (f.e. for a kiosk application or similar).
 
 #### DisablePinchZoom
 
@@ -804,6 +826,13 @@ Setting this to `true` will enable swipe gestures for the webview.
 Name: EnableSwipeGestures<br/>
 Type: `bool`
 
+#### WindowClassName
+
+Class name for the window. If empty, 'wailsWindow' will be used.
+
+Name: WindowClassName<br/>
+Type: `string`
+
 ### Mac
 
 This defines [Mac specific options](#mac).
@@ -905,6 +934,15 @@ Setting this to `true` will make the window background translucent. Often combin
 with [WebviewIsTransparent](#WebviewIsTransparent) to make frosty-looking applications.
 
 Name: WindowIsTranslucent<br/>
+Type: `bool`
+
+#### ContentProtection
+
+Prevents window contents from being captured by other applications.
+
+On MacOS it sets the NSWindow's sharingType to NSWindowSharingNone, removing the window from capture entirely. 
+
+Name: ContentProtection<br/>
 Type: `bool`
 
 #### OnFileOpen
