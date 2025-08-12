@@ -17,9 +17,11 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Types Events by @fbbdev in [#4161](https://github.com/wailsapp/wails/pull/4161)
 
 ## Changed
 <!-- Changes in existing functionality -->
+- When emitting a custom event with zero or one data argument, the data value will be assigned directly to the Data field without wrapping it in a slice by [@fbbdev](https://github.com/fbbdev) in [#4161](https://github.com/wailsapp/wails/pull/4161)
 
 ## Fixed
 <!-- Bug fixes -->
