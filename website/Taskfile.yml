@@ -7,7 +7,7 @@ tasks:
     desc: Install Dependencies
     aliases: [i]
     cmds:
-      - bun install
+      - bun install --frozen-lockfile
     sources:
       - package.json
       - bun.lock

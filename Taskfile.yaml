@@ -39,13 +39,14 @@ tasks:
 
   syncfork:
     cmds:
+      - git remote get-url upstream || (echo "Error: upstream remote not found. Please add it with: git remote add upstream <url>" && exit 1)
       - git fetch upstream
-      - git checkout master
-      - git rebase upstream/master
-      - git push origin master
-      - git checkout --track origin/v3-alpha
-      - git rebase upstream/v3-alpha
-      - git push origin v3-alpha
+      - git checkout master || git checkout main || (echo "Error: Neither master nor main branch found" && exit 1)
+      - git rebase upstream/master || git rebase upstream/main
+      - git push --force-with-lease origin master || git push --force-with-lease origin main
+      - (git checkout --track origin/v3-alpha 2>/dev/null || git checkout v3-alpha) || echo "v3-alpha branch not found, skipping"
+      - git rebase upstream/v3-alpha || echo "Could not rebase v3-alpha"
+      - git push --force-with-lease origin v3-alpha || echo "Could not push v3-alpha"
 
   format-all-md:
     cmds:
