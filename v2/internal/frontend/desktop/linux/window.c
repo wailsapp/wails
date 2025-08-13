@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <stdint.h>
+#include <string.h>
 #include <locale.h>
 #include "window.h"
 
@@ -13,6 +14,9 @@ static float xroot = 0.0f;
 static float yroot = 0.0f;
 static int dragTime = -1;
 static uint mouseButton = 0;
+static int wmIsWayland = -1;
+static int decoratorWidth = -1;
+static int decoratorHeight = -1;
 
 // casts
 void ExecuteOnMainThread(void *f, gpointer jscallback)
@@ -41,11 +45,17 @@ GtkBox *GTKBOX(void *pointer)
 }
 
 extern void processMessage(char *);
+extern void processBindingMessage(char *, char *);
 
 static void sendMessageToBackend(WebKitUserContentManager *contentManager,
                                  WebKitJavascriptResult *result,
                                  void *data)
 {
+    // Retrieve webview from content manager
+    WebKitWebView *webview = WEBKIT_WEB_VIEW(g_object_get_data(G_OBJECT(contentManager), "webview"));
+    const char *current_uri = webview ? webkit_web_view_get_uri(webview) : NULL;
+    char *uri = current_uri ? g_strdup(current_uri) : NULL;
+
 #if WEBKIT_MAJOR_VERSION >= 2 && WEBKIT_MINOR_VERSION >= 22
     JSCValue *value = webkit_javascript_result_get_js_value(result);
     char *message = jsc_value_to_string(value);
@@ -58,13 +68,39 @@ static void sendMessageToBackend(WebKitUserContentManager *contentManager,
     JSStringGetUTF8CString(js, message, messageSize);
     JSStringRelease(js);
 #endif
-    processMessage(message);
+    processBindingMessage(message, uri);
     g_free(message);
+    if (uri) {
+        g_free(uri);
+    }
 }
 
 static bool isNULLRectangle(GdkRectangle input)
 {
     return input.x == -1 && input.y == -1 && input.width == -1 && input.height == -1;
+}
+
+static gboolean onWayland()
+{
+    switch (wmIsWayland)
+    {
+    case -1:
+        {
+            char *gdkBackend = getenv("XDG_SESSION_TYPE");
+            if(gdkBackend != NULL && strcmp(gdkBackend, "wayland") == 0)
+            {
+                wmIsWayland = 1;
+                return TRUE;
+            }
+
+            wmIsWayland = 0;
+            return FALSE;
+        }
+    case 1:
+        return TRUE;
+    default:
+        return FALSE;
+    }
 }
 
 static GdkMonitor *getCurrentMonitor(GtkWindow *window)
@@ -237,15 +273,38 @@ void SetMinMaxSize(GtkWindow *window, int min_width, int min_height, int max_wid
     {
         return;
     }
+
     int flags = GDK_HINT_MAX_SIZE | GDK_HINT_MIN_SIZE;
+
     size.max_height = (max_height == 0 ? monitorSize.height : max_height);
     size.max_width = (max_width == 0 ? monitorSize.width : max_width);
     size.min_height = min_height;
     size.min_width = min_width;
+
+    // On Wayland window manager get the decorators and calculate the differences from the windows' size.
+    if(onWayland())
+    {
+        if(decoratorWidth == -1 && decoratorHeight == -1)
+        {
+            int windowWidth, windowHeight;
+            gtk_window_get_size(window, &windowWidth, &windowHeight);
+
+            GtkAllocation windowAllocation;
+            gtk_widget_get_allocation(GTK_WIDGET(window), &windowAllocation);
+
+            decoratorWidth = (windowAllocation.width-windowWidth);
+            decoratorHeight = (windowAllocation.height-windowHeight);
+        }
+
+        // Add the decorator difference to the window so fullscreen and maximise can fill the window.
+        size.max_height = decoratorHeight+size.max_height;
+        size.max_width = decoratorWidth+size.max_width;
+    }
+
     gtk_window_set_geometry_hints(window, NULL, &size, flags);
 }
 
-// function to disable the context menu but propogate the event
+// function to disable the context menu but propagate the event
 static gboolean disableContextMenu(GtkWidget *widget, WebKitContextMenu *context_menu, GdkEvent *event, WebKitHitTestResult *hit_test_result, gpointer data)
 {
     // return true to disable the context menu
@@ -254,7 +313,7 @@ static gboolean disableContextMenu(GtkWidget *widget, WebKitContextMenu *context
 
 void DisableContextMenu(void *webview)
 {
-    // Disable the context menu but propogate the event
+    // Disable the context menu but propagate the event
     g_signal_connect(WEBKIT_WEB_VIEW(webview), "context-menu", G_CALLBACK(disableContextMenu), NULL);
 }
 
@@ -429,14 +488,95 @@ gboolean close_button_pressed(GtkWidget *widget, GdkEvent *event, void *data)
     return TRUE;
 }
 
+char *droppedFiles = NULL;
+
+static void onDragDataReceived(GtkWidget *self, GdkDragContext *context, gint x, gint y, GtkSelectionData *selection_data, guint target_type, guint time, gpointer data)
+{
+    if(selection_data == NULL || (gtk_selection_data_get_length(selection_data) <= 0) || target_type != 2)
+    {
+        return;
+    }
+
+    if(droppedFiles != NULL) {
+        free(droppedFiles);
+        droppedFiles = NULL;
+    }
+
+    gchar **filenames = NULL;
+    filenames = g_uri_list_extract_uris((const gchar *)gtk_selection_data_get_data(selection_data));
+    if (filenames == NULL) // If unable to retrieve filenames:
+    {
+        g_strfreev(filenames);
+        return;
+    }
+
+    droppedFiles = calloc((size_t)gtk_selection_data_get_length(selection_data), 1);
+
+    int iter = 0;
+    while(filenames[iter] != NULL) // The last URI list element is NULL.
+    {
+        if(iter != 0)
+        {
+            strncat(droppedFiles, "\n", 1);
+        }
+        char *filename = g_filename_from_uri(filenames[iter], NULL, NULL);
+        if (filename == NULL)
+        {
+            break;
+        }
+        strncat(droppedFiles, filename, strlen(filename));
+
+        free(filename);
+        iter++;
+    }
+
+    g_strfreev(filenames);
+}
+
+static gboolean onDragDrop(GtkWidget* self, GdkDragContext* context, gint x, gint y, guint time, gpointer user_data)
+{
+    if(droppedFiles == NULL)
+    {
+        return FALSE;
+    }
+
+    size_t resLen = strlen(droppedFiles)+(sizeof(gint)*2)+6;
+    char *res = calloc(resLen, 1);
+
+    snprintf(res, resLen, "DD:%d:%d:%s", x, y, droppedFiles);
+
+    if(droppedFiles != NULL) {
+        free(droppedFiles);
+        droppedFiles = NULL;
+    }
+
+    processMessage(res);
+    return FALSE;
+}
+
 // WebView
-GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowOnClose, int gpuPolicy)
+GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowOnClose, int gpuPolicy, int disableWebViewDragAndDrop, int enableDragAndDrop)
 {
     GtkWidget *webview = webkit_web_view_new_with_user_content_manager((WebKitUserContentManager *)contentManager);
+
+    // Store webview reference in the content manager
+    g_object_set_data(G_OBJECT((WebKitUserContentManager *)contentManager), "webview", webview);
     // gtk_container_add(GTK_CONTAINER(window), webview);
     WebKitWebContext *context = webkit_web_context_get_default();
     webkit_web_context_register_uri_scheme(context, "wails", (WebKitURISchemeRequestCallback)processURLRequest, NULL, NULL);
     g_signal_connect(G_OBJECT(webview), "load-changed", G_CALLBACK(webviewLoadChanged), NULL);
+
+    if(disableWebViewDragAndDrop)
+    {
+        gtk_drag_dest_unset(webview);
+    }
+
+    if(enableDragAndDrop)
+    {
+        g_signal_connect(G_OBJECT(webview), "drag-data-received", G_CALLBACK(onDragDataReceived), NULL);
+        g_signal_connect(G_OBJECT(webview), "drag-drop", G_CALLBACK(onDragDrop), NULL);
+    }
+
     if (hideWindowOnClose)
     {
         g_signal_connect(GTK_WIDGET(window), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);

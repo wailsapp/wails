@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/wailsapp/wails/v2/internal/shell"
+
 	"github.com/pterm/pterm"
 
 	"github.com/jaypipes/ghw"
@@ -77,6 +79,7 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 		{pterm.Bold.Sprint("OS"), info.OS.Name},
 		{pterm.Bold.Sprint("Version"), info.OS.Version},
 		{pterm.Bold.Sprint("ID"), info.OS.ID},
+		{pterm.Bold.Sprint("Branding"), info.OS.Branding},
 		{pterm.Bold.Sprint("Go Version"), runtime.Version()},
 		{pterm.Bold.Sprint("Platform"), runtime.GOOS},
 		{pterm.Bold.Sprint("Architecture"), runtime.GOARCH},
@@ -93,7 +96,14 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 			systemTabledata = append(systemTabledata, []string{prefix, cpu.Model})
 		}
 	} else {
-		systemTabledata = append(systemTabledata, []string{"CPU", "Unknown"})
+		cpuInfo := "Unknown"
+		if runtime.GOOS == "darwin" {
+			// Try to get CPU info from sysctl
+			if stdout, _, err := shell.RunCommand("", "sysctl", "-n", "machdep.cpu.brand_string"); err == nil {
+				cpuInfo = strings.TrimSpace(stdout)
+			}
+		}
+		systemTabledata = append(systemTabledata, []string{"CPU", cpuInfo})
 	}
 
 	// Probe GPU
@@ -104,18 +114,55 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 			if len(gpu.GraphicsCards) > 1 {
 				prefix = "GPU " + strconv.Itoa(idx+1) + " "
 			}
+			if card.DeviceInfo == nil {
+				systemTabledata = append(systemTabledata, []string{prefix, "Unknown"})
+				continue
+			}
 			details := fmt.Sprintf("%s (%s) - Driver: %s", card.DeviceInfo.Product.Name, card.DeviceInfo.Vendor.Name, card.DeviceInfo.Driver)
 			systemTabledata = append(systemTabledata, []string{prefix, details})
 		}
 	} else {
-		systemTabledata = append(systemTabledata, []string{"GPU", "Unknown"})
+		gpuInfo := "Unknown"
+		if runtime.GOOS == "darwin" {
+			// Try to get GPU info from system_profiler
+			if stdout, _, err := shell.RunCommand("", "system_profiler", "SPDisplaysDataType"); err == nil {
+				var (
+					startCapturing bool
+					gpuInfoDetails []string
+				)
+				for _, line := range strings.Split(stdout, "\n") {
+					if strings.Contains(line, "Chipset Model") {
+						startCapturing = true
+					}
+					if startCapturing {
+						gpuInfoDetails = append(gpuInfoDetails, strings.TrimSpace(line))
+					}
+					if strings.Contains(line, "Metal Support") {
+						break
+					}
+				}
+				if len(gpuInfoDetails) > 0 {
+					gpuInfo = strings.Join(gpuInfoDetails, " ")
+				}
+			}
+		}
+		systemTabledata = append(systemTabledata, []string{"GPU", gpuInfo})
 	}
 
 	memory, _ := ghw.Memory()
 	if memory != nil {
 		systemTabledata = append(systemTabledata, []string{"Memory", strconv.Itoa(int(memory.TotalPhysicalBytes/1024/1024/1024)) + "GB"})
 	} else {
-		systemTabledata = append(systemTabledata, []string{"Memory", "Unknown"})
+		memInfo := "Unknown"
+		if runtime.GOOS == "darwin" {
+			// Try to get Memory info from sysctl
+			if stdout, _, err := shell.RunCommand("", "sysctl", "-n", "hw.memsize"); err == nil {
+				if memSize, err := strconv.Atoi(strings.TrimSpace(stdout)); err == nil {
+					memInfo = strconv.Itoa(memSize/1024/1024/1024) + "GB"
+				}
+			}
+		}
+		systemTabledata = append(systemTabledata, []string{"Memory", memInfo})
 	}
 
 	err = pterm.DefaultTable.WithBoxed().WithData(systemTabledata).Render()
@@ -128,8 +175,8 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 	// Output Dependencies Status
 	var dependenciesMissing []string
 	var externalPackages []*packagemanager.Dependency
-	var dependenciesAvailableRequired = 0
-	var dependenciesAvailableOptional = 0
+	dependenciesAvailableRequired := 0
+	dependenciesAvailableOptional := 0
 
 	dependenciesTableData := pterm.TableData{
 		{"Dependency", "Package Name", "Status", "Version"},

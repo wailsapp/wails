@@ -28,4 +28,6 @@ extern void HandleSecondInstanceData(char * message);
 
 void SendDataToFirstInstance(char * singleInstanceUniqueId, char * text);
 
+char* GetMacOsNativeTempDir();
+
 #endif /* AppDelegate_h */

@@ -1,0 +1,144 @@
+# Version labels
+v2-only:
+  - '\[v2\]'
+  - '\(v2\)'
+  - 'v2:'
+  - 'version 2'
+  - 'wails v2'
+  - 'using v2'
+  - 'master branch'
+
+v3-alpha:
+  - '\[v3\]'
+  - '\(v3\)'
+  - 'v3:'
+  - '\[v3-alpha\]'
+  - '\(v3-alpha\)'
+  - 'version 3'
+  - 'wails v3'
+  - 'using v3'
+  - 'v3-alpha branch'
+
+# Component labels
+webview2:
+  - 'webview2'
+  - 'windows'
+  - 'microsoft edge'
+  - 'edge browser'
+  - 'IE'
+  - 'Explorer'
+  - 'browser crashes'
+
+macos:
+  - 'macOS'
+  - 'mac OS'
+  - 'OS X'
+  - 'darwin'
+  - 'cocoa'
+  - 'Safari'
+  - 'Catalyst'
+  - 'Ventura'
+  - 'Sonoma'
+  - 'apple'
+
+linux:
+  - 'linux'
+  - 'ubuntu'
+  - 'debian'
+  - 'fedora'
+  - 'gtk'
+  - 'webkitgtk'
+  - 'webkit2gtk'
+  - 'gnome'
+  - 'x11'
+  - 'wayland'
+
+cli:
+  - 'cli'
+  - 'command line'
+  - 'wails doctor'
+  - 'wails init'
+  - 'wails build'
+  - 'wails dev'
+  - 'template'
+  - 'scaffolding'
+
+# Type labels
+bug:
+  - 'bug'
+  - 'crash'
+  - 'broken'
+  - 'failure'
+  - 'error'
+  - 'failed'
+  - 'panic'
+  - 'segfault'
+  - 'issue'
+  - 'not working'
+  - 'problem'
+
+enhancement:
+  - 'feature'
+  - 'enhancement'
+  - 'request'
+  - 'add'
+  - 'new'
+  - 'improve'
+  - 'functionality'
+  - 'support for'
+  - 'please add'
+  - 'would be nice'
+
+documentation:
+  - 'docs'
+  - 'documentation'
+  - 'readme'
+  - 'example'
+  - 'tutorial'
+  - 'guide'
+  - 'explanation'
+  - 'clarification'
+  - 'instructions'
+
+security:
+  - 'security'
+  - 'vulnerability'
+  - 'exploit'
+  - 'hack'
+  - 'CVE'
+  - 'secure'
+  - 'encryption'
+  - 'hardening'
+
+performance:
+  - 'performance'
+  - 'slow'
+  - 'speed'
+  - 'memory leak'
+  - 'cpu usage'
+  - 'high memory'
+  - 'lag'
+  - 'freeze'
+  - 'optimization'
+
+# Priority labels
+high-priority:
+  - 'urgent'
+  - 'critical'
+  - 'security'
+  - 'high priority'
+  - 'important'
+  - 'production'
+  - 'blocker'
+  - 'blocking'
+
+question:
+  - 'how to'
+  - 'how do i'
+  - 'can I'
+  - 'is it possible'
+  - 'question'
+  - 'help me'
+  - 'need help'
+  - 'assistance'
+  - 'confused'

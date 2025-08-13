@@ -65,7 +65,7 @@ type ControlBase struct {
 	dispatchq []func()
 }
 
-// initControl is called by controls: edit, button, treeview, listview, and so on.
+// InitControl is called by controls: edit, button, treeview, listview, and so on.
 func (cba *ControlBase) InitControl(className string, parent Controller, exstyle, style uint) {
 	cba.hwnd = CreateWindow(className, parent, exstyle, style)
 	if cba.hwnd == 0 {
@@ -168,6 +168,14 @@ func (cba *ControlBase) SetTranslucentBackground() {
 	data.CbData = unsafe.Sizeof(accent)
 
 	w32.SetWindowCompositionAttribute(cba.hwnd, &data)
+}
+
+func (cba *ControlBase) SetContentProtection(enable bool) {
+	if enable {
+		w32.SetWindowDisplayAffinity(uintptr(cba.hwnd), w32.WDA_EXCLUDEFROMCAPTURE)
+	} else {
+		w32.SetWindowDisplayAffinity(uintptr(cba.hwnd), w32.WDA_NONE)
+	}
 }
 
 func min(a, b int) int {

@@ -143,7 +143,7 @@ func (e *Events) notifyBackend(eventName string, data ...interface{}) {
 	}
 
 	// Do we have items to delete?
-	if itemsToDelete == true {
+	if itemsToDelete {
 
 		// Create a new Listeners slice
 		var newListeners []*eventListener

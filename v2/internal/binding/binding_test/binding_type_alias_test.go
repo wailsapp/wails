@@ -15,11 +15,11 @@ const expectedTypeAliasBindings = `// Cynhyrchwyd y ffeil hon yn awtomatig. PEID
 import {binding_test} from '../models';
 import {int_package} from '../models';
 
-export function Map():Promise<{[key: string]: string}>;
+export function Map():Promise<Record<string, string>>;
 
 export function MapAlias():Promise<binding_test.MapAlias>;
 
-export function MapWithImportedStructValue():Promise<{[key: string]: int_package.SomeStruct}>;
+export function MapWithImportedStructValue():Promise<Record<string, int_package.SomeStruct>>;
 
 export function Slice():Promise<Array<string>>;
 
@@ -41,7 +41,7 @@ func TestAliases(t *testing.T) {
 
 	// setup
 	testLogger := &logger.Logger{}
-	b := binding.NewBindings(testLogger, []interface{}{&AliasTest{}}, []interface{}{}, false)
+	b := binding.NewBindings(testLogger, []interface{}{&AliasTest{}}, []interface{}{}, false, []interface{}{})
 
 	// then
 	err := b.GenerateGoBindings(generationDir)

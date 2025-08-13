@@ -133,6 +133,64 @@ func main() {
 }
 ```
 
+Also you might want to use Enums in your structs and have models for them on frontend. In that case you should create array that will contain all possible enum values, instrument enum type and bind it to the app:
+
+```go {16-18} title="app.go"
+type Weekday string
+
+const (
+    Sunday    Weekday = "Sunday"
+    Monday    Weekday = "Monday"
+    Tuesday   Weekday = "Tuesday"
+    Wednesday Weekday = "Wednesday"
+    Thursday  Weekday = "Thursday"
+    Friday    Weekday = "Friday"
+    Saturday  Weekday = "Saturday"
+)
+
+var AllWeekdays = []struct {
+    Value  Weekday
+    TSName string
+}{
+    {Sunday, "SUNDAY"},
+    {Monday, "MONDAY"},
+    {Tuesday, "TUESDAY"},
+    {Wednesday, "WEDNESDAY"},
+    {Thursday, "THURSDAY"},
+    {Friday, "FRIDAY"},
+    {Saturday, "SATURDAY"},
+}
+```
+
+In the main application configuration, the `EnumBind` key is where we can tell Wails what we want to bind enums as well:
+
+```go {11-13} title="main.go"
+func main() {
+
+    app := NewApp()
+
+    err := wails.Run(&options.App{
+        Title:             "My App",
+        Width:             800,
+        Height:            600,
+        OnStartup:  app.startup,
+        OnShutdown: app.shutdown,
+    Bind: []interface{}{
+        app,
+    },
+    EnumBind: []interface{}{
+        AllWeekdays,
+     },
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+
+```
+
+This will add missing enums to your `model.ts` file.
+
 バインディングの詳細については、[こちら](../howdoesitwork.mdx#method-binding)をご覧ください。
 
 ## アプリケーションメニュー
@@ -177,7 +235,7 @@ Wails v2にアセットを処理させるための方法は複雑ではありま
 
 ### アセットハンドラ
 
-Wails v2では必要に応じて、`options.App`の中に`http.Handler`を定義することができます。これにより、アセットサーバにフックして、その場でファイルを作成したり、POST/PUTリクエストを処理したりすることができます。 GETリクエストが要求されたときは、まず初めに、`assets` FSにハンドリングされます。 リクエストされたファイルをFSが見つけられなかった場合、そのリクエストは`http.Handler`に転送されます。 GET以外のリクエストは、`AssetsHandler`が指定されていれば、当該ハンドラによって直接処理されます。 なお、`Assets`オプションに`nil`を指定することで、`AssetsHandler`のみを使用することも可能です。
+Wails v2では必要に応じて、`options.App`の中に`http.Handler`を定義することができます。これにより、アセットサーバにフックして、その場でファイルを作成したり、POST/PUTリクエストを処理したりすることができます。 GETリクエストが要求されたときは、まず初めに、`assets` FSにハンドリングされます。 リクエストされたファイルをFSが見つけられなかった場合、そのリクエストは`http.Handler`に転送されます。 GET以外のリクエストは、`AssetsHandler`が指定されていれば、当該ハンドラによって直接処理されます。 It's also possible to only use the `AssetsHandler` by specifying `nil` as the `Assets` option.
 
 ## ビルトイン開発サーバ
 

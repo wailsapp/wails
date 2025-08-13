@@ -14,6 +14,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/typescriptify"
 
 	"github.com/leaanthony/slicer"
+
 	"github.com/wailsapp/wails/v2/internal/logger"
 )
 
@@ -23,17 +24,20 @@ type Bindings struct {
 	exemptions slicer.StringSlicer
 
 	structsToGenerateTS map[string]map[string]interface{}
+	enumsToGenerateTS   map[string]map[string]interface{}
 	tsPrefix            string
 	tsSuffix            string
+	tsInterface         bool
 	obfuscate           bool
 }
 
 // NewBindings returns a new Bindings object
-func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exemptions []interface{}, obfuscate bool) *Bindings {
+func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exemptions []interface{}, obfuscate bool, enumsToBind []interface{}) *Bindings {
 	result := &Bindings{
 		db:                  newDB(),
 		logger:              logger.CustomLogger("Bindings"),
 		structsToGenerateTS: make(map[string]map[string]interface{}),
+		enumsToGenerateTS:   make(map[string]map[string]interface{}),
 		obfuscate:           obfuscate,
 	}
 
@@ -45,6 +49,10 @@ func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exem
 		// Yuk yuk yuk! Is there a better way?
 		name = strings.TrimSuffix(name, "-fm")
 		result.exemptions.Add(name)
+	}
+
+	for _, enum := range enumsToBind {
+		result.AddEnumToGenerateTS(enum)
 	}
 
 	// Add the structs to bind
@@ -60,20 +68,13 @@ func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exem
 
 // Add the given struct methods to the Bindings
 func (b *Bindings) Add(structPtr interface{}) error {
-
 	methods, err := b.getMethods(structPtr)
 	if err != nil {
 		return fmt.Errorf("cannot bind value to app: %s", err.Error())
 	}
 
 	for _, method := range methods {
-		splitName := strings.Split(method.Name, ".")
-		packageName := splitName[0]
-		structName := splitName[1]
-		methodName := splitName[2]
-
-		// Add it as a regular method
-		b.db.AddMethod(packageName, structName, methodName, method)
+		b.db.AddMethod(method.Path.Package, method.Path.Struct, method.Path.Name, method)
 	}
 	return nil
 }
@@ -89,16 +90,21 @@ func (b *Bindings) ToJSON() (string, error) {
 func (b *Bindings) GenerateModels() ([]byte, error) {
 	models := map[string]string{}
 	var seen slicer.StringSlicer
+	var seenEnumsPackages slicer.StringSlicer
 	allStructNames := b.getAllStructNames()
 	allStructNames.Sort()
+	allEnumNames := b.getAllEnumNames()
+	allEnumNames.Sort()
 	for packageName, structsToGenerate := range b.structsToGenerateTS {
 		thisPackageCode := ""
 		w := typescriptify.New()
 		w.WithPrefix(b.tsPrefix)
 		w.WithSuffix(b.tsSuffix)
+		w.WithInterface(b.tsInterface)
 		w.Namespace = packageName
 		w.WithBackupDir("")
 		w.KnownStructs = allStructNames
+		w.KnownEnums = allEnumNames
 		// sort the structs
 		var structNames []string
 		for structName := range structsToGenerate {
@@ -113,12 +119,55 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 			structInterface := structsToGenerate[structName]
 			w.Add(structInterface)
 		}
+
+		// if we have enums for this package, add them as well
+		var enums, enumsExist = b.enumsToGenerateTS[packageName]
+		if enumsExist {
+			for enumName, enum := range enums {
+				fqemumname := packageName + "." + enumName
+				if seen.Contains(fqemumname) {
+					continue
+				}
+				w.AddEnum(enum)
+			}
+			seenEnumsPackages.Add(packageName)
+		}
+
 		str, err := w.Convert(nil)
 		if err != nil {
 			return nil, err
 		}
 		thisPackageCode += str
 		seen.AddSlice(w.GetGeneratedStructs())
+		models[packageName] = thisPackageCode
+	}
+
+	// Add outstanding enums to the models that were not in packages with structs
+	for packageName, enumsToGenerate := range b.enumsToGenerateTS {
+		if seenEnumsPackages.Contains(packageName) {
+			continue
+		}
+
+		thisPackageCode := ""
+		w := typescriptify.New()
+		w.WithPrefix(b.tsPrefix)
+		w.WithSuffix(b.tsSuffix)
+		w.WithInterface(b.tsInterface)
+		w.Namespace = packageName
+		w.WithBackupDir("")
+
+		for enumName, enum := range enumsToGenerate {
+			fqemumname := packageName + "." + enumName
+			if seen.Contains(fqemumname) {
+				continue
+			}
+			w.AddEnum(enum)
+		}
+		str, err := w.Convert(nil)
+		if err != nil {
+			return nil, err
+		}
+		thisPackageCode += str
 		models[packageName] = thisPackageCode
 	}
 
@@ -146,7 +195,6 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 }
 
 func (b *Bindings) WriteModels(modelsDir string) error {
-
 	modelsData, err := b.GenerateModels()
 	if err != nil {
 		return err
@@ -157,12 +205,45 @@ func (b *Bindings) WriteModels(modelsDir string) error {
 	}
 
 	filename := filepath.Join(modelsDir, "models.ts")
-	err = os.WriteFile(filename, modelsData, 0755)
+	err = os.WriteFile(filename, modelsData, 0o755)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (b *Bindings) AddEnumToGenerateTS(e interface{}) {
+	enumType := reflect.TypeOf(e)
+
+	var packageName string
+	var enumName string
+	// enums should be represented as array of all possible values
+	if hasElements(enumType) {
+		enum := enumType.Elem()
+		// simple enum represented by struct with Value/TSName fields
+		if enum.Kind() == reflect.Struct {
+			_, tsNamePresented := enum.FieldByName("TSName")
+			enumT, valuePresented := enum.FieldByName("Value")
+			if tsNamePresented && valuePresented {
+				packageName = getPackageName(enumT.Type.String())
+				enumName = enumT.Type.Name()
+			} else {
+				return
+			}
+			// otherwise expecting implementation with TSName() https://github.com/tkrajina/typescriptify-golang-structs#enums-with-tsname
+		} else {
+			packageName = getPackageName(enumType.Elem().String())
+			enumName = enumType.Elem().Name()
+		}
+		if b.enumsToGenerateTS[packageName] == nil {
+			b.enumsToGenerateTS[packageName] = make(map[string]interface{})
+		}
+		if b.enumsToGenerateTS[packageName][enumName] != nil {
+			return
+		}
+		b.enumsToGenerateTS[packageName][enumName] = e
+	}
 }
 
 func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, s interface{}) {
@@ -176,22 +257,19 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 
 	// Iterate this struct and add any struct field references
 	structType := reflect.TypeOf(s)
-	if hasElements(structType) {
+	for hasElements(structType) {
 		structType = structType.Elem()
 	}
 
 	for i := 0; i < structType.NumField(); i++ {
 		field := structType.Field(i)
-		if field.Anonymous {
+		if field.Anonymous || !field.IsExported() {
 			continue
 		}
 		kind := field.Type.Kind()
 		if kind == reflect.Struct {
-			if !field.IsExported() {
-				continue
-			}
 			fqname := field.Type.String()
-			sNameSplit := strings.Split(fqname, ".")
+			sNameSplit := strings.SplitN(fqname, ".", 2)
 			if len(sNameSplit) < 2 {
 				continue
 			}
@@ -202,22 +280,24 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 				s := reflect.Indirect(a).Interface()
 				b.AddStructToGenerateTS(pName, sName, s)
 			}
-		} else if hasElements(field.Type) && field.Type.Elem().Kind() == reflect.Struct {
-			if !field.IsExported() {
-				continue
+		} else {
+			fType := field.Type
+			for hasElements(fType) {
+				fType = fType.Elem()
 			}
-			fqname := field.Type.Elem().String()
-			sNameSplit := strings.Split(fqname, ".")
-			if len(sNameSplit) < 2 {
-				continue
-			}
-			sName := sNameSplit[1]
-			pName := getPackageName(fqname)
-			typ := field.Type.Elem()
-			a := reflect.New(typ)
-			if b.hasExportedJSONFields(typ) {
-				s := reflect.Indirect(a).Interface()
-				b.AddStructToGenerateTS(pName, sName, s)
+			if fType.Kind() == reflect.Struct {
+				fqname := fType.String()
+				sNameSplit := strings.SplitN(fqname, ".", 2)
+				if len(sNameSplit) < 2 {
+					continue
+				}
+				sName := sNameSplit[1]
+				pName := getPackageName(fqname)
+				a := reflect.New(fType)
+				if b.hasExportedJSONFields(fType) {
+					s := reflect.Indirect(a).Interface()
+					b.AddStructToGenerateTS(pName, sName, s)
+				}
 			}
 		}
 	}
@@ -233,6 +313,13 @@ func (b *Bindings) SetTsSuffix(postfix string) *Bindings {
 	return b
 }
 
+func (b *Bindings) SetOutputType(outputType string) *Bindings {
+	if outputType == "interfaces" {
+		b.tsInterface = true
+	}
+	return b
+}
+
 func (b *Bindings) getAllStructNames() *slicer.StringSlicer {
 	var result slicer.StringSlicer
 	for packageName, structsToGenerate := range b.structsToGenerateTS {
@@ -243,11 +330,32 @@ func (b *Bindings) getAllStructNames() *slicer.StringSlicer {
 	return &result
 }
 
+func (b *Bindings) getAllEnumNames() *slicer.StringSlicer {
+	var result slicer.StringSlicer
+	for packageName, enumsToGenerate := range b.enumsToGenerateTS {
+		for enumName := range enumsToGenerate {
+			result.Add(packageName + "." + enumName)
+		}
+	}
+	return &result
+}
+
 func (b *Bindings) hasExportedJSONFields(typeOf reflect.Type) bool {
 	for i := 0; i < typeOf.NumField(); i++ {
 		jsonFieldName := ""
 		f := typeOf.Field(i)
-		jsonTag := f.Tag.Get("json")
+		// function, complex, and channel types cannot be json-encoded
+		if f.Type.Kind() == reflect.Chan ||
+			f.Type.Kind() == reflect.Func ||
+			f.Type.Kind() == reflect.UnsafePointer ||
+			f.Type.Kind() == reflect.Complex128 ||
+			f.Type.Kind() == reflect.Complex64 {
+			continue
+		}
+		jsonTag, hasTag := f.Tag.Lookup("json")
+		if !hasTag && f.IsExported() {
+			return true
+		}
 		if len(jsonTag) == 0 {
 			continue
 		}

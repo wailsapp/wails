@@ -32,7 +32,7 @@ export namespace binding_test {
 			if (!a) {
 				return a;
 			}
-			if (a.slice) {
+			if (a.slice && a.map) {
 				return (a as any[]).map(elem => this.convertValues(elem, classs));
 			} else if ("object" === typeof a) {
 				if (asMap) {
@@ -50,7 +50,7 @@ export namespace binding_test {
 
 export namespace binding_test_import {
 	export class AMapWrapper {
-		AMap: {[key: string]: binding_test_nestedimport.A};
+		AMap: Record<string, binding_test_nestedimport.A>;
 		static createFrom(source: any = {}) {
 			return new AMapWrapper(source);
 		}
@@ -62,7 +62,7 @@ export namespace binding_test_import {
 			if (!a) {
 				return a;
 			}
-			if (a.slice) {
+			if (a.slice && a.map) {
 				return (a as any[]).map(elem => this.convertValues(elem, classs));
 			} else if ("object" === typeof a) {
 				if (asMap) {

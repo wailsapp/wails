@@ -41,7 +41,6 @@ func TitleBarHidden() *TitleBar {
 // TitleBarHiddenInset results in a hidden title bar with an alternative look where
 // the traffic light buttons are slightly more inset from the window edge.
 func TitleBarHiddenInset() *TitleBar {
-
 	return &TitleBar{
 		TitlebarAppearsTransparent: true,
 		HideTitle:                  true,
@@ -50,5 +49,4 @@ func TitleBarHiddenInset() *TitleBar {
 		UseToolbar:                 true,
 		HideToolbarSeparator:       true,
 	}
-
 }

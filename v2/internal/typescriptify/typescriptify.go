@@ -3,7 +3,7 @@ package typescriptify
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -24,7 +24,7 @@ const (
 	if (!a) {
 		return a;
 	}
-	if (a.slice) {
+	if (a.slice && a.map) {
 		return (a as any[]).map(elem => this.convertValues(elem, classs));
 	} else if ("object" === typeof a) {
 		if (asMap) {
@@ -39,6 +39,18 @@ const (
 }`
 	jsVariableNameRegex = `^([A-Z]|[a-z]|\$|_)([A-Z]|[a-z]|[0-9]|\$|_)*$`
 )
+
+var jsVariableUnsafeChars = regexp.MustCompile(`[^A-Za-z0-9_]`)
+
+func nameTypeOf(typeOf reflect.Type) string {
+	tname := typeOf.Name()
+	gidx := strings.IndexRune(tname, '[')
+	if gidx > 0 { // its a generic type
+		rem := strings.SplitN(tname, "[", 2)
+		tname = rem[0] + "_" + jsVariableUnsafeChars.ReplaceAllLiteralString(rem[1], "_")
+	}
+	return tname
+}
 
 // TypeOptions overrides options set by `ts_*` tags.
 type TypeOptions struct {
@@ -104,6 +116,7 @@ type TypeScriptify struct {
 
 	Namespace    string
 	KnownStructs *slicer.StringSlicer
+	KnownEnums   *slicer.StringSlicer
 }
 
 func New() *TypeScriptify {
@@ -156,10 +169,10 @@ func (t *TypeScriptify) deepFields(typeOf reflect.Type) []reflect.StructField {
 		kind := f.Type.Kind()
 		isPointer := kind == reflect.Ptr && f.Type.Elem().Kind() == reflect.Struct
 		if f.Anonymous && kind == reflect.Struct {
-			//fmt.Println(v.Interface())
+			// fmt.Println(v.Interface())
 			fields = append(fields, t.deepFields(f.Type)...)
 		} else if f.Anonymous && isPointer {
-			//fmt.Println(v.Interface())
+			// fmt.Println(v.Interface())
 			fields = append(fields, t.deepFields(f.Type.Elem())...)
 		} else {
 			// Check we have a json tag
@@ -260,15 +273,34 @@ func (t *TypeScriptify) AddType(typeOf reflect.Type) *TypeScriptify {
 func (t *typeScriptClassBuilder) AddMapField(fieldName string, field reflect.StructField) {
 	keyType := field.Type.Key()
 	valueType := field.Type.Elem()
-	valueTypeName := valueType.Name()
+	valueTypeName := nameTypeOf(valueType)
+	valueTypeSuffix := ""
+	valueTypePrefix := ""
+	if valueType.Kind() == reflect.Ptr {
+		valueType = valueType.Elem()
+		valueTypeName = nameTypeOf(valueType)
+	}
+	if valueType.Kind() == reflect.Array || valueType.Kind() == reflect.Slice {
+		arrayDepth := 1
+		for valueType.Elem().Kind() == reflect.Array || valueType.Elem().Kind() == reflect.Slice {
+			valueType = valueType.Elem()
+			arrayDepth++
+		}
+		valueType = valueType.Elem()
+		valueTypeName = nameTypeOf(valueType)
+		valueTypeSuffix = strings.Repeat(">", arrayDepth)
+		valueTypePrefix = strings.Repeat("Array<", arrayDepth)
+	}
+	if valueType.Kind() == reflect.Ptr {
+		valueType = valueType.Elem()
+		valueTypeName = nameTypeOf(valueType)
+	}
 	if name, ok := t.types[valueType.Kind()]; ok {
 		valueTypeName = name
 	}
-	if valueType.Kind() == reflect.Array || valueType.Kind() == reflect.Slice {
-		valueTypeName = valueType.Elem().Name() + "[]"
-	}
-	if valueType.Kind() == reflect.Ptr {
-		valueTypeName = valueType.Elem().Name()
+	if valueType.Kind() == reflect.Map {
+		// TODO: support nested maps
+		valueTypeName = "any" // valueType.Elem().Name()
 	}
 	if valueType.Kind() == reflect.Struct && differentNamespaces(t.namespace, valueType) {
 		valueTypeName = valueType.String()
@@ -293,11 +325,13 @@ func (t *typeScriptClassBuilder) AddMapField(fieldName string, field reflect.Str
 			fieldName = fmt.Sprintf(`"%s"?`, strippedFieldName)
 		}
 	}
-	t.fields = append(t.fields, fmt.Sprintf("%s%s: {[key: %s]: %s};", t.indent, fieldName, keyTypeStr, valueTypeName))
+	t.fields = append(t.fields, fmt.Sprintf("%s%s: Record<%s, %s>;", t.indent, fieldName, keyTypeStr, valueTypePrefix+valueTypeName+valueTypeSuffix))
 	if valueType.Kind() == reflect.Struct {
-		t.constructorBody = append(t.constructorBody, fmt.Sprintf("%s%sthis%s = this.convertValues(source[\"%s\"], %s, true);", t.indent, t.indent, dotField, strippedFieldName, t.prefix+valueTypeName+t.suffix))
+		t.constructorBody = append(t.constructorBody, fmt.Sprintf("%s%sthis%s = this.convertValues(source[\"%s\"], %s, true);",
+			t.indent, t.indent, dotField, strippedFieldName, t.prefix+valueTypePrefix+valueTypeName+valueTypeSuffix+t.suffix))
 	} else {
-		t.constructorBody = append(t.constructorBody, fmt.Sprintf("%s%sthis%s = source[\"%s\"];", t.indent, t.indent, dotField, strippedFieldName))
+		t.constructorBody = append(t.constructorBody, fmt.Sprintf("%s%sthis%s = source[\"%s\"];",
+			t.indent, t.indent, dotField, strippedFieldName))
 	}
 }
 
@@ -393,7 +427,7 @@ func loadCustomCode(fileName string) (map[string]string, error) {
 	}
 	defer f.Close()
 
-	bytes, err := ioutil.ReadAll(f)
+	bytes, err := io.ReadAll(f)
 	if err != nil {
 		return result, err
 	}
@@ -429,7 +463,7 @@ func (t TypeScriptify) backup(fileName string) error {
 	}
 	defer fileIn.Close()
 
-	bytes, err := ioutil.ReadAll(fileIn)
+	bytes, err := io.ReadAll(fileIn)
 	if err != nil {
 		return err
 	}
@@ -439,7 +473,7 @@ func (t TypeScriptify) backup(fileName string) error {
 		backupFn = path.Join(t.BackupDir, backupFn)
 	}
 
-	return ioutil.WriteFile(backupFn, bytes, os.FileMode(0700))
+	return os.WriteFile(backupFn, bytes, os.FileMode(0o700))
 }
 
 func (t TypeScriptify) ConvertToFile(fileName string, packageName string) error {
@@ -500,7 +534,7 @@ func (t *TypeScriptify) convertEnum(depth int, typeOf reflect.Type, elements []e
 	}
 	t.alreadyConverted[typeOf.String()] = true
 
-	entityName := t.Prefix + typeOf.Name() + t.Suffix
+	entityName := t.Prefix + nameTypeOf(typeOf) + t.Suffix
 	result := "enum " + entityName + " {\n"
 
 	for _, val := range elements {
@@ -552,7 +586,21 @@ func (t *TypeScriptify) getFieldOptions(structType reflect.Type, field reflect.S
 
 func (t *TypeScriptify) getJSONFieldName(field reflect.StructField, isPtr bool) string {
 	jsonFieldName := ""
-	jsonTag := field.Tag.Get("json")
+	// function, complex, and channel types cannot be json-encoded
+	if field.Type.Kind() == reflect.Chan ||
+		field.Type.Kind() == reflect.Func ||
+		field.Type.Kind() == reflect.UnsafePointer ||
+		field.Type.Kind() == reflect.Complex128 ||
+		field.Type.Kind() == reflect.Complex64 {
+		return ""
+	}
+	jsonTag, hasTag := field.Tag.Lookup("json")
+	if !hasTag && field.IsExported() {
+		jsonFieldName = field.Name
+		if isPtr {
+			jsonFieldName += "?"
+		}
+	}
 	if len(jsonTag) > 0 {
 		jsonTagParts := strings.Split(jsonTag, ",")
 		if len(jsonTagParts) > 0 {
@@ -585,9 +633,6 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 		return "", nil
 	}
 	fields := t.deepFields(typeOf)
-	if len(fields) == 0 {
-		return "", nil
-	}
 	t.logf(depth, "Converting type %s", typeOf.String())
 	if differentNamespaces(t.Namespace, typeOf) {
 		return "", nil
@@ -595,7 +640,7 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 
 	t.alreadyConverted[typeOf.String()] = true
 
-	entityName := t.Prefix + typeOf.Name() + t.Suffix
+	entityName := t.Prefix + nameTypeOf(typeOf) + t.Suffix
 
 	if typeClashWithReservedKeyword(entityName) {
 		warnAboutTypesClash(entityName)
@@ -655,8 +700,10 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 			}
 
 			isKnownType := t.KnownStructs.Contains(getStructFQN(field.Type.String()))
-			println("KnownStructs:", t.KnownStructs.Join("\t"))
-			println(getStructFQN(field.Type.String()))
+			if !isKnownType {
+				println("KnownStructs:", t.KnownStructs.Join("\t"))
+				println("Not found:", getStructFQN(field.Type.String()))
+			}
 			builder.AddStructField(jsonFieldName, field, !isKnownType)
 		} else if field.Type.Kind() == reflect.Map {
 			t.logf(depth, "- map field %s.%s", typeOf.Name(), field.Name)
@@ -697,14 +744,18 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 
 			builder.AddMapField(jsonFieldName, field)
 		} else if field.Type.Kind() == reflect.Slice || field.Type.Kind() == reflect.Array { // Slice:
-			if field.Type.Elem().Kind() == reflect.Ptr { //extract ptr type
+			if field.Type.Elem().Kind() == reflect.Ptr { // extract ptr type
 				field.Type = field.Type.Elem()
 			}
 
 			arrayDepth := 1
-			for field.Type.Elem().Kind() == reflect.Slice { // Slice of slices:
+			for field.Type.Elem().Kind() == reflect.Slice || field.Type.Elem().Kind() == reflect.Array { // Slice of slices:
 				field.Type = field.Type.Elem()
 				arrayDepth++
+			}
+
+			if field.Type.Elem().Kind() == reflect.Ptr { // extract ptr type
+				field.Type = field.Type.Elem()
 			}
 
 			if field.Type.Elem().Kind() == reflect.Struct { // Slice of structs:
@@ -723,7 +774,16 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 			}
 		} else { // Simple field:
 			t.logf(depth, "- simple field %s.%s", typeOf.Name(), field.Name)
-			err = builder.AddSimpleField(jsonFieldName, field, fldOpts)
+			// check if type is in known enum. If so, then replace TStype with enum name to avoid missing types
+			isKnownEnum := t.KnownEnums.Contains(getStructFQN(field.Type.String()))
+			if isKnownEnum {
+				err = builder.AddSimpleField(jsonFieldName, field, TypeOptions{
+					TSType:      getStructFQN(field.Type.String()),
+					TSTransform: fldOpts.TSTransform,
+				})
+			} else {
+				err = builder.AddSimpleField(jsonFieldName, field, fldOpts)
+			}
 		}
 		if err != nil {
 			return "", err
@@ -787,8 +847,12 @@ type typeScriptClassBuilder struct {
 }
 
 func (t *typeScriptClassBuilder) AddSimpleArrayField(fieldName string, field reflect.StructField, arrayDepth int, opts TypeOptions) error {
-	fieldType, kind := field.Type.Elem().Name(), field.Type.Elem().Kind()
-	typeScriptType := t.types[kind]
+	fieldType := nameTypeOf(field.Type.Elem())
+	kind := field.Type.Elem().Kind()
+	typeScriptType, ok := t.types[kind]
+	if !ok {
+		typeScriptType = "any"
+	}
 
 	if len(fieldName) > 0 {
 		strippedFieldName := strings.ReplaceAll(fieldName, "?", "")
@@ -807,9 +871,14 @@ func (t *typeScriptClassBuilder) AddSimpleArrayField(fieldName string, field ref
 }
 
 func (t *typeScriptClassBuilder) AddSimpleField(fieldName string, field reflect.StructField, opts TypeOptions) error {
-	fieldType, kind := field.Type.Name(), field.Type.Kind()
+	fieldType := nameTypeOf(field.Type)
+	kind := field.Type.Kind()
 
-	typeScriptType := t.types[kind]
+	typeScriptType, ok := t.types[kind]
+	if !ok {
+		typeScriptType = "any"
+	}
+
 	if len(opts.TSType) > 0 {
 		typeScriptType = opts.TSType
 	}
@@ -831,7 +900,7 @@ func (t *typeScriptClassBuilder) AddSimpleField(fieldName string, field reflect.
 }
 
 func (t *typeScriptClassBuilder) AddEnumField(fieldName string, field reflect.StructField) {
-	fieldType := field.Type.Name()
+	fieldType := nameTypeOf(field.Type)
 	t.addField(fieldName, t.prefix+fieldType+t.suffix, false)
 	strippedFieldName := strings.ReplaceAll(fieldName, "?", "")
 	t.addInitializerFieldLine(strippedFieldName, fmt.Sprintf("source[\"%s\"]", strippedFieldName))
@@ -841,7 +910,7 @@ func (t *typeScriptClassBuilder) AddStructField(fieldName string, field reflect.
 	strippedFieldName := strings.ReplaceAll(fieldName, "?", "")
 	classname := "null"
 	namespace := strings.Split(field.Type.String(), ".")[0]
-	fqname := t.prefix + field.Type.Name() + t.suffix
+	fqname := t.prefix + nameTypeOf(field.Type) + t.suffix
 	if namespace != t.namespace {
 		fqname = namespace + "." + fqname
 	}
@@ -860,7 +929,7 @@ func (t *typeScriptClassBuilder) AddStructField(fieldName string, field reflect.
 }
 
 func (t *typeScriptClassBuilder) AddArrayOfStructsField(fieldName string, field reflect.StructField, arrayDepth int) {
-	fieldType := field.Type.Elem().Name()
+	fieldType := nameTypeOf(field.Type.Elem())
 	if differentNamespaces(t.namespace, field.Type.Elem()) {
 		fieldType = field.Type.Elem().String()
 	}
@@ -884,7 +953,7 @@ func (t *typeScriptClassBuilder) addField(fld, fldType string, isAnyType bool) {
 	isOptional := strings.HasSuffix(fld, "?")
 	strippedFieldName := strings.ReplaceAll(fld, "?", "")
 	if !regexp.MustCompile(jsVariableNameRegex).Match([]byte(strippedFieldName)) {
-		fld = fmt.Sprintf(`"%s"`, fld)
+		fld = fmt.Sprintf(`"%s"`, strippedFieldName)
 		if isOptional {
 			fld += "?"
 		}
@@ -935,6 +1004,6 @@ func typeClashWithReservedKeyword(input string) bool {
 func warnAboutTypesClash(entity string) {
 	// TODO: Refactor logging
 	l := log.New(os.Stderr, "", 0)
-	l.Println(fmt.Sprintf("Usage of reserved keyword found and not supported: %s", entity))
+	l.Printf("Usage of reserved keyword found and not supported: %s", entity)
 	log.Println("Please rename returned type or consider adding bindings config to your wails.json")
 }

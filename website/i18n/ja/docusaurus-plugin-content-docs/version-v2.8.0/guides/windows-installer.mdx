@@ -1,0 +1,58 @@
+# NSISインストーラ
+
+```mdx-code-block
+<p style={{ "text-align": "center" }}>
+  <img
+    src={require("@site/static/img/nsis.webp").default}
+    style={{ "max-width": "50%" }}
+  />
+  <br />
+</p>
+```
+
+Wailsでは、[NSISインストーラ](https://nsis.sourceforge.io/)を使用したWindowsインストーラの生成をサポートしています。
+
+## NSISのインストール
+
+### Windows
+
+インストーラは、[NSISダウンロード](https://nsis.sourceforge.io/Download)ページから入手できます。
+
+Chocolateyパッケージマネージャを使用している場合は、次のスクリプトを実行することでインストールできます:
+
+```
+choco install nsis
+```
+
+NSISを手動でインストールする場合、NSISインストール時に作成される`makensis.exe`ファイルが含まれた_Bin_フォルダを、パスに追加する必要があります。 Windows上でパスを追加する方法については、[こちら](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/)の優れたチュートリアルをご覧ください。
+
+### Linux
+
+`nsis`パッケージは、ディストリビューションのパッケージマネージャから入手できます。
+
+### MacOS
+
+NSISは、homebrew経由でインストールできます: `brew install nsis`。
+
+## インストーラの生成
+
+新しくプロジェクトが作成されると、Wailsは、`build/windows/installer`内に、NSIS構成ファイルを生成します。 構成データは`installer/info.json`から読み込まれますが、当該データはプロジェクトの`wails.json`のInfo§の情報を使用するように設定されています:
+
+```json
+// ...
+ "Info": {
+    "companyName": "My Company Name",
+    "productName": "Wails Vite",
+    "productVersion": "1.0.0",
+    "copyright": "Copyright.........",
+    "comments": "Built using Wails (https://wails.io)"
+  },
+```
+
+アプリケーションのインストーラを生成するには、`wails build`コマンド実行時に、`-nsis`フラグを使用します:
+
+```
+wails build -nsis
+```
+
+これにより、`build/bin`ディレクトリにインストーラが生成されます。

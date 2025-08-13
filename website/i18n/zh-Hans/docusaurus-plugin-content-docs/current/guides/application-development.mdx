@@ -133,6 +133,64 @@ func main() {
 }
 ```
 
+Also you might want to use Enums in your structs and have models for them on frontend. In that case you should create array that will contain all possible enum values, instrument enum type and bind it to the app:
+
+```go {16-18} title="app.go"
+type Weekday string
+
+const (
+    Sunday    Weekday = "Sunday"
+    Monday    Weekday = "Monday"
+    Tuesday   Weekday = "Tuesday"
+    Wednesday Weekday = "Wednesday"
+    Thursday  Weekday = "Thursday"
+    Friday    Weekday = "Friday"
+    Saturday  Weekday = "Saturday"
+)
+
+var AllWeekdays = []struct {
+    Value  Weekday
+    TSName string
+}{
+    {Sunday, "SUNDAY"},
+    {Monday, "MONDAY"},
+    {Tuesday, "TUESDAY"},
+    {Wednesday, "WEDNESDAY"},
+    {Thursday, "THURSDAY"},
+    {Friday, "FRIDAY"},
+    {Saturday, "SATURDAY"},
+}
+```
+
+In the main application configuration, the `EnumBind` key is where we can tell Wails what we want to bind enums as well:
+
+```go {11-13} title="main.go"
+func main() {
+
+    app := NewApp()
+
+    err := wails.Run(&options.App{
+        Title:             "My App",
+        Width:             800,
+        Height:            600,
+        OnStartup:  app.startup,
+        OnShutdown: app.shutdown,
+    Bind: []interface{}{
+        app,
+    },
+    EnumBind: []interface{}{
+        AllWeekdays,
+     },
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+
+```
+
+This will add missing enums to your `model.ts` file.
+
 可以在 [此处](../howdoesitwork.mdx#method-binding) 找到有关绑定的更多信息。
 
 ## 应用程序菜单
@@ -177,7 +235,7 @@ Wails v2 处理资源的方式的伟大之处在于它不需要处理！ 您唯�
 
 ### 资产处理程序
 
-Wails v2 应用程序可以选择在 `options.App` 中定义一个 `http.Handler`，它允许连接到 AssetServer 以动态创建文件或处理 POST/PUT 请求。 GET 请求总是首先由 `assets` FS 处理。 如果 FS 没有找到请求的文件，请求将被转发到 `http.Handler` 服务。 如果指定，除了 GET 以外的任何请求都将由 `AssetsHandler` 直接处理。 也可以仅通过将 `nil` 指定为 `Assets` 选项来使用 `AssetsHandler`。
+Wails v2 应用程序可以选择在 `options.App` 中定义一个 `http.Handler`，它允许连接到 AssetServer 以动态创建文件或处理 POST/PUT 请求。 GET 请求总是首先由 `assets` FS 处理。 如果 FS 没有找到请求的文件，请求将被转发到 `http.Handler` 服务。 如果指定，除了 GET 以外的任何请求都将由 `AssetsHandler` 直接处理。 It's also possible to only use the `AssetsHandler` by specifying `nil` as the `Assets` option.
 
 ## 内置开发服务器
 

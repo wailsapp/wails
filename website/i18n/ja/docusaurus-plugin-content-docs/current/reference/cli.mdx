@@ -20,7 +20,7 @@ WailsのCLIには、プロジェクトの管理に使用できるコマンドが
 | -l                | 利用可能なプロジェクトテンプレート一覧を表示                                                        |         |
 | -q                | コンソールへの出力を抑止                                                                  |         |
 | -t "テンプレート名"      | 使用するプロジェクトテンプレート。 ここで指定する値は、デフォルトテンプレート名、または、GitHubでホストされているリモートテンプレートのURLです。 | vanilla |
-| -ide              | IDEプロジェクトファイルを生成                                                              |         |
+| -ide              | Generate IDE project files `vscode` or `goland`                               |         |
 | -f                | アプリケーションを強制的にビルド                                                              |  false  |
 
 例: `wails init -n test -d mytestproject -g -ide vscode -q`
@@ -66,7 +66,7 @@ WailsではGitHubでホストされているリモートテンプレートをサ
 | -nsis                | Windows向けのNSISインストーラを生成する                                                                                                                                                                                                                                          |                                                                                                                                                     |
 | -o filename          | 出力ファイル名                                                                                                                                                                                                                                                            |                                                                                                                                                     |
 | -obfuscated          | [garble](https://github.com/burrowers/garble)を使用してアプリケーションを難読化する                                                                                                                                                                                                   |                                                                                                                                                     |
-| -platform            | 指定された[プラットフォーム](../reference/cli.mdx#platforms)(カンマ区切り) 向けにビルドする。例: `windows/arm64`。 アーキテクチャを指定しない場合は、`runtime.GOARCH`の値が使用されます。                                                                                                                                   | platform = `GOOS` environment variable if given else `runtime.GOOS`.<br/>arch = `GOARCH` envrionment variable if given else `runtime.GOARCH`. |
+| -platform            | 指定された[プラットフォーム](../reference/cli.mdx#platforms)(カンマ区切り) 向けにビルドする。例: `windows/arm64`。 アーキテクチャを指定しない場合は、`runtime.GOARCH`の値が使用されます。                                                                                                                                   | platform = `GOOS` environment variable if given else `runtime.GOOS`.<br/>arch = `GOARCH` environment variable if given else `runtime.GOARCH`. |
 | -race                | Goのrace detectorを使用してビルドする                                                                                                                                                                                                                                         |                                                                                                                                                     |
 | -s                   | フロントエンドのビルドをスキップ                                                                                                                                                                                                                                                   |                                                                                                                                                     |
 | -skipbindings        | バインディングの生成をスキップする                                                                                                                                                                                                                                                  |                                                                                                                                                     |
@@ -96,6 +96,12 @@ Macの場合、`Info.dev.plist`ではなく`Info.plist`がアプリケーショ�
 :::info AppleシリコンでのUPX
 
 AppleシリコンにおけるUPXの使用には[既知の問題](https://github.com/upx/upx/issues/446)が確認されています。
+
+:::
+
+:::info Set minimal version for MacOS
+
+You can override default [minimal version](../gettingstarted/installation#supported-platforms) of macOS for your app by providing version via `CGO_CFLAGS` and `CGO_LDFLAGS` environment variables. e.g. `CGO_CFLAGS=-mmacosx-version-min=10.15.0 CGO_LDFLAGS=-mmacosx-version-min=10.15.0 wails build`
 
 :::
 
@@ -225,6 +231,11 @@ Wailsは、プロジェクトの生成に必ずテンプレートを使用しま
 ### module
 
 `wails generate module`コマンドを使用すると、アプリケーションの`wailsjs`ディレクトリを手動で生成できます。
+
+| フラグ                  | 説明                            | デフォルト |
+|:-------------------- |:----------------------------- |:----- |
+| -compiler "compiler" | 違うGoコンパイラを使用する。例: go1.15beta1 | go    |
+| -tags "extra tags"   | コンパイラへ渡すビルドタグ (引用符およびスペース区切り) |       |
 
 ## update
 

@@ -28,6 +28,11 @@ type Options struct {
 	//   - WebviewGpuPolicyAlways
 	//   - WebviewGpuPolicyOnDemand
 	//   - WebviewGpuPolicyNever
+	//
+	// Due to https://github.com/wailsapp/wails/issues/2977, if options.Linux is nil
+	// in the call to wails.Run(), WebviewGpuPolicy is set by default to WebviewGpuPolicyNever.
+	// Client code may override this behavior by passing a non-nil Options and set
+	// WebviewGpuPolicy as needed.
 	WebviewGpuPolicy WebviewGpuPolicy
 
 	// ProgramName is used to set the program's name for the window manager via GTK's g_set_prgname().

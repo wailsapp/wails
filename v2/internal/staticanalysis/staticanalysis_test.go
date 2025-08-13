@@ -1,8 +1,9 @@
 package staticanalysis
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetEmbedDetails(t *testing.T) {
@@ -24,6 +25,10 @@ func TestGetEmbedDetails(t *testing.T) {
 				{
 					EmbedPath: "frontend/dist",
 					All:       true,
+				},
+				{
+					EmbedPath: "frontend/static",
+					All:       false,
 				},
 			},
 			wantErr: false,

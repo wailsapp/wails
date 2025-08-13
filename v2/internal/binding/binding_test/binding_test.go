@@ -13,6 +13,7 @@ import (
 type BindingTest struct {
 	name        string
 	structs     []interface{}
+	enums       []interface{}
 	exemptions  []interface{}
 	want        string
 	shouldError bool
@@ -20,8 +21,9 @@ type BindingTest struct {
 }
 
 type TsGenerationOptionsTest struct {
-	TsPrefix string
-	TsSuffix string
+	TsPrefix     string
+	TsSuffix     string
+	TsOutputType string
 }
 
 func TestBindings_GenerateModels(t *testing.T) {
@@ -31,28 +33,41 @@ func TestBindings_GenerateModels(t *testing.T) {
 		ImportedStructTest,
 		ImportedSliceTest,
 		ImportedMapTest,
+		ImportedEnumTest,
 		NestedFieldTest,
 		NonStringMapKeyTest,
 		SingleFieldTest,
 		MultistructTest,
 		EmptyStructTest,
 		GeneratedJsEntityTest,
+		GeneratedJsEntityWithIntEnumTest,
+		GeneratedJsEntityWithStringEnumTest,
+		GeneratedJsEntityWithEnumTsName,
+		GeneratedJsEntityWithNestedStructInterfacesTest,
 		AnonymousSubStructTest,
 		AnonymousSubStructMultiLevelTest,
 		GeneratedJsEntityWithNestedStructTest,
-		EntityWithDiffNamespaces,
+		EntityWithDiffNamespacesTest,
+		SpecialCharacterFieldTest,
+		WithoutFieldsTest,
+		NoFieldTagsTest,
+		Generics1Test,
+		Generics2Test,
+		IgnoredTest,
+		DeepElementsTest,
 	}
 
 	testLogger := &logger.Logger{}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			b := binding.NewBindings(testLogger, tt.structs, tt.exemptions, false)
+			b := binding.NewBindings(testLogger, tt.structs, tt.exemptions, false, tt.enums)
 			for _, s := range tt.structs {
 				err := b.Add(s)
 				require.NoError(t, err)
 			}
 			b.SetTsPrefix(tt.TsPrefix)
 			b.SetTsSuffix(tt.TsSuffix)
+			b.SetOutputType(tt.TsOutputType)
 			got, err := b.GenerateModels()
 			if (err != nil) != tt.shouldError {
 				t.Errorf("GenerateModels() error = %v, shouldError %v", err, tt.shouldError)

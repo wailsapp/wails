@@ -197,7 +197,10 @@ func (r *request) Close() error {
 	if r.body != nil {
 		err = r.body.Close()
 	}
-	r.Response().Finish()
+	err = r.Response().Finish()
+	if err != nil {
+		return err
+	}
 	C.URLSchemeTaskRelease(r.task)
 	return err
 }

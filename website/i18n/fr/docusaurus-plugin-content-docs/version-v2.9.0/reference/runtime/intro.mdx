@@ -1,0 +1,85 @@
+---
+sidebar_position: 1
+---
+
+# Introduction
+
+Le runtime est une bibliothèque qui fournit des méthodes utilitaires pour votre application. Il y a à la fois un runtime Go et JavaScript et le but est d'essayer de les maintenir à parité dans la mesure du possible.
+
+Il a des méthodes utilitaires pour :
+
+- [Fenêtre](window.mdx)
+- [Menu](menu.mdx)
+- [Boîte de dialogue](dialog.mdx)
+- [Événements](events.mdx)
+- [Navigateur](browser.mdx)
+- [Log](log.mdx)
+- [Clipboard](clipboard.mdx)
+
+Le Go Runtime est disponible en important `github.com/wailsapp/wails/v2/pkg/runtime`. Toutes les méthodes de ce paquet prennent un contexte comme premier paramètre. Ce contexte doit être obtenu à partir des méthodes [OnStartup](../options.mdx#onstartup) ou [OnDomReady](../options.mdx#ondomready).
+
+:::info Note
+
+Alors que le contexte sera fourni à la méthode [OnStartup](../options.mdx#onstartup) , il n'y a aucune garantie que l'exécution fonctionnera dans cette méthode car la fenêtre s'initialise dans un autre thread. Si vous souhaitez appeler des méthodes d'exécution au démarrage, utilisez [OnDomReady](../options.mdx#ondomready).
+
+:::
+
+La bibliothèque JavaScript est disponible sur le frontend via la carte `window.runtime`. Il y a un package d'exécution généré lors de l'utilisation du mode `dev` qui fournit des déclarations TypeScript pour l'exécution. Ceci devrait être situé dans le répertoire `wailsjs` dans votre répertoire frontend.
+
+### Cacher
+
+Go: `Hide(ctx context.Context)`<br/> JS: `Hide()`
+
+Cache l'application.
+
+:::info Note
+
+Sur Mac, cela masquera l'application de la même manière que le bouton `Masquer` du menu des applications Mac standard. C'est une manière différente de cacher l'application, mais elle sera toujours au premier plan. Pour Windows et Linux, c'est actuellement la même chose que `WindowHide`.
+
+:::
+
+### Afficher
+
+Affiche l'application.
+
+:::info Note
+
+Sur Mac, cela va ramener l'application au premier plan. Pour Windows et Linux, c'est actuellement la même chose que `WindowShow`.
+
+:::
+
+Go: `Show(ctx context.Context)`<br/> JS: `Show()`
+
+### Quitter
+
+Quitte l'application.
+
+Go: `Quit(ctx context.Context)`<br/> JS: `Quit()`
+
+### Environnement
+
+Renvoie les détails de l'environnement actuel.
+
+Go: `Environment(ctx context.Context) EnvironmentInfo`<br/> JS: `Environment(): Promise<EnvironmentInfo>`
+
+#### EnvironmentInfo
+
+Go:
+
+```go
+type EnvironmentInfo struct {
+    BuildType string
+    Platform  string
+    Arch      string
+}
+```
+
+JS:
+
+```ts
+interface EnvironmentInfo {
+  buildType: string;
+  platform: string;
+  arch: string;
+}
+```

@@ -18,12 +18,14 @@ type AboutInfo struct {
 type Options struct {
 	TitleBar             *TitleBar
 	Appearance           AppearanceType
+	ContentProtection    bool
 	WebviewIsTransparent bool
 	WindowIsTranslucent  bool
 	Preferences          *Preferences
-	//ActivationPolicy     ActivationPolicy
+	DisableZoom          bool
+	// ActivationPolicy     ActivationPolicy
 	About      *AboutInfo
 	OnFileOpen func(filePath string) `json:"-"`
 	OnUrlOpen  func(filePath string) `json:"-"`
-	//URLHandlers          map[string]func(string)
+	// URLHandlers          map[string]func(string)
 }

@@ -14,6 +14,7 @@ package darwin
 #include <stdlib.h>
 */
 import "C"
+
 import (
 	"context"
 	"encoding/json"
@@ -22,6 +23,7 @@ import (
 	"log"
 	"net"
 	"net/url"
+	"os"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v2/pkg/assetserver"
@@ -29,6 +31,7 @@ import (
 
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/wailsapp/wails/v2/internal/frontend/originvalidator"
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -36,15 +39,23 @@ import (
 
 const startURL = "wails://wails/"
 
-var messageBuffer = make(chan string, 100)
-var requestBuffer = make(chan webview.Request, 100)
-var callbackBuffer = make(chan uint, 10)
-var openFilepathBuffer = make(chan string, 100)
-var openUrlBuffer = make(chan string, 100)
-var secondInstanceBuffer = make(chan options.SecondInstanceData, 1)
+type bindingsMessage struct {
+	message     string
+	source      string
+	isMainFrame bool
+}
+
+var (
+	messageBuffer         = make(chan string, 100)
+	bindingsMessageBuffer = make(chan *bindingsMessage, 100)
+	requestBuffer         = make(chan webview.Request, 100)
+	callbackBuffer        = make(chan uint, 10)
+	openFilepathBuffer    = make(chan string, 100)
+	openUrlBuffer         = make(chan string, 100)
+	secondInstanceBuffer  = make(chan options.SecondInstanceData, 1)
+)
 
 type Frontend struct {
-
 	// Context
 	ctx context.Context
 
@@ -52,6 +63,9 @@ type Frontend struct {
 	logger          *logger.Logger
 	debug           bool
 	devtoolsEnabled bool
+
+	// Keep single instance lock file, so that it will not be GC and lock will exist while app is running
+	singleInstanceLockFile *os.File
 
 	// Assets
 	assets   *assetserver.AssetServer
@@ -61,6 +75,8 @@ type Frontend struct {
 	mainWindow *Window
 	bindings   *binding.Bindings
 	dispatcher frontend.Dispatcher
+
+	originValidator *originvalidator.OriginValidator
 }
 
 func (f *Frontend) RunMainLoop() {
@@ -80,15 +96,18 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		ctx:             ctx,
 	}
 	result.startURL, _ = url.Parse(startURL)
+	result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 
 	// this should be initialized as early as possible to handle first instance launch
 	C.StartCustomProtocolHandler()
 
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
+		result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 	} else {
 		if port, _ := ctx.Value("assetserverport").(string); port != "" {
 			result.startURL.Host = net.JoinHostPort(result.startURL.Host+".localhost", port)
+			result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 		}
 
 		var bindings string
@@ -113,6 +132,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	}
 
 	go result.startMessageProcessor()
+	go result.startBindingsMessageProcessor()
 	go result.startCallbackProcessor()
 	go result.startFileOpenProcessor()
 	go result.startUrlOpenProcessor()
@@ -148,11 +168,36 @@ func (f *Frontend) startMessageProcessor() {
 	}
 }
 
+func (f *Frontend) startBindingsMessageProcessor() {
+	for msg := range bindingsMessageBuffer {
+		// Apple webkit doesn't provide origin of main frame. So we can't verify in case of iFrame that top level origin is allowed.
+		if !msg.isMainFrame {
+			f.logger.Error("Blocked request from not main frame")
+			continue
+		}
+
+		origin, err := f.originValidator.GetOriginFromURL(msg.source)
+		if err != nil {
+			f.logger.Error(fmt.Sprintf("failed to get origin for URL %q: %v", msg.source, err))
+			continue
+		}
+
+		allowed := f.originValidator.IsOriginAllowed(origin)
+		if !allowed {
+			f.logger.Error("Blocked request from unauthorized origin: %s", origin)
+			continue
+		}
+
+		f.processMessage(msg.message)
+	}
+}
+
 func (f *Frontend) startRequestProcessor() {
 	for request := range requestBuffer {
 		f.assets.ServeWebViewRequest(request)
 	}
 }
+
 func (f *Frontend) startCallbackProcessor() {
 	for callback := range callbackBuffer {
 		err := f.handleCallback(callback)
@@ -171,26 +216,23 @@ func (f *Frontend) WindowReloadApp() {
 }
 
 func (f *Frontend) WindowSetSystemDefaultTheme() {
-	return
 }
 
 func (f *Frontend) WindowSetLightTheme() {
-	return
 }
 
 func (f *Frontend) WindowSetDarkTheme() {
-	return
 }
 
 func (f *Frontend) Run(ctx context.Context) error {
 	f.ctx = ctx
 
 	if f.frontendOptions.SingleInstanceLock != nil {
-		SetupSingleInstance(f.frontendOptions.SingleInstanceLock.UniqueId)
+		f.singleInstanceLockFile = SetupSingleInstance(f.frontendOptions.SingleInstanceLock.UniqueId)
 	}
 
-	var _debug = ctx.Value("debug")
-	var _devtoolsEnabled = ctx.Value("devtoolsEnabled")
+	_debug := ctx.Value("debug")
+	_devtoolsEnabled := ctx.Value("devtoolsEnabled")
 
 	if _debug != nil {
 		f.debug = _debug.(bool)
@@ -215,6 +257,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 func (f *Frontend) WindowCenter() {
 	f.mainWindow.Center()
 }
+
 func (f *Frontend) WindowSetAlwaysOnTop(onTop bool) {
 	f.mainWindow.SetAlwaysOnTop(onTop)
 }
@@ -222,6 +265,7 @@ func (f *Frontend) WindowSetAlwaysOnTop(onTop bool) {
 func (f *Frontend) WindowSetPosition(x, y int) {
 	f.mainWindow.SetPosition(x, y)
 }
+
 func (f *Frontend) WindowGetPosition() (int, int) {
 	return f.mainWindow.GetPosition()
 }
@@ -253,6 +297,7 @@ func (f *Frontend) WindowShow() {
 func (f *Frontend) WindowHide() {
 	f.mainWindow.Hide()
 }
+
 func (f *Frontend) Show() {
 	f.mainWindow.ShowApplication()
 }
@@ -260,18 +305,23 @@ func (f *Frontend) Show() {
 func (f *Frontend) Hide() {
 	f.mainWindow.HideApplication()
 }
+
 func (f *Frontend) WindowMaximise() {
 	f.mainWindow.Maximise()
 }
+
 func (f *Frontend) WindowToggleMaximise() {
 	f.mainWindow.ToggleMaximise()
 }
+
 func (f *Frontend) WindowUnmaximise() {
 	f.mainWindow.UnMaximise()
 }
+
 func (f *Frontend) WindowMinimise() {
 	f.mainWindow.Minimise()
 }
+
 func (f *Frontend) WindowUnminimise() {
 	f.mainWindow.UnMinimise()
 }
@@ -279,6 +329,7 @@ func (f *Frontend) WindowUnminimise() {
 func (f *Frontend) WindowSetMinSize(width int, height int) {
 	f.mainWindow.SetMinSize(width, height)
 }
+
 func (f *Frontend) WindowSetMaxSize(width int, height int) {
 	f.mainWindow.SetMaxSize(width, height)
 }
@@ -345,7 +396,6 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 }
 
 func (f *Frontend) processMessage(message string) {
-
 	if message == "DomReady" {
 		if f.frontendOptions.OnDomReady != nil {
 			f.frontendOptions.OnDomReady(f.ctx)
@@ -356,6 +406,11 @@ func (f *Frontend) processMessage(message string) {
 	if message == "runtime:ready" {
 		cmd := fmt.Sprintf("window.wails.setCSSDragProperties('%s', '%s');", f.frontendOptions.CSSDragProperty, f.frontendOptions.CSSDragValue)
 		f.ExecJS(cmd)
+
+		if f.frontendOptions.DragAndDrop != nil && f.frontendOptions.DragAndDrop.EnableFileDrop {
+			f.ExecJS("window.wails.flags.enableWailsDragAndDrop = true;")
+		}
+
 		return
 	}
 
@@ -388,7 +443,6 @@ func (f *Frontend) processMessage(message string) {
 			f.logger.Info("Unknown message returned from dispatcher: %+v", result)
 		}
 	}()
-
 }
 
 func (f *Frontend) ProcessOpenFileEvent(filePath string) {
@@ -435,6 +489,17 @@ func (f *Frontend) ExecJS(js string) {
 func processMessage(message *C.char) {
 	goMessage := C.GoString(message)
 	messageBuffer <- goMessage
+}
+
+//export processBindingMessage
+func processBindingMessage(message *C.char, source *C.char, fromMainFrame bool) {
+	goMessage := C.GoString(message)
+	goSource := C.GoString(source)
+	bindingsMessageBuffer <- &bindingsMessage{
+		message:     goMessage,
+		source:      goSource,
+		isMainFrame: fromMainFrame,
+	}
 }
 
 //export processCallback

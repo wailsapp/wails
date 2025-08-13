@@ -9,15 +9,24 @@ The electron alternative for Go
 */
 /* jshint esversion: 9 */
 import * as Log from './log';
-import {eventListeners, EventsEmit, EventsNotify, EventsOff, EventsOn, EventsOnce, EventsOnMultiple} from './events';
-import {Call, Callback, callbacks} from './calls';
-import {SetBindings} from "./bindings";
+import {
+  eventListeners,
+  EventsEmit,
+  EventsNotify,
+  EventsOff,
+  EventsOffAll,
+  EventsOn,
+  EventsOnce,
+  EventsOnMultiple,
+} from "./events";
+import { Call, Callback, callbacks } from './calls';
+import { SetBindings } from "./bindings";
 import * as Window from "./window";
 import * as Screen from "./screen";
 import * as Browser from "./browser";
 import * as Clipboard from "./clipboard";
+import * as DragAndDrop from "./draganddrop";
 import * as ContextMenu from "./contextmenu";
-
 
 export function Quit() {
     window.WailsInvoke('Q');
@@ -42,11 +51,13 @@ window.runtime = {
     ...Browser,
     ...Screen,
     ...Clipboard,
+    ...DragAndDrop,
     EventsOn,
     EventsOnce,
     EventsOnMultiple,
     EventsEmit,
     EventsOff,
+    EventsOffAll,
     Environment,
     Show,
     Hide,
@@ -70,6 +81,9 @@ window.wails = {
         deferDragToMouseMove: true,
         cssDragProperty: "--wails-draggable",
         cssDragValue: "drag",
+        cssDropProperty: "--wails-drop-target",
+        cssDropValue: "drop",
+        enableWailsDragAndDrop: false,
     }
 };
 
@@ -84,12 +98,12 @@ if (!DEBUG) {
     delete window.wailsbindings;
 }
 
-let dragTest = function (e) {
+let dragTest = function(e) {
     var val = window.getComputedStyle(e.target).getPropertyValue(window.wails.flags.cssDragProperty);
     if (val) {
-      val = val.trim();
+        val = val.trim();
     }
-    
+
     if (val !== window.wails.flags.cssDragValue) {
         return false;
     }
@@ -107,13 +121,17 @@ let dragTest = function (e) {
     return true;
 };
 
-window.wails.setCSSDragProperties = function (property, value) {
+window.wails.setCSSDragProperties = function(property, value) {
     window.wails.flags.cssDragProperty = property;
     window.wails.flags.cssDragValue = value;
 }
 
-window.addEventListener('mousedown', (e) => {
+window.wails.setCSSDropProperties = function(property, value) {
+    window.wails.flags.cssDropProperty = property;
+    window.wails.flags.cssDropValue = value;
+}
 
+window.addEventListener('mousedown', (e) => {
     // Check for resizing
     if (window.wails.flags.resizeEdge) {
         window.WailsInvoke("resize:" + window.wails.flags.resizeEdge);
@@ -149,7 +167,7 @@ function setResize(cursor) {
     window.wails.flags.resizeEdge = cursor;
 }
 
-window.addEventListener('mousemove', function (e) {
+window.addEventListener('mousemove', function(e) {
     if (window.wails.flags.shouldDrag) {
         window.wails.flags.shouldDrag = false;
         let mousePressed = e.buttons !== undefined ? e.buttons : e.which;
@@ -187,7 +205,7 @@ window.addEventListener('mousemove', function (e) {
 });
 
 // Setup context menu hook
-window.addEventListener('contextmenu', function (e) {
+window.addEventListener('contextmenu', function(e) {
     // always show the contextmenu in debug & dev
     if (DEBUG) return;
 

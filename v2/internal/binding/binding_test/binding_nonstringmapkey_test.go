@@ -18,7 +18,7 @@ var NonStringMapKeyTest = BindingTest{
 	want: `
 export namespace binding_test {
 	export class NonStringMapKey {
-		numberMap: {[key: number]: any};
+		numberMap: Record<number, any>;
 		static createFrom(source: any = {}) {
 			return new NonStringMapKey(source);
 		}

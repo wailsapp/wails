@@ -33,7 +33,7 @@ func StartAtLogin(enabled bool) error {
 	}
 	_, stde, err := shell.RunCommand("/tmp", "osascript", "-e", command)
 	if err != nil {
-		errors.Wrap(err, stde)
+		return errors.Wrap(err, stde)
 	}
 	return nil
 }

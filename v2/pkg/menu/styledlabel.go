@@ -29,24 +29,31 @@ type StyledText struct {
 func (s *StyledText) Bold() bool {
 	return s.Style&Bold == Bold
 }
+
 func (s *StyledText) Faint() bool {
 	return s.Style&Faint == Faint
 }
+
 func (s *StyledText) Italic() bool {
 	return s.Style&Italic == Italic
 }
+
 func (s *StyledText) Blinking() bool {
 	return s.Style&Blinking == Blinking
 }
+
 func (s *StyledText) Inversed() bool {
 	return s.Style&Inversed == Inversed
 }
+
 func (s *StyledText) Invisible() bool {
 	return s.Style&Invisible == Invisible
 }
+
 func (s *StyledText) Underlined() bool {
 	return s.Style&Underlined == Underlined
 }
+
 func (s *StyledText) Strikethrough() bool {
 	return s.Style&Strikethrough == Strikethrough
 }

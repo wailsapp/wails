@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"golang.org/x/net/html"
+	"html/template"
 
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -67,9 +68,11 @@ func NewAssetServer(bindingsJSON string, options assetserver.Options, servingFro
 }
 
 func NewAssetServerWithHandler(handler http.Handler, bindingsJSON string, servingFromDisk bool, logger Logger, runtime RuntimeAssets) (*AssetServer, error) {
+
 	var buffer bytes.Buffer
 	if bindingsJSON != "" {
-		buffer.WriteString(`window.wailsbindings='` + bindingsJSON + `';` + "\n")
+		escapedBindingsJSON := template.JSEscapeString(bindingsJSON)
+		buffer.WriteString(`window.wailsbindings='` + escapedBindingsJSON + `';` + "\n")
 	}
 	buffer.Write(runtime.RuntimeDesktopJS())
 
@@ -123,10 +126,8 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	path := req.URL.Path
 	if path == runtimeJSPath {
 		d.writeBlob(rw, path, d.runtimeJS)
-
 	} else if path == runtimePath && d.runtimeHandler != nil {
 		d.runtimeHandler.HandleRuntimeCall(rw, req)
-
 	} else if path == ipcJSPath {
 		content := d.runtime.DesktopIPC()
 		if d.ipcJS != nil {
@@ -136,7 +137,6 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	} else if script, ok := d.pluginScripts[path]; ok {
 		d.writeBlob(rw, path, []byte(script))
-
 	} else if d.isRuntimeInjectionMatch(path) {
 		recorder := &bodyRecorder{
 			ResponseWriter: rw,
@@ -150,7 +150,8 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 				}
 
 				return strings.Contains(h.Get(HeaderContentType), "text/html")
-			}}
+			},
+		}
 
 		handler.ServeHTTP(recorder, req)
 

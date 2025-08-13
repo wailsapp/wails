@@ -2,8 +2,10 @@ package mac
 
 import "github.com/leaanthony/u"
 
-var Enabled = u.True
-var Disabled = u.False
+var (
+	Enabled  = u.True
+	Disabled = u.False
+)
 
 // Preferences allows to set webkit preferences
 type Preferences struct {

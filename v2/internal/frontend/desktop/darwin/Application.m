@@ -14,7 +14,7 @@
 #import "WailsMenu.h"
 #import "WailsMenuItem.h"
 
-WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int devtoolsEnabled, int defaultContextMenuEnabled, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight, bool fraudulentWebsiteWarningEnabled, struct Preferences preferences, int singleInstanceLockEnabled, const char* singleInstanceUniqueId) {
+WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int zoomable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int contentProtection, int devtoolsEnabled, int defaultContextMenuEnabled, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight, bool fraudulentWebsiteWarningEnabled, struct Preferences preferences, int singleInstanceLockEnabled, const char* singleInstanceUniqueId, bool enableDragAndDrop, bool disableWebViewDragAndDrop) {
 
     [NSApplication sharedApplication];
 
@@ -27,9 +27,14 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
         fullscreen = 1;
     }
 
-    [result CreateWindow:width :height :frameless :resizable :fullscreen :fullSizeContent :hideTitleBar :titlebarAppearsTransparent :hideTitle :useToolbar :hideToolbarSeparator :webviewIsTransparent :hideWindowOnClose :safeInit(appearance) :windowIsTranslucent :minWidth :minHeight :maxWidth :maxHeight :fraudulentWebsiteWarningEnabled :preferences];
+    [result CreateWindow:width :height :frameless :resizable :zoomable :fullscreen :fullSizeContent :hideTitleBar :titlebarAppearsTransparent :hideTitle :useToolbar :hideToolbarSeparator :webviewIsTransparent :hideWindowOnClose :safeInit(appearance) :windowIsTranslucent :minWidth :minHeight :maxWidth :maxHeight :fraudulentWebsiteWarningEnabled :preferences :enableDragAndDrop :disableWebViewDragAndDrop];
     [result SetTitle:safeInit(title)];
     [result Center];
+
+    if (contentProtection == 1 &&
+        [result.mainWindow respondsToSelector:@selector(setSharingType:)]) {
+        [result.mainWindow setSharingType:NSWindowSharingNone];
+    }
 
     switch( windowStartState ) {
         case WindowStartsMaximised:
@@ -396,7 +401,7 @@ void ReleaseContext(void *inctx) {
 // Credit: https://stackoverflow.com/q/33319295
 void WindowPrint(void *inctx) {
 
-	// Check if macOS 11.0 or newer
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
 	if (@available(macOS 11.0, *)) {
         ON_MAIN_THREAD(
             WailsContext *ctx = (__bridge WailsContext*) inctx;
@@ -424,4 +429,5 @@ void WindowPrint(void *inctx) {
             [po runOperationModalForWindow:ctx.mainWindow delegate:ctx.mainWindow.delegate didRunSelector:nil contextInfo:nil];
         )
 	}
+#endif
 }

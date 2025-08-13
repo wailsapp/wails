@@ -13,6 +13,7 @@ package darwin
 #include <stdlib.h>
 */
 import "C"
+
 import (
 	"log"
 	"runtime"
@@ -31,6 +32,8 @@ func init() {
 
 type Window struct {
 	context unsafe.Pointer
+
+	applicationMenu *menu.Menu
 }
 
 func bool2Cint(value bool) C.int {
@@ -46,7 +49,6 @@ func bool2CboolPtr(value bool) *C.bool {
 }
 
 func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window {
-
 	c := NewCalloc()
 	defer c.Free()
 
@@ -60,8 +62,8 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 	defaultContextMenuEnabled := bool2Cint(debug || frontendOptions.EnableDefaultContextMenu)
 	singleInstanceEnabled := bool2Cint(frontendOptions.SingleInstanceLock != nil)
 
-	var fullSizeContent, hideTitleBar, hideTitle, useToolbar, webviewIsTransparent C.int
-	var titlebarAppearsTransparent, hideToolbarSeparator, windowIsTranslucent C.int
+	var fullSizeContent, hideTitleBar, zoomable, hideTitle, useToolbar, webviewIsTransparent C.int
+	var titlebarAppearsTransparent, hideToolbarSeparator, windowIsTranslucent, contentProtection C.int
 	var appearance, title *C.char
 	var preferences C.struct_Preferences
 
@@ -82,6 +84,9 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 	singleInstanceUniqueId := c.String(singleInstanceUniqueIdStr)
 
 	enableFraudulentWebsiteWarnings := C.bool(frontendOptions.EnableFraudulentWebsiteDetection)
+
+	enableDragAndDrop := C.bool(frontendOptions.DragAndDrop != nil && frontendOptions.DragAndDrop.EnableFileDrop)
+	disableWebViewDragAndDrop := C.bool(frontendOptions.DragAndDrop != nil && frontendOptions.DragAndDrop.DisableWebViewDrop)
 
 	if frontendOptions.Mac != nil {
 		mac := frontendOptions.Mac
@@ -108,16 +113,19 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 			}
 		}
 
+		zoomable = bool2Cint(!frontendOptions.Mac.DisableZoom)
+
 		windowIsTranslucent = bool2Cint(mac.WindowIsTranslucent)
 		webviewIsTransparent = bool2Cint(mac.WebviewIsTransparent)
+		contentProtection = bool2Cint(mac.ContentProtection)
 
 		appearance = c.String(string(mac.Appearance))
 	}
-	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, fullscreen, fullSizeContent,
+	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, zoomable, fullscreen, fullSizeContent,
 		hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent,
-		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, devtoolsEnabled, defaultContextMenuEnabled,
+		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, contentProtection, devtoolsEnabled, defaultContextMenuEnabled,
 		windowStartState, startsHidden, minWidth, minHeight, maxWidth, maxHeight, enableFraudulentWebsiteWarnings,
-		preferences, singleInstanceEnabled, singleInstanceUniqueId,
+		preferences, singleInstanceEnabled, singleInstanceUniqueId, enableDragAndDrop, disableWebViewDragAndDrop,
 	)
 
 	// Create menu
@@ -196,6 +204,7 @@ func (w *Window) SetTitle(title string) {
 func (w *Window) Maximise() {
 	C.Maximise(w.context)
 }
+
 func (w *Window) ToggleMaximise() {
 	C.ToggleMaximise(w.context)
 }
@@ -251,6 +260,7 @@ func (w *Window) Show() {
 func (w *Window) Hide() {
 	C.Hide(w.context)
 }
+
 func (w *Window) ShowApplication() {
 	C.ShowApplication(w.context)
 }
@@ -285,12 +295,16 @@ func (w *Window) Size() (int, int) {
 }
 
 func (w *Window) SetApplicationMenu(inMenu *menu.Menu) {
-	mainMenu := NewNSMenu(w.context, "")
-	processMenu(mainMenu, inMenu)
-	C.SetAsApplicationMenu(w.context, mainMenu.nsmenu)
+	w.applicationMenu = inMenu
+	w.UpdateApplicationMenu()
 }
 
 func (w *Window) UpdateApplicationMenu() {
+	mainMenu := NewNSMenu(w.context, "")
+	if w.applicationMenu != nil {
+		processMenu(mainMenu, w.applicationMenu)
+	}
+	C.SetAsApplicationMenu(w.context, mainMenu.nsmenu)
 	C.UpdateApplicationMenu(w.context)
 }
 

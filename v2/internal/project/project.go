@@ -12,7 +12,6 @@ import (
 
 // Project holds the data related to a Wails project
 type Project struct {
-
 	/*** Application Data ***/
 	Name           string `json:"name"`
 	AssetDirectory string `json:"assetdir,omitempty"`
@@ -42,6 +41,9 @@ type Project struct {
 
 	// Build directory
 	BuildDir string `json:"build:dir"`
+
+	// BuildTags Extra tags to process during build
+	BuildTags string `json:"build:tags"`
 
 	// The output filename
 	OutputFilename string `json:"outputfilename"`
@@ -81,7 +83,7 @@ type Project struct {
 	// The address to bind the wails dev server to. Default "localhost:34115"
 	DevServer string `json:"devServer"`
 
-	// Arguments that are forwared to the application in dev mode
+	// Arguments that are forward to the application in dev mode
 	AppArgs string `json:"appargs"`
 
 	// NSISType to be build
@@ -93,6 +95,9 @@ type Project struct {
 
 	// Frontend directory
 	FrontendDir string `json:"frontend:dir"`
+
+	// The timeout in seconds for Vite server detection. Default 10
+	ViteServerTimeout int `json:"viteServerTimeout"`
 
 	Bindings Bindings `json:"bindings"`
 }
@@ -144,11 +149,10 @@ func (p *Project) Save() error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(p.filename, data, 0755)
+	return os.WriteFile(p.filename, data, 0o755)
 }
 
 func (p *Project) setDefaults() {
-
 	if p.Path == "" {
 		p.Path = lo.Must(os.Getwd())
 	}
@@ -176,6 +180,9 @@ func (p *Project) setDefaults() {
 	}
 	if p.DevServer == "" {
 		p.DevServer = "localhost:34115"
+	}
+	if p.ViteServerTimeout == 0 {
+		p.ViteServerTimeout = 10
 	}
 	if p.NSISType == "" {
 		p.NSISType = "multiple"
@@ -244,8 +251,9 @@ type Bindings struct {
 }
 
 type TsGeneration struct {
-	Prefix string `json:"prefix"`
-	Suffix string `json:"suffix"`
+	Prefix     string `json:"prefix"`
+	Suffix     string `json:"suffix"`
+	OutputType string `json:"outputType"`
 }
 
 // Parse the given JSON data into a Project struct

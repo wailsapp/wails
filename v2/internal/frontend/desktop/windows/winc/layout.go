@@ -65,7 +65,7 @@ type SimpleDock struct {
 	loadedState bool
 }
 
-// DockState gets saved and loaded from json
+// CtlState gets saved and loaded from json
 type CtlState struct {
 	X, Y, Width, Height int
 }

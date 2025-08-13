@@ -2,7 +2,6 @@ package binding
 
 import (
 	"encoding/json"
-	"sort"
 	"sync"
 	"unsafe"
 )
@@ -17,24 +16,28 @@ type DB struct {
 	methodMap map[string]*BoundMethod
 
 	// This uses ids to reference bound methods at runtime
-	obfuscatedMethodMap map[int]*BoundMethod
+	obfuscatedMethodArray []*ObfuscatedMethod
 
 	// Lock to ensure sync access to the data
 	lock sync.RWMutex
 }
 
+type ObfuscatedMethod struct {
+	method     *BoundMethod
+	methodName string
+}
+
 func newDB() *DB {
 	return &DB{
-		store:               make(map[string]map[string]map[string]*BoundMethod),
-		methodMap:           make(map[string]*BoundMethod),
-		obfuscatedMethodMap: make(map[int]*BoundMethod),
+		store:                 make(map[string]map[string]map[string]*BoundMethod),
+		methodMap:             make(map[string]*BoundMethod),
+		obfuscatedMethodArray: []*ObfuscatedMethod{},
 	}
 }
 
 // GetMethodFromStore returns the method for the given package/struct/method names
 // nil is returned if any one of those does not exist
 func (d *DB) GetMethodFromStore(packageName string, structName string, methodName string) *BoundMethod {
-
 	// Lock the db whilst processing and unlock on return
 	d.lock.RLock()
 	defer d.lock.RUnlock()
@@ -53,7 +56,6 @@ func (d *DB) GetMethodFromStore(packageName string, structName string, methodNam
 // GetMethod returns the method for the given qualified method name
 // qualifiedMethodName is "packagename.structname.methodname"
 func (d *DB) GetMethod(qualifiedMethodName string) *BoundMethod {
-
 	// Lock the db whilst processing and unlock on return
 	d.lock.RLock()
 	defer d.lock.RUnlock()
@@ -67,12 +69,15 @@ func (d *DB) GetObfuscatedMethod(id int) *BoundMethod {
 	d.lock.RLock()
 	defer d.lock.RUnlock()
 
-	return d.obfuscatedMethodMap[id]
+	if len(d.obfuscatedMethodArray) <= id {
+		return nil
+	}
+
+	return d.obfuscatedMethodArray[id].method
 }
 
 // AddMethod adds the given method definition to the db using the given qualified path: packageName.structName.methodName
 func (d *DB) AddMethod(packageName string, structName string, methodName string, methodDefinition *BoundMethod) {
-
 	// Lock the db whilst processing and unlock on return
 	d.lock.Lock()
 	defer d.lock.Unlock()
@@ -99,12 +104,11 @@ func (d *DB) AddMethod(packageName string, structName string, methodName string,
 	// Store in the methodMap
 	key := packageName + "." + structName + "." + methodName
 	d.methodMap[key] = methodDefinition
-
+	d.obfuscatedMethodArray = append(d.obfuscatedMethodArray, &ObfuscatedMethod{method: methodDefinition, methodName: key})
 }
 
 // ToJSON converts the method map to JSON
 func (d *DB) ToJSON() (string, error) {
-
 	// Lock the db whilst processing and unlock on return
 	d.lock.RLock()
 	defer d.lock.RUnlock()
@@ -120,20 +124,11 @@ func (d *DB) ToJSON() (string, error) {
 
 // UpdateObfuscatedCallMap sets up the secure call mappings
 func (d *DB) UpdateObfuscatedCallMap() map[string]int {
+	mappings := make(map[string]int)
 
-	var mappings = make(map[string]int)
-
-	// Iterate map keys and sort them
-	keys := make([]string, 0, len(d.methodMap))
-	for k := range d.methodMap {
-		keys = append(keys, k)
+	for id, k := range d.obfuscatedMethodArray {
+		mappings[k.methodName] = id
 	}
-	sort.Strings(keys)
 
-	// Iterate sorted keys and add to obfuscated method map
-	for id, k := range keys {
-		mappings[k] = id
-		d.obfuscatedMethodMap[id] = d.methodMap[k]
-	}
 	return mappings
 }

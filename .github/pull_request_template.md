@@ -1,3 +1,21 @@
+
+<!--
+
+*********************************************************************
+*               PLEASE READ BEFORE SUBMITTING YOUR PR               *
+*     YOUR PR MAY BE REJECTED IF IT DOES NOT FOLLOW THESE STEPS     *
+*********************************************************************
+
+- *DO NOT* submit PRs for v3 alpha enhancements, unless you have opened a post on the discord channel.
+  All enhancements must be discussed first.
+  The feedback guide for v3 is here: https://v3alpha.wails.io/getting-started/feedback/
+
+- Before submitting your PR, please ensure you have created and linked the PR to an issue.
+- If a relevant issue already exists, please reference it in your PR by including `Fixes #<issue number>` in your PR description.
+- Please fill in the checklists.
+
+-->
+
 # Description
 
 Please include a summary of the change and which issue is fixed. Please also include relevant motivation and context. List any dependencies that are required for this change.
@@ -6,7 +24,7 @@ Fixes # (issue)
 
 ## Type of change
   
-Please delete options that are not relevant.
+Please select the option that is relevant.
 
 - [ ] Bug fix (non-breaking change which fixes an issue)
 - [ ] New feature (non-breaking change which adds functionality)
@@ -20,6 +38,8 @@ Please describe the tests that you ran to verify your changes. Provide instructi
 - [ ] Windows
 - [ ] macOS
 - [ ] Linux
+      
+If you checked Linux, please specify the distro and version.
   
 ## Test Configuration
 

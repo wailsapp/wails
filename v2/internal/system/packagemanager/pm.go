@@ -16,9 +16,9 @@ type packagemap = map[string][]*Package
 type PackageManager interface {
 	Name() string
 	Packages() packagemap
-	PackageInstalled(*Package) (bool, error)
-	PackageAvailable(*Package) (bool, error)
-	InstallCommand(*Package) string
+	PackageInstalled(pkg *Package) (bool, error)
+	PackageAvailable(pkg *Package) (bool, error)
+	InstallCommand(pkg *Package) string
 }
 
 // Dependency represents a system package that we require
@@ -37,7 +37,6 @@ type DependencyList []*Dependency
 
 // InstallAllRequiredCommand returns the command you need to use to install all required dependencies
 func (d DependencyList) InstallAllRequiredCommand() string {
-
 	result := ""
 	for _, dependency := range d {
 		if !dependency.Installed && !dependency.Optional {
@@ -50,7 +49,6 @@ func (d DependencyList) InstallAllRequiredCommand() string {
 
 // InstallAllOptionalCommand returns the command you need to use to install all optional dependencies
 func (d DependencyList) InstallAllOptionalCommand() string {
-
 	result := ""
 	for _, dependency := range d {
 		if !dependency.Installed && dependency.Optional {

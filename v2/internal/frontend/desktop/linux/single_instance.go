@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"log"
 	"os"
 	"strings"
 )
@@ -55,8 +56,15 @@ func SetupSingleInstance(uniqueID string) {
 		data := options.SecondInstanceData{
 			Args: os.Args[1:],
 		}
+		data.WorkingDirectory, err = os.Getwd()
+		if err != nil {
+			log.Printf("Failed to get working directory: %v", err)
+			return
+		}
+
 		serialized, err := json.Marshal(data)
 		if err != nil {
+			log.Printf("Failed to marshal data: %v", err)
 			return
 		}
 

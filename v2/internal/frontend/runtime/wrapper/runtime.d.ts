@@ -134,7 +134,7 @@ export function WindowIsFullscreen(): Promise<boolean>;
 
 // [WindowSetSize](https://wails.io/docs/reference/runtime/window#windowsetsize)
 // Sets the width and height of the window.
-export function WindowSetSize(width: number, height: number): Promise<Size>;
+export function WindowSetSize(width: number, height: number): void;
 
 // [WindowGetSize](https://wails.io/docs/reference/runtime/window#windowgetsize)
 // Gets the width and height of the window.
@@ -233,3 +233,17 @@ export function ClipboardGetText(): Promise<string>;
 // [ClipboardSetText](https://wails.io/docs/reference/runtime/clipboard#clipboardsettext)
 // Sets a text on the clipboard
 export function ClipboardSetText(text: string): Promise<boolean>;
+
+// [OnFileDrop](https://wails.io/docs/reference/runtime/draganddrop#onfiledrop)
+// OnFileDrop listens to drag and drop events and calls the callback with the coordinates of the drop and an array of path strings.
+export function OnFileDrop(callback: (x: number, y: number ,paths: string[]) => void, useDropTarget: boolean) :void
+
+// [OnFileDropOff](https://wails.io/docs/reference/runtime/draganddrop#dragandddropoff)
+// OnFileDropOff removes the drag and drop listeners and handlers.
+export function OnFileDropOff() :void
+
+// Check if the file path resolver is available
+export function CanResolveFilePaths(): boolean;
+
+// Resolves file paths for an array of files
+export function ResolveFilePaths(files: File[]): void

@@ -2,7 +2,7 @@ name: Build + Test v2
 
 on:
   push:
-    branches: [release/*, master]
+    branches: [release/*, master, bugfix/*]
   workflow_dispatch:
 
 jobs:
@@ -12,21 +12,30 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        go-version: [1.18, 1.19]
+        os: [ubuntu-22.04, ubuntu-24.04, windows-latest, macos-latest]
+        go-version: ['1.22']
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Install linux dependencies
-        if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        if: matrix.os == 'ubuntu-22.04'
+        with:
+          packages: libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
+          version: 1.0
+
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        if: matrix.os == 'ubuntu-24.04'
+        with:
+          packages: libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config libegl1
+          version: 1.0
 
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
+          cache-dependency-path: ./v2/go.sum
 
       - name: Run tests (mac)
         if: matrix.os == 'macos-latest'
@@ -36,9 +45,14 @@ jobs:
         run: go test -v ./...
 
       - name: Run tests (!mac)
-        if: matrix.os != 'macos-latest'
+        if: matrix.os != 'macos-latest' && matrix.os != 'ubuntu-24.04'
         working-directory: ./v2
         run: go test -v ./...
+
+      - name: Run tests (Ubuntu 24.04)
+        if: matrix.os == 'ubuntu-24.04'
+        working-directory: ./v2
+        run: go test -v -tags webkit2_41 ./...
 
   test_js:
     name: Run JS Tests
@@ -46,11 +60,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [20.x]
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -72,7 +86,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-22.04, windows-latest, macos-latest, ubuntu-24.04]
         template:
           [
             svelte,
@@ -89,15 +103,16 @@ jobs:
             vanilla-ts,
             plain,
           ]
-        go-version: [1.18, 1.19]
+        go-version: ['1.22']
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
+          cache-dependency-path: ./v2/go.sum
 
       - name: Build Wails CLI
         run: |
@@ -105,14 +120,41 @@ jobs:
           go install
           wails -help
 
-      - name: Install linux dependencies
-        if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        if: matrix.os == 'ubuntu-22.04'
+        with:
+          packages: libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
+          version: 1.0
 
-      - name: Generate template '${{ matrix.template }}'
+#      - name: Install linux dependencies ( 22.04 )
+#        if: matrix.os == 'ubuntu-22.04'
+#        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
+
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        if: matrix.os == 'ubuntu-24.04'
+        with:
+          packages: libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config libegl1
+          version: 1.0
+
+#      - name: Install linux dependencies ( 24.04 )
+#        if: matrix.os == 'ubuntu-24.04'
+#        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
+
+      - name: Generate & Build template '${{ matrix.template }}'
+        if: matrix.os != 'ubuntu-24.04'
         run: |
           mkdir -p ./test-${{ matrix.template }}
           cd ./test-${{ matrix.template }}
           wails init -n ${{ matrix.template }} -t ${{ matrix.template }} -ci
           cd ${{ matrix.template }}
           wails build -v 2
+
+      - name: Generate & Build template '${{ matrix.template }}' (ubuntu-24.04)
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          mkdir -p ./test-${{ matrix.template }}
+          cd ./test-${{ matrix.template }}
+          wails init -n ${{ matrix.template }} -t ${{ matrix.template }} -ci
+          cd ${{ matrix.template }}
+          wails build -v 2 -tags webkit2_41
+

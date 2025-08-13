@@ -2,6 +2,7 @@ package s
 
 import (
 	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -74,9 +75,10 @@ func CD(dir string) {
 	checkError(err)
 	log("CD %s [%s]", dir, CWD())
 }
+
 func MKDIR(path string, mode ...os.FileMode) {
 	var perms os.FileMode
-	perms = 0755
+	perms = 0o755
 	if len(mode) == 1 {
 		perms = mode[0]
 	}
@@ -88,7 +90,7 @@ func MKDIR(path string, mode ...os.FileMode) {
 // ENDIR ensures that the path gets created if it doesn't exist
 func ENDIR(path string, mode ...os.FileMode) {
 	var perms os.FileMode
-	perms = 0755
+	perms = 0o755
 	if len(mode) == 1 {
 		perms = mode[0]
 	}
@@ -150,6 +152,7 @@ func COPY(source string, target string) {
 	defer closefile(src)
 	d, err := os.Create(target)
 	checkError(err)
+	defer closefile(d)
 	_, err = io.Copy(d, src)
 	checkError(err)
 }
@@ -210,17 +213,13 @@ func ISDIR(path string) bool {
 
 // ISDIREMPTY returns true if the given directory is empty
 func ISDIREMPTY(dir string) bool {
-
 	// CREDIT: https://stackoverflow.com/a/30708914/8325411
 	f, err := os.Open(dir)
 	checkError(err)
 	defer closefile(f)
 
 	_, err = f.Readdirnames(1) // Or f.Readdir(1)
-	if err == io.EOF {
-		return true
-	}
-	return false
+	return err == io.EOF
 }
 
 // ISFILE returns true if the given file exists
@@ -270,7 +269,7 @@ func LOADSTRING(filename string) string {
 // SAVEBYTES will create a file with the given string
 func SAVEBYTES(filename string, data []byte) {
 	log("SAVEBYTES %s", filename)
-	err := os.WriteFile(filename, data, 0755)
+	err := os.WriteFile(filename, data, 0o755)
 	checkError(err)
 }
 
@@ -297,7 +296,7 @@ func MD5FILE(filename string) string {
 	_, err = io.Copy(h, f)
 	checkError(err)
 
-	return fmt.Sprintf("%x", h.Sum(nil))
+	return hex.EncodeToString(h.Sum(nil))
 }
 
 // Sub is the substitution type

@@ -3,13 +3,15 @@ package github
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/charmbracelet/glamour"
+	"github.com/charmbracelet/glamour/styles"
 	"io"
 	"net/http"
 	"net/url"
 	"runtime"
 	"sort"
 	"strings"
+
+	"github.com/charmbracelet/glamour"
 )
 
 func GetReleaseNotes(tagVersion string, noColour bool) string {
@@ -38,7 +40,7 @@ func GetReleaseNotes(tagVersion string, noColour bool) string {
 	var termRendererOpts []glamour.TermRendererOption
 
 	if runtime.GOOS == "windows" || noColour {
-		termRendererOpts = append(termRendererOpts, glamour.WithStyles(glamour.NoTTYStyleConfig))
+		termRendererOpts = append(termRendererOpts, glamour.WithStyles(styles.NoTTYStyleConfig))
 	} else {
 		termRendererOpts = append(termRendererOpts, glamour.WithAutoStyle())
 	}
@@ -57,7 +59,6 @@ func GetReleaseNotes(tagVersion string, noColour bool) string {
 // GetVersionTags gets the list of tags on the Wails repo
 // It returns a list of sorted tags in descending order
 func GetVersionTags() ([]*SemanticVersion, error) {
-
 	result := []*SemanticVersion{}
 	var err error
 
@@ -97,7 +98,6 @@ func GetVersionTags() ([]*SemanticVersion, error) {
 
 // GetLatestStableRelease gets the latest stable release on GitHub
 func GetLatestStableRelease() (result *SemanticVersion, err error) {
-
 	tags, err := GetVersionTags()
 	if err != nil {
 		return nil, err
@@ -114,7 +114,6 @@ func GetLatestStableRelease() (result *SemanticVersion, err error) {
 
 // GetLatestPreRelease gets the latest prerelease on GitHub
 func GetLatestPreRelease() (result *SemanticVersion, err error) {
-
 	tags, err := GetVersionTags()
 	if err != nil {
 		return nil, err

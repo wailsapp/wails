@@ -23,6 +23,7 @@ extern void processMessage(const char *message);
 @end
 
 void showInspector(void *inctx) {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 120000
     ON_MAIN_THREAD(
 		if (@available(macOS 12.0, *)) {
 			WailsContext *ctx = (__bridge WailsContext*) inctx;
@@ -47,7 +48,7 @@ void showInspector(void *inctx) {
 			NSLog(@"Opening the inspector needs at least MacOS 12");
 		}
     );
-
+#endif
 }
 
 void setupF12hotkey() {
