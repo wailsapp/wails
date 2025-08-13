@@ -31,7 +31,7 @@ tasks:
 
   format:md:
     cmds:
-      - bunx prettier --write "**/*.md"
+      - bunx prettier --write "**/*.{md,mdx}"
 
   format:
     cmds:
