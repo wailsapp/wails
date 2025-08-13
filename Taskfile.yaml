@@ -19,7 +19,7 @@ includes:
 tasks:
   contributors:check:
     cmds:
-      - npx -y all-contributors-cli check
+      - bunx all-contributors-cli check
 
   contributors:update:
     cmds:
@@ -27,11 +27,11 @@ tasks:
 
   contributors:build:
     cmds:
-      - npx -y all-contributors-cli generate
+      - bunx all-contributors-cli generate
 
   format:md:
     cmds:
-      - npx prettier --write "**/*.md"
+      - bunx prettier --write "**/*.md"
 
   format:
     cmds:
