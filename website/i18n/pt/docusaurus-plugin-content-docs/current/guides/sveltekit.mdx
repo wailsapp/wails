@@ -104,8 +104,8 @@ wails dev
 
 ##### O tempo de execução do Wails descarrega com navegações de página inteira!
 
--   Tudo que causa navegações de página completa: `window.location.href = '/<some>/<page>'` ou recarga do menu de contexto ao usar wails dev.  Isso significa que você pode acabar perdendo a capacidade de chamar qualquer falha no aplicativo em tempo de execução. Há duas formas de trabalhar em torno desta questão.
--   Use `import { goto } from '$app/navigation'` e então chame `goto('/<some>/<page>')` em sua + page.svelte. Isso impedirá uma navegação de página completa.
+-   Tudo que causa navegações de página completa: `window.location.href = '/some/page'` ou recarga do menu de contexto ao usar wails dev.  Isso significa que você pode acabar perdendo a capacidade de chamar qualquer falha no aplicativo em tempo de execução. Há duas formas de trabalhar em torno desta questão.
+-   Use `import { goto } from '$app/navigation'` e então chame `goto('/some/page')` em sua + page.svelte. Isso impedirá uma navegação de página completa.
 -   Se a navegação por página inteira não puder ser impedido que o tempo de execução do Wails seja adicionado a todas as páginas, adicionando o abaixo ao `<head>` de myapp/frontend/src/app. Mt
 
 ```
