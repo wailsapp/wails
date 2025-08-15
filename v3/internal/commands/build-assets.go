@@ -31,15 +31,15 @@ type ProtocolConfig struct {
 
 // BuildAssetsOptions defines the options for generating build assets.
 type BuildAssetsOptions struct {
-	Dir                string `description:"The directory to generate the files into"            default:"."`
-	Name               string `description:"The name of the project"`
-	BinaryName         string `description:"The name of the binary"`
-	ProductName        string `description:"The name of the product" default:"My Product"`
-	ProductDescription string `description:"The description of the product" default:"My Product Description"`
-	ProductVersion     string `description:"The version of the product" default:"0.1.0"`
-	ProductCompany     string `description:"The company of the product" default:"My Company"`
-	ProductCopyright   string `description:"The copyright notice" default:"\u00a9 now, My Company"`
-	ProductComments    string `description:"Comments to add to the generated files" default:"This is a comment"`
+	Dir                   string `description:"The directory to generate the files into"            default:"."`
+	Name                  string `description:"The name of the project"`
+	BinaryName            string `description:"The name of the binary"`
+	ProductName           string `description:"The name of the product" default:"My Product"`
+	ProductDescription    string `description:"The description of the product" default:"My Product Description"`
+	ProductVersion        string `description:"The version of the product" default:"0.1.0"`
+	ProductCompany        string `description:"The company of the product" default:"My Company"`
+	ProductCopyright      string `description:"The copyright notice" default:"\u00a9 now, My Company"`
+	ProductComments       string `description:"Comments to add to the generated files" default:"This is a comment"`
 	ProductIdentifier     string `description:"The product identifier, e.g com.mycompany.myproduct"`
 	Publisher             string `description:"Publisher name for MSIX package (e.g., CN=CompanyName)"`
 	ProcessorArchitecture string `description:"Processor architecture for MSIX package" default:"x64"`
@@ -211,13 +211,27 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 			return err
 		}
 
-		options.ProductCompany = wailsConfig.Info.CompanyName
-		options.ProductName = wailsConfig.Info.ProductName
-		options.ProductIdentifier = wailsConfig.Info.ProductIdentifier
-		options.ProductDescription = wailsConfig.Info.Description
-		options.ProductCopyright = wailsConfig.Info.Copyright
-		options.ProductComments = wailsConfig.Info.Comments
-		options.ProductVersion = wailsConfig.Info.Version
+		if options.ProductCompany == "My Company" && wailsConfig.Info.CompanyName != "" {
+			options.ProductCompany = wailsConfig.Info.CompanyName
+		}
+		if options.ProductName == "My Product" && wailsConfig.Info.ProductName != "" {
+			options.ProductName = wailsConfig.Info.ProductName
+		}
+		if options.ProductIdentifier == "" {
+			options.ProductIdentifier = wailsConfig.Info.ProductIdentifier
+		}
+		if options.ProductDescription == "My Product Description" && wailsConfig.Info.Description != "" {
+			options.ProductDescription = wailsConfig.Info.Description
+		}
+		if options.ProductCopyright == "© now, My Company" && wailsConfig.Info.Copyright != "" {
+			options.ProductCopyright = wailsConfig.Info.Copyright
+		}
+		if options.ProductComments == "This is a comment" && wailsConfig.Info.Comments != "" {
+			options.ProductComments = wailsConfig.Info.Comments
+		}
+		if options.ProductVersion == "0.1.0" && wailsConfig.Info.Version != "" {
+			options.ProductVersion = wailsConfig.Info.Version
+		}
 		config.FileAssociations = wailsConfig.FileAssociations
 		config.Protocols = wailsConfig.Protocols
 	}
