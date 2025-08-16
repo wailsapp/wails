@@ -15,6 +15,15 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
 import * as $models from "./models.js";
 
 /**
+ * GetTitleMap returns a map with enum keys - this should generate correct TypeScript
+ */
+export function GetTitleMap(): $CancellablePromise<{ [_ in $models.Title]: string }> {
+    return $Call.ByID(1993183304).then(($result: any) => {
+        return $$createType0($result);
+    });
+}
+
+/**
  * Greet does XYZ
  */
 export function Greet(name: string, title: $models.Title): $CancellablePromise<string> {
@@ -26,10 +35,11 @@ export function Greet(name: string, title: $models.Title): $CancellablePromise<s
  */
 export function NewPerson(name: string): $CancellablePromise<$models.Person | null> {
     return $Call.ByID(1661412647, name).then(($result: any) => {
-        return $$createType1($result);
+        return $$createType2($result);
     });
 }
 
 // Private type creation functions
-const $$createType0 = $models.Person.createFrom;
-const $$createType1 = $Create.Nullable($$createType0);
+const $$createType0 = $Create.Map($Create.Any, $Create.Any);
+const $$createType1 = $models.Person.createFrom;
+const $$createType2 = $Create.Nullable($$createType1);
