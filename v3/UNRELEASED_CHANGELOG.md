@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add macOS Dock service to hide/show app icon in the dock @popaprozac in [PR](https://github.com/wailsapp/wails/pull/4451)
 
 ## Changed
 <!-- Changes in existing functionality -->
