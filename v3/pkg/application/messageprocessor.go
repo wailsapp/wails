@@ -33,6 +33,7 @@ type MessageProcessor struct {
 	logger *slog.Logger
 
 	runningCalls map[string]context.CancelFunc
+	windowCalls  map[uint]map[string]bool // Track which calls belong to which window
 	l            sync.Mutex
 }
 
@@ -40,6 +41,7 @@ func NewMessageProcessor(logger *slog.Logger) *MessageProcessor {
 	return &MessageProcessor{
 		logger:       logger,
 		runningCalls: map[string]context.CancelFunc{},
+		windowCalls:  map[uint]map[string]bool{},
 	}
 }
 
@@ -182,4 +184,27 @@ func (m *MessageProcessor) text(rw http.ResponseWriter, data string) {
 
 func (m *MessageProcessor) ok(rw http.ResponseWriter) {
 	rw.WriteHeader(http.StatusOK)
+}
+
+// CancelWindowCalls cancels all pending calls for a specific window
+func (m *MessageProcessor) CancelWindowCalls(windowID uint) {
+	m.l.Lock()
+	defer m.l.Unlock()
+
+	// Get all call IDs for this window
+	callIDs, exists := m.windowCalls[windowID]
+	if !exists {
+		return
+	}
+
+	// Cancel each call
+	for callID := range callIDs {
+		if cancel, ok := m.runningCalls[callID]; ok {
+			cancel()
+			delete(m.runningCalls, callID)
+		}
+	}
+
+	// Remove the window's call tracking
+	delete(m.windowCalls, windowID)
 }
