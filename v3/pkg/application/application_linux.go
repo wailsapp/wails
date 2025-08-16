@@ -231,6 +231,130 @@ func (a *linuxApp) monitorThemeChanges() {
 	}()
 }
 
+func (a *linuxApp) setStartAtLogin(enabled bool) error {
+	// Get the current executable path
+	exePath, err := os.Executable()
+	if err != nil {
+		return fmt.Errorf("failed to get executable path: %w", err)
+	}
+
+	// Resolve any symbolic links to get the real path
+	realPath, err := filepath.EvalSymlinks(exePath)
+	if err != nil {
+		return fmt.Errorf("failed to resolve executable path: %w", err)
+	}
+
+	// Validate that the executable exists
+	if _, err := os.Stat(realPath); os.IsNotExist(err) {
+		return fmt.Errorf("executable does not exist at path: %s", realPath)
+	}
+
+	// Get the autostart directory
+	autostartDir, err := a.getAutostartDir()
+	if err != nil {
+		return fmt.Errorf("failed to get autostart directory: %w", err)
+	}
+
+	// Create the desktop file name based on the application name
+	appName := a.parent.options.Name
+	if appName == "" {
+		appName = filepath.Base(realPath)
+	}
+	// Sanitize the app name for filename
+	desktopFileName := strings.ToLower(strings.ReplaceAll(appName, " ", "-")) + ".desktop"
+	desktopFilePath := filepath.Join(autostartDir, desktopFileName)
+
+	if enabled {
+		return a.createDesktopFile(desktopFilePath, appName, realPath)
+	}
+	return a.removeDesktopFile(desktopFilePath)
+}
+
+func (a *linuxApp) startsAtLogin() (bool, error) {
+	// Get the autostart directory
+	autostartDir, err := a.getAutostartDir()
+	if err != nil {
+		return false, fmt.Errorf("failed to get autostart directory: %w", err)
+	}
+
+	// Get the desktop file path
+	appName := a.parent.options.Name
+	if appName == "" {
+		exePath, err := os.Executable()
+		if err != nil {
+			return false, fmt.Errorf("failed to get executable path: %w", err)
+		}
+		appName = filepath.Base(exePath)
+	}
+	desktopFileName := strings.ToLower(strings.ReplaceAll(appName, " ", "-")) + ".desktop"
+	desktopFilePath := filepath.Join(autostartDir, desktopFileName)
+
+	// Check if the desktop file exists
+	_, err = os.Stat(desktopFilePath)
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	if err != nil {
+		return false, fmt.Errorf("failed to check desktop file: %w", err)
+	}
+
+	return true, nil
+}
+
+func (a *linuxApp) getAutostartDir() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("failed to get user home directory: %w", err)
+	}
+
+	configDir := os.Getenv("XDG_CONFIG_HOME")
+	if configDir == "" {
+		configDir = filepath.Join(homeDir, ".config")
+	}
+
+	autostartDir := filepath.Join(configDir, "autostart")
+
+	// Create the autostart directory if it doesn't exist
+	if err := os.MkdirAll(autostartDir, 0755); err != nil {
+		return "", fmt.Errorf("failed to create autostart directory: %w", err)
+	}
+
+	return autostartDir, nil
+}
+
+func (a *linuxApp) createDesktopFile(desktopFilePath, appName, execPath string) error {
+	// Create the desktop file content
+	desktopContent := fmt.Sprintf(`[Desktop Entry]
+Type=Application
+Name=%s
+Exec=%s
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+`, appName, execPath)
+
+	// Write the desktop file with restrictive permissions
+	err := os.WriteFile(desktopFilePath, []byte(desktopContent), 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write desktop file: %w", err)
+	}
+
+	return nil
+}
+
+func (a *linuxApp) removeDesktopFile(desktopFilePath string) error {
+	if _, err := os.Stat(desktopFilePath); os.IsNotExist(err) {
+		return nil // File doesn't exist, nothing to remove
+	}
+
+	err := os.Remove(desktopFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to remove desktop file: %w", err)
+	}
+
+	return nil
+}
+
 func newPlatformApp(parent *App) *linuxApp {
 
 	name := strings.ToLower(strings.Replace(parent.options.Name, " ", "", -1))
