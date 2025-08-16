@@ -1,2 +1,19 @@
 i18n
 versioned_docs
+
+# Dependencies
+node_modules/
+
+# Production
+build/
+dist/
+
+# Generated files
+.docusaurus/
+.cache-loader/
+
+# Lock files
+bun.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

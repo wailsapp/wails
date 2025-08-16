@@ -7,48 +7,46 @@ tasks:
     desc: Install Dependencies
     aliases: [i]
     cmds:
-      - corepack enable
-      - corepack prepare pnpm@8.3.1 --activate
-      - pnpm install
+      - bun install --frozen-lockfile
     sources:
       - package.json
-      - pnpm-lock.yaml
+      - bun.lock
 
   default:
     desc: Start Website
     deps: [install]
     aliases: [s, start]
     cmds:
-      - npx docusaurus start
+      - bun run start
 
   build:
     desc: Build Website
     deps: [install]
     cmds:
-      - npx docusaurus build
+      - bun run build
 
   preview:
     desc: Preview Website
     deps: [build]
     aliases: [serve]
     cmds:
-      - npx docusaurus serve
+      - bun run serve
 
   crowdin:push:
     desc: Upload source files to Crowdin
     deps: [install]
     cmds:
-      - npx crowdin push -b v2
+      - bunx crowdin push -b v2
 
   crowdin:pull:
     desc: Download approved translation files from Crowdin to local
     deps: [install]
     cmds:
-      - npx crowdin pull -b v2 --export-only-approved
+      - bunx crowdin pull -b v2 --export-only-approved
 
   format:md:
     cmds:
-      - npx prettier --write "**/*.{md,mdx}"
+      - bunx prettier --write "**/*.{md,mdx}"
 
   format:
     cmds:
