@@ -1,2 +1,3 @@
-## Added
-- Browser URL Sanitisation by @leaanthony in [#4500](https://github.dev/wailsapp/wails/pull/4500). Based on [#4484](https://github.com/wailsapp/wails/pull/4484) by @APShenkin.
+## Changed
+- When running `wails3 update build-assets` with the `-config` parameter, values set via the `-product*` parameters are
+  no longer ignored, and override the config value.
