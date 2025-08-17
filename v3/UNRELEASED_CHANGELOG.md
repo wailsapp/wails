@@ -16,13 +16,14 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
-<!-- New features, capabilities, or enhancements -->
+- Added NSIS Protocol template for Windows
+- Added tests for build-assets
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
-<!-- Bug fixes -->
+- Fixed linux desktop.tmpl protocol range, by removing `<.Info.Protocol>` to `<.Protocol>`
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
