@@ -42,23 +42,28 @@ export function newRuntimeCaller(object: number, windowName: string = '') {
 }
 
 async function runtimeCallWithID(objectID: number, method: number, windowName: string, args: any): Promise<any> {
-    let url = new URL(runtimeURL);
-    url.searchParams.append("object", objectID.toString());
-    url.searchParams.append("method", method.toString());
-    if (args) { url.searchParams.append("args", JSON.stringify(args)); }
-
+    let payload: any = {
+        object: objectID,
+        method: method,
+        params: args ?? null
+    };
+    if (windowName) {
+        payload.windowName = windowName;
+    }
     let headers: Record<string, string> = {
         ["x-wails-client-id"]: clientId
-    }
+    };
     if (windowName) {
         headers["x-wails-window-name"] = windowName;
     }
-
-    let response = await fetch(url, { headers });
+    let response = await fetch(runtimeURL, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(payload)
+    });
     if (!response.ok) {
         throw new Error(await response.text());
     }
-
     if ((response.headers.get("Content-Type")?.indexOf("application/json") ?? -1) !== -1) {
         return response.json();
     } else {
