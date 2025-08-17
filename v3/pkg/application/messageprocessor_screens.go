@@ -17,7 +17,7 @@ var screensMethodNames = map[int]string{
 	ScreensGetCurrent: "GetCurrent",
 }
 
-func (m *MessageProcessor) processScreensMethod(method int, rw http.ResponseWriter, _ *http.Request, _ Window, _ QueryParams) {
+func (m *MessageProcessor) processScreensMethod(method int, rw http.ResponseWriter, _ *http.Request, _ Window, _ runtimeRequest) {
 	switch method {
 	case ScreensGetAll:
 		screens := globalApplication.Screen.GetAll()

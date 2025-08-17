@@ -29,11 +29,16 @@ var contextmenuMethodNames = map[int]string{
 	ContextMenuOpen: "Open",
 }
 
-func (m *MessageProcessor) processContextMenuMethod(method int, rw http.ResponseWriter, _ *http.Request, window Window, params QueryParams) {
+func (m *MessageProcessor) processContextMenuMethod(method int, rw http.ResponseWriter, _ *http.Request, window Window, body runtimeRequest) {
 	switch method {
 	case ContextMenuOpen:
 		var data ContextMenuData
-		err := params.ToStruct(&data)
+		params, err := NewBodyParams(body.Params)
+		if err != nil {
+			m.httpError(rw, "Invalid contextmenu call:", fmt.Errorf("unable to parse arguments: %w", err))
+			return
+		}
+		err = params.ToStruct(&data)
 		if err != nil {
 			m.httpError(rw, "Invalid contextmenu call:", fmt.Errorf("error parsing parameters: %w", err))
 			return

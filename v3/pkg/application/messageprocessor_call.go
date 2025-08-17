@@ -33,14 +33,14 @@ func (m *MessageProcessor) callCallback(window Window, callID *string, result st
 	window.CallResponse(*callID, result)
 }
 
-func (m *MessageProcessor) processCallCancelMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
-	args, err := params.Args()
+func (m *MessageProcessor) processCallCancelMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, body runtimeRequest) {
+	params, err := NewBodyParams(body.Params)
 	if err != nil {
 		m.httpError(rw, "Invalid binding call:", fmt.Errorf("unable to parse arguments: %w", err))
 		return
 	}
 
-	callID := args.String("call-id")
+	callID := params.String("call-id")
 	if callID == nil || *callID == "" {
 		m.httpError(rw, "Invalid binding call:", errors.New("missing argument 'call-id'"))
 		return
@@ -60,14 +60,14 @@ func (m *MessageProcessor) processCallCancelMethod(method int, rw http.ResponseW
 	m.ok(rw)
 }
 
-func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
-	args, err := params.Args()
+func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, body runtimeRequest) {
+	params, err := NewBodyParams(body.Params)
 	if err != nil {
 		m.httpError(rw, "Invalid binding call:", fmt.Errorf("unable to parse arguments: %w", err))
 		return
 	}
 
-	callID := args.String("call-id")
+	callID := params.String("call-id")
 	if callID == nil || *callID == "" {
 		m.httpError(rw, "Invalid binding call:", errors.New("missing argument 'call-id'"))
 		return

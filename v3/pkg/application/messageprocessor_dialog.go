@@ -35,14 +35,14 @@ func (m *MessageProcessor) dialogCallback(window Window, dialogID *string, resul
 	window.DialogResponse(*dialogID, result, isJSON)
 }
 
-func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
-	args, err := params.Args()
+func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, body runtimeRequest) {
+	params, err := NewBodyParams(body.Params)
 	if err != nil {
-		m.httpError(rw, "Invalid dialog call:", fmt.Errorf("unable to parse arguments: %w", err))
+		m.httpError(rw, "Invalid window call:", fmt.Errorf("unable to parse arguments: %w", err))
 		return
 	}
 
-	dialogID := args.String("dialog-id")
+	dialogID := params.String("dialog-id")
 	if dialogID == nil {
 		m.httpError(rw, "Invalid window call:", errors.New("missing argument 'dialog-id'"))
 		return
@@ -75,7 +75,7 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 		case DialogQuestion:
 			dialog = QuestionDialog()
 		}
-		var detached = args.Bool("Detached")
+		var detached = params.Bool("Detached")
 		if detached == nil || !*detached {
 			dialog.AttachToWindow(window)
 		}
@@ -100,7 +100,7 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 			m.httpError(rw, "Invalid dialog call:", fmt.Errorf("error parsing dialog options: %w", err))
 			return
 		}
-		var detached = args.Bool("Detached")
+		var detached = params.Bool("Detached")
 		if detached == nil || !*detached {
 			options.Window = window
 		}
@@ -142,7 +142,7 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 			m.httpError(rw, "Invalid dialog call:", fmt.Errorf("error parsing dialog options: %w", err))
 			return
 		}
-		var detached = args.Bool("Detached")
+		var detached = params.Bool("Detached")
 		if detached == nil || !*detached {
 			options.Window = window
 		}

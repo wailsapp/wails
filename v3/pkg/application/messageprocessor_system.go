@@ -15,7 +15,7 @@ var systemMethodNames = map[int]string{
 	Environment:      "Environment",
 }
 
-func (m *MessageProcessor) processSystemMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
+func (m *MessageProcessor) processSystemMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, body runtimeRequest) {
 	switch method {
 	case SystemIsDarkMode:
 		m.json(rw, globalApplication.Env.IsDarkMode())

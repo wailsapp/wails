@@ -22,7 +22,7 @@ func (m *MessageProcessor) processApplicationMethod(
 	rw http.ResponseWriter,
 	r *http.Request,
 	window Window,
-	params QueryParams,
+	body runtimeRequest,
 ) {
 	switch method {
 	case ApplicationQuit:

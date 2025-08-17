@@ -15,11 +15,16 @@ var eventsMethodNames = map[int]string{
 	EventsEmit: "Emit",
 }
 
-func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWriter, _ *http.Request, window Window, params QueryParams) {
+func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWriter, _ *http.Request, window Window, body runtimeRequest) {
 	switch method {
 	case EventsEmit:
 		var event CustomEvent
-		err := params.ToStruct(&event)
+		params, err := NewBodyParams(body.Params)
+		if err != nil {
+			m.httpError(rw, "Invalid event call:", fmt.Errorf("unable to parse arguments: %w", err))
+			return
+		}
+		err = params.ToStruct(&event)
 		if err != nil {
 			m.httpError(rw, "Invalid events call:", fmt.Errorf("error parsing event: %w", err))
 			return
