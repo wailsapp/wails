@@ -38,7 +38,7 @@ type BadgeOptions struct {
 
 // ServiceName returns the name of the service.
 func (d *DockService) ServiceName() string {
-	return "github.com/wailsapp/wails/v3/services/dock"
+	return "github.com/wailsapp/wails/v3/pkg/services/dock"
 }
 
 // ServiceStartup is called when the service is loaded.
@@ -53,38 +53,25 @@ func (d *DockService) ServiceShutdown() error {
 
 // HideAppIcon hides the app icon in the dock/taskbar.
 func (d *DockService) HideAppIcon() {
-	application.InvokeSync(func() {
-		d.impl.HideAppIcon()
-	})
+	d.impl.HideAppIcon()
 }
 
 // ShowAppIcon shows the app icon in the dock/taskbar.
 func (d *DockService) ShowAppIcon() {
-	application.InvokeSync(func() {
-		d.impl.ShowAppIcon()
-	})
+	d.impl.ShowAppIcon()
 }
 
 // SetBadge sets the badge label on the application icon.
-// This method ensures the badge call is made on the main thread to avoid crashes.
 func (d *DockService) SetBadge(label string) error {
-	return application.InvokeSyncWithError(func() error {
-		return d.impl.SetBadge(label)
-	})
+	return d.impl.SetBadge(label)
 }
 
 // SetCustomBadge sets the badge label on the application icon with custom options.
-// This method ensures the badge call is made on the main thread to avoid crashes.
 func (d *DockService) SetCustomBadge(label string, options BadgeOptions) error {
-	return application.InvokeSyncWithError(func() error {
-		return d.impl.SetCustomBadge(label, options)
-	})
+	return d.impl.SetCustomBadge(label, options)
 }
 
 // RemoveBadge removes the badge label from the application icon.
-// This method ensures the badge call is made on the main thread to avoid crashes.
 func (d *DockService) RemoveBadge() error {
-	return application.InvokeSyncWithError(func() error {
-		return d.impl.RemoveBadge()
-	})
+	return d.impl.RemoveBadge()
 }

@@ -8,20 +8,26 @@ package dock
 #import <Cocoa/Cocoa.h>
 
 void hideDockIcon() {
-    [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
+    });
 }
 
 void showDockIcon() {
-    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+    });
 }
 
 static void setBadge(const char *label) {
-    NSString *nsLabel = nil;
-	if (label != NULL) {
-		nsLabel = [NSString stringWithUTF8String:label];
-	}
-	[[NSApp dockTile] setBadgeLabel:nsLabel];
-	[[NSApp dockTile] display];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSString *nsLabel = nil;
+		if (label != NULL) {
+			nsLabel = [NSString stringWithUTF8String:label];
+		}
+		[[NSApp dockTile] setBadgeLabel:nsLabel];
+		[[NSApp dockTile] display];
+    });
 }
 */
 import "C"

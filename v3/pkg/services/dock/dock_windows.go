@@ -83,128 +83,134 @@ func (w *windowsDock) ShowAppIcon() {
 
 // SetBadge sets the badge label on the application icon.
 func (w *windowsDock) SetBadge(label string) error {
-	if w.taskbar == nil {
-		return nil
-	}
-
-	app := application.Get()
-	if app == nil {
-		return nil
-	}
-
-	window := app.Window.Current()
-	if window == nil {
-		return nil
-	}
-
-	nativeWindow := window.NativeWindow()
-	if nativeWindow == nil {
-		return errors.New("window native handle unavailable")
-	}
-	hwnd := uintptr(nativeWindow)
-
-	w.createBadge()
-
-	var hicon w32.HICON
-	var err error
-	if label == "" {
-		hicon, err = w.createBadgeIcon()
-		if err != nil {
-			return err
+	return application.InvokeSyncWithError(func() error {
+		if w.taskbar == nil {
+			return nil
 		}
-	} else {
-		hicon, err = w.createBadgeIconWithText(label)
-		if err != nil {
-			return err
-		}
-	}
-	defer w32.DestroyIcon(hicon)
 
-	return w.taskbar.SetOverlayIcon(hwnd, hicon, nil)
+		app := application.Get()
+		if app == nil {
+			return nil
+		}
+
+		window := app.Window.Current()
+		if window == nil {
+			return nil
+		}
+
+		nativeWindow := window.NativeWindow()
+		if nativeWindow == nil {
+			return errors.New("window native handle unavailable")
+		}
+		hwnd := uintptr(nativeWindow)
+
+		w.createBadge()
+
+		var hicon w32.HICON
+		var err error
+		if label == "" {
+			hicon, err = w.createBadgeIcon()
+			if err != nil {
+				return err
+			}
+		} else {
+			hicon, err = w.createBadgeIconWithText(label)
+			if err != nil {
+				return err
+			}
+		}
+		defer w32.DestroyIcon(hicon)
+
+		return w.taskbar.SetOverlayIcon(hwnd, hicon, nil)
+	})
 }
 
 // SetCustomBadge sets the badge label on the application icon with one-off options.
 func (w *windowsDock) SetCustomBadge(label string, options BadgeOptions) error {
-	if w.taskbar == nil {
-		return nil
-	}
+	return application.InvokeSyncWithError(func() error {
+		if w.taskbar == nil {
+			return nil
+		}
 
-	app := application.Get()
-	if app == nil {
-		return nil
-	}
+		app := application.Get()
+		if app == nil {
+			return nil
+		}
 
-	window := app.Window.Current()
-	if window == nil {
-		return nil
-	}
+		window := app.Window.Current()
+		if window == nil {
+			return nil
+		}
 
-	nativeWindow := window.NativeWindow()
-	if nativeWindow == nil {
-		return errors.New("window native handle unavailable")
-	}
-	hwnd := uintptr(nativeWindow)
+		nativeWindow := window.NativeWindow()
+		if nativeWindow == nil {
+			return errors.New("window native handle unavailable")
+		}
+		hwnd := uintptr(nativeWindow)
 
-	const badgeSize = 32
+		const badgeSize = 32
 
-	img := image.NewRGBA(image.Rect(0, 0, badgeSize, badgeSize))
+		img := image.NewRGBA(image.Rect(0, 0, badgeSize, badgeSize))
 
-	backgroundColour := options.BackgroundColour
-	radius := badgeSize / 2
-	centerX, centerY := radius, radius
+		backgroundColour := options.BackgroundColour
+		radius := badgeSize / 2
+		centerX, centerY := radius, radius
 
-	for y := 0; y < badgeSize; y++ {
-		for x := 0; x < badgeSize; x++ {
-			dx := float64(x - centerX)
-			dy := float64(y - centerY)
+		for y := 0; y < badgeSize; y++ {
+			for x := 0; x < badgeSize; x++ {
+				dx := float64(x - centerX)
+				dy := float64(y - centerY)
 
-			if dx*dx+dy*dy < float64(radius*radius) {
-				img.Set(x, y, backgroundColour)
+				if dx*dx+dy*dy < float64(radius*radius) {
+					img.Set(x, y, backgroundColour)
+				}
 			}
 		}
-	}
 
-	var hicon w32.HICON
-	var err error
-	if label == "" {
-		hicon, err = createBadgeIcon(badgeSize, img, options)
-		if err != nil {
-			return err
+		var hicon w32.HICON
+		var err error
+		if label == "" {
+			hicon, err = createBadgeIcon(badgeSize, img, options)
+			if err != nil {
+				return err
+			}
+		} else {
+			hicon, err = createBadgeIconWithText(w, label, badgeSize, img, options)
+			if err != nil {
+				return err
+			}
 		}
-	} else {
-		hicon, err = createBadgeIconWithText(w, label, badgeSize, img, options)
-		if err != nil {
-			return err
-		}
-	}
-	defer w32.DestroyIcon(hicon)
+		defer w32.DestroyIcon(hicon)
 
-	return w.taskbar.SetOverlayIcon(hwnd, hicon, nil)
+		return w.taskbar.SetOverlayIcon(hwnd, hicon, nil)
+	})
 }
 
 // RemoveBadge removes the badge label from the application icon.
 func (w *windowsDock) RemoveBadge() error {
-	if w.taskbar == nil {
-		return nil
-	}
+	return application.InvokeSyncWithError(func() error {
+		if w.taskbar == nil {
+			return nil
+		}
 
-	app := application.Get()
-	if app == nil {
-		return nil
-	}
+		app := application.Get()
+		if app == nil {
+			return nil
+		}
 
-	window := app.Window.Current()
-	if window == nil {
-		return nil
-	}
+		window := app.Window.Current()
+		if window == nil {
+			return nil
+		}
 
-	nativeWindow := window.NativeWindow()
-	if nativeWindow == nil {
-		return errors.New("window native handle unavailable")
-	}
-	hwnd := uintptr(nativeWindow)
+		nativeWindow := window.NativeWindow()
+		if nativeWindow == nil {
+			return errors.New("window native handle unavailable")
+		}
+		hwnd := uintptr(nativeWindow)
 
-	return w.taskbar.SetOverlayIcon(hwnd, 0, nil)
+		return w.taskbar.SetOverlayIcon(hwnd, 0, nil)
+	})
 }
 
 // createBadgeIcon creates a badge icon with the specified size and color.
