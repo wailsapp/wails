@@ -19,10 +19,10 @@ func New() *DockService {
 	}
 }
 
-// NewWithBadgeOptions creates a new dock service with badge options.
+// NewWithOptions creates a new dock service with badge options.
 // On Linux, this returns a stub implementation since badge functionality
 // is not standardized across desktop environments. Options are ignored.
-func NewWithBadgeOptions(options BadgeOptions) *DockService {
+func NewWithOptions(options BadgeOptions) *DockService {
 	return New()
 }
 
