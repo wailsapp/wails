@@ -73,15 +73,16 @@ func (d *darwinDock) ShowAppIcon() {
 
 // SetBadge sets the badge label on the application icon.
 func (d *darwinDock) SetBadge(label string) error {
-	var cLabel *C.char
-	if label != "" {
-		cLabel = C.CString(label)
-		defer C.free(unsafe.Pointer(cLabel))
-	} else {
-		cLabel = C.CString("●") // Default badge character
-	}
-	C.setBadge(cLabel)
-	return nil
+    // Always pick a label (use “●” if empty), then allocate + free exactly once.
+    value := label
+    if value == "" {
+        value = "●" // Default badge character
+    }
+    cLabel := C.CString(value)
+    defer C.free(unsafe.Pointer(cLabel))
+
+    C.setBadge(cLabel)
+    return nil
 }
 
 // SetCustomBadge is not supported on macOS, SetBadge is called instead.
