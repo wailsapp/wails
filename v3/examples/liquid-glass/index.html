@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liquid Glass Effect</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: transparent;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        p {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .info {
+            font-size: 14px;
+            color: #888;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: rgba(100, 126, 234, 0.1);
+            border: 1px solid rgba(100, 126, 234, 0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            color: #667eea;
+            margin: 5px;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            body {
+                color: #f0f0f0;
+            }
+            
+            .container {
+                background: rgba(0, 0, 0, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            p {
+                color: #aaa;
+            }
+            
+            .info {
+                color: #777;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+        }
+        
+        /* Animation */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container floating">
+        <h1>Liquid Glass Effect</h1>
+        <p>
+            This window demonstrates the new Liquid Glass backdrop effect
+            available in Wails v3 on macOS.
+        </p>
+        <div>
+            <span class="badge">Translucent</span>
+            <span class="badge">Dynamic</span>
+            <span class="badge">Adaptive</span>
+        </div>
+        <div class="info">
+            Move windows close together to see the liquid merge effect!
+        </div>
+    </div>
+</body>
+</html>

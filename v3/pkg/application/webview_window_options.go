@@ -383,6 +383,8 @@ const (
 	MacBackdropTransparent
 	// MacBackdropTranslucent - The window will have a translucent background, with the content underneath it being "fuzzy" or "frosted"
 	MacBackdropTranslucent
+	// MacBackdropLiquidGlass - The window will use Apple's Liquid Glass effect (macOS 15.0+ with fallback to translucent)
+	MacBackdropLiquidGlass
 )
 
 // MacToolbarStyle is the style of toolbar for macOS
@@ -400,6 +402,42 @@ const (
 	// MacToolbarStyleUnifiedCompact - Same as MacToolbarStyleUnified, but with reduced margins in the toolbar allowing more focus to be on the contents of the window
 	MacToolbarStyleUnifiedCompact
 )
+
+// MacLiquidGlassStyle defines the style of the Liquid Glass effect
+type MacLiquidGlassStyle int
+
+const (
+	// LiquidGlassStyleAutomatic - System determines the best style
+	LiquidGlassStyleAutomatic MacLiquidGlassStyle = iota
+	// LiquidGlassStyleLight - Light glass appearance
+	LiquidGlassStyleLight
+	// LiquidGlassStyleDark - Dark glass appearance
+	LiquidGlassStyleDark
+	// LiquidGlassStyleVibrant - Vibrant glass with enhanced effects
+	LiquidGlassStyleVibrant
+)
+
+// MacLiquidGlass contains configuration for the Liquid Glass effect
+type MacLiquidGlass struct {
+	// Style of the glass effect
+	Style MacLiquidGlassStyle
+	
+	// Corner radius for the glass effect (0 for square corners)
+	CornerRadius float64
+	
+	// Tint color for the glass (optional, nil for no tint)
+	TintColor *RGBA
+	
+	// Group identifier for merging multiple glass windows
+	GroupID string
+	
+	// Spacing between grouped glass elements (in points)
+	GroupSpacing float64
+	
+	// Performance optimization options
+	ReduceMotion bool // Reduce visual effects for better performance
+	StaticMode   bool // Disable dynamic updates for static content
+}
 
 // MacWindow contains macOS specific options for Webview Windows
 type MacWindow struct {
@@ -425,6 +463,9 @@ type MacWindow struct {
 
 	// WindowLevel sets the window level to control the order of windows in the screen
 	WindowLevel MacWindowLevel
+	
+	// LiquidGlass contains configuration for the Liquid Glass effect
+	LiquidGlass MacLiquidGlass
 }
 
 type MacWindowLevel string
