@@ -919,13 +919,8 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
                 [glassView setValue:@(groupSpacing) forKey:@"groupSpacing"];
             }
             
-            // If NSGlassEffectView has a contentView property, set the webView there
-            if ([glassView respondsToSelector:@selector(contentView)]) {
-                NSView* contentView = [glassView valueForKey:@"contentView"];
-                if (contentView && window.webView) {
-                    [contentView addSubview:window.webView];
-                }
-            }
+            // Note: Don't add webView here - it will be properly reparented later
+            // to avoid exceptions from multiple parent views
         }
     }
     
@@ -1015,11 +1010,15 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
         // NSGlassEffectView: Add it to window and webView goes in its contentView
         [contentView addSubview:glassView positioned:NSWindowBelow relativeTo:nil];
         
-        // The webView was already added to the contentView in the NSGlassEffectView case above
-        // Just ensure it's positioned correctly
+        // Safely reparent the webView to the glass view's contentView
         WKWebView* webView = window.webView;
-        if (webView && ![webView superview]) {
-            // If webView wasn't added yet, add it to the glass view's content
+        if (webView) {
+            // Remove from current superview if it has one
+            if ([webView superview]) {
+                [webView removeFromSuperview];
+            }
+            
+            // Add to the glass view's contentView
             NSView* glassContentView = [glassView valueForKey:@"contentView"];
             if (glassContentView) {
                 [glassContentView addSubview:webView];
