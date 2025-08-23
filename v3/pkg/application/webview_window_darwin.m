@@ -823,10 +823,17 @@ void windowRemoveVisualEffects(void* nsWindow) {
     WebviewWindow* window = (WebviewWindow*)nsWindow;
     NSView* contentView = [window contentView];
     
-    // Remove all NSVisualEffectView subviews
+    // Get NSGlassEffectView class if available (avoid hard reference)
+    Class glassEffectViewClass = nil;
+    if (@available(macOS 15.0, *)) {
+        glassEffectViewClass = NSClassFromString(@"NSGlassEffectView");
+    }
+    
+    // Remove all NSVisualEffectView and NSGlassEffectView subviews
     NSArray* subviews = [contentView subviews];
     for (NSView* subview in subviews) {
-        if ([subview isKindOfClass:[NSVisualEffectView class]]) {
+        if ([subview isKindOfClass:[NSVisualEffectView class]] ||
+            (glassEffectViewClass && [subview isKindOfClass:glassEffectViewClass])) {
             [subview removeFromSuperview];
         }
     }
