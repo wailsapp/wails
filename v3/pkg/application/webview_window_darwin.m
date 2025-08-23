@@ -903,6 +903,22 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
                 [glassView setValue:@(lightStyle) forKey:@"style"];
             }
             
+            // Set group identifier if the property exists and groupID is specified
+            if (groupID && strlen(groupID) > 0) {
+                if ([glassView respondsToSelector:@selector(setGroupIdentifier:)]) {
+                    NSString* groupIDString = [NSString stringWithUTF8String:groupID];
+                    [glassView performSelector:@selector(setGroupIdentifier:) withObject:groupIDString];
+                } else if ([glassView respondsToSelector:@selector(setGroupName:)]) {
+                    NSString* groupIDString = [NSString stringWithUTF8String:groupID];
+                    [glassView performSelector:@selector(setGroupName:) withObject:groupIDString];
+                }
+            }
+            
+            // Set group spacing if the property exists and spacing is specified
+            if (groupSpacing > 0 && [glassView respondsToSelector:@selector(setGroupSpacing:)]) {
+                [glassView setValue:@(groupSpacing) forKey:@"groupSpacing"];
+            }
+            
             // If NSGlassEffectView has a contentView property, set the webView there
             if ([glassView respondsToSelector:@selector(contentView)]) {
                 NSView* contentView = [glassView valueForKey:@"contentView"];
