@@ -17,7 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add native Liquid Glass effect support for macOS with NSGlassEffectView (macOS 15.0+) and NSVisualEffectView fallback, including comprehensive material customization options
+- Add native Liquid Glass effect support for macOS with NSGlassEffectView (macOS 15.0+) and NSVisualEffectView fallback, including comprehensive material customization options by @leaanthony in [#4534](https://github.com/wailsapp/wails/pull/4534)
 
 ## Changed
 <!-- Changes in existing functionality -->
