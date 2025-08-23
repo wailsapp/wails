@@ -883,8 +883,8 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
             
             // Set tint color if the property exists and color is specified
             if (a > 0 && [glassView respondsToSelector:@selector(setTintColor:)]) {
-                NSColor* tintColor = [NSColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a/255.0];
-                [glassView setValue:tintColor forKey:@"tintColor"];
+                // Use performSelector to safely set tintColor if the setter exists
+                [glassView performSelector:@selector(setTintColor:) withObject:tintColor];
             }
             
             // Set style if the property exists
