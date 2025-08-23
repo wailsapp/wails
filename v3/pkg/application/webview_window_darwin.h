@@ -36,7 +36,7 @@ void windowSetScreen(void* window, void* screen, int yOffset);
 
 // Liquid Glass support functions
 bool isLiquidGlassSupported();
-void windowSetLiquidGlass(void* window, int style, double cornerRadius, 
+void windowSetLiquidGlass(void* window, int style, int material, double cornerRadius, 
                           int r, int g, int b, int a, 
                           const char* groupID, double groupSpacing);
 void windowRemoveVisualEffects(void* window);

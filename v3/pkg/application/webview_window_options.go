@@ -417,23 +417,52 @@ const (
 	LiquidGlassStyleVibrant
 )
 
+// NSVisualEffectMaterial represents the NSVisualEffectMaterial enum for macOS
+type NSVisualEffectMaterial int
+
+const (
+	// NSVisualEffectMaterial values from macOS SDK
+	NSVisualEffectMaterialAppearanceBased       NSVisualEffectMaterial = 0
+	NSVisualEffectMaterialLight                 NSVisualEffectMaterial = 1
+	NSVisualEffectMaterialDark                  NSVisualEffectMaterial = 2
+	NSVisualEffectMaterialTitlebar              NSVisualEffectMaterial = 3
+	NSVisualEffectMaterialSelection             NSVisualEffectMaterial = 4
+	NSVisualEffectMaterialMenu                  NSVisualEffectMaterial = 5
+	NSVisualEffectMaterialPopover               NSVisualEffectMaterial = 6
+	NSVisualEffectMaterialSidebar               NSVisualEffectMaterial = 7
+	NSVisualEffectMaterialHeaderView            NSVisualEffectMaterial = 10
+	NSVisualEffectMaterialSheet                 NSVisualEffectMaterial = 11
+	NSVisualEffectMaterialWindowBackground      NSVisualEffectMaterial = 12
+	NSVisualEffectMaterialHUDWindow             NSVisualEffectMaterial = 13
+	NSVisualEffectMaterialFullScreenUI          NSVisualEffectMaterial = 15
+	NSVisualEffectMaterialToolTip               NSVisualEffectMaterial = 17
+	NSVisualEffectMaterialContentBackground     NSVisualEffectMaterial = 18
+	NSVisualEffectMaterialUnderWindowBackground NSVisualEffectMaterial = 21
+	NSVisualEffectMaterialUnderPageBackground   NSVisualEffectMaterial = 22
+	NSVisualEffectMaterialAuto                  NSVisualEffectMaterial = -1 // Use auto-selection based on Style
+)
+
 // MacLiquidGlass contains configuration for the Liquid Glass effect
 type MacLiquidGlass struct {
 	// Style of the glass effect
 	Style MacLiquidGlassStyle
-	
+
+	// Material to use for NSVisualEffectView (when NSGlassEffectView is not available)
+	// Set to NSVisualEffectMaterialAuto to use automatic selection based on Style
+	Material NSVisualEffectMaterial
+
 	// Corner radius for the glass effect (0 for square corners)
 	CornerRadius float64
-	
+
 	// Tint color for the glass (optional, nil for no tint)
 	TintColor *RGBA
-	
+
 	// Group identifier for merging multiple glass windows
 	GroupID string
-	
+
 	// Spacing between grouped glass elements (in points)
 	GroupSpacing float64
-	
+
 	// Performance optimization options
 	ReduceMotion bool // Reduce visual effects for better performance
 	StaticMode   bool // Disable dynamic updates for static content
@@ -463,7 +492,7 @@ type MacWindow struct {
 
 	// WindowLevel sets the window level to control the order of windows in the screen
 	WindowLevel MacWindowLevel
-	
+
 	// LiquidGlass contains configuration for the Liquid Glass effect
 	LiquidGlass MacLiquidGlass
 }

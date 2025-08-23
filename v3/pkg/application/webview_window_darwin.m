@@ -1,6 +1,7 @@
 //go:build darwin
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
+#import <QuartzCore/QuartzCore.h>
 #import "webview_window_darwin.h"
 #import "../events/events_darwin.h"
 extern void processMessage(unsigned int, const char*);
@@ -321,14 +322,11 @@ extern bool windowShouldUnconditionallyClose(unsigned int);
 
 - (BOOL)windowShouldClose:(NSWindow *)sender {
     WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[sender delegate];
-    NSLog(@"[DEBUG] windowShouldClose called for window %d", delegate.windowId);
     // Check if this window should close unconditionally (called from Close() method)
     if (windowShouldUnconditionallyClose(delegate.windowId)) {
-        NSLog(@"[DEBUG] Window %d closing unconditionally (Close() method called)", delegate.windowId);
         return true;
     }
     // For user-initiated closes, emit WindowClosing event and let the application decide
-    NSLog(@"[DEBUG] Window %d close requested by user - emitting WindowClosing event", delegate.windowId);
     processWindowEvent(delegate.windowId, EventWindowShouldClose);
     return false;
 }
@@ -544,13 +542,11 @@ extern bool windowShouldUnconditionallyClose(unsigned int);
     }
 }
 - (void)windowDidOrderOffScreen:(NSNotification *)notification {
-    NSLog(@"[DEBUG] Window %d ordered OFF screen (hidden)", self.windowId);
     if( hasListeners(EventWindowDidOrderOffScreen) ) {
         processWindowEvent(self.windowId, EventWindowDidOrderOffScreen);
     }
 }
 - (void)windowDidOrderOnScreen:(NSNotification *)notification {
-    NSLog(@"[DEBUG] Window %d ordered ON screen (shown)", self.windowId);
     if( hasListeners(EventWindowDidOrderOnScreen) ) {
         processWindowEvent(self.windowId, EventWindowDidOrderOnScreen);
     }
@@ -626,7 +622,6 @@ extern bool windowShouldUnconditionallyClose(unsigned int);
     }
 }
 - (void)windowWillClose:(NSNotification *)notification {
-    NSLog(@"[DEBUG] Window %d WILL close (window is actually closing)", self.windowId);
     if( hasListeners(EventWindowWillClose) ) {
         processWindowEvent(self.windowId, EventWindowWillClose);
     }
@@ -672,13 +667,11 @@ extern bool windowShouldUnconditionallyClose(unsigned int);
     }
 }
 - (void)windowWillOrderOffScreen:(NSNotification *)notification {
-    NSLog(@"[DEBUG] Window %d WILL order off screen (about to hide)", self.windowId);
     if( hasListeners(EventWindowWillOrderOffScreen) ) {
         processWindowEvent(self.windowId, EventWindowWillOrderOffScreen);
     }
 }
 - (void)windowWillOrderOnScreen:(NSNotification *)notification {
-    NSLog(@"[DEBUG] Window %d WILL order on screen (about to show)", self.windowId);
     if( hasListeners(EventWindowWillOrderOnScreen) ) {
         processWindowEvent(self.windowId, EventWindowWillOrderOnScreen);
     }
@@ -814,4 +807,209 @@ void windowSetScreen(void* window, void* screen, int yOffset) {
     
     // Set the frame which moves the window to the new screen
     [nsWindow setFrame:frame display:YES];
+}
+
+// Check if Liquid Glass is supported on this system
+bool isLiquidGlassSupported() {
+    // Check for macOS 15.0+ and NSGlassEffectView availability
+    if (@available(macOS 15.0, *)) {
+        return NSClassFromString(@"NSGlassEffectView") != nil;
+    }
+    return false;
+}
+
+// Remove any existing visual effects from the window
+void windowRemoveVisualEffects(void* nsWindow) {
+    WebviewWindow* window = (WebviewWindow*)nsWindow;
+    NSView* contentView = [window contentView];
+    
+    // Remove all NSVisualEffectView subviews
+    NSArray* subviews = [contentView subviews];
+    for (NSView* subview in subviews) {
+        if ([subview isKindOfClass:[NSVisualEffectView class]]) {
+            [subview removeFromSuperview];
+        }
+    }
+}
+
+// Configure WebView for liquid glass effect
+void configureWebViewForLiquidGlass(void* nsWindow) {
+    WebviewWindow* window = (WebviewWindow*)nsWindow;
+    WKWebView* webView = window.webView;
+    
+    // Make WebView background transparent
+    [webView setValue:@NO forKey:@"drawsBackground"];
+    if (@available(macOS 10.12, *)) {
+        [webView setValue:[NSColor clearColor] forKey:@"backgroundColor"];
+    }
+    
+    // Ensure WebView is above glass layer
+    if (webView.layer) {
+        webView.layer.zPosition = 1.0;
+        webView.layer.shouldRasterize = YES;
+        webView.layer.rasterizationScale = [[NSScreen mainScreen] backingScaleFactor];
+    }
+}
+
+// Apply Liquid Glass effect to window
+void windowSetLiquidGlass(void* nsWindow, int style, int material, double cornerRadius,
+                          int r, int g, int b, int a, 
+                          const char* groupID, double groupSpacing) {
+    WebviewWindow* window = (WebviewWindow*)nsWindow;
+    
+    // Remove any existing visual effects
+    windowRemoveVisualEffects(nsWindow);
+    
+    // Try to use NSGlassEffectView if available
+    NSView* glassView = nil;
+    
+    if (@available(macOS 15.0, *)) {
+        Class NSGlassEffectViewClass = NSClassFromString(@"NSGlassEffectView");
+        if (NSGlassEffectViewClass) {
+            // Create NSGlassEffectView
+            glassView = [[NSGlassEffectViewClass alloc] init];
+            
+            // Set corner radius if the property exists
+            if (cornerRadius > 0 && [glassView respondsToSelector:@selector(setCornerRadius:)]) {
+                [glassView setValue:@(cornerRadius) forKey:@"cornerRadius"];
+            }
+            
+            // Set tint color if the property exists and color is specified
+            if (a > 0 && [glassView respondsToSelector:@selector(setTintColor:)]) {
+                NSColor* tintColor = [NSColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a/255.0];
+                [glassView setValue:tintColor forKey:@"tintColor"];
+            }
+            
+            // Set style if the property exists
+            if ([glassView respondsToSelector:@selector(setStyle:)]) {
+                // For vibrant (3), try to use Light (1) for a lighter effect
+                int lightStyle = (style == 3) ? 1 : style;
+                [glassView setValue:@(lightStyle) forKey:@"style"];
+            }
+            
+            // If NSGlassEffectView has a contentView property, set the webView there
+            if ([glassView respondsToSelector:@selector(contentView)]) {
+                NSView* contentView = [glassView valueForKey:@"contentView"];
+                if (contentView && window.webView) {
+                    [contentView addSubview:window.webView];
+                }
+            }
+        }
+    }
+    
+    // Fallback to NSVisualEffectView if NSGlassEffectView is not available
+    if (!glassView) {
+        NSVisualEffectView* effectView = [[NSVisualEffectView alloc] init];
+        glassView = effectView; // Use effectView as glassView for the rest of the function
+        
+        // If a custom material is specified, use it directly
+        if (material >= 0) {
+            [effectView setMaterial:(NSVisualEffectMaterial)material];
+            [effectView setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
+        } else {
+            // Configure the visual effect based on style
+            switch(style) {
+                case 1: // Light
+                    if (@available(macOS 15.0, *)) {
+                        [effectView setMaterial:NSVisualEffectMaterialUnderPageBackground];
+                    } else if (@available(macOS 10.14, *)) {
+                        [effectView setMaterial:NSVisualEffectMaterialHUDWindow];
+                    } else {
+                        [effectView setMaterial:NSVisualEffectMaterialLight];
+                    }
+                    [effectView setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
+                    break;
+                case 2: // Dark
+                    if (@available(macOS 15.0, *)) {
+                        [effectView setMaterial:NSVisualEffectMaterialHeaderView];
+                    } else if (@available(macOS 10.14, *)) {
+                        [effectView setMaterial:NSVisualEffectMaterialFullScreenUI];
+                    } else {
+                        [effectView setMaterial:NSVisualEffectMaterialDark];
+                    }
+                    [effectView setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
+                    break;
+                case 3: // Vibrant
+                    if (@available(macOS 11.0, *)) {
+                        // Use the lightest material available - similar to dock
+                        [effectView setMaterial:NSVisualEffectMaterialHUDWindow];
+                    } else if (@available(macOS 10.14, *)) {
+                        [effectView setMaterial:NSVisualEffectMaterialSheet];
+                    } else {
+                        [effectView setMaterial:NSVisualEffectMaterialLight];
+                    }
+                    // Use behind window for true transparency
+                    [effectView setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
+                    break;
+                default: // Automatic
+                    if (@available(macOS 10.14, *)) {
+                        // Use content background for lighter automatic effect
+                        [effectView setMaterial:NSVisualEffectMaterialContentBackground];
+                    } else {
+                        [effectView setMaterial:NSVisualEffectMaterialAppearanceBased];
+                    }
+                    [effectView setBlendingMode:NSVisualEffectBlendingModeWithinWindow];
+                    break;
+            }
+        }
+        
+        // Use followsWindowActiveState for automatic adjustment
+        [effectView setState:NSVisualEffectStateFollowsWindowActiveState];
+        
+        // Don't emphasize - it makes the effect too dark
+        if (@available(macOS 10.12, *)) {
+            [effectView setEmphasized:NO];
+        }
+        
+        // Apply corner radius if specified
+        if (cornerRadius > 0) {
+            [effectView setWantsLayer:YES];
+            effectView.layer.cornerRadius = cornerRadius;
+            effectView.layer.masksToBounds = YES;
+        }
+    }
+    
+    // Get the content view
+    NSView* contentView = [window contentView];
+    
+    // Set up the glass view
+    [glassView setFrame:contentView.bounds];
+    [glassView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+    
+    // Check if this is a real NSGlassEffectView with contentView property
+    BOOL hasContentView = [glassView respondsToSelector:@selector(contentView)];
+    
+    if (hasContentView) {
+        // NSGlassEffectView: Add it to window and webView goes in its contentView
+        [contentView addSubview:glassView positioned:NSWindowBelow relativeTo:nil];
+        
+        // The webView was already added to the contentView in the NSGlassEffectView case above
+        // Just ensure it's positioned correctly
+        WKWebView* webView = window.webView;
+        if (webView && ![webView superview]) {
+            // If webView wasn't added yet, add it to the glass view's content
+            NSView* glassContentView = [glassView valueForKey:@"contentView"];
+            if (glassContentView) {
+                [glassContentView addSubview:webView];
+                [webView setFrame:glassContentView.bounds];
+                [webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+            }
+        }
+    } else {
+        // NSVisualEffectView: Add glass as bottom layer, webView on top
+        [contentView addSubview:glassView positioned:NSWindowBelow relativeTo:nil];
+        
+        WKWebView* webView = window.webView;
+        if (webView) {
+            [webView removeFromSuperview];
+            [contentView addSubview:webView positioned:NSWindowAbove relativeTo:glassView];
+        }
+    }
+    
+    // Configure WebView for liquid glass
+    configureWebViewForLiquidGlass(nsWindow);
+    
+    // Make window transparent
+    [window setOpaque:NO];
+    [window setBackgroundColor:[NSColor clearColor]];
 }

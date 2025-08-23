@@ -1,86 +1,70 @@
-# Liquid Glass Effect Example
+# Liquid Glass Demo for Wails v3
 
-This example demonstrates the Liquid Glass backdrop effect for macOS windows in Wails v3.
+This demo showcases the native Liquid Glass effect available in macOS 15.0+ with fallback to NSVisualEffectView for older systems.
 
-## Features
+## Features Demonstrated
 
-The Liquid Glass effect provides:
-- **Dynamic glass material** that reflects and refracts light
-- **Adaptive appearance** that responds to the content behind it
-- **Liquid merge effects** when windows are grouped and placed close together
-- **Customizable styles** including Light, Dark, and Vibrant modes
-- **Tint colors** for adding subtle color overlays
-- **Corner radius** for rounded glass effects
+### Window Styles
 
-## Running the Example
+1. **Light Glass** - Clean, light appearance with no tint
+2. **Dark Glass** - Dark themed glass effect
+3. **Vibrant Glass** - Enhanced vibrant effect for maximum transparency
+4. **Tinted Glass** - Blue tinted glass with custom RGBA color
+5. **Sheet Material** - Using specific NSVisualEffectMaterialSheet
+6. **HUD Window** - Ultra-light HUD window material
+7. **Content Background** - Content background material with warm tint
+
+### Customization Options
+
+- **Style**: `LiquidGlassStyleAutomatic`, `LiquidGlassStyleLight`, `LiquidGlassStyleDark`, `LiquidGlassStyleVibrant`
+- **Material**: Direct NSVisualEffectMaterial selection (when NSGlassEffectView is not available)
+  - `NSVisualEffectMaterialAppearanceBased`
+  - `NSVisualEffectMaterialLight`
+  - `NSVisualEffectMaterialDark`
+  - `NSVisualEffectMaterialSheet`
+  - `NSVisualEffectMaterialHUDWindow`
+  - `NSVisualEffectMaterialContentBackground`
+  - `NSVisualEffectMaterialUnderWindowBackground`
+  - `NSVisualEffectMaterialUnderPageBackground`
+  - And more...
+- **CornerRadius**: Rounded corners (0 for square corners)
+- **TintColor**: Custom RGBA tint overlay
+- **GroupID**: For grouping multiple glass windows (future feature)
+- **GroupSpacing**: Spacing between grouped windows (future feature)
+
+### Running the Demo
 
 ```bash
-cd v3/examples/liquid-glass
-go run .
+go build -o liquid-glass-demo .
+./liquid-glass-demo
 ```
 
-## Window Configurations
+### Requirements
 
-The example creates three windows to showcase different configurations:
+- macOS 10.14+ (best experience on macOS 15.0+ with native NSGlassEffectView)
+- Wails v3
 
-### Window 1: Simple Liquid Glass
-Uses the simplest configuration with just the backdrop type set:
+### Implementation Details
+
+The implementation uses:
+- Native `NSGlassEffectView` on macOS 15.0+ for authentic glass effect
+- Falls back to `NSVisualEffectView` on older systems
+- Runtime detection using `NSClassFromString` for compatibility
+- Key-Value Coding (KVC) for dynamic property setting
+
+### Example Usage
+
 ```go
-Mac: application.MacWindow{
-    Backdrop: application.MacBackdropLiquidGlass,
-}
-```
-
-### Window 2: Advanced Configuration
-Shows advanced options with custom style, corner radius, and tint:
-```go
-Mac: application.MacWindow{
-    Backdrop: application.MacBackdropLiquidGlass,
-    LiquidGlass: application.MacLiquidGlass{
-        Style:        application.LiquidGlassStyleVibrant,
-        CornerRadius: 16.0,
-        TintColor:    &application.RGBA{0, 122, 255, 50},
-        GroupID:      "main-group",
-        GroupSpacing: 8.0,
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Mac: application.MacWindow{
+        Backdrop: application.MacBackdropLiquidGlass,
+        InvisibleTitleBarHeight: 500, // Make window draggable
+        LiquidGlass: application.MacLiquidGlass{
+            Style:        application.LiquidGlassStyleLight,
+            Material:     application.NSVisualEffectMaterialHUDWindow,
+            CornerRadius: 20.0,
+            TintColor:    &application.RGBA{Red: 0, Green: 100, Blue: 200, Alpha: 50},
+        },
     },
-}
+})
 ```
-
-### Window 3: Dark Style
-Demonstrates the dark glass style with magenta tint:
-```go
-Mac: application.MacWindow{
-    Backdrop: application.MacBackdropLiquidGlass,
-    LiquidGlass: application.MacLiquidGlass{
-        Style:        application.LiquidGlassStyleDark,
-        CornerRadius: 20.0,
-        TintColor:    &application.RGBA{255, 0, 255, 30},
-        GroupID:      "secondary-group",
-    },
-}
-```
-
-## Compatibility
-
-- **macOS 15.0+**: Full Liquid Glass effect with enhanced NSVisualEffectView
-- **macOS 10.10-14.x**: Automatic fallback to standard translucent effect
-- **Other platforms**: Not applicable (macOS-only feature)
-
-## CSS Considerations
-
-For best results with Liquid Glass:
-1. Use `background: transparent` on the body
-2. Apply semi-transparent backgrounds to containers
-3. Use `backdrop-filter` for additional blur effects
-4. Ensure text contrast with shadows or appropriate colors
-
-## Grouping Windows
-
-Windows with the same `GroupID` will exhibit liquid merge effects when positioned close together. The `GroupSpacing` property controls how close windows need to be to trigger the merge effect.
-
-## Performance
-
-The Liquid Glass effect uses GPU acceleration. For better performance on battery-powered devices, you can:
-- Set `ReduceMotion: true` to reduce visual effects
-- Use `StaticMode: true` for windows with static content
-- Limit the number of grouped windows

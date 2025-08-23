@@ -4,7 +4,7 @@ package application
 
 /*
 #cgo CFLAGS: -mmacosx-version-min=10.13 -x objective-c
-#cgo LDFLAGS: -framework Cocoa -framework WebKit
+#cgo LDFLAGS: -framework Cocoa -framework WebKit -framework QuartzCore
 
 #include "application_darwin.h"
 #include "webview_window_darwin.h"
@@ -831,169 +831,6 @@ static void setContentProtection(void *nsWindow, bool enabled) {
 	}
 }
 
-// ===== Liquid Glass Implementation =====
-
-// Check if Liquid Glass is supported on this system
-bool isLiquidGlassSupported() {
-	// Check for macOS 15.0+ where NSVisualEffectView got enhanced capabilities
-	// NSGlassEffectView doesn't exist yet, so we'll use enhanced NSVisualEffectView
-	if (@available(macOS 15.0, *)) {
-		return true;
-	}
-	return false;
-}
-
-// Remove any existing visual effects from the window
-void windowRemoveVisualEffects(void* nsWindow) {
-	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	NSView* contentView = [window contentView];
-	
-	// Find and remove any NSVisualEffectView instances
-	NSArray* subviews = [contentView subviews];
-	for (NSView* view in subviews) {
-		if ([view isKindOfClass:[NSVisualEffectView class]]) {
-			[view removeFromSuperview];
-		}
-	}
-}
-
-// Configure WebView for liquid glass effect
-void configureWebViewForLiquidGlass(void* nsWindow) {
-	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	WKWebView* webView = window.webView;
-	
-	// Make WebView background transparent
-	[webView setValue:@NO forKey:@"drawsBackground"];
-	[webView setValue:[NSColor clearColor] forKey:@"backgroundColor"];
-	
-	// Ensure WebView is above glass layer
-	if (webView.layer) {
-		webView.layer.zPosition = 1.0;
-		
-		// Optimize for performance
-		webView.layer.shouldRasterize = YES;
-		webView.layer.rasterizationScale = [[NSScreen mainScreen] backingScaleFactor];
-	}
-}
-
-// Window group manager for liquid glass merging effect
-static NSMutableDictionary* glassGroupContainers = nil;
-
-NSView* getOrCreateGlassContainer(const char* groupID) {
-	if (glassGroupContainers == nil) {
-		glassGroupContainers = [[NSMutableDictionary alloc] init];
-	}
-	
-	NSString* key = [NSString stringWithUTF8String:groupID];
-	NSView* container = [glassGroupContainers objectForKey:key];
-	
-	if (container == nil) {
-		container = [[NSView alloc] init];
-		[container setWantsLayer:YES];
-		[glassGroupContainers setObject:container forKey:key];
-	}
-	
-	return container;
-}
-
-// Apply Liquid Glass effect to window
-void windowSetLiquidGlass(void* nsWindow, int style, double cornerRadius, 
-                          int r, int g, int b, int a, 
-                          const char* groupID, double groupSpacing) {
-	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	
-	// Remove any existing visual effects
-	windowRemoveVisualEffects(nsWindow);
-	
-	// Since NSGlassEffectView doesn't exist yet, we'll create an enhanced NSVisualEffectView
-	// that mimics the liquid glass behavior
-	NSVisualEffectView* glassView = [[NSVisualEffectView alloc] init];
-	
-	// Configure the visual effect based on style
-	switch(style) {
-		case 1: // Light
-			if (@available(macOS 10.14, *)) {
-				[glassView setMaterial:NSVisualEffectMaterialHUDWindow];
-			} else {
-				[glassView setMaterial:NSVisualEffectMaterialLight];
-			}
-			[glassView setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameAqua]];
-			break;
-		case 2: // Dark
-			if (@available(macOS 10.14, *)) {
-				[glassView setMaterial:NSVisualEffectMaterialHUDWindow];
-				[glassView setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua]];
-			} else {
-				[glassView setMaterial:NSVisualEffectMaterialDark];
-				[glassView setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameVibrantDark]];
-			}
-			break;
-		case 3: // Vibrant
-			if (@available(macOS 10.14, *)) {
-				[glassView setMaterial:NSVisualEffectMaterialFullScreenUI];
-			} else {
-				[glassView setMaterial:NSVisualEffectMaterialAppearanceBased];
-			}
-			[glassView setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameVibrantDark]];
-			break;
-		default: // Automatic
-			[glassView setMaterial:NSVisualEffectMaterialAppearanceBased];
-			break;
-	}
-	
-	// Set blending mode for glass effect
-	[glassView setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
-	[glassView setState:NSVisualEffectStateActive];
-	
-	// Apply corner radius if specified
-	if (cornerRadius > 0) {
-		[glassView setWantsLayer:YES];
-		glassView.layer.cornerRadius = cornerRadius;
-		glassView.layer.masksToBounds = YES;
-	}
-	
-	// Apply tint color if specified
-	if (a > 0) {
-		// Create a tinted overlay view
-		NSView* tintView = [[NSView alloc] init];
-		[tintView setWantsLayer:YES];
-		tintView.layer.backgroundColor = CGColorCreateGenericRGB(r/255.0, g/255.0, b/255.0, a/255.0);
-		if (cornerRadius > 0) {
-			tintView.layer.cornerRadius = cornerRadius;
-			tintView.layer.masksToBounds = YES;
-		}
-		[tintView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-		[glassView addSubview:tintView];
-	}
-	
-	// Get the content view
-	NSView* contentView = [window contentView];
-	NSRect bounds = [contentView bounds];
-	[glassView setFrame:bounds];
-	[glassView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-	
-	// Handle grouping if specified
-	if (groupID && strlen(groupID) > 0) {
-		NSView* container = getOrCreateGlassContainer(groupID);
-		[container addSubview:glassView];
-		[contentView addSubview:container positioned:NSWindowBelow relativeTo:nil];
-		
-		// Set container frame and autoresizing
-		[container setFrame:bounds];
-		[container setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-	} else {
-		// Add glass view directly to content view
-		[contentView addSubview:glassView positioned:NSWindowBelow relativeTo:nil];
-	}
-	
-	// Configure WebView for liquid glass
-	configureWebViewForLiquidGlass(nsWindow);
-	
-	// Make window transparent if not already
-	[window setOpaque:NO];
-	[window setBackgroundColor:[NSColor clearColor]];
-}
-
 */
 import "C"
 import (
@@ -1519,6 +1356,8 @@ func (w *macosWebviewWindow) setBackgroundColour(colour RGBA) {
 func (w *macosWebviewWindow) applyLiquidGlass() {
 	options := w.parent.options.Mac.LiquidGlass
 	
+	globalApplication.debug("Applying Liquid Glass effect", "window", w.parent.id)
+	
 	// Check if liquid glass is supported
 	if !C.isLiquidGlassSupported() {
 		// Fallback to translucent
@@ -1548,6 +1387,7 @@ func (w *macosWebviewWindow) applyLiquidGlass() {
 	C.windowSetLiquidGlass(
 		w.nsWindow,
 		C.int(options.Style),
+		C.int(options.Material),
 		C.double(options.CornerRadius),
 		r, g, b, a,
 		groupIDCStr,
