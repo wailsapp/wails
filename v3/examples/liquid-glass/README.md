@@ -41,13 +41,13 @@ go build -o liquid-glass-demo .
 
 ### Requirements
 
-- macOS 10.14+ (best experience on macOS 15.0+ with native NSGlassEffectView)
+- macOS 10.14+ (best experience on macOS 26.0+ with native NSGlassEffectView)
 - Wails v3
 
 ### Implementation Details
 
 The implementation uses:
-- Native `NSGlassEffectView` on macOS 15.0+ for authentic glass effect
+- Native `NSGlassEffectView` on macOS 26.0+ for authentic glass effect
 - Falls back to `NSVisualEffectView` on older systems
 - Runtime detection using `NSClassFromString` for compatibility
 - Key-Value Coding (KVC) for dynamic property setting

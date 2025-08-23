@@ -819,8 +819,8 @@ void windowSetScreen(void* window, void* screen, int yOffset) {
 
 // Check if Liquid Glass is supported on this system
 bool isLiquidGlassSupported() {
-    // Check for macOS 15.0+ and NSGlassEffectView availability
-    if (@available(macOS 15.0, *)) {
+    // Check for macOS 26.0+ and NSGlassEffectView availability
+    if (@available(macOS 26.0, *)) {
         return NSClassFromString(@"NSGlassEffectView") != nil;
     }
     return false;
@@ -833,7 +833,7 @@ void windowRemoveVisualEffects(void* nsWindow) {
     
     // Get NSGlassEffectView class if available (avoid hard reference)
     Class glassEffectViewClass = nil;
-    if (@available(macOS 15.0, *)) {
+    if (@available(macOS 26.0, *)) {
         glassEffectViewClass = NSClassFromString(@"NSGlassEffectView");
     }
     
@@ -878,7 +878,7 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
     // Try to use NSGlassEffectView if available
     NSView* glassView = nil;
     
-    if (@available(macOS 15.0, *)) {
+    if (@available(macOS 26.0, *)) {
         Class NSGlassEffectViewClass = NSClassFromString(@"NSGlassEffectView");
         if (NSGlassEffectViewClass) {
             // Create NSGlassEffectView (autoreleased)
