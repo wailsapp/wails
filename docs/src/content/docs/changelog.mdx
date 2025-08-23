@@ -25,6 +25,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v3.0.0-alpha.25 - 2025-08-16
+
+## Changed
+- When running `wails3 update build-assets` with the `-config` parameter, values set via the `-product*` parameters are
+  no longer ignored, and override the config value.
+
+## v3.0.0-alpha.24 - 2025-08-13
+
+## Added
+- Browser URL Sanitisation by @leaanthony in [#4500](https://github.dev/wailsapp/wails/pull/4500). Based on [#4484](https://github.com/wailsapp/wails/pull/4484) by @APShenkin.
+
+## v3.0.0-alpha.23 - 2025-08-11
+
+## Fixed
+- Fix SetBackgroundColour on Windows by @PPTGamer in [PR](https://github.com/wailsapp/wails/pull/4492)
+
+## v3.0.0-alpha.22 - 2025-08-10
+
+## Added
+- Add Content Protection on Windows/Mac by [@leaanthony](https://github.com/leaanthony) based on the original work of [@Taiterbase](https://github.com/Taiterbase) in this [PR](https://github.com/wailsapp/wails/pull/4241)
+- Add support for passing CLI variables to Task commands through `wails3 build` and `wails3 package` aliases (#4422) by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/4488)
+
+## Changed
+- `window.NativeWindowHandle()` -> `window.NativeWindow()` by @leaanthony in [#4471](https://github.com/wailsapp/wails/pull/4471)
+- Refactor internal window handling by @leaanthony in [#4471](https://github.com/wailsapp/wails/pull/4471)
++ Fix extra-broad Linux package dependencies, fix outdated RPM dependencies.
+
 ## v3.0.0-alpha.21 - 2025-08-07
 
 ## Fixed

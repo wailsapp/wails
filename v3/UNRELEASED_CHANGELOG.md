@@ -22,8 +22,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
-- `window.NativeWindowHandle()` -> `window.NativeWindow()` by @leaanthony in [#4471](https://github.com/wailsapp/wails/pull/4471)
-- Refactor internal window handling by @leaanthony in [#4471](https://github.com/wailsapp/wails/pull/4471)
 
 ## Fixed
 <!-- Bug fixes -->

@@ -283,7 +283,13 @@ func (w *windowsWebviewWindow) execJS(js string) {
 }
 
 func (w *windowsWebviewWindow) setBackgroundColour(color RGBA) {
-	w32.SetBackgroundColour(w.hwnd, color.Red, color.Green, color.Blue)
+	switch w.parent.options.BackgroundType {
+	case BackgroundTypeSolid:
+		w32.SetBackgroundColour(w.hwnd, color.Red, color.Green, color.Blue)
+		w.chromium.SetBackgroundColour(color.Red, color.Green, color.Blue, color.Alpha)
+	case BackgroundTypeTransparent, BackgroundTypeTranslucent:
+		w.chromium.SetBackgroundColour(0, 0, 0, 0)
+	}
 }
 
 func (w *windowsWebviewWindow) framelessWithDecorations() bool {
@@ -474,16 +480,9 @@ func (w *windowsWebviewWindow) run() {
 		// The updateTheme call above will handle custom themes
 	}
 
-	switch options.BackgroundType {
-	case BackgroundTypeSolid:
-		var col = options.BackgroundColour
-		w.setBackgroundColour(col)
-		w.chromium.SetBackgroundColour(col.Red, col.Green, col.Blue, col.Alpha)
-	case BackgroundTypeTransparent:
-		w.chromium.SetBackgroundColour(0, 0, 0, 0)
-	case BackgroundTypeTranslucent:
-		w.chromium.SetBackgroundColour(0, 0, 0, 0)
-		w.setBackdropType(options.Windows.BackdropType)
+	w.setBackgroundColour(options.BackgroundColour)
+	if options.BackgroundType == BackgroundTypeTranslucent {
+		w.setBackdropType(w.parent.options.Windows.BackdropType)
 	}
 
 	// Process StartState

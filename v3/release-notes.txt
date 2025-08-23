@@ -1,3 +1,3 @@
-## Fixed
-- Update docs to reflect changes from Manager API Refactoring by @yulesxoxo in [PR #4476](https://github.com/wailsapp/wails/pull/4476)
-- Fix Linux .desktop file appicon variable in Linux taskfile [PR #4477](https://github.com/wailsapp/wails/pull/4477)
+## Changed
+- When running `wails3 update build-assets` with the `-config` parameter, values set via the `-product*` parameters are
+  no longer ignored, and override the config value.
