@@ -10,6 +10,14 @@ extern void processDragItems(unsigned int windowId, char** arr, int length, int 
 extern void processWindowKeyDownEvent(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
 extern bool windowShouldUnconditionallyClose(unsigned int);
+
+// Define NSGlassEffectView style constants (these match the Go constants)
+typedef NS_ENUM(NSInteger, NSGlassEffectViewStyle) {
+    NSGlassEffectViewStyleAutomatic = 0,
+    NSGlassEffectViewStyleLight = 1,
+    NSGlassEffectViewStyleDark = 2,
+    NSGlassEffectViewStyleVibrant = 3
+};
 @implementation WebviewWindow
 - (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
 {
@@ -873,8 +881,8 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
     if (@available(macOS 15.0, *)) {
         Class NSGlassEffectViewClass = NSClassFromString(@"NSGlassEffectView");
         if (NSGlassEffectViewClass) {
-            // Create NSGlassEffectView
-            glassView = [[NSGlassEffectViewClass alloc] init];
+            // Create NSGlassEffectView (autoreleased)
+            glassView = [[[NSGlassEffectViewClass alloc] init] autorelease];
             
             // Set corner radius if the property exists
             if (cornerRadius > 0 && [glassView respondsToSelector:@selector(setCornerRadius:)]) {
@@ -883,6 +891,7 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
             
             // Set tint color if the property exists and color is specified
             if (a > 0 && [glassView respondsToSelector:@selector(setTintColor:)]) {
+                NSColor* tintColor = [NSColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a/255.0];
                 // Use performSelector to safely set tintColor if the setter exists
                 [glassView performSelector:@selector(setTintColor:) withObject:tintColor];
             }
@@ -906,7 +915,7 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
     
     // Fallback to NSVisualEffectView if NSGlassEffectView is not available
     if (!glassView) {
-        NSVisualEffectView* effectView = [[NSVisualEffectView alloc] init];
+        NSVisualEffectView* effectView = [[[NSVisualEffectView alloc] init] autorelease];
         glassView = effectView; // Use effectView as glassView for the rest of the function
         
         // If a custom material is specified, use it directly
