@@ -889,8 +889,8 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
             
             // Set style if the property exists
             if ([glassView respondsToSelector:@selector(setStyle:)]) {
-                // For vibrant (3), try to use Light (1) for a lighter effect
-                int lightStyle = (style == 3) ? 1 : style;
+                // For vibrant style, try to use Light style for a lighter effect
+                int lightStyle = (style == NSGlassEffectViewStyleVibrant) ? NSGlassEffectViewStyleLight : style;
                 [glassView setValue:@(lightStyle) forKey:@"style"];
             }
             
