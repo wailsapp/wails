@@ -309,6 +309,7 @@ tasks:
         html-dnd-api
         ignore-mouse
         keybindings
+        liquid-glass
         menu
         notifications
         panic-handling
