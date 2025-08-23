@@ -1356,6 +1356,11 @@ func (w *macosWebviewWindow) setBackgroundColour(colour RGBA) {
 func (w *macosWebviewWindow) applyLiquidGlass() {
 	options := w.parent.options.Mac.LiquidGlass
 	
+	// Validate corner radius
+	if options.CornerRadius < 0 {
+		options.CornerRadius = 0
+	}
+	
 	globalApplication.debug("Applying Liquid Glass effect", "window", w.parent.id)
 	
 	// Check if liquid glass is supported
@@ -1367,7 +1372,7 @@ func (w *macosWebviewWindow) applyLiquidGlass() {
 		return
 	}
 	
-	// Prepare tint color values
+	// Prepare tint color values (already clamped by uint8 type)
 	var r, g, b, a C.int
 	if options.TintColor != nil {
 		r = C.int(options.TintColor.Red)

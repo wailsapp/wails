@@ -463,9 +463,10 @@ type MacLiquidGlass struct {
 	// Spacing between grouped glass elements (in points)
 	GroupSpacing float64
 
-	// Performance optimization options
-	ReduceMotion bool // Reduce visual effects for better performance
-	StaticMode   bool // Disable dynamic updates for static content
+	// Performance optimization options (reserved for future implementation)
+	// TODO: These fields are currently not wired to the native implementation
+	// ReduceMotion bool // Reduce visual effects for better performance
+	// StaticMode   bool // Disable dynamic updates for static content
 }
 
 // MacWindow contains macOS specific options for Webview Windows
