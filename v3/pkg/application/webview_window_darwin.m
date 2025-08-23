@@ -872,6 +872,14 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
                           const char* groupID, double groupSpacing) {
     WebviewWindow* window = (WebviewWindow*)nsWindow;
     
+    // Ensure we're on the main thread for UI operations
+    if (![NSThread isMainThread]) {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            windowSetLiquidGlass(nsWindow, style, material, cornerRadius, r, g, b, a, groupID, groupSpacing);
+        });
+        return;
+    }
+    
     // Remove any existing visual effects
     windowRemoveVisualEffects(nsWindow);
     
@@ -918,9 +926,6 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
             if (groupSpacing > 0 && [glassView respondsToSelector:@selector(setGroupSpacing:)]) {
                 [glassView setValue:@(groupSpacing) forKey:@"groupSpacing"];
             }
-            
-            // Note: Don't add webView here - it will be properly reparented later
-            // to avoid exceptions from multiple parent views
         }
     }
     
@@ -1012,19 +1017,17 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
         
         // Safely reparent the webView to the glass view's contentView
         WKWebView* webView = window.webView;
-        if (webView) {
-            // Remove from current superview if it has one
-            if ([webView superview]) {
-                [webView removeFromSuperview];
-            }
+        NSView* glassContentView = [glassView valueForKey:@"contentView"];
+        
+        // Only proceed if both webView and glassContentView are non-nil
+        if (webView && glassContentView) {
+            // Always remove from current superview to avoid exceptions
+            [webView removeFromSuperview];
             
             // Add to the glass view's contentView
-            NSView* glassContentView = [glassView valueForKey:@"contentView"];
-            if (glassContentView) {
-                [glassContentView addSubview:webView];
-                [webView setFrame:glassContentView.bounds];
-                [webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-            }
+            [glassContentView addSubview:webView];
+            [webView setFrame:glassContentView.bounds];
+            [webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
         }
     } else {
         // NSVisualEffectView: Add glass as bottom layer, webView on top
