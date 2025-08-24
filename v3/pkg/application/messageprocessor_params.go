@@ -6,20 +6,51 @@ import (
 	"strconv"
 )
 
-type QueryParams map[string][]string
+type BodyParams []byte
 
-func (qp QueryParams) String(key string) *string {
-	if qp == nil {
-		return nil
+// NewBodyParams creates BodyParams from an interface{} (typically from JSON unmarshaling)
+func NewBodyParams(data interface{}) (BodyParams, error) {
+	if data == nil {
+		return nil, nil
 	}
-	values := qp[key]
-	if len(values) == 0 {
-		return nil
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
 	}
-	return &values[0]
+	return BodyParams(bytes), nil
 }
 
-func (qp QueryParams) Int(key string) *int {
+// ToBodyParams is a convenience function to convert interface{} to BodyParams
+// Usage: params, err := ToBodyParams(body.Params)
+func ToBodyParams(data interface{}) (BodyParams, error) {
+	return NewBodyParams(data)
+}
+
+func (qp BodyParams) getMap() (map[string]any, error) {
+	if qp == nil {
+		return nil, nil
+	}
+	var m map[string]any
+	err := json.Unmarshal([]byte(qp), &m)
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (qp BodyParams) String(key string) *string {
+	m, err := qp.getMap()
+	if err != nil || m == nil {
+		return nil
+	}
+	if val, ok := m[key]; ok && val != nil {
+		result := fmt.Sprintf("%v", val)
+		return &result
+	}
+	return nil
+}
+
+func (qp BodyParams) Int(key string) *int {
 	val := qp.String(key)
 	if val == nil {
 		return nil
@@ -31,50 +62,36 @@ func (qp QueryParams) Int(key string) *int {
 	return &result
 }
 
-func (qp QueryParams) UInt8(key string) *uint8 {
-	val := qp.String(key)
+func (qp BodyParams) UInt8(key string) *uint8 {
+	val := qp.Int(key)
 	if val == nil {
 		return nil
 	}
-	intResult, err := strconv.Atoi(*val)
-	if err != nil {
-		return nil
-	}
-
+	intResult := *val
 	if intResult < 0 {
 		intResult = 0
 	}
 	if intResult > 255 {
 		intResult = 255
 	}
-
-	var result = uint8(intResult)
-
+	result := uint8(intResult)
 	return &result
 }
-func (qp QueryParams) UInt(key string) *uint {
-	val := qp.String(key)
+
+func (qp BodyParams) UInt(key string) *uint {
+	val := qp.Int(key)
 	if val == nil {
 		return nil
 	}
-	intResult, err := strconv.Atoi(*val)
-	if err != nil {
-		return nil
-	}
-
+	intResult := *val
 	if intResult < 0 {
 		intResult = 0
 	}
-	if intResult > 255 {
-		intResult = 255
-	}
-
-	var result = uint(intResult)
-
+	result := uint(intResult)
 	return &result
 }
 
-func (qp QueryParams) Bool(key string) *bool {
+func (qp BodyParams) Bool(key string) *bool {
 	val := qp.String(key)
 	if val == nil {
 		return nil
@@ -86,7 +103,7 @@ func (qp QueryParams) Bool(key string) *bool {
 	return &result
 }
 
-func (qp QueryParams) Float64(key string) *float64 {
+func (qp BodyParams) Float64(key string) *float64 {
 	val := qp.String(key)
 	if val == nil {
 		return nil
@@ -98,109 +115,9 @@ func (qp QueryParams) Float64(key string) *float64 {
 	return &result
 }
 
-func (qp QueryParams) ToStruct(str any) error {
-	args := qp["args"]
-	if len(args) == 1 {
-		return json.Unmarshal([]byte(args[0]), &str)
-	}
-	return nil
-}
-
-type Args struct {
-	data map[string]any
-}
-
-func (a *Args) String(key string) *string {
-	if a == nil {
+func (qp BodyParams) ToStruct(str any) error {
+	if qp == nil {
 		return nil
 	}
-	if val := a.data[key]; val != nil {
-		result := fmt.Sprintf("%v", val)
-		return &result
-	}
-	return nil
-}
-
-func (a *Args) Int(s string) *int {
-	if a == nil {
-		return nil
-	}
-	if val := a.data[s]; val != nil {
-		return convertNumber[int](val)
-	}
-	return nil
-}
-
-func convertNumber[T int | int8 | int16 | int32 | int64 | uint | uint8 | uint16 | uint32 | uint64](val any) *T {
-	if val == nil {
-		return nil
-	}
-	var result T
-	switch v := val.(type) {
-	case T:
-		result = v
-	case float64:
-		result = T(v)
-	default:
-		return nil
-	}
-	return &result
-}
-
-func (a *Args) UInt8(s string) *uint8 {
-	if a == nil {
-		return nil
-	}
-	if val := a.data[s]; val != nil {
-		return convertNumber[uint8](val)
-	}
-	return nil
-}
-
-func (a *Args) UInt(s string) *uint {
-	if a == nil {
-		return nil
-	}
-	if val := a.data[s]; val != nil {
-		return convertNumber[uint](val)
-	}
-	return nil
-}
-
-func (a *Args) Float64(s string) *float64 {
-	if a == nil {
-		return nil
-	}
-	if val := a.data[s]; val != nil {
-		if result, ok := val.(float64); ok {
-			return &result
-		}
-	}
-	return nil
-}
-
-func (a *Args) Bool(s string) *bool {
-	if a == nil {
-		return nil
-	}
-	if val := a.data[s]; val != nil {
-		if result, ok := val.(bool); ok {
-			return &result
-		}
-	}
-	return nil
-}
-
-func (qp QueryParams) Args() (*Args, error) {
-	argData := qp["args"]
-	var result = &Args{
-		data: make(map[string]any),
-	}
-	if len(argData) == 1 {
-		err := json.Unmarshal([]byte(argData[0]), &result.data)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return result, nil
+	return json.Unmarshal([]byte(qp), str)
 }
