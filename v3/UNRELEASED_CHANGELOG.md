@@ -1,6 +1,6 @@
 # Unreleased Changes
 
-<!-- 
+<!--
 This file is used to collect changelog entries for the next v3-alpha release.
 Add your changes under the appropriate sections below.
 
@@ -16,38 +16,51 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
-<!-- New features, capabilities, or enhancements -->
+
+- Updated the configuration for detecting the screenFrame to use the
+  visibleFrame instead of the frame to handle cases where the screen is not
+  fully visible (mostly due to dock or menu bar).
 
 ## Changed
-<!-- Changes in existing functionality -->
+
+- Changed the NSRect screenFrame = [screen frame]; to
+- Changed the NSRect screenFrame = [screen visibleFrame];
 
 ## Fixed
-<!-- Bug fixes -->
+
+N/A
 
 ## Deprecated
-<!-- Soon-to-be removed features -->
+
+N/A
 
 ## Removed
-<!-- Features removed in this release -->
+
+N/A
 
 ## Security
-<!-- Security-related changes -->
+
+N/A
 
 ---
 
 ### Example Entries:
 
 **Added:**
+
 - Add support for custom window icons in application options
 - Add new `SetWindowIcon()` method to runtime API (#1234)
 
 **Changed:**
+
 - Update minimum Go version requirement to 1.21
 - Improve error messages for invalid configuration files
 
 **Fixed:**
+
 - Fix memory leak in event system during window close operations (#5678)
 - Fix crash when using context menus on Linux with Wayland
 
 **Security:**
+
 - Update dependencies to address CVE-2024-12345 in third-party library
