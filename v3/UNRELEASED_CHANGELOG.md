@@ -16,31 +16,23 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
-
-- Updated the configuration for detecting the screenFrame to use the
-  visibleFrame instead of the frame to handle cases where the screen is not
-  fully visible (mostly due to dock or menu bar).
+<!-- New features, capabilities, or enhancements -->
 
 ## Changed
-
-- Changed the NSRect screenFrame = [screen frame]; to
-- Changed the NSRect screenFrame = [screen visibleFrame];
+<!-- Changes in existing functionality -->
+- macOS: Use `visibleFrame` instead of `frame` for window centering to exclude menu bar and dock areas
 
 ## Fixed
-
-N/A
+<!-- Bug fixes -->
 
 ## Deprecated
-
-N/A
+<!-- Soon-to-be removed features -->
 
 ## Removed
-
-N/A
+<!-- Features removed in this release -->
 
 ## Security
-
-N/A
+<!-- Security-related changes -->
 
 ---
 
