@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 - Fixed linux desktop.tmpl protocol range, by removing `<.Info.Protocol>` to `<.Protocol>`
+- Fixed redefinition error for liquid glass demo in [#4542](https://github.com/wailsapp/wails/pull/4542) by @Etesam913
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
