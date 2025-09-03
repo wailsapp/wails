@@ -69,3 +69,16 @@ func (a *App) logStartup() {
 
 	a.info("Build Info:", args...)
 }
+
+func (a *App) logBindingConfig() {
+	cfg := &a.options.Bindings
+	a.info("Binding Configuration:",
+		"timeout", cfg.Timeout,
+		"cors.enabled", cfg.CORS.Enabled,
+		"cors.origins", cfg.CORS.AllowedOrigins,
+		"cors.methods", cfg.CORS.AllowedMethods,
+		"cors.headers", cfg.CORS.AllowedHeaders,
+		"cors.maxAge", cfg.CORS.MaxAge,
+		"enableStreaming", cfg.EnableStreaming,
+	)
+}
