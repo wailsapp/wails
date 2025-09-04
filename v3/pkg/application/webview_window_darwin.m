@@ -11,12 +11,12 @@ extern void processWindowKeyDownEvent(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
 extern bool windowShouldUnconditionallyClose(unsigned int);
 
-// Define NSGlassEffectView style constants (these match the Go constants)
-typedef NS_ENUM(NSInteger, NSGlassEffectViewStyle) {
-    NSGlassEffectViewStyleAutomatic = 0,
-    NSGlassEffectViewStyleLight = 1,
-    NSGlassEffectViewStyleDark = 2,
-    NSGlassEffectViewStyleVibrant = 3
+// Define custom glass effect style constants (these match the Go constants)
+typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
+    LiquidGlassStyleAutomatic = 0,
+    LiquidGlassStyleLight = 1,
+    LiquidGlassStyleDark = 2,
+    LiquidGlassStyleVibrant = 3
 };
 @implementation WebviewWindow
 - (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
@@ -907,7 +907,7 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
             // Set style if the property exists
             if ([glassView respondsToSelector:@selector(setStyle:)]) {
                 // For vibrant style, try to use Light style for a lighter effect
-                int lightStyle = (style == NSGlassEffectViewStyleVibrant) ? NSGlassEffectViewStyleLight : style;
+                int lightStyle = (style == LiquidGlassStyleVibrant) ? LiquidGlassStyleLight : style;
                 [glassView setValue:@(lightStyle) forKey:@"style"];
             }
             
