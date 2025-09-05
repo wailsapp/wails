@@ -2,9 +2,8 @@ import './App.css'
 import logo from "./assets/images/logo-universal.png"
 import {Greet} from "../wailsjs/go/main/App";
 import {useState} from "preact/hooks";
-import {h} from 'preact';
 
-export function App(props: any) {
+export function App() {
     const [resultText, setResultText] = useState("Please enter your name below 👇");
     const [name, setName] = useState('');
     const updateName = (e: any) => setName(e.target.value);
