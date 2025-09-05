@@ -4,6 +4,7 @@ package application
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -373,6 +374,136 @@ func setupDPIAwareness() error {
 	}
 
 	return errors.New("no DPI awareness method supported")
+}
+
+func (m *windowsApp) setStartAtLogin(enabled bool) error {
+	// Get the current executable path
+	exePath, err := os.Executable()
+	if err != nil {
+		return fmt.Errorf("failed to get executable path: %w", err)
+	}
+
+	// Resolve any symbolic links to get the real path
+	realPath, err := filepath.EvalSymlinks(exePath)
+	if err != nil {
+		return fmt.Errorf("failed to resolve executable path: %w", err)
+	}
+
+	// Validate that the executable exists
+	if _, err := os.Stat(realPath); os.IsNotExist(err) {
+		return fmt.Errorf("executable does not exist at path: %s", realPath)
+	}
+
+	// Get the registry key name (derive from executable name)
+	exeName := filepath.Base(realPath)
+	keyName := strings.TrimSuffix(exeName, filepath.Ext(exeName)) // Remove extension
+
+	// Validate key name - avoid problematic characters
+	if strings.ContainsAny(keyName, "\\/:*?\"<>|") {
+		return fmt.Errorf("invalid executable name for registry key: %s", keyName)
+	}
+
+	if enabled {
+		return m.addToStartup(keyName, realPath)
+	}
+	return m.removeFromStartup(keyName)
+}
+
+func (m *windowsApp) startsAtLogin() (bool, error) {
+	// Get the current executable path
+	exePath, err := os.Executable()
+	if err != nil {
+		return false, fmt.Errorf("failed to get executable path: %w", err)
+	}
+
+	// Get the registry key name
+	exeName := filepath.Base(exePath)
+	keyName := strings.TrimSuffix(exeName, filepath.Ext(exeName))
+
+	return m.isInStartup(keyName)
+}
+
+func (m *windowsApp) addToStartup(keyName, exePath string) error {
+	key, err := w32.RegOpenKeyEx(
+		w32.HKEY_CURRENT_USER,
+		w32.StringToUTF16Ptr(`Software\Microsoft\Windows\CurrentVersion\Run`),
+		0,
+		w32.KEY_SET_VALUE,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to open registry key: %w", err)
+	}
+	defer w32.RegCloseKey(key)
+
+	// Set the registry value
+	err = w32.RegSetValueEx(
+		key,
+		w32.StringToUTF16Ptr(keyName),
+		0,
+		w32.REG_SZ,
+		(*byte)(unsafe.Pointer(w32.StringToUTF16Ptr(exePath))),
+		uint32((len(exePath)+1)*2), // UTF-16 byte length
+	)
+	if err != nil {
+		return fmt.Errorf("failed to set registry value: %w", err)
+	}
+
+	return nil
+}
+
+func (m *windowsApp) removeFromStartup(keyName string) error {
+	key, err := w32.RegOpenKeyEx(
+		w32.HKEY_CURRENT_USER,
+		w32.StringToUTF16Ptr(`Software\Microsoft\Windows\CurrentVersion\Run`),
+		0,
+		w32.KEY_SET_VALUE,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to open registry key: %w", err)
+	}
+	defer w32.RegCloseKey(key)
+
+	// Delete the registry value
+	err = w32.RegDeleteValue(key, w32.StringToUTF16Ptr(keyName))
+	if err != nil && err != w32.ERROR_FILE_NOT_FOUND {
+		return fmt.Errorf("failed to delete registry value: %w", err)
+	}
+
+	return nil
+}
+
+func (m *windowsApp) isInStartup(keyName string) (bool, error) {
+	key, err := w32.RegOpenKeyEx(
+		w32.HKEY_CURRENT_USER,
+		w32.StringToUTF16Ptr(`Software\Microsoft\Windows\CurrentVersion\Run`),
+		0,
+		w32.KEY_QUERY_VALUE,
+	)
+	if err != nil {
+		return false, fmt.Errorf("failed to open registry key: %w", err)
+	}
+	defer w32.RegCloseKey(key)
+
+	// Query the registry value
+	var valueType uint32
+	var dataSize uint32
+	err = w32.RegQueryValueEx(
+		key,
+		w32.StringToUTF16Ptr(keyName),
+		nil,
+		&valueType,
+		nil,
+		&dataSize,
+	)
+
+	if err == w32.ERROR_FILE_NOT_FOUND {
+		return false, nil // Key doesn't exist, not in startup
+	}
+	if err != nil {
+		return false, fmt.Errorf("failed to query registry value: %w", err)
+	}
+
+	return true, nil
 }
 
 func newPlatformApp(app *App) *windowsApp {
