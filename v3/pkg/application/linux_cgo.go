@@ -945,13 +945,10 @@ func (w *linuxWebviewWindow) getCurrentMonitor() *C.GdkMonitor {
 		if test_monitor != nil {
 			var rect C.GdkRectangle
 			C.gdk_monitor_get_geometry(test_monitor, &rect)
-			fmt.Printf("Monitor %d bounds: x=%d, y=%d, w=%d, h=%d\n",
-				i, int(rect.x), int(rect.y), int(rect.width), int(rect.height))
 
 			// Check if window is within this monitor's bounds
 			if window_x >= int(rect.x) && window_x < int(rect.x+rect.width) &&
 				window_y >= int(rect.y) && window_y < int(rect.y+rect.height) {
-				fmt.Printf("Found window on monitor %d\n", i)
 				return test_monitor
 			}
 		}
