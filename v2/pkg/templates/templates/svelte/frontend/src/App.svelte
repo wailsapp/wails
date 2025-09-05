@@ -2,8 +2,8 @@
   import logo from './assets/images/logo-universal.png'
   import {Greet} from '../wailsjs/go/main/App.js'
 
-  let resultText = "Please enter your name below 👇"
-  let name
+  let resultText = $state("Please enter your name below 👇")
+  let name = $state("")
 
   function greet() {
     Greet(name).then(result => resultText = result)
@@ -15,7 +15,7 @@
   <div class="result" id="result">{resultText}</div>
   <div class="input-box" id="input">
     <input autocomplete="off" bind:value={name} class="input" id="name" type="text"/>
-    <button class="btn" on:click={greet}>Greet</button>
+    <button class="btn" onclick={greet}>Greet</button>
   </div>
 </main>
 
