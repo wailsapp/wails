@@ -28,11 +28,13 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/originvalidator"
 	wailsruntime "github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
+	w32consts "github.com/wailsapp/wails/v2/internal/platform/win32"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"github.com/wailsapp/wails/v2/pkg/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
+	w "golang.org/x/sys/windows"
 )
 
 const startURL = "http://wails.localhost/"
@@ -75,6 +77,13 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	// Get Windows build number
 	versionInfo, _ := operatingsystem.GetWindowsVersionInfo()
 
+	// Apply DLL search path settings if specified
+	if appoptions.Windows != nil && appoptions.Windows.DLLSearchPaths != 0 {
+		w.SetDefaultDllDirectories(appoptions.Windows.DLLSearchPaths)
+	}
+	// Now initialize packages that load DLLs
+	w32.Init()
+	w32consts.Init()
 	result := &Frontend{
 		frontendOptions: appoptions,
 		logger:          myLogger,
