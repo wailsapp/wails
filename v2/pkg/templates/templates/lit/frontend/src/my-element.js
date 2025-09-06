@@ -1,7 +1,7 @@
 import {css, html, LitElement} from 'lit'
 import logo from './assets/images/logo-universal.png'
 import {Greet} from "../wailsjs/go/main/App";
-import './style.css';
+import './index.css';
 
 /**
  * An example element.
