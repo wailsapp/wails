@@ -25,6 +25,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
+	"github.com/wailsapp/wails/v2/internal/frontend/originvalidator"
 	wailsruntime "github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
@@ -62,6 +63,8 @@ type Frontend struct {
 
 	hasStarted bool
 
+	originValidator *originvalidator.OriginValidator
+
 	// Windows build number
 	versionInfo     *operatingsystem.WindowsVersionInfo
 	resizeDebouncer func(f func())
@@ -89,14 +92,17 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 
 	// We currently can't use wails://wails/ as other platforms do, therefore we map the assets sever onto the following url.
 	result.startURL, _ = url.Parse(startURL)
+	result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
+		result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 		return result
 	}
 
 	if port, _ := ctx.Value("assetserverport").(string); port != "" {
 		result.startURL.Host = net.JoinHostPort(result.startURL.Host, port)
+		result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 	}
 
 	var bindings string
@@ -680,7 +686,24 @@ var edgeMap = map[string]uintptr{
 	"nw-resize": w32.HTTOPLEFT,
 }
 
-func (f *Frontend) processMessage(message string) {
+func (f *Frontend) processMessage(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
+	topSource, err := sender.GetSource()
+	if err != nil {
+		f.logger.Error(fmt.Sprintf("Unable to get source from sender: %s", err.Error()))
+		return
+	}
+
+	senderSource, err := args.GetSource()
+	if err != nil {
+		f.logger.Error(fmt.Sprintf("Unable to get source from args: %s", err.Error()))
+		return
+	}
+
+	// verify both topSource and sender are allowed origins
+	if !f.validBindingOrigin(topSource) || !f.validBindingOrigin(senderSource) {
+		return
+	}
+
 	if message == "drag" {
 		if !f.mainWindow.IsFullScreen() {
 			err := f.startDrag()
@@ -725,6 +748,23 @@ func (f *Frontend) processMessage(message string) {
 }
 
 func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
+	topSource, err := sender.GetSource()
+	if err != nil {
+		f.logger.Error(fmt.Sprintf("Unable to get source from sender: %s", err.Error()))
+		return
+	}
+
+	senderSource, err := args.GetSource()
+	if err != nil {
+		f.logger.Error(fmt.Sprintf("Unable to get source from args: %s", err.Error()))
+		return
+	}
+
+	// verify both topSource and sender are allowed origins
+	if !f.validBindingOrigin(topSource) || !f.validBindingOrigin(senderSource) {
+		return
+	}
+
 	if strings.HasPrefix(message, "file:drop") {
 		if !f.frontendOptions.DragAndDrop.EnableFileDrop {
 			return
@@ -781,6 +821,20 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 		go f.dispatchMessage(fmt.Sprintf("DD:%s:%s:%s", x, y, strings.Join(files, "\n")))
 		return
 	}
+}
+
+func (f *Frontend) validBindingOrigin(source string) bool {
+	origin, err := f.originValidator.GetOriginFromURL(source)
+	if err != nil {
+		f.logger.Error(fmt.Sprintf("Error parsing source URL %s: %v", source, err.Error()))
+		return false
+	}
+	allowed := f.originValidator.IsOriginAllowed(origin)
+	if !allowed {
+		f.logger.Error("Blocked request from unauthorized origin: %s", origin)
+		return false
+	}
+	return true
 }
 
 func (f *Frontend) dispatchMessage(message string) {

@@ -235,7 +235,7 @@ Si ces 2 clés ne sont pas fournies, alors Wails ne fait absolument rien avec le
 
 ### AssetsHandler
 
-Une application Wails v2 peut éventuellement définir un `http.Handler` dans `options.app`, qui permet de se connecter à l'AssetServer pour créer des fichiers à la volée ou traiter les requêtes POST/PUT. Les requêtes GET sont toujours traitées d'abord par le `assets` FS. Si le FS ne trouve pas le fichier demandé, la requête sera transmise au `http.Handler`. Toute requête autre que GET sera traitée directement par le `AssetsHandler` si spécifié. Il est également possible d'utiliser le `AssetsHandler` uniquement en spécifiant `nil` dans l'option `Assets`.
+Une application Wails v2 peut éventuellement définir un `http.Handler` dans `options.app`, qui permet de se connecter à l'AssetServer pour créer des fichiers à la volée ou traiter les requêtes POST/PUT. Les requêtes GET sont toujours traitées d'abord par le `assets` FS. Si le FS ne trouve pas le fichier demandé, la requête sera transmise au `http.Handler`. Toute requête autre que GET sera traitée directement par le `AssetsHandler` si spécifié. It's also possible to only use the `AssetsHandler` by specifying `nil` as the `Assets` option.
 
 ## Serveur de développement embarqué
 
