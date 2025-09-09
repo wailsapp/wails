@@ -32,7 +32,7 @@ jobs:
       with:
         ref: v3-alpha
         fetch-depth: 0
-        token: ${{ github.token }}
+        token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
     
     - name: Setup Go
       uses: actions/setup-go@v5
@@ -44,7 +44,7 @@ jobs:
       uses: arduino/setup-task@v2
       with:
         version: 3.x
-        repo-token: ${{ github.token }}
+        repo-token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
     
     - name: Verify Go and Task installation
       run: |
@@ -66,7 +66,7 @@ jobs:
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         
         # Configure git to use the token for authentication
-        git config --global url."https://x-access-token:${{ github.token }}@github.com/".insteadOf "https://github.com/"
+        git config --global url."https://x-access-token:${{ secrets.WAILS_REPO_TOKEN || github.token }}@github.com/".insteadOf "https://github.com/"
     
     - name: Check for existing release tag
       id: check_tag
@@ -329,7 +329,7 @@ jobs:
         steps.release.outputs.success == 'true' &&
         steps.release.outputs.version_changed == 'true'
       env:
-        GITHUB_TOKEN: ${{ github.token }}
+        GITHUB_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
       run: |
         echo "🏷️  Creating and pushing git tag: ${{ steps.release.outputs.tag }}"
         
@@ -395,7 +395,7 @@ jobs:
         steps.release.outputs.success == 'true' &&
         steps.release.outputs.version_changed == 'true'
       env:
-        GITHUB_TOKEN: ${{ github.token }}
+        GITHUB_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
       run: |
         echo "📝 Committing and pushing changes..."
         
@@ -572,7 +572,7 @@ jobs:
           echo "outcome=failure" >> $GITHUB_OUTPUT
         fi
       env:
-        GITHUB_TOKEN: ${{ github.token }}
+        GITHUB_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
     
     - name: Handle GitHub Release Creation Result
       id: release_result
