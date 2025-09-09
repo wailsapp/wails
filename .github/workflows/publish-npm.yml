@@ -1,6 +1,6 @@
 on:
   push:
-    branches: ['v3-alpha']
+    branches: ['atterpac-npm-publish']
   workflow_dispatch:
 
 concurrency:
@@ -92,19 +92,6 @@ jobs:
         run: |
           npm test
           npm run build
-
-      - name: Bump version
-        id: bump-version
-        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
-        run: |
-          echo "version=$(npm --no-git-tag-version --force version prerelease)" >> "$GITHUB_OUTPUT"
-
-      - name: Commit changes
-        run: |
-          git add .
-          git commit -m "[skip ci] Publish @wailsio/runtime ${{ steps.bump-version.outputs.version }}"
-          git push
-          fi
 
       - name: Publish npm package
         uses: JS-DevTools/npm-publish@v3
