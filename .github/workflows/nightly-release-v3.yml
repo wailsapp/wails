@@ -681,7 +681,8 @@ jobs:
     - name: Summary
       if: always()
       run: |
-        if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+        DRY_RUN_INPUT="${{ github.event.inputs.dry_run }}"; [ -z "$DRY_RUN_INPUT" ] && DRY_RUN_INPUT=false
+        if [ "$DRY_RUN_INPUT" == "true" ]; then
           echo "## 🧪 DRY RUN Release Test Summary" >> $GITHUB_STEP_SUMMARY
         else
           echo "## 🚀 Nightly Release Summary" >> $GITHUB_STEP_SUMMARY
@@ -699,7 +700,7 @@ jobs:
         
         # Overall status
         if [ "${{ steps.error_summary.outputs.overall_success }}" == "true" ]; then
-          if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+          if [ "$DRY_RUN_INPUT" == "true" ]; then
             echo "- **Mode:** 🧪 DRY RUN (no actual release created)" >> $GITHUB_STEP_SUMMARY
             echo "- **Status:** ✅ Test completed successfully" >> $GITHUB_STEP_SUMMARY
           else
@@ -730,10 +731,12 @@ jobs:
         fi
         
         # Error reporting section
-        if [ "${{ steps.error_summary.outputs.total_errors }}" -gt 0 ]; then
+        ERRORS_TOTAL="${{ steps.error_summary.outputs.total_errors }}"
+        ERRORS_TOTAL=${ERRORS_TOTAL:-0}
+        if [ "$ERRORS_TOTAL" -gt 0 ]; then
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## ⚠️  Error Report" >> $GITHUB_STEP_SUMMARY
-          echo "**Total Error Categories:** ${{ steps.error_summary.outputs.total_errors }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Total Error Categories:** $ERRORS_TOTAL" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "${{ steps.error_summary.outputs.error_summary }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
