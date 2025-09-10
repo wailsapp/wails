@@ -70,7 +70,7 @@ body:
     validations:
       required: false
   - type: textarea
-    id: systemetails
+    id: systemdetails
     attributes:
       label: System Details
       description: Please add the output of `wails doctor`.
