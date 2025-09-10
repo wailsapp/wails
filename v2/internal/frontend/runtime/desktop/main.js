@@ -44,6 +44,10 @@ export function Environment() {
     return Call(":wails:Environment");
 }
 
+export function ProductInfo() {
+  return Call(":wails:ProductInfo");
+}
+
 // The JS runtime
 window.runtime = {
     ...Log,
@@ -59,6 +63,7 @@ window.runtime = {
     EventsOff,
     EventsOffAll,
     Environment,
+    ProductInfo,
     Show,
     Hide,
     Quit
