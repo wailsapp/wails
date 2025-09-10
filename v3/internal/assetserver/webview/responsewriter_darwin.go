@@ -101,7 +101,7 @@ func (rw *responseWriter) Write(buf []byte) (int, error) {
 
 	var content unsafe.Pointer
 	var contentLen int
-	if buf != nil {
+	if len(buf) > 0 {
 		content = unsafe.Pointer(&buf[0])
 		contentLen = len(buf)
 	}
