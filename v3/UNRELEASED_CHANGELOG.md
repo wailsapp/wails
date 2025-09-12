@@ -25,6 +25,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 - Fixed redefinition error for liquid glass demo in [#4542](https://github.com/wailsapp/wails/pull/4542) by @Etesam913
+- Fixed issue where AssetServer can crash on MacOS in [#4576](https://github.com/wailsapp/wails/pull/4576) by @jghiloni
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
