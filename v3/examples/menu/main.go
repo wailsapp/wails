@@ -149,7 +149,7 @@ func main() {
 	window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Name:  "menu-example",
 		Title: "Menu Example",
-	}).SetBackgroundColour(application.NewRGB(33, 37, 41)).SetBackgroundColour(application.NewRGB(33, 37, 41))
+	}).SetBackgroundColour(application.NewRGB(33, 37, 41))
 	window.SetMenu(menu)
 
 	err := app.Run()
