@@ -32,6 +32,22 @@ func ServeFile(rw http.ResponseWriter, filename string, blob []byte) error {
 	if mimeType := header.Get(HeaderContentType); mimeType == "" {
 		mimeType = GetMimetype(filename, blob)
 		header.Set(HeaderContentType, mimeType)
+		// Debug CSS serving with clear markers
+		if strings.HasSuffix(filename, ".css") {
+			fmt.Printf("\n🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨\n")
+			fmt.Printf("CSS FILE BEING SERVED:\n")
+			fmt.Printf("  Filename: %s\n", filename)
+			fmt.Printf("  MimeType: %s\n", mimeType)
+			fmt.Printf("  Size: %d bytes\n", len(blob))
+			if len(blob) > 0 {
+				preview := string(blob)
+				if len(preview) > 100 {
+					preview = preview[:100] + "..."
+				}
+				fmt.Printf("  Preview: %s\n", preview)
+			}
+			fmt.Printf("🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨\n\n")
+		}
 	}
 
 	rw.WriteHeader(http.StatusOK)

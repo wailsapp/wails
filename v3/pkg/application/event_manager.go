@@ -1,6 +1,7 @@
 package application
 
 import (
+	"fmt"
 	"slices"
 
 	"github.com/samber/lo"
@@ -14,13 +15,26 @@ type EventManager struct {
 
 // newEventManager creates a new EventManager instance
 func newEventManager(app *App) *EventManager {
-	return &EventManager{
+	println("🟢 [newEventManager] Creating EventManager")
+	em := &EventManager{
 		app: app,
 	}
+	println("🟢 [newEventManager] EventManager created")
+	return em
 }
 
 // Emit emits a custom event
 func (em *EventManager) Emit(name string, data ...any) {
+	// Use fmt.Printf to ensure output on iOS
+	fmt.Printf("🔵 [EventManager.Emit] Emitting event: %s, Data count: %d\n", name, len(data))
+	if em.app == nil {
+		fmt.Println("🔴 [EventManager.Emit] App is nil!")
+		return
+	}
+	if em.app.customEventProcessor == nil {
+		fmt.Println("🔴 [EventManager.Emit] customEventProcessor is nil!")
+		return
+	}
 	em.app.customEventProcessor.Emit(&CustomEvent{
 		Name: name,
 		Data: data,
@@ -34,6 +48,15 @@ func (em *EventManager) EmitEvent(event *CustomEvent) {
 
 // On registers a listener for custom events
 func (em *EventManager) On(name string, callback func(event *CustomEvent)) func() {
+	println("🔵 [EventManager.On] Registering listener for:", name)
+	if em.app == nil {
+		println("🔴 [EventManager.On] App is nil!")
+		return func() {}
+	}
+	if em.app.customEventProcessor == nil {
+		println("🔴 [EventManager.On] customEventProcessor is nil!")
+		return func() {}
+	}
 	return em.app.customEventProcessor.On(name, callback)
 }
 
@@ -96,13 +119,19 @@ func (em *EventManager) RegisterApplicationEventHook(eventType events.Applicatio
 
 // Dispatch dispatches an event to listeners (internal use)
 func (em *EventManager) dispatch(event *CustomEvent) {
+	println("🔵 [EventManager.dispatch] Dispatching event to windows:", event.Name)
+
 	// Snapshot windows under RLock
 	em.app.windowsLock.RLock()
-	for _, window := range em.app.windows {
+	windowCount := len(em.app.windows)
+	println("🔵 [EventManager.dispatch] Window count:", windowCount)
+	for i, window := range em.app.windows {
 		if event.IsCancelled() {
+			println("🟠 [EventManager.dispatch] Event cancelled, stopping dispatch")
 			em.app.windowsLock.RUnlock()
 			return
 		}
+		println("🔵 [EventManager.dispatch] Dispatching to window", i+1)
 		window.DispatchWailsEvent(event)
 	}
 	em.app.windowsLock.RUnlock()
@@ -112,10 +141,14 @@ func (em *EventManager) dispatch(event *CustomEvent) {
 	listeners := slices.Clone(em.app.wailsEventListeners)
 	em.app.wailsEventListenerLock.Unlock()
 
-	for _, listener := range listeners {
+	println("🔵 [EventManager.dispatch] Wails event listener count:", len(listeners))
+
+	for i, listener := range listeners {
 		if event.IsCancelled() {
+			println("🟠 [EventManager.dispatch] Event cancelled during listener dispatch")
 			return
 		}
+		println("🔵 [EventManager.dispatch] Dispatching to Wails listener", i+1)
 		listener.DispatchWailsEvent(event)
 	}
 }

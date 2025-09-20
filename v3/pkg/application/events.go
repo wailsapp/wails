@@ -109,11 +109,17 @@ type EventProcessor struct {
 }
 
 func NewWailsEventProcessor(dispatchEventToWindows func(*CustomEvent)) *EventProcessor {
-	return &EventProcessor{
+	println("🟢 [NewWailsEventProcessor] Creating new EventProcessor")
+	println("🟢 [NewWailsEventProcessor] dispatchEventToWindows func is nil:", dispatchEventToWindows == nil)
+
+	processor := &EventProcessor{
 		listeners:              make(map[string][]*eventListener),
 		dispatchEventToWindows: dispatchEventToWindows,
 		hooks:                  make(map[string][]*hook),
 	}
+
+	println("🟢 [NewWailsEventProcessor] EventProcessor created successfully")
+	return processor
 }
 
 // On is the equivalent of Javascript's `addEventListener`
@@ -133,29 +139,40 @@ func (e *EventProcessor) Once(eventName string, callback func(event *CustomEvent
 
 // Emit sends an event to all listeners
 func (e *EventProcessor) Emit(thisEvent *CustomEvent) {
+	println("🔵 [EventProcessor.Emit] Event:", thisEvent.Name, "Data:", thisEvent.Data)
+
 	if thisEvent == nil {
+		println("🔴 [EventProcessor.Emit] Event is nil, returning")
 		return
 	}
 
 	// If we have any hooks, run them first and check if the event was cancelled
 	if e.hooks != nil {
 		if hooks, ok := e.hooks[thisEvent.Name]; ok {
+			println("🔵 [EventProcessor.Emit] Running", len(hooks), "hooks for", thisEvent.Name)
 			for _, thisHook := range hooks {
 				thisHook.callback(thisEvent)
 				if thisEvent.IsCancelled() {
+					println("🟠 [EventProcessor.Emit] Event cancelled by hook")
 					return
 				}
 			}
 		}
 	}
 
+	println("🔵 [EventProcessor.Emit] Dispatching to listeners and windows for:", thisEvent.Name)
 	go func() {
 		defer handlePanic()
 		e.dispatchEventToListeners(thisEvent)
 	}()
 	go func() {
 		defer handlePanic()
-		e.dispatchEventToWindows(thisEvent)
+		if e.dispatchEventToWindows != nil {
+			println("🔵 [EventProcessor.Emit] Calling dispatchEventToWindows for:", thisEvent.Name)
+			e.dispatchEventToWindows(thisEvent)
+		} else {
+			println("🔴 [EventProcessor.Emit] dispatchEventToWindows is nil!")
+		}
 	}()
 }
 
@@ -171,6 +188,8 @@ func (e *EventProcessor) OffAll() {
 
 // registerListener provides a means of subscribing to events of type "eventName"
 func (e *EventProcessor) registerListener(eventName string, callback func(*CustomEvent), counter int) func() {
+	println("🟢 [EventProcessor.registerListener] Registering listener for:", eventName, "Counter:", counter)
+
 	// Create new eventListener
 	thisListener := &eventListener{
 		callback: callback,
@@ -180,8 +199,13 @@ func (e *EventProcessor) registerListener(eventName string, callback func(*Custo
 	e.notifyLock.Lock()
 	// Append the new listener to the listeners slice
 	e.listeners[eventName] = append(e.listeners[eventName], thisListener)
+	listenerCount := len(e.listeners[eventName])
 	e.notifyLock.Unlock()
+
+	println("🟢 [EventProcessor.registerListener] Listener registered. Total listeners for", eventName, ":", listenerCount)
+
 	return func() {
+		println("🔴 [EventProcessor.registerListener] Unregistering listener for:", eventName)
 		e.notifyLock.Lock()
 		defer e.notifyLock.Unlock()
 
@@ -226,25 +250,31 @@ func (e *EventProcessor) unRegisterListener(eventName string) {
 
 // dispatchEventToListeners calls all registered listeners event name
 func (e *EventProcessor) dispatchEventToListeners(event *CustomEvent) {
+	println("🔵 [EventProcessor.dispatchEventToListeners] Dispatching:", event.Name)
 
 	e.notifyLock.Lock()
 	defer e.notifyLock.Unlock()
 
 	listeners := e.listeners[event.Name]
 	if listeners == nil {
+		println("🟠 [EventProcessor.dispatchEventToListeners] No listeners for:", event.Name)
 		return
 	}
+
+	println("🔵 [EventProcessor.dispatchEventToListeners] Found", len(listeners), "listeners for:", event.Name)
 
 	// We have a dirty flag to indicate that there are items to delete
 	itemsToDelete := false
 
 	// Callback in goroutine
-	for _, listener := range listeners {
+	for i, listener := range listeners {
+		println("🔵 [EventProcessor.dispatchEventToListeners] Calling listener", i+1, "for:", event.Name)
 		if listener.counter > 0 {
 			listener.counter--
 		}
 		go func() {
 			if event.IsCancelled() {
+				println("🟠 [EventProcessor.dispatchEventToListeners] Event cancelled, skipping callback")
 				return
 			}
 			defer handlePanic()

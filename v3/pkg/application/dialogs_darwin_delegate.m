@@ -1,4 +1,4 @@
-//go:build darwin
+//go:build darwin && !ios
 
 #import "dialogs_darwin_delegate.h"
 

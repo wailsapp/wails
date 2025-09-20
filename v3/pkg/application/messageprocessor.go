@@ -27,6 +27,7 @@ const (
 	systemRequest      = 8
 	browserRequest     = 9
 	cancelCallRequesst = 10
+	iosRequest         = 11
 )
 
 type MessageProcessor struct {
@@ -137,6 +138,8 @@ func (m *MessageProcessor) HandleRuntimeCallWithIDs(rw http.ResponseWriter, r *h
 		m.processBrowserMethod(method, rw, r, targetWindow, params)
 	case cancelCallRequesst:
 		m.processCallCancelMethod(method, rw, r, targetWindow, params)
+	case iosRequest:
+		m.processIOSMethod(method, rw, r, targetWindow, params)
 	default:
 		m.httpError(rw, "Invalid runtime call:", fmt.Errorf("unknown object %d", object))
 	}

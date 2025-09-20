@@ -98,7 +98,7 @@ export function Environment(): Promise<EnvironmentInfo> {
  * @return True if the operating system is Windows, otherwise false.
  */
 export function IsWindows(): boolean {
-    return window._wails.environment.OS === "windows";
+    return (window as any)._wails?.environment?.OS === "windows";
 }
 
 /**
@@ -107,7 +107,7 @@ export function IsWindows(): boolean {
  * @returns Returns true if the current operating system is Linux, false otherwise.
  */
 export function IsLinux(): boolean {
-    return window._wails.environment.OS === "linux";
+    return (window as any)._wails?.environment?.OS === "linux";
 }
 
 /**
@@ -116,7 +116,7 @@ export function IsLinux(): boolean {
  * @returns True if the environment is macOS, false otherwise.
  */
 export function IsMac(): boolean {
-    return window._wails.environment.OS === "darwin";
+    return (window as any)._wails?.environment?.OS === "darwin";
 }
 
 /**
@@ -125,7 +125,7 @@ export function IsMac(): boolean {
  * @returns True if the current environment architecture is AMD64, false otherwise.
  */
 export function IsAMD64(): boolean {
-    return window._wails.environment.Arch === "amd64";
+    return (window as any)._wails?.environment?.Arch === "amd64";
 }
 
 /**
@@ -134,7 +134,7 @@ export function IsAMD64(): boolean {
  * @returns True if the current architecture is ARM, false otherwise.
  */
 export function IsARM(): boolean {
-    return window._wails.environment.Arch === "arm";
+    return (window as any)._wails?.environment?.Arch === "arm";
 }
 
 /**
@@ -143,7 +143,7 @@ export function IsARM(): boolean {
  * @returns Returns true if the environment is ARM64 architecture, otherwise returns false.
  */
 export function IsARM64(): boolean {
-    return window._wails.environment.Arch === "arm64";
+    return (window as any)._wails?.environment?.Arch === "arm64";
 }
 
 /**
@@ -152,7 +152,7 @@ export function IsARM64(): boolean {
  * @returns True if the app is being run in debug mode.
  */
 export function IsDebug(): boolean {
-    return Boolean(window._wails.environment.Debug);
+    return Boolean((window as any)._wails?.environment?.Debug);
 }
 
 /**

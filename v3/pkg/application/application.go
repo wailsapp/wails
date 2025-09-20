@@ -16,8 +16,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/wailsapp/wails/v3/internal/signal"
-
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
@@ -32,10 +30,6 @@ var globalApplication *App
 // AlphaAssets is the default assets for the alpha application
 var AlphaAssets = AssetOptions{
 	Handler: BundledAssetFileServer(alphaAssets),
-}
-
-func init() {
-	runtime.LockOSThread()
 }
 
 type EventListener struct {
@@ -65,13 +59,8 @@ func New(appOptions Options) *App {
 		}
 	}
 
-	if !appOptions.DisableDefaultSignalHandler {
-		result.signalHandler = signal.NewSignalHandler(result.Quit)
-		result.signalHandler.Logger = result.Logger
-		result.signalHandler.ExitMessage = func(sig os.Signal) string {
-			return "Quitting application..."
-		}
-	}
+	// Set up signal handling (platform-specific)
+	result.setupSignalHandler(appOptions)
 
 	result.logStartup()
 	result.logPlatformInfo()
@@ -251,7 +240,7 @@ const webViewRequestHeaderWindowId = "x-wails-window-id"
 const webViewRequestHeaderWindowName = "x-wails-window-name"
 
 type webViewAssetRequest struct {
-	webview.Request
+	Request    webview.Request
 	windowId   uint
 	windowName string
 }
@@ -263,6 +252,14 @@ type windowKeyEvent struct {
 	acceleratorString string
 }
 
+func (r *webViewAssetRequest) URL() (string, error) {
+	return r.Request.URL()
+}
+
+func (r *webViewAssetRequest) Method() (string, error) {
+	return r.Request.Method()
+}
+
 func (r *webViewAssetRequest) Header() (http.Header, error) {
 	h, err := r.Request.Header()
 	if err != nil {
@@ -271,7 +268,22 @@ func (r *webViewAssetRequest) Header() (http.Header, error) {
 
 	hh := h.Clone()
 	hh.Set(webViewRequestHeaderWindowId, strconv.FormatUint(uint64(r.windowId), 10))
+	if r.windowName != "" {
+		hh.Set(webViewRequestHeaderWindowName, r.windowName)
+	}
 	return hh, nil
+}
+
+func (r *webViewAssetRequest) Body() (io.ReadCloser, error) {
+	return r.Request.Body()
+}
+
+func (r *webViewAssetRequest) Response() webview.ResponseWriter {
+	return r.Request.Response()
+}
+
+func (r *webViewAssetRequest) Close() error {
+	return r.Request.Close()
 }
 
 var webviewRequests = make(chan *webViewAssetRequest, 5)
@@ -362,8 +374,8 @@ type App struct {
 	// The application option `OnShutdown` is run first.
 	shutdownTasks []func()
 
-	// signalHandler is used to handle signals
-	signalHandler *signal.SignalHandler
+	// Platform-specific fields (includes signal handler on desktop)
+	platformSignalHandler
 
 	// Wails ApplicationEvent Listener related
 	wailsEventListenerLock sync.Mutex
@@ -429,6 +441,7 @@ func (a *App) handleFatalError(err error) {
 }
 
 func (a *App) init() {
+	fmt.Println("🟠 [application.go] START App.init()")
 	a.ctx, a.cancel = context.WithCancel(context.Background())
 	a.applicationEventHooks = make(map[uint][]*eventHook)
 	a.applicationEventListeners = make(map[uint][]*EventListener)
@@ -441,6 +454,7 @@ func (a *App) init() {
 	a.wailsEventListeners = make([]WailsEventListener, 0)
 
 	// Initialize managers
+	fmt.Println("🟠 [application.go] Initializing managers...")
 	a.Window = newWindowManager(a)
 	a.ContextMenu = newContextMenuManager(a)
 	a.KeyBinding = newKeyBindingManager(a)
@@ -452,6 +466,7 @@ func (a *App) init() {
 	a.Screen = newScreenManager(a)
 	a.Clipboard = newClipboardManager(a)
 	a.SystemTray = newSystemTrayManager(a)
+	fmt.Println("🟠 [application.go] END App.init()")
 }
 
 func (a *App) Capabilities() capabilities.Capabilities {
@@ -473,21 +488,31 @@ func (a *App) GetPID() int {
 }
 
 func (a *App) info(message string, args ...any) {
-	if a.Logger != nil {
-		go func() {
-			defer handlePanic()
-			a.Logger.Info(message, args...)
-		}()
-	}
+    if a.Logger != nil {
+        go func() {
+            defer handlePanic()
+            // Avoid slog BADKEY by formatting printf-style messages ourselves
+            if len(args) > 0 {
+                a.Logger.Info(fmt.Sprintf(message, args...))
+            } else {
+                a.Logger.Info(message)
+            }
+        }()
+    }
 }
 
 func (a *App) debug(message string, args ...any) {
-	if a.Logger != nil {
-		go func() {
-			defer handlePanic()
-			a.Logger.Debug(message, args...)
-		}()
-	}
+    if a.Logger != nil {
+        go func() {
+            defer handlePanic()
+            // Avoid slog BADKEY by formatting printf-style messages ourselves
+            if len(args) > 0 {
+                a.Logger.Debug(fmt.Sprintf(message, args...))
+            } else {
+                a.Logger.Debug(message)
+            }
+        }()
+    }
 }
 
 func (a *App) fatal(message string, args ...any) {
@@ -504,10 +529,12 @@ func (a *App) error(message string, args ...any) {
 }
 
 func (a *App) Run() error {
+	fmt.Println("🟠 [application.go] START App.Run()")
 	a.runLock.Lock()
 	// Prevent double invocations.
 	if a.starting || a.running {
 		a.runLock.Unlock()
+		fmt.Println("🟠 [application.go] App already starting/running")
 		return errors.New("application is running or a previous run has failed")
 	}
 	// Block further service registrations.
@@ -518,12 +545,17 @@ func (a *App) Run() error {
 	defer a.cancel()
 
 	// Call post-create hooks
+	fmt.Println("🟠 [application.go] About to call preRun()")
 	err := a.preRun()
 	if err != nil {
+		fmt.Printf("🟠 [application.go] preRun() failed: %v\n", err)
 		return err
 	}
+	fmt.Println("🟠 [application.go] preRun() completed")
 
+	fmt.Println("🟠 [application.go] About to call newPlatformApp()")
 	a.impl = newPlatformApp(a)
+	fmt.Println("🟠 [application.go] newPlatformApp() completed")
 
 	// Ensure services are shut down in case of failures.
 	defer a.shutdownServices()
@@ -700,13 +732,22 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	// Get window from window map
 	a.windowsLock.RLock()
 	window, ok := a.windows[event.windowId]
+	// Debug: log all window IDs
+	var ids []uint
+	for id := range a.windows {
+		ids = append(ids, id)
+	}
 	a.windowsLock.RUnlock()
+
+	a.info("handleWindowMessage: Looking for window ID %d, available IDs: %v", event.windowId, ids)
+
 	if !ok {
 		a.warning("WebviewWindow #%d not found", event.windowId)
 		return
 	}
 	// Check if the message starts with "wails:"
 	if strings.HasPrefix(event.message, "wails:") {
+		a.info("handleWindowMessage: Processing wails message: %s", event.message)
 		window.HandleMessage(event.message)
 	} else {
 		if a.options.RawMessageHandler != nil {
@@ -717,7 +758,14 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 
 func (a *App) handleWebViewRequest(request *webViewAssetRequest) {
 	defer handlePanic()
+	// Log that we're processing the request
+	url, _ := request.Request.URL()
+	a.info(" handleWebViewRequest: Processing request for URL: %s", url)
+	fmt.Printf(" handleWebViewRequest: About to call ServeWebViewRequest for: %s\n", url)
+	// IMPORTANT: pass the wrapper request so our injected headers (x-wails-window-id/name) are used
 	a.assets.ServeWebViewRequest(request)
+	a.info(" handleWebViewRequest: Request processing complete for: %s", url)
+	fmt.Printf(" handleWebViewRequest: Request complete for: %s\n", url)
 }
 
 func (a *App) handleWindowEvent(event *windowEvent) {
@@ -831,8 +879,10 @@ func SaveFileDialog() *SaveFileDialogStruct {
 }
 
 func (a *App) dispatchOnMainThread(fn func()) {
+	fmt.Println("🟠 [application.go] dispatchOnMainThread() called")
 	// If we are on the main thread, just call the function
 	if a.impl.isOnMainThread() {
+		fmt.Println("🟠 [application.go] Already on main thread, executing directly")
 		fn()
 		return
 	}
@@ -841,6 +891,7 @@ func (a *App) dispatchOnMainThread(fn func()) {
 	id := generateFunctionStoreID()
 	mainThreadFunctionStore[id] = fn
 	mainThreadFunctionStoreLock.Unlock()
+	fmt.Printf("🟠 [application.go] Dispatching function with ID %d to main thread\n", id)
 	// Call platform specific dispatch function
 	a.impl.dispatchOnMainThread(id)
 }

@@ -52,6 +52,16 @@ func newWindowsEvents() windowsEvents {
 $$WINDOWSEVENTSVALUES	}
 }
 
+var iOS = newIOSEvents()
+
+type iosEvents struct {
+$$IOSEVENTSDECL}
+
+func newIOSEvents() iosEvents {
+	return iosEvents{
+$$IOSEVENTSVALUES	}
+}
+
 func JSEvent(event uint) string {
 	return eventToJS[event]
 }
@@ -85,6 +95,18 @@ $$CHEADEREVENTS
 
 #endif`
 
+const iosEventsH = `//go:build ios
+
+#ifndef _events_h
+#define _events_h
+
+extern void processApplicationEvent(unsigned int, void* data);
+extern void processWindowEvent(unsigned int, unsigned int);
+
+$$CHEADEREVENTS
+
+#endif`
+
 const eventsTS = `/*
  _	   __	  _ __
 | |	 / /___ _(_) /____
@@ -105,6 +127,8 @@ $$WINDOWSJSEVENTS	}),
 $$MACJSEVENTS	}),
 	Linux: Object.freeze({
 $$LINUXJSEVENTS	}),
+	iOS: Object.freeze({
+$$IOSJSEVENTS	}),
 	Common: Object.freeze({
 $$COMMONJSEVENTS	}),
 });
@@ -130,12 +154,17 @@ func main() {
 	windowsEventsDecl := bytes.NewBufferString("")
 	windowsEventsValues := bytes.NewBufferString("")
 
+	iosEventsDecl := bytes.NewBufferString("")
+	iosEventsValues := bytes.NewBufferString("")
+	iosCHeaderEvents := bytes.NewBufferString("")
+
 	commonEventsDecl := bytes.NewBufferString("")
 	commonEventsValues := bytes.NewBufferString("")
 
 	linuxTSEvents := bytes.NewBufferString("")
 	macTSEvents := bytes.NewBufferString("")
 	windowsTSEvents := bytes.NewBufferString("")
+	iosTSEvents := bytes.NewBufferString("")
 	commonTSEvents := bytes.NewBufferString("")
 
 	eventToJS := bytes.NewBufferString("")
@@ -144,6 +173,7 @@ func main() {
 	//	var maxLinuxEvents int
 	var maxMacEvents int
 	var maxLinuxEvents int
+	var maxIOSEvents int
 	var line []byte
 	// Loop over each line in the file
 	for id, line = range bytes.Split(eventNames, []byte{'\n'}) {
@@ -263,11 +293,26 @@ func main() {
 			windowsEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
 			windowsTSEvents.WriteString("\t\t" + event + ": \"windows:" + event + "\",\n")
 			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"windows:" + event + "\",\n")
+		case "ios":
+			eventType := "ApplicationEventType"
+			if strings.HasPrefix(event, "Window") {
+				eventType = "WindowEventType"
+			}
+			if strings.HasPrefix(event, "WebView") {
+				eventType = "WindowEventType"
+			}
+			iosEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
+			iosEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
+			iosTSEvents.WriteString("\t\t" + event + ": \"ios:" + event + "\",\n")
+			iosCHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
+			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"ios:" + event + "\",\n")
+			maxIOSEvents = id
 		}
 	}
 
 	macCHeaderEvents.WriteString("\n#define MAX_EVENTS " + strconv.Itoa(maxMacEvents+1) + "\n")
 	linuxCHeaderEvents.WriteString("\n#define MAX_EVENTS " + strconv.Itoa(maxLinuxEvents+1) + "\n")
+	iosCHeaderEvents.WriteString("\n#define MAX_EVENTS " + strconv.Itoa(maxIOSEvents+1) + "\n")
 
 	// Save the eventsGo template substituting the values and decls
 	templateToWrite := strings.ReplaceAll(eventsGo, "$$LINUXEVENTSDECL", linuxEventsDecl.String())
@@ -277,6 +322,8 @@ func main() {
 
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$WINDOWSEVENTSDECL", windowsEventsDecl.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$WINDOWSEVENTSVALUES", windowsEventsValues.String())
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$IOSEVENTSDECL", iosEventsDecl.String())
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$IOSEVENTSVALUES", iosEventsValues.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$COMMONEVENTSDECL", commonEventsDecl.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$COMMONEVENTSVALUES", commonEventsValues.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$EVENTTOJS", eventToJS.String())
@@ -289,6 +336,7 @@ func main() {
 	templateToWrite = strings.ReplaceAll(eventsTS, "$$MACJSEVENTS", macTSEvents.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$WINDOWSJSEVENTS", windowsTSEvents.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$LINUXJSEVENTS", linuxTSEvents.String())
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$IOSJSEVENTS", iosTSEvents.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$COMMONJSEVENTS", commonTSEvents.String())
 	err = os.WriteFile("../../internal/runtime/desktop/@wailsio/runtime/src/event_types.ts", []byte(templateToWrite), 0644)
 	if err != nil {
@@ -305,6 +353,13 @@ func main() {
 	// Save the linuxEventsH template substituting the values and decls
 	templateToWrite = strings.ReplaceAll(linuxEventsH, "$$CHEADEREVENTS", linuxCHeaderEvents.String())
 	err = os.WriteFile("../../pkg/events/events_linux.h", []byte(templateToWrite), 0644)
+	if err != nil {
+		panic(err)
+	}
+
+	// Save the iosEventsH template substituting the values and decls
+	templateToWrite = strings.ReplaceAll(iosEventsH, "$$CHEADEREVENTS", iosCHeaderEvents.String())
+	err = os.WriteFile("../../pkg/events/events_ios.h", []byte(templateToWrite), 0644)
 	if err != nil {
 		panic(err)
 	}

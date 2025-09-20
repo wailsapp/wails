@@ -465,6 +465,60 @@ func newWindowsEvents() windowsEvents {
 	}
 }
 
+var IOS = newIOSEvents()
+
+type iosEvents struct {
+	ApplicationDidBecomeActive             ApplicationEventType
+	ApplicationDidEnterBackground          ApplicationEventType
+	ApplicationDidFinishLaunching          ApplicationEventType
+	ApplicationDidReceiveMemoryWarning     ApplicationEventType
+	ApplicationWillEnterForeground         ApplicationEventType
+	ApplicationWillResignActive            ApplicationEventType
+	ApplicationWillTerminate               ApplicationEventType
+	WindowDidLoad                          WindowEventType
+	WindowWillAppear                       WindowEventType
+	WindowDidAppear                        WindowEventType
+	WindowWillDisappear                    WindowEventType
+	WindowDidDisappear                     WindowEventType
+	WindowSafeAreaInsetsChanged            WindowEventType
+	WindowOrientationChanged               WindowEventType
+	WindowTouchBegan                       WindowEventType
+	WindowTouchMoved                       WindowEventType
+	WindowTouchEnded                       WindowEventType
+	WindowTouchCancelled                   WindowEventType
+	WebViewDidStartNavigation              WindowEventType
+	WebViewDidFinishNavigation             WindowEventType
+	WebViewDidFailNavigation               WindowEventType
+	WebViewDecidePolicyForNavigationAction WindowEventType
+}
+
+func newIOSEvents() iosEvents {
+	return iosEvents{
+		ApplicationDidBecomeActive:             1235,
+		ApplicationDidEnterBackground:          1236,
+		ApplicationDidFinishLaunching:          1237,
+		ApplicationDidReceiveMemoryWarning:     1238,
+		ApplicationWillEnterForeground:         1239,
+		ApplicationWillResignActive:            1240,
+		ApplicationWillTerminate:               1241,
+		WindowDidLoad:                          1242,
+		WindowWillAppear:                       1243,
+		WindowDidAppear:                        1244,
+		WindowWillDisappear:                    1245,
+		WindowDidDisappear:                     1246,
+		WindowSafeAreaInsetsChanged:            1247,
+		WindowOrientationChanged:               1248,
+		WindowTouchBegan:                       1249,
+		WindowTouchMoved:                       1250,
+		WindowTouchEnded:                       1251,
+		WindowTouchCancelled:                   1252,
+		WebViewDidStartNavigation:              1253,
+		WebViewDidFinishNavigation:             1254,
+		WebViewDidFailNavigation:               1255,
+		WebViewDecidePolicyForNavigationAction: 1256,
+	}
+}
+
 func JSEvent(event uint) string {
 	return eventToJS[event]
 }
@@ -681,4 +735,26 @@ var eventToJS = map[uint]string{
 	1232: "windows:WindowUnMinimise",
 	1233: "windows:WindowMaximise",
 	1234: "windows:WindowUnMaximise",
+	1235: "ios:ApplicationDidBecomeActive",
+	1236: "ios:ApplicationDidEnterBackground",
+	1237: "ios:ApplicationDidFinishLaunching",
+	1238: "ios:ApplicationDidReceiveMemoryWarning",
+	1239: "ios:ApplicationWillEnterForeground",
+	1240: "ios:ApplicationWillResignActive",
+	1241: "ios:ApplicationWillTerminate",
+	1242: "ios:WindowDidLoad",
+	1243: "ios:WindowWillAppear",
+	1244: "ios:WindowDidAppear",
+	1245: "ios:WindowWillDisappear",
+	1246: "ios:WindowDidDisappear",
+	1247: "ios:WindowSafeAreaInsetsChanged",
+	1248: "ios:WindowOrientationChanged",
+	1249: "ios:WindowTouchBegan",
+	1250: "ios:WindowTouchMoved",
+	1251: "ios:WindowTouchEnded",
+	1252: "ios:WindowTouchCancelled",
+	1253: "ios:WebViewDidStartNavigation",
+	1254: "ios:WebViewDidFinishNavigation",
+	1255: "ios:WebViewDidFailNavigation",
+	1256: "ios:WebViewDecidePolicyForNavigationAction",
 }

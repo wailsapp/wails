@@ -1,4 +1,4 @@
-//go:build darwin && (!production || devtools)
+//go:build darwin && !ios && (!production || devtools)
 
 package application
 
