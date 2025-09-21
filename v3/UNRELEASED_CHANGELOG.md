@@ -16,14 +16,15 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
-<!-- New features, capabilities, or enhancements -->
+- Added NSIS Protocol template for Windows
+- Added tests for build-assets
 
 ## Changed
 <!-- Changes in existing functionality -->
 - macOS: Use `visibleFrame` instead of `frame` for window centering to exclude menu bar and dock areas
 
 ## Fixed
-<!-- Bug fixes -->
+- Fixed linux desktop.tmpl protocol range, by removing `<.Info.Protocol>` to `<.Protocol>`
 - Fixed redefinition error for liquid glass demo in [#4542](https://github.com/wailsapp/wails/pull/4542) by @Etesam913
 - Fixed issue where AssetServer can crash on MacOS in [#4576](https://github.com/wailsapp/wails/pull/4576) by @jghiloni
 - Fixed compilation issue when building with NextJs. Fixed in [#4585](https://github.com/wailsapp/wails/pull/4585) by @rev42
