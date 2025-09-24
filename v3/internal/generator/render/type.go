@@ -15,6 +15,22 @@ type aliasOrNamed interface {
 	Obj() *types.TypeName
 }
 
+// getTypeNameObj extracts the TypeName object from a type,
+// handling Alias, Named, and Pointer types.
+func getTypeNameObj(typ types.Type) *types.TypeName {
+	switch t := typ.(type) {
+	case *types.Alias:
+		return t.Obj()
+	case *types.Named:
+		return t.Obj()
+	case *types.Pointer:
+		// Unwrap pointer and try again
+		return getTypeNameObj(t.Elem())
+	default:
+		return nil
+	}
+}
+
 // typeByteSlice caches the type-checker type for a slice of bytes.
 var typeByteSlice = types.NewSlice(types.Universe.Lookup("byte").Type())
 
@@ -138,6 +154,7 @@ func (m *module) renderMapType(typ *types.Map) (result string, nullable bool) {
 
 	key := "string"
 	elem, _ := m.renderType(typ.Elem(), false)
+	useInSyntax := false
 
 	// Test whether we can upgrade key rendering.
 	switch k := typ.Key().(type) {
@@ -149,7 +166,31 @@ func (m *module) renderMapType(typ *types.Map) (result string, nullable bool) {
 
 	case *types.Alias, *types.Named, *types.Pointer:
 		if collect.IsMapKey(k) {
-			if collect.IsStringAlias(k) {
+			// Check for enum types first before string alias check
+			if obj := getTypeNameObj(k); obj != nil {
+				model := m.collector.Model(obj)
+				if model != nil {
+					model.Collect()
+					info := modelinfo(model, m.UseInterfaces)
+					if info.IsEnum {
+						// Use 'in' syntax for enum keys in TypeScript
+						key, _ = m.renderType(k, false)
+						useInSyntax = true
+					} else if collect.IsStringAlias(k) {
+						// Alias or named type is a string and therefore
+						// safe to use as a JS object key.
+						if ptr, ok := k.(*types.Pointer); ok {
+							// Unwrap pointers to string aliases.
+							key, _ = m.renderType(ptr.Elem(), false)
+						} else {
+							key, _ = m.renderType(k, false)
+						}
+					} else if basic, ok := k.Underlying().(*types.Basic); ok && basic.Info()&types.IsString == 0 {
+						// Render non-string basic type in quoted mode.
+						key = m.renderBasicType(basic, true)
+					}
+				}
+			} else if collect.IsStringAlias(k) {
 				// Alias or named type is a string and therefore
 				// safe to use as a JS object key.
 				if ptr, ok := k.(*types.Pointer); ok {
@@ -165,7 +206,11 @@ func (m *module) renderMapType(typ *types.Map) (result string, nullable bool) {
 		}
 	}
 
-	return fmt.Sprintf("{ [_: %s]: %s }%s", key, elem, null), m.UseInterfaces
+	if useInSyntax {
+		return fmt.Sprintf("{ [_ in %s]: %s }%s", key, elem, null), m.UseInterfaces
+	} else {
+		return fmt.Sprintf("{ [_: %s]: %s }%s", key, elem, null), m.UseInterfaces
+	}
 }
 
 // renderNamedType outputs the TS representation
