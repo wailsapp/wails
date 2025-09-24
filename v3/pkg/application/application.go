@@ -421,8 +421,6 @@ func (a *App) RegisterService(service Service) {
 	a.options.Services = append(a.options.Services, service)
 }
 
-// EmitEvent will emit an event
-
 func (a *App) handleFatalError(err error) {
 	a.handleError(&FatalError{err: err})
 	os.Exit(1)
