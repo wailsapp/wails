@@ -61,7 +61,7 @@ Ceci est un exemple du fichier entitlements de l'application [RiftShare](https:/
 </plist>
 ```
 
-**Ajouter le profil de provisionnement incorporé** Le profil de provisioning créé ci-dessus doit être ajouté à la racine de l'application. Il doit être nommé embedded.provisionprofile.
+**Add the Embedded Provisioning Profile** The Provisioning Profile created above needs to be added to the root of the application. Il doit être nommé embedded.provisionprofile.
 
 #### Construire et signer le package de l'application
 
@@ -80,9 +80,9 @@ wails build -platform darwin/universal -clean
 
 cp ./embedded.provisionprofile "./build/bin/$APP_NAME.app/Contents"
 
-codesign --timestamp --options=runtime -s "$APP_CERTIFICATE" -v --entitlements ./build/darwin/entitlements.plist ./build/bin/$APP_NAME.app
+codesign --timestamp --options=runtime -s "$APP_CERTIFICATE" -v --entitlements ./build/darwin/entitlements.plist "./build/bin/$APP_NAME.app"
 
-productbuild --sign "$PKG_CERTIFICATE" --component ./build/bin/$APP_NAME.app /Applications ./$APP_NAME.pkg
+productbuild --sign "$PKG_CERTIFICATE" --component "./build/bin/$APP_NAME.app" /Applications "./$APP_NAME.pkg"
 ```
 
 #### Télécharger l'application

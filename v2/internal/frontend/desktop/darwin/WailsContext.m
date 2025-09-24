@@ -486,6 +486,15 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
 }
 
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
+    // Get the origin from the message's frame
+    NSString *origin = nil;
+    if (message.frameInfo && message.frameInfo.request && message.frameInfo.request.URL) {
+        NSURL *url = message.frameInfo.request.URL;
+        if (url.scheme && url.host) {
+            origin = [url absoluteString];
+        }
+    }
+
     NSString *m = message.body;
 
     // Check for drag
@@ -500,10 +509,10 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
     }
 
     const char *_m = [m UTF8String];
+    const char *_origin = [origin UTF8String];
 
-    processMessage(_m);
+    processBindingMessage(_m, _origin, message.frameInfo.isMainFrame);
 }
-
 
 /***** Dialogs ******/
 -(void) MessageDialog :(NSString*)dialogType :(NSString*)title :(NSString*)message :(NSString*)button1 :(NSString*)button2 :(NSString*)button3 :(NSString*)button4 :(NSString*)defaultButton :(NSString*)cancelButton :(void*)iconData :(int)iconDataLength {
