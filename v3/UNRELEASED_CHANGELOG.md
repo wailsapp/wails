@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- macOS: Shows native window controls in the menu bar in [#4588](https://github.com/wailsapp/wails/pull/4588) by @nidib
 
 ## Changed
 <!-- Changes in existing functionality -->
