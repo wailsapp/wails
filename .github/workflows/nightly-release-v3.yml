@@ -483,7 +483,7 @@ jobs:
         echo ""
         echo "**Installation:**"
         echo "\`\`\`bash"
-        echo "go install github.com/wailsapp/wails/v3/cmd/wails@${{ steps.release.outputs.tag }}"
+        echo "go install github.com/wailsapp/wails/v3/cmd/wails3@${{ steps.release.outputs.tag }}"
         echo "\`\`\`"
         echo ""
         echo "**⚠️ Alpha Warning:** This is pre-release software and may contain bugs or incomplete features."
@@ -517,7 +517,7 @@ jobs:
         
         **Installation:**
         ```bash
-        go install github.com/wailsapp/wails/v3/cmd/wails@${{ steps.release.outputs.tag }}
+        go install github.com/wailsapp/wails/v3/cmd/wails3@${{ steps.release.outputs.tag }}
         ```
         
         **⚠️ Alpha Warning:** This is pre-release software and may contain bugs or incomplete features.
