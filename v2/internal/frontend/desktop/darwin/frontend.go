@@ -32,6 +32,7 @@ import (
 
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/wailsapp/wails/v2/internal/frontend/originvalidator"
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -39,13 +40,20 @@ import (
 
 const startURL = "wails://wails/"
 
+type bindingsMessage struct {
+	message     string
+	source      string
+	isMainFrame bool
+}
+
 var (
-	messageBuffer        = make(chan string, 100)
-	requestBuffer        = make(chan webview.Request, 100)
-	callbackBuffer       = make(chan uint, 10)
-	openFilepathBuffer   = make(chan string, 100)
-	openUrlBuffer        = make(chan string, 100)
-	secondInstanceBuffer = make(chan options.SecondInstanceData, 1)
+	messageBuffer         = make(chan string, 100)
+	bindingsMessageBuffer = make(chan *bindingsMessage, 100)
+	requestBuffer         = make(chan webview.Request, 100)
+	callbackBuffer        = make(chan uint, 10)
+	openFilepathBuffer    = make(chan string, 100)
+	openUrlBuffer         = make(chan string, 100)
+	secondInstanceBuffer  = make(chan options.SecondInstanceData, 1)
 )
 
 type Frontend struct {
@@ -68,6 +76,8 @@ type Frontend struct {
 	mainWindow *Window
 	bindings   *binding.Bindings
 	dispatcher frontend.Dispatcher
+
+	originValidator *originvalidator.OriginValidator
 }
 
 func (f *Frontend) RunMainLoop() {
@@ -87,15 +97,18 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		ctx:             ctx,
 	}
 	result.startURL, _ = url.Parse(startURL)
+	result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 
 	// this should be initialized as early as possible to handle first instance launch
 	C.StartCustomProtocolHandler()
 
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
+		result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 	} else {
 		if port, _ := ctx.Value("assetserverport").(string); port != "" {
 			result.startURL.Host = net.JoinHostPort(result.startURL.Host+".localhost", port)
+			result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 		}
 
 		var bindings string
@@ -120,6 +133,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	}
 
 	go result.startMessageProcessor()
+	go result.startBindingsMessageProcessor()
 	go result.startCallbackProcessor()
 	go result.startFileOpenProcessor()
 	go result.startUrlOpenProcessor()
@@ -152,6 +166,30 @@ func (f *Frontend) startSecondInstanceProcessor() {
 func (f *Frontend) startMessageProcessor() {
 	for message := range messageBuffer {
 		f.processMessage(message)
+	}
+}
+
+func (f *Frontend) startBindingsMessageProcessor() {
+	for msg := range bindingsMessageBuffer {
+		// Apple webkit doesn't provide origin of main frame. So we can't verify in case of iFrame that top level origin is allowed.
+		if !msg.isMainFrame {
+			f.logger.Error("Blocked request from not main frame")
+			continue
+		}
+
+		origin, err := f.originValidator.GetOriginFromURL(msg.source)
+		if err != nil {
+			f.logger.Error(fmt.Sprintf("failed to get origin for URL %q: %v", msg.source, err))
+			continue
+		}
+
+		allowed := f.originValidator.IsOriginAllowed(origin)
+		if !allowed {
+			f.logger.Error("Blocked request from unauthorized origin: %s", origin)
+			continue
+		}
+
+		f.processMessage(msg.message)
 	}
 }
 
@@ -452,6 +490,17 @@ func (f *Frontend) ExecJS(js string) {
 func processMessage(message *C.char) {
 	goMessage := C.GoString(message)
 	messageBuffer <- goMessage
+}
+
+//export processBindingMessage
+func processBindingMessage(message *C.char, source *C.char, fromMainFrame bool) {
+	goMessage := C.GoString(message)
+	goSource := C.GoString(source)
+	bindingsMessageBuffer <- &bindingsMessage{
+		message:     goMessage,
+		source:      goSource,
+		isMainFrame: fromMainFrame,
+	}
 }
 
 //export processCallback

@@ -73,8 +73,9 @@ func main() {
         Windows: &windows.Options{
             WebviewIsTransparent:              false,
             WindowIsTranslucent:               false,
+            ContentProtection:                 false,
             BackdropType:                      windows.Mica,
-            DisablePinchZoom:               false,
+            DisablePinchZoom:                  false,
             DisableWindowIcon:                 false,
             DisableFramelessWindowDecorations: false,
             WebviewUserDataPath:               "",
@@ -117,6 +118,7 @@ func main() {
 			Appearance:           mac.NSAppearanceNameDarkAqua,
             WebviewIsTransparent: true,
             WindowIsTranslucent:  false,
+            ContentProtection:    false,
             About: &mac.AboutInfo{
                 Title:   "My Application",
                 Message: "© 2021 Me",
@@ -132,6 +134,7 @@ func main() {
         Debug: options.Debug{
             OpenInspectorOnStartup: false,
         },
+        BindingsAllowedOrigins: "https://my.topapp,https://*.wails.isgreat",
     })
 
     if err != nil {
@@ -613,6 +616,17 @@ by Windows. To configure this, use the [BackdropType](#BackdropType) option.
 Name: WindowIsTranslucent<br/>
 Type: `bool`
 
+#### ContentProtection
+
+Prevents window contents from being captured by other applications.
+
+On Windows it calls SetWindowDisplayAffinity with `WDA_EXCLUDEFROMCAPTURE`.
+For Windows 10 version 2004 and later the window will be completely removed from capture.
+Older Windows versions will call SetWindowDisplayAffinity with `WDA_MONITOR`, capturing a black window.
+
+Name: ContentProtection<br/>
+Type: `bool`
+
 #### BackdropType
 
 :::note
@@ -923,6 +937,15 @@ with [WebviewIsTransparent](#WebviewIsTransparent) to make frosty-looking applic
 Name: WindowIsTranslucent<br/>
 Type: `bool`
 
+#### ContentProtection
+
+Prevents window contents from being captured by other applications.
+
+On MacOS it sets the NSWindow's sharingType to NSWindowSharingNone, removing the window from capture entirely.
+
+Name: ContentProtection<br/>
+Type: `bool`
+
 #### OnFileOpen
 
 Callback that is called when a file is opened with the application.
@@ -1107,3 +1130,12 @@ Setting this to `true` will open the WebInspector on startup of the application.
 
 Name: OpenInspectorOnStartup<br/>
 Type: `bool`
+
+### BindingsAllowedOrigins
+
+Comma-separated list of additional allowed origins for JS ↔ Go bindings.
+Supports “*” wildcards in hostnames for subdomain matching.
+Example: `"https://*.myapp.com, https://example.com"`
+
+Name: BindingsAllowedOrigins<br/>
+Type: `string`<br/>

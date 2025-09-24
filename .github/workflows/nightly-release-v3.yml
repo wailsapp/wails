@@ -1,0 +1,566 @@
+
+name: Nightly Release v3-alpha
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # 2 AM UTC daily
+  workflow_dispatch:
+    inputs:
+      force_release:
+        description: 'Force release even if no changes detected'
+        required: false
+        default: false
+        type: boolean
+      dry_run:
+        description: 'Run in dry-run mode (no actual release)'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  nightly-release:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      pull-requests: read
+      actions: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: v3-alpha
+        fetch-depth: 0
+        token: ${{ github.token }}
+    
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+        cache-dependency-path: 'v3/go.sum'
+    
+    - name: Install Task
+      uses: arduino/setup-task@v2
+      with:
+        version: 3.x
+        repo-token: ${{ github.token }}
+    
+    - name: Verify Go and Task installation
+      run: |
+        echo "Go version:"
+        go version
+        echo ""
+        echo "Task version:"
+        task --version
+        echo ""
+        echo "Working directory:"
+        pwd
+        echo ""
+        echo "v3 directory contents:"
+        ls -la v3/
+    
+    - name: Setup Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        
+        # Configure git to use the token for authentication
+        git config --global url."https://x-access-token:${{ github.token }}@github.com/".insteadOf "https://github.com/"
+    
+    - name: Check for existing release tag
+      id: check_tag
+      run: |
+        if git describe --tags --exact-match HEAD 2>/dev/null; then
+          echo "has_tag=true" >> $GITHUB_OUTPUT
+          echo "tag=$(git describe --tags --exact-match HEAD)" >> $GITHUB_OUTPUT
+        else
+          echo "has_tag=false" >> $GITHUB_OUTPUT
+          echo "tag=" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Check for unreleased changelog content
+      id: changelog_check
+      run: |
+        echo "🔍 Checking UNRELEASED_CHANGELOG.md for content..."
+        
+        # Check if the file exists and has content
+        if [ -f "v3/UNRELEASED_CHANGELOG.md" ]; then
+          echo "Found v3/UNRELEASED_CHANGELOG.md"
+          
+          # Run the release script in check mode to see if there's content
+          cd v3/tasks/release
+          
+          # Use the release script itself to check for content
+          if go run release.go --check-only 2>/dev/null; then
+            echo "has_unreleased_content=true" >> $GITHUB_OUTPUT
+            echo "✅ Found unreleased changelog content"
+          else
+            echo "has_unreleased_content=false" >> $GITHUB_OUTPUT
+            echo "ℹ️  No unreleased changelog content found"
+          fi
+        else
+          echo "⚠️  v3/UNRELEASED_CHANGELOG.md not found"
+          echo "has_unreleased_content=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Quick change detection and early exit
+      id: quick_check
+      run: |
+        echo "🔍 Quick check for changes to determine if we should continue..."
+        
+        # First check if we have unreleased changelog content
+        if [ "${{ steps.changelog_check.outputs.has_unreleased_content }}" == "true" ]; then
+          echo "✅ Found unreleased changelog content, proceeding with release"
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+          echo "should_continue=true" >> $GITHUB_OUTPUT
+          echo "reason=Found unreleased changelog content" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        
+        # If no unreleased changelog content, check for git changes as fallback
+        echo "No unreleased changelog content found, checking for git changes..."
+        
+        # Check if current commit has a release tag
+        if git describe --tags --exact-match HEAD 2>/dev/null; then
+          CURRENT_TAG=$(git describe --tags --exact-match HEAD)
+          echo "Current commit has release tag: $CURRENT_TAG"
+          
+          # Get the tag creation date
+          TAG_DATE=$(git log -1 --format=%aI "$CURRENT_TAG")
+          if [ -z "$TAG_DATE" ]; then
+            echo "Failed to obtain tag date, proceeding with conservative fallback"
+            TAG_DATE="1970-01-01T00:00:00Z"
+          fi
+          echo "Tag date: $TAG_DATE"
+          
+          # Compare this commit date with tag date
+          COMMIT_DATE=$(git log -1 --format=%aI HEAD)
+          echo "Commit date: $COMMIT_DATE"
+          
+          # If the commit is newer than the tag, then it means there are changes
+          if [ "$COMMIT_DATE" \> "$TAG_DATE" ]; then
+            echo "Commit is newer than the tag. Proceeding with release."
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "should_continue=true" >> $GITHUB_OUTPUT
+            echo "reason=Commit newer than tag" >> $GITHUB_OUTPUT
+          else
+            echo "Commit is the same as the tag. No new changes."
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "should_continue=false" >> $GITHUB_OUTPUT
+            echo "reason=No changes since existing tag $CURRENT_TAG and no unreleased changelog content" >> $GITHUB_OUTPUT
+          fi
+          exit 0
+        fi
+        
+        echo "Checking against the latest existing release tag..."
+        
+        # Find the latest release tag matching v3-alpha
+        LATEST_TAG=$(git tag --list 'v3.0.0-alpha.*' --sort=-v:refname | head -n 1)
+        echo "Latest tag: $LATEST_TAG"
+        
+        if [ -z "$LATEST_TAG" ]; then
+          echo "No previous release found, proceeding with release"
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+          echo "should_continue=true" >> $GITHUB_OUTPUT
+          echo "reason=No previous tag found" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        
+        # Compare against the latest release tag
+        if git diff --quiet "$LATEST_TAG"..HEAD -- v3; then
+          echo "No changes detected since latest release $LATEST_TAG and no unreleased changelog content"
+          echo "has_changes=false" >> $GITHUB_OUTPUT
+          echo "should_continue=false" >> $GITHUB_OUTPUT
+          echo "reason=No changes since latest release $LATEST_TAG and no unreleased changelog content" >> $GITHUB_OUTPUT
+        else
+          echo "Changes detected since latest release $LATEST_TAG"
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+          echo "should_continue=true" >> $GITHUB_OUTPUT
+          echo "reason=Changes detected since latest release $LATEST_TAG" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Early exit if no changes and not forced
+      if: >-
+        steps.quick_check.outputs.should_continue == 'false' &&
+        github.event.inputs.force_release != 'true'
+      run: |
+        echo "ℹ️  No changes detected since last release and force_release is not enabled."
+        echo "   Skipping release to avoid unnecessary version churn."
+        echo "   To force a release anyway, run this workflow with 'force_release=true'"
+        
+        # Add summary to GITHUB_STEP_SUMMARY
+        echo "### Nightly Release Skipped" >> $GITHUB_STEP_SUMMARY
+        echo "- Reason: ${{ steps.quick_check.outputs.reason }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Has unreleased changelog content: ${{ steps.changelog_check.outputs.has_unreleased_content }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Force release: ${{ github.event.inputs.force_release || 'false' }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Force Release:** Set 'force_release=true' to override this behavior" >> $GITHUB_STEP_SUMMARY
+        
+        exit 0
+
+    - name: Continue with release process
+      if: >-
+        steps.quick_check.outputs.should_continue == 'true' ||
+        github.event.inputs.force_release == 'true'
+      run: |
+        echo "✅ Proceeding with release process..."
+        if [ "${{ github.event.inputs.force_release }}" == "true" ]; then
+          echo "🚨 FORCE RELEASE: Overriding change detection"
+        fi
+
+    - name: Extract changelog content before release
+      if: >-
+        steps.changelog_check.outputs.has_unreleased_content == 'true' ||
+        github.event.inputs.force_release == 'true'
+      run: |
+        echo "📝 Extracting changelog content before release..."
+
+        # Use the new --create-release-notes flag
+        cd v3/tasks/release
+        if go run release.go --create-release-notes ../../release_notes.md; then
+          echo "✅ Successfully created release notes"
+          cd ../..
+          
+          # Show release notes preview
+          echo "Release notes preview:"
+          head -10 ../../release_notes.md
+        else
+          echo "ℹ️  Could not create release notes, continuing without them"
+          cd ../..
+        fi
+
+    - name: Process release and bump version
+      id: process_release
+      run: |
+        echo "🔢 Processing release: updating changelog and bumping version.txt"
+        cd v3/tasks/release
+        # Run release processing (updates internal/version/version.txt and changelog)
+        if go run release.go; then
+          echo "✅ Release processing complete"
+        else
+          echo "❌ Release processing failed"
+          exit 1
+        fi
+        cd ../..
+        # Read the new version from version.txt
+        NEW_VERSION=$(cat v3/internal/version/version.txt | tr -d '\r\n')
+        if [ -z "$NEW_VERSION" ]; then
+          echo "❌ Could not read new version from v3/internal/version/version.txt"
+          exit 1
+        fi
+        # Ensure tag starts with 'v'
+        case "$NEW_VERSION" in
+          v*) NEW_TAG="$NEW_VERSION" ;;
+          *) NEW_TAG="v$NEW_VERSION" ;;
+        esac
+        echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
+        # Nightly v3-alpha are prereleases
+        echo "is_prerelease=true" >> $GITHUB_OUTPUT
+        echo "is_latest=false" >> $GITHUB_OUTPUT
+        echo "version_changed=true" >> $GITHUB_OUTPUT
+
+    - name: Commit updated version and changelog
+      env:
+        GITHUB_TOKEN: ${{ secrets.WAILS_REPO_TOKEN }}
+      run: |
+        echo "📝 Committing updated version and changelog to v3-alpha"
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add v3/internal/version/version.txt v3/docs/src/content/docs/changelog.mdx v3/UNRELEASED_CHANGELOG.md || true
+        if git diff --cached --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "chore(v3): bump to ${{ steps.process_release.outputs.version }} and update changelog [skip ci]"
+          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git" HEAD:v3-alpha
+        fi
+
+    - name: Create and push Git tag
+      if: >-
+        steps.process_release.outputs.version_changed == 'true'
+      env:
+        GITHUB_TOKEN: ${{ secrets.WAILS_REPO_TOKEN }}
+      run: |
+        echo "🏷️  Creating and pushing git tag: ${{ steps.process_release.outputs.tag }}"
+        
+        # Try pushing the tag with debugging and error capture
+        PUSH_SUCCESS=false
+        PUSH_OUTPUT=$(cat << 'EOF'
+        $(
+          git tag -f "${{ steps.process_release.outputs.tag }}" &&
+          if git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git" "${{ steps.process_release.outputs.tag }}" 2>&1; then
+          echo "SUCCESS"
+        else
+          echo "FAILURE"
+        fi)
+        EOF
+        )
+        
+        if echo "$PUSH_OUTPUT" | grep -q "SUCCESS"; then
+          echo "✅ Successfully pushed git tag to origin"
+          PUSH_SUCCESS=true
+        else
+          echo "❌ Failed to push tag. Output:"
+          echo "$PUSH_OUTPUT"
+          
+          # Check if tag already exists on remote
+          echo "Checking if tag already exists on remote..."
+          if git ls-remote --tags origin | grep -q "refs/tags/${{ steps.process_release.outputs.tag }}$"; then
+            echo "ℹ️  Tag already exists on remote, treating as success"
+            PUSH_SUCCESS=true
+          else
+            echo "❌ Tag does not exist on remote"
+          fi
+        fi
+        
+        if [ "$PUSH_SUCCESS" != "true" ]; then
+          echo "❌ Could not push tag even after retries"
+          exit 1
+        fi
+
+    - name: Create GitHub Release
+      if: >-
+        steps.process_release.outputs.version_changed == 'true'
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        echo "🚀 Creating GitHub release for tag: ${{ steps.process_release.outputs.tag }}"
+        
+        # Prepare release notes content
+        RELEASE_NOTES_FILE="release_notes.md"
+        if [ -f "$RELEASE_NOTES_FILE" ]; then
+          echo "Using generated release notes from $RELEASE_NOTES_FILE"
+        else
+          echo "No release notes file found, generating basic notes"
+          echo "# Release ${{ steps.release.outputs.version }}" > $RELEASE_NOTES_FILE
+          echo "Generated by nightly release workflow" >> $RELEASE_NOTES_FILE
+        fi
+        
+        echo "Creating release via GitHub API..."
+        API_URL="https://api.github.com/repos/${{ github.repository }}/releases"
+        AUTH_HEADER="Authorization: Bearer ${GITHUB_TOKEN}"
+        ACCEPT_HEADER="Accept: application/vnd.github+json"
+        USER_AGENT_HEADER="User-Agent: nightly-release-script"
+        
+        # Create GitHub release using gh cli if available, fallback to API
+        if command -v gh >/dev/null 2>&1; then
+          echo "Using gh CLI to create release"
+          if gh release create "${{ steps.process_release.outputs.tag }}" \
+            --title "${{ steps.process_release.outputs.version }}" \
+            --notes-file "$RELEASE_NOTES_FILE" \
+            $([ "${{ steps.process_release.outputs.is_prerelease }}" == "true" ] && echo "--prerelease") \
+            $([ "${{ steps.process_release.outputs.is_latest }}" == "true" ] && echo "--latest"); then
+            echo "✅ GitHub release created successfully using gh CLI"
+          else
+            echo "❌ Failed to create GitHub release using gh CLI"
+            exit 1
+          fi
+        else
+          echo "gh CLI not available, using GitHub API"
+          
+          RELEASE_DATA=$(jq -n \
+            --arg tag_name "${{ steps.process_release.outputs.tag }}" \
+            --arg name "${{ steps.process_release.outputs.version }}" \
+            --arg body "$(cat "$RELEASE_NOTES_FILE" | sed 's/"/\\"/g')" \
+            --argjson prerelease $([ "${{ steps.process_release.outputs.is_prerelease }}" == "true" ] && echo true || echo false) \
+            --argjson make_latest $([ "${{ steps.process_release.outputs.is_latest }}" == "true" ] && echo true || echo false) \
+            '{ tag_name: $tag_name, name: $name, body: $body, prerelease: $prerelease, make_latest: $make_latest }')
+          
+          echo "Release data payload:"
+          echo "$RELEASE_DATA" | jq '.'
+          
+          RESPONSE=$(curl -sS -X POST -H "$AUTH_HEADER" -H "$ACCEPT_HEADER" -H "$USER_AGENT_HEADER" -d "$RELEASE_DATA" "$API_URL")
+          echo "GitHub API response:"
+          echo "$RESPONSE" | jq '.'
+          
+          if echo "$RESPONSE" | jq -e '.id' >/dev/null; then
+            echo "✅ GitHub release created successfully via API"
+          else
+            echo "❌ Failed to create GitHub release via API"
+            exit 1
+          fi
+        fi
+
+    - name: Read generated release notes
+      id: read_notes
+      if: >-
+        steps.process_release.outputs.version_changed == 'true'
+      run: |
+        if [ -f "release_notes.md" ]; then
+          echo "Reading release notes content..."
+          echo "release_notes<<EOF" >> $GITHUB_OUTPUT
+          cat release_notes.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        else
+          echo "No release notes file found"
+          echo "release_notes=" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Handle GitHub Release Creation Result
+      id: release_result
+      if: >-
+        steps.process_release.outputs.version_changed == 'true'
+      run: |
+        echo "🔍 Checking release result..."
+        
+        # Initialize variables
+        HAS_GITHUB_ERRORS=false
+        GITHUB_ERRORS=""
+        
+        # Check if we can access the release via API
+        if command -v gh >/dev/null 2>&1; then
+          echo "Checking release via gh CLI..."
+          if gh release view "${{ steps.release.outputs.tag }}" >/dev/null 2>&1; then
+            echo "✅ Release is accessible via gh CLI"
+          else
+            echo "⚠️  Release not accessible via gh CLI"
+            HAS_GITHUB_ERRORS=true
+            GITHUB_ERRORS="$GITHUB_ERRORS\n- Release not accessible via gh CLI"
+          fi
+        else
+          echo "gh CLI not available, skipping CLI checks"
+        fi
+        
+        echo "has_github_errors=$HAS_GITHUB_ERRORS" >> $GITHUB_OUTPUT
+        if [ -n "$GITHUB_ERRORS" ]; then
+          echo "github_errors=$GITHUB_ERRORS" >> $GITHUB_OUTPUT
+        else
+          echo "github_errors=" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Error Summary and Reporting
+      id: error_summary
+      if: always()
+      run: |
+        echo "🧮 Generating comprehensive error summary..."
+        
+        # Initialize error tracking
+        TOTAL_ERRORS=0
+        ERROR_SUMMARY=""
+        OVERALL_SUCCESS=true
+        
+        # Check for changelog errors
+        if [ "${{ steps.changelog_check.outputs.has_errors }}" == "true" ]; then
+          echo "❌ Changelog processing errors detected"
+          ERROR_SUMMARY="$ERROR_SUMMARY\n### 📄 Changelog Processing Errors\n${{ steps.changelog_check.outputs.changelog_errors }}\n"
+          TOTAL_ERRORS=$((TOTAL_ERRORS + 1))
+          OVERALL_SUCCESS=false
+        fi
+        
+        # Check for release script errors
+        if [ "${{ steps.release.outputs.has_release_errors }}" == "true" ]; then
+          echo "❌ Release script errors detected"
+          ERROR_SUMMARY="$ERROR_SUMMARY\n### 🚀 Release Script Errors\n${{ steps.release.outputs.release_errors }}\n"
+          TOTAL_ERRORS=$((TOTAL_ERRORS + 1))
+          OVERALL_SUCCESS=false
+        fi
+        
+        # Check for GitHub release errors
+        if [ "${{ steps.release_result.outputs.has_github_errors }}" == "true" ]; then
+          echo "❌ GitHub release errors detected"
+          ERROR_SUMMARY="$ERROR_SUMMARY\n### 🐙 GitHub Release Errors\n${{ steps.release_result.outputs.github_errors }}\n"
+          TOTAL_ERRORS=$((TOTAL_ERRORS + 1))
+          OVERALL_SUCCESS=false
+        fi
+        
+        # Set outputs for final summary
+        echo "total_errors=$TOTAL_ERRORS" >> $GITHUB_OUTPUT
+        echo "overall_success=$OVERALL_SUCCESS" >> $GITHUB_OUTPUT
+        
+        if [ -n "$ERROR_SUMMARY" ]; then
+          echo "error_summary<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$ERROR_SUMMARY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        fi
+        
+        # Log summary
+        if [ "$OVERALL_SUCCESS" == "true" ]; then
+          echo "✅ Workflow completed successfully with no errors"
+        else
+          echo "⚠️  Workflow completed with $TOTAL_ERRORS error categories"
+        fi
+
+    - name: Summary
+      if: always()
+      run: |
+        if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+          echo "## 🧪 DRY RUN Release Test Summary" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "## 🚀 Nightly Release Summary" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "================================" >> $GITHUB_STEP_SUMMARY
+        echo "- **Version:** ${{ steps.process_release.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Tag:** ${{ steps.process_release.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Version Changed:** ${{ steps.process_release.outputs.version_changed }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Has existing tag:** ${{ steps.check_tag.outputs.has_tag }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Has unreleased changelog content:** ${{ steps.changelog_check.outputs.has_unreleased_content }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Has changes:** true" >> $GITHUB_STEP_SUMMARY
+        echo "- **Is prerelease:** ${{ steps.process_release.outputs.is_prerelease }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Is latest:** ${{ steps.process_release.outputs.is_latest }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # Overall status
+        if [ "${{ steps.error_summary.outputs.overall_success }}" == "true" ]; then
+          if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+            echo "- **Mode:** 🧪 DRY RUN (no actual release created)" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** ✅ Test completed successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Mode:** 🚀 Live release" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** ✅ Release created successfully" >> $GITHUB_STEP_SUMMARY
+          fi
+        else
+          echo "- **Mode:** ${{ github.event.inputs.dry_run == 'true' && '🧪 DRY RUN' || '🚀 Live release' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** ⚠️  Completed with ${{ steps.error_summary.outputs.total_errors }} error(s)" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Release Processing" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ steps.process_release.outputs.version_changed }}" == "true" ]; then
+          echo "✅ **Version was incremented** and release created" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "ℹ️  **Version was not changed** - no release created" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Changelog Processing" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ steps.changelog_check.outputs.has_unreleased_content }}" == "true" ]; then
+          echo "✅ **UNRELEASED_CHANGELOG.md** had content and was processed" >> $GITHUB_STEP_SUMMARY
+          echo "- Content moved to main changelog" >> $GITHUB_STEP_SUMMARY
+          echo "- UNRELEASED_CHANGELOG.md reset with template" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "ℹ️  **UNRELEASED_CHANGELOG.md** had no content to process" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        # Error reporting section
+        if [ "${{ steps.error_summary.outputs.total_errors }}" -gt 0 ]; then
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## ⚠️  Error Report" >> $GITHUB_STEP_SUMMARY
+          echo "**Total Error Categories:** ${{ steps.error_summary.outputs.total_errors }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.error_summary.outputs.error_summary }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔧 Troubleshooting Tips" >> $GITHUB_STEP_SUMMARY
+          echo "- Check the individual step logs above for detailed error messages" >> $GITHUB_STEP_SUMMARY
+          echo "- Verify GitHub token permissions (contents: write, pull-requests: read)" >> $GITHUB_STEP_SUMMARY
+          echo "- Ensure UNRELEASED_CHANGELOG.md follows the expected format" >> $GITHUB_STEP_SUMMARY
+          echo "- Check for network connectivity issues if git/GitHub operations failed" >> $GITHUB_STEP_SUMMARY
+          echo "- Re-run the workflow with 'force_release=true' if needed" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Release Notes Preview" >> $GITHUB_STEP_SUMMARY
+        if [ -n "${{ steps.read_notes.outputs.release_notes }}" ]; then
+          echo "${{ steps.read_notes.outputs.release_notes }}" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "No specific release notes generated" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "---" >> $GITHUB_STEP_SUMMARY
+        echo "*Generated by automated nightly release workflow with enhanced error handling and changelog integration*" >> $GITHUB_STEP_SUMMARY
+        
+        # Set final workflow status
+        if [ "${{ steps.error_summary.outputs.overall_success }}" != "true" ]; then
+          echo "⚠️  Workflow completed with errors. Check the summary above for details."
+          exit 1
+        fi

@@ -14,7 +14,7 @@ Go: `EventsOn(ctx context.Context, eventName string, callback func(optionalData 
 
 ### EventsOff  移除事件侦听器
 
-此方法取消注册给定事件名称的侦听器，可选地，可以通过 `additionalEventNames` 取消注册多个侦听器。
+This method unregisters the listener for the given event name, optionally multiple listeners can be unregistered via `additionalEventNames`.
 
 Go: `EventsOff(ctx context.Context, eventName string, additionalEventNames ...string)`<br/> JS: `EventsOff(eventName string, ...additionalEventNames)`
 
