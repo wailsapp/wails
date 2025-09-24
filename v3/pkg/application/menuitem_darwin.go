@@ -19,16 +19,13 @@ void* newMenuItem(unsigned int menuItemID, char *label, bool disabled, char* too
     // Label
     menuItem.title = [NSString stringWithUTF8String:label];
 
-	if( disabled ) {
-		[menuItem setTarget:nil];
+	// Always set the action regardless of disabled state
+	if (selector != NULL) {
+		menuItem.action = NSSelectorFromString([NSString stringWithUTF8String:selector]);
+		menuItem.target = disabled ? nil : nil; // Role-based actions always use responder chain
 	} else {
-		if (selector != NULL) {
-			menuItem.action = NSSelectorFromString([NSString stringWithUTF8String:selector]);
-			menuItem.target = nil; // Allow the action to be sent up the responder chain
-		} else {
-			menuItem.action = @selector(handleClick);
-			menuItem.target = menuItem;
-		}
+		menuItem.action = @selector(handleClick);
+		menuItem.target = disabled ? nil : menuItem; // Custom callbacks need target=menuItem when enabled
 	}
     menuItem.menuItemID = menuItemID;
 
@@ -60,11 +57,20 @@ void setMenuItemDisabled(void* nsMenuItem, bool disabled) {
 	dispatch_async(dispatch_get_main_queue(), ^{
 		MenuItem *menuItem = (MenuItem *)nsMenuItem;
 		[menuItem setEnabled:!disabled];
-		// remove target
+		// Handle target based on whether item uses custom selector or handleClick
 		if( disabled ) {
 			[menuItem setTarget:nil];
 		} else {
-			[menuItem setTarget:menuItem];
+			// Check if this menu item uses a custom selector (role-based)
+			// by checking if the action is handleClick or something else
+			if ([menuItem action] == @selector(handleClick)) {
+				// This is a custom callback menu item, set target to self
+				[menuItem setTarget:menuItem];
+			} else {
+				// This is a role-based menu item, target should be nil
+				// to allow the action to be sent up the responder chain
+				[menuItem setTarget:nil];
+			}
 		}
 	});
 }

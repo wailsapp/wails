@@ -50,7 +50,7 @@ func main() {
         Name:        "My Application",
     })
 
-    app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
         MinimiseButtonState: application.ButtonHidden,
         MaximiseButtonState: application.ButtonDisabled,
         CloseButtonState:    application.ButtonEnabled,
@@ -110,7 +110,7 @@ func main() {
         Name: "My Application",
     })
 
-    app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
         Windows: application.WindowsWindow{
             ExStyle: w32.WS_EX_TOOLWINDOW | w32.WS_EX_NOREDIRECTIONBITMAP | w32.WS_EX_TOPMOST,
         },

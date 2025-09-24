@@ -11,6 +11,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
+	"unsafe"
 )
 
 type dragInfo struct {
@@ -376,8 +377,8 @@ func (w *linuxWebviewWindow) startResize(border string) error {
 	return nil
 }
 
-func (w *linuxWebviewWindow) nativeWindowHandle() uintptr {
-	return uintptr(w.window)
+func (w *linuxWebviewWindow) nativeWindow() unsafe.Pointer {
+	return unsafe.Pointer(w.window)
 }
 
 func (w *linuxWebviewWindow) print() error {
@@ -424,6 +425,8 @@ func (w *linuxWebviewWindow) hide() {
 	w.windowHide()
 }
 
-func (w *linuxWebviewWindow) showMenuBar()   {}
-func (w *linuxWebviewWindow) hideMenuBar()   {}
-func (w *linuxWebviewWindow) toggleMenuBar() {}
+func (w *linuxWebviewWindow) showMenuBar()                      {}
+func (w *linuxWebviewWindow) hideMenuBar()                      {}
+func (w *linuxWebviewWindow) toggleMenuBar()                    {}
+func (w *linuxWebviewWindow) snapAssist()                       {} // No-op on Linux
+func (w *linuxWebviewWindow) setContentProtection(enabled bool) {}

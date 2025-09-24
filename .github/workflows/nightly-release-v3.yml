@@ -285,73 +285,6 @@ jobs:
           echo "has_release_errors=false" >> $GITHUB_OUTPUT
         fi
     
-    - name: Create and push git tag
-      id: git_tag
-      if: |
-        (steps.quick_check.outputs.should_continue == 'true' || github.event.inputs.force_release == 'true') &&
-        steps.check_tag.outputs.has_tag == 'false' && 
-        github.event.inputs.dry_run != 'true' &&
-        steps.release.outputs.success == 'true' &&
-        steps.release.outputs.version_changed == 'true'
-      env:
-        GITHUB_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
-      run: |
-        echo "🏷️  Creating and pushing git tag: ${{ steps.release.outputs.tag }}"
-        
-        # Initialize error tracking
-        GIT_ERRORS=""
-        GIT_SUCCESS=true
-        
-        # Create git tag with error handling
-        if git tag -a "${{ steps.release.outputs.tag }}" -m "Release ${{ steps.release.outputs.version }}" 2>&1; then
-          echo "✅ Successfully created git tag: ${{ steps.release.outputs.tag }}"
-        else
-          echo "❌ Failed to create git tag"
-          GIT_ERRORS="$GIT_ERRORS\n- Failed to create git tag: ${{ steps.release.outputs.tag }}"
-          GIT_SUCCESS=false
-        fi
-        
-        # Push tag with retry logic and error handling
-        if [ "$GIT_SUCCESS" == "true" ]; then
-          RETRY_COUNT=0
-          MAX_RETRIES=3
-          PUSH_SUCCESS=false
-          
-          while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$PUSH_SUCCESS" == "false" ]; do
-            RETRY_COUNT=$((RETRY_COUNT + 1))
-            echo "🔄 Attempting to push tag (attempt $RETRY_COUNT/$MAX_RETRIES)..."
-            
-            if git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git" "${{ steps.release.outputs.tag }}" 2>&1; then
-              echo "✅ Successfully pushed git tag to origin"
-              PUSH_SUCCESS=true
-            else
-              echo "❌ Failed to push git tag (attempt $RETRY_COUNT/$MAX_RETRIES)"
-              if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
-                echo "⏳ Waiting 5 seconds before retry..."
-                sleep 5
-              fi
-            fi
-          done
-          
-          if [ "$PUSH_SUCCESS" == "false" ]; then
-            echo "❌ Failed to push git tag after $MAX_RETRIES attempts"
-            GIT_ERRORS="$GIT_ERRORS\n- Failed to push git tag after $MAX_RETRIES attempts"
-            GIT_SUCCESS=false
-          fi
-        fi
-        
-        # Set outputs for later steps
-        echo "success=$GIT_SUCCESS" >> $GITHUB_OUTPUT
-        
-        if [ -n "$GIT_ERRORS" ]; then
-          echo "git_tag_errors<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$GIT_ERRORS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-          echo "has_git_errors=true" >> $GITHUB_OUTPUT
-        else
-          echo "has_git_errors=false" >> $GITHUB_OUTPUT
-        fi
-    
     - name: Commit and push changes
       id: git_commit
       if: |
@@ -434,12 +367,81 @@ jobs:
           echo "has_commit_errors=false" >> $GITHUB_OUTPUT
         fi
     
+    - name: Create and push git tag
+      id: git_tag
+      if: |
+        (steps.quick_check.outputs.should_continue == 'true' || github.event.inputs.force_release == 'true') &&
+        steps.check_tag.outputs.has_tag == 'false' && 
+        github.event.inputs.dry_run != 'true' &&
+        steps.release.outputs.success == 'true' &&
+        steps.release.outputs.version_changed == 'true' &&
+        steps.git_commit.outputs.success == 'true'
+      env:
+        GITHUB_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+      run: |
+        echo "🏷️  Creating and pushing git tag: ${{ steps.release.outputs.tag }}"
+        
+        # Initialize error tracking
+        GIT_ERRORS=""
+        GIT_SUCCESS=true
+        
+        # Create git tag with error handling
+        if git tag -a "${{ steps.release.outputs.tag }}" -m "Release ${{ steps.release.outputs.version }}" 2>&1; then
+          echo "✅ Successfully created git tag: ${{ steps.release.outputs.tag }}"
+        else
+          echo "❌ Failed to create git tag"
+          GIT_ERRORS="$GIT_ERRORS\n- Failed to create git tag: ${{ steps.release.outputs.tag }}"
+          GIT_SUCCESS=false
+        fi
+        
+        # Push tag with retry logic and error handling
+        if [ "$GIT_SUCCESS" == "true" ]; then
+          RETRY_COUNT=0
+          MAX_RETRIES=3
+          PUSH_SUCCESS=false
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$PUSH_SUCCESS" == "false" ]; do
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            echo "🔄 Attempting to push tag (attempt $RETRY_COUNT/$MAX_RETRIES)..."
+            
+            if git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git" "${{ steps.release.outputs.tag }}" 2>&1; then
+              echo "✅ Successfully pushed git tag to origin"
+              PUSH_SUCCESS=true
+            else
+              echo "❌ Failed to push git tag (attempt $RETRY_COUNT/$MAX_RETRIES)"
+              if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                echo "⏳ Waiting 5 seconds before retry..."
+                sleep 5
+              fi
+            fi
+          done
+          
+          if [ "$PUSH_SUCCESS" == "false" ]; then
+            echo "❌ Failed to push git tag after $MAX_RETRIES attempts"
+            GIT_ERRORS="$GIT_ERRORS\n- Failed to push git tag after $MAX_RETRIES attempts"
+            GIT_SUCCESS=false
+          fi
+        fi
+        
+        # Set outputs for later steps
+        echo "success=$GIT_SUCCESS" >> $GITHUB_OUTPUT
+        
+        if [ -n "$GIT_ERRORS" ]; then
+          echo "git_tag_errors<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$GIT_ERRORS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "has_git_errors=true" >> $GITHUB_OUTPUT
+        else
+          echo "has_git_errors=false" >> $GITHUB_OUTPUT
+        fi
+    
     - name: Read release notes
       id: read_notes
       if: |
         (steps.quick_check.outputs.should_continue == 'true' || github.event.inputs.force_release == 'true') &&
         steps.release.outputs.release_notes_file != '' &&
-        steps.release.outputs.version_changed == 'true'
+        steps.release.outputs.version_changed == 'true' &&
+        steps.git_commit.outputs.success == 'true'
       run: |
         cd v3
         if [ -f "release-notes.txt" ]; then
@@ -481,7 +483,7 @@ jobs:
         echo ""
         echo "**Installation:**"
         echo "\`\`\`bash"
-        echo "go install github.com/wailsapp/wails/v3/cmd/wails@${{ steps.release.outputs.tag }}"
+        echo "go install github.com/wailsapp/wails/v3/cmd/wails3@${{ steps.release.outputs.tag }}"
         echo "\`\`\`"
         echo ""
         echo "**⚠️ Alpha Warning:** This is pre-release software and may contain bugs or incomplete features."
@@ -494,7 +496,9 @@ jobs:
         (steps.quick_check.outputs.should_continue == 'true' || github.event.inputs.force_release == 'true') &&
         github.event.inputs.dry_run != 'true' &&
         steps.release.outputs.success == 'true' &&
-        steps.release.outputs.version_changed == 'true'
+        steps.release.outputs.version_changed == 'true' &&
+        steps.git_commit.outputs.success == 'true' &&
+        steps.git_tag.outputs.success == 'true'
       continue-on-error: true
       run: |
         echo "🚀 Creating GitHub release using gh CLI..."
@@ -513,7 +517,7 @@ jobs:
         
         **Installation:**
         ```bash
-        go install github.com/wailsapp/wails/v3/cmd/wails@${{ steps.release.outputs.tag }}
+        go install github.com/wailsapp/wails/v3/cmd/wails3@${{ steps.release.outputs.tag }}
         ```
         
         **⚠️ Alpha Warning:** This is pre-release software and may contain bugs or incomplete features.
@@ -540,7 +544,9 @@ jobs:
         (steps.quick_check.outputs.should_continue == 'true' || github.event.inputs.force_release == 'true') &&
         github.event.inputs.dry_run != 'true' &&
         steps.release.outputs.success == 'true' &&
-        steps.release.outputs.version_changed == 'true'
+        steps.release.outputs.version_changed == 'true' &&
+        steps.git_commit.outputs.success == 'true' &&
+        steps.git_tag.outputs.success == 'true'
       run: |
         echo "📋 Checking GitHub release creation result..."
         

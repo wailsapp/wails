@@ -4,7 +4,10 @@ func (a *linuxApp) showAboutDialog(title string, message string, icon []byte) {
 	window, _ := globalApplication.Window.GetByID(a.getCurrentWindowID())
 	var parent uintptr
 	if window != nil {
-		parent, _ = window.(*WebviewWindow).NativeWindowHandle()
+		nativeWindow := window.NativeWindow()
+		if nativeWindow != nil {
+			parent = uintptr(nativeWindow)
+		}
 	}
 	about := newMessageDialog(InfoDialogType)
 	about.SetTitle(title).
@@ -27,7 +30,10 @@ func (m *linuxDialog) show() {
 	window, _ := globalApplication.Window.GetByID(windowId)
 	var parent uintptr
 	if window != nil {
-		parent, _ = window.(*WebviewWindow).NativeWindowHandle()
+		nativeWindow := window.NativeWindow()
+		if nativeWindow != nil {
+			parent = uintptr(nativeWindow)
+		}
 	}
 
 	InvokeAsync(func() {

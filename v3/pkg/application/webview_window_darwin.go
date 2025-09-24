@@ -4,7 +4,7 @@ package application
 
 /*
 #cgo CFLAGS: -mmacosx-version-min=10.13 -x objective-c
-#cgo LDFLAGS: -framework Cocoa -framework WebKit
+#cgo LDFLAGS: -framework Cocoa -framework WebKit -framework QuartzCore
 
 #include "application_darwin.h"
 #include "webview_window_darwin.h"
@@ -18,6 +18,7 @@ struct WebviewPreferences {
     bool *TabFocusesLinks;
     bool *TextInteractionEnabled;
     bool *FullscreenEnabled;
+    bool *AllowsBackForwardNavigationGestures;
 };
 
 extern void registerListener(unsigned int event);
@@ -100,6 +101,11 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 
 	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
 	[webView autorelease];
+
+    // Set allowsBackForwardNavigationGestures if specified
+    if (preferences.AllowsBackForwardNavigationGestures != NULL) {
+        webView.allowsBackForwardNavigationGestures = *preferences.AllowsBackForwardNavigationGestures;
+    }
 
 	[view addSubview:webView];
 
@@ -523,7 +529,7 @@ void windowCenter(void* nsWindow) {
         screen = [NSScreen mainScreen];
     }
 
-    NSRect screenFrame = [screen frame];
+    NSRect screenFrame = [screen visibleFrame];
     NSRect windowFrame = [window frame];
 
     CGFloat x = screenFrame.origin.x + (screenFrame.size.width - windowFrame.size.width) / 2;
@@ -810,6 +816,19 @@ static bool isIgnoreMouseEvents(void *nsWindow) {
 static void setIgnoreMouseEvents(void *nsWindow, bool ignore) {
     NSWindow *window = (__bridge NSWindow *)nsWindow;
     [window setIgnoresMouseEvents:ignore];
+}
+
+static void setContentProtection(void *nsWindow, bool enabled) {
+    NSWindow *window = (__bridge NSWindow *)nsWindow;
+	if( ! [window respondsToSelector:@selector(setSharingType:)]) {
+		return;
+	}
+
+	if( enabled ) {
+		[window setSharingType:NSWindowSharingNone];
+	} else {
+		[window setSharingType:NSWindowSharingReadOnly];
+	}
 }
 
 */
@@ -1182,6 +1201,9 @@ func (w *macosWebviewWindow) getWebviewPreferences() C.struct_WebviewPreferences
 	if wvprefs.FullscreenEnabled.IsSet() {
 		result.FullscreenEnabled = bool2CboolPtr(wvprefs.FullscreenEnabled.Get())
 	}
+	if wvprefs.AllowsBackForwardNavigationGestures.IsSet() {
+		result.AllowsBackForwardNavigationGestures = bool2CboolPtr(wvprefs.AllowsBackForwardNavigationGestures.Get())
+	}
 
 	return result
 }
@@ -1213,6 +1235,9 @@ func (w *macosWebviewWindow) run() {
 		//w.setZoom(options.Zoom)
 		w.enableDevTools()
 
+		// Content Protection
+		w.setContentProtection(options.ContentProtectionEnabled)
+
 		w.setBackgroundColour(options.BackgroundColour)
 
 		switch macOptions.Backdrop {
@@ -1222,6 +1247,8 @@ func (w *macosWebviewWindow) run() {
 		case MacBackdropTranslucent:
 			C.windowSetTranslucent(w.nsWindow)
 			C.webviewSetTransparent(w.nsWindow)
+		case MacBackdropLiquidGlass:
+			w.applyLiquidGlass()
 		case MacBackdropNormal:
 		}
 
@@ -1317,13 +1344,62 @@ func (w *macosWebviewWindow) run() {
 	})
 }
 
-func (w *macosWebviewWindow) nativeWindowHandle() uintptr {
-	return uintptr(w.nsWindow)
+func (w *macosWebviewWindow) nativeWindow() unsafe.Pointer {
+	return w.nsWindow
 }
 
 func (w *macosWebviewWindow) setBackgroundColour(colour RGBA) {
 
 	C.windowSetBackgroundColour(w.nsWindow, C.int(colour.Red), C.int(colour.Green), C.int(colour.Blue), C.int(colour.Alpha))
+}
+
+func (w *macosWebviewWindow) applyLiquidGlass() {
+	options := w.parent.options.Mac.LiquidGlass
+	
+	// Validate corner radius
+	if options.CornerRadius < 0 {
+		options.CornerRadius = 0
+	}
+	
+	globalApplication.debug("Applying Liquid Glass effect", "window", w.parent.id)
+	
+	// Check if liquid glass is supported
+	if !C.isLiquidGlassSupported() {
+		// Fallback to translucent
+		C.windowSetTranslucent(w.nsWindow)
+		C.webviewSetTransparent(w.nsWindow)
+		globalApplication.debug("Liquid Glass not supported on this macOS version, falling back to translucent", "window", w.parent.id)
+		return
+	}
+	
+	// Prepare tint color values (already clamped by uint8 type)
+	var r, g, b, a C.int
+	if options.TintColor != nil {
+		r = C.int(options.TintColor.Red)
+		g = C.int(options.TintColor.Green)
+		b = C.int(options.TintColor.Blue)
+		a = C.int(options.TintColor.Alpha)
+	}
+	
+	// Prepare group ID
+	var groupIDCStr *C.char
+	if options.GroupID != "" {
+		groupIDCStr = C.CString(options.GroupID)
+		defer C.free(unsafe.Pointer(groupIDCStr))
+	}
+	
+	// Apply liquid glass effect
+	C.windowSetLiquidGlass(
+		w.nsWindow,
+		C.int(options.Style),
+		C.int(options.Material),
+		C.double(options.CornerRadius),
+		r, g, b, a,
+		groupIDCStr,
+		C.double(options.GroupSpacing),
+	)
+	
+	globalApplication.debug("Applied Liquid Glass effect", "window", w.parent.id, "style", options.Style)
 }
 
 func (w *macosWebviewWindow) relativePosition() (int, int) {
@@ -1413,6 +1489,10 @@ func (w *macosWebviewWindow) setIgnoreMouseEvents(ignore bool) {
 	C.setIgnoreMouseEvents(w.nsWindow, C.bool(ignore))
 }
 
+func (w *macosWebviewWindow) setContentProtection(enabled bool) {
+	C.setContentProtection(w.nsWindow, C.bool(enabled))
+}
+
 func (w *macosWebviewWindow) cut() {
 }
 
@@ -1438,3 +1518,4 @@ func (w *macosWebviewWindow) showMenuBar()    {}
 func (w *macosWebviewWindow) hideMenuBar()    {}
 func (w *macosWebviewWindow) toggleMenuBar()  {}
 func (w *macosWebviewWindow) setMenu(_ *Menu) {}
+func (w *macosWebviewWindow) snapAssist()     {} // No-op on macOS

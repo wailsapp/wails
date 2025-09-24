@@ -77,7 +77,7 @@ extern void handleLoadChanged(WebKitWebView*, WebKitLoadEvent, uintptr_t);
 void handleClick(void*);
 extern gboolean onButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
 extern gboolean onMenuButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
-extern void onUriList(char **extracted, gpointer data);
+extern void onUriList(char **extracted, gint x, gint y, gpointer data);
 extern gboolean onKeyPressEvent (GtkWidget *widget, GdkEventKey *event, uintptr_t user_data);
 extern void onProcessRequest(WebKitURISchemeRequest *request, uintptr_t user_data);
 extern void sendMessageToBackend(WebKitUserContentManager *contentManager, WebKitJavascriptResult *result, void *data);
@@ -230,7 +230,7 @@ static void on_data_received(GtkWidget *widget, GdkDragContext *context, gint x,
     gchar *uri_data = (gchar *)gtk_selection_data_get_data(selection_data);
     gchar **uri_list = g_uri_list_extract_uris(uri_data);
 
-    onUriList(uri_list, data);
+    onUriList(uri_list, x, y, data);
 
     g_strfreev(uri_list);
     gtk_drag_finish(context, TRUE, TRUE, time);
@@ -277,6 +277,26 @@ type identifier C.uint
 type pointer unsafe.Pointer
 type GSList C.GSList
 type GSListPointer *GSList
+
+// getLinuxWebviewWindow safely extracts a linuxWebviewWindow from a Window interface
+// Returns nil if the window is not a WebviewWindow or not a Linux implementation
+func getLinuxWebviewWindow(window Window) *linuxWebviewWindow {
+	if window == nil {
+		return nil
+	}
+	
+	webviewWindow, ok := window.(*WebviewWindow)
+	if !ok {
+		return nil
+	}
+	
+	lw, ok := webviewWindow.impl.(*linuxWebviewWindow)
+	if !ok {
+		return nil
+	}
+	
+	return lw
+}
 
 var (
 	nilPointer    pointer       = nil
@@ -1278,8 +1298,8 @@ func emit(we *C.WindowEvent) {
 func handleConfigureEvent(widget *C.GtkWidget, event *C.GdkEventConfigure, data C.uintptr_t) C.gboolean {
 	window, _ := globalApplication.Window.GetByID(uint(data))
 	if window != nil {
-		lw, ok := window.(*WebviewWindow).impl.(*linuxWebviewWindow)
-		if !ok {
+		lw := getLinuxWebviewWindow(window)
+		if lw == nil {
 			return C.gboolean(1)
 		}
 		if lw.lastX != int(event.x) || lw.lastY != int(event.y) {
@@ -1461,8 +1481,8 @@ func onButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data C.uintptr_t) C.
 	if window == nil {
 		return C.gboolean(0)
 	}
-	lw, ok := (window.(*WebviewWindow).impl).(*linuxWebviewWindow)
-	if !ok {
+	lw := getLinuxWebviewWindow(window)
+	if lw == nil {
 		return C.gboolean(0)
 	}
 
@@ -1498,8 +1518,8 @@ func onMenuButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data C.uintptr_t
 	if window == nil {
 		return C.gboolean(0)
 	}
-	lw, ok := (window.(*WebviewWindow).impl).(*linuxWebviewWindow)
-	if !ok {
+	lw := getLinuxWebviewWindow(window)
+	if lw == nil {
 		return C.gboolean(0)
 	}
 
@@ -1513,7 +1533,7 @@ func onMenuButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data C.uintptr_t
 }
 
 //export onUriList
-func onUriList(extracted **C.char, data unsafe.Pointer) {
+func onUriList(extracted **C.char, x C.gint, y C.gint, data unsafe.Pointer) {
 	// Credit: https://groups.google.com/g/golang-nuts/c/bI17Bpck8K4/m/DVDa7EMtDAAJ
 	offset := unsafe.Sizeof(uintptr(0))
 	filenames := []string{}
@@ -1525,6 +1545,8 @@ func onUriList(extracted **C.char, data unsafe.Pointer) {
 	windowDragAndDropBuffer <- &dragAndDropMessage{
 		windowId:  uint(*((*C.uint)(data))),
 		filenames: filenames,
+		X:         int(x),
+		Y:         int(y),
 	}
 }
 
@@ -1753,7 +1775,10 @@ func runOpenFileDialog(dialog *OpenFileDialogStruct) (chan string, error) {
 
 	window := nilPointer
 	if dialog.window != nil {
-		window = (dialog.window.impl).(*linuxWebviewWindow).window
+		nativeWindow := dialog.window.NativeWindow()
+		if nativeWindow != nil {
+			window = pointer(nativeWindow)
+		}
 	}
 
 	buttonText := dialog.buttonText

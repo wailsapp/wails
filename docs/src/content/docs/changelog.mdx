@@ -23,7 +23,93 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 */
 
+/* 
+  ** PLEASE DO NOT UPDATE THIS FILE **
+  Updates should be added to `v3/UNRELEASED_CHANGELOG.md`
+  Thank you!  
+*/
 ## [Unreleased]
+
+## v3.0.0-alpha.27 - 2025-09-07
+
+## Fixed
+- Fixed redefinition error for liquid glass demo in [#4542](https://github.com/wailsapp/wails/pull/4542) by @Etesam913
+
+## v3.0.0-alpha.26 - 2025-08-24
+
+## Added
+- Add native Liquid Glass effect support for macOS with NSGlassEffectView (macOS 15.0+) and NSVisualEffectView fallback, including comprehensive material customization options by @leaanthony in [#4534](https://github.com/wailsapp/wails/pull/4534)
+
+## v3.0.0-alpha.25 - 2025-08-16
+
+## Changed
+- When running `wails3 update build-assets` with the `-config` parameter, values set via the `-product*` parameters are
+  no longer ignored, and override the config value.
+
+## v3.0.0-alpha.24 - 2025-08-13
+
+## Added
+- Browser URL Sanitisation by @leaanthony in [#4500](https://github.dev/wailsapp/wails/pull/4500). Based on [#4484](https://github.com/wailsapp/wails/pull/4484) by @APShenkin.
+
+## v3.0.0-alpha.23 - 2025-08-11
+
+## Fixed
+- Fix SetBackgroundColour on Windows by @PPTGamer in [PR](https://github.com/wailsapp/wails/pull/4492)
+
+## v3.0.0-alpha.22 - 2025-08-10
+
+## Added
+- Add Content Protection on Windows/Mac by [@leaanthony](https://github.com/leaanthony) based on the original work of [@Taiterbase](https://github.com/Taiterbase) in this [PR](https://github.com/wailsapp/wails/pull/4241)
+- Add support for passing CLI variables to Task commands through `wails3 build` and `wails3 package` aliases (#4422) by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/4488)
+
+## Changed
+- `window.NativeWindowHandle()` -> `window.NativeWindow()` by @leaanthony in [#4471](https://github.com/wailsapp/wails/pull/4471)
+- Refactor internal window handling by @leaanthony in [#4471](https://github.com/wailsapp/wails/pull/4471)
++ Fix extra-broad Linux package dependencies, fix outdated RPM dependencies.
+
+## v3.0.0-alpha.21 - 2025-08-07
+
+## Fixed
+- Update docs to reflect changes from Manager API Refactoring by @yulesxoxo in [PR #4476](https://github.com/wailsapp/wails/pull/4476)
+- Fix Linux .desktop file appicon variable in Linux taskfile [PR #4477](https://github.com/wailsapp/wails/pull/4477)
+
+## v3.0.0-alpha.20 - 2025-08-06
+
+## Fixed
+- Update docs to reflect changes from Manager API Refactoring by @yulesxoxo in [PR #4476](https://github.com/wailsapp/wails/pull/4476)
+
+## v3.0.0-alpha.19 - 2025-08-05
+
+## Added
+- Support for dropzones with event sourcing dropped element data [@atterpac](https://github.com/atterpac) in [#4318](https://github.com/wailsapp/wails/pull/4318)
+- Added `AdditionalLaunchArgs` to `WindowsWindow` options to allow for additional command line arguments to be passed to the WebView2 browser. in [PR](https://github.com/wailsapp/wails/pull/4467)
+- Added Run go mod tidy automatically after wails init [@triadmoko](https://github.com/triadmoko) in [PR](https://github.com/wailsapp/wails/pull/4286)
+- Windows Snapassist feature by @leaanthony in [PR](https://github.dev/wailsapp/wails/pull/4463)
+
+## Fixed
+- Fix Windows nil pointer dereference bug reported in [#4456](https://github.com/wailsapp/wails/issues/4456) by @leaanthony in [#4460](https://github.com/wailsapp/wails/pull/4460)
+- Add support for `allowsBackForwardNavigationGestures` in macOS WKWebView to enable two-finger swipe navigation gestures (#1857)
+- Fixes issue where onClick didn't work for menu items initially set as disabled by @leaanthony in [PR #4469](https://github.com/wailsapp/wails/pull/4469). Thanks to @IanVS for the initial investigation.
+- Fix Vite server not being cleaned up when build fails (#4403)
+- Fixed panic when closing or cancelling a `SaveFileDialog` on windows. Fixed in [PR](https://github.com/wailsapp/wails/pull/4284) by @hkhere
+- Fixed HTML level drag and drop on Windows by [@mbaklor](https://github.com/mbaklor) in [#4259](https://github.com/wailsapp/wails/pull/4259)
+
+## v3.0.0-alpha.18 - 2025-08-03
+
+## Added
+- Added `AdditionalLaunchArgs` to `WindowsWindow` options to allow for additional command line arguments to be passed to the WebView2 browser. in [PR](https://github.com/wailsapp/wails/pull/4467)
+- Added Run go mod tidy automatically after wails init [@triadmoko](https://github.com/triadmoko) in [PR](https://github.com/wailsapp/wails/pull/4286)
+- Windows Snapassist feature by @leaanthony in [PR](https://github.dev/wailsapp/wails/pull/4463)
+
+## Fixed
+- Add support for `allowsBackForwardNavigationGestures` in macOS WKWebView to enable two-finger swipe navigation gestures (#1857)
+- Fixes issue where onClick didn't work for menu items initially set as disabled by @leaanthony in [PR #4469](https://github.com/wailsapp/wails/pull/4469). Thanks to @IanVS for the initial investigation.
+- Fix Vite server not being cleaned up when build fails (#4403)
+
+## v3.0.0-alpha.17 - 2025-07-31
+
+## Fixed
+- Fixed notification parsing on Windows @popaprozac in [PR](https://github.com/wailsapp/wails/pull/4450)
 
 ## v3.0.0-alpha.16 - 2025-07-25
 
@@ -54,8 +140,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## v3.0.0-alpha.11 - 2025-07-12
 
 ## Added
-  - Add distribution-specific build dependencies for Linux by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/4345)
-  - Added bindings guide by @atterpac in [PR](https://github.com/wailsapp/wails/pull/4404)
+- Add distribution-specific build dependencies for Linux by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/4345)
+- Added bindings guide by @atterpac in [PR](https://github.com/wailsapp/wails/pull/4404)
 
 ## v3.0.0-alpha.10 - 2025-07-06
 
@@ -137,7 +223,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add method `Close` on `sqlite` service to close the DB manually by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
 - Add cancellation support for query methods on `sqlite` service by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
 - Add prepared statement support to `sqlite` service with JS bindings by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
-- Gin support by [Lea Anthony](https://github.com/leaanthony) in [PR](https://github.com/wailsapp/wails/pull/3537) based on the original work of [@AnalogJ](https://github.com/AnalogJ) in PR[https://github.com/wailsapp/wails/pull/3537]
+- Gin support by [Lea Anthony](https://github.com/leaanthony) in [PR](https://github.com/wailsapp/wails/pull/3537) based on the original work of [@AnalogJ](https://github.com/AnalogJ) in this [PR](https://github.com/wailsapp/wails/pull/3537)
 - Fix auto save and password auto save always enabled by [@oSethoum](https://github.com/osethoum) in [#4134](https://github.com/wailsapp/wails/pull/4134)
 - Add `SetMenu()` on window to allow for setting a menu on a window by [@leaanthony](https://github.com/leaanthony)
 - Add Notification support by [@popaprozac](https://github.com/popaprozac) in [#4098](https://github.com/wailsapp/wails/pull/4098)
