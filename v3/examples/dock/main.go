@@ -3,9 +3,7 @@ package main
 import (
 	"embed"
 	_ "embed"
-	"image/color"
 	"log"
-	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/services/dock"
@@ -23,22 +21,17 @@ var assets embed.FS
 // and starts a goroutine that emits a time-based event every second. It subsequently runs the application and
 // logs any error that might occur.
 func main() {
+
 	// Create a new Wails application by providing the necessary options.
 	// Variables 'Name' and 'Description' are for application metadata.
 	// 'Assets' configures the asset server with the 'FS' variable pointing to the frontend files.
 	// 'Bind' is a list of Go struct instances. The frontend has access to the methods of these instances.
 	// 'Mac' options tailor the application when running an macOS.
 
-	dockService := dock.NewWithOptions(dock.BadgeOptions{
-		TextColour:       color.RGBA{255, 255, 204, 255},
-		BackgroundColour: color.RGBA{16, 124, 16, 255},
-		FontName:         "consolab.ttf",
-		FontSize:         20,
-		SmallFontSize:    14,
-	})
+	dockService := dock.New()
 
 	app := application.New(application.Options{
-		Name:        "badge",
+		Name:        "dock",
 		Description: "A demo of using raw HTML & CSS",
 		Services: []application.Service{
 			application.NewService(dockService),
@@ -66,37 +59,6 @@ func main() {
 		BackgroundColour: application.NewRGB(27, 38, 54),
 		URL:              "/",
 	})
-
-	app.Event.On("remove:badge", func(event *application.CustomEvent) {
-		err := dockService.RemoveBadge()
-		if err != nil {
-			log.Fatal(err)
-		}
-	})
-
-	app.Event.On("set:badge", func(event *application.CustomEvent) {
-		text := event.Data.(string)
-		err := dockService.SetBadge(text)
-		if err != nil {
-			log.Fatal(err)
-		}
-	})
-
-	// Create a goroutine that emits an event containing the current time every second.
-	// The frontend can listen to this event and update the UI accordingly.
-	go func() {
-		ticker := time.NewTicker(time.Second)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ticker.C:
-				now := time.Now().Format(time.RFC1123)
-				app.Event.Emit("time", now)
-			case <-app.Context().Done():
-				return
-			}
-		}
-	}()
 
 	// Run the application. This blocks until the application has been exited.
 	err := app.Run()

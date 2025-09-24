@@ -18,6 +18,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Added
 <!-- New features, capabilities, or enhancements -->
 - macOS: Shows native window controls in the menu bar in [#4588](https://github.com/wailsapp/wails/pull/4588) by @nidib
+- Add macOS Dock service to hide/show app icon in the dock @popaprozac in [PR](https://github.com/wailsapp/wails/pull/4451)
 
 ## Changed
 <!-- Changes in existing functionality -->
