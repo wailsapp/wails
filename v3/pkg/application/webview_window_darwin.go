@@ -45,9 +45,6 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	[window setDelegate:delegate];
 	delegate.windowId = id;
 
-	// Disable window tab features. This also prevents tab controls in the window menu.
-	[window setTabbingMode:NSWindowTabbingModeDisallowed];
-
 	// Add NSView to window
 	NSView* view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
 	[view autorelease];
