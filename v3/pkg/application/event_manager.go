@@ -21,16 +21,23 @@ func newEventManager(app *App) *EventManager {
 
 // Emit emits a custom event with the specified name and associated data.
 //
+// If no data argument is provided, EmitEvent emits an event with nil data.
+// When there is exactly one data argument, it will be used as the custom event's data field.
+// When more than one argument is provided, the event's data field will be set to the argument slice.
+//
 // If the given event name is registered, EmitEvent validates the data parameter
 // against the expected data type. In case of a mismatch, EmitEvent reports an error
 // to the registered error handler for the application and cancels the event.
 func (em *EventManager) Emit(name string, data ...any) {
-	err := em.app.customEventProcessor.Emit(&CustomEvent{
-		Name: name,
-		Data: data,
-	})
+	event := &CustomEvent{Name: name}
 
-	if err != nil {
+	if len(data) == 1 {
+		event.Data = data[0]
+	} else if len(data) > 1 {
+		event.Data = data
+	}
+
+	if err := em.app.customEventProcessor.Emit(event); err != nil {
 		globalApplication.handleError(err)
 	}
 }
