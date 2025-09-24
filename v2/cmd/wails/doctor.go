@@ -255,7 +255,6 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 	if len(dependenciesMissing) != 0 {
 		pterm.Println("Fatal:")
 		pterm.Println("Required dependencies missing: " + strings.Join(dependenciesMissing, " "))
-		pterm.Println("Please read this article on how to resolve this: https://wails.io/guides/resolving-missing-packages")
 	}
 
 	pterm.Println() // Spacer for sponsor message
