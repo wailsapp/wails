@@ -104,3 +104,9 @@ export function Struct(createField: Record<string, (source: any) => any>):
         return source;
     };
 }
+
+/**
+ * Maps known event names to creation functions for their data types.
+ * Will be monkey-patched by the binding generator.
+ */
+export const Events: Record<string, (source: any) => any> = {};

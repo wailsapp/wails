@@ -17,9 +17,12 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Types Events by @fbbdev in [#4161](https://github.com/wailsapp/wails/pull/4161)
+- Browser URL Sanitisation by @leaanthony in [#4500](https://github.dev/wailsapp/wails/pull/4500). Based on [#4484](https://github.com/wailsapp/wails/pull/4484) by @APShenkin.
 
 ## Changed
 <!-- Changes in existing functionality -->
+- When emitting a custom event with zero or one data argument, the data value will be assigned directly to the Data field without wrapping it in a slice by [@fbbdev](https://github.com/fbbdev) in [#4161](https://github.com/wailsapp/wails/pull/4161)
 - macOS: Use `visibleFrame` instead of `frame` for window centering to exclude menu bar and dock areas
 
 ## Fixed

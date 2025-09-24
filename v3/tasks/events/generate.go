@@ -10,7 +10,7 @@ import (
 const eventsGo = `package events
 
 type ApplicationEventType uint
-type WindowEventType      uint
+type WindowEventType uint
 
 var Common = newCommonEvents()
 
@@ -58,7 +58,6 @@ func JSEvent(event uint) string {
 
 var eventToJS = map[uint]string{
 $$EVENTTOJS}
-
 `
 
 const darwinEventsH = `//go:build darwin
@@ -85,6 +84,17 @@ $$CHEADEREVENTS
 
 #endif`
 
+const knownEvents = `package $$PACKAGE
+
+func IsKnownEvent(name string) bool {
+	_, ok := knownEvents[name]
+	return ok
+}
+
+var knownEvents = map[string]struct{}{
+$$EVENTNAMEMAP}
+`
+
 const eventsTS = `/*
  _	   __	  _ __
 | |	 / /___ _(_) /____
@@ -100,14 +110,19 @@ The electron alternative for Go
 
 export const Types = Object.freeze({
 	Windows: Object.freeze({
-$$WINDOWSJSEVENTS	}),
+$$WINDOWSJSEVENTS	} as const),
 	Mac: Object.freeze({
-$$MACJSEVENTS	}),
+$$MACJSEVENTS	} as const),
 	Linux: Object.freeze({
-$$LINUXJSEVENTS	}),
+$$LINUXJSEVENTS	} as const),
 	Common: Object.freeze({
-$$COMMONJSEVENTS	}),
-});
+$$COMMONJSEVENTS	} as const),
+} as const);
+
+export const Windows = Types.Windows;
+export const Mac = Types.Mac;
+export const Linux = Types.Linux;
+export const Common = Types.Common;
 `
 
 func main() {
@@ -116,29 +131,30 @@ func main() {
 		panic(err)
 	}
 
-	linuxEventsDecl := bytes.NewBufferString("")
-	linuxEventsValues := bytes.NewBufferString("")
-	linuxCHeaderEvents := bytes.NewBufferString("")
+	var linuxEventsDecl bytes.Buffer
+	var linuxEventsValues bytes.Buffer
+	var linuxCHeaderEvents bytes.Buffer
 
-	macEventsDecl := bytes.NewBufferString("")
-	macEventsValues := bytes.NewBufferString("")
-	macCHeaderEvents := bytes.NewBufferString("")
-	windowDelegateEvents := bytes.NewBufferString("")
-	applicationDelegateEvents := bytes.NewBufferString("")
-	webviewDelegateEvents := bytes.NewBufferString("")
+	var macEventsDecl bytes.Buffer
+	var macEventsValues bytes.Buffer
+	var macCHeaderEvents bytes.Buffer
+	var windowDelegateEvents bytes.Buffer
+	var applicationDelegateEvents bytes.Buffer
+	var webviewDelegateEvents bytes.Buffer
 
-	windowsEventsDecl := bytes.NewBufferString("")
-	windowsEventsValues := bytes.NewBufferString("")
+	var windowsEventsDecl bytes.Buffer
+	var windowsEventsValues bytes.Buffer
 
-	commonEventsDecl := bytes.NewBufferString("")
-	commonEventsValues := bytes.NewBufferString("")
+	var commonEventsDecl bytes.Buffer
+	var commonEventsValues bytes.Buffer
 
-	linuxTSEvents := bytes.NewBufferString("")
-	macTSEvents := bytes.NewBufferString("")
-	windowsTSEvents := bytes.NewBufferString("")
-	commonTSEvents := bytes.NewBufferString("")
+	var linuxTSEvents bytes.Buffer
+	var macTSEvents bytes.Buffer
+	var windowsTSEvents bytes.Buffer
+	var commonTSEvents bytes.Buffer
 
-	eventToJS := bytes.NewBufferString("")
+	var eventNameMap bytes.Buffer
+	var eventToJS bytes.Buffer
 
 	var id int
 	//	var maxLinuxEvents int
@@ -188,6 +204,7 @@ func main() {
 			linuxEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
 			linuxEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
 			linuxTSEvents.WriteString("\t\t" + event + ": \"linux:" + event + "\",\n")
+			eventNameMap.WriteString("\t\"" + strings.TrimSpace(string(line)) + "\": {},\n")
 			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"linux:" + event + "\",\n")
 			maxLinuxEvents = id
 			linuxCHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
@@ -203,6 +220,7 @@ func main() {
 			macEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
 			macTSEvents.WriteString("\t\t" + event + ": \"mac:" + event + "\",\n")
 			macCHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
+			eventNameMap.WriteString("\t\"" + strings.TrimSpace(string(line)) + "\": {},\n")
 			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"mac:" + event + "\",\n")
 			maxMacEvents = id
 			if ignoreEvent {
@@ -250,7 +268,8 @@ func main() {
 			commonEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
 			commonEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
 			commonTSEvents.WriteString("\t\t" + event + ": \"common:" + event + "\",\n")
-			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"common:" + event + "\",\n")
+			eventNameMap.WriteString("\t\"" + strings.TrimSpace(string(line)) + "\": {},\n")
+      eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"common:" + event + "\",\n")
 		case "windows":
 			eventType := "ApplicationEventType"
 			if strings.HasPrefix(event, "Window") {
@@ -262,6 +281,7 @@ func main() {
 			windowsEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
 			windowsEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
 			windowsTSEvents.WriteString("\t\t" + event + ": \"windows:" + event + "\",\n")
+			eventNameMap.WriteString("\t\"" + strings.TrimSpace(string(line)) + "\": {},\n")
 			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"windows:" + event + "\",\n")
 		}
 	}
@@ -281,6 +301,21 @@ func main() {
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$COMMONEVENTSVALUES", commonEventsValues.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$EVENTTOJS", eventToJS.String())
 	err = os.WriteFile("../../pkg/events/events.go", []byte(templateToWrite), 0644)
+	if err != nil {
+		panic(err)
+	}
+
+	// Save the knownEvents template substituting the values and decls
+	templateToWrite = strings.ReplaceAll(knownEvents, "$$PACKAGE", "events")
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$EVENTNAMEMAP", eventNameMap.String())
+	err = os.WriteFile("../../pkg/events/known_events.go", []byte(templateToWrite), 0644)
+	if err != nil {
+		panic(err)
+	}
+
+	templateToWrite = strings.ReplaceAll(knownEvents, "$$PACKAGE", "collect")
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$EVENTNAMEMAP", eventNameMap.String())
+	err = os.WriteFile("../../internal/generator/collect/known_events.go", []byte(templateToWrite), 0644)
 	if err != nil {
 		panic(err)
 	}
