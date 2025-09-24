@@ -4,7 +4,7 @@ package application
 
 /*
 #cgo CFLAGS: -mmacosx-version-min=10.13 -x objective-c
-#cgo LDFLAGS: -framework Cocoa -framework WebKit
+#cgo LDFLAGS: -framework Cocoa -framework WebKit -framework QuartzCore
 
 #include "application_darwin.h"
 #include "webview_window_darwin.h"
@@ -529,7 +529,7 @@ void windowCenter(void* nsWindow) {
         screen = [NSScreen mainScreen];
     }
 
-    NSRect screenFrame = [screen frame];
+    NSRect screenFrame = [screen visibleFrame];
     NSRect windowFrame = [window frame];
 
     CGFloat x = screenFrame.origin.x + (screenFrame.size.width - windowFrame.size.width) / 2;
@@ -1247,6 +1247,8 @@ func (w *macosWebviewWindow) run() {
 		case MacBackdropTranslucent:
 			C.windowSetTranslucent(w.nsWindow)
 			C.webviewSetTransparent(w.nsWindow)
+		case MacBackdropLiquidGlass:
+			w.applyLiquidGlass()
 		case MacBackdropNormal:
 		}
 
@@ -1349,6 +1351,55 @@ func (w *macosWebviewWindow) nativeWindow() unsafe.Pointer {
 func (w *macosWebviewWindow) setBackgroundColour(colour RGBA) {
 
 	C.windowSetBackgroundColour(w.nsWindow, C.int(colour.Red), C.int(colour.Green), C.int(colour.Blue), C.int(colour.Alpha))
+}
+
+func (w *macosWebviewWindow) applyLiquidGlass() {
+	options := w.parent.options.Mac.LiquidGlass
+	
+	// Validate corner radius
+	if options.CornerRadius < 0 {
+		options.CornerRadius = 0
+	}
+	
+	globalApplication.debug("Applying Liquid Glass effect", "window", w.parent.id)
+	
+	// Check if liquid glass is supported
+	if !C.isLiquidGlassSupported() {
+		// Fallback to translucent
+		C.windowSetTranslucent(w.nsWindow)
+		C.webviewSetTransparent(w.nsWindow)
+		globalApplication.debug("Liquid Glass not supported on this macOS version, falling back to translucent", "window", w.parent.id)
+		return
+	}
+	
+	// Prepare tint color values (already clamped by uint8 type)
+	var r, g, b, a C.int
+	if options.TintColor != nil {
+		r = C.int(options.TintColor.Red)
+		g = C.int(options.TintColor.Green)
+		b = C.int(options.TintColor.Blue)
+		a = C.int(options.TintColor.Alpha)
+	}
+	
+	// Prepare group ID
+	var groupIDCStr *C.char
+	if options.GroupID != "" {
+		groupIDCStr = C.CString(options.GroupID)
+		defer C.free(unsafe.Pointer(groupIDCStr))
+	}
+	
+	// Apply liquid glass effect
+	C.windowSetLiquidGlass(
+		w.nsWindow,
+		C.int(options.Style),
+		C.int(options.Material),
+		C.double(options.CornerRadius),
+		r, g, b, a,
+		groupIDCStr,
+		C.double(options.GroupSpacing),
+	)
+	
+	globalApplication.debug("Applied Liquid Glass effect", "window", w.parent.id, "style", options.Style)
 }
 
 func (w *macosWebviewWindow) relativePosition() (int, int) {
