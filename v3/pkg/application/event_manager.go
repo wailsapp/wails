@@ -19,17 +19,31 @@ func newEventManager(app *App) *EventManager {
 	}
 }
 
-// Emit emits a custom event
+// Emit emits a custom event with the specified name and associated data.
+//
+// If the given event name is registered, EmitEvent validates the data parameter
+// against the expected data type. In case of a mismatch, EmitEvent reports an error
+// to the registered error handler for the application and cancels the event.
 func (em *EventManager) Emit(name string, data ...any) {
-	em.app.customEventProcessor.Emit(&CustomEvent{
+	err := em.app.customEventProcessor.Emit(&CustomEvent{
 		Name: name,
 		Data: data,
 	})
+
+	if err != nil {
+		globalApplication.handleError(err)
+	}
 }
 
 // EmitEvent emits a custom event object (internal use)
+//
+// If the given event name is registered, emitEvent validates the data parameter
+// against the expected data type. In case of a mismatch, emitEvent reports an error
+// to the registered error handler for the application and cancels the event.
 func (em *EventManager) EmitEvent(event *CustomEvent) {
-	em.app.customEventProcessor.Emit(event)
+	if err := em.app.customEventProcessor.Emit(event); err != nil {
+		globalApplication.handleError(err)
+	}
 }
 
 // On registers a listener for custom events
