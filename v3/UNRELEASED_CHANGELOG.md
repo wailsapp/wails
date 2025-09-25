@@ -1,6 +1,6 @@
 # Unreleased Changes
 
-<!--
+<!-- 
 This file is used to collect changelog entries for the next v3-alpha release.
 Add your changes under the appropriate sections below.
 
@@ -17,19 +17,12 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- macOS: Shows native window controls in the menu bar in [#4588](https://github.com/wailsapp/wails/pull/4588) by @nidib
-- Add macOS Dock service to hide/show app icon in the dock @popaprozac in [PR](https://github.com/wailsapp/wails/pull/4451)
 
 ## Changed
 <!-- Changes in existing functionality -->
-- macOS: Use `visibleFrame` instead of `frame` for window centering to exclude menu bar and dock areas
 
 ## Fixed
 <!-- Bug fixes -->
-- Fixed redefinition error for liquid glass demo in [#4542](https://github.com/wailsapp/wails/pull/4542) by @Etesam913
-- Fixed issue where AssetServer can crash on MacOS in [#4576](https://github.com/wailsapp/wails/pull/4576) by @jghiloni
-- Fixed compilation issue when building with NextJs. Fixed in [#4585](https://github.com/wailsapp/wails/pull/4585) by @rev42
-- Fixed pipelines for nightly release in [#4597](https://github.com/wailsapp/wails/pull/4597) by @riadafridishibly
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
@@ -45,20 +38,16 @@ After processing, the content will be moved to the main changelog and this file 
 ### Example Entries:
 
 **Added:**
-
 - Add support for custom window icons in application options
 - Add new `SetWindowIcon()` method to runtime API (#1234)
 
 **Changed:**
-
 - Update minimum Go version requirement to 1.21
 - Improve error messages for invalid configuration files
 
 **Fixed:**
-
 - Fix memory leak in event system during window close operations (#5678)
 - Fix crash when using context menus on Linux with Wayland
 
 **Security:**
-
 - Update dependencies to address CVE-2024-12345 in third-party library
