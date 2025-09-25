@@ -495,7 +495,11 @@ func runRelease(opts releaseOptions) error {
 	}
 	changelogContent = strings.TrimSpace(changelogContent)
 	if changelogContent == "" {
-		return errNoUnreleasedContent
+		fmt.Println("ℹ️  UNRELEASED_CHANGELOG.md has no unreleased entries. Skipping release.")
+		writeGitHubOutput("release_skipped", "true")
+		writeGitHubOutput("release_reason", "no_unreleased_changelog_content")
+		writeGitHubOutput("release_outcome", "skipped")
+		return nil
 	}
 
 	originalVersionData, err := os.ReadFile(versionFile)
@@ -544,6 +548,7 @@ func runRelease(opts releaseOptions) error {
 
 	if opts.dryRun {
 		writeGitHubOutput("release_dry_run", "true")
+		writeGitHubOutput("release_outcome", "dry-run")
 		fmt.Println("🧪 Dry run enabled: skipping git commit, push, tagging, and GitHub release creation")
 		fmt.Println("\n--- Release Notes Preview ---")
 		fmt.Println(releaseBody)
@@ -612,6 +617,7 @@ func runRelease(opts releaseOptions) error {
 		writeGitHubOutput("release_url", releaseInfo.HTMLURL)
 	}
 
+	writeGitHubOutput("release_outcome", "success")
 	fmt.Println("🎉 Release completed successfully.")
 	return nil
 }
