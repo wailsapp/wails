@@ -24,7 +24,6 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 - Fixed Wayland window size maximising issues (https://github.com/wailsapp/wails/issues/4429) by [@samstanier](https://github.com/samstanier)
-- Fixed redefinition error for liquid glass demo in [#4542](https://github.com/wailsapp/wails/pull/4542) by @Etesam913
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

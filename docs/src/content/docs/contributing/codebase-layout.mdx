@@ -89,7 +89,7 @@ internal/
 | Package | Responsibility | Where It Connects |
 |---------|----------------|-------------------|
 | `runtime` | Window/event loop, clipboard, dialogs, system tray. One file per OS with build-tags (`*_darwin.go`, `*_linux.go`, …). | Called by `pkg/application` and message processor. |
-| `assetserver` | Dual-mode file server:<br>• Dev: serves from disk & proxies Vite<br>• Prod: embeds assets via `go:embed` | Initialized by `pkg/application` during startup. |
+| `assetserver` | Dual-mode file server:<br />• Dev: serves from disk & proxies Vite<br />• Prod: embeds assets via `go:embed` | Initialized by `pkg/application` during startup. |
 | `generator` | Parses Go source to build **binding metadata** which later produces TypeScript stub files and Go marshal/unmarshal code. | Triggered by `wails3 init` / `wails3 generate`. |
 | `packager` | Wraps platform-specific packaging CLIs (eg. `electron-builder` equivalents) into Go for cross-platform automation. | Invoked by `wails3 package`. |
 
@@ -172,19 +172,25 @@ so the same logic powers **CLI** and **CI**.
 
 ## How the Pieces Interact
 
-```mermaid
-flowchart TD
-    A[wails3 CLI] -- build/generate --> B[internal.generator]
-    A -- dev --> C[assetserver (dev)]
-    A -- package --> P[internal.packager]
-
-    subgraph App runtime
-        E[pkg.application] --> F[internal.runtime]
-        F --> G[OS APIs]
-        E --> C
-    end
-
-    B --> E  %% generated bindings registered at init
+```d2
+direction: down
+CLI: "wails3 CLI"
+Generator: "internal/generator"
+AssetDev: "assetserver (dev)"
+Packager: "internal/packager"
+AppRuntime: {
+  label: "App runtime"
+  ApplicationPkg: "pkg.application"
+  InternalRuntime: "internal.runtime"
+  OSAPIs: "OS APIs"
+}
+CLI -> Generator: "build / generate"
+CLI -> AssetDev: "dev"
+CLI -> Packager: "package"
+Generator -> ApplicationPkg: "bindings"
+ApplicationPkg -> InternalRuntime
+InternalRuntime -> OSAPIs
+ApplicationPkg -> AssetDev
 ```
 
 *CLI → generator → runtime* forms the core path from **source** to **running
