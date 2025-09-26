@@ -321,10 +321,17 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 		command = appBinary
 	} else {
 		command = "dlv"
-		newArgs := append(strings.Split(f.DlvFlag, " "), "exec", appBinary)
+
+		// Use shlex to properly handle quoted arguments
+		dlvArgs, err := shlex.Split(f.DlvFlag)
+		if err != nil {
+			buildOptions.Logger.Fatal("Unable to parse dlvflag: %s", err.Error())
+		}
+		newArgs := append(dlvArgs, "exec", appBinary)
 		if len(args) > 0 {
 			newArgs = append(newArgs, "--")
-			args = append(newArgs, args...)
+
+			newArgs = append(newArgs, args...)
 		}
 		args = newArgs
 	}
