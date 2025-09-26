@@ -6,10 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math"
 	"net/http"
 	"strconv"
 	"sync"
-	"math"
 )
 
 // TODO maybe we could use a new struct that has the targetWindow as an attribute so we could get rid of passing the targetWindow
@@ -81,32 +81,33 @@ func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
 }
 
 func (m *MessageProcessor) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	object := r.URL.Query().Get("object")
-	if object == "" {
-		m.httpError(rw, "Invalid runtime call:", errors.New("missing object value"))
+	body, err := m.decodeBody(r.Body)
+	if err != nil {
+		m.httpError(rw, "Invalid runtime call:", err)
+		return
+	}
+	if string(body.Object) == "" {
+		m.httpError(rw, "Invalid runtime call:", errors.New("missing object values"))
 		return
 	}
 
-	m.HandleRuntimeCallWithIDs(rw, r)
+	m.HandleRuntimeCallWithIDs(rw, r, body)
 }
 
-func (m *MessageProcessor) HandleRuntimeCallWithIDs(rw http.ResponseWriter, r *http.Request) {
+func (m *MessageProcessor) HandleRuntimeCallWithIDs(rw http.ResponseWriter, r *http.Request, body *runtimeRequest) {
 	defer func() {
 		if handlePanic() {
 			rw.WriteHeader(http.StatusInternalServerError)
 		}
 	}()
-	object, err := strconv.Atoi(r.URL.Query().Get("object"))
-	if err != nil {
-		m.httpError(rw, "Invalid runtime call:", fmt.Errorf("error decoding object value: %w", err))
+
+	if body == nil {
+		m.httpError(rw, "Invalid runtime call:", errors.New("request body is nil"))
 		return
 	}
-	method, err := strconv.Atoi(r.URL.Query().Get("method"))
-	if err != nil {
-		m.httpError(rw, "Invalid runtime call:", fmt.Errorf("error decoding method value: %w", err))
-		return
-	}
-	params := QueryParams(r.URL.Query())
+
+	object := body.Object
+	method := body.Method
 
 	targetWindow, nameOrID := m.getTargetWindow(r)
 	if targetWindow == nil {
@@ -116,27 +117,27 @@ func (m *MessageProcessor) HandleRuntimeCallWithIDs(rw http.ResponseWriter, r *h
 
 	switch object {
 	case windowRequest:
-		m.processWindowMethod(method, rw, r, targetWindow, params)
+		m.processWindowMethod(method, rw, r, targetWindow, *body)
 	case clipboardRequest:
-		m.processClipboardMethod(method, rw, r, targetWindow, params)
+		m.processClipboardMethod(method, rw, r, targetWindow, *body)
 	case dialogRequest:
-		m.processDialogMethod(method, rw, r, targetWindow, params)
+		m.processDialogMethod(method, rw, r, targetWindow, *body)
 	case eventsRequest:
-		m.processEventsMethod(method, rw, r, targetWindow, params)
+		m.processEventsMethod(method, rw, r, targetWindow, *body)
 	case applicationRequest:
-		m.processApplicationMethod(method, rw, r, targetWindow, params)
+		m.processApplicationMethod(method, rw, r, targetWindow, *body)
 	case contextMenuRequest:
-		m.processContextMenuMethod(method, rw, r, targetWindow, params)
+		m.processContextMenuMethod(method, rw, r, targetWindow, *body)
 	case screensRequest:
-		m.processScreensMethod(method, rw, r, targetWindow, params)
+		m.processScreensMethod(method, rw, r, targetWindow, *body)
 	case callRequest:
-		m.processCallMethod(method, rw, r, targetWindow, params)
+		m.processCallMethod(method, rw, r, targetWindow, *body)
 	case systemRequest:
-		m.processSystemMethod(method, rw, r, targetWindow, params)
+		m.processSystemMethod(method, rw, r, targetWindow, *body)
 	case browserRequest:
-		m.processBrowserMethod(method, rw, r, targetWindow, params)
+		m.processBrowserMethod(method, rw, r, targetWindow, *body)
 	case cancelCallRequesst:
-		m.processCallCancelMethod(method, rw, r, targetWindow, params)
+		m.processCallCancelMethod(method, rw, r, targetWindow, *body)
 	default:
 		m.httpError(rw, "Invalid runtime call:", fmt.Errorf("unknown object %d", object))
 	}
