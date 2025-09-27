@@ -1,12 +1,12 @@
-//go:build linux && !webkit_6
-// +build linux,!webkit_6
+//go:build linux && webkit_6
+// +build linux,webkit_6
 
 #ifndef window_h
 #define window_h
 
-#include <JavaScriptCore/JavaScript.h>
+#include <jsc/jsc.h>
 #include <gtk/gtk.h>
-#include <webkit2/webkit2.h>
+#include <webkit/webkit.h>
 #include <stdio.h>
 #include <limits.h>
 #include <stdint.h>
@@ -21,7 +21,7 @@ typedef struct ResizeOptions
 {
     void *webview;
     GtkWindow *mainwindow;
-    GdkWindowEdge edge;
+    GdkSurfaceEdge edge;
 } ResizeOptions;
 
 typedef struct JSCallback
@@ -79,7 +79,7 @@ void ExecuteOnMainThread(void *f, gpointer jscallback);
 
 GtkWidget *GTKWIDGET(void *pointer);
 GtkWindow *GTKWINDOW(void *pointer);
-GtkContainer *GTKCONTAINER(void *pointer);
+// GtkContainer *GTKCONTAINER(void *pointer);
 GtkBox *GTKBOX(void *pointer);
 
 // window
@@ -116,7 +116,7 @@ void ExecuteJS(void *data);
 
 // Drag
 void StartDrag(void *webview, GtkWindow *mainwindow);
-void StartResize(void *webview, GtkWindow *mainwindow, GdkWindowEdge edge);
+void StartResize(void *webview, GtkWindow *mainwindow, GdkSurfaceEdge edge);
 
 // Dialog
 void MessageDialog(void *data);
@@ -126,6 +126,10 @@ void Opendialog(void *data);
 // Inspector
 void sendShowInspectorMessage();
 void ShowInspector(void *webview);
-void InstallF12Hotkey(void *window);
+void InstallF12Hotkey(GtkApplication *app, GtkWindow *window);
+
+static void activate(GtkApplication *app, gpointer user_data);
+GtkApplication* createApp(char *appId);
+void runApp(GtkApplication *app);
 
 #endif /* window_h */

@@ -4,12 +4,20 @@
 package linux
 
 /*
-#cgo linux pkg-config: gtk+-3.0
-#cgo !webkit2_41 pkg-config: webkit2gtk-4.0
+#cgo webkit_6 CFLAGS: -DWEBKIT_6
+#cgo !webkit_6 pkg-config: gtk+-3.0
+#cgo webkit_6 pkg-config: gtk4
+#cgo !(webkit2_41 || webkit_6) pkg-config: webkit2gtk-4.0
 #cgo webkit2_41 pkg-config: webkit2gtk-4.1
+#cgo webkit_6 pkg-config: webkitgtk-6.0
 
 #include "gtk/gtk.h"
+
+#ifdef WEBKIT_6
+#include "webkit/webkit.h"
+#else
 #include "webkit2/webkit2.h"
+#endif
 
 // CREDIT: https://github.com/rainycape/magick
 #include <errno.h>
@@ -130,7 +138,7 @@ type Frontend struct {
 }
 
 func (f *Frontend) RunMainLoop() {
-	C.gtk_main()
+	runMainLoop()
 }
 
 func (f *Frontend) WindowClose() {
@@ -146,7 +154,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 			_ = os.Setenv("GDK_BACKEND", "x11")
 		}
 
-		if ok := C.gtk_init_check(nil, nil); ok != 1 {
+		if ok := initGtk(); ok != 1 {
 			panic(errors.New("failed to init GTK"))
 		}
 	})
@@ -417,17 +425,6 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 		return
 	}
 	f.mainWindow.ExecJS(`window.wails.EventsNotify('` + template.JSEscapeString(string(payload)) + `');`)
-}
-
-var edgeMap = map[string]uintptr{
-	"n-resize":  C.GDK_WINDOW_EDGE_NORTH,
-	"ne-resize": C.GDK_WINDOW_EDGE_NORTH_EAST,
-	"e-resize":  C.GDK_WINDOW_EDGE_EAST,
-	"se-resize": C.GDK_WINDOW_EDGE_SOUTH_EAST,
-	"s-resize":  C.GDK_WINDOW_EDGE_SOUTH,
-	"sw-resize": C.GDK_WINDOW_EDGE_SOUTH_WEST,
-	"w-resize":  C.GDK_WINDOW_EDGE_WEST,
-	"nw-resize": C.GDK_WINDOW_EDGE_NORTH_WEST,
 }
 
 func (f *Frontend) processMessage(message string) {
