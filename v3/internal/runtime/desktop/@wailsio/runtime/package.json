@@ -1,7 +1,7 @@
 {
   "name": "@wailsio/runtime",
   "type": "module",
-  "version": "3.0.0-alpha.70",
+  "version": "3.0.0-alpha.71",
   "description": "Wails Runtime",
   "types": "types/index.d.ts",
   "exports": {
