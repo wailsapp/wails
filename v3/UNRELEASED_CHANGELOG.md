@@ -23,6 +23,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Windows: Flicker of window at start and hidden windows being shown incorrectly in [PR](https://github.com/wailsapp/wails/pull/4600) by @leaanthony.
+- Fixed Wayland window size maximising issues (https://github.com/wailsapp/wails/issues/4429) by [@samstanier](https://github.com/samstanier)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
