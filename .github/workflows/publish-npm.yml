@@ -50,18 +50,23 @@ jobs:
       !failure() && !cancelled()
       && (github.event_name == 'workflow_dispatch' || needs.detect.outputs.changed == 'true')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+      pull-requests: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: 'v3-alpha'
-          ssh-key: ${{ secrets.DEPLOY_KEY }}
+          token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
 
       - name: Configure git
         run: |
-          git config --local user.email "github-actions@github.com"
-          git config --local user.name "GitHub Actions"
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git config --global url."https://x-access-token:${{ secrets.WAILS_REPO_TOKEN || github.token }}@github.com/".insteadOf "https://github.com/"
 
       - name: Install Task
         uses: arduino/setup-task@v2
