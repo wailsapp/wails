@@ -12,6 +12,7 @@ import (
 	"github.com/wailsapp/wails/v2/cmd/wails/flags"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/template"
 	"github.com/wailsapp/wails/v2/internal/colour"
+	"github.com/wailsapp/wails/v2/internal/conv"
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/project"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
@@ -230,7 +231,7 @@ func processPackageLockJSON(frontendDir string) error {
 	if err != nil {
 		return err
 	}
-	json := string(data)
+	json := conv.BytesToString(data)
 
 	// We will ignore these errors - it's not critical
 	printBulletPoint("Updating package-lock.json data...")

@@ -3,6 +3,7 @@ package menumanager
 import (
 	"encoding/json"
 
+	"github.com/wailsapp/wails/v2/internal/conv"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/menu/keys"
 )
@@ -134,7 +135,7 @@ func (w *WailsMenu) AsJSON() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(menuAsJSON), nil
+	return conv.BytesToString(menuAsJSON), nil
 }
 
 func (w *WailsMenu) processRadioGroups() {
