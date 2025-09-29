@@ -962,8 +962,6 @@ void InstallF12Hotkey(GtkApplication *app, GtkWindow *window)
 
 extern void onActivate();
 
-const int G_APPLICATION_DEFAULT_FLAGS = 0;
-
 static void activate(GtkApplication *app, gpointer user_data) {
 	onActivate();
 }
