@@ -739,28 +739,28 @@ void messageResult(GtkDialog* dialog, gint response_id, gpointer user_data) {
 
 void MessageDialog(void *data)
 {
-    GtkDialogFlags flags;
+    GtkButtonsType buttons;
     GtkMessageType messageType;
     MessageDialogOptions *options = (MessageDialogOptions *)data;
     if (options->messageType == 0)
     {
         messageType = GTK_MESSAGE_INFO;
-        flags = GTK_BUTTONS_OK;
+        buttons = GTK_BUTTONS_OK;
     }
     else if (options->messageType == 1)
     {
         messageType = GTK_MESSAGE_ERROR;
-        flags = GTK_BUTTONS_OK;
+        buttons = GTK_BUTTONS_OK;
     }
     else if (options->messageType == 2)
     {
         messageType = GTK_MESSAGE_QUESTION;
-        flags = GTK_BUTTONS_YES_NO;
+        buttons = GTK_BUTTONS_YES_NO;
     }
     else
     {
         messageType = GTK_MESSAGE_WARNING;
-        flags = GTK_BUTTONS_OK;
+        buttons = GTK_BUTTONS_OK;
     }
 
     // TODO: gtk_message_dialog_new is deprecated since 4.10
@@ -771,7 +771,7 @@ void MessageDialog(void *data)
     dialog = gtk_message_dialog_new(GTK_WINDOW(options->window),
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
                                     messageType,
-                                    flags,
+                                    buttons,
                                     options->message, NULL);
     
     g_object_ref_sink(dialog);
