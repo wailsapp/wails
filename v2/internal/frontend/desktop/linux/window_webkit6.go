@@ -381,6 +381,8 @@ func (w *Window) SetDecorated(frameless bool) {
 }
 
 func (w *Window) SetTitle(title string) {
+	cTitle := C.CString(title)
+	defer C.free(unsafe.Pointer(cTitle))
 	C.SetTitle(w.asGTKWindow(), C.CString(title))
 }
 
@@ -401,8 +403,14 @@ func (w *Window) StartResize(edge uintptr) {
 }
 
 func (w *Window) Quit() {
+	if mainLoop == nil {
+		return
+	}
+
 	C.g_main_loop_quit(mainLoop)
 	C.g_main_loop_unref(mainLoop)
+
+	mainLoop = nil
 }
 
 func (w *Window) OpenFileDialog(dialogOptions frontend.OpenDialogOptions, multipleFiles int, action C.GtkFileChooserAction) {
