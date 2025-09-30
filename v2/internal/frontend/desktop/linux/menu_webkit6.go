@@ -89,6 +89,18 @@ func (w *Window) SetApplicationMenu(inmenu *menu.Menu) {
 		return
 	}
 
+	// Clean up previous menu
+	for _, gmenu := range gtkMenuCache {
+		if gmenu != nil {
+			C.g_object_unref(C.gpointer(gmenu))
+		}
+	}
+
+	if w.menubar != nil {
+		C.gtk_widget_unparent(w.menubar)
+		w.menubar = nil
+	}
+
 	menuItemToId = make(map[*menu.MenuItem]int)
 	menuIdToItem = make(map[int]*menu.MenuItem)
 	gtkMenuCache = make(map[*menu.MenuItem]*C.GMenu)
