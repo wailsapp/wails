@@ -124,7 +124,7 @@ GtkFileFilter **AllocFileFilterArray(size_t ln);
 void Opendialog(void *data);
 
 // Inspector
-void sendShowInspectorMessage();
+void sendShowInspectorMessage(GAction *action, GVariant *param);
 void ShowInspector(void *webview);
 void InstallF12Hotkey(GtkApplication *app, GtkWindow *window);
 
