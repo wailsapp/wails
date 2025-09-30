@@ -381,9 +381,8 @@ func (w *Window) SetDecorated(frameless bool) {
 }
 
 func (w *Window) SetTitle(title string) {
-	cTitle := C.CString(title)
-	defer C.free(unsafe.Pointer(cTitle))
-	C.SetTitle(w.asGTKWindow(), cTitle)
+	// No need to free 'title' C-string here since it's freed in C-side
+	C.SetTitle(w.asGTKWindow(), C.CString(title))
 }
 
 func (w *Window) ExecJS(js string) {
