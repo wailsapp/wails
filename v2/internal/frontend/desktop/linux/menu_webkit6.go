@@ -64,6 +64,7 @@ void setAccels(GtkApplication *app, char *actionName, char *accels) {
 import "C"
 import (
 	"strings"
+	"sync"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v2/pkg/menu"
@@ -73,7 +74,7 @@ var menuIdCounter int
 var menuItemToId map[*menu.MenuItem]int
 var menuIdToItem map[int]*menu.MenuItem
 var gtkMenuCache map[*menu.MenuItem]*C.GMenu
-var gActionIdToMenuItem map[string]*menu.MenuItem
+var gActionIdToMenuItem sync.Map
 
 func (f *Frontend) MenuSetApplicationMenu(menu *menu.Menu) {
 	f.mainWindow.SetApplicationMenu(menu)
@@ -91,7 +92,6 @@ func (w *Window) SetApplicationMenu(inmenu *menu.Menu) {
 	menuItemToId = make(map[*menu.MenuItem]int)
 	menuIdToItem = make(map[int]*menu.MenuItem)
 	gtkMenuCache = make(map[*menu.MenuItem]*C.GMenu)
-	gActionIdToMenuItem = make(map[string]*menu.MenuItem)
 
 	processMenu(w, inmenu)
 }
@@ -221,7 +221,7 @@ func processMenuItem(window *Window, parent *C.GMenu, menuItem *menu.MenuItem) {
 		}
 	}
 
-	gActionIdToMenuItem[actionName] = menuItem
+	gActionIdToMenuItem.Store(actionName, menuItem)
 
 	detActionName := C.CString("win." + actionName)
 	defer C.free(unsafe.Pointer(detActionName))

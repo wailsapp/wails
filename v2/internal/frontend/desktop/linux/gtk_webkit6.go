@@ -15,10 +15,12 @@ func handleMenuRadioItemClick(rName *C.char, prev *C.char, curr *C.char) {
 	itemId := C.GoString(curr)
 
 	actionName := radioActionName + "::" + itemId
-	item := gActionIdToMenuItem[actionName]
+	it, _ := gActionIdToMenuItem.Load(actionName)
+	item := it.(*menu.MenuItem)
 
 	prevActionId := radioActionName + "::" + prevId
-	prevItem := gActionIdToMenuItem[prevActionId]
+	prevIt, _ := gActionIdToMenuItem.Load(prevActionId)
+	prevItem := prevIt.(*menu.MenuItem)
 
 	prevItem.Checked = false
 	item.Checked = true
@@ -29,7 +31,8 @@ func handleMenuRadioItemClick(rName *C.char, prev *C.char, curr *C.char) {
 //export handleMenuCheckItemClick
 func handleMenuCheckItemClick(aName *C.char, checked C.int) {
 	actionName := C.GoString(aName)
-	item := gActionIdToMenuItem[actionName]
+	it, _ := gActionIdToMenuItem.Load(actionName)
+	item := it.(*menu.MenuItem)
 
 	item.Checked = int(checked) == 1
 
@@ -39,7 +42,8 @@ func handleMenuCheckItemClick(aName *C.char, checked C.int) {
 //export handleMenuItemClick
 func handleMenuItemClick(aName *C.char) {
 	actionName := C.GoString(aName)
-	item := gActionIdToMenuItem[actionName]
+	it, _ := gActionIdToMenuItem.Load(actionName)
+	item := it.(*menu.MenuItem)
 
 	go item.Click(&menu.CallbackData{MenuItem: item})
 }
