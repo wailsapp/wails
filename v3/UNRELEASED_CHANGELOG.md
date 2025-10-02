@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix drag-and-drop not working when using npm package @wailsio/runtime (#4489) by @leaanthony in #4616
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
