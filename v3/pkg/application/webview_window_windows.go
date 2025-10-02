@@ -369,6 +369,11 @@ func (w *windowsWebviewWindow) run() {
 	var parent w32.HWND
 
 	var style uint = w32.WS_OVERLAPPEDWINDOW
+	// If the window should be hidden initially, exclude WS_VISIBLE from the style
+	// This prevents the white window flash reported in issue #4611
+	if options.Hidden {
+		style = style &^ uint(w32.WS_VISIBLE)
+	}
 
 	w.hwnd = w32.CreateWindowEx(
 		uint(exStyle),
