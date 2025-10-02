@@ -23,7 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix the white window appearing on Windows when creating a hidden window by @leaanthony in [#4612](https://github.com/wailsapp/wails/pull/4612)
+- Fix drag-and-drop not working when using npm package @wailsio/runtime (#4489) by @leaanthony in #4616
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
