@@ -23,7 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Fixed systray menu updates on Linux (https://github.com/wailsapp/wails/issues/4604) by [@JackDoan](https://github.com/JackDoan)
+- Fixed systray menu updates on Linux [#4604](https://github.com/wailsapp/wails/issues/4604) by [@JackDoan](https://github.com/JackDoan)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
