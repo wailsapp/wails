@@ -3,9 +3,16 @@
 package linux
 
 /*
-#cgo !webkit2_41 pkg-config: webkit2gtk-4.0
+#cgo webkit_6 CFLAGS: -DWEBKIT_6
+#cgo !(webkit2_41 || webkit_6) pkg-config: webkit2gtk-4.0
 #cgo webkit2_41 pkg-config: webkit2gtk-4.1
+#cgo webkit_6 pkg-config: webkitgtk-6.0
+
+#ifdef WEBKIT_6
+#include "webkit/webkit.h"
+#else
 #include "webkit2/webkit2.h"
+#endif
 */
 import "C"
 import (
