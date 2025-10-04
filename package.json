@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "astro-d2": "^0.8.0"
+  }
+}

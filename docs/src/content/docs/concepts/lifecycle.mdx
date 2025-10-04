@@ -1,0 +1,612 @@
+---
+title: Application Lifecycle
+description: Understanding the Wails application lifecycle from startup to shutdown
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Understanding Application Lifecycle
+
+Desktop applications have a lifecycle from startup to shutdown. Wails provides hooks at each stage to **initialise resources**, **clean up properly**, **handle errors gracefully**, and **manage multiple windows** effectively.
+
+## The Lifecycle Stages
+
+```d2
+direction: down
+
+Start: "Application Start" {
+  shape: oval
+  style.fill: "#10B981"
+}
+
+PreInit: "Pre-Initialisation" {
+  Parse: "Parse Options" {
+    shape: rectangle
+  }
+  Register: "Register Services" {
+    shape: rectangle
+  }
+  Validate: "Validate Config" {
+    shape: rectangle
+  }
+}
+
+OnStartup: "OnStartup Hook" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+}
+
+CreateWindows: "Create Windows" {
+  shape: rectangle
+}
+
+EventLoop: "Event Loop" {
+  Process: "Process Events" {
+    shape: rectangle
+  }
+  Handle: "Handle Messages" {
+    shape: rectangle
+  }
+  Update: "Update UI" {
+    shape: rectangle
+  }
+}
+
+QuitSignal: "Quit Signal" {
+  shape: diamond
+  style.fill: "#F59E0B"
+}
+
+OnBeforeClose: "OnBeforeClose Hook" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+}
+
+OnShutdown: "OnShutdown Hook" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+}
+
+Cleanup: "Cleanup" {
+  Close: "Close Windows" {
+    shape: rectangle
+  }
+  Release: "Release Resources" {
+    shape: rectangle
+  }
+}
+
+End: "Application End" {
+  shape: oval
+  style.fill: "#EF4444"
+}
+
+Start -> PreInit.Parse
+PreInit.Parse -> PreInit.Register
+PreInit.Register -> PreInit.Validate
+PreInit.Validate -> OnStartup
+OnStartup -> CreateWindows
+CreateWindows -> EventLoop.Process
+EventLoop.Process -> EventLoop.Handle
+EventLoop.Handle -> EventLoop.Update
+EventLoop.Update -> EventLoop.Process: "Loop"
+EventLoop.Process -> QuitSignal: "User quits"
+QuitSignal -> OnBeforeClose: "Can cancel?"
+OnBeforeClose -> EventLoop.Process: "Cancelled"
+OnBeforeClose -> OnShutdown: "Confirmed"
+OnShutdown -> Cleanup.Close
+Cleanup.Close -> Cleanup.Release
+Cleanup.Release -> End
+```
+
+### 1. Pre-Initialisation
+
+Before your code runs, Wails:
+1. Parses `application.Options`
+2. Registers services
+3. Validates configuration
+4. Sets up the runtime
+
+**You don't control this phase** - it happens automatically.
+
+### 2. OnStartup Hook
+
+Your first opportunity to run code:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    OnStartup: func(ctx context.Context) {
+        // Initialise database
+        db, err := sql.Open("sqlite3", "app.db")
+        if err != nil {
+            log.Fatal(err)
+        }
+        
+        // Load configuration
+        config, err := loadConfig()
+        if err != nil {
+            log.Fatal(err)
+        }
+        
+        // Store in context for services to access
+        ctx = context.WithValue(ctx, "db", db)
+        ctx = context.WithValue(ctx, "config", config)
+    },
+})
+```
+
+**When it runs:** After Wails initialisation, before windows are created
+
+**Use it for:**
+- Database connections
+- Configuration loading
+- Resource initialisation
+- Authentication checks
+
+**Context:** The `context.Context` is passed to all services and can store shared state.
+
+### 3. Window Creation
+
+After `OnStartup`, you create windows:
+
+```go
+window := app.NewWebviewWindow()
+```
+
+**What happens:**
+1. Window is created (but not shown)
+2. WebView is initialised
+3. Frontend assets are loaded
+4. Window is shown (unless `Hidden: true`)
+
+### 4. Event Loop
+
+The application enters the event loop:
+
+```go
+err := app.Run()  // Blocks here until quit
+```
+
+**What happens in the loop:**
+- OS events processed (mouse, keyboard, window events)
+- Go-to-JS messages handled
+- JS-to-Go calls executed
+- UI updates rendered
+
+**This is where your application spends most of its time.**
+
+### 5. Quit Signal
+
+User triggers quit via:
+- Closing last window (default behaviour)
+- Cmd+Q / Alt+F4 / File → Quit
+- Your code calling `app.Quit()`
+
+### 6. OnBeforeClose Hook
+
+**Optional hook to prevent quit:**
+
+```go
+window := app.NewWebviewWindow(application.WebviewWindowOptions{
+    OnBeforeClose: func() bool {
+        // Return false to cancel quit
+        // Return true to allow quit
+        
+        if hasUnsavedChanges() {
+            result := showConfirmDialog("Unsaved changes. Quit anyway?")
+            return result == "yes"
+        }
+        return true
+    },
+})
+```
+
+**Use cases:**
+- Confirm quit with unsaved changes
+- Prevent accidental closure
+- Save state before quitting
+
+**Important:** Only works for window close events, not `app.Quit()`.
+
+### 7. OnShutdown Hook
+
+Your last opportunity to run code:
+
+```go
+app := application.New(application.Options{
+    OnShutdown: func() {
+        // Save application state
+        saveState()
+        
+        // Close database
+        db.Close()
+        
+        // Release resources
+        cleanup()
+    },
+})
+```
+
+**When it runs:** After quit confirmed, before application exits
+
+**Use it for:**
+- Saving state
+- Closing connections
+- Releasing resources
+- Final cleanup
+
+**Important:** Keep it fast (<1 second). OS may force-kill if too slow.
+
+### 8. Cleanup & Exit
+
+Wails automatically:
+1. Closes all windows
+2. Releases WebView resources
+3. Exits the process
+
+## Lifecycle Hooks Reference
+
+| Hook | When | Can Cancel? | Use For |
+|------|------|-------------|---------|
+| `OnStartup` | Before windows created | No | Initialisation |
+| `OnBeforeClose` | Window closing | Yes | Confirm quit |
+| `OnShutdown` | After quit confirmed | No | Cleanup |
+
+## Common Patterns
+
+### Pattern 1: Database Lifecycle
+
+```go
+var db *sql.DB
+
+app := application.New(application.Options{
+    OnStartup: func(ctx context.Context) {
+        var err error
+        db, err = sql.Open("sqlite3", "app.db")
+        if err != nil {
+            log.Fatal(err)
+        }
+        
+        // Run migrations
+        if err := runMigrations(db); err != nil {
+            log.Fatal(err)
+        }
+    },
+    OnShutdown: func() {
+        if db != nil {
+            db.Close()
+        }
+    },
+})
+```
+
+### Pattern 2: Configuration Management
+
+```go
+type Config struct {
+    Theme string
+    Language string
+    WindowPos Point
+}
+
+var config *Config
+
+app := application.New(application.Options{
+    OnStartup: func(ctx context.Context) {
+        config = loadConfig()  // Load from disk
+    },
+    OnShutdown: func() {
+        saveConfig(config)  // Save to disk
+    },
+})
+```
+
+### Pattern 3: Confirm Quit with Unsaved Changes
+
+```go
+type AppState struct {
+    hasUnsavedChanges bool
+}
+
+var state AppState
+
+window := app.NewWebviewWindow(application.WebviewWindowOptions{
+    OnBeforeClose: func() bool {
+        if state.hasUnsavedChanges {
+            // Show dialog (blocks until user responds)
+            result := showConfirmdialog("Unsaved changes. Quit anyway?")
+            return result == "yes"
+        }
+        return true
+    },
+})
+```
+
+### Pattern 4: Background Tasks
+
+```go
+app := application.New(application.Options{
+    OnStartup: func(ctx context.Context) {
+        // Start background task
+        go func() {
+            ticker := time.NewTicker(5 * time.Minute)
+            defer ticker.Stop()
+            
+            for {
+                select {
+                case <-ticker.C:
+                    performBackgroundSync()
+                case <-ctx.Done():
+                    // Context cancelled, quit
+                    return
+                }
+            }
+        }()
+    },
+})
+```
+
+**Important:** Use `ctx.Done()` to know when to stop background tasks.
+
+## Window Lifecycle
+
+Each window has its own lifecycle:
+
+```d2
+direction: down
+
+Create: "Create Window" {
+  shape: oval
+  style.fill: "#10B981"
+}
+
+Load: "Load Frontend" {
+  shape: rectangle
+}
+
+Show: "Show Window" {
+  shape: rectangle
+}
+
+Active: "Window Active" {
+  Events: "Handle Events" {
+    shape: rectangle
+  }
+}
+
+CloseRequest: "Close Request" {
+  shape: diamond
+  style.fill: "#F59E0B"
+}
+
+OnBeforeClose: "OnBeforeClose" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+}
+
+Destroy: "Destroy Window" {
+  shape: rectangle
+}
+
+End: "Window Closed" {
+  shape: oval
+  style.fill: "#EF4444"
+}
+
+Create -> Load
+Load -> Show
+Show -> Active.Events
+Active.Events -> Active.Events: "Loop"
+Active.Events -> CloseRequest: "User closes"
+CloseRequest -> OnBeforeClose
+OnBeforeClose -> Active.Events: "Cancelled"
+OnBeforeClose -> Destroy: "Confirmed"
+Destroy -> End
+```
+
+**Key points:**
+- Each window is independent
+- Closing last window quits app (by default)
+- Windows can prevent their own closure
+
+## Multi-Window Lifecycle
+
+With multiple windows:
+
+```go
+// Create main window
+mainWindow := app.NewWebviewWindow()
+
+// Create secondary window
+secondaryWindow := app.NewWebviewWindow(application.WebviewWindowOptions{
+    Title: "Settings",
+    Width: 400,
+    Height: 600,
+})
+
+// Closing secondary window doesn't quit app
+// Closing main window quits app (closes all windows)
+```
+
+**Default behaviour:**
+- Closing any window closes just that window
+- Closing the **last** window quits the application
+
+**Custom behaviour:**
+
+```go
+// Prevent app quit when last window closes
+app := application.New(application.Options{
+    Mac: application.MacOptions{
+        ApplicationShouldTerminateAfterLastWindowClosed: false,
+    },
+})
+
+// Now app stays running even with no windows
+// Useful for menu bar / system tray apps
+```
+
+## Error Handling During Lifecycle
+
+### Startup Errors
+
+```go
+app := application.New(application.Options{
+    OnStartup: func(ctx context.Context) {
+        if err := initialise(); err != nil {
+            // Show error dialog
+            showErrordialog("Initialisation failed: " + err.Error())
+            
+            // Quit application
+            app.Quit()
+        }
+    },
+})
+```
+
+### Shutdown Errors
+
+```go
+app := application.New(application.Options{
+    OnShutdown: func() {
+        if err := saveState(); err != nil {
+            // Log error (can't show dialog, app is quitting)
+            log.Printf("Failed to save state: %v", err)
+        }
+    },
+})
+```
+
+**Important:** `OnShutdown` runs during quit - don't show dialogs or try to cancel.
+
+## Platform Differences
+
+### macOS
+
+- **Application menu** persists even with no windows
+- **Cmd+Q** always quits (can't be prevented)
+- **Dock icon** remains unless hidden
+
+### Windows
+
+- **No application menu** without a window
+- **Alt+F4** closes window (can be prevented)
+- **System tray** can keep app running
+
+### Linux
+
+- **Behaviour varies** by desktop environment
+- **Generally similar to Windows**
+
+## Debugging Lifecycle Issues
+
+### Problem: Resources Not Cleaned Up
+
+**Symptom:** Database connections left open, files not closed
+
+**Solution:** Use `OnShutdown`:
+
+```go
+app := application.New(application.Options{
+    OnShutdown: func() {
+        log.Println("Cleaning up...")
+        // Your cleanup code
+    },
+})
+```
+
+### Problem: Application Won't Quit
+
+**Symptom:** App hangs when trying to quit
+
+**Causes:**
+1. `OnBeforeClose` returning `false`
+2. `OnShutdown` taking too long
+3. Background goroutines not stopping
+
+**Solution:**
+
+```go
+// 1. Check OnBeforeClose logic
+OnBeforeClose: func() bool {
+    log.Println("OnBeforeClose called")
+    return true  // Allow quit
+}
+
+// 2. Keep OnShutdown fast
+OnShutdown: func() {
+    log.Println("OnShutdown started")
+    // Fast cleanup only
+    log.Println("OnShutdown finished")
+}
+
+// 3. Stop background tasks
+OnStartup: func(ctx context.Context) {
+    go func() {
+        for {
+            select {
+            case <-ctx.Done():
+                log.Println("Background task stopped")
+                return
+            default:
+                // Work
+            }
+        }
+    }()
+}
+```
+
+### Problem: Initialisation Fails Silently
+
+**Symptom:** App starts but doesn't work correctly
+
+**Solution:** Check errors in `OnStartup`:
+
+```go
+OnStartup: func(ctx context.Context) {
+    if err := initialise(); err != nil {
+        log.Fatal("Initialisation failed:", err)
+        // Or show dialog and quit
+    }
+}
+```
+
+## Best Practices
+
+### ✅ Do
+
+- **Initialise in OnStartup** - Database, config, resources
+- **Clean up in OnShutdown** - Close connections, save state
+- **Keep OnShutdown fast** - <1 second
+- **Use context for cancellation** - Stop background tasks
+- **Handle errors gracefully** - Show dialogs, log errors
+- **Test quit scenarios** - Unsaved changes, background tasks
+
+### ❌ Don't
+
+- **Don't block OnStartup** - Keep it fast (<2 seconds)
+- **Don't show dialogs in OnShutdown** - App is quitting
+- **Don't ignore errors** - Log or show them
+- **Don't leak resources** - Always clean up
+- **Don't forget background tasks** - Stop them on quit
+
+## Next Steps
+
+**Go-Frontend Bridge** - Understand how Go and JavaScript communicate  
+[Learn More →](/concepts/bridge)
+
+**Build System** - Learn how Wails builds your application  
+[Learn More →](/concepts/build-system)
+
+**Events System** - Use events for communication between components  
+[Learn More →](/features/events/system)
+
+**Window Management** - Create and manage multiple windows  
+[Learn More →](/features/windows/basics)
+
+---
+
+**Questions about lifecycle?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples).

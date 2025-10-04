@@ -1,0 +1,23 @@
+$ astro build
+10:08:53 [WARN] [starlight-blog-plugin] It looks like you already have a `MarkdownContent` component override in your Starlight configuration.
+10:08:53 [WARN] [starlight-blog-plugin] To use `starlight-blog`, either remove your override or update it to render the content from `starlight-blog/overrides/MarkdownContent.astro`.
+10:08:54 [content] Syncing content
+10:08:54 [WARN] [glob-loader] The base directory "E:\wails\docs\src\content\i18n\" does not exist.
+10:08:55 [WARN] [astro-expressive-code] Error while loading code block language "pseudo" in document "E:\wails\docs\src\content\docs\DEVELOPER_GUIDE.md". Using "txt" instead. You can add custom languages using the "langs" config option. Error details: Unknown language "pseudo"
+10:08:55 [WARN] [astro-expressive-code] Error while loading code block language "pseudo" in document "E:\wails\docs\src\content\docs\DEVELOPER_GUIDE.md". Using "txt" instead. You can add custom languages using the "langs" config option. Error details: Unknown language "pseudo"
+10:08:55 [WARN] [astro-expressive-code] Error while loading code block language "pseudo" in document "E:\wails\docs\src\content\docs\DEVELOPER_GUIDE.md". Using "txt" instead. You can add custom languages using the "langs" config option. Error details: Unknown language "pseudo"
+10:08:55 [WARN] [astro-expressive-code] Error while loading code block language "pseudo" in document "E:\wails\docs\src\content\docs\DEVELOPER_GUIDE.md". Using "txt" instead. You can add custom languages using the "langs" config option. Error details: Unknown language "pseudo"
+10:08:55 [WARN] [astro-expressive-code] Error while loading code block language "pseudo" in document "E:\wails\docs\src\content\docs\DEVELOPER_GUIDE.md". Using "txt" instead. You can add custom languages using the "langs" config option. Error details: Unknown language "pseudo"
+10:08:55 [WARN] [astro-expressive-code] Error while loading code block language "pseudo" in document "E:\wails\docs\src\content\docs\DEVELOPER_GUIDE.md". Using "txt" instead. You can add custom languages using the "langs" config option. Error details: Unknown language "pseudo"
+10:08:55 [WARN] [astro-expressive-code] Error while loading code block language "pseudo" in document "E:\wails\docs\src\content\docs\DEVELOPER_GUIDE.md". Using "txt" instead. You can add custom languages using the "langs" config option. Error details: Unknown language "pseudo"
+10:08:55 [WARN] [astro-expressive-code] Error while loading code block language "pseudo" in document "E:\wails\docs\src\content\docs\DEVELOPER_GUIDE.md". Using "txt" instead. You can add custom languages using the "langs" config option. Error details: Unknown language "pseudo"
+bad indentation of a mapping entry
+  Location:
+    E:\wails\docs\src\content\docs\learn\context-menu.mdx:3:7
+  Stack trace:
+    at generateError (file:///E:/wails/docs/node_modules/js-yaml/dist/js-yaml.mjs:1273:10)
+    at readBlockMapping (file:///E:/wails/docs/node_modules/js-yaml/dist/js-yaml.mjs:2272:7)
+    at readDocument (file:///E:/wails/docs/node_modules/js-yaml/dist/js-yaml.mjs:2715:3)
+    at load$1 (file:///E:/wails/docs/node_modules/js-yaml/dist/js-yaml.mjs:2804:19)
+    at safeParseFrontmatter (file:///E:/wails/docs/node_modules/@astrojs/mdx/dist/utils.js:33:12)
+error: script "astro" exited with code 1

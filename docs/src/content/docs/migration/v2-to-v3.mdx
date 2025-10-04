@@ -1,0 +1,688 @@
+---
+title: Migrating from v2 to v3
+description: Complete guide to migrating your Wails v2 application to v3
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Overview
+
+Wails v3 is a **complete rewrite** with significant improvements in architecture, performance, and developer experience. This guide helps you migrate your v2 application to v3.
+
+**Key changes:**
+- New application structure
+- Improved bindings system
+- Enhanced window management
+- Better event system
+- Simplified configuration
+
+**Migration time:** 1-4 hours for typical applications
+
+## Breaking Changes
+
+### Application Initialisation
+
+**v2:**
+
+```go
+err := wails.Run(&options.App{
+    Title:  "My App",
+    Width:  1024,
+    Height: 768,
+    Bind: []interface{}{
+        &GreetService{},
+    },
+})
+```
+
+**v3:**
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+})
+
+window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Title:  "My App",
+    Width:  1024,
+    Height: 768,
+})
+
+app.Run()
+```
+
+**Changes:**
+- `wails.Run()` → `application.New()` + `app.Run()`
+- `Bind` → `Services` (wrapped with `application.NewService()`)
+- Window options separate from app options
+
+### Bindings
+
+**v2:**
+
+```go
+type App struct {
+    ctx context.Context
+}
+
+func (a *App) startup(ctx context.Context) {
+    a.ctx = ctx
+}
+
+func (a *App) Greet(name string) string {
+    return "Hello " + name
+}
+```
+
+**v3:**
+
+```go
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+    return "Hello " + name
+}
+
+// Register as service
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+})
+```
+
+**Changes:**
+- No `startup(ctx)` method needed
+- No context stored in struct
+- Services are standalone
+- Use `ServiceStartup()` for initialisation
+
+### Runtime
+
+**v2:**
+
+```go
+import "github.com/wailsapp/wails/v2/pkg/runtime"
+
+runtime.WindowSetTitle(a.ctx, "New Title")
+runtime.EventsEmit(a.ctx, "event-name", data)
+```
+
+**v3:**
+
+```go
+// Store app reference
+type MyService struct {
+    app *application.Application
+}
+
+func (s *MyService) UpdateTitle() {
+    window := s.app.CurrentWindow()
+    window.SetTitle("New Title")
+}
+
+func (s *MyService) EmitEvent() {
+    s.app.EmitEvent("event-name", data)
+}
+```
+
+**Changes:**
+- No context-based runtime
+- Direct method calls on app/window
+- Store app reference in services
+
+### Frontend Bindings
+
+**v2:**
+
+```javascript
+import { Greet } from '../wailsjs/go/main/App'
+
+const result = await Greet("World")
+```
+
+**v3:**
+
+```javascript
+import { Greet } from './bindings/myapp/greetservice'
+
+const result = await Greet("World")
+```
+
+**Changes:**
+- Different import path
+- Service-based organisation
+- Generate with `wails3 generate bindings`
+
+### Events
+
+**v2:**
+
+```go
+runtime.EventsOn(ctx, "event-name", func(data ...interface{}) {
+    // Handle event
+})
+
+runtime.EventsEmit(ctx, "event-name", data)
+```
+
+**v3:**
+
+```go
+app.OnEvent("event-name", func(e *application.CustomEvent) {
+    data := e.Data
+    // Handle event
+})
+
+app.EmitEvent("event-name", data)
+```
+
+**Changes:**
+- No context needed
+- Typed event objects
+- Simpler API
+
+### Windows
+
+**v2:**
+
+```go
+// Single window only
+runtime.WindowSetSize(ctx, 800, 600)
+```
+
+**v3:**
+
+```go
+// Multiple windows supported
+window1 := app.NewWebviewWindow()
+window1.SetSize(800, 600)
+
+window2 := app.NewWebviewWindow()
+window2.SetSize(1024, 768)
+```
+
+**Changes:**
+- Native multi-window support
+- Direct window methods
+- Better window management
+
+## Migration Steps
+
+### Step 1: Update Dependencies
+
+**go.mod:**
+
+```go
+module myapp
+
+go 1.21
+
+require (
+    github.com/wailsapp/wails/v3 v3.0.0-alpha.1
+)
+```
+
+**Update:**
+
+```bash
+go get github.com/wailsapp/wails/v3@latest
+go mod tidy
+```
+
+### Step 2: Update main.go
+
+**v2:**
+
+```go
+package main
+
+import (
+    "embed"
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+    "github.com/wailsapp/wails/v2/pkg/options/windows"
+)
+
+//go:embed all:frontend/dist
+var assets embed.FS
+
+func main() {
+    app := NewApp()
+
+    err := wails.Run(&options.App{
+        Title:  "My App",
+        Width:  1024,
+        Height: 768,
+        AssetServer: &assetserver.Options{
+            Assets: assets,
+        },
+        Bind: []interface{}{
+            app,
+        },
+        Windows: &windows.Options{
+            WebviewIsTransparent: false,
+        },
+    })
+
+    if err != nil {
+        println("Error:", err.Error())
+    }
+}
+```
+
+**v3:**
+
+```go
+package main
+
+import (
+    "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        Services: []application.Service{
+            application.NewService(&MyService{}),
+        },
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+
+    app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        Title:  "My App",
+        Width:  1024,
+        Height: 768,
+    })
+
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
+}
+```
+
+### Step 3: Convert App Struct to Service
+
+**v2:**
+
+```go
+type App struct {
+    ctx context.Context
+}
+
+func NewApp() *App {
+    return &App{}
+}
+
+func (a *App) startup(ctx context.Context) {
+    a.ctx = ctx
+    // Initialisation
+}
+
+func (a *App) Greet(name string) string {
+    return "Hello " + name
+}
+```
+
+**v3:**
+
+```go
+type MyService struct {
+    app *application.Application
+}
+
+func NewMyService(app *application.Application) *MyService {
+    return &MyService{app: app}
+}
+
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    // Initialisation
+    return nil
+}
+
+func (s *MyService) Greet(name string) string {
+    return "Hello " + name
+}
+
+// Register after app creation
+app := application.New(application.Options{})
+app.RegisterService(application.NewService(NewMyService(app)))
+```
+
+### Step 4: Update Runtime Calls
+
+**v2:**
+
+```go
+func (a *App) DoSomething() {
+    runtime.WindowSetTitle(a.ctx, "New Title")
+    runtime.EventsEmit(a.ctx, "update", data)
+    runtime.LogInfo(a.ctx, "Message")
+}
+```
+
+**v3:**
+
+```go
+func (s *MyService) DoSomething() {
+    window := s.app.CurrentWindow()
+    window.SetTitle("New Title")
+    
+    s.app.EmitEvent("update", data)
+    
+    s.app.Logger.Info("Message")
+}
+```
+
+### Step 5: Update Frontend
+
+**Generate new bindings:**
+
+```bash
+wails3 generate bindings
+```
+
+**Update imports:**
+
+```javascript
+// v2
+import { Greet } from '../wailsjs/go/main/App'
+
+// v3
+import { Greet } from './bindings/myapp/myservice'
+```
+
+**Update event handling:**
+
+```javascript
+// v2
+import { EventsOn, EventsEmit } from '../wailsjs/runtime/runtime'
+
+EventsOn("update", (data) => {
+    console.log(data)
+})
+
+EventsEmit("action", data)
+
+// v3
+import { OnEvent, Emit } from '@wailsio/runtime'
+
+OnEvent("update", (data) => {
+    console.log(data)
+})
+
+Emit("action", data)
+```
+
+### Step 6: Update Configuration
+
+**v2 (wails.json):**
+
+```json
+{
+  "name": "myapp",
+  "outputfilename": "myapp",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto"
+}
+```
+
+**v3 (wails.json):**
+
+```json
+{
+  "name": "myapp",
+  "frontend": {
+    "dir": "./frontend",
+    "install": "npm install",
+    "build": "npm run build",
+    "dev": "npm run dev",
+    "devServerUrl": "http://localhost:5173"
+  }
+}
+```
+
+## Feature Mapping
+
+### dialogs
+
+**v2:**
+
+```go
+selection, err := runtime.OpenFileDialog(ctx, runtime.OpenDialogOptions{
+    Title: "Select File",
+})
+```
+
+**v3:**
+
+```go
+selection, err := app.OpenFileDialog(application.OpenFileDialogOptions{
+    Title: "Select File",
+})
+```
+
+### Menus
+
+**v2:**
+
+```go
+menu := menu.NewMenu()
+menu.Append(menu.Text("File", nil, []*menu.MenuItem{
+    menu.Text("Quit", nil, func(_ *menu.CallbackData) {
+        runtime.Quit(ctx)
+    }),
+}))
+```
+
+**v3:**
+
+```go
+menu := app.NewMenu()
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+```
+
+### System Tray
+
+**v2:**
+
+```go
+// Not available in v2
+```
+
+**v3:**
+
+```go
+systray := app.NewSystemTray()
+systray.SetIcon(iconBytes)
+systray.SetLabel("My App")
+
+menu := app.NewMenu()
+menu.Add("Show").OnClick(showWindow)
+menu.Add("Quit").OnClick(app.Quit)
+systray.SetMenu(menu)
+```
+
+## Common Issues
+
+### Issue: Bindings not found
+
+**Problem:** Import errors after migration
+
+**Solution:**
+
+```bash
+# Regenerate bindings
+wails3 generate bindings
+
+# Check output directory
+ls frontend/bindings
+```
+
+### Issue: Context errors
+
+**Problem:** `ctx` not available
+
+**Solution:**
+
+Store app reference instead:
+
+```go
+type MyService struct {
+    app *application.Application
+}
+
+func NewMyService(app *application.Application) *MyService {
+    return &MyService{app: app}
+}
+```
+
+### Issue: Window methods not working
+
+**Problem:** `runtime.WindowSetTitle()` doesn't exist
+
+**Solution:**
+
+Use window methods directly:
+
+```go
+window := s.app.CurrentWindow()
+window.SetTitle("New Title")
+```
+
+### Issue: Events not firing
+
+**Problem:** Events registered but not received
+
+**Solution:**
+
+Check event names match exactly:
+
+```go
+// Go
+app.EmitEvent("my-event", data)
+
+// JavaScript
+OnEvent("my-event", handler)  // Must match exactly
+```
+
+## Testing Migration
+
+### Checklist
+
+- [ ] Application starts without errors
+- [ ] All bindings work
+- [ ] Events are sent and received
+- [ ] Windows open and close correctly
+- [ ] Menus work (if applicable)
+- [ ] dialogs work (if applicable)
+- [ ] System tray works (if applicable)
+- [ ] Build process works
+- [ ] Production build works
+
+### Test Commands
+
+```bash
+# Development
+wails3 dev
+
+# Build
+wails3 build
+
+# Generate bindings
+wails3 generate bindings
+```
+
+## Benefits of v3
+
+### Performance
+
+- **Faster startup** - Optimised initialisation
+- **Lower memory** - Efficient resource usage
+- **Better bridge** - &lt;1ms call overhead
+
+### Features
+
+- **Multi-window** - Native support
+- **System tray** - Built-in
+- **Better events** - Typed, simpler API
+- **Services** - Better code organisation
+
+### Developer Experience
+
+- **Type safety** - Full TypeScript support
+- **Better errors** - Clear error messages
+- **Hot reload** - Faster development
+- **Better docs** - Comprehensive guides
+
+## Getting Help
+
+### Resources
+
+- [Documentation](/quick-start/why-wails)
+- [Discord Community](https://discord.gg/JDdSxwjhGf)
+- [GitHub Issues](https://github.com/wailsapp/wails/issues)
+- [Examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples)
+
+### Common Questions
+
+**Q: Can I run v2 and v3 side by side?**  
+A: Yes, they use different import paths.
+
+**Q: Is v3 production-ready?**  
+A: v3 is in alpha/beta. Test thoroughly before production.
+
+**Q: Will v2 be maintained?**  
+A: Yes, v2 will receive critical updates.
+
+**Q: How long does migration take?**  
+A: 1-4 hours for typical applications.
+
+## Next Steps
+
+<CardGrid>
+  <Card title="Quick Start" icon="rocket">
+    Get started with Wails v3.
+    
+    [Learn More →](/quick-start/installation)
+  </Card>
+
+  <Card title="Core Concepts" icon="star">
+    Understand v3 architecture.
+    
+    [Learn More →](/concepts/architecture)
+  </Card>
+
+  <Card title="Bindings" icon="puzzle">
+    Learn the new bindings system.
+    
+    [Learn More →](/features/bindings/methods)
+  </Card>
+
+  <Card title="Examples" icon="open-book">
+    See complete v3 examples.
+    
+    [View Examples →](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples)
+  </Card>
+</CardGrid>
+
+---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or [open an issue](https://github.com/wailsapp/wails/issues).

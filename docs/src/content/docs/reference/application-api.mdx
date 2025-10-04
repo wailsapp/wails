@@ -1,0 +1,491 @@
+---
+title: Application API
+description: Complete reference for the Application API
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Overview
+
+The `Application` is the core of your Wails app. It manages windows, services, events, and provides access to all platform features.
+
+## Creating an Application
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+app := application.New(application.Options{
+    Name:        "My App",
+    Description: "My awesome application",
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+    },
+})
+```
+
+## Core Methods
+
+### Run()
+
+Starts the application event loop.
+
+```go
+func (a *App) Run() error
+```
+
+**Example:**
+
+```go
+err := app.Run()
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+**Returns:** Error if startup fails
+
+### Quit()
+
+Gracefully shuts down the application.
+
+```go
+func (a *App) Quit()
+```
+
+**Example:**
+
+```go
+// In a menu handler
+menu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+```
+
+### Config()
+
+Returns the application configuration.
+
+```go
+func (a *App) Config() Options
+```
+
+**Example:**
+
+```go
+config := app.Config()
+fmt.Println("App name:", config.Name)
+```
+
+## Window Management
+
+### NewWebviewWindow()
+
+Creates a new webview window with default options.
+
+```go
+func (a *App) NewWebviewWindow() *WebviewWindow
+```
+
+**Example:**
+
+```go
+window := app.NewWebviewWindow()
+window.Show()
+```
+
+### NewWebviewWindowWithOptions()
+
+Creates a new webview window with custom options.
+
+```go
+func (a *App) NewWebviewWindowWithOptions(options WebviewWindowOptions) *WebviewWindow
+```
+
+**Example:**
+
+```go
+window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Title:  "My Window",
+    Width:  800,
+    Height: 600,
+    BackgroundColour: application.NewRGB(255, 255, 255),
+})
+```
+
+### GetWindowByName()
+
+Gets a window by its name.
+
+```go
+func (a *App) GetWindowByName(name string) Window
+```
+
+**Example:**
+
+```go
+window := app.GetWindowByName("main")
+if window != nil {
+    window.Show()
+}
+```
+
+### GetWindows()
+
+Returns all application windows.
+
+```go
+func (a *App) GetWindows() []Window
+```
+
+**Example:**
+
+```go
+windows := app.GetWindows()
+for _, window := range windows {
+    fmt.Println("Window:", window.Name())
+}
+```
+
+## Managers
+
+The Application provides access to various managers through properties:
+
+```go
+app.Window      // Window management
+app.Menu        // Menu management
+app.Dialog      // dialog management
+app.Event       // Event management
+app.Clipboard   // Clipboard operations
+app.Screen      // Screen information
+app.SystemTray  // System tray
+app.Browser     // Browser operations
+app.Env         // Environment variables
+```
+
+### Example Usage
+
+```go
+// Create window
+window := app.Window.NewWebviewWindow()
+
+// Show dialog
+app.Dialog.Info().SetMessage("Hello!").Show()
+
+// Copy to clipboard
+app.Clipboard.SetText("Copied text")
+
+// Get screens
+screens := app.Screen.GetAll()
+```
+
+## Service Management
+
+### RegisterService()
+
+Registers a service with the application.
+
+```go
+func (a *App) RegisterService(service Service) error
+```
+
+**Example:**
+
+```go
+type MyService struct {
+    app *application.Application
+}
+
+func NewMyService(app *application.Application) *MyService {
+    return &MyService{app: app}
+}
+
+// Register after app creation
+app.RegisterService(application.NewService(NewMyService(app)))
+```
+
+## Event Management
+
+### EmitEvent()
+
+Emits a custom event.
+
+```go
+func (a *App) EmitEvent(name string, data ...interface{})
+```
+
+**Example:**
+
+```go
+// Emit event with data
+app.EmitEvent("user-logged-in", map[string]interface{}{
+    "username": "john",
+    "timestamp": time.Now(),
+})
+```
+
+### OnEvent()
+
+Listens for custom events.
+
+```go
+func (a *App) OnEvent(name string, callback func(*CustomEvent))
+```
+
+**Example:**
+
+```go
+app.OnEvent("user-logged-in", func(e *application.CustomEvent) {
+    data := e.Data.(map[string]interface{})
+    username := data["username"].(string)
+    fmt.Println("User logged in:", username)
+})
+```
+
+### OnApplicationEvent()
+
+Listens for application lifecycle events.
+
+```go
+func (a *App) OnApplicationEvent(eventType ApplicationEventType, callback func(*ApplicationEvent)) func()
+```
+
+**Example:**
+
+```go
+// Listen for shutdown
+app.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
+    fmt.Println("Application shutting down")
+    // Cleanup
+})
+```
+
+## dialog Methods
+
+### InfoDialog()
+
+Creates an information dialog.
+
+```go
+func (a *App) InfoDialog() InfoDialog
+```
+
+**Example:**
+
+```go
+app.InfoDialog().
+    SetTitle("Success").
+    SetMessage("Operation completed!").
+    Show()
+```
+
+### QuestionDialog()
+
+Creates a question dialog.
+
+```go
+func (a *App) QuestionDialog() QuestionDialog
+```
+
+**Example:**
+
+```go
+result, _ := app.QuestionDialog().
+    SetTitle("Confirm").
+    SetMessage("Continue?").
+    SetButtons("Yes", "No").
+    Show()
+
+if result == "Yes" {
+    // Continue
+}
+```
+
+### ErrorDialog()
+
+Creates an error dialog.
+
+```go
+func (a *App) ErrorDialog() ErrorDialog
+```
+
+### WarningDialog()
+
+Creates a warning dialog.
+
+```go
+func (a *App) WarningDialog() WarningDialog
+```
+
+### OpenFileDialog()
+
+Creates a file open dialog.
+
+```go
+func (a *App) OpenFileDialog() OpenFileDialog
+```
+
+**Example:**
+
+```go
+path, err := app.OpenFileDialog().
+    SetTitle("Select File").
+    SetFilters([]application.FileFilter{
+        {DisplayName: "Images", Pattern: "*.png;*.jpg"},
+    }).
+    PromptForSingleSelection()
+```
+
+### SaveFileDialog()
+
+Creates a file save dialog.
+
+```go
+func (a *App) SaveFileDialog() SaveFileDialog
+```
+
+### SelectFolderDialog()
+
+Creates a folder selection dialog.
+
+```go
+func (a *App) SelectFolderDialog() SelectFolderDialog
+```
+
+## Logger
+
+The application provides a structured logger:
+
+```go
+app.Logger.Info("Message", "key", "value")
+app.Logger.Error("Error occurred", "error", err)
+app.Logger.Debug("Debug info")
+app.Logger.Warn("Warning message")
+```
+
+**Example:**
+
+```go
+func (s *MyService) ProcessData(data string) error {
+    s.app.Logger.Info("Processing data", "length", len(data))
+    
+    if err := process(data); err != nil {
+        s.app.Logger.Error("Processing failed", "error", err)
+        return err
+    }
+    
+    s.app.Logger.Info("Processing complete")
+    return nil
+}
+```
+
+## Complete Example
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type App struct {
+    app *application.Application
+}
+
+func NewApp(app *application.Application) *App {
+    return &App{app: app}
+}
+
+func (a *App) Startup() {
+    // Listen for events
+    a.app.OnEvent("data-updated", func(e *application.CustomEvent) {
+        a.app.Logger.Info("Data updated", "data", e.Data)
+    })
+    
+    // Listen for shutdown
+    a.app.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
+        a.app.Logger.Info("Shutting down")
+        // Cleanup
+    })
+}
+
+func (a *App) ShowMessage(message string) {
+    a.app.InfoDialog().
+        SetTitle("Message").
+        SetMessage(message).
+        Show()
+}
+
+func (a *App) GetData() string {
+    // Get clipboard
+    text, _ := a.app.Clipboard.Text()
+    return text
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        Services: []application.Service{
+            application.NewService(NewApp(app)),
+        },
+    })
+    
+    app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        Title:  "My App",
+        Width:  800,
+        Height: 600,
+    })
+    
+    app.Run()
+}
+```
+
+## Best Practices
+
+### ✅ Do
+
+- **Store app reference** - Keep in service structs
+- **Use managers** - Access features through managers
+- **Handle errors** - Check dialog results
+- **Use logger** - Structured logging
+- **Clean up** - Use shutdown hooks
+
+### ❌ Don't
+
+- **Don't block Run()** - It's the event loop
+- **Don't ignore errors** - Handle all errors
+- **Don't create multiple apps** - One per process
+- **Don't call Quit() in startup** - Let app initialize
+
+## Next Steps
+
+<CardGrid>
+  <Card title="Window API" icon="laptop">
+    Complete window management reference.
+    
+    [Learn More →](/reference/window-api)
+  </Card>
+
+  <Card title="Services" icon="puzzle">
+    Learn about service architecture.
+    
+    [Learn More →](/features/bindings/services)
+  </Card>
+
+  <Card title="Events" icon="star">
+    Master the event system.
+    
+    [Learn More →](/features/events/system)
+  </Card>
+
+  <Card title="dialogs" icon="information">
+    Use native dialogs.
+    
+    [Learn More →](/features/dialogs/overview)
+  </Card>
+</CardGrid>
+
+---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples).

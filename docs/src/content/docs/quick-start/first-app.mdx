@@ -1,0 +1,434 @@
+---
+title: Your First App
+description: Build a working Wails application in 10 minutes
+sidebar:
+  order: 3
+---
+
+import { Card, CardGrid, Tabs, TabItem, Steps } from "@astrojs/starlight/components";
+
+## What We're Building
+
+A simple **Greet App** that demonstrates the core Wails concepts:
+- Go backend with a service
+- Frontend calling Go functions
+- Type-safe bindings
+- Hot reload during development
+
+**Time to complete:** 10 minutes
+
+{/* VISUAL PLACEHOLDER: App Screenshot
+Description: Screenshot of the finished app showing:
+- Clean, modern UI with an input field labeled "Your name"
+- A "Greet" button
+- Output area showing "Hello, [name]!" message
+- Wails logo in corner
+Style: Professional screenshot with subtle shadow, showing both light and dark themes side-by-side
+*/}
+
+## Create Your Project
+
+<Steps>
+
+1. **Generate the project**
+
+   ```bash
+   wails3 init -n greet-app -t vanilla
+   cd greet-app
+   ```
+
+   **What this does:**
+   - Creates a new project called `greet-app`
+   - Uses the `vanilla` template (plain HTML/CSS/JS)
+   - Sets up the complete project structure
+
+   :::tip[Other Templates]
+   Try `-t react`, `-t vue`, or `-t svelte` for your preferred framework.
+   Run `wails3 init -l` to see all available templates.
+   :::
+
+2. **Understand the project structure**
+
+   ```
+   greet-app/
+   ├── main.go              # Application entry point
+   ├── frontend/            # Your UI code
+   │   ├── src/
+   │   │   ├── main.js      # Frontend entry
+   │   │   ├── style.css    # Styles
+   │   │   └── index.html   # HTML
+   │   └── package.json     # Frontend dependencies
+   ├── build/               # Build configuration
+   └── Taskfile.yml         # Build tasks
+   ```
+
+3. **Run the app**
+
+   ```bash
+   wails3 dev
+   ```
+
+   **What happens:**
+   - Compiles your Go code
+   - Builds the frontend
+   - Launches the app with hot reload enabled
+   - Opens your default browser for frontend development
+
+   :::note[First Run]
+   The first run takes longer (~30s) as it installs frontend dependencies.
+   Subsequent runs are instant.
+   :::
+
+4. **See it in action**
+
+   The template app should open automatically. Try:
+   - Typing your name in the input field
+   - Clicking the "Greet" button
+   - Seeing the greeting appear
+
+   **Hot reload test:**
+   - Keep the app running
+   - Edit `frontend/src/style.css` (change a color)
+   - Save the file
+   - Watch the app update instantly (no restart needed)
+
+</Steps>
+
+## How It Works
+
+Let's understand what's happening under the hood.
+
+### The Go Backend
+
+Open `main.go`:
+
+```go title="main.go"
+package main
+
+import (
+	"github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+	if name == "" {
+		return "Hello, World!"
+	}
+	return "Hello, " + name + "!"
+}
+
+func main() {
+	app := application.New(application.Options{
+		Name:        "Greet App",
+		Description: "A demo application",
+		Services: []application.Service{
+			application.NewService(&GreetService{}),
+		},
+	})
+
+	app.NewWebviewWindow()
+
+	err := app.Run()
+	if err != nil {
+		panic(err)
+	}
+}
+```
+
+**Key concepts:**
+
+1. **Service**: `GreetService` is a regular Go struct with exported methods
+2. **Registration**: `application.NewService(&GreetService{})` makes it available to the frontend
+3. **Window**: `app.NewWebviewWindow()` creates the UI window
+4. **Run**: `app.Run()` starts the event loop
+
+:::tip[Services vs Bindings]
+- **Services**: Struct-based, auto-discovered methods, recommended for v3
+- **Bindings**: Function-based, v2 compatibility mode
+
+[Learn more about services →](/features/bindings/services)
+:::
+
+### The Frontend
+
+Open `frontend/src/main.js`:
+
+```javascript title="frontend/src/main.js"
+import { Greet } from './bindings/GreetService'
+
+document.getElementById('greetBtn').addEventListener('click', async () => {
+    const nameInput = document.getElementById('nameInput')
+    const resultDiv = document.getElementById('result')
+    
+    try {
+        const greeting = await Greet(nameInput.value)
+        resultDiv.textContent = greeting
+    } catch (error) {
+        resultDiv.textContent = 'Error: ' + error
+    }
+})
+```
+
+**Key concepts:**
+
+1. **Auto-generated bindings**: `./bindings/GreetService` is created automatically
+2. **Type-safe calls**: `Greet()` is a typed function (TypeScript definitions included)
+3. **Async by default**: All Go calls return Promises
+4. **Error handling**: Errors from Go are caught in the `catch` block
+
+:::note[Where are the bindings?]
+Generated bindings are in `frontend/bindings/`. They're created automatically when you run `wails3 dev` or `wails3 build`.
+
+**Never edit these files manually**—they're regenerated on every build.
+:::
+
+### The Bridge
+
+```d2
+direction: right
+
+Frontend: "Frontend\n(JavaScript)" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+}
+
+Bindings: "Auto-Generated\nBindings" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+Bridge: "Wails Bridge\n(In-Memory)" {
+  shape: diamond
+  style.fill: "#10B981"
+}
+
+Service: "GreetService\n(Go)" {
+  shape: rectangle
+  style.fill: "#00ADD8"
+}
+
+Frontend -> Bindings: "import { Greet }"
+Bindings -> Bridge: "JSON message"
+Bridge -> Service: "Direct call"
+Service -> Bridge: "Return value"
+Bridge -> Bindings: "JSON response"
+Bindings -> Frontend: "Promise resolves"
+```
+
+**No HTTP. No REST. No serialisation overhead.** Just direct function calls.
+
+## Customise Your App
+
+Let's make some changes to understand the workflow.
+
+### Add a New Method
+
+<Steps>
+
+1. **Edit the Go service**
+
+   Add a new method to `GreetService` in `main.go`:
+
+   ```go title="main.go" {5-7}
+   type GreetService struct{}
+
+   func (g *GreetService) Greet(name string) string {
+       if name == "" {
+           return "Hello, World!"
+       }
+       return "Hello, " + name + "!"
+   }
+
+   // Add this new method
+   func (g *GreetService) GetTimeOfDay() string {
+       hour := time.Now().Hour()
+       if hour < 12 {
+           return "Good morning"
+       } else if hour < 18 {
+           return "Good afternoon"
+       }
+       return "Good evening"
+   }
+   ```
+
+   Don't forget to import `time`:
+   ```go
+   import (
+       "time"
+       "github.com/wailsapp/wails/v3/pkg/application"
+   )
+   ```
+
+2. **Restart the app**
+
+   Stop the app (Ctrl+C) and run `wails3 dev` again.
+
+   :::note[Why restart?]
+   Go code changes require a restart. Frontend changes hot-reload automatically.
+   :::
+
+3. **Use the new method in frontend**
+
+   Edit `frontend/src/main.js`:
+
+   ```javascript title="frontend/src/main.js" {1,8-10}
+   import { Greet, GetTimeOfDay } from './bindings/GreetService'
+
+   document.getElementById('greetBtn').addEventListener('click', async () => {
+       const nameInput = document.getElementById('nameInput')
+       const resultDiv = document.getElementById('result')
+       
+       try {
+           const timeOfDay = await GetTimeOfDay()
+           const greeting = await Greet(nameInput.value)
+           resultDiv.textContent = `${timeOfDay}! ${greeting}`
+       } catch (error) {
+           resultDiv.textContent = 'Error: ' + error
+       }
+   })
+   ```
+
+4. **See the result**
+
+   The app hot-reloads automatically. Click "Greet" to see the time-based greeting.
+
+</Steps>
+
+### Add Error Handling
+
+Let's add validation to demonstrate error handling:
+
+<Steps>
+
+1. **Update the Go method**
+
+   ```go title="main.go" {1,4-6}
+   import (
+       "errors"
+       "time"
+       "github.com/wailsapp/wails/v3/pkg/application"
+   )
+
+   func (g *GreetService) Greet(name string) (string, error) {
+       if len(name) > 50 {
+           return "", errors.New("name too long (max 50 characters)")
+       }
+       if name == "" {
+           return "Hello, World!", nil
+       }
+       return "Hello, " + name + "!", nil
+   }
+   ```
+
+2. **Restart and test**
+
+   ```bash
+   # Stop and restart
+   wails3 dev
+   ```
+
+   Try entering a very long name—the error will be caught by the `catch` block in your frontend code.
+
+</Steps>
+
+## Build for Production
+
+When you're ready to distribute your app:
+
+```bash
+wails3 build
+```
+
+**What this does:**
+- Compiles Go code with optimisations
+- Builds frontend for production (minified)
+- Creates a native executable in `build/bin/`
+
+<Tabs syncKey="os">
+  <TabItem label="Windows" icon="seti:windows">
+    **Output:** `build/bin/greet-app.exe`
+
+    Double-click to run. No dependencies needed (WebView2 is part of Windows).
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **Output:** `build/bin/greet-app.app`
+
+    Drag to Applications folder or double-click to run.
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **Output:** `build/bin/greet-app`
+
+    Run with `./build/bin/greet-app` or create a `.desktop` file for your launcher.
+  </TabItem>
+</Tabs>
+
+:::tip[Cross-Platform Builds]
+Want to build for other platforms? See [Cross-Platform Builds →](/guides/build/cross-platform)
+:::
+
+## What You've Learned
+
+<CardGrid>
+  <Card title="✅ Project Structure" icon="document">
+    - `main.go` for Go backend
+    - `frontend/` for UI code
+    - `Taskfile.yml` for build tasks
+  </Card>
+
+  <Card title="✅ Services" icon="puzzle">
+    - Create Go structs with exported methods
+    - Register with `application.NewService()`
+    - Methods automatically available in frontend
+  </Card>
+
+  <Card title="✅ Bindings" icon="star">
+    - Auto-generated TypeScript definitions
+    - Type-safe function calls
+    - Async by default (Promises)
+  </Card>
+
+  <Card title="✅ Development Workflow" icon="rocket">
+    - `wails3 dev` for hot reload
+    - Go changes need restart
+    - Frontend changes hot-reload
+  </Card>
+</CardGrid>
+
+## Next Steps
+
+<CardGrid>
+  <Card title="Explore Features" icon="open-book">
+    Learn what else Wails can do:
+    - Multiple windows
+    - Native menus
+    - File dialogs
+    - System tray
+    
+    [Feature Overview →](/quick-start/next-steps)
+  </Card>
+
+  <Card title="Build Something Real" icon="rocket">
+    Follow a complete tutorial:
+    - Todo app with database
+    - Dashboard with charts
+    - File manager
+    
+    [Tutorials →](/tutorials/overview)
+  </Card>
+
+  <Card title="Deep Dive" icon="star">
+    Understand how Wails works:
+    - Architecture
+    - Binding system
+    - Event system
+    
+    [Core Concepts →](/concepts/architecture)
+  </Card>
+</CardGrid>
+
+---
+
+**Questions?** Join [Discord](https://discord.gg/JDdSxwjhGf) and ask the community.

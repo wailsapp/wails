@@ -1,0 +1,192 @@
+---
+title: Building Applications
+description: Build and package your Wails application
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Overview
+
+Wails provides simple commands to build your application for development and production.
+
+## Development Build
+
+### Quick Start
+
+```bash
+wails3 dev
+```
+
+**Features:**
+- Hot reload for frontend changes
+- Automatic Go rebuild on changes
+- Debug mode enabled
+- Fast iteration
+
+### Dev Options
+
+```bash
+# Specify frontend dev server
+wails3 dev -devserver http://localhost:5173
+
+# Skip frontend dev server
+wails3 dev -nofrontend
+
+# Custom build flags
+wails3 dev -tags dev
+```
+
+## Production Build
+
+### Basic Build
+
+```bash
+wails3 build
+```
+
+**Output:** Optimized binary in `build/bin/`
+
+### Build Options
+
+```bash
+# Build for specific platform
+wails3 build -platform windows/amd64
+
+# Custom output directory
+wails3 build -o ./dist/myapp
+
+# Skip frontend build
+wails3 build -nofrontend
+
+# Production optimizations
+wails3 build -ldflags "-s -w"
+```
+
+## Build Configuration
+
+### wails.json
+
+```json
+{
+  "name": "myapp",
+  "frontend": {
+    "dir": "./frontend",
+    "install": "npm install",
+    "build": "npm run build",
+    "dev": "npm run dev",
+    "devServerUrl": "http://localhost:5173"
+  },
+  "build": {
+    "output": "myapp",
+    "ldflags": "-s -w"
+  }
+}
+```
+
+## Platform-Specific Builds
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+    ```bash
+    # Windows executable
+    wails3 build -platform windows/amd64
+    
+    # With icon
+    wails3 build -platform windows/amd64 -icon icon.ico
+    
+    # Console app (shows terminal)
+    wails3 build -platform windows/amd64 -windowsconsole
+    ```
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    ```bash
+    # macOS app bundle
+    wails3 build -platform darwin/amd64
+    
+    # Universal binary (Intel + Apple Silicon)
+    wails3 build -platform darwin/universal
+    
+    # With icon
+    wails3 build -platform darwin/amd64 -icon icon.icns
+    ```
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    ```bash
+    # Linux executable
+    wails3 build -platform linux/amd64
+    
+    # With icon
+    wails3 build -platform linux/amd64 -icon icon.png
+    ```
+  </TabItem>
+</Tabs>
+
+## Optimization
+
+### Binary Size
+
+```bash
+# Strip debug symbols
+wails3 build -ldflags "-s -w"
+
+# UPX compression (external tool)
+upx --best --lzma build/bin/myapp
+```
+
+### Performance
+
+```bash
+# Enable optimizations
+wails3 build -tags production
+
+# Disable debug features
+wails3 build -ldflags "-X main.debug=false"
+```
+
+## Troubleshooting
+
+### Build Fails
+
+**Problem:** Build errors
+
+**Solutions:**
+- Check `go.mod` is up to date
+- Run `go mod tidy`
+- Verify frontend builds: `cd frontend && npm run build`
+- Check wails.json configuration
+
+### Large Binary Size
+
+**Problem:** Binary is too large
+
+**Solutions:**
+- Use `-ldflags "-s -w"` to strip symbols
+- Remove unused dependencies
+- Use UPX compression
+- Check embedded assets size
+
+## Next Steps
+
+<CardGrid>
+  <Card title="Cross-Platform Building" icon="rocket">
+    Build for multiple platforms.
+    
+    [Learn More →](/guides/cross-platform)
+  </Card>
+
+  <Card title="Distribution" icon="package">
+    Create installers and packages.
+    
+    [Learn More →](/guides/installers)
+  </Card>
+
+  <Card title="Build System" icon="seti:config">
+    Understand the build system.
+    
+    [Learn More →](/concepts/build-system)
+  </Card>
+</CardGrid>

@@ -1,0 +1,829 @@
+---
+title: Window Options
+description: Complete reference for WebviewWindowOptions
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Window Configuration Options
+
+Wails provides comprehensive window configuration with dozens of options for size, position, appearance, and behaviour. This reference covers all available options across Windows, macOS, and Linux as the **complete reference** for `WebviewWindowOptions`. Every option, every platform, with examples and constraints.
+
+## WebviewWindowOptions Structure
+
+```go
+type WebviewWindowOptions struct {
+    // Identity
+    Name  string
+    Title string
+    
+    // Size and Position
+    Width     int
+    Height    int
+    X         int
+    Y         int
+    MinWidth  int
+    MinHeight int
+    MaxWidth  int
+    MaxHeight int
+    
+    // Initial State
+    Hidden          bool
+    Frameless       bool
+    Resizable       bool
+    AlwaysOnTop     bool
+    Fullscreen      bool
+    Minimised       bool
+    Maximised       bool
+    WindowState     WindowState
+    
+    // Appearance
+    BackgroundColour RGBA
+    BackgroundType   BackgroundType
+    
+    // Content
+    URL  string
+    HTML string
+    
+    // Assets
+    Assets application.AssetOptions
+    
+    // Security
+    ContentProtectionEnabled bool
+    
+    // Lifecycle
+    OnClose   func() bool
+    OnDestroy func()
+    
+    // Platform-Specific
+    Mac     MacOptions
+    Windows WindowsOptions
+    Linux   LinuxOptions
+}
+```
+
+## Core Options
+
+### Name
+
+**Type:** `string`  
+**Default:** Auto-generated UUID  
+**Platform:** All
+
+```go
+Name: "main-window"
+```
+
+**Purpose:** Unique identifier for finding windows later.
+
+**Best practices:**
+- Use descriptive names: `"main"`, `"settings"`, `"about"`
+- Use kebab-case: `"file-browser"`, `"color-picker"`
+- Keep it short and memorable
+
+**Example:**
+
+```go
+window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Name: "settings-window",
+})
+
+// Later...
+settings := app.GetWindowByName("settings-window")
+```
+
+### Title
+
+**Type:** `string`  
+**Default:** Application name  
+**Platform:** All
+
+```go
+Title: "My Application"
+```
+
+**Purpose:** Text shown in title bar and taskbar.
+
+**Dynamic updates:**
+
+```go
+window.SetTitle("My Application - Document.txt")
+```
+
+### Width / Height
+
+**Type:** `int` (pixels)  
+**Default:** 800 x 600  
+**Platform:** All  
+**Constraints:** Must be positive
+
+```go
+Width:  1200,
+Height: 800,
+```
+
+**Purpose:** Initial window size in logical pixels.
+
+**Notes:**
+- Wails handles DPI scaling automatically
+- Use logical pixels, not physical pixels
+- Consider minimum screen resolution (1024x768)
+
+**Example sizes:**
+
+| Use Case | Width | Height |
+|----------|-------|--------|
+| Small utility | 400 | 300 |
+| Standard app | 1024 | 768 |
+| Large app | 1440 | 900 |
+| Full HD | 1920 | 1080 |
+
+### X / Y
+
+**Type:** `int` (pixels)  
+**Default:** Centred on screen  
+**Platform:** All
+
+```go
+X: 100,  // 100px from left edge
+Y: 100,  // 100px from top edge
+```
+
+**Purpose:** Initial window position.
+
+**Coordinate system:**
+- (0, 0) is top-left of primary screen
+- Positive X goes right
+- Positive Y goes down
+
+**Best practice:** Use `Center()` instead:
+
+```go
+window := app.NewWebviewWindow()
+window.Center()
+```
+
+### MinWidth / MinHeight
+
+**Type:** `int` (pixels)  
+**Default:** 0 (no minimum)  
+**Platform:** All
+
+```go
+MinWidth:  400,
+MinHeight: 300,
+```
+
+**Purpose:** Prevent window from being too small.
+
+**Use cases:**
+- Prevent broken layouts
+- Ensure usability
+- Maintain aspect ratio
+
+**Example:**
+
+```go
+// Prevent window smaller than 400x300
+MinWidth:  400,
+MinHeight: 300,
+```
+
+### MaxWidth / MaxHeight
+
+**Type:** `int` (pixels)  
+**Default:** 0 (no maximum)  
+**Platform:** All
+
+```go
+MaxWidth:  1920,
+MaxHeight: 1080,
+```
+
+**Purpose:** Prevent window from being too large.
+
+**Use cases:**
+- Fixed-size applications
+- Prevent excessive resource usage
+- Maintain design constraints
+
+## State Options
+
+### Hidden
+
+**Type:** `bool`  
+**Default:** `false`  
+**Platform:** All
+
+```go
+Hidden: true,
+```
+
+**Purpose:** Create window without showing it.
+
+**Use cases:**
+- Background windows
+- Windows shown on demand
+- Splash screens (create, load, then show)
+
+**Example:**
+
+```go
+settings := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Name:   "settings",
+    Hidden: true,
+})
+
+// Show when needed
+settings.Show()
+```
+
+### Frameless
+
+**Type:** `bool`  
+**Default:** `false`  
+**Platform:** All
+
+```go
+Frameless: true,
+```
+
+**Purpose:** Remove title bar and window borders.
+
+**Use cases:**
+- Custom window chrome
+- Splash screens
+- Kiosk applications
+- Custom-designed windows
+
+**Important:** You'll need to implement:
+- Window dragging
+- Close/minimise/maximise buttons
+- Resize handles (if resizable)
+
+**See [Frameless Windows](/features/windows/frameless) for details.**
+
+### Resizable
+
+**Type:** `bool`  
+**Default:** `true`  
+**Platform:** All
+
+```go
+Resizable: false,
+```
+
+**Purpose:** Allow/prevent window resizing.
+
+**Use cases:**
+- Fixed-size applications
+- Splash screens
+- dialogs
+
+**Note:** Users can still maximise/fullscreen unless you prevent those too.
+
+### AlwaysOnTop
+
+**Type:** `bool`  
+**Default:** `false`  
+**Platform:** All
+
+```go
+AlwaysOnTop: true,
+```
+
+**Purpose:** Keep window above all other windows.
+
+**Use cases:**
+- Floating toolbars
+- Notifications
+- Picture-in-picture
+- Timers
+
+**Platform notes:**
+- **macOS:** Full support
+- **Windows:** Full support
+- **Linux:** Depends on window manager
+
+### Fullscreen
+
+**Type:** `bool`  
+**Default:** `false`  
+**Platform:** All
+
+```go
+Fullscreen: true,
+```
+
+**Purpose:** Start in fullscreen mode.
+
+**Platform behaviour:**
+- **macOS:** Creates new Space (virtual desktop)
+- **Windows:** Covers taskbar
+- **Linux:** Varies by desktop environment
+
+**Toggle at runtime:**
+
+```go
+window.Fullscreen()
+window.UnFullscreen()
+```
+
+### Minimised / Maximised
+
+**Type:** `bool`  
+**Default:** `false`  
+**Platform:** All
+
+```go
+Minimised: true,  // Start minimised
+Maximised: true,  // Start maximised
+```
+
+**Purpose:** Set initial window state.
+
+**Note:** Don't set both to `true` - behaviour is undefined.
+
+### WindowState
+
+**Type:** `WindowState` enum  
+**Default:** `WindowStateNormal`  
+**Platform:** All
+
+```go
+WindowState: application.WindowStateMaximised,
+```
+
+**Values:**
+- `WindowStateNormal` - Normal window
+- `WindowStateMinimised` - Minimised
+- `WindowStateMaximised` - Maximised
+- `WindowStateFullscreen` - Fullscreen
+- `WindowStateHidden` - Hidden
+
+**Preferred over individual flags:**
+
+```go
+// ✅ Preferred
+WindowState: application.WindowStateMaximised,
+
+// ❌ Avoid
+Maximised: true,
+```
+
+## Appearance Options
+
+### BackgroundColour
+
+**Type:** `RGBA` struct  
+**Default:** White (255, 255, 255, 255)  
+**Platform:** All
+
+```go
+BackgroundColour: application.RGBA{R: 0, G: 0, H: 0, A: 255},
+```
+
+**Purpose:** Window background colour before content loads.
+
+**Use cases:**
+- Match your app's theme
+- Prevent white flash on dark themes
+- Smooth loading experience
+
+**Example:**
+
+```go
+// Dark theme
+BackgroundColour: application.RGBA{R: 30, G: 30, B: 30, A: 255},
+
+// Light theme
+BackgroundColour: application.RGBA{R: 255, G: 255, B: 255, A: 255},
+```
+
+**Helper method:**
+
+```go
+window.SetBackgroundColour(30, 30, 30, 255)
+```
+
+### BackgroundType
+
+**Type:** `BackgroundType` enum  
+**Default:** `BackgroundTypeSolid`  
+**Platform:** macOS, Windows (partial)
+
+```go
+BackgroundType: application.BackgroundTypeTranslucent,
+```
+
+**Values:**
+- `BackgroundTypeSolid` - Solid colour
+- `BackgroundTypeTransparent` - Fully transparent
+- `BackgroundTypeTranslucent` - Semi-transparent blur
+
+**Platform support:**
+- **macOS:** All types supported
+- **Windows:** Transparent and Translucent (Windows 11+)
+- **Linux:** Solid only
+
+**Example (macOS):**
+
+```go
+BackgroundType: application.BackgroundTypeTranslucent,
+Mac: application.MacOptions{
+    Backdrop: application.MacBackdropTranslucent,
+},
+```
+
+## Content Options
+
+### URL
+
+**Type:** `string`  
+**Default:** Empty (loads from Assets)  
+**Platform:** All
+
+```go
+URL: "https://example.com",
+```
+
+**Purpose:** Load external URL instead of embedded assets.
+
+**Use cases:**
+- Development (load from dev server)
+- Web-based applications
+- Hybrid applications
+
+**Example:**
+
+```go
+// Development
+URL: "http://localhost:5173",
+
+// Production
+Assets: application.AssetOptions{
+    Handler: application.AssetFileServerFS(assets),
+},
+```
+
+### HTML
+
+**Type:** `string`  
+**Default:** Empty  
+**Platform:** All
+
+```go
+HTML: "<h1>Hello World</h1>",
+```
+
+**Purpose:** Load HTML string directly.
+
+**Use cases:**
+- Simple windows
+- Generated content
+- Testing
+
+**Example:**
+
+```go
+HTML: `
+<!DOCTYPE html>
+<html>
+<head><title>Simple Window</title></head>
+<body><h1>Hello from Wails!</h1></body>
+</html>
+`,
+```
+
+### Assets
+
+**Type:** `AssetOptions`  
+**Default:** Inherited from application  
+**Platform:** All
+
+```go
+Assets: application.AssetOptions{
+    Handler: application.AssetFileServerFS(assets),
+},
+```
+
+**Purpose:** Serve embedded frontend assets.
+
+**See [Build System](/concepts/build-system) for details.**
+
+## Security Options
+
+### ContentProtectionEnabled
+
+**Type:** `bool`  
+**Default:** `false`  
+**Platform:** Windows (10+), macOS
+
+```go
+ContentProtectionEnabled: true,
+```
+
+**Purpose:** Prevent screen capture of window contents.
+
+**Platform support:**
+- **Windows:** Windows 10 build 19041+ (full), older versions (partial)
+- **macOS:** Full support
+- **Linux:** Not supported
+
+**Use cases:**
+- Banking applications
+- Password managers
+- Medical records
+- Confidential documents
+
+**Important notes:**
+1. Doesn't prevent physical photography
+2. Some tools may bypass protection
+3. Part of comprehensive security, not sole protection
+4. DevTools windows not protected automatically
+
+**Example:**
+
+```go
+window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Title: "Secure Window",
+    ContentProtectionEnabled: true,
+})
+
+// Toggle at runtime
+window.SetContentProtection(true)
+```
+
+## Lifecycle Options
+
+### OnClose
+
+**Type:** `func() bool`  
+**Default:** `nil` (always allow close)  
+**Platform:** All
+
+```go
+OnClose: func() bool {
+    // Return false to cancel close
+    // Return true to allow close
+    return true
+},
+```
+
+**Purpose:** Handle window close events, optionally prevent closing.
+
+**Use cases:**
+- Confirm before closing with unsaved changes
+- Save state before closing
+- Prevent accidental closure
+
+**Example:**
+
+```go
+OnClose: func() bool {
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        return result == "yes"
+    }
+    return true
+},
+```
+
+**Important:** Only triggered by user actions (clicking X), not `window.Destroy()`.
+
+### OnDestroy
+
+**Type:** `func()`  
+**Default:** `nil`  
+**Platform:** All
+
+```go
+OnDestroy: func() {
+    // Cleanup code
+    fmt.Println("Window destroyed")
+},
+```
+
+**Purpose:** Cleanup when window is destroyed.
+
+**Use cases:**
+- Release resources
+- Close connections
+- Update application state
+
+**Example:**
+
+```go
+OnDestroy: func() {
+    // Close database connection
+    if db != nil {
+        db.Close()
+    }
+    
+    // Remove from window list
+    removeWindow(window.ID())
+},
+```
+
+## Platform-Specific Options
+
+### Mac Options
+
+```go
+Mac: application.MacOptions{
+    TitleBarAppearsTransparent: true,
+    Backdrop:                   application.MacBackdropTranslucent,
+    InvisibleTitleBarHeight:    50,
+    TitleBarStyle:              application.MacTitleBarStyleHidden,
+},
+```
+
+**TitleBarAppearsTransparent** (`bool`)
+- Makes title bar transparent
+- Content extends into title bar area
+
+**Backdrop** (`MacBackdrop`)
+- `MacBackdropNormal` - Standard
+- `MacBackdropTranslucent` - Blurred translucent
+- `MacBackdropTransparent` - Fully transparent
+
+**InvisibleTitleBarHeight** (`int`)
+- Height of invisible title bar (for dragging)
+- Only when `TitleBarStyle` is `MacTitleBarStyleHidden`
+
+**TitleBarStyle** (`MacTitleBarStyle`)
+- `MacTitleBarStyleDefault` - Standard title bar
+- `MacTitleBarStyleHidden` - Hidden title bar
+- `MacTitleBarStyleHiddenInset` - Hidden with inset
+
+**Example:**
+
+```go
+Mac: application.MacOptions{
+    TitleBarAppearsTransparent: true,
+    Backdrop:                   application.MacBackdropTranslucent,
+    InvisibleTitleBarHeight:    50,
+},
+```
+
+### Windows Options
+
+```go
+Windows: application.WindowsOptions{
+    DisableWindowIcon:      false,
+    WindowBackdropType:     application.WindowsBackdropTypeAuto,
+    CustomTheme:            nil,
+    DisableFramelessWindowDecorations: false,
+},
+```
+
+**DisableWindowIcon** (`bool`)
+- Remove icon from title bar
+- Cleaner appearance
+
+**WindowBackdropType** (`WindowsBackdropType`)
+- `WindowsBackdropTypeAuto` - System default
+- `WindowsBackdropTypeNone` - No backdrop
+- `WindowsBackdropTypeMica` - Mica material (Windows 11)
+- `WindowsBackdropTypeAcrylic` - Acrylic material (Windows 11)
+- `WindowsBackdropTypeTabbed` - Tabbed material (Windows 11)
+
+**CustomTheme** (`*WindowsTheme`)
+- Custom colour theme
+- Override system colours
+
+**DisableFramelessWindowDecorations** (`bool`)
+- Disable default frameless decorations
+- For custom window chrome
+
+**Example:**
+
+```go
+Windows: application.WindowsOptions{
+    WindowBackdropType: application.WindowsBackdropTypeMica,
+    DisableWindowIcon:  true,
+},
+```
+
+### Linux Options
+
+```go
+Linux: application.LinuxOptions{
+    Icon:                []byte{/* PNG data */},
+    WindowIsTranslucent: false,
+},
+```
+
+**Icon** (`[]byte`)
+- Window icon (PNG format)
+- Shown in title bar and taskbar
+
+**WindowIsTranslucent** (`bool`)
+- Enable window translucency
+- Requires compositor support
+
+**Example:**
+
+```go
+//go:embed icon.png
+var icon []byte
+
+Linux: application.LinuxOptions{
+    Icon: icon,
+},
+```
+
+## Complete Example
+
+Here's a production-ready window configuration:
+
+```go
+package main
+
+import (
+    _ "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+//go:embed icon.png
+var icon []byte
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My Application",
+    })
+
+    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        // Identity
+        Name:  "main-window",
+        Title: "My Application",
+        
+        // Size and Position
+        Width:     1200,
+        Height:    800,
+        MinWidth:  800,
+        MinHeight: 600,
+        
+        // Initial State
+        WindowState: application.WindowStateNormal,
+        Resizable:   true,
+        
+        // Appearance
+        BackgroundColour: application.RGBA{R: 255, G: 255, B: 255, A: 255},
+        
+        // Content
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+        
+        // Lifecycle
+        OnClose: func() bool {
+            if hasUnsavedChanges() {
+                result := showConfirmdialog("Unsaved changes. Close anyway?")
+                return result == "yes"
+            }
+            return true
+        },
+        
+        OnDestroy: func() {
+            cleanup()
+        },
+        
+        // Platform-Specific
+        Mac: application.MacOptions{
+            TitleBarAppearsTransparent: true,
+            Backdrop:                   application.MacBackdropTranslucent,
+        },
+        
+        Windows: application.WindowsOptions{
+            WindowBackdropType: application.WindowsBackdropTypeMica,
+            DisableWindowIcon:  false,
+        },
+        
+        Linux: application.LinuxOptions{
+            Icon: icon,
+        },
+    })
+
+    window.Center()
+    window.Show()
+
+    app.Run()
+}
+```
+
+## Next Steps
+
+- [Window Basics](/features/windows/basics) - Creating and controlling windows
+- [Multiple Windows](/features/windows/multiple) - Multi-window patterns
+- [Frameless Windows](/features/windows/frameless) - Custom window chrome
+- [Window Events](/features/windows/events) - Lifecycle events
+
+---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples).

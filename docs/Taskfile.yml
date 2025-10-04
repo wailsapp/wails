@@ -2,29 +2,33 @@
 
 version: '3'
 
+vars:
+  # Change this to switch package managers: bun, npm, pnpm, yarn
+  PKG_MANAGER: bun
+
 tasks:
 
   setup:
     summary: Setup the project
     preconditions:
-      - sh: npm --version
-        msg: "Looks like npm isn't installed."
+      - sh: '{{.PKG_MANAGER}} --version'
+        msg: "Looks like {{.PKG_MANAGER}} isn't installed."
     cmds:
-      - npm install
+      - '{{.PKG_MANAGER}} install'
 
   dev:
     summary: Run the dev server
     preconditions:
-      - sh: npm --version
-        msg: "Looks like npm isn't installed."
+      - sh: '{{.PKG_MANAGER}} --version'
+        msg: "Looks like {{.PKG_MANAGER}} isn't installed."
     cmds:
-      - npm run dev
+      - '{{.PKG_MANAGER}} run dev'
 
   build:
     summary: Build the docs
     preconditions:
-      - sh: npm --version
-        msg: "Looks like npm isn't installed."
+      - sh: '{{.PKG_MANAGER}} --version'
+        msg: "Looks like {{.PKG_MANAGER}} isn't installed."
     cmds:
-      - npm run build
+      - '{{.PKG_MANAGER}} run build'
 

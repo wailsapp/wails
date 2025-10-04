@@ -6,16 +6,15 @@ sidebar:
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
 
-Application menus provide the main menu bar interface for your application. They appear at the top of the window on Windows and Linux, and at the top of the screen on macOS.
+## Application Menus
 
-## Creating an Application Menu
+Wails provides native application menus with full support for menu bars, submenus, separators, keyboard shortcuts, and dynamic updates. Create professional menus that respect platform conventions across macOS, Windows, and Linux.
 
 Create a new application menu using the `New` method from the Menu manager:
 
 ```go
 menu := app.Menu.New()
 ```
-
 ## Setting the Menu
 
 The way to set the menu varies on the platform:
@@ -92,7 +91,7 @@ Create custom menus by adding items directly:
 // Add a custom menu
 customMenu := menu.AddSubmenu("Tools")
 customMenu.Add("Settings").OnClick(func(ctx *application.Context) {
-    // Show settings dialogue
+    // Show settings dialog
 })
 ```
 

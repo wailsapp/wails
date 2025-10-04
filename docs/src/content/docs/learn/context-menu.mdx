@@ -6,15 +6,9 @@ sidebar:
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
 
-Context menus are popup menus that appear when right-clicking elements in your application. They provide quick access to relevant actions for the clicked element.
+## Context Menus
 
-## Creating a Context Menu
-
-To create a context menu, use the `Add` method from the ContextMenu manager:
-
-```go
-contextMenu := app.ContextMenu.Add("menu-id", application.NewContextMenu())
-```
+Wails provides context menus (right-click menus) with full support for context-specific actions, custom data passing, and default menu overrides. Create different menus for text, images, links, and custom elements.()
 
 The `menu-id` parameter is a unique identifier for the menu that will be used to associate it with HTML elements.
 

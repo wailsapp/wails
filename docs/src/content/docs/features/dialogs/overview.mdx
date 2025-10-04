@@ -1,0 +1,470 @@
+---
+title: dialogs Overview
+description: Display native system dialogs in your application
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Native dialogs
+
+Wails provides **native system dialogs** that work across all platforms: message dialogs (info, warning, error, question), file dialogs (open, save, folder), and custom dialog windows with platform-native appearance and behaviour.
+
+## Quick Start
+
+```go
+// Information dialog
+app.InfoDialog().
+    SetTitle("Success").
+    SetMessage("File saved successfully!").
+    Show()
+
+// Question dialog
+result, _ := app.QuestionDialog().
+    SetTitle("Confirm").
+    SetMessage("Delete this file?").
+    SetButtons("Delete", "Cancel").
+    Show()
+
+if result == "Delete" {
+    deleteFile()
+}
+
+// File open dialog
+path, _ := app.OpenFileDialog().
+    SetTitle("Select Image").
+    SetFilters([]application.FileFilter{
+        {DisplayName: "Images", Pattern: "*.png;*.jpg"},
+    }).
+    PromptForSingleSelection()
+```
+
+**That's it!** Native dialogs with minimal code.
+
+## dialog Types
+
+### Information dialog
+
+Display simple messages:
+
+```go
+app.InfoDialog().
+    SetTitle("Welcome").
+    SetMessage("Welcome to our application!").
+    Show()
+```
+
+**Use cases:**
+- Success messages
+- Informational notices
+- Completion confirmations
+
+### Warning dialog
+
+Show warnings:
+
+```go
+app.WarningDialog().
+    SetTitle("Warning").
+    SetMessage("This action cannot be undone.").
+    Show()
+```
+
+**Use cases:**
+- Non-critical warnings
+- Deprecation notices
+- Caution messages
+
+### Error dialog
+
+Display errors:
+
+```go
+app.ErrorDialog().
+    SetTitle("Error").
+    SetMessage("Failed to save file: " + err.Error()).
+    Show()
+```
+
+**Use cases:**
+- Error messages
+- Failure notifications
+- Exception handling
+
+### Question dialog
+
+Ask users questions:
+
+```go
+result, err := app.QuestionDialog().
+    SetTitle("Confirm Delete").
+    SetMessage("Are you sure you want to delete this file?").
+    SetButtons("Delete", "Cancel").
+    SetDefaultButton("Cancel").
+    Show()
+
+if result == "Delete" {
+    deleteFile()
+}
+```
+
+**Use cases:**
+- Confirm actions
+- Yes/No questions
+- Multiple choice
+
+## File dialogs
+
+### Open File dialog
+
+Select files to open:
+
+```go
+path, err := app.OpenFileDialog().
+    SetTitle("Select Image").
+    SetFilters([]application.FileFilter{
+        {DisplayName: "Images", Pattern: "*.png;*.jpg;*.gif"},
+        {DisplayName: "All Files", Pattern: "*.*"},
+    }).
+    PromptForSingleSelection()
+
+if err == nil {
+    openFile(path)
+}
+```
+
+**Multiple selection:**
+
+```go
+paths, err := app.OpenFileDialog().
+    SetTitle("Select Images").
+    SetFilters([]application.FileFilter{
+        {DisplayName: "Images", Pattern: "*.png;*.jpg"},
+    }).
+    PromptForMultipleSelection()
+
+for _, path := range paths {
+    processFile(path)
+}
+```
+
+### Save File dialog
+
+Choose where to save:
+
+```go
+path, err := app.SaveFileDialog().
+    SetTitle("Save Document").
+    SetDefaultFilename("document.txt").
+    SetFilters([]application.FileFilter{
+        {DisplayName: "Text Files", Pattern: "*.txt"},
+        {DisplayName: "All Files", Pattern: "*.*"},
+    }).
+    PromptForSingleSelection()
+
+if err == nil {
+    saveFile(path)
+}
+```
+
+### Select Folder dialog
+
+Choose a directory:
+
+```go
+path, err := app.SelectFolderDialog().
+    SetTitle("Select Output Folder").
+    PromptForSingleSelection()
+
+if err == nil {
+    exportToFolder(path)
+}
+```
+
+## dialog Options
+
+### Title and Message
+
+```go
+dialog := app.InfoDialog().
+    SetTitle("Success").
+    SetMessage("Operation completed successfully!")
+```
+
+### Buttons
+
+**Predefined buttons:**
+
+```go
+// OK button
+app.InfoDialog().
+    SetMessage("Done!").
+    Show()
+
+// Yes/No buttons
+result, _ := app.QuestionDialog().
+    SetMessage("Continue?").
+    SetButtons("Yes", "No").
+    Show()
+
+// Custom buttons
+result, _ := app.QuestionDialog().
+    SetMessage("Choose action").
+    SetButtons("Save", "Don't Save", "Cancel").
+    Show()
+```
+
+**Default button:**
+
+```go
+app.QuestionDialog().
+    SetMessage("Delete file?").
+    SetButtons("Delete", "Cancel").
+    SetDefaultButton("Cancel").  // Highlighted by default
+    Show()
+```
+
+### Window Attachment
+
+Attach dialog to specific window:
+
+```go
+dialog := app.InfoDialog().
+    SetMessage("Window-specific message").
+    AttachToWindow(window)
+
+dialog.Show()
+```
+
+**Behaviour:**
+- dialog appears centred on parent window
+- Parent window disabled whilst dialog shown
+- dialog moves with parent window (macOS)
+
+## Platform Behaviour
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    **macOS dialogs:**
+    
+    - Native NSAlert appearance
+    - Follow system theme (light/dark)
+    - Support keyboard navigation
+    - Standard shortcuts (⌘. for Cancel)
+    - Accessibility features built-in
+    - Sheet-style when attached to window
+    
+    **Example:**
+    ```go
+    // Appears as sheet on macOS
+    app.QuestionDialog().
+        SetMessage("Save changes?").
+        AttachToWindow(window).
+        Show()
+    ```
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    **Windows dialogs:**
+    
+    - Native TaskDialog appearance
+    - Follow system theme
+    - Support keyboard navigation
+    - Standard shortcuts (Esc for Cancel)
+    - Accessibility features built-in
+    - Modal to parent window
+    
+    **Example:**
+    ```go
+    // Modal dialog on Windows
+    app.ErrorDialog().
+        SetTitle("Error").
+        SetMessage("Operation failed").
+        Show()
+    ```
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **Linux dialogs:**
+    
+    - GTK dialog appearance
+    - Follow desktop theme
+    - Support keyboard navigation
+    - Desktop environment integration
+    - Varies by DE (GNOME, KDE, etc.)
+    
+    **Example:**
+    ```go
+    // GTK dialog on Linux
+    app.InfoDialog().
+        SetMessage("Update complete").
+        Show()
+    ```
+  </TabItem>
+</Tabs>
+
+## Common Patterns
+
+### Confirm Before Destructive Action
+
+```go
+func deleteFile(path string) error {
+    result, err := app.QuestionDialog().
+        SetTitle("Confirm Delete").
+        SetMessage(fmt.Sprintf("Delete %s?", filepath.Base(path))).
+        SetButtons("Delete", "Cancel").
+        SetDefaultButton("Cancel").
+        Show()
+    
+    if err != nil || result != "Delete" {
+        return errors.New("cancelled")
+    }
+    
+    return os.Remove(path)
+}
+```
+
+### Error Handling with dialog
+
+```go
+func saveDocument(path string, data []byte) {
+    if err := os.WriteFile(path, data, 0644); err != nil {
+        app.ErrorDialog().
+            SetTitle("Save Failed").
+            SetMessage(fmt.Sprintf("Could not save file: %v", err)).
+            Show()
+        return
+    }
+    
+    app.InfoDialog().
+        SetTitle("Success").
+        SetMessage("File saved successfully!").
+        Show()
+}
+```
+
+### File Selection with Validation
+
+```go
+func selectImageFile() (string, error) {
+    path, err := app.OpenFileDialog().
+        SetTitle("Select Image").
+        SetFilters([]application.FileFilter{
+            {DisplayName: "Images", Pattern: "*.png;*.jpg;*.jpeg;*.gif"},
+        }).
+        PromptForSingleSelection()
+    
+    if err != nil {
+        return "", err
+    }
+    
+    // Validate file
+    if !isValidImage(path) {
+        app.ErrorDialog().
+            SetTitle("Invalid File").
+            SetMessage("Selected file is not a valid image.").
+            Show()
+        return "", errors.New("invalid image")
+    }
+    
+    return path, nil
+}
+```
+
+### Multi-Step dialog Flow
+
+```go
+func exportData() {
+    // Step 1: Confirm export
+    result, _ := app.QuestionDialog().
+        SetTitle("Export Data").
+        SetMessage("Export all data to CSV?").
+        SetButtons("Export", "Cancel").
+        Show()
+    
+    if result != "Export" {
+        return
+    }
+    
+    // Step 2: Select destination
+    path, err := app.SaveFileDialog().
+        SetTitle("Save Export").
+        SetDefaultFilename("export.csv").
+        SetFilters([]application.FileFilter{
+            {DisplayName: "CSV Files", Pattern: "*.csv"},
+        }).
+        PromptForSingleSelection()
+    
+    if err != nil {
+        return
+    }
+    
+    // Step 3: Perform export
+    if err := performExport(path); err != nil {
+        app.ErrorDialog().
+            SetTitle("Export Failed").
+            SetMessage(err.Error()).
+            Show()
+        return
+    }
+    
+    // Step 4: Success
+    app.InfoDialog().
+        SetTitle("Export Complete").
+        SetMessage("Data exported successfully!").
+        Show()
+}
+```
+
+## Best Practices
+
+### ✅ Do
+
+- **Use native dialogs** - Better UX than custom
+- **Provide clear messages** - Be specific
+- **Set appropriate titles** - Context matters
+- **Use default buttons wisely** - Safe option as default
+- **Handle cancellation** - User might cancel
+- **Validate file selections** - Check file types
+
+### ❌ Don't
+
+- **Don't overuse dialogs** - Interrupts workflow
+- **Don't use for frequent messages** - Use notifications
+- **Don't forget error handling** - User might cancel
+- **Don't block unnecessarily** - Consider alternatives
+- **Don't use generic messages** - Be specific
+- **Don't ignore platform differences** - Test on all platforms
+
+## Next Steps
+
+<CardGrid>
+  <Card title="Message dialogs" icon="information">
+    Info, warning, and error dialogs.
+    
+    [Learn More →](/features/dialogs/message)
+  </Card>
+
+  <Card title="File dialogs" icon="document">
+    Open, save, and folder selection.
+    
+    [Learn More →](/features/dialogs/file)
+  </Card>
+
+  <Card title="Custom dialogs" icon="puzzle">
+    Create custom dialog windows.
+    
+    [Learn More →](/features/dialogs/custom)
+  </Card>
+
+  <Card title="Windows" icon="laptop">
+    Learn about window management.
+    
+    [Learn More →](/features/windows/basics)
+  </Card>
+</CardGrid>
+
+---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [dialog examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/dialogs).

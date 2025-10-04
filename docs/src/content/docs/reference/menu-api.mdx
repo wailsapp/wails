@@ -1,0 +1,178 @@
+---
+title: Menu API
+description: Complete reference for the Menu API
+sidebar:
+  order: 3
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Overview
+
+The Menu API provides methods to create and manage application menus, context menus, and system tray menus.
+
+## Creating Menus
+
+### NewMenu()
+
+```go
+menu := app.NewMenu()
+```
+
+### Add()
+
+```go
+item := menu.Add("Menu Item")
+```
+
+### AddSubmenu()
+
+```go
+submenu := menu.AddSubmenu("File")
+```
+
+### AddSeparator()
+
+```go
+menu.AddSeparator()
+```
+
+## Menu Item Methods
+
+### OnClick()
+
+```go
+item.OnClick(func(ctx *application.Context) {
+    fmt.Println("Clicked!")
+})
+```
+
+### SetLabel()
+
+```go
+item.SetLabel("New Label")
+```
+
+### SetEnabled()
+
+```go
+item.SetEnabled(false)
+menu.Update()  // Important!
+```
+
+### SetChecked()
+
+```go
+item.SetChecked(true)
+```
+
+### SetAccelerator()
+
+```go
+item.SetAccelerator("Ctrl+S")
+```
+
+## Application Menu
+
+### SetApplicationMenu()
+
+```go
+menu := app.NewMenu()
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("Open").OnClick(openFile)
+fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+app.SetApplicationMenu(menu)
+```
+
+## Context Menu
+
+### RegisterContextMenu()
+
+```go
+menu := app.NewMenu()
+menu.Add("Copy").OnClick(copyHandler)
+menu.Add("Paste").OnClick(pasteHandler)
+
+app.RegisterContextMenu("myContext", menu)
+```
+
+## System Tray Menu
+
+```go
+tray := app.NewSystemTray()
+menu := app.NewMenu()
+menu.Add("Show").OnClick(showWindow)
+menu.Add("Quit").OnClick(app.Quit)
+tray.SetMenu(menu)
+```
+
+## Complete Example
+
+```go
+// Create application menu
+menu := app.NewMenu()
+
+// File menu
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("New").SetAccelerator("Ctrl+N").OnClick(newFile)
+fileMenu.Add("Open").SetAccelerator("Ctrl+O").OnClick(openFile)
+fileMenu.AddSeparator()
+fileMenu.Add("Quit").SetAccelerator("Ctrl+Q").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+// Edit menu
+editMenu := menu.AddSubmenu("Edit")
+editMenu.Add("Cut").SetAccelerator("Ctrl+X").OnClick(cut)
+editMenu.Add("Copy").SetAccelerator("Ctrl+C").OnClick(copy)
+editMenu.Add("Paste").SetAccelerator("Ctrl+V").OnClick(paste)
+
+// Set as application menu
+app.SetApplicationMenu(menu)
+```
+
+## Best Practices
+
+### ✅ Do
+
+- Call `menu.Update()` after changing item state
+- Use standard accelerators
+- Provide clear labels
+- Group related items
+
+### ❌ Don't
+
+- Don't forget to call Update()
+- Don't use ambiguous labels
+- Don't overcomplicate menus
+
+## Next Steps
+
+<CardGrid>
+  <Card title="Application Menus" icon="list">
+    Learn about application menus.
+    
+    [Learn More →](/learn/application-menu)
+  </Card>
+
+  <Card title="Context Menus" icon="puzzle">
+    Create context menus.
+    
+    [Learn More →](/learn/context-menu)
+  </Card>
+
+  <Card title="System Tray" icon="star">
+    System tray menus.
+    
+    [Learn More →](/learn/system-tray-menu)
+  </Card>
+
+  <Card title="Menu Patterns" icon="open-book">
+    Common menu patterns.
+    
+    [Learn More →](/learn/menu-patterns)
+  </Card>
+</CardGrid>

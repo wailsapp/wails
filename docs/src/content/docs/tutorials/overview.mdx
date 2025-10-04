@@ -1,0 +1,348 @@
+---
+title: Tutorials Overview
+description: Learn Wails by building real applications
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Learn by Building
+
+The best way to learn Wails is to build something real. Our tutorials use **production-ready patterns** and **real-world scenarios**—no toy examples.
+
+Each tutorial is:
+- ✅ **Complete** - Working code from start to finish
+- ✅ **Tested** - Verified on all platforms
+- ✅ **Explained** - Why, not just how
+- ✅ **Practical** - Patterns you'll use in real projects
+
+## Choose Your Path
+
+### 🎯 New to Wails?
+
+Start with a beginner-friendly tutorial that teaches the fundamentals:
+
+<CardGrid>
+  <Card title="Notes App (Vanilla JS)" icon="pencil">
+    **Perfect first tutorial**
+    
+    - No framework complexity
+    - Core Wails concepts
+    - File operations
+    - Local storage
+    
+    **Time:** 30 minutes  
+    **Level:** Beginner
+    
+    [Start Tutorial →](/tutorials/notes-vanilla)
+  </Card>
+
+  <Card title="Todo App (React)" icon="seti:react">
+    **Learn with React**
+    
+    - React integration
+    - SQLite database
+    - CRUD operations
+    - State management
+    
+    **Time:** 45 minutes  
+    **Level:** Beginner
+    
+    [Start Tutorial →](/tutorials/todo-react)
+  </Card>
+</CardGrid>
+
+### 🚀 Ready for More?
+
+Build feature-rich applications with advanced patterns:
+
+<CardGrid>
+  <Card title="Dashboard (Vue)" icon="seti:vue">
+    **Real-time data visualisation**
+    
+    - Vue 3 Composition API
+    - Charts and graphs
+    - WebSocket integration
+    - Event system
+    
+    **Time:** 60 minutes  
+    **Level:** Intermediate
+    
+    [Start Tutorial →](/tutorials/dashboard-vue)
+  </Card>
+
+  <Card title="File Manager" icon="document">
+    **Native file operations**
+    
+    - File dialogs
+    - Drag & drop
+    - Context menus
+    - File system operations
+    
+    **Time:** 45 minutes  
+    **Level:** Intermediate
+    
+    [Start Tutorial →](/tutorials/file-operations)
+  </Card>
+
+  <Card title="Database Integration" icon="seti:db">
+    **Data persistence patterns**
+    
+    - SQLite setup
+    - Migrations
+    - Query patterns
+    - Best practices
+    
+    **Time:** 40 minutes  
+    **Level:** Intermediate
+    
+    [Start Tutorial →](/tutorials/database)
+  </Card>
+
+  <Card title="System Tray App" icon="star">
+    **Background applications**
+    
+    - System tray integration
+    - Background tasks
+    - Notifications
+    - Window management
+    
+    **Time:** 35 minutes  
+    **Level:** Intermediate
+    
+    [Start Tutorial →](/tutorials/system-tray)
+  </Card>
+</CardGrid>
+
+### 🎓 Advanced Topics
+
+Master complex features and production patterns:
+
+<CardGrid>
+  <Card title="Multi-Window Application" icon="laptop">
+    **Multiple window management**
+    
+    - Window lifecycle
+    - Inter-window communication
+    - Shared state
+    - Window positioning
+    
+    **Time:** 50 minutes  
+    **Level:** Advanced
+    
+    [Start Tutorial →](/tutorials/multi-window)
+  </Card>
+
+  <Card title="Custom Protocols" icon="rocket">
+    **Deep linking and URL handling**
+    
+    - Protocol registration
+    - URL parsing
+    - Security considerations
+    - Platform differences
+    
+    **Time:** 40 minutes  
+    **Level:** Advanced
+    
+    [Start Tutorial →](/tutorials/custom-protocols)
+  </Card>
+
+  <Card title="Native Integrations" icon="puzzle">
+    **Platform-specific features**
+    
+    - macOS Dock integration
+    - Windows UAC
+    - Linux desktop files
+    - Platform detection
+    
+    **Time:** 45 minutes  
+    **Level:** Advanced
+    
+    [Start Tutorial →](/tutorials/native-integrations)
+  </Card>
+
+  <Card title="Auto-Updates (Sparkle)" icon="approve-check">
+    **Production deployment**
+    
+    - Sparkle setup (macOS)
+    - Update server
+    - Code signing
+    - Testing updates
+    
+    **Time:** 60 minutes  
+    **Level:** Advanced
+    
+    [Start Tutorial →](/tutorials/sparkle-updates)
+  </Card>
+</CardGrid>
+
+## Tutorial Structure
+
+Each tutorial follows a consistent structure:
+
+1. **What You'll Build** - See the finished product
+2. **Prerequisites** - What you need to know
+3. **Setup** - Create the project
+4. **Step-by-Step Implementation** - Build feature by feature
+5. **Testing** - Verify it works
+6. **Next Steps** - Where to go from here
+
+## Prerequisites
+
+### Required Knowledge
+
+- **Go basics** - Variables, functions, structs, methods
+- **JavaScript basics** - Variables, functions, async/await
+- **HTML/CSS basics** - For UI development
+
+:::tip[New to Go?]
+Complete the [Go Tour](https://go.dev/tour/) (2 hours) before starting tutorials.
+:::
+
+### Required Software
+
+- **Wails installed** - [Installation guide](/quick-start/installation)
+- **Go 1.23+** - [Download](https://go.dev/dl/)
+- **npm** (optional) - For framework templates
+
+### Recommended Tools
+
+- **VS Code** with Go extension
+- **Browser DevTools** knowledge
+- **Git** for version control
+
+## Learning Paths by Goal
+
+### Building a Business Application?
+
+**Recommended sequence:**
+1. [Todo App (React)](/tutorials/todo-react) - Learn basics
+2. [Database Integration](/tutorials/database) - Add persistence
+3. [Multi-Window Application](/tutorials/multi-window) - Multiple views
+4. [Auto-Updates](/tutorials/sparkle-updates) - Production deployment
+
+**You'll learn:** CRUD operations, database patterns, window management, deployment
+
+### Building a Developer Tool?
+
+**Recommended sequence:**
+1. [File Manager](/tutorials/file-operations) - File handling
+2. [System Tray App](/tutorials/system-tray) - Background operation
+3. [Custom Protocols](/tutorials/custom-protocols) - Deep linking
+4. [Native Integrations](/tutorials/native-integrations) - Platform features
+
+**You'll learn:** File operations, system integration, URL handling, platform APIs
+
+### Building a Creative Tool?
+
+**Recommended sequence:**
+1. [Notes App (Vanilla)](/tutorials/notes-vanilla) - Core concepts
+2. [File Manager](/tutorials/file-operations) - File I/O
+3. [Multi-Window Application](/tutorials/multi-window) - Multiple views
+4. [Native Integrations](/tutorials/native-integrations) - Platform features
+
+**You'll learn:** File operations, window management, native APIs, performance
+
+### Building a Productivity App?
+
+**Recommended sequence:**
+1. [Todo App (React)](/tutorials/todo-react) - Basic app structure
+2. [Database Integration](/tutorials/database) - Data persistence
+3. [System Tray App](/tutorials/system-tray) - Background operation
+4. [Dashboard (Vue)](/tutorials/dashboard-vue) - Real-time updates
+
+**You'll learn:** State management, persistence, background tasks, real-time data
+
+## Tutorial Difficulty Levels
+
+### 🟢 Beginner
+- Assumes basic Go and JavaScript knowledge
+- Step-by-step instructions
+- Detailed explanations
+- Simple patterns
+
+**Start here if:** You're new to Wails or desktop development
+
+### 🟡 Intermediate
+- Assumes Wails basics
+- Focuses on specific features
+- Less hand-holding
+- Real-world patterns
+
+**Start here if:** You've completed a beginner tutorial
+
+### 🔴 Advanced
+- Assumes solid Wails knowledge
+- Complex integrations
+- Production considerations
+- Performance optimisation
+
+**Start here if:** You're building production applications
+
+## Getting Help
+
+### While Following Tutorials
+
+1. **Read carefully** - Don't skip steps
+2. **Type the code** - Don't copy-paste (you'll learn more)
+3. **Experiment** - Try changing things
+4. **Check the examples** - [GitHub examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples)
+
+### If You Get Stuck
+
+1. **Check the error message** - It usually tells you what's wrong
+2. **Review the step** - Did you miss something?
+3. **Check the docs** - [API reference](/reference/overview)
+4. **Ask for help** - [Discord community](https://discord.gg/JDdSxwjhGf)
+
+### Reporting Issues
+
+Found a problem in a tutorial?
+
+1. **Check if it's already reported** - [GitHub issues](https://github.com/wailsapp/wails/issues)
+2. **Provide details** - OS, Go version, error message
+3. **Include code** - What you tried
+4. **Be specific** - Which tutorial, which step
+
+## Beyond Tutorials
+
+After completing tutorials, explore:
+
+<CardGrid>
+  <Card title="Features Documentation" icon="star">
+    Deep dive into specific Wails features.
+    
+    [Browse Features →](/features/windows/basics)
+  </Card>
+
+  <Card title="Guides" icon="open-book">
+    Task-oriented guides for common scenarios.
+    
+    [Browse Guides →](/guides/dev/project-structure)
+  </Card>
+
+  <Card title="API Reference" icon="document">
+    Complete API documentation.
+    
+    [Browse API →](/reference/overview)
+  </Card>
+
+  <Card title="Examples" icon="rocket">
+    50+ working examples on GitHub.
+    
+    [Browse Examples →](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples)
+  </Card>
+</CardGrid>
+
+## Community Tutorials
+
+Community members have created excellent tutorials:
+
+:::note[Submit Your Tutorial]
+Created a Wails tutorial? [Let us know](https://discord.gg/JDdSxwjhGf) and we'll feature it here!
+:::
+
+---
+
+**Ready to start?** Pick a tutorial above and start building!
