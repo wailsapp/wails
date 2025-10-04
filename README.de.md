@@ -25,7 +25,7 @@ Erschaffe Desktop Anwendungen mit Go & Web Technologien.
     <img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome" />
   </a>
   <a href="https://discord.gg/BrRSWTaxVK">
-    <img alt="Discord" src="https://dcbadge.vercel.app/api/server/BrRSWTaxVK?style=flat"/>
+    <img alt="Discord" src="https://img.shields.io/discord/1042734330029547630?logo=discord"/>
   </a>
   <br/>
   <a href="https://github.com/wailsapp/wails/actions/workflows/build-and-test.yml" rel="nofollow">
