@@ -16,8 +16,8 @@ var browserMethods = map[int]string{
 	BrowserOpenURL: "OpenURL",
 }
 
-func (m *MessageProcessor) processBrowserMethod(method int, rw http.ResponseWriter, _ *http.Request, _ Window, params QueryParams) {
-	args, err := params.Args()
+func (m *MessageProcessor) processBrowserMethod(method int, rw http.ResponseWriter, _ *http.Request, _ Window, body runtimeRequest) {
+	params, err := NewBodyParams(body.Params)
 	if err != nil {
 		m.httpError(rw, "Invalid browser call:", fmt.Errorf("unable to parse arguments: %w", err))
 		return
@@ -25,7 +25,7 @@ func (m *MessageProcessor) processBrowserMethod(method int, rw http.ResponseWrit
 
 	switch method {
 	case BrowserOpenURL:
-		url := args.String("url")
+		url := params.String("url")
 		if url == nil {
 			m.httpError(rw, "Invalid browser call:", errors.New("missing argument 'url'"))
 			return
