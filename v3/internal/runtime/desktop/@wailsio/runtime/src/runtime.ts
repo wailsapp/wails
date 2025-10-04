@@ -36,16 +36,24 @@ export let clientId = nanoid();
  * @return The new runtime caller function.
  */
 export function newRuntimeCaller(object: number, windowName: string = '') {
-    return function (method: number, args: any = null) {
-        return runtimeCallWithID(object, method, windowName, args);
+    return function (method: number, args: any = null, options: RequestInit = {}) {
+        return runtimeCallWithID(object, method, windowName, args, options);
     };
 }
 
-async function runtimeCallWithID(objectID: number, method: number, windowName: string, args: any): Promise<any> {
+async function runtimeCallWithID(
+    objectID: number, 
+    method: number, 
+    windowName: string, 
+    args: any,
+    options: RequestInit = {}
+): Promise<Response> {
     let url = new URL(runtimeURL);
     url.searchParams.append("object", objectID.toString());
     url.searchParams.append("method", method.toString());
-    if (args) { url.searchParams.append("args", JSON.stringify(args)); }
+    if (args) { 
+        url.searchParams.append("args", JSON.stringify(args)); 
+    }
 
     let headers: Record<string, string> = {
         ["x-wails-client-id"]: clientId
@@ -54,14 +62,19 @@ async function runtimeCallWithID(objectID: number, method: number, windowName: s
         headers["x-wails-window-name"] = windowName;
     }
 
-    let response = await fetch(url, { headers });
-    if (!response.ok) {
-        throw new Error(await response.text());
-    }
+    // Merge headers with provided options
+    const requestOptions: RequestInit = {
+        ...options,
+        headers: {
+            ...headers,
+            ...(options.headers || {})
+        }
+    };
 
-    if ((response.headers.get("Content-Type")?.indexOf("application/json") ?? -1) !== -1) {
-        return response.json();
-    } else {
-        return response.text();
-    }
+    let response = await fetch(url, requestOptions);
+    
+    // Don't automatically throw on !response.ok - let caller handle it
+    // This allows proper error handling with structured error responses
+    
+    return response; // Return response object for flexible handling
 }
