@@ -59,8 +59,23 @@ async function runtimeCallWithID(objectID: number, method: number, windowName: s
         throw new Error(await response.text());
     }
 
-    if ((response.headers.get("Content-Type")?.indexOf("application/json") ?? -1) !== -1) {
+    const contentType = response.headers.get("Content-Type") || "";
+
+    // Handle different content types
+    if (contentType.indexOf("application/json") !== -1) {
         return response.json();
+    } else if (contentType.indexOf("image/") !== -1) {
+        // Return image as Blob with data URL
+        const blob = await response.blob();
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    } else if (contentType.indexOf("application/octet-stream") !== -1) {
+        // Return binary data as ArrayBuffer
+        return response.arrayBuffer();
     } else {
         return response.text();
     }

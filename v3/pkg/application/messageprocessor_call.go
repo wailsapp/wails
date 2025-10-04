@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"image"
+	"image/png"
 	"net/http"
 )
 
@@ -35,6 +37,42 @@ func (m *MessageProcessor) jsonCallError(rw http.ResponseWriter, err error) {
 	if jsonErr := json.NewEncoder(rw).Encode(response); jsonErr != nil {
 		m.Error("Unable to encode error response", "error", jsonErr)
 	}
+}
+
+// callResult writes a successful call result to the HTTP response
+// It intelligently handles different return types:
+// - []byte: served as application/octet-stream
+// - image.Image: encoded as PNG
+// - everything else: JSON encoded
+func (m *MessageProcessor) callResult(rw http.ResponseWriter, result any) {
+	if result == nil {
+		m.jsonCallResult(rw, nil)
+		return
+	}
+
+	// Handle []byte - return as binary
+	if data, ok := result.([]byte); ok {
+		rw.Header().Set("Content-Type", "application/octet-stream")
+		rw.Header().Set("Content-Length", fmt.Sprintf("%d", len(data)))
+		rw.WriteHeader(http.StatusOK)
+		if _, err := rw.Write(data); err != nil {
+			m.Error("Unable to write binary response", "error", err)
+		}
+		return
+	}
+
+	// Handle image.Image - encode as PNG
+	if img, ok := result.(image.Image); ok {
+		rw.Header().Set("Content-Type", "image/png")
+		rw.WriteHeader(http.StatusOK)
+		if err := png.Encode(rw, img); err != nil {
+			m.Error("Unable to encode image as PNG", "error", err)
+		}
+		return
+	}
+
+	// Default: JSON encode
+	m.jsonCallResult(rw, result)
 }
 
 // jsonCallResult writes a successful call result to the HTTP response in JSON format
@@ -192,8 +230,8 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 		// Log completion
 		m.Info("Binding call complete:", "id", *callID, "method", boundMethod, "args", string(jsonArgs), "result", string(jsonResult))
 
-		// Return result via HTTP response
-		m.jsonCallResult(rw, result)
+		// Return result via HTTP response (auto-detects type and serves appropriately)
+		m.callResult(rw, result)
 
 	default:
 		m.httpError(rw, "Invalid binding call:", fmt.Errorf("unknown method: %d", method))
