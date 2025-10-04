@@ -80,19 +80,21 @@ function generateID(): string {
  */
 export function Call(options: CallOptions): CancellablePromise<any> {
     const id = generateID();
+    console.log('[Call] ===== HTTP-ONLY BINDINGS VERSION =====');
+    console.log('[Call] Starting call with options:', options);
 
     const result = CancellablePromise.withResolvers<any>();
 
     // Make HTTP request that waits for response
     const request = call(CallBinding, Object.assign({ "call-id": id }, options));
 
-    request.then(async (response: Response) => {
-        // Parse JSON response
-        const data = await response.json();
-
+    request.then((data) => {
+        // data is already parsed JSON from runtimeCallWithID
+        console.log('[Call] Received data:', data);
         if (data.error) {
             // Handle error response
             const error = data.error;
+            console.log('[Call] Processing error:', error);
             let options: ErrorOptions = {};
             if (error.cause) {
                 options.cause = error.cause;
@@ -116,10 +118,12 @@ export function Call(options: CallOptions): CancellablePromise<any> {
             result.reject(exception);
         } else {
             // Handle success response
+            console.log('[Call] Resolving with result:', data.result);
             result.resolve(data.result);
         }
     }, (err) => {
         // Handle HTTP/network errors
+        console.log('[Call] HTTP/network error:', err);
         result.reject(err);
     });
 
