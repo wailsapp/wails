@@ -6,7 +6,6 @@ sidebar:
 ---
 
 import { Card, CardGrid } from "@astrojs/starlight/components";
-import Mermaid from "../../components/Mermaid.astro";
 
 ## Welcome to the Wails v3 Technical Documentation
 
@@ -50,47 +49,47 @@ context you need.
 
 ## Architectural Overview
 
-<Mermaid title="Wails v3 – End-to-End Flow">
-```mermaid
-flowchart TD
-    subgraph Developer Environment
-        CLI[wails3 CLI<br/>Init · Dev · Build · Package]
-    end
+**Wails v3 – End-to-End Flow**
 
-    subgraph Build-Time
-        GEN[Binding System<br/>(Static Analysis & Codegen)]
-        ASSET[Asset Server<br/>(Dev Proxy · Embed FS)]
-        PKG[Build & Packaging<br/>Pipeline]
-    end
-
-    subgraph Runtime
-        RUNTIME[Desktop Runtime<br/>(Window · Events · Dialogs)]
-        BIND[Bridge<br/>(Message Processor)]
-    end
-
-    subgraph Application
-        GO[Go Backend<br/>(App Logic)]
-        WEB[Web Frontend<br/>(React/Vue/...)]
-    end
-
-    %% Relationships
-    CLI --> |"generate"| GEN
-    CLI --> |"dev / build"| ASSET
-    CLI --> |"compile & package"| PKG
-
-    GEN --> |"Code Stubs + TS"| GO
-    GEN --> |"Bindings JSON"| WEB
-
-    PKG --> |"Final Binary + Installer"| GO
-
-    GO --> |"Function Calls"| BIND
-    WEB --> |"Invoke / Events"| BIND
-
-    RUNTIME <-->|native messages| BIND
-    RUNTIME --> |"Display Assets"| ASSET
-    WEB <-->|HTTP / In-Memory| ASSET
+```d2
+direction: right
+Developer: "wails3 CLI
+Init · Dev · Build · Package"
+Build: {
+  label: "Build-Time"
+  GEN: "Binding System
+(Static Analysis & Codegen)"
+  ASSET: "Asset Server
+(Dev Proxy · Embed FS)"
+  PKG: "Build & Packaging
+Pipeline"
+}
+Runtime: {
+  label: "Runtime"
+  RUNTIME: "Desktop Runtime
+(Window · Events · Dialogs)"
+  BRIDGE: "Bridge
+(Message Processor)"
+}
+Application: {
+  label: "Application"
+  GO: "Go Backend
+(App Logic)"
+  WEB: "Web Frontend
+(React/Vue/...)"
+}
+Developer -> GEN: "generate"
+Developer -> ASSET: "dev / build"
+Developer -> PKG: "compile & package"
+GEN -> GO: "Code Stubs + TS"
+GEN -> WEB: "Bindings JSON"
+PKG -> GO: "Final Binary + Installer"
+GO -> BRIDGE: "Function Calls"
+WEB -> BRIDGE: "Invoke / Events"
+BRIDGE <-> RUNTIME: "native messages"
+RUNTIME -> ASSET: "Serve Assets"
+WEB <-> ASSET: "HTTP / In-Memory"
 ```
-</Mermaid>
 
 The diagram shows the **end-to-end flow**:
 

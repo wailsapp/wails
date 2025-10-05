@@ -1,5 +1,3 @@
-@import './mermaid.css';
-
 html {
     scrollbar-gutter: stable;
     overflow-y: scroll; /* Show vertical scrollbar */

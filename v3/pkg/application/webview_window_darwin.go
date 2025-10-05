@@ -529,7 +529,7 @@ void windowCenter(void* nsWindow) {
         screen = [NSScreen mainScreen];
     }
 
-    NSRect screenFrame = [screen frame];
+    NSRect screenFrame = [screen visibleFrame];
     NSRect windowFrame = [window frame];
 
     CGFloat x = screenFrame.origin.x + (screenFrame.size.width - windowFrame.size.width) / 2;

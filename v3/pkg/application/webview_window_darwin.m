@@ -10,7 +10,6 @@ extern void processDragItems(unsigned int windowId, char** arr, int length, int 
 extern void processWindowKeyDownEvent(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
 extern bool windowShouldUnconditionallyClose(unsigned int);
-
 // Define custom glass effect style constants (these match the Go constants)
 typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     LiquidGlassStyleAutomatic = 0,
@@ -194,7 +193,6 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 - (void) setDelegate:(id<NSWindowDelegate>) delegate {
     [delegate retain];
     [super setDelegate: delegate];
-
     // If the delegate is our WebviewWindowDelegate (which handles NSDraggingDestination)
     if ([delegate isKindOfClass:[WebviewWindowDelegate class]]) {
         NSLog(@"WebviewWindow: setDelegate - Registering window for dragged types (NSFilenamesPboardType) because WebviewWindowDelegate is being set.");
@@ -246,7 +244,6 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 }
 @end
 @implementation WebviewWindowDelegate
-
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
     NSLog(@"WebviewWindowDelegate: draggingEntered called. WindowID: %u", self.windowId);
     NSPasteboard *pasteboard = [sender draggingPasteboard];
@@ -262,19 +259,16 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     NSLog(@"WebviewWindowDelegate: draggingEntered - NSFilenamesPboardType NOT found.");
     return NSDragOperationNone;
 }
-
 - (void)draggingExited:(id<NSDraggingInfo>)sender {
     NSLog(@"WebviewWindowDelegate: draggingExited called. WindowID: %u", self.windowId);
     if (hasListeners(EventWindowFileDraggingExited)) {
         processWindowEvent(self.windowId, EventWindowFileDraggingExited);
     }
 }
-
 - (BOOL)prepareForDragOperation:(id<NSDraggingInfo>)sender {
     NSLog(@"WebviewWindowDelegate: prepareForDragOperation called. WindowID: %u", self.windowId);
     return YES;
 }
-
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
     NSLog(@"WebviewWindowDelegate: performDragOperation called. WindowID: %u", self.windowId);
     NSPasteboard *pasteboard = [sender draggingPasteboard];
@@ -282,7 +276,6 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     if (hasListeners(EventWindowFileDraggingPerformed)) {
         processWindowEvent(self.windowId, EventWindowFileDraggingPerformed);
     }
-
     if ([[pasteboard types] containsObject:NSFilenamesPboardType]) {
         NSLog(@"WebviewWindowDelegate: performDragOperation - Found NSFilenamesPboardType.");
         NSArray *files = [pasteboard propertyListForType:NSFilenamesPboardType];
@@ -292,7 +285,6 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
             NSLog(@"WebviewWindowDelegate: performDragOperation - No files found in pasteboard, though type was present.");
             return NO;
         }
-
         char** cArray = (char**)malloc(count * sizeof(char*));
         if (cArray == NULL) {
             NSLog(@"WebviewWindowDelegate: performDragOperation - Failed to allocate memory for file array.");
@@ -307,7 +299,6 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
         // Get the WebviewWindow instance, which is the dragging destination
         WebviewWindow *window = (WebviewWindow *)[sender draggingDestinationWindow];
         WKWebView *webView = window.webView; // Get the webView from the window
-
         NSPoint dropPointInWindow = [sender draggingLocation];
         NSPoint dropPointInView = [webView convertPoint:dropPointInWindow fromView:nil]; // Convert to webView's coordinate system
         
@@ -315,7 +306,6 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
         int x = (int)dropPointInView.x;
         int y = (int)(viewHeight - dropPointInView.y); // Flip Y for web coordinate system
         NSLog(@"WebviewWindowDelegate: performDragOperation - Coords: x=%d, y=%d. ViewHeight: %f", x, y, viewHeight);
-
         NSLog(@"WebviewWindowDelegate: performDragOperation - Calling processDragItems for windowId %u.", self.windowId);
         processDragItems(self.windowId, cArray, (int)count, x, y); // self.windowId is from the delegate
         free(cArray);
@@ -325,9 +315,7 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     NSLog(@"WebviewWindowDelegate: performDragOperation - NSFilenamesPboardType NOT found. Returning NO.");
     return NO;
 }
-
 // Original WebviewWindowDelegate methods continue here...
-
 - (BOOL)windowShouldClose:(NSWindow *)sender {
     WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[sender delegate];
     // Check if this window should close unconditionally (called from Close() method)
@@ -816,7 +804,6 @@ void windowSetScreen(void* window, void* screen, int yOffset) {
     // Set the frame which moves the window to the new screen
     [nsWindow setFrame:frame display:YES];
 }
-
 // Check if Liquid Glass is supported on this system
 bool isLiquidGlassSupported() {
     // Check for macOS 26.0+ and NSGlassEffectView availability
@@ -825,7 +812,6 @@ bool isLiquidGlassSupported() {
     }
     return false;
 }
-
 // Remove any existing visual effects from the window
 void windowRemoveVisualEffects(void* nsWindow) {
     WebviewWindow* window = (WebviewWindow*)nsWindow;
@@ -846,7 +832,6 @@ void windowRemoveVisualEffects(void* nsWindow) {
         }
     }
 }
-
 // Configure WebView for liquid glass effect
 void configureWebViewForLiquidGlass(void* nsWindow) {
     WebviewWindow* window = (WebviewWindow*)nsWindow;
@@ -865,7 +850,6 @@ void configureWebViewForLiquidGlass(void* nsWindow) {
         webView.layer.rasterizationScale = [[NSScreen mainScreen] backingScaleFactor];
     }
 }
-
 // Apply Liquid Glass effect to window
 void windowSetLiquidGlass(void* nsWindow, int style, int material, double cornerRadius,
                           int r, int g, int b, int a, 
