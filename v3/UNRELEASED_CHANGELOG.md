@@ -16,13 +16,15 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
-<!-- New features, capabilities, or enhancements -->
+- Added NSIS Protocol template for Windows by @Tolfx in #4510
+- Added tests for build-assets by @Tolfx in #4510
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
-<!-- Bug fixes -->
+- Fixed linux desktop.tmpl protocol range, by removing `<.Info.Protocol>` to `<.Protocol>` by @Tolfx in #4510
+- Fixed redefinition error for liquid glass demo in [#4542](https://github.com/wailsapp/wails/pull/4542) by @Etesam913
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

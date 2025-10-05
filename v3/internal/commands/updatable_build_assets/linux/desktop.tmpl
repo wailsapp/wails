@@ -11,5 +11,5 @@ Categories=Utility;
 StartupWMClass={{.BinaryName}}
 
 {{if .Protocols -}}
-MimeType={{range $index, $protocol := .Info.Protocols}}x-scheme-handler/{{$protocol.Scheme}};{{end}}
+MimeType={{range $index, $protocol := .Protocols}}x-scheme-handler/{{$protocol.Scheme}};{{end}}
 {{- end}} 
