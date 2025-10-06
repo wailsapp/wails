@@ -53,4 +53,10 @@ export * from "./cancellable.js";
 
 // Notify backend
 window._wails.invoke = System.invoke;
+
+// Register platform handlers (internal API)
+// Note: Window is the thisWindow instance (default export from window.ts)
+// Binding ensures 'this' correctly refers to the current window instance
+window._wails.handlePlatformFileDrop = Window.HandlePlatformFileDrop.bind(Window);
+
 System.invoke("wails:runtime:ready");
