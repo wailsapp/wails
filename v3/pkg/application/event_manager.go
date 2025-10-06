@@ -22,12 +22,12 @@ func newEventManager(app *App) *EventManager {
 // Emit emits a custom event with the specified name and associated data.
 // It returns a boolean indicating whether the event was cancelled by a hook.
 //
-// If no data argument is provided, EmitEvent emits an event with nil data.
+// If no data argument is provided, Emit emits an event with nil data.
 // When there is exactly one data argument, it will be used as the custom event's data field.
 // When more than one argument is provided, the event's data field will be set to the argument slice.
 //
-// If the given event name is registered, EmitEvent validates the data parameter
-// against the expected data type. In case of a mismatch, EmitEvent reports an error
+// If the given event name is registered, Emit validates the data parameter
+// against the expected data type. In case of a mismatch, Emit reports an error
 // to the registered error handler for the application and cancels the event.
 func (em *EventManager) Emit(name string, data ...any) bool {
 	event := &CustomEvent{Name: name}

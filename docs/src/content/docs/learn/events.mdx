@@ -313,7 +313,7 @@ win.OnWindowEvent(events.Common.WindowDropZoneFilesDropped, func(event *applicat
             "dropY":         details.Y,
             "attributes":    details.Attributes,
         }
-        application.Get().EmitEvent("frontend:FileDropInfo", payload) // Emits globally
+        application.Get().Event.Emit("frontend:FileDropInfo", payload) // Emits globally
         // or win.EmitEvent("frontend:FileDropInfoForWindow", payload) // Emits to this specific window
     } else {
         log.Println("Drop occurred, but DropZoneDetails were nil.")
@@ -565,6 +565,9 @@ You can emit custom events from anywhere in your application:
 // NEW: Using the Event Manager (recommended)
 app.Event.Emit("myevent", "hello")
 
+// Emit an event without data
+app.Event.Emit("datalessevent")
+
 // Emit from a specific window
 window.EmitEvent("windowevent", "window specific data")
 ```
@@ -574,11 +577,7 @@ window.EmitEvent("windowevent", "window specific data")
 // Traditional API (no longer works)
 app.EmitEvent("myevent", "hello")
 
-// Emit an event without data
-app.EmitEvent("datalessevent")
 
-// Emit from a specific window
-window.EmitEvent("windowevent", "window specific data")
 ```
 </TabItem>
 </Tabs>
@@ -640,7 +639,7 @@ You can also register a hook that will run synchronously when the event is emitt
 Hooks are useful [to cancel custom events and stop their propagation early](#event-cancellation):
 
 ```go
-app.RegisterHook("myevent", func(e *application.CustomEvent) {
+app.Event.RegisterHook("myevent", func(e *application.CustomEvent) {
 	// Do something.
 })
 ```
@@ -670,7 +669,7 @@ It is safe to register the same event multiple times as long as the data type is
 This might be useful to ensure a certain event is registered as soon as any one of many packages is loaded.
 :::
 
-Once the event is registered, data arguments passed to the `EmitEvent` method will be checked against the specified type.
+Once the event is registered, data arguments passed to the `Event.Emit` method will be checked against the specified type.
 In case of a mismatch, an error will be emitted and either logged or passed on to the registered error handled, if any.
 The offending event will not be propagated. Thanks to this mechanism, it is safe to assume that the data field
 of registered custom events will always be assignable to the declared type.
@@ -767,10 +766,10 @@ app.Event.On("myevent", func(e *application.CustomEvent) {
 })
 ```
 
-When emitting a custom event, you can also check the value returned by the `EmitEvent` method (for the app and windows):
+When emitting a custom event, you can also check the value returned by the `Event.Emit` method (for the app and windows):
 
 ```go
-if app.EmitEvent("myevent") {
+if app.Event.mit("myevent") {
 	app.Logger.Info("Event was cancelled")
     return
 }
