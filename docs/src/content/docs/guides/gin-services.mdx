@@ -127,13 +127,12 @@ func (s *GinService) ServiceStartup(ctx context.Context, options application.Ser
 		s.app.Logger.Info("Received event from frontend", "data", event.Data)
 
 		// Emit an event back to the frontend
-		s.app.Event.EmitEvent(&application.CustomEvent{
-			Name: "gin-api-response",
-			Data: map[string]interface{}{
+		s.app.Event.Emit("gin-api-response",
+			map[string]interface{}{
                 "message": "Response from Gin API Service",
                 "time":    time.Now().Format(time.RFC3339),
             },
-		})
+		)
 	})
 
 	return nil
@@ -316,13 +315,12 @@ s.app.Event.On("gin-api-event", func(event *application.CustomEvent) {
 	s.app.Logger.Info("Received event from frontend", "data", event.Data)
 
 	// Emit an event back to the frontend
-	s.app.Event.EmitEvent(&application.CustomEvent{
-		Name: "gin-api-response",
-		Data: map[string]interface{}{
+	s.app.Event.Emit("gin-api-response",
+		map[string]interface{}{
 			"message": "Response from Gin API Service",
 			"time":    time.Now().Format(time.RFC3339),
 		},
-	})
+	)
 })
 ```
 

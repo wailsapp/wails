@@ -77,13 +77,12 @@ func (s *Service) UpdateData() {
     
     // Notify the frontend
     app := application.Get()
-    app.Event.EmitEvent(&application.CustomEvent{
-        Name: "my-app:data-updated",
-        Data: map[string]interface{}{
+    app.Event.Emit("my-app:data-updated",
+        map[string]interface{}{
             "timestamp": time.Now(),
             "count": 42,
         },
-	})
+	)
 }
 ```
 
@@ -222,14 +221,13 @@ func (s *Service) ProcessUserData(userData UserData) error {
 
     app := application.Get()
     // Notify all listeners
-    app.Event.EmitEvent(&application.CustomEvent{
-        Name: "user:data-processed",
-        Data: map[string]interface{}{
+    app.Event.Emit("user:data-processed",
+        map[string]interface{}{
             "userId": userData.ID,
             "status": "completed",
             "timestamp": time.Now(),
         },
-    })
+    )
     
     return nil
 }
