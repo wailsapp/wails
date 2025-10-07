@@ -55,23 +55,26 @@ dialog.Show()
 Allow users to select files to open:
 
 ```go
-dialog := app.Dialog.OpenFile()
+dialog := application.OpenFileDialog()
 dialog.SetTitle("Select Image")
-dialog.SetFilters([]*application.FileFilter{
-    {
-        DisplayName: "Images (*.png;*.jpg)",
-        Pattern:     "*.png;*.jpg",
-    },
+dialog.SetOptions(&application.OpenFileDialogOptions{
+	CanChooseFiles: true,
+	Filters: []application.FileFilter{
+		{
+			DisplayName: "Images (*.png;*.jpg)",
+			Pattern:     "*.png;*.jpg",
+		},
+	},
 })
 
 // Single file selection
 if path, err := dialog.PromptForSingleSelection(); err == nil {
-    // Use selected file path
+	// Use selected file path
 }
 
 // Multiple file selection
 if paths, err := dialog.PromptForMultipleSelection(); err == nil {
-    // Use selected file paths
+	// Use selected file paths
 }
 ```
 
@@ -80,13 +83,15 @@ if paths, err := dialog.PromptForMultipleSelection(); err == nil {
 Allow users to choose where to save files:
 
 ```go
-dialog := app.Dialog.SaveFile()
-dialog.SetTitle("Save Document")
-dialog.SetDefaultFilename("document.txt")
-dialog.SetFilters([]*application.FileFilter{
-    {
-        DisplayName: "Text Files (*.txt)",
-        Pattern:     "*.txt",
+dialog := application.SaveFileDialog()
+dialog.SetOptions(&application.SaveFileDialogOptions{
+    Title:    "Save Document",
+    Filename: "document.txt",
+    Filters: []application.FileFilter{
+        {
+            DisplayName: "Text Files (*.txt)",
+            Pattern:     "*.txt",
+        },
     },
 })
 
