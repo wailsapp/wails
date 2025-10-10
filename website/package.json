@@ -18,7 +18,7 @@
     "pnpm": ">=8.3.1"
   },
   "dependencies": {
-    "@crowdin/crowdin-api-client": "^1.33.1",
+    "@crowdin/crowdin-api-client": "^1.48.0",
     "@docusaurus/core": "^2.4.0",
     "@docusaurus/preset-classic": "^2.4.0",
     "@docusaurus/theme-search-algolia": "^2.4.0",
