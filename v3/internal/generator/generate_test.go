@@ -16,6 +16,7 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/generator/config"
+	"github.com/wailsapp/wails/v3/internal/generator/render"
 )
 
 const testcases = "github.com/wailsapp/wails/v3/internal/generator/testcases/..."
@@ -72,7 +73,7 @@ func TestGenerator(t *testing.T) {
 			}
 
 			// Skip got files.
-			if strings.HasSuffix(d.Name(), ".got.js") || strings.HasSuffix(d.Name(), ".got.ts") {
+			if strings.HasSuffix(d.Name(), ".got.js") || strings.HasSuffix(d.Name(), ".got.ts") || strings.HasSuffix(d.Name(), ".got.log") {
 				return nil
 			}
 
@@ -145,7 +146,7 @@ func TestGenerator(t *testing.T) {
 						}
 
 						for _, msg := range warnings {
-							fmt.Fprint(log, msg, "\n")
+							fmt.Fprint(log, msg, render.Newline)
 						}
 					}()
 				}
