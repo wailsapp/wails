@@ -488,12 +488,6 @@ func (f *Frontend) setupChromium() {
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
 
-	if f.frontendOptions.DragAndDrop != nil && f.frontendOptions.DragAndDrop.DisableWebViewDrop {
-		if err := chromium.AllowExternalDrag(false); err != nil {
-			f.logger.Warning("WebView failed to set AllowExternalDrag to false!")
-		}
-	}
-
 	chromium.MessageCallback = f.processMessage
 	chromium.MessageWithAdditionalObjectsCallback = f.processMessageWithAdditionalObjects
 	chromium.WebResourceRequestedCallback = f.processRequest
@@ -547,6 +541,15 @@ func (f *Frontend) setupChromium() {
 	}
 
 	chromium.Embed(f.mainWindow.Handle())
+
+	if f.frontendOptions.DragAndDrop != nil && f.frontendOptions.DragAndDrop.EnableFileDrop {
+		if chromium.HasCapability(edge.AllowExternalDrop) {
+			err := chromium.AllowExternalDrag(false)
+			if err != nil {
+				f.logger.Warning("WebView failed to set AllowExternalDrag to false!")
+			}
+		}
+	}
 
 	if chromium.HasCapability(edge.SwipeNavigation) {
 		swipeGesturesEnabled := f.frontendOptions.Windows != nil && f.frontendOptions.Windows.EnableSwipeGestures
