@@ -55,6 +55,14 @@ export * from "./cancellable.js";
 // Export transport interfaces and utilities
 export { setTransport, getTransport, type RuntimeTransport, objectNames, clientId } from "./runtime.js";
 
+// Export codec interfaces and implementations
+export {
+    type TransportCodec,
+    Base64JSONCodec,
+    RawStringCodec,
+    RawJSONCodec
+} from "./transport-codec.js";
+
 // Notify backend
 window._wails.invoke = System.invoke;
 

@@ -106,8 +106,9 @@ type TransportResponse struct {
 	// ContentType indicates the response format ("application/json" or "text/plain")
 	ContentType string `json:"contentType"`
 
-	// Data contains the response body
-	Data []byte `json:"data"`
+	// Data contains the response body (can be []byte, string, or any encoded format)
+	// The type depends on the TransportCodec being used
+	Data interface{} `json:"data"`
 
 	// Error contains error information if the call failed
 	Error error `json:"error,omitempty"`

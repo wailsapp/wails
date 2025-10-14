@@ -4,12 +4,12 @@
  * This is a custom transport that replaces the default HTTP fetch transport
  * with WebSocket-based communication.
  *
- * VERSION 3 - WITH CALLBACK HANDLER FIX
+ * VERSION 4 - WITH CODEC SUPPORT
  */
 
-console.log('[WebSocket Transport] Loading VERSION 3 with callback handler fix');
+console.log('[WebSocket Transport] Loading VERSION 4 with codec support');
 
-import { clientId } from '/wails/runtime.js';
+import { clientId, Base64JSONCodec } from '/wails/runtime.js';
 
 /**
  * Generate a unique ID (simplified nanoid implementation)
@@ -37,6 +37,7 @@ export class WebSocketTransport {
         this.reconnectTimer = null;
         this.reconnectDelay = options.reconnectDelay || 2000;
         this.requestTimeout = options.requestTimeout || 30000;
+        this.codec = options.codec || new Base64JSONCodec();
 
         this.connect();
     }
@@ -133,18 +134,11 @@ export class WebSocketTransport {
                 console.log('[WebSocket] Response statusCode:', response.statusCode);
 
                 if (response.statusCode === 200) {
-                    // Decode base64 data (Go JSON marshals []byte as base64)
+                    // Decode response data using codec
                     let responseData = '';
                     if (response.data) {
                         try {
-                            // Decode base64 string to binary
-                            const binaryString = atob(response.data);
-                            const bytes = new Uint8Array(binaryString.length);
-                            for (let i = 0; i < binaryString.length; i++) {
-                                bytes[i] = binaryString.charCodeAt(i);
-                            }
-                            // Convert bytes to UTF-8 string
-                            responseData = new TextDecoder().decode(bytes);
+                            responseData = this.codec.decodeResponse(response.data, response.contentType);
                         } catch (err) {
                             console.error('[WebSocket] Failed to decode response data:', err);
                             pending.reject(new Error('Failed to decode response: ' + err.message));
@@ -173,20 +167,8 @@ export class WebSocketTransport {
                         pending.resolve(responseData || undefined);
                     }
                 } else {
-                    // Decode base64 error data
-                    let errorData = 'Unknown error';
-                    if (response.data) {
-                        try {
-                            const binaryString = atob(response.data);
-                            const bytes = new Uint8Array(binaryString.length);
-                            for (let i = 0; i < binaryString.length; i++) {
-                                bytes[i] = binaryString.charCodeAt(i);
-                            }
-                            errorData = new TextDecoder().decode(bytes);
-                        } catch (err) {
-                            errorData = 'Failed to decode error message';
-                        }
-                    }
+                    // Decode error data using codec
+                    const errorData = this.codec.decodeError(response.data);
                     console.error('[WebSocket] Error response:', errorData);
                     pending.reject(new Error(errorData));
                 }
