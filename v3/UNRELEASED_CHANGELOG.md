@@ -23,7 +23,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix Linux appimage appicon variable in Linux taskfile [PR #4644](https://github.com/wailsapp/wails/pull/4644)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
