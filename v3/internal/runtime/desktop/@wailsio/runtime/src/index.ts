@@ -52,6 +52,9 @@ export { Create };
 
 export * from "./cancellable.js";
 
+// Export transport interfaces and utilities
+export { setTransport, getTransport, type RuntimeTransport, objectNames, clientId } from "./runtime.js";
+
 // Notify backend
 window._wails.invoke = System.invoke;
 

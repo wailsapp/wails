@@ -60,7 +60,13 @@ func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
 	}
 	windowID := r.Header.Get(webViewRequestHeaderWindowId)
 	if windowID == "" {
-		return nil, windowID
+		// No window specified - return the first available window
+		// This is useful for custom transports that don't have automatic window context
+		windows := globalApplication.Window.GetAll()
+		if len(windows) > 0 {
+			return windows[0], ""
+		}
+		return nil, ""
 	}
 	wID, err := strconv.ParseUint(windowID, 10, 64)
 	if err != nil {
