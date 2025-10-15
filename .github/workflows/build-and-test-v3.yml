@@ -254,8 +254,10 @@ jobs:
           mkdir -p ./test-${{ matrix.template }}
           cd ./test-${{ matrix.template }}
           wails3 init -n ${{ matrix.template }} -t ${{ matrix.template }}
-          cd ${{ matrix.template }}
-          npm install ${{ env.WAILS_RUNTIME_TGZ }}
+          cd ${{ matrix.template }}/frontend
+          # Replace @wailsio/runtime version with local tarball
+          npm pkg set dependencies.@wailsio/runtime="file://${{ env.WAILS_RUNTIME_TGZ }}"
+          cd ..
           wails3 build
 
   build_results:
