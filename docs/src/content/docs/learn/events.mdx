@@ -769,7 +769,7 @@ app.Event.On("myevent", func(e *application.CustomEvent) {
 When emitting a custom event, you can also check the value returned by the `Event.Emit` method (for the app and windows):
 
 ```go
-if app.Event.mit("myevent") {
+if app.Event.Emit("myevent") {
 	app.Logger.Info("Event was cancelled")
     return
 }
