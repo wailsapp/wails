@@ -244,19 +244,16 @@ jobs:
           name: runtime-package
           path: /tmp/wails-runtime
 
-      - name: Setup npm to use local runtime
+      - name: Generate template '${{ matrix.template }}'
+        shell: bash
         run: |
           RUNTIME_TGZ=$(ls /tmp/wails-runtime/*.tgz | head -1)
-          echo "WAILS_RUNTIME_TGZ=$RUNTIME_TGZ" >> $GITHUB_ENV
-
-      - name: Generate template '${{ matrix.template }}'
-        run: |
           mkdir -p ./test-${{ matrix.template }}
           cd ./test-${{ matrix.template }}
           wails3 init -n ${{ matrix.template }} -t ${{ matrix.template }}
           cd ${{ matrix.template }}/frontend
           # Replace @wailsio/runtime version with local tarball
-          npm pkg set dependencies.@wailsio/runtime="file://${{ env.WAILS_RUNTIME_TGZ }}"
+          npm pkg set dependencies.@wailsio/runtime="file://$RUNTIME_TGZ"
           cd ..
           wails3 build
 
