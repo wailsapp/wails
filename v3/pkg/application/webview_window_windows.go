@@ -1801,7 +1801,7 @@ func (w *windowsWebviewWindow) isAlwaysOnTop() bool {
 
 // processMessage is given a message sent from JS via the postMessage API
 // We put it on the global window message buffer to be processed centrally
-func (w *windowsWebviewWindow) processMessage(message string) {
+func (w *windowsWebviewWindow) processMessage(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
 	// We send all messages to the centralised window message buffer
 	windowMessageBuffer <- &windowMessage{
 		windowId: w.parent.id,
