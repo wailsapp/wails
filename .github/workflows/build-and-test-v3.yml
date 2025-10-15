@@ -79,6 +79,10 @@ jobs:
         working-directory: v3/internal/runtime/desktop/@wailsio/runtime
         run: npm run build
 
+      - name: Pack runtime for template tests
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: npm pack
+
       - name: Store runtime build artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -87,6 +91,12 @@ jobs:
             v3/internal/runtime/desktop/@wailsio/runtime/dist/
             v3/internal/runtime/desktop/@wailsio/runtime/types/
             v3/internal/runtime/desktop/@wailsio/runtime/tsconfig.tsbuildinfo
+
+      - name: Store runtime package
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-package
+          path: v3/internal/runtime/desktop/@wailsio/runtime/*.tgz
 
   test_go:
     name: Run Go Tests v3
@@ -165,12 +175,14 @@ jobs:
   cleanup:
     name: Cleanup build artifacts
     if: always()
-    needs: [test_js, test_go]
+    needs: [test_js, test_go, test_templates]
     runs-on: ubuntu-latest
     steps:
       - uses: geekyeggo/delete-artifact@v5
         with:
-          name: runtime-build-artifacts
+          name: |
+            runtime-build-artifacts
+            runtime-package
           failOnError: false
 
   test_templates:
@@ -226,12 +238,24 @@ jobs:
           task install
           wails3 doctor
 
+      - name: Download runtime package
+        uses: actions/download-artifact@v4
+        with:
+          name: runtime-package
+          path: /tmp/wails-runtime
+
+      - name: Setup npm to use local runtime
+        run: |
+          RUNTIME_TGZ=$(ls /tmp/wails-runtime/*.tgz | head -1)
+          echo "WAILS_RUNTIME_TGZ=$RUNTIME_TGZ" >> $GITHUB_ENV
+
       - name: Generate template '${{ matrix.template }}'
         run: |
           mkdir -p ./test-${{ matrix.template }}
           cd ./test-${{ matrix.template }}
           wails3 init -n ${{ matrix.template }} -t ${{ matrix.template }}
           cd ${{ matrix.template }}
+          npm install ${{ env.WAILS_RUNTIME_TGZ }}
           wails3 build
 
   build_results:
