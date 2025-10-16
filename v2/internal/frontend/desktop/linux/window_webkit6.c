@@ -382,8 +382,14 @@ int IsMaximised(GtkWidget *widget)
 
 int IsMinimised(GtkWidget *widget)
 {
-    GtkWindow *gtkwindow = gtk_widget_get_root(widget);
-    return !gtk_window_is_fullscreen(gtkwindow) && !gtk_window_is_maximized(gtkwindow);
+    // The minimized state must be retrieved from the Gdk Toplevel
+    // See: https://docs.gtk.org/gtk4/migrating-3to4.html#the-iconified-window-state-has-been-renamed-to-minimized
+    GtkNative *native = gtk_widget_get_native(widget);
+	GdkSurface *surface = gtk_native_get_surface(native);
+
+    GdkToplevelState state = gdk_toplevel_get_state(GDK_TOPLEVEL(surface));
+
+    return state & GDK_TOPLEVEL_STATE_MINIMIZED;
 }
 
 //// TODO: gtk_window_move has been removed
