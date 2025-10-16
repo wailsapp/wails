@@ -509,83 +509,40 @@ gboolean close_button_pressed(GtkWindow* window, gpointer data)
     return TRUE;
 }
 
-char *droppedFiles = NULL;
-
-// static void onDragDataReceived(GtkWidget *self, GdkDragContext *context, gint x, gint y, GtkSelectionData *selection_data, guint target_type, guint time, gpointer data)
-// {
-//     if(selection_data == NULL || (gtk_selection_data_get_length(selection_data) <= 0) || target_type != 2)
-//     {
-//         return;
-//     }
-
-//     if(droppedFiles != NULL) {
-//         free(droppedFiles);
-//         droppedFiles = NULL;
-//     }
-
-//     gchar **filenames = NULL;
-//     filenames = g_uri_list_extract_uris((const gchar *)gtk_selection_data_get_data(selection_data));
-//     if (filenames == NULL) // If unable to retrieve filenames:
-//     {
-//         g_strfreev(filenames);
-//         return;
-//     }
-
-//     droppedFiles = calloc((size_t)gtk_selection_data_get_length(selection_data), 1);
-
-//     int iter = 0;
-//     while(filenames[iter] != NULL) // The last URI list element is NULL.
-//     {
-//         if(iter != 0)
-//         {
-//             strncat(droppedFiles, "\n", 1);
-//         }
-//         char *filename = g_filename_from_uri(filenames[iter], NULL, NULL);
-//         if (filename == NULL)
-//         {
-//             break;
-//         }
-//         strncat(droppedFiles, filename, strlen(filename));
-
-//         free(filename);
-//         iter++;
-//     }
-
-//     g_strfreev(filenames);
-// }
-
-// static gboolean onDragDrop(GtkWidget* self, GdkDragContext* context, gint x, gint y, guint time, gpointer user_data)
-// {
-//     if(droppedFiles == NULL)
-//     {
-//         return FALSE;
-//     }
-
-//     size_t resLen = strlen(droppedFiles)+(sizeof(gint)*2)+6;
-//     char *res = calloc(resLen, 1);
-
-//     snprintf(res, resLen, "DD:%d:%d:%s", x, y, droppedFiles);
-
-//     if(droppedFiles != NULL) {
-//         free(droppedFiles);
-//         droppedFiles = NULL;
-//     }
-
-//     processMessage(res);
-//     return FALSE;
-// }
-
-//// TODO: Drag and drop might not work
-// see: https://discourse.gnome.org/t/file-drag-and-drop-in-gtkmm4/10548/5
+// Drag and drop might encounter issues
+// See: https://discourse.gnome.org/t/file-drag-and-drop-in-gtkmm4/10548/5
 static gboolean onDragDrop(GtkDropTarget *target, const GValue *value, double x, double y, gpointer data) {
     GdkFileList *file_list = g_value_get_boxed(value);
 
     GSList *list = gdk_file_list_get_files(file_list);
 
+    char *paths = calloc(250 * g_slist_length(list), 1);
+    bool first = true;
+
     for(GSList *l = list; l != NULL; l = l->next) {
         GFile* file = l->data;
-        g_print ("%s\n", g_file_get_path(file));
+
+        char* path = g_file_get_path(file);
+        g_print("%s\n", path);
+
+        if(!first)
+        {
+            strncat(paths, "\n", 1);
+        }
+
+        first = false;
+
+        strncat(paths, path, strlen(path));
+        free(path);
     }
+
+    size_t resLen = strlen(paths)+(sizeof(int)*2)+6;
+    char *res = calloc(resLen, 1);
+
+    snprintf(res, resLen, "DD:%d:%d:%s", (int) x, (int) y, paths);
+
+    processMessage(res);
+    free(paths);
 
     return TRUE;
 }
@@ -608,16 +565,16 @@ GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowO
     //     gtk_drag_dest_unset(webview);
     // }
 
-    // if(enableDragAndDrop)
-    // {
-    //     GtkDropTarget *target = gtk_drop_target_new(G_TYPE_INVALID, GDK_ACTION_COPY);
+    if(enableDragAndDrop)
+    {
+        GtkDropTarget *target = gtk_drop_target_new(G_TYPE_INVALID, GDK_ACTION_COPY);
 
-    //     gtk_drop_target_set_gtypes(target, (GType[1]) { GDK_TYPE_FILE_LIST, }, 1);
+        gtk_drop_target_set_gtypes(target, (GType[1]) { GDK_TYPE_FILE_LIST, }, 1);
 
-    //     g_signal_connect(target, "drop", G_CALLBACK(onDragDrop), NULL);
+        g_signal_connect(target, "drop", G_CALLBACK(onDragDrop), NULL);
 
-    //     gtk_widget_add_controller(webview, GTK_EVENT_CONTROLLER(target));
-    // }
+        gtk_widget_add_controller(webview, GTK_EVENT_CONTROLLER(target));
+    }
 
     if (hideWindowOnClose)
     {
