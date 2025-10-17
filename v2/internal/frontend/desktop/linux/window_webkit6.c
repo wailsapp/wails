@@ -127,7 +127,7 @@ static int getCurrentMonitorScaleFactor(GtkWindow *window)
 
 // window
 
-ulong SetupInvokeSignal(void *contentManager)
+gulong SetupInvokeSignal(void *contentManager)
 {
     return g_signal_connect((WebKitUserContentManager *)contentManager, "script-message-received::external", G_CALLBACK(sendMessageToBackend), NULL);
 }

@@ -83,7 +83,7 @@ GtkWindow *GTKWINDOW(void *pointer);
 GtkBox *GTKBOX(void *pointer);
 
 // window
-ulong SetupInvokeSignal(void *contentManager);
+gulong SetupInvokeSignal(void *contentManager);
 
 void SetWindowIcon(GtkWindow *window, const guchar *buf, gsize len);
 void SetWindowTransparency(GtkWidget *widget, guchar alpha);
