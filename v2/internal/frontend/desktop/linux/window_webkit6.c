@@ -508,7 +508,8 @@ static gboolean onDragDrop(GtkDropTarget *target, const GValue *value, double x,
 
     GSList *list = gdk_file_list_get_files(file_list);
 
-    char *paths = calloc(250 * g_slist_length(list), 1);
+    int limit = 250 * g_slist_length(list);
+    char *paths = calloc(limit, 1);
     bool first = true;
 
     for(GSList *l = list; l != NULL; l = l->next) {
@@ -516,6 +517,14 @@ static gboolean onDragDrop(GtkDropTarget *target, const GValue *value, double x,
 
         char* path = g_file_get_path(file);
         g_print("%s\n", path);
+
+        if(strlen(paths) + strlen(path) + 2 >= limit)
+        {
+            g_print("path '%s' exceeds limit %d\n", path, limit);
+            free(path);
+            free(paths);
+            return TRUE; // Return early to guard against overflow
+        }
 
         if(!first)
         {
