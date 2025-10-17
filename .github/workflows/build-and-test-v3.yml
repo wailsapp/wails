@@ -242,12 +242,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: runtime-package
-          path: /tmp/wails-runtime
+          path: wails-runtime-temp
 
       - name: Generate template '${{ matrix.template }}'
         shell: bash
         run: |
-          RUNTIME_TGZ=$(ls /tmp/wails-runtime/*.tgz | head -1)
+          RUNTIME_TGZ=$(realpath wails-runtime-temp/*.tgz)
           mkdir -p ./test-${{ matrix.template }}
           cd ./test-${{ matrix.template }}
           wails3 init -n ${{ matrix.template }} -t ${{ matrix.template }}
