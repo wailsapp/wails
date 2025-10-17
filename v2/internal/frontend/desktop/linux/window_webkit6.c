@@ -146,18 +146,10 @@ void SetWindowIcon(GtkWindow *window, const guchar *buf, gsize len)
     // g_object_unref(loader);
 }
 
-void SetWindowTransparency(GtkWidget *widget)
+void SetWindowTransparency(GtkWidget *widget, u_char alpha)
 {
-    //// TODO: gtk_widget_set_opacity might be able to be used here?
-
-    // GdkScreen *screen = gtk_widget_get_screen(widget);
-    // GdkVisual *visual = gdk_screen_get_rgba_visual(screen);
-
-    // if (visual != NULL && gdk_screen_is_composited(screen))
-    // {
-    //     gtk_widget_set_app_paintable(widget, true);
-    //     gtk_widget_set_visual(widget, visual);
-    // }
+    // This opacity includes the menu as well as the webview's contents 
+    gtk_widget_set_opacity(widget, alpha / 255.0);
 }
 
 static GtkCssProvider *windowCssProvider = NULL;

@@ -161,7 +161,7 @@ func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Windo
 			result.SetWindowIcon(appoptions.Linux.Icon)
 		}
 		if appoptions.Linux.WindowIsTranslucent {
-			C.SetWindowTransparency(gtkWindow)
+			C.SetWindowTransparency(gtkWindow, C.uchar(RGBA.A))
 		}
 	}
 

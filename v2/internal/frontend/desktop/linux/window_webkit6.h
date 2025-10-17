@@ -86,7 +86,7 @@ GtkBox *GTKBOX(void *pointer);
 ulong SetupInvokeSignal(void *contentManager);
 
 void SetWindowIcon(GtkWindow *window, const guchar *buf, gsize len);
-void SetWindowTransparency(GtkWidget *widget);
+void SetWindowTransparency(GtkWidget *widget, u_char alpha);
 void SetBackgroundColour(void *data);
 void SetTitle(GtkWindow *window, char *title);
 void SetPosition(void *window, int x, int y);
