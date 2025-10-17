@@ -69,7 +69,6 @@ func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Windo
 
 	if appoptions.Linux == nil || appoptions.Linux.ProgramName == "" {
 		log.Fatal("App option Linux.ProgramName required for gtk4. ex: org.author.app-name")
-		return nil
 	}
 
 	result := &Window{

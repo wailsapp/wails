@@ -16,7 +16,7 @@
 static float xroot = 0.0f;
 static float yroot = 0.0f;
 static int dragTime = -1;
-static uint mouseButton = 0;
+static guint mouseButton = 0;
 static int wmIsWayland = -1;
 static int decoratorWidth = -1;
 static int decoratorHeight = -1;
@@ -117,6 +117,11 @@ static int getCurrentMonitorScaleFactor(GtkWindow *window)
 {
     GdkMonitor *monitor = getCurrentMonitor(window);
 
+    if(monitor == NULL) 
+    {
+        return 1;
+    }
+
     return gdk_monitor_get_scale_factor(monitor);
 }
 
@@ -146,7 +151,7 @@ void SetWindowIcon(GtkWindow *window, const guchar *buf, gsize len)
     // g_object_unref(loader);
 }
 
-void SetWindowTransparency(GtkWidget *widget, u_char alpha)
+void SetWindowTransparency(GtkWidget *widget, guchar alpha)
 {
     // This opacity includes the menu as well as the webview's contents 
     gtk_widget_set_opacity(widget, alpha / 255.0);
@@ -544,6 +549,7 @@ static gboolean onDragDrop(GtkDropTarget *target, const GValue *value, double x,
 
     processMessage(res);
     free(paths);
+    free(res);
 
     return TRUE;
 }
@@ -683,7 +689,7 @@ void ExecuteJS(void *data)
     free(js->script);
 }
 
-void extern processMessageDialogResult(char *);
+extern void processMessageDialogResult(char *);
 
 void messageResult(GtkDialog* dialog, gint response_id, gpointer user_data) {
     if(response_id == GTK_RESPONSE_YES) {
