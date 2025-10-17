@@ -247,8 +247,12 @@ jobs:
       - name: Generate template '${{ matrix.template }}'
         shell: bash
         run: |
-          # Get absolute path to runtime package (works on all platforms)
-          RUNTIME_TGZ="$(cd wails-runtime-temp && pwd)/$(ls wails-runtime-temp/*.tgz | xargs basename)"
+          # Get absolute path - use pwd -W on Windows for native paths, pwd elsewhere
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            RUNTIME_TGZ="$(cd wails-runtime-temp && pwd -W)/$(ls wails-runtime-temp/*.tgz | xargs basename)"
+          else
+            RUNTIME_TGZ="$(cd wails-runtime-temp && pwd)/$(ls wails-runtime-temp/*.tgz | xargs basename)"
+          fi
           mkdir -p ./test-${{ matrix.template }}
           cd ./test-${{ matrix.template }}
           wails3 init -n ${{ matrix.template }} -t ${{ matrix.template }}
