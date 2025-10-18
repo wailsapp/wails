@@ -420,9 +420,10 @@ func (s *windowsSystemTray) updateMenu(menu *Menu) {
 
 // Based on the idea from https://github.com/wailsapp/wails/issues/3487#issuecomment-2633242304
 func (s *windowsSystemTray) setTooltip(tooltip string) {
-	// Ensure the tooltip length is within the limit (64 characters for szTip)
-	if len(tooltip) > 64 {
-		tooltip = tooltip[:64]
+	// Ensure the tooltip length is within the limit (128 characters including null terminate characters for szTip for Windows 2000 and later)
+	// https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-notifyicondataw
+	if lo.RuneLength(tooltip) > 127 {
+		tooltip = string([]rune(tooltip)[:127])
 	}
 
 	// Create a new NOTIFYICONDATA structure
