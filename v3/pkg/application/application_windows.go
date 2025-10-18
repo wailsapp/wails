@@ -15,6 +15,7 @@ import (
 	"unsafe"
 
 	"github.com/wailsapp/go-webview2/webviewloader"
+
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -124,9 +125,9 @@ func (m *windowsApp) setIcon(_ []byte) {
 }
 
 func (m *windowsApp) name() string {
-	//appName := C.getAppName()
-	//defer C.free(unsafe.Pointer(appName))
-	//return C.GoString(appName)
+	// appName := C.getAppName()
+	// defer C.free(unsafe.Pointer(appName))
+	// return C.GoString(appName)
 	return ""
 }
 

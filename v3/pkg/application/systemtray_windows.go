@@ -5,7 +5,6 @@ package application
 import (
 	"errors"
 	"syscall"
-	"time"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/pkg/icons"
@@ -124,7 +123,7 @@ func (s *windowsSystemTray) bounds() (*Rect, error) {
 	if s.hwnd == 0 {
 		return nil, errors.New("system tray window handle not initialized")
 	}
-	
+
 	bounds, err := w32.GetSystrayBounds(s.hwnd, s.uid)
 	if err != nil {
 		return nil, err
@@ -150,7 +149,7 @@ func (s *windowsSystemTray) iconIsInTrayBounds() (bool, error) {
 	if s.hwnd == 0 {
 		return false, errors.New("system tray window handle not initialized")
 	}
-	
+
 	bounds, err := w32.GetSystrayBounds(s.hwnd, s.uid)
 	if err != nil {
 		return false, err
@@ -211,16 +210,9 @@ func (s *windowsSystemTray) run() {
 	}
 	nid.CbSize = uint32(unsafe.Sizeof(nid))
 
-	for retries := range 6 {
-		if !w32.ShellNotifyIcon(w32.NIM_ADD, &nid) {
-			if retries == 5 {
-				globalApplication.fatal("failed to register system tray icon: %w", syscall.GetLastError())
-			}
-
-			time.Sleep(500 * time.Millisecond)
-			continue
-		}
-		break
+	// Initial systray add can fail when the shell is not available. This is handled in v3/pkg/application/application_windows.go:260 via TaskbarCreated message
+	if !w32.ShellNotifyIcon(w32.NIM_ADD, &nid) {
+		globalApplication.warning("initial systray add failed:", syscall.GetLastError().Error())
 	}
 
 	nid.UVersion = w32.NOTIFYICON_VERSION
