@@ -25,11 +25,28 @@ type windowsSystemTray struct {
 	menu *Win32Menu
 
 	// Platform specific implementation
-	uid           uint32
-	hwnd          w32.HWND
-	lightModeIcon w32.HICON
-	darkModeIcon  w32.HICON
-	currentIcon   w32.HICON
+	uid                uint32
+	hwnd               w32.HWND
+	lightModeIcon      w32.HICON
+	lightModeIconOwned bool
+	darkModeIcon       w32.HICON
+	darkModeIconOwned  bool
+	currentIcon        w32.HICON
+	currentIconOwned   bool
+}
+
+// releaseIcon destroys an icon handle only when we own it and no new handle reuses it.
+// Shared handles (e.g. from LoadIcon/LoadIconWithResourceID) must not be passed to DestroyIcon per https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-destroyicon.
+func (s *windowsSystemTray) releaseIcon(handle w32.HICON, owned bool, keep ...w32.HICON) {
+	if !owned || handle == 0 {
+		return
+	}
+	for _, k := range keep {
+		if handle == k {
+			return
+		}
+	}
+	w32.DestroyIcon(handle)
 }
 
 func (s *windowsSystemTray) openMenu() {
@@ -221,33 +238,34 @@ func (s *windowsSystemTray) run() {
 		panic(syscall.GetLastError())
 	}
 
-	// Get the application icon if available
+	// Resolve the base icons once so we can reuse them for light/dark modes
 	defaultIcon := w32.LoadIconWithResourceID(w32.GetModuleHandle(""), w32.RT_ICON)
-	if defaultIcon != 0 {
+
+	if s.parent.icon != nil {
+		s.lightModeIcon = lo.Must(w32.CreateSmallHIconFromImage(s.parent.icon))
+		s.lightModeIconOwned = true
+	} else if defaultIcon != 0 {
 		s.lightModeIcon = defaultIcon
-		s.darkModeIcon = defaultIcon
+		s.lightModeIconOwned = false
 	} else {
 		s.lightModeIcon = lo.Must(w32.CreateSmallHIconFromImage(icons.SystrayLight))
-		s.darkModeIcon = lo.Must(w32.CreateSmallHIconFromImage(icons.SystrayDark))
+		s.lightModeIconOwned = true
 	}
 
-	// Use custom icons if provided
-	if s.parent.icon != nil {
-		// Create a new icon and destroy the old one
-		newIcon := lo.Must(w32.CreateSmallHIconFromImage(s.parent.icon))
-		if s.lightModeIcon != 0 && s.lightModeIcon != defaultIcon {
-			w32.DestroyIcon(s.lightModeIcon)
-		}
-		s.lightModeIcon = newIcon
-	}
 	if s.parent.darkModeIcon != nil {
-		// Create a new icon and destroy the old one
-		newIcon := lo.Must(w32.CreateSmallHIconFromImage(s.parent.darkModeIcon))
-		if s.darkModeIcon != 0 && s.darkModeIcon != defaultIcon && s.darkModeIcon != s.lightModeIcon {
-			w32.DestroyIcon(s.darkModeIcon)
-		}
-		s.darkModeIcon = newIcon
+		s.darkModeIcon = lo.Must(w32.CreateSmallHIconFromImage(s.parent.darkModeIcon))
+		s.darkModeIconOwned = true
+	} else if s.parent.icon != nil {
+		s.darkModeIcon = s.lightModeIcon
+		s.darkModeIconOwned = false
+	} else if defaultIcon != 0 {
+		s.darkModeIcon = defaultIcon
+		s.darkModeIconOwned = false
+	} else {
+		s.darkModeIcon = lo.Must(w32.CreateSmallHIconFromImage(icons.SystrayDark))
+		s.darkModeIconOwned = true
 	}
+
 	s.uid = nid.UID
 
 	if s.parent.menu != nil {
@@ -297,6 +315,7 @@ func (s *windowsSystemTray) updateIcon() {
 
 	// Store the old icon to destroy it after updating
 	oldIcon := s.currentIcon
+	oldIconOwned := s.currentIconOwned
 
 	s.currentIcon = newIcon
 	nid := s.newNotifyIconData()
@@ -309,8 +328,19 @@ func (s *windowsSystemTray) updateIcon() {
 		panic(syscall.GetLastError())
 	}
 
-	// Destroy the old icon handle if it exists and is not one of our default icons
-	if oldIcon != 0 && oldIcon != s.lightModeIcon && oldIcon != s.darkModeIcon {
+	// Track ownership of the current icon so we know if we can destroy it later
+	currentOwned := false
+	if newIcon != 0 {
+		if newIcon == s.lightModeIcon && s.lightModeIconOwned {
+			currentOwned = true
+		} else if newIcon == s.darkModeIcon && s.darkModeIconOwned {
+			currentOwned = true
+		}
+	}
+	s.currentIconOwned = currentOwned
+
+	// Destroy the old icon handle if it exists, we owned it, and nothing else references it
+	if oldIconOwned && oldIcon != 0 && oldIcon != s.lightModeIcon && oldIcon != s.darkModeIcon {
 		w32.DestroyIcon(oldIcon)
 	}
 }
@@ -325,36 +355,63 @@ func (s *windowsSystemTray) newNotifyIconData() w32.NOTIFYICONDATA {
 }
 
 func (s *windowsSystemTray) setIcon(icon []byte) {
-	var err error
-	// Destroy the previous light mode icon if it exists
-	if s.lightModeIcon != 0 {
-		w32.DestroyIcon(s.lightModeIcon)
-	}
-	s.lightModeIcon, err = w32.CreateSmallHIconFromImage(icon)
+	newIcon, err := w32.CreateSmallHIconFromImage(icon)
 	if err != nil {
 		panic(syscall.GetLastError())
 	}
-	if s.darkModeIcon == 0 {
-		s.darkModeIcon = s.lightModeIcon
+
+	oldLight := s.lightModeIcon
+	oldLightOwned := s.lightModeIconOwned
+	oldDark := s.darkModeIcon
+	oldDarkOwned := s.darkModeIconOwned
+
+	s.lightModeIcon = newIcon
+	s.lightModeIconOwned = true
+
+	// Keep dark mode in sync when both modes shared the same handle (or dark was unset).
+	if s.darkModeIcon == 0 || s.darkModeIcon == oldLight {
+		s.darkModeIcon = newIcon
+		s.darkModeIconOwned = false
 	}
-	// Update the icon
+
+	// Only free previous handles we own that are no longer referenced.
+	s.releaseIcon(oldLight, oldLightOwned, s.lightModeIcon, s.darkModeIcon)
+	if oldDark != s.darkModeIcon {
+		s.releaseIcon(oldDark, oldDarkOwned, s.lightModeIcon, s.darkModeIcon)
+	}
+
 	s.updateIcon()
 }
 
 func (s *windowsSystemTray) setDarkModeIcon(icon []byte) {
-	var err error
-	// Destroy the previous dark mode icon if it exists
-	if s.darkModeIcon != 0 {
-		w32.DestroyIcon(s.darkModeIcon)
-	}
-	s.darkModeIcon, err = w32.CreateSmallHIconFromImage(icon)
+	newIcon, err := w32.CreateSmallHIconFromImage(icon)
 	if err != nil {
 		panic(syscall.GetLastError())
 	}
-	if s.lightModeIcon == 0 {
-		s.lightModeIcon = s.darkModeIcon
+
+	oldDark := s.darkModeIcon
+	oldDarkOwned := s.darkModeIconOwned
+	oldLight := s.lightModeIcon
+	oldLightOwned := s.lightModeIconOwned
+
+	s.darkModeIcon = newIcon
+	s.darkModeIconOwned = true
+
+	lightReplaced := false
+
+	// Keep light mode in sync when both modes shared the same handle (or light was unset).
+	if s.lightModeIcon == 0 || s.lightModeIcon == oldDark {
+		s.lightModeIcon = newIcon
+		s.lightModeIconOwned = false
+		lightReplaced = true
 	}
-	// Update the icon
+
+	// Only free the previous handle if nothing else keeps a reference to it.
+	s.releaseIcon(oldDark, oldDarkOwned, s.lightModeIcon, s.darkModeIcon)
+	if lightReplaced {
+		s.releaseIcon(oldLight, oldLightOwned, s.lightModeIcon, s.darkModeIcon)
+	}
+
 	s.updateIcon()
 }
 
@@ -471,15 +528,20 @@ func (s *windowsSystemTray) destroy() {
 	}
 
 	// Clean up icon handles
-	if s.lightModeIcon != 0 {
-		w32.DestroyIcon(s.lightModeIcon)
-		s.lightModeIcon = 0
-	}
-	if s.darkModeIcon != 0 && s.darkModeIcon != s.lightModeIcon {
-		w32.DestroyIcon(s.darkModeIcon)
-		s.darkModeIcon = 0
-	}
+	lightIcon := s.lightModeIcon
+	darkIcon := s.darkModeIcon
+	currentIcon := s.currentIcon
+
+	s.releaseIcon(lightIcon, s.lightModeIconOwned)
+	s.releaseIcon(darkIcon, s.darkModeIconOwned, lightIcon)
+	s.releaseIcon(currentIcon, s.currentIconOwned, lightIcon, darkIcon)
+
+	s.lightModeIcon = 0
+	s.lightModeIconOwned = false
+	s.darkModeIcon = 0
+	s.darkModeIconOwned = false
 	s.currentIcon = 0
+	s.currentIconOwned = false
 }
 
 func (s *windowsSystemTray) Show() {
