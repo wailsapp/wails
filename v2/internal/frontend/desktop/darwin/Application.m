@@ -426,3 +426,10 @@ void WindowPrint(void *inctx) {
 	}
 #endif
 }
+
+void SetAppearance(void* inctx, const char* appearance) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    ON_MAIN_THREAD(
+       [ctx SetAppearance:safeInit(appearance)];
+    );
+}

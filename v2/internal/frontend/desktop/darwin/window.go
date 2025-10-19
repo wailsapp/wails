@@ -310,3 +310,10 @@ func (w *Window) UpdateApplicationMenu() {
 func (w Window) Print() {
 	C.WindowPrint(w.context)
 }
+
+func (w *Window) SetAppearance(appearance string) {
+	c := NewCalloc()
+	defer c.Free()
+	appearanceCStr := c.String(appearance)
+	C.SetAppearance(w.context, appearanceCStr)
+}

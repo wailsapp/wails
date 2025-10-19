@@ -84,6 +84,7 @@ struct Preferences {
 - (void) UnMaximise;
 - (bool) IsMaximised;
 - (void) SetBackgroundColour:(int)r :(int)g :(int)b :(int)a;
+- (void) SetAppearance:(NSString*)appearance;
 - (void) HideMouse;
 - (void) ShowMouse;
 - (void) Hide;

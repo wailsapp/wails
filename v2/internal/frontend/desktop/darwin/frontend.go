@@ -28,6 +28,7 @@ import (
 
 	"github.com/wailsapp/wails/v2/pkg/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
 
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -178,12 +179,15 @@ func (f *Frontend) WindowReloadApp() {
 }
 
 func (f *Frontend) WindowSetSystemDefaultTheme() {
+	f.mainWindow.SetAppearance(string(mac.DefaultAppearance))
 }
 
 func (f *Frontend) WindowSetLightTheme() {
+	f.mainWindow.SetAppearance(string(mac.NSAppearanceNameAqua))
 }
 
 func (f *Frontend) WindowSetDarkTheme() {
+	f.mainWindow.SetAppearance(string(mac.NSAppearanceNameDarkAqua))
 }
 
 func (f *Frontend) Run(ctx context.Context) error {
