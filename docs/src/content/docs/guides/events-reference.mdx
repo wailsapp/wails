@@ -86,6 +86,25 @@ func (s *Service) UpdateData() {
 }
 ```
 
+### Emitting Events (Frontend)
+
+While not as commonly used, you can also emit events from your frontend that your Go code can listen to:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Event without data
+Events.Emit('myapp:close-window')
+
+// Event with data:
+Events.Emit({
+    name: 'myapp:disconnect-requested', 
+    data: 'id-123'
+})
+```
+
+If you are using typescript in your frontend and [application.RegisterEvent](/learn/events#custom-event-registration) in your Go code, you will get event name autocomplete / checking and data type checking. 
+
 ### Removing Event Listeners
 
 Always clean up your event listeners when they're no longer needed:
@@ -221,7 +240,7 @@ Events.On('mac:ApplicationWillTerminate', () => {
 
 ## Creating Custom Events
 
-You can create your own events for application-specific needs:
+You can create your own events for application-specific needs.  See [application.RegisterEvent](/learn/events#custom-event-registration) to learn how to register these events and enable type checking of event data.
 
 ### Backend (Go)
 
