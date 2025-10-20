@@ -91,6 +91,8 @@ func (s *Service) UpdateData() {
 Always clean up your event listeners when they're no longer needed:
 
 ```javascript
+import { Events } from '@wailsio/runtime';
+
 // Store the handler reference
 const focusHandler = () => {
     console.log('Window focused');
@@ -113,6 +115,8 @@ Events.Off('common:WindowFocus');
 Many applications need to pause certain activities when the window loses focus:
 
 ```javascript
+import { Events } from '@wailsio/runtime';
+
 let animationRunning = true;
 
 Events.On('common:WindowLostFocus', () => {
@@ -131,6 +135,8 @@ Events.On('common:WindowFocus', () => {
 Keep your app in sync with the system theme:
 
 ```javascript
+import { Events } from '@wailsio/runtime';
+
 Events.On('common:ThemeChanged', (event) => {
     const isDarkMode = event.data.isDark;
     
@@ -149,6 +155,8 @@ Events.On('common:ThemeChanged', (event) => {
 Make your app accept dragged files:
 
 ```javascript
+import { Events } from '@wailsio/runtime';
+
 Events.On('common:WindowFilesDropped', (event) => {
     const files = event.data.files;
     
@@ -165,6 +173,8 @@ Events.On('common:WindowFilesDropped', (event) => {
 Respond to window state changes:
 
 ```javascript
+import { Events } from '@wailsio/runtime';
+
 Events.On('common:WindowClosing', () => {
     // Save user data before closing
     saveApplicationState();
@@ -189,6 +199,8 @@ Events.On('common:WindowRestore', () => {
 Handle platform-specific events when needed:
 
 ```javascript
+import { Events } from '@wailsio/runtime';
+
 // Windows-specific power management
 Events.On('windows:APMSuspend', () => {
     console.log('System is going to sleep');
@@ -248,6 +260,8 @@ func (s *Service) StartMonitoring() {
 ### Frontend (JavaScript)
 
 ```javascript
+import { Events } from '@wailsio/runtime';
+
 // Listen for your custom events
 Events.On('user:data-processed', (event) => {
     const { userId, status, timestamp } = event.data;
@@ -339,6 +353,8 @@ Events.Emit('update');
 Always remove event listeners when components unmount:
 
 ```javascript
+import { Events } from '@wailsio/runtime';
+
 // React example
 useEffect(() => {
     const handler = (event) => {
@@ -359,7 +375,7 @@ useEffect(() => {
 Check platform availability when using platform-specific events:
 
 ```javascript
-import { Platform } from '@wailsio/runtime';
+import { Platform, Events } from '@wailsio/runtime';
 
 if (Platform.isWindows) {
     Events.On('windows:APMSuspend', handleSuspend);
@@ -380,6 +396,8 @@ While events are powerful, don't use them for everything:
 To debug event issues:
 
 ```javascript
+import { Events } from '@wailsio/runtime';
+
 // Log all events (development only)
 if (isDevelopment) {
     const originalOn = Events.On;
