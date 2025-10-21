@@ -229,7 +229,7 @@ func (s *windowsSystemTray) run() {
 
 	// Initial systray add can fail when the shell is not available. This is handled in v3/pkg/application/application_windows.go:260 via TaskbarCreated message
 	if !w32.ShellNotifyIcon(w32.NIM_ADD, &nid) {
-		globalApplication.warning("initial systray add failed:", syscall.GetLastError().Error())
+		globalApplication.warning("initial systray add failed: %s", syscall.GetLastError().Error())
 	}
 
 	nid.UVersion = w32.NOTIFYICON_VERSION
