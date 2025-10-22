@@ -24,9 +24,10 @@ type windowsSystemTray struct {
 
 	menu *Win32Menu
 
-	// Platform specific implementation
-	uid                uint32
-	hwnd               w32.HWND
+	cancelTheme func()
+	uid         uint32
+	hwnd        w32.HWND
+
 	lightModeIcon      w32.HICON
 	lightModeIconOwned bool
 	darkModeIcon       w32.HICON
@@ -294,7 +295,10 @@ func (s *windowsSystemTray) run() {
 	s.updateIcon()
 
 	// Listen for dark mode changes
-	globalApplication.Event.OnApplicationEvent(events.Windows.SystemThemeChanged, func(event *ApplicationEvent) {
+	if s.cancelTheme != nil {
+		s.cancelTheme()
+	}
+	s.cancelTheme = globalApplication.Event.OnApplicationEvent(events.Windows.SystemThemeChanged, func(event *ApplicationEvent) {
 		s.updateIcon()
 	})
 
@@ -515,6 +519,10 @@ func (s *windowsSystemTray) setIconPosition(position IconPosition) {
 }
 
 func (s *windowsSystemTray) destroy() {
+	if s.cancelTheme != nil {
+		s.cancelTheme()
+		s.cancelTheme = nil
+	}
 	// Remove and delete the system tray
 	getNativeApplication().unregisterSystemTray(s)
 	if s.menu != nil {
@@ -542,6 +550,7 @@ func (s *windowsSystemTray) destroy() {
 	s.darkModeIconOwned = false
 	s.currentIcon = 0
 	s.currentIconOwned = false
+	s.hwnd = 0
 }
 
 func (s *windowsSystemTray) Show() {
