@@ -107,11 +107,29 @@ tasks:
         echo "Run this command in PowerShell as Administrator:"
         echo ""
         {{if eq OS "windows"}}
-          echo "  Add-Content -Path C:\Windows\System32\drivers\etc\hosts -Value \"`n{{.HOST_ENTRY}}\""
+          echo "  Add-Content -Path C:\Windows\System32\drivers\etc\hosts -Value '{{.HOST_ENTRY}}'"
         {{else}}
           echo "  echo '{{.HOST_ENTRY}}' | sudo tee -a /etc/hosts"
         {{end}}
         echo ""
+
+  add-hosts-notepad:
+    desc: "Open hosts file in Notepad as admin with entry in clipboard"
+    cmds:
+      - |
+        {{if eq OS "windows"}}
+          echo "{{.HOST_ENTRY}}" | clip
+          echo ""
+          echo "✅ Copied to clipboard: {{.HOST_ENTRY}}"
+          echo ""
+          echo "📝 Opening hosts file in Notepad as Administrator..."
+          echo "   1. Paste the line from clipboard (Ctrl+V)"
+          echo "   2. Save the file (Ctrl+S)"
+          echo ""
+          powershell -Command "Start-Process notepad.exe -ArgumentList 'C:\Windows\System32\drivers\etc\hosts' -Verb RunAs"
+        {{else}}
+          echo "This command is for Windows only"
+        {{end}}
 
   run-server:
     desc: "Run the external HTTPS server"
