@@ -15,12 +15,22 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"runtime"
 	"time"
 )
 
 func main() {
-	// Create certs directory if it doesn't exist
-	certsDir := "./certs"
+	// Get the directory where this source file is located
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		log.Fatal("Failed to get source file location")
+	}
+	scriptDir := filepath.Dir(filename)
+
+	// Create certs directory relative to script location
+	certsDir := filepath.Join(scriptDir, "certs")
+	fmt.Printf("Creating certificates in: %s\n", certsDir)
+
 	if err := os.MkdirAll(certsDir, 0755); err != nil {
 		log.Fatalf("Failed to create certs directory: %v", err)
 	}

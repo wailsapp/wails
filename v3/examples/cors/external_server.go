@@ -10,21 +10,29 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 //go:embed frontend/*
 var frontendFiles embed.FS
 
 func main() {
+	// Get the directory where this source file is located
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		log.Fatal("Failed to get source file location")
+	}
+	scriptDir := filepath.Dir(filename)
+
 	// Check if certificates exist
-	certFile := filepath.Join("certs", "server.crt")
-	keyFile := filepath.Join("certs", "server.key")
+	certFile := filepath.Join(scriptDir, "certs", "server.crt")
+	keyFile := filepath.Join(scriptDir, "certs", "server.key")
 
 	if _, err := os.Stat(certFile); os.IsNotExist(err) {
-		log.Fatal("Certificate file not found. Please run: go run generate_certs.go")
+		log.Fatalf("Certificate file not found at %s. Please run: go run generate_certs.go", certFile)
 	}
 	if _, err := os.Stat(keyFile); os.IsNotExist(err) {
-		log.Fatal("Key file not found. Please run: go run generate_certs.go")
+		log.Fatalf("Key file not found at %s. Please run: go run generate_certs.go", keyFile)
 	}
 
 	// Create a file server for the frontend
