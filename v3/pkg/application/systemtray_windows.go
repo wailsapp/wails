@@ -4,6 +4,7 @@ package application
 
 import (
 	"errors"
+	"fmt"
 	"syscall"
 	"unsafe"
 
@@ -219,24 +220,11 @@ func (s *windowsSystemTray) run() {
 		panic(syscall.GetLastError())
 	}
 
-	nid := w32.NOTIFYICONDATA{
-		HWnd:             s.hwnd,
-		UID:              uint32(s.parent.id),
-		UFlags:           w32.NIF_ICON | w32.NIF_MESSAGE,
-		HIcon:            s.currentIcon,
-		UCallbackMessage: WM_USER_SYSTRAY,
-	}
-	nid.CbSize = uint32(unsafe.Sizeof(nid))
+	s.uid = uint32(s.parent.id)
 
-	// Initial systray add can fail when the shell is not available. This is handled in v3/pkg/application/application_windows.go:260 via TaskbarCreated message
-	if !w32.ShellNotifyIcon(w32.NIM_ADD, &nid) {
-		globalApplication.warning("initial systray add failed: %s", syscall.GetLastError().Error())
-	}
-
-	nid.UVersion = w32.NOTIFYICON_VERSION
-
-	if !w32.ShellNotifyIcon(w32.NIM_SETVERSION, &nid) {
-		panic(syscall.GetLastError())
+	if _, err := s.show(); err != nil {
+		// Initial systray add can fail when the shell is not available. This is handled downstream via TaskbarCreated message.
+		globalApplication.warning("initial systray add failed: %v", err)
 	}
 
 	// Resolve the base icons once so we can reuse them for light/dark modes
@@ -267,14 +255,8 @@ func (s *windowsSystemTray) run() {
 		s.darkModeIconOwned = true
 	}
 
-	s.uid = nid.UID
-
 	if s.parent.menu != nil {
 		s.updateMenu(s.parent.menu)
-	}
-
-	if s.parent.tooltip != "" {
-		s.setTooltip(s.parent.tooltip)
 	}
 
 	// Set Default Callbacks
@@ -479,16 +461,14 @@ func (s *windowsSystemTray) updateMenu(menu *Menu) {
 	s.menu.Update()
 }
 
-// Based on the idea from https://github.com/wailsapp/wails/issues/3487#issuecomment-2633242304
 func (s *windowsSystemTray) setTooltip(tooltip string) {
-	// Ensure the tooltip length is within the limit (128 characters including null terminate characters for szTip for Windows 2000 and later)
-	// https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-notifyicondataw
-	tooltip = truncateUTF16(tooltip, 127)
-
 	// Create a new NOTIFYICONDATA structure
 	nid := s.newNotifyIconData()
-	nid.UFlags = w32.NIF_TIP
-	tooltipUTF16, err := w32.StringToUTF16(tooltip)
+	nid.UFlags = w32.NIF_TIP | w32.NIF_SHOWTIP
+
+	// Ensure the tooltip length is within the limit (128 characters including null terminate characters for szTip for Windows 2000 and later)
+	// https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-notifyicondataw
+	tooltipUTF16, err := w32.StringToUTF16(truncateUTF16(tooltip, 127))
 	if err != nil {
 		return
 	}
@@ -497,10 +477,6 @@ func (s *windowsSystemTray) setTooltip(tooltip string) {
 
 	// Modify the tray icon with the new tooltip
 	if !w32.ShellNotifyIcon(w32.NIM_MODIFY, &nid) {
-		return
-	}
-	nid.UVersion = 3 // Version 4 does not suport
-	if !w32.ShellNotifyIcon(w32.NIM_SETVERSION, &nid) {
 		return
 	}
 }
@@ -526,7 +502,7 @@ func (s *windowsSystemTray) destroy() {
 	if s.menu != nil {
 		s.menu.Destroy()
 	}
-	w32.DestroyWindow(s.hwnd)
+
 	// destroy the notification icon
 	nid := s.newNotifyIconData()
 	if !w32.ShellNotifyIcon(w32.NIM_DELETE, &nid) {
@@ -548,6 +524,8 @@ func (s *windowsSystemTray) destroy() {
 	s.darkModeIconOwned = false
 	s.currentIcon = 0
 	s.currentIconOwned = false
+
+	w32.DestroyWindow(s.hwnd)
 	s.hwnd = 0
 }
 
@@ -559,20 +537,32 @@ func (s *windowsSystemTray) Hide() {
 	// No-op
 }
 
-func (s *windowsSystemTray) reshow() {
-	// Add icons back to systray
+func (s *windowsSystemTray) show() (w32.NOTIFYICONDATA, error) {
 	nid := w32.NOTIFYICONDATA{
 		HWnd:             s.hwnd,
-		UID:              uint32(s.parent.id),
+		UID:              s.uid,
 		UFlags:           w32.NIF_ICON | w32.NIF_MESSAGE,
 		HIcon:            s.currentIcon,
 		UCallbackMessage: WM_USER_SYSTRAY,
 	}
 	nid.CbSize = uint32(unsafe.Sizeof(nid))
-	// Show the icon
+
 	if !w32.ShellNotifyIcon(w32.NIM_ADD, &nid) {
-		panic(syscall.GetLastError())
+		err := syscall.GetLastError()
+		return nid, fmt.Errorf("ShellNotifyIcon NIM_ADD failed: %w", err)
 	}
+
+	nid.UVersion = w32.NOTIFYICON_VERSION
+	if !w32.ShellNotifyIcon(w32.NIM_SETVERSION, &nid) {
+		err := syscall.GetLastError()
+		return nid, fmt.Errorf("ShellNotifyIcon NIM_SETVERSION failed: %w", err)
+	}
+
+	if s.parent.tooltip != "" {
+		s.setTooltip(s.parent.tooltip)
+	}
+
+	return nid, nil
 }
 
 func truncateUTF16(s string, maxUnits int) string {

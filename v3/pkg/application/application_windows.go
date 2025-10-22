@@ -348,7 +348,9 @@ func (m *windowsApp) reshowSystrays() {
 	m.systrayMapLock.Lock()
 	defer m.systrayMapLock.Unlock()
 	for _, systray := range m.systrayMap {
-		systray.reshow()
+		if _, err := systray.show(); err != nil {
+			globalApplication.warning("failed to re-add system tray icon: %v", err)
+		}
 	}
 }
 
