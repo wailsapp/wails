@@ -483,9 +483,7 @@ func (s *windowsSystemTray) updateMenu(menu *Menu) {
 func (s *windowsSystemTray) setTooltip(tooltip string) {
 	// Ensure the tooltip length is within the limit (128 characters including null terminate characters for szTip for Windows 2000 and later)
 	// https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-notifyicondataw
-	if lo.RuneLength(tooltip) > 127 {
-		tooltip = string([]rune(tooltip)[:127])
-	}
+	tooltip = truncateUTF16(tooltip, 127)
 
 	// Create a new NOTIFYICONDATA structure
 	nid := s.newNotifyIconData()
@@ -575,4 +573,25 @@ func (s *windowsSystemTray) reshow() {
 	if !w32.ShellNotifyIcon(w32.NIM_ADD, &nid) {
 		panic(syscall.GetLastError())
 	}
+}
+
+func truncateUTF16(s string, maxUnits int) string {
+	var units int
+	for i, r := range s {
+		var u int
+
+		// check if rune will take 2 UTF-16 units
+		if r > 0xFFFF {
+			u = 2
+		} else {
+			u = 1
+		}
+
+		if units+u > maxUnits {
+			return s[:i]
+		}
+		units += u
+	}
+
+	return s
 }
