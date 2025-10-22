@@ -240,7 +240,7 @@ func (s *windowsSystemTray) run() {
 	}
 
 	// Resolve the base icons once so we can reuse them for light/dark modes
-	defaultIcon := w32.LoadIconWithResourceID(w32.GetModuleHandle(""), w32.RT_ICON)
+	defaultIcon := getNativeApplication().windowClass.Icon
 
 	if s.parent.icon != nil {
 		s.lightModeIcon = lo.Must(w32.CreateSmallHIconFromImage(s.parent.icon))
@@ -361,7 +361,7 @@ func (s *windowsSystemTray) newNotifyIconData() w32.NOTIFYICONDATA {
 func (s *windowsSystemTray) setIcon(icon []byte) {
 	newIcon, err := w32.CreateSmallHIconFromImage(icon)
 	if err != nil {
-		panic(syscall.GetLastError())
+		panic(err.Error())
 	}
 
 	oldLight := s.lightModeIcon
@@ -390,7 +390,7 @@ func (s *windowsSystemTray) setIcon(icon []byte) {
 func (s *windowsSystemTray) setDarkModeIcon(icon []byte) {
 	newIcon, err := w32.CreateSmallHIconFromImage(icon)
 	if err != nil {
-		panic(syscall.GetLastError())
+		panic(err.Error())
 	}
 
 	oldDark := s.darkModeIcon
