@@ -75,14 +75,14 @@ func main() {
 	})
 
 	// Create window with external URL
-	window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "CORS Example - External URL",
 		Width:  1024,
 		Height: 768,
 		URL:    "https://app-local.wails-awesome.io:3000", // External URL
 
-		DevToolsEnabled:       true,
-		DefaultContextMenuEnabled: true,
+		DevToolsEnabled:            true,
+		DefaultContextMenuDisabled:  false, // Enable default context menu
 	})
 
 	// Show window
