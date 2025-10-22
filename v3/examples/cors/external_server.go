@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"embed"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -38,8 +39,12 @@ func main() {
 	// Create a file server for the frontend
 	mux := http.NewServeMux()
 
-	// Serve frontend files
-	mux.Handle("/", http.FileServer(http.FS(frontendFiles)))
+	// Serve frontend files (strip the "frontend/" prefix from the embedded files)
+	frontendFS, err := fs.Sub(frontendFiles, "frontend")
+	if err != nil {
+		log.Fatalf("Failed to create sub filesystem: %v", err)
+	}
+	mux.Handle("/", http.FileServer(http.FS(frontendFS)))
 
 	// Add some debug endpoints
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
