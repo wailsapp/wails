@@ -103,6 +103,12 @@ type Options struct {
 
 	// SingleInstance options for single instance functionality
 	SingleInstance *SingleInstanceOptions
+
+	// CORS configuration for the runtime API
+	// This allows you to control which external origins can access the Wails runtime API
+	// when using external URLs as the start URL for the webview.
+	// If not set, CORS will be disabled by default.
+	CORS CORSConfig
 }
 
 // AssetOptions defines the configuration of the AssetServer.

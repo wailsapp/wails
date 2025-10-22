@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/wailsapp/wails/v3/internal/signal"
 
@@ -78,7 +79,7 @@ func New(appOptions Options) *App {
 
 	result.customEventProcessor = NewWailsEventProcessor(result.Event.dispatch)
 
-	messageProc := NewMessageProcessor(result.Logger)
+	messageProc := NewMessageProcessor(result.Logger, &appOptions.CORS)
 	opts := &assetserver.Options{
 		Handler: appOptions.Assets.Handler,
 		Middleware: assetserver.ChainMiddleware(
@@ -180,6 +181,18 @@ func mergeApplicationDefaults(o *Options) {
 	}
 	if o.Windows.WndClass == "" {
 		o.Windows.WndClass = "WailsWebviewWindow"
+	}
+	// Set default CORS configuration if not provided
+	if o.CORS.AllowedMethods == nil {
+		defaultCORS := DefaultCORSConfig()
+		o.CORS.AllowedMethods = defaultCORS.AllowedMethods
+	}
+	if o.CORS.AllowedHeaders == nil {
+		defaultCORS := DefaultCORSConfig()
+		o.CORS.AllowedHeaders = defaultCORS.AllowedHeaders
+	}
+	if o.CORS.MaxAge == 0 {
+		o.CORS.MaxAge = 5 * time.Minute
 	}
 }
 

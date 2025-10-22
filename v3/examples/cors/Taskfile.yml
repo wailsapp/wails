@@ -1,0 +1,167 @@
+version: '3'
+
+vars:
+  CERT_DIR: "./certs"
+  HOST_ENTRY: "127.0.0.1    app-local.wails-awesome.io"
+
+tasks:
+  default:
+    desc: "Show available tasks"
+    cmds:
+      - task --list
+
+  setup:
+    desc: "Complete setup - generate certificates, check hosts file, and provide instructions"
+    cmds:
+      - task: check-go
+      - task: generate-certs
+      - task: check-hosts
+      - task: instructions
+
+  check-go:
+    desc: "Check if Go is installed"
+    cmds:
+      - go version
+    silent: true
+
+  generate-certs:
+    desc: "Generate SSL certificates for HTTPS"
+    cmds:
+      - go run generate_certs.go
+    status:
+      - test -f {{.CERT_DIR}}/ca.crt
+      - test -f {{.CERT_DIR}}/ca.key
+      - test -f {{.CERT_DIR}}/server.crt
+      - test -f {{.CERT_DIR}}/server.key
+
+  clean-certs:
+    desc: "Remove generated certificates"
+    cmds:
+      - cmd: rm -rf {{.CERT_DIR}}
+        platforms: [linux, darwin]
+      - cmd: powershell -Command "if (Test-Path {{.CERT_DIR}}) { Remove-Item -Recurse -Force {{.CERT_DIR}} }"
+        platforms: [windows]
+
+  regenerate-certs:
+    desc: "Clean and regenerate certificates"
+    cmds:
+      - task: clean-certs
+      - task: generate-certs
+
+  trust-cert-windows:
+    desc: "Trust the CA certificate on Windows (requires admin)"
+    platforms: [windows]
+    cmds:
+      - powershell -Command "Start-Process certutil -ArgumentList '-addstore', 'Root', '{{.CERT_DIR}}/ca.crt' -Verb RunAs"
+
+  trust-cert-macos:
+    desc: "Trust the CA certificate on macOS (requires sudo)"
+    platforms: [darwin]
+    cmds:
+      - sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain {{.CERT_DIR}}/ca.crt
+
+  trust-cert-linux:
+    desc: "Trust the CA certificate on Linux (requires sudo)"
+    platforms: [linux]
+    cmds:
+      - sudo cp {{.CERT_DIR}}/ca.crt /usr/local/share/ca-certificates/wails-cors-example.crt
+      - sudo update-ca-certificates
+
+  check-hosts:
+    desc: "Check if hosts file has the required entry"
+    vars:
+      HOSTS_FILE:
+        sh: |
+          {{if eq OS "windows"}}echo "C:/Windows/System32/drivers/etc/hosts"{{else}}echo "/etc/hosts"{{end}}
+    cmds:
+      - |
+        {{if eq OS "windows"}}
+          powershell -Command "if (Select-String -Path '{{.HOSTS_FILE}}' -Pattern 'app-local.wails-awesome.io' -Quiet) { Write-Host '✅ Hosts file entry found' -ForegroundColor Green } else { Write-Host '⚠️  Please add to hosts file: {{.HOST_ENTRY}}' -ForegroundColor Yellow }"
+        {{else}}
+          if grep -q "app-local.wails-awesome.io" {{.HOSTS_FILE}}; then
+            echo "✅ Hosts file entry found"
+          else
+            echo "⚠️  Please add to hosts file (as root): {{.HOST_ENTRY}}"
+          fi
+        {{end}}
+
+  add-hosts-entry:
+    desc: "Add entry to hosts file (requires admin/sudo)"
+    vars:
+      HOSTS_FILE:
+        sh: |
+          {{if eq OS "windows"}}echo "C:/Windows/System32/drivers/etc/hosts"{{else}}echo "/etc/hosts"{{end}}
+    cmds:
+      - |
+        {{if eq OS "windows"}}
+          powershell -Command "Start-Process powershell -ArgumentList 'Add-Content -Path {{.HOSTS_FILE}} -Value \"{{.HOST_ENTRY}}\"' -Verb RunAs"
+        {{else}}
+          echo "{{.HOST_ENTRY}}" | sudo tee -a {{.HOSTS_FILE}}
+        {{end}}
+
+  run-server:
+    desc: "Run the external HTTPS server"
+    deps: [generate-certs]
+    cmds:
+      - go run external_server.go
+
+  run-app:
+    desc: "Build and run the Wails application"
+    cmds:
+      - go run main.go
+
+  dev:
+    desc: "Run both server and app in development mode (requires two terminals)"
+    cmds:
+      - echo "Please run these commands in separate terminals:"
+      - echo "  1. task run-server"
+      - echo "  2. task run-app"
+
+  build:
+    desc: "Build the Wails application"
+    cmds:
+      - wails3 build
+
+  instructions:
+    desc: "Display setup instructions"
+    cmds:
+      - |
+        echo ""
+        echo "========================================="
+        echo "     Wails CORS Example Setup Complete    "
+        echo "========================================="
+        echo ""
+        echo "✅ Certificates generated in ./certs/"
+        echo ""
+        echo "📋 Next steps:"
+        echo ""
+        echo "1. Trust the CA certificate:"
+        {{if eq OS "windows"}}
+        echo "   Run: task trust-cert-windows"
+        {{else if eq OS "darwin"}}
+        echo "   Run: task trust-cert-macos"
+        {{else}}
+        echo "   Run: task trust-cert-linux"
+        {{end}}
+        echo ""
+        echo "2. Add hosts file entry (if not already added):"
+        echo "   Run: task add-hosts-entry"
+        echo "   Or manually add: {{.HOST_ENTRY}}"
+        echo ""
+        echo "3. Run the example:"
+        echo "   Terminal 1: task run-server"
+        echo "   Terminal 2: task run-app"
+        echo ""
+        echo "========================================="
+
+  test-cors:
+    desc: "Test CORS configuration with curl"
+    deps: [generate-certs]
+    cmds:
+      - |
+        echo "Testing CORS preflight request..."
+        curl -k -X OPTIONS \
+          -H "Origin: https://app-local.wails-awesome.io:3000" \
+          -H "Access-Control-Request-Method: POST" \
+          -H "Access-Control-Request-Headers: Content-Type" \
+          -v https://localhost:3000/wails/runtime 2>&1 | grep -E "(< HTTP|< Access-Control-)" || echo "Server may not be running"

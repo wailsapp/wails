@@ -1,0 +1,20 @@
+# Ignore generated certificates
+certs/
+
+# Ignore built binaries
+*.exe
+*.dll
+*.so
+*.dylib
+/build/
+
+# Ignore IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Ignore OS files
+.DS_Store
+Thumbs.db

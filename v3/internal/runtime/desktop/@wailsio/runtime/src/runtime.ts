@@ -54,7 +54,10 @@ async function runtimeCallWithID(objectID: number, method: number, windowName: s
         headers["x-wails-window-name"] = windowName;
     }
 
-    let response = await fetch(url, { headers });
+    let response = await fetch(url, {
+        headers,
+        credentials: 'include' // Include cookies and credentials for CORS requests
+    });
     if (!response.ok) {
         throw new Error(await response.text());
     }
