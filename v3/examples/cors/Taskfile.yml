@@ -72,11 +72,11 @@ tasks:
     vars:
       HOSTS_FILE:
         sh: |
-          {{if eq OS "windows"}}echo "C:/Windows/System32/drivers/etc/hosts"{{else}}echo "/etc/hosts"{{end}}
+          {{if eq OS "windows"}}echo "C:\Windows\System32\drivers\etc\hosts"{{else}}echo "/etc/hosts"{{end}}
     cmds:
       - |
         {{if eq OS "windows"}}
-          powershell -Command "if (Select-String -Path '{{.HOSTS_FILE}}' -Pattern 'app-local.wails-awesome.io' -Quiet) { Write-Host '✅ Hosts file entry found' -ForegroundColor Green } else { Write-Host '⚠️  Please add to hosts file: {{.HOST_ENTRY}}' -ForegroundColor Yellow }"
+          powershell -Command "if (Select-String -Path 'C:\Windows\System32\drivers\etc\hosts' -Pattern 'app-local.wails-awesome.io' -Quiet) { Write-Host '✅ Hosts file entry found' -ForegroundColor Green } else { Write-Host '⚠️  Please add to hosts file: {{.HOST_ENTRY}}' -ForegroundColor Yellow }"
         {{else}}
           if grep -q "app-local.wails-awesome.io" {{.HOSTS_FILE}}; then
             echo "✅ Hosts file entry found"
@@ -90,11 +90,11 @@ tasks:
     vars:
       HOSTS_FILE:
         sh: |
-          {{if eq OS "windows"}}echo "C:/Windows/System32/drivers/etc/hosts"{{else}}echo "/etc/hosts"{{end}}
+          {{if eq OS "windows"}}echo "C:\Windows\System32\drivers\etc\hosts"{{else}}echo "/etc/hosts"{{end}}
     cmds:
       - |
         {{if eq OS "windows"}}
-          powershell -Command "Start-Process powershell -ArgumentList 'Add-Content -Path {{.HOSTS_FILE}} -Value \"{{.HOST_ENTRY}}\"' -Verb RunAs"
+          powershell -Command "Start-Process powershell -ArgumentList 'Add-Content -Path ''C:\Windows\System32\drivers\etc\hosts'' -Value ''`n{{.HOST_ENTRY}}''' -Verb RunAs"
         {{else}}
           echo "{{.HOST_ENTRY}}" | sudo tee -a {{.HOSTS_FILE}}
         {{end}}
