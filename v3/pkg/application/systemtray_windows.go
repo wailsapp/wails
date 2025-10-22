@@ -265,6 +265,7 @@ func (s *windowsSystemTray) run() {
 			globalApplication.debug("Left Button Clicked")
 		}
 	}
+
 	if s.parent.rightClickHandler == nil {
 		s.parent.rightClickHandler = func() {
 			if s.menu != nil {
@@ -530,22 +531,38 @@ func (s *windowsSystemTray) destroy() {
 }
 
 func (s *windowsSystemTray) Show() {
-	// No-op
+	if s.hwnd == 0 {
+		return
+	}
+
+	nid := s.newNotifyIconData()
+	nid.UFlags = w32.NIF_STATE
+	nid.DwStateMask = w32.NIS_HIDDEN
+	nid.DwState = 0
+	if !w32.ShellNotifyIcon(w32.NIM_MODIFY, &nid) {
+		globalApplication.debug("ShellNotifyIcon NIM_MODIFY show failed: %v", syscall.GetLastError())
+	}
 }
 
 func (s *windowsSystemTray) Hide() {
-	// No-op
+	if s.hwnd == 0 {
+		return
+	}
+
+	nid := s.newNotifyIconData()
+	nid.UFlags = w32.NIF_STATE
+	nid.DwStateMask = w32.NIS_HIDDEN
+	nid.DwState = w32.NIS_HIDDEN
+	if !w32.ShellNotifyIcon(w32.NIM_MODIFY, &nid) {
+		globalApplication.debug("ShellNotifyIcon NIM_MODIFY hide failed: %v", syscall.GetLastError())
+	}
 }
 
 func (s *windowsSystemTray) show() (w32.NOTIFYICONDATA, error) {
-	nid := w32.NOTIFYICONDATA{
-		HWnd:             s.hwnd,
-		UID:              s.uid,
-		UFlags:           w32.NIF_ICON | w32.NIF_MESSAGE,
-		HIcon:            s.currentIcon,
-		UCallbackMessage: WM_USER_SYSTRAY,
-	}
-	nid.CbSize = uint32(unsafe.Sizeof(nid))
+	nid := s.newNotifyIconData()
+	nid.UFlags = w32.NIF_ICON | w32.NIF_MESSAGE
+	nid.HIcon = s.currentIcon
+	nid.UCallbackMessage = WM_USER_SYSTRAY
 
 	if !w32.ShellNotifyIcon(w32.NIM_ADD, &nid) {
 		err := syscall.GetLastError()
