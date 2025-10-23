@@ -280,9 +280,6 @@ func (s *windowsSystemTray) run() {
 		}
 	}
 
-	// Update the icon
-	s.updateIcon()
-
 	// Listen for dark mode changes
 	s.cancelTheme = globalApplication.Event.OnApplicationEvent(events.Windows.SystemThemeChanged, func(event *ApplicationEvent) {
 		s.updateIcon()
@@ -574,6 +571,8 @@ func (s *windowsSystemTray) show() (w32.NOTIFYICONDATA, error) {
 		err := syscall.GetLastError()
 		return nid, fmt.Errorf("ShellNotifyIcon NIM_SETVERSION failed: %w", err)
 	}
+
+	s.updateIcon()
 
 	if s.parent.tooltip != "" {
 		s.setTooltip(s.parent.tooltip)
