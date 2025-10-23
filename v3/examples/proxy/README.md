@@ -1,14 +1,14 @@
-# Wails v3 CORS Example
+# Wails v3 Proxy Example
 
-This example demonstrates how to use Wails v3 with external URLs and proper CORS (Cross-Origin Resource Sharing) configuration. It shows how a Wails application can load its frontend from an external HTTPS server while maintaining secure communication with the Wails backend.
+This example demonstrates how to use Wails v3 with external URLs through a reverse proxy. It shows how a Wails application can proxy content from an external HTTPS server while maintaining the local origin, avoiding cross-origin issues entirely.
 
 ## 🎯 What This Example Demonstrates
 
-- Loading a Wails WebView from an external URL (`https://app-local.wails-awesome.io:3000`)
-- Configuring CORS to allow cross-origin communication between the external frontend and Wails backend
-- Using Go to generate SSL certificates for cross-platform compatibility
+- Loading external content through Wails' built-in proxy support
+- Using the `ProxyTo` option in Assets to configure proxying
+- Serving frontend from an external HTTPS server while keeping the WebView on localhost
 - Secure HTTPS setup with self-signed certificates
-- Making runtime calls from an external origin to the Wails backend
+- Making runtime calls without cross-origin issues
 
 ## 📋 Prerequisites
 
@@ -22,7 +22,7 @@ This example demonstrates how to use Wails v3 with external URLs and proper CORS
 ### 1. Clone and Navigate to Example
 
 ```bash
-cd v3/examples/cors
+cd v3/examples/proxy
 ```
 
 ### 2. Run Automated Setup
@@ -89,8 +89,8 @@ task run-app
 ## 📁 Project Structure
 
 ```
-cors/
-├── main.go                 # Wails application with CORS configuration
+proxy/
+├── main.go                 # Wails application with proxy configuration
 ├── external_server.go      # External HTTPS server
 ├── generate_certs.go       # Cross-platform certificate generator
 ├── Taskfile.yml           # Task automation
@@ -127,29 +127,27 @@ The `external_server.go` file:
 ### 3. Wails Application
 
 The `main.go` file:
-- Configures CORS to allow the external origin
-- Creates a WebView window pointing to the external URL
+- Configures the ProxyTo option in Assets to proxy the external server
+- Creates a WebView window with the internal URL that proxies to external content
 - Provides backend services accessible via the Wails runtime
 
-### 4. CORS Configuration
+### 4. Proxy Configuration
 
 ```go
-CORS: application.CORSConfig{
-    Enabled: true,
-    AllowedOrigins: []string{
-        "https://app-local.wails-awesome.io:3000",
-        "https://localhost:3000",
+app := application.New(application.Options{
+    Name: "External URL Proxy Example",
+    Assets: application.AssetOptions{
+        Handler: application.BundledAssetFileServer(embed),
+        ProxyTo: "https://app-local.wails-awesome.io:3000",
     },
-    AllowedMethods: []string{"GET", "POST", "OPTIONS"},
-    AllowedHeaders: []string{
-        "Content-Type",
-        "X-Wails-Window-ID",
-        "X-Wails-Window-Name",
-        "X-Wails-Client-ID",
-    },
-    MaxAge: 5 * time.Minute,
-}
+})
 ```
+
+The proxy:
+- Forwards GET requests for assets to the external server
+- Handles Wails runtime paths locally (not proxied)
+- Falls back to local handler for 404s
+- Maintains the local origin throughout
 
 ## 🎮 Available Tasks
 
@@ -165,23 +163,23 @@ Run `task --list` to see all available tasks:
 - `task run-server` - Run the external HTTPS server
 - `task run-app` - Run the Wails application
 - `task build` - Build the Wails application
-- `task test-cors` - Test CORS with curl
+- `task test-proxy` - Test proxy with curl
 
 ## 🧪 Testing the Example
 
 Once running, you should see:
 
 1. **External Server Console:** Logs showing incoming requests
-2. **Wails Application:** A window loading from `https://app-local.wails-awesome.io:3000`
+2. **Wails Application:** A window loading from localhost but showing content from the external server
 3. **Frontend Interface:** Three test buttons:
    - **Greet:** Calls the backend Greet method with a name
    - **Get Time:** Retrieves the current server time
-   - **Test CORS:** Tests the CORS configuration
+   - **Test Proxy:** Tests the proxy configuration
 
 The browser developer console will show:
-- Current page origin
-- CORS headers in network requests
-- Successful/failed runtime calls
+- Current page origin (localhost)
+- Successful runtime calls without any cross-origin issues
+- Proxy debug headers in responses
 
 ## 🔒 Security Considerations
 
@@ -190,28 +188,21 @@ The browser developer console will show:
 This example uses self-signed certificates for development. In production:
 
 1. Use proper SSL certificates from a trusted CA
-2. Configure CORS with specific allowed origins (no wildcards)
-3. Use HTTPS for all communication
+2. Configure proxy with appropriate security headers
+3. Use HTTPS for all external communication
 4. Validate and sanitize all inputs
 
 ### Example Production Configuration
 
 ```go
-CORS: application.CORSConfig{
-    Enabled: true,
-    AllowedOrigins: []string{
-        "https://app.mycompany.com",
-        "https://cdn.mycompany.com",
+app := application.New(application.Options{
+    Name: "Production App",
+    Assets: application.AssetOptions{
+        Handler: application.AssetFileServerFS(assets),
+        ProxyTo: "https://app.mycompany.com",
     },
-    AllowedMethods: []string{"GET", "POST"},
-    AllowedHeaders: []string{
-        "Content-Type",
-        "X-Wails-Window-ID",
-        "X-Wails-Window-Name",
-        "Authorization",
-    },
-    MaxAge: 24 * time.Hour,
-}
+    // Additional security configurations...
+})
 ```
 
 ## ❓ Troubleshooting
@@ -229,23 +220,23 @@ If you see certificate warnings:
 2. Verify the external server is running: `task run-server`
 3. Check firewall settings for port 3000
 
-### CORS Errors
+### Proxy Errors
 
-1. Check the browser console for specific CORS error messages
-2. Verify the origin in the CORS configuration matches exactly
+1. Check that both servers are running (external and Wails)
+2. Verify the ProxyTo configuration matches the external server URL
 3. Ensure the external server is using HTTPS (not HTTP)
-4. Check that the Wails runtime is properly loaded
+4. Check the console for proxy error messages
 
 ### "Wails runtime not found"
 
 1. Make sure you're running the page inside the Wails WebView
 2. Check that the Wails application is running: `task run-app`
-3. Verify the URL in the WebView matches the external server URL
+3. Verify the proxy is correctly forwarding runtime paths
 
 ## 📚 Learn More
 
 - [Wails v3 Documentation](https://v3alpha.wails.io)
-- [CORS Documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
+- [Go Reverse Proxy Documentation](https://pkg.go.dev/net/http/httputil#ReverseProxy)
 - [Go TLS Documentation](https://pkg.go.dev/crypto/tls)
 
 ## 📝 License

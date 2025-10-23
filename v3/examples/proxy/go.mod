@@ -1,4 +1,4 @@
-module github.com/wailsapp/wails/v3/examples/cors
+module github.com/wailsapp/wails/v3/examples/proxy
 
 go 1.24.0
 

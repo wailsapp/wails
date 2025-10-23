@@ -84,7 +84,7 @@ func main() {
 	fmt.Printf("     sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain %s\n", filepath.Join(certsDir, "ca.crt"))
 	fmt.Println("")
 	fmt.Println("   Linux:")
-	fmt.Printf("     sudo cp %s /usr/local/share/ca-certificates/wails-cors-example.crt\n", filepath.Join(certsDir, "ca.crt"))
+	fmt.Printf("     sudo cp %s /usr/local/share/ca-certificates/wails-proxy-example.crt\n", filepath.Join(certsDir, "ca.crt"))
 	fmt.Println("     sudo update-ca-certificates")
 	fmt.Println("")
 	fmt.Println("📌 Add to hosts file (as administrator/root):")
@@ -102,7 +102,7 @@ func generateCA() (*x509.Certificate, *rsa.PrivateKey, error) {
 	template := x509.Certificate{
 		SerialNumber: big.NewInt(1),
 		Subject: pkix.Name{
-			Organization:  []string{"Wails CORS Example"},
+			Organization:  []string{"Wails Proxy Example"},
 			Country:       []string{"US"},
 			Province:      []string{""},
 			Locality:      []string{""},
@@ -142,7 +142,7 @@ func generateServerCert(caCert *x509.Certificate, caKey *rsa.PrivateKey, hosts [
 	template := x509.Certificate{
 		SerialNumber: big.NewInt(2),
 		Subject: pkix.Name{
-			Organization: []string{"Wails CORS Example Server"},
+			Organization: []string{"Wails Proxy Example Server"},
 			Country:      []string{"US"},
 		},
 		NotBefore:    time.Now(),

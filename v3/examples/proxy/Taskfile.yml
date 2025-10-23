@@ -64,7 +64,7 @@ tasks:
     desc: "Trust the CA certificate on Linux (requires sudo)"
     platforms: [linux]
     cmds:
-      - sudo cp {{.CERT_DIR}}/ca.crt /usr/local/share/ca-certificates/wails-cors-example.crt
+      - sudo cp {{.CERT_DIR}}/ca.crt /usr/local/share/ca-certificates/wails-proxy-example.crt
       - sudo update-ca-certificates
 
   check-hosts:
@@ -160,7 +160,7 @@ tasks:
       - |
         echo ""
         echo "========================================="
-        echo "     Wails CORS Example Setup Complete    "
+        echo "     Wails Proxy Example Setup Complete    "
         echo "========================================="
         echo ""
         echo "✅ Certificates generated in ./certs/"
@@ -186,12 +186,12 @@ tasks:
         echo ""
         echo "========================================="
 
-  test-cors:
-    desc: "Test CORS configuration with curl"
+  test-proxy:
+    desc: "Test proxy configuration with curl"
     deps: [generate-certs]
     cmds:
       - |
-        echo "Testing CORS preflight request..."
+        echo "Testing proxy configuration..."
         curl -k -X OPTIONS \
           -H "Origin: https://app-local.wails-awesome.io:3000" \
           -H "Access-Control-Request-Method: POST" \

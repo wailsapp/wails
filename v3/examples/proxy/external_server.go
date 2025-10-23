@@ -46,10 +46,13 @@ func main() {
 	}
 	mux.Handle("/", http.FileServer(http.FS(frontendFS)))
 
+	// Note: The Wails runtime is injected directly by the WebView when using external URLs
+	// No need to serve /wails/runtime.js from this external server
+
 	// Add some debug endpoints
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"status":"ok","server":"external","cors":"testing"}`))
+		w.Write([]byte(`{"status":"ok","server":"external","proxy":"enabled"}`))
 	})
 
 	// Load certificates
@@ -90,7 +93,7 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("[%s] %s %s %s", r.Method, r.URL.Path, r.RemoteAddr, r.Header.Get("Origin"))
 
-		// Add CORS headers for debugging (the Wails app will handle the actual CORS)
+		// Add debug headers to track the origin
 		origin := r.Header.Get("Origin")
 		if origin != "" {
 			w.Header().Set("X-Debug-Origin", origin)

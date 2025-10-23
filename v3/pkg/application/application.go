@@ -9,13 +9,13 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"runtime"
 	"slices"
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/wailsapp/wails/v3/internal/signal"
 
@@ -79,9 +79,13 @@ func New(appOptions Options) *App {
 
 	result.customEventProcessor = NewWailsEventProcessor(result.Event.dispatch)
 
-	messageProc := NewMessageProcessor(result.Logger, &appOptions.CORS)
+	messageProc := NewMessageProcessor(result.Logger)
+
+	// Start with the base asset handler
+	assetHandler := appOptions.Assets.Handler
+
 	opts := &assetserver.Options{
-		Handler: appOptions.Assets.Handler,
+		Handler: assetHandler,
 		Middleware: assetserver.ChainMiddleware(
 			func(next http.Handler) http.Handler {
 				if m := appOptions.Assets.Middleware; m != nil {
@@ -123,6 +127,20 @@ func New(appOptions Options) *App {
 						next.ServeHTTP(rw, req)
 					}
 				})
+			},
+			// Add proxy middleware as the last middleware in the chain if ProxyTo is configured
+			func(next http.Handler) http.Handler {
+				if appOptions.Assets.ProxyTo != "" && assetserver.IsExternalURL(appOptions.Assets.ProxyTo) {
+					externalURL, err := url.Parse(appOptions.Assets.ProxyTo)
+					if err != nil {
+						result.fatal("invalid proxy URL: %w", err)
+					}
+					result.info("Setting up proxy for external URL", "url", appOptions.Assets.ProxyTo)
+					return assetserver.NewExternalAssetsHandler(result.Logger, &assetserver.Options{
+						Handler: next, // Use next as the base handler - this includes all the /wails/ middleware
+					}, externalURL)
+				}
+				return next
 			},
 		),
 		Logger: result.Logger,
@@ -181,18 +199,6 @@ func mergeApplicationDefaults(o *Options) {
 	}
 	if o.Windows.WndClass == "" {
 		o.Windows.WndClass = "WailsWebviewWindow"
-	}
-	// Set default CORS configuration if not provided
-	if o.CORS.AllowedMethods == nil {
-		defaultCORS := DefaultCORSConfig()
-		o.CORS.AllowedMethods = defaultCORS.AllowedMethods
-	}
-	if o.CORS.AllowedHeaders == nil {
-		defaultCORS := DefaultCORSConfig()
-		o.CORS.AllowedHeaders = defaultCORS.AllowedHeaders
-	}
-	if o.CORS.MaxAge == 0 {
-		o.CORS.MaxAge = 5 * time.Minute
 	}
 }
 

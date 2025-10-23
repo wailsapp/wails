@@ -30,17 +30,15 @@ const (
 )
 
 type MessageProcessor struct {
-	logger     *slog.Logger
-	corsConfig *CORSConfig
+	logger *slog.Logger
 
 	runningCalls map[string]context.CancelFunc
 	l            sync.Mutex
 }
 
-func NewMessageProcessor(logger *slog.Logger, corsConfig *CORSConfig) *MessageProcessor {
+func NewMessageProcessor(logger *slog.Logger) *MessageProcessor {
 	return &MessageProcessor{
 		logger:       logger,
-		corsConfig:   corsConfig,
 		runningCalls: map[string]context.CancelFunc{},
 	}
 }
@@ -83,17 +81,6 @@ func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
 }
 
 func (m *MessageProcessor) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	// Handle CORS if configured
-	if m.corsConfig != nil && m.corsConfig.Enabled {
-		// Set CORS headers
-		m.corsConfig.setCORSHeaders(rw, r)
-
-		// Handle preflight requests
-		if m.corsConfig.handlePreflight(rw, r) {
-			return
-		}
-	}
-
 	object := r.URL.Query().Get("object")
 	if object == "" {
 		m.httpError(rw, "Invalid runtime call:", errors.New("missing object value"))
@@ -104,11 +91,6 @@ func (m *MessageProcessor) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (m *MessageProcessor) HandleRuntimeCallWithIDs(rw http.ResponseWriter, r *http.Request) {
-	// Handle CORS if configured
-	if m.corsConfig != nil && m.corsConfig.Enabled {
-		m.corsConfig.setCORSHeaders(rw, r)
-	}
-
 	defer func() {
 		if handlePanic() {
 			rw.WriteHeader(http.StatusInternalServerError)

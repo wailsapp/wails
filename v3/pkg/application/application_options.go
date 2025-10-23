@@ -103,12 +103,6 @@ type Options struct {
 
 	// SingleInstance options for single instance functionality
 	SingleInstance *SingleInstanceOptions
-
-	// CORS configuration for the runtime API
-	// This allows you to control which external origins can access the Wails runtime API
-	// when using external URLs as the start URL for the webview.
-	// If not set, CORS will be disabled by default.
-	CORS CORSConfig
 }
 
 // AssetOptions defines the configuration of the AssetServer.
@@ -131,6 +125,11 @@ type AssetOptions struct {
 
 	// DisableLogging disables logging of the AssetServer. By default, the AssetServer logs every request.
 	DisableLogging bool
+
+	// ProxyTo is an external URL to proxy through the asset server
+	// When set, the WebView loads from the local asset server which proxies
+	// requests to this external URL, avoiding CORS issues
+	ProxyTo string
 }
 
 // Middleware defines HTTP middleware that can be applied to the AssetServer.

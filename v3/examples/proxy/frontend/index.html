@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wails CORS Example</title>
+    <title>Wails Proxy Example</title>
     <style>
         * {
             margin: 0;
@@ -227,8 +227,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>🚀 Wails CORS Example</h1>
-        <p class="subtitle">Demonstrating cross-origin communication with external URLs</p>
+        <h1>🚀 Wails Proxy Example</h1>
+        <p class="subtitle">Demonstrating proxy support for external URLs</p>
 
         <div class="url-info">
             <strong>Current Page Origin:</strong>
@@ -238,8 +238,8 @@
         <div class="info-box">
             <h3>📍 About This Example</h3>
             <p>
-                This page is served from an external HTTPS server at <strong>https://app-local.wails-awesome.io:3000</strong>.
-                It demonstrates how Wails v3 can work with external URLs using proper CORS configuration.
+                This page originates from an external HTTPS server at <strong>https://app-local.wails-awesome.io:3000</strong>.
+                It demonstrates how Wails v3 can proxy external URLs through the local asset server for seamless integration.
             </p>
         </div>
 
@@ -256,7 +256,7 @@
         <div class="button-group">
             <button id="greetBtn">👋 Greet</button>
             <button id="timeBtn">🕒 Get Time</button>
-            <button id="corsBtn">🔒 Test CORS</button>
+            <button id="proxyBtn">🔄 Test Proxy</button>
         </div>
 
         <div class="result-box">
@@ -267,10 +267,10 @@
         </div>
     </div>
 
-    <!-- Load Wails runtime from the Wails internal server -->
-    <script src="http://wails/wails/runtime.js"></script>
+    <!-- Load Wails runtime API -->
+    <script type="module" src="/wails/runtime.js"></script>
 
-    <!-- Application JavaScript from the external server -->
+    <!-- Application JavaScript -->
     <script src="/app.js"></script>
 </body>
 </html>
