@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	WM_USER_SYSTRAY = w32.WM_USER + 1
+	wmUserSystray = w32.WM_USER + 1
 )
 
 type windowsSystemTray struct {
@@ -107,6 +107,9 @@ func (s *windowsSystemTray) positionWindow(window Window, offset int) error {
 	}
 
 	taskbarBounds := w32.GetTaskbarPosition()
+	if taskbarBounds == nil {
+		return errors.New("failed to get taskbar position")
+	}
 
 	// Set the window position based on the icon location
 	// if the icon is in the taskbar (traybounds) then we need
@@ -222,37 +225,40 @@ func (s *windowsSystemTray) run() {
 
 	s.uid = uint32(s.parent.id)
 
-	if _, err := s.show(); err != nil {
-		// Initial systray add can fail when the shell is not available. This is handled downstream via TaskbarCreated message.
-		globalApplication.warning("initial systray add failed: %v", err)
-	}
-
 	// Resolve the base icons once so we can reuse them for light/dark modes
 	defaultIcon := getNativeApplication().windowClass.Icon
 
-	if s.parent.icon != nil {
+	// Priority: custom icon > default app icon > built-in icon
+	switch {
+	case s.parent.icon != nil:
 		s.lightModeIcon = lo.Must(w32.CreateSmallHIconFromImage(s.parent.icon))
 		s.lightModeIconOwned = true
-	} else if defaultIcon != 0 {
+	case defaultIcon != 0:
 		s.lightModeIcon = defaultIcon
 		s.lightModeIconOwned = false
-	} else {
+	default:
 		s.lightModeIcon = lo.Must(w32.CreateSmallHIconFromImage(icons.SystrayLight))
 		s.lightModeIconOwned = true
 	}
 
-	if s.parent.darkModeIcon != nil {
+	switch {
+	case s.parent.darkModeIcon != nil:
 		s.darkModeIcon = lo.Must(w32.CreateSmallHIconFromImage(s.parent.darkModeIcon))
 		s.darkModeIconOwned = true
-	} else if s.parent.icon != nil {
+	case s.parent.icon != nil:
 		s.darkModeIcon = s.lightModeIcon
 		s.darkModeIconOwned = false
-	} else if defaultIcon != 0 {
+	case defaultIcon != 0:
 		s.darkModeIcon = defaultIcon
 		s.darkModeIconOwned = false
-	} else {
+	default:
 		s.darkModeIcon = lo.Must(w32.CreateSmallHIconFromImage(icons.SystrayDark))
 		s.darkModeIconOwned = true
+	}
+
+	if _, err := s.show(); err != nil {
+		// Initial systray add can fail when the shell is not available. This is handled downstream via TaskbarCreated message.
+		globalApplication.warning("initial systray add failed: %v", err)
 	}
 
 	if s.parent.menu != nil {
@@ -278,9 +284,6 @@ func (s *windowsSystemTray) run() {
 	s.updateIcon()
 
 	// Listen for dark mode changes
-	if s.cancelTheme != nil {
-		s.cancelTheme()
-	}
 	s.cancelTheme = globalApplication.Event.OnApplicationEvent(events.Windows.SystemThemeChanged, func(event *ApplicationEvent) {
 		s.updateIcon()
 	})
@@ -327,9 +330,7 @@ func (s *windowsSystemTray) updateIcon() {
 	s.currentIconOwned = currentOwned
 
 	// Destroy the old icon handle if it exists, we owned it, and nothing else references it
-	if oldIconOwned && oldIcon != 0 && oldIcon != s.lightModeIcon && oldIcon != s.darkModeIcon {
-		w32.DestroyIcon(oldIcon)
-	}
+	s.releaseIcon(oldIcon, oldIconOwned, s.lightModeIcon, s.darkModeIcon)
 }
 
 func (s *windowsSystemTray) newNotifyIconData() w32.NOTIFYICONDATA {
@@ -410,7 +411,7 @@ func newSystemTrayImpl(parent *SystemTray) systemTrayImpl {
 
 func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr {
 	switch msg {
-	case WM_USER_SYSTRAY:
+	case wmUserSystray:
 		msg := lParam & 0xffff
 		switch msg {
 		case w32.WM_LBUTTONUP:
@@ -429,11 +430,11 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 			if s.parent.rightDoubleClickHandler != nil {
 				s.parent.rightDoubleClickHandler()
 			}
-		case 0x0406:
+		case w32.NIN_POPUPOPEN:
 			if s.parent.mouseEnterHandler != nil {
 				s.parent.mouseEnterHandler()
 			}
-		case 0x0407:
+		case w32.NIN_POPUPCLOSE:
 			if s.parent.mouseLeaveHandler != nil {
 				s.parent.mouseLeaveHandler()
 			}
@@ -443,8 +444,7 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 	// Menu processing
 	case w32.WM_COMMAND:
 		cmdMsgID := int(wParam & 0xffff)
-		switch cmdMsgID {
-		default:
+		if s.menu != nil {
 			s.menu.ProcessCommand(cmdMsgID)
 		}
 	default:
@@ -562,14 +562,14 @@ func (s *windowsSystemTray) show() (w32.NOTIFYICONDATA, error) {
 	nid := s.newNotifyIconData()
 	nid.UFlags = w32.NIF_ICON | w32.NIF_MESSAGE
 	nid.HIcon = s.currentIcon
-	nid.UCallbackMessage = WM_USER_SYSTRAY
+	nid.UCallbackMessage = wmUserSystray
 
 	if !w32.ShellNotifyIcon(w32.NIM_ADD, &nid) {
 		err := syscall.GetLastError()
 		return nid, fmt.Errorf("ShellNotifyIcon NIM_ADD failed: %w", err)
 	}
 
-	nid.UVersion = w32.NOTIFYICON_VERSION
+	nid.UVersion = w32.NOTIFYICON_VERSION_4
 	if !w32.ShellNotifyIcon(w32.NIM_SETVERSION, &nid) {
 		err := syscall.GetLastError()
 		return nid, fmt.Errorf("ShellNotifyIcon NIM_SETVERSION failed: %w", err)
