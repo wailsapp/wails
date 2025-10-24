@@ -158,15 +158,13 @@ export function OffAll(): void {
 /**
  * Emits an event.
  *
- * @returns A promise that will be fulfilled once the event has been emitted.
- * @param {(WailsEvent|[string, any])} args - a WailsEvent to emit (typesafe), or an event name and optional data.
+ * @returns A promise that will be fulfilled once the event has been emitted.  Resolves to true if the event was cancelled.
+ * @param name - The name of the event to emit
+ * @param data - The data that will be sent with the event
  */
-export function Emit<E extends WailsEventName = WailsEventName>(...args: [WailsEvent<E>] | [E] | [E, any]): Promise<boolean> {
-    if (typeof args[0] === 'string') {
-        const [name, data] = args;
-        return call(EmitMethod, new WailsEvent(name, data))
-    }
-    const [event] = args;
-    return call(EmitMethod, event);
+export function Emit<E extends WailsEventName = WailsEventName>(name: E, data: WailsEventData<E>): Promise<boolean>
+export function Emit<E extends WailsEventName = WailsEventName>(name: WailsEventData<E> extends null | void ? E : never): Promise<boolean>
+export function Emit<E extends WailsEventName = WailsEventName>(name: WailsEventData<E>, data?: any): Promise<boolean> {
+    return call(EmitMethod,  new WailsEvent(name, data))
 }
 

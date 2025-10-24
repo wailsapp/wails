@@ -96,11 +96,8 @@ import { Events } from '@wailsio/runtime';
 // Event without data
 Events.Emit('myapp:close-window')
 
-// Event with data:
-Events.Emit({
-    name: 'myapp:disconnect-requested', 
-    data: 'id-123'
-})
+// Event with data
+Events.Emit('myapp:disconnect-requested', 'id-123')
 ```
 
 If you are using typescript in your frontend and [application.RegisterEvent](/learn/events#custom-event-registration) in your Go code, you will get event name autocomplete / checking and data type checking. 
