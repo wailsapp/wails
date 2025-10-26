@@ -10,8 +10,6 @@ import (
 
 	"github.com/wailsapp/wails/v3/pkg/icons"
 
-	"github.com/samber/lo"
-
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
 )
@@ -220,7 +218,8 @@ func (s *windowsSystemTray) run() {
 		0,
 		nil)
 	if s.hwnd == 0 {
-		panic(syscall.GetLastError())
+		globalApplication.fatal("failed to create tray window: %s", syscall.GetLastError())
+		return
 	}
 
 	s.uid = uint32(s.parent.id)
@@ -229,31 +228,63 @@ func (s *windowsSystemTray) run() {
 	defaultIcon := getNativeApplication().windowClass.Icon
 
 	// Priority: custom icon > default app icon > built-in icon
-	switch {
-	case s.parent.icon != nil:
-		s.lightModeIcon = lo.Must(w32.CreateSmallHIconFromImage(s.parent.icon))
-		s.lightModeIconOwned = true
-	case defaultIcon != 0:
-		s.lightModeIcon = defaultIcon
-		s.lightModeIconOwned = false
-	default:
-		s.lightModeIcon = lo.Must(w32.CreateSmallHIconFromImage(icons.SystrayLight))
-		s.lightModeIconOwned = true
+	if s.parent.icon != nil {
+		icon, err := w32.CreateSmallHIconFromImage(s.parent.icon)
+		if err == nil {
+			s.lightModeIcon = icon
+			s.lightModeIconOwned = true
+		} else {
+			globalApplication.warning("failed to create systray icon: %v", err)
+		}
 	}
 
-	switch {
-	case s.parent.darkModeIcon != nil:
-		s.darkModeIcon = lo.Must(w32.CreateSmallHIconFromImage(s.parent.darkModeIcon))
-		s.darkModeIconOwned = true
-	case s.parent.icon != nil:
+	if s.lightModeIcon == 0 && defaultIcon != 0 {
+		s.lightModeIcon = defaultIcon
+		s.lightModeIconOwned = false
+	}
+
+	if s.lightModeIcon == 0 {
+		icon, err := w32.CreateSmallHIconFromImage(icons.SystrayLight)
+		if err != nil {
+			globalApplication.warning("failed to create systray icon: %v", err)
+			s.lightModeIcon = 0
+			s.lightModeIconOwned = false
+		} else {
+			s.lightModeIcon = icon
+			s.lightModeIconOwned = true
+		}
+	}
+
+	if s.parent.darkModeIcon != nil {
+		icon, err := w32.CreateSmallHIconFromImage(s.parent.darkModeIcon)
+		if err == nil {
+			s.darkModeIcon = icon
+			s.darkModeIconOwned = true
+		} else {
+			globalApplication.warning("failed to create systray dark mode icon: %v", err)
+		}
+	}
+
+	if s.darkModeIcon == 0 && s.parent.icon != nil && s.lightModeIcon != 0 {
 		s.darkModeIcon = s.lightModeIcon
 		s.darkModeIconOwned = false
-	case defaultIcon != 0:
+	}
+
+	if s.darkModeIcon == 0 && defaultIcon != 0 {
 		s.darkModeIcon = defaultIcon
 		s.darkModeIconOwned = false
-	default:
-		s.darkModeIcon = lo.Must(w32.CreateSmallHIconFromImage(icons.SystrayDark))
-		s.darkModeIconOwned = true
+	}
+
+	if s.darkModeIcon == 0 {
+		icon, err := w32.CreateSmallHIconFromImage(icons.SystrayDark)
+		if err != nil {
+			globalApplication.warning("failed to create systray dark mode icon: %v", err)
+			s.darkModeIcon = 0
+			s.darkModeIconOwned = false
+		} else {
+			s.darkModeIcon = icon
+			s.darkModeIconOwned = true
+		}
 	}
 
 	if _, err := s.show(); err != nil {
@@ -342,7 +373,8 @@ func (s *windowsSystemTray) newNotifyIconData() w32.NOTIFYICONDATA {
 func (s *windowsSystemTray) setIcon(icon []byte) {
 	newIcon, err := w32.CreateSmallHIconFromImage(icon)
 	if err != nil {
-		panic(err.Error())
+		globalApplication.error("failed to create systray light mode icon: %v", err)
+		return
 	}
 
 	oldLight := s.lightModeIcon
@@ -371,7 +403,8 @@ func (s *windowsSystemTray) setIcon(icon []byte) {
 func (s *windowsSystemTray) setDarkModeIcon(icon []byte) {
 	newIcon, err := w32.CreateSmallHIconFromImage(icon)
 	if err != nil {
-		panic(err.Error())
+		globalApplication.error("failed to create systray dark mode icon: %v", err)
+		return
 	}
 
 	oldDark := s.darkModeIcon
