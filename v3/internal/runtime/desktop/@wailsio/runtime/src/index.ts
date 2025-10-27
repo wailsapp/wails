@@ -53,7 +53,18 @@ export { Create };
 export * from "./cancellable.js";
 
 // Export transport interfaces and utilities
-export { setTransport, getTransport, type RuntimeTransport, objectNames, clientId } from "./runtime.js";
+export {
+    setTransport,
+    getTransport,
+    type RuntimeTransport,
+    objectNames,
+    clientId,
+    // Helper utilities for custom transport implementations
+    generateMessageID,
+    buildTransportRequest,
+    handleWailsCallback,
+    dispatchWailsEvent
+} from "./runtime.js";
 
 // Export codec interfaces and implementations
 export {
