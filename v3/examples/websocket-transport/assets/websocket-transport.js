@@ -4,10 +4,10 @@
  * This is a custom transport that replaces the default HTTP fetch transport
  * with WebSocket-based communication.
  *
- * VERSION 4 - WITH CODEC SUPPORT
+ * VERSION 5 - SIMPLIFIED
  */
 
-console.log('[WebSocket Transport] Loading VERSION 4 with codec support');
+console.log('[WebSocket Transport] Loading VERSION 5 - simplified');
 
 import { clientId, Base64JSONCodec } from '/wails/runtime.js';
 
@@ -156,8 +156,6 @@ export class WebSocketTransport {
                         // Extract call-id from the stored request data
                         const callId = pending.request.args?.['call-id'];
                         console.log('[WebSocket] Extracted call-id:', callId);
-                        console.log('[WebSocket] window._wails exists:', !!window._wails);
-                        console.log('[WebSocket] callResultHandler exists:', !!window._wails?.callResultHandler);
                         if (callId && window._wails?.callResultHandler) {
                             console.log('[WebSocket] Invoking callResultHandler');
                             window._wails.callResultHandler(callId, responseData, true);
@@ -174,6 +172,11 @@ export class WebSocketTransport {
                 }
             } else if (msg.type === 'event') {
                 console.log('[WebSocket] Received server event:', msg);
+                // Dispatch to Wails event system
+                if (msg.event && window._wails?.dispatchWailsEvent) {
+                    window._wails.dispatchWailsEvent(msg.event);
+                    console.log('[WebSocket] Event dispatched to Wails:', msg.event.name);
+                }
             }
         } catch (err) {
             console.error('[WebSocket] Failed to parse WebSocket message:', err);

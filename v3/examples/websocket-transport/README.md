@@ -69,13 +69,15 @@ app := application.New(application.Options{
 
 ## Frontend Setup
 
-The frontend uses the built-in WebSocket transport from the Wails runtime:
+The frontend uses the WebSocket transport with **generated bindings**:
 
 ```typescript
-import { setTransport, createWebSocketTransport, ByName } from "/wails/runtime.js";
+import { setTransport } from "/wails/runtime.js";
+import { createWebSocketTransport } from "/websocket-transport.js";
+import { GreetService } from "/bindings/github.com/wailsapp/wails/v3/examples/websocket-transport/index.js";
 
 // Create and configure WebSocket transport
-const wsTransport = createWebSocketTransport('ws://localhost:9998/wails/ws', {
+const wsTransport = createWebSocketTransport('ws://localhost:9099/wails/ws', {
     reconnectDelay: 2000,      // Reconnect after 2 seconds if disconnected
     requestTimeout: 30000      // Request timeout of 30 seconds
 });
@@ -83,18 +85,22 @@ const wsTransport = createWebSocketTransport('ws://localhost:9998/wails/ws', {
 // Set as the active transport
 setTransport(wsTransport);
 
-// Now all Wails calls use WebSocket instead of HTTP fetch!
-const result = await ByName("main.GreetService.Greet", "World");
+// Now all generated bindings use WebSocket instead of HTTP fetch!
+const result = await GreetService.Greet("World");
 ```
+
+**Key Point**: The generated bindings (`GreetService.Greet()`, `GreetService.Echo()`, etc.) automatically use whatever transport is configured via `setTransport()`. This proves the custom transport hijack works seamlessly with Wails code generation!
 
 ## Features Demonstrated
 
-### 1. Method Binding
-All bound methods work identically with WebSocket transport:
-- `Greet(name string)` - Simple string parameter and return
-- `Echo(message string)` - Echo back messages
-- `Add(a, b int)` - Multiple parameters with numeric types
-- `GetTime()` - No parameters, string return
+### 1. Generated Bindings with Custom Transport
+All generated bindings work identically with WebSocket transport:
+- `GreetService.Greet(name)` - Simple string parameter and return
+- `GreetService.Echo(message)` - Echo back messages
+- `GreetService.Add(a, b)` - Multiple parameters with numeric types
+- `GreetService.GetTime()` - No parameters, string return
+
+**The bindings are generated once, but the transport can be swapped at runtime!**
 
 ### 2. Connection Management
 - Automatic connection establishment on startup

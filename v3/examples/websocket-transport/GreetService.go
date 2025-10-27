@@ -1,19 +1,55 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"time"
+
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // GreetService is a service that demonstrates bound methods over WebSocket transport
 type GreetService struct {
 	greetCount int
+	app        *application.App
 }
 
-// Greet greets a person by name
+// ServiceStartup is called when the service is initialized
+func (g *GreetService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+	g.app = application.Get()
+
+	// Start a timer that emits events every second
+	// This demonstrates automatic event forwarding to WebSocket transport
+	go func() {
+		ticker := time.NewTicker(1 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case t := <-ticker.C:
+				// Emit a timer event - automatically forwarded to WebSocket!
+				g.app.Event.Emit("timer:tick", t.Format("15:04:05"))
+			}
+		}
+	}()
+
+	return nil
+}
+
+// Greet greets a person by name and emits an event
 func (g *GreetService) Greet(name string) string {
 	g.greetCount++
-	return fmt.Sprintf("Hello, %s! (Greeted %d times via WebSocket)", name, g.greetCount)
+	result := fmt.Sprintf("Hello, %s! (Greeted %d times via WebSocket)", name, g.greetCount)
+
+	// Emit an event to demonstrate event support over WebSocket
+	// Events are automatically forwarded to the WebSocket transport!
+	if g.app != nil {
+		g.app.Event.Emit("greet:count", g.greetCount)
+	}
+
+	return result
 }
 
 // GetTime returns the current server time
