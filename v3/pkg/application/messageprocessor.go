@@ -115,7 +115,11 @@ func (m *MessageProcessor) HandleRuntimeCallWithIDs(rw http.ResponseWriter, r *h
 	params := QueryParams(r.URL.Query())
 
 	targetWindow, nameOrID := m.getTargetWindow(r)
-	if targetWindow == nil {
+
+	// Some operations (calls, events, application) don't require a window
+	// This is useful for browser-based deployments with custom transports
+	windowRequired := object != callRequest && object != eventsRequest && object != applicationRequest && object != systemRequest
+	if windowRequired && targetWindow == nil {
 		m.httpError(rw, "Invalid runtime call:", fmt.Errorf("window '%s' not found", nameOrID))
 		return
 	}

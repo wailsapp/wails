@@ -101,6 +101,16 @@ func New(appOptions Options) *App {
 				result.error("failed to stop custom transport: %w", err)
 			}
 		})
+
+		// Auto-wire events if transport supports event delivery
+		if eventTransport, ok := transport.(EventTransport); ok {
+			result.Event.On("*", func(event *CustomEvent) {
+				if err := eventTransport.SendEvent(event); err != nil {
+					result.Logger.Error("Failed to deliver event via transport", "error", err)
+				}
+			})
+			result.debug("Event auto-forwarding enabled for transport")
+		}
 	}
 
 	opts := &assetserver.Options{

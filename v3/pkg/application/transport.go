@@ -58,6 +58,41 @@ type AssetServerTransport interface {
 	ServeAssets(assetHandler http.Handler) error
 }
 
+// EventTransport is an optional interface for transports that support
+// server-to-client event delivery (e.g., WebSocket, Server-Sent Events).
+//
+// When a transport implements this interface, Wails automatically forwards
+// all application events to the transport, eliminating the need for manual
+// event wiring code.
+//
+// Example implementation:
+//
+//	type MyWebSocketTransport struct { ... }
+//
+//	func (t *MyWebSocketTransport) SendEvent(event *WailsEvent) error {
+//	    // Broadcast event to all connected WebSocket clients
+//	    return t.broadcast(event)
+//	}
+//
+// The transport determines the delivery strategy:
+//   - Broadcast to all clients (typical for WebSocket)
+//   - Targeted delivery to specific windows/clients
+//   - Buffering for disconnected clients
+//   - Delivery guarantees and acknowledgments
+type EventTransport interface {
+	// SendEvent delivers an event to connected client(s).
+	// Called automatically by Wails when any event is emitted via app.Events.Emit().
+	//
+	// The event contains:
+	//   - Name: Event name (e.g., "greet:count", "user:login")
+	//   - Data: Event payload (any JSON-serializable data)
+	//   - Sender: Originating window name (optional)
+	//
+	// Returns an error if event delivery fails. Errors are logged but don't
+	// prevent the event from being dispatched to other listeners.
+	SendEvent(event *CustomEvent) error
+}
+
 // TransportHandler wraps the Wails message processor to handle runtime calls.
 // Custom transports should invoke this handler to process bound method calls,
 // events, dialogs, clipboard operations, etc.
