@@ -13,6 +13,7 @@ import (
 
 	"github.com/leaanthony/gosod"
 	"gopkg.in/yaml.v3"
+	"howett.net/plist"
 )
 
 //go:embed build_assets
@@ -251,7 +252,23 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 		return err
 	}
 
-	err = gosod.New(tfs).Extract(options.Dir, config)
+	tempDir, err := os.MkdirTemp("", "wails-build-assets-*")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tempDir)
+
+	err = gosod.New(tfs).Extract(tempDir, config)
+	if err != nil {
+		return err
+	}
+
+	err = mergePlistFiles(tempDir, options.Dir)
+	if err != nil {
+		return err
+	}
+
+	err = copyNonPlistFiles(tempDir, options.Dir)
 	if err != nil {
 		return err
 	}
@@ -265,4 +282,119 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 
 func normaliseName(name string) string {
 	return strings.ToLower(strings.ReplaceAll(name, " ", "-"))
+}
+
+func mergePlistFile(filePath string, newContent []byte) error {
+	var newDict map[string]any
+	_, err := plist.Unmarshal(newContent, &newDict)
+	if err != nil {
+		return fmt.Errorf("failed to parse new plist content: %w", err)
+	}
+
+	existingDict := make(map[string]any)
+	if _, err := os.Stat(filePath); err == nil {
+		existingContent, err := os.ReadFile(filePath)
+		if err != nil {
+			return fmt.Errorf("failed to read existing plist file: %w", err)
+		}
+		_, err = plist.Unmarshal(existingContent, &existingDict)
+		if err != nil {
+			return fmt.Errorf("failed to parse existing plist file: %w", err)
+		}
+	}
+
+	for key, value := range newDict {
+		existingDict[key] = value
+	}
+
+	file, err := os.Create(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to create plist file: %w", err)
+	}
+	defer file.Close()
+
+	encoder := plist.NewEncoder(file)
+	encoder.Indent("\t")
+	err = encoder.Encode(existingDict)
+	if err != nil {
+		return fmt.Errorf("failed to encode merged plist: %w", err)
+	}
+
+	return nil
+}
+
+func mergePlistFiles(tempDir, targetDir string) error {
+	return filepath.Walk(tempDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		if !strings.HasSuffix(path, ".plist") {
+			return nil
+		}
+
+		relPath, err := filepath.Rel(tempDir, path)
+		if err != nil {
+			return err
+		}
+		targetPath := filepath.Join(targetDir, relPath)
+
+		newContent, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("failed to read new plist file %s: %w", path, err)
+		}
+
+		targetDirPath := filepath.Dir(targetPath)
+		if err := os.MkdirAll(targetDirPath, 0755); err != nil {
+			return fmt.Errorf("failed to create target directory %s: %w", targetDirPath, err)
+		}
+
+		if err := mergePlistFile(targetPath, newContent); err != nil {
+			return fmt.Errorf("failed to merge plist file %s: %w", targetPath, err)
+		}
+
+		return nil
+	})
+}
+
+func copyNonPlistFiles(tempDir, targetDir string) error {
+	return filepath.Walk(tempDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		if strings.HasSuffix(path, ".plist") {
+			return nil
+		}
+
+		relPath, err := filepath.Rel(tempDir, path)
+		if err != nil {
+			return err
+		}
+		targetPath := filepath.Join(targetDir, relPath)
+
+		targetDirPath := filepath.Dir(targetPath)
+		if err := os.MkdirAll(targetDirPath, 0755); err != nil {
+			return fmt.Errorf("failed to create target directory %s: %w", targetDirPath, err)
+		}
+
+		content, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("failed to read file %s: %w", path, err)
+		}
+
+		if err := os.WriteFile(targetPath, content, info.Mode()); err != nil {
+			return fmt.Errorf("failed to write file %s: %w", targetPath, err)
+		}
+
+		return nil
+	})
 }
