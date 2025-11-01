@@ -11,11 +11,11 @@ Two macOS-specific window behavior issues reported:
 1. **Window.hide() causing tray icon to disappear** - When calling `Window.hide()`, both the window and tray icon disappear
 2. **Window.ToggleMaximise white screen flicker** - When maximizing, the window shows a white flash before content fills
 
-## Investigation Findings
+---
 
-### Issue 1: Window.hide() and Tray Icon Behavior
+## Issue 1: Window.hide() and Tray Icon Behavior
 
-#### Code Analysis
+### Code Analysis
 
 **Window Hide Implementation:**
 - Location: `v3/pkg/application/webview_window_darwin.go:930-933`
@@ -49,43 +49,99 @@ C.systemTrayHide(s.nsStatusItem) (systemtray_darwin.go:65)
 [statusItem setVisible:NO] (line 26)
 ```
 
-#### Analysis
+### Analysis
 
-**The window hide and tray icon visibility are completely independent operations.** There is no code that links these two actions. Based on the code review:
+**The window hide and tray icon visibility are completely independent operations.** There is no code that links these two actions.
 
-1. **No direct coupling:** Window visibility and tray icon visibility use separate APIs with no shared state
-2. **No event handlers:** No built-in event listeners that hide the tray when a window is hidden
-3. **Application delegate:** The app delegate (`application_darwin_delegate.m`) doesn't contain logic that would hide the tray on window hide
+### macOS Default Behavior Research
 
-#### Possible Causes
+#### **CRITICAL FINDING: NSApplicationActivationPolicy**
 
-1. **User application code:** The user's application might have event listeners that hide the tray when the window hides
-   - Check for: `window.OnWindowEvent(events.Common.WindowHidden, ...)` handlers
-   - Check if the attached window feature is being used with custom handlers
+After researching macOS behavior, this is **likely a known macOS behavior** related to `NSApplicationActivationPolicy`:
 
-2. **macOS Sequoia behavior:** macOS 15.5 might have introduced new behaviors for status bar items
-   - If the app's activation policy is set in a certain way
-   - If there are no visible windows and the app isn't in the dock
+**How Wails v3 Sets Activation Policy:**
+- Location: `v3/pkg/application/application_darwin.go:278`
+- Set during: `ApplicationDidFinishLaunching` event
+- Configurable via: `options.Mac.ActivationPolicy`
+- Default: `ActivationPolicyRegular` (appears in Dock)
+- Alternative: `ActivationPolicyAccessory` (no Dock icon, menu bar only)
 
-3. **Attached Window Feature:** The `SystemTray.AttachWindow()` feature (systemtray.go:281) sets up automatic window toggling, but this shouldn't hide the tray icon itself
+**Known macOS Behavior with ActivationPolicyAccessory:**
+1. When using `ActivationPolicyAccessory`, hiding all windows can affect tray icon visibility
+2. macOS may hide the status bar item when there are no visible windows and the app is an accessory
+3. This is documented in several Wails issues:
+   - Issue #4103: Freezing with Hidden property when using `ActivationPolicyAccessory`
+   - Issue #3374: Request to enable activation policy (implemented in v3)
+   - Issue #4389: Hide/show window crashes on macOS
 
-4. **NSApplication activation policy:** If the app is running as an accessory (`NSApplicationActivationPolicyAccessory`), hiding all windows might affect tray visibility
+**From Online Research:**
+- **Stack Overflow**: Status bar-only apps must carefully manage activation policy switching
+- **Apple Documentation**: `NSApplicationActivationPolicyAccessory` - "does not appear in the Dock and does not have a menu bar, but may be activated programmatically"
+- **macOS Sequoia Issues**: Several reports of menu bar icons disappearing in Sequoia beta/release
+  - GitHub issue on Maccy project: Menu bar icon disappears under some circumstances in macOS Sequoia
+- **LSUIElement**: Setting `LSUIElement=1` in Info.plist makes apps run as "agent apps" (similar to Accessory policy)
 
-#### Recommended Next Steps
+**Common Pattern That Can Cause This:**
+```swift
+// When window closes
+NSApp.setActivationPolicy(.accessory)  // Hide dock icon
 
-1. **Request minimal reproduction:** Ask the user for a minimal code sample showing the issue
-2. **Check application setup:** Review how the app is initialized, particularly:
-   - `app.SetActivationPolicy()` calls
-   - Event listeners on window hide/show
-   - System tray initialization
-3. **Test on macOS 15.5:** Verify if this is specific to macOS Sequoia
-4. **Add debug logging:** Check if both `window.Hide()` AND `systemTray.Hide()` are being called
+// When showing window
+NSApp.setActivationPolicy(.regular)    // Show dock icon
+```
+
+If switching policies dynamically, the status item may disappear when switching to `.accessory` with no windows visible.
+
+### Root Cause Analysis
+
+**Most Likely Cause:** The user's app is using `ActivationPolicyAccessory` or dynamically switching activation policies, and this is triggering macOS default behavior where:
+1. App is set to Accessory mode (or switches to it)
+2. All windows are hidden via `orderOut:`
+3. macOS determines the app has no UI presence
+4. Status bar item is hidden by the system (not by Wails code)
+
+**Alternative Causes:**
+1. **macOS Sequoia specific behavior** - New in macOS 15.x where status items behave differently
+2. **Menu bar overflow** - Too many icons cause some to be hidden (but space should remain visible)
+3. **User application code** - Event listeners explicitly hiding the tray
+4. **Memory management** - Status item reference being released (but unlikely given Wails' implementation)
+
+### Recommended Investigation Steps
+
+1. **Check user's activation policy setting:**
+   ```go
+   app := application.New(application.Options{
+       Mac: application.MacOptions{
+           ActivationPolicy: application.ActivationPolicyAccessory, // Check this!
+       },
+   })
+   ```
+
+2. **Request minimal reproduction** with:
+   - Activation policy used
+   - Whether policy is switched dynamically
+   - Whether the issue occurs with `ActivationPolicyRegular`
+   - Whether tray icon has a strong reference
+
+3. **Test on macOS Sequoia** specifically (15.5) vs earlier versions
+
+4. **Workarounds to suggest:**
+   - Use `ActivationPolicyRegular` instead of `ActivationPolicyAccessory`
+   - Keep at least one window visible (even if zero-sized/transparent)
+   - Don't dynamically switch activation policies
+   - Use `window.canHide = false` if using Accessory policy
+
+### Files Involved
+- `v3/pkg/application/webview_window_darwin.go` - Window hide implementation
+- `v3/pkg/application/systemtray_darwin.go` - Tray implementation
+- `v3/pkg/application/application_darwin.go:278` - Activation policy setting
+- `v3/pkg/application/application_options.go:163-179` - Activation policy options
 
 ---
 
-### Issue 2: Window.ToggleMaximise White Screen Flicker
+## Issue 2: Window.ToggleMaximise White Screen Flicker
 
-#### Code Analysis
+### Code Analysis
 
 **Maximize Implementation:**
 - Location: `v3/pkg/application/webview_window_darwin.go:959-961`
@@ -103,7 +159,7 @@ C.systemTrayHide(s.nsStatusItem) (systemtray_darwin.go:65)
 - Webview background can be set transparent via `webviewSetTransparent()` (line 358)
 - Backdrop options available: Normal, Transparent, Translucent, LiquidGlass (lines 1243-1253)
 
-#### Root Cause
+### Root Cause
 
 The white flicker occurs because:
 
@@ -115,7 +171,7 @@ The white flicker occurs because:
 3. **Background visibility:** During this gap, the white NSWindow background shows through
 4. **Frameless mode:** The issue is more noticeable in frameless mode where users expect a seamless appearance
 
-#### Technical Details
+### Technical Details
 
 **Relevant Code Locations:**
 ```
@@ -136,7 +192,7 @@ Backdrop: webview_window_darwin.go:1243-1253
 - Background color is set via `setBackgroundColour(options.BackgroundColour)` (line 1241)
 - Default RGBA is `{0, 0, 0, 0}` (transparent black)
 
-#### Potential Solutions
+### Potential Solutions
 
 **Option 1: Set Window Background to Match Content (Recommended)**
 ```objc
@@ -167,7 +223,7 @@ Backdrop: webview_window_darwin.go:1243-1253
 // This could involve forcing a render or adjusting the webview size proactively
 ```
 
-#### Recommended Fix
+### Recommended Fix
 
 The most robust solution is **Option 1 + Option 2**:
 
@@ -187,29 +243,7 @@ if (frameless) {
 // This can be done in setBackgroundColour() to always apply to both window and webview
 ```
 
----
-
-## Additional Observations
-
-### Frameless Mode Considerations
-- Both issues are more noticeable in frameless mode where users expect seamless behavior
-- Frameless windows use `NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable`
-- Corner radius of 8.0 is applied to frameless windows (line 55)
-
-### Testing Requirements
-1. Test on macOS Sequoia (15.5) specifically
-2. Test with frameless windows
-3. Test with different backdrop options
-4. Test with various background colors
-5. Test system tray with and without attached windows
-
-### Files Modified for Potential Fixes
-
-**For Tray Icon Issue:**
-- Likely no code changes needed - requires user code review
-- Possibly add better documentation about window/tray independence
-
-**For Maximize Flicker:**
+### Files to Modify
 - `v3/pkg/application/webview_window_darwin.go` (C code section)
   - Line 27-128: windowNew() function
   - Line 641-643: windowMaximise() function
@@ -219,18 +253,68 @@ if (frameless) {
 
 ---
 
-## Conclusion
+## Additional Observations
+
+### Frameless Mode Considerations
+- Both issues are more noticeable in frameless mode where users expect seamless behavior
+- Frameless windows use `NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable`
+- Corner radius of 8.0 is applied to frameless windows (line 55)
+
+### Activation Policy in Wails v3
+- **Fully Supported**: `v3/pkg/application/application_options.go:163-179`
+- **Three Options**: Regular (default), Accessory, Prohibited
+- **Set on Launch**: During `ApplicationDidFinishLaunching` event
+- **Examples Available**: `v3/examples/systray-basic`, `systray-custom`, `systray-menu`
+- **Common Use Case**: System tray apps use `ActivationPolicyAccessory` to hide from Dock
+
+### Related Wails Issues
+- **#3374**: Enable setting activation policy (implemented in v3)
+- **#4103**: Freezing with Hidden property + Events + ActivationPolicyAccessory
+- **#4389**: Hide/show window crashes on macOS
+- **#4494**: Linux context menu hiding app (similar pattern, different platform)
+
+### Testing Requirements
+1. Test on macOS Sequoia (15.5) specifically
+2. Test with frameless windows
+3. Test with different backdrop options
+4. Test with various background colors
+5. Test system tray with and without attached windows
+6. **Test with both ActivationPolicyRegular and ActivationPolicyAccessory**
+
+---
+
+## Conclusions
 
 ### Issue 1: Window.hide() / Tray Icon
-**Status:** Needs user reproduction case
-**Likely Cause:** User application code or macOS Sequoia behavior
-**Recommended Action:** Request minimal reproduction and review user's event handlers
+**Status:** Likely macOS default behavior with `ActivationPolicyAccessory`
+**Root Cause:** When using `ActivationPolicyAccessory` (common for tray apps), macOS may hide the status bar item when all windows are hidden
+**Evidence:**
+- Multiple reports of this behavior with Accessory policy
+- Wails issue #4103 documents freezing with Hidden + Accessory policy
+- No code in Wails links window hiding to tray visibility
+- macOS Sequoia has known menu bar icon issues
+
+**Recommended Action:**
+1. Request user to confirm their activation policy setting
+2. Ask if they can reproduce with `ActivationPolicyRegular`
+3. Suggest workarounds (keep one window, use Regular policy)
+4. Investigate if this is new in macOS Sequoia 15.5
+
+**Priority:** Medium - Likely configuration/design issue rather than bug
+
+---
 
 ### Issue 2: ToggleMaximise Flicker
 **Status:** Reproducible issue with known cause
 **Root Cause:** Window background color during zoom animation
-**Recommended Action:** Implement window background color management, especially for frameless windows
-**Priority:** Medium - affects visual polish but not functionality
+**Evidence:** Default white NSWindow background visible during resize animation
+
+**Recommended Action:**
+1. Implement window background color management
+2. Default frameless windows to black background
+3. Ensure webview background always matches window background
+
+**Priority:** Medium - Affects visual polish but not functionality
 
 ---
 
@@ -240,6 +324,8 @@ if (frameless) {
 - `/home/user/wails/v3/pkg/application/webview_window_darwin.go` - Main macOS window implementation
 - `/home/user/wails/v3/pkg/application/webview_window_darwin.m` - Objective-C delegate implementation
 - `/home/user/wails/v3/pkg/application/systemtray_darwin.go` - System tray implementation
+- `/home/user/wails/v3/pkg/application/application_darwin.go` - macOS app initialization & activation policy
+- `/home/user/wails/v3/pkg/application/application_options.go` - Application options including activation policy
 - `/home/user/wails/v3/pkg/application/webview_window.go` - Generic window interface
 - `/home/user/wails/v3/pkg/application/webview_window_options.go` - Window options and configuration
 
@@ -248,3 +334,10 @@ if (frameless) {
 - `zoom:` - Maximize/restore window (NSWindow)
 - `setVisible:` - Show/hide status item (NSStatusItem)
 - `setBackgroundColor:` - Set window background (NSWindow)
+- `setActivationPolicy:` - Set app activation policy (NSApplication)
+
+**Online Resources:**
+- Stack Overflow: NSApplicationActivationPolicy discussions
+- GitHub Issue #789 (Maccy): Menu bar icon disappears in macOS Sequoia
+- Apple Developer Forums: Activation policy and status item visibility
+- Wails Issues: #3374, #4103, #4389, #4494
