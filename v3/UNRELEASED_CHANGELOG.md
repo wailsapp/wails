@@ -22,7 +22,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Changes in existing functionality -->
 
 ## Fixed
-- Fix Windows package task failure (#4667)
+<!-- Bug fixes -->
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
