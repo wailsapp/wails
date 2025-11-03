@@ -54,6 +54,7 @@ After processing, the content will be moved to the main changelog and this file 
 **Fixed:**
 - Fix memory leak in event system during window close operations (#5678)
 - Fix crash when using context menus on Linux with Wayland
+- Fix on Linux, trying to open a file with the `fileexplorer` will open parent directory (#4521)
 
 **Security:**
 - Update dependencies to address CVE-2024-12345 in third-party library
