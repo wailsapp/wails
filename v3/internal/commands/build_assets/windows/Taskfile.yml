@@ -33,12 +33,7 @@ tasks:
   package:
     summary: Packages a production build of the application
     cmds:
-      - |-
-        if [ "{{.FORMAT | default "nsis"}}" = "msix" ]; then
-          task: create:msix:package
-        else
-          task: create:nsis:installer
-        fi
+      - task: '{{if eq (.FORMAT | default "nsis") "msix"}}create:msix:package{{else}}create:nsis:installer{{end}}'
     vars:
       FORMAT: '{{.FORMAT | default "nsis"}}'
 
@@ -60,7 +55,12 @@ tasks:
     cmds:
       # Create the Microsoft WebView2 bootstrapper if it doesn't exist
       - wails3 generate webview2bootstrapper -dir "{{.ROOT_DIR}}/build/windows/nsis"
-      - makensis -DARG_WAILS_{{.ARG_FLAG}}_BINARY="{{.ROOT_DIR}}/{{.BIN_DIR}}/{{.APP_NAME}}.exe" project.nsi
+      - | 
+        {{if eq OS "windows"}}
+        makensis -DARG_WAILS_{{.ARG_FLAG}}_BINARY="{{.ROOT_DIR}}\{{.BIN_DIR}}\{{.APP_NAME}}.exe" project.nsi
+        {{else}}
+        makensis -DARG_WAILS_{{.ARG_FLAG}}_BINARY="{{.ROOT_DIR}}/{{.BIN_DIR}}/{{.APP_NAME}}.exe" project.nsi
+        {{end}}
     vars:
       ARCH: '{{.ARCH | default ARCH}}'
       ARG_FLAG: '{{if eq .ARCH "amd64"}}AMD64{{else}}ARM64{{end}}'
