@@ -17,12 +17,18 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add `systray-clock` example showing a headless tray with live tooltip updates (#4653).
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Windows trays now honor `SystemTray.Show()`/`Hide()` by toggling `NIS_HIDDEN`, so apps can truly disappear and return (#4653).
+- Tray registration reuses resolved icons, sets `NOTIFYICON_VERSION_4` once, and enables `NIF_SHOWTIP` so tooltips recover after Explorer restarts (#4653).
 
 ## Fixed
 <!-- Bug fixes -->
+- Track `HICON` ownership so only user-created handles are destroyed, preventing Explorer recycling crashes (#4653).
+- Release the Windows system-theme listener and retained tray icons during destroy to stop leaking goroutines and device contexts (#4653).
+- Truncate tray tooltips at 127 UTF-16 units to avoid corrupting surrogate pairs and multi-byte glyphs (#4653).
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
