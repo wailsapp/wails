@@ -25,6 +25,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 - Fixed linux desktop.tmpl protocol range, by removing `<.Info.Protocol>` to `<.Protocol>` by @Tolfx in #4510
 - Fixed redefinition error for liquid glass demo in [#4542](https://github.com/wailsapp/wails/pull/4542) by @Etesam913
+- Fixed DnD dropzone detection failing at non-100% display scaling on Windows [#4632](https://github.com/wailsapp/wails/pull/4632) by @yulesxoxo
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

@@ -539,8 +539,8 @@ class Window {
      * Gathers information about the drop target element and sends it back to the Go backend.
      *
      * @param filenames - An array of file paths (strings) that were dropped.
-     * @param x - The x-coordinate of the drop event.
-     * @param y - The y-coordinate of the drop event.
+     * @param x - The x-coordinate of the drop event, in logical (CSS) pixels relative to the webview.
+     * @param y - The y-coordinate of the drop event, in logical (CSS) pixels relative to the webview.
      */
     HandlePlatformFileDrop(filenames: string[], x: number, y: number): void {
         const element = document.elementFromPoint(x, y);
