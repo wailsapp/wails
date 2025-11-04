@@ -613,6 +613,11 @@ func (w *windowsWebviewWindow) convertWindowToWebviewCoordinates(windowX, window
 
 	// Get DPI for this window
 	dpi := w32.GetDpiForWindow(w.hwnd)
+	if dpi == 0 {
+		globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Failed to get dpi, returning physical coordinates", "webviewPhysicalX", webviewPhysicalX, "webviewPhysicalY", webviewPhysicalY)
+		return webviewPhysicalX, webviewPhysicalY
+	}
+
 	// Convert to scale factor: 96 DPI == 1.0 (100%)
 	scaleFactor := float64(dpi) / 96.0
 	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: DPI info", "dpi", dpi, "scaleFactor", scaleFactor)
