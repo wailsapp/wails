@@ -15,6 +15,7 @@ import (
 	"unsafe"
 
 	"github.com/wailsapp/go-webview2/webviewloader"
+
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -124,9 +125,9 @@ func (m *windowsApp) setIcon(_ []byte) {
 }
 
 func (m *windowsApp) name() string {
-	//appName := C.getAppName()
-	//defer C.free(unsafe.Pointer(appName))
-	//return C.GoString(appName)
+	// appName := C.getAppName()
+	// defer C.free(unsafe.Pointer(appName))
+	// return C.GoString(appName)
 	return ""
 }
 
@@ -347,7 +348,9 @@ func (m *windowsApp) reshowSystrays() {
 	m.systrayMapLock.Lock()
 	defer m.systrayMapLock.Unlock()
 	for _, systray := range m.systrayMap {
-		systray.reshow()
+		if _, err := systray.show(); err != nil {
+			globalApplication.warning("failed to re-add system tray icon: %v", err)
+		}
 	}
 }
 

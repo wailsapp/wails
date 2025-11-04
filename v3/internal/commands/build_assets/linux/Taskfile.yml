@@ -47,12 +47,12 @@ tasks:
       - task: generate:dotdesktop
     cmds:
       - cp {{.APP_BINARY}} {{.APP_NAME}}
-      - cp ../../appicon.png appicon.png
+      - cp ../../appicon.png {{.APP_NAME}}.png
       - wails3 generate appimage -binary {{.APP_NAME}} -icon {{.ICON}} -desktopfile {{.DESKTOP_FILE}} -outputdir {{.OUTPUT_DIR}} -builddir {{.ROOT_DIR}}/build/linux/appimage/build
     vars:
       APP_NAME: '{{.APP_NAME}}'
       APP_BINARY: '../../../bin/{{.APP_NAME}}'
-      ICON: '../../appicon.png'
+      ICON: '{{.APP_NAME}}.png'
       DESKTOP_FILE: '../{{.APP_NAME}}.desktop'
       OUTPUT_DIR: '../../../bin'
 

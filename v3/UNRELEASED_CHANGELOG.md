@@ -16,16 +16,20 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
-- Added NSIS Protocol template for Windows by @Tolfx in #4510
-- Added tests for build-assets by @Tolfx in #4510
+<!-- New features, capabilities, or enhancements -->
+- Add `systray-clock` example showing a headless tray with live tooltip updates (#4653).
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Windows trays now honor `SystemTray.Show()`/`Hide()` by toggling `NIS_HIDDEN`, so apps can truly disappear and return (#4653).
+- Tray registration reuses resolved icons, sets `NOTIFYICON_VERSION_4` once, and enables `NIF_SHOWTIP` so tooltips recover after Explorer restarts (#4653).
 
 ## Fixed
-- Fixed linux desktop.tmpl protocol range, by removing `<.Info.Protocol>` to `<.Protocol>` by @Tolfx in #4510
-- Fixed redefinition error for liquid glass demo in [#4542](https://github.com/wailsapp/wails/pull/4542) by @Etesam913
-- Fixed DnD dropzone detection failing at non-100% display scaling on Windows [#4632](https://github.com/wailsapp/wails/pull/4632) by @yulesxoxo
+<!-- Bug fixes -->
+- Track `HICON` ownership so only user-created handles are destroyed, preventing Explorer recycling crashes (#4653).
+- Release the Windows system-theme listener and retained tray icons during destroy to stop leaking goroutines and device contexts (#4653).
+- Truncate tray tooltips at 127 UTF-16 units to avoid corrupting surrogate pairs and multi-byte glyphs (#4653).
+- Fixed DnD dropzone detection failing at non-100% display scaling on Windows (#4632).
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
@@ -51,6 +55,7 @@ After processing, the content will be moved to the main changelog and this file 
 **Fixed:**
 - Fix memory leak in event system during window close operations (#5678)
 - Fix crash when using context menus on Linux with Wayland
+- Fix on Linux, trying to open a file with the `fileexplorer` will open parent directory (#4521)
 
 **Security:**
 - Update dependencies to address CVE-2024-12345 in third-party library
