@@ -66,8 +66,18 @@ func sysProcAttr(path string, selectFile bool) *syscall.SysProcAttr {
 }
 
 func fallbackExplorerBinArgs(path string, selectFile bool) (string, []string, error) {
-	// NOTE: The linux fallback explorer opening is not supporting file selection
-	path = filepath.Dir(path)
+	// NOTE: The linux fallback explorer opening does not support file selection
+
+	stat, err := os.Stat(path)
+	if err != nil {
+		return "", []string{}, fmt.Errorf("stat path: %w", err)
+	}
+
+	// If the path is a file, we want to open the directory containing the file
+	if !stat.IsDir() {
+		path = filepath.Dir(path)
+	}
+
 	return "xdg-open", []string{path}, nil
 }
 
