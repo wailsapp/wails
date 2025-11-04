@@ -5,6 +5,7 @@ package application
 import (
 	"errors"
 	"fmt"
+	"math"
 	"net/url"
 	"strconv"
 	"strings"
@@ -605,12 +606,30 @@ func (w *windowsWebviewWindow) convertWindowToWebviewCoordinates(windowX, window
 	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Calculated offset", "offsetX", offsetX, "offsetY", offsetY)
 
 	// Convert window-relative coordinates to webview-relative coordinates
-	webviewX := windowX - offsetX
-	webviewY := windowY - offsetY
+	webviewPhysicalX := windowX - offsetX
+	webviewPhysicalY := windowY - offsetY
 
-	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Final webview coordinates", "webviewX", webviewX, "webviewY", webviewY)
+	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Webview coordinates before DPI Scaling", "webviewPhysicalX", webviewPhysicalX, "webviewPhysicalY", webviewPhysicalY)
 
-	return webviewX, webviewY
+	// Get DPI for this window
+	dpi := w32.GetDpiForWindow(w.hwnd)
+	if dpi == 0 {
+		globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Failed to get dpi, returning physical coordinates", "webviewPhysicalX", webviewPhysicalX, "webviewPhysicalY", webviewPhysicalY)
+		return webviewPhysicalX, webviewPhysicalY
+	}
+
+	// Convert to scale factor: 96 DPI == 1.0 (100%)
+	scaleFactor := float64(dpi) / 96.0
+	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: DPI info", "dpi", dpi, "scaleFactor", scaleFactor)
+
+	// Convert physical pixels -> logical/CSS pixels by dividing by the scale factor
+	// Use rounding to avoid truncation artefacts
+	webviewLogicalX := int(math.Round(float64(webviewPhysicalX) / scaleFactor))
+	webviewLogicalY := int(math.Round(float64(webviewPhysicalY) / scaleFactor))
+	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Final webview coordinates (logical/CSS pixels)",
+		"webviewLogicalX", webviewLogicalX, "webviewLogicalY", webviewLogicalY)
+
+	return webviewLogicalX, webviewLogicalY
 }
 
 func (w *windowsWebviewWindow) physicalBounds() Rect {

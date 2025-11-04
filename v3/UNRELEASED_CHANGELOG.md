@@ -29,6 +29,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Track `HICON` ownership so only user-created handles are destroyed, preventing Explorer recycling crashes (#4653).
 - Release the Windows system-theme listener and retained tray icons during destroy to stop leaking goroutines and device contexts (#4653).
 - Truncate tray tooltips at 127 UTF-16 units to avoid corrupting surrogate pairs and multi-byte glyphs (#4653).
+- Fixed DnD dropzone detection failing at non-100% display scaling on Windows (#4632).
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
