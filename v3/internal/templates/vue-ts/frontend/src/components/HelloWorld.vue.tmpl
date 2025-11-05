@@ -30,9 +30,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <h1>{{ msg }}</h1>
+  <h1>{{"{{"}} msg {{"}}"}}</h1>
 
-  <div class="result">{{ result }}</div>
+  <div class="result">{{"{{"}} result {{"}}"}}</div>
   <div class="card">
     <div class="input-box">
       <input class="input" v-model="name" type="text" autocomplete="off"/>
@@ -42,6 +42,6 @@ onMounted(() => {
 
   <div class="footer">
     <div><p>Click on the Wails logo to learn more</p></div>
-    <div><p>{{ time }}</p></div>
+    <div><p>{{"{{"}} time {{"}}"}}</p></div>
   </div>
 </template>
