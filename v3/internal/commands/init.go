@@ -2,12 +2,13 @@ package commands
 
 import (
 	"fmt"
-	"github.com/go-git/go-git/v5/config"
-	"github.com/wailsapp/wails/v3/internal/term"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/go-git/go-git/v5/config"
+	"github.com/wailsapp/wails/v3/internal/term"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/pterm/pterm"
@@ -16,38 +17,6 @@ import (
 )
 
 var DisableFooter bool
-
-// GitURLToModuleName converts a git URL to a Go module name by removing common prefixes
-// and suffixes. It handles HTTPS, SSH, Git protocol, and filesystem URLs.
-func GitURLToModuleName(gitURL string) string {
-	moduleName := gitURL
-	if strings.HasSuffix(moduleName, ".git") {
-		moduleName = moduleName[:len(moduleName)-4]
-	}
-	// Handle various URL schemes
-	for _, prefix := range []string{
-		"https://",
-		"http://",
-		"git://",
-		"ssh://",
-		"file://",
-	} {
-		if strings.HasPrefix(moduleName, prefix) {
-			moduleName = moduleName[len(prefix):]
-			break
-		}
-	}
-	// Handle SSH URLs (git@github.com:username/project.git)
-	if strings.HasPrefix(moduleName, "git@") {
-		// Remove the 'git@' prefix
-		moduleName = moduleName[4:]
-		// Replace ':' with '/' for proper module path
-		moduleName = strings.Replace(moduleName, ":", "/", 1)
-	}
-	// Remove leading forward slash for file system paths
-	moduleName = strings.TrimPrefix(moduleName, "/")
-	return moduleName
-}
 
 func initGitRepository(projectDir string, gitURL string) error {
 	// Initialize repository
@@ -63,28 +32,6 @@ func initGitRepository(projectDir string, gitURL string) error {
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create git remote: %w", err)
-	}
-
-	// Update go.mod with the module name
-	moduleName := GitURLToModuleName(gitURL)
-
-	goModPath := filepath.Join(projectDir, "go.mod")
-	content, err := os.ReadFile(goModPath)
-	if err != nil {
-		return fmt.Errorf("failed to read go.mod: %w", err)
-	}
-
-	// Replace module name
-	lines := strings.Split(string(content), "\n")
-	if len(lines) == 0 {
-		return fmt.Errorf("go.mod is empty")
-	}
-	lines[0] = fmt.Sprintf("module %s", moduleName)
-	newContent := strings.Join(lines, "\n")
-
-	err = os.WriteFile(goModPath, []byte(newContent), 0644)
-	if err != nil {
-		return fmt.Errorf("failed to write go.mod: %w", err)
 	}
 
 	// Stage all files
