@@ -1,6 +1,6 @@
 # Unreleased Changes
 
-<!-- 
+<!--
 This file is used to collect changelog entries for the next v3-alpha release.
 Add your changes under the appropriate sections below.
 
@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix reference to javascript bindings in templates when using -git cli option
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
