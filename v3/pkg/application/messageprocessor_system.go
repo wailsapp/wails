@@ -1,8 +1,7 @@
 package application
 
 import (
-	"fmt"
-	"net/http"
+	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
 const (
@@ -15,16 +14,13 @@ var systemMethodNames = map[int]string{
 	Environment:      "Environment",
 }
 
-func (m *MessageProcessor) processSystemMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
-	switch method {
+func (m *MessageProcessor) processSystemMethod(req *RuntimeRequest) (any, error) {
+	switch req.Method {
 	case SystemIsDarkMode:
-		m.json(rw, globalApplication.Env.IsDarkMode())
+		return globalApplication.Env.IsDarkMode(), nil
 	case Environment:
-		m.json(rw, globalApplication.Env.Info())
+		return globalApplication.Env.Info(), nil
 	default:
-		m.httpError(rw, "Invalid system call:", fmt.Errorf("unknown method: %d", method))
-		return
+		return nil, errs.NewInvalidSystemCallErrorf("unknown method: %d", req.Method)
 	}
-
-	m.Info("Runtime call:", "method", "System."+systemMethodNames[method])
 }

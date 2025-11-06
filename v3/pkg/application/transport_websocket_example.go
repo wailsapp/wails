@@ -24,7 +24,6 @@ type WebSocketTransport struct {
 	clients  map[*websocket.Conn]bool
 	mu       sync.RWMutex
 	handler  TransportHandler
-	codec    TransportCodec
 }
 
 // TransportOption is a functional option for configuring WebSocketTransport
@@ -32,17 +31,10 @@ type TransportOption func(*WebSocketTransport)
 
 // WebSocketMessage represents a message sent over the WebSocket transport
 type WebSocketMessage struct {
-	ID      string           `json:"id"`      // Unique message ID for request/response matching
-	Type    string           `json:"type"`    // "request" or "response"
-	Request *TransportRequest `json:"request,omitempty"`
+	ID       string             `json:"id"`   // Unique message ID for request/response matching
+	Type     string             `json:"type"` // "request" or "response"
+	Request  *TransportRequest  `json:"request,omitempty"`
 	Response *TransportResponse `json:"response,omitempty"`
-}
-
-// WithCodec sets a custom codec for encoding/decoding transport data
-func WithCodec(codec TransportCodec) TransportOption {
-	return func(t *WebSocketTransport) {
-		t.codec = codec
-	}
 }
 
 // NewWebSocketTransport creates a new WebSocket transport listening on the specified address.
@@ -58,7 +50,6 @@ func NewWebSocketTransport(addr string, opts ...TransportOption) *WebSocketTrans
 			},
 		},
 		clients: make(map[*websocket.Conn]bool),
-		codec:   NewDefaultCodec(), // Default to base64/JSON codec
 	}
 
 	// Apply options
@@ -173,40 +164,8 @@ func (w *WebSocketTransport) handleWebSocket(rw http.ResponseWriter, r *http.Req
 func (w *WebSocketTransport) handleRequest(conn *websocket.Conn, msgID string, req *TransportRequest) {
 	log.Printf("[WebSocket] Received request: msgID=%s, object=%d, method=%d, args=%s", msgID, req.Object, req.Method, req.Args)
 
-	// Decode request args if needed
-	if req.Args != "" {
-		decodedArgs, err := w.codec.DecodeRequest(req.Args)
-		if err != nil {
-			log.Printf("[WebSocket] Failed to decode request args: %v", err)
-			errorResponse := &TransportResponse{
-				StatusCode:  http.StatusBadRequest,
-				ContentType: "text/plain",
-				Data:        []byte(fmt.Sprintf("Failed to decode request: %v", err)),
-			}
-			w.sendResponse(conn, msgID, errorResponse)
-			return
-		}
-		req.Args = decodedArgs
-	}
-
 	// Call the Wails runtime handler
 	response := w.handler.HandleRuntimeCall(context.Background(), req)
-
-	// Encode response data using codec
-	if response.StatusCode == http.StatusOK && response.Data != nil {
-		if dataBytes, ok := response.Data.([]byte); ok {
-			encodedData, err := w.codec.EncodeResponse(dataBytes, response.ContentType)
-			if err != nil {
-				log.Printf("[WebSocket] Failed to encode response: %v", err)
-				response.StatusCode = http.StatusInternalServerError
-				response.Data = []byte(fmt.Sprintf("Failed to encode response: %v", err))
-			} else {
-				response.Data = encodedData
-			}
-		}
-	}
-
-	log.Printf("[WebSocket] Response: statusCode=%d, contentType=%s", response.StatusCode, response.ContentType)
 
 	w.sendResponse(conn, msgID, response)
 }
@@ -240,9 +199,8 @@ func (w *WebSocketTransport) BroadcastEvent(event interface{}) error {
 	msg := WebSocketMessage{
 		Type: "event",
 		Response: &TransportResponse{
-			StatusCode:  200,
-			ContentType: "application/json",
-			Data:        data,
+			StatusCode: 200,
+			Data:       data,
 		},
 	}
 

@@ -2,14 +2,13 @@ package application
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"log/slog"
-	"net/http"
+	"slices"
 	"strconv"
 	"sync"
-	"math"
+
+	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
 // TODO maybe we could use a new struct that has the targetWindow as an attribute so we could get rid of passing the targetWindow
@@ -29,6 +28,15 @@ const (
 	cancelCallRequesst = 10
 )
 
+type RuntimeRequest struct {
+	Object            int         `json:"object"`
+	Method            int         `json:"method"`
+	Params            QueryParams `json:"params"`
+	WebviewWindowName string      `json:"webviewWindowName,omitempty"`
+	WebviewWindowId   uint32      `json:"webviewWindowId,omitempty"`
+	ClientId          string      `json:"clientId,omitempty"`
+}
+
 type MessageProcessor struct {
 	logger *slog.Logger
 
@@ -43,23 +51,60 @@ func NewMessageProcessor(logger *slog.Logger) *MessageProcessor {
 	}
 }
 
-func (m *MessageProcessor) httpError(rw http.ResponseWriter, message string, err error) {
-	m.Error(message, "error", err)
-	rw.WriteHeader(http.StatusUnprocessableEntity)
-	_, err = rw.Write([]byte(err.Error()))
-	if err != nil {
-		m.Error("Unable to write error response:", "error", err)
+func (m *MessageProcessor) HandleRuntimeCallWithIDs(ctx context.Context, req *RuntimeRequest) (any, error) {
+	defer func() (any, error) {
+		if handlePanic() {
+			// TODO: should get error here and return it.
+			return nil, errors.New("runtime panic detected!")
+		}
+
+		panic("todo!")
+	}()
+	targetWindow, nameOrID := m.getTargetWindow(req)
+
+	var windowNotRequiredRequests = []int{callRequest, eventsRequest, applicationRequest, systemRequest}
+
+	// Some operations (calls, events, application) don't require a window
+	// This is useful for browser-based deployments with custom transports
+	windowRequired := !slices.Contains(windowNotRequiredRequests, req.Object)
+	if windowRequired && targetWindow == nil {
+		return nil, errs.NewInvalidRuntimeCallErrorf("window '%s' not found", nameOrID)
+	}
+
+	switch req.Object {
+	case windowRequest:
+		return m.processWindowMethod(req, targetWindow)
+	case clipboardRequest:
+		return m.processClipboardMethod(req)
+	case dialogRequest:
+		return m.processDialogMethod(req, targetWindow)
+	case eventsRequest:
+		return m.processEventsMethod(req, targetWindow)
+	case applicationRequest:
+		return m.processApplicationMethod(req)
+	case contextMenuRequest:
+		return m.processContextMenuMethod(req, targetWindow)
+	case screensRequest:
+		return m.processScreensMethod(req)
+	case callRequest:
+		return m.processCallMethod(ctx, req, targetWindow)
+	case systemRequest:
+		return m.processSystemMethod(req)
+	case browserRequest:
+		return m.processBrowserMethod(req)
+	case cancelCallRequesst:
+		return m.processCallCancelMethod(req)
+	default:
+		return nil, errs.NewInvalidRuntimeCallErrorf("unknown object %d", req.Object)
 	}
 }
 
-func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
-	windowName := r.Header.Get(webViewRequestHeaderWindowName)
-	if windowName != "" {
-		window, _ := globalApplication.Window.GetByName(windowName)
-		return window, windowName
+func (m *MessageProcessor) getTargetWindow(req *RuntimeRequest) (Window, string) {
+	if req.WebviewWindowName != "" {
+		window, _ := globalApplication.Window.GetByName(req.WebviewWindowName)
+		return window, req.WebviewWindowName
 	}
-	windowID := r.Header.Get(webViewRequestHeaderWindowId)
-	if windowID == "" {
+	if req.WebviewWindowId == 0 {
 		// No window specified - return the first available window
 		// This is useful for custom transports that don't have automatic window context
 		windows := globalApplication.Window.GetAll()
@@ -68,88 +113,12 @@ func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
 		}
 		return nil, ""
 	}
-	wID, err := strconv.ParseUint(windowID, 10, 64)
-	if err != nil {
-		m.Error("Window ID not parsable:", "id", windowID, "error", err)
-		return nil, windowID
-	}
-	// Check if wID is within the valid range for uint
-	if wID > math.MaxUint32 {
-		m.Error("Window ID out of range for uint:", "id", wID)
-		return nil, windowID
-	}
-	targetWindow, _ := globalApplication.Window.GetByID(uint(wID))
+	targetWindow, _ := globalApplication.Window.GetByID(uint(req.WebviewWindowId))
 	if targetWindow == nil {
-		m.Error("Window ID not found:", "id", wID)
-		return nil, windowID
+		m.Error("Window ID not found:", "id", req.WebviewWindowId)
+		return nil, strconv.Itoa(int(windowID))
 	}
-	return targetWindow, windowID
-}
-
-func (m *MessageProcessor) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	object := r.URL.Query().Get("object")
-	if object == "" {
-		m.httpError(rw, "Invalid runtime call:", errors.New("missing object value"))
-		return
-	}
-
-	m.HandleRuntimeCallWithIDs(rw, r)
-}
-
-func (m *MessageProcessor) HandleRuntimeCallWithIDs(rw http.ResponseWriter, r *http.Request) {
-	defer func() {
-		if handlePanic() {
-			rw.WriteHeader(http.StatusInternalServerError)
-		}
-	}()
-	object, err := strconv.Atoi(r.URL.Query().Get("object"))
-	if err != nil {
-		m.httpError(rw, "Invalid runtime call:", fmt.Errorf("error decoding object value: %w", err))
-		return
-	}
-	method, err := strconv.Atoi(r.URL.Query().Get("method"))
-	if err != nil {
-		m.httpError(rw, "Invalid runtime call:", fmt.Errorf("error decoding method value: %w", err))
-		return
-	}
-	params := QueryParams(r.URL.Query())
-
-	targetWindow, nameOrID := m.getTargetWindow(r)
-
-	// Some operations (calls, events, application) don't require a window
-	// This is useful for browser-based deployments with custom transports
-	windowRequired := object != callRequest && object != eventsRequest && object != applicationRequest && object != systemRequest
-	if windowRequired && targetWindow == nil {
-		m.httpError(rw, "Invalid runtime call:", fmt.Errorf("window '%s' not found", nameOrID))
-		return
-	}
-
-	switch object {
-	case windowRequest:
-		m.processWindowMethod(method, rw, r, targetWindow, params)
-	case clipboardRequest:
-		m.processClipboardMethod(method, rw, r, targetWindow, params)
-	case dialogRequest:
-		m.processDialogMethod(method, rw, r, targetWindow, params)
-	case eventsRequest:
-		m.processEventsMethod(method, rw, r, targetWindow, params)
-	case applicationRequest:
-		m.processApplicationMethod(method, rw, r, targetWindow, params)
-	case contextMenuRequest:
-		m.processContextMenuMethod(method, rw, r, targetWindow, params)
-	case screensRequest:
-		m.processScreensMethod(method, rw, r, targetWindow, params)
-	case callRequest:
-		m.processCallMethod(method, rw, r, targetWindow, params)
-	case systemRequest:
-		m.processSystemMethod(method, rw, r, targetWindow, params)
-	case browserRequest:
-		m.processBrowserMethod(method, rw, r, targetWindow, params)
-	case cancelCallRequesst:
-		m.processCallCancelMethod(method, rw, r, targetWindow, params)
-	default:
-		m.httpError(rw, "Invalid runtime call:", fmt.Errorf("unknown object %d", object))
-	}
+	return targetWindow, strconv.Itoa(int(windowID))
 }
 
 func (m *MessageProcessor) Error(message string, args ...any) {
@@ -158,38 +127,4 @@ func (m *MessageProcessor) Error(message string, args ...any) {
 
 func (m *MessageProcessor) Info(message string, args ...any) {
 	m.logger.Info(message, args...)
-}
-
-func (m *MessageProcessor) json(rw http.ResponseWriter, data any) {
-	rw.Header().Set("Content-Type", "application/json")
-	// convert data to json
-	var jsonPayload = []byte("{}")
-	var err error
-	if data != nil {
-		jsonPayload, err = json.Marshal(data)
-		if err != nil {
-			m.Error("Unable to convert data to JSON. Please report this to the Wails team!", "error", err)
-			return
-		}
-	}
-	_, err = rw.Write(jsonPayload)
-	if err != nil {
-		m.Error("Unable to write json payload. Please report this to the Wails team!", "error", err)
-		return
-	}
-	m.ok(rw)
-}
-
-func (m *MessageProcessor) text(rw http.ResponseWriter, data string) {
-	_, err := rw.Write([]byte(data))
-	if err != nil {
-		m.Error("Unable to write json payload. Please report this to the Wails team!", "error", err)
-		return
-	}
-	rw.Header().Set("Content-Type", "text/plain")
-	rw.WriteHeader(http.StatusOK)
-}
-
-func (m *MessageProcessor) ok(rw http.ResponseWriter) {
-	rw.WriteHeader(http.StatusOK)
 }

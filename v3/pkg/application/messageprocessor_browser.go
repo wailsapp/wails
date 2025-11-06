@@ -1,11 +1,8 @@
 package application
 
 import (
-	"errors"
-	"fmt"
-	"net/http"
-
 	"github.com/pkg/browser"
+	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
 const (
@@ -16,38 +13,31 @@ var browserMethods = map[int]string{
 	BrowserOpenURL: "OpenURL",
 }
 
-func (m *MessageProcessor) processBrowserMethod(method int, rw http.ResponseWriter, _ *http.Request, _ Window, params QueryParams) {
-	args, err := params.Args()
+func (m *MessageProcessor) processBrowserMethod(req *RuntimeRequest) (any, error) {
+	args, err := req.Params.Args()
 	if err != nil {
-		m.httpError(rw, "Invalid browser call:", fmt.Errorf("unable to parse arguments: %w", err))
-		return
+		return nil, errs.WrapInvalidBrowserCallErrorf(err, "unable to parse arguments")
 	}
 
-	switch method {
+	switch req.Method {
 	case BrowserOpenURL:
 		url := args.String("url")
 		if url == nil {
-			m.httpError(rw, "Invalid browser call:", errors.New("missing argument 'url'"))
-			return
+			return nil, errs.NewInvalidBrowserCallErrorf("missing argument 'url'")
 		}
 
 		sanitizedURL, err := ValidateAndSanitizeURL(*url)
 		if err != nil {
-			m.Error("OpenURL: invalid URL - %s", err.Error())
-			m.httpError(rw, fmt.Sprintf("Invalid URL: %s", err.Error()), err)
-			return
+			return nil, errs.WrapInvalidBrowserCallErrorf(err, "invalid URL")
 		}
 
 		err = browser.OpenURL(sanitizedURL)
 		if err != nil {
-			m.httpError(rw, "OpenURL failed:", err)
-			return
+			return nil, errs.WrapInvalidBrowserCallErrorf(err, "OpenURL failed")
 		}
 
-		m.ok(rw)
-		m.Info("Runtime call:", "method", "Browser."+browserMethods[method], "url", sanitizedURL)
+		return unit, nil
 	default:
-		m.httpError(rw, "Invalid browser call:", fmt.Errorf("unknown method: %d", method))
-		return
+		return nil, errs.NewInvalidBrowserCallErrorf("unknown method: %d", req.Method)
 	}
 }

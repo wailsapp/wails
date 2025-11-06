@@ -1,9 +1,7 @@
 package application
 
 import (
-	"errors"
-	"fmt"
-	"net/http"
+	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
 const (
@@ -16,32 +14,27 @@ var clipboardMethods = map[int]string{
 	ClipboardText:    "Text",
 }
 
-func (m *MessageProcessor) processClipboardMethod(method int, rw http.ResponseWriter, _ *http.Request, _ Window, params QueryParams) {
-	args, err := params.Args()
+func (m *MessageProcessor) processClipboardMethod(req *RuntimeRequest) (any, error) {
+	args, err := req.Params.Args()
 	if err != nil {
-		m.httpError(rw, "Invalid clipboard call:", fmt.Errorf("unable to parse arguments: %w", err))
-		return
+		return nil, errs.WrapInvalidClipboardCallErrorf(err, "unable to parse arguments")
 	}
 
 	var text string
 
-	switch method {
+	switch req.Method {
 	case ClipboardSetText:
 		textp := args.String("text")
 		if textp == nil {
-			m.httpError(rw, "Invalid clipboard call:", errors.New("missing argument 'text'"))
-			return
+			return nil, errs.WrapInvalidClipboardCallErrorf(nil, "missing argument 'text'")
 		}
 		text = *textp
 		globalApplication.Clipboard.SetText(text)
-		m.ok(rw)
+		return unit, nil
 	case ClipboardText:
 		text, _ = globalApplication.Clipboard.Text()
-		m.text(rw, text)
+		return text, nil
 	default:
-		m.httpError(rw, "Invalid clipboard call:", fmt.Errorf("unknown method: %d", method))
-		return
+		return nil, errs.NewInvalidClipboardCallErrorf("unknown method: %d", req.Method)
 	}
-
-	m.Info("Runtime call:", "method", "Clipboard."+clipboardMethods[method], "text", text)
 }

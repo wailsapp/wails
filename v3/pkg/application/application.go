@@ -82,16 +82,9 @@ func New(appOptions Options) *App {
 
 	// Initialize transport (default to HTTP if not specified)
 	transport := appOptions.Transport
-	if transport == nil {
-		transport = NewHTTPTransport()
-	}
 
-	// Create transport handler that wraps the message processor
-	handler := &transportHandler{messageProcessor: messageProc}
-
-	// Start custom transport if provided
 	if appOptions.Transport != nil {
-		err := transport.Start(result.ctx, handler)
+		err := transport.Start(result.ctx, messageProc)
 		if err != nil {
 			result.fatal("failed to start custom transport: %w", err)
 		}
@@ -110,6 +103,13 @@ func New(appOptions Options) *App {
 				}
 			})
 			result.debug("Event auto-forwarding enabled for transport")
+		}
+	}
+
+	var runtimeServer *legacyTransport
+	if transport == nil {
+		runtimeServer = &legacyTransport{
+			messageProcessor: messageProc,
 		}
 	}
 
@@ -132,7 +132,11 @@ func New(appOptions Options) *App {
 							result.fatal("unable to serve runtime.js: %w", err)
 						}
 					case "/wails/runtime":
-						messageProc.ServeHTTP(rw, req)
+						if runtimeServer != nil {
+							runtimeServer.ServeHTTP(rw, req)
+						} else {
+							result.fatal("unable to serve runtime")
+						}
 					case "/wails/capabilities":
 						err := assetserver.ServeFile(
 							rw,

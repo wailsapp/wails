@@ -2,10 +2,10 @@ package application
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
-	"net/http"
 	"runtime"
+
+	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
 const (
@@ -35,28 +35,23 @@ func (m *MessageProcessor) dialogCallback(window Window, dialogID *string, resul
 	window.DialogResponse(*dialogID, result, isJSON)
 }
 
-func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
-	args, err := params.Args()
+func (m *MessageProcessor) processDialogMethod(req *RuntimeRequest, window Window) (any, error) {
+	args, err := req.Params.Args()
 	if err != nil {
-		m.httpError(rw, "Invalid dialog call:", fmt.Errorf("unable to parse arguments: %w", err))
-		return
+		return nil, errs.WrapInvalidDialogCallErrorf(err, "unable to parse arguments")
 	}
 
 	dialogID := args.String("dialog-id")
 	if dialogID == nil {
-		m.httpError(rw, "Invalid window call:", errors.New("missing argument 'dialog-id'"))
-		return
+		return nil, errs.NewInvalidDialogCallErrorf("missing argument 'dialog-id'")
 	}
 
-	var methodName = "Dialog." + dialogMethodNames[method]
-
-	switch method {
+	switch req.Method {
 	case DialogInfo, DialogWarning, DialogError, DialogQuestion:
 		var options MessageDialogOptions
 		err := params.ToStruct(&options)
 		if err != nil {
-			m.httpError(rw, "Invalid dialog call:", fmt.Errorf("error parsing dialog options: %w", err))
-			return
+			return nil, errs.WrapInvalidDialogCallErrorf(err, "error parsing dialog options")
 		}
 		if len(options.Buttons) == 0 {
 			switch runtime.GOOS {
@@ -65,7 +60,7 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 			}
 		}
 		var dialog *MessageDialog
-		switch method {
+		switch req.Method {
 		case DialogInfo:
 			dialog = InfoDialog()
 		case DialogWarning:
@@ -90,15 +85,13 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 		}
 		dialog.AddButtons(options.Buttons)
 		dialog.Show()
-		m.ok(rw)
-		m.Info("Runtime call:", "method", methodName, "options", options)
+		return unit, nil
 
 	case DialogOpenFile:
 		var options OpenFileDialogOptions
 		err := params.ToStruct(&options)
 		if err != nil {
-			m.httpError(rw, "Invalid dialog call:", fmt.Errorf("error parsing dialog options: %w", err))
-			return
+			return nil, errs.WrapInvalidDialogCallErrorf(err, "error parsing dialog options")
 		}
 		var detached = args.Bool("Detached")
 		if detached == nil || !*detached {
@@ -120,7 +113,6 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 						return
 					}
 					m.dialogCallback(window, dialogID, string(result), true)
-					m.Info("Runtime call:", "method", methodName, "result", result)
 				}
 			} else {
 				file, err := dialog.PromptForSingleSelection()
@@ -129,18 +121,15 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 					return
 				}
 				m.dialogCallback(window, dialogID, file, false)
-				m.Info("Runtime call:", "method", methodName, "result", file)
 			}
 		}()
-		m.ok(rw)
-		m.Info("Runtime call:", "method", methodName, "options", options)
+		return unit, nil
 
 	case DialogSaveFile:
 		var options SaveFileDialogOptions
 		err := params.ToStruct(&options)
 		if err != nil {
-			m.httpError(rw, "Invalid dialog call:", fmt.Errorf("error parsing dialog options: %w", err))
-			return
+			return nil, errs.WrapInvalidDialogCallErrorf(err, "error parsing dialog options")
 		}
 		var detached = args.Bool("Detached")
 		if detached == nil || !*detached {
@@ -156,13 +145,10 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 				return
 			}
 			m.dialogCallback(window, dialogID, file, false)
-			m.Info("Runtime call:", "method", methodName, "result", file)
 		}()
-		m.ok(rw)
-		m.Info("Runtime call:", "method", methodName, "options", options)
+		return unit, nil
 
 	default:
-		m.httpError(rw, "Invalid dialog call:", fmt.Errorf("unknown method: %d", method))
-		return
+		return nil, errs.NewInvalidDialogCallErrorf("unknown method: %d", req.Method)
 	}
 }
