@@ -1,26 +1,26 @@
 import { useState, useEffect } from 'react'
-import {GreetService} from "../bindings/changeme";
+import {GreetService} from "../bindings/{{.GoModule}}";
 import {Events, WML} from "@wailsio/runtime";
 
 function App() {
-  const [name, setName] = useState('');
-  const [result, setResult] = useState('Please enter your name below 👇');
-  const [time, setTime] = useState('Listening for Time event...');
+  const [name, setName] = useState<string>('');
+  const [result, setResult] = useState<string>('Please enter your name below 👇');
+  const [time, setTime] = useState<string>('Listening for Time event...');
 
   const doGreet = () => {
     let localName = name;
     if (!localName) {
       localName = 'anonymous';
     }
-    GreetService.Greet(localName).then((resultValue) => {
+    GreetService.Greet(localName).then((resultValue: string) => {
       setResult(resultValue);
-    }).catch((err) => {
+    }).catch((err: any) => {
       console.log(err);
     });
   }
 
   useEffect(() => {
-    Events.On('time', (timeValue) => {
+    Events.On('time', (timeValue: any) => {
       setTime(timeValue.data);
     });
     // Reload WML so it picks up the wml tags
@@ -34,7 +34,7 @@ function App() {
           <img src="/wails.png" className="logo" alt="Wails logo"/>
         </a>
         <a data-wml-openURL="https://reactjs.org">
-          <img src='/react.svg' className="logo react" alt="React logo"/>
+          <img src="/react.svg" className="logo react" alt="React logo"/>
         </a>
       </div>
       <h1>Wails + React</h1>

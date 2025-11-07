@@ -75,6 +75,7 @@ func GetDefaultTemplates() []TemplateData {
 
 type TemplateOptions struct {
 	*flags.Init
+	GoModule        string
 	LocalModulePath string
 	UseTypescript   bool
 	WailsVersion    string
@@ -258,8 +259,14 @@ func Install(options *flags.Init) error {
 	}
 	UseTypescript := strings.HasSuffix(options.TemplateName, "-ts")
 
+	gomodule := gitURLToModuleName(options.Git)
+	if gomodule == "" {
+		gomodule = options.ProjectName
+	}
+
 	templateData := TemplateOptions{
 		Init:            options,
+		GoModule:        gomodule,
 		LocalModulePath: localModulePath,
 		UseTypescript:   UseTypescript,
 		WailsVersion:    version.String(),
@@ -480,4 +487,36 @@ func goModTidy(projectDir string) error {
 		return fmt.Errorf("failed to run go mod tidy: %w\n%s", err, string(output))
 	}
 	return nil
+}
+
+// gitURLToModuleName converts a git URL to a Go module name by removing common prefixes
+// and suffixes. It handles HTTPS, SSH, Git protocol, and filesystem URLs.
+func gitURLToModuleName(gitURL string) string {
+	moduleName := gitURL
+	if strings.HasSuffix(moduleName, ".git") {
+		moduleName = moduleName[:len(moduleName)-4]
+	}
+	// Handle various URL schemes
+	for _, prefix := range []string{
+		"https://",
+		"http://",
+		"git://",
+		"ssh://",
+		"file://",
+	} {
+		if strings.HasPrefix(moduleName, prefix) {
+			moduleName = moduleName[len(prefix):]
+			break
+		}
+	}
+	// Handle SSH URLs (git@github.com:username/project.git)
+	if strings.HasPrefix(moduleName, "git@") {
+		// Remove the 'git@' prefix
+		moduleName = moduleName[4:]
+		// Replace ':' with '/' for proper module path
+		moduleName = strings.Replace(moduleName, ":", "/", 1)
+	}
+	// Remove leading forward slash for file system paths
+	moduleName = strings.TrimPrefix(moduleName, "/")
+	return moduleName
 }

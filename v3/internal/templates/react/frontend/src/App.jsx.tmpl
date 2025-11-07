@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'preact/hooks'
-import {GreetService} from "../bindings/changeme";
-import {Events} from "@wailsio/runtime";
+import { useState, useEffect } from 'react'
+import {GreetService} from "../bindings/{{.GoModule}}";
+import {Events, WML} from "@wailsio/runtime";
 
-export function App() {
+function App() {
   const [name, setName] = useState('');
   const [result, setResult] = useState('Please enter your name below 👇');
   const [time, setTime] = useState('Listening for Time event...');
@@ -23,6 +23,8 @@ export function App() {
     Events.On('time', (timeValue) => {
       setTime(timeValue.data);
     });
+    // Reload WML so it picks up the wml tags
+    WML.Reload();
   }, []);
 
   return (
@@ -31,15 +33,15 @@ export function App() {
         <a data-wml-openURL="https://wails.io">
           <img src="/wails.png" className="logo" alt="Wails logo"/>
         </a>
-        <a data-wml-openURL="https://preactjs.com">
-          <img src="/preact.svg" className="logo preact" alt="Preact logo"/>
+        <a data-wml-openURL="https://reactjs.org">
+          <img src='/react.svg' className="logo react" alt="React logo"/>
         </a>
       </div>
-      <h1>Wails + Preact</h1>
+      <h1>Wails + React</h1>
       <div className="result">{result}</div>
       <div className="card">
         <div className="input-box">
-          <input className="input" value={name} onInput={(e) => setName(e.target.value)} type="text" autoComplete="off"/>
+          <input className="input" value={name} onChange={(e) => setName(e.target.value)} type="text" autoComplete="off"/>
           <button className="btn" onClick={doGreet}>Greet</button>
         </div>
       </div>
@@ -50,3 +52,5 @@ export function App() {
     </div>
   )
 }
+
+export default App
