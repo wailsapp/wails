@@ -14,8 +14,9 @@
     "write-heading-ids": "docusaurus write-heading-ids"
   },
   "engines": {
-    "node": ">=18.14.0"
+    "node": ">=20.0.0"
   },
+  "packageManager": "bun@1.0.0",
   "dependencies": {
     "@crowdin/crowdin-api-client": "^1.33.1",
     "@docusaurus/core": "^3.9.0",
