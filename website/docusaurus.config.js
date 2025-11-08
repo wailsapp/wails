@@ -15,10 +15,15 @@ module.exports = async function configCreatorAsync() {
     url: "https://wails.io",
     baseUrl: "/",
     onBrokenLinks: "warn",
-    onBrokenMarkdownLinks: "warn",
     favicon: "img/favicon.ico",
     organizationName: "wailsapp",
     projectName: "wails",
+
+    markdown: {
+      hooks: {
+        onBrokenMarkdownLinks: "warn",
+      },
+    },
 
     i18n: {
       defaultLocale: "en",
