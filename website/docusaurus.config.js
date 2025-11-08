@@ -1,8 +1,9 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require("prism-react-renderer/themes/github");
-const darkCodeTheme = require("prism-react-renderer/themes/dracula");
+const { themes } = require("prism-react-renderer");
+const lightCodeTheme = themes.github;
+const darkCodeTheme = themes.dracula;
 
 const { getTranslationProgress } = require("./src/api/crowdin.js");
 
@@ -19,23 +20,6 @@ module.exports = async function configCreatorAsync() {
     organizationName: "wailsapp",
     projectName: "wails",
 
-    webpack: {
-      jsLoader: (isServer) => ({
-        loader: require.resolve("swc-loader"),
-        options: {
-          jsc: {
-            parser: {
-              syntax: "typescript",
-              tsx: true,
-            },
-            target: "es2017",
-          },
-          module: {
-            type: isServer ? "commonjs" : "es6",
-          },
-        },
-      }),
-    },
     i18n: {
       defaultLocale: "en",
       locales: ["en", "zh-Hans", "ja", "ru", "ko", "fr", "pt"],
