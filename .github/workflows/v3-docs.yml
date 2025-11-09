@@ -20,9 +20,9 @@ jobs:
     if: github.event.repository.fork == false
     steps:
       - name: Checkout your repository using git
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install, build, and upload your site output
-        uses: withastro/action@v2
+        uses: withastro/action@v5
         with:
            path: docs
            node-version: 20 # The specific version of Node that should be used to build your site. Defaults to 18. (optional)

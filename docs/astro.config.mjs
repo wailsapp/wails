@@ -6,7 +6,7 @@ import starlightLinksValidator from "starlight-links-validator";
 import starlightImageZoom from "starlight-image-zoom";
 import starlightBlog from "starlight-blog";
 import { authors } from "./src/content/authors";
-import d2 from 'astro-d2';
+import d2 from "astro-d2";
 
 // https://astro.build/config
 export default defineConfig({
@@ -38,11 +38,13 @@ export default defineConfig({
         // TODO: update this
         baseUrl: "https://github.com/wailsapp/wails/edit/v3-alpha/docs",
       },
-      social: {
-        github: "https://github.com/wailsapp/wails",
-        discord: "https://discord.gg/JDdSxwjhGf",
-        "x.com": "https://x.com/wailsapp",
-      },
+      social: [
+          { icon: 'codeberg', label: 'Codeberg', href: 'https://codeberg.org/knut' },
+          { icon: 'discord', label: 'Discord', href: 'https://discord.gg/JDdSxwjhGf' },
+          { icon: 'github', label: 'GitHub', href: 'https://github.com/wailsapp/wails' },
+          { icon: 'twitter', label: 'x', href: 'https://x.com/wailsapp' },
+          { icon: 'mastodon', label: 'Mastodon', href: 'https://m.webtoo.ls/@astro' },
+      ],
       defaultLocale: "root",
       locales: {
         root: { label: "English", lang: "en", dir: "ltr" },
@@ -55,7 +57,7 @@ export default defineConfig({
       plugins: [
         // https://starlight-links-validator.vercel.app/configuration/
         // starlightLinksValidator({
-          // exclude: [
+        //   exclude: [
         //     // TODO: Fix these links in the blog/wails-v2-released file
         //     // "/docs/reference/options#theme",
         //     // "/docs/reference/options#customtheme",
