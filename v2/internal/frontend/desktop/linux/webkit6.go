@@ -1,12 +1,12 @@
-//go:build linux && !webkit_6
-// +build linux,!webkit_6
+//go:build linux && webkit_6
+// +build linux,webkit_6
 
 package linux
 
 /*
-#cgo !webkit2_41 pkg-config: webkit2gtk-4.0
-#cgo webkit2_41 pkg-config: webkit2gtk-4.1
-#include "webkit2/webkit2.h"
+#cgo pkg-config: webkitgtk-6.0
+
+#include "webkit/webkit.h"
 */
 import "C"
 import (
