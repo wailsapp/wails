@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v2.11.0 - 2025-11-08
+
 ### Added
 
 - Add origin verification for bindings by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/4480)
@@ -26,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added url validation for BrowserOpenURL by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/4484)
 - Fixed C compilation error in onWayland on Linux due to declaration after label [#4446](https://github.com/wailsapp/wails/pull/4446) by [@jaesung9507](https://github.com/jaesung9507)
 - Use computed style when adding 'wails-drop-target-active' [PR](https://github.com/wailsapp/wails/pull/4420) by [@riannucci](https://github.com/riannucci)
+- Fixed panic when adding menuroles on Linux [#4558](https://github.com/wailsapp/wails/pull/4558) by [@jaesung9507](https://github.com/jaesung9507)
+- Fixed Discord badge in README by @sharkmu in [PR](https://github.com/wailsapp/wails/pull/4626)
+- Fixed HTML DnD by @leaanthony
 
 ## v2.10.2 - 2025-07-06
 
@@ -42,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated documentation to display the correct copyright year in [#4243](https://github.com/wailsapp/wails/pull/4243) by [@nnashwin](https://github.com/nnashwin)
 
 ### Added
+- Added DLLSearchPaths option to control DLL search paths on Windows in [#4207](https://github.com/wailsapp/wails/pull/4207) by @ansxuman
 - Added "Branding" section to `wails doctor` to correctly identify Windows 11 [#3891](https://github.com/wailsapp/wails/pull/3891) by [@ronen25](https://github.com/ronen25)
 - Added `-skipembedcreate` flag to build and dev command to improve compile and recompile speed [#4143](https://github.com/wailsapp/wails/pull/4143) by @josStorer
 - Added `DisablePanicRecovery` option to allow handle panics manually [#4136](https://github.com/wailsapp/wails/pull/4136) by [@APshenkin](https://github.com/APshenkin)
@@ -70,7 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fixed dev mode logging bug by @attperac in [#3972](https://wailsapp/wails/pull/3972)
-- Fixed `reloaddirs` wails.json config options by @atterpac in [#4005](https//github.com/wailsapp/wails/pull/4005)
+- Fixed `reloaddirs` wails.json config options by @atterpac in [#4005](https://github.com/wailsapp/wails/pull/4005)
 - Fixed cross compilation failed with CGO [PR](https://github.com/wailsapp/wails/pull/3795) by [@fcying](https://github.com/fcying)
 - Using go-webview2 v0.1.17 to fix native webview2loader issue, by @leaanthony
 - Fixed example for macOS menu by @takuyahara in [PR](https://github.com/wailsapp/wails/pull/3847)
@@ -121,7 +127,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed drag and drop missing cursor icon [PR](https://github.com/wailsapp/wails/pull/3703) by [@mrf345](https://github.com/mrf345)
 
 ### Changed
-- Modified docs to reflect the correct password syntax for the `gon-sign.json` file [PR](https://github.com/wailsapp/wails/pull/3620) by [@ignasbernotas](github.com/ignasbernotas)
+- Modified docs to reflect the correct password syntax for the `gon-sign.json` file [PR](https://github.com/wailsapp/wails/pull/3620) by [@ignasbernotas](https://github.com/ignasbernotas)
 ## v2.9.1 - 2024-06-18
 
 ### Fixed

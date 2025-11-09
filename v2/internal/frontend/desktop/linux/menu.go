@@ -84,8 +84,10 @@ func (w *Window) SetApplicationMenu(inmenu *menu.Menu) {
 
 func processMenu(window *Window, menu *menu.Menu) {
 	for _, menuItem := range menu.Items {
-		submenu := processSubmenu(menuItem, window.accels)
-		C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(window.menubar)), submenu)
+		if menuItem.SubMenu != nil {
+			submenu := processSubmenu(menuItem, window.accels)
+			C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(window.menubar)), submenu)
+		}
 	}
 }
 
