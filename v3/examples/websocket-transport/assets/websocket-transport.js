@@ -45,7 +45,7 @@ export class WebSocketTransport {
      * Connect to the WebSocket server
      */
     connect() {
-        if (this.ws?.readyState === WebSocket.OPEN) {
+        if (this.ws?.readyState === WebSocket.OPEN || this.ws?.readyState === WebSocket.CONNECTING) {
             return Promise.resolve();
         }
 
@@ -196,8 +196,6 @@ export class WebSocketTransport {
 
             // Register pending request with the message for later reference
             this.pendingRequests.set(msgID, { resolve, reject, timeout, request: { object: objectID, method, args } });
-
-            console.log('args', args)
 
             // Build message
             const message = {

@@ -125,6 +125,9 @@ func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRe
 				return nil, errs.WrapBindingCallFailedErrorf(cerr, "Bound method returned an error")
 			}
 		}
+		if err != nil {
+			return nil, errs.WrapBindingCallFailedErrorf(err, "failed to call binding")
+		}
 		return result, nil
 
 	default:

@@ -96,7 +96,7 @@ export function Call(options: CallOptions): CancellablePromise<any> {
 
     request.then((res) => {
         callResponses.delete(id);
-        result.resolve(res)
+        result.resolve(res);
     }, (err) => {
         callResponses.delete(id);
         result.reject(err);

@@ -12,20 +12,20 @@ This example demonstrates how to use a custom transport like WebSocket for Wails
 
 ## Architecture
 
-```
+```text
 ┌─────────────────────────────────────────┐
 │  Frontend (JavaScript)                  │
-│  - setTransport(wsTransport)           │
-│  - All bindings work unchanged         │
+│  - setTransport(wsTransport)            │
+│  - All bindings work unchanged          │
 └───────────────┬─────────────────────────┘
                 │
-                │ WebSocket (ws://localhost:9998)
+                │ WebSocket (ws://localhost:9099)
                 │
 ┌───────────────▼─────────────────────────┐
 │  Backend (Go)                           │
-│  - WebSocketTransport on port 9998     │
-│  - Standard MessageProcessor           │
-│  - All Wails features available        │
+│  - WebSocketTransport on port 9099      │
+│  - Standard MessageProcessor            │
+│  - All Wails features available         │
 └─────────────────────────────────────────┘
 ```
 
@@ -43,7 +43,7 @@ This example demonstrates how to use a custom transport like WebSocket for Wails
 
 3. The application will start with:
    - WebView window displaying the UI
-   - WebSocket server listening on `ws://localhost:9998/wails/ws`
+   - WebSocket server listening on `ws://localhost:9099/wails/ws`
    - Real-time connection status indicator
 
 ## Backend Setup

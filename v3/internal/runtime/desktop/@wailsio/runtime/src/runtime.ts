@@ -111,7 +111,7 @@ async function runtimeCallWithID(objectID: number, method: number, windowName: s
       object: objectID,
       method
     }
-    if (args) {
+    if (args !== null && args !== undefined) {
       body.args = args;
     }
 

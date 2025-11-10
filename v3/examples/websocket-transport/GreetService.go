@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -10,6 +11,7 @@ import (
 
 // GreetService is a service that demonstrates bound methods over WebSocket transport
 type GreetService struct {
+	mu         sync.Mutex
 	greetCount int
 	app        *application.App
 }
@@ -40,13 +42,16 @@ func (g *GreetService) ServiceStartup(ctx context.Context, options application.S
 
 // Greet greets a person by name and emits an event
 func (g *GreetService) Greet(name string) string {
+	g.mu.Lock()
 	g.greetCount++
-	result := fmt.Sprintf("Hello, %s! (Greeted %d times via WebSocket)", name, g.greetCount)
+	count := g.greetCount
+	g.mu.Unlock()
+	result := fmt.Sprintf("Hello, %s! (Greeted %d times via WebSocket)", name, count)
 
 	// Emit an event to demonstrate event support over WebSocket
 	// Events are automatically forwarded to the WebSocket transport!
 	if g.app != nil {
-		g.app.Event.Emit("greet:count", g.greetCount)
+		g.app.Event.Emit("greet:count", count)
 	}
 
 	return result

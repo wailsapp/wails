@@ -54,14 +54,12 @@ type AssetServerTransport interface {
 }
 
 // TransportHTTPHandler is an optional interface that transports can implement
-// to provide additional serving for webview under wails asset server.
+// to provide HTTP middleware for the Wails asset server in webview scenarios.
 //
-// When a transport implements this interface, Wails will use this as part of
-// after Start() to provide the asset server handler. The transport should
-// integrate this handler into its HTTP server to serve HTML, CSS, JS, and
-// other static assets alongside the IPC transport.
+// When a transport implements this interface, Wails will use Handler() in
+// asset server middlewares that may provide handling for request done from webview to wails:// URLs.
 //
-// This is used by default HTTP transport that
+// This is used by the default HTTP transport to handle IPC endpoints.
 type TransportHTTPHandler interface {
 	Handler() func(next http.Handler) http.Handler
 }
