@@ -59,11 +59,6 @@ export {
     type RuntimeTransport,
     objectNames,
     clientId,
-    // Helper utilities for custom transport implementations
-    generateMessageID,
-    buildTransportRequest,
-    handleWailsCallback,
-    dispatchWailsEvent
 } from "./runtime.js";
 
 // Notify backend
