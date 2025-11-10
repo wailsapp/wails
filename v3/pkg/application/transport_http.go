@@ -74,6 +74,7 @@ func (t *HTTPTransport) handleRuntimeRequest(rw http.ResponseWriter, r *http.Req
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		t.httpError(rw, errs.WrapInvalidRuntimeCallErrorf(err, "Unable to read request body"))
+		return
 	}
 
 	var body request
@@ -85,10 +86,12 @@ func (t *HTTPTransport) handleRuntimeRequest(rw http.ResponseWriter, r *http.Req
 
 	if body.Object == nil {
 		t.httpError(rw, errs.NewInvalidRuntimeCallErrorf("missing object value"))
+		return
 	}
 
 	if body.Method == nil {
 		t.httpError(rw, errs.NewInvalidRuntimeCallErrorf("missing method value"))
+		return
 	}
 
 	windowIdStr := r.Header.Get(webViewRequestHeaderWindowId)
@@ -127,16 +130,17 @@ func (t *HTTPTransport) handleRuntimeRequest(rw http.ResponseWriter, r *http.Req
 }
 
 func (t *HTTPTransport) text(rw http.ResponseWriter, data string) {
+	rw.WriteHeader(http.StatusOK)
+	rw.Header().Set("Content-Type", "text/plain")
 	_, err := rw.Write([]byte(data))
 	if err != nil {
 		t.error("Unable to write json payload. Please report this to the Wails team!", "error", err)
 		return
 	}
-	rw.Header().Set("Content-Type", "text/plain")
-	rw.WriteHeader(http.StatusOK)
 }
 
 func (t *HTTPTransport) json(rw http.ResponseWriter, data any) {
+	rw.WriteHeader(http.StatusOK)
 	rw.Header().Set("Content-Type", "application/json")
 	// convert data to json
 	var jsonPayload = []byte("{}")
@@ -153,7 +157,6 @@ func (t *HTTPTransport) json(rw http.ResponseWriter, data any) {
 		t.error("Unable to write json payload. Please report this to the Wails team!", "error", err)
 		return
 	}
-	rw.WriteHeader(http.StatusOK)
 }
 
 func (t *HTTPTransport) httpError(rw http.ResponseWriter, err error) {
@@ -164,7 +167,6 @@ func (t *HTTPTransport) httpError(rw http.ResponseWriter, err error) {
 	if cerr := (*CallError)(nil); errors.As(err, &cerr) {
 		if data, jsonErr := json.Marshal(cerr); jsonErr == nil {
 			bytes = data
-			return
 		} else {
 			bytes = []byte(err.Error())
 		}

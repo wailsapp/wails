@@ -12,8 +12,6 @@ const tmpl = `package errs
 
 import (
 	"fmt"
-
-	"errors"
 )
 
 type wailsError struct {
@@ -32,6 +30,7 @@ func (w *wailsError) Error() string {
 }
 func (w *wailsError) Msg() string           { return w.msg }
 func (w *wailsError) ErrorType() ErrorType  { return w.errorType }
+func (w *wailsError) Unwrap() error  { return w.cause }
 
 {{ range . }}
 func New{{ . }}f(message string, args ...any) error {

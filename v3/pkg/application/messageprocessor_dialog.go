@@ -64,11 +64,14 @@ func (m *MessageProcessor) processDialogMethod(req *RuntimeRequest, window Windo
 		dialog.SetTitle(options.Title)
 		dialog.SetMessage(options.Message)
 
-		resp := make(chan string)
+		resp := make(chan string, 1)
 		for _, button := range options.Buttons {
 			label := button.Label
 			button.OnClick(func() {
-				resp <- label
+				select {
+				case resp <- label:
+				default:
+				}
 			})
 		}
 		dialog.AddButtons(options.Buttons)

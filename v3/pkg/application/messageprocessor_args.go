@@ -34,7 +34,7 @@ func (a *Args) AsMap() *MapArgs {
 }
 
 func (a *Args) ToStruct(str any) error {
-	return json.Unmarshal(a.rawData, &str)
+	return json.Unmarshal(a.rawData, str)
 }
 
 type MapArgs struct {

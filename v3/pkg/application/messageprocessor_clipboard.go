@@ -23,7 +23,7 @@ func (m *MessageProcessor) processClipboardMethod(req *RuntimeRequest) (any, err
 	case ClipboardSetText:
 		textp := args.String("text")
 		if textp == nil {
-			return nil, errs.WrapInvalidClipboardCallErrorf(nil, "missing argument 'text'")
+			return nil, errs.NewInvalidClipboardCallErrorf("missing argument 'text'")
 		}
 		text = *textp
 		globalApplication.Clipboard.SetText(text)

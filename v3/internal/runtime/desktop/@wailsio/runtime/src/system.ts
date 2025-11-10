@@ -14,7 +14,7 @@ const call = newRuntimeCaller(objectNames.System);
 
 const SystemIsDarkMode = 0;
 const SystemEnvironment = 1;
-const SystemCapabilities = 1;
+const SystemCapabilities = 2;
 const ApplicationFilesDroppedWithContext = 100; // New method ID for enriched drop event
 
 const _invoke = (function () {

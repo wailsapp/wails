@@ -13,20 +13,20 @@ By default, Wails uses HTTP fetch requests from the frontend to communicate with
 
 ## Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────┐
 │  Frontend (TypeScript)                          │
-│  - Generated bindings still work               │
-│  - Your custom client transport               │
+│  - Generated bindings still work                │
+│  - Your custom client transport                 │
 └──────────────────┬──────────────────────────────┘
                    │
                    │ Your Protocol (WebSocket/etc)
                    │
 ┌──────────────────▼──────────────────────────────┐
 │  Backend (Go)                                   │
-│  - Your Transport implementation               │
-│  - Wails MessageProcessor                    │
-│  - All existing Wails infrastructure           │
+│  - Your Transport implementation                │
+│  - Wails MessageProcessor                       │
+│  - All existing Wails infrastructure            │
 └─────────────────────────────────────────────────┘
 ```
 

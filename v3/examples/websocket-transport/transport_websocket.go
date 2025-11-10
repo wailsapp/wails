@@ -145,8 +145,11 @@ func (w *WebSocketTransport) handleWebSocket(rw http.ResponseWriter, r *http.Req
 	w.clients[conn] = messageChan
 	w.mu.Unlock()
 
+	ctx, cancel := context.WithCancel(context.Background())
+
 	defer func() {
 		w.mu.Lock()
+		cancel()
 		close(w.clients[conn])
 		delete(w.clients, conn)
 		w.mu.Unlock()
@@ -158,17 +161,19 @@ func (w *WebSocketTransport) handleWebSocket(rw http.ResponseWriter, r *http.Req
 		for {
 			select {
 			case msg, ok := <-messageChan:
-				if ok {
-					w.mu.RLock()
-					if err := conn.WriteJSON(msg); err != nil {
-						log.Printf("[WebSocket] Failed to send message: %v", err)
-					} else {
-						if msg.Type == "response" {
-							log.Printf("[WebSocket] Successfully sent response for msgID=%s", msg.ID)
-						}
-					}
-					w.mu.RUnlock()
+				if !ok {
+					return
 				}
+
+				w.mu.RLock()
+				if err := conn.WriteJSON(msg); err != nil {
+					log.Printf("[WebSocket] Failed to send message: %v", err)
+				} else {
+					if msg.Type == "response" {
+						log.Printf("[WebSocket] Successfully sent response for msgID=%s", msg.ID)
+					}
+				}
+				w.mu.RUnlock()
 			}
 		}
 	}()
@@ -186,27 +191,26 @@ func (w *WebSocketTransport) handleWebSocket(rw http.ResponseWriter, r *http.Req
 
 		// Process request
 		if msg.Type == "request" && msg.Request != nil {
-			go w.handleRequest(messageChan, msg.ID, msg.Request)
+			go w.handleRequest(ctx, messageChan, msg.ID, msg.Request)
 		}
 	}
 }
 
 // handleRequest processes a runtime call request and sends the response
-func (w *WebSocketTransport) handleRequest(messageChan chan *WebSocketMessage, msgID string, req *application.RuntimeRequest) {
+func (w *WebSocketTransport) handleRequest(ctx context.Context, messageChan chan *WebSocketMessage, msgID string, req *application.RuntimeRequest) {
 	log.Printf("[WebSocket] Received request: msgID=%s, object=%d, method=%d, args=%s", msgID, req.Object, req.Method, req.Args.String())
 
 	// Call the Wails runtime handler
 	response, err := w.handler.HandleRuntimeCallWithIDs(context.Background(), req)
 
-	w.sendResponse(messageChan, msgID, response, err)
+	w.sendResponse(ctx, messageChan, msgID, response, err)
 }
 
 // sendResponse sends a response message to the client
-func (w *WebSocketTransport) sendResponse(messageChan chan *WebSocketMessage, msgID string, resp any, err error) {
-	response := &wsResponse{StatusCode: 500}
-	if resp != nil {
-		response.StatusCode = 200
-		response.Data = resp
+func (w *WebSocketTransport) sendResponse(ctx context.Context, messageChan chan *WebSocketMessage, msgID string, resp any, err error) {
+	response := &wsResponse{
+		StatusCode: 200,
+		Data:       resp,
 	}
 	if err != nil {
 		response.StatusCode = 422
@@ -222,7 +226,12 @@ func (w *WebSocketTransport) sendResponse(messageChan chan *WebSocketMessage, ms
 	w.mu.RLock()
 	defer w.mu.RUnlock()
 
-	messageChan <- responseMsg
+	select {
+	case <-ctx.Done():
+		log.Println("[WebSocket] Context cancelled before sending response.")
+	default:
+		messageChan <- responseMsg
+	}
 }
 
 // BroadcastEvent sends an event to all connected clients

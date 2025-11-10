@@ -1,5 +1,4 @@
 //go:generate go run codegen/error_functions/main.go
-//nolint:depguard // we want to use pkg/errors only here, but nowhere else
 package errs
 
 import (
@@ -19,20 +18,24 @@ func Is(err error, errorType ErrorType) bool {
 }
 
 func Cause(err error) error {
+	if err == nil {
+		return nil
+	}
+
 	type causer interface {
 		Cause() error
 	}
 
-	if err != nil {
-		cause, ok := err.(causer)
-		if !ok {
-			return err
-		}
-		causeErr := cause.Cause()
-		if causeErr != nil {
+	if cause, ok := err.(causer); ok {
+		if causeErr := cause.Cause(); causeErr != nil {
 			return causeErr
 		}
 	}
+
+	if unwrapErr := errors.Unwrap(err); unwrapErr != nil {
+		return unwrapErr
+	}
+
 	return err
 }
 

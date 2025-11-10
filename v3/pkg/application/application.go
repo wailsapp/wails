@@ -152,14 +152,12 @@ func New(appOptions Options) *App {
 	result.assets.LogDetails()
 
 	// If transport implements AssetServerTransport, configure it to serve assets
-	if appOptions.Transport != nil {
-		if assetTransport, ok := transport.(AssetServerTransport); ok {
-			err := assetTransport.ServeAssets(srv)
-			if err != nil {
-				result.fatal("failed to configure transport for serving assets: %w", err)
-			}
-			result.info("Transport configured to serve assets")
+	if assetTransport, ok := transport.(AssetServerTransport); ok {
+		err := assetTransport.ServeAssets(srv)
+		if err != nil {
+			result.fatal("failed to configure transport for serving assets: %w", err)
 		}
+		result.info("Transport configured to serve assets")
 	}
 
 	result.bindings = NewBindings(appOptions.MarshalError, appOptions.BindAliases)
