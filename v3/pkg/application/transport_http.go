@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	"net/http"
@@ -158,7 +159,18 @@ func (t *HTTPTransport) json(rw http.ResponseWriter, data any) {
 func (t *HTTPTransport) httpError(rw http.ResponseWriter, err error) {
 	t.error(err.Error())
 	rw.WriteHeader(http.StatusUnprocessableEntity)
-	_, err = rw.Write([]byte(err.Error()))
+	// return JSON error if it's a CallError
+	var bytes []byte
+	if cerr := (*CallError)(nil); errors.As(err, &cerr) {
+		if data, jsonErr := json.Marshal(cerr); jsonErr == nil {
+			bytes = data
+			return
+		} else {
+			bytes = []byte(err.Error())
+		}
+	}
+
+	_, err = rw.Write(bytes)
 	if err != nil {
 		t.error("Unable to write error response:", "error", err)
 	}
