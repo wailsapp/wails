@@ -4,20 +4,18 @@ package application
 
 import (
 	"errors"
+	"fmt"
 	"syscall"
-	"time"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/pkg/icons"
-
-	"github.com/samber/lo"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
 const (
-	WM_USER_SYSTRAY = w32.WM_USER + 1
+	wmUserSystray = w32.WM_USER + 1
 )
 
 type windowsSystemTray struct {
@@ -25,12 +23,30 @@ type windowsSystemTray struct {
 
 	menu *Win32Menu
 
-	// Platform specific implementation
-	uid           uint32
-	hwnd          w32.HWND
-	lightModeIcon w32.HICON
-	darkModeIcon  w32.HICON
-	currentIcon   w32.HICON
+	cancelTheme func()
+	uid         uint32
+	hwnd        w32.HWND
+
+	lightModeIcon      w32.HICON
+	lightModeIconOwned bool
+	darkModeIcon       w32.HICON
+	darkModeIconOwned  bool
+	currentIcon        w32.HICON
+	currentIconOwned   bool
+}
+
+// releaseIcon destroys an icon handle only when we own it and no new handle reuses it.
+// Shared handles (e.g. from LoadIcon/LoadIconWithResourceID) must not be passed to DestroyIcon per https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-destroyicon.
+func (s *windowsSystemTray) releaseIcon(handle w32.HICON, owned bool, keep ...w32.HICON) {
+	if !owned || handle == 0 {
+		return
+	}
+	for _, k := range keep {
+		if handle == k {
+			return
+		}
+	}
+	w32.DestroyIcon(handle)
 }
 
 func (s *windowsSystemTray) openMenu() {
@@ -89,6 +105,9 @@ func (s *windowsSystemTray) positionWindow(window Window, offset int) error {
 	}
 
 	taskbarBounds := w32.GetTaskbarPosition()
+	if taskbarBounds == nil {
+		return errors.New("failed to get taskbar position")
+	}
 
 	// Set the window position based on the icon location
 	// if the icon is in the taskbar (traybounds) then we need
@@ -124,7 +143,7 @@ func (s *windowsSystemTray) bounds() (*Rect, error) {
 	if s.hwnd == 0 {
 		return nil, errors.New("system tray window handle not initialized")
 	}
-	
+
 	bounds, err := w32.GetSystrayBounds(s.hwnd, s.uid)
 	if err != nil {
 		return nil, err
@@ -150,7 +169,7 @@ func (s *windowsSystemTray) iconIsInTrayBounds() (bool, error) {
 	if s.hwnd == 0 {
 		return false, errors.New("system tray window handle not initialized")
 	}
-	
+
 	bounds, err := w32.GetSystrayBounds(s.hwnd, s.uid)
 	if err != nil {
 		return false, err
@@ -199,71 +218,82 @@ func (s *windowsSystemTray) run() {
 		0,
 		nil)
 	if s.hwnd == 0 {
-		panic(syscall.GetLastError())
+		globalApplication.fatal("failed to create tray window: %s", syscall.GetLastError())
+		return
 	}
 
-	nid := w32.NOTIFYICONDATA{
-		HWnd:             s.hwnd,
-		UID:              uint32(s.parent.id),
-		UFlags:           w32.NIF_ICON | w32.NIF_MESSAGE,
-		HIcon:            s.currentIcon,
-		UCallbackMessage: WM_USER_SYSTRAY,
-	}
-	nid.CbSize = uint32(unsafe.Sizeof(nid))
+	s.uid = uint32(s.parent.id)
 
-	for retries := range 6 {
-		if !w32.ShellNotifyIcon(w32.NIM_ADD, &nid) {
-			if retries == 5 {
-				globalApplication.fatal("failed to register system tray icon: %w", syscall.GetLastError())
-			}
+	// Resolve the base icons once so we can reuse them for light/dark modes
+	defaultIcon := getNativeApplication().windowClass.Icon
 
-			time.Sleep(500 * time.Millisecond)
-			continue
-		}
-		break
-	}
-
-	nid.UVersion = w32.NOTIFYICON_VERSION
-
-	if !w32.ShellNotifyIcon(w32.NIM_SETVERSION, &nid) {
-		panic(syscall.GetLastError())
-	}
-
-	// Get the application icon if available
-	defaultIcon := w32.LoadIconWithResourceID(w32.GetModuleHandle(""), w32.RT_ICON)
-	if defaultIcon != 0 {
-		s.lightModeIcon = defaultIcon
-		s.darkModeIcon = defaultIcon
-	} else {
-		s.lightModeIcon = lo.Must(w32.CreateSmallHIconFromImage(icons.SystrayLight))
-		s.darkModeIcon = lo.Must(w32.CreateSmallHIconFromImage(icons.SystrayDark))
-	}
-
-	// Use custom icons if provided
+	// Priority: custom icon > default app icon > built-in icon
 	if s.parent.icon != nil {
-		// Create a new icon and destroy the old one
-		newIcon := lo.Must(w32.CreateSmallHIconFromImage(s.parent.icon))
-		if s.lightModeIcon != 0 && s.lightModeIcon != defaultIcon {
-			w32.DestroyIcon(s.lightModeIcon)
+		icon, err := w32.CreateSmallHIconFromImage(s.parent.icon)
+		if err == nil {
+			s.lightModeIcon = icon
+			s.lightModeIconOwned = true
+		} else {
+			globalApplication.warning("failed to create systray icon: %v", err)
 		}
-		s.lightModeIcon = newIcon
 	}
+
+	if s.lightModeIcon == 0 && defaultIcon != 0 {
+		s.lightModeIcon = defaultIcon
+		s.lightModeIconOwned = false
+	}
+
+	if s.lightModeIcon == 0 {
+		icon, err := w32.CreateSmallHIconFromImage(icons.SystrayLight)
+		if err != nil {
+			globalApplication.warning("failed to create systray icon: %v", err)
+			s.lightModeIcon = 0
+			s.lightModeIconOwned = false
+		} else {
+			s.lightModeIcon = icon
+			s.lightModeIconOwned = true
+		}
+	}
+
 	if s.parent.darkModeIcon != nil {
-		// Create a new icon and destroy the old one
-		newIcon := lo.Must(w32.CreateSmallHIconFromImage(s.parent.darkModeIcon))
-		if s.darkModeIcon != 0 && s.darkModeIcon != defaultIcon && s.darkModeIcon != s.lightModeIcon {
-			w32.DestroyIcon(s.darkModeIcon)
+		icon, err := w32.CreateSmallHIconFromImage(s.parent.darkModeIcon)
+		if err == nil {
+			s.darkModeIcon = icon
+			s.darkModeIconOwned = true
+		} else {
+			globalApplication.warning("failed to create systray dark mode icon: %v", err)
 		}
-		s.darkModeIcon = newIcon
 	}
-	s.uid = nid.UID
+
+	if s.darkModeIcon == 0 && s.parent.icon != nil && s.lightModeIcon != 0 {
+		s.darkModeIcon = s.lightModeIcon
+		s.darkModeIconOwned = false
+	}
+
+	if s.darkModeIcon == 0 && defaultIcon != 0 {
+		s.darkModeIcon = defaultIcon
+		s.darkModeIconOwned = false
+	}
+
+	if s.darkModeIcon == 0 {
+		icon, err := w32.CreateSmallHIconFromImage(icons.SystrayDark)
+		if err != nil {
+			globalApplication.warning("failed to create systray dark mode icon: %v", err)
+			s.darkModeIcon = 0
+			s.darkModeIconOwned = false
+		} else {
+			s.darkModeIcon = icon
+			s.darkModeIconOwned = true
+		}
+	}
+
+	if _, err := s.show(); err != nil {
+		// Initial systray add can fail when the shell is not available. This is handled downstream via TaskbarCreated message.
+		globalApplication.warning("initial systray add failed: %v", err)
+	}
 
 	if s.parent.menu != nil {
 		s.updateMenu(s.parent.menu)
-	}
-
-	if s.parent.tooltip != "" {
-		s.setTooltip(s.parent.tooltip)
 	}
 
 	// Set Default Callbacks
@@ -272,6 +302,7 @@ func (s *windowsSystemTray) run() {
 			globalApplication.debug("Left Button Clicked")
 		}
 	}
+
 	if s.parent.rightClickHandler == nil {
 		s.parent.rightClickHandler = func() {
 			if s.menu != nil {
@@ -280,11 +311,8 @@ func (s *windowsSystemTray) run() {
 		}
 	}
 
-	// Update the icon
-	s.updateIcon()
-
 	// Listen for dark mode changes
-	globalApplication.Event.OnApplicationEvent(events.Windows.SystemThemeChanged, func(event *ApplicationEvent) {
+	s.cancelTheme = globalApplication.Event.OnApplicationEvent(events.Windows.SystemThemeChanged, func(event *ApplicationEvent) {
 		s.updateIcon()
 	})
 
@@ -305,6 +333,7 @@ func (s *windowsSystemTray) updateIcon() {
 
 	// Store the old icon to destroy it after updating
 	oldIcon := s.currentIcon
+	oldIconOwned := s.currentIconOwned
 
 	s.currentIcon = newIcon
 	nid := s.newNotifyIconData()
@@ -317,10 +346,19 @@ func (s *windowsSystemTray) updateIcon() {
 		panic(syscall.GetLastError())
 	}
 
-	// Destroy the old icon handle if it exists and is not one of our default icons
-	if oldIcon != 0 && oldIcon != s.lightModeIcon && oldIcon != s.darkModeIcon {
-		w32.DestroyIcon(oldIcon)
+	// Track ownership of the current icon so we know if we can destroy it later
+	currentOwned := false
+	if newIcon != 0 {
+		if newIcon == s.lightModeIcon && s.lightModeIconOwned {
+			currentOwned = true
+		} else if newIcon == s.darkModeIcon && s.darkModeIconOwned {
+			currentOwned = true
+		}
 	}
+	s.currentIconOwned = currentOwned
+
+	// Destroy the old icon handle if it exists, we owned it, and nothing else references it
+	s.releaseIcon(oldIcon, oldIconOwned, s.lightModeIcon, s.darkModeIcon)
 }
 
 func (s *windowsSystemTray) newNotifyIconData() w32.NOTIFYICONDATA {
@@ -333,36 +371,65 @@ func (s *windowsSystemTray) newNotifyIconData() w32.NOTIFYICONDATA {
 }
 
 func (s *windowsSystemTray) setIcon(icon []byte) {
-	var err error
-	// Destroy the previous light mode icon if it exists
-	if s.lightModeIcon != 0 {
-		w32.DestroyIcon(s.lightModeIcon)
-	}
-	s.lightModeIcon, err = w32.CreateSmallHIconFromImage(icon)
+	newIcon, err := w32.CreateSmallHIconFromImage(icon)
 	if err != nil {
-		panic(syscall.GetLastError())
+		globalApplication.error("failed to create systray light mode icon: %v", err)
+		return
 	}
-	if s.darkModeIcon == 0 {
-		s.darkModeIcon = s.lightModeIcon
+
+	oldLight := s.lightModeIcon
+	oldLightOwned := s.lightModeIconOwned
+	oldDark := s.darkModeIcon
+	oldDarkOwned := s.darkModeIconOwned
+
+	s.lightModeIcon = newIcon
+	s.lightModeIconOwned = true
+
+	// Keep dark mode in sync when both modes shared the same handle (or dark was unset).
+	if s.darkModeIcon == 0 || s.darkModeIcon == oldLight {
+		s.darkModeIcon = newIcon
+		s.darkModeIconOwned = false
 	}
-	// Update the icon
+
+	// Only free previous handles we own that are no longer referenced.
+	s.releaseIcon(oldLight, oldLightOwned, s.lightModeIcon, s.darkModeIcon)
+	if oldDark != s.darkModeIcon {
+		s.releaseIcon(oldDark, oldDarkOwned, s.lightModeIcon, s.darkModeIcon)
+	}
+
 	s.updateIcon()
 }
 
 func (s *windowsSystemTray) setDarkModeIcon(icon []byte) {
-	var err error
-	// Destroy the previous dark mode icon if it exists
-	if s.darkModeIcon != 0 {
-		w32.DestroyIcon(s.darkModeIcon)
-	}
-	s.darkModeIcon, err = w32.CreateSmallHIconFromImage(icon)
+	newIcon, err := w32.CreateSmallHIconFromImage(icon)
 	if err != nil {
-		panic(syscall.GetLastError())
+		globalApplication.error("failed to create systray dark mode icon: %v", err)
+		return
 	}
-	if s.lightModeIcon == 0 {
-		s.lightModeIcon = s.darkModeIcon
+
+	oldDark := s.darkModeIcon
+	oldDarkOwned := s.darkModeIconOwned
+	oldLight := s.lightModeIcon
+	oldLightOwned := s.lightModeIconOwned
+
+	s.darkModeIcon = newIcon
+	s.darkModeIconOwned = true
+
+	lightReplaced := false
+
+	// Keep light mode in sync when both modes shared the same handle (or light was unset).
+	if s.lightModeIcon == 0 || s.lightModeIcon == oldDark {
+		s.lightModeIcon = newIcon
+		s.lightModeIconOwned = false
+		lightReplaced = true
 	}
-	// Update the icon
+
+	// Only free the previous handle if nothing else keeps a reference to it.
+	s.releaseIcon(oldDark, oldDarkOwned, s.lightModeIcon, s.darkModeIcon)
+	if lightReplaced {
+		s.releaseIcon(oldLight, oldLightOwned, s.lightModeIcon, s.darkModeIcon)
+	}
+
 	s.updateIcon()
 }
 
@@ -374,7 +441,7 @@ func newSystemTrayImpl(parent *SystemTray) systemTrayImpl {
 
 func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr {
 	switch msg {
-	case WM_USER_SYSTRAY:
+	case wmUserSystray:
 		msg := lParam & 0xffff
 		switch msg {
 		case w32.WM_LBUTTONUP:
@@ -393,11 +460,11 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 			if s.parent.rightDoubleClickHandler != nil {
 				s.parent.rightDoubleClickHandler()
 			}
-		case 0x0406:
+		case w32.NIN_POPUPOPEN:
 			if s.parent.mouseEnterHandler != nil {
 				s.parent.mouseEnterHandler()
 			}
-		case 0x0407:
+		case w32.NIN_POPUPCLOSE:
 			if s.parent.mouseLeaveHandler != nil {
 				s.parent.mouseLeaveHandler()
 			}
@@ -407,8 +474,7 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 	// Menu processing
 	case w32.WM_COMMAND:
 		cmdMsgID := int(wParam & 0xffff)
-		switch cmdMsgID {
-		default:
+		if s.menu != nil {
 			s.menu.ProcessCommand(cmdMsgID)
 		}
 	default:
@@ -426,17 +492,14 @@ func (s *windowsSystemTray) updateMenu(menu *Menu) {
 	s.menu.Update()
 }
 
-// Based on the idea from https://github.com/wailsapp/wails/issues/3487#issuecomment-2633242304
 func (s *windowsSystemTray) setTooltip(tooltip string) {
-	// Ensure the tooltip length is within the limit (64 characters for szTip)
-	if len(tooltip) > 64 {
-		tooltip = tooltip[:64]
-	}
-
 	// Create a new NOTIFYICONDATA structure
 	nid := s.newNotifyIconData()
-	nid.UFlags = w32.NIF_TIP
-	tooltipUTF16, err := w32.StringToUTF16(tooltip)
+	nid.UFlags = w32.NIF_TIP | w32.NIF_SHOWTIP
+
+	// Ensure the tooltip length is within the limit (128 characters including null terminate characters for szTip for Windows 2000 and later)
+	// https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-notifyicondataw
+	tooltipUTF16, err := w32.StringToUTF16(truncateUTF16(tooltip, 127))
 	if err != nil {
 		return
 	}
@@ -445,10 +508,6 @@ func (s *windowsSystemTray) setTooltip(tooltip string) {
 
 	// Modify the tray icon with the new tooltip
 	if !w32.ShellNotifyIcon(w32.NIM_MODIFY, &nid) {
-		return
-	}
-	nid.UVersion = 3 // Version 4 does not suport
-	if !w32.ShellNotifyIcon(w32.NIM_SETVERSION, &nid) {
 		return
 	}
 }
@@ -465,12 +524,16 @@ func (s *windowsSystemTray) setIconPosition(position IconPosition) {
 }
 
 func (s *windowsSystemTray) destroy() {
+	if s.cancelTheme != nil {
+		s.cancelTheme()
+		s.cancelTheme = nil
+	}
 	// Remove and delete the system tray
 	getNativeApplication().unregisterSystemTray(s)
 	if s.menu != nil {
 		s.menu.Destroy()
 	}
-	w32.DestroyWindow(s.hwnd)
+
 	// destroy the notification icon
 	nid := s.newNotifyIconData()
 	if !w32.ShellNotifyIcon(w32.NIM_DELETE, &nid) {
@@ -478,37 +541,96 @@ func (s *windowsSystemTray) destroy() {
 	}
 
 	// Clean up icon handles
-	if s.lightModeIcon != 0 {
-		w32.DestroyIcon(s.lightModeIcon)
-		s.lightModeIcon = 0
-	}
-	if s.darkModeIcon != 0 && s.darkModeIcon != s.lightModeIcon {
-		w32.DestroyIcon(s.darkModeIcon)
-		s.darkModeIcon = 0
-	}
+	lightIcon := s.lightModeIcon
+	darkIcon := s.darkModeIcon
+	currentIcon := s.currentIcon
+
+	s.releaseIcon(lightIcon, s.lightModeIconOwned)
+	s.releaseIcon(darkIcon, s.darkModeIconOwned, lightIcon)
+	s.releaseIcon(currentIcon, s.currentIconOwned, lightIcon, darkIcon)
+
+	s.lightModeIcon = 0
+	s.lightModeIconOwned = false
+	s.darkModeIcon = 0
+	s.darkModeIconOwned = false
 	s.currentIcon = 0
+	s.currentIconOwned = false
+
+	w32.DestroyWindow(s.hwnd)
+	s.hwnd = 0
 }
 
 func (s *windowsSystemTray) Show() {
-	// No-op
+	if s.hwnd == 0 {
+		return
+	}
+
+	nid := s.newNotifyIconData()
+	nid.UFlags = w32.NIF_STATE
+	nid.DwStateMask = w32.NIS_HIDDEN
+	nid.DwState = 0
+	if !w32.ShellNotifyIcon(w32.NIM_MODIFY, &nid) {
+		globalApplication.debug("ShellNotifyIcon NIM_MODIFY show failed: %v", syscall.GetLastError())
+	}
 }
 
 func (s *windowsSystemTray) Hide() {
-	// No-op
+	if s.hwnd == 0 {
+		return
+	}
+
+	nid := s.newNotifyIconData()
+	nid.UFlags = w32.NIF_STATE
+	nid.DwStateMask = w32.NIS_HIDDEN
+	nid.DwState = w32.NIS_HIDDEN
+	if !w32.ShellNotifyIcon(w32.NIM_MODIFY, &nid) {
+		globalApplication.debug("ShellNotifyIcon NIM_MODIFY hide failed: %v", syscall.GetLastError())
+	}
 }
 
-func (s *windowsSystemTray) reshow() {
-	// Add icons back to systray
-	nid := w32.NOTIFYICONDATA{
-		HWnd:             s.hwnd,
-		UID:              uint32(s.parent.id),
-		UFlags:           w32.NIF_ICON | w32.NIF_MESSAGE,
-		HIcon:            s.currentIcon,
-		UCallbackMessage: WM_USER_SYSTRAY,
-	}
-	nid.CbSize = uint32(unsafe.Sizeof(nid))
-	// Show the icon
+func (s *windowsSystemTray) show() (w32.NOTIFYICONDATA, error) {
+	nid := s.newNotifyIconData()
+	nid.UFlags = w32.NIF_ICON | w32.NIF_MESSAGE
+	nid.HIcon = s.currentIcon
+	nid.UCallbackMessage = wmUserSystray
+
 	if !w32.ShellNotifyIcon(w32.NIM_ADD, &nid) {
-		panic(syscall.GetLastError())
+		err := syscall.GetLastError()
+		return nid, fmt.Errorf("ShellNotifyIcon NIM_ADD failed: %w", err)
 	}
+
+	nid.UVersion = w32.NOTIFYICON_VERSION_4
+	if !w32.ShellNotifyIcon(w32.NIM_SETVERSION, &nid) {
+		err := syscall.GetLastError()
+		return nid, fmt.Errorf("ShellNotifyIcon NIM_SETVERSION failed: %w", err)
+	}
+
+	s.updateIcon()
+
+	if s.parent.tooltip != "" {
+		s.setTooltip(s.parent.tooltip)
+	}
+
+	return nid, nil
+}
+
+func truncateUTF16(s string, maxUnits int) string {
+	var units int
+	for i, r := range s {
+		var u int
+
+		// check if rune will take 2 UTF-16 units
+		if r > 0xFFFF {
+			u = 2
+		} else {
+			u = 1
+		}
+
+		if units+u > maxUnits {
+			return s[:i]
+		}
+		units += u
+	}
+
+	return s
 }
