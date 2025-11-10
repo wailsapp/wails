@@ -36,10 +36,7 @@ func (m *MessageProcessor) dialogCallback(window Window, dialogID *string, resul
 }
 
 func (m *MessageProcessor) processDialogMethod(req *RuntimeRequest, window Window) (any, error) {
-	args, err := req.Params.Args()
-	if err != nil {
-		return nil, errs.WrapInvalidDialogCallErrorf(err, "unable to parse arguments")
-	}
+	args := req.Args.AsMap()
 
 	dialogID := args.String("dialog-id")
 	if dialogID == nil {
@@ -49,7 +46,7 @@ func (m *MessageProcessor) processDialogMethod(req *RuntimeRequest, window Windo
 	switch req.Method {
 	case DialogInfo, DialogWarning, DialogError, DialogQuestion:
 		var options MessageDialogOptions
-		err := params.ToStruct(&options)
+		err := req.Args.ToStruct(&options)
 		if err != nil {
 			return nil, errs.WrapInvalidDialogCallErrorf(err, "error parsing dialog options")
 		}
@@ -89,7 +86,7 @@ func (m *MessageProcessor) processDialogMethod(req *RuntimeRequest, window Windo
 
 	case DialogOpenFile:
 		var options OpenFileDialogOptions
-		err := params.ToStruct(&options)
+		err := req.Args.ToStruct(&options)
 		if err != nil {
 			return nil, errs.WrapInvalidDialogCallErrorf(err, "error parsing dialog options")
 		}
@@ -127,7 +124,7 @@ func (m *MessageProcessor) processDialogMethod(req *RuntimeRequest, window Windo
 
 	case DialogSaveFile:
 		var options SaveFileDialogOptions
-		err := params.ToStruct(&options)
+		err := req.Args.ToStruct(&options)
 		if err != nil {
 			return nil, errs.WrapInvalidDialogCallErrorf(err, "error parsing dialog options")
 		}

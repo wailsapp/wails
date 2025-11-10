@@ -14,7 +14,7 @@ func main() {
 	// Create WebSocket transport on port 9099 with default Base64/JSON codec
 	// To use a different codec (e.g., raw JSON), use:
 	// wsTransport := application.NewWebSocketTransport(":9099", application.WithCodec(application.NewRawJSONCodec()))
-	wsTransport := application.NewWebSocketTransport(":9099")
+	wsTransport := NewWebSocketTransport(":9099")
 
 	app := application.New(application.Options{
 		Name:        "WebSocket Transport Example",

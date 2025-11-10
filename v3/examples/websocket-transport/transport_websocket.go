@@ -1,14 +1,13 @@
-package application
+package main
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"sync"
 
 	"github.com/gorilla/websocket"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // WebSocketTransport is an example implementation of a WebSocket-based transport.
@@ -21,26 +20,36 @@ type WebSocketTransport struct {
 	addr     string
 	server   *http.Server
 	upgrader websocket.Upgrader
-	clients  map[*websocket.Conn]bool
+	clients  map[*websocket.Conn]chan *WebSocketMessage
 	mu       sync.RWMutex
-	handler  TransportHandler
+	handler  *application.MessageProcessor
 }
 
-// TransportOption is a functional option for configuring WebSocketTransport
-type TransportOption func(*WebSocketTransport)
+// WebSocketTransportOption is a functional option for configuring WebSocketTransport
+type WebSocketTransportOption func(*WebSocketTransport)
+
+// wsResponse represents the response to a runtime call.
+type wsResponse struct {
+	// StatusCode is the HTTP status code equivalent (200 for success, 422 for error, etc.)
+	StatusCode int `json:"statusCode"`
+
+	// Data contains the response body (can be struct, string)
+	Data any `json:"data"`
+}
 
 // WebSocketMessage represents a message sent over the WebSocket transport
 type WebSocketMessage struct {
-	ID       string             `json:"id"`   // Unique message ID for request/response matching
-	Type     string             `json:"type"` // "request" or "response"
-	Request  *TransportRequest  `json:"request,omitempty"`
-	Response *TransportResponse `json:"response,omitempty"`
+	ID       string                      `json:"id"`   // Unique message ID for request/response matching
+	Type     string                      `json:"type"` // "request" or "response"
+	Request  *application.RuntimeRequest `json:"request,omitempty"`
+	Response *wsResponse                 `json:"response,omitempty"`
+	Event    *application.CustomEvent    `json:"event,omitempty"`
 }
 
 // NewWebSocketTransport creates a new WebSocket transport listening on the specified address.
 // Example: NewWebSocketTransport(":9998")
 // Example with codec: NewWebSocketTransport(":9998", WithCodec(NewRawJSONCodec()))
-func NewWebSocketTransport(addr string, opts ...TransportOption) *WebSocketTransport {
+func NewWebSocketTransport(addr string, opts ...WebSocketTransportOption) *WebSocketTransport {
 	t := &WebSocketTransport{
 		addr: addr,
 		upgrader: websocket.Upgrader{
@@ -49,7 +58,7 @@ func NewWebSocketTransport(addr string, opts ...TransportOption) *WebSocketTrans
 				return true
 			},
 		},
-		clients: make(map[*websocket.Conn]bool),
+		clients: make(map[*websocket.Conn]chan *WebSocketMessage),
 	}
 
 	// Apply options
@@ -61,7 +70,7 @@ func NewWebSocketTransport(addr string, opts ...TransportOption) *WebSocketTrans
 }
 
 // Start initializes and starts the WebSocket server
-func (w *WebSocketTransport) Start(ctx context.Context, handler TransportHandler) error {
+func (w *WebSocketTransport) Start(ctx context.Context, handler *application.MessageProcessor) error {
 	w.handler = handler
 
 	// Create HTTP server but don't start it yet
@@ -117,7 +126,7 @@ func (w *WebSocketTransport) Stop() error {
 	for conn := range w.clients {
 		conn.Close()
 	}
-	w.clients = make(map[*websocket.Conn]bool)
+	w.clients = make(map[*websocket.Conn]chan *WebSocketMessage)
 	w.mu.Unlock()
 
 	return w.server.Shutdown(context.Background())
@@ -132,14 +141,36 @@ func (w *WebSocketTransport) handleWebSocket(rw http.ResponseWriter, r *http.Req
 	}
 
 	w.mu.Lock()
-	w.clients[conn] = true
+	messageChan := make(chan *WebSocketMessage, 100)
+	w.clients[conn] = messageChan
 	w.mu.Unlock()
 
 	defer func() {
 		w.mu.Lock()
+		close(w.clients[conn])
 		delete(w.clients, conn)
 		w.mu.Unlock()
 		conn.Close()
+	}()
+
+	// write responses in one place, as concurrent writeJSON is not allowed
+	go func() {
+		for {
+			select {
+			case msg, ok := <-messageChan:
+				if ok {
+					w.mu.RLock()
+					if err := conn.WriteJSON(msg); err != nil {
+						log.Printf("[WebSocket] Failed to send message: %v", err)
+					} else {
+						if msg.Type == "response" {
+							log.Printf("[WebSocket] Successfully sent response for msgID=%s", msg.ID)
+						}
+					}
+					w.mu.RUnlock()
+				}
+			}
+		}
 	}()
 
 	// Read messages from client
@@ -155,24 +186,34 @@ func (w *WebSocketTransport) handleWebSocket(rw http.ResponseWriter, r *http.Req
 
 		// Process request
 		if msg.Type == "request" && msg.Request != nil {
-			go w.handleRequest(conn, msg.ID, msg.Request)
+			go w.handleRequest(messageChan, msg.ID, msg.Request)
 		}
 	}
 }
 
 // handleRequest processes a runtime call request and sends the response
-func (w *WebSocketTransport) handleRequest(conn *websocket.Conn, msgID string, req *TransportRequest) {
-	log.Printf("[WebSocket] Received request: msgID=%s, object=%d, method=%d, args=%s", msgID, req.Object, req.Method, req.Args)
+func (w *WebSocketTransport) handleRequest(messageChan chan *WebSocketMessage, msgID string, req *application.RuntimeRequest) {
+	log.Printf("[WebSocket] Received request: msgID=%s, object=%d, method=%d, args=%s", msgID, req.Object, req.Method, req.Args.String())
 
 	// Call the Wails runtime handler
-	response := w.handler.HandleRuntimeCall(context.Background(), req)
+	response, err := w.handler.HandleRuntimeCallWithIDs(context.Background(), req)
 
-	w.sendResponse(conn, msgID, response)
+	w.sendResponse(messageChan, msgID, response, err)
 }
 
 // sendResponse sends a response message to the client
-func (w *WebSocketTransport) sendResponse(conn *websocket.Conn, msgID string, response *TransportResponse) {
-	responseMsg := WebSocketMessage{
+func (w *WebSocketTransport) sendResponse(messageChan chan *WebSocketMessage, msgID string, resp any, err error) {
+	response := &wsResponse{StatusCode: 500}
+	if resp != nil {
+		response.StatusCode = 200
+		response.Data = resp
+	}
+	if err != nil {
+		response.StatusCode = 422
+		response.Data = err.Error()
+	}
+
+	responseMsg := &WebSocketMessage{
 		ID:       msgID,
 		Type:     "response",
 		Response: response,
@@ -181,37 +222,21 @@ func (w *WebSocketTransport) sendResponse(conn *websocket.Conn, msgID string, re
 	w.mu.RLock()
 	defer w.mu.RUnlock()
 
-	if err := conn.WriteJSON(responseMsg); err != nil {
-		log.Printf("[WebSocket] Failed to send response: %v", err)
-	} else {
-		log.Printf("[WebSocket] Successfully sent response for msgID=%s", msgID)
-	}
+	messageChan <- responseMsg
 }
 
 // BroadcastEvent sends an event to all connected clients
 // This can be used for server-pushed events
-func (w *WebSocketTransport) BroadcastEvent(event interface{}) error {
-	data, err := json.Marshal(event)
-	if err != nil {
-		return fmt.Errorf("failed to marshal event: %w", err)
-	}
-
-	msg := WebSocketMessage{
-		Type: "event",
-		Response: &TransportResponse{
-			StatusCode: 200,
-			Data:       data,
-		},
+func (w *WebSocketTransport) DispatchWailsEvent(event *application.CustomEvent) {
+	msg := &WebSocketMessage{
+		Type:  "event",
+		Event: event,
 	}
 
 	w.mu.RLock()
 	defer w.mu.RUnlock()
 
-	for conn := range w.clients {
-		if err := conn.WriteJSON(msg); err != nil {
-			log.Printf("Failed to broadcast event: %v", err)
-		}
+	for _, channel := range w.clients {
+		channel <- msg
 	}
-
-	return nil
 }

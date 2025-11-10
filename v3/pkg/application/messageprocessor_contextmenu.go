@@ -32,7 +32,7 @@ func (m *MessageProcessor) processContextMenuMethod(req *RuntimeRequest, window 
 	switch req.Method {
 	case ContextMenuOpen:
 		var data ContextMenuData
-		err := req.Params.ToStruct(&data)
+		err := req.Args.ToStruct(&data)
 		if err != nil {
 			return nil, errs.WrapInvalidContextMenuCallErrorf(err, "error parsing parameters")
 		}

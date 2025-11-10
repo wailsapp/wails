@@ -1,7 +1,6 @@
 package application
 
 import (
-	"encoding/json"
 	"fmt"
 	"log/slog"
 
@@ -122,10 +121,7 @@ func (m *MessageProcessor) processWindowMethod(
 	req *RuntimeRequest,
 	window Window,
 ) (any, error) {
-	args, err := req.Params.Args()
-	if err != nil {
-		return nil, errs.WrapInvalidWindowCallErrorf(err, "unable to parse arguments")
-	}
+	args := req.Args.AsMap()
 
 	switch req.Method {
 	case WindowPosition:
@@ -361,15 +357,11 @@ func (m *MessageProcessor) processWindowMethod(
 			"[DragDropDebug] processWindowMethod: Entered WindowDropZoneDropped case",
 		)
 
-		jsonArgs := req.Params.String("args") // 'params' is the QueryParams from processWindowMethod
-		if jsonArgs == nil {
-			return nil, errs.NewInvalidWindowCallErrorf("Error processing WindowDropZoneDropped: missing 'args' parameter")
-		}
-
-		slog.Info("[DragDropDebug] Raw 'args' payload string:", "data", *jsonArgs)
+		slog.Info("[DragDropDebug] Raw 'args' payload string:", "data", string(req.Args.rawData))
 
 		var payload fileDropPayload
-		err := json.Unmarshal([]byte(*jsonArgs), &payload)
+
+		err := req.Args.ToStruct(&payload)
 		if err != nil {
 			return nil, errs.WrapInvalidWindowCallErrorf(err, "Error decoding file drop payload from 'args' parameter")
 		}

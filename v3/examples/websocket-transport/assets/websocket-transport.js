@@ -9,7 +9,7 @@
 
 console.log('[WebSocket Transport] Loading VERSION 5 - simplified');
 
-import { clientId, Base64JSONCodec } from '/wails/runtime.js';
+import { clientId } from '/wails/runtime.js';
 
 /**
  * Generate a unique ID (simplified nanoid implementation)
@@ -37,7 +37,6 @@ export class WebSocketTransport {
         this.reconnectTimer = null;
         this.reconnectDelay = options.reconnectDelay || 2000;
         this.requestTimeout = options.requestTimeout || 30000;
-        this.codec = options.codec || new Base64JSONCodec();
 
         this.connect();
     }
@@ -134,17 +133,7 @@ export class WebSocketTransport {
                 console.log('[WebSocket] Response statusCode:', response.statusCode);
 
                 if (response.statusCode === 200) {
-                    // Decode response data using codec
-                    let responseData = '';
-                    if (response.data) {
-                        try {
-                            responseData = this.codec.decodeResponse(response.data, response.contentType);
-                        } catch (err) {
-                            console.error('[WebSocket] Failed to decode response data:', err);
-                            pending.reject(new Error('Failed to decode response: ' + err.message));
-                            return;
-                        }
-                    }
+                    let responseData = response.data;
 
                     console.log('[WebSocket] Response data:', responseData);
                     console.log('[WebSocket] Content type:', response.contentType);
@@ -165,8 +154,8 @@ export class WebSocketTransport {
                         pending.resolve(responseData || undefined);
                     }
                 } else {
+                  let errorData = response.data;
                     // Decode error data using codec
-                    const errorData = this.codec.decodeError(response.data);
                     console.error('[WebSocket] Error response:', errorData);
                     pending.reject(new Error(errorData));
                 }
@@ -208,6 +197,8 @@ export class WebSocketTransport {
             // Register pending request with the message for later reference
             this.pendingRequests.set(msgID, { resolve, reject, timeout, request: { object: objectID, method, args } });
 
+            console.log('args', args)
+
             // Build message
             const message = {
                 id: msgID,
@@ -215,7 +206,7 @@ export class WebSocketTransport {
                 request: {
                     object: objectID,
                     method: method,
-                    args: args ? JSON.stringify(args) : undefined,
+                    args: args,
                     windowName: windowName || undefined,
                     clientId: clientId
                 }

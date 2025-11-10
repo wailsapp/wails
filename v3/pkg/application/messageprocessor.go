@@ -25,16 +25,28 @@ const (
 	screensRequest     = 7
 	systemRequest      = 8
 	browserRequest     = 9
-	cancelCallRequesst = 10
+	cancelCallRequest  = 10
 )
 
 type RuntimeRequest struct {
-	Object            int         `json:"object"`
-	Method            int         `json:"method"`
-	Params            QueryParams `json:"params"`
-	WebviewWindowName string      `json:"webviewWindowName,omitempty"`
-	WebviewWindowId   uint32      `json:"webviewWindowId,omitempty"`
-	ClientId          string      `json:"clientId,omitempty"`
+	// Object identifies which Wails subsystem to call (Call=0, Clipboard=1, etc.)
+	// See objectNames in runtime.ts
+	Object int `json:"object"`
+
+	// Method identifies which method within the object to call
+	Method int `json:"method"`
+
+	// Args contains the method arguments
+	Args *Args `json:"args"`
+
+	// WebviewWindowName identifies the source window by name (optional, sent via header x-wails-window-name)
+	WebviewWindowName string `json:"webviewWindowName,omitempty"`
+
+	// WebviewWindowID identifies the source window (optional, sent via header x-wails-window-id)
+	WebviewWindowID uint32 `json:"webviewWindowId,omitempty"`
+
+	// ClientID identifies the frontend client (sent via header x-wails-client-id)
+	ClientID string `json:"clientId,omitempty"`
 }
 
 type MessageProcessor struct {
@@ -51,14 +63,12 @@ func NewMessageProcessor(logger *slog.Logger) *MessageProcessor {
 	}
 }
 
-func (m *MessageProcessor) HandleRuntimeCallWithIDs(ctx context.Context, req *RuntimeRequest) (any, error) {
-	defer func() (any, error) {
+func (m *MessageProcessor) HandleRuntimeCallWithIDs(ctx context.Context, req *RuntimeRequest) (resp any, err error) {
+	defer func() {
 		if handlePanic() {
-			// TODO: should get error here and return it.
-			return nil, errors.New("runtime panic detected!")
+			// TODO: return panic error itself?
+			err = errors.New("runtime panic detected!")
 		}
-
-		panic("todo!")
 	}()
 	targetWindow, nameOrID := m.getTargetWindow(req)
 
@@ -92,7 +102,7 @@ func (m *MessageProcessor) HandleRuntimeCallWithIDs(ctx context.Context, req *Ru
 		return m.processSystemMethod(req)
 	case browserRequest:
 		return m.processBrowserMethod(req)
-	case cancelCallRequesst:
+	case cancelCallRequest:
 		return m.processCallCancelMethod(req)
 	default:
 		return nil, errs.NewInvalidRuntimeCallErrorf("unknown object %d", req.Object)
@@ -104,7 +114,7 @@ func (m *MessageProcessor) getTargetWindow(req *RuntimeRequest) (Window, string)
 		window, _ := globalApplication.Window.GetByName(req.WebviewWindowName)
 		return window, req.WebviewWindowName
 	}
-	if req.WebviewWindowId == 0 {
+	if req.WebviewWindowID == 0 {
 		// No window specified - return the first available window
 		// This is useful for custom transports that don't have automatic window context
 		windows := globalApplication.Window.GetAll()
@@ -113,9 +123,9 @@ func (m *MessageProcessor) getTargetWindow(req *RuntimeRequest) (Window, string)
 		}
 		return nil, ""
 	}
-	targetWindow, _ := globalApplication.Window.GetByID(uint(req.WebviewWindowId))
+	targetWindow, _ := globalApplication.Window.GetByID(uint(req.WebviewWindowID))
 	if targetWindow == nil {
-		m.Error("Window ID not found:", "id", req.WebviewWindowId)
+		m.Error("Window ID not found:", "id", req.WebviewWindowID)
 		return nil, strconv.Itoa(int(windowID))
 	}
 	return targetWindow, strconv.Itoa(int(windowID))

@@ -14,14 +14,9 @@ var browserMethods = map[int]string{
 }
 
 func (m *MessageProcessor) processBrowserMethod(req *RuntimeRequest) (any, error) {
-	args, err := req.Params.Args()
-	if err != nil {
-		return nil, errs.WrapInvalidBrowserCallErrorf(err, "unable to parse arguments")
-	}
-
 	switch req.Method {
 	case BrowserOpenURL:
-		url := args.String("url")
+		url := req.Args.AsMap().String("url")
 		if url == nil {
 			return nil, errs.NewInvalidBrowserCallErrorf("missing argument 'url'")
 		}

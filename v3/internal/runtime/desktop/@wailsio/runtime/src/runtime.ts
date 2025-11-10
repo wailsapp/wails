@@ -8,7 +8,7 @@ The electron alternative for Go
 (c) Lea Anthony 2019-present
 */
 
-import { nanoid } from './nanoid.js';
+import { nanoid } from "./nanoid.js";
 
 const runtimeURL = window.location.origin + "/wails/runtime";
 
@@ -106,18 +106,28 @@ async function runtimeCallWithID(objectID: number, method: number, windowName: s
 
     // Default HTTP fetch transport
     let url = new URL(runtimeURL);
-    url.searchParams.append("object", objectID.toString());
-    url.searchParams.append("method", method.toString());
-    if (args) { url.searchParams.append("args", JSON.stringify(args)); }
+
+    let body: { object: number; method: number, args?: any } = {
+      object: objectID,
+      method
+    }
+    if (args) {
+      body.args = args;
+    }
 
     let headers: Record<string, string> = {
-        ["x-wails-client-id"]: clientId
+        ["x-wails-client-id"]: clientId,
+        ["Content-Type"]: "application/json"
     }
     if (windowName) {
         headers["x-wails-window-name"] = windowName;
     }
 
-    let response = await fetch(url, { headers });
+    let response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body)
+    });
     if (!response.ok) {
         throw new Error(await response.text());
     }

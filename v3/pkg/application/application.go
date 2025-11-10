@@ -3,7 +3,6 @@ package application
 import (
 	"context"
 	"embed"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -82,87 +81,62 @@ func New(appOptions Options) *App {
 
 	// Initialize transport (default to HTTP if not specified)
 	transport := appOptions.Transport
-
-	if appOptions.Transport != nil {
-		err := transport.Start(result.ctx, messageProc)
-		if err != nil {
-			result.fatal("failed to start custom transport: %w", err)
-		}
-		// Register shutdown task to stop transport
-		result.OnShutdown(func() {
-			if err := transport.Stop(); err != nil {
-				result.error("failed to stop custom transport: %w", err)
-			}
-		})
-
-		// Auto-wire events if transport supports event delivery
-		if eventTransport, ok := transport.(EventTransport); ok {
-			result.Event.On("*", func(event *CustomEvent) {
-				if err := eventTransport.SendEvent(event); err != nil {
-					result.Logger.Error("Failed to deliver event via transport", "error", err)
-				}
-			})
-			result.debug("Event auto-forwarding enabled for transport")
-		}
+	if transport == nil {
+		transport = NewHTTPTransport(HTTPTransportWithLogger(result.Logger))
 	}
 
-	var runtimeServer *legacyTransport
-	if transport == nil {
-		runtimeServer = &legacyTransport{
-			messageProcessor: messageProc,
+	err := transport.Start(result.ctx, messageProc)
+	if err != nil {
+		result.fatal("failed to start custom transport: %w", err)
+	}
+	// Register shutdown task to stop transport
+	result.OnShutdown(func() {
+		if err := transport.Stop(); err != nil {
+			result.error("failed to stop custom transport: %w", err)
 		}
+	})
+
+	// Auto-wire events if transport supports event delivery
+	if eventTransport, ok := transport.(WailsEventListener); ok {
+		result.wailsEventListeners = append(result.wailsEventListeners, eventTransport)
+	} else {
+		// otherwise fallback to IPC
+		result.wailsEventListeners = append(result.wailsEventListeners, &EventIPCTransport{
+			app: result,
+		})
+	}
+
+	middlewares := []assetserver.Middleware{
+		func(next http.Handler) http.Handler {
+			if m := appOptions.Assets.Middleware; m != nil {
+				return m(next)
+			}
+			return next
+		},
+		func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+				path := req.URL.Path
+				switch path {
+				case "/wails/runtime.js":
+					err := assetserver.ServeFile(rw, path, bundledassets.RuntimeJS)
+					if err != nil {
+						result.fatal("unable to serve runtime.js: %w", err)
+					}
+				default:
+					next.ServeHTTP(rw, req)
+				}
+			})
+		},
+	}
+
+	if handler, ok := transport.(TransportHTTPHandler); ok {
+		middlewares = append(middlewares, handler.Handler())
 	}
 
 	opts := &assetserver.Options{
-		Handler: appOptions.Assets.Handler,
-		Middleware: assetserver.ChainMiddleware(
-			func(next http.Handler) http.Handler {
-				if m := appOptions.Assets.Middleware; m != nil {
-					return m(next)
-				}
-				return next
-			},
-			func(next http.Handler) http.Handler {
-				return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-					path := req.URL.Path
-					switch path {
-					case "/wails/runtime.js":
-						err := assetserver.ServeFile(rw, path, bundledassets.RuntimeJS)
-						if err != nil {
-							result.fatal("unable to serve runtime.js: %w", err)
-						}
-					case "/wails/runtime":
-						if runtimeServer != nil {
-							runtimeServer.ServeHTTP(rw, req)
-						} else {
-							result.fatal("unable to serve runtime")
-						}
-					case "/wails/capabilities":
-						err := assetserver.ServeFile(
-							rw,
-							path,
-							globalApplication.capabilities.AsBytes(),
-						)
-						if err != nil {
-							result.fatal("unable to serve capabilities: %w", err)
-						}
-					case "/wails/flags":
-						updatedOptions := result.impl.GetFlags(appOptions)
-						flags, err := json.Marshal(updatedOptions)
-						if err != nil {
-							result.fatal("invalid flags provided to application: %w", err)
-						}
-						err = assetserver.ServeFile(rw, path, flags)
-						if err != nil {
-							result.fatal("unable to serve flags: %w", err)
-						}
-					default:
-						next.ServeHTTP(rw, req)
-					}
-				})
-			},
-		),
-		Logger: result.Logger,
+		Handler:    appOptions.Assets.Handler,
+		Middleware: assetserver.ChainMiddleware(middlewares...),
+		Logger:     result.Logger,
 	}
 
 	if appOptions.Assets.DisableLogging {

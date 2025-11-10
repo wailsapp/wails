@@ -66,14 +66,6 @@ export {
     dispatchWailsEvent
 } from "./runtime.js";
 
-// Export codec interfaces and implementations
-export {
-    type TransportCodec,
-    Base64JSONCodec,
-    RawStringCodec,
-    RawJSONCodec
-} from "./transport-codec.js";
-
 // Notify backend
 window._wails.invoke = System.invoke;
 

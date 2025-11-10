@@ -15,10 +15,7 @@ var clipboardMethods = map[int]string{
 }
 
 func (m *MessageProcessor) processClipboardMethod(req *RuntimeRequest) (any, error) {
-	args, err := req.Params.Args()
-	if err != nil {
-		return nil, errs.WrapInvalidClipboardCallErrorf(err, "unable to parse arguments")
-	}
+	args := req.Args.AsMap()
 
 	var text string
 

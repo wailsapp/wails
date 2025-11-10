@@ -34,12 +34,7 @@ func (m *MessageProcessor) callCallback(window Window, callID *string, result st
 }
 
 func (m *MessageProcessor) processCallCancelMethod(req *RuntimeRequest) (any, error) {
-	args, err := req.Params.Args()
-	if err != nil {
-		return nil, errs.WrapInvalidBindingCallErrorf(err, "unable to parse arguments")
-	}
-
-	callID := args.String("call-id")
+	callID := req.Args.AsMap().String("call-id")
 	if callID == nil || *callID == "" {
 		return nil, errs.NewInvalidBindingCallErrorf("missing argument 'call-id'")
 	}
@@ -59,12 +54,7 @@ func (m *MessageProcessor) processCallCancelMethod(req *RuntimeRequest) (any, er
 }
 
 func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRequest, window Window) (any, error) {
-	args, err := req.Params.Args()
-	if err != nil {
-		return nil, errs.NewInvalidBindingCallErrorf("unable to parse arguments")
-	}
-
-	callID := args.String("call-id")
+	callID := req.Args.AsMap().String("call-id")
 	if callID == nil || *callID == "" {
 		return nil, errs.NewInvalidBindingCallErrorf("missing argument 'call-id'")
 	}
@@ -72,7 +62,7 @@ func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRe
 	switch req.Method {
 	case CallBinding:
 		var options CallOptions
-		err := req.Params.ToStruct(&options)
+		err := req.Args.ToStruct(&options)
 		if err != nil {
 			return nil, errs.WrapInvalidBindingCallErrorf(err, "error parsing call options")
 		}

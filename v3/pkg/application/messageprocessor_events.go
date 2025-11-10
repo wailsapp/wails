@@ -16,7 +16,7 @@ func (m *MessageProcessor) processEventsMethod(req *RuntimeRequest, window Windo
 	switch req.Method {
 	case EventsEmit:
 		var event CustomEvent
-		err := req.Params.ToStruct(&event)
+		err := req.Args.ToStruct(&event)
 		if err != nil {
 			return nil, errs.WrapInvalidEventsCallErrorf(err, "error parsing event")
 		}

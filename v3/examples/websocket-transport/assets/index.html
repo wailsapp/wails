@@ -231,7 +231,7 @@
         // Import the custom WebSocket transport implementation with cache buster
         const timestamp = Date.now();
         const { createWebSocketTransport } = await import(`/websocket-transport.js?v=${timestamp}`);
-        const { setTransport, Base64JSONCodec, RawJSONCodec, Events } = await import('/wails/runtime.js');
+        const { setTransport, Events } = await import('/wails/runtime.js');
 
         // Import generated bindings
         console.log('[Init] Importing bindings from /bindings/...');
@@ -244,14 +244,11 @@
     const wsTransport = createWebSocketTransport('ws://localhost:9099/wails/ws', {
         reconnectDelay: 2000,
         requestTimeout: 30000,
-        // codec: new Base64JSONCodec()  // Default - base64 encoded responses
-        // codec: new RawJSONCodec()     // Alternative - raw JSON responses (requires backend WithCodec(NewRawJSONCodec()))
     });
 
     // Set as the active transport
     setTransport(wsTransport);
 
-    console.log('✓ WebSocket transport configured with codec:', wsTransport.codec.constructor.name);
     console.log('✓ Using generated bindings for GreetService');
 
     // Subscribe to timer events (automatically forwarded from backend!)
