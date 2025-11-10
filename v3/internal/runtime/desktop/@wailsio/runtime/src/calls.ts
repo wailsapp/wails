@@ -92,12 +92,14 @@ export function Call(options: CallOptions): CancellablePromise<any> {
     callResponses.set(id, { resolve: result.resolve, reject: result.reject });
 
     const request = call(CallBinding, Object.assign({ "call-id": id }, options));
-    let running = false;
+    let running = true;
 
     request.then((res) => {
+        running = false;
         callResponses.delete(id);
         result.resolve(res);
     }, (err) => {
+        running = false;
         callResponses.delete(id);
         result.reject(err);
     });

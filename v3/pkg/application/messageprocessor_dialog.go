@@ -27,11 +27,6 @@ var dialogMethodNames = map[int]string{
 func (m *MessageProcessor) processDialogMethod(req *RuntimeRequest, window Window) (any, error) {
 	args := req.Args.AsMap()
 
-	dialogID := args.String("dialog-id")
-	if dialogID == nil {
-		return nil, errs.NewInvalidDialogCallErrorf("missing argument 'dialog-id'")
-	}
-
 	switch req.Method {
 	case DialogInfo, DialogWarning, DialogError, DialogQuestion:
 		var options MessageDialogOptions

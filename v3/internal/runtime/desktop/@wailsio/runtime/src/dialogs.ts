@@ -9,15 +9,11 @@ The electron alternative for Go
 */
 
 import {newRuntimeCaller, objectNames} from "./runtime.js";
-import { nanoid } from './nanoid.js';
 
 // setup
 window._wails = window._wails || {};
 
-type PromiseResolvers = Omit<PromiseWithResolvers<any>, "promise">;
-
 const call = newRuntimeCaller(objectNames.Dialog);
-const dialogResponses = new Map<string, PromiseResolvers>();
 
 // Define constants from the `methods` object in Title Case
 const DialogInfo = 0;
@@ -125,19 +121,6 @@ export interface FileFilter {
 }
 
 /**
- * Generates a unique ID using the nanoid library.
- *
- * @returns A unique ID that does not exist in the dialogResponses set.
- */
-function generateID(): string {
-    let result;
-    do {
-        result = nanoid();
-    } while (dialogResponses.has(result));
-    return result;
-}
-
-/**
  * Presents a dialog of specified type with the given options.
  *
  * @param type - Dialog type.
@@ -145,11 +128,7 @@ function generateID(): string {
  * @returns A promise that resolves with result of dialog.
  */
 function dialog(type: number, options: MessageDialogOptions | OpenFileDialogOptions | SaveFileDialogOptions = {}): Promise<any> {
-    const id = generateID();
-
-    return call(type, Object.assign({ "dialog-id": id }, options)).finally(() => {
-      dialogResponses.delete(id)
-    });
+    return call(type, options);
 }
 
 /**
