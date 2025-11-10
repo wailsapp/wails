@@ -1,4 +1,3 @@
-//nolint:depguard // we want to use pkg/errors only here, but nowhere else
 package errs
 
 import (
