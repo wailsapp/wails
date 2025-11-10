@@ -188,6 +188,14 @@
     </div>
 
     <div class="card">
+        <h2>Test Dialog</h2>
+        <div class="input-group">
+            <button onclick="openDialog()">Open</button>
+        </div>
+        <div class="result" id="dialogResult">Click "Open" to test the binding...</div>
+    </div>
+
+    <div class="card">
         <h2>Test Greet Method (with Events)</h2>
         <div class="input-group">
             <input type="text" id="nameInput" placeholder="Enter your name" value="WebSocket User">
@@ -231,7 +239,7 @@
         // Import the custom WebSocket transport implementation with cache buster
         const timestamp = Date.now();
         const { createWebSocketTransport } = await import(`/websocket-transport.js?v=${timestamp}`);
-        const { setTransport, Events } = await import('/wails/runtime.js');
+        const { setTransport, Events, Dialogs } = await import('/wails/runtime.js');
 
         // Import generated bindings
         console.log('[Init] Importing bindings from /bindings/...');
@@ -240,11 +248,17 @@
         const { GreetService } = bindings;
 
     // Create and configure WebSocket transport
-    // The transport uses Base64JSONCodec by default (matches Go's []byte JSON marshaling)
     const wsTransport = createWebSocketTransport('ws://localhost:9099/wails/ws', {
         reconnectDelay: 2000,
         requestTimeout: 30000,
     });
+
+   window.openDialog = async function openDialog() {
+        document.getElementById("dialogResult").innerHTML = JSON.stringify(await Dialogs.OpenFile({
+          CanChooseFiles: true,
+          AllowsMultipleSelection: true
+        }));
+    }
 
     // Set as the active transport
     setTransport(wsTransport);

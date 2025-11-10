@@ -2,7 +2,6 @@ package application
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 
 	"github.com/wailsapp/wails/v3/pkg/errs"
@@ -14,24 +13,6 @@ const (
 	CallBinding            = 0
 	WindowKey   contextKey = "Window"
 )
-
-func (m *MessageProcessor) callErrorCallback(window Window, message string, callID *string, err error) {
-	m.Error(message, "id", *callID, "error", err)
-	if cerr := (*CallError)(nil); errors.As(err, &cerr) {
-		if data, jsonErr := json.Marshal(cerr); jsonErr == nil {
-			window.CallError(*callID, string(data), true)
-			return
-		} else {
-			m.Error("Unable to convert data to JSON. Please report this to the Wails team!", "id", *callID, "error", jsonErr)
-		}
-	}
-
-	window.CallError(*callID, err.Error(), false)
-}
-
-func (m *MessageProcessor) callCallback(window Window, callID *string, result string) {
-	window.CallResponse(*callID, result)
-}
 
 func (m *MessageProcessor) processCallCancelMethod(req *RuntimeRequest) (any, error) {
 	callID := req.Args.AsMap().String("call-id")
