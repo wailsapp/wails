@@ -25,7 +25,7 @@ By default, Wails uses HTTP fetch requests from the frontend to communicate with
 ┌──────────────────▼──────────────────────────────┐
 │  Backend (Go)                                   │
 │  - Your Transport implementation               │
-│  - TransportHandler (Wails MessageProcessor)   │
+│  - Wails MessageProcessor                    │
 │  - All existing Wails infrastructure           │
 └─────────────────────────────────────────────────┘
 ```
@@ -79,7 +79,7 @@ func main() {
 }
 ```
 
-### 3. Modify Frontend Runtime (Optional)
+### 3. Modify Frontend Runtime
 
 If using a custom transport, you'll need to modify the frontend runtime to use your transport instead of HTTP fetch. Replace the `runtimeCallWithID` function in your frontend:
 

@@ -30,6 +30,6 @@ func (m *MessageProcessor) processApplicationMethod(
 		globalApplication.Show()
 		return unit, nil
 	default:
-		return nil, errs.NewInvalidWindowCallErrorf("unknown method %d", req.Method)
+		return nil, errs.NewInvalidApplicationCallErrorf("unknown method %d", req.Method)
 	}
 }

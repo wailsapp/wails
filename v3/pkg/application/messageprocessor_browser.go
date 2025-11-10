@@ -9,7 +9,7 @@ const (
 	BrowserOpenURL = 0
 )
 
-var browserMethods = map[int]string{
+var browserMethodNames = map[int]string{
 	BrowserOpenURL: "OpenURL",
 }
 
@@ -28,6 +28,7 @@ func (m *MessageProcessor) processBrowserMethod(req *RuntimeRequest) (any, error
 
 		err = browser.OpenURL(sanitizedURL)
 		if err != nil {
+			m.Error("OpenURL: invalid URL - %s", err.Error())
 			return nil, errs.WrapInvalidBrowserCallErrorf(err, "OpenURL failed")
 		}
 

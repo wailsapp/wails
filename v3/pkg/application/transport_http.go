@@ -3,12 +3,12 @@ package application
 import (
 	"context"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"strconv"
+
+	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
 type HTTPTransport struct {
@@ -72,22 +72,22 @@ func (t *HTTPTransport) Handler() func(next http.Handler) http.Handler {
 func (t *HTTPTransport) handleRuntimeRequest(rw http.ResponseWriter, r *http.Request) {
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		t.httpError(rw, "Unable to read request body:", err)
+		t.httpError(rw, errs.WrapInvalidRuntimeCallErrorf(err, "Unable to read request body"))
 	}
 
 	var body request
 	err = json.Unmarshal(bodyBytes, &body)
 	if err != nil {
-		t.httpError(rw, "Unable to parse request body as JSON:", err)
+		t.httpError(rw, errs.WrapInvalidRuntimeCallErrorf(err, "Unable to parse request body as JSON"))
 		return
 	}
 
 	if body.Object == nil {
-		t.httpError(rw, "Invalid runtime call:", errors.New("missing object value"))
+		t.httpError(rw, errs.NewInvalidRuntimeCallErrorf("missing object value"))
 	}
 
 	if body.Method == nil {
-		t.httpError(rw, "Invalid runtime call:", errors.New("missing method value"))
+		t.httpError(rw, errs.NewInvalidRuntimeCallErrorf("missing method value"))
 	}
 
 	windowIdStr := r.Header.Get(webViewRequestHeaderWindowId)
@@ -95,7 +95,7 @@ func (t *HTTPTransport) handleRuntimeRequest(rw http.ResponseWriter, r *http.Req
 	if windowIdStr != "" {
 		windowId, err = strconv.Atoi(windowIdStr)
 		if err != nil {
-			t.httpError(rw, "Invalid runtime call:", fmt.Errorf("error decoding windowId value: %w", err))
+			t.httpError(rw, errs.WrapInvalidRuntimeCallErrorf(err, "error decoding windowId value"))
 			return
 		}
 	}
@@ -113,7 +113,7 @@ func (t *HTTPTransport) handleRuntimeRequest(rw http.ResponseWriter, r *http.Req
 	})
 
 	if err != nil {
-		t.httpError(rw, "Failed to process runtime call:", err)
+		t.httpError(rw, err)
 		return
 	}
 
@@ -155,8 +155,8 @@ func (t *HTTPTransport) json(rw http.ResponseWriter, data any) {
 	rw.WriteHeader(http.StatusOK)
 }
 
-func (t *HTTPTransport) httpError(rw http.ResponseWriter, message string, err error) {
-	t.error(message, "error", err)
+func (t *HTTPTransport) httpError(rw http.ResponseWriter, err error) {
+	t.error(err.Error())
 	rw.WriteHeader(http.StatusUnprocessableEntity)
 	_, err = rw.Write([]byte(err.Error()))
 	if err != nil {

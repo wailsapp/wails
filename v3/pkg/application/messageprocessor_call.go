@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 
 	"github.com/wailsapp/wails/v3/pkg/errs"
@@ -48,6 +49,13 @@ func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRe
 			return nil, errs.WrapInvalidBindingCallErrorf(err, "error parsing call options")
 		}
 
+		// Log call
+		var methodRef any = options.MethodName
+		if options.MethodName == "" {
+			methodRef = options.MethodID
+		}
+		m.Info("Binding call started:", "id", *callID, "method", methodRef)
+
 		ctx, cancel := context.WithCancel(context.WithoutCancel(ctx))
 
 		// Schedule cancel in case panics happen before starting the call.
@@ -74,7 +82,6 @@ func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRe
 			return nil, errs.NewInvalidBindingCallErrorf("ambiguous call id: %s", *callID)
 		}
 
-		defer handlePanic()
 		defer func() {
 			m.l.Lock()
 			defer m.l.Unlock()
@@ -95,12 +102,20 @@ func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRe
 			}
 		}
 
+		jsonArgs, _ := json.Marshal(options.Args)
+		var result any
+		defer func() {
+			var jsonResult []byte
+			jsonResult, _ = json.Marshal(result)
+			m.Info("Binding call complete:", "id", *callID, "method", boundMethod, "args", string(jsonArgs), "result", string(jsonResult))
+		}()
+
 		// Set the context values for the window
 		if window != nil {
 			ctx = context.WithValue(ctx, WindowKey, window)
 		}
 
-		result, err := boundMethod.Call(ctx, options.Args)
+		result, err = boundMethod.Call(ctx, options.Args)
 		if cerr := (*CallError)(nil); errors.As(err, &cerr) {
 			switch cerr.Kind {
 			case ReferenceError, TypeError:

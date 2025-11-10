@@ -2,7 +2,6 @@ package application
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 	"slices"
 	"strconv"
@@ -27,6 +26,20 @@ const (
 	browserRequest     = 9
 	cancelCallRequest  = 10
 )
+
+var objectNames = map[int]string{
+	callRequest:        "Call",
+	clipboardRequest:   "Clipboard",
+	applicationRequest: "Application",
+	eventsRequest:      "Events",
+	contextMenuRequest: "ContextMenu",
+	dialogRequest:      "Dialog",
+	windowRequest:      "Window",
+	screensRequest:     "Screens",
+	systemRequest:      "System",
+	browserRequest:     "Browser",
+	cancelCallRequest:  "CancellCall",
+}
 
 type RuntimeRequest struct {
 	// Object identifies which Wails subsystem to call (Call=0, Clipboard=1, etc.)
@@ -67,7 +80,7 @@ func (m *MessageProcessor) HandleRuntimeCallWithIDs(ctx context.Context, req *Ru
 	defer func() {
 		if handlePanic() {
 			// TODO: return panic error itself?
-			err = errors.New("runtime panic detected!")
+			err = errs.NewInvalidRuntimeCallErrorf("runtime panic detected!")
 		}
 	}()
 	targetWindow, nameOrID := m.getTargetWindow(req)
@@ -80,6 +93,8 @@ func (m *MessageProcessor) HandleRuntimeCallWithIDs(ctx context.Context, req *Ru
 	if windowRequired && targetWindow == nil {
 		return nil, errs.NewInvalidRuntimeCallErrorf("window '%s' not found", nameOrID)
 	}
+
+	m.logRuntimeCall(req)
 
 	switch req.Object {
 	case windowRequest:
@@ -137,4 +152,36 @@ func (m *MessageProcessor) Error(message string, args ...any) {
 
 func (m *MessageProcessor) Info(message string, args ...any) {
 	m.logger.Info(message, args...)
+}
+
+func (m *MessageProcessor) logRuntimeCall(req *RuntimeRequest) {
+	objectName := objectNames[req.Object]
+
+	methodName := ""
+	switch req.Object {
+	case callRequest:
+		return // logs done separately in call processor
+	case clipboardRequest:
+		methodName = clipboardMethods[req.Method]
+	case applicationRequest:
+		methodName = applicationMethodNames[req.Method]
+	case eventsRequest:
+		methodName = eventsMethodNames[req.Method]
+	case contextMenuRequest:
+		methodName = contextmenuMethodNames[req.Method]
+	case dialogRequest:
+		methodName = dialogMethodNames[req.Method]
+	case windowRequest:
+		methodName = windowMethodNames[req.Method]
+	case screensRequest:
+		methodName = screensMethodNames[req.Method]
+	case systemRequest:
+		methodName = systemMethodNames[req.Method]
+	case browserRequest:
+		methodName = browserMethodNames[req.Method]
+	case cancelCallRequest:
+		methodName = "Cancel"
+	}
+
+	m.Info("Runtime call:", "method", objectName+"."+methodName, "args", req.Args.String())
 }
