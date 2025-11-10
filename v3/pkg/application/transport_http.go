@@ -30,10 +30,10 @@ func NewHTTPTransport(opts ...HTTPTransportOption) *HTTPTransport {
 	return t
 }
 
-// WebSocketTransportOption is a functional option for configuring WebSocketTransport
+// HTTPTransportOption is a functional option for configuring HTTPTransport
 type HTTPTransportOption func(*HTTPTransport)
 
-// DBWithLogger functional option to set the logger of a logging DB instance.
+// HTTPTransportWithLogger is a functional option to set the logger for HTTPTransport.
 func HTTPTransportWithLogger(logger *slog.Logger) HTTPTransportOption {
 	return func(t *HTTPTransport) {
 		t.logger = logger
@@ -170,6 +170,8 @@ func (t *HTTPTransport) httpError(rw http.ResponseWriter, err error) {
 		} else {
 			bytes = []byte(err.Error())
 		}
+	} else {
+		bytes = []byte(err.Error())
 	}
 
 	_, err = rw.Write(bytes)

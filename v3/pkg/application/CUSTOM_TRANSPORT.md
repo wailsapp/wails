@@ -81,7 +81,7 @@ func main() {
 
 ### 3. Modify Frontend Runtime
 
-If using a custom transport, you'll need to modify the frontend runtime to use your transport instead of HTTP fetch. Implement `RuntimeTransport` interface that will be used to handle requests.:
+If using a custom transport, you'll need to modify the frontend runtime to use your transport instead of HTTP fetch. Implement `RuntimeTransport` interface that will be used to handle requests:
 
 ```typescript
 const { setTransport } = await import('/wails/runtime.js');

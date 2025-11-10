@@ -145,7 +145,7 @@ func (w *WebSocketTransport) handleWebSocket(rw http.ResponseWriter, r *http.Req
 	w.clients[conn] = messageChan
 	w.mu.Unlock()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(r.Context())
 
 	defer func() {
 		w.mu.Lock()
@@ -201,7 +201,7 @@ func (w *WebSocketTransport) handleRequest(ctx context.Context, messageChan chan
 	log.Printf("[WebSocket] Received request: msgID=%s, object=%d, method=%d, args=%s", msgID, req.Object, req.Method, req.Args.String())
 
 	// Call the Wails runtime handler
-	response, err := w.handler.HandleRuntimeCallWithIDs(context.Background(), req)
+	response, err := w.handler.HandleRuntimeCallWithIDs(ctx, req)
 
 	w.sendResponse(ctx, messageChan, msgID, response, err)
 }
