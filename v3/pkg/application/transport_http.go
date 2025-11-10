@@ -130,8 +130,8 @@ func (t *HTTPTransport) handleRuntimeRequest(rw http.ResponseWriter, r *http.Req
 }
 
 func (t *HTTPTransport) text(rw http.ResponseWriter, data string) {
-	rw.WriteHeader(http.StatusOK)
 	rw.Header().Set("Content-Type", "text/plain")
+	rw.WriteHeader(http.StatusOK)
 	_, err := rw.Write([]byte(data))
 	if err != nil {
 		t.error("Unable to write json payload. Please report this to the Wails team!", "error", err)
@@ -140,8 +140,8 @@ func (t *HTTPTransport) text(rw http.ResponseWriter, data string) {
 }
 
 func (t *HTTPTransport) json(rw http.ResponseWriter, data any) {
-	rw.WriteHeader(http.StatusOK)
 	rw.Header().Set("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusOK)
 	// convert data to json
 	var jsonPayload = []byte("{}")
 	var err error

@@ -7,6 +7,7 @@ type EventIPCTransport struct {
 func (t *EventIPCTransport) DispatchWailsEvent(event *CustomEvent) {
 	// Snapshot windows under RLock
 	t.app.windowsLock.RLock()
+	defer t.app.windowsLock.RUnlock()
 	for _, window := range t.app.windows {
 		if event.IsCancelled() {
 			t.app.windowsLock.RUnlock()
@@ -14,5 +15,4 @@ func (t *EventIPCTransport) DispatchWailsEvent(event *CustomEvent) {
 		}
 		window.DispatchWailsEvent(event)
 	}
-	t.app.windowsLock.RUnlock()
 }

@@ -37,6 +37,7 @@ export class WebSocketTransport {
     this.reconnectTimer = null;
     this.reconnectDelay = options.reconnectDelay || 2000;
     this.requestTimeout = options.requestTimeout || 30000;
+    this.maxQueueSize = options.maxQueueSize || 100;
 
     this.connect();
   }
@@ -90,6 +91,7 @@ export class WebSocketTransport {
           reject(new Error("WebSocket connection closed"));
         });
         this.pendingRequests.clear();
+        this.messageQueue = [];
 
         // Attempt to reconnect
         if (!this.reconnectTimer) {
@@ -136,7 +138,7 @@ export class WebSocketTransport {
           let responseData = response.data;
 
           console.log("[WebSocket] Response data:", responseData);
-          pending.resolve(responseData || undefined);
+          pending.resolve(responseData ?? undefined);
         } else {
           let errorData = response.data;
           // Decode error data using codec
@@ -198,6 +200,10 @@ export class WebSocketTransport {
       if (this.wsReady && this.ws?.readyState === WebSocket.OPEN) {
         this.ws.send(JSON.stringify(message));
       } else {
+        if (this.messageQueue.length >= this.maxQueueSize) {
+          reject(new Error("Message queue full"));
+          return;
+        }
         this.messageQueue.push(message);
         this.connect().catch(reject);
       }
@@ -232,7 +238,7 @@ export class WebSocketTransport {
 /**
  * Create and configure a WebSocket transport
  *
- * @param url - WebSocket URL (e.g., 'ws://localhost:9998/wails/ws')
+ * @param url - WebSocket URL (e.g., 'ws://localhost:9099/wails/ws')
  * @param options - Optional configuration
  * @returns WebSocketTransport instance
  */

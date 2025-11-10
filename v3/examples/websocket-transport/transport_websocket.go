@@ -121,12 +121,10 @@ func (w *WebSocketTransport) Stop() error {
 		return nil
 	}
 
-	// Close all client connections
 	w.mu.Lock()
 	for conn := range w.clients {
 		conn.Close()
 	}
-	w.clients = make(map[*websocket.Conn]chan *WebSocketMessage)
 	w.mu.Unlock()
 
 	return w.server.Shutdown(context.Background())
@@ -193,6 +191,9 @@ func (w *WebSocketTransport) handleWebSocket(rw http.ResponseWriter, r *http.Req
 
 		// Process request
 		if msg.Type == "request" && msg.Request != nil {
+			if msg.Request.Args == nil {
+				msg.Request.Args = &application.Args{}
+			}
 			go w.handleRequest(ctx, messageChan, msg.ID, msg.Request)
 		}
 	}
