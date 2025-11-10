@@ -161,18 +161,21 @@ func (t *HTTPTransport) json(rw http.ResponseWriter, data any) {
 
 func (t *HTTPTransport) httpError(rw http.ResponseWriter, err error) {
 	t.error(err.Error())
-	rw.WriteHeader(http.StatusUnprocessableEntity)
 	// return JSON error if it's a CallError
 	var bytes []byte
 	if cerr := (*CallError)(nil); errors.As(err, &cerr) {
 		if data, jsonErr := json.Marshal(cerr); jsonErr == nil {
+			rw.Header().Set("Content-Type", "application/json")
 			bytes = data
 		} else {
+			rw.Header().Set("Content-Type", "text/plain")
 			bytes = []byte(err.Error())
 		}
 	} else {
+		rw.Header().Set("Content-Type", "text/plain")
 		bytes = []byte(err.Error())
 	}
+	rw.WriteHeader(http.StatusUnprocessableEntity)
 
 	_, err = rw.Write(bytes)
 	if err != nil {

@@ -150,8 +150,10 @@ func (w *WebSocketTransport) handleWebSocket(rw http.ResponseWriter, r *http.Req
 	defer func() {
 		w.mu.Lock()
 		cancel()
-		close(w.clients[conn])
-		delete(w.clients, conn)
+		close(messageChan)
+		if _, ok := w.clients[conn]; ok {
+			delete(w.clients, conn)
+		}
 		w.mu.Unlock()
 		conn.Close()
 	}()

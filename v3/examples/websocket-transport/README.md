@@ -51,8 +51,8 @@ This example demonstrates how to use a custom transport like WebSocket for Wails
 The backend configuration is simple - just pass a `WebSocketTransport` to the application options:
 
 ```go
-// Create WebSocket transport on port 9998
-wsTransport := NewWebSocketTransport(":9998")
+// Create WebSocket transport on port 9099
+wsTransport := NewWebSocketTransport(":9099")
 
 app := application.New(application.Options{
     Name: "WebSocket Transport Example",

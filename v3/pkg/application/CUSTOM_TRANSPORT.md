@@ -88,7 +88,7 @@ const { setTransport } = await import('/wails/runtime.js');
 
 class MyRuntimeTransport {
   call(objectID: number, method: number, windowName: string, args: any): Promise<any> {
-    // dooo calls
+    // TODO: implement IPC call with your transport protocol
     
     return resp;
   }
