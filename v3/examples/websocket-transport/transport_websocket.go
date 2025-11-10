@@ -47,8 +47,7 @@ type WebSocketMessage struct {
 }
 
 // NewWebSocketTransport creates a new WebSocket transport listening on the specified address.
-// Example: NewWebSocketTransport(":9998")
-// Example with codec: NewWebSocketTransport(":9998", WithCodec(NewRawJSONCodec()))
+// Example: NewWebSocketTransport(":9099")
 func NewWebSocketTransport(addr string, opts ...WebSocketTransportOption) *WebSocketTransport {
 	t := &WebSocketTransport{
 		addr: addr,

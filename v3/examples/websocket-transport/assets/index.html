@@ -248,7 +248,7 @@
     const { GreetService } = bindings;
 
     // Create and configure WebSocket transport
-    const wsTransport = createWebSocketTransport("ws://localhost:9099/wails/ws", {
+    const wsTransport = await createWebSocketTransport("ws://localhost:9099/wails/ws", {
       reconnectDelay: 2000,
       requestTimeout: 30000
     });

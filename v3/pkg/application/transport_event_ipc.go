@@ -10,7 +10,6 @@ func (t *EventIPCTransport) DispatchWailsEvent(event *CustomEvent) {
 	defer t.app.windowsLock.RUnlock()
 	for _, window := range t.app.windows {
 		if event.IsCancelled() {
-			t.app.windowsLock.RUnlock()
 			return
 		}
 		window.DispatchWailsEvent(event)

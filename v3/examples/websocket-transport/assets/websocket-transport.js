@@ -38,8 +38,6 @@ export class WebSocketTransport {
     this.reconnectDelay = options.reconnectDelay || 2000;
     this.requestTimeout = options.requestTimeout || 30000;
     this.maxQueueSize = options.maxQueueSize || 100;
-
-    this.connect();
   }
 
   /**
@@ -141,7 +139,6 @@ export class WebSocketTransport {
           pending.resolve(responseData ?? undefined);
         } else {
           let errorData = response.data;
-          // Decode error data using codec
           console.error("[WebSocket] Error response:", errorData);
           pending.reject(new Error(errorData));
         }
@@ -242,6 +239,8 @@ export class WebSocketTransport {
  * @param options - Optional configuration
  * @returns WebSocketTransport instance
  */
-export function createWebSocketTransport(url, options = {}) {
-  return new WebSocketTransport(url, options);
+export async function createWebSocketTransport(url, options = {}) {
+  const transport = new WebSocketTransport(url, options);
+  await transport.connect();
+  return transport;
 }
