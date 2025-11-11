@@ -77,6 +77,12 @@ static guint get_window_id(void *object)
     return GPOINTER_TO_UINT(g_object_get_data((GObject *)object, "windowid"));
 }
 
+static char *uri gchar_to_char(const gchar *str)
+{
+	char *uri = g_strdup(str);
+	return uri;
+}
+
 // exported below
 void activateLinux(gpointer data);
 extern void emit(WindowEvent* data);
@@ -1663,7 +1669,7 @@ func sendMessageToBackend(contentManager *C.WebKitUserContentManager, result *C.
 	if webView != nil {
 		currentUri := C.webkit_web_view_get_uri(webView)
 		if currentUri != nil {
-			uri := C.g_strdup(currentUri)
+			uri := C.gchar_to_char(currentUri)
 			defer C.g_free(uri)
 			origin = C.GoString(uri)
 		}
