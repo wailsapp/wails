@@ -117,7 +117,7 @@ type (
 
 type WindowEvent struct {
 	ctx       *WindowEventContext
-	Cancelled bool
+	cancelled atomic.Bool
 }
 
 func (w *WindowEvent) Context() *WindowEventContext {
@@ -128,8 +128,12 @@ func NewWindowEvent() *WindowEvent {
 	return &WindowEvent{}
 }
 
+func (w *WindowEvent) IsCancelled() bool {
+	return w.cancelled.Load()
+}
+
 func (w *WindowEvent) Cancel() {
-	w.Cancelled = true
+	w.cancelled.Store(true)
 }
 
 type WindowEventListener struct {
@@ -188,13 +192,26 @@ func (w *WebviewWindow) SetMenu(menu *Menu) {
 	}
 }
 
-// EmitEvent emits an event from the window
-func (w *WebviewWindow) EmitEvent(name string, data ...any) {
-	globalApplication.Event.EmitEvent(&CustomEvent{
+// EmitEvent emits a custom event with the specified name and associated data.
+// It returns a boolean indicating whether the event was cancelled by a hook.
+// The [CustomEvent.Sender] field will be set to the window name.
+//
+// If the given event name is registered, EmitEvent validates the data parameter
+// against the expected data type. In case of a mismatch, EmitEvent reports an error
+// to the registered error handler for the application and cancels the event.
+func (w *WebviewWindow) EmitEvent(name string, data ...any) bool {
+	event := &CustomEvent{
 		Name:   name,
-		Data:   data,
 		Sender: w.Name(),
-	})
+	}
+
+	if len(data) == 1 {
+		event.Data = data[0]
+	} else if len(data) > 1 {
+		event.Data = data
+	}
+
+	return globalApplication.Event.EmitEvent(event)
 }
 
 var windowID uint
@@ -790,7 +807,7 @@ func (w *WebviewWindow) HandleWindowEvent(id uint) {
 
 	for _, thisHook := range hooks {
 		thisHook.callback(thisEvent)
-		if thisEvent.Cancelled {
+		if thisEvent.IsCancelled() {
 			return
 		}
 	}
@@ -802,6 +819,9 @@ func (w *WebviewWindow) HandleWindowEvent(id uint) {
 
 	for _, listener := range tempListeners {
 		go func() {
+			if thisEvent.IsCancelled() {
+				return
+			}
 			defer handlePanic()
 			listener.callback(thisEvent)
 		}()

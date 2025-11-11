@@ -19,17 +19,44 @@ func newEventManager(app *App) *EventManager {
 	}
 }
 
-// Emit emits a custom event
-func (em *EventManager) Emit(name string, data ...any) {
-	em.app.customEventProcessor.Emit(&CustomEvent{
-		Name: name,
-		Data: data,
-	})
+// Emit emits a custom event with the specified name and associated data.
+// It returns a boolean indicating whether the event was cancelled by a hook.
+//
+// If no data argument is provided, Emit emits an event with nil data.
+// When there is exactly one data argument, it will be used as the custom event's data field.
+// When more than one argument is provided, the event's data field will be set to the argument slice.
+//
+// If the given event name is registered, Emit validates the data parameter
+// against the expected data type. In case of a mismatch, Emit reports an error
+// to the registered error handler for the application and cancels the event.
+func (em *EventManager) Emit(name string, data ...any) bool {
+	event := &CustomEvent{Name: name}
+
+	if len(data) == 1 {
+		event.Data = data[0]
+	} else if len(data) > 1 {
+		event.Data = data
+	}
+
+	if err := em.app.customEventProcessor.Emit(event); err != nil {
+		globalApplication.handleError(err)
+	}
+
+	return event.IsCancelled()
 }
 
 // EmitEvent emits a custom event object (internal use)
-func (em *EventManager) EmitEvent(event *CustomEvent) {
-	em.app.customEventProcessor.Emit(event)
+// It returns a boolean indicating whether the event was cancelled by a hook.
+//
+// If the given event name is registered, emitEvent validates the data parameter
+// against the expected data type. In case of a mismatch, emitEvent reports an error
+// to the registered error handler for the application and cancels the event.
+func (em *EventManager) EmitEvent(event *CustomEvent) bool {
+	if err := em.app.customEventProcessor.Emit(event); err != nil {
+		globalApplication.handleError(err)
+	}
+
+	return event.IsCancelled()
 }
 
 // On registers a listener for custom events

@@ -30,7 +30,7 @@ func (m *MessageProcessor) processCallCancelMethod(req *RuntimeRequest) (any, er
 
 	if cancel != nil {
 		cancel()
-		m.Info("Binding call canceled:", "id", *callID)
+		m.Info("Binding call cancelled:", "id", *callID)
 	}
 	return unit, nil
 }

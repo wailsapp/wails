@@ -1,6 +1,8 @@
 package application
 
 import (
+	"encoding/json"
+
 	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
@@ -16,18 +18,30 @@ func (m *MessageProcessor) processEventsMethod(req *RuntimeRequest, window Windo
 	switch req.Method {
 	case EventsEmit:
 		var event CustomEvent
-		err := req.Args.ToStruct(&event)
+		var options struct {
+			Name *string         `json:"name"`
+			Data json.RawMessage `json:"data"`
+		}
+
+		err := req.Args.ToStruct(&options)
 		if err != nil {
 			return nil, errs.WrapInvalidEventsCallErrorf(err, "error parsing event")
 		}
-		if event.Name == "" {
+		if options.Name == nil {
 			return nil, errs.NewInvalidEventsCallErrorf("missing event name")
 		}
 
+		data, err := decodeEventData(*options.Name, options.Data)
+		if err != nil {
+			return nil, errs.WrapInvalidEventsCallErrorf(err, "error parsing event data")
+		}
+
+		event.Name = *options.Name
+		event.Data = data
 		event.Sender = window.Name()
 		globalApplication.Event.EmitEvent(&event)
 
-		return unit, nil
+		return event.IsCancelled(), nil
 	default:
 		return nil, errs.NewInvalidEventsCallErrorf("unknown method: %d", req.Method)
 	}

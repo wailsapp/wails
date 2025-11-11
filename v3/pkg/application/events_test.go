@@ -36,7 +36,7 @@ func Test_EventsOn(t *testing.T) {
 		counter++
 		wg.Done()
 	})
-	eventProcessor.Emit(&application.CustomEvent{
+	_ = eventProcessor.Emit(&application.CustomEvent{
 		Name: "test",
 		Data: "test payload",
 	})
@@ -47,7 +47,7 @@ func Test_EventsOn(t *testing.T) {
 	notifier.Reset()
 	unregisterFn()
 	counter = 0
-	eventProcessor.Emit(&application.CustomEvent{
+	_ = eventProcessor.Emit(&application.CustomEvent{
 		Name: "test",
 		Data: "test payload",
 	})
@@ -70,11 +70,11 @@ func Test_EventsOnce(t *testing.T) {
 		counter++
 		wg.Done()
 	})
-	eventProcessor.Emit(&application.CustomEvent{
+	_ = eventProcessor.Emit(&application.CustomEvent{
 		Name: "test",
 		Data: "test payload",
 	})
-	eventProcessor.Emit(&application.CustomEvent{
+	_ = eventProcessor.Emit(&application.CustomEvent{
 		Name: "test",
 		Data: "test payload",
 	})
@@ -85,7 +85,7 @@ func Test_EventsOnce(t *testing.T) {
 	notifier.Reset()
 	unregisterFn()
 	counter = 0
-	eventProcessor.Emit(&application.CustomEvent{
+	_ = eventProcessor.Emit(&application.CustomEvent{
 		Name: "test",
 		Data: "test payload",
 	})
@@ -107,15 +107,15 @@ func Test_EventsOnMultiple(t *testing.T) {
 		counter++
 		wg.Done()
 	}, 2)
-	eventProcessor.Emit(&application.CustomEvent{
+	_ = eventProcessor.Emit(&application.CustomEvent{
 		Name: "test",
 		Data: "test payload",
 	})
-	eventProcessor.Emit(&application.CustomEvent{
+	_ = eventProcessor.Emit(&application.CustomEvent{
 		Name: "test",
 		Data: "test payload",
 	})
-	eventProcessor.Emit(&application.CustomEvent{
+	_ = eventProcessor.Emit(&application.CustomEvent{
 		Name: "test",
 		Data: "test payload",
 	})
@@ -126,7 +126,7 @@ func Test_EventsOnMultiple(t *testing.T) {
 	notifier.Reset()
 	unregisterFn()
 	counter = 0
-	eventProcessor.Emit(&application.CustomEvent{
+	_ = eventProcessor.Emit(&application.CustomEvent{
 		Name: "test",
 		Data: "test payload",
 	})
