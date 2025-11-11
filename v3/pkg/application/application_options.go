@@ -88,7 +88,7 @@ type Options struct {
 
 	// RawMessageHandler is called when the frontend sends a raw message.
 	// This is useful for implementing custom frontend-to-backend communication.
-	RawMessageHandler func(window Window, message string)
+	RawMessageHandler func(window Window, message string, originInfo *OriginInfo)
 
 	// WarningHandler is called when a warning occurs
 	WarningHandler func(string)

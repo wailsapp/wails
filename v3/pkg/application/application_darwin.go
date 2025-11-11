@@ -344,10 +344,14 @@ func processWindowEvent(windowID C.uint, eventID C.uint) {
 }
 
 //export processMessage
-func processMessage(windowID C.uint, message *C.char) {
+func processMessage(windowID C.uint, message *C.char, origin *C.char, isMainFrame bool) {
 	windowMessageBuffer <- &windowMessage{
 		windowId: uint(windowID),
 		message:  C.GoString(message),
+		originInfo: &OriginInfo{
+			Origin:      C.GoString(origin),
+			IsMainFrame: isMainFrame,
+		},
 	}
 }
 

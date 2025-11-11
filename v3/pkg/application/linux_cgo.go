@@ -62,6 +62,16 @@ static void save_window_id(void *object, uint value)
     g_object_set_data((GObject *)object, "windowid", GUINT_TO_POINTER((guint)value));
 }
 
+static void save_webview_to_content_manager(void *contentManager, void *webview)
+{
+    g_object_set_data(G_OBJECT((WebKitUserContentManager *)contentManager), "webview", webview);
+}
+
+static WebKitWebView* get_webview_from_content_manager(void *contentManager)
+{
+	return WEBKIT_WEB_VIEW(g_object_get_data(G_OBJECT(contentManager), "webview"));
+}
+
 static guint get_window_id(void *object)
 {
     return GPOINTER_TO_UINT(g_object_get_data((GObject *)object, "windowid"));
@@ -1109,6 +1119,8 @@ func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
 	C.webkit_user_content_manager_register_script_message_handler(manager, c.String("external"))
 	webView := C.webkit_web_view_new_with_user_content_manager(manager)
 
+	C.save_webview_to_content_manager(unsafe.Pointer(manager), unsafe.Pointer(webView))
+
 	// attach window id to both the webview and contentmanager
 	C.save_window_id(unsafe.Pointer(webView), C.uint(parentId))
 	C.save_window_id(unsafe.Pointer(manager), C.uint(parentId))
@@ -1646,6 +1658,17 @@ func sendMessageToBackend(contentManager *C.WebKitUserContentManager, result *C.
 	// Get the windowID from the contentManager
 	thisWindowID := uint(C.get_window_id(unsafe.Pointer(contentManager)))
 
+	webView := C.get_webview_from_content_manager(unsafe.Pointer(contentManager))
+	var origin string
+	if webView != nil {
+		currentUri := C.webkit_web_view_get_uri(webView)
+		if currentUri != nil {
+			uri := C.g_strdup(currentUri)
+			defer C.g_free(uri)
+			origin = C.GoString(uri)
+		}
+	}
+
 	var msg string
 	value := C.webkit_javascript_result_get_js_value(result)
 	message := C.jsc_value_to_string(value)
@@ -1654,6 +1677,9 @@ func sendMessageToBackend(contentManager *C.WebKitUserContentManager, result *C.
 	windowMessageBuffer <- &windowMessage{
 		windowId: thisWindowID,
 		message:  msg,
+		originInfo: &OriginInfo{
+			Origin: origin,
+		},
 	}
 }
 

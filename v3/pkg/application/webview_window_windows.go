@@ -1802,10 +1802,26 @@ func (w *windowsWebviewWindow) isAlwaysOnTop() bool {
 // processMessage is given a message sent from JS via the postMessage API
 // We put it on the global window message buffer to be processed centrally
 func (w *windowsWebviewWindow) processMessage(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
+	topSource, err := sender.GetSource()
+	if err != nil {
+		f.logger.Error(fmt.Sprintf("Unable to get source from sender: %s", err.Error()))
+		return
+	}
+
+	senderSource, err := args.GetSource()
+	if err != nil {
+		f.logger.Error(fmt.Sprintf("Unable to get source from args: %s", err.Error()))
+		return
+	}
+
 	// We send all messages to the centralised window message buffer
 	windowMessageBuffer <- &windowMessage{
 		windowId: w.parent.id,
 		message:  message,
+		originInfo: &OriginInfo{
+			Origin:    senderSource,
+			TopOrigin: topSource,
+		},
 	}
 }
 
