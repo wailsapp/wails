@@ -12,7 +12,7 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
   },
   "dependencies": {
-    "@wailsio/runtime": "^3.0.0-alpha.28"
+    "@wailsio/runtime": "latest"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.5",

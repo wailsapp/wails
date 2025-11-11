@@ -282,14 +282,14 @@ func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
 			}
 		}
 
-		if types.IsInterface(param.Type()) && !types.Identical(param.Type(), typeAny) {
+		if types.IsInterface(param.Type()) && !types.Identical(param.Type().Underlying(), typeAny) {
 			paramName := param.Name()
 			if paramName == "" || paramName == "_" {
 				paramName = fmt.Sprintf("#%d", i+1)
 			}
 
 			collector.logger.Warningf(
-				"%s: parameter %s has non-empty interface type %s: this is not supported by encoding/json and will likely result in runtime errors",
+				"%s: parameter %s has non-empty interface type %s: passing values other than `null` is not supported by encoding/json and will likely result in runtime errors",
 				collector.Package(method.Pkg()).Fset.Position(param.Pos()),
 				paramName,
 				param.Type(),
