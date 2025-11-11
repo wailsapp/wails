@@ -1804,13 +1804,13 @@ func (w *windowsWebviewWindow) isAlwaysOnTop() bool {
 func (w *windowsWebviewWindow) processMessage(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
 	topSource, err := sender.GetSource()
 	if err != nil {
-		f.logger.Error(fmt.Sprintf("Unable to get source from sender: %s", err.Error()))
+		globalApplication.error(fmt.Sprintf("Unable to get source from sender: %s", err.Error()))
 		return
 	}
 
 	senderSource, err := args.GetSource()
 	if err != nil {
-		f.logger.Error(fmt.Sprintf("Unable to get source from args: %s", err.Error()))
+		globalApplication.error(fmt.Sprintf("Unable to get source from args: %s", err.Error()))
 		return
 	}
 
