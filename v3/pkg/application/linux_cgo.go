@@ -77,7 +77,7 @@ static guint get_window_id(void *object)
     return GPOINTER_TO_UINT(g_object_get_data((GObject *)object, "windowid"));
 }
 
-static char *uri gchar_to_char(const gchar *str)
+static char *gchar_to_char(const gchar *str)
 {
 	char *uri = g_strdup(str);
 	return uri;
