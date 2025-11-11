@@ -1670,7 +1670,7 @@ func sendMessageToBackend(contentManager *C.WebKitUserContentManager, result *C.
 		currentUri := C.webkit_web_view_get_uri(webView)
 		if currentUri != nil {
 			uri := C.gchar_to_char(currentUri)
-			defer C.g_free(uri)
+			defer C.g_free(unsafe.Pointer(uri))
 			origin = C.GoString(uri)
 		}
 	}
