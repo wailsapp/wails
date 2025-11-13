@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/wailsapp/wails/v3/internal/signal"
 
@@ -75,6 +76,13 @@ func New(appOptions Options) *App {
 
 	result.logStartup()
 	result.logPlatformInfo()
+	
+	// Validate binding configuration
+	if err := result.validateBindingConfiguration(); err != nil {
+		result.fatal("invalid binding configuration: %w", err)
+	}
+	
+	result.logBindingConfig()
 
 	result.customEventProcessor = NewWailsEventProcessor(result.Event.dispatch)
 
@@ -180,6 +188,28 @@ func mergeApplicationDefaults(o *Options) {
 	}
 	if o.Windows.WndClass == "" {
 		o.Windows.WndClass = "WailsWebviewWindow"
+	}
+	
+	// Set binding configuration defaults
+	if o.Bindings.Timeout == 0 {
+		o.Bindings.Timeout = 10 * time.Minute
+	}
+	
+	// Set CORS defaults
+	if o.Bindings.CORS.MaxAge == 0 {
+		o.Bindings.CORS.MaxAge = 24 * time.Hour
+	}
+	
+	if o.Bindings.CORS.AllowedMethods == nil {
+		o.Bindings.CORS.AllowedMethods = []string{"GET", "POST", "OPTIONS"}
+	}
+	
+	if o.Bindings.CORS.AllowedHeaders == nil {
+		o.Bindings.CORS.AllowedHeaders = []string{
+			"Content-Type",
+			"x-wails-client-id", 
+			"x-wails-window-name",
+		}
 	}
 }
 
@@ -889,4 +919,52 @@ func (a *App) shouldQuit() bool {
 		return a.options.ShouldQuit()
 	}
 	return true
+}
+
+// getBindingTimeout returns the configured timeout for binding execution
+func (a *App) getBindingTimeout() time.Duration {
+	return a.options.Bindings.Timeout
+}
+
+// getBindingConfig returns the binding configuration
+func (a *App) getBindingConfig() *BindingConfig {
+	return &a.options.Bindings
+}
+
+// validateBindingConfiguration validates the binding configuration for correctness
+func (a *App) validateBindingConfiguration() error {
+	cfg := &a.options.Bindings
+	
+	// Validate timeout
+	if cfg.Timeout < 0 {
+		return errors.New("binding timeout cannot be negative")
+	}
+	if cfg.Timeout == 0 {
+		cfg.Timeout = 10 * time.Minute // Set default if not set
+	}
+	
+	// Validate CORS configuration
+	if cfg.CORS.Enabled {
+		if cfg.CORS.MaxAge < 0 {
+			return errors.New("CORS MaxAge cannot be negative")
+		}
+		
+		// Validate allowed methods
+		validMethods := map[string]bool{
+			"GET": true, "POST": true, "PUT": true, "DELETE": true, 
+			"PATCH": true, "HEAD": true, "OPTIONS": true,
+		}
+		for _, method := range cfg.CORS.AllowedMethods {
+			if !validMethods[strings.ToUpper(method)] {
+				return fmt.Errorf("invalid CORS method: %s", method)
+			}
+		}
+		
+		// In production mode, require explicit origins if CORS is enabled
+		if !a.isDebugMode && len(cfg.CORS.AllowedOrigins) == 0 {
+			a.warning("CORS is enabled in production mode but no allowed origins are specified. This may be a security risk.")
+		}
+	}
+	
+	return nil
 }
