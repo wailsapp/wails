@@ -23,7 +23,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix Windows systray icon not defaulting to application icon when no custom icon is provided (#4704)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
