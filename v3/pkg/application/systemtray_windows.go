@@ -225,7 +225,7 @@ func (s *windowsSystemTray) run() {
 	s.uid = uint32(s.parent.id)
 
 	// Resolve the base icons once so we can reuse them for light/dark modes
-	defaultIcon := getNativeApplication().windowClass.Icon
+	defaultIcon := w32.LoadIconWithResourceID(w32.GetModuleHandle(""), w32.RT_ICON)
 
 	// Priority: custom icon > default app icon > built-in icon
 	if s.parent.icon != nil {

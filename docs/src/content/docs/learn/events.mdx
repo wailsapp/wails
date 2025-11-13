@@ -313,7 +313,7 @@ win.OnWindowEvent(events.Common.WindowDropZoneFilesDropped, func(event *applicat
             "dropY":         details.Y,
             "attributes":    details.Attributes,
         }
-        application.Get().EmitEvent("frontend:FileDropInfo", payload) // Emits globally
+        application.Get().Event.Emit("frontend:FileDropInfo", payload) // Emits globally
         // or win.EmitEvent("frontend:FileDropInfoForWindow", payload) // Emits to this specific window
     } else {
         log.Println("Drop occurred, but DropZoneDetails were nil.")
@@ -565,6 +565,9 @@ You can emit custom events from anywhere in your application:
 // NEW: Using the Event Manager (recommended)
 app.Event.Emit("myevent", "hello")
 
+// Emit an event without data
+app.Event.Emit("datalessevent")
+
 // Emit from a specific window
 window.EmitEvent("windowevent", "window specific data")
 ```
@@ -574,8 +577,7 @@ window.EmitEvent("windowevent", "window specific data")
 // Traditional API (no longer works)
 app.EmitEvent("myevent", "hello")
 
-// Emit from a specific window
-window.EmitEvent("windowevent", "window specific data")
+
 ```
 </TabItem>
 </Tabs>
@@ -633,6 +635,90 @@ app.OnMultipleEvent("myevent", func(e *application.CustomEvent) {
 </TabItem>
 </Tabs>
 
+You can also register a hook that will run synchronously when the event is emitted.
+Hooks are useful [to cancel custom events and stop their propagation early](#event-cancellation):
+
+```go
+app.Event.RegisterHook("myevent", func(e *application.CustomEvent) {
+	// Do something.
+})
+```
+
+### Custom Event Registration
+
+You can call the `application.RegisterEvent` function at init time to register custom event names:
+
+```go
+type MyEventData struct {
+    Num  int
+    Text string
+}
+
+func init() {
+	application.RegisterEvent[MyEventData]("myevent")
+}
+```
+
+:::caution
+Because this function is meant to be called at init time, it will panic when the arguments are not valid
+or the same event name is registered twice with two distinct data types.
+:::
+
+:::note
+It is safe to register the same event multiple times as long as the data type is always the same.
+This might be useful to ensure a certain event is registered as soon as any one of many packages is loaded.
+:::
+
+Once the event is registered, data arguments passed to the `Event.Emit` method will be checked against the specified type.
+In case of a mismatch, an error will be emitted and either logged or passed on to the registered error handled, if any.
+The offending event will not be propagated. Thanks to this mechanism, it is safe to assume that the data field
+of registered custom events will always be assignable to the declared type.
+
+:::tip[Strict mode]
+If you use the `strictevents` build tag, using unregistered events will trigger a warning message in development mode.
+The runtime emits at most one warning per event name, to avoid spamming the log.
+:::
+
+### Binding generator support
+
+The binding generator outputs TypeScript definitions and internal glue code
+to provide transparent support for registered events on the frontend.
+The specified data type will be rendered to TypeScript
+and the data field will be typed by the corresponding model:
+
+```js
+import { Events } from "@wailsio/runtime";
+
+Events.On("myevent", (ev) => {
+    ev.data;      // Has type MyEventData
+    ev.data.Text; // Has type string
+})
+```
+
+:::caution
+Static typing of event data on the frontend will only be available when the event name
+is specified by a constant expression, as shown above.
+:::
+
+When using the `Events.On*/Events.Off*` family of runtime methods or the `WailsEvent` constructor,
+IDEs with TypeScript support will offer autocompletion for registered event names.
+
+You can look at built-in application templates
+for an example of how to configure your project for typed events.
+
+### Events without data
+
+The `application.Void` interface can be used to register events without associated data:
+
+```go
+func init() {
+	application.RegisterEvent[application.Void]("dataless")
+}
+```
+
+On the Go side, the runtime will check that the data field for the `"dataless"` event is always `nil`.
+On the frontend, the binding generator will translate `application.Void` as the TypeScript `void` type.
+
 ## Event Cancellation
 
 Events can be cancelled to prevent their default behaviour or stop propagation to other listeners. This is particularly useful for hooks that need to control window closing, menu actions, or other system events.
@@ -646,7 +732,16 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
     // Prevent the window from closing
     e.Cancel()
 })
+
+// For custom events
+app.RegisterHook("myevent", func(e *application.CustomEvent) {
+	e.Cancel()
+})
 ```
+
+:::tip[Pro Tip]
+Remember that event cancellation in hooks affects all subsequent hooks and listeners, whilst cancellation in standard listeners only affects listeners that haven't yet been called.
+:::
 
 ### Checking Event Cancellation
 
@@ -671,6 +766,13 @@ app.Event.On("myevent", func(e *application.CustomEvent) {
 })
 ```
 
-:::tip[Pro Tip]
-Remember that event cancellation in hooks affects all subsequent hooks and listeners, whilst cancellation in standard listeners only affects listeners that haven't yet been called.
-:::
+When emitting a custom event, you can also check the value returned by the `Event.Emit` method (for the app and windows):
+
+```go
+if app.Event.Emit("myevent") {
+	app.Logger.Info("Event was cancelled")
+    return
+}
+```
+
+The returned value will take into account all hooks, but may or may not take into account cancellations that happen asynchronously in listeners.

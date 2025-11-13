@@ -23,6 +23,9 @@ var tmplModels = map[tmplLanguage]*template.Template{
 	tmplTS: template.Must(template.New("models.ts.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/models.ts.tmpl")),
 }
 
+var tmplEventData = template.Must(template.New("eventdata.d.ts.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/eventdata.d.ts.tmpl"))
+var tmplEventCreate = template.Must(template.New("eventcreate.js.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/eventcreate.js.tmpl"))
+
 var tmplIndex = template.Must(template.New("index.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/index.tmpl"))
 
 var Newline string
