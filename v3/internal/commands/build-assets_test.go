@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"gopkg.in/yaml.v3"
+	"howett.net/plist"
 )
 
 func TestGenerateBuildAssets(t *testing.T) {
@@ -263,5 +264,89 @@ func TestUpdateBuildAssets(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestPlistMerge(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "wails-plist-test-*")
+	if err != nil {
+		t.Fatalf("Failed to create temp directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	buildDir := filepath.Join(tempDir, "build", "darwin")
+	err = os.MkdirAll(buildDir, 0755)
+	if err != nil {
+		t.Fatalf("Failed to create build directory: %v", err)
+	}
+
+	existingPlistPath := filepath.Join(buildDir, "Info.plist")
+	existingPlist := `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleName</key>
+	<string>OldAppName</string>
+	<key>CFBundleVersion</key>
+	<string>1.0.0</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs microphone access</string>
+</dict>
+</plist>`
+
+	err = os.WriteFile(existingPlistPath, []byte(existingPlist), 0644)
+	if err != nil {
+		t.Fatalf("Failed to write existing plist: %v", err)
+	}
+
+	options := &UpdateBuildAssetsOptions{
+		Dir:                filepath.Join(tempDir, "build"),
+		Name:               "TestApp",
+		ProductName:        "NewAppName",
+		ProductVersion:     "2.0.0",
+		ProductCompany:     "Test Company",
+		ProductIdentifier:  "com.test.app",
+		ProductDescription: "Test Description",
+		ProductCopyright:   "© 2024 Test Company",
+		ProductComments:    "Test Comments",
+		Silent:             true,
+	}
+
+	err = UpdateBuildAssets(options)
+	if err != nil {
+		t.Fatalf("UpdateBuildAssets failed: %v", err)
+	}
+
+	mergedContent, err := os.ReadFile(existingPlistPath)
+	if err != nil {
+		t.Fatalf("Failed to read merged plist: %v", err)
+	}
+
+	var mergedDict map[string]any
+	_, err = plist.Unmarshal(mergedContent, &mergedDict)
+	if err != nil {
+		t.Fatalf("Failed to parse merged plist: %v", err)
+	}
+
+	if mergedDict["CFBundleName"] != "NewAppName" {
+		t.Errorf("Expected CFBundleName to be updated to 'NewAppName', got %v", mergedDict["CFBundleName"])
+	}
+
+	if mergedDict["CFBundleVersion"] != "2.0.0" {
+		t.Errorf("Expected CFBundleVersion to be updated to '2.0.0', got %v", mergedDict["CFBundleVersion"])
+	}
+
+	if mergedDict["NSCameraUsageDescription"] != "This app needs camera access" {
+		t.Errorf("Expected NSCameraUsageDescription to be preserved, got %v", mergedDict["NSCameraUsageDescription"])
+	}
+
+	if mergedDict["NSMicrophoneUsageDescription"] != "This app needs microphone access" {
+		t.Errorf("Expected NSMicrophoneUsageDescription to be preserved, got %v", mergedDict["NSMicrophoneUsageDescription"])
+	}
+
+	if mergedDict["CFBundleIdentifier"] != "com.test.app" {
+		t.Errorf("Expected CFBundleIdentifier to be 'com.test.app', got %v", mergedDict["CFBundleIdentifier"])
 	}
 }
