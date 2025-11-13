@@ -1,8 +1,7 @@
 package application
 
 import (
-	"fmt"
-	"net/http"
+	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
 const (
@@ -18,26 +17,19 @@ var applicationMethodNames = map[int]string{
 }
 
 func (m *MessageProcessor) processApplicationMethod(
-	method int,
-	rw http.ResponseWriter,
-	r *http.Request,
-	window Window,
-	params QueryParams,
-) {
-	switch method {
+	req *RuntimeRequest,
+) (any, error) {
+	switch req.Method {
 	case ApplicationQuit:
 		globalApplication.Quit()
-		m.ok(rw)
+		return unit, nil
 	case ApplicationHide:
 		globalApplication.Hide()
-		m.ok(rw)
+		return unit, nil
 	case ApplicationShow:
 		globalApplication.Show()
-		m.ok(rw)
+		return unit, nil
 	default:
-		m.httpError(rw, "Invalid application call:", fmt.Errorf("unknown method: %d", method))
-		return
+		return nil, errs.NewInvalidApplicationCallErrorf("unknown method %d", req.Method)
 	}
-
-	m.Info("Runtime call:", "method", "Application."+applicationMethodNames[method])
 }

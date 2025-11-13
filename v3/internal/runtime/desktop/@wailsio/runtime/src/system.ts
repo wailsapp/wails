@@ -14,6 +14,7 @@ const call = newRuntimeCaller(objectNames.System);
 
 const SystemIsDarkMode = 0;
 const SystemEnvironment = 1;
+const SystemCapabilities = 2;
 const ApplicationFilesDroppedWithContext = 100; // New method ID for enriched drop event
 
 const _invoke = (function () {
@@ -51,12 +52,7 @@ export function IsDarkMode(): Promise<boolean> {
  * @returns A promise that resolves to an object containing the capabilities.
  */
 export async function Capabilities(): Promise<Record<string, any>> {
-    let response = await fetch("/wails/capabilities");
-    if (response.ok) {
-        return response.json();
-    } else {
-        throw new Error("could not fetch capabilities: " + response.statusText);
-    }
+    return call(SystemCapabilities);
 }
 
 export interface OSInfo {
