@@ -43,14 +43,11 @@ removeButton.addEventListener('click', () => {
 
 setButtonUsingGo.addEventListener('click', () => {
     let label = (labelElement as HTMLInputElement).value
-    void Events.Emit({
-        name: "set:badge",
-        data: label,
-    })
+    void Events.Emit("set:badge", label);
 })
 
 removeButtonUsingGo.addEventListener('click', () => {
-    void Events.Emit({name:"remove:badge", data: null})
+    void Events.Emit("remove:badge");
 })
 
 Events.On('time', (time: {data: any}) => {

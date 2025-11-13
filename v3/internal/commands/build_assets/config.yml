@@ -30,16 +30,14 @@ dev_mode:
       - .gitkeep
     watched_extension:
       - "*.go"
+      - "*.js" # Watch for changes to JS/TS files included using the //wails:include directive.
+      - "*.ts" # The frontend directory will be excluded entirely by the setting above.
     git_ignore: true
   executes:
-    - cmd: wails3 task common:install:frontend:deps
-      type: once
-    - cmd: wails3 task common:dev:frontend
-      type: background
-    - cmd: go mod tidy
-      type: blocking
     - cmd: wails3 task build
       type: blocking
+    - cmd: wails3 task common:dev:frontend
+      type: background
     - cmd: wails3 task run
       type: primary
 

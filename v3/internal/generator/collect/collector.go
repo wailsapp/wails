@@ -40,6 +40,9 @@ type Collector struct {
 	// and declaration groups. Elements are [Info] instances.
 	cache sync.Map
 
+	// events holds collected information about registered custom events.
+	events *EventMap
+
 	systemPaths *config.SystemPaths
 	options     *flags.GenerateBindingsOptions
 	scheduler   Scheduler
@@ -47,7 +50,7 @@ type Collector struct {
 }
 
 // NewCollector initialises a new Collector instance for the given package set.
-func NewCollector(pkgs []*packages.Package, systemPaths *config.SystemPaths, options *flags.GenerateBindingsOptions, scheduler Scheduler, logger config.Logger) *Collector {
+func NewCollector(pkgs []*packages.Package, registerEvent types.Object, systemPaths *config.SystemPaths, options *flags.GenerateBindingsOptions, scheduler Scheduler, logger config.Logger) *Collector {
 	collector := &Collector{
 		pkgs: make(map[*types.Package]*PackageInfo, len(pkgs)),
 
@@ -60,6 +63,11 @@ func NewCollector(pkgs []*packages.Package, systemPaths *config.SystemPaths, opt
 	// Register packages.
 	for _, pkg := range pkgs {
 		collector.pkgs[pkg.Types] = newPackageInfo(pkg, collector)
+	}
+
+	// Initialise event map.
+	if !options.NoEvents {
+		collector.events = newEventMap(collector, registerEvent)
 	}
 
 	return collector

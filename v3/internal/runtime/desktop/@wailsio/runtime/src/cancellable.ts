@@ -92,7 +92,7 @@ interface CancellablePromiseState {
 // Private field names.
 const barrierSym = Symbol("barrier");
 const cancelImplSym = Symbol("cancelImpl");
-const species = Symbol.species ?? Symbol("speciesPolyfill");
+const species: typeof Symbol.species = Symbol.species ?? Symbol("speciesPolyfill");
 
 /**
  * A promise with an attached method for cancelling long-running operations (see {@link CancellablePromise#cancel}).
@@ -841,7 +841,7 @@ function rejectorFor<T>(promise: CancellablePromiseWithResolvers<T>, state: Canc
  * Returns a promise that fulfills once all cancellation procedures for the given values have settled.
  */
 function cancelAll(parent: CancellablePromise<unknown>, values: any[], cause?: any): Promise<void> {
-    const results = [];
+    const results: Promise<void>[] = [];
 
     for (const value of values) {
         let cancel: CancellablePromiseCanceller;
