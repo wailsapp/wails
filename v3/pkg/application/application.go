@@ -271,6 +271,7 @@ func (r *webViewAssetRequest) Header() (http.Header, error) {
 
 	hh := h.Clone()
 	hh.Set(webViewRequestHeaderWindowId, strconv.FormatUint(uint64(r.windowId), 10))
+	hh.Set(webViewRequestHeaderWindowName, r.windowName)
 	return hh, nil
 }
 
