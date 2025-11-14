@@ -546,9 +546,9 @@ func (f *Frontend) setupChromium() {
 	// This must be done after Embed() to avoid "Not enough memory" errors
 	if f.frontendOptions.DragAndDrop != nil && f.frontendOptions.DragAndDrop.EnableFileDrop {
 		if chromium.HasCapability(edge.AllowExternalDrop) {
-			err := chromium.AllowExternalDrag(false)
+			err := chromium.AllowExternalDrop(false)
 			if err != nil {
-				f.logger.Warning("WebView failed to set AllowExternalDrag to false: %s", err)
+				f.logger.Warning("WebView failed to set AllowExternalDrop to false: %s", err)
 			}
 		}
 	}
