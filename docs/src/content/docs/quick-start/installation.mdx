@@ -11,7 +11,7 @@ import { Card, CardGrid, Tabs, TabItem, Steps } from "@astrojs/starlight/compone
 
 :::tip[TL;DR - Experienced Developers]
 ```bash
-# Install Go 1.23+, then:
+# Install Go 1.25+, then:
 go install github.com/wailsapp/wails/v3/cmd/wails3@latest
 wails3 doctor  # Verify installation
 ```
@@ -25,15 +25,15 @@ If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/fir
 
 1. **Install Go (Required)**
 
-   Wails requires Go 1.23 or later.
+   Wails requires Go 1.25 or later.
 
    <Tabs syncKey="os">
      <TabItem label="Windows" icon="seti:windows">
-       Download from [go.dev/dl](https://go.dev/dl/) and run the installer.
+       Download the Windows installer from **[go.dev/dl](https://go.dev/dl/)** and run it.
 
        **Verify installation:**
        ```powershell
-       go version  # Should show 1.23 or later
+       go version  # Should show 1.25 or later
        ```
 
        **Check PATH:**
@@ -46,9 +46,8 @@ If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/fir
 
      <TabItem label="macOS" icon="apple">
        **Option 1: Official Installer**
-       ```bash
-       # Download from go.dev/dl and run the .pkg installer
-       ```
+
+       Download the macOS installer (.pkg file) from **[go.dev/dl](https://go.dev/dl/)** and run it.
 
        **Option 2: Homebrew**
        ```bash
@@ -57,7 +56,7 @@ If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/fir
 
        **Verify installation:**
        ```bash
-       go version  # Should show 1.23 or later
+       go version  # Should show 1.25 or later
        echo $PATH | grep go/bin  # Should show ~/go/bin
        ```
 
@@ -69,10 +68,11 @@ If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/fir
 
      <TabItem label="Linux" icon="linux">
        **Option 1: Official Tarball**
+
+       Download the Linux tarball from **[go.dev/dl](https://go.dev/dl/)**, then:
        ```bash
-       wget https://go.dev/dl/go1.23.linux-amd64.tar.gz
        sudo rm -rf /usr/local/go
-       sudo tar -C /usr/local -xzf go1.23.linux-amd64.tar.gz
+       sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
        ```
 
        **Option 2: Package Manager**
@@ -112,6 +112,10 @@ If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/fir
        - Or run `wails3 doctor` later—it will guide you
 
        **That's it!** No other dependencies needed.
+
+       :::tip[Performance Tip for Windows 11]
+       Consider using [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) to store your projects. Dev Drives are optimized for developer workloads and can significantly improve build times and disk access speeds by up to 30%.
+       :::
      </TabItem>
 
      <TabItem label="macOS" icon="apple">
@@ -175,24 +179,49 @@ If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/fir
    wails3 doctor
    ```
 
-   **Expected output:**
+   **Expected output (or similar):**
    ```
-   Wails CLI v3.0.0
-
-   Scanning system - Please wait (this may take a long time)...
+   Wails (v3.0.0-dev)  Wails Doctor
 
    # System
-   OS:             Windows 11
-   Version:        22H2
-   ID:             windows
-   Go Version:     go1.23.0
-   Platform:       windows/amd64
+
+   ┌──────────────────────────────────────────────────┐
+   | Name          | MacOS                            |
+   | Version       | 26.0                             |
+   | ID            | 25A354                           |
+   | Branding      | MacOS 26.0                       |
+   | Platform      | darwin                           |
+   | Architecture  | arm64                            |
+   | Apple Silicon | true                             |
+   | CPU           | Apple M2 Pro                     |
+   | CPU 1         | Apple M2 Pro                     |
+   | CPU 2         | Apple M2 Pro                     |
+   | GPU           | 16 cores, Metal Support: Metal 4 |
+   | Memory        | 16 GB                            |
+   └──────────────────────────────────────────────────┘
+
+   # Build Environment
+
+   ┌─────────────┬─────────────────┐
+   | Wails CLI   | v3.0.0-alpha.40 |
+   | Go Version  | go1.24.6        |
+   └─────────────┴─────────────────┘
 
    # Dependencies
-   WebView2:       ✅ Installed
-   npm:            ✅ Installed (10.2.3)
-   
-   ✅ Your system is ready for Wails development!
+
+   ┌─────────────────┬─────────────────────────────────────────────────┐
+   | npm             | 11.6.2                                          |
+   | *NSIS           | Not Installed. Install with `brew install...`.  |
+   | Xcode cli tools | 2412                                            |
+   └─────────────────┴─────────────────────────────────────────────────┘
+
+   # Checking for issues
+
+   SUCCESS No issues found
+
+   # Diagnosis
+
+   SUCCESS Your system is ready for Wails development!
    ```
 
    :::note[If `wails3` command not found]
@@ -256,7 +285,7 @@ If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/fir
 
 ## Troubleshooting
 
-### `wails3` command not found
+#### `wails3` command not found
 
 **Cause:** `~/go/bin` (or `%USERPROFILE%\go\bin`) isn't in your PATH.
 
@@ -295,8 +324,9 @@ If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/fir
     ```
   </TabItem>
 </Tabs>
+---
 
-### `wails3 doctor` reports missing dependencies
+#### `wails3 doctor` reports missing dependencies
 
 **Linux:** The output tells you exactly which packages to install. Example:
 ```
@@ -312,10 +342,10 @@ If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/fir
 ```bash
 xcode-select --install
 ```
+---
+#### Go version too old
 
-### Go version too old
-
-Wails v3 requires Go 1.23+. If you have an older version:
+Wails v3 requires Go 1.25+. If you have an older version:
 
 <Tabs syncKey="os">
   <TabItem label="Windows/macOS" icon="seti:windows">
@@ -323,23 +353,22 @@ Wails v3 requires Go 1.23+. If you have an older version:
   </TabItem>
 
   <TabItem label="Linux" icon="linux">
-    Remove old version and install new:
+    Download the latest tarball from [go.dev/dl](https://go.dev/dl/), then:
     ```bash
     sudo rm -rf /usr/local/go
-    wget https://go.dev/dl/go1.23.linux-amd64.tar.gz
-    sudo tar -C /usr/local -xzf go1.23.linux-amd64.tar.gz
+    sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
     ```
   </TabItem>
 </Tabs>
 
-## Development Version (Advanced)
+## Development Version (Bleeding Edge)
 
-Want the latest features before release?
+Want to use the absolute latest code from the main development branch? This gives you access to new features and fixes before they're released, but comes with the risk of bugs and breaking changes. Only recommended for contributors or those who need to test upcoming features.
 
 ```bash
 git clone https://github.com/wailsapp/wails.git
 cd wails
-git checkout v3-alpha
+git checkout v3
 cd v3/cmd/wails3
 go install
 ```
@@ -352,25 +381,21 @@ go install
 
 ## Next Steps
 
-<CardGrid>
-  <Card title="✅ Installation Complete!" icon="approve-check">
-    Your system is ready for Wails development.
-  </Card>
+**Installation Complete!** Your system is ready for Wails development.
 
-  <Card title="Build Your First App" icon="rocket">
-    Create a working application in 10 minutes.
-    
-    [First App Tutorial →](/quick-start/first-app)
-  </Card>
+<Card title="Build Your First App" icon="rocket">
+  Create a working application in 10 minutes.
 
-  <Card title="Explore Templates" icon="open-book">
-    See what's available out of the box.
-    
-    ```bash
-    wails3 init -l  # List templates
-    ```
-  </Card>
-</CardGrid>
+  [First App Tutorial →](/quick-start/first-app)
+</Card>
+
+<Card title="Explore Templates" icon="open-book">
+  See what's available out of the box.
+
+  ```bash
+  wails3 init -l  # List templates
+  ```
+</Card>
 
 ---
 

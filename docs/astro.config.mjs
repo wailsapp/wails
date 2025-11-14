@@ -76,7 +76,6 @@ export default defineConfig({
         {
           label: "Quick Start",
           collapsed: false,
-          badge: { text: "Start Here", variant: "success" },
           items: [
             { label: "Why Wails?", link: "/quick-start/why-wails" },
             { label: "Installation", link: "/quick-start/installation" },
@@ -385,10 +384,17 @@ export default defineConfig({
             { label: "Templates", link: "/community/templates" },
             {
               label: "Showcase",
-              autogenerate: {
-                directory: "community/showcase",
-                collapsed: true,
-              },
+              collapsed: true,
+              items: [
+                { label: "Overview", link: "/community/showcase" },
+                {
+                  label: "Applications",
+                  autogenerate: {
+                    directory: "community/showcase",
+                    collapsed: true,
+                  },
+                },
+              ],
             },
           ],
         },

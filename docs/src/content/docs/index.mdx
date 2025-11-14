@@ -3,7 +3,7 @@ title: Build Desktop Apps with Go
 description: "Native desktop applications using Go and web technologies"
 banner:
     content: |
-        Wails v3 is in BETA. <a href="/quick-start/installation">Start building →</a> | <a href="https://wails.io">v2 docs</a>
+        Wails v3 is in BETA. <a href="https://wails.io">v2 docs</a>
 template: splash
 hero:
   tagline: Build beautiful, performant desktop applications using Go and modern web technologies. One codebase. Three platforms. No browsers.
@@ -33,7 +33,7 @@ import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
     left: 0;
     width: 200%;
     height: 33.33vh;
-    opacity: 0.04;
+    opacity: 0.08;
     z-index: -1;
     background: 
       url('/showcase-images/tiny-rdm1.webp') 0px center / auto 80% no-repeat,
@@ -76,9 +76,9 @@ import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
     left: 0;
     width: 200%;
     height: 33.33vh;
-    opacity: 0.04;
+    opacity: 0.08;
     z-index: -2;
-    background: 
+    background:
       url('/showcase-images/portfall.webp') 0px center / auto 80% no-repeat,
       url('/showcase-images/resizem.webp') 350px center / auto 80% no-repeat,
       url('/showcase-images/wally.webp') 700px center / auto 80% no-repeat,
@@ -104,9 +104,9 @@ import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
     left: 0;
     width: 200%;
     height: 33.34vh;
-    opacity: 0.04;
+    opacity: 0.08;
     z-index: -2;
-    background: 
+    background:
       url('/showcase-images/wally.webp') 0px center / auto 80% no-repeat,
       url('/showcase-images/october.webp') 350px center / auto 80% no-repeat,
       url('/showcase-images/tiny-rdm1.webp') 700px center / auto 80% no-repeat,
@@ -223,10 +223,6 @@ cd myapp && wails3 dev
 
 **Your application is now running** with hot reload and type-safe Go-to-JS bindings.
 
-<div className="small-buttons">
-  <a href="/quick-start/installation">Complete installation guide →</a>
-</div>
-
 
 ## Why Wails?
 
@@ -243,8 +239,8 @@ cd myapp && wails3 dev
     - One Go codebase for all platforms
     - Any web framework - React, Vue, Svelte
     - Hot reload during development
-    - TypeScript bindings auto-generated
-    - No HTTP overhead or serialisation
+    - Auto-generated bindings to easily call Go from Javascript
+    - In-memory IPC. No network ports
   </Card>
   
   <Card title="Production Ready" icon="approve-check">
@@ -258,9 +254,9 @@ cd myapp && wails3 dev
   <Card title="Cross-Platform Native" icon="laptop">
     - Single codebase for Windows, macOS, Linux
     - Platform-specific features when needed
-    - Native look and feel on each OS
     - No compromise on user experience
     - Deploy to all platforms from one build
+    - Mobile coming soon...
   </Card>
 </CardGrid>
 

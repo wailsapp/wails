@@ -52,7 +52,7 @@ Ship quality software with fewer resources.
 
 ## When to Choose Wails
 
-### ✅ Wails is Perfect For:
+**Wails is Perfect For:**
 
 - **Business applications** (CRM, inventory, dashboards, admin tools)
 - **Developer tools** (database clients, API testers, deployment tools)
@@ -84,32 +84,26 @@ Go: "Go Backend" {
   style.fill: "#00ADD8"
 }
 
-Bridge: "Wails Bridge\n(In-Memory)" {
-  shape: diamond
-  style.fill: "#10B981"
-}
-
 WebView: "Native WebView" {
   shape: rectangle
   style.fill: "#3B82F6"
+
+    Frontend: "Your UI\n(React/Vue/etc)" {
+      shape: rectangle
+      style.fill: "#8B5CF6"
+    }
+
 }
 
-Frontend: "Your UI\n(React/Vue/etc)" {
-  shape: rectangle
-  style.fill: "#8B5CF6"
-}
 
-Go -> Bridge: "Direct function calls"
-Bridge -> WebView: "JSON messages"
-WebView -> Frontend: "Native rendering"
-Frontend -> Bridge: "Type-safe bindings"
-Bridge -> Go: "Zero-copy where possible"
+
+Go <-> WebView: "Bindings & Events"
 ```
 
 **How Wails achieves performance:**
 1. **No runtime bundled** - Uses Go's compiled binary
 2. **Native WebView** - OS-provided rendering engine
-3. **Direct Go ↔ JS bridge** - In-memory communication, no HTTP overhead
+3. **Direct Go ↔ JS bridge** - In-memory communication, no network overhead
 4. **Compiled binary** - Instant startup, no JIT compilation
 
 ## Next Steps
