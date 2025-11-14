@@ -930,6 +930,20 @@ func (w *macosWebviewWindow) show() {
 func (w *macosWebviewWindow) hide() {
 	globalApplication.debug("Window hiding", "windowId", w.parent.id, "title", w.parent.options.Title)
 	C.windowHide(w.nsWindow)
+
+	// Fix for issue #4650: When hiding a window, if there are active system trays,
+	// we need to ensure the application stays visible (doesn't get hidden by macOS).
+	// This is especially important when using ActivationPolicyAccessory.
+	globalApplication.systemTraysLock.Lock()
+	hasSystemTrays := len(globalApplication.systemTrays) > 0
+	globalApplication.systemTraysLock.Unlock()
+
+	if hasSystemTrays {
+		// Activate the application to ensure it and its system tray remain visible
+		// even when all windows are hidden
+		C.activateIgnoringOtherApps()
+		globalApplication.debug("Window hidden - keeping app visible due to active system tray", "windowId", w.parent.id)
+	}
 }
 
 func (w *macosWebviewWindow) setFullscreenButtonEnabled(enabled bool) {

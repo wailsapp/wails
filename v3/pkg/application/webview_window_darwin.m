@@ -22,8 +22,14 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 {
     self = [super initWithContentRect:contentRect styleMask:windowStyle backing:bufferingType defer:deferCreation];
     [self setAlphaValue:1.0];
-    [self setBackgroundColor:[NSColor clearColor]];
-    [self setOpaque:NO];
+    // Initialize with a default background color instead of clear to prevent white flicker during animations
+    // This will be updated later with the actual background color from options
+    if (@available(macOS 10.14, *)) {
+        [self setBackgroundColor:[NSColor windowBackgroundColor]];
+    } else {
+        [self setBackgroundColor:[NSColor whiteColor]];
+    }
+    [self setOpaque:YES];
     [self setMovableByWindowBackground:YES];
     return self;
 }
