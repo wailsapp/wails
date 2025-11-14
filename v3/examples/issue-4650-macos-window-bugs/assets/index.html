@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issue #4650 - macOS Window Bugs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            /* Dark background to make the white flicker visible during maximize */
+            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+            color: #ffffff;
+            padding: 60px 40px 40px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #ff6b6b;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 30px;
+        }
+
+        .issue-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .issue-section h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #4ecdc4;
+        }
+
+        .issue-section p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #ccc;
+            margin-bottom: 15px;
+        }
+
+        .bug-label {
+            display: inline-block;
+            background: #d73a4a;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        button.danger {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .expected {
+            background: rgba(76, 175, 80, 0.1);
+            border-left: 3px solid #4caf50;
+            padding: 10px 15px;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+
+        .actual {
+            background: rgba(244, 67, 54, 0.1);
+            border-left: 3px solid #f44336;
+            padding: 10px 15px;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+
+        .note {
+            background: rgba(255, 193, 7, 0.1);
+            border-left: 3px solid #ffc107;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .note strong {
+            color: #ffc107;
+        }
+
+        .controls {
+            margin-top: 15px;
+        }
+
+        /* Titlebar drag region for frameless window */
+        .titlebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            --wails-draggable:drag;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .titlebar-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+        }
+    </style>
+    <script src="wails://runtime/runtime.js"></script>
+</head>
+<body>
+    <div class="titlebar">
+        <div class="titlebar-title">Issue #4650 Reproduction - macOS Window Bugs</div>
+    </div>
+
+    <div class="container">
+        <h1>Issue #4650 Reproduction</h1>
+        <div class="subtitle">macOS Window Behavior Bugs (v3.0.0-alpha)</div>
+
+        <div class="issue-section">
+            <div class="bug-label">BUG #1</div>
+            <h2>Window.hide() Removes Tray Icon</h2>
+            <p>
+                On macOS, when hiding the window, the system tray icon also disappears,
+                making the application completely inaccessible.
+            </p>
+
+            <div class="expected">
+                <strong>✓ Expected (Windows):</strong> Window hides, tray icon remains visible and clickable
+            </div>
+            <div class="actual">
+                <strong>✗ Actual (macOS):</strong> Both window AND tray icon disappear
+            </div>
+
+            <div class="controls">
+                <button onclick="hideWindow()">Hide Window</button>
+                <button onclick="showWindow()" class="secondary">Show Window</button>
+            </div>
+
+            <p style="margin-top: 15px; font-size: 12px; color: #888;">
+                Try using the system tray menu to restore the window after hiding.
+            </p>
+        </div>
+
+        <div class="issue-section">
+            <div class="bug-label">BUG #2</div>
+            <h2>ToggleMaximise White Flicker</h2>
+            <p>
+                On macOS with Frameless=true, maximizing the window causes a noticeable
+                white flash before the dark content appears.
+            </p>
+
+            <div class="expected">
+                <strong>✓ Expected:</strong> Smooth transition maintaining dark background color
+            </div>
+            <div class="actual">
+                <strong>✗ Actual (macOS):</strong> White background flashes during zoom animation
+            </div>
+
+            <div class="controls">
+                <button onclick="toggleMaximise()" class="danger">Toggle Maximize (Watch for Flash)</button>
+                <button onclick="minimizeWindow()" class="secondary">Minimize</button>
+            </div>
+
+            <p style="margin-top: 15px; font-size: 12px; color: #888;">
+                Click the button and watch carefully - you'll see a white flash as the window expands.
+            </p>
+        </div>
+
+        <div class="note">
+            <strong>Platform Note:</strong> Both issues are macOS-specific and do not occur on Windows.
+            The issues are particularly noticeable on macOS Sequoia 15.5 with Apple Silicon (M4).
+            <br><br>
+            <strong>Root Causes:</strong>
+            <ul style="margin-top: 10px; padding-left: 20px;">
+                <li>Issue #1: Related to NSApplicationActivationPolicy handling</li>
+                <li>Issue #2: NSWindow's default white background visible during zoom animation</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Wails v3 runtime bindings
+        function hideWindow() {
+            // BUG: On macOS, this also hides the tray icon
+            wails.Call.AppService.HideWindow();
+        }
+
+        function showWindow() {
+            wails.Call.AppService.ShowWindow();
+        }
+
+        function toggleMaximise() {
+            // BUG: On macOS with Frameless=true, white flash occurs during animation
+            wails.Call.AppService.ToggleMaximise();
+        }
+
+        function minimizeWindow() {
+            wails.Call.AppService.MinimizeWindow();
+        }
+
+        // Log when page loads
+        console.log('Issue #4650 Reproduction Example Loaded');
+        console.log('Platform:', navigator.platform);
+        console.log('User Agent:', navigator.userAgent);
+    </script>
+</body>
+</html>
