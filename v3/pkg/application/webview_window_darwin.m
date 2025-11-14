@@ -4,7 +4,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "webview_window_darwin.h"
 #import "../events/events_darwin.h"
-extern void processMessage(unsigned int, const char*);
+extern void processMessage(unsigned int, const char*, const char *, bool);
 extern void processURLRequest(unsigned int, void *);
 extern void processDragItems(unsigned int windowId, char** arr, int length, int x, int y);
 extern void processWindowKeyDownEvent(unsigned int, const char*);
@@ -272,7 +272,7 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
     NSLog(@"WebviewWindowDelegate: performDragOperation called. WindowID: %u", self.windowId);
     NSPasteboard *pasteboard = [sender draggingPasteboard];
-    
+
     if (hasListeners(EventWindowFileDraggingPerformed)) {
         processWindowEvent(self.windowId, EventWindowFileDraggingPerformed);
     }
@@ -295,13 +295,13 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
             NSLog(@"WebviewWindowDelegate: performDragOperation - File %lu: %@", (unsigned long)i, str);
             cArray[i] = (char*)[str UTF8String];
         }
-        
+
         // Get the WebviewWindow instance, which is the dragging destination
         WebviewWindow *window = (WebviewWindow *)[sender draggingDestinationWindow];
         WKWebView *webView = window.webView; // Get the webView from the window
         NSPoint dropPointInWindow = [sender draggingLocation];
         NSPoint dropPointInView = [webView convertPoint:dropPointInWindow fromView:nil]; // Convert to webView's coordinate system
-        
+
         CGFloat viewHeight = webView.frame.size.height;
         int x = (int)dropPointInView.x;
         int y = (int)(viewHeight - dropPointInView.y); // Flip Y for web coordinate system
@@ -336,9 +336,21 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 }
 // Handle script messages from the external bridge
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
+    // Get the origin from the message's frame
+    NSString *origin = nil;
+    if (message.frameInfo && message.frameInfo.request && message.frameInfo.request.URL) {
+        NSURL *url = message.frameInfo.request.URL;
+        if (url.scheme && url.host) {
+            origin = [url absoluteString];
+        }
+    }
+
     NSString *m = message.body;
     const char *_m = [m UTF8String];
-    processMessage(self.windowId, _m);
+
+    const char *_origin = [origin UTF8String];
+
+    processMessage(self.windowId, _m, _origin, message.frameInfo.isMainFrame);
 }
 - (void)handleLeftMouseDown:(NSEvent *)event {
     self.leftMouseEvent = event;
@@ -782,25 +794,25 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 void windowSetScreen(void* window, void* screen, int yOffset) {
     WebviewWindow* nsWindow = (WebviewWindow*)window;
     NSScreen* nsScreen = (NSScreen*)screen;
-    
+
     // Get current frame
     NSRect frame = [nsWindow frame];
-    
+
     // Convert frame to screen coordinates
     NSRect screenFrame = [nsScreen frame];
     NSRect currentScreenFrame = [[nsWindow screen] frame];
-    
+
     // Calculate the menubar height for the target screen
     NSRect visibleFrame = [nsScreen visibleFrame];
     CGFloat menubarHeight = screenFrame.size.height - visibleFrame.size.height;
-    
+
     // Calculate the distance from the top of the current screen
     CGFloat topOffset = currentScreenFrame.origin.y + currentScreenFrame.size.height - frame.origin.y;
-    
+
     // Position relative to new screen's top, accounting for menubar
     frame.origin.x = screenFrame.origin.x + (frame.origin.x - currentScreenFrame.origin.x);
     frame.origin.y = screenFrame.origin.y + screenFrame.size.height - topOffset - menubarHeight - yOffset;
-    
+
     // Set the frame which moves the window to the new screen
     [nsWindow setFrame:frame display:YES];
 }
@@ -816,13 +828,13 @@ bool isLiquidGlassSupported() {
 void windowRemoveVisualEffects(void* nsWindow) {
     WebviewWindow* window = (WebviewWindow*)nsWindow;
     NSView* contentView = [window contentView];
-    
+
     // Get NSGlassEffectView class if available (avoid hard reference)
     Class glassEffectViewClass = nil;
     if (@available(macOS 26.0, *)) {
         glassEffectViewClass = NSClassFromString(@"NSGlassEffectView");
     }
-    
+
     // Remove all NSVisualEffectView and NSGlassEffectView subviews
     NSArray* subviews = [contentView subviews];
     for (NSView* subview in subviews) {
@@ -836,13 +848,13 @@ void windowRemoveVisualEffects(void* nsWindow) {
 void configureWebViewForLiquidGlass(void* nsWindow) {
     WebviewWindow* window = (WebviewWindow*)nsWindow;
     WKWebView* webView = window.webView;
-    
+
     // Make WebView background transparent
     [webView setValue:@NO forKey:@"drawsBackground"];
     if (@available(macOS 10.12, *)) {
         [webView setValue:[NSColor clearColor] forKey:@"backgroundColor"];
     }
-    
+
     // Ensure WebView is above glass layer
     if (webView.layer) {
         webView.layer.zPosition = 1.0;
@@ -852,10 +864,10 @@ void configureWebViewForLiquidGlass(void* nsWindow) {
 }
 // Apply Liquid Glass effect to window
 void windowSetLiquidGlass(void* nsWindow, int style, int material, double cornerRadius,
-                          int r, int g, int b, int a, 
+                          int r, int g, int b, int a,
                           const char* groupID, double groupSpacing) {
     WebviewWindow* window = (WebviewWindow*)nsWindow;
-    
+
     // Ensure we're on the main thread for UI operations
     if (![NSThread isMainThread]) {
         dispatch_sync(dispatch_get_main_queue(), ^{
@@ -863,38 +875,38 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
         });
         return;
     }
-    
+
     // Remove any existing visual effects
     windowRemoveVisualEffects(nsWindow);
-    
+
     // Try to use NSGlassEffectView if available
     NSView* glassView = nil;
-    
+
     if (@available(macOS 26.0, *)) {
         Class NSGlassEffectViewClass = NSClassFromString(@"NSGlassEffectView");
         if (NSGlassEffectViewClass) {
             // Create NSGlassEffectView (autoreleased)
             glassView = [[[NSGlassEffectViewClass alloc] init] autorelease];
-            
+
             // Set corner radius if the property exists
             if (cornerRadius > 0 && [glassView respondsToSelector:@selector(setCornerRadius:)]) {
                 [glassView setValue:@(cornerRadius) forKey:@"cornerRadius"];
             }
-            
+
             // Set tint color if the property exists and color is specified
             if (a > 0 && [glassView respondsToSelector:@selector(setTintColor:)]) {
                 NSColor* tintColor = [NSColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a/255.0];
                 // Use performSelector to safely set tintColor if the setter exists
                 [glassView performSelector:@selector(setTintColor:) withObject:tintColor];
             }
-            
+
             // Set style if the property exists
             if ([glassView respondsToSelector:@selector(setStyle:)]) {
                 // For vibrant style, try to use Light style for a lighter effect
                 int lightStyle = (style == LiquidGlassStyleVibrant) ? LiquidGlassStyleLight : style;
                 [glassView setValue:@(lightStyle) forKey:@"style"];
             }
-            
+
             // Set group identifier if the property exists and groupID is specified
             if (groupID && strlen(groupID) > 0) {
                 if ([glassView respondsToSelector:@selector(setGroupIdentifier:)]) {
@@ -905,19 +917,19 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
                     [glassView performSelector:@selector(setGroupName:) withObject:groupIDString];
                 }
             }
-            
+
             // Set group spacing if the property exists and spacing is specified
             if (groupSpacing > 0 && [glassView respondsToSelector:@selector(setGroupSpacing:)]) {
                 [glassView setValue:@(groupSpacing) forKey:@"groupSpacing"];
             }
         }
     }
-    
+
     // Fallback to NSVisualEffectView if NSGlassEffectView is not available
     if (!glassView) {
         NSVisualEffectView* effectView = [[[NSVisualEffectView alloc] init] autorelease];
         glassView = effectView; // Use effectView as glassView for the rest of the function
-        
+
         // If a custom material is specified, use it directly
         if (material >= 0) {
             [effectView setMaterial:(NSVisualEffectMaterial)material];
@@ -968,15 +980,15 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
                     break;
             }
         }
-        
+
         // Use followsWindowActiveState for automatic adjustment
         [effectView setState:NSVisualEffectStateFollowsWindowActiveState];
-        
+
         // Don't emphasize - it makes the effect too dark
         if (@available(macOS 10.12, *)) {
             [effectView setEmphasized:NO];
         }
-        
+
         // Apply corner radius if specified
         if (cornerRadius > 0) {
             [effectView setWantsLayer:YES];
@@ -984,30 +996,30 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
             effectView.layer.masksToBounds = YES;
         }
     }
-    
+
     // Get the content view
     NSView* contentView = [window contentView];
-    
+
     // Set up the glass view
     [glassView setFrame:contentView.bounds];
     [glassView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-    
+
     // Check if this is a real NSGlassEffectView with contentView property
     BOOL hasContentView = [glassView respondsToSelector:@selector(contentView)];
-    
+
     if (hasContentView) {
         // NSGlassEffectView: Add it to window and webView goes in its contentView
         [contentView addSubview:glassView positioned:NSWindowBelow relativeTo:nil];
-        
+
         // Safely reparent the webView to the glass view's contentView
         WKWebView* webView = window.webView;
         NSView* glassContentView = [glassView valueForKey:@"contentView"];
-        
+
         // Only proceed if both webView and glassContentView are non-nil
         if (webView && glassContentView) {
             // Always remove from current superview to avoid exceptions
             [webView removeFromSuperview];
-            
+
             // Add to the glass view's contentView
             [glassContentView addSubview:webView];
             [webView setFrame:glassContentView.bounds];
@@ -1016,17 +1028,17 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
     } else {
         // NSVisualEffectView: Add glass as bottom layer, webView on top
         [contentView addSubview:glassView positioned:NSWindowBelow relativeTo:nil];
-        
+
         WKWebView* webView = window.webView;
         if (webView) {
             [webView removeFromSuperview];
             [contentView addSubview:webView positioned:NSWindowAbove relativeTo:glassView];
         }
     }
-    
+
     // Configure WebView for liquid glass
     configureWebViewForLiquidGlass(nsWindow);
-    
+
     // Make window transparent
     [window setOpaque:NO];
     [window setBackgroundColor:[NSColor clearColor]];

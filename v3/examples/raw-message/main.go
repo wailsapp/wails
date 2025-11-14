@@ -3,8 +3,10 @@ package main
 import (
 	"embed"
 	_ "embed"
-	"github.com/wailsapp/wails/v3/pkg/application"
+	"fmt"
 	"log"
+
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 //go:embed assets
@@ -21,8 +23,8 @@ func main() {
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
-		RawMessageHandler: func(window application.Window, message string) {
-			println("Raw message received from Window '" + window.Name() + "' with message: " + message)
+		RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+			println(fmt.Sprintf("Raw message received from Window %s with message: %s, origin %s, topOriging %s, isMainFrame %t", window.Name(), message, originInfo.Origin, originInfo.TopOrigin, originInfo.IsMainFrame))
 		},
 	})
 

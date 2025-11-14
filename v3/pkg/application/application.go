@@ -211,8 +211,15 @@ type (
 
 // Messages sent from javascript get routed here
 type windowMessage struct {
-	windowId uint
-	message  string
+	windowId   uint
+	message    string
+	originInfo *OriginInfo
+}
+
+type OriginInfo struct {
+	Origin      string
+	TopOrigin   string
+	IsMainFrame bool
 }
 
 var windowMessageBuffer = make(chan *windowMessage, 5)
@@ -708,7 +715,7 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 		window.HandleMessage(event.message)
 	} else {
 		if a.options.RawMessageHandler != nil {
-			a.options.RawMessageHandler(window, event.message)
+			a.options.RawMessageHandler(window, event.message, event.originInfo)
 		}
 	}
 }
