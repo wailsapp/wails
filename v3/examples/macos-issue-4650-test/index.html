@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>macOS Issue #4650 Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+            color: #e0e0e0;
+            padding: 40px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #ffffff;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #a0a0a0;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .issue-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .issue-section h2 {
+            color: #4CAF50;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .issue-section p {
+            color: #b0b0b0;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .test-steps {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 3px solid #2196F3;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .test-steps ol {
+            margin-left: 20px;
+        }
+
+        .test-steps li {
+            margin-bottom: 8px;
+            color: #d0d0d0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .status {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            padding: 10px 15px;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-label {
+            color: #a0a0a0;
+        }
+
+        .status-value {
+            color: #4CAF50;
+            font-weight: 600;
+        }
+
+        .expected-result {
+            background: rgba(76, 175, 80, 0.1);
+            border-left: 3px solid #4CAF50;
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+
+        .expected-result strong {
+            color: #4CAF50;
+        }
+
+        code {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 macOS Issue #4650 Test App</h1>
+        <p class="subtitle">Test application for verifying macOS window behavior fixes</p>
+
+        <!-- Issue 1 -->
+        <div class="issue-section">
+            <h2>Issue #1: System Tray Icon Disappearing</h2>
+            <p>When calling <code>Window.Hide()</code>, the tray icon should remain visible.</p>
+
+            <div class="test-steps">
+                <strong>How to Test:</strong>
+                <ol>
+                    <li>Look at the menu bar - you should see the tray icon (📊 or custom icon)</li>
+                    <li>Click "Hide Window" button below</li>
+                    <li>Check the menu bar - the tray icon should STILL be visible</li>
+                    <li>Click the tray icon to show the window again</li>
+                </ol>
+            </div>
+
+            <div class="button-group">
+                <button onclick="hideWindow()">Hide Window</button>
+                <button onclick="showWindow()">Show Window</button>
+            </div>
+
+            <div class="expected-result">
+                <strong>✓ Expected Result:</strong> The system tray icon remains visible in the menu bar even when the window is hidden. You can click it to show the window again.
+            </div>
+        </div>
+
+        <!-- Issue 2 -->
+        <div class="issue-section">
+            <h2>Issue #2: White Flicker on Maximize</h2>
+            <p>When maximizing a window with a dark background, there should be NO white flash during the animation.</p>
+
+            <div class="test-steps">
+                <strong>How to Test:</strong>
+                <ol>
+                    <li>Ensure the window is NOT maximized (click Restore if needed)</li>
+                    <li>Observe the window carefully</li>
+                    <li>Click "Maximize Window" button below</li>
+                    <li>Watch the zoom animation - it should be smooth with NO white flash</li>
+                    <li>The dark background should be visible throughout the animation</li>
+                </ol>
+            </div>
+
+            <div class="button-group">
+                <button onclick="maximizeWindow()">Maximize Window</button>
+                <button onclick="restoreWindow()">Restore Window</button>
+            </div>
+
+            <div class="expected-result">
+                <strong>✓ Expected Result:</strong> The window zoom animation should be smooth and maintain the dark background color throughout. No white flicker should appear.
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div class="status">
+            <div class="status-item">
+                <span class="status-label">Window Visible:</span>
+                <span class="status-value" id="visible-status">Yes</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Window Maximized:</span>
+                <span class="status-value" id="maximized-status">No</span>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { Call } from '@wailsio/runtime';
+
+        window.hideWindow = async function() {
+            await Call.ByName('TestService.HideWindow');
+            updateStatus();
+        }
+
+        window.showWindow = async function() {
+            await Call.ByName('TestService.ShowWindow');
+            updateStatus();
+        }
+
+        window.maximizeWindow = async function() {
+            await Call.ByName('TestService.MaximizeWindow');
+            updateStatus();
+        }
+
+        window.restoreWindow = async function() {
+            await Call.ByName('TestService.RestoreWindow');
+            updateStatus();
+        }
+
+        async function updateStatus() {
+            try {
+                const isVisible = await Call.ByName('TestService.IsVisible');
+                const isMaximized = await Call.ByName('TestService.IsMaximized');
+
+                document.getElementById('visible-status').textContent = isVisible ? 'Yes' : 'No';
+                document.getElementById('maximized-status').textContent = isMaximized ? 'Yes' : 'No';
+            } catch (e) {
+                console.error('Error updating status:', e);
+            }
+        }
+
+        // Update status every second
+        setInterval(updateStatus, 1000);
+        updateStatus();
+    </script>
+</body>
+</html>
