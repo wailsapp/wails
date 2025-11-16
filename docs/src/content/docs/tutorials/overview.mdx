@@ -2,71 +2,80 @@
 title: Tutorials
 description: Learn Wails by building applications
 sidebar:
-  order: 1
+  label: Overview
+  order: 0
 ---
 
-## Overview
+import { LinkButton } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import qr1 from "../../../assets/qr1.png";
+import todoApp from "../../../assets/todo-app.png";
 
 Step-by-step tutorials that teach Wails concepts by building complete applications. Each tutorial includes working code, explanations, and practical patterns.
-
-## Beginner Tutorials
-
-**[TODO App (Vanilla JS)](/tutorials/todo-vanilla)** - 20 minutes
-- CRUD operations, thread-safe state, modern UI design
-- No framework complexity required
-
-**[Notes App (Vanilla JS)](/tutorials/notes-vanilla)** - 30 minutes
-- File operations, local storage, core Wails concepts
-- No framework complexity required
-
-**[TODO App (React)](/tutorials/todo-react)** - 45 minutes
-- React integration, SQLite database, state management
-
-## Intermediate Tutorials
-
-**[Dashboard (Vue)](/tutorials/dashboard-vue)** - 60 minutes
-- Vue 3 Composition API, charts and graphs, WebSocket integration, event system
-
-**[File Manager](/tutorials/file-operations)** - 45 minutes
-- File dialogs, drag & drop, context menus, file system operations
-
-**[Database Integration](/tutorials/database)** - 40 minutes
-- SQLite setup, migrations, query patterns, best practices
-
-**[System Tray App](/tutorials/system-tray)** - 35 minutes
-- System tray integration, background tasks, notifications, window management
-
-## Advanced Tutorials
-
-**[Multi-Window Application](/tutorials/multi-window)** - 50 minutes
-- Window lifecycle, inter-window communication, shared state, window positioning
-
-**[Custom Protocols](/tutorials/custom-protocols)** - 40 minutes
-- Protocol registration, URL parsing, security considerations, platform differences
-
-**[Native Integrations](/tutorials/native-integrations)** - 45 minutes
-- macOS Dock integration, Windows UAC, Linux desktop files, platform detection
-
-**[Auto-Updates (Sparkle)](/tutorials/sparkle-updates)** - 60 minutes
-- Sparkle setup (macOS), update server, code signing, testing updates
-
-## Prerequisites
-
-**Required:**
-- Go 1.25+
-- Basic Go knowledge (variables, functions, structs)
-- Basic JavaScript knowledge (variables, functions, async/await)
-- [Wails installed](/quick-start/installation)
-
-**Optional:**
-- npm (for framework templates)
 
 :::tip[New to Go?]
 Complete the [Go Tour](https://go.dev/tour/) before starting tutorials.
 :::
 
-## Get Help
+### QR Code Service
 
-- [Discord](https://discord.gg/JDdSxwjhGf) - Ask questions, share projects
-- [Examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples) - 50+ working examples
-- [API Reference](/reference/overview) - Complete documentation
+<Image src={qr1} alt="QR Code Example" style="max-width: 400px; margin: 1rem auto; display: block;" />
+
+Learn the fundamentals of Wails services by building a QR code generator. This tutorial introduces you to the core concepts of organizing your application logic into reusable services.
+
+**What you'll learn:**
+- How to create and structure a Wails service
+- Managing external Go dependencies
+- Binding Go methods to your frontend
+- Passing data between Go and JavaScript
+- Organizing code for maintainability
+
+**Best for:** First-time Wails users who want to understand the service architecture
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/tutorials/01-creating-a-service" variant="secondary" icon="right-arrow">Get Started</LinkButton>
+</div>
+
+---
+
+### TODO List
+
+<Image src={todoApp} alt="TODO List Application" style="max-width: 400px; margin: 1rem auto; display: block;" />
+
+Build a complete TODO list application with a beautiful, modern interface. This hands-on tutorial teaches you core Wails patterns through a practical, real-world application using vanilla JavaScript.
+
+**What you'll learn:**
+- Service-based architecture with thread-safe state management
+- CRUD operations (Create, Read, Update, Delete)
+- Type-safe bindings between Go and JavaScript
+- Building modern UIs without framework complexity
+- Proper error handling and validation patterns
+
+**Time to complete:** ~20 minutes
+
+**Best for:** Your first complete Wails application - perfect for understanding the fundamentals before adding framework complexity
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/tutorials/todo-vanilla" variant="secondary" icon="right-arrow">Get Started</LinkButton>
+</div>
+
+---
+
+### Notes
+
+Build an Apple Notes-style application with native file dialogs and auto-save functionality. This tutorial demonstrates desktop-specific features like file operations, native dialogs, and professional UI patterns.
+
+**What you'll learn:**
+- Native file dialogs (Save, Open, Info)
+- JSON-based data persistence
+- Debounced auto-save patterns
+- Professional two-column desktop layouts
+- Working with file system operations in Go
+
+**Time to complete:** ~30 minutes
+
+**Best for:** Learning desktop-specific features like file operations and native OS dialogs
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/tutorials/notes-vanilla" variant="secondary" icon="right-arrow">Get Started</LinkButton>
+</div>

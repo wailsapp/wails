@@ -84,41 +84,11 @@ export default defineConfig({
           ],
         },
 
-        // Tutorials - Step-by-step workflows (Netflix: Real production examples)
+        // Tutorials
         {
           label: "Tutorials",
           collapsed: true,
-          items: [
-            { label: "Overview", link: "/tutorials/overview" },
-            { 
-              label: "Building Your First App",
-              collapsed: true,
-              items: [
-                { label: "Todo App with React", link: "/tutorials/todo-react" },
-                { label: "Dashboard with Vue", link: "/tutorials/dashboard-vue" },
-                { label: "Notes App with Vanilla JS", link: "/tutorials/notes-vanilla" },
-              ]
-            },
-            {
-              label: "Adding Features",
-              collapsed: true,
-              items: [
-                { label: "File Operations", link: "/tutorials/file-operations" },
-                { label: "Database Integration", link: "/tutorials/database" },
-                { label: "System Tray Integration", link: "/tutorials/system-tray" },
-                { label: "Auto-Updates with Sparkle", link: "/tutorials/sparkle-updates" },
-              ]
-            },
-            {
-              label: "Advanced Tutorials",
-              collapsed: true,
-              items: [
-                { label: "Multi-Window Applications", link: "/tutorials/multi-window" },
-                { label: "Custom Protocols", link: "/tutorials/custom-protocols" },
-                { label: "Native Integrations", link: "/tutorials/native-integrations" },
-              ]
-            },
-          ],
+          autogenerate: { directory: "tutorials" },
         },
 
         // Learn - Discrete features (Netflix: Layered approach for different skill levels)
@@ -365,7 +335,6 @@ export default defineConfig({
           items: [
             { label: "From v2 to v3", link: "/migration/v2-to-v3" },
             { label: "From Electron", link: "/migration/from-electron" },
-            { label: "From Tauri", link: "/migration/from-tauri" },
           ],
         },
 

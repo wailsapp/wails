@@ -238,7 +238,7 @@ app := application.New(application.Options{
 - Releasing resources
 - Final cleanup
 
-**Important:** Keep it fast (<1 second). OS may force-kill if too slow.
+**Important:** Keep it fast (&lt;1 second). OS may force-kill if too slow.
 
 ### 8. Cleanup & Exit
 
@@ -580,14 +580,14 @@ OnStartup: func(ctx context.Context) {
 
 - **Initialise in OnStartup** - Database, config, resources
 - **Clean up in OnShutdown** - Close connections, save state
-- **Keep OnShutdown fast** - <1 second
+- **Keep OnShutdown fast** - &lt;1 second
 - **Use context for cancellation** - Stop background tasks
 - **Handle errors gracefully** - Show dialogs, log errors
 - **Test quit scenarios** - Unsaved changes, background tasks
 
 ### ❌ Don't
 
-- **Don't block OnStartup** - Keep it fast (<2 seconds)
+- **Don't block OnStartup** - Keep it fast (&lt;2 seconds)
 - **Don't show dialogs in OnShutdown** - App is quitting
 - **Don't ignore errors** - Log or show them
 - **Don't leak resources** - Always clean up

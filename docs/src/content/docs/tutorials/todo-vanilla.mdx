@@ -1,17 +1,29 @@
 ---
-title: TODO List App
+title: TODO List
 description: Build a complete TODO list application with CRUD operations
 sidebar:
   order: 2
 ---
 
 import { Tabs, TabItem, Steps } from "@astrojs/starlight/components";
+import { Image } from 'astro:assets';
+import todoApp from "../../../assets/todo-app.png";
 
-Build a complete TODO list application that demonstrates practical Wails concepts:
+In this tutorial, you'll build a fully functional TODO list application. This is a step up from the QR Code Service tutorial - you'll learn how to manage state, handle multiple operations, and create a polished user interface.
+
+**What you'll build:**
+- A complete TODO app with add, complete, and delete functionality
+- Thread-safe state management (important for desktop apps)
+- Modern, glassmorphic UI design
+- All using vanilla JavaScript - no frameworks required
+
+**What you'll learn:**
 - CRUD operations (Create, Read, Update, Delete)
-- Thread-safe state management
-- Modern UI design
-- Type-safe bindings
+- Managing mutable state safely in Go
+- Handling user input and validation
+- Building responsive UIs that feel native
+
+<Image src={todoApp} alt="TODO List Application" style="max-width: 600px; margin: 2rem auto; display: block; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);" />
 
 **Time to complete:** 20 minutes
 
@@ -21,12 +33,18 @@ Build a complete TODO list application that demonstrates practical Wails concept
 
 1. **Generate the project**
 
+   First, create a new Wails project. We'll use the default vanilla template which gives us a clean starting point:
+
    ```bash
    wails3 init -n todo-app
    cd todo-app
    ```
 
+   This creates a new project with the basic structure: Go backend in the root, frontend code in the `frontend/` directory.
+
 2. **Create the TODO service**
+
+   The TODO service will manage our application state and provide methods for CRUD operations. Unlike a web server where each request is isolated, desktop apps can have multiple concurrent operations, so we need thread-safe state management.
 
    Delete `greetservice.go` and create a new file `todoservice.go`:
 
@@ -110,14 +128,38 @@ Build a complete TODO list application that demonstrates practical Wails concept
    ```
 
    **What's happening here:**
-   - `sync.RWMutex` provides thread-safe access to the todos slice
-   - Each method locks appropriately (read lock for GetAll, write lock for mutations)
-   - IDs are auto-incremented for each new TODO
-   - Errors are returned for invalid operations
+
+   **The `Todo` struct:**
+   - Defines the shape of our data with ID, Title, and Completed fields
+   - `json:` tags tell Go how to convert this struct to JSON for the frontend
+   - Each field is exported (capitalized) so the bindings generator can see it
+
+   **The `TodoService` struct:**
+   - `todos []Todo` - a slice holding all our TODO items
+   - `nextID int` - tracks the next ID to assign (simulates auto-increment)
+   - `mu sync.RWMutex` - a read/write mutex for thread-safe access
+
+   **Thread safety with `sync.RWMutex`:**
+   - Desktop apps can have multiple concurrent operations from the UI
+   - `RLock()` allows multiple readers at once (e.g., multiple `GetAll` calls)
+   - `Lock()` gives exclusive access for writes (e.g., `Add`, `Toggle`, `Delete`)
+   - `defer` ensures locks are released even if the function returns early or panics
+
+   **The methods:**
+   - `GetAll()` - Returns all todos (uses read lock since we're not modifying data)
+   - `Add(title)` - Creates a new todo, validates input, increments ID
+   - `Toggle(id)` - Flips the completed status of a todo
+   - `Delete(id)` - Removes a todo from the slice
+
+   **Error handling:**
+   - We return `error` as the last value following Go conventions
+   - Empty titles are rejected
+   - Operations on non-existent todos return errors
+   - These errors become JavaScript exceptions in the frontend
 
 3. **Update main.go**
 
-   Update the service registration in `main.go`:
+   Register the TODO service with your Wails application. Find the `Services` section in `main.go` and replace the GreetService with our TodoService:
 
    ```go title="main.go" {5}
    Services: []application.Service{
@@ -125,7 +167,14 @@ Build a complete TODO list application that demonstrates practical Wails concept
    },
    ```
 
+   **What's happening here:**
+   - We're removing the default GreetService and adding our TodoService instead
+   - `application.NewService()` wraps our service so Wails can manage it
+   - Wails will automatically generate JavaScript bindings for all public methods on this service
+
 4. **Create the frontend UI**
+
+   Now let's build the frontend. This is where we'll call our Go methods and display the UI. We're using vanilla JavaScript to keep things simple and show you how the bindings work directly.
 
    Replace `frontend/src/main.js`:
 
@@ -172,7 +221,38 @@ Build a complete TODO list application that demonstrates practical Wails concept
    loadTodos();
    ```
 
+   **What's happening here:**
+
+   **Importing the bindings:**
+   - `import {TodoService} from "../bindings/changeme"` - brings in the auto-generated Go bindings
+   - Note: `changeme` will be your actual module name from `go.mod`
+
+   **The `loadTodos()` function:**
+   - Calls `TodoService.GetAll()` to fetch all todos from Go
+   - Builds HTML for each todo using template literals
+   - Dynamically adds/removes the `completed` class for styling
+   - Uses `onclick` attributes to connect buttons to our functions
+   - Joins all the HTML together and injects it into the DOM
+
+   **The CRUD functions:**
+   - `addTodo()` - Validates input, calls the Go `Add` method, refreshes the list
+   - `toggleTodo(id)` - Calls Go's `Toggle` method, refreshes the list
+   - `deleteTodo(id)` - Calls Go's `Delete` method, refreshes the list
+   - All functions are async because Go calls return Promises
+
+   **Why attach to window:**
+   - `window.addTodo = ...` makes functions accessible from HTML `onclick` attributes
+   - This is a simple pattern for vanilla JS (frameworks handle this differently)
+   - In production, you might use proper event delegation instead
+
+   **The refresh pattern:**
+   - After each mutation (add/toggle/delete), we call `loadTodos()` again
+   - This ensures the UI stays in sync with the Go state
+   - Alternative: Have Go methods return the new state to avoid the second call
+
 5. **Update the HTML**
+
+   The HTML provides the structure for our TODO app. It's minimal and semantic - the magic happens in the JavaScript and CSS.
 
    Replace `frontend/index.html`:
 
@@ -183,7 +263,7 @@ Build a complete TODO list application that demonstrates practical Wails concept
        <meta charset="UTF-8"/>
        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
        <title>TODO App</title>
-       <link rel="stylesheet" href="./public/style.css"/>
+       <link rel="stylesheet" href="./style.css"/>
    </head>
    <body>
        <div class="container">
@@ -205,7 +285,26 @@ Build a complete TODO list application that demonstrates practical Wails concept
    </html>
    ```
 
+   **What's happening here:**
+
+   **The structure:**
+   - `container` - centers our app and constrains the width
+   - `card` - the main white card holding everything
+   - `input-box` - flex container for the input and Add button
+   - `todo-list` - where individual todos will be injected by JavaScript
+
+   **Event handling:**
+   - `onkeypress="if(event.key==='Enter') addTodo()"` - add todo when Enter is pressed
+   - `onclick="addTodo()"` - add todo when button is clicked
+   - Inline event handlers work well for simple vanilla JS apps
+
+   **Module script:**
+   - `<script type="module">` lets us use ES6 imports
+   - Our `main.js` file can import the bindings and use modern JavaScript
+
 6. **Style the app**
+
+   The CSS creates a modern, glassmorphic design with smooth transitions. We're going for a polished feel that makes the app enjoyable to use.
 
    Replace `frontend/public/style.css`:
 
@@ -223,6 +322,7 @@ Build a complete TODO list application that demonstrates practical Wails concept
        margin: 0;
        display: flex;
        place-items: center;
+       justify-content: center;
        min-height: 100vh;
    }
 
@@ -392,13 +492,45 @@ Build a complete TODO list application that demonstrates practical Wails concept
    }
    ```
 
+   **What's happening here:**
+
+   **Glassmorphic design:**
+   - `background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)` - purple gradient background
+   - `backdrop-filter: blur(10px)` - creates the frosted glass effect on the card
+   - `rgba(255, 255, 255, 0.95)` - semi-transparent white for the glass effect
+
+   **Custom checkbox styling:**
+   - `appearance: none` removes the default browser checkbox
+   - We create a custom rounded square with a checkmark using `::after`
+   - The checkmark appears when `checked` using a ✓ unicode character
+
+   **Hover interactions:**
+   - Todos slide right on hover (`transform: translateX(4px)`)
+   - Delete button is hidden until hover (`opacity: 0` → `opacity: 1`)
+   - Buttons scale up slightly on hover for tactile feedback
+
+   **Empty state:**
+   - `#todo-list:empty::before` shows a message when there are no todos
+   - CSS-only solution - no JavaScript needed
+
 7. **Run the app**
+
+   Let's see it in action! Run the development server:
 
    ```bash
    wails3 dev
    ```
 
-   Try adding, completing, and deleting todos. Notice how the UI updates instantly after each operation.
+   The app will compile and open. Try it out:
+   - Type a todo and press Enter or click Add
+   - Click the checkbox to mark it complete
+   - Hover over a todo to see the delete button appear
+   - Notice how the UI updates instantly - that's our refresh pattern working
+
+   **What's happening:**
+   - Wails automatically generated bindings for your TodoService methods
+   - Dev mode includes hot reload - try changing the CSS and watch it update
+   - Your Go code is running natively - no translation or interpretation needed
 
 </Steps>
 
@@ -543,36 +675,51 @@ For production apps, you'd typically add database persistence. See the [Database
 
 ## Build for Production
 
+When you're ready to distribute your TODO app, build it for production:
+
 ```bash
 wails3 build
 ```
 
-Your TODO app is now a native executable in `build/bin/`.
+This creates an optimized native executable in `build/bin/`:
+- Compiles your Go code with optimizations
+- Builds your frontend for production
+- Bundles everything into a single executable
+- The resulting app is typically 10-20MB (compare to Electron's 150MB+)
 
-## What We Learned
+You can run the executable directly - no runtime needed, no servers to start. It's a true native application.
 
-**CRUD Operations**
-- Create (Add), Read (GetAll), Update (Toggle), Delete (Delete)
-- Error handling for invalid operations
-- Proper return types for each operation
+## What You Built
 
-**Thread Safety**
-- `sync.RWMutex` for concurrent access
-- Read locks vs write locks
-- Deferred unlocking to prevent deadlocks
+You just built a complete TODO application with:
 
-**Modern UI**
-- Gradient backgrounds
-- Glassmorphic design
-- Custom checkbox styling
-- Hover effects and transitions
-- Empty state messaging
+**Full CRUD implementation:**
+- Created a service with Create, Read, Update, and Delete operations
+- Added input validation and error handling
+- Learned how Go errors become JavaScript exceptions
 
-**State Management**
-- Centralized state in Go
-- Frontend as view layer
-- Refresh pattern after mutations
+**Thread-safe state management:**
+- Used `sync.RWMutex` to handle concurrent access safely
+- Understood the difference between read locks (RLock) and write locks (Lock)
+- Saw how `defer` prevents deadlocks by guaranteeing cleanup
 
----
+**Modern, polished UI:**
+- Built a glassmorphic interface with gradients and blur effects
+- Created custom-styled checkboxes without any framework
+- Added hover interactions and transitions for a native feel
+- Implemented an empty state with pure CSS
 
-**Next:** Try adding [database persistence](/guides/patterns/database) or building a [system tray app](/tutorials/system-tray).
+**Wails fundamentals:**
+- Service registration and automatic binding generation
+- Calling Go methods from JavaScript with async/await
+- State synchronization between Go and the frontend
+- Building and packaging a native desktop app
+
+## Next Steps
+
+Now that you understand CRUD operations and state management, try:
+
+- **Add persistence:** Make todos survive app restarts with [SQLite](/guides/patterns/database)
+- **Add more features:** Filtering (all/active/completed), editing existing todos, bulk operations
+- **Explore the Notes tutorial:** See how file operations work in [Notes](/tutorials/notes-vanilla)
+- **Build something real:** Take these concepts and build your own app!

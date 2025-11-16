@@ -267,7 +267,7 @@ try {
 
 ### Speed
 
-**Typical call overhead:** <1ms
+**Typical call overhead:** &lt;1ms
 
 ```
 Frontend Call → Bridge → Go Execution → Bridge → Frontend Response
@@ -278,7 +278,7 @@ Frontend Call → Bridge → Go Execution → Bridge → Frontend Response
 **Compared to alternatives:**
 - **HTTP/REST:** 5-50ms (network stack, serialisation)
 - **IPC:** 1-10ms (process boundaries, marshalling)
-- **Wails Bridge:** <1ms (in-memory, direct call)
+- **Wails Bridge:** &lt;1ms (in-memory, direct call)
 
 ### Memory
 
@@ -657,7 +657,7 @@ func TestGreetService(t *testing.T) {
 
 - **Batch operations** - Reduce bridge calls
 - **Use events for streaming** - Don't return large arrays
-- **Keep methods fast** - <100ms ideal
+- **Keep methods fast** - &lt;100ms ideal
 - **Use goroutines** - For long operations
 - **Cache on Go side** - Avoid repeated calculations
 
