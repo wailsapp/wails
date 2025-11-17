@@ -1,6 +1,6 @@
 ---
 title: Creating Custom Transport Layer
-description: Learn how to create and customise your own Wails v3 templates
+description: Learn how to create and customize your own Wails v3 custom IPC transport layer
 sidebar:
     order: 51
 ---
@@ -117,7 +117,7 @@ setTransport(myTransport);
 
 ```go
 type Transport interface {
-    Start(ctx context.Context, processor *application.MessageProcessor) error
+    Start(ctx context.Context, messageProcessor *application.MessageProcessor) error
     Stop() error
 }
 ```
