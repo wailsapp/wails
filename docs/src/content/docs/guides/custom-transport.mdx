@@ -1,4 +1,9 @@
-# Custom Transport Layer
+---
+title: Creating Custom Transport Layer
+description: Learn how to create and customise your own Wails v3 templates
+sidebar:
+    order: 51
+---
 
 Wails v3 allows you to provide a custom IPC transport layer while retaining all generated bindings and event communication. This enables you to replace the default HTTP fetch-based transport with WebSockets, custom protocols, or any other transport mechanism.
 
@@ -89,7 +94,7 @@ const { setTransport } = await import('/wails/runtime.js');
 class MyRuntimeTransport {
   call(objectID: number, method: number, windowName: string, args: any): Promise<any> {
     // TODO: implement IPC call with your transport protocol
-    
+
     return resp;
   }
 }
