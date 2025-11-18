@@ -335,7 +335,8 @@ func processApplicationEvent(eventID C.uint, data unsafe.Pointer) {
 	applicationEvents <- event
 }
 
-//export processWindowEvent
+// processWindowEvent enqueues a window event for processing by the application's event loop.
+// It is called from C and sends a windowEvent containing the provided window and event IDs to the internal windowEvents channel.
 func processWindowEvent(windowID C.uint, eventID C.uint) {
 	windowEvents <- &windowEvent{
 		WindowID: uint(windowID),
@@ -343,11 +344,21 @@ func processWindowEvent(windowID C.uint, eventID C.uint) {
 	}
 }
 
-//export processMessage
-func processMessage(windowID C.uint, message *C.char) {
+// processMessage enqueues a message from a webview into the internal window message buffer,
+// including the message origin and whether it came from the main frame.
+// If `origin` is nil, Origin in the queued OriginInfo is set to the empty string.
+func processMessage(windowID C.uint, message *C.char, origin *C.char, isMainFrame bool) {
+	o := ""
+	if origin != nil {
+		o = C.GoString(origin)
+	}
 	windowMessageBuffer <- &windowMessage{
 		windowId: uint(windowID),
 		message:  C.GoString(message),
+		originInfo: &OriginInfo{
+			Origin:      o,
+			IsMainFrame: isMainFrame,
+		},
 	}
 }
 
