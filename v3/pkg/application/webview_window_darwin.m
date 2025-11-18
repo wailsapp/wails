@@ -345,10 +345,11 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
         }
     }
 
-    NSString *m = message.body;
+    id body = message.body;
+    NSString *m = [body isKindOfClass:[NSString class]] ? (NSString *)body : [body description];
     const char *_m = [m UTF8String];
 
-    const char *_origin = [origin UTF8String];
+    const char *_origin = origin ? [origin UTF8String] : "";
 
     processMessage(self.windowId, _m, _origin, message.frameInfo.isMainFrame);
 }

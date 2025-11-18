@@ -1805,13 +1805,13 @@ func (w *windowsWebviewWindow) processMessage(message string, sender *edge.ICore
 	topSource, err := sender.GetSource()
 	if err != nil {
 		globalApplication.error(fmt.Sprintf("Unable to get source from sender: %s", err.Error()))
-		return
+		topSource = ""
 	}
 
 	senderSource, err := args.GetSource()
 	if err != nil {
 		globalApplication.error(fmt.Sprintf("Unable to get source from args: %s", err.Error()))
-		return
+		senderSource = ""
 	}
 
 	// We send all messages to the centralised window message buffer
