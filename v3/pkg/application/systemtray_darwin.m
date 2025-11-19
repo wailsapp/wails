@@ -5,6 +5,7 @@
 #include "systemtray_darwin.h"
 
 extern void systrayClickCallback(long, int);
+extern void systrayMenuNeedsUpdate(long);
 
 // StatusItemController.m
 @implementation StatusItemController
@@ -12,6 +13,23 @@ extern void systrayClickCallback(long, int);
 - (void)statusItemClicked:(id)sender {
 	NSEvent *event = [NSApp currentEvent];
 	systrayClickCallback(self.id, event.type);
+}
+
+@end
+
+// MenuDelegate implementation
+@implementation MenuDelegate
+
+- (void)menuNeedsUpdate:(NSMenu *)menu {
+    // This method is called automatically by macOS when the menu is about to be displayed
+    // or when it needs updating while already open
+    // Call back to Go to rebuild the menu with latest data
+    systrayMenuNeedsUpdate(self.trayID);
+}
+
+- (void)menuWillOpen:(NSMenu *)menu {
+    // Called when menu is about to open - ensure menu is up to date
+    systrayMenuNeedsUpdate(self.trayID);
 }
 
 @end
@@ -241,4 +259,19 @@ void systemTrayPositionWindow(void* nsStatusItem, void* nsWindow, int offset) {
     windowFrame.origin.x = windowX;
     windowFrame.origin.y = windowY;
     [(NSWindow*)nsWindow setFrame:windowFrame display:YES animate:NO];
+}
+
+// Create a new menu delegate
+void* createMenuDelegate(void* menuPtr, long trayID) {
+    MenuDelegate *delegate = [[MenuDelegate alloc] init];
+    delegate.menuPtr = menuPtr;
+    delegate.trayID = trayID;
+    return (void*)delegate;
+}
+
+// Set the delegate on a menu
+void setMenuDelegate(void* nsMenu, void* delegate) {
+    NSMenu *menu = (NSMenu *)nsMenu;
+    MenuDelegate *menuDelegate = (MenuDelegate *)delegate;
+    [menu setDelegate:menuDelegate];
 }

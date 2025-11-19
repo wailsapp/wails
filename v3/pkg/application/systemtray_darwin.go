@@ -45,6 +45,7 @@ type macosSystemTray struct {
 	nsStatusItem      unsafe.Pointer
 	nsImage           unsafe.Pointer
 	nsMenu            unsafe.Pointer
+	nsMenuDelegate    unsafe.Pointer
 	iconPosition      IconPosition
 	isTemplateIcon    bool
 	parent            *SystemTray
@@ -93,12 +94,40 @@ func systrayClickCallback(id C.long, buttonID C.int) {
 	systemTray.processClick(button(buttonID))
 }
 
+//export systrayMenuNeedsUpdate
+func systrayMenuNeedsUpdate(id C.long) {
+	// Get the system tray
+	systemTray := systemTrayMap[uint(id)]
+	if systemTray == nil || systemTray.menu == nil {
+		return
+	}
+	// Rebuild the menu to reflect any changes
+	systemTray.menu.Update()
+}
+
 func (s *macosSystemTray) setIconPosition(position IconPosition) {
 	s.iconPosition = position
 }
 
 func (s *macosSystemTray) setMenu(menu *Menu) {
 	s.menu = menu
+	if menu == nil {
+		s.nsMenu = nil
+		return
+	}
+
+	// Update the menu structure
+	globalApplication.dispatchOnMainThread(func() {
+		menu.Update()
+		// Update the nsMenu pointer to the new menu
+		s.nsMenu = (menu.impl).(*macosMenu).nsMenu
+
+		// Set up the delegate if not already done
+		if s.nsMenuDelegate == nil {
+			s.nsMenuDelegate = C.createMenuDelegate(s.nsMenu, C.long(s.id))
+		}
+		C.setMenuDelegate(s.nsMenu, s.nsMenuDelegate)
+	})
 }
 
 func (s *macosSystemTray) positionWindow(window Window, offset int) error {
@@ -167,6 +196,9 @@ func (s *macosSystemTray) run() {
 			s.menu.Update()
 			// Convert impl to macosMenu object
 			s.nsMenu = (s.menu.impl).(*macosMenu).nsMenu
+			// Set up the menu delegate for real-time updates
+			s.nsMenuDelegate = C.createMenuDelegate(s.nsMenu, C.long(s.id))
+			C.setMenuDelegate(s.nsMenu, s.nsMenuDelegate)
 		}
 	})
 }
