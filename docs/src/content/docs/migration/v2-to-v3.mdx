@@ -7,8 +7,6 @@ sidebar:
 
 import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
 
-## Overview
-
 Wails v3 is a **complete rewrite** with significant improvements in architecture, performance, and developer experience. This guide helps you migrate your v2 application to v3.
 
 **Key changes:**
@@ -23,6 +21,10 @@ Wails v3 is a **complete rewrite** with significant improvements in architecture
 ## Breaking Changes
 
 ### Application Initialisation
+
+In v2, application setup, window configuration, and execution were all combined into a single `wails.Run()` call. This monolithic approach made it difficult to create multiple windows, handle errors at different stages, or test individual components of your application.
+
+v3 separates these concerns into distinct phases: application creation, window creation, and execution. This separation gives you explicit control over each stage of your application's lifecycle and makes the code more modular and testable.
 
 **v2:**
 
@@ -56,12 +58,19 @@ window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 app.Run()
 ```
 
-**Changes:**
-- `wails.Run()` → `application.New()` + `app.Run()`
-- `Bind` → `Services` (wrapped with `application.NewService()`)
-- Window options separate from app options
+**Why this is better:**
+
+- **Multi-window support**: You can create windows dynamically at any point, not just at startup
+- **Better error handling**: Each phase can be validated separately with proper error handling
+- **Clearer code**: The separation makes it obvious what's happening at each stage
+- **More testable**: You can test application setup without running the event loop
+- **More flexible**: Windows can be created, destroyed, and recreated throughout the application lifecycle
 
 ### Bindings
+
+In v2, every bound struct required a context field and a `startup(ctx)` method to receive the runtime context. This created tight coupling between your business logic and the Wails runtime, making code harder to test and understand.
+
+v3 introduces the service pattern, where your structs are completely standalone and don't need to store runtime context. If a service needs access to the application instance, it explicitly receives it through dependency injection rather than implicit context threading.
 
 **v2:**
 
@@ -96,13 +105,19 @@ app := application.New(application.Options{
 })
 ```
 
-**Changes:**
-- No `startup(ctx)` method needed
-- No context stored in struct
-- Services are standalone
-- Use `ServiceStartup()` for initialisation
+**Why this is better:**
+
+- **No implicit dependencies**: Services are plain Go structs without hidden runtime dependencies
+- **Easier testing**: You can test service methods without mocking a Wails context
+- **Clearer code**: Dependencies are explicit (passed as constructor arguments) rather than hidden in a context field
+- **Better organization**: Services can be grouped by domain rather than all living in a single `App` struct
+- **Proper initialization**: Use `ServiceStartup()` method when you need initialization, making it explicit
 
 ### Runtime
+
+In v2, all runtime operations required passing a context to global functions from the `runtime` package. This created tight coupling to the context object throughout your codebase and made the API feel procedural rather than object-oriented.
+
+v3 replaces the context-based runtime with direct method calls on application and window objects. Operations are called directly on the objects they affect, making the code more intuitive and object-oriented.
 
 **v2:**
 
@@ -131,12 +146,19 @@ func (s *MyService) EmitEvent() {
 }
 ```
 
-**Changes:**
-- No context-based runtime
-- Direct method calls on app/window
-- Store app reference in services
+**Why this is better:**
+
+- **Object-oriented design**: Methods are called on the objects they affect (window, app, menu, etc.)
+- **Clearer intent**: `window.SetTitle()` is more obvious than `runtime.WindowSetTitle(ctx, ...)`
+- **Better IDE support**: Autocomplete works properly when methods are on objects
+- **Multi-window clarity**: With multiple windows, you explicitly choose which window to operate on
+- **No context threading**: You don't need to pass context through every function
 
 ### Frontend Bindings
+
+In v2, bindings were organized by Go package and struct name, typically resulting in paths like `wailsjs/go/main/App`. This structure didn't reflect logical grouping and made it hard to find related functionality.
+
+v3 organizes bindings by service name and application module, creating a clearer logical structure. The bindings are generated into a `bindings` directory organized by your application name and service names, making it easier to understand what functionality is available.
 
 **v2:**
 
@@ -154,12 +176,19 @@ import { Greet } from './bindings/myapp/greetservice'
 const result = await Greet("World")
 ```
 
-**Changes:**
-- Different import path
-- Service-based organisation
-- Generate with `wails3 generate bindings`
+**Why this is better:**
+
+- **Logical organization**: Bindings are grouped by service name rather than Go package structure
+- **Clearer imports**: The path reflects the domain logic (greetservice) not the file structure (main/App)
+- **Better discoverability**: You can navigate bindings by feature rather than by technical structure
+- **Consistent naming**: Service-based organization matches your backend architecture
+- **Simpler paths**: No more `../wailsjs/go` prefix - just `./bindings`
 
 ### Events
+
+In v2, events used variadic `interface{}` parameters and required passing context to every event function. Event handlers received untyped data that needed manual type assertions, making the event system error-prone and hard to debug.
+
+v3 introduces typed event objects and removes the context requirement. Event handlers receive a proper event object with typed data, making the event system more reliable and easier to use.
 
 **v2:**
 
@@ -182,12 +211,19 @@ app.OnEvent("event-name", func(e *application.CustomEvent) {
 app.EmitEvent("event-name", data)
 ```
 
-**Changes:**
-- No context needed
-- Typed event objects
-- Simpler API
+**Why this is better:**
+
+- **Type safety**: Events use proper event objects instead of `...interface{}`
+- **Better debugging**: Event objects contain metadata like event name, making debugging easier
+- **Clearer API**: `app.OnEvent()` and `app.EmitEvent()` are more intuitive than runtime functions
+- **No context needed**: Events work directly on the app object without threading context
+- **Simpler handlers**: Event handlers have a clear signature instead of variadic parameters
 
 ### Windows
+
+v2 supported only a single window per application. The window was created at startup and all window operations were performed through runtime functions that implicitly targeted that single window.
+
+v3 introduces native multi-window support as a core feature. Each window is a first-class object with its own methods and lifecycle. You can create, manage, and destroy multiple windows dynamically throughout your application's lifetime.
 
 **v2:**
 
@@ -207,10 +243,13 @@ window2 := app.NewWebviewWindow()
 window2.SetSize(1024, 768)
 ```
 
-**Changes:**
-- Native multi-window support
-- Direct window methods
-- Better window management
+**Why this is better:**
+
+- **Multi-window applications**: Build apps with multiple independent windows (dashboards, preferences, tools, etc.)
+- **Explicit window references**: Each window is an object you can store and manipulate directly
+- **Dynamic window creation**: Create and destroy windows at any time during runtime
+- **Independent window state**: Each window has its own events, properties, and lifecycle
+- **Better architecture**: Window management is object-oriented rather than context-based
 
 ## Migration Steps
 

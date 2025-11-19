@@ -5,7 +5,6 @@ sidebar:
   order: 1
 ---
 
-## Build Desktop Applications with Go
 
 Wails combines **Go's performance and simplicity** with **modern web UI flexibility**, enabling you to build beautiful, native desktop applications with the tools you already know.
 
@@ -40,15 +39,12 @@ Ship faster with less code to maintain.
 
 Build professional applications, not prototypes.
 
-## Lower Total Cost
+## Faster Development
 
-**Reduced costs across the board:**
-- Smaller team (one codebase, one language)
-- Faster development (familiar web technologies)
-- Lower infrastructure (smaller downloads, faster updates)
-- Better user retention (performance matters)
-
-Ship quality software with fewer resources.
+- **One codebase, three platforms** - Write once, build for Windows, macOS, and Linux
+- **Use existing skills** - Go for backend, HTML/CSS/JS for UI
+- **Instant feedback** - Hot reload during development, compile times measured in seconds
+- **Small binaries** - 15MB apps mean faster builds, faster downloads, faster iteration
 
 ## When to Choose Wails
 
@@ -74,16 +70,23 @@ Wails powers real applications used by thousands of users:
 
 ## How Wails Works
 
+Unlike Electron which bundles an entire browser and Node.js runtime, Wails takes a fundamentally different approach: your Go code compiles to a native binary, and your UI runs in the operating system's built-in WebView. This architecture delivers the small binaries, fast startup, and low memory usage that make Wails applications feel native.
+
 ### Architecture
+
+Wails applications consist of two main parts that communicate seamlessly: a Go backend handling business logic and system operations, and a web-based frontend for your user interface. The OS-provided WebView renders your UI without bundling a browser, while the bindings layer provides type-safe communication between Go and JavaScript.
+
+<div style="display: flex; justify-content: center; align-items: center; margin: 2rem 0;">
+<div style="max-width: 600px;">
 
 ```d2
 direction: down
 
+Application: {
 Go: "Go Backend" {
   shape: rectangle
   style.fill: "#00ADD8"
 }
-
 WebView: "Native WebView" {
   shape: rectangle
   style.fill: "#3B82F6"
@@ -94,11 +97,17 @@ WebView: "Native WebView" {
     }
 
 }
-
-
-
 Go <-> WebView: "Bindings & Events"
+}
+
+
+
 ```
+
+</div>
+</div>
+
+This simple architecture enables JavaScript code to call Go functions directly (through auto-generated bindings), while Go can send events and data back to the frontend. Both layers communicate through an efficient in-memory bridge with sub-millisecond overhead.
 
 **How Wails achieves performance:**
 1. **No runtime bundled** - Uses Go's compiled binary

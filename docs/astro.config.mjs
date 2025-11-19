@@ -285,7 +285,6 @@ export default defineConfig({
         {
           label: "Contributing",
           collapsed: true,
-          badge: { text: "For Contributors", variant: "note" },
           items: [
             { label: "Getting Started", link: "/contributing/getting-started" },
             { label: "Development Setup", link: "/contributing/setup" },
