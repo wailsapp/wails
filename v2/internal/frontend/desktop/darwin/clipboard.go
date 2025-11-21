@@ -4,6 +4,8 @@ package darwin
 
 import (
 	"os/exec"
+
+	"github.com/wailsapp/wails/v2/internal/conv"
 )
 
 func (f *Frontend) ClipboardGetText() (string, error) {
@@ -12,7 +14,7 @@ func (f *Frontend) ClipboardGetText() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(out), nil
+	return conv.BytesToString(out), nil
 }
 
 func (f *Frontend) ClipboardSetText(text string) error {

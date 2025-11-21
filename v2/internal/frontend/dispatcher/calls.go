@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/wailsapp/wails/v2/internal/conv"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 )
 
@@ -59,13 +60,13 @@ func (d *Dispatcher) processCallMessage(message string, sender frontend.Frontend
 		callbackMessage.Result = result
 	}
 	messageData, err := json.Marshal(callbackMessage)
-	d.log.Trace("json call result data: %+v\n", string(messageData))
+	d.log.Trace("json call result data: %+v\n", conv.BytesToString(messageData))
 	if err != nil {
 		// what now?
 		d.log.Fatal(err.Error())
 	}
 
-	return "c" + string(messageData), nil
+	return "c" + conv.BytesToString(messageData), nil
 }
 
 // CallbackMessage defines a message that contains the result of a call
@@ -81,6 +82,6 @@ func (d *Dispatcher) NewErrorCallback(message string, callbackID string) (string
 		Err:        message,
 	}
 	messageData, err := json.Marshal(result)
-	d.log.Trace("json call result data: %+v\n", string(messageData))
-	return string(messageData), err
+	d.log.Trace("json call result data: %+v\n", conv.BytesToString(messageData))
+	return conv.BytesToString(messageData), err
 }
