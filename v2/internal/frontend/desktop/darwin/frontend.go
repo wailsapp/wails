@@ -518,8 +518,8 @@ func HandleOpenFile(filePath *C.char) {
 	openFilepathBuffer <- goFilepath
 }
 
-//export HandleCustomProtocol
-func HandleCustomProtocol(url *C.char) {
+//export HandleOpenURL
+func HandleOpenURL(url *C.char) {
 	goUrl := C.GoString(url)
 	openUrlBuffer <- goUrl
 }
