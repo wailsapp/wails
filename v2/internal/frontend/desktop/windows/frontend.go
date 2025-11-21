@@ -539,16 +539,20 @@ func (f *Frontend) setupChromium() {
 			}
 		}
 	}
-
+	f.logger.Debug("About to call chromium.Embed()")
 	chromium.Embed(f.mainWindow.Handle())
+	f.logger.Debug("chromium.Embed() completed successfully")
 
 	// Handle drag and drop configuration after WebView2 is embedded
 	// This must be done after Embed() to avoid "Not enough memory" errors
 	if f.frontendOptions.DragAndDrop != nil && f.frontendOptions.DragAndDrop.EnableFileDrop {
 		if chromium.HasCapability(edge.AllowExternalDrop) {
-			err := chromium.AllowExternalDrop(false)
+			f.logger.Debug("Calling AllowExternalDrag(false) after Embed")
+			err := chromium.AllowExternalDrag(false)
 			if err != nil {
 				f.logger.Warning("WebView failed to set AllowExternalDrop to false: %s", err)
+			} else {
+				f.logger.Debug("AllowExternalDrag(false) succeeded")
 			}
 		}
 	}
@@ -648,6 +652,7 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 
 	//Get the request
 	uri, _ := req.GetUri()
+	f.logger.Debug("processRequest called for URI: %s", uri)
 	reqUri, err := url.ParseRequestURI(uri)
 	if err != nil {
 		f.logger.Error("Unable to parse equest uri %s: %s", uri, err)
