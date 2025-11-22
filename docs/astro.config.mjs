@@ -266,41 +266,13 @@ export default defineConfig({
           collapsed: true,
           items: [
             { label: "Overview", link: "/reference/overview" },
-            {
-              label: "Application",
-              collapsed: true,
-              autogenerate: { directory: "reference/application" },
-            },
-            {
-              label: "Window",
-              collapsed: true,
-              autogenerate: { directory: "reference/window" },
-            },
-            {
-              label: "Menu",
-              collapsed: true,
-              autogenerate: { directory: "reference/menu" },
-            },
-            {
-              label: "Events",
-              collapsed: true,
-              autogenerate: { directory: "reference/events" },
-            },
-            {
-              label: "Dialogs",
-              collapsed: true,
-              autogenerate: { directory: "reference/dialogs" },
-            },
-            {
-              label: "Runtime",
-              collapsed: true,
-              autogenerate: { directory: "reference/runtime" },
-            },
-            {
-              label: "CLI",
-              collapsed: true,
-              autogenerate: { directory: "reference/cli" },
-            },
+            { label: "Application", link: "/reference/application" },
+            { label: "Window", link: "/reference/window" },
+            { label: "Menu", link: "/reference/menu" },
+            { label: "Events", link: "/reference/events" },
+            { label: "Dialogs", link: "/reference/dialogs" },
+            { label: "Frontend Runtime", link: "/reference/frontend-runtime" },
+            { label: "CLI", link: "/reference/cli" },
           ],
         },
 

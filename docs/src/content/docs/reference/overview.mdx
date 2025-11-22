@@ -12,98 +12,18 @@ import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
 This is the complete API reference for Wails v3. It documents every public type, method, and option available in the framework.
 
 **Organisation:**
-- **Application** - Core application APIs
-- **Window** - Window creation and management
-- **Menu** - Application, context, and system tray menus
-- **Events** - Event system and built-in events
-- **Dialogs** - File and message dialogs
-- **Runtime** - Frontend runtime APIs
-- **CLI** - Command-line interface
-
-## Quick Navigation
-
-<CardGrid>
-  <Card title="Application API" icon="seti:go">
-    Core application creation and lifecycle.
-    
-    - `application.New()`
-    - `application.Options`
-    - `app.Run()`
-    - Lifecycle hooks
-    
-    [View API →](/reference/application/core)
-  </Card>
-
-  <Card title="Window API" icon="laptop">
-    Window creation and management.
-    
-    - `app.NewWebviewWindow()`
-    - `WebviewWindow` methods
-    - Window options
-    - Window events
-    
-    [View API →](/reference/window/webview-window)
-  </Card>
-
-  <Card title="Menu API" icon="list-format">
-    Menu creation and management.
-    
-    - Application menus
-    - Context menus
-    - System tray menus
-    - Menu items
-    
-    [View API →](/reference/menu/application-menu)
-  </Card>
-
-  <Card title="Events API" icon="rocket">
-    Event system and built-in events.
-    
-    - `app.EmitEvent()`
-    - `app.OnEvent()`
-    - Built-in events
-    - Custom events
-    
-    [View API →](/reference/events/system)
-  </Card>
-
-  <Card title="Dialogs API" icon="approve-check">
-    File and message dialogs.
-    
-    - File open/save
-    - Message dialogs
-    - dialog options
-    - Platform behaviour
-    
-    [View API →](/reference/dialogs/file)
-  </Card>
-
-  <Card title="Runtime API" icon="seti:javascript">
-    Frontend runtime APIs (JavaScript).
-    
-    - Window management
-    - Events
-    - Clipboard
-    - Browser
-    
-    [View API →](/reference/runtime/window)
-  </Card>
-
-  <Card title="CLI Reference" icon="seti:shell">
-    Command-line interface.
-    
-    - `wails3 init`
-    - `wails3 dev`
-    - `wails3 build`
-    - All commands
-    
-    [View API →](/reference/cli/init)
-  </Card>
-</CardGrid>
+- [Application](/reference/application) - Core application APIs
+- [Window](/reference/window) - Window creation and management
+- [Menu](/reference/menu) - Application, context, and system tray menus
+- [Events](/reference/events) - Event system and built-in events
+- [Dialogs](/reference/dialogs) - File and message dialogs
+- [Frontend Runtime](/reference/frontend-runtime) - Frontend runtime APIs
+- [CLI](/reference/cli) - Command-line interface
 
 ## API Conventions
 
-### Go API Conventions
+<details>
+<summary><strong>Go API Conventions</strong> - For developers new to Go</summary>
 
 #### Naming
 
@@ -144,6 +64,8 @@ app := application.New(application.Options{
     },
 })
 ```
+
+</details>
 
 ### JavaScript API Conventions
 

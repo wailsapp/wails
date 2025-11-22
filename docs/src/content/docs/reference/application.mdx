@@ -389,103 +389,30 @@ import (
     "github.com/wailsapp/wails/v3/pkg/application"
 )
 
-type App struct {
-    app *application.Application
-}
-
-func NewApp(app *application.Application) *App {
-    return &App{app: app}
-}
-
-func (a *App) Startup() {
-    // Listen for events
-    a.app.OnEvent("data-updated", func(e *application.CustomEvent) {
-        a.app.Logger.Info("Data updated", "data", e.Data)
-    })
-    
-    // Listen for shutdown
-    a.app.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
-        a.app.Logger.Info("Shutting down")
-        // Cleanup
-    })
-}
-
-func (a *App) ShowMessage(message string) {
-    a.app.InfoDialog().
-        SetTitle("Message").
-        SetMessage(message).
-        Show()
-}
-
-func (a *App) GetData() string {
-    // Get clipboard
-    text, _ := a.app.Clipboard.Text()
-    return text
-}
-
 func main() {
     app := application.New(application.Options{
-        Name: "My App",
-        Services: []application.Service{
-            application.NewService(NewApp(app)),
+        Name:        "My Application",
+        Description: "A demo application",
+        Mac: application.MacOptions{
+            ApplicationShouldTerminateAfterLastWindowClosed: true,
         },
     })
-    
-    app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-        Title:  "My App",
-        Width:  800,
-        Height: 600,
+
+    // Create main window
+    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        Title:            "My App",
+        Width:            1024,
+        Height:           768,
+        MinWidth:         800,
+        MinHeight:        600,
+        BackgroundColour: application.NewRGB(255, 255, 255),
+        URL:              "http://wails.localhost/",
     })
-    
+
+    window.Centre()
+    window.Show()
+
     app.Run()
 }
 ```
 
-## Best Practices
-
-### ✅ Do
-
-- **Store app reference** - Keep in service structs
-- **Use managers** - Access features through managers
-- **Handle errors** - Check dialog results
-- **Use logger** - Structured logging
-- **Clean up** - Use shutdown hooks
-
-### ❌ Don't
-
-- **Don't block Run()** - It's the event loop
-- **Don't ignore errors** - Handle all errors
-- **Don't create multiple apps** - One per process
-- **Don't call Quit() in startup** - Let app initialize
-
-## Next Steps
-
-<CardGrid>
-  <Card title="Window API" icon="laptop">
-    Complete window management reference.
-    
-    [Learn More →](/reference/window-api)
-  </Card>
-
-  <Card title="Services" icon="puzzle">
-    Learn about service architecture.
-    
-    [Learn More →](/features/bindings/services)
-  </Card>
-
-  <Card title="Events" icon="star">
-    Master the event system.
-    
-    [Learn More →](/features/events/system)
-  </Card>
-
-  <Card title="dialogs" icon="information">
-    Use native dialogs.
-    
-    [Learn More →](/features/dialogs/overview)
-  </Card>
-</CardGrid>
-
----
-
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples).
