@@ -17,10 +17,14 @@ static gchar* GetClipboardText() {
 	g_value_init(&value, G_TYPE_STRING);
 
 	if(!gdk_content_provider_get_value(provider, &value, NULL)) {
-		return "";
+		g_value_unset(&value);
+		return g_strdup("");
 	}
 
-	return g_value_get_string(&value);
+	gchar *result = g_value_dup_string(&value);
+	g_value_unset(&value);
+
+	return result ? result : g_strdup("");
 }
 
 static void SetClipboardText(gchar* text) {
