@@ -24,7 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 
-- Fixed an issue where the alpha value in `application.WebviewWindowOptions.BackgroundColour` is not respected. Fixed in [#4722](https://github.com/wailsapp/wails/pull/4722) by @BradHacker.
+- Resolve alpha value being ignored in `application.WebviewWindowOptions.BackgroundColour` on Linux ([#4722](https://github.com/wailsapp/wails/pull/4722), @BradHacker)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
