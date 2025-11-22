@@ -92,19 +92,13 @@ export default defineConfig({
           autogenerate: { directory: "tutorials" },
         },
 
-        // Learn - Discrete features
-        {
-          label: "Learn",
-          collapsed: true,
-          autogenerate: { directory: "learn" },
-        },
-
         // Core Concepts
         {
           label: "Core Concepts",
           collapsed: true,
           items: [
             { label: "How Wails Works", link: "/concepts/architecture" },
+            { label: "Manager API", link: "/concepts/manager-api" },
             { label: "Application Lifecycle", link: "/concepts/lifecycle" },
             { label: "Go-Frontend Bridge", link: "/concepts/bridge" },
             { label: "Build System", link: "/concepts/build-system" },
@@ -165,21 +159,41 @@ export default defineConfig({
                 { label: "Custom Dialogs", link: "/features/dialogs/custom" },
               ],
             },
-            { label: "Clipboard", link: "/features/clipboard" },
+            {
+              label: "Clipboard",
+              collapsed: true,
+              autogenerate: { directory: "features/clipboard" },
+            },
+            {
+              label: "Browser",
+              collapsed: true,
+              autogenerate: { directory: "features/browser" },
+            },
             { label: "Drag & Drop", link: "/features/drag-drop" },
-            { label: "Keyboard Shortcuts", link: "/features/keyboard" },
-            { label: "Notifications", link: "/features/notifications" },
-            { label: "Screens API", link: "/features/screens" },
-            { label: "Environment", link: "/features/environment" },
+            {
+              label: "Keyboard",
+              collapsed: true,
+              autogenerate: { directory: "features/keyboard" },
+            },
+            {
+              label: "Notifications",
+              collapsed: true,
+              autogenerate: { directory: "features/notifications" },
+            },
+            {
+              label: "Screens",
+              collapsed: true,
+              autogenerate: { directory: "features/screens" },
+            },
+            {
+              label: "Environment",
+              collapsed: true,
+              autogenerate: { directory: "features/environment" },
+            },
             {
               label: "Platform-Specific",
               collapsed: true,
-              items: [
-                { label: "macOS Dock", link: "/features/platform/macos-dock" },
-                { label: "macOS Toolbar", link: "/features/platform/macos-toolbar" },
-                { label: "Windows UAC", link: "/features/platform/windows-uac" },
-                { label: "Linux Desktop", link: "/features/platform/linux" },
-              ],
+              autogenerate: { directory: "features/platform" },
             },
           ],
         },
@@ -204,6 +218,7 @@ export default defineConfig({
               collapsed: true,
               items: [
                 { label: "Building Applications", link: "/guides/build/building" },
+                { label: "Build Customization", link: "/guides/build/customization" },
                 { label: "Cross-Platform Builds", link: "/guides/build/cross-platform" },
                 { label: "Code Signing", link: "/guides/build/signing" },
                 { label: "Windows Packaging", link: "/guides/build/windows" },
@@ -305,6 +320,7 @@ export default defineConfig({
                 { label: "Runtime Layer", link: "/contributing/architecture/runtime" },
                 { label: "Platform Layer", link: "/contributing/architecture/platform" },
                 { label: "Build System", link: "/contributing/architecture/build" },
+                { label: "Binding System", link: "/contributing/architecture/bindings" },
               ],
             },
             {
