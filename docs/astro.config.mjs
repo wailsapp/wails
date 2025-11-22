@@ -276,50 +276,14 @@ export default defineConfig({
           ],
         },
 
-        // Contributing - Onboarding Wails developers (Netflix: Internal documentation)
+        // Contributing
         {
           label: "Contributing",
           collapsed: true,
           items: [
             { label: "Getting Started", link: "/contributing/getting-started" },
             { label: "Development Setup", link: "/contributing/setup" },
-            {
-              label: "Architecture",
-              collapsed: true,
-              items: [
-                { label: "Overview", link: "/contributing/architecture/overview" },
-                { label: "CLI Layer", link: "/contributing/architecture/cli" },
-                { label: "Runtime Layer", link: "/contributing/architecture/runtime" },
-                { label: "Platform Layer", link: "/contributing/architecture/platform" },
-                { label: "Build System", link: "/contributing/architecture/build" },
-                { label: "Binding System", link: "/contributing/architecture/bindings" },
-              ],
-            },
-            {
-              label: "Codebase Guide",
-              collapsed: true,
-              items: [
-                { label: "Repository Structure", link: "/contributing/codebase/structure" },
-                { label: "Application Package", link: "/contributing/codebase/application" },
-                { label: "Internal Packages", link: "/contributing/codebase/internal" },
-                { label: "Platform Bindings", link: "/contributing/codebase/platform" },
-                { label: "Testing", link: "/contributing/codebase/testing" },
-              ],
-            },
-            {
-              label: "Development Workflows",
-              collapsed: true,
-              items: [
-                { label: "Building from Source", link: "/contributing/workflows/building" },
-                { label: "Running Tests", link: "/contributing/workflows/testing" },
-                { label: "Debugging", link: "/contributing/workflows/debugging" },
-                { label: "Adding Features", link: "/contributing/workflows/features" },
-                { label: "Fixing Bugs", link: "/contributing/workflows/bugs" },
-              ],
-            },
             { label: "Coding Standards", link: "/contributing/standards" },
-            { label: "Pull Request Process", link: "/contributing/pull-requests" },
-            { label: "Documentation", link: "/contributing/documentation" },
           ],
         },
 
@@ -363,7 +327,7 @@ export default defineConfig({
           ],
         },
 
-        { label: "What's New", link: "/whats-new", badge: { text: "v3", variant: "tip" } },
+        { label: "What's New", link: "/whats-new" },
         { label: "Status", link: "/status" },
         { label: "Changelog", link: "/changelog" },
         {
@@ -371,11 +335,7 @@ export default defineConfig({
           link: "https://github.com/sponsors/leaanthony",
           badge: { text: "❤️" },
         },
-        {
-          label: "Credits",
-          link: "/credits",
-          badge: { text: "👑" },
-        },
+        { label: "Credits", link: "/credits" },
       ],
     }),
   ],

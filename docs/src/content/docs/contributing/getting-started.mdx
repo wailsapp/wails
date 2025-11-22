@@ -1,0 +1,138 @@
+---
+title: Getting Started
+description: How to start contributing to Wails v3
+---
+
+## Welcome, Contributor!
+
+Thank you for your interest in contributing to Wails! This guide will help you make your first contribution.
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+- **Go 1.23+** installed ([download](https://go.dev/dl/))
+- **Node.js 18+** and **npm** ([download](https://nodejs.org/))
+- **Git** configured with your GitHub account
+- Basic familiarity with Go and JavaScript/TypeScript
+
+### Platform-Specific Requirements
+
+**macOS:**
+- Xcode Command Line Tools: `xcode-select --install`
+
+**Windows:**
+- MSYS2 or similar Unix-like environment recommended
+- WebView2 runtime (usually pre-installed on Windows 11)
+
+**Linux:**
+- `gcc`, `pkg-config`, `libgtk-3-dev`, `libwebkit2gtk-4.0-dev`
+- Install via: `sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev` (Debian/Ubuntu)
+
+## Fork and Clone
+
+1. **Fork the repository** at [github.com/wailsapp/wails](https://github.com/wailsapp/wails)
+
+2. **Clone your fork:**
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/wails.git
+   cd wails
+   ```
+
+3. **Add upstream remote:**
+   ```bash
+   git remote add upstream https://github.com/wailsapp/wails.git
+   ```
+
+## Building Wails
+
+Build the Wails v3 CLI:
+
+```bash
+cd v3
+go build -o ../wails3 ./cmd/wails3
+```
+
+This creates a `wails3` binary in the project root. Add it to your PATH or use it directly.
+
+## Testing Your Changes
+
+1. **Run tests:**
+   ```bash
+   cd v3
+   go test ./...
+   ```
+
+2. **Test the CLI:**
+   ```bash
+   cd ..
+   ./wails3 init -n testapp
+   cd testapp
+   ../wails3 dev
+   ```
+
+## Making Changes
+
+1. **Create a feature branch:**
+   ```bash
+   git checkout -b feature/my-awesome-feature
+   ```
+
+2. **Make your changes** following our [Coding Standards](/contributing/standards)
+
+3. **Commit with clear messages:**
+   ```bash
+   git commit -m "feat: add awesome feature"
+   ```
+
+   Use conventional commits:
+   - `feat:` for new features
+   - `fix:` for bug fixes
+   - `docs:` for documentation
+   - `refactor:` for code refactoring
+   - `test:` for test changes
+
+4. **Keep your branch updated:**
+   ```bash
+   git fetch upstream
+   git rebase upstream/master
+   ```
+
+## Submitting a Pull Request
+
+1. **Push your branch:**
+   ```bash
+   git push origin feature/my-awesome-feature
+   ```
+
+2. **Open a PR** on GitHub with:
+   - Clear title describing the change
+   - Description of what changed and why
+   - Reference to any related issues (#123)
+   - Screenshots/videos if UI changes
+
+3. **Respond to review feedback** - maintainers may request changes
+
+4. **Celebrate!** Once merged, your contribution is part of Wails
+
+## Finding Issues to Work On
+
+- Look for [`good first issue`](https://github.com/wailsapp/wails/labels/good%20first%20issue) labels
+- Check [`help wanted`](https://github.com/wailsapp/wails/labels/help%20wanted) issues
+- Browse [open issues](https://github.com/wailsapp/wails/issues) and ask to be assigned
+
+## Getting Help
+
+- **Discord:** Join [Wails Discord](https://discord.gg/JDdSxwjhGf)
+- **Discussions:** Post in [GitHub Discussions](https://github.com/wailsapp/wails/discussions)
+- **Issues:** Open an issue if you find a bug or have a question
+
+## Code of Conduct
+
+Be respectful, constructive, and welcoming. We're building a friendly community focused on creating great software together.
+
+## Next Steps
+
+- Set up your [Development Environment](/contributing/setup)
+- Review our [Coding Standards](/contributing/standards)
+- Explore the [Technical Documentation](/contributing)
