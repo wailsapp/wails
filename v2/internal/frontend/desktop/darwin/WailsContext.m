@@ -345,6 +345,15 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     [self.mainWindow setBackgroundColor:colour];
 }
 
+- (void) SetAppearance:(NSString*)appearance {
+    if (appearance != nil) {
+        NSAppearance *nsAppearance = [NSAppearance appearanceNamed:appearance];
+        if (nsAppearance != nil) {
+            [self.mainWindow setAppearance:nsAppearance];
+        }
+    }
+}
+
 - (void) HideMouse {
     [NSCursor hide];
 }
