@@ -71,13 +71,14 @@ export default defineConfig({
       ],
       sidebar: [
         { label: "Home", link: "/" },
-        
+
         // Progressive Onboarding - Netflix Principle: Start with the problem
+        { label: "Why Wails?", link: "/quick-start/why-wails" },
+
         {
           label: "Quick Start",
           collapsed: false,
           items: [
-            { label: "Why Wails?", link: "/quick-start/why-wails" },
             { label: "Installation", link: "/quick-start/installation" },
             { label: "Your First App", link: "/quick-start/first-app" },
             { label: "Next Steps", link: "/quick-start/next-steps" },
