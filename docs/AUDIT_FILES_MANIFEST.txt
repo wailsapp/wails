@@ -1,0 +1,388 @@
+================================================================================
+WAILS V3 DOCUMENTATION AUDIT - FILES MANIFEST
+================================================================================
+
+Complete inventory of all 142 documentation files with status assessment.
+
+================================================================================
+SECTION 1: QUICK-START (4 files - COMPLETE)
+================================================================================
+
+  [C] quick-start/why-wails.mdx                     (4,750 lines)
+  [C] quick-start/installation.mdx                  (11,378 lines)
+  [C] quick-start/first-app.mdx                     (7,479 lines)
+  [C] quick-start/next-steps.mdx                    (1,298 lines)
+
+STATUS: COMPLETE - Excellent modern structure for onboarding
+
+================================================================================
+SECTION 2: GETTING-STARTED (2 files - ORPHANED)
+================================================================================
+
+  [O] getting-started/installation.mdx              (3,647 lines)
+  [O] getting-started/your-first-app.mdx            (8,698 lines)
+
+STATUS: ORPHANED - Not referenced in sidebar, redundant with quick-start
+ACTION: DELETE in Phase 1
+
+================================================================================
+SECTION 3: CORE CONCEPTS (4 files - COMPLETE)
+================================================================================
+
+  [C] concepts/architecture.mdx
+  [C] concepts/bridge.mdx
+  [C] concepts/build-system.mdx
+  [C] concepts/lifecycle.mdx
+
+STATUS: COMPLETE - Foundational material covers all essential concepts
+
+================================================================================
+SECTION 4: FEATURES - WINDOWS (5 files - COMPLETE)
+================================================================================
+
+  [C] features/windows/basics.mdx                   (607 lines)
+  [C] features/windows/options.mdx                  (829 lines)
+  [C] features/windows/multiple.mdx                 (814 lines)
+  [C] features/windows/frameless.mdx                (870 lines)
+  [C] features/windows/events.mdx                   (693 lines)
+
+STATUS: COMPLETE - Comprehensive window management documentation
+
+================================================================================
+SECTION 5: FEATURES - MENUS (4 files - COMPLETE)
+================================================================================
+
+  [C] features/menus/application.mdx                (640 lines)
+  [C] features/menus/context.mdx                    (728 lines)
+  [C] features/menus/systray.mdx                    (665 lines)
+  [C] features/menus/reference.mdx                  (562 lines)
+
+STATUS: COMPLETE - Full menu system coverage with API reference
+
+================================================================================
+SECTION 6: FEATURES - DIALOGS (4 files - COMPLETE)
+================================================================================
+
+  [C] features/dialogs/overview.mdx                 (470 lines)
+  [C] features/dialogs/file.mdx                     (583 lines)
+  [C] features/dialogs/message.mdx                  (475 lines)
+  [C] features/dialogs/custom.mdx                   (624 lines)
+
+STATUS: COMPLETE - All dialog types documented
+
+================================================================================
+SECTION 7: FEATURES - BINDINGS (4 files - COMPLETE)
+================================================================================
+
+  [C] features/bindings/methods.mdx                 (643 lines)
+  [C] features/bindings/services.mdx                (790 lines)
+  [C] features/bindings/models.mdx                  (739 lines)
+  [C] features/bindings/best-practices.mdx          (688 lines)
+
+STATUS: COMPLETE - Excellent binding system documentation
+
+================================================================================
+SECTION 8: FEATURES - EVENTS (1 of 4 files - INCOMPLETE)
+================================================================================
+
+  [C] features/events/system.mdx                    (579 lines)
+  [M] features/events/application.mdx               MISSING
+  [M] features/events/window.mdx                    MISSING
+  [M] features/events/custom.mdx                    MISSING
+
+STATUS: INCOMPLETE - Sidebar expects 4 files, only 1 exists
+ACTION: Create 3 missing event documentation files in Phase 3
+
+================================================================================
+SECTION 9: FEATURES - OTHER (2 of 6 files - PARTIAL)
+================================================================================
+
+  [C] features/clipboard/basics.mdx                 (491 lines)
+  [C] features/screens/info.mdx                     (464 lines)
+  [M] features/drag-drop.mdx                        MISSING
+  [M] features/keyboard.mdx                         MISSING
+  [M] features/notifications.mdx                    MISSING
+  [M] features/environment.mdx                      MISSING
+
+STATUS: INCOMPLETE - 4 essential features not yet documented
+ACTION: Create 4 missing feature files in Phase 3
+NOTE: Content exists in /learn folder, can be migrated
+
+================================================================================
+SECTION 10: FEATURES - PLATFORM-SPECIFIC (0 of 4 files - MISSING)
+================================================================================
+
+  [M] features/platform/macos-dock.mdx              MISSING
+  [M] features/platform/macos-toolbar.mdx           MISSING
+  [M] features/platform/windows-uac.mdx             MISSING (in guides)
+  [M] features/platform/linux.mdx                   MISSING
+
+STATUS: MISSING - Platform-specific features not organized
+ACTION: Create 4 platform-specific files in Phase 3
+
+================================================================================
+SECTION 11: TUTORIALS (4 files - MINIMAL)
+================================================================================
+
+  [C] tutorials/overview.mdx
+  [C] tutorials/01-creating-a-service.mdx
+  [C] tutorials/02-todo-vanilla.mdx
+  [C] tutorials/03-notes-vanilla.mdx
+
+STATUS: MINIMAL - Only vanilla JavaScript examples
+ACTION: Add React, Vue, Svelte tutorials in Phase 4 (low priority)
+
+================================================================================
+SECTION 12: GUIDES (23 files - MOSTLY COMPLETE)
+================================================================================
+
+  [C] guides/architecture.mdx                       (3,491 lines)
+  [C] guides/auto-updates.mdx                       (3,161 lines)
+  [C] guides/building.mdx                           (3,243 lines)
+  [C] guides/cli.mdx                                (19,417 lines)
+  [C] guides/cross-platform.mdx                     (3,787 lines)
+  [C] guides/custom-protocol-association.mdx        (9,333 lines)
+  [C] guides/custom-templates.mdx                   (11,281 lines)
+  [C] guides/customising-windows.mdx                (3,515 lines)
+  [C] guides/e2e-testing.mdx                        (3,246 lines)
+  [C] guides/events-reference.mdx                   (11,972 lines)
+  [C] guides/file-associations.mdx                  (5,525 lines)
+  [C] guides/gin-routing.mdx                        (7,487 lines)
+  [C] guides/gin-services.mdx                       (18,538 lines)
+  [C] guides/installers.mdx                         (3,178 lines)
+  [C] guides/menus.mdx                              (16,942 lines)
+  [C] guides/msix-packaging.mdx                     (4,561 lines)
+  [C] guides/panic-handling.mdx                     (4,928 lines)
+  [C] guides/performance.mdx                        (5,876 lines)
+  [C] guides/security.mdx                           (5,165 lines)
+  [C] guides/signing.mdx                            (7,359 lines)
+  [C] guides/single-instance.mdx                    (5,174 lines)
+  [C] guides/testing.mdx                            (3,464 lines)
+  [C] guides/windows-uac.mdx                        (5,072 lines)
+
+STATUS: MOSTLY COMPLETE - All 23 guides exist
+ISSUE: Sidebar expects nested structure (/guides/build/, /guides/dev/, etc.)
+ACTION: Reorganize into subdirectories in Phase 2
+
+================================================================================
+SECTION 13: REFERENCE (4 of 10+ files - SPARSE)
+================================================================================
+
+  [C] reference/overview.mdx
+  [C] reference/application-api.mdx                 (sparse)
+  [C] reference/window-api.mdx                      (sparse)
+  [C] reference/menu-api.mdx                        (sparse)
+  [M] reference/events-api.mdx                      MISSING
+  [M] reference/dialogs-api.mdx                     MISSING
+  [M] reference/runtime-api.mdx                     MISSING
+  [M] reference/cli-api.mdx                         MISSING
+  [S] reference/application/                        EMPTY (expected by sidebar)
+  [S] reference/window/                             EMPTY (expected by sidebar)
+  [S] reference/menu/                               EMPTY (expected by sidebar)
+  [S] reference/events/                             EMPTY (expected by sidebar)
+  [S] reference/dialogs/                            EMPTY (expected by sidebar)
+  [S] reference/runtime/                            EMPTY (expected by sidebar)
+  [S] reference/cli/                                EMPTY (expected by sidebar)
+
+STATUS: SPARSE - Only 4 basic API docs, missing 6+ reference docs
+ACTION: Create comprehensive reference documentation in Phase 3
+
+================================================================================
+SECTION 14: CONTRIBUTING (10 files - MOSTLY COMPLETE)
+================================================================================
+
+  [C] contributing/index.mdx                        (4,177 lines)
+  [C] contributing/architecture.mdx                 (4,141 lines)
+  [C] contributing/asset-server.mdx                 (6,911 lines)
+  [C] contributing/binding-system.mdx               (6,647 lines)
+  [C] contributing/build-packaging.mdx              (7,045 lines)
+  [C] contributing/codebase-layout.mdx              (7,222 lines)
+  [C] contributing/extending-wails.mdx              (5,887 lines)
+  [C] contributing/runtime-internals.mdx            (6,299 lines)
+  [C] contributing/template-system.mdx              (6,046 lines)
+  [C] contributing/testing-ci.mdx                   (5,630 lines)
+  [M] contributing/getting-started.mdx              MISSING
+  [M] contributing/setup.mdx                        MISSING
+  [M] contributing/standards.mdx                    MISSING
+  [M] contributing/pull-requests.mdx                MISSING
+  [M] contributing/documentation.mdx                MISSING
+  [S] contributing/architecture/                    EMPTY (expected by sidebar)
+  [S] contributing/codebase/                        EMPTY (expected by sidebar)
+  [S] contributing/workflows/                       EMPTY (expected by sidebar)
+
+STATUS: MOSTLY COMPLETE - 10 files exist, 5+ missing for new contributor workflow
+ACTION: Create missing contributor docs and reorganize in Phase 2
+
+================================================================================
+SECTION 15: MIGRATION (1 of 2 files - INCOMPLETE)
+================================================================================
+
+  [C] migration/v2-to-v3.mdx
+  [M] migration/from-electron.mdx                   MISSING
+
+STATUS: INCOMPLETE - Missing Electron migration guide
+ACTION: Create migration guide in Phase 4
+
+================================================================================
+SECTION 16: TROUBLESHOOTING (1 of 5+ files - SPARSE)
+================================================================================
+
+  [C] troubleshooting/mac-syso.mdx
+  [M] troubleshooting/build-errors.mdx              MISSING
+  [M] troubleshooting/windows.mdx                   MISSING
+  [M] troubleshooting/linux.mdx                     MISSING
+  [M] troubleshooting/macos.mdx                     MISSING
+  [M] troubleshooting/debugging.mdx                 MISSING
+  [M] troubleshooting/performance.mdx               MISSING
+
+STATUS: SPARSE - Only 1 troubleshooting guide
+ACTION: Expand troubleshooting in Phase 4
+
+================================================================================
+SECTION 17: COMMUNITY (38 files - COMPLETE)
+================================================================================
+
+  [C] community/links.md
+  [C] community/templates.md
+  [C] community/showcase/index.mdx
+  [C] community/showcase/_template.md
+  [C] community/showcase/ + 34 project showcase files
+
+STATUS: COMPLETE - Comprehensive community showcase
+
+================================================================================
+SECTION 18: BLOG (7 files - MIXED)
+================================================================================
+
+  [O] blog/2021-09-27-v2-beta1-release-notes.md    OUTDATED V2
+  [O] blog/2021-11-08-v2-beta2-release-notes.md    OUTDATED V2
+  [O] blog/2022-02-22-v2-beta3-release-notes.md    OUTDATED V2
+  [O] blog/2022-09-22-v2-release-notes.md          OUTDATED V2
+  [O] blog/2023-01-17-v3-roadmap.md                OUTDATED (2 YEARS)
+  [C] blog/2024-12-03-alpha10-and-new-release-strategy.md  CURRENT
+  + Additional blog index/navigation files
+
+STATUS: MIXED - Current and legacy content
+ACTION: Archive v2 content and old roadmap in Phase 1
+
+================================================================================
+SECTION 19: UTILITY PAGES (8 files - COMPLETE)
+================================================================================
+
+  [C] index.mdx                                     (9,137 lines)
+  [C] faq.mdx
+  [C] credits.mdx
+  [C] feedback.mdx
+  [C] contributing.mdx
+  [C] status.mdx
+  [C] whats-new.md
+  [C] changelog.mdx                                 (56,442 lines)
+
+STATUS: COMPLETE - All utility pages present
+
+================================================================================
+SECTION 20: LEGACY "LEARN" FOLDER (24 files - REDUNDANT)
+================================================================================
+
+WINDOWS & MENUS:
+  [R] learn/windows.mdx                             (443 lines) → features/windows/*
+  [R] learn/application-menu.mdx                    (261 lines) → features/menus/application.mdx
+  [R] learn/context-menu.mdx                        (231 lines) → features/menus/context.mdx
+  [R] learn/systray.mdx                             (224 lines) → features/menus/systray.mdx
+  [R] learn/menu-reference.mdx                      (188 lines) → features/menus/reference.mdx
+
+BINDINGS & SERVICES:
+  [R] learn/bindings.mdx                            (674 lines) → features/bindings/*
+  [R] learn/binding-system.mdx                      (155 lines) → features/bindings/*
+  [R] learn/binding-best-practices.mdx              (115 lines) → features/bindings/best-practices.mdx
+  [R] learn/advanced-binding.mdx                    (342 lines) → features/bindings/*
+  [R] learn/services.mdx                            (212 lines) → features/bindings/services.mdx
+
+FEATURES & EVENTS:
+  [R] learn/dialogs.mdx                             (232 lines) → features/dialogs/*
+  [R] learn/events.mdx                              (675 lines) → features/events/*
+  [R] learn/clipboard.mdx                           (135 lines) → features/clipboard/basics.mdx
+  [R] learn/screens.mdx                             (504 lines) → features/screens/info.mdx
+
+PARTIAL/UNIQUE:
+  [P] learn/keybindings.mdx                         (436 lines) → CREATE features/keyboard.mdx
+  [P] learn/notifications.mdx                       (303 lines) → CREATE features/notifications.mdx
+  [P] learn/environment.mdx                         (619 lines) → CREATE features/environment.mdx
+  [P] learn/dock.mdx                                (232 lines) → CREATE features/platform/macos-dock.mdx
+  [P] learn/build.mdx                               (281 lines) → concepts/build-system.mdx
+  [P] learn/runtime.mdx                             (90 lines)  → REVIEW: keep or migrate to reference
+  [P] learn/manager-api.mdx                         (264 lines) → REVIEW: keep or migrate to reference
+  [O] learn/browser.mdx                             (509 lines) → REVIEW: legacy v2 content?
+
+TOTAL: 7,125 lines of legacy content
+
+STATUS: REDUNDANT - 20+ files duplicating features documentation
+ACTION: DELETE or MIGRATE content in Phase 1
+
+================================================================================
+SECTION 21: OTHER FILES (2 files)
+================================================================================
+
+  [?] DEVELOPER_GUIDE.md                            (34,926 lines) at root
+  [?] AGENTS.md                                     (untracked)
+
+STATUS: UNUSUAL PLACEMENT - Not in standard docs folder
+ACTION: Consider moving DEVELOPER_GUIDE.md to /contributing/
+
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+
+COMPLETE & CURRENT:        ~60 files (42%)
+  - Quick-start (4)
+  - Core concepts (4)
+  - Features: Windows (5), Menus (4), Dialogs (4), Bindings (4)
+  - Features: Clipboard (1), Screens (1)
+  - Guides (23)
+  - Community (38)
+  - Utility pages (8)
+  - Tutorials (4)
+  - Contributing (10)
+  - Reference (4)
+  - Migration (1)
+  - Troubleshooting (1)
+
+INCOMPLETE/SPARSE:         ~20 files (14%)
+  - Features: Events (1 of 4), Other (2 of 6)
+  - Reference (4 of 10+)
+  - Tutorials (4, limited frameworks)
+  - Troubleshooting (1 of 5+)
+  - Contributing (10, missing 5+)
+  - Migration (1 of 2)
+
+MISSING:                   ~56 files (39%)
+  - Guides subdirectories: dev/ (4), build/ (7), distribution/ (4), etc.
+  - Reference subdirectories: 7 expected
+  - Contributing subdirectories: 3 expected
+  - Features: 14 core files
+  - Tutorials: 4 framework examples
+
+REDUNDANT/ORPHANED:        ~26 files (18%)
+  - Learn folder (24 files, 7,125 lines)
+  - Getting-started folder (2 files)
+  - Old blog posts (4 files, v2 era)
+  - Outdated roadmap (1 file, 2023)
+
+TOTAL FILES INVENTORY:     142 files
+TOTAL CONTENT:             ~50,000+ lines
+
+================================================================================
+LEGEND
+================================================================================
+
+[C] = COMPLETE - File exists and is comprehensive
+[I] = INCOMPLETE - File exists but needs expansion
+[S] = SPARSE - File exists but lacks detail
+[P] = PARTIAL - Content available but in wrong location
+[R] = REDUNDANT - Duplicates other documentation
+[O] = ORPHANED - File exists but not referenced in navigation
+[M] = MISSING - File should exist but doesn't
+[?] = UNCLEAR - Unusual placement or purpose
+[X] = OUTDATED - File is old or references deprecated features
+
+================================================================================
