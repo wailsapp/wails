@@ -499,18 +499,37 @@ func (f *Frontend) setupChromium() {
 	chromium.WebResourceRequestedCallback = f.processRequest
 	chromium.NavigationCompletedCallback = f.navigationCompleted
 	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
-		if vkey == w32.VK_F12 && f.devtoolsEnabled {
-			var keyState [256]byte
-			if w32.GetKeyboardState(keyState[:]) {
-				// Check if CTRL is pressed
-				if keyState[w32.VK_CONTROL]&0x80 != 0 && keyState[w32.VK_SHIFT]&0x80 != 0 {
-					chromium.OpenDevToolsWindow()
-					return true
-				}
-			} else {
-				f.logger.Error("Call to GetKeyboardState failed")
+		var keyState [256]byte
+		if !w32.GetKeyboardState(keyState[:]) {
+			f.logger.Error("Call to GetKeyboardState failed")
+			return false
+		}
+
+		ctrlPressed := keyState[w32.VK_CONTROL]&0x80 != 0
+		shiftPressed := keyState[w32.VK_SHIFT]&0x80 != 0
+		altPressed := keyState[w32.VK_MENU]&0x80 != 0
+
+		// Handle Ctrl+Shift+F12 for DevTools
+		if vkey == w32.VK_F12 && f.devtoolsEnabled && ctrlPressed && shiftPressed {
+			chromium.OpenDevToolsWindow()
+			return true
+		}
+
+		// Allow standard browser/text editing shortcuts to pass through to WebView2
+		// These should not be posted to the main window to avoid interference
+		if ctrlPressed && !altPressed {
+			switch vkey {
+			case 0x5A, // Z - Undo
+				0x59, // Y - Redo
+				0x58, // X - Cut
+				0x43, // C - Copy
+				0x56, // V - Paste
+				0x41: // A - Select All
+				// Don't post these to main window, let WebView2 handle them
+				return false
 			}
 		}
+
 		w32.PostMessage(f.mainWindow.Handle(), w32.WM_KEYDOWN, uintptr(vkey), 0)
 		return false
 	}
