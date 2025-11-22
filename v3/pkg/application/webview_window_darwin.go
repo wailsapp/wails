@@ -1091,7 +1091,7 @@ func newWindowImpl(parent *WebviewWindow) *macosWebviewWindow {
 		parent: parent,
 	}
 	result.parent.RegisterHook(events.Mac.WebViewDidFinishNavigation, func(event *WindowEvent) {
-		result.execJS(runtime.Core())
+		result.execJS(runtime.Core(globalApplication.impl.GetFlags(globalApplication.options)))
 	})
 	return result
 }
@@ -1355,14 +1355,14 @@ func (w *macosWebviewWindow) setBackgroundColour(colour RGBA) {
 
 func (w *macosWebviewWindow) applyLiquidGlass() {
 	options := w.parent.options.Mac.LiquidGlass
-	
+
 	// Validate corner radius
 	if options.CornerRadius < 0 {
 		options.CornerRadius = 0
 	}
-	
+
 	globalApplication.debug("Applying Liquid Glass effect", "window", w.parent.id)
-	
+
 	// Check if liquid glass is supported
 	if !C.isLiquidGlassSupported() {
 		// Fallback to translucent
@@ -1371,7 +1371,7 @@ func (w *macosWebviewWindow) applyLiquidGlass() {
 		globalApplication.debug("Liquid Glass not supported on this macOS version, falling back to translucent", "window", w.parent.id)
 		return
 	}
-	
+
 	// Prepare tint color values (already clamped by uint8 type)
 	var r, g, b, a C.int
 	if options.TintColor != nil {
@@ -1380,14 +1380,14 @@ func (w *macosWebviewWindow) applyLiquidGlass() {
 		b = C.int(options.TintColor.Blue)
 		a = C.int(options.TintColor.Alpha)
 	}
-	
+
 	// Prepare group ID
 	var groupIDCStr *C.char
 	if options.GroupID != "" {
 		groupIDCStr = C.CString(options.GroupID)
 		defer C.free(unsafe.Pointer(groupIDCStr))
 	}
-	
+
 	// Apply liquid glass effect
 	C.windowSetLiquidGlass(
 		w.nsWindow,
@@ -1398,7 +1398,7 @@ func (w *macosWebviewWindow) applyLiquidGlass() {
 		groupIDCStr,
 		C.double(options.GroupSpacing),
 	)
-	
+
 	globalApplication.debug("Applied Liquid Glass effect", "window", w.parent.id, "style", options.Style)
 }
 

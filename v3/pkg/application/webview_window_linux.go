@@ -352,7 +352,7 @@ func (w *linuxWebviewWindow) run() {
 	})
 
 	w.parent.RegisterHook(events.Linux.WindowLoadChanged, func(e *WindowEvent) {
-		w.execJS(runtime.Core())
+		w.execJS(runtime.Core(globalApplication.impl.GetFlags(globalApplication.options)))
 	})
 	if w.parent.options.HTML != "" {
 		w.setHTML(w.parent.options.HTML)

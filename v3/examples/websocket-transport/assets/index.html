@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebSocket Transport Example</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+      "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+      color: white;
+      padding: 40px 20px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 1.1rem;
+      margin-bottom: 3rem;
+      opacity: 0.9;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .card h2 {
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    input::placeholder {
+      color: #999;
+    }
+
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .result {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      font-size: 1.1rem;
+    }
+
+    .status {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      display: inline-block;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .status.connected {
+      background: rgba(16, 185, 129, 0.3);
+      border: 1px solid rgba(16, 185, 129, 0.5);
+    }
+
+    .status.disconnected {
+      background: rgba(239, 68, 68, 0.3);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+    }
+
+    .info {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(59, 130, 246, 0.2);
+      border-radius: 8px;
+      border-left: 4px solid rgba(59, 130, 246, 0.8);
+    }
+
+    .info strong {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    code {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>🚀 WebSocket Transport Example</h1>
+  <p class="subtitle">Custom IPC transport using WebSockets instead of HTTP fetch</p>
+
+  <div class="card">
+    <h2>Connection Status</h2>
+    <div id="connection-status">
+      <span class="status disconnected">Disconnected</span>
+    </div>
+    <div class="info">
+      <strong>ℹ️ Transport Info:</strong>
+      This example uses a custom WebSocket transport running on <code>ws://localhost:9099/wails/ws</code>
+      instead of the default HTTP fetch-based transport. All Wails <strong>generated bindings</strong> work identically!
+      <br><br>
+      The methods below use <code>GreetService.Greet()</code>, <code>GreetService.Echo()</code>, etc. from the generated bindings,
+      proving that custom transports work seamlessly with Wails code generation.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🕐 Server Timer (Auto-updating via Events)</h2>
+    <div class="result" style="font-size: 2rem; text-align: center; font-weight: bold;">
+      <span id="serverTimer">Waiting for timer...</span>
+    </div>
+    <div class="info" style="margin-top: 1rem;">
+      <strong>✨ Automatic Event Forwarding:</strong>
+      The server emits a <code>timer:tick</code> event every second. Because the WebSocket transport
+      implements <code>EventTransport</code>, these events are <strong>automatically forwarded</strong> to
+      the frontend with zero manual wiring code!
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Test Dialog</h2>
+    <div class="input-group">
+      <button onclick="openDialog()">Open</button>
+    </div>
+    <div class="result" id="dialogResult">Click "Open" to test the binding...</div>
+  </div>
+
+  <div class="card">
+    <h2>Test Greet Method (with Events)</h2>
+    <div class="input-group">
+      <input type="text" id="nameInput" placeholder="Enter your name" value="WebSocket User">
+      <button onclick="greet()">Greet</button>
+    </div>
+    <div class="result" id="greetResult">Click "Greet" to test the binding...</div>
+    <div class="info" style="margin-top: 1rem;">
+      <strong>📡 Event Counter:</strong>
+      <span id="eventCounter">0</span> (Updates via WebSocket events)
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Test Echo Method</h2>
+    <div class="input-group">
+      <input type="text" id="echoInput" placeholder="Enter a message" value="Hello via WebSocket!">
+      <button onclick="echo()">Echo</button>
+    </div>
+    <div class="result" id="echoResult">Click "Echo" to test...</div>
+  </div>
+
+  <div class="card">
+    <h2>Test Add Method</h2>
+    <div class="input-group">
+      <input type="number" id="num1" placeholder="Number 1" value="42">
+      <input type="number" id="num2" placeholder="Number 2" value="58">
+      <button onclick="add()">Add</button>
+    </div>
+    <div class="result" id="addResult">Click "Add" to calculate...</div>
+  </div>
+
+  <div class="card">
+    <h2>Test GetTime Method</h2>
+    <button onclick="getTime()" style="width: 100%; margin-bottom: 1rem;">Get Server Time</button>
+    <div class="result" id="timeResult">Click to get current server time...</div>
+  </div>
+</div>
+
+<script type="module">
+  try {
+    // Import the custom WebSocket transport implementation with cache buster
+    const timestamp = Date.now();
+    const { createWebSocketTransport } = await import(`/websocket-transport.js?v=${timestamp}`);
+    const { setTransport, Events, Dialogs } = await import("/wails/runtime.js");
+
+    // Import generated bindings
+    console.log("[Init] Importing bindings from /bindings/...");
+    const bindings = await import("/bindings/github.com/wailsapp/wails/v3/examples/websocket-transport/index.js");
+    console.log("[Init] Bindings imported:", bindings);
+    const { GreetService } = bindings;
+
+    // Create and configure WebSocket transport
+    const wsTransport = await createWebSocketTransport("ws://localhost:9099/wails/ws", {
+      reconnectDelay: 2000,
+      requestTimeout: 30000
+    });
+
+    window.openDialog = async function openDialog() {
+      document.getElementById("dialogResult").innerHTML = JSON.stringify(await Dialogs.OpenFile({
+        CanChooseFiles: true,
+        AllowsMultipleSelection: true
+      }));
+    };
+
+    // Set as the active transport
+    setTransport(wsTransport);
+
+    console.log("✓ Using generated bindings for GreetService");
+
+    // Subscribe to timer events (automatically forwarded from backend!)
+    Events.On("timer:tick", (event) => {
+      console.log("[Events] Received timer:tick event:", event);
+      document.getElementById("serverTimer").textContent = event.data;
+    });
+    console.log("✓ Subscribed to timer:tick events");
+
+    // Subscribe to greet count events
+    Events.On("greet:count", (event) => {
+      console.log("[Events] Received greet:count event:", event);
+      document.getElementById("eventCounter").textContent = event.data;
+    });
+    console.log("✓ Subscribed to greet:count events");
+
+    // Make functions available globally - now using generated bindings!
+    window.greet = async function() {
+      try {
+        const name = document.getElementById("nameInput").value;
+        console.log("[UI] Calling Greet with:", name, "(via generated binding)");
+        const result = await GreetService.Greet(name);
+        console.log("[UI] Greet result:", result, typeof result);
+        const resultElement = document.getElementById("greetResult");
+        console.log("[UI] Result element:", resultElement);
+        resultElement.textContent = result;
+        console.log("[UI] UI updated successfully");
+      } catch (err) {
+        console.error("[UI] Greet error:", err);
+        console.error("[UI] Error stack:", err.stack);
+        document.getElementById("greetResult").textContent = "Error: " + err.message;
+      }
+    };
+
+    window.echo = async function() {
+      try {
+        const message = document.getElementById("echoInput").value;
+        console.log("[UI] Calling Echo via generated binding");
+        const result = await GreetService.Echo(message);
+        document.getElementById("echoResult").textContent = result;
+      } catch (err) {
+        document.getElementById("echoResult").textContent = "Error: " + err.message;
+      }
+    };
+
+    window.add = async function() {
+      try {
+        const num1 = parseInt(document.getElementById("num1").value);
+        const num2 = parseInt(document.getElementById("num2").value);
+        console.log("[UI] Calling Add via generated binding");
+        const result = await GreetService.Add(num1, num2);
+        document.getElementById("addResult").textContent = `${num1} + ${num2} = ${result}`;
+      } catch (err) {
+        document.getElementById("addResult").textContent = "Error: " + err.message;
+      }
+    };
+
+    window.getTime = async function() {
+      try {
+        console.log("[UI] Calling GetTime via generated binding");
+        const result = await GreetService.GetTime();
+        document.getElementById("timeResult").textContent = "Server time: " + result;
+      } catch (err) {
+        document.getElementById("timeResult").textContent = "Error: " + err.message;
+      }
+    };
+
+    // Monitor WebSocket connection status
+    function updateConnectionStatus() {
+      const statusEl = document.getElementById("connection-status");
+
+      setInterval(() => {
+        if (wsTransport.isConnected()) {
+          statusEl.innerHTML = "<span class=\"status connected\">✓ Connected to WebSocket (ws://localhost:9099)</span>";
+        } else {
+          statusEl.innerHTML = "<span class=\"status disconnected\">✗ Disconnected</span>";
+        }
+      }, 1000);
+    }
+
+    updateConnectionStatus();
+
+  } catch (err) {
+    console.error("[Init] Failed to initialize:", err);
+    console.error("[Init] Error stack:", err.stack);
+    document.body.innerHTML = `<div style="padding: 20px; color: white;">
+            <h1>Initialization Error</h1>
+            <p>Failed to load: ${err.message}</p>
+            <pre>${err.stack}</pre>
+        </div>`;
+  }
+</script>
+</body>
+</html>

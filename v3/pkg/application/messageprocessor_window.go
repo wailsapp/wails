@@ -1,11 +1,10 @@
 package application
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"log/slog"
-	"net/http"
+
+	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
 const (
@@ -116,144 +115,119 @@ var windowMethodNames = map[int]string{
 	WindowSnapAssist:                 "SnapAssist",
 }
 
-func (m *MessageProcessor) processWindowMethod(
-	method int,
-	rw http.ResponseWriter,
-	req *http.Request,
-	window Window,
-	params QueryParams,
-) {
-	args, err := params.Args()
-	if err != nil {
-		m.httpError(rw, "Invalid window call:", fmt.Errorf("unable to parse arguments: %w", err))
-		return
-	}
+var unit = struct{}{}
 
-	switch method {
+func (m *MessageProcessor) processWindowMethod(
+	req *RuntimeRequest,
+	window Window,
+) (any, error) {
+	args := req.Args.AsMap()
+
+	switch req.Method {
 	case WindowPosition:
 		x, y := window.Position()
-		m.json(rw, map[string]interface{}{
+		return map[string]interface{}{
 			"x": x,
 			"y": y,
-		})
+		}, nil
 	case WindowCenter:
 		window.Center()
-		m.ok(rw)
+		return unit, nil
 	case WindowClose:
 		window.Close()
-		m.ok(rw)
+		return unit, nil
 	case WindowDisableSizeConstraints:
 		window.DisableSizeConstraints()
-		m.ok(rw)
+		return unit, nil
 	case WindowEnableSizeConstraints:
 		window.EnableSizeConstraints()
-		m.ok(rw)
+		return unit, nil
 	case WindowFocus:
 		window.Focus()
-		m.ok(rw)
+		return unit, nil
 	case WindowForceReload:
 		window.ForceReload()
-		m.ok(rw)
+		return unit, nil
 	case WindowFullscreen:
 		window.Fullscreen()
-		m.ok(rw)
+		return unit, nil
 	case WindowGetScreen:
 		screen, err := window.GetScreen()
 		if err != nil {
-			m.httpError(rw, "Window.GetScreen failed:", err)
-			return
+			return nil, fmt.Errorf("Window.GetScreen failed: %w", err)
 		}
-		m.json(rw, screen)
+		return screen, nil
 	case WindowGetZoom:
-		zoom := window.GetZoom()
-		m.json(rw, zoom)
+		return window.GetZoom(), nil
 	case WindowHeight:
-		height := window.Height()
-		m.json(rw, height)
+		return window.Height(), nil
 	case WindowHide:
 		window.Hide()
-		m.ok(rw)
+		return unit, nil
 	case WindowIsFocused:
-		isFocused := window.IsFocused()
-		m.json(rw, isFocused)
+		return window.IsFocused(), nil
 	case WindowIsFullscreen:
-		isFullscreen := window.IsFullscreen()
-		m.json(rw, isFullscreen)
+		return window.IsFullscreen(), nil
 	case WindowIsMaximised:
-		isMaximised := window.IsMaximised()
-		m.json(rw, isMaximised)
+		return window.IsMaximised(), nil
 	case WindowIsMinimised:
-		isMinimised := window.IsMinimised()
-		m.json(rw, isMinimised)
+		return window.IsMinimised(), nil
 	case WindowMaximise:
 		window.Maximise()
-		m.ok(rw)
+		return unit, nil
 	case WindowMinimise:
 		window.Minimise()
-		m.ok(rw)
+		return unit, nil
 	case WindowName:
-		name := window.Name()
-		m.json(rw, name)
+		return window.Name(), nil
 	case WindowRelativePosition:
 		x, y := window.RelativePosition()
-		m.json(rw, map[string]interface{}{
+		return map[string]interface{}{
 			"x": x,
 			"y": y,
-		})
+		}, nil
 	case WindowReload:
 		window.Reload()
-		m.ok(rw)
+		return unit, nil
 	case WindowResizable:
-		resizable := window.Resizable()
-		m.json(rw, resizable)
+		return window.Resizable(), nil
 	case WindowRestore:
 		window.Restore()
-		m.ok(rw)
+		return unit, nil
 	case WindowSetPosition:
 		x := args.Int("x")
 		if x == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'x'"))
-			return
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'x'")
 		}
 		y := args.Int("y")
 		if y == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'y'"))
-			return
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'y'")
 		}
 		window.SetPosition(*x, *y)
-		m.ok(rw)
+		return unit, nil
 	case WindowSetAlwaysOnTop:
 		alwaysOnTop := args.Bool("alwaysOnTop")
 		if alwaysOnTop == nil {
-			m.httpError(
-				rw,
-				"Invalid window call:",
-				errors.New("missing or invalid argument 'alwaysOnTop'"),
-			)
-			return
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'alwaysOnTop'")
 		}
 		window.SetAlwaysOnTop(*alwaysOnTop)
-		m.ok(rw)
+		return unit, nil
 	case WindowSetBackgroundColour:
 		r := args.UInt8("r")
 		if r == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'r'"))
-			return
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'r'")
 		}
 		g := args.UInt8("g")
 		if g == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'g'"))
-			return
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'g'")
 		}
 		b := args.UInt8("b")
 		if b == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'b'"))
-			return
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'b'")
 		}
 		a := args.UInt8("a")
 		if a == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'a'"))
-			return
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'a'")
 		}
 		window.SetBackgroundColour(RGBA{
 			Red:   *r,
@@ -261,190 +235,135 @@ func (m *MessageProcessor) processWindowMethod(
 			Blue:  *b,
 			Alpha: *a,
 		})
-		m.ok(rw)
+		return unit, nil
 	case WindowSetFrameless:
 		frameless := args.Bool("frameless")
 		if frameless == nil {
-			m.httpError(
-				rw,
-				"Invalid window call:",
-				errors.New("missing or invalid argument 'frameless'"),
-			)
-			return
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'frameless'")
 		}
 		window.SetFrameless(*frameless)
-		m.ok(rw)
+		return unit, nil
 	case WindowSetMaxSize:
 		width := args.Int("width")
 		if width == nil {
-			m.httpError(
-				rw,
-				"Invalid window call:",
-				errors.New("missing or invalid argument 'width'"),
-			)
-			return
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'width'")
 		}
 		height := args.Int("height")
 		if height == nil {
-			m.httpError(
-				rw,
-				"Invalid window call:",
-				errors.New("missing or invalid argument 'height'"),
-			)
-			return
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'height'")
 		}
 		window.SetMaxSize(*width, *height)
-		m.ok(rw)
+		return unit, nil
 	case WindowSetMinSize:
 		width := args.Int("width")
 		if width == nil {
-			m.httpError(
-				rw,
-				"Invalid window call:",
-				errors.New("missing or invalid argument 'width'"),
-			)
-			return
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'width'")
 		}
 		height := args.Int("height")
 		if height == nil {
-			m.httpError(
-				rw,
-				"Invalid window call:",
-				errors.New("missing or invalid argument 'height'"),
-			)
-			return
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'height'")
 		}
 		window.SetMinSize(*width, *height)
-		m.ok(rw)
+		return unit, nil
 	case WindowSetRelativePosition:
 		x := args.Int("x")
 		if x == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'x'"))
-			return
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'x'")
 		}
 		y := args.Int("y")
 		if y == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'y'"))
-			return
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'y'")
 		}
 		window.SetRelativePosition(*x, *y)
-		m.ok(rw)
+		return unit, nil
 	case WindowSetResizable:
 		resizable := args.Bool("resizable")
 		if resizable == nil {
-			m.httpError(
-				rw,
-				"Invalid window call:",
-				errors.New("missing or invalid argument 'resizable'"),
-			)
-			return
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'resizable'")
 		}
 		window.SetResizable(*resizable)
-		m.ok(rw)
+		return unit, nil
 	case WindowSetSize:
 		width := args.Int("width")
 		if width == nil {
-			m.httpError(
-				rw,
-				"Invalid window call:",
-				errors.New("missing or invalid argument 'width'"),
-			)
-			return
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'width'")
 		}
 		height := args.Int("height")
 		if height == nil {
-			m.httpError(
-				rw,
-				"Invalid window call:",
-				errors.New("missing or invalid argument 'height'"),
-			)
-			return
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'height'")
 		}
 		window.SetSize(*width, *height)
-		m.ok(rw)
+		return unit, nil
 	case WindowSetTitle:
 		title := args.String("title")
 		if title == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing argument 'title'"))
-			return
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'title'")
 		}
 		window.SetTitle(*title)
-		m.ok(rw)
+		return unit, nil
 	case WindowSetZoom:
 		zoom := args.Float64("zoom")
 		if zoom == nil {
-			m.httpError(
-				rw,
-				"Invalid window call:",
-				errors.New("missing or invalid argument 'zoom'"),
-			)
-			return
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'zoom'")
 		}
 		window.SetZoom(*zoom)
-		m.ok(rw)
+		return unit, nil
 	case WindowShow:
 		window.Show()
-		m.ok(rw)
+		return unit, nil
 	case WindowSize:
 		width, height := window.Size()
-		m.json(rw, map[string]interface{}{
+		return map[string]interface{}{
 			"width":  width,
 			"height": height,
-		})
+		}, nil
 	case WindowOpenDevTools:
 		window.OpenDevTools()
-		m.ok(rw)
+		return unit, nil
 	case WindowToggleFullscreen:
 		window.ToggleFullscreen()
-		m.ok(rw)
+		return unit, nil
 	case WindowToggleMaximise:
 		window.ToggleMaximise()
-		m.ok(rw)
+		return unit, nil
 	case WindowToggleFrameless:
 		window.ToggleFrameless()
-		m.ok(rw)
+		return unit, nil
 	case WindowUnFullscreen:
 		window.UnFullscreen()
-		m.ok(rw)
+		return unit, nil
 	case WindowUnMaximise:
 		window.UnMaximise()
-		m.ok(rw)
+		return unit, nil
 	case WindowUnMinimise:
 		window.UnMinimise()
-		m.ok(rw)
+		return unit, nil
 	case WindowWidth:
-		width := window.Width()
-		m.json(rw, width)
+		return window.Width(), nil
 	case WindowZoom:
 		window.Zoom()
-		m.ok(rw)
+		return unit, nil
 	case WindowZoomIn:
 		window.ZoomIn()
-		m.ok(rw)
+		return unit, nil
 	case WindowZoomOut:
 		window.ZoomOut()
-		m.ok(rw)
+		return unit, nil
 	case WindowZoomReset:
 		window.ZoomReset()
-		m.ok(rw)
+		return unit, nil
 	case WindowDropZoneDropped:
 		m.Info(
 			"[DragDropDebug] processWindowMethod: Entered WindowDropZoneDropped case",
 		)
 
-		jsonArgs := params.String("args") // 'params' is the QueryParams from processWindowMethod
-		if jsonArgs == nil {
-			m.httpError(rw, "Error processing WindowDropZoneDropped: missing 'args' parameter", nil)
-			return
-		}
-
-		slog.Info("[DragDropDebug] Raw 'args' payload string:", "data", *jsonArgs)
+		slog.Info("[DragDropDebug] Raw 'args' payload string:", "data", string(req.Args.rawData))
 
 		var payload fileDropPayload
-		err := json.Unmarshal([]byte(*jsonArgs), &payload)
+
+		err := req.Args.ToStruct(&payload)
 		if err != nil {
-			m.httpError(rw, "Error decoding file drop payload from 'args' parameter:", err)
-			return
+			return nil, errs.WrapInvalidWindowCallErrorf(err, "Error decoding file drop payload from 'args' parameter")
 		}
 		m.Info(
 			"[DragDropDebug] processWindowMethod: Decoded payload from 'args'",
@@ -462,12 +381,7 @@ func (m *MessageProcessor) processWindowMethod(
 
 		wvWindow, ok := window.(*WebviewWindow)
 		if !ok {
-			m.httpError(
-				rw,
-				"Error: Target window is not a WebviewWindow for FilesDroppedWithContext",
-				nil,
-			)
-			return
+			return nil, errs.NewInvalidWindowCallErrorf("Error: Target window is not a WebviewWindow for FilesDroppedWithContext")
 		}
 
 		msg := &dragAndDropMessage{
@@ -482,16 +396,13 @@ func (m *MessageProcessor) processWindowMethod(
 			fmt.Sprintf("%+v", msg),
 		)
 		windowDragAndDropBuffer <- msg
-    m.ok(rw)
+		return unit, nil
 	case WindowSnapAssist:
 		window.SnapAssist()
-		m.ok(rw)
+		return unit, nil
 	default:
-		m.httpError(rw, "Invalid window call:", fmt.Errorf("unknown method %d", method))
-		return
+		return nil, errs.NewInvalidWindowCallErrorf("Unknown method %d", req.Method)
 	}
-
-	m.Info("Runtime call:", "method", "Window."+windowMethodNames[method])
 }
 
 // ElementDetailsPayload holds detailed information about the drop target element.

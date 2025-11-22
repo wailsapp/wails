@@ -1,11 +1,9 @@
 package application
 
 import (
-	"encoding/json"
-	"errors"
-	"fmt"
-	"net/http"
 	"runtime"
+
+	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
 const (
@@ -26,37 +24,15 @@ var dialogMethodNames = map[int]string{
 	DialogSaveFile: "SaveFile",
 }
 
-func (m *MessageProcessor) dialogErrorCallback(window Window, message string, dialogID *string, err error) {
-	m.Error(message, "error", err)
-	window.DialogError(*dialogID, err.Error())
-}
+func (m *MessageProcessor) processDialogMethod(req *RuntimeRequest, window Window) (any, error) {
+	args := req.Args.AsMap()
 
-func (m *MessageProcessor) dialogCallback(window Window, dialogID *string, result string, isJSON bool) {
-	window.DialogResponse(*dialogID, result, isJSON)
-}
-
-func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
-	args, err := params.Args()
-	if err != nil {
-		m.httpError(rw, "Invalid dialog call:", fmt.Errorf("unable to parse arguments: %w", err))
-		return
-	}
-
-	dialogID := args.String("dialog-id")
-	if dialogID == nil {
-		m.httpError(rw, "Invalid window call:", errors.New("missing argument 'dialog-id'"))
-		return
-	}
-
-	var methodName = "Dialog." + dialogMethodNames[method]
-
-	switch method {
+	switch req.Method {
 	case DialogInfo, DialogWarning, DialogError, DialogQuestion:
 		var options MessageDialogOptions
-		err := params.ToStruct(&options)
+		err := req.Args.ToStruct(&options)
 		if err != nil {
-			m.httpError(rw, "Invalid dialog call:", fmt.Errorf("error parsing dialog options: %w", err))
-			return
+			return nil, errs.WrapInvalidDialogCallErrorf(err, "error parsing dialog options")
 		}
 		if len(options.Buttons) == 0 {
 			switch runtime.GOOS {
@@ -65,7 +41,7 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 			}
 		}
 		var dialog *MessageDialog
-		switch method {
+		switch req.Method {
 		case DialogInfo:
 			dialog = InfoDialog()
 		case DialogWarning:
@@ -82,23 +58,28 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 
 		dialog.SetTitle(options.Title)
 		dialog.SetMessage(options.Message)
+
+		resp := make(chan string, 1)
 		for _, button := range options.Buttons {
 			label := button.Label
 			button.OnClick(func() {
-				m.dialogCallback(window, dialogID, label, false)
+				select {
+				case resp <- label:
+				default:
+				}
 			})
 		}
 		dialog.AddButtons(options.Buttons)
 		dialog.Show()
-		m.ok(rw)
-		m.Info("Runtime call:", "method", methodName, "options", options)
+
+		response := <-resp
+		return response, nil
 
 	case DialogOpenFile:
 		var options OpenFileDialogOptions
-		err := params.ToStruct(&options)
+		err := req.Args.ToStruct(&options)
 		if err != nil {
-			m.httpError(rw, "Invalid dialog call:", fmt.Errorf("error parsing dialog options: %w", err))
-			return
+			return nil, errs.WrapInvalidDialogCallErrorf(err, "error parsing dialog options")
 		}
 		var detached = args.Bool("Detached")
 		if detached == nil || !*detached {
@@ -106,41 +87,26 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 		}
 		dialog := globalApplication.Dialog.OpenFileWithOptions(&options)
 
-		go func() {
-			defer handlePanic()
-			if options.AllowsMultipleSelection {
-				files, err := dialog.PromptForMultipleSelection()
-				if err != nil {
-					m.dialogErrorCallback(window, "Dialog.OpenFile failed", dialogID, fmt.Errorf("error getting selection: %w", err))
-					return
-				} else {
-					result, err := json.Marshal(files)
-					if err != nil {
-						m.dialogErrorCallback(window, "Dialog.OpenFile failed", dialogID, fmt.Errorf("error marshaling files: %w", err))
-						return
-					}
-					m.dialogCallback(window, dialogID, string(result), true)
-					m.Info("Runtime call:", "method", methodName, "result", result)
-				}
-			} else {
-				file, err := dialog.PromptForSingleSelection()
-				if err != nil {
-					m.dialogErrorCallback(window, "Dialog.OpenFile failed", dialogID, fmt.Errorf("error getting selection: %w", err))
-					return
-				}
-				m.dialogCallback(window, dialogID, file, false)
-				m.Info("Runtime call:", "method", methodName, "result", file)
+		if options.AllowsMultipleSelection {
+			files, err := dialog.PromptForMultipleSelection()
+			if err != nil {
+				return nil, errs.WrapInvalidDialogCallErrorf(err, "Dialog.OpenFile failed: error getting selection")
 			}
-		}()
-		m.ok(rw)
-		m.Info("Runtime call:", "method", methodName, "options", options)
+
+			return files, nil
+		} else {
+			file, err := dialog.PromptForSingleSelection()
+			if err != nil {
+				return nil, errs.WrapInvalidDialogCallErrorf(err, "Dialog.OpenFile failed, error getting selection")
+			}
+			return file, nil
+		}
 
 	case DialogSaveFile:
 		var options SaveFileDialogOptions
-		err := params.ToStruct(&options)
+		err := req.Args.ToStruct(&options)
 		if err != nil {
-			m.httpError(rw, "Invalid dialog call:", fmt.Errorf("error parsing dialog options: %w", err))
-			return
+			return nil, errs.WrapInvalidDialogCallErrorf(err, "error parsing dialog options")
 		}
 		var detached = args.Bool("Detached")
 		if detached == nil || !*detached {
@@ -148,21 +114,13 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 		}
 		dialog := globalApplication.Dialog.SaveFileWithOptions(&options)
 
-		go func() {
-			defer handlePanic()
-			file, err := dialog.PromptForSingleSelection()
-			if err != nil {
-				m.dialogErrorCallback(window, "Dialog.SaveFile failed", dialogID, fmt.Errorf("error getting selection: %w", err))
-				return
-			}
-			m.dialogCallback(window, dialogID, file, false)
-			m.Info("Runtime call:", "method", methodName, "result", file)
-		}()
-		m.ok(rw)
-		m.Info("Runtime call:", "method", methodName, "options", options)
+		file, err := dialog.PromptForSingleSelection()
+		if err != nil {
+			return nil, errs.WrapInvalidDialogCallErrorf(err, "Dialog.SaveFile failed: error getting selection")
+		}
+		return file, nil
 
 	default:
-		m.httpError(rw, "Invalid dialog call:", fmt.Errorf("unknown method: %d", method))
-		return
+		return nil, errs.NewInvalidDialogCallErrorf("unknown method: %d", req.Method)
 	}
 }
