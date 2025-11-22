@@ -99,10 +99,13 @@ func (r *webkitRequestBody) Read(p []byte) (int, error) {
 		contentLen = len(p)
 	}
 
-	var n C.gsize
+	if contentLen == 0 {
+		return 0, nil
+	}
+
 	var gErr *C.GError
-	res := C.g_input_stream_read_all(r.stream, content, C.gsize(contentLen), &n, nil, &gErr)
-	if res == 0 {
+	n := C.g_input_stream_read(r.stream, content, C.gsize(contentLen), nil, &gErr)
+	if n == -1 {
 		return 0, formatGError("stream read failed", gErr)
 	} else if n == 0 {
 		return 0, io.EOF
