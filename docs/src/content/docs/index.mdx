@@ -3,7 +3,7 @@ title: Build Desktop Apps with Go
 description: "Native desktop applications using Go and web technologies"
 banner:
     content: |
-        Wails v3 is in BETA. <a href="https://wails.io">v2 docs</a>
+        Wails v3 is in ALPHA. <a href="https://wails.io">v2 docs</a>
 template: splash
 hero:
   tagline: Build beautiful, performant desktop applications using Go and modern web technologies. One codebase. Three platforms. No browsers.
@@ -17,7 +17,7 @@ hero:
       icon: right-arrow
       variant: primary
     - text: View Tutorial
-      link: /tutorials/notes-vanilla
+      link: /tutorials/03-notes-vanilla
       icon: open-book
       variant: secondary
 ---
@@ -37,17 +37,23 @@ import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
     z-index: -1;
     background:
       url('/showcase-images/tiny-rdm1.webp') 0px center / auto 80% no-repeat,
-      url('/showcase-images/gamestacker.webp') 350px center / auto 80% no-repeat,
-      url('/showcase-images/scriptbar.webp') 700px center / auto 80% no-repeat,
-      url('/showcase-images/minesweeper-xp.webp') 1050px center / auto 80% no-repeat,
-      url('/showcase-images/wailsterm.webp') 1400px center / auto 80% no-repeat,
-      url('/showcase-images/modalfilemanager.webp') 1750px center / auto 80% no-repeat,
-      url('/showcase-images/ytd.webp') 2100px center / auto 80% no-repeat,
-      url('/showcase-images/filehound.webp') 2450px center / auto 80% no-repeat,
-      url('/showcase-images/tiny-rdm1.webp') 2800px center / auto 80% no-repeat,
-      url('/showcase-images/gamestacker.webp') 3150px center / auto 80% no-repeat,
-      url('/showcase-images/scriptbar.webp') 3500px center / auto 80% no-repeat,
-      url('/showcase-images/minesweeper-xp.webp') 3850px center / auto 80% no-repeat;
+      url('/showcase-images/gamestacker.webp') 550px center / auto 80% no-repeat,
+      url('/showcase-images/scriptbar.webp') 1100px center / auto 80% no-repeat,
+      url('/showcase-images/minesweeper-xp.webp') 1650px center / auto 80% no-repeat,
+      url('/showcase-images/wailsterm.webp') 2200px center / auto 80% no-repeat,
+      url('/showcase-images/modalfilemanager.webp') 2750px center / auto 80% no-repeat,
+      url('/showcase-images/ytd.webp') 3300px center / auto 80% no-repeat,
+      url('/showcase-images/filehound.webp') 3850px center / auto 80% no-repeat,
+      url('/showcase-images/edex-ui.webp') 4400px center / auto 80% no-repeat,
+      url('/showcase-images/tiny-rdm1.webp') 4950px center / auto 80% no-repeat,
+      url('/showcase-images/gamestacker.webp') 5500px center / auto 80% no-repeat,
+      url('/showcase-images/scriptbar.webp') 6050px center / auto 80% no-repeat,
+      url('/showcase-images/minesweeper-xp.webp') 6600px center / auto 80% no-repeat,
+      url('/showcase-images/wailsterm.webp') 7150px center / auto 80% no-repeat,
+      url('/showcase-images/modalfilemanager.webp') 7700px center / auto 80% no-repeat,
+      url('/showcase-images/ytd.webp') 8250px center / auto 80% no-repeat,
+      url('/showcase-images/filehound.webp') 8800px center / auto 80% no-repeat,
+      url('/showcase-images/edex-ui.webp') 9350px center / auto 80% no-repeat;
     animation: scroll-row1 40s linear infinite;
     filter: blur(0.5px);
     pointer-events: none;
@@ -80,17 +86,21 @@ import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
     z-index: -2;
     background:
       url('/showcase-images/tiny-rdm2.webp') 0px center / auto 80% no-repeat,
-      url('/showcase-images/mollywallet.webp') 350px center / auto 80% no-repeat,
-      url('/showcase-images/emailit.webp') 700px center / auto 80% no-repeat,
-      url('/showcase-images/optimus.webp') 1050px center / auto 80% no-repeat,
-      url('/showcase-images/cfntracker.webp') 1400px center / auto 80% no-repeat,
-      url('/showcase-images/riftshare-main.webp') 1750px center / auto 80% no-repeat,
-      url('/showcase-images/minecraft-mod-updater.webp') 2100px center / auto 80% no-repeat,
-      url('/showcase-images/resizem.webp') 2450px center / auto 80% no-repeat,
-      url('/showcase-images/tiny-rdm2.webp') 2800px center / auto 80% no-repeat,
-      url('/showcase-images/mollywallet.webp') 3150px center / auto 80% no-repeat,
-      url('/showcase-images/emailit.webp') 3500px center / auto 80% no-repeat,
-      url('/showcase-images/optimus.webp') 3850px center / auto 80% no-repeat;
+      url('/showcase-images/mollywallet.webp') 550px center / auto 80% no-repeat,
+      url('/showcase-images/optimus.webp') 1100px center / auto 80% no-repeat,
+      url('/showcase-images/cfntracker.webp') 1650px center / auto 80% no-repeat,
+      url('/showcase-images/riftshare-main.webp') 2200px center / auto 80% no-repeat,
+      url('/showcase-images/minecraft-mod-updater.webp') 2750px center / auto 80% no-repeat,
+      url('/showcase-images/resizem.webp') 3300px center / auto 80% no-repeat,
+      url('/showcase-images/mchat.webp') 3850px center / auto 80% no-repeat,
+      url('/showcase-images/tiny-rdm2.webp') 4400px center / auto 80% no-repeat,
+      url('/showcase-images/mollywallet.webp') 4950px center / auto 80% no-repeat,
+      url('/showcase-images/optimus.webp') 5500px center / auto 80% no-repeat,
+      url('/showcase-images/cfntracker.webp') 6050px center / auto 80% no-repeat,
+      url('/showcase-images/riftshare-main.webp') 6600px center / auto 80% no-repeat,
+      url('/showcase-images/minecraft-mod-updater.webp') 7150px center / auto 80% no-repeat,
+      url('/showcase-images/resizem.webp') 7700px center / auto 80% no-repeat,
+      url('/showcase-images/mchat.webp') 8250px center / auto 80% no-repeat;
     animation: scroll-row2 25s linear infinite;
     filter: blur(0.5px);
     pointer-events: none;
@@ -108,17 +118,19 @@ import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
     z-index: -2;
     background:
       url('/showcase-images/portfall.webp') 0px center / auto 80% no-repeat,
-      url('/showcase-images/encrypteasy.webp') 350px center / auto 80% no-repeat,
-      url('/showcase-images/gamestacker.webp') 700px center / auto 80% no-repeat,
-      url('/showcase-images/bboard.webp') 1050px center / auto 80% no-repeat,
-      url('/showcase-images/varly2.webp') 1400px center / auto 80% no-repeat,
-      url('/showcase-images/hiposter.webp') 1750px center / auto 80% no-repeat,
-      url('/showcase-images/october.webp') 2100px center / auto 80% no-repeat,
-      url('/showcase-images/wombat.webp') 2450px center / auto 80% no-repeat,
-      url('/showcase-images/portfall.webp') 2800px center / auto 80% no-repeat,
-      url('/showcase-images/encrypteasy.webp') 3150px center / auto 80% no-repeat,
-      url('/showcase-images/gamestacker.webp') 3500px center / auto 80% no-repeat,
-      url('/showcase-images/bboard.webp') 3850px center / auto 80% no-repeat;
+      url('/showcase-images/encrypteasy.webp') 550px center / auto 80% no-repeat,
+      url('/showcase-images/gamestacker.webp') 1100px center / auto 80% no-repeat,
+      url('/showcase-images/varly2.webp') 1650px center / auto 80% no-repeat,
+      url('/showcase-images/hiposter.webp') 2200px center / auto 80% no-repeat,
+      url('/showcase-images/october.webp') 2750px center / auto 80% no-repeat,
+      url('/showcase-images/wombat.webp') 3300px center / auto 80% no-repeat,
+      url('/showcase-images/portfall.webp') 3850px center / auto 80% no-repeat,
+      url('/showcase-images/encrypteasy.webp') 4400px center / auto 80% no-repeat,
+      url('/showcase-images/gamestacker.webp') 4950px center / auto 80% no-repeat,
+      url('/showcase-images/varly2.webp') 5500px center / auto 80% no-repeat,
+      url('/showcase-images/hiposter.webp') 6050px center / auto 80% no-repeat,
+      url('/showcase-images/october.webp') 6600px center / auto 80% no-repeat,
+      url('/showcase-images/wombat.webp') 7150px center / auto 80% no-repeat;
     animation: scroll-row3 50s linear infinite;
     filter: blur(0.5px);
     pointer-events: none;
@@ -265,11 +277,11 @@ cd myapp && wails3 dev
 
 ## Next Steps
 
-Next: [Build a complete application](/tutorials/notes-vanilla), browse [examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples), or check the [API reference](/reference/application-api). Migrating from v2? See the [upgrade guide](/migration/v2-to-v3).
+Next: [Build a complete application](/tutorials/03-notes-vanilla), browse [examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples), or check the [API reference](/reference/application-api). Migrating from v2? See the [upgrade guide](/migration/v2-to-v3).
 
 
 :::note[Production Ready]
-Wails v3 is in **BETA**. The API is stable, and applications are running in production. We're refining documentation and tooling before the final release.
+Wails v3 is in **ALPHA**. The API is *reasonably* stable, and applications are running in production. We're refining documentation and tooling before the final release.
 :::
 
 <Card title="Support Wails Development" icon="heart">
