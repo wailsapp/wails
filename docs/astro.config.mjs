@@ -92,7 +92,14 @@ export default defineConfig({
           autogenerate: { directory: "tutorials" },
         },
 
-        // Learn - Discrete features (Netflix: Layered approach for different skill levels)
+        // Learn - Discrete features
+        {
+          label: "Learn",
+          collapsed: true,
+          autogenerate: { directory: "learn" },
+        },
+
+        // Core Concepts
         {
           label: "Core Concepts",
           collapsed: true,
