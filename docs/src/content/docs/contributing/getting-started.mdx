@@ -3,6 +3,8 @@ title: Getting Started
 description: How to start contributing to Wails v3
 ---
 
+import { Steps } from '@astrojs/starlight/components';
+
 ## Welcome, Contributor!
 
 Thank you for your interest in contributing to Wails! This guide will help you make your first contribution.
@@ -11,8 +13,8 @@ Thank you for your interest in contributing to Wails! This guide will help you m
 
 Before you begin, ensure you have:
 
-- **Go 1.23+** installed ([download](https://go.dev/dl/))
-- **Node.js 18+** and **npm** ([download](https://nodejs.org/))
+- **Go 1.25+** installed ([download](https://go.dev/dl/))
+- **Node.js 20+** and **npm** ([download](https://nodejs.org/))
 - **Git** configured with your GitHub account
 - Basic familiarity with Go and JavaScript/TypeScript
 
@@ -29,41 +31,59 @@ Before you begin, ensure you have:
 - `gcc`, `pkg-config`, `libgtk-3-dev`, `libwebkit2gtk-4.0-dev`
 - Install via: `sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev` (Debian/Ubuntu)
 
-## Fork and Clone
+## Contribution Process Overview
 
-1. **Fork the repository** at [github.com/wailsapp/wails](https://github.com/wailsapp/wails)
+The typical contribution workflow follows these steps:
 
-2. **Clone your fork:**
+1. **Fork & Clone** - Create your own copy of the Wails repository
+2. **Setup** - Build the Wails CLI and verify your environment
+3. **Branch** - Create a feature branch for your changes
+4. **Develop** - Make your changes following our coding standards
+5. **Test** - Run tests to ensure everything works
+6. **Commit** - Commit with clear, conventional commit messages
+7. **Submit** - Open a pull request for review
+8. **Iterate** - Respond to feedback and make adjustments
+9. **Merge** - Once approved, your changes become part of Wails!
+
+## Step-by-Step Guide
+
+<Steps>
+
+1. **Fork and Clone**
+
+   Fork the repository at [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork)
+
+   Then clone your fork:
    ```bash
    git clone https://github.com/YOUR_USERNAME/wails.git
    cd wails
    ```
 
-3. **Add upstream remote:**
+   Add the upstream remote:
    ```bash
    git remote add upstream https://github.com/wailsapp/wails.git
    ```
 
-## Building Wails
+2. **Build Wails**
 
-Build the Wails v3 CLI:
+   Build the Wails v3 CLI:
 
-```bash
-cd v3
-go build -o ../wails3 ./cmd/wails3
-```
+   ```bash
+   cd v3
+   go build -o ../wails3 ./cmd/wails3
+   ```
 
-This creates a `wails3` binary in the project root. Add it to your PATH or use it directly.
+   This creates a `wails3` binary in the project root. Add it to your PATH or use it directly.
 
-## Testing Your Changes
+3. **Verify Your Setup**
 
-1. **Run tests:**
+   Run tests to ensure everything is working:
    ```bash
    cd v3
    go test ./...
    ```
 
-2. **Test the CLI:**
+   Test the CLI:
    ```bash
    cd ..
    ./wails3 init -n testapp
@@ -71,19 +91,16 @@ This creates a `wails3` binary in the project root. Add it to your PATH or use i
    ../wails3 dev
    ```
 
-## Making Changes
+4. **Create a Feature Branch**
 
-1. **Create a feature branch:**
+   Create a branch for your changes:
    ```bash
    git checkout -b feature/my-awesome-feature
    ```
 
-2. **Make your changes** following our [Coding Standards](/contributing/standards)
+5. **Make Your Changes**
 
-3. **Commit with clear messages:**
-   ```bash
-   git commit -m "feat: add awesome feature"
-   ```
+   Make your changes following our [Coding Standards](/contributing/standards)
 
    Use conventional commits:
    - `feat:` for new features
@@ -92,28 +109,41 @@ This creates a `wails3` binary in the project root. Add it to your PATH or use i
    - `refactor:` for code refactoring
    - `test:` for test changes
 
-4. **Keep your branch updated:**
+   Commit with clear messages:
+   ```bash
+   git commit -m "feat: add awesome feature"
+   ```
+
+6. **Keep Your Branch Updated**
+
+   Regularly sync with upstream:
    ```bash
    git fetch upstream
    git rebase upstream/master
    ```
 
-## Submitting a Pull Request
+7. **Submit a Pull Request**
 
-1. **Push your branch:**
+   Push your branch:
    ```bash
    git push origin feature/my-awesome-feature
    ```
 
-2. **Open a PR** on GitHub with:
+   Open a PR on GitHub with:
    - Clear title describing the change
    - Description of what changed and why
    - Reference to any related issues (#123)
    - Screenshots/videos if UI changes
 
-3. **Respond to review feedback** - maintainers may request changes
+8. **Respond to Review Feedback**
 
-4. **Celebrate!** Once merged, your contribution is part of Wails
+   Maintainers may request changes. Make the requested updates and push them to your branch.
+
+9. **Celebrate!**
+
+   Once merged, your contribution is part of Wails!
+
+</Steps>
 
 ## Finding Issues to Work On
 
