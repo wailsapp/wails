@@ -20,10 +20,12 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+astro updated to v5, including various improvements to the documentation site.
 
 ## Fixed
 <!-- Bug fixes -->
-
+- Fixed alpha3 documentation website build.
+- 
 ## Deprecated
 <!-- Soon-to-be removed features -->
 

@@ -28,24 +28,20 @@ direction: right
 Developer: "wails3 CLI"
 Build: {
   label: "Build-time Tool-chain"
-  GEN: "Binding Generator
-(static analysis)"
+  GEN: "Binding Generator (static analysis)"
   TMP: "Template Engine"
   ASSETDEV: "Asset Server (dev)"
   PKG: "Cross-compilation & Packaging"
 }
 Runtime: {
   label: "Native Runtime"
-  RT: "Desktop Runtime
-(window, dialogs, tray, …)"
-  BRIDGE: "Message Bridge
-(JSON channel)"
+  RT: "Desktop Runtime (window, dialogs, tray, …)"
+  BRIDGE: "Message Bridge (JSON channel)"
 }
 App: {
   label: "Your Application"
   BACKEND: "Go Backend"
-  FRONTEND: "Web Frontend
-(React/Vue/…)"
+  FRONTEND: "Web Frontend (React/Vue/…)"
 }
 Developer -> TMP: "init"
 Developer -> GEN: "generate"
@@ -68,12 +64,9 @@ RT -> ASSETDEV: "serve assets"
 
 ```d2
 direction: right
-JS: "JavaScript
-(frontend)"
-Bridge: "Bridge
-(WebView callback)"
-MP: "Message Processor
-(Go)"
+JS: "JavaScript (frontend)"
+Bridge: "Bridge (WebView callback)"
+MP: "Message Processor (Go)"
 GoNode: "Bound Go Function"
 JS -> Bridge: "invoke(\"Greet\",\"Alice\")"
 Bridge -> MP: "JSON call {t:c,id:42,…}"
@@ -99,18 +92,14 @@ Key points:
 direction: right
 Dev: {
   label: "`wails3 dev`"
-  VITE: "Framework Dev Server
-(port 5173)"
-  ASDEV: "Asset Server (dev)
-(proxy + disk)"
+  VITE: "Framework Dev Server (port 5173)"
+  ASDEV: "Asset Server (dev) (proxy + disk)"
   FRONTENDDEV: "Browser"
 }
 Prod: {
   label: "`wails3 build`"
-  EMBED: "Embedded FS
-(go:embed)"
-  ASPROD: "Asset Server (prod)
-(read-only)"
+  EMBED: "Embedded FS (go:embed)"
+  ASPROD: "Asset Server (prod) (read-only)"
   FRONTENDPROD: "WebView Window"
 }
 VITE <-> ASDEV: "proxy / HMR"
@@ -132,20 +121,10 @@ ASPROD <-> FRONTENDPROD: "in-memory"
 
 ```d2
 direction: right
-Window: "runtime::Window
-Shared interface (pkg/application)"
-WindowDarwin: "Window_darwin
-//go:build darwin
-Objective-C (cgo)
-NSWindow* ptr"
-WindowLinux: "Window_linux
-//go:build linux
-Pure Go GTK calls
-GtkWindow* ptr"
-WindowWindows: "Window_windows
-//go:build windows
-Win32 API via syscall
-HWND ptr"
+Window: "runtime::Window Shared interface (pkg/application)"
+WindowDarwin: "Window_darwin //go:build darwin Objective-C (cgo) NSWindow* ptr"
+WindowLinux: "Window_linux //go:build linux Pure Go GTK calls GtkWindow* ptr"
+WindowWindows: "Window_windows //go:build windows Win32 API via syscall HWND ptr"
 Window -> WindowDarwin
 Window -> WindowLinux
 Window -> WindowWindows

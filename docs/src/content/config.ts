@@ -5,6 +5,6 @@ import { blogSchema } from "starlight-blog/schema";
 export const collections = {
   i18n: defineCollection({ type: "data", schema: i18nSchema() }),
   docs: defineCollection({
-    schema: docsSchema({ extend: (context) => blogSchema(context) }),
+    schema: docsSchema({ extend: blogSchema }),
   }),
 };

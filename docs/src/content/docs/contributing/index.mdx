@@ -53,30 +53,22 @@ context you need.
 
 ```d2
 direction: right
-Developer: "wails3 CLI
-Init · Dev · Build · Package"
+Developer: "wails3 CLI Init · Dev · Build · Package"
 Build: {
   label: "Build-Time"
-  GEN: "Binding System
-(Static Analysis & Codegen)"
-  ASSET: "Asset Server
-(Dev Proxy · Embed FS)"
-  PKG: "Build & Packaging
-Pipeline"
+  GEN: "Binding System (Static Analysis & Codegen)"
+  ASSET: "Asset Server (Dev Proxy · Embed FS)"
+  PKG: "Build & Packaging Pipeline"
 }
 Runtime: {
   label: "Runtime"
-  RUNTIME: "Desktop Runtime
-(Window · Events · Dialogs)"
-  BRIDGE: "Bridge
-(Message Processor)"
+  RUNTIME: "Desktop Runtime (Window · Events · Dialogs)"
+  BRIDGE: "Bridge (Message Processor)"
 }
 Application: {
   label: "Application"
-  GO: "Go Backend
-(App Logic)"
-  WEB: "Web Frontend
-(React/Vue/...)"
+  GO: "Go Backend (App Logic)"
+  WEB: "Web Frontend (React/Vue/...)"
 }
 Developer -> GEN: "generate"
 Developer -> ASSET: "dev / build"
