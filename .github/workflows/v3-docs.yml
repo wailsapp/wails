@@ -2,9 +2,12 @@ name: Deploy to GitHub Pages
 
 on:
   # Trigger the workflow every time you push to the `main` branch
-  # Using a different branch name? Replace `main` with your branch’s name
+  # Using a different branch name? Replace `main` with your branch's name
   push:
     branches: [v3-alpha]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/v3-docs.yml'
   # Allows you to run this workflow manually from the Actions tab on GitHub.
   workflow_dispatch:
 
@@ -43,5 +46,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-env:
-  GH_TOKEN: ${{ secrets.GH_TOKEN }}
