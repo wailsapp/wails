@@ -7,6 +7,7 @@ import starlightImageZoom from "starlight-image-zoom";
 import starlightBlog from "starlight-blog";
 import { authors } from "./src/content/authors";
 import d2 from 'astro-d2';
+import react from '@astrojs/react';
 
 // https://astro.build/config
 export default defineConfig({
@@ -17,6 +18,7 @@ export default defineConfig({
   build: { format: "directory" },
   devToolbar: { enabled: true },
   integrations: [
+    react(),
     d2(),
     sitemap(),
     starlight({
