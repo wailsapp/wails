@@ -21,6 +21,10 @@ jobs:
     steps:
       - name: Checkout your repository using git
         uses: actions/checkout@v4
+      - name: Install D2
+        run: |
+          curl -fsSL https://d2lang.com/install.sh | sh -s --
+          sudo mv ./bin/d2 /usr/local/bin/
       - name: Install, build, and upload your site output
         uses: withastro/action@v2
         with:
