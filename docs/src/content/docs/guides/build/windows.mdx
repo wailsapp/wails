@@ -1,0 +1,415 @@
+---
+title: Windows Packaging
+description: Package your Wails application for Windows distribution
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Learn how to package your Wails application for Windows distribution using various installer formats.
+
+## Overview
+
+Wails provides several packaging options for Windows:
+- **NSIS** - Nullsoft Scriptable Install System (recommended)
+- **MSI** - Windows Installer Package
+- **Portable** - Standalone executable (no installation)
+- **MSIX** - Modern Windows app package
+
+## NSIS Installer
+
+NSIS creates professional installers with customization options and automatic system integration.
+
+### Quick Start
+
+Build an NSIS installer:
+
+```bash
+wails3 build
+wails3 task nsis
+```
+
+This generates `build/bin/<AppName>-<version>-<arch>-installer.exe`.
+
+### Features
+
+**Automatic Integration:**
+- ✅ Start Menu shortcuts
+- ✅ Desktop shortcuts (optional)
+- ✅ File associations
+- ✅ **Custom URL protocol registration** (NEW)
+- ✅ Uninstaller creation
+- ✅ Registry entries
+
+**Custom Protocols:**
+
+Wails automatically registers custom URL protocols defined in your application:
+
+```go
+app := application.New(application.Options{
+    Name: "My Application",
+    Protocols: []application.Protocol{
+        {
+            Scheme:      "myapp",
+            Description: "My Application Protocol",
+        },
+    },
+})
+```
+
+The NSIS installer:
+1. Registers all protocols during installation
+2. Associates them with your application executable
+3. Removes them during uninstallation
+
+**No additional configuration needed!**
+
+### Customization
+
+Customize the installer via `wails.json`:
+
+```json
+{
+  "name": "MyApp",
+  "outputfilename": "myapp.exe",
+  "nsis": {
+    "companyName": "My Company",
+    "productName": "My Application",
+    "productDescription": "An amazing desktop application",
+    "productVersion": "1.0.0",
+    "installerIcon": "build/appicon.ico",
+    "license": "LICENSE.txt",
+    "allowInstallDirCustomization": true,
+    "installDirectory": "$PROGRAMFILES64\\MyApp",
+    "createDesktopShortcut": true,
+    "runAfterInstall": true,
+    "adminPrivileges": false
+  }
+}
+```
+
+### NSIS Options
+
+| Option | Type | Description | Default |
+|--------|------|-------------|---------|
+| `companyName` | string | Company name shown in installer | Project name |
+| `productName` | string | Product name | App name |
+| `productDescription` | string | Description shown in installer | App description |
+| `productVersion` | string | Version number (e.g., "1.0.0") | "1.0.0" |
+| `installerIcon` | string | Path to .ico file for installer | App icon |
+| `license` | string | Path to license file (txt) | None |
+| `allowInstallDirCustomization` | boolean | Let users choose install location | true |
+| `installDirectory` | string | Default installation directory | `$PROGRAMFILES64\<ProductName>` |
+| `createDesktopShortcut` | boolean | Create desktop shortcut | true |
+| `runAfterInstall` | boolean | Run app after installation | false |
+| `adminPrivileges` | boolean | Require admin rights to install | false |
+
+### Advanced NSIS
+
+#### Custom NSIS Script
+
+For advanced customization, provide your own NSIS script:
+
+```bash
+# Create custom template
+cp build/nsis/installer.nsi build/nsis/installer.custom.nsi
+
+# Edit build/nsis/installer.custom.nsi
+# Add custom sections, pages, or logic
+
+# Build with custom script
+wails3 task nsis --script build/nsis/installer.custom.nsi
+```
+
+#### Available Macros
+
+Wails provides NSIS macros for common tasks:
+
+**wails.associateCustomProtocols**
+- Registers all custom URL protocols defined in `application.Options.Protocols`
+- Called automatically during installation
+- Creates registry entries under `HKEY_CURRENT_USER\SOFTWARE\Classes\`
+
+**wails.unassociateCustomProtocols**
+- Removes custom URL protocol registrations
+- Called automatically during uninstallation
+- Cleans up all protocol-related registry entries
+
+**Example usage in custom NSIS script:**
+
+```nsis
+Section "Install"
+    # ... your installation code ...
+
+    # Register custom protocols
+    !insertmacro wails.associateCustomProtocols
+
+    # ... more installation code ...
+SectionEnd
+
+Section "Uninstall"
+    # Remove custom protocols
+    !insertmacro wails.unassociateCustomProtocols
+
+    # ... your uninstallation code ...
+SectionEnd
+```
+
+## MSI Installer
+
+Windows Installer Package format with Windows logo certification support.
+
+### Build MSI
+
+```bash
+wails3 build
+wails3 task msi
+```
+
+Generates `build/bin/<AppName>-<version>-<arch>.msi`.
+
+### Customization
+
+Configure via `wails.json`:
+
+```json
+{
+  "msi": {
+    "productCode": "{GUID}",
+    "upgradeCode": "{GUID}",
+    "manufacturer": "My Company",
+    "installScope": "perMachine",
+    "shortcuts": {
+      "desktop": true,
+      "startMenu": true
+    }
+  }
+}
+```
+
+### MSI vs NSIS
+
+| Feature | NSIS | MSI |
+|---------|------|-----|
+| Customization | ✅ High | ⚠️ Limited |
+| File Size | ✅ Smaller | ⚠️ Larger |
+| Corporate Deployment | ⚠️ Less common | ✅ Preferred |
+| Custom UI | ✅ Full control | ⚠️ Restricted |
+| Windows Logo | ❌ No | ✅ Yes |
+| Protocol Registration | ✅ Automatic | ⚠️ Manual |
+
+**Use NSIS when:**
+- You want maximum customization
+- You need custom branding and UI
+- You want automatic protocol registration
+- File size matters
+
+**Use MSI when:**
+- You need Windows logo certification
+- You're deploying in enterprise environments
+- You need Group Policy support
+- You want Windows Update integration
+
+## Portable Executable
+
+Single executable with no installation required.
+
+### Build Portable
+
+```bash
+wails3 build
+```
+
+Output: `build/bin/<appname>.exe`
+
+### Characteristics
+
+- No installation required
+- No registry changes
+- No administrator privileges needed
+- Can run from USB drives
+- No automatic updates
+- No Start Menu integration
+
+### Use Cases
+
+- Trial versions
+- USB stick applications
+- Corporate environments with restricted installations
+- Quick testing and demos
+
+## MSIX Packages
+
+Modern Windows app package format for Microsoft Store and sideloading.
+
+See [MSIX Packaging Guide](/guides/build/msix) for detailed information.
+
+## Code Signing
+
+Sign your executables and installers to:
+- Avoid Windows SmartScreen warnings
+- Establish publisher identity
+- Enable automatic updates
+- Meet corporate security requirements
+
+See [Code Signing Guide](/guides/build/signing) for details.
+
+## Icon Requirements
+
+### Application Icon
+
+**Format:** `.ico` file with multiple resolutions
+
+**Recommended sizes:**
+- 16x16, 32x32, 48x48, 64x64, 128x128, 256x256
+
+**Create from PNG:**
+
+```bash
+# Using ImageMagick
+magick convert icon.png -define icon:auto-resize=256,128,64,48,32,16 appicon.ico
+
+# Using online tools
+# https://icoconvert.com/
+```
+
+### Installer Icon
+
+Same `.ico` file can be used for both application and installer.
+
+Configure in `wails.json`:
+
+```json
+{
+  "nsis": {
+    "installerIcon": "build/appicon.ico"
+  },
+  "windows": {
+    "applicationIcon": "build/appicon.ico"
+  }
+}
+```
+
+## Building for Different Architectures
+
+### AMD64 (64-bit)
+
+```bash
+wails3 build -platform windows/amd64
+```
+
+### ARM64
+
+```bash
+wails3 build -platform windows/arm64
+```
+
+### Universal Build
+
+Build for all architectures:
+
+```bash
+wails3 build -platform windows/amd64,windows/arm64
+```
+
+## Distribution Checklist
+
+Before distributing your Windows application:
+
+- [ ] Test installer on clean Windows installation
+- [ ] Verify application icon displays correctly
+- [ ] Test uninstaller completely removes application
+- [ ] Verify Start Menu shortcuts work
+- [ ] Test custom protocol handlers (if used)
+- [ ] Check SmartScreen behavior (sign your app if possible)
+- [ ] Test on Windows 10 and Windows 11
+- [ ] Verify file associations work (if used)
+- [ ] Test with antivirus software
+- [ ] Include license and documentation
+
+## Troubleshooting
+
+### NSIS Build Fails
+
+**Error:** `makensis: command not found`
+
+**Solution:**
+```bash
+# Install NSIS
+winget install NSIS.NSIS
+
+# Or download from https://nsis.sourceforge.io/
+```
+
+### Custom Protocols Not Working
+
+**Check registration:**
+```powershell
+# Check registry
+Get-ItemProperty -Path "HKCU:\SOFTWARE\Classes\myapp"
+
+# Test protocol
+Start-Process "myapp://test"
+```
+
+**Fix:**
+1. Reinstall with NSIS installer
+2. Run installer as administrator if needed
+3. Verify `Protocols` configuration in Go code
+
+### SmartScreen Warning
+
+**Cause:** Unsigned executable
+
+**Solutions:**
+1. **Code sign your application** (recommended)
+2. Build reputation (downloads over time)
+3. Submit to Microsoft for analysis
+4. Use Extended Validation (EV) certificate for immediate trust
+
+### Installer Won't Run
+
+**Possible causes:**
+- Antivirus blocking
+- Missing dependencies
+- Corrupted download
+- User permissions
+
+**Solutions:**
+1. Temporarily disable antivirus for testing
+2. Run as administrator
+3. Re-download installer
+4. Check Windows Event Viewer for errors
+
+## Best Practices
+
+### ✅ Do
+
+- **Code sign your releases** - Avoids SmartScreen warnings
+- **Test on clean Windows installations** - Don't rely on dev environment
+- **Provide both installer and portable versions** - Give users choice
+- **Include comprehensive uninstaller** - Remove all traces
+- **Use semantic versioning** - Clear version numbering
+- **Test protocol handlers thoroughly** - Validate all URL inputs
+- **Provide clear installation instructions** - Help users succeed
+
+### ❌ Don't
+
+- **Don't skip code signing** - Users will see scary warnings
+- **Don't require admin for normal apps** - Only if truly necessary
+- **Don't install to non-standard locations** - Use `$PROGRAMFILES64`
+- **Don't leave orphaned registry entries** - Clean up properly
+- **Don't forget to test uninstaller** - Broken uninstallers frustrate users
+- **Don't hardcode paths** - Use Windows environment variables
+
+## Next Steps
+
+- [Code Signing](/guides/build/signing) - Sign your executables and installers
+- [MSIX Packaging](/guides/build/msix) - Modern Windows app packages
+- [Custom Protocols](/guides/distribution/custom-protocols) - Deep linking and URL schemes
+- [Auto-Updates](/guides/distribution/auto-updates) - Keep your app current
+
+---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [Windows packaging examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples).
