@@ -24,7 +24,7 @@ jobs:
       - name: Install D2
         run: |
           curl -fsSL https://d2lang.com/install.sh | sh -s --
-          sudo cp bin/d2 /usr/local/bin/d2
+          sudo cp ~/.local/bin/d2 /usr/local/bin/d2
           d2 --version
       - name: Install, build, and upload your site output
         uses: withastro/action@v2
