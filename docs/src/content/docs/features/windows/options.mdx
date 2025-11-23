@@ -213,8 +213,8 @@ MaxHeight: 1080,
 
 ### Hidden
 
-**Type:** `bool`  
-**Default:** `false`  
+**Type:** `bool`
+**Default:** `false`
 **Platform:** All
 
 ```go
@@ -227,6 +227,29 @@ Hidden: true,
 - Background windows
 - Windows shown on demand
 - Splash screens (create, load, then show)
+- Prevent white flash while loading content
+
+**Platform improvements:**
+- **Windows:** Fixed white window flash - window stays invisible until `Show()` is called
+- **macOS:** Full support
+- **Linux:** Full support
+
+**Recommended pattern for smooth loading:**
+
+```go
+// Create hidden window
+window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Name:   "main-window",
+    Hidden: true,
+    BackgroundColour: application.RGBA{R: 30, G: 30, B: 30, A: 255}, // Match your theme
+})
+
+// Load content while hidden
+// ... content loads ...
+
+// Show when ready (no flash!)
+window.Show()
+```
 
 **Example:**
 

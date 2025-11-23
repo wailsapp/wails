@@ -341,25 +341,40 @@ func rebuildTrayMenu(status string) {
 
   <TabItem label="Windows" icon="seti:windows">
     **Notification area integration:**
-    
+
     ```go
     // Set tooltip (appears on hover)
     systray.SetTooltip("My Application")
-    
+
     // Or use SetLabel (same as tooltip on Windows)
     systray.SetLabel("My Application")
+
+    // Show/Hide functionality (fully functional)
+    systray.Show()  // Show tray icon
+    systray.Hide()  // Hide tray icon
     ```
-    
+
     **Icon requirements:**
     - 16x16 or 32x32 pixels
     - PNG or ICO format
     - Transparent background
-    
+
+    **Tooltip limits:**
+    - Maximum 127 UTF-16 characters
+    - Longer tooltips will be truncated
+    - Keep concise for best experience
+
+    **Platform features:**
+    - Tray icon survives Windows Explorer restarts
+    - Show() and Hide() methods fully functional
+    - Proper lifecycle management
+
     **Best practices:**
     - Use 32x32 for high-DPI displays
-    - Keep tooltips concise
+    - Keep tooltips under 127 characters
     - Test on different Windows versions
     - Consider notification area overflow
+    - Use Show/Hide for conditional tray visibility
   </TabItem>
 
   <TabItem label="Linux" icon="linux">
@@ -534,7 +549,7 @@ func (t *TrayApp) setStartAtLogin(enabled bool) {
 
 ## Visibility Control
 
-Show/hide the tray icon:
+Show/hide the tray icon dynamically:
 
 ```go
 // Hide tray icon
@@ -549,7 +564,40 @@ if systray.IsVisible() {
 }
 ```
 
-**Use case:** Temporarily hide tray icon based on user preference.
+**Platform Support:**
+
+| Platform | Hide() | Show() | Notes |
+|----------|--------|--------|-------|
+| **Windows** | ✅ | ✅ | Fully functional - icon appears/disappears from notification area |
+| **macOS** | ✅ | ✅ | Menu bar item shows/hides |
+| **Linux** | ✅ | ✅ | Varies by desktop environment |
+
+**Use cases:**
+- Temporarily hide tray icon based on user preference
+- Headless mode with tray icon appearing only when needed
+- Toggle visibility based on application state
+
+**Example - Conditional Tray Visibility:**
+
+```go
+func (t *TrayApp) setTrayVisibility(visible bool) {
+    if visible {
+        t.systray.Show()
+    } else {
+        t.systray.Hide()
+    }
+}
+
+// Show tray only when updates are available
+func (t *TrayApp) checkForUpdates() {
+    if hasUpdates {
+        t.systray.Show()
+        t.systray.SetLabel("Update Available")
+    } else {
+        t.systray.Hide()
+    }
+}
+```
 
 ## Cleanup
 

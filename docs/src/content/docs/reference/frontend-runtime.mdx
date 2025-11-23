@@ -91,6 +91,63 @@ all required initialisation code in the build.
 If you prefer the pre-built bundle, adding a script tag as shown above suffices.
 :::
 
+## Vite Plugin for Typed Events
+
+The runtime includes a Vite plugin that enables HMR (Hot Module Replacement) support for typed events during development.
+
+### Setup
+
+Add the plugin to your `vite.config.ts`:
+
+```typescript
+import { defineConfig } from 'vite'
+import wails from '@wailsio/runtime/plugins/vite'
+
+export default defineConfig({
+  plugins: [wails()],
+})
+```
+
+### Benefits
+
+- **Automatic Reloading**: Event bindings are automatically regenerated and reloaded when you run `wails3 generate bindings`
+- **Development Mode**: Works seamlessly with `wails3 dev` for instant updates
+- **Type Safety**: Full TypeScript support with autocomplete and type checking
+
+### Usage with Event Registration
+
+Register your events in Go:
+
+```go
+type UserData struct {
+    ID   string
+    Name string
+}
+
+func init() {
+    application.RegisterEvent[UserData]("user-updated")
+}
+```
+
+Generate bindings:
+
+```bash
+wails3 generate bindings
+```
+
+Use typed events in your frontend:
+
+```typescript
+import { Events } from '@wailsio/runtime'
+import { UserUpdated } from './bindings/events'
+
+// Type-safe event with autocomplete
+Events.Emit(UserUpdated({
+    ID: "123",
+    Name: "John Doe"
+}))
+```
+
 ## API Reference
 
 The runtime is organized into modules, each providing specific functionality. Import only what you need:
@@ -111,6 +168,7 @@ Register a callback for an event.
 
 ```typescript
 function On(eventName: string, callback: (event: WailsEvent) => void): () => void
+function On<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
 ```
 
 **Returns:** Unsubscribe function
@@ -120,7 +178,16 @@ function On(eventName: string, callback: (event: WailsEvent) => void): () => voi
 ```javascript
 import { On } from '@wailsio/runtime/events'
 
+// Basic event listening
 const unsubscribe = On('user-logged-in', (event) => {
+    console.log('User:', event.data.username)
+})
+
+// With typed events (TypeScript)
+import { UserLogin } from './bindings/events'
+
+On(UserLogin, (event) => {
+    // event.data is typed as UserLoginData
     console.log('User:', event.data.username)
 })
 
@@ -133,6 +200,7 @@ Register a callback that runs only once.
 
 ```typescript
 function Once(eventName: string, callback: (event: WailsEvent) => void): () => void
+function Once<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
 ```
 
 **Example:**
@@ -147,19 +215,40 @@ Once('app-ready', () => {
 
 #### Emit()
 
-Emit an event to Go backend.
+Emit an event to Go backend or other windows.
 
 ```typescript
-function Emit(name: string, data?: any): Promise<void>
+function Emit(name: string, data?: any): Promise<boolean>
+function Emit<T>(event: Event<T>): Promise<boolean>
 ```
+
+**Returns:** Promise that resolves to `true` if the event was cancelled, `false` otherwise
 
 **Example:**
 
 ```javascript
 import { Emit } from '@wailsio/runtime/events'
 
-await Emit('button-clicked', { buttonId: 'submit' })
+// Basic event emission
+const wasCancelled = await Emit('button-clicked', { buttonId: 'submit' })
+
+// With typed events (TypeScript)
+import { UserLogin } from './bindings/events'
+
+const cancelled = await Emit(UserLogin({
+    UserID: "123",
+    Username: "john_doe",
+    LoginTime: new Date().toISOString()
+}))
+
+if (cancelled) {
+    console.log('Login was cancelled by a hook')
+}
 ```
+
+:::note
+The return value indicates whether the event was cancelled by a hook. Most events cannot be cancelled and will always return `false`.
+:::
 
 #### Off()
 
