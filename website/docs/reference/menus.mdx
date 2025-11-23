@@ -28,7 +28,7 @@ An example of how to create a menu:
     })
 
     if runtime.GOOS == "darwin" {
-	    AppMenu.Append(menu.EditMenu())  // On macOS platform, EditMenu should be appended to enable Cmd+C, Cmd+V, Cmd+Z... shortcuts
+        AppMenu.Append(menu.EditMenu())  // On macOS platform, EditMenu should be appended to enable Cmd+C, Cmd+V, Cmd+Z... shortcuts
     }
 
     err := wails.Run(&options.App{
