@@ -12,19 +12,32 @@ import { CancellablePromise, type CancellablePromiseWithResolvers } from "./canc
 import { newRuntimeCaller, objectNames } from "./runtime.js";
 import { nanoid } from "./nanoid.js";
 
-// Setup
+// Initialize global _wails object (still needed by other runtime components)
 window._wails = window._wails || {};
-window._wails.callResultHandler = resultHandler;
-window._wails.callErrorHandler = errorHandler;
 
-type PromiseResolvers = Omit<CancellablePromiseWithResolvers<any>, "promise" | "oncancelled">
+// Remove callback handlers setup - HTTP-only implementation no longer needs these
+// DELETE: window._wails.callResultHandler = resultHandler;
+// DELETE: window._wails.callErrorHandler = errorHandler;
+
+// Remove callback response map - no longer needed for HTTP-only
+// DELETE: const callResponses = new Map<string, PromiseResolvers>();
 
 const call = newRuntimeCaller(objectNames.Call);
 const cancelCall = newRuntimeCaller(objectNames.CancelCall);
-const callResponses = new Map<string, PromiseResolvers>();
 
 const CallBinding = 0;
-const CancelMethod = 0
+const CancelMethod = 0;
+
+// Configuration
+let bindingTimeout = 5 * 60 * 1000; // 5 minutes default
+
+export function setBindingTimeout(timeout: number) {
+    bindingTimeout = timeout;
+}
+
+export function getBindingTimeout(): number {
+    return bindingTimeout;
+}
 
 /**
  * Holds all required information for a binding call.
@@ -47,8 +60,24 @@ export type CallOptions = {
 };
 
 /**
+ * Exception class for binding errors with HTTP status codes
+ */
+export class BindingError extends Error {
+    constructor(
+        public status: number,
+        public kind: string,
+        message: string,
+        public cause?: any
+    ) {
+        super(message);
+        this.name = "BindingError";
+    }
+}
+
+/**
  * Exception class that will be thrown in case the bound method returns an error.
  * The value of the {@link RuntimeError#name} property is "RuntimeError".
+ * @deprecated Use BindingError for new HTTP-only implementations
  */
 export class RuntimeError extends Error {
     /**
@@ -62,149 +91,92 @@ export class RuntimeError extends Error {
     }
 }
 
-/**
- * Handles the result of a call request.
- *
- * @param id - The id of the request to handle the result for.
- * @param data - The result data of the request.
- * @param isJSON - Indicates whether the data is JSON or not.
- */
-function resultHandler(id: string, data: string, isJSON: boolean): void {
-    const resolvers = getAndDeleteResponse(id);
-    if (!resolvers) {
-        return;
-    }
-
-    if (!data) {
-        resolvers.resolve(undefined);
-    } else if (!isJSON) {
-        resolvers.resolve(data);
-    } else {
-        try {
-            resolvers.resolve(JSON.parse(data));
-        } catch (err: any) {
-            resolvers.reject(new TypeError("could not parse result: " + err.message, { cause: err }));
-        }
-    }
-}
+// Remove all callback handler functions - HTTP-only implementation
+// DELETE: function resultHandler(...)
+// DELETE: function errorHandler(...)
+// DELETE: function getAndDeleteResponse(...)
 
 /**
- * Handles the error from a call request.
- *
- * @param id - The id of the promise handler.
- * @param data - The error data to reject the promise handler with.
- * @param isJSON - Indicates whether the data is JSON or not.
- */
-function errorHandler(id: string, data: string, isJSON: boolean): void {
-    const resolvers = getAndDeleteResponse(id);
-    if (!resolvers) {
-        return;
-    }
-
-    if (!isJSON) {
-        resolvers.reject(new Error(data));
-    } else {
-        let error: any;
-        try {
-            error = JSON.parse(data);
-        } catch (err: any) {
-            resolvers.reject(new TypeError("could not parse error: " + err.message, { cause: err }));
-            return;
-        }
-
-        let options: ErrorOptions = {};
-        if (error.cause) {
-            options.cause = error.cause;
-        }
-
-        let exception;
-        switch (error.kind) {
-            case "ReferenceError":
-                exception = new ReferenceError(error.message, options);
-                break;
-            case "TypeError":
-                exception = new TypeError(error.message, options);
-                break;
-            case "RuntimeError":
-                exception = new RuntimeError(error.message, options);
-                break;
-            default:
-                exception = new Error(error.message, options);
-                break;
-        }
-
-        resolvers.reject(exception);
-    }
-}
-
-/**
- * Retrieves and removes the response associated with the given ID from the callResponses map.
- *
- * @param id - The ID of the response to be retrieved and removed.
- * @returns The response object associated with the given ID, if any.
- */
-function getAndDeleteResponse(id: string): PromiseResolvers | undefined {
-    const response = callResponses.get(id);
-    callResponses.delete(id);
-    return response;
-}
-
-/**
- * Generates a unique ID using the nanoid library.
- *
- * @returns A unique ID that does not exist in the callResponses set.
+ * Generate unique ID for calls
  */
 function generateID(): string {
     let result;
     do {
         result = nanoid();
-    } while (callResponses.has(result));
+    } while (false); // No longer need to check against callback map
     return result;
 }
 
 /**
- * Call a bound method according to the given call options.
+ * Call a bound method - HTTP-only implementation
  *
- * In case of failure, the returned promise will reject with an exception
- * among ReferenceError (unknown method), TypeError (wrong argument count or type),
- * {@link RuntimeError} (method returned an error), or other (network or internal errors).
- * The exception might have a "cause" field with the value returned
- * by the application- or service-level error marshaling functions.
+ * In case of failure, the returned promise will reject with a BindingError
+ * containing HTTP status information, error kind, message, and optional cause.
  *
  * @param options - A method call descriptor.
  * @returns The result of the call.
  */
 export function Call(options: CallOptions): CancellablePromise<any> {
     const id = generateID();
-
+    const abortController = new AbortController();
+    
     const result = CancellablePromise.withResolvers<any>();
-    callResponses.set(id, { resolve: result.resolve, reject: result.reject });
-
-    const request = call(CallBinding, Object.assign({ "call-id": id }, options));
-    let running = false;
-
-    request.then(() => {
-        running = true;
-    }, (err) => {
-        callResponses.delete(id);
-        result.reject(err);
+    
+    // Make HTTP request with timeout and cancellation support
+    const requestOptions = {
+        signal: abortController.signal,
+        timeout: getBindingTimeout()
+    };
+    
+    const request = call(CallBinding, Object.assign({ "call-id": id }, options), requestOptions);
+    
+    request.then(response => {
+        // Handle direct HTTP response
+        if (!response.ok) {
+            // Parse error response
+            return response.json().then(errorData => {
+                throw new BindingError(
+                    response.status,
+                    errorData.kind || 'UnknownError',
+                    errorData.error || response.statusText,
+                    errorData.cause
+                );
+            }).catch(parseError => {
+                // If error response isn't JSON, create generic error
+                throw new BindingError(
+                    response.status,
+                    'HttpError',
+                    `HTTP ${response.status}: ${response.statusText}`
+                );
+            });
+        }
+        
+        // Success - parse JSON response
+        const contentType = response.headers.get('Content-Type');
+        if (contentType && contentType.includes('application/json')) {
+            return response.json();
+        } else {
+            return response.text();
+        }
+    }).then(data => {
+        result.resolve(data);
+    }).catch(err => {
+        if (err.name === 'AbortError') {
+            result.reject(new Error('Binding call cancelled'));
+        } else {
+            result.reject(err);
+        }
     });
-
-    const cancel = () => {
-        callResponses.delete(id);
-        return cancelCall(CancelMethod, {"call-id": id}).catch((err) => {
-            console.error("Error while requesting binding call cancellation:", err);
+    
+    // Cancellation support
+    result.oncancelled = () => {
+        abortController.abort();
+        // Also try to cancel on backend (best effort)
+        return cancelCall(CancelMethod, {"call-id": id}).catch(() => {
+            // Ignore cancel request failures
         });
     };
-
-    result.oncancelled = () => {
-        if (running) {
-            return cancel();
-        } else {
-            return request.then(cancel);
-        }
-    };
-
+    
     return result.promise;
 }
 

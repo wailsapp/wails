@@ -334,30 +334,8 @@ func (w *WebviewWindow) addCancellationFunction(canceller func()) {
 	w.cancellers = append(w.cancellers, canceller)
 }
 
-func (w *WebviewWindow) CallError(callID string, result string, isJSON bool) {
-	if w.impl != nil {
-		w.impl.execJS(
-			fmt.Sprintf(
-				"_wails.callErrorHandler('%s', '%s', %t);",
-				callID,
-				template.JSEscapeString(result),
-				isJSON,
-			),
-		)
-	}
-}
-
-func (w *WebviewWindow) CallResponse(callID string, result string) {
-	if w.impl != nil {
-		w.impl.execJS(
-			fmt.Sprintf(
-				"_wails.callResultHandler('%s', '%s', true);",
-				callID,
-				template.JSEscapeString(result),
-			),
-		)
-	}
-}
+// CallError and CallResponse methods removed - HTTP-only bindings use direct HTTP responses
+// instead of JavaScript callbacks
 
 func (w *WebviewWindow) DialogError(dialogID string, result string) {
 	if w.impl != nil {

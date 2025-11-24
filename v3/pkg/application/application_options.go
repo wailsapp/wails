@@ -4,6 +4,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 )
@@ -54,6 +55,9 @@ type Options struct {
 
 	// Assets are the application assets to be used.
 	Assets AssetOptions
+
+	// Bindings contains configuration for HTTP-only binding behavior
+	Bindings BindingConfig
 
 	// Flags are key value pairs that are available to the frontend.
 	// This is also used by Wails to provide information to the frontend.
@@ -222,4 +226,40 @@ type LinuxOptions struct {
 	//
 	//[see the docs]: https://docs.gtk.org/glib/func.set_prgname.html
 	ProgramName string
+}
+
+/********* Binding Configuration *********/
+
+// BindingConfig contains configuration options for HTTP-only binding execution
+type BindingConfig struct {
+	// Timeout for binding execution. If not set, defaults to 10 minutes
+	Timeout time.Duration `json:"timeout"`
+	
+	// CORS configuration for external URLs
+	CORS CORSConfig `json:"cors"`
+	
+	// EnableStreaming enables streaming for large responses
+	EnableStreaming bool `json:"enableStreaming"`
+}
+
+// CORSConfig contains Cross-Origin Resource Sharing configuration
+type CORSConfig struct {
+	// Enabled determines if CORS headers should be set
+	Enabled bool `json:"enabled"`
+	
+	// AllowedOrigins is a list of origins allowed to make cross-origin requests
+	// Supports wildcards like "https://*.myapp.com"
+	AllowedOrigins []string `json:"allowedOrigins"`
+	
+	// AllowedMethods is a list of HTTP methods allowed for cross-origin requests
+	// Defaults to ["GET", "POST", "OPTIONS"]
+	AllowedMethods []string `json:"allowedMethods"`
+	
+	// AllowedHeaders is a list of headers allowed in cross-origin requests
+	// Defaults to ["Content-Type", "x-wails-client-id", "x-wails-window-name"]
+	AllowedHeaders []string `json:"allowedHeaders"`
+	
+	// MaxAge specifies how long the browser can cache preflight results
+	// Defaults to 24 hours
+	MaxAge time.Duration `json:"maxAge"`
 }
