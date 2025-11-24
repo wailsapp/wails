@@ -37,11 +37,11 @@ export default defineConfig({
       editLink: {
         baseUrl: "https://github.com/wailsapp/wails/edit/v3-alpha/docs",
       },
-      social: {
-        github: "https://github.com/wailsapp/wails",
-        discord: "https://discord.gg/JDdSxwjhGf",
-        "x.com": "https://x.com/wailsapp",
-      },
+      social: [
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/wailsapp/wails' },
+        { icon: 'discord', label: 'Discord', href: 'https://discord.gg/JDdSxwjhGf' },
+        { icon: 'x.com', label: 'X', href: 'https://x.com/wailsapp' },
+      ],
       head: [
         {
           tag: 'script',

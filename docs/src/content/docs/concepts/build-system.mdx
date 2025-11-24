@@ -19,72 +19,13 @@ wails3 build
 
 ## Build Process Overview
 
-```d2
-direction: down
+{/*
+TODO: Fix D2 diagram generation or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
 
-Source: "Source Code" {
-  Go: "Go Code\n(main.go, services)" {
-    shape: rectangle
-    style.fill: "#00ADD8"
-  }
-  
-  Frontend: "Frontend Code\n(HTML/CSS/JS)" {
-    shape: rectangle
-    style.fill: "#8B5CF6"
-  }
-}
+**[Build Process Diagram Placeholder]**
 
-Analysis: "Analysis Phase" {
-  ScanGo: "Scan Go Services" {
-    shape: rectangle
-  }
-  
-  ExtractTypes: "Extract Types" {
-    shape: rectangle
-  }
-}
-
-Generation: "Generation Phase" {
-  GenBindings: "Generate TypeScript Bindings" {
-    shape: rectangle
-    style.fill: "#10B981"
-  }
-  
-  BuildFrontend: "Build Frontend\n(Vite/webpack)" {
-    shape: rectangle
-    style.fill: "#8B5CF6"
-  }
-}
-
-Compilation: "Compilation Phase" {
-  CompileGo: "Compile Go\n(with optimisations)" {
-    shape: rectangle
-    style.fill: "#00ADD8"
-  }
-  
-  EmbedAssets: "Embed Frontend Assets" {
-    shape: rectangle
-    style.fill: "#10B981"
-  }
-}
-
-Output: "Output" {
-  Binary: "Native Binary\n(myapp.exe/.app)" {
-    shape: rectangle
-    style.fill: "#10B981"
-  }
-}
-
-Source.Go -> Analysis.ScanGo
-Analysis.ScanGo -> Analysis.ExtractTypes
-Analysis.ExtractTypes -> Generation.GenBindings
-Generation.GenBindings -> Source.Frontend: "TypeScript types"
-Source.Frontend -> Generation.BuildFrontend
-Generation.BuildFrontend -> Compilation.EmbedAssets: "Bundled assets"
-Source.Go -> Compilation.CompileGo
-Compilation.CompileGo -> Compilation.EmbedAssets
-Compilation.EmbedAssets -> Output.Binary
-```
 
 ## Build Phases
 

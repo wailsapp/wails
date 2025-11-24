@@ -26,9 +26,12 @@ jobs:
         uses: actions/checkout@v4
       - name: Install D2
         run: |
-          curl -fsSL https://d2lang.com/install.sh | sh -s --
+          curl -fsSL https://d2lang.com/install.sh > install.sh
+          chmod +x install.sh
+          ./install.sh
           sudo cp ~/.local/bin/d2 /usr/local/bin/d2
           d2 --version
+          rm install.sh
       - name: Install, build, and upload your site output
         uses: withastro/action@v2
         with:
