@@ -74,7 +74,7 @@ import (
 
 func (s *Service) UpdateData() {
     // Do some data processing...
-    
+
     // Notify the frontend
     app := application.Get()
     app.Event.Emit("my-app:data-updated",
@@ -100,7 +100,7 @@ Events.Emit('myapp:close-window')
 Events.Emit('myapp:disconnect-requested', 'id-123')
 ```
 
-If you are using typescript in your frontend and [application.RegisterEvent](/learn/events#custom-event-registration) in your Go code, you will get event name autocomplete / checking and data type checking. 
+If you are using TypeScript in your frontend and [registering typed events](#typed-events-with-typecheck) in your Go code, you will get event name autocomplete/checking and data type checking.
 
 ### Removing Event Listeners
 
@@ -155,7 +155,7 @@ import { Events } from '@wailsio/runtime';
 
 Events.On('common:ThemeChanged', (event) => {
     const isDarkMode = event.data.isDark;
-    
+
     if (isDarkMode) {
         document.body.classList.add('dark-theme');
         document.body.classList.remove('light-theme');
@@ -175,7 +175,7 @@ import { Events } from '@wailsio/runtime';
 
 Events.On('common:WindowFilesDropped', (event) => {
     const files = event.data.files;
-    
+
     files.forEach(file => {
         console.log('File dropped:', file);
         // Process the dropped files
@@ -194,7 +194,7 @@ import { Events } from '@wailsio/runtime';
 Events.On('common:WindowClosing', () => {
     // Save user data before closing
     saveApplicationState();
-    
+
     // You could also prevent closing by returning false
     // from a registered window close handler
 });
@@ -237,7 +237,7 @@ Events.On('mac:ApplicationWillTerminate', () => {
 
 ## Creating Custom Events
 
-You can create your own events for application-specific needs.  See [application.RegisterEvent](/learn/events#custom-event-registration) to learn how to register these events and enable type checking of event data.
+You can create your own events for application-specific needs.
 
 ### Backend (Go)
 
@@ -256,7 +256,6 @@ func (s *Service) ProcessUserData(userData UserData) error {
             "timestamp": time.Now(),
         },
     )
-    
     return nil
 }
 
@@ -281,7 +280,7 @@ import { Events } from '@wailsio/runtime';
 // Listen for your custom events
 Events.On('user:data-processed', (event) => {
     const { userId, status, timestamp } = event.data;
-    
+
     showNotification(`User ${userId} processing ${status}`);
     updateUIWithNewData();
 });
@@ -290,6 +289,128 @@ Events.On('monitor:stats-updated', (event) => {
     updateDashboard(event.data);
 });
 ```
+
+## Typed Events with Type Safety
+
+Wails v3 supports typed events with full TypeScript type safety through event registration and automatic binding generation.
+
+### Registering Custom Events
+
+Call `application.RegisterEvent` at init time to register custom event names with their data types:
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+type UserLoginData struct {
+    UserID   string
+    Username string
+    LoginTime string
+}
+
+type MonitorStats struct {
+    CPUUsage    float64
+    MemoryUsage float64
+}
+
+func init() {
+    // Register events with their data types
+    application.RegisterEvent[UserLoginData]("user:login")
+    application.RegisterEvent[MonitorStats]("monitor:stats")
+
+    // Register events without data (void events)
+    application.RegisterEvent[application.Void]("app:ready")
+}
+```
+
+:::caution
+`RegisterEvent` is meant to be called at init time and will panic if:
+- Arguments are not valid
+- The same event name is registered twice with different data types
+:::
+
+:::note
+It is safe to register the same event multiple times as long as the data type is always the same. This can be useful to ensure an event is registered when any of multiple packages is loaded.
+:::
+
+### Benefits of Event Registration
+
+Once registered, data arguments passed to `Event.Emit` are type-checked against the specified type. On mismatch:
+- An error is emitted and logged (or passed to the registered error handler)
+- The offending event will not be propagated
+- This ensures the data field of registered events is always assignable to the declared type
+
+### Strict Mode
+
+Use the `strictevents` build tag to enable warnings for unregistered events in development:
+
+```bash
+go build -tags strictevents
+```
+
+With strict mode enabled, the runtime emits at most one warning per unregistered event name to avoid spamming logs.
+
+### TypeScript Binding Generation
+
+The binding generator outputs TypeScript definitions and glue code for transparent typed event support in the frontend.
+
+#### 1. Set up the Vite Plugin
+
+In your `vite.config.ts`:
+
+```typescript
+import { defineConfig } from 'vite'
+import wails from '@wailsio/runtime/plugins/vite'
+
+export default defineConfig({
+  plugins: [wails()],
+})
+```
+
+#### 2. Generate Bindings
+
+Run the binding generator:
+
+```bash
+wails3 generate bindings
+```
+
+This creates TypeScript files in your frontend directory with typed event creators and data interfaces.
+
+#### 3. Use Typed Events in Frontend
+
+```typescript
+import { Events } from '@wailsio/runtime'
+import { UserLogin, MonitorStats } from './bindings/events'
+
+// Type-safe event emission with autocomplete
+Events.Emit(UserLogin({
+    UserID: "123",
+    Username: "john_doe",
+    LoginTime: new Date().toISOString()
+}))
+
+// Type-safe event listening
+Events.On(UserLogin, (event) => {
+    // event.data is typed as UserLoginData
+    console.log(`User ${event.data.Username} logged in`)
+})
+
+Events.On(MonitorStats, (event) => {
+    // event.data is typed as MonitorStats
+    updateDashboard({
+        cpu: event.data.CPUUsage,
+        memory: event.data.MemoryUsage
+    })
+})
+```
+
+The typed events provide:
+- **Autocomplete** for event names
+- **Type checking** for event data
+- **Compile-time errors** for mismatched data types
+- **IntelliSense** documentation
 
 ## Event Reference
 
@@ -354,6 +475,8 @@ Core Linux window events:
 When creating custom events, use namespaces to avoid conflicts:
 
 ```javascript
+import { Events } from '@wailsio/runtime';
+
 // Good - namespaced events
 Events.Emit('myapp:user:login');
 Events.Emit('myapp:data:updated');
@@ -376,9 +499,9 @@ useEffect(() => {
     const handler = (event) => {
         // Handle event
     };
-    
+
     Events.On('common:WindowResize', handler);
-    
+
     // Cleanup
     return () => {
         Events.Off('common:WindowResize', handler);
