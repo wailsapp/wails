@@ -2,10 +2,8 @@ package application
 
 import (
 	"encoding/json"
-	"fmt"
-	"net/http"
 
-	"github.com/pkg/errors"
+	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
 const (
@@ -16,8 +14,8 @@ var eventsMethodNames = map[int]string{
 	EventsEmit: "Emit",
 }
 
-func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWriter, _ *http.Request, window Window, params QueryParams) {
-	switch method {
+func (m *MessageProcessor) processEventsMethod(req *RuntimeRequest, window Window) (any, error) {
+	switch req.Method {
 	case EventsEmit:
 		var event CustomEvent
 		var options struct {
@@ -25,20 +23,17 @@ func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWrite
 			Data json.RawMessage `json:"data"`
 		}
 
-		err := params.ToStruct(&options)
+		err := req.Args.ToStruct(&options)
 		if err != nil {
-			m.httpError(rw, "Invalid events call:", fmt.Errorf("error parsing event: %w", err))
-			return
+			return nil, errs.WrapInvalidEventsCallErrorf(err, "error parsing event")
 		}
 		if options.Name == nil {
-			m.httpError(rw, "Invalid events call:", errors.New("missing event name"))
-			return
+			return nil, errs.NewInvalidEventsCallErrorf("missing event name")
 		}
 
 		data, err := decodeEventData(*options.Name, options.Data)
 		if err != nil {
-			m.httpError(rw, "Events.Emit failed: ", fmt.Errorf("error parsing event data: %w", err))
-			return
+			return nil, errs.WrapInvalidEventsCallErrorf(err, "error parsing event data")
 		}
 
 		event.Name = *options.Name
@@ -46,10 +41,8 @@ func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWrite
 		event.Sender = window.Name()
 		globalApplication.Event.EmitEvent(&event)
 
-		m.json(rw, event.IsCancelled())
-		m.Info("Runtime call:", "method", "Events."+eventsMethodNames[method], "name", event.Name, "sender", event.Sender, "data", event.Data, "cancelled", event.IsCancelled())
+		return event.IsCancelled(), nil
 	default:
-		m.httpError(rw, "Invalid events call:", fmt.Errorf("unknown method: %d", method))
-		return
+		return nil, errs.NewInvalidEventsCallErrorf("unknown method: %d", req.Method)
 	}
 }
