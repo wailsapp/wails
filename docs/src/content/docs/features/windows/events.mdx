@@ -1,0 +1,693 @@
+---
+title: Window Events
+description: Handle window lifecycle and state change events
+sidebar:
+  order: 5
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Window Events
+
+Wails provides **comprehensive event hooks** for window lifecycle and state changes: creation, focus/blur, resize/move, minimise/maximise, and close events. Register callbacks, handle events, and coordinate between windows with simple, consistent APIs.
+
+## Lifecycle Events
+
+### OnCreate
+
+Called when a window is created:
+
+```go
+app.OnWindowCreation(func(window *application.WebviewWindow) {
+    fmt.Printf("Window created: %s (ID: %d)\n", window.Name(), window.ID())
+    
+    // Configure all new windows
+    window.SetMinSize(400, 300)
+    
+    // Register window-specific handlers
+    window.OnClose(func() bool {
+        return confirmClose()
+    })
+})
+```
+
+**Use cases:**
+- Configure all windows consistently
+- Register event handlers
+- Track window creation
+- Initialise window-specific resources
+
+### OnClose
+
+Called when user attempts to close window:
+
+```go
+window.OnClose(func() bool {
+    // Return false to cancel close
+    // Return true to allow close
+    
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        return result == "yes"
+    }
+    return true
+})
+```
+
+**Important:**
+- Only triggered by user actions (clicking X button)
+- NOT triggered by `window.Destroy()`
+- Can cancel the close by returning `false`
+
+**Use cases:**
+- Confirm before closing
+- Save state
+- Prevent accidental closure
+- Cleanup before close
+
+**Example with dialog:**
+
+```go
+window.OnClose(func() bool {
+    if !hasUnsavedChanges() {
+        return true
+    }
+    
+    // Show confirmation dialog
+    dialog := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        Title:       "Confirm Close",
+        Width:       400,
+        Height:      150,
+        Parent:      window,
+        AlwaysOnTop: true,
+    })
+    
+    // Wait for user response
+    result := waitFordialogResult(dialog)
+    
+    return result == "yes"
+})
+```
+
+### OnDestroy
+
+Called when window is destroyed:
+
+```go
+window.OnDestroy(func() {
+    fmt.Printf("Window destroyed: %s\n", window.Name())
+    
+    // Cleanup resources
+    closeDatabase()
+    
+    // Remove from tracking
+    removeWindowFromRegistry(window.ID())
+    
+    // Update application state
+    updateWindowCount()
+})
+```
+
+**Important:**
+- Always called when window is destroyed
+- Cannot be cancelled
+- Last chance to cleanup
+
+**Use cases:**
+- Release resources
+- Close connections
+- Update application state
+- Remove from tracking
+
+**Example with resource cleanup:**
+
+```go
+type ManagedWindow struct {
+    window    *application.WebviewWindow
+    db        *sql.DB
+    listeners []func()
+}
+
+func (mw *ManagedWindow) Setup() {
+    mw.window.OnDestroy(func() {
+        // Close database
+        if mw.db != nil {
+            mw.db.Close()
+        }
+        
+        // Remove event listeners
+        for _, listener := range mw.listeners {
+            listener()
+        }
+        
+        // Clear references
+        mw.db = nil
+        mw.listeners = nil
+    })
+}
+```
+
+## Focus Events
+
+### OnFocus
+
+Called when window gains focus:
+
+```go
+window.OnFocus(func() {
+    fmt.Println("Window gained focus")
+    
+    // Update UI
+    updateTitleBar(true)
+    
+    // Refresh data
+    refreshContent()
+    
+    // Notify other windows
+    app.EmitEvent("window-focused", window.ID())
+})
+```
+
+**Use cases:**
+- Update UI appearance
+- Refresh data
+- Resume operations
+- Coordinate with other windows
+
+### OnBlur
+
+Called when window loses focus:
+
+```go
+window.OnBlur(func() {
+    fmt.Println("Window lost focus")
+    
+    // Update UI
+    updateTitleBar(false)
+    
+    // Pause operations
+    pauseAnimations()
+    
+    // Save state
+    saveCurrentState()
+})
+```
+
+**Use cases:**
+- Update UI appearance
+- Pause operations
+- Save state
+- Reduce resource usage
+
+**Example: Focus-aware UI:**
+
+```go
+type FocusAwareWindow struct {
+    window  *application.WebviewWindow
+    focused bool
+}
+
+func (fw *FocusAwareWindow) Setup() {
+    fw.window.OnFocus(func() {
+        fw.focused = true
+        fw.updateAppearance()
+    })
+    
+    fw.window.OnBlur(func() {
+        fw.focused = false
+        fw.updateAppearance()
+    })
+}
+
+func (fw *FocusAwareWindow) updateAppearance() {
+    if fw.focused {
+        fw.window.EmitEvent("update-theme", "active")
+    } else {
+        fw.window.EmitEvent("update-theme", "inactive")
+    }
+}
+```
+
+## State Change Events
+
+### OnMinimise / OnUnMinimise
+
+Called when window is minimised or restored:
+
+```go
+window.OnMinimise(func() {
+    fmt.Println("Window minimised")
+    
+    // Pause expensive operations
+    pauseRendering()
+    
+    // Save state
+    saveWindowState()
+})
+
+window.OnUnMinimise(func() {
+    fmt.Println("Window restored from minimised")
+    
+    // Resume operations
+    resumeRendering()
+    
+    // Refresh data
+    refreshContent()
+})
+```
+
+**Use cases:**
+- Pause/resume operations
+- Save/restore state
+- Reduce resource usage
+- Update UI
+
+### OnMaximise / OnUnMaximise
+
+Called when window is maximised or restored:
+
+```go
+window.OnMaximise(func() {
+    fmt.Println("Window maximised")
+    
+    // Adjust layout
+    window.EmitEvent("layout-mode", "maximised")
+    
+    // Update button icon
+    updateMaximiseButton("restore")
+})
+
+window.OnUnMaximise(func() {
+    fmt.Println("Window restored from maximised")
+    
+    // Adjust layout
+    window.EmitEvent("layout-mode", "normal")
+    
+    // Update button icon
+    updateMaximiseButton("maximise")
+})
+```
+
+**Use cases:**
+- Adjust layout
+- Update UI
+- Save window state
+- Coordinate with other windows
+
+### OnFullscreen / OnUnFullscreen
+
+Called when window enters or exits fullscreen:
+
+```go
+window.OnFullscreen(func() {
+    fmt.Println("Window entered fullscreen")
+    
+    // Hide UI chrome
+    window.EmitEvent("chrome-visibility", false)
+    
+    // Adjust layout
+    window.EmitEvent("layout-mode", "fullscreen")
+})
+
+window.OnUnFullscreen(func() {
+    fmt.Println("Window exited fullscreen")
+    
+    // Show UI chrome
+    window.EmitEvent("chrome-visibility", true)
+    
+    // Restore layout
+    window.EmitEvent("layout-mode", "normal")
+})
+```
+
+**Use cases:**
+- Show/hide UI elements
+- Adjust layout
+- Update controls
+- Save preferences
+
+## Position and Size Events
+
+### OnMove
+
+Called when window is moved:
+
+```go
+window.OnMove(func(x, y int) {
+    fmt.Printf("Window moved to: %d, %d\n", x, y)
+    
+    // Save position
+    saveWindowPosition(x, y)
+    
+    // Update related windows
+    updateRelatedWindowPositions(x, y)
+})
+```
+
+**Use cases:**
+- Save window position
+- Update related windows
+- Snap to edges
+- Multi-monitor handling
+
+### OnResize
+
+Called when window is resized:
+
+```go
+window.OnResize(func(width, height int) {
+    fmt.Printf("Window resized to: %dx%d\n", width, height)
+    
+    // Save size
+    saveWindowSize(width, height)
+    
+    // Adjust layout
+    window.EmitEvent("window-size", map[string]int{
+        "width":  width,
+        "height": height,
+    })
+})
+```
+
+**Use cases:**
+- Save window size
+- Adjust layout
+- Update UI
+- Responsive design
+
+**Example: Responsive layout:**
+
+```go
+window.OnResize(func(width, height int) {
+    var layout string
+    
+    if width < 600 {
+        layout = "compact"
+    } else if width < 1200 {
+        layout = "normal"
+    } else {
+        layout = "wide"
+    }
+    
+    window.EmitEvent("layout-changed", layout)
+})
+```
+
+## Complete Example
+
+Here's a production-ready window with full event handling:
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+    "os"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type WindowState struct {
+    X          int  `json:"x"`
+    Y          int  `json:"y"`
+    Width      int  `json:"width"`
+    Height     int  `json:"height"`
+    Maximised  bool `json:"maximised"`
+    Fullscreen bool `json:"fullscreen"`
+}
+
+type ManagedWindow struct {
+    app     *application.Application
+    window  *application.WebviewWindow
+    state   WindowState
+    dirty   bool
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Event Demo",
+    })
+
+    mw := &ManagedWindow{app: app}
+    mw.CreateWindow()
+    mw.LoadState()
+    mw.SetupEventHandlers()
+
+    app.Run()
+}
+
+func (mw *ManagedWindow) CreateWindow() {
+    mw.window = mw.app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        Name:   "main",
+        Title:  "Event Demo",
+        Width:  800,
+        Height: 600,
+    })
+}
+
+func (mw *ManagedWindow) SetupEventHandlers() {
+    // Focus events
+    mw.window.OnFocus(func() {
+        fmt.Println("Window focused")
+        mw.window.EmitEvent("focus-state", true)
+    })
+    
+    mw.window.OnBlur(func() {
+        fmt.Println("Window blurred")
+        mw.window.EmitEvent("focus-state", false)
+    })
+    
+    // State change events
+    mw.window.OnMinimise(func() {
+        fmt.Println("Window minimised")
+        mw.SaveState()
+    })
+    
+    mw.window.OnUnMinimise(func() {
+        fmt.Println("Window restored")
+    })
+    
+    mw.window.OnMaximise(func() {
+        fmt.Println("Window maximised")
+        mw.state.Maximised = true
+        mw.dirty = true
+    })
+    
+    mw.window.OnUnMaximise(func() {
+        fmt.Println("Window restored from maximised")
+        mw.state.Maximised = false
+        mw.dirty = true
+    })
+    
+    mw.window.OnFullscreen(func() {
+        fmt.Println("Window fullscreen")
+        mw.state.Fullscreen = true
+        mw.dirty = true
+    })
+    
+    mw.window.OnUnFullscreen(func() {
+        fmt.Println("Window exited fullscreen")
+        mw.state.Fullscreen = false
+        mw.dirty = true
+    })
+    
+    // Position and size events
+    mw.window.OnMove(func(x, y int) {
+        mw.state.X = x
+        mw.state.Y = y
+        mw.dirty = true
+    })
+    
+    mw.window.OnResize(func(width, height int) {
+        mw.state.Width = width
+        mw.state.Height = height
+        mw.dirty = true
+    })
+    
+    // Lifecycle events
+    mw.window.OnClose(func() bool {
+        if mw.dirty {
+            mw.SaveState()
+        }
+        return true
+    })
+    
+    mw.window.OnDestroy(func() {
+        fmt.Println("Window destroyed")
+        if mw.dirty {
+            mw.SaveState()
+        }
+    })
+}
+
+func (mw *ManagedWindow) LoadState() {
+    data, err := os.ReadFile("window-state.json")
+    if err != nil {
+        return
+    }
+    
+    if err := json.Unmarshal(data, &mw.state); err != nil {
+        return
+    }
+    
+    // Restore window state
+    mw.window.SetPosition(mw.state.X, mw.state.Y)
+    mw.window.SetSize(mw.state.Width, mw.state.Height)
+    
+    if mw.state.Maximised {
+        mw.window.Maximise()
+    }
+    
+    if mw.state.Fullscreen {
+        mw.window.Fullscreen()
+    }
+}
+
+func (mw *ManagedWindow) SaveState() {
+    data, err := json.Marshal(mw.state)
+    if err != nil {
+        return
+    }
+    
+    os.WriteFile("window-state.json", data, 0644)
+    mw.dirty = false
+    
+    fmt.Println("Window state saved")
+}
+```
+
+## Event Coordination
+
+### Cross-Window Events
+
+Coordinate between multiple windows:
+
+```go
+// In main window
+mainWindow.OnFocus(func() {
+    // Notify all windows
+    app.EmitEvent("main-window-focused", nil)
+})
+
+// In other windows
+app.OnEvent("main-window-focused", func(event *application.WailsEvent) {
+    // Update UI
+    updateRelativeToMain()
+})
+```
+
+### Event Chains
+
+Chain events together:
+
+```go
+window.OnMaximise(func() {
+    // Save state
+    saveWindowState()
+    
+    // Update layout
+    window.EmitEvent("layout-changed", "maximised")
+    
+    // Notify other windows
+    app.EmitEvent("window-maximised", window.ID())
+})
+```
+
+### Debounced Events
+
+Debounce frequent events:
+
+```go
+var resizeTimer *time.Timer
+
+window.OnResize(func(width, height int) {
+    if resizeTimer != nil {
+        resizeTimer.Stop()
+    }
+    
+    resizeTimer = time.AfterFunc(500*time.Millisecond, func() {
+        // Save after resize stops
+        saveWindowSize(width, height)
+    })
+})
+```
+
+## Best Practices
+
+### ✅ Do
+
+- **Save state on close** - Restore window position/size
+- **Cleanup on destroy** - Release resources
+- **Debounce frequent events** - Resize, move
+- **Handle focus changes** - Update UI appropriately
+- **Coordinate windows** - Use events for communication
+- **Test all events** - Ensure handlers work correctly
+
+### ❌ Don't
+
+- **Don't block event handlers** - Keep them fast
+- **Don't forget cleanup** - Memory leaks
+- **Don't ignore errors** - Log or handle them
+- **Don't save on every event** - Debounce first
+- **Don't create circular events** - Infinite loops
+- **Don't forget platform differences** - Test thoroughly
+
+## Troubleshooting
+
+### OnClose Not Firing
+
+**Cause:** Using `window.Destroy()` instead of `window.Close()`
+
+**Solution:**
+
+```go
+// ✅ Triggers OnClose
+window.Close()
+
+// ❌ Doesn't trigger OnClose
+window.Destroy()
+```
+
+### Events Not Firing
+
+**Cause:** Handler registered after event occurred
+
+**Solution:**
+
+```go
+// Register handlers immediately after creation
+window := app.NewWebviewWindow()
+window.OnClose(func() bool { return true })
+```
+
+### Memory Leaks
+
+**Cause:** Not cleaning up in OnDestroy
+
+**Solution:**
+
+```go
+window.OnDestroy(func() {
+    // Always cleanup
+    closeResources()
+    removeReferences()
+})
+```
+
+## Next Steps
+
+**Window Basics** - Learn the fundamentals of window management  
+[Learn More →](/features/windows/basics)
+
+**Multiple Windows** - Patterns for multi-window applications  
+[Learn More →](/features/windows/multiple)
+
+**Events System** - Deep dive into the event system  
+[Learn More →](/features/events/system)
+
+**Application Lifecycle** - Understand the application lifecycle  
+[Learn More →](/concepts/lifecycle)
+
+---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples).

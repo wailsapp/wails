@@ -1,0 +1,713 @@
+---
+title: System Tray Menus
+description: Add system tray (notification area) integration to your application
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## System Tray Menus
+
+Wails provides **unified system tray APIs** that work across all platforms. Create tray icons with menus, attach windows, and handle clicks with native platform behaviour for background applications, services, and quick-access utilities.
+{/* VISUAL PLACEHOLDER: System Tray Comparison
+Description: Three screenshots showing the same Wails system tray icon on:
+1. Windows - Notification area (bottom-right)
+2. macOS - Menu bar (top-right) with label
+3. Linux (GNOME) - Top bar
+All showing the same icon and menu structure
+Style: Clean screenshots with arrows pointing to tray icon, menu expanded
+*/}
+
+## Quick Start
+
+```go
+package main
+
+import (
+    _ "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed assets/icon.png
+var icon []byte
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Tray App",
+    })
+
+    // Create system tray
+    systray := app.NewSystemTray()
+    systray.SetIcon(icon)
+    systray.SetLabel("My App")
+
+    // Add menu
+    menu := app.NewMenu()
+    menu.Add("Show").OnClick(func(ctx *application.Context) {
+        // Show main window
+    })
+    menu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+    systray.SetMenu(menu)
+
+    // Create hidden window
+    window := app.NewWebviewWindow()
+    window.Hide()
+
+    app.Run()
+}
+```
+
+**Result:** System tray icon with menu on all platforms.
+
+## Creating a System Tray
+
+### Basic System Tray
+
+```go
+// Create system tray
+systray := app.NewSystemTray()
+
+// Set icon
+systray.SetIcon(iconBytes)
+
+// Set label (macOS) / tooltip (Windows)
+systray.SetLabel("My Application")
+```
+
+### With Icon
+
+Icons should be embedded:
+
+```go
+import _ "embed"
+
+//go:embed assets/icon.png
+var icon []byte
+
+//go:embed assets/icon-dark.png
+var iconDark []byte
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    systray := app.NewSystemTray()
+    systray.SetIcon(icon)
+    systray.SetDarkModeIcon(iconDark)  // macOS dark mode
+    
+    app.Run()
+}
+```
+
+**Icon requirements:**
+
+| Platform | Size | Format | Notes |
+|----------|------|--------|-------|
+| **Windows** | 16x16 or 32x32 | PNG, ICO | Notification area |
+| **macOS** | 18x18 to 22x22 | PNG | Menu bar, template recommended |
+| **Linux** | 22x22 to 48x48 | PNG, SVG | Varies by DE |
+
+### Template Icons (macOS)
+
+Template icons adapt to light/dark mode automatically:
+
+```go
+systray.SetTemplateIcon(iconBytes)
+```
+
+**Template icon guidelines:**
+- Use black and clear (transparent) colours only
+- Black becomes white in dark mode
+- Name file with `Template` suffix: `iconTemplate.png`
+- [Design guide](https://bjango.com/articles/designingmenubarextras/)
+
+## Adding Menus
+
+System tray menus work like application menus:
+
+```go
+menu := app.NewMenu()
+
+// Add items
+menu.Add("Open").OnClick(func(ctx *application.Context) {
+    showMainWindow()
+})
+
+menu.AddSeparator()
+
+menu.AddCheckbox("Start at Login", false).OnClick(func(ctx *application.Context) {
+    enabled := ctx.ClickedMenuItem().Checked()
+    setStartAtLogin(enabled)
+})
+
+menu.AddSeparator()
+
+menu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+// Set menu
+systray.SetMenu(menu)
+```
+
+**For all menu item types**, see [Menu Reference](/features/menus/reference).
+
+## Attaching Windows
+
+Attach a window to the tray icon for automatic show/hide:
+
+```go
+// Create window
+window := app.NewWebviewWindow()
+
+// Attach to tray
+systray.AttachWindow(window)
+
+// Configure behaviour
+systray.SetWindowOffset(10)  // Pixels from tray icon
+systray.SetWindowDebounce(200 * time.Millisecond)  // Click debounce
+```
+
+**Behaviour:**
+- Window starts hidden
+- **Left-click tray icon** → Toggle window visibility
+- **Right-click tray icon** → Show menu (if set)
+- Window positioned near tray icon
+
+**Example: Popup window**
+
+```go
+window := app.NewWebviewWindow(application.WebviewWindowOptions{
+    Title:  "Quick Access",
+    Width:  300,
+    Height: 400,
+    Frameless: true,  // No title bar
+    AlwaysOnTop: true,  // Stay on top
+})
+
+systray.AttachWindow(window)
+systray.SetWindowOffset(5)
+```
+
+## Click Handlers
+
+Handle tray icon clicks:
+
+```go
+systray := app.NewSystemTray()
+
+// Left click
+systray.OnClick(func() {
+    fmt.Println("Tray icon clicked")
+})
+
+// Right click
+systray.OnRightClick(func() {
+    fmt.Println("Tray icon right-clicked")
+})
+
+// Double click
+systray.OnDoubleClick(func() {
+    fmt.Println("Tray icon double-clicked")
+})
+
+// Mouse enter/leave
+systray.OnMouseEnter(func() {
+    fmt.Println("Mouse entered tray icon")
+})
+
+systray.OnMouseLeave(func() {
+    fmt.Println("Mouse left tray icon")
+})
+```
+
+**Platform support:**
+
+| Event | Windows | macOS | Linux |
+|-------|---------|-------|-------|
+| OnClick | ✅ | ✅ | ✅ |
+| OnRightClick | ✅ | ✅ | ✅ |
+| OnDoubleClick | ✅ | ✅ | ⚠️ Varies |
+| OnMouseEnter | ✅ | ✅ | ⚠️ Varies |
+| OnMouseLeave | ✅ | ✅ | ⚠️ Varies |
+
+## Dynamic Updates
+
+Update tray icon and menu dynamically:
+
+### Change Icon
+
+```go
+var isActive bool
+
+func updateTrayIcon() {
+    if isActive {
+        systray.SetIcon(activeIcon)
+        systray.SetLabel("Active")
+    } else {
+        systray.SetIcon(inactiveIcon)
+        systray.SetLabel("Inactive")
+    }
+}
+```
+
+### Update Menu
+
+```go
+var isPaused bool
+
+pauseMenuItem := menu.Add("Pause")
+
+pauseMenuItem.OnClick(func(ctx *application.Context) {
+    isPaused = !isPaused
+    
+    if isPaused {
+        pauseMenuItem.SetLabel("Resume")
+    } else {
+        pauseMenuItem.SetLabel("Pause")
+    }
+    
+    menu.Update()  // Important!
+})
+```
+
+:::caution[Always Call Update()]
+After changing menu state, **call `menu.Update()`**. See [Menu Reference](/features/menus/reference#enabled-state).
+:::
+
+### Rebuild Menu
+
+For major changes, rebuild the entire menu:
+
+```go
+func rebuildTrayMenu(status string) {
+    menu := app.NewMenu()
+    
+    // Status-specific items
+    switch status {
+    case "syncing":
+        menu.Add("Syncing...").SetEnabled(false)
+        menu.Add("Pause Sync").OnClick(pauseSync)
+    case "synced":
+        menu.Add("Up to date ✓").SetEnabled(false)
+        menu.Add("Sync Now").OnClick(startSync)
+    case "error":
+        menu.Add("Sync Error").SetEnabled(false)
+        menu.Add("Retry").OnClick(retrySync)
+    }
+    
+    menu.AddSeparator()
+    menu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+    
+    systray.SetMenu(menu)
+}
+```
+
+## Platform-Specific Features
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    **Menu bar integration:**
+    
+    ```go
+    // Set label (appears next to icon)
+    systray.SetLabel("My App")
+    
+    // Use template icon (adapts to dark mode)
+    systray.SetTemplateIcon(iconBytes)
+    
+    // Set icon position
+    systray.SetIconPosition(application.IconPositionRight)
+    ```
+    
+    **Icon positions:**
+    - `IconPositionLeft` - Icon left of label
+    - `IconPositionRight` - Icon right of label
+    - `IconPositionOnly` - Icon only, no label
+    - `IconPositionNone` - Label only, no icon
+    
+    **Best practices:**
+    - Use template icons (black + transparent)
+    - Keep labels short (3-5 characters)
+    - 18x18 to 22x22 pixels for Retina displays
+    - Test in both light and dark modes
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    **Notification area integration:**
+
+    ```go
+    // Set tooltip (appears on hover)
+    systray.SetTooltip("My Application")
+
+    // Or use SetLabel (same as tooltip on Windows)
+    systray.SetLabel("My Application")
+
+    // Show/Hide functionality (fully functional)
+    systray.Show()  // Show tray icon
+    systray.Hide()  // Hide tray icon
+    ```
+
+    **Icon requirements:**
+    - 16x16 or 32x32 pixels
+    - PNG or ICO format
+    - Transparent background
+
+    **Tooltip limits:**
+    - Maximum 127 UTF-16 characters
+    - Longer tooltips will be truncated
+    - Keep concise for best experience
+
+    **Platform features:**
+    - Tray icon survives Windows Explorer restarts
+    - Show() and Hide() methods fully functional
+    - Proper lifecycle management
+
+    **Best practices:**
+    - Use 32x32 for high-DPI displays
+    - Keep tooltips under 127 characters
+    - Test on different Windows versions
+    - Consider notification area overflow
+    - Use Show/Hide for conditional tray visibility
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **System tray integration:**
+    
+    Uses StatusNotifierItem specification (most modern DEs).
+    
+    ```go
+    systray.SetIcon(iconBytes)
+    systray.SetLabel("My App")
+    ```
+    
+    **Desktop environment support:**
+    - **GNOME**: Top bar (with extension)
+    - **KDE Plasma**: System tray
+    - **XFCE**: Notification area
+    - **Others**: Varies
+    
+    **Best practices:**
+    - Use 22x22 or 24x24 pixels
+    - SVG icons scale better
+    - Test on target desktop environments
+    - Provide fallback for unsupported DEs
+  </TabItem>
+</Tabs>
+
+## Complete Example
+
+Here's a production-ready system tray application:
+
+```go
+package main
+
+import (
+    _ "embed"
+    "fmt"
+    "time"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed assets/icon.png
+var icon []byte
+
+//go:embed assets/icon-active.png
+var iconActive []byte
+
+type TrayApp struct {
+    app     *application.Application
+    systray *application.SystemTray
+    window  *application.WebviewWindow
+    menu    *application.Menu
+    isActive bool
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Tray Application",
+        Mac: application.MacOptions{
+            ApplicationShouldTerminateAfterLastWindowClosed: false,
+        },
+    })
+
+    trayApp := &TrayApp{app: app}
+    trayApp.setup()
+
+    app.Run()
+}
+
+func (t *TrayApp) setup() {
+    // Create system tray
+    t.systray = t.app.NewSystemTray()
+    t.systray.SetIcon(icon)
+    t.systray.SetLabel("Inactive")
+    
+    // Create menu
+    t.createMenu()
+    
+    // Create window (hidden by default)
+    t.window = t.app.NewWebviewWindow(application.WebviewWindowOptions{
+        Title:  "Tray Application",
+        Width:  400,
+        Height: 600,
+        Hidden: true,
+    })
+    
+    // Attach window to tray
+    t.systray.AttachWindow(t.window)
+    t.systray.SetWindowOffset(10)
+    
+    // Handle tray clicks
+    t.systray.OnRightClick(func() {
+        t.systray.OpenMenu()
+    })
+    
+    // Start background task
+    go t.backgroundTask()
+}
+
+func (t *TrayApp) createMenu() {
+    t.menu = t.app.NewMenu()
+    
+    // Status item (disabled)
+    statusItem := t.menu.Add("Status: Inactive")
+    statusItem.SetEnabled(false)
+    
+    t.menu.AddSeparator()
+    
+    // Toggle active
+    t.menu.Add("Start").OnClick(func(ctx *application.Context) {
+        t.toggleActive()
+    })
+    
+    // Show window
+    t.menu.Add("Show Window").OnClick(func(ctx *application.Context) {
+        t.window.Show()
+        t.window.SetFocus()
+    })
+    
+    t.menu.AddSeparator()
+    
+    // Settings
+    t.menu.AddCheckbox("Start at Login", false).OnClick(func(ctx *application.Context) {
+        enabled := ctx.ClickedMenuItem().Checked()
+        t.setStartAtLogin(enabled)
+    })
+    
+    t.menu.AddSeparator()
+    
+    // Quit
+    t.menu.Add("Quit").OnClick(func(ctx *application.Context) {
+        t.app.Quit()
+    })
+    
+    t.systray.SetMenu(t.menu)
+}
+
+func (t *TrayApp) toggleActive() {
+    t.isActive = !t.isActive
+    t.updateTray()
+}
+
+func (t *TrayApp) updateTray() {
+    if t.isActive {
+        t.systray.SetIcon(iconActive)
+        t.systray.SetLabel("Active")
+    } else {
+        t.systray.SetIcon(icon)
+        t.systray.SetLabel("Inactive")
+    }
+    
+    // Rebuild menu with new status
+    t.createMenu()
+}
+
+func (t *TrayApp) backgroundTask() {
+    ticker := time.NewTicker(5 * time.Second)
+    defer ticker.Stop()
+    
+    for range ticker.C {
+        if t.isActive {
+            fmt.Println("Background task running...")
+            // Do work
+        }
+    }
+}
+
+func (t *TrayApp) setStartAtLogin(enabled bool) {
+    // Implementation varies by platform
+    fmt.Printf("Start at login: %v\n", enabled)
+}
+```
+
+## Visibility Control
+
+Show/hide the tray icon dynamically:
+
+```go
+// Hide tray icon
+systray.Hide()
+
+// Show tray icon
+systray.Show()
+
+// Check visibility
+if systray.IsVisible() {
+    fmt.Println("Tray icon is visible")
+}
+```
+
+**Platform Support:**
+
+| Platform | Hide() | Show() | Notes |
+|----------|--------|--------|-------|
+| **Windows** | ✅ | ✅ | Fully functional - icon appears/disappears from notification area |
+| **macOS** | ✅ | ✅ | Menu bar item shows/hides |
+| **Linux** | ✅ | ✅ | Varies by desktop environment |
+
+**Use cases:**
+- Temporarily hide tray icon based on user preference
+- Headless mode with tray icon appearing only when needed
+- Toggle visibility based on application state
+
+**Example - Conditional Tray Visibility:**
+
+```go
+func (t *TrayApp) setTrayVisibility(visible bool) {
+    if visible {
+        t.systray.Show()
+    } else {
+        t.systray.Hide()
+    }
+}
+
+// Show tray only when updates are available
+func (t *TrayApp) checkForUpdates() {
+    if hasUpdates {
+        t.systray.Show()
+        t.systray.SetLabel("Update Available")
+    } else {
+        t.systray.Hide()
+    }
+}
+```
+
+## Cleanup
+
+Destroy the tray icon when done:
+
+```go
+// In OnShutdown
+app := application.New(application.Options{
+    OnShutdown: func() {
+        if systray != nil {
+            systray.Destroy()
+        }
+    },
+})
+```
+
+**Important:** Always destroy system tray on shutdown to release resources.
+
+## Best Practices
+
+### ✅ Do
+
+- **Use template icons on macOS** - Adapts to dark mode
+- **Keep labels short** - 3-5 characters maximum
+- **Provide tooltips on Windows** - Helps users identify your app
+- **Test on all platforms** - Behaviour varies
+- **Handle clicks appropriately** - Left-click for main action, right-click for menu
+- **Update icon for status** - Visual feedback is important
+- **Destroy on shutdown** - Release resources
+
+### ❌ Don't
+
+- **Don't use large icons** - Follow platform guidelines
+- **Don't use long labels** - Gets truncated
+- **Don't forget dark mode** - Test on macOS dark mode
+- **Don't block click handlers** - Keep them fast
+- **Don't forget menu.Update()** - After changing menu state
+- **Don't assume tray support** - Some Linux DEs don't support it
+
+## Troubleshooting
+
+### Tray Icon Not Appearing
+
+**Possible causes:**
+1. Icon format not supported
+2. Icon size too large/small
+3. System tray not supported (Linux)
+
+**Solution:**
+
+```go
+// Check if system tray is supported
+if !application.SystemTraySupported() {
+    fmt.Println("System tray not supported")
+    // Fallback to window-only mode
+}
+```
+
+### Icon Looks Wrong on macOS
+
+**Cause:** Not using template icon
+
+**Solution:**
+
+```go
+// Use template icon
+systray.SetTemplateIcon(iconBytes)
+
+// Or design icon as template (black + transparent)
+```
+
+### Menu Not Updating
+
+**Cause:** Forgot to call `menu.Update()`
+
+**Solution:**
+
+```go
+menuItem.SetLabel("New Label")
+menu.Update()  // Add this!
+```
+
+## Next Steps
+
+<CardGrid>
+  <Card title="Menu Reference" icon="document">
+    Complete reference for menu item types and properties.
+    
+    [Learn More →](/features/menus/reference)
+  </Card>
+
+  <Card title="Application Menus" icon="list-format">
+    Create application menu bars.
+    
+    [Learn More →](/features/menus/application)
+  </Card>
+
+  <Card title="Context Menus" icon="puzzle">
+    Create right-click context menus.
+    
+    [Learn More →](/features/menus/context)
+  </Card>
+
+  <Card title="System Tray Tutorial" icon="open-book">
+    Build a complete system tray application.
+    
+    [Learn More →](/tutorials/system-tray)
+  </Card>
+</CardGrid>
+
+---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [system tray examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/systray-basic).

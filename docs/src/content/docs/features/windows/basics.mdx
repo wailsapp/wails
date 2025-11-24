@@ -1,0 +1,607 @@
+---
+title: Window Basics
+description: Creating and managing application windows in Wails
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## Window Management
+
+Wails provides a **unified window management API** that works across all platforms. Create windows, control their behaviour, and manage multiple windows with full control over creation, appearance, behaviour, and lifecycle.
+
+## Quick Start
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    // Create a window
+    window := app.NewWebviewWindow()
+    
+    // Configure it
+    window.SetTitle("Hello Wails")
+    window.SetSize(800, 600)
+    window.Center()
+    
+    // Show it
+    window.Show()
+
+    app.Run()
+}
+```
+
+**That's it!** You have a cross-platform window.
+
+## Creating Windows
+
+### Basic Window
+
+The simplest way to create a window:
+
+```go
+window := app.NewWebviewWindow()
+```
+
+**What you get:**
+- Default size (800x600)
+- Default title (application name)
+- WebView ready for your frontend
+- Platform-native appearance
+
+### Window with Options
+
+Create a window with custom configuration:
+
+```go
+window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Title:  "My Application",
+    Width:  1200,
+    Height: 800,
+    X:      100,   // Position from left
+    Y:      100,   // Position from top
+    AlwaysOnTop: false,
+    Frameless: false,
+    Hidden: false,
+    MinWidth: 400,
+    MinHeight: 300,
+    MaxWidth: 1920,
+    MaxHeight: 1080,
+})
+```
+
+**Common options:**
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `Title` | `string` | Window title |
+| `Width` | `int` | Window width in pixels |
+| `Height` | `int` | Window height in pixels |
+| `X` | `int` | X position (from left) |
+| `Y` | `int` | Y position (from top) |
+| `AlwaysOnTop` | `bool` | Keep window above others |
+| `Frameless` | `bool` | Remove title bar and borders |
+| `Hidden` | `bool` | Start hidden |
+| `MinWidth` | `int` | Minimum width |
+| `MinHeight` | `int` | Minimum height |
+| `MaxWidth` | `int` | Maximum width |
+| `MaxHeight` | `int` | Maximum height |
+
+**See [Window Options](/features/windows/options) for complete list.**
+
+### Named Windows
+
+Give windows names for easy retrieval:
+
+```go
+window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Name:  "main-window",
+    Title: "Main Application",
+})
+
+// Later, find it by name
+mainWindow := app.GetWindowByName("main-window")
+if mainWindow != nil {
+    mainWindow.Show()
+}
+```
+
+**Use cases:**
+- Multiple windows (main, settings, about)
+- Finding windows from different parts of your code
+- Window communication
+
+## Controlling Windows
+
+### Show and Hide
+
+```go
+// Show window
+window.Show()
+
+// Hide window
+window.Hide()
+
+// Check if visible
+if window.IsVisible() {
+    fmt.Println("Window is visible")
+}
+```
+
+**Use cases:**
+- Splash screens (show, then hide)
+- Settings windows (hide when not needed)
+- Popup windows (show on demand)
+
+### Position and Size
+
+```go
+// Set size
+window.SetSize(1024, 768)
+
+// Set position
+window.SetPosition(100, 100)
+
+// Centre on screen
+window.Center()
+
+// Get current size
+width, height := window.Size()
+
+// Get current position
+x, y := window.Position()
+```
+
+**Coordinate system:**
+- (0, 0) is top-left of primary screen
+- Positive X goes right
+- Positive Y goes down
+
+### Window State
+
+```go
+// Minimise
+window.Minimise()
+
+// Maximise
+window.Maximise()
+
+// Fullscreen
+window.Fullscreen()
+
+// Restore to normal
+window.Restore()
+
+// Check state
+if window.IsMinimised() {
+    fmt.Println("Window is minimised")
+}
+
+if window.IsMaximised() {
+    fmt.Println("Window is maximised")
+}
+
+if window.IsFullscreen() {
+    fmt.Println("Window is fullscreen")
+}
+```
+
+**State transitions:**
+
+```
+Normal ←→ Minimised
+Normal ←→ Maximised
+Normal ←→ Fullscreen
+```
+
+### Title and Appearance
+
+```go
+// Set title
+window.SetTitle("My Application - Document.txt")
+
+// Set background colour
+window.SetBackgroundColour(0, 0, 0, 255) // RGBA
+
+// Set always on top
+window.SetAlwaysOnTop(true)
+
+// Set resizable
+window.SetResizable(false)
+```
+
+### Closing Windows
+
+```go
+// Close window
+window.Close()
+
+// Destroy window (force close)
+window.Destroy()
+```
+
+**Difference:**
+- `Close()` - Triggers close event, can be cancelled
+- `Destroy()` - Immediate destruction, cannot be cancelled
+
+## Finding Windows
+
+### By Name
+
+```go
+window := app.GetWindowByName("settings")
+if window != nil {
+    window.Show()
+}
+```
+
+### By ID
+
+Every window has a unique ID:
+
+```go
+id := window.ID()
+fmt.Printf("Window ID: %d\n", id)
+
+// Find by ID
+foundWindow := app.GetWindowByID(id)
+```
+
+### Current Window
+
+Get the currently focused window:
+
+```go
+current := app.CurrentWindow()
+if current != nil {
+    current.SetTitle("Active Window")
+}
+```
+
+### All Windows
+
+Get all windows:
+
+```go
+windows := app.GetAllWindows()
+fmt.Printf("Total windows: %d\n", len(windows))
+
+for _, w := range windows {
+    fmt.Printf("Window: %s (ID: %d)\n", w.Name(), w.ID())
+}
+```
+
+## Window Lifecycle
+
+### Creation
+
+```go
+app.OnWindowCreation(func(window *application.WebviewWindow) {
+    fmt.Printf("Window created: %s\n", window.Name())
+    
+    // Configure new windows
+    window.SetMinSize(400, 300)
+})
+```
+
+### Closing
+
+```go
+window.OnClose(func() bool {
+    // Return false to cancel close
+    // Return true to allow close
+    
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        return result == "yes"
+    }
+    return true
+})
+```
+
+**Important:** `OnClose` only works for user-initiated closes (clicking X button). It doesn't prevent `window.Destroy()`.
+
+### Destruction
+
+```go
+window.OnDestroy(func() {
+    fmt.Println("Window destroyed")
+    // Cleanup resources
+})
+```
+
+## Multiple Windows
+
+### Creating Multiple Windows
+
+```go
+// Main window
+mainWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Name:   "main",
+    Title:  "Main Application",
+    Width:  1200,
+    Height: 800,
+})
+
+// Settings window
+settingsWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Name:   "settings",
+    Title:  "Settings",
+    Width:  600,
+    Height: 400,
+    Hidden: true,  // Start hidden
+})
+
+// Show settings when needed
+settingsWindow.Show()
+```
+
+### Window Communication
+
+Windows can communicate via events:
+
+```go
+// In main window
+app.EmitEvent("data-updated", map[string]interface{}{
+    "value": 42,
+})
+
+// In settings window
+app.OnEvent("data-updated", func(event *application.WailsEvent) {
+    data := event.Data.(map[string]interface{})
+    value := data["value"].(int)
+    fmt.Printf("Received: %d\n", value)
+})
+```
+
+**See [Events](/features/events/system) for more.**
+
+### Parent-Child Windows
+
+```go
+// Create child window
+childWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Title:  "Child Window",
+    Parent: mainWindow,  // Set parent
+})
+```
+
+**Behaviour:**
+- Child closes when parent closes
+- Child stays above parent (on some platforms)
+- Child minimises with parent (on some platforms)
+
+**Platform support:**
+- **macOS:** Full support
+- **Windows:** Partial support
+- **Linux:** Varies by desktop environment
+
+## Platform-Specific Features
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+    **Windows-specific features:**
+    
+    ```go
+    // Flash taskbar button
+    window.Flash(true)  // Start flashing
+    window.Flash(false) // Stop flashing
+    
+    // Trigger Windows 11 Snap Assist (Win+Z)
+    window.SnapAssist()
+    
+    // Set window icon
+    window.SetIcon(iconBytes)
+    ```
+    
+    **Snap Assist:**
+    Shows Windows 11 snap layout options for the window.
+    
+    **Taskbar flashing:**
+    Useful for notifications when window is minimised.
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **macOS-specific features:**
+    
+    ```go
+    // Transparent title bar
+    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        Mac: application.MacOptions{
+            TitleBarAppearsTransparent: true,
+            Backdrop:                   application.MacBackdropTranslucent,
+        },
+    })
+    ```
+    
+    **Backdrop types:**
+    - `MacBackdropNormal` - Standard window
+    - `MacBackdropTranslucent` - Translucent background
+    - `MacBackdropTransparent` - Fully transparent
+    
+    **Native fullscreen:**
+    macOS fullscreen creates a new Space (virtual desktop).
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **Linux-specific features:**
+    
+    ```go
+    // Set window icon
+    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        Linux: application.LinuxOptions{
+            Icon: iconBytes,
+        },
+    })
+    ```
+    
+    **Desktop environment notes:**
+    - GNOME: Full support
+    - KDE Plasma: Full support
+    - XFCE: Partial support
+    - Others: Varies
+    
+    **Window managers:**
+    - Tiling WMs may ignore size/position
+    - Some WMs don't support always-on-top
+  </TabItem>
+</Tabs>
+
+## Common Patterns
+
+### Splash Screen
+
+```go
+// Create splash screen
+splash := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Title:     "Loading...",
+    Width:     400,
+    Height:    300,
+    Frameless: true,
+    AlwaysOnTop: true,
+})
+
+// Show splash
+splash.Show()
+
+// Initialise application
+time.Sleep(2 * time.Second)
+
+// Hide splash, show main window
+splash.Close()
+mainWindow.Show()
+```
+
+### Settings Window
+
+```go
+var settingsWindow *application.WebviewWindow
+
+func showSettings() {
+    if settingsWindow == nil {
+        settingsWindow = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+            Name:   "settings",
+            Title:  "Settings",
+            Width:  600,
+            Height: 400,
+        })
+    }
+    
+    settingsWindow.Show()
+    settingsWindow.SetFocus()
+}
+```
+
+### Confirm Before Close
+
+```go
+window.OnClose(func() bool {
+    if hasUnsavedChanges() {
+        // Show dialog
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        return result == "yes"
+    }
+    return true
+})
+```
+
+## Best Practices
+
+### ✅ Do
+
+- **Name important windows** - Easier to find later
+- **Set minimum size** - Prevent unusable layouts
+- **Centre windows** - Better UX than random position
+- **Handle close events** - Prevent data loss
+- **Test on all platforms** - Behaviour varies
+- **Use appropriate sizes** - Consider different screen sizes
+
+### ❌ Don't
+
+- **Don't create too many windows** - Confusing for users
+- **Don't forget to close windows** - Memory leaks
+- **Don't hardcode positions** - Different screen sizes
+- **Don't ignore platform differences** - Test thoroughly
+- **Don't block the UI thread** - Use goroutines for long operations
+
+## Troubleshooting
+
+### Window Not Showing
+
+**Possible causes:**
+1. Window created as hidden
+2. Window off-screen
+3. Window behind other windows
+
+**Solution:**
+
+```go
+window.Show()
+window.Center()
+window.SetFocus()
+```
+
+### Window Wrong Size
+
+**Cause:** DPI scaling on Windows/Linux
+
+**Solution:**
+
+```go
+// Wails handles DPI automatically
+// Just use logical pixels
+window.SetSize(800, 600)
+```
+
+### Window Closes Immediately
+
+**Cause:** Application exits when last window closes
+
+**Solution:**
+
+```go
+app := application.New(application.Options{
+    Mac: application.MacOptions{
+        ApplicationShouldTerminateAfterLastWindowClosed: false,
+    },
+})
+```
+
+## Next Steps
+
+<CardGrid>
+  <Card title="Window Options" icon="seti:config">
+    Complete reference for all window options.
+    
+    [Learn More →](/features/windows/options)
+  </Card>
+
+  <Card title="Multiple Windows" icon="laptop">
+    Patterns for multi-window applications.
+    
+    [Learn More →](/features/windows/multiple)
+  </Card>
+
+  <Card title="Frameless Windows" icon="star">
+    Create custom window chrome.
+    
+    [Learn More →](/features/windows/frameless)
+  </Card>
+
+  <Card title="Window Events" icon="rocket">
+    Handle window lifecycle events.
+    
+    [Learn More →](/features/windows/events)
+  </Card>
+</CardGrid>
+
+---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [window examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples).

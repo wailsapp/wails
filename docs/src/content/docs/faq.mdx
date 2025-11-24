@@ -1,0 +1,260 @@
+---
+title: Frequently Asked Questions
+description: Common questions about Wails
+sidebar:
+  order: 99
+---
+
+## General
+
+### What is Wails?
+
+Wails is a framework for building desktop applications using Go and web technologies. It provides native OS integration whilst allowing you to build your UI with HTML, CSS, and JavaScript.
+
+### How does Wails compare to Electron?
+
+**Wails:**
+- ~10MB memory usage
+- ~15MB binary size
+- Native performance
+- Go backend
+
+**Electron:**
+- ~100MB+ memory usage
+- ~150MB+ binary size
+- Chromium overhead
+- Node.js backend
+
+### Is Wails production-ready?
+
+Yes! Wails v3 is suitable for production applications. Many companies use Wails for their desktop applications.
+
+### What platforms does Wails support?
+
+- Windows (7+)
+- macOS (10.13+)
+- Linux (GTK3)
+
+## Development
+
+### Do I need to know Go?
+
+Basic Go knowledge is helpful but not required. You can start with simple services and learn as you go.
+
+### Can I use my favourite frontend framework?
+
+Yes! Wails works with:
+- Vanilla JavaScript
+- React
+- Vue
+- Svelte
+- Any framework that builds to HTML/CSS/JS
+
+### How do I call Go functions from JavaScript?
+
+Use bindings:
+
+```go
+// Go
+func (s *Service) Greet(name string) string {
+    return "Hello " + name
+}
+```
+
+```javascript
+// JavaScript
+import { Greet } from './bindings/myapp/service'
+const message = await Greet("World")
+```
+
+### Can I use TypeScript?
+
+Yes! Wails generates TypeScript definitions automatically.
+
+### How do I debug my application?
+
+Use your browser's dev tools:
+- Right-click → Inspect Element
+- Or enable dev tools in window options
+
+## Building & Distribution
+
+### How do I build for production?
+
+```bash
+wails3 build
+```
+
+Your application will be in `build/bin/`.
+
+### Can I cross-compile?
+
+Yes! Build for other platforms:
+
+```bash
+wails3 build -platform windows/amd64
+wails3 build -platform darwin/universal
+wails3 build -platform linux/amd64
+```
+
+### How do I create an installer?
+
+Use platform-specific tools:
+- Windows: NSIS or WiX
+- macOS: Create DMG
+- Linux: DEB/RPM packages
+
+See the [Installers Guide](/guides/installers).
+
+### How do I code sign my application?
+
+**macOS:**
+```bash
+codesign --deep --force --sign "Developer ID" MyApp.app
+```
+
+**Windows:**
+Use SignTool with your certificate.
+
+## Features
+
+### Can I create multiple windows?
+
+Yes! Wails v3 has native multi-window support:
+
+```go
+window1 := app.NewWebviewWindow()
+window2 := app.NewWebviewWindow()
+```
+
+### Does Wails support system tray?
+
+Yes! Create system tray applications:
+
+```go
+tray := app.NewSystemTray()
+tray.SetIcon(iconBytes)
+tray.SetMenu(menu)
+```
+
+### Can I use native dialogs?
+
+Yes! Wails provides native dialogs:
+
+```go
+path, _ := app.OpenFileDialog().
+    SetTitle("Select File").
+    PromptForSingleSelection()
+```
+
+### Does Wails support auto-updates?
+
+Wails doesn't include auto-update functionality, but you can implement it yourself or use third-party libraries.
+
+## Performance
+
+### Why is my binary large?
+
+Go binaries include the runtime. Reduce size:
+
+```bash
+wails3 build -ldflags "-s -w"
+```
+
+### How do I improve performance?
+
+- Paginate large datasets
+- Cache expensive operations
+- Use events for updates
+- Optimise frontend bundle
+- Profile your code
+
+See the [Performance Guide](/guides/performance).
+
+### Does Wails support hot reload?
+
+Yes! Use dev mode:
+
+```bash
+wails3 dev
+```
+
+## Troubleshooting
+
+### My bindings aren't working
+
+Regenerate bindings:
+
+```bash
+wails3 generate bindings
+```
+
+### Window doesn't appear
+
+Check if you called `Show()`:
+
+```go
+window := app.NewWebviewWindow()
+window.Show()  // Don't forget this!
+```
+
+### Events not firing
+
+Ensure event names match exactly:
+
+```go
+// Go
+app.EmitEvent("my-event", data)
+
+// JavaScript
+OnEvent("my-event", handler)  // Must match
+```
+
+### Build fails
+
+Common fixes:
+- Run `go mod tidy`
+- Check `wails.json` configuration
+- Verify frontend builds: `cd frontend && npm run build`
+- Update Wails: `go install github.com/wailsapp/wails/v3/cmd/wails3@latest`
+
+## Migration
+
+### Should I migrate from v2 to v3?
+
+v3 offers:
+- Better performance
+- Multi-window support
+- Improved API
+- Better developer experience
+
+See the [Migration Guide](/migration/v2-to-v3).
+
+### Will v2 be maintained?
+
+Yes, v2 will receive critical updates.
+
+### Can I run v2 and v3 side by side?
+
+Yes, they use different import paths.
+
+## Community
+
+### How do I get help?
+
+- [Discord Community](https://discord.gg/JDdSxwjhGf)
+- [GitHub Discussions](https://github.com/wailsapp/wails/discussions)
+- [GitHub Issues](https://github.com/wailsapp/wails/issues)
+
+### How do I contribute?
+
+See the [Contributing Guide](/contributing).
+
+### Where can I find examples?
+
+- [Official Examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples)
+- [Community Examples](https://github.com/topics/wails)
+
+## Still Have Questions?
+
+Ask in [Discord](https://discord.gg/JDdSxwjhGf) or [open a discussion](https://github.com/wailsapp/wails/discussions).

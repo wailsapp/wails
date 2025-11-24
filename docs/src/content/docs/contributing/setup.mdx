@@ -1,0 +1,297 @@
+---
+title: Development Setup
+description: Set up your development environment for Wails v3 development
+---
+
+## Development Environment Setup
+
+This guide walks you through setting up a complete development environment for working on Wails v3.
+
+## Required Tools
+
+### Go Development
+
+1. **Install Go 1.25 or later:**
+   ```bash
+   # Download from https://go.dev/dl/
+   go version  # Verify installation
+   ```
+
+2. **Configure Go environment:**
+   ```bash
+   # Add to your shell profile (.bashrc, .zshrc, etc.)
+   export GOPATH=$HOME/go
+   export PATH=$PATH:$GOPATH/bin
+   ```
+
+3. **Install useful Go tools:**
+   ```bash
+   go install golang.org/x/tools/cmd/goimports@latest
+   go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+   ```
+
+### Node.js and npm
+
+Required for building documentation and testing frontend integrations.
+
+```bash
+# Install Node.js 20+ and npm
+node --version  # Should be 20+
+npm --version
+```
+
+### Platform-Specific Dependencies
+
+**macOS:**
+
+```bash
+# Install Xcode Command Line Tools
+xcode-select --install
+
+# Verify installation
+xcode-select -p  # Should output a path
+```
+
+**Windows:**
+
+1. Install [MSYS2](https://www.msys2.org/) for a Unix-like environment
+2. WebView2 Runtime (pre-installed on Windows 11, [download](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) for Windows 10)
+3. Optional: Install [Git for Windows](https://git-scm.com/download/win)
+
+**Linux (Debian/Ubuntu):**
+
+```bash
+sudo apt update
+sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev
+```
+
+**Linux (Fedora/RHEL):**
+
+```bash
+sudo dnf install gcc pkg-config gtk3-devel webkit2gtk3-devel
+```
+
+**Linux (Arch):**
+
+```bash
+sudo pacman -S base-devel gtk3 webkit2gtk
+```
+
+## Repository Setup
+
+### Clone and Configure
+
+```bash
+# Clone your fork
+git clone https://github.com/YOUR_USERNAME/wails.git
+cd wails
+
+# Add upstream remote
+git remote add upstream https://github.com/wailsapp/wails.git
+
+# Verify remotes
+git remote -v
+```
+
+### Build the Wails CLI
+
+```bash
+# Navigate to v3 directory
+cd v3
+
+# Build the CLI
+go build -o ../wails3 ./cmd/wails3
+
+# Test the build
+cd ..
+./wails3 version
+```
+
+### Add to PATH (Optional)
+
+**Linux/macOS:**
+
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+export PATH=$PATH:/path/to/wails
+```
+
+**Windows:**
+
+Add the Wails directory to your PATH environment variable through System Properties.
+
+## IDE Setup
+
+### VS Code (Recommended)
+
+1. **Install VS Code:** [Download](https://code.visualstudio.com/)
+
+2. **Install extensions:**
+   - Go (by Go Team at Google)
+   - ESLint
+   - Prettier
+   - MDX (for documentation)
+
+3. **Configure workspace settings** (`.vscode/settings.json`):
+   ```json
+   {
+     "go.useLanguageServer": true,
+     "go.lintTool": "golangci-lint",
+     "go.lintOnSave": "workspace",
+     "editor.formatOnSave": true,
+     "go.formatTool": "goimports"
+   }
+   ```
+
+### GoLand
+
+1. **Install GoLand:** [Download](https://www.jetbrains.com/go/)
+
+2. **Configure:**
+   - Enable Go modules support
+   - Set up file watchers for `goimports`
+   - Configure code style to match project conventions
+
+## Verify Your Setup
+
+Run these commands to verify everything is working:
+
+```bash
+# Go version check
+go version
+
+# Build Wails
+cd v3
+go build ./cmd/wails3
+
+# Run tests
+go test ./pkg/...
+
+# Create a test app
+cd ..
+./wails3 init -n mytest -t vanilla
+cd mytest
+../wails3 dev
+```
+
+If the test app builds and runs, your environment is ready!
+
+## Running Tests
+
+### Unit Tests
+
+```bash
+cd v3
+go test ./...
+```
+
+### Specific Package Tests
+
+```bash
+go test ./pkg/application
+go test ./pkg/events -v  # Verbose output
+```
+
+### Run with Coverage
+
+```bash
+go test ./... -coverprofile=coverage.out
+go tool cover -html=coverage.out
+```
+
+### Run with Race Detector
+
+```bash
+go test ./... -race
+```
+
+## Working with Documentation
+
+The Wails documentation is built with Astro and Starlight.
+
+```bash
+cd docs
+
+# Install dependencies
+npm install
+
+# Start dev server
+npm run dev
+
+# Build for production
+npm run build
+```
+
+Documentation will be available at `http://localhost:4321/`
+
+## Debugging
+
+### Debugging Go Code
+
+**VS Code:**
+
+Create `.vscode/launch.json`:
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Wails CLI",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/v3/cmd/wails3",
+      "args": ["dev"]
+    }
+  ]
+}
+```
+
+**Command Line:**
+
+```bash
+# Use Delve debugger
+go install github.com/go-delve/delve/cmd/dlv@latest
+dlv debug ./cmd/wails3 -- dev
+```
+
+### Debugging Platform Code
+
+Platform-specific debugging requires platform tools:
+
+- **macOS:** Xcode Instruments
+- **Windows:** Visual Studio Debugger
+- **Linux:** GDB
+
+## Common Issues
+
+### "command not found: wails3"
+
+Add the Wails directory to your PATH or use `./wails3` from the project root.
+
+### "webkit2gtk not found" (Linux)
+
+Install WebKit2GTK development packages:
+
+```bash
+sudo apt install libwebkit2gtk-4.0-dev  # Debian/Ubuntu
+```
+
+### Build fails with Go module errors
+
+```bash
+cd v3
+go mod tidy
+go mod download
+```
+
+### "CGO_ENABLED" errors on Windows
+
+Ensure you have a C compiler (MinGW-w64 via MSYS2) in your PATH.
+
+## Next Steps
+
+- Review [Coding Standards](/contributing/standards)
+- Explore the [Technical Documentation](/contributing)
+- Find an issue to work on: [Good First Issues](https://github.com/wailsapp/wails/labels/good%20first%20issue)
