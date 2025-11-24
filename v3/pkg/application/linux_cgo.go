@@ -1190,7 +1190,6 @@ func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
 	rgba := C.GdkRGBA{C.double(colour.Red) / 255.0, C.double(colour.Green) / 255.0, C.double(colour.Blue) / 255.0, C.double(colour.Alpha) / 255.0}
 	C.webkit_web_view_set_background_color((*C.WebKitWebView)(w.webview), &rgba)
 
-	colour.Alpha = 255
 	cssStr := C.CString(fmt.Sprintf("#webview-box {background-color: rgba(%d, %d, %d, %1.1f);}", colour.Red, colour.Green, colour.Blue, float32(colour.Alpha)/255.0))
 	provider := C.gtk_css_provider_new()
 	C.gtk_style_context_add_provider(
