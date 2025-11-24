@@ -144,7 +144,7 @@ var assets embed.FS
     5. Includes source maps
     
     **Characteristics:**
-    - **Fast rebuilds** (<1s for frontend changes)
+    - **Fast rebuilds** (&lt;1s for frontend changes)
     - **No asset embedding** (served from dev server)
     - **Debug symbols** included
     - **Source maps** enabled
@@ -548,11 +548,11 @@ sudo cp icon.png /usr/share/icons/hicolor/256x256/apps/myapp.png
 
 | Phase | Time | Notes |
 |-------|------|-------|
-| Analysis | <1s | Go code scanning |
-| Binding Generation | <1s | TypeScript generation |
+| Analysis | &lt;1s | Go code scanning |
+| Binding Generation | &lt;1s | TypeScript generation |
 | Frontend Build | 5-30s | Depends on project size |
 | Go Compilation | 2-10s | Depends on code size |
-| Asset Embedding | <1s | Embedding frontend |
+| Asset Embedding | &lt;1s | Embedding frontend |
 | **Total** | **10-45s** | First build |
 | **Incremental** | **5-15s** | Subsequent builds |
 

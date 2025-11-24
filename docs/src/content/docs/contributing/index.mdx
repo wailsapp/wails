@@ -51,45 +51,13 @@ context you need.
 
 **Wails v3 – End-to-End Flow**
 
-```d2
-direction: right
-Developer: "wails3 CLI
-Init · Dev · Build · Package"
-Build: {
-  label: "Build-Time"
-  GEN: "Binding System
-(Static Analysis & Codegen)"
-  ASSET: "Asset Server
-(Dev Proxy · Embed FS)"
-  PKG: "Build & Packaging
-Pipeline"
-}
-Runtime: {
-  label: "Runtime"
-  RUNTIME: "Desktop Runtime
-(Window · Events · Dialogs)"
-  BRIDGE: "Bridge
-(Message Processor)"
-}
-Application: {
-  label: "Application"
-  GO: "Go Backend
-(App Logic)"
-  WEB: "Web Frontend
-(React/Vue/...)"
-}
-Developer -> GEN: "generate"
-Developer -> ASSET: "dev / build"
-Developer -> PKG: "compile & package"
-GEN -> GO: "Code Stubs + TS"
-GEN -> WEB: "Bindings JSON"
-PKG -> GO: "Final Binary + Installer"
-GO -> BRIDGE: "Function Calls"
-WEB -> BRIDGE: "Invoke / Events"
-BRIDGE <-> RUNTIME: "native messages"
-RUNTIME -> ASSET: "Serve Assets"
-WEB <-> ASSET: "HTTP / In-Memory"
-```
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[End-to-End Flow Diagram Placeholder]**
+
 
 The diagram shows the **end-to-end flow**:
 
