@@ -1,0 +1,171 @@
+---
+title: Auto-Updates
+description: Implement automatic application updates
+sidebar:
+  order: 4
+---
+
+## Overview
+
+Keep your application up-to-date with automatic updates.
+
+## Update Strategies
+
+### 1. Check on Startup
+
+```go
+func (a *App) checkForUpdates() {
+    latest, err := getLatestVersion()
+    if err != nil {
+        return
+    }
+    
+    if isNewer(latest, currentVersion) {
+        a.promptUpdate(latest)
+    }
+}
+```
+
+### 2. Periodic Checks
+
+```go
+func (a *App) startUpdateChecker() {
+    ticker := time.NewTicker(24 * time.Hour)
+    go func() {
+        for range ticker.C {
+            a.checkForUpdates()
+        }
+    }()
+}
+```
+
+### 3. Manual Check
+
+```go
+func (a *App) CheckForUpdates() {
+    result, _ := a.app.QuestionDialog().
+        SetMessage("Check for updates?").
+        SetButtons("Check", "Cancel").
+        Show()
+    
+    if result == "Check" {
+        a.checkForUpdates()
+    }
+}
+```
+
+## Implementation
+
+### Version Checking
+
+```go
+type UpdateInfo struct {
+    Version     string `json:"version"`
+    DownloadURL string `json:"download_url"`
+    ReleaseNotes string `json:"release_notes"`
+}
+
+func getLatestVersion() (*UpdateInfo, error) {
+    resp, err := http.Get("https://api.example.com/latest")
+    if err != nil {
+        return nil, err
+    }
+    defer resp.Body.Close()
+    
+    var info UpdateInfo
+    if err := json.NewDecoder(resp.Body).Decode(&info); err != nil {
+        return nil, err
+    }
+    
+    return &info, nil
+}
+```
+
+### Download and Install
+
+```go
+func (a *App) downloadUpdate(url string) error {
+    // Download update
+    resp, err := http.Get(url)
+    if err != nil {
+        return err
+    }
+    defer resp.Body.Close()
+    
+    // Save to temp file
+    tmpFile, err := os.CreateTemp("", "update-*.exe")
+    if err != nil {
+        return err
+    }
+    defer tmpFile.Close()
+    
+    // Copy data
+    if _, err := io.Copy(tmpFile, resp.Body); err != nil {
+        return err
+    }
+    
+    // Launch installer and quit
+    return a.installUpdate(tmpFile.Name())
+}
+```
+
+## Third-Party Solutions
+
+### Squirrel
+
+```go
+import "github.com/Squirrel/go-squirrel"
+
+func setupUpdater() {
+    updater := squirrel.NewUpdater(squirrel.Options{
+        URL: "https://updates.example.com",
+    })
+    
+    updater.CheckForUpdates()
+}
+```
+
+### Self-Hosted
+
+Host update manifests on your own server:
+
+```json
+{
+  "version": "1.0.1",
+  "platforms": {
+    "windows": {
+      "url": "https://example.com/myapp-1.0.1-windows.exe",
+      "sha256": "..."
+    },
+    "darwin": {
+      "url": "https://example.com/myapp-1.0.1-macos.dmg",
+      "sha256": "..."
+    }
+  },
+  "release_notes": "Bug fixes and improvements"
+}
+```
+
+## Best Practices
+
+### ✅ Do
+
+- Verify update signatures
+- Show release notes
+- Allow users to skip versions
+- Test update process thoroughly
+- Provide rollback mechanism
+- Use HTTPS for downloads
+
+### ❌ Don't
+
+- Don't force immediate updates
+- Don't skip signature verification
+- Don't interrupt user work
+- Don't forget error handling
+- Don't lose user data
+
+## Next Steps
+
+- [Creating Installers](/guides/installers) - Package your application
+- [Testing](/guides/testing) - Test your application

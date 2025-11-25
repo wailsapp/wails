@@ -23,42 +23,12 @@ This page presents the *big picture* in four diagrams:
 
 **Wails v3 – High-Level Stack**
 
-```d2
-direction: right
-Developer: "wails3 CLI"
-Build: {
-  label: "Build-time Tool-chain"
-  GEN: "Binding Generator
-(static analysis)"
-  TMP: "Template Engine"
-  ASSETDEV: "Asset Server (dev)"
-  PKG: "Cross-compilation & Packaging"
-}
-Runtime: {
-  label: "Native Runtime"
-  RT: "Desktop Runtime
-(window, dialogs, tray, …)"
-  BRIDGE: "Message Bridge
-(JSON channel)"
-}
-App: {
-  label: "Your Application"
-  BACKEND: "Go Backend"
-  FRONTEND: "Web Frontend
-(React/Vue/…)"
-}
-Developer -> TMP: "init"
-Developer -> GEN: "generate"
-Developer -> ASSETDEV: "dev"
-Developer -> PKG: "build / package"
-GEN -> BACKEND: "Go & TS stubs"
-GEN -> FRONTEND: "bindings.json"
-ASSETDEV <-> FRONTEND: "HTTP"
-BACKEND <-> BRIDGE: "calls / events"
-FRONTEND <-> BRIDGE: "invoke / emit"
-BRIDGE <-> RT: "native API"
-RT -> ASSETDEV: "serve assets"
-```
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[High-Level Stack Diagram Placeholder]**
 
 ---
 
@@ -66,22 +36,12 @@ RT -> ASSETDEV: "serve assets"
 
 **Runtime – JavaScript ⇄ Go Calling Path**
 
-```d2
-direction: right
-JS: "JavaScript
-(frontend)"
-Bridge: "Bridge
-(WebView callback)"
-MP: "Message Processor
-(Go)"
-GoNode: "Bound Go Function"
-JS -> Bridge: "invoke(\"Greet\",\"Alice\")"
-Bridge -> MP: "JSON call {t:c,id:42,…}"
-MP -> GoNode: "call Greet(\"Alice\")"
-GoNode -> MP: "\"Hello Alice\""
-MP -> Bridge: "JSON {t:r,id:42,result:\"Hello Alice\"}"
-Bridge -> JS: "Promise.resolve(\"Hello Alice\")"
-```
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[Runtime Call Flow Diagram Placeholder]**
 
 Key points:
 
@@ -95,29 +55,12 @@ Key points:
 
 **Dev ↔ Prod Asset Server**
 
-```d2
-direction: right
-Dev: {
-  label: "`wails3 dev`"
-  VITE: "Framework Dev Server
-(port 5173)"
-  ASDEV: "Asset Server (dev)
-(proxy + disk)"
-  FRONTENDDEV: "Browser"
-}
-Prod: {
-  label: "`wails3 build`"
-  EMBED: "Embedded FS
-(go:embed)"
-  ASPROD: "Asset Server (prod)
-(read-only)"
-  FRONTENDPROD: "WebView Window"
-}
-VITE <-> ASDEV: "proxy / HMR"
-ASDEV <-> FRONTENDDEV: "HTTP"
-EMBED -> ASPROD: "serve assets"
-ASPROD <-> FRONTENDPROD: "in-memory"
-```
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[Asset Flow Diagram Placeholder]**
 
 * In **dev** the server proxies unknown paths to the framework’s live-reload
   server and serves static assets from disk.  
@@ -130,26 +73,12 @@ ASPROD <-> FRONTENDPROD: "in-memory"
 
 **Per-OS Runtime Files**
 
-```d2
-direction: right
-Window: "runtime::Window
-Shared interface (pkg/application)"
-WindowDarwin: "Window_darwin
-//go:build darwin
-Objective-C (cgo)
-NSWindow* ptr"
-WindowLinux: "Window_linux
-//go:build linux
-Pure Go GTK calls
-GtkWindow* ptr"
-WindowWindows: "Window_windows
-//go:build windows
-Win32 API via syscall
-HWND ptr"
-Window -> WindowDarwin
-Window -> WindowLinux
-Window -> WindowWindows
-```
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[Platform Split Diagram Placeholder]**
 
 Every feature follows this pattern:
 
