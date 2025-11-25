@@ -115,6 +115,10 @@ While Wails aims for a unified event, the underlying mechanism for custom protoc
 
 In addition to custom protocol schemes, macOS also supports **Universal Links**, which allow your app to be launched by regular HTTPS links (e.g., `https://myawesomeapp.com/path`). Universal Links provide a seamless user experience between your web and desktop app.
 
+<Aside type="caution">
+Universal Links require your macOS app to be **code-signed** with a valid Apple Developer certificate and provisioning profile. Unsigned or ad-hoc signed builds will not be able to open Universal Links. Ensure your app is properly signed before testing.
+</Aside>
+
 To enable Universal Links, follow the [Apple guide on supporting Universal Links in your app](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app). You'll need to:
 
 1. **Add entitlements** in your `entitlements.plist`:
