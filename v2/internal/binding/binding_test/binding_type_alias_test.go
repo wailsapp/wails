@@ -1,10 +1,12 @@
 package binding_test
 
 import (
-	"github.com/wailsapp/wails/v2/internal/binding/binding_test/binding_test_import/int_package"
 	"io/fs"
 	"os"
 	"testing"
+
+	"github.com/wailsapp/wails/v2/internal/binding/binding_test/binding_test_import/int_package"
+	"github.com/wailsapp/wails/v2/internal/conv"
 
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -56,7 +58,7 @@ func TestAliases(t *testing.T) {
 	}
 
 	// then
-	generatedBindings := string(rawGeneratedBindings)
+	generatedBindings := conv.BytesToString(rawGeneratedBindings)
 	if generatedBindings != expectedTypeAliasBindings {
 		t.Fatalf("the generated bindings does not match the expected ones.\nWanted:\n%s\n\nGot:\n%s", expectedTypeAliasBindings,
 			generatedBindings)
