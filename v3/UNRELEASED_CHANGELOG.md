@@ -24,6 +24,8 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 
+- Fix issue where `common:update:build-assets` command overwrites instead of updating plist files by @rxliuli in [#4636](https://github.com/wailsapp/wails/pull/4636)
+
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
