@@ -1,0 +1,210 @@
+name: Nightly Release v3-alpha
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # 2 AM UTC daily
+  workflow_dispatch:
+    inputs:
+      force_release:
+        description: 'Force release even if no changes detected'
+        required: false
+        default: false
+        type: boolean
+      dry_run:
+        description: 'Run in dry-run mode (no actual release)'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  nightly-release:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      pull-requests: read
+      actions: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: v3-alpha
+        fetch-depth: 0
+        token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+    
+    - name: Setup Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.24'
+        cache: true
+        cache-dependency-path: 'v3/go.sum'
+    
+    - name: Install Task
+      uses: arduino/setup-task@v2
+      with:
+        version: 3.x
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Setup Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        
+        # Configure git to use the token for authentication
+        git config --global url."https://x-access-token:${{ secrets.WAILS_REPO_TOKEN || github.token }}@github.com/".insteadOf "https://github.com/"
+    
+    - name: Check for existing release tag
+      id: check_tag
+      run: |
+        if git describe --tags --exact-match HEAD 2>/dev/null; then
+          echo "has_tag=true" >> $GITHUB_OUTPUT
+          echo "tag=$(git describe --tags --exact-match HEAD)" >> $GITHUB_OUTPUT
+        else
+          echo "has_tag=false" >> $GITHUB_OUTPUT
+          echo "tag=" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Check for unreleased changelog content
+      id: changelog_check
+      run: |
+        echo "🔍 Checking UNRELEASED_CHANGELOG.md for content..."
+        
+        # Run the release script in check mode to see if there's content
+        cd v3/tasks/release
+        
+        # Use the release script itself to check for content
+        if go run release.go --check-only 2>/dev/null; then
+          echo "has_unreleased_content=true" >> $GITHUB_OUTPUT
+          echo "✅ Found unreleased changelog content"
+        else
+          echo "has_unreleased_content=false" >> $GITHUB_OUTPUT
+          echo "ℹ️  No unreleased changelog content found"
+        fi
+
+    - name: Quick change detection and early exit
+      id: quick_check
+      run: |
+        echo "🔍 Quick check for changes to determine if we should continue..."
+        
+        # First check if we have unreleased changelog content
+        if [ "${{ steps.changelog_check.outputs.has_unreleased_content }}" == "true" ]; then
+          echo "✅ Found unreleased changelog content, proceeding with release"
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+          echo "should_continue=true" >> $GITHUB_OUTPUT
+          echo "reason=Found unreleased changelog content" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        
+        # If no unreleased changelog content, check for git changes as fallback
+        echo "No unreleased changelog content found, checking for git changes..."
+        
+        # Check if current commit has a release tag
+        if git describe --tags --exact-match HEAD 2>/dev/null; then
+          CURRENT_TAG=$(git describe --tags --exact-match HEAD)
+          echo "Current commit has release tag: $CURRENT_TAG"
+          
+          # For tagged commits, check if there are changes since the tag
+          COMMIT_COUNT=$(git rev-list ${CURRENT_TAG}..HEAD --count)
+          if [ "$COMMIT_COUNT" -eq 0 ]; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "should_continue=false" >> $GITHUB_OUTPUT
+            echo "reason=No changes since existing tag $CURRENT_TAG and no unreleased changelog content" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "should_continue=true" >> $GITHUB_OUTPUT
+          fi
+        else
+          # No current tag, check against latest release
+          LATEST_TAG=$(git tag --list "v3.0.0-alpha.*" | sort -V | tail -1)
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No previous release found, proceeding with release"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "should_continue=true" >> $GITHUB_OUTPUT
+          else
+            COMMIT_COUNT=$(git rev-list ${LATEST_TAG}..HEAD --count)
+            if [ "$COMMIT_COUNT" -gt 0 ]; then
+              echo "Found $COMMIT_COUNT commits since $LATEST_TAG"
+              echo "has_changes=true" >> $GITHUB_OUTPUT
+              echo "should_continue=true" >> $GITHUB_OUTPUT
+            else
+              echo "has_changes=false" >> $GITHUB_OUTPUT
+              echo "should_continue=false" >> $GITHUB_OUTPUT
+              echo "reason=No changes since latest release $LATEST_TAG and no unreleased changelog content" >> $GITHUB_OUTPUT
+            fi
+          fi
+        fi
+    
+    - name: Early exit - No changes detected
+      if: |
+        steps.quick_check.outputs.should_continue == 'false' && 
+        github.event.inputs.force_release != 'true'
+      run: |
+        echo "🛑 EARLY EXIT: ${{ steps.quick_check.outputs.reason }}"
+        echo ""
+        echo "ℹ️  No changes detected since last release and force_release is not enabled."
+        echo "   Workflow will exit early to save resources."
+        echo ""
+        echo "   To force a release anyway, run this workflow with 'force_release=true'"
+        echo ""
+        echo "## 🛑 Early Exit Summary" >> $GITHUB_STEP_SUMMARY
+        echo "**Reason:** ${{ steps.quick_check.outputs.reason }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Action:** Workflow exited early to save resources" >> $GITHUB_STEP_SUMMARY
+        echo "**Force Release:** Set 'force_release=true' to override this behavior" >> $GITHUB_STEP_SUMMARY
+        exit 0
+    
+    - name: Continue with release process
+      if: |
+        steps.quick_check.outputs.should_continue == 'true' || 
+        github.event.inputs.force_release == 'true'
+      run: |
+        echo "✅ Proceeding with release process..."
+        if [ "${{ github.event.inputs.force_release }}" == "true" ]; then
+          echo "🔨 FORCE RELEASE: Overriding change detection"
+        fi
+    
+    - name: Run release script
+      id: release
+      if: |
+        steps.quick_check.outputs.should_continue == 'true' || 
+        github.event.inputs.force_release == 'true'
+      env:
+        WAILS_REPO_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+        GITHUB_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+      run: |
+        cd v3/tasks/release
+        ARGS=()
+        if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+          ARGS+=(--dry-run)
+        fi
+        go run release.go "${ARGS[@]}"
+
+    - name: Summary
+      if: always()
+      run: |
+        if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+          echo "## 🧪 DRY RUN Release Summary" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "## 🚀 Nightly Release Summary" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "================================" >> $GITHUB_STEP_SUMMARY
+
+        if [ -n "${{ steps.release.outputs.release_version }}" ]; then
+          echo "- **Version:** ${{ steps.release.outputs.release_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tag:** ${{ steps.release.outputs.release_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** ${{ steps.release.outcome == 'success' && '✅ Success' || '⚠️ Failed' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Mode:** ${{ steps.release.outputs.release_dry_run == 'true' && '🧪 Dry Run' || '🚀 Live release' }}" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ steps.release.outputs.release_url }}" ]; then
+            echo "- **Release URL:** ${{ steps.release.outputs.release_url }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Changelog" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.changelog_check.outputs.has_unreleased_content }}" == "true" ]; then
+            echo "✅ Unreleased changelog processed and reset." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "ℹ️ No unreleased changelog content detected." >> $GITHUB_STEP_SUMMARY
+          fi
+        else
+          echo "- Release script did not run (skipped or failed before execution)." >> $GITHUB_STEP_SUMMARY
+        fi
+    

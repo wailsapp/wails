@@ -1,0 +1,40 @@
+# Constructions obfusquées
+
+Wails inclut le support pour masquer votre application en utilisant [garble](https://github.com/burrowers/garble).
+
+Pour produire une version obfusquée, vous pouvez utiliser l'option `-obfuscate` avec la commande `wails build`:
+
+```bash
+wails build -obfuscated
+```
+
+Pour personnaliser les paramètres d'obfuscation, vous pouvez utiliser l'option `-garbleargs`:
+
+```bash
+wails build -obfuscated -garbleargs "-literals -tiny -seed=myrandomseed"
+```
+
+These settings may be persisted in your [project config](../reference/project-config.mdx).
+
+## Comment ça marche
+
+Dans une compilation standard, toutes les méthodes liées sont disponibles dans le frontend sous la variable `window.go` . Lorsque ces méthodes sont appelées, la méthode d'arrière-plan correspondante est appelée en utilisant le nom de la fonction. Lors de l'utilisation d'une compilation obfusquée, les méthodes sont liées en utilisant un ID au lieu d'un nom. Les liaisons générées dans le répertoire `wailsjs` utilisent ces IDs pour appeler les fonctions backend.
+
+:::note
+
+Pour vous assurer que votre application fonctionnera en mode masqué, vous devez utiliser les liaisons générées dans le répertoire `wailsjs` de votre application.
+
+:::
+
+## Exemple
+
+Importing the "Greet" method from the bindings like this:
+
+```js
+import { Greet } from "../../wailsjs/go/main/App";
+
+// snip
+Greet("World");
+```
+
+Cela assurera que la méthode fonctionnera correctement en mode obfusqué, car les liaisons seront régénérées avec des identifiants et le mécanisme d'appel mis à jour.

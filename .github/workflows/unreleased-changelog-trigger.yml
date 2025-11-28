@@ -1,0 +1,129 @@
+name: Auto Release on Changelog Update
+
+on:
+  push:
+    branches:
+      - v3-alpha
+    paths:
+      - 'v3/UNRELEASED_CHANGELOG.md'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run in dry-run mode (no actual release)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  check-permissions:
+    name: Check Release Permissions
+    runs-on: ubuntu-latest
+    outputs:
+      authorized: ${{ steps.check.outputs.authorized }}
+    steps:
+      - name: Check if user is authorized for releases
+        id: check
+        run: |
+          # Only allow specific users to trigger releases
+          AUTHORIZED_USERS="leaanthony"
+          
+          if [[ "$AUTHORIZED_USERS" == *"${{ github.actor }}"* ]]; then
+            echo "✅ User ${{ github.actor }} is authorized for releases"
+            echo "authorized=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ User ${{ github.actor }} is not authorized for releases"
+            echo "authorized=false" >> $GITHUB_OUTPUT
+          fi
+
+  trigger-release:
+    name: Trigger v3-alpha Release
+    permissions:
+      contents: read
+      actions: write
+    runs-on: ubuntu-latest
+    needs: check-permissions
+    if: needs.check-permissions.outputs.authorized == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: v3-alpha
+          fetch-depth: 0
+          token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+
+      - name: Check for unreleased changelog content
+        id: changelog_check
+        run: |
+          echo "🔍 Checking UNRELEASED_CHANGELOG.md for content..."
+          
+          cd v3
+          # Check if UNRELEASED_CHANGELOG.md has actual content beyond the template
+          if [ -f "UNRELEASED_CHANGELOG.md" ]; then
+            # Use a simple check for actual content (bullet points starting with -)
+            CONTENT_LINES=$(grep -E "^\s*-\s+[^[:space:]]" UNRELEASED_CHANGELOG.md | wc -l)
+            if [ "$CONTENT_LINES" -gt 0 ]; then
+              echo "✅ Found $CONTENT_LINES content lines in UNRELEASED_CHANGELOG.md"
+              echo "has_content=true" >> $GITHUB_OUTPUT
+            else
+              echo "ℹ️  No actual content found in UNRELEASED_CHANGELOG.md"
+              echo "has_content=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "❌ UNRELEASED_CHANGELOG.md not found"
+            echo "has_content=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Trigger nightly release workflow
+        if: steps.changelog_check.outputs.has_content == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+          script: |
+            const response = await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'nightly-release-v3.yml',
+              ref: 'v3-alpha',
+              inputs: {
+                force_release: 'true',
+                dry_run: '${{ github.event.inputs.dry_run || "false" }}'
+              }
+            });
+            
+            console.log('🚀 Successfully triggered nightly release workflow');
+            console.log(`Workflow dispatch response status: ${response.status}`);
+            
+            // Create a summary
+            core.summary
+              .addHeading('🚀 Auto Release Triggered')
+              .addRaw('The v3-alpha release workflow has been automatically triggered due to changes in UNRELEASED_CHANGELOG.md')
+              .addTable([
+                [{data: 'Trigger', header: true}, {data: 'Value', header: true}],
+                ['Repository', context.repo.repo],
+                ['Branch', 'v3-alpha'],
+                ['Actor', context.actor],
+                ['Dry Run', '${{ github.event.inputs.dry_run || "false" }}'],
+                ['Force Release', 'true']
+              ])
+              .addRaw('\n---\n*This release was automatically triggered by the unreleased-changelog-trigger workflow*')
+              .write();
+
+      - name: No content found
+        if: steps.changelog_check.outputs.has_content == 'false'
+        run: |
+          echo "ℹ️  No content found in UNRELEASED_CHANGELOG.md, skipping release trigger"
+          echo "## ℹ️  No Release Triggered" >> $GITHUB_STEP_SUMMARY
+          echo "**Reason:** UNRELEASED_CHANGELOG.md does not contain actual changelog content" >> $GITHUB_STEP_SUMMARY
+          echo "**Action:** No release workflow was triggered" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "To trigger a release, add actual changelog entries to the UNRELEASED_CHANGELOG.md file." >> $GITHUB_STEP_SUMMARY
+
+      - name: Unauthorized user
+        if: needs.check-permissions.outputs.authorized == 'false'
+        run: |
+          echo "❌ User ${{ github.actor }} is not authorized to trigger releases"
+          echo "## ❌ Unauthorized Release Attempt" >> $GITHUB_STEP_SUMMARY
+          echo "**User:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Action:** Release trigger was blocked due to insufficient permissions" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Only authorized users can trigger automatic releases via changelog updates." >> $GITHUB_STEP_SUMMARY

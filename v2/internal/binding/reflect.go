@@ -24,6 +24,26 @@ func isStruct(value interface{}) bool {
 	return reflect.ValueOf(value).Kind() == reflect.Struct
 }
 
+func normalizeStructName(name string) string {
+	return strings.ReplaceAll(
+		strings.ReplaceAll(
+			strings.ReplaceAll(
+				strings.ReplaceAll(
+					name,
+					",",
+					"-",
+				),
+				"*",
+				"",
+			),
+			"]",
+			"__",
+		),
+		"[",
+		"__",
+	)
+}
+
 func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 	// Create result placeholder
 	var result []*BoundMethod
@@ -47,14 +67,14 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 	// Process Struct
 	structType := reflect.TypeOf(value)
 	structValue := reflect.ValueOf(value)
-	structTypeString := structType.String()
-	baseName := structTypeString[1:]
+	structName := structType.Elem().Name()
+	structNameNormalized := normalizeStructName(structName)
+	pkgPath := strings.TrimSuffix(structType.Elem().String(), fmt.Sprintf(".%s", structName))
 
 	// Process Methods
 	for i := 0; i < structType.NumMethod(); i++ {
 		methodDef := structType.Method(i)
 		methodName := methodDef.Name
-		fullMethodName := baseName + "." + methodName
 		method := structValue.MethodByName(methodName)
 
 		methodReflectName := runtime.FuncForPC(methodDef.Func.Pointer()).Name()
@@ -64,7 +84,11 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 
 		// Create new method
 		boundMethod := &BoundMethod{
-			Name:     fullMethodName,
+			Path: &BoundedMethodPath{
+				Package: pkgPath,
+				Struct:  structNameNormalized,
+				Name:    methodName,
+			},
 			Inputs:   nil,
 			Outputs:  nil,
 			Comments: "",

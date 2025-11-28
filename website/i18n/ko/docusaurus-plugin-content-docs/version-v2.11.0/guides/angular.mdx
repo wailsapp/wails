@@ -1,0 +1,14 @@
+# Angular
+
+Wails에는 Angular 템플릿이 없지만 Wails와 함께 Angular를 사용할 수 있습니다.
+
+## 개발자 모드
+
+Angular에서 작동하는 개발 모드를 사용하려면 `wails.json`에 다음을 추가해야 합니다.
+
+```json
+  "frontend:build": "npx ng build",
+  "frontend:install": "npm install",
+  "frontend:dev:watcher": "npx ng serve",
+  "frontend:dev:serverUrl": "http://localhost:4200",
+```
