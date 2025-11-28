@@ -18,7 +18,7 @@ source code.
 |-------|-----------|--------------|
 | **Bootstrap** | `pkg/application/application.go:init()` | Registers build-time data, creates a global `application` singleton. |
 | **New()** | `application.New(...)` | Validates `Options`, spins up the **AssetServer**, initialises logging. |
-| **Run()** | `application.(*App).Run()` | 1. Calls platform `mainthread.X()` to enter the OS UI thread.<br>2. Boots the **runtime** (`internal/runtime`).<br>3. Blocks until the last window closes or `Quit()` is called. |
+| **Run()** | `application.(*App).Run()` | 1. Calls platform `mainthread.X()` to enter the OS UI thread.<br />2. Boots the **runtime** (`internal/runtime`).<br />3. Blocks until the last window closes or `Quit()` is called. |
 | **Shutdown** | `application.(*App).Quit()` | Broadcasts `application:shutdown` event, flushes log, tears down windows & services. |
 
 The lifecycle is strictly **single-entry**: you may create many windows, but the

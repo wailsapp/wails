@@ -176,6 +176,11 @@ func (m *module) renderNamedType(typ aliasOrNamed, quoted bool) (result string, 
 		return m.renderType(typ.Underlying(), quoted)
 	}
 
+	// Special case: application.Void renders as TS void
+	if m.collector.IsVoidAlias(typ.Obj()) {
+		return "void", false
+	}
+
 	if quoted {
 		switch a := types.Unalias(typ).(type) {
 		case *types.Basic:

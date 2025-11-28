@@ -1,8 +1,8 @@
 ---
-title: Creating a Service
+title: QR Code Service
+description: Create a QR code service to learn about Wails services
 sidebar:
-  label: 1. Creating a Service
-  order: 10
+  order: 1
 ---
 
 import { Steps } from "@astrojs/starlight/components";
@@ -10,10 +10,11 @@ import {Image } from 'astro:assets';
 
 import qr1 from "../../../assets/qr1.png";
 
-Services are the backbone of your application. They handle business logic and manage state.
+A **service** in Wails is a Go struct that contains business logic you want to make available to your frontend. Services keep your code organized by grouping related functionality together.
 
-In this guide, we'll create a new service that generates QR codes from text.
-This will show you how to organize your code into reusable services and handle external dependencies.
+Think of a service as a collection of methods that your JavaScript code can call. Each public method on the service becomes callable from the frontend after generating bindings.
+
+In this tutorial, we'll create a QR code generator service to demonstrate these concepts. By the end, you'll understand how to create services, manage dependencies, and connect your Go code to the frontend.
 
 <br/>
 
@@ -21,7 +22,7 @@ This will show you how to organize your code into reusable services and handle e
 
 1. ## Create the QR Service file
 
-   Create a new file called `qrservice.go` in your application directory and add the following code:
+   Create a new file called `qrservice.go` in your application directory:
 
    ```go title="qrservice.go"
    package main
@@ -57,11 +58,22 @@ This will show you how to organize your code into reusable services and handle e
        return png, nil
    }
    ```
+
+   **What's happening here:**
+
+   - `QRService` is an empty struct that will hold our QR code generation methods
+   - `NewQRService()` is a constructor function that creates a new instance of our service
+   - `Generate()` is a method that takes text and a size, then returns the QR code as a PNG byte array
+   - The method returns `([]byte, error)` following Go's convention of returning errors as the last value
+   - We use the `github.com/skip2/go-qrcode` package to handle the actual QR code generation
+
     <br/>
 
 2. ## Register the Service
 
-   Update your `main.go` to use the new QR service:
+   Creating a service isn't enough - we need to **register** it with the Wails application so it knows the service exists and can generate bindings for it.
+
+   Registration happens in `main.go` when you create your application. You pass your service instances to the `Services` option:
 
    ```go title="main.go" ins={7-9}
     func main() {
@@ -96,15 +108,35 @@ This will show you how to organize your code into reusable services and handle e
         }
     }
    ```
+
+   **What's happening here:**
+
+   - `application.NewService()` wraps your service so Wails can manage it
+   - We call `NewQRService()` to create an instance of our service
+   - The service is added to the `Services` slice in application options
+   - Wails will now scan this service for public methods to make available to the frontend
+
     <br/>
 
-3. ## Update go.mod
+3. ## Install Dependencies
 
-   Update your `go.mod` dependencies to include the `github.com/skip2/go-qrcode` package:
+   We referenced the `github.com/skip2/go-qrcode` package in our code, but we haven't actually downloaded it yet. Go needs to know about this dependency and download it to your project.
 
-   ```go
+   Run this command in your terminal from your project directory:
+
+   ```bash
    go mod tidy
    ```
+
+   **What's happening here:**
+
+   - `go mod tidy` scans your Go files for import statements
+   - It downloads any missing packages (like `go-qrcode`) and adds them to `go.mod`
+   - It also removes any dependencies that are no longer used
+   - This ensures your project has all the code it needs to compile successfully
+
+   You should see output indicating that the QR code package has been downloaded and added to your project.
+
     <br/>
 
 4. ## Generate the Bindings
@@ -216,7 +248,9 @@ This will show you how to organize your code into reusable services and handle e
 
 6. ## Use Bindings in Frontend
 
-    Firstly, update `frontend/src/main.js` to use the new bindings:
+    Now we can call our Go service from JavaScript! The generated bindings make this easy and type-safe.
+
+    Update `frontend/src/main.js` to use the new bindings:
 
    ```js title="frontend/src/main.js"
     import { QRService } from './bindings/changeme';
@@ -247,6 +281,15 @@ This will show you how to organize your code into reusable services and handle e
         button.addEventListener('click', generateQR);
     }
    ```
+
+   **What's happening here:**
+
+   - We import `QRService` from the generated bindings
+   - `QRService.Generate()` calls our Go method - it returns a Promise, so we use `await`
+   - The Go method returns `[]byte`, which Wails automatically converts to a base64 string for JavaScript
+   - We create a data URL with the base64 string to display the PNG image
+   - The `try/catch` block handles any errors from the Go side (like invalid input)
+   - If our Go code returns an error, the Promise rejects and we catch it here
 
    Now update `index.html` to use the new bindings in the `initializeQRGenerator` function:
 
@@ -312,18 +355,23 @@ This will show you how to organize your code into reusable services and handle e
     <br/>
     <br/>
 
-7. ## Alternative Approach
+7. ## Alternative Approach: HTTP Handler
 
     So far, we have covered the following areas:
     - Creating a new Service
     - Generating Bindings
     - Using the Bindings in our Frontend code
 
-    If the aim of your service is to serve files/assets/media to the frontend, like a traditional web server,
-    then there is an alternative approach to achieve the same result.
+    **Why use an HTTP handler?**
 
-    If your service defines Go's standard http handler function `ServeHTTP(w http.ResponseWriter, r *http.Request)`,
-    then it can be made accessible on the frontend. Let's extend our QR code service to do this:
+    Method bindings work great for data operations, but there's an alternative approach for serving files, images, or other media. Instead of converting everything to base64 and sending it through bindings, you can make your service act like a mini web server.
+
+    This is useful when:
+    - You're serving images, videos, or large files
+    - You want to use standard HTML `<img>` or `<video>` tags with `src` attributes
+    - You need direct URL access to resources
+
+    If your service implements Go's standard `ServeHTTP(w http.ResponseWriter, r *http.Request)` method, Wails can make it accessible as an HTTP endpoint. Let's extend our QR code service to support this:
 
     ```go title="qrservice.go" ins={4-5,37-65}
     package main
@@ -393,6 +441,14 @@ This will show you how to organize your code into reusable services and handle e
     }
     ```
 
+    **What's happening here:**
+
+    - `ServeHTTP` is Go's standard interface for handling HTTP requests
+    - We parse query parameters from the URL (`?text=hello&size=256`)
+    - We call our existing `Generate()` method to create the QR code
+    - We set the content type to `image/png` so browsers know it's an image
+    - We write the raw PNG bytes directly to the response - no base64 needed!
+
     Now update `main.go` to specify the route that the QR code service should be accessible on:
 
    ```go title="main.go" ins={8-10}
@@ -431,12 +487,19 @@ This will show you how to organize your code into reusable services and handle e
     }
    ```
 
+    **What's happening here:**
+
+    - We add `application.ServiceOptions` to configure how the service is exposed
+    - `Route: "/qrservice"` makes the HTTP handler accessible at `/qrservice`
+    - Now any request to `/qrservice?text=hello` will call our `ServeHTTP` method
+    - Without setting `Route`, the HTTP handler functionality is disabled
+
     :::note
     If you do not set the `Route` option explicitly,
     the HTTP handler won't be accessible from the frontend.
     :::
 
-    Finally, update `main.js` to make the image source the path to the QR code service, passing the text as a query parameter:
+    Finally, update `main.js` to use a simple image `src` instead of base64 encoding:
 
     ```js title="frontend/src/main.js"
     async function generateQR() {
@@ -461,14 +524,26 @@ This will show you how to organize your code into reusable services and handle e
     }
     ```
 
+    **What's happening here:**
+
+    - We removed the import and the `await QRService.Generate()` call
+    - Instead, we simply set `img.src` to point to our HTTP endpoint
+    - `encodeURIComponent()` safely escapes special characters in the URL
+    - The browser automatically makes an HTTP GET request when we set the `src`
+    - This is simpler and more efficient for images - no base64 conversion needed!
+
     Running the application again should result in the same QR code:
 
     <Image src={qr1} alt="QR Code"/>
     <br/>
 
-8. ## Supporting dynamic configurations
+8. ## Supporting Dynamic Configurations
 
-    In the example above we used a hardcoded route `/qrservice`.
+    **The problem with hardcoded routes:**
+
+    In the example above we used a hardcoded route `/qrservice` in our JavaScript code.
+    This creates a tight coupling between your Go configuration and your frontend code.
+
     If you edit `main.go` and change the `Route` option without updating `main.js`,
     the application will break:
 
@@ -480,12 +555,17 @@ This will show you how to organize your code into reusable services and handle e
             // ...
     ```
 
-    Hardcoded routes can be good for many applications,
-    but if you need more flexibility, method bindings and HTTP handlers
-    can work together to improve the development experience.
+    Hardcoded routes work for simple applications, but they make your code brittle and harder to maintain.
 
-    The `ServiceStartup` Lifecycle method provides access to service options at startup,
-    and a custom method can be used to announce the configured route to the frontend.
+    **The solution: Dynamic configuration**
+
+    Method bindings and HTTP handlers can work together! We can use bindings to tell the frontend what route to use, making the configuration dynamic and eliminating the hardcoded path.
+
+    Here's how it works:
+    1. The `ServiceStartup` lifecycle method runs when your app starts
+    2. We save the configured route from the options
+    3. We add a `URL()` method that the frontend can call to get the correct route
+    4. Now the frontend asks the Go service for its route instead of guessing
 
     First, implement the `ServiceStartup` interface and add a new `URL` method:
 
@@ -577,6 +657,15 @@ This will show you how to organize your code into reusable services and handle e
     }
     ```
 
+    **What's happening here:**
+
+    - We added a `route` field to store the configured route from `ServiceStartup`
+    - `ServiceStartup(ctx, options)` is called when the app starts - we save the route here
+    - The `URL()` method builds the full URL with query parameters
+    - If no route is configured (route is empty), we return an error
+    - `url.QueryEscape()` safely encodes the text for use in a URL
+    - This method will be available to the frontend through bindings
+
     Now update `main.js` to use the `URL` method in place of a hardcoded path:
 
     ```js title="frontend/src/main.js" ins={1,11-12}
@@ -603,6 +692,14 @@ This will show you how to organize your code into reusable services and handle e
         }
     }
     ```
+
+    **What's happening here:**
+
+    - We import `QRService` to use the bindings again
+    - Instead of hardcoding `/qrservice`, we call `await QRService.URL(text, 256)`
+    - The Go service builds the URL with the correct route and parameters
+    - Now if you change the route in `main.go`, the frontend automatically uses the new route
+    - No more manual synchronization between Go configuration and frontend code!
 
     It should work just like the previous example,
     but changing the service route in `main.go`

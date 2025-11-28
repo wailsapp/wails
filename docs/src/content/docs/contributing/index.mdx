@@ -6,7 +6,6 @@ sidebar:
 ---
 
 import { Card, CardGrid } from "@astrojs/starlight/components";
-import Mermaid from "../../components/Mermaid.astro";
 
 ## Welcome to the Wails v3 Technical Documentation
 
@@ -50,47 +49,15 @@ context you need.
 
 ## Architectural Overview
 
-<Mermaid title="Wails v3 – End-to-End Flow">
-```mermaid
-flowchart TD
-    subgraph Developer Environment
-        CLI[wails3 CLI<br/>Init · Dev · Build · Package]
-    end
+**Wails v3 – End-to-End Flow**
 
-    subgraph Build-Time
-        GEN[Binding System<br/>(Static Analysis & Codegen)]
-        ASSET[Asset Server<br/>(Dev Proxy · Embed FS)]
-        PKG[Build & Packaging<br/>Pipeline]
-    end
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
 
-    subgraph Runtime
-        RUNTIME[Desktop Runtime<br/>(Window · Events · Dialogs)]
-        BIND[Bridge<br/>(Message Processor)]
-    end
+**[End-to-End Flow Diagram Placeholder]**
 
-    subgraph Application
-        GO[Go Backend<br/>(App Logic)]
-        WEB[Web Frontend<br/>(React/Vue/...)]
-    end
-
-    %% Relationships
-    CLI --> |"generate"| GEN
-    CLI --> |"dev / build"| ASSET
-    CLI --> |"compile & package"| PKG
-
-    GEN --> |"Code Stubs + TS"| GO
-    GEN --> |"Bindings JSON"| WEB
-
-    PKG --> |"Final Binary + Installer"| GO
-
-    GO --> |"Function Calls"| BIND
-    WEB --> |"Invoke / Events"| BIND
-
-    RUNTIME <-->|native messages| BIND
-    RUNTIME --> |"Display Assets"| ASSET
-    WEB <-->|HTTP / In-Memory| ASSET
-```
-</Mermaid>
 
 The diagram shows the **end-to-end flow**:
 
@@ -120,7 +87,7 @@ diagrams, and references to the relevant source files.
 ---
 
 :::note
-Prerequisites: You should be comfortable with **Go 1.23+**, basic TypeScript,
+Prerequisites: You should be comfortable with **Go 1.25+**, basic TypeScript,
 and modern frontend build tools. If you are new to Go, consider skimming the
 official tour first.
 :::

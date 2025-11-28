@@ -61,6 +61,8 @@ type windowsWebviewWindow struct {
 	showRequested     bool        // Track if show() was called before navigation completed
 	visibilityTimeout *time.Timer // Timeout to show window if navigation is delayed
 	windowShown       bool        // Track if window container has been shown
+	// Track whether content protection has been applied to the native window yet
+	contentProtectionApplied bool
 
 	// resizeBorder* is the width/height of the resize border in pixels.
 	resizeBorderWidth  int32
@@ -367,6 +369,11 @@ func (w *windowsWebviewWindow) run() {
 	var parent w32.HWND
 
 	var style uint = w32.WS_OVERLAPPEDWINDOW
+	// If the window should be hidden initially, exclude WS_VISIBLE from the style
+	// This prevents the white window flash reported in issue #4611
+	if options.Hidden {
+		style = style &^ uint(w32.WS_VISIBLE)
+	}
 
 	w.hwnd = w32.CreateWindowEx(
 		uint(exStyle),
@@ -385,9 +392,6 @@ func (w *windowsWebviewWindow) run() {
 	if w.hwnd == 0 {
 		globalApplication.fatal("unable to create window")
 	}
-
-	// Process ContentProtection
-	w.setContentProtection(w.parent.options.ContentProtectionEnabled)
 
 	// Ensure correct window size in case the scale factor of current screen is different from the initial one.
 	// This could happen when using the default window position and the window launches on a secondary monitor.
@@ -1093,6 +1097,7 @@ func (w *windowsWebviewWindow) show() {
 	w32.ShowWindow(w.hwnd, w32.SW_SHOW)
 	w.windowShown = true
 	w.showRequested = true
+	w.updateContentProtection()
 
 	// Show WebView if navigation has completed
 	if w.webviewNavigationCompleted {
@@ -1437,6 +1442,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	case w32.WM_SHOWWINDOW:
 		if wparam == 1 {
 			w.parent.emit(events.Windows.WindowShow)
+			w.updateContentProtection()
 		} else {
 			w.parent.emit(events.Windows.WindowHide)
 		}
@@ -1795,7 +1801,7 @@ func (w *windowsWebviewWindow) isAlwaysOnTop() bool {
 
 // processMessage is given a message sent from JS via the postMessage API
 // We put it on the global window message buffer to be processed centrally
-func (w *windowsWebviewWindow) processMessage(message string) {
+func (w *windowsWebviewWindow) processMessage(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
 	// We send all messages to the centralised window message buffer
 	windowMessageBuffer <- &windowMessage{
 		windowId: w.parent.id,
@@ -2446,13 +2452,40 @@ func (w *windowsWebviewWindow) snapAssist() {
 }
 
 func (w *windowsWebviewWindow) setContentProtection(enabled bool) {
-	var affinity uint32 = w32.WDA_EXCLUDEFROMCAPTURE
-	if !enabled {
-		affinity = w32.WDA_NONE
+	// Ensure the option reflects the requested state for future show() calls
+	w.parent.options.ContentProtectionEnabled = enabled
+	w.updateContentProtection()
+}
+
+func (w *windowsWebviewWindow) updateContentProtection() {
+	if w.hwnd == 0 {
+		return
 	}
+
+	if !w.isVisible() {
+		// Defer updates until the window is visible to avoid affinity glitches.
+		return
+	}
+
+	desired := w.parent.options.ContentProtectionEnabled
+
+	if desired {
+		if w.applyDisplayAffinity(w32.WDA_EXCLUDEFROMCAPTURE) {
+			w.contentProtectionApplied = true
+		}
+		return
+	}
+
+	if w.applyDisplayAffinity(w32.WDA_NONE) {
+		w.contentProtectionApplied = false
+	}
+}
+
+func (w *windowsWebviewWindow) applyDisplayAffinity(affinity uint32) bool {
 	if ok := w32.SetWindowDisplayAffinity(w.hwnd, affinity); !ok {
 		// Note: wrapper already falls back to WDA_MONITOR on older Windows.
-		globalApplication.warning("SetWindowDisplayAffinity failed: window=%v, affinity=%v",
-			w.parent.id, affinity)
+		globalApplication.warning("SetWindowDisplayAffinity failed: window=%v, affinity=%v", w.parent.id, affinity)
+		return false
 	}
+	return true
 }

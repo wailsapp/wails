@@ -222,6 +222,7 @@ func (s *linuxSystemTray) setMenu(menu *Menu) {
 	menu.processRadioGroups()
 	s.processMenu(menu, 0)
 	s.menu = menu
+	s.refresh()
 }
 
 func (s *linuxSystemTray) positionWindow(window Window, offset int) error {

@@ -1,21 +1,44 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
+	"flag"
 	"fmt"
+	"io"
+	"net/http"
+	"net/url"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 )
 
 const (
-	versionFile   = "../../internal/version/version.txt"
-	changelogFile = "../../../docs/src/content/docs/changelog.mdx"
+	versionFile          = "../../internal/version/version.txt"
+	changelogFile        = "../../../docs/src/content/docs/changelog.mdx"
+	defaultReleaseBranch = "v3-alpha"
+	defaultReleaseTitle  = "Wails %s"
+	defaultReleaseTarget = "v3-alpha"
+	githubDefaultAPI     = "https://api.github.com"
+	githubAPIVersion     = "2022-11-28"
 )
 
 var (
 	unreleasedChangelogFile = "../../UNRELEASED_CHANGELOG.md"
 )
+
+type releaseOptions struct {
+	version string
+	dryRun  bool
+	branch  string
+	target  string
+}
+
+var errNoUnreleasedContent = errors.New("No unreleased changelog content found.")
 
 func checkError(err error) {
 	if err != nil {
@@ -260,69 +283,54 @@ func updateVersion() string {
 	currentVersionData, err := os.ReadFile(versionFile)
 	checkError(err)
 	currentVersion := strings.TrimSpace(string(currentVersionData))
+	newVersion := computeNextVersion(currentVersion)
+	err = os.WriteFile(versionFile, []byte(newVersion), 0o755)
+	checkError(err)
+	return newVersion
+}
 
-	// Check if it has a pre-release suffix (e.g., -alpha.12, -beta.1)
+func computeNextVersion(currentVersion string) string {
+	if currentVersion == "" {
+		return "v0.0.1"
+	}
+
 	if strings.Contains(currentVersion, "-") {
-		// Split on the dash to separate version and pre-release
 		parts := strings.SplitN(currentVersion, "-", 2)
 		baseVersion := parts[0]
 		preRelease := parts[1]
-
-		// Check if pre-release has a numeric suffix (e.g., alpha.12)
 		lastDotIndex := strings.LastIndex(preRelease, ".")
 		if lastDotIndex != -1 {
 			preReleaseTag := preRelease[:lastDotIndex]
 			numberStr := preRelease[lastDotIndex+1:]
-
-			// Try to parse the number
 			if number, err := strconv.Atoi(numberStr); err == nil {
-				// Increment the pre-release number
 				number++
-				newVersion := fmt.Sprintf("%s-%s.%d", baseVersion, preReleaseTag, number)
-				err = os.WriteFile(versionFile, []byte(newVersion), 0o755)
-				checkError(err)
-				return newVersion
+				return fmt.Sprintf("%s-%s.%d", baseVersion, preReleaseTag, number)
 			}
 		}
-
-		// If we can't parse the pre-release format, just increment patch version
-		// and remove pre-release suffix
-		return incrementPatchVersion(baseVersion)
+		return computeNextVersion(baseVersion)
 	}
 
-	// No pre-release suffix, just increment patch version
 	return incrementPatchVersion(currentVersion)
 }
 
 // incrementPatchVersion increments the patch version of a semantic version
 // e.g., v3.0.0 -> v3.0.1
 func incrementPatchVersion(version string) string {
-	// Remove 'v' prefix if present
 	versionWithoutV := strings.TrimPrefix(version, "v")
-
-	// Split into major.minor.patch
 	parts := strings.Split(versionWithoutV, ".")
 	if len(parts) != 3 {
-		// Not a valid semver, return as-is
 		fmt.Printf("Warning: Invalid semantic version format: %s\n", version)
 		return version
 	}
 
-	// Parse patch version
 	patch, err := strconv.Atoi(parts[2])
 	if err != nil {
 		fmt.Printf("Warning: Could not parse patch version: %s\n", parts[2])
 		return version
 	}
 
-	// Increment patch
 	patch++
-
-	// Reconstruct version
-	newVersion := fmt.Sprintf("v%s.%s.%d", parts[0], parts[1], patch)
-	err = os.WriteFile(versionFile, []byte(newVersion), 0o755)
-	checkError(err)
-	return newVersion
+	return fmt.Sprintf("v%s.%s.%d", parts[0], parts[1], patch)
 }
 
 //func runCommand(name string, arg ...string) {
@@ -348,135 +356,633 @@ func incrementPatchVersion(version string) string {
 //}
 
 func main() {
-
-	// Check for --check-only flag
-	if len(os.Args) > 1 && os.Args[1] == "--check-only" {
-		// Just check if there's unreleased content and exit
-		changelogContent, err := extractChangelogContent()
-		if err != nil {
-			fmt.Printf("Error: Failed to extract unreleased changelog content: %v\n", err)
-			os.Exit(1)
+	args := os.Args[1:]
+	if len(args) > 0 {
+		switch args[0] {
+		case "--check-only":
+			if err := handleCheckOnly(); err != nil {
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
+			os.Exit(0)
+		case "--extract-changelog":
+			if err := handleExtractChangelog(); err != nil {
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
+			os.Exit(0)
+		case "--reset-changelog":
+			if err := handleResetChangelog(); err != nil {
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
+			os.Exit(0)
+		case "--create-release-notes":
+			releaseNotesPath := "../../release_notes.md"
+			if len(args) > 1 && strings.TrimSpace(args[1]) != "" {
+				releaseNotesPath = args[1]
+			}
+			if err := handleCreateReleaseNotes(releaseNotesPath); err != nil {
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
+			os.Exit(0)
 		}
-		if changelogContent == "" {
-			fmt.Println("No unreleased changelog content found.")
-			os.Exit(1)
-		}
-		fmt.Println("Found unreleased changelog content.")
-		os.Exit(0)
 	}
 
-	// Check for --extract-changelog flag
-	if len(os.Args) > 1 && os.Args[1] == "--extract-changelog" {
-		// Extract and output changelog content for release notes
-		changelogContent, err := extractChangelogContent()
-		if err != nil {
-			fmt.Printf("Error: Failed to extract unreleased changelog content: %v\n", err)
-			os.Exit(1)
-		}
-		if changelogContent == "" {
-			fmt.Println("No changelog content found.")
-			os.Exit(1)
-		}
-		fmt.Print(changelogContent)
-		os.Exit(0)
+	opts, err := parseReleaseArgs(args)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error parsing arguments: %v\n", err)
+		os.Exit(1)
 	}
 
-	// Check for --reset-changelog flag
-	if len(os.Args) > 1 && os.Args[1] == "--reset-changelog" {
-		// Reset the changelog to the template
-		err := clearUnreleasedChangelog()
-		if err != nil {
-			fmt.Printf("Error: Failed to reset changelog: %v\n", err)
-			os.Exit(1)
-		}
-		os.Exit(0)
+	if err := runRelease(opts); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
 	}
+}
 
-	// Check for --create-release-notes flag
-	if len(os.Args) > 1 && os.Args[1] == "--create-release-notes" {
-		// Extract changelog content and create release_notes.md
-		changelogContent, err := extractChangelogContent()
-		if err != nil {
-			fmt.Printf("Error: Failed to extract unreleased changelog content: %v\n", err)
-			os.Exit(1)
-		}
-		if changelogContent == "" {
-			fmt.Printf("Error: No changelog content found in UNRELEASED_CHANGELOG.md\n")
-			os.Exit(1)
-		}
-
-		// Create release_notes.md file
-		releaseNotesPath := "../../release_notes.md"
-		if len(os.Args) > 2 {
-			releaseNotesPath = os.Args[2]
-		}
-
-		err = os.WriteFile(releaseNotesPath, []byte(changelogContent), 0o644)
-		if err != nil {
-			fmt.Printf("Error: Failed to write release notes to %s: %v\n", releaseNotesPath, err)
-			os.Exit(1)
-		}
-
-		fmt.Printf("Successfully created release notes at %s\n", releaseNotesPath)
-		os.Exit(0)
-	}
-
-	// Extract changelog content first
+func handleCheckOnly() error {
 	changelogContent, err := extractChangelogContent()
 	if err != nil {
-		fmt.Printf("Warning: Failed to extract unreleased changelog content: %v\n", err)
-		return
+		return fmt.Errorf("Error: Failed to extract unreleased changelog content: %w", err)
 	}
-	if changelogContent == "" {
-		fmt.Println("UNRELEASED_CHANGELOG.md is empty. Skipping changelog processing.")
-		return
+	if strings.TrimSpace(changelogContent) == "" {
+		return errNoUnreleasedContent
 	}
+	fmt.Println("Found unreleased changelog content.")
+	return nil
+}
 
-	var newVersion string
-	if len(os.Args) > 1 {
-		newVersion = os.Args[1]
-		//currentVersion, err := os.ReadFile(versionFile)
-		//checkError(err)
-		err := os.WriteFile(versionFile, []byte(newVersion), 0o755)
-		checkError(err)
-		//isPointRelease = IsPointRelease(string(currentVersion), newVersion)
-	} else {
-		newVersion = updateVersion()
-	}
-
-	// Read in the main changelog
-	changelogData, err := os.ReadFile(changelogFile)
-	checkError(err)
-	changelog := string(changelogData)
-
-	// Split on the line that has `## [Unreleased]`
-	changelogSplit := strings.Split(changelog, "## [Unreleased]")
-	if len(changelogSplit) != 2 {
-		fmt.Printf("Error: Could not find '## [Unreleased]' section in changelog\n")
-		os.Exit(1)
-	}
-
-	// Get today's date in YYYY-MM-DD format
-	today := time.Now().Format("2006-01-02")
-
-	// Create the new changelog with the extracted content
-	newChangelog := changelogSplit[0] + "## [Unreleased]\n\n## " + newVersion + " - " + today + "\n\n" + changelogContent + changelogSplit[1]
-
-	// Write the changelog back
-	err = safeFileOperation(changelogFile, func() error {
-		return os.WriteFile(changelogFile, []byte(newChangelog), 0o644)
-	})
-	checkError(err)
-
-	// Clear UNRELEASED_CHANGELOG.md after successful changelog update
-	fmt.Printf("Changelog updated successfully. Clearing %s...\n", unreleasedChangelogFile)
-	err = safeFileOperation(unreleasedChangelogFile, func() error {
-		return clearUnreleasedChangelog()
-	})
+func handleExtractChangelog() error {
+	changelogContent, err := extractChangelogContent()
 	if err != nil {
-		fmt.Printf("Error: Failed to clear %s: %v\n", unreleasedChangelogFile, err)
-		os.Exit(1)
+		return fmt.Errorf("Error: Failed to extract unreleased changelog content: %w", err)
+	}
+	if strings.TrimSpace(changelogContent) == "" {
+		return errors.New("No changelog content found.")
+	}
+	fmt.Print(changelogContent)
+	return nil
+}
+
+func handleResetChangelog() error {
+	if err := clearUnreleasedChangelog(); err != nil {
+		return fmt.Errorf("Error: Failed to reset changelog: %w", err)
+	}
+	return nil
+}
+
+func handleCreateReleaseNotes(targetPath string) error {
+	changelogContent, err := extractChangelogContent()
+	if err != nil {
+		return fmt.Errorf("Error: Failed to extract unreleased changelog content: %w", err)
+	}
+	if strings.TrimSpace(changelogContent) == "" {
+		return errors.New("Error: No changelog content found in UNRELEASED_CHANGELOG.md")
+	}
+	if err := os.WriteFile(targetPath, []byte(changelogContent), 0o644); err != nil {
+		return fmt.Errorf("Error: Failed to write release notes to %s: %w", targetPath, err)
+	}
+	fmt.Printf("Successfully created release notes at %s\n", targetPath)
+	return nil
+}
+
+func parseReleaseArgs(args []string) (releaseOptions, error) {
+	fs := flag.NewFlagSet("release", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+
+	dryRun := fs.Bool("dry-run", false, "simulate the release without pushing changes or creating a GitHub release")
+	branch := fs.String("branch", defaultReleaseBranch, "git branch to push release changes to")
+	target := fs.String("target", defaultReleaseTarget, "target reference for the GitHub release (usually the same as branch)")
+	versionFlag := fs.String("version", "", "explicit release version (overrides automatic increment)")
+
+	if err := fs.Parse(args); err != nil {
+		return releaseOptions{}, err
 	}
 
-	fmt.Printf("Release %s processed successfully!\n", newVersion)
+	version := strings.TrimSpace(*versionFlag)
+	remaining := fs.Args()
+	if version == "" && len(remaining) > 0 {
+		version = strings.TrimSpace(remaining[0])
+		if len(remaining) > 1 {
+			return releaseOptions{}, fmt.Errorf("unexpected argument: %s", strings.Join(remaining[1:], " "))
+		}
+	} else if version != "" && len(remaining) > 0 {
+		return releaseOptions{}, fmt.Errorf("unexpected argument: %s", strings.Join(remaining, " "))
+	}
+
+	return releaseOptions{
+		version: version,
+		dryRun:  *dryRun,
+		branch:  *branch,
+		target:  *target,
+	}, nil
+}
+
+func runRelease(opts releaseOptions) error {
+	fmt.Println("🚀 Starting release workflow")
+
+	releaseDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("failed to determine working directory: %w", err)
+	}
+	repoDir := filepath.Clean(filepath.Join(releaseDir, "..", "..", ".."))
+
+	changelogContent, err := extractChangelogContent()
+	if err != nil {
+		return fmt.Errorf("failed to extract unreleased changelog content: %w", err)
+	}
+	changelogContent = strings.TrimSpace(changelogContent)
+	if changelogContent == "" {
+		fmt.Println("ℹ️  UNRELEASED_CHANGELOG.md has no unreleased entries. Skipping release.")
+		writeGitHubOutput("release_skipped", "true")
+		writeGitHubOutput("release_reason", "no_unreleased_changelog_content")
+		writeGitHubOutput("release_outcome", "skipped")
+		return nil
+	}
+
+	originalVersionData, err := os.ReadFile(versionFile)
+	if err != nil {
+		return fmt.Errorf("failed to read version file: %w", err)
+	}
+	originalVersion := strings.TrimSpace(string(originalVersionData))
+	if originalVersion == "" {
+		return errors.New("version file is empty")
+	}
+	fmt.Printf("📌 Current version: %s\n", originalVersion)
+
+	newVersion := strings.TrimSpace(opts.version)
+	if newVersion != "" {
+		if !strings.HasPrefix(newVersion, "v") {
+			newVersion = "v" + newVersion
+		}
+		if opts.dryRun {
+			fmt.Printf("✏️  (simulated) version override: %s\n", newVersion)
+		} else {
+			if err := os.WriteFile(versionFile, []byte(newVersion), 0o755); err != nil {
+				return fmt.Errorf("failed to write version file: %w", err)
+			}
+			fmt.Printf("✏️  Version override applied: %s\n", newVersion)
+		}
+	} else {
+		if opts.dryRun {
+			newVersion = computeNextVersion(originalVersion)
+			fmt.Printf("🔢 (simulated) next version: %s\n", newVersion)
+		} else {
+			newVersion = updateVersion()
+			fmt.Printf("🔢 Auto-incremented version to: %s\n", newVersion)
+		}
+	}
+
+	if !opts.dryRun {
+		if err := applyChangelogUpdates(newVersion, changelogContent); err != nil {
+			return err
+		}
+	}
+
+	releaseBody := buildReleaseBody(newVersion, changelogContent)
+	writeGitHubOutput("release_version", newVersion)
+	writeGitHubOutput("release_tag", newVersion)
+	writeGitHubOutput("release_target", opts.target)
+
+	if opts.dryRun {
+		writeGitHubOutput("release_dry_run", "true")
+		writeGitHubOutput("release_outcome", "dry-run")
+		fmt.Println("🧪 Dry run enabled: skipping git commit, push, tagging, and GitHub release creation")
+		fmt.Println("\n--- Release Notes Preview ---")
+		fmt.Println(releaseBody)
+		return nil
+	}
+	writeGitHubOutput("release_dry_run", "false")
+
+	git := newGitRunner(repoDir)
+	if err := git.ensureOnBranch(opts.branch); err != nil {
+		return err
+	}
+
+	filesToAdd := []string{
+		"v3/internal/version/version.txt",
+		"docs/src/content/docs/changelog.mdx",
+		"v3/UNRELEASED_CHANGELOG.md",
+	}
+	if err := git.add(filesToAdd...); err != nil {
+		return fmt.Errorf("failed to stage release files: %w", err)
+	}
+
+	hasChanges, err := git.hasStagedChanges()
+	if err != nil {
+		return fmt.Errorf("failed to inspect staged changes: %w", err)
+	}
+	if !hasChanges {
+		return errors.New("no changes were staged for commit")
+	}
+
+	commitMessage := fmt.Sprintf("chore(v3): bump to %s and update changelog [skip ci]", newVersion)
+	if err := git.commit(commitMessage); err != nil {
+		return fmt.Errorf("failed to commit release changes: %w", err)
+	}
+
+	repoSlug, err := resolveRepoSlug(repoDir)
+	if err != nil {
+		return fmt.Errorf("failed to determine repository slug: %w", err)
+	}
+
+	token := strings.TrimSpace(os.Getenv("WAILS_REPO_TOKEN"))
+	if token == "" {
+		token = strings.TrimSpace(os.Getenv("GITHUB_TOKEN"))
+	}
+	if token == "" {
+		return errors.New("WAILS_REPO_TOKEN (or GITHUB_TOKEN) must be set to push and create releases")
+	}
+
+	if err := git.push(opts.branch, repoSlug, token); err != nil {
+		return err
+	}
+
+	if err := git.createAnnotatedTag(newVersion, fmt.Sprintf("Release %s", newVersion)); err != nil {
+		return fmt.Errorf("failed to create git tag: %w", err)
+	}
+
+	if err := git.pushTag(newVersion, repoSlug, token); err != nil {
+		return err
+	}
+
+	releaseTitle := fmt.Sprintf(defaultReleaseTitle, newVersion)
+	releaseInfo, err := createGitHubRelease(token, repoSlug, opts.target, newVersion, releaseTitle, releaseBody)
+	if err != nil {
+		return err
+	}
+	if releaseInfo.HTMLURL != "" {
+		writeGitHubOutput("release_url", releaseInfo.HTMLURL)
+	}
+
+	writeGitHubOutput("release_outcome", "success")
+	fmt.Println("🎉 Release completed successfully.")
+	return nil
+}
+
+func applyChangelogUpdates(newVersion, changelogContent string) error {
+	changelogData, err := os.ReadFile(changelogFile)
+	if err != nil {
+		return fmt.Errorf("failed to read changelog.mdx: %w", err)
+	}
+	changelog := string(changelogData)
+	split := strings.Split(changelog, "## [Unreleased]")
+	if len(split) != 2 {
+		return fmt.Errorf("could not find '## [Unreleased]' section in changelog.mdx")
+	}
+
+	today := time.Now().Format("2006-01-02")
+	newChangelog := split[0] + "## [Unreleased]\n\n## " + newVersion + " - " + today + "\n\n" + changelogContent + split[1]
+
+	if err := safeFileOperation(changelogFile, func() error {
+		return os.WriteFile(changelogFile, []byte(newChangelog), 0o644)
+	}); err != nil {
+		return fmt.Errorf("failed to update changelog.mdx: %w", err)
+	}
+	fmt.Println("📝 Updated docs changelog with new release entry.")
+
+	if err := safeFileOperation(unreleasedChangelogFile, func() error {
+		return clearUnreleasedChangelog()
+	}); err != nil {
+		return fmt.Errorf("failed to reset %s: %w", unreleasedChangelogFile, err)
+	}
+	fmt.Printf("🧹 Reset %s to template.\n", unreleasedChangelogFile)
+	return nil
+}
+
+func buildReleaseBody(version, changelogContent string) string {
+	trimmed := strings.TrimSpace(changelogContent)
+	sections := []string{
+		fmt.Sprintf("## Wails v3 Alpha Release - %s", version),
+		"",
+		trimmed,
+		"",
+		"---",
+		"",
+		"🤖 This is an automated nightly release generated from the latest changes in the v3-alpha branch.",
+		"",
+		"**Installation:**",
+		"```bash",
+		fmt.Sprintf("go install github.com/wailsapp/wails/v3/cmd/wails3@%s", version),
+		"```",
+		"",
+		"**⚠️ Alpha Warning:** This is pre-release software and may contain bugs or incomplete features.",
+	}
+	return strings.Join(sections, "\n")
+}
+
+type gitRunner struct {
+	repoDir string
+}
+
+func newGitRunner(repoDir string) *gitRunner {
+	return &gitRunner{repoDir: repoDir}
+}
+
+func (g *gitRunner) command(args ...string) *exec.Cmd {
+	cmdArgs := append([]string{"-C", g.repoDir}, args...)
+	cmd := exec.Command("git", cmdArgs...)
+	cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0")
+	return cmd
+}
+
+func (g *gitRunner) run(args ...string) error {
+	cmd := g.command(args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
+func (g *gitRunner) runCapture(args ...string) (string, error) {
+	cmd := g.command(args...)
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(out.String()), nil
+}
+
+func (g *gitRunner) add(files ...string) error {
+	if len(files) == 0 {
+		return nil
+	}
+	return g.run(append([]string{"add"}, files...)...)
+}
+
+func (g *gitRunner) hasStagedChanges() (bool, error) {
+	cmd := g.command("diff", "--cached", "--quiet")
+	if err := cmd.Run(); err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 1 {
+			return true, nil
+		}
+		return false, err
+	}
+	return false, nil
+}
+
+func (g *gitRunner) commit(message string) error {
+	return g.run("commit", "-m", message)
+}
+
+func (g *gitRunner) ensureOnBranch(expected string) error {
+	branch, err := g.currentBranch()
+	if err != nil {
+		return err
+	}
+	if branch != expected && branch != "HEAD" {
+		return fmt.Errorf("release must run from %s branch (current: %s)", expected, branch)
+	}
+	return nil
+}
+
+func (g *gitRunner) currentBranch() (string, error) {
+	branch, err := g.runCapture("rev-parse", "--abbrev-ref", "HEAD")
+	if err != nil {
+		return "", fmt.Errorf("failed to determine current branch: %w", err)
+	}
+	return branch, nil
+}
+
+func (g *gitRunner) push(branch, repoSlug, token string) error {
+	fmt.Printf("⬆️  Pushing changes to %s\n", branch)
+	authURL := buildAuthURL(repoSlug, token)
+	if err := g.run("push", authURL, "HEAD:"+branch); err != nil {
+		return fmt.Errorf("failed to push branch %s: %w", branch, err)
+	}
+	return nil
+}
+
+func (g *gitRunner) createAnnotatedTag(tag, message string) error {
+	fmt.Printf("🏷️  Creating tag %s\n", tag)
+	return g.run("tag", "-a", "-f", tag, "-m", message)
+}
+
+func (g *gitRunner) pushTag(tag, repoSlug, token string) error {
+	fmt.Printf("⬆️  Pushing tag %s\n", tag)
+	authURL := buildAuthURL(repoSlug, token)
+	if err := g.run("push", authURL, tag); err != nil {
+		return fmt.Errorf("failed to push tag %s: %w", tag, err)
+	}
+	return nil
+}
+
+func resolveRepoSlug(repoDir string) (string, error) {
+	if slug := strings.TrimSpace(os.Getenv("GITHUB_REPOSITORY")); slug != "" {
+		return slug, nil
+	}
+	git := newGitRunner(repoDir)
+	remote, err := git.runCapture("remote", "get-url", "origin")
+	if err != nil {
+		return "", fmt.Errorf("failed to read origin remote: %w", err)
+	}
+	slug, err := parseGitRemote(remote)
+	if err != nil {
+		return "", err
+	}
+	return slug, nil
+}
+
+func parseGitRemote(raw string) (string, error) {
+	remote := strings.TrimSpace(raw)
+	if remote == "" {
+		return "", errors.New("origin remote URL is empty")
+	}
+	remote = strings.TrimSuffix(remote, ".git")
+	if strings.HasPrefix(remote, "git@") {
+		parts := strings.SplitN(remote, ":", 2)
+		if len(parts) != 2 {
+			return "", fmt.Errorf("unsupported git remote format: %s", raw)
+		}
+		return parts[1], nil
+	}
+
+	if !strings.Contains(remote, "://") {
+		remote = "https://" + remote
+	}
+	parsed, err := url.Parse(remote)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse git remote: %w", err)
+	}
+	path := strings.TrimPrefix(parsed.Path, "/")
+	path = strings.TrimSuffix(path, "/")
+	if path == "" {
+		return "", fmt.Errorf("could not extract repository from remote: %s", raw)
+	}
+	return path, nil
+}
+
+func buildAuthURL(repoSlug, token string) string {
+	serverURL := strings.TrimSpace(os.Getenv("GITHUB_SERVER_URL"))
+	if serverURL == "" {
+		serverURL = "https://github.com"
+	}
+	parsed, err := url.Parse(serverURL)
+	if err != nil || parsed.Host == "" {
+		parsed = &url.URL{Scheme: "https", Host: "github.com"}
+	}
+	host := parsed.Host
+	return fmt.Sprintf("https://x-access-token:%s@%s/%s.git", token, host, repoSlug)
+}
+
+type releaseCreateResponse struct {
+	ID      int64  `json:"id"`
+	HTMLURL string `json:"html_url"`
+}
+
+func createGitHubRelease(token, repoSlug, target, tag, title, body string) (releaseCreateResponse, error) {
+	apiBase := strings.TrimSpace(os.Getenv("GITHUB_API_URL"))
+	if apiBase == "" {
+		apiBase = githubDefaultAPI
+	}
+	apiBase = strings.TrimSuffix(apiBase, "/")
+
+	payload := map[string]interface{}{
+		"tag_name":         tag,
+		"target_commitish": target,
+		"name":             title,
+		"body":             body,
+		"draft":            false,
+		"prerelease":       true,
+		"make_latest":      "false",
+	}
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return releaseCreateResponse{}, fmt.Errorf("failed to marshal GitHub release payload: %w", err)
+	}
+
+	endpoint := fmt.Sprintf("%s/repos/%s/releases", apiBase, repoSlug)
+	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewReader(data))
+	if err != nil {
+		return releaseCreateResponse{}, fmt.Errorf("failed to create GitHub release request: %w", err)
+	}
+	setGitHubHeaders(req, token)
+
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return releaseCreateResponse{}, fmt.Errorf("failed to call GitHub release API: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusCreated {
+		var result releaseCreateResponse
+		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+			return releaseCreateResponse{}, fmt.Errorf("failed to decode GitHub release response: %w", err)
+		}
+		if result.HTMLURL != "" {
+			fmt.Printf("✅ GitHub release created: %s\n", result.HTMLURL)
+		} else {
+			fmt.Println("✅ GitHub release created successfully")
+		}
+		return result, nil
+	}
+
+	if resp.StatusCode == http.StatusUnprocessableEntity {
+		release, err := fetchReleaseByTag(apiBase, token, repoSlug, tag)
+		if err != nil {
+			bodyBytes, _ := io.ReadAll(resp.Body)
+			return releaseCreateResponse{}, fmt.Errorf("failed to create GitHub release (status %d): %s", resp.StatusCode, strings.TrimSpace(string(bodyBytes)))
+		}
+		if err := updateGitHubRelease(apiBase, token, repoSlug, release, title, body); err != nil {
+			return releaseCreateResponse{}, err
+		}
+		if release.HTMLURL != "" {
+			fmt.Printf("♻️  Updated existing GitHub release: %s\n", release.HTMLURL)
+		} else {
+			fmt.Println("♻️  Updated existing GitHub release")
+		}
+		return release, nil
+	}
+
+	bodyBytes, _ := io.ReadAll(resp.Body)
+	return releaseCreateResponse{}, fmt.Errorf("GitHub release API returned %d: %s", resp.StatusCode, strings.TrimSpace(string(bodyBytes)))
+}
+
+func fetchReleaseByTag(apiBase, token, repoSlug, tag string) (releaseCreateResponse, error) {
+	endpoint := fmt.Sprintf("%s/repos/%s/releases/tags/%s", apiBase, repoSlug, tag)
+	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
+	if err != nil {
+		return releaseCreateResponse{}, fmt.Errorf("failed to create GitHub release lookup request: %w", err)
+	}
+	setGitHubHeaders(req, token)
+
+	client := &http.Client{Timeout: 15 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return releaseCreateResponse{}, fmt.Errorf("failed to query existing GitHub release: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return releaseCreateResponse{}, fmt.Errorf("GitHub release lookup returned %d: %s", resp.StatusCode, strings.TrimSpace(string(bodyBytes)))
+	}
+
+	var result releaseCreateResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return releaseCreateResponse{}, fmt.Errorf("failed to decode release lookup response: %w", err)
+	}
+	return result, nil
+}
+
+func updateGitHubRelease(apiBase, token, repoSlug string, release releaseCreateResponse, title, body string) error {
+	if release.ID == 0 {
+		return errors.New("cannot update GitHub release: missing release ID")
+	}
+	payload := map[string]interface{}{
+		"name":        title,
+		"body":        body,
+		"prerelease":  true,
+		"make_latest": "false",
+	}
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("failed to marshal GitHub release update payload: %w", err)
+	}
+	endpoint := fmt.Sprintf("%s/repos/%s/releases/%d", apiBase, repoSlug, release.ID)
+	req, err := http.NewRequest(http.MethodPatch, endpoint, bytes.NewReader(data))
+	if err != nil {
+		return fmt.Errorf("failed to create GitHub release update request: %w", err)
+	}
+	setGitHubHeaders(req, token)
+
+	client := &http.Client{Timeout: 15 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to update existing GitHub release: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("GitHub release update returned %d: %s", resp.StatusCode, strings.TrimSpace(string(bodyBytes)))
+	}
+	return nil
+}
+
+func setGitHubHeaders(req *http.Request, token string) {
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Accept", "application/vnd.github+json")
+	req.Header.Set("X-GitHub-Api-Version", githubAPIVersion)
+	req.Header.Set("Content-Type", "application/json")
+}
+
+func writeGitHubOutput(key, value string) {
+	outputPath := strings.TrimSpace(os.Getenv("GITHUB_OUTPUT"))
+	if outputPath == "" || key == "" || value == "" {
+		return
+	}
+	f, err := os.OpenFile(outputPath, os.O_APPEND|os.O_WRONLY, 0o644)
+	if err != nil {
+		fmt.Printf("Warning: unable to write %s to GITHUB_OUTPUT: %v\n", key, err)
+		return
+	}
+	defer f.Close()
+	if _, err := fmt.Fprintf(f, "%s=%s\n", key, value); err != nil {
+		fmt.Printf("Warning: unable to persist %s to GITHUB_OUTPUT: %v\n", key, err)
+	}
 }

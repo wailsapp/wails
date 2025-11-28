@@ -53,6 +53,12 @@ static void addServicesMenu(void* menu) {
 	[NSApp setServicesMenu:nsMenu];
 }
 
+// Add windows menu
+void addWindowsMenu(void* menu) {
+	NSMenu *nsMenu = (__bridge NSMenu *)menu;
+	[NSApp setWindowsMenu:nsMenu];
+}
+
 
 */
 import "C"
@@ -95,6 +101,9 @@ func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 			C.setMenuItemSubmenu(menuItem.nsMenuItem, nsSubmenu)
 			if item.role == ServicesMenu {
 				C.addServicesMenu(nsSubmenu)
+			}
+			if item.role == WindowMenu {
+				C.addWindowsMenu(nsSubmenu)
 			}
 		case text, checkbox, radio:
 			menuItem := newMenuItemImpl(item)

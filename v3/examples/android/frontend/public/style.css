@@ -289,7 +289,8 @@ h1 {
   .container {
     width: 100%;
     max-width: 520px; /* allow a bit wider on phones */
-    align-items: stretch;
+    align-items: center; /* keep content centered on mobile */
+    text-align: center;
   }
 
   /* Stack controls vertically with full-width tap targets */

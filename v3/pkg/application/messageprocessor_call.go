@@ -55,7 +55,7 @@ func (m *MessageProcessor) processCallCancelMethod(method int, rw http.ResponseW
 
 	if cancel != nil {
 		cancel()
-		m.Info("Binding call canceled:", "id", *callID)
+		m.Info("Binding call cancelled:", "id", *callID)
 	}
 	m.ok(rw)
 }

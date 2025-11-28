@@ -33,16 +33,16 @@ func main() {
 	app := clir.NewCli("wails", "The Wails3 CLI", "v3")
 	app.NewSubCommand("docs", "Open the docs").Action(openDocs)
 	app.NewSubCommandFunction("init", "Initialise a new project", commands.Init)
-	
+
 	build := app.NewSubCommand("build", "Build the project")
 	var buildFlags flags.Build
 	build.AddFlags(&buildFlags)
 	build.Action(func() error {
 		return commands.Build(&buildFlags, build.OtherArgs())
 	})
-	
+
 	app.NewSubCommandFunction("dev", "Run in Dev mode", commands.Dev)
-	
+
 	pkg := app.NewSubCommand("package", "Package application")
 	var pkgFlags flags.Package
 	pkg.AddFlags(&pkgFlags)

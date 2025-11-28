@@ -284,17 +284,17 @@ func getLinuxWebviewWindow(window Window) *linuxWebviewWindow {
 	if window == nil {
 		return nil
 	}
-	
+
 	webviewWindow, ok := window.(*WebviewWindow)
 	if !ok {
 		return nil
 	}
-	
+
 	lw, ok := webviewWindow.impl.(*linuxWebviewWindow)
 	if !ok {
 		return nil
 	}
-	
+
 	return lw
 }
 
@@ -928,13 +928,33 @@ func (w *linuxWebviewWindow) fullscreen() {
 }
 
 func (w *linuxWebviewWindow) getCurrentMonitor() *C.GdkMonitor {
-	// Get the monitor that the window is currently on
 	display := C.gtk_widget_get_display(w.gtkWidget())
 	gdkWindow := C.gtk_widget_get_window(w.gtkWidget())
-	if gdkWindow == nil {
-		return nil
+	if gdkWindow != nil {
+		monitor := C.gdk_display_get_monitor_at_window(display, gdkWindow)
+		if monitor != nil {
+			return monitor
+		}
 	}
-	return C.gdk_display_get_monitor_at_window(display, gdkWindow)
+
+	// Wayland fallback: find monitor containing the current window
+	n_monitors := C.gdk_display_get_n_monitors(display)
+	window_x, window_y := w.position()
+	for i := 0; i < int(n_monitors); i++ {
+		test_monitor := C.gdk_display_get_monitor(display, C.int(i))
+		if test_monitor != nil {
+			var rect C.GdkRectangle
+			C.gdk_monitor_get_geometry(test_monitor, &rect)
+
+			// Check if window is within this monitor's bounds
+			if window_x >= int(rect.x) && window_x < int(rect.x+rect.width) &&
+				window_y >= int(rect.y) && window_y < int(rect.y+rect.height) {
+				return test_monitor
+			}
+		}
+	}
+
+	return nil
 }
 
 func (w *linuxWebviewWindow) getScreen() (*Screen, error) {
@@ -1170,7 +1190,6 @@ func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
 	rgba := C.GdkRGBA{C.double(colour.Red) / 255.0, C.double(colour.Green) / 255.0, C.double(colour.Blue) / 255.0, C.double(colour.Alpha) / 255.0}
 	C.webkit_web_view_set_background_color((*C.WebKitWebView)(w.webview), &rgba)
 
-	colour.Alpha = 255
 	cssStr := C.CString(fmt.Sprintf("#webview-box {background-color: rgba(%d, %d, %d, %1.1f);}", colour.Red, colour.Green, colour.Blue, float32(colour.Alpha)/255.0))
 	provider := C.gtk_css_provider_new()
 	C.gtk_style_context_add_provider(

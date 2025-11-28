@@ -64,7 +64,7 @@ func main() {
    window1.Center()
    
    // Load an external URL
-   window2.SetURL("https://wails.app")
+   window2.SetURL("https://wails.io")
    
    err := app.Run()
 

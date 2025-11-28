@@ -1,5 +1,5 @@
 import {Events} from "@wailsio/runtime";
-import {SetBadge, RemoveBadge} from "../bindings/github.com/wailsapp/wails/v3/pkg/services/badge/badgeservice";
+import {SetBadge, RemoveBadge} from "../bindings/github.com/wailsapp/wails/v3/pkg/services/dock/dockservice";
 
 const setButton = document.getElementById('set')! as HTMLButtonElement;
 const removeButton = document.getElementById('remove')! as HTMLButtonElement;
@@ -19,14 +19,11 @@ removeButton.addEventListener('click', () => {
 
 setButtonUsingGo.addEventListener('click', () => {
     let label = (labelElement as HTMLInputElement).value
-    void Events.Emit({
-        name: "set:badge",
-        data: label,
-    })
+    void Events.Emit("set:badge", label)
 })
 
 removeButtonUsingGo.addEventListener('click', () => {
-    void Events.Emit({name:"remove:badge", data: null})
+    void Events.Emit("remove:badge")
 })
 
 Events.On('time', (time: {data: any}) => {

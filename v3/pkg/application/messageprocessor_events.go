@@ -25,7 +25,12 @@ func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWrite
 		}
 
 		var event CustomEvent
-		err := params.ToStruct(&event)
+		var options struct {
+			Name *string         `json:"name"`
+			Data json.RawMessage `json:"data"`
+		}
+
+		err := params.ToStruct(&options)
 		if err != nil {
 			// Fallback: if args is a JSON string (e.g., "\"frontend-test\""), treat it as event.Name
 			if raw := params["args"]; len(raw) == 1 {
@@ -41,15 +46,23 @@ func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWrite
 				return
 			}
 		}
-		if event.Name == "" {
+		if options.Name == nil {
 			m.httpError(rw, "Invalid events call:", errors.New("missing event name"))
 			return
 		}
 
+		data, err := decodeEventData(*options.Name, options.Data)
+		if err != nil {
+			m.httpError(rw, "Events.Emit failed: ", fmt.Errorf("error parsing event data: %w", err))
+			return
+		}
+
+		event.Name = *options.Name
+		event.Data = data
 		event.Sender = window.Name()
 		globalApplication.Event.EmitEvent(&event)
 
-		m.ok(rw)
+		m.json(rw, event.IsCancelled())
 		m.Info("Runtime call:", "method", "Events."+eventsMethodNames[method], "name", event.Name, "sender", event.Sender, "data", event.Data, "cancelled", event.IsCancelled())
 	default:
 		m.httpError(rw, "Invalid events call:", fmt.Errorf("unknown method: %d", method))

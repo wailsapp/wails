@@ -29,7 +29,7 @@ bytes over the WebView.
 | Stage | Component | Output |
 |-------|-----------|--------|
 | **Analysis** | `internal/generator/analyse.go` | In-memory AST of exported Go structs, methods, params, return types |
-| **Generation** | `internal/generator/render/*.tmpl` | • `pkg/application/bindings.go` (Go)<br>• `frontend/src/wailsjs/**.ts` (TS defs)<br>• `runtime/desktop/@wailsio/runtime/internal/bindings.json` |
+| **Generation** | `internal/generator/render/*.tmpl` | • `pkg/application/bindings.go` (Go)<br />• `frontend/src/wailsjs/**.ts` (TS defs)<br />• `runtime/desktop/@wailsio/runtime/internal/bindings.json` |
 | **Runtime** | `pkg/application/messageprocessor_call.go` + JS runtime (`invoke.ts`) | JSON messages over WebView native bridge |
 
 The flow is orchestrated by the `wails3` CLI:
