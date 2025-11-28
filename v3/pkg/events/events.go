@@ -465,7 +465,41 @@ func newWindowsEvents() windowsEvents {
 	}
 }
 
-var IOS = newIOSEvents()
+var Android = newAndroidEvents()
+
+type androidEvents struct {
+	ActivityCreated             ApplicationEventType
+	ActivityStarted             ApplicationEventType
+	ActivityResumed             ApplicationEventType
+	ActivityPaused              ApplicationEventType
+	ActivityStopped             ApplicationEventType
+	ActivityDestroyed           ApplicationEventType
+	ApplicationLowMemory        ApplicationEventType
+	ApplicationConfigChanged    ApplicationEventType
+	WebViewDidStartNavigation   WindowEventType
+	WebViewDidFinishNavigation  WindowEventType
+	WebViewDidFailNavigation    WindowEventType
+	WebViewReceivedError        WindowEventType
+}
+
+func newAndroidEvents() androidEvents {
+	return androidEvents{
+		ActivityCreated:             1257,
+		ActivityStarted:             1258,
+		ActivityResumed:             1259,
+		ActivityPaused:              1260,
+		ActivityStopped:             1261,
+		ActivityDestroyed:           1262,
+		ApplicationLowMemory:        1263,
+		ApplicationConfigChanged:    1264,
+		WebViewDidStartNavigation:   1265,
+		WebViewDidFinishNavigation:  1266,
+		WebViewDidFailNavigation:    1267,
+		WebViewReceivedError:        1268,
+	}
+}
+
+var iOS = newIOSEvents()
 
 type iosEvents struct {
 	ApplicationDidBecomeActive             ApplicationEventType
@@ -757,4 +791,16 @@ var eventToJS = map[uint]string{
 	1254: "ios:WebViewDidFinishNavigation",
 	1255: "ios:WebViewDidFailNavigation",
 	1256: "ios:WebViewDecidePolicyForNavigationAction",
+	1257: "android:ActivityCreated",
+	1258: "android:ActivityStarted",
+	1259: "android:ActivityResumed",
+	1260: "android:ActivityPaused",
+	1261: "android:ActivityStopped",
+	1262: "android:ActivityDestroyed",
+	1263: "android:ApplicationLowMemory",
+	1264: "android:ApplicationConfigChanged",
+	1265: "android:WebViewDidStartNavigation",
+	1266: "android:WebViewDidFinishNavigation",
+	1267: "android:WebViewDidFailNavigation",
+	1268: "android:WebViewReceivedError",
 }

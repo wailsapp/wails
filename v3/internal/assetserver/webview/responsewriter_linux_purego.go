@@ -1,5 +1,4 @@
-//go:build linux && purego
-// +build linux,purego
+//go:build linux && purego && !android
 
 package webview
 

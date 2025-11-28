@@ -31,6 +31,9 @@ type Options struct {
 	// IOS is the iOS specific configuration for iOS builds
 	IOS IOSOptions
 
+	// Android is the Android specific configuration for Android builds
+	Android AndroidOptions
+
 	// Services allows you to bind Go methods to the frontend.
 	Services []Service
 
@@ -316,3 +319,26 @@ const (
     NativeTabIconList    NativeTabIcon = "list.bullet"
     NativeTabIconFolder  NativeTabIcon = "folder"
 )
+
+/********* Android Options *********/
+
+// AndroidOptions contains options for Android applications.
+type AndroidOptions struct {
+	// DisableScroll disables scrolling in the WebView
+	DisableScroll bool
+
+	// DisableBounce disables the overscroll bounce effect
+	DisableOverscroll bool
+
+	// EnableZoom allows pinch-to-zoom in the WebView (default: false)
+	EnableZoom bool
+
+	// UserAgent sets a custom user agent string
+	UserAgent string
+
+	// BackgroundColour sets the background colour of the WebView
+	BackgroundColour RGBA
+
+	// DisableHardwareAcceleration disables hardware acceleration for the WebView
+	DisableHardwareAcceleration bool
+}
