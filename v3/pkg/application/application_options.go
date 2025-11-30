@@ -103,6 +103,9 @@ type Options struct {
 
 	// SingleInstance options for single instance functionality
 	SingleInstance *SingleInstanceOptions
+
+	// StartAtLogin configures the application to start automatically when the user logs in
+	StartAtLogin bool
 }
 
 // AssetOptions defines the configuration of the AssetServer.

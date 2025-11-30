@@ -202,6 +202,8 @@ type (
 		isOnMainThread() bool
 		isDarkMode() bool
 		getAccentColor() string
+		setStartAtLogin(enabled bool) error
+		startsAtLogin() (bool, error)
 	}
 
 	runnable interface {
@@ -613,6 +615,13 @@ func (a *App) Run() error {
 		a.impl.setIcon(a.options.Icon)
 	}
 
+	// Configure start at login if requested
+	if a.options.StartAtLogin {
+		if err := a.impl.setStartAtLogin(true); err != nil {
+			a.warning("failed to enable start at login: %v", err)
+		}
+	}
+
 	return a.impl.run()
 }
 
@@ -889,4 +898,33 @@ func (a *App) shouldQuit() bool {
 		return a.options.ShouldQuit()
 	}
 	return true
+}
+
+// SetStartAtLogin enables or disables the application to start at login.
+// This allows users to configure the application to launch automatically when they log in.
+// 
+// Platform-specific behavior:
+//   - macOS: Uses AppleScript to manage login items (requires System Events access)
+//   - Windows: Uses registry entries under HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run
+//   - Linux: Creates/removes .desktop files in ~/.config/autostart/
+// 
+// Returns an error if the operation fails due to permissions, invalid paths, or platform limitations.
+func (a *App) SetStartAtLogin(enabled bool) error {
+	if a.impl == nil {
+		return errors.New("application not initialized")
+	}
+	return a.impl.setStartAtLogin(enabled)
+}
+
+// StartsAtLogin returns whether the application is configured to start at login.
+// This checks the current configuration without modifying it.
+//
+// Returns:
+//   - bool: true if the application starts at login, false otherwise
+//   - error: if the check fails due to permissions or platform limitations
+func (a *App) StartsAtLogin() (bool, error) {
+	if a.impl == nil {
+		return false, errors.New("application not initialized")
+	}
+	return a.impl.startsAtLogin()
 }

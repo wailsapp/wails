@@ -193,10 +193,93 @@ static void startSingleInstanceListener(const char *uniqueID) {
 	[[NSDistributedNotificationCenter defaultCenter] addObserver:appDelegate
           selector:@selector(handleSecondInstanceNotification:) name:uid object:nil];
 }
+
+// setStartAtLogin enables or disables the application to start at login
+static bool setStartAtLogin(bool enabled) {
+	@autoreleasepool {
+		NSString* appPath = [[NSBundle mainBundle] bundlePath];
+		NSString* binName = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
+		
+		if (appPath == nil || binName == nil) {
+			return false;
+		}
+		
+		// Escape special characters in the binary name to prevent AppleScript injection
+		NSString* escapedBinName = [binName stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
+		escapedBinName = [escapedBinName stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
+		
+		// Escape special characters in the app path
+		NSString* escapedAppPath = [appPath stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
+		escapedAppPath = [escapedAppPath stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
+		
+		NSString* appleScript;
+		if (enabled) {
+			appleScript = [NSString stringWithFormat:@"tell application \"System Events\" to make login item at end with properties {name:\"%@\", path:\"%@\", hidden:false}", escapedBinName, escapedAppPath];
+		} else {
+			appleScript = [NSString stringWithFormat:@"tell application \"System Events\" to delete login item \"%@\"", escapedBinName];
+		}
+		
+		NSAppleScript* script = [[NSAppleScript alloc] initWithSource:appleScript];
+		NSDictionary* errorInfo = nil;
+		NSAppleEventDescriptor* result = [script executeAndReturnError:&errorInfo];
+		
+		[script release];
+		
+		if (errorInfo != nil) {
+			NSLog(@"AppleScript error: %@", errorInfo);
+			return false;
+		}
+		
+		return result != nil;
+	}
+}
+
+// startsAtLogin checks if the application is configured to start at login
+static bool startsAtLogin(void) {
+	@autoreleasepool {
+		NSString* binName = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
+		
+		if (binName == nil) {
+			return false;
+		}
+		
+		// Escape special characters in the binary name
+		NSString* escapedBinName = [binName stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
+		escapedBinName = [escapedBinName stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
+		
+		NSString* appleScript = @"tell application \"System Events\" to get the name of every login item";
+		NSAppleScript* script = [[NSAppleScript alloc] initWithSource:appleScript];
+		NSDictionary* errorInfo = nil;
+		NSAppleEventDescriptor* result = [script executeAndReturnError:&errorInfo];
+		
+		[script release];
+		
+		if (errorInfo != nil || result == nil) {
+			return false;
+		}
+		
+		NSString* resultString = [result stringValue];
+		if (resultString == nil) {
+			return false;
+		}
+		
+		// Split the result by comma and check if our app name is in the list
+		NSArray* loginItems = [resultString componentsSeparatedByString:@", "];
+		for (NSString* item in loginItems) {
+			NSString* trimmedItem = [item stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+			if ([trimmedItem isEqualToString:binName]) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+}
 */
 import "C"
 import (
 	"encoding/json"
+	"fmt"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
@@ -297,6 +380,21 @@ func (m *macosApp) GetFlags(options Options) map[string]any {
 		options.Flags = make(map[string]any)
 	}
 	return options.Flags
+}
+
+func (m *macosApp) setStartAtLogin(enabled bool) error {
+	success := bool(C.setStartAtLogin(C.bool(enabled)))
+	if !success {
+		if enabled {
+			return fmt.Errorf("failed to enable start at login: ensure the application is properly bundled and has System Events access")
+		}
+		return fmt.Errorf("failed to disable start at login")
+	}
+	return nil
+}
+
+func (m *macosApp) startsAtLogin() (bool, error) {
+	return bool(C.startsAtLogin()), nil
 }
 
 func newPlatformApp(app *App) *macosApp {
