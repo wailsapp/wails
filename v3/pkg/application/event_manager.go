@@ -1,7 +1,6 @@
 package application
 
 import (
-	"fmt"
 	"slices"
 
 	"github.com/samber/lo"
@@ -15,48 +14,53 @@ type EventManager struct {
 
 // newEventManager creates a new EventManager instance
 func newEventManager(app *App) *EventManager {
-	println("🟢 [newEventManager] Creating EventManager")
-	em := &EventManager{
+	return &EventManager{
 		app: app,
 	}
-	println("🟢 [newEventManager] EventManager created")
-	return em
 }
 
-// Emit emits a custom event
-func (em *EventManager) Emit(name string, data ...any) {
-	// Use fmt.Printf to ensure output on iOS
-	fmt.Printf("🔵 [EventManager.Emit] Emitting event: %s, Data count: %d\n", name, len(data))
-	if em.app == nil {
-		fmt.Println("🔴 [EventManager.Emit] App is nil!")
-		return
+// Emit emits a custom event with the specified name and associated data.
+// It returns a boolean indicating whether the event was cancelled by a hook.
+//
+// If no data argument is provided, Emit emits an event with nil data.
+// When there is exactly one data argument, it will be used as the custom event's data field.
+// When more than one argument is provided, the event's data field will be set to the argument slice.
+//
+// If the given event name is registered, Emit validates the data parameter
+// against the expected data type. In case of a mismatch, Emit reports an error
+// to the registered error handler for the application and cancels the event.
+func (em *EventManager) Emit(name string, data ...any) bool {
+	event := &CustomEvent{Name: name}
+
+	if len(data) == 1 {
+		event.Data = data[0]
+	} else if len(data) > 1 {
+		event.Data = data
 	}
-	if em.app.customEventProcessor == nil {
-		fmt.Println("🔴 [EventManager.Emit] customEventProcessor is nil!")
-		return
+
+	if err := em.app.customEventProcessor.Emit(event); err != nil {
+		globalApplication.handleError(err)
 	}
-	em.app.customEventProcessor.Emit(&CustomEvent{
-		Name: name,
-		Data: data,
-	})
+
+	return event.IsCancelled()
 }
 
 // EmitEvent emits a custom event object (internal use)
-func (em *EventManager) EmitEvent(event *CustomEvent) {
-	em.app.customEventProcessor.Emit(event)
+// It returns a boolean indicating whether the event was cancelled by a hook.
+//
+// If the given event name is registered, emitEvent validates the data parameter
+// against the expected data type. In case of a mismatch, emitEvent reports an error
+// to the registered error handler for the application and cancels the event.
+func (em *EventManager) EmitEvent(event *CustomEvent) bool {
+	if err := em.app.customEventProcessor.Emit(event); err != nil {
+		globalApplication.handleError(err)
+	}
+
+	return event.IsCancelled()
 }
 
 // On registers a listener for custom events
 func (em *EventManager) On(name string, callback func(event *CustomEvent)) func() {
-	println("🔵 [EventManager.On] Registering listener for:", name)
-	if em.app == nil {
-		println("🔴 [EventManager.On] App is nil!")
-		return func() {}
-	}
-	if em.app.customEventProcessor == nil {
-		println("🔴 [EventManager.On] customEventProcessor is nil!")
-		return func() {}
-	}
 	return em.app.customEventProcessor.On(name, callback)
 }
 
@@ -119,19 +123,13 @@ func (em *EventManager) RegisterApplicationEventHook(eventType events.Applicatio
 
 // Dispatch dispatches an event to listeners (internal use)
 func (em *EventManager) dispatch(event *CustomEvent) {
-	println("🔵 [EventManager.dispatch] Dispatching event to windows:", event.Name)
-
 	// Snapshot windows under RLock
 	em.app.windowsLock.RLock()
-	windowCount := len(em.app.windows)
-	println("🔵 [EventManager.dispatch] Window count:", windowCount)
-	for i, window := range em.app.windows {
+	for _, window := range em.app.windows {
 		if event.IsCancelled() {
-			println("🟠 [EventManager.dispatch] Event cancelled, stopping dispatch")
 			em.app.windowsLock.RUnlock()
 			return
 		}
-		println("🔵 [EventManager.dispatch] Dispatching to window", i+1)
 		window.DispatchWailsEvent(event)
 	}
 	em.app.windowsLock.RUnlock()
@@ -141,14 +139,10 @@ func (em *EventManager) dispatch(event *CustomEvent) {
 	listeners := slices.Clone(em.app.wailsEventListeners)
 	em.app.wailsEventListenerLock.Unlock()
 
-	println("🔵 [EventManager.dispatch] Wails event listener count:", len(listeners))
-
-	for i, listener := range listeners {
+	for _, listener := range listeners {
 		if event.IsCancelled() {
-			println("🟠 [EventManager.dispatch] Event cancelled during listener dispatch")
 			return
 		}
-		println("🔵 [EventManager.dispatch] Dispatching to Wails listener", i+1)
 		listener.DispatchWailsEvent(event)
 	}
 }

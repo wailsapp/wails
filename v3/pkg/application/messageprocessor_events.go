@@ -19,11 +19,6 @@ var eventsMethodNames = map[int]string{
 func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWriter, _ *http.Request, window Window, params QueryParams) {
 	switch method {
 	case EventsEmit:
-		// Debug: log the raw args
-		if args := params["args"]; len(args) > 0 {
-			m.Info("Events.Emit raw args:", "args", args[0])
-		}
-
 		var event CustomEvent
 		var options struct {
 			Name *string         `json:"name"`
@@ -32,19 +27,8 @@ func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWrite
 
 		err := params.ToStruct(&options)
 		if err != nil {
-			// Fallback: if args is a JSON string (e.g., "\"frontend-test\""), treat it as event.Name
-			if raw := params["args"]; len(raw) == 1 {
-				var name string
-				if uerr := json.Unmarshal([]byte(raw[0]), &name); uerr == nil && name != "" {
-					event.Name = name
-				} else {
-					m.httpError(rw, "Invalid events call:", fmt.Errorf("error parsing event: %w", err))
-					return
-				}
-			} else {
-				m.httpError(rw, "Invalid events call:", fmt.Errorf("error parsing event: %w", err))
-				return
-			}
+			m.httpError(rw, "Invalid events call:", fmt.Errorf("error parsing event: %w", err))
+			return
 		}
 		if options.Name == nil {
 			m.httpError(rw, "Invalid events call:", errors.New("missing event name"))

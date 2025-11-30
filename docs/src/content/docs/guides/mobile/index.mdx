@@ -1,0 +1,52 @@
+---
+title: Overview
+description: Build native iOS and Android applications with Wails v3
+sidebar:
+  order: 0
+---
+
+import { Card, CardGrid, LinkCard, Aside } from "@astrojs/starlight/components";
+
+<Aside type="danger" title="Experimental Feature">
+Mobile support is **experimental**. APIs may change before final release.
+</Aside>
+
+Wails v3 enables building native mobile apps using the same Go codebase and web frontend as desktop.
+
+## How It Works
+
+| Platform | WebView | Bridge | Output |
+|----------|---------|--------|--------|
+| iOS | WKWebView | CGO | .app / .ipa |
+| Android | Android WebView | JNI | .apk |
+
+Your Go code compiles to a native library, your web frontend renders in a native WebView, and Wails bridges them together.
+
+## Platform Guides
+
+<CardGrid>
+  <LinkCard
+    title="Android"
+    description="Build APKs for Android devices and emulators"
+    href="/guides/mobile/android"
+  />
+  <LinkCard
+    title="iOS"
+    description="Build apps for iPhone, iPad, and simulators"
+    href="/guides/mobile/ios"
+  />
+</CardGrid>
+
+## Limitations
+
+Features not available on mobile:
+- System tray / menu bar
+- Multiple windows
+- Window manipulation (position, size)
+- Native file dialogs (platform alternatives exist)
+
+## Architecture
+
+For implementation details:
+- [Android Architecture](https://github.com/wailsapp/wails/blob/v3-alpha/v3/ANDROID_ARCHITECTURE.md)
+- [iOS Architecture](https://github.com/wailsapp/wails/blob/v3-alpha/v3/IOS_ARCHITECTURE.md)

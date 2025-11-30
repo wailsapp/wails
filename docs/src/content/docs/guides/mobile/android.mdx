@@ -1,0 +1,97 @@
+---
+title: Android
+description: Building Wails apps for Android
+sidebar:
+  order: 1
+---
+
+import { Aside, Steps } from "@astrojs/starlight/components";
+
+## Prerequisites
+
+- **Go** 1.21+ with CGO
+- **Android SDK** (via Android Studio or command-line tools)
+- **Android NDK** r26d+
+- **Java JDK** 11+
+
+### Environment Setup
+
+Add to your shell profile:
+
+```bash
+# macOS
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+
+# Linux
+export ANDROID_HOME="$HOME/Android/Sdk"
+
+export PATH="$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator"
+```
+
+## Building
+
+```bash
+# Build for device (arm64)
+task android:build
+
+# Build for emulator on Intel/AMD
+task android:build ARCH=x86_64
+
+# Package APK
+task android:package
+
+# Build and run
+task android:run
+```
+
+<Aside type="tip">
+Apple Silicon Macs run arm64 emulators. Use the default `ARCH=arm64`.
+</Aside>
+
+### Architectures
+
+| Architecture | GOARCH | Use Case |
+|--------------|--------|----------|
+| arm64-v8a | arm64 | Modern devices, Apple Silicon emulators |
+| x86_64 | amd64 | Intel/AMD emulators |
+
+## Configuration
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Android: application.AndroidOptions{
+        DisableOverscroll: true,
+        EnableZoom:        false,
+        UserAgent:         "MyApp/1.0",
+        BackgroundColour:  application.NewRGB(255, 255, 255),
+    },
+})
+```
+
+## Debugging
+
+```bash
+# View logs
+task android:logs
+
+# Chrome DevTools
+# 1. Connect device or start emulator
+# 2. Open chrome://inspect/#devices
+# 3. Click "inspect" on your app
+```
+
+## Troubleshooting
+
+**INSTALL_FAILED_NO_MATCHING_ABIS**
+- Architecture mismatch. Use `ARCH=arm64` for Apple Silicon, `ARCH=x86_64` for Intel/AMD emulators.
+
+**NDK not found**
+```bash
+export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125
+```
+
+**Blank WebView**
+1. Check logcat: `task android:logs`
+2. Debug with Chrome DevTools
+3. Verify `main_android.go` exists in build assets

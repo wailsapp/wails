@@ -20,12 +20,9 @@ tasks:
 
   build:
     summary: Creates a build of the application for Android
+    silent: true
     deps:
       - task: common:go:mod:tidy
-      - task: generate:android:bindings
-        vars:
-          BUILD_FLAGS:
-            ref: .BUILD_FLAGS
       - task: common:build:frontend
         vars:
           BUILD_FLAGS:
@@ -45,6 +42,7 @@ tasks:
 
   compile:go:shared:
     summary: Compile Go code to shared library (.so)
+    silent: true
     cmds:
       - |
         NDK_ROOT="${ANDROID_NDK_HOME:-$ANDROID_HOME/ndk/{{.NDK_VERSION}}}"
@@ -91,8 +89,14 @@ tasks:
 
         go build -buildmode=c-shared {{.BUILD_FLAGS}} \
           -o build/android/app/src/main/jniLibs/$JNI_DIR/libwails.so
+
+        # Strip the shared library for smaller size
+        STRIP="$TOOLCHAIN/bin/llvm-strip"
+        if [ -f "$STRIP" ]; then
+          "$STRIP" --strip-unneeded build/android/app/src/main/jniLibs/$JNI_DIR/libwails.so
+        fi
     vars:
-      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,android -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-tags android,debug -buildvcs=false -gcflags=all="-l"{{end}}'
+      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,android -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-tags android -trimpath -buildvcs=false -ldflags="-w -s"{{end}}'
 
   compile:go:all-archs:
     summary: Compile Go code for all Android architectures (fat APK)
@@ -121,6 +125,7 @@ tasks:
 
   assemble:apk:
     summary: Assembles the APK using Gradle
+    silent: true
     cmds:
       - |
         cd build/android
@@ -136,22 +141,6 @@ tasks:
         ./gradlew assembleRelease
         cp app/build/outputs/apk/release/app-release-unsigned.apk ../../{{.BIN_DIR}}/{{.APP_NAME}}-release.apk
         echo "Release APK created: {{.BIN_DIR}}/{{.APP_NAME}}-release.apk"
-
-  generate:android:bindings:
-    internal: true
-    summary: Generates bindings for Android
-    sources:
-      - "**/*.go"
-      - go.mod
-      - go.sum
-    generates:
-      - frontend/bindings/**/*
-    cmds:
-      - wails3 generate bindings -f '{{.BUILD_FLAGS}}' -clean=true
-    env:
-      GOOS: android
-      CGO_ENABLED: 1
-      GOARCH: '{{.ARCH | default "arm64"}}'
 
   ensure-emulator:
     internal: true
@@ -211,7 +200,7 @@ tasks:
       - task: ensure-emulator
       - task: build
         vars:
-          ARCH: x86_64
+          ARCH: '{{.ARCH | default "arm64"}}'
     cmds:
       - task: assemble:apk
       - adb uninstall {{.APP_ID}} 2>/dev/null || true

@@ -1,0 +1,70 @@
+---
+title: iOS
+description: Building Wails apps for iOS
+sidebar:
+  order: 2
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+<Aside type="caution">
+iOS development requires macOS with Xcode.
+</Aside>
+
+## Prerequisites
+
+- **macOS** 12.0+
+- **Xcode** 14.0+
+- **Go** 1.21+ with CGO
+
+```bash
+xcode-select --install
+```
+
+## Building
+
+```bash
+# Build for iOS
+task ios:build
+
+# Run on simulator
+task ios:run
+
+# Build for device (requires code signing)
+task ios:build:device
+```
+
+## Configuration
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    iOS: application.IOSOptions{
+        DisableBounce: true,
+        EnableZoom:    false,
+        UserAgent:     "MyApp/1.0",
+        BackgroundColour: application.NewRGB(255, 255, 255),
+    },
+})
+```
+
+## Testing
+
+```bash
+# List simulators
+xcrun simctl list devices
+
+# Run on specific simulator
+task ios:run SIMULATOR="iPhone 15 Pro"
+```
+
+## Troubleshooting
+
+**Code signing required**
+- Physical devices require an Apple Developer account
+- Simulators don't need signing
+
+**Command Line Tools not found**
+```bash
+xcode-select --install
+```

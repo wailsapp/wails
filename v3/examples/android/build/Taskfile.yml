@@ -10,6 +10,7 @@ tasks:
   install:frontend:deps:
     summary: Install frontend dependencies
     dir: frontend
+    silent: true
     sources:
       - package.json
       - package-lock.json
@@ -19,7 +20,7 @@ tasks:
       - sh: npm version
         msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
     cmds:
-      - npm install
+      - npm install --silent
 
   build:frontend:
     label: build:frontend (PRODUCTION={{.PRODUCTION}})

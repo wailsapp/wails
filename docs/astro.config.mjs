@@ -230,6 +230,12 @@ export default defineConfig({
               ],
             },
             {
+              label: "Mobile",
+              collapsed: true,
+              badge: { text: "Experimental", variant: "caution" },
+              autogenerate: { directory: "guides/mobile" },
+            },
+            {
               label: "Distribution",
               collapsed: true,
               items: [
