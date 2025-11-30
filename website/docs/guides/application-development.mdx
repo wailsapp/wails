@@ -59,7 +59,6 @@ func main() {
 		log.Fatal(err)
 	}
 }
-
 ```
 
 More information on application lifecycle hooks can be found [here](../howdoesitwork.mdx#application-lifecycle-callbacks).
@@ -91,7 +90,7 @@ func (a *App) shutdown(ctx context.Context) {
 }
 
 func (a *App) Greet(name string) string {
-    return fmt.Sprintf("Hello %s!", name)
+	return fmt.Sprintf("Hello %s!", name)
 }
 ```
 
@@ -108,15 +107,14 @@ func main() {
 		Height:            600,
 		OnStartup:  app.startup,
 		OnShutdown: app.shutdown,
-        Bind: []interface{}{
-            app,
-        },
+		Bind: []interface{}{
+			app,
+		},
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 }
-
 ```
 
 This will bind all public methods in our `App` struct (it will never bind the startup and shutdown methods).
@@ -142,10 +140,10 @@ func main() {
 			otherStruct.SetContext(ctx)
 		},
 		OnShutdown: app.shutdown,
-        Bind: []interface{}{
-            app,
+		Bind: []interface{}{
+			app,
 			otherStruct
-        },
+		},
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -196,18 +194,17 @@ func main() {
 		Height:            600,
 		OnStartup:  app.startup,
 		OnShutdown: app.shutdown,
-    Bind: []interface{}{
-        app,
-    },
-    EnumBind: []interface{}{
-        AllWeekdays,
-     },
+		Bind: []interface{}{
+			app,
+		},
+		EnumBind: []interface{}{
+			AllWeekdays,
+		},
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 }
-
 ```
 
 This will add missing enums to your `model.ts` file.
@@ -232,15 +229,14 @@ func main() {
 		OnStartup:  app.startup,
 		OnShutdown: app.shutdown,
 		Menu:       app.menu(),
-        Bind: []interface{}{
-            app,
-        },
+		Bind: []interface{}{
+			app,
+		},
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 }
-
 ```
 
 ## Assets
