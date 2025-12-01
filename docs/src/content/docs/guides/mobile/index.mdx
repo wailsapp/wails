@@ -37,13 +37,163 @@ Your Go code compiles to a native library, your web frontend renders in a native
   />
 </CardGrid>
 
-## Limitations
+## Runtime API Support
 
-Features not available on mobile:
-- System tray / menu bar
-- Multiple windows
-- Window manipulation (position, size)
-- Native file dialogs (platform alternatives exist)
+The following table shows feature support across platforms:
+
+### Core Features
+
+| Feature | Android | iOS | Notes |
+|---------|---------|-----|-------|
+| **Service Bindings** | ✅ | ✅ | Full Go method binding support |
+| **Events (Go→JS)** | ✅ | ✅ | Emit events from Go to frontend |
+| **Events (JS→Go)** | ✅ | ✅ | Emit events from frontend to Go |
+| **Asset Server** | ✅ | ✅ | Serves frontend files |
+| **Dark Mode Detection** | ✅ | ✅ | `System.IsDarkMode()` |
+| **Environment Info** | ✅ | ✅ | `System.Environment()` |
+| **Open URL** | ✅ | ✅ | `Browser.OpenURL()` |
+
+### Dialogs
+
+| Feature | Android | iOS | Notes |
+|---------|---------|-----|-------|
+| **Info/Warning/Error Dialogs** | ✅ | ✅ | Native alert dialogs |
+| **Question Dialog** | ✅ | ✅ | Confirmation prompts |
+| **File Open Dialog** | ⚠️ | ⚠️ | Platform limitations, sandboxed access |
+| **File Save Dialog** | ⚠️ | ⚠️ | Platform limitations |
+
+### Clipboard
+
+| Feature | Android | iOS | Notes |
+|---------|---------|-----|-------|
+| **Set Text** | ✅ | ✅ | Copy to clipboard |
+| **Get Text** | ✅ | ✅ | Paste from clipboard |
+
+### Window (Limited on Mobile)
+
+| Feature | Android | iOS | Notes |
+|---------|---------|-----|-------|
+| **Show/Hide** | ✅ | ✅ | App visibility |
+| **Reload/ForceReload** | ✅ | ✅ | WebView reload |
+| **Fullscreen** | ✅ | ✅ | Immersive mode |
+| **Zoom Control** | ✅ | ✅ | WebView zoom level |
+| **Get Size/Width/Height** | ✅ | ✅ | WebView dimensions |
+| **Set Background Color** | ✅ | ✅ | RGBA background |
+| Position/Move/Resize | ❌ | ❌ | Not applicable on mobile |
+| Minimize/Maximize | ❌ | ❌ | Not applicable on mobile |
+| Multiple Windows | ❌ | ❌ | Single window paradigm |
+
+### Platform-Specific: iOS
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| **Haptic Feedback** | ✅ | Impact styles: light, medium, heavy, soft, rigid |
+| **Device Info** | ✅ | Device model, OS version |
+| **Scroll Control** | ✅ | Enable/disable, bounce effect |
+| **Navigation Gestures** | ✅ | Back/forward swipe gestures |
+| **Link Preview** | ✅ | Long-press link previews |
+| **Safari Inspector** | ✅ | Debug builds only |
+| **Custom User Agent** | ✅ | Set WebView user agent |
+
+### Platform-Specific: Android
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| **Haptic Feedback** | ✅ | Vibration with duration |
+| **Device Info** | ✅ | Device model, SDK version |
+| **Toast Notifications** | ✅ | Native Android toasts |
+| **Scroll Control** | 🔜 | Coming soon |
+| **Custom User Agent** | 🔜 | Coming soon |
+
+### Desktop-Only Features
+
+These features are not available on mobile:
+
+| Feature | Reason |
+|---------|--------|
+| System Tray | No system tray on mobile |
+| Menu Bar | No application menu bar |
+| Context Menus | Different mobile UX patterns |
+| Window Decorations | Frameless, title bar options |
+| Snap Assist | Windows-only feature |
+| Multiple Windows | Mobile single-window paradigm |
+
+## MobileManager API
+
+Wails v3 provides a unified `MobileManager` API that works across both iOS and Android, as well as desktop platforms (where methods are no-ops).
+
+### Accessing the MobileManager
+
+```go
+app := application.New(application.Options{...})
+
+// Access mobile features via app.Mobile
+app.Mobile.Vibrate(50)
+app.Mobile.Toast("Hello!")
+```
+
+### Available Methods
+
+| Method | Description | iOS | Android |
+|--------|-------------|-----|---------|
+| `Vibrate(ms)` | Trigger vibration | Uses haptic feedback (duration ignored) | Vibrates for specified milliseconds |
+| `HapticFeedback(style)` | Native haptic feedback | Taptic Engine with style | Short vibration mapped to style |
+| `Toast(message)` | Show toast notification | Not yet implemented | Native Android Toast |
+| `DeviceInfo()` | Get device information | Returns DeviceInfo struct | Returns DeviceInfo struct |
+| `ScreenInfo()` | Get screen metrics | Returns MobileScreenInfo | Returns MobileScreenInfo |
+| `IsMobile()` | Check if mobile platform | Returns `true` | Returns `true` |
+
+### Haptic Feedback Styles
+
+```go
+// Available styles
+application.HapticLight   // Subtle feedback
+application.HapticMedium  // Moderate feedback (default)
+application.HapticHeavy   // Strong feedback
+application.HapticSoft    // Soft, gentle feedback
+application.HapticRigid   // Sharp, precise feedback
+
+// Usage
+app.Mobile.HapticFeedback(application.HapticMedium)
+```
+
+### Device Information
+
+```go
+info := app.Mobile.DeviceInfo()
+fmt.Println(info.Platform)     // "android", "ios", or "desktop"
+fmt.Println(info.Model)        // e.g., "Pixel 7", "iPhone 15"
+fmt.Println(info.Manufacturer) // e.g., "Google", "Apple"
+fmt.Println(info.OSVersion)    // e.g., "14", "17.0"
+fmt.Println(info.SDKVersion)   // Android SDK level (Android only)
+```
+
+### WebView Control
+
+Control WebView behavior at runtime:
+
+```go
+app.Mobile.SetScrollEnabled(false)           // Disable scrolling
+app.Mobile.SetBounceEnabled(false)           // Disable iOS bounce/Android overscroll
+app.Mobile.SetScrollIndicatorsEnabled(false) // Hide scroll bars
+app.Mobile.SetBackForwardGesturesEnabled(true) // Enable swipe navigation
+app.Mobile.SetLinkPreviewEnabled(true)       // Enable link previews (iOS only)
+app.Mobile.SetInspectableEnabled(true)       // Enable DevTools debugging
+app.Mobile.SetCustomUserAgent("MyApp/1.0")   // Set custom user agent
+```
+
+### Cross-Platform Pattern
+
+The MobileManager uses the same pattern as other Wails managers. On desktop, all methods are safe to call but are no-ops:
+
+```go
+// This code works on all platforms
+if app.Mobile.IsMobile() {
+    app.Mobile.HapticFeedback(application.HapticMedium)
+} else {
+    // Desktop fallback if needed
+}
+```
 
 ## Architecture
 

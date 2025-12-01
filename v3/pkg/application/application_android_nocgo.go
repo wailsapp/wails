@@ -223,3 +223,62 @@ func endsWith(s, suffix string) bool {
 func executeJavaScript(js string) {
 	androidLogf("warn", "executeJavaScript called but cgo is not enabled")
 }
+
+// ==================== Android Platform Features (stubs for non-CGO) ====================
+
+// AndroidVibrate is a stub - CGO required for actual implementation
+func AndroidVibrate(durationMs int) {
+	androidLogf("warn", "AndroidVibrate called but cgo is not enabled")
+}
+
+// AndroidShowToast is a stub - CGO required for actual implementation
+func AndroidShowToast(message string) {
+	androidLogf("warn", "AndroidShowToast called but cgo is not enabled")
+}
+
+// AndroidGetDeviceInfo is a stub - CGO required for actual implementation
+func AndroidGetDeviceInfo() string {
+	return `{"platform":"android","error":"cgo not enabled"}`
+}
+
+// AndroidOpenURL is a stub - CGO required for actual implementation
+func AndroidOpenURL(url string) error {
+	androidLogf("warn", "AndroidOpenURL called but cgo is not enabled")
+	return fmt.Errorf("cgo not enabled")
+}
+
+// AndroidGetScreenInfo is a stub - CGO required for actual implementation
+func AndroidGetScreenInfo() string {
+	return `{}`
+}
+
+// AndroidSetWebViewBackgroundColor is a stub - CGO required for actual implementation
+func AndroidSetWebViewBackgroundColor(r, g, b, a uint8) {
+	androidLogf("warn", "AndroidSetWebViewBackgroundColor called but cgo is not enabled")
+}
+
+// AndroidSetClipboardText is a stub - CGO required for actual implementation
+func AndroidSetClipboardText(text string) {
+	androidLogf("warn", "AndroidSetClipboardText called but cgo is not enabled")
+}
+
+// AndroidGetClipboardText is a stub - CGO required for actual implementation
+func AndroidGetClipboardText() string {
+	return ""
+}
+
+// AndroidShowMessageDialog is a stub - CGO required for actual implementation
+func AndroidShowMessageDialog(dialogType, title, message, buttons string) string {
+	androidLogf("warn", "AndroidShowMessageDialog called but cgo is not enabled")
+	return ""
+}
+
+// AndroidSetHTML is a stub - CGO required for actual implementation
+func AndroidSetHTML(html string) {
+	androidLogf("warn", "AndroidSetHTML called but cgo is not enabled")
+}
+
+// AndroidSetURL is a stub - CGO required for actual implementation
+func AndroidSetURL(url string) {
+	androidLogf("warn", "AndroidSetURL called but cgo is not enabled")
+}

@@ -1,5 +1,8 @@
 import {GreetService} from "./bindings/changeme";
-import {Events} from "@wailsio/runtime";
+import {Events, WML} from "@wailsio/runtime";
+
+// Enable Wails Markup Language (WML) for data-wml-* attributes
+WML.Enable();
 
 const resultElement = document.getElementById('result');
 const timeElement = document.getElementById('time');

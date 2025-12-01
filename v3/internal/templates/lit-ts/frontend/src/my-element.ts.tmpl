@@ -1,7 +1,10 @@
 import {css, html, LitElement} from 'lit'
 import {customElement, property} from 'lit/decorators.js'
-import {Events} from "@wailsio/runtime";
+import {Events, WML} from "@wailsio/runtime";
 import {GreetService} from '../bindings/{{js .ModulePath}}';
+
+// Enable Wails Markup Language (WML) for data-wml-* attributes
+WML.Enable();
 
 /**
  * An example element.

@@ -25,7 +25,7 @@
   flex-direction: column;
   width: 100%;
   max-width: 520px;
-  height: 70vh; /* fixed-height main screen */
+  /* Removed fixed height - let content determine height */
   border-radius: 12px;
 }
 .mobile-pane .p-mobile-tabs-content {
@@ -284,6 +284,8 @@ h1 {
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
     position: static;
+    justify-content: flex-start; /* Align content to top on mobile */
+    padding-top: clamp(16px, 4vh, 32px);
   }
 
   .container {
