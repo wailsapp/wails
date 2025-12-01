@@ -50,12 +50,35 @@ app := application.New(application.Options{
 
 ## iOS-Specific Features
 
-These features are only available on iOS and can be accessed via the `application` package.
+<Aside type="tip" title="Multiple API Options">
+iOS features are available through two APIs:
+- **Unified API** (recommended): `app.Mobile.HapticFeedback()` - works cross-platform
+- **Platform Manager**: `application.IOS.HapticsImpact()` - iOS-specific manager
+
+See the [MobileManager API](/guides/mobile#mobilemanager-api) section for details on the unified API.
+</Aside>
+
+These features are available on iOS via the `application.IOS` manager or the unified `app.Mobile` API.
 
 ### Haptic Feedback
 
 Trigger native iOS haptic feedback using the Taptic Engine:
 
+<Tabs>
+<TabItem label="Unified API (Recommended)">
+```go
+// Available haptic styles (cross-platform)
+app.Mobile.HapticFeedback(application.HapticLight)   // Button taps
+app.Mobile.HapticFeedback(application.HapticMedium)  // Default
+app.Mobile.HapticFeedback(application.HapticHeavy)   // Important actions
+app.Mobile.HapticFeedback(application.HapticSoft)    // Gentle feedback
+app.Mobile.HapticFeedback(application.HapticRigid)   // Sharp feedback
+
+// Or use Vibrate (uses medium haptic on iOS)
+app.Mobile.Vibrate(50) // Duration ignored on iOS
+```
+</TabItem>
+<TabItem label="Platform Manager">
 ```go
 // Available impact styles:
 // - "light"  - Subtle feedback
@@ -64,39 +87,70 @@ Trigger native iOS haptic feedback using the Taptic Engine:
 // - "soft"   - Soft, gentle feedback
 // - "rigid"  - Sharp, precise feedback
 
-application.IOSHapticsImpact("medium")
+application.IOS.HapticsImpact("medium")
 
 // Use for UI interactions
-application.IOSHapticsImpact("light")  // Button taps
-application.IOSHapticsImpact("heavy")  // Important actions
+application.IOS.HapticsImpact("light")  // Button taps
+application.IOS.HapticsImpact("heavy")  // Important actions
 ```
+</TabItem>
+</Tabs>
 
 ### Scroll Control
 
 Control WKWebView scrolling behavior at runtime:
 
+<Tabs>
+<TabItem label="Unified API (Recommended)">
 ```go
 // Disable scrolling entirely (for fixed-layout UIs)
-application.IOSSetScrollEnabled(false)
+app.Mobile.SetScrollEnabled(false)
 
 // Re-enable scrolling
-application.IOSSetScrollEnabled(true)
+app.Mobile.SetScrollEnabled(true)
 
 // Hide scroll indicators
-application.IOSSetScrollIndicatorsEnabled(false)
+app.Mobile.SetScrollIndicatorsEnabled(false)
 ```
+</TabItem>
+<TabItem label="Platform Manager">
+```go
+// Disable scrolling entirely (for fixed-layout UIs)
+application.IOS.SetScrollEnabled(false)
+
+// Re-enable scrolling
+application.IOS.SetScrollEnabled(true)
+
+// Hide scroll indicators
+application.IOS.SetScrollIndicatorsEnabled(false)
+```
+</TabItem>
+</Tabs>
 
 ### Bounce Effect
 
 Control the iOS rubber-band bounce effect when scrolling past content bounds:
 
+<Tabs>
+<TabItem label="Unified API (Recommended)">
 ```go
 // Disable bounce effect for more native-app feel
-application.IOSSetBounceEnabled(false)
+app.Mobile.SetBounceEnabled(false)
 
 // Re-enable bounce
-application.IOSSetBounceEnabled(true)
+app.Mobile.SetBounceEnabled(true)
 ```
+</TabItem>
+<TabItem label="Platform Manager">
+```go
+// Disable bounce effect for more native-app feel
+application.IOS.SetBounceEnabled(false)
+
+// Re-enable bounce
+application.IOS.SetBounceEnabled(true)
+```
+</TabItem>
+</Tabs>
 
 <Aside type="tip">
 Disabling bounce is useful for apps with fixed layouts or when you want to prevent overscroll interference with custom gestures.
@@ -106,34 +160,70 @@ Disabling bounce is useful for apps with fixed layouts or when you want to preve
 
 Control swipe gestures for browser-style back/forward navigation:
 
+<Tabs>
+<TabItem label="Unified API (Recommended)">
 ```go
 // Enable swipe-to-go-back gesture
-application.IOSSetBackForwardGesturesEnabled(true)
+app.Mobile.SetBackForwardGesturesEnabled(true)
 
 // Disable navigation gestures (default)
-application.IOSSetBackForwardGesturesEnabled(false)
+app.Mobile.SetBackForwardGesturesEnabled(false)
 ```
+</TabItem>
+<TabItem label="Platform Manager">
+```go
+// Enable swipe-to-go-back gesture
+application.IOS.SetBackForwardGesturesEnabled(true)
+
+// Disable navigation gestures (default)
+application.IOS.SetBackForwardGesturesEnabled(false)
+```
+</TabItem>
+</Tabs>
 
 ### Link Preview
 
 Control 3D Touch / long-press link previews:
 
+<Tabs>
+<TabItem label="Unified API (Recommended)">
 ```go
 // Enable link preview popups
-application.IOSSetLinkPreviewEnabled(true)
+app.Mobile.SetLinkPreviewEnabled(true)
 
 // Disable previews (default for apps)
-application.IOSSetLinkPreviewEnabled(false)
+app.Mobile.SetLinkPreviewEnabled(false)
 ```
+</TabItem>
+<TabItem label="Platform Manager">
+```go
+// Enable link preview popups
+application.IOS.SetLinkPreviewEnabled(true)
+
+// Disable previews (default for apps)
+application.IOS.SetLinkPreviewEnabled(false)
+```
+</TabItem>
+</Tabs>
 
 ### Safari Web Inspector
 
 Enable debugging via Safari's Web Inspector (debug builds):
 
+<Tabs>
+<TabItem label="Unified API (Recommended)">
 ```go
 // Enable for development
-application.IOSSetInspectableEnabled(true)
+app.Mobile.SetInspectableEnabled(true)
 ```
+</TabItem>
+<TabItem label="Platform Manager">
+```go
+// Enable for development
+application.IOS.SetInspectableEnabled(true)
+```
+</TabItem>
+</Tabs>
 
 <Aside type="note">
 To inspect: Safari → Develop menu → [Your Simulator/Device] → [Your App]
@@ -143,23 +233,74 @@ To inspect: Safari → Develop menu → [Your Simulator/Device] → [Your App]
 
 Set a custom User-Agent string for the WebView:
 
+<Tabs>
+<TabItem label="Unified API (Recommended)">
 ```go
 // Set custom user agent
-application.IOSSetCustomUserAgent("MyApp/1.0 (iOS)")
+app.Mobile.SetCustomUserAgent("MyApp/1.0 (iOS)")
 
 // Include version info
 version := "2.1.0"
-application.IOSSetCustomUserAgent(fmt.Sprintf("MyApp/%s WKWebView", version))
+app.Mobile.SetCustomUserAgent(fmt.Sprintf("MyApp/%s WKWebView", version))
 ```
+</TabItem>
+<TabItem label="Platform Manager">
+```go
+// Set custom user agent
+application.IOS.SetCustomUserAgent("MyApp/1.0 (iOS)")
+
+// Include version info
+version := "2.1.0"
+application.IOS.SetCustomUserAgent(fmt.Sprintf("MyApp/%s WKWebView", version))
+```
+</TabItem>
+</Tabs>
 
 ### Device Information
 
-Get iOS device information (available via system environment):
+Get iOS device information:
+
+<Tabs>
+<TabItem label="Unified API (Recommended)">
+```go
+// Returns typed DeviceInfo struct
+info := app.Mobile.DeviceInfo()
+fmt.Println(info.Platform)     // "ios"
+fmt.Println(info.Manufacturer) // "Apple"
+fmt.Println(info.Model)        // e.g., "iPhone 15"
+fmt.Println(info.OSVersion)    // e.g., "17.0"
+
+// Check if running on mobile
+if app.Mobile.IsMobile() {
+    // iOS or Android specific logic
+}
+```
+</TabItem>
+<TabItem label="Platform Manager">
+```go
+// Get device info struct
+info := application.IOS.DeviceInfo()
+fmt.Println(info.Model)         // e.g., "iPhone 15"
+fmt.Println(info.SystemName)    // "iOS"
+fmt.Println(info.SystemVersion) // e.g., "17.0"
+fmt.Println(info.IsSimulator)   // true/false
+```
+</TabItem>
+</Tabs>
+
+### Native Tabs
+
+Control native iOS tab bar:
 
 ```go
-// Access via environment info
-env := app.Environment()
-// Contains platform info for iOS builds
+// Enable native tab bar
+application.IOS.SetNativeTabsEnabled(true)
+
+// Check if native tabs are enabled
+if application.IOS.NativeTabsIsEnabled() {
+    // Select a specific tab
+    application.IOS.SelectNativeTab(2)
+}
 ```
 
 ## Testing

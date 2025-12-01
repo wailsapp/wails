@@ -71,20 +71,38 @@ app := application.New(application.Options{
 
 ## Android-Specific Features
 
-These features are only available on Android and can be accessed via the `application` package.
+<Aside type="tip" title="Multiple API Options">
+Android features are available through two APIs:
+- **Unified API** (recommended): `app.Mobile.Vibrate()` - works cross-platform
+- **Platform Manager**: `application.Android.Vibrate()` - Android-specific manager
+
+See the [MobileManager API](/guides/mobile#mobilemanager-api) section for details on the unified API.
+</Aside>
+
+These features are available on Android via the `application.Android` manager or the unified `app.Mobile` API.
 
 ### Haptic Feedback
 
 Trigger device vibration for tactile feedback:
 
 <Tabs>
-<TabItem label="Go">
+<TabItem label="Unified API (Recommended)">
 ```go
 // Vibrate for 50 milliseconds
-application.AndroidVibrate(50)
+app.Mobile.Vibrate(50)
+
+// Use haptic styles for cross-platform code
+app.Mobile.HapticFeedback(application.HapticMedium)
+app.Mobile.HapticFeedback(application.HapticHeavy)
+```
+</TabItem>
+<TabItem label="Platform Manager">
+```go
+// Vibrate for 50 milliseconds
+application.Android.Vibrate(50)
 
 // Longer vibration for important notifications
-application.AndroidVibrate(200)
+application.Android.Vibrate(200)
 ```
 </TabItem>
 <TabItem label="Frontend">
@@ -103,13 +121,26 @@ Requires `android.permission.VIBRATE` in AndroidManifest.xml (included by defaul
 
 Show native Android toast messages:
 
+<Tabs>
+<TabItem label="Unified API (Recommended)">
 ```go
 // Show a short toast message
-application.AndroidShowToast("Operation completed!")
+app.Mobile.Toast("Operation completed!")
 
 // Toasts appear at the bottom of the screen
-application.AndroidShowToast("File saved successfully")
+app.Mobile.Toast("File saved successfully")
 ```
+</TabItem>
+<TabItem label="Platform Manager">
+```go
+// Show a short toast message
+application.Android.ShowToast("Operation completed!")
+
+// Toasts appear at the bottom of the screen
+application.Android.ShowToast("File saved successfully")
+```
+</TabItem>
+</Tabs>
 
 Toasts are non-blocking and auto-dismiss after a short duration.
 
@@ -117,9 +148,23 @@ Toasts are non-blocking and auto-dismiss after a short duration.
 
 Get detailed information about the Android device:
 
+<Tabs>
+<TabItem label="Unified API (Recommended)">
+```go
+// Returns typed DeviceInfo struct
+info := app.Mobile.DeviceInfo()
+fmt.Println(info.Platform)     // "android"
+fmt.Println(info.Manufacturer) // e.g., "Google", "Samsung"
+fmt.Println(info.Model)        // e.g., "Pixel 7", "SM-S918B"
+fmt.Println(info.Brand)        // e.g., "google", "samsung"
+fmt.Println(info.SDKVersion)   // e.g., 34 (Android 14)
+fmt.Println(info.OSVersion)    // e.g., "14"
+```
+</TabItem>
+<TabItem label="Platform Manager">
 ```go
 // Returns JSON string with device details
-infoJSON := application.AndroidGetDeviceInfo()
+infoJSON := application.Android.GetDeviceInfo()
 
 // Parse the JSON to access fields:
 // - platform: "android"
@@ -129,22 +174,8 @@ infoJSON := application.AndroidGetDeviceInfo()
 // - sdkVersion: e.g., 34 (Android 14)
 // - release: e.g., "14"
 ```
-
-### Open External URLs
-
-Open URLs in the default browser:
-
-```go
-// Open in default browser
-err := application.AndroidOpenURL("https://wails.io")
-if err != nil {
-    log.Println("Failed to open URL:", err)
-}
-
-// Also works for other URL schemes
-application.AndroidOpenURL("mailto:hello@example.com")
-application.AndroidOpenURL("tel:+1234567890")
-```
+</TabItem>
+</Tabs>
 
 ### Screen Information
 
@@ -152,7 +183,7 @@ Get display metrics for the device screen:
 
 ```go
 // Returns JSON with screen details
-screenJSON := application.AndroidGetScreenInfo()
+screenJSON := application.Android.GetScreenInfo()
 
 // Available fields:
 // - widthPixels: Screen width in pixels
@@ -163,56 +194,54 @@ screenJSON := application.AndroidGetScreenInfo()
 // - xdpi, ydpi: Exact physical DPI
 ```
 
+### Logging
+
+Write messages to Android logcat:
+
+```go
+// Log at different levels
+application.Android.Debug("Debug message: %s", value)
+application.Android.Info("Info message")
+application.Android.Warn("Warning: %v", err)
+application.Android.Error("Error occurred: %v", err)
+
+// Or use the generic Log method
+application.Android.Log("info", "Custom log message")
+```
+
+View logs with:
+```bash
+task android:logs
+```
+
+## Cross-Platform Features
+
+These features work on Android through the unified managers (same API as desktop):
+
+### Browser/URLs
+
+```go
+// Open URLs in default browser
+app.Browser.OpenURL("https://wails.io")
+```
+
 ### Clipboard
 
-Read and write to the system clipboard:
-
 ```go
-// Copy text to clipboard
-application.AndroidSetClipboardText("Hello from Wails!")
+// Copy text
+app.Clipboard.SetText("Hello!")
 
-// Read text from clipboard
-text := application.AndroidGetClipboardText()
+// Read text
+text, _ := app.Clipboard.Text()
 ```
 
-### Message Dialogs
-
-Show native Android dialogs:
+### Dialogs
 
 ```go
-import "encoding/json"
-
-// Info dialog with single button
-buttons, _ := json.Marshal([]string{"OK"})
-result := application.AndroidShowMessageDialog("info", "Welcome", "Thanks for using our app!", string(buttons))
-
-// Question dialog with Yes/No
-buttons, _ = json.Marshal([]string{"Yes", "No"})
-result = application.AndroidShowMessageDialog("question", "Confirm", "Are you sure?", string(buttons))
-if result == "Yes" {
-    // User confirmed
-}
-
-// Warning dialog with multiple options
-buttons, _ = json.Marshal([]string{"Save", "Discard", "Cancel"})
-result = application.AndroidShowMessageDialog("warning", "Unsaved Changes", "You have unsaved changes.", string(buttons))
-```
-
-Dialog types: `"info"`, `"warning"`, `"error"`, `"question"`
-
-### WebView Control
-
-Programmatically control the WebView content:
-
-```go
-// Load custom HTML content
-application.AndroidSetHTML("<html><body><h1>Hello!</h1></body></html>")
-
-// Navigate to a URL
-application.AndroidSetURL("https://wails.io")
-
-// Set background color (via window options)
-window.SetBackgroundColour(application.NewRGBA(255, 255, 255, 255))
+// Show message dialog
+app.Dialogs.Info("Title", "Message")
+app.Dialogs.Warning("Title", "Message")
+app.Dialogs.Error("Title", "Message")
 ```
 
 ## Debugging
