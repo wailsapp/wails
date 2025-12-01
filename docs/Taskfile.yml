@@ -22,9 +22,7 @@ tasks:
 
   dev:
     summary: Run the dev server
-    preconditions:
-      - sh: '{{.PKG_MANAGER}} --version'
-        msg: "Looks like {{.PKG_MANAGER}} isn't installed."
+    deps: [setup]
     cmds:
       - '{{.PKG_MANAGER}} run dev'
 
