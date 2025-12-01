@@ -21,6 +21,8 @@ type Transport interface {
 	// The context is the application context and will be cancelled on shutdown.
 	Start(ctx context.Context, messageProcessor *MessageProcessor) error
 
+	JSClient() []byte
+
 	// Stop gracefully shuts down the transport.
 	Stop() error
 }

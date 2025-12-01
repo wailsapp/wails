@@ -46,6 +46,10 @@ func (t *HTTPTransport) Start(ctx context.Context, processor *MessageProcessor) 
 	return nil
 }
 
+func (t *HTTPTransport) JSClient() []byte {
+	return nil
+}
+
 func (t *HTTPTransport) Stop() error {
 	return nil
 }

@@ -122,6 +122,11 @@ func New(appOptions Options) *App {
 					if err != nil {
 						result.fatal("unable to serve runtime.js: %w", err)
 					}
+				case "/wails/transport.js":
+					err := assetserver.ServeFile(rw, path, transport.JSClient())
+					if err != nil {
+						result.fatal("unable to serve transport.js: %w", err)
+					}
 				default:
 					next.ServeHTTP(rw, req)
 				}

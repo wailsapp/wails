@@ -244,3 +244,10 @@ export async function createWebSocketTransport(url, options = {}) {
   await transport.connect();
   return transport;
 }
+
+const wsTransport = await createWebSocketTransport("ws://localhost:9099/wails/ws", {
+  reconnectDelay: 2000,
+  requestTimeout: 30000
+});
+
+export default wsTransport;
