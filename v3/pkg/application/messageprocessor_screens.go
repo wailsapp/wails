@@ -1,8 +1,7 @@
 package application
 
 import (
-	"fmt"
-	"net/http"
+	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
 const (
@@ -17,26 +16,19 @@ var screensMethodNames = map[int]string{
 	ScreensGetCurrent: "GetCurrent",
 }
 
-func (m *MessageProcessor) processScreensMethod(method int, rw http.ResponseWriter, _ *http.Request, _ Window, _ QueryParams) {
-	switch method {
+func (m *MessageProcessor) processScreensMethod(req *RuntimeRequest) (any, error) {
+	switch req.Method {
 	case ScreensGetAll:
-		screens := globalApplication.Screen.GetAll()
-		m.json(rw, screens)
+		return globalApplication.Screen.GetAll(), nil
 	case ScreensGetPrimary:
-		screen := globalApplication.Screen.GetPrimary()
-		m.json(rw, screen)
+		return globalApplication.Screen.GetPrimary(), nil
 	case ScreensGetCurrent:
 		screen, err := globalApplication.Window.Current().GetScreen()
 		if err != nil {
-			m.httpError(rw, "Window.GetScreen failed:", err)
-			return
+			return nil, errs.WrapInvalidScreensCallErrorf(err, "Window.GetScreen failed")
 		}
-		m.json(rw, screen)
+		return screen, nil
 	default:
-		m.httpError(rw, "Invalid screens call:", fmt.Errorf("unknown method: %d", method))
-		return
+		return nil, errs.NewInvalidScreensCallErrorf("Unknown method: %d", req.Method)
 	}
-
-	m.Info("Runtime call:", "method", "Screens."+screensMethodNames[method])
-
 }

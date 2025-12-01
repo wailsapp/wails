@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+Refactor binding transport layer by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/4702)
 
 ## Changed
 <!-- Changes in existing functionality -->
