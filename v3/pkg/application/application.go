@@ -313,6 +313,7 @@ type App struct {
 	Screen      *ScreenManager
 	Clipboard   *ClipboardManager
 	SystemTray  *SystemTrayManager
+	Mobile      *MobileManager
 
 	// Windows
 	windows     map[uint]Window
@@ -464,6 +465,7 @@ func (a *App) init() {
 	a.Screen = newScreenManager(a)
 	a.Clipboard = newClipboardManager(a)
 	a.SystemTray = newSystemTrayManager(a)
+	a.Mobile = newMobileManager(a)
 	fmt.Println("🟠 [application.go] END App.init()")
 }
 
