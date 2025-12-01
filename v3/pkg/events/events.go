@@ -499,7 +499,7 @@ func newAndroidEvents() androidEvents {
 	}
 }
 
-var iOS = newIOSEvents()
+var IOS = newIOSEvents()
 
 type iosEvents struct {
 	ApplicationDidBecomeActive             ApplicationEventType

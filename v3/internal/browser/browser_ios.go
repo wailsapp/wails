@@ -7,6 +7,8 @@ package browser
 #cgo LDFLAGS: -framework Foundation -framework UIKit
 
 #include <stdlib.h>
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 // Objective-C function to open URL using UIApplication
 static int iosOpenURL(const char* urlStr) {
