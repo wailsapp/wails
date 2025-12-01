@@ -334,8 +334,8 @@ func (w *androidWebviewWindow) setContentProtection(_ bool) {
 }
 
 func (w *androidWebviewWindow) setHTML(html string) {
-	// TODO: Implement via JNI
 	androidLogf("debug", "setHTML called")
+	AndroidSetHTML(html)
 }
 
 func (w *androidWebviewWindow) setMenu(_ *Menu) {
@@ -351,8 +351,8 @@ func (w *androidWebviewWindow) setPosition(_ int, _ int) {
 }
 
 func (w *androidWebviewWindow) setURL(url string) {
-	// TODO: Implement via JNI
 	androidLogf("debug", "setURL: %s", url)
+	AndroidSetURL(url)
 }
 
 func (w *androidWebviewWindow) showMenuBar() {

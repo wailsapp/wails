@@ -491,6 +491,43 @@ public class WailsBridge {
         return result[0] != null ? result[0] : "";
     }
 
+    /**
+     * Load HTML content into the WebView.
+     * Called from Go via JNI.
+     * @param html The HTML content to load
+     */
+    public void setHTML(String html) {
+        Log.d(TAG, "setHTML called");
+        if (webView != null) {
+            mainHandler.post(() -> {
+                try {
+                    // Use loadDataWithBaseURL to properly handle relative URLs and encoding
+                    webView.loadDataWithBaseURL("wails://wails/", html, "text/html", "UTF-8", null);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error loading HTML", e);
+                }
+            });
+        }
+    }
+
+    /**
+     * Load a URL into the WebView.
+     * Called from Go via JNI.
+     * @param url The URL to load
+     */
+    public void setURL(String url) {
+        Log.d(TAG, "setURL called: " + url);
+        if (webView != null) {
+            mainHandler.post(() -> {
+                try {
+                    webView.loadUrl(url);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error loading URL: " + url, e);
+                }
+            });
+        }
+    }
+
     // Callback interfaces
     public interface AssetCallback {
         void onAssetReady(byte[] data, String mimeType);

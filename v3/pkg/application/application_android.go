@@ -81,6 +81,8 @@ static jmethodID g_getScreenInfoMethod = NULL;
 static jmethodID g_setClipboardTextMethod = NULL;
 static jmethodID g_getClipboardTextMethod = NULL;
 static jmethodID g_showMessageDialogMethod = NULL;
+static jmethodID g_setHTMLMethod = NULL;
+static jmethodID g_setURLMethod = NULL;
 
 // Helper function to get JNIEnv for current thread
 static JNIEnv* getEnv(int *needsDetach) {
@@ -144,6 +146,12 @@ static void cacheAndroidMethods(JNIEnv *env) {
     }
     if (g_showMessageDialogMethod == NULL) {
         g_showMessageDialogMethod = (*env)->GetMethodID(env, bridgeClass, "showMessageDialog", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
+    }
+    if (g_setHTMLMethod == NULL) {
+        g_setHTMLMethod = (*env)->GetMethodID(env, bridgeClass, "setHTML", "(Ljava/lang/String;)V");
+    }
+    if (g_setURLMethod == NULL) {
+        g_setURLMethod = (*env)->GetMethodID(env, bridgeClass, "setURL", "(Ljava/lang/String;)V");
     }
 
     (*env)->DeleteLocalRef(env, bridgeClass);
@@ -490,6 +498,68 @@ static const char* androidShowMessageDialogNative(const char* dialogType, const 
 
     releaseEnv(needsDetach);
     return result;
+}
+
+// Set HTML content in WebView
+static void androidSetHTMLNative(const char* html) {
+    LOGD("androidSetHTMLNative called");
+
+    int needsDetach = 0;
+    JNIEnv *env = getEnv(&needsDetach);
+    if (env == NULL || g_bridge == NULL || html == NULL) {
+        LOGD("androidSetHTMLNative: env, bridge, or html is NULL");
+        return;
+    }
+
+    // Ensure method is cached
+    if (g_setHTMLMethod == NULL) {
+        cacheAndroidMethods(env);
+    }
+
+    if (g_setHTMLMethod != NULL) {
+        jstring jHtml = (*env)->NewStringUTF(env, html);
+        if (jHtml != NULL) {
+            (*env)->CallVoidMethod(env, g_bridge, g_setHTMLMethod, jHtml);
+            if ((*env)->ExceptionCheck(env)) {
+                (*env)->ExceptionDescribe(env);
+                (*env)->ExceptionClear(env);
+            }
+            (*env)->DeleteLocalRef(env, jHtml);
+        }
+    }
+
+    releaseEnv(needsDetach);
+}
+
+// Set URL in WebView
+static void androidSetURLNative(const char* url) {
+    LOGD("androidSetURLNative called: %s", url ? url : "null");
+
+    int needsDetach = 0;
+    JNIEnv *env = getEnv(&needsDetach);
+    if (env == NULL || g_bridge == NULL || url == NULL) {
+        LOGD("androidSetURLNative: env, bridge, or url is NULL");
+        return;
+    }
+
+    // Ensure method is cached
+    if (g_setURLMethod == NULL) {
+        cacheAndroidMethods(env);
+    }
+
+    if (g_setURLMethod != NULL) {
+        jstring jUrl = (*env)->NewStringUTF(env, url);
+        if (jUrl != NULL) {
+            (*env)->CallVoidMethod(env, g_bridge, g_setURLMethod, jUrl);
+            if ((*env)->ExceptionCheck(env)) {
+                (*env)->ExceptionDescribe(env);
+                (*env)->ExceptionClear(env);
+            }
+            (*env)->DeleteLocalRef(env, jUrl);
+        }
+    }
+
+    releaseEnv(needsDetach);
 }
 
 // Execute JavaScript via the bridge - can be called from any thread
@@ -1252,4 +1322,20 @@ func AndroidShowMessageDialog(dialogType, title, message, buttons string) string
 	C.free(unsafe.Pointer(cResult))
 	androidLogf("debug", "AndroidShowMessageDialog result: %s", result)
 	return result
+}
+
+// AndroidSetHTML loads HTML content into the WebView via JNI
+func AndroidSetHTML(html string) {
+	androidLogf("debug", "AndroidSetHTML called")
+	cHtml := C.CString(html)
+	defer C.free(unsafe.Pointer(cHtml))
+	C.androidSetHTMLNative(cHtml)
+}
+
+// AndroidSetURL loads a URL into the WebView via JNI
+func AndroidSetURL(url string) {
+	androidLogf("debug", "AndroidSetURL: %s", url)
+	cUrl := C.CString(url)
+	defer C.free(unsafe.Pointer(cUrl))
+	C.androidSetURLNative(cUrl)
 }
