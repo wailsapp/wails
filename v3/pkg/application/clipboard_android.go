@@ -9,15 +9,13 @@ func newClipboardImpl() clipboardImpl {
 }
 
 func (c *androidClipboardImpl) setText(text string) bool {
-	// Android clipboard implementation would go here
-	// TODO: Implement via JNI to Android ClipboardManager
+	AndroidSetClipboardText(text)
 	return true
 }
 
 func (c *androidClipboardImpl) text() (string, bool) {
-	// Android clipboard implementation would go here
-	// TODO: Implement via JNI to Android ClipboardManager
-	return "", false
+	text := AndroidGetClipboardText()
+	return text, text != ""
 }
 
 // SetClipboardText sets the clipboard text on Android

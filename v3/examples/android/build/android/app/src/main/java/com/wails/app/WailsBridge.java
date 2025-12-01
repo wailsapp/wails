@@ -1,8 +1,23 @@
 package com.wails.app;
 
+import android.content.ClipboardManager;
+import android.content.ClipData;
 import android.content.Context;
+import android.content.Intent;
+import android.content.res.Configuration;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.os.VibratorManager;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.webkit.WebView;
+import android.widget.Toast;
+
+import org.json.JSONObject;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,7 +42,9 @@ public class WailsBridge {
     private final AtomicInteger callbackIdGenerator = new AtomicInteger(0);
     private final ConcurrentHashMap<Integer, AssetCallback> pendingAssetCallbacks = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Integer, MessageCallback> pendingMessageCallbacks = new ConcurrentHashMap<>();
+    private final Handler mainHandler;
     private WebView webView;
+    private Vibrator vibrator;
     private volatile boolean initialized = false;
 
     // Native methods - implemented in Go
@@ -42,6 +59,17 @@ public class WailsBridge {
 
     public WailsBridge(Context context) {
         this.context = context;
+        this.mainHandler = new Handler(Looper.getMainLooper());
+
+        // Initialize vibrator service
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            VibratorManager vibratorManager = (VibratorManager) context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
+            if (vibratorManager != null) {
+                this.vibrator = vibratorManager.getDefaultVibrator();
+            }
+        } else {
+            this.vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        }
     }
 
     /**
@@ -199,6 +227,198 @@ public class WailsBridge {
                 .replace("'", "\\'")
                 .replace("\n", "\\n")
                 .replace("\r", "\\r");
+    }
+
+    // ==================== Android-Specific Features ====================
+
+    /**
+     * Trigger haptic feedback (vibration).
+     * Called from Go via JNI.
+     * @param durationMs Duration of vibration in milliseconds
+     */
+    @SuppressWarnings("deprecation")
+    public void vibrate(int durationMs) {
+        Log.d(TAG, "vibrate called: " + durationMs + "ms");
+
+        if (vibrator == null || !vibrator.hasVibrator()) {
+            Log.w(TAG, "No vibrator available");
+            return;
+        }
+
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createOneShot(durationMs, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                // Deprecated in API 26, but needed for older devices
+                vibrator.vibrate(durationMs);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error triggering vibration", e);
+        }
+    }
+
+    /**
+     * Show a native Android Toast notification.
+     * Called from Go via JNI.
+     * @param message The message to display
+     */
+    public void showToast(String message) {
+        Log.d(TAG, "showToast called: " + message);
+
+        // Toast must be shown on the main thread
+        mainHandler.post(() -> {
+            try {
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                Log.e(TAG, "Error showing toast", e);
+            }
+        });
+    }
+
+    /**
+     * Get device information.
+     * Called from Go via JNI.
+     * @return JSON string with device info
+     */
+    public String getDeviceInfo() {
+        Log.d(TAG, "getDeviceInfo called");
+
+        try {
+            JSONObject info = new JSONObject();
+            info.put("platform", "android");
+            info.put("manufacturer", Build.MANUFACTURER);
+            info.put("model", Build.MODEL);
+            info.put("brand", Build.BRAND);
+            info.put("device", Build.DEVICE);
+            info.put("product", Build.PRODUCT);
+            info.put("sdkVersion", Build.VERSION.SDK_INT);
+            info.put("release", Build.VERSION.RELEASE);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                info.put("securityPatch", Build.VERSION.SECURITY_PATCH);
+            }
+
+            return info.toString();
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting device info", e);
+            return "{\"platform\":\"android\",\"error\":\"" + e.getMessage() + "\"}";
+        }
+    }
+
+    /**
+     * Open a URL in the default browser using Android's Intent system.
+     * Called from Go via JNI.
+     * @param url The URL to open
+     * @return true if successful, false otherwise
+     */
+    public boolean openURL(String url) {
+        Log.d(TAG, "openURL called: " + url);
+
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+            return true;
+        } catch (Exception e) {
+            Log.e(TAG, "Error opening URL: " + url, e);
+            return false;
+        }
+    }
+
+    /**
+     * Set text to clipboard.
+     * Called from Go via JNI.
+     * @param text The text to copy
+     */
+    public void setClipboardText(String text) {
+        Log.d(TAG, "setClipboardText called");
+        mainHandler.post(() -> {
+            try {
+                ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("wails", text);
+                clipboard.setPrimaryClip(clip);
+            } catch (Exception e) {
+                Log.e(TAG, "Error setting clipboard text", e);
+            }
+        });
+    }
+
+    /**
+     * Get text from clipboard.
+     * Called from Go via JNI.
+     * @return The clipboard text, or empty string if none
+     */
+    public String getClipboardText() {
+        Log.d(TAG, "getClipboardText called");
+        try {
+            ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+            if (clipboard != null && clipboard.hasPrimaryClip()) {
+                ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
+                CharSequence text = item.getText();
+                return text != null ? text.toString() : "";
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting clipboard text", e);
+        }
+        return "";
+    }
+
+    /**
+     * Set WebView background color.
+     * Called from Go via JNI.
+     * @param color The ARGB color value
+     */
+    public void setWebViewBackgroundColor(int color) {
+        Log.d(TAG, "setWebViewBackgroundColor called: " + Integer.toHexString(color));
+        if (webView != null) {
+            mainHandler.post(() -> {
+                try {
+                    webView.setBackgroundColor(color);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error setting WebView background color", e);
+                }
+            });
+        }
+    }
+
+    /**
+     * Check if dark mode is enabled.
+     * Called from Go via JNI.
+     * @return true if dark mode is enabled
+     */
+    public boolean isDarkMode() {
+        Log.d(TAG, "isDarkMode called");
+        try {
+            int nightMode = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+            return nightMode == Configuration.UI_MODE_NIGHT_YES;
+        } catch (Exception e) {
+            Log.e(TAG, "Error checking dark mode", e);
+            return false;
+        }
+    }
+
+    /**
+     * Get screen information.
+     * Called from Go via JNI.
+     * @return JSON string with screen info
+     */
+    public String getScreenInfo() {
+        Log.d(TAG, "getScreenInfo called");
+        try {
+            DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+            JSONObject info = new JSONObject();
+            info.put("widthPixels", metrics.widthPixels);
+            info.put("heightPixels", metrics.heightPixels);
+            info.put("density", metrics.density);
+            info.put("densityDpi", metrics.densityDpi);
+            info.put("scaledDensity", metrics.scaledDensity);
+            info.put("xdpi", metrics.xdpi);
+            info.put("ydpi", metrics.ydpi);
+            return info.toString();
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting screen info", e);
+            return "{\"widthPixels\":1080,\"heightPixels\":2400}";
+        }
     }
 
     // Callback interfaces

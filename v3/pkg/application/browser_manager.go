@@ -1,7 +1,7 @@
 package application
 
 import (
-	"github.com/pkg/browser"
+	"github.com/wailsapp/wails/v3/internal/browser"
 )
 
 // BrowserManager manages browser-related operations
@@ -21,7 +21,7 @@ func (bm *BrowserManager) OpenURL(url string) error {
 	return browser.OpenURL(url)
 }
 
-// OpenFile opens a file in the default browser
+// OpenFile opens a file in the default application
 func (bm *BrowserManager) OpenFile(path string) error {
 	return browser.OpenFile(path)
 }

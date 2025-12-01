@@ -126,8 +126,8 @@ func (w *androidWebviewWindow) setAbsolutePosition(_ int, _ int) {}
 func (w *androidWebviewWindow) setAlwaysOnTop(_ bool) {}
 
 func (w *androidWebviewWindow) setBackgroundColour(col RGBA) {
-	// TODO: Send background colour to Java via JNI
 	androidLogf("debug", "setBackgroundColour: rgba(%d,%d,%d,%d)", col.Red, col.Green, col.Blue, col.Alpha)
+	AndroidSetWebViewBackgroundColor(col.Red, col.Green, col.Blue, col.Alpha)
 }
 
 func (w *androidWebviewWindow) setEnabled(_ bool) {}

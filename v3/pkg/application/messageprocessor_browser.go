@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/pkg/browser"
+	"github.com/wailsapp/wails/v3/internal/browser"
 )
 
 const (

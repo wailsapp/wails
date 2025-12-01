@@ -49,7 +49,8 @@ func (a *App) platformQuit() {
 }
 
 func (a *App) isDarkMode() bool {
-	// TODO: Query Android for dark mode status
+	// TODO: Query Android for dark mode status (CGO version implemented)
+	// This is a stub for non-CGO builds
 	return false
 }
 

@@ -3,6 +3,7 @@
 package application
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -52,23 +53,29 @@ func (m *MessageProcessor) processIOSMethod(method int, rw http.ResponseWriter, 
 	m.httpError(rw, "iOS methods not available on Android:", fmt.Errorf("unknown method: %d", method))
 }
 
-// Android-specific runtime functions (stubs for now)
+// Android-specific runtime functions - call Go wrappers in application_android.go
 
 func androidHapticsVibrate(durationMs int) {
-	// TODO: Implement via JNI to Android Vibrator service
-	androidLogf("debug", "Haptics vibrate: %dms", durationMs)
+	AndroidVibrate(durationMs)
 }
 
 func androidDeviceInfo() map[string]interface{} {
-	// TODO: Implement via JNI to get actual device info
-	return map[string]interface{}{
-		"platform": "android",
-		"model":    "Unknown",
-		"version":  "Unknown",
+	// Get JSON string from Go wrapper
+	jsonStr := AndroidGetDeviceInfo()
+
+	// Parse JSON into map
+	var info map[string]interface{}
+	if err := json.Unmarshal([]byte(jsonStr), &info); err != nil {
+		return map[string]interface{}{
+			"platform": "android",
+			"model":    "Unknown",
+			"version":  "Unknown",
+		}
 	}
+
+	return info
 }
 
 func androidShowToast(message string) {
-	// TODO: Implement via JNI to Android Toast
-	androidLogf("debug", "Toast: %s", message)
+	AndroidShowToast(message)
 }

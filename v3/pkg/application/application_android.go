@@ -70,6 +70,376 @@ static void storeBridgeRef(JNIEnv *env, jobject bridge) {
 #include <android/log.h>
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, "WailsNative", __VA_ARGS__)
 
+// Cached method IDs for Android-specific features
+static jmethodID g_vibrateMethod = NULL;
+static jmethodID g_showToastMethod = NULL;
+static jmethodID g_getDeviceInfoMethod = NULL;
+static jmethodID g_openURLMethod = NULL;
+static jmethodID g_setWebViewBackgroundColorMethod = NULL;
+static jmethodID g_isDarkModeMethod = NULL;
+static jmethodID g_getScreenInfoMethod = NULL;
+static jmethodID g_setClipboardTextMethod = NULL;
+static jmethodID g_getClipboardTextMethod = NULL;
+
+// Helper function to get JNIEnv for current thread
+static JNIEnv* getEnv(int *needsDetach) {
+    *needsDetach = 0;
+    if (g_jvm == NULL) return NULL;
+
+    JNIEnv *env = NULL;
+    jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
+    if (result == JNI_EDETACHED) {
+        if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
+            return NULL;
+        }
+        *needsDetach = 1;
+    } else if (result != JNI_OK) {
+        return NULL;
+    }
+    return env;
+}
+
+// Helper function to detach from JVM if needed
+static void releaseEnv(int needsDetach) {
+    if (needsDetach && g_jvm != NULL) {
+        (*g_jvm)->DetachCurrentThread(g_jvm);
+    }
+}
+
+// Cache method IDs for Android-specific features
+static void cacheAndroidMethods(JNIEnv *env) {
+    if (g_bridge == NULL) return;
+
+    jclass bridgeClass = (*env)->GetObjectClass(env, g_bridge);
+    if (bridgeClass == NULL) return;
+
+    // Cache method IDs if not already cached
+    if (g_vibrateMethod == NULL) {
+        g_vibrateMethod = (*env)->GetMethodID(env, bridgeClass, "vibrate", "(I)V");
+    }
+    if (g_showToastMethod == NULL) {
+        g_showToastMethod = (*env)->GetMethodID(env, bridgeClass, "showToast", "(Ljava/lang/String;)V");
+    }
+    if (g_getDeviceInfoMethod == NULL) {
+        g_getDeviceInfoMethod = (*env)->GetMethodID(env, bridgeClass, "getDeviceInfo", "()Ljava/lang/String;");
+    }
+    if (g_openURLMethod == NULL) {
+        g_openURLMethod = (*env)->GetMethodID(env, bridgeClass, "openURL", "(Ljava/lang/String;)Z");
+    }
+    if (g_setWebViewBackgroundColorMethod == NULL) {
+        g_setWebViewBackgroundColorMethod = (*env)->GetMethodID(env, bridgeClass, "setWebViewBackgroundColor", "(I)V");
+    }
+    if (g_isDarkModeMethod == NULL) {
+        g_isDarkModeMethod = (*env)->GetMethodID(env, bridgeClass, "isDarkMode", "()Z");
+    }
+    if (g_getScreenInfoMethod == NULL) {
+        g_getScreenInfoMethod = (*env)->GetMethodID(env, bridgeClass, "getScreenInfo", "()Ljava/lang/String;");
+    }
+    if (g_setClipboardTextMethod == NULL) {
+        g_setClipboardTextMethod = (*env)->GetMethodID(env, bridgeClass, "setClipboardText", "(Ljava/lang/String;)V");
+    }
+    if (g_getClipboardTextMethod == NULL) {
+        g_getClipboardTextMethod = (*env)->GetMethodID(env, bridgeClass, "getClipboardText", "()Ljava/lang/String;");
+    }
+
+    (*env)->DeleteLocalRef(env, bridgeClass);
+}
+
+// Call Android Vibrator service
+static void androidVibrate(int durationMs) {
+    LOGD("androidVibrate called: %dms", durationMs);
+
+    int needsDetach = 0;
+    JNIEnv *env = getEnv(&needsDetach);
+    if (env == NULL || g_bridge == NULL) {
+        LOGD("androidVibrate: env or bridge is NULL");
+        return;
+    }
+
+    // Ensure method is cached
+    if (g_vibrateMethod == NULL) {
+        cacheAndroidMethods(env);
+    }
+
+    if (g_vibrateMethod != NULL) {
+        (*env)->CallVoidMethod(env, g_bridge, g_vibrateMethod, (jint)durationMs);
+        if ((*env)->ExceptionCheck(env)) {
+            (*env)->ExceptionDescribe(env);
+            (*env)->ExceptionClear(env);
+        }
+    }
+
+    releaseEnv(needsDetach);
+}
+
+// Show Android Toast
+static void androidShowToastNative(const char* message) {
+    LOGD("androidShowToastNative called: %s", message ? message : "null");
+
+    int needsDetach = 0;
+    JNIEnv *env = getEnv(&needsDetach);
+    if (env == NULL || g_bridge == NULL || message == NULL) {
+        LOGD("androidShowToastNative: env, bridge, or message is NULL");
+        return;
+    }
+
+    // Ensure method is cached
+    if (g_showToastMethod == NULL) {
+        cacheAndroidMethods(env);
+    }
+
+    if (g_showToastMethod != NULL) {
+        jstring jMessage = (*env)->NewStringUTF(env, message);
+        if (jMessage != NULL) {
+            (*env)->CallVoidMethod(env, g_bridge, g_showToastMethod, jMessage);
+            if ((*env)->ExceptionCheck(env)) {
+                (*env)->ExceptionDescribe(env);
+                (*env)->ExceptionClear(env);
+            }
+            (*env)->DeleteLocalRef(env, jMessage);
+        }
+    }
+
+    releaseEnv(needsDetach);
+}
+
+// Get Android device info
+static const char* androidGetDeviceInfoNative() {
+    LOGD("androidGetDeviceInfoNative called");
+
+    int needsDetach = 0;
+    JNIEnv *env = getEnv(&needsDetach);
+    if (env == NULL || g_bridge == NULL) {
+        LOGD("androidGetDeviceInfoNative: env or bridge is NULL");
+        return NULL;
+    }
+
+    // Ensure method is cached
+    if (g_getDeviceInfoMethod == NULL) {
+        cacheAndroidMethods(env);
+    }
+
+    const char* result = NULL;
+    if (g_getDeviceInfoMethod != NULL) {
+        jstring jResult = (jstring)(*env)->CallObjectMethod(env, g_bridge, g_getDeviceInfoMethod);
+        if ((*env)->ExceptionCheck(env)) {
+            (*env)->ExceptionDescribe(env);
+            (*env)->ExceptionClear(env);
+        } else if (jResult != NULL) {
+            const char* cResult = (*env)->GetStringUTFChars(env, jResult, NULL);
+            if (cResult != NULL) {
+                // Make a copy since we need to release the JNI string
+                result = strdup(cResult);
+                (*env)->ReleaseStringUTFChars(env, jResult, cResult);
+            }
+            (*env)->DeleteLocalRef(env, jResult);
+        }
+    }
+
+    releaseEnv(needsDetach);
+    return result;
+}
+
+// Open URL via Android Intent
+static int androidOpenURLNative(const char* url) {
+    LOGD("androidOpenURLNative called: %s", url ? url : "null");
+
+    int needsDetach = 0;
+    JNIEnv *env = getEnv(&needsDetach);
+    if (env == NULL || g_bridge == NULL || url == NULL) {
+        LOGD("androidOpenURLNative: env, bridge, or url is NULL");
+        return 0;
+    }
+
+    // Ensure method is cached
+    if (g_openURLMethod == NULL) {
+        cacheAndroidMethods(env);
+    }
+
+    int result = 0;
+    if (g_openURLMethod != NULL) {
+        jstring jUrl = (*env)->NewStringUTF(env, url);
+        if (jUrl != NULL) {
+            jboolean success = (*env)->CallBooleanMethod(env, g_bridge, g_openURLMethod, jUrl);
+            if ((*env)->ExceptionCheck(env)) {
+                (*env)->ExceptionDescribe(env);
+                (*env)->ExceptionClear(env);
+            } else {
+                result = success ? 1 : 0;
+            }
+            (*env)->DeleteLocalRef(env, jUrl);
+        }
+    }
+
+    releaseEnv(needsDetach);
+    LOGD("androidOpenURLNative result: %d", result);
+    return result;
+}
+
+// Set WebView background color
+static void androidSetWebViewBackgroundColorNative(int color) {
+    LOGD("androidSetWebViewBackgroundColorNative called: 0x%08x", color);
+
+    int needsDetach = 0;
+    JNIEnv *env = getEnv(&needsDetach);
+    if (env == NULL || g_bridge == NULL) {
+        LOGD("androidSetWebViewBackgroundColorNative: env or bridge is NULL");
+        return;
+    }
+
+    // Ensure method is cached
+    if (g_setWebViewBackgroundColorMethod == NULL) {
+        cacheAndroidMethods(env);
+    }
+
+    if (g_setWebViewBackgroundColorMethod != NULL) {
+        (*env)->CallVoidMethod(env, g_bridge, g_setWebViewBackgroundColorMethod, (jint)color);
+        if ((*env)->ExceptionCheck(env)) {
+            (*env)->ExceptionDescribe(env);
+            (*env)->ExceptionClear(env);
+        }
+    }
+
+    releaseEnv(needsDetach);
+}
+
+// Check if dark mode is enabled
+static int androidIsDarkModeNative() {
+    LOGD("androidIsDarkModeNative called");
+
+    int needsDetach = 0;
+    JNIEnv *env = getEnv(&needsDetach);
+    if (env == NULL || g_bridge == NULL) {
+        LOGD("androidIsDarkModeNative: env or bridge is NULL");
+        return 0;
+    }
+
+    // Ensure method is cached
+    if (g_isDarkModeMethod == NULL) {
+        cacheAndroidMethods(env);
+    }
+
+    int result = 0;
+    if (g_isDarkModeMethod != NULL) {
+        jboolean isDark = (*env)->CallBooleanMethod(env, g_bridge, g_isDarkModeMethod);
+        if ((*env)->ExceptionCheck(env)) {
+            (*env)->ExceptionDescribe(env);
+            (*env)->ExceptionClear(env);
+        } else {
+            result = isDark ? 1 : 0;
+        }
+    }
+
+    releaseEnv(needsDetach);
+    LOGD("androidIsDarkModeNative result: %d", result);
+    return result;
+}
+
+// Get Android screen info
+static const char* androidGetScreenInfoNative() {
+    LOGD("androidGetScreenInfoNative called");
+
+    int needsDetach = 0;
+    JNIEnv *env = getEnv(&needsDetach);
+    if (env == NULL || g_bridge == NULL) {
+        LOGD("androidGetScreenInfoNative: env or bridge is NULL");
+        return NULL;
+    }
+
+    // Ensure method is cached
+    if (g_getScreenInfoMethod == NULL) {
+        cacheAndroidMethods(env);
+    }
+
+    const char* result = NULL;
+    if (g_getScreenInfoMethod != NULL) {
+        jstring jResult = (jstring)(*env)->CallObjectMethod(env, g_bridge, g_getScreenInfoMethod);
+        if ((*env)->ExceptionCheck(env)) {
+            (*env)->ExceptionDescribe(env);
+            (*env)->ExceptionClear(env);
+        } else if (jResult != NULL) {
+            const char* cResult = (*env)->GetStringUTFChars(env, jResult, NULL);
+            if (cResult != NULL) {
+                // Make a copy since we need to release the JNI string
+                result = strdup(cResult);
+                (*env)->ReleaseStringUTFChars(env, jResult, cResult);
+            }
+            (*env)->DeleteLocalRef(env, jResult);
+        }
+    }
+
+    releaseEnv(needsDetach);
+    return result;
+}
+
+// Call Android ClipboardManager to set text
+static void androidSetClipboardTextNative(const char* text) {
+    LOGD("androidSetClipboardTextNative called: %s", text ? text : "null");
+
+    int needsDetach = 0;
+    JNIEnv *env = getEnv(&needsDetach);
+    if (env == NULL || g_bridge == NULL || text == NULL) {
+        LOGD("androidSetClipboardTextNative: env, bridge, or text is NULL");
+        return;
+    }
+
+    // Ensure method is cached
+    if (g_setClipboardTextMethod == NULL) {
+        cacheAndroidMethods(env);
+    }
+
+    if (g_setClipboardTextMethod != NULL) {
+        jstring jText = (*env)->NewStringUTF(env, text);
+        if (jText != NULL) {
+            (*env)->CallVoidMethod(env, g_bridge, g_setClipboardTextMethod, jText);
+            if ((*env)->ExceptionCheck(env)) {
+                (*env)->ExceptionDescribe(env);
+                (*env)->ExceptionClear(env);
+            }
+            (*env)->DeleteLocalRef(env, jText);
+        }
+    }
+
+    releaseEnv(needsDetach);
+}
+
+// Get text from Android ClipboardManager
+static const char* androidGetClipboardTextNative() {
+    LOGD("androidGetClipboardTextNative called");
+
+    int needsDetach = 0;
+    JNIEnv *env = getEnv(&needsDetach);
+    if (env == NULL || g_bridge == NULL) {
+        LOGD("androidGetClipboardTextNative: env or bridge is NULL");
+        return NULL;
+    }
+
+    // Ensure method is cached
+    if (g_getClipboardTextMethod == NULL) {
+        cacheAndroidMethods(env);
+    }
+
+    const char* result = NULL;
+    if (g_getClipboardTextMethod != NULL) {
+        jstring jResult = (jstring)(*env)->CallObjectMethod(env, g_bridge, g_getClipboardTextMethod);
+        if ((*env)->ExceptionCheck(env)) {
+            (*env)->ExceptionDescribe(env);
+            (*env)->ExceptionClear(env);
+        } else if (jResult != NULL) {
+            const char* cResult = (*env)->GetStringUTFChars(env, jResult, NULL);
+            if (cResult != NULL) {
+                // Make a copy since we need to release the JNI string
+                result = strdup(cResult);
+                (*env)->ReleaseStringUTFChars(env, jResult, cResult);
+            }
+            (*env)->DeleteLocalRef(env, jResult);
+        }
+    }
+
+    releaseEnv(needsDetach);
+    return result;
+}
+
 // Execute JavaScript via the bridge - can be called from any thread
 static void executeJavaScriptOnBridge(const char* js) {
     LOGD("executeJavaScriptOnBridge called, js length: %d", js ? (int)strlen(js) : -1);
@@ -149,6 +519,7 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/wailsapp/wails/v3/internal/browser"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 )
 
@@ -172,6 +543,8 @@ var (
 
 func init() {
 	androidLogf("info", "🤖 [application_android.go] init() called")
+	// Register the Android OpenURL implementation with the browser package
+	browser.OpenURLFunc = AndroidOpenURL
 }
 
 // RegisterAndroidMain registers the main function to be called when the Android app starts.
@@ -235,8 +608,8 @@ func (a *App) platformQuit() {
 }
 
 func (a *App) isDarkMode() bool {
-	// TODO: Query Android for dark mode status
-	return false
+	result := C.androidIsDarkModeNative()
+	return result != 0
 }
 
 func (a *App) isWindows() bool {
@@ -621,14 +994,51 @@ func serveAssetForAndroid(app *App, path string) ([]byte, error) {
 }
 
 func handleMessageForAndroid(app *App, message string) string {
-	// Parse the message
-	var msg map[string]interface{}
-	if err := json.Unmarshal([]byte(message), &msg); err != nil {
-		return fmt.Sprintf(`{"error":"%s"}`, err.Error())
+	androidLogf("debug", "🤖 [handleMessageForAndroid] Received message: %s", message)
+
+	// Check for special system messages that don't need JSON parsing
+	// These are sent directly as strings from the frontend runtime
+	if strings.HasPrefix(message, "wails:") {
+		androidLogf("info", "🤖 [handleMessageForAndroid] System message detected: %s", message)
+
+		// Route to the first window's HandleMessage (Android typically has only one window)
+		app.windowsLock.RLock()
+		for _, win := range app.windows {
+			if win != nil {
+				app.windowsLock.RUnlock()
+				androidLogf("info", "🤖 [handleMessageForAndroid] Routing to window.HandleMessage: %s", message)
+				win.HandleMessage(message)
+				return `{"success":true}`
+			}
+		}
+		app.windowsLock.RUnlock()
+
+		androidLogf("warn", "🤖 [handleMessageForAndroid] No windows available to handle message")
+		return `{"error":"No windows available"}`
 	}
 
-	// TODO: Route to appropriate handler based on message type
-	// For now, return success
+	// Try to parse as JSON for other message types
+	var msg map[string]interface{}
+	if err := json.Unmarshal([]byte(message), &msg); err != nil {
+		// Not JSON and not a system message - treat as an unknown message
+		androidLogf("warn", "🤖 [handleMessageForAndroid] Unknown message format: %s", message)
+		return fmt.Sprintf(`{"error":"Unknown message format: %s"}`, err.Error())
+	}
+
+	// Handle JSON-based messages (e.g., method calls, events from JS)
+	androidLogf("debug", "🤖 [handleMessageForAndroid] JSON message: %v", msg)
+
+	// Check for event emission from JS to Go
+	if eventName, ok := msg["event"].(string); ok {
+		androidLogf("info", "🤖 [handleMessageForAndroid] Event from JS: %s", eventName)
+		// Get event data if present
+		eventData := msg["data"]
+		app.Event.Emit(eventName, eventData)
+		return `{"success":true}`
+	}
+
+	// For other JSON messages, return success for now
+	// Additional message types can be added here as needed
 	return `{"success":true}`
 }
 
@@ -683,4 +1093,88 @@ func executeJavaScript(js string) {
 
 	C.executeJavaScriptOnBridge(cJs)
 	androidLogf("info", "🤖 executeJavaScript: done")
+}
+
+// ==================== Android Platform Features ====================
+// These Go wrapper functions call the C/JNI functions and can be
+// called from other Go files in the package (e.g., messageprocessor_android.go)
+
+// AndroidVibrate triggers haptic feedback via JNI
+func AndroidVibrate(durationMs int) {
+	androidLogf("debug", "AndroidVibrate: %dms", durationMs)
+	C.androidVibrate(C.int(durationMs))
+}
+
+// AndroidShowToast shows a native Android toast notification via JNI
+func AndroidShowToast(message string) {
+	androidLogf("debug", "AndroidShowToast: %s", message)
+	cMessage := C.CString(message)
+	defer C.free(unsafe.Pointer(cMessage))
+	C.androidShowToastNative(cMessage)
+}
+
+// AndroidGetDeviceInfo returns device information as a JSON string via JNI
+func AndroidGetDeviceInfo() string {
+	androidLogf("debug", "AndroidGetDeviceInfo called")
+	cResult := C.androidGetDeviceInfoNative()
+	if cResult == nil {
+		return `{"platform":"android","model":"Unknown","version":"Unknown"}`
+	}
+	result := C.GoString(cResult)
+	C.free(unsafe.Pointer(cResult))
+	return result
+}
+
+// AndroidOpenURL opens a URL using Android's Intent system via JNI
+func AndroidOpenURL(url string) error {
+	androidLogf("debug", "AndroidOpenURL: %s", url)
+	cURL := C.CString(url)
+	defer C.free(unsafe.Pointer(cURL))
+	result := C.androidOpenURLNative(cURL)
+	if result == 0 {
+		return fmt.Errorf("failed to open URL: %s", url)
+	}
+	return nil
+}
+
+// AndroidGetScreenInfo returns screen information as a JSON string via JNI
+func AndroidGetScreenInfo() string {
+	androidLogf("debug", "AndroidGetScreenInfo called")
+	cResult := C.androidGetScreenInfoNative()
+	if cResult == nil {
+		return `{"widthPixels":1080,"heightPixels":2400,"density":2.0}`
+	}
+	result := C.GoString(cResult)
+	C.free(unsafe.Pointer(cResult))
+	return result
+}
+
+// AndroidSetWebViewBackgroundColor sets the WebView background color via JNI
+// Android uses ARGB format: (alpha << 24) | (red << 16) | (green << 8) | blue
+func AndroidSetWebViewBackgroundColor(r, g, b, a uint8) {
+	androidLogf("debug", "AndroidSetWebViewBackgroundColor: rgba(%d,%d,%d,%d)", r, g, b, a)
+	// Convert RGBA to Android ARGB int format
+	color := (int(a) << 24) | (int(r) << 16) | (int(g) << 8) | int(b)
+	androidLogf("debug", "AndroidSetWebViewBackgroundColor: color=0x%08x", color)
+	C.androidSetWebViewBackgroundColorNative(C.int(color))
+}
+
+// AndroidSetClipboardText sets clipboard text via JNI
+func AndroidSetClipboardText(text string) {
+	androidLogf("debug", "AndroidSetClipboardText: %s", text)
+	cText := C.CString(text)
+	defer C.free(unsafe.Pointer(cText))
+	C.androidSetClipboardTextNative(cText)
+}
+
+// AndroidGetClipboardText gets clipboard text via JNI
+func AndroidGetClipboardText() string {
+	androidLogf("debug", "AndroidGetClipboardText called")
+	cResult := C.androidGetClipboardTextNative()
+	if cResult == nil {
+		return ""
+	}
+	result := C.GoString(cResult)
+	C.free(unsafe.Pointer(cResult))
+	return result
 }

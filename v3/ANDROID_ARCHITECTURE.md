@@ -141,6 +141,10 @@ handleMessage(message)    // Send message to Go, get response
 getAssetMimeType(path)    // Get MIME type for asset
 executeJavaScript(js)     // Execute JS (callable from Go)
 emitEvent(name, data)     // Emit event to frontend
+openURL(url)              // Open URL in default browser (via Intent)
+vibrate(durationMs)       // Trigger haptic feedback
+showToast(message)        // Show Android toast notification
+getDeviceInfo()           // Get device info as JSON
 ```
 
 #### WailsPathHandler (`WailsPathHandler.java`)
@@ -964,19 +968,63 @@ cd examples/android && go mod tidy
 2. Verify `@JavascriptInterface` annotations present
 3. Check for JavaScript errors in console
 
+## Android Runtime API Status
+
+### Fully Implemented
+| Category | Method | Notes |
+|----------|--------|-------|
+| **Browser** | `OpenURL` | Opens URL in default browser via Intent |
+| **Events** | `Emit`, `On`, `Off`, `Once`, `OnMultiple` | Full event system |
+| **Call** | Bound method calls | Service method invocation |
+| **WML** | `wml-event`, `wml-openurl`, `wml-window` | Wails Markup Language |
+| **Android.Haptics** | `Vibrate(duration)` | Haptic feedback |
+| **Android.Device** | `Info()` | Device model, SDK version, etc. |
+| **Android.Toast** | `Show(message)` | Native toast notifications |
+
+### Recently Implemented
+| Category | Method | Notes |
+|----------|--------|-------|
+| **Clipboard** | `SetText`, `Text` | ✅ JNI to ClipboardManager |
+| **System** | `IsDarkMode` | ✅ Configuration.uiMode query |
+| **Screens** | `GetAll`, `GetPrimary`, `GetCurrent` | ✅ DisplayMetrics with actual dimensions |
+| **Window** | `SetBackgroundColour` | ✅ WebView.setBackgroundColor via JNI |
+
+### Stub Implementations (TODO)
+| Category | Method | Issue | Notes |
+|----------|--------|-------|-------|
+| **Dialogs** | `Info`, `Warning`, `Error`, `Question` | #TBD | Needs AlertDialog implementation |
+| **Dialogs** | `OpenFile`, `SaveFile`, `OpenDirectory` | #TBD | Needs Storage Access Framework |
+
+### Not Applicable on Mobile
+| Category | Methods | Reason |
+|----------|---------|--------|
+| **Window** | Position, Size, Minimize, Maximize, etc. | Mobile apps are fullscreen |
+| **Window** | Frameless, AlwaysOnTop, Resizable | Not applicable on mobile |
+| **Context Menu** | OpenContextMenu | Use long-press instead |
+| **System Tray** | All methods | Android doesn't have system trays |
+
+### iOS-Only Methods (Not on Android)
+| Category | Methods | Android Alternative |
+|----------|---------|---------------------|
+| **iOS.Scroll** | SetEnabled, SetBounceEnabled, SetIndicatorsEnabled | N/A (WebView handles) |
+| **iOS.Navigation** | SetBackForwardGesturesEnabled | N/A |
+| **iOS.Haptics** | Impact(style) | Use Android.Haptics.Vibrate |
+
 ## Future Enhancements
 
-### Phase 1: Core Stability
-- [ ] Complete JNI callback implementation for Go → Java
-- [ ] Full asset server integration
+### Phase 1: Core Stability (Current)
+- [x] Complete JNI callback implementation for Go → Java
+- [x] Full asset server integration
+- [x] Browser.OpenURL support
 - [ ] Error handling and recovery
 - [ ] Unit and integration tests
 
 ### Phase 2: Feature Parity
-- [ ] Clipboard support
-- [ ] File dialogs (via Storage Access Framework)
-- [ ] Notifications
-- [ ] Deep linking
+- [ ] Clipboard support (ClipboardManager JNI)
+- [ ] File dialogs (Storage Access Framework)
+- [ ] Message dialogs (AlertDialog)
+- [ ] Dark mode detection
+- [ ] Actual screen dimensions via DisplayMetrics
 
 ### Phase 3: Android-Specific Features
 - [ ] Material Design 3 theming integration
@@ -990,7 +1038,7 @@ cd examples/android && go mod tidy
 - [ ] Push notifications (FCM)
 - [ ] Biometric authentication
 - [ ] App Shortcuts
-- [ ] Wear OS companion
+- [ ] Deep linking
 
 ## Conclusion
 
@@ -1014,12 +1062,21 @@ The implementation follows Android best practices while maintaining the simplici
 | Go Platform Files | ✅ Complete | All *_android.go files |
 | Taskfile | ✅ Complete | Build orchestration |
 | Gradle Project | ✅ Complete | App structure |
-| JNI Implementation | 🔄 Partial | Needs Go → Java callbacks |
-| Asset Server Integration | 🔄 Partial | Needs full wiring |
-| Testing | ❌ Pending | Needs emulator testing |
+| JNI Implementation | ✅ Complete | Go ↔ Java bidirectional |
+| Asset Server Integration | ✅ Complete | Full wiring done |
+| Browser.OpenURL | ✅ Complete | Opens in default browser |
+| Events System | ✅ Complete | Emit/On/Off working |
+| Android Haptics | ✅ Complete | Vibrate via JNI |
+| Android Toast | ✅ Complete | Native toast messages |
+| Clipboard | ✅ Complete | ClipboardManager JNI |
+| Dark Mode Detection | ✅ Complete | Configuration.uiMode query |
+| Screen Info | ✅ Complete | DisplayMetrics integration |
+| Background Color | ✅ Complete | WebView.setBackgroundColor |
+| Dialogs | 🔄 Stub | Needs AlertDialog/SAF |
+| Testing | ❌ Pending | Needs comprehensive tests |
 
 ---
 
-*Document Version: 1.0*
-*Last Updated: November 2024*
+*Document Version: 1.1*
+*Last Updated: December 2024*
 *Wails Version: v3-alpha*
