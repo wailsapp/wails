@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-import { Aside } from "@astrojs/starlight/components";
+import { Aside, Tabs, TabItem } from "@astrojs/starlight/components";
 
 <Aside type="caution">
 iOS development requires macOS with Xcode.
@@ -46,6 +46,120 @@ app := application.New(application.Options{
         BackgroundColour: application.NewRGB(255, 255, 255),
     },
 })
+```
+
+## iOS-Specific Features
+
+These features are only available on iOS and can be accessed via the `application` package.
+
+### Haptic Feedback
+
+Trigger native iOS haptic feedback using the Taptic Engine:
+
+```go
+// Available impact styles:
+// - "light"  - Subtle feedback
+// - "medium" - Moderate feedback
+// - "heavy"  - Strong feedback
+// - "soft"   - Soft, gentle feedback
+// - "rigid"  - Sharp, precise feedback
+
+application.IOSHapticsImpact("medium")
+
+// Use for UI interactions
+application.IOSHapticsImpact("light")  // Button taps
+application.IOSHapticsImpact("heavy")  // Important actions
+```
+
+### Scroll Control
+
+Control WKWebView scrolling behavior at runtime:
+
+```go
+// Disable scrolling entirely (for fixed-layout UIs)
+application.IOSSetScrollEnabled(false)
+
+// Re-enable scrolling
+application.IOSSetScrollEnabled(true)
+
+// Hide scroll indicators
+application.IOSSetScrollIndicatorsEnabled(false)
+```
+
+### Bounce Effect
+
+Control the iOS rubber-band bounce effect when scrolling past content bounds:
+
+```go
+// Disable bounce effect for more native-app feel
+application.IOSSetBounceEnabled(false)
+
+// Re-enable bounce
+application.IOSSetBounceEnabled(true)
+```
+
+<Aside type="tip">
+Disabling bounce is useful for apps with fixed layouts or when you want to prevent overscroll interference with custom gestures.
+</Aside>
+
+### Navigation Gestures
+
+Control swipe gestures for browser-style back/forward navigation:
+
+```go
+// Enable swipe-to-go-back gesture
+application.IOSSetBackForwardGesturesEnabled(true)
+
+// Disable navigation gestures (default)
+application.IOSSetBackForwardGesturesEnabled(false)
+```
+
+### Link Preview
+
+Control 3D Touch / long-press link previews:
+
+```go
+// Enable link preview popups
+application.IOSSetLinkPreviewEnabled(true)
+
+// Disable previews (default for apps)
+application.IOSSetLinkPreviewEnabled(false)
+```
+
+### Safari Web Inspector
+
+Enable debugging via Safari's Web Inspector (debug builds):
+
+```go
+// Enable for development
+application.IOSSetInspectableEnabled(true)
+```
+
+<Aside type="note">
+To inspect: Safari → Develop menu → [Your Simulator/Device] → [Your App]
+</Aside>
+
+### Custom User Agent
+
+Set a custom User-Agent string for the WebView:
+
+```go
+// Set custom user agent
+application.IOSSetCustomUserAgent("MyApp/1.0 (iOS)")
+
+// Include version info
+version := "2.1.0"
+application.IOSSetCustomUserAgent(fmt.Sprintf("MyApp/%s WKWebView", version))
+```
+
+### Device Information
+
+Get iOS device information (available via system environment):
+
+```go
+// Access via environment info
+env := app.Environment()
+// Contains platform info for iOS builds
 ```
 
 ## Testing

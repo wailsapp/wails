@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-import { Aside, Steps } from "@astrojs/starlight/components";
+import { Aside, Steps, Tabs, TabItem } from "@astrojs/starlight/components";
 
 ## Prerequisites
 
@@ -67,6 +67,152 @@ app := application.New(application.Options{
         BackgroundColour:  application.NewRGB(255, 255, 255),
     },
 })
+```
+
+## Android-Specific Features
+
+These features are only available on Android and can be accessed via the `application` package.
+
+### Haptic Feedback
+
+Trigger device vibration for tactile feedback:
+
+<Tabs>
+<TabItem label="Go">
+```go
+// Vibrate for 50 milliseconds
+application.AndroidVibrate(50)
+
+// Longer vibration for important notifications
+application.AndroidVibrate(200)
+```
+</TabItem>
+<TabItem label="Frontend">
+```javascript
+// Call via bound service
+await myService.TriggerHaptic(50);
+```
+</TabItem>
+</Tabs>
+
+<Aside type="note">
+Requires `android.permission.VIBRATE` in AndroidManifest.xml (included by default).
+</Aside>
+
+### Toast Notifications
+
+Show native Android toast messages:
+
+```go
+// Show a short toast message
+application.AndroidShowToast("Operation completed!")
+
+// Toasts appear at the bottom of the screen
+application.AndroidShowToast("File saved successfully")
+```
+
+Toasts are non-blocking and auto-dismiss after a short duration.
+
+### Device Information
+
+Get detailed information about the Android device:
+
+```go
+// Returns JSON string with device details
+infoJSON := application.AndroidGetDeviceInfo()
+
+// Parse the JSON to access fields:
+// - platform: "android"
+// - manufacturer: e.g., "Google", "Samsung"
+// - model: e.g., "Pixel 7", "SM-S918B"
+// - brand: e.g., "google", "samsung"
+// - sdkVersion: e.g., 34 (Android 14)
+// - release: e.g., "14"
+```
+
+### Open External URLs
+
+Open URLs in the default browser:
+
+```go
+// Open in default browser
+err := application.AndroidOpenURL("https://wails.io")
+if err != nil {
+    log.Println("Failed to open URL:", err)
+}
+
+// Also works for other URL schemes
+application.AndroidOpenURL("mailto:hello@example.com")
+application.AndroidOpenURL("tel:+1234567890")
+```
+
+### Screen Information
+
+Get display metrics for the device screen:
+
+```go
+// Returns JSON with screen details
+screenJSON := application.AndroidGetScreenInfo()
+
+// Available fields:
+// - widthPixels: Screen width in pixels
+// - heightPixels: Screen height in pixels
+// - density: Display density scale factor
+// - densityDpi: DPI (160, 240, 320, etc.)
+// - scaledDensity: Font scaling factor
+// - xdpi, ydpi: Exact physical DPI
+```
+
+### Clipboard
+
+Read and write to the system clipboard:
+
+```go
+// Copy text to clipboard
+application.AndroidSetClipboardText("Hello from Wails!")
+
+// Read text from clipboard
+text := application.AndroidGetClipboardText()
+```
+
+### Message Dialogs
+
+Show native Android dialogs:
+
+```go
+import "encoding/json"
+
+// Info dialog with single button
+buttons, _ := json.Marshal([]string{"OK"})
+result := application.AndroidShowMessageDialog("info", "Welcome", "Thanks for using our app!", string(buttons))
+
+// Question dialog with Yes/No
+buttons, _ = json.Marshal([]string{"Yes", "No"})
+result = application.AndroidShowMessageDialog("question", "Confirm", "Are you sure?", string(buttons))
+if result == "Yes" {
+    // User confirmed
+}
+
+// Warning dialog with multiple options
+buttons, _ = json.Marshal([]string{"Save", "Discard", "Cancel"})
+result = application.AndroidShowMessageDialog("warning", "Unsaved Changes", "You have unsaved changes.", string(buttons))
+```
+
+Dialog types: `"info"`, `"warning"`, `"error"`, `"question"`
+
+### WebView Control
+
+Programmatically control the WebView content:
+
+```go
+// Load custom HTML content
+application.AndroidSetHTML("<html><body><h1>Hello!</h1></body></html>")
+
+// Navigate to a URL
+application.AndroidSetURL("https://wails.io")
+
+// Set background color (via window options)
+window.SetBackgroundColour(application.NewRGBA(255, 255, 255, 255))
 ```
 
 ## Debugging
