@@ -80,6 +80,7 @@ static jmethodID g_isDarkModeMethod = NULL;
 static jmethodID g_getScreenInfoMethod = NULL;
 static jmethodID g_setClipboardTextMethod = NULL;
 static jmethodID g_getClipboardTextMethod = NULL;
+static jmethodID g_showMessageDialogMethod = NULL;
 
 // Helper function to get JNIEnv for current thread
 static JNIEnv* getEnv(int *needsDetach) {
@@ -140,6 +141,9 @@ static void cacheAndroidMethods(JNIEnv *env) {
     }
     if (g_getClipboardTextMethod == NULL) {
         g_getClipboardTextMethod = (*env)->GetMethodID(env, bridgeClass, "getClipboardText", "()Ljava/lang/String;");
+    }
+    if (g_showMessageDialogMethod == NULL) {
+        g_showMessageDialogMethod = (*env)->GetMethodID(env, bridgeClass, "showMessageDialog", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
     }
 
     (*env)->DeleteLocalRef(env, bridgeClass);
@@ -433,6 +437,54 @@ static const char* androidGetClipboardTextNative() {
                 (*env)->ReleaseStringUTFChars(env, jResult, cResult);
             }
             (*env)->DeleteLocalRef(env, jResult);
+        }
+    }
+
+    releaseEnv(needsDetach);
+    return result;
+}
+
+// Show message dialog via Android AlertDialog
+static const char* androidShowMessageDialogNative(const char* dialogType, const char* title, const char* message, const char* buttons) {
+    LOGD("androidShowMessageDialogNative called: type=%s, title=%s", dialogType ? dialogType : "null", title ? title : "null");
+
+    int needsDetach = 0;
+    JNIEnv *env = getEnv(&needsDetach);
+    if (env == NULL || g_bridge == NULL || dialogType == NULL || title == NULL || message == NULL || buttons == NULL) {
+        LOGD("androidShowMessageDialogNative: env, bridge, or parameters are NULL");
+        return NULL;
+    }
+
+    // Ensure method is cached
+    if (g_showMessageDialogMethod == NULL) {
+        cacheAndroidMethods(env);
+    }
+
+    const char* result = NULL;
+    if (g_showMessageDialogMethod != NULL) {
+        jstring jDialogType = (*env)->NewStringUTF(env, dialogType);
+        jstring jTitle = (*env)->NewStringUTF(env, title);
+        jstring jMessage = (*env)->NewStringUTF(env, message);
+        jstring jButtons = (*env)->NewStringUTF(env, buttons);
+
+        if (jDialogType != NULL && jTitle != NULL && jMessage != NULL && jButtons != NULL) {
+            jstring jResult = (jstring)(*env)->CallObjectMethod(env, g_bridge, g_showMessageDialogMethod, jDialogType, jTitle, jMessage, jButtons);
+            if ((*env)->ExceptionCheck(env)) {
+                (*env)->ExceptionDescribe(env);
+                (*env)->ExceptionClear(env);
+            } else if (jResult != NULL) {
+                const char* cResult = (*env)->GetStringUTFChars(env, jResult, NULL);
+                if (cResult != NULL) {
+                    // Make a copy since we need to release the JNI string
+                    result = strdup(cResult);
+                    (*env)->ReleaseStringUTFChars(env, jResult, cResult);
+                }
+                (*env)->DeleteLocalRef(env, jResult);
+            }
+            (*env)->DeleteLocalRef(env, jDialogType);
+            (*env)->DeleteLocalRef(env, jTitle);
+            (*env)->DeleteLocalRef(env, jMessage);
+            (*env)->DeleteLocalRef(env, jButtons);
         }
     }
 
@@ -1176,5 +1228,28 @@ func AndroidGetClipboardText() string {
 	}
 	result := C.GoString(cResult)
 	C.free(unsafe.Pointer(cResult))
+	return result
+}
+
+// AndroidShowMessageDialog shows a message dialog via JNI
+// Returns the label of the button that was clicked, or empty string if cancelled
+func AndroidShowMessageDialog(dialogType, title, message, buttons string) string {
+	androidLogf("debug", "AndroidShowMessageDialog: type=%s, title=%s", dialogType, title)
+	cDialogType := C.CString(dialogType)
+	cTitle := C.CString(title)
+	cMessage := C.CString(message)
+	cButtons := C.CString(buttons)
+	defer C.free(unsafe.Pointer(cDialogType))
+	defer C.free(unsafe.Pointer(cTitle))
+	defer C.free(unsafe.Pointer(cMessage))
+	defer C.free(unsafe.Pointer(cButtons))
+
+	cResult := C.androidShowMessageDialogNative(cDialogType, cTitle, cMessage, cButtons)
+	if cResult == nil {
+		return ""
+	}
+	result := C.GoString(cResult)
+	C.free(unsafe.Pointer(cResult))
+	androidLogf("debug", "AndroidShowMessageDialog result: %s", result)
 	return result
 }

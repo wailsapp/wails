@@ -17,9 +17,12 @@ import android.util.Log;
 import android.webkit.WebView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -419,6 +422,73 @@ public class WailsBridge {
             Log.e(TAG, "Error getting screen info", e);
             return "{\"widthPixels\":1080,\"heightPixels\":2400}";
         }
+    }
+
+    /**
+     * Show a message dialog.
+     * Called from Go via JNI.
+     * @param type Dialog type: "info", "warning", "error", "question"
+     * @param title Dialog title
+     * @param message Dialog message
+     * @param buttons JSON array of button labels, e.g. ["OK"] or ["Yes", "No"]
+     * @return The label of the clicked button
+     */
+    public String showMessageDialog(String type, String title, String message, String buttons) {
+        Log.d(TAG, "showMessageDialog: type=" + type + ", title=" + title);
+
+        // Use a blocking approach with CountDownLatch for synchronous result
+        final String[] result = new String[1];
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        mainHandler.post(() -> {
+            try {
+                android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(context);
+                builder.setTitle(title);
+                builder.setMessage(message);
+
+                // Parse buttons JSON
+                JSONArray btnArray = new JSONArray(buttons);
+
+                if (btnArray.length() >= 1) {
+                    builder.setPositiveButton(btnArray.getString(0), (dialog, which) -> {
+                        result[0] = btnArray.optString(0, "OK");
+                        latch.countDown();
+                    });
+                }
+                if (btnArray.length() >= 2) {
+                    builder.setNegativeButton(btnArray.getString(1), (dialog, which) -> {
+                        result[0] = btnArray.optString(1, "Cancel");
+                        latch.countDown();
+                    });
+                }
+                if (btnArray.length() >= 3) {
+                    builder.setNeutralButton(btnArray.getString(2), (dialog, which) -> {
+                        result[0] = btnArray.optString(2, "");
+                        latch.countDown();
+                    });
+                }
+
+                builder.setOnCancelListener(dialog -> {
+                    result[0] = "";
+                    latch.countDown();
+                });
+
+                builder.show();
+            } catch (Exception e) {
+                Log.e(TAG, "Error showing dialog", e);
+                result[0] = "";
+                latch.countDown();
+            }
+        });
+
+        try {
+            latch.await(30, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Log.e(TAG, "Dialog interrupted", e);
+            return "";
+        }
+
+        return result[0] != null ? result[0] : "";
     }
 
     // Callback interfaces
