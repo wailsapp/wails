@@ -469,20 +469,11 @@ gboolean UnFullscreen(gpointer data)
     return G_SOURCE_REMOVE;
 }
 
-// Flag to track if DomReady has been sent - ensures OnDomReady callback is only called once
-static gboolean domReadySent = FALSE;
-
 static void webviewLoadChanged(WebKitWebView *web_view, WebKitLoadEvent load_event, gpointer data)
 {
     if (load_event == WEBKIT_LOAD_FINISHED)
     {
-        // Only send DomReady once to prevent OnDomReady callback from being called
-        // multiple times (e.g., on navigation or page reload)
-        if (!domReadySent)
-        {
-            domReadySent = TRUE;
-            processMessage("DomReady");
-        }
+        processMessage("DomReady");
     }
 }
 

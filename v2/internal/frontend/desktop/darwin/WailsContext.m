@@ -473,12 +473,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 }
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
-    // Only send DomReady once to prevent OnDomReady callback from being called
-    // multiple times (e.g., on navigation or page reload)
-    if (!self.domReadySent) {
-        self.domReadySent = YES;
-        processMessage("DomReady");
-    }
+    processMessage("DomReady");
 }
 
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {

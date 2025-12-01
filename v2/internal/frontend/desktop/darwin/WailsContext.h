@@ -50,7 +50,6 @@
 
 @property bool devtoolsEnabled;
 @property bool defaultContextMenuEnabled;
-@property bool domReadySent;
 
 @property (retain) WKUserContentController* userContentController;
 

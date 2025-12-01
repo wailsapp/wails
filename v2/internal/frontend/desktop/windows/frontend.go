@@ -907,6 +907,10 @@ func (f *Frontend) ExecJS(js string) {
 }
 
 func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.ICoreWebView2NavigationCompletedEventArgs) {
+	if f.frontendOptions.OnDomReady != nil {
+		go f.frontendOptions.OnDomReady(f.ctx)
+	}
+
 	if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
 		f.ExecJS("window.wails.flags.enableResize = true;")
 	}
@@ -919,12 +923,6 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 		return
 	}
 	f.hasStarted = true
-
-	// Only call OnDomReady on the first navigation completion to prevent
-	// multiple calls when page reloads or navigates (e.g., during file drops)
-	if f.frontendOptions.OnDomReady != nil {
-		go f.frontendOptions.OnDomReady(f.ctx)
-	}
 
 	// Hack to make it visible: https://github.com/MicrosoftEdge/WebView2Feedback/issues/1077#issuecomment-825375026
 	err := f.chromium.Hide()
