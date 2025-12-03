@@ -91,3 +91,5 @@ v2/cmd/wails/internal/commands/initialise/templates/testtemplates/
 .aider*
 .cache
 .local
+/.claude/CLAUDE.md
+/TASKS.md

@@ -69,7 +69,48 @@ tasks:
       - cp build/darwin/icons.icns {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/Resources
       - cp {{.BIN_DIR}}/{{.APP_NAME}} {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/MacOS
       - cp build/darwin/Info.plist {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents
-      - codesign --force --deep --sign - {{.BIN_DIR}}/{{.APP_NAME}}.app
+      - task: sign:app
+    vars:
+      SIGN_IDENTITY: '{{.SIGN_IDENTITY | default "-"}}'
+
+  sign:app:
+    summary: Sign the application bundle
+    cmds:
+      - |
+        {{if eq .SIGN_IDENTITY "-"}}
+        codesign --force --deep --sign - {{.BIN_DIR}}/{{.APP_NAME}}.app
+        {{else}}
+        codesign --force --deep --sign "{{.SIGN_IDENTITY}}" --options runtime {{if .ENTITLEMENTS}}--entitlements {{.ENTITLEMENTS}}{{end}} {{.BIN_DIR}}/{{.APP_NAME}}.app
+        {{end}}
+    vars:
+      SIGN_IDENTITY: '{{.SIGN_IDENTITY | default "-"}}'
+      ENTITLEMENTS: '{{.ENTITLEMENTS | default ""}}'
+
+  sign:notarize:
+    summary: Notarize the application (requires signed app with Developer ID)
+    cmds:
+      - wails3 sign --app {{.BIN_DIR}}/{{.APP_NAME}}.app --notarize {{if .KEYCHAIN_PROFILE}}--keychain-profile {{.KEYCHAIN_PROFILE}}{{end}}
+    vars:
+      KEYCHAIN_PROFILE: '{{.KEYCHAIN_PROFILE | default ""}}'
+
+  package:signed:
+    summary: Build, package, and sign with Developer ID certificate
+    deps:
+      - task: build
+        vars:
+          PRODUCTION: "true"
+    cmds:
+      - task: create:app:bundle
+        vars:
+          SIGN_IDENTITY: '{{.SIGN_IDENTITY | default "Developer ID Application"}}'
+          ENTITLEMENTS: '{{.ENTITLEMENTS | default "build/darwin/entitlements.plist"}}'
+
+  package:notarize:
+    summary: Build, package, sign with Developer ID, and notarize
+    deps:
+      - task: package:signed
+    cmds:
+      - task: sign:notarize
 
   run:
     cmds:

@@ -1,6 +1,6 @@
 ---
 title: Code Signing
-description: Guide for signing your Wails applications on macOS and Windows
+description: Complete guide for signing your Wails applications on macOS, Windows, and Linux
 sidebar:
   order: 4
 ---
@@ -8,221 +8,861 @@ sidebar:
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 import { Steps } from '@astrojs/starlight/components';
 import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Aside } from '@astrojs/starlight/components';
 
 # Code Signing Your Application
 
-This guide covers how to sign your Wails applications for both macOS and Windows, with a focus on automated signing using GitHub Actions.
+Code signing authenticates your application and ensures users that it hasn't been tampered with. Wails v3 provides built-in signing support for all major platforms with cross-platform capabilities.
 
 <CardGrid>
-  <Card title="Windows Signing" icon="windows">
-    Sign your Windows executables with certificates
+  <Card title="Windows" icon="seti:windows">
+    Authenticode signing for EXE, DLL, MSI, and PowerShell
   </Card>
-  <Card title="macOS Signing" icon="apple">
-    Sign and notarize your macOS applications
+  <Card title="macOS" icon="apple">
+    Code signing and notarization for .app bundles
+  </Card>
+  <Card title="Linux" icon="linux">
+    PGP signing for DEB and RPM packages
+  </Card>
+  <Card title="Cross-Platform" icon="rocket">
+    Sign Windows and Linux packages from any OS
   </Card>
 </CardGrid>
 
+## Why Sign Your Application?
+
+- **User Trust**: Signed apps show publisher information instead of "Unknown Publisher" warnings
+- **Security**: Proves the binary hasn't been modified since signing
+- **Distribution**: Required for app stores and many enterprise deployments
+- **Gatekeeper/SmartScreen**: Unsigned apps are blocked or warned by OS security features
+
+## Quick Start
+
+### Check Available Signing Backends
+
+```bash
+wails3 signing info
+```
+
+Output shows which signing methods are available on your system:
+
+```
+Current platform: linux/amd64
+
+Windows signing:
+  ✓ relic
+
+macOS signing:
+  ✓ relic (limited - use rcodesign for full support)
+
+Linux package signing:
+  ✓ relic (DEB/RPM packages)
+
+Cross-platform signing:
+  Windows binaries can be signed from any platform using the relic library.
+  Linux packages (DEB/RPM) can be signed from any platform using the relic library.
+  macOS binaries should be signed on macOS or using rcodesign.
+```
+
+### Sign Your First Binary
+
+<Tabs>
+  <TabItem label="Windows">
+    ```bash
+    # With certificate file
+    wails3 sign --input myapp.exe --certificate cert.pfx --certificate-password PASSWORD
+
+    # With Windows certificate store (Windows only)
+    wails3 sign --input myapp.exe --thumbprint CERT_THUMBPRINT
+    ```
+  </TabItem>
+  <TabItem label="macOS">
+    ```bash
+    # Auto-detect Developer ID certificate
+    wails3 sign --input MyApp.app
+
+    # Ad-hoc signing for development
+    wails3 sign --input MyApp.app --identity -
+
+    # Sign and notarize
+    wails3 sign --input MyApp.app --notarize --keychain-profile myprofile
+    ```
+  </TabItem>
+  <TabItem label="Linux">
+    ```bash
+    # Generate a key first (if you don't have one)
+    wails3 signing generate-key --name "Your Name" --email "you@example.com"
+
+    # Sign packages
+    wails3 sign --input myapp.deb --pgp-key your_name_private.asc
+    wails3 sign --input myapp.rpm --pgp-key your_name_private.asc
+    ```
+  </TabItem>
+</Tabs>
+
+## Signing Backends
+
+Wails uses a smart backend selection strategy:
+
+| Platform | Native Backend | Cross-Platform Backend |
+|----------|----------------|------------------------|
+| Windows | `signtool.exe` (Windows SDK) | `relic` library (any OS) |
+| macOS | `codesign` (Xcode) | Limited via `relic`; use `rcodesign` |
+| Linux | N/A | `relic` library (any OS) |
+
+The CLI automatically selects the best available backend:
+1. **Native tools** are preferred when available (faster, full feature support)
+2. **Relic library** provides cross-platform fallback for Windows and Linux signing
+
+<Aside type="note">
+Cross-platform macOS signing has limitations. For production macOS apps from non-Mac systems, use [rcodesign](https://github.com/indygreg/apple-platform-rs).
+</Aside>
+
+---
+
 ## Windows Code Signing
 
+Windows uses Authenticode to sign executables. Signatures can include timestamping for long-term validity.
+
+### Supported File Types
+
+- `.exe` - Executables
+- `.dll` - Dynamic libraries
+- `.msi` - Windows Installer packages
+- `.msix` / `.appx` - Modern app packages
+- `.ps1` / `.psm1` / `.psd1` - PowerShell scripts
+- `.sys` - Driver files
+- `.cab` - Cabinet archives
+
+### Obtaining a Certificate
+
 <Steps>
-1. **Obtain a Code Signing Certificate**
-   - Get from a trusted provider listed on [Microsoft's documentation](https://docs.microsoft.com/en-us/windows-hardware/drivers/dashboard/get-a-code-signing-certificate)
-   - Standard code signing certificate is sufficient (EV not required)
-   - Test signing locally before setting up CI
+1. **Purchase a Code Signing Certificate**
 
-2. **Prepare for GitHub Actions**
-   - Convert your certificate to Base64
-   - Store in GitHub Secrets
-   - Set up signing workflow
+   Get from a Certificate Authority trusted by Microsoft:
+   - [DigiCert](https://www.digicert.com/signing/code-signing-certificates)
+   - [Sectigo](https://sectigo.com/ssl-certificates-tls/code-signing)
+   - [GlobalSign](https://www.globalsign.com/en/code-signing-certificate)
 
-3. **Configure GitHub Actions**
-   ```yaml
-   name: Sign Windows Binary
-   
-   on:
-     workflow_dispatch:
-     release:
-       types: [created]
-   
-   jobs:
-     sign:
-       runs-on: windows-latest
-       steps:
-         - uses: actions/checkout@v3
-         
-         - name: Import Certificate
-           run: |
-             New-Item -ItemType directory -Path certificate
-             Set-Content -Path certificate\certificate.txt -Value ${{ secrets.WINDOWS_CERTIFICATE }}
-             certutil -decode certificate\certificate.txt certificate\certificate.pfx
-           
-         - name: Sign Binary
-           run: |
-             & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x86\signtool.exe' sign /f certificate\certificate.pfx /t http://timestamp.sectigo.com /p ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }} /v /fd sha256 .\build\bin\app.exe
+   Standard certificates work for most uses. EV (Extended Validation) certificates provide immediate SmartScreen reputation.
+
+2. **Export as PFX/P12**
+
+   Export your certificate with the private key:
+   ```powershell
+   # From Windows certificate store
+   $cert = Get-ChildItem -Path Cert:\CurrentUser\My\THUMBPRINT
+   Export-PfxCertificate -Cert $cert -FilePath cert.pfx -Password (ConvertTo-SecureString -String "password" -Force -AsPlainText)
+   ```
+
+3. **Test Signing**
+   ```bash
+   wails3 sign --input myapp.exe --certificate cert.pfx --certificate-password PASSWORD --verify
    ```
 </Steps>
 
-### Important Windows Parameters
+### CLI Usage
 
-- **Signing Algorithm**: Usually `sha256`
-- **Timestamp Server**: Valid timestamping server URL
-- **Certificate Password**: Stored in GitHub Secrets
-- **Binary Path**: Path to your compiled executable
+```bash
+# Basic signing with certificate file
+wails3 sign --input myapp.exe --certificate cert.pfx --certificate-password PASSWORD
+
+# Using Windows certificate store (native only)
+wails3 sign --input myapp.exe --thumbprint ABC123DEF456...
+
+# With timestamping (recommended for production)
+wails3 sign --input myapp.exe --certificate cert.pfx --certificate-password PASSWORD \
+  --timestamp http://timestamp.digicert.com
+
+# Add description and URL (shown in properties)
+wails3 sign --input myapp.exe --certificate cert.pfx --certificate-password PASSWORD \
+  --description "My Application" --url "https://myapp.example.com"
+
+# Sign multiple file types
+wails3 sign --input myapp.msi --certificate cert.pfx --certificate-password PASSWORD
+wails3 sign --input install.ps1 --certificate cert.pfx --certificate-password PASSWORD
+```
+
+### Windows CLI Options
+
+| Option | Description | Environment Variable |
+|--------|-------------|---------------------|
+| `--input` | Path to file to sign | - |
+| `--output` | Output path (default: in-place) | - |
+| `--certificate` | Path to .pfx/.p12 file | - |
+| `--certificate-password` | Certificate password | `$SIGN_CERT_PASSWORD` |
+| `--thumbprint` | Cert thumbprint (native only) | - |
+| `--timestamp` | Timestamp server URL | - |
+| `--description` | Application description | - |
+| `--url` | Application URL | - |
+| `--verify` | Verify after signing | - |
+| `--verbose` | Verbose output | - |
+
+### Timestamp Servers
+
+Always use timestamping for production releases. Without it, signatures become invalid when the certificate expires.
+
+| Provider | URL |
+|----------|-----|
+| DigiCert | `http://timestamp.digicert.com` |
+| Sectigo | `http://timestamp.sectigo.com` |
+| GlobalSign | `http://timestamp.globalsign.com/tsa/r6advanced1` |
+
+### GitHub Actions
+
+<Tabs>
+  <TabItem label="Windows Runner">
+    ```yaml
+    name: Build and Sign (Windows)
+
+    on:
+      release:
+        types: [created]
+
+    jobs:
+      build:
+        runs-on: windows-latest
+        steps:
+          - uses: actions/checkout@v4
+
+          - name: Setup Go
+            uses: actions/setup-go@v5
+            with:
+              go-version: '1.23'
+
+          - name: Build
+            run: wails3 build
+
+          - name: Decode Certificate
+            run: |
+              $bytes = [Convert]::FromBase64String("${{ secrets.WINDOWS_CERTIFICATE }}")
+              [IO.File]::WriteAllBytes("cert.pfx", $bytes)
+
+          - name: Sign Binary
+            run: |
+              wails3 sign --input bin/myapp.exe `
+                --certificate cert.pfx `
+                --certificate-password "${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}" `
+                --timestamp http://timestamp.digicert.com `
+                --description "My Application" `
+                --verify
+
+          - name: Cleanup
+            run: Remove-Item cert.pfx
+    ```
+  </TabItem>
+  <TabItem label="Linux Runner (Cross-Platform)">
+    ```yaml
+    name: Build and Sign (Cross-Platform)
+
+    on:
+      release:
+        types: [created]
+
+    jobs:
+      build:
+        runs-on: ubuntu-latest  # Cheaper than Windows runners!
+        steps:
+          - uses: actions/checkout@v4
+
+          - name: Setup Go
+            uses: actions/setup-go@v5
+            with:
+              go-version: '1.23'
+
+          - name: Install Wails
+            run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+          - name: Build for Windows
+            run: GOOS=windows GOARCH=amd64 wails3 build
+
+          - name: Decode Certificate
+            run: echo "${{ secrets.WINDOWS_CERTIFICATE }}" | base64 -d > cert.pfx
+
+          - name: Sign Binary
+            env:
+              SIGN_CERT_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+            run: |
+              wails3 sign --input bin/myapp.exe \
+                --certificate cert.pfx \
+                --timestamp http://timestamp.digicert.com \
+                --verify
+
+          - name: Cleanup
+            run: rm -f cert.pfx
+    ```
+  </TabItem>
+</Tabs>
+
+---
 
 ## macOS Code Signing
 
+macOS requires code signing for distribution and notarization for apps outside the App Store.
+
+### Requirements
+
+- **Apple Developer Account** ($99/year)
+- **Developer ID Application certificate** (for distribution outside App Store)
+- **Xcode Command Line Tools** (for `codesign`)
+
+### Signing Identities
+
+List available identities:
+
+```bash
+wails3 signing list
+```
+
+Output:
+```
+Found 2 signing identities:
+
+  Developer ID Application: Your Company (ABC123XYZ) [valid]
+    Hash: 1234567890ABCDEF...
+
+  Apple Development: you@example.com (DEF456ABC) [valid]
+    Hash: FEDCBA0987654321...
+```
+
+### CLI Usage
+
+```bash
+# Auto-detect Developer ID certificate
+wails3 sign --input MyApp.app
+
+# Specify identity by name
+wails3 sign --input MyApp.app --identity "Developer ID Application: Your Company"
+
+# Specify identity by hash
+wails3 sign --input MyApp.app --identity 1234567890ABCDEF
+
+# Ad-hoc signing (development only, no distribution)
+wails3 sign --input MyApp.app --identity -
+
+# With entitlements
+wails3 sign --input MyApp.app --entitlements entitlements.plist
+
+# Disable hardened runtime (not recommended)
+wails3 sign --input MyApp.app --hardened-runtime=false
+```
+
+### macOS CLI Options
+
+| Option | Description | Environment Variable |
+|--------|-------------|---------------------|
+| `--input` or `--app` | Path to .app bundle | - |
+| `--identity` | Signing identity (name or hash) | - |
+| `--entitlements` | Path to entitlements.plist | - |
+| `--hardened-runtime` | Enable hardened runtime (default: true) | - |
+| `--notarize` | Submit for notarization | - |
+| `--keychain-profile` | Notarization credential profile | - |
+| `--apple-id` | Apple ID for notarization | `$APPLE_ID` |
+| `--team-id` | Team ID for notarization | `$APPLE_TEAM_ID` |
+| `--app-password` | App-specific password | `$APPLE_APP_PASSWORD` |
+
+### Entitlements
+
+Create `entitlements.plist` for your app's capabilities:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+</dict>
+</plist>
+```
+
+### Notarization
+
+Notarization is required for distribution outside the App Store on macOS 10.15+.
+
 <Steps>
-1. **Prerequisites**
-   - Apple Developer Account
-   - Developer ID Certificate
-   - App Store Connect API Key
-   - [gon](https://github.com/mitchellh/gon) for notarization
+1. **Create App-Specific Password**
 
-2. **Certificate Setup**
-   - Generate Developer ID Certificate
-   - Download and install certificate
-   - Export certificate for CI
+   Go to [appleid.apple.com](https://appleid.apple.com) → Security → App-Specific Passwords
 
-3. **Configure Notarization**
-   ```json title="gon-sign.json"
-   {
-     "source": ["./build/bin/app"],
-     "bundle_id": "com.company.app",
-     "apple_id": {
-       "username": "dev@company.com",
-       "password": "@env:AC_PASSWORD"
-     },
-     "sign": {
-       "application_identity": "Developer ID Application: Company Name"
-     }
-   }
+2. **Store Credentials in Keychain**
+   ```bash
+   wails3 signing credentials --profile myapp \
+     --apple-id your@email.com \
+     --team-id ABC123XYZ
    ```
 
-4. **GitHub Actions Configuration**
-   ```yaml
-   name: Sign macOS Binary
-   
-   on:
-     workflow_dispatch:
-     release:
-       types: [created]
-   
-   jobs:
-     sign:
-       runs-on: macos-latest
-       steps:
-         - uses: actions/checkout@v3
-         
-         - name: Import Certificate
-           env:
-             MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
-             MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-           run: |
-             echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
-             security create-keychain -p "" build.keychain
-             security default-keychain -s build.keychain
-             security unlock-keychain -p "" build.keychain
-             security import certificate.p12 -k build.keychain -P $MACOS_CERTIFICATE_PWD -T /usr/bin/codesign
-             security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
-         
-         - name: Sign and Notarize
-           env:
-             AC_USERNAME: ${{ secrets.AC_USERNAME }}
-             AC_PASSWORD: ${{ secrets.AC_PASSWORD }}
-           run: |
-             gon -log-level=info ./build/darwin/gon-sign.json
+   Or use `xcrun` directly:
+   ```bash
+   xcrun notarytool store-credentials myapp \
+     --apple-id your@email.com \
+     --team-id ABC123XYZ \
+     --password "xxxx-xxxx-xxxx-xxxx"
+   ```
+
+3. **Sign and Notarize**
+   ```bash
+   wails3 sign --input MyApp.app --notarize --keychain-profile myapp
    ```
 </Steps>
 
-### Important macOS Parameters
-
-- **Bundle ID**: Unique identifier for your app
-- **Developer ID**: Your Developer ID Application certificate
-- **Apple ID**: Developer account credentials
-- **ASC API Key**: App Store Connect API credentials
-
-## Best Practices
-
-1. **Security**
-   - Store all credentials in GitHub Secrets
-   - Use environment variables for sensitive data
-   - Regularly rotate certificates and credentials
-
-2. **Workflow**
-   - Test signing locally first
-   - Use conditional signing based on platform
-   - Implement proper error handling
-
-3. **Verification**
-   - Verify signatures after signing
-   - Test notarization process
-   - Check timestamp validity
-
-## Troubleshooting
-
-### Windows Issues
-- Certificate not found
-- Invalid timestamp server
-- Signing tool errors
-
-### macOS Issues
-- Keychain access issues
-- Notarization failures
-- Certificate validation errors
-
-## Complete GitHub Actions Workflow
+### GitHub Actions
 
 ```yaml
-name: Sign Binaries
+name: Build and Sign (macOS)
 
 on:
-  workflow_dispatch:
   release:
     types: [created]
 
 jobs:
-  sign:
-    strategy:
-      matrix:
-        platform: [windows-latest, macos-latest]
-    runs-on: ${{ matrix.platform }}
-    
+  build:
+    runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
-      
-      # Windows Signing
-      - name: Sign Windows Binary
-        if: matrix.platform == 'windows-latest'
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Import Certificate
         env:
-          CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
-          CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+          CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
         run: |
-          New-Item -ItemType directory -Path certificate
-          Set-Content -Path certificate\certificate.txt -Value $env:CERTIFICATE
-          certutil -decode certificate\certificate.txt certificate\certificate.pfx
-          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x86\signtool.exe' sign /f certificate\certificate.pfx /t http://timestamp.sectigo.com /p $env:CERTIFICATE_PASSWORD /v /fd sha256 .\build\bin\app.exe
-      
-      # macOS Signing
-      - name: Sign macOS Binary
-        if: matrix.platform == 'macos-latest'
+          # Create temporary keychain
+          KEYCHAIN_PATH=$RUNNER_TEMP/build.keychain
+          KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          # Import certificate
+          echo "$CERTIFICATE" | base64 --decode > certificate.p12
+          security import certificate.p12 -k "$KEYCHAIN_PATH" \
+            -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple: -s \
+            -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          # Add to search list
+          security list-keychain -d user -s "$KEYCHAIN_PATH" login.keychain
+
+          rm certificate.p12
+
+      - name: Build
+        run: wails3 build
+
+      - name: Sign and Notarize
         env:
-          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
-          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-          AC_USERNAME: ${{ secrets.AC_USERNAME }}
-          AC_PASSWORD: ${{ secrets.AC_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
         run: |
-          echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+          wails3 sign --input bin/MyApp.app \
+            --hardened-runtime \
+            --entitlements build/darwin/entitlements.plist \
+            --notarize
+```
+
+---
+
+## Linux Package Signing
+
+Linux packages (DEB and RPM) use PGP/GPG signatures. Wails supports signing from any platform.
+
+### Supported Package Types
+
+- `.deb` - Debian/Ubuntu packages
+- `.rpm` - Red Hat/Fedora/SUSE packages
+
+### Generating a PGP Key
+
+Generate a new key pair for signing:
+
+```bash
+wails3 signing generate-key \
+  --name "Your Name" \
+  --email "you@example.com" \
+  --password "secure-password" \
+  --comment "Package Signing Key"
+```
+
+Options:
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--name` | Key holder name | Required |
+| `--email` | Key holder email | Required |
+| `--comment` | Key comment | - |
+| `--password` | Private key password | None (unencrypted) |
+| `--bits` | RSA key size | 4096 |
+| `--output` | Output directory | Current directory |
+
+This creates two files:
+- `your_name_private.asc` - **Keep secret!** Used for signing
+- `your_name_public.asc` - Distribute to users for verification
+
+### Viewing Key Information
+
+```bash
+wails3 signing key-info --key your_name_private.asc
+```
+
+Output:
+```
+Key ID:      ABCD1234EFGH5678
+Fingerprint: 1234567890ABCDEF1234567890ABCDEF12345678
+Created:     2024-01-15 10:30:00
+Expires:     never
+
+User IDs:
+  Your Name (Package Signing Key) <you@example.com>
+
+This is a private key (encrypted)
+```
+
+### CLI Usage
+
+```bash
+# Sign a DEB package
+wails3 sign --input myapp_1.0.0_amd64.deb --pgp-key signing_key.asc
+
+# Sign an RPM package
+wails3 sign --input myapp-1.0.0.x86_64.rpm --pgp-key signing_key.asc
+
+# With password (from environment)
+export PGP_KEY_PASSWORD="your-password"
+wails3 sign --input myapp.deb --pgp-key signing_key.asc
+
+# With password (command line)
+wails3 sign --input myapp.deb --pgp-key signing_key.asc --pgp-key-password "your-password"
+
+# Specify DEB signing role
+wails3 sign --input myapp.deb --pgp-key signing_key.asc --role origin
+```
+
+### DEB Signing Roles
+
+| Role | Description |
+|------|-------------|
+| `builder` | Default role, indicates who built the package |
+| `origin` | Original package maintainer |
+| `maint` | Current maintainer |
+| `archive` | Archive/repository signature |
+
+### Linux CLI Options
+
+| Option | Description | Environment Variable |
+|--------|-------------|---------------------|
+| `--input` | Path to .deb or .rpm | - |
+| `--output` | Output path (default: in-place) | - |
+| `--pgp-key` | Path to PGP private key | - |
+| `--pgp-key-password` | PGP key password | `$PGP_KEY_PASSWORD` |
+| `--role` | DEB signing role | - |
+| `--verify` | Verify after signing | - |
+
+### Distributing Your Public Key
+
+Users need your public key to verify signatures.
+
+**For APT (Debian/Ubuntu):**
+```bash
+# Modern method (recommended)
+curl -fsSL https://example.com/your_name_public.asc | sudo gpg --dearmor -o /usr/share/keyrings/myapp.gpg
+
+# In sources.list.d
+echo "deb [signed-by=/usr/share/keyrings/myapp.gpg] https://repo.example.com stable main" | \
+  sudo tee /etc/apt/sources.list.d/myapp.list
+```
+
+**For RPM (Red Hat/Fedora):**
+```bash
+sudo rpm --import https://example.com/your_name_public.asc
+```
+
+### GitHub Actions
+
+```yaml
+name: Build and Sign Linux Packages
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm
+
+      - name: Build
+        run: wails3 build
+
+      - name: Create Packages
+        run: |
+          wails3 tool package --deb
+          wails3 tool package --rpm
+
+      - name: Import Signing Key
+        run: |
+          echo "${{ secrets.PGP_PRIVATE_KEY }}" > signing_key.asc
+          chmod 600 signing_key.asc
+
+      - name: Sign DEB
+        env:
+          PGP_KEY_PASSWORD: ${{ secrets.PGP_KEY_PASSWORD }}
+        run: wails3 sign --input dist/*.deb --pgp-key signing_key.asc --verify
+
+      - name: Sign RPM
+        env:
+          PGP_KEY_PASSWORD: ${{ secrets.PGP_KEY_PASSWORD }}
+        run: wails3 sign --input dist/*.rpm --pgp-key signing_key.asc --verify
+
+      - name: Cleanup
+        run: rm -f signing_key.asc
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-packages
+          path: |
+            dist/*.deb
+            dist/*.rpm
+```
+
+---
+
+## Configuration File
+
+Store signing configuration in `wails.yaml`:
+
+```yaml
+signing:
+  windows:
+    certificate_path: certs/windows.pfx
+    certificate_password: ${SIGN_CERT_PASSWORD}  # From environment
+    timestamp_server: http://timestamp.digicert.com
+    description: My Application
+    url: https://myapp.example.com
+
+  macos:
+    identity: "Developer ID Application: Your Company (ABC123XYZ)"
+    entitlements: build/darwin/entitlements.plist
+    hardened_runtime: true
+    notarization:
+      keychain_profile: myapp
+      # Or use environment variables:
+      # apple_id: ${APPLE_ID}
+      # team_id: ${APPLE_TEAM_ID}
+      # app_password: ${APPLE_APP_PASSWORD}
+
+  linux:
+    pgp_key_path: certs/signing_key.asc
+    pgp_key_password: ${PGP_KEY_PASSWORD}
+```
+
+Use with:
+```bash
+wails3 sign --input myapp.exe --config wails.yaml
+```
+
+---
+
+## Complete CI/CD Workflow
+
+Sign for all platforms in a single workflow:
+
+```yaml
+name: Build and Sign All Platforms
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build-windows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Build Windows
+        run: GOOS=windows GOARCH=amd64 wails3 build
+
+      - name: Sign Windows
+        env:
+          SIGN_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
+        run: |
+          echo "${{ secrets.WINDOWS_CERTIFICATE }}" | base64 -d > cert.pfx
+          wails3 sign --input bin/myapp.exe --certificate cert.pfx \
+            --timestamp http://timestamp.digicert.com --verify
+          rm cert.pfx
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: bin/myapp.exe
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Import Certificate
+        env:
+          CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        run: |
+          echo "$CERTIFICATE" | base64 --decode > cert.p12
           security create-keychain -p "" build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p "" build.keychain
-          security import certificate.p12 -k build.keychain -P $MACOS_CERTIFICATE_PWD -T /usr/bin/codesign
+          security import cert.p12 -k build.keychain -P "$PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
-          gon -log-level=info ./build/darwin/gon-sign.json
+          rm cert.p12
+
+      - name: Build macOS
+        run: wails3 build
+
+      - name: Sign and Notarize
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: wails3 sign --input bin/MyApp.app --notarize --hardened-runtime
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: bin/MyApp.app
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Build Linux
+        run: wails3 build
+
+      - name: Create Packages
+        run: |
+          wails3 tool package --deb
+          wails3 tool package --rpm
+
+      - name: Sign Packages
+        env:
+          PGP_KEY_PASSWORD: ${{ secrets.PGP_KEY_PASSWORD }}
+        run: |
+          echo "${{ secrets.PGP_PRIVATE_KEY }}" > key.asc
+          wails3 sign --input dist/*.deb --pgp-key key.asc --verify
+          wails3 sign --input dist/*.rpm --pgp-key key.asc --verify
+          rm key.asc
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: dist/*
 ```
+
+---
+
+## Troubleshooting
+
+### Check System Capabilities
+
+```bash
+wails3 signing info
+```
+
+### Verify Signatures
+
+<Tabs>
+  <TabItem label="Windows">
+    ```powershell
+    # Using signtool
+    signtool verify /pa /v myapp.exe
+
+    # Using PowerShell
+    Get-AuthenticodeSignature myapp.exe
+    ```
+  </TabItem>
+  <TabItem label="macOS">
+    ```bash
+    # Basic verification
+    codesign --verify --verbose=2 MyApp.app
+
+    # Check notarization
+    spctl --assess --verbose=2 MyApp.app
+
+    # Display signature details
+    codesign -dv --verbose=4 MyApp.app
+    ```
+  </TabItem>
+  <TabItem label="Linux">
+    ```bash
+    # DEB packages
+    dpkg-sig --verify myapp.deb
+
+    # RPM packages
+    rpm -K myapp.rpm
+    rpm -qpi myapp.rpm | grep Signature
+    ```
+  </TabItem>
+</Tabs>
+
+### Common Issues
+
+**Windows:**
+| Error | Solution |
+|-------|----------|
+| "Certificate not found" | Check certificate path or thumbprint |
+| "Private key not exportable" | Re-export certificate with exportable key |
+| "Timestamp server unreachable" | Try a different timestamp server |
+| "Cross-platform signing failed" | Ensure .pfx contains private key |
+
+**macOS:**
+| Error | Solution |
+|-------|----------|
+| "Code signature invalid" | Re-sign with `--force` |
+| "No identity found" | Check `wails3 signing list` output |
+| "Notarization rejected" | Enable hardened runtime, check entitlements |
+| "Certificate not trusted" | Use Developer ID, not development certificate |
+
+**Linux:**
+| Error | Solution |
+|-------|----------|
+| "PGP key encrypted, no password" | Set `$PGP_KEY_PASSWORD` or use `--pgp-key-password` |
+| "Failed to read PGP entity" | Check key format (should be ASCII-armored) |
+| "No signatures found" | Package wasn't signed; run signing again |
+
+---
 
 ## Additional Resources
 
-- [Apple Code Signing Documentation](https://developer.apple.com/support/code-signing/)
-- [Microsoft Code Signing Documentation](https://docs.microsoft.com/en-us/windows-hardware/drivers/dashboard/get-a-code-signing-certificate)
-- [Gon Documentation](https://github.com/mitchellh/gon)
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [Apple Code Signing Guide](https://developer.apple.com/support/code-signing/)
+- [Microsoft Authenticode Documentation](https://docs.microsoft.com/en-us/windows-hardware/drivers/install/authenticode)
+- [rcodesign](https://github.com/indygreg/apple-platform-rs) - Cross-platform macOS signing
+- [relic](https://github.com/sassoftware/relic) - The signing library Wails uses internally

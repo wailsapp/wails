@@ -94,6 +94,15 @@ func main() {
 	tool.NewSubCommandFunction("package", "Generate Linux packages (deb, rpm, archlinux)", commands.ToolPackage)
 	tool.NewSubCommandFunction("version", "Bump semantic version", commands.ToolVersion)
 
+	// Signing commands
+	app.NewSubCommandFunction("sign", "Code sign the application", commands.Sign)
+	sign := app.NewSubCommand("signing", "Code signing tools")
+	sign.NewSubCommandFunction("info", "Show signing capabilities on this system", commands.SigningInfo)
+	sign.NewSubCommandFunction("list", "List available signing identities", commands.ListSigningIdentities)
+	sign.NewSubCommandFunction("credentials", "Store notarization credentials in keychain", commands.StoreNotarizationCredentials)
+	sign.NewSubCommandFunction("generate-key", "Generate PGP key pair for Linux package signing", commands.GeneratePGPKey)
+	sign.NewSubCommandFunction("key-info", "Display information about a PGP key", commands.PGPKeyInfo)
+
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)
 
