@@ -488,7 +488,13 @@ func (f *Frontend) setupChromium() {
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
 
-	if f.frontendOptions.DragAndDrop != nil && f.frontendOptions.DragAndDrop.DisableWebViewDrop {
+	// Only disable external drag if DisableWebViewDrop is true AND EnableFileDrop is false.
+	// When EnableFileDrop is true, we need to allow external drag events so that the
+	// JavaScript handlers can receive file drop events. The JavaScript will prevent
+	// the default browser behavior (navigating to the dropped file).
+	if f.frontendOptions.DragAndDrop != nil &&
+		f.frontendOptions.DragAndDrop.DisableWebViewDrop &&
+		!f.frontendOptions.DragAndDrop.EnableFileDrop {
 		if err := chromium.AllowExternalDrag(false); err != nil {
 			f.logger.Warning("WebView failed to set AllowExternalDrag to false!")
 		}
