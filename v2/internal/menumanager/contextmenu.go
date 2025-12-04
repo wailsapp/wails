@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/wailsapp/wails/v2/internal/conv"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 )
 
@@ -19,7 +20,7 @@ func (t *ContextMenu) AsJSON() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(data), nil
+	return conv.BytesToString(data), nil
 }
 
 func NewContextMenu(contextMenu *menu.ContextMenu) *ContextMenu {

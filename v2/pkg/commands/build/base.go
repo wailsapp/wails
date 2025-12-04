@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/pterm/pterm"
+	"github.com/wailsapp/wails/v2/internal/conv"
 
 	"github.com/wailsapp/wails/v2/internal/system"
 
@@ -377,7 +378,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	if err != nil {
 		if options.Platform == "darwin" {
 			output, _ := cmd.CombinedOutput()
-			stdErr := string(output)
+			stdErr := conv.BytesToString(output)
 			if strings.Contains(err.Error(), "ld: framework not found UniformTypeIdentifiers") ||
 				strings.Contains(stdErr, "ld: framework not found UniformTypeIdentifiers") {
 				pterm.Warning.Println(`

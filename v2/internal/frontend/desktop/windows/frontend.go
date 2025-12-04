@@ -872,7 +872,7 @@ func (f *Frontend) Callback(message string) {
 		panic(err)
 	}
 	f.mainWindow.Invoke(func() {
-		f.chromium.Eval(`window.wails.Callback(` + string(escaped) + `);`)
+		f.chromium.Eval(`window.wails.Callback(` + conv.BytesToString(escaped) + `);`)
 	})
 }
 
