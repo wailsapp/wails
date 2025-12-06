@@ -105,6 +105,9 @@ func main() {
 
 	// Setup commands
 	setup := app.NewSubCommand("setup", "Project setup wizards")
+	setup.Action(func() error {
+		return commands.Setup(&commands.SetupOptions{})
+	})
 	setupSigning := setup.NewSubCommand("signing", "Configure code signing")
 	var setupSigningFlags flags.SigningSetup
 	setupSigning.AddFlags(&setupSigningFlags)
@@ -120,7 +123,12 @@ func main() {
 	})
 
 	// Sign command (wrapper that calls platform-specific tasks)
-	app.NewSubCommandFunction("sign", "Sign binaries and packages for current or specified platform", commands.SignWrapper)
+	sign := app.NewSubCommand("sign", "Sign binaries and packages for current or specified platform")
+	var signWrapperFlags flags.SignWrapper
+	sign.AddFlags(&signWrapperFlags)
+	sign.Action(func() error {
+		return commands.SignWrapper(&signWrapperFlags, sign.OtherArgs())
+	})
 
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)
