@@ -58,3 +58,18 @@ export async function saveWailsConfig(config: WailsConfig): Promise<{ status: st
   });
   return response.json();
 }
+
+export interface InstallResult {
+  success: boolean;
+  output: string;
+  error?: string;
+}
+
+export async function installDependency(command: string): Promise<InstallResult> {
+  const response = await fetch(`${API_BASE}/dependencies/install`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ command }),
+  });
+  return response.json();
+}

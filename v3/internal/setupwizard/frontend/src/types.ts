@@ -6,6 +6,8 @@ export interface DependencyStatus {
   status: 'installed' | 'not_installed' | 'needs_update' | 'checking';
   required: boolean;
   message?: string;
+  installCommand?: string;
+  helpUrl?: string;
 }
 
 export interface DockerStatus {
@@ -45,6 +47,8 @@ export interface SystemInfo {
   wailsVersion: string;
   goVersion: string;
   homeDir: string;
+  osName?: string;
+  osVersion?: string;
   gitName?: string;
   gitEmail?: string;
 }

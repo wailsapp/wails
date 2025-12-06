@@ -27,12 +27,26 @@ var frontendFS embed.FS
 
 // DependencyStatus represents the status of a dependency
 type DependencyStatus struct {
-	Name      string `json:"name"`
-	Installed bool   `json:"installed"`
-	Version   string `json:"version,omitempty"`
-	Status    string `json:"status"` // "installed", "not_installed", "needs_update"
-	Required  bool   `json:"required"`
-	Message   string `json:"message,omitempty"`
+	Name           string `json:"name"`
+	Installed      bool   `json:"installed"`
+	Version        string `json:"version,omitempty"`
+	Status         string `json:"status"` // "installed", "not_installed", "needs_update"
+	Required       bool   `json:"required"`
+	Message        string `json:"message,omitempty"`
+	InstallCommand string `json:"installCommand,omitempty"`
+	HelpURL        string `json:"helpUrl,omitempty"`
+}
+
+// DockerStatus represents Docker installation and image status
+type DockerStatus struct {
+	Installed    bool   `json:"installed"`
+	Running      bool   `json:"running"`
+	Version      string `json:"version,omitempty"`
+	ImageBuilt   bool   `json:"imageBuilt"`
+	ImageName    string `json:"imageName"`
+	PullProgress int    `json:"pullProgress"`
+	PullStatus   string `json:"pullStatus"` // "idle", "pulling", "complete", "error"
+	PullError    string `json:"pullError,omitempty"`
 }
 
 // WailsConfigInfo represents the info section of wails.yaml
@@ -71,11 +85,13 @@ type WizardState struct {
 
 // Wizard is the setup wizard server
 type Wizard struct {
-	server   *http.Server
-	state    WizardState
-	stateMu  sync.RWMutex
-	done     chan struct{}
-	shutdown chan struct{}
+	server       *http.Server
+	state        WizardState
+	stateMu      sync.RWMutex
+	dockerStatus DockerStatus
+	dockerMu     sync.RWMutex
+	done         chan struct{}
+	shutdown     chan struct{}
 }
 
 // New creates a new setup wizard
@@ -143,6 +159,9 @@ func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 	// API routes
 	mux.HandleFunc("/api/state", w.handleState)
 	mux.HandleFunc("/api/dependencies/check", w.handleCheckDependencies)
+	mux.HandleFunc("/api/dependencies/install", w.handleInstallDependency)
+	mux.HandleFunc("/api/docker/status", w.handleDockerStatus)
+	mux.HandleFunc("/api/docker/build", w.handleDockerBuild)
 	mux.HandleFunc("/api/wails-config", w.handleWailsConfig)
 	mux.HandleFunc("/api/complete", w.handleComplete)
 	mux.HandleFunc("/api/close", w.handleClose)
@@ -325,4 +344,151 @@ func execCommand(name string, args ...string) (string, error) {
 func commandExists(name string) bool {
 	_, err := exec.LookPath(name)
 	return err == nil
+}
+
+func (w *Wizard) handleDockerStatus(rw http.ResponseWriter, r *http.Request) {
+	status := w.checkDocker()
+
+	w.dockerMu.Lock()
+	w.dockerStatus = status
+	w.dockerMu.Unlock()
+
+	rw.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(rw).Encode(status)
+}
+
+func (w *Wizard) checkDocker() DockerStatus {
+	status := DockerStatus{
+		ImageName:  "wails-cross",
+		PullStatus: "idle",
+	}
+
+	// Check if Docker is installed
+	output, err := execCommand("docker", "--version")
+	if err != nil {
+		status.Installed = false
+		return status
+	}
+
+	status.Installed = true
+	// Parse version from "Docker version 24.0.7, build afdd53b"
+	parts := strings.Split(output, ",")
+	if len(parts) > 0 {
+		status.Version = strings.TrimPrefix(strings.TrimSpace(parts[0]), "Docker version ")
+	}
+
+	// Check if Docker daemon is running
+	if _, err := execCommand("docker", "info"); err != nil {
+		status.Running = false
+		return status
+	}
+	status.Running = true
+
+	// Check if wails-cross image exists
+	imageOutput, err := execCommand("docker", "image", "inspect", "wails-cross")
+	status.ImageBuilt = err == nil && len(imageOutput) > 0
+
+	return status
+}
+
+func (w *Wizard) handleDockerBuild(rw http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.dockerMu.Lock()
+	w.dockerStatus.PullStatus = "pulling"
+	w.dockerStatus.PullProgress = 0
+	w.dockerMu.Unlock()
+
+	// Build the Docker image in background
+	go func() {
+		// Run: wails3 task setup:docker
+		cmd := exec.Command("wails3", "task", "setup:docker")
+		err := cmd.Run()
+
+		w.dockerMu.Lock()
+		if err != nil {
+			w.dockerStatus.PullStatus = "error"
+			w.dockerStatus.PullError = err.Error()
+		} else {
+			w.dockerStatus.PullStatus = "complete"
+			w.dockerStatus.ImageBuilt = true
+		}
+		w.dockerStatus.PullProgress = 100
+		w.dockerMu.Unlock()
+	}()
+
+	// Simulate progress updates while building
+	go func() {
+		for i := 0; i < 90; i += 5 {
+			time.Sleep(2 * time.Second)
+			w.dockerMu.Lock()
+			if w.dockerStatus.PullStatus != "pulling" {
+				w.dockerMu.Unlock()
+				return
+			}
+			w.dockerStatus.PullProgress = i
+			w.dockerMu.Unlock()
+		}
+	}()
+
+	rw.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(rw).Encode(map[string]string{"status": "started"})
+}
+
+// InstallRequest represents a request to install a dependency
+type InstallRequest struct {
+	Command string `json:"command"`
+}
+
+// InstallResponse represents the result of an install attempt
+type InstallResponse struct {
+	Success bool   `json:"success"`
+	Output  string `json:"output"`
+	Error   string `json:"error,omitempty"`
+}
+
+func (w *Wizard) handleInstallDependency(rw http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req InstallRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	rw.Header().Set("Content-Type", "application/json")
+
+	// Execute the install command
+	// Split the command into parts
+	parts := strings.Fields(req.Command)
+	if len(parts) == 0 {
+		json.NewEncoder(rw).Encode(InstallResponse{
+			Success: false,
+			Error:   "Empty command",
+		})
+		return
+	}
+
+	cmd := exec.Command(parts[0], parts[1:]...)
+	output, err := cmd.CombinedOutput()
+
+	if err != nil {
+		json.NewEncoder(rw).Encode(InstallResponse{
+			Success: false,
+			Output:  string(output),
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	json.NewEncoder(rw).Encode(InstallResponse{
+		Success: true,
+		Output:  string(output),
+	})
 }

@@ -34,8 +34,9 @@ func (w *Wizard) checkAllDependencies() []DependencyStatus {
 			} else {
 				status.Installed = false
 				status.Status = "not_installed"
+				status.InstallCommand = dep.InstallCommand
 				if dep.InstallCommand != "" {
-					status.Message = "Install with: " + dep.InstallCommand
+					status.Message = "Run the install command to install this dependency"
 				}
 			}
 
@@ -55,14 +56,16 @@ func (w *Wizard) checkAllDependencies() []DependencyStatus {
 func checkNpm() DependencyStatus {
 	dep := DependencyStatus{
 		Name:     "npm",
-		Required: true,
+		Required: false, // Optional - not strictly required for Go-only projects
 	}
 
 	version, err := execCommand("npm", "-v")
 	if err != nil {
 		dep.Status = "not_installed"
 		dep.Installed = false
-		dep.Message = "npm is required. Install Node.js from https://nodejs.org/"
+		dep.Message = "Required for frontend development"
+		dep.HelpURL = "https://nodejs.org/"
+		dep.InstallCommand = "Install Node.js from https://nodejs.org/"
 		return dep
 	}
 
@@ -75,7 +78,8 @@ func checkNpm() DependencyStatus {
 		if major < 7 {
 			dep.Status = "needs_update"
 			dep.Installed = true
-			dep.Message = "npm 7.0.0 or higher is required"
+			dep.Message = "npm 7.0.0 or higher recommended"
+			dep.HelpURL = "https://nodejs.org/"
 			return dep
 		}
 	}
@@ -95,7 +99,9 @@ func checkDocker() DependencyStatus {
 	if err != nil {
 		dep.Status = "not_installed"
 		dep.Installed = false
-		dep.Message = "Optional - for cross-compilation"
+		dep.Message = "Enables cross-platform builds"
+		dep.HelpURL = "https://docs.docker.com/get-docker/"
+		dep.InstallCommand = "Install Docker from https://docs.docker.com/get-docker/"
 		return dep
 	}
 
@@ -110,7 +116,7 @@ func checkDocker() DependencyStatus {
 	if err != nil {
 		dep.Installed = true
 		dep.Status = "installed"
-		dep.Message = "Daemon not running"
+		dep.Message = "Start Docker to enable cross-compilation"
 		return dep
 	}
 
@@ -119,7 +125,7 @@ func checkDocker() DependencyStatus {
 	if imageCheck == "" || strings.Contains(imageCheck, "Error") {
 		dep.Installed = true
 		dep.Status = "installed"
-		dep.Message = "wails-cross image not built"
+		dep.Message = "Run 'wails3 task setup:docker' to build cross-compilation image"
 	} else {
 		dep.Installed = true
 		dep.Status = "installed"
