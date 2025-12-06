@@ -12,6 +12,7 @@ import (
 
 func (w *Wizard) checkAllDependencies() []DependencyStatus {
 	var deps []DependencyStatus
+	hasNpm := false
 
 	// Get OS info for package manager detection
 	info, _ := operatingsystem.Info()
@@ -22,6 +23,9 @@ func (w *Wizard) checkAllDependencies() []DependencyStatus {
 		// Get platform dependencies from the doctor package
 		platformDeps, _ := packagemanager.Dependencies(pm)
 		for _, dep := range platformDeps {
+			if dep.Name == "npm" {
+				hasNpm = true
+			}
 			status := DependencyStatus{
 				Name:     dep.Name,
 				Required: !dep.Optional,
@@ -35,17 +39,16 @@ func (w *Wizard) checkAllDependencies() []DependencyStatus {
 				status.Installed = false
 				status.Status = "not_installed"
 				status.InstallCommand = dep.InstallCommand
-				if dep.InstallCommand != "" {
-					status.Message = "Run the install command to install this dependency"
-				}
 			}
 
 			deps = append(deps, status)
 		}
 	}
 
-	// Check npm (common dependency)
-	deps = append(deps, checkNpm())
+	// Check npm (common dependency) - only if not already added by package manager
+	if !hasNpm {
+		deps = append(deps, checkNpm())
+	}
 
 	// Check Docker (optional)
 	deps = append(deps, checkDocker())
