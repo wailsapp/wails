@@ -120,9 +120,9 @@ function WelcomePage({ system, onNext, onCancel }: { system: SystemInfo | null; 
             <span className="text-gray-500">Operating System</span>
             <span className="text-gray-200">{system.osName || system.os} ({system.arch})</span>
             <span className="text-gray-500">Wails Version</span>
-            <span className="text-gray-200">v{system.wailsVersion}</span>
+            <span className="text-gray-200">{system.wailsVersion.replace(/^v+/, '')}</span>
             <span className="text-gray-500">Go Version</span>
-            <span className="text-gray-200">{system.goVersion}</span>
+            <span className="text-gray-200">{system.goVersion.replace(/^go/, '')}</span>
           </div>
         </div>
       )}
@@ -517,17 +517,32 @@ function DockerPage({
         <h3 className="text-sm font-medium text-gray-400 mb-2">What you can build:</h3>
         <div className="grid grid-cols-3 gap-4 text-center text-sm">
           <div className="py-2">
-            <div className="text-lg mb-1">🍎</div>
+            <div className="flex justify-center mb-2">
+              {/* Apple logo */}
+              <svg className="w-8 h-8 text-gray-300" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+              </svg>
+            </div>
             <div className="text-gray-300">macOS</div>
             <div className="text-xs text-gray-500">.app / .dmg</div>
           </div>
           <div className="py-2">
-            <div className="text-lg mb-1">🪟</div>
+            <div className="flex justify-center mb-2">
+              {/* Windows logo */}
+              <svg className="w-8 h-8 text-gray-300" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/>
+              </svg>
+            </div>
             <div className="text-gray-300">Windows</div>
             <div className="text-xs text-gray-500">.exe / .msi</div>
           </div>
           <div className="py-2">
-            <div className="text-lg mb-1">🐧</div>
+            <div className="flex justify-center mb-2">
+              {/* Tux penguin */}
+              <svg className="w-8 h-8 text-gray-300" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.503 0c-.155 0-.315.008-.48.021-4.226.333-3.105 4.807-3.17 6.298-.076 1.092-.3 1.953-1.05 3.02-.885 1.051-2.127 2.75-2.716 4.521-.278.832-.41 1.684-.287 2.489.117.779.567 1.563 1.182 2.114.267.24.567.428.895.556-.407.662-.648 1.418-.648 2.229 0 .792.188 1.541.522 2.205.15.298.33.579.535.837a4.85 4.85 0 002.056 1.53c.724.296 1.51.447 2.32.447.81 0 1.596-.15 2.32-.447a4.85 4.85 0 002.056-1.53c.205-.258.385-.54.535-.837.334-.664.522-1.413.522-2.205 0-.811-.241-1.567-.648-2.229.328-.128.628-.316.895-.556.615-.551 1.065-1.335 1.182-2.114.123-.805-.009-1.657-.287-2.489-.589-1.77-1.831-3.47-2.716-4.521-.75-1.067-.974-1.928-1.05-3.02-.065-1.491 1.056-5.965-3.17-6.298-.165-.013-.325-.021-.48-.021zm-.006 2.354c.136 0 .27.007.4.02 1.896.192 1.645 2.96 1.687 3.876.053.987.262 1.785.862 2.64.6.854 1.44 1.893 1.997 3.009.48.964.555 2.098.28 2.763-.165.4-.448.698-.743.898a.907.907 0 01-.275.12 1.003 1.003 0 01-.243.03c-.235 0-.455-.058-.661-.178-.19-.11-.363-.276-.499-.501a1.806 1.806 0 01-.25-.72 2.89 2.89 0 01-.03-.59c.013-.234.043-.462.087-.678-.17.06-.346.101-.526.121a3.55 3.55 0 01-.559.013 3.55 3.55 0 01-.559-.013 3.072 3.072 0 01-.526-.121c.044.216.074.444.087.678.016.197.003.396-.03.59a1.806 1.806 0 01-.25.72c-.136.225-.309.39-.499.501-.206.12-.426.178-.661.178a1.003 1.003 0 01-.243-.03.907.907 0 01-.275-.12c-.295-.2-.578-.499-.743-.898-.275-.665-.2-1.799.28-2.763.557-1.116 1.397-2.155 1.997-3.01.6-.854.809-1.652.862-2.64.042-.915-.21-3.683 1.687-3.875.13-.013.264-.02.4-.02z"/>
+              </svg>
+            </div>
             <div className="text-gray-300">Linux</div>
             <div className="text-xs text-gray-500">.deb / .rpm / AppImage</div>
           </div>
