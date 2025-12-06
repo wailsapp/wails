@@ -29,4 +29,33 @@ func checkCommonDependencies(result map[string]string, ok *bool) {
 		}
 	}
 	result["npm"] = string(npmVersion)
+
+	// Check for Docker (optional - used for macOS cross-compilation from Linux)
+	checkDocker(result)
+}
+
+func checkDocker(result map[string]string) {
+	dockerVersion, err := exec.Command("docker", "--version").Output()
+	if err != nil {
+		result["docker"] = "*Not installed (optional - for cross-compilation)"
+		return
+	}
+
+	// Check if Docker daemon is running
+	_, err = exec.Command("docker", "info").Output()
+	if err != nil {
+		version := strings.TrimSpace(string(dockerVersion))
+		result["docker"] = "*" + version + " (daemon not running)"
+		return
+	}
+
+	version := strings.TrimSpace(string(dockerVersion))
+
+	// Check for the unified cross-compilation image
+	imageCheck, _ := exec.Command("docker", "image", "inspect", "wails-cross").Output()
+	if len(imageCheck) == 0 {
+		result["docker"] = "*" + version + " (wails-cross image not built - run: wails3 task setup:docker)"
+	} else {
+		result["docker"] = "*" + version + " (cross-compilation ready)"
+	}
 }

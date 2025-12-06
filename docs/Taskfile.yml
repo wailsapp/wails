@@ -4,7 +4,7 @@ version: '3'
 
 vars:
   # Change this to switch package managers: bun, npm, pnpm, yarn
-  PKG_MANAGER: bun
+  PKG_MANAGER: npm
 
 tasks:
 
