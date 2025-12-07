@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/go-git/go-git/v5/config"
+	"github.com/wailsapp/wails/v3/internal/defaults"
 	"github.com/wailsapp/wails/v3/internal/term"
 
 	"github.com/go-git/go-git/v5"
@@ -98,6 +99,39 @@ func initGitRepository(projectDir string, gitURL string) error {
 	return nil
 }
 
+// applyGlobalDefaults applies global defaults to init options if they are using default values
+func applyGlobalDefaults(options *flags.Init, globalDefaults defaults.GlobalDefaults) {
+	// Apply template default if using the built-in default
+	if options.TemplateName == "vanilla" && globalDefaults.Project.DefaultTemplate != "" {
+		options.TemplateName = globalDefaults.Project.DefaultTemplate
+	}
+
+	// Apply company default if using the built-in default
+	if options.ProductCompany == "My Company" && globalDefaults.Author.Company != "" {
+		options.ProductCompany = globalDefaults.Author.Company
+	}
+
+	// Apply copyright from global defaults if using the built-in default
+	if options.ProductCopyright == "\u00a9 now, My Company" {
+		options.ProductCopyright = globalDefaults.GenerateCopyright()
+	}
+
+	// Apply product identifier from global defaults if not explicitly set
+	if options.ProductIdentifier == "" && globalDefaults.Project.ProductIdentifierPrefix != "" {
+		options.ProductIdentifier = globalDefaults.GenerateProductIdentifier(options.ProjectName)
+	}
+
+	// Apply description from global defaults if using the built-in default
+	if options.ProductDescription == "My Product Description" && globalDefaults.Project.DescriptionTemplate != "" {
+		options.ProductDescription = globalDefaults.GenerateDescription(options.ProjectName)
+	}
+
+	// Apply version from global defaults if using the built-in default
+	if options.ProductVersion == "0.1.0" && globalDefaults.Project.DefaultVersion != "" {
+		options.ProductVersion = globalDefaults.GetDefaultVersion()
+	}
+}
+
 func Init(options *flags.Init) error {
 	if options.List {
 		term.Header("Available templates")
@@ -121,6 +155,15 @@ func Init(options *flags.Init) error {
 
 	options.ProjectName = sanitizeFileName(options.ProjectName)
 
+	// Load and apply global defaults
+	globalDefaults, err := defaults.Load()
+	if err != nil {
+		// Log warning but continue - global defaults are optional
+		term.Warningf("Could not load global defaults: %v\n", err)
+	} else {
+		applyGlobalDefaults(options, globalDefaults)
+	}
+
 	if options.ModulePath == "" {
 		if options.Git == "" {
 			options.ModulePath = "changeme"
@@ -129,7 +172,7 @@ func Init(options *flags.Init) error {
 		}
 	}
 
-	err := templates.Install(options)
+	err = templates.Install(options)
 	if err != nil {
 		return err
 	}
