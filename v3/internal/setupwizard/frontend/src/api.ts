@@ -1,4 +1,4 @@
-import type { WizardState, DependencyStatus, DockerStatus, UserConfig, WailsConfig } from './types';
+import type { WizardState, DependencyStatus, DockerStatus, UserConfig, WailsConfig, GlobalDefaults } from './types';
 
 const API_BASE = '/api';
 
@@ -19,6 +19,17 @@ export async function getDockerStatus(): Promise<DockerStatus> {
 
 export async function buildDockerImage(): Promise<{ status: string }> {
   const response = await fetch(`${API_BASE}/docker/build`, { method: 'POST' });
+  return response.json();
+}
+
+export interface DockerStartBackgroundResponse {
+  started: boolean;
+  reason?: string;
+  status: DockerStatus;
+}
+
+export async function startDockerBuildBackground(): Promise<DockerStartBackgroundResponse> {
+  const response = await fetch(`${API_BASE}/docker/start-background`, { method: 'POST' });
   return response.json();
 }
 
@@ -70,6 +81,20 @@ export async function installDependency(command: string): Promise<InstallResult>
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ command }),
+  });
+  return response.json();
+}
+
+export async function getDefaults(): Promise<GlobalDefaults> {
+  const response = await fetch(`${API_BASE}/defaults`);
+  return response.json();
+}
+
+export async function saveDefaults(defaults: GlobalDefaults): Promise<{ status: string; path: string }> {
+  const response = await fetch(`${API_BASE}/defaults`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(defaults),
   });
   return response.json();
 }

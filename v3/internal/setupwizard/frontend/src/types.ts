@@ -62,4 +62,35 @@ export interface WizardState {
   startTime: string;
 }
 
-export type Step = 'splash' | 'welcome' | 'dependencies' | 'docker' | 'config' | 'wails-config' | 'complete';
+export type Step = 'splash' | 'welcome' | 'dependencies' | 'docker' | 'defaults' | 'config' | 'wails-config' | 'complete';
+
+export interface AuthorDefaults {
+  name: string;
+  company: string;
+}
+
+export interface ProjectDefaults {
+  productIdentifierPrefix: string;
+  defaultTemplate: string;
+  copyrightTemplate: string;
+  descriptionTemplate: string;
+  defaultVersion: string;
+}
+
+export interface SigningDefaults {
+  macOS: {
+    developerID: string;        // e.g., "Developer ID Application: John Doe (TEAMID)"
+    appleID: string;            // Apple ID for notarization
+    teamID: string;             // Apple Team ID
+  };
+  windows: {
+    certificatePath: string;    // Path to .pfx certificate
+    timestampServer: string;    // e.g., "http://timestamp.digicert.com"
+  };
+}
+
+export interface GlobalDefaults {
+  author: AuthorDefaults;
+  project: ProjectDefaults;
+  signing?: SigningDefaults;
+}

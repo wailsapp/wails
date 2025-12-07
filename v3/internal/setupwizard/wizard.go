@@ -162,7 +162,9 @@ func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/dependencies/install", w.handleInstallDependency)
 	mux.HandleFunc("/api/docker/status", w.handleDockerStatus)
 	mux.HandleFunc("/api/docker/build", w.handleDockerBuild)
+	mux.HandleFunc("/api/docker/start-background", w.handleDockerStartBackground)
 	mux.HandleFunc("/api/wails-config", w.handleWailsConfig)
+	mux.HandleFunc("/api/defaults", w.handleDefaults)
 	mux.HandleFunc("/api/complete", w.handleComplete)
 	mux.HandleFunc("/api/close", w.handleClose)
 
@@ -438,6 +440,98 @@ func (w *Wizard) handleDockerBuild(rw http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(rw).Encode(map[string]string{"status": "started"})
 }
 
+// handleDockerStartBackground checks if Docker is available and starts building in background
+// This is called early in the wizard flow to get a head start on the image build
+func (w *Wizard) handleDockerStartBackground(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+
+	// Check Docker status first
+	status := w.checkDocker()
+
+	w.dockerMu.Lock()
+	w.dockerStatus = status
+	w.dockerMu.Unlock()
+
+	// Only start build if Docker is installed, running, and image not built yet
+	if !status.Installed || !status.Running || status.ImageBuilt {
+		json.NewEncoder(rw).Encode(map[string]interface{}{
+			"started": false,
+			"reason":  getDockerNotStartedReason(status),
+			"status":  status,
+		})
+		return
+	}
+
+	// Check if already building
+	w.dockerMu.RLock()
+	alreadyBuilding := w.dockerStatus.PullStatus == "pulling"
+	w.dockerMu.RUnlock()
+
+	if alreadyBuilding {
+		json.NewEncoder(rw).Encode(map[string]interface{}{
+			"started": false,
+			"reason":  "already_building",
+			"status":  status,
+		})
+		return
+	}
+
+	// Start building in background
+	w.dockerMu.Lock()
+	w.dockerStatus.PullStatus = "pulling"
+	w.dockerStatus.PullProgress = 0
+	w.dockerMu.Unlock()
+
+	// Build the Docker image in background
+	go func() {
+		cmd := exec.Command("wails3", "task", "setup:docker")
+		err := cmd.Run()
+
+		w.dockerMu.Lock()
+		if err != nil {
+			w.dockerStatus.PullStatus = "error"
+			w.dockerStatus.PullError = err.Error()
+		} else {
+			w.dockerStatus.PullStatus = "complete"
+			w.dockerStatus.ImageBuilt = true
+		}
+		w.dockerStatus.PullProgress = 100
+		w.dockerMu.Unlock()
+	}()
+
+	// Simulate progress updates while building
+	go func() {
+		for i := 0; i < 90; i += 5 {
+			time.Sleep(2 * time.Second)
+			w.dockerMu.Lock()
+			if w.dockerStatus.PullStatus != "pulling" {
+				w.dockerMu.Unlock()
+				return
+			}
+			w.dockerStatus.PullProgress = i
+			w.dockerMu.Unlock()
+		}
+	}()
+
+	json.NewEncoder(rw).Encode(map[string]interface{}{
+		"started": true,
+		"status":  status,
+	})
+}
+
+func getDockerNotStartedReason(status DockerStatus) string {
+	if !status.Installed {
+		return "not_installed"
+	}
+	if !status.Running {
+		return "not_running"
+	}
+	if status.ImageBuilt {
+		return "already_built"
+	}
+	return "unknown"
+}
+
 // InstallRequest represents a request to install a dependency
 type InstallRequest struct {
 	Command string `json:"command"`
@@ -491,4 +585,44 @@ func (w *Wizard) handleInstallDependency(rw http.ResponseWriter, r *http.Request
 		Success: true,
 		Output:  string(output),
 	})
+}
+
+func (w *Wizard) handleDefaults(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+
+	switch r.Method {
+	case http.MethodGet:
+		defaults, err := LoadGlobalDefaults()
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Try to pre-populate author info from git config if empty
+		if defaults.Author.Name == "" {
+			if name, err := execCommand("git", "config", "--global", "user.name"); err == nil && name != "" {
+				defaults.Author.Name = name
+			}
+		}
+
+		json.NewEncoder(rw).Encode(defaults)
+
+	case http.MethodPost:
+		var defaults GlobalDefaults
+		if err := json.NewDecoder(r.Body).Decode(&defaults); err != nil {
+			http.Error(rw, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if err := SaveGlobalDefaults(defaults); err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		path, _ := GetDefaultsPath()
+		json.NewEncoder(rw).Encode(map[string]string{"status": "saved", "path": path})
+
+	default:
+		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
+	}
 }
