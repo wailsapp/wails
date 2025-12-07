@@ -5,8 +5,6 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - v3-alpha
-    paths:
-      - 'v3/**'
   pull_request_review:
     types: [submitted]
     branches:
