@@ -32,7 +32,14 @@ app := application.New(application.Options{
 })
 ```
 
-**That's it!** `Greet` is now callable from JavaScript.
+**That's it!** `Greet` is now callable from JavaScript:
+
+```js
+import { Greet } from './bindings/main/GreetService';
+
+const message = await Greet("World");
+console.log(message);  // "Hello, World!"
+```
 
 ## Creating Services
 

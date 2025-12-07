@@ -11,3 +11,7 @@ type Dev struct {
 type Package struct {
 	Common
 }
+
+type SignWrapper struct {
+	Common
+}

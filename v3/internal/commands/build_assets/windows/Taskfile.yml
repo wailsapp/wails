@@ -3,17 +3,41 @@ version: '3'
 includes:
   common: ../Taskfile.yml
 
+vars:
+  # Signing configuration - edit these values for your project
+  # SIGN_CERTIFICATE: "path/to/certificate.pfx"
+  # SIGN_THUMBPRINT: "certificate-thumbprint"  # Alternative to SIGN_CERTIFICATE
+  # TIMESTAMP_SERVER: "http://timestamp.digicert.com"
+  #
+  # Password is stored securely in system keychain. Run: wails3 setup signing
+
+  # Docker image for cross-compilation with CGO (used when CGO_ENABLED=1 on non-Windows)
+  CROSS_IMAGE: wails-cross
+
 tasks:
   build:
     summary: Builds the application for Windows
+    cmds:
+      # Auto-detect CGO: if CGO_ENABLED=1, use Docker; otherwise use native Go cross-compile
+      - task: '{{if and (ne OS "windows") (eq .CGO_ENABLED "1")}}build:docker{{else}}build:native{{end}}'
+        vars:
+          ARCH: '{{.ARCH}}'
+          DEV: '{{.DEV}}'
+    vars:
+      # Default to CGO_ENABLED=0 if not explicitly set
+      CGO_ENABLED: '{{.CGO_ENABLED | default "0"}}'
+
+  build:native:
+    summary: Builds the application using native Go cross-compilation
+    internal: true
     deps:
       - task: common:go:mod:tidy
       - task: common:build:frontend
         vars:
           BUILD_FLAGS:
             ref: .BUILD_FLAGS
-          PRODUCTION:
-            ref: .PRODUCTION
+          DEV:
+            ref: .DEV
       - task: common:generate:icons
     cmds:
       - task: generate:syso
@@ -23,15 +47,52 @@ tasks:
       - cmd: rm -f *.syso
         platforms: [linux, darwin]
     vars:
-      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production -trimpath -buildvcs=false -ldflags="-w -s -H windowsgui"{{else}}-buildvcs=false -gcflags=all="-l"{{end}}'
+      BUILD_FLAGS: '{{if eq .DEV "true"}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production -trimpath -buildvcs=false -ldflags="-w -s -H windowsgui"{{end}}'
     env:
       GOOS: windows
-      CGO_ENABLED: 0
+      CGO_ENABLED: '{{.CGO_ENABLED | default "0"}}'
       GOARCH: '{{.ARCH | default ARCH}}'
-      PRODUCTION: '{{.PRODUCTION | default "false"}}'
+
+  build:docker:
+    summary: Cross-compiles for Windows using Docker with Zig (for CGO builds on non-Windows)
+    internal: true
+    deps:
+      - task: common:build:frontend
+      - task: common:generate:icons
+    preconditions:
+      - sh: docker info > /dev/null 2>&1
+        msg: "Docker is required for CGO cross-compilation. Please install Docker."
+      - sh: docker image inspect {{.CROSS_IMAGE}} > /dev/null 2>&1
+        msg: |
+          Docker image '{{.CROSS_IMAGE}}' not found.
+          Build it first: wails3 task setup:docker
+    cmds:
+      - task: generate:syso
+      - docker run --rm -v "{{.ROOT_DIR}}:/app" {{.GO_CACHE_MOUNT}} {{.REPLACE_MOUNTS}} -e APP_NAME={{.APP_NAME}} {{.CROSS_IMAGE}} windows {{.DOCKER_ARCH}}
+      - docker run --rm -v "{{.ROOT_DIR}}:/app" alpine chown -R $(id -u):$(id -g) /app/bin
+      - rm -f *.syso
+    vars:
+      DOCKER_ARCH: '{{.ARCH | default "amd64"}}'
+      # Mount Go module cache for faster builds
+      GO_CACHE_MOUNT:
+        sh: 'echo "-v ${GOPATH:-$HOME/go}/pkg/mod:/go/pkg/mod"'
+      # Extract replace directives from go.mod and create -v mounts for each
+      REPLACE_MOUNTS:
+        sh: |
+          grep -E '^replace .* => ' go.mod 2>/dev/null | while read -r line; do
+            path=$(echo "$line" | sed -E 's/^replace .* => //' | tr -d '\r')
+            # Convert relative paths to absolute
+            if [ "${path#/}" = "$path" ]; then
+              path="$(cd "$(dirname "$path")" 2>/dev/null && pwd)/$(basename "$path")"
+            fi
+            # Only mount if directory exists
+            if [ -d "$path" ]; then
+              echo "-v $path:$path:ro"
+            fi
+          done | tr '\n' ' '
 
   package:
-    summary: Packages a production build of the application
+    summary: Packages the application
     cmds:
       - task: '{{if eq (.FORMAT | default "nsis") "msix"}}create:msix:package{{else}}create:nsis:installer{{end}}'
     vars:
@@ -50,8 +111,6 @@ tasks:
     dir: build/windows/nsis
     deps:
       - task: build
-        vars:
-          PRODUCTION: "true"
     cmds:
       # Create the Microsoft WebView2 bootstrapper if it doesn't exist
       - wails3 generate webview2bootstrapper -dir "{{.ROOT_DIR}}/build/windows/nsis"
@@ -69,8 +128,6 @@ tasks:
     summary: Creates an MSIX package
     deps:
       - task: build
-        vars:
-          PRODUCTION: "true"
     cmds:
       - |-
         wails3 tool msix \
@@ -96,3 +153,31 @@ tasks:
   run:
     cmds:
       - '{{.BIN_DIR}}/{{.APP_NAME}}.exe'
+
+  sign:
+    summary: Signs the Windows executable
+    desc: |
+      Signs the .exe with an Authenticode certificate.
+      Configure SIGN_CERTIFICATE or SIGN_THUMBPRINT in the vars section at the top of this file.
+      Password is retrieved from system keychain (run: wails3 setup signing)
+    deps:
+      - task: build
+    cmds:
+      - wails3 tool sign --input {{.BIN_DIR}}/{{.APP_NAME}}.exe {{if .SIGN_CERTIFICATE}}--certificate {{.SIGN_CERTIFICATE}}{{end}} {{if .SIGN_THUMBPRINT}}--thumbprint {{.SIGN_THUMBPRINT}}{{end}} {{if .TIMESTAMP_SERVER}}--timestamp {{.TIMESTAMP_SERVER}}{{end}}
+    preconditions:
+      - sh: '[ -n "{{.SIGN_CERTIFICATE}}" ] || [ -n "{{.SIGN_THUMBPRINT}}" ]'
+        msg: "Either SIGN_CERTIFICATE or SIGN_THUMBPRINT is required. Set it in the vars section at the top of build/windows/Taskfile.yml"
+
+  sign:installer:
+    summary: Signs the NSIS installer
+    desc: |
+      Creates and signs the NSIS installer.
+      Configure SIGN_CERTIFICATE or SIGN_THUMBPRINT in the vars section at the top of this file.
+      Password is retrieved from system keychain (run: wails3 setup signing)
+    deps:
+      - task: create:nsis:installer
+    cmds:
+      - wails3 tool sign --input build/windows/nsis/{{.APP_NAME}}-installer.exe {{if .SIGN_CERTIFICATE}}--certificate {{.SIGN_CERTIFICATE}}{{end}} {{if .SIGN_THUMBPRINT}}--thumbprint {{.SIGN_THUMBPRINT}}{{end}} {{if .TIMESTAMP_SERVER}}--timestamp {{.TIMESTAMP_SERVER}}{{end}}
+    preconditions:
+      - sh: '[ -n "{{.SIGN_CERTIFICATE}}" ] || [ -n "{{.SIGN_THUMBPRINT}}" ]'
+        msg: "Either SIGN_CERTIFICATE or SIGN_THUMBPRINT is required. Set it in the vars section at the top of build/windows/Taskfile.yml"

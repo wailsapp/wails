@@ -2153,7 +2153,7 @@ func (w *windowsWebviewWindow) navigationCompleted(
 ) {
 
 	// Install the runtime core
-	w.execJS(runtime.Core())
+	w.execJS(runtime.Core(globalApplication.impl.GetFlags(globalApplication.options)))
 
 	// EmitEvent DomReady ApplicationEvent
 	windowEvents <- &windowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}
