@@ -146,7 +146,9 @@ func TestGenerator(t *testing.T) {
 						}
 
 						for _, msg := range warnings {
-							fmt.Fprint(log, msg, render.Newline)
+							// Prefix with [warn] to prevent GitHub Actions Go problem matcher
+							// from treating these as errors when diff output is shown
+							fmt.Fprint(log, "[warn] "+msg, render.Newline)
 						}
 					}()
 				}
