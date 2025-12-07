@@ -93,6 +93,42 @@ func main() {
 	tool.NewSubCommandFunction("buildinfo", "Show Build Info", commands.BuildInfo)
 	tool.NewSubCommandFunction("package", "Generate Linux packages (deb, rpm, archlinux)", commands.ToolPackage)
 	tool.NewSubCommandFunction("version", "Bump semantic version", commands.ToolVersion)
+	tool.NewSubCommandFunction("lipo", "Create macOS universal binary from multiple architectures", commands.ToolLipo)
+
+	// Low-level sign tool (used by Taskfiles)
+	toolSign := tool.NewSubCommand("sign", "Sign a binary or package directly")
+	var toolSignFlags flags.Sign
+	toolSign.AddFlags(&toolSignFlags)
+	toolSign.Action(func() error {
+		return commands.Sign(&toolSignFlags)
+	})
+
+	// Setup commands
+	setup := app.NewSubCommand("setup", "Project setup wizards")
+	setup.Action(func() error {
+		return commands.Setup(&commands.SetupOptions{})
+	})
+	setupSigning := setup.NewSubCommand("signing", "Configure code signing")
+	var setupSigningFlags flags.SigningSetup
+	setupSigning.AddFlags(&setupSigningFlags)
+	setupSigning.Action(func() error {
+		return commands.SigningSetup(&setupSigningFlags)
+	})
+
+	setupEntitlements := setup.NewSubCommand("entitlements", "Configure macOS entitlements")
+	var setupEntitlementsFlags flags.EntitlementsSetup
+	setupEntitlements.AddFlags(&setupEntitlementsFlags)
+	setupEntitlements.Action(func() error {
+		return commands.EntitlementsSetup(&setupEntitlementsFlags)
+	})
+
+	// Sign command (wrapper that calls platform-specific tasks)
+	sign := app.NewSubCommand("sign", "Sign binaries and packages for current or specified platform")
+	var signWrapperFlags flags.SignWrapper
+	sign.AddFlags(&signWrapperFlags)
+	sign.Action(func() error {
+		return commands.SignWrapper(&signWrapperFlags, sign.OtherArgs())
+	})
 
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)

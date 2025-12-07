@@ -13,7 +13,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/generator/config"
 	"github.com/wailsapp/wails/v3/internal/generator/render"
@@ -95,15 +94,17 @@ func TestGenerator(t *testing.T) {
 			generator := NewGenerator(
 				test.options,
 				creator,
-				config.DefaultPtermLogger(nil),
+				// Use NullLogger to suppress console output during tests.
+				// Warnings are written to warnings.log for comparison instead.
+				// This prevents GitHub Actions Go problem matcher from treating
+				// warning output as errors.
+				config.NullLogger,
 			)
 
 			_, err := generator.Generate(testcases)
 			if report := (*ErrorReport)(nil); errors.As(err, &report) {
 				if report.HasErrors() {
 					t.Error(report)
-				} else if report.HasWarnings() {
-					pterm.Warning.Println(report)
 				}
 
 				// Log warnings and compare with reference output.
@@ -146,7 +147,9 @@ func TestGenerator(t *testing.T) {
 						}
 
 						for _, msg := range warnings {
-							fmt.Fprint(log, msg, render.Newline)
+							// Prefix with [warn] to prevent GitHub Actions Go problem matcher
+							// from treating these as errors when diff output is shown
+							fmt.Fprint(log, "[warn] "+msg, render.Newline)
 						}
 					}()
 				}

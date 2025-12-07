@@ -1,0 +1,132 @@
+---
+title: macOS Packaging
+description: Package your Wails application for macOS distribution
+sidebar:
+  order: 4
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Application Bundle
+
+Package your app as a standard macOS `.app` bundle:
+
+```bash
+wails3 package GOOS=darwin
+```
+
+This creates `bin/<AppName>.app` containing:
+- The compiled binary in `Contents/MacOS/`
+- App icon in `Contents/Resources/`
+- `Info.plist` with app metadata
+
+### Universal Binary
+
+Build for both Apple Silicon and Intel Macs:
+
+```bash
+wails3 task darwin:package:universal
+```
+
+This creates a single `.app` that runs natively on both architectures. Universal binaries can be built on any platform — on Linux and Windows, `wails3 tool lipo` is used automatically.
+
+## Customizing the Bundle
+
+Edit `build/darwin/Info.plist` to customize:
+
+- Bundle identifier (`CFBundleIdentifier`)
+- App name and version
+- Minimum macOS version
+- File associations
+- URL schemes
+
+The app icon is generated from `build/appicon.png`. Regenerate with:
+
+```bash
+wails3 generate icons -input build/appicon.png
+```
+
+## Code Signing
+
+Sign your app for distribution:
+
+```bash
+# Using the wrapper (auto-detects platform)
+wails3 sign GOOS=darwin
+
+# Or using the task directly
+wails3 task darwin:sign
+```
+
+Configure signing in `build/darwin/Taskfile.yml`:
+
+```yaml
+vars:
+  SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
+  ENTITLEMENTS: "build/darwin/entitlements.plist"
+```
+
+### Notarization
+
+For apps distributed outside the Mac App Store, Apple requires notarization:
+
+```bash
+wails3 task darwin:sign:notarize
+```
+
+First, store your credentials:
+
+```bash
+wails3 signing credentials \
+  --apple-id "you@email.com" \
+  --team-id "TEAMID" \
+  --password "app-specific-password" \
+  --profile "my-notarize-profile"
+```
+
+Configure in `build/darwin/Taskfile.yml`:
+
+```yaml
+vars:
+  SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
+  KEYCHAIN_PROFILE: "my-notarize-profile"
+```
+
+See [Signing Applications](/guides/build/signing) for details.
+
+## DMG Installer
+
+Create a DMG disk image for distribution:
+
+```bash
+wails3 task darwin:create:dmg
+```
+
+<Aside type="tip">
+Customize the DMG background and layout by editing `build/darwin/dmg/` assets.
+</Aside>
+
+## Troubleshooting
+
+### "App is damaged and can't be opened"
+
+The app isn't signed. Either sign it with a Developer ID certificate, or users can bypass Gatekeeper:
+
+```bash
+xattr -cr /path/to/YourApp.app
+```
+
+### Notarization fails
+
+Common issues:
+- **Invalid credentials**: Re-run `wails3 signing credentials`
+- **Hardened runtime required**: Ensure entitlements include `com.apple.security.cs.allow-unsigned-executable-memory` if needed
+- **Missing timestamp**: The signing process should include a timestamp automatically
+
+### Cross-compiled app won't run
+
+Cross-compiled macOS binaries aren't signed. Transfer to a Mac and sign before testing:
+
+```bash
+codesign --force --deep --sign - YourApp.app
+```

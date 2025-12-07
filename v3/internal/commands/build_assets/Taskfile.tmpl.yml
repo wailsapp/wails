@@ -22,7 +22,7 @@ tasks:
       - npm install
 
   build:frontend:
-    label: build:frontend (PRODUCTION={{ "{{.PRODUCTION}}" }})
+    label: build:frontend (DEV={{ "{{.DEV}}" }})
     summary: Build the frontend project
     dir: frontend
     sources:
@@ -38,9 +38,9 @@ tasks:
     cmds:
       - npm run {{ "{{.BUILD_COMMAND}}" }} -q
     env:
-      PRODUCTION: {{ "'{{.PRODUCTION | default \"false\"}}'" }}
+      PRODUCTION: {{ "'{{if eq .DEV \"true\"}}false{{else}}true{{end}}'" }}
     vars:
-      BUILD_COMMAND: {{ "'{{if eq .PRODUCTION \"true\"}}build{{else}}build:dev{{end}}'" }}
+      BUILD_COMMAND: {{ "'{{if eq .DEV \"true\"}}build:dev{{else}}build{{end}}'" }}
 
 
   generate:bindings:
@@ -84,3 +84,15 @@ tasks:
     dir: build
     cmds:
       - wails3 update build-assets -name {{ "\"{{.APP_NAME}}\"" }} -binaryname {{ "\"{{.APP_NAME}}\"" }} -config config.yml -dir .
+
+  setup:docker:
+    summary: Builds Docker image for cross-compilation (~800MB download)
+    desc: |
+      Builds the Docker image needed for cross-compiling to any platform.
+      Run this once to enable cross-platform builds from any OS.
+    cmds:
+      - docker build -t wails-cross -f build/docker/Dockerfile.cross build/docker/
+    preconditions:
+      - sh: docker info > /dev/null 2>&1
+        msg: "Docker is required. Please install Docker first."
+

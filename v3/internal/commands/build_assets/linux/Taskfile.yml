@@ -3,34 +3,100 @@ version: '3'
 includes:
   common: ../Taskfile.yml
 
+vars:
+  # Signing configuration - edit these values for your project
+  # PGP_KEY: "path/to/signing-key.asc"
+  # SIGN_ROLE: "builder"  # Options: origin, maint, archive, builder
+  #
+  # Password is stored securely in system keychain. Run: wails3 setup signing
+
+  # Docker image for cross-compilation (used when building on non-Linux or no CC available)
+  CROSS_IMAGE: wails-cross
+
 tasks:
   build:
     summary: Builds the application for Linux
+    cmds:
+      # Linux requires CGO - use Docker when cross-compiling from non-Linux OR when no C compiler is available
+      - task: '{{if and (eq OS "linux") (eq .HAS_CC "true")}}build:native{{else}}build:docker{{end}}'
+        vars:
+          ARCH: '{{.ARCH}}'
+          DEV: '{{.DEV}}'
+          OUTPUT: '{{.OUTPUT}}'
+    vars:
+      DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
+      OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
+      # Check if a C compiler is available (gcc or clang)
+      HAS_CC:
+        sh: '(command -v gcc >/dev/null 2>&1 || command -v clang >/dev/null 2>&1) && echo "true" || echo "false"'
+
+  build:native:
+    summary: Builds the application natively on Linux
+    internal: true
     deps:
       - task: common:go:mod:tidy
       - task: common:build:frontend
         vars:
           BUILD_FLAGS:
             ref: .BUILD_FLAGS
-          PRODUCTION:
-            ref: .PRODUCTION
+          DEV:
+            ref: .DEV
       - task: common:generate:icons
     cmds:
-      - go build {{.BUILD_FLAGS}} -o {{.BIN_DIR}}/{{.APP_NAME}}
+      - go build {{.BUILD_FLAGS}} -o {{.OUTPUT}}
     vars:
-      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-buildvcs=false -gcflags=all="-l"{{end}}'
+      BUILD_FLAGS: '{{if eq .DEV "true"}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production -trimpath -buildvcs=false -ldflags="-w -s"{{end}}'
+      DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
+      OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
     env:
       GOOS: linux
       CGO_ENABLED: 1
       GOARCH: '{{.ARCH | default ARCH}}'
-      PRODUCTION: '{{.PRODUCTION | default "false"}}'
+
+  build:docker:
+    summary: Cross-compiles for Linux using Docker with Zig (for macOS/Windows hosts)
+    internal: true
+    deps:
+      - task: common:build:frontend
+      - task: common:generate:icons
+    preconditions:
+      - sh: docker info > /dev/null 2>&1
+        msg: "Docker is required for cross-compilation to Linux. Please install Docker."
+      - sh: docker image inspect {{.CROSS_IMAGE}} > /dev/null 2>&1
+        msg: |
+          Docker image '{{.CROSS_IMAGE}}' not found.
+          Build it first: wails3 task setup:docker
+    cmds:
+      - docker run --rm -v "{{.ROOT_DIR}}:/app" {{.GO_CACHE_MOUNT}} {{.REPLACE_MOUNTS}} -e APP_NAME={{.APP_NAME}} {{.CROSS_IMAGE}} linux {{.DOCKER_ARCH}}
+      - docker run --rm -v "{{.ROOT_DIR}}:/app" alpine chown -R $(id -u):$(id -g) /app/bin
+      - mkdir -p {{.BIN_DIR}}
+      - mv bin/{{.APP_NAME}}-linux-{{.DOCKER_ARCH}} {{.OUTPUT}}
+    vars:
+      DOCKER_ARCH: '{{.ARCH | default "amd64"}}'
+      DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
+      OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
+      # Mount Go module cache for faster builds
+      GO_CACHE_MOUNT:
+        sh: 'echo "-v ${GOPATH:-$HOME/go}/pkg/mod:/go/pkg/mod"'
+      # Extract replace directives from go.mod and create -v mounts for each
+      REPLACE_MOUNTS:
+        sh: |
+          grep -E '^replace .* => ' go.mod 2>/dev/null | while read -r line; do
+            path=$(echo "$line" | sed -E 's/^replace .* => //' | tr -d '\r')
+            # Convert relative paths to absolute
+            if [ "${path#/}" = "$path" ]; then
+              path="$(cd "$(dirname "$path")" 2>/dev/null && pwd)/$(basename "$path")"
+            fi
+            # Only mount if directory exists
+            if [ -d "$path" ]; then
+              echo "-v $path:$path:ro"
+            fi
+          done | tr '\n' ' '
 
   package:
-    summary: Packages a production build of the application for Linux
+    summary: Packages the application for Linux
     deps:
       - task: build
-        vars:
-          PRODUCTION: "true"
     cmds:
       - task: create:appimage
       - task: create:deb
@@ -42,8 +108,6 @@ tasks:
     dir: build/linux/appimage
     deps:
       - task: build
-        vars:
-          PRODUCTION: "true"
       - task: generate:dotdesktop
     cmds:
       - cp {{.APP_BINARY}} {{.APP_NAME}}
@@ -60,8 +124,6 @@ tasks:
     summary: Creates a deb package
     deps:
       - task: build
-        vars:
-          PRODUCTION: "true"
     cmds:
       - task: generate:dotdesktop
       - task: generate:deb
@@ -70,8 +132,6 @@ tasks:
     summary: Creates a rpm package
     deps:
       - task: build
-        vars:
-          PRODUCTION: "true"
     cmds:
       - task: generate:dotdesktop
       - task: generate:rpm
@@ -80,8 +140,6 @@ tasks:
     summary: Creates a arch linux packager package
     deps:
       - task: build
-        vars:
-          PRODUCTION: "true"
     cmds:
       - task: generate:dotdesktop
       - task: generate:aur
@@ -117,3 +175,44 @@ tasks:
   run:
     cmds:
       - '{{.BIN_DIR}}/{{.APP_NAME}}'
+
+  sign:deb:
+    summary: Signs the DEB package
+    desc: |
+      Signs the .deb package with a PGP key.
+      Configure PGP_KEY in the vars section at the top of this file.
+      Password is retrieved from system keychain (run: wails3 setup signing)
+    deps:
+      - task: create:deb
+    cmds:
+      - wails3 tool sign --input {{.BIN_DIR}}/{{.APP_NAME}}*.deb --pgp-key {{.PGP_KEY}} {{if .SIGN_ROLE}}--role {{.SIGN_ROLE}}{{end}}
+    preconditions:
+      - sh: '[ -n "{{.PGP_KEY}}" ]'
+        msg: "PGP_KEY is required. Set it in the vars section at the top of build/linux/Taskfile.yml"
+
+  sign:rpm:
+    summary: Signs the RPM package
+    desc: |
+      Signs the .rpm package with a PGP key.
+      Configure PGP_KEY in the vars section at the top of this file.
+      Password is retrieved from system keychain (run: wails3 setup signing)
+    deps:
+      - task: create:rpm
+    cmds:
+      - wails3 tool sign --input {{.BIN_DIR}}/{{.APP_NAME}}*.rpm --pgp-key {{.PGP_KEY}}
+    preconditions:
+      - sh: '[ -n "{{.PGP_KEY}}" ]'
+        msg: "PGP_KEY is required. Set it in the vars section at the top of build/linux/Taskfile.yml"
+
+  sign:packages:
+    summary: Signs all Linux packages (DEB and RPM)
+    desc: |
+      Signs both .deb and .rpm packages with a PGP key.
+      Configure PGP_KEY in the vars section at the top of this file.
+      Password is retrieved from system keychain (run: wails3 setup signing)
+    cmds:
+      - task: sign:deb
+      - task: sign:rpm
+    preconditions:
+      - sh: '[ -n "{{.PGP_KEY}}" ]'
+        msg: "PGP_KEY is required. Set it in the vars section at the top of build/linux/Taskfile.yml"

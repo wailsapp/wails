@@ -123,17 +123,6 @@ func (em *EventManager) RegisterApplicationEventHook(eventType events.Applicatio
 
 // Dispatch dispatches an event to listeners (internal use)
 func (em *EventManager) dispatch(event *CustomEvent) {
-	// Snapshot windows under RLock
-	em.app.windowsLock.RLock()
-	for _, window := range em.app.windows {
-		if event.IsCancelled() {
-			em.app.windowsLock.RUnlock()
-			return
-		}
-		window.DispatchWailsEvent(event)
-	}
-	em.app.windowsLock.RUnlock()
-
 	// Snapshot listeners under Lock
 	em.app.wailsEventListenerLock.Lock()
 	listeners := slices.Clone(em.app.wailsEventListeners)

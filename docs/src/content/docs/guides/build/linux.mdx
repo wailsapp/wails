@@ -1,0 +1,147 @@
+---
+title: Linux Packaging
+description: Package your Wails application for Linux distribution
+sidebar:
+  order: 5
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Package Formats
+
+Package your app for Linux distribution:
+
+```bash
+wails3 package GOOS=linux
+```
+
+This creates multiple formats in the `bin/` directory:
+- **AppImage**: Portable, runs on any Linux distribution
+- **DEB**: For Debian, Ubuntu, and derivatives
+- **RPM**: For Fedora, RHEL, and derivatives
+- **Arch**: For Arch Linux and derivatives
+
+### Individual Formats
+
+Build specific formats:
+
+```bash
+wails3 task linux:create:appimage
+wails3 task linux:create:deb
+wails3 task linux:create:rpm
+wails3 task linux:create:aur
+```
+
+## Customizing Packages
+
+### Desktop Entry
+
+The `.desktop` file controls how your app appears in application menus. It's generated from values in `build/linux/Taskfile.yml`:
+
+```yaml
+vars:
+  APP_NAME: 'MyApp'
+  EXEC: 'MyApp'
+  ICON: 'MyApp'
+  CATEGORIES: 'Development;'
+```
+
+### Package Metadata
+
+Edit `build/linux/nfpm/nfpm.yaml` to customize DEB and RPM packages:
+
+```yaml
+name: myapp
+version: 1.0.0
+maintainer: Your Name <you@example.com>
+description: My awesome Wails application
+homepage: https://example.com
+license: MIT
+```
+
+### AppImage
+
+AppImage configuration is in `build/linux/appimage/`. The app icon comes from `build/appicon.png`.
+
+## Signing Packages
+
+Sign DEB and RPM packages with a PGP key:
+
+```bash
+# Using the wrapper (auto-detects platform)
+wails3 sign GOOS=linux
+
+# Or using tasks directly
+wails3 task linux:sign:deb
+wails3 task linux:sign:rpm
+wails3 task linux:sign:packages  # Both
+```
+
+Configure signing in `build/linux/Taskfile.yml`:
+
+```yaml
+vars:
+  PGP_KEY: "path/to/signing-key.asc"
+  SIGN_ROLE: "builder"  # origin, maint, archive, or builder
+```
+
+Store your key password:
+
+```bash
+wails3 setup signing
+```
+
+See [Signing Applications](/guides/build/signing) for details.
+
+## Building for ARM
+
+```bash
+wails3 build GOOS=linux GOARCH=arm64
+wails3 package GOOS=linux GOARCH=arm64
+```
+
+<Aside type="note">
+ARM64 builds from x86_64 hosts use Docker for CGO cross-compilation.
+</Aside>
+
+## Troubleshooting
+
+### AppImage won't run
+
+Make it executable:
+
+```bash
+chmod +x MyApp-x86_64.AppImage
+```
+
+### Missing dependencies
+
+If the app fails to start, check for missing WebKit dependencies:
+
+```bash
+# Debian/Ubuntu
+sudo apt install libwebkit2gtk-4.1-0
+
+# Fedora
+sudo dnf install webkit2gtk4.1
+
+# Arch
+sudo pacman -S webkit2gtk-4.1
+```
+
+### No C compiler found
+
+The build system needs GCC or Clang for CGO:
+
+```bash
+# Debian/Ubuntu
+sudo apt install build-essential
+
+# Fedora
+sudo dnf install gcc
+
+# Arch
+sudo pacman -S base-devel
+```
+
+Alternatively, run `wails3 task setup:docker` and the build system will use Docker automatically.
