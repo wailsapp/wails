@@ -1,8 +1,7 @@
 package application
 
 import (
-	"fmt"
-	"net/http"
+	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
 type ContextMenuData struct {
@@ -29,22 +28,19 @@ var contextmenuMethodNames = map[int]string{
 	ContextMenuOpen: "Open",
 }
 
-func (m *MessageProcessor) processContextMenuMethod(method int, rw http.ResponseWriter, _ *http.Request, window Window, params QueryParams) {
-	switch method {
+func (m *MessageProcessor) processContextMenuMethod(req *RuntimeRequest, window Window) (any, error) {
+	switch req.Method {
 	case ContextMenuOpen:
 		var data ContextMenuData
-		err := params.ToStruct(&data)
+		err := req.Args.ToStruct(&data)
 		if err != nil {
-			m.httpError(rw, "Invalid contextmenu call:", fmt.Errorf("error parsing parameters: %w", err))
-			return
+			return nil, errs.WrapInvalidContextMenuCallErrorf(err, "error parsing parameters")
 		}
 
 		window.OpenContextMenu(&data)
 
-		m.ok(rw)
-		m.Info("Runtime call:", "method", "ContextMenu."+contextmenuMethodNames[method], "id", data.Id, "x", data.X, "y", data.Y, "data", data.Data)
+		return unit, err
 	default:
-		m.httpError(rw, "Invalid contextmenu call:", fmt.Errorf("unknown method: %d", method))
-		return
+		return nil, errs.NewInvalidContextMenuCallErrorf("unknown method: %d", req.Method)
 	}
 }
