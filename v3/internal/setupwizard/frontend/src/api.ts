@@ -52,8 +52,15 @@ export async function complete(): Promise<{ status: string; duration: string }> 
   return response.json();
 }
 
-export async function close(): Promise<void> {
-  await fetch(`${API_BASE}/close`);
+export interface CloseResponse {
+  status: string;
+  dockerBuilding: boolean;
+  message?: string;
+}
+
+export async function close(): Promise<CloseResponse> {
+  const response = await fetch(`${API_BASE}/close`);
+  return response.json();
 }
 
 export async function getWailsConfig(): Promise<WailsConfig | null> {

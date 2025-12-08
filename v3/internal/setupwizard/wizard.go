@@ -25,6 +25,9 @@ import (
 //go:embed frontend/dist/*
 var frontendFS embed.FS
 
+//go:embed docker/Dockerfile.cross
+var dockerfileContent string
+
 // DependencyStatus represents the status of a dependency
 type DependencyStatus struct {
 	Name           string `json:"name"`
@@ -44,6 +47,7 @@ type DockerStatus struct {
 	Version      string `json:"version,omitempty"`
 	ImageBuilt   bool   `json:"imageBuilt"`
 	ImageName    string `json:"imageName"`
+	ImageSize    string `json:"imageSize,omitempty"`
 	PullProgress int    `json:"pullProgress"`
 	PullStatus   string `json:"pullStatus"` // "idle", "pulling", "complete", "error"
 	PullError    string `json:"pullError,omitempty"`
@@ -92,6 +96,7 @@ type Wizard struct {
 	dockerMu     sync.RWMutex
 	done         chan struct{}
 	shutdown     chan struct{}
+	buildWg      sync.WaitGroup // Tracks background Docker builds
 }
 
 // New creates a new setup wizard
@@ -330,9 +335,26 @@ func (w *Wizard) handleComplete(rw http.ResponseWriter, r *http.Request) {
 
 func (w *Wizard) handleClose(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(rw).Encode(map[string]string{"status": "closing"})
 
-	close(w.shutdown)
+	// Check if Docker build is in progress
+	w.dockerMu.RLock()
+	dockerBuilding := w.dockerStatus.PullStatus == "pulling"
+	w.dockerMu.RUnlock()
+
+	response := map[string]interface{}{
+		"status":         "closing",
+		"dockerBuilding": dockerBuilding,
+	}
+	if dockerBuilding {
+		response["message"] = "Docker image build will continue in the background"
+	}
+	json.NewEncoder(rw).Encode(response)
+
+	// Wait for any running Docker builds to complete before shutting down
+	go func() {
+		w.buildWg.Wait()
+		close(w.shutdown)
+	}()
 }
 
 // execCommand runs a command and returns its output
@@ -349,10 +371,25 @@ func commandExists(name string) bool {
 }
 
 func (w *Wizard) handleDockerStatus(rw http.ResponseWriter, r *http.Request) {
-	status := w.checkDocker()
+	// Get fresh Docker info (installed, running, image status)
+	freshStatus := w.checkDocker()
 
 	w.dockerMu.Lock()
-	w.dockerStatus = status
+	// Preserve the build progress/status if currently building
+	// but update the image built status and other base info
+	if w.dockerStatus.PullStatus == "pulling" {
+		// Keep the pulling status and progress, but update image built flag
+		freshStatus.PullStatus = w.dockerStatus.PullStatus
+		freshStatus.PullProgress = w.dockerStatus.PullProgress
+		freshStatus.PullError = w.dockerStatus.PullError
+	} else if w.dockerStatus.PullStatus == "complete" || w.dockerStatus.PullStatus == "error" {
+		// Keep the final status until it's acknowledged
+		freshStatus.PullStatus = w.dockerStatus.PullStatus
+		freshStatus.PullProgress = w.dockerStatus.PullProgress
+		freshStatus.PullError = w.dockerStatus.PullError
+	}
+	w.dockerStatus = freshStatus
+	status := w.dockerStatus
 	w.dockerMu.Unlock()
 
 	rw.Header().Set("Content-Type", "application/json")
@@ -390,6 +427,14 @@ func (w *Wizard) checkDocker() DockerStatus {
 	imageOutput, err := execCommand("docker", "image", "inspect", "wails-cross")
 	status.ImageBuilt = err == nil && len(imageOutput) > 0
 
+	// Get image size if it exists
+	if status.ImageBuilt {
+		sizeOutput, err := execCommand("docker", "images", "wails-cross", "--format", "{{.Size}}")
+		if err == nil && len(sizeOutput) > 0 {
+			status.ImageSize = strings.TrimSpace(sizeOutput)
+		}
+	}
+
 	return status
 }
 
@@ -405,33 +450,63 @@ func (w *Wizard) handleDockerBuild(rw http.ResponseWriter, r *http.Request) {
 	w.dockerMu.Unlock()
 
 	// Build the Docker image in background
+	w.buildWg.Add(1)
 	go func() {
-		// Run: wails3 task setup:docker
-		cmd := exec.Command("wails3", "task", "setup:docker")
-		err := cmd.Run()
+		defer w.buildWg.Done()
+
+		// Write Dockerfile to temp directory
+		tmpDir, err := os.MkdirTemp("", "wails-docker-build-*")
+		if err != nil {
+			w.dockerMu.Lock()
+			w.dockerStatus.PullStatus = "error"
+			w.dockerStatus.PullError = fmt.Sprintf("Failed to create temp dir: %v", err)
+			w.dockerMu.Unlock()
+			return
+		}
+		defer os.RemoveAll(tmpDir)
+
+		dockerfilePath := filepath.Join(tmpDir, "Dockerfile")
+		if err := os.WriteFile(dockerfilePath, []byte(dockerfileContent), 0644); err != nil {
+			w.dockerMu.Lock()
+			w.dockerStatus.PullStatus = "error"
+			w.dockerStatus.PullError = fmt.Sprintf("Failed to write Dockerfile: %v", err)
+			w.dockerMu.Unlock()
+			return
+		}
+
+		// Build the Docker image: docker build -t wails-cross -f Dockerfile .
+		cmd := exec.Command("docker", "build", "-t", "wails-cross", "-f", dockerfilePath, tmpDir)
+		output, err := cmd.CombinedOutput()
 
 		w.dockerMu.Lock()
 		if err != nil {
 			w.dockerStatus.PullStatus = "error"
-			w.dockerStatus.PullError = err.Error()
+			w.dockerStatus.PullError = fmt.Sprintf("Build failed: %v\n%s", err, string(output))
 		} else {
 			w.dockerStatus.PullStatus = "complete"
 			w.dockerStatus.ImageBuilt = true
+			// Get image size
+			if sizeOutput, sizeErr := execCommand("docker", "images", "wails-cross", "--format", "{{.Size}}"); sizeErr == nil && len(sizeOutput) > 0 {
+				w.dockerStatus.ImageSize = strings.TrimSpace(sizeOutput)
+			}
 		}
 		w.dockerStatus.PullProgress = 100
 		w.dockerMu.Unlock()
 	}()
 
-	// Simulate progress updates while building
+	// Simulate progress updates while building (only increment, never decrease)
 	go func() {
-		for i := 0; i < 90; i += 5 {
+		for i := 5; i < 90; i += 5 {
 			time.Sleep(2 * time.Second)
 			w.dockerMu.Lock()
 			if w.dockerStatus.PullStatus != "pulling" {
 				w.dockerMu.Unlock()
 				return
 			}
-			w.dockerStatus.PullProgress = i
+			// Only update if new value is higher (prevents going backwards)
+			if i > w.dockerStatus.PullProgress {
+				w.dockerStatus.PullProgress = i
+			}
 			w.dockerMu.Unlock()
 		}
 	}()
@@ -482,33 +557,64 @@ func (w *Wizard) handleDockerStartBackground(rw http.ResponseWriter, r *http.Req
 	w.dockerStatus.PullProgress = 0
 	w.dockerMu.Unlock()
 
-	// Build the Docker image in background
+	// Build the Docker image in background using embedded Dockerfile
+	w.buildWg.Add(1)
 	go func() {
-		cmd := exec.Command("wails3", "task", "setup:docker")
-		err := cmd.Run()
+		defer w.buildWg.Done()
+
+		// Write Dockerfile to temp directory
+		tmpDir, err := os.MkdirTemp("", "wails-docker-build-*")
+		if err != nil {
+			w.dockerMu.Lock()
+			w.dockerStatus.PullStatus = "error"
+			w.dockerStatus.PullError = fmt.Sprintf("Failed to create temp dir: %v", err)
+			w.dockerMu.Unlock()
+			return
+		}
+		defer os.RemoveAll(tmpDir)
+
+		dockerfilePath := filepath.Join(tmpDir, "Dockerfile")
+		if err := os.WriteFile(dockerfilePath, []byte(dockerfileContent), 0644); err != nil {
+			w.dockerMu.Lock()
+			w.dockerStatus.PullStatus = "error"
+			w.dockerStatus.PullError = fmt.Sprintf("Failed to write Dockerfile: %v", err)
+			w.dockerMu.Unlock()
+			return
+		}
+
+		// Build the Docker image: docker build -t wails-cross -f Dockerfile .
+		cmd := exec.Command("docker", "build", "-t", "wails-cross", "-f", dockerfilePath, tmpDir)
+		output, err := cmd.CombinedOutput()
 
 		w.dockerMu.Lock()
 		if err != nil {
 			w.dockerStatus.PullStatus = "error"
-			w.dockerStatus.PullError = err.Error()
+			w.dockerStatus.PullError = fmt.Sprintf("Build failed: %v\n%s", err, string(output))
 		} else {
 			w.dockerStatus.PullStatus = "complete"
 			w.dockerStatus.ImageBuilt = true
+			// Get image size
+			if sizeOutput, sizeErr := execCommand("docker", "images", "wails-cross", "--format", "{{.Size}}"); sizeErr == nil && len(sizeOutput) > 0 {
+				w.dockerStatus.ImageSize = strings.TrimSpace(sizeOutput)
+			}
 		}
 		w.dockerStatus.PullProgress = 100
 		w.dockerMu.Unlock()
 	}()
 
-	// Simulate progress updates while building
+	// Simulate progress updates while building (only increment, never decrease)
 	go func() {
-		for i := 0; i < 90; i += 5 {
+		for i := 5; i < 90; i += 5 {
 			time.Sleep(2 * time.Second)
 			w.dockerMu.Lock()
 			if w.dockerStatus.PullStatus != "pulling" {
 				w.dockerMu.Unlock()
 				return
 			}
-			w.dockerStatus.PullProgress = i
+			// Only update if new value is higher (prevents going backwards)
+			if i > w.dockerStatus.PullProgress {
+				w.dockerStatus.PullProgress = i
+			}
 			w.dockerMu.Unlock()
 		}
 	}()

@@ -16,6 +16,7 @@ export interface DockerStatus {
   version?: string;
   imageBuilt: boolean;
   imageName: string;
+  imageSize?: string;
   pullProgress: number;
   pullStatus: 'idle' | 'pulling' | 'complete' | 'error';
   pullError?: string;
@@ -62,7 +63,7 @@ export interface WizardState {
   startTime: string;
 }
 
-export type Step = 'splash' | 'welcome' | 'dependencies' | 'docker' | 'defaults' | 'config' | 'wails-config' | 'complete';
+export type Step = 'splash' | 'welcome' | 'dependencies' | 'docker' | 'defaults' | 'signing' | 'config' | 'wails-config' | 'complete';
 
 export interface AuthorDefaults {
   name: string;

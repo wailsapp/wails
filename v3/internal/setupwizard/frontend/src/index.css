@@ -72,6 +72,24 @@ html, body, #root {
   background: #4b5563;
 }
 
+/* Thin scrollbar for compact areas */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 2px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
+
 /* Button hover effect */
 .btn-primary {
   @apply bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold
@@ -100,6 +118,20 @@ html, body, #root {
   stroke-dasharray: 100;
   stroke-dashoffset: 100;
   animation: drawCheck 0.5s ease-out forwards;
+}
+
+/* Scrolling background animation */
+@keyframes scrollBackground {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+.scrolling-bg {
+  animation: scrollBackground 60s linear infinite;
 }
 
 /* Reduced motion support */
