@@ -380,7 +380,41 @@ func (s *MyService) ProcessData(data string) error {
 }
 ```
 
-## Complete Example
+## Raw Message Handling
+
+For applications that need direct, low-level control over frontend-to-backend communication, Wails provides the `RawMessageHandler` option. This bypasses the standard binding system.
+
+:::note
+Raw messages should only be used as a last resort. The standard binding system is highly optimized and sufficient for almost all applications. Only use raw messages if you have profiled your application and confirmed that bindings are a bottleneck.
+:::
+
+### RawMessageHandler
+
+The `RawMessageHandler` callback receives raw messages sent from the frontend using `System.invoke()`.
+
+```go
+func (a *App) RawMessageHandler(window Window, message string)
+```
+
+**Example:**
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    RawMessageHandler: func(window application.Window, message string) {
+        // Handle the raw message
+        fmt.Printf("Received from %s: %s\n", window.Name(), message)
+
+        // You can respond using events
+        window.EmitEvent("response", processMessage(message))
+    },
+})
+```
+
+
+For more details, see the [Raw Messages Guide](/guides/raw-messages).
+
+## Complete Application Example
 
 ```go
 package main
