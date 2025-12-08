@@ -4,7 +4,7 @@ import type { DependencyStatus, SystemInfo, DockerStatus, GlobalDefaults } from 
 import { checkDependencies, getState, getDockerStatus, buildDockerImage, close, getDefaults, saveDefaults, startDockerBuildBackground } from './api';
 import WailsLogo from './components/WailsLogo';
 
-type Step = 'welcome' | 'dependencies' | 'defaults' | 'docker' | 'complete';
+type Step = 'splash' | 'welcome' | 'dependencies' | 'defaults' | 'docker' | 'complete';
 type Theme = 'light' | 'dark';
 
 // Theme context
@@ -37,6 +37,99 @@ function ThemeToggle() {
         </svg>
       )}
     </button>
+  );
+}
+
+// Splash/Landing Page with scrolling background
+function SplashPage({ onNext }: { onNext: () => void }) {
+  const { theme, toggleTheme } = useTheme();
+
+  return (
+    <div className="h-full flex flex-col">
+      {/* Main content area */}
+      <div className="flex-1 min-h-0">
+        <div className="h-full flex flex-col items-center justify-center">
+          {/* Logo with glow effect */}
+          <motion.div
+            className="text-center mb-10"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
+            <div className="flex justify-center">
+              <img
+                src={theme === 'dark' ? '/assets/wails-logo-white-text-B284k7fX.svg' : '/assets/wails-logo-black-text-Cx-vsZ4W.svg'}
+                alt="Wails"
+                width={280}
+                className="object-contain"
+                style={{ filter: 'drop-shadow(0 0 60px rgba(239, 68, 68, 0.4))' }}
+              />
+            </div>
+          </motion.div>
+
+          {/* Apple-style welcome text */}
+          <motion.div
+            className="text-center px-8 max-w-lg"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 tracking-tight">
+              Welcome to Wails
+            </h1>
+            <p className="text-base text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
+              Let's get your development environment ready. We'll guide you through each step, making sure everything is set up perfectly.
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+              This takes just a few minutes. You can skip any step and return later.
+            </p>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex-shrink-0">
+        <div className="w-full flex justify-between items-center pt-4 mt-4 border-t border-gray-200 dark:border-gray-800">
+          {/* Left side: Theme toggle and Sponsor */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {theme === 'dark' ? (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              )}
+            </button>
+            <a
+              href="https://github.com/sponsors/leaanthony"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              </svg>
+              Sponsor
+            </a>
+          </div>
+
+          {/* Get Started button */}
+          <button
+            onClick={onNext}
+            className="px-4 py-1.5 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-500 transition-colors"
+          >
+            Get Started
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -1017,7 +1110,7 @@ function CompletePage({ onClose }: { onClose: () => void }) {
 
 // Main App
 export default function App() {
-  const [step, setStep] = useState<Step>('welcome');
+  const [step, setStep] = useState<Step>('splash');
   const [dependencies, setDependencies] = useState<DependencyStatus[]>([]);
   const [system, setSystem] = useState<SystemInfo | null>(null);
   const [dockerStatus, setDockerStatus] = useState<DockerStatus | null>(null);
@@ -1080,7 +1173,9 @@ export default function App() {
   };
 
   const handleNext = async () => {
-    if (step === 'welcome') {
+    if (step === 'splash') {
+      setStep('welcome');
+    } else if (step === 'welcome') {
       setCheckingDeps(true);
       const deps = await checkDependencies();
       setDependencies(deps);
@@ -1118,7 +1213,8 @@ export default function App() {
   };
 
   const handleBack = () => {
-    if (step === 'dependencies') setStep('welcome');
+    if (step === 'welcome') setStep('splash');
+    else if (step === 'dependencies') setStep('welcome');
     else if (step === 'docker') setStep('dependencies');
     else if (step === 'defaults') setStep('docker');
   };
@@ -1178,9 +1274,19 @@ export default function App() {
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      <div className="min-h-screen bg-gray-50 dark:bg-[#0f0f0f] flex items-center justify-center p-4 transition-colors">
-        {/* Theme toggle */}
-        <ThemeToggle />
+      <div className="min-h-screen bg-gray-50 dark:bg-[#0f0f0f] flex items-center justify-center p-4 transition-colors relative overflow-hidden">
+        {/* Scrolling background - only visible on splash */}
+        {step === 'splash' && (
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="scrolling-bg w-full h-[200%] opacity-[0.08] dark:opacity-[0.06]">
+              <img src="/showcase/montage.png" alt="" className="w-full h-1/2 object-cover object-center" />
+              <img src="/showcase/montage.png" alt="" className="w-full h-1/2 object-cover object-center" />
+            </div>
+          </div>
+        )}
+
+        {/* Theme toggle - only show when not on splash (splash has its own) */}
+        {step !== 'splash' && <ThemeToggle />}
 
         {/* Persistent Docker status indicator */}
         <AnimatePresence>
@@ -1192,72 +1298,79 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        <div className="w-full max-w-lg">
-          {/* Header with logo and step indicator */}
-          <div className="flex flex-col items-center mb-4">
-            <WailsLogo size={160} theme={theme} />
-            <div className="mt-3">
-              <StepIndicator steps={steps} currentStep={step} />
-            </div>
+        {/* Main content card */}
+        <div className="w-full max-w-2xl bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 rounded-xl shadow-2xl h-[85vh] flex flex-col overflow-hidden relative z-10">
+          <div className="flex-1 flex flex-col p-4 min-h-0">
+            {/* Splash page - full height, no header */}
+            {step === 'splash' && (
+              <SplashPage onNext={handleNext} />
+            )}
+
+            {/* Other pages with header */}
+            {step !== 'splash' && (
+              <>
+                {/* Header with logo and step indicator */}
+                <div className="flex flex-col items-center mb-4 flex-shrink-0">
+                  <WailsLogo size={120} theme={theme} />
+                  <div className="mt-3">
+                    <StepIndicator steps={steps} currentStep={step} />
+                  </div>
+                </div>
+
+                {/* Page content */}
+                <div className="flex-1 min-h-0 overflow-y-auto">
+                  <AnimatePresence mode="wait">
+                    {step === 'welcome' && (
+                      <WelcomePage
+                        key="welcome"
+                        system={system}
+                        onNext={handleNext}
+                        onCancel={handleCancel}
+                        checking={checkingDeps}
+                      />
+                    )}
+                    {step === 'dependencies' && (
+                      <DependenciesPage
+                        key="dependencies"
+                        dependencies={dependencies}
+                        onNext={handleNext}
+                        onBack={handleBack}
+                        onCancel={handleCancel}
+                        onRetry={handleRetryDeps}
+                        checking={checkingDeps}
+                      />
+                    )}
+                    {step === 'defaults' && (
+                      <DefaultsPage
+                        key="defaults"
+                        defaults={defaults}
+                        onDefaultsChange={setDefaults}
+                        onNext={handleNext}
+                        onBack={handleBack}
+                        onCancel={handleCancel}
+                        saving={savingDefaults}
+                      />
+                    )}
+                    {step === 'docker' && (
+                      <DockerPage
+                        key="docker"
+                        dockerStatus={dockerStatus}
+                        buildingImage={buildingImage}
+                        onBuildImage={handleBuildImage}
+                        onNext={handleNext}
+                        onBack={handleBack}
+                        onCancel={handleCancel}
+                      />
+                    )}
+                    {step === 'complete' && (
+                      <CompletePage key="complete" onClose={handleClose} />
+                    )}
+                  </AnimatePresence>
+                </div>
+              </>
+            )}
           </div>
-
-          {/* Wizard container */}
-          <div className="bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-2xl max-h-[70vh] overflow-y-auto">
-
-          <AnimatePresence mode="wait">
-            {step === 'welcome' && (
-              <WelcomePage
-                key="welcome"
-                system={system}
-                onNext={handleNext}
-                onCancel={handleCancel}
-                checking={checkingDeps}
-              />
-            )}
-            {step === 'dependencies' && (
-              <DependenciesPage
-                key="dependencies"
-                dependencies={dependencies}
-                onNext={handleNext}
-                onBack={handleBack}
-                onCancel={handleCancel}
-                onRetry={handleRetryDeps}
-                checking={checkingDeps}
-              />
-            )}
-            {step === 'defaults' && (
-              <DefaultsPage
-                key="defaults"
-                defaults={defaults}
-                onDefaultsChange={setDefaults}
-                onNext={handleNext}
-                onBack={handleBack}
-                onCancel={handleCancel}
-                saving={savingDefaults}
-              />
-            )}
-            {step === 'docker' && (
-              <DockerPage
-                key="docker"
-                dockerStatus={dockerStatus}
-                buildingImage={buildingImage}
-                onBuildImage={handleBuildImage}
-                onNext={handleNext}
-                onBack={handleBack}
-                onCancel={handleCancel}
-              />
-            )}
-            {step === 'complete' && (
-              <CompletePage key="complete" onClose={handleClose} />
-            )}
-          </AnimatePresence>
         </div>
-
-        {/* Footer */}
-        <div className="text-center mt-4 text-xs text-gray-500 dark:text-gray-600">
-          Wails • Build cross-platform apps with Go
-        </div>
-      </div>
       </div>
     </ThemeContext.Provider>
   );
