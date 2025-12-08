@@ -160,13 +160,12 @@ function StepIndicator({ steps, currentStep }: { steps: { id: Step; label: strin
   );
 }
 
-// Wizard footer with navigation buttons
-function WizardFooter({
+// Template footer with theme toggle + sponsor on left, navigation on right (matches saved design)
+function TemplateFooter({
   onBack,
   onNext,
-  onCancel,
   nextLabel = 'Next',
-  backLabel = 'Back',
+  backLabel = '← Back',
   showBack = true,
   nextDisabled = false,
   showRetry = false,
@@ -174,7 +173,6 @@ function WizardFooter({
 }: {
   onBack?: () => void;
   onNext: () => void;
-  onCancel?: () => void;
   nextLabel?: string;
   backLabel?: string;
   showBack?: boolean;
@@ -182,18 +180,41 @@ function WizardFooter({
   showRetry?: boolean;
   onRetry?: () => void;
 }) {
+  const { theme, toggleTheme } = useTheme();
+
   return (
-    <div className="flex justify-between items-center pt-4 mt-4 border-t border-gray-200 dark:border-gray-800">
-      <div>
-        {onCancel && (
-          <button
-            onClick={onCancel}
-            className="px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-          >
-            Cancel
-          </button>
-        )}
+    <div className="w-full flex justify-between items-center pt-4 mt-4 border-t border-gray-200 dark:border-gray-800">
+      {/* Left side: Theme toggle and Sponsor */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={toggleTheme}
+          className="p-1.5 rounded-md bg-gray-200/80 dark:bg-gray-800/80 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors"
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {theme === 'dark' ? (
+            <svg className="w-3.5 h-3.5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          ) : (
+            <svg className="w-3.5 h-3.5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          )}
+        </button>
+        <a
+          href="https://github.com/sponsors/leaanthony"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="p-1.5 rounded-md bg-gray-200/80 dark:bg-gray-800/80 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors group"
+          title="Sponsor Wails"
+        >
+          <svg className="w-3.5 h-3.5 text-red-500 group-hover:text-red-600 dark:group-hover:text-red-400" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+        </a>
       </div>
+
+      {/* Right side: Navigation buttons */}
       <div className="flex gap-2">
         {showBack && onBack && (
           <button
@@ -230,8 +251,70 @@ function WizardFooter({
   );
 }
 
-// Welcome Page
-function WelcomePage({ system, onNext, onCancel, checking }: { system: SystemInfo | null; onNext: () => void; onCancel: () => void; checking: boolean }) {
+// Legacy wizard footer (kept for backwards compatibility)
+function WizardFooter({
+  onBack,
+  onNext,
+  onCancel: _onCancel,
+  nextLabel = 'Next',
+  backLabel = 'Back',
+  showBack = true,
+  nextDisabled = false,
+  showRetry = false,
+  onRetry
+}: {
+  onBack?: () => void;
+  onNext: () => void;
+  onCancel?: () => void;
+  nextLabel?: string;
+  backLabel?: string;
+  showBack?: boolean;
+  nextDisabled?: boolean;
+  showRetry?: boolean;
+  onRetry?: () => void;
+}) {
+  return (
+    <TemplateFooter
+      onBack={onBack}
+      onNext={onNext}
+      nextLabel={nextLabel}
+      backLabel={showBack ? '← Back' : backLabel}
+      showBack={showBack}
+      nextDisabled={nextDisabled}
+      showRetry={showRetry}
+      onRetry={onRetry}
+    />
+  );
+}
+
+// Welcome Page - uses PageTemplate layout with logo on left
+function WelcomePage({ onNext, onBack, checking }: { onNext: () => void; onBack: () => void; checking: boolean }) {
+  const { theme } = useTheme();
+
+  // Links component for the bottom of the page
+  const links = (
+    <div className="flex items-center gap-3">
+      <a href="https://wails.io/" target="_blank" rel="noopener noreferrer" className="text-[10px] text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors flex items-center gap-1">
+        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+        wails.io
+      </a>
+      <a href="https://v3alpha.wails.io/" target="_blank" rel="noopener noreferrer" className="text-[10px] text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors flex items-center gap-1">
+        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+        Documentation
+      </a>
+      <a href="https://github.com/wailsapp/wails" target="_blank" rel="noopener noreferrer" className="text-[10px] text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors flex items-center gap-1">
+        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+          <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+        </svg>
+        GitHub
+      </a>
+    </div>
+  );
+
   return (
     <motion.div
       variants={pageVariants}
@@ -239,59 +322,94 @@ function WelcomePage({ system, onNext, onCancel, checking }: { system: SystemInf
       animate="animate"
       exit="exit"
       transition={{ duration: 0.2 }}
+      className="h-full flex flex-col"
     >
-      <div className="text-center mb-4">
-        <p className="text-xs text-gray-500 dark:text-gray-300">
-          This wizard will help you set up your development environment.
-        </p>
+      {/* Header with logo on left, title/subtitle on right */}
+      <div className="flex items-center gap-6 mb-4 flex-shrink-0">
+        <div className="flex-shrink-0">
+          <img
+            src={theme === 'dark' ? '/assets/wails-logo-white-text-B284k7fX.svg' : '/assets/wails-logo-black-text-Cx-vsZ4W.svg'}
+            alt="Wails"
+            width={80}
+            className="object-contain"
+            style={{ filter: 'drop-shadow(0 0 60px rgba(239, 68, 68, 0.4))' }}
+          />
+        </div>
+        <div className="flex-1">
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Welcome to Wails</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Build beautiful cross-platform applications with Go</p>
+        </div>
       </div>
 
-      {system && (
-        <div className="bg-gray-100 dark:bg-gray-900/50 rounded-lg p-3 mb-4">
-          <h3 className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mb-2">System Information</h3>
-          <div className="grid grid-cols-2 gap-y-1.5 text-xs">
-            <span className="text-gray-400 dark:text-gray-500">Operating System</span>
-            <span className="text-gray-700 dark:text-gray-200">{system.osName || system.os} ({system.arch})</span>
-            <span className="text-gray-400 dark:text-gray-500">Wails Version</span>
-            <span className="text-gray-700 dark:text-gray-200">{system.wailsVersion.replace(/^v+/, '')}</span>
-            <span className="text-gray-400 dark:text-gray-500">Go Version</span>
-            <span className="text-gray-700 dark:text-gray-200">{system.goVersion.replace(/^go/, '')}</span>
-          </div>
-        </div>
-      )}
+      {/* Description */}
+      <p className="text-sm text-gray-700 dark:text-gray-300 mt-4 mb-6 flex-shrink-0 leading-relaxed">
+        This wizard will help you set up your development environment, check dependencies, configure cross-compilation, and customize your project defaults.
+      </p>
 
-      {checking ? (
-        <div className="bg-gray-100 dark:bg-gray-900/50 rounded-lg p-4">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-6 h-6 border-2 border-gray-400 dark:border-gray-600 border-t-red-500 rounded-full animate-spin" />
-            <span className="text-xs text-gray-500 dark:text-gray-300">Checking dependencies...</span>
-          </div>
-        </div>
-      ) : (
-        <div className="bg-gray-100 dark:bg-gray-900/50 rounded-lg p-3">
-          <h3 className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mb-2">Setup will check:</h3>
-          <ul className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
-            <li className="flex items-center gap-2">
-              <span className="text-gray-400 dark:text-gray-500">•</span>
-              Required build dependencies (GTK, WebKit, GCC)
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="text-gray-400 dark:text-gray-500">•</span>
-              Optional tools (npm, Docker)
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="text-gray-400 dark:text-gray-500">•</span>
-              Cross-compilation capabilities
-            </li>
-          </ul>
-        </div>
-      )}
+      {/* Scrollable content area */}
+      <div className="flex-1 overflow-y-auto scrollbar-thin min-h-0 px-4">
+        <div className="space-y-3">
+          {checking ? (
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-6 h-6 border-2 border-gray-400 dark:border-gray-600 border-t-red-500 rounded-full animate-spin" />
+                <span className="text-xs text-gray-500 dark:text-gray-300">Checking dependencies...</span>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-2">
+              {/* Step 1 */}
+              <div className="flex items-start gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                <div className="w-5 h-5 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs font-medium text-red-500">1</span>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-900 dark:text-white">Check Dependencies</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">Verify Go, Node.js, and platform tools are installed</p>
+                </div>
+              </div>
 
-      <WizardFooter
+              {/* Step 2 */}
+              <div className="flex items-start gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                <div className="w-5 h-5 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs font-medium text-red-500">2</span>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-900 dark:text-white">Cross-Platform Builds</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">Set up Docker for building on all platforms</p>
+                </div>
+              </div>
+
+              {/* Step 3 */}
+              <div className="flex items-start gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                <div className="w-5 h-5 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs font-medium text-red-500">3</span>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-900 dark:text-white">Configure Defaults</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">Set your author info and project preferences</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <p className="text-[10px] text-gray-500 dark:text-gray-400 text-center pt-1">
+            You can run this wizard anytime with <code className="px-1 py-0.5 rounded bg-gray-100 dark:bg-gray-800 font-mono">wails3 setup</code>
+          </p>
+        </div>
+      </div>
+
+      {/* Links bar */}
+      <div className="flex-shrink-0 mt-auto pt-3 border-t border-gray-200 dark:border-gray-700">
+        {links}
+      </div>
+
+      {/* Footer */}
+      <TemplateFooter
+        onBack={onBack}
         onNext={onNext}
-        onCancel={onCancel}
-        nextLabel="Check Dependencies"
-        showBack={false}
+        showBack={true}
+        nextLabel="Get Started"
         nextDisabled={checking}
       />
     </motion.div>
@@ -1112,7 +1230,7 @@ function CompletePage({ onClose }: { onClose: () => void }) {
 export default function App() {
   const [step, setStep] = useState<Step>('splash');
   const [dependencies, setDependencies] = useState<DependencyStatus[]>([]);
-  const [system, setSystem] = useState<SystemInfo | null>(null);
+  const [_system, setSystem] = useState<SystemInfo | null>(null);
   const [dockerStatus, setDockerStatus] = useState<DockerStatus | null>(null);
   const [buildingImage, setBuildingImage] = useState(false);
   const [checkingDeps, setCheckingDeps] = useState(false);
@@ -1285,8 +1403,8 @@ export default function App() {
           </div>
         )}
 
-        {/* Theme toggle - only show when not on splash (splash has its own) */}
-        {step !== 'splash' && <ThemeToggle />}
+        {/* Theme toggle - only show on pages that don't have their own footer */}
+        {step !== 'splash' && step !== 'welcome' && <ThemeToggle />}
 
         {/* Persistent Docker status indicator */}
         <AnimatePresence>
@@ -1306,8 +1424,17 @@ export default function App() {
               <SplashPage onNext={handleNext} />
             )}
 
-            {/* Other pages with header */}
-            {step !== 'splash' && (
+            {/* Welcome page - full height with its own layout */}
+            {step === 'welcome' && (
+              <WelcomePage
+                onNext={handleNext}
+                onBack={handleBack}
+                checking={checkingDeps}
+              />
+            )}
+
+            {/* Other pages with centered header */}
+            {step !== 'splash' && step !== 'welcome' && (
               <>
                 {/* Header with logo and step indicator */}
                 <div className="flex flex-col items-center mb-4 flex-shrink-0">
@@ -1320,15 +1447,6 @@ export default function App() {
                 {/* Page content */}
                 <div className="flex-1 min-h-0 overflow-y-auto">
                   <AnimatePresence mode="wait">
-                    {step === 'welcome' && (
-                      <WelcomePage
-                        key="welcome"
-                        system={system}
-                        onNext={handleNext}
-                        onCancel={handleCancel}
-                        checking={checkingDeps}
-                      />
-                    )}
                     {step === 'dependencies' && (
                       <DependenciesPage
                         key="dependencies"
