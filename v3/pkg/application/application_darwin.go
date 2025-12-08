@@ -454,8 +454,8 @@ func HandleOpenFile(filePath *C.char) {
 	}
 }
 
-//export HandleCustomProtocol
-func HandleCustomProtocol(urlCString *C.char) {
+//export HandleOpenURL
+func HandleOpenURL(urlCString *C.char) {
 	urlString := C.GoString(urlCString)
 	eventContext := newApplicationEventContext()
 	eventContext.setURL(urlString)

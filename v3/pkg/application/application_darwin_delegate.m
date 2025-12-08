@@ -17,6 +17,16 @@ extern void handleSecondInstanceData(char * message);
     HandleOpenFile((char*)utf8FileName);
     return YES;
  }
+- (BOOL)application:(NSApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<NSUserActivityRestoring>> * _Nullable))restorationHandler {
+    if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]) {
+        NSURL *url = userActivity.webpageURL;
+        if (url) {
+            HandleOpenURL((char*)[[url absoluteString] UTF8String]);
+            return YES;
+        }
+    }
+    return NO;
+}
 // Create the applicationShouldTerminateAfterLastWindowClosed: method
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)theApplication
 {
@@ -46,7 +56,7 @@ extern void handleSecondInstanceData(char * message);
     if( hasListeners(EventApplicationShouldHandleReopen) ) {
         processApplicationEvent(EventApplicationShouldHandleReopen, @{@"hasVisibleWindows": @(flag)});
     }
-    
+
     return TRUE;
 }
 - (void)handleSecondInstanceNotification:(NSNotification *)note;
@@ -185,7 +195,7 @@ extern void handleSecondInstanceData(char * message);
 + (void)handleGetURLEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent {
    NSString *urlStr = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
    if (urlStr) {
-       HandleCustomProtocol((char*)[urlStr UTF8String]);
+       HandleOpenURL((char*)[urlStr UTF8String]);
    }
 }
 @end
