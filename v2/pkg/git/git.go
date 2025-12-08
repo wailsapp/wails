@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/wailsapp/wails/v2/internal/conv"
 	"github.com/wailsapp/wails/v2/internal/shell"
 )
 
@@ -46,7 +47,7 @@ func EscapeName(str string) (string, error) {
 		return "", err
 	}
 	// Remove the surrounding quotes
-	escaped := string(b[1 : len(b)-1])
+	escaped := conv.BytesToString(b[1 : len(b)-1])
 
 	// Check if username is JSON compliant
 	var js json.RawMessage

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v2/internal/conv"
 
 	"github.com/wailsapp/wails/v2/internal/s"
 )
@@ -26,7 +27,7 @@ func checkError(err error) {
 func updateVersion() string {
 	currentVersionData, err := os.ReadFile(versionFile)
 	checkError(err)
-	currentVersion := string(currentVersionData)
+	currentVersion := conv.BytesToString(currentVersionData)
 	vsplit := strings.Split(currentVersion, ".")
 	minorVersion, err := strconv.Atoi(vsplit[len(vsplit)-1])
 	checkError(err)
@@ -81,7 +82,7 @@ func main() {
 	// Read in `src/pages/changelog.mdx`
 	changelogData, err := os.ReadFile("src/pages/changelog.mdx")
 	checkError(err)
-	changelog := string(changelogData)
+	changelog := conv.BytesToString(changelogData)
 	// Split on the line that has `## [Unreleased]`
 	changelogSplit := strings.Split(changelog, "## [Unreleased]")
 	// Get today's date in YYYY-MM-DD format

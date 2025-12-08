@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/wailsapp/wails/v2/internal/binding"
+	"github.com/wailsapp/wails/v2/internal/conv"
 	"github.com/wailsapp/wails/v2/internal/logger"
 )
 
@@ -74,7 +75,7 @@ func TestPromises(t *testing.T) {
 	}
 
 	// then
-	generatedBindings := string(rawGeneratedBindings)
+	generatedBindings := conv.BytesToString(rawGeneratedBindings)
 	if generatedBindings != expectedPromiseBindings {
 		t.Fatalf("the generated bindings does not match the expected ones.\nWanted:\n%s\n\nGot:\n%s", expectedPromiseBindings, generatedBindings)
 	}

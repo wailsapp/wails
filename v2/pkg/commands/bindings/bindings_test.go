@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/matryer/is"
+	"github.com/wailsapp/wails/v2/internal/conv"
 	"github.com/wailsapp/wails/v2/pkg/templates"
 )
 
@@ -61,7 +62,7 @@ func TestGenerateBindings(t *testing.T) {
 	i.NoErr(err)
 	pathToRepository := filepath.Join(workingDirectory, "..", "..", "..")
 	absPathToRepo, _ := filepath.Abs(pathToRepository)
-	goModString := string(goMod)
+	goModString := conv.BytesToString(goMod)
 	goModSplit := strings.Split(goModString, "=>")
 	goModSplit[1] = absPathToRepo
 	goModString = strings.Join(goModSplit, "=> ")

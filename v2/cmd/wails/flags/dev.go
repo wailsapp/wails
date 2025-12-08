@@ -31,6 +31,7 @@ type Dev struct {
 	AppArgs              string `flag:"appargs" description:"arguments to pass to the underlying app (quoted and space separated)"`
 	Save                 bool   `flag:"save" description:"Save the given flags as defaults"`
 	FrontendDevServerURL string `flag:"frontenddevserverurl" description:"The url of the external frontend dev server to use"`
+	DlvFlag              string `flag:"dlvflag" description:"Debug flags pass to dlv"`
 	ViteServerTimeout    int    `flag:"viteservertimeout" description:"The timeout in seconds for Vite server detection (default: 10)"`
 
 	// Internal state

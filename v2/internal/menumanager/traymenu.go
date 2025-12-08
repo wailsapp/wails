@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/leaanthony/go-ansi-parser"
+	"github.com/wailsapp/wails/v2/internal/conv"
 
 	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v2/pkg/menu"
@@ -49,7 +50,7 @@ func (t *TrayMenu) AsJSON() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(data), nil
+	return conv.BytesToString(data), nil
 }
 
 func NewTrayMenu(trayMenu *menu.TrayMenu) *TrayMenu {
@@ -205,7 +206,7 @@ func (m *Manager) UpdateTrayMenuLabel(trayMenu *menu.TrayMenu) (string, error) {
 		return "", errors.Wrap(err, "[UpdateTrayMenuLabel] ")
 	}
 
-	return string(data), nil
+	return conv.BytesToString(data), nil
 }
 
 func (m *Manager) GetContextMenus() ([]string, error) {

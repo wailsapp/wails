@@ -4,13 +4,14 @@ package windows
 
 import (
 	"encoding/json"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
-	"github.com/wailsapp/wails/v2/pkg/options"
-	"golang.org/x/sys/windows"
 	"log"
 	"os"
 	"syscall"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
+	"github.com/wailsapp/wails/v2/pkg/options"
+	"golang.org/x/sys/windows"
 )
 
 type COPYDATASTRUCT struct {
@@ -63,7 +64,7 @@ func SetupSingleInstance(uniqueId string) {
 					return
 				}
 
-				SendMessage(hwnd, string(serialized))
+				SendMessage(hwnd, conv.BytesToString(serialized))
 				// exit second instance of app after sending message
 				os.Exit(0)
 			}

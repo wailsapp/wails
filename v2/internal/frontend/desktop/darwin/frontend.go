@@ -26,6 +26,7 @@ import (
 	"os"
 	"unsafe"
 
+	"github.com/wailsapp/wails/v2/internal/conv"
 	"github.com/wailsapp/wails/v2/pkg/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
 
@@ -462,7 +463,7 @@ func (f *Frontend) Callback(message string) {
 	if err != nil {
 		panic(err)
 	}
-	f.ExecJS(`window.wails.Callback(` + string(escaped) + `);`)
+	f.ExecJS(`window.wails.Callback(` + conv.BytesToString(escaped) + `);`)
 }
 
 func (f *Frontend) ExecJS(js string) {
