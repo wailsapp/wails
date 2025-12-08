@@ -534,6 +534,36 @@ const clipboardText = await Text()
 console.log('Clipboard:', clipboardText)
 ```
 
+### System
+
+Low-level system methods for direct communication with the backend.
+
+#### invoke()
+
+Sends a raw message directly to the backend. This bypasses the standard binding system and is handled by the `RawMessageHandler` in your application options.
+
+```typescript
+function invoke(message: any): void
+```
+
+**Example:**
+
+```javascript
+import { System } from '@wailsio/runtime'
+
+// Send a raw message to the backend
+System.invoke('my-custom-message')
+
+// Send structured data as JSON
+System.invoke(JSON.stringify({ action: 'update', value: 42 }))
+```
+
+:::caution
+This is a fire-and-forget function with no return value. Use events to receive responses from the backend.
+:::
+
+For more details, see the [Raw Messages Guide](/guides/raw-messages).
+
 ### Application
 
 Application-level methods.
