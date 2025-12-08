@@ -38,8 +38,8 @@ func main() {
         Assets: application.AssetOptions{
             Handler: application.BundledAssetFileServer(assets),
         },
-        RawMessageHandler: func(window application.Window, message string) {
-            fmt.Printf("Raw message from window '%s': %s\n", window.Name(), message)
+        RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+            fmt.Printf("Raw message from window '%s': %s (origin: %+v)\n", window.Name(), message, originInfo.Origin)
 
             // Process the message and respond via events
             response := processMessage(message)
@@ -67,13 +67,36 @@ func processMessage(message string) map[string]any {
 ### Handler Signature
 
 ```go
-RawMessageHandler func(window Window, message string)
+RawMessageHandler func(window Window, message string, originInfo *application.OriginInfo)
 ```
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `window` | `Window` | The window that sent the message |
 | `message` | `string` | The raw message content |
+| `originInfo` | `*application.OriginInfo` | Origin information about the message source |
+
+#### OriginInfo Structure
+
+```go
+type OriginInfo struct {
+	Origin      string
+	TopOrigin   string
+	IsMainFrame bool
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `Origin` | `string` | The origin URL of the document that sent the message |
+| `TopOrigin` | `string` | The top-level origin URL (may differ from Origin in iframes) |
+| `IsMainFrame` | `bool` | Whether the message originated from the main frame |
+
+#### Platform-Specific Availability
+
+- **macOS**: `Origin` and `IsMainFrame` are provided
+- **Windows**: `Origin` and `TopOrigin` are provided
+- **Linux**: Only `Origin` is provided
 
 :::note
 Messages prefixed with `wails:` are reserved for internal Wails communication and will not be passed to your handler.
@@ -147,7 +170,7 @@ System.invoke(JSON.stringify(command))
 ### Backend
 
 ```go
-RawMessageHandler: func(window application.Window, message string) {
+RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
     var cmd struct {
         Action  string `json:"action"`
         Payload struct {
@@ -185,7 +208,7 @@ Raw messages can process significantly more messages per second compared to serv
 
 ```go
 // Raw message handler - minimal overhead
-RawMessageHandler: func(window application.Window, message string) {
+RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
     // Direct string processing, no reflection or marshaling
     counter++
 }
@@ -226,7 +249,7 @@ func main() {
         Mac: application.MacOptions{
             ApplicationShouldTerminateAfterLastWindowClosed: true,
         },
-        RawMessageHandler: func(window application.Window, message string) {
+        RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
             var cmd Command
             if err := json.Unmarshal([]byte(message), &cmd); err != nil {
                 window.EmitEvent("error", map[string]string{"error": err.Error()})
@@ -337,7 +360,7 @@ The `window` parameter identifies which window sent the message, allowing you to
 - Track message sources for debugging
 
 ```go
-RawMessageHandler: func(window application.Window, message string) {
+RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
     // Respond only to the sending window
     window.EmitEvent("response", result)
 
