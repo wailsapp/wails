@@ -98,6 +98,23 @@ type OriginInfo struct {
 - **Windows**: `Origin` and `TopOrigin` are provided
 - **Linux**: Only `Origin` is provided
 
+### Origin Validation
+
+<Aside type="caution">
+Never assume a message is safe because it arrives in your handler. The origin information must be validated before processing sensitive operations or operations that modify state.
+</Aside>
+
+**Always verify the origin of incoming messages before processing them.** The `originInfo` parameter provides critical security information that must be validated to prevent unauthorized access.
+Malicious content, compromised content, or unintended scripts could send raw messages. Without origin validation, you may process commands from untrusted sources. Use `originInfo` to ensure messages come from expected sources.
+
+### Key Validation Points
+
+- **Always check `Origin`** - Verify the origin matches your expected trusted sources (typically `wails://wails` or `http://wails.localhost` for local assets or your app's specific origin)
+- **Validate `IsMainFrame`** (macOS) - Be aware if the message comes from an iframe, as this may indicate embedded content with different security contexts
+- **Use `TopOrigin`** (Windows) - Verify the top-level origin when dealing with framed content
+- **Reject unexpected origins** - Fail securely by rejecting messages from origins you don't explicitly allow
+
+
 :::note
 Messages prefixed with `wails:` are reserved for internal Wails communication and will not be passed to your handler.
 :::
