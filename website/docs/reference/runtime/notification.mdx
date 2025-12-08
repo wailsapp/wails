@@ -1,0 +1,319 @@
+---
+sidebar_position: 6
+---
+
+# Notification
+
+This part of the runtime provides access to native system notifications with support for interactive elements like action buttons and text input fields.
+
+:::info JavaScript
+
+Notifications are currently unsupported in the JS runtime.
+
+:::
+
+### InitializeNotifications
+
+Initializes the notification system. Should be called during app startup.
+
+Go: `InitializeNotifications(ctx context.Context) error`
+
+Returns: Error if initialization fails
+
+### IsNotificationAvailable
+
+Checks if notifications are supported on the current platform.
+
+Go: `IsNotificationAvailable(ctx context.Context) bool`
+
+Returns: `true` if notifications are supported, `false` otherwise
+
+### RequestNotificationAuthorization
+
+Requests permission to display notifications (macOS only). On Windows and Linux, this always returns `true`.
+
+Go: `RequestNotificationAuthorization(ctx context.Context) (bool, error)`
+
+Returns: Authorization status and error
+
+### CheckNotificationAuthorization
+
+Checks the current notification authorization status (macOS only). On Windows and Linux, this always returns `true`.
+
+Go: `CheckNotificationAuthorization(ctx context.Context) (bool, error)`
+
+Returns: Authorization status and error
+
+### SendNotification
+
+Sends a basic notification to the system.
+
+Go: `SendNotification(ctx context.Context, options NotificationOptions) error`
+
+Returns: Error if the notification fails to send
+
+### SendNotificationWithActions
+
+Sends an interactive notification with predefined actions. Requires a registered notification category.
+
+Go: `SendNotificationWithActions(ctx context.Context, options NotificationOptions) error`
+
+Returns: Error if the notification fails to send
+
+### RegisterNotificationCategory
+
+Registers a notification category that can be used with interactive notifications.
+
+Go: `RegisterNotificationCategory(ctx context.Context, category NotificationCategory) error`
+
+Returns: Error if registration fails
+
+### RemoveNotificationCategory
+
+Removes a previously registered notification category.
+
+Go: `RemoveNotificationCategory(ctx context.Context, categoryID string) error`
+
+Returns: Error if removal fails
+
+### RemoveAllPendingNotifications
+
+Removes all pending notifications (macOS and Linux only).
+
+Go: `RemoveAllPendingNotifications(ctx context.Context) error`
+
+Returns: Error if removal fails
+
+### RemovePendingNotification
+
+Removes a specific pending notification (macOS and Linux only).
+
+Go: `RemovePendingNotification(ctx context.Context, identifier string) error`
+
+Returns: Error if removal fails
+
+### RemoveAllDeliveredNotifications
+
+Removes all delivered notifications (macOS and Linux only).
+
+Go: `RemoveAllDeliveredNotifications(ctx context.Context) error`
+
+Returns: Error if removal fails
+
+### RemoveDeliveredNotification
+
+Removes a specific delivered notification (macOS and Linux only).
+
+Go: `RemoveDeliveredNotification(ctx context.Context, identifier string) error`
+
+Returns: Error if removal fails
+
+### RemoveNotification
+
+Checks the current notification authorization status (Linux only).
+
+Go: `RemoveNotification(ctx context.Context, identifier string) error`
+
+Returns: Error if removal fails
+
+### OnNotificationResponse
+
+Registers a callback function to handle notification responses when users interact with notifications.
+
+Go: `OnNotificationResponse(ctx context.Context, callback func(result NotificationResult))`
+
+## Options
+
+### NotificationOptions
+
+```go
+type NotificationOptions struct {
+    ID         string                 `json:"id"`
+    Title      string                 `json:"title"`
+    Subtitle   string                 `json:"subtitle,omitempty"` // (macOS and Linux only)
+    Body       string                 `json:"body,omitempty"`
+    CategoryID string                 `json:"categoryId,omitempty"`
+    Data       map[string]interface{} `json:"data,omitempty"`
+}
+```
+
+| Field       | Description                                    | Win | Mac | Lin |
+|-------------|------------------------------------------------|-----|-----|-----|
+| ID          | Unique identifier for the notification        | ✅   | ✅   | ✅   |
+| Title       | Main notification title                        | ✅   | ✅   | ✅   |
+| Subtitle    | Subtitle text (macOS and Linux only)          |     | ✅   | ✅   |
+| Body        | Main notification content                      | ✅   | ✅   | ✅   |
+| CategoryID  | Category identifier for interactive notifications | ✅   | ✅   | ✅   |
+| Data        | Custom data to associate with the notification | ✅   | ✅   | ✅   |
+
+### NotificationCategory
+
+```go
+type NotificationCategory struct {
+    ID               string               `json:"id,omitempty"`
+    Actions          []NotificationAction `json:"actions,omitempty"`
+    HasReplyField    bool                 `json:"hasReplyField,omitempty"`
+    ReplyPlaceholder string               `json:"replyPlaceholder,omitempty"`
+    ReplyButtonTitle string               `json:"replyButtonTitle,omitempty"`
+}
+```
+
+| Field            | Description                                    | Win | Mac | Lin |
+|------------------|------------------------------------------------|-----|-----|-----|
+| ID               | Unique identifier for the category            | ✅   | ✅   | ✅   |
+| Actions          | Array of action buttons                       | ✅   | ✅   | ✅   |
+| HasReplyField    | Whether to include a text input field          | ✅   | ✅   | ✅   |
+| ReplyPlaceholder | Placeholder text for the input field          | ✅   | ✅   | ✅   |
+| ReplyButtonTitle | Text for the reply button                     | ✅   | ✅   | ✅   |
+
+### NotificationAction
+
+```go
+type NotificationAction struct {
+    ID          string `json:"id,omitempty"`
+    Title       string `json:"title,omitempty"`
+    Destructive bool   `json:"destructive,omitempty"` // (macOS-specific)
+}
+```
+
+| Field       | Description                                    | Win            | Mac | Lin |
+|-------------|------------------------------------------------|----------------|-----|-----|
+| ID          | Unique identifier for the action              | ✅              | ✅   | ✅   |
+| Title       | Button text                                    | ✅              | ✅   | ✅   |
+| Destructive | Whether the action is destructive (macOS-only) |                | ✅   |     |
+
+#### macOS-specific Behavior
+
+On macOS, the `Destructive` flag causes the action button to appear in red, indicating it's a destructive action (like delete or cancel). On Windows and Linux, this flag is ignored.
+
+Example:
+```go
+actions := []runtime.NotificationAction{
+    {ID: "SAVE", Title: "Save"},
+    {ID: "DELETE", Title: "Delete", Destructive: true}, // Shows as red button on macOS
+}
+```
+
+### NotificationResponse
+
+```go
+type NotificationResponse struct {
+    ID               string                 `json:"id,omitempty"`
+    ActionIdentifier string                 `json:"actionIdentifier,omitempty"`
+    CategoryID       string                 `json:"categoryIdentifier,omitempty"`
+    Title            string                 `json:"title,omitempty"`
+    Subtitle         string                 `json:"subtitle,omitempty"` // (macOS and Linux only)
+    Body             string                 `json:"body,omitempty"`
+    UserText         string                 `json:"userText,omitempty"`
+    UserInfo         map[string]interface{} `json:"userInfo,omitempty"`
+}
+```
+
+| Field            | Description                                    | Win | Mac | Lin |
+|------------------|------------------------------------------------|-----|-----|-----|
+| ID               | Notification identifier                        | ✅   | ✅   | ✅   |
+| ActionIdentifier | Action that was triggered                      | ✅   | ✅   | ✅   |
+| CategoryID       | Category of the notification                   | ✅   | ✅   | ✅   |
+| Title            | Title of the notification                      | ✅   | ✅   | ✅   |
+| Subtitle         | Subtitle of the notification (macOS and Linux only) | | ✅   | ✅   |
+| Body             | Body text of the notification                  | ✅   | ✅   | ✅   |
+| UserText         | Text entered by the user                       | ✅   | ✅   |     |
+| UserInfo         | Custom data from the notification              | ✅   | ✅   | ✅   |
+
+### NotificationResult
+
+```go
+type NotificationResult struct {
+    Response NotificationResponse
+    Error    error
+}
+```
+
+| Field    | Description                                    |
+|----------|------------------------------------------------|
+| Response | The notification response data                 |
+| Error    | Any error that occurred during the interaction |
+
+## Platform-Specific Behavior
+
+### macOS
+
+- **Authorization Required**: Apps must request notification permission before sending notifications
+- **Notarization**: Apps must be notarized for distribution
+- **Features**: All features supported including subtitles, text input, and destructive actions
+- **Styling**: Automatically adapts to system dark/light mode
+- **Center**: Notifications appear in macOS Notification Center
+
+Example:
+```go
+// Check and request authorization
+authorized, err := runtime.CheckNotificationAuthorization(ctx)
+if err != nil {
+    return err
+}
+
+if !authorized {
+    authorized, err = runtime.RequestNotificationAuthorization(ctx)
+    if err != nil || !authorized {
+        return fmt.Errorf("notification authorization denied")
+    }
+}
+
+// Now send notifications
+```
+
+### Windows
+
+- **No Authorization**: Permission system not required
+- **Features**: Supports text input and high DPI displays
+- **Limitations**: Subtitle not supported
+- **Styling**: Adapts to Windows theme settings
+- **Behavior**: Uses Windows toast notification system
+
+### Linux
+
+- **Desktop Environment Dependent**: Behavior varies by DE (GNOME, KDE, XFCE, etc.)
+- **Features**: Supports subtitles
+- **Limitations**: User text input not supported
+- **Styling**: Follows desktop environment theme
+- **Behavior**: Uses native notification system when available
+
+Example:
+```go
+// Check system support
+if !runtime.IsNotificationAvailable(ctx) {
+    return fmt.Errorf("notifications not supported on this Linux desktop")
+}
+
+// Linux notifications may not support text input
+// Only use actions that don't require user text
+```
+
+## Action Identifiers
+
+When handling notification responses, these special action identifiers may be present:
+
+- `DEFAULT_ACTION`: Triggered when the user clicks the notification itself (not an action button)
+- `TEXT_REPLY`: Triggered when the user submits text via the reply field
+
+Example response handling:
+```go
+runtime.OnNotificationResponse(ctx, func(result runtime.NotificationResult) {
+    if result.Error != nil {
+        fmt.Printf("Response error: %v\n", result.Error)
+        return
+    }
+    
+    response := result.Response
+    switch response.ActionIdentifier {
+    case "DEFAULT_ACTION":
+        fmt.Println("User clicked the notification")
+    case "TEXT_REPLY":
+        fmt.Printf("User replied: %s\n", response.UserText)
+    case "COMPLETE":
+        fmt.Println("User clicked Complete button")
+    case "CANCEL":
+        fmt.Println("User clicked Cancel button")
+    }
+})
+```
