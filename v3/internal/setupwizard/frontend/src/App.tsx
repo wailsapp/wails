@@ -373,7 +373,7 @@ function DependenciesPage({
   const { theme } = useTheme();
   const [copied, setCopied] = useState(false);
   const missingRequired = dependencies.filter(d => d.required && !d.installed);
-  const allRequiredInstalled = missingRequired.length === 0;
+  const allRequiredInstalled = dependencies.length > 0 && missingRequired.length === 0;
   const missingDeps = dependencies.filter(d => !d.installed);
 
   // Build combined install command from all missing deps that have system commands (starting with sudo)
@@ -431,20 +431,6 @@ function DependenciesPage({
       transition={{ duration: 0.2 }}
       className="h-full flex flex-col"
     >
-      {/* Loading overlay for retry */}
-      {checking && (
-        <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 rounded-lg flex items-center justify-center z-10">
-          <div className="flex flex-col items-center gap-4">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              className="w-8 h-8 border-2 border-gray-400 dark:border-gray-600 border-t-red-500 rounded-full"
-            />
-            <span className="text-sm text-gray-600 dark:text-gray-400">Checking dependencies...</span>
-          </div>
-        </div>
-      )}
-
       {/* Header: Logo left, title right */}
       <div className="flex items-center gap-6 mb-4 flex-shrink-0">
         <div className="flex-shrink-0">
@@ -466,15 +452,44 @@ function DependenciesPage({
 
       {/* Scrollable content area */}
       <div className="flex-1 overflow-y-auto scrollbar-thin min-h-0 px-4">
+        {/* Status Summary - show above deps when all good OR show checking spinner */}
+        {checking ? (
+          <div className="rounded-lg p-3 bg-gray-100 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 mb-4">
+            <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400 text-sm">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                className="w-4 h-4 border-2 border-gray-400 dark:border-gray-600 border-t-red-500 rounded-full"
+              />
+              Checking dependencies...
+            </div>
+          </div>
+        ) : allRequiredInstalled && (
+          <div className="rounded-lg p-3 bg-green-500/10 border border-green-500/20 mb-4">
+            <div className="flex items-center gap-2 text-green-600 dark:text-green-400 text-sm">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              All required dependencies are installed.
+            </div>
+          </div>
+        )}
+
         {/* All Dependencies */}
         <div className="mb-4">
           <div className="bg-gray-100 dark:bg-gray-900/50 rounded-lg px-4">
-            {dependencies.map(dep => (
-              <DependencyRow
-                key={dep.name}
-                dep={dep}
-              />
-            ))}
+            {dependencies.length > 0 ? (
+              dependencies.map(dep => (
+                <DependencyRow
+                  key={dep.name}
+                  dep={dep}
+                />
+              ))
+            ) : !checking && (
+              <div className="py-4 text-center text-sm text-gray-500">
+                No dependencies to check.
+              </div>
+            )}
           </div>
         </div>
 
@@ -504,18 +519,6 @@ function DependenciesPage({
             </div>
           </div>
         )}
-
-        {/* Status Summary - only show when all required are installed */}
-        {allRequiredInstalled && (
-          <div className="rounded-lg p-3 bg-green-500/10 border border-green-500/20">
-            <div className="flex items-center gap-2 text-green-600 dark:text-green-400 text-sm">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              All required dependencies are installed. You can proceed.
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Footer - grounded to bottom */}
@@ -524,7 +527,8 @@ function DependenciesPage({
           onBack={onBack}
           onNext={onNext}
           nextLabel="Next"
-          showRetry={!allRequiredInstalled}
+          nextDisabled={checking}
+          showRetry={!checking && !allRequiredInstalled && dependencies.length > 0}
           onRetry={onRetry}
         />
       </div>
@@ -1177,12 +1181,22 @@ export default function App() {
     setSystem(state.system);
   };
 
+  // Trigger dependency check when entering dependencies page
+  useEffect(() => {
+    if (step === 'dependencies' && dependencies.length === 0 && !checkingDeps) {
+      const check = async () => {
+        setCheckingDeps(true);
+        const deps = await checkDependencies();
+        setDependencies(deps);
+        setCheckingDeps(false);
+      };
+      check();
+    }
+  }, [step]);
+
   const handleNext = async () => {
     if (step === 'splash') {
-      setCheckingDeps(true);
-      const deps = await checkDependencies();
-      setDependencies(deps);
-      setCheckingDeps(false);
+      // Just transition to dependencies - checking happens there
       setStep('dependencies');
     } else if (step === 'dependencies') {
       // Check docker status and start background build if available
