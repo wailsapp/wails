@@ -38,11 +38,11 @@ export const App = component$(() => {
         </a>
       </div>
       <h1>Wails + Qwik</h1>
-      <div class="result">{result.value}</div>
+      <div aria-label="result" class="result">{result.value}</div>
       <div class="card">
         <div class="input-box">
-          <input class="input" value={name.value} onInput$={(e) => name.value = e.target.value} type="text" autocomplete="off"/>
-          <button class="btn" onClick$={doGreet}>Greet</button>
+          <input aria-label="input" class="input" value={name.value} onInput$={(e) => name.value = e.target.value} type="text" autocomplete="off"/>
+          <button aria-label="greet-btn" class="btn" onClick$={doGreet}>Greet</button>
         </div>
       </div>
       <div class="footer">
