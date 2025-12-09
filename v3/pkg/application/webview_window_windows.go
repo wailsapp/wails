@@ -1802,10 +1802,26 @@ func (w *windowsWebviewWindow) isAlwaysOnTop() bool {
 // processMessage is given a message sent from JS via the postMessage API
 // We put it on the global window message buffer to be processed centrally
 func (w *windowsWebviewWindow) processMessage(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
+	topSource, err := sender.GetSource()
+	if err != nil {
+		globalApplication.error("Unable to get source from sender: %s", err.Error())
+		topSource = ""
+	}
+
+	senderSource, err := args.GetSource()
+	if err != nil {
+		globalApplication.error("Unable to get source from args: %s", err.Error())
+		senderSource = ""
+	}
+
 	// We send all messages to the centralised window message buffer
 	windowMessageBuffer <- &windowMessage{
 		windowId: w.parent.id,
 		message:  message,
+		originInfo: &OriginInfo{
+			Origin:    senderSource,
+			TopOrigin: topSource,
+		},
 	}
 }
 
@@ -2137,7 +2153,7 @@ func (w *windowsWebviewWindow) navigationCompleted(
 ) {
 
 	// Install the runtime core
-	w.execJS(runtime.Core())
+	w.execJS(runtime.Core(globalApplication.impl.GetFlags(globalApplication.options)))
 
 	// EmitEvent DomReady ApplicationEvent
 	windowEvents <- &windowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}

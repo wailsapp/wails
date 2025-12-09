@@ -2,24 +2,16 @@ package application
 
 import (
 	"unsafe"
-	
+
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
-type Callback interface {
-	CallError(callID string, result string, isJSON bool)
-	CallResponse(callID string, result string)
-	DialogError(dialogID string, result string)
-	DialogResponse(dialogID string, result string, isJSON bool)
-}
-
 type Window interface {
-	Callback
 	Center()
 	Close()
 	DisableSizeConstraints()
 	DispatchWailsEvent(event *CustomEvent)
-	EmitEvent(name string, data ...any)
+	EmitEvent(name string, data ...any) bool
 	EnableSizeConstraints()
 	Error(message string, args ...any)
 	ExecJS(js string)

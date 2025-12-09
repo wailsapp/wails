@@ -3,7 +3,6 @@ package application
 import (
 	"context"
 	"embed"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -79,52 +78,70 @@ func New(appOptions Options) *App {
 	result.customEventProcessor = NewWailsEventProcessor(result.Event.dispatch)
 
 	messageProc := NewMessageProcessor(result.Logger)
-	opts := &assetserver.Options{
-		Handler: appOptions.Assets.Handler,
-		Middleware: assetserver.ChainMiddleware(
-			func(next http.Handler) http.Handler {
-				if m := appOptions.Assets.Middleware; m != nil {
-					return m(next)
-				}
-				return next
-			},
-			func(next http.Handler) http.Handler {
-				return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-					path := req.URL.Path
-					switch path {
-					case "/wails/runtime.js":
-						err := assetserver.ServeFile(rw, path, bundledassets.RuntimeJS)
-						if err != nil {
-							result.fatal("unable to serve runtime.js: %w", err)
-						}
-					case "/wails/runtime":
-						messageProc.ServeHTTP(rw, req)
-					case "/wails/capabilities":
-						err := assetserver.ServeFile(
-							rw,
-							path,
-							globalApplication.capabilities.AsBytes(),
-						)
-						if err != nil {
-							result.fatal("unable to serve capabilities: %w", err)
-						}
-					case "/wails/flags":
-						updatedOptions := result.impl.GetFlags(appOptions)
-						flags, err := json.Marshal(updatedOptions)
-						if err != nil {
-							result.fatal("invalid flags provided to application: %w", err)
-						}
-						err = assetserver.ServeFile(rw, path, flags)
-						if err != nil {
-							result.fatal("unable to serve flags: %w", err)
-						}
-					default:
-						next.ServeHTTP(rw, req)
+
+	// Initialize transport (default to HTTP if not specified)
+	transport := appOptions.Transport
+	if transport == nil {
+		transport = NewHTTPTransport(HTTPTransportWithLogger(result.Logger))
+	}
+
+	err := transport.Start(result.ctx, messageProc)
+	if err != nil {
+		result.fatal("failed to start custom transport: %w", err)
+	}
+	// Register shutdown task to stop transport
+	result.OnShutdown(func() {
+		if err := transport.Stop(); err != nil {
+			result.error("failed to stop custom transport: %w", err)
+		}
+	})
+
+	// Auto-wire events if transport supports event delivery
+	if eventTransport, ok := transport.(WailsEventListener); ok {
+		result.wailsEventListeners = append(result.wailsEventListeners, eventTransport)
+	} else {
+		// otherwise fallback to IPC
+		result.wailsEventListeners = append(result.wailsEventListeners, &EventIPCTransport{
+			app: result,
+		})
+	}
+
+	middlewares := []assetserver.Middleware{
+		func(next http.Handler) http.Handler {
+			if m := appOptions.Assets.Middleware; m != nil {
+				return m(next)
+			}
+			return next
+		},
+		func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+				path := req.URL.Path
+				switch path {
+				case "/wails/runtime.js":
+					err := assetserver.ServeFile(rw, path, bundledassets.RuntimeJS)
+					if err != nil {
+						result.fatal("unable to serve runtime.js: %w", err)
 					}
-				})
-			},
-		),
-		Logger: result.Logger,
+				case "/wails/transport.js":
+					err := assetserver.ServeFile(rw, path, transport.JSClient())
+					if err != nil {
+						result.fatal("unable to serve transport.js: %w", err)
+					}
+				default:
+					next.ServeHTTP(rw, req)
+				}
+			})
+		},
+	}
+
+	if handler, ok := transport.(TransportHTTPHandler); ok {
+		middlewares = append(middlewares, handler.Handler())
+	}
+
+	opts := &assetserver.Options{
+		Handler:    appOptions.Assets.Handler,
+		Middleware: assetserver.ChainMiddleware(middlewares...),
+		Logger:     result.Logger,
 	}
 
 	if appOptions.Assets.DisableLogging {
@@ -138,6 +155,15 @@ func New(appOptions Options) *App {
 
 	result.assets = srv
 	result.assets.LogDetails()
+
+	// If transport implements AssetServerTransport, configure it to serve assets
+	if assetTransport, ok := transport.(AssetServerTransport); ok {
+		err := assetTransport.ServeAssets(srv)
+		if err != nil {
+			result.fatal("failed to configure transport for serving assets: %w", err)
+		}
+		result.info("Transport configured to serve assets")
+	}
 
 	result.bindings = NewBindings(appOptions.MarshalError, appOptions.BindAliases)
 	result.options.Services = slices.Clone(appOptions.Services)
@@ -211,8 +237,15 @@ type (
 
 // Messages sent from javascript get routed here
 type windowMessage struct {
-	windowId uint
-	message  string
+	windowId   uint
+	message    string
+	originInfo *OriginInfo
+}
+
+type OriginInfo struct {
+	Origin      string
+	TopOrigin   string
+	IsMainFrame bool
 }
 
 var windowMessageBuffer = make(chan *windowMessage, 5)
@@ -421,8 +454,6 @@ func (a *App) RegisterService(service Service) {
 	a.options.Services = append(a.options.Services, service)
 }
 
-// EmitEvent will emit an event
-
 func (a *App) handleFatalError(err error) {
 	a.handleError(&FatalError{err: err})
 	os.Exit(1)
@@ -514,7 +545,7 @@ func (a *App) Run() error {
 	a.starting = true
 	a.runLock.Unlock()
 
-	// Ensure application context is canceled in case of failures.
+	// Ensure application context is cancelled in case of failures.
 	defer a.cancel()
 
 	// Call post-create hooks
@@ -654,7 +685,7 @@ func (a *App) shutdownServices() {
 	a.serviceShutdownLock.Lock()
 	defer a.serviceShutdownLock.Unlock()
 
-	// Ensure app context is canceled first (duplicate calls don't hurt).
+	// Ensure app context is cancelled first (duplicate calls don't hurt).
 	a.cancel()
 
 	for len(a.options.Services) > 0 {
@@ -710,7 +741,7 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 		window.HandleMessage(event.message)
 	} else {
 		if a.options.RawMessageHandler != nil {
-			a.options.RawMessageHandler(window, event.message)
+			a.options.RawMessageHandler(window, event.message, event.originInfo)
 		}
 	}
 }

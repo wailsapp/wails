@@ -88,7 +88,7 @@ type Options struct {
 
 	// RawMessageHandler is called when the frontend sends a raw message.
 	// This is useful for implementing custom frontend-to-backend communication.
-	RawMessageHandler func(window Window, message string)
+	RawMessageHandler func(window Window, message string, originInfo *OriginInfo)
 
 	// WarningHandler is called when a warning occurs
 	WarningHandler func(string)
@@ -103,6 +103,17 @@ type Options struct {
 
 	// SingleInstance options for single instance functionality
 	SingleInstance *SingleInstanceOptions
+
+	// Transport allows you to provide a custom IPC transport layer.
+	// When set, Wails will use your transport instead of the default HTTP fetch-based transport.
+	// This allows you to use WebSockets, custom protocols, or any other transport mechanism
+	// while retaining all Wails generated bindings and event communication.
+	//
+	// The default transport uses HTTP fetch requests to /wails/runtime + events via js.Exec in webview.
+	// If not specified, the default transport is used.
+	//
+	// Example use case: Implementing WebSocket-based or PostMessage IPC.
+	Transport Transport
 }
 
 // AssetOptions defines the configuration of the AssetServer.

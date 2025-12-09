@@ -1,0 +1,104 @@
+---
+title: Building Applications
+description: Build and package your Wails application
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Aside } from "@astrojs/starlight/components";
+
+Wails v3 uses [Task](https://taskfile.dev) as its build system. The `wails3 build` and `wails3 package` commands are convenient wrappers around Task.
+
+## Building
+
+Build for the current platform:
+
+```bash
+wails3 build
+```
+
+Build for a specific platform:
+
+```bash
+wails3 build GOOS=windows
+wails3 build GOOS=darwin
+wails3 build GOOS=linux
+
+# With architecture
+wails3 build GOOS=darwin GOARCH=arm64
+
+# Environment variable style works too
+GOOS=windows wails3 build
+```
+
+Output goes to the `bin/` directory.
+
+<Aside type="tip">
+Cross-compiling to macOS or Linux from another platform requires Docker. See [Cross-Platform Builds](/guides/build/cross-platform) for setup.
+</Aside>
+
+## Development
+
+Run your application with hot reload:
+
+```bash
+wails3 dev
+```
+
+This starts a file watcher that rebuilds and restarts your app on changes. The frontend dev server runs on port 9245 by default.
+
+```bash
+# Custom port
+wails3 dev -port 3000
+
+# Enable HTTPS
+wails3 dev -s
+```
+
+## Packaging
+
+Package your app for distribution:
+
+```bash
+wails3 package
+wails3 package GOOS=windows
+wails3 package GOOS=darwin
+wails3 package GOOS=linux
+```
+
+This creates platform-specific packages:
+- **Windows**: NSIS installer — see [Windows Packaging](/guides/build/windows)
+- **macOS**: Application bundle (`.app`) — see [macOS Packaging](/guides/build/macos)
+- **Linux**: AppImage, deb, and rpm — see [Linux Packaging](/guides/build/linux)
+
+## Using Task Directly
+
+For more control, use Task directly:
+
+```bash
+# List available tasks
+wails3 task --list
+
+# Verbose output
+wails3 task build -v
+
+# Dry run
+wails3 task --dry
+
+# Force rebuild
+wails3 task build -f
+
+# Pass variables
+wails3 task darwin:build ARCH=amd64
+```
+
+Platform-specific tasks like `linux:create:deb` or `darwin:build:universal` are only available through Task.
+
+## Generating Assets
+
+Regenerate icons or update build configuration:
+
+```bash
+wails3 generate icons -input build/appicon.png
+wails3 update build-assets -name "MyApp" -config build/config.yml -dir build
+```
