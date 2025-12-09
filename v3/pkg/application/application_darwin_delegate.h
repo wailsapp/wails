@@ -13,8 +13,8 @@
 
 extern void HandleOpenFile(char *);
 
-// Declarations for Apple Event based custom URL handling
-extern void HandleCustomProtocol(char*);
+// Declarations for Apple Event based custom URL handling and universal link
+extern void HandleOpenURL(char*);
 
 @interface CustomProtocolSchemeHandler : NSObject
 + (void)handleGetURLEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent;

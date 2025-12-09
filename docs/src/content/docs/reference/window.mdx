@@ -1,0 +1,644 @@
+---
+title: Window API
+description: Complete reference for the Window API
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Overview
+
+The Window API provides methods to control window appearance, behaviour, and lifecycle. Access through window instances or the Window manager.
+
+**Common operations:**
+- Create and show windows
+- Control size, position, and state
+- Handle window events
+- Manage window content
+- Configure appearance and behaviour
+
+## Visibility
+
+### Show()
+
+Shows the window. If the window was hidden, it becomes visible.
+
+```go
+func (w *Window) Show()
+```
+
+**Example:**
+```go
+window := app.NewWebviewWindow()
+window.Show()
+```
+
+### Hide()
+
+Hides the window without closing it. The window remains in memory and can be shown again.
+
+```go
+func (w *Window) Hide()
+```
+
+**Example:**
+```go
+// Hide window temporarily
+window.Hide()
+
+// Show it again later
+window.Show()
+```
+
+**Use cases:**
+- System tray applications that hide to tray
+- Wizard flows where windows are reused
+- Temporary hiding during operations
+
+### Close()
+
+Closes the window. This triggers the `WindowClosing` event.
+
+```go
+func (w *Window) Close()
+```
+
+**Example:**
+```go
+window.Close()
+```
+
+**Note:** If a registered hook calls `event.Cancel()`, the close will be prevented.
+
+## Window Properties
+
+### SetTitle()
+
+Sets the window title bar text.
+
+```go
+func (w *Window) SetTitle(title string)
+```
+
+**Parameters:**
+- `title` - The new window title
+
+**Example:**
+```go
+window.SetTitle("My Application - Document.txt")
+```
+
+### Name()
+
+Returns the window's unique name identifier.
+
+```go
+func (w *Window) Name() string
+```
+
+**Example:**
+```go
+name := window.Name()
+fmt.Println("Window name:", name)
+
+// Retrieve window by name later
+window := app.GetWindowByName(name)
+```
+
+## Size and Position
+
+### SetSize()
+
+Sets the window dimensions in pixels.
+
+```go
+func (w *Window) SetSize(width, height int)
+```
+
+**Parameters:**
+- `width` - Window width in pixels
+- `height` - Window height in pixels
+
+**Example:**
+```go
+window.SetSize(1024, 768)
+```
+
+### Size()
+
+Returns the current window dimensions.
+
+```go
+func (w *Window) Size() (width, height int)
+```
+
+**Example:**
+```go
+width, height := window.Size()
+fmt.Printf("Window is %dx%d\n", width, height)
+```
+
+### SetMinSize() / SetMaxSize()
+
+Sets minimum and maximum window dimensions.
+
+```go
+func (w *Window) SetMinSize(width, height int)
+func (w *Window) SetMaxSize(width, height int)
+```
+
+**Example:**
+```go
+// Prevent window from being too small
+window.SetMinSize(800, 600)
+
+// Prevent window from being too large
+window.SetMaxSize(1920, 1080)
+```
+
+### SetPosition()
+
+Sets the window position relative to the top-left corner of the screen.
+
+```go
+func (w *Window) SetPosition(x, y int)
+```
+
+**Parameters:**
+- `x` - Horizontal position in pixels
+- `y` - Vertical position in pixels
+
+**Example:**
+```go
+// Position window at top-left
+window.SetPosition(0, 0)
+
+// Position window 100px from top-left
+window.SetPosition(100, 100)
+```
+
+### Position()
+
+Returns the current window position.
+
+```go
+func (w *Window) Position() (x, y int)
+```
+
+**Example:**
+```go
+x, y := window.Position()
+fmt.Printf("Window is at (%d, %d)\n", x, y)
+```
+
+### Centre()
+
+Centers the window on the screen.
+
+```go
+func (w *Window) Centre()
+```
+
+**Example:**
+```go
+window := app.NewWebviewWindow()
+window.Centre()
+window.Show()
+```
+
+**Note:** Centre on the primary monitor. For multi-monitor setups, see screen APIs.
+
+### SetFocus()
+
+Brings the window to the front and gives it keyboard focus.
+
+```go
+func (w *Window) SetFocus()
+```
+
+**Example:**
+```go
+// Bring window to front
+window.SetFocus()
+```
+
+## Window State
+
+### Minimise() / UnMinimise()
+
+Minimizes the window to the taskbar/dock or restores it.
+
+```go
+func (w *Window) Minimise()
+func (w *Window) UnMinimise()
+```
+
+**Example:**
+```go
+// Minimize window
+window.Minimise()
+
+// Restore from minimized state
+window.UnMinimise()
+```
+
+### Maximise() / UnMaximise()
+
+Maximizes the window to fill the screen or restores it to its previous size.
+
+```go
+func (w *Window) Maximise()
+func (w *Window) UnMaximise()
+```
+
+**Example:**
+```go
+// Maximize window
+window.Maximise()
+
+// Restore to previous size
+window.UnMaximise()
+```
+
+### Fullscreen() / UnFullscreen()
+
+Enters or exits fullscreen mode.
+
+```go
+func (w *Window) Fullscreen()
+func (w *Window) UnFullscreen()
+```
+
+**Example:**
+```go
+// Enter fullscreen
+window.Fullscreen()
+
+// Exit fullscreen
+window.UnFullscreen()
+```
+
+### IsMinimised() / IsMaximised() / IsFullscreen()
+
+Checks the current window state.
+
+```go
+func (w *Window) IsMinimised() bool
+func (w *Window) IsMaximised() bool
+func (w *Window) IsFullscreen() bool
+```
+
+**Example:**
+```go
+if window.IsMinimised() {
+    window.UnMinimise()
+}
+
+if window.IsMaximised() {
+    fmt.Println("Window is maximized")
+}
+
+if window.IsFullscreen() {
+    window.UnFullscreen()
+}
+```
+
+## Window Content
+
+### SetURL()
+
+Navigates to a specific URL within the window.
+
+```go
+func (w *Window) SetURL(url string)
+```
+
+**Parameters:**
+- `url` - URL to navigate to (can be `http://wails.localhost/` for embedded assets)
+
+**Example:**
+```go
+// Navigate to embedded page
+window.SetURL("http://wails.localhost/settings.html")
+
+// Navigate to external URL (if allowed)
+window.SetURL("https://wails.io")
+```
+
+### SetHTML()
+
+Sets the window content directly from an HTML string.
+
+```go
+func (w *Window) SetHTML(html string)
+```
+
+**Parameters:**
+- `html` - HTML content to display
+
+**Example:**
+```go
+html := `
+<!DOCTYPE html>
+<html>
+<head><title>Dynamic Content</title></head>
+<body>
+    <h1>Hello from Go!</h1>
+    <p>This content was generated dynamically.</p>
+</body>
+</html>
+`
+window.SetHTML(html)
+```
+
+**Use cases:**
+- Dynamic content generation
+- Simple windows without frontend build process
+- Error pages or splash screens
+
+### Reload()
+
+Reloads the current window content.
+
+```go
+func (w *Window) Reload()
+```
+
+**Example:**
+```go
+// Reload current page
+window.Reload()
+```
+
+**Note:** Useful during development or when content needs refreshing.
+
+## Window Events
+
+Wails provides two methods for handling window events:
+
+- **OnWindowEvent()** - Listen to window events (cannot prevent them)
+- **RegisterHook()** - Hook into window events (can prevent them by calling `event.Cancel()`)
+
+### OnWindowEvent()
+
+Registers a callback for window events.
+
+```go
+func (w *Window) OnWindowEvent(
+    eventType events.WindowEventType,
+    callback func(event *WindowEvent),
+) func()
+```
+
+**Returns:** Cleanup function to remove the event listener
+
+**Example:**
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// Listen for window focus
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window gained focus")
+})
+
+// Listen for window lost focus
+window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window lost focus")
+})
+
+// Listen for window resize
+window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
+    app.Logger.Info("Window resized")
+})
+```
+
+**Common Window Events:**
+- `events.Common.WindowClosing` - Window is about to close
+- `events.Common.WindowFocus` - Window gained focus
+- `events.Common.WindowLostFocus` - Window lost focus
+- `events.Common.WindowDidMove` - Window moved
+- `events.Common.WindowDidResize` - Window resized
+- `events.Common.WindowMinimise` - Window minimized
+- `events.Common.WindowMaximise` - Window maximized
+- `events.Common.WindowFullscreen` - Window entered fullscreen
+
+### RegisterHook()
+
+Registers a hook for window events. Hooks run before listeners and can prevent the event by calling `event.Cancel()`.
+
+```go
+func (w *Window) RegisterHook(
+    eventType events.WindowEventType,
+    callback func(event *WindowEvent),
+) func()
+```
+
+**Returns:** Cleanup function to remove the hook
+
+**Example - Prevent window close:**
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    result, _ := app.QuestionDialog().
+        SetTitle("Confirm Close").
+        SetMessage("Are you sure you want to close this window?").
+        SetButtons("Yes", "No").
+        Show()
+
+    if result == "No" {
+        e.Cancel()  // Prevent window from closing
+    }
+})
+```
+
+**Example - Save before closing:**
+```go
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    if hasUnsavedChanges {
+        result, _ := app.QuestionDialog().
+            SetMessage("Save changes before closing?").
+            SetButtons("Save", "Don't Save", "Cancel").
+            Show()
+
+        switch result {
+        case "Save":
+            saveData()
+            // Allow close
+        case "Don't Save":
+            // Allow close
+        case "Cancel":
+            e.Cancel()  // Prevent close
+        }
+    }
+})
+```
+
+### EmitEvent()
+
+Emits a custom event to the window's frontend.
+
+```go
+func (w *Window) EmitEvent(name string, data ...interface{})
+```
+
+**Parameters:**
+- `name` - Event name
+- `data` - Optional data to send with the event
+
+**Example:**
+```go
+// Send data to specific window
+window.EmitEvent("data-updated", map[string]interface{}{
+    "count": 42,
+    "status": "success",
+})
+```
+
+**Frontend (JavaScript):**
+```javascript
+import { On } from '@wailsio/runtime'
+
+On('data-updated', (data) => {
+    console.log('Count:', data.count)
+    console.log('Status:', data.status)
+})
+```
+
+## Other Methods
+
+### SetEnabled()
+
+Enables or disables user interaction with the window.
+
+```go
+func (w *Window) SetEnabled(enabled bool)
+```
+
+**Example:**
+```go
+// Disable window during long operation
+window.SetEnabled(false)
+
+// Perform operation
+performLongOperation()
+
+// Re-enable window
+window.SetEnabled(true)
+```
+
+### SetBackgroundColour()
+
+Sets the window background color (shown before content loads).
+
+```go
+func (w *Window) SetBackgroundColour(r, g, b, a uint8)
+```
+
+**Parameters:**
+- `r` - Red (0-255)
+- `g` - Green (0-255)
+- `b` - Blue (0-255)
+- `a` - Alpha/opacity (0-255)
+
+**Example:**
+```go
+// Set white background
+window.SetBackgroundColour(255, 255, 255, 255)
+
+// Set dark background
+window.SetBackgroundColour(30, 30, 30, 255)
+```
+
+### SetResizable()
+
+Controls whether the window can be resized by the user.
+
+```go
+func (w *Window) SetResizable(resizable bool)
+```
+
+**Example:**
+```go
+// Make window fixed size
+window.SetResizable(false)
+```
+
+### SetAlwaysOnTop()
+
+Sets whether the window stays above other windows.
+
+```go
+func (w *Window) SetAlwaysOnTop(alwaysOnTop bool)
+```
+
+**Example:**
+```go
+// Keep window on top
+window.SetAlwaysOnTop(true)
+```
+
+## Complete Example
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Window API Demo",
+    })
+
+    // Create window with options
+    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        Title:            "My Application",
+        Width:            1024,
+        Height:           768,
+        MinWidth:         800,
+        MinHeight:        600,
+        BackgroundColour: application.NewRGB(255, 255, 255),
+        URL:              "http://wails.localhost/",
+    })
+
+    // Configure window behavior
+    window.SetResizable(true)
+    window.SetMinSize(800, 600)
+    window.SetMaxSize(1920, 1080)
+
+    // Set up event hooks
+    window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+        // Confirm before closing
+        result, _ := app.QuestionDialog().
+            SetTitle("Confirm Close").
+            SetMessage("Are you sure you want to close this window?").
+            SetButtons("Yes", "No").
+            Show()
+
+        if result == "No" {
+            e.Cancel()
+        }
+    })
+
+    // Listen for window events
+    window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+        window.SetTitle("My Application (Active)")
+        app.Logger.Info("Window gained focus")
+    })
+
+    window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+        window.SetTitle("My Application")
+        app.Logger.Info("Window lost focus")
+    })
+
+    // Position and show window
+    window.Centre()
+    window.Show()
+
+    app.Run()
+}
+```

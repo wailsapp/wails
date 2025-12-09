@@ -1,12 +1,18 @@
 {
   "name": "@wailsio/runtime",
   "type": "module",
-  "version": "3.0.0-alpha.72",
+  "version": "3.0.0-alpha.74",
   "description": "Wails Runtime",
   "types": "types/index.d.ts",
   "exports": {
-    "types": "./types/index.d.ts",
-    "import": "./dist/index.js"
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./plugins/*": {
+      "types": "./types/plugins/*.d.ts",
+      "default": "./dist/plugins/*.js"
+    }
   },
   "repository": {
     "type": "git",
@@ -50,6 +56,7 @@
     "typedoc-plugin-mdn-links": "^4.0.13",
     "typedoc-plugin-missing-exports": "^3.1.0",
     "typescript": "^5.7.3",
+    "vite": "^5.2.0",
     "vitest": "^3.0.6"
   },
   "overrides": {

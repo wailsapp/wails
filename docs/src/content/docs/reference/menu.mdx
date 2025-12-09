@@ -1,0 +1,724 @@
+---
+title: Menu API
+description: Complete reference for the Menu API
+sidebar:
+  order: 3
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Overview
+
+The Menu API provides methods to create and manage application menus, context menus, and system tray menus.
+
+**Menu Types:**
+- **Application Menus** - Top menu bar (File, Edit, etc.)
+- **Context Menus** - Right-click menus
+- **System Tray Menus** - Menus in the system tray/notification area
+
+## Creating Menus
+
+### NewMenu()
+
+Creates a new menu.
+
+```go
+func (a *App) NewMenu() *Menu
+```
+
+**Example:**
+```go
+menu := app.NewMenu()
+```
+
+## Menu Methods
+
+### Add()
+
+Adds a menu item to the menu.
+
+```go
+func (m *Menu) Add(label string) *MenuItem
+```
+
+**Parameters:**
+- `label` - The text displayed for the menu item
+
+**Returns:** The created menu item
+
+**Example:**
+```go
+item := menu.Add("Open File")
+item.OnClick(func(ctx *application.Context) {
+    // Handle click
+})
+```
+
+### AddSubmenu()
+
+Adds a submenu to the menu.
+
+```go
+func (m *Menu) AddSubmenu(label string) *Menu
+```
+
+**Parameters:**
+- `label` - The submenu label
+
+**Returns:** The created submenu
+
+**Example:**
+```go
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("New")
+fileMenu.Add("Open")
+fileMenu.Add("Save")
+```
+
+### AddSeparator()
+
+Adds a visual separator line between menu items.
+
+```go
+func (m *Menu) AddSeparator()
+```
+
+**Example:**
+```go
+menu.Add("Copy")
+menu.Add("Paste")
+menu.AddSeparator()
+menu.Add("Select All")
+```
+
+**Best practice:** Use separators to group related menu items.
+
+### AddCheckbox()
+
+Adds a checkable menu item.
+
+```go
+func (m *Menu) AddCheckbox(label string, checked bool) *MenuItem
+```
+
+**Parameters:**
+- `label` - The checkbox label
+- `checked` - Initial checked state
+
+**Example:**
+```go
+darkMode := menu.AddCheckbox("Dark Mode", false)
+darkMode.OnClick(func(ctx *application.Context) {
+    isChecked := darkMode.Checked()
+    // Toggle dark mode
+})
+```
+
+### AddRadio()
+
+Adds a radio menu item (mutually exclusive group).
+
+```go
+func (m *Menu) AddRadio(label string, checked bool) *MenuItem
+```
+
+**Parameters:**
+- `label` - The radio button label
+- `checked` - Initial checked state
+
+**Example:**
+```go
+// Create radio group for view modes
+viewMenu := menu.AddSubmenu("View")
+listView := viewMenu.AddRadio("List View", true)
+gridView := viewMenu.AddRadio("Grid View", false)
+treeView := viewMenu.AddRadio("Tree View", false)
+
+listView.OnClick(func(ctx *application.Context) {
+    setViewMode("list")
+})
+gridView.OnClick(func(ctx *application.Context) {
+    setViewMode("grid")
+})
+```
+
+### Update()
+
+Updates the menu to reflect any changes made to menu items.
+
+```go
+func (m *Menu) Update()
+```
+
+**Example:**
+```go
+item.SetEnabled(false)
+menu.Update()  // Must call to apply changes
+```
+
+**Important:** Always call `Update()` after modifying menu item properties.
+
+## Menu Item Methods
+
+### OnClick()
+
+Registers a click handler for the menu item.
+
+```go
+func (mi *MenuItem) OnClick(callback func(ctx *application.Context)) *MenuItem
+```
+
+**Parameters:**
+- `callback` - Function called when item is clicked
+
+**Returns:** The menu item (for chaining)
+
+**Example:**
+```go
+item.OnClick(func(ctx *application.Context) {
+    fmt.Println("Menu item clicked")
+    app.Logger.Info("User clicked menu item")
+})
+```
+
+### SetLabel()
+
+Changes the menu item's label.
+
+```go
+func (mi *MenuItem) SetLabel(label string) *MenuItem
+```
+
+**Example:**
+```go
+item.SetLabel("Save As...")
+menu.Update()
+```
+
+### SetEnabled()
+
+Enables or disables the menu item.
+
+```go
+func (mi *MenuItem) SetEnabled(enabled bool) *MenuItem
+```
+
+**Example:**
+```go
+// Disable save when no document is open
+saveItem.SetEnabled(hasOpenDocument)
+menu.Update()
+```
+
+**Common pattern:**
+```go
+// Update menu state based on application state
+func updateMenuState() {
+    saveItem.SetEnabled(hasUnsavedChanges)
+    undoItem.SetEnabled(canUndo)
+    redoItem.SetEnabled(canRedo)
+    menu.Update()
+}
+```
+
+### SetChecked()
+
+Sets the checked state for checkbox/radio menu items.
+
+```go
+func (mi *MenuItem) SetChecked(checked bool) *MenuItem
+```
+
+**Example:**
+```go
+darkModeItem.SetChecked(isDarkModeEnabled)
+menu.Update()
+```
+
+### Checked()
+
+Returns the current checked state.
+
+```go
+func (mi *MenuItem) Checked() bool
+```
+
+**Example:**
+```go
+if darkModeItem.Checked() {
+    // Dark mode is enabled
+}
+```
+
+### SetAccelerator()
+
+Sets a keyboard shortcut for the menu item.
+
+```go
+func (mi *MenuItem) SetAccelerator(accelerator string) *MenuItem
+```
+
+**Parameters:**
+- `accelerator` - Keyboard shortcut (e.g., "Ctrl+S", "Cmd+Q")
+
+**Accelerator format:**
+- **Modifiers:** `Ctrl`, `Cmd`, `Alt`, `Shift`
+- **Keys:** `A-Z`, `0-9`, `F1-F12`, `Enter`, `Backspace`, etc.
+- **Platform:** Use `Cmd` on macOS, `Ctrl` on Windows/Linux
+
+**Example:**
+```go
+saveItem.SetAccelerator("Ctrl+S")
+quitItem.SetAccelerator("Ctrl+Q")
+newItem.SetAccelerator("Ctrl+N")
+```
+
+**Platform-aware example:**
+```go
+import "runtime"
+
+var quitShortcut string
+if runtime.GOOS == "darwin" {
+    quitShortcut = "Cmd+Q"
+} else {
+    quitShortcut = "Ctrl+Q"
+}
+quitItem.SetAccelerator(quitShortcut)
+```
+
+### SetTooltip()
+
+Sets a tooltip that appears when hovering over the menu item.
+
+```go
+func (mi *MenuItem) SetTooltip(tooltip string) *MenuItem
+```
+
+**Example:**
+```go
+item.SetTooltip("Opens a file from disk")
+```
+
+### SetHidden()
+
+Shows or hides the menu item.
+
+```go
+func (mi *MenuItem) SetHidden(hidden bool) *MenuItem
+```
+
+**Example:**
+```go
+// Hide debug menu in production
+debugItem.SetHidden(!isDevelopment)
+menu.Update()
+```
+
+## Application Menu
+
+### SetApplicationMenu()
+
+Sets the application's main menu bar.
+
+```go
+func (a *App) SetApplicationMenu(menu *Menu)
+```
+
+**Example:**
+```go
+menu := app.NewMenu()
+
+// File menu
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("New").SetAccelerator("Ctrl+N").OnClick(newFile)
+fileMenu.Add("Open").SetAccelerator("Ctrl+O").OnClick(openFile)
+fileMenu.Add("Save").SetAccelerator("Ctrl+S").OnClick(saveFile)
+fileMenu.AddSeparator()
+fileMenu.Add("Exit").SetAccelerator("Ctrl+Q").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+// Edit menu
+editMenu := menu.AddSubmenu("Edit")
+editMenu.Add("Undo").SetAccelerator("Ctrl+Z").OnClick(undo)
+editMenu.Add("Redo").SetAccelerator("Ctrl+Y").OnClick(redo)
+editMenu.AddSeparator()
+editMenu.Add("Cut").SetAccelerator("Ctrl+X").OnClick(cut)
+editMenu.Add("Copy").SetAccelerator("Ctrl+C").OnClick(copy)
+editMenu.Add("Paste").SetAccelerator("Ctrl+V").OnClick(paste)
+
+app.SetApplicationMenu(menu)
+```
+
+**Platform notes:**
+- **macOS:** Menu appears in the top menu bar
+- **Windows/Linux:** Menu appears in the window title bar
+- **macOS:** Automatically adds application menu with app name
+
+## Context Menus
+
+### RegisterContextMenu()
+
+Registers a context menu (right-click menu) with a specific name.
+
+```go
+func (a *App) RegisterContextMenu(name string, menu *Menu)
+```
+
+**Parameters:**
+- `name` - Unique identifier for the context menu
+- `menu` - The menu to show
+
+**Go:**
+
+```go
+// Create context menu
+contextMenu := app.NewMenu()
+contextMenu.Add("Cut").OnClick(cut)
+contextMenu.Add("Copy").OnClick(copy)
+contextMenu.Add("Paste").OnClick(paste)
+contextMenu.AddSeparator()
+contextMenu.Add("Select All").OnClick(selectAll)
+
+// Register it
+app.RegisterContextMenu("editor", contextMenu)
+```
+
+**HTML:**
+
+```html
+<!-- Trigger context menu on right-click -->
+<div data-wails-context-menu="editor">
+    Right-click here for context menu
+</div>
+```
+
+**Dynamic context menus:**
+```go
+// Update context menu based on selection
+func updateContextMenu() {
+    contextMenu := app.NewMenu()
+
+    if hasSelection {
+        contextMenu.Add("Cut").OnClick(cut)
+        contextMenu.Add("Copy").OnClick(copy)
+    }
+
+    contextMenu.Add("Paste").SetEnabled(hasClipboardContent).OnClick(paste)
+
+    app.RegisterContextMenu("editor", contextMenu)
+}
+```
+
+## System Tray Menu
+
+### NewSystemTray()
+
+Creates a new system tray icon.
+
+```go
+func (a *App) NewSystemTray() *SystemTray
+```
+
+**Example:**
+```go
+tray := app.NewSystemTray()
+```
+
+### SetIcon()
+
+Sets the system tray icon.
+
+```go
+func (st *SystemTray) SetIcon(icon []byte) *SystemTray
+```
+
+**Example:**
+```go
+iconData, _ := os.ReadFile("icon.png")
+tray.SetIcon(iconData)
+```
+
+### SetMenu()
+
+Sets the menu for the system tray.
+
+```go
+func (st *SystemTray) SetMenu(menu *Menu) *SystemTray
+```
+
+**Example:**
+```go
+trayMenu := app.NewMenu()
+trayMenu.Add("Show Window").OnClick(func(ctx *application.Context) {
+    window.Show()
+    window.SetFocus()
+})
+trayMenu.Add("Settings").OnClick(openSettings)
+trayMenu.AddSeparator()
+trayMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+tray.SetMenu(trayMenu)
+```
+
+### SetTooltip()
+
+Sets the tooltip shown when hovering over the tray icon.
+
+```go
+func (st *SystemTray) SetTooltip(tooltip string) *SystemTray
+```
+
+**Example:**
+```go
+tray.SetTooltip("My Application - Running")
+```
+
+### OnClick()
+
+Handles left-click on the tray icon.
+
+```go
+func (st *SystemTray) OnClick(callback func()) *SystemTray
+```
+
+**Example:**
+```go
+tray.OnClick(func() {
+    if window.IsVisible() {
+        window.Hide()
+    } else {
+        window.Show()
+        window.SetFocus()
+    }
+})
+```
+
+## Complete Examples
+
+### Standard Application Menu
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func createMenu(app *application.Application) *application.Menu {
+    menu := app.NewMenu()
+
+    // File menu
+    fileMenu := menu.AddSubmenu("File")
+    fileMenu.Add("New").
+        SetAccelerator("Ctrl+N").
+        OnClick(func(ctx *application.Context) {
+            // Create new document
+        })
+    fileMenu.Add("Open").
+        SetAccelerator("Ctrl+O").
+        OnClick(func(ctx *application.Context) {
+            // Open file dialog
+        })
+    fileMenu.Add("Save").
+        SetAccelerator("Ctrl+S").
+        OnClick(func(ctx *application.Context) {
+            // Save document
+        })
+    fileMenu.AddSeparator()
+    fileMenu.Add("Exit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+
+    // Edit menu
+    editMenu := menu.AddSubmenu("Edit")
+    editMenu.Add("Undo").SetAccelerator("Ctrl+Z")
+    editMenu.Add("Redo").SetAccelerator("Ctrl+Y")
+    editMenu.AddSeparator()
+    editMenu.Add("Cut").SetAccelerator("Ctrl+X")
+    editMenu.Add("Copy").SetAccelerator("Ctrl+C")
+    editMenu.Add("Paste").SetAccelerator("Ctrl+V")
+
+    // View menu
+    viewMenu := menu.AddSubmenu("View")
+    darkMode := viewMenu.AddCheckbox("Dark Mode", false)
+    darkMode.OnClick(func(ctx *application.Context) {
+        // Toggle dark mode
+        isChecked := darkMode.Checked()
+        app.Logger.Info("Dark mode", "enabled", isChecked)
+    })
+    viewMenu.AddSeparator()
+    viewMenu.AddRadio("List View", true)
+    viewMenu.AddRadio("Grid View", false)
+    viewMenu.AddRadio("Detail View", false)
+
+    // Help menu
+    helpMenu := menu.AddSubmenu("Help")
+    helpMenu.Add("Documentation").OnClick(func(ctx *application.Context) {
+        // Open docs
+    })
+    helpMenu.Add("About").OnClick(func(ctx *application.Context) {
+        // Show about dialog
+    })
+
+    return menu
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Menu Demo",
+    })
+
+    menu := createMenu(app)
+    app.SetApplicationMenu(menu)
+
+    window := app.NewWebviewWindow()
+    window.Show()
+
+    app.Run()
+}
+```
+
+### System Tray Application
+
+```go
+func setupSystemTray(app *application.Application, window *application.Window) {
+    // Create system tray
+    tray := app.NewSystemTray()
+
+    // Set icon
+    iconData, _ := os.ReadFile("icon.png")
+    tray.SetIcon(iconData)
+    tray.SetTooltip("My App - Running")
+
+    // Handle left-click on tray icon
+    tray.OnClick(func() {
+        if window.IsVisible() {
+            window.Hide()
+        } else {
+            window.Show()
+            window.SetFocus()
+        }
+    })
+
+    // Create tray menu
+    trayMenu := app.NewMenu()
+
+    showItem := trayMenu.Add("Show Window")
+    showItem.OnClick(func(ctx *application.Context) {
+        window.Show()
+        window.SetFocus()
+    })
+
+    trayMenu.AddSeparator()
+
+    trayMenu.Add("Settings").OnClick(func(ctx *application.Context) {
+        // Open settings window
+    })
+
+    trayMenu.Add("About").OnClick(func(ctx *application.Context) {
+        // Show about dialog
+    })
+
+    trayMenu.AddSeparator()
+
+    trayMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+
+    tray.SetMenu(trayMenu)
+}
+```
+
+### Dynamic Menu Updates
+
+```go
+type Editor struct {
+    app         *application.Application
+    menu        *application.Menu
+    undoItem    *application.MenuItem
+    redoItem    *application.MenuItem
+    saveItem    *application.MenuItem
+    undoStack   []string
+    redoStack   []string
+    hasChanges  bool
+}
+
+func (e *Editor) createMenu() {
+    e.menu = e.app.NewMenu()
+
+    fileMenu := e.menu.AddSubmenu("File")
+    e.saveItem = fileMenu.Add("Save").SetAccelerator("Ctrl+S")
+    e.saveItem.OnClick(func(ctx *application.Context) {
+        e.save()
+    })
+
+    editMenu := e.menu.AddSubmenu("Edit")
+    e.undoItem = editMenu.Add("Undo").SetAccelerator("Ctrl+Z")
+    e.undoItem.OnClick(func(ctx *application.Context) {
+        e.undo()
+    })
+
+    e.redoItem = editMenu.Add("Redo").SetAccelerator("Ctrl+Y")
+    e.redoItem.OnClick(func(ctx *application.Context) {
+        e.redo()
+    })
+
+    e.updateMenuState()
+    e.app.SetApplicationMenu(e.menu)
+}
+
+func (e *Editor) updateMenuState() {
+    // Update menu items based on current state
+    e.saveItem.SetEnabled(e.hasChanges)
+    e.undoItem.SetEnabled(len(e.undoStack) > 0)
+    e.redoItem.SetEnabled(len(e.redoStack) > 0)
+    e.menu.Update()
+}
+
+func (e *Editor) onChange() {
+    e.hasChanges = true
+    e.updateMenuState()
+}
+
+func (e *Editor) save() {
+    // Save logic
+    e.hasChanges = false
+    e.updateMenuState()
+}
+```
+
+## Best Practices
+
+### ✅ Do
+
+- **Use standard accelerators** - Follow platform conventions (Ctrl+C for copy, etc.)
+- **Call Update() after changes** - Menu won't reflect changes otherwise
+- **Group related items** - Use separators to organize menu items
+- **Disable unavailable actions** - Don't hide, disable with SetEnabled(false)
+- **Use clear labels** - Be concise and descriptive
+- **Follow platform conventions** - macOS vs Windows/Linux menu patterns
+
+### ❌ Don't
+
+- **Don't forget Update()** - Most common mistake
+- **Don't nest too deeply** - Keep menus 2-3 levels maximum
+- **Don't use ambiguous labels** - "Process" vs "Process Document"
+- **Don't overcomplicate** - Keep menus simple and focused
+- **Don't mix metaphors** - Consistent naming and organization
+
+## Platform-Specific Notes
+
+### macOS
+
+- Application menu automatically added with app name
+- Use `Cmd` instead of `Ctrl` for accelerators
+- "About", "Preferences", and "Quit" in application menu by default
+
+### Windows/Linux
+
+- No automatic application menu
+- Use `Ctrl` for accelerators
+- "Exit" typically in File menu

@@ -1,0 +1,928 @@
+---
+title: Frontend Runtime
+description: The Wails JavaScript runtime package for frontend integration
+sidebar:
+  order: 1
+---
+
+The Wails frontend runtime is the standard library for Wails applications. It provides a
+number of features that may be used in your applications, including:
+
+- Window management
+- Dialogs
+- Browser integration
+- Clipboard
+- Menus
+- System information
+- Events
+- Context Menus
+- Screens
+- WML (Wails Markup Language)
+
+The runtime is required for integration between Go and the frontend. There are 2
+ways to integrate the runtime:
+
+- Using the `@wailsio/runtime` package
+- Using a pre-built bundle
+
+## Using the npm package
+
+The `@wailsio/runtime` package is a JavaScript package that provides access to
+the Wails runtime from the frontend. It is used by all standard templates
+and is the recommended way to integrate the runtime into your application.
+By using the `@wailsio/runtime` package, you will only include the parts of the runtime that you use.
+
+The package is available on npm and can be installed using:
+
+```shell
+npm install --save @wailsio/runtime
+```
+
+## Using a pre-built bundle
+
+Some projects will not use a Javascript bundler and may prefer to use a
+pre-built bundled version of the runtime. This version can be generated locally
+using the following command:
+
+```shell
+wails3 generate runtime
+```
+
+The command will output a `runtime.js` (and `runtime.debug.js`) file in the current
+directory. This file is an ES module that can be imported by your application scripts
+just like the npm package, but the API is also exported to the global window object,
+so for simpler applications you can use it as follows:
+
+```html
+<html>
+    <head>
+        <script type="module" src="./runtime.js"></script>
+        <script>
+            window.onload = function () {
+                wails.Window.SetTitle("A new window title");
+            }
+        </script>
+    </head>
+    <!--- ... -->
+</html>
+```
+
+:::caution
+It is important to include the `type="module"` attribute on the `<script>` tag that loads the runtime
+and to wait for the page to be fully loaded before calling the API,
+because scripts with the `type="module"` attribute run asynchronously.
+:::
+
+## Initialisation
+
+Apart from the API functions, the runtime provides support for context menus and window dragging.
+These features will only work as expected after the runtime has been initialised.
+Even if you don't use the API, make sure to include a side-effect import statement
+somewhere in your frontend code:
+
+```javascript
+import "@wailsio/runtime";
+```
+
+Your bundler should detect the presence of side-effects and include
+all required initialisation code in the build.
+
+:::note
+If you prefer the pre-built bundle, adding a script tag as shown above suffices.
+:::
+
+## Vite Plugin for Typed Events
+
+The runtime includes a Vite plugin that enables HMR (Hot Module Replacement) support for typed events during development.
+
+### Setup
+
+Add the plugin to your `vite.config.ts`:
+
+```typescript
+import { defineConfig } from 'vite'
+import wails from '@wailsio/runtime/plugins/vite'
+
+export default defineConfig({
+  plugins: [wails()],
+})
+```
+
+### Benefits
+
+- **Automatic Reloading**: Event bindings are automatically regenerated and reloaded when you run `wails3 generate bindings`
+- **Development Mode**: Works seamlessly with `wails3 dev` for instant updates
+- **Type Safety**: Full TypeScript support with autocomplete and type checking
+
+### Usage with Event Registration
+
+Register your events in Go:
+
+```go
+type UserData struct {
+    ID   string
+    Name string
+}
+
+func init() {
+    application.RegisterEvent[UserData]("user-updated")
+}
+```
+
+Generate bindings:
+
+```bash
+wails3 generate bindings
+```
+
+Use typed events in your frontend:
+
+```typescript
+import { Events } from '@wailsio/runtime'
+import { UserUpdated } from './bindings/events'
+
+// Type-safe event with autocomplete
+Events.Emit(UserUpdated({
+    ID: "123",
+    Name: "John Doe"
+}))
+```
+
+## API Reference
+
+The runtime is organized into modules, each providing specific functionality. Import only what you need:
+
+```javascript
+import { On, Emit } from '@wailsio/runtime/events'
+import Window from '@wailsio/runtime/window'
+import { SetText, Text } from '@wailsio/runtime/clipboard'
+```
+
+### Events
+
+Event system for communication between Go and JavaScript.
+
+#### On()
+
+Register a callback for an event.
+
+```typescript
+function On(eventName: string, callback: (event: WailsEvent) => void): () => void
+function On<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
+```
+
+**Returns:** Unsubscribe function
+
+**Example:**
+
+```javascript
+import { On } from '@wailsio/runtime/events'
+
+// Basic event listening
+const unsubscribe = On('user-logged-in', (event) => {
+    console.log('User:', event.data.username)
+})
+
+// With typed events (TypeScript)
+import { UserLogin } from './bindings/events'
+
+On(UserLogin, (event) => {
+    // event.data is typed as UserLoginData
+    console.log('User:', event.data.username)
+})
+
+// Later: unsubscribe()
+```
+
+#### Once()
+
+Register a callback that runs only once.
+
+```typescript
+function Once(eventName: string, callback: (event: WailsEvent) => void): () => void
+function Once<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
+```
+
+**Example:**
+
+```javascript
+import { Once } from '@wailsio/runtime/events'
+
+Once('app-ready', () => {
+    console.log('App initialized')
+})
+```
+
+#### Emit()
+
+Emit an event to Go backend or other windows.
+
+```typescript
+function Emit(name: string, data?: any): Promise<boolean>
+function Emit<T>(event: Event<T>): Promise<boolean>
+```
+
+**Returns:** Promise that resolves to `true` if the event was cancelled, `false` otherwise
+
+**Example:**
+
+```javascript
+import { Emit } from '@wailsio/runtime/events'
+
+// Basic event emission
+const wasCancelled = await Emit('button-clicked', { buttonId: 'submit' })
+
+// With typed events (TypeScript)
+import { UserLogin } from './bindings/events'
+
+const cancelled = await Emit(UserLogin({
+    UserID: "123",
+    Username: "john_doe",
+    LoginTime: new Date().toISOString()
+}))
+
+if (cancelled) {
+    console.log('Login was cancelled by a hook')
+}
+```
+
+:::note
+The return value indicates whether the event was cancelled by a hook. Most events cannot be cancelled and will always return `false`.
+:::
+
+#### Off()
+
+Remove event listeners.
+
+```typescript
+function Off(...eventNames: string[]): void
+```
+
+**Example:**
+
+```javascript
+import { Off } from '@wailsio/runtime/events'
+
+Off('user-logged-in', 'user-logged-out')
+```
+
+#### OffAll()
+
+Remove all event listeners.
+
+```typescript
+function OffAll(): void
+```
+
+### Window
+
+Window management methods. The default export is the current window.
+
+```javascript
+import Window from '@wailsio/runtime/window'
+
+// Current window
+await Window.SetTitle('New Title')
+await Window.Center()
+
+// Get another window
+const otherWindow = Window.Get('secondary')
+await otherWindow.Show()
+```
+
+#### Visibility
+
+**Show()** - Shows the window
+
+```typescript
+function Show(): Promise<void>
+```
+
+**Hide()** - Hides the window
+
+```typescript
+function Hide(): Promise<void>
+```
+
+**Close()** - Closes the window
+
+```typescript
+function Close(): Promise<void>
+```
+
+#### Size and Position
+
+**SetSize(width, height)** - Sets window size
+
+```typescript
+function SetSize(width: number, height: number): Promise<void>
+```
+
+**Size()** - Gets window size
+
+```typescript
+function Size(): Promise<{ width: number, height: number }>
+```
+
+**SetPosition(x, y)** - Sets absolute position
+
+```typescript
+function SetPosition(x: number, y: number): Promise<void>
+```
+
+**Position()** - Gets absolute position
+
+```typescript
+function Position(): Promise<{ x: number, y: number }>
+```
+
+**Center()** - Centers the window
+
+```typescript
+function Center(): Promise<void>
+```
+
+**Example:**
+
+```javascript
+import Window from '@wailsio/runtime/window'
+
+// Resize and center
+await Window.SetSize(800, 600)
+await Window.Center()
+
+// Get current size
+const { width, height } = await Window.Size()
+```
+
+#### Window State
+
+**Minimise()** - Minimizes the window
+
+```typescript
+function Minimise(): Promise<void>
+```
+
+**Maximise()** - Maximizes the window
+
+```typescript
+function Maximise(): Promise<void>
+```
+
+**Fullscreen()** - Enters fullscreen
+
+```typescript
+function Fullscreen(): Promise<void>
+```
+
+**Restore()** - Restores from minimized/maximized/fullscreen
+
+```typescript
+function Restore(): Promise<void>
+```
+
+**IsMinimised()** - Checks if minimized
+
+```typescript
+function IsMinimised(): Promise<boolean>
+```
+
+**IsMaximised()** - Checks if maximized
+
+```typescript
+function IsMaximised(): Promise<boolean>
+```
+
+**IsFullscreen()** - Checks if fullscreen
+
+```typescript
+function IsFullscreen(): Promise<boolean>
+```
+
+#### Window Properties
+
+**SetTitle(title)** - Sets window title
+
+```typescript
+function SetTitle(title: string): Promise<void>
+```
+
+**Name()** - Gets window name
+
+```typescript
+function Name(): Promise<string>
+```
+
+**SetBackgroundColour(r, g, b, a)** - Sets background color
+
+```typescript
+function SetBackgroundColour(r: number, g: number, b: number, a: number): Promise<void>
+```
+
+**SetAlwaysOnTop(alwaysOnTop)** - Keeps window on top
+
+```typescript
+function SetAlwaysOnTop(alwaysOnTop: boolean): Promise<void>
+```
+
+**SetResizable(resizable)** - Makes window resizable
+
+```typescript
+function SetResizable(resizable: boolean): Promise<void>
+```
+
+#### Focus and Screen
+
+**Focus()** - Focuses the window
+
+```typescript
+function Focus(): Promise<void>
+```
+
+**IsFocused()** - Checks if focused
+
+```typescript
+function IsFocused(): Promise<boolean>
+```
+
+**GetScreen()** - Gets the screen the window is on
+
+```typescript
+function GetScreen(): Promise<Screen>
+```
+
+#### Content
+
+**Reload()** - Reloads the page
+
+```typescript
+function Reload(): Promise<void>
+```
+
+**ForceReload()** - Forces page reload (clears cache)
+
+```typescript
+function ForceReload(): Promise<void>
+```
+
+#### Zoom
+
+**SetZoom(level)** - Sets zoom level
+
+```typescript
+function SetZoom(level: number): Promise<void>
+```
+
+**GetZoom()** - Gets zoom level
+
+```typescript
+function GetZoom(): Promise<number>
+```
+
+**ZoomIn()** - Increases zoom
+
+```typescript
+function ZoomIn(): Promise<void>
+```
+
+**ZoomOut()** - Decreases zoom
+
+```typescript
+function ZoomOut(): Promise<void>
+```
+
+**ZoomReset()** - Resets zoom to 100%
+
+```typescript
+function ZoomReset(): Promise<void>
+```
+
+### Clipboard
+
+Clipboard operations.
+
+#### SetText()
+
+Set clipboard text.
+
+```typescript
+function SetText(text: string): Promise<void>
+```
+
+**Example:**
+
+```javascript
+import { SetText } from '@wailsio/runtime/clipboard'
+
+await SetText('Hello from Wails!')
+```
+
+#### Text()
+
+Get clipboard text.
+
+```typescript
+function Text(): Promise<string>
+```
+
+**Example:**
+
+```javascript
+import { Text } from '@wailsio/runtime/clipboard'
+
+const clipboardText = await Text()
+console.log('Clipboard:', clipboardText)
+```
+
+### System
+
+Low-level system methods for direct communication with the backend.
+
+#### invoke()
+
+Sends a raw message directly to the backend. This bypasses the standard binding system and is handled by the `RawMessageHandler` in your application options.
+
+```typescript
+function invoke(message: any): void
+```
+
+**Example:**
+
+```javascript
+import { System } from '@wailsio/runtime'
+
+// Send a raw message to the backend
+System.invoke('my-custom-message')
+
+// Send structured data as JSON
+System.invoke(JSON.stringify({ action: 'update', value: 42 }))
+```
+
+:::caution
+This is a fire-and-forget function with no return value. Use events to receive responses from the backend.
+:::
+
+For more details, see the [Raw Messages Guide](/guides/raw-messages).
+
+### Application
+
+Application-level methods.
+
+#### Show()
+
+Shows all application windows.
+
+```typescript
+function Show(): Promise<void>
+```
+
+#### Hide()
+
+Hides all application windows.
+
+```typescript
+function Hide(): Promise<void>
+```
+
+#### Quit()
+
+Quits the application.
+
+```typescript
+function Quit(): Promise<void>
+```
+
+**Example:**
+
+```javascript
+import { Quit } from '@wailsio/runtime/application'
+
+// Add quit button
+document.getElementById('quit-btn').addEventListener('click', async () => {
+    await Quit()
+})
+```
+
+### Browser
+
+Open URLs in the default browser.
+
+#### OpenURL()
+
+Opens a URL in the system browser.
+
+```typescript
+function OpenURL(url: string | URL): Promise<void>
+```
+
+**Example:**
+
+```javascript
+import { OpenURL } from '@wailsio/runtime/browser'
+
+await OpenURL('https://wails.io')
+```
+
+### Screens
+
+Screen information and management.
+
+#### GetAll()
+
+Gets all screens.
+
+```typescript
+function GetAll(): Promise<Screen[]>
+```
+
+#### GetPrimary()
+
+Gets the primary screen.
+
+```typescript
+function GetPrimary(): Promise<Screen>
+```
+
+#### GetCurrent()
+
+Gets the current active screen.
+
+```typescript
+function GetCurrent(): Promise<Screen>
+```
+
+**Screen Interface:**
+
+```typescript
+interface Screen {
+    ID: string
+    Name: string
+    ScaleFactor: number
+    X: number
+    Y: number
+    Size: { Width: number, Height: number }
+    Bounds: { X: number, Y: number, Width: number, Height: number }
+    WorkArea: { X: number, Y: number, Width: number, Height: number }
+    IsPrimary: boolean
+    Rotation: number
+}
+```
+
+**Example:**
+
+```javascript
+import { GetAll, GetPrimary } from '@wailsio/runtime/screens'
+
+// List all screens
+const screens = await GetAll()
+screens.forEach(screen => {
+    console.log(`${screen.Name}: ${screen.Size.Width}x${screen.Size.Height}`)
+})
+
+// Get primary screen
+const primary = await GetPrimary()
+console.log('Primary screen:', primary.Name)
+```
+
+### Dialogs
+
+Native OS dialogs from JavaScript.
+
+#### Info()
+
+Shows an information dialog.
+
+```typescript
+function Info(options: MessageDialogOptions): Promise<string>
+```
+
+**Example:**
+
+```javascript
+import { Info } from '@wailsio/runtime/dialogs'
+
+await Info({
+    Title: 'Success',
+    Message: 'Operation completed successfully!'
+})
+```
+
+#### Error()
+
+Shows an error dialog.
+
+```typescript
+function Error(options: MessageDialogOptions): Promise<string>
+```
+
+#### Warning()
+
+Shows a warning dialog.
+
+```typescript
+function Warning(options: MessageDialogOptions): Promise<string>
+```
+
+#### Question()
+
+Shows a question dialog with custom buttons.
+
+```typescript
+function Question(options: QuestionDialogOptions): Promise<string>
+```
+
+**Example:**
+
+```javascript
+import { Question } from '@wailsio/runtime/dialogs'
+
+const result = await Question({
+    Title: 'Confirm Delete',
+    Message: 'Are you sure you want to delete this file?',
+    Buttons: [
+        { Label: 'Delete', IsDefault: false },
+        { Label: 'Cancel', IsDefault: true }
+    ]
+})
+
+if (result === 'Delete') {
+    // Delete the file
+}
+```
+
+#### OpenFile()
+
+Shows a file open dialog.
+
+```typescript
+function OpenFile(options: OpenFileDialogOptions): Promise<string | string[]>
+```
+
+**Example:**
+
+```javascript
+import { OpenFile } from '@wailsio/runtime/dialogs'
+
+const file = await OpenFile({
+    Title: 'Select Image',
+    Filters: [
+        { DisplayName: 'Images', Pattern: '*.png;*.jpg;*.jpeg' },
+        { DisplayName: 'All Files', Pattern: '*.*' }
+    ]
+})
+
+if (file) {
+    console.log('Selected:', file)
+}
+```
+
+#### SaveFile()
+
+Shows a file save dialog.
+
+```typescript
+function SaveFile(options: SaveFileDialogOptions): Promise<string>
+```
+
+### WML (Wails Markup Language)
+
+WML provides declarative attributes for common actions. Add attributes to HTML elements:
+
+#### Attributes
+
+**wml-event** - Emits an event when clicked
+
+```html
+<button wml-event="save-clicked">Save</button>
+```
+
+**wml-window** - Calls a window method
+
+```html
+<button wml-window="Close">Close Window</button>
+<button wml-window="Minimise">Minimize</button>
+```
+
+**wml-target-window** - Specifies target window for wml-window
+
+```html
+<button wml-window="Show" wml-target-window="settings">
+    Show Settings
+</button>
+```
+
+**wml-openurl** - Opens a URL in the browser
+
+```html
+<a href="#" wml-openurl="https://wails.io">Visit Wails</a>
+```
+
+**wml-confirm** - Shows confirmation dialog before action
+
+```html
+<button wml-window="Close" wml-confirm="Are you sure you want to close?">
+    Close
+</button>
+```
+
+**Example:**
+
+```html
+<div>
+    <button wml-event="save-clicked">Save</button>
+    <button wml-window="Minimise">Minimize</button>
+    <button wml-window="Close" wml-confirm="Close window?">Close</button>
+    <a href="#" wml-openurl="https://github.com/wailsapp/wails">GitHub</a>
+</div>
+```
+
+## Complete Example
+
+```javascript
+import { On, Emit } from '@wailsio/runtime/events'
+import Window from '@wailsio/runtime/window'
+import { SetText, Text } from '@wailsio/runtime/clipboard'
+import { Question } from '@wailsio/runtime/dialogs'
+import { GetAll } from '@wailsio/runtime/screens'
+
+// Listen for events from Go
+On('data-updated', (event) => {
+    console.log('Data:', event.data)
+    updateUI(event.data)
+})
+
+// Window management
+document.getElementById('center-btn').addEventListener('click', async () => {
+    await Window.Center()
+})
+
+document.getElementById('fullscreen-btn').addEventListener('click', async () => {
+    const isFullscreen = await Window.IsFullscreen()
+    if (isFullscreen) {
+        await Window.UnFullscreen()
+    } else {
+        await Window.Fullscreen()
+    }
+})
+
+// Clipboard operations
+document.getElementById('copy-btn').addEventListener('click', async () => {
+    await SetText('Copied from Wails!')
+})
+
+// Dialog with confirmation
+document.getElementById('delete-btn').addEventListener('click', async () => {
+    const result = await Question({
+        Title: 'Confirm',
+        Message: 'Delete this item?',
+        Buttons: [
+            { Label: 'Delete' },
+            { Label: 'Cancel', IsDefault: true }
+        ]
+    })
+
+    if (result === 'Delete') {
+        await Emit('delete-item', { id: currentItemId })
+    }
+})
+
+// Screen information
+const screens = await GetAll()
+console.log(`Detected ${screens.length} screen(s)`)
+screens.forEach(screen => {
+    console.log(`- ${screen.Name}: ${screen.Size.Width}x${screen.Size.Height}`)
+})
+```
+
+## Best Practices
+
+### ✅ Do
+
+- **Import selectively** - Only import what you need
+- **Handle promises** - All methods return promises
+- **Use WML for simple actions** - Cleaner than JavaScript
+- **Check return values** - Especially for dialogs
+- **Unsubscribe events** - Clean up when done
+
+### ❌ Don't
+
+- **Don't forget await** - Most methods are async
+- **Don't block UI** - Use async/await properly
+- **Don't ignore errors** - Always handle rejections
+
+## TypeScript Support
+
+The runtime includes full TypeScript definitions:
+
+```typescript
+import { On, WailsEvent } from '@wailsio/runtime/events'
+import Window from '@wailsio/runtime/window'
+
+On('custom-event', (event: WailsEvent) => {
+    // TypeScript knows event.data, event.name, event.sender
+    console.log(event.data)
+})
+
+// All methods are fully typed
+const size: { width: number, height: number } = await Window.Size()
+```

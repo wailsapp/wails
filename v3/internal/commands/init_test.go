@@ -1,8 +1,10 @@
 package commands
 
-import "testing"
+import (
+	"testing"
+)
 
-func Test_GitURLToModuleName(t *testing.T) {
+func TestGitURLToModulePath(t *testing.T) {
 	tests := []struct {
 		name   string
 		gitURL string
@@ -106,8 +108,8 @@ func Test_GitURLToModuleName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GitURLToModuleName(tt.gitURL); got != tt.want {
-				t.Errorf("GitURLToModuleName() = %v, want %v", got, tt.want)
+			if got := gitURLToModulePath(tt.gitURL); got != tt.want {
+				t.Errorf("gitURLToModulePath() = %v, want %v", got, tt.want)
 			}
 		})
 	}

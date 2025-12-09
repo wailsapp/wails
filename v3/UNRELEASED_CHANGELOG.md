@@ -17,6 +17,9 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add origin to raw message handler by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/4710)
+- Add universal link support for macOS by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/4712)
+- Refactor binding transport layer by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/4702)
 
 ## Changed
 <!-- Changes in existing functionality -->

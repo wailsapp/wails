@@ -1,0 +1,532 @@
+---
+title: "Tutorial: Distributing Your App"
+description: Learn how to build, sign, and distribute your Wails application with automatic updates
+sidebar:
+  order: 5
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Aside } from '@astrojs/starlight/components';
+
+# Distributing Your Wails Application
+
+This tutorial walks you through the complete process of building, signing, and distributing a Wails application with automatic updates. By the end, you'll have a production-ready app that can update itself.
+
+## What You'll Learn
+
+- Building production binaries for multiple platforms
+- Code signing for macOS and Windows
+- Setting up an update server
+- Implementing automatic updates in your app
+- Creating a release workflow
+
+## Prerequisites
+
+- A working Wails v3 application
+- For macOS: Apple Developer Account and Developer ID certificate
+- For Windows: A code signing certificate (optional but recommended)
+- A place to host files (S3, GitHub Releases, or any web server)
+
+## Step 1: Prepare Your Application
+
+First, let's configure your app for distribution.
+
+### Update your build configuration
+
+Edit `build/config.yml`:
+
+```yaml title="build/config.yml"
+version: '3'
+
+info:
+  companyName: "Your Company"
+  productName: "My App"
+  productIdentifier: "com.yourcompany.myapp"
+  description: "An awesome desktop application"
+  copyright: "(c) 2025 Your Company"
+  version: "1.0.0"  # Update this for each release
+
+# Optional: Configure signing
+signing:
+  macos:
+    identity: "Developer ID Application: Your Company (TEAMID)"
+    entitlements: "build/darwin/entitlements.plist"
+    hardened_runtime: true
+```
+
+### Add version tracking
+
+Create a version file that your app can read:
+
+```go title="version.go"
+package main
+
+// Version is set at build time
+var Version = "1.0.0"
+
+// Set via: go build -ldflags="-X main.Version=1.0.0"
+```
+
+## Step 2: Add the Updater Service
+
+Now let's integrate automatic updates.
+
+### Create the updater
+
+```go title="main.go"
+package main
+
+import (
+    "log"
+    "time"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    // Create the updater service
+    updater, err := application.CreateUpdaterService(
+        Version, // Use build-time version
+        application.WithUpdateURL("https://updates.yourcompany.com/myapp/"),
+        application.WithCheckInterval(6 * time.Hour),
+    )
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    app := application.New(application.Options{
+        Name:    "My App",
+        Version: Version,
+        Services: []application.Service{
+            application.NewService(updater),
+        },
+    })
+
+    // ... configure windows, menus, etc.
+
+    if err := app.Run(); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+### Add update UI
+
+Create a simple update checker component:
+
+```tsx title="frontend/src/UpdateChecker.tsx"
+import { useState, useEffect } from 'react';
+import { updater } from './bindings/main';
+import { Events } from '@wailsio/runtime';
+
+export function UpdateChecker() {
+  const [update, setUpdate] = useState<any>(null);
+  const [downloading, setDownloading] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    // Check for updates on mount
+    checkForUpdates();
+
+    // Listen for progress
+    const cleanup = Events.On('updater:progress', (data: any) => {
+      setProgress(data.percentage);
+    });
+
+    return () => cleanup();
+  }, []);
+
+  async function checkForUpdates() {
+    const info = await updater.CheckForUpdate();
+    setUpdate(info);
+  }
+
+  async function installUpdate() {
+    setDownloading(true);
+    try {
+      await updater.DownloadAndApply();
+    } catch (err) {
+      console.error(err);
+      setDownloading(false);
+    }
+  }
+
+  if (!update) return null;
+
+  return (
+    <div className="update-banner">
+      {downloading ? (
+        <p>Downloading update... {progress.toFixed(0)}%</p>
+      ) : (
+        <>
+          <p>Version {update.version} is available!</p>
+          <button onClick={installUpdate}>Update Now</button>
+        </>
+      )}
+    </div>
+  );
+}
+```
+
+## Step 3: Build for Production
+
+<Tabs>
+<TabItem label="macOS">
+
+### Build and sign for macOS
+
+```bash
+# Build with production flags
+wails3 task package:signed
+
+# Or build with notarization (recommended)
+wails3 task package:notarize KEYCHAIN_PROFILE="my-notarize-profile"
+```
+
+The output will be in `bin/MyApp.app`.
+
+### Create a DMG for distribution
+
+```bash
+# Install create-dmg if needed
+brew install create-dmg
+
+# Create DMG
+create-dmg \
+  --volname "My App" \
+  --window-pos 200 120 \
+  --window-size 600 400 \
+  --icon-size 100 \
+  --icon "My App.app" 150 185 \
+  --app-drop-link 450 185 \
+  "MyApp-1.0.0-macos.dmg" \
+  "bin/MyApp.app"
+```
+
+</TabItem>
+<TabItem label="Windows">
+
+### Build for Windows
+
+```bash
+# Build production binary
+wails3 build -production
+
+# Sign the executable (if you have a certificate)
+signtool sign /f certificate.pfx /p "password" /fd SHA256 /t http://timestamp.digicert.com bin\MyApp.exe
+```
+
+### Create an installer
+
+Use the built-in NSIS task:
+
+```bash
+wails3 task package
+```
+
+Or create an MSIX package:
+
+```bash
+wails3 tool msix --certificate-path certificate.pfx --certificate-password "password"
+```
+
+</TabItem>
+<TabItem label="Linux">
+
+### Build for Linux
+
+```bash
+# Build production binary
+wails3 build -production
+```
+
+### Create an AppImage
+
+```bash
+wails3 generate appimage
+```
+
+### Create distribution packages
+
+```bash
+# Create DEB package
+wails3 tool package --format deb
+
+# Create RPM package
+wails3 tool package --format rpm
+```
+
+</TabItem>
+</Tabs>
+
+## Step 4: Create Update Archives
+
+For the updater, you need to create update archives:
+
+<Tabs>
+<TabItem label="macOS">
+
+```bash
+# Create update archive
+cd bin
+tar -czvf myapp-1.0.0-macos-arm64.tar.gz MyApp.app
+
+# Calculate checksum
+shasum -a 256 myapp-1.0.0-macos-arm64.tar.gz
+```
+
+</TabItem>
+<TabItem label="Windows">
+
+```bash
+# Create update archive
+cd bin
+zip -r myapp-1.0.0-windows-amd64.zip MyApp.exe
+
+# Calculate checksum
+certutil -hashfile myapp-1.0.0-windows-amd64.zip SHA256
+```
+
+</TabItem>
+<TabItem label="Linux">
+
+```bash
+# Create update archive
+cd bin
+tar -czvf myapp-1.0.0-linux-amd64.tar.gz myapp
+
+# Calculate checksum
+sha256sum myapp-1.0.0-linux-amd64.tar.gz
+```
+
+</TabItem>
+</Tabs>
+
+## Step 5: Create the Update Manifest
+
+Create an `update.json` file:
+
+```json title="update.json"
+{
+  "version": "1.0.0",
+  "release_date": "2025-01-15T00:00:00Z",
+  "release_notes": "## Initial Release\n\n- Feature one\n- Feature two",
+  "platforms": {
+    "macos-arm64": {
+      "url": "https://updates.yourcompany.com/myapp/myapp-1.0.0-macos-arm64.tar.gz",
+      "size": 12582912,
+      "checksum": "sha256:YOUR_CHECKSUM_HERE"
+    },
+    "macos-amd64": {
+      "url": "https://updates.yourcompany.com/myapp/myapp-1.0.0-macos-amd64.tar.gz",
+      "size": 13107200,
+      "checksum": "sha256:YOUR_CHECKSUM_HERE"
+    },
+    "windows-amd64": {
+      "url": "https://updates.yourcompany.com/myapp/myapp-1.0.0-windows-amd64.zip",
+      "size": 14680064,
+      "checksum": "sha256:YOUR_CHECKSUM_HERE"
+    },
+    "linux-amd64": {
+      "url": "https://updates.yourcompany.com/myapp/myapp-1.0.0-linux-amd64.tar.gz",
+      "size": 11534336,
+      "checksum": "sha256:YOUR_CHECKSUM_HERE"
+    }
+  }
+}
+```
+
+## Step 6: Set Up Hosting
+
+### Option A: GitHub Releases
+
+Upload your files as release assets:
+
+1. Create a new release in your repository
+2. Upload the update archives and manifest
+3. Use raw URLs for the update manifest
+
+```go
+application.WithUpdateURL("https://github.com/yourname/myapp/releases/latest/download/")
+```
+
+### Option B: S3 or Cloud Storage
+
+<Steps>
+1. Create a bucket for your updates
+2. Upload files:
+   ```bash
+   aws s3 cp update.json s3://my-updates-bucket/myapp/
+   aws s3 cp myapp-1.0.0-macos-arm64.tar.gz s3://my-updates-bucket/myapp/
+   # ... upload other platforms
+   ```
+3. Configure public access or CloudFront distribution
+</Steps>
+
+### Option C: Any Web Server
+
+Simply serve the files from any web server. Ensure CORS is configured if serving from a different domain.
+
+## Step 7: Automate with GitHub Actions
+
+Create a release workflow:
+
+```yaml title=".github/workflows/release.yml"
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            platform: macos
+            arch: arm64
+          - os: macos-latest
+            platform: macos
+            arch: amd64
+          - os: windows-latest
+            platform: windows
+            arch: amd64
+          - os: ubuntu-latest
+            platform: linux
+            arch: amd64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v3/cmd/wails@latest
+
+      - name: Build
+        run: wails3 build -production
+        env:
+          GOARCH: ${{ matrix.arch }}
+
+      # macOS signing
+      - name: Sign macOS
+        if: matrix.platform == 'macos'
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        run: |
+          # Import certificate
+          echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
+
+          # Sign the app bundle
+          wails3 task darwin:sign
+
+      # Create archive
+      - name: Create Archive
+        run: |
+          cd bin
+          if [ "${{ matrix.platform }}" = "windows" ]; then
+            zip -r ../myapp-${{ github.ref_name }}-${{ matrix.platform }}-${{ matrix.arch }}.zip .
+          else
+            tar -czvf ../myapp-${{ github.ref_name }}-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz .
+          fi
+        shell: bash
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: myapp-${{ matrix.platform }}-${{ matrix.arch }}
+          path: myapp-*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            myapp-*/myapp-*
+```
+
+## Step 8: Release a New Version
+
+When you're ready to release:
+
+<Steps>
+1. Update the version in `build/config.yml`
+2. Update the `Version` variable in your code
+3. Commit and tag:
+   ```bash
+   git add .
+   git commit -m "Release v1.1.0"
+   git tag v1.1.0
+   git push origin main --tags
+   ```
+4. Wait for CI to build and create the release
+5. Update your `update.json` manifest with new checksums
+6. Upload the new manifest to your update server
+</Steps>
+
+## Testing Updates
+
+Before releasing to production:
+
+1. Build version 1.0.0 and install it
+2. Build version 1.1.0 and create the update files
+3. Host the update files locally:
+   ```bash
+   python -m http.server 8080
+   ```
+4. Update your app to check `http://localhost:8080/`
+5. Verify the update process works correctly
+
+## Troubleshooting
+
+### Update not detected
+
+- Check the manifest URL is correct
+- Verify the version in the manifest is newer than the installed version
+- Check browser console for network errors
+
+### Download fails
+
+- Verify all URLs in the manifest are accessible
+- Check CORS headers if hosting on a different domain
+- Verify checksums are correct
+
+### Installation fails
+
+- On macOS, ensure proper code signing
+- On Windows, check for file locks
+- Check application logs for error details
+
+## Next Steps
+
+Congratulations! You now have a fully distributable Wails application with automatic updates.
+
+- [Code Signing Guide](/guides/build/signing) - Learn more about code signing
+- [Auto-Updates Guide](/guides/distribution/auto-updates) - Advanced update configurations
+- [Creating Installers](/guides/installers) - More installer options

@@ -344,10 +344,18 @@ func processWindowEvent(windowID C.uint, eventID C.uint) {
 }
 
 //export processMessage
-func processMessage(windowID C.uint, message *C.char) {
+func processMessage(windowID C.uint, message *C.char, origin *C.char, isMainFrame bool) {
+	o := ""
+	if origin != nil {
+		o = C.GoString(origin)
+	}
 	windowMessageBuffer <- &windowMessage{
 		windowId: uint(windowID),
 		message:  C.GoString(message),
+		originInfo: &OriginInfo{
+			Origin:      o,
+			IsMainFrame: isMainFrame,
+		},
 	}
 }
 
@@ -454,8 +462,8 @@ func HandleOpenFile(filePath *C.char) {
 	}
 }
 
-//export HandleCustomProtocol
-func HandleCustomProtocol(urlCString *C.char) {
+//export HandleOpenURL
+func HandleOpenURL(urlCString *C.char) {
 	urlString := C.GoString(urlCString)
 	eventContext := newApplicationEventContext()
 	eventContext.setURL(urlString)
