@@ -100,9 +100,9 @@ type OriginInfo struct {
 
 ### Origin Validation
 
-<Aside type="caution">
+:::caution
 Never assume a message is safe because it arrives in your handler. The origin information must be validated before processing sensitive operations or operations that modify state.
-</Aside>
+:::
 
 **Always verify the origin of incoming messages before processing them.** The `originInfo` parameter provides critical security information that must be validated to prevent unauthorized access.
 Malicious content, compromised content, or unintended scripts could send raw messages. Without origin validation, you may process commands from untrusted sources. Use `originInfo` to ensure messages come from expected sources.
