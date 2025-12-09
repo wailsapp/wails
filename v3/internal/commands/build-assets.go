@@ -252,26 +252,26 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 		return err
 	}
 
-	tempDir, err := os.MkdirTemp("", "wails-build-assets-*")
-	if err != nil {
-		return err
-	}
-	defer os.RemoveAll(tempDir)
-
-	err = gosod.New(tfs).Extract(tempDir, config)
+	// Backup existing plist files before extraction
+	backups, err := backupPlistFiles(options.Dir)
 	if err != nil {
 		return err
 	}
 
-	err = mergePlistFiles(tempDir, options.Dir)
+	// Extract new assets (overwrites existing files)
+	err = gosod.New(tfs).Extract(options.Dir, config)
 	if err != nil {
 		return err
 	}
 
-	err = copyNonPlistFiles(tempDir, options.Dir)
+	// Merge backed-up content into newly extracted plists
+	err = mergeBackupPlists(backups)
 	if err != nil {
 		return err
 	}
+
+	// Clean up backup files
+	cleanupBackups(backups)
 
 	if !options.Silent {
 		println("Successfully updated build assets in " + options.Dir)
@@ -302,115 +302,84 @@ func mergeMaps(dst, src map[string]any) {
 	}
 }
 
-func mergePlistFile(filePath string, newContent []byte) error {
-	var newDict map[string]any
-	_, err := plist.Unmarshal(newContent, &newDict)
-	if err != nil {
-		return fmt.Errorf("failed to parse new plist content: %w", err)
-	}
+// plistBackup holds the original path and backup path for a plist file
+type plistBackup struct {
+	originalPath string
+	backupPath   string
+}
 
-	existingDict := make(map[string]any)
-	if _, err := os.Stat(filePath); err == nil {
-		existingContent, err := os.ReadFile(filePath)
+// backupPlistFiles finds all .plist files in dir and renames them to .plist.bak
+func backupPlistFiles(dir string) ([]plistBackup, error) {
+	var backups []plistBackup
+
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return fmt.Errorf("failed to read existing plist file: %w", err)
+			return err
 		}
-		_, err = plist.Unmarshal(existingContent, &existingDict)
+		if info.IsDir() || !strings.HasSuffix(path, ".plist") {
+			return nil
+		}
+
+		backupPath := path + ".bak"
+		if err := os.Rename(path, backupPath); err != nil {
+			return fmt.Errorf("failed to backup plist %s: %w", path, err)
+		}
+		backups = append(backups, plistBackup{originalPath: path, backupPath: backupPath})
+		return nil
+	})
+
+	return backups, err
+}
+
+// mergeBackupPlists merges the backed-up plist content into the newly extracted plists
+func mergeBackupPlists(backups []plistBackup) error {
+	for _, backup := range backups {
+		// Read the backup (original user content)
+		backupContent, err := os.ReadFile(backup.backupPath)
 		if err != nil {
-			return fmt.Errorf("failed to parse existing plist file: %w", err)
+			return fmt.Errorf("failed to read backup %s: %w", backup.backupPath, err)
 		}
+
+		var backupDict map[string]any
+		if _, err := plist.Unmarshal(backupContent, &backupDict); err != nil {
+			return fmt.Errorf("failed to parse backup plist %s: %w", backup.backupPath, err)
+		}
+
+		// Read the newly extracted plist
+		newContent, err := os.ReadFile(backup.originalPath)
+		if err != nil {
+			// New file might not exist if template didn't generate one for this path
+			continue
+		}
+
+		var newDict map[string]any
+		if _, err := plist.Unmarshal(newContent, &newDict); err != nil {
+			return fmt.Errorf("failed to parse new plist %s: %w", backup.originalPath, err)
+		}
+
+		// Merge: start with backup (user's content), apply new values on top
+		mergeMaps(backupDict, newDict)
+
+		// Write merged result
+		file, err := os.Create(backup.originalPath)
+		if err != nil {
+			return fmt.Errorf("failed to create merged plist %s: %w", backup.originalPath, err)
+		}
+
+		encoder := plist.NewEncoder(file)
+		encoder.Indent("\t")
+		if err := encoder.Encode(backupDict); err != nil {
+			file.Close()
+			return fmt.Errorf("failed to encode merged plist %s: %w", backup.originalPath, err)
+		}
+		file.Close()
 	}
-
-	mergeMaps(existingDict, newDict)
-
-	file, err := os.Create(filePath)
-	if err != nil {
-		return fmt.Errorf("failed to create plist file: %w", err)
-	}
-	defer file.Close()
-
-	encoder := plist.NewEncoder(file)
-	encoder.Indent("\t")
-	err = encoder.Encode(existingDict)
-	if err != nil {
-		return fmt.Errorf("failed to encode merged plist: %w", err)
-	}
-
 	return nil
 }
 
-func mergePlistFiles(tempDir, targetDir string) error {
-	return filepath.Walk(tempDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if info.IsDir() {
-			return nil
-		}
-
-		if !strings.HasSuffix(path, ".plist") {
-			return nil
-		}
-
-		relPath, err := filepath.Rel(tempDir, path)
-		if err != nil {
-			return err
-		}
-		targetPath := filepath.Join(targetDir, relPath)
-
-		newContent, err := os.ReadFile(path)
-		if err != nil {
-			return fmt.Errorf("failed to read new plist file %s: %w", path, err)
-		}
-
-		targetDirPath := filepath.Dir(targetPath)
-		if err := os.MkdirAll(targetDirPath, 0755); err != nil {
-			return fmt.Errorf("failed to create target directory %s: %w", targetDirPath, err)
-		}
-
-		if err := mergePlistFile(targetPath, newContent); err != nil {
-			return fmt.Errorf("failed to merge plist file %s: %w", targetPath, err)
-		}
-
-		return nil
-	})
-}
-
-func copyNonPlistFiles(tempDir, targetDir string) error {
-	return filepath.Walk(tempDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if info.IsDir() {
-			return nil
-		}
-
-		if strings.HasSuffix(path, ".plist") {
-			return nil
-		}
-
-		relPath, err := filepath.Rel(tempDir, path)
-		if err != nil {
-			return err
-		}
-		targetPath := filepath.Join(targetDir, relPath)
-
-		targetDirPath := filepath.Dir(targetPath)
-		if err := os.MkdirAll(targetDirPath, 0755); err != nil {
-			return fmt.Errorf("failed to create target directory %s: %w", targetDirPath, err)
-		}
-
-		content, err := os.ReadFile(path)
-		if err != nil {
-			return fmt.Errorf("failed to read file %s: %w", path, err)
-		}
-
-		if err := os.WriteFile(targetPath, content, info.Mode()); err != nil {
-			return fmt.Errorf("failed to write file %s: %w", targetPath, err)
-		}
-
-		return nil
-	})
+// cleanupBackups removes the backup files after successful merge
+func cleanupBackups(backups []plistBackup) {
+	for _, backup := range backups {
+		os.Remove(backup.backupPath)
+	}
 }
