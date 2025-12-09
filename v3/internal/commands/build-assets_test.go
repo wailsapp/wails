@@ -350,3 +350,167 @@ func TestPlistMerge(t *testing.T) {
 		t.Errorf("Expected CFBundleIdentifier to be 'com.test.app', got %v", mergedDict["CFBundleIdentifier"])
 	}
 }
+
+func TestNestedPlistMerge(t *testing.T) {
+	tests := []struct {
+		name     string
+		existing map[string]any
+		new      map[string]any
+		expected map[string]any
+	}{
+		{
+			name: "simple overwrite",
+			existing: map[string]any{
+				"key1": "oldValue",
+			},
+			new: map[string]any{
+				"key1": "newValue",
+			},
+			expected: map[string]any{
+				"key1": "newValue",
+			},
+		},
+		{
+			name: "preserve existing keys",
+			existing: map[string]any{
+				"key1": "value1",
+				"key2": "value2",
+			},
+			new: map[string]any{
+				"key1": "newValue1",
+			},
+			expected: map[string]any{
+				"key1": "newValue1",
+				"key2": "value2",
+			},
+		},
+		{
+			name: "nested dict merge",
+			existing: map[string]any{
+				"CustomConfig": map[string]any{
+					"Setting1": "existingValue1",
+					"Setting2": "existingValue2",
+				},
+			},
+			new: map[string]any{
+				"CustomConfig": map[string]any{
+					"Setting1": "newValue1",
+					"Setting3": "newValue3",
+				},
+			},
+			expected: map[string]any{
+				"CustomConfig": map[string]any{
+					"Setting1": "newValue1",
+					"Setting2": "existingValue2",
+					"Setting3": "newValue3",
+				},
+			},
+		},
+		{
+			name: "deeply nested merge",
+			existing: map[string]any{
+				"Level1": map[string]any{
+					"Level2": map[string]any{
+						"deepKey1": "deepValue1",
+						"deepKey2": "deepValue2",
+					},
+				},
+			},
+			new: map[string]any{
+				"Level1": map[string]any{
+					"Level2": map[string]any{
+						"deepKey1": "newDeepValue1",
+						"deepKey3": "newDeepValue3",
+					},
+				},
+			},
+			expected: map[string]any{
+				"Level1": map[string]any{
+					"Level2": map[string]any{
+						"deepKey1": "newDeepValue1",
+						"deepKey2": "deepValue2",
+						"deepKey3": "newDeepValue3",
+					},
+				},
+			},
+		},
+		{
+			name: "mixed types - new dict replaces non-dict",
+			existing: map[string]any{
+				"key1": "stringValue",
+			},
+			new: map[string]any{
+				"key1": map[string]any{
+					"nested": "value",
+				},
+			},
+			expected: map[string]any{
+				"key1": map[string]any{
+					"nested": "value",
+				},
+			},
+		},
+		{
+			name: "mixed types - new non-dict replaces dict",
+			existing: map[string]any{
+				"key1": map[string]any{
+					"nested": "value",
+				},
+			},
+			new: map[string]any{
+				"key1": "stringValue",
+			},
+			expected: map[string]any{
+				"key1": "stringValue",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Make a copy of existing to avoid mutation issues
+			dst := deepCopyMap(tt.existing)
+			mergeMaps(dst, tt.new)
+
+			if !mapsEqual(dst, tt.expected) {
+				t.Errorf("mergeMaps() got %v, expected %v", dst, tt.expected)
+			}
+		})
+	}
+}
+
+func deepCopyMap(m map[string]any) map[string]any {
+	result := make(map[string]any)
+	for k, v := range m {
+		if nested, ok := v.(map[string]any); ok {
+			result[k] = deepCopyMap(nested)
+		} else {
+			result[k] = v
+		}
+	}
+	return result
+}
+
+func mapsEqual(a, b map[string]any) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for k, av := range a {
+		bv, ok := b[k]
+		if !ok {
+			return false
+		}
+		aMap, aIsMap := av.(map[string]any)
+		bMap, bIsMap := bv.(map[string]any)
+		if aIsMap && bIsMap {
+			if !mapsEqual(aMap, bMap) {
+				return false
+			}
+		} else if aIsMap != bIsMap {
+			return false
+		} else if av != bv {
+			return false
+		}
+	}
+	return true
+}

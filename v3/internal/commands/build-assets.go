@@ -284,6 +284,24 @@ func normaliseName(name string) string {
 	return strings.ToLower(strings.ReplaceAll(name, " ", "-"))
 }
 
+// mergeMaps recursively merges src into dst.
+// For nested maps, it merges recursively. For other types, src overwrites dst.
+func mergeMaps(dst, src map[string]any) {
+	for key, srcValue := range src {
+		if dstValue, exists := dst[key]; exists {
+			// If both are maps, merge recursively
+			srcMap, srcIsMap := srcValue.(map[string]any)
+			dstMap, dstIsMap := dstValue.(map[string]any)
+			if srcIsMap && dstIsMap {
+				mergeMaps(dstMap, srcMap)
+				continue
+			}
+		}
+		// Otherwise, src overwrites dst
+		dst[key] = srcValue
+	}
+}
+
 func mergePlistFile(filePath string, newContent []byte) error {
 	var newDict map[string]any
 	_, err := plist.Unmarshal(newContent, &newDict)
@@ -303,9 +321,7 @@ func mergePlistFile(filePath string, newContent []byte) error {
 		}
 	}
 
-	for key, value := range newDict {
-		existingDict[key] = value
-	}
+	mergeMaps(existingDict, newDict)
 
 	file, err := os.Create(filePath)
 	if err != nil {
