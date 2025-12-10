@@ -1,4 +1,4 @@
-//go:build darwin
+//go:build darwin && !ios
 
 #ifndef NOTIFICATIONS_DARWIN_H
 #define NOTIFICATIONS_DARWIN_H

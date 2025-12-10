@@ -202,6 +202,30 @@ export const Types = Object.freeze({
 		WindowFocusOut: "linux:WindowFocusOut",
 		WindowLoadChanged: "linux:WindowLoadChanged",
 	} as const),
+	iOS: Object.freeze({
+		ApplicationDidBecomeActive: "ios:ApplicationDidBecomeActive",
+		ApplicationDidEnterBackground: "ios:ApplicationDidEnterBackground",
+		ApplicationDidFinishLaunching: "ios:ApplicationDidFinishLaunching",
+		ApplicationDidReceiveMemoryWarning: "ios:ApplicationDidReceiveMemoryWarning",
+		ApplicationWillEnterForeground: "ios:ApplicationWillEnterForeground",
+		ApplicationWillResignActive: "ios:ApplicationWillResignActive",
+		ApplicationWillTerminate: "ios:ApplicationWillTerminate",
+		WindowDidLoad: "ios:WindowDidLoad",
+		WindowWillAppear: "ios:WindowWillAppear",
+		WindowDidAppear: "ios:WindowDidAppear",
+		WindowWillDisappear: "ios:WindowWillDisappear",
+		WindowDidDisappear: "ios:WindowDidDisappear",
+		WindowSafeAreaInsetsChanged: "ios:WindowSafeAreaInsetsChanged",
+		WindowOrientationChanged: "ios:WindowOrientationChanged",
+		WindowTouchBegan: "ios:WindowTouchBegan",
+		WindowTouchMoved: "ios:WindowTouchMoved",
+		WindowTouchEnded: "ios:WindowTouchEnded",
+		WindowTouchCancelled: "ios:WindowTouchCancelled",
+		WebViewDidStartNavigation: "ios:WebViewDidStartNavigation",
+		WebViewDidFinishNavigation: "ios:WebViewDidFinishNavigation",
+		WebViewDidFailNavigation: "ios:WebViewDidFailNavigation",
+		WebViewDecidePolicyForNavigationAction: "ios:WebViewDecidePolicyForNavigationAction",
+	} as const),
 	Common: Object.freeze({
 		ApplicationOpenedWithFile: "common:ApplicationOpenedWithFile",
 		ApplicationStarted: "common:ApplicationStarted",
@@ -236,4 +260,5 @@ export const Types = Object.freeze({
 export const Windows = Types.Windows;
 export const Mac = Types.Mac;
 export const Linux = Types.Linux;
+export const iOS = Types.iOS;
 export const Common = Types.Common;

@@ -28,6 +28,7 @@ export const objectNames = Object.freeze({
     System: 8,
     Browser: 9,
     CancelCall: 10,
+    IOS: 11,
 });
 export let clientId = nanoid();
 

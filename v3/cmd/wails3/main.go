@@ -130,6 +130,11 @@ func main() {
 		return commands.SignWrapper(&signWrapperFlags, sign.OtherArgs())
 	})
 
+    // iOS tools
+    ios := app.NewSubCommand("ios", "iOS tooling")
+    ios.NewSubCommandFunction("overlay:gen", "Generate Go overlay for iOS bridge shim", commands.IOSOverlayGen)
+    ios.NewSubCommandFunction("xcode:gen", "Generate Xcode project in output directory", commands.IOSXcodeGen)
+
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)
 

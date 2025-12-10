@@ -1,4 +1,4 @@
-//go:build darwin
+//go:build darwin && !ios
 
 #ifndef _DIALOGS_DELEGATE_H_
 #define _DIALOGS_DELEGATE_H_

@@ -25,6 +25,7 @@ const (
 	systemRequest      = 8
 	browserRequest     = 9
 	cancelCallRequest  = 10
+	iosRequest         = 11
 )
 
 var objectNames = map[int]string{
@@ -38,7 +39,8 @@ var objectNames = map[int]string{
 	screensRequest:     "Screens",
 	systemRequest:      "System",
 	browserRequest:     "Browser",
-	cancelCallRequest:  "CancellCall",
+	cancelCallRequest:  "CancelCall",
+	iosRequest:         "iOS",
 }
 
 type RuntimeRequest struct {
@@ -119,6 +121,8 @@ func (m *MessageProcessor) HandleRuntimeCallWithIDs(ctx context.Context, req *Ru
 		return m.processBrowserMethod(req)
 	case cancelCallRequest:
 		return m.processCallCancelMethod(req)
+	case iosRequest:
+		return m.processIOSMethod(req, targetWindow)
 	default:
 		return nil, errs.NewInvalidRuntimeCallErrorf("unknown object %d", req.Object)
 	}
