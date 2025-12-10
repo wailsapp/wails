@@ -2,7 +2,10 @@ package application
 
 import (
 	"encoding/json"
+	"fmt"
+	"reflect"
 	"sync"
+	"sync/atomic"
 
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -11,8 +14,7 @@ import (
 type ApplicationEvent struct {
 	Id        uint
 	ctx       *ApplicationEventContext
-	cancelled bool
-	lock      sync.RWMutex
+	cancelled atomic.Bool
 }
 
 func (w *ApplicationEvent) Context() *ApplicationEventContext {
@@ -27,15 +29,11 @@ func newApplicationEvent(id events.ApplicationEventType) *ApplicationEvent {
 }
 
 func (w *ApplicationEvent) Cancel() {
-	w.lock.Lock()
-	defer w.lock.Unlock()
-	w.cancelled = true
+	w.cancelled.Store(true)
 }
 
 func (w *ApplicationEvent) IsCancelled() bool {
-	w.lock.RLock()
-	defer w.lock.RUnlock()
-	return w.cancelled
+	return w.cancelled.Load()
 }
 
 var applicationEvents = make(chan *ApplicationEvent, 5)
@@ -50,23 +48,22 @@ var windowEvents = make(chan *windowEvent, 5)
 var menuItemClicked = make(chan uint, 5)
 
 type CustomEvent struct {
-	Name      string `json:"name"`
-	Data      any    `json:"data"`
-	Sender    string `json:"sender"` // Name of the window sending the event, or "" if sent from application
-	cancelled bool
-	lock      sync.RWMutex
+	Name string `json:"name"`
+	Data any    `json:"data"`
+
+	// Sender records the name of the window sending the event,
+	// or "" if sent from application.
+	Sender string `json:"sender,omitempty"`
+
+	cancelled atomic.Bool
 }
 
 func (e *CustomEvent) Cancel() {
-	e.lock.Lock()
-	defer e.lock.Unlock()
-	e.cancelled = true
+	e.cancelled.Store(true)
 }
 
 func (e *CustomEvent) IsCancelled() bool {
-	e.lock.Lock()
-	defer e.lock.Unlock()
-	return e.cancelled
+	return e.cancelled.Load()
 }
 
 func (e *CustomEvent) ToJSON() string {
@@ -109,17 +106,11 @@ type EventProcessor struct {
 }
 
 func NewWailsEventProcessor(dispatchEventToWindows func(*CustomEvent)) *EventProcessor {
-	println("🟢 [NewWailsEventProcessor] Creating new EventProcessor")
-	println("🟢 [NewWailsEventProcessor] dispatchEventToWindows func is nil:", dispatchEventToWindows == nil)
-
-	processor := &EventProcessor{
+	return &EventProcessor{
 		listeners:              make(map[string][]*eventListener),
 		dispatchEventToWindows: dispatchEventToWindows,
 		hooks:                  make(map[string][]*hook),
 	}
-
-	println("🟢 [NewWailsEventProcessor] EventProcessor created successfully")
-	return processor
 }
 
 // On is the equivalent of Javascript's `addEventListener`
@@ -137,43 +128,44 @@ func (e *EventProcessor) Once(eventName string, callback func(event *CustomEvent
 	return e.registerListener(eventName, callback, 1)
 }
 
-// Emit sends an event to all listeners
-func (e *EventProcessor) Emit(thisEvent *CustomEvent) {
-	println("🔵 [EventProcessor.Emit] Event:", thisEvent.Name, "Data:", thisEvent.Data)
-
+// Emit sends an event to all listeners.
+//
+// If the event is globally registered, it validates associated data
+// against the expected data type. In case of mismatches,
+// it cancels the event and returns an error.
+func (e *EventProcessor) Emit(thisEvent *CustomEvent) error {
 	if thisEvent == nil {
-		println("🔴 [EventProcessor.Emit] Event is nil, returning")
-		return
+		return nil
+	}
+
+	// Validate data type; in case of mismatches cancel and report error.
+	if err := validateCustomEvent(thisEvent); err != nil {
+		thisEvent.Cancel()
+		return err
 	}
 
 	// If we have any hooks, run them first and check if the event was cancelled
 	if e.hooks != nil {
 		if hooks, ok := e.hooks[thisEvent.Name]; ok {
-			println("🔵 [EventProcessor.Emit] Running", len(hooks), "hooks for", thisEvent.Name)
 			for _, thisHook := range hooks {
 				thisHook.callback(thisEvent)
 				if thisEvent.IsCancelled() {
-					println("🟠 [EventProcessor.Emit] Event cancelled by hook")
-					return
+					return nil
 				}
 			}
 		}
 	}
 
-	println("🔵 [EventProcessor.Emit] Dispatching to listeners and windows for:", thisEvent.Name)
 	go func() {
 		defer handlePanic()
 		e.dispatchEventToListeners(thisEvent)
 	}()
 	go func() {
 		defer handlePanic()
-		if e.dispatchEventToWindows != nil {
-			println("🔵 [EventProcessor.Emit] Calling dispatchEventToWindows for:", thisEvent.Name)
-			e.dispatchEventToWindows(thisEvent)
-		} else {
-			println("🔴 [EventProcessor.Emit] dispatchEventToWindows is nil!")
-		}
+		e.dispatchEventToWindows(thisEvent)
 	}()
+
+	return nil
 }
 
 func (e *EventProcessor) Off(eventName string) {
@@ -188,8 +180,6 @@ func (e *EventProcessor) OffAll() {
 
 // registerListener provides a means of subscribing to events of type "eventName"
 func (e *EventProcessor) registerListener(eventName string, callback func(*CustomEvent), counter int) func() {
-	println("🟢 [EventProcessor.registerListener] Registering listener for:", eventName, "Counter:", counter)
-
 	// Create new eventListener
 	thisListener := &eventListener{
 		callback: callback,
@@ -199,13 +189,8 @@ func (e *EventProcessor) registerListener(eventName string, callback func(*Custo
 	e.notifyLock.Lock()
 	// Append the new listener to the listeners slice
 	e.listeners[eventName] = append(e.listeners[eventName], thisListener)
-	listenerCount := len(e.listeners[eventName])
 	e.notifyLock.Unlock()
-
-	println("🟢 [EventProcessor.registerListener] Listener registered. Total listeners for", eventName, ":", listenerCount)
-
 	return func() {
-		println("🔴 [EventProcessor.registerListener] Unregistering listener for:", eventName)
 		e.notifyLock.Lock()
 		defer e.notifyLock.Unlock()
 
@@ -250,31 +235,25 @@ func (e *EventProcessor) unRegisterListener(eventName string) {
 
 // dispatchEventToListeners calls all registered listeners event name
 func (e *EventProcessor) dispatchEventToListeners(event *CustomEvent) {
-	println("🔵 [EventProcessor.dispatchEventToListeners] Dispatching:", event.Name)
 
 	e.notifyLock.Lock()
 	defer e.notifyLock.Unlock()
 
 	listeners := e.listeners[event.Name]
 	if listeners == nil {
-		println("🟠 [EventProcessor.dispatchEventToListeners] No listeners for:", event.Name)
 		return
 	}
-
-	println("🔵 [EventProcessor.dispatchEventToListeners] Found", len(listeners), "listeners for:", event.Name)
 
 	// We have a dirty flag to indicate that there are items to delete
 	itemsToDelete := false
 
 	// Callback in goroutine
-	for i, listener := range listeners {
-		println("🔵 [EventProcessor.dispatchEventToListeners] Calling listener", i+1, "for:", event.Name)
+	for _, listener := range listeners {
 		if listener.counter > 0 {
 			listener.counter--
 		}
 		go func() {
 			if event.IsCancelled() {
-				println("🟠 [EventProcessor.dispatchEventToListeners] Event cancelled, skipping callback")
 				return
 			}
 			defer handlePanic()
@@ -293,4 +272,94 @@ func (e *EventProcessor) dispatchEventToListeners(event *CustomEvent) {
 			return l.delete == false
 		})
 	}
+}
+
+// Void will be translated by the binding generator to the TypeScript type 'void'.
+// It can be used as an event data type to register events that must not have any associated data.
+type Void interface {
+	sentinel()
+}
+
+var registeredEvents sync.Map
+var voidType = reflect.TypeFor[Void]()
+
+// RegisterEvent registers a custom event name and associated data type.
+// Events may be registered at most once.
+// Duplicate calls for the same event name trigger a panic.
+//
+// The binding generator emits typing information for all registered custom events.
+// [App.EmitEvent] and [Window.EmitEvent] check the data type for registered events.
+// Data types are matched exactly and no conversion is performed.
+//
+// It is recommended to call RegisterEvent directly,
+// with constant arguments, and only from init functions.
+// Indirect calls or instantiations are not discoverable by the binding generator.
+func RegisterEvent[Data any](name string) {
+	if events.IsKnownEvent(name) {
+		panic(fmt.Errorf("'%s' is a known system event name", name))
+	}
+	if typ, ok := registeredEvents.Load(name); ok {
+		panic(fmt.Errorf("event '%s' is already registered with data type %s", name, typ))
+	}
+
+	registeredEvents.Store(name, reflect.TypeFor[Data]())
+	eventRegistered(name)
+}
+
+func validateCustomEvent(event *CustomEvent) error {
+	r, ok := registeredEvents.Load(event.Name)
+	if !ok {
+		warnAboutUnregisteredEvent(event.Name)
+		return nil
+	}
+
+	typ := r.(reflect.Type)
+
+	if typ == voidType {
+		if event.Data == nil {
+			return nil
+		}
+	} else if typ.Kind() == reflect.Interface {
+		if reflect.TypeOf(event.Data).Implements(typ) {
+			return nil
+		}
+	} else {
+		if reflect.TypeOf(event.Data) == typ {
+			return nil
+		}
+	}
+
+	return fmt.Errorf(
+		"data of type %s for event '%s' does not match registered data type %s",
+		reflect.TypeOf(event.Data),
+		event.Name,
+		typ,
+	)
+}
+
+func decodeEventData(name string, data []byte) (result any, err error) {
+	r, ok := registeredEvents.Load(name)
+	if !ok {
+		// Unregistered events unmarshal to any.
+		err = json.Unmarshal(data, &result)
+		return
+	}
+
+	typ := r.(reflect.Type)
+
+	if typ == voidType {
+		// When typ is voidType, perform a null check
+		err = json.Unmarshal(data, &result)
+		if err == nil && result != nil {
+			err = fmt.Errorf("non-null data for event '%s' does not match registered data type %s", name, typ)
+		}
+	} else {
+		value := reflect.New(typ.(reflect.Type))
+		err = json.Unmarshal(data, value.Interface())
+		if err == nil {
+			result = value.Elem().Interface()
+		}
+	}
+
+	return
 }
