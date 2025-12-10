@@ -8,6 +8,7 @@ export interface DependencyStatus {
   message?: string;
   installCommand?: string;
   helpUrl?: string;
+  imageBuilt?: boolean; // For Docker: whether wails-cross image exists
 }
 
 export interface DockerStatus {

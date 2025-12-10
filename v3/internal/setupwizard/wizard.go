@@ -38,6 +38,7 @@ type DependencyStatus struct {
 	Message        string `json:"message,omitempty"`
 	InstallCommand string `json:"installCommand,omitempty"`
 	HelpURL        string `json:"helpUrl,omitempty"`
+	ImageBuilt     bool   `json:"imageBuilt"` // For Docker: whether wails-cross image exists
 }
 
 // DockerStatus represents Docker installation and image status
