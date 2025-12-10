@@ -1,6 +1,6 @@
 # Unreleased Changes
 
-<!-- 
+<!--
 This file is used to collect changelog entries for the next v3-alpha release.
 Add your changes under the appropriate sections below.
 
@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Added missing window name to request headers, so it can be logged with the window ID by @jasikpark in [#4687](https://github.com/wailsapp/wails/pull/4687)
 
 - Fix issue where `common:update:build-assets` command overwrites instead of updating plist files by @rxliuli in [#4636](https://github.com/wailsapp/wails/pull/4636)
 
