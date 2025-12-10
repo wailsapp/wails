@@ -1,3 +1,5 @@
+//go:build linux && !android
+
 package application
 
 func (a *linuxApp) showAboutDialog(title string, message string, icon []byte) {

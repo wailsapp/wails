@@ -10,7 +10,7 @@ import (
 const eventsGo = `package events
 
 type ApplicationEventType uint
-type WindowEventType uint
+type WindowEventType      uint
 
 var Common = newCommonEvents()
 
@@ -52,12 +52,23 @@ func newWindowsEvents() windowsEvents {
 $$WINDOWSEVENTSVALUES	}
 }
 
+var iOS = newIOSEvents()
+
+type iosEvents struct {
+$$IOSEVENTSDECL}
+
+func newIOSEvents() iosEvents {
+	return iosEvents{
+$$IOSEVENTSVALUES	}
+}
+
 func JSEvent(event uint) string {
 	return eventToJS[event]
 }
 
 var eventToJS = map[uint]string{
 $$EVENTTOJS}
+
 `
 
 const darwinEventsH = `//go:build darwin
@@ -84,16 +95,17 @@ $$CHEADEREVENTS
 
 #endif`
 
-const knownEvents = `package $$PACKAGE
+const iosEventsH = `//go:build ios
 
-func IsKnownEvent(name string) bool {
-	_, ok := knownEvents[name]
-	return ok
-}
+#ifndef _events_h
+#define _events_h
 
-var knownEvents = map[string]struct{}{
-$$EVENTNAMEMAP}
-`
+extern void processApplicationEvent(unsigned int, void* data);
+extern void processWindowEvent(unsigned int, unsigned int);
+
+$$CHEADEREVENTS
+
+#endif`
 
 const eventsTS = `/*
  _	   __	  _ __
@@ -110,19 +122,16 @@ The electron alternative for Go
 
 export const Types = Object.freeze({
 	Windows: Object.freeze({
-$$WINDOWSJSEVENTS	} as const),
+$$WINDOWSJSEVENTS	}),
 	Mac: Object.freeze({
-$$MACJSEVENTS	} as const),
+$$MACJSEVENTS	}),
 	Linux: Object.freeze({
-$$LINUXJSEVENTS	} as const),
+$$LINUXJSEVENTS	}),
+	iOS: Object.freeze({
+$$IOSJSEVENTS	}),
 	Common: Object.freeze({
-$$COMMONJSEVENTS	} as const),
-} as const);
-
-export const Windows = Types.Windows;
-export const Mac = Types.Mac;
-export const Linux = Types.Linux;
-export const Common = Types.Common;
+$$COMMONJSEVENTS	}),
+});
 `
 
 func main() {
@@ -131,35 +140,42 @@ func main() {
 		panic(err)
 	}
 
-	var linuxEventsDecl bytes.Buffer
-	var linuxEventsValues bytes.Buffer
-	var linuxCHeaderEvents bytes.Buffer
+	linuxEventsDecl := bytes.NewBufferString("")
+	linuxEventsValues := bytes.NewBufferString("")
+	linuxCHeaderEvents := bytes.NewBufferString("")
 
-	var macEventsDecl bytes.Buffer
-	var macEventsValues bytes.Buffer
-	var macCHeaderEvents bytes.Buffer
-	var windowDelegateEvents bytes.Buffer
-	var applicationDelegateEvents bytes.Buffer
-	var webviewDelegateEvents bytes.Buffer
+	macEventsDecl := bytes.NewBufferString("")
+	macEventsValues := bytes.NewBufferString("")
+	macCHeaderEvents := bytes.NewBufferString("")
+	windowDelegateEvents := bytes.NewBufferString("")
+	applicationDelegateEvents := bytes.NewBufferString("")
+	webviewDelegateEvents := bytes.NewBufferString("")
 
-	var windowsEventsDecl bytes.Buffer
-	var windowsEventsValues bytes.Buffer
+	windowsEventsDecl := bytes.NewBufferString("")
+	windowsEventsValues := bytes.NewBufferString("")
 
-	var commonEventsDecl bytes.Buffer
-	var commonEventsValues bytes.Buffer
+	iosEventsDecl := bytes.NewBufferString("")
+	iosEventsValues := bytes.NewBufferString("")
+	iosCHeaderEvents := bytes.NewBufferString("")
+	iosApplicationDelegateEvents := bytes.NewBufferString("")
+	iosWebviewDelegateEvents := bytes.NewBufferString("")
 
-	var linuxTSEvents bytes.Buffer
-	var macTSEvents bytes.Buffer
-	var windowsTSEvents bytes.Buffer
-	var commonTSEvents bytes.Buffer
+	commonEventsDecl := bytes.NewBufferString("")
+	commonEventsValues := bytes.NewBufferString("")
 
-	var eventNameMap bytes.Buffer
-	var eventToJS bytes.Buffer
+	linuxTSEvents := bytes.NewBufferString("")
+	macTSEvents := bytes.NewBufferString("")
+	windowsTSEvents := bytes.NewBufferString("")
+	iosTSEvents := bytes.NewBufferString("")
+	commonTSEvents := bytes.NewBufferString("")
+
+	eventToJS := bytes.NewBufferString("")
 
 	var id int
 	//	var maxLinuxEvents int
 	var maxMacEvents int
 	var maxLinuxEvents int
+	var maxIOSEvents int
 	var line []byte
 	// Loop over each line in the file
 	for id, line = range bytes.Split(eventNames, []byte{'\n'}) {
@@ -204,7 +220,6 @@ func main() {
 			linuxEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
 			linuxEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
 			linuxTSEvents.WriteString("\t\t" + event + ": \"linux:" + event + "\",\n")
-			eventNameMap.WriteString("\t\"" + strings.TrimSpace(string(line)) + "\": {},\n")
 			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"linux:" + event + "\",\n")
 			maxLinuxEvents = id
 			linuxCHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
@@ -220,7 +235,6 @@ func main() {
 			macEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
 			macTSEvents.WriteString("\t\t" + event + ": \"mac:" + event + "\",\n")
 			macCHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
-			eventNameMap.WriteString("\t\"" + strings.TrimSpace(string(line)) + "\": {},\n")
 			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"mac:" + event + "\",\n")
 			maxMacEvents = id
 			if ignoreEvent {
@@ -268,8 +282,7 @@ func main() {
 			commonEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
 			commonEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
 			commonTSEvents.WriteString("\t\t" + event + ": \"common:" + event + "\",\n")
-			eventNameMap.WriteString("\t\"" + strings.TrimSpace(string(line)) + "\": {},\n")
-      eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"common:" + event + "\",\n")
+			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"common:" + event + "\",\n")
 		case "windows":
 			eventType := "ApplicationEventType"
 			if strings.HasPrefix(event, "Window") {
@@ -281,13 +294,85 @@ func main() {
 			windowsEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
 			windowsEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
 			windowsTSEvents.WriteString("\t\t" + event + ": \"windows:" + event + "\",\n")
-			eventNameMap.WriteString("\t\"" + strings.TrimSpace(string(line)) + "\": {},\n")
 			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"windows:" + event + "\",\n")
+		case "ios":
+			eventType := "ApplicationEventType"
+			if strings.HasPrefix(event, "Window") {
+				eventType = "WindowEventType"
+			}
+			if strings.HasPrefix(event, "WebView") {
+				eventType = "WindowEventType"
+			}
+			iosEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
+			iosEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
+			iosTSEvents.WriteString("\t\t" + event + ": \"ios:" + event + "\",\n")
+			iosCHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
+			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"ios:" + event + "\",\n")
+			maxIOSEvents = id
+			// Note: iOS Window and Touch events are not auto-generated as delegate methods
+			// because they need to be integrated into existing UIViewController lifecycle methods
+			// and touch handling code. These events should be manually triggered where appropriate.
+			// Check if this is a webview navigation event
+			if strings.HasPrefix(event, "WebView") {
+				// Convert to WKNavigationDelegate method format
+				webViewMethod := strings.TrimPrefix(event, "WebView")
+				webViewMethod = string(bytes.ToLower([]byte{webViewMethod[0]})) + webViewMethod[1:]
+
+				// Map to actual WKNavigationDelegate methods
+				var delegateMethod string
+				switch webViewMethod {
+				case "didStartNavigation":
+					delegateMethod = "didStartProvisionalNavigation"
+				case "didFinishNavigation":
+					delegateMethod = "didFinishNavigation"
+				case "didFailNavigation":
+					delegateMethod = "didFailProvisionalNavigation"
+				case "decidePolicyForNavigationAction":
+					// This needs special handling with decisionHandler
+					iosWebviewDelegateEvents.WriteString(`- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
+    if( hasListeners(Event` + eventTitle + `) ) {
+        processWindowEvent(self.windowID, Event` + eventTitle + `);
+    }
+    decisionHandler(WKNavigationActionPolicyAllow);
+}
+
+`)
+					// Skip the default delegate method generation below
+					goto skipDefaultWebViewDelegate
+				default:
+					delegateMethod = webViewMethod
+				}
+
+				iosWebviewDelegateEvents.WriteString(`- (void)webView:(WKWebView *)webView ` + delegateMethod + `:(WKNavigation *)navigation {
+    if( hasListeners(Event` + eventTitle + `) ) {
+        processWindowEvent(self.windowID, Event` + eventTitle + `);
+    }
+}
+
+`)
+			skipDefaultWebViewDelegate:
+			}
+			// Check if this is an application event
+			if strings.HasPrefix(event, "Application") {
+				// Convert to UIApplicationDelegate method format
+				// e.g. "ApplicationDidBecomeActive" -> "applicationDidBecomeActive"
+				methodName := "application" + strings.TrimPrefix(event, "Application")
+				methodName = string(bytes.ToLower([]byte{methodName[0]})) + methodName[1:]
+
+				iosApplicationDelegateEvents.WriteString(`- (void)` + methodName + `:(UIApplication *)application {
+    if( hasListeners(Event` + eventTitle + `) ) {
+        processApplicationEvent(Event` + eventTitle + `, NULL);
+    }
+}
+
+`)
+			}
 		}
 	}
 
 	macCHeaderEvents.WriteString("\n#define MAX_EVENTS " + strconv.Itoa(maxMacEvents+1) + "\n")
 	linuxCHeaderEvents.WriteString("\n#define MAX_EVENTS " + strconv.Itoa(maxLinuxEvents+1) + "\n")
+	iosCHeaderEvents.WriteString("\n#define MAX_EVENTS " + strconv.Itoa(maxIOSEvents+1) + "\n")
 
 	// Save the eventsGo template substituting the values and decls
 	templateToWrite := strings.ReplaceAll(eventsGo, "$$LINUXEVENTSDECL", linuxEventsDecl.String())
@@ -297,6 +382,8 @@ func main() {
 
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$WINDOWSEVENTSDECL", windowsEventsDecl.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$WINDOWSEVENTSVALUES", windowsEventsValues.String())
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$IOSEVENTSDECL", iosEventsDecl.String())
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$IOSEVENTSVALUES", iosEventsValues.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$COMMONEVENTSDECL", commonEventsDecl.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$COMMONEVENTSVALUES", commonEventsValues.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$EVENTTOJS", eventToJS.String())
@@ -305,25 +392,11 @@ func main() {
 		panic(err)
 	}
 
-	// Save the knownEvents template substituting the values and decls
-	templateToWrite = strings.ReplaceAll(knownEvents, "$$PACKAGE", "events")
-	templateToWrite = strings.ReplaceAll(templateToWrite, "$$EVENTNAMEMAP", eventNameMap.String())
-	err = os.WriteFile("../../pkg/events/known_events.go", []byte(templateToWrite), 0644)
-	if err != nil {
-		panic(err)
-	}
-
-	templateToWrite = strings.ReplaceAll(knownEvents, "$$PACKAGE", "collect")
-	templateToWrite = strings.ReplaceAll(templateToWrite, "$$EVENTNAMEMAP", eventNameMap.String())
-	err = os.WriteFile("../../internal/generator/collect/known_events.go", []byte(templateToWrite), 0644)
-	if err != nil {
-		panic(err)
-	}
-
 	// Save the eventsTS template substituting the values and decls
 	templateToWrite = strings.ReplaceAll(eventsTS, "$$MACJSEVENTS", macTSEvents.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$WINDOWSJSEVENTS", windowsTSEvents.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$LINUXJSEVENTS", linuxTSEvents.String())
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$IOSJSEVENTS", iosTSEvents.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$COMMONJSEVENTS", commonTSEvents.String())
 	err = os.WriteFile("../../internal/runtime/desktop/@wailsio/runtime/src/event_types.ts", []byte(templateToWrite), 0644)
 	if err != nil {
@@ -344,6 +417,87 @@ func main() {
 		panic(err)
 	}
 
+	// Save the iosEventsH template substituting the values and decls
+	templateToWrite = strings.ReplaceAll(iosEventsH, "$$CHEADEREVENTS", iosCHeaderEvents.String())
+	err = os.WriteFile("../../pkg/events/events_ios.h", []byte(templateToWrite), 0644)
+	if err != nil {
+		panic(err)
+	}
+
+	// Declare buffer and flag for processing delegate files
+	var buffer bytes.Buffer
+	var inGeneratedEvents bool
+
+	// Load the iOS app_delegate.m file
+	iosAppDelegate, err := os.ReadFile("../../pkg/application/application_ios_delegate.m")
+	if err != nil {
+		panic(err)
+	}
+	// iterate over the lines until we reach a line that says "// GENERATED EVENTS START"
+	// then we insert the events
+	// then we iterate until we reach a line that says "// GENERATED EVENTS END"
+	// then we write the file
+	buffer.Reset()
+	inGeneratedEvents = false
+	for _, line := range bytes.Split(iosAppDelegate, []byte{'\n'}) {
+		if bytes.Contains(line, []byte("// GENERATED EVENTS START")) {
+			inGeneratedEvents = true
+			buffer.WriteString("// GENERATED EVENTS START\n")
+			buffer.WriteString(iosApplicationDelegateEvents.String())
+			continue
+		}
+		if bytes.Contains(line, []byte("// GENERATED EVENTS END")) {
+			inGeneratedEvents = false
+			buffer.WriteString("// GENERATED EVENTS END\n")
+			continue
+		}
+		if !inGeneratedEvents {
+			if len(line) > 0 {
+				buffer.Write(line)
+				buffer.WriteString("\n")
+			}
+		}
+	}
+	err = os.WriteFile("../../pkg/application/application_ios_delegate.m", buffer.Bytes(), 0755)
+	if err != nil {
+		panic(err)
+	}
+
+	// Load the iOS webview_window.m file
+	iosWebviewWindow, err := os.ReadFile("../../pkg/application/webview_window_ios.m")
+	if err != nil {
+		panic(err)
+	}
+	// iterate over the lines until we reach a line that says "// GENERATED EVENTS START"
+	// then we insert the events
+	// then we iterate until we reach a line that says "// GENERATED EVENTS END"
+	// then we write the file
+	buffer.Reset()
+	for _, line := range bytes.Split(iosWebviewWindow, []byte{'\n'}) {
+		if bytes.Contains(line, []byte("// GENERATED EVENTS START")) {
+			inGeneratedEvents = true
+			buffer.WriteString("// GENERATED EVENTS START\n")
+			// Only write webview delegate events, not view controller lifecycle events
+			buffer.WriteString(iosWebviewDelegateEvents.String())
+			continue
+		}
+		if bytes.Contains(line, []byte("// GENERATED EVENTS END")) {
+			inGeneratedEvents = false
+			buffer.WriteString("// GENERATED EVENTS END\n")
+			continue
+		}
+		if !inGeneratedEvents {
+			if len(line) > 0 {
+				buffer.Write(line)
+				buffer.WriteString("\n")
+			}
+		}
+	}
+	err = os.WriteFile("../../pkg/application/webview_window_ios.m", buffer.Bytes(), 0755)
+	if err != nil {
+		panic(err)
+	}
+
 	// Load the window_delegate.m file
 	windowDelegate, err := os.ReadFile("../../pkg/application/webview_window_darwin.m")
 	if err != nil {
@@ -353,8 +507,7 @@ func main() {
 	// then we insert the events
 	// then we iterate until we reach a line that says "// GENERATED EVENTS END"
 	// then we write the file
-	var buffer bytes.Buffer
-	var inGeneratedEvents bool
+	buffer.Reset()
 	for _, line := range bytes.Split(windowDelegate, []byte{'\n'}) {
 		if bytes.Contains(line, []byte("// GENERATED EVENTS START")) {
 			inGeneratedEvents = true

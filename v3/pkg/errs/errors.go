@@ -23,4 +23,6 @@ const (
 	BindingCallFailedError      ErrorType = "Binding call failed"
 	InvalidEventsCallError      ErrorType = "Invalid events call"
 	InvalidRuntimeCallError     ErrorType = "Invalid runtime call"
+	InvalidIOSCallError         ErrorType = "Invalid iOS call"
+	InvalidAndroidCallError     ErrorType = "Invalid Android call"
 )

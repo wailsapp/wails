@@ -1,4 +1,4 @@
-//go:build linux && !production
+//go:build linux && !production && !android
 
 package application
 

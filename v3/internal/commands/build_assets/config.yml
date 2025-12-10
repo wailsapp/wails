@@ -13,6 +13,20 @@ info:
   comments: "Some Product Comments" # Comments
   version: "0.0.1" # The application version
 
+# iOS build configuration (uncomment to customise iOS project generation)
+# Note: Keys under `ios` OVERRIDE values under `info` when set.
+# ios:
+#   # The iOS bundle identifier used in the generated Xcode project (CFBundleIdentifier)
+#   bundleID: "com.mycompany.myproduct"
+#   # The display name shown under the app icon (CFBundleDisplayName/CFBundleName)
+#   displayName: "My Product"
+#   # The app version to embed in Info.plist (CFBundleShortVersionString/CFBundleVersion)
+#   version: "0.0.1"
+#   # The company/organisation name for templates and project settings
+#   company: "My Company"
+#   # Additional comments to embed in Info.plist metadata
+#   comments: "Some Product Comments"
+
 # Dev mode configuration
 dev_mode:
   root_path: .

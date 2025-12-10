@@ -1,4 +1,4 @@
-//go:build !windows && !production
+//go:build !windows && !production && !ios
 
 package application
 

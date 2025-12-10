@@ -25,6 +25,7 @@ import * as Events from "./events.js";
 import * as Flags from "./flags.js";
 import * as Screens from "./screens.js";
 import * as System from "./system.js";
+import * as IOS from "./ios.js";
 import Window from "./window.js";
 import * as WML from "./wml.js";
 
@@ -38,6 +39,7 @@ export {
     Flags,
     Screens,
     System,
+    IOS,
     Window,
     WML
 };
