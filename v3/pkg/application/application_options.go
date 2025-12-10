@@ -330,8 +330,6 @@ const (
     NativeTabIconList    NativeTabIcon = "list.bullet"
     NativeTabIconFolder  NativeTabIcon = "folder"
 )
-<<<<<<< HEAD
-=======
 
 /********* Android Options *********/
 
@@ -355,4 +353,3 @@ type AndroidOptions struct {
 	// DisableHardwareAcceleration disables hardware acceleration for the WebView
 	DisableHardwareAcceleration bool
 }
->>>>>>> origin/v3-alpha-feature/android-support
