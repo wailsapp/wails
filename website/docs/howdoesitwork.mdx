@@ -63,17 +63,17 @@ func main() {
 
 
 type App struct {
-    ctx context.Context
+	ctx context.Context
 }
 
 func (b *App) startup(ctx context.Context) {
-    b.ctx = ctx
+	b.ctx = ctx
 }
 
 func (b *App) shutdown(ctx context.Context) {}
 
 func (b *App) Greet(name string) string {
-    return fmt.Sprintf("Hello %s!", name)
+	return fmt.Sprintf("Hello %s!", name)
 }
 ```
 
@@ -178,18 +178,18 @@ func main() {
 
 
 type App struct {
-    ctx context.Context
+	ctx context.Context
 }
 
 func (a *App) Greet(name string) string {
-    return fmt.Sprintf("Hello %s!", name)
+	return fmt.Sprintf("Hello %s!", name)
 }
 ```
 
 You may bind as many structs as you like. Just make sure you create an instance of it and pass it in `Bind`:
 
 ```go {10-12}
-    //...
+	//...
 	err := wails.Run(&options.App{
 		Title:  "Basic Demo",
 		Width:  1024,
@@ -203,7 +203,6 @@ You may bind as many structs as you like. Just make sure you create an instance 
 			&mystruct2{},
 		},
 	})
-
 ```
 
 You may bind enums types as well.
@@ -237,7 +236,7 @@ var AllWeekdays = []struct {
 ```
 
 ```go {10-12}
-    //...
+	//...
 	err := wails.Run(&options.App{
 		Title:  "Basic Demo",
 		Width:  1024,
@@ -250,11 +249,10 @@ var AllWeekdays = []struct {
 			&mystruct1{},
 			&mystruct2{},
 		},
-    EnumBind: []interface{}{
-        AllWeekdays,
-    },
+		EnumBind: []interface{}{
+			AllWeekdays,
+		},
 	})
-
 ```
 
 When you run `wails dev` (or `wails generate module`), a frontend module will be generated containing the following:

@@ -10,6 +10,10 @@ The pattern used by the default templates are that `main.go` is used for configu
 The `app.go` file will define a struct that has 2 methods which act as hooks into the main application:
 
 ```go title="app.go"
+import (
+  "context"
+)
+
 type App struct {
 	ctx context.Context
 }
@@ -28,7 +32,7 @@ func (a *App) shutdown(ctx context.Context) {
 
 - The startup method is called as soon as Wails allocates the resources it needs and is a good place for creating resources,
   setting up event listeners and anything else the application needs at startup.
-  It is given a `context.Context` which is usually saved in a struct field. This context is needed for calling the
+  It is given a [`context.Context`](https://pkg.go.dev/context) which is usually saved in a struct field. This context is needed for calling the
   [runtime](../reference/runtime/intro.mdx). If this method returns an error, the application will terminate.
   In dev mode, the error will be output to the console.
 
@@ -55,7 +59,6 @@ func main() {
 		log.Fatal(err)
 	}
 }
-
 ```
 
 More information on application lifecycle hooks can be found [here](../howdoesitwork.mdx#application-lifecycle-callbacks).
@@ -65,7 +68,12 @@ More information on application lifecycle hooks can be found [here](../howdoesit
 It is likely that you will want to call Go methods from the frontend. This is normally done by adding public methods to
 the already defined struct in `app.go`:
 
-```go {16-18} title="app.go"
+```go {3,21-23} title="app.go"
+import (
+	"context"
+	"fmt"
+)
+
 type App struct {
 	ctx context.Context
 }
@@ -82,7 +90,7 @@ func (a *App) shutdown(ctx context.Context) {
 }
 
 func (a *App) Greet(name string) string {
-    return fmt.Sprintf("Hello %s!", name)
+	return fmt.Sprintf("Hello %s!", name)
 }
 ```
 
@@ -99,15 +107,14 @@ func main() {
 		Height:            600,
 		OnStartup:  app.startup,
 		OnShutdown: app.shutdown,
-        Bind: []interface{}{
-            app,
-        },
+		Bind: []interface{}{
+			app,
+		},
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 }
-
 ```
 
 This will bind all public methods in our `App` struct (it will never bind the startup and shutdown methods).
@@ -133,10 +140,10 @@ func main() {
 			otherStruct.SetContext(ctx)
 		},
 		OnShutdown: app.shutdown,
-        Bind: []interface{}{
-            app,
+		Bind: []interface{}{
+			app,
 			otherStruct
-        },
+		},
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -187,18 +194,17 @@ func main() {
 		Height:            600,
 		OnStartup:  app.startup,
 		OnShutdown: app.shutdown,
-    Bind: []interface{}{
-        app,
-    },
-    EnumBind: []interface{}{
-        AllWeekdays,
-     },
+		Bind: []interface{}{
+			app,
+		},
+		EnumBind: []interface{}{
+			AllWeekdays,
+		},
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 }
-
 ```
 
 This will add missing enums to your `model.ts` file.
@@ -223,15 +229,14 @@ func main() {
 		OnStartup:  app.startup,
 		OnShutdown: app.shutdown,
 		Menu:       app.menu(),
-        Bind: []interface{}{
-            app,
-        },
+		Bind: []interface{}{
+			app,
+		},
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 }
-
 ```
 
 ## Assets
