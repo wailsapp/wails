@@ -5,8 +5,8 @@ includes:
 
 vars:
   BUNDLE_ID: '{{.BUNDLE_ID | default "com.wails.app"}}'
-  SDK_PATH:
-    sh: xcrun --sdk iphonesimulator --show-sdk-path
+  # SDK_PATH is computed lazily at task-level to avoid errors on non-macOS systems
+  # Each task that needs it defines SDK_PATH in its own vars section
 
 tasks:
   install:deps:
@@ -44,6 +44,8 @@ tasks:
       BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,ios -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-tags ios,debug -buildvcs=false -gcflags=all="-l"{{end}}'
       DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
       OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
+      SDK_PATH:
+        sh: xcrun --sdk iphonesimulator --show-sdk-path
     env:
       GOOS: ios
       CGO_ENABLED: 1
@@ -54,6 +56,9 @@ tasks:
 
   compile:objc:
     summary: Compile Objective-C iOS wrapper
+    vars:
+      SDK_PATH:
+        sh: xcrun --sdk iphonesimulator --show-sdk-path
     cmds:
       - xcrun -sdk iphonesimulator clang -target arm64-apple-ios15.0-simulator -isysroot {{.SDK_PATH}} -framework Foundation -framework UIKit -framework WebKit -o {{.BIN_DIR}}/{{.APP_NAME}} build/ios/main.m
       - codesign --force --sign - {{.BIN_DIR}}/{{.APP_NAME}}
@@ -113,6 +118,9 @@ tasks:
     summary: Compile the iOS executable from Go archive and main.m
     deps:
       - task: build
+    vars:
+      SDK_PATH:
+        sh: xcrun --sdk iphonesimulator --show-sdk-path
     cmds:
       - |
         MAIN_M=build/ios/xcode/main/main.m
@@ -137,6 +145,9 @@ tasks:
       - go.sum
     generates:
       - frontend/bindings/**/*
+    vars:
+      SDK_PATH:
+        sh: xcrun --sdk iphonesimulator --show-sdk-path
     cmds:
       - wails3 generate bindings -f '{{.BUILD_FLAGS}}' -clean=true
     env:
