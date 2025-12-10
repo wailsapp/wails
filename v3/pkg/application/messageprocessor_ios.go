@@ -1,3 +1,5 @@
+//go:build ios
+
 package application
 
 import (

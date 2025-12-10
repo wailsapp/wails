@@ -19,10 +19,17 @@ const ApplicationFilesDroppedWithContext = 100; // New method ID for enriched dr
 
 const _invoke = (function () {
     try {
+        // Windows WebView2
         if ((window as any).chrome?.webview?.postMessage) {
             return (window as any).chrome.webview.postMessage.bind((window as any).chrome.webview);
-        } else if ((window as any).webkit?.messageHandlers?.['external']?.postMessage) {
+        }
+        // macOS/iOS WKWebView
+        else if ((window as any).webkit?.messageHandlers?.['external']?.postMessage) {
             return (window as any).webkit.messageHandlers['external'].postMessage.bind((window as any).webkit.messageHandlers['external']);
+        }
+        // Android WebView - uses addJavascriptInterface which exposes window.wails.invoke
+        else if ((window as any).wails?.invoke) {
+            return (msg: any) => (window as any).wails.invoke(typeof msg === 'string' ? msg : JSON.stringify(msg));
         }
     } catch(e) {}
 

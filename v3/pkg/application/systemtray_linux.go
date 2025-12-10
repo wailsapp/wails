@@ -1,4 +1,4 @@
-//go:build linux
+//go:build linux && !android
 
 /*
 Portions of this code are derived from the project:
