@@ -13,6 +13,7 @@ import (
 
 	"github.com/leaanthony/gosod"
 	"gopkg.in/yaml.v3"
+	"howett.net/plist"
 )
 
 //go:embed build_assets
@@ -251,10 +252,26 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 		return err
 	}
 
+	// Backup existing plist files before extraction
+	backups, err := backupPlistFiles(options.Dir)
+	if err != nil {
+		return err
+	}
+
+	// Extract new assets (overwrites existing files)
 	err = gosod.New(tfs).Extract(options.Dir, config)
 	if err != nil {
 		return err
 	}
+
+	// Merge backed-up content into newly extracted plists
+	err = mergeBackupPlists(backups)
+	if err != nil {
+		return err
+	}
+
+	// Clean up backup files
+	cleanupBackups(backups)
 
 	if !options.Silent {
 		println("Successfully updated build assets in " + options.Dir)
@@ -265,4 +282,104 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 
 func normaliseName(name string) string {
 	return strings.ToLower(strings.ReplaceAll(name, " ", "-"))
+}
+
+// mergeMaps recursively merges src into dst.
+// For nested maps, it merges recursively. For other types, src overwrites dst.
+func mergeMaps(dst, src map[string]any) {
+	for key, srcValue := range src {
+		if dstValue, exists := dst[key]; exists {
+			// If both are maps, merge recursively
+			srcMap, srcIsMap := srcValue.(map[string]any)
+			dstMap, dstIsMap := dstValue.(map[string]any)
+			if srcIsMap && dstIsMap {
+				mergeMaps(dstMap, srcMap)
+				continue
+			}
+		}
+		// Otherwise, src overwrites dst
+		dst[key] = srcValue
+	}
+}
+
+// plistBackup holds the original path and backup path for a plist file
+type plistBackup struct {
+	originalPath string
+	backupPath   string
+}
+
+// backupPlistFiles finds all .plist files in dir and renames them to .plist.bak
+func backupPlistFiles(dir string) ([]plistBackup, error) {
+	var backups []plistBackup
+
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() || !strings.HasSuffix(path, ".plist") {
+			return nil
+		}
+
+		backupPath := path + ".bak"
+		if err := os.Rename(path, backupPath); err != nil {
+			return fmt.Errorf("failed to backup plist %s: %w", path, err)
+		}
+		backups = append(backups, plistBackup{originalPath: path, backupPath: backupPath})
+		return nil
+	})
+
+	return backups, err
+}
+
+// mergeBackupPlists merges the backed-up plist content into the newly extracted plists
+func mergeBackupPlists(backups []plistBackup) error {
+	for _, backup := range backups {
+		// Read the backup (original user content)
+		backupContent, err := os.ReadFile(backup.backupPath)
+		if err != nil {
+			return fmt.Errorf("failed to read backup %s: %w", backup.backupPath, err)
+		}
+
+		var backupDict map[string]any
+		if _, err := plist.Unmarshal(backupContent, &backupDict); err != nil {
+			return fmt.Errorf("failed to parse backup plist %s: %w", backup.backupPath, err)
+		}
+
+		// Read the newly extracted plist
+		newContent, err := os.ReadFile(backup.originalPath)
+		if err != nil {
+			// New file might not exist if template didn't generate one for this path
+			continue
+		}
+
+		var newDict map[string]any
+		if _, err := plist.Unmarshal(newContent, &newDict); err != nil {
+			return fmt.Errorf("failed to parse new plist %s: %w", backup.originalPath, err)
+		}
+
+		// Merge: start with backup (user's content), apply new values on top
+		mergeMaps(backupDict, newDict)
+
+		// Write merged result
+		file, err := os.Create(backup.originalPath)
+		if err != nil {
+			return fmt.Errorf("failed to create merged plist %s: %w", backup.originalPath, err)
+		}
+
+		encoder := plist.NewEncoder(file)
+		encoder.Indent("\t")
+		if err := encoder.Encode(backupDict); err != nil {
+			file.Close()
+			return fmt.Errorf("failed to encode merged plist %s: %w", backup.originalPath, err)
+		}
+		file.Close()
+	}
+	return nil
+}
+
+// cleanupBackups removes the backup files after successful merge
+func cleanupBackups(backups []plistBackup) {
+	for _, backup := range backups {
+		os.Remove(backup.backupPath)
+	}
 }

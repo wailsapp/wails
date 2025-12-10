@@ -25,6 +25,8 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Bug fixes -->
 - Added missing window name to request headers, so it can be logged with the window ID by @jasikpark in [#4687](https://github.com/wailsapp/wails/pull/4687)
 
+- Fix issue where `common:update:build-assets` command overwrites instead of updating plist files by @rxliuli in [#4636](https://github.com/wailsapp/wails/pull/4636)
+
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
