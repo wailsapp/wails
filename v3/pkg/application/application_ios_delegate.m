@@ -1,15 +1,11 @@
 //go:build ios
-
 #import "application_ios_delegate.h"
 #import "../events/events_ios.h"
 #import "application_ios.h"
-
 extern void processApplicationEvent(unsigned int, void* data);
 extern void processWindowEvent(unsigned int, unsigned int);
 extern bool hasListeners(unsigned int);
-
 @implementation WailsAppDelegate
-
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Set global appDelegate reference and bring up a window if needed
     appDelegate = self;
@@ -35,47 +31,53 @@ extern bool hasListeners(unsigned int);
     if (!self.viewControllers) {
         self.viewControllers = [NSMutableArray array];
     }
-
     if (hasListeners(EventApplicationDidFinishLaunching)) {
         processApplicationEvent(EventApplicationDidFinishLaunching, NULL);
     }
     return YES;
 }
-
+// GENERATED EVENTS START
 - (void)applicationDidBecomeActive:(UIApplication *)application {
-    if (hasListeners(EventApplicationDidBecomeActive)) {
+    if( hasListeners(EventApplicationDidBecomeActive) ) {
         processApplicationEvent(EventApplicationDidBecomeActive, NULL);
     }
 }
 
-- (void)applicationWillResignActive:(UIApplication *)application {
-    if (hasListeners(EventApplicationWillResignActive)) {
-        processApplicationEvent(EventApplicationWillResignActive, NULL);
-    }
-}
-
 - (void)applicationDidEnterBackground:(UIApplication *)application {
-    if (hasListeners(EventApplicationDidEnterBackground)) {
+    if( hasListeners(EventApplicationDidEnterBackground) ) {
         processApplicationEvent(EventApplicationDidEnterBackground, NULL);
     }
 }
 
-- (void)applicationWillEnterForeground:(UIApplication *)application {
-    if (hasListeners(EventApplicationWillEnterForeground)) {
-        processApplicationEvent(EventApplicationWillEnterForeground, NULL);
-    }
-}
-
-- (void)applicationWillTerminate:(UIApplication *)application {
-    if (hasListeners(EventApplicationWillTerminate)) {
-        processApplicationEvent(EventApplicationWillTerminate, NULL);
+- (void)applicationDidFinishLaunching:(UIApplication *)application {
+    if( hasListeners(EventApplicationDidFinishLaunching) ) {
+        processApplicationEvent(EventApplicationDidFinishLaunching, NULL);
     }
 }
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application {
-    if (hasListeners(EventApplicationDidReceiveMemoryWarning)) {
+    if( hasListeners(EventApplicationDidReceiveMemoryWarning) ) {
         processApplicationEvent(EventApplicationDidReceiveMemoryWarning, NULL);
     }
 }
 
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+    if( hasListeners(EventApplicationWillEnterForeground) ) {
+        processApplicationEvent(EventApplicationWillEnterForeground, NULL);
+    }
+}
+
+- (void)applicationWillResignActive:(UIApplication *)application {
+    if( hasListeners(EventApplicationWillResignActive) ) {
+        processApplicationEvent(EventApplicationWillResignActive, NULL);
+    }
+}
+
+- (void)applicationWillTerminate:(UIApplication *)application {
+    if( hasListeners(EventApplicationWillTerminate) ) {
+        processApplicationEvent(EventApplicationWillTerminate, NULL);
+    }
+}
+
+// GENERATED EVENTS END
 @end

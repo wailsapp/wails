@@ -26,6 +26,7 @@ const (
 	browserRequest     = 9
 	cancelCallRequest  = 10
 	iosRequest         = 11
+	androidRequest     = 12
 )
 
 var objectNames = map[int]string{
@@ -41,6 +42,7 @@ var objectNames = map[int]string{
 	browserRequest:     "Browser",
 	cancelCallRequest:  "CancelCall",
 	iosRequest:         "iOS",
+	androidRequest:     "Android",
 }
 
 type RuntimeRequest struct {
@@ -123,6 +125,8 @@ func (m *MessageProcessor) HandleRuntimeCallWithIDs(ctx context.Context, req *Ru
 		return m.processCallCancelMethod(req)
 	case iosRequest:
 		return m.processIOSMethod(req, targetWindow)
+	case androidRequest:
+		return m.processAndroidMethod(req, targetWindow)
 	default:
 		return nil, errs.NewInvalidRuntimeCallErrorf("unknown object %d", req.Object)
 	}
@@ -145,9 +149,9 @@ func (m *MessageProcessor) getTargetWindow(req *RuntimeRequest) (Window, string)
 	targetWindow, _ := globalApplication.Window.GetByID(uint(req.WebviewWindowID))
 	if targetWindow == nil {
 		m.Error("Window ID not found:", "id", req.WebviewWindowID)
-		return nil, strconv.Itoa(int(windowID))
+		return nil, strconv.Itoa(int(req.WebviewWindowID))
 	}
-	return targetWindow, strconv.Itoa(int(windowID))
+	return targetWindow, strconv.Itoa(int(req.WebviewWindowID))
 }
 
 func (m *MessageProcessor) Error(message string, args ...any) {
@@ -185,6 +189,10 @@ func (m *MessageProcessor) logRuntimeCall(req *RuntimeRequest) {
 		methodName = browserMethodNames[req.Method]
 	case cancelCallRequest:
 		methodName = "Cancel"
+	case iosRequest:
+		methodName = iosMethodNames[req.Method]
+	case androidRequest:
+		methodName = androidMethodNames[req.Method]
 	}
 
 	m.Info("Runtime call:", "method", objectName+"."+methodName, "args", req.Args.String())

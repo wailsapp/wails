@@ -56,7 +56,6 @@ extern void handleSecondInstanceData(char * message);
     if( hasListeners(EventApplicationShouldHandleReopen) ) {
         processApplicationEvent(EventApplicationShouldHandleReopen, @{@"hasVisibleWindows": @(flag)});
     }
-
     return TRUE;
 }
 - (void)handleSecondInstanceNotification:(NSNotification *)note;

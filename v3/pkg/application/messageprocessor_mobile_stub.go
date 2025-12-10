@@ -3,16 +3,19 @@
 package application
 
 import (
-	"fmt"
-	"net/http"
+	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
+// Empty method name maps for logging on non-mobile platforms
+var iosMethodNames = map[int]string{}
+var androidMethodNames = map[int]string{}
+
 // processIOSMethod is a stub for non-mobile platforms
-func (m *MessageProcessor) processIOSMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
-	m.httpError(rw, "iOS methods not available:", fmt.Errorf("unknown method: %d", method))
+func (m *MessageProcessor) processIOSMethod(req *RuntimeRequest, window Window) (any, error) {
+	return nil, errs.NewInvalidIOSCallErrorf("iOS methods not available on this platform")
 }
 
 // processAndroidMethod is a stub for non-mobile platforms
-func (m *MessageProcessor) processAndroidMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
-	m.httpError(rw, "Android methods not available:", fmt.Errorf("unknown method: %d", method))
+func (m *MessageProcessor) processAndroidMethod(req *RuntimeRequest, window Window) (any, error) {
+	return nil, errs.NewInvalidAndroidCallErrorf("Android methods not available on this platform")
 }

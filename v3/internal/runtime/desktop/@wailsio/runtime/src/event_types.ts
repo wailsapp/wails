@@ -57,7 +57,7 @@ export const Types = Object.freeze({
 		WindowUnMinimise: "windows:WindowUnMinimise",
 		WindowMaximise: "windows:WindowMaximise",
 		WindowUnMaximise: "windows:WindowUnMaximise",
-	} as const),
+	}),
 	Mac: Object.freeze({
 		ApplicationDidBecomeActive: "mac:ApplicationDidBecomeActive",
 		ApplicationDidChangeBackingProperties: "mac:ApplicationDidChangeBackingProperties",
@@ -191,7 +191,7 @@ export const Types = Object.freeze({
 		WindowZoomIn: "mac:WindowZoomIn",
 		WindowZoomOut: "mac:WindowZoomOut",
 		WindowZoomReset: "mac:WindowZoomReset",
-	} as const),
+	}),
 	Linux: Object.freeze({
 		ApplicationStartup: "linux:ApplicationStartup",
 		SystemThemeChanged: "linux:SystemThemeChanged",
@@ -201,7 +201,7 @@ export const Types = Object.freeze({
 		WindowFocusIn: "linux:WindowFocusIn",
 		WindowFocusOut: "linux:WindowFocusOut",
 		WindowLoadChanged: "linux:WindowLoadChanged",
-	} as const),
+	}),
 	iOS: Object.freeze({
 		ApplicationDidBecomeActive: "ios:ApplicationDidBecomeActive",
 		ApplicationDidEnterBackground: "ios:ApplicationDidEnterBackground",
@@ -225,7 +225,7 @@ export const Types = Object.freeze({
 		WebViewDidFinishNavigation: "ios:WebViewDidFinishNavigation",
 		WebViewDidFailNavigation: "ios:WebViewDidFailNavigation",
 		WebViewDecidePolicyForNavigationAction: "ios:WebViewDecidePolicyForNavigationAction",
-	} as const),
+	}),
 	Common: Object.freeze({
 		ApplicationOpenedWithFile: "common:ApplicationOpenedWithFile",
 		ApplicationStarted: "common:ApplicationStarted",
@@ -254,11 +254,5 @@ export const Types = Object.freeze({
 		WindowZoomOut: "common:WindowZoomOut",
 		WindowZoomReset: "common:WindowZoomReset",
 		WindowDropZoneFilesDropped: "common:WindowDropZoneFilesDropped",
-	} as const),
-} as const);
-
-export const Windows = Types.Windows;
-export const Mac = Types.Mac;
-export const Linux = Types.Linux;
-export const iOS = Types.iOS;
-export const Common = Types.Common;
+	}),
+});

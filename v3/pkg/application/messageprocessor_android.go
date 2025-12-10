@@ -3,8 +3,7 @@
 package application
 
 import (
-	"fmt"
-	"net/http"
+	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
 const (
@@ -19,37 +18,34 @@ var androidMethodNames = map[int]string{
 	AndroidToast:          "Toast.Show",
 }
 
-func (m *MessageProcessor) processAndroidMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
-	switch method {
+func (m *MessageProcessor) processAndroidMethod(req *RuntimeRequest, window Window) (any, error) {
+	args := req.Args.AsMap()
+
+	switch req.Method {
 	case AndroidHapticsVibrate:
-		args, _ := params.Args()
 		duration := 100 // default 100ms
 		if d := args.Int("duration"); d != nil {
 			duration = *d
 		}
 		androidHapticsVibrate(duration)
-		m.ok(rw)
+		return unit, nil
 	case AndroidDeviceInfo:
-		m.json(rw, androidDeviceInfo())
+		return androidDeviceInfo(), nil
 	case AndroidToast:
-		args, _ := params.Args()
 		message := ""
 		if s := args.String("message"); s != nil {
 			message = *s
 		}
 		androidShowToast(message)
-		m.ok(rw)
+		return unit, nil
 	default:
-		m.httpError(rw, "Invalid Android call:", fmt.Errorf("unknown method: %d", method))
-		return
+		return nil, errs.NewInvalidAndroidCallErrorf("unknown method: %d", req.Method)
 	}
-
-	m.Info("Runtime call:", "method", "Android."+androidMethodNames[method])
 }
 
 // processIOSMethod is a stub on Android
-func (m *MessageProcessor) processIOSMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
-	m.httpError(rw, "iOS methods not available on Android:", fmt.Errorf("unknown method: %d", method))
+func (m *MessageProcessor) processIOSMethod(req *RuntimeRequest, window Window) (any, error) {
+	return nil, errs.NewInvalidIOSCallErrorf("iOS methods not available on Android")
 }
 
 // Android-specific runtime functions (stubs for now)

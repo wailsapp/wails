@@ -157,6 +157,8 @@ func main() {
 	iosEventsDecl := bytes.NewBufferString("")
 	iosEventsValues := bytes.NewBufferString("")
 	iosCHeaderEvents := bytes.NewBufferString("")
+	iosApplicationDelegateEvents := bytes.NewBufferString("")
+	iosWebviewDelegateEvents := bytes.NewBufferString("")
 
 	commonEventsDecl := bytes.NewBufferString("")
 	commonEventsValues := bytes.NewBufferString("")
@@ -307,6 +309,64 @@ func main() {
 			iosCHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
 			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"ios:" + event + "\",\n")
 			maxIOSEvents = id
+			// Note: iOS Window and Touch events are not auto-generated as delegate methods
+			// because they need to be integrated into existing UIViewController lifecycle methods
+			// and touch handling code. These events should be manually triggered where appropriate.
+			// Check if this is a webview navigation event
+			if strings.HasPrefix(event, "WebView") {
+				// Convert to WKNavigationDelegate method format
+				webViewMethod := strings.TrimPrefix(event, "WebView")
+				webViewMethod = string(bytes.ToLower([]byte{webViewMethod[0]})) + webViewMethod[1:]
+
+				// Map to actual WKNavigationDelegate methods
+				var delegateMethod string
+				switch webViewMethod {
+				case "didStartNavigation":
+					delegateMethod = "didStartProvisionalNavigation"
+				case "didFinishNavigation":
+					delegateMethod = "didFinishNavigation"
+				case "didFailNavigation":
+					delegateMethod = "didFailProvisionalNavigation"
+				case "decidePolicyForNavigationAction":
+					// This needs special handling with decisionHandler
+					iosWebviewDelegateEvents.WriteString(`- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
+    if( hasListeners(Event` + eventTitle + `) ) {
+        processWindowEvent(self.windowID, Event` + eventTitle + `);
+    }
+    decisionHandler(WKNavigationActionPolicyAllow);
+}
+
+`)
+					// Skip the default delegate method generation below
+					goto skipDefaultWebViewDelegate
+				default:
+					delegateMethod = webViewMethod
+				}
+
+				iosWebviewDelegateEvents.WriteString(`- (void)webView:(WKWebView *)webView ` + delegateMethod + `:(WKNavigation *)navigation {
+    if( hasListeners(Event` + eventTitle + `) ) {
+        processWindowEvent(self.windowID, Event` + eventTitle + `);
+    }
+}
+
+`)
+			skipDefaultWebViewDelegate:
+			}
+			// Check if this is an application event
+			if strings.HasPrefix(event, "Application") {
+				// Convert to UIApplicationDelegate method format
+				// e.g. "ApplicationDidBecomeActive" -> "applicationDidBecomeActive"
+				methodName := "application" + strings.TrimPrefix(event, "Application")
+				methodName = string(bytes.ToLower([]byte{methodName[0]})) + methodName[1:]
+
+				iosApplicationDelegateEvents.WriteString(`- (void)` + methodName + `:(UIApplication *)application {
+    if( hasListeners(Event` + eventTitle + `) ) {
+        processApplicationEvent(Event` + eventTitle + `, NULL);
+    }
+}
+
+`)
+			}
 		}
 	}
 
@@ -364,6 +424,80 @@ func main() {
 		panic(err)
 	}
 
+	// Declare buffer and flag for processing delegate files
+	var buffer bytes.Buffer
+	var inGeneratedEvents bool
+
+	// Load the iOS app_delegate.m file
+	iosAppDelegate, err := os.ReadFile("../../pkg/application/application_ios_delegate.m")
+	if err != nil {
+		panic(err)
+	}
+	// iterate over the lines until we reach a line that says "// GENERATED EVENTS START"
+	// then we insert the events
+	// then we iterate until we reach a line that says "// GENERATED EVENTS END"
+	// then we write the file
+	buffer.Reset()
+	inGeneratedEvents = false
+	for _, line := range bytes.Split(iosAppDelegate, []byte{'\n'}) {
+		if bytes.Contains(line, []byte("// GENERATED EVENTS START")) {
+			inGeneratedEvents = true
+			buffer.WriteString("// GENERATED EVENTS START\n")
+			buffer.WriteString(iosApplicationDelegateEvents.String())
+			continue
+		}
+		if bytes.Contains(line, []byte("// GENERATED EVENTS END")) {
+			inGeneratedEvents = false
+			buffer.WriteString("// GENERATED EVENTS END\n")
+			continue
+		}
+		if !inGeneratedEvents {
+			if len(line) > 0 {
+				buffer.Write(line)
+				buffer.WriteString("\n")
+			}
+		}
+	}
+	err = os.WriteFile("../../pkg/application/application_ios_delegate.m", buffer.Bytes(), 0755)
+	if err != nil {
+		panic(err)
+	}
+
+	// Load the iOS webview_window.m file
+	iosWebviewWindow, err := os.ReadFile("../../pkg/application/webview_window_ios.m")
+	if err != nil {
+		panic(err)
+	}
+	// iterate over the lines until we reach a line that says "// GENERATED EVENTS START"
+	// then we insert the events
+	// then we iterate until we reach a line that says "// GENERATED EVENTS END"
+	// then we write the file
+	buffer.Reset()
+	for _, line := range bytes.Split(iosWebviewWindow, []byte{'\n'}) {
+		if bytes.Contains(line, []byte("// GENERATED EVENTS START")) {
+			inGeneratedEvents = true
+			buffer.WriteString("// GENERATED EVENTS START\n")
+			// Only write webview delegate events, not view controller lifecycle events
+			buffer.WriteString(iosWebviewDelegateEvents.String())
+			continue
+		}
+		if bytes.Contains(line, []byte("// GENERATED EVENTS END")) {
+			inGeneratedEvents = false
+			buffer.WriteString("// GENERATED EVENTS END\n")
+			continue
+		}
+		if !inGeneratedEvents {
+			if len(line) > 0 {
+				buffer.Write(line)
+				buffer.WriteString("\n")
+			}
+		}
+	}
+	err = os.WriteFile("../../pkg/application/webview_window_ios.m", buffer.Bytes(), 0755)
+	if err != nil {
+		panic(err)
+	}
+
 	// Load the window_delegate.m file
 	windowDelegate, err := os.ReadFile("../../pkg/application/webview_window_darwin.m")
 	if err != nil {
@@ -373,8 +507,7 @@ func main() {
 	// then we insert the events
 	// then we iterate until we reach a line that says "// GENERATED EVENTS END"
 	// then we write the file
-	var buffer bytes.Buffer
-	var inGeneratedEvents bool
+	buffer.Reset()
 	for _, line := range bytes.Split(windowDelegate, []byte{'\n'}) {
 		if bytes.Contains(line, []byte("// GENERATED EVENTS START")) {
 			inGeneratedEvents = true

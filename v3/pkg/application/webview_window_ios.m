@@ -1,13 +1,14 @@
 //go:build ios
-
 #import "webview_window_ios.h"
 #import "application_ios.h"
 #import "application_ios_delegate.h"
+#import "../events/events_ios.h"
 #import <stdlib.h>
-
+extern void processApplicationEvent(unsigned int, void* data);
+extern void processWindowEvent(unsigned int, unsigned int);
+extern bool hasListeners(unsigned int);
 // Buffer console messages until a WKWebView exists
 static NSMutableArray<NSString *> *pendingConsoleJS;
-
 // Subclass that optionally hides the input accessory toolbar based on global flag
 @interface WailsWebView : WKWebView @end
 @implementation WailsWebView
@@ -18,10 +19,8 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     return [super inputAccessoryView];
 }
 @end
-
 // MARK: - WailsSchemeHandler
 @implementation WailsSchemeHandler
-
 - (instancetype)initWithWindowID:(unsigned int)windowID {
     self = [super init];
     if (self) {
@@ -29,22 +28,17 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     }
     return self;
 }
-
 - (void)webView:(WKWebView *)webView startURLSchemeTask:(id<WKURLSchemeTask>)urlSchemeTask {
     NSURL *url = urlSchemeTask.request.URL;
     NSLog(@"[WailsSchemeHandler] start task: %@", url.absoluteString);
     ServeAssetRequest(self.windowID, (__bridge void*)urlSchemeTask);
 }
-
 - (void)webView:(WKWebView *)webView stopURLSchemeTask:(id<WKURLSchemeTask>)urlSchemeTask {
     NSLog(@"[WailsSchemeHandler] stop task");
 }
-
 @end
-
 // MARK: - WailsMessageHandler
 @implementation WailsMessageHandler
-
 - (instancetype)initWithWindowID:(unsigned int)windowID {
     self = [super init];
     if (self) {
@@ -52,7 +46,6 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     }
     return self;
 }
-
 - (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
     // Support both plain string messages and structured objects
     if ([message.body isKindOfClass:[NSString class]]) {
@@ -71,12 +64,9 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
         HandleJSMessage(self.windowID, (char *)[desc UTF8String]);
     }
 }
-
 @end
-
 // MARK: - WailsViewController
 @implementation WailsViewController
-
 - (instancetype)initWithWindowID:(unsigned int)windowID {
     self = [super init];
     if (self) {
@@ -84,10 +74,8 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     }
     return self;
 }
-
 - (void)viewDidLoad {
     [super viewDidLoad];
-
     WKWebViewConfiguration *config = [[WKWebViewConfiguration alloc] init];
     config.suppressesIncrementalRendering = YES;
     // Application name for UA (default to "wails.io" if not set)
@@ -110,7 +98,6 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     } else {
         config.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeAll;
     }
-
     // URL scheme handler and script bridge
     self.schemeHandler = [[WailsSchemeHandler alloc] initWithWindowID:self.windowID];
     [config setURLSchemeHandler:self.schemeHandler forURLScheme:@"wails"];
@@ -118,7 +105,6 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     // Register both handler names used by runtimes: "external" (current runtime) and "wails" (legacy)
     [config.userContentController addScriptMessageHandler:self.messageHandler name:@"external"];
     [config.userContentController addScriptMessageHandler:self.messageHandler name:@"wails"];
-
     self.webView = [[WailsWebView alloc] initWithFrame:self.view.bounds configuration:config];
     // Custom user agent if provided
     const char* userAgent = ios_get_user_agent();
@@ -131,7 +117,6 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     self.webView.allowsBackForwardNavigationGestures = ios_is_back_forward_gestures_enabled();
     // Link preview
     self.webView.allowsLinkPreview = ios_is_link_preview_disabled() ? NO : YES;
-
     // Configure scrolling & bounce & indicators
     UIScrollView *sv = self.webView.scrollView;
     bool scrollDisabled = ios_is_scroll_disabled();
@@ -148,7 +133,6 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     if (@available(iOS 11.0, *)) {
         sv.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     }
-
     // Inspector
     BOOL inspectorOn = ios_is_inspectable_disabled() ? NO : YES;
     if (@available(iOS 16.4, *)) {
@@ -156,13 +140,10 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     } else {
         @try { [self.webView setValue:@(inspectorOn) forKey:@"inspectable"]; } @catch (__unused NSException *e) {}
     }
-
     [self.view addSubview:self.webView];
-
     // Initial load triggers our scheme handler
     NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"wails://localhost/"]];
     [self.webView loadRequest:request];
-
     // Flush any pending console logs now that a webview exists
     dispatch_async(dispatch_get_main_queue(), ^{
         if (pendingConsoleJS.count > 0) {
@@ -172,7 +153,6 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
             [pendingConsoleJS removeAllObjects];
         }
     });
-
     // Enable native tabs if globally enabled
     BOOL tabsEnabled = ios_native_tabs_is_enabled();
     NSLog(@"[WailsViewController] viewDidLoad: ios_native_tabs_is_enabled=%d", tabsEnabled);
@@ -180,7 +160,6 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
         [self enableNativeTabs:YES];
     }
 }
-
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
     // Layout webView and optional tabBar respecting safe area
@@ -200,7 +179,6 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     CGFloat webBottom = safe.bottom + tabH;
     self.webView.frame = UIEdgeInsetsInsetRect(self.view.bounds, UIEdgeInsetsMake(webTop, safe.left, webBottom, safe.right));
 }
-
 - (void)enableNativeTabs:(BOOL)enabled {
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"[WailsViewController] enableNativeTabs called with enabled=%d, existingTabBar=%@", enabled, self.tabBar ? @"YES" : @"NO");
@@ -284,7 +262,6 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
         NSLog(@"[WailsViewController] Requested layout update (enableNativeTabs)");
     });
 }
-
 - (void)selectNativeTabIndex:(NSInteger)index {
     dispatch_async(dispatch_get_main_queue(), ^{
         if (!self.tabBar || self.tabBar.isHidden) return;
@@ -294,9 +271,7 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
         [self tabBar:self.tabBar didSelectItem:item];
     });
 }
-
 #pragma mark - UITabBarDelegate
-
 - (void)tabBar:(UITabBar *)tabBar didSelectItem:(UITabBarItem *)item {
     NSInteger idx = [tabBar.items indexOfObject:item];
     if (idx == NSNotFound) return;
@@ -304,7 +279,6 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     NSString *js = [NSString stringWithFormat:@"window.dispatchEvent(new CustomEvent('nativeTabSelected',{detail:{index:%ld}}));", (long)idx];
     [self executeJavaScript:js];
 }
-
 - (void)executeJavaScript:(NSString *)js {
     [self.webView evaluateJavaScript:js completionHandler:^(id result, NSError *error) {
         if (error) {
@@ -312,11 +286,35 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
         }
     }];
 }
+// GENERATED EVENTS START
+- (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation {
+    if( hasListeners(EventWebViewDidStartNavigation) ) {
+        processWindowEvent(self.windowID, EventWebViewDidStartNavigation);
+    }
+}
 
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
+    if( hasListeners(EventWebViewDidFinishNavigation) ) {
+        processWindowEvent(self.windowID, EventWebViewDidFinishNavigation);
+    }
+}
+
+- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation {
+    if( hasListeners(EventWebViewDidFailNavigation) ) {
+        processWindowEvent(self.windowID, EventWebViewDidFailNavigation);
+    }
+}
+
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
+    if( hasListeners(EventWebViewDecidePolicyForNavigationAction) ) {
+        processWindowEvent(self.windowID, EventWebViewDecidePolicyForNavigationAction);
+    }
+    decisionHandler(WKNavigationActionPolicyAllow);
+}
+
+// GENERATED EVENTS END
 @end
-
 // MARK: - C bridges used by Go
-
 unsigned int ios_create_webview(void) {
     __block unsigned int windowID = nextWindowID++;
     if (!appDelegate || !appDelegate.window) {
@@ -332,7 +330,6 @@ unsigned int ios_create_webview(void) {
     });
     return windowID;
 }
-
 void* ios_create_webview_with_id(unsigned int wailsID) {
     __block WailsViewController *viewController = nil;
     if (!appDelegate || !appDelegate.window) {
@@ -355,7 +352,6 @@ void* ios_create_webview_with_id(unsigned int wailsID) {
     }
     return (__bridge_retained void*)viewController;
 }
-
 void ios_execute_javascript(unsigned int windowID, const char* js) {
     if (!js) return;
     NSString *jsString = [NSString stringWithUTF8String:js];
@@ -365,14 +361,12 @@ void ios_execute_javascript(unsigned int windowID, const char* js) {
         }
     });
 }
-
 void ios_window_exec_js(void* viewController, const char* js) {
     if (!viewController || !js) return;
     WailsViewController *vc = (__bridge WailsViewController *)viewController;
     NSString *jsString = [NSString stringWithUTF8String:js];
     dispatch_async(dispatch_get_main_queue(), ^{ [vc executeJavaScript:jsString]; });
 }
-
 void ios_window_load_url(void* viewController, const char* url) {
     if (!viewController || !url) return;
     WailsViewController *vc = (__bridge WailsViewController *)viewController;
@@ -383,7 +377,6 @@ void ios_window_load_url(void* viewController, const char* url) {
         [vc.webView loadRequest:[NSURLRequest requestWithURL:nsurl]];
     });
 }
-
 void ios_window_set_html(void* viewController, const char* html) {
     if (!viewController || !html) return;
     WailsViewController *vc = (__bridge WailsViewController *)viewController;
@@ -392,18 +385,15 @@ void ios_window_set_html(void* viewController, const char* html) {
         [vc.webView loadHTMLString:htmlString baseURL:[NSURL URLWithString:@"wails://localhost/"]];
     });
 }
-
 unsigned int ios_window_get_id(void* viewController) {
     if (!viewController) return 0;
     WailsViewController *vc = (__bridge WailsViewController *)viewController;
     return vc.windowID;
 }
-
 void ios_window_release_handle(void* viewController) {
     if (!viewController) return;
     CFRelease(viewController);
 }
-
 // Broadcast a console message to all active WKWebViews
 void ios_console_log(const char* level, const char* message) {
     if (!message) return;
@@ -437,7 +427,6 @@ void ios_console_log(const char* level, const char* message) {
         NSLog(@"[ios_console_log] Delivered log to %lu webview(s)", (unsigned long)count);
     });
 }
-
 // Set background color (applies to VC view, WKWebView, and app window)
 void ios_window_set_background_color(void* viewController, unsigned char r, unsigned char g, unsigned char b, unsigned char a) {
     if (!viewController) return;

@@ -3,25 +3,24 @@
 package application
 
 import (
-	"fmt"
-	"net/http"
+	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
 const (
-	IOSHapticsImpact = 0
-	IOSDeviceInfo    = 1
-	IOSScrollSetEnabled                   = 2
-	IOSScrollSetBounceEnabled             = 3
-	IOSScrollSetIndicatorsEnabled         = 4
-	IOSNavigationSetBackForwardGestures   = 5
-	IOSLinksSetPreviewEnabled             = 6
-	IOSDebugSetInspectableEnabled         = 7
-	IOSUserAgentSet                       = 8
+	IOSHapticsImpact                    = 0
+	IOSDeviceInfo                       = 1
+	IOSScrollSetEnabled                 = 2
+	IOSScrollSetBounceEnabled           = 3
+	IOSScrollSetIndicatorsEnabled       = 4
+	IOSNavigationSetBackForwardGestures = 5
+	IOSLinksSetPreviewEnabled           = 6
+	IOSDebugSetInspectableEnabled       = 7
+	IOSUserAgentSet                     = 8
 )
 
 var iosMethodNames = map[int]string{
-	IOSHapticsImpact: "Haptics.Impact",
-	IOSDeviceInfo:    "Device.Info",
+	IOSHapticsImpact:                    "Haptics.Impact",
+	IOSDeviceInfo:                       "Device.Info",
 	IOSScrollSetEnabled:                 "Scroll.SetEnabled",
 	IOSScrollSetBounceEnabled:           "Scroll.SetBounceEnabled",
 	IOSScrollSetIndicatorsEnabled:       "Scroll.SetIndicatorsEnabled",
@@ -31,68 +30,62 @@ var iosMethodNames = map[int]string{
 	IOSUserAgentSet:                     "UserAgent.Set",
 }
 
-func (m *MessageProcessor) processIOSMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
-	switch method {
+func (m *MessageProcessor) processIOSMethod(req *RuntimeRequest, window Window) (any, error) {
+	args := req.Args.AsMap()
+
+	switch req.Method {
 	case IOSHapticsImpact:
-		args, _ := params.Args()
 		style := "medium"
 		if s := args.String("style"); s != nil {
 			style = *s
 		}
 		iosHapticsImpact(style)
-		m.ok(rw)
+		return unit, nil
 	case IOSDeviceInfo:
-		m.json(rw, iosDeviceInfo())
+		return iosDeviceInfo(), nil
 	case IOSScrollSetEnabled:
-		args, _ := params.Args()
 		enabled := true
 		if b := args.Bool("enabled"); b != nil {
 			enabled = *b
 		}
 		iosSetScrollEnabled(enabled)
-		m.ok(rw)
+		return unit, nil
 	case IOSScrollSetBounceEnabled:
-		args, _ := params.Args()
 		enabled := true
 		if b := args.Bool("enabled"); b != nil {
 			enabled = *b
 		}
 		iosSetBounceEnabled(enabled)
-		m.ok(rw)
+		return unit, nil
 	case IOSScrollSetIndicatorsEnabled:
-		args, _ := params.Args()
 		enabled := true
 		if b := args.Bool("enabled"); b != nil {
 			enabled = *b
 		}
 		iosSetScrollIndicatorsEnabled(enabled)
-		m.ok(rw)
+		return unit, nil
 	case IOSNavigationSetBackForwardGestures:
-		args, _ := params.Args()
 		enabled := false
 		if b := args.Bool("enabled"); b != nil {
 			enabled = *b
 		}
 		iosSetBackForwardGesturesEnabled(enabled)
-		m.ok(rw)
+		return unit, nil
 	case IOSLinksSetPreviewEnabled:
-		args, _ := params.Args()
 		enabled := true
 		if b := args.Bool("enabled"); b != nil {
 			enabled = *b
 		}
 		iosSetLinkPreviewEnabled(enabled)
-		m.ok(rw)
+		return unit, nil
 	case IOSDebugSetInspectableEnabled:
-		args, _ := params.Args()
 		enabled := true
 		if b := args.Bool("enabled"); b != nil {
 			enabled = *b
 		}
 		iosSetInspectableEnabled(enabled)
-		m.ok(rw)
+		return unit, nil
 	case IOSUserAgentSet:
-		args, _ := params.Args()
 		ua := ""
 		if s := args.String("ua"); s != nil {
 			ua = *s
@@ -100,13 +93,13 @@ func (m *MessageProcessor) processIOSMethod(method int, rw http.ResponseWriter, 
 			ua = *s2
 		}
 		iosSetCustomUserAgent(ua)
-		m.ok(rw)
+		return unit, nil
 	default:
-		m.httpError(rw, "Invalid iOS call:", errUnknownMethod(method))
-		return
+		return nil, errs.NewInvalidIOSCallErrorf("unknown method: %d", req.Method)
 	}
-
-	m.Info("Runtime call:", "method", "IOS."+iosMethodNames[method])
 }
 
-func errUnknownMethod(m int) error { return fmt.Errorf("unknown method: %d", m) }
+// processAndroidMethod is a stub on iOS
+func (m *MessageProcessor) processAndroidMethod(req *RuntimeRequest, window Window) (any, error) {
+	return nil, errs.NewInvalidAndroidCallErrorf("Android methods not available on iOS")
+}
