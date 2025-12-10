@@ -123,7 +123,15 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 		// if we have enums for this package, add them as well
 		var enums, enumsExist = b.enumsToGenerateTS[packageName]
 		if enumsExist {
-			for enumName, enum := range enums {
+			// Sort the enum names first to make the output deterministic
+			sortedEnumNames := make([]string, 0, len(enums))
+			for enumName := range enums {
+				sortedEnumNames = append(sortedEnumNames, enumName)
+			}
+			sort.Strings(sortedEnumNames)
+
+			for _, enumName := range sortedEnumNames {
+				enum := enums[enumName]
 				fqemumname := packageName + "." + enumName
 				if seen.Contains(fqemumname) {
 					continue
@@ -172,7 +180,7 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 	}
 
 	// Sort the package names first to make the output deterministic
-	sortedPackageNames := make([]string, 0)
+	sortedPackageNames := make([]string, 0, len(models))
 	for packageName := range models {
 		sortedPackageNames = append(sortedPackageNames, packageName)
 	}
