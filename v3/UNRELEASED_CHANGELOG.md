@@ -1,6 +1,6 @@
 # Unreleased Changes
 
-<!-- 
+<!--
 This file is used to collect changelog entries for the next v3-alpha release.
 Add your changes under the appropriate sections below.
 
@@ -17,16 +17,15 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add origin to raw message handler by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/4710)
-- Add universal link support for macOS by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/4712)
-- Refactor binding transport layer by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/4702)
-- Added aria-label identifiers to the helloworld templates so that the example app can be easily tested by Appium test clients by @chinenual in [PR](https://github.com/wailsapp/wails/pull/4760)
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
+- Added missing window name to request headers, so it can be logged with the window ID by @jasikpark in [#4687](https://github.com/wailsapp/wails/pull/4687)
+
+- Fix issue where `common:update:build-assets` command overwrites instead of updating plist files by @rxliuli in [#4636](https://github.com/wailsapp/wails/pull/4636)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
