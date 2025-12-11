@@ -27,6 +27,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Fix iOS service stubs causing build failures due to non-existent package import by @leaanthony
 - Fix structured logging in debug/info methods causing "no formatting directives" errors by @leaanthony
 - Remove temporary debug print statements accidentally included from mobile platform merge by @leaanthony
+- Fix WebKitGTK crash on Wayland with NVIDIA GPUs (Error 71 Protocol error) by auto-disabling DMA-BUF renderer by @leaanthony
 <!-- Bug fixes -->
 
 ## Deprecated

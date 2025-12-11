@@ -133,11 +133,6 @@ func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 
 	req.Header = header
 
-	// Debug iOS headers
-	if strings.Contains(uri, "wails://") {
-		fmt.Printf("🔍 iOS Request: URI=%s Headers=%v\n", uri, header)
-	}
-
 	if req.RemoteAddr == "" {
 		// 192.0.2.0/24 is "TEST-NET" in RFC 5737
 		req.RemoteAddr = "192.0.2.1:1234"
@@ -160,7 +155,6 @@ func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 	// iOS uses "localhost" while other platforms might use different hosts
 	// Skip host check for iOS requests from wails:// scheme
 	if expectedHost := a.ExpectedWebViewHost; expectedHost != "" && expectedHost != req.Host && !strings.HasPrefix(uri, "wails://") {
-		fmt.Printf("🔴 HOST MISMATCH: Expected='%s' Got='%s' URI=%s\n", expectedHost, req.Host, uri)
 		a.webviewRequestErrorHandler(uri, rw, fmt.Errorf("expected host '%s' in request, but was '%s'", expectedHost, req.Host))
 		return
 	}
