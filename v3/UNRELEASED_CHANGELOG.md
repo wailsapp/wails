@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add NVIDIA driver version info to `wails3 doctor` output on Linux by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
