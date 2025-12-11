@@ -3,7 +3,6 @@
 package application
 
 import (
-	"fmt"
 	"github.com/go-git/go-git/v5"
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/version"
@@ -30,14 +29,11 @@ func init() {
 
 // We use this to patch the application to production mode.
 func newApplication(options Options) *App {
-	fmt.Println("🟣 [application_debug.go] START newApplication()")
 	result := &App{
 		isDebugMode: true,
 		options:     options,
 	}
-	fmt.Println("🟣 [application_debug.go] About to call result.init()")
 	result.init()
-	fmt.Println("🟣 [application_debug.go] END newApplication() - App created")
 	return result
 }
 

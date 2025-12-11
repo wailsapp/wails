@@ -17,12 +17,18 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add NVIDIA driver version info to `wails3 doctor` output on Linux by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
+- **BREAKING**: Production builds are now the default. To create dev builds, set `DEV=true` in your Taskfiles. Generate a new project for examples by @leaanthony
 
 ## Fixed
 - Fix default `config.yml` would run `wails3 dev` with a production build by @mbaklor
+- Fix iOS service stubs causing build failures due to non-existent package import by @leaanthony
+- Fix structured logging in debug/info methods causing "no formatting directives" errors by @leaanthony
+- Remove temporary debug print statements accidentally included from mobile platform merge by @leaanthony
+- Fix WebKitGTK crash on Wayland with NVIDIA GPUs (Error 71 Protocol error) by auto-disabling DMA-BUF renderer by @leaanthony
 <!-- Bug fixes -->
 
 ## Deprecated

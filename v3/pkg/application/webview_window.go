@@ -570,16 +570,13 @@ func (w *WebviewWindow) SetMaxSize(maxWidth, maxHeight int) Window {
 // ExecJS executes the given javascript in the context of the window.
 func (w *WebviewWindow) ExecJS(js string) {
 	if w.impl == nil || w.isDestroyed() {
-		fmt.Println("🔴 [ExecJS] Window impl is nil or destroyed")
 		return
 	}
 	if w.runtimeLoaded {
-		fmt.Println("🟢 [ExecJS] Runtime loaded, executing JS immediately")
 		InvokeSync(func() {
 			w.impl.execJS(js)
 		})
 	} else {
-		fmt.Printf("🟠 [ExecJS] Runtime NOT loaded yet, queuing JS (queue size: %d)\n", len(w.pendingJS)+1)
 		w.pendingJS = append(w.pendingJS, js)
 	}
 }
@@ -726,12 +723,10 @@ func (w *WebviewWindow) HandleMessage(message string) {
 			}
 		}
 	case message == "wails:runtime:ready":
-		fmt.Printf("🟢 [WebviewWindow] Runtime ready! Pending JS count: %d\n", len(w.pendingJS))
 		w.emit(events.Common.WindowRuntimeReady)
 		w.runtimeLoaded = true
 		w.SetResizable(!w.options.DisableResize)
-		for i, js := range w.pendingJS {
-			fmt.Printf("🟢 [WebviewWindow] Executing pending JS %d/%d\n", i+1, len(w.pendingJS))
+		for _, js := range w.pendingJS {
 			w.ExecJS(js)
 		}
 		w.pendingJS = nil
@@ -1182,9 +1177,7 @@ func (w *WebviewWindow) SetFrameless(frameless bool) Window {
 }
 
 func (w *WebviewWindow) DispatchWailsEvent(event *CustomEvent) {
-	fmt.Printf("🔵 [WebviewWindow.DispatchWailsEvent] Dispatching to frontend: %s\n", event.Name)
 	msg := fmt.Sprintf("_wails.dispatchWailsEvent(%s);", event.ToJSON())
-	fmt.Printf("🔵 [WebviewWindow.DispatchWailsEvent] JS command: %s\n", msg)
 	w.ExecJS(msg)
 }
 
@@ -1242,7 +1235,6 @@ func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string, dropZone *D
 	)
 	for _, listener := range listeners {
 		if listener == nil {
-			fmt.Println("[DragDropDebug] HandleDragAndDropMessage: Skipping nil listener")
 			continue
 		}
 		listener.callback(thisEvent)
