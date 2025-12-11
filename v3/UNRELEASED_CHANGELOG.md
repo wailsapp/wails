@@ -22,6 +22,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Changes in existing functionality -->
 
 ## Fixed
+- Fix default `config.yml` would run `wails3 dev` with a production build by @mbaklor
 <!-- Bug fixes -->
 
 ## Deprecated
