@@ -472,7 +472,6 @@ func (a *App) handleFatalError(err error) {
 }
 
 func (a *App) init() {
-	fmt.Println("🟠 [application.go] START App.init()")
 	a.ctx, a.cancel = context.WithCancel(context.Background())
 	a.applicationEventHooks = make(map[uint][]*eventHook)
 	a.applicationEventListeners = make(map[uint][]*EventListener)
@@ -485,7 +484,6 @@ func (a *App) init() {
 	a.wailsEventListeners = make([]WailsEventListener, 0)
 
 	// Initialize managers
-	fmt.Println("🟠 [application.go] Initializing managers...")
 	a.Window = newWindowManager(a)
 	a.ContextMenu = newContextMenuManager(a)
 	a.KeyBinding = newKeyBindingManager(a)
@@ -497,7 +495,6 @@ func (a *App) init() {
 	a.Screen = newScreenManager(a)
 	a.Clipboard = newClipboardManager(a)
 	a.SystemTray = newSystemTrayManager(a)
-	fmt.Println("🟠 [application.go] END App.init()")
 }
 
 func (a *App) Capabilities() capabilities.Capabilities {
@@ -550,12 +547,10 @@ func (a *App) error(message string, args ...any) {
 }
 
 func (a *App) Run() error {
-	fmt.Println("🟠 [application.go] START App.Run()")
 	a.runLock.Lock()
 	// Prevent double invocations.
 	if a.starting || a.running {
 		a.runLock.Unlock()
-		fmt.Println("🟠 [application.go] App already starting/running")
 		return errors.New("application is running or a previous run has failed")
 	}
 	// Block further service registrations.
@@ -566,17 +561,12 @@ func (a *App) Run() error {
 	defer a.cancel()
 
 	// Call post-create hooks
-	fmt.Println("🟠 [application.go] About to call preRun()")
 	err := a.preRun()
 	if err != nil {
-		fmt.Printf("🟠 [application.go] preRun() failed: %v\n", err)
 		return err
 	}
-	fmt.Println("🟠 [application.go] preRun() completed")
 
-	fmt.Println("🟠 [application.go] About to call newPlatformApp()")
 	a.impl = newPlatformApp(a)
-	fmt.Println("🟠 [application.go] newPlatformApp() completed")
 
 	// Ensure services are shut down in case of failures.
 	defer a.shutdownServices()
@@ -900,10 +890,8 @@ func SaveFileDialog() *SaveFileDialogStruct {
 }
 
 func (a *App) dispatchOnMainThread(fn func()) {
-	fmt.Println("🟠 [application.go] dispatchOnMainThread() called")
 	// If we are on the main thread, just call the function
 	if a.impl.isOnMainThread() {
-		fmt.Println("🟠 [application.go] Already on main thread, executing directly")
 		fn()
 		return
 	}
@@ -912,7 +900,6 @@ func (a *App) dispatchOnMainThread(fn func()) {
 	id := generateFunctionStoreID()
 	mainThreadFunctionStore[id] = fn
 	mainThreadFunctionStoreLock.Unlock()
-	fmt.Printf("🟠 [application.go] Dispatching function with ID %d to main thread\n", id)
 	// Call platform specific dispatch function
 	a.impl.dispatchOnMainThread(id)
 }
