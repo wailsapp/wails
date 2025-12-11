@@ -363,7 +363,7 @@ func processMessage(windowID C.uint, message *C.char, origin *C.char, isMainFram
 func processURLRequest(windowID C.uint, wkUrlSchemeTask unsafe.Pointer) {
 	window, ok := globalApplication.Window.GetByID(uint(windowID))
 	if !ok || window == nil {
-		globalApplication.debug("could not find window with id: %d", windowID)
+		globalApplication.debug("could not find window with id", "windowID", windowID)
 		return
 	}
 

@@ -570,7 +570,7 @@ func (s *windowsSystemTray) Show() {
 	nid.DwStateMask = w32.NIS_HIDDEN
 	nid.DwState = 0
 	if !w32.ShellNotifyIcon(w32.NIM_MODIFY, &nid) {
-		globalApplication.debug("ShellNotifyIcon NIM_MODIFY show failed: %v", syscall.GetLastError())
+		globalApplication.debug("ShellNotifyIcon NIM_MODIFY show failed", "error", syscall.GetLastError())
 	}
 }
 
@@ -584,7 +584,7 @@ func (s *windowsSystemTray) Hide() {
 	nid.DwStateMask = w32.NIS_HIDDEN
 	nid.DwState = w32.NIS_HIDDEN
 	if !w32.ShellNotifyIcon(w32.NIM_MODIFY, &nid) {
-		globalApplication.debug("ShellNotifyIcon NIM_MODIFY hide failed: %v", syscall.GetLastError())
+		globalApplication.debug("ShellNotifyIcon NIM_MODIFY hide failed", "error", syscall.GetLastError())
 	}
 }
 
