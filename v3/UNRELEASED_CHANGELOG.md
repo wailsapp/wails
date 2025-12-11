@@ -23,6 +23,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 - Fix default `config.yml` would run `wails3 dev` with a production build by @mbaklor
+- Fix iOS service stubs causing build failures due to non-existent package import by @leaanthony
+- Fix structured logging in debug/info methods causing "no formatting directives" errors by @leaanthony
 <!-- Bug fixes -->
 
 ## Deprecated
