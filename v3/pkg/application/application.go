@@ -519,31 +519,21 @@ func (a *App) GetPID() int {
 }
 
 func (a *App) info(message string, args ...any) {
-    if a.Logger != nil {
-        go func() {
-            defer handlePanic()
-            // Avoid slog BADKEY by formatting printf-style messages ourselves
-            if len(args) > 0 {
-                a.Logger.Info(fmt.Sprintf(message, args...))
-            } else {
-                a.Logger.Info(message)
-            }
-        }()
-    }
+	if a.Logger != nil {
+		go func() {
+			defer handlePanic()
+			a.Logger.Info(message, args...)
+		}()
+	}
 }
 
 func (a *App) debug(message string, args ...any) {
-    if a.Logger != nil {
-        go func() {
-            defer handlePanic()
-            // Avoid slog BADKEY by formatting printf-style messages ourselves
-            if len(args) > 0 {
-                a.Logger.Debug(fmt.Sprintf(message, args...))
-            } else {
-                a.Logger.Debug(message)
-            }
-        }()
-    }
+	if a.Logger != nil {
+		go func() {
+			defer handlePanic()
+			a.Logger.Debug(message, args...)
+		}()
+	}
 }
 
 func (a *App) fatal(message string, args ...any) {
