@@ -20,7 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
-- **BREAKING**: Production builds are now the default. To create dev builds, set `DEV=true` in your Taskfiles by @leaanthony
+- **BREAKING**: Production builds are now the default. To create dev builds, set `DEV=true` in your Taskfiles. Generate a new project for examples by @leaanthony
 
 ## Fixed
 - Fix default `config.yml` would run `wails3 dev` with a production build by @mbaklor

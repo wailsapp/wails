@@ -98,7 +98,7 @@ func LogInfo(source *C.char, message *C.char) {
 	iosConsoleLogf("info", "[iOS-%s] %s", goSource, goMessage)
 
 	if globalApplication != nil && globalApplication.Logger != nil {
-		globalApplication.info("[iOS-%s] %s", goSource, goMessage)
+		globalApplication.info("iOS log", "source", goSource, "message", goMessage)
 	}
 }
 
@@ -375,7 +375,7 @@ func HandleJSMessage(windowID C.uint, message *C.char) {
 			}
 
 			if globalApplication != nil {
-				globalApplication.info("[HandleJSMessage] Received '%s' from client", name)
+				globalApplication.info("HandleJSMessage received from client", "name", name)
 			}
 			windowMessageBuffer <- &windowMessage{
 				windowId: uint(windowID),
@@ -386,7 +386,7 @@ func HandleJSMessage(windowID C.uint, message *C.char) {
 		// Fallback for structured payloads without a "name" field
 		if name, ok := msgData["message"].(string); ok && name != "" {
 			if globalApplication != nil {
-				globalApplication.info("[HandleJSMessage] Received raw message field '%s' from client", name)
+				globalApplication.info("HandleJSMessage received raw message field from client", "name", name)
 			}
 			windowMessageBuffer <- &windowMessage{
 				windowId: uint(windowID),
@@ -404,7 +404,7 @@ func HandleJSMessage(windowID C.uint, message *C.char) {
 	// If not JSON or JSON without name/message, treat the entire payload as a string event
 	if msg != "" {
 		if globalApplication != nil {
-			globalApplication.info("[HandleJSMessage] Received raw '%s' from client", msg)
+			globalApplication.info("HandleJSMessage received raw message from client", "message", msg)
 		}
 		windowMessageBuffer <- &windowMessage{
 			windowId: uint(windowID),

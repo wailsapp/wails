@@ -750,7 +750,7 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	}
 	a.windowsLock.RUnlock()
 
-	a.info("handleWindowMessage: Looking for window ID %d, available IDs: %v", event.windowId, ids)
+	a.info("handleWindowMessage: Looking for window", "windowId", event.windowId, "availableIDs", ids)
 
 	if !ok {
 		a.warning("WebviewWindow #%d not found", event.windowId)
@@ -758,7 +758,7 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	}
 	// Check if the message starts with "wails:"
 	if strings.HasPrefix(event.message, "wails:") {
-		a.info("handleWindowMessage: Processing wails message: %s", event.message)
+		a.info("handleWindowMessage: Processing wails message", "message", event.message)
 		window.HandleMessage(event.message)
 	} else {
 		if a.options.RawMessageHandler != nil {
@@ -771,12 +771,10 @@ func (a *App) handleWebViewRequest(request *webViewAssetRequest) {
 	defer handlePanic()
 	// Log that we're processing the request
 	url, _ := request.Request.URL()
-	a.info(" handleWebViewRequest: Processing request for URL: %s", url)
-	fmt.Printf(" handleWebViewRequest: About to call ServeWebViewRequest for: %s\n", url)
+	a.info("handleWebViewRequest: Processing request", "url", url)
 	// IMPORTANT: pass the wrapper request so our injected headers (x-wails-window-id/name) are used
 	a.assets.ServeWebViewRequest(request)
-	a.info(" handleWebViewRequest: Request processing complete for: %s", url)
-	fmt.Printf(" handleWebViewRequest: Request complete for: %s\n", url)
+	a.info("handleWebViewRequest: Request processing complete", "url", url)
 }
 
 func (a *App) handleWindowEvent(event *windowEvent) {
