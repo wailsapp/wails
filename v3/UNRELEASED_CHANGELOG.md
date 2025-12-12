@@ -16,6 +16,7 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
+- Add `XDG_SESSION_TYPE` to `wails3 doctor` output on Linux
 <!-- New features, capabilities, or enhancements -->
 
 ## Changed

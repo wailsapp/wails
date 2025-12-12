@@ -13,10 +13,21 @@ import (
 func getInfo() (map[string]string, bool) {
 	result := make(map[string]string)
 
+	// Check session type (X11/Wayland)
+	result["XDG_SESSION_TYPE"] = getSessionType()
+
 	// Check for NVIDIA driver
 	result["NVIDIA Driver"] = getNvidiaDriverInfo()
 
 	return result, true
+}
+
+func getSessionType() string {
+	sessionType := os.Getenv("XDG_SESSION_TYPE")
+	if sessionType == "" {
+		return "unset"
+	}
+	return sessionType
 }
 
 func getNvidiaDriverInfo() string {
