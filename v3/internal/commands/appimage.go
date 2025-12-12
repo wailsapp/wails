@@ -190,9 +190,17 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 
 	cmd := fmt.Sprintf("%s --appimage-extract-and-run --appdir %s --output appimage --plugin gtk", linuxdeployAppImage, appDir)
 	s.SETENV("DEPLOY_GTK_VERSION", DeployGtkVersion)
+
+	// Check if system libraries use .relr.dyn sections (modern toolchains)
+	// If so, disable stripping as linuxdeploy's bundled strip can't handle them
+	if hasRelrDynSections() {
+		term.Infof("Detected modern toolchain (.relr.dyn sections), disabling stripping for compatibility. See: https://v3.wails.io/guides/build/linux#appimage-strip-compatibility")
+		s.SETENV("NO_STRIP", "1")
+	}
+
 	output, err := s.EXEC(cmd)
 	if err != nil {
-		println(output)
+		fmt.Println(string(output))
 		return err
 	}
 
@@ -247,4 +255,26 @@ func findGTKFiles(files []string) ([]string, error) {
 		return nil, errors.New("Unable to locate all required files: " + strings.Join(notFound, ", "))
 	}
 	return found, nil
+}
+
+// hasRelrDynSections checks if system libraries use .relr.dyn sections
+// which are incompatible with linuxdeploy's bundled strip binary.
+// This is common on modern Linux distributions (Arch, Fedora 39+, Ubuntu 24.04+).
+func hasRelrDynSections() bool {
+	// Check common GTK library that will be bundled
+	testLibs := []string{
+		"/usr/lib/libgtk-3.so.0",
+		"/usr/lib64/libgtk-3.so.0",
+		"/usr/lib/x86_64-linux-gnu/libgtk-3.so.0",
+	}
+
+	for _, lib := range testLibs {
+		if _, err := os.Stat(lib); err == nil {
+			output, err := s.EXEC(fmt.Sprintf("readelf -S %s", lib))
+			if err == nil && strings.Contains(string(output), ".relr.dyn") {
+				return true
+			}
+		}
+	}
+	return false
 }
