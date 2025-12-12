@@ -4,7 +4,6 @@ package application
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -385,12 +384,7 @@ func appName() string {
 func appNew(name string) pointer {
 	C.install_signal_handlers()
 
-	// prevent leading number
-	if matched, _ := regexp.MatchString(`^\d+`, name); matched {
-		name = fmt.Sprintf("_%s", name)
-	}
-	name = strings.Replace(name, "(", "_", -1)
-	name = strings.Replace(name, ")", "_", -1)
+	// Name is already sanitized by sanitizeAppName() in application_linux.go
 	appId := fmt.Sprintf("org.wails.%s", name)
 	nameC := C.CString(appId)
 	defer C.free(unsafe.Pointer(nameC))
@@ -1169,6 +1163,11 @@ func (w *linuxWebviewWindow) windowShow() {
 	if w.gtkWidget() == nil {
 		return
 	}
+	// Realize the window first to ensure it has a valid GdkWindow.
+	// This prevents crashes on Wayland when appmenu-gtk-module tries to
+	// set DBus properties for global menu integration before the window
+	// is fully realized. See: https://github.com/wailsapp/wails/issues/4769
+	C.gtk_widget_realize(w.gtkWidget())
 	C.gtk_widget_show_all(w.gtkWidget())
 }
 

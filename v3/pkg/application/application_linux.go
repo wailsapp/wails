@@ -16,6 +16,7 @@ import "C"
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"slices"
 	"strings"
 	"sync"
@@ -26,6 +27,29 @@ import (
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
+
+// sanitizeAppName sanitizes the application name to be a valid GTK/D-Bus application ID.
+// Valid IDs contain only alphanumeric characters, hyphens, and underscores.
+// They must not start with a digit.
+var invalidAppNameChars = regexp.MustCompile(`[^a-zA-Z0-9_-]`)
+var leadingDigits = regexp.MustCompile(`^[0-9]+`)
+
+func sanitizeAppName(name string) string {
+	// Replace invalid characters with underscores
+	name = invalidAppNameChars.ReplaceAllString(name, "_")
+	// Prefix with underscore if starts with digit
+	name = leadingDigits.ReplaceAllString(name, "_$0")
+	// Remove consecutive underscores
+	for strings.Contains(name, "__") {
+		name = strings.ReplaceAll(name, "__", "_")
+	}
+	// Trim leading/trailing underscores
+	name = strings.Trim(name, "_")
+	if name == "" {
+		name = "wailsapp"
+	}
+	return strings.ToLower(name)
+}
 
 func init() {
 	// FIXME: This should be handled appropriately in the individual files most likely.
@@ -250,11 +274,7 @@ func (a *linuxApp) monitorThemeChanges() {
 }
 
 func newPlatformApp(parent *App) *linuxApp {
-
-	name := strings.ToLower(strings.Replace(parent.options.Name, " ", "", -1))
-	if name == "" {
-		name = "undefined"
-	}
+	name := sanitizeAppName(parent.options.Name)
 	app := &linuxApp{
 		parent:      parent,
 		application: appNew(name),
