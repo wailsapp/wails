@@ -178,6 +178,7 @@ var (
 	gtkWidgetGetWindow              func(pointer) pointer
 	gtkWidgetHide                   func(pointer)
 	gtkWidgetIsVisible              func(pointer) bool
+	gtkWidgetRealize                func(pointer)
 	gtkWidgetShow                   func(pointer)
 	gtkWidgetShowAll                func(pointer)
 	gtkWidgetSetAppPaintable        func(pointer, int)
@@ -330,6 +331,7 @@ func init() {
 	purego.RegisterLibFunc(&gtkWidgetGetWindow, gtk, "gtk_widget_get_window")
 	purego.RegisterLibFunc(&gtkWidgetHide, gtk, "gtk_widget_hide")
 	purego.RegisterLibFunc(&gtkWidgetIsVisible, gtk, "gtk_widget_is_visible")
+	purego.RegisterLibFunc(&gtkWidgetRealize, gtk, "gtk_widget_realize")
 	purego.RegisterLibFunc(&gtkWidgetSetAppPaintable, gtk, "gtk_widget_set_app_paintable")
 	purego.RegisterLibFunc(&gtkWidgetSetName, gtk, "gtk_widget_set_name")
 	purego.RegisterLibFunc(&gtkWidgetSetSensitive, gtk, "gtk_widget_set_sensitive")
@@ -863,6 +865,11 @@ func windowResize(window pointer, width, height int) {
 }
 
 func windowShow(window pointer) {
+	// Realize the window first to ensure it has a valid GdkWindow.
+	// This prevents crashes on Wayland when appmenu-gtk-module tries to
+	// set DBus properties for global menu integration before the window
+	// is fully realized. See: https://github.com/wailsapp/wails/issues/4769
+	gtkWidgetRealize(pointer(window))
 	gtkWidgetShowAll(pointer(window))
 }
 

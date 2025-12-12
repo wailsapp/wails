@@ -22,6 +22,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Changes in existing functionality -->
 
 ## Fixed
+- Fix window menu crash on Wayland caused by appmenu-gtk-module accessing unrealized window (#4769)
 <!-- Bug fixes -->
 
 ## Deprecated
