@@ -1241,6 +1241,24 @@ func getPrimaryScreen() (*Screen, error) {
 }
 
 func windowSetGeometryHints(window pointer, minWidth, minHeight, maxWidth, maxHeight int) {
+	// On Wayland, calculate and cache the decorator offset (difference between
+	// allocated size and actual window size) on first call.
+	if isWayland() {
+		var windowWidth, windowHeight C.int
+		C.gtk_window_get_size((*C.GtkWindow)(window), &windowWidth, &windowHeight)
+
+		var allocation C.GtkAllocation
+		C.gtk_widget_get_allocation((*C.GtkWidget)(window), &allocation)
+
+		setDecoratorOffset(int(windowWidth), int(windowHeight), int(allocation.width), int(allocation.height))
+	}
+
+	// Add decorator offset to max dimensions on Wayland so fullscreen
+	// and maximize can properly fill the screen.
+	decWidth, decHeight := getDecoratorOffset()
+	maxWidth += decWidth
+	maxHeight += decHeight
+
 	size := C.GdkGeometry{
 		min_width:  C.int(minWidth),
 		min_height: C.int(minHeight),
