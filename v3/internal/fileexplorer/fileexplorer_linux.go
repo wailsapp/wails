@@ -86,7 +86,14 @@ func pathToURI(path string) string {
 	if err != nil {
 		return path
 	}
-	return "file://" + url.PathEscape(absPath)
+	// Use url.URL to properly construct file URIs.
+	// url.PathEscape incorrectly escapes forward slashes (/ -> %2F),
+	// which breaks file manager path parsing.
+	u := &url.URL{
+		Scheme: "file",
+		Path:   absPath,
+	}
+	return u.String()
 }
 
 func findDesktopFile(xdgFileName string) (string, error) {
