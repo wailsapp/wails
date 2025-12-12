@@ -29,6 +29,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Fix structured logging in debug/info methods causing "no formatting directives" errors by @leaanthony
 - Remove temporary debug print statements accidentally included from mobile platform merge by @leaanthony
 - Fix WebKitGTK crash on Wayland with NVIDIA GPUs (Error 71 Protocol error) by auto-disabling DMA-BUF renderer by @leaanthony
+- Fix window menu crash on Wayland caused by appmenu-gtk-module accessing unrealized window (#4769)
 <!-- Bug fixes -->
 
 ## Deprecated

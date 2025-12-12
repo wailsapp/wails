@@ -1169,6 +1169,11 @@ func (w *linuxWebviewWindow) windowShow() {
 	if w.gtkWidget() == nil {
 		return
 	}
+	// Realize the window first to ensure it has a valid GdkWindow.
+	// This prevents crashes on Wayland when appmenu-gtk-module tries to
+	// set DBus properties for global menu integration before the window
+	// is fully realized. See: https://github.com/wailsapp/wails/issues/4769
+	C.gtk_widget_realize(w.gtkWidget())
 	C.gtk_widget_show_all(w.gtkWidget())
 }
 
