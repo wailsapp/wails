@@ -26,6 +26,8 @@ After processing, the content will be moved to the main changelog and this file 
 - Fix window menu crash on Wayland caused by appmenu-gtk-module accessing unrealized window (#4769) by @leaanthony
 - Fix GTK application crash when app name contains invalid characters (spaces, parentheses, etc.) by @leaanthony
 - Fix "not enough memory" error when initializing drag and drop on Windows (#4701) by @overlordtm
+- Fix race condition in mainthread callback store using incorrect RLock for map deletion (Linux, macOS, iOS) (#4424) by @leaanthony
+- Fix potential deadlock in event dispatch by not holding windowsLock during blocking ExecJS calls (#4424) by @leaanthony
 <!-- Bug fixes -->
 
 ## Deprecated
