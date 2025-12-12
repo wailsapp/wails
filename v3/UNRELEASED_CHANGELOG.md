@@ -26,6 +26,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Fix window menu crash on Wayland caused by appmenu-gtk-module accessing unrealized window (#4769) by @leaanthony
 - Fix GTK application crash when app name contains invalid characters (spaces, parentheses, etc.) by @leaanthony
 - Fix "not enough memory" error when initializing drag and drop on Windows (#4701) by @overlordtm
+- Fix AppImage build failure on modern Linux distributions (Arch, Fedora 39+, Ubuntu 24.04+) by auto-detecting `.relr.dyn` ELF sections and disabling stripping (#4642) by @leaanthony
 <!-- Bug fixes -->
 
 ## Deprecated
