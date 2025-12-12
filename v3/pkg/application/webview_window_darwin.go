@@ -339,6 +339,44 @@ void windowExecJS(void* nsWindow, const char* js) {
 	free((void*)js);
 }
 
+// Add a user script that runs on every page navigation
+// injectionTime: 0 = document start, 1 = document end
+// forMainFrameOnly: true = main frame only, false = all frames
+void windowAddUserScript(void* nsWindow, const char* js, int injectionTime, bool forMainFrameOnly) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	WKUserContentController* controller = window.webView.configuration.userContentController;
+
+	WKUserScriptInjectionTime time = (injectionTime == 0) ?
+		WKUserScriptInjectionTimeAtDocumentStart :
+		WKUserScriptInjectionTimeAtDocumentEnd;
+
+	WKUserScript* script = [[WKUserScript alloc]
+		initWithSource:[NSString stringWithUTF8String:js]
+		injectionTime:time
+		forMainFrameOnly:forMainFrameOnly];
+
+	[controller addUserScript:script];
+	[script release];
+	free((void*)js);
+}
+
+// Remove all user scripts from the webview
+void windowRemoveAllUserScripts(void* nsWindow) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	WKUserContentController* controller = window.webView.configuration.userContentController;
+	[controller removeAllUserScripts];
+}
+
+// Get the current URL from the webview
+const char* windowGetCurrentURL(void* nsWindow) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSURL* url = window.webView.URL;
+	if (url == nil) {
+		return strdup("");
+	}
+	return strdup([[url absoluteString] UTF8String]);
+}
+
 // Make NSWindow backdrop translucent
 void windowSetTranslucent(void* nsWindow) {
 	// Get window
@@ -1078,6 +1116,74 @@ func (w *macosWebviewWindow) execJS(js string) {
 	})
 }
 
+// addUserScript adds a user script that runs on every page navigation
+// injectionTime: 0 = document start, 1 = document end
+func (w *macosWebviewWindow) addUserScript(js string, injectionTime int, forMainFrameOnly bool) {
+	if w.nsWindow == nil {
+		return
+	}
+	C.windowAddUserScript(w.nsWindow, C.CString(js), C.int(injectionTime), C.bool(forMainFrameOnly))
+}
+
+// removeAllUserScripts removes all user scripts from the webview
+func (w *macosWebviewWindow) removeAllUserScripts() {
+	if w.nsWindow == nil {
+		return
+	}
+	C.windowRemoveAllUserScripts(w.nsWindow)
+}
+
+// getCurrentURL returns the current URL of the webview
+func (w *macosWebviewWindow) getCurrentURL() string {
+	if w.nsWindow == nil {
+		return ""
+	}
+	cURL := C.windowGetCurrentURL(w.nsWindow)
+	url := C.GoString(cURL)
+	C.free(unsafe.Pointer(cURL))
+	return url
+}
+
+// setupBrowserMode configures the webview for browser mode with script injection
+// and optional security bypasses for external sites
+func (w *macosWebviewWindow) setupBrowserMode(browserMode *BrowserModeOptions) {
+	if browserMode == nil {
+		return
+	}
+
+	// Add script to inject at document start (before page scripts run)
+	if browserMode.InjectScriptAtDocumentStart != "" {
+		w.addUserScript(browserMode.InjectScriptAtDocumentStart, 0, false) // 0 = document start, false = all frames
+	}
+
+	// Add script to inject at document end (after DOM is ready)
+	if browserMode.InjectScriptOnNavigation != "" {
+		w.addUserScript(browserMode.InjectScriptOnNavigation, 1, false) // 1 = document end, false = all frames
+	}
+
+	// Add helper script for data extraction if enabled
+	if browserMode.EnableDataExtraction {
+		extractionHelperScript := `
+			// Wails Browser Mode Data Extraction Helper
+			window._wailsBrowserData = window._wailsBrowserData || {};
+			window._wailsSetBrowserData = function(key, value) {
+				window._wailsBrowserData[key] = value;
+			};
+		`
+		w.addUserScript(extractionHelperScript, 0, false)
+	}
+
+	// Note: WKWebView does not have a simple flag to disable web security like Chrome.
+	// For cross-origin requests, you would need to:
+	// 1. Use a custom WKURLSchemeHandler to proxy requests
+	// 2. Or configure a local proxy server
+	// 3. Or use private APIs (not recommended for App Store apps)
+	// The DisableWebSecurity option is logged as a warning on macOS
+	if browserMode.DisableWebSecurity {
+		globalApplication.info("BrowserMode.DisableWebSecurity is set, but WKWebView does not support disabling web security directly. Consider using a proxy or custom URL scheme handler for cross-origin requests.")
+	}
+}
+
 func (w *macosWebviewWindow) setURL(uri string) {
 	C.navigationLoadURL(w.nsWindow, C.CString(uri))
 }
@@ -1305,11 +1411,22 @@ func (w *macosWebviewWindow) run() {
 			globalApplication.handleFatalError(err)
 		}
 
+		// Setup browser mode if enabled
+		if options.BrowserMode != nil {
+			w.setupBrowserMode(options.BrowserMode)
+		}
+
 		w.setURL(startURL)
 
 		// We need to wait for the HTML to load before we can execute the javascript
 		w.parent.OnWindowEvent(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEvent) {
 			InvokeAsync(func() {
+				// Call browser mode navigation callback if set
+				if options.BrowserMode != nil && options.BrowserMode.OnNavigationComplete != nil {
+					currentURL := w.getCurrentURL()
+					options.BrowserMode.OnNavigationComplete(currentURL)
+				}
+
 				if options.JS != "" {
 					w.execJS(options.JS)
 				}

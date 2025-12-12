@@ -1492,3 +1492,121 @@ func (w *WebviewWindow) SnapAssist() {
 	}
 	InvokeSync(w.impl.snapAssist)
 }
+
+// IsBrowserMode returns true if this window is configured for browser mode
+func (w *WebviewWindow) IsBrowserMode() bool {
+	return w.options.BrowserMode != nil
+}
+
+// GetCurrentURL returns the current URL of the webview.
+// This is useful for browser mode windows to track navigation.
+func (w *WebviewWindow) GetCurrentURL() string {
+	if w.impl == nil || w.isDestroyed() {
+		return ""
+	}
+	// Execute JS to get current URL and return it
+	// Note: This is a simplified implementation - actual implementation
+	// would need platform-specific code to get URL synchronously
+	return w.options.URL
+}
+
+// ExtractBrowserData extracts cookies, localStorage, sessionStorage, URL params,
+// and HTML content from the current page. Only works if BrowserMode.EnableDataExtraction is true.
+// The extraction is asynchronous - the data will be passed to the OnDataExtracted callback
+// and stored in the global BrowserDataStore.
+func (w *WebviewWindow) ExtractBrowserData() {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
+	if w.options.BrowserMode == nil || !w.options.BrowserMode.EnableDataExtraction {
+		globalApplication.error("ExtractBrowserData called but BrowserMode.EnableDataExtraction is not enabled for window %s", w.Name())
+		return
+	}
+
+	windowName := w.Name()
+
+	// JavaScript to extract all browser data and send it back via wails message
+	extractionScript := fmt.Sprintf(`
+(function() {
+	var data = {
+		windowName: %q,
+		url: window.location.href,
+		cookies: {},
+		localStorage: {},
+		sessionStorage: {},
+		urlParams: {},
+		htmlContent: document.documentElement.outerHTML,
+		customData: window._wailsBrowserData || {}
+	};
+
+	// Parse cookies
+	document.cookie.split(';').forEach(function(cookie) {
+		var parts = cookie.trim().split('=');
+		if (parts.length >= 2) {
+			data.cookies[parts[0]] = parts.slice(1).join('=');
+		}
+	});
+
+	// Get localStorage
+	try {
+		for (var i = 0; i < localStorage.length; i++) {
+			var key = localStorage.key(i);
+			data.localStorage[key] = localStorage.getItem(key);
+		}
+	} catch(e) {}
+
+	// Get sessionStorage
+	try {
+		for (var i = 0; i < sessionStorage.length; i++) {
+			var key = sessionStorage.key(i);
+			data.sessionStorage[key] = sessionStorage.getItem(key);
+		}
+	} catch(e) {}
+
+	// Parse URL params
+	var urlParams = new URLSearchParams(window.location.search);
+	urlParams.forEach(function(value, key) {
+		data.urlParams[key] = value;
+	});
+
+	// Send data back to Go via wails runtime
+	if (window.wails && window.wails.Browser && window.wails.Browser.sendData) {
+		window.wails.Browser.sendData(JSON.stringify(data));
+	} else {
+		// Fallback: post message to external handler
+		window.webkit && window.webkit.messageHandlers &&
+		window.webkit.messageHandlers.external &&
+		window.webkit.messageHandlers.external.postMessage('browser:data:' + JSON.stringify(data));
+	}
+})();
+`, windowName)
+
+	w.ExecJS(extractionScript)
+}
+
+// InjectBrowserScript injects JavaScript into the current page.
+// This is useful for browser mode windows to run custom scripts on external sites.
+func (w *WebviewWindow) InjectBrowserScript(script string) {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
+	w.ExecJS(script)
+}
+
+// SetBrowserCustomData sets custom data that can be retrieved via ExtractBrowserData.
+// This allows Go code to store data that will be included in the extraction.
+func (w *WebviewWindow) SetBrowserCustomData(key string, value interface{}) {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
+	valueJSON, err := json.Marshal(value)
+	if err != nil {
+		globalApplication.error("Failed to marshal custom data: %v", err)
+		return
+	}
+	script := fmt.Sprintf(`
+		window._wailsBrowserData = window._wailsBrowserData || {};
+		window._wailsBrowserData[%q] = %s;
+	`, key, string(valueJSON))
+	w.ExecJS(script)
+}

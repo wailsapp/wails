@@ -140,6 +140,72 @@ type WebviewWindowOptions struct {
 	// Effective on Windows and macOS only; no-op on Linux.
 	// Best-effort protection with platform-specific caveats (see docs).
 	ContentProtectionEnabled bool
+
+	// BrowserMode enables special browser functionality for external sites.
+	// This allows injecting JavaScript into external sites and extracting data like cookies,
+	// localStorage, URL parameters, and page content.
+	// WARNING: Disabling web security is a significant security risk. Only use for trusted scenarios.
+	BrowserMode *BrowserModeOptions
+}
+
+// BrowserModeOptions configures browser mode for a window, enabling JavaScript injection
+// and data extraction from external sites.
+type BrowserModeOptions struct {
+	// DisableWebSecurity disables CORS and same-origin policy restrictions.
+	// This allows the webview to make cross-origin requests and access resources
+	// that would normally be blocked by browser security policies.
+	// WARNING: This is a significant security risk - only use for trusted scenarios.
+	DisableWebSecurity bool
+
+	// InjectScriptOnNavigation is JavaScript that will be injected after every
+	// page navigation completes. This script runs in the context of the loaded page
+	// and can access the DOM, cookies, localStorage, etc.
+	// The script is injected for ALL URLs, including external sites.
+	InjectScriptOnNavigation string
+
+	// InjectScriptAtDocumentStart is JavaScript that will be injected at document start,
+	// before the page's own scripts run. Useful for intercepting or modifying page behavior.
+	InjectScriptAtDocumentStart string
+
+	// EnableDataExtraction enables the data extraction APIs for this window.
+	// When enabled, you can call methods to extract cookies, localStorage, etc.
+	EnableDataExtraction bool
+
+	// OnNavigationComplete is called when navigation completes in the browser window.
+	// The callback receives the current URL.
+	OnNavigationComplete func(url string)
+
+	// OnDataExtracted is called when data is extracted from the browser window.
+	// This is triggered by calling ExtractBrowserData() on the window.
+	OnDataExtracted func(data *BrowserData)
+}
+
+// BrowserData contains data extracted from a browser window
+type BrowserData struct {
+	// WindowName is the name of the window this data was extracted from
+	WindowName string
+
+	// URL is the current URL of the page
+	URL string
+
+	// Cookies contains all cookies accessible to the page
+	Cookies map[string]string
+
+	// LocalStorage contains all localStorage key-value pairs
+	LocalStorage map[string]string
+
+	// SessionStorage contains all sessionStorage key-value pairs
+	SessionStorage map[string]string
+
+	// URLParams contains parsed URL query parameters
+	URLParams map[string]string
+
+	// HTMLContent contains the full HTML content of the page
+	HTMLContent string
+
+	// CustomData contains any custom data extracted by user scripts
+	// User scripts can populate this by calling window.wails.browserData.setCustom(key, value)
+	CustomData map[string]interface{}
 }
 
 type RGBA struct {

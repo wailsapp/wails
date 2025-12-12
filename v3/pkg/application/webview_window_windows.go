@@ -260,6 +260,19 @@ func (w *windowsWebviewWindow) setURL(url string) {
 	w.chromium.Navigate(url)
 }
 
+// getCurrentURL returns the current URL of the webview
+func (w *windowsWebviewWindow) getCurrentURL() string {
+	if w.chromium == nil {
+		return ""
+	}
+	url, err := w.chromium.GetURL()
+	if err != nil {
+		globalApplication.error("Failed to get current URL: %v", err)
+		return ""
+	}
+	return url
+}
+
 func (w *windowsWebviewWindow) setResizable(resizable bool) {
 	w.setStyle(resizable, w32.WS_THICKFRAME)
 	w.execJS(fmt.Sprintf("window._wails.setResizable(%v);", resizable))
@@ -1925,6 +1938,18 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, opts.AdditionalLaunchArgs...)
 	}
 
+	// Browser mode: Add flags to disable web security if requested
+	if w.parent.options.BrowserMode != nil && w.parent.options.BrowserMode.DisableWebSecurity {
+		// These flags disable CORS and same-origin policy in Chromium
+		// WARNING: This is a significant security risk - only use for trusted scenarios
+		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs,
+			"--disable-web-security",
+			"--disable-site-isolation-trials",
+			"--allow-running-insecure-content",
+		)
+		globalApplication.info("BrowserMode: Web security disabled for window %s", w.parent.options.Name)
+	}
+
 	chromium.DataPath = globalApplication.options.Windows.WebviewUserDataPath
 	chromium.BrowserPath = globalApplication.options.Windows.WebviewBrowserPath
 
@@ -2089,6 +2114,11 @@ func (w *windowsWebviewWindow) setupChromium() {
 	chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
 
+	// Browser mode: Inject scripts that run on every navigation
+	if w.parent.options.BrowserMode != nil {
+		w.setupBrowserModeScripts(chromium)
+	}
+
 	if w.parent.options.HTML != "" {
 		var script string
 		if w.parent.options.JS != "" {
@@ -2113,6 +2143,45 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.Navigate(startURL)
 	}
 
+}
+
+// setupBrowserModeScripts configures script injection for browser mode
+func (w *windowsWebviewWindow) setupBrowserModeScripts(chromium *edge.Chromium) {
+	browserMode := w.parent.options.BrowserMode
+	if browserMode == nil {
+		return
+	}
+
+	var initScript string
+
+	// Add data extraction helper if enabled
+	if browserMode.EnableDataExtraction {
+		initScript += `
+			// Wails Browser Mode Data Extraction Helper
+			window._wailsBrowserData = window._wailsBrowserData || {};
+			window._wailsSetBrowserData = function(key, value) {
+				window._wailsBrowserData[key] = value;
+			};
+		`
+	}
+
+	// Add script to inject at document start
+	if browserMode.InjectScriptAtDocumentStart != "" {
+		initScript += browserMode.InjectScriptAtDocumentStart + ";"
+	}
+
+	// Add script to inject at document end (wrapped in DOMContentLoaded)
+	if browserMode.InjectScriptOnNavigation != "" {
+		initScript += fmt.Sprintf(`
+			addEventListener("DOMContentLoaded", function() {
+				%s
+			});
+		`, browserMode.InjectScriptOnNavigation)
+	}
+
+	if initScript != "" {
+		chromium.Init(initScript)
+	}
 }
 
 func (w *windowsWebviewWindow) fullscreenChanged(
@@ -2154,6 +2223,12 @@ func (w *windowsWebviewWindow) navigationCompleted(
 
 	// Install the runtime core
 	w.execJS(runtime.Core(globalApplication.impl.GetFlags(globalApplication.options)))
+
+	// Call browser mode navigation callback if set
+	if w.parent.options.BrowserMode != nil && w.parent.options.BrowserMode.OnNavigationComplete != nil {
+		currentURL := w.getCurrentURL()
+		w.parent.options.BrowserMode.OnNavigationComplete(currentURL)
+	}
 
 	// EmitEvent DomReady ApplicationEvent
 	windowEvents <- &windowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}

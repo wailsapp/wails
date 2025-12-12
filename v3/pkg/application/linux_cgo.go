@@ -875,6 +875,94 @@ func (w *linuxWebviewWindow) execJS(js string) {
 	})
 }
 
+// addUserScript adds a user script that runs on every page navigation
+// injectionTime: 0 = document start, 1 = document end
+// forMainFrameOnly: true = main frame only, false = all frames
+func (w *linuxWebviewWindow) addUserScript(js string, injectionTime int, forMainFrameOnly bool) {
+	c := NewCalloc()
+	defer c.Free()
+
+	webView := w.webKitWebView()
+	manager := C.webkit_web_view_get_user_content_manager(webView)
+
+	var time C.WebKitUserScriptInjectionTime
+	if injectionTime == 0 {
+		time = C.WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START
+	} else {
+		time = C.WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_END
+	}
+
+	var frames C.WebKitInjectedContentFrames
+	if forMainFrameOnly {
+		frames = C.WEBKIT_INJECTED_CONTENT_TOP_FRAME
+	} else {
+		frames = C.WEBKIT_INJECTED_CONTENT_ALL_FRAMES
+	}
+
+	script := C.webkit_user_script_new(
+		c.String(js),
+		frames,
+		time,
+		nil, // allowlist
+		nil, // blocklist
+	)
+	C.webkit_user_content_manager_add_script(manager, script)
+	C.webkit_user_script_unref(script)
+}
+
+// removeAllUserScripts removes all user scripts from the webview
+func (w *linuxWebviewWindow) removeAllUserScripts() {
+	webView := w.webKitWebView()
+	manager := C.webkit_web_view_get_user_content_manager(webView)
+	C.webkit_user_content_manager_remove_all_scripts(manager)
+}
+
+// getCurrentURL returns the current URL of the webview
+func (w *linuxWebviewWindow) getCurrentURL() string {
+	webView := w.webKitWebView()
+	uri := C.webkit_web_view_get_uri(webView)
+	if uri == nil {
+		return ""
+	}
+	return C.GoString(uri)
+}
+
+// setupBrowserMode configures the webview for browser mode with script injection
+func (w *linuxWebviewWindow) setupBrowserMode(browserMode *BrowserModeOptions) {
+	if browserMode == nil {
+		return
+	}
+
+	// Add data extraction helper if enabled
+	if browserMode.EnableDataExtraction {
+		extractionHelperScript := `
+			// Wails Browser Mode Data Extraction Helper
+			window._wailsBrowserData = window._wailsBrowserData || {};
+			window._wailsSetBrowserData = function(key, value) {
+				window._wailsBrowserData[key] = value;
+			};
+		`
+		w.addUserScript(extractionHelperScript, 0, false)
+	}
+
+	// Add script to inject at document start
+	if browserMode.InjectScriptAtDocumentStart != "" {
+		w.addUserScript(browserMode.InjectScriptAtDocumentStart, 0, false)
+	}
+
+	// Add script to inject at document end
+	if browserMode.InjectScriptOnNavigation != "" {
+		w.addUserScript(browserMode.InjectScriptOnNavigation, 1, false)
+	}
+
+	// Note: WebKitGTK doesn't have a simple flag to disable web security.
+	// For cross-origin requests, you would need to configure the WebKitWebContext
+	// or use a proxy server.
+	if browserMode.DisableWebSecurity {
+		globalApplication.info("BrowserMode.DisableWebSecurity is set, but WebKitGTK does not support disabling web security directly. Consider using a proxy for cross-origin requests.")
+	}
+}
+
 func getMousePosition() (int, int, *Screen) {
 	var x, y C.gint
 	var screen *C.GdkScreen

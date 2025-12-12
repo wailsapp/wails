@@ -338,9 +338,20 @@ func (w *linuxWebviewWindow) run() {
 		globalApplication.handleFatalError(err)
 	}
 
+	// Setup browser mode if enabled
+	if w.parent.options.BrowserMode != nil {
+		w.setupBrowserMode(w.parent.options.BrowserMode)
+	}
+
 	w.setURL(startURL)
 	w.parent.OnWindowEvent(events.Linux.WindowLoadChanged, func(_ *WindowEvent) {
 		InvokeAsync(func() {
+			// Call browser mode navigation callback if set
+			if w.parent.options.BrowserMode != nil && w.parent.options.BrowserMode.OnNavigationComplete != nil {
+				currentURL := w.getCurrentURL()
+				w.parent.options.BrowserMode.OnNavigationComplete(currentURL)
+			}
+
 			if w.parent.options.JS != "" {
 				w.execJS(w.parent.options.JS)
 			}
