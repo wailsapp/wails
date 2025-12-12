@@ -21,20 +21,17 @@ static bool onMainThread() {
 }
 */
 import "C"
-import "fmt"
 
 func (a *iosApp) isOnMainThread() bool {
 	return bool(C.onMainThread())
 }
 
 func (a *iosApp) dispatchOnMainThread(id uint) {
-	fmt.Printf("🔵 [mainthread_ios.go] dispatchOnMainThread(id=%d)\n", id)
 	C.dispatchOnMainThread(C.uint(id))
 }
 
 //export dispatchOnMainThreadCallback
 func dispatchOnMainThreadCallback(callbackID C.uint) {
-	fmt.Printf("🔵 [mainthread_ios.go] dispatchOnMainThreadCallback(id=%d)\n", callbackID)
 	mainThreadFunctionStoreLock.RLock()
 	id := uint(callbackID)
 	fn := mainThreadFunctionStore[id]

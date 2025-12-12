@@ -16,7 +16,6 @@ void ios_window_set_background_color(void* viewController, unsigned char r, unsi
 */
 import "C"
 import (
-	"fmt"
 	"unsafe"
 )
 
@@ -203,29 +202,22 @@ func (w *iosWebviewWindow) setParent(_ *WebviewWindow) error {
 }
 
 func (w *iosWebviewWindow) run() {
-	fmt.Printf("🔥 iosWebviewWindow.run() called! nativeHandle: %v\n", w.nativeHandle)
 	// Create the native WebView when the window runs
 	if w.nativeHandle == nil {
 		// Get the Wails window ID from the parent
 		wailsID := w.parent.ID()
-		fmt.Printf("🔥 Creating native WebView with Wails ID: %d\n", wailsID)
 		// Create the native WebView with the Wails window ID
 		w.nativeHandle = C.ios_create_webview_with_id(C.uint(wailsID))
 		if w.nativeHandle != nil {
 			// Store the window ID (should match what we passed in)
 			w.windowID = uint32(wailsID)
-			fmt.Printf("🔥 Native WebView created successfully! Handle: %v\n", w.nativeHandle)
 			// Apply initial background colour if set (default white otherwise)
 			rgba := w.parent.options.BackgroundColour
 			C.ios_window_set_background_color(
 				w.nativeHandle,
 				C.uchar(rgba.Red), C.uchar(rgba.Green), C.uchar(rgba.Blue), C.uchar(rgba.Alpha),
 			)
-		} else {
-			fmt.Printf("🔴 FAILED to create native WebView!\n")
 		}
-	} else {
-		fmt.Printf("🔥 Native WebView already exists!\n")
 	}
 }
 

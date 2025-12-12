@@ -472,7 +472,6 @@ func (a *App) handleFatalError(err error) {
 }
 
 func (a *App) init() {
-	fmt.Println("🟠 [application.go] START App.init()")
 	a.ctx, a.cancel = context.WithCancel(context.Background())
 	a.applicationEventHooks = make(map[uint][]*eventHook)
 	a.applicationEventListeners = make(map[uint][]*EventListener)
@@ -485,7 +484,6 @@ func (a *App) init() {
 	a.wailsEventListeners = make([]WailsEventListener, 0)
 
 	// Initialize managers
-	fmt.Println("🟠 [application.go] Initializing managers...")
 	a.Window = newWindowManager(a)
 	a.ContextMenu = newContextMenuManager(a)
 	a.KeyBinding = newKeyBindingManager(a)
@@ -497,7 +495,6 @@ func (a *App) init() {
 	a.Screen = newScreenManager(a)
 	a.Clipboard = newClipboardManager(a)
 	a.SystemTray = newSystemTrayManager(a)
-	fmt.Println("🟠 [application.go] END App.init()")
 }
 
 func (a *App) Capabilities() capabilities.Capabilities {
@@ -519,31 +516,21 @@ func (a *App) GetPID() int {
 }
 
 func (a *App) info(message string, args ...any) {
-    if a.Logger != nil {
-        go func() {
-            defer handlePanic()
-            // Avoid slog BADKEY by formatting printf-style messages ourselves
-            if len(args) > 0 {
-                a.Logger.Info(fmt.Sprintf(message, args...))
-            } else {
-                a.Logger.Info(message)
-            }
-        }()
-    }
+	if a.Logger != nil {
+		go func() {
+			defer handlePanic()
+			a.Logger.Info(message, args...)
+		}()
+	}
 }
 
 func (a *App) debug(message string, args ...any) {
-    if a.Logger != nil {
-        go func() {
-            defer handlePanic()
-            // Avoid slog BADKEY by formatting printf-style messages ourselves
-            if len(args) > 0 {
-                a.Logger.Debug(fmt.Sprintf(message, args...))
-            } else {
-                a.Logger.Debug(message)
-            }
-        }()
-    }
+	if a.Logger != nil {
+		go func() {
+			defer handlePanic()
+			a.Logger.Debug(message, args...)
+		}()
+	}
 }
 
 func (a *App) fatal(message string, args ...any) {
@@ -560,12 +547,10 @@ func (a *App) error(message string, args ...any) {
 }
 
 func (a *App) Run() error {
-	fmt.Println("🟠 [application.go] START App.Run()")
 	a.runLock.Lock()
 	// Prevent double invocations.
 	if a.starting || a.running {
 		a.runLock.Unlock()
-		fmt.Println("🟠 [application.go] App already starting/running")
 		return errors.New("application is running or a previous run has failed")
 	}
 	// Block further service registrations.
@@ -576,17 +561,12 @@ func (a *App) Run() error {
 	defer a.cancel()
 
 	// Call post-create hooks
-	fmt.Println("🟠 [application.go] About to call preRun()")
 	err := a.preRun()
 	if err != nil {
-		fmt.Printf("🟠 [application.go] preRun() failed: %v\n", err)
 		return err
 	}
-	fmt.Println("🟠 [application.go] preRun() completed")
 
-	fmt.Println("🟠 [application.go] About to call newPlatformApp()")
 	a.impl = newPlatformApp(a)
-	fmt.Println("🟠 [application.go] newPlatformApp() completed")
 
 	// Ensure services are shut down in case of failures.
 	defer a.shutdownServices()
@@ -770,7 +750,7 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	}
 	a.windowsLock.RUnlock()
 
-	a.info("handleWindowMessage: Looking for window ID %d, available IDs: %v", event.windowId, ids)
+	a.info("handleWindowMessage: Looking for window", "windowId", event.windowId, "availableIDs", ids)
 
 	if !ok {
 		a.warning("WebviewWindow #%d not found", event.windowId)
@@ -778,7 +758,7 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	}
 	// Check if the message starts with "wails:"
 	if strings.HasPrefix(event.message, "wails:") {
-		a.info("handleWindowMessage: Processing wails message: %s", event.message)
+		a.info("handleWindowMessage: Processing wails message", "message", event.message)
 		window.HandleMessage(event.message)
 	} else {
 		if a.options.RawMessageHandler != nil {
@@ -791,12 +771,10 @@ func (a *App) handleWebViewRequest(request *webViewAssetRequest) {
 	defer handlePanic()
 	// Log that we're processing the request
 	url, _ := request.Request.URL()
-	a.info(" handleWebViewRequest: Processing request for URL: %s", url)
-	fmt.Printf(" handleWebViewRequest: About to call ServeWebViewRequest for: %s\n", url)
+	a.info("handleWebViewRequest: Processing request", "url", url)
 	// IMPORTANT: pass the wrapper request so our injected headers (x-wails-window-id/name) are used
 	a.assets.ServeWebViewRequest(request)
-	a.info(" handleWebViewRequest: Request processing complete for: %s", url)
-	fmt.Printf(" handleWebViewRequest: Request complete for: %s\n", url)
+	a.info("handleWebViewRequest: Request processing complete", "url", url)
 }
 
 func (a *App) handleWindowEvent(event *windowEvent) {
@@ -910,10 +888,8 @@ func SaveFileDialog() *SaveFileDialogStruct {
 }
 
 func (a *App) dispatchOnMainThread(fn func()) {
-	fmt.Println("🟠 [application.go] dispatchOnMainThread() called")
 	// If we are on the main thread, just call the function
 	if a.impl.isOnMainThread() {
-		fmt.Println("🟠 [application.go] Already on main thread, executing directly")
 		fn()
 		return
 	}
@@ -922,7 +898,6 @@ func (a *App) dispatchOnMainThread(fn func()) {
 	id := generateFunctionStoreID()
 	mainThreadFunctionStore[id] = fn
 	mainThreadFunctionStoreLock.Unlock()
-	fmt.Printf("🟠 [application.go] Dispatching function with ID %d to main thread\n", id)
 	// Call platform specific dispatch function
 	a.impl.dispatchOnMainThread(id)
 }

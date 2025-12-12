@@ -34,6 +34,24 @@ func init() {
 		(os.Getenv("XDG_SESSION_TYPE") == "" || os.Getenv("XDG_SESSION_TYPE") == "unspecified" || os.Getenv("XDG_SESSION_TYPE") == "x11") {
 		_ = os.Setenv("GDK_BACKEND", "x11")
 	}
+
+	// Disable DMA-BUF renderer on Wayland with NVIDIA to prevent "Error 71 (Protocol error)" crashes.
+	// This is a known WebKitGTK issue with NVIDIA proprietary drivers on Wayland.
+	// See: https://bugs.webkit.org/show_bug.cgi?id=262607
+	if os.Getenv("WEBKIT_DISABLE_DMABUF_RENDERER") == "" &&
+		os.Getenv("XDG_SESSION_TYPE") == "wayland" &&
+		isNVIDIAGPU() {
+		_ = os.Setenv("WEBKIT_DISABLE_DMABUF_RENDERER", "1")
+	}
+}
+
+// isNVIDIAGPU checks if an NVIDIA GPU is present by looking for the nvidia kernel module.
+func isNVIDIAGPU() bool {
+	// Check if nvidia module is loaded (most reliable for proprietary driver)
+	if _, err := os.Stat("/sys/module/nvidia"); err == nil {
+		return true
+	}
+	return false
 }
 
 type linuxApp struct {
