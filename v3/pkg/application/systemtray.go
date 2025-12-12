@@ -101,6 +101,11 @@ func (s *SystemTray) Run() {
 	if s.attachedWindow.Window != nil {
 		// Setup listener
 		s.attachedWindow.Window.OnWindowEvent(events.Common.WindowLostFocus, func(event *WindowEvent) {
+			// On Linux, don't hide when the systray menu is active (opening or open).
+			// The menu steals focus from the window, but we don't want to hide in this case.
+			if s.attachedWindow.menuActive {
+				return
+			}
 			s.attachedWindow.Window.Hide()
 			// Special handler for Windows
 			if runtime.GOOS == "windows" {
@@ -274,6 +279,10 @@ type WindowAttachConfig struct {
 
 	// Used to ensure that the window state is read on first click
 	initialClick sync.Once
+
+	// Indicates that the systray menu is currently open or about to open.
+	// Used on Linux to prevent hiding the attached window when the menu steals focus.
+	menuActive bool
 }
 
 // AttachWindow attaches a window to the system tray. The window will be shown when the system tray icon is clicked.

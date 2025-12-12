@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Systray Test (#4494)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: calc(100vh - 40px);
+        }
+        h1 {
+            margin-top: 0;
+        }
+        .test-info {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .bug {
+            color: #ffcccc;
+            font-weight: bold;
+        }
+        .expected {
+            color: #ccffcc;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Systray Test (#4494)</h1>
+
+    <div class="test-info">
+        <h3>Test Steps:</h3>
+        <ol>
+            <li>Look for the systray icon in your system tray</li>
+            <li>Right-click the systray icon to open the context menu</li>
+        </ol>
+
+        <p class="expected">Expected: This window should stay visible when the context menu opens</p>
+        <p class="bug">Bug: On Linux (Wayland/KDE), this window hides when right-clicking the systray icon</p>
+    </div>
+
+    <div class="test-info">
+        <h3>Issue Details:</h3>
+        <p>When an attached window loses focus (which happens when the context menu opens),
+           the WindowLostFocus event triggers and hides the window.</p>
+        <p>This is problematic because the user is still interacting with the systray,
+           not clicking away from it.</p>
+    </div>
+</body>
+</html>

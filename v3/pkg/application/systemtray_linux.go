@@ -620,6 +620,9 @@ func iconToPX(icon []byte) (PX, error) {
 
 // AboutToShow is an implementation of the com.canonical.dbusmenu.AboutToShow method.
 func (s *linuxSystemTray) AboutToShow(id int32) (needUpdate bool, err *dbus.Error) {
+	// Mark menu as active to prevent hiding attached window when menu steals focus.
+	// This is called by the desktop environment before showing the menu.
+	s.parent.attachedWindow.menuActive = true
 	return
 }
 
@@ -646,6 +649,8 @@ func (s *linuxSystemTray) Event(id int32, eventID string, data dbus.Variant, tim
 			InvokeAsync(item.menuItem.handleClick)
 		}
 	case "opened":
+		// Menu is now open - keep the flag active
+		s.parent.attachedWindow.menuActive = true
 		if s.parent.clickHandler != nil {
 			s.parent.clickHandler()
 		}
@@ -653,6 +658,8 @@ func (s *linuxSystemTray) Event(id int32, eventID string, data dbus.Variant, tim
 			s.parent.onMenuOpen()
 		}
 	case "closed":
+		// Menu is closed - clear the flag so normal focus behavior resumes
+		s.parent.attachedWindow.menuActive = false
 		if s.parent.onMenuClose != nil {
 			s.parent.onMenuClose()
 		}
