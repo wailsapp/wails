@@ -1967,6 +1967,10 @@ func (w *windowsWebviewWindow) setupChromium() {
 				globalApplication.handleFatalError(err)
 			}
 		}
+
+		// Initialize OLE for drag-and-drop operations
+		w32.OleInitialise()
+
 		w.dropTarget = w32.NewDropTarget()
 		w.dropTarget.OnDrop = func(files []string, x int, y int) {
 			w.parent.emit(events.Windows.WindowDragDrop)
