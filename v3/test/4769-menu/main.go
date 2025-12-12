@@ -13,7 +13,7 @@ var assets embed.FS
 
 func main() {
 	app := application.New(application.Options{
-		Name:        "MenuWaylandTest",
+		Name:        "Menu Wayland Test (#4769)",
 		Description: "Test for window menu crash on Wayland",
 		Assets: application.AssetOptions{
 			Handler: application.BundledAssetFileServer(assets),

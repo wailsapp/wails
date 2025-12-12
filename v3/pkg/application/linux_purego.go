@@ -395,11 +395,8 @@ func appName() string {
 func appNew(name string) pointer {
 	GApplicationDefaultFlags := uint(0)
 
-	name = strings.ToLower(name)
-	if name == "" {
-		name = "undefined"
-	}
-	identifier := fmt.Sprintf("org.wails.%s", strings.Replace(name, " ", "-", -1))
+	// Name is already sanitized by sanitizeAppName() in application_linux.go
+	identifier := fmt.Sprintf("org.wails.%s", name)
 
 	return pointer(gtkApplicationNew(identifier, GApplicationDefaultFlags))
 }
