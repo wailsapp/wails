@@ -392,7 +392,8 @@ func appName() string {
 	return gApplicationName()
 }
 
-func appNew(name string) pointer {
+func appNew(name string, disableSignalFixup bool) pointer {
+	// Note: purego doesn't require signal fixup, the parameter is ignored for API compatibility
 	GApplicationDefaultFlags := uint(0)
 
 	// Name is already sanitized by sanitizeAppName() in application_linux.go

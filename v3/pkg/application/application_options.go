@@ -239,6 +239,12 @@ type LinuxOptions struct {
 	//
 	//[see the docs]: https://docs.gtk.org/glib/func.set_prgname.html
 	ProgramName string
+
+	// DisableGTKSignalHandlerFixup disables the SA_ONSTACK signal handler fixup that is normally
+	// applied during GTK initialization. This fixup is necessary for CGO compatibility with Go's
+	// signal handling, but can interfere with debuggers like Delve. Set this to true when
+	// debugging your application with Delve or similar tools.
+	DisableGTKSignalHandlerFixup bool
 }
 
 /********* iOS Options *********/

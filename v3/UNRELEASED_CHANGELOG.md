@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 - Add `XDG_SESSION_TYPE` to `wails3 doctor` output on Linux by @leaanthony
+- Add `LinuxOptions.DisableGTKSignalHandlerFixup` option to allow debugging with Delve on Linux (#4398) by @leaanthony
 <!-- New features, capabilities, or enhancements -->
 
 ## Changed
