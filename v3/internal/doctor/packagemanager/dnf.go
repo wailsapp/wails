@@ -59,7 +59,7 @@ func (y *Dnf) PackageInstalled(pkg *Package) (bool, error) {
 		}
 		return false, nil
 	}
-	stdout, err := execCmd("dnf", "info", "installed", pkg.Name)
+	stdout, err := execCmd("dnf", "-q", "list", "--installed", pkg.Name)
 	if err != nil {
 		_, ok := err.(*exec.ExitError)
 		if ok {
@@ -68,15 +68,20 @@ func (y *Dnf) PackageInstalled(pkg *Package) (bool, error) {
 		return false, err
 	}
 
+	// Output format: "package-name.arch version repo"
+	// e.g., "webkit2gtk4.0-devel.x86_64 2.46.5-1.fc41 @updates"
 	splitoutput := strings.Split(stdout, "\n")
 	for _, line := range splitoutput {
-		if strings.HasPrefix(line, "Version") {
-			splitline := strings.Split(line, ":")
-			pkg.Version = strings.TrimSpace(splitline[1])
+		if strings.HasPrefix(line, pkg.Name) {
+			fields := strings.Fields(line)
+			if len(fields) >= 2 {
+				pkg.Version = fields[1]
+			}
+			return true, nil
 		}
 	}
 
-	return true, err
+	return false, nil
 }
 
 // PackageAvailable tests if the given package is available for installation
