@@ -30,6 +30,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Soon-to-be removed features -->
 
 ## Removed
+- **BREAKING**: Remove `linux:WindowLoadChanged` event - use `linux:WindowLoadFinished` instead for detecting when WebView has finished loading (#3896) by @leaanthony
 <!-- Features removed in this release -->
 
 ## Security
