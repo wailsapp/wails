@@ -60,7 +60,8 @@ func checkWebView2() DependencyStatus {
 
 	dep.Status = "not_installed"
 	dep.Installed = false
-	dep.Message = "Download from Microsoft Edge WebView2"
+	dep.Message = "Required for rendering the application UI"
+	dep.HelpURL = "https://developer.microsoft.com/en-us/microsoft-edge/webview2/"
 	return dep
 }
 
@@ -74,7 +75,8 @@ func checkNpm() DependencyStatus {
 	if err != nil {
 		dep.Status = "not_installed"
 		dep.Installed = false
-		dep.Message = "npm is required. Install Node.js from https://nodejs.org/"
+		dep.Message = "Required for frontend development"
+		dep.HelpURL = "https://nodejs.org/"
 		return dep
 	}
 
@@ -87,7 +89,8 @@ func checkNpm() DependencyStatus {
 		if major < 7 {
 			dep.Status = "needs_update"
 			dep.Installed = true
-			dep.Message = "npm 7.0.0 or higher is required"
+			dep.Message = "npm 7.0.0 or higher recommended"
+			dep.HelpURL = "https://nodejs.org/"
 			return dep
 		}
 	}
