@@ -6,30 +6,30 @@
 extern void processApplicationEvent(unsigned int, void* data);
 extern void processWindowEvent(unsigned int, unsigned int);
 
-#define EventApplicationDidBecomeActive 1235
-#define EventApplicationDidEnterBackground 1236
-#define EventApplicationDidFinishLaunching 1237
-#define EventApplicationDidReceiveMemoryWarning 1238
-#define EventApplicationWillEnterForeground 1239
-#define EventApplicationWillResignActive 1240
-#define EventApplicationWillTerminate 1241
-#define EventWindowDidLoad 1242
-#define EventWindowWillAppear 1243
-#define EventWindowDidAppear 1244
-#define EventWindowWillDisappear 1245
-#define EventWindowDidDisappear 1246
-#define EventWindowSafeAreaInsetsChanged 1247
-#define EventWindowOrientationChanged 1248
-#define EventWindowTouchBegan 1249
-#define EventWindowTouchMoved 1250
-#define EventWindowTouchEnded 1251
-#define EventWindowTouchCancelled 1252
-#define EventWebViewDidStartNavigation 1253
-#define EventWebViewDidFinishNavigation 1254
-#define EventWebViewDidFailNavigation 1255
-#define EventWebViewDecidePolicyForNavigationAction 1256
+#define EventApplicationDidBecomeActive 1239
+#define EventApplicationDidEnterBackground 1240
+#define EventApplicationDidFinishLaunching 1241
+#define EventApplicationDidReceiveMemoryWarning 1242
+#define EventApplicationWillEnterForeground 1243
+#define EventApplicationWillResignActive 1244
+#define EventApplicationWillTerminate 1245
+#define EventWindowDidLoad 1246
+#define EventWindowWillAppear 1247
+#define EventWindowDidAppear 1248
+#define EventWindowWillDisappear 1249
+#define EventWindowDidDisappear 1250
+#define EventWindowSafeAreaInsetsChanged 1251
+#define EventWindowOrientationChanged 1252
+#define EventWindowTouchBegan 1253
+#define EventWindowTouchMoved 1254
+#define EventWindowTouchEnded 1255
+#define EventWindowTouchCancelled 1256
+#define EventWebViewDidStartNavigation 1257
+#define EventWebViewDidFinishNavigation 1258
+#define EventWebViewDidFailNavigation 1259
+#define EventWebViewDecidePolicyForNavigationAction 1260
 
-#define MAX_EVENTS 1257
+#define MAX_EVENTS 1261
 
 
 #endif
