@@ -17,7 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 - Add `XDG_SESSION_TYPE` to `wails3 doctor` output on Linux by @leaanthony
-- Add additional WebKit2 load-change events for Linux: `WindowLoadStarted`, `WindowLoadRedirected`, `WindowLoadCommitted`, `WindowLoadFinished` (#3896) by @anthropic
+- Add additional WebKit2 load-change events for Linux: `WindowLoadStarted`, `WindowLoadRedirected`, `WindowLoadCommitted`, `WindowLoadFinished` (#3896) by @leaanthony
 <!-- New features, capabilities, or enhancements -->
 
 ## Changed
