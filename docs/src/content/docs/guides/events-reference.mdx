@@ -467,6 +467,11 @@ Core Linux window events:
 | `linux:SystemThemeChanged` | Desktop theme changed | Update app theme |
 | `linux:WindowFocusIn` | Window gained focus | Resume activities |
 | `linux:WindowFocusOut` | Window lost focus | Pause activities |
+| `linux:WindowLoadChanged` | WebView load state changed (legacy) | Page load completed (backward compat) |
+| `linux:WindowLoadStarted` | WebView started loading | Show loading indicator |
+| `linux:WindowLoadRedirected` | WebView redirected | Track navigation redirects |
+| `linux:WindowLoadCommitted` | WebView committed load | Content is being received |
+| `linux:WindowLoadFinished` | WebView finished loading | Hide loading indicator, inject JS/CSS |
 
 ## Best Practices
 
