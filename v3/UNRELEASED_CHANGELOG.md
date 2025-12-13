@@ -16,12 +16,15 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
+- Add `DisableGStreamerFix` and `EnableGStreamerCaching` options to `LinuxOptions` for controlling media playback workaround (#4412) by @leaanthony
+- Add `audio-video` example demonstrating HTML5 media playback with the `@wailsio/runtime` npm module by @leaanthony
 <!-- New features, capabilities, or enhancements -->
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
+- Fix video and audio playback on Linux/WebKitGTK by intercepting media elements and converting wails:// URLs to blob URLs (#4412) by @leaanthony
 <!-- Bug fixes -->
 
 ## Deprecated

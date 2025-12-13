@@ -1,0 +1,16 @@
+{
+  "name": "audio-video-example",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@wailsio/runtime": "file:../../../internal/runtime/desktop/@wailsio/runtime"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}

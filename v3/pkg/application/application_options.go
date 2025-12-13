@@ -239,6 +239,17 @@ type LinuxOptions struct {
 	//
 	//[see the docs]: https://docs.gtk.org/glib/func.set_prgname.html
 	ProgramName string
+
+	// DisableGStreamerFix disables the workaround for GStreamer not supporting wails:// URLs.
+	// When false (default), video and audio elements with wails:// URLs are automatically
+	// converted to blob URLs via fetch() to enable media playback on WebKitGTK.
+	// See: https://bugs.webkit.org/show_bug.cgi?id=146351
+	DisableGStreamerFix bool
+
+	// EnableGStreamerCaching enables caching of blob URLs for the GStreamer fix.
+	// When true, blob URLs are cached to avoid re-fetching the same media.
+	// Default is false since the data is already in memory on the server side.
+	EnableGStreamerCaching bool
 }
 
 /********* iOS Options *********/
