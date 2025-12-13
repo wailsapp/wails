@@ -4,10 +4,58 @@ package setupwizard
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"golang.org/x/sys/windows/registry"
 )
+
+// refreshPath updates the process PATH environment variable from the Windows registry.
+// This is needed because when software is installed, the PATH is updated in the registry
+// but running processes still have the old PATH until they restart.
+func refreshPath() {
+	var paths []string
+
+	// Get system PATH from HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment
+	if key, err := registry.OpenKey(registry.LOCAL_MACHINE, `SYSTEM\CurrentControlSet\Control\Session Manager\Environment`, registry.QUERY_VALUE); err == nil {
+		if systemPath, _, err := key.GetStringValue("Path"); err == nil {
+			paths = append(paths, strings.Split(systemPath, ";")...)
+		}
+		key.Close()
+	}
+
+	// Get user PATH from HKEY_CURRENT_USER\Environment
+	if key, err := registry.OpenKey(registry.CURRENT_USER, `Environment`, registry.QUERY_VALUE); err == nil {
+		if userPath, _, err := key.GetStringValue("Path"); err == nil {
+			paths = append(paths, strings.Split(userPath, ";")...)
+		}
+		key.Close()
+	}
+
+	// Build new PATH, removing empty entries
+	var cleanPaths []string
+	for _, p := range paths {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			cleanPaths = append(cleanPaths, p)
+		}
+	}
+
+	if len(cleanPaths) > 0 {
+		os.Setenv("PATH", strings.Join(cleanPaths, ";"))
+	}
+}
+
+// execCommandRefreshed refreshes PATH and then executes a command.
+// This ensures newly installed software is found.
+func execCommandRefreshed(name string, args ...string) (string, error) {
+	refreshPath()
+	cmd := exec.Command(name, args...)
+	output, err := cmd.Output()
+	return strings.TrimSpace(string(output)), err
+}
 
 func (w *Wizard) checkAllDependencies() []DependencyStatus {
 	var deps []DependencyStatus
@@ -71,7 +119,7 @@ func checkNpm() DependencyStatus {
 		Required: true,
 	}
 
-	version, err := execCommand("npm", "-v")
+	version, err := execCommandRefreshed("npm", "-v")
 	if err != nil {
 		dep.Status = "not_installed"
 		dep.Installed = false
@@ -106,7 +154,7 @@ func checkDocker() DependencyStatus {
 		Required: false, // Optional for cross-compilation
 	}
 
-	version, err := execCommand("docker", "--version")
+	version, err := execCommandRefreshed("docker", "--version")
 	if err != nil {
 		dep.Status = "not_installed"
 		dep.Installed = false
