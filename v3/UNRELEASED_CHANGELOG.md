@@ -30,6 +30,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Fix "not enough memory" error when initializing drag and drop on Windows (#4701) by @overlordtm
 - Fix file explorer opening wrong directory on Linux due to incorrect URI escaping (#4397) by @leaanthony
 - Fix AppImage build failure on modern Linux distributions (Arch, Fedora 39+, Ubuntu 24.04+) by auto-detecting `.relr.dyn` ELF sections and disabling stripping (#4642) by @leaanthony
+- Fix `wails doctor` falsely reporting webkit packages as installed on Fedora/DNF-based systems (#4457) by @leaanthony
 <!-- Bug fixes -->
 
 ## Deprecated
