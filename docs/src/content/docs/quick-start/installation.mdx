@@ -144,17 +144,32 @@ If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/fir
            sudo apt update
            sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev
            ```
+
+           **For audio/video playback** (optional but recommended):
+           ```bash
+           sudo apt install gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly
+           ```
          </TabItem>
 
          <TabItem label="Fedora">
            ```bash
            sudo dnf install gcc pkg-config gtk3-devel webkit2gtk4.0-devel
            ```
+
+           **For audio/video playback** (optional but recommended):
+           ```bash
+           sudo dnf install gstreamer1-plugins-good gstreamer1-plugins-bad-free gstreamer1-plugins-ugly-free
+           ```
          </TabItem>
 
          <TabItem label="Arch">
            ```bash
            sudo pacman -S base-devel gtk3 webkit2gtk
+           ```
+
+           **For audio/video playback** (optional but recommended):
+           ```bash
+           sudo pacman -S gst-plugins-good gst-plugins-bad gst-plugins-ugly
            ```
          </TabItem>
 

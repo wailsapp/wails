@@ -10,3 +10,6 @@ var baseURL = url.URL{
 	Scheme: "https",
 	Host:   "wails.localhost",
 }
+
+// platformJS is empty on android - no platform-specific JS needed.
+var platformJS []byte

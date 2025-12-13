@@ -1,0 +1,189 @@
+---
+title: Linux Media Playback
+sidebar:
+  order: 12
+---
+
+import {Badge} from '@astrojs/starlight/components';
+
+Relevant Platforms: <Badge text="Linux" variant="note" />
+<br/>
+
+On Linux, Wails applications use WebKitGTK for rendering web content. WebKitGTK delegates media playback (video and audio) to GStreamer, which handles the actual decoding and rendering of media files.
+
+## The GStreamer Protocol Issue
+
+GStreamer operates independently from WebKit's custom URI scheme handling. While Wails registers a `wails://` protocol handler with WebKit for serving your application's assets, GStreamer doesn't have access to this handler. This means when an HTML `<video>` or `<audio>` element tries to load a media file from your bundled assets, GStreamer cannot resolve the `wails://` URL.
+
+This is a [known upstream WebKit issue](https://bugs.webkit.org/show_bug.cgi?id=146351) that has been open since 2015.
+
+### Symptoms
+
+Without the workaround, you might experience:
+- Video elements showing a black screen or failing to load
+- Audio elements remaining silent
+- Browser console errors about failed media requests
+- Media elements stuck in a "loading" state
+
+## Automatic Workaround
+
+Wails automatically works around this limitation by injecting JavaScript that intercepts media elements and converts their sources to blob URLs. This happens transparently - you don't need to modify your frontend code.
+
+### How It Works
+
+1. When your application loads, Wails injects platform-specific JavaScript
+2. This JavaScript monitors the DOM for `<video>` and `<audio>` elements
+3. When a media element is found with a relative or `wails://` URL, the script:
+   - Fetches the media file using the standard `fetch()` API (which works with the Wails asset server)
+   - Creates a blob URL from the response
+   - Replaces the element's `src` with the blob URL
+4. GStreamer can then play the blob URL normally
+
+### What Gets Intercepted
+
+The workaround intercepts:
+- `<video>` elements with `src` attributes
+- `<audio>` elements with `src` attributes
+- `<source>` elements inside `<video>` and `<audio>` elements
+- Elements added dynamically via JavaScript
+- Elements with `src` set via JavaScript after page load
+
+## Configuration Options
+
+You can configure the GStreamer workaround behavior using `LinuxOptions`:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Linux: application.LinuxOptions{
+        // Disable the GStreamer workaround entirely
+        DisableGStreamerFix: false,
+
+        // Enable caching of blob URLs for better performance
+        EnableGStreamerCaching: true,
+    },
+})
+```
+
+### DisableGStreamerFix
+
+Set to `true` to disable the automatic media interception. You might want to do this if:
+- You're only using external media URLs (http/https)
+- You're implementing your own media handling solution
+- You're debugging media-related issues
+
+```go
+Linux: application.LinuxOptions{
+    DisableGStreamerFix: true,
+},
+```
+
+### EnableGStreamerCaching
+
+When enabled, blob URLs are cached so that the same media file doesn't need to be fetched and converted multiple times. This improves performance when:
+- The same media is played repeatedly
+- Multiple elements reference the same media file
+- Media elements are recreated (e.g., in a SPA with component remounting)
+
+```go
+Linux: application.LinuxOptions{
+    EnableGStreamerCaching: true,
+},
+```
+
+:::note[Memory Considerations]
+Enabling caching keeps blob URLs in memory for the lifetime of the page. For applications with many large media files, consider whether the memory trade-off is worthwhile for your use case.
+:::
+
+## Working with Media Files
+
+### Bundled Assets
+
+Place media files in your frontend's public or assets directory:
+
+```
+frontend/
+  public/
+    video.mp4
+    audio.ogg
+  src/
+    main.js
+```
+
+Reference them with relative URLs:
+
+```html
+<video controls>
+    <source src="/video.mp4" type="video/mp4">
+</video>
+
+<audio controls>
+    <source src="/audio.ogg" type="audio/ogg">
+</audio>
+```
+
+### Supported Formats
+
+The supported media formats depend on your GStreamer installation. Common formats include:
+- Video: MP4 (H.264), WebM (VP8/VP9), OGG (Theora)
+- Audio: MP3, OGG (Vorbis), WAV, FLAC
+
+To check available codecs on your system:
+
+```bash
+gst-inspect-1.0 --version
+gst-inspect-1.0 | grep -i decoder
+```
+
+### Installing Codecs
+
+On Ubuntu/Debian:
+```bash
+sudo apt install gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly
+```
+
+On Fedora:
+```bash
+sudo dnf install gstreamer1-plugins-good gstreamer1-plugins-bad-free gstreamer1-plugins-ugly-free
+```
+
+On Arch Linux:
+```bash
+sudo pacman -S gst-plugins-good gst-plugins-bad gst-plugins-ugly
+```
+
+## Example Application
+
+See the [audio-video example](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/audio-video) for a complete working example that demonstrates:
+- Video playback with bundled MP4 files
+- Audio playback with bundled MP3 files
+- Using the `@wailsio/runtime` npm module
+- Proper project structure for media assets
+
+## Troubleshooting
+
+### Media Not Playing
+
+1. **Check GStreamer installation**: Ensure GStreamer and required plugins are installed
+2. **Check the console**: Look for JavaScript errors or failed network requests
+3. **Verify file paths**: Ensure media files are in the correct location and accessible
+4. **Check codec support**: Verify GStreamer has the necessary decoder for your media format
+
+### Performance Issues
+
+If media playback is sluggish:
+1. Enable caching with `EnableGStreamerCaching: true`
+2. Consider using more efficient codecs (e.g., H.264 instead of VP9)
+3. Reduce media file sizes through compression
+
+### Debugging
+
+To see what the media interceptor is doing, check the browser console. The interceptor logs its actions when media sources are converted.
+
+You can also temporarily disable the fix to compare behavior:
+
+```go
+Linux: application.LinuxOptions{
+    DisableGStreamerFix: true,
+},
+```
