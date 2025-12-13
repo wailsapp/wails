@@ -15,7 +15,7 @@ Wails provides a **unified screen API** that works across all platforms. Get scr
 
 ```go
 // Get all screens
-screens := app.Screens.GetAll()
+screens := app.Screen.GetAll()
 
 for _, screen := range screens {
     fmt.Printf("Screen: %s (%dx%d)\n", 
@@ -34,7 +34,7 @@ fmt.Printf("Primary: %s\n", primary.Name)
 ### All Screens
 
 ```go
-screens := app.Screens.GetAll()
+screens := app.Screen.GetAll()
 
 for _, screen := range screens {
     fmt.Printf("ID: %s\n", screen.ID)
@@ -137,7 +137,7 @@ func centreOnScreen(window *application.WebviewWindow, screen *Screen) {
 
 ```go
 func moveToScreen(window *application.WebviewWindow, screenIndex int) {
-    screens := app.Screens.GetAll()
+    screens := app.Screen.GetAll()
     
     if screenIndex < 0 || screenIndex >= len(screens) {
         return
@@ -180,11 +180,11 @@ func positionBottomRight(window *application.WebviewWindow, screen *Screen) {
 
 ```go
 func hasMultipleMonitors() bool {
-    return len(app.Screens.GetAll()) > 1
+    return len(app.Screen.GetAll()) > 1
 }
 
 func getMonitorCount() int {
-    return len(app.Screens.GetAll())
+    return len(app.Screen.GetAll())
 }
 ```
 
@@ -192,7 +192,7 @@ func getMonitorCount() int {
 
 ```go
 func listMonitors() {
-    screens := app.Screens.GetAll()
+    screens := app.Screen.GetAll()
     
     fmt.Printf("Found %d monitor(s):\n", len(screens))
     
@@ -214,7 +214,7 @@ func listMonitors() {
 
 ```go
 func chooseMonitor() (*Screen, error) {
-    screens := app.Screens.GetAll()
+    screens := app.Screen.GetAll()
     
     if len(screens) == 1 {
         return screens[0], nil
@@ -257,7 +257,7 @@ func NewMultiMonitorManager(app *application.Application) *MultiMonitorManager {
 }
 
 func (m *MultiMonitorManager) CreateWindowOnScreen(screenIndex int) error {
-    screens := m.app.Screens.GetAll()
+    screens := m.app.Screen.GetAll()
     
     if screenIndex < 0 || screenIndex >= len(screens) {
         return errors.New("invalid screen index")
@@ -284,7 +284,7 @@ func (m *MultiMonitorManager) CreateWindowOnScreen(screenIndex int) error {
 }
 
 func (m *MultiMonitorManager) CreateWindowOnEachScreen() {
-    screens := m.app.Screens.GetAll()
+    screens := m.app.Screen.GetAll()
     
     for i := range screens {
         m.CreateWindowOnScreen(i)
@@ -304,7 +304,7 @@ type ScreenMonitor struct {
 func NewScreenMonitor(app *application.Application) *ScreenMonitor {
     return &ScreenMonitor{
         app:         app,
-        lastScreens: app.Screens.GetAll(),
+        lastScreens: app.Screen.GetAll(),
     }
 }
 
@@ -323,7 +323,7 @@ func (sm *ScreenMonitor) Start() {
 }
 
 func (sm *ScreenMonitor) checkScreens() {
-    current := sm.app.Screens.GetAll()
+    current := sm.app.Screen.GetAll()
     
     if len(current) != len(sm.lastScreens) {
         sm.lastScreens = current
@@ -365,7 +365,7 @@ func createDPIAwareWindow(screen *Screen) *application.WebviewWindow {
 
 ```go
 func visualiseScreenLayout() string {
-    screens := app.Screens.GetAll()
+    screens := app.Screen.GetAll()
     
     var layout strings.Builder
     layout.WriteString("Screen Layout:\n\n")
