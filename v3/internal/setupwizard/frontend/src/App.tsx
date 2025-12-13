@@ -1078,13 +1078,15 @@ export default function App() {
   };
 
   const handleDepsReadyNext = async () => {
-    // Check if docker is installed but image is not built
+    // Check if we should ask about cross-platform builds
     const dockerDep = dependencies.find(d => d.name === 'docker');
-    if (dockerDep?.installed && dockerDep.imageBuilt === false) {
-      // Docker installed but no image - ask about cross-compilation
+    // Show cross-platform page if:
+    // 1. Docker is not installed (user might want to install it), OR
+    // 2. Docker is installed but wails-cross image is not built
+    if (!dockerDep?.installed || dockerDep.imageBuilt === false) {
       setStep('cross-platform');
     } else {
-      // Either no docker or image already built - go to author
+      // Docker installed and image already built - go to author
       const loadedDefaults = await getDefaults();
       setDefaults(loadedDefaults);
       setStep('author');
@@ -1105,13 +1107,15 @@ export default function App() {
   };
 
   const handleDepsMissingContinue = async () => {
-    // Check if docker is installed but image is not built
+    // Check if we should ask about cross-platform builds
     const dockerDep = dependencies.find(d => d.name === 'docker');
-    if (dockerDep?.installed && dockerDep.imageBuilt === false) {
-      // Docker installed but no image - ask about cross-compilation
+    // Show cross-platform page if:
+    // 1. Docker is not installed (user might want to install it), OR
+    // 2. Docker is installed but wails-cross image is not built
+    if (!dockerDep?.installed || dockerDep.imageBuilt === false) {
       setStep('cross-platform');
     } else {
-      // Either no docker or image already built - go to author
+      // Docker installed and image already built - go to author
       const loadedDefaults = await getDefaults();
       setDefaults(loadedDefaults);
       setStep('author');
