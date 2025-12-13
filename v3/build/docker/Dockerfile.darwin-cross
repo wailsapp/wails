@@ -1,0 +1,97 @@
+# Cross-compile Wails v3 apps to macOS from Linux
+#
+# Uses Zig as C compiler + full macOS SDK
+#
+# Usage:
+#   docker build -t wails-darwin-cross -f Dockerfile.darwin-cross .
+#   docker run --rm -v $(pwd):/app wails-darwin-cross arm64
+#   docker run --rm -v $(pwd):/app wails-darwin-cross amd64
+
+FROM golang:1.25-alpine
+
+RUN apk add --no-cache curl xz nodejs npm
+
+# Install Zig
+ARG ZIG_VERSION=0.14.0
+RUN curl -L "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" \
+    | tar -xJ -C /opt \
+    && ln -s /opt/zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/zig
+
+# Download macOS SDK
+ARG MACOS_SDK_VERSION=14.5
+RUN curl -L "https://github.com/joseluisq/macosx-sdks/releases/download/${MACOS_SDK_VERSION}/MacOSX${MACOS_SDK_VERSION}.sdk.tar.xz" \
+    | tar -xJ -C /opt \
+    && mv /opt/MacOSX${MACOS_SDK_VERSION}.sdk /opt/macos-sdk
+
+ENV MACOS_SDK_PATH=/opt/macos-sdk
+
+# Create zig cc wrappers that filter out conflicting flags from Go's cgo
+COPY <<'ZIGWRAP' /usr/local/bin/zcc-darwin-arm64
+#!/bin/sh
+# Filter out -target and -mmacosx-version-min flags that Go adds
+ARGS=""
+SKIP_NEXT=0
+for arg in "$@"; do
+    if [ $SKIP_NEXT -eq 1 ]; then
+        SKIP_NEXT=0
+        continue
+    fi
+    case "$arg" in
+        -target) SKIP_NEXT=1 ;;
+        -mmacosx-version-min=*) ;;
+        *) ARGS="$ARGS $arg" ;;
+    esac
+done
+exec zig cc -target aarch64-macos-none -isysroot /opt/macos-sdk -I/opt/macos-sdk/usr/include -L/opt/macos-sdk/usr/lib -F/opt/macos-sdk/System/Library/Frameworks -Wno-nullability-completeness -Wno-availability -Wno-expansion-to-defined $ARGS
+ZIGWRAP
+RUN chmod +x /usr/local/bin/zcc-darwin-arm64
+
+COPY <<'ZIGWRAP' /usr/local/bin/zcc-darwin-amd64
+#!/bin/sh
+ARGS=""
+SKIP_NEXT=0
+for arg in "$@"; do
+    if [ $SKIP_NEXT -eq 1 ]; then
+        SKIP_NEXT=0
+        continue
+    fi
+    case "$arg" in
+        -target) SKIP_NEXT=1 ;;
+        -mmacosx-version-min=*) ;;
+        *) ARGS="$ARGS $arg" ;;
+    esac
+done
+exec zig cc -target x86_64-macos-none -isysroot /opt/macos-sdk -I/opt/macos-sdk/usr/include -L/opt/macos-sdk/usr/lib -F/opt/macos-sdk/System/Library/Frameworks -Wno-nullability-completeness -Wno-availability -Wno-expansion-to-defined $ARGS
+ZIGWRAP
+RUN chmod +x /usr/local/bin/zcc-darwin-amd64
+
+COPY <<'SCRIPT' /usr/local/bin/build-darwin.sh
+#!/bin/sh
+set -e
+
+ARCH=${1:-arm64}
+
+case $ARCH in
+    arm64|aarch64) export CC=zcc-darwin-arm64; export GOARCH=arm64 ;;
+    amd64|x86_64)  export CC=zcc-darwin-amd64; export GOARCH=amd64 ;;
+    *) echo "Usage: arm64 or amd64"; exit 1 ;;
+esac
+
+export CGO_ENABLED=1
+export GOOS=darwin
+
+# Build frontend if exists
+[ -d "frontend" ] && [ -f "frontend/package.json" ] && \
+    (cd frontend && npm install --silent && npm run build --silent)
+
+# Build
+APP=${APP_NAME:-$(basename $(pwd))}
+mkdir -p bin
+go build -ldflags="-s -w" -o bin/${APP}-darwin-${GOARCH} .
+echo "Built: bin/${APP}-darwin-${GOARCH}"
+SCRIPT
+RUN chmod +x /usr/local/bin/build-darwin.sh
+
+WORKDIR /app
+ENTRYPOINT ["/usr/local/bin/build-darwin.sh"]
+CMD ["arm64"]
