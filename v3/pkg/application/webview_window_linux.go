@@ -339,7 +339,7 @@ func (w *linuxWebviewWindow) run() {
 	}
 
 	w.setURL(startURL)
-	w.parent.OnWindowEvent(events.Linux.WindowLoadChanged, func(_ *WindowEvent) {
+	w.parent.OnWindowEvent(events.Linux.WindowLoadFinished, func(_ *WindowEvent) {
 		InvokeAsync(func() {
 			if w.parent.options.JS != "" {
 				w.execJS(w.parent.options.JS)
@@ -351,7 +351,7 @@ func (w *linuxWebviewWindow) run() {
 		})
 	})
 
-	w.parent.RegisterHook(events.Linux.WindowLoadChanged, func(e *WindowEvent) {
+	w.parent.RegisterHook(events.Linux.WindowLoadFinished, func(e *WindowEvent) {
 		w.execJS(runtime.Core(globalApplication.impl.GetFlags(globalApplication.options)))
 	})
 	if w.parent.options.HTML != "" {
