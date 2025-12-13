@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 - Add `XDG_SESSION_TYPE` to `wails3 doctor` output on Linux by @leaanthony
+- Generate `.desktop` file during Linux build, not just packaging (#4575)
 - Add Linux runtime dependencies documentation with distro-specific package names and nfpm packaging examples (#4339) by @leaanthony
 <!-- New features, capabilities, or enhancements -->
 
