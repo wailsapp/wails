@@ -78,6 +78,47 @@ func isNVIDIAGPU() bool {
 	return false
 }
 
+// Wayland detection and decorator offset caching.
+// On Wayland, GTK reports window allocation size including decorations (header bar, shadows),
+// but window size excludes them. This causes max size constraints to be too small.
+// We cache the decorator offset once and add it to max size constraints on Wayland.
+var (
+	waylandOnce       sync.Once
+	waylandDetected   bool
+	decoratorOffset   struct {
+		width  int
+		height int
+		once   sync.Once
+	}
+)
+
+// isWayland returns true if running on Wayland display server.
+// The result is cached after the first call.
+func isWayland() bool {
+	waylandOnce.Do(func() {
+		waylandDetected = os.Getenv("XDG_SESSION_TYPE") == "wayland"
+	})
+	return waylandDetected
+}
+
+// setDecoratorOffset calculates and caches the window decorator offset.
+// This should be called with the actual window dimensions and allocated dimensions.
+func setDecoratorOffset(windowWidth, windowHeight, allocWidth, allocHeight int) {
+	decoratorOffset.once.Do(func() {
+		decoratorOffset.width = allocWidth - windowWidth
+		decoratorOffset.height = allocHeight - windowHeight
+	})
+}
+
+// getDecoratorOffset returns the cached decorator offset for Wayland.
+// Returns (0, 0) if not on Wayland or not yet calculated.
+func getDecoratorOffset() (width, height int) {
+	if !isWayland() {
+		return 0, 0
+	}
+	return decoratorOffset.width, decoratorOffset.height
+}
+
 type linuxApp struct {
 	application pointer
 	parent      *App

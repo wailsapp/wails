@@ -77,6 +77,15 @@ type GdkGeometry struct {
 	GdkGravity int32
 }
 
+// GtkAllocation is used to store widget allocation (position and size).
+// It's typedef'd to GdkRectangle in GTK.
+type GtkAllocation struct {
+	X      int32
+	Y      int32
+	Width  int32
+	Height int32
+}
+
 var (
 	nilRadioGroup       GSListPointer         = nil
 	gtkSignalHandlers   map[pointer]uint      = map[pointer]uint{}
@@ -172,6 +181,7 @@ var (
 	gtkTargetEntryFree              func(pointer)
 	gtkTargetEntryNew               func(string, int, uint) pointer
 	gtkWidgetDestroy                func(pointer)
+	gtkWidgetGetAllocation          func(pointer, *GtkAllocation)
 	gtkWidgetGetDisplay             func(pointer) pointer
 	gtkWidgetGetScreen              func(pointer) pointer
 	gtkWidgetGetStyleContext        func(pointer) pointer
@@ -325,6 +335,7 @@ func init() {
 	purego.RegisterLibFunc(&gtkTargetEntryFree, gtk, "gtk_target_entry_free")
 	purego.RegisterLibFunc(&gtkTargetEntryNew, gtk, "gtk_target_entry_new")
 	purego.RegisterLibFunc(&gtkWidgetDestroy, gtk, "gtk_widget_destroy")
+	purego.RegisterLibFunc(&gtkWidgetGetAllocation, gtk, "gtk_widget_get_allocation")
 	purego.RegisterLibFunc(&gtkWidgetGetDisplay, gtk, "gtk_widget_get_display")
 	purego.RegisterLibFunc(&gtkWidgetGetScreen, gtk, "gtk_widget_get_screen")
 	purego.RegisterLibFunc(&gtkWidgetGetStyleContext, gtk, "gtk_widget_get_style_context")
@@ -901,6 +912,24 @@ func windowSetBackgroundColour(vbox, webview pointer, colour RGBA) {
 }
 
 func windowSetGeometryHints(window pointer, minWidth, minHeight, maxWidth, maxHeight int) {
+	// On Wayland, calculate and cache the decorator offset (difference between
+	// allocated size and actual window size) on first call.
+	if isWayland() {
+		var windowWidth, windowHeight int
+		gtkWindowGetSize(window, &windowWidth, &windowHeight)
+
+		var allocation GtkAllocation
+		gtkWidgetGetAllocation(window, &allocation)
+
+		setDecoratorOffset(windowWidth, windowHeight, int(allocation.Width), int(allocation.Height))
+	}
+
+	// Add decorator offset to max dimensions on Wayland so fullscreen
+	// and maximize can properly fill the screen.
+	decWidth, decHeight := getDecoratorOffset()
+	maxWidth += decWidth
+	maxHeight += decHeight
+
 	size := GdkGeometry{
 		minWidth:  int32(minWidth),
 		minHeight: int32(minHeight),
