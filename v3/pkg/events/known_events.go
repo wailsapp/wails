@@ -40,7 +40,6 @@ var knownEvents = map[string]struct{}{
 	"linux:WindowDidResize": {},
 	"linux:WindowFocusIn": {},
 	"linux:WindowFocusOut": {},
-	"linux:WindowLoadChanged": {},
 	"linux:WindowLoadStarted": {},
 	"linux:WindowLoadRedirected": {},
 	"linux:WindowLoadCommitted": {},

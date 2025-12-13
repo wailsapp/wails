@@ -13,13 +13,12 @@ extern void processWindowEvent(unsigned int, unsigned int);
 #define EventWindowDidResize 1055
 #define EventWindowFocusIn 1056
 #define EventWindowFocusOut 1057
-#define EventWindowLoadChanged 1058
-#define EventWindowLoadStarted 1059
-#define EventWindowLoadRedirected 1060
-#define EventWindowLoadCommitted 1061
-#define EventWindowLoadFinished 1062
+#define EventWindowLoadStarted 1058
+#define EventWindowLoadRedirected 1059
+#define EventWindowLoadCommitted 1060
+#define EventWindowLoadFinished 1061
 
-#define MAX_EVENTS 1063
+#define MAX_EVENTS 1062
 
 
 #endif

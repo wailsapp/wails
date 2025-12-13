@@ -1382,8 +1382,6 @@ func handleLoadChanged(webview *C.WebKitWebView, event C.WebKitLoadEvent, data C
 	case C.WEBKIT_LOAD_COMMITTED:
 		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadCommitted))
 	case C.WEBKIT_LOAD_FINISHED:
-		// Fire both WindowLoadChanged (for backward compatibility) and WindowLoadFinished
-		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadChanged))
 		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadFinished))
 	}
 }
