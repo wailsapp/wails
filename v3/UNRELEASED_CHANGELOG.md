@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Changes in existing functionality -->
 
 ## Fixed
+- Fix crash on macOS when toggling window visibility via Hide()/Show() with ApplicationShouldTerminateAfterLastWindowClosed enabled (#4389) by @leaanthony
 <!-- Bug fixes -->
 
 ## Deprecated
