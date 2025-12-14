@@ -170,36 +170,48 @@ tasks:
       - '{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Contents/MacOS/{{.APP_NAME}}'
 
   sign:
-    summary: Signs the application bundle with Developer ID (macOS only, recommended)
+    summary: Signs the application bundle for distribution
     desc: |
-      Signs the .app bundle for distribution using native codesign.
-      This is the recommended approach when building on macOS.
+      Signs the .app bundle for distribution. Automatically detects signing method:
 
-      For cross-platform signing (Linux/Windows), use sign:cross instead.
+      - If SIGN_IDENTITY is set (and on macOS): uses native codesign
+      - If P12_CERTIFICATE is set: uses cross-platform signing (works on any OS)
 
-      Configure SIGN_IDENTITY in the vars section at the top of this file.
+      Configure credentials in the vars section at the top of this file.
+      Store passwords with: wails3 setup signing
     deps:
       - task: package
+    cmds:
+      - task: '{{if .P12_CERTIFICATE}}sign:p12{{else}}sign:native{{end}}'
+
+  sign:notarize:
+    summary: Signs and notarizes the application bundle
+    desc: |
+      Signs the .app bundle and submits for notarization. Automatically detects signing method:
+
+      - If SIGN_IDENTITY is set (and on macOS): uses native codesign + notarytool
+      - If P12_CERTIFICATE is set: uses cross-platform signing (works on any OS)
+
+      Configure credentials in the vars section at the top of this file.
+      Store passwords with: wails3 setup signing
+    deps:
+      - task: package
+    cmds:
+      - task: '{{if .P12_CERTIFICATE}}sign:p12:notarize{{else}}sign:native:notarize{{end}}'
+
+  # Internal tasks - use sign: or sign:notarize instead
+  sign:native:
+    summary: Signs using native codesign (macOS only)
+    internal: true
     cmds:
       - wails3 tool sign --input {{.BIN_DIR}}/{{.APP_NAME}}.app --identity "{{.SIGN_IDENTITY}}" {{if .ENTITLEMENTS}}--entitlements {{.ENTITLEMENTS}}{{end}}
     preconditions:
       - sh: '[ -n "{{.SIGN_IDENTITY}}" ]'
         msg: "SIGN_IDENTITY is required. Set it in the vars section at the top of build/darwin/Taskfile.yml"
 
-  sign:notarize:
-    summary: Signs and notarizes the application bundle (macOS only, recommended)
-    desc: |
-      Signs the .app bundle and submits it for notarization using native tools.
-      This is the recommended approach when building on macOS.
-
-      For cross-platform signing (Linux/Windows), use sign:cross:notarize instead.
-
-      Configure SIGN_IDENTITY and KEYCHAIN_PROFILE in the vars section at the top of this file.
-
-      Setup (one-time):
-        wails3 signing credentials --apple-id "you@email.com" --team-id "TEAMID" --password "app-specific-password" --profile "my-profile"
-    deps:
-      - task: package
+  sign:native:notarize:
+    summary: Signs and notarizes using native tools (macOS only)
+    internal: true
     cmds:
       - wails3 tool sign --input {{.BIN_DIR}}/{{.APP_NAME}}.app --identity "{{.SIGN_IDENTITY}}" {{if .ENTITLEMENTS}}--entitlements {{.ENTITLEMENTS}}{{end}} --notarize --keychain-profile {{.KEYCHAIN_PROFILE}}
     preconditions:
@@ -208,44 +220,20 @@ tasks:
       - sh: '[ -n "{{.KEYCHAIN_PROFILE}}" ]'
         msg: "KEYCHAIN_PROFILE is required. Set it in the vars section at the top of build/darwin/Taskfile.yml"
 
-  # Cross-platform signing tasks (work on any OS)
-  # Use these when building on Linux/Windows, or in CI/CD without macOS runners
-  sign:cross:
-    summary: Signs the macOS binary using cross-platform signing
-    desc: |
-      Signs the macOS binary from any platform.
-      Works on macOS, Linux, and Windows.
-
-      Use this for CI/CD on non-macOS runners or when building on Linux/Windows.
-      On macOS, prefer the native 'sign:' task instead.
-
-      Requires exporting your Developer ID certificate as a P12 file.
-      Configure P12_CERTIFICATE in the vars section at the top of this file.
-      Store your P12 password with: wails3 setup signing
-    deps:
-      - task: package
+  sign:p12:
+    summary: Signs using P12 certificate (cross-platform)
+    internal: true
     cmds:
-      - wails3 tool sign --input {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/MacOS/{{.APP_NAME}} --p12 "{{.P12_CERTIFICATE}}"
+      - wails3 tool sign --input {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/MacOS/{{.APP_NAME}} --p12 "{{.P12_CERTIFICATE}}" {{if .ENTITLEMENTS}}--entitlements {{.ENTITLEMENTS}}{{end}}
     preconditions:
       - sh: '[ -n "{{.P12_CERTIFICATE}}" ]'
         msg: "P12_CERTIFICATE is required. Set it in the vars section at the top of build/darwin/Taskfile.yml"
 
-  sign:cross:notarize:
-    summary: Signs and notarizes the macOS binary using cross-platform signing
-    desc: |
-      Signs and notarizes the macOS binary from any platform.
-      Works on macOS, Linux, and Windows.
-
-      Use this for CI/CD on non-macOS runners or when building on Linux/Windows.
-      On macOS, prefer the native 'sign:notarize' task instead.
-
-      Requires exporting your Developer ID certificate as a P12 file and Apple API key.
-      Configure P12_CERTIFICATE and NOTARY_KEY in the vars section at the top of this file.
-      Store your credentials with: wails3 setup signing
-    deps:
-      - task: package
+  sign:p12:notarize:
+    summary: Signs and notarizes using P12 certificate (cross-platform)
+    internal: true
     cmds:
-      - wails3 tool sign --input {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/MacOS/{{.APP_NAME}} --p12 "{{.P12_CERTIFICATE}}" --notarize --notary-key "{{.NOTARY_KEY}}"
+      - wails3 tool sign --input {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/MacOS/{{.APP_NAME}} --p12 "{{.P12_CERTIFICATE}}" {{if .ENTITLEMENTS}}--entitlements {{.ENTITLEMENTS}}{{end}} --notarize --notary-key "{{.NOTARY_KEY}}"
     preconditions:
       - sh: '[ -n "{{.P12_CERTIFICATE}}" ]'
         msg: "P12_CERTIFICATE is required. Set it in the vars section at the top of build/darwin/Taskfile.yml"

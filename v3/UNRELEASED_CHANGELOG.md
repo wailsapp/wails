@@ -23,7 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
   - Full notarization support via Apple API keys
   - Secure credential storage in system keychain (passwords never in env vars or CLI args)
   - New flags: `--p12`, `--notary-key`, `--notary-key-id`, `--notary-issuer`
-  - New Taskfile tasks: `sign:cross`, `sign:cross:notarize`
+  - Unified `sign:` and `sign:notarize` tasks auto-detect native vs cross-platform signing
   - Updated `wails3 setup signing` wizard with cross-platform option
 <!-- New features, capabilities, or enhancements -->
 

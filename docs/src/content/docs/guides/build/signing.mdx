@@ -83,17 +83,25 @@ Edit `build/darwin/Taskfile.yml`:
 
 ```yaml
 vars:
+  # Option 1: Native signing (macOS only)
   SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
   KEYCHAIN_PROFILE: "my-notarize-profile"
+
+  # Option 2: Cross-platform signing (any OS)
+  # P12_CERTIFICATE: "path/to/developer-id.p12"
+  # NOTARY_KEY: "path/to/AuthKey_XXXXXX.p8"
+
   # ENTITLEMENTS: "build/darwin/entitlements.plist"
 ```
 
 Then run:
 
 ```bash
-wails3 task darwin:sign           # Sign only
-wails3 task darwin:sign:notarize  # Sign and notarize
+wails3 task darwin:sign           # Sign only (auto-detects method)
+wails3 task darwin:sign:notarize  # Sign and notarize (auto-detects method)
 ```
+
+The task automatically uses native signing if `SIGN_IDENTITY` is set, or cross-platform signing if `P12_CERTIFICATE` is set.
 </TabItem>
 <TabItem label="Windows">
 Edit `build/windows/Taskfile.yml`:
@@ -312,7 +320,7 @@ Keep your P12 file and password secure! The P12 contains your private key. Never
 
 #### Configuration
 
-Run the setup wizard (select "Cross-platform (Quill)" when prompted):
+Run the setup wizard (select "Cross-platform" when prompted):
 
 ```bash
 wails3 setup signing --platform darwin
@@ -339,11 +347,13 @@ The P12 password and notarization credentials are stored in your system keychain
 
 ```bash
 # Sign only (from any platform)
-wails3 task darwin:sign:cross
+wails3 task darwin:sign
 
 # Sign and notarize (from any platform)
-wails3 task darwin:sign:cross:notarize
+wails3 task darwin:sign:notarize
 ```
+
+The task automatically detects that `P12_CERTIFICATE` is set and uses cross-platform signing.
 
 Or use the CLI directly:
 
@@ -407,7 +417,7 @@ jobs:
 
       - name: Sign and Notarize
         run: |
-          wails3 task darwin:sign:cross:notarize \
+          wails3 task darwin:sign:notarize \
             P12_CERTIFICATE=developer-id.p12 \
             NOTARY_KEY=AuthKey.p8
 

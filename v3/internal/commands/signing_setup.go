@@ -78,7 +78,7 @@ func setupDarwinSigning() error {
 					Description("Choose how to sign macOS binaries").
 					Options(
 						huh.NewOption("Native (codesign) - requires macOS", "native"),
-						huh.NewOption("Cross-platform (Quill) - works on any OS", "quill"),
+						huh.NewOption("Cross-platform (P12) - works on any OS", "crossplatform"),
 					).
 					Value(&signingMethod),
 			),
@@ -88,15 +88,15 @@ func setupDarwinSigning() error {
 		}
 	} else {
 		// Not on macOS, must use cross-platform
-		signingMethod = "quill"
-		pterm.Info.Println("Not running on macOS - using cross-platform signing (Quill)")
+		signingMethod = "crossplatform"
+		pterm.Info.Println("Not running on macOS - using cross-platform signing")
 		fmt.Println()
 	}
 
 	if signingMethod == "native" {
 		return setupDarwinSigningNative()
 	}
-	return setupDarwinSigningQuill()
+	return setupDarwinSigningCrossPlatform()
 }
 
 // setupDarwinSigningNative configures native macOS signing using codesign
@@ -205,8 +205,8 @@ func setupDarwinSigningNative() error {
 	return nil
 }
 
-// setupDarwinSigningQuill configures cross-platform macOS signing using Quill
-func setupDarwinSigningQuill() error {
+// setupDarwinSigningCrossPlatform configures cross-platform macOS signing using P12 certificates
+func setupDarwinSigningCrossPlatform() error {
 	var p12Path string
 	var p12Password string
 	var configureNotarization bool
