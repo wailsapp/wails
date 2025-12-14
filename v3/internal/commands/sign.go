@@ -262,7 +262,7 @@ func signMacOSWithQuill(options *flags.Sign) error {
 		pterm.Info.Printfln("Signing macOS binary with Quill: %s", options.Input)
 	}
 
-	// Write password to secure temp file (more secure than env var)
+	// Write password to temp file for Quill's --password-file flag
 	passFile, err := os.CreateTemp("", "wails-sign-pass-*")
 	if err != nil {
 		return fmt.Errorf("failed to create temp file: %w", err)

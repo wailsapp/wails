@@ -255,7 +255,7 @@ if [ ! -f "$P12" ]; then
     exit 1
 fi
 
-# Read password from stdin into temp file (more secure than env var)
+# Read password from stdin into temp file for Quill's --password-file flag
 PASS_FILE=$(mktemp)
 chmod 600 "$PASS_FILE"
 cat > "$PASS_FILE"
