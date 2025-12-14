@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	// "github.com/wailsapp/wails/v3/internal/commands/dmg" // TODO: Missing package
+	"github.com/wailsapp/wails/v3/internal/commands/macpkg"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/packager"
 )
@@ -16,11 +17,12 @@ import (
 func ToolPackage(options *flags.ToolPackage) error {
 	DisableFooter = true
 
-	// Check if we're creating a DMG
+	// Check if we're creating a DMG or PKG
 	isDMG := strings.ToLower(options.Format) == "dmg" || options.CreateDMG
+	isPKG := strings.ToLower(options.Format) == "pkg" || options.CreatePKG
 
-	// Config file is required for Linux packages but optional for DMG
-	if options.ConfigPath == "" && !isDMG {
+	// Config file is required for Linux packages but optional for DMG/PKG
+	if options.ConfigPath == "" && !isDMG && !isPKG {
 		return fmt.Errorf("please provide a config file using the -config flag")
 	}
 
@@ -73,6 +75,23 @@ func ToolPackage(options *flags.ToolPackage) error {
 		// return nil
 	}
 
+	// Handle PKG creation for macOS
+	if isPKG {
+		if runtime.GOOS != "darwin" {
+			return fmt.Errorf("PKG creation is only supported on macOS")
+		}
+
+		// Convert ToolPackage options to MacPKG options
+		macPKGOptions := &macpkg.BuildMacPKGOptions{
+			ConfigPath:       options.ConfigPath,
+			GenerateTemplate: options.GenerateTemplate,
+			SkipNotarization: options.SkipNotarization,
+			ValidateOnly:     options.ValidateOnly,
+		}
+
+		return macpkg.BuildMacPKG(macPKGOptions)
+	}
+
 	// For Linux packages, continue with existing logic
 	var pkgType packager.PackageType
 	switch strings.ToLower(options.Format) {
@@ -83,7 +102,7 @@ func ToolPackage(options *flags.ToolPackage) error {
 	case "archlinux":
 		pkgType = packager.ARCH
 	default:
-		return fmt.Errorf("unsupported package format '%s'. Supported formats: deb, rpm, archlinux, dmg", options.Format)
+		return fmt.Errorf("unsupported package format '%s'. Supported formats: deb, rpm, archlinux, dmg, pkg", options.Format)
 	}
 
 	// Get absolute path of config file
