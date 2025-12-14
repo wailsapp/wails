@@ -50,7 +50,7 @@ html, body, #root {
 
 /* Glass sidebar - blurred to show background through */
 .glass-sidebar {
-  background: rgba(5, 7, 12, 0.75);
+  background: rgba(5, 7, 12, 0.55);
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
   border-right: 1px solid var(--glass-border);

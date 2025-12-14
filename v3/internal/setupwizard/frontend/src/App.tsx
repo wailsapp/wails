@@ -14,10 +14,21 @@ type OOBEStep =
   | 'cross-platform'
   | 'docker-setup'
   | 'projects'
+  | 'language-select'
+  | 'template-select'
   | 'complete';
 
+// Framework template info
+type FrameworkTemplate = {
+  id: string;
+  name: string;
+  description: string;
+  color: string;
+  icon: string;
+};
+
 // Wizard stages for sidebar progress display
-type WizardStage = 'welcome' | 'dependencies' | 'platform' | 'identity' | 'complete';
+type WizardStage = 'welcome' | 'dependencies' | 'platform' | 'identity' | 'templates' | 'complete';
 
 // Map OOBE steps to wizard stages
 function getWizardStage(step: OOBEStep): WizardStage {
@@ -33,6 +44,9 @@ function getWizardStage(step: OOBEStep): WizardStage {
       return 'platform';
     case 'projects':
       return 'identity';
+    case 'language-select':
+    case 'template-select':
+      return 'templates';
     case 'complete':
       return 'complete';
     default:
@@ -40,9 +54,9 @@ function getWizardStage(step: OOBEStep): WizardStage {
   }
 }
 
-// Get stage index for progress tracking (1-5)
+// Get stage index for progress tracking (1-6)
 function getStageIndex(stage: WizardStage): number {
-  const stages: WizardStage[] = ['welcome', 'dependencies', 'platform', 'identity', 'complete'];
+  const stages: WizardStage[] = ['welcome', 'dependencies', 'platform', 'identity', 'templates', 'complete'];
   return stages.indexOf(stage) + 1;
 }
 
@@ -75,6 +89,7 @@ function Sidebar({ currentStep }: { currentStep: OOBEStep }) {
     { key: 'dependencies' as const, label: 'Dependencies' },
     { key: 'platform' as const, label: 'Platform' },
     { key: 'identity' as const, label: 'Projects' },
+    { key: 'templates' as const, label: 'Templates' },
     { key: 'complete' as const, label: 'Complete' },
   ];
 
@@ -193,6 +208,33 @@ function PageTemplate({
   secondaryLabel?: string;
   primaryDisabled?: boolean;
 }) {
+  // Render actions as a render prop so parent can place them where needed
+  const actionsElement = (primaryAction || secondaryAction) ? (
+    <div className="flex-shrink-0 pt-4 pb-6 flex flex-col items-center gap-1.5">
+      {primaryAction && primaryLabel && (
+        <button
+          onClick={primaryAction}
+          disabled={primaryDisabled}
+          className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors border ${
+            primaryDisabled
+              ? 'border-gray-300 dark:border-gray-700 text-gray-400 cursor-not-allowed'
+              : 'border-red-500 text-red-600 dark:text-red-400 hover:bg-red-500/10'
+          }`}
+        >
+          {primaryLabel}
+        </button>
+      )}
+      {secondaryAction && secondaryLabel && (
+        <button
+          onClick={secondaryAction}
+          className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+        >
+          {secondaryLabel}
+        </button>
+      )}
+    </div>
+  ) : null;
+
   return (
     <motion.div
       variants={pageVariants}
@@ -200,45 +242,21 @@ function PageTemplate({
       animate="animate"
       exit="exit"
       transition={{ duration: 0.3 }}
-      className="h-full flex flex-col"
+      className="flex-1 flex flex-col"
     >
-      {/* Header - centered */}
-      <div className="text-center mb-6 flex-shrink-0">
+      {/* Header - centered with horizontal padding */}
+      <div className="text-center mb-6 flex-shrink-0 px-10 pt-10">
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-1.5 tracking-tight">{title}</h1>
         <p className="text-base text-gray-500 dark:text-gray-400">{subtitle}</p>
       </div>
 
-      {/* Scrollable content area */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin min-h-0">
+      {/* Scrollable content area with horizontal padding */}
+      <div className="flex-1 overflow-y-auto scrollbar-thin min-h-0 px-10">
         {children}
       </div>
 
-      {/* Actions - only shown if provided */}
-      {(primaryAction || secondaryAction) && (
-        <div className="flex-shrink-0 pt-4 flex flex-col items-center gap-1.5">
-          {primaryAction && primaryLabel && (
-            <button
-              onClick={primaryAction}
-              disabled={primaryDisabled}
-              className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors border ${
-                primaryDisabled
-                  ? 'border-gray-300 dark:border-gray-700 text-gray-400 cursor-not-allowed'
-                  : 'border-red-500 text-red-600 dark:text-red-400 hover:bg-red-500/10'
-              }`}
-            >
-              {primaryLabel}
-            </button>
-          )}
-          {secondaryAction && secondaryLabel && (
-            <button
-              onClick={secondaryAction}
-              className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-            >
-              {secondaryLabel}
-            </button>
-          )}
-        </div>
-      )}
+      {/* Actions - anchored to bottom */}
+      {actionsElement}
     </motion.div>
   );
 }
@@ -254,7 +272,7 @@ function SplashPage({ onNext }: { onNext: () => void }) {
       animate="animate"
       exit="exit"
       transition={{ duration: 0.3 }}
-      className="h-full flex flex-col items-center justify-center"
+      className="flex-1 flex flex-col items-center justify-center"
     >
       {/* Logo with glow effect */}
       <motion.div
@@ -312,7 +330,7 @@ function CheckingPage() {
       animate="animate"
       exit="exit"
       transition={{ duration: 0.3 }}
-      className="h-full flex flex-col items-center justify-center"
+      className="flex-1 flex flex-col items-center justify-start pt-[30%]"
     >
       <motion.div
         className="w-12 h-12 border-3 border-gray-300 dark:border-gray-600 border-t-red-500 rounded-full mb-6"
@@ -338,7 +356,7 @@ function DepsReadyPage({ onNext }: { onNext: () => void }) {
       animate="animate"
       exit="exit"
       transition={{ duration: 0.3 }}
-      className="h-full flex flex-col items-center justify-center"
+      className="flex-1 flex flex-col items-center justify-center"
     >
       {/* Animated checkmark */}
       <motion.div
@@ -512,7 +530,7 @@ function CrossPlatformPage({
       animate="animate"
       exit="exit"
       transition={{ duration: 0.3 }}
-      className="h-full flex flex-col items-center justify-center"
+      className="flex-1 flex flex-col items-center justify-center"
     >
       {isReady ? (
         <>
@@ -631,7 +649,7 @@ function DockerSetupPage({
         animate="animate"
         exit="exit"
         transition={{ duration: 0.3 }}
-        className="h-full flex flex-col items-center justify-center"
+        className="flex-1 flex flex-col items-center justify-center"
       >
         <div className="w-16 h-16 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-6">
           <svg className="w-10 h-10" viewBox="0 0 756.26 596.9">
@@ -690,7 +708,7 @@ function DockerSetupPage({
         animate="animate"
         exit="exit"
         transition={{ duration: 0.3 }}
-        className="h-full flex flex-col items-center justify-center"
+        className="flex-1 flex flex-col items-center justify-center"
       >
         <div className="w-16 h-16 rounded-2xl bg-gray-200 dark:bg-gray-800 flex items-center justify-center mb-6 opacity-50">
           <svg className="w-10 h-10" viewBox="0 0 756.26 596.9">
@@ -733,7 +751,7 @@ function DockerSetupPage({
         animate="animate"
         exit="exit"
         transition={{ duration: 0.3 }}
-        className="h-full flex flex-col items-center justify-center"
+        className="flex-1 flex flex-col items-center justify-center"
       >
         <div className="w-16 h-16 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-6">
           <svg className="w-10 h-10" viewBox="0 0 756.26 596.9">
@@ -781,7 +799,7 @@ function DockerSetupPage({
         animate="animate"
         exit="exit"
         transition={{ duration: 0.3 }}
-        className="h-full flex flex-col items-center justify-center"
+        className="flex-1 flex flex-col items-center justify-center"
       >
         <motion.div
           initial={{ scale: 0 }}
@@ -819,7 +837,7 @@ function DockerSetupPage({
       animate="animate"
       exit="exit"
       transition={{ duration: 0.3 }}
-      className="h-full flex flex-col items-center justify-center"
+      className="flex-1 flex flex-col items-center justify-center"
     >
       <div className="w-16 h-16 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-6">
         <svg className="w-10 h-10" viewBox="0 0 756.26 596.9">
@@ -852,6 +870,144 @@ function DockerSetupPage({
         </button>
       </div>
     </motion.div>
+  );
+}
+
+// Available framework templates
+const FRAMEWORKS: FrameworkTemplate[] = [
+  { id: 'vanilla', name: 'Vanilla', description: 'Plain JavaScript/TypeScript', color: '#f7df1e', icon: 'javascript' },
+  { id: 'react', name: 'React', description: 'React with Vite', color: '#61dafb', icon: 'react' },
+  { id: 'vue', name: 'Vue', description: 'Vue 3 with Vite', color: '#42b883', icon: 'vue' },
+  { id: 'svelte', name: 'Svelte', description: 'Svelte with Vite', color: '#ff3e00', icon: 'svelte' },
+  { id: 'preact', name: 'Preact', description: 'Lightweight React alternative', color: '#673ab8', icon: 'preact' },
+  { id: 'lit', name: 'Lit', description: 'Web Components with Lit', color: '#324fff', icon: 'lit' },
+  { id: 'solid', name: 'Solid', description: 'Solid.js with Vite', color: '#2c4f7c', icon: 'solid' },
+  { id: 'qwik', name: 'Qwik', description: 'Qwik with Vite', color: '#18b6f6', icon: 'qwik' },
+];
+
+// Language Select Page - TypeScript or JavaScript
+function LanguageSelectPage({
+  preferTypeScript,
+  onSelect,
+  onNext,
+}: {
+  preferTypeScript: boolean;
+  onSelect: (useTypeScript: boolean) => void;
+  onNext: () => void;
+}) {
+  return (
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={{ duration: 0.3 }}
+      className="flex-1 flex flex-col"
+    >
+      {/* Main content - centered */}
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2 text-center">
+          Language Preference
+        </h2>
+        <p className="text-gray-500 dark:text-gray-400 mb-8 text-center max-w-md">
+          Choose your preferred language for new projects
+        </p>
+
+        <div className="flex gap-4">
+          {/* JavaScript card */}
+          <button
+            onClick={() => onSelect(false)}
+            className={`w-40 h-48 rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all border-2 ${
+              !preferTypeScript
+                ? 'border-yellow-400 bg-yellow-400/10 shadow-lg shadow-yellow-400/20'
+                : 'border-white/10 bg-white/5 hover:bg-white/10'
+            }`}
+          >
+            <div className="w-16 h-16 flex items-center justify-center">
+              <img src="/logos/javascript.svg" alt="JavaScript" className="w-14 h-14" />
+            </div>
+            <span className="text-lg font-semibold text-white">JavaScript</span>
+            <span className="text-xs text-white/50">Dynamic typing</span>
+          </button>
+
+          {/* TypeScript card */}
+          <button
+            onClick={() => onSelect(true)}
+            className={`w-40 h-48 rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all border-2 ${
+              preferTypeScript
+                ? 'border-blue-400 bg-blue-400/10 shadow-lg shadow-blue-400/20'
+                : 'border-white/10 bg-white/5 hover:bg-white/10'
+            }`}
+          >
+            <div className="w-16 h-16 flex items-center justify-center">
+              <img src="/logos/typescript.svg" alt="TypeScript" className="w-14 h-14" />
+            </div>
+            <span className="text-lg font-semibold text-white">TypeScript</span>
+            <span className="text-xs text-white/50">Type safety</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Button area - sibling below main content */}
+      <div className="flex justify-center pb-6">
+        <button
+          onClick={onNext}
+          className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors"
+        >
+          Continue
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+// Template Select Page - Framework cards grid
+function TemplateSelectPage({
+  selectedFramework,
+  preferTypeScript,
+  onSelect,
+  onNext,
+  onSkip,
+}: {
+  selectedFramework: string;
+  preferTypeScript: boolean;
+  onSelect: (frameworkId: string) => void;
+  onNext: () => void;
+  onSkip: () => void;
+}) {
+  return (
+    <PageTemplate
+      title="Default Template"
+      subtitle="Choose a framework for new projects"
+      primaryAction={onNext}
+      primaryLabel="Continue"
+      secondaryAction={onSkip}
+      secondaryLabel="Skip"
+    >
+      <div className="grid grid-cols-4 gap-3 max-w-2xl mx-auto">
+        {FRAMEWORKS.map((framework) => (
+          <button
+            key={framework.id}
+            onClick={() => onSelect(framework.id)}
+            className={`aspect-square rounded-xl p-4 flex flex-col items-center justify-center gap-2 transition-all border-2 ${
+              selectedFramework === framework.id
+                ? 'border-red-500 bg-red-500/10 shadow-lg shadow-red-500/10'
+                : 'border-white/10 bg-white/5 hover:bg-white/10'
+            }`}
+          >
+            <img
+              src={`/logos/${framework.id === 'vanilla' ? (preferTypeScript ? 'typescript' : 'javascript') : framework.icon}.svg`}
+              alt={framework.name}
+              className="w-12 h-12"
+            />
+            <span className="text-sm font-medium text-white">{framework.name}</span>
+          </button>
+        ))}
+      </div>
+      <p className="text-xs text-white/40 mt-4 text-center">
+        This sets the default template for new projects
+      </p>
+    </PageTemplate>
   );
 }
 
@@ -1022,31 +1178,49 @@ function CompletePage({ onClose }: { onClose: () => void }) {
       animate="animate"
       exit="exit"
       transition={{ duration: 0.3 }}
-      className="h-full flex flex-col items-center justify-center"
+      className="flex-1 flex flex-col items-center justify-center px-8"
     >
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-        className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mb-6"
-      >
-        <svg className="w-10 h-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-        </svg>
-      </motion.div>
+      {/* Header with check and title - compact */}
+      <div className="flex items-center gap-3 mb-4">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+          className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center"
+        >
+          <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+          </svg>
+        </motion.div>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          You're ready to build!
+        </h2>
+      </div>
 
-      <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
-        You're ready to build!
-      </h2>
-      <p className="text-gray-500 dark:text-gray-400 mb-8 text-center max-w-sm">
-        Your development environment is all set up
-      </p>
-
-      <div className="bg-gray-100 dark:bg-gray-900/50 rounded-xl p-5 mb-8 w-full max-w-sm">
-        <div className="space-y-4">
-          <CopyableCommand command="wails3 init -n myapp" label="Create your first app:" />
-          <CopyableCommand command="cd myapp && wails3 dev" label="Start developing:" />
-          <CopyableCommand command="wails3 build" label="Build for production:" />
+      {/* Terminal-style command display */}
+      <div className="bg-gray-900 dark:bg-black/50 rounded-lg p-4 mb-6 w-full max-w-md font-mono text-xs border border-gray-700/50">
+        <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-700/50">
+          <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
+          <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
+          <span className="text-gray-500 text-[10px] ml-2">terminal</span>
+        </div>
+        <div className="space-y-2 text-gray-300">
+          <div className="flex items-start gap-2">
+            <span className="text-green-400 select-none">$</span>
+            <span className="text-gray-100">wails3 init -n myapp</span>
+            <span className="text-gray-500 ml-auto text-[10px]"># create app</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-green-400 select-none">$</span>
+            <span className="text-gray-100">cd myapp && wails3 dev</span>
+            <span className="text-gray-500 ml-auto text-[10px]"># develop</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-green-400 select-none">$</span>
+            <span className="text-gray-100">wails3 build</span>
+            <span className="text-gray-500 ml-auto text-[10px]"># build</span>
+          </div>
         </div>
       </div>
 
@@ -1065,73 +1239,6 @@ function CompletePage({ onClose }: { onClose: () => void }) {
       >
         Read the documentation
       </a>
-    </motion.div>
-  );
-}
-
-// Persistent Docker status indicator
-function DockerStatusIndicator({
-  status,
-  visible
-}: {
-  status: DockerStatus | null;
-  visible: boolean;
-}) {
-  if (!visible || !status) return null;
-  if (!status.installed || !status.running) return null;
-  if (status.imageBuilt && status.pullStatus !== 'pulling') return null;
-
-  const isPulling = status.pullStatus === 'pulling';
-  const progress = status.pullProgress || 0;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 10 }}
-      className="bg-white/95 dark:bg-gray-900/95 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg px-3 py-2 backdrop-blur-sm min-w-[200px]"
-    >
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5" viewBox="0 0 756.26 596.9">
-              <path fill="#1d63ed" d="M743.96,245.25c-18.54-12.48-67.26-17.81-102.68-8.27-1.91-35.28-20.1-65.01-53.38-90.95l-12.32-8.27-8.21,12.4c-16.14,24.5-22.94,57.14-20.53,86.81,1.9,18.28,8.26,38.83,20.53,53.74-46.1,26.74-88.59,20.67-276.77,20.67H.06c-.85,42.49,5.98,124.23,57.96,190.77,5.74,7.35,12.04,14.46,18.87,21.31,42.26,42.32,106.11,73.35,201.59,73.44,145.66.13,270.46-78.6,346.37-268.97,24.98.41,90.92,4.48,123.19-57.88.79-1.05,8.21-16.54,8.21-16.54l-12.3-8.27ZM189.67,206.39h-81.7v81.7h81.7v-81.7ZM295.22,206.39h-81.7v81.7h81.7v-81.7ZM400.77,206.39h-81.7v81.7h81.7v-81.7ZM506.32,206.39h-81.7v81.7h81.7v-81.7ZM84.12,206.39H2.42v81.7h81.7v-81.7ZM189.67,103.2h-81.7v81.7h81.7v-81.7ZM295.22,103.2h-81.7v81.7h81.7v-81.7ZM400.77,103.2h-81.7v81.7h81.7v-81.7ZM400.77,0h-81.7v81.7h81.7V0Z"/>
-            </svg>
-          </div>
-          <div className="flex-1 min-w-0">
-            {isPulling ? (
-              <>
-                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-sm mb-1">
-                  <motion.span
-                    className="w-3 h-3 border-2 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                  />
-                  <span className="truncate">Building image...</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full bg-blue-500"
-                      animate={{ width: `${progress}%` }}
-                    />
-                  </div>
-                  <span className="text-xs text-gray-500 tabular-nums">{progress}%</span>
-                </div>
-              </>
-            ) : status.imageBuilt ? (
-              <div className="flex items-center gap-2 text-green-600 dark:text-green-400 text-sm">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span>Docker image ready</span>
-              </div>
-            ) : (
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Preparing Docker build...
-              </div>
-            )}
-          </div>
-        </div>
     </motion.div>
   );
 }
@@ -1155,6 +1262,8 @@ export default function App() {
   });
   const [savingDefaults, setSavingDefaults] = useState(false);
   const [backgroundDockerStarted, setBackgroundDockerStarted] = useState(false);
+  const [preferTypeScript, setPreferTypeScript] = useState(true);
+  const [selectedFramework, setSelectedFramework] = useState('vanilla');
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('wails-setup-theme');
@@ -1282,14 +1391,45 @@ export default function App() {
     setStep('projects');
   };
 
-  const handleProjectsNext = async () => {
+  const handleProjectsNext = () => {
+    setStep('language-select');
+  };
+
+  const handleProjectsSkip = () => {
+    setStep('language-select');
+  };
+
+  const handleLanguageSelectNext = () => {
+    setStep('template-select');
+  };
+
+  const handleTemplateSelectNext = async () => {
+    // Build template name with TS suffix if needed
+    const templateName = preferTypeScript && selectedFramework !== 'vanilla'
+      ? `${selectedFramework}-ts`
+      : preferTypeScript && selectedFramework === 'vanilla'
+        ? 'vanilla-ts'
+        : selectedFramework;
+
+    // Update defaults with selected template
+    const updatedDefaults = {
+      ...defaults,
+      project: {
+        ...defaults.project,
+        defaultTemplate: templateName
+      }
+    };
+
     setSavingDefaults(true);
-    await saveDefaults(defaults);
+    await saveDefaults(updatedDefaults);
     setSavingDefaults(false);
     setStep('complete');
   };
 
-  const handleProjectsSkip = () => {
+  const handleTemplateSelectSkip = async () => {
+    setSavingDefaults(true);
+    await saveDefaults(defaults);
+    setSavingDefaults(false);
     setStep('complete');
   };
 
@@ -1315,8 +1455,6 @@ export default function App() {
     }
   }, [backgroundDockerStarted, buildingImage, dockerStatus?.pullStatus]);
 
-  const showDockerIndicator = backgroundDockerStarted && step !== 'docker-setup' && step !== 'splash' && step !== 'checking';
-
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       <div className="min-h-screen bg-gray-50 dark:bg-[#0f0f0f] flex items-center justify-center p-4 transition-colors relative overflow-hidden">
@@ -1335,7 +1473,7 @@ export default function App() {
 
           {/* Content area - distinct from sidebar in dark mode */}
           <div className="flex-1 flex flex-col min-w-0 bg-white/50 dark:bg-white/[0.03]">
-            <div className="flex-1 flex flex-col p-10 min-h-0">
+            <div className="flex-1 flex flex-col min-h-0">
               <AnimatePresence mode="wait">
                 {step === 'splash' && (
                   <SplashPage key="splash" onNext={handleSplashNext} />
@@ -1383,20 +1521,26 @@ export default function App() {
                     saving={savingDefaults}
                   />
                 )}
+                {step === 'language-select' && (
+                  <LanguageSelectPage
+                    key="language-select"
+                    preferTypeScript={preferTypeScript}
+                    onSelect={setPreferTypeScript}
+                    onNext={handleLanguageSelectNext}
+                  />
+                )}
+                {step === 'template-select' && (
+                  <TemplateSelectPage
+                    key="template-select"
+                    selectedFramework={selectedFramework}
+                    preferTypeScript={preferTypeScript}
+                    onSelect={setSelectedFramework}
+                    onNext={handleTemplateSelectNext}
+                    onSkip={handleTemplateSelectSkip}
+                  />
+                )}
                 {step === 'complete' && (
                   <CompletePage key="complete" onClose={handleClose} />
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Docker status indicator - bottom left of content area */}
-            <div className="flex-shrink-0 px-6 pb-6 pt-2">
-              <AnimatePresence>
-                {showDockerIndicator && (
-                  <DockerStatusIndicator
-                    status={dockerStatus}
-                    visible={showDockerIndicator}
-                  />
                 )}
               </AnimatePresence>
             </div>
