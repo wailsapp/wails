@@ -170,9 +170,13 @@ tasks:
       - '{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Contents/MacOS/{{.APP_NAME}}'
 
   sign:
-    summary: Signs the application bundle with Developer ID
+    summary: Signs the application bundle with Developer ID (macOS only, recommended)
     desc: |
-      Signs the .app bundle for distribution.
+      Signs the .app bundle for distribution using native codesign.
+      This is the recommended approach when building on macOS.
+
+      For cross-platform signing (Linux/Windows), use sign:cross instead.
+
       Configure SIGN_IDENTITY in the vars section at the top of this file.
     deps:
       - task: package
@@ -183,9 +187,13 @@ tasks:
         msg: "SIGN_IDENTITY is required. Set it in the vars section at the top of build/darwin/Taskfile.yml"
 
   sign:notarize:
-    summary: Signs and notarizes the application bundle
+    summary: Signs and notarizes the application bundle (macOS only, recommended)
     desc: |
-      Signs the .app bundle and submits it for notarization.
+      Signs the .app bundle and submits it for notarization using native tools.
+      This is the recommended approach when building on macOS.
+
+      For cross-platform signing (Linux/Windows), use sign:cross:notarize instead.
+
       Configure SIGN_IDENTITY and KEYCHAIN_PROFILE in the vars section at the top of this file.
 
       Setup (one-time):
@@ -201,12 +209,17 @@ tasks:
         msg: "KEYCHAIN_PROFILE is required. Set it in the vars section at the top of build/darwin/Taskfile.yml"
 
   # Cross-platform signing tasks (work on any OS via Quill library)
+  # Use these when building on Linux/Windows, or in CI/CD without macOS runners
   sign:cross:
     summary: Signs the macOS binary using cross-platform signing (Quill)
     desc: |
       Signs the macOS binary from any platform using the Quill library.
       Works on macOS, Linux, and Windows.
 
+      Use this for CI/CD on non-macOS runners or when building on Linux/Windows.
+      On macOS, prefer the native 'sign:' task instead.
+
+      Requires exporting your Developer ID certificate as a P12 file.
       Configure P12_CERTIFICATE in the vars section at the top of this file.
       Store your P12 password with: wails3 setup signing
     deps:
@@ -223,6 +236,10 @@ tasks:
       Signs and notarizes the macOS binary from any platform using the Quill library.
       Works on macOS, Linux, and Windows.
 
+      Use this for CI/CD on non-macOS runners or when building on Linux/Windows.
+      On macOS, prefer the native 'sign:notarize' task instead.
+
+      Requires exporting your Developer ID certificate as a P12 file and Apple API key.
       Configure P12_CERTIFICATE and NOTARY_KEY in the vars section at the top of this file.
       Store your credentials with: wails3 setup signing
     deps:
