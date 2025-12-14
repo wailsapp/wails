@@ -10,12 +10,35 @@ import { Card, CardGrid } from "@astrojs/starlight/components";
 ## Message dialogs
 
 Wails provides **native message dialogs** with platform-appropriate appearance: info, warning, error, and question dialogs with customisable titles, messages, and buttons. Simple API, native behaviour, accessible by default.
+
+## Creating Dialogs
+
+There are two ways to create message dialogs:
+
+**Package-level functions:**
+```go
+application.InfoDialog()
+application.QuestionDialog()
+application.WarningDialog()
+application.ErrorDialog()
+```
+
+**Via DialogManager (on the App instance):**
+```go
+app.Dialog.Info()
+app.Dialog.Question()
+app.Dialog.Warning()
+app.Dialog.Error()
+```
+
+Both approaches return a `*MessageDialog` that can be configured using method chaining.
+
 ## Information dialog
 
 Display informational messages:
 
 ```go
-app.InfoDialog().
+application.InfoDialog().
     SetTitle("Success").
     SetMessage("File saved successfully!").
     Show()
@@ -34,12 +57,12 @@ func saveFile(path string, data []byte) error {
     if err := os.WriteFile(path, data, 0644); err != nil {
         return err
     }
-    
-    app.InfoDialog().
+
+    application.InfoDialog().
         SetTitle("File Saved").
         SetMessage(fmt.Sprintf("Saved to %s", filepath.Base(path))).
         Show()
-    
+
     return nil
 }
 ```
@@ -49,7 +72,7 @@ func saveFile(path string, data []byte) error {
 Show warnings:
 
 ```go
-app.WarningDialog().
+application.WarningDialog().
     SetTitle("Warning").
     SetMessage("This action cannot be undone.").
     Show()
@@ -66,9 +89,9 @@ app.WarningDialog().
 ```go
 func checkDiskSpace() {
     available := getDiskSpace()
-    
+
     if available < 100*1024*1024 { // Less than 100MB
-        app.WarningDialog().
+        application.WarningDialog().
             SetTitle("Low Disk Space").
             SetMessage(fmt.Sprintf("Only %d MB available.", available/(1024*1024))).
             Show()
@@ -81,7 +104,7 @@ func checkDiskSpace() {
 Display errors:
 
 ```go
-app.ErrorDialog().
+application.ErrorDialog().
     SetTitle("Error").
     SetMessage("Failed to connect to server.").
     Show()
@@ -99,38 +122,45 @@ app.ErrorDialog().
 func fetchData(url string) ([]byte, error) {
     resp, err := http.Get(url)
     if err != nil {
-        app.ErrorDialog().
+        application.ErrorDialog().
             SetTitle("Network Error").
             SetMessage(fmt.Sprintf("Failed to connect: %v", err)).
             Show()
         return nil, err
     }
     defer resp.Body.Close()
-    
+
     return io.ReadAll(resp.Body)
 }
 ```
 
 ## Question dialog
 
-Ask users questions:
+Ask users questions and handle responses via button callbacks:
 
 ```go
-result, err := app.QuestionDialog().
+dialog := application.QuestionDialog().
     SetTitle("Confirm").
-    SetMessage("Save changes before closing?").
-    SetButtons("Save", "Don't Save", "Cancel").
-    SetDefaultButton("Save").
-    Show()
+    SetMessage("Save changes before closing?")
 
-switch result {
-case "Save":
+save := dialog.AddButton("Save")
+save.OnClick(func() {
     saveChanges()
-case "Don't Save":
+})
+
+dontSave := dialog.AddButton("Don't Save")
+dontSave.OnClick(func() {
     // Continue without saving
-case "Cancel":
+})
+
+cancel := dialog.AddButton("Cancel")
+cancel.OnClick(func() {
     // Don't close
-}
+})
+
+dialog.SetDefaultButton(save)
+dialog.SetCancelButton(cancel)
+dialog.Show()
 ```
 
 **Use cases:**
@@ -142,32 +172,34 @@ case "Cancel":
 **Example - Unsaved changes:**
 
 ```go
-func closeDocument() bool {
+func closeDocument() {
     if !hasUnsavedChanges() {
-        return true
+        doClose()
+        return
     }
-    
-    result, err := app.QuestionDialog().
+
+    dialog := application.QuestionDialog().
         SetTitle("Unsaved Changes").
-        SetMessage("Do you want to save your changes?").
-        SetButtons("Save", "Don't Save", "Cancel").
-        SetDefaultButton("Save").
-        Show()
-    
-    if err != nil {
-        return false
-    }
-    
-    switch result {
-    case "Save":
-        return saveDocument()
-    case "Don't Save":
-        return true
-    case "Cancel":
-        return false
-    }
-    
-    return false
+        SetMessage("Do you want to save your changes?")
+
+    save := dialog.AddButton("Save")
+    save.OnClick(func() {
+        if saveDocument() {
+            doClose()
+        }
+    })
+
+    dontSave := dialog.AddButton("Don't Save")
+    dontSave.OnClick(func() {
+        doClose()
+    })
+
+    cancel := dialog.AddButton("Cancel")
+    // Cancel button has no callback - just closes the dialog
+
+    dialog.SetDefaultButton(save)
+    dialog.SetCancelButton(cancel)
+    dialog.Show()
 }
 ```
 
@@ -176,7 +208,7 @@ func closeDocument() bool {
 ### Title and Message
 
 ```go
-dialog := app.InfoDialog().
+dialog := application.InfoDialog().
     SetTitle("Operation Complete").
     SetMessage("All files have been processed successfully.")
 ```
@@ -190,30 +222,85 @@ dialog := app.InfoDialog().
 
 **Single button (Info/Warning/Error):**
 
+Info, warning, and error dialogs display a default "OK" button:
+
 ```go
-// Default "OK" button
-app.InfoDialog().
+application.InfoDialog().
     SetMessage("Done!").
     Show()
 ```
 
-**Multiple buttons (Question):**
+You can also add custom buttons:
 
 ```go
-result, _ := app.QuestionDialog().
-    SetMessage("Choose an action").
-    SetButtons("Option 1", "Option 2", "Option 3").
-    Show()
+dialog := application.InfoDialog().
+    SetMessage("Done!")
+ok := dialog.AddButton("Got it!")
+dialog.SetDefaultButton(ok)
+dialog.Show()
 ```
 
-**Default button:**
+**Multiple buttons (Question):**
+
+Use `AddButton()` to add buttons, which returns a `*Button` you can configure:
 
 ```go
-app.QuestionDialog().
-    SetMessage("Delete file?").
-    SetButtons("Delete", "Cancel").
-    SetDefaultButton("Cancel").  // Safe option
-    Show()
+dialog := application.QuestionDialog().
+    SetMessage("Choose an action")
+
+option1 := dialog.AddButton("Option 1")
+option1.OnClick(func() {
+    handleOption1()
+})
+
+option2 := dialog.AddButton("Option 2")
+option2.OnClick(func() {
+    handleOption2()
+})
+
+option3 := dialog.AddButton("Option 3")
+option3.OnClick(func() {
+    handleOption3()
+})
+
+dialog.Show()
+```
+
+**Default and Cancel buttons:**
+
+Use `SetDefaultButton()` to specify which button is highlighted and triggered by Enter.
+Use `SetCancelButton()` to specify which button is triggered by Escape.
+
+```go
+dialog := application.QuestionDialog().
+    SetMessage("Delete file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    performDelete()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+// No callback needed - just dismisses dialog
+
+dialog.SetDefaultButton(cancelBtn)  // Safe option as default
+dialog.SetCancelButton(cancelBtn)   // Escape triggers Cancel
+dialog.Show()
+```
+
+You can also use the fluent `SetAsDefault()` and `SetAsCancel()` methods on buttons:
+
+```go
+dialog := application.QuestionDialog().
+    SetMessage("Delete file?")
+
+dialog.AddButton("Delete").OnClick(func() {
+    performDelete()
+})
+
+dialog.AddButton("Cancel").SetAsDefault().SetAsCancel()
+
+dialog.Show()
 ```
 
 **Best practices:**
@@ -222,16 +309,29 @@ app.QuestionDialog().
 - **Safe default:** Non-destructive action
 - **Order matters:** Most likely action first (except Cancel)
 
+### Custom Icon
+
+Set a custom icon for the dialog:
+
+```go
+application.InfoDialog().
+    SetTitle("Custom Icon Example").
+    SetMessage("Using a custom icon").
+    SetIcon(myIconBytes).
+    Show()
+```
+
 ### Window Attachment
 
 Attach to specific window:
 
 ```go
-dialog := app.QuestionDialog().
+dialog := application.QuestionDialog().
     SetMessage("Window-specific question").
     AttachToWindow(window)
 
-result, _ := dialog.Show()
+dialog.AddButton("OK")
+dialog.Show()
 ```
 
 **Benefits:**
@@ -244,162 +344,110 @@ result, _ := dialog.Show()
 ### Confirm Destructive Action
 
 ```go
-func deleteFiles(paths []string) error {
+func deleteFiles(paths []string) {
     // Confirm deletion
     message := fmt.Sprintf("Delete %d file(s)?", len(paths))
     if len(paths) == 1 {
         message = fmt.Sprintf("Delete %s?", filepath.Base(paths[0]))
     }
-    
-    result, err := app.QuestionDialog().
+
+    dialog := application.QuestionDialog().
         SetTitle("Confirm Delete").
-        SetMessage(message).
-        SetButtons("Delete", "Cancel").
-        SetDefaultButton("Cancel").
-        Show()
-    
-    if err != nil || result != "Delete" {
-        return errors.New("cancelled")
-    }
-    
-    // Perform deletion
-    var errors []error
-    for _, path := range paths {
-        if err := os.Remove(path); err != nil {
-            errors = append(errors, err)
-        }
-    }
-    
-    // Show result
-    if len(errors) > 0 {
-        app.ErrorDialog().
-            SetTitle("Delete Failed").
-            SetMessage(fmt.Sprintf("Failed to delete %d file(s)", len(errors))).
-            Show()
-        return fmt.Errorf("%d errors", len(errors))
-    }
-    
-    app.InfoDialog().
-        SetTitle("Delete Complete").
-        SetMessage(fmt.Sprintf("Deleted %d file(s)", len(paths))).
-        Show()
-    
-    return nil
-}
-```
+        SetMessage(message)
 
-### Error Handling with Retry
-
-```go
-func connectToServer(url string) error {
-    for attempts := 0; attempts < 3; attempts++ {
-        if err := tryConnect(url); err == nil {
-            return nil
-        }
-        
-        if attempts < 2 {
-            result, _ := app.QuestionDialog().
-                SetTitle("Connection Failed").
-                SetMessage("Failed to connect. Retry?").
-                SetButtons("Retry", "Cancel").
-                Show()
-            
-            if result != "Retry" {
-                return errors.New("cancelled")
+    deleteBtn := dialog.AddButton("Delete")
+    deleteBtn.OnClick(func() {
+        // Perform deletion
+        var errs []error
+        for _, path := range paths {
+            if err := os.Remove(path); err != nil {
+                errs = append(errs, err)
             }
         }
-    }
-    
-    app.ErrorDialog().
-        SetTitle("Connection Failed").
-        SetMessage("Could not connect after 3 attempts.").
-        Show()
-    
-    return errors.New("connection failed")
-}
-```
 
-### Multi-Step Workflow
-
-```go
-func exportAndEmail() {
-    // Step 1: Confirm export
-    result, _ := app.QuestionDialog().
-        SetTitle("Export and Email").
-        SetMessage("Export data and send via email?").
-        SetButtons("Continue", "Cancel").
-        Show()
-    
-    if result != "Continue" {
-        return
-    }
-    
-    // Step 2: Export data
-    data, err := exportData()
-    if err != nil {
-        app.ErrorDialog().
-            SetTitle("Export Failed").
-            SetMessage(err.Error()).
-            Show()
-        return
-    }
-    
-    // Step 3: Send email
-    if err := sendEmail(data); err != nil {
-        app.ErrorDialog().
-            SetTitle("Email Failed").
-            SetMessage(err.Error()).
-            Show()
-        return
-    }
-    
-    // Step 4: Success
-    app.InfoDialog().
-        SetTitle("Success").
-        SetMessage("Data exported and emailed successfully!").
-        Show()
-}
-```
-
-### Validation with Feedback
-
-```go
-func validateAndSave(data string) error {
-    // Validate
-    if err := validate(data); err != nil {
-        app.WarningDialog().
-            SetTitle("Validation Warning").
-            SetMessage(err.Error()).
-            Show()
-        
-        result, _ := app.QuestionDialog().
-            SetMessage("Save anyway?").
-            SetButtons("Save", "Cancel").
-            SetDefaultButton("Cancel").
-            Show()
-        
-        if result != "Save" {
-            return errors.New("cancelled")
+        // Show result
+        if len(errs) > 0 {
+            application.ErrorDialog().
+                SetTitle("Delete Failed").
+                SetMessage(fmt.Sprintf("Failed to delete %d file(s)", len(errs))).
+                Show()
+        } else {
+            application.InfoDialog().
+                SetTitle("Delete Complete").
+                SetMessage(fmt.Sprintf("Deleted %d file(s)", len(paths))).
+                Show()
         }
-    }
-    
-    // Save
-    if err := save(data); err != nil {
-        app.ErrorDialog().
-            SetTitle("Save Failed").
-            SetMessage(err.Error()).
-            Show()
-        return err
-    }
-    
-    app.InfoDialog().
-        SetTitle("Saved").
-        SetMessage("Data saved successfully!").
-        Show()
-    
-    return nil
+    })
+
+    cancelBtn := dialog.AddButton("Cancel")
+    dialog.SetDefaultButton(cancelBtn)
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
 }
 ```
+
+### Quit Confirmation
+
+```go
+func confirmQuit(app *application.App) {
+    dialog := application.QuestionDialog().
+        SetTitle("Quit").
+        SetMessage("You have unsaved work. Are you sure you want to quit?")
+
+    yes := dialog.AddButton("Yes")
+    yes.OnClick(func() {
+        app.Quit()
+    })
+
+    no := dialog.AddButton("No")
+    dialog.SetDefaultButton(no)
+    dialog.Show()
+}
+```
+
+### Update Dialog with Download Option
+
+```go
+func showUpdateDialog() {
+    dialog := application.QuestionDialog().
+        SetTitle("Update").
+        SetMessage("A new version is available. The cancel button is selected when pressing escape.")
+
+    download := dialog.AddButton("📥 Download")
+    download.OnClick(func() {
+        application.InfoDialog().SetMessage("Downloading...").Show()
+    })
+
+    cancel := dialog.AddButton("Cancel")
+
+    dialog.SetDefaultButton(download)
+    dialog.SetCancelButton(cancel)
+    dialog.Show()
+}
+```
+
+### Custom Icon Question
+
+```go
+func showCustomIconQuestion(iconBytes []byte) {
+    dialog := application.QuestionDialog().
+        SetTitle("Custom Icon Example").
+        SetMessage("Using a custom icon").
+        SetIcon(iconBytes)
+
+    likeIt := dialog.AddButton("I like it!")
+    likeIt.OnClick(func() {
+        application.InfoDialog().SetMessage("Thanks!").Show()
+    })
+
+    notKeen := dialog.AddButton("Not so keen...")
+    notKeen.OnClick(func() {
+        application.InfoDialog().SetMessage("Too bad!").Show()
+    })
+
+    dialog.SetDefaultButton(likeIt)
+    dialog.Show()
+}
 
 ## Best Practices
 

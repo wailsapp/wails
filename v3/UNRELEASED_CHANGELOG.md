@@ -20,6 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Update dialogs documentation to match actual API: use `application.InfoDialog()` (not `app.InfoDialog()`), `AddButton()` with callbacks (not `SetButtons()`), `SetDefaultButton(*Button)` (not string), `AddFilter()` (not `SetFilters()`), `SetFilename()` (not `SetDefaultFilename()`), and `OpenFileDialog().CanChooseDirectories(true)` for folder selection
 
 ## Fixed
 <!-- Bug fixes -->
