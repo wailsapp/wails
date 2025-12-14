@@ -1,6 +1,6 @@
 # Unreleased Changes
 
-<!-- 
+<!--
 This file is used to collect changelog entries for the next v3-alpha release.
 Add your changes under the appropriate sections below.
 
@@ -16,8 +16,7 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
-- Add `XDG_SESSION_TYPE` to `wails3 doctor` output on Linux by @leaanthony
-- Add additional WebKit2 load-change events for Linux: `WindowLoadStarted`, `WindowLoadRedirected`, `WindowLoadCommitted`, `WindowLoadFinished` (#3896) by @leaanthony
+- Add `Window.Print()` method to JavaScript runtime for triggering print dialog from frontend (#4290) by @leaanthony
 <!-- New features, capabilities, or enhancements -->
 
 ## Changed
@@ -25,13 +24,13 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 - Fix macOS dock icon click not showing hidden windows when app started with `Hidden: true` (#4583) by @leaanthony
+- Fix macOS print dialog not opening due to incorrect window pointer type in CGO call (#4290) by @leaanthony
 <!-- Bug fixes -->
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
 ## Removed
-- **BREAKING**: Remove `linux:WindowLoadChanged` event - use `linux:WindowLoadFinished` instead for detecting when WebView has finished loading (#3896) by @leaanthony
 <!-- Features removed in this release -->
 
 ## Security

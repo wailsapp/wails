@@ -59,6 +59,7 @@ const (
 	WindowZoomReset                  = 48
 	WindowSnapAssist                 = 49
 	WindowDropZoneDropped            = 50
+	WindowPrint                      = 51
 )
 
 var windowMethodNames = map[int]string{
@@ -113,6 +114,7 @@ var windowMethodNames = map[int]string{
 	WindowZoomReset:                  "ZoomReset",
 	WindowDropZoneDropped:            "DropZoneDropped",
 	WindowSnapAssist:                 "SnapAssist",
+	WindowPrint:                      "Print",
 }
 
 var unit = struct{}{}
@@ -399,6 +401,12 @@ func (m *MessageProcessor) processWindowMethod(
 		return unit, nil
 	case WindowSnapAssist:
 		window.SnapAssist()
+		return unit, nil
+	case WindowPrint:
+		err := window.Print()
+		if err != nil {
+			return nil, fmt.Errorf("Window.Print failed: %w", err)
+		}
 		return unit, nil
 	default:
 		return nil, errs.NewInvalidWindowCallErrorf("Unknown method %d", req.Method)

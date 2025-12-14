@@ -30,6 +30,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha.46 - 2025-12-14
+
+## Added
+- Add `XDG_SESSION_TYPE` to `wails3 doctor` output on Linux by @leaanthony
+- Add additional WebKit2 load-change events for Linux: `WindowLoadStarted`, `WindowLoadRedirected`, `WindowLoadCommitted`, `WindowLoadFinished` (#3896) by @leaanthony
+
+## Removed
+- **BREAKING**: Remove `linux:WindowLoadChanged` event - use `linux:WindowLoadFinished` instead for detecting when WebView has finished loading (#3896) by @leaanthony
+
 ## v3.0.0-alpha.45 - 2025-12-13
 
 ## Added
