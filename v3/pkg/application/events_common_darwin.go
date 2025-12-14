@@ -18,4 +18,19 @@ func (m *macosApp) setupCommonEvents() {
 			applicationEvents <- event
 		})
 	}
+
+	// Handle dock icon click (applicationShouldHandleReopen) to show windows
+	// when there are no visible windows. This provides the expected macOS UX
+	// where clicking the dock icon shows a hidden app's window.
+	// Issue #4583: Apps with StartHidden: true should show when dock icon is clicked.
+	m.parent.Event.OnApplicationEvent(events.Mac.ApplicationShouldHandleReopen, func(event *ApplicationEvent) {
+		if !event.Context().HasVisibleWindows() {
+			// Show all windows that are not visible
+			for _, window := range m.parent.Window.GetAll() {
+				if !window.IsVisible() {
+					window.Show()
+				}
+			}
+		}
+	})
 }
