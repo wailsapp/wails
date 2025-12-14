@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Changes in existing functionality -->
 
 ## Fixed
+- Fix macOS dock icon click not showing hidden windows when app started with `Hidden: true` (#4583) by @leaanthony
 <!-- Bug fixes -->
 
 ## Deprecated
