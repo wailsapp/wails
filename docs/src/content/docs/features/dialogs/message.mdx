@@ -38,7 +38,7 @@ Both approaches return a `*MessageDialog` that can be configured using method ch
 Display informational messages:
 
 ```go
-application.InfoDialog().
+app.Dialog.Info().
     SetTitle("Success").
     SetMessage("File saved successfully!").
     Show()
@@ -53,12 +53,12 @@ application.InfoDialog().
 **Example - Save confirmation:**
 
 ```go
-func saveFile(path string, data []byte) error {
+func saveFile(app *application.App, path string, data []byte) error {
     if err := os.WriteFile(path, data, 0644); err != nil {
         return err
     }
 
-    application.InfoDialog().
+    app.Dialog.Info().
         SetTitle("File Saved").
         SetMessage(fmt.Sprintf("Saved to %s", filepath.Base(path))).
         Show()
@@ -72,7 +72,7 @@ func saveFile(path string, data []byte) error {
 Show warnings:
 
 ```go
-application.WarningDialog().
+app.Dialog.Warning().
     SetTitle("Warning").
     SetMessage("This action cannot be undone.").
     Show()
@@ -87,11 +87,11 @@ application.WarningDialog().
 **Example - Disk space warning:**
 
 ```go
-func checkDiskSpace() {
+func checkDiskSpace(app *application.App) {
     available := getDiskSpace()
 
     if available < 100*1024*1024 { // Less than 100MB
-        application.WarningDialog().
+        app.Dialog.Warning().
             SetTitle("Low Disk Space").
             SetMessage(fmt.Sprintf("Only %d MB available.", available/(1024*1024))).
             Show()
@@ -104,7 +104,7 @@ func checkDiskSpace() {
 Display errors:
 
 ```go
-application.ErrorDialog().
+app.Dialog.Error().
     SetTitle("Error").
     SetMessage("Failed to connect to server.").
     Show()
@@ -119,10 +119,10 @@ application.ErrorDialog().
 **Example - Network error:**
 
 ```go
-func fetchData(url string) ([]byte, error) {
+func fetchData(app *application.App, url string) ([]byte, error) {
     resp, err := http.Get(url)
     if err != nil {
-        application.ErrorDialog().
+        app.Dialog.Error().
             SetTitle("Network Error").
             SetMessage(fmt.Sprintf("Failed to connect: %v", err)).
             Show()
@@ -139,7 +139,7 @@ func fetchData(url string) ([]byte, error) {
 Ask users questions and handle responses via button callbacks:
 
 ```go
-dialog := application.QuestionDialog().
+dialog := app.Dialog.Question().
     SetTitle("Confirm").
     SetMessage("Save changes before closing?")
 
@@ -172,13 +172,13 @@ dialog.Show()
 **Example - Unsaved changes:**
 
 ```go
-func closeDocument() {
+func closeDocument(app *application.App) {
     if !hasUnsavedChanges() {
         doClose()
         return
     }
 
-    dialog := application.QuestionDialog().
+    dialog := app.Dialog.Question().
         SetTitle("Unsaved Changes").
         SetMessage("Do you want to save your changes?")
 
@@ -208,7 +208,7 @@ func closeDocument() {
 ### Title and Message
 
 ```go
-dialog := application.InfoDialog().
+dialog := app.Dialog.Info().
     SetTitle("Operation Complete").
     SetMessage("All files have been processed successfully.")
 ```
@@ -225,7 +225,7 @@ dialog := application.InfoDialog().
 Info, warning, and error dialogs display a default "OK" button:
 
 ```go
-application.InfoDialog().
+app.Dialog.Info().
     SetMessage("Done!").
     Show()
 ```
@@ -233,7 +233,7 @@ application.InfoDialog().
 You can also add custom buttons:
 
 ```go
-dialog := application.InfoDialog().
+dialog := app.Dialog.Info().
     SetMessage("Done!")
 ok := dialog.AddButton("Got it!")
 dialog.SetDefaultButton(ok)
@@ -245,7 +245,7 @@ dialog.Show()
 Use `AddButton()` to add buttons, which returns a `*Button` you can configure:
 
 ```go
-dialog := application.QuestionDialog().
+dialog := app.Dialog.Question().
     SetMessage("Choose an action")
 
 option1 := dialog.AddButton("Option 1")
@@ -272,7 +272,7 @@ Use `SetDefaultButton()` to specify which button is highlighted and triggered by
 Use `SetCancelButton()` to specify which button is triggered by Escape.
 
 ```go
-dialog := application.QuestionDialog().
+dialog := app.Dialog.Question().
     SetMessage("Delete file?")
 
 deleteBtn := dialog.AddButton("Delete")
@@ -291,7 +291,7 @@ dialog.Show()
 You can also use the fluent `SetAsDefault()` and `SetAsCancel()` methods on buttons:
 
 ```go
-dialog := application.QuestionDialog().
+dialog := app.Dialog.Question().
     SetMessage("Delete file?")
 
 dialog.AddButton("Delete").OnClick(func() {
@@ -314,7 +314,7 @@ dialog.Show()
 Set a custom icon for the dialog:
 
 ```go
-application.InfoDialog().
+app.Dialog.Info().
     SetTitle("Custom Icon Example").
     SetMessage("Using a custom icon").
     SetIcon(myIconBytes).
@@ -326,7 +326,7 @@ application.InfoDialog().
 Attach to specific window:
 
 ```go
-dialog := application.QuestionDialog().
+dialog := app.Dialog.Question().
     SetMessage("Window-specific question").
     AttachToWindow(window)
 
@@ -344,14 +344,14 @@ dialog.Show()
 ### Confirm Destructive Action
 
 ```go
-func deleteFiles(paths []string) {
+func deleteFiles(app *application.App, paths []string) {
     // Confirm deletion
     message := fmt.Sprintf("Delete %d file(s)?", len(paths))
     if len(paths) == 1 {
         message = fmt.Sprintf("Delete %s?", filepath.Base(paths[0]))
     }
 
-    dialog := application.QuestionDialog().
+    dialog := app.Dialog.Question().
         SetTitle("Confirm Delete").
         SetMessage(message)
 
@@ -367,12 +367,12 @@ func deleteFiles(paths []string) {
 
         // Show result
         if len(errs) > 0 {
-            application.ErrorDialog().
+            app.Dialog.Error().
                 SetTitle("Delete Failed").
                 SetMessage(fmt.Sprintf("Failed to delete %d file(s)", len(errs))).
                 Show()
         } else {
-            application.InfoDialog().
+            app.Dialog.Info().
                 SetTitle("Delete Complete").
                 SetMessage(fmt.Sprintf("Deleted %d file(s)", len(paths))).
                 Show()
@@ -390,7 +390,7 @@ func deleteFiles(paths []string) {
 
 ```go
 func confirmQuit(app *application.App) {
-    dialog := application.QuestionDialog().
+    dialog := app.Dialog.Question().
         SetTitle("Quit").
         SetMessage("You have unsaved work. Are you sure you want to quit?")
 
@@ -408,14 +408,14 @@ func confirmQuit(app *application.App) {
 ### Update Dialog with Download Option
 
 ```go
-func showUpdateDialog() {
-    dialog := application.QuestionDialog().
+func showUpdateDialog(app *application.App) {
+    dialog := app.Dialog.Question().
         SetTitle("Update").
         SetMessage("A new version is available. The cancel button is selected when pressing escape.")
 
     download := dialog.AddButton("📥 Download")
     download.OnClick(func() {
-        application.InfoDialog().SetMessage("Downloading...").Show()
+        app.Dialog.Info().SetMessage("Downloading...").Show()
     })
 
     cancel := dialog.AddButton("Cancel")
@@ -429,20 +429,20 @@ func showUpdateDialog() {
 ### Custom Icon Question
 
 ```go
-func showCustomIconQuestion(iconBytes []byte) {
-    dialog := application.QuestionDialog().
+func showCustomIconQuestion(app *application.App, iconBytes []byte) {
+    dialog := app.Dialog.Question().
         SetTitle("Custom Icon Example").
         SetMessage("Using a custom icon").
         SetIcon(iconBytes)
 
     likeIt := dialog.AddButton("I like it!")
     likeIt.OnClick(func() {
-        application.InfoDialog().SetMessage("Thanks!").Show()
+        app.Dialog.Info().SetMessage("Thanks!").Show()
     })
 
     notKeen := dialog.AddButton("Not so keen...")
     notKeen.OnClick(func() {
-        application.InfoDialog().SetMessage("Too bad!").Show()
+        app.Dialog.Info().SetMessage("Too bad!").Show()
     })
 
     dialog.SetDefaultButton(likeIt)

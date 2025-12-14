@@ -258,8 +258,8 @@ AddFilter("Images", "*.png;*.jpg;*.gif")
 ### Open Image File
 
 ```go
-func openImage() (image.Image, error) {
-    path, err := application.OpenFileDialog().
+func openImage(app *application.App) (image.Image, error) {
+    path, err := app.Dialog.OpenFile().
         SetTitle("Select Image").
         AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif;*.bmp").
         PromptForSingleSelection()
@@ -275,7 +275,7 @@ func openImage() (image.Image, error) {
     // Open and decode image
     file, err := os.Open(path)
     if err != nil {
-        application.ErrorDialog().
+        app.Dialog.Error().
             SetTitle("Open Failed").
             SetMessage(err.Error()).
             Show()
@@ -285,7 +285,7 @@ func openImage() (image.Image, error) {
 
     img, _, err := image.Decode(file)
     if err != nil {
-        application.ErrorDialog().
+        app.Dialog.Error().
             SetTitle("Invalid Image").
             SetMessage("Could not decode image file.").
             Show()
@@ -299,8 +299,8 @@ func openImage() (image.Image, error) {
 ### Save Document with Validation
 
 ```go
-func saveDocument(content string) {
-    path, err := application.SaveFileDialog().
+func saveDocument(app *application.App, content string) {
+    path, err := app.Dialog.SaveFile().
         SetFilename("document.txt").
         AddFilter("Text Files", "*.txt").
         AddFilter("Markdown Files", "*.md").
@@ -314,13 +314,13 @@ func saveDocument(content string) {
     // Validate extension
     ext := filepath.Ext(path)
     if ext != ".txt" && ext != ".md" {
-        dialog := application.QuestionDialog().
+        dialog := app.Dialog.Question().
             SetTitle("Confirm Extension").
             SetMessage(fmt.Sprintf("Save as %s file?", ext))
 
         saveBtn := dialog.AddButton("Save")
         saveBtn.OnClick(func() {
-            doSave(path, content)
+            doSave(app, path, content)
         })
 
         cancelBtn := dialog.AddButton("Cancel")
@@ -330,19 +330,19 @@ func saveDocument(content string) {
         return
     }
 
-    doSave(path, content)
+    doSave(app, path, content)
 }
 
-func doSave(path, content string) {
+func doSave(app *application.App, path, content string) {
     if err := os.WriteFile(path, []byte(content), 0644); err != nil {
-        application.ErrorDialog().
+        app.Dialog.Error().
             SetTitle("Save Failed").
             SetMessage(err.Error()).
             Show()
         return
     }
 
-    application.InfoDialog().
+    app.Dialog.Info().
         SetTitle("Saved").
         SetMessage("Document saved successfully!").
         Show()
@@ -352,8 +352,8 @@ func doSave(path, content string) {
 ### Batch File Processing
 
 ```go
-func processMultipleFiles() {
-    paths, err := application.OpenFileDialog().
+func processMultipleFiles(app *application.App) {
+    paths, err := app.Dialog.OpenFile().
         SetTitle("Select Files to Process").
         AddFilter("Images", "*.png;*.jpg").
         PromptForMultipleSelection()
@@ -363,7 +363,7 @@ func processMultipleFiles() {
     }
 
     // Confirm processing
-    dialog := application.QuestionDialog().
+    dialog := app.Dialog.Question().
         SetTitle("Confirm Processing").
         SetMessage(fmt.Sprintf("Process %d file(s)?", len(paths)))
 
@@ -376,7 +376,7 @@ func processMultipleFiles() {
                 errs = append(errs, err)
             }
 
-            // Update progress (assuming app is available)
+            // Update progress
             // app.Event.Emit("progress", map[string]interface{}{
             //     "current": i + 1,
             //     "total":   len(paths),
@@ -386,13 +386,13 @@ func processMultipleFiles() {
 
         // Show results
         if len(errs) > 0 {
-            application.WarningDialog().
+            app.Dialog.Warning().
                 SetTitle("Processing Complete").
                 SetMessage(fmt.Sprintf("Processed %d files with %d errors.",
                     len(paths), len(errs))).
                 Show()
         } else {
-            application.InfoDialog().
+            app.Dialog.Info().
                 SetTitle("Success").
                 SetMessage(fmt.Sprintf("Processed %d files successfully!", len(paths))).
                 Show()
@@ -408,9 +408,9 @@ func processMultipleFiles() {
 ### Export with Folder Selection
 
 ```go
-func exportData(data []byte) {
+func exportData(app *application.App, data []byte) {
     // Select output folder
-    folder, err := application.OpenFileDialog().
+    folder, err := app.Dialog.OpenFile().
         SetTitle("Select Export Folder").
         SetDirectory(getDefaultExportFolder()).
         CanChooseDirectories(true).
@@ -428,7 +428,7 @@ func exportData(data []byte) {
 
     // Save file
     if err := os.WriteFile(path, data, 0644); err != nil {
-        application.ErrorDialog().
+        app.Dialog.Error().
             SetTitle("Export Failed").
             SetMessage(err.Error()).
             Show()
@@ -436,7 +436,7 @@ func exportData(data []byte) {
     }
 
     // Show success with option to open folder
-    dialog := application.QuestionDialog().
+    dialog := app.Dialog.Question().
         SetTitle("Export Complete").
         SetMessage(fmt.Sprintf("Exported to %s", filename))
 
@@ -453,8 +453,8 @@ func exportData(data []byte) {
 ### Import with Validation
 
 ```go
-func importConfiguration() {
-    path, err := application.OpenFileDialog().
+func importConfiguration(app *application.App) {
+    path, err := app.Dialog.OpenFile().
         SetTitle("Import Configuration").
         AddFilter("JSON Files", "*.json").
         AddFilter("YAML Files", "*.yaml;*.yml").
@@ -467,7 +467,7 @@ func importConfiguration() {
     // Read file
     data, err := os.ReadFile(path)
     if err != nil {
-        application.ErrorDialog().
+        app.Dialog.Error().
             SetTitle("Read Failed").
             SetMessage(err.Error()).
             Show()
@@ -477,7 +477,7 @@ func importConfiguration() {
     // Validate configuration
     config, err := parseConfig(data)
     if err != nil {
-        application.ErrorDialog().
+        app.Dialog.Error().
             SetTitle("Invalid Configuration").
             SetMessage("File is not a valid configuration.").
             Show()
@@ -485,7 +485,7 @@ func importConfiguration() {
     }
 
     // Confirm import
-    dialog := application.QuestionDialog().
+    dialog := app.Dialog.Question().
         SetTitle("Confirm Import").
         SetMessage("Import this configuration?")
 
@@ -493,14 +493,14 @@ func importConfiguration() {
     importBtn.OnClick(func() {
         // Apply configuration
         if err := applyConfig(config); err != nil {
-            application.ErrorDialog().
+            app.Dialog.Error().
                 SetTitle("Import Failed").
                 SetMessage(err.Error()).
                 Show()
             return
         }
 
-        application.InfoDialog().
+        app.Dialog.Info().
             SetTitle("Success").
             SetMessage("Configuration imported successfully!").
             Show()
