@@ -22,25 +22,12 @@ All dialogs are **native OS dialogs** that match the platform's look and feel.
 Dialogs are accessed through the `app.Dialog` manager:
 
 ```go
-// Via the Dialog manager (recommended)
 app.Dialog.OpenFile()
 app.Dialog.SaveFile()
 app.Dialog.Info()
 app.Dialog.Question()
 app.Dialog.Warning()
 app.Dialog.Error()
-```
-
-You can also use package-level functions when you don't have access to the app instance:
-
-```go
-// Package-level functions
-application.OpenFileDialog()
-application.SaveFileDialog()
-application.InfoDialog()
-application.QuestionDialog()
-application.WarningDialog()
-application.ErrorDialog()
 ```
 
 ## File Dialogs

@@ -13,21 +13,12 @@ Wails provides **native file dialogs** with platform-appropriate appearance for 
 
 ## Creating File Dialogs
 
-There are two ways to create file dialogs:
+File dialogs are accessed through the `app.Dialog` manager:
 
-**Via DialogManager (recommended when you have an app instance):**
 ```go
 app.Dialog.OpenFile()
 app.Dialog.SaveFile()
 ```
-
-**Package-level functions (useful in callbacks or when app isn't in scope):**
-```go
-application.OpenFileDialog()
-application.SaveFileDialog()
-```
-
-Both approaches return the same dialog types and work identically.
 
 ## Open File dialog
 

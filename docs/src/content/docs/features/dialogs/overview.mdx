@@ -46,9 +46,8 @@ path, _ := app.Dialog.OpenFile().
 
 ## Accessing Dialogs
 
-There are two ways to create dialogs:
+Dialogs are accessed through the `app.Dialog` manager:
 
-**Via DialogManager (recommended when you have an app instance):**
 ```go
 app.Dialog.Info()
 app.Dialog.Question()
@@ -57,18 +56,6 @@ app.Dialog.Error()
 app.Dialog.OpenFile()
 app.Dialog.SaveFile()
 ```
-
-**Package-level functions (useful in callbacks or when app isn't in scope):**
-```go
-application.InfoDialog()
-application.QuestionDialog()
-application.WarningDialog()
-application.ErrorDialog()
-application.OpenFileDialog()
-application.SaveFileDialog()
-```
-
-Both approaches return the same dialog types and work identically.
 
 ## dialog Types
 

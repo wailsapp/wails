@@ -13,9 +13,8 @@ Wails provides **native message dialogs** with platform-appropriate appearance: 
 
 ## Creating Dialogs
 
-There are two ways to create message dialogs:
+Message dialogs are accessed through the `app.Dialog` manager:
 
-**Via DialogManager (recommended when you have an app instance):**
 ```go
 app.Dialog.Info()
 app.Dialog.Question()
@@ -23,15 +22,7 @@ app.Dialog.Warning()
 app.Dialog.Error()
 ```
 
-**Package-level functions (useful in callbacks or when app isn't in scope):**
-```go
-application.InfoDialog()
-application.QuestionDialog()
-application.WarningDialog()
-application.ErrorDialog()
-```
-
-Both approaches return a `*MessageDialog` that can be configured using method chaining.
+All methods return a `*MessageDialog` that can be configured using method chaining.
 
 ## Information dialog
 
