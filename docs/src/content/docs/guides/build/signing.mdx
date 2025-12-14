@@ -28,7 +28,7 @@ This matrix shows what you can sign from each source platform:
 | Linux RPM | ✅ | ✅ | ✅ |
 
 <Aside type="tip">
-All platforms can be signed from **any platform**! macOS cross-platform signing uses the [Quill](https://github.com/anchore/quill) library and requires exporting your Developer ID certificate as a P12 file.
+All platforms can be signed from **any platform**! macOS cross-platform signing requires exporting your Developer ID certificate as a P12 file.
 </Aside>
 
 ### Signing Backends
@@ -38,7 +38,7 @@ Wails automatically selects the best available signing backend:
 | Platform | Native Backend | Cross-Platform Backend |
 |----------|----------------|------------------------|
 | Windows | `signtool.exe` (Windows SDK) | Built-in |
-| macOS | `codesign` (Xcode) | Quill library |
+| macOS | `codesign` (Xcode) | Built-in |
 | Linux | N/A | Built-in |
 
 When running on the native platform, Wails uses the native tools for maximum compatibility. When cross-compiling, it uses the built-in signing support.
@@ -267,7 +267,7 @@ Notarization typically takes 1-2 minutes. The ticket is automatically stapled to
 
 ### Cross-Platform macOS Signing
 
-You can sign macOS binaries from Linux or Windows using the Quill library. This is useful for CI/CD pipelines that don't have access to macOS runners.
+You can sign macOS binaries from Linux or Windows. This is useful for CI/CD pipelines that don't have access to macOS runners.
 
 <Aside type="caution">
 **When to use cross-platform signing:**

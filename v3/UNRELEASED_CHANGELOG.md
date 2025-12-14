@@ -18,7 +18,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Added
 - Add `XDG_SESSION_TYPE` to `wails3 doctor` output on Linux by @leaanthony
 - Add additional WebKit2 load-change events for Linux: `WindowLoadStarted`, `WindowLoadRedirected`, `WindowLoadCommitted`, `WindowLoadFinished` (#3896) by @leaanthony
-- Add cross-platform macOS binary signing via Quill library (#2012) by @leaanthony
+- Add cross-platform macOS binary signing (#2012) by @leaanthony
   - Sign macOS binaries from Linux, Windows, or macOS using P12 certificates
   - Full notarization support via Apple API keys
   - Secure credential storage in system keychain (passwords never in env vars or CLI args)

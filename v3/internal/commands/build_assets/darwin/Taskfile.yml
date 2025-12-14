@@ -208,12 +208,12 @@ tasks:
       - sh: '[ -n "{{.KEYCHAIN_PROFILE}}" ]'
         msg: "KEYCHAIN_PROFILE is required. Set it in the vars section at the top of build/darwin/Taskfile.yml"
 
-  # Cross-platform signing tasks (work on any OS via Quill library)
+  # Cross-platform signing tasks (work on any OS)
   # Use these when building on Linux/Windows, or in CI/CD without macOS runners
   sign:cross:
-    summary: Signs the macOS binary using cross-platform signing (Quill)
+    summary: Signs the macOS binary using cross-platform signing
     desc: |
-      Signs the macOS binary from any platform using the Quill library.
+      Signs the macOS binary from any platform.
       Works on macOS, Linux, and Windows.
 
       Use this for CI/CD on non-macOS runners or when building on Linux/Windows.
@@ -233,7 +233,7 @@ tasks:
   sign:cross:notarize:
     summary: Signs and notarizes the macOS binary using cross-platform signing
     desc: |
-      Signs and notarizes the macOS binary from any platform using the Quill library.
+      Signs and notarizes the macOS binary from any platform.
       Works on macOS, Linux, and Windows.
 
       Use this for CI/CD on non-macOS runners or when building on Linux/Windows.
