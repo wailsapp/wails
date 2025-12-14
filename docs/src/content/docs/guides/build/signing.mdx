@@ -401,25 +401,20 @@ jobs:
           echo "$P12_CERTIFICATE_BASE64" | base64 -d > developer-id.p12
           echo "$NOTARY_KEY_BASE64" | base64 -d > AuthKey.p8
 
-      - name: Store Credentials
-        env:
-          P12_PASSWORD: ${{ secrets.MACOS_P12_PASSWORD }}
-          NOTARY_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
-          NOTARY_ISSUER: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          # Store credentials in keychain for wails3 to use
-          wails3 keychain set macos-p12-password "$P12_PASSWORD"
-          wails3 keychain set notary-key-id "$NOTARY_KEY_ID"
-          wails3 keychain set notary-issuer "$NOTARY_ISSUER"
-
       - name: Build macOS Binary
         run: wails3 task darwin:build
 
       - name: Sign and Notarize
+        env:
+          WAILS_MACOS_P12_PASSWORD: ${{ secrets.MACOS_P12_PASSWORD }}
         run: |
-          wails3 task darwin:sign:notarize \
-            P12_CERTIFICATE=developer-id.p12 \
-            NOTARY_KEY=AuthKey.p8
+          wails3 tool sign \
+            --input bin/MyApp.app/Contents/MacOS/MyApp \
+            --p12 developer-id.p12 \
+            --notarize \
+            --notary-key AuthKey.p8 \
+            --notary-key-id "${{ secrets.APPLE_API_KEY_ID }}" \
+            --notary-issuer "${{ secrets.APPLE_TEAM_ID }}"
 
       - name: Cleanup Secrets
         if: always()
@@ -433,7 +428,11 @@ jobs:
 ```
 
 <Aside type="note">
-Cross-platform signing produces identical results to native signing. The signed binary will pass Apple's notarization and Gatekeeper checks.
+Cross-platform signing produces equivalent results to native signing. Verify the signed binary on macOS with:
+```bash
+codesign --verify --deep --strict --verbose=2 MyApp.app
+spctl --assess --type execute --verbose MyApp.app
+```
 </Aside>
 
 ## Windows Code Signing
