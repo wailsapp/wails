@@ -579,6 +579,31 @@ func (w *Window) SetAlwaysOnTop(alwaysOnTop bool)
 window.SetAlwaysOnTop(true)
 ```
 
+### Print()
+
+Opens the native print dialog for the window content.
+
+```go
+func (w *Window) Print() error
+```
+
+**Returns:** Error if printing fails
+
+**Example:**
+```go
+err := window.Print()
+if err != nil {
+    log.Println("Print failed:", err)
+}
+```
+
+**Platform support:**
+- **macOS**: Full support
+- **Windows**: Full support
+- **Linux**: Full support
+
+**Note:** This triggers the native OS print dialog, allowing the user to select printer settings and print the current window content.
+
 ## Complete Example
 
 ```go
