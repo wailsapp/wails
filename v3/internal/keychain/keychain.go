@@ -14,9 +14,16 @@ const (
 	// ServiceName is the service identifier used for all Wails credentials
 	ServiceName = "wails"
 
-	// Credential keys
+	// Credential keys - Windows
 	KeyWindowsCertPassword = "windows-cert-password"
-	KeyPGPPassword         = "pgp-password"
+
+	// Credential keys - Linux
+	KeyPGPPassword = "pgp-password"
+
+	// Credential keys - macOS (cross-platform signing via Quill)
+	KeyMacOSP12Password = "macos-p12-password"
+	KeyNotaryKeyID      = "notary-key-id"
+	KeyNotaryIssuer     = "notary-issuer"
 )
 
 // Set stores a credential in the system keychain.

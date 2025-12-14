@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -30,10 +31,10 @@ func Sign(options *flags.Sign) error {
 
 	// macOS app bundle (directory)
 	if info.IsDir() && strings.HasSuffix(options.Input, ".app") {
-		return signMacOSApp(options)
+		return signMacOS(options)
 	}
 
-	// macOS binary or Windows executable
+	// Windows executable
 	if ext == ".exe" || ext == ".msi" || ext == ".msix" || ext == ".appx" {
 		return signWindows(options)
 	}
@@ -46,21 +47,62 @@ func Sign(options *flags.Sign) error {
 		return signRPM(options)
 	}
 
-	// macOS binary (no extension typically)
-	if runtime.GOOS == "darwin" && options.Identity != "" {
-		return signMacOSBinary(options)
+	// macOS binary (no extension typically) - check for macOS signing options
+	if options.Identity != "" || options.P12Certificate != "" {
+		return signMacOS(options)
 	}
 
-	return fmt.Errorf("unsupported file type: %s", ext)
+	return fmt.Errorf("unsupported file type or missing signing options: %s", ext)
 }
 
-func signMacOSApp(options *flags.Sign) error {
+// signMacOS routes to the appropriate macOS signing method
+func signMacOS(options *flags.Sign) error {
+	// Determine signing method:
+	// 1. If --use-docker is set, use Docker with Quill
+	// 2. If --p12 is set (cross-platform signing), use Quill (native or Docker)
+	// 3. If on macOS with --identity, use native codesign
+	// 4. If on macOS without --identity but with --p12, use Quill
+	// 5. If not on macOS and no --p12, error
+
+	if options.UseDocker {
+		return signMacOSWithDocker(options)
+	}
+
+	if options.P12Certificate != "" {
+		// Cross-platform signing with Quill
+		return signMacOSWithQuill(options)
+	}
+
+	if runtime.GOOS == "darwin" && options.Identity != "" {
+		// Native macOS signing
+		info, err := os.Stat(options.Input)
+		if err != nil {
+			return err
+		}
+		if info.IsDir() && strings.HasSuffix(options.Input, ".app") {
+			return signMacOSAppNative(options)
+		}
+		return signMacOSBinaryNative(options)
+	}
+
+	if runtime.GOOS != "darwin" {
+		return fmt.Errorf("macOS signing on non-macOS requires --p12 certificate for cross-platform signing, or --use-docker")
+	}
+
+	return fmt.Errorf("--identity or --p12 is required for macOS signing")
+}
+
+// =============================================================================
+// Native macOS signing (requires macOS with codesign)
+// =============================================================================
+
+func signMacOSAppNative(options *flags.Sign) error {
 	if options.Identity == "" {
-		return fmt.Errorf("--identity is required for macOS signing")
+		return fmt.Errorf("--identity is required for native macOS signing")
 	}
 
 	if options.Verbose {
-		pterm.Info.Printfln("Signing macOS app bundle: %s", options.Input)
+		pterm.Info.Printfln("Signing macOS app bundle (native): %s", options.Input)
 	}
 
 	// Build codesign command
@@ -92,19 +134,19 @@ func signMacOSApp(options *flags.Sign) error {
 
 	// Notarize if requested
 	if options.Notarize {
-		return notarizeMacOSApp(options)
+		return notarizeMacOSNative(options)
 	}
 
 	return nil
 }
 
-func signMacOSBinary(options *flags.Sign) error {
+func signMacOSBinaryNative(options *flags.Sign) error {
 	if options.Identity == "" {
-		return fmt.Errorf("--identity is required for macOS signing")
+		return fmt.Errorf("--identity is required for native macOS signing")
 	}
 
 	if options.Verbose {
-		pterm.Info.Printfln("Signing macOS binary: %s", options.Input)
+		pterm.Info.Printfln("Signing macOS binary (native): %s", options.Input)
 	}
 
 	args := []string{
@@ -131,16 +173,21 @@ func signMacOSBinary(options *flags.Sign) error {
 	}
 
 	pterm.Success.Printfln("Signed: %s", options.Input)
+
+	if options.Notarize {
+		return notarizeMacOSNative(options)
+	}
+
 	return nil
 }
 
-func notarizeMacOSApp(options *flags.Sign) error {
+func notarizeMacOSNative(options *flags.Sign) error {
 	if options.KeychainProfile == "" {
-		return fmt.Errorf("--keychain-profile is required for notarization")
+		return fmt.Errorf("--keychain-profile is required for native notarization")
 	}
 
 	if options.Verbose {
-		pterm.Info.Println("Submitting for notarization...")
+		pterm.Info.Println("Submitting for notarization (native)...")
 	}
 
 	// Create a zip for notarization
@@ -177,6 +224,271 @@ func notarizeMacOSApp(options *flags.Sign) error {
 	}
 
 	pterm.Success.Println("Notarization complete and ticket stapled")
+	return nil
+}
+
+// =============================================================================
+// Cross-platform macOS signing via Quill
+// =============================================================================
+
+// signMacOSWithQuill signs a macOS binary using Quill (works on any platform)
+func signMacOSWithQuill(options *flags.Sign) error {
+	if options.P12Certificate == "" {
+		return fmt.Errorf("--p12 is required for cross-platform macOS signing")
+	}
+
+	// Check if P12 file exists
+	if _, err := os.Stat(options.P12Certificate); err != nil {
+		return fmt.Errorf("P12 certificate not found: %w", err)
+	}
+
+	// Check if quill is available
+	quillPath, err := exec.LookPath("quill")
+	if err != nil {
+		// Quill not found - try Docker
+		if options.Verbose {
+			pterm.Info.Println("Quill not found locally, trying Docker...")
+		}
+		return signMacOSWithDocker(options)
+	}
+
+	// Get P12 password from keychain
+	password, err := keychain.Get(keychain.KeyMacOSP12Password)
+	if err != nil {
+		return fmt.Errorf("P12 password not found: %w\nStore it with: wails3 setup signing", err)
+	}
+
+	if options.Verbose {
+		pterm.Info.Printfln("Signing macOS binary with Quill: %s", options.Input)
+	}
+
+	// Write password to secure temp file (more secure than env var)
+	passFile, err := os.CreateTemp("", "wails-sign-pass-*")
+	if err != nil {
+		return fmt.Errorf("failed to create temp file: %w", err)
+	}
+	defer os.Remove(passFile.Name())
+
+	if err := os.Chmod(passFile.Name(), 0600); err != nil {
+		return fmt.Errorf("failed to set temp file permissions: %w", err)
+	}
+	if _, err := passFile.WriteString(password); err != nil {
+		return fmt.Errorf("failed to write temp file: %w", err)
+	}
+	passFile.Close()
+
+	// Build quill sign command
+	args := []string{
+		"sign",
+		"--p12", options.P12Certificate,
+		"--password-file", passFile.Name(),
+		options.Input,
+	}
+
+	cmd := exec.Command(quillPath, args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("quill sign failed: %w", err)
+	}
+
+	pterm.Success.Printfln("Signed: %s", options.Input)
+
+	// Notarize if requested
+	if options.Notarize {
+		return notarizeMacOSWithQuill(options, passFile.Name())
+	}
+
+	return nil
+}
+
+// notarizeMacOSWithQuill notarizes a macOS binary using Quill
+func notarizeMacOSWithQuill(options *flags.Sign, passFilePath string) error {
+	// For notarization, we need the Apple API key credentials
+	if options.NotaryKey == "" {
+		return fmt.Errorf("--notary-key is required for notarization with Quill")
+	}
+
+	// Get notary credentials - first check flags, then keychain
+	notaryKeyID := options.NotaryKeyID
+	if notaryKeyID == "" {
+		var err error
+		notaryKeyID, err = keychain.Get(keychain.KeyNotaryKeyID)
+		if err != nil {
+			return fmt.Errorf("notary key ID not found: %w\nProvide --notary-key-id or run: wails3 setup signing", err)
+		}
+	}
+
+	notaryIssuer := options.NotaryIssuer
+	if notaryIssuer == "" {
+		var err error
+		notaryIssuer, err = keychain.Get(keychain.KeyNotaryIssuer)
+		if err != nil {
+			return fmt.Errorf("notary issuer not found: %w\nProvide --notary-issuer or run: wails3 setup signing", err)
+		}
+	}
+
+	if options.Verbose {
+		pterm.Info.Println("Submitting for notarization with Quill...")
+	}
+
+	quillPath, err := exec.LookPath("quill")
+	if err != nil {
+		return fmt.Errorf("quill not found: %w", err)
+	}
+
+	args := []string{
+		"notarize",
+		"--p12", options.P12Certificate,
+		"--password-file", passFilePath,
+		"--notary-key", options.NotaryKey,
+		"--notary-key-id", notaryKeyID,
+		"--notary-issuer", notaryIssuer,
+		options.Input,
+	}
+
+	cmd := exec.Command(quillPath, args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("quill notarize failed: %w", err)
+	}
+
+	pterm.Success.Println("Notarization complete")
+	return nil
+}
+
+// =============================================================================
+// Docker-based macOS signing (uses Quill in container)
+// =============================================================================
+
+const dockerCrossImage = "wails-cross"
+
+// signMacOSWithDocker signs a macOS binary using Quill in a Docker container
+func signMacOSWithDocker(options *flags.Sign) error {
+	if options.P12Certificate == "" {
+		return fmt.Errorf("--p12 is required for Docker-based macOS signing")
+	}
+
+	// Check Docker is available
+	if _, err := exec.LookPath("docker"); err != nil {
+		return fmt.Errorf("docker not found: %w\nInstall Docker or Quill for cross-platform macOS signing", err)
+	}
+
+	// Check Docker image exists
+	checkCmd := exec.Command("docker", "image", "inspect", dockerCrossImage)
+	if err := checkCmd.Run(); err != nil {
+		return fmt.Errorf("docker image '%s' not found\nBuild it with: wails3 task setup:docker", dockerCrossImage)
+	}
+
+	// Check if P12 file exists
+	p12Abs, err := filepath.Abs(options.P12Certificate)
+	if err != nil {
+		return fmt.Errorf("failed to resolve P12 path: %w", err)
+	}
+	if _, err := os.Stat(p12Abs); err != nil {
+		return fmt.Errorf("P12 certificate not found: %w", err)
+	}
+
+	// Get input file absolute path
+	inputAbs, err := filepath.Abs(options.Input)
+	if err != nil {
+		return fmt.Errorf("failed to resolve input path: %w", err)
+	}
+
+	// Get P12 password from keychain
+	password, err := keychain.Get(keychain.KeyMacOSP12Password)
+	if err != nil {
+		return fmt.Errorf("P12 password not found: %w\nStore it with: wails3 setup signing", err)
+	}
+
+	if options.Verbose {
+		pterm.Info.Printfln("Signing macOS binary with Docker: %s", options.Input)
+	}
+
+	// Build docker command - password passed via stdin
+	dockerArgs := []string{
+		"run", "--rm", "-i",
+		"-v", p12Abs + ":/cert.p12:ro",
+		"-v", inputAbs + ":/input",
+		"--entrypoint", "/usr/local/bin/sign.sh",
+		dockerCrossImage,
+		"/input",
+		"--p12", "/cert.p12",
+	}
+
+	// Add notarization args if requested
+	if options.Notarize {
+		if options.NotaryKey == "" {
+			return fmt.Errorf("--notary-key is required for notarization")
+		}
+
+		notaryKeyAbs, err := filepath.Abs(options.NotaryKey)
+		if err != nil {
+			return fmt.Errorf("failed to resolve notary key path: %w", err)
+		}
+
+		// Get notary credentials
+		notaryKeyID := options.NotaryKeyID
+		if notaryKeyID == "" {
+			notaryKeyID, err = keychain.Get(keychain.KeyNotaryKeyID)
+			if err != nil {
+				return fmt.Errorf("notary key ID not found: %w", err)
+			}
+		}
+
+		notaryIssuer := options.NotaryIssuer
+		if notaryIssuer == "" {
+			notaryIssuer, err = keychain.Get(keychain.KeyNotaryIssuer)
+			if err != nil {
+				return fmt.Errorf("notary issuer not found: %w", err)
+			}
+		}
+
+		// Update docker args to include notary key mount
+		dockerArgs = []string{
+			"run", "--rm", "-i",
+			"-v", p12Abs + ":/cert.p12:ro",
+			"-v", notaryKeyAbs + ":/notary-key.p8:ro",
+			"-v", inputAbs + ":/input",
+			"--entrypoint", "/usr/local/bin/sign.sh",
+			dockerCrossImage,
+			"/input",
+			"--p12", "/cert.p12",
+			"--notarize",
+			"--notary-key", "/notary-key.p8",
+			"--notary-key-id", notaryKeyID,
+			"--notary-issuer", notaryIssuer,
+		}
+	}
+
+	cmd := exec.Command("docker", dockerArgs...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	// Pass password via stdin (secure - not in process list or env)
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return fmt.Errorf("failed to create stdin pipe: %w", err)
+	}
+
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("failed to start docker: %w", err)
+	}
+
+	// Write password to stdin
+	if _, err := io.WriteString(stdin, password); err != nil {
+		return fmt.Errorf("failed to write password: %w", err)
+	}
+	stdin.Close()
+
+	if err := cmd.Wait(); err != nil {
+		return fmt.Errorf("docker signing failed: %w", err)
+	}
+
+	pterm.Success.Printfln("Signed: %s", options.Input)
 	return nil
 }
 

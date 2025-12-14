@@ -4,10 +4,14 @@ includes:
   common: ../Taskfile.yml
 
 vars:
-  # Signing configuration - edit these values for your project
+  # Native signing configuration (macOS only)
   # SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
   # KEYCHAIN_PROFILE: "my-notarize-profile"
   # ENTITLEMENTS: "build/darwin/entitlements.plist"
+
+  # Cross-platform signing configuration (works on any OS via Quill)
+  # P12_CERTIFICATE: "certs/developer-id.p12"
+  # NOTARY_KEY: "certs/AuthKey_XXXXXXXX.p8"
 
   # Docker image for cross-compilation (used when building on non-macOS)
   CROSS_IMAGE: wails-cross
@@ -195,3 +199,53 @@ tasks:
         msg: "SIGN_IDENTITY is required. Set it in the vars section at the top of build/darwin/Taskfile.yml"
       - sh: '[ -n "{{.KEYCHAIN_PROFILE}}" ]'
         msg: "KEYCHAIN_PROFILE is required. Set it in the vars section at the top of build/darwin/Taskfile.yml"
+
+  # Cross-platform signing tasks (work on any OS via Quill/Docker)
+  sign:cross:
+    summary: Signs the macOS binary using cross-platform signing (Quill)
+    desc: |
+      Signs the macOS binary from any platform using Quill.
+      If Quill is not installed locally, Docker will be used automatically.
+
+      Configure P12_CERTIFICATE in the vars section at the top of this file.
+      Store your P12 password with: wails3 setup signing
+    deps:
+      - task: package
+    cmds:
+      - wails3 tool sign --input {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/MacOS/{{.APP_NAME}} --p12 "{{.P12_CERTIFICATE}}"
+    preconditions:
+      - sh: '[ -n "{{.P12_CERTIFICATE}}" ]'
+        msg: "P12_CERTIFICATE is required. Set it in the vars section at the top of build/darwin/Taskfile.yml"
+
+  sign:cross:notarize:
+    summary: Signs and notarizes the macOS binary using cross-platform signing
+    desc: |
+      Signs and notarizes the macOS binary from any platform using Quill.
+      If Quill is not installed locally, Docker will be used automatically.
+
+      Configure P12_CERTIFICATE and NOTARY_KEY in the vars section at the top of this file.
+      Store your credentials with: wails3 setup signing
+    deps:
+      - task: package
+    cmds:
+      - wails3 tool sign --input {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/MacOS/{{.APP_NAME}} --p12 "{{.P12_CERTIFICATE}}" --notarize --notary-key "{{.NOTARY_KEY}}"
+    preconditions:
+      - sh: '[ -n "{{.P12_CERTIFICATE}}" ]'
+        msg: "P12_CERTIFICATE is required. Set it in the vars section at the top of build/darwin/Taskfile.yml"
+      - sh: '[ -n "{{.NOTARY_KEY}}" ]'
+        msg: "NOTARY_KEY is required. Set it in the vars section at the top of build/darwin/Taskfile.yml"
+
+  sign:cross:docker:
+    summary: Forces signing via Docker container (uses Quill)
+    desc: |
+      Signs the macOS binary using the Docker cross-compilation image.
+      Useful for CI/CD environments or when Quill is not installed locally.
+    deps:
+      - task: package
+    cmds:
+      - wails3 tool sign --input {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/MacOS/{{.APP_NAME}} --p12 "{{.P12_CERTIFICATE}}" --use-docker
+    preconditions:
+      - sh: '[ -n "{{.P12_CERTIFICATE}}" ]'
+        msg: "P12_CERTIFICATE is required. Set it in the vars section at the top of build/darwin/Taskfile.yml"
+      - sh: docker info > /dev/null 2>&1
+        msg: "Docker is required for this task. Please install Docker."

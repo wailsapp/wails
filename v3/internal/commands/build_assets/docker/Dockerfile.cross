@@ -1,6 +1,7 @@
 # Cross-compile Wails v3 apps to any platform
 #
 # Uses Zig as C compiler + macOS SDK for darwin targets
+# Includes Quill for cross-platform macOS binary signing
 #
 # Usage:
 #   docker build -t wails-cross -f Dockerfile.cross .
@@ -10,10 +11,22 @@
 #   docker run --rm -v $(pwd):/app wails-cross linux arm64
 #   docker run --rm -v $(pwd):/app wails-cross windows amd64
 #   docker run --rm -v $(pwd):/app wails-cross windows arm64
+#
+# Signing (pass password via stdin):
+#   echo "$P12_PASSWORD" | docker run --rm -i \
+#     -v /path/to/cert.p12:/cert.p12:ro \
+#     -v /path/to/binary:/input \
+#     wails-cross sign /input --p12 /cert.p12
 
 FROM golang:1.25-alpine
 
 RUN apk add --no-cache curl xz nodejs npm
+
+# Install Quill for macOS binary signing
+ARG QUILL_VERSION=0.5.1
+RUN curl -L "https://github.com/anchore/quill/releases/download/v${QUILL_VERSION}/quill_${QUILL_VERSION}_linux_amd64.tar.gz" \
+    | tar -xz -C /usr/local/bin quill \
+    && chmod +x /usr/local/bin/quill
 
 # Install Zig
 ARG ZIG_VERSION=0.14.0
@@ -189,6 +202,86 @@ go build -ldflags="$LDFLAGS" -o bin/${APP}-${GOOS}-${GOARCH}${EXT} .
 echo "Built: bin/${APP}-${GOOS}-${GOARCH}${EXT}"
 SCRIPT
 RUN chmod +x /usr/local/bin/build.sh
+
+# Sign script for macOS binaries (password via stdin)
+COPY <<'SCRIPT' /usr/local/bin/sign.sh
+#!/bin/sh
+set -e
+
+usage() {
+    echo "Usage: sign.sh <binary> --p12 <cert.p12> [--notarize --notary-key <key.p8> --notary-key-id <id> --notary-issuer <issuer>]"
+    echo ""
+    echo "Password is read from stdin for security."
+    echo "Example: echo \"\$PASSWORD\" | sign.sh /app/myapp --p12 /cert.p12"
+    exit 1
+}
+
+if [ $# -lt 3 ]; then
+    usage
+fi
+
+BINARY="$1"
+shift
+
+P12=""
+NOTARIZE=0
+NOTARY_KEY=""
+NOTARY_KEY_ID=""
+NOTARY_ISSUER=""
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --p12) P12="$2"; shift 2 ;;
+        --notarize) NOTARIZE=1; shift ;;
+        --notary-key) NOTARY_KEY="$2"; shift 2 ;;
+        --notary-key-id) NOTARY_KEY_ID="$2"; shift 2 ;;
+        --notary-issuer) NOTARY_ISSUER="$2"; shift 2 ;;
+        *) echo "Unknown option: $1"; usage ;;
+    esac
+done
+
+if [ -z "$P12" ]; then
+    echo "Error: --p12 is required"
+    usage
+fi
+
+if [ ! -f "$BINARY" ]; then
+    echo "Error: Binary not found: $BINARY"
+    exit 1
+fi
+
+if [ ! -f "$P12" ]; then
+    echo "Error: P12 certificate not found: $P12"
+    exit 1
+fi
+
+# Read password from stdin into temp file (more secure than env var)
+PASS_FILE=$(mktemp)
+chmod 600 "$PASS_FILE"
+cat > "$PASS_FILE"
+
+trap "rm -f $PASS_FILE" EXIT
+
+echo "Signing: $BINARY"
+quill sign --p12 "$P12" --password-file "$PASS_FILE" "$BINARY"
+
+if [ $NOTARIZE -eq 1 ]; then
+    if [ -z "$NOTARY_KEY" ] || [ -z "$NOTARY_KEY_ID" ] || [ -z "$NOTARY_ISSUER" ]; then
+        echo "Error: Notarization requires --notary-key, --notary-key-id, and --notary-issuer"
+        exit 1
+    fi
+
+    echo "Notarizing: $BINARY"
+    quill notarize --p12 "$P12" --password-file "$PASS_FILE" \
+        --notary-key "$NOTARY_KEY" \
+        --notary-key-id "$NOTARY_KEY_ID" \
+        --notary-issuer "$NOTARY_ISSUER" \
+        "$BINARY"
+fi
+
+echo "Done: $BINARY"
+SCRIPT
+RUN chmod +x /usr/local/bin/sign.sh
 
 WORKDIR /app
 ENTRYPOINT ["/usr/local/bin/build.sh"]

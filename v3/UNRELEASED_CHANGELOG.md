@@ -18,6 +18,15 @@ After processing, the content will be moved to the main changelog and this file 
 ## Added
 - Add `XDG_SESSION_TYPE` to `wails3 doctor` output on Linux by @leaanthony
 - Add additional WebKit2 load-change events for Linux: `WindowLoadStarted`, `WindowLoadRedirected`, `WindowLoadCommitted`, `WindowLoadFinished` (#3896) by @leaanthony
+- Add cross-platform macOS binary signing via Quill (#2012) by @leaanthony
+  - Sign macOS binaries from Linux, Windows, or macOS using P12 certificates
+  - Automatic fallback to Docker container if Quill not installed locally
+  - Full notarization support via Apple API keys
+  - Secure credential storage in system keychain (passwords never in env vars or CLI args)
+  - New flags: `--p12`, `--notary-key`, `--notary-key-id`, `--notary-issuer`, `--use-docker`
+  - New Taskfile tasks: `sign:cross`, `sign:cross:notarize`, `sign:cross:docker`
+  - Updated `wails3 setup signing` wizard with cross-platform option
+  - Quill included in Docker cross-compilation image
 <!-- New features, capabilities, or enhancements -->
 
 ## Changed
