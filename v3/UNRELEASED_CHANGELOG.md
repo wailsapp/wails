@@ -21,6 +21,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- New features, capabilities, or enhancements -->
 
 ## Changed
+- Update the `Frontend Runtime` documentation by adding more options for generating frontend bindings by @ndianabasi
 <!-- Changes in existing functionality -->
 
 ## Fixed
