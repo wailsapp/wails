@@ -44,7 +44,7 @@ Wails automatically selects the best available signing backend:
 When running on the native platform, Wails uses the native tools for maximum compatibility. When cross-compiling, it uses the built-in signing support.
 
 <Aside type="note">
-**macOS signing recommendation**: On macOS, prefer native `codesign` (via `sign:` task) as it's Apple's official tooling. Use cross-platform signing (via `sign:cross:` task) only when building on Linux/Windows or in CI/CD without macOS runners.
+**macOS signing recommendation**: On macOS, prefer native `codesign` by setting `SIGN_IDENTITY`. Use cross-platform signing (by setting `P12_CERTIFICATE`) only when building on Linux/Windows or in CI/CD without macOS runners. The `sign:` task auto-detects which method to use.
 </Aside>
 
 ## Quick Start
