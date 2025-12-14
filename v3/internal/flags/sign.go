@@ -23,7 +23,6 @@ type Sign struct {
 	NotaryKey      string `name:"notary-key" description:"Path to Apple API key (.p8) for notarization"`
 	NotaryKeyID    string `name:"notary-key-id" description:"Apple API Key ID for notarization"`
 	NotaryIssuer   string `name:"notary-issuer" description:"Apple Team ID (Issuer) for notarization"`
-	UseDocker      bool   `name:"use-docker" description:"Force signing via Docker container (uses Quill)"`
 
 	// Notarization (works with both native and Quill)
 	Notarize bool `name:"notarize" description:"Submit for Apple notarization after signing"`

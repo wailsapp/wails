@@ -345,9 +345,6 @@ func setupDarwinSigningQuill() error {
 		fmt.Println()
 	}
 
-	pterm.Info.Println("Note: If Quill is not installed locally, signing will use Docker automatically.")
-	pterm.Println("Build the Docker image first: wails3 task setup:docker")
-
 	return nil
 }
 
