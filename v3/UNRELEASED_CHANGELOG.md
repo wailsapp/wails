@@ -16,8 +16,6 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
-- Add `XDG_SESSION_TYPE` to `wails3 doctor` output on Linux by @leaanthony
-- Add additional WebKit2 load-change events for Linux: `WindowLoadStarted`, `WindowLoadRedirected`, `WindowLoadCommitted`, `WindowLoadFinished` (#3896) by @leaanthony
 - Add cross-platform macOS binary signing (#2012) by @leaanthony
   - Sign macOS binaries from Linux, Windows, or macOS using P12 certificates
   - Full notarization support via Apple API keys
@@ -37,7 +35,6 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Soon-to-be removed features -->
 
 ## Removed
-- **BREAKING**: Remove `linux:WindowLoadChanged` event - use `linux:WindowLoadFinished` instead for detecting when WebView has finished loading (#3896) by @leaanthony
 <!-- Features removed in this release -->
 
 ## Security
