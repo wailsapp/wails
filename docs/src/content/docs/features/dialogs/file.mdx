@@ -10,12 +10,31 @@ import { Card, CardGrid } from "@astrojs/starlight/components";
 ## File dialogs
 
 Wails provides **native file dialogs** with platform-appropriate appearance for opening files, saving files, and selecting folders. Simple API with file type filtering, multiple selection support, and default locations.
+
+## Creating File Dialogs
+
+There are two ways to create file dialogs:
+
+**Via DialogManager (recommended when you have an app instance):**
+```go
+app.Dialog.OpenFile()
+app.Dialog.SaveFile()
+```
+
+**Package-level functions (useful in callbacks or when app isn't in scope):**
+```go
+application.OpenFileDialog()
+application.SaveFileDialog()
+```
+
+Both approaches return the same dialog types and work identically.
+
 ## Open File dialog
 
 Select files to open:
 
 ```go
-path, err := application.OpenFileDialog().
+path, err := app.Dialog.OpenFile().
     SetTitle("Select Image").
     AddFilter("Images", "*.png;*.jpg;*.gif").
     AddFilter("All Files", "*.*").
@@ -37,7 +56,7 @@ openFile(path)
 ### Single File Selection
 
 ```go
-path, err := application.OpenFileDialog().
+path, err := app.Dialog.OpenFile().
     SetTitle("Open Document").
     AddFilter("Text Files", "*.txt").
     AddFilter("All Files", "*.*").
@@ -55,7 +74,7 @@ data, _ := os.ReadFile(path)
 ### Multiple File Selection
 
 ```go
-paths, err := application.OpenFileDialog().
+paths, err := app.Dialog.OpenFile().
     SetTitle("Select Images").
     AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif").
     PromptForMultipleSelection()
@@ -73,7 +92,7 @@ for _, path := range paths {
 ### With Default Directory
 
 ```go
-path, err := application.OpenFileDialog().
+path, err := app.Dialog.OpenFile().
     SetTitle("Open File").
     SetDirectory("/Users/me/Documents").
     PromptForSingleSelection()
@@ -84,7 +103,7 @@ path, err := application.OpenFileDialog().
 Choose where to save:
 
 ```go
-path, err := application.SaveFileDialog().
+path, err := app.Dialog.SaveFile().
     SetFilename("document.txt").
     AddFilter("Text Files", "*.txt").
     AddFilter("All Files", "*.*").
@@ -106,7 +125,7 @@ saveFile(path, data)
 ### With Default Filename
 
 ```go
-path, err := application.SaveFileDialog().
+path, err := app.Dialog.SaveFile().
     SetFilename("export.csv").
     AddFilter("CSV Files", "*.csv").
     PromptForSingleSelection()
@@ -115,7 +134,7 @@ path, err := application.SaveFileDialog().
 ### With Default Directory
 
 ```go
-path, err := application.SaveFileDialog().
+path, err := app.Dialog.SaveFile().
     SetDirectory("/Users/me/Documents").
     SetFilename("untitled.txt").
     PromptForSingleSelection()
@@ -124,7 +143,7 @@ path, err := application.SaveFileDialog().
 ### Overwrite Confirmation
 
 ```go
-path, err := application.SaveFileDialog().
+path, err := app.Dialog.SaveFile().
     SetFilename("document.txt").
     PromptForSingleSelection()
 
@@ -134,7 +153,7 @@ if err != nil || path == "" {
 
 // Check if file exists
 if _, err := os.Stat(path); err == nil {
-    dialog := application.QuestionDialog().
+    dialog := app.Dialog.Question().
         SetTitle("Confirm Overwrite").
         SetMessage("File already exists. Overwrite?")
 
@@ -158,7 +177,7 @@ saveFile(path, data)
 Choose a directory using the open file dialog with directory selection enabled:
 
 ```go
-path, err := application.OpenFileDialog().
+path, err := app.Dialog.OpenFile().
     SetTitle("Select Output Folder").
     CanChooseDirectories(true).
     CanChooseFiles(false).
@@ -180,7 +199,7 @@ exportToFolder(path)
 ### With Default Directory
 
 ```go
-path, err := application.OpenFileDialog().
+path, err := app.Dialog.OpenFile().
     SetTitle("Select Folder").
     SetDirectory("/Users/me/Documents").
     CanChooseDirectories(true).
@@ -195,7 +214,7 @@ Use the `AddFilter()` method to add file type filters to dialogs. Each call adds
 ### Basic Filters
 
 ```go
-path, _ := application.OpenFileDialog().
+path, _ := app.Dialog.OpenFile().
     AddFilter("Text Files", "*.txt").
     AddFilter("All Files", "*.*").
     PromptForSingleSelection()
@@ -206,7 +225,7 @@ path, _ := application.OpenFileDialog().
 Use semicolons to specify multiple extensions in a single filter:
 
 ```go
-dialog := application.OpenFileDialog().
+dialog := app.Dialog.OpenFile().
     AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif;*.bmp").
     AddFilter("Documents", "*.txt;*.doc;*.docx;*.pdf").
     AddFilter("All Files", "*.*")
