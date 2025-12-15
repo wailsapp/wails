@@ -70,3 +70,74 @@ If the added package does not resolve the issue, additional GStreamer dependenci
 - This issue impacts [Tauri apps](https://tauri.app/).
 
 Source: [developomp](https://github.com/developomp) on the [Tauri discussion board](https://github.com/tauri-apps/tauri/issues/4642#issuecomment-1643229562).
+
+## Debugging with Delve
+
+When debugging Wails applications on Linux using [Delve](https://github.com/go-delve/delve) (the Go debugger), you may experience crashes when hitting breakpoints. This is caused by a conflict between Wails' GTK signal handler configuration and Delve's debugging mechanism.
+
+### The Problem
+
+Wails applies a signal handler fixup during GTK initialization that adds the `SA_ONSTACK` flag to various signals (including `SIGSEGV`, `SIGBUS`, `SIGABRT`, etc.). This fixup is necessary for CGO compatibility with Go's signal handling and prevents crashes in certain scenarios (such as when using gRPC). However, it can interfere with Delve's ability to properly handle signals during debugging, causing the application to crash when breakpoints are hit.
+
+### The Solution
+
+To debug your application with Delve, disable the GTK signal handler fixup by setting `DisableGTKSignalHandlerFixup` to `true` in your Linux options:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Linux: application.LinuxOptions{
+        DisableGTKSignalHandlerFixup: true,
+    },
+    // ... other options
+})
+```
+
+### Using Build Tags for Debug Builds
+
+A recommended approach is to use build tags to enable this option only during development/debugging:
+
+**main.go** (production):
+```go
+//go:build !debug
+
+package main
+
+var linuxOptions = application.LinuxOptions{}
+```
+
+**main_debug.go** (debug builds):
+```go
+//go:build debug
+
+package main
+
+var linuxOptions = application.LinuxOptions{
+    DisableGTKSignalHandlerFixup: true,
+}
+```
+
+**main_common.go**:
+```go
+package main
+
+func main() {
+    app := application.New(application.Options{
+        Name:  "My App",
+        Linux: linuxOptions,
+        // ... other options
+    })
+    // ...
+}
+```
+
+Then build with debug support using:
+```bash
+go build -tags debug -gcflags="all=-N -l" .
+```
+
+### Important Notes
+
+- Only disable the signal handler fixup when debugging. In production builds, the fixup should remain enabled to ensure compatibility with CGO libraries.
+- If you encounter "signal arrived during cgo execution" errors in production, make sure `DisableGTKSignalHandlerFixup` is `false` (the default).
+- This option only affects Linux builds and is ignored on other platforms.
