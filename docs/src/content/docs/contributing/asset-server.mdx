@@ -41,9 +41,9 @@ ringqueue.go              # Tiny LRU for mime cache
 
 1. `wails3 dev` boots and **spawns your frontend dev server**  
    (Vite, SvelteKit, React-SWC …) by running the task defined in
-   `frontend/Taskfile.yml` (usually `npm run dev`).
+   `build/Taskfile.yml` (usually `npm run dev`).
 2. Wails starts the **Dev Asset Server** listening on `localhost:<random>` and
-   tells the Go runtime to load `http://<host>:<port>` as the window URL.
+   tells the Go runtime to load `http://<host>:<VITE_PORT>` as the window URL.
 3. Incoming requests are handled by `assetserver_dev.go`:
 
    ```
@@ -77,8 +77,8 @@ ringqueue.go              # Tiny LRU for mime cache
 
 The dev proxy is **framework-agnostic**:
 
-* The `wails.json` template injects two env vars:
-  `FRONTEND_DEV_HOST` & `FRONTEND_DEV_PORT`.
+* The root `Taskfile.yml` task file injects two env vars:
+  `APP_NAME` & `WAILS_VITE_PORT`.
 * Taskfiles for each template emit those vars before running their dev servers.
 * `assetserver_dev.go` simply proxies to that target.
 
@@ -143,18 +143,17 @@ type AssetServer interface {
 
 Each official template (React, Vue, Svelte, Solid…) contains:
 
-* `frontend/Taskfile.yml`
+* `build/Taskfile.yml`
 * `frontend/vite.config.ts` (or equivalent)
 
-They export two tasks:
+They export several tasks including:
 
 | Task | Purpose |
 |------|---------|
-| `dev`   | Starts the framework dev server on a **random free port** and prints it to stdout (`PORT=5173`). |
-| `build` | Produces static assets into `dist/` + manifest for cache-busting. |
+| `dev:frontend`   | Starts the framework dev server on a **random free port** and prints it to stdout (`PORT=5173`). |
+| `build:frontend` | Produces static assets into `dist/` + manifest for cache-busting. |
 
-`internal/commands/dev.go` parses that stdout, sets `FRONTEND_DEV_*` env vars
-and launches the **Dev Asset Server**.
+`internal/commands/dev.go` sets the `FRONTEND_DEVSERVER_URL` env var using the hard-coded `localhost` as the `host` and the emitted `VITE_PORT` env var as the `port` and launches the **Dev Asset Server**.
 
 Frameworks remain fully decoupled from Go:
 
