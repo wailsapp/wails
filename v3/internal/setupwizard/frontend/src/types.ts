@@ -77,6 +77,7 @@ export interface ProjectDefaults {
   copyrightTemplate: string;
   descriptionTemplate: string;
   defaultVersion: string;
+  useInterfaces: boolean;
 }
 
 export interface SigningDefaults {

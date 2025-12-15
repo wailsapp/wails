@@ -77,6 +77,7 @@ type TemplateOptions struct {
 	*flags.Init
 	LocalModulePath string
 	UseTypescript   bool
+	UseInterfaces   bool
 	WailsVersion    string
 }
 
@@ -262,6 +263,7 @@ func Install(options *flags.Init) error {
 		Init:            options,
 		LocalModulePath: localModulePath,
 		UseTypescript:   UseTypescript,
+		UseInterfaces:   options.UseInterfaces,
 		WailsVersion:    version.String(),
 	}
 

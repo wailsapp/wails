@@ -42,6 +42,10 @@ type ProjectDefaults struct {
 
 	// Default product version for new projects
 	DefaultVersion string `json:"defaultVersion" yaml:"defaultVersion"`
+
+	// UseInterfaces generates TypeScript interfaces instead of classes for bindings
+	// Interfaces are lighter-weight and don't require runtime imports
+	UseInterfaces bool `json:"useInterfaces" yaml:"useInterfaces"`
 }
 
 // Default returns sensible defaults for first-time users
@@ -57,6 +61,7 @@ func Default() GlobalDefaults {
 			CopyrightTemplate:       "© {year}, {company}",
 			DescriptionTemplate:     "A {name} application",
 			DefaultVersion:          "0.1.0",
+			UseInterfaces:           true,
 		},
 	}
 }

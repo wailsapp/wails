@@ -130,6 +130,9 @@ func applyGlobalDefaults(options *flags.Init, globalDefaults defaults.GlobalDefa
 	if options.ProductVersion == "0.1.0" && globalDefaults.Project.DefaultVersion != "" {
 		options.ProductVersion = globalDefaults.GetDefaultVersion()
 	}
+
+	// Apply UseInterfaces from global defaults (for TypeScript binding generation)
+	options.UseInterfaces = globalDefaults.Project.UseInterfaces
 }
 
 func Init(options *flags.Init) error {

@@ -15,6 +15,7 @@ type OOBEStep =
   | 'docker-setup'
   | 'projects'
   | 'language-select'
+  | 'binding-style'
   | 'template-select'
   | 'complete';
 
@@ -45,6 +46,7 @@ function getWizardStage(step: OOBEStep): WizardStage {
     case 'projects':
       return 'identity';
     case 'language-select':
+    case 'binding-style':
     case 'template-select':
       return 'templates';
     case 'complete':
@@ -330,7 +332,7 @@ function CheckingPage() {
       animate="animate"
       exit="exit"
       transition={{ duration: 0.3 }}
-      className="flex-1 flex flex-col items-center justify-start pt-[30%]"
+      className="flex-1 flex flex-col items-center justify-start pt-[15%]"
     >
       <motion.div
         className="w-12 h-12 border-3 border-gray-300 dark:border-gray-600 border-t-red-500 rounded-full mb-6"
@@ -902,61 +904,145 @@ function LanguageSelectPage({
       animate="animate"
       exit="exit"
       transition={{ duration: 0.3 }}
-      className="flex-1 flex flex-col"
+      className="flex-1 flex flex-col items-center justify-center"
     >
-      {/* Main content - centered */}
-      <div className="flex-1 flex flex-col items-center justify-center">
-        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2 text-center">
-          Language Preference
-        </h2>
-        <p className="text-gray-500 dark:text-gray-400 mb-8 text-center max-w-md">
-          Choose your preferred language for new projects
-        </p>
+      <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2 text-center">
+        Language Preference
+      </h2>
+      <p className="text-gray-500 dark:text-gray-400 mb-8 text-center max-w-md">
+        Choose your preferred language for new projects
+      </p>
 
-        <div className="flex gap-4">
-          {/* JavaScript card */}
-          <button
-            onClick={() => onSelect(false)}
-            className={`w-40 h-48 rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all border-2 ${
-              !preferTypeScript
-                ? 'border-yellow-400 bg-yellow-400/10 shadow-lg shadow-yellow-400/20'
-                : 'border-white/10 bg-white/5 hover:bg-white/10'
-            }`}
-          >
-            <div className="w-16 h-16 flex items-center justify-center">
-              <img src="/logos/javascript.svg" alt="JavaScript" className="w-14 h-14" />
-            </div>
-            <span className="text-lg font-semibold text-white">JavaScript</span>
-            <span className="text-xs text-white/50">Dynamic typing</span>
-          </button>
-
-          {/* TypeScript card */}
-          <button
-            onClick={() => onSelect(true)}
-            className={`w-40 h-48 rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all border-2 ${
-              preferTypeScript
-                ? 'border-blue-400 bg-blue-400/10 shadow-lg shadow-blue-400/20'
-                : 'border-white/10 bg-white/5 hover:bg-white/10'
-            }`}
-          >
-            <div className="w-16 h-16 flex items-center justify-center">
-              <img src="/logos/typescript.svg" alt="TypeScript" className="w-14 h-14" />
-            </div>
-            <span className="text-lg font-semibold text-white">TypeScript</span>
-            <span className="text-xs text-white/50">Type safety</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Button area - sibling below main content */}
-      <div className="flex justify-center pb-6">
+      <div className="flex gap-4 mb-8">
+        {/* JavaScript card */}
         <button
-          onClick={onNext}
-          className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors"
+          onClick={() => onSelect(false)}
+          className={`w-40 h-48 rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all border-2 ${
+            !preferTypeScript
+              ? 'border-yellow-400 bg-yellow-400/10 shadow-lg shadow-yellow-400/20'
+              : 'border-white/10 bg-white/5 hover:bg-white/10'
+          }`}
         >
-          Continue
+          <div className="w-16 h-16 flex items-center justify-center">
+            <img src="/logos/javascript.svg" alt="JavaScript" className="w-14 h-14" />
+          </div>
+          <span className="text-lg font-semibold text-white">JavaScript</span>
+          <span className="text-xs text-white/50">Dynamic typing</span>
+        </button>
+
+        {/* TypeScript card */}
+        <button
+          onClick={() => onSelect(true)}
+          className={`w-40 h-48 rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all border-2 ${
+            preferTypeScript
+              ? 'border-blue-400 bg-blue-400/10 shadow-lg shadow-blue-400/20'
+              : 'border-white/10 bg-white/5 hover:bg-white/10'
+          }`}
+        >
+          <div className="w-16 h-16 flex items-center justify-center">
+            <img src="/logos/typescript.svg" alt="TypeScript" className="w-14 h-14" />
+          </div>
+          <span className="text-lg font-semibold text-white">TypeScript</span>
+          <span className="text-xs text-white/50">Type safety</span>
         </button>
       </div>
+
+      <button
+        onClick={onNext}
+        className="px-6 py-2.5 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors"
+      >
+        Continue
+      </button>
+    </motion.div>
+  );
+}
+
+// Binding Style Select Page - Classes vs Interfaces (TypeScript only)
+function BindingStylePage({
+  useInterfaces,
+  onSelect,
+  onNext,
+}: {
+  useInterfaces: boolean;
+  onSelect: (useInterfaces: boolean) => void;
+  onNext: () => void;
+}) {
+  return (
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={{ duration: 0.3 }}
+      className="flex-1 flex flex-col items-center justify-center px-4 overflow-hidden"
+    >
+      <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2 text-center">
+        TypeScript Binding Style
+      </h2>
+      <p className="text-gray-500 dark:text-gray-400 mb-6 text-center max-w-lg">
+        Choose how Go structs are represented in TypeScript
+      </p>
+
+      <div className="flex gap-4 mb-8 max-w-full overflow-x-auto">
+        {/* Interfaces option */}
+        <button
+          onClick={() => onSelect(true)}
+          className={`w-56 shrink-0 rounded-xl p-4 flex flex-col items-start gap-2 transition-all border-2 text-left ${
+            useInterfaces
+              ? 'border-blue-400 bg-blue-400/10 shadow-lg shadow-blue-400/20'
+              : 'border-white/10 bg-white/5 hover:bg-white/10'
+          }`}
+        >
+          <span className="text-base font-semibold text-gray-900 dark:text-white">Interfaces</span>
+          <pre className="text-[10px] leading-tight text-gray-700 dark:text-white/70 font-mono bg-gray-100 dark:bg-black/30 p-2 rounded-lg w-full overflow-x-auto">
+{`interface Person {
+  name: string;
+  age: number;
+}`}
+          </pre>
+          <ul className="text-[10px] text-gray-500 dark:text-white/50 space-y-0.5">
+            <li>• Lightweight types</li>
+            <li>• No runtime code</li>
+            <li>• Simpler output</li>
+          </ul>
+        </button>
+
+        {/* Classes option */}
+        <button
+          onClick={() => onSelect(false)}
+          className={`w-56 shrink-0 rounded-xl p-4 flex flex-col items-start gap-2 transition-all border-2 text-left ${
+            !useInterfaces
+              ? 'border-purple-400 bg-purple-400/10 shadow-lg shadow-purple-400/20'
+              : 'border-white/10 bg-white/5 hover:bg-white/10'
+          }`}
+        >
+          <span className="text-base font-semibold text-gray-900 dark:text-white">Classes</span>
+          <pre className="text-[10px] leading-tight text-gray-700 dark:text-white/70 font-mono bg-gray-100 dark:bg-black/30 p-2 rounded-lg w-full overflow-x-auto">
+{`class Person {
+  name: string;
+  age: number;
+  constructor(src) {
+    Object.assign(this, src);
+  }
+  static createFrom(src) {
+    return new Person(src);
+  }
+}`}
+          </pre>
+          <ul className="text-[10px] text-gray-500 dark:text-white/50 space-y-0.5">
+            <li>• Factory methods</li>
+            <li>• Default initialization</li>
+            <li>• More verbose</li>
+          </ul>
+        </button>
+      </div>
+
+      <button
+        onClick={onNext}
+        className="px-6 py-2.5 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors"
+      >
+        Continue
+      </button>
     </motion.div>
   );
 }
@@ -1004,9 +1090,6 @@ function TemplateSelectPage({
           </button>
         ))}
       </div>
-      <p className="text-xs text-white/40 mt-4 text-center">
-        This sets the default template for new projects
-      </p>
     </PageTemplate>
   );
 }
@@ -1182,13 +1265,15 @@ export default function App() {
       defaultTemplate: 'vanilla',
       copyrightTemplate: '(c) {year}, {company}',
       descriptionTemplate: 'A {name} application',
-      defaultVersion: '0.1.0'
+      defaultVersion: '0.1.0',
+      useInterfaces: true
     }
   });
   const [savingDefaults, setSavingDefaults] = useState(false);
   const [backgroundDockerStarted, setBackgroundDockerStarted] = useState(false);
   const [preferTypeScript, setPreferTypeScript] = useState(true);
   const [selectedFramework, setSelectedFramework] = useState('vanilla');
+  const [useInterfaces, setUseInterfaces] = useState(true);
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('wails-setup-theme');
@@ -1275,6 +1360,7 @@ export default function App() {
     // Load defaults and go to projects
     const loadedDefaults = await getDefaults();
     setDefaults(loadedDefaults);
+    setUseInterfaces(loadedDefaults.project?.useInterfaces ?? true);
     setStep('projects');
   };
 
@@ -1307,12 +1393,14 @@ export default function App() {
     // Load defaults and go to projects
     const loadedDefaults = await getDefaults();
     setDefaults(loadedDefaults);
+    setUseInterfaces(loadedDefaults.project?.useInterfaces ?? true);
     setStep('projects');
   };
 
   const handleDockerSkip = async () => {
     const loadedDefaults = await getDefaults();
     setDefaults(loadedDefaults);
+    setUseInterfaces(loadedDefaults.project?.useInterfaces ?? true);
     setStep('projects');
   };
 
@@ -1325,6 +1413,14 @@ export default function App() {
   };
 
   const handleLanguageSelectNext = () => {
+    if (preferTypeScript) {
+      setStep('binding-style');
+    } else {
+      setStep('template-select');
+    }
+  };
+
+  const handleBindingStyleNext = () => {
     setStep('template-select');
   };
 
@@ -1336,12 +1432,13 @@ export default function App() {
         ? 'vanilla-ts'
         : selectedFramework;
 
-    // Update defaults with selected template
+    // Update defaults with selected template and binding style
     const updatedDefaults = {
       ...defaults,
       project: {
         ...defaults.project,
-        defaultTemplate: templateName
+        defaultTemplate: templateName,
+        useInterfaces: preferTypeScript ? useInterfaces : true, // Only relevant for TypeScript
       }
     };
 
@@ -1352,8 +1449,16 @@ export default function App() {
   };
 
   const handleTemplateSelectSkip = async () => {
+    // Save defaults with binding style preference
+    const updatedDefaults = {
+      ...defaults,
+      project: {
+        ...defaults.project,
+        useInterfaces: preferTypeScript ? useInterfaces : true,
+      }
+    };
     setSavingDefaults(true);
-    await saveDefaults(defaults);
+    await saveDefaults(updatedDefaults);
     setSavingDefaults(false);
     setStep('complete');
   };
@@ -1447,6 +1552,14 @@ export default function App() {
                     preferTypeScript={preferTypeScript}
                     onSelect={setPreferTypeScript}
                     onNext={handleLanguageSelectNext}
+                  />
+                )}
+                {step === 'binding-style' && (
+                  <BindingStylePage
+                    key="binding-style"
+                    useInterfaces={useInterfaces}
+                    onSelect={setUseInterfaces}
+                    onNext={handleBindingStyleNext}
                   />
                 )}
                 {step === 'template-select' && (
