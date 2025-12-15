@@ -67,6 +67,7 @@ const ZoomOutMethod                     = 47;
 const ZoomResetMethod                   = 48;
 const SnapAssistMethod                  = 49;
 const WindowDropZoneDropped             = 50;
+const PrintMethod                       = 51;
 
 function getDropzoneElement(element: Element | null): Element | null {
     if (!element) {
@@ -580,6 +581,13 @@ class Window {
      */
     SnapAssist(): Promise<void> {
         return this[callerSym](SnapAssistMethod);
+    }
+
+    /**
+     * Opens the print dialog for the window.
+     */
+    Print(): Promise<void> {
+        return this[callerSym](PrintMethod);
     }
 }
 

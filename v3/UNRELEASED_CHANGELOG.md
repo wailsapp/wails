@@ -16,10 +16,9 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
-- Add `XDG_SESSION_TYPE` to `wails3 doctor` output on Linux by @leaanthony
-- Add additional WebKit2 load-change events for Linux: `WindowLoadStarted`, `WindowLoadRedirected`, `WindowLoadCommitted`, `WindowLoadFinished` (#3896) by @leaanthony
-- Add `CollectionBehavior` option to `MacWindow` for controlling window behavior across macOS Spaces and fullscreen (#4756) by @leaanthony
 <!-- New features, capabilities, or enhancements -->
+- Add `CollectionBehavior` option to `MacWindow` for controlling window behavior across macOS Spaces and fullscreen (#4756) by @leaanthony
+- Add desktop environment detection on linux [PR #4797](https://github.com/wailsapp/wails/pull/4797)
 
 ## Changed
 <!-- Changes in existing functionality -->
@@ -31,7 +30,6 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Soon-to-be removed features -->
 
 ## Removed
-- **BREAKING**: Remove `linux:WindowLoadChanged` event - use `linux:WindowLoadFinished` instead for detecting when WebView has finished loading (#3896) by @leaanthony
 <!-- Features removed in this release -->
 
 ## Security
