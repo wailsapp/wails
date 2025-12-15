@@ -1,6 +1,6 @@
 # Unreleased Changes
 
-<!--
+<!-- 
 This file is used to collect changelog entries for the next v3-alpha release.
 Add your changes under the appropriate sections below.
 
@@ -16,8 +16,8 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
-- Add `Window.Print()` method to JavaScript runtime for triggering print dialog from frontend (#4290) by @leaanthony
 <!-- New features, capabilities, or enhancements -->
+- Add desktop environment detection on linux [PR #4797](https://github.com/wailsapp/wails/pull/4797)
 
 ## Changed
 <!-- Changes in existing functionality -->
@@ -25,8 +25,6 @@ After processing, the content will be moved to the main changelog and this file 
 - Update dialogs documentation to match actual API: use `app.Dialog.*`, `AddButton()` with callbacks (not `SetButtons()`), `SetDefaultButton(*Button)` (not string), `AddFilter()` (not `SetFilters()`), `SetFilename()` (not `SetDefaultFilename()`), and `app.Dialog.OpenFile().CanChooseDirectories(true)` for folder selection
 
 ## Fixed
-- Fix macOS dock icon click not showing hidden windows when app started with `Hidden: true` (#4583) by @leaanthony
-- Fix macOS print dialog not opening due to incorrect window pointer type in CGO call (#4290) by @leaanthony
 <!-- Bug fixes -->
 
 ## Deprecated
