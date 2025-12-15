@@ -21,7 +21,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Update dialogs documentation to match actual API: use `app.Dialog.Info()` or `application.InfoDialog()`, `AddButton()` with callbacks (not `SetButtons()`), `SetDefaultButton(*Button)` (not string), `AddFilter()` (not `SetFilters()`), `SetFilename()` (not `SetDefaultFilename()`), and `app.Dialog.OpenFile().CanChooseDirectories(true)` for folder selection
+- **BREAKING**: Remove package-level dialog functions (`application.InfoDialog()`, `application.QuestionDialog()`, etc.). Use the `app.Dialog` manager instead: `app.Dialog.Info()`, `app.Dialog.Question()`, `app.Dialog.Warning()`, `app.Dialog.Error()`, `app.Dialog.OpenFile()`, `app.Dialog.SaveFile()`
+- Update dialogs documentation to match actual API: use `app.Dialog.*`, `AddButton()` with callbacks (not `SetButtons()`), `SetDefaultButton(*Button)` (not string), `AddFilter()` (not `SetFilters()`), `SetFilename()` (not `SetDefaultFilename()`), and `app.Dialog.OpenFile().CanChooseDirectories(true)` for folder selection
 
 ## Fixed
 - Fix macOS dock icon click not showing hidden windows when app started with `Hidden: true` (#4583) by @leaanthony
