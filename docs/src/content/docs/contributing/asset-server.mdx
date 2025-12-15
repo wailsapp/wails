@@ -153,7 +153,7 @@ They export several tasks including:
 | `dev:frontend`   | Starts the framework dev server on a **random free port** and prints it to stdout (`PORT=5173`). |
 | `build:frontend` | Produces static assets into `dist/` + manifest for cache-busting. |
 
-`internal/commands/dev.go` sets the `FRONTEND_DEVSERVER_URL` env var using the hard-coded `localhost` has the `host` and the emitted `VITE_PORT` env var as the `port` and launches the **Dev Asset Server**.
+`internal/commands/dev.go` sets the `FRONTEND_DEVSERVER_URL` env var using the hard-coded `localhost` as the `host` and the emitted `VITE_PORT` env var as the `port` and launches the **Dev Asset Server**.
 
 Frameworks remain fully decoupled from Go:
 
