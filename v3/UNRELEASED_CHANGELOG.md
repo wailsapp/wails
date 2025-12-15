@@ -21,6 +21,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Update the documentation page for Wails v3 Asset Server by @ndianabasi
 
 ## Fixed
 <!-- Bug fixes -->
