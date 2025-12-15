@@ -6,8 +6,10 @@ import (
 	"log"
 )
 
+var app *application.App
+
 func main() {
-	app := application.New(application.Options{
+	app = application.New(application.Options{
 		Name:        "Key Bindings Demo",
 		Description: "A demo of the Key Bindings Options",
 		Mac: application.MacOptions{
@@ -15,7 +17,7 @@ func main() {
 		},
 		KeyBindings: map[string]func(window application.Window){
 			"shift+ctrl+c": func(window application.Window) {
-				selection, err := application.OpenFileDialog().
+				selection, err := app.Dialog.OpenFile().
 					CanChooseFiles(true).
 					CanCreateDirectories(true).
 					ShowHiddenFiles(true).

@@ -43,13 +43,13 @@ func (m *MessageProcessor) processDialogMethod(req *RuntimeRequest, window Windo
 		var dialog *MessageDialog
 		switch req.Method {
 		case DialogInfo:
-			dialog = InfoDialog()
+			dialog = newMessageDialog(InfoDialogType)
 		case DialogWarning:
-			dialog = WarningDialog()
+			dialog = newMessageDialog(WarningDialogType)
 		case DialogError:
-			dialog = ErrorDialog()
+			dialog = newMessageDialog(ErrorDialogType)
 		case DialogQuestion:
-			dialog = QuestionDialog()
+			dialog = newMessageDialog(QuestionDialogType)
 		}
 		var detached = args.Bool("Detached")
 		if detached == nil || !*detached {

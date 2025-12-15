@@ -14,44 +14,44 @@ func newDialogManager(app *App) *DialogManager {
 
 // OpenFile creates a file dialog for selecting files
 func (dm *DialogManager) OpenFile() *OpenFileDialogStruct {
-	return OpenFileDialog()
+	return newOpenFileDialog()
 }
 
 // OpenFileWithOptions creates a file dialog with options
 func (dm *DialogManager) OpenFileWithOptions(options *OpenFileDialogOptions) *OpenFileDialogStruct {
-	result := OpenFileDialog()
+	result := newOpenFileDialog()
 	result.SetOptions(options)
 	return result
 }
 
 // SaveFile creates a save file dialog
 func (dm *DialogManager) SaveFile() *SaveFileDialogStruct {
-	return SaveFileDialog()
+	return newSaveFileDialog()
 }
 
 // SaveFileWithOptions creates a save file dialog with options
 func (dm *DialogManager) SaveFileWithOptions(options *SaveFileDialogOptions) *SaveFileDialogStruct {
-	result := SaveFileDialog()
+	result := newSaveFileDialog()
 	result.SetOptions(options)
 	return result
 }
 
 // Info creates an information dialog
 func (dm *DialogManager) Info() *MessageDialog {
-	return InfoDialog()
+	return newMessageDialog(InfoDialogType)
 }
 
 // Question creates a question dialog
 func (dm *DialogManager) Question() *MessageDialog {
-	return QuestionDialog()
+	return newMessageDialog(QuestionDialogType)
 }
 
 // Warning creates a warning dialog
 func (dm *DialogManager) Warning() *MessageDialog {
-	return WarningDialog()
+	return newMessageDialog(WarningDialogType)
 }
 
 // Error creates an error dialog
 func (dm *DialogManager) Error() *MessageDialog {
-	return ErrorDialog()
+	return newMessageDialog(ErrorDialogType)
 }

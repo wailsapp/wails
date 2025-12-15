@@ -863,30 +863,6 @@ func (a *App) SetIcon(icon []byte) {
 	}
 }
 
-func InfoDialog() *MessageDialog {
-	return newMessageDialog(InfoDialogType)
-}
-
-func QuestionDialog() *MessageDialog {
-	return newMessageDialog(QuestionDialogType)
-}
-
-func WarningDialog() *MessageDialog {
-	return newMessageDialog(WarningDialogType)
-}
-
-func ErrorDialog() *MessageDialog {
-	return newMessageDialog(ErrorDialogType)
-}
-
-func OpenFileDialog() *OpenFileDialogStruct {
-	return newOpenFileDialog()
-}
-
-func SaveFileDialog() *SaveFileDialogStruct {
-	return newSaveFileDialog()
-}
-
 func (a *App) dispatchOnMainThread(fn func()) {
 	// If we are on the main thread, just call the function
 	if a.impl.isOnMainThread() {
