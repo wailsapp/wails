@@ -1,7 +1,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { DependencyStatus, SystemInfo, DockerStatus, GlobalDefaults } from './types';
-import { checkDependencies, getState, getDockerStatus, buildDockerImage, close, getDefaults, saveDefaults } from './api';
+import { checkDependencies, getState, getDockerStatus, buildDockerImage, getDefaults, saveDefaults } from './api';
 import wailsLogoWhite from './assets/wails-logo-white-text.svg';
 import wailsLogoBlack from './assets/wails-logo-black-text.svg';
 
@@ -1131,46 +1131,8 @@ function ProjectsPage({
     </PageTemplate>
   );
 }
-
-// Copyable command component
-function CopyableCommand({ command, label }: { command: string; label: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const copyCommand = () => {
-    navigator.clipboard.writeText(command);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <div>
-      <p className="text-gray-600 dark:text-gray-400 mb-1 text-sm">{label}</p>
-      <div className="flex items-center gap-2">
-        <code className="flex-1 text-green-600 dark:text-green-400 font-mono text-xs bg-gray-100 dark:bg-gray-900 px-3 py-2 rounded-lg">
-          {command}
-        </code>
-        <button
-          onClick={copyCommand}
-          className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors p-1"
-          title="Copy command"
-        >
-          {copied ? (
-            <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          ) : (
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-          )}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // Complete Page
-function CompletePage({ onClose }: { onClose: () => void }) {
+function CompletePage() {
   return (
     <motion.div
       variants={pageVariants}
@@ -1180,64 +1142,27 @@ function CompletePage({ onClose }: { onClose: () => void }) {
       transition={{ duration: 0.3 }}
       className="flex-1 flex flex-col items-center justify-center px-8"
     >
-      {/* Header with check and title - compact */}
-      <div className="flex items-center gap-3 mb-4">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-          className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center"
-        >
-          <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-          </svg>
-        </motion.div>
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-          You're ready to build!
-        </h2>
-      </div>
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+        className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mb-4"
+      >
+        <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+        </svg>
+      </motion.div>
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+        You're ready to build!
+      </h2>
 
-      {/* Terminal-style command display */}
-      <div className="bg-gray-900 dark:bg-black/50 rounded-lg p-4 mb-6 w-full max-w-md font-mono text-xs border border-gray-700/50">
-        <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-700/50">
-          <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
-          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
-          <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
-          <span className="text-gray-500 text-[10px] ml-2">terminal</span>
-        </div>
-        <div className="space-y-2 text-gray-300">
-          <div className="flex items-start gap-2">
-            <span className="text-green-400 select-none">$</span>
-            <span className="text-gray-100">wails3 init -n myapp</span>
-            <span className="text-gray-500 ml-auto text-[10px]"># create app</span>
-          </div>
-          <div className="flex items-start gap-2">
-            <span className="text-green-400 select-none">$</span>
-            <span className="text-gray-100">cd myapp && wails3 dev</span>
-            <span className="text-gray-500 ml-auto text-[10px]"># develop</span>
-          </div>
-          <div className="flex items-start gap-2">
-            <span className="text-green-400 select-none">$</span>
-            <span className="text-gray-100">wails3 build</span>
-            <span className="text-gray-500 ml-auto text-[10px]"># build</span>
-          </div>
-        </div>
-      </div>
-
-      <button
-        onClick={onClose}
+      <a
+        href="https://v3alpha.wails.io/quick-start/first-app/"
+        target="_blank"
+        rel="noopener noreferrer"
         className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors"
       >
         Start Building
-      </button>
-
-      <a
-        href="https://wails.io/docs"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-3 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-      >
-        Read the documentation
       </a>
     </motion.div>
   );
@@ -1433,11 +1358,6 @@ export default function App() {
     setStep('complete');
   };
 
-  const handleClose = async () => {
-    await close();
-    window.close();
-  };
-
   // Poll Docker status in background
   useEffect(() => {
     if (backgroundDockerStarted && (buildingImage || (dockerStatus && dockerStatus.pullStatus === 'pulling'))) {
@@ -1540,7 +1460,7 @@ export default function App() {
                   />
                 )}
                 {step === 'complete' && (
-                  <CompletePage key="complete" onClose={handleClose} />
+                  <CompletePage key="complete" />
                 )}
               </AnimatePresence>
             </div>
