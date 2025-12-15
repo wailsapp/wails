@@ -784,7 +784,7 @@ static void windowPrint(void *window) {
 		po.view.frame = webView.bounds;
 
 		// [printOperation runOperation] DOES NOT WORK WITH WKWEBVIEW, use
-		[po runOperationModalForWindow:window delegate:windowDelegate didRunSelector:nil contextInfo:nil];
+		[po runOperationModalForWindow:nsWindow delegate:windowDelegate didRunSelector:nil contextInfo:nil];
 	}
 #endif
 }
