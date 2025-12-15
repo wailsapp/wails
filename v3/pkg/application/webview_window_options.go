@@ -510,30 +510,31 @@ const (
 )
 
 // MacWindowCollectionBehavior controls window behavior across macOS Spaces and fullscreen.
-// These correspond to NSWindowCollectionBehavior values.
+// These correspond to NSWindowCollectionBehavior values and can be combined using bitwise OR.
+// Example: MacWindowCollectionBehaviorCanJoinAllSpaces | MacWindowCollectionBehaviorFullScreenAuxiliary
 type MacWindowCollectionBehavior int
 
 const (
 	// MacWindowCollectionBehaviorDefault uses FullScreenPrimary for backwards compatibility
-	MacWindowCollectionBehaviorDefault MacWindowCollectionBehavior = iota
-	// MacWindowCollectionBehaviorCanJoinAllSpaces allows window to appear on all Spaces
-	MacWindowCollectionBehaviorCanJoinAllSpaces
-	// MacWindowCollectionBehaviorMoveToActiveSpace moves window to active Space when shown
-	MacWindowCollectionBehaviorMoveToActiveSpace
-	// MacWindowCollectionBehaviorManaged is the default managed window behavior
-	MacWindowCollectionBehaviorManaged
-	// MacWindowCollectionBehaviorTransient marks window as temporary/transient
-	MacWindowCollectionBehaviorTransient
-	// MacWindowCollectionBehaviorStationary keeps window stationary during Space switches
-	MacWindowCollectionBehaviorStationary
-	// MacWindowCollectionBehaviorFullScreenPrimary allows the window to enter fullscreen
-	MacWindowCollectionBehaviorFullScreenPrimary
-	// MacWindowCollectionBehaviorFullScreenAuxiliary allows window to overlay fullscreen apps
-	MacWindowCollectionBehaviorFullScreenAuxiliary
-	// MacWindowCollectionBehaviorFullScreenNone disables fullscreen capability
-	MacWindowCollectionBehaviorFullScreenNone
-	// MacWindowCollectionBehaviorFullScreenAllowsTiling allows side-by-side tiling in fullscreen (macOS 10.11+)
-	MacWindowCollectionBehaviorFullScreenAllowsTiling
+	MacWindowCollectionBehaviorDefault MacWindowCollectionBehavior = 0
+	// MacWindowCollectionBehaviorCanJoinAllSpaces allows window to appear on all Spaces (1 << 0)
+	MacWindowCollectionBehaviorCanJoinAllSpaces MacWindowCollectionBehavior = 1 << 0
+	// MacWindowCollectionBehaviorMoveToActiveSpace moves window to active Space when shown (1 << 1)
+	MacWindowCollectionBehaviorMoveToActiveSpace MacWindowCollectionBehavior = 1 << 1
+	// MacWindowCollectionBehaviorManaged is the default managed window behavior (1 << 2)
+	MacWindowCollectionBehaviorManaged MacWindowCollectionBehavior = 1 << 2
+	// MacWindowCollectionBehaviorTransient marks window as temporary/transient (1 << 3)
+	MacWindowCollectionBehaviorTransient MacWindowCollectionBehavior = 1 << 3
+	// MacWindowCollectionBehaviorStationary keeps window stationary during Space switches (1 << 4)
+	MacWindowCollectionBehaviorStationary MacWindowCollectionBehavior = 1 << 4
+	// MacWindowCollectionBehaviorFullScreenPrimary allows the window to enter fullscreen (1 << 7)
+	MacWindowCollectionBehaviorFullScreenPrimary MacWindowCollectionBehavior = 1 << 7
+	// MacWindowCollectionBehaviorFullScreenAuxiliary allows window to overlay fullscreen apps (1 << 8)
+	MacWindowCollectionBehaviorFullScreenAuxiliary MacWindowCollectionBehavior = 1 << 8
+	// MacWindowCollectionBehaviorFullScreenNone disables fullscreen capability (1 << 9)
+	MacWindowCollectionBehaviorFullScreenNone MacWindowCollectionBehavior = 1 << 9
+	// MacWindowCollectionBehaviorFullScreenAllowsTiling allows side-by-side tiling in fullscreen (1 << 11) (macOS 10.11+)
+	MacWindowCollectionBehaviorFullScreenAllowsTiling MacWindowCollectionBehavior = 1 << 11
 )
 
 // MacWebviewPreferences contains preferences for the Mac webview

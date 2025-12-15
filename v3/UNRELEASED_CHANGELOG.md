@@ -17,7 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add `CollectionBehavior` option to `MacWindow` for controlling window behavior across macOS Spaces and fullscreen (#4756) by @leaanthony
+- Add `CollectionBehavior` option to `MacWindow` for controlling window behavior across macOS Spaces and fullscreen. Multiple behaviors can be combined using bitwise OR (#4756) by @leaanthony
 - Add desktop environment detection on linux [PR #4797](https://github.com/wailsapp/wails/pull/4797)
 
 ## Changed

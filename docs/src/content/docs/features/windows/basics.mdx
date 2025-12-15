@@ -429,9 +429,17 @@ childWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
     - `MacBackdropTransparent` - Fully transparent
 
     **Collection behavior:**
-    Control how windows behave across Spaces:
+    Control how windows behave across Spaces (can be combined using `|`):
     - `MacWindowCollectionBehaviorCanJoinAllSpaces` - Visible on all Spaces
     - `MacWindowCollectionBehaviorFullScreenAuxiliary` - Can overlay fullscreen apps
+
+    ```go
+    // Combine behaviors to appear on all Spaces AND overlay fullscreen
+    Mac: application.MacWindow{
+        CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces |
+                           application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+    }
+    ```
 
     **Native fullscreen:**
     macOS fullscreen creates a new Space (virtual desktop).

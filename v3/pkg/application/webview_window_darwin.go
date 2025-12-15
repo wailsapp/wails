@@ -235,41 +235,16 @@ void setScreenSaverWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLe
 void setTornOffMenuWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSTornOffMenuWindowLevel]; }
 
 // Set NSWindow collection behavior for Spaces and fullscreen
+// Supports bitwise OR of multiple behaviors
 void windowSetCollectionBehavior(void* nsWindow, int behavior) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	switch(behavior) {
-		case 0:  // Default (FullScreenPrimary for backwards compatibility)
-			window.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary;
-			break;
-		case 1:  // CanJoinAllSpaces
-			window.collectionBehavior = NSWindowCollectionBehaviorCanJoinAllSpaces;
-			break;
-		case 2:  // MoveToActiveSpace
-			window.collectionBehavior = NSWindowCollectionBehaviorMoveToActiveSpace;
-			break;
-		case 3:  // Managed
-			window.collectionBehavior = NSWindowCollectionBehaviorManaged;
-			break;
-		case 4:  // Transient
-			window.collectionBehavior = NSWindowCollectionBehaviorTransient;
-			break;
-		case 5:  // Stationary
-			window.collectionBehavior = NSWindowCollectionBehaviorStationary;
-			break;
-		case 6:  // FullScreenPrimary
-			window.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary;
-			break;
-		case 7:  // FullScreenAuxiliary
-			window.collectionBehavior = NSWindowCollectionBehaviorFullScreenAuxiliary;
-			break;
-		case 8:  // FullScreenNone
-			window.collectionBehavior = NSWindowCollectionBehaviorFullScreenNone;
-			break;
-		case 9:  // FullScreenAllowsTiling (macOS 10.11+)
-			if (@available(macOS 10.11, *)) {
-				window.collectionBehavior = NSWindowCollectionBehaviorFullScreenAllowsTiling;
-			}
-			break;
+
+	// If behavior is 0 (Default), use FullScreenPrimary for backwards compatibility
+	if (behavior == 0) {
+		window.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary;
+	} else {
+		// Use the behavior value directly as a bitmask
+		window.collectionBehavior = behavior;
 	}
 }
 

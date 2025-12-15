@@ -696,7 +696,8 @@ Mac: application.MacWindow{
 
 **CollectionBehavior** (`MacWindowCollectionBehavior`)
 
-Controls how the window behaves across macOS Spaces and fullscreen:
+Controls how the window behaves across macOS Spaces and fullscreen.
+**Multiple behaviors can be combined using bitwise OR (`|`).**
 
 - `MacWindowCollectionBehaviorDefault` - Uses FullScreenPrimary (default, backwards compatible)
 - `MacWindowCollectionBehaviorCanJoinAllSpaces` - Window appears on all Spaces
@@ -725,6 +726,17 @@ Mac: application.MacWindow{
 // Window that can appear over fullscreen applications
 Mac: application.MacWindow{
     CollectionBehavior: application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+},
+```
+
+**Example - Combining behaviors:**
+
+```go
+// Window that appears on ALL Spaces AND can overlay fullscreen apps
+Mac: application.MacWindow{
+    CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces |
+                       application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+    WindowLevel:        application.MacWindowLevelFloating,
 },
 ```
 

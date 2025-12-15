@@ -60,11 +60,15 @@ func main() {
 		URL: "/",
 	})
 
-	// You could also create a window that overlays fullscreen apps:
+	// You can also combine behaviors using bitwise OR to create windows that:
+	// - Appear on all Spaces AND overlay fullscreen apps
+	// - Have other combinations of collection behaviors
 	//
 	// app.Window.NewWithOptions(application.WebviewWindowOptions{
 	//     Mac: application.MacWindow{
-	//         CollectionBehavior: application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+	//         // Combine multiple behaviors using |
+	//         CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces |
+	//                            application.MacWindowCollectionBehaviorFullScreenAuxiliary,
 	//     },
 	// })
 
