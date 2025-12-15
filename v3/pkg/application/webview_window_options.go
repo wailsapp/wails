@@ -489,6 +489,9 @@ type MacWindow struct {
 	// WindowLevel sets the window level to control the order of windows in the screen
 	WindowLevel MacWindowLevel
 
+	// CollectionBehavior controls how the window behaves across macOS Spaces and fullscreen
+	CollectionBehavior MacWindowCollectionBehavior
+
 	// LiquidGlass contains configuration for the Liquid Glass effect
 	LiquidGlass MacLiquidGlass
 }
@@ -504,6 +507,33 @@ const (
 	MacWindowLevelStatus      MacWindowLevel = "status"
 	MacWindowLevelPopUpMenu   MacWindowLevel = "popUpMenu"
 	MacWindowLevelScreenSaver MacWindowLevel = "screenSaver"
+)
+
+// MacWindowCollectionBehavior controls window behavior across macOS Spaces and fullscreen.
+// These correspond to NSWindowCollectionBehavior values.
+type MacWindowCollectionBehavior int
+
+const (
+	// MacWindowCollectionBehaviorDefault uses FullScreenPrimary for backwards compatibility
+	MacWindowCollectionBehaviorDefault MacWindowCollectionBehavior = iota
+	// MacWindowCollectionBehaviorCanJoinAllSpaces allows window to appear on all Spaces
+	MacWindowCollectionBehaviorCanJoinAllSpaces
+	// MacWindowCollectionBehaviorMoveToActiveSpace moves window to active Space when shown
+	MacWindowCollectionBehaviorMoveToActiveSpace
+	// MacWindowCollectionBehaviorManaged is the default managed window behavior
+	MacWindowCollectionBehaviorManaged
+	// MacWindowCollectionBehaviorTransient marks window as temporary/transient
+	MacWindowCollectionBehaviorTransient
+	// MacWindowCollectionBehaviorStationary keeps window stationary during Space switches
+	MacWindowCollectionBehaviorStationary
+	// MacWindowCollectionBehaviorFullScreenPrimary allows the window to enter fullscreen
+	MacWindowCollectionBehaviorFullScreenPrimary
+	// MacWindowCollectionBehaviorFullScreenAuxiliary allows window to overlay fullscreen apps
+	MacWindowCollectionBehaviorFullScreenAuxiliary
+	// MacWindowCollectionBehaviorFullScreenNone disables fullscreen capability
+	MacWindowCollectionBehaviorFullScreenNone
+	// MacWindowCollectionBehaviorFullScreenAllowsTiling allows side-by-side tiling in fullscreen (macOS 10.11+)
+	MacWindowCollectionBehaviorFullScreenAllowsTiling
 )
 
 // MacWebviewPreferences contains preferences for the Mac webview

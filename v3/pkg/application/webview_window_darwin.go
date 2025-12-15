@@ -34,8 +34,8 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 		backing:NSBackingStoreBuffered
 		defer:NO];
 
-	// Allow fullscreen. Needed for frameless windows
-	window.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary;
+	// Note: collectionBehavior is set later via windowSetCollectionBehavior()
+	// to allow user configuration of Space and fullscreen behavior
 
 	// Create delegate
 	WebviewWindowDelegate* delegate = [[WebviewWindowDelegate alloc] init];
@@ -233,6 +233,45 @@ void setStatusWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:N
 void setModalPanelWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSModalPanelWindowLevel]; }
 void setScreenSaverWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSScreenSaverWindowLevel]; }
 void setTornOffMenuWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSTornOffMenuWindowLevel]; }
+
+// Set NSWindow collection behavior for Spaces and fullscreen
+void windowSetCollectionBehavior(void* nsWindow, int behavior) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	switch(behavior) {
+		case 0:  // Default (FullScreenPrimary for backwards compatibility)
+			window.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary;
+			break;
+		case 1:  // CanJoinAllSpaces
+			window.collectionBehavior = NSWindowCollectionBehaviorCanJoinAllSpaces;
+			break;
+		case 2:  // MoveToActiveSpace
+			window.collectionBehavior = NSWindowCollectionBehaviorMoveToActiveSpace;
+			break;
+		case 3:  // Managed
+			window.collectionBehavior = NSWindowCollectionBehaviorManaged;
+			break;
+		case 4:  // Transient
+			window.collectionBehavior = NSWindowCollectionBehaviorTransient;
+			break;
+		case 5:  // Stationary
+			window.collectionBehavior = NSWindowCollectionBehaviorStationary;
+			break;
+		case 6:  // FullScreenPrimary
+			window.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary;
+			break;
+		case 7:  // FullScreenAuxiliary
+			window.collectionBehavior = NSWindowCollectionBehaviorFullScreenAuxiliary;
+			break;
+		case 8:  // FullScreenNone
+			window.collectionBehavior = NSWindowCollectionBehaviorFullScreenNone;
+			break;
+		case 9:  // FullScreenAllowsTiling (macOS 10.11+)
+			if (@available(macOS 10.11, *)) {
+				window.collectionBehavior = NSWindowCollectionBehaviorFullScreenAllowsTiling;
+			}
+			break;
+	}
+}
 
 // Load URL in NSWindow
 void navigationLoadURL(void* nsWindow, char* url) {
@@ -1159,6 +1198,10 @@ func (w *macosWebviewWindow) setWindowLevel(level MacWindowLevel) {
 	}
 }
 
+func (w *macosWebviewWindow) setCollectionBehavior(behavior MacWindowCollectionBehavior) {
+	C.windowSetCollectionBehavior(w.nsWindow, C.int(behavior))
+}
+
 func (w *macosWebviewWindow) width() int {
 	var width C.int
 	var wg sync.WaitGroup
@@ -1256,6 +1299,9 @@ func (w *macosWebviewWindow) run() {
 			macOptions.WindowLevel = MacWindowLevelNormal
 		}
 		w.setWindowLevel(macOptions.WindowLevel)
+
+		// Set collection behavior (defaults to FullScreenPrimary for backwards compatibility)
+		w.setCollectionBehavior(macOptions.CollectionBehavior)
 
 		// Initialise the window buttons
 		w.setMinimiseButtonState(options.MinimiseButtonState)
