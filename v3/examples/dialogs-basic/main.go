@@ -47,7 +47,7 @@ func main() {
 		result, err := app.Dialog.OpenFile().
 			CanChooseFiles(true).
 			PromptForSingleSelection()
-		showResult(app, "Basic Open", result, err, nil)
+		showResult("Basic Open", result, err, nil)
 	})
 
 	// Test 1b: Basic file open with window
@@ -56,7 +56,7 @@ func main() {
 			CanChooseFiles(true).
 			AttachToWindow(mainWindow).
 			PromptForSingleSelection()
-		showResult(app, "Basic Open", result, err, mainWindow)
+		showResult("Basic Open", result, err, mainWindow)
 	})
 
 	// Test 2: Open with single extension filter
@@ -66,7 +66,7 @@ func main() {
 			AddFilter("Text Files", "*.txt").
 			AttachToWindow(mainWindow).
 			PromptForSingleSelection()
-		showResult(app, "Single Filter", result, err, mainWindow)
+		showResult("Single Filter", result, err, mainWindow)
 	})
 
 	// Test 3: Open with multiple extension filter
@@ -76,7 +76,7 @@ func main() {
 			AddFilter("Documents", "*.txt;*.md;*.doc;*.docx").
 			AttachToWindow(mainWindow).
 			PromptForSingleSelection()
-		showResult(app, "Multiple Filter", result, err, mainWindow)
+		showResult("Multiple Filter", result, err, mainWindow)
 	})
 
 	// Test 4: Multiple file selection
@@ -87,10 +87,10 @@ func main() {
 			AttachToWindow(mainWindow).
 			PromptForMultipleSelection()
 		if err != nil {
-			showError(app, "Multiple Selection", err, mainWindow)
+			showError("Multiple Selection", err, mainWindow)
 			return
 		}
-		showResults(app, "Multiple Selection", results, mainWindow)
+		showResults("Multiple Selection", results, mainWindow)
 	})
 
 	// Test 5: Directory selection
@@ -100,7 +100,7 @@ func main() {
 			CanChooseFiles(false).
 			AttachToWindow(mainWindow).
 			PromptForSingleSelection()
-		showResult(app, "Directory Selection", result, err, mainWindow)
+		showResult("Directory Selection", result, err, mainWindow)
 	})
 
 	// Test 6: Save dialog with extension
@@ -110,7 +110,7 @@ func main() {
 			AddFilter("Text Files", "*.txt").
 			AttachToWindow(mainWindow).
 			PromptForSingleSelection()
-		showResult(app, "Save Dialog", result, err, mainWindow)
+		showResult("Save Dialog", result, err, mainWindow)
 	})
 
 	// Test 7: Complex filters
@@ -124,7 +124,7 @@ func main() {
 			AddFilter("PDF Files", "*.pdf").
 			AttachToWindow(mainWindow).
 			PromptForSingleSelection()
-		showResult(app, "Complex Filters", result, err, mainWindow)
+		showResult("Complex Filters", result, err, mainWindow)
 	})
 
 	// Test 8: Hidden files
@@ -134,7 +134,7 @@ func main() {
 			ShowHiddenFiles(true).
 			AttachToWindow(mainWindow).
 			PromptForSingleSelection()
-		showResult(app, "Show Hidden", result, err, mainWindow)
+		showResult("Show Hidden", result, err, mainWindow)
 	})
 
 	// Test 9: Default directory
@@ -145,7 +145,7 @@ func main() {
 			SetDirectory(home).
 			AttachToWindow(mainWindow).
 			PromptForSingleSelection()
-		showResult(app, "Default Directory", result, err, mainWindow)
+		showResult("Default Directory", result, err, mainWindow)
 	})
 
 	// Test 10: Full featured dialog
@@ -171,10 +171,10 @@ func main() {
 
 		results, err := dialog.PromptForMultipleSelection()
 		if err != nil {
-			showError(app, "Full Featured", err, mainWindow)
+			showError("Full Featured", err, mainWindow)
 			return
 		}
-		showResults(app, "Full Featured", results, mainWindow)
+		showResults("Full Featured", results, mainWindow)
 	})
 
 	// Show the window
@@ -186,13 +186,13 @@ func main() {
 	}
 }
 
-func showResult(app *application.App, test string, result string, err error, window *application.WebviewWindow) {
+func showResult(test string, result string, err error, window *application.WebviewWindow) {
 	if err != nil {
-		showError(app, test, err, window)
+		showError(test, err, window)
 		return
 	}
 	if result == "" {
-		dialog := app.Dialog.Info().
+		dialog := application.Get().Dialog.Info().
 			SetTitle(test).
 			SetMessage("No file selected")
 		if window != nil {
@@ -201,7 +201,7 @@ func showResult(app *application.App, test string, result string, err error, win
 		dialog.Show()
 		return
 	}
-	dialog := app.Dialog.Info().
+	dialog := application.Get().Dialog.Info().
 		SetTitle(test).
 		SetMessage(fmt.Sprintf("Selected: %s\nType: %s", result, getFileType(result)))
 	if window != nil {
@@ -210,9 +210,9 @@ func showResult(app *application.App, test string, result string, err error, win
 	dialog.Show()
 }
 
-func showResults(app *application.App, test string, results []string, window *application.WebviewWindow) {
+func showResults(test string, results []string, window *application.WebviewWindow) {
 	if len(results) == 0 {
-		dialog := app.Dialog.Info().
+		dialog := application.Get().Dialog.Info().
 			SetTitle(test).
 			SetMessage("No files selected")
 		if window != nil {
@@ -226,7 +226,7 @@ func showResults(app *application.App, test string, results []string, window *ap
 	for _, result := range results {
 		message.WriteString(fmt.Sprintf("%s (%s)\n", result, getFileType(result)))
 	}
-	dialog := app.Dialog.Info().
+	dialog := application.Get().Dialog.Info().
 		SetTitle(test).
 		SetMessage(message.String())
 	if window != nil {
@@ -235,8 +235,8 @@ func showResults(app *application.App, test string, results []string, window *ap
 	dialog.Show()
 }
 
-func showError(app *application.App, test string, err error, window *application.WebviewWindow) {
-	dialog := app.Dialog.Error().
+func showError(test string, err error, window *application.WebviewWindow) {
+	dialog := application.Get().Dialog.Error().
 		SetTitle(test).
 		SetMessage(fmt.Sprintf("Error: %v", err))
 	if window != nil {

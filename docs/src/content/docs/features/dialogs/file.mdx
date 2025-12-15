@@ -222,25 +222,12 @@ dialog := app.Dialog.OpenFile().
     AddFilter("All Files", "*.*")
 ```
 
-### Platform-Specific Patterns
+### Pattern Format
 
-**Windows:**
-```go
-// Semicolon-separated
-AddFilter("Images", "*.png;*.jpg;*.gif")
-```
+Use **semicolons** to separate multiple extensions in a single filter:
 
-**macOS/Linux:**
 ```go
-// Space or comma-separated (both work)
-AddFilter("Images", "*.png *.jpg *.gif")
-// or
-AddFilter("Images", "*.png,*.jpg,*.gif")
-```
-
-**Cross-platform (recommended):**
-```go
-// Use semicolons (works on all platforms)
+// Multiple extensions separated by semicolons
 AddFilter("Images", "*.png;*.jpg;*.gif")
 ```
 
