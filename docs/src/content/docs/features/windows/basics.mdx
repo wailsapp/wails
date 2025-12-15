@@ -410,22 +410,29 @@ childWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 
   <TabItem label="macOS" icon="apple">
     **macOS-specific features:**
-    
+
     ```go
     // Transparent title bar
     window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-        Mac: application.MacOptions{
-            TitleBarAppearsTransparent: true,
-            Backdrop:                   application.MacBackdropTranslucent,
+        Mac: application.MacWindow{
+            TitleBar: application.MacTitleBar{
+                AppearsTransparent: true,
+            },
+            Backdrop: application.MacBackdropTranslucent,
         },
     })
     ```
-    
+
     **Backdrop types:**
     - `MacBackdropNormal` - Standard window
     - `MacBackdropTranslucent` - Translucent background
     - `MacBackdropTransparent` - Fully transparent
-    
+
+    **Collection behavior:**
+    Control how windows behave across Spaces:
+    - `MacWindowCollectionBehaviorCanJoinAllSpaces` - Visible on all Spaces
+    - `MacWindowCollectionBehaviorFullScreenAuxiliary` - Can overlay fullscreen apps
+
     **Native fullscreen:**
     macOS fullscreen creates a new Space (virtual desktop).
   </TabItem>
