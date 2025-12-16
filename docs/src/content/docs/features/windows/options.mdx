@@ -696,30 +696,39 @@ Mac: application.MacWindow{
 
 **CollectionBehavior** (`MacWindowCollectionBehavior`)
 
-Controls how the window behaves across macOS Spaces and fullscreen:
+Controls how the window behaves across macOS Spaces and fullscreen. These are bitmask values that can be combined using bitwise OR (`|`).
 
+**Space behavior:**
 - `MacWindowCollectionBehaviorDefault` - Uses FullScreenPrimary (default, backwards compatible)
 - `MacWindowCollectionBehaviorCanJoinAllSpaces` - Window appears on all Spaces
 - `MacWindowCollectionBehaviorMoveToActiveSpace` - Moves to active Space when shown
 - `MacWindowCollectionBehaviorManaged` - Default managed window behavior
 - `MacWindowCollectionBehaviorTransient` - Temporary/transient window
 - `MacWindowCollectionBehaviorStationary` - Stays stationary during Space switches
+
+**Window cycling:**
+- `MacWindowCollectionBehaviorParticipatesInCycle` - Included in Cmd+` cycling
+- `MacWindowCollectionBehaviorIgnoresCycle` - Excluded from Cmd+` cycling
+
+**Fullscreen behavior:**
 - `MacWindowCollectionBehaviorFullScreenPrimary` - Can enter fullscreen mode
 - `MacWindowCollectionBehaviorFullScreenAuxiliary` - Can overlay fullscreen apps
 - `MacWindowCollectionBehaviorFullScreenNone` - Disables fullscreen capability
 - `MacWindowCollectionBehaviorFullScreenAllowsTiling` - Allows side-by-side tiling (macOS 10.11+)
+- `MacWindowCollectionBehaviorFullScreenDisallowsTiling` - Prevents tiling (macOS 10.11+)
 
 **Example - Spotlight-like window:**
 
 ```go
-// Window that appears on all Spaces (useful for launcher/spotlight-style apps)
+// Window that appears on all Spaces AND can overlay fullscreen apps
 Mac: application.MacWindow{
-    CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces,
+    CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces |
+                        application.MacWindowCollectionBehaviorFullScreenAuxiliary,
     WindowLevel:        application.MacWindowLevelFloating,
 },
 ```
 
-**Example - Overlay on fullscreen apps:**
+**Example - Single behavior:**
 
 ```go
 // Window that can appear over fullscreen applications

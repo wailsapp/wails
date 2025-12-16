@@ -45,8 +45,11 @@ func main() {
 		// Prevent resizing
 		DisableResize: true,
 		Mac: application.MacWindow{
-			// Window appears on ALL Spaces - key for launcher apps
-			CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces,
+			// Combine multiple behaviors using bitwise OR:
+			// - CanJoinAllSpaces: window appears on ALL Spaces (virtual desktops)
+			// - FullScreenAuxiliary: window can overlay fullscreen applications
+			CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces |
+				application.MacWindowCollectionBehaviorFullScreenAuxiliary,
 			// Float above other windows
 			WindowLevel: application.MacWindowLevelFloating,
 			// Translucent vibrancy effect
@@ -59,14 +62,6 @@ func main() {
 		},
 		URL: "/",
 	})
-
-	// You could also create a window that overlays fullscreen apps:
-	//
-	// app.Window.NewWithOptions(application.WebviewWindowOptions{
-	//     Mac: application.MacWindow{
-	//         CollectionBehavior: application.MacWindowCollectionBehaviorFullScreenAuxiliary,
-	//     },
-	// })
 
 	err := app.Run()
 	if err != nil {

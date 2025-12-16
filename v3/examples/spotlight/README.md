@@ -5,6 +5,8 @@ This example demonstrates how to create a Spotlight-like launcher window using t
 ## Features
 
 - **Appears on all Spaces**: Using `MacWindowCollectionBehaviorCanJoinAllSpaces`, the window is visible across all virtual desktops
+- **Overlays fullscreen apps**: Using `MacWindowCollectionBehaviorFullScreenAuxiliary`, the window can appear over fullscreen applications
+- **Combined behaviors**: Demonstrates combining multiple behaviors with bitwise OR
 - **Floating window**: `MacWindowLevelFloating` keeps the window above other windows
 - **Accessory app**: Doesn't appear in the Dock (uses `ActivationPolicyAccessory`)
 - **Frameless design**: Clean, borderless appearance with translucent backdrop
@@ -17,16 +19,36 @@ go run .
 
 **Note**: This example is macOS-specific due to the use of `CollectionBehavior`.
 
+## Combining CollectionBehaviors
+
+Behaviors can be combined using bitwise OR (`|`):
+
+```go
+CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces |
+                    application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+```
+
 ## CollectionBehavior Options
 
+These are bitmask values that can be combined:
+
+**Space behavior:**
 | Option | Description |
 |--------|-------------|
 | `MacWindowCollectionBehaviorDefault` | Uses FullScreenPrimary (default) |
 | `MacWindowCollectionBehaviorCanJoinAllSpaces` | Window appears on all Spaces |
 | `MacWindowCollectionBehaviorMoveToActiveSpace` | Moves to active Space when shown |
-| `MacWindowCollectionBehaviorFullScreenAuxiliary` | Can overlay fullscreen apps |
+| `MacWindowCollectionBehaviorManaged` | Default managed window behavior |
+| `MacWindowCollectionBehaviorTransient` | Temporary/transient window |
+| `MacWindowCollectionBehaviorStationary` | Stays stationary during Space switches |
+
+**Fullscreen behavior:**
+| Option | Description |
+|--------|-------------|
 | `MacWindowCollectionBehaviorFullScreenPrimary` | Can enter fullscreen mode |
+| `MacWindowCollectionBehaviorFullScreenAuxiliary` | Can overlay fullscreen apps |
 | `MacWindowCollectionBehaviorFullScreenNone` | Disables fullscreen |
+| `MacWindowCollectionBehaviorFullScreenAllowsTiling` | Allows side-by-side tiling |
 
 ## Use Cases
 
