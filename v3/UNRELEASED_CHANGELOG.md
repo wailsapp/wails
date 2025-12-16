@@ -17,19 +17,12 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add desktop environment detection on linux [PR #4797](https://github.com/wailsapp/wails/pull/4797)
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Update the documentation page for Wails v3 Asset Server by @ndianabasi
-- **BREAKING**: Remove package-level dialog functions (`application.InfoDialog()`, `application.QuestionDialog()`, etc.). Use the `app.Dialog` manager instead: `app.Dialog.Info()`, `app.Dialog.Question()`, `app.Dialog.Warning()`, `app.Dialog.Error()`, `app.Dialog.OpenFile()`, `app.Dialog.SaveFile()`
-- Update dialogs documentation to match actual API: use `app.Dialog.*`, `AddButton()` with callbacks (not `SetButtons()`), `SetDefaultButton(*Button)` (not string), `AddFilter()` (not `SetFilters()`), `SetFilename()` (not `SetDefaultFilename()`), and `app.Dialog.OpenFile().CanChooseDirectories(true)` for folder selection
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix crash on macOS when toggling window visibility via Hide()/Show() with ApplicationShouldTerminateAfterLastWindowClosed enabled (#4389) by @leaanthony
-- Fix memory leak in context menus on macOS and Windows when repeatedly opening menus (#4012) by @leaanthony
-- Fix context menu native resources not being reused on macOS, causing fresh menu creation on each display (#4012) by @leaanthony
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
@@ -51,7 +44,6 @@ After processing, the content will be moved to the main changelog and this file 
 **Changed:**
 - Update minimum Go version requirement to 1.21
 - Improve error messages for invalid configuration files
-- Correct all `app.Screens.GetAll()` calls in the documentation page (`features/screens/info)` to `app.Screen.GetAll()` by @ndianabasi
 
 **Fixed:**
 - Fix memory leak in event system during window close operations (#5678)
