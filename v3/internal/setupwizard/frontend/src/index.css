@@ -68,20 +68,30 @@ html, body, #root {
   transition: background-color 0.12s ease;
 }
 .settings-row:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+.dark .settings-row:hover {
   background: rgba(255, 255, 255, 0.06);
 }
 .settings-row + .settings-row {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+.dark .settings-row + .settings-row {
   border-top: 1px solid var(--glass-border);
 }
 
 /* Settings group container */
 .settings-group {
   border-radius: 12px;
+  background: rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.08) inset;
+  overflow: hidden;
+}
+.dark .settings-group {
   background: rgba(255, 255, 255, 0.10);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--glass-border) inset;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  overflow: hidden;
 }
 
 /* Subtle grid background */

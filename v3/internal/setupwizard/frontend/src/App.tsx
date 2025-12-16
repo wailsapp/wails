@@ -81,7 +81,11 @@ const pageVariants = {
 
 
 // Sidebar with progress steps (1:4 ratio - sidebar is 20% of total width)
-function Sidebar({ currentStep }: { currentStep: OOBEStep }) {
+function Sidebar({ currentStep, dockerStatus, buildingDocker }: {
+  currentStep: OOBEStep;
+  dockerStatus: DockerStatus | null;
+  buildingDocker: boolean;
+}) {
   const { theme, toggleTheme } = useTheme();
   const currentStage = getWizardStage(currentStep);
   const currentIndex = getStageIndex(currentStage);
@@ -98,6 +102,8 @@ function Sidebar({ currentStep }: { currentStep: OOBEStep }) {
   const handleSponsorClick = () => {
     window.open('https://github.com/sponsors/leaanthony', '_blank', 'noopener,noreferrer');
   };
+
+  const showDockerProgress = buildingDocker || (dockerStatus?.pullStatus === 'pulling');
 
   return (
     <div className="w-48 flex-shrink-0 bg-gray-100/80 dark:bg-transparent dark:glass-sidebar border-r border-gray-200 dark:border-transparent flex flex-col">
@@ -158,6 +164,25 @@ function Sidebar({ currentStep }: { currentStep: OOBEStep }) {
           })}
         </ul>
       </nav>
+
+      {/* Docker build progress */}
+      {showDockerProgress && (
+        <div className="px-4 py-3 border-t border-gray-200 dark:border-white/10">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-4 h-4 border-2 border-gray-300 dark:border-gray-600 border-t-blue-500 rounded-full animate-spin" />
+            <span className="text-xs text-gray-600 dark:text-gray-400">Docker image</span>
+          </div>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+            <div
+              className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
+              style={{ width: `${dockerStatus?.pullProgress || 0}%` }}
+            />
+          </div>
+          <span className="text-[10px] text-gray-500 dark:text-gray-500 mt-1 block">
+            {dockerStatus?.pullProgress ? `${Math.round(dockerStatus.pullProgress)}%` : 'Starting...'}
+          </span>
+        </div>
+      )}
 
       {/* Bottom controls - centered */}
       <div className="p-4 flex justify-center gap-3">
@@ -1167,16 +1192,16 @@ function ProjectsPage({
                   onBlur={handleSaveField}
                   autoFocus
                   placeholder="Acme Corp"
-                  className="w-full bg-transparent border-none text-sm text-white placeholder-gray-500 focus:outline-none"
+                  className="w-full bg-transparent border-none text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none"
                 />
               </div>
             </div>
           ) : (
             <div className="settings-row" onClick={() => handleRowClick('company')}>
-              <span className="text-sm font-medium text-white/90">Company</span>
-              <div className="flex items-center gap-2 text-sm text-white/65">
+              <span className="text-sm font-medium text-gray-800 dark:text-white/90">Company</span>
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-white/65">
                 <span>{defaults.author.company || 'Not set'}</span>
-                <span className="text-white/40 text-xs">&#9656;</span>
+                <span className="text-gray-400 dark:text-white/40 text-xs">&#9656;</span>
               </div>
             </div>
           )}
@@ -1193,21 +1218,21 @@ function ProjectsPage({
                   onBlur={handleSaveField}
                   autoFocus
                   placeholder="com.example"
-                  className="w-full bg-transparent border-none text-sm text-white placeholder-gray-500 focus:outline-none font-mono"
+                  className="w-full bg-transparent border-none text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none font-mono"
                 />
               </div>
             </div>
           ) : (
             <div className="settings-row" onClick={() => handleRowClick('bundleId')}>
-              <span className="text-sm font-medium text-white/90">Bundle identifier</span>
-              <div className="flex items-center gap-2 text-sm text-white/65">
+              <span className="text-sm font-medium text-gray-800 dark:text-white/90">Bundle identifier</span>
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-white/65">
                 <span className="font-mono">{defaults.project.productIdentifierPrefix || 'com.example'}</span>
-                <span className="text-white/40 text-xs">&#9656;</span>
+                <span className="text-gray-400 dark:text-white/40 text-xs">&#9656;</span>
               </div>
             </div>
           )}
         </div>
-        <p className="text-xs text-white/40 mt-3 text-center">
+        <p className="text-xs text-gray-500 dark:text-white/40 mt-3 text-center">
           These defaults are used when creating new projects
         </p>
       </div>
@@ -1494,7 +1519,7 @@ export default function App() {
         {/* Main content card - max 75% width/height, sidebar:content = 1:4 ratio */}
         <div className="w-[75vw] max-w-[75vw] h-[75vh] max-h-[75vh] glass-card rounded-2xl flex overflow-hidden relative z-10">
           {/* Sidebar */}
-          <Sidebar currentStep={step} />
+          <Sidebar currentStep={step} dockerStatus={dockerStatus} buildingDocker={backgroundDockerStarted && (buildingImage || dockerStatus?.pullStatus === 'pulling')} />
 
           {/* Content area - distinct from sidebar in dark mode */}
           <div className="flex-1 flex flex-col min-w-0 bg-white/50 dark:bg-white/[0.03]">
