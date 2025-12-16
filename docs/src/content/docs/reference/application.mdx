@@ -351,16 +351,71 @@ app.Logger.Warn("Warning message")
 ```go
 func (s *MyService) ProcessData(data string) error {
     s.app.Logger.Info("Processing data", "length", len(data))
-    
+
     if err := process(data); err != nil {
         s.app.Logger.Error("Processing failed", "error", err)
         return err
     }
-    
+
     s.app.Logger.Info("Processing complete")
     return nil
 }
 ```
+
+## Sanitizer
+
+The application provides a sanitizer for redacting sensitive data. IPC logs are automatically sanitized by default.
+
+### Sanitizer()
+
+Returns the application's sanitizer instance.
+
+```go
+func (a *App) Sanitizer() *Sanitizer
+```
+
+**Example:**
+
+```go
+// Get the sanitizer
+sanitizer := app.Sanitizer()
+
+// Sanitize a map
+cleanData := sanitizer.SanitizeMap(map[string]any{
+    "username": "john",
+    "password": "secret123",  // Will be redacted
+})
+
+// Sanitize JSON bytes
+cleanJSON := sanitizer.SanitizeJSON(jsonBytes)
+```
+
+### Configuration
+
+Configure sanitization via `SanitizeOptions` in application options:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    SanitizeOptions: &application.SanitizeOptions{
+        // Add custom fields to redact
+        RedactFields: []string{"ssn", "credit_card"},
+
+        // Custom replacement string (default: "***")
+        Replacement: "[REDACTED]",
+
+        // Custom sanitization logic
+        CustomSanitizeFunc: func(key string, value any, path string) (any, bool) {
+            if strings.HasPrefix(path, "user.") {
+                return "***", true
+            }
+            return nil, false // Use default logic
+        },
+    },
+})
+```
+
+See [Security Guide](/guides/security#log-sanitization) for full documentation.
 
 ## Raw Message Handling
 
