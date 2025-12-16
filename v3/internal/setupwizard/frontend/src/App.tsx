@@ -945,14 +945,14 @@ function LanguageSelectPage({
           className={`w-40 h-48 rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all border-2 ${
             !preferTypeScript
               ? 'border-yellow-400 bg-yellow-400/10 shadow-lg shadow-yellow-400/20'
-              : 'border-white/10 bg-white/5 hover:bg-white/10'
+              : 'border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10'
           }`}
         >
           <div className="w-16 h-16 flex items-center justify-center">
             <img src="/logos/javascript.svg" alt="JavaScript" className="w-14 h-14" />
           </div>
-          <span className="text-lg font-semibold text-white">JavaScript</span>
-          <span className="text-xs text-white/50">Dynamic typing</span>
+          <span className="text-lg font-semibold text-gray-900 dark:text-white">JavaScript</span>
+          <span className="text-xs text-gray-500 dark:text-white/50">Dynamic typing</span>
         </button>
 
         {/* TypeScript card */}
@@ -961,14 +961,14 @@ function LanguageSelectPage({
           className={`w-40 h-48 rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all border-2 ${
             preferTypeScript
               ? 'border-blue-400 bg-blue-400/10 shadow-lg shadow-blue-400/20'
-              : 'border-white/10 bg-white/5 hover:bg-white/10'
+              : 'border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10'
           }`}
         >
           <div className="w-16 h-16 flex items-center justify-center">
             <img src="/logos/typescript.svg" alt="TypeScript" className="w-14 h-14" />
           </div>
-          <span className="text-lg font-semibold text-white">TypeScript</span>
-          <span className="text-xs text-white/50">Type safety</span>
+          <span className="text-lg font-semibold text-gray-900 dark:text-white">TypeScript</span>
+          <span className="text-xs text-gray-500 dark:text-white/50">Type safety</span>
         </button>
       </div>
 
@@ -1103,7 +1103,7 @@ function TemplateSelectPage({
             className={`aspect-square rounded-xl p-4 flex flex-col items-center justify-center gap-2 transition-all border-2 ${
               selectedFramework === framework.id
                 ? 'border-red-500 bg-red-500/10 shadow-lg shadow-red-500/10'
-                : 'border-white/10 bg-white/5 hover:bg-white/10'
+                : 'border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10'
             }`}
           >
             <img
@@ -1111,7 +1111,7 @@ function TemplateSelectPage({
               alt={framework.name}
               className="w-12 h-12"
             />
-            <span className="text-sm font-medium text-white">{framework.name}</span>
+            <span className="text-sm font-medium text-gray-900 dark:text-white">{framework.name}</span>
           </button>
         ))}
       </div>
