@@ -1,7 +1,9 @@
 package application
 
 import (
+	"context"
 	"encoding/json"
+	"log/slog"
 	"regexp"
 	"strings"
 	"testing"
@@ -581,5 +583,287 @@ func BenchmarkSanitizer_Disabled(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		s.SanitizeMap(input)
+	}
+}
+
+// SanitizingHandler tests
+
+type testLogEntry struct {
+	Level   slog.Level
+	Message string
+	Attrs   map[string]any
+}
+
+type testHandler struct {
+	entries []testLogEntry
+}
+
+func (h *testHandler) Enabled(_ context.Context, _ slog.Level) bool {
+	return true
+}
+
+func (h *testHandler) Handle(_ context.Context, record slog.Record) error {
+	entry := testLogEntry{
+		Level:   record.Level,
+		Message: record.Message,
+		Attrs:   make(map[string]any),
+	}
+	record.Attrs(func(attr slog.Attr) bool {
+		h.collectAttr(entry.Attrs, "", attr)
+		return true
+	})
+	h.entries = append(h.entries, entry)
+	return nil
+}
+
+func (h *testHandler) collectAttr(m map[string]any, prefix string, attr slog.Attr) {
+	key := attr.Key
+	if prefix != "" {
+		key = prefix + "." + key
+	}
+
+	if attr.Value.Kind() == slog.KindGroup {
+		for _, ga := range attr.Value.Group() {
+			h.collectAttr(m, key, ga)
+		}
+		return
+	}
+
+	m[key] = attr.Value.Any()
+}
+
+func (h *testHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	return h
+}
+
+func (h *testHandler) WithGroup(name string) slog.Handler {
+	return h
+}
+
+func TestSanitizingHandler_Basic(t *testing.T) {
+	underlying := &testHandler{}
+	sanitizer := NewSanitizer(nil)
+	handler := NewSanitizingHandler(underlying, sanitizer)
+	logger := slog.New(handler)
+
+	logger.Info("test message",
+		"username", "john",
+		"password", "secret123",
+		"count", 42,
+	)
+
+	if len(underlying.entries) != 1 {
+		t.Fatalf("expected 1 log entry, got %d", len(underlying.entries))
+	}
+
+	entry := underlying.entries[0]
+	if entry.Message != "test message" {
+		t.Errorf("expected message 'test message', got %q", entry.Message)
+	}
+	if entry.Attrs["username"] != "john" {
+		t.Errorf("expected username 'john', got %v", entry.Attrs["username"])
+	}
+	if entry.Attrs["password"] != "***" {
+		t.Errorf("expected password '***', got %v", entry.Attrs["password"])
+	}
+	if entry.Attrs["count"] != int64(42) {
+		t.Errorf("expected count 42, got %v", entry.Attrs["count"])
+	}
+}
+
+func TestSanitizingHandler_NestedGroup(t *testing.T) {
+	underlying := &testHandler{}
+	sanitizer := NewSanitizer(nil)
+	handler := NewSanitizingHandler(underlying, sanitizer)
+	logger := slog.New(handler)
+
+	logger.Info("test message",
+		slog.Group("user",
+			slog.String("name", "john"),
+			slog.String("password", "secret123"),
+		),
+	)
+
+	if len(underlying.entries) != 1 {
+		t.Fatalf("expected 1 log entry, got %d", len(underlying.entries))
+	}
+
+	entry := underlying.entries[0]
+	if entry.Attrs["user.name"] != "john" {
+		t.Errorf("expected user.name 'john', got %v", entry.Attrs["user.name"])
+	}
+	if entry.Attrs["user.password"] != "***" {
+		t.Errorf("expected user.password '***', got %v", entry.Attrs["user.password"])
+	}
+}
+
+func TestSanitizingHandler_PatternMatching(t *testing.T) {
+	underlying := &testHandler{}
+	sanitizer := NewSanitizer(nil)
+	handler := NewSanitizingHandler(underlying, sanitizer)
+	logger := slog.New(handler)
+
+	jwt := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.signature"
+	logger.Info("auth",
+		"data", jwt,
+		"normal", "hello",
+	)
+
+	if len(underlying.entries) != 1 {
+		t.Fatalf("expected 1 log entry, got %d", len(underlying.entries))
+	}
+
+	entry := underlying.entries[0]
+	if entry.Attrs["data"] != "***" {
+		t.Errorf("expected JWT redacted, got %v", entry.Attrs["data"])
+	}
+	if entry.Attrs["normal"] != "hello" {
+		t.Errorf("expected normal 'hello', got %v", entry.Attrs["normal"])
+	}
+}
+
+func TestSanitizingHandler_Disabled(t *testing.T) {
+	underlying := &testHandler{}
+	sanitizer := NewSanitizer(&SanitizeOptions{Disabled: true})
+	handler := NewSanitizingHandler(underlying, sanitizer)
+	logger := slog.New(handler)
+
+	logger.Info("test", "password", "secret123")
+
+	if len(underlying.entries) != 1 {
+		t.Fatalf("expected 1 log entry, got %d", len(underlying.entries))
+	}
+
+	entry := underlying.entries[0]
+	if entry.Attrs["password"] != "secret123" {
+		t.Errorf("expected password unchanged when disabled, got %v", entry.Attrs["password"])
+	}
+}
+
+func TestSanitizingHandler_WithAttrs(t *testing.T) {
+	underlying := &testHandler{}
+	sanitizer := NewSanitizer(nil)
+	handler := NewSanitizingHandler(underlying, sanitizer)
+
+	// Create handler with pre-set attrs
+	handlerWithAttrs := handler.WithAttrs([]slog.Attr{
+		slog.String("api_key", "secret_key_123"),
+	})
+
+	logger := slog.New(handlerWithAttrs)
+	logger.Info("test", "username", "john")
+
+	// The WithAttrs should have sanitized the api_key
+	// Note: Our test handler doesn't properly handle WithAttrs,
+	// but we're testing that WithAttrs returns a SanitizingHandler
+	if _, ok := handlerWithAttrs.(*SanitizingHandler); !ok {
+		t.Error("expected WithAttrs to return a SanitizingHandler")
+	}
+}
+
+func TestSanitizingHandler_WithGroup(t *testing.T) {
+	underlying := &testHandler{}
+	sanitizer := NewSanitizer(nil)
+	handler := NewSanitizingHandler(underlying, sanitizer)
+
+	handlerWithGroup := handler.WithGroup("request")
+
+	if h, ok := handlerWithGroup.(*SanitizingHandler); !ok {
+		t.Error("expected WithGroup to return a SanitizingHandler")
+	} else {
+		if len(h.groups) != 1 || h.groups[0] != "request" {
+			t.Errorf("expected groups ['request'], got %v", h.groups)
+		}
+	}
+}
+
+func TestSanitizingHandler_AnyValue(t *testing.T) {
+	underlying := &testHandler{}
+	sanitizer := NewSanitizer(nil)
+	handler := NewSanitizingHandler(underlying, sanitizer)
+	logger := slog.New(handler)
+
+	// Log a map as Any value
+	data := map[string]any{
+		"username": "john",
+		"password": "secret",
+	}
+	logger.Info("test", "data", data)
+
+	if len(underlying.entries) != 1 {
+		t.Fatalf("expected 1 log entry, got %d", len(underlying.entries))
+	}
+
+	entry := underlying.entries[0]
+	dataResult, ok := entry.Attrs["data"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected data to be map, got %T", entry.Attrs["data"])
+	}
+
+	if dataResult["username"] != "john" {
+		t.Errorf("expected username 'john', got %v", dataResult["username"])
+	}
+	if dataResult["password"] != "***" {
+		t.Errorf("expected password '***', got %v", dataResult["password"])
+	}
+}
+
+func TestWrapLoggerWithSanitizer(t *testing.T) {
+	underlying := &testHandler{}
+	originalLogger := slog.New(underlying)
+	sanitizer := NewSanitizer(nil)
+
+	wrappedLogger := WrapLoggerWithSanitizer(originalLogger, sanitizer)
+
+	wrappedLogger.Info("test", "password", "secret123")
+
+	if len(underlying.entries) != 1 {
+		t.Fatalf("expected 1 log entry, got %d", len(underlying.entries))
+	}
+
+	entry := underlying.entries[0]
+	if entry.Attrs["password"] != "***" {
+		t.Errorf("expected password '***', got %v", entry.Attrs["password"])
+	}
+}
+
+func TestWrapLoggerWithSanitizer_Nil(t *testing.T) {
+	result := WrapLoggerWithSanitizer(nil, nil)
+	if result != nil {
+		t.Error("expected nil result for nil logger")
+	}
+}
+
+func BenchmarkSanitizingHandler(b *testing.B) {
+	underlying := &testHandler{}
+	sanitizer := NewSanitizer(nil)
+	handler := NewSanitizingHandler(underlying, sanitizer)
+	logger := slog.New(handler)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		underlying.entries = nil // Reset
+		logger.Info("test",
+			"username", "john",
+			"password", "secret123",
+			"count", 42,
+		)
+	}
+}
+
+func BenchmarkSanitizingHandler_Disabled(b *testing.B) {
+	underlying := &testHandler{}
+	sanitizer := NewSanitizer(&SanitizeOptions{Disabled: true})
+	handler := NewSanitizingHandler(underlying, sanitizer)
+	logger := slog.New(handler)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		underlying.entries = nil
+		logger.Info("test",
+			"username", "john",
+			"password", "secret123",
+			"count", 42,
+		)
 	}
 }
