@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -11,47 +12,86 @@ func main() {
 	app := application.New(application.Options{
 		Name: "Log Sanitization Demo",
 
-		// Configure log sanitization
 		SanitizeOptions: &application.SanitizeOptions{
-			// Add custom fields to redact (merged with defaults)
+			// RedactFields: additional field names to redact (merged with defaults)
 			RedactFields: []string{"cardNumber", "cvv", "ssn"},
 
-			// Add custom patterns
+			// RedactPatterns: additional regex patterns to match values
 			RedactPatterns: []*regexp.Regexp{
-				regexp.MustCompile(`\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b`),
+				regexp.MustCompile(`\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b`), // card numbers
 			},
+
+			// CustomSanitizeFunc: full control - return (value, true) to override
+			CustomSanitizeFunc: func(key string, value any, path string) (any, bool) {
+				// Custom handling for specific paths
+				if strings.HasPrefix(path, "payment.") && key != "amount" {
+					return "[PAYMENT_REDACTED]", true
+				}
+				return nil, false // fall through to default logic
+			},
+
+			// Replacement: custom replacement string (default: "***")
+			Replacement: "[REDACTED]",
+
+			// DisableDefaults: if true, only use explicitly specified fields/patterns
+			// DisableDefaults: false,
+
+			// Disabled: completely disable sanitization
+			// Disabled: false,
 		},
 	})
 
-	// Demonstrate the sanitizer API
-	fmt.Println("\n=== Log Sanitization Demo ===\n")
-
 	sanitizer := app.Sanitizer()
 
-	// Test data with sensitive information
-	testData := map[string]any{
-		"username":   "john_doe",
-		"password":   "super_secret_123",
-		"token":      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.sig",
-		"apiKey":     "sk_live_abcdefghij1234567890",
-		"email":      "john@example.com",
-		"cardNumber": "4111-1111-1111-1111", // custom field
-		"cvv":        "123",                 // custom field
-		"ssn":        "123-45-6789",         // custom field
-	}
+	fmt.Println("\n=== Log Sanitization Demo ===")
 
-	fmt.Println("Original data:")
-	for k, v := range testData {
-		fmt.Printf("  %s: %v\n", k, v)
+	// Test default field redaction
+	fmt.Println("\n--- Default Fields ---")
+	defaultData := map[string]any{
+		"username": "john_doe",
+		"password": "super_secret_123",
+		"token":    "abc123",
+		"apiKey":   "sk_live_xyz",
+		"email":    "john@example.com",
 	}
+	fmt.Println("Original:", defaultData)
+	fmt.Println("Sanitized:", sanitizer.SanitizeMap(defaultData))
 
-	fmt.Println("\nSanitized data:")
-	cleanData := sanitizer.SanitizeMap(testData)
-	for k, v := range cleanData {
-		fmt.Printf("  %s: %v\n", k, v)
+	// Test custom field redaction
+	fmt.Println("\n--- Custom Fields ---")
+	customData := map[string]any{
+		"cardNumber": "4111-1111-1111-1111",
+		"cvv":        "123",
+		"ssn":        "123-45-6789",
+		"name":       "John Doe",
 	}
+	fmt.Println("Original:", customData)
+	fmt.Println("Sanitized:", sanitizer.SanitizeMap(customData))
 
-	// Demonstrate nested sanitization
+	// Test pattern matching
+	fmt.Println("\n--- Pattern Matching ---")
+	patternData := map[string]any{
+		"data":    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.sig", // JWT
+		"header":  "Bearer abc123xyz",
+		"message": "Hello world",
+	}
+	fmt.Println("Original:", patternData)
+	fmt.Println("Sanitized:", sanitizer.SanitizeMap(patternData))
+
+	// Test CustomSanitizeFunc
+	fmt.Println("\n--- CustomSanitizeFunc ---")
+	paymentData := map[string]any{
+		"payment": map[string]any{
+			"cardNumber": "4111111111111111",
+			"amount":     99.99,
+			"currency":   "USD",
+		},
+	}
+	fmt.Println("Original:", paymentData)
+	fmt.Println("Sanitized:", sanitizer.SanitizeMap(paymentData))
+
+	// Test nested structures
+	fmt.Println("\n--- Nested Structures ---")
 	nestedData := map[string]any{
 		"user": map[string]any{
 			"name":     "Jane",
@@ -62,11 +102,12 @@ func main() {
 			},
 		},
 	}
+	fmt.Println("Original:", nestedData)
+	fmt.Println("Sanitized:", sanitizer.SanitizeMap(nestedData))
 
-	fmt.Println("\nNested original:")
-	fmt.Printf("  %+v\n", nestedData)
-
-	fmt.Println("\nNested sanitized:")
-	cleanNested := sanitizer.SanitizeMap(nestedData)
-	fmt.Printf("  %+v\n", cleanNested)
+	// Test JSON sanitization
+	fmt.Println("\n--- JSON Sanitization ---")
+	jsonData := []byte(`{"user":"john","password":"secret","token":"abc123"}`)
+	fmt.Println("Original:", string(jsonData))
+	fmt.Println("Sanitized:", string(sanitizer.SanitizeJSON(jsonData)))
 }

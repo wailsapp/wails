@@ -398,19 +398,31 @@ Configure sanitization via `SanitizeOptions` in application options:
 app := application.New(application.Options{
     Name: "My App",
     SanitizeOptions: &application.SanitizeOptions{
-        // Add custom fields to redact
-        RedactFields: []string{"ssn", "credit_card"},
+        // RedactFields: additional field names to redact (merged with defaults)
+        RedactFields: []string{"cardNumber", "cvv", "ssn"},
 
-        // Custom replacement string (default: "***")
+        // RedactPatterns: additional regex patterns to match values
+        RedactPatterns: []*regexp.Regexp{
+            regexp.MustCompile(`\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b`), // card numbers
+        },
+
+        // CustomSanitizeFunc: full control - return (value, true) to override
+        CustomSanitizeFunc: func(key string, value any, path string) (any, bool) {
+            // Custom handling for specific paths
+            if strings.HasPrefix(path, "payment.") && key != "amount" {
+                return "[PAYMENT_REDACTED]", true
+            }
+            return nil, false // fall through to default logic
+        },
+
+        // Replacement: custom replacement string (default: "***")
         Replacement: "[REDACTED]",
 
-        // Custom sanitization logic
-        CustomSanitizeFunc: func(key string, value any, path string) (any, bool) {
-            if strings.HasPrefix(path, "user.") {
-                return "***", true
-            }
-            return nil, false // Use default logic
-        },
+        // DisableDefaults: if true, only use explicitly specified fields/patterns
+        // DisableDefaults: false,
+
+        // Disabled: completely disable sanitization
+        // Disabled: false,
     },
 })
 ```
