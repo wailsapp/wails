@@ -1175,7 +1175,11 @@ func newWindowImpl(parent *WebviewWindow) *windowsWebviewWindow {
 }
 
 func (w *windowsWebviewWindow) openContextMenu(menu *Menu, _ *ContextMenuData) {
-	// Create the menu
+	// Destroy previous context menu if it exists to prevent memory leak
+	if w.currentlyOpenContextMenu != nil {
+		w.currentlyOpenContextMenu.Destroy()
+	}
+	// Create the menu from current Go-side menu state
 	thisMenu := NewPopupMenu(w.hwnd, menu)
 	thisMenu.Update()
 	w.currentlyOpenContextMenu = thisMenu
