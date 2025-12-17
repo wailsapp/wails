@@ -30,7 +30,7 @@ type windowsDialog struct {
 	UseAppIcon bool
 }
 
-func (m *windowsDialog) show() {
+func (m *windowsDialog) show() string {
 
 	title := w32.MustStringToUTF16Ptr(m.dialog.Title)
 	message := w32.MustStringToUTF16Ptr(m.dialog.Message)
@@ -72,6 +72,7 @@ func (m *windowsDialog) show() {
 			}
 		}
 	}
+	return result
 }
 
 func newDialogImpl(d *MessageDialog) *windowsDialog {

@@ -20,6 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- **BREAKING**: `MessageDialog.Show()` now returns the clicked button's label as a string, enabling synchronous dialog workflows (#4792)
 
 ## Fixed
 <!-- Bug fixes -->

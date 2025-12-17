@@ -27,7 +27,7 @@ type linuxDialog struct {
 	dialog *MessageDialog
 }
 
-func (m *linuxDialog) show() {
+func (m *linuxDialog) show() string {
 	windowId := getNativeApplication().getCurrentWindowID()
 	window, _ := globalApplication.Window.GetByID(windowId)
 	var parent uintptr
@@ -38,10 +38,15 @@ func (m *linuxDialog) show() {
 		}
 	}
 
+	// Channel to receive the result
+	resultChan := make(chan string, 1)
+
 	InvokeAsync(func() {
 		response := runQuestionDialog(pointer(parent), m.dialog)
+		var buttonLabel string
 		if response >= 0 && response < len(m.dialog.Buttons) {
 			button := m.dialog.Buttons[response]
+			buttonLabel = button.Label
 			if button.Callback != nil {
 				go func() {
 					defer handlePanic()
@@ -49,7 +54,11 @@ func (m *linuxDialog) show() {
 				}()
 			}
 		}
+		resultChan <- buttonLabel
 	})
+
+	// Wait for and return the result
+	return <-resultChan
 }
 
 func newDialogImpl(d *MessageDialog) *linuxDialog {

@@ -66,7 +66,7 @@ func (b *Button) SetAsCancel() *Button {
 }
 
 type messageDialogImpl interface {
-	show()
+	show() string
 }
 
 type MessageDialogOptions struct {
@@ -106,11 +106,14 @@ func (d *MessageDialog) SetTitle(title string) *MessageDialog {
 	return d
 }
 
-func (d *MessageDialog) Show() {
+// Show displays the dialog and returns the label of the clicked button.
+// This method blocks until the user clicks a button.
+// If the dialog has button callbacks defined, they will still be called.
+func (d *MessageDialog) Show() string {
 	if d.impl == nil {
 		d.impl = newDialogImpl(d)
 	}
-	InvokeSync(d.impl.show)
+	return InvokeSyncWithResult(d.impl.show)
 }
 
 func (d *MessageDialog) SetIcon(icon []byte) *MessageDialog {
