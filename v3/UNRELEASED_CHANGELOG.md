@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 - Add `Window.Print()` method to JavaScript runtime for triggering print dialog from frontend (#4290) by @leaanthony
+- Add `DisableMenu` option to `WindowsWindow` to disable the menu bar on Windows (#4273)
 <!-- New features, capabilities, or enhancements -->
 
 ## Changed
