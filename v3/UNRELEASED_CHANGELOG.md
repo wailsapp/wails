@@ -1,6 +1,6 @@
 # Unreleased Changes
 
-<!--
+<!-- 
 This file is used to collect changelog entries for the next v3-alpha release.
 Add your changes under the appropriate sections below.
 
@@ -16,16 +16,14 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
-- Add `Window.Print()` method to JavaScript runtime for triggering print dialog from frontend (#4290) by @leaanthony
-- Add `DisableMenu` option to `WindowsWindow` to disable the menu bar on Windows (#4273)
 <!-- New features, capabilities, or enhancements -->
+- Add `DisableMenu` option to `WindowsWindow` to disable the menu bar on Windows (#4273)
 
 ## Changed
+- Update the `Frontend Runtime` documentation by adding more options for generating frontend bindings by @ndianabasi
 <!-- Changes in existing functionality -->
 
 ## Fixed
-- Fix macOS dock icon click not showing hidden windows when app started with `Hidden: true` (#4583) by @leaanthony
-- Fix macOS print dialog not opening due to incorrect window pointer type in CGO call (#4290) by @leaanthony
 <!-- Bug fixes -->
 
 ## Deprecated

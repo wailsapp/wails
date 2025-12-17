@@ -10,6 +10,7 @@ extern void processDragItems(unsigned int windowId, char** arr, int length, int 
 extern void processWindowKeyDownEvent(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
 extern bool windowShouldUnconditionallyClose(unsigned int);
+extern bool windowIsHidden(unsigned int);
 // Define custom glass effect style constants (these match the Go constants)
 typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     LiquidGlassStyleAutomatic = 0,
@@ -318,6 +319,13 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     // Check if this window should close unconditionally (called from Close() method)
     if (windowShouldUnconditionallyClose(delegate.windowId)) {
         return true;
+    }
+    // If the window is hidden (via Hide()), don't trigger close events.
+    // This fixes issue #4389 where hiding the last window with
+    // ApplicationShouldTerminateAfterLastWindowClosed=true would incorrectly
+    // trigger the close event sequence and destroy the window.
+    if (windowIsHidden(delegate.windowId)) {
+        return false;
     }
     // For user-initiated closes, emit WindowClosing event and let the application decide
     processWindowEvent(delegate.windowId, EventWindowShouldClose);

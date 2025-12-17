@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"encoding/base64"
+	"fmt"
 	"log"
 	"runtime"
 	"strings"
@@ -25,10 +26,11 @@ func main() {
 	// Check if running on macOS
 	if runtime.GOOS != "darwin" {
 		// Show dialog for non-macOS platforms
-		application.InfoDialog().
+		app.Dialog.Info().
 			SetTitle("macOS Only Demo").
 			SetMessage("The Liquid Glass effect is a macOS-specific feature that uses native NSGlassEffectView (macOS 15.0+) or NSVisualEffectView.\n\nThis demo is not available on " + runtime.GOOS + ".").
 			Show()
+		fmt.Println("The Liquid Glass effect is a macOS-specific feature. This demo is not available on", runtime.GOOS)
 		return
 	}
 
