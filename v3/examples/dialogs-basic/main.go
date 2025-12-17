@@ -44,7 +44,7 @@ func main() {
 
 	// Test 1: Basic file open with no filters (no window)
 	testMenu.Add("1. Basic Open (No Window)").OnClick(func(ctx *application.Context) {
-		result, err := application.OpenFileDialog().
+		result, err := app.Dialog.OpenFile().
 			CanChooseFiles(true).
 			PromptForSingleSelection()
 		showResult("Basic Open", result, err, nil)
@@ -52,7 +52,7 @@ func main() {
 
 	// Test 1b: Basic file open with window
 	testMenu.Add("1b. Basic Open (With Window)").OnClick(func(ctx *application.Context) {
-		result, err := application.OpenFileDialog().
+		result, err := app.Dialog.OpenFile().
 			CanChooseFiles(true).
 			AttachToWindow(mainWindow).
 			PromptForSingleSelection()
@@ -61,7 +61,7 @@ func main() {
 
 	// Test 2: Open with single extension filter
 	testMenu.Add("2. Single Filter").OnClick(func(ctx *application.Context) {
-		result, err := application.OpenFileDialog().
+		result, err := app.Dialog.OpenFile().
 			CanChooseFiles(true).
 			AddFilter("Text Files", "*.txt").
 			AttachToWindow(mainWindow).
@@ -71,7 +71,7 @@ func main() {
 
 	// Test 3: Open with multiple extension filter
 	testMenu.Add("3. Multiple Filter").OnClick(func(ctx *application.Context) {
-		result, err := application.OpenFileDialog().
+		result, err := app.Dialog.OpenFile().
 			CanChooseFiles(true).
 			AddFilter("Documents", "*.txt;*.md;*.doc;*.docx").
 			AttachToWindow(mainWindow).
@@ -81,7 +81,7 @@ func main() {
 
 	// Test 4: Multiple file selection
 	testMenu.Add("4. Multiple Selection").OnClick(func(ctx *application.Context) {
-		results, err := application.OpenFileDialog().
+		results, err := app.Dialog.OpenFile().
 			CanChooseFiles(true).
 			AddFilter("Images", "*.png;*.jpg;*.jpeg").
 			AttachToWindow(mainWindow).
@@ -95,7 +95,7 @@ func main() {
 
 	// Test 5: Directory selection
 	testMenu.Add("5. Directory Selection").OnClick(func(ctx *application.Context) {
-		result, err := application.OpenFileDialog().
+		result, err := app.Dialog.OpenFile().
 			CanChooseDirectories(true).
 			CanChooseFiles(false).
 			AttachToWindow(mainWindow).
@@ -105,7 +105,7 @@ func main() {
 
 	// Test 6: Save dialog with extension
 	testMenu.Add("6. Save Dialog").OnClick(func(ctx *application.Context) {
-		result, err := application.SaveFileDialog().
+		result, err := app.Dialog.SaveFile().
 			SetFilename("test.txt").
 			AddFilter("Text Files", "*.txt").
 			AttachToWindow(mainWindow).
@@ -115,7 +115,7 @@ func main() {
 
 	// Test 7: Complex filters
 	testMenu.Add("7. Complex Filters").OnClick(func(ctx *application.Context) {
-		result, err := application.OpenFileDialog().
+		result, err := app.Dialog.OpenFile().
 			CanChooseFiles(true).
 			AddFilter("All Documents", "*.txt;*.md;*.doc;*.docx;*.pdf").
 			AddFilter("Text Files", "*.txt").
@@ -129,7 +129,7 @@ func main() {
 
 	// Test 8: Hidden files
 	testMenu.Add("8. Show Hidden").OnClick(func(ctx *application.Context) {
-		result, err := application.OpenFileDialog().
+		result, err := app.Dialog.OpenFile().
 			CanChooseFiles(true).
 			ShowHiddenFiles(true).
 			AttachToWindow(mainWindow).
@@ -140,7 +140,7 @@ func main() {
 	// Test 9: Default directory
 	testMenu.Add("9. Default Directory").OnClick(func(ctx *application.Context) {
 		home, _ := os.UserHomeDir()
-		result, err := application.OpenFileDialog().
+		result, err := app.Dialog.OpenFile().
 			CanChooseFiles(true).
 			SetDirectory(home).
 			AttachToWindow(mainWindow).
@@ -151,7 +151,7 @@ func main() {
 	// Test 10: Full featured dialog
 	testMenu.Add("10. Full Featured").OnClick(func(ctx *application.Context) {
 		home, _ := os.UserHomeDir()
-		dialog := application.OpenFileDialog().
+		dialog := app.Dialog.OpenFile().
 			SetTitle("Full Featured Dialog").
 			SetDirectory(home).
 			CanChooseFiles(true).
@@ -192,7 +192,7 @@ func showResult(test string, result string, err error, window *application.Webvi
 		return
 	}
 	if result == "" {
-		dialog := application.InfoDialog().
+		dialog := application.Get().Dialog.Info().
 			SetTitle(test).
 			SetMessage("No file selected")
 		if window != nil {
@@ -201,7 +201,7 @@ func showResult(test string, result string, err error, window *application.Webvi
 		dialog.Show()
 		return
 	}
-	dialog := application.InfoDialog().
+	dialog := application.Get().Dialog.Info().
 		SetTitle(test).
 		SetMessage(fmt.Sprintf("Selected: %s\nType: %s", result, getFileType(result)))
 	if window != nil {
@@ -212,7 +212,7 @@ func showResult(test string, result string, err error, window *application.Webvi
 
 func showResults(test string, results []string, window *application.WebviewWindow) {
 	if len(results) == 0 {
-		dialog := application.InfoDialog().
+		dialog := application.Get().Dialog.Info().
 			SetTitle(test).
 			SetMessage("No files selected")
 		if window != nil {
@@ -226,7 +226,7 @@ func showResults(test string, results []string, window *application.WebviewWindo
 	for _, result := range results {
 		message.WriteString(fmt.Sprintf("%s (%s)\n", result, getFileType(result)))
 	}
-	dialog := application.InfoDialog().
+	dialog := application.Get().Dialog.Info().
 		SetTitle(test).
 		SetMessage(message.String())
 	if window != nil {
@@ -236,7 +236,7 @@ func showResults(test string, results []string, window *application.WebviewWindo
 }
 
 func showError(test string, err error, window *application.WebviewWindow) {
-	dialog := application.ErrorDialog().
+	dialog := application.Get().Dialog.Error().
 		SetTitle(test).
 		SetMessage(fmt.Sprintf("Error: %v", err))
 	if window != nil {
@@ -249,11 +249,8 @@ func getFileType(path string) string {
 	if path == "" {
 		return "unknown"
 	}
-	ext := strings.ToLower(filepath.Ext(path))
+	ext := filepath.Ext(path)
 	if ext == "" {
-		if fi, err := os.Stat(path); err == nil && fi.IsDir() {
-			return "directory"
-		}
 		return "no extension"
 	}
 	return ext

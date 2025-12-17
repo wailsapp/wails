@@ -16,6 +16,9 @@ func getInfo() (map[string]string, bool) {
 	// Check session type (X11/Wayland)
 	result["XDG_SESSION_TYPE"] = getSessionType()
 
+	// Check desktop environment
+	result["Desktop Environment"] = getDesktopEnvironment()
+
 	// Check for NVIDIA driver
 	result["NVIDIA Driver"] = getNvidiaDriverInfo()
 
@@ -28,6 +31,14 @@ func getSessionType() string {
 		return "unset"
 	}
 	return sessionType
+}
+
+func getDesktopEnvironment() string {
+	de := os.Getenv("XDG_CURRENT_DESKTOP")
+	if de == "" {
+		return "unset"
+	}
+	return de
 }
 
 func getNvidiaDriverInfo() string {

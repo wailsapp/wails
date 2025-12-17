@@ -503,6 +503,25 @@ function ZoomOut(): Promise<void>
 function ZoomReset(): Promise<void>
 ```
 
+#### Printing
+
+**Print()** - Opens the native print dialog
+
+```typescript
+function Print(): Promise<void>
+```
+
+**Example:**
+
+```javascript
+import Window from '@wailsio/runtime/window'
+
+// Open print dialog for current window
+await Window.Print()
+```
+
+**Note:** This opens the native OS print dialog, allowing the user to select printer settings and print the current window content. Unlike `window.print()` which may not work in webviews, this uses the native platform printing API.
+
 ### Clipboard
 
 Clipboard operations.
