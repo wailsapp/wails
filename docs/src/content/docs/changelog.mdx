@@ -30,6 +30,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha.48 - 2025-12-16
+
+## Added
+- Add desktop environment detection on linux [PR #4797](https://github.com/wailsapp/wails/pull/4797)
+
+## Changed
+- Update the documentation page for Wails v3 Asset Server by @ndianabasi
+- **BREAKING**: Remove package-level dialog functions (`application.InfoDialog()`, `application.QuestionDialog()`, etc.). Use the `app.Dialog` manager instead: `app.Dialog.Info()`, `app.Dialog.Question()`, `app.Dialog.Warning()`, `app.Dialog.Error()`, `app.Dialog.OpenFile()`, `app.Dialog.SaveFile()`
+- Update dialogs documentation to match actual API: use `app.Dialog.*`, `AddButton()` with callbacks (not `SetButtons()`), `SetDefaultButton(*Button)` (not string), `AddFilter()` (not `SetFilters()`), `SetFilename()` (not `SetDefaultFilename()`), and `app.Dialog.OpenFile().CanChooseDirectories(true)` for folder selection
+
+## Fixed
+- Fix crash on macOS when toggling window visibility via Hide()/Show() with ApplicationShouldTerminateAfterLastWindowClosed enabled (#4389) by @leaanthony
+- Fix memory leak in context menus on macOS and Windows when repeatedly opening menus (#4012) by @leaanthony
+- Fix context menu native resources not being reused on macOS, causing fresh menu creation on each display (#4012) by @leaanthony
+
+## v3.0.0-alpha.47 - 2025-12-15
+
+## Added
+- Add `Window.Print()` method to JavaScript runtime for triggering print dialog from frontend (#4290) by @leaanthony
+
+## Fixed
+- Fix macOS dock icon click not showing hidden windows when app started with `Hidden: true` (#4583) by @leaanthony
+- Fix macOS print dialog not opening due to incorrect window pointer type in CGO call (#4290) by @leaanthony
+
+## v3.0.0-alpha.46 - 2025-12-14
+
+## Added
+- Add `XDG_SESSION_TYPE` to `wails3 doctor` output on Linux by @leaanthony
+- Add additional WebKit2 load-change events for Linux: `WindowLoadStarted`, `WindowLoadRedirected`, `WindowLoadCommitted`, `WindowLoadFinished` (#3896) by @leaanthony
+
+## Removed
+- **BREAKING**: Remove `linux:WindowLoadChanged` event - use `linux:WindowLoadFinished` instead for detecting when WebView has finished loading (#3896) by @leaanthony
+
+## v3.0.0-alpha.45 - 2025-12-13
+
+## Added
+- Add `XDG_SESSION_TYPE` to `wails3 doctor` output on Linux by @leaanthony
+- Generate `.desktop` file during Linux build, not just packaging (#4575)
+- Add Linux runtime dependencies documentation with distro-specific package names and nfpm packaging examples (#4339) by @leaanthony
+
+## Fixed
+- Fix window menu crash on Wayland caused by appmenu-gtk-module accessing unrealized window (#4769) by @leaanthony
+- Fix GTK application crash when app name contains invalid characters (spaces, parentheses, etc.) by @leaanthony
+- Fix "not enough memory" error when initializing drag and drop on Windows (#4701) by @overlordtm
+- Fix file explorer opening wrong directory on Linux due to incorrect URI escaping (#4397) by @leaanthony
+- Fix AppImage build failure on modern Linux distributions (Arch, Fedora 39+, Ubuntu 24.04+) by auto-detecting `.relr.dyn` ELF sections and disabling stripping (#4642) by @leaanthony
+- Fix `wails doctor` falsely reporting webkit packages as installed on Fedora/DNF-based systems (#4457) by @leaanthony
+
 ## v3.0.0-alpha.44 - 2025-12-12
 
 ## Added

@@ -32,7 +32,10 @@ linux:WindowDidMove
 linux:WindowDidResize
 linux:WindowFocusIn
 linux:WindowFocusOut
-linux:WindowLoadChanged
+linux:WindowLoadStarted
+linux:WindowLoadRedirected
+linux:WindowLoadCommitted
+linux:WindowLoadFinished
 mac:ApplicationDidBecomeActive
 mac:ApplicationDidChangeBackingProperties
 mac:ApplicationDidChangeEffectiveAppearance

@@ -1,6 +1,8 @@
-module changeme
+module print
 
 go 1.24.0
+
+replace github.com/wailsapp/wails/v3 => ../../
 
 require github.com/wailsapp/wails/v3 v3.0.0-alpha.0
 
@@ -45,5 +47,3 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
-
-replace github.com/wailsapp/wails/v3 => ../..

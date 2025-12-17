@@ -1377,8 +1377,14 @@ func handleFocusEvent(widget *C.GtkWidget, event *C.GdkEvent, data C.uintptr_t) 
 //export handleLoadChanged
 func handleLoadChanged(webview *C.WebKitWebView, event C.WebKitLoadEvent, data C.uintptr_t) {
 	switch event {
+	case C.WEBKIT_LOAD_STARTED:
+		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadStarted))
+	case C.WEBKIT_LOAD_REDIRECTED:
+		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadRedirected))
+	case C.WEBKIT_LOAD_COMMITTED:
+		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadCommitted))
 	case C.WEBKIT_LOAD_FINISHED:
-		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadChanged))
+		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadFinished))
 	}
 }
 
