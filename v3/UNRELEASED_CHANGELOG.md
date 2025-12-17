@@ -25,6 +25,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 - Fix macOS dock icon click not showing hidden windows when app started with `Hidden: true` (#4583) by @leaanthony
 - Fix macOS print dialog not opening due to incorrect window pointer type in CGO call (#4290) by @leaanthony
+- Fix Windows systray menu crash when clicking icon repeatedly by adding guard against concurrent TrackPopupMenuEx calls (#4151) by @anthropics-ai
 <!-- Bug fixes -->
 
 ## Deprecated
