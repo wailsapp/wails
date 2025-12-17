@@ -25,6 +25,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 - Fix macOS dock icon click not showing hidden windows when app started with `Hidden: true` (#4583) by @leaanthony
 - Fix macOS print dialog not opening due to incorrect window pointer type in CGO call (#4290) by @leaanthony
+- Fix fullscreen click-through on Windows when using `Frameless: true` with `BackgroundTypeTransparent` (#4408) by @anthropic-vibekanban
 <!-- Bug fixes -->
 
 ## Deprecated
