@@ -18,6 +18,8 @@ After processing, the content will be moved to the main changelog and this file 
 ## Added
 <!-- New features, capabilities, or enhancements -->
 - Add `MessageDialog.WithButton()` method for builder pattern chaining when adding buttons without configuration (#4792)
+- Add `MessageDialog.WithDefaultButton()` method for adding a button marked as default (Enter key) with builder pattern chaining (#4810)
+- Add `MessageDialog.WithCancelButton()` method for adding a button marked as cancel (Escape key) with builder pattern chaining (#4810)
 
 ## Changed
 <!-- Changes in existing functionality -->
@@ -26,6 +28,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix `IsCancel` button not responding to Escape key on Linux (GTK) (#4810)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

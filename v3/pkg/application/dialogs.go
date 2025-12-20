@@ -139,6 +139,30 @@ func (d *MessageDialog) WithButton(s string) *MessageDialog {
 	return d
 }
 
+// WithDefaultButton adds a button with the given label, marks it as the default button,
+// and returns the MessageDialog for chaining. The default button is activated when the
+// user presses Enter/Return. Only one button should be marked as default.
+func (d *MessageDialog) WithDefaultButton(s string) *MessageDialog {
+	// Clear any existing default buttons
+	for _, b := range d.Buttons {
+		b.IsDefault = false
+	}
+	d.Buttons = append(d.Buttons, &Button{Label: s, IsDefault: true})
+	return d
+}
+
+// WithCancelButton adds a button with the given label, marks it as the cancel button,
+// and returns the MessageDialog for chaining. The cancel button is activated when the
+// user presses Escape. Only one button should be marked as cancel.
+func (d *MessageDialog) WithCancelButton(s string) *MessageDialog {
+	// Clear any existing cancel buttons
+	for _, b := range d.Buttons {
+		b.IsCancel = false
+	}
+	d.Buttons = append(d.Buttons, &Button{Label: s, IsCancel: true})
+	return d
+}
+
 func (d *MessageDialog) AddButtons(buttons []*Button) *MessageDialog {
 	d.Buttons = buttons
 	return d

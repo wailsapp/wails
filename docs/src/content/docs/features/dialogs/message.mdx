@@ -286,8 +286,34 @@ result, err := dialog.Show()
 
 **Default and Cancel buttons:**
 
-Use `SetDefaultButton()` to specify which button is highlighted and triggered by Enter.
-Use `SetCancelButton()` to specify which button is triggered by Escape.
+There are multiple ways to configure default and cancel buttons:
+
+**1. Fluent API with `WithDefaultButton()` and `WithCancelButton()` (recommended for simple dialogs):**
+
+These methods add a button and mark it as default/cancel in a single call, perfect for method chaining:
+
+```go
+result, err := app.Dialog.Question().
+    SetTitle("Save Changes?").
+    SetMessage("You have unsaved changes.").
+    WithDefaultButton("Save").       // Enter triggers this
+    WithButton("Don't Save").
+    WithCancelButton("Cancel").      // Escape triggers this
+    Show()
+
+switch result {
+case "Save":
+    saveChanges()
+case "Don't Save":
+    discardChanges()
+case "Cancel":
+    // User cancelled
+}
+```
+
+**2. Using `SetDefaultButton()` and `SetCancelButton()` on the dialog:**
+
+Use these when you need a reference to the button for other purposes:
 
 ```go
 dialog := app.Dialog.Question().
@@ -310,7 +336,7 @@ if result == "Delete" {
 }
 ```
 
-You can also use the fluent `SetAsDefault()` and `SetAsCancel()` methods on buttons:
+**3. Using `SetAsDefault()` and `SetAsCancel()` on individual buttons:**
 
 ```go
 dialog := app.Dialog.Question().
@@ -446,6 +472,32 @@ func showUpdateDialog(app *application.App) {
     result, _ := dialog.Show()
     if result == "📥 Download" {
         app.Dialog.Info().SetMessage("Downloading...").Show()
+    }
+}
+```
+
+### Save Changes Dialog (Fluent API)
+
+Using the fluent `WithDefaultButton()` and `WithCancelButton()` methods for a clean, chainable API:
+
+```go
+func promptSaveChanges(app *application.App) string {
+    result, _ := app.Dialog.Question().
+        SetTitle("Save Changes?").
+        SetMessage("You have unsaved changes. What would you like to do?").
+        WithDefaultButton("Save").
+        WithButton("Don't Save").
+        WithCancelButton("Cancel").
+        Show()
+
+    switch result {
+    case "Save":
+        saveDocument()
+        return "saved"
+    case "Don't Save":
+        return "discarded"
+    default:
+        return "cancelled"
     }
 }
 ```
