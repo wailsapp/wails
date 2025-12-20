@@ -147,6 +147,7 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 
 var customTypeMap = map[string]string{
 	"time.Time": "string",
+	"url.URL":   "string",
 	"uuid.UUID": "string",
 }
 

@@ -143,6 +143,11 @@ func Test_goTypeToJSDocType(t *testing.T) {
 			want:  "string",
 		},
 		{
+			name:  "url.URL mapped to string",
+			input: "url.URL",
+			want:  "string",
+		},
+		{
 			name:  "uuid.UUID mapped to string",
 			input: "uuid.UUID",
 			want:  "string",
