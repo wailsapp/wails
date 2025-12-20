@@ -1078,6 +1078,20 @@ property differs form the executable's filename.
 Name: ProgramName<br/>
 Type: string<br/>
 
+#### DisableGTKSignalHandlerFixup
+
+Setting this to `true` disables the SA_ONSTACK signal handler fixup that is normally applied during GTK initialization.
+
+This fixup is necessary for CGO compatibility with Go's signal handling and prevents crashes when using certain libraries (such as gRPC). However, it can interfere with debuggers like [Delve](https://github.com/go-delve/delve), causing the application to crash when breakpoints are hit.
+
+Set this to `true` when debugging your application with Delve. For production builds, leave this at the default value (`false`).
+
+See the [Linux Debugging Guide](/docs/guides/linux#debugging-with-delve) for more information.
+
+Name: DisableGTKSignalHandlerFixup<br/>
+Type: `bool`<br/>
+Default: `false`
+
 ### Debug
 
 This defines [Debug specific options](#Debug) that apply to debug builds.
