@@ -185,6 +185,7 @@ type DownloadProgress struct {
 type Service struct {
 	lock          sync.RWMutex
 	config        *Config
+	configErr     error // Stores any configuration error for reporting at startup.
 	source        selfupdate.Source
 	app           *application.App
 	pendingUpdate *selfupdate.Release
@@ -199,10 +200,13 @@ func New() *Service {
 
 // NewWithConfig creates a new selfupdate service with the given configuration.
 // If config is nil, you must call Configure before using the service.
+// If the config is invalid, the error will be returned when ServiceStartup is called.
 func NewWithConfig(config *Config) *Service {
 	s := &Service{}
 	if config != nil {
-		_ = s.Configure(config)
+		if err := s.Configure(config); err != nil {
+			s.configErr = err
+		}
 	}
 	return s
 }
@@ -218,6 +222,11 @@ func (s *Service) ServiceStartup(ctx context.Context, options application.Servic
 	defer s.lock.Unlock()
 
 	s.app = application.Get()
+
+	// Return any configuration error from NewWithConfig.
+	if s.configErr != nil {
+		return errors.Wrap(s.configErr, "selfupdate configuration error")
+	}
 
 	if s.config == nil {
 		return errors.New("selfupdate service not configured; call Configure with a valid Config")
@@ -249,6 +258,16 @@ func (s *Service) Configure(config *Config) error {
 	// Clone to prevent changes from the outside.
 	clone := new(Config)
 	*clone = *config
+
+	// Deep clone nested pointer fields.
+	if config.Signature != nil {
+		sig := *config.Signature
+		clone.Signature = &sig
+	}
+	if config.UI != nil {
+		ui := *config.UI
+		clone.UI = &ui
+	}
 
 	// Set defaults.
 	if clone.Source == "" {

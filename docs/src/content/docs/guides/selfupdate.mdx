@@ -66,13 +66,23 @@ func main() {
 }
 ```
 
-### 2. Check for Updates from Frontend
+### 2. Generate Bindings
 
-Call the service methods from your frontend JavaScript:
+Before using the service from the frontend, generate the JavaScript bindings:
+
+```bash
+wails3 generate bindings
+```
+
+This creates binding files in your assets directory that you'll import in your frontend code.
+
+### 3. Check for Updates from Frontend
+
+Import and use the service from your frontend JavaScript (using ES modules):
 
 ```javascript
-// Get the selfupdate service
-const Selfupdate = wails.Service("github.com/wailsapp/wails/v3/services/selfupdate");
+// Import the selfupdate service from generated bindings
+import { Service as Selfupdate } from "./bindings/github.com/wailsapp/wails/v3/pkg/services/selfupdate/index.js";
 
 // Check for updates
 async function checkForUpdates() {
@@ -277,6 +287,8 @@ selfupdate.Config{
 You can retrieve the UI config from the frontend to apply consistent theming:
 
 ```javascript
+import { Service as Selfupdate } from "./bindings/github.com/wailsapp/wails/v3/pkg/services/selfupdate/index.js";
+
 const uiConfig = await Selfupdate.GetUIConfig();
 if (uiConfig) {
     document.body.style.backgroundColor = uiConfig.backgroundColor;
@@ -289,8 +301,11 @@ if (uiConfig) {
 The service emits progress events during downloads. Listen for them in your frontend:
 
 ```javascript
+// Import Events from Wails runtime
+import { Events } from "/wails/runtime.js";
+
 // Listen for download progress
-wails.Events.On('selfupdate:progress', (event) => {
+Events.On('selfupdate:progress', (event) => {
     const progress = event.data;
 
     switch (progress.state) {
