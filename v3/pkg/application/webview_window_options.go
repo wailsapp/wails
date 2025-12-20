@@ -281,6 +281,10 @@ type WindowsWindow struct {
 	// Menu is the menu to use for the window.
 	Menu *Menu
 
+	// DisableMenu will disable the menu for the window.
+	// Default: false
+	DisableMenu bool
+
 	// Drag Cursor Effects
 	OnEnterEffect DragEffect
 	OnOverEffect  DragEffect

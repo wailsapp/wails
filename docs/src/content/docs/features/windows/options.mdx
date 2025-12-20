@@ -706,6 +706,7 @@ Mac: application.MacOptions{
 ```go
 Windows: application.WindowsOptions{
     DisableWindowIcon:      false,
+    DisableMenu:            false,
     WindowBackdropType:     application.WindowsBackdropTypeAuto,
     CustomTheme:            nil,
     DisableFramelessWindowDecorations: false,
@@ -715,6 +716,11 @@ Windows: application.WindowsOptions{
 **DisableWindowIcon** (`bool`)
 - Remove icon from title bar
 - Cleaner appearance
+
+**DisableMenu** (`bool`)
+- Disable the menu bar for the window
+- When true, the window will not display a menu bar even if one is configured
+- Default: `false`
 
 **WindowBackdropType** (`WindowsBackdropType`)
 - `WindowsBackdropTypeAuto` - System default
@@ -836,6 +842,7 @@ func main() {
         Windows: application.WindowsOptions{
             WindowBackdropType: application.WindowsBackdropTypeMica,
             DisableWindowIcon:  false,
+            DisableMenu:        false,
         },
         
         Linux: application.LinuxOptions{

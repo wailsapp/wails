@@ -84,6 +84,9 @@ type windowsWebviewWindow struct {
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
+	if w.parent.options.Windows.DisableMenu {
+		return
+	}
 	menu.Update()
 	w.menu = NewApplicationMenu(w, menu)
 	w.menu.parentWindow = w
@@ -356,7 +359,7 @@ func (w *windowsWebviewWindow) run() {
 	var appMenu w32.HMENU
 
 	// Process Menu
-	if !options.Frameless {
+	if !options.Frameless && !options.Windows.DisableMenu {
 		userMenu := w.parent.options.Windows.Menu
 		if userMenu != nil {
 			userMenu.Update()
@@ -2340,6 +2343,9 @@ func (w *windowsWebviewWindow) setMinimiseButtonEnabled(enabled bool) {
 }
 
 func (w *windowsWebviewWindow) toggleMenuBar() {
+	if w.parent.options.Windows.DisableMenu {
+		return
+	}
 	if w.menu != nil {
 		if w32.GetMenu(w.hwnd) == 0 {
 			w32.SetMenu(w.hwnd, w.menu.menu)
@@ -2452,6 +2458,9 @@ func (w *windowsWebviewWindow) setPadding(padding edge.Rect) {
 }
 
 func (w *windowsWebviewWindow) showMenuBar() {
+	if w.parent.options.Windows.DisableMenu {
+		return
+	}
 	if w.menu != nil {
 		w32.SetMenu(w.hwnd, w.menu.menu)
 	}
