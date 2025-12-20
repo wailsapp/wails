@@ -136,7 +136,7 @@ func main() {
 		dialog.AddButton("Not so keen...")
 		dialog.SetDefaultButton(likeIt)
 		// Show() returns the clicked button's label
-		switch dialog.Show() {
+		switch result, _ := dialog.Show(); result {
 		case "I like it!":
 			app.Dialog.Info().SetMessage("Thanks!").Show()
 		case "Not so keen...":
