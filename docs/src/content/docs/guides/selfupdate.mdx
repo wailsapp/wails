@@ -1,0 +1,455 @@
+---
+title: Self-Updating Applications
+description: A guide to implementing automatic updates in Wails v3 applications
+---
+
+# Self-Updating Applications
+
+The selfupdate service provides a simple way to add automatic update functionality to your Wails v3 applications. It supports multiple release sources (GitHub, GitLab, Gitea), cryptographic signature verification, and a themable progress UI.
+
+This guide covers:
+
+1. Basic setup and configuration
+2. Checking for and applying updates
+3. Signing releases for secure updates
+4. Customizing the update UI
+5. Handling update events in the frontend
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+- Wails v3 installed
+- A GitHub, GitLab, or Gitea repository for hosting releases
+- Basic understanding of semantic versioning
+
+## Quick Start
+
+### 1. Add the Service
+
+Import and configure the selfupdate service in your application:
+
+```go
+package main
+
+import (
+    "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/services/selfupdate"
+)
+
+//go:embed assets/*
+var assets embed.FS
+
+// Set at build time: go build -ldflags "-X main.version=1.0.0"
+var version = "0.0.1"
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        Services: []application.Service{
+            application.NewService(selfupdate.NewWithConfig(&selfupdate.Config{
+                CurrentVersion: version,
+                Repository:     "myorg/myapp",
+            })),
+        },
+        Assets: application.AssetOptions{
+            Handler: application.BundledAssetFileServer(assets),
+        },
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "My App v" + version,
+    })
+
+    app.Run()
+}
+```
+
+### 2. Check for Updates from Frontend
+
+Call the service methods from your frontend JavaScript:
+
+```javascript
+// Get the selfupdate service
+const Selfupdate = wails.Service("github.com/wailsapp/wails/v3/services/selfupdate");
+
+// Check for updates
+async function checkForUpdates() {
+    try {
+        const info = await Selfupdate.Check();
+
+        if (info.updateAvailable) {
+            console.log(`Update available: ${info.latestVersion}`);
+            console.log(`Release notes: ${info.releaseNotes}`);
+
+            // Prompt user and apply update
+            if (confirm(`Update to ${info.latestVersion}?`)) {
+                const success = await Selfupdate.DownloadAndInstall();
+                if (success) {
+                    await Selfupdate.Restart();
+                }
+            }
+        } else {
+            console.log("You're running the latest version!");
+        }
+    } catch (err) {
+        console.error("Update check failed:", err);
+    }
+}
+```
+
+## Configuration Options
+
+The `Config` struct supports the following options:
+
+```go
+selfupdate.Config{
+    // Required: Current version of your application
+    CurrentVersion: "1.0.0",
+
+    // Required: Repository in "owner/repo" format
+    Repository: "myorg/myapp",
+
+    // Optional: Update source (default: SourceGitHub)
+    Source: selfupdate.SourceGitHub, // or SourceGitLab, SourceGitea
+
+    // Optional: Base URL for self-hosted instances
+    BaseURL: "https://gitlab.mycompany.com/",
+
+    // Optional: Access token for private repositories
+    Token: os.Getenv("GITHUB_TOKEN"),
+
+    // Optional: Allow pre-release versions
+    AllowPrerelease: false,
+
+    // Optional: Allow downgrading to older versions
+    AllowDowngrade: false,
+
+    // Optional: Signature verification (see below)
+    Signature: &selfupdate.SignatureConfig{...},
+
+    // Optional: UI theming (see below)
+    UI: &selfupdate.UIConfig{...},
+}
+```
+
+### Update Sources
+
+#### GitHub (Default)
+
+```go
+selfupdate.Config{
+    CurrentVersion: version,
+    Source:         selfupdate.SourceGitHub,
+    Repository:     "owner/repo",
+    // Optional: for private repos or higher rate limits
+    Token:          os.Getenv("GITHUB_TOKEN"),
+}
+```
+
+#### GitLab
+
+```go
+selfupdate.Config{
+    CurrentVersion: version,
+    Source:         selfupdate.SourceGitLab,
+    Repository:     "owner/repo",
+    // For self-hosted GitLab:
+    BaseURL:        "https://gitlab.mycompany.com/",
+    Token:          os.Getenv("GITLAB_TOKEN"),
+}
+```
+
+#### Gitea
+
+```go
+selfupdate.Config{
+    CurrentVersion: version,
+    Source:         selfupdate.SourceGitea,
+    Repository:     "owner/repo",
+    BaseURL:        "https://gitea.mycompany.com/", // Required for Gitea
+    Token:          os.Getenv("GITEA_TOKEN"),
+}
+```
+
+## Signing Releases
+
+For production applications, you should sign your releases to ensure users only install authentic updates.
+
+### Generate Signing Keys
+
+Use the Wails CLI to generate an ECDSA key pair:
+
+```bash
+wails3 tool selfupdate keygen -o ./keys
+```
+
+This creates:
+- `keys/update_private.pem` - Keep this secret! Store in CI/CD secrets.
+- `keys/update_public.pem` - Embed this in your application.
+
+### Sign Your Releases
+
+During your build/release process, sign each binary:
+
+```bash
+wails3 tool selfupdate sign -key ./keys/update_private.pem -file ./build/myapp
+```
+
+This creates `myapp.sig` alongside your binary. Upload both files to your release.
+
+### Verify Signatures (Testing)
+
+You can verify signatures locally:
+
+```bash
+wails3 tool selfupdate verify -key ./keys/update_public.pem -file ./build/myapp
+```
+
+### Configure Signature Verification
+
+Embed the public key in your application:
+
+```go
+import _ "embed"
+
+//go:embed keys/update_public.pem
+var publicKey string
+
+func main() {
+    app := application.New(application.Options{
+        Services: []application.Service{
+            application.NewService(selfupdate.NewWithConfig(&selfupdate.Config{
+                CurrentVersion: version,
+                Repository:     "myorg/myapp",
+                Signature: &selfupdate.SignatureConfig{
+                    Type:      selfupdate.SignatureECDSA,
+                    PublicKey: publicKey,
+                },
+            })),
+        },
+    })
+}
+```
+
+### Signature Types
+
+| Type | Description | Use Case |
+|------|-------------|----------|
+| `SignatureChecksum` | SHA256 checksum verification | Basic integrity checking |
+| `SignatureECDSA` | ECDSA digital signatures | Recommended for most apps |
+| `SignaturePGP` | PGP/GPG signatures | When using existing GPG infrastructure |
+
+For checksum verification, create a `checksums.txt` file with your release:
+
+```
+abc123... myapp-linux-amd64
+def456... myapp-darwin-amd64
+789ghi... myapp-windows-amd64.exe
+```
+
+## Theming the Update UI
+
+Customize the update dialog appearance to match your application:
+
+```go
+selfupdate.Config{
+    // ... other config
+    UI: &selfupdate.UIConfig{
+        // Window title
+        Title: "Update Available",
+
+        // Custom icon path
+        IconPath: "/path/to/icon.png",
+
+        // Colors (hex format)
+        BackgroundColor:  "#1a1a2e",
+        TextColor:        "#eaeaea",
+        AccentColor:      "#0f3460",
+        ProgressBarColor: "#e94560",
+        ButtonColor:      "#e94560",
+        ButtonTextColor:  "#ffffff",
+    },
+}
+```
+
+You can retrieve the UI config from the frontend to apply consistent theming:
+
+```javascript
+const uiConfig = await Selfupdate.GetUIConfig();
+if (uiConfig) {
+    document.body.style.backgroundColor = uiConfig.backgroundColor;
+    // Apply other styles...
+}
+```
+
+## Handling Progress Events
+
+The service emits progress events during downloads. Listen for them in your frontend:
+
+```javascript
+// Listen for download progress
+wails.Events.On('selfupdate:progress', (event) => {
+    const progress = event.data;
+
+    switch (progress.state) {
+        case 'started':
+            console.log(`Download started: ${progress.totalBytes} bytes`);
+            break;
+        case 'progress':
+            const percent = progress.percentage.toFixed(1);
+            console.log(`Downloading: ${percent}%`);
+            updateProgressBar(progress.percentage);
+            break;
+        case 'finished':
+            console.log('Download complete!');
+            break;
+    }
+});
+```
+
+The progress event data structure:
+
+```typescript
+interface DownloadProgress {
+    state: 'started' | 'progress' | 'finished';
+    totalBytes: number;
+    downloadedBytes: number;
+    percentage: number; // 0-100
+}
+```
+
+## Service API Reference
+
+### Methods
+
+| Method | Description |
+|--------|-------------|
+| `Check(ctx)` | Check for available updates. Returns `UpdateInfo`. |
+| `DownloadAndInstall(ctx)` | Download and apply the pending update. Returns `true` on success. |
+| `GetCurrentVersion()` | Get the current application version string. |
+| `GetLatestRelease(ctx)` | Get info about the latest release without storing it. |
+| `GetPlatformInfo()` | Get current OS and architecture. |
+| `CanUpdate()` | Check if the app has permission to update itself. |
+| `Restart()` | Restart the application after an update. |
+| `GetUIConfig()` | Get the UI theming configuration. |
+
+### UpdateInfo Structure
+
+```typescript
+interface UpdateInfo {
+    updateAvailable: boolean;
+    currentVersion: string;
+    latestVersion: string;
+    releaseNotes: string;
+    releaseUrl: string;
+    publishedAt: string;
+    assetName: string;
+    assetUrl: string;
+    assetSize: number;
+}
+```
+
+## Release Asset Naming
+
+The selfupdate library automatically detects the correct asset for the user's platform. Name your release assets using this format:
+
+```
+{appname}_{os}_{arch}{extension}
+```
+
+Examples:
+- `myapp_linux_amd64`
+- `myapp_darwin_amd64`
+- `myapp_darwin_arm64`
+- `myapp_windows_amd64.exe`
+
+Supported archive formats: `.zip`, `.tar.gz`, `.tar.xz`, `.tar.bz2`
+
+## CI/CD Integration
+
+### GitHub Actions Example
+
+```yaml
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: wails3 build
+
+      - name: Sign binaries
+        env:
+          SIGNING_KEY: ${{ secrets.UPDATE_PRIVATE_KEY }}
+        run: |
+          echo "$SIGNING_KEY" > /tmp/key.pem
+          wails3 tool selfupdate sign -key /tmp/key.pem -file ./build/myapp
+          rm /tmp/key.pem
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./build/myapp
+            ./build/myapp.sig
+```
+
+## Best Practices
+
+1. **Always sign releases** - Use ECDSA signatures for production apps.
+
+2. **Set version at build time** - Use `-ldflags` to inject the version:
+   ```bash
+   go build -ldflags "-X main.version=1.2.3"
+   ```
+
+3. **Check update permissions** - Call `CanUpdate()` before showing update UI:
+   ```javascript
+   if (await Selfupdate.CanUpdate()) {
+       showUpdateButton();
+   }
+   ```
+
+4. **Handle errors gracefully** - Network issues are common:
+   ```javascript
+   try {
+       await Selfupdate.Check();
+   } catch (err) {
+       // Don't block the app, just log and continue
+       console.warn("Update check failed:", err);
+   }
+   ```
+
+5. **Respect user preferences** - Let users disable auto-update checks.
+
+6. **Test updates thoroughly** - Use a staging repository to test the full update flow before releasing.
+
+## Troubleshooting
+
+### "No release found for this platform"
+
+Ensure your release assets follow the naming convention and include builds for all target platforms.
+
+### "Signature verification failed"
+
+1. Verify you're using the matching public/private key pair
+2. Ensure the `.sig` file was uploaded alongside the binary
+3. Check that the binary wasn't modified after signing
+
+### Updates fail on macOS
+
+macOS app bundles require special handling. The library handles this automatically, but ensure your release contains the full `.app` bundle (usually as a `.zip` archive).
+
+### Updates fail on Windows
+
+On Windows, the executable may be locked while running. The library handles this by using a temporary file and replacing on restart.

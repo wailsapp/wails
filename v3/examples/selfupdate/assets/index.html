@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selfupdate Demo</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #0f3460;
+            --text-primary: #eaeaea;
+            --text-secondary: #a0a0a0;
+            --accent: #e94560;
+            --accent-hover: #ff6b6b;
+            --success: #4ecca3;
+            --warning: #ffc107;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: var(--bg-card);
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--bg-card);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+        }
+
+        .status-dot.checking { background: var(--warning); animation: pulse 1s infinite; }
+        .status-dot.available { background: var(--success); }
+        .status-dot.up-to-date { background: var(--accent); }
+        .status-dot.error { background: #dc3545; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            background: var(--bg-card);
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+        }
+
+        .btn-secondary:hover {
+            background: #1a4a7a;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .info-item {
+            background: var(--bg-card);
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .progress-container {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--bg-card);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .release-notes {
+            background: var(--bg-card);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .release-notes.active {
+            display: block;
+        }
+
+        .platform-info {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .platform-badge {
+            background: var(--bg-card);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .log-container {
+            background: #0d1117;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            max-height: 150px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.75rem;
+        }
+
+        .log-entry {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #21262d;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-time {
+            color: var(--text-secondary);
+            margin-right: 0.5rem;
+        }
+
+        .log-info { color: #58a6ff; }
+        .log-success { color: var(--success); }
+        .log-error { color: #f85149; }
+        .log-warning { color: var(--warning); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Selfupdate Service Demo</h1>
+            <span class="version-badge" id="currentVersion">Loading...</span>
+        </header>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Update Status</h2>
+                <div class="status-indicator">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="statusText">Ready</span>
+                </div>
+            </div>
+
+            <div class="info-grid" id="updateInfo" style="display: none;">
+                <div class="info-item">
+                    <div class="info-label">Current Version</div>
+                    <div class="info-value" id="infoCurrentVersion">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Latest Version</div>
+                    <div class="info-value" id="infoLatestVersion">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Published</div>
+                    <div class="info-value" id="infoPublished">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Asset Size</div>
+                    <div class="info-value" id="infoAssetSize">-</div>
+                </div>
+            </div>
+
+            <div class="release-notes" id="releaseNotes"></div>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">Downloading...</div>
+            </div>
+
+            <div class="button-group" style="margin-top: 1.5rem;">
+                <button class="btn" id="checkBtn" onclick="checkForUpdate()">Check for Updates</button>
+                <button class="btn btn-secondary" id="updateBtn" onclick="performUpdate()" disabled>Download & Install</button>
+                <button class="btn btn-secondary" id="restartBtn" onclick="restart()" style="display: none;">Restart Application</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Platform Info</h2>
+            </div>
+            <div class="platform-info" id="platformInfo">
+                <span class="platform-badge" id="platformOs">-</span>
+                <span class="platform-badge" id="platformArch">-</span>
+                <span class="platform-badge" id="canUpdate">-</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Activity Log</h2>
+            </div>
+            <div class="log-container" id="logContainer"></div>
+        </div>
+    </div>
+
+    <script src="/wails/runtime.js"></script>
+    <script>
+        // Service binding - adjust the path based on your generated bindings
+        const Selfupdate = wails.Service("github.com/wailsapp/wails/v3/services/selfupdate");
+
+        function log(message, type = 'info') {
+            const container = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const time = new Date().toLocaleTimeString();
+            entry.innerHTML = `<span class="log-time">${time}</span><span class="log-${type}">${message}</span>`;
+            container.insertBefore(entry, container.firstChild);
+        }
+
+        function setStatus(status, text) {
+            const dot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            dot.className = 'status-dot ' + status;
+            statusText.textContent = text;
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        }
+
+        async function init() {
+            log('Initializing selfupdate service...', 'info');
+
+            try {
+                // Get current version
+                const version = await Selfupdate.GetCurrentVersion();
+                document.getElementById('currentVersion').textContent = 'v' + version;
+                log('Current version: ' + version, 'success');
+
+                // Get platform info
+                const platform = await Selfupdate.GetPlatformInfo();
+                document.getElementById('platformOs').textContent = 'OS: ' + platform.os;
+                document.getElementById('platformArch').textContent = 'Arch: ' + platform.arch;
+
+                // Check if we can update
+                const canUpdate = await Selfupdate.CanUpdate();
+                document.getElementById('canUpdate').textContent = canUpdate ? 'Can Update' : 'Read-only';
+                log('Platform: ' + platform.os + '/' + platform.arch, 'info');
+
+            } catch (err) {
+                log('Error initializing: ' + err.message, 'error');
+            }
+
+            // Listen for progress events
+            wails.Events.On('selfupdate:progress', (event) => {
+                const progress = event.data;
+                const container = document.getElementById('progressContainer');
+                const fill = document.getElementById('progressFill');
+                const text = document.getElementById('progressText');
+
+                container.classList.add('active');
+
+                if (progress.state === 'started') {
+                    log('Download started: ' + formatBytes(progress.totalBytes), 'info');
+                    fill.style.width = '0%';
+                    text.textContent = 'Starting download...';
+                } else if (progress.state === 'progress') {
+                    const pct = progress.percentage.toFixed(1);
+                    fill.style.width = pct + '%';
+                    text.textContent = `Downloading: ${formatBytes(progress.downloadedBytes)} / ${formatBytes(progress.totalBytes)} (${pct}%)`;
+                } else if (progress.state === 'finished') {
+                    fill.style.width = '100%';
+                    text.textContent = 'Download complete!';
+                    log('Download completed', 'success');
+                }
+            });
+        }
+
+        async function checkForUpdate() {
+            const btn = document.getElementById('checkBtn');
+            btn.disabled = true;
+            setStatus('checking', 'Checking...');
+            log('Checking for updates...', 'info');
+
+            try {
+                const info = await Selfupdate.Check();
+
+                document.getElementById('updateInfo').style.display = 'grid';
+                document.getElementById('infoCurrentVersion').textContent = info.currentVersion;
+                document.getElementById('infoLatestVersion').textContent = info.latestVersion;
+                document.getElementById('infoPublished').textContent = formatDate(info.publishedAt);
+                document.getElementById('infoAssetSize').textContent = formatBytes(info.assetSize);
+
+                if (info.releaseNotes) {
+                    const notes = document.getElementById('releaseNotes');
+                    notes.textContent = info.releaseNotes;
+                    notes.classList.add('active');
+                }
+
+                if (info.updateAvailable) {
+                    setStatus('available', 'Update Available');
+                    document.getElementById('updateBtn').disabled = false;
+                    log('Update available: ' + info.latestVersion, 'success');
+                } else {
+                    setStatus('up-to-date', 'Up to Date');
+                    log('Already running the latest version', 'info');
+                }
+
+            } catch (err) {
+                setStatus('error', 'Error');
+                log('Error checking for updates: ' + err.message, 'error');
+            }
+
+            btn.disabled = false;
+        }
+
+        async function performUpdate() {
+            const checkBtn = document.getElementById('checkBtn');
+            const updateBtn = document.getElementById('updateBtn');
+            const restartBtn = document.getElementById('restartBtn');
+
+            checkBtn.disabled = true;
+            updateBtn.disabled = true;
+            setStatus('checking', 'Updating...');
+            log('Starting update...', 'info');
+
+            try {
+                const success = await Selfupdate.DownloadAndInstall();
+
+                if (success) {
+                    setStatus('available', 'Update Complete');
+                    log('Update installed successfully! Please restart.', 'success');
+                    restartBtn.style.display = 'inline-block';
+                } else {
+                    setStatus('up-to-date', 'No Update');
+                    log('No update was applied', 'warning');
+                }
+
+            } catch (err) {
+                setStatus('error', 'Update Failed');
+                log('Error during update: ' + err.message, 'error');
+                checkBtn.disabled = false;
+            }
+        }
+
+        async function restart() {
+            log('Restarting application...', 'info');
+            try {
+                await Selfupdate.Restart();
+            } catch (err) {
+                log('Error restarting: ' + err.message, 'error');
+            }
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
