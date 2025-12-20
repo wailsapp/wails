@@ -127,7 +127,7 @@ func fetchData(app *application.App, url string) ([]byte, error) {
 
 ## Question dialog
 
-Ask users questions and handle responses. `Show()` returns the clicked button's label:
+Ask users questions and handle responses. `Show()` returns the clicked button's label and an error:
 
 ```go
 dialog := app.Dialog.Question().
@@ -141,8 +141,14 @@ cancel := dialog.AddButton("Cancel")
 dialog.SetDefaultButton(dialog.Buttons[0]) // "Save"
 dialog.SetCancelButton(cancel)
 
-// Show() blocks and returns the clicked button's label
-switch dialog.Show() {
+// Show() blocks and returns the clicked button's label and an error
+result, err := dialog.Show()
+if err != nil {
+    // Handle error (dialog could not be displayed)
+    return
+}
+
+switch result {
 case "Save":
     saveChanges()
     doClose()
@@ -179,8 +185,14 @@ func closeDocument(app *application.App) {
     dialog.SetDefaultButton(save)
     dialog.SetCancelButton(cancel)
 
-    // Show() returns the clicked button's label
-    switch dialog.Show() {
+    // Show() returns the clicked button's label and an error
+    result, err := dialog.Show()
+    if err != nil {
+        // Handle error
+        return
+    }
+
+    switch result {
     case "Save":
         if saveDocument() {
             doClose()
@@ -232,7 +244,7 @@ dialog.Show()
 
 **Multiple buttons (Question):**
 
-Use `AddButton()` to add buttons. `Show()` returns the label of the clicked button:
+Use `AddButton()` to add buttons. `Show()` returns the label of the clicked button and an error:
 
 ```go
 dialog := app.Dialog.Question().
@@ -242,7 +254,13 @@ dialog.AddButton("Option 1")
 dialog.AddButton("Option 2")
 dialog.AddButton("Option 3")
 
-switch dialog.Show() {
+result, err := dialog.Show()
+if err != nil {
+    // Handle error
+    return
+}
+
+switch result {
 case "Option 1":
     handleOption1()
 case "Option 2":
@@ -267,7 +285,13 @@ cancelBtn := dialog.AddButton("Cancel")
 dialog.SetDefaultButton(cancelBtn)  // Safe option as default
 dialog.SetCancelButton(cancelBtn)   // Escape triggers Cancel
 
-if dialog.Show() == "Delete" {
+result, err := dialog.Show()
+if err != nil {
+    // Handle error
+    return
+}
+
+if result == "Delete" {
     performDelete()
 }
 ```
@@ -281,7 +305,8 @@ dialog := app.Dialog.Question().
 dialog.AddButton("Delete")
 dialog.AddButton("Cancel").SetAsDefault().SetAsCancel()
 
-if dialog.Show() == "Delete" {
+result, _ := dialog.Show()
+if result == "Delete" {
     performDelete()
 }
 ```
@@ -343,8 +368,9 @@ func deleteFiles(app *application.App, paths []string) {
     dialog.SetDefaultButton(cancelBtn)
     dialog.SetCancelButton(cancelBtn)
 
-    if dialog.Show() != "Delete" {
-        return // User cancelled
+    result, err := dialog.Show()
+    if err != nil || result != "Delete" {
+        return // Error or user cancelled
     }
 
     // Perform deletion
@@ -382,7 +408,8 @@ func confirmQuit(app *application.App) {
     no := dialog.AddButton("No")
     dialog.SetDefaultButton(no)
 
-    if dialog.Show() == "Yes" {
+    result, _ := dialog.Show()
+    if result == "Yes" {
         app.Quit()
     }
 }
@@ -402,7 +429,8 @@ func showUpdateDialog(app *application.App) {
     dialog.SetDefaultButton(download)
     dialog.SetCancelButton(cancel)
 
-    if dialog.Show() == "📥 Download" {
+    result, _ := dialog.Show()
+    if result == "📥 Download" {
         app.Dialog.Info().SetMessage("Downloading...").Show()
     }
 }
@@ -421,7 +449,8 @@ func showCustomIconQuestion(app *application.App, iconBytes []byte) {
     dialog.AddButton("Not so keen...")
     dialog.SetDefaultButton(likeIt)
 
-    switch dialog.Show() {
+    result, _ := dialog.Show()
+    switch result {
     case "I like it!":
         app.Dialog.Info().SetMessage("Thanks!").Show()
     case "Not so keen...":

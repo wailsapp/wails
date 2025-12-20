@@ -27,7 +27,7 @@ type linuxDialog struct {
 	dialog *MessageDialog
 }
 
-func (m *linuxDialog) show() string {
+func (m *linuxDialog) show() (string, error) {
 	windowId := getNativeApplication().getCurrentWindowID()
 	window, _ := globalApplication.Window.GetByID(windowId)
 	var parent uintptr
@@ -58,7 +58,7 @@ func (m *linuxDialog) show() string {
 	})
 
 	// Wait for and return the result
-	return <-resultChan
+	return <-resultChan, nil
 }
 
 func newDialogImpl(d *MessageDialog) *linuxDialog {

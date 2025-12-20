@@ -30,7 +30,7 @@ type windowsDialog struct {
 	UseAppIcon bool
 }
 
-func (m *windowsDialog) show() string {
+func (m *windowsDialog) show() (string, error) {
 
 	title := w32.MustStringToUTF16Ptr(m.dialog.Title)
 	message := w32.MustStringToUTF16Ptr(m.dialog.Message)
@@ -50,12 +50,12 @@ func (m *windowsDialog) show() string {
 		// 3 is the application icon
 		button, err = w32.MessageBoxWithIcon(parentWindow, message, title, 3, windows.MB_OK|windows.MB_USERICON)
 		if err != nil {
-			globalApplication.handleFatalError(err)
+			return "", err
 		}
 	} else {
 		button, err = windows.MessageBox(windows.HWND(parentWindow), message, title, flags|windows.MB_SYSTEMMODAL)
 		if err != nil {
-			globalApplication.handleFatalError(err)
+			return "", err
 		}
 	}
 	// This maps MessageBox return values to strings
@@ -72,7 +72,7 @@ func (m *windowsDialog) show() string {
 			}
 		}
 	}
-	return result
+	return result, nil
 }
 
 func newDialogImpl(d *MessageDialog) *windowsDialog {

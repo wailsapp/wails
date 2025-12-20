@@ -371,7 +371,7 @@ type macosDialog struct {
 	nsDialog unsafe.Pointer
 }
 
-func (m *macosDialog) show() string {
+func (m *macosDialog) show() (string, error) {
 	// Channel to receive the result
 	resultChan := make(chan string, 1)
 
@@ -449,7 +449,7 @@ func (m *macosDialog) show() string {
 	})
 
 	// Wait for and return the result
-	return <-resultChan
+	return <-resultChan, nil
 }
 
 func newDialogImpl(d *MessageDialog) *macosDialog {
