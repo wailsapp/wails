@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add `MessageDialog.WithButton()` method for builder pattern chaining when adding buttons without configuration (#4792)
 
 ## Changed
 <!-- Changes in existing functionality -->

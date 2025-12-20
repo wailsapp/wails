@@ -244,17 +244,17 @@ dialog.Show()
 
 **Multiple buttons (Question):**
 
-Use `AddButton()` to add buttons. `Show()` returns the label of the clicked button and an error:
+Use `WithButton()` for simple button additions with chaining, or `AddButton()` when you need to configure the button.
+`Show()` returns the label of the clicked button and an error:
 
 ```go
-dialog := app.Dialog.Question().
-    SetMessage("Choose an action")
-
-dialog.AddButton("Option 1")
-dialog.AddButton("Option 2")
-dialog.AddButton("Option 3")
-
-result, err := dialog.Show()
+// Using WithButton() for simple chaining
+result, err := app.Dialog.Question().
+    SetMessage("Choose an action").
+    WithButton("Option 1").
+    WithButton("Option 2").
+    WithButton("Option 3").
+    Show()
 if err != nil {
     // Handle error
     return
@@ -268,6 +268,20 @@ case "Option 2":
 case "Option 3":
     handleOption3()
 }
+```
+
+Use `AddButton()` when you need to configure buttons (returns `*Button` for further configuration):
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Choose an action")
+
+dialog.AddButton("Option 1").SetAsDefault()
+dialog.AddButton("Option 2")
+dialog.AddButton("Option 3").SetAsCancel()
+
+result, err := dialog.Show()
+// ...
 ```
 
 **Default and Cancel buttons:**

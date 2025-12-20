@@ -122,12 +122,21 @@ func (d *MessageDialog) SetIcon(icon []byte) *MessageDialog {
 	return d
 }
 
+// AddButton adds a button with the given label and returns the Button for further configuration.
+// Use this when you need to configure the button (e.g., SetAsDefault, SetAsCancel, OnClick).
 func (d *MessageDialog) AddButton(s string) *Button {
 	result := &Button{
 		Label: s,
 	}
 	d.Buttons = append(d.Buttons, result)
 	return result
+}
+
+// WithButton adds a button with the given label and returns the MessageDialog for chaining.
+// Use this for simple button additions when no button configuration is needed.
+func (d *MessageDialog) WithButton(s string) *MessageDialog {
+	d.Buttons = append(d.Buttons, &Button{Label: s})
+	return d
 }
 
 func (d *MessageDialog) AddButtons(buttons []*Button) *MessageDialog {
