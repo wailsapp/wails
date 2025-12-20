@@ -21,7 +21,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
-- **BREAKING**: `MessageDialog.Show()` now returns `(string, error)` - the clicked button's label and an error if the dialog could not be displayed. This enables synchronous dialog workflows and proper error handling (#4792)
+- **BREAKING**: `MessageDialog.Show()` now returns `(string, error)` - the clicked button's label and an error if the dialog could not be displayed. This enables synchronous dialog workflows and proper error handling (#4792) by @leaanthony
+- Update the documentation for Window `X/Y` options @ruhuang2001
 
 ## Fixed
 <!-- Bug fixes -->
