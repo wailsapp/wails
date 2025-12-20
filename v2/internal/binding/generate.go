@@ -252,6 +252,8 @@ func goTypeToJSDocType(goType string) string {
 	}
 
 	// Generic type pattern (legacy underscore flattening)
+	// Note: This pattern matches the innermost brackets for nested generics.
+	// Nested generics like Outer[Inner[T]] are not currently supported.
 	if matches := genericTypePattern.FindStringSubmatch(goType); len(matches) == 3 {
 		base := matches[1]
 		inner := jsVariableUnsafeChars.ReplaceAllLiteralString(matches[2], "_")
