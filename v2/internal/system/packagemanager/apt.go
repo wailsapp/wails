@@ -35,6 +35,7 @@ func (a *Apt) Packages() packagemap {
 			{Name: "libgtk-3-dev", SystemPackage: true, Library: true},
 		},
 		"libwebkit": []*Package{
+			{Name: "libwebkit2gtk-4.1-dev", SystemPackage: true, Library: true},
 			{Name: "libwebkit2gtk-4.0-dev", SystemPackage: true, Library: true},
 		},
 		"gcc": []*Package{
