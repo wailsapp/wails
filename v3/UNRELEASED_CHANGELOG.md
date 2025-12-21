@@ -20,7 +20,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Update the documentation for Window `X/Y` options @ruhuang2001
 
 ## Fixed
 <!-- Bug fixes -->
