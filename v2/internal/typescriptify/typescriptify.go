@@ -2,6 +2,7 @@ package typescriptify
 
 import (
 	"bufio"
+	"cmp"
 	"fmt"
 	"io"
 	"log"
@@ -9,6 +10,7 @@ import (
 	"path"
 	"reflect"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -372,6 +374,9 @@ func (t *TypeScriptify) AddEnum(values interface{}) *TypeScriptify {
 
 		elements = append(elements, el)
 	}
+	slices.SortFunc(elements, func(a, b enumElement) int {
+		return cmp.Compare(a.name, b.name)
+	})
 	ty := reflect.TypeOf(elements[0].value)
 	t.enums[ty] = elements
 	t.enumTypes = append(t.enumTypes, EnumType{Type: ty})
@@ -514,9 +519,6 @@ func (t TypeScriptify) ConvertToFile(fileName string, packageName string) error 
 		return err
 	}
 	if _, err := f.WriteString(converted); err != nil {
-		return err
-	}
-	if err != nil {
 		return err
 	}
 
