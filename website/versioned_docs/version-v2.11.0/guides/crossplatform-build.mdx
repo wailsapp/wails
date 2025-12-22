@@ -1,0 +1,65 @@
+# Crossplatform build with Github Actions
+
+To build a Wails project for all the available platforms, you need to create an application build for each operating system. One effective method to achieve this is by utilizing GitHub Actions.
+
+An action that facilitates building a Wails app is available at:
+https://github.com/dAppServer/wails-build-action
+
+In case the existing action doesn't fulfill your requirements, you can select only the necessary steps from the source:
+https://github.com/dAppServer/wails-build-action/blob/main/action.yml
+
+Below is a comprehensive example that demonstrates building an app upon the creation of a new Git tag and subsequently uploading it to the Actions artifacts:
+
+```yaml
+name: Wails build
+
+on:
+  push:
+    tags:
+    # Match any new tag
+      - '*'
+
+env:
+  # Necessary for most environments as build failure can occur due to OOM issues
+  NODE_OPTIONS: "--max-old-space-size=4096"
+
+jobs:
+  build:
+    strategy:
+    # Failure in one platform build won't impact the others
+      fail-fast: false
+      matrix:
+        build:
+          - name: 'App'
+            platform:  'linux/amd64'
+            os: 'ubuntu-latest'
+          - name: 'App'
+            platform:  'windows/amd64'
+            os: 'windows-latest'
+          - name: 'App'
+            platform:  'darwin/universal'
+            os: 'macos-latest'
+
+    runs-on: ${{ matrix.build.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Build wails
+        uses: dAppServer/wails-build-action@v2.2
+        id: build
+        with:
+          build-name: ${{ matrix.build.name }}
+          build-platform: ${{ matrix.build.platform }}
+          package: false
+          go-version: '1.20'
+```
+
+This example offers opportunities for various enhancements, including:
+- Caching dependencies
+- Code signing
+- Uploading to platforms like S3, Supabase, etc.
+- Injecting secrets as environment variables
+- Utilizing environment variables as build variables (such as version variable extracted from the current Git tag)
