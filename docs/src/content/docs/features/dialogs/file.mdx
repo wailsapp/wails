@@ -148,16 +148,15 @@ if _, err := os.Stat(path); err == nil {
         SetTitle("Confirm Overwrite").
         SetMessage("File already exists. Overwrite?")
 
-    overwriteBtn := dialog.AddButton("Overwrite")
-    overwriteBtn.OnClick(func() {
-        saveFile(path, data)
-    })
+    dialog.Buttons(
+		application.Button{Label: "Overwrite"},
+		application.Button{Label: "Cancel", IsDefault: true, IsCancel: true},
+	)
 
-    cancelBtn := dialog.AddButton("Cancel")
-    dialog.SetDefaultButton(cancelBtn)
-    dialog.SetCancelButton(cancelBtn)
-    dialog.Show()
-    return
+	result, err := dialog.Result()
+	if err != nil || result != "Overwrite" {
+		return
+	}
 }
 
 saveFile(path, data)
@@ -263,10 +262,10 @@ func openImage(app *application.App) (image.Image, error) {
 
     img, _, err := image.Decode(file)
     if err != nil {
-        app.Dialog.Error().
-            SetTitle("Invalid Image").
-            SetMessage("Could not decode image file.").
-            Show()
+		_ = app.Dialog.Error().
+			SetTitle("Invalid Image").
+			SetMessage("Could not decode image file.").
+			Show()
         return nil, err
     }
 
@@ -296,16 +295,15 @@ func saveDocument(app *application.App, content string) {
             SetTitle("Confirm Extension").
             SetMessage(fmt.Sprintf("Save as %s file?", ext))
 
-        saveBtn := dialog.AddButton("Save")
-        saveBtn.OnClick(func() {
-            doSave(app, path, content)
-        })
+        dialog.Buttons(
+			application.Button{Label: "Save"},
+			application.Button{Label: "Cancel", IsDefault: true, IsCancel: true},
+		)
 
-        cancelBtn := dialog.AddButton("Cancel")
-        dialog.SetDefaultButton(cancelBtn)
-        dialog.SetCancelButton(cancelBtn)
-        dialog.Show()
-        return
+		result, err := dialog.Result()
+		if err != nil || result != "Save" {
+			return
+		}
     }
 
     doSave(app, path, content)
@@ -313,17 +311,17 @@ func saveDocument(app *application.App, content string) {
 
 func doSave(app *application.App, path, content string) {
     if err := os.WriteFile(path, []byte(content), 0644); err != nil {
-        app.Dialog.Error().
-            SetTitle("Save Failed").
-            SetMessage(err.Error()).
-            Show()
+		_ = app.Dialog.Error().
+			SetTitle("Save Failed").
+			SetMessage(err.Error()).
+			Show()
         return
     }
 
-    app.Dialog.Info().
-        SetTitle("Saved").
-        SetMessage("Document saved successfully!").
-        Show()
+	_ = app.Dialog.Info().
+		SetTitle("Saved").
+		SetMessage("Document saved successfully!").
+		Show()
 }
 ```
 
@@ -345,41 +343,44 @@ func processMultipleFiles(app *application.App) {
         SetTitle("Confirm Processing").
         SetMessage(fmt.Sprintf("Process %d file(s)?", len(paths)))
 
-    processBtn := dialog.AddButton("Process")
-    processBtn.OnClick(func() {
-        // Process files
-        var errs []error
-        for i, path := range paths {
-            if err := processFile(path); err != nil {
-                errs = append(errs, err)
-            }
+    dialog.Buttons(
+		application.Button{Label: "Process"},
+		application.Button{Label: "Cancel", IsDefault: true, IsCancel: true},
+	)
 
-            // Update progress
-            // app.Event.Emit("progress", map[string]interface{}{
-            //     "current": i + 1,
-            //     "total":   len(paths),
-            // })
-            _ = i // suppress unused variable warning in example
+    result, err := dialog.Result()
+    if err != nil || result != "Process" {
+        return
+    }
+
+    // Process files
+    var errs []error
+    for i, path := range paths {
+        if err := processFile(path); err != nil {
+            errs = append(errs, err)
         }
 
-        // Show results
-        if len(errs) > 0 {
-            app.Dialog.Warning().
-                SetTitle("Processing Complete").
-                SetMessage(fmt.Sprintf("Processed %d files with %d errors.",
-                    len(paths), len(errs))).
-                Show()
-        } else {
-            app.Dialog.Info().
-                SetTitle("Success").
-                SetMessage(fmt.Sprintf("Processed %d files successfully!", len(paths))).
-                Show()
-        }
-    })
+        // Update progress
+        // app.Event.Emit("progress", map[string]interface{}{
+        //     "current": i + 1,
+        //     "total":   len(paths),
+        // })
+        _ = i // suppress unused variable warning in example
+    }
 
-    cancelBtn := dialog.AddButton("Cancel")
-    dialog.SetCancelButton(cancelBtn)
-    dialog.Show()
+    // Show results
+    if len(errs) > 0 {
+		_ = app.Dialog.Warning().
+			SetTitle("Processing Complete").
+			SetMessage(fmt.Sprintf("Processed %d files with %d errors.",
+				len(paths), len(errs))).
+			Show()
+    } else {
+		_ = app.Dialog.Info().
+			SetTitle("Success").
+			SetMessage(fmt.Sprintf("Processed %d files successfully!", len(paths))).
+			Show()
+    }
 }
 ```
 
@@ -406,10 +407,10 @@ func exportData(app *application.App, data []byte) {
 
     // Save file
     if err := os.WriteFile(path, data, 0644); err != nil {
-        app.Dialog.Error().
-            SetTitle("Export Failed").
-            SetMessage(err.Error()).
-            Show()
+		_ = app.Dialog.Error().
+			SetTitle("Export Failed").
+			SetMessage(err.Error()).
+			Show()
         return
     }
 
@@ -418,13 +419,15 @@ func exportData(app *application.App, data []byte) {
         SetTitle("Export Complete").
         SetMessage(fmt.Sprintf("Exported to %s", filename))
 
-    openBtn := dialog.AddButton("Open Folder")
-    openBtn.OnClick(func() {
-        openFolder(folder)
-    })
+    dialog.Buttons(
+		application.Button{Label: "Open Folder"},
+		application.Button{Label: "OK", IsDefault: true, IsCancel: true},
+	)
 
-    dialog.AddButton("OK")
-    dialog.Show()
+    result, _ := dialog.Result()
+    if result == "Open Folder" {
+		openFolder(folder)
+    }
 }
 ```
 
@@ -445,20 +448,20 @@ func importConfiguration(app *application.App) {
     // Read file
     data, err := os.ReadFile(path)
     if err != nil {
-        app.Dialog.Error().
-            SetTitle("Read Failed").
-            SetMessage(err.Error()).
-            Show()
+		_ = app.Dialog.Error().
+			SetTitle("Read Failed").
+			SetMessage(err.Error()).
+			Show()
         return
     }
 
     // Validate configuration
     config, err := parseConfig(data)
     if err != nil {
-        app.Dialog.Error().
-            SetTitle("Invalid Configuration").
-            SetMessage("File is not a valid configuration.").
-            Show()
+		_ = app.Dialog.Error().
+			SetTitle("Invalid Configuration").
+			SetMessage("File is not a valid configuration.").
+			Show()
         return
     }
 
@@ -467,26 +470,29 @@ func importConfiguration(app *application.App) {
         SetTitle("Confirm Import").
         SetMessage("Import this configuration?")
 
-    importBtn := dialog.AddButton("Import")
-    importBtn.OnClick(func() {
-        // Apply configuration
-        if err := applyConfig(config); err != nil {
-            app.Dialog.Error().
-                SetTitle("Import Failed").
-                SetMessage(err.Error()).
-                Show()
-            return
-        }
+    dialog.Buttons(
+		application.Button{Label: "Import"},
+		application.Button{Label: "Cancel", IsDefault: true, IsCancel: true},
+	)
 
-        app.Dialog.Info().
-            SetTitle("Success").
-            SetMessage("Configuration imported successfully!").
-            Show()
-    })
+    result, err := dialog.Result()
+    if err != nil || result != "Import" {
+        return
+    }
 
-    cancelBtn := dialog.AddButton("Cancel")
-    dialog.SetCancelButton(cancelBtn)
-    dialog.Show()
+    // Apply configuration
+    if err := applyConfig(config); err != nil {
+		_ = app.Dialog.Error().
+			SetTitle("Import Failed").
+			SetMessage(err.Error()).
+			Show()
+        return
+    }
+
+    _ = app.Dialog.Info().
+        SetTitle("Success").
+        SetMessage("Configuration imported successfully!").
+        Show()
 }
 ```
 
