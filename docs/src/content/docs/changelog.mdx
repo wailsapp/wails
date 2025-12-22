@@ -43,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Changed
 - Update the documentation page for Wails v3 Asset Server by @ndianabasi
 - **BREAKING**: Remove package-level dialog functions (`application.InfoDialog()`, `application.QuestionDialog()`, etc.). Use the `app.Dialog` manager instead: `app.Dialog.Info()`, `app.Dialog.Question()`, `app.Dialog.Warning()`, `app.Dialog.Error()`, `app.Dialog.OpenFile()`, `app.Dialog.SaveFile()`
-- Update dialogs documentation to match actual API: use `app.Dialog.*`, `AddButton()` with callbacks (not `SetButtons()`), `SetDefaultButton(*Button)` (not string), `AddFilter()` (not `SetFilters()`), `SetFilename()` (not `SetDefaultFilename()`), and `app.Dialog.OpenFile().CanChooseDirectories(true)` for folder selection
+- Update dialogs documentation to match actual API: use `app.Dialog.*`, `Buttons(...)`, `Show() error` (non-blocking), `Result() (string, error)` (blocking), `AddFilter()`, `SetFilename()`, and `app.Dialog.OpenFile().CanChooseDirectories(true)` for folder selection
 
 ## Fixed
 - Fix crash on macOS when toggling window visibility via Hide()/Show() with ApplicationShouldTerminateAfterLastWindowClosed enabled (#4389) by @leaanthony

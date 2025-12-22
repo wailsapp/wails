@@ -29,7 +29,8 @@ All methods return a `*MessageDialog` that can be configured using method chaini
 Display informational messages:
 
 ```go
-app.Dialog.Info().
+
+_ = app.Dialog.Info().
     SetTitle("Success").
     SetMessage("File saved successfully!").
     Show()
@@ -49,10 +50,10 @@ func saveFile(app *application.App, path string, data []byte) error {
         return err
     }
 
-    app.Dialog.Info().
-        SetTitle("File Saved").
-        SetMessage(fmt.Sprintf("Saved to %s", filepath.Base(path))).
-        Show()
+	_ = app.Dialog.Info().
+		SetTitle("File Saved").
+		SetMessage(fmt.Sprintf("Saved to %s", filepath.Base(path))).
+		Show()
 
     return nil
 }
@@ -63,7 +64,8 @@ func saveFile(app *application.App, path string, data []byte) error {
 Show warnings:
 
 ```go
-app.Dialog.Warning().
+
+_ = app.Dialog.Warning().
     SetTitle("Warning").
     SetMessage("This action cannot be undone.").
     Show()
@@ -82,10 +84,10 @@ func checkDiskSpace(app *application.App) {
     available := getDiskSpace()
 
     if available < 100*1024*1024 { // Less than 100MB
-        app.Dialog.Warning().
-            SetTitle("Low Disk Space").
-            SetMessage(fmt.Sprintf("Only %d MB available.", available/(1024*1024))).
-            Show()
+		_ = app.Dialog.Warning().
+			SetTitle("Low Disk Space").
+			SetMessage(fmt.Sprintf("Only %d MB available.", available/(1024*1024))).
+			Show()
     }
 }
 ```
@@ -95,7 +97,8 @@ func checkDiskSpace(app *application.App) {
 Display errors:
 
 ```go
-app.Dialog.Error().
+
+_ = app.Dialog.Error().
     SetTitle("Error").
     SetMessage("Failed to connect to server.").
     Show()
@@ -113,10 +116,10 @@ app.Dialog.Error().
 func fetchData(app *application.App, url string) ([]byte, error) {
     resp, err := http.Get(url)
     if err != nil {
-        app.Dialog.Error().
-            SetTitle("Network Error").
-            SetMessage(fmt.Sprintf("Failed to connect: %v", err)).
-            Show()
+		_ = app.Dialog.Error().
+			SetTitle("Network Error").
+			SetMessage(fmt.Sprintf("Failed to connect: %v", err)).
+			Show()
         return nil, err
     }
     defer resp.Body.Close()
@@ -127,22 +130,21 @@ func fetchData(app *application.App, url string) ([]byte, error) {
 
 ## Question dialog
 
-Ask users questions and handle responses. `Show()` returns the clicked button's label and an error:
+Ask users questions and handle responses. `Show()` is non-blocking and returns an error if the dialog could not be displayed. Use `Result()` to block and retrieve the clicked button's label:
 
 ```go
 dialog := app.Dialog.Question().
     SetTitle("Confirm").
     SetMessage("Save changes before closing?")
 
-dialog.AddButton("Save")
-dialog.AddButton("Don't Save")
-cancel := dialog.AddButton("Cancel")
+dialog.Buttons(
+	application.Button{Label: "Save", IsDefault: true},
+	application.Button{Label: "Don't Save"},
+	application.Button{Label: "Cancel", IsCancel: true},
+)
 
-dialog.SetDefaultButton(dialog.Buttons[0]) // "Save"
-dialog.SetCancelButton(cancel)
-
-// Show() blocks and returns the clicked button's label and an error
-result, err := dialog.Show()
+// Result() blocks and returns the clicked button's label and an error
+result, err := dialog.Result()
 if err != nil {
     // Handle error (dialog could not be displayed)
     return
@@ -178,15 +180,14 @@ func closeDocument(app *application.App) {
         SetTitle("Unsaved Changes").
         SetMessage("Do you want to save your changes?")
 
-    save := dialog.AddButton("Save")
-    dialog.AddButton("Don't Save")
-    cancel := dialog.AddButton("Cancel")
+    dialog.Buttons(
+		application.Button{Label: "Save", IsDefault: true},
+		application.Button{Label: "Don't Save"},
+		application.Button{Label: "Cancel", IsCancel: true},
+	)
 
-    dialog.SetDefaultButton(save)
-    dialog.SetCancelButton(cancel)
-
-    // Show() returns the clicked button's label and an error
-    result, err := dialog.Show()
+    // Result() returns the clicked button's label and an error
+    result, err := dialog.Result()
     if err != nil {
         // Handle error
         return
@@ -237,24 +238,27 @@ You can also add custom buttons:
 ```go
 dialog := app.Dialog.Info().
     SetMessage("Done!")
-ok := dialog.AddButton("Got it!")
-dialog.SetDefaultButton(ok)
-dialog.Show()
+
+dialog.Buttons(
+	application.Button{Label: "Got it!", IsDefault: true, IsCancel: true},
+)
+
+_ = dialog.Show()
 ```
 
 **Multiple buttons (Question):**
 
-Use `WithButton()` for simple button additions with chaining, or `AddButton()` when you need to configure the button.
-`Show()` returns the label of the clicked button and an error:
+Use `Buttons(...)` to define buttons. Use `Result()` to block and retrieve the clicked button's label:
 
 ```go
-// Using WithButton() for simple chaining
 result, err := app.Dialog.Question().
     SetMessage("Choose an action").
-    WithButton("Option 1").
-    WithButton("Option 2").
-    WithButton("Option 3").
-    Show()
+    Buttons(
+		application.Button{Label: "Option 1"},
+		application.Button{Label: "Option 2"},
+		application.Button{Label: "Option 3"},
+	).
+    Result()
 if err != nil {
     // Handle error
     return
@@ -270,36 +274,36 @@ case "Option 3":
 }
 ```
 
-Use `AddButton()` when you need to configure buttons (returns `*Button` for further configuration):
+You can configure default/cancel buttons inline:
 
 ```go
 dialog := app.Dialog.Question().
     SetMessage("Choose an action")
 
-dialog.AddButton("Option 1").SetAsDefault()
-dialog.AddButton("Option 2")
-dialog.AddButton("Option 3").SetAsCancel()
+dialog.Buttons(
+	application.Button{Label: "Option 1", IsDefault: true},
+	application.Button{Label: "Option 2"},
+	application.Button{Label: "Option 3", IsCancel: true},
+)
 
-result, err := dialog.Show()
+result, err := dialog.Result()
 // ...
 ```
 
 **Default and Cancel buttons:**
 
-There are multiple ways to configure default and cancel buttons:
-
-**1. Fluent API with `WithDefaultButton()` and `WithCancelButton()` (recommended for simple dialogs):**
-
-These methods add a button and mark it as default/cancel in a single call, perfect for method chaining:
+Use `IsDefault` and `IsCancel` to configure default/cancel behavior:
 
 ```go
 result, err := app.Dialog.Question().
     SetTitle("Save Changes?").
     SetMessage("You have unsaved changes.").
-    WithDefaultButton("Save").       // Enter triggers this
-    WithButton("Don't Save").
-    WithCancelButton("Cancel").      // Escape triggers this
-    Show()
+    Buttons(
+		application.Button{Label: "Save", IsDefault: true},
+		application.Button{Label: "Don't Save"},
+		application.Button{Label: "Cancel", IsCancel: true},
+	).
+    Result()
 
 switch result {
 case "Save":
@@ -311,41 +315,28 @@ case "Cancel":
 }
 ```
 
-**2. Using `SetDefaultButton()` and `SetCancelButton()` on the dialog:**
+**2. Using `Default()` and `Cancel()` on the dialog:**
 
-Use these when you need a reference to the button for other purposes:
+Use these when you want to set default/cancel behavior by button label:
 
 ```go
 dialog := app.Dialog.Question().
     SetMessage("Delete file?")
 
-dialog.AddButton("Delete")
-cancelBtn := dialog.AddButton("Cancel")
+dialog.Buttons(
+	application.Button{Label: "Delete"},
+	application.Button{Label: "Cancel"},
+)
 
-dialog.SetDefaultButton(cancelBtn)  // Safe option as default
-dialog.SetCancelButton(cancelBtn)   // Escape triggers Cancel
+dialog.Default("Cancel")
+dialog.Cancel("Cancel")
 
-result, err := dialog.Show()
+result, err := dialog.Result()
 if err != nil {
     // Handle error
     return
 }
 
-if result == "Delete" {
-    performDelete()
-}
-```
-
-**3. Using `SetAsDefault()` and `SetAsCancel()` on individual buttons:**
-
-```go
-dialog := app.Dialog.Question().
-    SetMessage("Delete file?")
-
-dialog.AddButton("Delete")
-dialog.AddButton("Cancel").SetAsDefault().SetAsCancel()
-
-result, _ := dialog.Show()
 if result == "Delete" {
     performDelete()
 }
@@ -366,7 +357,7 @@ app.Dialog.Info().
     SetTitle("Custom Icon Example").
     SetMessage("Using a custom icon").
     SetIcon(myIconBytes).
-    Show()
+	Show()
 ```
 
 ### Window Attachment
@@ -378,8 +369,11 @@ dialog := app.Dialog.Question().
     SetMessage("Window-specific question").
     AttachToWindow(window)
 
-dialog.AddButton("OK")
-dialog.Show()
+dialog.Buttons(
+	application.Button{Label: "OK", IsDefault: true, IsCancel: true},
+)
+
+_ = dialog.Show()
 ```
 
 **Benefits:**
@@ -403,12 +397,12 @@ func deleteFiles(app *application.App, paths []string) {
         SetTitle("Confirm Delete").
         SetMessage(message)
 
-    dialog.AddButton("Delete")
-    cancelBtn := dialog.AddButton("Cancel")
-    dialog.SetDefaultButton(cancelBtn)
-    dialog.SetCancelButton(cancelBtn)
+    dialog.Buttons(
+		application.Button{Label: "Delete"},
+		application.Button{Label: "Cancel", IsDefault: true, IsCancel: true},
+	)
 
-    result, err := dialog.Show()
+    result, err := dialog.Result()
     if err != nil || result != "Delete" {
         return // Error or user cancelled
     }
@@ -423,15 +417,15 @@ func deleteFiles(app *application.App, paths []string) {
 
     // Show result
     if len(errs) > 0 {
-        app.Dialog.Error().
-            SetTitle("Delete Failed").
-            SetMessage(fmt.Sprintf("Failed to delete %d file(s)", len(errs))).
-            Show()
+		_ = app.Dialog.Error().
+			SetTitle("Delete Failed").
+			SetMessage(fmt.Sprintf("Failed to delete %d file(s)", len(errs))).
+			Show()
     } else {
-        app.Dialog.Info().
-            SetTitle("Delete Complete").
-            SetMessage(fmt.Sprintf("Deleted %d file(s)", len(paths))).
-            Show()
+		_ = app.Dialog.Info().
+			SetTitle("Delete Complete").
+			SetMessage(fmt.Sprintf("Deleted %d file(s)", len(paths))).
+			Show()
     }
 }
 ```
@@ -444,11 +438,12 @@ func confirmQuit(app *application.App) {
         SetTitle("Quit").
         SetMessage("You have unsaved work. Are you sure you want to quit?")
 
-    dialog.AddButton("Yes")
-    no := dialog.AddButton("No")
-    dialog.SetDefaultButton(no)
+    dialog.Buttons(
+		application.Button{Label: "Yes"},
+		application.Button{Label: "No", IsDefault: true, IsCancel: true},
+	)
 
-    result, _ := dialog.Show()
+    result, _ := dialog.Result()
     if result == "Yes" {
         app.Quit()
     }
@@ -463,32 +458,31 @@ func showUpdateDialog(app *application.App) {
         SetTitle("Update").
         SetMessage("A new version is available. The cancel button is selected when pressing escape.")
 
-    download := dialog.AddButton("📥 Download")
-    cancel := dialog.AddButton("Cancel")
+    dialog.Buttons(
+		application.Button{Label: "📥 Download", IsDefault: true},
+		application.Button{Label: "Cancel", IsCancel: true},
+	)
 
-    dialog.SetDefaultButton(download)
-    dialog.SetCancelButton(cancel)
-
-    result, _ := dialog.Show()
+    result, _ := dialog.Result()
     if result == "📥 Download" {
-        app.Dialog.Info().SetMessage("Downloading...").Show()
+		_ = app.Dialog.Info().SetMessage("Downloading...").Show()
     }
 }
 ```
 
-### Save Changes Dialog (Fluent API)
-
-Using the fluent `WithDefaultButton()` and `WithCancelButton()` methods for a clean, chainable API:
+### Save Changes Dialog
 
 ```go
 func promptSaveChanges(app *application.App) string {
     result, _ := app.Dialog.Question().
         SetTitle("Save Changes?").
         SetMessage("You have unsaved changes. What would you like to do?").
-        WithDefaultButton("Save").
-        WithButton("Don't Save").
-        WithCancelButton("Cancel").
-        Show()
+		Buttons(
+			application.Button{Label: "Save", IsDefault: true},
+			application.Button{Label: "Don't Save"},
+			application.Button{Label: "Cancel", IsCancel: true},
+		).
+		Result()
 
     switch result {
     case "Save":
@@ -511,16 +505,17 @@ func showCustomIconQuestion(app *application.App, iconBytes []byte) {
         SetMessage("Using a custom icon").
         SetIcon(iconBytes)
 
-    likeIt := dialog.AddButton("I like it!")
-    dialog.AddButton("Not so keen...")
-    dialog.SetDefaultButton(likeIt)
+    dialog.Buttons(
+		application.Button{Label: "I like it!", IsDefault: true},
+		application.Button{Label: "Not so keen..."},
+	)
 
-    result, _ := dialog.Show()
+    result, _ := dialog.Result()
     switch result {
     case "I like it!":
-        app.Dialog.Info().SetMessage("Thanks!").Show()
+        _ = app.Dialog.Info().SetMessage("Thanks!").Show()
     case "Not so keen...":
-        app.Dialog.Info().SetMessage("Too bad!").Show()
+		_ = app.Dialog.Info().SetMessage("Too bad!").Show()
     }
 }
 
