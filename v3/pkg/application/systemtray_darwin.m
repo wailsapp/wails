@@ -5,6 +5,8 @@
 #include "systemtray_darwin.h"
 
 extern void systrayClickCallback(long, int);
+extern void systrayMenuOpenCallback(long);
+extern void systrayMenuCloseCallback(long);
 
 // StatusItemController.m
 @implementation StatusItemController
@@ -26,7 +28,11 @@ extern void systrayClickCallback(long, int);
 }
 
 - (void)menuWillOpen:(NSMenu *)menu {
-    // Called when menu is about to open - good hook point for updates
+    systrayMenuOpenCallback(self.trayID);
+}
+
+- (void)menuDidClose:(NSMenu *)menu {
+    systrayMenuCloseCallback(self.trayID);
 }
 
 @end

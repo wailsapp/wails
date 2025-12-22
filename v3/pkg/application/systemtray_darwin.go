@@ -94,6 +94,28 @@ func systrayClickCallback(id C.long, buttonID C.int) {
 	systemTray.processClick(button(buttonID))
 }
 
+//export systrayMenuOpenCallback
+func systrayMenuOpenCallback(id C.long) {
+	systemTray := systemTrayMap[uint(id)]
+	if systemTray == nil {
+		return
+	}
+	if systemTray.parent.onMenuOpen != nil {
+		systemTray.parent.onMenuOpen()
+	}
+}
+
+//export systrayMenuCloseCallback
+func systrayMenuCloseCallback(id C.long) {
+	systemTray := systemTrayMap[uint(id)]
+	if systemTray == nil {
+		return
+	}
+	if systemTray.parent.onMenuClose != nil {
+		systemTray.parent.onMenuClose()
+	}
+}
+
 func (s *macosSystemTray) setIconPosition(position IconPosition) {
 	s.iconPosition = position
 }

@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 - Fix macOS system tray menu real-time updates using NSMenuDelegate (#4630)
+- Implement macOS system tray onMenuOpen/onMenuClose callbacks for parity with Windows and Linux
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
