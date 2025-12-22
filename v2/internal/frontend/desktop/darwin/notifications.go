@@ -403,6 +403,12 @@ func (f *Frontend) registerChannel() (int, chan notificationChannel) {
 	channelsLock.Lock()
 	defer channelsLock.Unlock()
 
+	// Initialize channels map if it's nil
+	if channels == nil {
+		channels = make(map[int]chan notificationChannel)
+		nextChannelID = 0
+	}
+
 	id := nextChannelID
 	nextChannelID++
 
@@ -416,6 +422,10 @@ func (f *Frontend) GetChannel(id int) (chan notificationChannel, bool) {
 	channelsLock.Lock()
 	defer channelsLock.Unlock()
 
+	if channels == nil {
+		return nil, false
+	}
+
 	ch, exists := channels[id]
 	if exists {
 		delete(channels, id)
@@ -426,6 +436,10 @@ func (f *Frontend) GetChannel(id int) (chan notificationChannel, bool) {
 func (f *Frontend) cleanupChannel(id int) {
 	channelsLock.Lock()
 	defer channelsLock.Unlock()
+
+	if channels == nil {
+		return
+	}
 
 	if ch, exists := channels[id]; exists {
 		delete(channels, id)
