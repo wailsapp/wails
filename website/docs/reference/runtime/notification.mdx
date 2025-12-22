@@ -54,7 +54,7 @@ Returns: Error if the notification fails to send
 
 ### SendNotificationWithActions
 
-Sends an interactive notification with predefined actions. Requires a registered notification category.
+Sends an interactive notification with predefined actions. Requires a registered notification category. If the category is not found or `CategoryID` is empty, a basic notification will be sent instead.
 
 Go: `SendNotificationWithActions(ctx context.Context, options NotificationOptions) error`
 
@@ -62,7 +62,7 @@ Returns: Error if the notification fails to send
 
 ### RegisterNotificationCategory
 
-Registers a notification category that can be used with interactive notifications.
+Registers a notification category that can be used with interactive notifications. Registering a category with the same ID as a previously registered category will override it.
 
 Go: `RegisterNotificationCategory(ctx context.Context, category NotificationCategory) error`
 
@@ -110,7 +110,7 @@ Returns: Error if removal fails
 
 ### RemoveNotification
 
-Checks the current notification authorization status (Linux only).
+Removes a notification by identifier (Linux only). On macOS and Windows, this is a stub that always returns `nil`.
 
 Go: `RemoveNotification(ctx context.Context, identifier string) error`
 

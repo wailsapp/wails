@@ -12,11 +12,23 @@ Notifications are currently unsupported in the JS runtime.
 
 ### Initializing Notifications
 
-First, check if notifications are available on the current platform:
+First, initialize the notification system. This should be called during app startup (typically in `OnStartup`):
+
+```go
+err := runtime.InitializeNotifications(a.ctx)
+if err != nil {
+    // Handle initialization error
+    // On macOS, this may fail if bundle identifier is not set
+}
+```
+
+Then, check if notifications are available on the current platform:
 
 ```go
 if runtime.IsNotificationAvailable(a.ctx) {
     // Notifications are supported
+    // On macOS, this checks for macOS 10.14+
+    // On Windows and Linux, this always returns true
 }
 ```
 
@@ -91,7 +103,7 @@ if err != nil {
 
 ### Sending Interactive Notifications
 
-Send an interactive notification using the registered category:
+Send an interactive notification using the registered category. If the category is not found or `CategoryID` is empty, a basic notification will be sent instead:
 
 ```go
 err := runtime.SendNotificationWithActions(a.ctx, runtime.NotificationOptions{
@@ -219,142 +231,3 @@ err = runtime.RemoveNotification(a.ctx, "notification-id")
 4. **Handle Responses**: Always implement proper error handling for notification responses
 5. **Test Across Platforms**: Verify functionality on your target platforms
 6. **Clean Up**: Remove old notification categories when they're no longer needed
-
-## Example: Complete Notification App
-
-Here's a complete example showing how to implement notifications in a Wails app:
-
-```go
-package main
-
-import (
-    "context"
-    "fmt"
-    "time"
-
-    "github.com/wailsapp/wails/v2/pkg/runtime"
-)
-
-type App struct {
-    ctx context.Context
-}
-
-func NewApp() *App {
-    return &App{}
-}
-
-func (a *App) OnStartup(ctx context.Context) {
-    a.ctx = ctx
-    
-    // Initialize notifications
-    if runtime.IsNotificationAvailable(ctx) {
-        fmt.Println("Notifications are supported")
-        
-        // Check authorization on macOS
-        authorized, err := runtime.CheckNotificationAuthorization(ctx)
-        if err != nil {
-            fmt.Printf("Error checking notification authorization: %v\n", err)
-            return
-        }
-        
-        if !authorized {
-            authorized, err = runtime.RequestNotificationAuthorization(ctx)
-            if err != nil {
-                fmt.Printf("Error requesting notification authorization: %v\n", err)
-                return
-            }
-        }
-        
-        if authorized {
-            a.setupNotifications()
-        }
-    }
-}
-
-func (a *App) setupNotifications() {
-    // Register a notification category
-    err := runtime.RegisterNotificationCategory(a.ctx, runtime.NotificationCategory{
-        ID: "task-category",
-        Actions: []runtime.NotificationAction{
-            {ID: "COMPLETE", Title: "Mark Complete"},
-            {ID: "REMIND", Title: "Remind Later"},
-            {ID: "CANCEL", Title: "Cancel", Destructive: true},
-        },
-        HasReplyField:    true,
-        ReplyPlaceholder: "Add a note...",
-        ReplyButtonTitle: "Add Note",
-    })
-    
-    if err != nil {
-        fmt.Printf("Error registering notification category: %v\n", err)
-        return
-    }
-    
-    // Set up notification response handler
-    runtime.OnNotificationResponse(a.ctx, func(result runtime.NotificationResult) {
-        if result.Error != nil {
-            fmt.Printf("Notification response error: %v\n", result.Error)
-            return
-        }
-        
-        response := result.Response
-        fmt.Printf("Received notification response: %s for action %s\n", 
-            response.ID, response.ActionIdentifier)
-        
-        switch response.ActionIdentifier {
-        case "COMPLETE":
-            fmt.Println("Task marked as complete")
-        case "REMIND":
-            // Schedule reminder notification
-            go a.scheduleReminder(response.ID)
-        case "TEXT_REPLY":
-            fmt.Printf("User added note: %s\n", response.UserText)
-        }
-    })
-}
-
-func (a *App) SendTaskNotification(title, body string) {
-    err := runtime.SendNotificationWithActions(a.ctx, runtime.NotificationOptions{
-        ID:         fmt.Sprintf("task-%d", time.Now().Unix()),
-        Title:      title,
-        Subtitle:   "Task Reminder",
-        Body:       body,
-        CategoryID: "task-category",
-        Data: map[string]interface{}{
-            "timestamp": time.Now().Unix(),
-            "type": "task",
-        },
-    })
-    
-    if err != nil {
-        fmt.Printf("Error sending notification: %v\n", err)
-    }
-}
-
-func (a *App) scheduleReminder(taskID string) {
-    time.Sleep(30 * time.Second) // Wait 30 seconds
-    
-    err := runtime.SendNotification(a.ctx, runtime.NotificationOptions{
-        ID:    taskID + "-reminder",
-        Title: "Task Reminder",
-        Body:  "Don't forget about your pending task!",
-        Data: map[string]interface{}{
-            "originalTask": taskID,
-            "type": "reminder",
-        },
-    })
-    
-    if err != nil {
-        fmt.Printf("Error sending reminder: %v\n", err)
-    }
-}
-```
-
-This example demonstrates:
-- Platform support checking
-- Authorization handling for macOS
-- Notification category registration
-- Sending basic and interactive notifications
-- Response handling with different action types
-- Custom data usage
-- Proper error handling throughout
