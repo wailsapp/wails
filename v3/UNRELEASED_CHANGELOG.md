@@ -17,6 +17,10 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add comprehensive unit tests for pkg/application improving coverage from 13.6% to 17.7%
+  - Add tests for Context, Services, Parameters, Dialogs, WebviewWindowOptions
+  - Add internal tests for Menu, MenuItem, ScreenManager, Keys, SingleInstance
+  - Add tests for ChainMiddleware and application options
 
 ## Changed
 <!-- Changes in existing functionality -->
