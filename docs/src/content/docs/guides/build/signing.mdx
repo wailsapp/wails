@@ -22,13 +22,13 @@ This matrix shows what you can sign from each source platform:
 | Target Format | From Windows | From macOS | From Linux |
 |---------------|:------------:|:----------:|:----------:|
 | Windows EXE/MSI | ✅ | ✅ | ✅ |
-| macOS .app bundle | ❌ | ✅ | ❌ |
-| macOS notarization | ❌ | ✅ | ❌ |
+| macOS .app bundle | ✅ | ✅ | ✅ |
+| macOS notarization | ✅ | ✅ | ✅ |
 | Linux DEB | ✅ | ✅ | ✅ |
 | Linux RPM | ✅ | ✅ | ✅ |
 
 <Aside type="tip">
-Windows and Linux packages can be signed from **any platform**. macOS signing requires a Mac due to Apple's tooling requirements.
+All platforms can be signed from **any platform**! macOS cross-platform signing requires exporting your Developer ID certificate as a P12 file.
 </Aside>
 
 ### Signing Backends
@@ -38,10 +38,14 @@ Wails automatically selects the best available signing backend:
 | Platform | Native Backend | Cross-Platform Backend |
 |----------|----------------|------------------------|
 | Windows | `signtool.exe` (Windows SDK) | Built-in |
-| macOS | `codesign` (Xcode) | Not available |
+| macOS | `codesign` (Xcode) | Built-in |
 | Linux | N/A | Built-in |
 
 When running on the native platform, Wails uses the native tools for maximum compatibility. When cross-compiling, it uses the built-in signing support.
+
+<Aside type="note">
+**macOS signing recommendation**: On macOS, prefer native `codesign` by setting `SIGN_IDENTITY`. Use cross-platform signing (by setting `P12_CERTIFICATE`) only when building on Linux/Windows or in CI/CD without macOS runners. The `sign:` task auto-detects which method to use.
+</Aside>
 
 ## Quick Start
 
@@ -79,17 +83,25 @@ Edit `build/darwin/Taskfile.yml`:
 
 ```yaml
 vars:
+  # Option 1: Native signing (macOS only)
   SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
   KEYCHAIN_PROFILE: "my-notarize-profile"
+
+  # Option 2: Cross-platform signing (any OS)
+  # P12_CERTIFICATE: "path/to/developer-id.p12"
+  # NOTARY_KEY: "path/to/AuthKey_XXXXXX.p8"
+
   # ENTITLEMENTS: "build/darwin/entitlements.plist"
 ```
 
 Then run:
 
 ```bash
-wails3 task darwin:sign           # Sign only
-wails3 task darwin:sign:notarize  # Sign and notarize
+wails3 task darwin:sign           # Sign only (auto-detects method)
+wails3 task darwin:sign:notarize  # Sign and notarize (auto-detects method)
 ```
+
+The task automatically uses native signing if `SIGN_IDENTITY` is set, or cross-platform signing if `P12_CERTIFICATE` is set.
 </TabItem>
 <TabItem label="Windows">
 Edit `build/windows/Taskfile.yml`:
@@ -259,6 +271,168 @@ Apple requires all distributed apps to be notarized.
 
 <Aside type="note">
 Notarization typically takes 1-2 minutes. The ticket is automatically stapled to your app.
+</Aside>
+
+### Cross-Platform macOS Signing
+
+You can sign macOS binaries from Linux or Windows. This is useful for CI/CD pipelines that don't have access to macOS runners.
+
+<Aside type="caution">
+**When to use cross-platform signing:**
+- CI/CD on Linux/Windows runners
+- Building for macOS from a non-Mac development machine
+
+**When to use native signing:**
+- Building on macOS (recommended for best compatibility)
+- Local development on a Mac
+</Aside>
+
+#### Prerequisites
+
+- Apple Developer Account ($99/year)
+- Developer ID Application certificate **exported as a P12 file**
+- For notarization: Apple API key (.p8 file) from App Store Connect
+
+#### Exporting Your Certificate as P12
+
+<Steps>
+1. Open **Keychain Access** on your Mac
+2. Find your "Developer ID Application" certificate
+3. Right-click and select **Export**
+4. Choose **Personal Information Exchange (.p12)** format
+5. Set a strong password (you'll need this for signing)
+6. Save the file securely
+</Steps>
+
+<Aside type="caution">
+Keep your P12 file and password secure! The P12 contains your private key. Never commit it to version control.
+</Aside>
+
+#### Getting an Apple API Key (for Notarization)
+
+<Steps>
+1. Go to [App Store Connect](https://appstoreconnect.apple.com) → Users and Access → Keys
+2. Click the **+** button to create a new key
+3. Give it a name and select **Developer** access
+4. Download the `.p8` file (you can only download it once!)
+5. Note the **Key ID** and your **Team ID** (Issuer ID)
+</Steps>
+
+#### Configuration
+
+Run the setup wizard (select "Cross-platform" when prompted):
+
+```bash
+wails3 setup signing --platform darwin
+```
+
+Or manually configure `build/darwin/Taskfile.yml`:
+
+```yaml
+vars:
+  P12_CERTIFICATE: "path/to/developer-id.p12"
+  NOTARY_KEY: "path/to/AuthKey_XXXXXX.p8"
+  # ENTITLEMENTS: "build/darwin/entitlements.plist"
+```
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `P12_CERTIFICATE` | Yes | Path to exported P12 certificate |
+| `NOTARY_KEY` | For notarization | Path to Apple API key (.p8 file) |
+| `ENTITLEMENTS` | No | Path to entitlements file |
+
+The P12 password and notarization credentials are stored in your system keychain via `wails3 setup signing`.
+
+#### Signing Commands
+
+```bash
+# Sign only (from any platform)
+wails3 task darwin:sign
+
+# Sign and notarize (from any platform)
+wails3 task darwin:sign:notarize
+```
+
+The task automatically detects that `P12_CERTIFICATE` is set and uses cross-platform signing.
+
+Or use the CLI directly:
+
+```bash
+# Sign a binary
+wails3 tool sign --input bin/MyApp.app/Contents/MacOS/MyApp --p12 developer-id.p12
+
+# Sign and notarize
+wails3 tool sign --input bin/MyApp.app/Contents/MacOS/MyApp \
+  --p12 developer-id.p12 \
+  --notarize \
+  --notary-key AuthKey_XXXXXX.p8
+```
+
+#### GitHub Actions (Linux Runner)
+
+Sign macOS binaries from a Linux runner:
+
+```yaml
+name: Build and Sign macOS (Cross-Platform)
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+      - name: Import Certificates
+        env:
+          P12_CERTIFICATE_BASE64: ${{ secrets.MACOS_P12_CERTIFICATE }}
+          NOTARY_KEY_BASE64: ${{ secrets.APPLE_API_KEY }}
+        run: |
+          echo "$P12_CERTIFICATE_BASE64" | base64 -d > developer-id.p12
+          echo "$NOTARY_KEY_BASE64" | base64 -d > AuthKey.p8
+
+      - name: Build macOS Binary
+        run: wails3 task darwin:build
+
+      - name: Sign and Notarize
+        env:
+          WAILS_MACOS_P12_PASSWORD: ${{ secrets.MACOS_P12_PASSWORD }}
+        run: |
+          wails3 tool sign \
+            --input bin/MyApp.app/Contents/MacOS/MyApp \
+            --p12 developer-id.p12 \
+            --notarize \
+            --notary-key AuthKey.p8 \
+            --notary-key-id "${{ secrets.APPLE_API_KEY_ID }}" \
+            --notary-issuer "${{ secrets.APPLE_TEAM_ID }}"
+
+      - name: Cleanup Secrets
+        if: always()
+        run: rm -f developer-id.p12 AuthKey.p8
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MyApp-macOS
+          path: bin/*.app
+```
+
+<Aside type="note">
+Cross-platform signing produces equivalent results to native signing. Verify the signed binary on macOS with:
+```bash
+codesign --verify --deep --strict --verbose=2 MyApp.app
+spctl --assess --type execute --verbose MyApp.app
+```
 </Aside>
 
 ## Windows Code Signing
@@ -435,6 +609,7 @@ In CI environments, passwords are provided via environment variables instead of 
 |---------------------|-------------|
 | `WAILS_WINDOWS_CERT_PASSWORD` | Windows certificate password |
 | `WAILS_PGP_PASSWORD` | PGP key password for Linux packages |
+| `WAILS_MACOS_P12_PASSWORD` | macOS P12 certificate password (cross-platform) |
 
 You can also pass Taskfile variables directly:
 
@@ -442,7 +617,7 @@ You can also pass Taskfile variables directly:
 wails3 task darwin:sign SIGN_IDENTITY="$SIGN_IDENTITY" KEYCHAIN_PROFILE="$KEYCHAIN_PROFILE"
 ```
 
-### macOS Workflow
+### macOS Workflow (Native - requires macOS runner)
 
 ```yaml
 name: Build and Sign macOS
@@ -503,6 +678,69 @@ jobs:
           name: MyApp-macOS
           path: bin/*.app
 ```
+
+### macOS Workflow (Cross-Platform - any runner)
+
+Sign macOS binaries from a Linux runner without needing macOS:
+
+```yaml
+name: Build and Sign macOS (Cross-Platform)
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+      - name: Import Certificates
+        env:
+          P12_CERTIFICATE_BASE64: ${{ secrets.MACOS_P12_CERTIFICATE }}
+          NOTARY_KEY_BASE64: ${{ secrets.APPLE_API_KEY }}
+        run: |
+          echo "$P12_CERTIFICATE_BASE64" | base64 -d > developer-id.p12
+          echo "$NOTARY_KEY_BASE64" | base64 -d > AuthKey.p8
+
+      - name: Build macOS Binary
+        run: wails3 task darwin:build
+
+      - name: Sign and Notarize
+        env:
+          WAILS_MACOS_P12_PASSWORD: ${{ secrets.MACOS_P12_PASSWORD }}
+        run: |
+          wails3 tool sign \
+            --input bin/MyApp.app/Contents/MacOS/MyApp \
+            --p12 developer-id.p12 \
+            --notarize \
+            --notary-key AuthKey.p8 \
+            --notary-key-id "${{ secrets.APPLE_API_KEY_ID }}" \
+            --notary-issuer "${{ secrets.APPLE_TEAM_ID }}"
+
+      - name: Cleanup Secrets
+        if: always()
+        run: rm -f developer-id.p12 AuthKey.p8
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MyApp-macOS
+          path: bin/*.app
+```
+
+<Aside type="tip">
+Cross-platform signing eliminates the need for expensive macOS runners in your CI/CD pipeline. A single Linux runner can build and sign for all platforms.
+</Aside>
 
 ### Windows Workflow
 
@@ -692,7 +930,7 @@ wails3 tool sign [flags]
 | `--password` | Certificate password |
 | `--timestamp` | Timestamp server URL |
 
-**macOS-Specific Flags:**
+**macOS Native Flags (requires macOS):**
 | Flag | Description |
 |------|-------------|
 | `--identity` | Signing identity (use '-' for ad-hoc) |
@@ -700,6 +938,15 @@ wails3 tool sign [flags]
 | `--hardened-runtime` | Enable hardened runtime (default: true) |
 | `--notarize` | Submit for notarization |
 | `--keychain-profile` | Keychain profile for notarization |
+
+**macOS Cross-Platform Flags (works on any OS):**
+| Flag | Description |
+|------|-------------|
+| `--p12` | Path to P12 certificate file |
+| `--notarize` | Submit for notarization |
+| `--notary-key` | Path to Apple API key (.p8 file) |
+| `--notary-key-id` | Apple API Key ID |
+| `--notary-issuer` | Apple Team ID (Issuer) |
 
 **Windows-Specific Flags:**
 | Flag | Description |
@@ -788,6 +1035,28 @@ wails3 signing key-info --key <path-to-key>
 **"Codesign failed"**
 - Make sure the keychain is unlocked: `security unlock-keychain`
 - Check file permissions on the app bundle
+
+### macOS Cross-Platform Issues
+
+**"Failed to load P12 certificate"**
+- Verify the P12 file path is correct
+- Check the P12 password is correct (stored in keychain via `wails3 setup signing`)
+- Ensure the P12 was exported correctly from Keychain Access
+- Try re-exporting the certificate as P12
+
+**"P12 password not found"**
+- Run `wails3 setup signing --platform darwin` to store your P12 password
+- Or set `WAILS_MACOS_P12_PASSWORD` environment variable in CI
+
+**"Notarization failed" (cross-platform)**
+- Verify your Apple API key (.p8) is valid and hasn't expired
+- Check the Key ID and Team ID (Issuer) are correct
+- Ensure the binary was signed before notarization
+- Apple API keys have rate limits - wait and retry if you hit them
+
+**"Binary is not signed thus will not pass notarization"**
+- The binary must be signed before notarization
+- Ensure the `--p12` flag is provided and the signing step succeeded
 
 ### Windows Issues
 

@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/anchore/quill/quill"
+	"github.com/anchore/quill/quill/pki/load"
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/keychain"
@@ -30,10 +32,10 @@ func Sign(options *flags.Sign) error {
 
 	// macOS app bundle (directory)
 	if info.IsDir() && strings.HasSuffix(options.Input, ".app") {
-		return signMacOSApp(options)
+		return signMacOS(options)
 	}
 
-	// macOS binary or Windows executable
+	// Windows executable
 	if ext == ".exe" || ext == ".msi" || ext == ".msix" || ext == ".appx" {
 		return signWindows(options)
 	}
@@ -46,21 +48,56 @@ func Sign(options *flags.Sign) error {
 		return signRPM(options)
 	}
 
-	// macOS binary (no extension typically)
-	if runtime.GOOS == "darwin" && options.Identity != "" {
-		return signMacOSBinary(options)
+	// macOS binary (no extension typically) - check for macOS signing options
+	if options.Identity != "" || options.P12Certificate != "" {
+		return signMacOS(options)
 	}
 
-	return fmt.Errorf("unsupported file type: %s", ext)
+	return fmt.Errorf("unsupported file type or missing signing options: %s", ext)
 }
 
-func signMacOSApp(options *flags.Sign) error {
+// signMacOS routes to the appropriate macOS signing method
+func signMacOS(options *flags.Sign) error {
+	// Determine signing method:
+	// 1. If --p12 is set, use Quill library (cross-platform)
+	// 2. If on macOS with --identity, use native codesign
+	// 3. If not on macOS and no --p12, error
+
+	if options.P12Certificate != "" {
+		// Cross-platform signing with Quill library
+		return signMacOSWithQuill(options)
+	}
+
+	if runtime.GOOS == "darwin" && options.Identity != "" {
+		// Native macOS signing
+		info, err := os.Stat(options.Input)
+		if err != nil {
+			return err
+		}
+		if info.IsDir() && strings.HasSuffix(options.Input, ".app") {
+			return signMacOSAppNative(options)
+		}
+		return signMacOSBinaryNative(options)
+	}
+
+	if runtime.GOOS != "darwin" {
+		return fmt.Errorf("macOS signing on non-macOS requires --p12 certificate for cross-platform signing")
+	}
+
+	return fmt.Errorf("--identity or --p12 is required for macOS signing")
+}
+
+// =============================================================================
+// Native macOS signing (requires macOS with codesign)
+// =============================================================================
+
+func signMacOSAppNative(options *flags.Sign) error {
 	if options.Identity == "" {
-		return fmt.Errorf("--identity is required for macOS signing")
+		return fmt.Errorf("--identity is required for native macOS signing")
 	}
 
 	if options.Verbose {
-		pterm.Info.Printfln("Signing macOS app bundle: %s", options.Input)
+		pterm.Info.Printfln("Signing macOS app bundle (native): %s", options.Input)
 	}
 
 	// Build codesign command
@@ -92,19 +129,19 @@ func signMacOSApp(options *flags.Sign) error {
 
 	// Notarize if requested
 	if options.Notarize {
-		return notarizeMacOSApp(options)
+		return notarizeMacOSNative(options)
 	}
 
 	return nil
 }
 
-func signMacOSBinary(options *flags.Sign) error {
+func signMacOSBinaryNative(options *flags.Sign) error {
 	if options.Identity == "" {
-		return fmt.Errorf("--identity is required for macOS signing")
+		return fmt.Errorf("--identity is required for native macOS signing")
 	}
 
 	if options.Verbose {
-		pterm.Info.Printfln("Signing macOS binary: %s", options.Input)
+		pterm.Info.Printfln("Signing macOS binary (native): %s", options.Input)
 	}
 
 	args := []string{
@@ -131,16 +168,21 @@ func signMacOSBinary(options *flags.Sign) error {
 	}
 
 	pterm.Success.Printfln("Signed: %s", options.Input)
+
+	if options.Notarize {
+		return notarizeMacOSNative(options)
+	}
+
 	return nil
 }
 
-func notarizeMacOSApp(options *flags.Sign) error {
+func notarizeMacOSNative(options *flags.Sign) error {
 	if options.KeychainProfile == "" {
-		return fmt.Errorf("--keychain-profile is required for notarization")
+		return fmt.Errorf("--keychain-profile is required for native notarization")
 	}
 
 	if options.Verbose {
-		pterm.Info.Println("Submitting for notarization...")
+		pterm.Info.Println("Submitting for notarization (native)...")
 	}
 
 	// Create a zip for notarization
@@ -179,6 +221,118 @@ func notarizeMacOSApp(options *flags.Sign) error {
 	pterm.Success.Println("Notarization complete and ticket stapled")
 	return nil
 }
+
+// =============================================================================
+// Cross-platform macOS signing via Quill library
+// =============================================================================
+
+// signMacOSWithQuill signs a macOS binary using the Quill library (works on any platform)
+func signMacOSWithQuill(options *flags.Sign) error {
+	if options.P12Certificate == "" {
+		return fmt.Errorf("--p12 is required for cross-platform macOS signing")
+	}
+
+	// Check if P12 file exists
+	if _, err := os.Stat(options.P12Certificate); err != nil {
+		return fmt.Errorf("P12 certificate not found: %w", err)
+	}
+
+	// Get P12 password from keychain
+	password, err := keychain.Get(keychain.KeyMacOSP12Password)
+	if err != nil {
+		return fmt.Errorf("P12 password not found: %w\nStore it with: wails3 setup signing", err)
+	}
+
+	if options.Verbose {
+		pterm.Info.Printfln("Signing macOS binary with Quill: %s", options.Input)
+	}
+
+	// Load P12 certificate contents - password stays in memory, never touches disk
+	p12Contents, err := load.P12(options.P12Certificate, password)
+	if err != nil {
+		return fmt.Errorf("failed to load P12 certificate: %w", err)
+	}
+
+	// Create signing config from P12 contents
+	cfg, err := quill.NewSigningConfigFromP12(options.Input, *p12Contents, false)
+	if err != nil {
+		return fmt.Errorf("failed to create signing config: %w", err)
+	}
+
+	// Add entitlements if specified
+	if options.Entitlements != "" {
+		cfg = cfg.WithEntitlements(options.Entitlements)
+	}
+
+	// Sign the binary
+	if err := quill.Sign(*cfg); err != nil {
+		return fmt.Errorf("signing failed: %w", err)
+	}
+
+	pterm.Success.Printfln("Signed: %s", options.Input)
+
+	// Notarize if requested
+	if options.Notarize {
+		return notarizeMacOSWithQuill(options)
+	}
+
+	return nil
+}
+
+// notarizeMacOSWithQuill notarizes a macOS binary using the Quill library
+func notarizeMacOSWithQuill(options *flags.Sign) error {
+	// For notarization, we need the Apple API key credentials
+	if options.NotaryKey == "" {
+		return fmt.Errorf("--notary-key is required for notarization")
+	}
+
+	// Read the API key file
+	privateKey, err := os.ReadFile(options.NotaryKey)
+	if err != nil {
+		return fmt.Errorf("failed to read notary key: %w", err)
+	}
+
+	// Get notary credentials - first check flags, then keychain
+	notaryKeyID := options.NotaryKeyID
+	if notaryKeyID == "" {
+		notaryKeyID, err = keychain.Get(keychain.KeyNotaryKeyID)
+		if err != nil {
+			return fmt.Errorf("notary key ID not found: %w\nProvide --notary-key-id or run: wails3 setup signing", err)
+		}
+	}
+
+	notaryIssuer := options.NotaryIssuer
+	if notaryIssuer == "" {
+		notaryIssuer, err = keychain.Get(keychain.KeyNotaryIssuer)
+		if err != nil {
+			return fmt.Errorf("notary issuer not found: %w\nProvide --notary-issuer or run: wails3 setup signing", err)
+		}
+	}
+
+	if options.Verbose {
+		pterm.Info.Println("Submitting for notarization...")
+	}
+
+	// Create notarization config
+	cfg := quill.NewNotarizeConfig(notaryIssuer, notaryKeyID, string(privateKey))
+
+	// Submit for notarization and wait for result
+	status, err := quill.Notarize(options.Input, *cfg)
+	if err != nil {
+		return fmt.Errorf("notarization failed: %w", err)
+	}
+
+	if options.Verbose {
+		pterm.Info.Printfln("Notarization status: %s", status)
+	}
+
+	pterm.Success.Println("Notarization complete")
+	return nil
+}
+
+// =============================================================================
+// Windows signing
+// =============================================================================
 
 func signWindows(options *flags.Sign) error {
 	// Get password from keychain if not provided
@@ -288,6 +442,10 @@ func signWindowsBuiltin(options *flags.Sign, password string) error {
 
 	return fmt.Errorf("built-in Windows signing not yet implemented - please use signtool.exe on Windows, or install osslsigncode")
 }
+
+// =============================================================================
+// Linux signing
+// =============================================================================
 
 func signDEB(options *flags.Sign) error {
 	if options.PGPKey == "" {

@@ -4,10 +4,14 @@ includes:
   common: ../Taskfile.yml
 
 vars:
-  # Signing configuration - edit these values for your project
+  # Native signing configuration (macOS only)
   # SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
   # KEYCHAIN_PROFILE: "my-notarize-profile"
   # ENTITLEMENTS: "build/darwin/entitlements.plist"
+
+  # Cross-platform signing configuration (works on any OS via Quill)
+  # P12_CERTIFICATE: "certs/developer-id.p12"
+  # NOTARY_KEY: "certs/AuthKey_XXXXXXXX.p8"
 
   # Docker image for cross-compilation (used when building on non-macOS)
   CROSS_IMAGE: wails-cross
@@ -166,28 +170,48 @@ tasks:
       - '{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Contents/MacOS/{{.APP_NAME}}'
 
   sign:
-    summary: Signs the application bundle with Developer ID
+    summary: Signs the application bundle for distribution
     desc: |
-      Signs the .app bundle for distribution.
-      Configure SIGN_IDENTITY in the vars section at the top of this file.
+      Signs the .app bundle for distribution. Automatically detects signing method:
+
+      - If SIGN_IDENTITY is set (and on macOS): uses native codesign
+      - If P12_CERTIFICATE is set: uses cross-platform signing (works on any OS)
+
+      Configure credentials in the vars section at the top of this file.
+      Store passwords with: wails3 setup signing
     deps:
       - task: package
+    cmds:
+      - task: '{{if .P12_CERTIFICATE}}sign:p12{{else}}sign:native{{end}}'
+
+  sign:notarize:
+    summary: Signs and notarizes the application bundle
+    desc: |
+      Signs the .app bundle and submits for notarization. Automatically detects signing method:
+
+      - If SIGN_IDENTITY is set (and on macOS): uses native codesign + notarytool
+      - If P12_CERTIFICATE is set: uses cross-platform signing (works on any OS)
+
+      Configure credentials in the vars section at the top of this file.
+      Store passwords with: wails3 setup signing
+    deps:
+      - task: package
+    cmds:
+      - task: '{{if .P12_CERTIFICATE}}sign:p12:notarize{{else}}sign:native:notarize{{end}}'
+
+  # Internal tasks - use sign: or sign:notarize instead
+  sign:native:
+    summary: Signs using native codesign (macOS only)
+    internal: true
     cmds:
       - wails3 tool sign --input {{.BIN_DIR}}/{{.APP_NAME}}.app --identity "{{.SIGN_IDENTITY}}" {{if .ENTITLEMENTS}}--entitlements {{.ENTITLEMENTS}}{{end}}
     preconditions:
       - sh: '[ -n "{{.SIGN_IDENTITY}}" ]'
         msg: "SIGN_IDENTITY is required. Set it in the vars section at the top of build/darwin/Taskfile.yml"
 
-  sign:notarize:
-    summary: Signs and notarizes the application bundle
-    desc: |
-      Signs the .app bundle and submits it for notarization.
-      Configure SIGN_IDENTITY and KEYCHAIN_PROFILE in the vars section at the top of this file.
-
-      Setup (one-time):
-        wails3 signing credentials --apple-id "you@email.com" --team-id "TEAMID" --password "app-specific-password" --profile "my-profile"
-    deps:
-      - task: package
+  sign:native:notarize:
+    summary: Signs and notarizes using native tools (macOS only)
+    internal: true
     cmds:
       - wails3 tool sign --input {{.BIN_DIR}}/{{.APP_NAME}}.app --identity "{{.SIGN_IDENTITY}}" {{if .ENTITLEMENTS}}--entitlements {{.ENTITLEMENTS}}{{end}} --notarize --keychain-profile {{.KEYCHAIN_PROFILE}}
     preconditions:
@@ -195,3 +219,24 @@ tasks:
         msg: "SIGN_IDENTITY is required. Set it in the vars section at the top of build/darwin/Taskfile.yml"
       - sh: '[ -n "{{.KEYCHAIN_PROFILE}}" ]'
         msg: "KEYCHAIN_PROFILE is required. Set it in the vars section at the top of build/darwin/Taskfile.yml"
+
+  sign:p12:
+    summary: Signs using P12 certificate (cross-platform)
+    internal: true
+    cmds:
+      - wails3 tool sign --input {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/MacOS/{{.APP_NAME}} --p12 "{{.P12_CERTIFICATE}}" {{if .ENTITLEMENTS}}--entitlements {{.ENTITLEMENTS}}{{end}}
+    preconditions:
+      - sh: '[ -n "{{.P12_CERTIFICATE}}" ]'
+        msg: "P12_CERTIFICATE is required. Set it in the vars section at the top of build/darwin/Taskfile.yml"
+
+  sign:p12:notarize:
+    summary: Signs and notarizes using P12 certificate (cross-platform)
+    internal: true
+    cmds:
+      - wails3 tool sign --input {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/MacOS/{{.APP_NAME}} --p12 "{{.P12_CERTIFICATE}}" {{if .ENTITLEMENTS}}--entitlements {{.ENTITLEMENTS}}{{end}} --notarize --notary-key "{{.NOTARY_KEY}}"
+    preconditions:
+      - sh: '[ -n "{{.P12_CERTIFICATE}}" ]'
+        msg: "P12_CERTIFICATE is required. Set it in the vars section at the top of build/darwin/Taskfile.yml"
+      - sh: '[ -n "{{.NOTARY_KEY}}" ]'
+        msg: "NOTARY_KEY is required. Set it in the vars section at the top of build/darwin/Taskfile.yml"
+
