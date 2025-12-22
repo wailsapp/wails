@@ -17,10 +17,14 @@ func TestGetDialogID(t *testing.T) {
 	// Free first ID
 	freeDialogID(id1)
 
-	// Get another ID - could be the freed one
+	// Get another ID - should recycle the freed id1 or be unique from id2
 	id3 := getDialogID()
 	if id3 == id2 {
 		t.Error("getDialogID should not return the same ID as an active dialog")
+	}
+	// Verify recycling behavior: id3 should either be id1 (recycled) or a new unique ID
+	if id3 != id1 && id3 <= id2 {
+		t.Errorf("getDialogID returned unexpected ID: got %d, expected recycled %d or new > %d", id3, id1, id2)
 	}
 
 	// Cleanup
