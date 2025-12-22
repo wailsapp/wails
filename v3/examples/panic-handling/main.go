@@ -3,8 +3,9 @@ package main
 import (
 	"embed"
 	"fmt"
-	"github.com/wailsapp/wails/v3/pkg/application"
 	"log"
+
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 //go:embed assets/*
@@ -46,7 +47,7 @@ func main() {
 			fmt.Printf("Time: %s\n", panicDetails.Time)
 			fmt.Printf("Error: %s\n", panicDetails.Error)
 			fmt.Printf("Stacktrace: %s\n", panicDetails.StackTrace)
-			app.Dialog.Info().SetMessage("There was a panic!").Show()
+			_ = app.Dialog.Info().SetMessage("There was a panic!").Show()
 		},
 	})
 

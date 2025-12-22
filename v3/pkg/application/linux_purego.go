@@ -5,7 +5,6 @@ package application
 import (
 	"fmt"
 	"os"
-	"strings"
 	"unsafe"
 
 	"github.com/ebitengine/purego"
@@ -1139,7 +1138,7 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 		dType = GtkMessageInfo
 	}
 	buttonMask := GtkButtonsOk
-	if len(options.Buttons) > 0 {
+	if len(options.ButtonList) > 0 {
 		buttonMask = GtkButtonsNone
 	}
 
@@ -1176,7 +1175,7 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 	}
 
 	cancelButtonIndex := -1
-	for i, button := range options.Buttons {
+	for i, button := range options.ButtonList {
 		gtkDialogAddButton(
 			dialog,
 			button.Label,

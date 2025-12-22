@@ -143,7 +143,7 @@ func main() {
 	sizeMenu.Add("Get Current WebviewWindow Size").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w application.Window) {
 			width, height := w.Size()
-			app.Dialog.Info().SetTitle("Current WebviewWindow Size").SetMessage("Width: " + strconv.Itoa(width) + " Height: " + strconv.Itoa(height)).Show()
+			_ = app.Dialog.Info().SetTitle("Current WebviewWindow Size").SetMessage("Width: " + strconv.Itoa(width) + " Height: " + strconv.Itoa(height)).Show()
 		})
 	})
 
@@ -174,7 +174,7 @@ func main() {
 	positionMenu.Add("Get Relative Position").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w application.Window) {
 			x, y := w.RelativePosition()
-			app.Dialog.Info().SetTitle("Current WebviewWindow Relative Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
+			_ = app.Dialog.Info().SetTitle("Current WebviewWindow Relative Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
 		})
 	})
 
@@ -241,24 +241,24 @@ func main() {
 	stateMenu.Add("Get Primary Screen").OnClick(func(ctx *application.Context) {
 		screen := app.Screen.GetPrimary()
 		msg := fmt.Sprintf("Screen: %+v", screen)
-		app.Dialog.Info().SetTitle("Primary Screen").SetMessage(msg).Show()
+		_ = app.Dialog.Info().SetTitle("Primary Screen").SetMessage(msg).Show()
 	})
 	stateMenu.Add("Get Screens").OnClick(func(ctx *application.Context) {
 		screens := app.Screen.GetAll()
 		for _, screen := range screens {
 			msg := fmt.Sprintf("Screen: %+v", screen)
-			app.Dialog.Info().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
+			_ = app.Dialog.Info().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
 		}
 	})
 	stateMenu.Add("Get Screen for WebviewWindow").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w application.Window) {
 			screen, err := w.GetScreen()
 			if err != nil {
-				app.Dialog.Error().SetTitle("Error").SetMessage(err.Error()).Show()
+				_ = app.Dialog.Error().SetTitle("Error").SetMessage(err.Error()).Show()
 				return
 			}
 			msg := fmt.Sprintf("Screen: %+v", screen)
-			app.Dialog.Info().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
+			_ = app.Dialog.Info().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
 		})
 	})
 	app.Window.New()

@@ -66,14 +66,15 @@ func (b *Button) SetAsCancel() *Button {
 }
 
 type messageDialogImpl interface {
-	show() (string, error)
+	show() error
+	result() (string, error)
 }
 
 type MessageDialogOptions struct {
 	DialogType DialogType
 	Title      string
 	Message    string
-	Buttons    []*Button
+	ButtonList []*Button `json:"Buttons,omitempty"`
 	Icon       []byte
 	window     Window
 }
@@ -106,15 +107,18 @@ func (d *MessageDialog) SetTitle(title string) *MessageDialog {
 	return d
 }
 
-// Show displays the dialog and returns the label of the clicked button.
-// This method blocks until the user clicks a button.
-// If the dialog has button callbacks defined, they will still be called.
-// Returns an error if the dialog could not be displayed.
-func (d *MessageDialog) Show() (string, error) {
+func (d *MessageDialog) Show() error {
 	if d.impl == nil {
 		d.impl = newDialogImpl(d)
 	}
-	return InvokeSyncWithResultAndError(d.impl.show)
+	return d.impl.show()
+}
+
+func (d *MessageDialog) Result() (string, error) {
+	if d.impl == nil {
+		d.impl = newDialogImpl(d)
+	}
+	return d.impl.result()
 }
 
 func (d *MessageDialog) SetIcon(icon []byte) *MessageDialog {
@@ -122,49 +126,13 @@ func (d *MessageDialog) SetIcon(icon []byte) *MessageDialog {
 	return d
 }
 
-// AddButton adds a button with the given label and returns the Button for further configuration.
-// Use this when you need to configure the button (e.g., SetAsDefault, SetAsCancel, OnClick).
-func (d *MessageDialog) AddButton(s string) *Button {
-	result := &Button{
-		Label: s,
+func (d *MessageDialog) Buttons(buttons ...Button) *MessageDialog {
+	result := make([]*Button, 0, len(buttons))
+	for _, b := range buttons {
+		bCopy := b
+		result = append(result, &bCopy)
 	}
-	d.Buttons = append(d.Buttons, result)
-	return result
-}
-
-// WithButton adds a button with the given label and returns the MessageDialog for chaining.
-// Use this for simple button additions when no button configuration is needed.
-func (d *MessageDialog) WithButton(s string) *MessageDialog {
-	d.Buttons = append(d.Buttons, &Button{Label: s})
-	return d
-}
-
-// WithDefaultButton adds a button with the given label, marks it as the default button,
-// and returns the MessageDialog for chaining. The default button is activated when the
-// user presses Enter/Return. Only one button should be marked as default.
-func (d *MessageDialog) WithDefaultButton(s string) *MessageDialog {
-	// Clear any existing default buttons
-	for _, b := range d.Buttons {
-		b.IsDefault = false
-	}
-	d.Buttons = append(d.Buttons, &Button{Label: s, IsDefault: true})
-	return d
-}
-
-// WithCancelButton adds a button with the given label, marks it as the cancel button,
-// and returns the MessageDialog for chaining. The cancel button is activated when the
-// user presses Escape. Only one button should be marked as cancel.
-func (d *MessageDialog) WithCancelButton(s string) *MessageDialog {
-	// Clear any existing cancel buttons
-	for _, b := range d.Buttons {
-		b.IsCancel = false
-	}
-	d.Buttons = append(d.Buttons, &Button{Label: s, IsCancel: true})
-	return d
-}
-
-func (d *MessageDialog) AddButtons(buttons []*Button) *MessageDialog {
-	d.Buttons = buttons
+	d.ButtonList = result
 	return d
 }
 
@@ -173,19 +141,17 @@ func (d *MessageDialog) AttachToWindow(window Window) *MessageDialog {
 	return d
 }
 
-func (d *MessageDialog) SetDefaultButton(button *Button) *MessageDialog {
-	for _, b := range d.Buttons {
-		b.IsDefault = false
+func (d *MessageDialog) Default(label string) *MessageDialog {
+	for _, b := range d.ButtonList {
+		b.IsDefault = b.Label == label
 	}
-	button.IsDefault = true
 	return d
 }
 
-func (d *MessageDialog) SetCancelButton(button *Button) *MessageDialog {
-	for _, b := range d.Buttons {
-		b.IsCancel = false
+func (d *MessageDialog) Cancel(label string) *MessageDialog {
+	for _, b := range d.ButtonList {
+		b.IsCancel = b.Label == label
 	}
-	button.IsCancel = true
 	return d
 }
 

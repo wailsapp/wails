@@ -1854,7 +1854,7 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 	defer C.free(unsafe.Pointer(cMsg))
 	defer C.free(unsafe.Pointer(cTitle))
 	hasButtons := false
-	if len(options.Buttons) > 0 {
+	if len(options.ButtonList) > 0 {
 		hasButtons = true
 	}
 
@@ -1898,7 +1898,7 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 			(*C.GtkWidget)(image))
 	}
 	cancelButtonIndex := -1
-	for i, button := range options.Buttons {
+	for i, button := range options.ButtonList {
 		cLabel := C.CString(button.Label)
 		defer C.free(unsafe.Pointer(cLabel))
 		index := C.int(i)

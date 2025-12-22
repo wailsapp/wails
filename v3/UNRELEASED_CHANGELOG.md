@@ -17,13 +17,12 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add `MessageDialog.WithButton()` method for builder pattern chaining when adding buttons without configuration (#4792)
-- Add `MessageDialog.WithDefaultButton()` method for adding a button marked as default (Enter key) with builder pattern chaining (#4810)
-- Add `MessageDialog.WithCancelButton()` method for adding a button marked as cancel (Escape key) with builder pattern chaining (#4810)
+- Add `MessageDialog.Buttons(...)` method for defining dialog buttons inline (#4810)
+- Add `MessageDialog.Result() (string, error)` method for synchronously retrieving the clicked button label (#4810)
 
 ## Changed
 <!-- Changes in existing functionality -->
-- **BREAKING**: `MessageDialog.Show()` now returns `(string, error)` - the clicked button's label and an error if the dialog could not be displayed. This enables synchronous dialog workflows and proper error handling (#4792) by @leaanthony
+- **BREAKING**: `MessageDialog.Show()` now returns `error` and is non-blocking. Use `MessageDialog.Result() (string, error)` for synchronous workflows and to retrieve the clicked button label (#4810)
 - Update the documentation for Window `X/Y` options @ruhuang2001
 
 ## Fixed

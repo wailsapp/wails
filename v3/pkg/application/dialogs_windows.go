@@ -20,7 +20,7 @@ func (m *windowsApp) showAboutDialog(title string, message string, _ []byte) {
 		},
 	})
 	about.UseAppIcon = true
-	about.show()
+	_ = about.show()
 }
 
 type windowsDialog struct {
@@ -30,7 +30,12 @@ type windowsDialog struct {
 	UseAppIcon bool
 }
 
-func (m *windowsDialog) show() (string, error) {
+func (m *windowsDialog) show() error {
+	_, err := m.result()
+	return err
+}
+
+func (m *windowsDialog) result() (string, error) {
 
 	title := w32.MustStringToUTF16Ptr(m.dialog.Title)
 	message := w32.MustStringToUTF16Ptr(m.dialog.Message)
@@ -65,7 +70,7 @@ func (m *windowsDialog) show() (string, error) {
 		result = responses[button]
 	}
 	// Check if there's a callback for the button pressed
-	for _, buttonInDialog := range m.dialog.Buttons {
+	for _, buttonInDialog := range m.dialog.ButtonList {
 		if buttonInDialog.Label == result {
 			if buttonInDialog.Callback != nil {
 				buttonInDialog.Callback()
@@ -215,7 +220,7 @@ func calculateMessageDialogFlags(options MessageDialogOptions) uint32 {
 		flags = windows.MB_ICONERROR | windows.MB_OK
 	case QuestionDialogType:
 		flags = windows.MB_YESNO
-		for _, button := range options.Buttons {
+		for _, button := range options.ButtonList {
 			if strings.TrimSpace(strings.ToLower(button.Label)) == "no" && button.IsDefault {
 				flags |= windows.MB_DEFBUTTON2
 			}

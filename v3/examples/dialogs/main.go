@@ -39,25 +39,25 @@ func main() {
 		dialog := app.Dialog.Info()
 		dialog.SetTitle("Custom Title")
 		dialog.SetMessage("This is a custom message")
-		dialog.Show()
+		_ = dialog.Show()
 	})
 
 	infoMenu.Add("Info (Title only)").OnClick(func(ctx *application.Context) {
 		dialog := app.Dialog.Info()
 		dialog.SetTitle("Custom Title")
-		dialog.Show()
+		_ = dialog.Show()
 	})
 	infoMenu.Add("Info (Message only)").OnClick(func(ctx *application.Context) {
 		dialog := app.Dialog.Info()
 		dialog.SetMessage("This is a custom message")
-		dialog.Show()
+		_ = dialog.Show()
 	})
 	infoMenu.Add("Info (Custom Icon)").OnClick(func(ctx *application.Context) {
 		dialog := app.Dialog.Info()
 		dialog.SetTitle("Custom Icon Example")
 		dialog.SetMessage("Using a custom icon")
 		dialog.SetIcon(icons.ApplicationDarkMode256)
-		dialog.Show()
+		_ = dialog.Show()
 	})
 	infoMenu.Add("About").OnClick(func(ctx *application.Context) {
 		app.Menu.ShowAbout()
@@ -67,27 +67,31 @@ func main() {
 	questionMenu.Add("Question (No default)").OnClick(func(ctx *application.Context) {
 		dialog := app.Dialog.Question()
 		dialog.SetMessage("No default button")
-		dialog.AddButton("Yes")
-		dialog.AddButton("No")
-		dialog.Show()
+		dialog.Buttons(
+			application.Button{Label: "Yes"},
+			application.Button{Label: "No"},
+		)
+		_ = dialog.Show()
 	})
 	questionMenu.Add("Question (Attached to Window)").OnClick(func(ctx *application.Context) {
 		dialog := app.Dialog.Question()
 		dialog.AttachToWindow(app.Window.Current())
 		dialog.SetMessage("No default button")
-		dialog.AddButton("Yes")
-		dialog.AddButton("No")
-		dialog.Show()
+		dialog.Buttons(
+			application.Button{Label: "Yes"},
+			application.Button{Label: "No"},
+		)
+		_ = dialog.Show()
 	})
 	questionMenu.Add("Question (With Default)").OnClick(func(ctx *application.Context) {
 		dialog := app.Dialog.Question()
 		dialog.SetTitle("Quit")
 		dialog.SetMessage("You have unsaved work. Are you sure you want to quit?")
-		dialog.AddButton("Yes")
-		no := dialog.AddButton("No")
-		dialog.SetDefaultButton(no)
-		// Show() returns the clicked button's label
-		result, _ := dialog.Show()
+		dialog.Buttons(
+			application.Button{Label: "Yes"},
+			application.Button{Label: "No", IsDefault: true},
+		)
+		result, _ := dialog.Result()
 		if result == "Yes" {
 			app.Quit()
 		}
@@ -96,33 +100,33 @@ func main() {
 		dialog := app.Dialog.Question().
 			SetTitle("Update").
 			SetMessage("The cancel button is selected when pressing escape")
-		download := dialog.AddButton("📥 Download")
-		no := dialog.AddButton("Cancel")
-		dialog.SetDefaultButton(download)
-		dialog.SetCancelButton(no)
-		// Show() returns the clicked button's label - use switch for multiple options
-		switch result, _ := dialog.Show(); result {
+		dialog.Buttons(
+			application.Button{Label: "📥 Download", IsDefault: true},
+			application.Button{Label: "Cancel", IsCancel: true},
+		)
+		switch result, _ := dialog.Result(); result {
 		case "📥 Download":
-			app.Dialog.Info().SetMessage("Downloading...").Show()
+			_ = app.Dialog.Info().SetMessage("Downloading...").Show()
 		case "Cancel":
 			// User cancelled
 		}
 	})
 	questionMenu.Add("Question (Fluent Cancel/Default)").OnClick(func(ctx *application.Context) {
-		// Fluent API using WithDefaultButton and WithCancelButton
 		result, _ := app.Dialog.Question().
 			SetTitle("Save Changes?").
 			SetMessage("You have unsaved changes. What would you like to do?").
-			WithDefaultButton("Save").
-			WithButton("Don't Save").
-			WithCancelButton("Cancel").
-			Show()
+			Buttons(
+				application.Button{Label: "Save", IsDefault: true},
+				application.Button{Label: "Don't Save"},
+				application.Button{Label: "Cancel", IsCancel: true},
+			).
+			Result()
 
 		switch result {
 		case "Save":
-			app.Dialog.Info().SetMessage("Changes saved!").Show()
+			_ = app.Dialog.Info().SetMessage("Changes saved!").Show()
 		case "Don't Save":
-			app.Dialog.Info().SetMessage("Changes discarded.").Show()
+			_ = app.Dialog.Info().SetMessage("Changes discarded.").Show()
 		case "Cancel":
 			// User cancelled - do nothing
 		}
@@ -132,21 +136,21 @@ func main() {
 		dialog.SetTitle("Custom Icon Example")
 		dialog.SetMessage("Using a custom icon")
 		dialog.SetIcon(icons.WailsLogoWhiteTransparent)
-		likeIt := dialog.AddButton("I like it!")
-		dialog.AddButton("Not so keen...")
-		dialog.SetDefaultButton(likeIt)
-		// Show() returns the clicked button's label
-		switch result, _ := dialog.Show(); result {
+		dialog.Buttons(
+			application.Button{Label: "I like it!", IsDefault: true},
+			application.Button{Label: "Not so keen..."},
+		)
+		switch result, _ := dialog.Result(); result {
 		case "I like it!":
-			app.Dialog.Info().SetMessage("Thanks!").Show()
+			_ = app.Dialog.Info().SetMessage("Thanks!").Show()
 		case "Not so keen...":
-			app.Dialog.Info().SetMessage("Too bad!").Show()
+			_ = app.Dialog.Info().SetMessage("Too bad!").Show()
 		}
 	})
 
 	warningMenu := menu.AddSubmenu("Warning")
 	warningMenu.Add("Warning").OnClick(func(ctx *application.Context) {
-		app.Dialog.Warning().
+		_ = app.Dialog.Warning().
 			SetTitle("Custom Title").
 			SetMessage("This is a custom message").
 			Show()
@@ -154,19 +158,19 @@ func main() {
 	warningMenu.Add("Warning (Title only)").OnClick(func(ctx *application.Context) {
 		dialog := app.Dialog.Warning()
 		dialog.SetTitle("Custom Title")
-		dialog.Show()
+		_ = dialog.Show()
 	})
 	warningMenu.Add("Warning (Message only)").OnClick(func(ctx *application.Context) {
 		dialog := app.Dialog.Warning()
 		dialog.SetMessage("This is a custom message")
-		dialog.Show()
+		_ = dialog.Show()
 	})
 	warningMenu.Add("Warning (Custom Icon)").OnClick(func(ctx *application.Context) {
 		dialog := app.Dialog.Warning()
 		dialog.SetTitle("Custom Icon Example")
 		dialog.SetMessage("Using a custom icon")
 		dialog.SetIcon(icons.ApplicationLightMode256)
-		dialog.Show()
+		_ = dialog.Show()
 	})
 
 	errorMenu := menu.AddSubmenu("Error")
@@ -174,15 +178,15 @@ func main() {
 		dialog := app.Dialog.Error()
 		dialog.SetTitle("Ooops")
 		dialog.SetMessage("I accidentally the whole of Twitter")
-		dialog.Show()
+		_ = dialog.Show()
 	})
 	errorMenu.Add("Error (Title Only)").OnClick(func(ctx *application.Context) {
 		dialog := app.Dialog.Error()
 		dialog.SetTitle("Custom Title")
-		dialog.Show()
+		_ = dialog.Show()
 	})
 	errorMenu.Add("Error (Custom Message)").OnClick(func(ctx *application.Context) {
-		app.Dialog.Error().
+		_ = app.Dialog.Error().
 			SetMessage("This is a custom message").
 			Show()
 	})
@@ -191,7 +195,7 @@ func main() {
 		dialog.SetTitle("Custom Icon Example")
 		dialog.SetMessage("Using a custom icon")
 		dialog.SetIcon(icons.WailsLogoWhite)
-		dialog.Show()
+		_ = dialog.Show()
 	})
 
 	openMenu := menu.AddSubmenu("Open")
@@ -200,9 +204,9 @@ func main() {
 			CanChooseFiles(true).
 			PromptForSingleSelection()
 		if result != "" {
-			app.Dialog.Info().SetMessage(result).Show()
+			_ = app.Dialog.Info().SetMessage(result).Show()
 		} else {
-			app.Dialog.Info().SetMessage("No file selected").Show()
+			_ = app.Dialog.Info().SetMessage("No file selected").Show()
 		}
 	})
 	openMenu.Add("Open File (Show Hidden Files)").OnClick(func(ctx *application.Context) {
@@ -212,9 +216,9 @@ func main() {
 			ShowHiddenFiles(true).
 			PromptForSingleSelection()
 		if result != "" {
-			app.Dialog.Info().SetMessage(result).Show()
+			_ = app.Dialog.Info().SetMessage(result).Show()
 		} else {
-			app.Dialog.Info().SetMessage("No file selected").Show()
+			_ = app.Dialog.Info().SetMessage("No file selected").Show()
 		}
 	})
 	openMenu.Add("Open File (Attach to window)").OnClick(func(ctx *application.Context) {
@@ -225,9 +229,9 @@ func main() {
 			AttachToWindow(app.Window.Current()).
 			PromptForSingleSelection()
 		if result != "" {
-			app.Dialog.Info().SetMessage(result).Show()
+			_ = app.Dialog.Info().SetMessage(result).Show()
 		} else {
-			app.Dialog.Info().SetMessage("No file selected").Show()
+			_ = app.Dialog.Info().SetMessage("No file selected").Show()
 		}
 	})
 	openMenu.Add("Open Multiple Files (Show Hidden Files)").OnClick(func(ctx *application.Context) {
@@ -237,9 +241,9 @@ func main() {
 			ShowHiddenFiles(true).
 			PromptForMultipleSelection()
 		if len(result) > 0 {
-			app.Dialog.Info().SetMessage(strings.Join(result, ",")).Show()
+			_ = app.Dialog.Info().SetMessage(strings.Join(result, ",")).Show()
 		} else {
-			app.Dialog.Info().SetMessage("No file selected").Show()
+			_ = app.Dialog.Info().SetMessage("No file selected").Show()
 		}
 	})
 	openMenu.Add("Open Directory").OnClick(func(ctx *application.Context) {
@@ -248,9 +252,9 @@ func main() {
 			CanChooseFiles(false).
 			PromptForSingleSelection()
 		if result != "" {
-			app.Dialog.Info().SetMessage(result).Show()
+			_ = app.Dialog.Info().SetMessage(result).Show()
 		} else {
-			app.Dialog.Info().SetMessage("No directory selected").Show()
+			_ = app.Dialog.Info().SetMessage("No directory selected").Show()
 		}
 	})
 	openMenu.Add("Open Directory (Create Directories)").OnClick(func(ctx *application.Context) {
@@ -260,9 +264,9 @@ func main() {
 			CanChooseFiles(false).
 			PromptForSingleSelection()
 		if result != "" {
-			app.Dialog.Info().SetMessage(result).Show()
+			_ = app.Dialog.Info().SetMessage(result).Show()
 		} else {
-			app.Dialog.Info().SetMessage("No directory selected").Show()
+			_ = app.Dialog.Info().SetMessage("No directory selected").Show()
 		}
 	})
 	openMenu.Add("Open Directory (Resolves Aliases)").OnClick(func(ctx *application.Context) {
@@ -273,9 +277,9 @@ func main() {
 			ResolvesAliases(true).
 			PromptForSingleSelection()
 		if result != "" {
-			app.Dialog.Info().SetMessage(result).Show()
+			_ = app.Dialog.Info().SetMessage(result).Show()
 		} else {
-			app.Dialog.Info().SetMessage("No directory selected").Show()
+			_ = app.Dialog.Info().SetMessage("No directory selected").Show()
 		}
 	})
 	openMenu.Add("Open File/Directory (Set Title)").OnClick(func(ctx *application.Context) {
@@ -291,9 +295,9 @@ func main() {
 
 		result, _ := dialog.PromptForSingleSelection()
 		if result != "" {
-			app.Dialog.Info().SetMessage(result).Show()
+			_ = app.Dialog.Info().SetMessage(result).Show()
 		} else {
-			app.Dialog.Info().SetMessage("No file/directory selected").Show()
+			_ = app.Dialog.Info().SetMessage("No file/directory selected").Show()
 		}
 	})
 	openMenu.Add("Open (Full Example)").OnClick(func(ctx *application.Context) {
@@ -320,9 +324,9 @@ func main() {
 
 		result, _ := dialog.PromptForSingleSelection()
 		if result != "" {
-			app.Dialog.Info().SetMessage(result).Show()
+			_ = app.Dialog.Info().SetMessage(result).Show()
 		} else {
-			app.Dialog.Info().SetMessage("No file selected").Show()
+			_ = app.Dialog.Info().SetMessage("No file selected").Show()
 		}
 	})
 
@@ -331,7 +335,7 @@ func main() {
 		result, _ := app.Dialog.SaveFile().
 			PromptForSingleSelection()
 		if result != "" {
-			app.Dialog.Info().SetMessage(result).Show()
+			_ = app.Dialog.Info().SetMessage(result).Show()
 		}
 	})
 	saveMenu.Add("Select File (Attach To WebviewWindow)").OnClick(func(ctx *application.Context) {
@@ -339,7 +343,7 @@ func main() {
 			AttachToWindow(app.Window.Current()).
 			PromptForSingleSelection()
 		if result != "" {
-			app.Dialog.Info().SetMessage(result).Show()
+			_ = app.Dialog.Info().SetMessage(result).Show()
 		}
 	})
 	saveMenu.Add("Select File (Show Hidden Files)").OnClick(func(ctx *application.Context) {
@@ -347,7 +351,7 @@ func main() {
 			ShowHiddenFiles(true).
 			PromptForSingleSelection()
 		if result != "" {
-			app.Dialog.Info().SetMessage(result).Show()
+			_ = app.Dialog.Info().SetMessage(result).Show()
 		}
 	})
 	saveMenu.Add("Select File (Cannot Create Directories)").OnClick(func(ctx *application.Context) {
@@ -355,7 +359,7 @@ func main() {
 			CanCreateDirectories(false).
 			PromptForSingleSelection()
 		if result != "" {
-			app.Dialog.Info().SetMessage(result).Show()
+			_ = app.Dialog.Info().SetMessage(result).Show()
 		}
 	})
 	saveMenu.Add("Select File (Full Example)").OnClick(func(ctx *application.Context) {
@@ -372,7 +376,7 @@ func main() {
 			ShowHiddenFiles(true).
 			PromptForSingleSelection()
 		if result != "" {
-			app.Dialog.Info().SetMessage(result).Show()
+			_ = app.Dialog.Info().SetMessage(result).Show()
 		}
 	})
 

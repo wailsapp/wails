@@ -27,7 +27,34 @@ type linuxDialog struct {
 	dialog *MessageDialog
 }
 
-func (m *linuxDialog) show() (string, error) {
+func (m *linuxDialog) show() error {
+	windowId := getNativeApplication().getCurrentWindowID()
+	window, _ := globalApplication.Window.GetByID(windowId)
+	var parent uintptr
+	if window != nil {
+		nativeWindow := window.NativeWindow()
+		if nativeWindow != nil {
+			parent = uintptr(nativeWindow)
+		}
+	}
+
+	InvokeAsync(func() {
+		response := runQuestionDialog(pointer(parent), m.dialog)
+		if response >= 0 && response < len(m.dialog.ButtonList) {
+			button := m.dialog.ButtonList[response]
+			if button.Callback != nil {
+				go func() {
+					defer handlePanic()
+					button.Callback()
+				}()
+			}
+		}
+	})
+
+	return nil
+}
+
+func (m *linuxDialog) result() (string, error) {
 	windowId := getNativeApplication().getCurrentWindowID()
 	window, _ := globalApplication.Window.GetByID(windowId)
 	var parent uintptr
@@ -44,8 +71,8 @@ func (m *linuxDialog) show() (string, error) {
 	InvokeAsync(func() {
 		response := runQuestionDialog(pointer(parent), m.dialog)
 		var buttonLabel string
-		if response >= 0 && response < len(m.dialog.Buttons) {
-			button := m.dialog.Buttons[response]
+		if response >= 0 && response < len(m.dialog.ButtonList) {
+			button := m.dialog.ButtonList[response]
 			buttonLabel = button.Label
 			if button.Callback != nil {
 				go func() {

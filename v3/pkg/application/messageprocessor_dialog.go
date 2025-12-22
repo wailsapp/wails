@@ -1,8 +1,6 @@
 package application
 
 import (
-	"runtime"
-
 	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
@@ -34,11 +32,8 @@ func (m *MessageProcessor) processDialogMethod(req *RuntimeRequest, window Windo
 		if err != nil {
 			return nil, errs.WrapInvalidDialogCallErrorf(err, "error parsing dialog options")
 		}
-		if len(options.Buttons) == 0 {
-			switch runtime.GOOS {
-			case "darwin":
-				options.Buttons = []*Button{{Label: "OK", IsDefault: true}}
-			}
+		if len(options.ButtonList) == 0 {
+			options.ButtonList = []*Button{{Label: "OK", IsDefault: true, IsCancel: true}}
 		}
 		var dialog *MessageDialog
 		switch req.Method {
@@ -58,21 +53,12 @@ func (m *MessageProcessor) processDialogMethod(req *RuntimeRequest, window Windo
 
 		dialog.SetTitle(options.Title)
 		dialog.SetMessage(options.Message)
+		dialog.ButtonList = options.ButtonList
 
-		resp := make(chan string, 1)
-		for _, button := range options.Buttons {
-			label := button.Label
-			button.OnClick(func() {
-				select {
-				case resp <- label:
-				default:
-				}
-			})
+		response, err := dialog.Result()
+		if err != nil {
+			return nil, errs.WrapInvalidDialogCallErrorf(err, "Dialog.%s failed: error getting selection", dialogMethodNames[req.Method])
 		}
-		dialog.AddButtons(options.Buttons)
-		dialog.Show()
-
-		response := <-resp
 		return response, nil
 
 	case DialogOpenFile:

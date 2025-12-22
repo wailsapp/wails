@@ -16,6 +16,12 @@ func skipCI(t *testing.T) {
 	if os.Getenv("CI") != "" {
 		t.Skip("Skipping testing in CI environment")
 	}
+	if os.Getenv("WAILS_RUN_FILEEXPLORER_TESTS") == "" {
+		t.Skip("Skipping file explorer integration tests")
+	}
+	if runtime.GOOS == "linux" && os.Getenv("DISPLAY") == "" && os.Getenv("WAYLAND_DISPLAY") == "" {
+		t.Skip("Skipping file explorer integration tests: no DISPLAY/WAYLAND_DISPLAY")
+	}
 }
 
 func TestFileExplorer(t *testing.T) {
