@@ -16,6 +16,21 @@ extern void systrayClickCallback(long, int);
 
 @end
 
+// MenuDelegate implementation
+@implementation MenuDelegate
+
+- (void)menuNeedsUpdate:(NSMenu *)menu {
+    // This method is called automatically by macOS when the menu is about to be displayed
+    // or when it needs updating while already open
+    // The Go side will handle the actual menu rebuilding through menu.Update()
+}
+
+- (void)menuWillOpen:(NSMenu *)menu {
+    // Called when menu is about to open - good hook point for updates
+}
+
+@end
+
 // Create a new system tray
 void* systemTrayNew(long id) {
 	StatusItemController *controller = [[StatusItemController alloc] init];
@@ -241,4 +256,19 @@ void systemTrayPositionWindow(void* nsStatusItem, void* nsWindow, int offset) {
     windowFrame.origin.x = windowX;
     windowFrame.origin.y = windowY;
     [(NSWindow*)nsWindow setFrame:windowFrame display:YES animate:NO];
+}
+
+// Create a new menu delegate
+void* createMenuDelegate(void* menuPtr, long trayID) {
+    MenuDelegate *delegate = [[MenuDelegate alloc] init];
+    delegate.menuPtr = menuPtr;
+    delegate.trayID = trayID;
+    return (void*)delegate;
+}
+
+// Set the delegate on a menu
+void setMenuDelegate(void* nsMenu, void* delegate) {
+    NSMenu *menu = (NSMenu *)nsMenu;
+    MenuDelegate *menuDelegate = (MenuDelegate *)delegate;
+    [menu setDelegate:menuDelegate];
 }

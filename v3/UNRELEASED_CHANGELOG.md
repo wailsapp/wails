@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix macOS system tray menu real-time updates using NSMenuDelegate (#4630)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
