@@ -15,8 +15,8 @@ text {
   font-size: 20px;
 }
 </style>
-<text x="400" y="100" text-anchor="middle" class="sponsorkit-tier-title">Silver Sponsors</text><a href="https://lt.hn" class="sponsorkit-link" target="_blank" id="letheanVPN">
-  <text x="345" y="243" text-anchor="middle" class="sponsorkit-name" fill="currentColor">letheanVPN</text>
+<text x="400" y="100" text-anchor="middle" class="sponsorkit-tier-title">Silver Sponsors</text><a href="https://lt.hn" class="sponsorkit-link" target="_blank" id="LetheanNetwork">
+  <text x="345" y="243" text-anchor="middle" class="sponsorkit-name" fill="currentColor">LetheanNetwork</text>
   
   <clipPath id="ccea882">
     <rect x="295" y="125" width="100" height="100" rx="10" ry="10" />
