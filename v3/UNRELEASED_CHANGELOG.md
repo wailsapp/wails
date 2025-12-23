@@ -23,7 +23,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Prevent app crashing when calling systray.Run() before app.Run() by @leaanthony
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
