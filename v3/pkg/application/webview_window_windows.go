@@ -843,10 +843,13 @@ func (w *windowsWebviewWindow) fullscreen() {
 		w32.GWL_STYLE,
 		w.previousWindowStyle & ^uint32(w32.WS_OVERLAPPEDWINDOW) | (w32.WS_POPUP|w32.WS_VISIBLE),
 	)
+	// Remove WS_EX_TRANSPARENT to ensure mouse events are captured in fullscreen mode.
+	// This fixes click-through issues when Frameless + BackgroundTypeTransparent are used.
+	// See: https://github.com/wailsapp/wails/issues/4408
 	w32.SetWindowLong(
 		w.hwnd,
 		w32.GWL_EXSTYLE,
-		w.previousWindowExStyle & ^uint32(w32.WS_EX_DLGMODALFRAME),
+		w.previousWindowExStyle & ^uint32(w32.WS_EX_DLGMODALFRAME|w32.WS_EX_TRANSPARENT),
 	)
 	w.isCurrentlyFullscreen = true
 	w32.SetWindowPos(w.hwnd, w32.HWND_TOP,
