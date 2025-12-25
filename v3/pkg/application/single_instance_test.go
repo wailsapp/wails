@@ -129,7 +129,8 @@ func TestGetLockPath(t *testing.T) {
 	}
 
 	// Path should be in temp directory
-	tmpDir := os.TempDir()
+	// Use filepath.Clean to normalize paths (os.TempDir may have trailing slash on macOS)
+	tmpDir := filepath.Clean(os.TempDir())
 	if filepath.Dir(path) != tmpDir {
 		t.Errorf("path should be in temp directory %q, got %q", tmpDir, filepath.Dir(path))
 	}
