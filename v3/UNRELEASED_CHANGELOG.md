@@ -23,7 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix custom protocol association documentation to use correct `build/config.yml` format instead of incorrect `wails.json` references
+- Consolidate custom protocol documentation and add Universal Links sections by @leaanthony
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

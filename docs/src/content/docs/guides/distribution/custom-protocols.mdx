@@ -5,7 +5,7 @@ sidebar:
   order: 3
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
 
 Custom URL protocols (also called URL schemes) allow your application to be launched when users click links with your custom protocol, such as `myapp://action` or `myapp://open/document`.
 
@@ -159,6 +159,25 @@ Start-Process "myapp://test/action"
 start myapp://test/action
 ```
 
+#### Universal Links (Web-to-App Linking)
+
+Windows supports **Web-to-App linking**, which works similarly to Universal Links on macOS. When deploying your application as an MSIX package, you can enable HTTPS links to launch your app directly.
+
+To enable Web-to-App linking, follow the [Microsoft guide on web-to-app linking](https://learn.microsoft.com/en-us/windows/apps/develop/launch/web-to-app-linking). You'll need to:
+
+1. **Add App URI Handler in your MSIX manifest**:
+   ```xml
+   <uap3:Extension Category="windows.appUriHandler">
+     <uap3:AppUriHandler>
+       <uap3:Host Name="myawesomeapp.com"/>
+     </uap3:AppUriHandler>
+   </uap3:Extension>
+   ```
+
+2. **Configure `windows-app-web-link` on your website:** Host a `windows-app-web-link` file at `https://myawesomeapp.com/.well-known/windows-app-web-link`. This file should contain your app's package information and the paths it handles.
+
+When a Web-to-App link launches your application, you'll receive the same `ApplicationOpenedWithURL` event as with custom protocol schemes.
+
   </TabItem>
 
   <TabItem label="macOS" icon="apple">
@@ -198,6 +217,36 @@ open "myapp://test/action"
 # Check registered handlers
 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -dump | grep myapp
 ```
+
+#### Universal Links
+
+In addition to custom protocol schemes, macOS also supports **Universal Links**, which allow your app to be launched by regular HTTPS links (e.g., `https://myawesomeapp.com/path`). Universal Links provide a seamless user experience between your web and desktop app.
+
+<Aside type="caution">
+Universal Links require your macOS app to be **code-signed** with a valid Apple Developer certificate and provisioning profile. Unsigned or ad-hoc signed builds will not be able to open Universal Links. Ensure your app is properly signed before testing.
+</Aside>
+
+To enable Universal Links, follow the [Apple guide on supporting Universal Links in your app](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app). You'll need to:
+
+1. **Add entitlements** in your `entitlements.plist`:
+   ```xml
+   <key>com.apple.developer.associated-domains</key>
+   <array>
+     <string>applinks:myawesomeapp.com</string>
+   </array>
+   ```
+
+2. **Add NSUserActivityTypes to Info.plist**:
+   ```xml
+   <key>NSUserActivityTypes</key>
+   <array>
+     <string>NSUserActivityTypeBrowsingWeb</string>
+   </array>
+   ```
+
+3. **Configure `apple-app-site-association` on your website:** Host an `apple-app-site-association` file at `https://myawesomeapp.com/.well-known/apple-app-site-association`.
+
+When a Universal Link triggers your app, you'll receive the same `ApplicationOpenedWithURL` event, making the handling code identical to custom protocol schemes.
 
   </TabItem>
 
