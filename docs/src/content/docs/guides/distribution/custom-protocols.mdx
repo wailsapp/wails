@@ -159,13 +159,35 @@ Start-Process "myapp://test/action"
 start myapp://test/action
 ```
 
+### Windows MSIX Package
+
+Custom protocols are also automatically registered when using MSIX packaging.
+
+#### Automatic Registration
+
+When you build your application with MSIX, the manifest automatically includes protocol registrations from your `build/config.yml` protocols configuration.
+
+The generated manifest includes:
+
+```xml
+<uap:Extension Category="windows.protocol">
+  <uap:Protocol Name="myapp">
+    <uap:DisplayName>My Application Protocol</uap:DisplayName>
+  </uap:Protocol>
+</uap:Extension>
+```
+
 #### Universal Links (Web-to-App Linking)
 
 Windows supports **Web-to-App linking**, which works similarly to Universal Links on macOS. When deploying your application as an MSIX package, you can enable HTTPS links to launch your app directly.
 
+<Aside type="note">
+Web-to-App linking requires manual manifest configuration. Custom protocol schemes are automatically configured from `build/config.yml`, but associated domains must be added manually to your MSIX manifest.
+</Aside>
+
 To enable Web-to-App linking, follow the [Microsoft guide on web-to-app linking](https://learn.microsoft.com/en-us/windows/apps/develop/launch/web-to-app-linking). You'll need to:
 
-1. **Add App URI Handler in your MSIX manifest**:
+1. **Manually add App URI Handler to your MSIX manifest** (`build/windows/msix/app_manifest.xml`):
    ```xml
    <uap3:Extension Category="windows.appUriHandler">
      <uap3:AppUriHandler>
