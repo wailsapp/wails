@@ -65,8 +65,14 @@ type iosDialog struct {
 	dialog *MessageDialog
 }
 
-func (d *iosDialog) show() {
+func (d *iosDialog) show() error {
 	// TODO: Implement using UIAlertController
+	return nil
+}
+
+func (d *iosDialog) result() (string, error) {
+	// TODO: Implement using UIAlertController
+	return "", nil
 }
 
 func newDialogImpl(d *MessageDialog) *iosDialog {

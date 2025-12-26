@@ -269,46 +269,48 @@ Dialogs are accessed through the `app.Dialog` manager. See [Dialogs API](/refere
 
 ```go
 // Information dialog
-app.Dialog.Info().
-    SetTitle("Success").
-    SetMessage("Operation completed!").
-    Show()
+
+_ = app.Dialog.Info().
+	SetTitle("Success").
+	SetMessage("Operation completed!").
+	Show()
 
 // Error dialog
-app.Dialog.Error().
-    SetTitle("Error").
-    SetMessage("Something went wrong.").
-    Show()
+
+_ = app.Dialog.Error().
+	SetTitle("Error").
+	SetMessage("Something went wrong.").
+	Show()
 
 // Warning dialog
-app.Dialog.Warning().
-    SetTitle("Warning").
-    SetMessage("This action cannot be undone.").
-    Show()
+
+_ = app.Dialog.Warning().
+	SetTitle("Warning").
+	SetMessage("This action cannot be undone.").
+	Show()
 ```
 
 ### Question Dialogs
 
-Question dialogs use button callbacks to handle user responses:
+Question dialogs use `Result()` to handle user responses:
 
 ```go
 dialog := app.Dialog.Question().
     SetTitle("Confirm").
     SetMessage("Continue?")
 
-yes := dialog.AddButton("Yes")
-yes.OnClick(func() {
-    // Handle yes
-})
+dialog.Buttons(
+	application.Button{Label: "Yes", IsDefault: true},
+	application.Button{Label: "No", IsCancel: true},
+)
 
-no := dialog.AddButton("No")
-no.OnClick(func() {
-    // Handle no
-})
-
-dialog.SetDefaultButton(yes)
-dialog.SetCancelButton(no)
-dialog.Show()
+result, _ := dialog.Result()
+switch result {
+case "Yes":
+	// Handle yes
+case "No":
+	// Handle no
+}
 ```
 
 ### File Dialogs

@@ -324,10 +324,10 @@ func (dm *DialogManager) Info() *MessageDialog
 
 **Example:**
 ```go
-app.Dialog.Info().
-    SetTitle("Success").
-    SetMessage("File saved successfully!").
-    Show()
+_ = app.Dialog.Info().
+	SetTitle("Success").
+	SetMessage("File saved successfully!").
+	Show()
 ```
 
 ### Error()
@@ -340,10 +340,10 @@ func (dm *DialogManager) Error() *MessageDialog
 
 **Example:**
 ```go
-app.Dialog.Error().
-    SetTitle("Error").
-    SetMessage("Failed to save file: " + err.Error()).
-    Show()
+_ = app.Dialog.Error().
+	SetTitle("Error").
+	SetMessage("Failed to save file: " + err.Error()).
+	Show()
 ```
 
 ### Warning()
@@ -356,10 +356,10 @@ func (dm *DialogManager) Warning() *MessageDialog
 
 **Example:**
 ```go
-app.Dialog.Warning().
-    SetTitle("Warning").
-    SetMessage("This action cannot be undone.").
-    Show()
+_ = app.Dialog.Warning().
+	SetTitle("Warning").
+	SetMessage("This action cannot be undone.").
+	Show()
 ```
 
 ### Question()
@@ -376,24 +376,19 @@ dialog := app.Dialog.Question().
     SetTitle("Confirm").
     SetMessage("Do you want to save changes?")
 
-save := dialog.AddButton("Save")
-save.OnClick(func() {
-    saveDocument()
-})
+dialog.Buttons(
+	application.Button{Label: "Save", IsDefault: true},
+	application.Button{Label: "Don't Save"},
+	application.Button{Label: "Cancel", IsCancel: true},
+)
 
-dontSave := dialog.AddButton("Don't Save")
-dontSave.OnClick(func() {
-    // Continue without saving
-})
-
-cancel := dialog.AddButton("Cancel")
-cancel.OnClick(func() {
-    // Do nothing
-})
-
-dialog.SetDefaultButton(save)
-dialog.SetCancelButton(cancel)
-dialog.Show()
+result, _ := dialog.Result()
+switch result {
+case "Save":
+	saveDocument()
+case "Don't Save":
+	// Continue without saving
+}
 ```
 
 ### MessageDialog Methods
@@ -422,52 +417,36 @@ Sets a custom icon for the dialog.
 func (d *MessageDialog) SetIcon(icon []byte) *MessageDialog
 ```
 
-#### AddButton()
+#### Buttons()
 
-Adds a button to the dialog and returns the button for configuration.
-
-```go
-func (d *MessageDialog) AddButton(label string) *Button
-```
-
-**Returns:** `*Button` - The button instance for further configuration
-
-**Example:**
-```go
-button := dialog.AddButton("OK")
-button.OnClick(func() {
-    // Handle click
-})
-```
-
-#### SetDefaultButton()
-
-Sets which button is the default (activated by pressing Enter).
+Sets the dialog buttons.
 
 ```go
-func (d *MessageDialog) SetDefaultButton(button *Button) *MessageDialog
+func (d *MessageDialog) Buttons(buttons ...Button) *MessageDialog
 ```
 
 **Example:**
 ```go
-yes := dialog.AddButton("Yes")
-no := dialog.AddButton("No")
-dialog.SetDefaultButton(yes)
+dialog.Buttons(
+	application.Button{Label: "Yes"},
+	application.Button{Label: "No", IsDefault: true, IsCancel: true},
+)
 ```
 
-#### SetCancelButton()
+#### Default()
 
-Sets which button is the cancel button (activated by pressing Escape).
+Marks the button with the given label as the default (activated by pressing Enter).
 
 ```go
-func (d *MessageDialog) SetCancelButton(button *Button) *MessageDialog
+func (d *MessageDialog) Default(label string) *MessageDialog
 ```
 
-**Example:**
+#### Cancel()
+
+Marks the button with the given label as the cancel button (activated by pressing Escape).
+
 ```go
-ok := dialog.AddButton("OK")
-cancel := dialog.AddButton("Cancel")
-dialog.SetCancelButton(cancel)
+func (d *MessageDialog) Cancel(label string) *MessageDialog
 ```
 
 #### AttachToWindow()
@@ -480,38 +459,18 @@ func (d *MessageDialog) AttachToWindow(window Window) *MessageDialog
 
 #### Show()
 
-Shows the dialog. Button callbacks handle user responses.
+Shows the dialog (non-blocking).
 
 ```go
-func (d *MessageDialog) Show()
+func (d *MessageDialog) Show() error
 ```
 
-**Note:** `Show()` does not return a value. Use button callbacks to handle user responses.
+#### Result()
 
-### Button Methods
-
-#### OnClick()
-
-Sets the callback function for when the button is clicked.
+Shows the dialog (blocking) and returns the clicked button label.
 
 ```go
-func (b *Button) OnClick(callback func()) *Button
-```
-
-#### SetAsDefault()
-
-Marks this button as the default button.
-
-```go
-func (b *Button) SetAsDefault() *Button
-```
-
-#### SetAsCancel()
-
-Marks this button as the cancel button.
-
-```go
-func (b *Button) SetAsCancel() *Button
+func (d *MessageDialog) Result() (string, error)
 ```
 
 ## Complete Examples
@@ -575,17 +534,17 @@ func (s *Service) DeleteItem(app *application.App, id string) {
         SetTitle("Confirm Delete").
         SetMessage("Are you sure you want to delete this item?")
 
-    deleteBtn := dialog.AddButton("Delete")
-    deleteBtn.OnClick(func() {
-        deleteFromDatabase(id)
-    })
+    dialog.Buttons(
+		application.Button{Label: "Delete"},
+		application.Button{Label: "Cancel", IsDefault: true, IsCancel: true},
+	)
 
-    cancelBtn := dialog.AddButton("Cancel")
-    // Cancel does nothing
+    result, err := dialog.Result()
+    if err != nil || result != "Delete" {
+        return
+    }
 
-    dialog.SetDefaultButton(cancelBtn) // Default to Cancel for safety
-    dialog.SetCancelButton(cancelBtn)
-    dialog.Show()
+    deleteFromDatabase(id)
 }
 ```
 
@@ -597,23 +556,24 @@ func (s *Editor) PromptSaveChanges(app *application.App) {
         SetTitle("Unsaved Changes").
         SetMessage("Do you want to save your changes before closing?")
 
-    save := dialog.AddButton("Save")
-    save.OnClick(func() {
+    dialog.Buttons(
+		application.Button{Label: "Save", IsDefault: true},
+		application.Button{Label: "Don't Save"},
+		application.Button{Label: "Cancel", IsCancel: true},
+	)
+
+    result, err := dialog.Result()
+    if err != nil {
+        return
+    }
+
+    switch result {
+    case "Save":
         s.Save()
         s.Close()
-    })
-
-    dontSave := dialog.AddButton("Don't Save")
-    dontSave.OnClick(func() {
+    case "Don't Save":
         s.Close()
-    })
-
-    cancel := dialog.AddButton("Cancel")
-    // Cancel does nothing, dialog closes
-
-    dialog.SetDefaultButton(save)
-    dialog.SetCancelButton(cancel)
-    dialog.Show()
+    }
 }
 ```
 
@@ -632,7 +592,7 @@ func (s *Service) ProcessMultipleFiles(app *application.App) error {
     }
 
     if len(paths) == 0 {
-        app.Dialog.Info().
+        _ = app.Dialog.Info().
             SetTitle("No Files Selected").
             SetMessage("Please select at least one file.").
             Show()
@@ -643,7 +603,7 @@ func (s *Service) ProcessMultipleFiles(app *application.App) error {
     for _, path := range paths {
         err := processFile(path)
         if err != nil {
-            app.Dialog.Error().
+            _ = app.Dialog.Error().
                 SetTitle("Processing Error").
                 SetMessage(fmt.Sprintf("Failed to process %s: %v", path, err)).
                 Show()
@@ -652,7 +612,7 @@ func (s *Service) ProcessMultipleFiles(app *application.App) error {
     }
 
     // Show completion
-    app.Dialog.Info().
+    _ = app.Dialog.Info().
         SetTitle("Complete").
         SetMessage(fmt.Sprintf("Successfully processed %d files", len(paths))).
         Show()
@@ -681,7 +641,7 @@ func (s *Service) SaveFile(app *application.App, data []byte) error {
     err = os.WriteFile(path, data, 0644)
     if err != nil {
         // Show error dialog
-        app.Dialog.Error().
+        _ = app.Dialog.Error().
             SetTitle("Save Failed").
             SetMessage(fmt.Sprintf("Could not save file: %v", err)).
             Show()
@@ -689,7 +649,7 @@ func (s *Service) SaveFile(app *application.App, data []byte) error {
     }
 
     // Show success
-    app.Dialog.Info().
+    _ = app.Dialog.Info().
         SetTitle("Success").
         SetMessage("File saved successfully!").
         Show()
@@ -742,7 +702,6 @@ func (s *Service) OpenWithDefaults(app *application.App) (string, error) {
 - **Show confirmation for destructive actions** - Use Question dialogs
 - **Provide feedback** - Use Info dialogs for success messages
 - **Set sensible defaults** - Default directory, filename, etc.
-- **Use callbacks for button actions** - Handle user responses properly
 
 ### Don't
 
@@ -806,14 +765,15 @@ func (s *Service) OpenRecent(app *application.App, recentPath string) error {
             SetTitle("File Not Found").
             SetMessage("The file no longer exists. Remove from recent files?")
 
-        remove := dialog.AddButton("Remove")
-        remove.OnClick(func() {
-            s.removeFromRecent(recentPath)
-        })
+        dialog.Buttons(
+			application.Button{Label: "Remove"},
+			application.Button{Label: "Cancel", IsDefault: true, IsCancel: true},
+		)
 
-        cancel := dialog.AddButton("Cancel")
-        dialog.SetCancelButton(cancel)
-        dialog.Show()
+        result, _ := dialog.Result()
+        if result == "Remove" {
+			s.removeFromRecent(recentPath)
+        }
 
         return err
     }

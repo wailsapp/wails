@@ -65,8 +65,14 @@ type androidDialog struct {
 	dialog *MessageDialog
 }
 
-func (d *androidDialog) show() {
+func (d *androidDialog) show() error {
 	// TODO: Implement using AlertDialog
+	return nil
+}
+
+func (d *androidDialog) result() (string, error) {
+	// TODO: Implement using AlertDialog
+	return "", nil
 }
 
 func newDialogImpl(d *MessageDialog) *androidDialog {

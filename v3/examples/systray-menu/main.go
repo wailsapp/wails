@@ -2,10 +2,11 @@ package main
 
 import (
 	_ "embed"
-	"github.com/wailsapp/wails/v3/pkg/events"
 	"log"
 	"runtime"
 	"time"
+
+	"github.com/wailsapp/wails/v3/pkg/events"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/icons"
@@ -59,14 +60,18 @@ func main() {
 
 	myMenu.Add("Hello World!").OnClick(func(ctx *application.Context) {
 		println("Hello World!")
-		q := app.Dialog.Question().SetTitle("Ready?").SetMessage("Are you feeling ready?")
-		q.AddButton("Yes").OnClick(func() {
-			println("Awesome!")
-		})
-		q.AddButton("No").SetAsDefault().OnClick(func() {
-			println("Boo!")
-		})
-		q.Show()
+		q := app.Dialog.Question().
+			SetTitle("Ready?").
+			SetMessage("Are you feeling ready?").
+			Buttons(
+				application.Button{Label: "Yes", Callback: func() {
+					println("Awesome!")
+				}},
+				application.Button{Label: "No", IsDefault: true, Callback: func() {
+					println("Boo!")
+				}},
+			)
+		_ = q.Show()
 	})
 	subMenu := myMenu.AddSubmenu("Submenu")
 	subMenu.Add("Click me!").OnClick(func(ctx *application.Context) {
@@ -75,7 +80,7 @@ func main() {
 	myMenu.AddSeparator()
 	myMenu.AddCheckbox("Checked", true).OnClick(func(ctx *application.Context) {
 		println("Checked: ", ctx.ClickedMenuItem().Checked())
-		app.Dialog.Info().SetTitle("Hello World!").SetMessage("Hello World!").Show()
+		_ = app.Dialog.Info().SetTitle("Hello World!").SetMessage("Hello World!").Show()
 	})
 	myMenu.Add("Enabled").OnClick(func(ctx *application.Context) {
 		println("Click me!")

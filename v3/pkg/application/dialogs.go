@@ -66,14 +66,15 @@ func (b *Button) SetAsCancel() *Button {
 }
 
 type messageDialogImpl interface {
-	show()
+	show() error
+	result() (string, error)
 }
 
 type MessageDialogOptions struct {
 	DialogType DialogType
 	Title      string
 	Message    string
-	Buttons    []*Button
+	ButtonList []*Button `json:"Buttons,omitempty"`
 	Icon       []byte
 	window     Window
 }
@@ -106,11 +107,18 @@ func (d *MessageDialog) SetTitle(title string) *MessageDialog {
 	return d
 }
 
-func (d *MessageDialog) Show() {
+func (d *MessageDialog) Show() error {
 	if d.impl == nil {
 		d.impl = newDialogImpl(d)
 	}
-	InvokeSync(d.impl.show)
+	return d.impl.show()
+}
+
+func (d *MessageDialog) Result() (string, error) {
+	if d.impl == nil {
+		d.impl = newDialogImpl(d)
+	}
+	return d.impl.result()
 }
 
 func (d *MessageDialog) SetIcon(icon []byte) *MessageDialog {
@@ -118,16 +126,13 @@ func (d *MessageDialog) SetIcon(icon []byte) *MessageDialog {
 	return d
 }
 
-func (d *MessageDialog) AddButton(s string) *Button {
-	result := &Button{
-		Label: s,
+func (d *MessageDialog) Buttons(buttons ...Button) *MessageDialog {
+	result := make([]*Button, 0, len(buttons))
+	for _, b := range buttons {
+		bCopy := b
+		result = append(result, &bCopy)
 	}
-	d.Buttons = append(d.Buttons, result)
-	return result
-}
-
-func (d *MessageDialog) AddButtons(buttons []*Button) *MessageDialog {
-	d.Buttons = buttons
+	d.ButtonList = result
 	return d
 }
 
@@ -136,19 +141,17 @@ func (d *MessageDialog) AttachToWindow(window Window) *MessageDialog {
 	return d
 }
 
-func (d *MessageDialog) SetDefaultButton(button *Button) *MessageDialog {
-	for _, b := range d.Buttons {
-		b.IsDefault = false
+func (d *MessageDialog) Default(label string) *MessageDialog {
+	for _, b := range d.ButtonList {
+		b.IsDefault = b.Label == label
 	}
-	button.IsDefault = true
 	return d
 }
 
-func (d *MessageDialog) SetCancelButton(button *Button) *MessageDialog {
-	for _, b := range d.Buttons {
-		b.IsCancel = false
+func (d *MessageDialog) Cancel(label string) *MessageDialog {
+	for _, b := range d.ButtonList {
+		b.IsCancel = b.Label == label
 	}
-	button.IsCancel = true
 	return d
 }
 

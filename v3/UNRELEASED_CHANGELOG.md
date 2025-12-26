@@ -17,12 +17,16 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add `MessageDialog.Buttons(...)` method for defining dialog buttons inline (#4810)
+- Add `MessageDialog.Result() (string, error)` method for synchronously retrieving the clicked button label (#4810)
 
 ## Changed
 <!-- Changes in existing functionality -->
+- **BREAKING**: `MessageDialog.Show()` now returns `error` and is non-blocking. Use `MessageDialog.Result() (string, error)` for synchronous workflows and to retrieve the clicked button label (#4810)
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix `IsCancel` button not responding to Escape key on Linux (GTK) (#4810)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

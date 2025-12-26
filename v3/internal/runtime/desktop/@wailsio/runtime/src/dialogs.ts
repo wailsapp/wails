@@ -43,7 +43,7 @@ export interface OpenFileDialogOptions {
     /** Indicates if file packages should be treated as directories. */
     TreatsFilePackagesAsDirectories?: boolean;
     /** Indicates if other file types are allowed. */
-    AllowsOtherFiletypes?: boolean;
+    AllowsOtherFileTypes?: boolean;
     /** Array of file filters. */
     Filters?: FileFilter[];
     /** Title of the dialog. */
@@ -78,7 +78,7 @@ export interface SaveFileDialogOptions {
     /** Indicates if file packages should be treated as directories. */
     TreatsFilePackagesAsDirectories?: boolean;
     /** Indicates if other file types are allowed. */
-    AllowsOtherFiletypes?: boolean;
+    AllowsOtherFileTypes?: boolean;
     /** Array of file filters. */
     Filters?: FileFilter[];
     /** Title of the dialog. */
@@ -172,7 +172,7 @@ export function Question(options: MessageDialogOptions): Promise<string> { retur
 export function OpenFile(options: OpenFileDialogOptions & { AllowsMultipleSelection: true }): Promise<string[]>;
 export function OpenFile(options: OpenFileDialogOptions & { AllowsMultipleSelection?: false | undefined }): Promise<string>;
 export function OpenFile(options: OpenFileDialogOptions): Promise<string | string[]>;
-export function OpenFile(options: OpenFileDialogOptions): Promise<string | string[]> { return dialog(DialogOpenFile, options) ?? []; }
+export function OpenFile(options: OpenFileDialogOptions): Promise<string | string[]> { return dialog(DialogOpenFile, options); }
 
 /**
  * Presents a file selection dialog to pick a file to save.

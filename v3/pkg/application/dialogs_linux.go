@@ -27,7 +27,7 @@ type linuxDialog struct {
 	dialog *MessageDialog
 }
 
-func (m *linuxDialog) show() {
+func (m *linuxDialog) show() error {
 	windowId := getNativeApplication().getCurrentWindowID()
 	window, _ := globalApplication.Window.GetByID(windowId)
 	var parent uintptr
@@ -40,8 +40,8 @@ func (m *linuxDialog) show() {
 
 	InvokeAsync(func() {
 		response := runQuestionDialog(pointer(parent), m.dialog)
-		if response >= 0 && response < len(m.dialog.Buttons) {
-			button := m.dialog.Buttons[response]
+		if response >= 0 && response < len(m.dialog.ButtonList) {
+			button := m.dialog.ButtonList[response]
 			if button.Callback != nil {
 				go func() {
 					defer handlePanic()
@@ -50,6 +50,42 @@ func (m *linuxDialog) show() {
 			}
 		}
 	})
+
+	return nil
+}
+
+func (m *linuxDialog) result() (string, error) {
+	windowId := getNativeApplication().getCurrentWindowID()
+	window, _ := globalApplication.Window.GetByID(windowId)
+	var parent uintptr
+	if window != nil {
+		nativeWindow := window.NativeWindow()
+		if nativeWindow != nil {
+			parent = uintptr(nativeWindow)
+		}
+	}
+
+	// Channel to receive the result
+	resultChan := make(chan string, 1)
+
+	InvokeAsync(func() {
+		response := runQuestionDialog(pointer(parent), m.dialog)
+		var buttonLabel string
+		if response >= 0 && response < len(m.dialog.ButtonList) {
+			button := m.dialog.ButtonList[response]
+			buttonLabel = button.Label
+			if button.Callback != nil {
+				go func() {
+					defer handlePanic()
+					button.Callback()
+				}()
+			}
+		}
+		resultChan <- buttonLabel
+	})
+
+	// Wait for and return the result
+	return <-resultChan, nil
 }
 
 func newDialogImpl(d *MessageDialog) *linuxDialog {

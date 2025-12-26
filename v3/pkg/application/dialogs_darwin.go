@@ -371,12 +371,12 @@ type macosDialog struct {
 	nsDialog unsafe.Pointer
 }
 
-func (m *macosDialog) show() {
+func (m *macosDialog) show() error {
 	InvokeAsync(func() {
 
 		// Mac can only have 4 Buttons on a dialog
-		if len(m.dialog.Buttons) > 4 {
-			m.dialog.Buttons = m.dialog.Buttons[:4]
+		if len(m.dialog.ButtonList) > 4 {
+			m.dialog.ButtonList = m.dialog.ButtonList[:4]
 		}
 
 		if m.nsDialog != nil {
@@ -418,18 +418,18 @@ func (m *macosDialog) show() {
 		m.nsDialog = C.createAlert(alertType, title, message, iconData, iconLength)
 
 		// Reverse the Buttons so that the default is on the right
-		reversedButtons := make([]*Button, len(m.dialog.Buttons))
+		reversedButtons := make([]*Button, len(m.dialog.ButtonList))
 		var count = 0
-		for i := len(m.dialog.Buttons) - 1; i >= 0; i-- {
-			button := m.dialog.Buttons[i]
+		for i := len(m.dialog.ButtonList) - 1; i >= 0; i-- {
+			button := m.dialog.ButtonList[i]
 			C.alertAddButton(m.nsDialog, C.CString(button.Label), C.bool(button.IsDefault), C.bool(button.IsCancel))
-			reversedButtons[count] = m.dialog.Buttons[i]
+			reversedButtons[count] = m.dialog.ButtonList[i]
 			count++
 		}
 
 		var callBackID int
 		callBackID = addDialogCallback(func(buttonPressed int) {
-			if len(m.dialog.Buttons) > buttonPressed {
+			if len(m.dialog.ButtonList) > buttonPressed {
 				button := reversedButtons[buttonPressed]
 				if button.Callback != nil {
 					button.Callback()
@@ -442,6 +442,88 @@ func (m *macosDialog) show() {
 
 	})
 
+	return nil
+}
+
+func (m *macosDialog) result() (string, error) {
+	// Channel to receive the result
+	resultChan := make(chan string, 1)
+
+	InvokeAsync(func() {
+
+		// Mac can only have 4 Buttons on a dialog
+		if len(m.dialog.ButtonList) > 4 {
+			m.dialog.ButtonList = m.dialog.ButtonList[:4]
+		}
+
+		if m.nsDialog != nil {
+			C.releaseDialog(m.nsDialog)
+		}
+		var title *C.char
+		if m.dialog.Title != "" {
+			title = C.CString(m.dialog.Title)
+		}
+		var message *C.char
+		if m.dialog.Message != "" {
+			message = C.CString(m.dialog.Message)
+		}
+		var iconData unsafe.Pointer
+		var iconLength C.int
+		if m.dialog.Icon != nil {
+			iconData = unsafe.Pointer(&m.dialog.Icon[0])
+			iconLength = C.int(len(m.dialog.Icon))
+		} else {
+			// if it's an error, use the application Icon
+			if m.dialog.DialogType == ErrorDialogType {
+				if globalApplication.options.Icon != nil {
+					iconData = unsafe.Pointer(&globalApplication.options.Icon[0])
+					iconLength = C.int(len(globalApplication.options.Icon))
+				}
+			}
+		}
+		var parent unsafe.Pointer
+		if m.dialog.window != nil {
+			// get NSWindow from window
+			parent = m.dialog.window.NativeWindow()
+		}
+
+		alertType, ok := alertTypeMap[m.dialog.DialogType]
+		if !ok {
+			alertType = C.NSAlertStyleInformational
+		}
+
+		m.nsDialog = C.createAlert(alertType, title, message, iconData, iconLength)
+
+		// Reverse the Buttons so that the default is on the right
+		reversedButtons := make([]*Button, len(m.dialog.ButtonList))
+		var count = 0
+		for i := len(m.dialog.ButtonList) - 1; i >= 0; i-- {
+			button := m.dialog.ButtonList[i]
+			C.alertAddButton(m.nsDialog, C.CString(button.Label), C.bool(button.IsDefault), C.bool(button.IsCancel))
+			reversedButtons[count] = m.dialog.ButtonList[i]
+			count++
+		}
+
+		var callBackID int
+		callBackID = addDialogCallback(func(buttonPressed int) {
+			var buttonLabel string
+			if len(m.dialog.ButtonList) > buttonPressed {
+				button := reversedButtons[buttonPressed]
+				buttonLabel = button.Label
+				if button.Callback != nil {
+					button.Callback()
+				}
+			}
+			removeDialogCallback(callBackID)
+			resultChan <- buttonLabel
+		})
+
+		C.dialogRunModal(m.nsDialog, parent, C.int(callBackID))
+
+	})
+
+	// Wait for and return the result
+	return <-resultChan, nil
 }
 
 func newDialogImpl(d *MessageDialog) *macosDialog {
