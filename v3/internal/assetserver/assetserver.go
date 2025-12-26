@@ -1,12 +1,15 @@
 package assetserver
 
 import (
+	"bytes"
 	"fmt"
 	"net"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 )
 
 const (
@@ -14,6 +17,19 @@ const (
 	webViewRequestHeaderWindowName = "x-wails-window-name"
 	HeaderAcceptLanguage           = "accept-language"
 )
+
+// Platform-specific options set during application initialization.
+var (
+	disableGStreamerFix    bool
+	enableGStreamerCaching bool
+)
+
+// SetGStreamerOptions configures GStreamer workaround options on Linux.
+// This is called during application initialization.
+func SetGStreamerOptions(disable, enableCaching bool) {
+	disableGStreamerFix = disable
+	enableGStreamerCaching = enableCaching
+}
 
 type RuntimeHandler interface {
 	HandleRuntimeCall(w http.ResponseWriter, r *http.Request)
@@ -94,6 +110,13 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 	//}
 
 	reqPath := req.URL.Path
+
+	// Handle internal Wails endpoints - these work regardless of user's handler
+	if strings.HasPrefix(reqPath, "/wails/") {
+		a.serveWailsEndpoint(rw, reqPath[6:]) // Strip "/wails" prefix
+		return
+	}
+
 	switch reqPath {
 	case "", "/", "/index.html":
 		// Cache the accept-language header
@@ -131,6 +154,40 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 
 func (a *AssetServer) AttachServiceHandler(route string, handler http.Handler) {
 	a.services = append(a.services, service{route, handler})
+}
+
+// serveWailsEndpoint handles internal /wails/* endpoints.
+func (a *AssetServer) serveWailsEndpoint(rw http.ResponseWriter, path string) {
+	rw.Header().Set(HeaderContentType, "application/javascript")
+	switch path {
+	case "/runtime.js":
+		rw.Write(bundledassets.RuntimeJS)
+	case "/platform.js":
+		rw.Write(getPlatformJS())
+	default:
+		rw.WriteHeader(http.StatusNotFound)
+	}
+}
+
+// getPlatformJS returns the platform-specific JavaScript based on current options.
+func getPlatformJS() []byte {
+	if platformJS == nil {
+		return nil
+	}
+
+	// If the fix is disabled, return empty
+	if disableGStreamerFix {
+		return nil
+	}
+
+	// If caching is not enabled, modify the JS to disable caching
+	if !enableGStreamerCaching {
+		return bytes.ReplaceAll(platformJS,
+			[]byte("const ENABLE_CACHING = true;"),
+			[]byte("const ENABLE_CACHING = false;"))
+	}
+
+	return platformJS
 }
 
 func (a *AssetServer) writeBlob(rw http.ResponseWriter, filename string, blob []byte) {
