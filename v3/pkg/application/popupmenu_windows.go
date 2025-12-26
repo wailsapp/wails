@@ -1,8 +1,10 @@
 package application
 
 import (
-	"github.com/wailsapp/wails/v3/pkg/w32"
+	"sync/atomic"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
 const (
@@ -49,6 +51,7 @@ type Win32Menu struct {
 	currentMenuID int
 	onMenuClose   func()
 	onMenuOpen    func()
+	isShowing     atomic.Bool // guards against concurrent TrackPopupMenuEx calls
 }
 
 func (p *Win32Menu) newMenu() w32.HMENU {
@@ -189,6 +192,12 @@ func NewApplicationMenu(parent *windowsWebviewWindow, inputMenu *Menu) *Win32Men
 }
 
 func (p *Win32Menu) ShowAt(x int, y int) {
+	// Prevent concurrent menu displays - TrackPopupMenuEx is blocking and
+	// calling it while another popup is showing causes "TrackPopupMenu failed"
+	if !p.isShowing.CompareAndSwap(false, true) {
+		return
+	}
+	defer p.isShowing.Store(false)
 
 	w32.SetForegroundWindow(p.parent)
 
@@ -216,7 +225,10 @@ func (p *Win32Menu) ShowAt(x int, y int) {
 	}
 
 	if !w32.TrackPopupMenuEx(p.menu, menuFlags, int32(x), int32(y), p.parent, nil) {
-		globalApplication.fatal("TrackPopupMenu failed")
+		// TrackPopupMenuEx can fail if called during menu transitions or rapid clicks.
+		// This is not fatal - just skip this menu display attempt.
+		globalApplication.debug("TrackPopupMenu failed - menu may already be showing")
+		return
 	}
 
 	if p.onMenuClose != nil {

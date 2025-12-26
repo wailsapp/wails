@@ -23,7 +23,6 @@ After processing, the content will be moved to the main changelog and this file 
 ## Changed
 <!-- Changes in existing functionality -->
 - **BREAKING**: `MessageDialog.Show()` now returns `error` and is non-blocking. Use `MessageDialog.Result() (string, error)` for synchronous workflows and to retrieve the clicked button label (#4810)
-- Update the documentation for Window `X/Y` options @ruhuang2001
 
 ## Fixed
 <!-- Bug fixes -->
