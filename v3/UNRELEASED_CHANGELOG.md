@@ -23,7 +23,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix Windows systray menu crash when clicking icon repeatedly by adding guard against concurrent TrackPopupMenuEx calls (#4151) by @leaanthony
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
