@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add unit tests for pkg/application by @leaanthony
 - Add custom protocol support to MSIX packaging by @leaanthony
 
 ## Changed
