@@ -373,14 +373,8 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 }
 - (void)webView:(nonnull WKWebView *)webView startURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
     NSURL *url = urlSchemeTask.request.URL;
-    printf("🎨🎨🎨 [DARWIN] URL SCHEME HANDLER: %s\n", [url.absoluteString UTF8String]);
     fflush(stdout);
     if ([url.path hasSuffix:@".css"] || [url.path containsString:@"style"]) {
-        printf("🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨\n");
-        printf("🎨 [DARWIN] CSS REQUEST INTERCEPTED!\n");
-        printf("🎨 URL: %s\n", [url.absoluteString UTF8String]);
-        printf("🎨 Path: %s\n", [url.path UTF8String]);
-        printf("🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨\n");
         fflush(stdout);
     }
     processURLRequest(self.windowId, urlSchemeTask);
