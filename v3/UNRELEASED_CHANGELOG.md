@@ -17,15 +17,12 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add unit tests for pkg/application by @leaanthony
-- Add custom protocol support to MSIX packaging by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
-- Consolidate custom protocol documentation and add Universal Links sections by @leaanthony
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
