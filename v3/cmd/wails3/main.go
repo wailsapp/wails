@@ -103,6 +103,30 @@ func main() {
 		return commands.Sign(&toolSignFlags)
 	})
 
+	// Selfupdate tools
+	selfupdate := tool.NewSubCommand("selfupdate", "Self-update key management tools")
+
+	selfupdateKeygen := selfupdate.NewSubCommand("keygen", "Generate signing keys for application updates")
+	var selfupdateKeygenFlags commands.SelfupdateKeygenOptions
+	selfupdateKeygen.AddFlags(&selfupdateKeygenFlags)
+	selfupdateKeygen.Action(func() error {
+		return commands.SelfupdateKeygen(&selfupdateKeygenFlags)
+	})
+
+	selfupdateSign := selfupdate.NewSubCommand("sign", "Sign an application binary for updates")
+	var selfupdateSignFlags commands.SelfupdateSignOptions
+	selfupdateSign.AddFlags(&selfupdateSignFlags)
+	selfupdateSign.Action(func() error {
+		return commands.SelfupdateSign(&selfupdateSignFlags)
+	})
+
+	selfupdateVerify := selfupdate.NewSubCommand("verify", "Verify a signed application binary")
+	var selfupdateVerifyFlags commands.SelfupdateVerifyOptions
+	selfupdateVerify.AddFlags(&selfupdateVerifyFlags)
+	selfupdateVerify.Action(func() error {
+		return commands.SelfupdateVerify(&selfupdateVerifyFlags)
+	})
+
 	// Setup commands
 	setup := app.NewSubCommand("setup", "Project setup wizards")
 	setupSigning := setup.NewSubCommand("signing", "Configure code signing")

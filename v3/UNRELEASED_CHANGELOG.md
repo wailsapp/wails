@@ -17,6 +17,16 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add selfupdate service for application self-updating via GitHub/GitLab/Gitea releases (#1178)
+  - Supports GitHub, GitLab, and Gitea release sources
+  - ECDSA and PGP signature verification for secure updates
+  - Themable progress UI with customizable colors and icons
+  - Progress events for download tracking
+  - Automatic platform detection (OS/arch)
+- Add `wails3 tool selfupdate` CLI commands for update signing:
+  - `keygen` - Generate ECDSA signing keys
+  - `sign` - Sign application binaries
+  - `verify` - Verify signed binaries
 
 ## Changed
 <!-- Changes in existing functionality -->
