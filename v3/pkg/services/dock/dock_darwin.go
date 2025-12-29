@@ -8,19 +8,19 @@ package dock
 #import <Cocoa/Cocoa.h>
 
 void hideDockIcon() {
-    dispatch_async(dispatch_get_main_queue(), ^{
+    dispatch_sync(dispatch_get_main_queue(), ^{
         [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
     });
 }
 
 void showDockIcon() {
-    dispatch_async(dispatch_get_main_queue(), ^{
+    dispatch_sync(dispatch_get_main_queue(), ^{
         [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
     });
 }
 
 void setBadge(const char *label) {
-    dispatch_async(dispatch_get_main_queue(), ^{
+    dispatch_sync(dispatch_get_main_queue(), ^{
         // Ensure the app is in Regular activation policy (dock icon visible)
         NSApplicationActivationPolicy currentPolicy = [NSApp activationPolicy];
         if (currentPolicy != NSApplicationActivationPolicyRegular) {
@@ -39,12 +39,14 @@ void setBadge(const char *label) {
 import "C"
 import (
 	"context"
+	"sync"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 type darwinDock struct {
+	mu    sync.RWMutex
 	Badge *string
 }
 
@@ -91,7 +93,9 @@ func (d *darwinDock) SetBadge(label string) error {
 	defer C.free(unsafe.Pointer(cLabel))
 
 	C.setBadge(cLabel)
+	d.mu.Lock()
 	d.Badge = &label
+	d.mu.Unlock()
 	return nil
 }
 
@@ -103,11 +107,15 @@ func (d *darwinDock) SetCustomBadge(label string, options BadgeOptions) error {
 // RemoveBadge removes the badge label from the application icon.
 func (d *darwinDock) RemoveBadge() error {
 	C.setBadge(nil)
+	d.mu.Lock()
 	d.Badge = nil
+	d.mu.Unlock()
 	return nil
 }
 
 // GetBadge returns the badge label on the application icon.
 func (d *darwinDock) GetBadge() *string {
+	d.mu.RLock()
+	defer d.mu.RUnlock()
 	return d.Badge
 }
