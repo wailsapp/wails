@@ -30,6 +30,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha.54 - 2025-12-29
+
+## Added
+- Add `CollectionBehavior` option to `MacWindow` for controlling window behavior across macOS Spaces and fullscreen (#4756) by @leaanthony
+
+## Fixed
+- Fix command argument error when executing 'build:universal:lipo:go' task on Linux by @wux1an
+- Fix Docker error "undefined symbol: ___ubsan_handle_xxxxxxx" when running 'wails3 build GOOS=darwin GOARCH=arm64' on Linux by @wux1an
+
+## Removed
+- Remove debug printf statements from Darwin URL scheme handler (#4834)
+
 ## v3.0.0-alpha.53 - 2025-12-27
 
 ## Added
