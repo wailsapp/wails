@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add `CollectionBehavior` option to `MacWindow` for controlling window behavior across macOS Spaces and fullscreen (#4756) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
@@ -31,6 +32,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Removed
 <!-- Features removed in this release -->
+- Remove debug printf statements from Darwin URL scheme handler (#4834)
 
 ## Security
 <!-- Security-related changes -->
