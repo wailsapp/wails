@@ -29,6 +29,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Removed
 <!-- Features removed in this release -->
+- Remove debug printf statements from Darwin URL scheme handler (#4834)
 
 ## Security
 <!-- Security-related changes -->
@@ -48,7 +49,6 @@ After processing, the content will be moved to the main changelog and this file 
 **Fixed:**
 - Fix memory leak in event system during window close operations (#5678)
 - Fix crash when using context menus on Linux with Wayland
-- Remove debug printf statements from Darwin URL scheme handler (#4834)
 
 **Security:**
 - Update dependencies to address CVE-2024-12345 in third-party library
