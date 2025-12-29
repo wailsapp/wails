@@ -70,4 +70,20 @@ window._wails.invoke = System.invoke;
 // Binding ensures 'this' correctly refers to the current window instance
 window._wails.handlePlatformFileDrop = Window.HandlePlatformFileDrop.bind(Window);
 
-System.invoke("wails:runtime:ready");
+// Load platform-specific code before signaling ready
+// This allows the backend to inject OS-specific fixes (e.g., Linux media interceptor)
+fetch("/wails/platform.js")
+    .then(response => response.text())
+    .then(code => {
+        if (code && code.trim().length > 0) {
+            const script = document.createElement("script");
+            script.textContent = code;
+            document.head.appendChild(script);
+        }
+    })
+    .catch(err => {
+        console.debug("[Wails] No platform-specific code to load:", err);
+    })
+    .finally(() => {
+        System.invoke("wails:runtime:ready");
+    });
