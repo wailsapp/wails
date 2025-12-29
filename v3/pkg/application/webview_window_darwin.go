@@ -340,9 +340,12 @@ void createModalWindow(void* parentWindowPtr, void* modalWindowPtr) {
 	NSWindow* modalWindow = (NSWindow*)modalWindowPtr;
 
 	// Present the modal window as a sheet attached to the parent window
-	[parentWindow beginSheet:modalWindow completionHandler:^(NSModalResponse returnCode) {
-		// Sheet was dismissed - window will be released automatically
-	}];
+	// Must be dispatched to the main thread for UI thread safety
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[parentWindow beginSheet:modalWindow completionHandler:^(NSModalResponse returnCode) {
+			// Sheet was dismissed - window will be released automatically
+		}];
+	});
 }
 
 // set the window position relative to the screen
