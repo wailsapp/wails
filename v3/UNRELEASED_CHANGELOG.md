@@ -23,8 +23,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 
-Fix command argument error when executing 'build:universal:lipo:go' task on Linux  
-Fix Docker error "undefined symbol: ___ubsan_handle_xxxxxxx" when running 'wails3 build GOOS=darwin GOARCH=arm64' on Linux
+- Fix command argument error when executing 'build:universal:lipo:go' task on Linux by @wux1an
+- Fix Docker error "undefined symbol: ___ubsan_handle_xxxxxxx" when running 'wails3 build GOOS=darwin GOARCH=arm64' on Linux by @wux1an
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
