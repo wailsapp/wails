@@ -5,6 +5,8 @@
 #include "systemtray_darwin.h"
 
 extern void systrayClickCallback(long, int);
+extern void systrayMenuOpenCallback(long);
+extern void systrayMenuCloseCallback(long);
 
 // StatusItemController.m
 @implementation StatusItemController
@@ -12,6 +14,25 @@ extern void systrayClickCallback(long, int);
 - (void)statusItemClicked:(id)sender {
 	NSEvent *event = [NSApp currentEvent];
 	systrayClickCallback(self.id, event.type);
+}
+
+@end
+
+// MenuDelegate implementation
+@implementation MenuDelegate
+
+- (void)menuNeedsUpdate:(NSMenu *)menu {
+    // This method is called automatically by macOS when the menu is about to be displayed
+    // or when it needs updating while already open
+    // The Go side will handle the actual menu rebuilding through menu.Update()
+}
+
+- (void)menuWillOpen:(NSMenu *)menu {
+    systrayMenuOpenCallback(self.trayID);
+}
+
+- (void)menuDidClose:(NSMenu *)menu {
+    systrayMenuCloseCallback(self.trayID);
 }
 
 @end
@@ -241,4 +262,19 @@ void systemTrayPositionWindow(void* nsStatusItem, void* nsWindow, int offset) {
     windowFrame.origin.x = windowX;
     windowFrame.origin.y = windowY;
     [(NSWindow*)nsWindow setFrame:windowFrame display:YES animate:NO];
+}
+
+// Create a new menu delegate
+void* createMenuDelegate(void* menuPtr, long trayID) {
+    MenuDelegate *delegate = [[MenuDelegate alloc] init];
+    delegate.menuPtr = menuPtr;
+    delegate.trayID = trayID;
+    return (void*)delegate;
+}
+
+// Set the delegate on a menu
+void setMenuDelegate(void* nsMenu, void* delegate) {
+    NSMenu *menu = (NSMenu *)nsMenu;
+    MenuDelegate *menuDelegate = (MenuDelegate *)delegate;
+    [menu setDelegate:menuDelegate];
 }

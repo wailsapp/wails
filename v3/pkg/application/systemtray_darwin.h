@@ -7,6 +7,11 @@
 - (void)statusItemClicked:(id)sender;
 @end
 
+@interface MenuDelegate : NSObject <NSMenuDelegate>
+@property (nonatomic) void* menuPtr;
+@property (nonatomic) long trayID;
+@end
+
 void* systemTrayNew(long id);
 void systemTraySetLabel(void* nsStatusItem, char *label);
 void systemTraySetANSILabel(void* nsStatusItem, void* attributedString);
@@ -22,3 +27,5 @@ NSRect NSScreen_frame(void* screen);
 void windowSetScreen(void* window, void* screen, int yOffset);
 int statusBarHeight();
 void systemTrayPositionWindow(void* nsStatusItem, void* nsWindow, int offset);
+void* createMenuDelegate(void* menuPtr, long trayID);
+void setMenuDelegate(void* nsMenu, void* delegate);
