@@ -350,7 +350,7 @@ func (e *EditorApp) TogglePreview() {
 ### Creating Child Windows
 
 ```go
-childWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:  "Child Window",
 })
 
@@ -374,7 +374,7 @@ Create modal-like behaviour:
 
 ```go
 func ShowModaldialog(parent *application.WebviewWindow, title string) {
-    dialog := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:       title,
         Width:       400,
         Height:      200,
