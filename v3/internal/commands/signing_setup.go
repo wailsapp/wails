@@ -65,6 +65,42 @@ func setupDarwinSigning() error {
 	pterm.DefaultHeader.Println("macOS Code Signing Setup")
 	fmt.Println()
 
+	// Determine signing method based on platform
+	var signingMethod string
+	onMacOS := runtime.GOOS == "darwin"
+
+	if onMacOS {
+		// On macOS, offer choice between native and cross-platform
+		methodForm := huh.NewForm(
+			huh.NewGroup(
+				huh.NewSelect[string]().
+					Title("Signing method").
+					Description("Choose how to sign macOS binaries").
+					Options(
+						huh.NewOption("Native (codesign) - requires macOS", "native"),
+						huh.NewOption("Cross-platform (P12) - works on any OS", "crossplatform"),
+					).
+					Value(&signingMethod),
+			),
+		)
+		if err := methodForm.Run(); err != nil {
+			return err
+		}
+	} else {
+		// Not on macOS, must use cross-platform
+		signingMethod = "crossplatform"
+		pterm.Info.Println("Not running on macOS - using cross-platform signing")
+		fmt.Println()
+	}
+
+	if signingMethod == "native" {
+		return setupDarwinSigningNative()
+	}
+	return setupDarwinSigningCrossPlatform()
+}
+
+// setupDarwinSigningNative configures native macOS signing using codesign
+func setupDarwinSigningNative() error {
 	// Get available signing identities
 	identities, err := getMacOSSigningIdentities()
 	if err != nil {
@@ -163,6 +199,149 @@ func setupDarwinSigning() error {
     --team-id "TEAMID" \
     --password "app-specific-password" \
     --profile "%s"`, keychainProfile)))
+		fmt.Println()
+	}
+
+	return nil
+}
+
+// setupDarwinSigningCrossPlatform configures cross-platform macOS signing using P12 certificates
+func setupDarwinSigningCrossPlatform() error {
+	var p12Path string
+	var p12Password string
+	var configureNotarization bool
+	var notaryKeyPath string
+	var notaryKeyID string
+	var notaryIssuer string
+
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewInput().
+				Title("P12 certificate path").
+				Description("Path to your Developer ID certificate exported as .p12").
+				Placeholder("certs/developer-id.p12").
+				Value(&p12Path).
+				Validate(func(s string) error {
+					if s == "" {
+						return fmt.Errorf("P12 certificate path is required")
+					}
+					return nil
+				}),
+
+			huh.NewInput().
+				Title("P12 password").
+				Description("Stored securely in system keychain").
+				EchoMode(huh.EchoModePassword).
+				Value(&p12Password).
+				Validate(func(s string) error {
+					if s == "" {
+						return fmt.Errorf("P12 password is required")
+					}
+					return nil
+				}),
+		),
+
+		huh.NewGroup(
+			huh.NewConfirm().
+				Title("Configure notarization?").
+				Description("Required for distributing apps outside the App Store").
+				Value(&configureNotarization),
+		),
+
+		huh.NewGroup(
+			huh.NewInput().
+				Title("Apple API key path (.p8)").
+				Description("Download from App Store Connect > Users and Access > Keys").
+				Placeholder("certs/AuthKey_XXXXXXXX.p8").
+				Value(&notaryKeyPath).
+				Validate(func(s string) error {
+					if configureNotarization && s == "" {
+						return fmt.Errorf("API key path is required for notarization")
+					}
+					return nil
+				}),
+
+			huh.NewInput().
+				Title("API Key ID").
+				Description("The Key ID from App Store Connect (e.g., ABC123DEFG)").
+				Placeholder("ABC123DEFG").
+				Value(&notaryKeyID).
+				Validate(func(s string) error {
+					if configureNotarization && s == "" {
+						return fmt.Errorf("API Key ID is required for notarization")
+					}
+					return nil
+				}),
+
+			huh.NewInput().
+				Title("Team ID (Issuer ID)").
+				Description("Your Apple Developer Team ID").
+				Placeholder("TEAMID123").
+				Value(&notaryIssuer).
+				Validate(func(s string) error {
+					if configureNotarization && s == "" {
+						return fmt.Errorf("Team ID is required for notarization")
+					}
+					return nil
+				}),
+		).WithHideFunc(func() bool {
+			return !configureNotarization
+		}),
+	)
+
+	err := form.Run()
+	if err != nil {
+		return err
+	}
+
+	// Store P12 password in keychain
+	err = keychain.Set(keychain.KeyMacOSP12Password, p12Password)
+	if err != nil {
+		return fmt.Errorf("failed to store P12 password in keychain: %w", err)
+	}
+	pterm.Success.Println("P12 password stored in system keychain")
+
+	// Store notarization credentials in keychain if configured
+	if configureNotarization {
+		err = keychain.Set(keychain.KeyNotaryKeyID, notaryKeyID)
+		if err != nil {
+			return fmt.Errorf("failed to store notary key ID in keychain: %w", err)
+		}
+
+		err = keychain.Set(keychain.KeyNotaryIssuer, notaryIssuer)
+		if err != nil {
+			return fmt.Errorf("failed to store notary issuer in keychain: %w", err)
+		}
+		pterm.Success.Println("Notarization credentials stored in system keychain")
+	}
+
+	// Update Taskfile with non-sensitive values
+	taskfilePath := filepath.Join("build", "darwin", "Taskfile.yml")
+	vars := map[string]string{
+		"P12_CERTIFICATE": p12Path,
+	}
+	if configureNotarization {
+		vars["NOTARY_KEY"] = notaryKeyPath
+	}
+
+	err = updateTaskfileVars(taskfilePath, vars)
+	if err != nil {
+		return err
+	}
+
+	pterm.Success.Printfln("Updated %s", taskfilePath)
+
+	fmt.Println()
+	pterm.Info.Println("Cross-platform signing configured!")
+	fmt.Println()
+	pterm.Println("To sign a macOS binary from any platform:")
+	pterm.Println(pterm.LightBlue(fmt.Sprintf("  wails3 tool sign --input myapp --p12 %s", p12Path)))
+	fmt.Println()
+
+	if configureNotarization {
+		pterm.Println("To sign and notarize:")
+		pterm.Println(pterm.LightBlue(fmt.Sprintf("  wails3 tool sign --input myapp --p12 %s --notarize --notary-key %s",
+			p12Path, notaryKeyPath)))
 		fmt.Println()
 	}
 

@@ -16,6 +16,13 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
+- Add cross-platform macOS binary signing (#2012) by @leaanthony
+  - Sign macOS binaries from Linux, Windows, or macOS using P12 certificates
+  - Full notarization support via Apple API keys
+  - Secure credential storage via system keychain or CI environment variables
+  - New flags: `--p12`, `--notary-key`, `--notary-key-id`, `--notary-issuer`
+  - Unified `sign:` and `sign:notarize` tasks auto-detect native vs cross-platform signing
+  - Updated `wails3 setup signing` wizard with cross-platform option
 <!-- New features, capabilities, or enhancements -->
 
 ## Changed
