@@ -112,6 +112,7 @@ type (
 		setMenu(menu *Menu)
 		snapAssist()
 		setContentProtection(enabled bool)
+		attachModal(modalWindow *WebviewWindow)
 	}
 )
 
@@ -1263,6 +1264,22 @@ func (w *WebviewWindow) NativeWindow() unsafe.Pointer {
 		return nil
 	}
 	return w.impl.nativeWindow()
+}
+
+// AttachModal attaches a modal window to this window, presenting it as a sheet on macOS.
+func (w *WebviewWindow) AttachModal(modalWindow Window) {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
+	
+	modalWebviewWindow, ok := modalWindow.(*WebviewWindow)
+	if !ok || modalWebviewWindow == nil {
+		return
+	}
+	
+	InvokeSync(func() {
+		w.impl.attachModal(modalWebviewWindow)
+	})
 }
 
 // shouldUnconditionallyClose returns whether the window should close unconditionally

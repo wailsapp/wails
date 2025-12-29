@@ -236,6 +236,10 @@ func (w *windowsWebviewWindow) startDrag() error {
 	return nil
 }
 
+func (w *windowsWebviewWindow) attachModal(modalWindow *WebviewWindow) {
+	// Modal windows are not supported on Windows
+}
+
 func (w *windowsWebviewWindow) nativeWindow() unsafe.Pointer {
 	return unsafe.Pointer(w.hwnd)
 }

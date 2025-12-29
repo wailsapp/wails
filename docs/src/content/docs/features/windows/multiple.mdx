@@ -288,7 +288,7 @@ func CreateToolPalette(app *application.Application) *application.WebviewWindow 
 }
 ```
 
-### Pattern 4: Modal dialogs
+### Pattern 4: Modal dialogs (macOS only)
 
 Child windows that block parent:
 
@@ -303,14 +303,7 @@ func ShowModaldialog(parent *application.WebviewWindow, title string) {
         Resizable:   false,
     })
     
-    // Disable parent (platform-specific)
-    parent.SetEnabled(false)
-    
-    // Re-enable parent on close
-    dialog.OnDestroy(func() {
-        parent.SetEnabled(true)
-        parent.SetFocus()
-    })
+    parent.AttachModal(dialog)
 }
 ```
 
@@ -359,50 +352,37 @@ func (e *EditorApp) TogglePreview() {
 ```go
 childWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
     Title:  "Child Window",
-    Parent: parentWindow,
 })
+
+parentWindow.AttachModal(childWindow)
 ```
 
 **Behaviour:**
-- Child closes when parent closes
-- Child stays above parent (on some platforms)
-- Child minimises with parent (on some platforms)
+- Child stays above parent
+- Child moves with parent
+- Child blocks interaction to parent
 
 **Platform support:**
 
-| Feature | macOS | Windows | Linux |
-|---------|-------|---------|-------|
-| Auto-close | ✅ | ✅ | ⚠️ Varies |
-| Stay above | ✅ | ⚠️ Partial | ⚠️ Varies |
-| Minimise together | ✅ | ❌ | ⚠️ Varies |
+| macOS | Windows | Linux |
+|-------|---------|-------|
+| ✅ | ❌ | ❌ |
 
 ### Modal Behaviour
 
 Create modal-like behaviour:
 
 ```go
-func ShowModal(parent *application.WebviewWindow) {
-    modal := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-        Title:       "Modal dialog",
+func ShowModaldialog(parent *application.WebviewWindow, title string) {
+    dialog := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        Title:       title,
         Width:       400,
         Height:      200,
-        Parent:      parent,
-        AlwaysOnTop: true,
     })
     
-    // Disable parent interaction
-    parent.SetEnabled(false)
-    
-    // Re-enable on close
-    modal.OnClose(func() bool {
-        parent.SetEnabled(true)
-        parent.SetFocus()
-        return true
-    })
+    parent.AttachModal(dialog)
 }
 ```
-
-**Note:** True modal behaviour (blocking) varies by platform.
 
 ## Window Lifecycle Management
 
