@@ -19,8 +19,14 @@ void showDockIcon() {
     });
 }
 
-static void setBadge(const char *label) {
+void setBadge(const char *label) {
     dispatch_async(dispatch_get_main_queue(), ^{
+        // Ensure the app is in Regular activation policy (dock icon visible)
+        NSApplicationActivationPolicy currentPolicy = [NSApp activationPolicy];
+        if (currentPolicy != NSApplicationActivationPolicyRegular) {
+            return;
+        }
+
         NSString *nsLabel = nil;
 		if (label != NULL) {
 			nsLabel = [NSString stringWithUTF8String:label];
@@ -38,12 +44,16 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-type darwinDock struct{}
+type darwinDock struct {
+	Badge *string
+}
 
 // Creates a new Dock Service.
 func New() *DockService {
 	return &DockService{
-		impl: &darwinDock{},
+		impl: &darwinDock{
+			Badge: nil,
+		},
 	}
 }
 
@@ -73,16 +83,16 @@ func (d *darwinDock) ShowAppIcon() {
 
 // SetBadge sets the badge label on the application icon.
 func (d *darwinDock) SetBadge(label string) error {
-    // Always pick a label (use “●” if empty), then allocate + free exactly once.
-    value := label
-    if value == "" {
-        value = "●" // Default badge character
-    }
-    cLabel := C.CString(value)
-    defer C.free(unsafe.Pointer(cLabel))
+	// Always pick a label (use “●” if empty), then allocate + free exactly once.
+	if label == "" {
+		label = "●" // Default badge character
+	}
+	cLabel := C.CString(label)
+	defer C.free(unsafe.Pointer(cLabel))
 
-    C.setBadge(cLabel)
-    return nil
+	C.setBadge(cLabel)
+	d.Badge = &label
+	return nil
 }
 
 // SetCustomBadge is not supported on macOS, SetBadge is called instead.
@@ -93,5 +103,11 @@ func (d *darwinDock) SetCustomBadge(label string, options BadgeOptions) error {
 // RemoveBadge removes the badge label from the application icon.
 func (d *darwinDock) RemoveBadge() error {
 	C.setBadge(nil)
+	d.Badge = nil
 	return nil
+}
+
+// GetBadge returns the badge label on the application icon.
+func (d *darwinDock) GetBadge() *string {
+	return d.Badge
 }
