@@ -15,32 +15,47 @@ Wails provides **native system dialogs** that work across all platforms: message
 
 ```go
 // Information dialog
-app.InfoDialog().
+app.Dialog.Info().
     SetTitle("Success").
     SetMessage("File saved successfully!").
     Show()
 
-// Question dialog
-result, _ := app.QuestionDialog().
+// Question dialog with button callbacks
+dialog := app.Dialog.Question().
     SetTitle("Confirm").
-    SetMessage("Delete this file?").
-    SetButtons("Delete", "Cancel").
-    Show()
+    SetMessage("Delete this file?")
 
-if result == "Delete" {
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
     deleteFile()
-}
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)
+dialog.SetCancelButton(cancelBtn)
+dialog.Show()
 
 // File open dialog
-path, _ := app.OpenFileDialog().
+path, _ := app.Dialog.OpenFile().
     SetTitle("Select Image").
-    SetFilters([]application.FileFilter{
-        {DisplayName: "Images", Pattern: "*.png;*.jpg"},
-    }).
+    AddFilter("Images", "*.png;*.jpg").
     PromptForSingleSelection()
 ```
 
 **That's it!** Native dialogs with minimal code.
+
+## Accessing Dialogs
+
+Dialogs are accessed through the `app.Dialog` manager:
+
+```go
+app.Dialog.Info()
+app.Dialog.Question()
+app.Dialog.Warning()
+app.Dialog.Error()
+app.Dialog.OpenFile()
+app.Dialog.SaveFile()
+```
 
 ## dialog Types
 
@@ -49,7 +64,7 @@ path, _ := app.OpenFileDialog().
 Display simple messages:
 
 ```go
-app.InfoDialog().
+app.Dialog.Info().
     SetTitle("Welcome").
     SetMessage("Welcome to our application!").
     Show()
@@ -65,7 +80,7 @@ app.InfoDialog().
 Show warnings:
 
 ```go
-app.WarningDialog().
+app.Dialog.Warning().
     SetTitle("Warning").
     SetMessage("This action cannot be undone.").
     Show()
@@ -81,7 +96,7 @@ app.WarningDialog().
 Display errors:
 
 ```go
-app.ErrorDialog().
+app.Dialog.Error().
     SetTitle("Error").
     SetMessage("Failed to save file: " + err.Error()).
     Show()
@@ -94,19 +109,22 @@ app.ErrorDialog().
 
 ### Question dialog
 
-Ask users questions:
+Ask users questions and handle responses via button callbacks:
 
 ```go
-result, err := app.QuestionDialog().
+dialog := app.Dialog.Question().
     SetTitle("Confirm Delete").
-    SetMessage("Are you sure you want to delete this file?").
-    SetButtons("Delete", "Cancel").
-    SetDefaultButton("Cancel").
-    Show()
+    SetMessage("Are you sure you want to delete this file?")
 
-if result == "Delete" {
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
     deleteFile()
-}
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)
+dialog.SetCancelButton(cancelBtn)
+dialog.Show()
 ```
 
 **Use cases:**
@@ -121,15 +139,13 @@ if result == "Delete" {
 Select files to open:
 
 ```go
-path, err := app.OpenFileDialog().
+path, err := app.Dialog.OpenFile().
     SetTitle("Select Image").
-    SetFilters([]application.FileFilter{
-        {DisplayName: "Images", Pattern: "*.png;*.jpg;*.gif"},
-        {DisplayName: "All Files", Pattern: "*.*"},
-    }).
+    AddFilter("Images", "*.png;*.jpg;*.gif").
+    AddFilter("All Files", "*.*").
     PromptForSingleSelection()
 
-if err == nil {
+if err == nil && path != "" {
     openFile(path)
 }
 ```
@@ -137,15 +153,15 @@ if err == nil {
 **Multiple selection:**
 
 ```go
-paths, err := app.OpenFileDialog().
+paths, err := app.Dialog.OpenFile().
     SetTitle("Select Images").
-    SetFilters([]application.FileFilter{
-        {DisplayName: "Images", Pattern: "*.png;*.jpg"},
-    }).
+    AddFilter("Images", "*.png;*.jpg").
     PromptForMultipleSelection()
 
-for _, path := range paths {
-    processFile(path)
+if err == nil {
+    for _, path := range paths {
+        processFile(path)
+    }
 }
 ```
 
@@ -154,30 +170,29 @@ for _, path := range paths {
 Choose where to save:
 
 ```go
-path, err := app.SaveFileDialog().
-    SetTitle("Save Document").
-    SetDefaultFilename("document.txt").
-    SetFilters([]application.FileFilter{
-        {DisplayName: "Text Files", Pattern: "*.txt"},
-        {DisplayName: "All Files", Pattern: "*.*"},
-    }).
+path, err := app.Dialog.SaveFile().
+    SetFilename("document.txt").
+    AddFilter("Text Files", "*.txt").
+    AddFilter("All Files", "*.*").
     PromptForSingleSelection()
 
-if err == nil {
+if err == nil && path != "" {
     saveFile(path)
 }
 ```
 
 ### Select Folder dialog
 
-Choose a directory:
+Choose a directory using the open file dialog with directory selection enabled:
 
 ```go
-path, err := app.SelectFolderDialog().
+path, err := app.Dialog.OpenFile().
     SetTitle("Select Output Folder").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
     PromptForSingleSelection()
 
-if err == nil {
+if err == nil && path != "" {
     exportToFolder(path)
 }
 ```
@@ -187,42 +202,67 @@ if err == nil {
 ### Title and Message
 
 ```go
-dialog := app.InfoDialog().
+dialog := app.Dialog.Info().
     SetTitle("Success").
     SetMessage("Operation completed successfully!")
 ```
 
 ### Buttons
 
-**Predefined buttons:**
+**Default button for simple dialogs:**
+
+Info, warning, and error dialogs display a default "OK" button:
 
 ```go
-// OK button
-app.InfoDialog().
+app.Dialog.Info().
     SetMessage("Done!").
-    Show()
-
-// Yes/No buttons
-result, _ := app.QuestionDialog().
-    SetMessage("Continue?").
-    SetButtons("Yes", "No").
-    Show()
-
-// Custom buttons
-result, _ := app.QuestionDialog().
-    SetMessage("Choose action").
-    SetButtons("Save", "Don't Save", "Cancel").
     Show()
 ```
 
-**Default button:**
+**Custom buttons for question dialogs:**
+
+Use `AddButton()` to add buttons, which returns a `*Button` you can configure with callbacks:
 
 ```go
-app.QuestionDialog().
-    SetMessage("Delete file?").
-    SetButtons("Delete", "Cancel").
-    SetDefaultButton("Cancel").  // Highlighted by default
-    Show()
+dialog := app.Dialog.Question().
+    SetMessage("Choose action")
+
+save := dialog.AddButton("Save")
+save.OnClick(func() {
+    saveDocument()
+})
+
+dontSave := dialog.AddButton("Don't Save")
+dontSave.OnClick(func() {
+    discardChanges()
+})
+
+cancel := dialog.AddButton("Cancel")
+// No callback needed - just dismisses dialog
+
+dialog.SetDefaultButton(save)
+dialog.SetCancelButton(cancel)
+dialog.Show()
+```
+
+**Default and Cancel buttons:**
+
+Use `SetDefaultButton()` to specify which button is highlighted and triggered by Enter.
+Use `SetCancelButton()` to specify which button is triggered by Escape.
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Delete file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    performDelete()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)  // Safe option highlighted by default
+dialog.SetCancelButton(cancelBtn)   // Escape triggers Cancel
+dialog.Show()
 ```
 
 ### Window Attachment
@@ -230,7 +270,7 @@ app.QuestionDialog().
 Attach dialog to specific window:
 
 ```go
-dialog := app.InfoDialog().
+dialog := app.Dialog.Info().
     SetMessage("Window-specific message").
     AttachToWindow(window)
 
@@ -258,10 +298,12 @@ dialog.Show()
     **Example:**
     ```go
     // Appears as sheet on macOS
-    app.QuestionDialog().
+    dialog := app.Dialog.Question().
         SetMessage("Save changes?").
-        AttachToWindow(window).
-        Show()
+        AttachToWindow(window)
+    dialog.AddButton("Yes")
+    dialog.AddButton("No")
+    dialog.Show()
     ```
   </TabItem>
 
@@ -278,7 +320,7 @@ dialog.Show()
     **Example:**
     ```go
     // Modal dialog on Windows
-    app.ErrorDialog().
+    app.Dialog.Error().
         SetTitle("Error").
         SetMessage("Operation failed").
         Show()
@@ -297,7 +339,7 @@ dialog.Show()
     **Example:**
     ```go
     // GTK dialog on Linux
-    app.InfoDialog().
+    app.Dialog.Info().
         SetMessage("Update complete").
         Show()
     ```
@@ -309,35 +351,41 @@ dialog.Show()
 ### Confirm Before Destructive Action
 
 ```go
-func deleteFile(path string) error {
-    result, err := app.QuestionDialog().
+func deleteFile(app *application.App, path string) {
+    dialog := app.Dialog.Question().
         SetTitle("Confirm Delete").
-        SetMessage(fmt.Sprintf("Delete %s?", filepath.Base(path))).
-        SetButtons("Delete", "Cancel").
-        SetDefaultButton("Cancel").
-        Show()
-    
-    if err != nil || result != "Delete" {
-        return errors.New("cancelled")
-    }
-    
-    return os.Remove(path)
+        SetMessage(fmt.Sprintf("Delete %s?", filepath.Base(path)))
+
+    deleteBtn := dialog.AddButton("Delete")
+    deleteBtn.OnClick(func() {
+        if err := os.Remove(path); err != nil {
+            app.Dialog.Error().
+                SetTitle("Delete Failed").
+                SetMessage(err.Error()).
+                Show()
+        }
+    })
+
+    cancelBtn := dialog.AddButton("Cancel")
+    dialog.SetDefaultButton(cancelBtn)
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
 }
 ```
 
 ### Error Handling with dialog
 
 ```go
-func saveDocument(path string, data []byte) {
+func saveDocument(app *application.App, path string, data []byte) {
     if err := os.WriteFile(path, data, 0644); err != nil {
-        app.ErrorDialog().
+        app.Dialog.Error().
             SetTitle("Save Failed").
             SetMessage(fmt.Sprintf("Could not save file: %v", err)).
             Show()
         return
     }
-    
-    app.InfoDialog().
+
+    app.Dialog.Info().
         SetTitle("Success").
         SetMessage("File saved successfully!").
         Show()
@@ -347,27 +395,29 @@ func saveDocument(path string, data []byte) {
 ### File Selection with Validation
 
 ```go
-func selectImageFile() (string, error) {
-    path, err := app.OpenFileDialog().
+func selectImageFile(app *application.App) (string, error) {
+    path, err := app.Dialog.OpenFile().
         SetTitle("Select Image").
-        SetFilters([]application.FileFilter{
-            {DisplayName: "Images", Pattern: "*.png;*.jpg;*.jpeg;*.gif"},
-        }).
+        AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif").
         PromptForSingleSelection()
-    
+
     if err != nil {
         return "", err
     }
-    
+
+    if path == "" {
+        return "", errors.New("no file selected")
+    }
+
     // Validate file
     if !isValidImage(path) {
-        app.ErrorDialog().
+        app.Dialog.Error().
             SetTitle("Invalid File").
             SetMessage("Selected file is not a valid image.").
             Show()
         return "", errors.New("invalid image")
     }
-    
+
     return path, nil
 }
 ```
@@ -375,45 +425,43 @@ func selectImageFile() (string, error) {
 ### Multi-Step dialog Flow
 
 ```go
-func exportData() {
+func exportData(app *application.App) {
     // Step 1: Confirm export
-    result, _ := app.QuestionDialog().
+    dialog := app.Dialog.Question().
         SetTitle("Export Data").
-        SetMessage("Export all data to CSV?").
-        SetButtons("Export", "Cancel").
-        Show()
-    
-    if result != "Export" {
-        return
-    }
-    
-    // Step 2: Select destination
-    path, err := app.SaveFileDialog().
-        SetTitle("Save Export").
-        SetDefaultFilename("export.csv").
-        SetFilters([]application.FileFilter{
-            {DisplayName: "CSV Files", Pattern: "*.csv"},
-        }).
-        PromptForSingleSelection()
-    
-    if err != nil {
-        return
-    }
-    
-    // Step 3: Perform export
-    if err := performExport(path); err != nil {
-        app.ErrorDialog().
-            SetTitle("Export Failed").
-            SetMessage(err.Error()).
+        SetMessage("Export all data to CSV?")
+
+    exportBtn := dialog.AddButton("Export")
+    exportBtn.OnClick(func() {
+        // Step 2: Select destination
+        path, err := app.Dialog.SaveFile().
+            SetFilename("export.csv").
+            AddFilter("CSV Files", "*.csv").
+            PromptForSingleSelection()
+
+        if err != nil || path == "" {
+            return
+        }
+
+        // Step 3: Perform export
+        if err := performExport(path); err != nil {
+            app.Dialog.Error().
+                SetTitle("Export Failed").
+                SetMessage(err.Error()).
+                Show()
+            return
+        }
+
+        // Step 4: Success
+        app.Dialog.Info().
+            SetTitle("Export Complete").
+            SetMessage("Data exported successfully!").
             Show()
-        return
-    }
-    
-    // Step 4: Success
-    app.InfoDialog().
-        SetTitle("Export Complete").
-        SetMessage("Data exported successfully!").
-        Show()
+    })
+
+    cancelBtn := dialog.AddButton("Cancel")
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
 }
 ```
 

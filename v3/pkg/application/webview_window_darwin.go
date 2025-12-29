@@ -900,8 +900,11 @@ func (w *macosWebviewWindow) focus() {
 }
 
 func (w *macosWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData) {
-	// Create the menu
-	thisMenu := newMenuImpl(menu)
+	// Reuse existing impl if available, otherwise create new one
+	if menu.impl == nil {
+		menu.impl = newMenuImpl(menu)
+	}
+	thisMenu := menu.impl.(*macosMenu)
 	thisMenu.update()
 	C.windowShowMenu(w.nsWindow, thisMenu.nsMenu, C.int(data.X), C.int(data.Y))
 }

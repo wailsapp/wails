@@ -261,96 +261,78 @@ app.OnApplicationEvent(application.EventApplicationShutdown, func(e *application
 })
 ```
 
-## dialog Methods
+## Dialog Methods
 
-### InfoDialog()
+Dialogs are accessed through the `app.Dialog` manager. See [Dialogs API](/reference/dialogs/) for complete reference.
 
-Creates an information dialog.
-
-```go
-func (a *App) InfoDialog() InfoDialog
-```
-
-**Example:**
+### Message Dialogs
 
 ```go
-app.InfoDialog().
+// Information dialog
+app.Dialog.Info().
     SetTitle("Success").
     SetMessage("Operation completed!").
     Show()
-```
 
-### QuestionDialog()
-
-Creates a question dialog.
-
-```go
-func (a *App) QuestionDialog() QuestionDialog
-```
-
-**Example:**
-
-```go
-result, _ := app.QuestionDialog().
-    SetTitle("Confirm").
-    SetMessage("Continue?").
-    SetButtons("Yes", "No").
+// Error dialog
+app.Dialog.Error().
+    SetTitle("Error").
+    SetMessage("Something went wrong.").
     Show()
 
-if result == "Yes" {
-    // Continue
-}
+// Warning dialog
+app.Dialog.Warning().
+    SetTitle("Warning").
+    SetMessage("This action cannot be undone.").
+    Show()
 ```
 
-### ErrorDialog()
+### Question Dialogs
 
-Creates an error dialog.
+Question dialogs use button callbacks to handle user responses:
 
 ```go
-func (a *App) ErrorDialog() ErrorDialog
+dialog := app.Dialog.Question().
+    SetTitle("Confirm").
+    SetMessage("Continue?")
+
+yes := dialog.AddButton("Yes")
+yes.OnClick(func() {
+    // Handle yes
+})
+
+no := dialog.AddButton("No")
+no.OnClick(func() {
+    // Handle no
+})
+
+dialog.SetDefaultButton(yes)
+dialog.SetCancelButton(no)
+dialog.Show()
 ```
 
-### WarningDialog()
-
-Creates a warning dialog.
+### File Dialogs
 
 ```go
-func (a *App) WarningDialog() WarningDialog
-```
-
-### OpenFileDialog()
-
-Creates a file open dialog.
-
-```go
-func (a *App) OpenFileDialog() OpenFileDialog
-```
-
-**Example:**
-
-```go
-path, err := app.OpenFileDialog().
+// Open file dialog
+path, err := app.Dialog.OpenFile().
     SetTitle("Select File").
-    SetFilters([]application.FileFilter{
-        {DisplayName: "Images", Pattern: "*.png;*.jpg"},
-    }).
+    AddFilter("Images", "*.png;*.jpg").
     PromptForSingleSelection()
-```
 
-### SaveFileDialog()
+// Save file dialog
+path, err := app.Dialog.SaveFile().
+    SetTitle("Save File").
+    SetFilename("document.pdf").
+    AddFilter("PDF", "*.pdf").
+    PromptForSingleSelection()
 
-Creates a file save dialog.
-
-```go
-func (a *App) SaveFileDialog() SaveFileDialog
-```
-
-### SelectFolderDialog()
-
-Creates a folder selection dialog.
-
-```go
-func (a *App) SelectFolderDialog() SelectFolderDialog
+// Folder selection (use OpenFile with directory options)
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Folder").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
 ```
 
 ## Logger

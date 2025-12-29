@@ -158,7 +158,17 @@ Y: 100,  // 100px from top edge
 - Positive X goes right
 - Positive Y goes down
 
-**Best practice:** Use `Center()` instead:
+**Example:**
+
+```go
+settings := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Name: "coordinate-window",
+    InitialPosition: application.WindowXY, // use coordinate system
+    X:    100,
+    Y:    100,
+})
+
+**Best practice:** Use `Center()` to center the window:
 
 ```go
 window := app.NewWebviewWindow()
