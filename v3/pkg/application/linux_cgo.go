@@ -381,8 +381,10 @@ func appName() string {
 	return C.GoString(name)
 }
 
-func appNew(name string) pointer {
-	C.install_signal_handlers()
+func appNew(name string, disableSignalFixup bool) pointer {
+	if !disableSignalFixup {
+		C.install_signal_handlers()
+	}
 
 	// Name is already sanitized by sanitizeAppName() in application_linux.go
 	appId := fmt.Sprintf("org.wails.%s", name)

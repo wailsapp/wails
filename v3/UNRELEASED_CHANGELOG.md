@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add `LinuxOptions.DisableGTKSignalHandlerFixup` option to allow debugging with Delve on Linux (#4398) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->

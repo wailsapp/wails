@@ -277,7 +277,7 @@ func newPlatformApp(parent *App) *linuxApp {
 	name := sanitizeAppName(parent.options.Name)
 	app := &linuxApp{
 		parent:      parent,
-		application: appNew(name),
+		application: appNew(name, parent.options.Linux.DisableGTKSignalHandlerFixup),
 		windowMap:   map[windowPointer]uint{},
 	}
 
