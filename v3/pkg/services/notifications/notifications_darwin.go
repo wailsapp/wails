@@ -99,8 +99,6 @@ func (dn *darwinNotifier) RequestNotificationAuthorization(callback func(bool, e
 	// Note: No timeout here - users may take a long time to respond to the authorization dialog
 	go func() {
 		result := <-resultCh
-		// Ensure channel is cleaned up (GetChannel may have already removed it, but this ensures cleanup)
-		dn.cleanupChannel(id)
 		callback(result.Success, result.Error)
 	}()
 }
@@ -116,11 +114,8 @@ func (dn *darwinNotifier) CheckNotificationAuthorization(callback func(bool, err
 	C.checkNotificationAuthorization(C.int(id))
 
 	// Start a goroutine to handle the result asynchronously
-	// Note: Checking status is typically very fast, but we don't timeout to handle edge cases
 	go func() {
 		result := <-resultCh
-		// Ensure channel is cleaned up (GetChannel may have already removed it, but this ensures cleanup)
-		dn.cleanupChannel(id)
 		callback(result.Success, result.Error)
 	}()
 }
