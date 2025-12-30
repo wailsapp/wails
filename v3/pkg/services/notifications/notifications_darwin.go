@@ -96,20 +96,12 @@ func (dn *darwinNotifier) RequestNotificationAuthorization(callback func(bool, e
 	C.requestNotificationAuthorization(C.int(id))
 
 	// Start a goroutine to handle the result asynchronously
+	// Note: No timeout here - users may take a long time to respond to the authorization dialog
 	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-		defer cancel()
-
-		select {
-		case result := <-resultCh:
-			// Ensure channel is cleaned up (GetChannel may have already removed it, but this ensures cleanup)
-			dn.cleanupChannel(id)
-			callback(result.Success, result.Error)
-		case <-ctx.Done():
-			// Timeout: ensure cleanup and notify callback of timeout
-			dn.cleanupChannel(id)
-			callback(false, fmt.Errorf("notification authorization timed out after 5 minutes: %w", ctx.Err()))
-		}
+		result := <-resultCh
+		// Ensure channel is cleaned up (GetChannel may have already removed it, but this ensures cleanup)
+		dn.cleanupChannel(id)
+		callback(result.Success, result.Error)
 	}()
 }
 
@@ -124,20 +116,12 @@ func (dn *darwinNotifier) CheckNotificationAuthorization(callback func(bool, err
 	C.checkNotificationAuthorization(C.int(id))
 
 	// Start a goroutine to handle the result asynchronously
+	// Note: Checking status is typically very fast, but we don't timeout to handle edge cases
 	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-
-		select {
-		case result := <-resultCh:
-			// Ensure channel is cleaned up (GetChannel may have already removed it, but this ensures cleanup)
-			dn.cleanupChannel(id)
-			callback(result.Success, result.Error)
-		case <-ctx.Done():
-			// Timeout: ensure cleanup and notify callback of timeout
-			dn.cleanupChannel(id)
-			callback(false, fmt.Errorf("notification authorization check timed out after 30 seconds: %w", ctx.Err()))
-		}
+		result := <-resultCh
+		// Ensure channel is cleaned up (GetChannel may have already removed it, but this ensures cleanup)
+		dn.cleanupChannel(id)
+		callback(result.Success, result.Error)
 	}()
 }
 
