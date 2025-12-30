@@ -151,16 +151,20 @@ func (wn *windowsNotifier) Shutdown() error {
 	return wn.saveCategoriesToRegistry()
 }
 
-// RequestNotificationAuthorization is a Windows stub that always returns true, nil.
+// RequestNotificationAuthorization is a Windows stub that immediately invokes the callback with true, nil.
 // (user authorization is macOS-specific)
-func (wn *windowsNotifier) RequestNotificationAuthorization() (bool, error) {
-	return true, nil
+func (wn *windowsNotifier) RequestNotificationAuthorization(callback func(bool, error)) {
+	if callback != nil {
+		callback(true, nil)
+	}
 }
 
-// CheckNotificationAuthorization is a Windows stub that always returns true.
+// CheckNotificationAuthorization is a Windows stub that immediately invokes the callback with true, nil.
 // (user authorization is macOS-specific)
-func (wn *windowsNotifier) CheckNotificationAuthorization() (bool, error) {
-	return true, nil
+func (wn *windowsNotifier) CheckNotificationAuthorization(callback func(bool, error)) {
+	if callback != nil {
+		callback(true, nil)
+	}
 }
 
 // SendNotification sends a basic notification with a name, title, and body. All other options are ignored on Windows.

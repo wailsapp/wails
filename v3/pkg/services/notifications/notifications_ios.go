@@ -35,14 +35,18 @@ func (n *iosNotifier) Shutdown() error {
 	return nil
 }
 
-func (n *iosNotifier) RequestNotificationAuthorization() (bool, error) {
+func (n *iosNotifier) RequestNotificationAuthorization(callback func(bool, error)) {
 	// iOS notification authorization would go here via native bridge
-	return true, nil
+	if callback != nil {
+		callback(true, nil)
+	}
 }
 
-func (n *iosNotifier) CheckNotificationAuthorization() (bool, error) {
+func (n *iosNotifier) CheckNotificationAuthorization(callback func(bool, error)) {
 	// iOS notification authorization check would go here via native bridge
-	return true, nil
+	if callback != nil {
+		callback(true, nil)
+	}
 }
 
 func (n *iosNotifier) SendNotification(options NotificationOptions) error {

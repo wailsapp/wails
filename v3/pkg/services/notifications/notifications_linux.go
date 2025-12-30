@@ -96,16 +96,20 @@ func (ln *linuxNotifier) Shutdown() error {
 	return nil
 }
 
-// RequestNotificationAuthorization is a Linux stub that always returns true, nil.
+// RequestNotificationAuthorization is a Linux stub that immediately invokes the callback with true, nil.
 // (authorization is macOS-specific)
-func (ln *linuxNotifier) RequestNotificationAuthorization() (bool, error) {
-	return true, nil
+func (ln *linuxNotifier) RequestNotificationAuthorization(callback func(bool, error)) {
+	if callback != nil {
+		callback(true, nil)
+	}
 }
 
-// CheckNotificationAuthorization is a Linux stub that always returns true.
+// CheckNotificationAuthorization is a Linux stub that immediately invokes the callback with true, nil.
 // (authorization is macOS-specific)
-func (ln *linuxNotifier) CheckNotificationAuthorization() (bool, error) {
-	return true, nil
+func (ln *linuxNotifier) CheckNotificationAuthorization(callback func(bool, error)) {
+	if callback != nil {
+		callback(true, nil)
+	}
 }
 
 // SendNotification sends a basic notification with a unique identifier, title, subtitle, and body.

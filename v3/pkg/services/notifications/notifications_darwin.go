@@ -85,40 +85,60 @@ func checkBundleIdentifier() bool {
 }
 
 // RequestNotificationAuthorization requests permission for notifications.
-// Default timeout is 3 minutes
-func (dn *darwinNotifier) RequestNotificationAuthorization() (bool, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
-	defer cancel()
+// The callback will be invoked asynchronously when the authorization result is available.
+func (dn *darwinNotifier) RequestNotificationAuthorization(callback func(bool, error)) {
+	if callback == nil {
+		return
+	}
 
 	id, resultCh := dn.registerChannel()
 
 	C.requestNotificationAuthorization(C.int(id))
 
-	select {
-	case result := <-resultCh:
-		return result.Success, result.Error
-	case <-ctx.Done():
-		dn.cleanupChannel(id)
-		return false, fmt.Errorf("notification authorization timed out after 3 minutes: %w", ctx.Err())
-	}
+	// Start a goroutine to handle the result asynchronously
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer cancel()
+
+		select {
+		case result := <-resultCh:
+			// Ensure channel is cleaned up (GetChannel may have already removed it, but this ensures cleanup)
+			dn.cleanupChannel(id)
+			callback(result.Success, result.Error)
+		case <-ctx.Done():
+			// Timeout: ensure cleanup and notify callback of timeout
+			dn.cleanupChannel(id)
+			callback(false, fmt.Errorf("notification authorization timed out after 5 minutes: %w", ctx.Err()))
+		}
+	}()
 }
 
 // CheckNotificationAuthorization checks current notification permission status.
-func (dn *darwinNotifier) CheckNotificationAuthorization() (bool, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
+func (dn *darwinNotifier) CheckNotificationAuthorization(callback func(bool, error)) {
+	if callback == nil {
+		return
+	}
 
 	id, resultCh := dn.registerChannel()
 
 	C.checkNotificationAuthorization(C.int(id))
 
-	select {
-	case result := <-resultCh:
-		return result.Success, result.Error
-	case <-ctx.Done():
-		dn.cleanupChannel(id)
-		return false, fmt.Errorf("notification authorization timed out after 15s: %w", ctx.Err())
-	}
+	// Start a goroutine to handle the result asynchronously
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		select {
+		case result := <-resultCh:
+			// Ensure channel is cleaned up (GetChannel may have already removed it, but this ensures cleanup)
+			dn.cleanupChannel(id)
+			callback(result.Success, result.Error)
+		case <-ctx.Done():
+			// Timeout: ensure cleanup and notify callback of timeout
+			dn.cleanupChannel(id)
+			callback(false, fmt.Errorf("notification authorization check timed out after 30 seconds: %w", ctx.Err()))
+		}
+	}()
 }
 
 // SendNotification sends a basic notification with a unique identifier, title, subtitle, and body.
