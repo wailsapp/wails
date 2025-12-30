@@ -20,7 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Update notification authorization methods on macOS to callbacks
+- Update notifications authorization methods on macOS to callbacks
 
 ## Fixed
 <!-- Bug fixes -->
