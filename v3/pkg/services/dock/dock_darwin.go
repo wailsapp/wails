@@ -19,11 +19,13 @@ void showDockIcon() {
     });
 }
 
-void setBadge(const char *label) {
+bool setBadge(const char *label) {
+    __block bool success = false;
     dispatch_sync(dispatch_get_main_queue(), ^{
         // Ensure the app is in Regular activation policy (dock icon visible)
         NSApplicationActivationPolicy currentPolicy = [NSApp activationPolicy];
         if (currentPolicy != NSApplicationActivationPolicyRegular) {
+            success = false;
             return;
         }
 
@@ -33,12 +35,15 @@ void setBadge(const char *label) {
 		}
 		[[NSApp dockTile] setBadgeLabel:nsLabel];
 		[[NSApp dockTile] display];
+		success = true;
     });
+    return success;
 }
 */
 import "C"
 import (
 	"context"
+	"fmt"
 	"sync"
 	"unsafe"
 
@@ -86,28 +91,35 @@ func (d *darwinDock) ShowAppIcon() {
 }
 
 // setBadge handles the C call and updates the internal badge state with locking.
-func (d *darwinDock) setBadge(label *string) {
+func (d *darwinDock) setBadge(label *string) error {
 	var cLabel *C.char
 	if label != nil {
 		cLabel = C.CString(*label)
 		defer C.free(unsafe.Pointer(cLabel))
 	}
 
-	C.setBadge(cLabel)
+	success := C.setBadge(cLabel)
+	if !success {
+		return fmt.Errorf("failed to set badge")
+	}
 
 	d.mu.Lock()
 	d.Badge = label
 	d.mu.Unlock()
+
+	return nil
 }
 
 // SetBadge sets the badge label on the application icon.
+// Available default badge labels:
+// Single space " " empty badge
+// Empty string "" dot "●" indeterminate badge
 func (d *darwinDock) SetBadge(label string) error {
 	// Always pick a label (use "●" if empty), then allocate + free exactly once.
 	if label == "" {
 		label = "●" // Default badge character
 	}
-	d.setBadge(&label)
-	return nil
+	return d.setBadge(&label)
 }
 
 // SetCustomBadge is not supported on macOS, SetBadge is called instead.
@@ -117,8 +129,7 @@ func (d *darwinDock) SetCustomBadge(label string, options BadgeOptions) error {
 
 // RemoveBadge removes the badge label from the application icon.
 func (d *darwinDock) RemoveBadge() error {
-	d.setBadge(nil)
-	return nil
+	return d.setBadge(nil)
 }
 
 // GetBadge returns the badge label on the application icon.
