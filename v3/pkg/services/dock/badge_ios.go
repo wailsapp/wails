@@ -9,7 +9,6 @@ import (
 )
 
 type iosDock struct {
-	Badge *string
 }
 
 // New creates a new Dock Service.
@@ -17,9 +16,7 @@ type iosDock struct {
 // iOS badge functionality will be implemented via native bridges.
 func New() *DockService {
 	return &DockService{
-		impl: &iosDock{
-			Badge: nil,
-		},
+		impl: &iosDock{},
 	}
 }
 

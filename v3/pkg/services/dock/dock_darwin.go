@@ -79,23 +79,34 @@ func (d *darwinDock) HideAppIcon() {
 }
 
 // ShowAppIcon shows the app icon in the macOS Dock.
+// Note: After showing the dock icon, you may need to call SetBadge again
+// to reapply any previously set badge, as changing activation policies clears the badge.
 func (d *darwinDock) ShowAppIcon() {
 	C.showDockIcon()
 }
 
+// setBadge handles the C call and updates the internal badge state with locking.
+func (d *darwinDock) setBadge(label *string) {
+	var cLabel *C.char
+	if label != nil {
+		cLabel = C.CString(*label)
+		defer C.free(unsafe.Pointer(cLabel))
+	}
+
+	C.setBadge(cLabel)
+
+	d.mu.Lock()
+	d.Badge = label
+	d.mu.Unlock()
+}
+
 // SetBadge sets the badge label on the application icon.
 func (d *darwinDock) SetBadge(label string) error {
-	// Always pick a label (use “●” if empty), then allocate + free exactly once.
+	// Always pick a label (use "●" if empty), then allocate + free exactly once.
 	if label == "" {
 		label = "●" // Default badge character
 	}
-	cLabel := C.CString(label)
-	defer C.free(unsafe.Pointer(cLabel))
-
-	C.setBadge(cLabel)
-	d.mu.Lock()
-	d.Badge = &label
-	d.mu.Unlock()
+	d.setBadge(&label)
 	return nil
 }
 
@@ -106,10 +117,7 @@ func (d *darwinDock) SetCustomBadge(label string, options BadgeOptions) error {
 
 // RemoveBadge removes the badge label from the application icon.
 func (d *darwinDock) RemoveBadge() error {
-	C.setBadge(nil)
-	d.mu.Lock()
-	d.Badge = nil
-	d.mu.Unlock()
+	d.setBadge(nil)
 	return nil
 }
 
