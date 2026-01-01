@@ -21,8 +21,54 @@ func init() {
 	// On Windows, if the decoder is first invoked later (e.g., during tests),
 	// the type address calculation can fail with an index out of bounds panic.
 	// See: https://github.com/goccy/go-json/issues/474
-	var si []int
+	var (
+		s   string
+		i   int
+		i8  int8
+		i16 int16
+		i32 int32
+		i64 int64
+		u   uint
+		u8  uint8
+		u16 uint16
+		u32 uint32
+		u64 uint64
+		f32 float32
+		f64 float64
+		b   bool
+		bs  []byte
+		ss  []string
+		si  []int
+		sf  []float64
+		sa  []any
+		msa map[string]any
+		mss map[string]string
+		msi map[string]int
+		rm  json.RawMessage
+	)
+	_ = json.Unmarshal([]byte(`""`), &s)
+	_ = json.Unmarshal([]byte(`0`), &i)
+	_ = json.Unmarshal([]byte(`0`), &i8)
+	_ = json.Unmarshal([]byte(`0`), &i16)
+	_ = json.Unmarshal([]byte(`0`), &i32)
+	_ = json.Unmarshal([]byte(`0`), &i64)
+	_ = json.Unmarshal([]byte(`0`), &u)
+	_ = json.Unmarshal([]byte(`0`), &u8)
+	_ = json.Unmarshal([]byte(`0`), &u16)
+	_ = json.Unmarshal([]byte(`0`), &u32)
+	_ = json.Unmarshal([]byte(`0`), &u64)
+	_ = json.Unmarshal([]byte(`0`), &f32)
+	_ = json.Unmarshal([]byte(`0`), &f64)
+	_ = json.Unmarshal([]byte(`false`), &b)
+	_ = json.Unmarshal([]byte(`""`), &bs)
+	_ = json.Unmarshal([]byte(`[]`), &ss)
 	_ = json.Unmarshal([]byte(`[]`), &si)
+	_ = json.Unmarshal([]byte(`[]`), &sf)
+	_ = json.Unmarshal([]byte(`[]`), &sa)
+	_ = json.Unmarshal([]byte(`{}`), &msa)
+	_ = json.Unmarshal([]byte(`{}`), &mss)
+	_ = json.Unmarshal([]byte(`{}`), &msi)
+	_ = json.Unmarshal([]byte(`""`), &rm)
 }
 
 // CallOptions defines the options for a method call.
