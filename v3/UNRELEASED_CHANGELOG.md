@@ -20,7 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Switch to goccy/go-json for method binding and event JSON processing, improving performance by 21-63% and reducing memory allocations by 40-60%
+- Switch to goccy/go-json for all runtime JSON processing (method bindings, events, webview requests, notifications, kvstore), improving performance by 21-63% and reducing memory allocations by 40-60%
 - Optimize BoundMethod struct layout and cache isVariadic flag to reduce per-call overhead
 - Use stack-allocated argument buffer for methods with <=8 arguments to avoid heap allocations
 - Optimize result collection in method calls to avoid slice allocation for single return values
@@ -38,7 +38,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Removed
 <!-- Features removed in this release -->
-- Remove github.com/wailsapp/mimetype dependency in favor of expanded extension map + stdlib http.DetectContentType, reducing binary size by ~208KB
+- Remove github.com/wailsapp/mimetype dependency in favor of expanded extension map + stdlib http.DetectContentType, reducing binary size by ~1.2MB
 
 ## Security
 <!-- Security-related changes -->

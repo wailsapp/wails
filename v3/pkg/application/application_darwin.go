@@ -196,12 +196,12 @@ static void startSingleInstanceListener(const char *uniqueID) {
 */
 import "C"
 import (
-	"encoding/json"
 	"unsafe"
 
-	"github.com/wailsapp/wails/v3/internal/operatingsystem"
+	json "github.com/goccy/go-json"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
+	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 

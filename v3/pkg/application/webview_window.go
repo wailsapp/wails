@@ -1,7 +1,6 @@
 package application
 
 import (
-	"encoding/json"
 	"fmt"
 	"runtime"
 	"slices"
@@ -10,8 +9,9 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"github.com/leaanthony/u"
+	json "github.com/goccy/go-json"
 
+	"github.com/leaanthony/u"
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/pkg/events"

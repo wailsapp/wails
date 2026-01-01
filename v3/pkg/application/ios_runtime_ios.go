@@ -10,8 +10,9 @@ package application
 */
 import "C"
 import (
-	"encoding/json"
 	"unsafe"
+
+	json "github.com/goccy/go-json"
 )
 
 func iosHapticsImpact(style string) {
@@ -43,20 +44,20 @@ func iosDeviceInfo() deviceInfo {
 func iosSetScrollEnabled(enabled bool) { C.ios_runtime_set_scroll_enabled(C.bool(enabled)) }
 func iosSetBounceEnabled(enabled bool) { C.ios_runtime_set_bounce_enabled(C.bool(enabled)) }
 func iosSetScrollIndicatorsEnabled(enabled bool) {
-    C.ios_runtime_set_scroll_indicators_enabled(C.bool(enabled))
+	C.ios_runtime_set_scroll_indicators_enabled(C.bool(enabled))
 }
 func iosSetBackForwardGesturesEnabled(enabled bool) {
-    C.ios_runtime_set_back_forward_gestures_enabled(C.bool(enabled))
+	C.ios_runtime_set_back_forward_gestures_enabled(C.bool(enabled))
 }
 func iosSetLinkPreviewEnabled(enabled bool) { C.ios_runtime_set_link_preview_enabled(C.bool(enabled)) }
 func iosSetInspectableEnabled(enabled bool) { C.ios_runtime_set_inspectable_enabled(C.bool(enabled)) }
 func iosSetCustomUserAgent(ua string) {
-    var cstr *C.char
-    if ua != "" {
-        cstr = C.CString(ua)
-        defer C.free(unsafe.Pointer(cstr))
-    }
-    C.ios_runtime_set_custom_user_agent(cstr)
+	var cstr *C.char
+	if ua != "" {
+		cstr = C.CString(ua)
+		defer C.free(unsafe.Pointer(cstr))
+	}
+	C.ios_runtime_set_custom_user_agent(cstr)
 }
 
 // Native tabs
