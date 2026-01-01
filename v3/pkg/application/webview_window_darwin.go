@@ -34,8 +34,8 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 		backing:NSBackingStoreBuffered
 		defer:NO];
 
-	// Allow fullscreen. Needed for frameless windows
-	window.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary;
+	// Note: collectionBehavior is set later via windowSetCollectionBehavior()
+	// to allow user configuration of Space and fullscreen behavior
 
 	// Create delegate
 	WebviewWindowDelegate* delegate = [[WebviewWindowDelegate alloc] init];
@@ -233,6 +233,19 @@ void setStatusWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:N
 void setModalPanelWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSModalPanelWindowLevel]; }
 void setScreenSaverWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSScreenSaverWindowLevel]; }
 void setTornOffMenuWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSTornOffMenuWindowLevel]; }
+
+// Set NSWindow collection behavior for Spaces and fullscreen
+// The behavior parameter is a bitmask that can combine multiple NSWindowCollectionBehavior values
+void windowSetCollectionBehavior(void* nsWindow, int behavior) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	if (behavior == 0) {
+		// Default: use FullScreenPrimary for backwards compatibility
+		window.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary;
+	} else {
+		// Pass through the combined bitmask directly
+		window.collectionBehavior = (NSWindowCollectionBehavior)behavior;
+	}
+}
 
 // Load URL in NSWindow
 void navigationLoadURL(void* nsWindow, char* url) {
@@ -1162,6 +1175,10 @@ func (w *macosWebviewWindow) setWindowLevel(level MacWindowLevel) {
 	}
 }
 
+func (w *macosWebviewWindow) setCollectionBehavior(behavior MacWindowCollectionBehavior) {
+	C.windowSetCollectionBehavior(w.nsWindow, C.int(behavior))
+}
+
 func (w *macosWebviewWindow) width() int {
 	var width C.int
 	var wg sync.WaitGroup
@@ -1259,6 +1276,9 @@ func (w *macosWebviewWindow) run() {
 			macOptions.WindowLevel = MacWindowLevelNormal
 		}
 		w.setWindowLevel(macOptions.WindowLevel)
+
+		// Set collection behavior (defaults to FullScreenPrimary for backwards compatibility)
+		w.setCollectionBehavior(macOptions.CollectionBehavior)
 
 		// Initialise the window buttons
 		w.setMinimiseButtonState(options.MinimiseButtonState)

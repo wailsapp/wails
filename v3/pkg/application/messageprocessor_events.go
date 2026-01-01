@@ -1,7 +1,7 @@
 package application
 
 import (
-	"encoding/json"
+	json "github.com/goccy/go-json"
 
 	"github.com/wailsapp/wails/v3/pkg/errs"
 )

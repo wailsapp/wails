@@ -20,8 +20,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/internal/runtime"
-
-	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/sliceutil"
 
 	"github.com/wailsapp/go-webview2/pkg/edge"
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -245,8 +244,14 @@ func (w *windowsWebviewWindow) setTitle(title string) {
 }
 
 func (w *windowsWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
+	var hwndInsertAfter uintptr
+	if alwaysOnTop {
+		hwndInsertAfter = w32.HWND_TOPMOST
+	} else {
+		hwndInsertAfter = w32.HWND_NOTOPMOST
+	}
 	w32.SetWindowPos(w.hwnd,
-		lo.Ternary(alwaysOnTop, w32.HWND_TOPMOST, w32.HWND_NOTOPMOST),
+		hwndInsertAfter,
 		0,
 		0,
 		0,
@@ -1186,14 +1191,22 @@ func (w *windowsWebviewWindow) openContextMenu(menu *Menu, _ *ContextMenuData) {
 func (w *windowsWebviewWindow) setStyle(b bool, style int) {
 	currentStyle := int(w32.GetWindowLongPtr(w.hwnd, w32.GWL_STYLE))
 	if currentStyle != 0 {
-		currentStyle = lo.Ternary(b, currentStyle|style, currentStyle&^style)
+		if b {
+			currentStyle = currentStyle | style
+		} else {
+			currentStyle = currentStyle &^ style
+		}
 		w32.SetWindowLongPtr(w.hwnd, w32.GWL_STYLE, uintptr(currentStyle))
 	}
 }
 func (w *windowsWebviewWindow) setExStyle(b bool, style int) {
 	currentStyle := int(w32.GetWindowLongPtr(w.hwnd, w32.GWL_EXSTYLE))
 	if currentStyle != 0 {
-		currentStyle = lo.Ternary(b, currentStyle|style, currentStyle&^style)
+		if b {
+			currentStyle = currentStyle | style
+		} else {
+			currentStyle = currentStyle &^ style
+		}
 		w32.SetWindowLongPtr(w.hwnd, w32.GWL_EXSTYLE, uintptr(currentStyle))
 	}
 }
@@ -1914,13 +1927,13 @@ func (w *windowsWebviewWindow) setupChromium() {
 	opts.DisabledFeatures = append(opts.DisabledFeatures, "msSmartScreenProtection")
 
 	if len(opts.DisabledFeatures) > 0 {
-		opts.DisabledFeatures = lo.Uniq(opts.DisabledFeatures)
+		opts.DisabledFeatures = sliceutil.Unique(opts.DisabledFeatures)
 		arg := fmt.Sprintf("--disable-features=%s", strings.Join(opts.DisabledFeatures, ","))
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
 
 	if len(opts.EnabledFeatures) > 0 {
-		opts.EnabledFeatures = lo.Uniq(opts.EnabledFeatures)
+		opts.EnabledFeatures = sliceutil.Unique(opts.EnabledFeatures)
 		arg := fmt.Sprintf("--enable-features=%s", strings.Join(opts.EnabledFeatures, ","))
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}

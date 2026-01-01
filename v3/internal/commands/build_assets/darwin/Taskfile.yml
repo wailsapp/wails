@@ -117,7 +117,7 @@ tasks:
     summary: Creates universal binary using wails3 tool lipo (Linux/Windows)
     internal: true
     cmds:
-      - wails3 tool lipo -o "{{.BIN_DIR}}/{{.APP_NAME}}" -i "{{.BIN_DIR}}/{{.APP_NAME}}-amd64" -i "{{.BIN_DIR}}/{{.APP_NAME}}-arm64"
+      - wails3 tool lipo -output "{{.BIN_DIR}}/{{.APP_NAME}}" -input "{{.BIN_DIR}}/{{.APP_NAME}}-amd64" -input "{{.BIN_DIR}}/{{.APP_NAME}}-arm64"
       - rm -f "{{.BIN_DIR}}/{{.APP_NAME}}-amd64" "{{.BIN_DIR}}/{{.APP_NAME}}-arm64"
 
   package:

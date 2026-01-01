@@ -30,6 +30,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha.54 - 2025-12-29
+
+## Added
+- Add `CollectionBehavior` option to `MacWindow` for controlling window behavior across macOS Spaces and fullscreen (#4756) by @leaanthony
+
+## Fixed
+- Fix command argument error when executing 'build:universal:lipo:go' task on Linux by @wux1an
+- Fix Docker error "undefined symbol: ___ubsan_handle_xxxxxxx" when running 'wails3 build GOOS=darwin GOARCH=arm64' on Linux by @wux1an
+
+## Removed
+- Remove debug printf statements from Darwin URL scheme handler (#4834)
+
+## v3.0.0-alpha.53 - 2025-12-27
+
+## Added
+- Add unit tests for pkg/application by @leaanthony
+- Add custom protocol support to MSIX packaging by @leaanthony
+
+## Fixed
+- Consolidate custom protocol documentation and add Universal Links sections by @leaanthony
+
+## v3.0.0-alpha.52 - 2025-12-26
+
+## Fixed
+- Fix Windows systray menu crash when clicking icon repeatedly by adding guard against concurrent TrackPopupMenuEx calls (#4151) by @leaanthony
+
+## v3.0.0-alpha.51 - 2025-12-23
+
+## Fixed
+- Prevent app crashing when calling systray.Run() before app.Run() by @leaanthony
+
+## v3.0.0-alpha.50 - 2025-12-21
+
+## Changed
+- Update the documentation for Window `X/Y` options @ruhuang2001
+
 ## v3.0.0-alpha.49 - 2025-12-18
 
 ## Changed
