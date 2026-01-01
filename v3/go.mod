@@ -42,7 +42,6 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/tc-hib/winres v0.3.1
 	github.com/wailsapp/go-webview2 v1.0.22
-	github.com/wailsapp/mimetype v1.4.1
 	github.com/wailsapp/task/v3 v3.40.1-patched3
 	github.com/zalando/go-keyring v0.2.6
 	golang.org/x/sys v0.33.0

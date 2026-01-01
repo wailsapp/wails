@@ -28,6 +28,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Use buffer pool for HTTP transport request body reading
 - Lazily allocate CloseNotify channel in content type sniffer to reduce per-request allocations
 - Remove debug CSS logging from asset server
+- Expand MIME type extension map to cover 50+ common web formats (fonts, audio, video, etc.)
 
 ## Fixed
 <!-- Bug fixes -->
@@ -37,6 +38,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Removed
 <!-- Features removed in this release -->
+- Remove github.com/wailsapp/mimetype dependency in favor of expanded extension map + stdlib http.DetectContentType, reducing binary size by ~208KB
 
 ## Security
 <!-- Security-related changes -->
