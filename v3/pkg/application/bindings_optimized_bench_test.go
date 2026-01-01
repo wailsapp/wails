@@ -92,9 +92,9 @@ func (b *BoundMethod) CallOptimized(ctx context.Context, args []json.RawMessage)
 		callArgs[base+index] = value.Elem()
 	}
 
-	// Do the call
+	// Do the call - use cached isVariadic flag like production code
 	var callResults []reflect.Value
-	if b.Method.Type().IsVariadic() {
+	if b.isVariadic {
 		callResults = b.Method.CallSlice(callArgs)
 	} else {
 		callResults = b.Method.Call(callArgs)

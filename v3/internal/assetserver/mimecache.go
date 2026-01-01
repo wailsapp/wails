@@ -26,8 +26,8 @@ var (
 		".css": "text/css; charset=utf-8",
 		".js":  "text/javascript; charset=utf-8",
 		".mjs": "text/javascript; charset=utf-8",
-		".ts":  "text/typescript; charset=utf-8",
-		".tsx": "text/typescript; charset=utf-8",
+		".ts":  "application/x-typescript; charset=utf-8",
+		".tsx": "application/x-typescript; charset=utf-8",
 		".jsx": "text/javascript; charset=utf-8",
 
 		// Data formats

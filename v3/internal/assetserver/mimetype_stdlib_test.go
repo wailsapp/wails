@@ -3,6 +3,7 @@ package assetserver
 import (
 	"net/http"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -103,8 +104,8 @@ var extMimeTypes = map[string]string{
 	".css": "text/css; charset=utf-8",
 	".js":  "text/javascript; charset=utf-8",
 	".mjs": "text/javascript; charset=utf-8",
-	".ts":  "text/typescript; charset=utf-8",
-	".tsx": "text/typescript; charset=utf-8",
+	".ts":  "application/x-typescript; charset=utf-8",
+	".tsx": "application/x-typescript; charset=utf-8",
 	".jsx": "text/javascript; charset=utf-8",
 
 	// Data formats
@@ -240,8 +241,12 @@ func TestMimeTypeExtensionMapCompleteness(t *testing.T) {
 		if newMime, ok := extMimeTypes[ext]; !ok {
 			t.Errorf("extension %q missing from extMimeTypes (was: %q)", ext, mime)
 		} else if newMime != mime {
-			// Allow differences as long as they're equivalent
-			if !hasPrefix(newMime, mime[:len(mime)-10]) { // rough prefix check
+			// Allow differences as long as they're equivalent (compare base MIME type)
+			mimeBase := mime
+			if idx := strings.Index(mime, ";"); idx > 0 {
+				mimeBase = mime[:idx]
+			}
+			if !hasPrefix(newMime, mimeBase) {
 				t.Logf("extension %q changed: %q -> %q (verify this is correct)", ext, mime, newMime)
 			}
 		}
