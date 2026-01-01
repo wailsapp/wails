@@ -4,7 +4,6 @@ package w32
 
 import (
 	"fmt"
-	"github.com/samber/lo"
 	"strconv"
 	"strings"
 	"sync"
@@ -182,13 +181,20 @@ func MustStringToUTF16Ptr(input string) *uint16 {
 
 func MustStringToUTF16uintptr(input string) uintptr {
 	input = stripNulls(input)
-	ret := lo.Must(syscall.UTF16PtrFromString(input))
+	ret, err := syscall.UTF16PtrFromString(input)
+	if err != nil {
+		panic(err)
+	}
 	return uintptr(unsafe.Pointer(ret))
 }
 
 func MustStringToUTF16(input string) []uint16 {
 	input = stripNulls(input)
-	return lo.Must(syscall.UTF16FromString(input))
+	ret, err := syscall.UTF16FromString(input)
+	if err != nil {
+		panic(err)
+	}
+	return ret
 }
 
 func StringToUTF16(input string) ([]uint16, error) {

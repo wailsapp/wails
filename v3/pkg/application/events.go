@@ -3,12 +3,12 @@ package application
 import (
 	"fmt"
 	"reflect"
+	"slices"
 	"sync"
 	"sync/atomic"
 
 	json "github.com/goccy/go-json"
 
-	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -198,8 +198,8 @@ func (e *EventProcessor) registerListener(eventName string, callback func(*Custo
 		if _, ok := e.listeners[eventName]; !ok {
 			return
 		}
-		e.listeners[eventName] = lo.Filter(e.listeners[eventName], func(l *eventListener, i int) bool {
-			return l != thisListener
+		e.listeners[eventName] = slices.DeleteFunc(e.listeners[eventName], func(l *eventListener) bool {
+			return l == thisListener
 		})
 	}
 }
@@ -221,8 +221,8 @@ func (e *EventProcessor) RegisterHook(eventName string, callback func(*CustomEve
 		if _, ok := e.hooks[eventName]; !ok {
 			return
 		}
-		e.hooks[eventName] = lo.Filter(e.hooks[eventName], func(l *hook, i int) bool {
-			return l != thisHook
+		e.hooks[eventName] = slices.DeleteFunc(e.hooks[eventName], func(h *hook) bool {
+			return h == thisHook
 		})
 	}
 }
@@ -269,8 +269,8 @@ func (e *EventProcessor) dispatchEventToListeners(event *CustomEvent) {
 
 	// Do we have items to delete?
 	if itemsToDelete == true {
-		e.listeners[event.Name] = lo.Filter(listeners, func(l *eventListener, i int) bool {
-			return l.delete == false
+		e.listeners[event.Name] = slices.DeleteFunc(listeners, func(l *eventListener) bool {
+			return l.delete == true
 		})
 	}
 }

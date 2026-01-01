@@ -11,8 +11,7 @@ import (
 	json "github.com/goccy/go-json"
 
 	"github.com/wailsapp/wails/v3/internal/hash"
-
-	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/sliceutil"
 )
 
 // CallOptions defines the options for a method call.
@@ -120,7 +119,7 @@ func (b *Bindings) Add(service Service) error {
 
 		// Log
 		attrs := []any{"fqn", method.FQN, "id", method.ID}
-		if alias, ok := lo.FindKey(b.methodAliases, method.ID); ok {
+		if alias, ok := sliceutil.FindMapKey(b.methodAliases, method.ID); ok {
 			attrs = append(attrs, "alias", alias)
 		}
 		globalApplication.debug("Registering bound method:", attrs...)

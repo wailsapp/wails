@@ -40,6 +40,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Features removed in this release -->
 - Remove github.com/wailsapp/mimetype dependency in favor of expanded extension map + stdlib http.DetectContentType, reducing binary size by ~1.2MB
 - Remove gopkg.in/ini.v1 dependency by implementing minimal .desktop file parser for Linux file explorer, saving ~45KB
+- Remove samber/lo from runtime code by using Go 1.21+ stdlib slices package and minimal internal helpers, saving ~310KB
 
 ## Security
 <!-- Security-related changes -->
