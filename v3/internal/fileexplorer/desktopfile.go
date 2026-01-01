@@ -16,7 +16,8 @@ type DesktopEntry struct {
 
 // ParseDesktopFile parses a .desktop file and returns the Desktop Entry section.
 // It follows the Desktop Entry Specification:
-// https://specifications.freedesktop.org/desktop-entry-spec/latest/
+// ParseDesktopFile parses the `[Desktop Entry]` section of the desktop file at path and returns a DesktopEntry.
+// It returns an error if the file cannot be opened or if parsing the file fails.
 func ParseDesktopFile(path string) (*DesktopEntry, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -26,7 +27,10 @@ func ParseDesktopFile(path string) (*DesktopEntry, error) {
 	return ParseDesktopReader(f)
 }
 
-// ParseDesktopReader parses a .desktop file from an io.Reader.
+// ParseDesktopReader parses the [Desktop Entry] section of a .desktop file from r and extracts the Exec value.
+// It ignores empty lines and lines starting with '#', treats section names as case-sensitive, and stops parsing after leaving the [Desktop Entry] section.
+// The returned *DesktopEntry has Exec set to the exact value of the Exec key if present (whitespace preserved).
+// An error is returned if reading from r fails.
 func ParseDesktopReader(r io.Reader) (*DesktopEntry, error) {
 	scanner := bufio.NewScanner(r)
 	entry := &DesktopEntry{}

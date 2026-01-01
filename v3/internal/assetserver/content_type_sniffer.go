@@ -4,6 +4,8 @@ import (
 	"net/http"
 )
 
+// newContentTypeSniffer creates a contentTypeSniffer that wraps the provided http.ResponseWriter.
+// The returned sniffer does not allocate a close notification channel; it will be initialized lazily by CloseNotify.
 func newContentTypeSniffer(rw http.ResponseWriter) *contentTypeSniffer {
 	return &contentTypeSniffer{
 		rw: rw,

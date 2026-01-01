@@ -179,6 +179,9 @@ func MustStringToUTF16Ptr(input string) *uint16 {
 	return result
 }
 
+// MustStringToUTF16uintptr converts input to a NUL-terminated UTF-16 buffer and returns its pointer as a uintptr.
+// It first removes any internal NUL characters from input, then converts the result to a UTF-16 pointer.
+// The function panics if the conversion fails.
 func MustStringToUTF16uintptr(input string) uintptr {
 	input = stripNulls(input)
 	ret, err := syscall.UTF16PtrFromString(input)
@@ -188,6 +191,9 @@ func MustStringToUTF16uintptr(input string) uintptr {
 	return uintptr(unsafe.Pointer(ret))
 }
 
+// MustStringToUTF16 converts s to UTF-16 encoding, stripping any embedded NULs and panicking on error.
+// 
+// The returned slice is suitable for Windows API calls that expect a UTF-16 encoded string.
 func MustStringToUTF16(input string) []uint16 {
 	input = stripNulls(input)
 	ret, err := syscall.UTF16FromString(input)
@@ -197,6 +203,9 @@ func MustStringToUTF16(input string) []uint16 {
 	return ret
 }
 
+// StringToUTF16 converts input to a UTF-16 encoded, NUL-terminated []uint16 suitable for Windows API calls.
+// It first removes any embedded NUL ('\x00') characters from input. The returned slice is NUL-terminated;
+// an error is returned if the conversion fails.
 func StringToUTF16(input string) ([]uint16, error) {
 	input = stripNulls(input)
 	return syscall.UTF16FromString(input)

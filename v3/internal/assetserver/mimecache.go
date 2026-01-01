@@ -93,6 +93,7 @@ var (
 	}
 )
 
+// "application/octet-stream".
 func GetMimetype(filename string, data []byte) string {
 	// Fast path: check extension map first (no lock needed)
 	if result := mimeTypesByExt[filepath.Ext(filename)]; result != "" {

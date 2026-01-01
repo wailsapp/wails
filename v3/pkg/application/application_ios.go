@@ -108,6 +108,12 @@ type iosApp struct {
 	parent *App
 }
 
+// newPlatformApp creates an iosApp for the provided App and applies iOS-specific
+// configuration derived from app.options. It sets input accessory visibility,
+// scrolling/bounce/indicator behavior, navigation gestures, link preview,
+// media playback, inspector, user agent strings, app background color, and
+// native tabs (marshaling items to JSON when enabled). The function invokes
+// platform bindings to apply these settings and returns the configured *iosApp.
 func newPlatformApp(app *App) *iosApp {
 	iosConsoleLogf("info", "🔵 [application_ios.go] START newPlatformApp()")
 	// iOS initialization
