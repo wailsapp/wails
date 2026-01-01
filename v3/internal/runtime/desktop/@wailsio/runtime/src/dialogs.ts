@@ -106,7 +106,7 @@ export interface MessageDialogOptions {
 
 export interface Button {
     /** Text that appears within the button. */
-    Label?: string;
+    Label: string;
     /** True if the button should cancel an operation when clicked. */
     IsCancel?: boolean;
     /** True if the button should be the default action when the user presses enter. */

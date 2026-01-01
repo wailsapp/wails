@@ -374,13 +374,10 @@ func (dm *DialogManager) Question() *MessageDialog
 ```go
 dialog := app.Dialog.Question().
     SetTitle("Confirm").
-    SetMessage("Do you want to save changes?")
-
-dialog.Buttons(
-	application.Button{Label: "Save", IsDefault: true},
-	application.Button{Label: "Don't Save"},
-	application.Button{Label: "Cancel", IsCancel: true},
-)
+    SetMessage("Do you want to save changes?").
+	AddDefaultButton("Save").
+	AddButton("Don't Save").
+	AddCancelButton("Cancel")
 
 result, _ := dialog.Result()
 switch result {
@@ -425,6 +422,8 @@ Sets the dialog buttons.
 func (d *MessageDialog) Buttons(buttons ...Button) *MessageDialog
 ```
 
+If multiple buttons are marked as default or cancel, the **last one wins**.
+
 **Example:**
 ```go
 dialog.Buttons(
@@ -433,9 +432,48 @@ dialog.Buttons(
 )
 ```
 
+#### WithButton()
+
+Appends a pre-configured button to the dialog.
+
+```go
+func (d *MessageDialog) WithButton(button Button) *MessageDialog
+```
+
+**Example:**
+```go
+dialog.WithButton(application.Button{Label: "Retry", IsDefault: true})
+```
+
+#### AddButton()
+
+Adds a button with the given label.
+
+```go
+func (d *MessageDialog) AddButton(label string) *MessageDialog
+```
+
+#### AddDefaultButton()
+
+Adds a default button (activated by Enter). If a default button already exists, it will be cleared.
+
+```go
+func (d *MessageDialog) AddDefaultButton(label string) *MessageDialog
+```
+
+#### AddCancelButton()
+
+Adds a cancel button (activated by Escape). If a cancel button already exists, it will be cleared.
+
+```go
+func (d *MessageDialog) AddCancelButton(label string) *MessageDialog
+```
+
 #### Default()
 
 Marks the button with the given label as the default (activated by pressing Enter).
+
+If multiple buttons match the label, the **last one wins**.
 
 ```go
 func (d *MessageDialog) Default(label string) *MessageDialog
@@ -444,6 +482,8 @@ func (d *MessageDialog) Default(label string) *MessageDialog
 #### Cancel()
 
 Marks the button with the given label as the cancel button (activated by pressing Escape).
+
+If multiple buttons match the label, the **last one wins**.
 
 ```go
 func (d *MessageDialog) Cancel(label string) *MessageDialog

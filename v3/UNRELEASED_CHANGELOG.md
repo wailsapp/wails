@@ -18,11 +18,14 @@ After processing, the content will be moved to the main changelog and this file 
 ## Added
 <!-- New features, capabilities, or enhancements -->
 - Add `MessageDialog.Buttons(...)` method for defining dialog buttons inline (#4810)
+- Add fluent `MessageDialog.AddButton(...)`, `MessageDialog.AddDefaultButton(...)`, `MessageDialog.AddCancelButton(...)`, and `MessageDialog.WithButton(...)` helpers for building dialogs incrementally (#4810)
 - Add `MessageDialog.Result() (string, error)` method for synchronously retrieving the clicked button label (#4810)
 
 ## Changed
 <!-- Changes in existing functionality -->
 - **BREAKING**: `MessageDialog.Show()` now returns `error` and is non-blocking. Use `MessageDialog.Result() (string, error)` for synchronous workflows and to retrieve the clicked button label (#4810)
+- TypeScript runtime dialogs `Button.Label` is now required (dialog results are returned by label) (#4810)
+- Update the documentation for Window `X/Y` options @ruhuang2001
 
 ## Fixed
 <!-- Bug fixes -->

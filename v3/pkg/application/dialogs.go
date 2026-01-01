@@ -108,6 +108,7 @@ func (d *MessageDialog) SetTitle(title string) *MessageDialog {
 }
 
 func (d *MessageDialog) Show() error {
+	d.normalizeButtonList()
 	if d.impl == nil {
 		d.impl = newDialogImpl(d)
 	}
@@ -115,6 +116,7 @@ func (d *MessageDialog) Show() error {
 }
 
 func (d *MessageDialog) Result() (string, error) {
+	d.normalizeButtonList()
 	if d.impl == nil {
 		d.impl = newDialogImpl(d)
 	}
@@ -133,6 +135,35 @@ func (d *MessageDialog) Buttons(buttons ...Button) *MessageDialog {
 		result = append(result, &bCopy)
 	}
 	d.ButtonList = result
+	d.normalizeButtonList()
+	return d
+}
+
+func (d *MessageDialog) WithButton(button Button) *MessageDialog {
+	bCopy := button
+	d.ButtonList = append(d.ButtonList, &bCopy)
+	d.normalizeButtonList()
+	return d
+}
+
+func (d *MessageDialog) AddButton(label string) *MessageDialog {
+	d.ButtonList = append(d.ButtonList, &Button{Label: label})
+	return d
+}
+
+func (d *MessageDialog) AddDefaultButton(label string) *MessageDialog {
+	for _, b := range d.ButtonList {
+		b.IsDefault = false
+	}
+	d.ButtonList = append(d.ButtonList, &Button{Label: label, IsDefault: true})
+	return d
+}
+
+func (d *MessageDialog) AddCancelButton(label string) *MessageDialog {
+	for _, b := range d.ButtonList {
+		b.IsCancel = false
+	}
+	d.ButtonList = append(d.ButtonList, &Button{Label: label, IsCancel: true})
 	return d
 }
 
@@ -143,16 +174,57 @@ func (d *MessageDialog) AttachToWindow(window Window) *MessageDialog {
 
 func (d *MessageDialog) Default(label string) *MessageDialog {
 	for _, b := range d.ButtonList {
-		b.IsDefault = b.Label == label
+		b.IsDefault = false
+	}
+	for i := len(d.ButtonList) - 1; i >= 0; i-- {
+		if d.ButtonList[i].Label == label {
+			d.ButtonList[i].IsDefault = true
+			break
+		}
 	}
 	return d
 }
 
 func (d *MessageDialog) Cancel(label string) *MessageDialog {
 	for _, b := range d.ButtonList {
-		b.IsCancel = b.Label == label
+		b.IsCancel = false
+	}
+	for i := len(d.ButtonList) - 1; i >= 0; i-- {
+		if d.ButtonList[i].Label == label {
+			d.ButtonList[i].IsCancel = true
+			break
+		}
 	}
 	return d
+}
+
+func (d *MessageDialog) normalizeButtonList() {
+	defaultIndex := -1
+	cancelIndex := -1
+	for i := 0; i < len(d.ButtonList); i++ {
+		b := d.ButtonList[i]
+		if b == nil {
+			continue
+		}
+		if b.IsDefault {
+			defaultIndex = i
+		}
+		if b.IsCancel {
+			cancelIndex = i
+		}
+	}
+	for i := 0; i < len(d.ButtonList); i++ {
+		b := d.ButtonList[i]
+		if b == nil {
+			continue
+		}
+		if defaultIndex >= 0 {
+			b.IsDefault = i == defaultIndex
+		}
+		if cancelIndex >= 0 {
+			b.IsCancel = i == cancelIndex
+		}
+	}
 }
 
 func (d *MessageDialog) SetMessage(message string) *MessageDialog {

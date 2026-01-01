@@ -19,20 +19,19 @@ Wails provides **native system dialogs** that work across all platforms: message
 _ = app.Dialog.Info().
     SetTitle("Success").
     SetMessage("File saved successfully!").
-	Show()
+    Show()
 
 // Question dialog (use Result() to get clicked button label)
-dialog := app.Dialog.Question().
+result, _ := app.Dialog.Question().
     SetTitle("Confirm").
-    SetMessage("Delete this file?")
+    SetMessage("Delete this file?").
+    AddButton("Delete").
+    AddCancelButton("Cancel").
+    Default("Cancel").
+    Result()
 
-dialog.Buttons(
-	application.Button{Label: "Delete"},
-	application.Button{Label: "Cancel", IsDefault: true, IsCancel: true},
-)
-
-if result, _ := dialog.Result(); result == "Delete" {
-	deleteFile()
+if result == "Delete" {
+    deleteFile()
 }
 
 // File open dialog
@@ -64,10 +63,10 @@ app.Dialog.SaveFile()
 Display simple messages:
 
 ```go
-app.Dialog.Info().
+_ = app.Dialog.Info().
     SetTitle("Welcome").
     SetMessage("Welcome to our application!").
-	Show()
+    Show()
 ```
 
 **Use cases:**
@@ -80,10 +79,10 @@ app.Dialog.Info().
 Show warnings:
 
 ```go
-app.Dialog.Warning().
+_ = app.Dialog.Warning().
     SetTitle("Warning").
     SetMessage("This action cannot be undone.").
-	Show()
+    Show()
 ```
 
 **Use cases:**
@@ -96,10 +95,10 @@ app.Dialog.Warning().
 Display errors:
 
 ```go
-app.Dialog.Error().
+_ = app.Dialog.Error().
     SetTitle("Error").
     SetMessage("Failed to save file: " + err.Error()).
-	Show()
+    Show()
 ```
 
 **Use cases:**
@@ -112,17 +111,16 @@ app.Dialog.Error().
 Ask users questions and handle responses via `Result()`:
 
 ```go
-dialog := app.Dialog.Question().
+result, _ := app.Dialog.Question().
     SetTitle("Confirm Delete").
-    SetMessage("Are you sure you want to delete this file?")
+    SetMessage("Are you sure you want to delete this file?").
+    AddButton("Delete").
+    AddCancelButton("Cancel").
+    Default("Cancel").
+    Result()
 
-dialog.Buttons(
-	application.Button{Label: "Delete"},
-	application.Button{Label: "Cancel", IsDefault: true, IsCancel: true},
-)
-
-if result, _ := dialog.Result(); result == "Delete" {
-	deleteFile()
+if result == "Delete" {
+    deleteFile()
 }
 ```
 
@@ -213,50 +211,48 @@ dialog := app.Dialog.Info().
 Info, warning, and error dialogs display a default "OK" button:
 
 ```go
-app.Dialog.Info().
+_ = app.Dialog.Info().
     SetMessage("Done!").
-	Show()
+    Show()
 ```
 
 **Custom buttons for question dialogs:**
 
-Use `Buttons(...)` to define buttons and `Result()` to retrieve the clicked button label:
+Use `AddButton(...)`/`AddDefaultButton(...)`/`AddCancelButton(...)` (or `Buttons(...)`) to define buttons and `Result()` to retrieve the clicked button label:
 
 ```go
-dialog := app.Dialog.Question().
-    SetMessage("Choose action")
+result, _ := app.Dialog.Question().
+    SetMessage("Choose action").
+    AddDefaultButton("Save").
+    AddButton("Don't Save").
+    AddCancelButton("Cancel").
+    Result()
 
-dialog.Buttons(
-	application.Button{Label: "Save", IsDefault: true},
-	application.Button{Label: "Don't Save"},
-	application.Button{Label: "Cancel", IsCancel: true},
-)
-
-result, _ := dialog.Result()
 switch result {
 case "Save":
-	saveDocument()
+    saveDocument()
 case "Don't Save":
-	discardChanges()
+    discardChanges()
 }
 ```
 
 **Default and Cancel buttons:**
 
-Use `IsDefault` to specify which button is highlighted and triggered by Enter.
-Use `IsCancel` to specify which button is triggered by Escape.
+Use `AddDefaultButton(...)` to specify which button is highlighted and triggered by Enter.
+Use `AddCancelButton(...)` to specify which button is triggered by Escape.
+
+If multiple default/cancel buttons are specified, the **last one wins**.
 
 ```go
-dialog := app.Dialog.Question().
-    SetMessage("Delete file?")
+result, _ := app.Dialog.Question().
+    SetMessage("Delete file?").
+    AddButton("Delete").
+    AddCancelButton("Cancel").
+    Default("Cancel").
+    Result()
 
-dialog.Buttons(
-	application.Button{Label: "Delete"},
-	application.Button{Label: "Cancel", IsDefault: true, IsCancel: true},
-)
-
-if result, _ := dialog.Result(); result == "Delete" {
-	performDelete()
+if result == "Delete" {
+    performDelete()
 }
 ```
 
@@ -265,11 +261,10 @@ if result, _ := dialog.Result(); result == "Delete" {
 Attach dialog to specific window:
 
 ```go
-dialog := app.Dialog.Info().
-    SetMessage("Window-specific message").
-    AttachToWindow(window)
-
-	_ = dialog.Show()
+_ = app.Dialog.Info().
+	SetMessage("Window-specific message").
+	AttachToWindow(window).
+	Show()
 ```
 
 **Behaviour:**
@@ -292,15 +287,15 @@ dialog := app.Dialog.Info().
     
     **Example:**
     ```go
-    // Appears as sheet on macOS
-    dialog := app.Dialog.Question().
-        SetMessage("Save changes?").
-        AttachToWindow(window)
-    dialog.Buttons(
-		application.Button{Label: "Yes"},
-		application.Button{Label: "No", IsDefault: true, IsCancel: true},
-	)
-	_ = dialog.Show()
+	// Appears as sheet on macOS
+	_ = app.Dialog.Question().
+		SetMessage("Save changes?").
+		AttachToWindow(window).
+		AddButton("Yes").
+		AddButton("No").
+		Default("No").
+		Cancel("No").
+		Show()
     ```
   </TabItem>
 
@@ -317,9 +312,9 @@ dialog := app.Dialog.Info().
     **Example:**
     ```go
     // Modal dialog on Windows
-    app.Dialog.Error().
-        SetTitle("Error").
-        SetMessage("Operation failed").
+	_ = app.Dialog.Error().
+		SetTitle("Error").
+		SetMessage("Operation failed").
 		Show()
     ```
   </TabItem>
@@ -336,8 +331,8 @@ dialog := app.Dialog.Info().
     **Example:**
     ```go
     // GTK dialog on Linux
-    app.Dialog.Info().
-        SetMessage("Update complete").
+	_ = app.Dialog.Info().
+		SetMessage("Update complete").
 		Show()
     ```
   </TabItem>
@@ -349,19 +344,16 @@ dialog := app.Dialog.Info().
 
 ```go
 func deleteFile(app *application.App, path string) {
-    dialog := app.Dialog.Question().
-        SetTitle("Confirm Delete").
-        SetMessage(fmt.Sprintf("Delete %s?", filepath.Base(path)))
-
-    dialog.Buttons(
-		application.Button{Label: "Delete"},
-		application.Button{Label: "Cancel", IsDefault: true, IsCancel: true},
-	)
-
-    result, err := dialog.Result()
-    if err != nil || result != "Delete" {
-        return
-    }
+	result, err := app.Dialog.Question().
+		SetTitle("Confirm Delete").
+		SetMessage(fmt.Sprintf("Delete %s?", filepath.Base(path))).
+		AddButton("Delete").
+		AddCancelButton("Cancel").
+		Default("Cancel").
+		Result()
+	if err != nil || result != "Delete" {
+		return
+	}
 
     if err := os.Remove(path); err != nil {
 		_ = app.Dialog.Error().
@@ -425,20 +417,17 @@ func selectImageFile(app *application.App) (string, error) {
 
 ```go
 func exportData(app *application.App) {
-    // Step 1: Confirm export
-    dialog := app.Dialog.Question().
-        SetTitle("Export Data").
-        SetMessage("Export all data to CSV?")
-
-    dialog.Buttons(
-		application.Button{Label: "Export"},
-		application.Button{Label: "Cancel", IsDefault: true, IsCancel: true},
-	)
-
-    result, err := dialog.Result()
-    if err != nil || result != "Export" {
-        return
-    }
+	// Step 1: Confirm export
+	result, err := app.Dialog.Question().
+		SetTitle("Export Data").
+		SetMessage("Export all data to CSV?").
+		AddButton("Export").
+		AddCancelButton("Cancel").
+		Default("Cancel").
+		Result()
+	if err != nil || result != "Export" {
+		return
+	}
 
     // Step 2: Select destination
     path, err := app.Dialog.SaveFile().

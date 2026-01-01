@@ -144,19 +144,16 @@ if err != nil || path == "" {
 
 // Check if file exists
 if _, err := os.Stat(path); err == nil {
-    dialog := app.Dialog.Question().
+    result, err := app.Dialog.Question().
         SetTitle("Confirm Overwrite").
-        SetMessage("File already exists. Overwrite?")
-
-    dialog.Buttons(
-		application.Button{Label: "Overwrite"},
-		application.Button{Label: "Cancel", IsDefault: true, IsCancel: true},
-	)
-
-	result, err := dialog.Result()
-	if err != nil || result != "Overwrite" {
-		return
-	}
+        SetMessage("File already exists. Overwrite?").
+        AddButton("Overwrite").
+        AddCancelButton("Cancel").
+        Default("Cancel").
+        Result()
+    if err != nil || result != "Overwrite" {
+        return
+    }
 }
 
 saveFile(path, data)
@@ -291,19 +288,16 @@ func saveDocument(app *application.App, content string) {
     // Validate extension
     ext := filepath.Ext(path)
     if ext != ".txt" && ext != ".md" {
-        dialog := app.Dialog.Question().
+        result, err := app.Dialog.Question().
             SetTitle("Confirm Extension").
-            SetMessage(fmt.Sprintf("Save as %s file?", ext))
-
-        dialog.Buttons(
-			application.Button{Label: "Save"},
-			application.Button{Label: "Cancel", IsDefault: true, IsCancel: true},
-		)
-
-		result, err := dialog.Result()
-		if err != nil || result != "Save" {
-			return
-		}
+            SetMessage(fmt.Sprintf("Save as %s file?", ext)).
+		    AddButton("Save").
+		    AddCancelButton("Cancel").
+		    Default("Cancel").
+		    Result()
+        if err != nil || result != "Save" {
+            return
+        }
     }
 
     doSave(app, path, content)
@@ -339,23 +333,20 @@ func processMultipleFiles(app *application.App) {
     }
 
     // Confirm processing
-    dialog := app.Dialog.Question().
+    result, err := app.Dialog.Question().
         SetTitle("Confirm Processing").
-        SetMessage(fmt.Sprintf("Process %d file(s)?", len(paths)))
-
-    dialog.Buttons(
-		application.Button{Label: "Process"},
-		application.Button{Label: "Cancel", IsDefault: true, IsCancel: true},
-	)
-
-    result, err := dialog.Result()
+        SetMessage(fmt.Sprintf("Process %d file(s)?", len(paths))).
+		AddButton("Process").
+		AddCancelButton("Cancel").
+		Default("Cancel").
+		Result()
     if err != nil || result != "Process" {
         return
     }
 
     // Process files
     var errs []error
-    for i, path := range paths {
+    for _, path := range paths {
         if err := processFile(path); err != nil {
             errs = append(errs, err)
         }
@@ -415,19 +406,19 @@ func exportData(app *application.App, data []byte) {
     }
 
     // Show success with option to open folder
-    dialog := app.Dialog.Question().
+    result, err := app.Dialog.Question().
         SetTitle("Export Complete").
-        SetMessage(fmt.Sprintf("Exported to %s", filename))
-
-    dialog.Buttons(
-		application.Button{Label: "Open Folder"},
-		application.Button{Label: "OK", IsDefault: true, IsCancel: true},
-	)
-
-    result, _ := dialog.Result()
-    if result == "Open Folder" {
-		openFolder(folder)
+        SetMessage(fmt.Sprintf("Exported to %s", filename)).
+		AddButton("Open Folder").
+		AddButton("OK").
+		Default("OK").
+		Cancel("OK").
+		Result()
+    if err != nil || result != "Open Folder" {
+        return
     }
+
+    openFolder(folder)
 }
 ```
 
@@ -466,16 +457,13 @@ func importConfiguration(app *application.App) {
     }
 
     // Confirm import
-    dialog := app.Dialog.Question().
+    result, err := app.Dialog.Question().
         SetTitle("Confirm Import").
-        SetMessage("Import this configuration?")
-
-    dialog.Buttons(
-		application.Button{Label: "Import"},
-		application.Button{Label: "Cancel", IsDefault: true, IsCancel: true},
-	)
-
-    result, err := dialog.Result()
+        SetMessage("Import this configuration?").
+		AddButton("Import").
+		AddCancelButton("Cancel").
+		Default("Cancel").
+		Result()
     if err != nil || result != "Import" {
         return
     }
