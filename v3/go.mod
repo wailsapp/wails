@@ -1,6 +1,6 @@
 module github.com/wailsapp/wails/v3
 
-go 1.24.0
+go 1.25
 
 require (
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3
@@ -8,11 +8,14 @@ require (
 	github.com/adrg/xdg v0.5.3
 	github.com/atterpac/refresh v0.8.6
 	github.com/bep/debounce v1.2.1
+	github.com/bytedance/sonic v1.14.2
 	github.com/charmbracelet/glamour v0.9.0
 	github.com/charmbracelet/huh v0.8.0
 	github.com/ebitengine/purego v0.8.2
 	github.com/go-git/go-git/v5 v5.13.2
+	github.com/go-json-experiment/json v0.0.0-20251027170946-4849db3c2f7e
 	github.com/go-ole/go-ole v1.3.0
+	github.com/goccy/go-json v0.10.5
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/google/go-cmp v0.7.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
@@ -21,6 +24,7 @@ require (
 	github.com/gorilla/websocket v1.5.3
 	github.com/jackmordaunt/icns/v2 v2.2.7
 	github.com/jaypipes/ghw v0.17.0
+	github.com/json-iterator/go v1.1.12
 	github.com/konoui/lipo v0.10.0
 	github.com/leaanthony/clir v1.7.0
 	github.com/leaanthony/go-ansi-parser v1.6.1
@@ -53,6 +57,8 @@ require (
 	al.essio.dev/pkg/shellescape v1.5.1 // indirect
 	atomicgo.dev/schedule v0.1.0 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
+	github.com/bytedance/gopkg v0.1.3 // indirect
+	github.com/bytedance/sonic/loader v0.4.0 // indirect
 	github.com/catppuccin/go v0.3.0 // indirect
 	github.com/charmbracelet/bubbles v0.21.1-0.20250623103423-23b8fd6302d7 // indirect
 	github.com/charmbracelet/bubbletea v1.3.6 // indirect
@@ -60,13 +66,18 @@ require (
 	github.com/charmbracelet/x/cellbuf v0.0.13 // indirect
 	github.com/charmbracelet/x/exp/strings v0.0.0-20240722160745-212f7b056ed0 // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
+	github.com/cloudwego/base64x v0.1.6 // indirect
 	github.com/danieljoos/wincred v1.2.2 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/konoui/go-qsort v0.1.0 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
+	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
+	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6 // indirect
 	github.com/ncruces/go-strftime v0.1.9 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
+	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
 )
 
 require (
@@ -160,7 +171,7 @@ require (
 	golang.org/x/text v0.23.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	howett.net/plist v1.0.1 // indirect
+	howett.net/plist v1.0.1
 	modernc.org/libc v1.61.13 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.8.2 // indirect

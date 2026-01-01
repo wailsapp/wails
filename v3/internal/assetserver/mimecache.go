@@ -9,8 +9,9 @@ import (
 )
 
 var (
-	mimeCache = map[string]string{}
-	mimeMutex sync.Mutex
+	// mimeCache uses sync.Map for better concurrent read performance
+	// since reads are far more common than writes
+	mimeCache sync.Map
 
 	// The list of builtin mime-types by extension as defined by
 	// the golang standard lib package "mime"
@@ -38,19 +39,18 @@ var (
 )
 
 func GetMimetype(filename string, data []byte) string {
-	mimeMutex.Lock()
-	defer mimeMutex.Unlock()
-
-	result := mimeTypesByExt[filepath.Ext(filename)]
-	if result != "" {
+	// Fast path: check extension map first (no lock needed)
+	if result := mimeTypesByExt[filepath.Ext(filename)]; result != "" {
 		return result
 	}
 
-	result = mimeCache[filename]
-	if result != "" {
-		return result
+	// Check cache (lock-free read)
+	if cached, ok := mimeCache.Load(filename); ok {
+		return cached.(string)
 	}
 
+	// Slow path: detect and cache
+	var result string
 	detect := mimetype.Detect(data)
 	if detect == nil {
 		result = http.DetectContentType(data)
@@ -62,6 +62,6 @@ func GetMimetype(filename string, data []byte) string {
 		result = "application/octet-stream"
 	}
 
-	mimeCache[filename] = result
+	mimeCache.Store(filename, result)
 	return result
 }

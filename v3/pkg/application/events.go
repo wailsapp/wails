@@ -1,11 +1,12 @@
 package application
 
 import (
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"sync"
 	"sync/atomic"
+
+	json "github.com/goccy/go-json"
 
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/pkg/events"

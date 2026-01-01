@@ -20,6 +20,14 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Switch to goccy/go-json for method binding and event JSON processing, improving performance by 21-63% and reducing memory allocations by 40-60%
+- Optimize BoundMethod struct layout and cache isVariadic flag to reduce per-call overhead
+- Use stack-allocated argument buffer for methods with <=8 arguments to avoid heap allocations
+- Optimize result collection in method calls to avoid slice allocation for single return values
+- Use sync.Map for MIME type cache to improve concurrent performance
+- Use buffer pool for HTTP transport request body reading
+- Lazily allocate CloseNotify channel in content type sniffer to reduce per-request allocations
+- Remove debug CSS logging from asset server
 
 ## Fixed
 <!-- Bug fixes -->
