@@ -5,12 +5,13 @@ package notifications
 import (
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
 	_ "unsafe"
+
+	json "github.com/goccy/go-json"
 
 	"git.sr.ht/~jackmordaunt/go-toast/v2"
 	wintoast "git.sr.ht/~jackmordaunt/go-toast/v2/wintoast"

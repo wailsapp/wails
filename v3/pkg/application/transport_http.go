@@ -1,16 +1,30 @@
 package application
 
 import (
+	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"io"
 	"log/slog"
 	"net/http"
 	"strconv"
+	"sync"
+
+	json "github.com/goccy/go-json"
 
 	"github.com/wailsapp/wails/v3/pkg/errs"
 )
+
+// bufferPool reduces allocations for reading request bodies.
+// Buffers larger than maxPooledBufferSize are not returned to the pool
+// to prevent memory bloat from occasional large requests (e.g., images).
+const maxPooledBufferSize = 512 * 1024 // 512KB
+
+var bufferPool = sync.Pool{
+	New: func() any {
+		return bytes.NewBuffer(make([]byte, 0, 4096))
+	},
+}
 
 type HTTPTransport struct {
 	messageProcessor *MessageProcessor
@@ -75,14 +89,24 @@ func (t *HTTPTransport) Handler() func(next http.Handler) http.Handler {
 }
 
 func (t *HTTPTransport) handleRuntimeRequest(rw http.ResponseWriter, r *http.Request) {
-	bodyBytes, err := io.ReadAll(r.Body)
+	// Use pooled buffer to reduce allocations
+	buf := bufferPool.Get().(*bytes.Buffer)
+	buf.Reset()
+	defer func() {
+		// Don't return large buffers to pool to prevent memory bloat
+		if buf.Cap() <= maxPooledBufferSize {
+			bufferPool.Put(buf)
+		}
+	}()
+
+	_, err := io.Copy(buf, r.Body)
 	if err != nil {
 		t.httpError(rw, errs.WrapInvalidRuntimeCallErrorf(err, "Unable to read request body"))
 		return
 	}
 
 	var body request
-	err = json.Unmarshal(bodyBytes, &body)
+	err = json.Unmarshal(buf.Bytes(), &body)
 	if err != nil {
 		t.httpError(rw, errs.WrapInvalidRuntimeCallErrorf(err, "Unable to parse request body as JSON"))
 		return

@@ -68,9 +68,10 @@ static bool URLSchemeTaskDidReceiveResponse(void *wkUrlSchemeTask, int statusCod
 import "C"
 
 import (
-	"encoding/json"
 	"net/http"
 	"unsafe"
+
+	json "github.com/goccy/go-json"
 )
 
 var _ ResponseWriter = &responseWriter{}

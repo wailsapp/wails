@@ -15,11 +15,12 @@ package application
 import "C"
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 	"unsafe"
+
+	json "github.com/goccy/go-json"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -107,6 +108,12 @@ type iosApp struct {
 	parent *App
 }
 
+// newPlatformApp creates an iosApp for the provided App and applies iOS-specific
+// configuration derived from app.options. It sets input accessory visibility,
+// scrolling/bounce/indicator behavior, navigation gestures, link preview,
+// media playback, inspector, user agent strings, app background color, and
+// native tabs (marshaling items to JSON when enabled). The function invokes
+// platform bindings to apply these settings and returns the configured *iosApp.
 func newPlatformApp(app *App) *iosApp {
 	iosConsoleLogf("info", "🔵 [application_ios.go] START newPlatformApp()")
 	// iOS initialization
@@ -161,19 +168,19 @@ func newPlatformApp(app *App) *iosApp {
 		// Ensure it's marked as not set to allow delegate to fallback to white
 		C.ios_set_app_background_color(255, 255, 255, 255, C.bool(false))
 	}
-    // Native tabs option: only enable when explicitly requested
-    if app.options.IOS.EnableNativeTabs {
-        if len(app.options.IOS.NativeTabsItems) > 0 {
-            if data, err := json.Marshal(app.options.IOS.NativeTabsItems); err == nil {
-                cjson := C.CString(string(data))
-                C.ios_native_tabs_set_items_json(cjson)
-                C.free(unsafe.Pointer(cjson))
-            } else if globalApplication != nil {
-                globalApplication.error("Failed to marshal IOS.NativeTabsItems: %v", err)
-            }
-        }
-        C.ios_native_tabs_set_enabled(C.bool(true))
-    }
+	// Native tabs option: only enable when explicitly requested
+	if app.options.IOS.EnableNativeTabs {
+		if len(app.options.IOS.NativeTabsItems) > 0 {
+			if data, err := json.Marshal(app.options.IOS.NativeTabsItems); err == nil {
+				cjson := C.CString(string(data))
+				C.ios_native_tabs_set_items_json(cjson)
+				C.free(unsafe.Pointer(cjson))
+			} else if globalApplication != nil {
+				globalApplication.error("Failed to marshal IOS.NativeTabsItems: %v", err)
+			}
+		}
+		C.ios_native_tabs_set_enabled(C.bool(true))
+	}
 
 	iosConsoleLogf("info", "🔵 [application_ios.go] END newPlatformApp() - iosApp created")
 	return result
