@@ -24,6 +24,13 @@ type assetServerLogger struct{}
 
 var assetServerLoggerKey assetServerLogger
 
+// ServeFile writes the provided blob to rw as an HTTP 200 response, ensuring appropriate
+// Content-Length and Content-Type headers are set.
+//
+// If the Content-Type header is not already present, ServeFile determines an appropriate
+// MIME type from the filename and blob and sets the Content-Type header. It then writes
+// the 200 status and the blob body to the response, returning any error encountered while
+// writing the body.
 func ServeFile(rw http.ResponseWriter, filename string, blob []byte) error {
 	header := rw.Header()
 	header.Set(HeaderContentLength, fmt.Sprintf("%d", len(blob)))

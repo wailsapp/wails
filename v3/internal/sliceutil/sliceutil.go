@@ -7,7 +7,9 @@ package sliceutil
 // Preserves the order of first occurrence.
 // The original slice is not modified.
 //
-// Note: Unlike slices.Compact, this works on unsorted slices and preserves order.
+// Unique returns a new slice containing the first occurrence of each element from the input slice, preserving their original order.
+// If the input slice is nil, Unique returns nil.
+// The original slice is not modified.
 func Unique[T comparable](slice []T) []T {
 	if slice == nil {
 		return nil
@@ -24,7 +26,8 @@ func Unique[T comparable](slice []T) []T {
 }
 
 // FindMapKey returns the first key in map m whose value equals val.
-// Returns the key and true if found, or zero value and false if not found.
+// FindMapKey returns the first key in m whose value equals val.
+// If no such key exists it returns the zero value of K and false. If multiple keys map to val, the returned key depends on Go's map iteration order.
 func FindMapKey[K comparable, V comparable](m map[K]V, val V) (K, bool) {
 	for k, v := range m {
 		if v == val {

@@ -14,6 +14,8 @@ import (
 	"github.com/wailsapp/wails/v3/internal/sliceutil"
 )
 
+// init forces goccy/go-json to initialize its type address cache at program startup.
+// This prevents a Windows-specific index out-of-bounds panic that can occur when the decoder is first invoked later (see https://github.com/goccy/go-json/issues/474).
 func init() {
 	// Force goccy/go-json to initialize its type address cache early.
 	// On Windows, if the decoder is first invoked later (e.g., during tests),
@@ -179,6 +181,10 @@ var internalServiceMethods = map[string]bool{
 
 var ctxType = reflect.TypeFor[context.Context]()
 
+// getMethods returns the list of BoundMethod descriptors for the methods of the named pointer type provided by value.
+// 
+// It returns an error if value is not a pointer to a named type, if a function value is supplied (binding functions is deprecated), or if a generic type is supplied.
+// The returned BoundMethod slice includes only exported methods that are not listed in internalServiceMethods. Each BoundMethod has its FQN, ID (computed from the FQN), Method reflect.Value, Inputs and Outputs populated, isVariadic cached from the method signature, and needsContext set when the first parameter is context.Context.
 func getMethods(value any) ([]*BoundMethod, error) {
 	// Create result placeholder
 	var result []*BoundMethod

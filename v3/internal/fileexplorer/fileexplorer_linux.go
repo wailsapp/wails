@@ -13,6 +13,7 @@ import (
 	"syscall"
 )
 
+// when possible; the fallback method does not support selecting a file.
 func explorerBinArgs(path string, selectFile bool) (string, []string, error) {
 	// Map of field codes to their replacements
 	var fieldCodes = map[string]string{
