@@ -15,7 +15,11 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
-// bufferPool reduces allocations for reading request bodies
+// bufferPool reduces allocations for reading request bodies.
+// Buffers larger than maxPooledBufferSize are not returned to the pool
+// to prevent memory bloat from occasional large requests (e.g., images).
+const maxPooledBufferSize = 512 * 1024 // 512KB
+
 var bufferPool = sync.Pool{
 	New: func() any {
 		return bytes.NewBuffer(make([]byte, 0, 4096))
@@ -88,7 +92,12 @@ func (t *HTTPTransport) handleRuntimeRequest(rw http.ResponseWriter, r *http.Req
 	// Use pooled buffer to reduce allocations
 	buf := bufferPool.Get().(*bytes.Buffer)
 	buf.Reset()
-	defer bufferPool.Put(buf)
+	defer func() {
+		// Don't return large buffers to pool to prevent memory bloat
+		if buf.Cap() <= maxPooledBufferSize {
+			bufferPool.Put(buf)
+		}
+	}()
 
 	_, err := io.Copy(buf, r.Body)
 	if err != nil {
