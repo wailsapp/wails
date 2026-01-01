@@ -14,6 +14,15 @@ import (
 	"github.com/wailsapp/wails/v3/internal/sliceutil"
 )
 
+func init() {
+	// Force goccy/go-json to initialize its type address cache early.
+	// On Windows, if the decoder is first invoked later (e.g., during tests),
+	// the type address calculation can fail with an index out of bounds panic.
+	// See: https://github.com/goccy/go-json/issues/474
+	var si []int
+	_ = json.Unmarshal([]byte(`[]`), &si)
+}
+
 // CallOptions defines the options for a method call.
 // Field order is optimized to minimize struct padding.
 type CallOptions struct {
