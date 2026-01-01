@@ -11,8 +11,6 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
-
-	ini "gopkg.in/ini.v1"
 )
 
 func explorerBinArgs(path string, selectFile bool) (string, []string, error) {
@@ -38,22 +36,22 @@ func explorerBinArgs(path string, selectFile bool) (string, []string, error) {
 		return fallbackExplorerBinArgs(path, selectFile)
 	}
 
-	desktopFile, err := findDesktopFile(strings.TrimSpace((buf.String())))
+	desktopFilePath, err := findDesktopFile(strings.TrimSpace((buf.String())))
 	if err != nil {
 		return fallbackExplorerBinArgs(path, selectFile)
 	}
 
-	cfg, err := ini.Load(desktopFile)
+	entry, err := ParseDesktopFile(desktopFilePath)
 	if err != nil {
 		// Opting to fallback rather than fail
 		return fallbackExplorerBinArgs(path, selectFile)
 	}
 
-	exec := cfg.Section("Desktop Entry").Key("Exec").String()
+	execCmd := entry.Exec
 	for fieldCode, replacement := range fieldCodes {
-		exec = strings.ReplaceAll(exec, fieldCode, replacement)
+		execCmd = strings.ReplaceAll(execCmd, fieldCode, replacement)
 	}
-	args := strings.Fields(exec)
+	args := strings.Fields(execCmd)
 	if !strings.Contains(strings.Join(args, " "), path) {
 		args = append(args, path)
 	}
