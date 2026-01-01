@@ -19,7 +19,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- New features, capabilities, or enhancements -->
 
 ## Changed
-<!-- Changes in existing functionality -->
+- Update all commands in Taskfile.yml files for all operation systems to accommodate spaces in variables such as `APP_NAME` by @ndianabasi
 
 ## Fixed
 <!-- Bug fixes -->
