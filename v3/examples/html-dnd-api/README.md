@@ -36,8 +36,8 @@ wails3 task build
 
 # Status
 
-| Platform | Status      |
-|----------|-------------|
-| Mac      | Working     |
-| Windows  | Not Working |
-| Linux    |             |
+| Platform | Status  |
+|----------|---------|
+| Mac      | Working |
+| Windows  | Working |
+| Linux    | Working |

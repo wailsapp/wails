@@ -239,9 +239,9 @@ type OriginInfo struct {
 
 var windowMessageBuffer = make(chan *windowMessage, 5)
 
-// DropZoneDetails contains information about the HTML element
-// at the location of a file drop.
-type DropZoneDetails struct {
+// DropTargetDetails contains information about the HTML element
+// where files were dropped (the element with data-file-drop-target attribute).
+type DropTargetDetails struct {
 	X          int               `json:"x"`
 	Y          int               `json:"y"`
 	ElementID  string            `json:"id"`
@@ -250,20 +250,20 @@ type DropZoneDetails struct {
 }
 
 type dragAndDropMessage struct {
-	windowId  uint
-	filenames []string
-	X         int
-	Y         int
-	DropZone  *DropZoneDetails
+	windowId   uint
+	filenames  []string
+	X          int
+	Y          int
+	DropTarget *DropTargetDetails
 }
 
 var windowDragAndDropBuffer = make(chan *dragAndDropMessage, 5)
 
-func addDragAndDropMessage(windowId uint, filenames []string, dropZone *DropZoneDetails) {
+func addDragAndDropMessage(windowId uint, filenames []string, dropTarget *DropTargetDetails) {
 	windowDragAndDropBuffer <- &dragAndDropMessage{
-		windowId:  windowId,
-		filenames: filenames,
-		DropZone:  dropZone,
+		windowId:   windowId,
+		filenames:  filenames,
+		DropTarget: dropTarget,
 	}
 }
 
@@ -619,11 +619,6 @@ func (a *App) Run() error {
 	go func() {
 		for {
 			dragAndDropMessage := <-windowDragAndDropBuffer
-			a.Logger.Debug(
-				"[DragDropDebug] App.Run: Received message from windowDragAndDropBuffer",
-				"message",
-				fmt.Sprintf("%+v", dragAndDropMessage),
-			)
 			go a.handleDragAndDropMessage(dragAndDropMessage)
 		}
 	}()
@@ -715,13 +710,7 @@ func (a *App) shutdownServices() {
 }
 
 func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
-	a.Logger.Debug(
-		"[DragDropDebug] App.handleDragAndDropMessage: Called with event",
-		"event",
-		fmt.Sprintf("%+v", event),
-	)
 	defer handlePanic()
-	// Get window from window map
 	a.windowsLock.Lock()
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.Unlock()
@@ -729,13 +718,7 @@ func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
 		a.warning("WebviewWindow #%d not found", event.windowId)
 		return
 	}
-	// Get callback from window
-	a.Logger.Debug(
-		"[DragDropDebug] App.handleDragAndDropMessage: Calling window.HandleDragAndDropMessage",
-		"windowID",
-		event.windowId,
-	)
-	window.HandleDragAndDropMessage(event.filenames, event.DropZone)
+	window.HandleDragAndDropMessage(event.filenames, event.DropTarget)
 }
 
 func (a *App) handleWindowMessage(event *windowMessage) {

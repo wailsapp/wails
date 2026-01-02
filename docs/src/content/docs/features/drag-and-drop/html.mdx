@@ -1,0 +1,201 @@
+---
+title: HTML Drag & Drop
+description: Drag and drop elements within your application
+sidebar:
+  order: 2
+---
+
+HTML5 drag-and-drop lets users drag elements within your app's UI - for example, reordering a list or moving items between columns. This is standard web functionality that works in Wails without any special setup.
+
+## Make an Element Draggable
+
+By default, most elements can't be dragged. To make an element draggable, add `draggable="true"`:
+
+```html
+<div class="item" draggable="true">Drag me</div>
+```
+
+The element will now show a drag preview when the user clicks and drags it.
+
+## Define a Drop Zone
+
+Elements don't accept drops by default. To make an element accept drops, you need to cancel the default behaviour on `dragover`:
+
+```html
+<div class="drop-zone" id="target">Drop here</div>
+
+<script>
+const target = document.getElementById('target');
+
+target.addEventListener('dragover', (e) => {
+    e.preventDefault(); // Allow the drop
+});
+
+target.addEventListener('drop', (e) => {
+    e.preventDefault();
+    // Handle the drop
+});
+</script>
+```
+
+Calling `preventDefault()` on `dragover` is required - it signals that this element accepts drops. Without it, the drop event won't fire.
+
+## Style Drag Hover
+
+To show users where they can drop, add visual feedback when dragging over a drop zone. The `dragenter` event fires when something enters the zone, and `dragleave` fires when it leaves:
+
+```css
+.drop-zone {
+    border: 2px dashed #ccc;
+    padding: 40px;
+    transition: all 0.2s ease;
+}
+
+.drop-zone.drag-over {
+    border-color: #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+```
+
+```javascript
+const target = document.getElementById('target');
+
+target.addEventListener('dragenter', () => {
+    target.classList.add('drag-over');
+});
+
+target.addEventListener('dragleave', () => {
+    target.classList.remove('drag-over');
+});
+
+target.addEventListener('drop', (e) => {
+    e.preventDefault();
+    target.classList.remove('drag-over');
+    // Handle the drop
+});
+```
+
+Note: `dragleave` also fires when entering a child element, which can cause flickering. The complete example below shows how to handle this.
+
+## Complete Example
+
+A task list where items can be dragged between priority columns. This tracks the dragged element in a variable, which is the simplest approach when everything is on the same page:
+
+```html
+<div class="tasks">
+    <div class="item" draggable="true">Fix login bug</div>
+    <div class="item" draggable="true">Update docs</div>
+    <div class="item" draggable="true">Add dark mode</div>
+</div>
+
+<div class="columns">
+    <div class="drop-zone" data-priority="high">
+        <h3>High Priority</h3>
+        <ul></ul>
+    </div>
+    <div class="drop-zone" data-priority="low">
+        <h3>Low Priority</h3>
+        <ul></ul>
+    </div>
+</div>
+
+<script>
+let draggedItem = null;
+
+// Track which item is being dragged
+document.querySelectorAll('.item').forEach(item => {
+    item.addEventListener('dragstart', () => {
+        draggedItem = item;
+        item.classList.add('dragging');
+    });
+    
+    item.addEventListener('dragend', () => {
+        item.classList.remove('dragging');
+    });
+});
+
+// Handle drops on each zone
+document.querySelectorAll('.drop-zone').forEach(zone => {
+    zone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+    });
+    
+    zone.addEventListener('dragenter', () => {
+        zone.classList.add('drag-over');
+    });
+    
+    zone.addEventListener('dragleave', (e) => {
+        // Only remove the class if we're leaving the zone entirely,
+        // not just entering a child element
+        if (!zone.contains(e.relatedTarget)) {
+            zone.classList.remove('drag-over');
+        }
+    });
+    
+    zone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        
+        if (draggedItem) {
+            const li = document.createElement('li');
+            li.textContent = draggedItem.textContent;
+            zone.querySelector('ul').appendChild(li);
+            draggedItem.remove();
+        }
+    });
+});
+</script>
+
+<style>
+.item {
+    padding: 12px 16px;
+    background: #f0f0f0;
+    margin: 8px 0;
+    border-radius: 8px;
+    cursor: grab;
+}
+
+.item.dragging {
+    opacity: 0.5;
+}
+
+.drop-zone {
+    min-height: 150px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 15px;
+    transition: all 0.2s ease;
+}
+
+.drop-zone.drag-over {
+    border-color: #007bff;
+    background: rgba(0, 123, 255, 0.1);
+}
+</style>
+```
+
+## Passing Data with dataTransfer
+
+The example above tracks the dragged element in a JavaScript variable. This works well when everything is on the same page. But if you need to drag between iframes or pass data that isn't tied to a DOM element, use the `dataTransfer` API:
+
+```javascript
+// When drag starts, store data
+item.addEventListener('dragstart', (e) => {
+    e.dataTransfer.setData('text/plain', item.id);
+});
+
+// When dropped, retrieve the data
+target.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const itemId = e.dataTransfer.getData('text/plain');
+    const item = document.getElementById(itemId);
+    // Move or copy the item
+});
+```
+
+The data is stored as strings, so you'll need to serialize objects with `JSON.stringify()` if needed.
+
+## Next Steps
+
+- [File Drop](./files) - Accept files from the operating system
+- [MDN Drag and Drop API](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API) - Full browser API reference

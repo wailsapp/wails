@@ -1241,7 +1241,7 @@ func (w *macosWebviewWindow) run() {
 			C.int(options.Height),
 			C.bool(macOptions.EnableFraudulentWebsiteWarnings),
 			C.bool(options.Frameless),
-			C.bool(options.EnableDragAndDrop),
+			C.bool(options.EnableFileDrop),
 			w.getWebviewPreferences(),
 		)
 		w.setTitle(options.Title)

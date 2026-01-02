@@ -1,0 +1,181 @@
+---
+title: File Drop
+description: Accept files dragged from the operating system into your application
+sidebar:
+  order: 1
+---
+
+Wails lets users drag files from the operating system (file manager, desktop) into your application. Unlike HTML5 drag-and-drop which only works within the browser, this gives you access to actual file paths on disk.
+
+## Enable File Drop
+
+File drop is disabled by default. To enable it, set `EnableFileDrop: true` in your window options:
+
+```go
+window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Title:          "My App",
+    Width:          800,
+    Height:         600,
+    EnableFileDrop: true,
+})
+```
+
+## Define Drop Zones
+
+Drop zones tell Wails which elements should accept files. Files dropped outside a drop zone are ignored.
+
+Add the `data-file-drop-target` attribute to any element:
+
+```html
+<div id="upload" class="drop-zone" data-file-drop-target>
+    Drop files here
+</div>
+```
+
+You can have multiple drop zones. The element's `id` and CSS classes are passed to your Go code, so you can handle drops differently depending on where files land.
+
+## Style Drag Hover
+
+When files are dragged over a drop zone, Wails adds the `file-drop-target-active` class. This lets you provide visual feedback so users know where they can drop:
+
+```css
+.drop-zone {
+    border: 2px dashed #ccc;
+    padding: 40px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.drop-zone.file-drop-target-active {
+    border-color: #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+```
+
+The class is removed automatically when files leave the zone or are dropped.
+
+## Detect Dropped Files
+
+When files are dropped on a valid drop zone, Wails fires a `WindowFilesDropped` event. The event context contains the full filesystem paths of all dropped files:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    
+    for _, file := range files {
+        fmt.Println("Dropped:", file)
+    }
+})
+```
+
+The paths are absolute, like `/home/user/documents/report.pdf` or `C:\Users\Name\Documents\report.pdf`.
+
+## Get Drop Target Info
+
+When you have multiple drop zones, you can find out which one received the files using `DropTargetDetails()`:
+
+```go
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    details := event.Context().DropTargetDetails()
+    
+    fmt.Printf("Dropped on element: id=%s, classes=%v\n", 
+        details.ElementID, details.ClassList)
+    fmt.Printf("Position: x=%d, y=%d\n", details.X, details.Y)
+})
+```
+
+This lets you route files to different handlers:
+
+```go
+switch details.ElementID {
+case "images":
+    handleImageUpload(files)
+case "documents":
+    handleDocumentUpload(files)
+}
+```
+
+## Complete Example
+
+**Go:**
+
+```go
+window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Title:          "File Uploader",
+    EnableFileDrop: true,
+})
+
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    details := event.Context().DropTargetDetails()
+    
+    // Send to frontend
+    app.EmitEvent("files-dropped", map[string]any{
+        "files":   files,
+        "target":  details.ElementID,
+    })
+})
+```
+
+**HTML:**
+
+```html
+<div id="images" class="drop-zone" data-file-drop-target>
+    Drop images here
+</div>
+
+<div id="documents" class="drop-zone" data-file-drop-target>
+    Drop documents here
+</div>
+
+<style>
+    .drop-zone {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 40px;
+        text-align: center;
+        margin: 20px;
+        transition: all 0.2s ease;
+    }
+    
+    .drop-zone.file-drop-target-active {
+        border-color: #007bff;
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+</style>
+```
+
+## Full Window Drop
+
+If you want files to be droppable anywhere in your app, add the attribute to the body element:
+
+```html
+<body data-file-drop-target>
+    <!-- Your app content -->
+</body>
+```
+
+You can use a CSS overlay to indicate the entire window is a drop target:
+
+```css
+body.file-drop-target-active::after {
+    content: "Drop files anywhere";
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #007bff;
+    background: rgba(255, 255, 255, 0.9);
+    pointer-events: none;
+}
+```
+
+## Next Steps
+
+- [HTML Drag & Drop](./html) - Drag elements within your app
+- [Window Options](/features/windows/options) - All window configuration options

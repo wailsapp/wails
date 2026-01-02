@@ -11,10 +11,10 @@ The electron alternative for Go
 import {newRuntimeCaller, objectNames} from "./runtime.js";
 import type { Screen } from "./screens.js";
 
-// NEW: Dropzone constants
-const DROPZONE_ATTRIBUTE = 'data-wails-dropzone';
-const DROPZONE_HOVER_CLASS = 'wails-dropzone-hover'; // User can style this class
-let currentHoveredDropzone: Element | null = null;
+// Drop target constants
+const DROP_TARGET_ATTRIBUTE = 'data-file-drop-target';
+const DROP_TARGET_ACTIVE_CLASS = 'file-drop-target-active';
+let currentDropTarget: Element | null = null;
 
 const PositionMethod                    = 0;
 const CenterMethod                      = 1;
@@ -66,16 +66,89 @@ const ZoomInMethod                      = 46;
 const ZoomOutMethod                     = 47;
 const ZoomResetMethod                   = 48;
 const SnapAssistMethod                  = 49;
-const WindowDropZoneDropped             = 50;
+const FilesDropped                      = 50;
 const PrintMethod                       = 51;
 
-function getDropzoneElement(element: Element | null): Element | null {
+/**
+ * Finds the nearest drop target element by walking up the DOM tree.
+ */
+function getDropTargetElement(element: Element | null): Element | null {
     if (!element) {
         return null;
     }
-    // Allow dropzone attribute to be on the element itself or any parent
-    return element.closest(`[${DROPZONE_ATTRIBUTE}]`);
+    return element.closest(`[${DROP_TARGET_ATTRIBUTE}]`);
 }
+
+/**
+ * Check if we can use WebView2's postMessageWithAdditionalObjects (Windows)
+ */
+function canResolveFilePaths(): boolean {
+    return (window as any).chrome?.webview?.postMessageWithAdditionalObjects != null;
+}
+
+/**
+ * Send file drop to backend via WebView2 (Windows only)
+ */
+function resolveFilePaths(x: number, y: number, files: File[]): void {
+    if ((window as any).chrome?.webview?.postMessageWithAdditionalObjects) {
+        (window as any).chrome.webview.postMessageWithAdditionalObjects(`file:drop:${x}:${y}`, files);
+    }
+}
+
+// Linux-specific drag state (GTK intercepts DOM drag events)
+let linuxDragActive = false;
+
+/**
+ * Cleans up Linux drag state and hover effects.
+ * Called on drop or when drag leaves the window.
+ */
+function cleanupLinuxDrag(): void {
+    linuxDragActive = false;
+    if (currentDropTarget) {
+        currentDropTarget.classList.remove(DROP_TARGET_ACTIVE_CLASS);
+        currentDropTarget = null;
+    }
+}
+
+/**
+ * Called from Go when a file drag enters the window on Linux.
+ */
+function handleDragEnter(): void {
+    linuxDragActive = true;
+}
+
+/**
+ * Called from Go when a file drag leaves the window on Linux.
+ */
+function handleDragLeave(): void {
+    cleanupLinuxDrag();
+}
+
+/**
+ * Called from Go during drag-motion on Linux to update hover state.
+ * @param x - The x-coordinate (CSS pixels)
+ * @param y - The y-coordinate (CSS pixels)
+ */
+function handleDragOver(x: number, y: number): void {
+    if (!linuxDragActive) return;
+    
+    const targetElement = document.elementFromPoint(x, y);
+    const dropTarget = getDropTargetElement(targetElement);
+    
+    if (currentDropTarget && currentDropTarget !== dropTarget) {
+        currentDropTarget.classList.remove(DROP_TARGET_ACTIVE_CLASS);
+    }
+    
+    if (dropTarget) {
+        dropTarget.classList.add(DROP_TARGET_ACTIVE_CLASS);
+        currentDropTarget = dropTarget;
+    } else {
+        currentDropTarget = null;
+    }
+}
+
+// Export the handlers for use by Go via index.ts
+export { handleDragEnter, handleDragLeave, handleDragOver };
 
 /**
  * A record describing the position of a window.
@@ -536,33 +609,29 @@ class Window {
     }
 
     /**
-     * Handles file drops originating from platform-specific code (e.g., macOS native drag-and-drop).
+     * Handles file drops originating from platform-specific code (e.g., macOS/Linux native drag-and-drop).
      * Gathers information about the drop target element and sends it back to the Go backend.
      *
      * @param filenames - An array of file paths (strings) that were dropped.
-     * @param x - The x-coordinate of the drop event.
-     * @param y - The y-coordinate of the drop event.
+     * @param x - The x-coordinate of the drop event (CSS pixels).
+     * @param y - The y-coordinate of the drop event (CSS pixels).
      */
     HandlePlatformFileDrop(filenames: string[], x: number, y: number): void {
         const element = document.elementFromPoint(x, y);
+        const dropTarget = getDropTargetElement(element);
 
-        // NEW: Check if the drop target is a valid dropzone
-        const dropzoneTarget = getDropzoneElement(element);
-
-        if (!dropzoneTarget) {
-            console.log(`Wails Runtime: Drop on element (or no element) at ${x},${y} which is not a designated dropzone. Ignoring. Element:`, element);
-            // No need to call backend if not a valid dropzone target
+        if (!dropTarget) {
+            // Drop was not on a designated drop target - ignore
             return;
         }
 
-        console.log(`Wails Runtime: Drop on designated dropzone. Element at (${x}, ${y}):`, element, 'Effective dropzone:', dropzoneTarget);
         const elementDetails = {
-            id: dropzoneTarget.id,
-            classList: Array.from(dropzoneTarget.classList),
+            id: dropTarget.id,
+            classList: Array.from(dropTarget.classList),
             attributes: {} as { [key: string]: string },
         };
-        for (let i = 0; i < dropzoneTarget.attributes.length; i++) {
-            const attr = dropzoneTarget.attributes[i];
+        for (let i = 0; i < dropTarget.attributes.length; i++) {
+            const attr = dropTarget.attributes[i];
             elementDetails.attributes[attr.name] = attr.value;
         }
 
@@ -573,7 +642,7 @@ class Window {
             elementDetails,
         };
 
-        this[callerSym](WindowDropZoneDropped, payload);
+        this[callerSym](FilesDropped, payload);
     }
   
     /* Triggers Windows 11 Snap Assist feature (Windows only).
@@ -596,81 +665,128 @@ class Window {
  */
 const thisWindow = new Window('');
 
-// NEW: Global Drag Event Listeners
-function setupGlobalDropzoneListeners() {
+/**
+ * Sets up global drag and drop event listeners for file drops.
+ * Handles visual feedback (hover state) and file drop processing.
+ */
+function setupDropTargetListeners() {
     const docElement = document.documentElement;
-    let dragEnterCounter = 0; // To handle dragenter/dragleave on child elements
+    let dragEnterCounter = 0;
 
     docElement.addEventListener('dragenter', (event) => {
+        if (!event.dataTransfer?.types.includes('Files')) {
+            return; // Only handle file drags, let other drags pass through
+        }
         event.preventDefault();
-        if (event.dataTransfer && event.dataTransfer.types.includes('Files')) {
-            dragEnterCounter++;
-            const targetElement = document.elementFromPoint(event.clientX, event.clientY);
-            const dropzone = getDropzoneElement(targetElement);
+        dragEnterCounter++;
+        
+        const targetElement = document.elementFromPoint(event.clientX, event.clientY);
+        const dropTarget = getDropTargetElement(targetElement);
 
-            // Clear previous hover regardless, then apply new if valid
-            if (currentHoveredDropzone && currentHoveredDropzone !== dropzone) {
-                currentHoveredDropzone.classList.remove(DROPZONE_HOVER_CLASS);
-            }
+        // Update hover state
+        if (currentDropTarget && currentDropTarget !== dropTarget) {
+            currentDropTarget.classList.remove(DROP_TARGET_ACTIVE_CLASS);
+        }
 
-            if (dropzone) {
-                dropzone.classList.add(DROPZONE_HOVER_CLASS);
-                event.dataTransfer.dropEffect = 'copy';
-                currentHoveredDropzone = dropzone;
-            } else {
-                event.dataTransfer.dropEffect = 'none';
-                currentHoveredDropzone = null; // Ensure it's cleared if no dropzone found
-            }
+        if (dropTarget) {
+            dropTarget.classList.add(DROP_TARGET_ACTIVE_CLASS);
+            event.dataTransfer.dropEffect = 'copy';
+            currentDropTarget = dropTarget;
+        } else {
+            event.dataTransfer.dropEffect = 'none';
+            currentDropTarget = null;
         }
     }, false);
 
     docElement.addEventListener('dragover', (event) => {
-        event.preventDefault(); // Necessary to allow drop
-        if (event.dataTransfer && event.dataTransfer.types.includes('Files')) {
-            // No need to query elementFromPoint again if already handled by dragenter correctly
-            // Just ensure dropEffect is continuously set based on currentHoveredDropzone
-            if (currentHoveredDropzone) {
-                 // Re-apply class just in case it was removed by some other JS
-                if(!currentHoveredDropzone.classList.contains(DROPZONE_HOVER_CLASS)) {
-                    currentHoveredDropzone.classList.add(DROPZONE_HOVER_CLASS);
-                }
-                event.dataTransfer.dropEffect = 'copy';
-            } else {
-                event.dataTransfer.dropEffect = 'none';
+        if (!event.dataTransfer?.types.includes('Files')) {
+            return; // Only handle file drags
+        }
+        event.preventDefault();
+        
+        // Update drop target as cursor moves
+        const targetElement = document.elementFromPoint(event.clientX, event.clientY);
+        const dropTarget = getDropTargetElement(targetElement);
+        
+        if (currentDropTarget && currentDropTarget !== dropTarget) {
+            currentDropTarget.classList.remove(DROP_TARGET_ACTIVE_CLASS);
+        }
+        
+        if (dropTarget) {
+            if (!dropTarget.classList.contains(DROP_TARGET_ACTIVE_CLASS)) {
+                dropTarget.classList.add(DROP_TARGET_ACTIVE_CLASS);
             }
+            event.dataTransfer.dropEffect = 'copy';
+            currentDropTarget = dropTarget;
+        } else {
+            event.dataTransfer.dropEffect = 'none';
+            currentDropTarget = null;
         }
     }, false);
 
     docElement.addEventListener('dragleave', (event) => {
+        if (!event.dataTransfer?.types.includes('Files')) {
+            return;
+        }
         event.preventDefault();
-        if (event.dataTransfer && event.dataTransfer.types.includes('Files')) {
-            dragEnterCounter--;
-            // Only remove hover if drag truly left the window or the last dropzone
-            if (dragEnterCounter === 0 || event.relatedTarget === null || (currentHoveredDropzone && !currentHoveredDropzone.contains(event.relatedTarget as Node))) {
-                if (currentHoveredDropzone) {
-                    currentHoveredDropzone.classList.remove(DROPZONE_HOVER_CLASS);
-                    currentHoveredDropzone = null;
-                }
-                dragEnterCounter = 0; // Reset counter if it went negative or left window
+        
+        // On Linux/WebKitGTK, dragleave fires immediately with relatedTarget=null when native GTK 
+        // drag handling is involved. Ignore these spurious events - we'll clean up on drop instead.
+        if (event.relatedTarget === null) {
+            return;
+        }
+        
+        dragEnterCounter--;
+        
+        if (dragEnterCounter === 0 || 
+            (currentDropTarget && !currentDropTarget.contains(event.relatedTarget as Node))) {
+            if (currentDropTarget) {
+                currentDropTarget.classList.remove(DROP_TARGET_ACTIVE_CLASS);
+                currentDropTarget = null;
             }
+            dragEnterCounter = 0;
         }
     }, false);
 
     docElement.addEventListener('drop', (event) => {
-        event.preventDefault(); // Prevent default browser file handling
-        dragEnterCounter = 0; // Reset counter
-        if (currentHoveredDropzone) {
-            currentHoveredDropzone.classList.remove(DROPZONE_HOVER_CLASS);
-            currentHoveredDropzone = null;
+        if (!event.dataTransfer?.types.includes('Files')) {
+            return; // Only handle file drops
         }
-        // The actual drop processing is initiated by the native side calling HandlePlatformFileDrop
-        // HandlePlatformFileDrop will then check if the drop was on a valid zone.
+        event.preventDefault();
+        dragEnterCounter = 0;
+        
+        if (currentDropTarget) {
+            currentDropTarget.classList.remove(DROP_TARGET_ACTIVE_CLASS);
+            currentDropTarget = null;
+        }
+
+        // On Windows, handle file drops via JavaScript
+        // On macOS/Linux, native code will call HandlePlatformFileDrop
+        if (canResolveFilePaths()) {
+            const files: File[] = [];
+            if (event.dataTransfer.items) {
+                for (const item of event.dataTransfer.items) {
+                    if (item.kind === 'file') {
+                        const file = item.getAsFile();
+                        if (file) files.push(file);
+                    }
+                }
+            } else if (event.dataTransfer.files) {
+                for (const file of event.dataTransfer.files) {
+                    files.push(file);
+                }
+            }
+            
+            if (files.length > 0) {
+                resolveFilePaths(event.clientX, event.clientY, files);
+            }
+        }
     }, false);
 }
 
 // Initialize listeners when the script loads
 if (typeof window !== "undefined" && typeof document !== "undefined") {
-    setupGlobalDropzoneListeners();
+    setupDropTargetListeners();
 }
 
 export default thisWindow;

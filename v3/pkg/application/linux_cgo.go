@@ -23,11 +23,9 @@ import (
 #include <stdio.h>
 #include <limits.h>
 #include <stdint.h>
-#ifdef G_APPLICATION_DEFAULT_FLAGS
-    #define APPLICATION_DEFAULT_FLAGS G_APPLICATION_DEFAULT_FLAGS
-#else
-    #define APPLICATION_DEFAULT_FLAGS G_APPLICATION_FLAGS_NONE
-#endif
+// Use NON_UNIQUE to allow multiple instances of the application to run.
+// This matches the behavior of gtk_init/gtk_main used in v2.
+#define APPLICATION_DEFAULT_FLAGS G_APPLICATION_NON_UNIQUE
 
 typedef struct CallbackID
 {
@@ -87,6 +85,9 @@ void handleClick(void*);
 extern gboolean onButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
 extern gboolean onMenuButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
 extern void onUriList(char **extracted, gint x, gint y, gpointer data);
+extern void onDragEnter(gpointer data);
+extern void onDragLeave(gpointer data);
+extern void onDragOver(gint x, gint y, gpointer data);
 extern gboolean onKeyPressEvent (GtkWidget *widget, GdkEventKey *event, uintptr_t user_data);
 extern void onProcessRequest(WebKitURISchemeRequest *request, uintptr_t user_data);
 extern void sendMessageToBackend(WebKitUserContentManager *contentManager, WebKitJavascriptResult *result, void *data);
@@ -224,34 +225,174 @@ static int GetNumScreens(){
     return 0;
 }
 
-static void on_data_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
+// Handle file drops from the OS - called when drag data is received
+static void on_drag_data_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
                       GtkSelectionData *selection_data, guint target_type, guint time,
                       gpointer data)
 {
-    gint length = gtk_selection_data_get_length(selection_data);
-
-    if (length < 0)
-    {
-        g_print("DnD failed!\n");
-        gtk_drag_finish(context, FALSE, FALSE, time);
+    // Only process target_type 2 which is our text/uri-list
+    // Other target types are from internal WebKit drags
+    if (target_type != 2) {
+        return;  // Don't interfere with internal drags
     }
 
-    gchar *uri_data = (gchar *)gtk_selection_data_get_data(selection_data);
-    gchar **uri_list = g_uri_list_extract_uris(uri_data);
+    // Check if we have valid data
+    if (selection_data == NULL || gtk_selection_data_get_length(selection_data) <= 0) {
+        gtk_drag_finish(context, FALSE, FALSE, time);
+        return;
+    }
 
-    onUriList(uri_list, x, y, data);
+    const gchar *uri_data = (const gchar *)gtk_selection_data_get_data(selection_data);
+    gchar **filenames = g_uri_list_extract_uris(uri_data);
+    if (filenames == NULL || filenames[0] == NULL) {
+        if (filenames) g_strfreev(filenames);
+        gtk_drag_finish(context, FALSE, FALSE, time);
+        return;
+    }
 
-    g_strfreev(uri_list);
-    gtk_drag_finish(context, TRUE, TRUE, time);
+    // Build file array for Go
+    GPtrArray *file_array = g_ptr_array_new();
+    int iter = 0;
+    while (filenames[iter] != NULL) {
+        char *filename = g_filename_from_uri(filenames[iter], NULL, NULL);
+        if (filename != NULL) {
+            g_ptr_array_add(file_array, filename);
+        }
+        iter++;
+    }
+    g_strfreev(filenames);
+
+    if (file_array->len > 0) {
+        // Get stored drop coordinates and data pointer
+        gint drop_x = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "drop-x"));
+        gint drop_y = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "drop-y"));
+        gpointer drop_data = g_object_get_data(G_OBJECT(widget), "drop-data");
+
+        // Add NULL terminator and call Go
+        g_ptr_array_add(file_array, NULL);
+        onUriList((gchar **)file_array->pdata, drop_x, drop_y, drop_data);
+    }
+
+    // Cleanup
+    for (guint i = 0; i < file_array->len; i++) {
+        gpointer item = g_ptr_array_index(file_array, i);
+        if (item) g_free(item);
+    }
+    g_ptr_array_free(file_array, TRUE);
+
+    // Finish the drag successfully to prevent WebKit from opening the file
+    gtk_drag_finish(context, TRUE, FALSE, time);
 }
 
-// drag and drop tutorial: https://wiki.gnome.org/Newcomers/OldDragNDropTutorial
+// Track if we've notified about drag entering
+static gboolean drag_entered = FALSE;
+
+// Track if a drag started from within the webview (internal HTML5 drag)
+static gboolean internal_drag_active = FALSE;
+
+// Called when a drag starts FROM this widget (internal drag)
+static void on_drag_begin(GtkWidget *widget, GdkDragContext *context, gpointer data)
+{
+    internal_drag_active = TRUE;
+}
+
+// Called when a drag that started from this widget ends
+static void on_drag_end(GtkWidget *widget, GdkDragContext *context, gpointer data)
+{
+    internal_drag_active = FALSE;
+}
+
+// Check if a drag context contains file URIs (external drop)
+// Returns TRUE only for external file manager drops, FALSE for internal HTML5 drags
+static gboolean is_file_drag(GdkDragContext *context)
+{
+    GList *targets = gdk_drag_context_list_targets(context);
+
+    // Internal HTML5 drags have WebKit-specific targets, external file drops have text/uri-list
+    for (GList *l = targets; l != NULL; l = l->next) {
+        GdkAtom atom = GDK_POINTER_TO_ATOM(l->data);
+        gchar *name = gdk_atom_name(atom);
+        if (name) {
+            gboolean is_uri = g_strcmp0(name, "text/uri-list") == 0;
+            g_free(name);
+            if (is_uri) {
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
+
+// Handle the actual drop - called when user releases mouse button
+static gboolean on_drag_drop(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
+                      guint time, gpointer data)
+{
+    // Only handle external file drops, let WebKit handle internal HTML5 drags
+    if (!is_file_drag(context)) {
+        return FALSE;
+    }
+
+    // Reset drag entered state
+    drag_entered = FALSE;
+
+    // Store coordinates for use in drag-data-received
+    g_object_set_data(G_OBJECT(widget), "drop-x", GINT_TO_POINTER(x));
+    g_object_set_data(G_OBJECT(widget), "drop-y", GINT_TO_POINTER(y));
+    g_object_set_data(G_OBJECT(widget), "drop-data", data);
+
+    // Request the file data - this triggers drag-data-received
+    GdkAtom target = gdk_atom_intern("text/uri-list", FALSE);
+    gtk_drag_get_data(widget, context, target, time);
+
+    return TRUE;
+}
+
+// Handle drag-motion for hover effects on external file drags
+static gboolean on_drag_motion(GtkWidget *widget, GdkDragContext *context, gint x, gint y, guint time, gpointer data)
+{
+    // Don't handle internal HTML5 drags
+    if (internal_drag_active || !is_file_drag(context)) {
+        return FALSE;
+    }
+
+    gdk_drag_status(context, GDK_ACTION_COPY, time);
+
+    // Notify JS once when drag enters
+    if (!drag_entered) {
+        drag_entered = TRUE;
+        onDragEnter(data);
+    }
+
+    // Send position to JS for hover effects (Go side throttles this)
+    onDragOver(x, y, data);
+
+    return TRUE;
+}
+
+// Handle drag-leave - drag exited the window
+static void on_drag_leave(GtkWidget *widget, GdkDragContext *context, guint time, gpointer data)
+{
+    // Don't handle internal HTML5 drags
+    if (internal_drag_active || !is_file_drag(context)) {
+        return;
+    }
+
+    if (drag_entered) {
+        drag_entered = FALSE;
+        onDragLeave(data);
+    }
+}
+
+// Set up drag and drop handlers for external file drops with hover effects
 static void enableDND(GtkWidget *widget, gpointer data)
 {
-    GtkTargetEntry *target = gtk_target_entry_new("text/uri-list", 0, 0);
-    gtk_drag_dest_set(widget, GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_HIGHLIGHT | GTK_DEST_DEFAULT_DROP, target, 1, GDK_ACTION_COPY);
+    // Core handlers for file drop
+    g_signal_connect(G_OBJECT(widget), "drag-data-received", G_CALLBACK(on_drag_data_received), data);
+    g_signal_connect(G_OBJECT(widget), "drag-drop", G_CALLBACK(on_drag_drop), data);
 
-    signal_connect(widget, "drag-data-received", on_data_received, data);
+    // Hover effect handlers - return FALSE for internal drags to let WebKit handle them
+    g_signal_connect(G_OBJECT(widget), "drag-motion", G_CALLBACK(on_drag_motion), data);
+    g_signal_connect(G_OBJECT(widget), "drag-leave", G_CALLBACK(on_drag_leave), data);
 }
 */
 import "C"
@@ -848,10 +989,9 @@ func (w *linuxWebviewWindow) close() {
 }
 
 func (w *linuxWebviewWindow) enableDND() {
-	C.gtk_drag_dest_unset((*C.GtkWidget)(w.webview))
-
-	windowId := C.uint(w.parent.id)
-	C.enableDND((*C.GtkWidget)(w.vbox), C.gpointer(&windowId))
+	// Pass window ID as pointer value (not pointer to ID) - same pattern as other signal handlers
+	winID := unsafe.Pointer(uintptr(w.parent.id))
+	C.enableDND((*C.GtkWidget)(w.webview), C.gpointer(winID))
 }
 
 func (w *linuxWebviewWindow) execJS(js string) {
@@ -867,6 +1007,61 @@ func (w *linuxWebviewWindow) execJS(js string) {
 			nil)
 		C.free(unsafe.Pointer(value))
 	})
+}
+
+// Preallocated buffer for drag-over JS calls to avoid allocations
+// "window._wails.handleDragOver(XXXXX,YYYYY)" is max ~45 chars
+var dragOverJSBuffer = C.CString(strings.Repeat(" ", 64))
+var emptyWorldName = C.CString("")
+
+// execJSDragOver executes JS for drag-over events with zero Go allocations.
+// It directly writes to a preallocated C buffer. Must be called from main thread.
+func (w *linuxWebviewWindow) execJSDragOver(x, y int) {
+	// Format: "window._wails.handleDragOver(X,Y)"
+	// Write directly to C buffer
+	buf := (*[64]byte)(unsafe.Pointer(dragOverJSBuffer))
+	n := copy(buf[:], "window._wails.handleDragOver(")
+	n += writeInt(buf[n:], x)
+	buf[n] = ','
+	n++
+	n += writeInt(buf[n:], y)
+	buf[n] = ')'
+	n++
+	buf[n] = 0 // null terminate
+
+	C.webkit_web_view_evaluate_javascript(w.webKitWebView(),
+		dragOverJSBuffer,
+		C.long(n),
+		nil,
+		emptyWorldName,
+		nil,
+		nil,
+		nil)
+}
+
+// writeInt writes an integer to a byte slice and returns the number of bytes written
+func writeInt(buf []byte, n int) int {
+	if n < 0 {
+		buf[0] = '-'
+		return 1 + writeInt(buf[1:], -n)
+	}
+	if n == 0 {
+		buf[0] = '0'
+		return 1
+	}
+	// Count digits
+	tmp := n
+	digits := 0
+	for tmp > 0 {
+		digits++
+		tmp /= 10
+	}
+	// Write digits in reverse
+	for i := digits - 1; i >= 0; i-- {
+		buf[i] = byte('0' + n%10)
+		n /= 10
+	}
+	return digits
 }
 
 func getMousePosition() (int, int, *Screen) {
@@ -1568,6 +1763,45 @@ func onMenuButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data C.uintptr_t
 	return C.gboolean(0)
 }
 
+//export onDragEnter
+func onDragEnter(data unsafe.Pointer) {
+	windowId := uint(uintptr(data))
+	targetWindow, ok := globalApplication.Window.GetByID(windowId)
+	if !ok || targetWindow == nil {
+		return
+	}
+	// HandleDragEnter is Linux-specific (GTK intercepts drag events)
+	if w, ok := targetWindow.(*WebviewWindow); ok {
+		w.HandleDragEnter()
+	}
+}
+
+//export onDragLeave
+func onDragLeave(data unsafe.Pointer) {
+	windowId := uint(uintptr(data))
+	targetWindow, ok := globalApplication.Window.GetByID(windowId)
+	if !ok || targetWindow == nil {
+		return
+	}
+	// HandleDragLeave is Linux-specific (GTK intercepts drag events)
+	if w, ok := targetWindow.(*WebviewWindow); ok {
+		w.HandleDragLeave()
+	}
+}
+
+//export onDragOver
+func onDragOver(x C.gint, y C.gint, data unsafe.Pointer) {
+	windowId := uint(uintptr(data))
+	targetWindow, ok := globalApplication.Window.GetByID(windowId)
+	if !ok || targetWindow == nil {
+		return
+	}
+	// HandleDragOver is Linux-specific (GTK intercepts drag events)
+	if w, ok := targetWindow.(*WebviewWindow); ok {
+		w.HandleDragOver(int(x), int(y))
+	}
+}
+
 //export onUriList
 func onUriList(extracted **C.char, x C.gint, y C.gint, data unsafe.Pointer) {
 	// Credit: https://groups.google.com/g/golang-nuts/c/bI17Bpck8K4/m/DVDa7EMtDAAJ
@@ -1578,12 +1812,17 @@ func onUriList(extracted **C.char, x C.gint, y C.gint, data unsafe.Pointer) {
 		extracted = (**C.char)(unsafe.Pointer(uintptr(unsafe.Pointer(extracted)) + offset))
 	}
 
-	windowDragAndDropBuffer <- &dragAndDropMessage{
-		windowId:  uint(*((*C.uint)(data))),
-		filenames: filenames,
-		X:         int(x),
-		Y:         int(y),
+	// Window ID is stored as the pointer value itself (not pointing to memory)
+	// Same pattern as other signal handlers in this file
+	windowId := uint(uintptr(data))
+	targetWindow, ok := globalApplication.Window.GetByID(windowId)
+	if !ok || targetWindow == nil {
+		globalApplication.error("onUriList could not find window with ID: %d", windowId)
+		return
 	}
+
+	// Send to frontend for drop target detection and filtering
+	targetWindow.InitiateFrontendDropProcessing(filenames, int(x), int(y))
 }
 
 var debounceTimer *time.Timer

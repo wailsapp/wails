@@ -10,7 +10,6 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-	"syscall"
 	"time"
 	"unsafe"
 
@@ -68,7 +67,6 @@ type windowsWebviewWindow struct {
 	resizeBorderWidth  int32
 	resizeBorderHeight int32
 	focusingChromium   bool
-	dropTarget         *w32.DropTarget
 	onceDo             sync.Once
 
 	// Window move debouncer
@@ -716,9 +714,6 @@ func (w *windowsWebviewWindow) setRelativePosition(x int, y int) {
 
 func (w *windowsWebviewWindow) destroy() {
 	w.parent.markAsDestroyed()
-	if w.dropTarget != nil {
-		w.dropTarget.Release()
-	}
 	// destroy the window
 	w32.DestroyWindow(w.hwnd)
 }
@@ -1964,65 +1959,16 @@ func (w *windowsWebviewWindow) setupChromium() {
 		}
 	}
 
-	if w.parent.options.EnableDragAndDrop {
+	if w.parent.options.EnableFileDrop {
+		// Disable WebView2's default file handling so we can handle it ourselves via JavaScript
 		if chromium.HasCapability(edge.AllowExternalDrop) {
 			err := chromium.AllowExternalDrag(false)
 			if err != nil {
 				globalApplication.handleFatalError(err)
 			}
 		}
-
-		// Initialize OLE for drag-and-drop operations
-		w32.OleInitialise()
-
-		w.dropTarget = w32.NewDropTarget()
-		w.dropTarget.OnDrop = func(files []string, x int, y int) {
-			w.parent.emit(events.Windows.WindowDragDrop)
-			globalApplication.debug("[DragDropDebug] Windows DropTarget OnDrop: Raw screen coordinates", "x", x, "y", y)
-
-			// Convert screen coordinates to window-relative coordinates first
-			// Windows DropTarget gives us screen coordinates, but we need window-relative coordinates
-			windowRect := w32.GetWindowRect(w.hwnd)
-			windowRelativeX := x - int(windowRect.Left)
-			windowRelativeY := y - int(windowRect.Top)
-
-			globalApplication.debug("[DragDropDebug] Windows DropTarget OnDrop: After screen-to-window conversion", "windowRelativeX", windowRelativeX, "windowRelativeY", windowRelativeY)
-
-			// Convert window-relative coordinates to webview-relative coordinates
-			webviewX, webviewY := w.convertWindowToWebviewCoordinates(windowRelativeX, windowRelativeY)
-			globalApplication.debug("[DragDropDebug] Windows DropTarget OnDrop: Final webview coordinates", "webviewX", webviewX, "webviewY", webviewY)
-			w.parent.InitiateFrontendDropProcessing(files, webviewX, webviewY)
-		}
-		if opts.OnEnterEffect != 0 {
-			w.dropTarget.OnEnterEffect = convertEffect(opts.OnEnterEffect)
-		}
-		if opts.OnOverEffect != 0 {
-			w.dropTarget.OnOverEffect = convertEffect(opts.OnOverEffect)
-		}
-		w.dropTarget.OnEnter = func() {
-			w.parent.emit(events.Windows.WindowDragEnter)
-		}
-		w.dropTarget.OnLeave = func() {
-			w.parent.emit(events.Windows.WindowDragLeave)
-		}
-		w.dropTarget.OnOver = func() {
-			w.parent.emit(events.Windows.WindowDragOver)
-		}
-		// Enumerate all the child windows for this window and register them as drop targets
-		w32.EnumChildWindows(w.hwnd, func(hwnd w32.HWND, lparam w32.LPARAM) w32.LRESULT {
-			// Check if the window class is "Chrome_RenderWidgetHostHWND"
-			// If it is, then we register it as a drop target
-			//windowName := w32.GetClassName(hwnd)
-			//println(windowName)
-			//if windowName == "Chrome_RenderWidgetHostHWND" {
-			err := w32.RegisterDragDrop(hwnd, w.dropTarget)
-			if err != nil && !errors.Is(err, syscall.Errno(w32.DRAGDROP_E_ALREADYREGISTERED)) {
-				globalApplication.error("error registering drag and drop: %w", err)
-			}
-			//}
-			return 1
-		})
-
+		// File drops are handled via JavaScript using chrome.webview.postMessageWithAdditionalObjects
+		// which provides coordinates in CSS pixels (no DPI conversion needed)
 	}
 
 	err = chromium.PutIsGeneralAutofillEnabled(opts.GeneralAutofillEnabled)
@@ -2135,19 +2081,6 @@ func (w *windowsWebviewWindow) fullscreenChanged(
 		w.fullscreen()
 	} else {
 		w.unfullscreen()
-	}
-}
-
-func convertEffect(effect DragEffect) w32.DWORD {
-	switch effect {
-	case DragEffectCopy:
-		return w32.DROPEFFECT_COPY
-	case DragEffectMove:
-		return w32.DROPEFFECT_MOVE
-	case DragEffectLink:
-		return w32.DROPEFFECT_LINK
-	default:
-		return w32.DROPEFFECT_NONE
 	}
 }
 
