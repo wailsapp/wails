@@ -296,6 +296,10 @@ func (w *androidWebviewWindow) nativeWindow() unsafe.Pointer {
 	return nil
 }
 
+func (w *androidWebviewWindow) attachModal(modalWindow *WebviewWindow) {
+	// Modal windows are not supported on Android
+}
+
 func (w *androidWebviewWindow) on(eventID uint) {
 	// Android event handling
 }

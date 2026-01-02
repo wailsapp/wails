@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add support for modal sheets (macOS) 
 
 ## Changed
 <!-- Changes in existing functionality -->

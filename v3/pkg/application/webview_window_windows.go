@@ -80,6 +80,9 @@ type windowsWebviewWindow struct {
 
 	// menubarTheme is the theme for the menubar
 	menubarTheme *w32.MenuBarTheme
+
+	// Modal window tracking
+	parentHWND w32.HWND // Parent window HWND when this window is a modal
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
@@ -233,6 +236,37 @@ func (w *windowsWebviewWindow) startDrag() error {
 	// Use PostMessage because we don't want to block the caller until dragging has been finished.
 	w32.PostMessage(w.hwnd, w32.WM_NCLBUTTONDOWN, w32.HTCAPTION, 0)
 	return nil
+}
+
+func (w *windowsWebviewWindow) attachModal(modalWindow *WebviewWindow) {
+	if modalWindow == nil || modalWindow.impl == nil || modalWindow.isDestroyed() {
+		return
+	}
+
+	// Get the modal window's Windows implementation
+	modalWindowsImpl, ok := modalWindow.impl.(*windowsWebviewWindow)
+	if !ok {
+		return
+	}
+
+	parentHWND := w.hwnd
+	modalHWND := modalWindowsImpl.hwnd
+
+	// Set parent-child relationship using GWLP_HWNDPARENT
+	// This ensures the modal stays above parent and moves with it
+	w32.SetWindowLongPtr(modalHWND, w32.GWLP_HWNDPARENT, uintptr(parentHWND))
+
+	// Track the parent HWND in the modal window for cleanup
+	modalWindowsImpl.parentHWND = parentHWND
+
+	// Disable the parent window to block interaction (Microsoft's recommended approach)
+	// This follows Windows modal dialog best practices
+	w32.EnableWindow(parentHWND, false)
+
+	// Ensure modal window is shown and brought to front
+	w32.ShowWindow(modalHWND, w32.SW_SHOW)
+	w32.SetForegroundWindow(modalHWND)
+	w32.BringWindowToTop(modalHWND)
 }
 
 func (w *windowsWebviewWindow) nativeWindow() unsafe.Pointer {
@@ -720,6 +754,12 @@ func (w *windowsWebviewWindow) setRelativePosition(x int, y int) {
 }
 
 func (w *windowsWebviewWindow) destroy() {
+	// Re-enable parent window if this was a modal window
+	if w.parentHWND != 0 {
+		w32.EnableWindow(w.parentHWND, true)
+		w.parentHWND = 0
+	}
+
 	w.parent.markAsDestroyed()
 	if w.dropTarget != nil {
 		w.dropTarget.Release()
@@ -1418,6 +1458,12 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 
 		defer func() {
+			// Re-enable parent window if this was a modal window
+			if w.parentHWND != 0 {
+				w32.EnableWindow(w.parentHWND, true)
+				w.parentHWND = 0
+			}
+
 			windowsApp := globalApplication.impl.(*windowsApp)
 			windowsApp.unregisterWindow(w)
 

@@ -382,6 +382,10 @@ func (w *linuxWebviewWindow) nativeWindow() unsafe.Pointer {
 	return unsafe.Pointer(w.window)
 }
 
+func (w *linuxWebviewWindow) attachModal(modalWindow *WebviewWindow) {
+	// Modal windows are not supported on Linux
+}
+
 func (w *linuxWebviewWindow) print() error {
 	w.execJS("window.print();")
 	return nil
