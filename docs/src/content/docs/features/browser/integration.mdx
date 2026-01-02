@@ -153,16 +153,19 @@ func handleExternalLink(app *application.App, url string) {
     dialog := app.Dialog.Question()
     dialog.SetTitle("Open External Link")
     dialog.SetMessage(fmt.Sprintf("Open %s in your browser?", url))
-    
-    dialog.AddButton("Open").OnClick(func() {
-        err := app.Browser.OpenURL(url)
-        if err != nil {
-            app.Logger.Error("Failed to open URL", "url", url, "error", err)
-        }
-    })
-    
-    dialog.AddButton("Cancel")
-    dialog.Show()
+
+    dialog.Buttons(
+		application.Button{Label: "Open"},
+		application.Button{Label: "Cancel", IsDefault: true, IsCancel: true},
+	)
+
+    result, _ := dialog.Result()
+    if result == "Open" {
+		err := app.Browser.OpenURL(url)
+		if err != nil {
+			app.Logger.Error("Failed to open URL", "url", url, "error", err)
+		}
+    }
 }
 
 func isValidURL(url string) bool {
@@ -443,15 +446,18 @@ func openWithConfirmation(app *application.App, url string) {
     dialog := app.Dialog.Question()
     dialog.SetTitle("Open External Link")
     dialog.SetMessage(fmt.Sprintf("Open %s in your browser?", url))
-    
-    dialog.AddButton("Open").OnClick(func() {
-        if err := app.Browser.OpenURL(url); err != nil {
-            showError(app, "Failed to open URL", err)
-        }
-    })
-    
-    dialog.AddButton("Cancel")
-    dialog.Show()
+
+    dialog.Buttons(
+		application.Button{Label: "Open"},
+		application.Button{Label: "Cancel", IsDefault: true, IsCancel: true},
+	)
+
+    result, _ := dialog.Result()
+    if result == "Open" {
+		if err := app.Browser.OpenURL(url); err != nil {
+			showError(app, "Failed to open URL", err)
+		}
+    }
 }
 
 func generateHTMLReport(app *application.App) {
@@ -495,10 +501,10 @@ func generateHTMLReport(app *application.App) {
 }
 
 func showError(app *application.App, message string, err error) {
-    app.Dialog.Error().
-        SetTitle("Error").
-        SetMessage(fmt.Sprintf("%s: %v", message, err)).
-        Show()
+	_ = app.Dialog.Error().
+		SetTitle("Error").
+		SetMessage(fmt.Sprintf("%s: %v", message, err)).
+		Show()
 }
 ```
 

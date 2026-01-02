@@ -277,15 +277,17 @@ app := application.New(application.Options{
         }
 
         // Prompt the user
-        result, _ := application.QuestionDialog().
+        result, _ := app.Dialog.Question().
             SetTitle("Unsaved Changes").
             SetMessage("You have unsaved changes. Quit anyway?").
-            AddButton("Quit", "quit").
-            AddButton("Cancel", "cancel").
-            Show()
+			Buttons(
+				application.Button{Label: "Quit"},
+				application.Button{Label: "Cancel", IsDefault: true, IsCancel: true},
+			).
+			Result()
 
         // Only quit if user clicked "Quit"
-        return result == "quit"
+		return result == "Quit"
     },
 })
 ```
@@ -503,19 +505,21 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
     if hasUnsavedChanges() {
         // Show dialog
-        result, _ := application.QuestionDialog().
+        result, _ := app.Dialog.Question().
             SetTitle("Unsaved Changes").
             SetMessage("Save before closing?").
-            AddButton("Save", "save").
-            AddButton("Discard", "discard").
-            AddButton("Cancel", "cancel").
-            Show()
+			Buttons(
+				application.Button{Label: "Save", IsDefault: true},
+				application.Button{Label: "Discard"},
+				application.Button{Label: "Cancel", IsCancel: true},
+			).
+			Result()
 
         switch result {
-        case "save":
+        case "Save":
             saveChanges()
             // Allow close
-        case "cancel":
+        case "Cancel":
             e.Cancel()  // Prevent close
         }
         // "discard" falls through and allows close
