@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix SaveFileDialog.SetFilename() having no effect on Linux (#4841) by @samstanier
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

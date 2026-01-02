@@ -1722,7 +1722,7 @@ func messageDialogCB(button C.int) {
 	fmt.Println("messageDialogCB", button)
 }
 
-func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFolder, title string, action int, acceptLabel string, filters []FileFilter) (chan string, error) {
+func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFolder, title string, action int, acceptLabel string, filters []FileFilter, currentName string) (chan string, error) {
 	titleStr := C.CString(title)
 	defer C.free(unsafe.Pointer(titleStr))
 	cancelStr := C.CString("_Cancel")
@@ -1770,6 +1770,15 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 			(*C.GtkFileChooser)(fc),
 			path)
 		C.free(unsafe.Pointer(path))
+	}
+
+	// Set the current name for save dialogs to pre-populate the filename
+	if currentName != "" && action == C.GTK_FILE_CHOOSER_ACTION_SAVE {
+		nameStr := C.CString(currentName)
+		C.gtk_file_chooser_set_current_name(
+			(*C.GtkFileChooser)(fc),
+			nameStr)
+		C.free(unsafe.Pointer(nameStr))
 	}
 
 	// FIXME: This should be consolidated - duplicate exists in linux_purego.go
@@ -1845,7 +1854,8 @@ func runOpenFileDialog(dialog *OpenFileDialogStruct) (chan string, error) {
 		dialog.title,
 		action,
 		buttonText,
-		dialog.filters)
+		dialog.filters,
+		"")
 }
 
 func runQuestionDialog(parent pointer, options *MessageDialog) int {
@@ -1927,7 +1937,8 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (chan string, error) {
 		dialog.title,
 		C.GTK_FILE_CHOOSER_ACTION_SAVE,
 		buttonText,
-		dialog.filters)
+		dialog.filters,
+		dialog.filename)
 
 	return results, err
 }
