@@ -61,7 +61,7 @@ tasks:
         sh: xcrun --sdk iphonesimulator --show-sdk-path
     cmds:
       - xcrun -sdk iphonesimulator clang -target arm64-apple-ios15.0-simulator -isysroot {{.SDK_PATH}} -framework Foundation -framework UIKit -framework WebKit -o {{.BIN_DIR}}/{{.APP_NAME}} build/ios/main.m
-      - codesign --force --sign - {{.BIN_DIR}}/{{.APP_NAME}}
+      - codesign --force --sign - "{{.BIN_DIR}}/{{.APP_NAME}}"
 
   package:
     summary: Packages a production build of the application into a `.app` bundle
@@ -75,10 +75,10 @@ tasks:
   create:app:bundle:
     summary: Creates an iOS `.app` bundle
     cmds:
-      - rm -rf {{.BIN_DIR}}/{{.APP_NAME}}.app
-      - mkdir -p {{.BIN_DIR}}/{{.APP_NAME}}.app
-      - cp {{.BIN_DIR}}/{{.APP_NAME}} {{.BIN_DIR}}/{{.APP_NAME}}.app/
-      - cp build/ios/Info.plist {{.BIN_DIR}}/{{.APP_NAME}}.app/
+      - rm -rf "{{.BIN_DIR}}/{{.APP_NAME}}.app"
+      - mkdir -p "{{.BIN_DIR}}/{{.APP_NAME}}.app"
+      - cp "{{.BIN_DIR}}/{{.APP_NAME}}" "{{.BIN_DIR}}/{{.APP_NAME}}.app/"
+      - cp build/ios/Info.plist "{{.BIN_DIR}}/{{.APP_NAME}}.app/"
       - |
         # Compile asset catalog and embed icons in the app bundle
         APP_BUNDLE="{{.BIN_DIR}}/{{.APP_NAME}}.app"
@@ -103,7 +103,7 @@ tasks:
             /usr/libexec/PlistBuddy -c "Merge $APP_BUNDLE/assetcatalog_generated_info.plist" "$APP_BUNDLE/Info.plist" || true
           fi
         fi
-      - codesign --force --sign - {{.BIN_DIR}}/{{.APP_NAME}}.app
+      - codesign --force --sign - "{{.BIN_DIR}}/{{.APP_NAME}}.app"
 
   deploy-simulator:
     summary: Deploy to iOS Simulator
@@ -111,7 +111,7 @@ tasks:
     cmds:
       - xcrun simctl terminate booted {{.BUNDLE_ID}} 2>/dev/null || true
       - xcrun simctl uninstall booted {{.BUNDLE_ID}} 2>/dev/null || true
-      - xcrun simctl install booted {{.BIN_DIR}}/{{.APP_NAME}}.app
+      - xcrun simctl install booted "{{.BIN_DIR}}/{{.APP_NAME}}.app"
       - xcrun simctl launch booted {{.BUNDLE_ID}}
 
   compile:ios:
@@ -133,8 +133,8 @@ tasks:
           -framework Foundation -framework UIKit -framework WebKit \
           -framework Security -framework CoreFoundation \
           -lresolv \
-          -o {{.BIN_DIR}}/{{.APP_NAME | lower}} \
-          "$MAIN_M" {{.BIN_DIR}}/{{.APP_NAME}}.a
+          -o "{{.BIN_DIR}}/{{.APP_NAME | lower}}" \
+          "$MAIN_M" "{{.BIN_DIR}}/{{.APP_NAME}}.a"
 
   generate:ios:bindings:
     internal: true
@@ -225,10 +225,10 @@ tasks:
       - task: ensure-simulator
       - task: compile:ios
     cmds:
-      - rm -rf {{.BIN_DIR}}/{{.APP_NAME}}.dev.app
-      - mkdir -p {{.BIN_DIR}}/{{.APP_NAME}}.dev.app
-      - cp {{.BIN_DIR}}/{{.APP_NAME | lower}} {{.BIN_DIR}}/{{.APP_NAME}}.dev.app/{{.APP_NAME | lower}}
-      - cp build/ios/Info.dev.plist {{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Info.plist
+      - rm -rf "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"
+      - mkdir -p "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"
+      - cp "{{.BIN_DIR}}/{{.APP_NAME | lower}}" "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/{{.APP_NAME | lower}}"
+      - cp build/ios/Info.dev.plist "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Info.plist"
       - |
         # Compile asset catalog and embed icons for dev bundle
         APP_BUNDLE="{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"
@@ -253,11 +253,11 @@ tasks:
             /usr/libexec/PlistBuddy -c "Merge $APP_BUNDLE/assetcatalog_generated_info.plist" "$APP_BUNDLE/Info.plist" || true
           fi
         fi
-      - codesign --force --sign - {{.BIN_DIR}}/{{.APP_NAME}}.dev.app
-      - xcrun simctl terminate booted com.wails.{{.APP_NAME | lower}}.dev 2>/dev/null || true
-      - xcrun simctl uninstall booted com.wails.{{.APP_NAME | lower}}.dev 2>/dev/null || true
-      - xcrun simctl install booted {{.BIN_DIR}}/{{.APP_NAME}}.dev.app
-      - xcrun simctl launch booted com.wails.{{.APP_NAME | lower}}.dev
+      - codesign --force --sign - "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"
+      - xcrun simctl terminate booted "com.wails.{{.APP_NAME | lower}}.dev" 2>/dev/null || true
+      - xcrun simctl uninstall booted "com.wails.{{.APP_NAME | lower}}.dev" 2>/dev/null || true
+      - xcrun simctl install booted "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"
+      - xcrun simctl launch booted "com.wails.{{.APP_NAME | lower}}.dev"
 
   xcode:
     summary: Open the generated Xcode project for this app

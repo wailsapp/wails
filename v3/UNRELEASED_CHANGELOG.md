@@ -24,15 +24,6 @@ After processing, the content will be moved to the main changelog and this file 
 ## Changed
 <!-- Changes in existing functionality -->
 - **BREAKING**: `MessageDialog.Show()` now returns `(string, error)` - the clicked button's label and an error if the dialog could not be displayed. This enables synchronous dialog workflows and proper error handling (#4792) by @leaanthony
-- Switch to goccy/go-json for all runtime JSON processing (method bindings, events, webview requests, notifications, kvstore), improving performance by 21-63% and reducing memory allocations by 40-60%
-- Optimize BoundMethod struct layout and cache isVariadic flag to reduce per-call overhead
-- Use stack-allocated argument buffer for methods with <=8 arguments to avoid heap allocations
-- Optimize result collection in method calls to avoid slice allocation for single return values
-- Use sync.Map for MIME type cache to improve concurrent performance
-- Use buffer pool for HTTP transport request body reading
-- Lazily allocate CloseNotify channel in content type sniffer to reduce per-request allocations
-- Remove debug CSS logging from asset server
-- Expand MIME type extension map to cover 50+ common web formats (fonts, audio, video, etc.)
 
 ## Fixed
 <!-- Bug fixes -->
@@ -43,9 +34,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Removed
 <!-- Features removed in this release -->
-- Remove github.com/wailsapp/mimetype dependency in favor of expanded extension map + stdlib http.DetectContentType, reducing binary size by ~1.2MB
-- Remove gopkg.in/ini.v1 dependency by implementing minimal .desktop file parser for Linux file explorer, saving ~45KB
-- Remove samber/lo from runtime code by using Go 1.21+ stdlib slices package and minimal internal helpers, saving ~310KB
 
 ## Security
 <!-- Security-related changes -->
