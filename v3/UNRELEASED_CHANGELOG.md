@@ -31,7 +31,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Expand MIME type extension map to cover 50+ common web formats (fonts, audio, video, etc.)
 
 ## Fixed
-<!-- Bug fixes -->
+- Update all commands in Taskfile.yml files for all operating systems to accommodate spaces in variables such as `APP_NAME` by @ndianabasi
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
