@@ -34,21 +34,35 @@ app := application.New(application.Options{
 
 ## Notification Authorization
 
-Notifications on macOS require user authorization. Request and check authorization:
+Notifications on macOS require user authorization. Request and check authorization using callbacks:
 
 ```go
-authorized, err := notifier.CheckNotificationAuthorization()
-if err != nil {
-    // Handle authorization error
-}
-if authorized {
-    // Send notifications
-} else {
-    // Request authorization
-    authorized, err = notifier.RequestNotificationAuthorization()
-}
+// Check current authorization status
+notifier.CheckNotificationAuthorization(func(authorized bool, err error) {
+    if err != nil {
+        // Handle authorization error
+        return
+    }
+    if authorized {
+        // Send notifications
+    } else {
+        // Request authorization
+        notifier.RequestNotificationAuthorization(func(authorized bool, err error) {
+            if err != nil {
+                // Handle authorization error
+                return
+            }
+            if authorized {
+                // User granted authorization, now you can send notifications
+            } else {
+                // User denied authorization
+            }
+        })
+    }
+})
 ```
-On Windows and Linux this always returns `true`.
+
+On Windows and Linux, the callbacks are invoked immediately with `authorized = true` and `err = nil`.
 
 ## Notification Types
 
@@ -219,10 +233,10 @@ Explore this example:
 | `New()`                                    | Creates a new notifications service                   |
 
 ### Notification Authorization
-| Method                                       | Description                                                |
-|----------------------------------------------|------------------------------------------------------------|
-| `RequestNotificationAuthorization()`         | Requests permission to display notifications (macOS)       |
-| `CheckNotificationAuthorization()`           | Checks current notification authorization status (macOS)   |
+| Method                                                          | Description                                                          |
+|-----------------------------------------------------------------|----------------------------------------------------------------------|
+| `RequestNotificationAuthorization(callback func(bool, error))` | Requests permission to display notifications (macOS). Callback is invoked asynchronously when the user responds. |
+| `CheckNotificationAuthorization(callback func(bool, error))`   | Checks current notification authorization status (macOS). Callback is invoked asynchronously with the result. |
 
 ### Sending Notifications
 | Method                                                     | Description                                       |

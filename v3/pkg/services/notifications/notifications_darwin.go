@@ -86,40 +86,39 @@ func checkBundleIdentifier() bool {
 }
 
 // RequestNotificationAuthorization requests permission for notifications.
-// Default timeout is 3 minutes
-func (dn *darwinNotifier) RequestNotificationAuthorization() (bool, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
-	defer cancel()
+// The callback will be invoked asynchronously when the authorization result is available.
+func (dn *darwinNotifier) RequestNotificationAuthorization(callback func(bool, error)) {
+	if callback == nil {
+		return
+	}
 
 	id, resultCh := dn.registerChannel()
 
 	C.requestNotificationAuthorization(C.int(id))
 
-	select {
-	case result := <-resultCh:
-		return result.Success, result.Error
-	case <-ctx.Done():
-		dn.cleanupChannel(id)
-		return false, fmt.Errorf("notification authorization timed out after 3 minutes: %w", ctx.Err())
-	}
+	// Start a goroutine to handle the result asynchronously
+	// Note: No timeout here - users may take a long time to respond to the authorization dialog
+	go func() {
+		result := <-resultCh
+		callback(result.Success, result.Error)
+	}()
 }
 
 // CheckNotificationAuthorization checks current notification permission status.
-func (dn *darwinNotifier) CheckNotificationAuthorization() (bool, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
+func (dn *darwinNotifier) CheckNotificationAuthorization(callback func(bool, error)) {
+	if callback == nil {
+		return
+	}
 
 	id, resultCh := dn.registerChannel()
 
 	C.checkNotificationAuthorization(C.int(id))
 
-	select {
-	case result := <-resultCh:
-		return result.Success, result.Error
-	case <-ctx.Done():
-		dn.cleanupChannel(id)
-		return false, fmt.Errorf("notification authorization timed out after 15s: %w", ctx.Err())
-	}
+	// Start a goroutine to handle the result asynchronously
+	go func() {
+		result := <-resultCh
+		callback(result.Success, result.Error)
+	}()
 }
 
 // SendNotification sends a basic notification with a unique identifier, title, subtitle, and body.

@@ -26,8 +26,8 @@ type platformNotifier interface {
 	Shutdown() error
 
 	// Core notification methods
-	RequestNotificationAuthorization() (bool, error)
-	CheckNotificationAuthorization() (bool, error)
+	RequestNotificationAuthorization(callback func(bool, error))
+	CheckNotificationAuthorization(callback func(bool, error))
 	SendNotification(options NotificationOptions) error
 	SendNotificationWithActions(options NotificationOptions) error
 
@@ -109,7 +109,7 @@ type NotificationResult struct {
 
 // ServiceName returns the name of the service.
 func (ns *NotificationService) ServiceName() string {
-	return "github.com/wailsapp/wails/v3/services/notifications"
+	return "github.com/wailsapp/wails/v3/pkg/services/notifications"
 }
 
 // OnNotificationResponse registers a callback function that will be called when
@@ -146,12 +146,12 @@ func (ns *NotificationService) ServiceShutdown() error {
 }
 
 // Public methods that delegate to the implementation.
-func (ns *NotificationService) RequestNotificationAuthorization() (bool, error) {
-	return ns.impl.RequestNotificationAuthorization()
+func (ns *NotificationService) RequestNotificationAuthorization(callback func(bool, error)) {
+	ns.impl.RequestNotificationAuthorization(callback)
 }
 
-func (ns *NotificationService) CheckNotificationAuthorization() (bool, error) {
-	return ns.impl.CheckNotificationAuthorization()
+func (ns *NotificationService) CheckNotificationAuthorization(callback func(bool, error)) {
+	ns.impl.CheckNotificationAuthorization(callback)
 }
 
 func (ns *NotificationService) SendNotification(options NotificationOptions) error {
