@@ -11,72 +11,6 @@ import (
 	"sync"
 )
 
-// pathCache holds cached dynamic library paths to avoid repeated
-// expensive filesystem and subprocess operations.
-type pathCache struct {
-	mu       sync.RWMutex
-	flatpak  []string
-	snap     []string
-	nix      []string
-	initOnce sync.Once
-	inited   bool
-}
-
-var cache pathCache
-
-// initCache populates the cache with dynamic paths from package managers.
-// This is called lazily on first access.
-func (c *pathCache) init() {
-	c.initOnce.Do(func() {
-		c.flatpak = discoverFlatpakLibPaths()
-		c.snap = discoverSnapLibPaths()
-		c.nix = discoverNixLibPaths()
-		c.inited = true
-	})
-}
-
-// getFlatpak returns cached Flatpak library paths.
-func (c *pathCache) getFlatpak() []string {
-	c.init()
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	return c.flatpak
-}
-
-// getSnap returns cached Snap library paths.
-func (c *pathCache) getSnap() []string {
-	c.init()
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	return c.snap
-}
-
-// getNix returns cached Nix library paths.
-func (c *pathCache) getNix() []string {
-	c.init()
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	return c.nix
-}
-
-// invalidate clears the cache and forces re-discovery on next access.
-func (c *pathCache) invalidate() {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.flatpak = nil
-	c.snap = nil
-	c.nix = nil
-	c.initOnce = sync.Once{} // Reset so init() runs again
-	c.inited = false
-}
-
-// InvalidateCache clears the cached dynamic library paths.
-// Call this if packages are installed or removed during runtime
-// and you need to re-discover library paths.
-func InvalidateCache() {
-	cache.invalidate()
-}
-
 // Common library search paths on Linux systems
 var defaultLibPaths = []string{
 	// Standard paths
@@ -113,106 +47,6 @@ var defaultLibPaths = []string{
 	"/usr/local/lib64",
 }
 
-// getFlatpakLibPaths returns cached library paths from installed Flatpak runtimes.
-func getFlatpakLibPaths() []string {
-	return cache.getFlatpak()
-}
-
-// discoverFlatpakLibPaths scans for Flatpak runtime library directories.
-// Uses `flatpak --installations` and scans for runtime lib directories.
-func discoverFlatpakLibPaths() []string {
-	var paths []string
-
-	// Get system and user installation directories
-	installDirs := []string{
-		"/var/lib/flatpak",                         // System default
-		os.ExpandEnv("$HOME/.local/share/flatpak"), // User default
-	}
-
-	// Try to get actual installation path from flatpak
-	if out, err := exec.Command("flatpak", "--installations").Output(); err == nil {
-		for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
-			if line != "" {
-				installDirs = append(installDirs, line)
-			}
-		}
-	}
-
-	// Scan for runtime lib directories
-	for _, installDir := range installDirs {
-		runtimeDir := filepath.Join(installDir, "runtime")
-		if _, err := os.Stat(runtimeDir); err != nil {
-			continue
-		}
-
-		// Look for lib directories in runtimes
-		// Structure: runtime/<name>/<arch>/<version>/<hash>/files/lib
-		matches, err := filepath.Glob(filepath.Join(runtimeDir, "*", "*", "*", "*", "files", "lib"))
-		if err == nil {
-			paths = append(paths, matches...)
-		}
-	}
-
-	return paths
-}
-
-// getSnapLibPaths returns cached library paths from installed Snap packages.
-func getSnapLibPaths() []string {
-	return cache.getSnap()
-}
-
-// discoverSnapLibPaths scans for Snap package library directories.
-// Scans /snap/*/current/usr/lib* directories.
-func discoverSnapLibPaths() []string {
-	var paths []string
-
-	snapDir := "/snap"
-	if _, err := os.Stat(snapDir); err != nil {
-		return paths
-	}
-
-	// Find all snap packages with lib directories
-	patterns := []string{
-		filepath.Join(snapDir, "*", "current", "usr", "lib"),
-		filepath.Join(snapDir, "*", "current", "usr", "lib64"),
-		filepath.Join(snapDir, "*", "current", "usr", "lib", "*-linux-gnu"),
-		filepath.Join(snapDir, "*", "current", "lib"),
-		filepath.Join(snapDir, "*", "current", "lib", "*-linux-gnu"),
-	}
-
-	for _, pattern := range patterns {
-		matches, err := filepath.Glob(pattern)
-		if err == nil {
-			paths = append(paths, matches...)
-		}
-	}
-
-	return paths
-}
-
-// getNixLibPaths returns cached library paths for Nix/NixOS installations.
-func getNixLibPaths() []string {
-	return cache.getNix()
-}
-
-// discoverNixLibPaths scans for Nix library paths.
-func discoverNixLibPaths() []string {
-	var paths []string
-
-	nixProfileLib := os.ExpandEnv("$HOME/.nix-profile/lib")
-	if _, err := os.Stat(nixProfileLib); err == nil {
-		paths = append(paths, nixProfileLib)
-	}
-
-	// System Nix store - packages expose libs through profiles
-	nixStoreLib := "/run/current-system/sw/lib"
-	if _, err := os.Stat(nixStoreLib); err == nil {
-		paths = append(paths, nixStoreLib)
-	}
-
-	return paths
-}
-
 // searchResult holds the result from a parallel search goroutine.
 type searchResult struct {
 	path   string
@@ -226,62 +60,7 @@ type searchResult struct {
 // The libName should be the pkg-config name (e.g., "gtk+-3.0", "webkit2gtk-4.1").
 // Returns the library directory path and any error encountered.
 func FindLibraryPath(libName string) (string, error) {
-	// Create a context that we'll cancel once we find a result
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// Channel to receive results - buffered to avoid goroutine leaks
-	results := make(chan searchResult, 3)
-
-	// Launch parallel searches
-	var wg sync.WaitGroup
-	wg.Add(3)
-
-	// Search via pkg-config
-	go func() {
-		defer wg.Done()
-		if path, err := findWithPkgConfigCtx(ctx, libName); err == nil {
-			select {
-			case results <- searchResult{path: path, source: "pkg-config"}:
-			case <-ctx.Done():
-			}
-		}
-	}()
-
-	// Search via ldconfig
-	go func() {
-		defer wg.Done()
-		if path, err := findWithLdconfigCtx(ctx, libName); err == nil {
-			select {
-			case results <- searchResult{path: path, source: "ldconfig"}:
-			case <-ctx.Done():
-			}
-		}
-	}()
-
-	// Search via filesystem
-	go func() {
-		defer wg.Done()
-		if path, err := findInCommonPathsCtx(ctx, libName); err == nil {
-			select {
-			case results <- searchResult{path: path, source: "filesystem"}:
-			case <-ctx.Done():
-			}
-		}
-	}()
-
-	// Close results channel when all goroutines complete
-	go func() {
-		wg.Wait()
-		close(results)
-	}()
-
-	// Return first result or error if none found
-	if result, ok := <-results; ok {
-		return result.path, nil
-	}
-
-	return "", &LibraryNotFoundError{Name: libName}
+	return findLibraryPathCtx(context.Background(), libName)
 }
 
 // FindLibraryPathSequential is the original sequential implementation.
@@ -529,7 +308,7 @@ func GetAllLibPaths() []string {
 	return paths
 }
 
-// FindLibraryPathWithOptions finds a library path with additional search options.
+// FindOptions controls library search behavior.
 type FindOptions struct {
 	// IncludeCurrentDir includes "." in the search path.
 	// WARNING: This is a security risk and should only be used for development.
@@ -551,8 +330,9 @@ func FindLibraryPathWithOptions(libName string, opts FindOptions) (string, error
 		return path, nil
 	}
 
-	// Build search paths
-	searchPaths := make([]string, 0, len(opts.ExtraPaths)+len(defaultLibPaths)+1)
+	// Build search paths - include all dynamic paths too
+	allPaths := GetAllLibPaths()
+	searchPaths := make([]string, 0, len(opts.ExtraPaths)+len(allPaths)+1)
 
 	if opts.IncludeCurrentDir {
 		if cwd, err := os.Getwd(); err == nil {
@@ -561,7 +341,7 @@ func FindLibraryPathWithOptions(libName string, opts FindOptions) (string, error
 	}
 
 	searchPaths = append(searchPaths, opts.ExtraPaths...)
-	searchPaths = append(searchPaths, defaultLibPaths...)
+	searchPaths = append(searchPaths, allPaths...)
 
 	// Search the paths
 	searchName := pkgConfigToLibName(libName)
