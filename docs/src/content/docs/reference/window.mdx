@@ -441,11 +441,13 @@ func (w *Window) RegisterHook(
 import "github.com/wailsapp/wails/v3/pkg/events"
 
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
-    result, _ := app.QuestionDialog().
+    result, _ := app.Dialog.Question().
         SetTitle("Confirm Close").
         SetMessage("Are you sure you want to close this window?").
-        SetButtons("Yes", "No").
-        Show()
+        AddButton("Yes").
+        AddCancelButton("No").
+        Default("No").
+        Result()
 
     if result == "No" {
         e.Cancel()  // Prevent window from closing
@@ -457,10 +459,12 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
     if hasUnsavedChanges {
-        result, _ := app.QuestionDialog().
+        result, _ := app.Dialog.Question().
             SetMessage("Save changes before closing?").
-            SetButtons("Save", "Don't Save", "Cancel").
-            Show()
+            AddDefaultButton("Save").
+            AddButton("Don't Save").
+            AddCancelButton("Cancel").
+            Result()
 
         switch result {
         case "Save":
@@ -638,11 +642,13 @@ func main() {
     // Set up event hooks
     window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
         // Confirm before closing
-        result, _ := app.QuestionDialog().
-            SetTitle("Confirm Close").
-            SetMessage("Are you sure you want to close this window?").
-            SetButtons("Yes", "No").
-            Show()
+        result, _ := app.Dialog.Question().
+			SetTitle("Confirm Close").
+			SetMessage("Are you sure you want to close this window?").
+			AddButton("Yes").
+			AddCancelButton("No").
+			Default("No").
+			Result()
 
         if result == "No" {
             e.Cancel()

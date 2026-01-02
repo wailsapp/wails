@@ -374,11 +374,11 @@ menu := application.NewMenu()
 menu.Add("Check for Updates...").OnClick(func(ctx *application.Context) {
     info, err := updater.CheckForUpdate()
     if err != nil {
-        application.InfoDialog().SetMessage("Error checking for updates").Show()
+		_ = application.Get().Dialog.Info().SetMessage("Error checking for updates").Show()
         return
     }
     if info == nil {
-        application.InfoDialog().SetMessage("You're up to date!").Show()
+		_ = application.Get().Dialog.Info().SetMessage("You're up to date!").Show()
         return
     }
     // Show update dialog...

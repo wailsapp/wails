@@ -720,10 +720,12 @@ window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent)
 
 // Cancel window close
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
-    result, _ := app.QuestionDialog().
+    result, _ := app.Dialog.Question().
         SetMessage("Close window?").
-        SetButtons("Yes", "No").
-        Show()
+        AddButton("Yes").
+        AddCancelButton("No").
+        Default("No").
+        Result()
 
     if result == "No" {
         e.Cancel() // Prevent close

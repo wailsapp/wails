@@ -115,7 +115,7 @@ In this tutorial, you'll build a notes application that demonstrates file operat
 
    // SaveToFile saves notes to a file
    func (n *NotesService) SaveToFile() error {
-   	path, err := application.SaveFileDialog().
+   	path, err := application.Get().Dialog.SaveFile().
    		SetFilename("notes.json").
    		AddFilter("JSON Files", "*.json").
    		PromptForSingleSelection()
@@ -133,17 +133,19 @@ In this tutorial, you'll build a notes application that demonstrates file operat
    		return err
    	}
 
-   	application.InfoDialog().
+   	if err := application.Get().Dialog.Info().
    		SetTitle("Success").
    		SetMessage("Notes saved successfully!").
-   		Show()
+   		Show(); err != nil {
+   		return err
+   	}
 
    	return nil
    }
 
    // LoadFromFile loads notes from a file
    func (n *NotesService) LoadFromFile() error {
-   	path, err := application.OpenFileDialog().
+   	path, err := application.Get().Dialog.OpenFile().
    		AddFilter("JSON Files", "*.json").
    		PromptForSingleSelection()
 
@@ -163,10 +165,12 @@ In this tutorial, you'll build a notes application that demonstrates file operat
 
    	n.notes = notes
 
-   	application.InfoDialog().
+   	if err := application.Get().Dialog.Info().
    		SetTitle("Success").
    		SetMessage("Notes loaded successfully!").
-   		Show()
+   		Show(); err != nil {
+   		return err
+   	}
 
    	return nil
    }
@@ -180,8 +184,8 @@ In this tutorial, you'll build a notes application that demonstrates file operat
 
    - **Note struct**: Defines the data structure with JSON tags (lowercase) for proper serialization
    - **CRUD operations**: GetAll, Create, Update, and Delete for managing notes in memory
-   - **File dialogs**: Uses package-level functions `application.SaveFileDialog()` and `application.OpenFileDialog()`
-   - **Info dialogs**: Shows success messages using `application.InfoDialog()`
+   - **File dialogs**: Uses `application.Get().Dialog.SaveFile()` and `application.Get().Dialog.OpenFile()`
+   - **Info dialogs**: Shows success messages using `application.Get().Dialog.Info()`
    - **ID generation**: Simple timestamp-based ID generator
 
 3. **Update main.go**
@@ -652,17 +656,21 @@ In this tutorial, you'll build a notes application that demonstrates file operat
 
 ### Package-Level Dialog Functions
 
-In Wails v3, file and message dialogs are package-level functions, not methods on the app instance:
+In Wails v3, dialogs are accessed via the app's dialog manager:
 
 ```go
-// Correct - package-level function
-path, err := application.SaveFileDialog().
-    SetFilename("notes.json").
-    AddFilter("JSON Files", "*.json").
-    PromptForSingleSelection()
+path, err := app.Dialog.SaveFile().
+	SetFilename("notes.json").
+	AddFilter("JSON Files", "*.json").
+	PromptForSingleSelection()
 
-// Wrong - not available
-path, err := app.Dialog.SaveFile() // This doesn't exist
+if err != nil {
+	return err
+}
+
+if err := app.Dialog.Info().SetMessage("Saved!").Show(); err != nil {
+	return err
+}
 ```
 
 ### JSON Tag Mapping

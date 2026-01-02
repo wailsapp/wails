@@ -64,15 +64,15 @@ await CopyToClipboard("Text to copy")
 ```go
 func copyWithFeedback(text string) {
     if app.Clipboard.SetText(text) {
-        app.InfoDialog().
-            SetTitle("Copied").
-            SetMessage("Text copied to clipboard!").
-            Show()
+		_ = app.Dialog.Info().
+			SetTitle("Copied").
+			SetMessage("Text copied to clipboard!").
+			Show()
     } else {
-        app.ErrorDialog().
-            SetTitle("Copy Failed").
-            SetMessage("Failed to copy to clipboard.").
-            Show()
+		_ = app.Dialog.Error().
+			SetTitle("Copy Failed").
+			SetMessage("Failed to copy to clipboard.").
+			Show()
     }
 }
 ```

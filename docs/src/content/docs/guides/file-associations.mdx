@@ -86,7 +86,7 @@ func main() {
     // Listen for files being used to open the application
     app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(event *application.ApplicationEvent) {
         associatedFile := event.Context().Filename()
-        application.InfoDialog().SetMessage("Application opened with file: " + associatedFile).Show()
+        _ = app.Dialog.Info().SetMessage("Application opened with file: " + associatedFile).Show()
     })
 
     // Create your window and run the app...
