@@ -1,6 +1,6 @@
 package capabilities
 
-import "encoding/json"
+import json "github.com/goccy/go-json"
 
 type Capabilities struct {
 	HasNativeDrag bool
