@@ -8,7 +8,8 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-type iosDock struct{}
+type iosDock struct {
+}
 
 // New creates a new Dock Service.
 // On iOS, this returns a stub implementation.
@@ -60,5 +61,11 @@ func (d *iosDock) SetCustomBadge(label string, options BadgeOptions) error {
 // RemoveBadge removes the badge from the iOS app icon.
 func (d *iosDock) RemoveBadge() error {
 	// iOS badge removal would go here via native bridge
+	return nil
+}
+
+// GetBadge retrieves the badge from the iOS app icon.
+func (d *iosDock) GetBadge() *string {
+	// iOS badge retrieval would go here via native bridge
 	return nil
 }

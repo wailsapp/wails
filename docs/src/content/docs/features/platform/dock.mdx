@@ -131,6 +131,11 @@ Remove the badge from the application icon:
 dockService.RemoveBadge()
 ```
 
+### Getting the set badge
+```go
+dockService.GetBadge()
+``` 
+
 ## Platform Considerations
 
 <Tabs>
@@ -220,6 +225,7 @@ dockService.RemoveBadge()
 | `SetBadge(label string) error`                    | Sets a badge with the specified label                      |
 | `SetCustomBadge(label string, options BadgeOptions) error` | Sets a badge with the specified label and custom styling options (Windows only) |
 | `RemoveBadge() error`                             | Removes the badge from the application icon                |
+| `GetBadge() *string`                             | Gets the current badge                |
 
 ### Structs and Types
 
