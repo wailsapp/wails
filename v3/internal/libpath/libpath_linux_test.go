@@ -603,3 +603,167 @@ func BenchmarkFindLibraryPathParallel(b *testing.B) {
 		_, _ = FindLibraryPath("glib-2.0")
 	}
 }
+
+// Tests for multi-library search functions
+
+func TestFindFirstLibrary(t *testing.T) {
+	if _, err := exec.LookPath("pkg-config"); err != nil {
+		t.Skip("pkg-config not available")
+	}
+
+	// Test with a mix of existing and non-existing libraries
+	match, err := FindFirstLibrary("nonexistent-xyz", "glib-2.0", "also-nonexistent")
+	if err != nil {
+		t.Skipf("glib-2.0 not installed: %v", err)
+	}
+
+	if match.Name != "glib-2.0" {
+		t.Errorf("Expected glib-2.0, got %s", match.Name)
+	}
+	if match.Path == "" {
+		t.Error("Expected non-empty path")
+	}
+}
+
+func TestFindFirstLibrary_AllNotFound(t *testing.T) {
+	_, err := FindFirstLibrary("nonexistent-1", "nonexistent-2", "nonexistent-3")
+	if err == nil {
+		t.Error("Expected error for all non-existent libraries")
+	}
+}
+
+func TestFindFirstLibrary_Empty(t *testing.T) {
+	_, err := FindFirstLibrary()
+	if err == nil {
+		t.Error("Expected error for empty library list")
+	}
+}
+
+func TestFindFirstLibraryOrdered(t *testing.T) {
+	if _, err := exec.LookPath("pkg-config"); err != nil {
+		t.Skip("pkg-config not available")
+	}
+
+	// glib-2.0 should be found, and since it's first, it should be returned
+	match, err := FindFirstLibraryOrdered("glib-2.0", "nonexistent-xyz")
+	if err != nil {
+		t.Skipf("glib-2.0 not installed: %v", err)
+	}
+
+	if match.Name != "glib-2.0" {
+		t.Errorf("Expected glib-2.0, got %s", match.Name)
+	}
+}
+
+func TestFindFirstLibraryOrdered_PreferFirst(t *testing.T) {
+	if _, err := exec.LookPath("pkg-config"); err != nil {
+		t.Skip("pkg-config not available")
+	}
+
+	// Check what GTK versions are available
+	gtk4Available := exec.Command("pkg-config", "--exists", "gtk4").Run() == nil
+	gtk3Available := exec.Command("pkg-config", "--exists", "gtk+-3.0").Run() == nil
+
+	if !gtk4Available && !gtk3Available {
+		t.Skip("Neither GTK3 nor GTK4 installed")
+	}
+
+	// If both available, test that order is respected
+	if gtk4Available && gtk3Available {
+		match, err := FindFirstLibraryOrdered("gtk4", "gtk+-3.0")
+		if err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
+		if match.Name != "gtk4" {
+			t.Errorf("Expected gtk4 (first in order), got %s", match.Name)
+		}
+
+		// Reverse order
+		match, err = FindFirstLibraryOrdered("gtk+-3.0", "gtk4")
+		if err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
+		if match.Name != "gtk+-3.0" {
+			t.Errorf("Expected gtk+-3.0 (first in order), got %s", match.Name)
+		}
+	}
+}
+
+func TestFindAllLibraries(t *testing.T) {
+	if _, err := exec.LookPath("pkg-config"); err != nil {
+		t.Skip("pkg-config not available")
+	}
+
+	matches := FindAllLibraries("glib-2.0", "nonexistent-xyz", "zlib")
+
+	// Should find at least glib-2.0 on most systems
+	if len(matches) == 0 {
+		t.Skip("No common libraries found")
+	}
+
+	t.Logf("Found %d libraries:", len(matches))
+	for _, m := range matches {
+		t.Logf("  %s at %s", m.Name, m.Path)
+	}
+
+	// Verify no duplicates and no nonexistent library
+	seen := make(map[string]bool)
+	for _, m := range matches {
+		if m.Name == "nonexistent-xyz" {
+			t.Error("Should not have found nonexistent library")
+		}
+		if seen[m.Name] {
+			t.Errorf("Duplicate match for %s", m.Name)
+		}
+		seen[m.Name] = true
+	}
+}
+
+func TestFindAllLibraries_Empty(t *testing.T) {
+	matches := FindAllLibraries()
+	if len(matches) != 0 {
+		t.Error("Expected empty result for empty input")
+	}
+}
+
+func TestFindAllLibraries_AllNotFound(t *testing.T) {
+	matches := FindAllLibraries("nonexistent-1", "nonexistent-2")
+	if len(matches) != 0 {
+		t.Errorf("Expected empty result, got %d matches", len(matches))
+	}
+}
+
+// Benchmarks for multi-library search
+
+func BenchmarkFindFirstLibrary(b *testing.B) {
+	if _, err := exec.LookPath("pkg-config"); err != nil {
+		b.Skip("pkg-config not available")
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = FindFirstLibrary("nonexistent-1", "glib-2.0", "nonexistent-2")
+	}
+}
+
+func BenchmarkFindFirstLibraryOrdered(b *testing.B) {
+	if _, err := exec.LookPath("pkg-config"); err != nil {
+		b.Skip("pkg-config not available")
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = FindFirstLibraryOrdered("nonexistent-1", "glib-2.0", "nonexistent-2")
+	}
+}
+
+func BenchmarkFindAllLibraries(b *testing.B) {
+	if _, err := exec.LookPath("pkg-config"); err != nil {
+		b.Skip("pkg-config not available")
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = FindAllLibraries("glib-2.0", "zlib", "nonexistent-xyz")
+	}
+}

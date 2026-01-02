@@ -593,3 +593,179 @@ type LibraryNotFoundError struct {
 func (e *LibraryNotFoundError) Error() string {
 	return "library not found: " + e.Name
 }
+
+// LibraryMatch holds information about a found library.
+type LibraryMatch struct {
+	// Name is the pkg-config name that was searched for.
+	Name string
+	// Path is the directory containing the library.
+	Path string
+}
+
+// FindFirstLibrary searches for multiple libraries in parallel and returns
+// the first one found. This is useful when you don't know the exact version
+// of a library installed (e.g., gtk+-3.0 vs gtk+-4.0).
+//
+// The search order among candidates is non-deterministic - whichever is found
+// first wins. If you need a specific preference order, list preferred libraries
+// first and use FindFirstLibraryOrdered instead.
+//
+// Example:
+//
+//	match, err := FindFirstLibrary("webkit2gtk-4.1", "webkit2gtk-4.0", "webkit2gtk-6.0")
+//	if err != nil {
+//	    log.Fatal("No WebKit2GTK found")
+//	}
+//	fmt.Printf("Found %s at %s\n", match.Name, match.Path)
+func FindFirstLibrary(libNames ...string) (*LibraryMatch, error) {
+	if len(libNames) == 0 {
+		return nil, &LibraryNotFoundError{Name: "no libraries specified"}
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	results := make(chan *LibraryMatch, len(libNames))
+	var wg sync.WaitGroup
+
+	for _, name := range libNames {
+		wg.Add(1)
+		go func(libName string) {
+			defer wg.Done()
+			if path, err := findLibraryPathCtx(ctx, libName); err == nil {
+				select {
+				case results <- &LibraryMatch{Name: libName, Path: path}:
+				case <-ctx.Done():
+				}
+			}
+		}(name)
+	}
+
+	// Close results when all goroutines complete
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	if result := <-results; result != nil {
+		return result, nil
+	}
+
+	return nil, &LibraryNotFoundError{Name: strings.Join(libNames, ", ")}
+}
+
+// FindFirstLibraryOrdered searches for libraries in order of preference,
+// returning the first one found. Unlike FindFirstLibrary, this respects
+// the order of candidates - earlier entries are preferred.
+//
+// This is useful when you want to prefer newer library versions:
+//
+//	match, err := FindFirstLibraryOrdered("gtk+-4.0", "gtk+-3.0")
+//	// Will return gtk+-4.0 if available, otherwise gtk+-3.0
+func FindFirstLibraryOrdered(libNames ...string) (*LibraryMatch, error) {
+	if len(libNames) == 0 {
+		return nil, &LibraryNotFoundError{Name: "no libraries specified"}
+	}
+
+	for _, name := range libNames {
+		if path, err := FindLibraryPath(name); err == nil {
+			return &LibraryMatch{Name: name, Path: path}, nil
+		}
+	}
+
+	return nil, &LibraryNotFoundError{Name: strings.Join(libNames, ", ")}
+}
+
+// FindAllLibraries searches for multiple libraries in parallel and returns
+// all that are found. This is useful for discovering which library versions
+// are available on the system.
+//
+// Example:
+//
+//	matches := FindAllLibraries("gtk+-3.0", "gtk+-4.0", "webkit2gtk-4.0", "webkit2gtk-4.1")
+//	for _, m := range matches {
+//	    fmt.Printf("Found %s at %s\n", m.Name, m.Path)
+//	}
+func FindAllLibraries(libNames ...string) []LibraryMatch {
+	if len(libNames) == 0 {
+		return nil
+	}
+
+	results := make(chan *LibraryMatch, len(libNames))
+	var wg sync.WaitGroup
+
+	for _, name := range libNames {
+		wg.Add(1)
+		go func(libName string) {
+			defer wg.Done()
+			if path, err := FindLibraryPath(libName); err == nil {
+				results <- &LibraryMatch{Name: libName, Path: path}
+			}
+		}(name)
+	}
+
+	// Close results when all goroutines complete
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	var matches []LibraryMatch
+	for result := range results {
+		matches = append(matches, *result)
+	}
+
+	return matches
+}
+
+// findLibraryPathCtx is FindLibraryPath with context support.
+func findLibraryPathCtx(ctx context.Context, libName string) (string, error) {
+	// Create a child context for this search
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	results := make(chan searchResult, 3)
+	var wg sync.WaitGroup
+	wg.Add(3)
+
+	go func() {
+		defer wg.Done()
+		if path, err := findWithPkgConfigCtx(ctx, libName); err == nil {
+			select {
+			case results <- searchResult{path: path, source: "pkg-config"}:
+			case <-ctx.Done():
+			}
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		if path, err := findWithLdconfigCtx(ctx, libName); err == nil {
+			select {
+			case results <- searchResult{path: path, source: "ldconfig"}:
+			case <-ctx.Done():
+			}
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		if path, err := findInCommonPathsCtx(ctx, libName); err == nil {
+			select {
+			case results <- searchResult{path: path, source: "filesystem"}:
+			case <-ctx.Done():
+			}
+		}
+	}()
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	if result, ok := <-results; ok {
+		return result.path, nil
+	}
+
+	return "", &LibraryNotFoundError{Name: libName}
+}

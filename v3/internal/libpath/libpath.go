@@ -78,6 +78,27 @@
 //	    fmt.Println(p)
 //	}
 //
+// # Multi-Library Search
+//
+// When you don't know which version of a library is installed, use the
+// multi-library search functions:
+//
+//	// Find any available WebKit2GTK version (first found wins)
+//	match, err := libpath.FindFirstLibrary("webkit2gtk-4.1", "webkit2gtk-4.0", "webkit2gtk-6.0")
+//	if err != nil {
+//	    log.Fatal("No WebKit2GTK found")
+//	}
+//	fmt.Printf("Found %s at %s\n", match.Name, match.Path)
+//
+//	// Prefer newer versions (ordered search)
+//	match, err := libpath.FindFirstLibraryOrdered("gtk4", "gtk+-3.0")
+//
+//	// Discover all available versions
+//	matches := libpath.FindAllLibraries("gtk+-3.0", "gtk4", "webkit2gtk-4.0", "webkit2gtk-4.1")
+//	for _, m := range matches {
+//	    fmt.Printf("Available: %s at %s\n", m.Name, m.Path)
+//	}
+//
 // On non-Linux platforms, stub implementations are provided that always
 // return [LibraryNotFoundError].
 package libpath

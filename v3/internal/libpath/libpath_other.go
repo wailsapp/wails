@@ -39,3 +39,35 @@ type LibraryNotFoundError struct {
 func (e *LibraryNotFoundError) Error() string {
 	return "library not found: " + e.Name
 }
+
+// LibraryMatch holds information about a found library.
+type LibraryMatch struct {
+	Name string
+	Path string
+}
+
+// FindFirstLibrary is a stub for non-Linux platforms.
+func FindFirstLibrary(libNames ...string) (*LibraryMatch, error) {
+	if len(libNames) == 0 {
+		return nil, &LibraryNotFoundError{Name: "no libraries specified"}
+	}
+	return nil, &LibraryNotFoundError{Name: libNames[0]}
+}
+
+// FindFirstLibraryOrdered is a stub for non-Linux platforms.
+func FindFirstLibraryOrdered(libNames ...string) (*LibraryMatch, error) {
+	if len(libNames) == 0 {
+		return nil, &LibraryNotFoundError{Name: "no libraries specified"}
+	}
+	return nil, &LibraryNotFoundError{Name: libNames[0]}
+}
+
+// FindAllLibraries is a stub for non-Linux platforms.
+func FindAllLibraries(libNames ...string) []LibraryMatch {
+	return nil
+}
+
+// FindLibraryPathSequential is a stub for non-Linux platforms.
+func FindLibraryPathSequential(libName string) (string, error) {
+	return "", &LibraryNotFoundError{Name: libName}
+}
