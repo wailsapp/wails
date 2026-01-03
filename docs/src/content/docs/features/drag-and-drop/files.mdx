@@ -20,6 +20,8 @@ window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 })
 ```
 
+When `EnableFileDrop` is `false` (the default), files dragged from the OS are blocked - they won't open in the webview or trigger any events. This prevents accidental navigation when users drag files over your app.
+
 ## Define Drop Zones
 
 Drop zones tell Wails which elements should accept files. Files dropped outside a drop zone are ignored.
@@ -177,7 +179,32 @@ body.file-drop-target-active::after {
 
 ## Combining with HTML Drag & Drop
 
-If your app uses both file drop and [HTML drag-and-drop](./html), see the HTML Drag & Drop guide for how to filter events so your internal drop zones don't react to external file drags.
+You can use both external file drops and internal HTML drag-and-drop in the same application. When `EnableFileDrop` is `true`, Wails intercepts external file drags but lets internal HTML5 drags pass through normally.
+
+To distinguish between them in your HTML drop zone handlers, check if the drag contains files:
+
+```javascript
+zone.addEventListener('dragenter', (e) => {
+    // Skip external file drags - Wails handles these
+    if (e.dataTransfer?.types.includes('Files')) {
+        return;
+    }
+    // Handle internal HTML5 drags
+    zone.classList.add('drag-over');
+});
+
+zone.addEventListener('drop', (e) => {
+    // Skip external file drops - Wails handles these
+    if (e.dataTransfer?.types.includes('Files')) {
+        return;
+    }
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    // Handle internal drop
+});
+```
+
+This ensures your HTML drop handlers only respond to internal drags (like moving list items), while Wails handles external file drops separately via the `WindowFilesDropped` event.
 
 ## Next Steps
 

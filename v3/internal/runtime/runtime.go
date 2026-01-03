@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-var runtimeInit = `window._wails=window._wails||{};window.wails=window.wails||{};`
+var runtimeInit = `window._wails=window._wails||{};window._wails.flags=window._wails.flags||{};window.wails=window.wails||{};`
 
 func Core(flags map[string]any) string {
 	flagsStr := ""

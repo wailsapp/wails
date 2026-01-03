@@ -394,6 +394,36 @@ static void enableDND(GtkWidget *widget, gpointer data)
     g_signal_connect(G_OBJECT(widget), "drag-motion", G_CALLBACK(on_drag_motion), data);
     g_signal_connect(G_OBJECT(widget), "drag-leave", G_CALLBACK(on_drag_leave), data);
 }
+
+// Block external file drops - consume the events to prevent WebKit from navigating to files
+// Returns TRUE for file drags to consume them, FALSE for internal HTML5 drags to let WebKit handle
+static gboolean on_drag_drop_blocked(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
+                      guint time, gpointer data)
+{
+    if (!is_file_drag(context)) {
+        return FALSE;  // Let WebKit handle internal HTML5 drags
+    }
+    // Block external file drops by finishing with failure
+    gtk_drag_finish(context, FALSE, FALSE, time);
+    return TRUE;
+}
+
+static gboolean on_drag_motion_blocked(GtkWidget *widget, GdkDragContext *context, gint x, gint y, guint time, gpointer data)
+{
+    if (internal_drag_active || !is_file_drag(context)) {
+        return FALSE;  // Let WebKit handle internal HTML5 drags
+    }
+    // Show "no drop" cursor for external file drags
+    gdk_drag_status(context, 0, time);
+    return TRUE;
+}
+
+// Set up handlers that block external file drops while allowing internal HTML5 drag-and-drop
+static void disableDND(GtkWidget *widget, gpointer data)
+{
+    g_signal_connect(G_OBJECT(widget), "drag-drop", G_CALLBACK(on_drag_drop_blocked), data);
+    g_signal_connect(G_OBJECT(widget), "drag-motion", G_CALLBACK(on_drag_motion_blocked), data);
+}
 */
 import "C"
 
@@ -992,6 +1022,12 @@ func (w *linuxWebviewWindow) enableDND() {
 	// Pass window ID as pointer value (not pointer to ID) - same pattern as other signal handlers
 	winID := unsafe.Pointer(uintptr(w.parent.id))
 	C.enableDND((*C.GtkWidget)(w.webview), C.gpointer(winID))
+}
+
+func (w *linuxWebviewWindow) disableDND() {
+	// Block external file drops while allowing internal HTML5 drag-and-drop
+	winID := unsafe.Pointer(uintptr(w.parent.id))
+	C.disableDND((*C.GtkWidget)(w.webview), C.gpointer(winID))
 }
 
 func (w *linuxWebviewWindow) execJS(js string) {

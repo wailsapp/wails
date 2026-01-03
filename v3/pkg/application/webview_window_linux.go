@@ -284,6 +284,8 @@ func (w *linuxWebviewWindow) run() {
 	w.connectSignals()
 	if w.parent.options.EnableFileDrop {
 		w.enableDND()
+	} else {
+		w.disableDND()
 	}
 	w.setTitle(w.parent.options.Title)
 	w.setIcon(app.icon)
@@ -352,7 +354,10 @@ func (w *linuxWebviewWindow) run() {
 	})
 
 	w.parent.RegisterHook(events.Linux.WindowLoadFinished, func(e *WindowEvent) {
-		w.execJS(runtime.Core(globalApplication.impl.GetFlags(globalApplication.options)))
+		// Inject runtime core and EnableFileDrop flag together
+		js := runtime.Core(globalApplication.impl.GetFlags(globalApplication.options))
+		js += fmt.Sprintf("window._wails.flags.enableFileDrop=%v;", w.parent.options.EnableFileDrop)
+		w.execJS(js)
 	})
 	if w.parent.options.HTML != "" {
 		w.setHTML(w.parent.options.HTML)
