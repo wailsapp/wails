@@ -196,7 +196,6 @@ static void startSingleInstanceListener(const char *uniqueID) {
 */
 import "C"
 import (
-	"encoding/json"
 	"sync"
 	"time"
 	"unsafe"
