@@ -1,7 +1,6 @@
 package application
 
 import (
-	"encoding/json"
 	"fmt"
 	"runtime"
 	"slices"
@@ -10,9 +9,9 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"github.com/leaanthony/u"
+	json "github.com/goccy/go-json"
 
-	"github.com/samber/lo"
+	"github.com/leaanthony/u"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
@@ -772,7 +771,9 @@ func (w *WebviewWindow) OnWindowEvent(
 	return func() {
 		// Check if eventListener is already locked
 		w.eventListenersLock.Lock()
-		w.eventListeners[eventID] = lo.Without(w.eventListeners[eventID], windowEventListener)
+		w.eventListeners[eventID] = slices.DeleteFunc(w.eventListeners[eventID], func(l *WindowEventListener) bool {
+			return l == windowEventListener
+		})
 		w.eventListenersLock.Unlock()
 	}
 }
@@ -793,7 +794,9 @@ func (w *WebviewWindow) RegisterHook(
 	return func() {
 		w.eventHooksLock.Lock()
 		defer w.eventHooksLock.Unlock()
-		w.eventHooks[eventID] = lo.Without(w.eventHooks[eventID], windowEventHook)
+		w.eventHooks[eventID] = slices.DeleteFunc(w.eventHooks[eventID], func(l *WindowEventListener) bool {
+			return l == windowEventHook
+		})
 	}
 }
 

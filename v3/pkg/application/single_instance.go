@@ -5,11 +5,12 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
 	"sync"
+
+	json "github.com/goccy/go-json"
 )
 
 var alreadyRunningError = errors.New("application is already running")

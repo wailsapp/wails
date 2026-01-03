@@ -2,8 +2,9 @@ package application
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
+
+	json "github.com/goccy/go-json"
 
 	"github.com/wailsapp/wails/v3/pkg/errs"
 )
