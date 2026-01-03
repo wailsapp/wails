@@ -12,7 +12,7 @@ Wails lets users drag files from the operating system (file manager, desktop) in
 File drop is disabled by default. To enable it, set `EnableFileDrop: true` in your window options:
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:          "My App",
     Width:          800,
     Height:         600,
@@ -105,7 +105,7 @@ case "documents":
 **Go:**
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:          "File Uploader",
     EnableFileDrop: true,
 })

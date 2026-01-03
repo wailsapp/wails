@@ -441,6 +441,7 @@ func macosOnDragExit(windowID C.uint) {
 var (
 	// Pre-allocated buffer for drag JS calls to avoid allocations
 	dragOverJSBuffer = make([]byte, 128) // Increased for safety
+	dragOverJSMutex  sync.Mutex          // Protects dragOverJSBuffer
 	dragOverJSPrefix = []byte("window._wails.handleDragOver(")
 
 	// Cache window references to avoid repeated lookups
@@ -451,6 +452,7 @@ var (
 )
 
 type dragThrottleState struct {
+	mu           sync.Mutex // Protects all fields below
 	lastX, lastY int
 	timer        *time.Timer
 	pendingX     int
@@ -464,8 +466,12 @@ func clearWindowDragCache(windowID uint) {
 
 	// Cancel any pending timer
 	if throttleVal, ok := dragThrottle.Load(windowID); ok {
-		if throttle, ok := throttleVal.(*dragThrottleState); ok && throttle.timer != nil {
-			throttle.timer.Stop()
+		if throttle, ok := throttleVal.(*dragThrottleState); ok {
+			throttle.mu.Lock()
+			if throttle.timer != nil {
+				throttle.timer.Stop()
+			}
+			throttle.mu.Unlock()
 		}
 	}
 	dragThrottle.Delete(windowID)
@@ -522,6 +528,8 @@ func macosOnDragOver(windowID C.uint, x C.int, y C.int) {
 	})
 	throttle := throttleVal.(*dragThrottleState)
 
+	throttle.mu.Lock()
+
 	// Update pending position
 	throttle.pendingX = intX
 	throttle.pendingY = intY
@@ -529,6 +537,7 @@ func macosOnDragOver(windowID C.uint, x C.int, y C.int) {
 
 	// If timer is already running, just update the pending position
 	if throttle.timer != nil {
+		throttle.mu.Unlock()
 		return
 	}
 
@@ -551,26 +560,34 @@ func macosOnDragOver(windowID C.uint, x C.int, y C.int) {
 		throttle.lastY = intY
 		throttle.hasPending = false
 
-		// Send this update immediately
+		// Send this update immediately (unlock before JS call to avoid deadlock)
+		throttle.mu.Unlock()
 		sendDragUpdate(winID, intX, intY)
+		throttle.mu.Lock()
 	}
 
 	// Start 50ms timer for next update (whether we sent now or not)
 	throttle.timer = time.AfterFunc(50*time.Millisecond, func() {
 		// Execute on main thread to ensure UI updates
 		InvokeSync(func() {
+			throttle.mu.Lock()
 			// Clear timer reference
 			throttle.timer = nil
 
 			// Send pending update if any
 			if throttle.hasPending {
-				sendDragUpdate(winID, throttle.pendingX, throttle.pendingY)
-				throttle.lastX = throttle.pendingX
-				throttle.lastY = throttle.pendingY
+				pendingX, pendingY := throttle.pendingX, throttle.pendingY
+				throttle.lastX = pendingX
+				throttle.lastY = pendingY
 				throttle.hasPending = false
+				throttle.mu.Unlock()
+				sendDragUpdate(winID, pendingX, pendingY)
+			} else {
+				throttle.mu.Unlock()
 			}
 		})
 	})
+	throttle.mu.Unlock()
 }
 
 // sendDragUpdate sends the actual drag update to JavaScript
@@ -617,6 +634,9 @@ func sendDragUpdate(winID uint, x, y int) {
 		return
 	}
 
+	// Protect shared buffer access
+	dragOverJSMutex.Lock()
+
 	// Build JS string with zero allocations
 	// Format: "window._wails.handleDragOver(X,Y)"
 	// Max length with int32 coords: 30 + 11 + 1 + 11 + 1 + 1 = 55 bytes
@@ -635,11 +655,13 @@ func sendDragUpdate(winID uint, x, y int) {
 		dragOverJSBuffer[n] = 0 // null terminate for C
 	} else {
 		// Buffer overflow - this should not happen with 128 byte buffer
+		dragOverJSMutex.Unlock()
 		return
 	}
 
 	// Call JavaScript with zero allocations
 	darwinImpl.execJSDragOver(dragOverJSBuffer[:n+1]) // Include null terminator
+	dragOverJSMutex.Unlock()
 }
 
 //export processMenuItemClick
