@@ -718,7 +718,7 @@ func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
 		a.warning("WebviewWindow #%d not found", event.windowId)
 		return
 	}
-	window.HandleDragAndDropMessage(event.filenames, event.DropTarget)
+	window.handleDragAndDropMessage(event.filenames, event.DropTarget)
 }
 
 func (a *App) handleWindowMessage(event *windowMessage) {
