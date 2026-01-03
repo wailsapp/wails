@@ -853,6 +853,7 @@ static void setContentProtection(void *nsWindow, bool enabled) {
 */
 import "C"
 import (
+	"fmt"
 	"sync"
 	"sync/atomic"
 	"unsafe"
