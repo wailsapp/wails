@@ -1959,17 +1959,21 @@ func (w *windowsWebviewWindow) setupChromium() {
 		}
 	}
 
-	if w.parent.options.EnableFileDrop {
-		// Disable WebView2's default file handling so we can handle it ourselves via JavaScript
-		if chromium.HasCapability(edge.AllowExternalDrop) {
-			err := chromium.AllowExternalDrag(false)
-			if err != nil {
-				globalApplication.handleFatalError(err)
-			}
-		}
-		// File drops are handled via JavaScript using chrome.webview.postMessageWithAdditionalObjects
-		// which provides coordinates in CSS pixels (no DPI conversion needed)
-	}
+	// File drop handling on Windows:
+	// WebView2's AllowExternalDrop controls ALL drag-and-drop (both external file drops
+	// AND internal HTML5 drag-and-drop). We cannot disable it without breaking HTML5 DnD.
+	//
+	// When EnableFileDrop is true:
+	// - JS dragenter/dragover/drop events fire for external file drags
+	// - JS calls preventDefault() to stop the browser from navigating to the file
+	// - JS uses chrome.webview.postMessageWithAdditionalObjects to send file paths to Go
+	// - Go receives paths via processMessageWithAdditionalObjects
+	//
+	// When EnableFileDrop is false:
+	// - We cannot use AllowExternalDrag(false) as it breaks HTML5 internal drag-and-drop
+	// - The JS runtime checks the canResolveFilePaths() function which only returns true
+	//   when postMessageWithAdditionalObjects is available AND we want to handle file drops
+	// - TODO: Pass EnableFileDrop setting to JS runtime to conditionally handle file drops
 
 	err = chromium.PutIsGeneralAutofillEnabled(opts.GeneralAutofillEnabled)
 	if err != nil {
@@ -2096,6 +2100,10 @@ func (w *windowsWebviewWindow) navigationCompleted(
 	// Install the runtime core
 	w.execJS(runtime.Core(globalApplication.impl.GetFlags(globalApplication.options)))
 
+	// Set the EnableFileDrop flag for this window (Windows-specific)
+	// The JS runtime checks this before processing file drops
+	w.execJS(fmt.Sprintf("window._wails.flags.enableFileDrop = %v;", w.parent.options.EnableFileDrop))
+
 	// EmitEvent DomReady ApplicationEvent
 	windowEvents <- &windowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}
 
@@ -2197,7 +2205,7 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(
 	sender *edge.ICoreWebView2,
 	args *edge.ICoreWebView2WebMessageReceivedEventArgs,
 ) {
-	if strings.HasPrefix(message, "FilesDropped") {
+	if strings.HasPrefix(message, "file:drop:") {
 		objs, err := args.GetAdditionalObjects()
 		if err != nil {
 			globalApplication.handleError(err)
@@ -2239,14 +2247,14 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(
 			filenames = append(filenames, filepath)
 		}
 
-		// Extract X/Y coordinates from message - format should be "FilesDropped:x:y"
+		// Extract X/Y coordinates from message - format is "file:drop:x:y"
 		var x, y int
 		parts := strings.Split(message, ":")
-		if len(parts) >= 3 {
-			if parsedX, err := strconv.Atoi(parts[1]); err == nil {
+		if len(parts) >= 4 {
+			if parsedX, err := strconv.Atoi(parts[2]); err == nil {
 				x = parsedX
 			}
-			if parsedY, err := strconv.Atoi(parts[2]); err == nil {
+			if parsedY, err := strconv.Atoi(parts[3]); err == nil {
 				y = parsedY
 			}
 		}

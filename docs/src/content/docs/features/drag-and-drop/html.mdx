@@ -174,6 +174,37 @@ document.querySelectorAll('.drop-zone').forEach(zone => {
 </style>
 ```
 
+## Combining with File Drop
+
+If your app uses both HTML drag-and-drop and [File Drop](./files), your HTML drop zones will also receive events when users drag files from the operating system. To prevent confusion, filter out file drags in your handlers:
+
+```javascript
+zone.addEventListener('dragenter', (e) => {
+    // Ignore external file drags
+    if (e.dataTransfer?.types.includes('Files')) return;
+    
+    zone.classList.add('drag-over');
+});
+
+zone.addEventListener('dragover', (e) => {
+    // Ignore external file drags
+    if (e.dataTransfer?.types.includes('Files')) return;
+    
+    e.preventDefault();
+});
+
+zone.addEventListener('drop', (e) => {
+    // Ignore external file drags
+    if (e.dataTransfer?.types.includes('Files')) return;
+    
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    // Handle the internal drop
+});
+```
+
+The `dataTransfer.types` array contains `'Files'` when the user is dragging files from the OS, but contains types like `'text/plain'` for internal HTML drags. This lets you distinguish between the two.
+
 ## Passing Data with dataTransfer
 
 The example above tracks the dragged element in a JavaScript variable. This works well when everything is on the same page. But if you need to drag between iframes or pass data that isn't tied to a DOM element, use the `dataTransfer` API:

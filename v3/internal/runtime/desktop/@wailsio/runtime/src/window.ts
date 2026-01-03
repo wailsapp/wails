@@ -81,9 +81,16 @@ function getDropTargetElement(element: Element | null): Element | null {
 
 /**
  * Check if we can use WebView2's postMessageWithAdditionalObjects (Windows)
+ * Also checks that EnableFileDrop is true for this window.
  */
 function canResolveFilePaths(): boolean {
-    return (window as any).chrome?.webview?.postMessageWithAdditionalObjects != null;
+    // Must have WebView2's postMessageWithAdditionalObjects API (Windows only)
+    if ((window as any).chrome?.webview?.postMessageWithAdditionalObjects == null) {
+        return false;
+    }
+    // Must have EnableFileDrop set to true for this window
+    // This flag is set by the Go backend during runtime initialization
+    return (window as any)._wails?.flags?.enableFileDrop === true;
 }
 
 /**
@@ -680,7 +687,12 @@ function setupDropTargetListeners() {
         if (!event.dataTransfer?.types.includes('Files')) {
             return; // Only handle file drags, let other drags pass through
         }
-        event.preventDefault();
+        event.preventDefault(); // Always prevent default to stop browser navigation
+        // On Windows, check if file drops are enabled for this window
+        if ((window as any)._wails?.flags?.enableFileDrop === false) {
+            event.dataTransfer.dropEffect = 'none'; // Show "no drop" cursor
+            return; // File drops disabled, don't show hover effects
+        }
         dragEnterCounter++;
         
         const targetElement = document.elementFromPoint(event.clientX, event.clientY);
@@ -705,7 +717,12 @@ function setupDropTargetListeners() {
         if (!event.dataTransfer?.types.includes('Files')) {
             return; // Only handle file drags
         }
-        event.preventDefault();
+        event.preventDefault(); // Always prevent default to stop browser navigation
+        // On Windows, check if file drops are enabled for this window
+        if ((window as any)._wails?.flags?.enableFileDrop === false) {
+            event.dataTransfer.dropEffect = 'none'; // Show "no drop" cursor
+            return; // File drops disabled, don't show hover effects
+        }
         
         // Update drop target as cursor moves
         const targetElement = document.elementFromPoint(event.clientX, event.clientY);
@@ -731,7 +748,11 @@ function setupDropTargetListeners() {
         if (!event.dataTransfer?.types.includes('Files')) {
             return;
         }
-        event.preventDefault();
+        event.preventDefault(); // Always prevent default to stop browser navigation
+        // On Windows, check if file drops are enabled for this window
+        if ((window as any)._wails?.flags?.enableFileDrop === false) {
+            return;
+        }
         
         // On Linux/WebKitGTK and macOS, dragleave fires immediately with relatedTarget=null when native
         // drag handling is involved. Ignore these spurious events - we'll clean up on drop instead.
@@ -755,7 +776,11 @@ function setupDropTargetListeners() {
         if (!event.dataTransfer?.types.includes('Files')) {
             return; // Only handle file drops
         }
-        event.preventDefault();
+        event.preventDefault(); // Always prevent default to stop browser navigation
+        // On Windows, check if file drops are enabled for this window
+        if ((window as any)._wails?.flags?.enableFileDrop === false) {
+            return;
+        }
         dragEnterCounter = 0;
         
         if (currentDropTarget) {

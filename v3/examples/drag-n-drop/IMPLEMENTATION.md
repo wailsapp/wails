@@ -23,22 +23,15 @@ File drag-and-drop in Wails v3 uses a **JavaScript-first approach** on all platf
 Windows uses WebView2's built-in file drop support via `chrome.webview.postMessageWithAdditionalObjects`.
 
 **Setup:**
-```go
-if w.parent.options.EnableFileDrop {
-    // Disable WebView2's default file handling
-    if chromium.HasCapability(edge.AllowExternalDrop) {
-        chromium.AllowExternalDrag(false)
-    }
-    // File drops handled via JavaScript
-}
-```
+No special setup is needed. WebView2's `AllowExternalDrop` is enabled by default, which is what we want. The JavaScript runtime handles file drops natively.
 
 **How it works:**
-1. WebView2 intercepts file drops natively
-2. JavaScript receives drop event with `File` objects
-3. JavaScript calls `chrome.webview.postMessageWithAdditionalObjects` with file list
-4. WebView2 resolves `File` objects to actual file paths
-5. Go receives paths via message handler
+1. User drags files from the OS into the WebView2 window
+2. JavaScript `dragenter`/`dragover`/`drop` events fire (WebView2 allows external drops by default)
+3. JavaScript calls `event.preventDefault()` to stop the browser from navigating to the file
+4. JavaScript collects `File` objects and calls `chrome.webview.postMessageWithAdditionalObjects`
+5. WebView2 resolves `File` objects to actual file paths
+6. Go receives paths via `processMessageWithAdditionalObjects` handler
 
 **Key files:**
 - `v3/pkg/application/webview_window_windows.go` - Setup code

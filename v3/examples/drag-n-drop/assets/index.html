@@ -386,16 +386,22 @@
         
         dropZones.forEach(zone => {
             zone.addEventListener('dragenter', (e) => {
+                // Ignore external file drags - only respond to internal HTML drags
+                if (e.dataTransfer?.types.includes('Files')) return;
                 e.preventDefault();
                 zone.classList.add('drag-over');
             });
             
             zone.addEventListener('dragover', (e) => {
+                // Ignore external file drags - only respond to internal HTML drags
+                if (e.dataTransfer?.types.includes('Files')) return;
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
             });
             
             zone.addEventListener('dragleave', (e) => {
+                // Ignore external file drags - only respond to internal HTML drags
+                if (e.dataTransfer?.types.includes('Files')) return;
                 // Only remove if leaving the zone entirely
                 if (!zone.contains(e.relatedTarget)) {
                     zone.classList.remove('drag-over');
@@ -403,6 +409,8 @@
             });
             
             zone.addEventListener('drop', (e) => {
+                // Ignore external file drags - only respond to internal HTML drags
+                if (e.dataTransfer?.types.includes('Files')) return;
                 e.preventDefault();
                 zone.classList.remove('drag-over');
                 
