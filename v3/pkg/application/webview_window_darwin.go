@@ -1125,7 +1125,7 @@ func newWindowImpl(parent *WebviewWindow) *macosWebviewWindow {
 		parent: parent,
 	}
 	result.parent.RegisterHook(events.Mac.WebViewDidFinishNavigation, func(event *WindowEvent) {
-		// Inject runtime core and EnableFileDrop flag together
+		// Inject runtime core
 		js := runtime.Core(globalApplication.impl.GetFlags(globalApplication.options))
 		js += fmt.Sprintf("window._wails.flags.enableFileDrop=%v;", result.parent.options.EnableFileDrop)
 		result.execJS(js)

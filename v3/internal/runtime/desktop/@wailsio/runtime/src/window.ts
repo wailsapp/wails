@@ -121,6 +121,10 @@ function cleanupNativeDrag(): void {
  * Called from Go when a file drag enters the window on Linux/macOS.
  */
 function handleDragEnter(): void {
+    // Check if file drops are enabled for this window
+    if ((window as any)._wails?.flags?.enableFileDrop === false) {
+        return; // File drops disabled, don't activate drag state
+    }
     nativeDragActive = true;
 }
 
@@ -132,12 +136,17 @@ function handleDragLeave(): void {
 }
 
 /**
- * Called from Go during drag-motion on Linux/macOS to update hover state.
- * @param x - The x-coordinate (CSS pixels)
- * @param y - The y-coordinate (CSS pixels)
+ * Called from Go during file drag to update hover state on Linux/macOS.
+ * @param x - X coordinate in CSS pixels
+ * @param y - Y coordinate in CSS pixels
  */
 function handleDragOver(x: number, y: number): void {
     if (!nativeDragActive) return;
+    
+    // Check if file drops are enabled for this window
+    if ((window as any)._wails?.flags?.enableFileDrop === false) {
+        return; // File drops disabled, don't show hover effects
+    }
     
     const targetElement = document.elementFromPoint(x, y);
     const dropTarget = getDropTargetElement(targetElement);
@@ -153,6 +162,8 @@ function handleDragOver(x: number, y: number): void {
         currentDropTarget = null;
     }
 }
+
+
 
 // Export the handlers for use by Go via index.ts
 export { handleDragEnter, handleDragLeave, handleDragOver };
@@ -624,6 +635,11 @@ class Window {
      * @param y - The y-coordinate of the drop event (CSS pixels).
      */
     HandlePlatformFileDrop(filenames: string[], x: number, y: number): void {
+        // Check if file drops are enabled for this window
+        if ((window as any)._wails?.flags?.enableFileDrop === false) {
+            return; // File drops disabled, ignore the drop
+        }
+        
         const element = document.elementFromPoint(x, y);
         const dropTarget = getDropTargetElement(element);
 
