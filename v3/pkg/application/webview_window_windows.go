@@ -1984,9 +1984,8 @@ func (w *windowsWebviewWindow) setupChromium() {
 	//
 	// When EnableFileDrop is false:
 	// - We cannot use AllowExternalDrag(false) as it breaks HTML5 internal drag-and-drop
-	// - The JS runtime checks the canResolveFilePaths() function which only returns true
-	//   when postMessageWithAdditionalObjects is available AND we want to handle file drops
-	// - TODO: Pass EnableFileDrop setting to JS runtime to conditionally handle file drops
+	// - JS runtime checks window._wails.flags.enableFileDrop and shows "no drop" cursor
+	// - The enableFileDrop flag is injected in navigationCompleted callback
 
 	err = chromium.PutIsGeneralAutofillEnabled(opts.GeneralAutofillEnabled)
 	if err != nil {
