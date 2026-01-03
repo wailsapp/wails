@@ -95,15 +95,15 @@ function resolveFilePaths(x: number, y: number, files: File[]): void {
     }
 }
 
-// Linux-specific drag state (GTK intercepts DOM drag events)
-let linuxDragActive = false;
+// Native drag state (Linux/macOS intercept DOM drag events)
+let nativeDragActive = false;
 
 /**
- * Cleans up Linux drag state and hover effects.
+ * Cleans up native drag state and hover effects.
  * Called on drop or when drag leaves the window.
  */
-function cleanupLinuxDrag(): void {
-    linuxDragActive = false;
+function cleanupNativeDrag(): void {
+    nativeDragActive = false;
     if (currentDropTarget) {
         currentDropTarget.classList.remove(DROP_TARGET_ACTIVE_CLASS);
         currentDropTarget = null;
@@ -111,26 +111,26 @@ function cleanupLinuxDrag(): void {
 }
 
 /**
- * Called from Go when a file drag enters the window on Linux.
+ * Called from Go when a file drag enters the window on Linux/macOS.
  */
 function handleDragEnter(): void {
-    linuxDragActive = true;
+    nativeDragActive = true;
 }
 
 /**
- * Called from Go when a file drag leaves the window on Linux.
+ * Called from Go when a file drag leaves the window on Linux/macOS.
  */
 function handleDragLeave(): void {
-    cleanupLinuxDrag();
+    cleanupNativeDrag();
 }
 
 /**
- * Called from Go during drag-motion on Linux to update hover state.
+ * Called from Go during drag-motion on Linux/macOS to update hover state.
  * @param x - The x-coordinate (CSS pixels)
  * @param y - The y-coordinate (CSS pixels)
  */
 function handleDragOver(x: number, y: number): void {
-    if (!linuxDragActive) return;
+    if (!nativeDragActive) return;
     
     const targetElement = document.elementFromPoint(x, y);
     const dropTarget = getDropTargetElement(targetElement);
@@ -643,6 +643,9 @@ class Window {
         };
 
         this[callerSym](FilesDropped, payload);
+        
+        // Clean up native drag state after drop
+        cleanupNativeDrag();
     }
   
     /* Triggers Windows 11 Snap Assist feature (Windows only).
@@ -730,7 +733,7 @@ function setupDropTargetListeners() {
         }
         event.preventDefault();
         
-        // On Linux/WebKitGTK, dragleave fires immediately with relatedTarget=null when native GTK 
+        // On Linux/WebKitGTK and macOS, dragleave fires immediately with relatedTarget=null when native
         // drag handling is involved. Ignore these spurious events - we'll clean up on drop instead.
         if (event.relatedTarget === null) {
             return;

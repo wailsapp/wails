@@ -74,15 +74,26 @@ macOS uses native `NSWindow` drag-and-drop with Objective-C.
 
 **JavaScript notification:**
 ```objc
-// On drag enter/over, call JS to update hover effects
-NSString *js = [NSString stringWithFormat:@"window._wails.onFileDragOver(%d, %d)", x, y];
-[webView evaluateJavaScript:js completionHandler:nil];
+// On drag enter, call JS to show drag entered state
+macosOnDragEnter(self.windowId);  // Calls window._wails.handleDragEnter()
+
+// On drag over, notify position for hover effects  
+macosOnDragOver(self.windowId, x, y);  // Calls window._wails.handleDragOver(x,y)
+
+// On drag exit, clean up state
+macosOnDragExit(self.windowId);  // Calls window._wails.handleDragLeave()
 
 // On drop, send files to JS for processing
-NSString *js = [NSString stringWithFormat:@"window.wails.Window.HandlePlatformFileDrop(%@, %d, %d)", 
-    jsonFilePaths, x, y];
-[webView evaluateJavaScript:js completionHandler:nil];
+processDragItems(self.windowId, cArray, (int)count, x, y);
 ```
+
+**Performance Optimizations (macOS):**
+
+1. **Zero-allocation drag updates**: Pre-allocated buffer for JS strings
+2. **Window caching**: Cache window implementation to avoid map lookups
+3. **5-pixel threshold**: Only send updates if cursor moves >5 pixels
+4. **50ms debounce**: Limits updates to max 20/sec while maintaining responsiveness
+5. **Main thread handling**: Timer callbacks use InvokeSync for UI updates
 
 ### Linux (`linux_cgo.go`)
 
@@ -196,7 +207,7 @@ const DROP_TARGET_ACTIVE_CLASS = 'file-drop-target-active';
 **Hover effect handlers (called from native code on Linux/macOS):**
 ```typescript
 function handleDragEnter(): void {
-    linuxDragActive = true;
+    nativeDragActive = true;  // Renamed from linuxDragActive for clarity
 }
 
 function handleDragOver(x: number, y: number): void {
@@ -220,6 +231,7 @@ function handleDragLeave(): void {
         currentDropTarget.classList.remove(DROP_TARGET_ACTIVE_CLASS);
         currentDropTarget = null;
     }
+    nativeDragActive = false;
 }
 ```
 
@@ -306,6 +318,93 @@ Check browser console. Enable debug mode for verbose logging.
 3. **Wrong coordinates**: Check coordinate space conversions. CSS pixels vs physical pixels vs window-relative.
 
 4. **Drop ignored**: Element doesn't have `data-file-drop-target` attribute. The JS code ignores drops outside valid targets.
+
+## Implementing Drag-Over Updates for Windows
+
+When implementing drag-over hover effects for Windows, consider these approaches based on what we learned from macOS/Linux:
+
+### Approach 1: WebView2 Native Events (Recommended)
+If WebView2 provides drag-over events for external files:
+- Use the native WebView2 drag events if available
+- JavaScript already handles the hover effects via standard DOM events
+- No additional work needed if WebView2 passes through drag events
+
+### Approach 2: Win32 Drag-Drop with Notifications
+If you need to intercept at the Win32 level (like macOS/Linux):
+
+```cpp
+// In your IDropTarget implementation
+HRESULT DragOver(DWORD grfKeyState, POINTL pt, DWORD* pdwEffect) {
+    // Convert screen coordinates to window coordinates
+    POINT windowPt = {pt.x, pt.y};
+    ScreenToClient(hwnd, &windowPt);
+    
+    // Notify JavaScript (similar to macOS/Linux)
+    // Use a debouncer to limit update frequency
+    if (ShouldSendUpdate(windowPt)) {  // 5-pixel threshold + 50ms debounce
+        NotifyJavaScript(windowPt.x, windowPt.y);
+    }
+    
+    *pdwEffect = DROPEFFECT_COPY;
+    return S_OK;
+}
+```
+
+### Key Considerations:
+
+1. **Coordinate Systems**: 
+   - Win32 uses screen coordinates, convert to window-relative
+   - WebView2 might need DPI scaling adjustments
+   - Test with different DPI settings
+
+2. **Performance Optimizations**:
+   - **5-pixel threshold**: Reduce events by ~90%
+   - **50ms debounce timer**: Cap at 20 updates/sec
+   - **Pre-allocated buffers**: For JavaScript strings if using ExecuteScript
+   - **Caching**: Cache window/WebView2 references
+
+3. **Threading**:
+   - Win32 drag callbacks may come from different threads
+   - Use PostMessage or similar to marshal to UI thread
+   - WebView2 ExecuteScript must be called from UI thread
+
+4. **Distinguishing Drag Types**:
+   - Check IDataObject format to distinguish file drags
+   - Let WebView2 handle internal HTML5 drags if possible
+   - Similar to Linux's target type checking
+
+### Example Debouncer Implementation:
+```cpp
+class DragDebouncer {
+    POINT lastPoint;
+    DWORD lastTime;
+    UINT_PTR timerId;
+    
+    bool ShouldSendImmediate(POINT pt) {
+        // 5-pixel threshold
+        return abs(pt.x - lastPoint.x) >= 5 || 
+               abs(pt.y - lastPoint.y) >= 5;
+    }
+    
+    void OnDragOver(POINT pt) {
+        if (ShouldSendImmediate(pt)) {
+            SendUpdate(pt);
+            lastPoint = pt;
+            // Start 50ms timer for next update
+            SetTimer(hwnd, DRAG_TIMER_ID, 50, nullptr);
+        } else {
+            // Update pending position for timer
+            pendingPoint = pt;
+        }
+    }
+};
+```
+
+### Testing Recommendations:
+1. Test with high-frequency mouse polling (gaming mice)
+2. Verify UI updates without mouse movement after timer fires
+3. Test with multiple monitors and DPI settings
+4. Ensure no memory leaks in long drag sessions
 
 ## Testing
 
