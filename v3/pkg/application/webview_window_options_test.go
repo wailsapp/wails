@@ -82,21 +82,6 @@ func TestBackdropType_Constants(t *testing.T) {
 	}
 }
 
-func TestDragEffect_Constants(t *testing.T) {
-	if DragEffectNone != 1 {
-		t.Error("DragEffectNone should be 1")
-	}
-	if DragEffectCopy != 2 {
-		t.Error("DragEffectCopy should be 2")
-	}
-	if DragEffectMove != 3 {
-		t.Error("DragEffectMove should be 3")
-	}
-	if DragEffectLink != 4 {
-		t.Error("DragEffectLink should be 4")
-	}
-}
-
 func TestTheme_Constants(t *testing.T) {
 	if SystemDefault != 0 {
 		t.Error("SystemDefault should be 0")

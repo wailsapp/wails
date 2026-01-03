@@ -26,7 +26,7 @@ import * as Flags from "./flags.js";
 import * as Screens from "./screens.js";
 import * as System from "./system.js";
 import * as IOS from "./ios.js";
-import Window from "./window.js";
+import Window, { handleDragEnter, handleDragLeave, handleDragOver } from "./window.js";
 import * as WML from "./wml.js";
 
 export {
@@ -69,5 +69,10 @@ window._wails.invoke = System.invoke;
 // Note: Window is the thisWindow instance (default export from window.ts)
 // Binding ensures 'this' correctly refers to the current window instance
 window._wails.handlePlatformFileDrop = Window.HandlePlatformFileDrop.bind(Window);
+
+// Linux-specific drag handlers (GTK intercepts DOM drag events)
+window._wails.handleDragEnter = handleDragEnter;
+window._wails.handleDragLeave = handleDragLeave;
+window._wails.handleDragOver = handleDragOver;
 
 System.invoke("wails:runtime:ready");

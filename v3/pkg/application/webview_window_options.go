@@ -104,8 +104,10 @@ type WebviewWindowOptions struct {
 	// ZoomControlEnabled will enable the zoom control.
 	ZoomControlEnabled bool
 
-	// EnableDragAndDrop will enable drag and drop.
-	EnableDragAndDrop bool
+	// EnableFileDrop enables drag and drop of files onto the window.
+	// When enabled, files dragged from the OS onto elements with the
+	// `data-file-drop-target` attribute will trigger a FilesDropped event.
+	EnableFileDrop bool
 
 	// OpenInspectorOnStartup will open the inspector when the window is first shown.
 	OpenInspectorOnStartup bool
@@ -182,20 +184,6 @@ const (
 /******* Windows Options *******/
 
 type BackdropType int32
-type DragEffect int32
-
-const (
-	// DragEffectNone is used to indicate that the drop target cannot accept the data.
-	DragEffectNone DragEffect = 1
-	// DragEffectCopy is used to indicate that the data is copied to the drop target.
-	DragEffectCopy DragEffect = 2
-	// DragEffectMove is used to indicate that the data is removed from the drag source.
-	DragEffectMove DragEffect = 3
-	// DragEffectLink is used to indicate that a link to the original data is established.
-	DragEffectLink DragEffect = 4
-	// DragEffectScroll is used to indicate that the target can be scrolled while dragging to locate a drop position that is not currently visible in the target.
-
-)
 
 const (
 	Auto    BackdropType = 0
@@ -280,10 +268,6 @@ type WindowsWindow struct {
 
 	// Menu is the menu to use for the window.
 	Menu *Menu
-
-	// Drag Cursor Effects
-	OnEnterEffect DragEffect
-	OnOverEffect  DragEffect
 
 	// Permissions map for WebView2. If empty, default permissions will be granted.
 	Permissions map[CoreWebView2PermissionKind]CoreWebView2PermissionState

@@ -3,8 +3,8 @@ package application
 var blankWindowEventContext = &WindowEventContext{}
 
 const (
-	droppedFiles       = "droppedFiles"
-	dropZoneDetailsKey = "dropZoneDetails"
+	droppedFiles         = "droppedFiles"
+	dropTargetDetailsKey = "dropTargetDetails"
 )
 
 type WindowEventContext struct {
@@ -42,33 +42,31 @@ func (c WindowEventContext) setCoordinates(x, y int) {
 	c.data["y"] = y
 }
 
-func (c WindowEventContext) setDropZoneDetails(details *DropZoneDetails) {
+func (c WindowEventContext) setDropTargetDetails(details *DropTargetDetails) {
 	if c.data == nil {
 		c.data = make(map[string]any)
 	}
 	if details == nil {
-		c.data[dropZoneDetailsKey] = nil
+		c.data[dropTargetDetailsKey] = nil
 		return
 	}
-	c.data[dropZoneDetailsKey] = details
+	c.data[dropTargetDetailsKey] = details
 }
 
-// DropZoneDetails retrieves the detailed drop zone information, if available.
-func (c WindowEventContext) DropZoneDetails() *DropZoneDetails {
+// DropTargetDetails retrieves information about the drop target element.
+func (c WindowEventContext) DropTargetDetails() *DropTargetDetails {
 	if c.data == nil {
 		c.data = make(map[string]any)
 	}
-	details, ok := c.data[dropZoneDetailsKey]
+	details, ok := c.data[dropTargetDetailsKey]
 	if !ok {
 		return nil
 	}
-	// Explicitly type assert, handle if it's nil (though setDropZoneDetails should handle it)
 	if details == nil {
 		return nil
 	}
-	result, ok := details.(*DropZoneDetails)
+	result, ok := details.(*DropTargetDetails)
 	if !ok {
-		// This case indicates a programming error if data was set incorrectly
 		return nil
 	}
 	return result
