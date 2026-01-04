@@ -26,6 +26,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Fix SaveFileDialog.SetFilename() having no effect on Linux (#4841) by @samstanier
 - Fix drop coordinates showing as undefined in drag-n-drop example
 - Fix macOS app bundle creation failing when APP_NAME contains spaces (brace expansion issue)
+- Fix index out of bounds panic on Windows when calling service methods (revert goccy/go-json)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
