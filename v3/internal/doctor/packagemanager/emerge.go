@@ -26,12 +26,18 @@ func NewEmerge(osid string) *Emerge {
 // They will potentially differ on different distributions or versions
 func (e *Emerge) Packages() Packagemap {
 	return Packagemap{
-		"gtk3": []*Package{
-			{Name: "x11-libs/gtk+", SystemPackage: true, Library: true},
+		"gtk4": []*Package{
+			{Name: "gui-libs/gtk", SystemPackage: true, Library: true},
 		},
-		"webkit2gtk": []*Package{
+		"webkitgtk-6.0": []*Package{
 			{Name: "net-libs/webkit-gtk:6", SystemPackage: true, Library: true},
-			{Name: "net-libs/webkit-gtk:4", SystemPackage: true, Library: true},
+		},
+		"gtk3 (legacy)": []*Package{
+			{Name: "x11-libs/gtk+:3", SystemPackage: true, Library: true, Optional: true},
+		},
+		"webkit2gtk (legacy)": []*Package{
+			{Name: "net-libs/webkit-gtk:4.1", SystemPackage: true, Library: true, Optional: true},
+			{Name: "net-libs/webkit-gtk:4", SystemPackage: true, Library: true, Optional: true},
 		},
 		"gcc": []*Package{
 			{Name: "sys-devel/gcc", SystemPackage: true},

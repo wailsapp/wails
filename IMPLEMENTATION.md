@@ -84,14 +84,30 @@ Files created:
 - `v3/internal/assetserver/webview/request_linux_gtk4.go`
 - `v3/internal/assetserver/webview/responsewriter_linux_gtk4.go`
 
-### Phase 2: Doctor & Capabilities 🔄 IN PROGRESS
+### Phase 2: Doctor & Capabilities ✅ COMPLETE
 
 **Goal**: Update `wails doctor` to check for GTK4 as primary, GTK3 as secondary.
 
-TODO:
-- [ ] Update `v3/internal/doctor/doctor_linux.go`
-- [ ] Update `v3/internal/capabilities/capabilities_linux.go`
-- [ ] Add `wails3 capabilities` command output for GTK version detection
+#### 2.1 Package Manager Updates
+All 7 package managers updated to check GTK4/WebKitGTK 6.0 as primary, GTK3 as optional/legacy:
+- `v3/internal/doctor/packagemanager/apt.go` ✅
+- `v3/internal/doctor/packagemanager/dnf.go` ✅
+- `v3/internal/doctor/packagemanager/pacman.go` ✅
+- `v3/internal/doctor/packagemanager/zypper.go` ✅
+- `v3/internal/doctor/packagemanager/emerge.go` ✅
+- `v3/internal/doctor/packagemanager/eopkg.go` ✅
+- `v3/internal/doctor/packagemanager/nixpkgs.go` ✅
+
+Package key naming convention: `gtk4`, `webkitgtk-6.0` (primary), `gtk3 (legacy)`, `webkit2gtk (legacy)` (optional)
+
+#### 2.2 Capabilities Detection
+Files created/updated:
+- `v3/internal/capabilities/capabilities.go` - Added `GTKVersion` (int) and `WebKitVersion` (string) fields
+- `v3/internal/capabilities/capabilities_linux.go` - GTK4 default: `GTKVersion: 4, WebKitVersion: "6.0"`
+- `v3/internal/capabilities/capabilities_linux_gtk3.go` - GTK3 legacy: `GTKVersion: 3, WebKitVersion: "4.1"`
+
+TODO (deferred to Phase 3):
+- [ ] Update `v3/internal/doctor/doctor_linux.go` - Improve output to show GTK4 vs GTK3 status
 
 ### Phase 3: Window Management 📋 PENDING
 
@@ -160,6 +176,9 @@ v3/internal/assetserver/webview/
   webkit2.go                 # WebKit2GTK helpers (gtk3 tag)
   request_linux.go           # Request handling (gtk3 tag)
   responsewriter_linux.go    # Response writing (gtk3 tag)
+
+v3/internal/capabilities/
+  capabilities_linux_gtk3.go # GTK3 capabilities (gtk3 tag)
 ```
 
 ### GTK4 (Default) Files
@@ -172,6 +191,9 @@ v3/internal/assetserver/webview/
   webkit6.go                 # WebKitGTK 6.0 helpers (!gtk3 tag)
   request_linux_gtk4.go      # Request handling (!gtk3 tag)
   responsewriter_linux_gtk4.go # Response writing (!gtk3 tag)
+
+v3/internal/capabilities/
+  capabilities_linux.go      # GTK4 capabilities (!gtk3 tag)
 ```
 
 ### Shared Files (no GTK-specific code)
@@ -187,7 +209,13 @@ v3/internal/assetserver/webview/
 
 ## Changelog
 
-### 2026-01-04
+### 2026-01-04 (Session 2)
+- Completed Phase 2: Doctor & Capabilities
+- Updated all 7 package managers for GTK4/WebKitGTK 6.0 as primary
+- Added GTKVersion and WebKitVersion fields to Capabilities struct
+- Created capabilities_linux_gtk3.go for legacy build path
+
+### 2026-01-04 (Session 1)
 - Initial implementation of GTK4 build infrastructure
 - Added `gtk3` constraint to 5 existing files
 - Created 5 new GTK4 stub files

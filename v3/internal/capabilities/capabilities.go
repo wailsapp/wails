@@ -4,6 +4,8 @@ import json "github.com/goccy/go-json"
 
 type Capabilities struct {
 	HasNativeDrag bool
+	GTKVersion    int
+	WebKitVersion string
 }
 
 func (c Capabilities) AsBytes() []byte {
