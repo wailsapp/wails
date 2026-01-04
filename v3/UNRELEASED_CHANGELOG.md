@@ -20,16 +20,10 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
-- **BREAKING:** Rename `EnableDragAndDrop` to `EnableFileDrop` in window options
-- **BREAKING:** Rename `DropZoneDetails` to `DropTargetDetails` in event context
-- **BREAKING:** Rename `DropZoneDetails()` method to `DropTargetDetails()` on `WindowEventContext`
-- **BREAKING:** Remove `WindowDropZoneFilesDropped` event, use `WindowFilesDropped` instead
-- **BREAKING:** Change HTML attribute from `data-wails-dropzone` to `data-file-drop-target`
-- **BREAKING:** Change CSS hover class from `wails-dropzone-hover` to `file-drop-target-active`
-- **BREAKING:** Remove `DragEffect`, `OnEnterEffect`, `OnOverEffect` options from Windows (were part of removed IDropTarget)
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix SaveFileDialog.SetFilename() having no effect on Linux (#4841) by @samstanier
 - Fix file drag-and-drop on Windows not working at non-100% display scaling
 - Fix HTML5 internal drag-and-drop being broken when file drop was enabled on Windows
 - Fix file drop coordinates being in wrong pixel space on Windows (physical vs CSS pixels)
@@ -42,7 +36,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Removed
 <!-- Features removed in this release -->
-- Remove native `IDropTarget` implementation on Windows in favor of JavaScript-based approach (matches v2 behavior)
 
 ## Security
 <!-- Security-related changes -->
