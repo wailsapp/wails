@@ -35,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Changed
 - Switch to goccy/go-json for all runtime JSON processing (method bindings, events, webview requests, notifications, kvstore), improving performance by 21-63% and reducing memory allocations by 40-60%
 - Optimize BoundMethod struct layout and cache isVariadic flag to reduce per-call overhead
-- Use stack-allocated argument buffer for methods with <=8 arguments to avoid heap allocations
+- Use stack-allocated argument buffer for methods with `<=8` arguments to avoid heap allocations
 - Optimize result collection in method calls to avoid slice allocation for single return values
 - Use sync.Map for MIME type cache to improve concurrent performance
 - Use buffer pool for HTTP transport request body reading
