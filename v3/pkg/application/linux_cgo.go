@@ -221,6 +221,16 @@ static void install_signal_handlers() {
 	#endif
 }
 
+static gboolean install_signal_handlers_idle(gpointer data) {
+	(void)data;
+	install_signal_handlers();
+	return G_SOURCE_REMOVE;
+}
+
+static void fix_signal_handlers_after_gtk_init() {
+	g_idle_add(install_signal_handlers_idle, NULL);
+}
+
 static int GetNumScreens(){
     return 0;
 }
@@ -553,7 +563,7 @@ func appName() string {
 }
 
 func appNew(name string) pointer {
-	C.install_signal_handlers()
+	C.fix_signal_handlers_after_gtk_init()
 
 	// Name is already sanitized by sanitizeAppName() in application_linux.go
 	appId := fmt.Sprintf("org.wails.%s", name)
