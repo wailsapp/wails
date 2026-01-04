@@ -158,8 +158,8 @@ func (m *MessageProcessor) Error(message string, args ...any) {
 	m.logger.Error(message, args...)
 }
 
-func (m *MessageProcessor) Info(message string, args ...any) {
-	m.logger.Info(message, args...)
+func (m *MessageProcessor) Debug(message string, args ...any) {
+	m.logger.Debug(message, args...)
 }
 
 func (m *MessageProcessor) logRuntimeCall(req *RuntimeRequest) {
@@ -195,5 +195,5 @@ func (m *MessageProcessor) logRuntimeCall(req *RuntimeRequest) {
 		methodName = androidMethodNames[req.Method]
 	}
 
-	m.Info("Runtime call:", "method", objectName+"."+methodName, "args", req.Args.String())
+	m.Debug("Runtime call:", "method", objectName+"."+methodName, "args", req.Args.String())
 }

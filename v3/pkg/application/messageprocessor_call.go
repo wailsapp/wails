@@ -31,7 +31,7 @@ func (m *MessageProcessor) processCallCancelMethod(req *RuntimeRequest) (any, er
 
 	if cancel != nil {
 		cancel()
-		m.Info("Binding call cancelled:", "id", *callID)
+		m.Debug("Binding call cancelled:", "id", *callID)
 	}
 	return unit, nil
 }
@@ -55,7 +55,7 @@ func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRe
 		if options.MethodName == "" {
 			methodRef = options.MethodID
 		}
-		m.Info("Binding call started:", "id", *callID, "method", methodRef)
+		m.Debug("Binding call started:", "id", *callID, "method", methodRef)
 
 		ctx, cancel := context.WithCancel(context.WithoutCancel(ctx))
 
@@ -108,7 +108,7 @@ func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRe
 		defer func() {
 			var jsonResult []byte
 			jsonResult, _ = json.Marshal(result)
-			m.Info("Binding call complete:", "id", *callID, "method", boundMethod, "args", string(jsonArgs), "result", string(jsonResult))
+			m.Debug("Binding call complete:", "id", *callID, "method", boundMethod, "args", string(jsonArgs), "result", string(jsonResult))
 		}()
 
 		// Set the context values for the window
