@@ -20,6 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Replace various debug logs from Info to Debug (by @mbaklor)
 
 ## Fixed
 <!-- Bug fixes -->
