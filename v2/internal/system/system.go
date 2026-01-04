@@ -1,6 +1,9 @@
 package system
 
 import (
+	"bytes"
+	"fmt"
+	"log"
 	"os/exec"
 	"strings"
 
@@ -121,6 +124,32 @@ func checkLibrary(name string) func() *packagemanager.Dependency {
 	return func() *packagemanager.Dependency {
 		output, _, _ := shell.RunCommand(".", "pkg-config", "--cflags", name)
 		installed := len(strings.TrimSpace(output)) > 0
+
+		// As a fallback, attempt to look for presence of the library using find
+		if !installed {
+			pattern := fmt.Sprintf("%s*.so*", name)
+
+			// Use the shell to keep the globbing (/usr/lib*, /lib*)
+			cmdStr := fmt.Sprintf(
+				`find /usr/lib* /lib* -type f -name %q`,
+				pattern,
+			)
+
+			cmd := exec.Command("sh", "-c", cmdStr)
+
+			var out bytes.Buffer
+			cmd.Stdout = &out
+			cmd.Stderr = nil
+
+			if err := cmd.Run(); err != nil {
+				log.Printf("error running sh -c: %v", err)
+			}
+
+			raw := strings.TrimSpace(out.String())
+			if raw != "" {
+				installed = true
+			}
+		}
 
 		return &packagemanager.Dependency{
 			Name:           "lib" + name + " ",
