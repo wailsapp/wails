@@ -181,7 +181,6 @@ tasks:
         gin-routing
         gin-service
         hide-window
-        html-dnd-api
         ignore-mouse
         keybindings
         liquid-glass
@@ -306,7 +305,6 @@ tasks:
         gin-routing
         gin-service
         hide-window
-        html-dnd-api
         ignore-mouse
         keybindings
         liquid-glass
