@@ -58,6 +58,8 @@ what scripts are run and what packages are installed.
   runtime
 - [Wails-Tool-Template](https://github.com/xisuo67/Wails-Tool-Template) - Wails
   template using Vue+TypeScript+Vite+Element-plus(仿网易云)
+- [wails3-vue3-naive-template](https://github.com/dinstone/wails3-vue3-naive-template) - Wails3
+  Template, using JavaScript + Vite7 + Vue3 + NaiveUI + Pinia + UnoCSS
 
 ## Angular
 
