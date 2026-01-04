@@ -181,6 +181,107 @@ static int GetNumScreens(){
     return 0;
 }
 
+// GTK4 Menu System - uses GMenu/GAction instead of GtkMenu/GtkMenuItem
+// Each menu item has an associated GSimpleAction in an action group
+
+typedef struct MenuItemData {
+    guint id;
+    GSimpleAction *action;
+} MenuItemData;
+
+static GMenu *app_menu_model = NULL;
+static GSimpleActionGroup *app_action_group = NULL;
+
+extern void menuActionActivated(guint id);
+
+static void on_action_activated(GSimpleAction *action, GVariant *parameter, gpointer user_data) {
+    MenuItemData *data = (MenuItemData *)user_data;
+    if (data != NULL) {
+        menuActionActivated(data->id);
+    }
+}
+
+static void init_app_action_group() {
+    if (app_action_group == NULL) {
+        app_action_group = g_simple_action_group_new();
+    }
+}
+
+static GMenuItem* create_menu_item(const char *label, const char *action_name, guint item_id) {
+    init_app_action_group();
+
+    char full_action_name[256];
+    snprintf(full_action_name, sizeof(full_action_name), "app.%s", action_name);
+
+    GMenuItem *item = g_menu_item_new(label, full_action_name);
+
+    GSimpleAction *action = g_simple_action_new(action_name, NULL);
+    MenuItemData *data = g_new0(MenuItemData, 1);
+    data->id = item_id;
+    data->action = action;
+    g_signal_connect(action, "activate", G_CALLBACK(on_action_activated), data);
+    g_action_map_add_action(G_ACTION_MAP(app_action_group), G_ACTION(action));
+
+    return item;
+}
+
+static GMenuItem* create_check_menu_item(const char *label, const char *action_name, guint item_id, gboolean initial_state) {
+    init_app_action_group();
+
+    char full_action_name[256];
+    snprintf(full_action_name, sizeof(full_action_name), "app.%s", action_name);
+
+    GMenuItem *item = g_menu_item_new(label, full_action_name);
+
+    GSimpleAction *action = g_simple_action_new_stateful(action_name, NULL, g_variant_new_boolean(initial_state));
+    MenuItemData *data = g_new0(MenuItemData, 1);
+    data->id = item_id;
+    data->action = action;
+    g_signal_connect(action, "activate", G_CALLBACK(on_action_activated), data);
+    g_action_map_add_action(G_ACTION_MAP(app_action_group), G_ACTION(action));
+
+    return item;
+}
+
+static GtkWidget* create_menu_bar_from_model(GMenu *menu_model) {
+    return gtk_popover_menu_bar_new_from_model(G_MENU_MODEL(menu_model));
+}
+
+static void attach_action_group_to_widget(GtkWidget *widget) {
+    init_app_action_group();
+    gtk_widget_insert_action_group(widget, "app", G_ACTION_GROUP(app_action_group));
+}
+
+static void set_action_enabled(const char *action_name, gboolean enabled) {
+    if (app_action_group == NULL) return;
+    GAction *action = g_action_map_lookup_action(G_ACTION_MAP(app_action_group), action_name);
+    if (action != NULL && G_IS_SIMPLE_ACTION(action)) {
+        g_simple_action_set_enabled(G_SIMPLE_ACTION(action), enabled);
+    }
+}
+
+static void set_action_state(const char *action_name, gboolean state) {
+    if (app_action_group == NULL) return;
+    GAction *action = g_action_map_lookup_action(G_ACTION_MAP(app_action_group), action_name);
+    if (action != NULL && G_IS_SIMPLE_ACTION(action)) {
+        g_simple_action_set_state(G_SIMPLE_ACTION(action), g_variant_new_boolean(state));
+    }
+}
+
+static gboolean get_action_state(const char *action_name) {
+    if (app_action_group == NULL) return FALSE;
+    GAction *action = g_action_map_lookup_action(G_ACTION_MAP(app_action_group), action_name);
+    if (action != NULL) {
+        GVariant *state = g_action_get_state(action);
+        if (state != NULL) {
+            gboolean result = g_variant_get_boolean(state);
+            g_variant_unref(state);
+            return result;
+        }
+    }
+    return FALSE;
+}
+
 // GTK4 uses GtkEventController for events instead of direct signal handlers
 static void setupWindowEventControllers(GtkWindow *window, GtkWidget *webview, uintptr_t winID) {
     // Close request (replaces delete-event)
@@ -534,108 +635,256 @@ func clipboardSet(text string) {
 }
 
 // Menu - GTK4 uses GMenu/GAction instead of GtkMenu
+
+var menuItemActionCounter uint32 = 0
+var menuItemActions = make(map[uint]string)
+
+func generateActionName(itemId uint) string {
+	menuItemActionCounter++
+	name := fmt.Sprintf("action_%d", menuItemActionCounter)
+	menuItemActions[itemId] = name
+	return name
+}
+
+//export menuActionActivated
+func menuActionActivated(id C.guint) {
+	item, ok := gtkSignalToMenuItem[uint(id)]
+	if !ok {
+		return
+	}
+	switch item.itemType {
+	case text:
+		menuItemClicked <- item.id
+	case checkbox:
+		impl := item.impl.(*linuxMenuItem)
+		currentState := impl.isChecked()
+		impl.setChecked(!currentState)
+		menuItemClicked <- item.id
+	case radio:
+		menuItem := item.impl.(*linuxMenuItem)
+		if !menuItem.isChecked() {
+			menuItem.setChecked(true)
+			menuItemClicked <- item.id
+		}
+	}
+}
+
 func menuAddSeparator(menu *Menu) {
-	// GTK4: GMenu separators are sections, not items
-	// TODO: Implement GTK4 menu separators
+	if menu.impl == nil {
+		return
+	}
+	impl := menu.impl.(*linuxMenu)
+	if impl.native == nil {
+		return
+	}
+	gmenu := (*C.GMenu)(impl.native)
+	section := C.g_menu_new()
+	C.g_menu_append_section(gmenu, nil, (*C.GMenuModel)(unsafe.Pointer(section)))
 }
 
 func menuAppend(parent *Menu, menu *MenuItem) {
-	// GTK4: Use g_menu_append_item
-	// TODO: Implement GTK4 menu append
+	if parent.impl == nil || menu.impl == nil {
+		return
+	}
+	parentImpl := parent.impl.(*linuxMenu)
+	menuImpl := menu.impl.(*linuxMenuItem)
+	if parentImpl.native == nil || menuImpl.native == nil {
+		return
+	}
+	gmenu := (*C.GMenu)(parentImpl.native)
+	gitem := (*C.GMenuItem)(menuImpl.native)
+	C.g_menu_append_item(gmenu, gitem)
 }
 
 func menuBarNew() pointer {
-	// GTK4: Use GtkPopoverMenuBar
-	return nil
+	gmenu := C.g_menu_new()
+	C.app_menu_model = gmenu
+	return pointer(gmenu)
 }
 
 func menuNew() pointer {
-	// GTK4: Use GMenu
 	return pointer(C.g_menu_new())
 }
 
 func menuSetSubmenu(item *MenuItem, menu *Menu) {
-	// GTK4: Use g_menu_item_set_submenu
-	// TODO: Implement GTK4 submenu
+	if item.impl == nil || menu.impl == nil {
+		return
+	}
+	itemImpl := item.impl.(*linuxMenuItem)
+	menuImpl := menu.impl.(*linuxMenu)
+	if itemImpl.native == nil || menuImpl.native == nil {
+		return
+	}
+	gitem := (*C.GMenuItem)(itemImpl.native)
+	gmenu := (*C.GMenu)(menuImpl.native)
+	C.g_menu_item_set_submenu(gitem, (*C.GMenuModel)(unsafe.Pointer(gmenu)))
 }
 
 func menuGetRadioGroup(item *linuxMenuItem) *GSList {
-	// GTK4: Radio groups work via GAction state
 	return nil
 }
 
 //export handleClick
 func handleClick(idPtr unsafe.Pointer) {
-	// GTK4: GAction activation callback
-	// TODO: Implement GTK4 menu click handling
 }
 
 func attachMenuHandler(item *MenuItem) uint {
-	// GTK4: Use g_signal_connect on GSimpleAction
-	// TODO: Implement GTK4 menu handler
-	return 0
+	gtkSignalToMenuItem[item.id] = item
+	return item.id
 }
 
-// menuItem - GTK4 uses GMenuItem
 func menuItemChecked(widget pointer) bool {
-	// GTK4: Check GAction state
-	return false
+	if widget == nil {
+		return false
+	}
+	cKey := C.CString("item_id")
+	defer C.free(unsafe.Pointer(cKey))
+	itemId := uint(uintptr(C.g_object_get_data((*C.GObject)(widget), cKey)))
+	actionName, ok := menuItemActions[itemId]
+	if !ok {
+		return false
+	}
+	cName := C.CString(actionName)
+	defer C.free(unsafe.Pointer(cName))
+	return C.get_action_state(cName) != 0
 }
 
 func menuItemNew(label string, bitmap []byte) pointer {
-	// GTK4: Use g_menu_item_new
 	return nil
 }
 
+func menuItemNewWithId(label string, bitmap []byte, itemId uint) pointer {
+	cLabel := C.CString(label)
+	defer C.free(unsafe.Pointer(cLabel))
+	actionName := generateActionName(itemId)
+	cAction := C.CString(actionName)
+	defer C.free(unsafe.Pointer(cAction))
+
+	gitem := C.create_menu_item(cLabel, cAction, C.guint(itemId))
+
+	cKey := C.CString("item_id")
+	defer C.free(unsafe.Pointer(cKey))
+	C.g_object_set_data((*C.GObject)(unsafe.Pointer(gitem)), cKey, C.gpointer(uintptr(itemId)))
+	return pointer(gitem)
+}
+
 func menuItemDestroy(widget pointer) {
-	// GTK4: GMenuItem is reference counted
+	if widget != nil {
+		C.g_object_unref(C.gpointer(widget))
+	}
 }
 
 func menuItemAddProperties(menuItem *C.GtkWidget, label string, bitmap []byte) pointer {
-	// GTK4: Different API for menu items
 	return nil
 }
 
 func menuCheckItemNew(label string, bitmap []byte) pointer {
-	// GTK4: Use GMenuItem with stateful GAction
 	return nil
+}
+
+func menuCheckItemNewWithId(label string, bitmap []byte, itemId uint, checked bool) pointer {
+	cLabel := C.CString(label)
+	defer C.free(unsafe.Pointer(cLabel))
+	actionName := generateActionName(itemId)
+	cAction := C.CString(actionName)
+	defer C.free(unsafe.Pointer(cAction))
+
+	initialState := C.gboolean(0)
+	if checked {
+		initialState = C.gboolean(1)
+	}
+
+	gitem := C.create_check_menu_item(cLabel, cAction, C.guint(itemId), initialState)
+
+	cKey := C.CString("item_id")
+	defer C.free(unsafe.Pointer(cKey))
+	C.g_object_set_data((*C.GObject)(unsafe.Pointer(gitem)), cKey, C.gpointer(uintptr(itemId)))
+	return pointer(gitem)
 }
 
 func menuItemSetChecked(widget pointer, checked bool) {
-	// GTK4: Set GAction state
+	if widget == nil {
+		return
+	}
+	cKey := C.CString("item_id")
+	defer C.free(unsafe.Pointer(cKey))
+	itemId := uint(uintptr(C.g_object_get_data((*C.GObject)(widget), cKey)))
+	actionName, ok := menuItemActions[itemId]
+	if !ok {
+		return
+	}
+	cName := C.CString(actionName)
+	defer C.free(unsafe.Pointer(cName))
+	state := C.gboolean(0)
+	if checked {
+		state = C.gboolean(1)
+	}
+	C.set_action_state(cName, state)
 }
 
 func menuItemSetDisabled(widget pointer, disabled bool) {
-	// GTK4: Set GAction enabled state
+	if widget == nil {
+		return
+	}
+	cKey := C.CString("item_id")
+	defer C.free(unsafe.Pointer(cKey))
+	itemId := uint(uintptr(C.g_object_get_data((*C.GObject)(widget), cKey)))
+	actionName, ok := menuItemActions[itemId]
+	if !ok {
+		return
+	}
+	cName := C.CString(actionName)
+	defer C.free(unsafe.Pointer(cName))
+	enabled := C.gboolean(1)
+	if disabled {
+		enabled = C.gboolean(0)
+	}
+	C.set_action_enabled(cName, enabled)
 }
 
 func menuItemSetLabel(widget pointer, label string) {
-	// GTK4: Use g_menu_item_set_label
+	if widget == nil {
+		return
+	}
+	cLabel := C.CString(label)
+	defer C.free(unsafe.Pointer(cLabel))
+	C.g_menu_item_set_label((*C.GMenuItem)(widget), cLabel)
 }
 
 func menuItemRemoveBitmap(widget pointer) {
-	// GTK4: Different icon handling
 }
 
 func menuItemSetBitmap(widget pointer, bitmap []byte) {
-	// GTK4: Use g_menu_item_set_icon
 }
 
 func menuItemSetToolTip(widget pointer, tooltip string) {
-	// GTK4: Tooltips on menu items
 }
 
 func menuItemSignalBlock(widget pointer, handlerId uint, block bool) {
-	if block {
-		C.g_signal_handler_block(C.gpointer(widget), C.ulong(handlerId))
-	} else {
-		C.g_signal_handler_unblock(C.gpointer(widget), C.ulong(handlerId))
-	}
 }
 
 func menuRadioItemNew(group *GSList, label string) pointer {
-	// GTK4: Use GMenuItem with radio action
 	return nil
+}
+
+func menuRadioItemNewWithId(label string, itemId uint, checked bool) pointer {
+	cLabel := C.CString(label)
+	defer C.free(unsafe.Pointer(cLabel))
+	actionName := generateActionName(itemId)
+	cAction := C.CString(actionName)
+	defer C.free(unsafe.Pointer(cAction))
+
+	initialState := C.gboolean(0)
+	if checked {
+		initialState = C.gboolean(1)
+	}
+
+	gitem := C.create_check_menu_item(cLabel, cAction, C.guint(itemId), initialState)
+
+	cKey := C.CString("item_id")
+	defer C.free(unsafe.Pointer(cKey))
+	C.g_object_set_data((*C.GObject)(unsafe.Pointer(gitem)), cKey, C.gpointer(uintptr(itemId)))
+	return pointer(gitem)
 }
 
 // screen related
@@ -949,19 +1198,23 @@ func (w *linuxWebviewWindow) minimise() {
 func windowNew(application pointer, menu pointer, windowId uint, gpuPolicy WebviewGpuPolicy) (window, webview, vbox pointer) {
 	window = pointer(C.gtk_application_window_new((*C.GtkApplication)(application)))
 	C.g_object_ref_sink(C.gpointer(window))
+
+	C.attach_action_group_to_widget((*C.GtkWidget)(window))
+
 	webview = windowNewWebview(windowId, gpuPolicy)
 	vbox = pointer(C.gtk_box_new(C.GTK_ORIENTATION_VERTICAL, 0))
 	name := C.CString("webview-box")
 	defer C.free(unsafe.Pointer(name))
 	C.gtk_widget_set_name((*C.GtkWidget)(vbox), name)
 
-	// GTK4: Use gtk_window_set_child instead of gtk_container_add
 	C.gtk_window_set_child((*C.GtkWindow)(window), (*C.GtkWidget)(vbox))
+
 	if menu != nil {
-		C.gtk_box_prepend((*C.GtkBox)(vbox), (*C.GtkWidget)(menu))
+		menuBar := C.create_menu_bar_from_model((*C.GMenu)(menu))
+		C.gtk_box_prepend((*C.GtkBox)(vbox), menuBar)
 	}
+
 	C.gtk_box_append((*C.GtkBox)(vbox), (*C.GtkWidget)(webview))
-	// GTK4: Set expand properties for webview
 	C.gtk_widget_set_vexpand((*C.GtkWidget)(webview), C.gboolean(1))
 	C.gtk_widget_set_hexpand((*C.GtkWidget)(webview), C.gboolean(1))
 	return

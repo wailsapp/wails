@@ -144,14 +144,39 @@ GTK4 removed `gtk_window_set_geometry_hints()`. Now using `gtk_widget_set_size_r
 TODO (deferred):
 - [ ] Test window lifecycle on GTK4 with actual GTK4 libraries
 
-### Phase 4: Menu System 📋 PENDING
+### Phase 4: Menu System ✅ COMPLETE
 
-TODO:
-- [ ] Implement GMenu/GAction menu system
-- [ ] Implement GtkPopoverMenuBar for application menus
-- [ ] Implement context menus with GtkPopoverMenu
-- [ ] Handle menu item states (checked, disabled)
-- [ ] Implement accelerators with GtkShortcut
+GTK4 completely replaced the menu system. GTK3's GtkMenu/GtkMenuItem are gone.
+
+#### 4.1 GMenu/GAction Architecture
+- `GMenu` - Menu model (data structure, not a widget)
+- `GMenuItem` - Individual menu item in the model
+- `GSimpleAction` - Action that gets triggered when menu item is activated
+- `GSimpleActionGroup` - Container for actions, attached to widgets
+
+#### 4.2 Menu Bar Implementation
+- `GtkPopoverMenuBar` created from `GMenu` model via `create_menu_bar_from_model()`
+- Action group attached to window with `attach_action_group_to_widget()`
+- Actions use "app.action_name" namespace
+
+#### 4.3 New Files Created
+- `v3/pkg/application/menu_linux_gtk4.go` - GTK4 menu processing
+- `v3/pkg/application/menuitem_linux_gtk4.go` - GTK4 menu item handling
+
+#### 4.4 Build Tag Changes
+- `menu_linux.go` - Added `gtk3` tag
+- `menuitem_linux.go` - Added `gtk3` tag
+
+#### 4.5 Key Functions
+- `menuActionActivated()` - Callback when GAction is triggered
+- `menuItemNewWithId()` - Creates GMenuItem + associated GSimpleAction
+- `menuCheckItemNewWithId()` - Creates stateful toggle action
+- `menuRadioItemNewWithId()` - Creates radio action
+- `set_action_enabled()` / `set_action_state()` - Manage action state
+
+TODO (deferred):
+- [ ] Context menus with GtkPopoverMenu
+- [ ] Keyboard accelerators with GtkShortcut
 
 ### Phase 5: Asset Server 📋 PENDING
 
@@ -235,6 +260,14 @@ v3/internal/assetserver/webview/
 ```
 
 ## Changelog
+
+### 2026-01-04 (Session 4)
+- Completed Phase 4: Menu System
+- Implemented GMenu/GAction architecture for GTK4 menus
+- Created GtkPopoverMenuBar integration
+- Added menu_linux_gtk4.go and menuitem_linux_gtk4.go
+- Added gtk3 build tags to original menu files
+- Implemented stateful actions for checkboxes and radio items
 
 ### 2026-01-04 (Session 3)
 - Completed Phase 3: Window Management

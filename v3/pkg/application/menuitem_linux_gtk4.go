@@ -1,4 +1,4 @@
-//go:build linux && !android && gtk3
+//go:build linux && !android && !gtk3
 
 package application
 
@@ -15,43 +15,30 @@ type linuxMenuItem struct {
 
 func (l linuxMenuItem) setTooltip(tooltip string) {
 	InvokeSync(func() {
-		l.blockSignal()
-		defer l.unBlockSignal()
 		menuItemSetToolTip(l.native, tooltip)
 	})
 }
 
 func (l linuxMenuItem) destroy() {
 	InvokeSync(func() {
-		l.blockSignal()
-		defer l.unBlockSignal()
 		menuItemDestroy(l.native)
 	})
 }
 
 func (l linuxMenuItem) blockSignal() {
-	if l.handlerId != 0 {
-		menuItemSignalBlock(l.native, l.handlerId, true)
-	}
 }
+
 func (l linuxMenuItem) setBitmap(data []byte) {
 	InvokeSync(func() {
-		l.blockSignal()
-		defer l.unBlockSignal()
 		menuItemSetBitmap(l.native, data)
 	})
 }
 
 func (l linuxMenuItem) unBlockSignal() {
-	if l.handlerId != 0 {
-		menuItemSignalBlock(l.native, l.handlerId, false)
-	}
 }
 
 func (l linuxMenuItem) setLabel(s string) {
 	InvokeSync(func() {
-		l.blockSignal()
-		defer l.unBlockSignal()
 		menuItemSetLabel(l.native, s)
 	})
 }
@@ -62,40 +49,24 @@ func (l linuxMenuItem) isChecked() bool {
 
 func (l linuxMenuItem) setDisabled(disabled bool) {
 	InvokeSync(func() {
-		l.blockSignal()
-		defer l.unBlockSignal()
 		menuItemSetDisabled(l.native, disabled)
 	})
 }
 
 func (l linuxMenuItem) setChecked(checked bool) {
 	InvokeSync(func() {
-		l.blockSignal()
-		defer l.unBlockSignal()
 		menuItemSetChecked(l.native, checked)
 	})
 }
 
 func (l linuxMenuItem) setHidden(hidden bool) {
 	InvokeSync(func() {
-		l.blockSignal()
-		defer l.unBlockSignal()
 		widgetSetVisible(l.native, hidden)
 	})
 }
 
 func (l linuxMenuItem) setAccelerator(accelerator *accelerator) {
 	fmt.Println("setAccelerator", accelerator)
-	// Set the keyboard shortcut of the menu item
-	//	var modifier C.int
-	//	var key *C.char
-	if accelerator != nil {
-		//		modifier = C.int(toMacModifier(accelerator.Modifiers))
-		//		key = C.CString(accelerator.Key)
-	}
-
-	// Convert the key to a string
-	//	C.setMenuItemKeyEquivalent(m.nsMenuItem, key, modifier)
 }
 
 func newMenuItemImpl(item *MenuItem) *linuxMenuItem {
@@ -104,30 +75,33 @@ func newMenuItemImpl(item *MenuItem) *linuxMenuItem {
 	}
 	switch item.itemType {
 	case text:
-		result.native = menuItemNew(item.label, item.bitmap)
-
-	case checkbox:
-		result.native = menuCheckItemNew(item.label, item.bitmap)
-		result.setChecked(item.checked)
-		if item.accelerator != nil {
-			result.setAccelerator(item.accelerator)
-		}
+		result.native = menuItemNewWithId(item.label, item.bitmap, item.id)
 	case submenu:
-		result.native = menuItemNew(item.label, item.bitmap)
-
+		result.native = menuItemNewWithId(item.label, item.bitmap, item.id)
 	default:
-		panic(fmt.Sprintf("Unknown menu type: %v", item.itemType))
+		panic(fmt.Sprintf("Unknown menu type for newMenuItemImpl: %v", item.itemType))
 	}
 	result.setDisabled(result.menuItem.disabled)
 	return result
 }
 
-func newRadioItemImpl(item *MenuItem, group GSListPointer) *linuxMenuItem {
+func newCheckMenuItemImpl(item *MenuItem) *linuxMenuItem {
 	result := &linuxMenuItem{
 		menuItem: item,
-		native:   menuRadioItemNew(group, item.label),
+		native:   menuCheckItemNewWithId(item.label, item.bitmap, item.id, item.checked),
 	}
-	result.setChecked(item.checked)
+	if item.accelerator != nil {
+		result.setAccelerator(item.accelerator)
+	}
+	result.setDisabled(result.menuItem.disabled)
+	return result
+}
+
+func newRadioMenuItemImpl(item *MenuItem) *linuxMenuItem {
+	result := &linuxMenuItem{
+		menuItem: item,
+		native:   menuRadioItemNewWithId(item.label, item.id, item.checked),
+	}
 	result.setDisabled(result.menuItem.disabled)
 	return result
 }
@@ -136,14 +110,10 @@ func newSpeechMenu() *MenuItem {
 	speechMenu := NewMenu()
 	speechMenu.Add("Start Speaking").
 		SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+.").
-		OnClick(func(ctx *Context) {
-			//			C.startSpeaking()
-		})
+		OnClick(func(ctx *Context) {})
 	speechMenu.Add("Stop Speaking").
 		SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+,").
-		OnClick(func(ctx *Context) {
-			//			C.stopSpeaking()
-		})
+		OnClick(func(ctx *Context) {})
 	subMenu := NewSubMenuItem("Speech")
 	subMenu.submenu = speechMenu
 	return subMenu
@@ -156,82 +126,60 @@ func newFrontMenuItem() *MenuItem {
 func newHideMenuItem() *MenuItem {
 	return NewMenuItem("Hide " + globalApplication.options.Name).
 		SetAccelerator("CmdOrCtrl+h").
-		OnClick(func(ctx *Context) {
-
-			//			C.hideApplication()
-		})
+		OnClick(func(ctx *Context) {})
 }
 
 func newHideOthersMenuItem() *MenuItem {
 	return NewMenuItem("Hide Others").
 		SetAccelerator("CmdOrCtrl+OptionOrAlt+h").
-		OnClick(func(ctx *Context) {
-			//			C.hideOthers()
-		})
+		OnClick(func(ctx *Context) {})
 }
 
 func newUnhideMenuItem() *MenuItem {
 	return NewMenuItem("Show All").
-		OnClick(func(ctx *Context) {
-			//			C.showAll()
-		})
+		OnClick(func(ctx *Context) {})
 }
 
 func newUndoMenuItem() *MenuItem {
 	return NewMenuItem("Undo").
 		SetAccelerator("CmdOrCtrl+z").
-		OnClick(func(ctx *Context) {
-			//			C.undo()
-		})
+		OnClick(func(ctx *Context) {})
 }
 
-// newRedoMenuItem creates a new menu item for redoing the last action
 func newRedoMenuItem() *MenuItem {
 	return NewMenuItem("Redo").
 		SetAccelerator("CmdOrCtrl+Shift+z").
-		OnClick(func(ctx *Context) {
-			//			C.redo()
-		})
+		OnClick(func(ctx *Context) {})
 }
 
 func newCutMenuItem() *MenuItem {
 	return NewMenuItem("Cut").
 		SetAccelerator("CmdOrCtrl+x").
-		OnClick(func(ctx *Context) {
-			//			C.cut()
-		})
+		OnClick(func(ctx *Context) {})
 }
 
 func newCopyMenuItem() *MenuItem {
 	return NewMenuItem("Copy").
 		SetAccelerator("CmdOrCtrl+c").
-		OnClick(func(ctx *Context) {
-			//			C.copy()
-		})
+		OnClick(func(ctx *Context) {})
 }
 
 func newPasteMenuItem() *MenuItem {
 	return NewMenuItem("Paste").
 		SetAccelerator("CmdOrCtrl+v").
-		OnClick(func(ctx *Context) {
-			//			C.paste()
-		})
+		OnClick(func(ctx *Context) {})
 }
 
 func newPasteAndMatchStyleMenuItem() *MenuItem {
 	return NewMenuItem("Paste and Match Style").
 		SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+v").
-		OnClick(func(ctx *Context) {
-			//			C.pasteAndMatchStyle()
-		})
+		OnClick(func(ctx *Context) {})
 }
 
 func newDeleteMenuItem() *MenuItem {
 	return NewMenuItem("Delete").
 		SetAccelerator("backspace").
-		OnClick(func(ctx *Context) {
-			//			C.delete()
-		})
+		OnClick(func(ctx *Context) {})
 }
 
 func newQuitMenuItem() *MenuItem {
@@ -245,9 +193,7 @@ func newQuitMenuItem() *MenuItem {
 func newSelectAllMenuItem() *MenuItem {
 	return NewMenuItem("Select All").
 		SetAccelerator("CmdOrCtrl+a").
-		OnClick(func(ctx *Context) {
-			//			C.selectAll()
-		})
+		OnClick(func(ctx *Context) {})
 }
 
 func newAboutMenuItem() *MenuItem {
@@ -307,7 +253,6 @@ func newToggleFullscreenMenuItem() *MenuItem {
 }
 
 func newZoomResetMenuItem() *MenuItem {
-	// reset zoom menu item
 	return NewMenuItem("Actual Size").
 		SetAccelerator("CmdOrCtrl+0").
 		OnClick(func(ctx *Context) {

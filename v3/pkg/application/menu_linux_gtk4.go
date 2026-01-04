@@ -1,4 +1,4 @@
-//go:build linux && !android && gtk3
+//go:build linux && !android && !gtk3
 
 package application
 
@@ -30,14 +30,8 @@ func (m *linuxMenu) processMenu(menu *Menu) {
 			native: menuNew(),
 		}
 	}
-	var currentRadioGroup GSListPointer
 
 	for _, item := range menu.items {
-		// drop the group if we have run out of radio items
-		if item.itemType != radio {
-			currentRadioGroup = nilRadioGroup
-		}
-
 		switch item.itemType {
 		case submenu:
 			menuItem := newMenuItemImpl(item)
@@ -45,19 +39,21 @@ func (m *linuxMenu) processMenu(menu *Menu) {
 			m.processMenu(item.submenu)
 			m.addSubMenuToItem(item.submenu, item)
 			m.addMenuItem(menu, item)
-		case text, checkbox:
+		case text:
 			menuItem := newMenuItemImpl(item)
 			item.impl = menuItem
 			m.addMenuItem(menu, item)
-		case radio:
-			menuItem := newRadioItemImpl(item, currentRadioGroup)
+		case checkbox:
+			menuItem := newCheckMenuItemImpl(item)
 			item.impl = menuItem
 			m.addMenuItem(menu, item)
-			currentRadioGroup = menuGetRadioGroup(menuItem)
+		case radio:
+			menuItem := newRadioMenuItemImpl(item)
+			item.impl = menuItem
+			m.addMenuItem(menu, item)
 		case separator:
 			m.addMenuSeparator(menu)
 		}
-
 	}
 
 	for _, item := range menu.items {
@@ -65,7 +61,6 @@ func (m *linuxMenu) processMenu(menu *Menu) {
 			m.attachHandler(item)
 		}
 	}
-
 }
 
 func (m *linuxMenu) attachHandler(item *MenuItem) {
@@ -88,11 +83,9 @@ func (m *linuxMenu) addMenuItem(parent *Menu, menu *MenuItem) {
 
 func (m *linuxMenu) addMenuSeparator(menu *Menu) {
 	menuAddSeparator(menu)
-
 }
 
 func (m *linuxMenu) addServicesMenu(menu *Menu) {
-	// FIXME: Should this be required?
 }
 
 func (l *linuxMenu) createMenu(name string, items []*MenuItem) *Menu {
