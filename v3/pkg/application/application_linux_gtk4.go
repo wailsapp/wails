@@ -134,21 +134,9 @@ func (a *linuxApp) init(_ *App, options Options) {
 		C.get_compiled_webkit_micro_version())
 	a.parent.info("Using %s", osInfo.Name)
 
-	name := options.Name
-	if name == "" {
-		name = "wails"
-	}
-	a.application = appNew(sanitizeAppName(name))
-
-	if options.Linux.ProgramName != "" {
-		setProgramName(options.Linux.ProgramName)
-	}
-
 	if options.Icon != nil {
 		a.setIcon(options.Icon)
 	}
-
-	a.windowMap = map[windowPointer]uint{}
 
 	go listenForSystemThemeChanges(a)
 }
@@ -198,10 +186,19 @@ func (a *linuxApp) unregisterWindow(window windowPointer) {
 	a.windowMapLock.Unlock()
 }
 
-func newPlatformApp(a *App) platformApp {
-	return &linuxApp{
-		parent: a,
+func newPlatformApp(parent *App) *linuxApp {
+	name := sanitizeAppName(parent.options.Name)
+	app := &linuxApp{
+		parent:      parent,
+		application: appNew(name),
+		windowMap:   map[windowPointer]uint{},
 	}
+
+	if parent.options.Linux.ProgramName != "" {
+		setProgramName(parent.options.Linux.ProgramName)
+	}
+
+	return app
 }
 
 func (a *linuxApp) getIconForFile(filename string) ([]byte, error) {

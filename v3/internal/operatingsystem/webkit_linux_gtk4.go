@@ -1,10 +1,10 @@
-//go:build linux && cgo && gtk3 && !android
+//go:build linux && cgo && !gtk3 && !android
 
 package operatingsystem
 
 /*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.1
-#include <webkit2/webkit2.h>
+#cgo linux pkg-config: gtk4 webkitgtk-6.0
+#include <webkit/webkit.h>
 */
 import "C"
 import "fmt"
