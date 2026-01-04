@@ -29,6 +29,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Fix file drop coordinates being in wrong pixel space on Windows (physical vs CSS pixels)
 - Fix file drag-and-drop on Linux not working reliably with hover effects
 - Fix HTML5 internal drag-and-drop being broken when file drop was enabled on Linux
+- Fix macOS app bundle creation failing when APP_NAME contains spaces (brace expansion issue)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
