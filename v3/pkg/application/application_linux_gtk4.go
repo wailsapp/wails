@@ -16,12 +16,10 @@ import "C"
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
-	"slices"
 	"strings"
 	"sync"
-
-	"path/filepath"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
@@ -98,6 +96,21 @@ func (a *linuxApp) getApplicationMenu() *Menu {
 
 func (a *linuxApp) setApplicationMenu(menu *Menu) {}
 
+func (a *linuxApp) hide() {
+	a.hideAllWindows()
+}
+
+func (a *linuxApp) show() {
+	a.showAllWindows()
+}
+
+func (a *linuxApp) on(eventID uint) {
+}
+
+func (a *linuxApp) isOnMainThread() bool {
+	return isOnMainThread()
+}
+
 func (a *linuxApp) appendGTKVersion(result map[string]string) {
 	result["GTK"] = fmt.Sprintf("%d.%d.%d",
 		C.get_compiled_gtk_major_version(),
@@ -127,7 +140,7 @@ func (a *linuxApp) init(_ *App, options Options) {
 	}
 	a.application = appNew(sanitizeAppName(name))
 
-	if options.Linux != nil && options.Linux.ProgramName != "" {
+	if options.Linux.ProgramName != "" {
 		setProgramName(options.Linux.ProgramName)
 	}
 
@@ -173,9 +186,9 @@ func listenForSystemThemeChanges(a *linuxApp) {
 	}
 }
 
-func (a *linuxApp) registerWindow(window windowPointer, id uint) {
+func (a *linuxApp) registerWindow(window pointer, id uint) {
 	a.windowMapLock.Lock()
-	a.windowMap[window] = id
+	a.windowMap[windowPointer(window)] = id
 	a.windowMapLock.Unlock()
 }
 
@@ -262,6 +275,10 @@ func (a *linuxApp) isDarkMode() bool {
 	return colorScheme == 1
 }
 
+func (a *linuxApp) getAccentColor() string {
+	return "rgb(0,122,255)"
+}
+
 func (a *linuxApp) isVisible() bool {
 	windows := a.getWindows()
 	for _, window := range windows {
@@ -276,7 +293,62 @@ func getNativeApplication() *linuxApp {
 	return globalApplication.impl.(*linuxApp)
 }
 
-var _ = slices.Contains
 var _ = dbus.SessionBus
 var _ = filepath.Ext
 var _ = operatingsystem.Info
+
+// logPlatformInfo logs the platform information to the console
+func (a *App) logPlatformInfo() {
+	info, err := operatingsystem.Info()
+	if err != nil {
+		a.error("error getting OS info: %w", err)
+		return
+	}
+
+	platformInfo := info.AsLogSlice()
+	platformInfo = append(platformInfo, "GTK", fmt.Sprintf("%d.%d.%d",
+		C.get_compiled_gtk_major_version(),
+		C.get_compiled_gtk_minor_version(),
+		C.get_compiled_gtk_micro_version()))
+	platformInfo = append(platformInfo, "WebKitGTK", fmt.Sprintf("%d.%d.%d",
+		C.get_compiled_webkit_major_version(),
+		C.get_compiled_webkit_minor_version(),
+		C.get_compiled_webkit_micro_version()))
+
+	a.info("Platform Info:", platformInfo...)
+}
+
+func buildVersionString(major, minor, micro C.guint) string {
+	return fmt.Sprintf("%d.%d.%d", uint(major), uint(minor), uint(micro))
+}
+
+func (a *App) platformEnvironment() map[string]any {
+	result := map[string]any{}
+	result["gtk4-compiled"] = buildVersionString(
+		C.get_compiled_gtk_major_version(),
+		C.get_compiled_gtk_minor_version(),
+		C.get_compiled_gtk_micro_version(),
+	)
+	result["gtk4-runtime"] = buildVersionString(
+		C.gtk_get_major_version(),
+		C.gtk_get_minor_version(),
+		C.gtk_get_micro_version(),
+	)
+
+	result["webkitgtk6-compiled"] = buildVersionString(
+		C.get_compiled_webkit_major_version(),
+		C.get_compiled_webkit_minor_version(),
+		C.get_compiled_webkit_micro_version(),
+	)
+	result["webkitgtk6-runtime"] = buildVersionString(
+		C.webkit_get_major_version(),
+		C.webkit_get_minor_version(),
+		C.webkit_get_micro_version(),
+	)
+	return result
+}
+
+func fatalHandler(errFunc func(error)) {
+	// Stub for windows function
+	return
+}

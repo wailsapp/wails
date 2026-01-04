@@ -9,6 +9,7 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -1090,7 +1091,7 @@ func (w *linuxWebviewWindow) setTransparent() {
 }
 
 func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
-	rgba := C.GdkRGBA{C.double(colour.Red) / 255.0, C.double(colour.Green) / 255.0, C.double(colour.Blue) / 255.0, C.double(colour.Alpha) / 255.0}
+	rgba := C.GdkRGBA{C.float(colour.Red) / 255.0, C.float(colour.Green) / 255.0, C.float(colour.Blue) / 255.0, C.float(colour.Alpha) / 255.0}
 	C.webkit_web_view_set_background_color(w.webKitWebView(), &rgba)
 }
 
@@ -1242,6 +1243,20 @@ func handleFocusEnter(controller *C.GtkEventController, data C.uintptr_t) C.gboo
 func handleFocusLeave(controller *C.GtkEventController, data C.uintptr_t) C.gboolean {
 	processWindowEvent(C.uint(data), C.uint(events.Linux.WindowFocusOut))
 	return C.gboolean(0)
+}
+
+//export handleLoadChanged
+func handleLoadChanged(wv *C.WebKitWebView, event C.WebKitLoadEvent, data C.uintptr_t) {
+	switch event {
+	case C.WEBKIT_LOAD_STARTED:
+		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadStarted))
+	case C.WEBKIT_LOAD_REDIRECTED:
+		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadRedirected))
+	case C.WEBKIT_LOAD_COMMITTED:
+		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadCommitted))
+	case C.WEBKIT_LOAD_FINISHED:
+		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadFinished))
+	}
 }
 
 //export handleButtonPressed
@@ -1588,7 +1603,7 @@ func runOpenFileDialog(dialog *OpenFileDialogStruct) (chan string, error) {
 	)
 }
 
-func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
+func runSaveFileDialog(dialog *SaveFileDialogStruct) (chan string, error) {
 	window := nilPointer
 	if dialog.window != nil {
 		nativeWindow := dialog.window.NativeWindow()
@@ -1602,7 +1617,7 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
 		buttonText = "_Save"
 	}
 
-	results, err := runChooserDialog(
+	return runChooserDialog(
 		window,
 		false,
 		dialog.canCreateDirectories,
@@ -1613,16 +1628,6 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
 		buttonText,
 		dialog.filters,
 	)
-
-	if err != nil {
-		return "", err
-	}
-
-	// Get first result
-	for path := range results {
-		return path, nil
-	}
-	return "", nil
 }
 
 func runQuestionDialog(parent pointer, options *MessageDialog) int {
@@ -1660,10 +1665,10 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 		defaultButton := 0
 		cancelButton := -1
 		for i, btn := range options.Buttons {
-			if btn == options.DefaultButton {
+			if btn.IsDefault {
 				defaultButton = i
 			}
-			if btn == options.CancelButton {
+			if btn.IsCancel {
 				cancelButton = i
 			}
 		}
@@ -1688,6 +1693,81 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 	// Wait for result
 	result := <-resultChan
 	return result
+}
+
+func getPrimaryScreen() (*Screen, error) {
+	display := C.gdk_display_get_default()
+	monitors := C.gdk_display_get_monitors(display)
+	if monitors == nil {
+		return nil, fmt.Errorf("no monitors found")
+	}
+	count := C.g_list_model_get_n_items(monitors)
+	if count == 0 {
+		return nil, fmt.Errorf("no monitors found")
+	}
+	monitor := (*C.GdkMonitor)(C.g_list_model_get_item(monitors, 0))
+	if monitor == nil {
+		return nil, fmt.Errorf("failed to get primary monitor")
+	}
+	defer C.g_object_unref(C.gpointer(monitor))
+
+	var geometry C.GdkRectangle
+	C.gdk_monitor_get_geometry(monitor, &geometry)
+	scaleFactor := int(C.gdk_monitor_get_scale_factor(monitor))
+	name := C.gdk_monitor_get_model(monitor)
+
+	return &Screen{
+		ID:        "0",
+		Name:      C.GoString(name),
+		IsPrimary: true,
+		X:         int(geometry.x),
+		Y:         int(geometry.y),
+		Size: Size{
+			Height: int(geometry.height),
+			Width:  int(geometry.width),
+		},
+		Bounds: Rect{
+			X:      int(geometry.x),
+			Y:      int(geometry.y),
+			Height: int(geometry.height),
+			Width:  int(geometry.width),
+		},
+		ScaleFactor: float32(scaleFactor),
+		WorkArea: Rect{
+			X:      int(geometry.x),
+			Y:      int(geometry.y),
+			Height: int(geometry.height),
+			Width:  int(geometry.width),
+		},
+		PhysicalBounds: Rect{
+			X:      int(geometry.x),
+			Y:      int(geometry.y),
+			Height: int(geometry.height),
+			Width:  int(geometry.width),
+		},
+		PhysicalWorkArea: Rect{
+			X:      int(geometry.x),
+			Y:      int(geometry.y),
+			Height: int(geometry.height),
+			Width:  int(geometry.width),
+		},
+		Rotation: 0.0,
+	}, nil
+}
+
+func openDevTools(wv pointer) {
+	inspector := C.webkit_web_view_get_inspector((*C.WebKitWebView)(wv))
+	C.webkit_web_inspector_show(inspector)
+}
+
+func enableDevTools(wv pointer) {
+	settings := C.webkit_web_view_get_settings((*C.WebKitWebView)(wv))
+	enabled := C.webkit_settings_get_enable_developer_extras(settings)
+	if enabled == 0 {
+		C.webkit_settings_set_enable_developer_extras(settings, C.gboolean(1))
+	} else {
+		C.webkit_settings_set_enable_developer_extras(settings, C.gboolean(0))
+	}
 }
 
 var _ = time.Now

@@ -394,3 +394,28 @@ tasks:
       - echo "=== Cleaning Up Test Binaries ==="
       - task: clean:test:binaries
       - echo "✅ All tests completed successfully"
+
+  sanity:
+    summary: Quick compilation sanity check for key examples
+    platforms:
+      - linux
+    cmds:
+      - echo "🔍 Running quick sanity check..."
+      - cd examples/menu && go build -o /dev/null .
+      - cd examples/window && go build -o /dev/null .
+      - cd examples/events && go build -o /dev/null .
+      - cd examples/plain && go build -o /dev/null .
+      - cd examples/dialogs-basic && go build -o /dev/null .
+      - echo "✅ Sanity check passed"
+
+  sanity:gtk3:
+    summary: Quick compilation sanity check for GTK3 (legacy)
+    platforms:
+      - linux
+    cmds:
+      - echo "🔍 Running GTK3 sanity check..."
+      - cd examples/menu && go build -tags gtk3 -o /dev/null .
+      - cd examples/window && go build -tags gtk3 -o /dev/null .
+      - cd examples/events && go build -tags gtk3 -o /dev/null .
+      - cd examples/plain && go build -tags gtk3 -o /dev/null .
+      - echo "✅ GTK3 sanity check passed"
