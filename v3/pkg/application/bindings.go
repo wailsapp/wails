@@ -69,6 +69,20 @@ func init() {
 	_ = json.Unmarshal([]byte(`{}`), &mss)
 	_ = json.Unmarshal([]byte(`{}`), &msi)
 	_ = json.Unmarshal([]byte(`""`), &rm)
+
+	// Warm up Wails internal types commonly used in service calls
+	var (
+		ff   FileFilter
+		ffs  []FileFilter
+		ofdo OpenFileDialogOptions
+		sfdo SaveFileDialogOptions
+		mdo  MessageDialogOptions
+	)
+	_ = json.Unmarshal([]byte(`{}`), &ff)
+	_ = json.Unmarshal([]byte(`[]`), &ffs)
+	_ = json.Unmarshal([]byte(`{}`), &ofdo)
+	_ = json.Unmarshal([]byte(`{}`), &sfdo)
+	_ = json.Unmarshal([]byte(`{}`), &mdo)
 }
 
 // CallOptions defines the options for a method call.
@@ -228,7 +242,7 @@ var internalServiceMethods = map[string]bool{
 var ctxType = reflect.TypeFor[context.Context]()
 
 // getMethods returns the list of BoundMethod descriptors for the methods of the named pointer type provided by value.
-// 
+//
 // It returns an error if value is not a pointer to a named type, if a function value is supplied (binding functions is deprecated), or if a generic type is supplied.
 // The returned BoundMethod slice includes only exported methods that are not listed in internalServiceMethods. Each BoundMethod has its FQN, ID (computed from the FQN), Method reflect.Value, Inputs and Outputs populated, isVariadic cached from the method signature, and needsContext set when the first parameter is context.Context.
 func getMethods(value any) ([]*BoundMethod, error) {
