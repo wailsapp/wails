@@ -10,7 +10,6 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-	"syscall"
 	"time"
 	"unsafe"
 
@@ -67,7 +66,6 @@ type windowsWebviewWindow struct {
 	resizeBorderWidth  int32
 	resizeBorderHeight int32
 	focusingChromium   bool
-	dropTarget         *w32.DropTarget
 	onceDo             sync.Once
 
 	// Window move debouncer
@@ -721,9 +719,6 @@ func (w *windowsWebviewWindow) setRelativePosition(x int, y int) {
 
 func (w *windowsWebviewWindow) destroy() {
 	w.parent.markAsDestroyed()
-	if w.dropTarget != nil {
-		w.dropTarget.Release()
-	}
 	// destroy the window
 	w32.DestroyWindow(w.hwnd)
 }
@@ -1977,66 +1972,20 @@ func (w *windowsWebviewWindow) setupChromium() {
 		}
 	}
 
-	if w.parent.options.EnableDragAndDrop {
-		if chromium.HasCapability(edge.AllowExternalDrop) {
-			err := chromium.AllowExternalDrag(false)
-			if err != nil {
-				globalApplication.handleFatalError(err)
-			}
-		}
-
-		// Initialize OLE for drag-and-drop operations
-		w32.OleInitialise()
-
-		w.dropTarget = w32.NewDropTarget()
-		w.dropTarget.OnDrop = func(files []string, x int, y int) {
-			w.parent.emit(events.Windows.WindowDragDrop)
-			globalApplication.debug("[DragDropDebug] Windows DropTarget OnDrop: Raw screen coordinates", "x", x, "y", y)
-
-			// Convert screen coordinates to window-relative coordinates first
-			// Windows DropTarget gives us screen coordinates, but we need window-relative coordinates
-			windowRect := w32.GetWindowRect(w.hwnd)
-			windowRelativeX := x - int(windowRect.Left)
-			windowRelativeY := y - int(windowRect.Top)
-
-			globalApplication.debug("[DragDropDebug] Windows DropTarget OnDrop: After screen-to-window conversion", "windowRelativeX", windowRelativeX, "windowRelativeY", windowRelativeY)
-
-			// Convert window-relative coordinates to webview-relative coordinates
-			webviewX, webviewY := w.convertWindowToWebviewCoordinates(windowRelativeX, windowRelativeY)
-			globalApplication.debug("[DragDropDebug] Windows DropTarget OnDrop: Final webview coordinates", "webviewX", webviewX, "webviewY", webviewY)
-			w.parent.InitiateFrontendDropProcessing(files, webviewX, webviewY)
-		}
-		if opts.OnEnterEffect != 0 {
-			w.dropTarget.OnEnterEffect = convertEffect(opts.OnEnterEffect)
-		}
-		if opts.OnOverEffect != 0 {
-			w.dropTarget.OnOverEffect = convertEffect(opts.OnOverEffect)
-		}
-		w.dropTarget.OnEnter = func() {
-			w.parent.emit(events.Windows.WindowDragEnter)
-		}
-		w.dropTarget.OnLeave = func() {
-			w.parent.emit(events.Windows.WindowDragLeave)
-		}
-		w.dropTarget.OnOver = func() {
-			w.parent.emit(events.Windows.WindowDragOver)
-		}
-		// Enumerate all the child windows for this window and register them as drop targets
-		w32.EnumChildWindows(w.hwnd, func(hwnd w32.HWND, lparam w32.LPARAM) w32.LRESULT {
-			// Check if the window class is "Chrome_RenderWidgetHostHWND"
-			// If it is, then we register it as a drop target
-			//windowName := w32.GetClassName(hwnd)
-			//println(windowName)
-			//if windowName == "Chrome_RenderWidgetHostHWND" {
-			err := w32.RegisterDragDrop(hwnd, w.dropTarget)
-			if err != nil && !errors.Is(err, syscall.Errno(w32.DRAGDROP_E_ALREADYREGISTERED)) {
-				globalApplication.error("error registering drag and drop: %w", err)
-			}
-			//}
-			return 1
-		})
-
-	}
+	// File drop handling on Windows:
+	// WebView2's AllowExternalDrop controls ALL drag-and-drop (both external file drops
+	// AND internal HTML5 drag-and-drop). We cannot disable it without breaking HTML5 DnD.
+	//
+	// When EnableFileDrop is true:
+	// - JS dragenter/dragover/drop events fire for external file drags
+	// - JS calls preventDefault() to stop the browser from navigating to the file
+	// - JS uses chrome.webview.postMessageWithAdditionalObjects to send file paths to Go
+	// - Go receives paths via processMessageWithAdditionalObjects
+	//
+	// When EnableFileDrop is false:
+	// - We cannot use AllowExternalDrag(false) as it breaks HTML5 internal drag-and-drop
+	// - JS runtime checks window._wails.flags.enableFileDrop and shows "no drop" cursor
+	// - The enableFileDrop flag is injected in navigationCompleted callback
 
 	err = chromium.PutIsGeneralAutofillEnabled(opts.GeneralAutofillEnabled)
 	if err != nil {
@@ -2151,19 +2100,6 @@ func (w *windowsWebviewWindow) fullscreenChanged(
 	}
 }
 
-func convertEffect(effect DragEffect) w32.DWORD {
-	switch effect {
-	case DragEffectCopy:
-		return w32.DROPEFFECT_COPY
-	case DragEffectMove:
-		return w32.DROPEFFECT_MOVE
-	case DragEffectLink:
-		return w32.DROPEFFECT_LINK
-	default:
-		return w32.DROPEFFECT_NONE
-	}
-}
-
 func (w *windowsWebviewWindow) flash(enabled bool) {
 	w32.FlashWindow(w.hwnd, enabled)
 }
@@ -2175,6 +2111,10 @@ func (w *windowsWebviewWindow) navigationCompleted(
 
 	// Install the runtime core
 	w.execJS(runtime.Core(globalApplication.impl.GetFlags(globalApplication.options)))
+
+	// Set the EnableFileDrop flag for this window (Windows-specific)
+	// The JS runtime checks this before processing file drops
+	w.execJS(fmt.Sprintf("window._wails.flags.enableFileDrop = %v;", w.parent.options.EnableFileDrop))
 
 	// EmitEvent DomReady ApplicationEvent
 	windowEvents <- &windowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}
@@ -2277,7 +2217,7 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(
 	sender *edge.ICoreWebView2,
 	args *edge.ICoreWebView2WebMessageReceivedEventArgs,
 ) {
-	if strings.HasPrefix(message, "FilesDropped") {
+	if strings.HasPrefix(message, "file:drop:") {
 		objs, err := args.GetAdditionalObjects()
 		if err != nil {
 			globalApplication.handleError(err)
@@ -2319,14 +2259,14 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(
 			filenames = append(filenames, filepath)
 		}
 
-		// Extract X/Y coordinates from message - format should be "FilesDropped:x:y"
+		// Extract X/Y coordinates from message - format is "file:drop:x:y"
 		var x, y int
 		parts := strings.Split(message, ":")
-		if len(parts) >= 3 {
-			if parsedX, err := strconv.Atoi(parts[1]); err == nil {
+		if len(parts) >= 4 {
+			if parsedX, err := strconv.Atoi(parts[2]); err == nil {
 				x = parsedX
 			}
-			if parsedY, err := strconv.Atoi(parts[2]); err == nil {
+			if parsedY, err := strconv.Atoi(parts[3]); err == nil {
 				y = parsedY
 			}
 		}

@@ -393,12 +393,15 @@ func appName() string {
 }
 
 func appNew(name string) pointer {
-	GApplicationDefaultFlags := uint(0)
+	// Use NON_UNIQUE to allow multiple instances of the application to run
+	// This matches the behavior of gtk_init/gtk_main used in v2
+	// G_APPLICATION_NON_UNIQUE = (1 << 5) = 32
+	GApplicationNonUnique := uint(32)
 
 	// Name is already sanitized by sanitizeAppName() in application_linux.go
 	identifier := fmt.Sprintf("org.wails.%s", name)
 
-	return pointer(gtkApplicationNew(identifier, GApplicationDefaultFlags))
+	return pointer(gtkApplicationNew(identifier, GApplicationNonUnique))
 }
 
 func appRun(application pointer) error {
