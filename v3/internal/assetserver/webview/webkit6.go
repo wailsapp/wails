@@ -1,13 +1,13 @@
-//go:build linux && cgo && gtk3 && !android
+//go:build linux && cgo && !gtk3 && !android
 
 package webview
 
 /*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.1 libsoup-3.0
+#cgo linux pkg-config: gtk4 webkitgtk-6.0 libsoup-3.0
 
-#include "gtk/gtk.h"
-#include "webkit2/webkit2.h"
-#include "libsoup/soup.h"
+#include <gtk/gtk.h>
+#include <webkit/webkit.h>
+#include <libsoup/soup.h>
 */
 import "C"
 
@@ -19,7 +19,7 @@ import (
 	"unsafe"
 )
 
-const Webkit2MinMinorVersion = 40
+const Webkit2MinMinorVersion = 0
 
 func webkit_uri_scheme_request_get_http_method(req *C.WebKitURISchemeRequest) string {
 	method := C.GoString(C.webkit_uri_scheme_request_get_http_method(req))
@@ -85,7 +85,6 @@ type webkitRequestBody struct {
 	closed bool
 }
 
-// Read implements io.Reader
 func (r *webkitRequestBody) Read(p []byte) (int, error) {
 	if r.closed {
 		return 0, io.ErrClosedPipe
@@ -115,9 +114,6 @@ func (r *webkitRequestBody) Close() error {
 	}
 	r.closed = true
 
-	// https://docs.gtk.org/gio/method.InputStream.close.html
-	// Streams will be automatically closed when the last reference is dropped, but you might want to call this function
-	// to make sure resources are released as early as possible.
 	var err error
 	var gErr *C.GError
 	if C.g_input_stream_close(r.stream, nil, &gErr) == 0 {

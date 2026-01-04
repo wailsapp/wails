@@ -18,6 +18,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Added
 <!-- New features, capabilities, or enhancements -->
 - Add `internal/libpath` package for finding native library paths on Linux with parallel search, caching, and support for Flatpak/Snap/Nix
+- **WIP:** Add WebKitGTK 6.0 / GTK4 support as new default for Linux (GTK3/WebKit2GTK 4.1 available via `-tags gtk3`)
 
 ## Changed
 <!-- Changes in existing functionality -->

@@ -1,12 +1,12 @@
-//go:build linux && cgo && gtk3 && !android
+//go:build linux && cgo && !gtk3 && !android
 
 package webview
 
 /*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.1 gio-unix-2.0
+#cgo linux pkg-config: gtk4 webkitgtk-6.0 gio-unix-2.0
 
-#include "gtk/gtk.h"
-#include "webkit2/webkit2.h"
+#include <gtk/gtk.h>
+#include <webkit/webkit.h>
 */
 import "C"
 
@@ -16,7 +16,6 @@ import (
 	"unsafe"
 )
 
-// NewRequest creates as new WebViewRequest based on a pointer to an `WebKitURISchemeRequest`
 func NewRequest(webKitURISchemeRequest unsafe.Pointer) Request {
 	webkitReq := (*C.WebKitURISchemeRequest)(webKitURISchemeRequest)
 	C.g_object_ref(C.gpointer(webkitReq))

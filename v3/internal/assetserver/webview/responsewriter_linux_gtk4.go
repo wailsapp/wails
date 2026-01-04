@@ -1,13 +1,13 @@
-//go:build linux && cgo && gtk3 && !android
+//go:build linux && cgo && !gtk3 && !android
 
 package webview
 
 /*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.1 gio-unix-2.0
+#cgo linux pkg-config: gtk4 webkitgtk-6.0 gio-unix-2.0
 
-#include "gtk/gtk.h"
-#include "webkit2/webkit2.h"
-#include "gio/gunixinputstream.h"
+#include <gtk/gtk.h>
+#include <webkit/webkit.h>
+#include <gio/gunixinputstream.h>
 
 */
 import "C"
@@ -70,9 +70,6 @@ func (rw *responseWriter) WriteHeader(code int) {
 		}
 	}
 
-	// We can't use os.Pipe here, because that returns files with a finalizer for closing the FD. But the control over the
-	// read FD is given to the InputStream and will be closed there.
-	// Furthermore we especially don't want to have the FD_CLOEXEC
 	rFD, w, err := pipe()
 	if err != nil {
 		rw.finishWithError(http.StatusInternalServerError, fmt.Errorf("unable to open pipe: %s", err))
