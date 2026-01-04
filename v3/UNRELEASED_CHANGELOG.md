@@ -23,6 +23,12 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix SaveFileDialog.SetFilename() having no effect on Linux (#4841) by @samstanier
+- Fix file drag-and-drop on Windows not working at non-100% display scaling
+- Fix HTML5 internal drag-and-drop being broken when file drop was enabled on Windows
+- Fix file drop coordinates being in wrong pixel space on Windows (physical vs CSS pixels)
+- Fix file drag-and-drop on Linux not working reliably with hover effects
+- Fix HTML5 internal drag-and-drop being broken when file drop was enabled on Linux
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
