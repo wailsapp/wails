@@ -92,13 +92,24 @@ tasks:
       GOARCH: amd64
 
   test:example:linux:
+    summary: Build example for Linux with GTK4 (default)
     dir: 'examples/{{.DIR}}'
     platforms:
       - linux
     cmds:
-      - echo "Building example {{.DIR}} for Linux"
+      - echo "Building example {{.DIR}} for Linux (GTK4)"
       - go mod tidy
       - go build -o "testbuild-{{.DIR}}-linux"
+
+  test:example:linux:gtk3:
+    summary: Build example for Linux with GTK3 (legacy)
+    dir: 'examples/{{.DIR}}'
+    platforms:
+      - linux
+    cmds:
+      - echo "Building example {{.DIR}} for Linux (GTK3 legacy)"
+      - go mod tidy
+      - go build -tags gtk3 -o "testbuild-{{.DIR}}-linux-gtk3"
 
   test:example:linux:docker:arm64:
     summary: Build a single example for Linux ARM64 using Docker (Ubuntu 24.04)
@@ -115,20 +126,36 @@ tasks:
       - docker run --rm wails-v3-linux-x86_64 /build/build-linux-x86_64.sh {{.DIR}}
 
   test:examples:linux:docker:arm64:
-    summary: Build all examples for Linux ARM64 using Docker (Ubuntu 24.04)
+    summary: Build all examples for Linux ARM64 using Docker (Ubuntu 24.04, GTK4)
     cmds:
       - echo "Building Docker image for Linux ARM64 compilation..."
       - docker build --pull -f test/docker/Dockerfile.linux-arm64 -t wails-v3-linux-arm64 .
-      - echo "Running Linux ARM64 compilation in Docker container..."
+      - echo "Running Linux ARM64 compilation in Docker container (GTK4)..."
       - docker run --rm wails-v3-linux-arm64
 
   test:examples:linux:docker:x86_64:
-    summary: Build all examples for Linux x86_64 using Docker (Ubuntu 24.04)
+    summary: Build all examples for Linux x86_64 using Docker (Ubuntu 24.04, GTK4)
     cmds:
       - echo "Building Docker image for Linux x86_64 compilation..."
       - docker build --pull -f test/docker/Dockerfile.linux-x86_64 -t wails-v3-linux-x86_64 .
-      - echo "Running Linux x86_64 compilation in Docker container..."
+      - echo "Running Linux x86_64 compilation in Docker container (GTK4)..."
       - docker run --rm wails-v3-linux-x86_64
+
+  test:examples:linux:docker:x86_64:gtk3:
+    summary: Build all examples for Linux x86_64 using Docker with GTK3 (legacy)
+    cmds:
+      - echo "Building Docker image for Linux x86_64 compilation..."
+      - docker build --pull -f test/docker/Dockerfile.linux-x86_64 -t wails-v3-linux-x86_64 .
+      - echo "Running Linux x86_64 compilation in Docker container (GTK3 legacy)..."
+      - docker run --rm -e BUILD_TAGS=gtk3 wails-v3-linux-x86_64
+
+  test:examples:linux:docker:arm64:gtk3:
+    summary: Build all examples for Linux ARM64 using Docker with GTK3 (legacy)
+    cmds:
+      - echo "Building Docker image for Linux ARM64 compilation..."
+      - docker build --pull -f test/docker/Dockerfile.linux-arm64 -t wails-v3-linux-arm64 .
+      - echo "Running Linux ARM64 compilation in Docker container (GTK3 legacy)..."
+      - docker run --rm -e BUILD_TAGS=gtk3 wails-v3-linux-arm64
 
   test:example:linux:docker:
     summary: Build a single example for Linux using Docker (auto-detect architecture)

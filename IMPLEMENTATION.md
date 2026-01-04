@@ -207,12 +207,31 @@ TODO (deferred to testing phase):
 - [ ] Test asset loading on actual GTK4 system
 - [ ] Verify JavaScript execution works correctly
 
-### Phase 6: Docker & Build System 📋 PENDING
+### Phase 6: Docker & Build System ✅ COMPLETE
 
-TODO:
-- [ ] Update Docker container with both GTK3 and GTK4 libraries
-- [ ] Add Taskfile targets: `build:linux` (GTK4), `build:linux:gtk3` (legacy)
-- [ ] Update CI/CD workflows
+#### 6.1 Docker Container Updates
+Updated both Dockerfile.linux-x86_64 and Dockerfile.linux-arm64 to install:
+- GTK4 + WebKitGTK 6.0 (default build target)
+- GTK3 + WebKit2GTK 4.1 (for legacy `-tags gtk3` builds)
+
+Build scripts now support `BUILD_TAGS` environment variable:
+- Default: Builds with GTK4/WebKitGTK 6.0
+- `BUILD_TAGS=gtk3`: Builds with GTK3/WebKit2GTK 4.1
+
+#### 6.2 Taskfile Targets
+New targets added to `v3/Taskfile.yaml`:
+
+| Target | Description |
+|--------|-------------|
+| `test:example:linux` | Build single example with GTK4 (native) |
+| `test:example:linux:gtk3` | Build single example with GTK3 (native, legacy) |
+| `test:examples:linux:docker:x86_64` | Build all examples with GTK4 in Docker |
+| `test:examples:linux:docker:x86_64:gtk3` | Build all examples with GTK3 in Docker |
+| `test:examples:linux:docker:arm64` | Build all examples with GTK4 in Docker (ARM64) |
+| `test:examples:linux:docker:arm64:gtk3` | Build all examples with GTK3 in Docker (ARM64) |
+
+TODO (deferred):
+- [ ] Update CI/CD workflows to test both GTK versions
 
 ### Phase 7: Testing 📋 PENDING
 
@@ -282,6 +301,12 @@ v3/internal/assetserver/webview/
 ```
 
 ## Changelog
+
+### 2026-01-04 (Session 5 continued)
+- Completed Phase 6: Docker & Build System
+- Updated Dockerfile.linux-x86_64 and Dockerfile.linux-arm64 for GTK4 + GTK3
+- Added BUILD_TAGS environment variable support in build scripts
+- Added Taskfile targets for GTK4 (default) and GTK3 (legacy) builds
 
 ### 2026-01-04 (Session 5)
 - Completed Phase 5: Asset Server
