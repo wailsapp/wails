@@ -76,7 +76,14 @@ static guint get_window_id(void *object)
 // exported below
 void activateLinux(gpointer data);
 extern void emit(WindowEvent* data);
+extern gboolean handleCloseRequest(GtkWindow*, uintptr_t);
+extern void handleNotifyState(GObject*, GParamSpec*, uintptr_t);
+extern gboolean handleFocusEnter(GtkEventController*, uintptr_t);
+extern gboolean handleFocusLeave(GtkEventController*, uintptr_t);
 extern void handleLoadChanged(WebKitWebView*, WebKitLoadEvent, uintptr_t);
+extern void handleButtonPressed(GtkGestureClick*, gint, gdouble, gdouble, uintptr_t);
+extern void handleButtonReleased(GtkGestureClick*, gint, gdouble, gdouble, uintptr_t);
+extern gboolean handleKeyPressed(GtkEventControllerKey*, guint, guint, GdkModifierType, uintptr_t);
 void handleClick(void*);
 extern void onProcessRequest(WebKitURISchemeRequest *request, uintptr_t user_data);
 extern void sendMessageToBackend(WebKitUserContentManager *contentManager, void *result, void *data);
@@ -174,15 +181,140 @@ static int GetNumScreens(){
     return 0;
 }
 
+// GTK4 uses GtkEventController for events instead of direct signal handlers
+static void setupWindowEventControllers(GtkWindow *window, GtkWidget *webview, uintptr_t winID) {
+    // Close request (replaces delete-event)
+    g_signal_connect(window, "close-request", G_CALLBACK(handleCloseRequest), (gpointer)winID);
+
+    // Window state changes (maximize, fullscreen, etc)
+    g_signal_connect(window, "notify::maximized", G_CALLBACK(handleNotifyState), (gpointer)winID);
+    g_signal_connect(window, "notify::fullscreened", G_CALLBACK(handleNotifyState), (gpointer)winID);
+
+    // Focus controller for window
+    GtkEventController *focus_controller = gtk_event_controller_focus_new();
+    gtk_widget_add_controller(GTK_WIDGET(window), focus_controller);
+    g_signal_connect(focus_controller, "enter", G_CALLBACK(handleFocusEnter), (gpointer)winID);
+    g_signal_connect(focus_controller, "leave", G_CALLBACK(handleFocusLeave), (gpointer)winID);
+
+    // Click gesture for webview (button press/release)
+    GtkGesture *click_gesture = gtk_gesture_click_new();
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(click_gesture), 0); // Listen to all buttons
+    gtk_widget_add_controller(webview, GTK_EVENT_CONTROLLER(click_gesture));
+    g_signal_connect(click_gesture, "pressed", G_CALLBACK(handleButtonPressed), (gpointer)winID);
+    g_signal_connect(click_gesture, "released", G_CALLBACK(handleButtonReleased), (gpointer)winID);
+
+    // Key controller for webview
+    GtkEventController *key_controller = gtk_event_controller_key_new();
+    gtk_widget_add_controller(webview, key_controller);
+    g_signal_connect(key_controller, "key-pressed", G_CALLBACK(handleKeyPressed), (gpointer)winID);
+}
+
+// GTK4 window drag using GdkToplevel
+static void beginWindowDrag(GtkWindow *window, int button, double x, double y, guint32 timestamp) {
+    GtkNative *native = gtk_widget_get_native(GTK_WIDGET(window));
+    if (native == NULL) return;
+
+    GdkSurface *surface = gtk_native_get_surface(native);
+    if (surface == NULL || !GDK_IS_TOPLEVEL(surface)) return;
+
+    GdkToplevel *toplevel = GDK_TOPLEVEL(surface);
+    GdkDevice *device = NULL;
+    GdkDisplay *display = gdk_surface_get_display(surface);
+    GdkSeat *seat = gdk_display_get_default_seat(display);
+    if (seat) {
+        device = gdk_seat_get_pointer(seat);
+    }
+
+    gdk_toplevel_begin_move(toplevel, device, button, x, y, timestamp);
+}
+
+// GTK4 window resize using GdkToplevel
+static void beginWindowResize(GtkWindow *window, GdkSurfaceEdge edge, int button, double x, double y, guint32 timestamp) {
+    GtkNative *native = gtk_widget_get_native(GTK_WIDGET(window));
+    if (native == NULL) return;
+
+    GdkSurface *surface = gtk_native_get_surface(native);
+    if (surface == NULL || !GDK_IS_TOPLEVEL(surface)) return;
+
+    GdkToplevel *toplevel = GDK_TOPLEVEL(surface);
+    GdkDevice *device = NULL;
+    GdkDisplay *display = gdk_surface_get_display(surface);
+    GdkSeat *seat = gdk_display_get_default_seat(display);
+    if (seat) {
+        device = gdk_seat_get_pointer(seat);
+    }
+
+    gdk_toplevel_begin_resize(toplevel, edge, device, button, x, y, timestamp);
+}
+
 // GTK4 drag-and-drop uses GtkDropTarget instead of GTK3's drag signals
-// This is a significant API change - stub for now
+extern void onDropEnter(uintptr_t);
+extern void onDropLeave(uintptr_t);
+extern void onDropMotion(gint, gint, uintptr_t);
+extern void onDropFiles(char**, gint, gint, uintptr_t);
+
+static GdkDragAction on_drop_enter(GtkDropTarget *target, gdouble x, gdouble y, gpointer data) {
+    onDropEnter((uintptr_t)data);
+    return GDK_ACTION_COPY;
+}
+
+static void on_drop_leave(GtkDropTarget *target, gpointer data) {
+    onDropLeave((uintptr_t)data);
+}
+
+static GdkDragAction on_drop_motion(GtkDropTarget *target, gdouble x, gdouble y, gpointer data) {
+    onDropMotion((gint)x, (gint)y, (uintptr_t)data);
+    return GDK_ACTION_COPY;
+}
+
+static gboolean on_drop(GtkDropTarget *target, const GValue *value, gdouble x, gdouble y, gpointer data) {
+    if (!G_VALUE_HOLDS(value, GDK_TYPE_FILE_LIST)) {
+        return FALSE;
+    }
+
+    GSList *file_list = g_value_get_boxed(value);
+    if (file_list == NULL) {
+        return FALSE;
+    }
+
+    // Count files
+    guint count = g_slist_length(file_list);
+    if (count == 0) {
+        return FALSE;
+    }
+
+    // Build array of file paths
+    char **paths = g_new0(char*, count + 1);
+    guint i = 0;
+    for (GSList *l = file_list; l != NULL; l = l->next) {
+        GFile *file = G_FILE(l->data);
+        paths[i++] = g_file_get_path(file);
+    }
+    paths[count] = NULL;
+
+    onDropFiles(paths, (gint)x, (gint)y, (uintptr_t)data);
+
+    // Cleanup
+    for (i = 0; i < count; i++) {
+        g_free(paths[i]);
+    }
+    g_free(paths);
+
+    return TRUE;
+}
 
 static void enableDND(GtkWidget *widget, gpointer data) {
-    // TODO: Implement GTK4 drag-and-drop with GtkDropTarget
+    GtkDropTarget *target = gtk_drop_target_new(GDK_TYPE_FILE_LIST, GDK_ACTION_COPY);
+    g_signal_connect(target, "enter", G_CALLBACK(on_drop_enter), data);
+    g_signal_connect(target, "leave", G_CALLBACK(on_drop_leave), data);
+    g_signal_connect(target, "motion", G_CALLBACK(on_drop_motion), data);
+    g_signal_connect(target, "drop", G_CALLBACK(on_drop), data);
+    gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(target));
 }
 
 static void disableDND(GtkWidget *widget, gpointer data) {
-    // TODO: Implement GTK4 drag-and-drop blocking
+    // In GTK4, we don't add a drop target to block drops
+    // The default behavior is to not accept drops
 }
 
 */
@@ -758,9 +890,13 @@ func (w *linuxWebviewWindow) getCurrentMonitorGeometry() (x int, y int, width in
 }
 
 func (w *linuxWebviewWindow) size() (int, int) {
-	return C.gtk_window_get_default_size(w.gtkWindow(), nil, nil), 0
-	// GTK4: gtk_window_get_size is deprecated, use gtk_window_get_default_size
-	// TODO: Fix this to return proper values
+	var width, height C.int
+	C.gtk_window_get_default_size(w.gtkWindow(), &width, &height)
+	if width <= 0 || height <= 0 {
+		width = C.int(C.gtk_widget_get_width(w.gtkWidget()))
+		height = C.int(C.gtk_widget_get_height(w.gtkWidget()))
+	}
+	return int(width), int(height)
 }
 
 func (w *linuxWebviewWindow) relativePosition() (int, int) {
@@ -790,9 +926,12 @@ func (w *linuxWebviewWindow) isMaximised() bool {
 }
 
 func (w *linuxWebviewWindow) isMinimised() bool {
-	// GTK4: There's no direct API for this on Wayland
-	// The window state is managed by the compositor
-	return false
+	surface := C.gtk_native_get_surface((*C.GtkNative)(unsafe.Pointer(w.gtkWindow())))
+	if surface == nil {
+		return false
+	}
+	state := C.gdk_toplevel_get_state((*C.GdkToplevel)(unsafe.Pointer(surface)))
+	return state&C.GDK_TOPLEVEL_STATE_MINIMIZED != 0
 }
 
 func (w *linuxWebviewWindow) isVisible() bool {
@@ -907,9 +1046,10 @@ func (w *linuxWebviewWindow) setDefaultSize(width int, height int) {
 }
 
 func windowSetGeometryHints(window pointer, minWidth, minHeight, maxWidth, maxHeight int) {
-	// GTK4: GdkGeometry and gtk_window_set_geometry_hints are removed
-	// Size constraints must be handled differently in GTK4
-	// TODO: Implement via GtkConstraint or size request
+	w := (*C.GtkWidget)(window)
+	if minWidth > 0 && minHeight > 0 {
+		C.gtk_widget_set_size_request(w, C.int(minWidth), C.int(minHeight))
+	}
 }
 
 func (w *linuxWebviewWindow) setResizable(resizable bool) {
@@ -975,12 +1115,23 @@ func (w *linuxWebviewWindow) setIcon(icon pointer) {
 }
 
 func (w *linuxWebviewWindow) startDrag() error {
-	// TODO: GTK4 drag via GtkGestureDrag
+	C.beginWindowDrag(
+		w.gtkWindow(),
+		C.int(w.drag.MouseButton),
+		C.double(w.drag.XRoot),
+		C.double(w.drag.YRoot),
+		C.guint32(w.drag.DragTime))
 	return nil
 }
 
 func (w *linuxWebviewWindow) startResize(edge uint) error {
-	// TODO: GTK4 resize via gtk_window_begin_resize
+	C.beginWindowResize(
+		w.gtkWindow(),
+		C.GdkSurfaceEdge(edge),
+		C.int(w.drag.MouseButton),
+		C.double(w.drag.XRoot),
+		C.double(w.drag.YRoot),
+		C.guint32(w.drag.DragTime))
 	return nil
 }
 
@@ -1067,13 +1218,187 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 	c := NewCalloc()
 	defer c.Free()
 
-	winID := unsafe.Pointer(uintptr(C.uint(w.parent.ID())))
+	winID := C.uintptr_t(w.parent.ID())
+
+	C.setupWindowEventControllers(w.gtkWindow(), (*C.GtkWidget)(w.webview), winID)
 
 	wv := unsafe.Pointer(w.webview)
-	C.signal_connect(wv, c.String("load-changed"), C.handleLoadChanged, winID)
+	C.signal_connect(wv, c.String("load-changed"), C.handleLoadChanged, unsafe.Pointer(uintptr(winID)))
 
 	contentManager := C.webkit_web_view_get_user_content_manager(w.webKitWebView())
 	C.signal_connect(unsafe.Pointer(contentManager), c.String("script-message-received::external"), C.sendMessageToBackend, nil)
+}
+
+//export handleCloseRequest
+func handleCloseRequest(window *C.GtkWindow, data C.uintptr_t) C.gboolean {
+	processWindowEvent(C.uint(data), C.uint(events.Linux.WindowDeleteEvent))
+	return C.gboolean(1)
+}
+
+//export handleNotifyState
+func handleNotifyState(object *C.GObject, pspec *C.GParamSpec, data C.uintptr_t) {
+	windowId := uint(data)
+	window, ok := globalApplication.Window.GetByID(windowId)
+	if !ok || window == nil {
+		return
+	}
+
+	lw := getLinuxWebviewWindow(window)
+	if lw == nil {
+		return
+	}
+
+	if lw.isMaximised() {
+		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowDidResize))
+	}
+	if lw.isFullscreen() {
+		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowDidResize))
+	}
+}
+
+//export handleFocusEnter
+func handleFocusEnter(controller *C.GtkEventController, data C.uintptr_t) C.gboolean {
+	processWindowEvent(C.uint(data), C.uint(events.Linux.WindowFocusIn))
+	return C.gboolean(0)
+}
+
+//export handleFocusLeave
+func handleFocusLeave(controller *C.GtkEventController, data C.uintptr_t) C.gboolean {
+	processWindowEvent(C.uint(data), C.uint(events.Linux.WindowFocusOut))
+	return C.gboolean(0)
+}
+
+//export handleButtonPressed
+func handleButtonPressed(gesture *C.GtkGestureClick, nPress C.gint, x C.gdouble, y C.gdouble, data C.uintptr_t) {
+	windowId := uint(data)
+	window, ok := globalApplication.Window.GetByID(windowId)
+	if !ok || window == nil {
+		return
+	}
+
+	lw := getLinuxWebviewWindow(window)
+	if lw == nil {
+		return
+	}
+
+	button := C.gtk_gesture_single_get_current_button((*C.GtkGestureSingle)(unsafe.Pointer(gesture)))
+	lw.drag.MouseButton = uint(button)
+	lw.drag.XRoot = int(x)
+	lw.drag.YRoot = int(y)
+	lw.drag.DragTime = uint32(C.GDK_CURRENT_TIME)
+}
+
+//export handleButtonReleased
+func handleButtonReleased(gesture *C.GtkGestureClick, nPress C.gint, x C.gdouble, y C.gdouble, data C.uintptr_t) {
+	windowId := uint(data)
+	window, ok := globalApplication.Window.GetByID(windowId)
+	if !ok || window == nil {
+		return
+	}
+
+	lw := getLinuxWebviewWindow(window)
+	if lw == nil {
+		return
+	}
+
+	button := C.gtk_gesture_single_get_current_button((*C.GtkGestureSingle)(unsafe.Pointer(gesture)))
+	lw.endDrag(uint(button), int(x), int(y))
+}
+
+//export handleKeyPressed
+func handleKeyPressed(controller *C.GtkEventControllerKey, keyval C.guint, keycode C.guint, state C.GdkModifierType, data C.uintptr_t) C.gboolean {
+	windowID := uint(data)
+
+	modifiers := uint(state)
+	var acc accelerator
+
+	if modifiers&C.GDK_SHIFT_MASK != 0 {
+		acc.Modifiers = append(acc.Modifiers, ShiftKey)
+	}
+	if modifiers&C.GDK_CONTROL_MASK != 0 {
+		acc.Modifiers = append(acc.Modifiers, ControlKey)
+	}
+	if modifiers&C.GDK_ALT_MASK != 0 {
+		acc.Modifiers = append(acc.Modifiers, OptionOrAltKey)
+	}
+	if modifiers&C.GDK_SUPER_MASK != 0 {
+		acc.Modifiers = append(acc.Modifiers, SuperKey)
+	}
+
+	keyString, ok := VirtualKeyCodes[uint(keyval)]
+	if !ok {
+		return C.gboolean(0)
+	}
+	acc.Key = keyString
+
+	windowKeyEvents <- &windowKeyEvent{
+		windowId:          windowID,
+		acceleratorString: acc.String(),
+	}
+
+	return C.gboolean(0)
+}
+
+//export onDropEnter
+func onDropEnter(data C.uintptr_t) {
+	windowId := uint(data)
+	targetWindow, ok := globalApplication.Window.GetByID(windowId)
+	if !ok || targetWindow == nil {
+		return
+	}
+	if w, ok := targetWindow.(*WebviewWindow); ok {
+		w.HandleDragEnter()
+	}
+}
+
+//export onDropLeave
+func onDropLeave(data C.uintptr_t) {
+	windowId := uint(data)
+	targetWindow, ok := globalApplication.Window.GetByID(windowId)
+	if !ok || targetWindow == nil {
+		return
+	}
+	if w, ok := targetWindow.(*WebviewWindow); ok {
+		w.HandleDragLeave()
+	}
+}
+
+//export onDropMotion
+func onDropMotion(x C.gint, y C.gint, data C.uintptr_t) {
+	windowId := uint(data)
+	targetWindow, ok := globalApplication.Window.GetByID(windowId)
+	if !ok || targetWindow == nil {
+		return
+	}
+	if w, ok := targetWindow.(*WebviewWindow); ok {
+		w.HandleDragOver(int(x), int(y))
+	}
+}
+
+//export onDropFiles
+func onDropFiles(paths **C.char, x C.gint, y C.gint, data C.uintptr_t) {
+	windowId := uint(data)
+	targetWindow, ok := globalApplication.Window.GetByID(windowId)
+	if !ok || targetWindow == nil {
+		return
+	}
+
+	offset := unsafe.Sizeof(uintptr(0))
+	var filenames []string
+	for *paths != nil {
+		filenames = append(filenames, C.GoString(*paths))
+		paths = (**C.char)(unsafe.Pointer(uintptr(unsafe.Pointer(paths)) + offset))
+	}
+
+	targetWindow.InitiateFrontendDropProcessing(filenames, int(x), int(y))
+}
+
+//export processWindowEvent
+func processWindowEvent(windowID C.uint, eventID C.uint) {
+	windowEvents <- &windowEvent{
+		WindowID: uint(windowID),
+		EventID:  uint(eventID),
+	}
 }
 
 var _ = time.Now

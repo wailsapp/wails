@@ -109,13 +109,40 @@ Files created/updated:
 TODO (deferred to Phase 3):
 - [ ] Update `v3/internal/doctor/doctor_linux.go` - Improve output to show GTK4 vs GTK3 status
 
-### Phase 3: Window Management 📋 PENDING
+### Phase 3: Window Management ✅ COMPLETE
 
-TODO:
-- [ ] Implement GTK4 signal handlers (different event model)
-- [ ] Implement window state management (fullscreen, maximize, minimize)
-- [ ] Implement GTK4 drag-and-drop with GtkDropTarget
-- [ ] Test window lifecycle on GTK4
+#### 3.1 GTK4 Event Controllers
+GTK4 replaces direct signal handlers with `GtkEventController` objects:
+- `GtkEventControllerFocus` for focus in/out events
+- `GtkGestureClick` for button press/release events
+- `GtkEventControllerKey` for keyboard events
+- Window signals: `close-request`, `notify::maximized`, `notify::fullscreened`
+
+New C function `setupWindowEventControllers()` sets up all event controllers.
+
+#### 3.2 Window Drag and Resize
+GTK4 uses `GdkToplevel` API instead of GTK3's `gtk_window_begin_move_drag`:
+- `gdk_toplevel_begin_move()` for window drag
+- `gdk_toplevel_begin_resize()` for window resize
+- Requires `gtk_native_get_surface()` to get the GdkSurface
+
+#### 3.3 Drag-and-Drop with GtkDropTarget
+Complete implementation using GTK4's `GtkDropTarget`:
+- `on_drop_enter` / `on_drop_leave` for drag enter/exit events
+- `on_drop_motion` for drag position updates
+- `on_drop` handles file drops via `GDK_TYPE_FILE_LIST`
+- Go callbacks: `onDropEnter`, `onDropLeave`, `onDropMotion`, `onDropFiles`
+
+#### 3.4 Window State Detection
+- `isMinimised()` uses `gdk_toplevel_get_state()` with `GDK_TOPLEVEL_STATE_MINIMIZED`
+- `isMaximised()` uses `gtk_window_is_maximized()`
+- `isFullscreen()` uses `gtk_window_is_fullscreen()`
+
+#### 3.5 Size Constraints
+GTK4 removed `gtk_window_set_geometry_hints()`. Now using `gtk_widget_set_size_request()` for minimum size.
+
+TODO (deferred):
+- [ ] Test window lifecycle on GTK4 with actual GTK4 libraries
 
 ### Phase 4: Menu System 📋 PENDING
 
@@ -208,6 +235,15 @@ v3/internal/assetserver/webview/
 ```
 
 ## Changelog
+
+### 2026-01-04 (Session 3)
+- Completed Phase 3: Window Management
+- Implemented GTK4 event controllers (GtkEventControllerFocus, GtkGestureClick, GtkEventControllerKey)
+- Implemented window drag using GdkToplevel API (gdk_toplevel_begin_move/resize)
+- Implemented complete drag-and-drop with GtkDropTarget
+- Fixed window state detection (isMinimised, isMaximised, isFullscreen)
+- Fixed size() function to properly return window dimensions
+- Updated windowSetGeometryHints for GTK4 (uses gtk_widget_set_size_request)
 
 ### 2026-01-04 (Session 2)
 - Completed Phase 2: Doctor & Capabilities
