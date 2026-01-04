@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	json "github.com/goccy/go-json"
+	"encoding/json"
 )
 
 var alreadyRunningError = errors.New("application is already running")

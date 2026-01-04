@@ -7,7 +7,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	json "github.com/goccy/go-json"
+	"encoding/json"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 )

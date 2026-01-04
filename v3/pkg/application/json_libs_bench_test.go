@@ -1,7 +1,10 @@
 //go:build bench
 
+// Disabled: goccy/go-json causes Windows panics. See PR #4859.
+
 package application_test
 
+/*
 import (
 	"encoding/json"
 	"testing"
@@ -308,3 +311,4 @@ func BenchmarkMarshal_Complex_Sonic(b *testing.B) {
 		_, _ = sonic.Marshal(complexResult)
 	}
 }
+*/

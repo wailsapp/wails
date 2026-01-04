@@ -3,7 +3,7 @@ package runtime
 import (
 	"fmt"
 
-	json "github.com/goccy/go-json"
+	"encoding/json"
 )
 
 var runtimeInit = `window._wails=window._wails||{};window._wails.flags=window._wails.flags||{};window.wails=window.wails||{};`

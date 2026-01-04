@@ -17,7 +17,7 @@ import (
 	"time"
 	"unsafe"
 
-	json "github.com/goccy/go-json"
+	"encoding/json"
 )
 
 // iosConsoleHandler implements slog.Handler and forwards records to the WKWebView console.

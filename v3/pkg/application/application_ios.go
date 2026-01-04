@@ -20,7 +20,7 @@ import (
 	"time"
 	"unsafe"
 
-	json "github.com/goccy/go-json"
+	"encoding/json"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/pkg/events"
