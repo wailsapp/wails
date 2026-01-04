@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	json "github.com/goccy/go-json"
+	"encoding/json"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v3/pkg/application"

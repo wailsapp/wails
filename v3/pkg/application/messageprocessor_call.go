@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	json "github.com/goccy/go-json"
+	"encoding/json"
 
 	"github.com/wailsapp/wails/v3/pkg/errs"
 )
