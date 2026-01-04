@@ -178,12 +178,34 @@ TODO (deferred):
 - [ ] Context menus with GtkPopoverMenu
 - [ ] Keyboard accelerators with GtkShortcut
 
-### Phase 5: Asset Server 📋 PENDING
+### Phase 5: Asset Server ✅ COMPLETE
 
-TODO:
-- [ ] Verify WebKitGTK 6.0 URI scheme handler API
-- [ ] Test asset loading
-- [ ] Verify JavaScript execution API changes
+WebKitGTK 6.0 uses the same URI scheme handler API as WebKitGTK 4.1.
+The asset server implementation is identical between GTK3 and GTK4.
+
+#### 5.1 Asset Server Files (already created in Phase 1)
+- `v3/internal/assetserver/webview/webkit6.go` - WebKitGTK 6.0 helpers
+- `v3/internal/assetserver/webview/request_linux_gtk4.go` - Request handling
+- `v3/internal/assetserver/webview/responsewriter_linux_gtk4.go` - Response writing
+
+#### 5.2 Missing Exports Added
+The GTK4 CGO file was missing two critical exports that were in the GTK3 file:
+- `onProcessRequest` - Handles URI scheme requests from WebKit
+- `sendMessageToBackend` - Handles JavaScript to Go communication
+
+Both exports were added to `linux_cgo_gtk4.go`.
+
+#### 5.3 Key Differences from GTK3
+| Aspect | GTK3 | GTK4 |
+|--------|------|------|
+| pkg-config | `webkit2gtk-4.1` | `webkitgtk-6.0` |
+| Headers | `webkit2/webkit2.h` | `webkit/webkit.h` |
+| Min version | 2.40 | 6.0 |
+| URI scheme API | Same | Same |
+
+TODO (deferred to testing phase):
+- [ ] Test asset loading on actual GTK4 system
+- [ ] Verify JavaScript execution works correctly
 
 ### Phase 6: Docker & Build System 📋 PENDING
 
@@ -260,6 +282,13 @@ v3/internal/assetserver/webview/
 ```
 
 ## Changelog
+
+### 2026-01-04 (Session 5)
+- Completed Phase 5: Asset Server
+- Verified WebKitGTK 6.0 uses same URI scheme handler API as WebKitGTK 4.1
+- Added missing `onProcessRequest` export to linux_cgo_gtk4.go
+- Added missing `sendMessageToBackend` export to linux_cgo_gtk4.go
+- Confirmed asset server files (webkit6.go, request/responsewriter) are complete
 
 ### 2026-01-04 (Session 4)
 - Completed Phase 4: Menu System

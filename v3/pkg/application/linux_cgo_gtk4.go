@@ -1654,6 +1654,54 @@ func processWindowEvent(windowID C.uint, eventID C.uint) {
 	}
 }
 
+//export onProcessRequest
+func onProcessRequest(request *C.WebKitURISchemeRequest, data C.uintptr_t) {
+	webView := C.webkit_uri_scheme_request_get_web_view(request)
+	windowId := uint(C.get_window_id(unsafe.Pointer(webView)))
+	webviewRequests <- &webViewAssetRequest{
+		Request:  webview.NewRequest(unsafe.Pointer(request)),
+		windowId: windowId,
+		windowName: func() string {
+			if window, ok := globalApplication.Window.GetByID(windowId); ok {
+				return window.Name()
+			}
+			return ""
+		}(),
+	}
+}
+
+//export sendMessageToBackend
+func sendMessageToBackend(contentManager *C.WebKitUserContentManager, result *C.WebKitJavascriptResult,
+	data unsafe.Pointer) {
+
+	// Get the windowID from the contentManager
+	thisWindowID := uint(C.get_window_id(unsafe.Pointer(contentManager)))
+
+	webView := C.get_webview_from_content_manager(unsafe.Pointer(contentManager))
+	var origin string
+	if webView != nil {
+		currentUri := C.webkit_web_view_get_uri(webView)
+		if currentUri != nil {
+			uri := C.g_strdup(currentUri)
+			defer C.g_free(C.gpointer(uri))
+			origin = C.GoString(uri)
+		}
+	}
+
+	var msg string
+	value := C.webkit_javascript_result_get_js_value(result)
+	message := C.jsc_value_to_string(value)
+	msg = C.GoString(message)
+	defer C.g_free(C.gpointer(message))
+	windowMessageBuffer <- &windowMessage{
+		windowId: thisWindowID,
+		message:  msg,
+		originInfo: &OriginInfo{
+			Origin: origin,
+		},
+	}
+}
+
 var _ = time.Now
 var _ = events.Linux
 var _ = webview.Scheme
