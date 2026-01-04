@@ -1,8 +1,9 @@
 package application
 
 import (
-	"encoding/json"
 	"fmt"
+
+	json "github.com/goccy/go-json"
 )
 
 type Args struct {

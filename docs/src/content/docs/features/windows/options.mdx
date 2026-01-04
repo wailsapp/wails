@@ -546,6 +546,61 @@ Assets: application.AssetOptions{
 
 **See [Build System](/concepts/build-system) for details.**
 
+## Input Options
+
+### EnableFileDrop
+
+**Type:** `bool`  
+**Default:** `false`  
+**Platform:** All
+
+```go
+EnableFileDrop: true,
+```
+
+**Purpose:** Enable drag-and-drop of files from the operating system into the window.
+
+When enabled:
+- Files dragged from file managers can be dropped into your application
+- The `WindowFilesDropped` event fires with the dropped file paths
+- Elements with `data-file-drop-target` attribute provide detailed drop information
+
+**Use cases:**
+- File upload interfaces
+- Document editors
+- Media importers
+- Any app that accepts files
+
+**Example:**
+
+```go
+window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Title:          "File Uploader",
+    EnableFileDrop: true,
+})
+
+// Handle dropped files
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    details := event.Context().DropTargetDetails()
+    
+    for _, file := range files {
+        fmt.Println("Dropped:", file)
+    }
+})
+```
+
+**HTML drop zones:**
+
+```html
+<!-- Mark elements as drop targets -->
+<div id="upload" data-file-drop-target>
+    Drop files here
+</div>
+```
+
+**See [File Drop](/features/drag-and-drop/files) for complete documentation.**
+
 ## Security Options
 
 ### ContentProtectionEnabled
