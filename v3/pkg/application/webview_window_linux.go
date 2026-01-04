@@ -116,11 +116,16 @@ func (w *linuxWebviewWindow) on(eventID uint) {
 }
 
 func (w *linuxWebviewWindow) zoom() {
-	w.zoomIn()
+	// Zoom toggles between maximized and normal state (like macOS green button)
+	if w.isMaximised() {
+		w.unmaximise()
+	} else {
+		w.maximise()
+	}
 }
 
 func (w *linuxWebviewWindow) windowZoom() {
-	w.zoom() // FIXME> This should be removed
+	w.zoom()
 }
 
 func (w *linuxWebviewWindow) forceReload() {
@@ -279,7 +284,7 @@ func (w *linuxWebviewWindow) run() {
 		w.gtkmenu = (menu.impl).(*linuxMenu).native
 	}
 
-	w.window, w.webview, w.vbox = windowNew(app.application, w.gtkmenu, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)
+	w.window, w.webview, w.vbox = windowNew(app.application, w.gtkmenu, w.parent.options.Linux.MenuStyle, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)
 	app.registerWindow(w.window, w.parent.id) // record our mapping
 	w.connectSignals()
 	if w.parent.options.EnableFileDrop {

@@ -270,7 +270,11 @@ func menuActionActivated(id C.guint) {
 	}
 }
 
-func menuAddSeparator(menu *Menu) {
+func menuNewSection() pointer {
+	return pointer(C.g_menu_new())
+}
+
+func menuAppendSection(menu *Menu, section pointer) {
 	if menu.impl == nil {
 		return
 	}
@@ -279,11 +283,32 @@ func menuAddSeparator(menu *Menu) {
 		return
 	}
 	gmenu := (*C.GMenu)(impl.native)
-	section := C.g_menu_new()
-	C.g_menu_append_section(gmenu, nil, (*C.GMenuModel)(unsafe.Pointer(section)))
+	C.g_menu_append_section(gmenu, nil, (*C.GMenuModel)(section))
 }
 
-func menuAppend(parent *Menu, menu *MenuItem) {
+func menuAppendItemToSection(section pointer, item *MenuItem) {
+	if item.impl == nil {
+		return
+	}
+	menuImpl := item.impl.(*linuxMenuItem)
+	if menuImpl.native == nil {
+		return
+	}
+	gsection := (*C.GMenu)(section)
+	gitem := (*C.GMenuItem)(menuImpl.native)
+
+	menuImpl.parentMenu = section
+	menuImpl.isHidden = item.hidden
+
+	if !item.hidden {
+		C.g_menu_append_item(gsection, gitem)
+	}
+}
+
+var menuItemCounters = make(map[pointer]int)
+var menuItemCountersLock sync.Mutex
+
+func menuAppend(parent *Menu, menu *MenuItem, hidden bool) {
 	if parent.impl == nil || menu.impl == nil {
 		return
 	}
@@ -294,7 +319,18 @@ func menuAppend(parent *Menu, menu *MenuItem) {
 	}
 	gmenu := (*C.GMenu)(parentImpl.native)
 	gitem := (*C.GMenuItem)(menuImpl.native)
-	C.g_menu_append_item(gmenu, gitem)
+
+	menuImpl.parentMenu = parentImpl.native
+	menuImpl.isHidden = hidden
+
+	menuItemCountersLock.Lock()
+	menuImpl.menuIndex = menuItemCounters[parentImpl.native]
+	menuItemCounters[parentImpl.native]++
+	menuItemCountersLock.Unlock()
+
+	if !hidden {
+		C.g_menu_append_item(gmenu, gitem)
+	}
 }
 
 func menuBarNew() pointer {
@@ -372,6 +408,20 @@ func menuItemNewWithId(label string, bitmap []byte, itemId uint) pointer {
 func menuItemDestroy(widget pointer) {
 	if widget != nil {
 		C.g_object_unref(C.gpointer(widget))
+	}
+}
+
+func menuItemSetHidden(item *linuxMenuItem, hidden bool) {
+	if item.parentMenu == nil {
+		return
+	}
+	gmenu := (*C.GMenu)(item.parentMenu)
+	gitem := (*C.GMenuItem)(item.native)
+
+	if hidden {
+		C.menu_remove_item(gmenu, C.gint(item.menuIndex))
+	} else {
+		C.menu_insert_item(gmenu, C.gint(item.menuIndex), gitem)
 	}
 }
 
@@ -481,6 +531,30 @@ func menuRadioItemNewWithId(label string, itemId uint, checked bool) pointer {
 	}
 
 	gitem := C.create_check_menu_item(cLabel, cAction, C.guint(itemId), initialState)
+
+	cKey := C.CString("item_id")
+	defer C.free(unsafe.Pointer(cKey))
+	C.g_object_set_data((*C.GObject)(unsafe.Pointer(gitem)), cKey, C.gpointer(uintptr(itemId)))
+	return pointer(gitem)
+}
+
+func menuRadioItemNewWithGroup(label string, itemId uint, groupId uint, checkedId uint) pointer {
+	cLabel := C.CString(label)
+	defer C.free(unsafe.Pointer(cLabel))
+
+	actionName := fmt.Sprintf("radio_group_%d", groupId)
+	cAction := C.CString(actionName)
+	defer C.free(unsafe.Pointer(cAction))
+
+	targetValue := fmt.Sprintf("%d", itemId)
+	cTarget := C.CString(targetValue)
+	defer C.free(unsafe.Pointer(cTarget))
+
+	initialValue := fmt.Sprintf("%d", checkedId)
+	cInitial := C.CString(initialValue)
+	defer C.free(unsafe.Pointer(cInitial))
+
+	gitem := C.create_radio_menu_item(cLabel, cAction, cTarget, cInitial, C.guint(itemId))
 
 	cKey := C.CString("item_id")
 	defer C.free(unsafe.Pointer(cKey))
@@ -703,7 +777,7 @@ func widgetSetVisible(widget pointer, hidden bool) {
 }
 
 func (w *linuxWebviewWindow) close() {
-	C.gtk_window_close(w.gtkWindow())
+	C.gtk_window_destroy(w.gtkWindow())
 	getNativeApplication().unregisterWindow(windowPointer(w.window))
 }
 
@@ -932,7 +1006,7 @@ func (w *linuxWebviewWindow) minimise() {
 	C.gtk_window_minimize(w.gtkWindow())
 }
 
-func windowNew(application pointer, menu pointer, windowId uint, gpuPolicy WebviewGpuPolicy) (window, webview, vbox pointer) {
+func windowNew(application pointer, menu pointer, menuStyle LinuxMenuStyle, windowId uint, gpuPolicy WebviewGpuPolicy) (window, webview, vbox pointer) {
 	window = pointer(C.gtk_application_window_new((*C.GtkApplication)(application)))
 	C.g_object_ref_sink(C.gpointer(window))
 
@@ -947,8 +1021,14 @@ func windowNew(application pointer, menu pointer, windowId uint, gpuPolicy Webvi
 	C.gtk_window_set_child((*C.GtkWindow)(window), (*C.GtkWidget)(vbox))
 
 	if menu != nil {
-		menuBar := C.create_menu_bar_from_model((*C.GMenu)(menu))
-		C.gtk_box_prepend((*C.GtkBox)(vbox), menuBar)
+		switch menuStyle {
+		case LinuxMenuStylePrimaryMenu:
+			headerBar := C.create_header_bar_with_menu((*C.GMenu)(menu))
+			C.gtk_window_set_titlebar((*C.GtkWindow)(window), headerBar)
+		default:
+			menuBar := C.create_menu_bar_from_model((*C.GMenu)(menu))
+			C.gtk_box_prepend((*C.GtkBox)(vbox), menuBar)
+		}
 	}
 
 	C.gtk_box_append((*C.GtkBox)(vbox), (*C.GtkWidget)(webview))

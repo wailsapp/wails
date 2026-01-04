@@ -1,5 +1,4 @@
-// linux_cgo_gtk4.h - GTK4/WebKitGTK 6.0 C declarations for Wails v3
-// This file is included by linux_cgo_gtk4.go via CGO
+//go:build linux && !gtk3
 
 #ifndef LINUX_CGO_GTK4_H
 #define LINUX_CGO_GTK4_H
@@ -131,13 +130,17 @@ void init_app_action_group(void);
 void set_app_menu_model(GMenu *menu);
 GMenuItem* create_menu_item(const char *label, const char *action_name, guint item_id);
 GMenuItem* create_check_menu_item(const char *label, const char *action_name, guint item_id, gboolean initial_state);
+GMenuItem* create_radio_menu_item(const char *label, const char *action_name, const char *target, const char *initial_value, guint item_id);
 GtkWidget* create_menu_bar_from_model(GMenu *menu_model);
+GtkWidget* create_header_bar_with_menu(GMenu *menu_model);
 void attach_action_group_to_widget(GtkWidget *widget);
 void set_action_accelerator(GtkApplication *app, const char *action_name, const char *accel);
 char* build_accelerator_string(guint key, GdkModifierType mods);
 void set_action_enabled(const char *action_name, gboolean enabled);
 void set_action_state(const char *action_name, gboolean state);
 gboolean get_action_state(const char *action_name);
+void menu_remove_item(GMenu *menu, gint position);
+void menu_insert_item(GMenu *menu, gint position, GMenuItem *item);
 
 // ============================================================================
 // Window event controllers (GTK4 style)

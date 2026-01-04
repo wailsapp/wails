@@ -8,9 +8,12 @@ import (
 )
 
 type linuxMenuItem struct {
-	menuItem  *MenuItem
-	native    pointer
-	handlerId uint
+	menuItem   *MenuItem
+	native     pointer
+	handlerId  uint
+	parentMenu pointer
+	menuIndex  int
+	isHidden   bool
 }
 
 func (l linuxMenuItem) setTooltip(tooltip string) {
@@ -59,10 +62,14 @@ func (l linuxMenuItem) setChecked(checked bool) {
 	})
 }
 
-func (l linuxMenuItem) setHidden(hidden bool) {
+func (l *linuxMenuItem) setHidden(hidden bool) {
+	if l.isHidden == hidden {
+		return
+	}
 	InvokeSync(func() {
-		widgetSetVisible(l.native, hidden)
+		menuItemSetHidden(l, hidden)
 	})
+	l.isHidden = hidden
 }
 
 func (l linuxMenuItem) setAccelerator(accelerator *accelerator) {
@@ -105,10 +112,10 @@ func newCheckMenuItemImpl(item *MenuItem) *linuxMenuItem {
 	return result
 }
 
-func newRadioMenuItemImpl(item *MenuItem) *linuxMenuItem {
+func newRadioMenuItemImpl(item *MenuItem, groupId uint, checkedId uint) *linuxMenuItem {
 	result := &linuxMenuItem{
 		menuItem: item,
-		native:   menuRadioItemNewWithId(item.label, item.id, item.checked),
+		native:   menuRadioItemNewWithGroup(item.label, item.id, groupId, checkedId),
 	}
 	if item.accelerator != nil {
 		result.setAccelerator(item.accelerator)

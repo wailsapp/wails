@@ -23,6 +23,8 @@ func (m *linuxMenu) update() {
 	m.processMenu(m.menu)
 }
 
+var radioGroupCounter uint = 0
+
 func (m *linuxMenu) processMenu(menu *Menu) {
 	if menu.impl == nil {
 		menu.impl = &linuxMenu{
@@ -31,29 +33,89 @@ func (m *linuxMenu) processMenu(menu *Menu) {
 		}
 	}
 
+	var currentRadioGroup uint = 0
+	var checkedRadioId uint = 0
+
+	hasSeparators := false
 	for _, item := range menu.items {
+		if item.itemType == separator {
+			hasSeparators = true
+			break
+		}
+	}
+
+	// GMenu uses sections for visual separators
+	// Only use sections if the menu has separators
+	var currentSection pointer
+	var hasSectionItems bool
+	if hasSeparators {
+		currentSection = menuNewSection()
+		hasSectionItems = false
+	}
+
+	for _, item := range menu.items {
+		if item.itemType != radio {
+			currentRadioGroup = 0
+			checkedRadioId = 0
+		}
+
 		switch item.itemType {
 		case submenu:
 			menuItem := newMenuItemImpl(item)
 			item.impl = menuItem
 			m.processMenu(item.submenu)
 			m.addSubMenuToItem(item.submenu, item)
-			m.addMenuItem(menu, item)
+			if hasSeparators {
+				m.addMenuItemToSection(currentSection, item)
+				hasSectionItems = true
+			} else {
+				m.addMenuItem(menu, item)
+			}
 		case text:
 			menuItem := newMenuItemImpl(item)
 			item.impl = menuItem
-			m.addMenuItem(menu, item)
+			if hasSeparators {
+				m.addMenuItemToSection(currentSection, item)
+				hasSectionItems = true
+			} else {
+				m.addMenuItem(menu, item)
+			}
 		case checkbox:
 			menuItem := newCheckMenuItemImpl(item)
 			item.impl = menuItem
-			m.addMenuItem(menu, item)
+			if hasSeparators {
+				m.addMenuItemToSection(currentSection, item)
+				hasSectionItems = true
+			} else {
+				m.addMenuItem(menu, item)
+			}
 		case radio:
-			menuItem := newRadioMenuItemImpl(item)
+			if currentRadioGroup == 0 {
+				radioGroupCounter++
+				currentRadioGroup = radioGroupCounter
+			}
+			if item.checked {
+				checkedRadioId = item.id
+			}
+			menuItem := newRadioMenuItemImpl(item, currentRadioGroup, checkedRadioId)
 			item.impl = menuItem
-			m.addMenuItem(menu, item)
+			if hasSeparators {
+				m.addMenuItemToSection(currentSection, item)
+				hasSectionItems = true
+			} else {
+				m.addMenuItem(menu, item)
+			}
 		case separator:
-			m.addMenuSeparator(menu)
+			if hasSectionItems {
+				menuAppendSection(menu, currentSection)
+				currentSection = menuNewSection()
+				hasSectionItems = false
+			}
 		}
+	}
+
+	if hasSeparators && hasSectionItems {
+		menuAppendSection(menu, currentSection)
 	}
 
 	for _, item := range menu.items {
@@ -77,12 +139,12 @@ func (m *linuxMenu) addSubMenuToItem(menu *Menu, item *MenuItem) {
 	menuSetSubmenu(item, menu)
 }
 
-func (m *linuxMenu) addMenuItem(parent *Menu, menu *MenuItem) {
-	menuAppend(parent, menu)
+func (m *linuxMenu) addMenuItem(parent *Menu, item *MenuItem) {
+	menuAppend(parent, item, item.hidden)
 }
 
-func (m *linuxMenu) addMenuSeparator(menu *Menu) {
-	menuAddSeparator(menu)
+func (m *linuxMenu) addMenuItemToSection(section pointer, item *MenuItem) {
+	menuAppendItemToSection(section, item)
 }
 
 func (m *linuxMenu) addServicesMenu(menu *Menu) {

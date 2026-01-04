@@ -1,5 +1,4 @@
-// linux_cgo_gtk4.c - GTK4/WebKitGTK 6.0 C implementation for Wails v3
-// Build tag: !gtk3
+//go:build linux && !gtk3
 
 #include "linux_cgo_gtk4.h"
 
@@ -187,8 +186,56 @@ GMenuItem* create_check_menu_item(const char *label, const char *action_name, gu
     return item;
 }
 
+static void on_radio_action_activated(GSimpleAction *action, GVariant *parameter, gpointer user_data) {
+    const gchar *target = g_variant_get_string(parameter, NULL);
+    g_simple_action_set_state(action, g_variant_new_string(target));
+    guint item_id = (guint)atoi(target);
+    menuActionActivated(item_id);
+}
+
+GMenuItem* create_radio_menu_item(const char *label, const char *action_name, const char *target, const char *initial_value, guint item_id) {
+    init_app_action_group();
+
+    char full_action_name[256];
+    snprintf(full_action_name, sizeof(full_action_name), "app.%s", action_name);
+
+    GMenuItem *item = g_menu_item_new(label, NULL);
+    g_menu_item_set_action_and_target(item, full_action_name, "s", target);
+
+    GAction *existing = g_action_map_lookup_action(G_ACTION_MAP(app_action_group), action_name);
+    if (existing == NULL) {
+        GSimpleAction *action = g_simple_action_new_stateful(
+            action_name,
+            G_VARIANT_TYPE_STRING,
+            g_variant_new_string(initial_value)
+        );
+        MenuItemData *data = g_new0(MenuItemData, 1);
+        data->id = item_id;
+        data->action = action;
+        g_signal_connect(action, "activate", G_CALLBACK(on_radio_action_activated), data);
+        g_action_map_add_action(G_ACTION_MAP(app_action_group), G_ACTION(action));
+    }
+
+    return item;
+}
+
 GtkWidget* create_menu_bar_from_model(GMenu *menu_model) {
     return gtk_popover_menu_bar_new_from_model(G_MENU_MODEL(menu_model));
+}
+
+GtkWidget* create_header_bar_with_menu(GMenu *menu_model) {
+    GtkWidget *header_bar = gtk_header_bar_new();
+    
+    GtkWidget *menu_button = gtk_menu_button_new();
+    gtk_menu_button_set_icon_name(GTK_MENU_BUTTON(menu_button), "open-menu-symbolic");
+    gtk_menu_button_set_menu_model(GTK_MENU_BUTTON(menu_button), G_MENU_MODEL(menu_model));
+    gtk_widget_set_tooltip_text(menu_button, "Main Menu");
+    gtk_accessible_update_property(GTK_ACCESSIBLE(menu_button),
+        GTK_ACCESSIBLE_PROPERTY_LABEL, "Main Menu", -1);
+    
+    gtk_header_bar_pack_end(GTK_HEADER_BAR(header_bar), menu_button);
+    
+    return header_bar;
 }
 
 void attach_action_group_to_widget(GtkWidget *widget) {
@@ -238,6 +285,14 @@ gboolean get_action_state(const char *action_name) {
         }
     }
     return FALSE;
+}
+
+void menu_remove_item(GMenu *menu, gint position) {
+    g_menu_remove(menu, position);
+}
+
+void menu_insert_item(GMenu *menu, gint position, GMenuItem *item) {
+    g_menu_insert_item(menu, position, item);
 }
 
 // ============================================================================

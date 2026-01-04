@@ -642,6 +642,17 @@ const (
 	WebviewGpuPolicyNever
 )
 
+// LinuxMenuStyle defines how the application menu is displayed on Linux (GTK4 only).
+// On GTK3 builds, this option is ignored and MenuBar style is always used.
+type LinuxMenuStyle int
+
+const (
+	// LinuxMenuStyleMenuBar displays a traditional menu bar below the title bar (default)
+	LinuxMenuStyleMenuBar LinuxMenuStyle = iota
+	// LinuxMenuStylePrimaryMenu displays a primary menu button in the header bar (GNOME style)
+	LinuxMenuStylePrimaryMenu
+)
+
 // LinuxWindow specific to Linux windows
 type LinuxWindow struct {
 	// Icon Sets up the icon representing the window. This icon is used when the window is minimized
@@ -667,4 +678,7 @@ type LinuxWindow struct {
 
 	// Menu is the window's menu
 	Menu *Menu
+
+	// MenuStyle controls how the menu is displayed (GTK4 only, ignored on GTK3)
+	MenuStyle LinuxMenuStyle
 }

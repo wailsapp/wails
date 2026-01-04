@@ -384,6 +384,48 @@ v3/internal/assetserver/webview/
 
 ## Changelog
 
+### 2026-01-04 (Session 10)
+- Fixed Window → Zoom menu behavior to toggle maximize/restore (was incorrectly calling webview zoomIn)
+- Fixed radio button styling in GTK4 GMenu (now shows dots instead of checkmarks)
+  - Implemented proper GMenu radio groups with string-valued stateful actions
+  - All items in group share same action name with unique target values
+  - Added `create_radio_menu_item()` C helper and `menuRadioItemNewWithGroup()` Go wrapper
+- Researched Wayland minimize behavior:
+  - `gtk_window_minimize()` works on GNOME/KDE (sends xdg_toplevel_set_minimized)
+  - May be no-op on tiling WMs (Sway, etc.) per Wayland protocol design
+- Fixed app not terminating when last window closed
+  - Added quit logic to `unregisterWindow()` in `application_linux_gtk4.go`
+  - Respects `DisableQuitOnLastWindowClosed` option
+- Fixed menu separators not showing
+  - GMenu uses sections for visual separators (not separate separator items)
+  - Rewrote menu processing to group items into sections, separators create new sections
+  - Added `menuNewSection()`, `menuAppendSection()`, `menuAppendItemToSection()` helpers
+- Added CSS provider to reduce popover menu padding
+- Removed all debug println statements
+- Files modified:
+  - `v3/pkg/application/linux_cgo_gtk4.go` - added radio group support, section helpers
+  - `v3/pkg/application/linux_cgo_gtk4.c` - added create_radio_menu_item(), init_menu_css()
+  - `v3/pkg/application/linux_cgo_gtk4.h` - added function declaration
+  - `v3/pkg/application/application_linux_gtk4.go` - added quit-on-last-window logic
+  - `v3/pkg/application/menu_linux_gtk4.go` - section-based menu processing, radio groups
+  - `v3/pkg/application/menuitem_linux_gtk4.go` - updated radio item creation
+  - `v3/pkg/application/webview_window_linux.go` - fixed zoom() to toggle maximize
+  - `v3/pkg/application/window_manager.go` - removed debug output
+
+### 2026-01-04 (Session 9)
+- Fixed GTK4 window creation crash (SIGSEGV in gtk_application_window_new)
+- **Root Cause**: GTK4 requires app to be "activated" before creating windows
+- **Solution**: Added activation synchronization mechanism:
+  - Added `activated` channel and `sync.Once` to `linuxApp` struct
+  - Added `markActivated()` method called from `activateLinux()` callback
+  - Added `waitForActivation()` method for callers to block until ready
+  - Modified `WebviewWindow.Run()` to wait for activation before `InvokeSync`
+- Files modified:
+  - `v3/pkg/application/application_linux_gtk4.go` - activation gate
+  - `v3/pkg/application/linux_cgo_gtk4.go` - call markActivated() in activateLinux
+  - `v3/pkg/application/webview_window.go` - wait for activation on GTK4
+- GTK4 apps now create windows successfully without crashes
+
 ### 2026-01-04 (Session 8)
 - Fixed GTK3/GTK4 symbol conflict in operatingsystem package
 - Added `gtk3` build tag to `v3/internal/operatingsystem/webkit_linux.go`

@@ -88,6 +88,10 @@ func (a *linuxApp) run() error {
 }
 
 func (a *linuxApp) destroy() {
+	if !globalApplication.shouldQuit() {
+		return
+	}
+	globalApplication.cleanup()
 	appDestroy(a.application)
 }
 
@@ -184,7 +188,12 @@ func (a *linuxApp) registerWindow(window pointer, id uint) {
 func (a *linuxApp) unregisterWindow(window windowPointer) {
 	a.windowMapLock.Lock()
 	delete(a.windowMap, window)
+	remainingWindows := len(a.windowMap)
 	a.windowMapLock.Unlock()
+
+	if remainingWindows == 0 && !a.parent.options.Linux.DisableQuitOnLastWindowClosed {
+		a.destroy()
+	}
 }
 
 func newPlatformApp(parent *App) *linuxApp {
