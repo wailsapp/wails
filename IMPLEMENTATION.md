@@ -233,13 +233,51 @@ New targets added to `v3/Taskfile.yaml`:
 TODO (deferred):
 - [ ] Update CI/CD workflows to test both GTK versions
 
-### Phase 7: Testing 📋 PENDING
+### Phase 8: Dialog System ✅ COMPLETE
+
+GTK4 completely replaced the dialog APIs. GTK3's `GtkFileChooserDialog` and
+`gtk_message_dialog_new` are deprecated/removed.
+
+#### 8.1 File Dialogs
+GTK4 uses `GtkFileDialog` with async API:
+- `gtk_file_dialog_open()` - Open single file
+- `gtk_file_dialog_open_multiple()` - Open multiple files
+- `gtk_file_dialog_select_folder()` - Select folder
+- `gtk_file_dialog_save()` - Save file
+
+Key differences:
+- No more `gtk_dialog_run()` - everything is async with callbacks
+- Filters use `GListStore` of `GtkFileFilter` objects
+- Results delivered via `GAsyncResult` callbacks
+
+#### 8.2 Message Dialogs
+GTK4 uses `GtkAlertDialog`:
+- `gtk_alert_dialog_choose()` - Show dialog with buttons
+- Buttons specified as NULL-terminated string array
+- Default and cancel button indices configurable
+
+#### 8.3 Implementation Details
+- Request ID tracking for async callback matching
+- `fileDialogCallback` / `alertDialogCallback` C exports for results
+- `runChooserDialog()` and `runQuestionDialog()` Go wrappers
+- `runOpenFileDialog()` and `runSaveFileDialog()` convenience functions
+
+| GTK3 | GTK4 |
+|------|------|
+| `GtkFileChooserDialog` | `GtkFileDialog` |
+| `gtk_dialog_run()` | Async callbacks |
+| `gtk_message_dialog_new()` | `GtkAlertDialog` |
+| `gtk_widget_destroy()` | `g_object_unref()` |
+
+### Phase 9: Testing 📋 PENDING
 
 TODO:
 - [ ] Test on Ubuntu 24.04 (native GTK4)
 - [ ] Test on Ubuntu 22.04 (backported WebKitGTK 6.0)
 - [ ] Test legacy build on older systems
 - [ ] Performance benchmarks
+- [ ] Verify file dialogs work correctly
+- [ ] Verify message dialogs work correctly
 
 ## API Differences: GTK3 vs GTK4
 
@@ -301,6 +339,13 @@ v3/internal/assetserver/webview/
 ```
 
 ## Changelog
+
+### 2026-01-04 (Session 6)
+- Completed Phase 8: Dialog System
+- Implemented GtkFileDialog for file open/save/folder dialogs
+- Implemented GtkAlertDialog for message dialogs
+- Added async callback system for GTK4 dialogs (no more gtk_dialog_run)
+- Added C helper functions and Go wrapper functions
 
 ### 2026-01-04 (Session 5 continued)
 - Completed Phase 6: Docker & Build System

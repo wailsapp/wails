@@ -418,6 +418,228 @@ static void disableDND(GtkWidget *widget, gpointer data) {
     // The default behavior is to not accept drops
 }
 
+// ============================================================================
+// GTK4 Dialog System - GtkFileDialog and GtkAlertDialog
+// GTK4 uses async dialogs instead of gtk_dialog_run()
+// ============================================================================
+
+// File dialog result callback types
+typedef void (*FileDialogCallback)(GObject *source, GAsyncResult *result, gpointer user_data);
+
+// Create a new file dialog for opening files
+static GtkFileDialog* create_file_dialog(const char *title) {
+    GtkFileDialog *dialog = gtk_file_dialog_new();
+    gtk_file_dialog_set_title(dialog, title);
+    return dialog;
+}
+
+// Create file filter and add to filter list
+static void add_file_filter(GtkFileDialog *dialog, GListStore *filters, const char *name, const char *pattern) {
+    GtkFileFilter *filter = gtk_file_filter_new();
+    gtk_file_filter_set_name(filter, name);
+
+    // Split pattern by semicolon and add each
+    gchar **patterns = g_strsplit(pattern, ";", -1);
+    for (int i = 0; patterns[i] != NULL; i++) {
+        gchar *p = g_strstrip(patterns[i]);
+        if (strlen(p) > 0) {
+            gtk_file_filter_add_pattern(filter, p);
+        }
+    }
+    g_strfreev(patterns);
+
+    g_list_store_append(filters, filter);
+    g_object_unref(filter);
+}
+
+// Set filters on file dialog
+static void set_file_dialog_filters(GtkFileDialog *dialog, GListStore *filters) {
+    gtk_file_dialog_set_filters(dialog, G_LIST_MODEL(filters));
+}
+
+// File dialog callback data
+typedef struct {
+    guint request_id;
+    gboolean allow_multiple;
+    gboolean is_save;
+    gboolean is_folder;
+} FileDialogData;
+
+extern void fileDialogCallback(guint request_id, char **files, int count, gboolean cancelled);
+
+// Callback for single file open
+static void on_file_dialog_open_finish(GObject *source, GAsyncResult *result, gpointer user_data) {
+    FileDialogData *data = (FileDialogData *)user_data;
+    GtkFileDialog *dialog = GTK_FILE_DIALOG(source);
+    GError *error = NULL;
+
+    GFile *file = gtk_file_dialog_open_finish(dialog, result, &error);
+
+    if (error != NULL) {
+        // User cancelled or error
+        fileDialogCallback(data->request_id, NULL, 0, TRUE);
+        g_error_free(error);
+    } else if (file != NULL) {
+        char *path = g_file_get_path(file);
+        char *files[1] = { path };
+        fileDialogCallback(data->request_id, files, 1, FALSE);
+        g_free(path);
+        g_object_unref(file);
+    }
+
+    g_free(data);
+}
+
+// Callback for multiple file open
+static void on_file_dialog_open_multiple_finish(GObject *source, GAsyncResult *result, gpointer user_data) {
+    FileDialogData *data = (FileDialogData *)user_data;
+    GtkFileDialog *dialog = GTK_FILE_DIALOG(source);
+    GError *error = NULL;
+
+    GListModel *files = gtk_file_dialog_open_multiple_finish(dialog, result, &error);
+
+    if (error != NULL) {
+        fileDialogCallback(data->request_id, NULL, 0, TRUE);
+        g_error_free(error);
+    } else if (files != NULL) {
+        guint n = g_list_model_get_n_items(files);
+        char **paths = g_new0(char*, n + 1);
+
+        for (guint i = 0; i < n; i++) {
+            GFile *file = G_FILE(g_list_model_get_item(files, i));
+            paths[i] = g_file_get_path(file);
+            g_object_unref(file);
+        }
+
+        fileDialogCallback(data->request_id, paths, (int)n, FALSE);
+
+        for (guint i = 0; i < n; i++) {
+            g_free(paths[i]);
+        }
+        g_free(paths);
+        g_object_unref(files);
+    }
+
+    g_free(data);
+}
+
+// Callback for folder select
+static void on_file_dialog_select_folder_finish(GObject *source, GAsyncResult *result, gpointer user_data) {
+    FileDialogData *data = (FileDialogData *)user_data;
+    GtkFileDialog *dialog = GTK_FILE_DIALOG(source);
+    GError *error = NULL;
+
+    GFile *file = gtk_file_dialog_select_folder_finish(dialog, result, &error);
+
+    if (error != NULL) {
+        fileDialogCallback(data->request_id, NULL, 0, TRUE);
+        g_error_free(error);
+    } else if (file != NULL) {
+        char *path = g_file_get_path(file);
+        char *files[1] = { path };
+        fileDialogCallback(data->request_id, files, 1, FALSE);
+        g_free(path);
+        g_object_unref(file);
+    }
+
+    g_free(data);
+}
+
+// Callback for save dialog
+static void on_file_dialog_save_finish(GObject *source, GAsyncResult *result, gpointer user_data) {
+    FileDialogData *data = (FileDialogData *)user_data;
+    GtkFileDialog *dialog = GTK_FILE_DIALOG(source);
+    GError *error = NULL;
+
+    GFile *file = gtk_file_dialog_save_finish(dialog, result, &error);
+
+    if (error != NULL) {
+        fileDialogCallback(data->request_id, NULL, 0, TRUE);
+        g_error_free(error);
+    } else if (file != NULL) {
+        char *path = g_file_get_path(file);
+        char *files[1] = { path };
+        fileDialogCallback(data->request_id, files, 1, FALSE);
+        g_free(path);
+        g_object_unref(file);
+    }
+
+    g_free(data);
+}
+
+// Open file dialog
+static void show_open_file_dialog(GtkWindow *parent, GtkFileDialog *dialog, guint request_id, gboolean allow_multiple, gboolean is_folder) {
+    FileDialogData *data = g_new0(FileDialogData, 1);
+    data->request_id = request_id;
+    data->allow_multiple = allow_multiple;
+    data->is_folder = is_folder;
+
+    if (is_folder) {
+        gtk_file_dialog_select_folder(dialog, parent, NULL, on_file_dialog_select_folder_finish, data);
+    } else if (allow_multiple) {
+        gtk_file_dialog_open_multiple(dialog, parent, NULL, on_file_dialog_open_multiple_finish, data);
+    } else {
+        gtk_file_dialog_open(dialog, parent, NULL, on_file_dialog_open_finish, data);
+    }
+}
+
+// Save file dialog
+static void show_save_file_dialog(GtkWindow *parent, GtkFileDialog *dialog, guint request_id) {
+    FileDialogData *data = g_new0(FileDialogData, 1);
+    data->request_id = request_id;
+    data->is_save = TRUE;
+
+    gtk_file_dialog_save(dialog, parent, NULL, on_file_dialog_save_finish, data);
+}
+
+// ============================================================================
+// GtkAlertDialog for message dialogs
+// ============================================================================
+
+typedef struct {
+    guint request_id;
+} AlertDialogData;
+
+extern void alertDialogCallback(guint request_id, int button_index);
+
+static void on_alert_dialog_response(GObject *source, GAsyncResult *result, gpointer user_data) {
+    AlertDialogData *data = (AlertDialogData *)user_data;
+    GtkAlertDialog *dialog = GTK_ALERT_DIALOG(source);
+    GError *error = NULL;
+
+    int button = gtk_alert_dialog_choose_finish(dialog, result, &error);
+
+    if (error != NULL) {
+        // Cancelled
+        alertDialogCallback(data->request_id, -1);
+        g_error_free(error);
+    } else {
+        alertDialogCallback(data->request_id, button);
+    }
+
+    g_free(data);
+}
+
+static void show_alert_dialog(GtkWindow *parent, const char *message, const char *detail,
+                              const char **buttons, int button_count, int default_button,
+                              int cancel_button, guint request_id) {
+    GtkAlertDialog *dialog = gtk_alert_dialog_new("%s", message);
+
+    if (detail != NULL && strlen(detail) > 0) {
+        gtk_alert_dialog_set_detail(dialog, detail);
+    }
+
+    gtk_alert_dialog_set_buttons(dialog, buttons);
+    gtk_alert_dialog_set_default_button(dialog, default_button);
+    gtk_alert_dialog_set_cancel_button(dialog, cancel_button);
+
+    AlertDialogData *data = g_new0(AlertDialogData, 1);
+    data->request_id = request_id;
+
+    gtk_alert_dialog_choose(dialog, parent, NULL, on_alert_dialog_response, data);
+    g_object_unref(dialog);
+}
+
 */
 import "C"
 
@@ -1702,6 +1924,271 @@ func sendMessageToBackend(contentManager *C.WebKitUserContentManager, result *C.
 	}
 }
 
+// ============================================================================
+// GTK4 Dialog System - Go wrapper functions
+// ============================================================================
+
+// Dialog request tracking
+var (
+	dialogRequestCounter uint32
+	dialogRequestMutex   sync.Mutex
+	fileDialogCallbacks  = make(map[uint]chan string)
+	alertDialogCallbacks = make(map[uint]chan int)
+)
+
+func nextDialogRequestID() uint {
+	dialogRequestMutex.Lock()
+	defer dialogRequestMutex.Unlock()
+	dialogRequestCounter++
+	return uint(dialogRequestCounter)
+}
+
+//export fileDialogCallback
+func fileDialogCallback(requestID C.uint, files **C.char, count C.int, cancelled C.gboolean) {
+	dialogRequestMutex.Lock()
+	ch, ok := fileDialogCallbacks[uint(requestID)]
+	if ok {
+		delete(fileDialogCallbacks, uint(requestID))
+	}
+	dialogRequestMutex.Unlock()
+
+	if !ok {
+		return
+	}
+
+	if cancelled != 0 {
+		close(ch)
+		return
+	}
+
+	// Convert C string array to Go strings
+	if count > 0 && files != nil {
+		slice := unsafe.Slice(files, int(count))
+		for _, cstr := range slice {
+			if cstr != nil {
+				ch <- C.GoString(cstr)
+			}
+		}
+	}
+	close(ch)
+}
+
+//export alertDialogCallback
+func alertDialogCallback(requestID C.uint, buttonIndex C.int) {
+	dialogRequestMutex.Lock()
+	ch, ok := alertDialogCallbacks[uint(requestID)]
+	if ok {
+		delete(alertDialogCallbacks, uint(requestID))
+	}
+	dialogRequestMutex.Unlock()
+
+	if !ok {
+		return
+	}
+
+	ch <- int(buttonIndex)
+	close(ch)
+}
+
+func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFolder, title string, action int, acceptLabel string, filters []FileFilter) (chan string, error) {
+	requestID := nextDialogRequestID()
+	resultChan := make(chan string, 100)
+
+	dialogRequestMutex.Lock()
+	fileDialogCallbacks[requestID] = resultChan
+	dialogRequestMutex.Unlock()
+
+	InvokeAsync(func() {
+		cTitle := C.CString(title)
+		defer C.free(unsafe.Pointer(cTitle))
+
+		dialog := C.create_file_dialog(cTitle)
+		defer C.g_object_unref(C.gpointer(dialog))
+
+		// Create filter list if we have filters
+		if len(filters) > 0 {
+			filterStore := C.g_list_store_new(C.gtk_file_filter_get_type())
+			defer C.g_object_unref(C.gpointer(filterStore))
+
+			for _, filter := range filters {
+				cName := C.CString(filter.DisplayName)
+				cPattern := C.CString(filter.Pattern)
+				C.add_file_filter(dialog, filterStore, cName, cPattern)
+				C.free(unsafe.Pointer(cName))
+				C.free(unsafe.Pointer(cPattern))
+			}
+			C.set_file_dialog_filters(dialog, filterStore)
+		}
+
+		// Set initial folder if provided
+		if currentFolder != "" {
+			cFolder := C.CString(currentFolder)
+			file := C.g_file_new_for_path(cFolder)
+			C.gtk_file_dialog_set_initial_folder(dialog, file)
+			C.g_object_unref(C.gpointer(file))
+			C.free(unsafe.Pointer(cFolder))
+		}
+
+		var parent *C.GtkWindow
+		if window != nil {
+			parent = (*C.GtkWindow)(window)
+		}
+
+		// Determine dialog type based on action
+		// GTK_FILE_CHOOSER_ACTION_OPEN = 0
+		// GTK_FILE_CHOOSER_ACTION_SAVE = 1
+		// GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER = 2
+		isFolder := action == 2
+		isSave := action == 1
+
+		if isSave {
+			C.show_save_file_dialog(parent, dialog, C.uint(requestID))
+		} else {
+			C.show_open_file_dialog(parent, dialog, C.uint(requestID), gtkBool(allowMultiple), gtkBool(isFolder))
+		}
+	})
+
+	return resultChan, nil
+}
+
+func runOpenFileDialog(dialog *OpenFileDialogStruct) (chan string, error) {
+	var action int
+
+	if dialog.canChooseDirectories {
+		action = 2 // GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER
+	} else {
+		action = 0 // GTK_FILE_CHOOSER_ACTION_OPEN
+	}
+
+	window := nilPointer
+	if dialog.window != nil {
+		nativeWindow := dialog.window.NativeWindow()
+		if nativeWindow != nil {
+			window = pointer(nativeWindow)
+		}
+	}
+
+	buttonText := dialog.buttonText
+	if buttonText == "" {
+		buttonText = "_Open"
+	}
+
+	return runChooserDialog(
+		window,
+		dialog.allowsMultipleSelection,
+		false, // createFolders not applicable for open
+		dialog.showHiddenFiles,
+		dialog.directory,
+		dialog.title,
+		action,
+		buttonText,
+		dialog.filters,
+	)
+}
+
+func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
+	window := nilPointer
+	if dialog.window != nil {
+		nativeWindow := dialog.window.NativeWindow()
+		if nativeWindow != nil {
+			window = pointer(nativeWindow)
+		}
+	}
+
+	buttonText := dialog.buttonText
+	if buttonText == "" {
+		buttonText = "_Save"
+	}
+
+	results, err := runChooserDialog(
+		window,
+		false,
+		dialog.canCreateDirectories,
+		dialog.showHiddenFiles,
+		dialog.directory,
+		dialog.title,
+		1, // GTK_FILE_CHOOSER_ACTION_SAVE
+		buttonText,
+		dialog.filters,
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	// Get first result
+	for path := range results {
+		return path, nil
+	}
+	return "", nil
+}
+
+func runQuestionDialog(parent pointer, options *MessageDialog) int {
+	requestID := nextDialogRequestID()
+	resultChan := make(chan int, 1)
+
+	dialogRequestMutex.Lock()
+	alertDialogCallbacks[requestID] = resultChan
+	dialogRequestMutex.Unlock()
+
+	InvokeAsync(func() {
+		cMessage := C.CString(options.Message)
+		defer C.free(unsafe.Pointer(cMessage))
+
+		var cDetail *C.char
+		if options.Message != "" {
+			cDetail = C.CString(options.Message)
+			defer C.free(unsafe.Pointer(cDetail))
+		}
+
+		// Build button labels
+		buttonLabels := make([]*C.char, len(options.Buttons)+1)
+		for i, btn := range options.Buttons {
+			buttonLabels[i] = C.CString(btn.Label)
+		}
+		buttonLabels[len(options.Buttons)] = nil // NULL terminator
+
+		defer func() {
+			for _, label := range buttonLabels[:len(options.Buttons)] {
+				C.free(unsafe.Pointer(label))
+			}
+		}()
+
+		// Find default and cancel button indices
+		defaultButton := 0
+		cancelButton := -1
+		for i, btn := range options.Buttons {
+			if btn == options.DefaultButton {
+				defaultButton = i
+			}
+			if btn == options.CancelButton {
+				cancelButton = i
+			}
+		}
+
+		var parentWindow *C.GtkWindow
+		if parent != nil {
+			parentWindow = (*C.GtkWindow)(parent)
+		}
+
+		C.show_alert_dialog(
+			parentWindow,
+			cMessage,
+			cDetail,
+			(**C.char)(unsafe.Pointer(&buttonLabels[0])),
+			C.int(len(options.Buttons)),
+			C.int(defaultButton),
+			C.int(cancelButton),
+			C.uint(requestID),
+		)
+	})
+
+	// Wait for result
+	result := <-resultChan
+	return result
+}
+
 var _ = time.Now
 var _ = events.Linux
 var _ = webview.Scheme
+var _ = strings.TrimSpace
