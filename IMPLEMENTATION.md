@@ -348,6 +348,9 @@ v3/internal/assetserver/webview/
 
 v3/internal/capabilities/
   capabilities_linux_gtk3.go # GTK3 capabilities (gtk3 tag)
+
+v3/internal/operatingsystem/
+  webkit_linux.go           # WebKit version info (gtk3 tag)
 ```
 
 ### GTK4 (Default) Files
@@ -363,6 +366,9 @@ v3/internal/assetserver/webview/
 
 v3/internal/capabilities/
   capabilities_linux.go      # GTK4 capabilities (!gtk3 tag)
+
+v3/internal/operatingsystem/
+  webkit_linux_gtk4.go       # WebKit version info (!gtk3 tag)
 ```
 
 ### Shared Files (no GTK-specific code)
@@ -377,6 +383,14 @@ v3/internal/assetserver/webview/
 ```
 
 ## Changelog
+
+### 2026-01-04 (Session 8)
+- Fixed GTK3/GTK4 symbol conflict in operatingsystem package
+- Added `gtk3` build tag to `v3/internal/operatingsystem/webkit_linux.go`
+- Created `v3/internal/operatingsystem/webkit_linux_gtk4.go` with GTK4/WebKitGTK 6.0
+- Moved app initialization from `init()` to `newPlatformApp()` for cleaner setup
+- Resolved runtime crash: "GTK 2/3 symbols detected in GTK 4 process"
+- Verified menu example runs successfully with GTK 4.20.3 and WebKitGTK 2.50.3
 
 ### 2026-01-04 (Session 7)
 - Completed Phase 9: Keyboard Accelerators
