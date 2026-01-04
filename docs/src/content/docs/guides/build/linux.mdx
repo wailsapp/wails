@@ -146,7 +146,7 @@ sudo pacman -S base-devel
 
 Alternatively, run `wails3 task setup:docker` and the build system will use Docker automatically.
 
-### AppImage strip compatibility {#appimage-strip-compatibility}
+### AppImage strip compatibility
 
 On modern Linux distributions (Arch Linux, Fedora 39+, Ubuntu 24.04+), system libraries are compiled with `.relr.dyn` ELF sections for more efficient relocations. The `linuxdeploy` tool used to create AppImages bundles an older `strip` binary that cannot process these modern sections.
 
