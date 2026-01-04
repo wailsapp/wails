@@ -99,6 +99,8 @@ func dispatchOnMainThreadCallback(callbackID C.uint) {
 
 //export activateLinux
 func activateLinux(data pointer) {
+	app := getNativeApplication()
+	app.markActivated()
 	processApplicationEvent(C.uint(events.Linux.ApplicationStartup), data)
 }
 

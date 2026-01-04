@@ -61,7 +61,8 @@ type linuxApp struct {
 	application pointer
 	parent      *App
 
-	startupActions []func()
+	activated     chan struct{}
+	activatedOnce sync.Once
 
 	windowMap     map[windowPointer]uint
 	windowMapLock sync.Mutex
@@ -191,6 +192,7 @@ func newPlatformApp(parent *App) *linuxApp {
 	app := &linuxApp{
 		parent:      parent,
 		application: appNew(name),
+		activated:   make(chan struct{}),
 		windowMap:   map[windowPointer]uint{},
 	}
 
@@ -199,6 +201,16 @@ func newPlatformApp(parent *App) *linuxApp {
 	}
 
 	return app
+}
+
+func (a *linuxApp) markActivated() {
+	a.activatedOnce.Do(func() {
+		close(a.activated)
+	})
+}
+
+func (a *linuxApp) waitForActivation() {
+	<-a.activated
 }
 
 func (a *linuxApp) getIconForFile(filename string) ([]byte, error) {

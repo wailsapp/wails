@@ -401,6 +401,14 @@ func (w *WebviewWindow) Run() {
 	}
 	w.impl = newWindowImpl(w)
 
+	// On Linux GTK4, we must wait for the application to be activated
+	// before creating windows with gtk_application_window_new()
+	if nativeApp := globalApplication.impl; nativeApp != nil {
+		if waiter, ok := nativeApp.(interface{ waitForActivation() }); ok {
+			waiter.waitForActivation()
+		}
+	}
+
 	InvokeSync(w.impl.run)
 }
 
