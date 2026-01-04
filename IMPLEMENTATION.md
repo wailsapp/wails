@@ -176,7 +176,6 @@ GTK4 completely replaced the menu system. GTK3's GtkMenu/GtkMenuItem are gone.
 
 TODO (deferred):
 - [ ] Context menus with GtkPopoverMenu
-- [ ] Keyboard accelerators with GtkShortcut
 
 ### Phase 5: Asset Server ✅ COMPLETE
 
@@ -269,7 +268,46 @@ GTK4 uses `GtkAlertDialog`:
 | `gtk_message_dialog_new()` | `GtkAlertDialog` |
 | `gtk_widget_destroy()` | `g_object_unref()` |
 
-### Phase 9: Testing 📋 PENDING
+### Phase 9: Keyboard Accelerators ✅ COMPLETE
+
+GTK4 uses `gtk_application_set_accels_for_action()` to bind keyboard shortcuts to GActions.
+
+#### 9.1 Key Components
+
+**C Helper Functions** (in `linux_cgo_gtk4.go`):
+- `set_action_accelerator(app, action_name, accel)` - Sets accelerator for a GAction
+- `build_accelerator_string(key, mods)` - Converts key+modifiers to GTK accelerator string
+
+**Go Functions** (in `linux_cgo_gtk4.go`):
+- `namedKeysToGTK` - Map of key names to GDK keysym values (e.g., "backspace" → 0xff08)
+- `parseKeyGTK(key)` - Converts Wails key string to GDK keysym
+- `parseModifiersGTK(modifiers)` - Converts Wails modifiers to GdkModifierType
+- `acceleratorToGTK(accel)` - Converts full accelerator to GTK format
+- `setMenuItemAccelerator(itemId, accel)` - Sets accelerator for a menu item
+
+**Integration** (in `menuitem_linux_gtk4.go`):
+- `setAccelerator()` method on `linuxMenuItem` calls `setMenuItemAccelerator()`
+- `newMenuItemImpl()`, `newCheckMenuItemImpl()`, `newRadioMenuItemImpl()` all set accelerators during creation
+
+#### 9.2 Accelerator String Format
+
+GTK accelerator strings use format like:
+- `<Control>q` - Ctrl+Q
+- `<Control><Shift>s` - Ctrl+Shift+S
+- `<Alt>F4` - Alt+F4
+- `<Super>e` - Super+E (Windows/Command key)
+
+#### 9.3 Modifier Mapping
+
+| Wails Modifier | GDK Modifier |
+|----------------|--------------|
+| `CmdOrCtrlKey` | `GDK_CONTROL_MASK` |
+| `ControlKey` | `GDK_CONTROL_MASK` |
+| `OptionOrAltKey` | `GDK_ALT_MASK` |
+| `ShiftKey` | `GDK_SHIFT_MASK` |
+| `SuperKey` | `GDK_SUPER_MASK` |
+
+### Phase 10: Testing 📋 PENDING
 
 TODO:
 - [ ] Test on Ubuntu 24.04 (native GTK4)
@@ -339,6 +377,15 @@ v3/internal/assetserver/webview/
 ```
 
 ## Changelog
+
+### 2026-01-04 (Session 7)
+- Completed Phase 9: Keyboard Accelerators
+- Added namedKeysToGTK map with GDK keysym values for all special keys
+- Added parseKeyGTK() and parseModifiersGTK() conversion functions
+- Added acceleratorToGTK() to convert Wails accelerator format to GTK
+- Added setMenuItemAccelerator() Go wrapper that calls C helpers
+- Integrated accelerator setting in all menu item creation functions
+- Uses gtk_application_set_accels_for_action() for GTK4 shortcut binding
 
 ### 2026-01-04 (Session 6)
 - Completed Phase 8: Dialog System

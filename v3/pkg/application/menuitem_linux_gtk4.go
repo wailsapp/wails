@@ -66,7 +66,12 @@ func (l linuxMenuItem) setHidden(hidden bool) {
 }
 
 func (l linuxMenuItem) setAccelerator(accelerator *accelerator) {
-	fmt.Println("setAccelerator", accelerator)
+	if accelerator == nil || l.menuItem == nil {
+		return
+	}
+	InvokeSync(func() {
+		setMenuItemAccelerator(l.menuItem.id, accelerator)
+	})
 }
 
 func newMenuItemImpl(item *MenuItem) *linuxMenuItem {
@@ -80,6 +85,9 @@ func newMenuItemImpl(item *MenuItem) *linuxMenuItem {
 		result.native = menuItemNewWithId(item.label, item.bitmap, item.id)
 	default:
 		panic(fmt.Sprintf("Unknown menu type for newMenuItemImpl: %v", item.itemType))
+	}
+	if item.accelerator != nil {
+		result.setAccelerator(item.accelerator)
 	}
 	result.setDisabled(result.menuItem.disabled)
 	return result
@@ -101,6 +109,9 @@ func newRadioMenuItemImpl(item *MenuItem) *linuxMenuItem {
 	result := &linuxMenuItem{
 		menuItem: item,
 		native:   menuRadioItemNewWithId(item.label, item.id, item.checked),
+	}
+	if item.accelerator != nil {
+		result.setAccelerator(item.accelerator)
 	}
 	result.setDisabled(result.menuItem.disabled)
 	return result
