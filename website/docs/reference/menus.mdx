@@ -8,10 +8,23 @@ It is possible to add an application menu to Wails projects. This is achieved by
 setting it in the [`Menu`](../reference/options.mdx#menu) application config, or by calling the runtime method
 [MenuSetApplicationMenu](../reference/runtime/menu.mdx#menusetapplicationmenu).
 
-An example of how to create a menu:
+An example of how to create a menu, using [the `NewApp` scaffold](../guides/application-development.mdx):
 
-```go
+```go title="main.go"
+package main
 
+import (
+    "log"
+    "runtime"
+
+    "github.com/wailsapp/wails/v2"
+    "github.com/wailsapp/wails/v2/pkg/menu"
+    "github.com/wailsapp/wails/v2/pkg/menu/keys"
+    "github.com/wailsapp/wails/v2/pkg/options"
+    rt "github.com/wailsapp/wails/v2/pkg/runtime"
+)
+
+func main() {
     app := NewApp()
 
     AppMenu := menu.NewMenu()
@@ -29,7 +42,7 @@ An example of how to create a menu:
     })
 
     if runtime.GOOS == "darwin" {
-	AppMenu.Append(menu.EditMenu())  // On macOS platform, EditMenu should be appended to enable Cmd+C, Cmd+V, Cmd+Z... shortcuts
+        AppMenu.Append(menu.EditMenu())  // On macOS platform, EditMenu should be appended to enable Cmd+C, Cmd+V, Cmd+Z... shortcuts
     }
 
     err := wails.Run(&options.App{
@@ -40,8 +53,11 @@ An example of how to create a menu:
         Bind: []interface{}{
             app,
         },
-    )
-    // ...
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+}
 ```
 
 It is also possible to dynamically update the menu, by updating the menu struct and calling
