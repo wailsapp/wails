@@ -143,6 +143,33 @@ For example: `bd create --help` shows `--parent`, `--deps`, `--assignee`, etc.
 
 For more details, see README.md and QUICKSTART.md.
 
+## Implementation Tracking (IMPLEMENTATION.md)
+
+**IMPORTANT**: The `IMPLEMENTATION.md` file at the repository root is a **persistent tracking document** for the WebKitGTK 6.0 / GTK4 implementation work. It is NOT an ephemeral planning document.
+
+### Requirements
+
+1. **Update with EVERY commit** that touches GTK4/WebKitGTK 6.0 related code
+2. **Track all architectural decisions** with context, decision, and rationale
+3. **Maintain progress status** for each implementation phase
+4. **Document API differences** between GTK3 and GTK4
+5. **Keep file references** accurate and up-to-date
+
+### What to Update
+
+- Phase completion status (✅ COMPLETE, 🔄 IN PROGRESS, 📋 PENDING)
+- New decisions made during implementation
+- Files created or modified
+- Changelog entries with dates
+- TODO items discovered during work
+
+### Commit Message Pattern
+
+When updating IMPLEMENTATION.md:
+```
+docs: update implementation tracker for [phase/feature]
+```
+
 ## Landing the Plane (Session Completion)
 
 **When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
