@@ -227,7 +227,7 @@ func (a *linuxApp) monitorThemeChanges() {
 		conn, err := dbus.ConnectSessionBus()
 		if err != nil {
 			a.parent.warning(
-				"[WARNING] Failed to connect to session bus; monitoring for theme changes will not function:",
+				"[WARNING] Failed to connect to session bus; monitoring for theme changes will not function: %v",
 				err,
 			)
 			return
