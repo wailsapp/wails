@@ -160,7 +160,7 @@ func (m *windowsApp) run() error {
 		arg1 := os.Args[1]
 		// Check if the argument is likely a URL from a custom protocol invocation
 		if strings.Contains(arg1, "://") {
-			m.parent.info("Application launched with argument, potentially a URL from custom protocol", "url", arg1)
+			m.parent.debug("Application launched with argument, potentially a URL from custom protocol", "url", arg1)
 			eventContext := newApplicationEventContext()
 			eventContext.setURL(arg1)
 			applicationEvents <- &ApplicationEvent{
@@ -172,7 +172,7 @@ func (m *windowsApp) run() error {
 			if m.parent.options.FileAssociations != nil {
 				ext := filepath.Ext(arg1)
 				if slices.Contains(m.parent.options.FileAssociations, ext) {
-					m.parent.info("Application launched with file via file association", "file", arg1)
+					m.parent.debug("Application launched with file via file association", "file", arg1)
 					eventContext := newApplicationEventContext()
 					eventContext.setOpenedWithFile(arg1)
 					applicationEvents <- &ApplicationEvent{
@@ -184,7 +184,7 @@ func (m *windowsApp) run() error {
 		}
 	} else if len(os.Args) > 2 {
 		// Log if multiple arguments are passed, though typical protocol/file launch is a single arg.
-		m.parent.info("Application launched with multiple arguments", "args", os.Args[1:])
+		m.parent.debug("Application launched with multiple arguments", "args", os.Args[1:])
 	}
 
 	_ = m.runMainLoop()

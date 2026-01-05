@@ -151,7 +151,7 @@ func New(appOptions Options) *App {
 		if err != nil {
 			result.fatal("failed to configure transport for serving assets: %w", err)
 		}
-		result.info("Transport configured to serve assets")
+		result.debug("Transport configured to serve assets")
 	}
 
 	result.bindings = NewBindings(appOptions.MarshalError, appOptions.BindAliases)
@@ -239,9 +239,9 @@ type OriginInfo struct {
 
 var windowMessageBuffer = make(chan *windowMessage, 5)
 
-// DropZoneDetails contains information about the HTML element
-// at the location of a file drop.
-type DropZoneDetails struct {
+// DropTargetDetails contains information about the HTML element
+// where files were dropped (the element with data-file-drop-target attribute).
+type DropTargetDetails struct {
 	X          int               `json:"x"`
 	Y          int               `json:"y"`
 	ElementID  string            `json:"id"`
@@ -250,20 +250,20 @@ type DropZoneDetails struct {
 }
 
 type dragAndDropMessage struct {
-	windowId  uint
-	filenames []string
-	X         int
-	Y         int
-	DropZone  *DropZoneDetails
+	windowId   uint
+	filenames  []string
+	X          int
+	Y          int
+	DropTarget *DropTargetDetails
 }
 
 var windowDragAndDropBuffer = make(chan *dragAndDropMessage, 5)
 
-func addDragAndDropMessage(windowId uint, filenames []string, dropZone *DropZoneDetails) {
+func addDragAndDropMessage(windowId uint, filenames []string, dropTarget *DropTargetDetails) {
 	windowDragAndDropBuffer <- &dragAndDropMessage{
-		windowId:  windowId,
-		filenames: filenames,
-		DropZone:  dropZone,
+		windowId:   windowId,
+		filenames:  filenames,
+		DropTarget: dropTarget,
 	}
 }
 
@@ -619,11 +619,6 @@ func (a *App) Run() error {
 	go func() {
 		for {
 			dragAndDropMessage := <-windowDragAndDropBuffer
-			a.Logger.Debug(
-				"[DragDropDebug] App.Run: Received message from windowDragAndDropBuffer",
-				"message",
-				fmt.Sprintf("%+v", dragAndDropMessage),
-			)
 			go a.handleDragAndDropMessage(dragAndDropMessage)
 		}
 	}()
@@ -715,13 +710,7 @@ func (a *App) shutdownServices() {
 }
 
 func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
-	a.Logger.Debug(
-		"[DragDropDebug] App.handleDragAndDropMessage: Called with event",
-		"event",
-		fmt.Sprintf("%+v", event),
-	)
 	defer handlePanic()
-	// Get window from window map
 	a.windowsLock.Lock()
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.Unlock()
@@ -729,13 +718,7 @@ func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
 		a.warning("WebviewWindow #%d not found", event.windowId)
 		return
 	}
-	// Get callback from window
-	a.Logger.Debug(
-		"[DragDropDebug] App.handleDragAndDropMessage: Calling window.HandleDragAndDropMessage",
-		"windowID",
-		event.windowId,
-	)
-	window.HandleDragAndDropMessage(event.filenames, event.DropZone)
+	window.handleDragAndDropMessage(event.filenames, event.DropTarget)
 }
 
 func (a *App) handleWindowMessage(event *windowMessage) {
@@ -750,7 +733,7 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	}
 	a.windowsLock.RUnlock()
 
-	a.info("handleWindowMessage: Looking for window", "windowId", event.windowId, "availableIDs", ids)
+	a.debug("handleWindowMessage: Looking for window", "windowId", event.windowId, "availableIDs", ids)
 
 	if !ok {
 		a.warning("WebviewWindow #%d not found", event.windowId)
@@ -758,7 +741,7 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	}
 	// Check if the message starts with "wails:"
 	if strings.HasPrefix(event.message, "wails:") {
-		a.info("handleWindowMessage: Processing wails message", "message", event.message)
+		a.debug("handleWindowMessage: Processing wails message", "message", event.message)
 		window.HandleMessage(event.message)
 	} else {
 		if a.options.RawMessageHandler != nil {
@@ -771,10 +754,10 @@ func (a *App) handleWebViewRequest(request *webViewAssetRequest) {
 	defer handlePanic()
 	// Log that we're processing the request
 	url, _ := request.Request.URL()
-	a.info("handleWebViewRequest: Processing request", "url", url)
+	a.debug("handleWebViewRequest: Processing request", "url", url)
 	// IMPORTANT: pass the wrapper request so our injected headers (x-wails-window-id/name) are used
 	a.assets.ServeWebViewRequest(request)
-	a.info("handleWebViewRequest: Request processing complete", "url", url)
+	a.debug("handleWebViewRequest: Request processing complete", "url", url)
 }
 
 func (a *App) handleWindowEvent(event *windowEvent) {
