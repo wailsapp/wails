@@ -135,6 +135,7 @@ For example: `bd create --help` shows `--parent`, `--deps`, `--assignee`, etc.
 - Check `bd ready` before asking "what should I work on?"
 - Store AI planning docs in `history/` directory
 - Run `bd <cmd> --help` to discover available flags
+- **ALWAYS run `coderabbit --plain` before committing** to get code analysis and catch issues early
 - Do NOT create markdown TODO lists
 - Do NOT use external issue trackers
 - Do NOT duplicate tracking systems
