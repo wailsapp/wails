@@ -370,6 +370,12 @@ void windowExecJS(void* nsWindow, const char* js) {
 	free((void*)js);
 }
 
+// Execute JS without allocation - buffer is NOT freed
+void windowExecJSNoAlloc(void* nsWindow, const char* js) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	[window.webView evaluateJavaScript:[NSString stringWithUTF8String:js] completionHandler:nil];
+}
+
 // Make NSWindow backdrop translucent
 void windowSetTranslucent(void* nsWindow) {
 	// Get window
@@ -865,6 +871,7 @@ static void setContentProtection(void *nsWindow, bool enabled) {
 */
 import "C"
 import (
+	"fmt"
 	"sync"
 	"sync/atomic"
 	"unsafe"
@@ -1112,6 +1119,17 @@ func (w *macosWebviewWindow) execJS(js string) {
 	})
 }
 
+// execJSDragOver executes JS for drag-over events with zero allocations
+// Must be called from main thread
+func (w *macosWebviewWindow) execJSDragOver(buffer []byte) {
+	if w.nsWindow == nil {
+		return
+	}
+	// Pass buffer directly to C without allocation
+	// Buffer must be null-terminated
+	C.windowExecJSNoAlloc(w.nsWindow, (*C.char)(unsafe.Pointer(&buffer[0])))
+}
+
 func (w *macosWebviewWindow) setURL(uri string) {
 	C.navigationLoadURL(w.nsWindow, C.CString(uri))
 }
@@ -1125,7 +1143,10 @@ func newWindowImpl(parent *WebviewWindow) *macosWebviewWindow {
 		parent: parent,
 	}
 	result.parent.RegisterHook(events.Mac.WebViewDidFinishNavigation, func(event *WindowEvent) {
-		result.execJS(runtime.Core(globalApplication.impl.GetFlags(globalApplication.options)))
+		// Inject runtime core
+		js := runtime.Core(globalApplication.impl.GetFlags(globalApplication.options))
+		js += fmt.Sprintf("window._wails.flags.enableFileDrop=%v;", result.parent.options.EnableFileDrop)
+		result.execJS(js)
 	})
 	return result
 }
@@ -1259,7 +1280,7 @@ func (w *macosWebviewWindow) run() {
 			C.int(options.Height),
 			C.bool(macOptions.EnableFraudulentWebsiteWarnings),
 			C.bool(options.Frameless),
-			C.bool(options.EnableDragAndDrop),
+			C.bool(options.EnableFileDrop),
 			w.getWebviewPreferences(),
 		)
 		w.setTitle(options.Title)
@@ -1495,6 +1516,8 @@ func (w *macosWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
 
 func (w *macosWebviewWindow) destroy() {
 	w.parent.markAsDestroyed()
+	// Clear caches for this window
+	clearWindowDragCache(w.parent.id)
 	C.windowDestroy(w.nsWindow)
 }
 

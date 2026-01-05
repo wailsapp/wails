@@ -68,11 +68,12 @@ static bool URLSchemeTaskDidReceiveResponse(void *wkUrlSchemeTask, int statusCod
 import "C"
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 	"unsafe"
+
+	"encoding/json"
 )
 
 var _ ResponseWriter = &responseWriter{}
