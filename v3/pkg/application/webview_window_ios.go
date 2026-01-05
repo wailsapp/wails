@@ -330,6 +330,10 @@ func (w *iosWebviewWindow) nativeWindow() unsafe.Pointer {
 	return w.nativeHandle
 }
 
+func (w *iosWebviewWindow) attachModal(modalWindow *WebviewWindow) {
+	// Modal windows are not supported on iOS
+}
+
 func (w *iosWebviewWindow) on(eventID uint) {
 	// iOS event handling
 }
