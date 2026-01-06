@@ -18,8 +18,6 @@ type state int
 const (
 	stateLoading state = iota
 	stateReport
-	stateInstall
-	stateDone
 )
 
 type Model struct {
@@ -29,7 +27,6 @@ type Model struct {
 	err          error
 	width        int
 	height       int
-	selectedDep  int
 	showHelp     bool
 	copiedNotice bool
 }
@@ -75,18 +72,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "?":
 			m.showHelp = !m.showHelp
-		case "j", "down":
-			if m.state == stateReport && m.report != nil {
-				if m.selectedDep < len(m.report.Dependencies)-1 {
-					m.selectedDep++
-				}
-			}
-		case "k", "up":
-			if m.state == stateReport {
-				if m.selectedDep > 0 {
-					m.selectedDep--
-				}
-			}
+
 		case "i":
 			if m.state == stateReport && m.report != nil {
 				missing := m.report.Dependencies.RequiredMissing()
@@ -97,10 +83,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					)
 				}
 			}
-		case "enter":
-			if m.state == stateInstall {
-				m.state = stateReport
-			}
+
 		case "r":
 			if m.state == stateReport {
 				m.state = stateLoading
@@ -143,8 +126,6 @@ func (m Model) View() string {
 		return m.viewLoading()
 	case stateReport:
 		return m.viewReport()
-	case stateInstall:
-		return m.viewInstall()
 	default:
 		return ""
 	}
@@ -241,9 +222,7 @@ func (m Model) renderDependencies() string {
 	b.WriteString(sectionStyle.Render("Dependencies"))
 	b.WriteString("\n")
 
-	hasMissing := len(m.report.Dependencies.RequiredMissing()) > 0
-
-	for i, dep := range m.report.Dependencies {
+	for _, dep := range m.report.Dependencies {
 		icon := statusIconTri(dep.Status.String())
 		name := dep.Name
 		version := dep.Version
@@ -252,10 +231,6 @@ func (m Model) renderDependencies() string {
 		}
 
 		row := fmt.Sprintf("  %s %-25s %s", icon, name, version)
-
-		if hasMissing && i == m.selectedDep {
-			row = selectedStyle.Render(row)
-		}
 
 		if !dep.Required {
 			row += mutedStyle.Render(" (optional)")
@@ -334,7 +309,6 @@ func (m Model) renderHelp() string {
 	help += "  r           Refresh / re-scan system\n"
 
 	if m.report != nil && len(m.report.Dependencies.RequiredMissing()) > 0 {
-		help += "  j/k, ↑/↓    Navigate dependencies\n"
 		help += "  i           Install missing dependencies\n"
 	}
 
@@ -342,41 +316,6 @@ func (m Model) renderHelp() string {
 	help += "  q           Quit"
 
 	b.WriteString(boxStyle.Render(help))
-	return b.String()
-}
-
-func (m Model) viewInstall() string {
-	var b strings.Builder
-
-	b.WriteString(titleStyle.Render(" Install Dependencies "))
-	b.WriteString("\n\n")
-
-	missing := m.report.Dependencies.RequiredMissing()
-	if len(missing) == 0 {
-		b.WriteString(okStyle.Render("All dependencies are installed!"))
-		b.WriteString("\n\nPress Enter to return")
-		return b.String()
-	}
-
-	b.WriteString("The following commands will be run:\n\n")
-
-	for _, dep := range missing {
-		if dep.InstallCommand != "" {
-			b.WriteString(fmt.Sprintf("  %s\n", mutedStyle.Render(dep.InstallCommand)))
-		}
-	}
-
-	b.WriteString("\n")
-	b.WriteString(warnStyle.Render("Note: Some commands may require sudo"))
-	b.WriteString("\n\n")
-
-	b.WriteString(buttonStyle.Render(" Cancel "))
-	b.WriteString(" ")
-	b.WriteString(buttonActiveStyle.Render(" Install "))
-
-	b.WriteString("\n\n")
-	b.WriteString(mutedStyle.Render("Press Enter to return, or run commands manually"))
-
 	return b.String()
 }
 
