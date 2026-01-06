@@ -11,6 +11,9 @@ import (
 func (w *Wizard) checkAllDependencies() []DependencyStatus {
 	var deps []DependencyStatus
 
+	// Check Go (required)
+	deps = append(deps, checkGo())
+
 	// Check Xcode Command Line Tools
 	deps = append(deps, checkXcode())
 
@@ -21,6 +24,44 @@ func (w *Wizard) checkAllDependencies() []DependencyStatus {
 	deps = append(deps, checkDocker())
 
 	return deps
+}
+
+func checkGo() DependencyStatus {
+	dep := DependencyStatus{
+		Name:     "Go",
+		Required: true,
+	}
+
+	version, err := execCommand("go", "version")
+	if err != nil {
+		dep.Status = "not_installed"
+		dep.Installed = false
+		dep.Message = "Go 1.25+ is required"
+		dep.HelpURL = "https://go.dev/dl/"
+		return dep
+	}
+
+	dep.Installed = true
+	dep.Status = "installed"
+
+	parts := strings.Split(version, " ")
+	if len(parts) >= 3 {
+		versionStr := strings.TrimPrefix(parts[2], "go")
+		dep.Version = versionStr
+
+		versionParts := strings.Split(versionStr, ".")
+		if len(versionParts) >= 2 {
+			major, _ := strconv.Atoi(versionParts[0])
+			minor, _ := strconv.Atoi(versionParts[1])
+			if major < 1 || (major == 1 && minor < 25) {
+				dep.Status = "needs_update"
+				dep.Message = "Go 1.25+ is required (found " + versionStr + ")"
+				dep.HelpURL = "https://go.dev/dl/"
+			}
+		}
+	}
+
+	return dep
 }
 
 func checkXcode() DependencyStatus {

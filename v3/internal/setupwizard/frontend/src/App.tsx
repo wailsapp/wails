@@ -1,7 +1,7 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { DependencyStatus, SystemInfo, DockerStatus, GlobalDefaults } from './types';
-import { checkDependencies, getState, getDockerStatus, buildDockerImage, getDefaults, saveDefaults } from './api';
+import { checkDependencies, getState, getDockerStatus, buildDockerImage, getDefaults, saveDefaults, subscribeDockerStatus } from './api';
 import wailsLogoWhite from './assets/wails-logo-white-text.svg';
 import wailsLogoBlack from './assets/wails-logo-black-text.svg';
 
@@ -12,6 +12,7 @@ type OOBEStep =
   | 'deps-ready'
   | 'deps-missing'
   | 'cross-platform'
+  | 'sdk-license'
   | 'docker-setup'
   | 'projects'
   | 'language-select'
@@ -103,42 +104,51 @@ function Sidebar({ currentStep, dockerStatus, buildingDocker }: {
     window.open('https://github.com/sponsors/leaanthony', '_blank', 'noopener,noreferrer');
   };
 
-  const showDockerProgress = buildingDocker || (dockerStatus?.pullStatus === 'pulling');
+  const isDockerBuilding = buildingDocker;
 
   return (
-    <div className="w-48 flex-shrink-0 bg-gray-100/80 dark:bg-transparent dark:glass-sidebar border-r border-gray-200 dark:border-transparent flex flex-col">
-      {/* Wails logo - 3x bigger */}
+    <aside
+      className="w-48 flex-shrink-0 bg-gray-100/80 dark:bg-transparent dark:glass-sidebar border-r border-gray-200 dark:border-transparent flex flex-col"
+      aria-label="Setup progress"
+    >
       <div className="p-6 flex justify-center">
         <img
           src={theme === 'dark' ? wailsLogoWhite : wailsLogoBlack}
-          alt="Wails"
+          alt="Wails logo"
           className="h-24 object-contain"
         />
       </div>
 
-      {/* Progress steps */}
-      <nav className="flex-1 px-4 py-2">
-        <ul className="space-y-1">
+      <nav className="flex-1 px-4 py-2" aria-label="Setup steps">
+        <ol className="space-y-1">
           {stages.map((stage, index) => {
             const stageIndex = index + 1;
             const isCurrent = stage.key === currentStage;
             const isCompleted = stageIndex < currentIndex;
+            const stepStatus = isCompleted ? 'completed' : isCurrent ? 'current' : 'upcoming';
+            const showDockerSubtask = stage.key === 'platform' && isDockerBuilding;
 
             return (
-              <li key={stage.key}>
-                <div className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                  isCurrent
-                    ? 'bg-white dark:bg-gray-800/80'
-                    : ''
-                }`}>
-                  {/* Step number or checkmark */}
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 ${
-                    isCompleted
-                      ? 'bg-green-500 text-white'
-                      : isCurrent
-                        ? 'bg-red-500 text-white'
-                        : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-                  }`}>
+              <li
+                key={stage.key}
+                aria-current={isCurrent ? 'step' : undefined}
+              >
+                <div
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                    isCurrent ? 'bg-white dark:bg-gray-800/80' : ''
+                  }`}
+                  aria-label={`Step ${stageIndex}: ${stage.label}, ${stepStatus}`}
+                >
+                  <div
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 ${
+                      isCompleted
+                        ? 'bg-green-500 text-white'
+                        : isCurrent
+                          ? 'bg-red-500 text-white'
+                          : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                    }`}
+                    aria-hidden="true"
+                  >
                     {isCompleted ? (
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -148,74 +158,71 @@ function Sidebar({ currentStep, dockerStatus, buildingDocker }: {
                     )}
                   </div>
 
-                  {/* Label */}
-                  <span className={`text-sm font-medium ${
-                    isCurrent
-                      ? 'text-gray-900 dark:text-white'
-                      : isCompleted
-                        ? 'text-green-700 dark:text-gray-400'
-                        : 'text-gray-400 dark:text-gray-600'
-                  }`}>
+                  <span
+                    className={`text-sm font-medium ${
+                      isCurrent
+                        ? 'text-gray-900 dark:text-white'
+                        : isCompleted
+                          ? 'text-green-700 dark:text-gray-400'
+                          : 'text-gray-400 dark:text-gray-600'
+                    }`}
+                  >
                     {stage.label}
                   </span>
                 </div>
+
+                {showDockerSubtask && (
+                  <div className="ml-9 mt-1 mb-3">
+                    <div className="flex items-center justify-between text-[10px] text-gray-500 dark:text-gray-400 mb-1">
+                      <span>{dockerStatus?.pullMessage || 'Connecting'}</span>
+                      <span>{dockerStatus?.pullProgress || 0}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1">
+                      <div
+                        className="bg-blue-500 h-1 rounded-full transition-all duration-300"
+                        style={{ width: `${dockerStatus?.pullProgress || 0}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
               </li>
             );
           })}
-        </ul>
+        </ol>
       </nav>
 
-      {/* Docker build progress */}
-      {showDockerProgress && (
-        <div className="px-4 py-3 border-t border-gray-200 dark:border-white/10">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-4 h-4 border-2 border-gray-300 dark:border-gray-600 border-t-blue-500 rounded-full animate-spin" />
-            <span className="text-xs text-gray-600 dark:text-gray-400">Docker image</span>
-          </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-            <div
-              className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
-              style={{ width: `${dockerStatus?.pullProgress || 0}%` }}
-            />
-          </div>
-          <span className="text-[10px] text-gray-500 dark:text-gray-500 mt-1 block">
-            {dockerStatus?.pullProgress ? `${Math.round(dockerStatus.pullProgress)}%` : 'Starting...'}
-          </span>
-        </div>
-      )}
 
-      {/* Bottom controls - centered */}
+
       <div className="p-4 flex justify-center gap-3">
         <button
           onClick={handleSponsorClick}
-          className="p-1 hover:opacity-70 transition-opacity"
-          title="Sponsor Wails"
+          className="p-1 hover:opacity-70 transition-opacity focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded"
+          aria-label="Sponsor Wails on GitHub"
         >
-          <svg className="w-4 h-4 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+          <svg className="w-4 h-4 text-red-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
           </svg>
         </button>
         <button
           onClick={toggleTheme}
-          className="p-1 hover:opacity-70 transition-opacity"
-          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          className="p-1 hover:opacity-70 transition-opacity focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded"
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
         >
           {theme === 'dark' ? (
-            <svg className="w-4 h-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
           ) : (
-            <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
             </svg>
           )}
         </button>
       </div>
-    </div>
+    </aside>
   );
 }
 
-// Page template - header + subheader, content, optional buttons
 function PageTemplate({
   title,
   subtitle,
@@ -224,7 +231,9 @@ function PageTemplate({
   primaryLabel,
   secondaryAction,
   secondaryLabel,
-  primaryDisabled = false
+  primaryDisabled = false,
+  onBack,
+  canGoBack = false
 }: {
   title: string;
   subtitle: string;
@@ -234,27 +243,45 @@ function PageTemplate({
   secondaryAction?: () => void;
   secondaryLabel?: string;
   primaryDisabled?: boolean;
+  onBack?: () => void;
+  canGoBack?: boolean;
 }) {
-  // Render actions as a render prop so parent can place them where needed
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, [title]);
+
   const actionsElement = (primaryAction || secondaryAction) ? (
-    <div className="flex-shrink-0 pt-4 pb-6 flex flex-col items-center gap-1.5">
-      {primaryAction && primaryLabel && (
-        <button
-          onClick={primaryAction}
-          disabled={primaryDisabled}
-          className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors border ${
-            primaryDisabled
-              ? 'border-gray-300 dark:border-gray-700 text-gray-400 cursor-not-allowed'
-              : 'border-red-500 text-red-600 dark:text-red-400 hover:bg-red-500/10'
-          }`}
-        >
-          {primaryLabel}
-        </button>
-      )}
+    <div className="flex-shrink-0 pt-4 pb-6 flex flex-col items-center gap-1.5" role="group" aria-label="Page actions">
+      <div className="flex items-center gap-3">
+        {canGoBack && onBack && (
+          <button
+            onClick={onBack}
+            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+          >
+            Back
+          </button>
+        )}
+        {primaryAction && primaryLabel && (
+          <button
+            onClick={primaryAction}
+            disabled={primaryDisabled}
+            className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors border focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${
+              primaryDisabled
+                ? 'border-gray-300 dark:border-gray-700 text-gray-400 cursor-not-allowed'
+                : 'border-red-500 text-red-600 dark:text-red-400 hover:bg-red-500/10'
+            }`}
+            aria-disabled={primaryDisabled}
+          >
+            {primaryLabel}
+          </button>
+        )}
+      </div>
       {secondaryAction && secondaryLabel && (
         <button
           onClick={secondaryAction}
-          className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+          className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded"
         >
           {secondaryLabel}
         </button>
@@ -263,45 +290,63 @@ function PageTemplate({
   ) : null;
 
   return (
-    <motion.div
+    <motion.main
       variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
       transition={{ duration: 0.3 }}
       className="flex-1 flex flex-col"
+      aria-labelledby="page-title"
     >
-      {/* Header - centered with horizontal padding */}
-      <div className="text-center mb-6 flex-shrink-0 px-10 pt-10">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-1.5 tracking-tight">{title}</h1>
+      <header className="text-center mb-6 flex-shrink-0 px-10 pt-10">
+        <h1
+          ref={headingRef}
+          id="page-title"
+          className="text-2xl font-semibold text-gray-900 dark:text-white mb-1.5 tracking-tight focus:outline-none"
+          tabIndex={-1}
+        >
+          {title}
+        </h1>
         <p className="text-base text-gray-500 dark:text-gray-400">{subtitle}</p>
-      </div>
+      </header>
 
-      {/* Scrollable content area with horizontal padding */}
       <div className="flex-1 overflow-y-auto scrollbar-thin min-h-0 px-10">
         {children}
       </div>
 
-      {/* Actions - anchored to bottom */}
       {actionsElement}
-    </motion.div>
+    </motion.main>
   );
 }
 
 // Splash Page - simple welcome with Let's Start
 function SplashPage({ onNext }: { onNext: () => void }) {
   const { theme } = useTheme();
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const startButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && document.activeElement === startButtonRef.current) {
+      onNext();
+    }
+  };
 
   return (
-    <motion.div
+    <motion.main
       variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
       transition={{ duration: 0.3 }}
       className="flex-1 flex flex-col items-center justify-center"
+      aria-labelledby="splash-title"
+      onKeyDown={handleKeyDown}
     >
-      {/* Logo with glow effect */}
       <motion.div
         className="text-center mb-10"
         initial={{ opacity: 0, scale: 0.9 }}
@@ -311,106 +356,155 @@ function SplashPage({ onNext }: { onNext: () => void }) {
         <div className="flex justify-center">
           <img
             src={theme === 'dark' ? wailsLogoWhite : wailsLogoBlack}
-            alt="Wails"
+            alt=""
             width={280}
             className="object-contain"
             style={{ filter: 'drop-shadow(0 0 60px rgba(239, 68, 68, 0.4))' }}
+            aria-hidden="true"
           />
         </div>
       </motion.div>
 
-      {/* Welcome text */}
       <motion.div
         className="text-center px-8 max-w-lg"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 tracking-tight">
-          Welcome to Wails
-        </h1>
+        <div className="flex items-center justify-center gap-2 mb-3">
+          <h1
+            ref={headingRef}
+            id="splash-title"
+            className="text-2xl font-semibold text-gray-900 dark:text-white tracking-tight focus:outline-none"
+            tabIndex={-1}
+          >
+            Welcome to Wails
+          </h1>
+          <span
+            className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30"
+            role="status"
+            aria-label="This setup wizard is experimental"
+          >
+            Experimental
+          </span>
+        </div>
         <p className="text-base text-gray-600 dark:text-gray-300 leading-relaxed mb-8">
           Build beautiful cross-platform apps using Go and web technologies
         </p>
       </motion.div>
 
-      {/* Let's Start button */}
       <motion.button
+        ref={startButtonRef}
         onClick={onNext}
-        className="px-6 py-2.5 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors"
+        className="px-6 py-2.5 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.4 }}
       >
         Let's Start
       </motion.button>
-    </motion.div>
+    </motion.main>
   );
 }
 
-// Checking Screen - brief loading while checking dependencies
 function CheckingPage() {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
+
   return (
-    <motion.div
+    <motion.main
       variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
       transition={{ duration: 0.3 }}
       className="flex-1 flex flex-col items-center justify-start pt-[15%]"
+      aria-labelledby="checking-title"
+      aria-busy="true"
     >
       <motion.div
         className="w-12 h-12 border-3 border-gray-300 dark:border-gray-600 border-t-red-500 rounded-full mb-6"
         animate={{ rotate: 360 }}
         transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+        role="status"
+        aria-label="Loading"
       />
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+      <h2
+        ref={headingRef}
+        id="checking-title"
+        className="text-xl font-semibold text-gray-900 dark:text-white mb-2 focus:outline-none"
+        tabIndex={-1}
+      >
         Checking your system...
       </h2>
-      <p className="text-gray-500 dark:text-gray-400">
+      <p className="text-gray-500 dark:text-gray-400" aria-live="polite">
         This will only take a moment
       </p>
-    </motion.div>
+    </motion.main>
   );
 }
 
-// Deps Ready Page - simple checkmark, deps are good
-function DepsReadyPage({ onNext }: { onNext: () => void }) {
+function DepsReadyPage({ onNext, onBack, canGoBack }: { onNext: () => void; onBack?: () => void; canGoBack?: boolean }) {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
+
   return (
-    <motion.div
+    <motion.main
       variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
       transition={{ duration: 0.3 }}
       className="flex-1 flex flex-col items-center justify-center"
+      aria-labelledby="deps-ready-title"
     >
-      {/* Animated checkmark */}
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15 }}
         className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mb-6"
+        aria-hidden="true"
       >
         <svg className="w-10 h-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
         </svg>
       </motion.div>
 
-      <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
+      <h2
+        ref={headingRef}
+        id="deps-ready-title"
+        className="text-2xl font-semibold text-gray-900 dark:text-white mb-2 focus:outline-none"
+        tabIndex={-1}
+      >
         All dependencies installed
       </h2>
       <p className="text-gray-500 dark:text-gray-400 mb-8 text-center max-w-sm">
         Your system has everything needed to build Wails apps
       </p>
 
-      <button
-        onClick={onNext}
-        className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors"
-      >
-        Continue
-      </button>
-    </motion.div>
+      <div className="flex items-center gap-3" role="group" aria-label="Navigation">
+        {canGoBack && onBack && (
+          <button
+            onClick={onBack}
+            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+          >
+            Back
+          </button>
+        )}
+        <button
+          onClick={onNext}
+          className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+        >
+          Continue
+        </button>
+      </div>
+    </motion.main>
   );
 }
 
@@ -418,11 +512,15 @@ function DepsReadyPage({ onNext }: { onNext: () => void }) {
 function DepsMissingPage({
   dependencies,
   onRetry,
-  onContinue
+  onContinue,
+  onBack,
+  canGoBack
 }: {
   dependencies: DependencyStatus[];
   onRetry: () => void;
   onContinue: () => void;
+  onBack?: () => void;
+  canGoBack?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
   const missingDeps = dependencies.filter(d => !d.installed && d.required);
@@ -474,6 +572,8 @@ function DepsMissingPage({
       primaryLabel="Check Again"
       secondaryAction={onContinue}
       secondaryLabel="Continue anyway"
+      onBack={onBack}
+      canGoBack={canGoBack}
     >
       {/* Missing dependencies list */}
       <div className="bg-gray-100 dark:bg-gray-900/50 rounded-lg p-4 mb-4">
@@ -541,11 +641,15 @@ function DepsMissingPage({
 function CrossPlatformPage({
   dockerDep,
   onYes,
-  onSkip
+  onSkip,
+  onBack,
+  canGoBack
 }: {
   dockerDep: DependencyStatus | undefined;
   onYes: () => void;
   onSkip: () => void;
+  onBack?: () => void;
+  canGoBack?: boolean;
 }) {
   // If Docker is installed and image is already built, show ready state
   const isReady = dockerDep?.installed && dockerDep?.imageBuilt === true;
@@ -596,12 +700,22 @@ function CrossPlatformPage({
             You can build for Windows, macOS, and Linux from this machine
           </p>
 
-          <button
-            onClick={onSkip}
-            className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors"
-          >
-            Continue
-          </button>
+          <div className="flex items-center gap-3">
+            {canGoBack && onBack && (
+              <button
+                onClick={onBack}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                Back
+              </button>
+            )}
+            <button
+              onClick={onSkip}
+              className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors"
+            >
+              Continue
+            </button>
+          </div>
         </>
       ) : (
         <>
@@ -632,12 +746,22 @@ function CrossPlatformPage({
           </p>
 
           <div className="flex flex-col items-center gap-2">
-            <button
-              onClick={onYes}
-              className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors"
-            >
-              Yes, set this up
-            </button>
+            <div className="flex items-center gap-3">
+              {canGoBack && onBack && (
+                <button
+                  onClick={onBack}
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                >
+                  Back
+                </button>
+              )}
+              <button
+                onClick={onYes}
+                className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors"
+              >
+                Yes, set this up
+              </button>
+            </div>
             <button
               onClick={onSkip}
               className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
@@ -651,21 +775,235 @@ function CrossPlatformPage({
   );
 }
 
-// Docker Setup Page - handles install/not running/building states
+function DockerBuildError({
+  onBuildImage,
+  onUseLocalSDK,
+  onSkip
+}: {
+  onBuildImage: () => void;
+  onUseLocalSDK: (file: File) => void;
+  onSkip: () => void;
+}) {
+  const [showLogs, setShowLogs] = useState(false);
+  const [logs, setLogs] = useState<string | null>(null);
+
+  const handleViewLogs = async () => {
+    if (!logs) {
+      const response = await fetch('/api/docker/logs');
+      const text = await response.text();
+      setLogs(text);
+    }
+    setShowLogs(true);
+  };
+
+  if (showLogs) {
+    return (
+      <motion.div
+        variants={pageVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        transition={{ duration: 0.3 }}
+        className="flex-1 flex flex-col items-center justify-center max-w-4xl mx-auto w-full"
+      >
+        <div className="w-full flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Build Logs
+          </h2>
+          <button
+            onClick={() => setShowLogs(false)}
+            className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          >
+            Back
+          </button>
+        </div>
+        <pre className="w-full h-96 overflow-auto bg-gray-900 text-gray-100 p-4 rounded-lg text-xs font-mono whitespace-pre-wrap">
+          {logs || 'No logs available'}
+        </pre>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={{ duration: 0.3 }}
+      className="flex-1 flex flex-col items-center justify-center"
+    >
+      <div className="w-16 h-16 rounded-2xl bg-amber-500/20 flex items-center justify-center mb-6">
+        <svg className="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+        Build failed
+      </h2>
+
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-2 text-center max-w-sm">
+        Check your internet connection and try again, or download the SDK manually.
+      </p>
+
+      <button
+        onClick={handleViewLogs}
+        className="text-sm text-blue-500 hover:text-blue-600 mb-6"
+      >
+        View logs
+      </button>
+
+      <div className="flex flex-col gap-3 items-center">
+        <div className="flex gap-3">
+          <button
+            onClick={onBuildImage}
+            className="px-5 py-2.5 rounded-lg bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition-colors"
+          >
+            Try again
+          </button>
+          <label className="px-5 py-2.5 rounded-lg border border-blue-500 text-blue-600 dark:text-blue-400 text-sm font-medium hover:bg-blue-500/10 transition-colors cursor-pointer">
+            Use local file
+            <input
+              type="file"
+              accept=".tar.xz"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) onUseLocalSDK(file);
+              }}
+            />
+          </label>
+        </div>
+        <a
+          href="https://github.com/wailsapp/macosx-sdks/releases/download/26.1/MacOSX26.1.sdk.tar.xz"
+          download
+          className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+        >
+          Download SDK manually
+        </a>
+        <button
+          onClick={onSkip}
+          className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+        >
+          Skip for now
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+function SDKLicensePage({
+  onAgree,
+  onDecline,
+  onBack,
+  canGoBack
+}: {
+  onAgree: () => void;
+  onDecline: () => void;
+  onBack?: () => void;
+  canGoBack?: boolean;
+}) {
+  const [agreed, setAgreed] = useState(false);
+
+  return (
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={{ duration: 0.3 }}
+      className="flex-1 flex flex-col items-center justify-center"
+    >
+      {canGoBack && onBack && (
+        <button
+          onClick={onBack}
+          className="absolute top-4 left-4 p-2 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          aria-label="Go back"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      )}
+
+      <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+        <svg className="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </div>
+
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+        Apple SDK License Agreement
+      </h2>
+
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center max-w-md">
+        Cross-platform builds for macOS require the Apple SDK. Please review and accept the license terms.
+      </p>
+
+      <div className="w-full max-w-2xl h-72 mb-4 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-white">
+        <iframe
+          src="/assets/apple-sdk-license.pdf#view=FitH&navpanes=0&toolbar=0"
+          className="w-full h-full"
+          title="Apple Xcode and SDK License Agreement"
+        />
+      </div>
+
+      <label className="flex items-center gap-2 mb-5 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={agreed}
+          onChange={(e) => setAgreed(e.target.checked)}
+          className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+        />
+        <span className="text-sm text-gray-600 dark:text-gray-300">
+          I agree to Apple's Xcode and SDK License Agreement
+        </span>
+      </label>
+
+      <div className="flex gap-3">
+        <button
+          onClick={onDecline}
+          className="px-5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        >
+          Skip cross-platform
+        </button>
+        <button
+          onClick={onAgree}
+          disabled={!agreed}
+          className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            agreed
+              ? 'bg-blue-500 text-white hover:bg-blue-600'
+              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+          }`}
+        >
+          Continue
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
 function DockerSetupPage({
   dockerStatus,
   buildingImage,
   onBuildImage,
   onCheckAgain,
   onContinueBackground,
-  onSkip
+  onUseLocalSDK,
+  onSkip,
+  onBack,
+  canGoBack
 }: {
   dockerStatus: DockerStatus | null;
   buildingImage: boolean;
   onBuildImage: () => void;
   onCheckAgain: () => void;
   onContinueBackground: () => void;
+  onUseLocalSDK: (file: File) => void;
   onSkip: () => void;
+  onBack?: () => void;
+  canGoBack?: boolean;
 }) {
   // Docker not installed
   if (!dockerStatus || !dockerStatus.installed) {
@@ -709,12 +1047,22 @@ function DockerSetupPage({
         </p>
 
         <div className="flex flex-col items-center gap-1.5">
-          <button
-            onClick={onCheckAgain}
-            className="px-5 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-          >
-            Check Again
-          </button>
+          <div className="flex items-center gap-3">
+            {canGoBack && onBack && (
+              <button
+                onClick={onBack}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                Back
+              </button>
+            )}
+            <button
+              onClick={onCheckAgain}
+              className="px-5 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            >
+              Check Again
+            </button>
+          </div>
           <button
             onClick={onSkip}
             className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
@@ -751,12 +1099,22 @@ function DockerSetupPage({
         </p>
 
         <div className="flex flex-col items-center gap-1.5">
-          <button
-            onClick={onCheckAgain}
-            className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors"
-          >
-            Check Again
-          </button>
+          <div className="flex items-center gap-3">
+            {canGoBack && onBack && (
+              <button
+                onClick={onBack}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                Back
+              </button>
+            )}
+            <button
+              onClick={onCheckAgain}
+              className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors"
+            >
+              Check Again
+            </button>
+          </div>
           <button
             onClick={onSkip}
             className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
@@ -771,6 +1129,7 @@ function DockerSetupPage({
   // Building image
   if (buildingImage || dockerStatus.pullStatus === 'pulling') {
     const progress = dockerStatus.pullProgress || 0;
+    const stage = dockerStatus.pullMessage || 'Connecting';
     return (
       <motion.div
         variants={pageVariants}
@@ -787,12 +1146,12 @@ function DockerSetupPage({
         </div>
 
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-          Building cross-compiler image
+          Downloading cross-compiler image
         </h2>
 
         <div className="w-64 mb-4">
           <div className="flex items-center justify-between text-sm text-gray-500 mb-1">
-            <span>Progress</span>
+            <span>{stage}</span>
             <span>{progress}%</span>
           </div>
           <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -814,6 +1173,16 @@ function DockerSetupPage({
           Continue in background
         </button>
       </motion.div>
+    );
+  }
+
+  if (dockerStatus.pullStatus === 'error') {
+    return (
+      <DockerBuildError
+        onBuildImage={onBuildImage}
+        onUseLocalSDK={onUseLocalSDK}
+        onSkip={onSkip}
+      />
     );
   }
 
@@ -846,12 +1215,22 @@ function DockerSetupPage({
           You can now build for Windows, macOS, and Linux
         </p>
 
-        <button
-          onClick={onContinueBackground}
-          className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors"
-        >
-          Continue
-        </button>
+        <div className="flex items-center gap-3">
+          {canGoBack && onBack && (
+            <button
+              onClick={onBack}
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              Back
+            </button>
+          )}
+          <button
+            onClick={onContinueBackground}
+            className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors"
+          >
+            Continue
+          </button>
+        </div>
       </motion.div>
     );
   }
@@ -876,19 +1255,29 @@ function DockerSetupPage({
         Docker is ready!
       </h2>
       <p className="text-gray-500 dark:text-gray-400 mb-2 text-center max-w-sm">
-        Build the cross-compilation image to enable building for all platforms
+        Download the cross-compilation image to enable building for all platforms
       </p>
       <p className="text-xs text-gray-400 dark:text-gray-500 mb-8 text-center">
         This will download ~800MB and may take several minutes
       </p>
 
       <div className="flex flex-col items-center gap-2">
-        <button
-          onClick={onBuildImage}
-          className="px-5 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-500 transition-colors"
-        >
-          Build Image
-        </button>
+        <div className="flex items-center gap-3">
+          {canGoBack && onBack && (
+            <button
+              onClick={onBack}
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              Back
+            </button>
+          )}
+          <button
+            onClick={onBuildImage}
+            className="px-5 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-500 transition-colors"
+          >
+            Download Image
+          </button>
+        </div>
         <button
           onClick={onSkip}
           className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
@@ -912,137 +1301,181 @@ const FRAMEWORKS: FrameworkTemplate[] = [
   { id: 'qwik', name: 'Qwik', description: 'Qwik with Vite', color: '#18b6f6', icon: 'qwik' },
 ];
 
-// Language Select Page - TypeScript or JavaScript
 function LanguageSelectPage({
   preferTypeScript,
   onSelect,
   onNext,
+  onBack,
+  canGoBack
 }: {
   preferTypeScript: boolean;
   onSelect: (useTypeScript: boolean) => void;
   onNext: () => void;
+  onBack?: () => void;
+  canGoBack?: boolean;
 }) {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
+
   return (
-    <motion.div
+    <motion.main
       variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
       transition={{ duration: 0.3 }}
       className="flex-1 flex flex-col items-center justify-center"
+      aria-labelledby="language-title"
     >
-      <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2 text-center">
+      <h2
+        ref={headingRef}
+        id="language-title"
+        className="text-2xl font-semibold text-gray-900 dark:text-white mb-2 text-center focus:outline-none"
+        tabIndex={-1}
+      >
         Language Preference
       </h2>
       <p className="text-gray-500 dark:text-gray-400 mb-8 text-center max-w-md">
         Choose your preferred language for new projects
       </p>
 
-      <div className="flex gap-4 mb-8">
-        {/* JavaScript card */}
+      <div className="flex gap-4 mb-8" role="radiogroup" aria-label="Programming language">
         <button
           onClick={() => onSelect(false)}
-          className={`w-40 h-48 rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all border-2 ${
+          role="radio"
+          aria-checked={!preferTypeScript}
+          className={`w-40 h-48 rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all border-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${
             !preferTypeScript
               ? 'border-yellow-400 bg-yellow-400/10 shadow-lg shadow-yellow-400/20'
               : 'border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10'
           }`}
         >
-          <div className="w-16 h-16 flex items-center justify-center">
-            <img src="/logos/javascript.svg" alt="JavaScript" className="w-14 h-14" />
+          <div className="w-16 h-16 flex items-center justify-center" aria-hidden="true">
+            <img src="/logos/javascript.svg" alt="" className="w-14 h-14" />
           </div>
           <span className="text-lg font-semibold text-gray-900 dark:text-white">JavaScript</span>
           <span className="text-xs text-gray-500 dark:text-white/50">Dynamic typing</span>
         </button>
 
-        {/* TypeScript card */}
         <button
           onClick={() => onSelect(true)}
-          className={`w-40 h-48 rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all border-2 ${
+          role="radio"
+          aria-checked={preferTypeScript}
+          className={`w-40 h-48 rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all border-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${
             preferTypeScript
               ? 'border-blue-400 bg-blue-400/10 shadow-lg shadow-blue-400/20'
               : 'border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10'
           }`}
         >
-          <div className="w-16 h-16 flex items-center justify-center">
-            <img src="/logos/typescript.svg" alt="TypeScript" className="w-14 h-14" />
+          <div className="w-16 h-16 flex items-center justify-center" aria-hidden="true">
+            <img src="/logos/typescript.svg" alt="" className="w-14 h-14" />
           </div>
           <span className="text-lg font-semibold text-gray-900 dark:text-white">TypeScript</span>
           <span className="text-xs text-gray-500 dark:text-white/50">Type safety</span>
         </button>
       </div>
 
-      <button
-        onClick={onNext}
-        className="px-6 py-2.5 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors"
-      >
-        Continue
-      </button>
-    </motion.div>
+      <div className="flex items-center gap-3" role="group" aria-label="Navigation">
+        {canGoBack && onBack && (
+          <button
+            onClick={onBack}
+            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+          >
+            Back
+          </button>
+        )}
+        <button
+          onClick={onNext}
+          className="px-6 py-2.5 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+        >
+          Continue
+        </button>
+      </div>
+    </motion.main>
   );
 }
 
-// Binding Style Select Page - Classes vs Interfaces (TypeScript only)
 function BindingStylePage({
   useInterfaces,
   onSelect,
   onNext,
+  onBack,
+  canGoBack
 }: {
   useInterfaces: boolean;
   onSelect: (useInterfaces: boolean) => void;
   onNext: () => void;
+  onBack?: () => void;
+  canGoBack?: boolean;
 }) {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
+
   return (
-    <motion.div
+    <motion.main
       variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
       transition={{ duration: 0.3 }}
       className="flex-1 flex flex-col items-center justify-center px-4 overflow-hidden"
+      aria-labelledby="binding-title"
     >
-      <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2 text-center">
+      <h2
+        ref={headingRef}
+        id="binding-title"
+        className="text-2xl font-semibold text-gray-900 dark:text-white mb-2 text-center focus:outline-none"
+        tabIndex={-1}
+      >
         TypeScript Binding Style
       </h2>
       <p className="text-gray-500 dark:text-gray-400 mb-6 text-center max-w-lg">
         Choose how Go structs are represented in TypeScript
       </p>
 
-      <div className="flex gap-4 mb-8 max-w-full overflow-x-auto">
-        {/* Interfaces option */}
+      <div className="flex gap-4 mb-8 max-w-full overflow-x-auto p-1" role="radiogroup" aria-label="Binding style">
         <button
           onClick={() => onSelect(true)}
-          className={`w-56 shrink-0 rounded-xl p-4 flex flex-col items-start gap-2 transition-all border-2 text-left ${
+          role="radio"
+          aria-checked={useInterfaces}
+          className={`w-56 shrink-0 rounded-xl p-4 flex flex-col items-start gap-2 transition-all border-2 text-left focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${
             useInterfaces
               ? 'border-blue-400 bg-blue-400/10 shadow-lg shadow-blue-400/20'
               : 'border-white/10 bg-white/5 hover:bg-white/10'
           }`}
         >
           <span className="text-base font-semibold text-gray-900 dark:text-white">Interfaces</span>
-          <pre className="text-[10px] leading-tight text-gray-700 dark:text-white/70 font-mono bg-gray-100 dark:bg-black/30 p-2 rounded-lg w-full overflow-x-auto">
+          <pre className="text-[10px] leading-tight text-gray-700 dark:text-white/70 font-mono bg-gray-100 dark:bg-black/30 p-2 rounded-lg w-full overflow-x-auto" aria-hidden="true">
 {`interface Person {
   name: string;
   age: number;
 }`}
           </pre>
-          <ul className="text-[10px] text-gray-500 dark:text-white/50 space-y-0.5">
-            <li>• Lightweight types</li>
-            <li>• No runtime code</li>
-            <li>• Simpler output</li>
+          <ul className="text-[10px] text-gray-500 dark:text-white/50 space-y-0.5" aria-label="Features">
+            <li>Lightweight types</li>
+            <li>No runtime code</li>
+            <li>Simpler output</li>
           </ul>
         </button>
 
-        {/* Classes option */}
         <button
           onClick={() => onSelect(false)}
-          className={`w-56 shrink-0 rounded-xl p-4 flex flex-col items-start gap-2 transition-all border-2 text-left ${
+          role="radio"
+          aria-checked={!useInterfaces}
+          className={`w-56 shrink-0 rounded-xl p-4 flex flex-col items-start gap-2 transition-all border-2 text-left focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${
             !useInterfaces
               ? 'border-purple-400 bg-purple-400/10 shadow-lg shadow-purple-400/20'
               : 'border-white/10 bg-white/5 hover:bg-white/10'
           }`}
         >
           <span className="text-base font-semibold text-gray-900 dark:text-white">Classes</span>
-          <pre className="text-[10px] leading-tight text-gray-700 dark:text-white/70 font-mono bg-gray-100 dark:bg-black/30 p-2 rounded-lg w-full overflow-x-auto">
+          <pre className="text-[10px] leading-tight text-gray-700 dark:text-white/70 font-mono bg-gray-100 dark:bg-black/30 p-2 rounded-lg w-full overflow-x-auto" aria-hidden="true">
 {`class Person {
   name: string;
   age: number;
@@ -1054,37 +1487,50 @@ function BindingStylePage({
   }
 }`}
           </pre>
-          <ul className="text-[10px] text-gray-500 dark:text-white/50 space-y-0.5">
-            <li>• Factory methods</li>
-            <li>• Default initialization</li>
-            <li>• More verbose</li>
+          <ul className="text-[10px] text-gray-500 dark:text-white/50 space-y-0.5" aria-label="Features">
+            <li>Factory methods</li>
+            <li>Default initialization</li>
+            <li>More verbose</li>
           </ul>
         </button>
       </div>
 
-      <button
-        onClick={onNext}
-        className="px-6 py-2.5 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors"
-      >
-        Continue
-      </button>
-    </motion.div>
+      <div className="flex items-center gap-3" role="group" aria-label="Navigation">
+        {canGoBack && onBack && (
+          <button
+            onClick={onBack}
+            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+          >
+            Back
+          </button>
+        )}
+        <button
+          onClick={onNext}
+          className="px-6 py-2.5 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+        >
+          Continue
+        </button>
+      </div>
+    </motion.main>
   );
 }
 
-// Template Select Page - Framework cards grid
 function TemplateSelectPage({
   selectedFramework,
   preferTypeScript,
   onSelect,
   onNext,
   onSkip,
+  onBack,
+  canGoBack
 }: {
   selectedFramework: string;
   preferTypeScript: boolean;
   onSelect: (frameworkId: string) => void;
   onNext: () => void;
   onSkip: () => void;
+  onBack?: () => void;
+  canGoBack?: boolean;
 }) {
   return (
     <PageTemplate
@@ -1094,13 +1540,21 @@ function TemplateSelectPage({
       primaryLabel="Continue"
       secondaryAction={onSkip}
       secondaryLabel="Skip"
+      onBack={onBack}
+      canGoBack={canGoBack}
     >
-      <div className="grid grid-cols-4 gap-3 max-w-2xl mx-auto">
+      <div
+        className="grid grid-cols-4 gap-3 max-w-2xl mx-auto p-1"
+        role="radiogroup"
+        aria-label="Framework templates"
+      >
         {FRAMEWORKS.map((framework) => (
           <button
             key={framework.id}
             onClick={() => onSelect(framework.id)}
-            className={`aspect-square rounded-xl p-4 flex flex-col items-center justify-center gap-2 transition-all border-2 ${
+            role="radio"
+            aria-checked={selectedFramework === framework.id}
+            className={`aspect-square rounded-xl p-4 flex flex-col items-center justify-center gap-2 transition-all border-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${
               selectedFramework === framework.id
                 ? 'border-red-500 bg-red-500/10 shadow-lg shadow-red-500/10'
                 : 'border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10'
@@ -1108,7 +1562,8 @@ function TemplateSelectPage({
           >
             <img
               src={`/logos/${framework.id === 'vanilla' ? (preferTypeScript ? 'typescript' : 'javascript') : framework.icon}.svg`}
-              alt={framework.name}
+              alt=""
+              aria-hidden="true"
               className="w-12 h-12"
             />
             <span className="text-sm font-medium text-gray-900 dark:text-white">{framework.name}</span>
@@ -1119,25 +1574,30 @@ function TemplateSelectPage({
   );
 }
 
-// Projects Page - Company and Bundle ID (no template)
 function ProjectsPage({
   defaults,
   onDefaultsChange,
   onNext,
   onSkip,
-  saving
+  saving,
+  onBack,
+  canGoBack
 }: {
   defaults: GlobalDefaults;
   onDefaultsChange: (defaults: GlobalDefaults) => void;
   onNext: () => void;
   onSkip: () => void;
   saving: boolean;
+  onBack?: () => void;
+  canGoBack?: boolean;
 }) {
-  const [editingField, setEditingField] = useState<'company' | 'bundleId' | null>(null);
+  const [editingField, setEditingField] = useState<'name' | 'company' | 'bundleId' | null>(null);
   const [tempValue, setTempValue] = useState('');
 
-  const handleRowClick = (field: 'company' | 'bundleId') => {
-    if (field === 'company') {
+  const handleRowClick = (field: 'name' | 'company' | 'bundleId') => {
+    if (field === 'name') {
+      setTempValue(defaults.author.name);
+    } else if (field === 'company') {
       setTempValue(defaults.author.company);
     } else if (field === 'bundleId') {
       setTempValue(defaults.project.productIdentifierPrefix);
@@ -1146,7 +1606,12 @@ function ProjectsPage({
   };
 
   const handleSaveField = () => {
-    if (editingField === 'company') {
+    if (editingField === 'name') {
+      onDefaultsChange({
+        ...defaults,
+        author: { ...defaults.author, name: tempValue }
+      });
+    } else if (editingField === 'company') {
       onDefaultsChange({
         ...defaults,
         author: { ...defaults.author, company: tempValue }
@@ -1177,14 +1642,49 @@ function ProjectsPage({
       primaryDisabled={saving}
       secondaryAction={onSkip}
       secondaryLabel="Skip"
+      onBack={onBack}
+      canGoBack={canGoBack}
     >
       <div className="max-w-xl mx-auto">
-        <div className="settings-group">
-          {/* Company row */}
-          {editingField === 'company' ? (
+        <div className="settings-group" role="group" aria-label="Project default settings">
+          {editingField === 'name' ? (
             <div className="settings-row">
+              <label htmlFor="author-input" className="sr-only">Author name</label>
               <div className="flex-1">
                 <input
+                  id="author-input"
+                  type="text"
+                  value={tempValue}
+                  onChange={(e) => setTempValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onBlur={handleSaveField}
+                  autoFocus
+                  placeholder="Your Name"
+                  aria-label="Author name"
+                  className="w-full bg-transparent border-none text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 rounded px-1"
+                />
+              </div>
+            </div>
+          ) : (
+            <button
+              className="settings-row w-full text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500"
+              onClick={() => handleRowClick('name')}
+              aria-label={`Author: ${defaults.author.name || 'Not set'}. Click to edit.`}
+            >
+              <span className="text-sm font-medium text-gray-800 dark:text-white/90">Author</span>
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-white/65">
+                <span>{defaults.author.name || 'Not set'}</span>
+                <span className="text-gray-400 dark:text-white/40 text-xs" aria-hidden="true">&#9656;</span>
+              </div>
+            </button>
+          )}
+
+          {editingField === 'company' ? (
+            <div className="settings-row">
+              <label htmlFor="company-input" className="sr-only">Company name</label>
+              <div className="flex-1">
+                <input
+                  id="company-input"
                   type="text"
                   value={tempValue}
                   onChange={(e) => setTempValue(e.target.value)}
@@ -1192,25 +1692,31 @@ function ProjectsPage({
                   onBlur={handleSaveField}
                   autoFocus
                   placeholder="Acme Corp"
-                  className="w-full bg-transparent border-none text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none"
+                  aria-label="Company name"
+                  className="w-full bg-transparent border-none text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 rounded px-1"
                 />
               </div>
             </div>
           ) : (
-            <div className="settings-row" onClick={() => handleRowClick('company')}>
+            <button
+              className="settings-row w-full text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500"
+              onClick={() => handleRowClick('company')}
+              aria-label={`Company: ${defaults.author.company || 'Not set'}. Click to edit.`}
+            >
               <span className="text-sm font-medium text-gray-800 dark:text-white/90">Company</span>
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-white/65">
                 <span>{defaults.author.company || 'Not set'}</span>
-                <span className="text-gray-400 dark:text-white/40 text-xs">&#9656;</span>
+                <span className="text-gray-400 dark:text-white/40 text-xs" aria-hidden="true">&#9656;</span>
               </div>
-            </div>
+            </button>
           )}
 
-          {/* Bundle identifier row */}
           {editingField === 'bundleId' ? (
             <div className="settings-row">
+              <label htmlFor="bundle-input" className="sr-only">Bundle identifier</label>
               <div className="flex-1">
                 <input
+                  id="bundle-input"
                   type="text"
                   value={tempValue}
                   onChange={(e) => setTempValue(e.target.value)}
@@ -1218,36 +1724,52 @@ function ProjectsPage({
                   onBlur={handleSaveField}
                   autoFocus
                   placeholder="com.example"
-                  className="w-full bg-transparent border-none text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none font-mono"
+                  aria-label="Bundle identifier"
+                  className="w-full bg-transparent border-none text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 rounded px-1 font-mono"
                 />
               </div>
             </div>
           ) : (
-            <div className="settings-row" onClick={() => handleRowClick('bundleId')}>
+            <button
+              className="settings-row w-full text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500"
+              onClick={() => handleRowClick('bundleId')}
+              aria-label={`Bundle identifier: ${defaults.project.productIdentifierPrefix || 'com.example'}. Click to edit.`}
+            >
               <span className="text-sm font-medium text-gray-800 dark:text-white/90">Bundle identifier</span>
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-white/65">
                 <span className="font-mono">{defaults.project.productIdentifierPrefix || 'com.example'}</span>
-                <span className="text-gray-400 dark:text-white/40 text-xs">&#9656;</span>
+                <span className="text-gray-400 dark:text-white/40 text-xs" aria-hidden="true">&#9656;</span>
               </div>
-            </div>
+            </button>
           )}
         </div>
-        <p className="text-xs text-gray-500 dark:text-white/40 mt-3 text-center">
+        <p className="text-xs text-gray-500 dark:text-white/40 mt-3 text-center" id="settings-description">
           These defaults are used when creating new projects
         </p>
       </div>
     </PageTemplate>
   );
 }
-// Complete Page
+
 function CompletePage() {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
+
+  const handleStartBuilding = () => {
+    window.open('https://v3alpha.wails.io/quick-start/first-app/', '_blank', 'noopener,noreferrer');
+  };
+
   return (
-    <motion.div
+    <motion.main
       variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
       transition={{ duration: 0.3 }}
+      aria-labelledby="complete-title"
       className="flex-1 flex flex-col items-center justify-center px-8"
     >
       <motion.div
@@ -1255,30 +1777,35 @@ function CompletePage() {
         animate={{ scale: 1 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15 }}
         className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mb-4"
+        aria-hidden="true"
       >
         <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
         </svg>
       </motion.div>
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+      <h2
+        ref={headingRef}
+        id="complete-title"
+        className="text-xl font-semibold text-gray-900 dark:text-white mb-6 focus:outline-none"
+        tabIndex={-1}
+      >
         You're ready to build!
       </h2>
 
-      <a
-        href="https://v3alpha.wails.io/quick-start/first-app/"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors"
+      <button
+        onClick={handleStartBuilding}
+        className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
       >
         Start Building
-      </a>
-    </motion.div>
+      </button>
+    </motion.main>
   );
 }
 
 // Main App
 export default function App() {
   const [step, setStep] = useState<OOBEStep>('splash');
+  const [stepHistory, setStepHistory] = useState<OOBEStep[]>([]);
   const [dependencies, setDependencies] = useState<DependencyStatus[]>([]);
   const [_system, setSystem] = useState<SystemInfo | null>(null);
   const [dockerStatus, setDockerStatus] = useState<DockerStatus | null>(null);
@@ -1299,6 +1826,8 @@ export default function App() {
   const [preferTypeScript, setPreferTypeScript] = useState(true);
   const [selectedFramework, setSelectedFramework] = useState('vanilla');
   const [useInterfaces, setUseInterfaces] = useState(true);
+  const [showDockerToast, setShowDockerToast] = useState(false);
+  const [prevDockerPullStatus, setPrevDockerPullStatus] = useState<string | null>(null);
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('wails-setup-theme');
@@ -1307,6 +1836,27 @@ export default function App() {
     }
     return 'dark';
   });
+
+  const navigateTo = (newStep: OOBEStep) => {
+    setStepHistory(prev => [...prev, step]);
+    setStep(newStep);
+  };
+
+  const goBack = () => {
+    if (stepHistory.length === 0) return;
+    const newHistory = [...stepHistory];
+    let previousStep = newHistory.pop()!;
+    
+    // Skip transient steps like 'checking'
+    while (previousStep === 'checking' && newHistory.length > 0) {
+      previousStep = newHistory.pop()!;
+    }
+    
+    setStepHistory(newHistory);
+    setStep(previousStep);
+  };
+
+  const canGoBack = stepHistory.length > 0 && step !== 'splash' && step !== 'checking';
 
   const toggleTheme = () => {
     setTheme(prev => {
@@ -1329,20 +1879,33 @@ export default function App() {
     init();
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      if (e.key === 'Escape' && canGoBack) {
+        e.preventDefault();
+        goBack();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [canGoBack, step]);
+
   const init = async () => {
     const state = await getState();
     setSystem(state.system);
   };
 
-  // Handle splash -> checking -> deps result
   const handleSplashNext = async () => {
-    setStep('checking');
+    navigateTo('checking');
 
-    // Check dependencies
     const deps = await checkDependencies();
     setDependencies(deps);
 
-    // Determine next step based on deps
     const missingRequired = deps.filter(d => d.required && !d.installed);
     if (missingRequired.length === 0) {
       setStep('deps-ready');
@@ -1352,8 +1915,7 @@ export default function App() {
   };
 
   const handleDepsReadyNext = async () => {
-    // Always show the cross-platform step so users can see their cross-compilation status
-    setStep('cross-platform');
+    navigateTo('cross-platform');
   };
 
   const handleDepsMissingRetry = async () => {
@@ -1370,23 +1932,31 @@ export default function App() {
   };
 
   const handleDepsMissingContinue = async () => {
-    // Always show the cross-platform step so users can see their cross-compilation status
-    setStep('cross-platform');
+    navigateTo('cross-platform');
   };
 
   const handleCrossPlatformYes = async () => {
-    // Check Docker status
-    const docker = await getDockerStatus();
-    setDockerStatus(docker);
-    setStep('docker-setup');
+    navigateTo('sdk-license');
   };
 
-  const handleCrossPlatformSkip = async () => {
-    // Load defaults and go to projects
+  const handleSDKLicenseAgree = async () => {
+    const docker = await getDockerStatus();
+    setDockerStatus(docker);
+    navigateTo('docker-setup');
+  };
+
+  const handleSDKLicenseDecline = async () => {
     const loadedDefaults = await getDefaults();
     setDefaults(loadedDefaults);
     setUseInterfaces(loadedDefaults.project?.useInterfaces ?? true);
-    setStep('projects');
+    navigateTo('projects');
+  };
+
+  const handleCrossPlatformSkip = async () => {
+    const loadedDefaults = await getDefaults();
+    setDefaults(loadedDefaults);
+    setUseInterfaces(loadedDefaults.project?.useInterfaces ?? true);
+    navigateTo('projects');
   };
 
   const handleDockerCheckAgain = async () => {
@@ -1398,83 +1968,95 @@ export default function App() {
     setBuildingImage(true);
     await buildDockerImage();
 
-    const poll = async () => {
-      const status = await getDockerStatus();
+    const unsubscribe = subscribeDockerStatus((status) => {
       setDockerStatus(status);
-      if (status.pullStatus === 'pulling') {
-        setTimeout(poll, 1000);
-      } else {
+      if (status.pullStatus !== 'pulling') {
         setBuildingImage(false);
+        unsubscribe();
       }
-    };
-    poll();
+    });
   };
 
   const handleDockerContinueBackground = async () => {
-    // If build is in progress, let it continue in background
     if (buildingImage || (dockerStatus && dockerStatus.pullStatus === 'pulling')) {
       setBackgroundDockerStarted(true);
     }
-    // Load defaults and go to projects
     const loadedDefaults = await getDefaults();
     setDefaults(loadedDefaults);
     setUseInterfaces(loadedDefaults.project?.useInterfaces ?? true);
-    setStep('projects');
+    navigateTo('projects');
   };
 
   const handleDockerSkip = async () => {
     const loadedDefaults = await getDefaults();
     setDefaults(loadedDefaults);
     setUseInterfaces(loadedDefaults.project?.useInterfaces ?? true);
-    setStep('projects');
+    navigateTo('projects');
+  };
+
+  const handleDockerUseLocalSDK = async (file: File) => {
+    setBuildingImage(true);
+    
+    const formData = new FormData();
+    formData.append('sdk', file);
+    
+    await fetch('/api/docker/build-with-sdk', {
+      method: 'POST',
+      body: formData
+    });
+
+    const unsubscribe = subscribeDockerStatus((status) => {
+      setDockerStatus(status);
+      if (status.pullStatus !== 'pulling') {
+        setBuildingImage(false);
+        unsubscribe();
+      }
+    });
   };
 
   const handleProjectsNext = () => {
-    setStep('language-select');
+    navigateTo('language-select');
   };
 
   const handleProjectsSkip = () => {
-    setStep('language-select');
+    navigateTo('language-select');
   };
 
   const handleLanguageSelectNext = () => {
     if (preferTypeScript) {
-      setStep('binding-style');
+      navigateTo('binding-style');
     } else {
-      setStep('template-select');
+      navigateTo('template-select');
     }
   };
 
   const handleBindingStyleNext = () => {
-    setStep('template-select');
+    navigateTo('template-select');
   };
 
   const handleTemplateSelectNext = async () => {
-    // Build template name with TS suffix if needed
     const templateName = preferTypeScript && selectedFramework !== 'vanilla'
       ? `${selectedFramework}-ts`
       : preferTypeScript && selectedFramework === 'vanilla'
         ? 'vanilla-ts'
         : selectedFramework;
 
-    // Update defaults with selected template and binding style
     const updatedDefaults = {
       ...defaults,
       project: {
         ...defaults.project,
         defaultTemplate: templateName,
-        useInterfaces: preferTypeScript ? useInterfaces : true, // Only relevant for TypeScript
+        useInterfaces: preferTypeScript ? useInterfaces : true,
       }
     };
 
     setSavingDefaults(true);
     await saveDefaults(updatedDefaults);
     setSavingDefaults(false);
-    setStep('complete');
+    navigateTo('complete');
   };
 
   const handleTemplateSelectSkip = async () => {
-    // Save defaults with binding style preference
     const updatedDefaults = {
       ...defaults,
       project: {
@@ -1485,25 +2067,30 @@ export default function App() {
     setSavingDefaults(true);
     await saveDefaults(updatedDefaults);
     setSavingDefaults(false);
-    setStep('complete');
+    navigateTo('complete');
   };
 
-  // Poll Docker status in background
+  // Stream Docker status in background via SSE
   useEffect(() => {
     if (backgroundDockerStarted && (buildingImage || (dockerStatus && dockerStatus.pullStatus === 'pulling'))) {
-      const poll = async () => {
-        const status = await getDockerStatus();
+      const unsubscribe = subscribeDockerStatus((status) => {
         setDockerStatus(status);
-        if (status.pullStatus === 'pulling') {
-          setTimeout(poll, 2000);
-        } else {
+        if (status.pullStatus !== 'pulling') {
           setBuildingImage(false);
         }
-      };
-      const timer = setTimeout(poll, 2000);
-      return () => clearTimeout(timer);
+      });
+      return unsubscribe;
     }
   }, [backgroundDockerStarted, buildingImage, dockerStatus?.pullStatus]);
+
+  useEffect(() => {
+    if (prevDockerPullStatus === 'pulling' && dockerStatus?.pullStatus === 'complete' && step !== 'docker-setup') {
+      setShowDockerToast(true);
+      const timer = setTimeout(() => setShowDockerToast(false), 3000);
+      return () => clearTimeout(timer);
+    }
+    setPrevDockerPullStatus(dockerStatus?.pullStatus || null);
+  }, [dockerStatus?.pullStatus, step]);
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
@@ -1516,13 +2103,28 @@ export default function App() {
           </div>
         </div>
 
-        {/* Main content card - max 75% width/height, sidebar:content = 1:4 ratio */}
-        <div className="w-[75vw] max-w-[75vw] h-[75vh] max-h-[75vh] glass-card rounded-2xl flex overflow-hidden relative z-10">
+        <div className="w-[75vw] max-w-[1200px] h-[75vh] max-h-[800px] glass-card rounded-2xl flex overflow-hidden relative z-10">
           {/* Sidebar */}
           <Sidebar currentStep={step} dockerStatus={dockerStatus} buildingDocker={backgroundDockerStarted && (buildingImage || dockerStatus?.pullStatus === 'pulling')} />
 
           {/* Content area - distinct from sidebar in dark mode */}
-          <div className="flex-1 flex flex-col min-w-0 bg-white/50 dark:bg-white/[0.03]">
+          <div className="flex-1 flex flex-col min-w-0 bg-white/50 dark:bg-white/[0.03] relative">
+            <AnimatePresence>
+              {showDockerToast && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className="absolute top-4 right-4 z-50 flex items-center gap-2 px-3 py-2 bg-green-500 text-white rounded-lg shadow-lg"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-sm font-medium">Docker image ready</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
             <div className="flex-1 flex flex-col min-h-0">
               <AnimatePresence mode="wait">
                 {step === 'splash' && (
@@ -1532,7 +2134,7 @@ export default function App() {
                   <CheckingPage key="checking" />
                 )}
                 {step === 'deps-ready' && (
-                  <DepsReadyPage key="deps-ready" onNext={handleDepsReadyNext} />
+                  <DepsReadyPage key="deps-ready" onNext={handleDepsReadyNext} onBack={goBack} canGoBack={canGoBack} />
                 )}
                 {step === 'deps-missing' && (
                   <DepsMissingPage
@@ -1540,6 +2142,8 @@ export default function App() {
                     dependencies={dependencies}
                     onRetry={handleDepsMissingRetry}
                     onContinue={handleDepsMissingContinue}
+                    onBack={goBack}
+                    canGoBack={canGoBack}
                   />
                 )}
                 {step === 'cross-platform' && (
@@ -1548,6 +2152,17 @@ export default function App() {
                     dockerDep={dependencies.find(d => d.name === 'docker')}
                     onYes={handleCrossPlatformYes}
                     onSkip={handleCrossPlatformSkip}
+                    onBack={goBack}
+                    canGoBack={canGoBack}
+                  />
+                )}
+                {step === 'sdk-license' && (
+                  <SDKLicensePage
+                    key="sdk-license"
+                    onAgree={handleSDKLicenseAgree}
+                    onDecline={handleSDKLicenseDecline}
+                    onBack={goBack}
+                    canGoBack={canGoBack}
                   />
                 )}
                 {step === 'docker-setup' && (
@@ -1558,7 +2173,10 @@ export default function App() {
                     onBuildImage={handleDockerBuildImage}
                     onCheckAgain={handleDockerCheckAgain}
                     onContinueBackground={handleDockerContinueBackground}
+                    onUseLocalSDK={handleDockerUseLocalSDK}
                     onSkip={handleDockerSkip}
+                    onBack={goBack}
+                    canGoBack={canGoBack}
                   />
                 )}
                 {step === 'projects' && (
@@ -1569,6 +2187,8 @@ export default function App() {
                     onNext={handleProjectsNext}
                     onSkip={handleProjectsSkip}
                     saving={savingDefaults}
+                    onBack={goBack}
+                    canGoBack={canGoBack}
                   />
                 )}
                 {step === 'language-select' && (
@@ -1577,6 +2197,8 @@ export default function App() {
                     preferTypeScript={preferTypeScript}
                     onSelect={setPreferTypeScript}
                     onNext={handleLanguageSelectNext}
+                    onBack={goBack}
+                    canGoBack={canGoBack}
                   />
                 )}
                 {step === 'binding-style' && (
@@ -1585,6 +2207,8 @@ export default function App() {
                     useInterfaces={useInterfaces}
                     onSelect={setUseInterfaces}
                     onNext={handleBindingStyleNext}
+                    onBack={goBack}
+                    canGoBack={canGoBack}
                   />
                 )}
                 {step === 'template-select' && (
@@ -1595,6 +2219,8 @@ export default function App() {
                     onSelect={setSelectedFramework}
                     onNext={handleTemplateSelectNext}
                     onSkip={handleTemplateSelectSkip}
+                    onBack={goBack}
+                    canGoBack={canGoBack}
                   />
                 )}
                 {step === 'complete' && (

@@ -60,16 +60,50 @@ func execCommandRefreshed(name string, args ...string) (string, error) {
 func (w *Wizard) checkAllDependencies() []DependencyStatus {
 	var deps []DependencyStatus
 
-	// Check WebView2 Runtime
+	deps = append(deps, checkGo())
 	deps = append(deps, checkWebView2())
-
-	// Check npm (common dependency)
 	deps = append(deps, checkNpm())
-
-	// Check Docker (optional)
 	deps = append(deps, checkDocker())
 
 	return deps
+}
+
+func checkGo() DependencyStatus {
+	dep := DependencyStatus{
+		Name:     "Go",
+		Required: true,
+	}
+
+	version, err := execCommandRefreshed("go", "version")
+	if err != nil {
+		dep.Status = "not_installed"
+		dep.Installed = false
+		dep.Message = "Go 1.25+ is required"
+		dep.HelpURL = "https://go.dev/dl/"
+		return dep
+	}
+
+	dep.Installed = true
+	dep.Status = "installed"
+
+	parts := strings.Split(version, " ")
+	if len(parts) >= 3 {
+		versionStr := strings.TrimPrefix(parts[2], "go")
+		dep.Version = versionStr
+
+		versionParts := strings.Split(versionStr, ".")
+		if len(versionParts) >= 2 {
+			major, _ := strconv.Atoi(versionParts[0])
+			minor, _ := strconv.Atoi(versionParts[1])
+			if major < 1 || (major == 1 && minor < 25) {
+				dep.Status = "needs_update"
+				dep.Message = "Go 1.25+ is required (found " + versionStr + ")"
+				dep.HelpURL = "https://go.dev/dl/"
+			}
+		}
+	}
+
+	return dep
 }
 
 func checkWebView2() DependencyStatus {

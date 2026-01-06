@@ -19,8 +19,13 @@ export interface DockerStatus {
   imageName: string;
   imageSize?: string;
   pullProgress: number;
+  pullMessage?: string;
   pullStatus: 'idle' | 'pulling' | 'complete' | 'error';
   pullError?: string;
+  bytesTotal?: number;
+  bytesDone?: number;
+  layerCount?: number;
+  layersDone?: number;
 }
 
 export interface UserConfig {

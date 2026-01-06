@@ -17,6 +17,40 @@ export async function getDockerStatus(): Promise<DockerStatus> {
   return response.json();
 }
 
+export function subscribeDockerStatus(onUpdate: (status: DockerStatus) => void): () => void {
+  let eventSource: EventSource | null = null;
+  let closed = false;
+
+  const connect = () => {
+    if (closed) return;
+    
+    eventSource = new EventSource(`${API_BASE}/docker/status/stream`);
+    
+    eventSource.onmessage = (event) => {
+      try {
+        const status = JSON.parse(event.data) as DockerStatus;
+        onUpdate(status);
+      } catch (e) {
+        console.error('Failed to parse docker status:', e);
+      }
+    };
+
+    eventSource.onerror = () => {
+      eventSource?.close();
+      if (!closed) {
+        setTimeout(connect, 1000);
+      }
+    };
+  };
+
+  connect();
+
+  return () => {
+    closed = true;
+    eventSource?.close();
+  };
+}
+
 export async function buildDockerImage(): Promise<{ status: string }> {
   const response = await fetch(`${API_BASE}/docker/build`, { method: 'POST' });
   return response.json();
