@@ -3,8 +3,10 @@ package tui
 import (
 	"fmt"
 	"os/exec"
+	"sort"
 	"strings"
 
+	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -21,14 +23,15 @@ const (
 )
 
 type Model struct {
-	state       state
-	report      *doctorng.Report
-	spinner     spinner.Model
-	err         error
-	width       int
-	height      int
-	selectedDep int
-	showHelp    bool
+	state        state
+	report       *doctorng.Report
+	spinner      spinner.Model
+	err          error
+	width        int
+	height       int
+	selectedDep  int
+	showHelp     bool
+	copiedNotice bool
 }
 
 type reportReadyMsg struct {
@@ -103,6 +106,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.state = stateLoading
 				return m, tea.Batch(m.spinner.Tick, runDoctor)
 			}
+		case "c":
+			if m.state == stateReport && m.report != nil {
+				text := m.generateClipboardText()
+				if err := clipboard.WriteAll(text); err == nil {
+					m.copiedNotice = true
+				}
+			}
 		}
 
 	case tea.WindowSizeMsg:
@@ -165,8 +175,10 @@ func (m Model) viewReport() string {
 
 	if m.showHelp {
 		b.WriteString(m.renderHelp())
+	} else if m.copiedNotice {
+		b.WriteString(okStyle.Render("Copied to clipboard!") + " " + helpStyle.Render("Press ? for help, q to quit"))
 	} else {
-		b.WriteString(helpStyle.Render("Press ? for help, q to quit"))
+		b.WriteString(helpStyle.Render("Press c to copy, ? for help, q to quit"))
 	}
 
 	return b.String()
@@ -195,8 +207,13 @@ func (m Model) renderSystemInfo() string {
 	}
 	rows = append(rows, []string{"Memory", sys.Hardware.Memory})
 
-	for k, v := range sys.PlatformExtras {
-		rows = append(rows, []string{k, v})
+	keys := make([]string, 0, len(sys.PlatformExtras))
+	for k := range sys.PlatformExtras {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		rows = append(rows, []string{k, sys.PlatformExtras[k]})
 	}
 
 	b.WriteString(renderTable(rows))
@@ -224,6 +241,8 @@ func (m Model) renderDependencies() string {
 	b.WriteString(sectionStyle.Render("Dependencies"))
 	b.WriteString("\n")
 
+	hasMissing := len(m.report.Dependencies.RequiredMissing()) > 0
+
 	for i, dep := range m.report.Dependencies {
 		icon := statusIconTri(dep.Status.String())
 		name := dep.Name
@@ -234,7 +253,7 @@ func (m Model) renderDependencies() string {
 
 		row := fmt.Sprintf("  %s %-25s %s", icon, name, version)
 
-		if i == m.selectedDep {
+		if hasMissing && i == m.selectedDep {
 			row = selectedStyle.Render(row)
 		}
 
@@ -309,12 +328,20 @@ func (m Model) renderSummary() string {
 func (m Model) renderHelp() string {
 	var b strings.Builder
 	b.WriteString("\n")
-	b.WriteString(boxStyle.Render(`Keyboard Shortcuts:
-  j/k or ↑/↓  Navigate dependencies
-  i           Install missing dependencies  
-  r           Refresh / re-scan system
-  ?           Toggle help
-  q           Quit`))
+
+	help := "Keyboard Shortcuts:\n"
+	help += "  c           Copy report to clipboard\n"
+	help += "  r           Refresh / re-scan system\n"
+
+	if m.report != nil && len(m.report.Dependencies.RequiredMissing()) > 0 {
+		help += "  j/k, ↑/↓    Navigate dependencies\n"
+		help += "  i           Install missing dependencies\n"
+	}
+
+	help += "  ?           Toggle help\n"
+	help += "  q           Quit"
+
+	b.WriteString(boxStyle.Render(help))
 	return b.String()
 }
 
@@ -385,4 +412,67 @@ func createInstallCmd(deps doctorng.DependencyList) *exec.Cmd {
 
 	combined := strings.Join(commands, " && ")
 	return exec.Command("sh", "-c", combined)
+}
+
+func (m Model) generateClipboardText() string {
+	if m.report == nil {
+		return ""
+	}
+
+	var b strings.Builder
+	b.WriteString("Wails Doctor Report\n")
+	b.WriteString("===================\n\n")
+
+	sys := m.report.System
+	b.WriteString("System:\n")
+	b.WriteString(fmt.Sprintf("  OS: %s %s\n", sys.OS.Name, sys.OS.Version))
+	b.WriteString(fmt.Sprintf("  Platform: %s/%s\n", sys.OS.Platform, sys.OS.Arch))
+	if len(sys.Hardware.CPUs) > 0 {
+		b.WriteString(fmt.Sprintf("  CPU: %s\n", sys.Hardware.CPUs[0].Model))
+	}
+	if len(sys.Hardware.GPUs) > 0 {
+		b.WriteString(fmt.Sprintf("  GPU: %s\n", sys.Hardware.GPUs[0].Name))
+	}
+	b.WriteString(fmt.Sprintf("  Memory: %s\n", sys.Hardware.Memory))
+
+	keys := make([]string, 0, len(sys.PlatformExtras))
+	for k := range sys.PlatformExtras {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		b.WriteString(fmt.Sprintf("  %s: %s\n", k, sys.PlatformExtras[k]))
+	}
+
+	b.WriteString("\nBuild Environment:\n")
+	b.WriteString(fmt.Sprintf("  Wails: %s\n", m.report.Build.WailsVersion))
+	b.WriteString(fmt.Sprintf("  Go: %s\n", m.report.Build.GoVersion))
+
+	b.WriteString("\nDependencies:\n")
+	for _, dep := range m.report.Dependencies {
+		status := "✓"
+		if dep.Status != doctorng.StatusOK {
+			status = "✗"
+		}
+		version := dep.Version
+		if version == "" {
+			version = "not installed"
+		}
+		optional := ""
+		if !dep.Required {
+			optional = " (optional)"
+		}
+		b.WriteString(fmt.Sprintf("  %s %s: %s%s\n", status, dep.Name, version, optional))
+	}
+
+	if len(m.report.Diagnostics) > 0 {
+		b.WriteString("\nIssues:\n")
+		for _, diag := range m.report.Diagnostics {
+			b.WriteString(fmt.Sprintf("  - %s: %s\n", diag.Name, diag.Message))
+		}
+	}
+
+	b.WriteString(fmt.Sprintf("\nStatus: %s\n", m.report.Summary))
+
+	return b.String()
 }
