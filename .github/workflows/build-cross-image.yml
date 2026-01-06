@@ -3,6 +3,10 @@ name: Build Cross-Compiler Image
 on:
   workflow_dispatch:
     inputs:
+      branch:
+        description: 'Branch containing Dockerfile'
+        required: true
+        default: 'v3-alpha'
       sdk_version:
         description: 'macOS SDK version'
         required: true
@@ -28,10 +32,10 @@ jobs:
       packages: write
 
     steps:
-      - name: Checkout v3-alpha
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: v3-alpha
+          ref: ${{ inputs.branch }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
