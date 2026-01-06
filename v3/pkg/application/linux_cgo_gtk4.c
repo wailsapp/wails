@@ -109,8 +109,8 @@ WebKitWebView* get_webview_from_content_manager(void *contentManager) {
 // Signal connection (wrapper for macro)
 // ============================================================================
 
-void signal_connect(void *widget, char *event, void *cb, void* data) {
-    g_signal_connect(widget, event, cb, data);
+void signal_connect(void *widget, char *event, void *cb, uintptr_t data) {
+    g_signal_connect(widget, event, cb, (gpointer)data);
 }
 
 // ============================================================================
@@ -417,16 +417,16 @@ static gboolean on_drop(GtkDropTarget *target, const GValue *value, gdouble x, g
     return TRUE;
 }
 
-void enableDND(GtkWidget *widget, gpointer data) {
+void enableDND(GtkWidget *widget, uintptr_t winID) {
     GtkDropTarget *target = gtk_drop_target_new(GDK_TYPE_FILE_LIST, GDK_ACTION_COPY);
-    g_signal_connect(target, "enter", G_CALLBACK(on_drop_enter), data);
-    g_signal_connect(target, "leave", G_CALLBACK(on_drop_leave), data);
-    g_signal_connect(target, "motion", G_CALLBACK(on_drop_motion), data);
-    g_signal_connect(target, "drop", G_CALLBACK(on_drop), data);
+    g_signal_connect(target, "enter", G_CALLBACK(on_drop_enter), (gpointer)winID);
+    g_signal_connect(target, "leave", G_CALLBACK(on_drop_leave), (gpointer)winID);
+    g_signal_connect(target, "motion", G_CALLBACK(on_drop_motion), (gpointer)winID);
+    g_signal_connect(target, "drop", G_CALLBACK(on_drop), (gpointer)winID);
     gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(target));
 }
 
-void disableDND(GtkWidget *widget, gpointer data) {
+void disableDND(GtkWidget *widget, uintptr_t winID) {
     // In GTK4, we don't add a drop target to block drops
     // The default behavior is to not accept drops
 }

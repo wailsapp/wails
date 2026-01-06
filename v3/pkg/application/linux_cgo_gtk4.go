@@ -149,7 +149,7 @@ func appRun(app pointer) error {
 
 	signal := C.CString("activate")
 	defer C.free(unsafe.Pointer(signal))
-	C.signal_connect(unsafe.Pointer(application), signal, C.activateLinux, nil)
+	C.signal_connect(unsafe.Pointer(application), signal, C.activateLinux, 0)
 	status := C.g_application_run(application, 0, nil)
 	C.g_application_release(application)
 	C.g_object_unref(C.gpointer(app))
@@ -239,6 +239,8 @@ func clipboardSet(text string) {
 
 var menuItemActionCounter uint32 = 0
 var menuItemActions = make(map[uint]string)
+var menuItemIds = make(map[pointer]uint)
+var menuItemIdsMutex sync.RWMutex
 
 func generateActionName(itemId uint) string {
 	menuItemActionCounter++
@@ -374,9 +376,12 @@ func menuItemChecked(widget pointer) bool {
 	if widget == nil {
 		return false
 	}
-	cKey := C.CString("item_id")
-	defer C.free(unsafe.Pointer(cKey))
-	itemId := uint(uintptr(C.g_object_get_data((*C.GObject)(widget), cKey)))
+	menuItemIdsMutex.RLock()
+	itemId, exists := menuItemIds[widget]
+	menuItemIdsMutex.RUnlock()
+	if !exists {
+		return false
+	}
 	actionName, ok := menuItemActions[itemId]
 	if !ok {
 		return false
@@ -399,9 +404,9 @@ func menuItemNewWithId(label string, bitmap []byte, itemId uint) pointer {
 
 	gitem := C.create_menu_item(cLabel, cAction, C.guint(itemId))
 
-	cKey := C.CString("item_id")
-	defer C.free(unsafe.Pointer(cKey))
-	C.g_object_set_data((*C.GObject)(unsafe.Pointer(gitem)), cKey, C.gpointer(uintptr(itemId)))
+	menuItemIdsMutex.Lock()
+	menuItemIds[pointer(gitem)] = itemId
+	menuItemIdsMutex.Unlock()
 	return pointer(gitem)
 }
 
@@ -447,9 +452,9 @@ func menuCheckItemNewWithId(label string, bitmap []byte, itemId uint, checked bo
 
 	gitem := C.create_check_menu_item(cLabel, cAction, C.guint(itemId), initialState)
 
-	cKey := C.CString("item_id")
-	defer C.free(unsafe.Pointer(cKey))
-	C.g_object_set_data((*C.GObject)(unsafe.Pointer(gitem)), cKey, C.gpointer(uintptr(itemId)))
+	menuItemIdsMutex.Lock()
+	menuItemIds[pointer(gitem)] = itemId
+	menuItemIdsMutex.Unlock()
 	return pointer(gitem)
 }
 
@@ -457,9 +462,12 @@ func menuItemSetChecked(widget pointer, checked bool) {
 	if widget == nil {
 		return
 	}
-	cKey := C.CString("item_id")
-	defer C.free(unsafe.Pointer(cKey))
-	itemId := uint(uintptr(C.g_object_get_data((*C.GObject)(widget), cKey)))
+	menuItemIdsMutex.RLock()
+	itemId, exists := menuItemIds[widget]
+	menuItemIdsMutex.RUnlock()
+	if !exists {
+		return
+	}
 	actionName, ok := menuItemActions[itemId]
 	if !ok {
 		return
@@ -477,9 +485,12 @@ func menuItemSetDisabled(widget pointer, disabled bool) {
 	if widget == nil {
 		return
 	}
-	cKey := C.CString("item_id")
-	defer C.free(unsafe.Pointer(cKey))
-	itemId := uint(uintptr(C.g_object_get_data((*C.GObject)(widget), cKey)))
+	menuItemIdsMutex.RLock()
+	itemId, exists := menuItemIds[widget]
+	menuItemIdsMutex.RUnlock()
+	if !exists {
+		return
+	}
 	actionName, ok := menuItemActions[itemId]
 	if !ok {
 		return
@@ -532,9 +543,9 @@ func menuRadioItemNewWithId(label string, itemId uint, checked bool) pointer {
 
 	gitem := C.create_check_menu_item(cLabel, cAction, C.guint(itemId), initialState)
 
-	cKey := C.CString("item_id")
-	defer C.free(unsafe.Pointer(cKey))
-	C.g_object_set_data((*C.GObject)(unsafe.Pointer(gitem)), cKey, C.gpointer(uintptr(itemId)))
+	menuItemIdsMutex.Lock()
+	menuItemIds[pointer(gitem)] = itemId
+	menuItemIdsMutex.Unlock()
 	return pointer(gitem)
 }
 
@@ -556,9 +567,9 @@ func menuRadioItemNewWithGroup(label string, itemId uint, groupId uint, checkedI
 
 	gitem := C.create_radio_menu_item(cLabel, cAction, cTarget, cInitial, C.guint(itemId))
 
-	cKey := C.CString("item_id")
-	defer C.free(unsafe.Pointer(cKey))
-	C.g_object_set_data((*C.GObject)(unsafe.Pointer(gitem)), cKey, C.gpointer(uintptr(itemId)))
+	menuItemIdsMutex.Lock()
+	menuItemIds[pointer(gitem)] = itemId
+	menuItemIdsMutex.Unlock()
 	return pointer(gitem)
 }
 
@@ -782,13 +793,11 @@ func (w *linuxWebviewWindow) close() {
 }
 
 func (w *linuxWebviewWindow) enableDND() {
-	winID := unsafe.Pointer(uintptr(w.parent.id))
-	C.enableDND((*C.GtkWidget)(w.webview), C.gpointer(winID))
+	C.enableDND((*C.GtkWidget)(w.webview), C.uintptr_t(w.parent.id))
 }
 
 func (w *linuxWebviewWindow) disableDND() {
-	winID := unsafe.Pointer(uintptr(w.parent.id))
-	C.disableDND((*C.GtkWidget)(w.webview), C.gpointer(winID))
+	C.disableDND((*C.GtkWidget)(w.webview), C.uintptr_t(w.parent.id))
 }
 
 func (w *linuxWebviewWindow) execJS(js string) {
@@ -1339,10 +1348,10 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 	C.setupWindowEventControllers(w.gtkWindow(), (*C.GtkWidget)(w.webview), winID)
 
 	wv := unsafe.Pointer(w.webview)
-	C.signal_connect(wv, c.String("load-changed"), C.handleLoadChanged, unsafe.Pointer(uintptr(winID)))
+	C.signal_connect(wv, c.String("load-changed"), C.handleLoadChanged, winID)
 
 	contentManager := C.webkit_web_view_get_user_content_manager(w.webKitWebView())
-	C.signal_connect(unsafe.Pointer(contentManager), c.String("script-message-received::external"), C.sendMessageToBackend, nil)
+	C.signal_connect(unsafe.Pointer(contentManager), c.String("script-message-received::external"), C.sendMessageToBackend, 0)
 }
 
 //export handleCloseRequest

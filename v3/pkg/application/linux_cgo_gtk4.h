@@ -113,7 +113,7 @@ WebKitWebView* get_webview_from_content_manager(void *contentManager);
 // Signal connection (wrapper for macro)
 // ============================================================================
 
-void signal_connect(void *widget, char *event, void *cb, void* data);
+void signal_connect(void *widget, char *event, void *cb, uintptr_t data);
 
 // ============================================================================
 // WebView helpers
@@ -159,8 +159,8 @@ void beginWindowResize(GtkWindow *window, GdkSurfaceEdge edge, int button, doubl
 // Drag and drop (GtkDropTarget for GTK4)
 // ============================================================================
 
-void enableDND(GtkWidget *widget, gpointer data);
-void disableDND(GtkWidget *widget, gpointer data);
+void enableDND(GtkWidget *widget, uintptr_t winID);
+void disableDND(GtkWidget *widget, uintptr_t winID);
 
 // ============================================================================
 // File dialogs (GtkFileDialog for GTK4)
