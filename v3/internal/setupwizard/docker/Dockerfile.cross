@@ -1,31 +1,28 @@
-# Cross-compile Wails v3 apps to any platform
-#
-# Uses Zig as C compiler + macOS SDK for darwin targets
-#
-# Usage:
-#   docker build -t wails-cross -f Dockerfile.cross .
-#   docker run --rm -v $(pwd):/app wails-cross darwin arm64
-#   docker run --rm -v $(pwd):/app wails-cross darwin amd64
-#   docker run --rm -v $(pwd):/app wails-cross linux amd64
-#   docker run --rm -v $(pwd):/app wails-cross linux arm64
-#   docker run --rm -v $(pwd):/app wails-cross windows amd64
-#   docker run --rm -v $(pwd):/app wails-cross windows arm64
-
 FROM golang:1.25-alpine
+
+ARG ZIG_VERSION=0.14.0
+ARG MACOS_SDK_VERSION=26.1
+ARG IMAGE_VERSION=1.0.0
+
+LABEL org.opencontainers.image.title="Wails Cross-Compiler"
+LABEL org.opencontainers.image.description="Cross-compile Wails v3 apps to macOS, Linux, and Windows"
+LABEL org.opencontainers.image.source="https://github.com/wailsapp/wails"
+LABEL org.opencontainers.image.vendor="Wails"
+LABEL org.opencontainers.image.version="${IMAGE_VERSION}"
+LABEL io.wails.sdk.version="${MACOS_SDK_VERSION}"
+LABEL io.wails.zig.version="${ZIG_VERSION}"
 
 RUN apk add --no-cache curl xz nodejs npm
 
-# Install Zig
-ARG ZIG_VERSION=0.14.0
 RUN curl -L "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" \
     | tar -xJ -C /opt \
     && ln -s /opt/zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/zig
 
-# Download macOS SDK (required for darwin targets)
-ARG MACOS_SDK_VERSION=14.5
-RUN curl -L "https://github.com/joseluisq/macosx-sdks/releases/download/${MACOS_SDK_VERSION}/MacOSX${MACOS_SDK_VERSION}.sdk.tar.xz" \
-    | tar -xJ -C /opt \
-    && mv /opt/MacOSX${MACOS_SDK_VERSION}.sdk /opt/macos-sdk
+RUN curl -fL --retry 3 --retry-delay 5 -o /tmp/sdk.tar.xz \
+    "https://github.com/wailsapp/macosx-sdks/releases/download/${MACOS_SDK_VERSION}/MacOSX${MACOS_SDK_VERSION}.sdk.tar.xz" \
+    && tar -xJf /tmp/sdk.tar.xz -C /opt \
+    && mv /opt/MacOSX${MACOS_SDK_VERSION}.sdk /opt/macos-sdk \
+    && rm /tmp/sdk.tar.xz
 
 ENV MACOS_SDK_PATH=/opt/macos-sdk
 
