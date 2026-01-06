@@ -350,9 +350,13 @@ func main() {
 		}
 	})
 
-	app.Menu.Set(menu)
-
-	app.Window.New()
+	window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+		Title: "Dialogs Demo",
+		Linux: application.LinuxWindow{
+			MenuStyle: application.LinuxMenuStylePrimaryMenu,
+		},
+	})
+	window.SetMenu(menu)
 
 	err := app.Run()
 
