@@ -142,6 +142,16 @@ type WebviewWindowOptions struct {
 	// Effective on Windows and macOS only; no-op on Linux.
 	// Best-effort protection with platform-specific caveats (see docs).
 	ContentProtectionEnabled bool
+
+	// HideOnFocusLost will hide the window when it loses focus.
+	// Useful for popup/transient windows like systray attached windows.
+	// On Linux with focus-follows-mouse WMs (Hyprland, Sway, i3), this is automatically disabled
+	// as it would cause the window to hide immediately when the mouse moves away.
+	HideOnFocusLost bool
+
+	// HideOnEscape will hide the window when the Escape key is pressed.
+	// Useful for popup/transient windows that should dismiss on Escape.
+	HideOnEscape bool
 }
 
 type RGBA struct {

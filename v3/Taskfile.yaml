@@ -366,6 +366,11 @@ tasks:
           DIR: "{{.ITEM}}"
         platforms: [linux]
       - for: { var: EXAMPLEDIRS }
+        task: test:example:linux:gtk3
+        vars:
+          DIR: "{{.ITEM}}"
+        platforms: [linux]
+      - for: { var: EXAMPLEDIRS }
         task: test:example:windows
         vars:
           DIR: "{{.ITEM}}"
@@ -396,17 +401,18 @@ tasks:
       - echo "✅ All tests completed successfully"
 
   sanity:
-    summary: Quick compilation sanity check for key examples
+    summary: Quick compilation sanity check for key examples (GTK4 + GTK3)
     platforms:
       - linux
     cmds:
-      - echo "🔍 Running quick sanity check..."
+      - echo "🔍 Running quick sanity check (GTK4)..."
       - cd examples/menu && go build -o /dev/null .
       - cd examples/window && go build -o /dev/null .
       - cd examples/events && go build -o /dev/null .
       - cd examples/plain && go build -o /dev/null .
       - cd examples/dialogs-basic && go build -o /dev/null .
-      - echo "✅ Sanity check passed"
+      - echo "✅ GTK4 sanity check passed"
+      - task: sanity:gtk3
 
   sanity:gtk3:
     summary: Quick compilation sanity check for GTK3 (legacy)

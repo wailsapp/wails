@@ -1,0 +1,99 @@
+version: "3"
+
+vars:
+  BIN_DIR: "{{.ROOT_DIR}}/bin"
+
+tasks:
+  default:
+    desc: Build all systray tests for GTK3 and GTK4
+    cmds:
+      - task: build:all
+
+  build:all:
+    desc: Build all tests for both GTK3 and GTK4
+    deps:
+      - build:gtk4
+      - build:gtk3
+
+  build:gtk4:
+    desc: Build all tests for GTK4
+    cmds:
+      - task: build:window-only-gtk4
+      - task: build:menu-only-gtk4
+      - task: build:window-menu-gtk4
+      - task: build:custom-handlers-gtk4
+      - task: build:hide-options-gtk4
+
+  build:gtk3:
+    desc: Build all tests for GTK3
+    cmds:
+      - task: build:window-only-gtk3
+      - task: build:menu-only-gtk3
+      - task: build:window-menu-gtk3
+      - task: build:custom-handlers-gtk3
+      - task: build:hide-options-gtk3
+
+  build:window-only-gtk4:
+    desc: Build window-only test (GTK4)
+    dir: window-only
+    cmds:
+      - go build -o "{{.BIN_DIR}}/window-only-gtk4" .
+
+  build:window-only-gtk3:
+    desc: Build window-only test (GTK3)
+    dir: window-only
+    cmds:
+      - go build -tags gtk3 -o "{{.BIN_DIR}}/window-only-gtk3" .
+
+  build:menu-only-gtk4:
+    desc: Build menu-only test (GTK4)
+    dir: menu-only
+    cmds:
+      - go build -o "{{.BIN_DIR}}/menu-only-gtk4" .
+
+  build:menu-only-gtk3:
+    desc: Build menu-only test (GTK3)
+    dir: menu-only
+    cmds:
+      - go build -tags gtk3 -o "{{.BIN_DIR}}/menu-only-gtk3" .
+
+  build:window-menu-gtk4:
+    desc: Build window-menu test (GTK4)
+    dir: window-menu
+    cmds:
+      - go build -o "{{.BIN_DIR}}/window-menu-gtk4" .
+
+  build:window-menu-gtk3:
+    desc: Build window-menu test (GTK3)
+    dir: window-menu
+    cmds:
+      - go build -tags gtk3 -o "{{.BIN_DIR}}/window-menu-gtk3" .
+
+  build:custom-handlers-gtk4:
+    desc: Build custom-handlers test (GTK4)
+    dir: custom-handlers
+    cmds:
+      - go build -o "{{.BIN_DIR}}/custom-handlers-gtk4" .
+
+  build:custom-handlers-gtk3:
+    desc: Build custom-handlers test (GTK3)
+    dir: custom-handlers
+    cmds:
+      - go build -tags gtk3 -o "{{.BIN_DIR}}/custom-handlers-gtk3" .
+
+  build:hide-options-gtk4:
+    desc: Build hide-options test (GTK4)
+    dir: hide-options
+    cmds:
+      - go build -o "{{.BIN_DIR}}/hide-options-gtk4" .
+
+  build:hide-options-gtk3:
+    desc: Build hide-options test (GTK3)
+    dir: hide-options
+    cmds:
+      - go build -tags gtk3 -o "{{.BIN_DIR}}/hide-options-gtk3" .
+
+  clean:
+    desc: Remove all built binaries
+    cmds:
+      - rm -rf "{{.BIN_DIR}}"

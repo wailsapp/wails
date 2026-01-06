@@ -12,33 +12,27 @@ import (
 
 func main() {
 	app := application.New(application.Options{
-		Name:        "Systray Demo",
-		Description: "A demo of the Systray API",
+		Name:        "Systray Window Only",
+		Description: "Tests systray with attached window only (no menu)",
 		Assets:      application.AlphaAssets,
 		Mac: application.MacOptions{
 			ActivationPolicy: application.ActivationPolicyAccessory,
 		},
 	})
 
-	systemTray := app.SystemTray.New()
+	systray := app.SystemTray.New()
 
 	window := app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Width:           500,
-		Height:          500,
-		Name:            "Systray Demo Window",
-		Frameless:       true,
-		AlwaysOnTop:     true,
-		Hidden:          true,
-		DisableResize:   true,
-		HideOnEscape:    true,
-		HideOnFocusLost: true,
+		Width:         400,
+		Height:        300,
+		Name:          "Window Only Test",
+		Title:         "Window Only - Left-click systray to toggle",
+		Frameless:     true,
+		AlwaysOnTop:   true,
+		Hidden:        true,
+		DisableResize: true,
 		Windows: application.WindowsWindow{
 			HiddenOnTaskbar: true,
-		},
-		KeyBindings: map[string]func(window application.Window){
-			"F12": func(window application.Window) {
-				systemTray.OpenMenu()
-			},
 		},
 	})
 
@@ -48,13 +42,17 @@ func main() {
 	})
 
 	if runtime.GOOS == "darwin" {
-		systemTray.SetTemplateIcon(icons.SystrayMacTemplate)
+		systray.SetTemplateIcon(icons.SystrayMacTemplate)
 	}
 
-	systemTray.AttachWindow(window).WindowOffset(5)
+	systray.AttachWindow(window).WindowOffset(5)
 
-	err := app.Run()
-	if err != nil {
+	log.Println("Window-only test started")
+	log.Println("Expected behavior:")
+	log.Println("  - Left-click: Toggle window visibility")
+	log.Println("  - Right-click: Nothing (no menu)")
+
+	if err := app.Run(); err != nil {
 		log.Fatal(err)
 	}
 }

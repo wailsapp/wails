@@ -15,6 +15,10 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
+func init() {
+	shouldSkipHideOnFocusLost = detectFocusFollowsMouse
+}
+
 type dragInfo struct {
 	XRoot       int
 	YRoot       int
@@ -292,7 +296,11 @@ func (w *linuxWebviewWindow) run() {
 	} else {
 		w.disableDND()
 	}
-	w.setTitle(w.parent.options.Title)
+	title := w.parent.options.Title
+	if title == "" {
+		title = w.parent.options.Name
+	}
+	w.setTitle(title)
 	w.setIcon(app.icon)
 	w.setAlwaysOnTop(w.parent.options.AlwaysOnTop)
 	w.setResizable(!w.parent.options.DisableResize)

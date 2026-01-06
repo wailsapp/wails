@@ -855,14 +855,68 @@ func writeInt(buf []byte, n int) int {
 }
 
 func getMousePosition() (int, int, *Screen) {
-	// GTK4: Pointer position API is different
-	// On Wayland, this may not work reliably
 	display := C.gdk_display_get_default()
-	seat := C.gdk_display_get_default_seat(display)
-	device := C.gdk_seat_get_pointer(seat)
-	_ = device
-	// TODO: Implement GTK4 pointer position
-	return 0, 0, nil
+	if display == nil {
+		return 0, 0, nil
+	}
+
+	monitors := C.gdk_display_get_monitors(display)
+	if monitors == nil {
+		return 0, 0, nil
+	}
+
+	n := C.g_list_model_get_n_items(monitors)
+	if n == 0 {
+		return 0, 0, nil
+	}
+
+	var primaryMonitor *C.GdkMonitor
+	for i := C.guint(0); i < n; i++ {
+		mon := (*C.GdkMonitor)(C.g_list_model_get_item(monitors, i))
+		if mon != nil {
+			primaryMonitor = mon
+			break
+		}
+	}
+
+	if primaryMonitor == nil {
+		return 0, 0, nil
+	}
+
+	var geometry C.GdkRectangle
+	C.gdk_monitor_get_geometry(primaryMonitor, &geometry)
+	scaleFactor := int(C.gdk_monitor_get_scale_factor(primaryMonitor))
+	name := C.gdk_monitor_get_model(primaryMonitor)
+
+	screen := &Screen{
+		ID:          "0",
+		Name:        C.GoString(name),
+		ScaleFactor: float32(scaleFactor),
+		X:           int(geometry.x),
+		Y:           int(geometry.y),
+		Size: Size{
+			Height: int(geometry.height),
+			Width:  int(geometry.width),
+		},
+		Bounds: Rect{
+			X:      int(geometry.x),
+			Y:      int(geometry.y),
+			Height: int(geometry.height),
+			Width:  int(geometry.width),
+		},
+		WorkArea: Rect{
+			X:      int(geometry.x),
+			Y:      int(geometry.y),
+			Height: int(geometry.height),
+			Width:  int(geometry.width),
+		},
+		IsPrimary: true,
+	}
+
+	centerX := int(geometry.x) + int(geometry.width)/2
+	centerY := int(geometry.y) + int(geometry.height)/2
+
+	return centerX, centerY, screen
 }
 
 func (w *linuxWebviewWindow) destroy() {
@@ -1132,7 +1186,6 @@ func (w *linuxWebviewWindow) setResizable(resizable bool) {
 }
 
 func (w *linuxWebviewWindow) move(x, y int) {
-	// GTK4/Wayland: Window positioning is controlled by compositor
 }
 
 func (w *linuxWebviewWindow) position() (int, int) {
@@ -1240,6 +1293,10 @@ func (w *linuxWebviewWindow) setHTML(html string) {
 }
 
 func (w *linuxWebviewWindow) flash(_ bool) {}
+
+func (w *linuxWebviewWindow) setOpacity(opacity float64) {
+	C.gtk_widget_set_opacity(w.gtkWidget(), C.double(opacity))
+}
 
 func (w *linuxWebviewWindow) ignoreMouse(ignore bool) {
 	// GTK4: Input handling is different

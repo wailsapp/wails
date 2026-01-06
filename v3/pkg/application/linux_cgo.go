@@ -1507,7 +1507,10 @@ func (w *linuxWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
 }
 
 func (w *linuxWebviewWindow) flash(_ bool) {
-	// Not supported on Linux
+}
+
+func (w *linuxWebviewWindow) setOpacity(opacity float64) {
+	C.gtk_widget_set_opacity(w.gtkWidget(), C.double(opacity))
 }
 
 func (w *linuxWebviewWindow) setTitle(title string) {

@@ -22,6 +22,8 @@ var Enabled = u.True
 // Disabled means the feature should be disabled
 var Disabled = u.False
 
+var shouldSkipHideOnFocusLost = func() bool { return false }
+
 // LRTB is a struct that holds Left, Right, Top, Bottom values
 type LRTB struct {
 	Left   int
@@ -305,6 +307,15 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 	if result.options.KeyBindings != nil {
 		result.keyBindings = processKeyBindingOptions(result.options.KeyBindings)
 	}
+	if result.options.HideOnEscape {
+		result.RegisterKeyBinding("escape", func(window Window) {
+			window.Hide()
+		})
+	}
+
+	if result.options.HideOnFocusLost {
+		result.setupHideOnFocusLost()
+	}
 
 	return result
 }
@@ -324,6 +335,15 @@ func processKeyBindingOptions(
 		globalApplication.debug("Added Keybinding", "accelerator", acc.String())
 	}
 	return result
+}
+
+func (w *WebviewWindow) setupHideOnFocusLost() {
+	if runtime.GOOS == "linux" && shouldSkipHideOnFocusLost() {
+		return
+	}
+	w.OnWindowEvent(events.Common.WindowLostFocus, func(event *WindowEvent) {
+		w.Hide()
+	})
 }
 
 func (w *WebviewWindow) addCancellationFunction(canceller func()) {
@@ -1335,6 +1355,21 @@ func (w *WebviewWindow) isDestroyed() bool {
 	w.destroyedLock.RLock()
 	defer w.destroyedLock.RUnlock()
 	return w.destroyed
+}
+
+func (w *WebviewWindow) RegisterKeyBinding(binding string, callback func(window Window)) *WebviewWindow {
+	acc, err := parseAccelerator(binding)
+	if err != nil {
+		globalApplication.error("invalid keybinding: %w", err)
+		return w
+	}
+	w.keyBindingsLock.Lock()
+	defer w.keyBindingsLock.Unlock()
+	if w.keyBindings == nil {
+		w.keyBindings = make(map[string]func(Window))
+	}
+	w.keyBindings[acc.String()] = callback
+	return w
 }
 
 func (w *WebviewWindow) removeMenuBinding(a *accelerator) {
