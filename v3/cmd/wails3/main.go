@@ -95,6 +95,7 @@ func main() {
 	tool.NewSubCommandFunction("package", "Generate Linux packages (deb, rpm, archlinux)", commands.ToolPackage)
 	tool.NewSubCommandFunction("version", "Bump semantic version", commands.ToolVersion)
 	tool.NewSubCommandFunction("lipo", "Create macOS universal binary from multiple architectures", commands.ToolLipo)
+	tool.NewSubCommandFunction("capabilities", "Check system build capabilities (GTK4/GTK3 availability)", commands.ToolCapabilities)
 
 	// Low-level sign tool (used by Taskfiles)
 	toolSign := tool.NewSubCommand("sign", "Sign a binary or package directly")
