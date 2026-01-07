@@ -323,6 +323,8 @@ func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/docker/start-background", w.handleDockerStartBackground)
 	mux.HandleFunc("/api/wails-config", w.handleWailsConfig)
 	mux.HandleFunc("/api/defaults", w.handleDefaults)
+	mux.HandleFunc("/api/signing", w.handleSigning)
+	mux.HandleFunc("/api/signing/status", w.handleSigningStatus)
 	mux.HandleFunc("/api/complete", w.handleComplete)
 	mux.HandleFunc("/api/close", w.handleClose)
 
@@ -1299,4 +1301,219 @@ func (w *Wizard) handleDefaults(rw http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
 	}
+}
+
+func (w *Wizard) handleSigningStatus(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+
+	status := checkSigningStatus()
+	json.NewEncoder(rw).Encode(status)
+}
+
+func (w *Wizard) handleSigning(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+
+	switch r.Method {
+	case http.MethodGet:
+		defaults, err := LoadGlobalDefaults()
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		json.NewEncoder(rw).Encode(defaults.Signing)
+
+	case http.MethodPost:
+		var signing SigningDefaults
+		if err := json.NewDecoder(r.Body).Decode(&signing); err != nil {
+			http.Error(rw, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		defaults, err := LoadGlobalDefaults()
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		defaults.Signing = signing
+
+		if err := SaveGlobalDefaults(defaults); err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		json.NewEncoder(rw).Encode(map[string]string{"status": "saved"})
+
+	default:
+		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+type signingStatusResponse struct {
+	Darwin  darwinSigningStatus  `json:"darwin"`
+	Windows windowsSigningStatus `json:"windows"`
+	Linux   linuxSigningStatus   `json:"linux"`
+}
+
+type darwinSigningStatus struct {
+	HasIdentity     bool     `json:"hasIdentity"`
+	Identity        string   `json:"identity,omitempty"`
+	Identities      []string `json:"identities,omitempty"`
+	HasNotarization bool     `json:"hasNotarization"`
+	TeamID          string   `json:"teamID,omitempty"`
+	ConfigSource    string   `json:"configSource,omitempty"`
+}
+
+type windowsSigningStatus struct {
+	HasCertificate  bool   `json:"hasCertificate"`
+	CertificateType string `json:"certificateType,omitempty"`
+	HasSignTool     bool   `json:"hasSignTool"`
+	TimestampServer string `json:"timestampServer,omitempty"`
+	ConfigSource    string `json:"configSource,omitempty"`
+}
+
+type linuxSigningStatus struct {
+	HasGPGKey    bool   `json:"hasGpgKey"`
+	GPGKeyID     string `json:"gpgKeyID,omitempty"`
+	ConfigSource string `json:"configSource,omitempty"`
+}
+
+func checkSigningStatus() signingStatusResponse {
+	globalDefaults, _ := LoadGlobalDefaults()
+
+	return signingStatusResponse{
+		Darwin:  checkDarwinSigningStatus(globalDefaults),
+		Windows: checkWindowsSigningStatus(globalDefaults),
+		Linux:   checkLinuxSigningStatus(globalDefaults),
+	}
+}
+
+func checkDarwinSigningStatus(cfg GlobalDefaults) darwinSigningStatus {
+	status := darwinSigningStatus{}
+
+	if cfg.Signing.Darwin.Identity != "" {
+		status.HasIdentity = true
+		status.Identity = cfg.Signing.Darwin.Identity
+		status.TeamID = cfg.Signing.Darwin.TeamID
+		status.ConfigSource = "defaults.yaml"
+	}
+
+	if cfg.Signing.Darwin.KeychainProfile != "" || cfg.Signing.Darwin.APIKeyID != "" {
+		status.HasNotarization = true
+	}
+
+	if runtime.GOOS == "darwin" {
+		identities := getMacOSSigningIdentities()
+		status.Identities = identities
+		if len(identities) > 0 && !status.HasIdentity {
+			status.HasIdentity = true
+			status.Identity = identities[0]
+			status.ConfigSource = "keychain"
+		}
+	}
+
+	return status
+}
+
+func checkWindowsSigningStatus(cfg GlobalDefaults) windowsSigningStatus {
+	status := windowsSigningStatus{}
+
+	if cfg.Signing.Windows.CertificatePath != "" {
+		status.HasCertificate = true
+		status.CertificateType = "file"
+		status.ConfigSource = "defaults.yaml"
+	} else if cfg.Signing.Windows.Thumbprint != "" {
+		status.HasCertificate = true
+		status.CertificateType = "store"
+		status.ConfigSource = "defaults.yaml"
+	} else if cfg.Signing.Windows.CloudProvider != "" {
+		status.HasCertificate = true
+		status.CertificateType = "cloud:" + cfg.Signing.Windows.CloudProvider
+		status.ConfigSource = "defaults.yaml"
+	}
+
+	status.TimestampServer = cfg.Signing.Windows.TimestampServer
+	if status.TimestampServer == "" {
+		status.TimestampServer = "http://timestamp.digicert.com"
+	}
+
+	if runtime.GOOS == "windows" {
+		_, err := exec.LookPath("signtool.exe")
+		status.HasSignTool = err == nil
+	}
+
+	return status
+}
+
+func checkLinuxSigningStatus(cfg GlobalDefaults) linuxSigningStatus {
+	status := linuxSigningStatus{}
+
+	if cfg.Signing.Linux.GPGKeyPath != "" {
+		status.HasGPGKey = true
+		status.GPGKeyID = cfg.Signing.Linux.GPGKeyID
+		status.ConfigSource = "defaults.yaml"
+	}
+
+	if !status.HasGPGKey {
+		keyID := getDefaultGPGKey()
+		if keyID != "" {
+			status.HasGPGKey = true
+			status.GPGKeyID = keyID
+			status.ConfigSource = "gpg"
+		}
+	}
+
+	return status
+}
+
+func getMacOSSigningIdentities() []string {
+	if runtime.GOOS != "darwin" {
+		return nil
+	}
+
+	cmd := exec.Command("security", "find-identity", "-v", "-p", "codesigning")
+	output, err := cmd.Output()
+	if err != nil {
+		return nil
+	}
+
+	var identities []string
+	lines := strings.Split(string(output), "\n")
+	for _, line := range lines {
+		if strings.Contains(line, "\"") && strings.Contains(line, "Developer ID") {
+			start := strings.Index(line, "\"")
+			end := strings.LastIndex(line, "\"")
+			if start != -1 && end > start {
+				identity := line[start+1 : end]
+				identities = append(identities, identity)
+			}
+		}
+	}
+
+	return identities
+}
+
+func getDefaultGPGKey() string {
+	cmd := exec.Command("gpg", "--list-secret-keys", "--keyid-format", "long")
+	output, err := cmd.Output()
+	if err != nil {
+		return ""
+	}
+
+	lines := strings.Split(string(output), "\n")
+	for _, line := range lines {
+		if strings.Contains(line, "sec") {
+			parts := strings.Fields(line)
+			for _, part := range parts {
+				if strings.Contains(part, "/") {
+					keyParts := strings.Split(part, "/")
+					if len(keyParts) > 1 {
+						return keyParts[1]
+					}
+				}
+			}
+		}
+	}
+
+	return ""
 }

@@ -18,6 +18,9 @@ type GlobalDefaults struct {
 
 	// Default project settings
 	Project ProjectDefaults `json:"project" yaml:"project"`
+
+	// Code signing configuration (optional)
+	Signing SigningDefaults `json:"signing,omitempty" yaml:"signing,omitempty"`
 }
 
 // AuthorDefaults contains the author's information
@@ -36,6 +39,41 @@ type ProjectDefaults struct {
 	DescriptionTemplate     string `json:"descriptionTemplate" yaml:"descriptionTemplate"`
 	DefaultVersion          string `json:"defaultVersion" yaml:"defaultVersion"`
 	UseInterfaces           bool   `json:"useInterfaces" yaml:"useInterfaces"`
+}
+
+// SigningDefaults contains code signing configuration for all platforms
+type SigningDefaults struct {
+	Darwin  DarwinSigningDefaults  `json:"darwin,omitempty" yaml:"darwin,omitempty"`
+	Windows WindowsSigningDefaults `json:"windows,omitempty" yaml:"windows,omitempty"`
+	Linux   LinuxSigningDefaults   `json:"linux,omitempty" yaml:"linux,omitempty"`
+}
+
+// DarwinSigningDefaults contains macOS code signing configuration
+type DarwinSigningDefaults struct {
+	Identity        string `json:"identity,omitempty" yaml:"identity,omitempty"`
+	TeamID          string `json:"teamID,omitempty" yaml:"teamID,omitempty"`
+	KeychainProfile string `json:"keychainProfile,omitempty" yaml:"keychainProfile,omitempty"`
+	Entitlements    string `json:"entitlements,omitempty" yaml:"entitlements,omitempty"`
+	P12Path         string `json:"p12Path,omitempty" yaml:"p12Path,omitempty"`
+	APIKeyPath      string `json:"apiKeyPath,omitempty" yaml:"apiKeyPath,omitempty"`
+	APIKeyID        string `json:"apiKeyID,omitempty" yaml:"apiKeyID,omitempty"`
+	APIIssuerID     string `json:"apiIssuerID,omitempty" yaml:"apiIssuerID,omitempty"`
+}
+
+// WindowsSigningDefaults contains Windows code signing configuration
+type WindowsSigningDefaults struct {
+	CertificatePath string `json:"certificatePath,omitempty" yaml:"certificatePath,omitempty"`
+	Thumbprint      string `json:"thumbprint,omitempty" yaml:"thumbprint,omitempty"`
+	TimestampServer string `json:"timestampServer,omitempty" yaml:"timestampServer,omitempty"`
+	CloudProvider   string `json:"cloudProvider,omitempty" yaml:"cloudProvider,omitempty"`
+	CloudKeyID      string `json:"cloudKeyID,omitempty" yaml:"cloudKeyID,omitempty"`
+}
+
+// LinuxSigningDefaults contains Linux package signing configuration
+type LinuxSigningDefaults struct {
+	GPGKeyPath string `json:"gpgKeyPath,omitempty" yaml:"gpgKeyPath,omitempty"`
+	GPGKeyID   string `json:"gpgKeyID,omitempty" yaml:"gpgKeyID,omitempty"`
+	SignRole   string `json:"signRole,omitempty" yaml:"signRole,omitempty"`
 }
 
 // Default returns sensible defaults for first-time users

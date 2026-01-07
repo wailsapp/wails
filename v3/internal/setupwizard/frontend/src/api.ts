@@ -1,4 +1,4 @@
-import type { WizardState, DependencyStatus, DockerStatus, UserConfig, WailsConfig, GlobalDefaults } from './types';
+import type { WizardState, DependencyStatus, DockerStatus, UserConfig, WailsConfig, GlobalDefaults, SigningDefaults, SigningStatus } from './types';
 
 const API_BASE = '/api';
 
@@ -136,6 +136,25 @@ export async function saveDefaults(defaults: GlobalDefaults): Promise<{ status: 
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(defaults),
+  });
+  return response.json();
+}
+
+export async function getSigningStatus(): Promise<SigningStatus> {
+  const response = await fetch(`${API_BASE}/signing/status`);
+  return response.json();
+}
+
+export async function getSigning(): Promise<SigningDefaults | null> {
+  const response = await fetch(`${API_BASE}/signing`);
+  return response.json();
+}
+
+export async function saveSigning(signing: SigningDefaults): Promise<{ status: string }> {
+  const response = await fetch(`${API_BASE}/signing`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(signing),
   });
   return response.json();
 }

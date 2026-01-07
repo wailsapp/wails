@@ -49,7 +49,12 @@ func main() {
 	pkg.Action(func() error {
 		return commands.Package(&pkgFlags, pkg.OtherArgs())
 	})
-	app.NewSubCommandFunction("doctor", "System status report", commands.Doctor)
+	doctorCmd := app.NewSubCommand("doctor", "System status report")
+	var doctorFlags flags.Doctor
+	doctorCmd.AddFlags(&doctorFlags)
+	doctorCmd.Action(func() error {
+		return commands.Doctor(&doctorFlags)
+	})
 	app.NewSubCommandFunction("releasenotes", "Show release notes", commands.ReleaseNotes)
 
 	task := app.NewSubCommand("task", "Run and list tasks")

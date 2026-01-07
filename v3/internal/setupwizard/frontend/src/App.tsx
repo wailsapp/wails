@@ -4,8 +4,8 @@ import type { DependencyStatus, SystemInfo, DockerStatus, GlobalDefaults } from 
 import { checkDependencies, getState, getDockerStatus, buildDockerImage, getDefaults, saveDefaults, subscribeDockerStatus } from './api';
 import wailsLogoWhite from './assets/wails-logo-white-text.svg';
 import wailsLogoBlack from './assets/wails-logo-black-text.svg';
+import SigningStep from './components/SigningStep';
 
-// OOBE Steps - branching state machine
 type OOBEStep =
   | 'splash'
   | 'checking'
@@ -15,6 +15,7 @@ type OOBEStep =
   | 'sdk-license'
   | 'docker-setup'
   | 'projects'
+  | 'signing'
   | 'language-select'
   | 'binding-style'
   | 'template-select'
@@ -32,7 +33,6 @@ type FrameworkTemplate = {
 // Wizard stages for sidebar progress display
 type WizardStage = 'welcome' | 'dependencies' | 'platform' | 'identity' | 'templates' | 'complete';
 
-// Map OOBE steps to wizard stages
 function getWizardStage(step: OOBEStep): WizardStage {
   switch (step) {
     case 'splash':
@@ -45,6 +45,7 @@ function getWizardStage(step: OOBEStep): WizardStage {
     case 'docker-setup':
       return 'platform';
     case 'projects':
+    case 'signing':
       return 'identity';
     case 'language-select':
     case 'binding-style':
@@ -2015,10 +2016,18 @@ export default function App() {
   };
 
   const handleProjectsNext = () => {
-    navigateTo('language-select');
+    navigateTo('signing');
   };
 
   const handleProjectsSkip = () => {
+    navigateTo('signing');
+  };
+
+  const handleSigningNext = () => {
+    navigateTo('language-select');
+  };
+
+  const handleSigningSkip = () => {
     navigateTo('language-select');
   };
 
@@ -2187,6 +2196,15 @@ export default function App() {
                     onNext={handleProjectsNext}
                     onSkip={handleProjectsSkip}
                     saving={savingDefaults}
+                    onBack={goBack}
+                    canGoBack={canGoBack}
+                  />
+                )}
+                {step === 'signing' && (
+                  <SigningStep
+                    key="signing"
+                    onNext={handleSigningNext}
+                    onSkip={handleSigningSkip}
                     onBack={goBack}
                     canGoBack={canGoBack}
                   />

@@ -85,20 +85,68 @@ export interface ProjectDefaults {
   useInterfaces: boolean;
 }
 
+export interface DarwinSigningDefaults {
+  identity?: string;
+  teamID?: string;
+  keychainProfile?: string;
+  entitlements?: string;
+  p12Path?: string;
+  apiKeyPath?: string;
+  apiKeyID?: string;
+  apiIssuerID?: string;
+}
+
+export interface WindowsSigningDefaults {
+  certificatePath?: string;
+  thumbprint?: string;
+  timestampServer?: string;
+  cloudProvider?: string;
+  cloudKeyID?: string;
+}
+
+export interface LinuxSigningDefaults {
+  gpgKeyPath?: string;
+  gpgKeyID?: string;
+  signRole?: string;
+}
+
 export interface SigningDefaults {
-  macOS: {
-    developerID: string;        // e.g., "Developer ID Application: John Doe (TEAMID)"
-    appleID: string;            // Apple ID for notarization
-    teamID: string;             // Apple Team ID
-  };
-  windows: {
-    certificatePath: string;    // Path to .pfx certificate
-    timestampServer: string;    // e.g., "http://timestamp.digicert.com"
-  };
+  darwin?: DarwinSigningDefaults;
+  windows?: WindowsSigningDefaults;
+  linux?: LinuxSigningDefaults;
 }
 
 export interface GlobalDefaults {
   author: AuthorDefaults;
   project: ProjectDefaults;
   signing?: SigningDefaults;
+}
+
+export interface DarwinSigningStatus {
+  hasIdentity: boolean;
+  identity?: string;
+  identities?: string[];
+  hasNotarization: boolean;
+  teamID?: string;
+  configSource?: string;
+}
+
+export interface WindowsSigningStatus {
+  hasCertificate: boolean;
+  certificateType?: string;
+  hasSignTool: boolean;
+  timestampServer?: string;
+  configSource?: string;
+}
+
+export interface LinuxSigningStatus {
+  hasGpgKey: boolean;
+  gpgKeyID?: string;
+  configSource?: string;
+}
+
+export interface SigningStatus {
+  darwin: DarwinSigningStatus;
+  windows: WindowsSigningStatus;
+  linux: LinuxSigningStatus;
 }
