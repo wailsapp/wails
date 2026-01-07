@@ -50,6 +50,7 @@ type BuildAssetsOptions struct {
 	CertificatePath       string `description:"Certificate path for MSIX package"`
 	Silent                bool   `description:"Suppress output to console"`
 	Typescript            bool   `description:"Use typescript" default:"false"`
+	UseInterfaces         bool   `description:"Generate TypeScript interfaces instead of classes"`
 }
 
 // BuildConfig defines the configuration for generating build assets.

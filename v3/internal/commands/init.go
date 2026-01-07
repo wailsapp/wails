@@ -99,40 +99,35 @@ func initGitRepository(projectDir string, gitURL string) error {
 	return nil
 }
 
-// applyGlobalDefaults applies global defaults to init options if they are using default values
 func applyGlobalDefaults(options *flags.Init, globalDefaults defaults.GlobalDefaults) {
-	// Apply template default if using the built-in default
-	if options.TemplateName == "vanilla" && globalDefaults.Project.DefaultTemplate != "" {
-		options.TemplateName = globalDefaults.Project.DefaultTemplate
+	templateName := globalDefaults.GetTemplateName()
+	if options.TemplateName == "vanilla" && templateName != "" && templateName != "vanilla" {
+		options.TemplateName = templateName
+		options.TemplateFromDefaults = true
 	}
 
-	// Apply company default if using the built-in default
 	if options.ProductCompany == "My Company" && globalDefaults.Author.Company != "" {
 		options.ProductCompany = globalDefaults.Author.Company
 	}
 
-	// Apply copyright from global defaults if using the built-in default
 	if options.ProductCopyright == "\u00a9 now, My Company" {
 		options.ProductCopyright = globalDefaults.GenerateCopyright()
 	}
 
-	// Apply product identifier from global defaults if not explicitly set
 	if options.ProductIdentifier == "" && globalDefaults.Project.ProductIdentifierPrefix != "" {
 		options.ProductIdentifier = globalDefaults.GenerateProductIdentifier(options.ProjectName)
 	}
 
-	// Apply description from global defaults if using the built-in default
 	if options.ProductDescription == "My Product Description" && globalDefaults.Project.DescriptionTemplate != "" {
 		options.ProductDescription = globalDefaults.GenerateDescription(options.ProjectName)
 	}
 
-	// Apply version from global defaults if using the built-in default
 	if options.ProductVersion == "0.1.0" && globalDefaults.Project.DefaultVersion != "" {
 		options.ProductVersion = globalDefaults.GetDefaultVersion()
 	}
 
-	// Apply UseInterfaces from global defaults (for TypeScript binding generation)
 	options.UseInterfaces = globalDefaults.Project.UseInterfaces
+	options.UseInterfacesFromDefaults = true
 }
 
 func Init(options *flags.Init) error {
@@ -199,6 +194,7 @@ func Init(options *flags.Init) error {
 		ProductCopyright:   options.ProductCopyright,
 		ProductComments:    options.ProductComments,
 		Typescript:         isTypescript,
+		UseInterfaces:      options.UseInterfaces,
 	}
 	err = GenerateBuildAssets(buildAssetsOptions)
 	if err != nil {

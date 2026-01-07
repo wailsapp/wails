@@ -28,24 +28,14 @@ type AuthorDefaults struct {
 
 // ProjectDefaults contains default project settings
 type ProjectDefaults struct {
-	// ProductIdentifierPrefix is the prefix for app identifiers (e.g., "com.mycompany")
 	ProductIdentifierPrefix string `json:"productIdentifierPrefix" yaml:"productIdentifierPrefix"`
-
-	// DefaultTemplate is the default frontend template to use
-	DefaultTemplate string `json:"defaultTemplate" yaml:"defaultTemplate"`
-
-	// Copyright template - can include {year} and {company} placeholders
-	CopyrightTemplate string `json:"copyrightTemplate" yaml:"copyrightTemplate"`
-
-	// Description template for new projects - can include {name} placeholder
-	DescriptionTemplate string `json:"descriptionTemplate" yaml:"descriptionTemplate"`
-
-	// Default product version for new projects
-	DefaultVersion string `json:"defaultVersion" yaml:"defaultVersion"`
-
-	// UseInterfaces generates TypeScript interfaces instead of classes for bindings
-	// Interfaces are lighter-weight and don't require runtime imports
-	UseInterfaces bool `json:"useInterfaces" yaml:"useInterfaces"`
+	DefaultTemplate         string `json:"defaultTemplate" yaml:"defaultTemplate"`
+	Framework               string `json:"framework" yaml:"framework"`
+	Language                string `json:"language" yaml:"language"`
+	CopyrightTemplate       string `json:"copyrightTemplate" yaml:"copyrightTemplate"`
+	DescriptionTemplate     string `json:"descriptionTemplate" yaml:"descriptionTemplate"`
+	DefaultVersion          string `json:"defaultVersion" yaml:"defaultVersion"`
+	UseInterfaces           bool   `json:"useInterfaces" yaml:"useInterfaces"`
 }
 
 // Default returns sensible defaults for first-time users
@@ -202,7 +192,42 @@ func replaceOnce(s, old, new string) string {
 	return s
 }
 
-// sanitizeIdentifier creates a valid identifier from a project name
+var (
+	Frameworks = []string{
+		"vanilla", "vue", "react", "react-swc", "svelte", "sveltekit",
+		"preact", "lit", "solid", "qwik", "ios",
+	}
+
+	Languages = []string{"JavaScript", "TypeScript"}
+)
+
+func IsValidFramework(f string) bool {
+	for _, fw := range Frameworks {
+		if fw == f {
+			return true
+		}
+	}
+	return false
+}
+
+func (d *GlobalDefaults) GetTemplateName() string {
+	framework := d.Project.Framework
+	lang := d.Project.Language
+
+	if framework != "" && IsValidFramework(framework) {
+		if lang == "TypeScript" {
+			return framework + "-ts"
+		}
+		return framework
+	}
+
+	if d.Project.DefaultTemplate != "" {
+		return d.Project.DefaultTemplate
+	}
+
+	return "vanilla"
+}
+
 func sanitizeIdentifier(name string) string {
 	var result []byte
 	for i := 0; i < len(name); i++ {
