@@ -1668,7 +1668,6 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 		defer C.free(unsafe.Pointer(cTitle))
 
 		dialog := C.create_file_dialog(cTitle)
-		defer C.g_object_unref(C.gpointer(dialog))
 
 		// Create filter list if we have filters
 		if len(filters) > 0 {
