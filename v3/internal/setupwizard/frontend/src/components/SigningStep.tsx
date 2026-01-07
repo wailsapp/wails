@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { SigningStatus, SigningDefaults } from '../types';
-import { getSigningStatus, getSigning, saveSigning } from '../api';
+import { getSigningStatus, getSigning, saveSigning, getState } from '../api';
 
 const pageVariants = {
   initial: { opacity: 0 },
@@ -10,6 +10,7 @@ const pageVariants = {
 };
 
 type Platform = 'darwin' | 'windows' | 'linux';
+type HostOS = 'darwin' | 'windows' | 'linux';
 
 interface Props {
   onNext: () => void;
@@ -22,6 +23,7 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
   const [status, setStatus] = useState<SigningStatus | null>(null);
   const [config, setConfig] = useState<SigningDefaults | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hostOS, setHostOS] = useState<HostOS>('linux');
   const [selectedPlatform, setSelectedPlatform] = useState<Platform>('darwin');
   const [configuring, setConfiguring] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -34,9 +36,12 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
 
   const loadData = async () => {
     try {
-      const [s, c] = await Promise.all([getSigningStatus(), getSigning()]);
+      const [s, c, state] = await Promise.all([getSigningStatus(), getSigning(), getState()]);
       setStatus(s);
       setConfig(c || { darwin: {}, windows: {}, linux: {} });
+      if (state.system?.os) {
+        setHostOS(state.system.os as HostOS);
+      }
     } catch (e) {
       console.error('Failed to load signing data:', e);
     } finally {
@@ -62,8 +67,24 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
     if (!config) return null;
 
     if (selectedPlatform === 'darwin') {
+      const isOnMac = hostOS === 'darwin';
+      
       return (
         <div className="space-y-4">
+          {!isOnMac && (
+            <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm">
+              <p className="text-amber-800 dark:text-amber-200 font-medium mb-1">Cross-platform signing</p>
+              <p className="text-amber-700 dark:text-amber-300 text-xs">
+                You can sign macOS apps from {hostOS === 'linux' ? 'Linux' : 'Windows'} using{' '}
+                <a href="https://github.com/indygreg/apple-platform-rs/tree/main/apple-codesign" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   className="underline hover:no-underline">rcodesign</a>.
+                You'll need a .p12 certificate file exported from a Mac.
+              </p>
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Signing Identity
@@ -78,9 +99,11 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
               placeholder="Developer ID Application: Your Name (TEAMID)"
               className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
             />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Find with: <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">security find-identity -v -p codesigning</code>
-            </p>
+            {isOnMac && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Find with: <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">security find-identity -v -p codesigning</code>
+              </p>
+            )}
           </div>
 
           <div>
@@ -99,9 +122,30 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
             />
           </div>
 
+          {!isOnMac && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                P12 Certificate Path
+              </label>
+              <input
+                type="text"
+                value={config.darwin?.p12Path || ''}
+                onChange={(e) => setConfig({
+                  ...config,
+                  darwin: { ...config.darwin, p12Path: e.target.value }
+                })}
+                placeholder="/path/to/certificate.p12"
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Export from Keychain Access on a Mac, or generate via Apple Developer Portal
+              </p>
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Notarization Profile (optional)
+              Notarization Profile {!isOnMac && '(Mac only)'}
             </label>
             <input
               type="text"
@@ -111,12 +155,82 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                 darwin: { ...config.darwin, keychainProfile: e.target.value }
               })}
               placeholder="notarytool-profile"
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+              disabled={!isOnMac}
+              className={`w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500 ${!isOnMac ? 'opacity-50 cursor-not-allowed' : ''}`}
             />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Create with: <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">xcrun notarytool store-credentials</code>
-            </p>
+            {isOnMac && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Create with: <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">xcrun notarytool store-credentials</code>
+              </p>
+            )}
+            {!isOnMac && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                For cross-platform notarization, use App Store Connect API keys instead
+              </p>
+            )}
           </div>
+
+          {!isOnMac && (
+            <>
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 font-medium">
+                  App Store Connect API (for notarization from {hostOS === 'linux' ? 'Linux' : 'Windows'})
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  API Key ID
+                </label>
+                <input
+                  type="text"
+                  value={config.darwin?.apiKeyID || ''}
+                  onChange={(e) => setConfig({
+                    ...config,
+                    darwin: { ...config.darwin, apiKeyID: e.target.value }
+                  })}
+                  placeholder="ABC123DEF4"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Issuer ID
+                </label>
+                <input
+                  type="text"
+                  value={config.darwin?.apiIssuerID || ''}
+                  onChange={(e) => setConfig({
+                    ...config,
+                    darwin: { ...config.darwin, apiIssuerID: e.target.value }
+                  })}
+                  placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  API Key Path (.p8 file)
+                </label>
+                <input
+                  type="text"
+                  value={config.darwin?.apiKeyPath || ''}
+                  onChange={(e) => setConfig({
+                    ...config,
+                    darwin: { ...config.darwin, apiKeyPath: e.target.value }
+                  })}
+                  placeholder="/path/to/AuthKey_ABC123DEF4.p8"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Create at{' '}
+                  <a href="https://appstoreconnect.apple.com/access/api" 
+                     target="_blank" 
+                     rel="noopener noreferrer"
+                     className="text-blue-500 hover:underline">App Store Connect → Users and Access → Keys</a>
+                </p>
+              </div>
+            </>
+          )}
         </div>
       );
     }
