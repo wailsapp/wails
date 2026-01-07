@@ -167,11 +167,9 @@ type WebviewWindow struct {
 	destroyed     bool
 	destroyedLock sync.RWMutex
 
-	// Flags for managing the runtime
-	// runtimeLoaded indicates that the runtime has been loaded
-	runtimeLoaded bool
-	// pendingJS holds JS that was sent to the window before the runtime was loaded
-	pendingJS []string
+	runtimeLoaded  bool
+	pendingJS      []string
+	pendingJSMutex sync.Mutex
 
 	// unconditionallyClose marks the window to be unconditionally closed (atomic)
 	unconditionallyClose uint32
@@ -599,12 +597,15 @@ func (w *WebviewWindow) ExecJS(js string) {
 	if w.impl == nil || w.isDestroyed() {
 		return
 	}
+	w.pendingJSMutex.Lock()
 	if w.runtimeLoaded {
+		w.pendingJSMutex.Unlock()
 		InvokeSync(func() {
 			w.impl.execJS(js)
 		})
 	} else {
 		w.pendingJS = append(w.pendingJS, js)
+		w.pendingJSMutex.Unlock()
 	}
 }
 
@@ -751,12 +752,17 @@ func (w *WebviewWindow) HandleMessage(message string) {
 		}
 	case message == "wails:runtime:ready":
 		w.emit(events.Common.WindowRuntimeReady)
+		w.pendingJSMutex.Lock()
 		w.runtimeLoaded = true
-		w.SetResizable(!w.options.DisableResize)
-		for _, js := range w.pendingJS {
-			w.ExecJS(js)
-		}
+		pending := w.pendingJS
 		w.pendingJS = nil
+		w.pendingJSMutex.Unlock()
+		w.SetResizable(!w.options.DisableResize)
+		for _, js := range pending {
+			InvokeSync(func() {
+				w.impl.execJS(js)
+			})
+		}
 	default:
 		w.Error("unknown message sent via 'invoke' on frontend: %v", message)
 	}
@@ -1493,11 +1499,13 @@ func (w *WebviewWindow) InitiateFrontendDropProcessing(filenames []string, x int
 		y,
 	)
 
-	// Ensure JS is executed after runtime is loaded
+	w.pendingJSMutex.Lock()
 	if !w.runtimeLoaded {
 		w.pendingJS = append(w.pendingJS, jsCall)
+		w.pendingJSMutex.Unlock()
 		return
 	}
+	w.pendingJSMutex.Unlock()
 
 	InvokeSync(func() {
 		w.impl.execJS(jsCall)
