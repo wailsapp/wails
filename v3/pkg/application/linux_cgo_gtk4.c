@@ -2,6 +2,12 @@
 
 #include "linux_cgo_gtk4.h"
 
+#ifdef WAILS_GTK_DEBUG
+#define DEBUG_LOG(fmt, ...) fprintf(stderr, "[GTK4] " fmt "\n", ##__VA_ARGS__)
+#else
+#define DEBUG_LOG(fmt, ...)
+#endif
+
 // ============================================================================
 // Global state
 // ============================================================================
@@ -472,6 +478,7 @@ static void on_file_dialog_open_finish(GObject *source, GAsyncResult *result, gp
     GFile *file = gtk_file_dialog_open_finish(dialog, result, &error);
 
     if (error != NULL) {
+        DEBUG_LOG("open_finish error: %s", error->message);
         fileDialogCallback(data->request_id, NULL, 0, TRUE);
         g_error_free(error);
     } else if (file != NULL) {
@@ -480,6 +487,9 @@ static void on_file_dialog_open_finish(GObject *source, GAsyncResult *result, gp
         fileDialogCallback(data->request_id, files, 1, FALSE);
         g_free(path);
         g_object_unref(file);
+    } else {
+        // Cancelled - no error but no file
+        fileDialogCallback(data->request_id, NULL, 0, TRUE);
     }
 
     g_free(data);
@@ -493,6 +503,7 @@ static void on_file_dialog_open_multiple_finish(GObject *source, GAsyncResult *r
     GListModel *files = gtk_file_dialog_open_multiple_finish(dialog, result, &error);
 
     if (error != NULL) {
+        DEBUG_LOG("open_multiple_finish error: %s", error->message);
         fileDialogCallback(data->request_id, NULL, 0, TRUE);
         g_error_free(error);
     } else if (files != NULL) {
@@ -512,6 +523,8 @@ static void on_file_dialog_open_multiple_finish(GObject *source, GAsyncResult *r
         }
         g_free(paths);
         g_object_unref(files);
+    } else {
+        fileDialogCallback(data->request_id, NULL, 0, TRUE);
     }
 
     g_free(data);
@@ -525,6 +538,7 @@ static void on_file_dialog_select_folder_finish(GObject *source, GAsyncResult *r
     GFile *file = gtk_file_dialog_select_folder_finish(dialog, result, &error);
 
     if (error != NULL) {
+        DEBUG_LOG("select_folder_finish error: %s", error->message);
         fileDialogCallback(data->request_id, NULL, 0, TRUE);
         g_error_free(error);
     } else if (file != NULL) {
@@ -533,6 +547,8 @@ static void on_file_dialog_select_folder_finish(GObject *source, GAsyncResult *r
         fileDialogCallback(data->request_id, files, 1, FALSE);
         g_free(path);
         g_object_unref(file);
+    } else {
+        fileDialogCallback(data->request_id, NULL, 0, TRUE);
     }
 
     g_free(data);
@@ -546,6 +562,7 @@ static void on_file_dialog_save_finish(GObject *source, GAsyncResult *result, gp
     GFile *file = gtk_file_dialog_save_finish(dialog, result, &error);
 
     if (error != NULL) {
+        DEBUG_LOG("save_finish error: %s", error->message);
         fileDialogCallback(data->request_id, NULL, 0, TRUE);
         g_error_free(error);
     } else if (file != NULL) {
@@ -554,6 +571,8 @@ static void on_file_dialog_save_finish(GObject *source, GAsyncResult *result, gp
         fileDialogCallback(data->request_id, files, 1, FALSE);
         g_free(path);
         g_object_unref(file);
+    } else {
+        fileDialogCallback(data->request_id, NULL, 0, TRUE);
     }
 
     g_free(data);
@@ -594,6 +613,7 @@ static void on_alert_dialog_response(GObject *source, GAsyncResult *result, gpoi
     int button = gtk_alert_dialog_choose_finish(dialog, result, &error);
 
     if (error != NULL) {
+        DEBUG_LOG("alert_response error: %s", error->message);
         alertDialogCallback(data->request_id, -1);
         g_error_free(error);
     } else {
@@ -620,7 +640,6 @@ void show_alert_dialog(GtkWindow *parent, const char *message, const char *detai
     data->request_id = request_id;
 
     gtk_alert_dialog_choose(dialog, parent, NULL, on_alert_dialog_response, data);
-    g_object_unref(dialog);
 }
 
 // ============================================================================

@@ -1626,7 +1626,6 @@ func fileDialogCallback(requestID C.uint, files **C.char, count C.int, cancelled
 		return
 	}
 
-	// Convert C string array to Go strings
 	if count > 0 && files != nil {
 		slice := unsafe.Slice(files, int(count))
 		for _, cstr := range slice {
@@ -1698,10 +1697,6 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 			parent = (*C.GtkWindow)(window)
 		}
 
-		// Determine dialog type based on action
-		// GTK_FILE_CHOOSER_ACTION_OPEN = 0
-		// GTK_FILE_CHOOSER_ACTION_SAVE = 1
-		// GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER = 2
 		isFolder := action == 2
 		isSave := action == 1
 
@@ -1786,7 +1781,7 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 	dialogRequestMutex.Unlock()
 
 	InvokeAsync(func() {
-		cMessage := C.CString(options.Message)
+		cMessage := C.CString(options.Title)
 		defer C.free(unsafe.Pointer(cMessage))
 
 		var cDetail *C.char
@@ -1795,23 +1790,26 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 			defer C.free(unsafe.Pointer(cDetail))
 		}
 
-		// Build button labels
-		buttonLabels := make([]*C.char, len(options.Buttons)+1)
-		for i, btn := range options.Buttons {
+		buttons := options.Buttons
+		if len(buttons) == 0 {
+			buttons = []*Button{{Label: "OK", IsDefault: true}}
+		}
+
+		buttonLabels := make([]*C.char, len(buttons)+1)
+		for i, btn := range buttons {
 			buttonLabels[i] = C.CString(btn.Label)
 		}
-		buttonLabels[len(options.Buttons)] = nil // NULL terminator
+		buttonLabels[len(buttons)] = nil
 
 		defer func() {
-			for _, label := range buttonLabels[:len(options.Buttons)] {
+			for _, label := range buttonLabels[:len(buttons)] {
 				C.free(unsafe.Pointer(label))
 			}
 		}()
 
-		// Find default and cancel button indices
 		defaultButton := 0
 		cancelButton := -1
-		for i, btn := range options.Buttons {
+		for i, btn := range buttons {
 			if btn.IsDefault {
 				defaultButton = i
 			}
@@ -1830,7 +1828,7 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 			cMessage,
 			cDetail,
 			(**C.char)(unsafe.Pointer(&buttonLabels[0])),
-			C.int(len(options.Buttons)),
+			C.int(len(buttons)),
 			C.int(defaultButton),
 			C.int(cancelButton),
 			C.uint(requestID),
