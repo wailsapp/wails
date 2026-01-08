@@ -16,9 +16,9 @@ func main() {
 
 	menu := app.NewMenu()
 
-	testMenu := menu.AddSubmenu("Tests")
+	
 
-	testMenu.Add("Select Multiple Files").OnClick(func(ctx *application.Context) {
+	menu.Add("Select Multiple Files").OnClick(func(ctx *application.Context) {
 		results, err := app.Dialog.OpenFile().
 			SetTitle("Select Multiple Files").
 			CanChooseFiles(true).
@@ -26,7 +26,7 @@ func main() {
 		showResults(app, "Multi Select", results, err)
 	})
 
-	testMenu.Add("With Hidden Files").OnClick(func(ctx *application.Context) {
+	menu.Add("With Hidden Files").OnClick(func(ctx *application.Context) {
 		results, err := app.Dialog.OpenFile().
 			SetTitle("Select Files (Hidden Visible)").
 			CanChooseFiles(true).
@@ -35,7 +35,7 @@ func main() {
 		showResults(app, "Hidden Files", results, err)
 	})
 
-	testMenu.Add("Filter: Source Code").OnClick(func(ctx *application.Context) {
+	menu.Add("Filter: Source Code").OnClick(func(ctx *application.Context) {
 		results, err := app.Dialog.OpenFile().
 			SetTitle("Select Source Files").
 			CanChooseFiles(true).
@@ -45,7 +45,7 @@ func main() {
 		showResults(app, "Source Filter", results, err)
 	})
 
-	testMenu.Add("Filter: Documents").OnClick(func(ctx *application.Context) {
+	menu.Add("Filter: Documents").OnClick(func(ctx *application.Context) {
 		results, err := app.Dialog.OpenFile().
 			SetTitle("Select Documents").
 			CanChooseFiles(true).
@@ -54,7 +54,7 @@ func main() {
 		showResults(app, "Doc Filter", results, err)
 	})
 
-	testMenu.Add("Attached to Window").OnClick(func(ctx *application.Context) {
+	menu.Add("Attached to Window").OnClick(func(ctx *application.Context) {
 		results, err := app.Dialog.OpenFile().
 			SetTitle("Select Files (Attached)").
 			CanChooseFiles(true).
@@ -63,8 +63,8 @@ func main() {
 		showResults(app, "Attached", results, err)
 	})
 
-	testMenu.AddSeparator()
-	testMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+	menu.AddSeparator()
+	menu.Add("Quit").OnClick(func(ctx *application.Context) {
 		app.Quit()
 	})
 

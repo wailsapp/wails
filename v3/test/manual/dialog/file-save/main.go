@@ -15,22 +15,22 @@ func main() {
 
 	menu := app.NewMenu()
 
-	testMenu := menu.AddSubmenu("Tests")
+	
 
-	testMenu.Add("Basic Save").OnClick(func(ctx *application.Context) {
+	menu.Add("Basic Save").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.SaveFile().
 			PromptForSingleSelection()
 		showResult(app, "Basic Save", result, err)
 	})
 
-	testMenu.Add("With Message").OnClick(func(ctx *application.Context) {
+	menu.Add("With Message").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.SaveFile().
 			SetMessage("Save your file").
 			PromptForSingleSelection()
 		showResult(app, "With Message", result, err)
 	})
 
-	testMenu.Add("With Default Filename").OnClick(func(ctx *application.Context) {
+	menu.Add("With Default Filename").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.SaveFile().
 			SetMessage("Save Document").
 			SetFilename("document.txt").
@@ -38,7 +38,7 @@ func main() {
 		showResult(app, "Default Filename", result, err)
 	})
 
-	testMenu.Add("Start in Home").OnClick(func(ctx *application.Context) {
+	menu.Add("Start in Home").OnClick(func(ctx *application.Context) {
 		home, _ := os.UserHomeDir()
 		result, err := app.Dialog.SaveFile().
 			SetMessage("Save to Home").
@@ -48,7 +48,7 @@ func main() {
 		showResult(app, "Home Directory", result, err)
 	})
 
-	testMenu.Add("Start in /tmp").OnClick(func(ctx *application.Context) {
+	menu.Add("Start in /tmp").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.SaveFile().
 			SetMessage("Save to /tmp").
 			SetDirectory("/tmp").
@@ -57,7 +57,7 @@ func main() {
 		showResult(app, "/tmp Directory", result, err)
 	})
 
-	testMenu.Add("Show Hidden Files").OnClick(func(ctx *application.Context) {
+	menu.Add("Show Hidden Files").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.SaveFile().
 			SetMessage("Save (Hidden Visible)").
 			ShowHiddenFiles(true).
@@ -65,7 +65,7 @@ func main() {
 		showResult(app, "Show Hidden", result, err)
 	})
 
-	testMenu.Add("Can Create Directories").OnClick(func(ctx *application.Context) {
+	menu.Add("Can Create Directories").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.SaveFile().
 			SetMessage("Save (Can Create Dirs)").
 			CanCreateDirectories(true).
@@ -73,7 +73,7 @@ func main() {
 		showResult(app, "Create Dirs", result, err)
 	})
 
-	testMenu.Add("Cannot Create Directories").OnClick(func(ctx *application.Context) {
+	menu.Add("Cannot Create Directories").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.SaveFile().
 			SetMessage("Save (No Create Dirs)").
 			CanCreateDirectories(false).
@@ -81,7 +81,7 @@ func main() {
 		showResult(app, "No Create Dirs", result, err)
 	})
 
-	testMenu.Add("Custom Button Text").OnClick(func(ctx *application.Context) {
+	menu.Add("Custom Button Text").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.SaveFile().
 			SetMessage("Export File").
 			SetButtonText("Export").
@@ -90,7 +90,7 @@ func main() {
 		showResult(app, "Custom Button", result, err)
 	})
 
-	testMenu.Add("Attached to Window").OnClick(func(ctx *application.Context) {
+	menu.Add("Attached to Window").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.SaveFile().
 			SetMessage("Save (Attached)").
 			AttachToWindow(app.Window.Current()).
@@ -98,8 +98,8 @@ func main() {
 		showResult(app, "Attached", result, err)
 	})
 
-	testMenu.AddSeparator()
-	testMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+	menu.AddSeparator()
+	menu.Add("Quit").OnClick(func(ctx *application.Context) {
 		app.Quit()
 	})
 

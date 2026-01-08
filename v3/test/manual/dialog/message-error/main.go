@@ -15,28 +15,28 @@ func main() {
 
 	menu := app.NewMenu()
 
-	testMenu := menu.AddSubmenu("Tests")
+	
 
-	testMenu.Add("Basic Error").OnClick(func(ctx *application.Context) {
+	menu.Add("Basic Error").OnClick(func(ctx *application.Context) {
 		app.Dialog.Error().
 			SetTitle("Error").
 			SetMessage("An error has occurred").
 			Show()
 	})
 
-	testMenu.Add("Title Only").OnClick(func(ctx *application.Context) {
+	menu.Add("Title Only").OnClick(func(ctx *application.Context) {
 		app.Dialog.Error().
 			SetTitle("Error - Something went wrong").
 			Show()
 	})
 
-	testMenu.Add("Message Only").OnClick(func(ctx *application.Context) {
+	menu.Add("Message Only").OnClick(func(ctx *application.Context) {
 		app.Dialog.Error().
 			SetMessage("Error message without a title").
 			Show()
 	})
 
-	testMenu.Add("Custom Icon").OnClick(func(ctx *application.Context) {
+	menu.Add("Custom Icon").OnClick(func(ctx *application.Context) {
 		app.Dialog.Error().
 			SetTitle("Custom Error Icon").
 			SetMessage("This error dialog has a custom icon").
@@ -44,7 +44,7 @@ func main() {
 			Show()
 	})
 
-	testMenu.Add("Technical Error").OnClick(func(ctx *application.Context) {
+	menu.Add("Technical Error").OnClick(func(ctx *application.Context) {
 		app.Dialog.Error().
 			SetTitle("Connection Failed").
 			SetMessage("Failed to connect to server at localhost:8080. " +
@@ -53,7 +53,7 @@ func main() {
 			Show()
 	})
 
-	testMenu.Add("Attached to Window").OnClick(func(ctx *application.Context) {
+	menu.Add("Attached to Window").OnClick(func(ctx *application.Context) {
 		app.Dialog.Error().
 			SetTitle("Attached Error").
 			SetMessage("This error dialog is attached to the main window").
@@ -61,8 +61,8 @@ func main() {
 			Show()
 	})
 
-	testMenu.AddSeparator()
-	testMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+	menu.AddSeparator()
+	menu.Add("Quit").OnClick(func(ctx *application.Context) {
 		app.Quit()
 	})
 

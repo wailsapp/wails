@@ -15,28 +15,28 @@ func main() {
 
 	menu := app.NewMenu()
 
-	testMenu := menu.AddSubmenu("Tests")
+	
 
-	testMenu.Add("Basic Warning").OnClick(func(ctx *application.Context) {
+	menu.Add("Basic Warning").OnClick(func(ctx *application.Context) {
 		app.Dialog.Warning().
 			SetTitle("Warning").
 			SetMessage("This is a warning message").
 			Show()
 	})
 
-	testMenu.Add("Title Only").OnClick(func(ctx *application.Context) {
+	menu.Add("Title Only").OnClick(func(ctx *application.Context) {
 		app.Dialog.Warning().
 			SetTitle("Warning - Title Only").
 			Show()
 	})
 
-	testMenu.Add("Message Only").OnClick(func(ctx *application.Context) {
+	menu.Add("Message Only").OnClick(func(ctx *application.Context) {
 		app.Dialog.Warning().
 			SetMessage("Warning message without title").
 			Show()
 	})
 
-	testMenu.Add("Custom Icon").OnClick(func(ctx *application.Context) {
+	menu.Add("Custom Icon").OnClick(func(ctx *application.Context) {
 		app.Dialog.Warning().
 			SetTitle("Custom Warning Icon").
 			SetMessage("This warning has a custom icon").
@@ -44,7 +44,7 @@ func main() {
 			Show()
 	})
 
-	testMenu.Add("Long Warning").OnClick(func(ctx *application.Context) {
+	menu.Add("Long Warning").OnClick(func(ctx *application.Context) {
 		app.Dialog.Warning().
 			SetTitle("Important Warning").
 			SetMessage("This is an important warning that contains a lot of text. " +
@@ -53,7 +53,7 @@ func main() {
 			Show()
 	})
 
-	testMenu.Add("Attached to Window").OnClick(func(ctx *application.Context) {
+	menu.Add("Attached to Window").OnClick(func(ctx *application.Context) {
 		app.Dialog.Warning().
 			SetTitle("Attached Warning").
 			SetMessage("This warning is attached to the main window").
@@ -61,8 +61,8 @@ func main() {
 			Show()
 	})
 
-	testMenu.AddSeparator()
-	testMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+	menu.AddSeparator()
+	menu.Add("Quit").OnClick(func(ctx *application.Context) {
 		app.Quit()
 	})
 

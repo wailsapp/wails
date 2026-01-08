@@ -15,9 +15,7 @@ func main() {
 
 	menu := app.NewMenu()
 
-	testMenu := menu.AddSubmenu("Tests")
-
-	testMenu.Add("Basic Directory").OnClick(func(ctx *application.Context) {
+	menu.Add("Basic Directory").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.OpenFile().
 			SetTitle("Select Directory").
 			CanChooseDirectories(true).
@@ -26,7 +24,7 @@ func main() {
 		showResult(app, "Basic Directory", result, err)
 	})
 
-	testMenu.Add("Start in Home").OnClick(func(ctx *application.Context) {
+	menu.Add("Start in Home").OnClick(func(ctx *application.Context) {
 		home, _ := os.UserHomeDir()
 		result, err := app.Dialog.OpenFile().
 			SetTitle("Select from Home").
@@ -37,7 +35,7 @@ func main() {
 		showResult(app, "Home Directory", result, err)
 	})
 
-	testMenu.Add("Start in /").OnClick(func(ctx *application.Context) {
+	menu.Add("Start in /").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.OpenFile().
 			SetTitle("Select from Root").
 			SetDirectory("/").
@@ -47,7 +45,7 @@ func main() {
 		showResult(app, "Root Directory", result, err)
 	})
 
-	testMenu.Add("Can Create Directories").OnClick(func(ctx *application.Context) {
+	menu.Add("Can Create Directories").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.OpenFile().
 			SetTitle("Select Directory (Can Create)").
 			CanChooseDirectories(true).
@@ -57,7 +55,7 @@ func main() {
 		showResult(app, "Create Dirs", result, err)
 	})
 
-	testMenu.Add("Show Hidden").OnClick(func(ctx *application.Context) {
+	menu.Add("Show Hidden").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.OpenFile().
 			SetTitle("Select Directory (Hidden Visible)").
 			CanChooseDirectories(true).
@@ -67,7 +65,7 @@ func main() {
 		showResult(app, "Show Hidden", result, err)
 	})
 
-	testMenu.Add("Resolve Aliases/Symlinks").OnClick(func(ctx *application.Context) {
+	menu.Add("Resolve Aliases/Symlinks").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.OpenFile().
 			SetTitle("Select Directory (Resolve Symlinks)").
 			CanChooseDirectories(true).
@@ -77,7 +75,7 @@ func main() {
 		showResult(app, "Resolve Aliases", result, err)
 	})
 
-	testMenu.Add("Custom Button Text").OnClick(func(ctx *application.Context) {
+	menu.Add("Custom Button Text").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.OpenFile().
 			SetTitle("Choose Project Folder").
 			SetButtonText("Use This Folder").
@@ -87,7 +85,7 @@ func main() {
 		showResult(app, "Custom Button", result, err)
 	})
 
-	testMenu.Add("Multiple Directories").OnClick(func(ctx *application.Context) {
+	menu.Add("Multiple Directories").OnClick(func(ctx *application.Context) {
 		results, err := app.Dialog.OpenFile().
 			SetTitle("Select Multiple Directories").
 			CanChooseDirectories(true).
@@ -111,7 +109,7 @@ func main() {
 		app.Dialog.Info().SetTitle("Multi Dir").SetMessage(msg).Show()
 	})
 
-	testMenu.Add("Attached to Window").OnClick(func(ctx *application.Context) {
+	menu.Add("Attached to Window").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.OpenFile().
 			SetTitle("Select Directory (Attached)").
 			CanChooseDirectories(true).
@@ -121,8 +119,8 @@ func main() {
 		showResult(app, "Attached", result, err)
 	})
 
-	testMenu.AddSeparator()
-	testMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+	menu.AddSeparator()
+	menu.Add("Quit").OnClick(func(ctx *application.Context) {
 		app.Quit()
 	})
 

@@ -15,16 +15,16 @@ func main() {
 
 	menu := app.NewMenu()
 
-	testMenu := menu.AddSubmenu("Tests")
+	
 
-	testMenu.Add("Basic Open").OnClick(func(ctx *application.Context) {
+	menu.Add("Basic Open").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.OpenFile().
 			CanChooseFiles(true).
 			PromptForSingleSelection()
 		showResult(app, "Basic Open", result, err)
 	})
 
-	testMenu.Add("With Title").OnClick(func(ctx *application.Context) {
+	menu.Add("With Title").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.OpenFile().
 			SetTitle("Select a File").
 			CanChooseFiles(true).
@@ -32,7 +32,7 @@ func main() {
 		showResult(app, "With Title", result, err)
 	})
 
-	testMenu.Add("Show Hidden Files").OnClick(func(ctx *application.Context) {
+	menu.Add("Show Hidden Files").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.OpenFile().
 			SetTitle("Select File (Hidden Visible)").
 			CanChooseFiles(true).
@@ -41,7 +41,7 @@ func main() {
 		showResult(app, "Show Hidden", result, err)
 	})
 
-	testMenu.Add("Start in Home Directory").OnClick(func(ctx *application.Context) {
+	menu.Add("Start in Home Directory").OnClick(func(ctx *application.Context) {
 		home, _ := os.UserHomeDir()
 		result, err := app.Dialog.OpenFile().
 			SetTitle("Select from Home").
@@ -51,7 +51,7 @@ func main() {
 		showResult(app, "Home Directory", result, err)
 	})
 
-	testMenu.Add("Start in /tmp").OnClick(func(ctx *application.Context) {
+	menu.Add("Start in /tmp").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.OpenFile().
 			SetTitle("Select from /tmp").
 			SetDirectory("/tmp").
@@ -60,7 +60,7 @@ func main() {
 		showResult(app, "/tmp Directory", result, err)
 	})
 
-	testMenu.Add("Filter: Text Files").OnClick(func(ctx *application.Context) {
+	menu.Add("Filter: Text Files").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.OpenFile().
 			SetTitle("Select Text File").
 			CanChooseFiles(true).
@@ -69,7 +69,7 @@ func main() {
 		showResult(app, "Text Filter", result, err)
 	})
 
-	testMenu.Add("Filter: Images").OnClick(func(ctx *application.Context) {
+	menu.Add("Filter: Images").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.OpenFile().
 			SetTitle("Select Image").
 			CanChooseFiles(true).
@@ -78,7 +78,7 @@ func main() {
 		showResult(app, "Image Filter", result, err)
 	})
 
-	testMenu.Add("Multiple Filters").OnClick(func(ctx *application.Context) {
+	menu.Add("Multiple Filters").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.OpenFile().
 			SetTitle("Select File").
 			CanChooseFiles(true).
@@ -89,7 +89,7 @@ func main() {
 		showResult(app, "Multi Filter", result, err)
 	})
 
-	testMenu.Add("Custom Button Text").OnClick(func(ctx *application.Context) {
+	menu.Add("Custom Button Text").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.OpenFile().
 			SetTitle("Select File").
 			SetButtonText("Choose This One").
@@ -98,7 +98,7 @@ func main() {
 		showResult(app, "Custom Button", result, err)
 	})
 
-	testMenu.Add("Attached to Window").OnClick(func(ctx *application.Context) {
+	menu.Add("Attached to Window").OnClick(func(ctx *application.Context) {
 		result, err := app.Dialog.OpenFile().
 			SetTitle("Attached Dialog").
 			CanChooseFiles(true).
@@ -107,8 +107,8 @@ func main() {
 		showResult(app, "Attached", result, err)
 	})
 
-	testMenu.AddSeparator()
-	testMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+	menu.AddSeparator()
+	menu.Add("Quit").OnClick(func(ctx *application.Context) {
 		app.Quit()
 	})
 

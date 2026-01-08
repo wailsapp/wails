@@ -242,12 +242,31 @@ GTK4 uses `GtkFileDialog` with async API:
 - `gtk_file_dialog_open()` - Open single file
 - `gtk_file_dialog_open_multiple()` - Open multiple files
 - `gtk_file_dialog_select_folder()` - Select folder
+- `gtk_file_dialog_select_multiple_folders()` - Select multiple folders
 - `gtk_file_dialog_save()` - Save file
 
 Key differences:
 - No more `gtk_dialog_run()` - everything is async with callbacks
 - Filters use `GListStore` of `GtkFileFilter` objects
 - Results delivered via `GAsyncResult` callbacks
+- Custom button text via `gtk_file_dialog_set_accept_label()`
+
+#### 8.1.1 GTK4 File Dialog Limitations (Portal-based)
+
+GTK4's `GtkFileDialog` uses **xdg-desktop-portal** for native file dialogs. This provides
+better desktop integration but removes some application control:
+
+| Feature | GTK3 | GTK4 | Notes |
+|---------|------|------|-------|
+| `ShowHiddenFiles()` | ✅ Works | ❌ No effect | User controls via portal UI toggle |
+| `CanCreateDirectories()` | ✅ Works | ❌ No effect | Always enabled in portal |
+| `ResolvesAliases()` | ✅ Works | ❌ No effect | Portal handles symlinks |
+| `SetButtonText()` | ✅ Works | ✅ Works | `gtk_file_dialog_set_accept_label()` |
+| Multiple folders | ✅ Works | ✅ Works | `gtk_file_dialog_select_multiple_folders()` |
+
+**Why these limitations exist**: GTK4's portal-based dialogs delegate UI control to the
+desktop environment (GNOME, KDE, etc.). This is intentional - the portal provides
+consistent UX across applications and respects user preferences.
 
 #### 8.2 Message Dialogs
 GTK4 uses `GtkAlertDialog`:
@@ -383,6 +402,36 @@ v3/internal/assetserver/webview/
 ```
 
 ## Changelog
+
+### 2026-01-07 (Session 11)
+- Fixed GTK4 dialog system bugs
+- **File Dialog Fix**: Removed premature `g_object_unref()` that freed dialog before async callback
+  - GTK4 async dialogs manage their own lifecycle
+  - Commit: `6f9c5beb5`
+- **Alert Dialog Fixes**:
+  - Removed premature `g_object_unref(dialog)` from `show_alert_dialog()` (same issue as file dialogs)
+  - Fixed deadlock in `dialogs_linux.go` - `InvokeAsync` → `go func()` since `runQuestionDialog` blocks internally
+  - Fixed `runQuestionDialog` to use `options.Title` as message (was using `options.Message`)
+  - Added default "OK" button when no buttons specified
+  - Commit: `1a77e6091`
+- **Other Fixes**:
+  - Fixed checkptr errors with `-race` flag by changing C signal functions to accept `uintptr_t` (`3999f1f24`)
+  - Fixed ExecJS race condition by adding mutex for `runtimeLoaded`/`pendingJS` (`8e386034e`)
+- Added DEBUG_LOG macro for compile-time debug output: `CGO_CFLAGS="-DWAILS_GTK_DEBUG" go build ...`
+- Added manual dialog test suite in `v3/test/manual/dialog/`
+- **Additional Dialog Fixes** (Session 11 continued):
+  - Added `gtk_file_dialog_set_accept_label()` for custom button text
+  - Added `gtk_file_dialog_select_multiple_folders()` for multiple directory selection
+  - Fixed data race in `application.go` cleanup - was using RLock() when writing `a.windows = nil`
+  - Documented GTK4 portal limitations (ShowHiddenFiles, CanCreateDirectories have no effect)
+- Files modified:
+  - `v3/pkg/application/linux_cgo_gtk4.go` - dialog fixes, race fixes, accept label, multiple folders
+  - `v3/pkg/application/linux_cgo_gtk4.c` - DEBUG_LOG macro, alert dialog lifecycle fix, select_multiple_folders callback
+  - `v3/pkg/application/linux_cgo_gtk4.h` - uintptr_t for signal functions
+  - `v3/pkg/application/dialogs_linux.go` - deadlock fix
+  - `v3/pkg/application/webview_window.go` - pendingJS mutex
+  - `v3/pkg/application/application.go` - RLock → Lock for cleanup writes
+  - `docs/src/content/docs/reference/dialogs.mdx` - documented GTK4 limitations
 
 ### 2026-01-04 (Session 10)
 - Fixed Window → Zoom menu behavior to toggle maximize/restore (was incorrectly calling webview zoomIn)

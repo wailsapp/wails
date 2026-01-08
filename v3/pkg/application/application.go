@@ -808,12 +808,12 @@ func (a *App) cleanup() {
 	}
 	InvokeSync(func() {
 		a.shutdownServices()
-		a.windowsLock.RLock()
+		a.windowsLock.Lock()
 		for _, window := range a.windows {
 			window.Close()
 		}
 		a.windows = nil
-		a.windowsLock.RUnlock()
+		a.windowsLock.Unlock()
 		a.systemTraysLock.Lock()
 		for _, systray := range a.systemTrays {
 			systray.destroy()
