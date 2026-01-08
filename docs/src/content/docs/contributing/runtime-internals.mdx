@@ -39,7 +39,7 @@ win := app.Window.New(&application.WebviewWindowOptions{
 win.Show()
 ```
 
-`NewWebviewWindow` delegates to `internal/runtime/webview_window_*.go` where
+`app.Window.New()` delegates to `internal/runtime/webview_window_*.go` where
 platform-specific constructors live:
 
 ```

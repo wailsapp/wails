@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix outdated Manager API references in documentation (31 files updated to use new pattern like `app.Window.New()`, `app.Event.Emit()`, etc.) by @leaanthony
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

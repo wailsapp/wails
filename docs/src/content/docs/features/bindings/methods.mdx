@@ -461,7 +461,7 @@ const config = await GetConfig()
 func ProcessLargeFile(path string) error {
     // Emit progress events
     for line := range lines {
-        app.EmitEvent("progress", line)
+        app.Event.Emit("progress", line)
     }
     return nil
 }
@@ -530,7 +530,7 @@ func main() {
         },
     })
     
-    app.NewWebviewWindow()
+    app.Window.New()
     app.Run()
 }
 ```
