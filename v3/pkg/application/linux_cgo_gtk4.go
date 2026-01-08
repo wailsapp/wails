@@ -217,13 +217,13 @@ func (a *linuxApp) setIcon(icon []byte) {
 	defer C.g_bytes_unref(gbytes)
 }
 
-// Clipboard - GTK4 uses GdkClipboard API
 func clipboardGet() string {
-	display := C.gdk_display_get_default()
-	clip := C.gdk_display_get_clipboard(display)
-	// GTK4: Async clipboard API - this is a simplified sync version
-	// TODO: Implement proper async clipboard for GTK4
-	_ = clip
+	cText := C.clipboard_get_text_sync()
+	if cText != nil {
+		result := C.GoString(cText)
+		C.clipboard_free_text(cText)
+		return result
+	}
 	return ""
 }
 
@@ -231,8 +231,8 @@ func clipboardSet(text string) {
 	display := C.gdk_display_get_default()
 	clip := C.gdk_display_get_clipboard(display)
 	cText := C.CString(text)
-	defer C.free(unsafe.Pointer(cText))
 	C.gdk_clipboard_set_text(clip, cText)
+	C.free(unsafe.Pointer(cText))
 }
 
 // Menu - GTK4 uses GMenu/GAction instead of GtkMenu

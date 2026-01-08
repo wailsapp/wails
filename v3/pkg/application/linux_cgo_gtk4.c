@@ -824,6 +824,50 @@ void show_message_dialog(GtkWindow *parent, const char *heading, const char *bod
 }
 
 // ============================================================================
+// Clipboard (async API for GTK4)
+// ============================================================================
+
+static char *clipboard_sync_result = NULL;
+static gboolean clipboard_sync_done = FALSE;
+
+static void on_clipboard_sync_finish(GObject *source, GAsyncResult *result, gpointer user_data) {
+    GdkClipboard *clipboard = GDK_CLIPBOARD(source);
+    GError *error = NULL;
+
+    clipboard_sync_result = gdk_clipboard_read_text_finish(clipboard, result, &error);
+
+    if (error != NULL) {
+        DEBUG_LOG("clipboard read error: %s", error->message);
+        g_error_free(error);
+        clipboard_sync_result = NULL;
+    }
+    clipboard_sync_done = TRUE;
+}
+
+char* clipboard_get_text_sync(void) {
+    GdkDisplay *display = gdk_display_get_default();
+    GdkClipboard *clipboard = gdk_display_get_clipboard(display);
+    
+    clipboard_sync_done = FALSE;
+    clipboard_sync_result = NULL;
+    
+    gdk_clipboard_read_text_async(clipboard, NULL, on_clipboard_sync_finish, NULL);
+    
+    GMainContext *ctx = g_main_context_default();
+    while (!clipboard_sync_done) {
+        g_main_context_iteration(ctx, TRUE);
+    }
+    
+    return clipboard_sync_result;
+}
+
+void clipboard_free_text(char *text) {
+    if (text != NULL) {
+        g_free(text);
+    }
+}
+
+// ============================================================================
 // Misc
 // ============================================================================
 
