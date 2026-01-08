@@ -554,6 +554,41 @@ static void on_file_dialog_select_folder_finish(GObject *source, GAsyncResult *r
     g_free(data);
 }
 
+static void on_file_dialog_select_multiple_folders_finish(GObject *source, GAsyncResult *result, gpointer user_data) {
+    FileDialogData *data = (FileDialogData *)user_data;
+    GtkFileDialog *dialog = GTK_FILE_DIALOG(source);
+    GError *error = NULL;
+
+    GListModel *files = gtk_file_dialog_select_multiple_folders_finish(dialog, result, &error);
+
+    if (error != NULL) {
+        DEBUG_LOG("select_multiple_folders_finish error: %s", error->message);
+        fileDialogCallback(data->request_id, NULL, 0, TRUE);
+        g_error_free(error);
+    } else if (files != NULL) {
+        guint n = g_list_model_get_n_items(files);
+        char **paths = g_new0(char*, n + 1);
+
+        for (guint i = 0; i < n; i++) {
+            GFile *file = G_FILE(g_list_model_get_item(files, i));
+            paths[i] = g_file_get_path(file);
+            g_object_unref(file);
+        }
+
+        fileDialogCallback(data->request_id, paths, (int)n, FALSE);
+
+        for (guint i = 0; i < n; i++) {
+            g_free(paths[i]);
+        }
+        g_free(paths);
+        g_object_unref(files);
+    } else {
+        fileDialogCallback(data->request_id, NULL, 0, TRUE);
+    }
+
+    g_free(data);
+}
+
 static void on_file_dialog_save_finish(GObject *source, GAsyncResult *result, gpointer user_data) {
     FileDialogData *data = (FileDialogData *)user_data;
     GtkFileDialog *dialog = GTK_FILE_DIALOG(source);
@@ -584,7 +619,9 @@ void show_open_file_dialog(GtkWindow *parent, GtkFileDialog *dialog, guint reque
     data->allow_multiple = allow_multiple;
     data->is_folder = is_folder;
 
-    if (is_folder) {
+    if (is_folder && allow_multiple) {
+        gtk_file_dialog_select_multiple_folders(dialog, parent, NULL, on_file_dialog_select_multiple_folders_finish, data);
+    } else if (is_folder) {
         gtk_file_dialog_select_folder(dialog, parent, NULL, on_file_dialog_select_folder_finish, data);
     } else if (allow_multiple) {
         gtk_file_dialog_open_multiple(dialog, parent, NULL, on_file_dialog_open_multiple_finish, data);
@@ -602,44 +639,163 @@ void show_save_file_dialog(GtkWindow *parent, GtkFileDialog *dialog, guint reque
 }
 
 // ============================================================================
-// Alert dialogs (GtkAlertDialog for GTK4)
+// Custom Message Dialogs (GtkWindow-based for proper styling)
 // ============================================================================
 
-static void on_alert_dialog_response(GObject *source, GAsyncResult *result, gpointer user_data) {
-    AlertDialogData *data = (AlertDialogData *)user_data;
-    GtkAlertDialog *dialog = GTK_ALERT_DIALOG(source);
-    GError *error = NULL;
+typedef struct {
+    GtkWindow *dialog;
+    guint request_id;
+    int button_count;
+    int cancel_button;
+    GtkWidget **buttons;
+} MessageDialogData;
 
-    int button = gtk_alert_dialog_choose_finish(dialog, result, &error);
-
-    if (error != NULL) {
-        DEBUG_LOG("alert_response error: %s", error->message);
-        alertDialogCallback(data->request_id, -1);
-        g_error_free(error);
-    } else {
-        alertDialogCallback(data->request_id, button);
+static void message_dialog_cleanup(MessageDialogData *data) {
+    if (data->buttons != NULL) {
+        g_free(data->buttons);
     }
-
     g_free(data);
 }
 
-void show_alert_dialog(GtkWindow *parent, const char *message, const char *detail,
-                       const char **buttons, int button_count, int default_button,
-                       int cancel_button, guint request_id) {
-    GtkAlertDialog *dialog = gtk_alert_dialog_new("%s", message);
+static void on_message_dialog_button_clicked(GtkButton *button, gpointer user_data) {
+    MessageDialogData *data = (MessageDialogData *)user_data;
+    int index = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "button-index"));
+    
+    alertDialogCallback(data->request_id, index);
+    gtk_window_destroy(data->dialog);
+    message_dialog_cleanup(data);
+}
 
-    if (detail != NULL && strlen(detail) > 0) {
-        gtk_alert_dialog_set_detail(dialog, detail);
+static gboolean on_message_dialog_close(GtkWindow *window, gpointer user_data) {
+    MessageDialogData *data = (MessageDialogData *)user_data;
+    int result = (data->cancel_button >= 0) ? data->cancel_button : -1;
+    alertDialogCallback(data->request_id, result);
+    message_dialog_cleanup(data);
+    return TRUE;
+}
+
+static gboolean on_message_dialog_key_pressed(GtkEventControllerKey *controller,
+                                               guint keyval, guint keycode,
+                                               GdkModifierType state, gpointer user_data) {
+    MessageDialogData *data = (MessageDialogData *)user_data;
+    
+    if (keyval == GDK_KEY_Escape && data->cancel_button >= 0 && data->cancel_button < data->button_count) {
+        gtk_widget_activate(data->buttons[data->cancel_button]);
+        return TRUE;
     }
+    return FALSE;
+}
 
-    gtk_alert_dialog_set_buttons(dialog, buttons);
-    gtk_alert_dialog_set_default_button(dialog, default_button);
-    gtk_alert_dialog_set_cancel_button(dialog, cancel_button);
-
-    AlertDialogData *data = g_new0(AlertDialogData, 1);
+void show_message_dialog(GtkWindow *parent, const char *heading, const char *body,
+                         const char *icon_name, const unsigned char *icon_data, int icon_data_len,
+                         const char **buttons, int button_count,
+                         int default_button, int cancel_button, int destructive_button,
+                         guint request_id) {
+    
+    GtkWidget *dialog = gtk_window_new();
+    gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+    gtk_window_set_resizable(GTK_WINDOW(dialog), FALSE);
+    gtk_window_set_decorated(GTK_WINDOW(dialog), TRUE);
+    gtk_widget_add_css_class(dialog, "message");
+    gtk_widget_set_size_request(dialog, 300, -1);
+    
+    if (parent != NULL) {
+        gtk_window_set_transient_for(GTK_WINDOW(dialog), parent);
+    }
+    
+    MessageDialogData *data = g_new0(MessageDialogData, 1);
+    data->dialog = GTK_WINDOW(dialog);
     data->request_id = request_id;
-
-    gtk_alert_dialog_choose(dialog, parent, NULL, on_alert_dialog_response, data);
+    data->button_count = button_count;
+    data->cancel_button = cancel_button;
+    data->buttons = (button_count > 0) ? g_new0(GtkWidget*, button_count) : NULL;
+    
+    GtkWidget *content = gtk_box_new(GTK_ORIENTATION_VERTICAL, 12);
+    gtk_widget_set_margin_start(content, 24);
+    gtk_widget_set_margin_end(content, 24);
+    gtk_widget_set_margin_top(content, 24);
+    gtk_widget_set_margin_bottom(content, 24);
+    
+    const int max_icon_size = 64;
+    GtkWidget *icon_widget = NULL;
+    if (icon_data != NULL && icon_data_len > 0) {
+        GBytes *bytes = g_bytes_new(icon_data, icon_data_len);
+        GdkTexture *texture = gdk_texture_new_from_bytes(bytes, NULL);
+        g_bytes_unref(bytes);
+        if (texture != NULL) {
+            GtkWidget *image = gtk_image_new_from_paintable(GDK_PAINTABLE(texture));
+            gtk_image_set_pixel_size(GTK_IMAGE(image), max_icon_size);
+            icon_widget = image;
+            g_object_unref(texture);
+        }
+    } else if (icon_name != NULL && strlen(icon_name) > 0) {
+        icon_widget = gtk_image_new_from_icon_name(icon_name);
+        gtk_image_set_pixel_size(GTK_IMAGE(icon_widget), max_icon_size);
+    }
+    
+    if (icon_widget != NULL) {
+        gtk_widget_set_halign(icon_widget, GTK_ALIGN_CENTER);
+        gtk_widget_set_margin_bottom(icon_widget, 12);
+        gtk_box_append(GTK_BOX(content), icon_widget);
+    }
+    
+    if (heading != NULL && strlen(heading) > 0) {
+        GtkWidget *heading_label = gtk_label_new(heading);
+        gtk_widget_add_css_class(heading_label, "title-2");
+        gtk_widget_set_halign(heading_label, GTK_ALIGN_CENTER);
+        gtk_label_set_wrap(GTK_LABEL(heading_label), TRUE);
+        gtk_label_set_max_width_chars(GTK_LABEL(heading_label), 50);
+        gtk_box_append(GTK_BOX(content), heading_label);
+    }
+    
+    if (body != NULL && strlen(body) > 0) {
+        GtkWidget *body_label = gtk_label_new(body);
+        gtk_widget_set_halign(body_label, GTK_ALIGN_CENTER);
+        gtk_label_set_wrap(GTK_LABEL(body_label), TRUE);
+        gtk_label_set_max_width_chars(GTK_LABEL(body_label), 50);
+        gtk_widget_add_css_class(body_label, "dim-label");
+        gtk_box_append(GTK_BOX(content), body_label);
+    }
+    
+    if (button_count > 0) {
+        GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
+        gtk_widget_set_halign(button_box, GTK_ALIGN_CENTER);
+        gtk_widget_set_margin_top(button_box, 12);
+        
+        for (int i = 0; i < button_count; i++) {
+            GtkWidget *btn = gtk_button_new_with_label(buttons[i]);
+            g_object_set_data(G_OBJECT(btn), "button-index", GINT_TO_POINTER(i));
+            g_signal_connect(btn, "clicked", G_CALLBACK(on_message_dialog_button_clicked), data);
+            data->buttons[i] = btn;
+            
+            if (i == default_button) {
+                gtk_widget_add_css_class(btn, "suggested-action");
+                gtk_widget_add_css_class(btn, "default");
+            }
+            if (i == destructive_button) {
+                gtk_widget_add_css_class(btn, "destructive-action");
+            }
+            
+            gtk_box_append(GTK_BOX(button_box), btn);
+        }
+        
+        gtk_box_append(GTK_BOX(content), button_box);
+    }
+    
+    gtk_window_set_child(GTK_WINDOW(dialog), content);
+    
+    GtkEventController *key_controller = gtk_event_controller_key_new();
+    g_signal_connect(key_controller, "key-pressed", G_CALLBACK(on_message_dialog_key_pressed), data);
+    gtk_widget_add_controller(dialog, key_controller);
+    
+    g_signal_connect(dialog, "close-request", G_CALLBACK(on_message_dialog_close), data);
+    
+    gtk_window_present(GTK_WINDOW(dialog));
+    
+    if (default_button >= 0 && default_button < button_count) {
+        gtk_window_set_default_widget(GTK_WINDOW(dialog), data->buttons[default_button]);
+        gtk_widget_grab_focus(data->buttons[default_button]);
+    }
 }
 
 // ============================================================================

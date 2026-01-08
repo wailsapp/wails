@@ -1683,13 +1683,18 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 			C.set_file_dialog_filters(dialog, filterStore)
 		}
 
-		// Set initial folder if provided
 		if currentFolder != "" {
 			cFolder := C.CString(currentFolder)
 			file := C.g_file_new_for_path(cFolder)
 			C.gtk_file_dialog_set_initial_folder(dialog, file)
 			C.g_object_unref(C.gpointer(file))
 			C.free(unsafe.Pointer(cFolder))
+		}
+
+		if acceptLabel != "" {
+			cLabel := C.CString(acceptLabel)
+			C.gtk_file_dialog_set_accept_label(dialog, cLabel)
+			C.free(unsafe.Pointer(cLabel))
 		}
 
 		var parent *C.GtkWindow
@@ -1772,6 +1777,21 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (chan string, error) {
 	)
 }
 
+func dialogTypeToIconName(dialogType DialogType) string {
+	switch dialogType {
+	case InfoDialogType:
+		return "dialog-information-symbolic"
+	case WarningDialogType:
+		return "dialog-warning-symbolic"
+	case ErrorDialogType:
+		return "dialog-error-symbolic"
+	case QuestionDialogType:
+		return "dialog-question-symbolic"
+	default:
+		return ""
+	}
+}
+
 func runQuestionDialog(parent pointer, options *MessageDialog) int {
 	requestID := nextDialogRequestID()
 	resultChan := make(chan int, 1)
@@ -1781,13 +1801,27 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 	dialogRequestMutex.Unlock()
 
 	InvokeAsync(func() {
-		cMessage := C.CString(options.Title)
-		defer C.free(unsafe.Pointer(cMessage))
+		cHeading := C.CString(options.Title)
+		defer C.free(unsafe.Pointer(cHeading))
 
-		var cDetail *C.char
+		var cBody *C.char
 		if options.Message != "" {
-			cDetail = C.CString(options.Message)
-			defer C.free(unsafe.Pointer(cDetail))
+			cBody = C.CString(options.Message)
+			defer C.free(unsafe.Pointer(cBody))
+		}
+
+		var cIconName *C.char
+		var iconData *C.uchar
+		var iconDataLen C.int
+		if len(options.Icon) > 0 {
+			iconData = (*C.uchar)(unsafe.Pointer(&options.Icon[0]))
+			iconDataLen = C.int(len(options.Icon))
+		} else {
+			iconName := dialogTypeToIconName(options.DialogType)
+			if iconName != "" {
+				cIconName = C.CString(iconName)
+				defer C.free(unsafe.Pointer(cIconName))
+			}
 		}
 
 		buttons := options.Buttons
@@ -1807,8 +1841,9 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 			}
 		}()
 
-		defaultButton := 0
+		defaultButton := -1
 		cancelButton := -1
+		destructiveButton := -1
 		for i, btn := range buttons {
 			if btn.IsDefault {
 				defaultButton = i
@@ -1818,19 +1853,30 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 			}
 		}
 
+		if options.DialogType == ErrorDialogType || options.DialogType == WarningDialogType {
+			if defaultButton >= 0 && !buttons[defaultButton].IsCancel {
+				destructiveButton = defaultButton
+				defaultButton = -1
+			}
+		}
+
 		var parentWindow *C.GtkWindow
 		if parent != nil {
 			parentWindow = (*C.GtkWindow)(parent)
 		}
 
-		C.show_alert_dialog(
+		C.show_message_dialog(
 			parentWindow,
-			cMessage,
-			cDetail,
+			cHeading,
+			cBody,
+			cIconName,
+			iconData,
+			iconDataLen,
 			(**C.char)(unsafe.Pointer(&buttonLabels[0])),
 			C.int(len(buttons)),
 			C.int(defaultButton),
 			C.int(cancelButton),
+			C.int(destructiveButton),
 			C.uint(requestID),
 		)
 	})

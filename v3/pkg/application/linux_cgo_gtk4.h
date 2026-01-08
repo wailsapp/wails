@@ -173,12 +173,14 @@ void show_open_file_dialog(GtkWindow *parent, GtkFileDialog *dialog, guint reque
 void show_save_file_dialog(GtkWindow *parent, GtkFileDialog *dialog, guint request_id);
 
 // ============================================================================
-// Alert dialogs (GtkAlertDialog for GTK4)
+// Message dialogs (custom GtkWindow-based for proper styling)
 // ============================================================================
 
-void show_alert_dialog(GtkWindow *parent, const char *message, const char *detail,
-                       const char **buttons, int button_count, int default_button,
-                       int cancel_button, guint request_id);
+void show_message_dialog(GtkWindow *parent, const char *heading, const char *body,
+                         const char *icon_name, const unsigned char *icon_data, int icon_data_len,
+                         const char **buttons, int button_count,
+                         int default_button, int cancel_button, int destructive_button,
+                         guint request_id);
 
 // ============================================================================
 // Misc
