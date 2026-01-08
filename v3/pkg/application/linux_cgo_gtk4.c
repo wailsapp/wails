@@ -376,6 +376,11 @@ void beginWindowResize(GtkWindow *window, GdkSurfaceEdge edge, int button, doubl
 // Drag and drop (GtkDropTarget for GTK4)
 // ============================================================================
 
+static gboolean on_drop_accept(GtkDropTarget *target, GdkDrop *drop, gpointer data) {
+    GdkContentFormats *formats = gdk_drop_get_formats(drop);
+    return gdk_content_formats_contain_gtype(formats, GDK_TYPE_FILE_LIST);
+}
+
 static GdkDragAction on_drop_enter(GtkDropTarget *target, gdouble x, gdouble y, gpointer data) {
     onDropEnter((uintptr_t)data);
     return GDK_ACTION_COPY;
@@ -423,8 +428,29 @@ static gboolean on_drop(GtkDropTarget *target, const GValue *value, gdouble x, g
     return TRUE;
 }
 
+static void on_motion_enter(GtkDropControllerMotion *ctrl, gdouble x, gdouble y, gpointer data) {
+    onDropEnter((uintptr_t)data);
+}
+
+static void on_motion_leave(GtkDropControllerMotion *ctrl, gpointer data) {
+    onDropLeave((uintptr_t)data);
+}
+
+static void on_motion_motion(GtkDropControllerMotion *ctrl, gdouble x, gdouble y, gpointer data) {
+    onDropMotion((gint)x, (gint)y, (uintptr_t)data);
+}
+
 void enableDND(GtkWidget *widget, uintptr_t winID) {
+    GtkEventController *motion_ctrl = gtk_drop_controller_motion_new();
+    gtk_event_controller_set_propagation_phase(motion_ctrl, GTK_PHASE_CAPTURE);
+    g_signal_connect(motion_ctrl, "enter", G_CALLBACK(on_motion_enter), (gpointer)winID);
+    g_signal_connect(motion_ctrl, "leave", G_CALLBACK(on_motion_leave), (gpointer)winID);
+    g_signal_connect(motion_ctrl, "motion", G_CALLBACK(on_motion_motion), (gpointer)winID);
+    gtk_widget_add_controller(widget, motion_ctrl);
+    
     GtkDropTarget *target = gtk_drop_target_new(GDK_TYPE_FILE_LIST, GDK_ACTION_COPY);
+    gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(target), GTK_PHASE_CAPTURE);
+    g_signal_connect(target, "accept", G_CALLBACK(on_drop_accept), (gpointer)winID);
     g_signal_connect(target, "enter", G_CALLBACK(on_drop_enter), (gpointer)winID);
     g_signal_connect(target, "leave", G_CALLBACK(on_drop_leave), (gpointer)winID);
     g_signal_connect(target, "motion", G_CALLBACK(on_drop_motion), (gpointer)winID);
@@ -433,8 +459,6 @@ void enableDND(GtkWidget *widget, uintptr_t winID) {
 }
 
 void disableDND(GtkWidget *widget, uintptr_t winID) {
-    // In GTK4, we don't add a drop target to block drops
-    // The default behavior is to not accept drops
 }
 
 // ============================================================================
