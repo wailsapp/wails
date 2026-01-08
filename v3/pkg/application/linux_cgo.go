@@ -161,7 +161,16 @@ typedef struct Screen {
 	bool isPrimary;
 } Screen;
 
+// Signal handler fix for WebKit/GTK compatibility.
 // CREDIT: https://github.com/rainycape/magick
+//
+// WebKit/GTK may install signal handlers without SA_ONSTACK, which causes
+// Go to crash when handling signals (e.g., during panic recovery).
+// This code adds SA_ONSTACK to signal handlers after WebKit initialization.
+//
+// Known limitation: Due to Go issue #7227 (golang/go#7227), signals may still
+// be delivered on the wrong stack in some cases when C libraries are involved.
+// This is a fundamental Go runtime limitation that cannot be fully resolved here.
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
@@ -489,6 +498,7 @@ var (
 )
 
 var registerURIScheme sync.Once
+var fixSignalHandlers sync.Once
 
 func init() {
 	gtkSignalToMenuItem = map[uint]*MenuItem{}
@@ -553,8 +563,6 @@ func appName() string {
 }
 
 func appNew(name string) pointer {
-	C.install_signal_handlers()
-
 	// Name is already sanitized by sanitizeAppName() in application_linux.go
 	appId := fmt.Sprintf("org.wails.%s", name)
 	nameC := C.CString(appId)
@@ -1343,6 +1351,10 @@ func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
 	manager := C.webkit_user_content_manager_new()
 	C.webkit_user_content_manager_register_script_message_handler(manager, c.String("external"))
 	webView := C.webkit_web_view_new_with_user_content_manager(manager)
+
+	fixSignalHandlers.Do(func() {
+		C.install_signal_handlers()
+	})
 
 	C.save_webview_to_content_manager(unsafe.Pointer(manager), unsafe.Pointer(webView))
 
