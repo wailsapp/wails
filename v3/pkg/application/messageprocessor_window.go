@@ -359,7 +359,7 @@ func (m *MessageProcessor) processWindowMethod(
 		if err != nil {
 			return nil, errs.WrapInvalidWindowCallErrorf(err, "error decoding file drop payload")
 		}
-		m.Info(
+		m.Debug(
 			"[DragDropDebug] processWindowMethod: Decoded payload from 'args'",
 			"payload",
 			fmt.Sprintf("%+v", payload),

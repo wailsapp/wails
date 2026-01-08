@@ -3,7 +3,7 @@ package application
 import (
 	"fmt"
 
-	json "github.com/goccy/go-json"
+	"encoding/json"
 )
 
 type Args struct {

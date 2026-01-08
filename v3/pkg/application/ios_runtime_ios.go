@@ -12,7 +12,7 @@ import "C"
 import (
 	"unsafe"
 
-	json "github.com/goccy/go-json"
+	"encoding/json"
 )
 
 // iosHapticsImpact triggers an iOS haptic impact using the provided style.
