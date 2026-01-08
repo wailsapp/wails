@@ -60,7 +60,7 @@ func main() {
     app.SetMenu(menu)
 
     // Create window and run
-    app.NewWebviewWindow()
+    app.Window.New()
     app.Run()
 }
 ```
@@ -487,7 +487,7 @@ func main() {
     createMenu(app)
 
     // Create main window
-    app.NewWebviewWindow()
+    app.Window.New()
 
     app.Run()
 }

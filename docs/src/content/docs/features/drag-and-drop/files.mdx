@@ -115,7 +115,7 @@ window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.W
     details := event.Context().DropTargetDetails()
     
     // Send to frontend
-    app.EmitEvent("files-dropped", map[string]any{
+    app.Event.Emit("files-dropped", map[string]any{
         "files":   files,
         "target":  details.ElementID,
     })

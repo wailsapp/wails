@@ -316,12 +316,12 @@ menu.Update()
 
 ## Application Menu
 
-### SetApplicationMenu()
+### app.Menu.Set()
 
 Sets the application's main menu bar.
 
 ```go
-func (a *App) SetApplicationMenu(menu *Menu)
+func (mm *MenuManager) Set(menu *Menu)
 ```
 
 **Example:**
@@ -347,7 +347,7 @@ editMenu.Add("Cut").SetAccelerator("Ctrl+X").OnClick(cut)
 editMenu.Add("Copy").SetAccelerator("Ctrl+C").OnClick(copy)
 editMenu.Add("Paste").SetAccelerator("Ctrl+V").OnClick(paste)
 
-app.SetApplicationMenu(menu)
+app.Menu.Set(menu)
 ```
 
 **Platform notes:**
@@ -357,12 +357,12 @@ app.SetApplicationMenu(menu)
 
 ## Context Menus
 
-### RegisterContextMenu()
+### app.ContextMenu.Add()
 
 Registers a context menu (right-click menu) with a specific name.
 
 ```go
-func (a *App) RegisterContextMenu(name string, menu *Menu)
+func (cm *ContextMenuManager) Add(name string, menu *Menu)
 ```
 
 **Parameters:**
@@ -412,17 +412,17 @@ func updateContextMenu() {
 
 ## System Tray Menu
 
-### NewSystemTray()
+### app.SystemTray.New()
 
 Creates a new system tray icon.
 
 ```go
-func (a *App) NewSystemTray() *SystemTray
+func (sm *SystemTrayManager) New() *SystemTray
 ```
 
 **Example:**
 ```go
-tray := app.NewSystemTray()
+tray := app.SystemTray.New()
 ```
 
 ### SetIcon()
@@ -572,9 +572,9 @@ func main() {
     })
 
     menu := createMenu(app)
-    app.SetApplicationMenu(menu)
+    app.Menu.Set(menu)
 
-    window := app.NewWebviewWindow()
+    window := app.Window.New()
     window.Show()
 
     app.Run()
@@ -586,7 +586,7 @@ func main() {
 ```go
 func setupSystemTray(app *application.Application, window *application.Window) {
     // Create system tray
-    tray := app.NewSystemTray()
+    tray := app.SystemTray.New()
 
     // Set icon
     iconData, _ := os.ReadFile("icon.png")
@@ -667,7 +667,7 @@ func (e *Editor) createMenu() {
     })
 
     e.updateMenuState()
-    e.app.SetApplicationMenu(e.menu)
+    e.app.Menu.Set(e.menu)
 }
 
 func (e *Editor) updateMenuState() {

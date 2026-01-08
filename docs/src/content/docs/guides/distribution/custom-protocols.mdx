@@ -42,7 +42,7 @@ func main() {
     })
 
     // Register handler for protocol events
-    app.OnEvent(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+    app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
         url := event.Context().ClickedURL()
         handleCustomURL(url)
     })
@@ -62,7 +62,7 @@ func handleCustomURL(url string) {
 Listen for protocol events to handle incoming URLs:
 
 ```go
-app.OnEvent(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
     url := event.Context().ClickedURL()
 
     // Parse the URL
@@ -362,7 +362,7 @@ func main() {
 
 func (a *App) setup() {
     // Create window
-    a.window = a.app.NewWebviewWindow(application.WebviewWindowOptions{
+    a.window = a.app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:  "DeepLink Demo",
         Width:  800,
         Height: 600,
@@ -370,7 +370,7 @@ func (a *App) setup() {
     })
 
     // Handle custom protocol URLs
-    a.app.OnEvent(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+    a.app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
         customURL := event.Context().ClickedURL()
         a.handleDeepLink(customURL)
     })
