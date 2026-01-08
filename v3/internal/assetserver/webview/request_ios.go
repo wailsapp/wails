@@ -113,7 +113,7 @@ import (
 	"net/http"
 	"unsafe"
 
-	json "github.com/goccy/go-json"
+	"encoding/json"
 )
 
 // NewRequest creates as new WebViewRequest based on a pointer to an `id<WKURLSchemeTask>`

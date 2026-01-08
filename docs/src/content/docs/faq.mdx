@@ -123,8 +123,8 @@ Use SignTool with your certificate.
 Yes! Wails v3 has native multi-window support:
 
 ```go
-window1 := app.NewWebviewWindow()
-window2 := app.NewWebviewWindow()
+window1 := app.Window.New()
+window2 := app.Window.New()
 ```
 
 ### Does Wails support system tray?
@@ -132,7 +132,7 @@ window2 := app.NewWebviewWindow()
 Yes! Create system tray applications:
 
 ```go
-tray := app.NewSystemTray()
+tray := app.SystemTray.New()
 tray.SetIcon(iconBytes)
 tray.SetMenu(menu)
 ```
@@ -142,7 +142,7 @@ tray.SetMenu(menu)
 Yes! Wails provides native dialogs:
 
 ```go
-path, _ := app.OpenFileDialog().
+path, _ := app.Dialog.OpenFile().
     SetTitle("Select File").
     PromptForSingleSelection()
 ```
@@ -194,7 +194,7 @@ wails3 generate bindings
 Check if you called `Show()`:
 
 ```go
-window := app.NewWebviewWindow()
+window := app.Window.New()
 window.Show()  // Don't forget this!
 ```
 
@@ -204,7 +204,7 @@ Ensure event names match exactly:
 
 ```go
 // Go
-app.EmitEvent("my-event", data)
+app.Event.Emit("my-event", data)
 
 // JavaScript
 OnEvent("my-event", handler)  // Must match

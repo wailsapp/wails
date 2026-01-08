@@ -73,7 +73,7 @@ import (
 	"strings"
 	"unsafe"
 
-	json "github.com/goccy/go-json"
+	"encoding/json"
 )
 
 var _ ResponseWriter = &responseWriter{}
