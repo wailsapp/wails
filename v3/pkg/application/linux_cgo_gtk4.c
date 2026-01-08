@@ -716,21 +716,22 @@ void show_message_dialog(GtkWindow *parent, const char *heading, const char *bod
     gtk_widget_set_margin_top(content, 24);
     gtk_widget_set_margin_bottom(content, 24);
     
-    const int max_icon_size = 64;
+    const int symbolic_icon_size = 32;
     GtkWidget *icon_widget = NULL;
     if (icon_data != NULL && icon_data_len > 0) {
         GBytes *bytes = g_bytes_new(icon_data, icon_data_len);
         GdkTexture *texture = gdk_texture_new_from_bytes(bytes, NULL);
         g_bytes_unref(bytes);
         if (texture != NULL) {
+            int tex_size = gdk_texture_get_width(texture);
             GtkWidget *image = gtk_image_new_from_paintable(GDK_PAINTABLE(texture));
-            gtk_image_set_pixel_size(GTK_IMAGE(image), max_icon_size);
+            gtk_image_set_pixel_size(GTK_IMAGE(image), tex_size);
             icon_widget = image;
             g_object_unref(texture);
         }
     } else if (icon_name != NULL && strlen(icon_name) > 0) {
         icon_widget = gtk_image_new_from_icon_name(icon_name);
-        gtk_image_set_pixel_size(GTK_IMAGE(icon_widget), max_icon_size);
+        gtk_image_set_pixel_size(GTK_IMAGE(icon_widget), symbolic_icon_size);
     }
     
     if (icon_widget != NULL) {
