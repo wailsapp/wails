@@ -30,6 +30,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix outdated Manager API references in documentation (31 files updated to use new pattern like `app.Window.New()`, `app.Event.Emit()`, etc.)
 - Fix file drag-and-drop on Windows not working at non-100% display scaling
 - Fix HTML5 internal drag-and-drop being broken when file drop was enabled on Windows
 - Fix file drop coordinates being in wrong pixel space on Windows (physical vs CSS pixels)
