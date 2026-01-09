@@ -326,7 +326,7 @@ app := application.New(application.Options{
 })
 ```
 
-**Access:** `http://wails.localhost/files/...`
+**Access:** `wails://localhost:9245/files/...` or programmatically within your frontend via `window.location.origin + 'files/...'`. The programmatic approach is preferable in case the port number is non-default.
 
 **Use cases:**
 - File serving
