@@ -19,7 +19,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- New features, capabilities, or enhancements -->
 
 ## Changed
-<!-- Changes in existing functionality -->
+- Update instructions for accessing HTTP paths exposed by services on the `bindings/services` docs page by @ndianabasi
 
 ## Fixed
 <!-- Bug fixes -->
