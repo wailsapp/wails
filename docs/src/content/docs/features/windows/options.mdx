@@ -86,7 +86,7 @@ Name: "main-window"
 **Example:**
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Name: "settings-window",
 })
 
@@ -161,7 +161,7 @@ Y: 100,  // 100px from top edge
 **Example:**
 
 ```go
-settings := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Name: "coordinate-window",
     InitialPosition: application.WindowXY, // use coordinate system
     X:    100,
@@ -171,7 +171,7 @@ settings := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 **Best practice:** Use `Center()` to center the window:
 
 ```go
-window := app.NewWebviewWindow()
+window := app.Window.New()
 window.Center()
 ```
 
@@ -248,7 +248,7 @@ Hidden: true,
 
 ```go
 // Create hidden window
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Name:   "main-window",
     Hidden: true,
     BackgroundColour: application.RGBA{R: 30, G: 30, B: 30, A: 255}, // Match your theme
@@ -264,7 +264,7 @@ window.Show()
 **Example:**
 
 ```go
-settings := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Name:   "settings",
     Hidden: true,
 })
@@ -574,7 +574,7 @@ When enabled:
 **Example:**
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:          "File Uploader",
     EnableFileDrop: true,
 })
@@ -635,7 +635,7 @@ ContentProtectionEnabled: true,
 **Example:**
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title: "Secure Window",
     ContentProtectionEnabled: true,
 })
@@ -892,7 +892,7 @@ func main() {
         Name: "My Application",
     })
 
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         // Identity
         Name:  "main-window",
         Title: "My Application",

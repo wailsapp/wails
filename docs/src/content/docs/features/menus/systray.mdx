@@ -38,7 +38,7 @@ func main() {
     })
 
     // Create system tray
-    systray := app.NewSystemTray()
+    systray := app.SystemTray.New()
     systray.SetIcon(icon)
     systray.SetLabel("My App")
 
@@ -53,7 +53,7 @@ func main() {
     systray.SetMenu(menu)
 
     // Create hidden window
-    window := app.NewWebviewWindow()
+    window := app.Window.New()
     window.Hide()
 
     app.Run()
@@ -68,7 +68,7 @@ func main() {
 
 ```go
 // Create system tray
-systray := app.NewSystemTray()
+systray := app.SystemTray.New()
 
 // Set icon
 systray.SetIcon(iconBytes)
@@ -95,7 +95,7 @@ func main() {
         Name: "My App",
     })
 
-    systray := app.NewSystemTray()
+    systray := app.SystemTray.New()
     systray.SetIcon(icon)
     systray.SetDarkModeIcon(iconDark)  // macOS dark mode
     
@@ -162,7 +162,7 @@ Attach a window to the tray icon for automatic show/hide:
 
 ```go
 // Create window
-window := app.NewWebviewWindow()
+window := app.Window.New()
 
 // Attach to tray
 systray.AttachWindow(window)
@@ -181,7 +181,7 @@ systray.SetWindowDebounce(200 * time.Millisecond)  // Click debounce
 **Example: Popup window**
 
 ```go
-window := app.NewWebviewWindow(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:  "Quick Access",
     Width:  300,
     Height: 400,
@@ -198,7 +198,7 @@ systray.SetWindowOffset(5)
 Handle tray icon clicks:
 
 ```go
-systray := app.NewSystemTray()
+systray := app.SystemTray.New()
 
 // Left click
 systray.OnClick(func() {
@@ -445,7 +445,7 @@ func main() {
 
 func (t *TrayApp) setup() {
     // Create system tray
-    t.systray = t.app.NewSystemTray()
+    t.systray = t.app.SystemTray.New()
     t.systray.SetIcon(icon)
     t.systray.SetLabel("Inactive")
     
@@ -453,7 +453,7 @@ func (t *TrayApp) setup() {
     t.createMenu()
     
     // Create window (hidden by default)
-    t.window = t.app.NewWebviewWindow(application.WebviewWindowOptions{
+    t.window = t.app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:  "Tray Application",
         Width:  400,
         Height: 600,

@@ -21,6 +21,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Changed
 <!-- Changes in existing functionality -->
 - Update notifications authorization methods on macOS to callbacks
+- Update the README for the `Drag N Drop` example and highlights that `Internal Drag and Drop` is demonstrated with the example @ndianabasi
 
 ## Fixed
 <!-- Bug fixes -->
