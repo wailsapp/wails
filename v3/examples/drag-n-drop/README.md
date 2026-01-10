@@ -60,9 +60,11 @@ go run main.go
 
 Then drag files from your desktop or file manager into the drop zone.
 
-## See also
+## HTML5 Drag and Drop API
 
-- [html-dnd-api](../html-dnd-api) - For dragging elements *within* your application (HTML5 Drag and Drop API)
+This example also includes a demonstration for dragging elements *within* your application via the HTML5 Drag and Drop API.
+
+Scroll down to the `Internal Drag and Drop` section within the launched application to interact with the demo.
 
 ## Status
 

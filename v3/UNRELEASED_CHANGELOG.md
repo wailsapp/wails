@@ -20,6 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 - Update instructions for accessing HTTP paths exposed by services on the `bindings/services` docs page by @ndianabasi
+- Update the README for the `Drag N Drop` example and highlights that `Internal Drag and Drop` is demonstrated with the example @ndianabasi
 
 ## Fixed
 <!-- Bug fixes -->
