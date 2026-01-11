@@ -17,6 +17,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add Web API examples in `v3/examples/web-apis/` demonstrating 15 browser APIs (localStorage, IndexedDB, Fetch, WebSocket, Canvas, WebGL, Web Audio, Geolocation, Clipboard, Fullscreen, WebCrypto, Notifications, Web Workers, Intersection Observer, Resize Observer)
+- Add WebView API compatibility checker example (`v3/examples/webview-api-check/`) that tests 200+ browser APIs across platforms
 - Add `internal/libpath` package for finding native library paths on Linux with parallel search, caching, and support for Flatpak/Snap/Nix
 - **WIP:** Add WebKitGTK 6.0 / GTK4 support as new default for Linux (GTK3/WebKit2GTK 4.1 available via `-tags gtk3`)
   - Note: On tiling window managers (e.g., Hyprland, Sway), Minimize/Maximize operations may not work as expected since the WM controls window geometry

@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"os"
 	"runtime"
@@ -10,6 +11,8 @@ import (
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
+
+var autorun = flag.Bool("autorun", false, "Automatically run tests and save report")
 
 //go:embed frontend/*
 var assets embed.FS
@@ -30,6 +33,8 @@ type APIReport struct {
 	Platform PlatformInfo           `json:"platform"`
 	APIs     map[string]interface{} `json:"apis"`
 }
+
+var appInstance *application.App
 
 // APICheckService provides methods for the frontend
 type APICheckService struct{}
@@ -80,8 +85,17 @@ func (s *APICheckService) SaveReport(report APIReport) error {
 	return nil
 }
 
+// Quit exits the application
+func (s *APICheckService) Quit() {
+	if appInstance != nil {
+		appInstance.Quit()
+	}
+}
+
 func main() {
-	app := application.New(application.Options{
+	flag.Parse()
+
+	appInstance = application.New(application.Options{
 		Name:        "WebView API Check",
 		Description: "Check which Web APIs are available in the webview",
 		Assets: application.AssetOptions{
@@ -92,14 +106,19 @@ func main() {
 		},
 	})
 
-	app.Window.NewWithOptions(application.WebviewWindowOptions{
+	url := "/"
+	if *autorun {
+		url = "/?autorun=1"
+	}
+
+	appInstance.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "WebView API Compatibility Check",
 		Width:  1200,
 		Height: 800,
-		URL:    "/",
+		URL:    url,
 	})
 
-	err := app.Run()
+	err := appInstance.Run()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)

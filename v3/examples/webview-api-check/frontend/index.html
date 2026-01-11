@@ -481,7 +481,7 @@
             });
         }
 
-        async function exportReport() {
+        async function exportReport(silent = false) {
             if (!testResults) return;
 
             const report = {
@@ -494,7 +494,8 @@
 
             try {
                 await wails.Call.APICheckService.SaveReport(report);
-                alert('Report saved successfully!');
+                if (!silent) alert('Report saved successfully!');
+                console.log('Report saved successfully');
             } catch (e) {
                 console.error('Failed to save report:', e);
                 // Fallback: download as file
@@ -508,8 +509,31 @@
             }
         }
 
+        // Check for auto-run mode
+        async function checkAutoRun() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('autorun')) {
+                console.log('Auto-run mode enabled');
+                // Wait a bit for wails bindings to be fully ready
+                await new Promise(r => setTimeout(r, 500));
+                await runAllTests();
+                await exportReport(true); // silent mode
+                // Wait for file to be written
+                await new Promise(r => setTimeout(r, 500));
+                // Quit the app after saving
+                try {
+                    await wails.Call.APICheckService.Quit();
+                } catch (e) {
+                    console.log('App will close');
+                }
+            }
+        }
+
         // Initialize on load
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', async () => {
+            await init();
+            await checkAutoRun();
+        });
     </script>
 </body>
 </html>
