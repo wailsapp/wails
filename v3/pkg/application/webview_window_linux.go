@@ -107,7 +107,7 @@ func (w *linuxWebviewWindow) setMaximiseButtonEnabled(enabled bool) {
 
 func (w *linuxWebviewWindow) disableSizeConstraints() {
 	x, y, width, height, scaleFactor := w.getCurrentMonitorGeometry()
-	w.setMinMaxSize(x, y, width*scaleFactor, height*scaleFactor)
+	w.setMinMaxSize(x, y, int(float64(width)*scaleFactor), int(float64(height)*scaleFactor))
 }
 
 func (w *linuxWebviewWindow) unminimise() {

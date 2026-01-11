@@ -3,8 +3,9 @@
 package application
 
 type linuxMenu struct {
-	menu   *Menu
-	native pointer
+	menu      *Menu
+	native    pointer
+	processed bool
 }
 
 func newMenuImpl(menu *Menu) *linuxMenu {
@@ -32,6 +33,13 @@ func (m *linuxMenu) processMenu(menu *Menu) {
 			native: menuNew(),
 		}
 	}
+
+	impl := menu.impl.(*linuxMenu)
+	if impl.processed {
+		// Menu already processed, skip re-processing to avoid duplicates
+		return
+	}
+	impl.processed = true
 
 	var currentRadioGroup uint = 0
 	var checkedRadioId uint = 0

@@ -720,41 +720,51 @@ func getScreenByIndex(display *C.GdkDisplay, index int) *Screen {
 
 	var geometry C.GdkRectangle
 	C.gdk_monitor_get_geometry(monitor, &geometry)
+	// Use gdk_monitor_get_scale (GTK 4.14+) for fractional scaling support
+	scaleFactor := float64(C.gdk_monitor_get_scale(monitor))
 	name := C.gdk_monitor_get_model(monitor)
+
+	// GTK4's gdk_monitor_get_geometry returns logical (DIP) coordinates.
+	// PhysicalBounds needs physical pixel dimensions for proper DPI scaling.
+	x := int(geometry.x)
+	y := int(geometry.y)
+	width := int(geometry.width)
+	height := int(geometry.height)
+
 	return &Screen{
 		ID:          fmt.Sprintf("%d", index),
 		Name:        C.GoString(name),
-		IsPrimary:   false, // GTK4 doesn't have gdk_monitor_is_primary
-		ScaleFactor: float32(C.gdk_monitor_get_scale_factor(monitor)),
-		X:           int(geometry.x),
-		Y:           int(geometry.y),
+		IsPrimary:   index == 0,
+		ScaleFactor: float32(scaleFactor),
+		X:           x,
+		Y:           y,
 		Size: Size{
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			Height: height,
+			Width:  width,
 		},
 		Bounds: Rect{
-			X:      int(geometry.x),
-			Y:      int(geometry.y),
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			X:      x,
+			Y:      y,
+			Height: height,
+			Width:  width,
 		},
 		PhysicalBounds: Rect{
-			X:      int(geometry.x),
-			Y:      int(geometry.y),
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			X:      int(float64(x) * scaleFactor),
+			Y:      int(float64(y) * scaleFactor),
+			Height: int(float64(height) * scaleFactor),
+			Width:  int(float64(width) * scaleFactor),
 		},
 		WorkArea: Rect{
-			X:      int(geometry.x),
-			Y:      int(geometry.y),
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			X:      x,
+			Y:      y,
+			Height: height,
+			Width:  width,
 		},
 		PhysicalWorkArea: Rect{
-			X:      int(geometry.x),
-			Y:      int(geometry.y),
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			X:      int(float64(x) * scaleFactor),
+			Y:      int(float64(y) * scaleFactor),
+			Height: int(float64(height) * scaleFactor),
+			Width:  int(float64(width) * scaleFactor),
 		},
 		Rotation: 0.0,
 	}
@@ -894,36 +904,56 @@ func getMousePosition() (int, int, *Screen) {
 
 	var geometry C.GdkRectangle
 	C.gdk_monitor_get_geometry(primaryMonitor, &geometry)
-	scaleFactor := int(C.gdk_monitor_get_scale_factor(primaryMonitor))
+	// Use gdk_monitor_get_scale (GTK 4.14+) for fractional scaling support
+	scaleFactor := float64(C.gdk_monitor_get_scale(primaryMonitor))
 	name := C.gdk_monitor_get_model(primaryMonitor)
+
+	// GTK4's gdk_monitor_get_geometry returns logical (DIP) coordinates.
+	// PhysicalBounds needs physical pixel dimensions for proper DPI scaling.
+	x := int(geometry.x)
+	y := int(geometry.y)
+	width := int(geometry.width)
+	height := int(geometry.height)
 
 	screen := &Screen{
 		ID:          "0",
 		Name:        C.GoString(name),
 		ScaleFactor: float32(scaleFactor),
-		X:           int(geometry.x),
-		Y:           int(geometry.y),
+		X:           x,
+		Y:           y,
 		Size: Size{
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			Height: height,
+			Width:  width,
 		},
 		Bounds: Rect{
-			X:      int(geometry.x),
-			Y:      int(geometry.y),
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			X:      x,
+			Y:      y,
+			Height: height,
+			Width:  width,
 		},
 		WorkArea: Rect{
-			X:      int(geometry.x),
-			Y:      int(geometry.y),
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			X:      x,
+			Y:      y,
+			Height: height,
+			Width:  width,
+		},
+		PhysicalBounds: Rect{
+			X:      int(float64(x) * scaleFactor),
+			Y:      int(float64(y) * scaleFactor),
+			Height: int(float64(height) * scaleFactor),
+			Width:  int(float64(width) * scaleFactor),
+		},
+		PhysicalWorkArea: Rect{
+			X:      int(float64(x) * scaleFactor),
+			Y:      int(float64(y) * scaleFactor),
+			Height: int(float64(height) * scaleFactor),
+			Width:  int(float64(width) * scaleFactor),
 		},
 		IsPrimary: true,
 	}
 
-	centerX := int(geometry.x) + int(geometry.width)/2
-	centerY := int(geometry.y) + int(geometry.height)/2
+	centerX := x + width/2
+	centerY := y + height/2
 
 	return centerX, centerY, screen
 }
@@ -961,54 +991,64 @@ func (w *linuxWebviewWindow) getScreen() (*Screen, error) {
 	name := C.gdk_monitor_get_model(monitor)
 	var geometry C.GdkRectangle
 	C.gdk_monitor_get_geometry(monitor, &geometry)
-	scaleFactor := int(C.gdk_monitor_get_scale_factor(monitor))
+	// Use gdk_monitor_get_scale (GTK 4.14+) for fractional scaling support
+	scaleFactor := float64(C.gdk_monitor_get_scale(monitor))
+
+	// GTK4's gdk_monitor_get_geometry returns logical (DIP) coordinates.
+	// PhysicalBounds needs physical pixel dimensions for proper DPI scaling.
+	x := int(geometry.x)
+	y := int(geometry.y)
+	width := int(geometry.width)
+	height := int(geometry.height)
+
 	return &Screen{
 		ID:          fmt.Sprintf("%d", w.id),
 		Name:        C.GoString(name),
 		ScaleFactor: float32(scaleFactor),
-		X:           int(geometry.x),
-		Y:           int(geometry.y),
+		X:           x,
+		Y:           y,
 		Size: Size{
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			Height: height,
+			Width:  width,
 		},
 		Bounds: Rect{
-			X:      int(geometry.x),
-			Y:      int(geometry.y),
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			X:      x,
+			Y:      y,
+			Height: height,
+			Width:  width,
 		},
 		WorkArea: Rect{
-			X:      int(geometry.x),
-			Y:      int(geometry.y),
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			X:      x,
+			Y:      y,
+			Height: height,
+			Width:  width,
 		},
 		PhysicalBounds: Rect{
-			X:      int(geometry.x),
-			Y:      int(geometry.y),
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			X:      int(float64(x) * scaleFactor),
+			Y:      int(float64(y) * scaleFactor),
+			Height: int(float64(height) * scaleFactor),
+			Width:  int(float64(width) * scaleFactor),
 		},
 		PhysicalWorkArea: Rect{
-			X:      int(geometry.x),
-			Y:      int(geometry.y),
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			X:      int(float64(x) * scaleFactor),
+			Y:      int(float64(y) * scaleFactor),
+			Height: int(float64(height) * scaleFactor),
+			Width:  int(float64(width) * scaleFactor),
 		},
 		IsPrimary: false,
 		Rotation:  0.0,
 	}, nil
 }
 
-func (w *linuxWebviewWindow) getCurrentMonitorGeometry() (x int, y int, width int, height int, scaleFactor int) {
+func (w *linuxWebviewWindow) getCurrentMonitorGeometry() (x int, y int, width int, height int, scaleFactor float64) {
 	monitor := w.getCurrentMonitor()
 	if monitor == nil {
 		return -1, -1, -1, -1, 1
 	}
 	var result C.GdkRectangle
 	C.gdk_monitor_get_geometry(monitor, &result)
-	scaleFactor = int(C.gdk_monitor_get_scale_factor(monitor))
+	// Use gdk_monitor_get_scale (GTK 4.14+) for fractional scaling support
+	scaleFactor = float64(C.gdk_monitor_get_scale(monitor))
 	return int(result.x), int(result.y), int(result.width), int(result.height), scaleFactor
 }
 
@@ -1904,43 +1944,51 @@ func getPrimaryScreen() (*Screen, error) {
 
 	var geometry C.GdkRectangle
 	C.gdk_monitor_get_geometry(monitor, &geometry)
-	scaleFactor := int(C.gdk_monitor_get_scale_factor(monitor))
+	// Use gdk_monitor_get_scale (GTK 4.14+) for fractional scaling support
+	scaleFactor := float64(C.gdk_monitor_get_scale(monitor))
 	name := C.gdk_monitor_get_model(monitor)
+
+	// GTK4's gdk_monitor_get_geometry returns logical (DIP) coordinates.
+	// PhysicalBounds needs physical pixel dimensions for proper DPI scaling.
+	x := int(geometry.x)
+	y := int(geometry.y)
+	width := int(geometry.width)
+	height := int(geometry.height)
 
 	return &Screen{
 		ID:        "0",
 		Name:      C.GoString(name),
 		IsPrimary: true,
-		X:         int(geometry.x),
-		Y:         int(geometry.y),
+		X:         x,
+		Y:         y,
 		Size: Size{
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			Height: height,
+			Width:  width,
 		},
 		Bounds: Rect{
-			X:      int(geometry.x),
-			Y:      int(geometry.y),
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			X:      x,
+			Y:      y,
+			Height: height,
+			Width:  width,
 		},
 		ScaleFactor: float32(scaleFactor),
 		WorkArea: Rect{
-			X:      int(geometry.x),
-			Y:      int(geometry.y),
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			X:      x,
+			Y:      y,
+			Height: height,
+			Width:  width,
 		},
 		PhysicalBounds: Rect{
-			X:      int(geometry.x),
-			Y:      int(geometry.y),
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			X:      int(float64(x) * scaleFactor),
+			Y:      int(float64(y) * scaleFactor),
+			Height: int(float64(height) * scaleFactor),
+			Width:  int(float64(width) * scaleFactor),
 		},
 		PhysicalWorkArea: Rect{
-			X:      int(geometry.x),
-			Y:      int(geometry.y),
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			X:      int(float64(x) * scaleFactor),
+			Y:      int(float64(y) * scaleFactor),
+			Height: int(float64(height) * scaleFactor),
+			Width:  int(float64(width) * scaleFactor),
 		},
 		Rotation: 0.0,
 	}, nil

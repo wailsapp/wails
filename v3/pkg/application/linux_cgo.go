@@ -1156,8 +1156,10 @@ func (w *linuxWebviewWindow) fullscreen() {
 	if x == -1 && y == -1 && width == -1 && height == -1 {
 		return
 	}
-	w.setMinMaxSize(0, 0, width*scaleFactor, height*scaleFactor)
-	w.setSize(width*scaleFactor, height*scaleFactor)
+	physicalWidth := int(float64(width) * scaleFactor)
+	physicalHeight := int(float64(height) * scaleFactor)
+	w.setMinMaxSize(0, 0, physicalWidth, physicalHeight)
+	w.setSize(physicalWidth, physicalHeight)
 	C.gtk_window_fullscreen(w.gtkWindow())
 	w.setRelativePosition(0, 0)
 }
@@ -1236,7 +1238,7 @@ func (w *linuxWebviewWindow) getScreen() (*Screen, error) {
 	}, nil
 }
 
-func (w *linuxWebviewWindow) getCurrentMonitorGeometry() (x int, y int, width int, height int, scaleFactor int) {
+func (w *linuxWebviewWindow) getCurrentMonitorGeometry() (x int, y int, width int, height int, scaleFactor float64) {
 	monitor := w.getCurrentMonitor()
 	if monitor == nil {
 		// Best effort to find screen resolution of default monitor
@@ -1248,7 +1250,8 @@ func (w *linuxWebviewWindow) getCurrentMonitorGeometry() (x int, y int, width in
 	}
 	var result C.GdkRectangle
 	C.gdk_monitor_get_geometry(monitor, &result)
-	scaleFactor = int(C.gdk_monitor_get_scale_factor(monitor))
+	// GTK3 only supports integer scale factors
+	scaleFactor = float64(C.gdk_monitor_get_scale_factor(monitor))
 	return int(result.x), int(result.y), int(result.width), int(result.height), scaleFactor
 }
 

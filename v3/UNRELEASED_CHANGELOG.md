@@ -19,6 +19,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- New features, capabilities, or enhancements -->
 - Add `internal/libpath` package for finding native library paths on Linux with parallel search, caching, and support for Flatpak/Snap/Nix
 - **WIP:** Add WebKitGTK 6.0 / GTK4 support as new default for Linux (GTK3/WebKit2GTK 4.1 available via `-tags gtk3`)
+  - Note: On tiling window managers (e.g., Hyprland, Sway), Minimize/Maximize operations may not work as expected since the WM controls window geometry
 
 ## Changed
 <!-- Changes in existing functionality -->
@@ -37,6 +38,8 @@ After processing, the content will be moved to the main changelog and this file 
 - Fix file drop coordinates being in wrong pixel space on Windows (physical vs CSS pixels)
 - Fix file drag-and-drop on Linux not working reliably with hover effects
 - Fix HTML5 internal drag-and-drop being broken when file drop was enabled on Linux
+- Fix DPI scaling on Linux/GTK4 by implementing proper PhysicalBounds calculation and fractional scaling support via `gdk_monitor_get_scale` (GTK 4.14+)
+- Fix menu items duplicating when creating new windows on Linux/GTK4
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

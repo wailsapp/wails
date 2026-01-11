@@ -439,7 +439,7 @@ childWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 
   <TabItem label="Linux" icon="linux">
     **Linux-specific features:**
-    
+
     ```go
     // Set window icon
     window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
@@ -448,15 +448,17 @@ childWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
         },
     })
     ```
-    
+
     **Desktop environment notes:**
     - GNOME: Full support
     - KDE Plasma: Full support
     - XFCE: Partial support
     - Others: Varies
-    
-    **Window managers:**
-    - Tiling WMs may ignore size/position
+
+    **Tiling window managers (Hyprland, Sway, i3, etc.):**
+    - `Minimise()` and `Maximise()` may not work as expected - the WM controls window geometry
+    - `SetSize()` and `SetPosition()` requests are advisory and may be ignored
+    - `Fullscreen()` typically works as expected
     - Some WMs don't support always-on-top
   </TabItem>
 </Tabs>
