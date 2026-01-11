@@ -32,7 +32,7 @@ func (f *Frontend) BrowserOpenURL(rawURL string) {
 		return
 	}
 	for _, fallback := range fallbackBrowserPaths {
-		if err := openBrowser(fallback, url); err == nil {
+		if err := openBrowser(fallback, parsed.String()); err == nil {
 			return
 		}
 	}
