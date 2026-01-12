@@ -9,12 +9,30 @@ import (
 //go:embed frontend/*
 var assets embed.FS
 
+var app *application.App
+
+// WindowService allows the frontend to open new windows
+type WindowService struct{}
+
+// OpenNewWindow creates a new application window
+func (s *WindowService) OpenNewWindow() {
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
+		Title:  "Broadcast Channel Demo",
+		Width:  800,
+		Height: 550,
+		URL:    "/",
+	})
+}
+
 func main() {
-	app := application.New(application.Options{
+	app = application.New(application.Options{
 		Name:        "Broadcast Channel Demo",
 		Description: "Cross-window communication via BroadcastChannel API",
 		Assets: application.AssetOptions{
 			Handler: application.BundledAssetFileServer(assets),
+		},
+		Services: []application.Service{
+			application.NewService(&WindowService{}),
 		},
 	})
 

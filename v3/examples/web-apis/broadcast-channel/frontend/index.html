@@ -99,10 +99,8 @@
                 </div>
 
                 <div class="btn-row">
+                    <button onclick="openNewWindow()">Open New Window</button>
                     <button class="secondary" onclick="sendPing()">Ping All Windows</button>
-                </div>
-                <div style="font-size:0.7rem;color:#666;margin-bottom:8px;">
-                    Run multiple instances of this app to test cross-window messaging
                 </div>
 
                 <h2>Send Message</h2>
@@ -135,6 +133,7 @@
         </div>
     </div>
 
+    <script src="/wails/runtime.js" type="module"></script>
     <script>
         let channel = null;
         const windowId = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -142,6 +141,10 @@
         let msgs = [];
 
         document.getElementById('windowId').textContent = windowId;
+
+        function openNewWindow() {
+            wails.Call.ByName('main.WindowService.OpenNewWindow');
+        }
 
         // Check support & show features
         const supported = typeof BroadcastChannel !== 'undefined';
