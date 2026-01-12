@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Components API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: #60a5fa; }
+        button.danger { background: #f87171; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            min-height: 100px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .feature {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .feature .name { font-weight: 600; margin-bottom: 5px; }
+        .feature .supported { color: #4ade80; }
+        .feature .unsupported { color: #f87171; }
+        .component-demo {
+            background: rgba(0,0,0,0.2);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .demo-label {
+            color: #aaa;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+        input[type="text"], input[type="color"], select {
+            background: #1a1a2e;
+            border: 1px solid #333;
+            color: #eee;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        input[type="color"] { padding: 2px; height: 36px; width: 60px; }
+        .code-block {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            color: #60a5fa;
+        }
+        .code-block .keyword { color: #e94560; }
+        .code-block .string { color: #4ade80; }
+        .code-block .comment { color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Web Components API Demo</h1>
+        <p class="description">
+            Web Components is a suite of APIs allowing you to create reusable custom elements with encapsulated
+            functionality using Custom Elements, Shadow DOM, and HTML Templates.
+        </p>
+
+        <div class="status success">
+            Web Components API: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>API Support</h2>
+            <div class="feature-grid" id="features"></div>
+        </div>
+
+        <div class="card">
+            <h2>Custom Element Demo: &lt;wails-card&gt;</h2>
+            <p class="demo-label">A custom card element with Shadow DOM encapsulation:</p>
+            <div class="component-demo">
+                <wails-card title="Welcome to Wails" theme="green">
+                    This is content inside a custom Web Component. The styling is encapsulated via Shadow DOM.
+                </wails-card>
+            </div>
+            <div class="component-demo">
+                <wails-card title="Another Card" theme="blue">
+                    Different theme variant using the same component.
+                </wails-card>
+            </div>
+            <div style="margin-top: 15px;">
+                <input type="text" id="cardTitle" placeholder="Card title" value="Dynamic Card">
+                <select id="cardTheme">
+                    <option value="green">Green</option>
+                    <option value="blue">Blue</option>
+                    <option value="red">Red</option>
+                </select>
+                <button onclick="addCard()">Add Card</button>
+            </div>
+            <div id="dynamicCards"></div>
+        </div>
+
+        <div class="card">
+            <h2>Custom Element Demo: &lt;wails-counter&gt;</h2>
+            <p class="demo-label">A stateful counter component with reactive attributes:</p>
+            <div class="component-demo">
+                <wails-counter value="0" step="1"></wails-counter>
+            </div>
+            <div class="component-demo">
+                <wails-counter value="100" step="10"></wails-counter>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>HTML Template Demo</h2>
+            <p class="demo-label">Using &lt;template&gt; for efficient cloning:</p>
+            <template id="item-template">
+                <div class="template-item" style="background: rgba(74, 222, 128, 0.1); padding: 10px; margin: 5px 0; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                    <span class="item-text">Template item</span>
+                    <button class="remove-btn" style="background: #f87171; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Remove</button>
+                </div>
+            </template>
+            <input type="text" id="templateText" placeholder="Enter item text" value="New Item">
+            <button onclick="addFromTemplate()">Add from Template</button>
+            <button class="secondary" onclick="clearTemplateItems()">Clear All</button>
+            <div id="templateItems" style="margin-top: 15px;"></div>
+        </div>
+
+        <div class="card">
+            <h2>Slot Demo: &lt;wails-panel&gt;</h2>
+            <p class="demo-label">Named slots for flexible content composition:</p>
+            <div class="component-demo">
+                <wails-panel>
+                    <span slot="header">Panel Header</span>
+                    <p>This is the default slot content - the main body of the panel.</p>
+                    <span slot="footer">Panel Footer - Created with Web Components</span>
+                </wails-panel>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <button onclick="clearLog()">Clear Log</button>
+            <div class="output" id="eventLog">Component events will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        // Event logging
+        let logEntries = [];
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            logEntries.unshift(`[${time}] ${message}`);
+            if (logEntries.length > 50) logEntries.pop();
+            document.getElementById('eventLog').textContent = logEntries.join('\n');
+        }
+        function clearLog() {
+            logEntries = [];
+            document.getElementById('eventLog').textContent = 'Log cleared.';
+        }
+
+        // Check API support
+        function checkSupport() {
+            const hasCustomElements = 'customElements' in window;
+            const hasShadowDOM = !!HTMLElement.prototype.attachShadow;
+            const hasTemplate = 'content' in document.createElement('template');
+            const hasSlot = 'HTMLSlotElement' in window;
+
+            const allSupported = hasCustomElements && hasShadowDOM && hasTemplate;
+            document.getElementById('supported').textContent = allSupported ? 'Fully Supported' : 'Partial Support';
+            document.getElementById('supported').parentElement.className = allSupported ? 'status success' : 'status error';
+
+            const features = document.getElementById('features');
+            const checks = [
+                { name: 'Custom Elements', supported: hasCustomElements },
+                { name: 'Shadow DOM', supported: hasShadowDOM },
+                { name: 'HTML Templates', supported: hasTemplate },
+                { name: 'Slots', supported: hasSlot },
+                { name: 'customElements.define()', supported: hasCustomElements && typeof customElements.define === 'function' },
+                { name: 'Autonomous Elements', supported: hasCustomElements },
+                { name: 'Built-in Extends', supported: hasCustomElements && typeof customElements.upgrade === 'function' },
+            ];
+
+            features.innerHTML = checks.map(c => `
+                <div class="feature">
+                    <div class="name">${c.name}</div>
+                    <div class="${c.supported ? 'supported' : 'unsupported'}">${c.supported ? 'Supported' : 'Not supported'}</div>
+                </div>
+            `).join('');
+
+            log('API support check completed');
+        }
+
+        // Define wails-card custom element
+        class WailsCard extends HTMLElement {
+            static get observedAttributes() {
+                return ['title', 'theme'];
+            }
+
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });
+                log('WailsCard: constructor called');
+            }
+
+            connectedCallback() {
+                this.render();
+                log(`WailsCard: connected - title="${this.getAttribute('title')}"`);
+            }
+
+            disconnectedCallback() {
+                log('WailsCard: disconnected');
+            }
+
+            attributeChangedCallback(name, oldValue, newValue) {
+                if (oldValue !== newValue) {
+                    log(`WailsCard: attribute "${name}" changed from "${oldValue}" to "${newValue}"`);
+                    this.render();
+                }
+            }
+
+            render() {
+                const theme = this.getAttribute('theme') || 'green';
+                const title = this.getAttribute('title') || 'Card';
+                const colors = {
+                    green: '#4ade80',
+                    blue: '#60a5fa',
+                    red: '#e94560'
+                };
+                const color = colors[theme] || colors.green;
+
+                this.shadowRoot.innerHTML = `
+                    <style>
+                        :host {
+                            display: block;
+                            margin: 10px 0;
+                        }
+                        .card {
+                            background: rgba(0, 0, 0, 0.3);
+                            border-left: 4px solid ${color};
+                            border-radius: 8px;
+                            padding: 15px;
+                        }
+                        .title {
+                            color: ${color};
+                            font-weight: bold;
+                            font-size: 1.1rem;
+                            margin-bottom: 10px;
+                        }
+                        .content {
+                            color: #ccc;
+                            line-height: 1.5;
+                        }
+                    </style>
+                    <div class="card">
+                        <div class="title">${title}</div>
+                        <div class="content">
+                            <slot></slot>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Define wails-counter custom element
+        class WailsCounter extends HTMLElement {
+            static get observedAttributes() {
+                return ['value', 'step'];
+            }
+
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });
+                this._value = 0;
+                this._step = 1;
+                log('WailsCounter: constructor called');
+            }
+
+            connectedCallback() {
+                this._value = parseInt(this.getAttribute('value')) || 0;
+                this._step = parseInt(this.getAttribute('step')) || 1;
+                this.render();
+                log(`WailsCounter: connected - value=${this._value}, step=${this._step}`);
+            }
+
+            attributeChangedCallback(name, oldValue, newValue) {
+                if (name === 'value') this._value = parseInt(newValue) || 0;
+                if (name === 'step') this._step = parseInt(newValue) || 1;
+                this.render();
+            }
+
+            increment() {
+                this._value += this._step;
+                this.setAttribute('value', this._value);
+                this.dispatchEvent(new CustomEvent('change', { detail: { value: this._value } }));
+                log(`WailsCounter: incremented to ${this._value}`);
+            }
+
+            decrement() {
+                this._value -= this._step;
+                this.setAttribute('value', this._value);
+                this.dispatchEvent(new CustomEvent('change', { detail: { value: this._value } }));
+                log(`WailsCounter: decremented to ${this._value}`);
+            }
+
+            reset() {
+                this._value = 0;
+                this.setAttribute('value', this._value);
+                log(`WailsCounter: reset to 0`);
+            }
+
+            render() {
+                this.shadowRoot.innerHTML = `
+                    <style>
+                        :host { display: inline-block; }
+                        .counter {
+                            display: flex;
+                            align-items: center;
+                            gap: 15px;
+                            background: rgba(0, 0, 0, 0.3);
+                            padding: 15px 20px;
+                            border-radius: 8px;
+                        }
+                        button {
+                            width: 40px;
+                            height: 40px;
+                            border: none;
+                            border-radius: 50%;
+                            font-size: 1.5rem;
+                            cursor: pointer;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        }
+                        .decrement { background: #f87171; color: white; }
+                        .increment { background: #4ade80; color: #1a1a2e; }
+                        .reset { background: #60a5fa; color: white; font-size: 0.8rem; width: auto; padding: 0 15px; border-radius: 6px; }
+                        button:hover { opacity: 0.9; }
+                        .value {
+                            font-size: 2rem;
+                            font-weight: bold;
+                            color: #4ade80;
+                            min-width: 80px;
+                            text-align: center;
+                        }
+                        .step {
+                            color: #aaa;
+                            font-size: 0.8rem;
+                        }
+                    </style>
+                    <div class="counter">
+                        <button class="decrement" id="dec">-</button>
+                        <div class="value">${this._value}</div>
+                        <button class="increment" id="inc">+</button>
+                        <button class="reset" id="reset">Reset</button>
+                        <span class="step">Step: ${this._step}</span>
+                    </div>
+                `;
+
+                this.shadowRoot.getElementById('inc').addEventListener('click', () => this.increment());
+                this.shadowRoot.getElementById('dec').addEventListener('click', () => this.decrement());
+                this.shadowRoot.getElementById('reset').addEventListener('click', () => this.reset());
+            }
+        }
+
+        // Define wails-panel with slots
+        class WailsPanel extends HTMLElement {
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });
+                log('WailsPanel: constructor called');
+            }
+
+            connectedCallback() {
+                this.shadowRoot.innerHTML = `
+                    <style>
+                        :host { display: block; }
+                        .panel {
+                            background: rgba(0, 0, 0, 0.3);
+                            border-radius: 8px;
+                            overflow: hidden;
+                        }
+                        .header {
+                            background: rgba(74, 222, 128, 0.2);
+                            padding: 12px 15px;
+                            font-weight: bold;
+                            color: #4ade80;
+                            border-bottom: 1px solid rgba(74, 222, 128, 0.3);
+                        }
+                        .body {
+                            padding: 15px;
+                            color: #ccc;
+                        }
+                        .footer {
+                            background: rgba(0, 0, 0, 0.2);
+                            padding: 10px 15px;
+                            font-size: 0.85rem;
+                            color: #888;
+                            border-top: 1px solid #333;
+                        }
+                        ::slotted(*) {
+                            margin: 0;
+                        }
+                    </style>
+                    <div class="panel">
+                        <div class="header">
+                            <slot name="header">Default Header</slot>
+                        </div>
+                        <div class="body">
+                            <slot>Default body content</slot>
+                        </div>
+                        <div class="footer">
+                            <slot name="footer">Default Footer</slot>
+                        </div>
+                    </div>
+                `;
+                log('WailsPanel: connected with slots');
+
+                // Listen for slot changes
+                this.shadowRoot.querySelectorAll('slot').forEach(slot => {
+                    slot.addEventListener('slotchange', (e) => {
+                        const nodes = slot.assignedNodes();
+                        log(`WailsPanel: slot "${slot.name || 'default'}" changed, ${nodes.length} node(s)`);
+                    });
+                });
+            }
+        }
+
+        // Register custom elements
+        customElements.define('wails-card', WailsCard);
+        customElements.define('wails-counter', WailsCounter);
+        customElements.define('wails-panel', WailsPanel);
+
+        // Template functionality
+        let itemCounter = 0;
+        function addFromTemplate() {
+            const template = document.getElementById('item-template');
+            const text = document.getElementById('templateText').value || `Item ${++itemCounter}`;
+            const clone = template.content.cloneNode(true);
+            clone.querySelector('.item-text').textContent = text;
+            clone.querySelector('.remove-btn').addEventListener('click', function() {
+                this.parentElement.remove();
+                log(`Template item removed: "${text}"`);
+            });
+            document.getElementById('templateItems').appendChild(clone);
+            log(`Template item added: "${text}"`);
+        }
+
+        function clearTemplateItems() {
+            document.getElementById('templateItems').innerHTML = '';
+            log('All template items cleared');
+        }
+
+        // Dynamic card creation
+        function addCard() {
+            const title = document.getElementById('cardTitle').value || 'Untitled';
+            const theme = document.getElementById('cardTheme').value;
+            const card = document.createElement('wails-card');
+            card.setAttribute('title', title);
+            card.setAttribute('theme', theme);
+            card.innerHTML = `Dynamically created at ${new Date().toLocaleTimeString()}`;
+            document.getElementById('dynamicCards').appendChild(card);
+        }
+
+        // Initialize
+        checkSupport();
+        log('Web Components demo initialized');
+    </script>
+</body>
+</html>

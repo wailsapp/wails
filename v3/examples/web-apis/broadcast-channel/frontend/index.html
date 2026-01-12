@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Broadcast Channel API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.danger { background: #f87171; }
+        button.secondary { background: #60a5fa; }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .feature {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .feature .name { font-weight: 600; margin-bottom: 5px; }
+        .feature .supported { color: #4ade80; }
+        .feature .unsupported { color: #f87171; }
+
+        /* Broadcast Channel specific styles */
+        .channel-info {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .info-card {
+            background: rgba(0,0,0,0.3);
+            padding: 15px 20px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 150px;
+        }
+        .info-label {
+            color: #aaa;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #4ade80;
+        }
+        .info-value.disconnected { color: #f87171; }
+        .info-value.connected { color: #4ade80; }
+
+        .message-input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .message-input-container input {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .quick-messages {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .quick-message {
+            background: rgba(96, 165, 250, 0.2);
+            color: #60a5fa;
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .quick-message:hover {
+            background: rgba(96, 165, 250, 0.3);
+        }
+
+        .message-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .message-item {
+            padding: 12px 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid #4ade80;
+        }
+        .message-item.sent {
+            border-left-color: #60a5fa;
+            background: rgba(96, 165, 250, 0.1);
+        }
+        .message-item.received {
+            border-left-color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+        }
+        .message-item.system {
+            border-left-color: #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+        }
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .message-type {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .message-type.sent { color: #60a5fa; }
+        .message-type.received { color: #4ade80; }
+        .message-type.system { color: #fbbf24; }
+        .message-time {
+            color: #666;
+            font-size: 0.8rem;
+        }
+        .message-content {
+            color: #ddd;
+            word-break: break-word;
+        }
+        .message-sender {
+            color: #aaa;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .tabs-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .tab-window {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 15px;
+            flex: 1;
+            min-width: 200px;
+        }
+        .tab-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .tab-title {
+            font-weight: 600;
+            color: #4ade80;
+        }
+        .tab-status {
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+        .tab-status.closed {
+            background: rgba(248, 113, 113, 0.2);
+            color: #f87171;
+        }
+
+        .iframe-demo {
+            width: 100%;
+            height: 200px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            background: #0a0a1a;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #4ade80;
+        }
+        .stat-label {
+            color: #aaa;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .use-case {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .use-case-title {
+            color: #4ade80;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .use-case-desc {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .channel-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .channel-selector input {
+            flex: 1;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Broadcast Channel API Demo</h1>
+        <p class="description">
+            The Broadcast Channel API allows communication between browsing contexts
+            (tabs, windows, iframes) of the same origin. Perfect for syncing state across tabs.
+        </p>
+
+        <div id="status" class="status success">
+            Broadcast Channel API: <span id="available">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Channel Status</h2>
+            <div class="channel-info">
+                <div class="info-card">
+                    <div class="info-label">Channel Name</div>
+                    <div class="info-value" id="channelName">demo-channel</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Connection</div>
+                    <div class="info-value connected" id="connectionStatus">Connected</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Tab ID</div>
+                    <div class="info-value" id="tabId">--</div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="sentCount">0</div>
+                    <div class="stat-label">Messages Sent</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="receivedCount">0</div>
+                    <div class="stat-label">Messages Received</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="errorCount">0</div>
+                    <div class="stat-label">Errors</div>
+                </div>
+            </div>
+
+            <div class="channel-selector">
+                <input type="text" id="channelInput" placeholder="Channel name" value="demo-channel">
+                <button onclick="switchChannel()">Switch Channel</button>
+                <button class="danger" onclick="closeChannel()">Close Channel</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Send Message</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">
+                Open this page in multiple tabs to see messages broadcast between them.
+            </p>
+            <div class="message-input-container">
+                <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendMessage()">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+            <div class="quick-messages">
+                <span class="quick-message" onclick="sendQuickMessage('Hello!')">Hello!</span>
+                <span class="quick-message" onclick="sendQuickMessage('Sync request')">Sync request</span>
+                <span class="quick-message" onclick="sendQuickMessage('User logged out')">User logged out</span>
+                <span class="quick-message" onclick="sendQuickMessage('Theme changed')">Theme changed</span>
+                <span class="quick-message" onclick="sendQuickMessage('Data updated')">Data updated</span>
+            </div>
+
+            <h3 style="color: #60a5fa; font-size: 1rem; margin: 20px 0 10px;">Send Structured Data</h3>
+            <select id="messageType" style="margin-bottom: 10px;">
+                <option value="text">Text Message</option>
+                <option value="sync">Sync State</option>
+                <option value="notification">Notification</option>
+                <option value="command">Command</option>
+            </select>
+            <textarea id="dataInput" rows="3" placeholder='{"key": "value"}'></textarea>
+            <button onclick="sendStructuredMessage()">Send Structured</button>
+        </div>
+
+        <div class="card">
+            <h2>Messages</h2>
+            <button onclick="clearMessages()">Clear Messages</button>
+            <div class="message-list" id="messageList" style="margin-top: 10px;">
+                <div class="message-item system">
+                    <div class="message-header">
+                        <span class="message-type system">System</span>
+                        <span class="message-time">--</span>
+                    </div>
+                    <div class="message-content">Waiting for messages... Open this page in another tab to test.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Test: Open New Tab</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">
+                Click the button below to open a new tab with the same channel. Messages will be
+                broadcast between all tabs on the same channel.
+            </p>
+            <button onclick="openNewTab()">Open New Tab</button>
+            <button class="secondary" onclick="broadcastPing()">Broadcast Ping to All Tabs</button>
+        </div>
+
+        <div class="card">
+            <h2>Common Use Cases</h2>
+            <div class="use-case">
+                <div class="use-case-title">User Authentication Sync</div>
+                <div class="use-case-desc">When a user logs out in one tab, broadcast the event to log them out in all other tabs instantly.</div>
+            </div>
+            <div class="use-case">
+                <div class="use-case-title">Theme/Settings Sync</div>
+                <div class="use-case-desc">Change dark mode in one tab and have it apply to all open tabs of your app.</div>
+            </div>
+            <div class="use-case">
+                <div class="use-case-title">Shopping Cart Updates</div>
+                <div class="use-case-desc">Add an item to cart in one tab and see it reflected in all other open tabs.</div>
+            </div>
+            <div class="use-case">
+                <div class="use-case-title">Notifications Deduplication</div>
+                <div class="use-case-desc">Coordinate between tabs to show notifications only once, not in every tab.</div>
+            </div>
+            <div class="use-case">
+                <div class="use-case-title">Collaborative Editing</div>
+                <div class="use-case-desc">Sync document changes between multiple tabs editing the same content.</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>API Support</h2>
+            <div class="feature-grid" id="features"></div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <button onclick="clearLog()">Clear Log</button>
+            <div class="output" id="eventLog" style="margin-top: 10px;">Broadcast Channel events will be logged here...
+
+Open this page in another tab and send messages to see them appear here.</div>
+        </div>
+    </div>
+
+    <script>
+        let channel = null;
+        let tabId = Math.random().toString(36).substring(2, 8).toUpperCase();
+        let logEntries = [];
+        let messages = [];
+        let stats = {
+            sent: 0,
+            received: 0,
+            errors: 0
+        };
+
+        function checkSupport() {
+            const hasBC = typeof BroadcastChannel !== 'undefined';
+            document.getElementById('available').textContent = hasBC ? 'Available' : 'Not available';
+            document.getElementById('status').className = hasBC ? 'status success' : 'status error';
+            return hasBC;
+        }
+
+        function checkFeatures() {
+            const features = document.getElementById('features');
+            const checks = [
+                { name: 'BroadcastChannel', supported: typeof BroadcastChannel !== 'undefined' },
+                { name: 'postMessage', supported: typeof BroadcastChannel !== 'undefined' && 'postMessage' in BroadcastChannel.prototype },
+                { name: 'close', supported: typeof BroadcastChannel !== 'undefined' && 'close' in BroadcastChannel.prototype },
+                { name: 'onmessage', supported: typeof BroadcastChannel !== 'undefined' },
+                { name: 'onmessageerror', supported: typeof BroadcastChannel !== 'undefined' },
+                { name: 'Structured Clone', supported: typeof structuredClone !== 'undefined' || typeof MessageChannel !== 'undefined' },
+            ];
+
+            features.innerHTML = checks.map(c => `
+                <div class="feature">
+                    <div class="name">${c.name}</div>
+                    <div class="${c.supported ? 'supported' : 'unsupported'}">${c.supported ? 'Supported' : 'Not supported'}</div>
+                </div>
+            `).join('');
+        }
+
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            logEntries.unshift(`[${time}] ${message}`);
+            if (logEntries.length > 50) logEntries.pop();
+            document.getElementById('eventLog').textContent = logEntries.join('\n');
+        }
+
+        function clearLog() {
+            logEntries = [];
+            document.getElementById('eventLog').textContent = 'Log cleared.';
+        }
+
+        function updateStats() {
+            document.getElementById('sentCount').textContent = stats.sent;
+            document.getElementById('receivedCount').textContent = stats.received;
+            document.getElementById('errorCount').textContent = stats.errors;
+        }
+
+        function initChannel(channelName) {
+            if (channel) {
+                channel.close();
+                log(`Closed previous channel`);
+            }
+
+            try {
+                channel = new BroadcastChannel(channelName);
+
+                channel.onmessage = (event) => {
+                    stats.received++;
+                    updateStats();
+                    addMessage('received', event.data);
+                    log(`Received: ${JSON.stringify(event.data).substring(0, 100)}`);
+                };
+
+                channel.onmessageerror = (event) => {
+                    stats.errors++;
+                    updateStats();
+                    log(`Message error: Could not deserialize message`);
+                };
+
+                document.getElementById('channelName').textContent = channelName;
+                document.getElementById('connectionStatus').textContent = 'Connected';
+                document.getElementById('connectionStatus').className = 'info-value connected';
+                document.getElementById('tabId').textContent = tabId;
+
+                log(`Connected to channel: ${channelName}`);
+
+                // Announce presence
+                channel.postMessage({
+                    type: 'presence',
+                    action: 'join',
+                    tabId: tabId,
+                    timestamp: Date.now()
+                });
+
+            } catch (e) {
+                log(`Error creating channel: ${e.message}`);
+                stats.errors++;
+                updateStats();
+            }
+        }
+
+        function switchChannel() {
+            const channelName = document.getElementById('channelInput').value.trim();
+            if (!channelName) {
+                alert('Please enter a channel name');
+                return;
+            }
+            initChannel(channelName);
+        }
+
+        function closeChannel() {
+            if (channel) {
+                // Announce departure
+                channel.postMessage({
+                    type: 'presence',
+                    action: 'leave',
+                    tabId: tabId,
+                    timestamp: Date.now()
+                });
+
+                channel.close();
+                channel = null;
+
+                document.getElementById('connectionStatus').textContent = 'Disconnected';
+                document.getElementById('connectionStatus').className = 'info-value disconnected';
+
+                log('Channel closed');
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            if (!channel) {
+                alert('Channel is closed. Please reconnect.');
+                return;
+            }
+
+            const payload = {
+                type: 'text',
+                content: message,
+                sender: tabId,
+                timestamp: Date.now()
+            };
+
+            channel.postMessage(payload);
+            stats.sent++;
+            updateStats();
+            addMessage('sent', payload);
+            log(`Sent: ${message}`);
+            input.value = '';
+        }
+
+        function sendQuickMessage(message) {
+            if (!channel) {
+                alert('Channel is closed. Please reconnect.');
+                return;
+            }
+
+            const payload = {
+                type: 'text',
+                content: message,
+                sender: tabId,
+                timestamp: Date.now()
+            };
+
+            channel.postMessage(payload);
+            stats.sent++;
+            updateStats();
+            addMessage('sent', payload);
+            log(`Sent quick message: ${message}`);
+        }
+
+        function sendStructuredMessage() {
+            if (!channel) {
+                alert('Channel is closed. Please reconnect.');
+                return;
+            }
+
+            const messageType = document.getElementById('messageType').value;
+            const dataInput = document.getElementById('dataInput').value.trim();
+
+            let data = {};
+            if (dataInput) {
+                try {
+                    data = JSON.parse(dataInput);
+                } catch (e) {
+                    data = { raw: dataInput };
+                }
+            }
+
+            const payload = {
+                type: messageType,
+                data: data,
+                sender: tabId,
+                timestamp: Date.now()
+            };
+
+            channel.postMessage(payload);
+            stats.sent++;
+            updateStats();
+            addMessage('sent', payload);
+            log(`Sent structured (${messageType}): ${JSON.stringify(data).substring(0, 50)}`);
+        }
+
+        function addMessage(direction, data) {
+            messages.unshift({ direction, data, time: new Date() });
+            if (messages.length > 50) messages.pop();
+            renderMessages();
+        }
+
+        function renderMessages() {
+            const list = document.getElementById('messageList');
+            if (messages.length === 0) {
+                list.innerHTML = `
+                    <div class="message-item system">
+                        <div class="message-header">
+                            <span class="message-type system">System</span>
+                        </div>
+                        <div class="message-content">No messages yet.</div>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = messages.map(msg => {
+                const isPresence = msg.data.type === 'presence';
+                const typeClass = isPresence ? 'system' : msg.direction;
+
+                let content = '';
+                if (msg.data.type === 'text') {
+                    content = msg.data.content;
+                } else if (msg.data.type === 'presence') {
+                    content = `Tab ${msg.data.tabId} ${msg.data.action === 'join' ? 'joined' : 'left'} the channel`;
+                } else {
+                    content = `[${msg.data.type}] ${JSON.stringify(msg.data.data || msg.data)}`;
+                }
+
+                return `
+                    <div class="message-item ${typeClass}">
+                        <div class="message-header">
+                            <span class="message-type ${typeClass}">${isPresence ? 'System' : (msg.direction === 'sent' ? 'Sent' : 'Received')}</span>
+                            <span class="message-time">${msg.time.toLocaleTimeString()}</span>
+                        </div>
+                        <div class="message-content">${escapeHtml(content)}</div>
+                        ${msg.data.sender && !isPresence ? `<div class="message-sender">From: ${msg.data.sender}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function clearMessages() {
+            messages = [];
+            renderMessages();
+            log('Messages cleared');
+        }
+
+        function openNewTab() {
+            window.open(window.location.href, '_blank');
+            log('Opened new tab');
+        }
+
+        function broadcastPing() {
+            if (!channel) {
+                alert('Channel is closed. Please reconnect.');
+                return;
+            }
+
+            const payload = {
+                type: 'ping',
+                sender: tabId,
+                timestamp: Date.now()
+            };
+
+            channel.postMessage(payload);
+            stats.sent++;
+            updateStats();
+            addMessage('sent', { type: 'text', content: 'PING sent to all tabs', sender: tabId });
+            log('Broadcast ping to all tabs');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Handle page unload
+        window.addEventListener('beforeunload', () => {
+            if (channel) {
+                channel.postMessage({
+                    type: 'presence',
+                    action: 'leave',
+                    tabId: tabId,
+                    timestamp: Date.now()
+                });
+            }
+        });
+
+        // Initialize
+        document.getElementById('tabId').textContent = tabId;
+
+        if (checkSupport()) {
+            checkFeatures();
+            initChannel('demo-channel');
+            log(`Tab ID: ${tabId}`);
+            log('Broadcast Channel API initialized');
+        } else {
+            document.getElementById('connectionStatus').textContent = 'Not supported';
+            document.getElementById('connectionStatus').className = 'info-value disconnected';
+        }
+    </script>
+</body>
+</html>

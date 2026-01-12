@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9rem; }
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 1rem;
+        }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button.secondary { background: #60a5fa; }
+        button.danger { background: #f87171; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            word-break: break-all;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .feature {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .feature .name { font-weight: 600; margin-bottom: 5px; }
+        .feature .supported { color: #4ade80; }
+        .feature .unsupported { color: #f87171; }
+        .event-log {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .event-log .event { margin-bottom: 5px; padding: 5px; border-radius: 4px; }
+        .event-log .event.info { background: rgba(96, 165, 250, 0.2); color: #60a5fa; }
+        .event-log .event.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .event-log .event.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .event-log .event.progress { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .drop-zone {
+            border: 2px dashed #333;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            color: #aaa;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+        .drop-zone.dragover {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+            color: #4ade80;
+        }
+        .drop-zone input[type="file"] {
+            display: none;
+        }
+        .file-list {
+            margin-top: 15px;
+        }
+        .file-item {
+            background: rgba(0,0,0,0.2);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .file-info {
+            flex: 1;
+        }
+        .file-name { font-weight: 600; margin-bottom: 3px; }
+        .file-meta { color: #aaa; font-size: 0.85rem; }
+        .file-actions { display: flex; gap: 5px; }
+        .file-actions button { margin: 0; padding: 6px 12px; font-size: 0.85rem; }
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #0a0a1a;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #60a5fa);
+            transition: width 0.1s;
+        }
+        .preview-container {
+            margin-top: 15px;
+            text-align: center;
+        }
+        .preview-container img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+        }
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+        .tab {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid #333;
+            color: #aaa;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .tab.active { background: #4ade80; color: #1a1a2e; border-color: #4ade80; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>File API Demo</h1>
+        <p class="description">
+            The File API provides access to file information and content, enabling web applications
+            to read files selected by users through file inputs or drag-and-drop operations.
+        </p>
+
+        <div id="status" class="status success">
+            File API available: <span id="available">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>API Support</h2>
+            <div class="feature-grid" id="features"></div>
+        </div>
+
+        <div class="card">
+            <h2>Select Files</h2>
+            <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                <p style="font-size: 1.2rem; margin-bottom: 10px;">Drop files here or click to select</p>
+                <p style="font-size: 0.9rem;">Supports multiple files of any type</p>
+                <input type="file" id="fileInput" multiple onchange="handleFiles(this.files)">
+            </div>
+            <div class="file-list" id="fileList"></div>
+        </div>
+
+        <div class="card">
+            <h2>File Information</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Select a file above to see its details</p>
+            <div class="output" id="fileInfo">No file selected yet...</div>
+        </div>
+
+        <div class="card">
+            <h2>Read File Content</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Choose how to read the selected file</p>
+            <div class="tabs">
+                <button class="tab active" onclick="setReadMode('text')">As Text</button>
+                <button class="tab" onclick="setReadMode('dataURL')">As Data URL</button>
+                <button class="tab" onclick="setReadMode('arrayBuffer')">As ArrayBuffer</button>
+                <button class="tab" onclick="setReadMode('binaryString')">As Binary String</button>
+            </div>
+            <button onclick="readSelectedFile()" id="readBtn" disabled>Read File</button>
+            <button class="secondary" onclick="abortRead()" id="abortBtn" disabled>Abort</button>
+            <div class="progress-bar">
+                <div class="fill" id="readProgress" style="width: 0%"></div>
+            </div>
+            <div class="output" id="fileContent">Select a file and click "Read File" to see content...</div>
+            <div class="preview-container" id="previewContainer"></div>
+        </div>
+
+        <div class="card">
+            <h2>File Slice Demo</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Read a portion of the selected file using slice()</p>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div class="form-group" style="flex: 1;">
+                    <label for="sliceStart">Start byte:</label>
+                    <input type="number" id="sliceStart" value="0" min="0">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label for="sliceEnd">End byte:</label>
+                    <input type="number" id="sliceEnd" value="100">
+                </div>
+            </div>
+            <button onclick="readSlice()" id="sliceBtn" disabled>Read Slice</button>
+            <div class="output" id="sliceContent">Select a file and define a range to read a slice...</div>
+        </div>
+
+        <div class="card">
+            <h2>Create File from Text</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Create a new File object from text content</p>
+            <div class="form-group">
+                <label for="createContent">File content:</label>
+                <textarea id="createContent" style="width: 100%; min-height: 80px; padding: 10px; border: 1px solid #333; border-radius: 6px; background: #1a1a2e; color: #eee; resize: vertical;">Hello, this is a test file created using the File API!</textarea>
+            </div>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div class="form-group" style="flex: 1;">
+                    <label for="createName">File name:</label>
+                    <input type="text" id="createName" value="test-file.txt">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label for="createType">MIME type:</label>
+                    <input type="text" id="createType" value="text/plain">
+                </div>
+            </div>
+            <button onclick="createFile()">Create File</button>
+            <button class="secondary" onclick="downloadCreatedFile()" id="downloadBtn" disabled>Download File</button>
+            <div class="output" id="createOutput">Click "Create File" to create a new File object...</div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <button class="secondary" onclick="clearLog()">Clear Log</button>
+            <div class="event-log" id="eventLog">
+                <div class="event info">Ready to log file events...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        let currentReader = null;
+        let readMode = 'text';
+        let createdFile = null;
+
+        function checkSupport() {
+            const hasFile = typeof File !== 'undefined';
+            const hasFileReader = typeof FileReader !== 'undefined';
+            const hasFileList = typeof FileList !== 'undefined';
+            const available = hasFile && hasFileReader;
+
+            document.getElementById('available').textContent = available ? 'Yes' : 'No';
+            document.getElementById('status').className = available ? 'status success' : 'status error';
+
+            const features = document.getElementById('features');
+            const checks = [
+                { name: 'File', supported: hasFile },
+                { name: 'FileReader', supported: hasFileReader },
+                { name: 'FileList', supported: hasFileList },
+                { name: 'Blob', supported: typeof Blob !== 'undefined' },
+                { name: 'FileReader.readAsText()', supported: hasFileReader && 'readAsText' in FileReader.prototype },
+                { name: 'FileReader.readAsDataURL()', supported: hasFileReader && 'readAsDataURL' in FileReader.prototype },
+                { name: 'FileReader.readAsArrayBuffer()', supported: hasFileReader && 'readAsArrayBuffer' in FileReader.prototype },
+                { name: 'FileReader.readAsBinaryString()', supported: hasFileReader && 'readAsBinaryString' in FileReader.prototype },
+                { name: 'Blob.slice()', supported: typeof Blob !== 'undefined' && 'slice' in Blob.prototype },
+                { name: 'File.lastModified', supported: hasFile && 'lastModified' in File.prototype },
+            ];
+
+            features.innerHTML = checks.map(c => `
+                <div class="feature">
+                    <div class="name">${c.name}</div>
+                    <div class="${c.supported ? 'supported' : 'unsupported'}">${c.supported ? 'Supported' : 'Not supported'}</div>
+                </div>
+            `).join('');
+        }
+
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('eventLog');
+            const time = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = `event ${type}`;
+            div.textContent = `[${time}] ${message}`;
+            logEl.insertBefore(div, logEl.firstChild);
+        }
+
+        function clearLog() {
+            document.getElementById('eventLog').innerHTML = '<div class="event info">Log cleared</div>';
+        }
+
+        function formatSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Drag and drop
+        const dropZone = document.getElementById('dropZone');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        function handleFiles(files) {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+
+            log(`${files.length} file(s) selected`, 'info');
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const div = document.createElement('div');
+                div.className = 'file-item';
+                div.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-meta">${formatSize(file.size)} - ${file.type || 'unknown type'}</div>
+                    </div>
+                    <div class="file-actions">
+                        <button onclick="selectFile(${i})" class="secondary">Select</button>
+                    </div>
+                `;
+                fileList.appendChild(div);
+
+                log(`File: ${file.name} (${formatSize(file.size)})`, 'info');
+            }
+
+            // Auto-select first file
+            if (files.length > 0) {
+                window.loadedFiles = files;
+                selectFile(0);
+            }
+        }
+
+        function selectFile(index) {
+            selectedFile = window.loadedFiles[index];
+            updateFileInfo();
+
+            document.getElementById('readBtn').disabled = false;
+            document.getElementById('sliceBtn').disabled = false;
+            document.getElementById('sliceEnd').value = Math.min(100, selectedFile.size);
+
+            log(`Selected: ${selectedFile.name}`, 'success');
+        }
+
+        function updateFileInfo() {
+            if (!selectedFile) return;
+
+            const info = document.getElementById('fileInfo');
+            const lastModified = new Date(selectedFile.lastModified);
+
+            info.textContent = `File Properties:
+--------------------
+Name: ${selectedFile.name}
+Size: ${formatSize(selectedFile.size)} (${selectedFile.size} bytes)
+Type: ${selectedFile.type || 'Not specified'}
+Last Modified: ${lastModified.toLocaleString()}
+
+Additional Info:
+--------------------
+Is a Blob: ${selectedFile instanceof Blob}
+Is a File: ${selectedFile instanceof File}
+Constructor: ${selectedFile.constructor.name}`;
+        }
+
+        function setReadMode(mode) {
+            readMode = mode;
+            document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tabs .tab[onclick="setReadMode('${mode}')"]`).classList.add('active');
+            document.getElementById('previewContainer').innerHTML = '';
+        }
+
+        function readSelectedFile() {
+            if (!selectedFile) return;
+
+            const content = document.getElementById('fileContent');
+            const progress = document.getElementById('readProgress');
+            const preview = document.getElementById('previewContainer');
+            const abortBtn = document.getElementById('abortBtn');
+
+            content.textContent = 'Reading file...';
+            progress.style.width = '0%';
+            preview.innerHTML = '';
+            abortBtn.disabled = false;
+
+            currentReader = new FileReader();
+
+            currentReader.onloadstart = () => {
+                log(`Started reading: ${selectedFile.name}`, 'info');
+            };
+
+            currentReader.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const percent = (e.loaded / e.total) * 100;
+                    progress.style.width = `${percent}%`;
+                    log(`Progress: ${percent.toFixed(1)}% (${formatSize(e.loaded)} / ${formatSize(e.total)})`, 'progress');
+                }
+            };
+
+            currentReader.onload = (e) => {
+                progress.style.width = '100%';
+                abortBtn.disabled = true;
+
+                const result = e.target.result;
+
+                switch (readMode) {
+                    case 'text':
+                        content.textContent = result.length > 10000
+                            ? result.substring(0, 10000) + '\n\n... (truncated)'
+                            : result;
+                        break;
+
+                    case 'dataURL':
+                        content.textContent = `Data URL (${result.length} chars):\n\n${result.substring(0, 500)}${result.length > 500 ? '...' : ''}`;
+                        if (selectedFile.type.startsWith('image/')) {
+                            preview.innerHTML = `<img src="${result}" alt="Preview">`;
+                        }
+                        break;
+
+                    case 'arrayBuffer':
+                        const arr = new Uint8Array(result);
+                        const hexView = Array.from(arr.slice(0, 256))
+                            .map(b => b.toString(16).padStart(2, '0'))
+                            .join(' ');
+                        content.textContent = `ArrayBuffer (${result.byteLength} bytes)
+
+First 256 bytes (hex):
+${hexView}
+
+First 256 bytes as numbers:
+${Array.from(arr.slice(0, 256)).join(', ')}`;
+                        break;
+
+                    case 'binaryString':
+                        content.textContent = `Binary String (${result.length} chars)
+
+First 500 chars (showing char codes):
+${result.substring(0, 500).split('').map(c => c.charCodeAt(0)).join(', ')}`;
+                        break;
+                }
+
+                log(`Read complete: ${selectedFile.name}`, 'success');
+            };
+
+            currentReader.onerror = (e) => {
+                content.textContent = `Error reading file: ${e.target.error.message}`;
+                log(`Read error: ${e.target.error.message}`, 'error');
+                abortBtn.disabled = true;
+            };
+
+            currentReader.onabort = () => {
+                content.textContent = 'File read was aborted.';
+                log('Read aborted', 'error');
+                abortBtn.disabled = true;
+            };
+
+            switch (readMode) {
+                case 'text':
+                    currentReader.readAsText(selectedFile);
+                    break;
+                case 'dataURL':
+                    currentReader.readAsDataURL(selectedFile);
+                    break;
+                case 'arrayBuffer':
+                    currentReader.readAsArrayBuffer(selectedFile);
+                    break;
+                case 'binaryString':
+                    currentReader.readAsBinaryString(selectedFile);
+                    break;
+            }
+        }
+
+        function abortRead() {
+            if (currentReader) {
+                currentReader.abort();
+            }
+        }
+
+        function readSlice() {
+            if (!selectedFile) return;
+
+            const start = parseInt(document.getElementById('sliceStart').value);
+            const end = parseInt(document.getElementById('sliceEnd').value);
+            const content = document.getElementById('sliceContent');
+
+            if (start >= end) {
+                content.textContent = 'Error: Start must be less than end';
+                return;
+            }
+
+            if (end > selectedFile.size) {
+                content.textContent = `Error: End (${end}) exceeds file size (${selectedFile.size})`;
+                return;
+            }
+
+            const slice = selectedFile.slice(start, end);
+            log(`Created slice: bytes ${start}-${end} (${slice.size} bytes)`, 'info');
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const result = e.target.result;
+                const hexView = Array.from(new Uint8Array(result))
+                    .map(b => b.toString(16).padStart(2, '0'))
+                    .join(' ');
+
+                content.textContent = `Slice Info:
+--------------------
+Original file: ${selectedFile.name}
+Slice range: bytes ${start} to ${end}
+Slice size: ${slice.size} bytes
+Slice type: ${slice.type || 'inherited from original'}
+
+Content (hex):
+${hexView}
+
+Content (text attempt):
+${new TextDecoder().decode(result)}`;
+
+                log(`Read slice: ${slice.size} bytes`, 'success');
+            };
+
+            reader.onerror = () => {
+                content.textContent = `Error reading slice: ${reader.error.message}`;
+                log(`Slice read error: ${reader.error.message}`, 'error');
+            };
+
+            reader.readAsArrayBuffer(slice);
+        }
+
+        function createFile() {
+            const content = document.getElementById('createContent').value;
+            const name = document.getElementById('createName').value;
+            const type = document.getElementById('createType').value;
+            const output = document.getElementById('createOutput');
+
+            try {
+                createdFile = new File([content], name, {
+                    type: type,
+                    lastModified: Date.now()
+                });
+
+                output.textContent = `File created successfully!
+
+Properties:
+--------------------
+Name: ${createdFile.name}
+Size: ${formatSize(createdFile.size)} (${createdFile.size} bytes)
+Type: ${createdFile.type}
+Last Modified: ${new Date(createdFile.lastModified).toLocaleString()}
+
+Content preview:
+--------------------
+${content.substring(0, 500)}${content.length > 500 ? '...' : ''}`;
+
+                document.getElementById('downloadBtn').disabled = false;
+                log(`Created file: ${name} (${formatSize(createdFile.size)})`, 'success');
+
+            } catch (e) {
+                output.textContent = `Error creating file: ${e.message}`;
+                log(`Create error: ${e.message}`, 'error');
+            }
+        }
+
+        function downloadCreatedFile() {
+            if (!createdFile) return;
+
+            const url = URL.createObjectURL(createdFile);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = createdFile.name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            log(`Downloaded: ${createdFile.name}`, 'success');
+        }
+
+        checkSupport();
+    </script>
+</body>
+</html>

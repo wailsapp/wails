@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beacon API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        .form-group { margin-bottom: 15px; }
+        .form-row { display: flex; gap: 10px; align-items: end; }
+        .form-row .form-group { flex: 1; }
+        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9rem; }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 1rem;
+        }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: #60a5fa; }
+        button.danger { background: #f87171; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            word-break: break-all;
+        }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .status.warning { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .event-log {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            padding: 6px 10px;
+            margin: 3px 0;
+            border-radius: 4px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        .log-entry.success { background: rgba(74, 222, 128, 0.1); border-left: 3px solid #4ade80; }
+        .log-entry.error { background: rgba(248, 113, 113, 0.1); border-left: 3px solid #f87171; }
+        .log-entry.info { background: rgba(96, 165, 250, 0.1); border-left: 3px solid #60a5fa; }
+        .log-entry.warning { background: rgba(251, 191, 36, 0.1); border-left: 3px solid #fbbf24; }
+        .log-time { color: #666; flex-shrink: 0; }
+        .log-type { flex-shrink: 0; width: 80px; font-weight: 600; }
+        .log-type.success { color: #4ade80; }
+        .log-type.error { color: #f87171; }
+        .log-type.info { color: #60a5fa; }
+        .log-type.warning { color: #fbbf24; }
+        .log-message { color: #ccc; flex: 1; }
+        .stats { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px; }
+        .stat {
+            background: rgba(0,0,0,0.3);
+            padding: 10px 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: #4ade80; }
+        .stat-value.error { color: #f87171; }
+        .stat-label { font-size: 0.8rem; color: #888; }
+        .data-type-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
+        .data-type-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid #333;
+            color: #aaa;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .data-type-btn.active { background: #4ade80; color: #1a1a2e; border-color: #4ade80; }
+        .note {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 15px;
+            color: #fbbf24;
+            font-size: 0.9rem;
+        }
+        .note strong { color: #fbbf24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Beacon API Demo</h1>
+        <p class="description">
+            The Beacon API is designed for sending analytics and diagnostics data to a server.
+            It ensures data is sent even when the page is unloading, without blocking navigation.
+        </p>
+
+        <div id="status" class="status success">
+            Beacon API available: <span id="available">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Send Beacon</h2>
+            <div class="note">
+                <strong>Note:</strong> Beacons are fire-and-forget requests. The API returns true/false
+                to indicate if the beacon was queued, not if it was successfully received by the server.
+                Check your browser's Network tab to see the actual requests.
+            </div>
+            <div class="form-group">
+                <label for="beaconUrl">Endpoint URL</label>
+                <input type="text" id="beaconUrl" value="https://httpbin.org/post" placeholder="Enter endpoint URL">
+            </div>
+            <div class="form-group">
+                <label>Data Type</label>
+                <div class="data-type-buttons">
+                    <button class="data-type-btn active" onclick="setDataType('string')" data-type="string">String</button>
+                    <button class="data-type-btn" onclick="setDataType('json')" data-type="json">JSON</button>
+                    <button class="data-type-btn" onclick="setDataType('formdata')" data-type="formdata">FormData</button>
+                    <button class="data-type-btn" onclick="setDataType('blob')" data-type="blob">Blob</button>
+                    <button class="data-type-btn" onclick="setDataType('arraybuffer')" data-type="arraybuffer">ArrayBuffer</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="beaconData">Data</label>
+                <textarea id="beaconData" rows="4" placeholder="Enter data to send">event=page_view&amp;timestamp=1234567890</textarea>
+            </div>
+            <button onclick="sendBeacon()">Send Beacon</button>
+            <button class="secondary" onclick="loadExample('analytics')">Analytics Example</button>
+            <button class="secondary" onclick="loadExample('error')">Error Report Example</button>
+            <button class="secondary" onclick="loadExample('timing')">Performance Timing</button>
+        </div>
+
+        <div class="card">
+            <h2>Page Lifecycle Events</h2>
+            <p style="color: #aaa; font-size: 0.9rem; margin-bottom: 15px;">
+                Beacon is ideal for sending data during page unload events. Click below to simulate scenarios:
+            </p>
+            <button onclick="simulateBeforeUnload()">Simulate beforeunload</button>
+            <button onclick="simulateVisibilityChange()" class="secondary">Simulate visibility hidden</button>
+            <button onclick="simulatePageHide()" class="secondary">Simulate pagehide</button>
+            <div class="form-group" style="margin-top: 15px;">
+                <label>
+                    <input type="checkbox" id="autoBeacon"> Auto-send beacon on page unload (test by closing tab)
+                </label>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Statistics</h2>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="totalSent">0</div>
+                    <div class="stat-label">Total Sent</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="queuedCount">0</div>
+                    <div class="stat-label">Queued (true)</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value error" id="failedCount">0</div>
+                    <div class="stat-label">Failed (false)</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="totalBytes">0</div>
+                    <div class="stat-label">Bytes Sent</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <button onclick="clearLog()">Clear Log</button>
+            <div class="event-log" id="eventLog">
+                <div class="log-entry info">
+                    <span class="log-time">--:--:--</span>
+                    <span class="log-type info">INFO</span>
+                    <span class="log-message">Ready to send beacons. Configure endpoint and data above.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Beacon API Reference</h2>
+            <div class="output">
+// Basic usage
+navigator.sendBeacon(url, data);
+
+// Returns boolean: true if queued, false if failed
+
+// Data types supported:
+navigator.sendBeacon(url, 'string data');
+navigator.sendBeacon(url, new Blob(['data'], {type: 'text/plain'}));
+navigator.sendBeacon(url, new FormData(form));
+navigator.sendBeacon(url, new URLSearchParams({key: 'value'}));
+navigator.sendBeacon(url, new ArrayBuffer(8));
+
+// Common use cases:
+
+// 1. Analytics on page unload
+window.addEventListener('beforeunload', () => {
+    navigator.sendBeacon('/analytics', JSON.stringify({
+        event: 'page_exit',
+        duration: performance.now(),
+        path: location.pathname
+    }));
+});
+
+// 2. Visibility change (tab hidden)
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+        navigator.sendBeacon('/analytics', JSON.stringify({
+            event: 'tab_hidden',
+            timestamp: Date.now()
+        }));
+    }
+});
+
+// 3. Error reporting
+window.addEventListener('error', (e) => {
+    navigator.sendBeacon('/errors', JSON.stringify({
+        message: e.message,
+        filename: e.filename,
+        lineno: e.lineno,
+        colno: e.colno
+    }));
+});
+
+// Advantages over XHR/fetch:
+// - Guaranteed to be sent even during page unload
+// - Non-blocking (doesn't delay navigation)
+// - Batched by browser for efficiency
+// - Uses HTTP POST with proper CORS support
+
+// Limitations:
+// - Fire-and-forget (no response available)
+// - Limited payload size (~64KB typical)
+// - Cannot set custom headers (except via Blob type)</div>
+        </div>
+    </div>
+
+    <script>
+        let currentDataType = 'string';
+        let stats = { total: 0, queued: 0, failed: 0, bytes: 0 };
+
+        function checkBeacon() {
+            const available = navigator && typeof navigator.sendBeacon === 'function';
+            document.getElementById('available').textContent = available ? 'Yes' : 'No';
+            document.getElementById('status').className = available ? 'status success' : 'status error';
+            return available;
+        }
+
+        function setDataType(type) {
+            currentDataType = type;
+            document.querySelectorAll('.data-type-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.type === type);
+            });
+
+            const dataField = document.getElementById('beaconData');
+            switch (type) {
+                case 'string':
+                    dataField.placeholder = 'Enter plain text or URL-encoded data';
+                    dataField.value = 'event=page_view&timestamp=' + Date.now();
+                    break;
+                case 'json':
+                    dataField.placeholder = 'Enter JSON data';
+                    dataField.value = JSON.stringify({
+                        event: 'custom_event',
+                        data: { key: 'value' },
+                        timestamp: Date.now()
+                    }, null, 2);
+                    break;
+                case 'formdata':
+                    dataField.placeholder = 'Enter key=value pairs (one per line)';
+                    dataField.value = 'event=form_submit\nuser_id=12345\naction=click';
+                    break;
+                case 'blob':
+                    dataField.placeholder = 'Enter text content for Blob';
+                    dataField.value = 'Binary data content here';
+                    break;
+                case 'arraybuffer':
+                    dataField.placeholder = 'Enter comma-separated byte values (0-255)';
+                    dataField.value = '72, 101, 108, 108, 111';
+                    break;
+            }
+            logEvent('INFO', `Data type changed to: ${type}`, 'info');
+        }
+
+        function prepareData(rawData) {
+            let data, size;
+
+            switch (currentDataType) {
+                case 'string':
+                    data = rawData;
+                    size = new Blob([rawData]).size;
+                    break;
+                case 'json':
+                    try {
+                        JSON.parse(rawData); // Validate JSON
+                        data = new Blob([rawData], { type: 'application/json' });
+                        size = data.size;
+                    } catch (e) {
+                        throw new Error('Invalid JSON: ' + e.message);
+                    }
+                    break;
+                case 'formdata':
+                    data = new FormData();
+                    rawData.split('\n').forEach(line => {
+                        const [key, ...valueParts] = line.split('=');
+                        if (key && valueParts.length > 0) {
+                            data.append(key.trim(), valueParts.join('=').trim());
+                        }
+                    });
+                    size = rawData.length; // Approximate
+                    break;
+                case 'blob':
+                    data = new Blob([rawData], { type: 'text/plain' });
+                    size = data.size;
+                    break;
+                case 'arraybuffer':
+                    const bytes = rawData.split(',').map(b => parseInt(b.trim(), 10));
+                    data = new Uint8Array(bytes).buffer;
+                    size = data.byteLength;
+                    break;
+                default:
+                    data = rawData;
+                    size = new Blob([rawData]).size;
+            }
+
+            return { data, size };
+        }
+
+        function sendBeacon() {
+            const url = document.getElementById('beaconUrl').value;
+            const rawData = document.getElementById('beaconData').value;
+
+            if (!url) {
+                logEvent('ERROR', 'Please enter an endpoint URL', 'error');
+                return;
+            }
+
+            try {
+                const { data, size } = prepareData(rawData);
+
+                logEvent('SEND', `Sending beacon to ${url} (${currentDataType}, ~${size} bytes)`, 'info');
+
+                const result = navigator.sendBeacon(url, data);
+
+                stats.total++;
+                stats.bytes += size;
+
+                if (result) {
+                    stats.queued++;
+                    logEvent('QUEUED', `Beacon queued successfully (returned: true)`, 'success');
+                } else {
+                    stats.failed++;
+                    logEvent('FAILED', `Beacon failed to queue (returned: false) - URL may be blocked or payload too large`, 'error');
+                }
+
+                updateStats();
+
+            } catch (e) {
+                stats.total++;
+                stats.failed++;
+                updateStats();
+                logEvent('ERROR', `Error: ${e.message}`, 'error');
+            }
+        }
+
+        function loadExample(type) {
+            const dataField = document.getElementById('beaconData');
+
+            switch (type) {
+                case 'analytics':
+                    setDataType('json');
+                    dataField.value = JSON.stringify({
+                        event: 'page_view',
+                        page: window.location.pathname,
+                        referrer: document.referrer || 'direct',
+                        userAgent: navigator.userAgent.substring(0, 50),
+                        screenSize: `${screen.width}x${screen.height}`,
+                        timestamp: Date.now(),
+                        sessionId: 'sess_' + Math.random().toString(36).substr(2, 9)
+                    }, null, 2);
+                    break;
+                case 'error':
+                    setDataType('json');
+                    dataField.value = JSON.stringify({
+                        type: 'error_report',
+                        message: 'Uncaught TypeError: Cannot read property of undefined',
+                        filename: 'app.js',
+                        lineno: 42,
+                        colno: 15,
+                        stack: 'TypeError: Cannot read property...\n    at Object.handleClick (app.js:42:15)',
+                        url: window.location.href,
+                        timestamp: Date.now()
+                    }, null, 2);
+                    break;
+                case 'timing':
+                    setDataType('json');
+                    const perf = performance.timing || {};
+                    dataField.value = JSON.stringify({
+                        type: 'performance',
+                        metrics: {
+                            pageLoad: performance.now().toFixed(2),
+                            domContentLoaded: perf.domContentLoadedEventEnd ?
+                                (perf.domContentLoadedEventEnd - perf.navigationStart) : 'N/A',
+                            firstPaint: performance.getEntriesByType ?
+                                (performance.getEntriesByType('paint')[0]?.startTime?.toFixed(2) || 'N/A') : 'N/A'
+                        },
+                        memory: performance.memory ? {
+                            usedJSHeapSize: performance.memory.usedJSHeapSize,
+                            totalJSHeapSize: performance.memory.totalJSHeapSize
+                        } : 'N/A',
+                        timestamp: Date.now()
+                    }, null, 2);
+                    break;
+            }
+            logEvent('INFO', `Loaded example: ${type}`, 'info');
+        }
+
+        function simulateBeforeUnload() {
+            logEvent('LIFECYCLE', 'Simulating beforeunload event...', 'warning');
+
+            const data = JSON.stringify({
+                event: 'page_unload',
+                type: 'beforeunload',
+                pageTime: performance.now().toFixed(2),
+                timestamp: Date.now()
+            });
+
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = document.getElementById('beaconUrl').value;
+
+            if (url) {
+                const result = navigator.sendBeacon(url, blob);
+                stats.total++;
+                stats.bytes += blob.size;
+                result ? stats.queued++ : stats.failed++;
+                updateStats();
+                logEvent(result ? 'QUEUED' : 'FAILED',
+                    `beforeunload beacon ${result ? 'queued' : 'failed'}`,
+                    result ? 'success' : 'error');
+            }
+        }
+
+        function simulateVisibilityChange() {
+            logEvent('LIFECYCLE', 'Simulating visibilitychange (hidden) event...', 'warning');
+
+            const data = JSON.stringify({
+                event: 'visibility_change',
+                state: 'hidden',
+                pageTime: performance.now().toFixed(2),
+                timestamp: Date.now()
+            });
+
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = document.getElementById('beaconUrl').value;
+
+            if (url) {
+                const result = navigator.sendBeacon(url, blob);
+                stats.total++;
+                stats.bytes += blob.size;
+                result ? stats.queued++ : stats.failed++;
+                updateStats();
+                logEvent(result ? 'QUEUED' : 'FAILED',
+                    `visibility beacon ${result ? 'queued' : 'failed'}`,
+                    result ? 'success' : 'error');
+            }
+        }
+
+        function simulatePageHide() {
+            logEvent('LIFECYCLE', 'Simulating pagehide event...', 'warning');
+
+            const data = JSON.stringify({
+                event: 'page_hide',
+                persisted: false,
+                pageTime: performance.now().toFixed(2),
+                timestamp: Date.now()
+            });
+
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = document.getElementById('beaconUrl').value;
+
+            if (url) {
+                const result = navigator.sendBeacon(url, blob);
+                stats.total++;
+                stats.bytes += blob.size;
+                result ? stats.queued++ : stats.failed++;
+                updateStats();
+                logEvent(result ? 'QUEUED' : 'FAILED',
+                    `pagehide beacon ${result ? 'queued' : 'failed'}`,
+                    result ? 'success' : 'error');
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalSent').textContent = stats.total;
+            document.getElementById('queuedCount').textContent = stats.queued;
+            document.getElementById('failedCount').textContent = stats.failed;
+            document.getElementById('totalBytes').textContent = formatBytes(stats.bytes);
+        }
+
+        function formatBytes(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
+        function logEvent(type, message, className = 'info') {
+            const log = document.getElementById('eventLog');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${className}`;
+            entry.innerHTML = `
+                <span class="log-time">${time}</span>
+                <span class="log-type ${className}">${type}</span>
+                <span class="log-message">${escapeHtml(message)}</span>
+            `;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('eventLog').innerHTML = '';
+            stats = { total: 0, queued: 0, failed: 0, bytes: 0 };
+            updateStats();
+            logEvent('INFO', 'Log cleared', 'info');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Set up actual page unload beacon
+        function setupUnloadBeacon() {
+            window.addEventListener('beforeunload', () => {
+                if (document.getElementById('autoBeacon').checked) {
+                    const url = document.getElementById('beaconUrl').value;
+                    if (url) {
+                        navigator.sendBeacon(url, JSON.stringify({
+                            event: 'page_unload',
+                            type: 'beforeunload',
+                            auto: true,
+                            timestamp: Date.now()
+                        }));
+                    }
+                }
+            });
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden' && document.getElementById('autoBeacon').checked) {
+                    const url = document.getElementById('beaconUrl').value;
+                    if (url) {
+                        navigator.sendBeacon(url, JSON.stringify({
+                            event: 'visibility_hidden',
+                            auto: true,
+                            timestamp: Date.now()
+                        }));
+                    }
+                }
+            });
+        }
+
+        // Initialize
+        checkBeacon();
+        setupUnloadBeacon();
+    </script>
+</body>
+</html>

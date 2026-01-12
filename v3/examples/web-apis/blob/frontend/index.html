@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blob API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9rem; }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 1rem;
+        }
+        textarea { min-height: 80px; resize: vertical; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button.secondary { background: #60a5fa; }
+        button.danger { background: #f87171; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            word-break: break-all;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .feature {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .feature .name { font-weight: 600; margin-bottom: 5px; }
+        .feature .supported { color: #4ade80; }
+        .feature .unsupported { color: #f87171; }
+        .event-log {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .event-log .event { margin-bottom: 5px; padding: 5px; border-radius: 4px; }
+        .event-log .event.info { background: rgba(96, 165, 250, 0.2); color: #60a5fa; }
+        .event-log .event.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .event-log .event.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .event-log .event.data { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .blob-list {
+            margin-top: 15px;
+        }
+        .blob-item {
+            background: rgba(0,0,0,0.2);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .blob-info { flex: 1; }
+        .blob-name { font-weight: 600; margin-bottom: 3px; color: #4ade80; }
+        .blob-meta { color: #aaa; font-size: 0.85rem; }
+        .blob-actions { display: flex; gap: 5px; }
+        .blob-actions button { margin: 0; padding: 6px 12px; font-size: 0.85rem; }
+        .form-row { display: flex; gap: 10px; }
+        .form-row .form-group { flex: 1; }
+        .preview-container {
+            margin-top: 15px;
+            text-align: center;
+        }
+        .preview-container img, .preview-container video, .preview-container audio {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+        }
+        .color-preview {
+            width: 100%;
+            height: 100px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: white;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Blob API Demo</h1>
+        <p class="description">
+            The Blob API represents immutable raw binary data. Blobs are used to handle file-like data,
+            create object URLs, and work with binary data in web applications.
+        </p>
+
+        <div id="status" class="status success">
+            Blob API available: <span id="available">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>API Support</h2>
+            <div class="feature-grid" id="features"></div>
+        </div>
+
+        <div class="card">
+            <h2>Create Blob from Text</h2>
+            <div class="form-group">
+                <label for="textContent">Text content:</label>
+                <textarea id="textContent">Hello, this is a text blob created using the Blob API!
+It can contain multiple lines of text.
+This is useful for creating downloadable text files.</textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="textType">MIME type:</label>
+                    <select id="textType">
+                        <option value="text/plain">text/plain</option>
+                        <option value="text/html">text/html</option>
+                        <option value="text/css">text/css</option>
+                        <option value="text/javascript">text/javascript</option>
+                        <option value="application/json">application/json</option>
+                        <option value="application/xml">application/xml</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="textName">Name (for tracking):</label>
+                    <input type="text" id="textName" value="text-blob">
+                </div>
+            </div>
+            <button onclick="createTextBlob()">Create Text Blob</button>
+            <div class="output" id="textOutput">Click "Create Text Blob" to create a new Blob...</div>
+        </div>
+
+        <div class="card">
+            <h2>Create Blob from JSON</h2>
+            <div class="form-group">
+                <label for="jsonContent">JSON content:</label>
+                <textarea id="jsonContent">{
+  "name": "Blob API Demo",
+  "version": "1.0",
+  "features": ["create", "slice", "convert"],
+  "supported": true
+}</textarea>
+            </div>
+            <button onclick="createJsonBlob()">Create JSON Blob</button>
+            <button class="secondary" onclick="prettyPrintJson()">Format JSON</button>
+            <div class="output" id="jsonOutput">Click "Create JSON Blob" to create a JSON Blob...</div>
+        </div>
+
+        <div class="card">
+            <h2>Create Blob from Binary Data</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Create a Blob from an ArrayBuffer or TypedArray</p>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="binaryType">Data type:</label>
+                    <select id="binaryType">
+                        <option value="uint8">Uint8Array (bytes)</option>
+                        <option value="uint16">Uint16Array</option>
+                        <option value="float32">Float32Array</option>
+                        <option value="int32">Int32Array</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="binaryValues">Values (comma-separated):</label>
+                    <input type="text" id="binaryValues" value="72, 101, 108, 108, 111">
+                </div>
+            </div>
+            <button onclick="createBinaryBlob()">Create Binary Blob</button>
+            <div class="output" id="binaryOutput">Click "Create Binary Blob" to create from binary data...</div>
+        </div>
+
+        <div class="card">
+            <h2>Create Image Blob (SVG)</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Generate an SVG image blob with custom colors</p>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="svgBg">Background color:</label>
+                    <input type="color" id="svgBg" value="#4ade80" style="height: 40px;">
+                </div>
+                <div class="form-group">
+                    <label for="svgFg">Foreground color:</label>
+                    <input type="color" id="svgFg" value="#1a1a2e" style="height: 40px;">
+                </div>
+                <div class="form-group">
+                    <label for="svgText">Text:</label>
+                    <input type="text" id="svgText" value="BLOB">
+                </div>
+            </div>
+            <button onclick="createSvgBlob()">Create SVG Blob</button>
+            <div class="preview-container" id="svgPreview"></div>
+            <div class="output" id="svgOutput">Click "Create SVG Blob" to generate an image...</div>
+        </div>
+
+        <div class="card">
+            <h2>Stored Blobs</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Blobs created in this session (stored with Object URLs)</p>
+            <div class="blob-list" id="blobList">
+                <p style="color: #666;">No blobs created yet...</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Blob Slicing</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Extract a portion of a blob using slice()</p>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="sliceSource">Source blob:</label>
+                    <select id="sliceSource">
+                        <option value="">-- Select a blob --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="sliceStart">Start:</label>
+                    <input type="number" id="sliceStart" value="0" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="sliceEnd">End:</label>
+                    <input type="number" id="sliceEnd" value="10">
+                </div>
+            </div>
+            <button onclick="sliceBlob()">Slice Blob</button>
+            <div class="output" id="sliceOutput">Select a blob and specify range to slice...</div>
+        </div>
+
+        <div class="card">
+            <h2>Blob Conversions</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Convert blobs to different formats</p>
+            <div class="form-group">
+                <label for="convertSource">Source blob:</label>
+                <select id="convertSource">
+                    <option value="">-- Select a blob --</option>
+                </select>
+            </div>
+            <button onclick="convertToText()">To Text</button>
+            <button onclick="convertToArrayBuffer()">To ArrayBuffer</button>
+            <button onclick="convertToBase64()">To Base64</button>
+            <button onclick="convertToStream()" class="secondary">To Stream</button>
+            <div class="output" id="convertOutput">Select a blob and choose a conversion method...</div>
+        </div>
+
+        <div class="card">
+            <h2>Combine Blobs</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Concatenate multiple blobs into one</p>
+            <div class="form-group">
+                <label>Select blobs to combine (hold Ctrl/Cmd for multiple):</label>
+                <select id="combineSource" multiple style="min-height: 100px;">
+                </select>
+            </div>
+            <button onclick="combineBlobs()">Combine Selected</button>
+            <div class="output" id="combineOutput">Select multiple blobs to combine...</div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <button class="secondary" onclick="clearLog()">Clear Log</button>
+            <div class="event-log" id="eventLog">
+                <div class="event info">Ready to log blob operations...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const storedBlobs = new Map();
+
+        function checkSupport() {
+            const hasBlob = typeof Blob !== 'undefined';
+            const hasURL = typeof URL !== 'undefined' && typeof URL.createObjectURL !== 'undefined';
+
+            document.getElementById('available').textContent = hasBlob ? 'Yes' : 'No';
+            document.getElementById('status').className = hasBlob ? 'status success' : 'status error';
+
+            const features = document.getElementById('features');
+            const checks = [
+                { name: 'Blob', supported: hasBlob },
+                { name: 'Blob.slice()', supported: hasBlob && 'slice' in Blob.prototype },
+                { name: 'Blob.text()', supported: hasBlob && 'text' in Blob.prototype },
+                { name: 'Blob.arrayBuffer()', supported: hasBlob && 'arrayBuffer' in Blob.prototype },
+                { name: 'Blob.stream()', supported: hasBlob && 'stream' in Blob.prototype },
+                { name: 'URL.createObjectURL()', supported: hasURL },
+                { name: 'URL.revokeObjectURL()', supported: hasURL && 'revokeObjectURL' in URL },
+                { name: 'FileReader', supported: typeof FileReader !== 'undefined' },
+                { name: 'File (extends Blob)', supported: typeof File !== 'undefined' },
+            ];
+
+            features.innerHTML = checks.map(c => `
+                <div class="feature">
+                    <div class="name">${c.name}</div>
+                    <div class="${c.supported ? 'supported' : 'unsupported'}">${c.supported ? 'Supported' : 'Not supported'}</div>
+                </div>
+            `).join('');
+        }
+
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('eventLog');
+            const time = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = `event ${type}`;
+            div.textContent = `[${time}] ${message}`;
+            logEl.insertBefore(div, logEl.firstChild);
+        }
+
+        function clearLog() {
+            document.getElementById('eventLog').innerHTML = '<div class="event info">Log cleared</div>';
+        }
+
+        function formatSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function storeBlob(name, blob) {
+            const url = URL.createObjectURL(blob);
+            storedBlobs.set(name, { blob, url });
+            updateBlobList();
+            updateBlobSelects();
+            log(`Stored blob: ${name} (${formatSize(blob.size)})`, 'success');
+        }
+
+        function updateBlobList() {
+            const list = document.getElementById('blobList');
+
+            if (storedBlobs.size === 0) {
+                list.innerHTML = '<p style="color: #666;">No blobs created yet...</p>';
+                return;
+            }
+
+            list.innerHTML = '';
+            storedBlobs.forEach((data, name) => {
+                const div = document.createElement('div');
+                div.className = 'blob-item';
+                div.innerHTML = `
+                    <div class="blob-info">
+                        <div class="blob-name">${name}</div>
+                        <div class="blob-meta">${formatSize(data.blob.size)} - ${data.blob.type || 'no type'}</div>
+                    </div>
+                    <div class="blob-actions">
+                        <button onclick="downloadBlob('${name}')" class="secondary">Download</button>
+                        <button onclick="viewBlob('${name}')" class="secondary">View</button>
+                        <button onclick="deleteBlob('${name}')" class="danger">Delete</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function updateBlobSelects() {
+            const selects = ['sliceSource', 'convertSource', 'combineSource'];
+            selects.forEach(id => {
+                const select = document.getElementById(id);
+                const isMultiple = select.multiple;
+                select.innerHTML = isMultiple ? '' : '<option value="">-- Select a blob --</option>';
+
+                storedBlobs.forEach((_, name) => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        function downloadBlob(name) {
+            const data = storedBlobs.get(name);
+            if (!data) return;
+
+            const a = document.createElement('a');
+            a.href = data.url;
+            a.download = name + getExtension(data.blob.type);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            log(`Downloaded: ${name}`, 'success');
+        }
+
+        function getExtension(mimeType) {
+            const map = {
+                'text/plain': '.txt',
+                'text/html': '.html',
+                'text/css': '.css',
+                'text/javascript': '.js',
+                'application/json': '.json',
+                'application/xml': '.xml',
+                'image/svg+xml': '.svg',
+                'image/png': '.png',
+                'image/jpeg': '.jpg',
+            };
+            return map[mimeType] || '';
+        }
+
+        function viewBlob(name) {
+            const data = storedBlobs.get(name);
+            if (!data) return;
+
+            window.open(data.url, '_blank');
+            log(`Opened blob URL: ${name}`, 'info');
+        }
+
+        function deleteBlob(name) {
+            const data = storedBlobs.get(name);
+            if (!data) return;
+
+            URL.revokeObjectURL(data.url);
+            storedBlobs.delete(name);
+            updateBlobList();
+            updateBlobSelects();
+
+            log(`Deleted blob: ${name}`, 'info');
+        }
+
+        function createTextBlob() {
+            const content = document.getElementById('textContent').value;
+            const type = document.getElementById('textType').value;
+            const name = document.getElementById('textName').value || 'text-blob-' + Date.now();
+            const output = document.getElementById('textOutput');
+
+            const blob = new Blob([content], { type });
+
+            output.textContent = `Blob created successfully!
+
+Properties:
+--------------------
+Size: ${formatSize(blob.size)} (${blob.size} bytes)
+Type: ${blob.type}
+
+Content preview:
+--------------------
+${content.substring(0, 500)}${content.length > 500 ? '...' : ''}`;
+
+            storeBlob(name, blob);
+        }
+
+        function createJsonBlob() {
+            const content = document.getElementById('jsonContent').value;
+            const output = document.getElementById('jsonOutput');
+
+            try {
+                // Validate JSON
+                const parsed = JSON.parse(content);
+                const blob = new Blob([content], { type: 'application/json' });
+
+                output.textContent = `JSON Blob created successfully!
+
+Properties:
+--------------------
+Size: ${formatSize(blob.size)} (${blob.size} bytes)
+Type: ${blob.type}
+Valid JSON: Yes
+
+Parsed structure:
+--------------------
+Keys: ${Object.keys(parsed).join(', ')}
+Type: ${Array.isArray(parsed) ? 'Array' : typeof parsed}`;
+
+                storeBlob('json-blob-' + Date.now(), blob);
+
+            } catch (e) {
+                output.textContent = `Error: Invalid JSON\n\n${e.message}`;
+                log(`JSON parse error: ${e.message}`, 'error');
+            }
+        }
+
+        function prettyPrintJson() {
+            const textarea = document.getElementById('jsonContent');
+            try {
+                const parsed = JSON.parse(textarea.value);
+                textarea.value = JSON.stringify(parsed, null, 2);
+                log('JSON formatted', 'success');
+            } catch (e) {
+                log(`JSON format error: ${e.message}`, 'error');
+            }
+        }
+
+        function createBinaryBlob() {
+            const type = document.getElementById('binaryType').value;
+            const valuesStr = document.getElementById('binaryValues').value;
+            const output = document.getElementById('binaryOutput');
+
+            try {
+                const values = valuesStr.split(',').map(v => parseFloat(v.trim()));
+
+                let array;
+                let typeName;
+                switch (type) {
+                    case 'uint8':
+                        array = new Uint8Array(values);
+                        typeName = 'Uint8Array';
+                        break;
+                    case 'uint16':
+                        array = new Uint16Array(values);
+                        typeName = 'Uint16Array';
+                        break;
+                    case 'float32':
+                        array = new Float32Array(values);
+                        typeName = 'Float32Array';
+                        break;
+                    case 'int32':
+                        array = new Int32Array(values);
+                        typeName = 'Int32Array';
+                        break;
+                }
+
+                const blob = new Blob([array], { type: 'application/octet-stream' });
+
+                output.textContent = `Binary Blob created successfully!
+
+Properties:
+--------------------
+Size: ${formatSize(blob.size)} (${blob.size} bytes)
+Type: ${blob.type}
+Array type: ${typeName}
+Element count: ${array.length}
+Bytes per element: ${array.BYTES_PER_ELEMENT}
+
+Raw values:
+--------------------
+${Array.from(array).join(', ')}
+
+As text (if applicable):
+--------------------
+${new TextDecoder().decode(array)}`;
+
+                storeBlob('binary-blob-' + Date.now(), blob);
+
+            } catch (e) {
+                output.textContent = `Error creating binary blob: ${e.message}`;
+                log(`Binary blob error: ${e.message}`, 'error');
+            }
+        }
+
+        function createSvgBlob() {
+            const bg = document.getElementById('svgBg').value;
+            const fg = document.getElementById('svgFg').value;
+            const text = document.getElementById('svgText').value;
+            const output = document.getElementById('svgOutput');
+            const preview = document.getElementById('svgPreview');
+
+            const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="${bg}" rx="20"/>
+  <text x="100" y="110" font-family="system-ui, sans-serif" font-size="36" font-weight="bold"
+        fill="${fg}" text-anchor="middle">${text}</text>
+</svg>`;
+
+            const blob = new Blob([svg], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+
+            preview.innerHTML = `<img src="${url}" alt="Generated SVG" style="border: 1px solid #333;">`;
+
+            output.textContent = `SVG Blob created successfully!
+
+Properties:
+--------------------
+Size: ${formatSize(blob.size)} (${blob.size} bytes)
+Type: ${blob.type}
+Dimensions: 200x200
+
+SVG source:
+--------------------
+${svg}`;
+
+            storeBlob('svg-blob-' + Date.now(), blob);
+        }
+
+        async function sliceBlob() {
+            const name = document.getElementById('sliceSource').value;
+            const start = parseInt(document.getElementById('sliceStart').value);
+            const end = parseInt(document.getElementById('sliceEnd').value);
+            const output = document.getElementById('sliceOutput');
+
+            if (!name) {
+                output.textContent = 'Please select a source blob';
+                return;
+            }
+
+            const data = storedBlobs.get(name);
+            if (!data) return;
+
+            if (start >= end) {
+                output.textContent = 'Error: Start must be less than end';
+                return;
+            }
+
+            const slice = data.blob.slice(start, end);
+            const text = await slice.text();
+
+            output.textContent = `Slice created successfully!
+
+Original blob: ${name}
+Original size: ${formatSize(data.blob.size)}
+
+Slice properties:
+--------------------
+Range: bytes ${start} to ${end}
+Size: ${formatSize(slice.size)} (${slice.size} bytes)
+Type: ${slice.type || 'inherited'}
+
+Slice content (as text):
+--------------------
+${text}`;
+
+            storeBlob(name + '-slice-' + start + '-' + end, slice);
+        }
+
+        async function convertToText() {
+            const name = document.getElementById('convertSource').value;
+            const output = document.getElementById('convertOutput');
+
+            if (!name) {
+                output.textContent = 'Please select a source blob';
+                return;
+            }
+
+            const data = storedBlobs.get(name);
+            if (!data) return;
+
+            try {
+                const text = await data.blob.text();
+                output.textContent = `Blob to Text conversion:
+
+Source: ${name}
+Size: ${formatSize(data.blob.size)}
+
+Text content:
+--------------------
+${text.substring(0, 2000)}${text.length > 2000 ? '\n\n... (truncated)' : ''}`;
+
+                log(`Converted ${name} to text`, 'success');
+            } catch (e) {
+                output.textContent = `Error: ${e.message}`;
+                log(`Conversion error: ${e.message}`, 'error');
+            }
+        }
+
+        async function convertToArrayBuffer() {
+            const name = document.getElementById('convertSource').value;
+            const output = document.getElementById('convertOutput');
+
+            if (!name) {
+                output.textContent = 'Please select a source blob';
+                return;
+            }
+
+            const data = storedBlobs.get(name);
+            if (!data) return;
+
+            try {
+                const buffer = await data.blob.arrayBuffer();
+                const view = new Uint8Array(buffer);
+                const hex = Array.from(view.slice(0, 256))
+                    .map(b => b.toString(16).padStart(2, '0'))
+                    .join(' ');
+
+                output.textContent = `Blob to ArrayBuffer conversion:
+
+Source: ${name}
+Buffer size: ${buffer.byteLength} bytes
+
+First 256 bytes (hex):
+--------------------
+${hex}
+
+First 256 bytes (decimal):
+--------------------
+${Array.from(view.slice(0, 256)).join(', ')}`;
+
+                log(`Converted ${name} to ArrayBuffer`, 'success');
+            } catch (e) {
+                output.textContent = `Error: ${e.message}`;
+                log(`Conversion error: ${e.message}`, 'error');
+            }
+        }
+
+        async function convertToBase64() {
+            const name = document.getElementById('convertSource').value;
+            const output = document.getElementById('convertOutput');
+
+            if (!name) {
+                output.textContent = 'Please select a source blob';
+                return;
+            }
+
+            const data = storedBlobs.get(name);
+            if (!data) return;
+
+            try {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const base64 = reader.result;
+                    output.textContent = `Blob to Base64 conversion:
+
+Source: ${name}
+Original size: ${formatSize(data.blob.size)}
+Base64 length: ${base64.length} chars
+
+Data URL:
+--------------------
+${base64.substring(0, 500)}${base64.length > 500 ? '...' : ''}
+
+Base64 only:
+--------------------
+${base64.split(',')[1]?.substring(0, 500)}${(base64.split(',')[1]?.length || 0) > 500 ? '...' : ''}`;
+
+                    log(`Converted ${name} to Base64`, 'success');
+                };
+                reader.readAsDataURL(data.blob);
+            } catch (e) {
+                output.textContent = `Error: ${e.message}`;
+                log(`Conversion error: ${e.message}`, 'error');
+            }
+        }
+
+        async function convertToStream() {
+            const name = document.getElementById('convertSource').value;
+            const output = document.getElementById('convertOutput');
+
+            if (!name) {
+                output.textContent = 'Please select a source blob';
+                return;
+            }
+
+            const data = storedBlobs.get(name);
+            if (!data) return;
+
+            if (!data.blob.stream) {
+                output.textContent = 'Error: Blob.stream() is not supported in this browser';
+                return;
+            }
+
+            try {
+                const stream = data.blob.stream();
+                const reader = stream.getReader();
+                let totalBytes = 0;
+                let chunks = 0;
+
+                output.textContent = `Reading blob as stream...\n\n`;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    totalBytes += value.length;
+                    chunks++;
+                    output.textContent += `Chunk ${chunks}: ${value.length} bytes\n`;
+                }
+
+                output.textContent += `\n--------------------
+Stream reading complete!
+Total chunks: ${chunks}
+Total bytes: ${totalBytes}`;
+
+                log(`Converted ${name} to stream (${chunks} chunks)`, 'success');
+            } catch (e) {
+                output.textContent = `Error: ${e.message}`;
+                log(`Conversion error: ${e.message}`, 'error');
+            }
+        }
+
+        async function combineBlobs() {
+            const select = document.getElementById('combineSource');
+            const output = document.getElementById('combineOutput');
+            const selected = Array.from(select.selectedOptions).map(o => o.value);
+
+            if (selected.length < 2) {
+                output.textContent = 'Please select at least 2 blobs to combine';
+                return;
+            }
+
+            const blobs = selected.map(name => storedBlobs.get(name)?.blob).filter(Boolean);
+            const combined = new Blob(blobs, { type: blobs[0]?.type || 'application/octet-stream' });
+
+            const text = await combined.text();
+
+            output.textContent = `Combined blob created!
+
+Sources: ${selected.join(', ')}
+Individual sizes: ${blobs.map(b => formatSize(b.size)).join(' + ')}
+
+Combined blob:
+--------------------
+Size: ${formatSize(combined.size)} (${combined.size} bytes)
+Type: ${combined.type}
+
+Content preview:
+--------------------
+${text.substring(0, 1000)}${text.length > 1000 ? '...' : ''}`;
+
+            storeBlob('combined-' + Date.now(), combined);
+        }
+
+        checkSupport();
+    </script>
+</body>
+</html>

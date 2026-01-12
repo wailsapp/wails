@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Device Orientation API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.danger { background: #f87171; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .status.warning { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .orientation-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .orientation-item {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .orientation-item .label { color: #aaa; font-size: 0.85rem; margin-bottom: 5px; }
+        .orientation-item .value { font-size: 2rem; color: #4ade80; font-family: monospace; }
+        .orientation-item .unit { font-size: 0.85rem; color: #666; }
+        .orientation-item .bar {
+            height: 8px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .orientation-item .bar-fill {
+            height: 100%;
+            background: #4ade80;
+            border-radius: 4px;
+            transition: width 0.1s ease;
+        }
+        .visualizer-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .visualizer {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            background: rgba(0,0,0,0.3);
+            border-radius: 50%;
+            border: 3px solid #333;
+        }
+        .visualizer-label {
+            text-align: center;
+            color: #aaa;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        .compass {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        .compass-needle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 80px;
+            background: linear-gradient(to bottom, #f87171 50%, #4ade80 50%);
+            transform-origin: center top;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+        .compass-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .compass-marks {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+        .compass-mark {
+            position: absolute;
+            color: #666;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .device-3d {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 300px;
+        }
+        .device-cube {
+            width: 80px;
+            height: 120px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease;
+        }
+        .cube-face {
+            position: absolute;
+            width: 80px;
+            height: 120px;
+            border: 2px solid #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: #4ade80;
+        }
+        .cube-front { transform: translateZ(40px); }
+        .cube-back { transform: translateZ(-40px) rotateY(180deg); }
+        .cube-left { width: 80px; transform: translateX(-40px) rotateY(-90deg); }
+        .cube-right { width: 80px; transform: translateX(40px) rotateY(90deg); }
+        .cube-top { height: 80px; transform: translateY(-60px) rotateX(90deg); }
+        .cube-bottom { height: 80px; transform: translateY(60px) rotateX(-90deg); }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .log-entry .time { color: #666; margin-right: 10px; }
+        .log-entry.event { color: #60a5fa; }
+        .log-entry.data { color: #4ade80; }
+        .log-entry.error { color: #f87171; }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+        }
+        .info-item {
+            background: rgba(0,0,0,0.2);
+            padding: 10px 15px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .info-item .label { color: #aaa; }
+        .info-item .value { color: #4ade80; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Device Orientation API Demo</h1>
+        <p class="description">
+            The Device Orientation API provides access to the physical orientation of the device.
+            It reports alpha (compass direction), beta (front-to-back tilt), and gamma (left-to-right tilt).
+        </p>
+
+        <div id="status" class="status">
+            Device Orientation: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Orientation Controls</h2>
+            <button id="startBtn" onclick="startListening()">Start Listening</button>
+            <button id="stopBtn" onclick="stopListening()" class="danger" disabled>Stop Listening</button>
+            <button onclick="requestPermission()">Request Permission (iOS)</button>
+            <button onclick="calibrate()">Calibrate</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+
+        <div class="card">
+            <h2>Orientation Values</h2>
+            <div class="orientation-display">
+                <div class="orientation-item">
+                    <div class="label">Alpha (Z-axis rotation)</div>
+                    <div class="value" id="alpha">-</div>
+                    <div class="unit">degrees (0-360)</div>
+                    <div class="bar"><div class="bar-fill" id="alphaBar" style="width: 0%"></div></div>
+                </div>
+                <div class="orientation-item">
+                    <div class="label">Beta (X-axis tilt)</div>
+                    <div class="value" id="beta">-</div>
+                    <div class="unit">degrees (-180 to 180)</div>
+                    <div class="bar"><div class="bar-fill" id="betaBar" style="width: 50%"></div></div>
+                </div>
+                <div class="orientation-item">
+                    <div class="label">Gamma (Y-axis tilt)</div>
+                    <div class="value" id="gamma">-</div>
+                    <div class="unit">degrees (-90 to 90)</div>
+                    <div class="bar"><div class="bar-fill" id="gammaBar" style="width: 50%"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Visual Representation</h2>
+            <div class="visualizer-container">
+                <div>
+                    <div class="visualizer">
+                        <div class="compass">
+                            <div class="compass-marks">
+                                <span class="compass-mark" style="top: 5px; left: 50%; transform: translateX(-50%);">N</span>
+                                <span class="compass-mark" style="bottom: 5px; left: 50%; transform: translateX(-50%);">S</span>
+                                <span class="compass-mark" style="left: 5px; top: 50%; transform: translateY(-50%);">W</span>
+                                <span class="compass-mark" style="right: 5px; top: 50%; transform: translateY(-50%);">E</span>
+                            </div>
+                            <div class="compass-needle" id="compassNeedle"></div>
+                            <div class="compass-center"></div>
+                        </div>
+                    </div>
+                    <div class="visualizer-label">Compass (Alpha)</div>
+                </div>
+                <div>
+                    <div class="visualizer">
+                        <div class="device-3d">
+                            <div class="device-cube" id="deviceCube">
+                                <div class="cube-face cube-front">FRONT</div>
+                                <div class="cube-face cube-back">BACK</div>
+                                <div class="cube-face cube-left">L</div>
+                                <div class="cube-face cube-right">R</div>
+                                <div class="cube-face cube-top">TOP</div>
+                                <div class="cube-face cube-bottom">BOT</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="visualizer-label">Device Tilt (Beta/Gamma)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Additional Information</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="label">Absolute Orientation</span>
+                    <span class="value" id="absolute">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">WebKit Compass Heading</span>
+                    <span class="value" id="compassHeading">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">WebKit Compass Accuracy</span>
+                    <span class="value" id="compassAccuracy">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Update Count</span>
+                    <span class="value" id="updateCount">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <div class="output" id="eventLog">
+                <div class="log-entry">Waiting for orientation events...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let listening = false;
+        let updateCount = 0;
+        let calibrationOffset = { alpha: 0, beta: 0, gamma: 0 };
+
+        function checkSupport() {
+            const hasOrientation = 'DeviceOrientationEvent' in window;
+            const hasAbsolute = 'DeviceOrientationAbsoluteEvent' in window;
+
+            let supportText = '';
+            if (hasOrientation && hasAbsolute) {
+                supportText = 'Supported (with absolute)';
+            } else if (hasOrientation) {
+                supportText = 'Supported (relative only)';
+            } else {
+                supportText = 'Not supported';
+            }
+
+            document.getElementById('supported').textContent = supportText;
+            document.getElementById('status').className = hasOrientation ? 'status success' : 'status error';
+
+            return hasOrientation;
+        }
+
+        function log(message, type = 'event') {
+            const logEl = document.getElementById('eventLog');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `<span class="time">${time}</span>${message}`;
+            logEl.insertBefore(entry, logEl.firstChild);
+
+            // Keep only last 50 entries
+            while (logEl.children.length > 50) {
+                logEl.removeChild(logEl.lastChild);
+            }
+        }
+
+        function clearLog() {
+            document.getElementById('eventLog').innerHTML = '<div class="log-entry">Log cleared.</div>';
+        }
+
+        async function requestPermission() {
+            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                try {
+                    const permission = await DeviceOrientationEvent.requestPermission();
+                    if (permission === 'granted') {
+                        log('Permission granted', 'data');
+                        startListening();
+                    } else {
+                        log('Permission denied', 'error');
+                    }
+                } catch (error) {
+                    log(`Permission error: ${error.message}`, 'error');
+                }
+            } else {
+                log('Permission API not required on this device', 'event');
+            }
+        }
+
+        function handleOrientation(event) {
+            updateCount++;
+            document.getElementById('updateCount').textContent = updateCount;
+
+            const alpha = event.alpha !== null ? (event.alpha - calibrationOffset.alpha + 360) % 360 : null;
+            const beta = event.beta !== null ? event.beta - calibrationOffset.beta : null;
+            const gamma = event.gamma !== null ? event.gamma - calibrationOffset.gamma : null;
+
+            // Update value displays
+            document.getElementById('alpha').textContent = alpha !== null ? alpha.toFixed(1) : '-';
+            document.getElementById('beta').textContent = beta !== null ? beta.toFixed(1) : '-';
+            document.getElementById('gamma').textContent = gamma !== null ? gamma.toFixed(1) : '-';
+
+            // Update bars
+            if (alpha !== null) {
+                document.getElementById('alphaBar').style.width = (alpha / 360 * 100) + '%';
+            }
+            if (beta !== null) {
+                document.getElementById('betaBar').style.width = ((beta + 180) / 360 * 100) + '%';
+            }
+            if (gamma !== null) {
+                document.getElementById('gammaBar').style.width = ((gamma + 90) / 180 * 100) + '%';
+            }
+
+            // Update compass needle
+            if (alpha !== null) {
+                document.getElementById('compassNeedle').style.transform =
+                    `translateX(-50%) rotate(${alpha}deg)`;
+            }
+
+            // Update 3D device visualization
+            if (beta !== null && gamma !== null) {
+                document.getElementById('deviceCube').style.transform =
+                    `rotateX(${-beta}deg) rotateY(${gamma}deg)`;
+            }
+
+            // Update additional info
+            document.getElementById('absolute').textContent = event.absolute ? 'Yes' : 'No';
+
+            // WebKit compass (Safari)
+            if (event.webkitCompassHeading !== undefined) {
+                document.getElementById('compassHeading').textContent =
+                    event.webkitCompassHeading.toFixed(1) + ' deg';
+            }
+            if (event.webkitCompassAccuracy !== undefined) {
+                document.getElementById('compassAccuracy').textContent =
+                    event.webkitCompassAccuracy.toFixed(1) + ' deg';
+            }
+
+            // Log every 10th update to avoid spam
+            if (updateCount % 10 === 0) {
+                log(`Alpha: ${alpha?.toFixed(1) || '-'}, Beta: ${beta?.toFixed(1) || '-'}, Gamma: ${gamma?.toFixed(1) || '-'}`, 'data');
+            }
+        }
+
+        function startListening() {
+            if (listening) return;
+
+            window.addEventListener('deviceorientation', handleOrientation);
+            listening = true;
+
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+
+            log('Started listening for orientation events', 'event');
+        }
+
+        function stopListening() {
+            if (!listening) return;
+
+            window.removeEventListener('deviceorientation', handleOrientation);
+            listening = false;
+
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+
+            log('Stopped listening for orientation events', 'event');
+        }
+
+        function calibrate() {
+            // Store current values as offset for next reading
+            const alpha = document.getElementById('alpha').textContent;
+            const beta = document.getElementById('beta').textContent;
+            const gamma = document.getElementById('gamma').textContent;
+
+            if (alpha !== '-' && beta !== '-' && gamma !== '-') {
+                calibrationOffset = {
+                    alpha: parseFloat(alpha),
+                    beta: parseFloat(beta),
+                    gamma: parseFloat(gamma)
+                };
+                log('Calibrated - current position set as reference', 'data');
+            } else {
+                log('Cannot calibrate - no orientation data available', 'error');
+            }
+        }
+
+        // Initialize
+        checkSupport();
+
+        // Auto-start on devices that don't require permission
+        if (!('requestPermission' in DeviceOrientationEvent)) {
+            log('Auto-starting orientation listener...', 'event');
+            startListening();
+        } else {
+            log('iOS detected - tap "Request Permission" to enable orientation', 'event');
+        }
+    </script>
+</body>
+</html>

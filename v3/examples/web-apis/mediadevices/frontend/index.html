@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediaDevices API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button.danger { background: #f87171; }
+        button.secondary { background: #60a5fa; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .feature {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .feature .name { font-weight: 600; margin-bottom: 5px; }
+        .feature .supported { color: #4ade80; }
+        .feature .unsupported { color: #f87171; }
+        .device-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .device-item {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .device-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            text-align: center;
+        }
+        .device-info { flex: 1; }
+        .device-info .label { font-weight: 600; }
+        .device-info .id { font-size: 0.75rem; color: #666; font-family: monospace; word-break: break-all; }
+        .device-type {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .device-type.audioinput { background: #4ade80; color: #1a1a2e; }
+        .device-type.videoinput { background: #60a5fa; color: #1a1a2e; }
+        .device-type.audiooutput { background: #f97316; color: #1a1a2e; }
+        .preview-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .preview-box {
+            flex: 1;
+            min-width: 280px;
+            background: #0a0a1a;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .preview-box h3 {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        video {
+            width: 100%;
+            border-radius: 6px;
+            background: #000;
+        }
+        .audio-meter {
+            width: 100%;
+            height: 30px;
+            background: #1a1a2e;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        .audio-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+            width: 0%;
+            transition: width 0.05s;
+        }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .log-entry { margin-bottom: 5px; }
+        .log-entry .time { color: #666; }
+        .log-entry .info { color: #60a5fa; }
+        .log-entry .success { color: #4ade80; }
+        .log-entry .error { color: #f87171; }
+        .log-entry .warn { color: #fbbf24; }
+        select {
+            padding: 8px 12px;
+            background: #1a1a2e;
+            color: #eee;
+            border: 1px solid #333;
+            border-radius: 4px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MediaDevices API Demo</h1>
+        <p class="description">
+            The MediaDevices API provides access to connected media input devices like cameras and microphones.
+            It enables applications to enumerate devices and request audio/video streams.
+        </p>
+
+        <div class="status success" id="apiStatus">
+            MediaDevices API: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>API Support</h2>
+            <div class="feature-grid" id="features"></div>
+        </div>
+
+        <div class="card">
+            <h2>Available Devices</h2>
+            <button onclick="enumerateDevices()">Enumerate Devices</button>
+            <button class="secondary" onclick="requestPermissions()">Request Permissions First</button>
+            <div class="device-list" id="deviceList">
+                <p style="color: #aaa;">Click "Enumerate Devices" to list available media devices...</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Camera & Microphone Preview</h2>
+            <div style="margin-bottom: 15px;">
+                <select id="videoSelect">
+                    <option value="">Select Camera</option>
+                </select>
+                <select id="audioSelect">
+                    <option value="">Select Microphone</option>
+                </select>
+            </div>
+            <button onclick="startPreview()">Start Preview</button>
+            <button class="danger" onclick="stopPreview()">Stop Preview</button>
+            <button class="secondary" onclick="toggleVideo()">Toggle Video</button>
+            <button class="secondary" onclick="toggleAudio()">Toggle Audio</button>
+
+            <div class="preview-container">
+                <div class="preview-box">
+                    <h3>Video Preview</h3>
+                    <video id="videoPreview" autoplay muted playsinline></video>
+                </div>
+                <div class="preview-box">
+                    <h3>Audio Level</h3>
+                    <div class="audio-meter">
+                        <div class="audio-bar" id="audioBar"></div>
+                    </div>
+                    <p id="audioStatus" style="color: #aaa; font-size: 0.85rem; margin-top: 10px;">
+                        Start preview to see audio levels...
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Constraints Builder</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Configure media constraints for getUserMedia:</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                <label style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="constraintVideo" checked> Video
+                </label>
+                <label style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="constraintAudio" checked> Audio
+                </label>
+                <label style="display: flex; align-items: center; gap: 10px;">
+                    Video Width: <input type="number" id="constraintWidth" value="1280" style="width: 80px; padding: 5px; background: #1a1a2e; color: #eee; border: 1px solid #333; border-radius: 4px;">
+                </label>
+                <label style="display: flex; align-items: center; gap: 10px;">
+                    Video Height: <input type="number" id="constraintHeight" value="720" style="width: 80px; padding: 5px; background: #1a1a2e; color: #eee; border: 1px solid #333; border-radius: 4px;">
+                </label>
+                <label style="display: flex; align-items: center; gap: 10px;">
+                    Frame Rate: <input type="number" id="constraintFps" value="30" style="width: 60px; padding: 5px; background: #1a1a2e; color: #eee; border: 1px solid #333; border-radius: 4px;">
+                </label>
+                <label style="display: flex; align-items: center; gap: 10px;">
+                    Facing Mode:
+                    <select id="constraintFacing" style="flex: 1;">
+                        <option value="">Any</option>
+                        <option value="user">User (Front)</option>
+                        <option value="environment">Environment (Back)</option>
+                    </select>
+                </label>
+            </div>
+            <button onclick="startWithConstraints()">Start with Constraints</button>
+            <button class="secondary" onclick="showConstraints()">Show JSON</button>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <button class="danger" onclick="clearLog()">Clear Log</button>
+            <div class="output" id="eventLog">Events will be logged here...</div>
+        </div>
+    </div>
+
+    <script>
+        let currentStream = null;
+        let audioContext = null;
+        let analyser = null;
+        let animationId = null;
+
+        // Check API Support
+        function checkSupport() {
+            const hasMediaDevices = 'mediaDevices' in navigator;
+            const hasGetUserMedia = hasMediaDevices && 'getUserMedia' in navigator.mediaDevices;
+
+            const supported = document.getElementById('supported');
+            const apiStatus = document.getElementById('apiStatus');
+
+            if (hasGetUserMedia) {
+                supported.textContent = 'Available';
+                apiStatus.className = 'status success';
+            } else {
+                supported.textContent = 'Not available';
+                apiStatus.className = 'status error';
+            }
+
+            const features = document.getElementById('features');
+            const checks = [
+                { name: 'navigator.mediaDevices', supported: hasMediaDevices },
+                { name: 'getUserMedia()', supported: hasGetUserMedia },
+                { name: 'enumerateDevices()', supported: hasMediaDevices && 'enumerateDevices' in navigator.mediaDevices },
+                { name: 'getSupportedConstraints()', supported: hasMediaDevices && 'getSupportedConstraints' in navigator.mediaDevices },
+                { name: 'getDisplayMedia()', supported: hasMediaDevices && 'getDisplayMedia' in navigator.mediaDevices },
+                { name: 'devicechange event', supported: hasMediaDevices && 'ondevicechange' in navigator.mediaDevices },
+            ];
+
+            features.innerHTML = checks.map(c => `
+                <div class="feature">
+                    <div class="name">${c.name}</div>
+                    <div class="${c.supported ? 'supported' : 'unsupported'}">${c.supported ? 'Supported' : 'Not supported'}</div>
+                </div>
+            `).join('');
+
+            return hasGetUserMedia;
+        }
+
+        // Logging
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('eventLog');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="time">[${time}]</span> <span class="${type}">${message}</span>`;
+            logDiv.insertBefore(entry, logDiv.firstChild);
+        }
+
+        function clearLog() {
+            document.getElementById('eventLog').innerHTML = '<div class="log-entry"><span class="info">Log cleared</span></div>';
+        }
+
+        // Enumerate Devices
+        async function enumerateDevices() {
+            try {
+                log('Enumerating devices...', 'info');
+                const devices = await navigator.mediaDevices.enumerateDevices();
+
+                const deviceList = document.getElementById('deviceList');
+                const videoSelect = document.getElementById('videoSelect');
+                const audioSelect = document.getElementById('audioSelect');
+
+                videoSelect.innerHTML = '<option value="">Select Camera</option>';
+                audioSelect.innerHTML = '<option value="">Select Microphone</option>';
+
+                if (devices.length === 0) {
+                    deviceList.innerHTML = '<p style="color: #aaa;">No devices found</p>';
+                    log('No devices found', 'warn');
+                    return;
+                }
+
+                const icons = {
+                    audioinput: '🎤',
+                    videoinput: '📷',
+                    audiooutput: '🔊'
+                };
+
+                deviceList.innerHTML = devices.map(device => `
+                    <div class="device-item">
+                        <div class="device-icon">${icons[device.kind] || '📱'}</div>
+                        <div class="device-info">
+                            <div class="label">${device.label || 'Unnamed device (permission needed)'}</div>
+                            <div class="id">${device.deviceId || 'No ID'}</div>
+                        </div>
+                        <span class="device-type ${device.kind}">${device.kind}</span>
+                    </div>
+                `).join('');
+
+                devices.forEach(device => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.textContent = device.label || `${device.kind} (${device.deviceId.substring(0, 8)}...)`;
+
+                    if (device.kind === 'videoinput') {
+                        videoSelect.appendChild(option);
+                    } else if (device.kind === 'audioinput') {
+                        audioSelect.appendChild(option);
+                    }
+                });
+
+                log(`Found ${devices.length} device(s)`, 'success');
+            } catch (e) {
+                log(`Error enumerating devices: ${e.message}`, 'error');
+            }
+        }
+
+        // Request Permissions
+        async function requestPermissions() {
+            try {
+                log('Requesting camera and microphone permissions...', 'info');
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                stream.getTracks().forEach(track => track.stop());
+                log('Permissions granted!', 'success');
+                await enumerateDevices();
+            } catch (e) {
+                log(`Permission denied: ${e.message}`, 'error');
+            }
+        }
+
+        // Start Preview
+        async function startPreview() {
+            await stopPreview();
+
+            try {
+                const videoId = document.getElementById('videoSelect').value;
+                const audioId = document.getElementById('audioSelect').value;
+
+                const constraints = {
+                    video: videoId ? { deviceId: { exact: videoId } } : true,
+                    audio: audioId ? { deviceId: { exact: audioId } } : true
+                };
+
+                log(`Starting preview with constraints: ${JSON.stringify(constraints)}`, 'info');
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+                const video = document.getElementById('videoPreview');
+                video.srcObject = currentStream;
+
+                // Log track info
+                currentStream.getTracks().forEach(track => {
+                    log(`Track started: ${track.kind} - ${track.label}`, 'success');
+                    track.onended = () => log(`Track ended: ${track.kind}`, 'warn');
+                });
+
+                // Start audio meter
+                startAudioMeter();
+
+            } catch (e) {
+                log(`Error starting preview: ${e.message}`, 'error');
+            }
+        }
+
+        // Stop Preview
+        async function stopPreview() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => {
+                    track.stop();
+                    log(`Stopped track: ${track.kind}`, 'info');
+                });
+                currentStream = null;
+            }
+
+            document.getElementById('videoPreview').srcObject = null;
+
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+
+            document.getElementById('audioBar').style.width = '0%';
+            document.getElementById('audioStatus').textContent = 'Start preview to see audio levels...';
+        }
+
+        // Toggle Video
+        function toggleVideo() {
+            if (!currentStream) {
+                log('No active stream', 'warn');
+                return;
+            }
+
+            currentStream.getVideoTracks().forEach(track => {
+                track.enabled = !track.enabled;
+                log(`Video ${track.enabled ? 'enabled' : 'disabled'}`, 'info');
+            });
+        }
+
+        // Toggle Audio
+        function toggleAudio() {
+            if (!currentStream) {
+                log('No active stream', 'warn');
+                return;
+            }
+
+            currentStream.getAudioTracks().forEach(track => {
+                track.enabled = !track.enabled;
+                log(`Audio ${track.enabled ? 'enabled' : 'disabled'}`, 'info');
+            });
+        }
+
+        // Audio Meter
+        function startAudioMeter() {
+            if (!currentStream) return;
+
+            const audioTrack = currentStream.getAudioTracks()[0];
+            if (!audioTrack) {
+                document.getElementById('audioStatus').textContent = 'No audio track available';
+                return;
+            }
+
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const source = audioContext.createMediaStreamSource(currentStream);
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            source.connect(analyser);
+
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            const audioBar = document.getElementById('audioBar');
+            const audioStatus = document.getElementById('audioStatus');
+
+            function updateMeter() {
+                animationId = requestAnimationFrame(updateMeter);
+                analyser.getByteFrequencyData(dataArray);
+
+                const average = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+                const percent = Math.min(100, (average / 128) * 100);
+
+                audioBar.style.width = percent + '%';
+                audioStatus.textContent = `Level: ${Math.round(percent)}%`;
+            }
+
+            updateMeter();
+        }
+
+        // Constraints Builder
+        function buildConstraints() {
+            const video = document.getElementById('constraintVideo').checked;
+            const audio = document.getElementById('constraintAudio').checked;
+            const width = parseInt(document.getElementById('constraintWidth').value) || 1280;
+            const height = parseInt(document.getElementById('constraintHeight').value) || 720;
+            const fps = parseInt(document.getElementById('constraintFps').value) || 30;
+            const facing = document.getElementById('constraintFacing').value;
+
+            const constraints = {
+                audio: audio,
+                video: video ? {
+                    width: { ideal: width },
+                    height: { ideal: height },
+                    frameRate: { ideal: fps }
+                } : false
+            };
+
+            if (video && facing) {
+                constraints.video.facingMode = facing;
+            }
+
+            return constraints;
+        }
+
+        function showConstraints() {
+            const constraints = buildConstraints();
+            log(`Constraints: ${JSON.stringify(constraints, null, 2)}`, 'info');
+        }
+
+        async function startWithConstraints() {
+            await stopPreview();
+
+            try {
+                const constraints = buildConstraints();
+                log(`Starting with constraints: ${JSON.stringify(constraints)}`, 'info');
+
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+                const video = document.getElementById('videoPreview');
+                video.srcObject = currentStream;
+
+                currentStream.getTracks().forEach(track => {
+                    const settings = track.getSettings();
+                    log(`Track: ${track.kind} - Settings: ${JSON.stringify(settings)}`, 'success');
+                });
+
+                if (constraints.audio) {
+                    startAudioMeter();
+                }
+
+            } catch (e) {
+                log(`Error: ${e.message}`, 'error');
+            }
+        }
+
+        // Device change listener
+        if (navigator.mediaDevices && 'ondevicechange' in navigator.mediaDevices) {
+            navigator.mediaDevices.addEventListener('devicechange', () => {
+                log('Device change detected!', 'warn');
+                enumerateDevices();
+            });
+        }
+
+        // Initialize
+        checkSupport();
+    </script>
+</body>
+</html>

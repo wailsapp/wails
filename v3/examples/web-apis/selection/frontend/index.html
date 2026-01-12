@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selection API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: #60a5fa; }
+        button.danger { background: #f87171; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            min-height: 100px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .feature {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .feature .name { font-weight: 600; margin-bottom: 5px; }
+        .feature .supported { color: #4ade80; }
+        .feature .unsupported { color: #f87171; }
+        .selectable-content {
+            background: rgba(0,0,0,0.2);
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.8;
+            font-size: 1.05rem;
+            margin-bottom: 15px;
+        }
+        .selectable-content::selection {
+            background: rgba(74, 222, 128, 0.4);
+            color: #fff;
+        }
+        .selection-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .info-item {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .info-label {
+            color: #888;
+            font-size: 0.8rem;
+            margin-bottom: 3px;
+        }
+        .info-value {
+            color: #4ade80;
+            font-family: monospace;
+            font-size: 0.95rem;
+            word-break: break-word;
+        }
+        .highlight {
+            background: rgba(74, 222, 128, 0.3);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .highlight-blue {
+            background: rgba(96, 165, 250, 0.3);
+        }
+        .highlight-red {
+            background: rgba(233, 69, 96, 0.3);
+        }
+        input[type="text"], input[type="number"] {
+            background: #1a1a2e;
+            border: 1px solid #333;
+            color: #eee;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            width: 80px;
+        }
+        input[type="text"] { width: 200px; }
+        .word-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        .word-item {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .word-item:hover {
+            background: rgba(74, 222, 128, 0.4);
+        }
+        .editable-area {
+            background: rgba(0,0,0,0.2);
+            padding: 20px;
+            border-radius: 8px;
+            min-height: 100px;
+            outline: none;
+            line-height: 1.6;
+        }
+        .editable-area:focus {
+            box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Selection API Demo</h1>
+        <p class="description">
+            The Selection API provides methods to programmatically select text, get the current selection,
+            and manipulate selected ranges within a document.
+        </p>
+
+        <div class="status success">
+            Selection API: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>API Support</h2>
+            <div class="feature-grid" id="features"></div>
+        </div>
+
+        <div class="card">
+            <h2>Text Selection Monitor</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Select any text in the paragraph below:</p>
+            <div class="selectable-content" id="selectableText">
+                The Selection API is a powerful browser feature that allows JavaScript to programmatically
+                interact with user text selections. It provides methods to get the currently selected text,
+                create new selections, modify existing selections, and respond to selection changes.
+                This API is essential for building rich text editors, annotation tools, and other
+                interactive text-based applications. Try selecting different parts of this text to see
+                the API in action!
+            </div>
+            <div class="selection-info">
+                <div class="info-item">
+                    <div class="info-label">Selected Text</div>
+                    <div class="info-value" id="selectedText">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Character Count</div>
+                    <div class="info-value" id="charCount">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Range Count</div>
+                    <div class="info-value" id="rangeCount">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Selection Type</div>
+                    <div class="info-value" id="selectionType">None</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Is Collapsed</div>
+                    <div class="info-value" id="isCollapsed">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Anchor/Focus Offset</div>
+                    <div class="info-value" id="offsets">-, -</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Programmatic Selection</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Select text programmatically by character position:</p>
+            <div class="selectable-content" id="programmaticText">
+                ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789
+            </div>
+            <div style="margin-top: 15px;">
+                <label style="color: #aaa;">Start:</label>
+                <input type="number" id="selStart" value="0" min="0">
+                <label style="color: #aaa;">End:</label>
+                <input type="number" id="selEnd" value="10" min="0">
+                <button onclick="selectRange()">Select Range</button>
+                <button class="secondary" onclick="selectAll()">Select All</button>
+                <button class="danger" onclick="clearSelection()">Clear Selection</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Word Selection</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Click a word to select it in the text:</p>
+            <div class="selectable-content" id="wordText">
+                JavaScript provides powerful APIs for working with text selections in the browser.
+                The Selection and Range objects give developers fine-grained control over selected content.
+            </div>
+            <div class="word-list" id="wordList"></div>
+        </div>
+
+        <div class="card">
+            <h2>Selection Manipulation</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Select text below, then apply actions:</p>
+            <div class="editable-area" id="editableArea" contenteditable="true">
+                This is an editable area where you can select text and apply transformations.
+                Try selecting some text and clicking the buttons below to see the Selection API in action.
+                You can also type and edit the content directly.
+            </div>
+            <div style="margin-top: 15px;">
+                <button onclick="wrapSelection('highlight')">Highlight</button>
+                <button onclick="wrapSelection('highlight-blue')" class="secondary">Highlight Blue</button>
+                <button onclick="wrapSelection('highlight-red')" class="danger">Highlight Red</button>
+                <button onclick="uppercaseSelection()">UPPERCASE</button>
+                <button onclick="lowercaseSelection()" class="secondary">lowercase</button>
+                <button onclick="deleteSelection()" class="danger">Delete</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Find and Select</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Find and select text matches:</p>
+            <div class="selectable-content" id="searchText">
+                The quick brown fox jumps over the lazy dog. The fox was very quick indeed.
+                A quick movement of the enemy will jeopardize five gunboats.
+                The five boxing wizards jump quickly.
+            </div>
+            <div style="margin-top: 15px;">
+                <input type="text" id="searchTerm" placeholder="Enter search term" value="quick">
+                <button onclick="findAndSelect()">Find First</button>
+                <button class="secondary" onclick="findAndSelectAll()">Find All (highlight)</button>
+                <button class="danger" onclick="resetSearchText()">Reset Text</button>
+            </div>
+            <div id="searchResults" style="color: #aaa; margin-top: 10px;"></div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <button onclick="clearLog()">Clear Log</button>
+            <div class="output" id="eventLog">Selection events will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        // Event logging
+        let logEntries = [];
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            logEntries.unshift(`[${time}] ${message}`);
+            if (logEntries.length > 50) logEntries.pop();
+            document.getElementById('eventLog').textContent = logEntries.join('\n');
+        }
+        function clearLog() {
+            logEntries = [];
+            document.getElementById('eventLog').textContent = 'Log cleared.';
+        }
+
+        // Check API support
+        function checkSupport() {
+            const hasSelection = 'getSelection' in window;
+            document.getElementById('supported').textContent = hasSelection ? 'Available' : 'Not available';
+            document.getElementById('supported').parentElement.className = hasSelection ? 'status success' : 'status error';
+
+            const features = document.getElementById('features');
+            const checks = [
+                { name: 'window.getSelection()', supported: 'getSelection' in window },
+                { name: 'Selection.toString()', supported: window.getSelection && typeof window.getSelection().toString === 'function' },
+                { name: 'Selection.getRangeAt()', supported: window.getSelection && typeof window.getSelection().getRangeAt === 'function' },
+                { name: 'Selection.addRange()', supported: window.getSelection && typeof window.getSelection().addRange === 'function' },
+                { name: 'Selection.removeAllRanges()', supported: window.getSelection && typeof window.getSelection().removeAllRanges === 'function' },
+                { name: 'Selection.extend()', supported: window.getSelection && typeof window.getSelection().extend === 'function' },
+                { name: 'Document.createRange()', supported: typeof document.createRange === 'function' },
+                { name: 'selectionchange event', supported: 'onselectionchange' in document },
+            ];
+
+            features.innerHTML = checks.map(c => `
+                <div class="feature">
+                    <div class="name">${c.name}</div>
+                    <div class="${c.supported ? 'supported' : 'unsupported'}">${c.supported ? 'Supported' : 'Not supported'}</div>
+                </div>
+            `).join('');
+
+            log('API support check completed');
+        }
+
+        // Selection monitoring
+        function updateSelectionInfo() {
+            const selection = window.getSelection();
+            const text = selection.toString();
+
+            document.getElementById('selectedText').textContent = text ? `"${text.substring(0, 100)}${text.length > 100 ? '...' : ''}"` : '-';
+            document.getElementById('charCount').textContent = text.length;
+            document.getElementById('rangeCount').textContent = selection.rangeCount;
+            document.getElementById('selectionType').textContent = selection.type || 'Unknown';
+            document.getElementById('isCollapsed').textContent = selection.isCollapsed ? 'Yes' : 'No';
+            document.getElementById('offsets').textContent = `${selection.anchorOffset}, ${selection.focusOffset}`;
+
+            if (text) {
+                log(`Selection changed: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}" (${text.length} chars)`);
+            }
+        }
+
+        document.addEventListener('selectionchange', updateSelectionInfo);
+
+        // Programmatic selection
+        function selectRange() {
+            const element = document.getElementById('programmaticText');
+            const textNode = element.firstChild;
+            const start = parseInt(document.getElementById('selStart').value) || 0;
+            const end = parseInt(document.getElementById('selEnd').value) || 0;
+
+            if (start >= 0 && end <= textNode.length && start <= end) {
+                const range = document.createRange();
+                range.setStart(textNode, start);
+                range.setEnd(textNode, end);
+
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+
+                log(`Programmatic selection: characters ${start} to ${end}`);
+            } else {
+                log('Invalid range specified');
+            }
+        }
+
+        function selectAll() {
+            const element = document.getElementById('programmaticText');
+            const range = document.createRange();
+            range.selectNodeContents(element);
+
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            log('Selected all text');
+        }
+
+        function clearSelection() {
+            window.getSelection().removeAllRanges();
+            log('Selection cleared');
+        }
+
+        // Word selection
+        function initWordSelection() {
+            const element = document.getElementById('wordText');
+            const text = element.textContent;
+            const words = text.match(/\b\w+\b/g) || [];
+            const uniqueWords = [...new Set(words)];
+
+            const wordList = document.getElementById('wordList');
+            wordList.innerHTML = uniqueWords.slice(0, 15).map(word =>
+                `<span class="word-item" onclick="selectWord('${word}')">${word}</span>`
+            ).join('');
+        }
+
+        function selectWord(word) {
+            const element = document.getElementById('wordText');
+            const text = element.textContent;
+            const textNode = element.firstChild;
+
+            const index = text.indexOf(word);
+            if (index !== -1) {
+                const range = document.createRange();
+                range.setStart(textNode, index);
+                range.setEnd(textNode, index + word.length);
+
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+
+                log(`Selected word: "${word}"`);
+            }
+        }
+
+        // Selection manipulation
+        function wrapSelection(className) {
+            const selection = window.getSelection();
+            if (selection.rangeCount === 0 || selection.isCollapsed) {
+                log('No text selected');
+                return;
+            }
+
+            const range = selection.getRangeAt(0);
+            const span = document.createElement('span');
+            span.className = className;
+
+            try {
+                range.surroundContents(span);
+                log(`Wrapped selection with class: ${className}`);
+            } catch (e) {
+                log('Cannot wrap: selection spans multiple elements');
+            }
+        }
+
+        function uppercaseSelection() {
+            const selection = window.getSelection();
+            if (selection.rangeCount === 0 || selection.isCollapsed) {
+                log('No text selected');
+                return;
+            }
+
+            const text = selection.toString();
+            const range = selection.getRangeAt(0);
+            range.deleteContents();
+            range.insertNode(document.createTextNode(text.toUpperCase()));
+            log(`Converted to uppercase: "${text.toUpperCase()}"`);
+        }
+
+        function lowercaseSelection() {
+            const selection = window.getSelection();
+            if (selection.rangeCount === 0 || selection.isCollapsed) {
+                log('No text selected');
+                return;
+            }
+
+            const text = selection.toString();
+            const range = selection.getRangeAt(0);
+            range.deleteContents();
+            range.insertNode(document.createTextNode(text.toLowerCase()));
+            log(`Converted to lowercase: "${text.toLowerCase()}"`);
+        }
+
+        function deleteSelection() {
+            const selection = window.getSelection();
+            if (selection.rangeCount === 0 || selection.isCollapsed) {
+                log('No text selected');
+                return;
+            }
+
+            const text = selection.toString();
+            const range = selection.getRangeAt(0);
+            range.deleteContents();
+            log(`Deleted: "${text}"`);
+        }
+
+        // Find and select
+        const originalSearchText = document.getElementById('searchText').innerHTML;
+
+        function findAndSelect() {
+            const searchTerm = document.getElementById('searchTerm').value;
+            if (!searchTerm) {
+                log('Enter a search term');
+                return;
+            }
+
+            resetSearchText();
+            const element = document.getElementById('searchText');
+            const text = element.textContent;
+            const textNode = element.firstChild;
+
+            const index = text.toLowerCase().indexOf(searchTerm.toLowerCase());
+            if (index !== -1) {
+                const range = document.createRange();
+                range.setStart(textNode, index);
+                range.setEnd(textNode, index + searchTerm.length);
+
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+
+                document.getElementById('searchResults').textContent = `Found at position ${index}`;
+                log(`Found "${searchTerm}" at position ${index}`);
+            } else {
+                document.getElementById('searchResults').textContent = 'Not found';
+                log(`"${searchTerm}" not found`);
+            }
+        }
+
+        function findAndSelectAll() {
+            const searchTerm = document.getElementById('searchTerm').value;
+            if (!searchTerm) {
+                log('Enter a search term');
+                return;
+            }
+
+            resetSearchText();
+            const element = document.getElementById('searchText');
+            const text = element.textContent;
+
+            const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            const matches = text.match(regex);
+
+            if (matches) {
+                element.innerHTML = text.replace(regex, '<span class="highlight">$1</span>');
+                document.getElementById('searchResults').textContent = `Found ${matches.length} match(es)`;
+                log(`Found ${matches.length} matches for "${searchTerm}"`);
+            } else {
+                document.getElementById('searchResults').textContent = 'Not found';
+                log(`"${searchTerm}" not found`);
+            }
+        }
+
+        function resetSearchText() {
+            document.getElementById('searchText').innerHTML = originalSearchText;
+            document.getElementById('searchResults').textContent = '';
+        }
+
+        // Initialize
+        checkSupport();
+        initWordSelection();
+        log('Selection API demo initialized');
+    </script>
+</body>
+</html>
