@@ -23,7 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix adds missing execJS call when creating Windows webview
+- Fix missing execJS call when creating Windows webview
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
