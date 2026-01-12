@@ -17,6 +17,8 @@
         .container { max-width: 950px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         h1 { color: #4ade80; font-size: 1.3rem; }
+        h1 a { color: #4ade80; text-decoration: none; }
+        h1 a:hover { text-decoration: underline; }
         .status { font-size: 0.8rem; color: #4ade80; }
         .main { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; flex: 1; min-height: 0; }
         .card { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; min-height: 0; }
@@ -93,7 +95,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Blob API Demo</h1>
+            <h1><a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob" target="_blank">Blob API</a> Demo</h1>
             <span class="status" id="status">Checking...</span>
         </header>
 
