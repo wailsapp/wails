@@ -105,6 +105,7 @@ var (
 	gBytesUnref           func(uintptr)
 	gFree                 func(pointer)
 	gIdleAdd              func(uintptr)
+	gListFree             func(*GList)
 	gObjectRefSink        func(pointer)
 	gObjectUnref          func(pointer)
 	gSignalConnectData    func(pointer, string, uintptr, pointer, bool, int) int
@@ -262,6 +263,7 @@ func init() {
 	purego.RegisterLibFunc(&gBytesUnref, gtk, "g_bytes_unref")
 	purego.RegisterLibFunc(&gFree, gtk, "g_free")
 	purego.RegisterLibFunc(&gIdleAdd, gtk, "g_idle_add")
+	purego.RegisterLibFunc(&gListFree, gtk, "g_list_free")
 	purego.RegisterLibFunc(&gObjectRefSink, gtk, "g_object_ref_sink")
 	purego.RegisterLibFunc(&gObjectUnref, gtk, "g_object_unref")
 	purego.RegisterLibFunc(&gSignalConnectData, gtk, "g_signal_connect_data")
