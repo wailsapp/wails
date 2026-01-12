@@ -93,8 +93,10 @@
                 </div>
 
                 <div class="btn-row">
-                    <button onclick="openNewWindow()">Open New Window</button>
-                    <button class="secondary" onclick="sendPing()">Ping All</button>
+                    <button class="secondary" onclick="sendPing()">Ping All Windows</button>
+                </div>
+                <div style="font-size:0.7rem;color:#666;margin-bottom:8px;">
+                    Run multiple instances of this app to test cross-window messaging
                 </div>
 
                 <h2>Send Message</h2>
@@ -188,14 +190,6 @@
                 channel = null;
                 document.getElementById('status').textContent = 'Disconnected';
                 document.getElementById('status').className = 'status off';
-            }
-        }
-
-        async function openNewWindow() {
-            try {
-                await window.wails.Call.WindowService.OpenNewWindow();
-            } catch (e) {
-                console.error('Failed to open window:', e);
             }
         }
 
