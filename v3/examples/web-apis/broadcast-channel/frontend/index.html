@@ -69,6 +69,9 @@
         .stat-val { font-size: 1.2rem; font-weight: bold; color: #4ade80; }
         .stat-lbl { font-size: 0.65rem; color: #555; }
         .empty { color: #444; font-size: 0.8rem; text-align: center; padding: 20px; }
+        .features { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+        .feature { font-size: 0.7rem; padding: 3px 8px; border-radius: 3px; background: rgba(74,222,128,0.2); color: #4ade80; }
+        .feature.no { background: rgba(248,113,113,0.2); color: #f87171; }
     </style>
 </head>
 <body>
@@ -80,6 +83,9 @@
 
         <div class="main">
             <div class="card">
+                <h2>API Features</h2>
+                <div class="features" id="features"></div>
+
                 <h2>Channel</h2>
                 <div class="info-row">
                     <div class="info-box">
@@ -137,10 +143,22 @@
 
         document.getElementById('windowId').textContent = windowId;
 
-        // Check support & init
+        // Check support & show features
         const supported = typeof BroadcastChannel !== 'undefined';
         document.getElementById('status').textContent = supported ? 'Connected' : 'Not Supported';
         document.getElementById('status').className = supported ? 'status on' : 'status off';
+
+        const checks = [
+            ['BroadcastChannel', typeof BroadcastChannel !== 'undefined'],
+            ['postMessage', supported && 'postMessage' in BroadcastChannel.prototype],
+            ['close', supported && 'close' in BroadcastChannel.prototype],
+            ['onmessage', supported],
+            ['onmessageerror', supported],
+            ['MessageChannel', typeof MessageChannel !== 'undefined'],
+        ];
+        document.getElementById('features').innerHTML = checks.map(([n, s]) =>
+            `<span class="feature${s ? '' : ' no'}">${n}</span>`
+        ).join('');
 
         if (supported) {
             channel = new BroadcastChannel('demo-channel');
