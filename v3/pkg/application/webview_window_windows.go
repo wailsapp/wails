@@ -2109,9 +2109,9 @@ func (w *windowsWebviewWindow) navigationCompleted(
 			w.execJS(w.parent.options.JS)
 		}
 		if w.parent.options.CSS != "" {
-			cssEscaped := strings.ReplaceAll(w.parent.options.CSS, `'`, `\'`)
-			js := fmt.Sprintf("(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('%s')); document.head.appendChild(style); })();", cssEscaped)
+			js := fmt.Sprintf("(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode(%q)); document.head.appendChild(style); })();", w.parent.options.CSS)
 			w.execJS(js)
+		}
 		}
 	}
 
