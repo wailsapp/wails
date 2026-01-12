@@ -5,7 +5,6 @@ package application
 import (
 	"fmt"
 	"os"
-	"strings"
 	"unsafe"
 
 	"github.com/ebitengine/purego"
@@ -539,8 +538,7 @@ func menuClear(menu *Menu) {
 			}
 			children = children.next
 		}
-		// Note: GList is freed automatically by GTK when items are removed
-		_ = originalList
+		gListFree(originalList)
 	}
 }
 
