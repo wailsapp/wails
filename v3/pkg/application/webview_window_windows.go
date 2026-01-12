@@ -2116,6 +2116,17 @@ func (w *windowsWebviewWindow) navigationCompleted(
 	// The JS runtime checks this before processing file drops
 	w.execJS(fmt.Sprintf("window._wails.flags.enableFileDrop = %v;", w.parent.options.EnableFileDrop))
 
+	// Execute user-provided JS and CSS (only on first navigation)
+	if !w.webviewNavigationCompleted {
+		if w.parent.options.JS != "" {
+			w.execJS(w.parent.options.JS)
+		}
+		if w.parent.options.CSS != "" {
+			js := fmt.Sprintf("(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('%s')); document.head.appendChild(style); })();", cssEscaped)
+			w.execJS(js)
+		}
+	}
+
 	// EmitEvent DomReady ApplicationEvent
 	windowEvents <- &windowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}
 
