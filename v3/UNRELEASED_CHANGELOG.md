@@ -19,10 +19,11 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- New features, capabilities, or enhancements -->
 
 ## Changed
-- Update the README for the `Drag N Drop` example and highlights that `Internal Drag and Drop` is demonstrated with the example @ndianabasi
+<!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix menu not clearing children on `menu.Update()`
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
