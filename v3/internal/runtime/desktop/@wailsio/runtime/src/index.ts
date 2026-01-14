@@ -26,9 +26,10 @@ import * as Flags from "./flags.js";
 import * as Screens from "./screens.js";
 import * as System from "./system.js";
 import * as IOS from "./ios.js";
-import { Panel } from "./panel.js";
 import Window, { handleDragEnter, handleDragLeave, handleDragOver } from "./window.js";
 import * as WML from "./wml.js";
+
+export { Panel } from "./panel.js";
 
 export {
     Application,
@@ -38,7 +39,6 @@ export {
     Dialogs,
     Events,
     Flags,
-    Panel,
     Screens,
     System,
     IOS,

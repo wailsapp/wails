@@ -276,7 +276,7 @@ func (p *linuxPanelImpl) bounds() Rect {
 	}
 }
 
-func (p *linuxPanelImpl) setZIndex(zIndex int) {
+func (p *linuxPanelImpl) setZIndex(_ int) {
 	// GTK doesn't have a direct z-index concept
 	// We could use gtk_box_reorder_child to change ordering
 	// For now, this is a no-op

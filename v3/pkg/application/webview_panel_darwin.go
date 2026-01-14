@@ -53,6 +53,7 @@ void* panelNew(unsigned int panelId, unsigned int windowId, void* parentWindow, 
 	[userContentController autorelease];
 
 	WebviewPanelDelegate* delegate = [[WebviewPanelDelegate alloc] init];
+	[delegate autorelease];
 	delegate.panelId = panelId;
 	delegate.windowId = windowId;
 
@@ -250,7 +251,7 @@ func newPanelImpl(panel *WebviewPanel) webviewPanelImpl {
 }
 
 //export panelNavigationCompleted
-func panelNavigationCompleted(panelId C.uint) {
+func panelNavigationCompleted(_ C.uint) {
 	// Find the panel and mark runtime as loaded
 	// This is called from Objective-C when navigation completes
 	// For now, we'll handle this through the panel's own tracking

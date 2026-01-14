@@ -165,9 +165,14 @@ func (p *windowsPanelImpl) loadHTMLWithScripts() {
 		script = p.panel.options.JS
 	}
 	if p.panel.options.CSS != "" {
+		// Escape CSS for safe injection into JavaScript string
+		escapedCSS := strings.ReplaceAll(p.panel.options.CSS, `\`, `\\`)
+		escapedCSS = strings.ReplaceAll(escapedCSS, `"`, `\"`)
+		escapedCSS = strings.ReplaceAll(escapedCSS, "\n", `\n`)
+		escapedCSS = strings.ReplaceAll(escapedCSS, "\r", `\r`)
 		script += fmt.Sprintf(
 			"; addEventListener(\"DOMContentLoaded\", (event) => { document.head.appendChild(document.createElement('style')).innerHTML=\"%s\"; });",
-			strings.ReplaceAll(p.panel.options.CSS, `"`, `\"`),
+			escapedCSS,
 		)
 	}
 	if script != "" {
@@ -176,13 +181,13 @@ func (p *windowsPanelImpl) loadHTMLWithScripts() {
 	p.chromium.NavigateToString(p.panel.options.HTML)
 }
 
-func (p *windowsPanelImpl) processMessage(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
+func (p *windowsPanelImpl) processMessage(message string, _ *edge.ICoreWebView2, _ *edge.ICoreWebView2WebMessageReceivedEventArgs) {
 	// For now, just log panel messages
 	// In future, we could route these to the parent window or handle panel-specific messages
 	globalApplication.debug("Panel message received", "panel", p.panel.name, "message", message)
 }
 
-func (p *windowsPanelImpl) navigationCompletedCallback(sender *edge.ICoreWebView2, args *edge.ICoreWebView2NavigationCompletedEventArgs) {
+func (p *windowsPanelImpl) navigationCompletedCallback(_ *edge.ICoreWebView2, _ *edge.ICoreWebView2NavigationCompletedEventArgs) {
 	p.navigationCompleted = true
 
 	// Execute any pending JS
@@ -190,9 +195,14 @@ func (p *windowsPanelImpl) navigationCompletedCallback(sender *edge.ICoreWebView
 		p.execJS(p.panel.options.JS)
 	}
 	if p.panel.options.CSS != "" && p.panel.options.HTML == "" {
+		// Escape CSS for safe injection into JavaScript string
+		escapedCSS := strings.ReplaceAll(p.panel.options.CSS, `\`, `\\`)
+		escapedCSS = strings.ReplaceAll(escapedCSS, `'`, `\'`)
+		escapedCSS = strings.ReplaceAll(escapedCSS, "\n", `\n`)
+		escapedCSS = strings.ReplaceAll(escapedCSS, "\r", `\r`)
 		js := fmt.Sprintf(
 			"(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('%s')); document.head.appendChild(style); })();",
-			strings.ReplaceAll(p.panel.options.CSS, "'", "\\'"),
+			escapedCSS,
 		)
 		p.execJS(js)
 	}
@@ -202,6 +212,9 @@ func (p *windowsPanelImpl) navigationCompletedCallback(sender *edge.ICoreWebView
 }
 
 func (p *windowsPanelImpl) destroy() {
+	if p.chromium != nil {
+		p.chromium.ShuttingDown()
+	}
 	if p.hwnd != 0 {
 		w32.DestroyWindow(p.hwnd)
 		p.hwnd = 0

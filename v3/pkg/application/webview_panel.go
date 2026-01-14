@@ -42,11 +42,8 @@ type webviewPanelImpl interface {
 }
 
 var panelID uint32
-var panelIDLock sync.Mutex
 
 func getNextPanelID() uint {
-	panelIDLock.Lock()
-	defer panelIDLock.Unlock()
 	return uint(atomic.AddUint32(&panelID, 1))
 }
 
@@ -65,9 +62,10 @@ type WebviewPanel struct {
 	destroyed     bool
 	destroyedLock sync.RWMutex
 
-	// Track if runtime has been loaded
+	// Track if runtime has been loaded (protected by runtimeLock)
 	runtimeLoaded bool
 	pendingJS     []string
+	runtimeLock   sync.Mutex
 }
 
 // NewPanel creates a new WebviewPanel with the given options.
@@ -223,12 +221,16 @@ func (p *WebviewPanel) ExecJS(js string) {
 	if p.impl == nil || p.isDestroyed() {
 		return
 	}
+
+	p.runtimeLock.Lock()
 	if p.runtimeLoaded {
+		p.runtimeLock.Unlock()
 		InvokeSync(func() {
 			p.impl.execJS(js)
 		})
 	} else {
 		p.pendingJS = append(p.pendingJS, js)
+		p.runtimeLock.Unlock()
 	}
 }
 
@@ -345,21 +347,31 @@ func (p *WebviewPanel) isDestroyed() bool {
 // run initializes the platform-specific implementation
 // This is called by the parent window when the panel is added
 func (p *WebviewPanel) run() {
-	if p.impl != nil {
+	p.destroyedLock.Lock()
+	if p.impl != nil || p.destroyed {
+		p.destroyedLock.Unlock()
 		return
 	}
 	p.impl = newPanelImpl(p)
+	p.destroyedLock.Unlock()
+
 	InvokeSync(p.impl.create)
 }
 
 // markRuntimeLoaded is called when the runtime JavaScript has been loaded
 func (p *WebviewPanel) markRuntimeLoaded() {
+	p.runtimeLock.Lock()
 	p.runtimeLoaded = true
-	// Execute any pending JavaScript
-	for _, js := range p.pendingJS {
-		p.ExecJS(js)
-	}
+	pendingJS := p.pendingJS
 	p.pendingJS = nil
+	p.runtimeLock.Unlock()
+
+	// Execute any pending JavaScript outside the lock
+	for _, js := range pendingJS {
+		InvokeSync(func() {
+			p.impl.execJS(js)
+		})
+	}
 }
 
 // =========================================================================

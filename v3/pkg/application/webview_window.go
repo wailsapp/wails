@@ -298,9 +298,10 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 
 	result.setupEventMapping()
 
-	// Listen for window closing events and de
+	// Listen for window closing events and cleanup panels
 	result.OnWindowEvent(events.Common.WindowClosing, func(event *WindowEvent) {
 		atomic.StoreUint32(&result.unconditionallyClose, 1)
+		InvokeSync(result.destroyAllPanels)
 		InvokeSync(result.markAsDestroyed)
 		InvokeSync(result.impl.close)
 		globalApplication.Window.Remove(result.id)
@@ -1634,13 +1635,18 @@ func (w *WebviewWindow) removePanel(id uint) {
 // runPanels starts all panels that haven't been started yet.
 // This is called after the window's impl is created.
 func (w *WebviewWindow) runPanels() {
+	// Collect panels under lock, then run them outside the lock
 	w.panelsLock.RLock()
-	defer w.panelsLock.RUnlock()
-
+	panels := make([]*WebviewPanel, 0, len(w.panels))
 	for _, panel := range w.panels {
 		if panel.impl == nil {
-			panel.run()
+			panels = append(panels, panel)
 		}
+	}
+	w.panelsLock.RUnlock()
+
+	for _, panel := range panels {
+		panel.run()
 	}
 }
 

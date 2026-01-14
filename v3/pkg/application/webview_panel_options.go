@@ -34,7 +34,7 @@ type WebviewPanelOptions struct {
 	URL string
 
 	// HTML is the initial HTML content to display in the panel.
-	// If both URL and HTML are set, URL takes precedence.
+	// If both URL and HTML are set, HTML takes precedence.
 	HTML string
 
 	// JS is JavaScript to execute after the page loads.
