@@ -26,8 +26,8 @@ package application
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
 	// Navigation completed callback
-	extern void panelNavigationCompleted(unsigned int panelId);
-	panelNavigationCompleted(self.panelId);
+	extern void panelNavigationCompleted(unsigned int windowId, unsigned int panelId);
+	panelNavigationCompleted(self.windowId, self.panelId);
 }
 
 @end
@@ -113,6 +113,9 @@ void panelGetBounds(void* panel, void* parentWindow, int* x, int* y, int* width,
 }
 
 // Set panel z-index (bring to front or send to back)
+// Note: This is a binary implementation - panels are either on top (zIndex > 0)
+// or at the bottom (zIndex <= 0). Granular z-index ordering would require tracking
+// all panels and repositioning them relative to each other using NSWindowOrderingMode.
 void panelSetZIndex(void* panel, void* parentWindow, int zIndex) {
 	WKWebView* webView = (WKWebView*)panel;
 	WebviewWindow* window = (WebviewWindow*)parentWindow;
@@ -251,10 +254,23 @@ func newPanelImpl(panel *WebviewPanel) webviewPanelImpl {
 }
 
 //export panelNavigationCompleted
-func panelNavigationCompleted(_ C.uint) {
-	// Find the panel and mark runtime as loaded
-	// This is called from Objective-C when navigation completes
-	// For now, we'll handle this through the panel's own tracking
+func panelNavigationCompleted(windowID C.uint, panelID C.uint) {
+	// Find the window first
+	window, ok := globalApplication.Window.GetByID(uint(windowID))
+	if !ok || window == nil {
+		globalApplication.debug("panelNavigationCompleted: could not find window", "windowID", uint(windowID))
+		return
+	}
+
+	// Find the panel in the window
+	panel := window.GetPanelByID(uint(panelID))
+	if panel == nil {
+		globalApplication.debug("panelNavigationCompleted: could not find panel", "panelID", uint(panelID))
+		return
+	}
+
+	// Mark runtime as loaded so that pending JS can execute
+	panel.markRuntimeLoaded()
 }
 
 func (p *darwinPanelImpl) create() {
@@ -305,8 +321,8 @@ func (p *darwinPanelImpl) create() {
 		C.free(unsafe.Pointer(url))
 	}
 
-	// Mark runtime as loaded (panels don't inject the wails runtime by default)
-	p.panel.markRuntimeLoaded()
+	// Note: markRuntimeLoaded() is called in panelNavigationCompleted callback
+	// when the navigation (for either HTML or URL) completes
 }
 
 func (p *darwinPanelImpl) destroy() {

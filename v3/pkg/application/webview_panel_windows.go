@@ -264,9 +264,6 @@ func (p *windowsPanelImpl) bounds() Rect {
 	}
 
 	// Calculate position relative to parent's client area
-	var clientPoint w32.POINT
-	clientPoint.X = 0
-	clientPoint.Y = 0
 	parentClientX, parentClientY := w32.ClientToScreen(p.parent.hwnd, 0, 0)
 
 	physicalBounds := Rect{
@@ -284,8 +281,11 @@ func (p *windowsPanelImpl) setZIndex(zIndex int) {
 		return
 	}
 
-	// Use SetWindowPos to change z-order
-	// Higher zIndex = on top
+	// Use SetWindowPos to change z-order.
+	// Note: This is a binary implementation - panels are either on top (zIndex > 0)
+	// or at the bottom (zIndex <= 0). Granular z-index ordering is not supported
+	// on Windows because child windows share a z-order space and precise positioning
+	// would require tracking all panels and re-ordering them relative to each other.
 	var insertAfter uintptr
 	if zIndex > 0 {
 		insertAfter = w32.HWND_TOP

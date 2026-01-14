@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 func main() {
@@ -72,17 +73,18 @@ func main() {
 	})
 
 	// =====================================================================
-	// Example 1: Using explicit coordinates (traditional approach)
+	// Create panels after the window is shown
+	// This ensures the window is fully initialized and visible before creating panels
 	// =====================================================================
-	
-	// Create a sidebar panel on the left with explicit positioning
-	sidebarPanel := window.NewPanel(application.WebviewPanelOptions{
-		Name:   "sidebar",
-		X:      0,
-		Y:      50,    // Start below the 50px header
-		Width:  220,
-		Height: 650,
-		HTML: `<!DOCTYPE html>
+	window.OnWindowEvent(events.Common.WindowShow, func(*application.WindowEvent) {
+		// Create a sidebar panel on the left with explicit positioning
+		sidebarPanel := window.NewPanel(application.WebviewPanelOptions{
+			Name:   "sidebar",
+			X:      0,
+			Y:      50,    // Start below the 50px header
+			Width:  220,
+			Height: 650,
+			HTML: `<!DOCTYPE html>
 <html>
 <head>
 	<style>
@@ -146,33 +148,34 @@ func main() {
 	</div>
 </body>
 </html>`,
-		BackgroundColour: application.NewRGB(30, 30, 46),
-		Visible:          boolPtr(true),
-		ZIndex:           1,
+			BackgroundColour: application.NewRGB(30, 30, 46),
+			Visible:          boolPtr(true),
+			ZIndex:           1,
+		})
+
+		// =====================================================================
+		// Example 2: Content panel showing an external website
+		// This demonstrates loading external URLs in an embedded webview
+		// =====================================================================
+
+		contentPanel := window.NewPanel(application.WebviewPanelOptions{
+			Name:             "content",
+			X:                220, // Right of sidebar
+			Y:                50,  // Below header
+			Width:            980,
+			Height:           650,
+			URL:              "https://wails.io", // External website
+			DevToolsEnabled:  boolPtr(true),
+			Visible:          boolPtr(true),
+			BackgroundColour: application.NewRGB(255, 255, 255),
+			ZIndex:           1,
+		})
+
+		// Log panel creation
+		log.Printf("✅ Created sidebar panel: %s (ID: %d)", sidebarPanel.Name(), sidebarPanel.ID())
+		log.Printf("✅ Created content panel: %s (ID: %d)", contentPanel.Name(), contentPanel.ID())
 	})
 
-	// =====================================================================
-	// Example 2: Content panel showing an external website
-	// This demonstrates loading external URLs in an embedded webview
-	// =====================================================================
-	
-	contentPanel := window.NewPanel(application.WebviewPanelOptions{
-		Name:             "content",
-		X:                220, // Right of sidebar
-		Y:                50,  // Below header
-		Width:            980,
-		Height:           650,
-		URL:              "https://wails.io", // External website
-		DevToolsEnabled:  boolPtr(true),
-		Visible:          boolPtr(true),
-		BackgroundColour: application.NewRGB(255, 255, 255),
-		ZIndex:           1,
-	})
-
-	// Log panel creation
-	log.Printf("✅ Created sidebar panel: %s (ID: %d)", sidebarPanel.Name(), sidebarPanel.ID())
-	log.Printf("✅ Created content panel: %s (ID: %d)", contentPanel.Name(), contentPanel.ID())
-	
 	// =====================================================================
 	// Alternative: Using layout helper methods (commented examples)
 	// =====================================================================
