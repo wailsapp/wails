@@ -173,6 +173,10 @@ type WebviewWindow struct {
 
 	// unconditionallyClose marks the window to be unconditionally closed (atomic)
 	unconditionallyClose uint32
+
+	// Embedded panels management
+	panels     map[uint]*WebviewPanel
+	panelsLock sync.RWMutex
 }
 
 func (w *WebviewWindow) SetMenu(menu *Menu) {
@@ -289,6 +293,7 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 		eventListeners: make(map[uint][]*WindowEventListener),
 		eventHooks:     make(map[uint][]*WindowEventListener),
 		menuBindings:   make(map[string]*MenuItem),
+		panels:         make(map[uint]*WebviewPanel),
 	}
 
 	result.setupEventMapping()
@@ -402,6 +407,9 @@ func (w *WebviewWindow) Run() {
 	w.impl = newWindowImpl(w)
 
 	InvokeSync(w.impl.run)
+
+	// Start any panels that were added before the window was run
+	w.runPanels()
 }
 
 // SetAlwaysOnTop sets the window to be always on top.
@@ -1527,4 +1535,126 @@ func (w *WebviewWindow) SnapAssist() {
 		return
 	}
 	InvokeSync(w.impl.snapAssist)
+}
+
+// ============================================================================
+// Panel Management Methods
+// ============================================================================
+
+// NewPanel creates a new WebviewPanel with the given options and adds it to this window.
+// The panel is a secondary webview that can be positioned anywhere within the window.
+// This is similar to Electron's BrowserView or the deprecated webview tag.
+//
+// Example:
+//
+//	panel := window.NewPanel(application.WebviewPanelOptions{
+//		X:      0,
+//		Y:      0,
+//		Width:  300,
+//		Height: 400,
+//		URL:    "https://example.com",
+//	})
+func (w *WebviewWindow) NewPanel(options WebviewPanelOptions) *WebviewPanel {
+	panel := NewPanel(options)
+	panel.parent = w
+
+	w.panelsLock.Lock()
+	w.panels[panel.id] = panel
+	w.panelsLock.Unlock()
+
+	// If window is already running, start the panel immediately
+	if w.impl != nil && !w.isDestroyed() {
+		InvokeSync(panel.run)
+	}
+
+	return panel
+}
+
+// GetPanel returns a panel by its name, or nil if not found.
+func (w *WebviewWindow) GetPanel(name string) *WebviewPanel {
+	w.panelsLock.RLock()
+	defer w.panelsLock.RUnlock()
+
+	for _, panel := range w.panels {
+		if panel.name == name {
+			return panel
+		}
+	}
+	return nil
+}
+
+// GetPanelByID returns a panel by its ID, or nil if not found.
+func (w *WebviewWindow) GetPanelByID(id uint) *WebviewPanel {
+	w.panelsLock.RLock()
+	defer w.panelsLock.RUnlock()
+	return w.panels[id]
+}
+
+// GetPanels returns all panels attached to this window.
+func (w *WebviewWindow) GetPanels() []*WebviewPanel {
+	w.panelsLock.RLock()
+	defer w.panelsLock.RUnlock()
+
+	panels := make([]*WebviewPanel, 0, len(w.panels))
+	for _, panel := range w.panels {
+		panels = append(panels, panel)
+	}
+	return panels
+}
+
+// RemovePanel removes a panel from this window by its name.
+// Returns true if the panel was found and removed.
+func (w *WebviewWindow) RemovePanel(name string) bool {
+	panel := w.GetPanel(name)
+	if panel == nil {
+		return false
+	}
+	panel.Destroy()
+	return true
+}
+
+// RemovePanelByID removes a panel from this window by its ID.
+// Returns true if the panel was found and removed.
+func (w *WebviewWindow) RemovePanelByID(id uint) bool {
+	panel := w.GetPanelByID(id)
+	if panel == nil {
+		return false
+	}
+	panel.Destroy()
+	return true
+}
+
+// removePanel is called by WebviewPanel.Destroy() to remove itself from the parent
+func (w *WebviewWindow) removePanel(id uint) {
+	w.panelsLock.Lock()
+	defer w.panelsLock.Unlock()
+	delete(w.panels, id)
+}
+
+// runPanels starts all panels that haven't been started yet.
+// This is called after the window's impl is created.
+func (w *WebviewWindow) runPanels() {
+	w.panelsLock.RLock()
+	defer w.panelsLock.RUnlock()
+
+	for _, panel := range w.panels {
+		if panel.impl == nil {
+			panel.run()
+		}
+	}
+}
+
+// destroyAllPanels destroys all panels in this window.
+// This is called when the window is closing.
+func (w *WebviewWindow) destroyAllPanels() {
+	w.panelsLock.Lock()
+	panels := make([]*WebviewPanel, 0, len(w.panels))
+	for _, panel := range w.panels {
+		panels = append(panels, panel)
+	}
+	w.panelsLock.Unlock()
+
+	for _, panel := range panels {
+		panel.Destroy()
+	}
 }
