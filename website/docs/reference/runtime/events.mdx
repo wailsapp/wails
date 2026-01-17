@@ -23,6 +23,13 @@ This method unregisters the listener for the given event name, optionally multip
 Go: `EventsOff(ctx context.Context, eventName string, additionalEventNames ...string)`<br/>
 JS: `EventsOff(eventName string, ...additionalEventNames)`
 
+### EventsOffAll
+
+This method unregisters all event listeners.
+
+Go: `EventsOffAll(ctx context.Context)`<br/>
+JS: `EventsOffAll()`
+
 ### EventsOnce
 
 This method sets up a listener for the given event name, but will only trigger once. It returns a function to cancel
