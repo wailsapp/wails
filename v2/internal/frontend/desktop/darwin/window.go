@@ -156,6 +156,16 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 	if debug && frontendOptions.Debug.OpenInspectorOnStartup {
 		showInspector(result.context)
 	}
+
+	// Setup Escape key monitor for fullscreen mode (unless explicitly disabled)
+	interceptEscape := true // Default to intercepting Escape key
+	if frontendOptions.Mac != nil && frontendOptions.Mac.DisableFullscreenEscapeIntercept {
+		interceptEscape = false
+	}
+	if interceptEscape {
+		setupEscapeKeyMonitor(result.context)
+	}
+
 	return result
 }
 

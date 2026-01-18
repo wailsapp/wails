@@ -28,4 +28,10 @@ type Options struct {
 	OnFileOpen func(filePath string) `json:"-"`
 	OnUrlOpen  func(filePath string) `json:"-"`
 	// URLHandlers          map[string]func(string)
+
+	// DisableFullscreenEscapeIntercept controls the Escape key behavior in fullscreen mode.
+	// When false (default), pressing Escape in fullscreen will dispatch the event to the WebView
+	// instead of exiting fullscreen, allowing JavaScript to handle it (e.g., to close modals).
+	// When true, Escape will exit fullscreen using native macOS behavior.
+	DisableFullscreenEscapeIntercept bool
 }
