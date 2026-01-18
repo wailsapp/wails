@@ -5,7 +5,6 @@ package application
 import (
 	"fmt"
 	"os"
-	"strings"
 	"unsafe"
 
 	"github.com/ebitengine/purego"
@@ -106,6 +105,7 @@ var (
 	gBytesUnref           func(uintptr)
 	gFree                 func(pointer)
 	gIdleAdd              func(uintptr)
+	gListFree             func(*GList)
 	gObjectRefSink        func(pointer)
 	gObjectUnref          func(pointer)
 	gSignalConnectData    func(pointer, string, uintptr, pointer, bool, int) int
@@ -139,6 +139,8 @@ var (
 	gtkCheckMenuItemNewWithLabel    func(string) pointer
 	gtkCheckMenuItemSetActive       func(pointer, int)
 	gtkContainerAdd                 func(pointer, pointer)
+	gtkContainerGetChildren         func(pointer) *GList
+	gtkContainerRemove              func(pointer, pointer)
 	gtkCSSProviderLoadFromData      func(pointer, string, int, pointer)
 	gtkCSSProviderNew               func() pointer
 	gtkDialogAddButton              func(pointer, string, int)
@@ -261,6 +263,7 @@ func init() {
 	purego.RegisterLibFunc(&gBytesUnref, gtk, "g_bytes_unref")
 	purego.RegisterLibFunc(&gFree, gtk, "g_free")
 	purego.RegisterLibFunc(&gIdleAdd, gtk, "g_idle_add")
+	purego.RegisterLibFunc(&gListFree, gtk, "g_list_free")
 	purego.RegisterLibFunc(&gObjectRefSink, gtk, "g_object_ref_sink")
 	purego.RegisterLibFunc(&gObjectUnref, gtk, "g_object_unref")
 	purego.RegisterLibFunc(&gSignalConnectData, gtk, "g_signal_connect_data")
@@ -294,6 +297,8 @@ func init() {
 	purego.RegisterLibFunc(&gtkCheckMenuItemNewWithLabel, gtk, "gtk_check_menu_item_new_with_label")
 	purego.RegisterLibFunc(&gtkCheckMenuItemSetActive, gtk, "gtk_check_menu_item_set_active")
 	purego.RegisterLibFunc(&gtkContainerAdd, gtk, "gtk_container_add")
+	purego.RegisterLibFunc(&gtkContainerGetChildren, gtk, "gtk_container_get_children")
+	purego.RegisterLibFunc(&gtkContainerRemove, gtk, "gtk_container_remove")
 	purego.RegisterLibFunc(&gtkCSSProviderLoadFromData, gtk, "gtk_css_provider_load_from_data")
 	purego.RegisterLibFunc(&gtkDialogAddButton, gtk, "gtk_dialog_add_button")
 	purego.RegisterLibFunc(&gtkDialogGetContentArea, gtk, "gtk_dialog_get_content_area")
@@ -519,6 +524,24 @@ func menuSetSubmenu(item *MenuItem, menu *Menu) {
 
 func menuGetRadioGroup(item *linuxMenuItem) *GSList {
 	return (*GSList)(gtkRadioMenuItemGetGroup(pointer(item.native)))
+}
+
+func menuClear(menu *Menu) {
+	menuShell := pointer((menu.impl).(*linuxMenu).native)
+	children := gtkContainerGetChildren(menuShell)
+	if children != nil {
+		// Save the original pointer to free later
+		originalList := children
+		// Iterate through all children and remove them
+		for children != nil {
+			child := children.data
+			if child != nilPointer {
+				gtkContainerRemove(menuShell, child)
+			}
+			children = children.next
+		}
+		gListFree(originalList)
+	}
 }
 
 func attachMenuHandler(item *MenuItem) {

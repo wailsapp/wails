@@ -731,6 +731,24 @@ func menuGetRadioGroup(item *linuxMenuItem) *GSList {
 	return (*GSList)(C.gtk_radio_menu_item_get_group((*C.GtkRadioMenuItem)(item.native)))
 }
 
+func menuClear(menu *Menu) {
+	menuShell := (*C.GtkMenuShell)((menu.impl).(*linuxMenu).native)
+	children := C.gtk_container_get_children((*C.GtkContainer)(unsafe.Pointer(menuShell)))
+	if children != nil {
+		// Save the original pointer to free later
+		originalList := children
+		// Iterate through all children and remove them
+		for children != nil {
+			child := (*C.GtkWidget)(children.data)
+			if child != nil {
+				C.gtk_container_remove((*C.GtkContainer)(unsafe.Pointer(menuShell)), child)
+			}
+			children = children.next
+		}
+		C.g_list_free(originalList)
+	}
+}
+
 //export handleClick
 func handleClick(idPtr unsafe.Pointer) {
 	ident := C.CString("id")
