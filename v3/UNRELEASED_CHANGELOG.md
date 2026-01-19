@@ -23,7 +23,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix menu not clearing children on `menu.Update()`
 - Fix documentation regarding generating custom binding, must use `-d String` instead of `-o String`
 
 ## Deprecated
