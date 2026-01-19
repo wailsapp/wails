@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Update the docs page for keyboard shortcuts and corrects the type of the callback parameter for `KeyBinding.Add` by @ndianabasi
 - Fix documentation regarding generating custom binding, must use `-d String` instead of `-o String`
 
 ## Deprecated
