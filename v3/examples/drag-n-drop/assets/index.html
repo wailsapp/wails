@@ -3,422 +3,433 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Tree Drag-and-Drop Example</title>
-    <!-- Material Icons -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <!-- Material UI lite CSS -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
-    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
-    <script defer src="https://code.getmdl.io/1.3.0/material.min.js" integrity="sha384-7/3UJ+C4EZRMEh+yDUhEZJ5YH9Ul3XW1U6AlTjHlyMowgIkG7svPJf0BN3b2CEm1" crossorigin="anonymous"></script>
+    <title>Drag and Drop Demo</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #1e1e1e;
-            color: #f0f0f0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
             padding: 20px;
-            height: 100vh;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
         }
-        
-        .container {
-            display: flex;
-            height: calc(100vh - 140px);
-            gap: 20px;
+        h1 {
+            margin-top: 40px;
+            text-align: center;
+            color: #fff;
         }
-        
-        .file-tree {
-            flex: 1;
-            background-color: #2a2a2a;
-            border-radius: 4px;
-            padding: 16px;
-            overflow: auto;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        
-        .info-panel {
-            flex: 1;
-            background-color: #2a2a2a;
-            border-radius: 4px;
-            padding: 16px;
-            overflow: auto;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        
-        .tree-node {
-            padding: 4px;
-            margin: 2px 0;
-            display: flex;
-            align-items: center;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        
-        .tree-node:hover {
-            background-color: #3a3a3a;
-        }
-        
-        .folder {
-            color: #ffca28; /* Amber for folders */
-        }
-        
-        .file {
-            color: #81c784; /* Light green for files */
-        }
-        
-        .node-icon {
-            margin-right: 8px;
-        }
-        
-        .tree-children {
-            padding-left: 24px;
-        }
-        
-        .dropzone {
-            transition: background-color 0.3s, box-shadow 0.3s;
-        }
-        
-        /* Wails applied class for active dropzones during drag */
-        .wails-dropzone-hover {
-            background-color: rgba(63, 81, 181, 0.2) !important;
-            box-shadow: 0 0 8px rgba(63, 81, 181, 0.5) !important;
-        }
-        
-        /* Custom styles for folder highlight */
-        .folder-dropzone {
-            transition: all 0.2s ease;
-            border: 1px solid transparent;
-        }
-        
-        .folder-dropzone.wails-dropzone-hover {
-            border: 1px dashed #7986cb;
-            box-shadow: inset 0 0 5px rgba(121, 134, 203, 0.5) !important;
-        }
-        
-        #drop-output {
-            background-color: #3a3a3a;
-            color: #f0f0f0;
-            font-family: monospace;
-            padding: 16px;
-            border-radius: 4px;
-            flex-grow: 1;
-            white-space: pre-wrap;
-            overflow: auto;
-            margin-top: 16px;
-        }
-        
-        .header {
-            margin-bottom: 20px;
+        h2 {
+            color: #888;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 40px 0 20px;
             text-align: center;
         }
-        
-        .info-header {
-            margin-bottom: 16px;
-            color: #7986cb;
+        .instructions {
+            max-width: 900px;
+            margin: 0 auto 20px;
+            text-align: center;
+            color: #888;
+            line-height: 1.6;
         }
-        
-        .material-icons {
-            font-size: 20px;
-        }
-        
-        /* Path breadcrumb */
-        .path-display {
-            background-color: #3a3a3a;
-            padding: 8px 16px;
+        .instructions code {
+            background: #16213e;
+            padding: 2px 6px;
             border-radius: 4px;
-            margin-bottom: 16px;
+            color: #4a9eff;
+        }
+        
+        /* ===== External File Drop Section ===== */
+        .external-section {
+            max-width: 900px;
+            margin: 0 auto 40px;
+        }
+        .drop-zone {
+            padding: 40px;
+            border: 3px dashed #444;
+            border-radius: 16px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        .drop-zone p {
+            margin: 0;
+            color: #666;
+            font-size: 18px;
+        }
+        /* Wails adds this class when dragging files over */
+        .file-drop-target-active {
+            border-color: #4a9eff !important;
+            background: rgba(74, 158, 255, 0.1) !important;
+            box-shadow: 0 0 30px rgba(74, 158, 255, 0.2);
+        }
+        .file-drop-target-active p {
+            color: #4a9eff;
+        }
+        .buckets {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .bucket {
+            flex: 1;
+            min-height: 150px;
+            background: #16213e;
+            border-radius: 12px;
+            padding: 15px;
+        }
+        .bucket h3 {
+            margin: 0 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #2a3a5e;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .bucket.documents h3 { color: #4a9eff; }
+        .bucket.images h3 { color: #9b59b6; }
+        .bucket.other h3 { color: #27ae60; }
+        .bucket ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .bucket li {
+            padding: 6px 0;
             font-family: monospace;
-            color: #bbdefb;
-            overflow-x: auto;
-            white-space: nowrap;
+            font-size: 12px;
+            color: #aaa;
+            word-break: break-all;
+        }
+        .bucket .empty {
+            color: #444;
+            font-style: italic;
+            font-family: inherit;
+        }
+        
+        /* ===== Internal Drag Section ===== */
+        .internal-section {
+            max-width: 900px;
+            margin: 0 auto 40px;
+        }
+        .internal-container {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        .draggable-items {
+            flex: 1;
+            background: #16213e;
+            border-radius: 12px;
+            padding: 15px;
+            min-height: 200px;
+        }
+        .draggable-items h3 {
+            margin: 0 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #2a3a5e;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #e67e22;
+        }
+        .draggable-item {
+            background: #2a3a5e;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: grab;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .draggable-item:hover {
+            background: #3a4a6e;
+        }
+        .draggable-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+        .drop-targets {
+            flex: 2;
+            display: flex;
+            gap: 15px;
+        }
+        .internal-drop-zone {
+            flex: 1;
+            min-height: 200px;
+            background: #16213e;
+            border: 2px dashed #333;
+            border-radius: 12px;
+            padding: 15px;
+            transition: all 0.2s ease;
+        }
+        .internal-drop-zone h3 {
+            margin: 0 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #2a3a5e;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .internal-drop-zone.priority-high h3 { color: #e74c3c; }
+        .internal-drop-zone.priority-medium h3 { color: #f39c12; }
+        .internal-drop-zone.priority-low h3 { color: #27ae60; }
+        .internal-drop-zone.drag-over {
+            border-color: #4a9eff;
+            background: rgba(74, 158, 255, 0.1);
+        }
+        .internal-drop-zone ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .internal-drop-zone li {
+            background: #2a3a5e;
+            padding: 10px 14px;
+            margin-bottom: 6px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        .internal-drop-zone .empty {
+            color: #444;
+            font-style: italic;
+            background: none;
+            padding: 0;
+        }
+        
+        /* ===== Info Section ===== */
+        .drop-info {
+            max-width: 900px;
+            margin: 20px auto 0;
+            padding: 15px;
+            background: #16213e;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+        }
+        .drop-info strong {
+            color: #888;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>File Tree Drag & Drop Example</h1>
-        <p>Drag files onto folders to upload them to that location</p>
+    <h1>Drag and Drop Demo</h1>
+    
+    <!-- ===== External File Drop ===== -->
+    <h2>External File Drop</h2>
+    <div class="instructions">
+        <p>
+            Drop files from your operating system (Finder, Explorer, file managers).
+            Uses <code>EnableFileDrop: true</code> and <code>data-file-drop-target</code>
+        </p>
     </div>
     
-    <div class="container">
-        <div class="file-tree">
-            <div class="path-display" id="current-path">/home/user</div>
-            
-            <!-- Root folder -->
-            <div class="tree-node folder folder-dropzone" data-path="/home/user" data-wails-dropzone data-folder-id="root" data-folder-name="Home">
-                <span class="material-icons node-icon">folder</span>
-                <span>Home</span>
+    <div class="external-section">
+        <div class="drop-zone" data-file-drop-target>
+            <p>Drop files from your desktop or file manager here</p>
+        </div>
+        
+        <div class="buckets">
+            <div class="bucket documents">
+                <h3>Documents</h3>
+                <ul id="documents-list">
+                    <li class="empty">No documents yet</li>
+                </ul>
             </div>
             
-            <div class="tree-children">
-                <!-- Documents folder -->
-                <div class="tree-node folder folder-dropzone" data-path="/home/user/Documents" data-wails-dropzone data-folder-id="docs" data-folder-name="Documents">
-                    <span class="material-icons node-icon">folder</span>
-                    <span>Documents</span>
+            <div class="bucket images">
+                <h3>Images</h3>
+                <ul id="images-list">
+                    <li class="empty">No images yet</li>
+                </ul>
+            </div>
+            
+            <div class="bucket other">
+                <h3>Other Files</h3>
+                <ul id="other-list">
+                    <li class="empty">No other files yet</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ===== Internal Drag and Drop ===== -->
+    <h2>Internal Drag and Drop</h2>
+    <div class="instructions">
+        <p>
+            Drag items between zones using the HTML5 Drag and Drop API.
+            Uses <code>draggable="true"</code> and standard DOM events.
+        </p>
+    </div>
+    
+    <div class="internal-section">
+        <div class="internal-container">
+            <div class="draggable-items">
+                <h3>Tasks</h3>
+                <div class="draggable-item" draggable="true" data-task="1">Fix login bug</div>
+                <div class="draggable-item" draggable="true" data-task="2">Update documentation</div>
+                <div class="draggable-item" draggable="true" data-task="3">Add dark mode</div>
+                <div class="draggable-item" draggable="true" data-task="4">Refactor API calls</div>
+                <div class="draggable-item" draggable="true" data-task="5">Write unit tests</div>
+            </div>
+            
+            <div class="drop-targets">
+                <div class="internal-drop-zone priority-high" data-priority="high">
+                    <h3>High Priority</h3>
+                    <ul></ul>
                 </div>
                 
-                <div class="tree-children">
-                    <div class="tree-node file" data-path="/home/user/Documents/report.pdf">
-                        <span class="material-icons node-icon">description</span>
-                        <span>report.pdf</span>
-                    </div>
-                    <div class="tree-node file" data-path="/home/user/Documents/notes.txt">
-                        <span class="material-icons node-icon">description</span>
-                        <span>notes.txt</span>
-                    </div>
+                <div class="internal-drop-zone priority-medium" data-priority="medium">
+                    <h3>Medium Priority</h3>
+                    <ul></ul>
                 </div>
                 
-                <!-- Pictures folder -->
-                <div class="tree-node folder folder-dropzone" data-path="/home/user/Pictures" data-wails-dropzone data-folder-id="pics" data-folder-name="Pictures">
-                    <span class="material-icons node-icon">folder</span>
-                    <span>Pictures</span>
-                </div>
-                
-                <div class="tree-children">
-                    <div class="tree-node file" data-path="/home/user/Pictures/vacation.jpg">
-                        <span class="material-icons node-icon">image</span>
-                        <span>vacation.jpg</span>
-                    </div>
-                    <div class="tree-node file" data-path="/home/user/Pictures/profile.png">
-                        <span class="material-icons node-icon">image</span>
-                        <span>profile.png</span>
-                    </div>
-                </div>
-                
-                <!-- Downloads folder -->
-                <div class="tree-node folder folder-dropzone" data-path="/home/user/Downloads" data-wails-dropzone data-folder-id="downloads" data-folder-name="Downloads">
-                    <span class="material-icons node-icon">folder</span>
-                    <span>Downloads</span>
-                </div>
-                
-                <div class="tree-children">
-                    <div class="tree-node file" data-path="/home/user/Downloads/app.dmg">
-                        <span class="material-icons node-icon">archive</span>
-                        <span>app.dmg</span>
-                    </div>
-                    <div class="tree-node file" data-path="/home/user/Downloads/data.zip">
-                        <span class="material-icons node-icon">archive</span>
-                        <span>data.zip</span>
-                    </div>
-                </div>
-                
-                <!-- Projects folder with nested structure -->
-                <div class="tree-node folder folder-dropzone" data-path="/home/user/Projects" data-wails-dropzone data-folder-id="projects" data-folder-name="Projects">
-                    <span class="material-icons node-icon">folder</span>
-                    <span>Projects</span>
-                </div>
-                
-                <div class="tree-children">
-                    <!-- Nested folder with its own dropzone -->
-                    <div class="tree-node folder folder-dropzone" data-path="/home/user/Projects/Wails" data-wails-dropzone data-folder-id="wails" data-folder-name="Wails">
-                        <span class="material-icons node-icon">folder</span>
-                        <span>Wails</span>
-                    </div>
-                    
-                    <div class="tree-children">
-                        <div class="tree-node file" data-path="/home/user/Projects/Wails/main.go">
-                            <span class="material-icons node-icon">code</span>
-                            <span>main.go</span>
-                        </div>
-                        <div class="tree-node file" data-path="/home/user/Projects/Wails/go.mod">
-                            <span class="material-icons node-icon">code</span>
-                            <span>go.mod</span>
-                        </div>
-                    </div>
+                <div class="internal-drop-zone priority-low" data-priority="low">
+                    <h3>Low Priority</h3>
+                    <ul></ul>
                 </div>
             </div>
         </div>
-        
-        <div class="info-panel">
-            <h2 class="info-header">Drop Information</h2>
-            <div id="drop-output">Drag and drop files onto any folder in the file tree...
+    </div>
+    
+    <div class="drop-info" id="drop-info">
+        <strong>Last action:</strong> <span id="drop-details">No actions yet</span>
+    </div>
 
-The folder elements have the following attributes:
-- data-wails-dropzone: Marks the element as a dropzone
-- data-path: Contains the full path (used for destination)
-- data-folder-id: A unique ID for the folder
-- data-folder-name: The display name of the folder</div>
-        </div>
-    </div>
-    
     <script type="module">
-        import * as wails from "/wails/runtime.js";
+        import { Events } from '/wails/runtime.js';
         
-        const outputDiv = document.getElementById('drop-output');
-        const pathDisplay = document.getElementById('current-path');
-        const folderNodes = document.querySelectorAll('.folder-dropzone');
+        const documentsEl = document.getElementById('documents-list');
+        const imagesEl = document.getElementById('images-list');
+        const otherEl = document.getElementById('other-list');
+        const dropDetails = document.getElementById('drop-details');
         
-        // Add debug coordinate overlay
-        let debugOverlay = null;
+        // ===== External File Drop =====
+        const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg', '.webp', '.ico', '.tiff', '.tif'];
+        const documentExtensions = ['.pdf', '.doc', '.docx', '.txt', '.rtf', '.odt', '.xls', '.xlsx', '.ppt', '.pptx', '.md', '.csv', '.json', '.xml', '.html', '.htm'];
         
-        function createDebugOverlay() {
-            if (debugOverlay) return;
-            
-            debugOverlay = document.createElement('div');
-            debugOverlay.style.cssText = `
-                position: fixed;
-                top: 10px;
-                right: 10px;
-                background: rgba(0, 0, 0, 0.8);
-                color: white;
-                padding: 10px;
-                border-radius: 5px;
-                font-family: monospace;
-                font-size: 12px;
-                z-index: 10000;
-                pointer-events: none;
-                white-space: pre-line;
-            `;
-            document.body.appendChild(debugOverlay);
+        function getFileName(path) {
+            return path.split(/[/\\]/).pop();
         }
         
-        function updateDebugOverlay(info) {
-            if (!debugOverlay) createDebugOverlay();
-            debugOverlay.textContent = info;
+        function getExtension(path) {
+            const name = getFileName(path);
+            const idx = name.lastIndexOf('.');
+            return idx > 0 ? name.substring(idx).toLowerCase() : '';
         }
         
-        // Track mouse position and other debug info
-        let mouseInfo = { x: 0, y: 0 };
-        let windowInfo = { width: window.innerWidth, height: window.innerHeight };
+        function categoriseFile(path) {
+            const ext = getExtension(path);
+            if (imageExtensions.includes(ext)) return 'images';
+            if (documentExtensions.includes(ext)) return 'documents';
+            return 'other';
+        }
         
-        document.addEventListener('mousemove', (e) => {
-            mouseInfo.x = e.clientX;
-            mouseInfo.y = e.clientY;
+        function addFileToList(listEl, fileName) {
+            const empty = listEl.querySelector('.empty');
+            if (empty) empty.remove();
             
-            const debugInfo = `Mouse: ${e.clientX}, ${e.clientY}
-Page: ${e.pageX}, ${e.pageY}
-Screen: ${e.screenX}, ${e.screenY}
-Window: ${windowInfo.width}x${windowInfo.height}
-Viewport offset: ${window.pageXOffset}, ${window.pageYOffset}`;
+            const li = document.createElement('li');
+            li.textContent = fileName;
+            listEl.appendChild(li);
+        }
+        
+        Events.On('files-dropped', (event) => {
+            const { files, details } = event.data;
             
-            updateDebugOverlay(debugInfo);
+            files.forEach(filePath => {
+                const fileName = getFileName(filePath);
+                const category = categoriseFile(filePath);
+                
+                switch (category) {
+                    case 'documents':
+                        addFileToList(documentsEl, fileName);
+                        break;
+                    case 'images':
+                        addFileToList(imagesEl, fileName);
+                        break;
+                    default:
+                        addFileToList(otherEl, fileName);
+                }
+            });
+            
+            let info = `External: ${files.length} file(s) dropped`;
+            if (details) {
+                info += ` at (${details.x}, ${details.y})`;
+            }
+            dropDetails.textContent = info;
         });
         
-        // Add drag event listeners to show coordinates during drag
-        document.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            const debugInfo = `[DRAGOVER]
-Mouse: ${e.clientX}, ${e.clientY}
-Page: ${e.pageX}, ${e.pageY}
-Screen: ${e.screenX}, ${e.screenY}
-Window: ${windowInfo.width}x${windowInfo.height}
-Target: ${e.target.tagName} ${e.target.className}`;
-            
-            updateDebugOverlay(debugInfo);
-        });
+        // ===== Internal Drag and Drop =====
+        const draggableItems = document.querySelectorAll('.draggable-item');
+        const dropZones = document.querySelectorAll('.internal-drop-zone');
         
-        document.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const rect = e.target.getBoundingClientRect();
-            const debugInfo = `[DROP EVENT]
-Client: ${e.clientX}, ${e.clientY}
-Page: ${e.pageX}, ${e.pageY}
-Screen: ${e.screenX}, ${e.screenY}
-Target rect: ${rect.left}, ${rect.top}, ${rect.width}x${rect.height}
-Relative to target: ${e.clientX - rect.left}, ${e.clientY - rect.top}
-Window: ${windowInfo.width}x${windowInfo.height}`;
+        let draggedItem = null;
+        
+        draggableItems.forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                draggedItem = item;
+                item.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', item.dataset.task);
+            });
             
-            updateDebugOverlay(debugInfo);
-            console.log('Drop event debug info:', {
-                clientX: e.clientX,
-                clientY: e.clientY,
-                pageX: e.pageX,
-                pageY: e.pageY,
-                screenX: e.screenX,
-                screenY: e.screenY,
-                targetRect: rect,
-                relativeX: e.clientX - rect.left,
-                relativeY: e.clientY - rect.top
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging');
+                draggedItem = null;
             });
         });
         
-        window.addEventListener('resize', () => {
-            windowInfo.width = window.innerWidth;
-            windowInfo.height = window.innerHeight;
-        });
-        
-        // Update path display when clicking folders
-        folderNodes.forEach(folder => {
-            folder.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent event bubbling
-                const path = folder.getAttribute('data-path');
-                if (path) {
-                    pathDisplay.textContent = path;
-                    outputDiv.textContent = `Selected folder: ${path}\nReady to receive files...`;
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragenter', (e) => {
+                // Ignore external file drags - only respond to internal HTML drags
+                if (e.dataTransfer?.types.includes('Files')) return;
+                e.preventDefault();
+                zone.classList.add('drag-over');
+            });
+            
+            zone.addEventListener('dragover', (e) => {
+                // Ignore external file drags - only respond to internal HTML drags
+                if (e.dataTransfer?.types.includes('Files')) return;
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+            });
+            
+            zone.addEventListener('dragleave', (e) => {
+                // Ignore external file drags - only respond to internal HTML drags
+                if (e.dataTransfer?.types.includes('Files')) return;
+                // Only remove if leaving the zone entirely
+                if (!zone.contains(e.relatedTarget)) {
+                    zone.classList.remove('drag-over');
+                }
+            });
+            
+            zone.addEventListener('drop', (e) => {
+                // Ignore external file drags - only respond to internal HTML drags
+                if (e.dataTransfer?.types.includes('Files')) return;
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                
+                if (draggedItem) {
+                    const taskText = draggedItem.textContent;
+                    const priority = zone.dataset.priority;
+                    
+                    // Add to drop zone
+                    const li = document.createElement('li');
+                    li.textContent = taskText;
+                    zone.querySelector('ul').appendChild(li);
+                    
+                    // Remove from source
+                    draggedItem.remove();
+                    
+                    dropDetails.textContent = `Internal: "${taskText}" moved to ${priority} priority`;
                 }
             });
         });
-        
-        // Listen for the file drop event from Wails
-        wails.Events.On("frontend:FileDropInfo", (eventData) => {
-            console.log("=============== Frontend: File Drop Debug Info ===============");
-            console.log("Full event data:", eventData);
-            
-            const { files, targetID, targetClasses, dropX, dropY, attributes } = eventData.data[0];
-            
-            console.log("Extracted data:", {
-                files,
-                targetID,
-                targetClasses,
-                dropX,
-                dropY,
-                attributes
-            });
-            
-            // Get additional folder information from the attributes
-            const folderPath = attributes ? attributes['data-path'] : 'Unknown path';
-            const folderName = attributes ? attributes['data-folder-name'] : 'Unknown folder';
-            
-            let message = `=============== FILE DROP DEBUG REPORT ===============\n`;
-            message += `Files dropped on folder: ${folderName}\n`;
-            message += `Target path: ${folderPath}\n`;
-            message += `Element ID: ${targetID || 'N/A'}\n`;
-            message += `Element Classes: ${targetClasses && targetClasses.length > 0 ? targetClasses.join(', ') : 'N/A'}\n`;
-            message += `\n=== COORDINATE DEBUG INFO ===\n`;
-            message += `Drop Coordinates from Wails: X=${dropX.toFixed(2)}, Y=${dropY.toFixed(2)}\n`;
-            message += `Current Mouse Position: X=${mouseInfo.x}, Y=${mouseInfo.y}\n`;
-            message += `Window Size: ${windowInfo.width}x${windowInfo.height}\n`;
-            
-            // Get the target element to show its position
-            const targetElement = document.querySelector(`[data-folder-id="${targetID}"]`);
-            if (targetElement) {
-                const rect = targetElement.getBoundingClientRect();
-                message += `Target Element Position:\n`;
-                message += `  - Bounding rect: left=${rect.left}, top=${rect.top}, right=${rect.right}, bottom=${rect.bottom}\n`;
-                message += `  - Size: ${rect.width}x${rect.height}\n`;
-                message += `  - Center: ${rect.left + rect.width/2}, ${rect.top + rect.height/2}\n`;
-                message += `  - Drop relative to element: X=${dropX - rect.left}, Y=${dropY - rect.top}\n`;
-            }
-            
-            message += `\n=== ELEMENT ATTRIBUTES ===\n`;
-            if (attributes && Object.keys(attributes).length > 0) {
-                Object.entries(attributes).forEach(([key, value]) => {
-                    message += `  ${key}: "${value}"\n`;
-                });
-            } else {
-                message += "  No attributes found\n";
-            }
-            
-            message += `\n=== DROPPED FILES ===\n`;
-            files.forEach((file, index) => {
-                message += `  ${index + 1}. ${file}\n`;
-            });
-            
-            message += `\n=== SIMULATION ===\n`;
-            message += `Simulating upload to ${folderPath}...\n`;
-            message += `===========================================`;
-            
-            outputDiv.textContent = message;
-            
-            console.log("=============== End Frontend Debug ===============");
-        });
-        
-        console.log("File Tree Drag-and-Drop example initialized with enhanced debugging.");
-        createDebugOverlay();
     </script>
 </body>
 </html>

@@ -104,8 +104,10 @@ type WebviewWindowOptions struct {
 	// ZoomControlEnabled will enable the zoom control.
 	ZoomControlEnabled bool
 
-	// EnableDragAndDrop will enable drag and drop.
-	EnableDragAndDrop bool
+	// EnableFileDrop enables drag and drop of files onto the window.
+	// When enabled, files dragged from the OS onto elements with the
+	// `data-file-drop-target` attribute will trigger a FilesDropped event.
+	EnableFileDrop bool
 
 	// OpenInspectorOnStartup will open the inspector when the window is first shown.
 	OpenInspectorOnStartup bool
@@ -182,20 +184,6 @@ const (
 /******* Windows Options *******/
 
 type BackdropType int32
-type DragEffect int32
-
-const (
-	// DragEffectNone is used to indicate that the drop target cannot accept the data.
-	DragEffectNone DragEffect = 1
-	// DragEffectCopy is used to indicate that the data is copied to the drop target.
-	DragEffectCopy DragEffect = 2
-	// DragEffectMove is used to indicate that the data is removed from the drag source.
-	DragEffectMove DragEffect = 3
-	// DragEffectLink is used to indicate that a link to the original data is established.
-	DragEffectLink DragEffect = 4
-	// DragEffectScroll is used to indicate that the target can be scrolled while dragging to locate a drop position that is not currently visible in the target.
-
-)
 
 const (
 	Auto    BackdropType = 0
@@ -280,10 +268,6 @@ type WindowsWindow struct {
 
 	// Menu is the menu to use for the window.
 	Menu *Menu
-
-	// Drag Cursor Effects
-	OnEnterEffect DragEffect
-	OnOverEffect  DragEffect
 
 	// Permissions map for WebView2. If empty, default permissions will be granted.
 	Permissions map[CoreWebView2PermissionKind]CoreWebView2PermissionState
@@ -489,6 +473,9 @@ type MacWindow struct {
 	// WindowLevel sets the window level to control the order of windows in the screen
 	WindowLevel MacWindowLevel
 
+	// CollectionBehavior controls how the window behaves across macOS Spaces and fullscreen
+	CollectionBehavior MacWindowCollectionBehavior
+
 	// LiquidGlass contains configuration for the Liquid Glass effect
 	LiquidGlass MacLiquidGlass
 }
@@ -504,6 +491,40 @@ const (
 	MacWindowLevelStatus      MacWindowLevel = "status"
 	MacWindowLevelPopUpMenu   MacWindowLevel = "popUpMenu"
 	MacWindowLevelScreenSaver MacWindowLevel = "screenSaver"
+)
+
+// MacWindowCollectionBehavior controls window behavior across macOS Spaces and fullscreen.
+// These correspond to NSWindowCollectionBehavior bitmask values and can be combined using bitwise OR.
+// For example: MacWindowCollectionBehaviorCanJoinAllSpaces | MacWindowCollectionBehaviorFullScreenAuxiliary
+type MacWindowCollectionBehavior int
+
+const (
+	// MacWindowCollectionBehaviorDefault is zero value - when set, FullScreenPrimary is used for backwards compatibility
+	MacWindowCollectionBehaviorDefault MacWindowCollectionBehavior = 0
+	// MacWindowCollectionBehaviorCanJoinAllSpaces allows window to appear on all Spaces
+	MacWindowCollectionBehaviorCanJoinAllSpaces MacWindowCollectionBehavior = 1 << 0 // 1
+	// MacWindowCollectionBehaviorMoveToActiveSpace moves window to active Space when shown
+	MacWindowCollectionBehaviorMoveToActiveSpace MacWindowCollectionBehavior = 1 << 1 // 2
+	// MacWindowCollectionBehaviorManaged is the default managed window behavior
+	MacWindowCollectionBehaviorManaged MacWindowCollectionBehavior = 1 << 2 // 4
+	// MacWindowCollectionBehaviorTransient marks window as temporary/transient
+	MacWindowCollectionBehaviorTransient MacWindowCollectionBehavior = 1 << 3 // 8
+	// MacWindowCollectionBehaviorStationary keeps window stationary during Space switches
+	MacWindowCollectionBehaviorStationary MacWindowCollectionBehavior = 1 << 4 // 16
+	// MacWindowCollectionBehaviorParticipatesInCycle includes window in Cmd+` cycling (default for normal windows)
+	MacWindowCollectionBehaviorParticipatesInCycle MacWindowCollectionBehavior = 1 << 5 // 32
+	// MacWindowCollectionBehaviorIgnoresCycle excludes window from Cmd+` cycling
+	MacWindowCollectionBehaviorIgnoresCycle MacWindowCollectionBehavior = 1 << 6 // 64
+	// MacWindowCollectionBehaviorFullScreenPrimary allows the window to enter fullscreen
+	MacWindowCollectionBehaviorFullScreenPrimary MacWindowCollectionBehavior = 1 << 7 // 128
+	// MacWindowCollectionBehaviorFullScreenAuxiliary allows window to overlay fullscreen apps
+	MacWindowCollectionBehaviorFullScreenAuxiliary MacWindowCollectionBehavior = 1 << 8 // 256
+	// MacWindowCollectionBehaviorFullScreenNone prevents window from entering fullscreen (macOS 10.7+)
+	MacWindowCollectionBehaviorFullScreenNone MacWindowCollectionBehavior = 1 << 9 // 512
+	// MacWindowCollectionBehaviorFullScreenAllowsTiling allows side-by-side tiling in fullscreen (macOS 10.11+)
+	MacWindowCollectionBehaviorFullScreenAllowsTiling MacWindowCollectionBehavior = 1 << 11 // 2048
+	// MacWindowCollectionBehaviorFullScreenDisallowsTiling prevents tiling in fullscreen (macOS 10.11+)
+	MacWindowCollectionBehaviorFullScreenDisallowsTiling MacWindowCollectionBehavior = 1 << 12 // 4096
 )
 
 // MacWebviewPreferences contains preferences for the Mac webview

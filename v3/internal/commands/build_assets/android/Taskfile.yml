@@ -125,7 +125,7 @@ tasks:
       - |
         cd build/android
         ./gradlew assembleDebug
-        cp app/build/outputs/apk/debug/app-debug.apk ../../{{.BIN_DIR}}/{{.APP_NAME}}.apk
+        cp app/build/outputs/apk/debug/app-debug.apk "../../{{.BIN_DIR}}/{{.APP_NAME}}.apk"
         echo "APK created: {{.BIN_DIR}}/{{.APP_NAME}}.apk"
 
   assemble:apk:release:
@@ -134,7 +134,7 @@ tasks:
       - |
         cd build/android
         ./gradlew assembleRelease
-        cp app/build/outputs/apk/release/app-release-unsigned.apk ../../{{.BIN_DIR}}/{{.APP_NAME}}-release.apk
+        cp app/build/outputs/apk/release/app-release-unsigned.apk "../../{{.BIN_DIR}}/{{.APP_NAME}}-release.apk"
         echo "Release APK created: {{.BIN_DIR}}/{{.APP_NAME}}-release.apk"
 
   generate:android:bindings:
@@ -202,7 +202,7 @@ tasks:
     deps: [package]
     cmds:
       - adb uninstall {{.APP_ID}} 2>/dev/null || true
-      - adb install {{.BIN_DIR}}/{{.APP_NAME}}.apk
+      - adb install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
       - adb shell am start -n {{.APP_ID}}/.MainActivity
 
   run:
@@ -215,7 +215,7 @@ tasks:
     cmds:
       - task: assemble:apk
       - adb uninstall {{.APP_ID}} 2>/dev/null || true
-      - adb install {{.BIN_DIR}}/{{.APP_NAME}}.apk
+      - adb install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
       - adb shell am start -n {{.APP_ID}}/.MainActivity
 
   logs:
