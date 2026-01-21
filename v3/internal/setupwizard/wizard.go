@@ -544,6 +544,77 @@ type InstallResponse struct {
 	Error   string `json:"error,omitempty"`
 }
 
+// allowedCommands is a whitelist of commands that can be executed for dependency installation.
+// This prevents arbitrary command execution from user-controlled input.
+var allowedCommands = map[string]bool{
+	// Package managers (may be called directly or via sudo)
+	"apt":       true,
+	"apt-get":   true,
+	"dnf":       true,
+	"yum":       true,
+	"pacman":    true,
+	"zypper":    true,
+	"emerge":    true,
+	"eopkg":     true,
+	"nix-env":   true,
+	"brew":      true,
+	"port":      true, // MacPorts
+	"winget":    true,
+	"choco":     true,
+	"scoop":     true,
+	"sudo":      true, // sudo is allowed as it prefixes package manager commands
+	"pkexec":    true, // polkit alternative to sudo
+	"doas":      true, // OpenBSD sudo alternative
+	"xcode-select": true, // macOS Xcode CLI tools
+}
+
+// allowedSudoCommands are commands allowed to be run after sudo/pkexec/doas
+var allowedSudoCommands = map[string]bool{
+	"apt":       true,
+	"apt-get":   true,
+	"dnf":       true,
+	"yum":       true,
+	"pacman":    true,
+	"zypper":    true,
+	"emerge":    true,
+	"eopkg":     true,
+	"nix-env":   true,
+	"brew":      true,
+	"port":      true,
+	"xcode-select": true,
+}
+
+// isCommandAllowed checks if a command is in the whitelist.
+// For sudo/pkexec/doas, it also validates the command being elevated.
+func isCommandAllowed(parts []string) bool {
+	if len(parts) == 0 {
+		return false
+	}
+
+	cmd := parts[0]
+	if !allowedCommands[cmd] {
+		return false
+	}
+
+	// If it's a privilege escalation command, validate the actual command
+	if cmd == "sudo" || cmd == "pkexec" || cmd == "doas" {
+		if len(parts) < 2 {
+			return false
+		}
+		// Skip sudo flags like -E, -S, etc.
+		actualCmdIndex := 1
+		for actualCmdIndex < len(parts) && strings.HasPrefix(parts[actualCmdIndex], "-") {
+			actualCmdIndex++
+		}
+		if actualCmdIndex >= len(parts) {
+			return false
+		}
+		return allowedSudoCommands[parts[actualCmdIndex]]
+	}
+
+	return true
+}
+
 func (w *Wizard) handleInstallDependency(rw http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
@@ -558,13 +629,21 @@ func (w *Wizard) handleInstallDependency(rw http.ResponseWriter, r *http.Request
 
 	rw.Header().Set("Content-Type", "application/json")
 
-	// Execute the install command
 	// Split the command into parts
 	parts := strings.Fields(req.Command)
 	if len(parts) == 0 {
 		json.NewEncoder(rw).Encode(InstallResponse{
 			Success: false,
 			Error:   "Empty command",
+		})
+		return
+	}
+
+	// Validate command against whitelist to prevent arbitrary command execution
+	if !isCommandAllowed(parts) {
+		json.NewEncoder(rw).Encode(InstallResponse{
+			Success: false,
+			Error:   "Command not allowed: only package manager commands are permitted",
 		})
 		return
 	}
