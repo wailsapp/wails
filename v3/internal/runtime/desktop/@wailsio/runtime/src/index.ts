@@ -76,3 +76,21 @@ window._wails.handleDragLeave = handleDragLeave;
 window._wails.handleDragOver = handleDragOver;
 
 System.invoke("wails:runtime:ready");
+
+// Load optional window init scripts (fire and forget, matching current async behavior)
+// The backend identifies the window from the x-wails-window-id header
+fetch('/wails/init.js')
+    .then(r => r.ok && r.status !== 204 ? r.text() : null)
+    .then(js => { if (js) eval(js); })
+    .catch(() => {}); // Silently ignore errors
+
+fetch('/wails/init.css')
+    .then(r => r.ok && r.status !== 204 ? r.text() : null)
+    .then(css => {
+        if (css) {
+            const style = document.createElement('style');
+            style.textContent = css;
+            document.head.appendChild(style);
+        }
+    })
+    .catch(() => {}); // Silently ignore errors
