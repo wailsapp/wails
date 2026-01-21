@@ -847,10 +847,9 @@ void windowEnableMouseTracking(void* nsWindow) {
         }
     }
     // Create and add tracking view
-    MouseTrackingView* trackingView = [[MouseTrackingView alloc] initWithFrame:contentView.bounds windowId:delegate.windowId];
+    MouseTrackingView* trackingView = [[[MouseTrackingView alloc] initWithFrame:contentView.bounds windowId:delegate.windowId] autorelease];
     [trackingView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
     [contentView addSubview:trackingView positioned:NSWindowAbove relativeTo:nil];
-    [trackingView release];
 }
 void windowSetScreen(void* window, void* screen, int yOffset) {
     WebviewWindow* nsWindow = (WebviewWindow*)window;
