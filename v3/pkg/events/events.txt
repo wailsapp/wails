@@ -24,6 +24,8 @@ common:WindowZoom
 common:WindowZoomIn
 common:WindowZoomOut
 common:WindowZoomReset
+common:WindowMouseEnter
+common:WindowMouseLeave
 linux:ApplicationStartup
 linux:SystemThemeChanged
 linux:WindowDeleteEvent
