@@ -123,8 +123,8 @@ func New(appOptions Options) *App {
 						rw.WriteHeader(http.StatusNoContent)
 						return
 					}
-					windowId, err := strconv.ParseUint(windowIdStr, 10, 64)
-					if err != nil {
+					windowId, err := strconv.Atoi(windowIdStr)
+					if err != nil || windowId < 0 {
 						rw.WriteHeader(http.StatusNoContent)
 						return
 					}
