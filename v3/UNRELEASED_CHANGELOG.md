@@ -33,6 +33,9 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Security
 <!-- Security-related changes -->
+- Restrict GITHUB_TOKEN permissions in workflow files to follow principle of least privilege
+- Fix path traversal vulnerability in screen example asset middleware
+- Update rollup to 3.29.5 to fix XSS vulnerability (CVE-2024-47068)
 
 ---
 

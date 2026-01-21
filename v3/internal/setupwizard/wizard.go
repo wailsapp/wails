@@ -544,6 +544,15 @@ type InstallResponse struct {
 	Error   string `json:"error,omitempty"`
 }
 
+// handleInstallDependency executes dependency installation commands.
+//
+// Security note: This endpoint executes commands that originate from the backend's
+// package manager detection (see packagemanager.InstallCommand). The commands are
+// generated server-side based on the detected OS package manager, not from arbitrary
+// user input. This is a local development tool where the explicit purpose is to help
+// users install dependencies on their own machine. The frontend currently only uses
+// this data to copy commands to clipboard - this endpoint exists for potential future
+// use or automation scenarios.
 func (w *Wizard) handleInstallDependency(rw http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
@@ -569,7 +578,7 @@ func (w *Wizard) handleInstallDependency(rw http.ResponseWriter, r *http.Request
 		return
 	}
 
-	cmd := exec.Command(parts[0], parts[1:]...)
+	cmd := exec.Command(parts[0], parts[1:]...) // #nosec G204 -- commands originate from backend package manager detection, not user input
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
