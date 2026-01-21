@@ -2112,7 +2112,6 @@ func (w *windowsWebviewWindow) navigationCompleted(
 			js := fmt.Sprintf("(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode(%q)); document.head.appendChild(style); })();", w.parent.options.CSS)
 			w.execJS(js)
 		}
-		}
 	}
 
 	// EmitEvent DomReady ApplicationEvent
