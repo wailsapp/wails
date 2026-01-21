@@ -94,15 +94,15 @@
         logEl.scrollTop = logEl.scrollHeight;
     }
 
-    // Listen for mouse enter event
-    wails.Events.OnWindowEvent(wails.Events.Types.Common.WindowMouseEnter, function() {
+    // Listen for mouse enter event using the event string directly
+    wails.Events.On("common:WindowMouseEnter", function() {
         statusEl.textContent = 'Mouse is INSIDE this window';
         statusEl.className = 'status inside';
         addLogEntry('WindowMouseEnter', 'enter');
     });
 
     // Listen for mouse leave event
-    wails.Events.OnWindowEvent(wails.Events.Types.Common.WindowMouseLeave, function() {
+    wails.Events.On("common:WindowMouseLeave", function() {
         statusEl.textContent = 'Mouse is outside this window';
         statusEl.className = 'status outside';
         addLogEntry('WindowMouseLeave', 'leave');
