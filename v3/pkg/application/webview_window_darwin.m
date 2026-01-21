@@ -781,6 +781,93 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 }
 // GENERATED EVENTS END
 @end
+
+// MouseTrackingView - A transparent view that tracks mouse enter/exit events
+// This view uses NSTrackingActiveAlways to receive events even when the window is not focused
+@interface MouseTrackingView : NSView
+@property (assign) unsigned int windowId;
+@property (strong) NSTrackingArea *trackingArea;
+@end
+
+@implementation MouseTrackingView
+
+- (instancetype)initWithFrame:(NSRect)frameRect windowId:(unsigned int)windowId {
+    self = [super initWithFrame:frameRect];
+    if (self) {
+        _windowId = windowId;
+        [self updateTrackingAreas];
+    }
+    return self;
+}
+
+- (void)updateTrackingAreas {
+    if (self.trackingArea != nil) {
+        [self removeTrackingArea:self.trackingArea];
+    }
+
+    NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited |
+                                    NSTrackingActiveAlways |
+                                    NSTrackingInVisibleRect;
+
+    self.trackingArea = [[NSTrackingArea alloc] initWithRect:self.bounds
+                                                     options:options
+                                                       owner:self
+                                                    userInfo:nil];
+    [self addTrackingArea:self.trackingArea];
+    [super updateTrackingAreas];
+}
+
+- (void)mouseEntered:(NSEvent *)event {
+    if (hasListeners(EventWindowMouseEnter)) {
+        processWindowEvent(self.windowId, EventWindowMouseEnter);
+    }
+}
+
+- (void)mouseExited:(NSEvent *)event {
+    if (hasListeners(EventWindowMouseLeave)) {
+        processWindowEvent(self.windowId, EventWindowMouseLeave);
+    }
+}
+
+- (BOOL)acceptsFirstMouse:(NSEvent *)event {
+    // Allow click-through when window is not focused
+    return YES;
+}
+
+- (NSView *)hitTest:(NSPoint)point {
+    // Make this view transparent to mouse clicks - pass through to underlying views
+    return nil;
+}
+
+- (void)dealloc {
+    if (self.trackingArea != nil) {
+        [self removeTrackingArea:self.trackingArea];
+    }
+    [super dealloc];
+}
+
+@end
+
+// Enable mouse enter/leave tracking for a window
+void windowEnableMouseTracking(void* nsWindow) {
+    WebviewWindow* window = (WebviewWindow*)nsWindow;
+    WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[window delegate];
+    NSView* contentView = [window contentView];
+
+    // Check if tracking view already exists
+    for (NSView* subview in [contentView subviews]) {
+        if ([subview isKindOfClass:[MouseTrackingView class]]) {
+            return; // Already enabled
+        }
+    }
+
+    // Create and add tracking view
+    MouseTrackingView* trackingView = [[MouseTrackingView alloc] initWithFrame:contentView.bounds windowId:delegate.windowId];
+    [trackingView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+    [contentView addSubview:trackingView positioned:NSWindowAbove relativeTo:nil];
+    [trackingView release];
+}
+
 void windowSetScreen(void* window, void* screen, int yOffset) {
     WebviewWindow* nsWindow = (WebviewWindow*)window;
     NSScreen* nsScreen = (NSScreen*)screen;

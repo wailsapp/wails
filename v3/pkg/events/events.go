@@ -32,6 +32,8 @@ type commonEvents struct {
 	WindowZoomIn               WindowEventType
 	WindowZoomOut              WindowEventType
 	WindowZoomReset            WindowEventType
+	WindowMouseEnter           WindowEventType
+	WindowMouseLeave           WindowEventType
 }
 
 func newCommonEvents() commonEvents {
@@ -62,6 +64,8 @@ func newCommonEvents() commonEvents {
 		WindowZoomIn:               1047,
 		WindowZoomOut:              1048,
 		WindowZoomReset:            1049,
+		WindowMouseEnter:           1259,
+		WindowMouseLeave:           1260,
 	}
 }
 
@@ -763,4 +767,6 @@ var eventToJS = map[uint]string{
 	1256: "ios:WebViewDidFinishNavigation",
 	1257: "ios:WebViewDidFailNavigation",
 	1258: "ios:WebViewDecidePolicyForNavigationAction",
+	1259: "common:WindowMouseEnter",
+	1260: "common:WindowMouseLeave",
 }

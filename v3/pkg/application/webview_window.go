@@ -306,6 +306,13 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 		result.keyBindings = processKeyBindingOptions(result.options.KeyBindings)
 	}
 
+	// Handle FocusOnMouseEnter option
+	if result.options.FocusOnMouseEnter {
+		result.OnWindowEvent(events.Common.WindowMouseEnter, func(event *WindowEvent) {
+			result.Focus()
+		})
+	}
+
 	return result
 }
 

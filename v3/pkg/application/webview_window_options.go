@@ -138,6 +138,11 @@ type WebviewWindowOptions struct {
 	// IgnoreMouseEvents will ignore mouse events in the window (Windows + Mac only)
 	IgnoreMouseEvents bool
 
+	// FocusOnMouseEnter will focus the window when the mouse enters it.
+	// This is useful for tray popup windows where you want the window to receive
+	// keyboard/click events immediately without requiring an initial click to focus.
+	FocusOnMouseEnter bool
+
 	// ContentProtectionEnabled specifies whether content protection is enabled, preventing screen capture and recording.
 	// Effective on Windows and macOS only; no-op on Linux.
 	// Best-effort protection with platform-specific caveats (see docs).

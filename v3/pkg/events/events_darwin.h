@@ -138,8 +138,10 @@ extern void processWindowEvent(unsigned int, unsigned int);
 #define EventWindowZoomIn 1190
 #define EventWindowZoomOut 1191
 #define EventWindowZoomReset 1192
+#define EventWindowMouseEnter 1259
+#define EventWindowMouseLeave 1260
 
-#define MAX_EVENTS 1193
+#define MAX_EVENTS 1261
 
 
 #endif

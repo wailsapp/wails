@@ -78,6 +78,9 @@ type windowsWebviewWindow struct {
 
 	// menubarTheme is the theme for the menubar
 	menubarTheme *w32.MenuBarTheme
+
+	// mouseTracking indicates whether mouse tracking is active for mouse enter/leave events
+	mouseTracking bool
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
@@ -1468,6 +1471,23 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	case w32.WM_ERASEBKGND:
 		w.parent.emit(events.Windows.WindowBackgroundErase)
 		return 1 // Let WebView2 handle background erasing
+	// Mouse enter/leave tracking
+	case w32.WM_MOUSEMOVE:
+		if !w.mouseTracking {
+			// Start tracking mouse leave events
+			tme := w32.TRACKMOUSEEVENT{
+				CbSize:      uint32(unsafe.Sizeof(w32.TRACKMOUSEEVENT{})),
+				DwFlags:     w32.TME_LEAVE,
+				HwndTrack:   w.hwnd,
+				DwHoverTime: 0,
+			}
+			w32.TrackMouseEvent(&tme)
+			w.mouseTracking = true
+			w.parent.emit(events.Common.WindowMouseEnter)
+		}
+	case w32.WM_MOUSELEAVE:
+		w.mouseTracking = false
+		w.parent.emit(events.Common.WindowMouseLeave)
 	// WM_UAHDRAWMENUITEM is handled by MenuBarWndProc at the top of this function
 	// Check for keypress
 	case w32.WM_SYSCOMMAND:

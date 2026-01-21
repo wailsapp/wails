@@ -17,6 +17,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add `WindowMouseEnter` and `WindowMouseLeave` events for detecting when the mouse enters or leaves a window (#4887)
+- Add `FocusOnMouseEnter` window option to automatically focus windows on mouse hover (useful for tray popup windows)
 
 ## Changed
 <!-- Changes in existing functionality -->
