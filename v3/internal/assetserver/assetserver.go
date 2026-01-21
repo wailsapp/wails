@@ -69,7 +69,7 @@ func (a *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	req = req.WithContext(contextWithLogger(req.Context(), a.options.Logger))
 	a.handler.ServeHTTP(wrapped, req)
 
-	a.options.Logger.Info(
+	a.options.Logger.Debug(
 		"Asset Request:",
 		"windowName", req.Header.Get(webViewRequestHeaderWindowName),
 		"windowID", req.Header.Get(webViewRequestHeaderWindowId),

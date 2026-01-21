@@ -133,6 +133,12 @@ Generate bindings:
 
 ```bash
 wails3 generate bindings
+
+# Or, to include TypeScript definitions
+wails3 generate bindings -ts
+
+# For more options, see:
+wails3 generate bindings -help
 ```
 
 Use typed events in your frontend:
@@ -496,6 +502,25 @@ function ZoomOut(): Promise<void>
 ```typescript
 function ZoomReset(): Promise<void>
 ```
+
+#### Printing
+
+**Print()** - Opens the native print dialog
+
+```typescript
+function Print(): Promise<void>
+```
+
+**Example:**
+
+```javascript
+import Window from '@wailsio/runtime/window'
+
+// Open print dialog for current window
+await Window.Print()
+```
+
+**Note:** This opens the native OS print dialog, allowing the user to select printer settings and print the current window content. Unlike `window.print()` which may not work in webviews, this uses the native platform printing API.
 
 ### Clipboard
 

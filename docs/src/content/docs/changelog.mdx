@@ -30,6 +30,158 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha.61 - 2026-01-20
+
+## Fixed
+- Update the docs page for keyboard shortcuts and corrects the type of the callback parameter for `KeyBinding.Add` by @ndianabasi
+- Fix documentation regarding generating custom binding, must use `-d String` instead of `-o String`
+
+## v3.0.0-alpha.60 - 2026-01-14
+
+## Fixed
+- Fix menu not clearing children on `menu.Update()`
+
+## v3.0.0-alpha.59 - 2026-01-11
+
+## Changed
+- Update the README for the `Drag N Drop` example and highlights that `Internal Drag and Drop` is demonstrated with the example @ndianabasi
+
+## v3.0.0-alpha.58 - 2026-01-09
+
+## Fixed
+- Fix outdated Manager API references in documentation (31 files updated to use new pattern like `app.Window.New()`, `app.Event.Emit()`, etc.) by @leaanthony
+- Fix Linux crash on panic in JS-bound Go methods due to WebKit overriding signal handlers (#3965) by @leaanthony
+
+## v3.0.0-alpha.57 - 2026-01-05
+
+## Changed
+- Replace various debug logs from Info to Debug (by @mbaklor)
+
+## Fixed
+- Fix SaveFileDialog.SetFilename() having no effect on Linux (#4841) by @samstanier
+- Fix drop coordinates showing as undefined in drag-n-drop example
+- Fix macOS app bundle creation failing when APP_NAME contains spaces (brace expansion issue)
+- Fix index out of bounds panic on Windows when calling service methods (revert goccy/go-json)
+
+## v3.0.0-alpha.56 - 2026-01-04
+
+## Added
+- Add `internal/libpath` package for finding native library paths on Linux with parallel search, caching, and support for Flatpak/Snap/Nix
+
+## Changed
+- **BREAKING:** Rename `EnableDragAndDrop` to `EnableFileDrop` in window options
+- **BREAKING:** Rename `DropZoneDetails` to `DropTargetDetails` in event context
+- **BREAKING:** Rename `DropZoneDetails()` method to `DropTargetDetails()` on `WindowEventContext`
+- **BREAKING:** Remove `WindowDropZoneFilesDropped` event, use `WindowFilesDropped` instead
+- **BREAKING:** Change HTML attribute from `data-wails-dropzone` to `data-file-drop-target`
+- **BREAKING:** Change CSS hover class from `wails-dropzone-hover` to `file-drop-target-active`
+- **BREAKING:** Remove `DragEffect`, `OnEnterEffect`, `OnOverEffect` options from Windows (were part of removed IDropTarget)
+
+## Fixed
+- Fix file drag-and-drop on Windows not working at non-100% display scaling
+- Fix HTML5 internal drag-and-drop being broken when file drop was enabled on Windows
+- Fix file drop coordinates being in wrong pixel space on Windows (physical vs CSS pixels)
+- Fix file drag-and-drop on Linux not working reliably with hover effects
+- Fix HTML5 internal drag-and-drop being broken when file drop was enabled on Linux
+
+## Removed
+- Remove native `IDropTarget` implementation on Windows in favor of JavaScript-based approach (matches v2 behavior)
+
+## v3.0.0-alpha.55 - 2026-01-02
+
+## Changed
+- Switch to goccy/go-json for all runtime JSON processing (method bindings, events, webview requests, notifications, kvstore), improving performance by 21-63% and reducing memory allocations by 40-60%
+- Optimize BoundMethod struct layout and cache isVariadic flag to reduce per-call overhead
+- Use stack-allocated argument buffer for methods with `<=8` arguments to avoid heap allocations
+- Optimize result collection in method calls to avoid slice allocation for single return values
+- Use sync.Map for MIME type cache to improve concurrent performance
+- Use buffer pool for HTTP transport request body reading
+- Lazily allocate CloseNotify channel in content type sniffer to reduce per-request allocations
+- Remove debug CSS logging from asset server
+- Expand MIME type extension map to cover 50+ common web formats (fonts, audio, video, etc.)
+
+## Fixed
+- Update all commands in Taskfile.yml files for all operating systems to accommodate spaces in variables such as `APP_NAME` by @ndianabasi
+
+## Removed
+- Remove github.com/wailsapp/mimetype dependency in favor of expanded extension map + stdlib http.DetectContentType, reducing binary size by ~1.2MB
+- Remove gopkg.in/ini.v1 dependency by implementing minimal .desktop file parser for Linux file explorer, saving ~45KB
+- Remove samber/lo from runtime code by using Go 1.21+ stdlib slices package and minimal internal helpers, saving ~310KB
+
+## v3.0.0-alpha.54 - 2025-12-29
+
+## Added
+- Add `CollectionBehavior` option to `MacWindow` for controlling window behavior across macOS Spaces and fullscreen (#4756) by @leaanthony
+
+## Fixed
+- Fix command argument error when executing 'build:universal:lipo:go' task on Linux by @wux1an
+- Fix Docker error "undefined symbol: ___ubsan_handle_xxxxxxx" when running 'wails3 build GOOS=darwin GOARCH=arm64' on Linux by @wux1an
+
+## Removed
+- Remove debug printf statements from Darwin URL scheme handler (#4834)
+
+## v3.0.0-alpha.53 - 2025-12-27
+
+## Added
+- Add unit tests for pkg/application by @leaanthony
+- Add custom protocol support to MSIX packaging by @leaanthony
+
+## Fixed
+- Consolidate custom protocol documentation and add Universal Links sections by @leaanthony
+
+## v3.0.0-alpha.52 - 2025-12-26
+
+## Fixed
+- Fix Windows systray menu crash when clicking icon repeatedly by adding guard against concurrent TrackPopupMenuEx calls (#4151) by @leaanthony
+
+## v3.0.0-alpha.51 - 2025-12-23
+
+## Fixed
+- Prevent app crashing when calling systray.Run() before app.Run() by @leaanthony
+
+## v3.0.0-alpha.50 - 2025-12-21
+
+## Changed
+- Update the documentation for Window `X/Y` options @ruhuang2001
+
+## v3.0.0-alpha.49 - 2025-12-18
+
+## Changed
+- Update the `Frontend Runtime` documentation by adding more options for generating frontend bindings by @ndianabasi
+
+## v3.0.0-alpha.48 - 2025-12-16
+
+## Added
+- Add desktop environment detection on linux [PR #4797](https://github.com/wailsapp/wails/pull/4797)
+
+## Changed
+- Update the documentation page for Wails v3 Asset Server by @ndianabasi
+- **BREAKING**: Remove package-level dialog functions (`application.InfoDialog()`, `application.QuestionDialog()`, etc.). Use the `app.Dialog` manager instead: `app.Dialog.Info()`, `app.Dialog.Question()`, `app.Dialog.Warning()`, `app.Dialog.Error()`, `app.Dialog.OpenFile()`, `app.Dialog.SaveFile()`
+- Update dialogs documentation to match actual API: use `app.Dialog.*`, `AddButton()` with callbacks (not `SetButtons()`), `SetDefaultButton(*Button)` (not string), `AddFilter()` (not `SetFilters()`), `SetFilename()` (not `SetDefaultFilename()`), and `app.Dialog.OpenFile().CanChooseDirectories(true)` for folder selection
+
+## Fixed
+- Fix crash on macOS when toggling window visibility via Hide()/Show() with ApplicationShouldTerminateAfterLastWindowClosed enabled (#4389) by @leaanthony
+- Fix memory leak in context menus on macOS and Windows when repeatedly opening menus (#4012) by @leaanthony
+- Fix context menu native resources not being reused on macOS, causing fresh menu creation on each display (#4012) by @leaanthony
+
+## v3.0.0-alpha.47 - 2025-12-15
+
+## Added
+- Add `Window.Print()` method to JavaScript runtime for triggering print dialog from frontend (#4290) by @leaanthony
+
+## Fixed
+- Fix macOS dock icon click not showing hidden windows when app started with `Hidden: true` (#4583) by @leaanthony
+- Fix macOS print dialog not opening due to incorrect window pointer type in CGO call (#4290) by @leaanthony
+
+## v3.0.0-alpha.46 - 2025-12-14
+
+## Added
+- Add `XDG_SESSION_TYPE` to `wails3 doctor` output on Linux by @leaanthony
+- Add additional WebKit2 load-change events for Linux: `WindowLoadStarted`, `WindowLoadRedirected`, `WindowLoadCommitted`, `WindowLoadFinished` (#3896) by @leaanthony
+
+## Removed
+- **BREAKING**: Remove `linux:WindowLoadChanged` event - use `linux:WindowLoadFinished` instead for detecting when WebView has finished loading (#3896) by @leaanthony
+
 ## v3.0.0-alpha.45 - 2025-12-13
 
 ## Added

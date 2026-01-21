@@ -438,7 +438,7 @@ func (o *OrderService) CreateOrder(items []Item) (*Order, error) {
     }
     
     // Emit event
-    o.app.EmitEvent("order-created", order)
+    o.app.Event.Emit("order-created", order)
     
     return order, nil
 }
@@ -485,7 +485,7 @@ func NewNotificationService(app *application.Application) *NotificationService {
 
 func (n *NotificationService) Notify(message string) {
     // Use application to emit events
-    n.app.EmitEvent("notification", message)
+    n.app.Event.Emit("notification", message)
     
     // Or show system notification
     n.app.ShowNotification(message)
@@ -780,7 +780,7 @@ func main() {
         },
     })
     
-    app.NewWebviewWindow()
+    app.Window.New()
     app.Run()
 }
 ```

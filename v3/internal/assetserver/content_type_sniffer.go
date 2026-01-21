@@ -4,20 +4,21 @@ import (
 	"net/http"
 )
 
+// newContentTypeSniffer creates a contentTypeSniffer that wraps the provided http.ResponseWriter.
+// The returned sniffer does not allocate a close notification channel; it will be initialized lazily by CloseNotify.
 func newContentTypeSniffer(rw http.ResponseWriter) *contentTypeSniffer {
 	return &contentTypeSniffer{
-		rw:           rw,
-		closeChannel: make(chan bool, 1),
+		rw: rw,
 	}
 }
 
 type contentTypeSniffer struct {
 	rw              http.ResponseWriter
 	prefix          []byte
+	closeChannel    chan bool // lazily allocated only if CloseNotify is called
 	status          int
 	headerCommitted bool
 	headerWritten   bool
-	closeChannel    chan bool
 }
 
 // Unwrap returns the wrapped [http.ResponseWriter] for use with [http.ResponseController].
@@ -118,12 +119,19 @@ func (rw *contentTypeSniffer) complete() (n int, err error) {
 }
 
 // CloseNotify implements the http.CloseNotifier interface.
+// The channel is lazily allocated to avoid allocation overhead for requests
+// that don't use this deprecated interface.
 func (rw *contentTypeSniffer) CloseNotify() <-chan bool {
+	if rw.closeChannel == nil {
+		rw.closeChannel = make(chan bool, 1)
+	}
 	return rw.closeChannel
 }
 
 func (rw *contentTypeSniffer) closeClient() {
-	rw.closeChannel <- true
+	if rw.closeChannel != nil {
+		rw.closeChannel <- true
+	}
 }
 
 // Flush implements the http.Flusher interface.

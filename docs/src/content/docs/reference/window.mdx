@@ -30,7 +30,7 @@ func (w *Window) Show()
 
 **Example:**
 ```go
-window := app.NewWebviewWindow()
+window := app.Window.New()
 window.Show()
 ```
 
@@ -202,7 +202,7 @@ func (w *Window) Centre()
 
 **Example:**
 ```go
-window := app.NewWebviewWindow()
+window := app.Window.New()
 window.Centre()
 window.Show()
 ```
@@ -441,7 +441,7 @@ func (w *Window) RegisterHook(
 import "github.com/wailsapp/wails/v3/pkg/events"
 
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
-    result, _ := app.QuestionDialog().
+    result, _ := app.Dialog.Question().
         SetTitle("Confirm Close").
         SetMessage("Are you sure you want to close this window?").
         SetButtons("Yes", "No").
@@ -457,7 +457,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
     if hasUnsavedChanges {
-        result, _ := app.QuestionDialog().
+        result, _ := app.Dialog.Question().
             SetMessage("Save changes before closing?").
             SetButtons("Save", "Don't Save", "Cancel").
             Show()
@@ -579,6 +579,31 @@ func (w *Window) SetAlwaysOnTop(alwaysOnTop bool)
 window.SetAlwaysOnTop(true)
 ```
 
+### Print()
+
+Opens the native print dialog for the window content.
+
+```go
+func (w *Window) Print() error
+```
+
+**Returns:** Error if printing fails
+
+**Example:**
+```go
+err := window.Print()
+if err != nil {
+    log.Println("Print failed:", err)
+}
+```
+
+**Platform support:**
+- **macOS**: Full support
+- **Windows**: Full support
+- **Linux**: Full support
+
+**Note:** This triggers the native OS print dialog, allowing the user to select printer settings and print the current window content.
+
 ## Complete Example
 
 ```go
@@ -595,7 +620,7 @@ func main() {
     })
 
     // Create window with options
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:            "My Application",
         Width:            1024,
         Height:           768,
@@ -613,7 +638,7 @@ func main() {
     // Set up event hooks
     window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
         // Confirm before closing
-        result, _ := app.QuestionDialog().
+        result, _ := app.Dialog.Question().
             SetTitle("Confirm Close").
             SetMessage("Are you sure you want to close this window?").
             SetButtons("Yes", "No").

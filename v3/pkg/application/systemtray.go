@@ -96,6 +96,13 @@ func (s *SystemTray) Label() string {
 }
 
 func (s *SystemTray) Run() {
+
+	// exit early if application isn't running.
+	// app.Run() will call this
+	if globalApplication == nil || globalApplication.running == false {
+		return
+	}
+
 	s.impl = newSystemTrayImpl(s)
 
 	if s.attachedWindow.Window != nil {

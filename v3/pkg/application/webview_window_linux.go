@@ -282,8 +282,10 @@ func (w *linuxWebviewWindow) run() {
 	w.window, w.webview, w.vbox = windowNew(app.application, w.gtkmenu, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)
 	app.registerWindow(w.window, w.parent.id) // record our mapping
 	w.connectSignals()
-	if w.parent.options.EnableDragAndDrop {
+	if w.parent.options.EnableFileDrop {
 		w.enableDND()
+	} else {
+		w.disableDND()
 	}
 	w.setTitle(w.parent.options.Title)
 	w.setIcon(app.icon)
@@ -339,7 +341,7 @@ func (w *linuxWebviewWindow) run() {
 	}
 
 	w.setURL(startURL)
-	w.parent.OnWindowEvent(events.Linux.WindowLoadChanged, func(_ *WindowEvent) {
+	w.parent.OnWindowEvent(events.Linux.WindowLoadFinished, func(_ *WindowEvent) {
 		InvokeAsync(func() {
 			if w.parent.options.JS != "" {
 				w.execJS(w.parent.options.JS)
@@ -351,8 +353,11 @@ func (w *linuxWebviewWindow) run() {
 		})
 	})
 
-	w.parent.RegisterHook(events.Linux.WindowLoadChanged, func(e *WindowEvent) {
-		w.execJS(runtime.Core(globalApplication.impl.GetFlags(globalApplication.options)))
+	w.parent.RegisterHook(events.Linux.WindowLoadFinished, func(e *WindowEvent) {
+		// Inject runtime core and EnableFileDrop flag together
+		js := runtime.Core(globalApplication.impl.GetFlags(globalApplication.options))
+		js += fmt.Sprintf("window._wails.flags.enableFileDrop=%v;", w.parent.options.EnableFileDrop)
+		w.execJS(js)
 	})
 	if w.parent.options.HTML != "" {
 		w.setHTML(w.parent.options.HTML)

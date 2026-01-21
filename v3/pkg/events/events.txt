@@ -24,7 +24,6 @@ common:WindowZoom
 common:WindowZoomIn
 common:WindowZoomOut
 common:WindowZoomReset
-common:WindowDropZoneFilesDropped
 linux:ApplicationStartup
 linux:SystemThemeChanged
 linux:WindowDeleteEvent
@@ -32,7 +31,10 @@ linux:WindowDidMove
 linux:WindowDidResize
 linux:WindowFocusIn
 linux:WindowFocusOut
-linux:WindowLoadChanged
+linux:WindowLoadStarted
+linux:WindowLoadRedirected
+linux:WindowLoadCommitted
+linux:WindowLoadFinished
 mac:ApplicationDidBecomeActive
 mac:ApplicationDidChangeBackingProperties
 mac:ApplicationDidChangeEffectiveAppearance

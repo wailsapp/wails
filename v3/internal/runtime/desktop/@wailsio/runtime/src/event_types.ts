@@ -200,7 +200,10 @@ export const Types = Object.freeze({
 		WindowDidResize: "linux:WindowDidResize",
 		WindowFocusIn: "linux:WindowFocusIn",
 		WindowFocusOut: "linux:WindowFocusOut",
-		WindowLoadChanged: "linux:WindowLoadChanged",
+		WindowLoadStarted: "linux:WindowLoadStarted",
+		WindowLoadRedirected: "linux:WindowLoadRedirected",
+		WindowLoadCommitted: "linux:WindowLoadCommitted",
+		WindowLoadFinished: "linux:WindowLoadFinished",
 	}),
 	iOS: Object.freeze({
 		ApplicationDidBecomeActive: "ios:ApplicationDidBecomeActive",
@@ -253,6 +256,5 @@ export const Types = Object.freeze({
 		WindowZoomIn: "common:WindowZoomIn",
 		WindowZoomOut: "common:WindowZoomOut",
 		WindowZoomReset: "common:WindowZoomReset",
-		WindowDropZoneFilesDropped: "common:WindowDropZoneFilesDropped",
 	}),
 });

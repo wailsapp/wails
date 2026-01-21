@@ -37,7 +37,7 @@ This is the complete API reference for Wails v3. It documents every public type,
 Most methods that can fail return `error` as the last return value:
 
 ```go
-window, err := app.NewWebviewWindow()
+window, err := app.Window.New()
 if err != nil {
     log.Fatal(err)
 }

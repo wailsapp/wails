@@ -10,6 +10,7 @@ extern void processDragItems(unsigned int windowId, char** arr, int length, int 
 extern void processWindowKeyDownEvent(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
 extern bool windowShouldUnconditionallyClose(unsigned int);
+extern bool windowIsHidden(unsigned int);
 // Define custom glass effect style constants (these match the Go constants)
 typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     LiquidGlassStyleAutomatic = 0,
@@ -195,7 +196,6 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     [super setDelegate: delegate];
     // If the delegate is our WebviewWindowDelegate (which handles NSDraggingDestination)
     if ([delegate isKindOfClass:[WebviewWindowDelegate class]]) {
-        NSLog(@"WebviewWindow: setDelegate - Registering window for dragged types (NSFilenamesPboardType) because WebviewWindowDelegate is being set.");
         [self registerForDraggedTypes:@[NSFilenamesPboardType]]; // 'self' is the WebviewWindow instance
     }
 }
@@ -245,53 +245,40 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 @end
 @implementation WebviewWindowDelegate
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
-    NSLog(@"WebviewWindowDelegate: draggingEntered called. WindowID: %u", self.windowId);
     NSPasteboard *pasteboard = [sender draggingPasteboard];
     if ([[pasteboard types] containsObject:NSFilenamesPboardType]) {
-        NSLog(@"WebviewWindowDelegate: draggingEntered - Found NSFilenamesPboardType. Firing EventWindowFileDraggingEntered.");
-        // We need to ensure processWindowEvent is available or adapt this part
-        // For now, let's assume it's available globally or via an import
         if (hasListeners(EventWindowFileDraggingEntered)) {
              processWindowEvent(self.windowId, EventWindowFileDraggingEntered);
         }
         return NSDragOperationCopy;
     }
-    NSLog(@"WebviewWindowDelegate: draggingEntered - NSFilenamesPboardType NOT found.");
     return NSDragOperationNone;
 }
 - (void)draggingExited:(id<NSDraggingInfo>)sender {
-    NSLog(@"WebviewWindowDelegate: draggingExited called. WindowID: %u", self.windowId);
     if (hasListeners(EventWindowFileDraggingExited)) {
         processWindowEvent(self.windowId, EventWindowFileDraggingExited);
     }
 }
 - (BOOL)prepareForDragOperation:(id<NSDraggingInfo>)sender {
-    NSLog(@"WebviewWindowDelegate: prepareForDragOperation called. WindowID: %u", self.windowId);
     return YES;
 }
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
-    NSLog(@"WebviewWindowDelegate: performDragOperation called. WindowID: %u", self.windowId);
     NSPasteboard *pasteboard = [sender draggingPasteboard];
     if (hasListeners(EventWindowFileDraggingPerformed)) {
         processWindowEvent(self.windowId, EventWindowFileDraggingPerformed);
     }
     if ([[pasteboard types] containsObject:NSFilenamesPboardType]) {
-        NSLog(@"WebviewWindowDelegate: performDragOperation - Found NSFilenamesPboardType.");
         NSArray *files = [pasteboard propertyListForType:NSFilenamesPboardType];
         NSUInteger count = [files count];
-        NSLog(@"WebviewWindowDelegate: performDragOperation - File count: %lu", (unsigned long)count);
         if (count == 0) {
-            NSLog(@"WebviewWindowDelegate: performDragOperation - No files found in pasteboard, though type was present.");
             return NO;
         }
         char** cArray = (char**)malloc(count * sizeof(char*));
         if (cArray == NULL) {
-            NSLog(@"WebviewWindowDelegate: performDragOperation - Failed to allocate memory for file array.");
             return NO;
         }
         for (NSUInteger i = 0; i < count; i++) {
             NSString* str = files[i];
-            NSLog(@"WebviewWindowDelegate: performDragOperation - File %lu: %@", (unsigned long)i, str);
             cArray[i] = (char*)[str UTF8String];
         }
         // Get the WebviewWindow instance, which is the dragging destination
@@ -302,14 +289,10 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
         CGFloat viewHeight = webView.frame.size.height;
         int x = (int)dropPointInView.x;
         int y = (int)(viewHeight - dropPointInView.y); // Flip Y for web coordinate system
-        NSLog(@"WebviewWindowDelegate: performDragOperation - Coords: x=%d, y=%d. ViewHeight: %f", x, y, viewHeight);
-        NSLog(@"WebviewWindowDelegate: performDragOperation - Calling processDragItems for windowId %u.", self.windowId);
         processDragItems(self.windowId, cArray, (int)count, x, y); // self.windowId is from the delegate
         free(cArray);
-        NSLog(@"WebviewWindowDelegate: performDragOperation - Returned from processDragItems.");
         return NO;
     }
-    NSLog(@"WebviewWindowDelegate: performDragOperation - NSFilenamesPboardType NOT found. Returning NO.");
     return NO;
 }
 // Original WebviewWindowDelegate methods continue here...
@@ -318,6 +301,13 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     // Check if this window should close unconditionally (called from Close() method)
     if (windowShouldUnconditionallyClose(delegate.windowId)) {
         return true;
+    }
+    // If the window is hidden (via Hide()), don't trigger close events.
+    // This fixes issue #4389 where hiding the last window with
+    // ApplicationShouldTerminateAfterLastWindowClosed=true would incorrectly
+    // trigger the close event sequence and destroy the window.
+    if (windowIsHidden(delegate.windowId)) {
+        return false;
     }
     // For user-initiated closes, emit WindowClosing event and let the application decide
     processWindowEvent(delegate.windowId, EventWindowShouldClose);
@@ -365,14 +355,8 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 }
 - (void)webView:(nonnull WKWebView *)webView startURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
     NSURL *url = urlSchemeTask.request.URL;
-    printf("🎨🎨🎨 [DARWIN] URL SCHEME HANDLER: %s\n", [url.absoluteString UTF8String]);
     fflush(stdout);
     if ([url.path hasSuffix:@".css"] || [url.path containsString:@"style"]) {
-        printf("🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨\n");
-        printf("🎨 [DARWIN] CSS REQUEST INTERCEPTED!\n");
-        printf("🎨 URL: %s\n", [url.absoluteString UTF8String]);
-        printf("🎨 Path: %s\n", [url.path UTF8String]);
-        printf("🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨\n");
         fflush(stdout);
     }
     processURLRequest(self.windowId, urlSchemeTask);

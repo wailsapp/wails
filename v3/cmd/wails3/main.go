@@ -105,9 +105,6 @@ func main() {
 
 	// Setup commands
 	setup := app.NewSubCommand("setup", "Project setup wizards")
-	setup.Action(func() error {
-		return commands.Setup(&commands.SetupOptions{})
-	})
 	setupSigning := setup.NewSubCommand("signing", "Configure code signing")
 	var setupSigningFlags flags.SigningSetup
 	setupSigning.AddFlags(&setupSigningFlags)

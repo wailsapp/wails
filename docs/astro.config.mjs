@@ -171,7 +171,11 @@ export default defineConfig({
               collapsed: true,
               autogenerate: { directory: "features/browser" },
             },
-            { label: "Drag & Drop", link: "/features/drag-drop" },
+            {
+              label: "Drag & Drop",
+              collapsed: true,
+              autogenerate: { directory: "features/drag-and-drop" },
+            },
             {
               label: "Keyboard",
               collapsed: true,

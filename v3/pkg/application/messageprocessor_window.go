@@ -2,7 +2,6 @@ package application
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/wailsapp/wails/v3/pkg/errs"
 )
@@ -58,7 +57,8 @@ const (
 	WindowZoomOut                    = 47
 	WindowZoomReset                  = 48
 	WindowSnapAssist                 = 49
-	WindowDropZoneDropped            = 50
+	WindowFilesDropped               = 50
+	WindowPrint                      = 51
 )
 
 var windowMethodNames = map[int]string{
@@ -111,8 +111,9 @@ var windowMethodNames = map[int]string{
 	WindowZoomIn:                     "ZoomIn",
 	WindowZoomOut:                    "ZoomOut",
 	WindowZoomReset:                  "ZoomReset",
-	WindowDropZoneDropped:            "DropZoneDropped",
+	WindowFilesDropped:               "FilesDropped",
 	WindowSnapAssist:                 "SnapAssist",
+	WindowPrint:                      "Print",
 }
 
 var unit = struct{}{}
@@ -352,53 +353,46 @@ func (m *MessageProcessor) processWindowMethod(
 	case WindowZoomReset:
 		window.ZoomReset()
 		return unit, nil
-	case WindowDropZoneDropped:
-		m.Info(
-			"[DragDropDebug] processWindowMethod: Entered WindowDropZoneDropped case",
-		)
-
-		slog.Info("[DragDropDebug] Raw 'args' payload string:", "data", string(req.Args.rawData))
-
+	case WindowFilesDropped:
 		var payload fileDropPayload
-
 		err := req.Args.ToStruct(&payload)
 		if err != nil {
-			return nil, errs.WrapInvalidWindowCallErrorf(err, "Error decoding file drop payload from 'args' parameter")
+			return nil, errs.WrapInvalidWindowCallErrorf(err, "error decoding file drop payload")
 		}
-		m.Info(
+		m.Debug(
 			"[DragDropDebug] processWindowMethod: Decoded payload from 'args'",
 			"payload",
 			fmt.Sprintf("%+v", payload),
 		)
 
-		dropDetails := &DropZoneDetails{
+		dropTarget := &DropTargetDetails{
 			X:          payload.X,
 			Y:          payload.Y,
 			ElementID:  payload.ElementDetails.ID,
 			ClassList:  payload.ElementDetails.ClassList,
-			Attributes: payload.ElementDetails.Attributes, // Assumes DropZoneDetails struct is updated to include this field
+			Attributes: payload.ElementDetails.Attributes,
 		}
 
 		wvWindow, ok := window.(*WebviewWindow)
 		if !ok {
-			return nil, errs.NewInvalidWindowCallErrorf("Error: Target window is not a WebviewWindow for FilesDroppedWithContext")
+			return nil, errs.NewInvalidWindowCallErrorf("target window is not a WebviewWindow")
 		}
 
 		msg := &dragAndDropMessage{
-			windowId:  wvWindow.id,
-			filenames: payload.Filenames,
-			DropZone:  dropDetails,
+			windowId:   wvWindow.id,
+			filenames:  payload.Filenames,
+			DropTarget: dropTarget,
 		}
-
-		m.Info(
-			"[DragDropDebug] processApplicationMethod: Sending message to windowDragAndDropBuffer",
-			"message",
-			fmt.Sprintf("%+v", msg),
-		)
 		windowDragAndDropBuffer <- msg
 		return unit, nil
 	case WindowSnapAssist:
 		window.SnapAssist()
+		return unit, nil
+	case WindowPrint:
+		err := window.Print()
+		if err != nil {
+			return nil, fmt.Errorf("Window.Print failed: %w", err)
+		}
 		return unit, nil
 	default:
 		return nil, errs.NewInvalidWindowCallErrorf("Unknown method %d", req.Method)
