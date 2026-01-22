@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mouse Hover Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            text-align: center;
+            color: white;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: calc(100vh - 40px);
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        h1 {
+            color: #00d9ff;
+            margin-bottom: 10px;
+        }
+        .info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px auto;
+            max-width: 500px;
+        }
+        .status {
+            font-size: 1.2em;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+        .status.inside {
+            background: rgba(0, 217, 255, 0.3);
+            border: 2px solid #00d9ff;
+        }
+        .status.outside {
+            background: rgba(255, 100, 100, 0.3);
+            border: 2px solid #ff6464;
+        }
+        #eventLog {
+            text-align: left;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        .log-entry {
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        .enter { color: #00ff88; }
+        .leave { color: #ff8800; }
+    </style>
+</head>
+<body>
+    <h1>Mouse Hover Events Demo</h1>
+
+    <div class="info">
+        <p>This demo shows the <code>WindowMouseEnter</code> and <code>WindowMouseLeave</code> events.</p>
+        <p>Move your mouse in and out of the windows to see the events fire.</p>
+        <p>Check the terminal for Go-side event logs.</p>
+    </div>
+
+    <div id="status" class="status outside">
+        Mouse is outside this window
+    </div>
+
+    <div id="eventLog">
+        <div class="log-entry">Event log:</div>
+    </div>
+
+<script type="module">
+    import * as wails from "/wails/runtime.js";
+
+    const statusEl = document.getElementById('status');
+    const logEl = document.getElementById('eventLog');
+
+    function addLogEntry(message, className) {
+        const entry = document.createElement('div');
+        entry.className = 'log-entry ' + className;
+        entry.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+        logEl.appendChild(entry);
+        logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    // Listen for mouse enter event using the event string directly
+    wails.Events.On("common:WindowMouseEnter", function() {
+        statusEl.textContent = 'Mouse is INSIDE this window';
+        statusEl.className = 'status inside';
+        addLogEntry('WindowMouseEnter', 'enter');
+    });
+
+    // Listen for mouse leave event
+    wails.Events.On("common:WindowMouseLeave", function() {
+        statusEl.textContent = 'Mouse is outside this window';
+        statusEl.className = 'status outside';
+        addLogEntry('WindowMouseLeave', 'leave');
+    });
+</script>
+
+</body>
+</html>

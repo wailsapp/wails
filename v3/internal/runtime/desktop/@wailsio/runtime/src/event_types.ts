@@ -256,5 +256,7 @@ export const Types = Object.freeze({
 		WindowZoomIn: "common:WindowZoomIn",
 		WindowZoomOut: "common:WindowZoomOut",
 		WindowZoomReset: "common:WindowZoomReset",
+		WindowMouseEnter: "common:WindowMouseEnter",
+		WindowMouseLeave: "common:WindowMouseLeave",
 	}),
 });

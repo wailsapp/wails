@@ -80,6 +80,7 @@ extern void emit(WindowEvent* data);
 extern gboolean handleConfigureEvent(GtkWidget*, GdkEventConfigure*, uintptr_t);
 extern gboolean handleDeleteEvent(GtkWidget*, GdkEvent*, uintptr_t);
 extern gboolean handleFocusEvent(GtkWidget*, GdkEvent*, uintptr_t);
+extern gboolean handleEnterLeaveEvent(GtkWidget*, GdkEventCrossing*, uintptr_t);
 extern void handleLoadChanged(WebKitWebView*, WebKitLoadEvent, uintptr_t);
 void handleClick(void*);
 extern gboolean onButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
@@ -1633,6 +1634,21 @@ func handleFocusEvent(widget *C.GtkWidget, event *C.GdkEvent, data C.uintptr_t) 
 	return C.gboolean(0)
 }
 
+//export handleEnterLeaveEvent
+func handleEnterLeaveEvent(widget *C.GtkWidget, event *C.GdkEventCrossing, data C.uintptr_t) C.gboolean {
+	// Filter out enter/leave events caused by grabs or inferior windows
+	// Only emit events for actual mouse enter/leave of the window
+	if event.detail == C.GDK_NOTIFY_INFERIOR {
+		return C.gboolean(0)
+	}
+	if event._type == C.GDK_ENTER_NOTIFY {
+		processWindowEvent(C.uint(data), C.uint(events.Common.WindowMouseEnter))
+	} else if event._type == C.GDK_LEAVE_NOTIFY {
+		processWindowEvent(C.uint(data), C.uint(events.Common.WindowMouseLeave))
+	}
+	return C.gboolean(0)
+}
+
 //export handleLoadChanged
 func handleLoadChanged(webview *C.WebKitWebView, event C.WebKitLoadEvent, data C.uintptr_t) {
 	switch event {
@@ -1666,6 +1682,12 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 	C.signal_connect(wv, c.String("button-press-event"), C.onButtonEvent, winID)
 	C.signal_connect(wv, c.String("button-release-event"), C.onButtonEvent, winID)
 	C.signal_connect(wv, c.String("key-press-event"), C.onKeyPressEvent, winID)
+
+	// Mouse enter/leave events for the window
+	// Add event masks to receive enter/leave notifications even when unfocused
+	C.gtk_widget_add_events((*C.GtkWidget)(unsafe.Pointer(w.window)), C.GDK_ENTER_NOTIFY_MASK|C.GDK_LEAVE_NOTIFY_MASK)
+	C.signal_connect(unsafe.Pointer(w.window), c.String("enter-notify-event"), C.handleEnterLeaveEvent, winID)
+	C.signal_connect(unsafe.Pointer(w.window), c.String("leave-notify-event"), C.handleEnterLeaveEvent, winID)
 }
 
 func getMouseButtons() (bool, bool, bool) {

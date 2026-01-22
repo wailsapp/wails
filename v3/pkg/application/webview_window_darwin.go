@@ -850,6 +850,9 @@ static void setContentProtection(void *nsWindow, bool enabled) {
 	}
 }
 
+// Enable mouse enter/leave tracking for a window
+void windowEnableMouseTracking(void* nsWindow);
+
 */
 import "C"
 import (
@@ -1265,6 +1268,10 @@ func (w *macosWebviewWindow) run() {
 			C.bool(options.EnableFileDrop),
 			w.getWebviewPreferences(),
 		)
+
+		// Enable mouse tracking for mouse enter/leave events
+		w.enableMouseTracking()
+
 		w.setTitle(options.Title)
 		w.setResizable(!options.DisableResize)
 		if options.MinWidth != 0 || options.MinHeight != 0 {
@@ -1444,6 +1451,10 @@ func (w *macosWebviewWindow) applyLiquidGlass() {
 	)
 
 	globalApplication.debug("Applied Liquid Glass effect", "window", w.parent.id, "style", options.Style)
+}
+
+func (w *macosWebviewWindow) enableMouseTracking() {
+	C.windowEnableMouseTracking(w.nsWindow)
 }
 
 func (w *macosWebviewWindow) relativePosition() (int, int) {
