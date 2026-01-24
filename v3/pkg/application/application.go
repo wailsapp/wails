@@ -501,16 +501,6 @@ func (a *App) Capabilities() capabilities.Capabilities {
 	return a.capabilities
 }
 
-//func (a *App) RegisterListener(listener WailsEventListener) {
-//	a.wailsEventListenerLock.Lock()
-//	a.wailsEventListeners = append(a.wailsEventListeners, listener)
-//	a.wailsEventListenerLock.Unlock()
-//}
-//
-//func (a *App) RegisterServiceHandler(prefix string, handler http.Handler) {
-//	a.assets.AttachServiceHandler(prefix, handler)
-//}
-
 func (a *App) GetPID() int {
 	return a.pid
 }

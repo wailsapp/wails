@@ -4,6 +4,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 )
@@ -120,6 +121,56 @@ type Options struct {
 	//
 	// Example use case: Implementing WebSocket-based or PostMessage IPC.
 	Transport Transport
+
+	// Server configures the HTTP server for server mode.
+	// Server mode is enabled by building with the "server" build tag:
+	//   go build -tags server
+	//
+	// In server mode, the application runs as an HTTP server without a native window.
+	// This enables deploying the same Wails application as a web server for:
+	//   - Docker/container deployments
+	//   - Server-side rendering
+	//   - Web-only access without desktop dependencies
+	Server ServerOptions
+}
+
+// ServerOptions configures the HTTP server for headless mode.
+type ServerOptions struct {
+	// Host is the address to bind to.
+	// Default: "localhost" for security. Use "0.0.0.0" for all interfaces.
+	Host string
+
+	// Port is the port to listen on.
+	// Default: 8080
+	Port int
+
+	// ReadTimeout is the maximum duration for reading the entire request.
+	// Default: 30 seconds
+	ReadTimeout time.Duration
+
+	// WriteTimeout is the maximum duration before timing out writes of the response.
+	// Default: 30 seconds
+	WriteTimeout time.Duration
+
+	// IdleTimeout is the maximum duration to wait for the next request.
+	// Default: 120 seconds
+	IdleTimeout time.Duration
+
+	// ShutdownTimeout is the maximum duration to wait for active connections to close.
+	// Default: 30 seconds
+	ShutdownTimeout time.Duration
+
+	// TLS configures HTTPS. If nil, HTTP is used.
+	TLS *TLSOptions
+}
+
+// TLSOptions configures HTTPS for the headless server.
+type TLSOptions struct {
+	// CertFile is the path to the TLS certificate file.
+	CertFile string
+
+	// KeyFile is the path to the TLS private key file.
+	KeyFile string
 }
 
 // AssetOptions defines the configuration of the AssetServer.
