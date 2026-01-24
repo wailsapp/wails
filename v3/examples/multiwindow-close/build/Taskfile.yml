@@ -1,0 +1,193 @@
+version: '3'
+
+tasks:
+  go:mod:tidy:
+    summary: Runs `go mod tidy`
+    internal: true
+    cmds:
+      - go mod tidy
+
+  install:frontend:deps:
+    summary: Install frontend dependencies
+    dir: frontend
+    sources:
+      - package.json
+      - package-lock.json
+    generates:
+      - node_modules
+    preconditions:
+      - sh: npm version
+        msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
+    cmds:
+      - npm install
+
+  build:frontend:
+    label: build:frontend (DEV={{.DEV}})
+    summary: Build the frontend project
+    dir: frontend
+    sources:
+      - "**/*"
+    generates:
+      - dist/**/*
+    deps:
+      - task: install:frontend:deps
+      - task: generate:bindings
+        vars:
+          BUILD_FLAGS:
+            ref: .BUILD_FLAGS
+    cmds:
+      - npm run {{.BUILD_COMMAND}} -q
+    env:
+      PRODUCTION: '{{if eq .DEV "true"}}false{{else}}true{{end}}'
+    vars:
+      BUILD_COMMAND: '{{if eq .DEV "true"}}build:dev{{else}}build{{end}}'
+
+
+  frontend:vendor:puppertino:
+    summary: Fetches Puppertino CSS into frontend/public for consistent mobile styling
+    sources:
+      - frontend/public/puppertino/puppertino.css
+    generates:
+      - frontend/public/puppertino/puppertino.css
+    cmds:
+      - |
+        set -euo pipefail
+        mkdir -p frontend/public/puppertino
+        # If bundled Puppertino exists, prefer it. Otherwise, try to fetch, but don't fail build on error.
+        if [ ! -f frontend/public/puppertino/puppertino.css ]; then
+          echo "No bundled Puppertino found. Attempting to fetch from GitHub..."
+          if curl -fsSL https://raw.githubusercontent.com/codedgar/Puppertino/main/dist/css/full.css -o frontend/public/puppertino/puppertino.css; then
+            curl -fsSL https://raw.githubusercontent.com/codedgar/Puppertino/main/LICENSE -o frontend/public/puppertino/LICENSE || true
+            echo "Puppertino CSS downloaded to frontend/public/puppertino/puppertino.css"
+          else
+            echo "Warning: Could not fetch Puppertino CSS. Proceeding without download since template may bundle it."
+          fi
+        else
+          echo "Using bundled Puppertino at frontend/public/puppertino/puppertino.css"
+        fi
+        # Ensure index.html includes Puppertino CSS and button classes
+        INDEX_HTML=frontend/index.html
+        if [ -f "$INDEX_HTML" ]; then
+          if ! grep -q 'href="/puppertino/puppertino.css"' "$INDEX_HTML"; then
+            # Insert Puppertino link tag after style.css link
+            awk '
+              /href="\/style.css"\/?/ && !x { print; print "    <link rel=\"stylesheet\" href=\"/puppertino/puppertino.css\"/>"; x=1; next }1
+            ' "$INDEX_HTML" > "$INDEX_HTML.tmp" && mv "$INDEX_HTML.tmp" "$INDEX_HTML"
+          fi
+          # Replace default .btn with Puppertino primary button classes if present
+          sed -E -i'' 's/class=\"btn\"/class=\"p-btn p-prim-col\"/g' "$INDEX_HTML" || true
+        fi
+
+
+  generate:bindings:
+    label: generate:bindings (BUILD_FLAGS={{.BUILD_FLAGS}})
+    summary: Generates bindings for the frontend
+    deps:
+      - task: go:mod:tidy
+    sources:
+      - "**/*.[jt]s"
+      - exclude: frontend/**/*
+      - frontend/bindings/**/*  # Rerun when switching between dev/production mode causes changes in output
+      - "**/*.go"
+      - go.mod
+      - go.sum
+    generates:
+      - frontend/bindings/**/*
+    cmds:
+      - wails3 generate bindings -f '{{.BUILD_FLAGS}}' -clean=true
+
+  generate:icons:
+    summary: Generates Windows `.ico` and Mac `.icns` files from an image
+    dir: build
+    sources:
+      - "appicon.png"
+    generates:
+      - "darwin/icons.icns"
+      - "windows/icon.ico"
+    cmds:
+      - wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico
+
+  dev:frontend:
+    summary: Runs the frontend in development mode
+    dir: frontend
+    deps:
+      - task: install:frontend:deps
+    cmds:
+      - npm run dev -- --port {{.VITE_PORT}} --strictPort
+
+  update:build-assets:
+    summary: Updates the build assets
+    dir: build
+    cmds:
+      - wails3 update build-assets -name "{{.APP_NAME}}" -binaryname "{{.APP_NAME}}" -config config.yml -dir .
+
+  setup:docker:
+    summary: Builds Docker image for cross-compilation (~800MB download)
+    desc: |
+      Builds the Docker image needed for cross-compiling to any platform.
+      Run this once to enable cross-platform builds from any OS.
+    cmds:
+      - docker build -t wails-cross -f build/docker/Dockerfile.cross build/docker/
+    preconditions:
+      - sh: docker info > /dev/null 2>&1
+        msg: "Docker is required. Please install Docker first."
+
+  ios:device:list:
+    summary: Lists connected iOS devices (UDIDs)
+    cmds:
+      - xcrun xcdevice list
+
+  ios:run:device:
+    summary: Build, install, and launch on a physical iPhone using Apple tools (xcodebuild/devicectl)
+    vars:
+      PROJECT: '{{.PROJECT}}'   # e.g., build/ios/xcode/<YourProject>.xcodeproj
+      SCHEME: '{{.SCHEME}}'     # e.g., ios.dev
+      CONFIG: '{{.CONFIG | default "Debug"}}'
+      DERIVED: '{{.DERIVED | default "build/ios/DerivedData"}}'
+      UDID: '{{.UDID}}'         # from `task ios:device:list`
+      BUNDLE_ID: '{{.BUNDLE_ID}}' # e.g., com.yourco.wails.ios.dev
+      TEAM_ID: '{{.TEAM_ID}}'   # optional, if your project is not already set up for signing
+    preconditions:
+      - sh: xcrun -f xcodebuild
+        msg: "xcodebuild not found. Please install Xcode."
+      - sh: xcrun -f devicectl
+        msg: "devicectl not found. Please update to Xcode 15+ (which includes devicectl)."
+      - sh: test -n '{{.PROJECT}}'
+        msg: "Set PROJECT to your .xcodeproj path (e.g., PROJECT=build/ios/xcode/App.xcodeproj)."
+      - sh: test -n '{{.SCHEME}}'
+        msg: "Set SCHEME to your app scheme (e.g., SCHEME=ios.dev)."
+      - sh: test -n '{{.UDID}}'
+        msg: "Set UDID to your device UDID (see: task ios:device:list)."
+      - sh: test -n '{{.BUNDLE_ID}}'
+        msg: "Set BUNDLE_ID to your app's bundle identifier (e.g., com.yourco.wails.ios.dev)."
+    cmds:
+      - |
+        set -euo pipefail
+        echo "Building for device: UDID={{.UDID}} SCHEME={{.SCHEME}} PROJECT={{.PROJECT}}"
+        XCB_ARGS=(
+          -project "{{.PROJECT}}"
+          -scheme "{{.SCHEME}}"
+          -configuration "{{.CONFIG}}"
+          -destination "id={{.UDID}}"
+          -derivedDataPath "{{.DERIVED}}"
+          -allowProvisioningUpdates
+          -allowProvisioningDeviceRegistration
+        )
+        # Optionally inject signing identifiers if provided
+        if [ -n '{{.TEAM_ID}}' ]; then XCB_ARGS+=(DEVELOPMENT_TEAM={{.TEAM_ID}}); fi
+        if [ -n '{{.BUNDLE_ID}}' ]; then XCB_ARGS+=(PRODUCT_BUNDLE_IDENTIFIER={{.BUNDLE_ID}}); fi
+        xcodebuild "${XCB_ARGS[@]}" build | xcpretty || true
+        # If xcpretty isn't installed, run without it
+        if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+          xcodebuild "${XCB_ARGS[@]}" build
+        fi
+        # Find built .app
+        APP_PATH=$(find "{{.DERIVED}}/Build/Products" -type d -name "*.app" -maxdepth 3 | head -n 1)
+        if [ -z "$APP_PATH" ]; then
+          echo "Could not locate built .app under {{.DERIVED}}/Build/Products" >&2
+          exit 1
+        fi
+        echo "Installing: $APP_PATH"
+        xcrun devicectl device install app --device "{{.UDID}}" "$APP_PATH"
+        echo "Launching: {{.BUNDLE_ID}}"
+        xcrun devicectl device process launch --device "{{.UDID}}" --stderr console --stdout console "{{.BUNDLE_ID}}"

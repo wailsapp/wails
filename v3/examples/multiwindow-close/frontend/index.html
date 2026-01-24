@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <link rel="icon" type="image/svg+xml" href="/wails.png"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="/style.css"/>
+    <title>multiWindow bug repro</title>
+</head>
+<body>
+<div class="app">
+    <div class="container" id="mainView">
+        <header class="header">
+            <div class="title">Multi-window close repro</div>
+            <div class="subtitle">
+                This repro is macOS-specific: the “ghost window” is only visible in <strong>App Exposé</strong> (<span class="kbd">Control</span> + <span class="kbd">↓</span>).
+            </div>
+        </header>
+
+        <section class="card">
+            <div class="row">
+                <button class="btn btn-primary" onclick="openChildWindow()">Open child window</button>
+                <button class="btn" onclick="refreshWindowList()">Refresh window list</button>
+            </div>
+
+            <div class="kv">
+                <div class="k">Last opened child name</div>
+                <div class="v" id="lastChildName">-</div>
+            </div>
+
+            <div class="sectionTitle">Windows (from Go)</div>
+            <pre class="code" id="windowsList">Click "Refresh window list"</pre>
+
+            <div class="hint">
+                <div class="sectionTitle" style="margin-top:0">Repro steps (observe in App Exposé)</div>
+                <ol class="steps">
+                    <li>Click <strong>Open child window</strong>.</li>
+                    <li>In the child window, click <strong>Close (after Current)</strong> or <strong>Close (using Current)</strong>.</li>
+                    <li>Open App Exposé: <span class="kbd">Control</span> + <span class="kbd">↓</span>.</li>
+                    <li>Observe: the child window may still appear as a thumbnail, even though it “closed”.</li>
+                </ol>
+                <div class="note">
+                    Note: the Go window list above may show the child as closed/removed.
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="container" id="childView" style="display:none">
+        <header class="header">
+            <div class="title">Child window</div>
+            <div class="subtitle">
+                After closing, check <strong>App Exposé</strong> (<span class="kbd">Control</span> + <span class="kbd">↓</span>).
+            </div>
+        </header>
+
+        <section class="card">
+            <div class="kv">
+                <div class="k">Window name</div>
+                <div class="v" id="childName">-</div>
+            </div>
+
+            <div class="row">
+                <button class="btn" onclick="closeNoCurrent()">Close (no Current)</button>
+                <button class="btn btn-danger" onclick="closeAfterCurrent()">Close (after Current)</button>
+                <button class="btn" onclick="closeUsingCurrent()">Close (using Current)</button>
+            </div>
+
+            <div class="sectionTitle">Last action</div>
+            <pre class="code" id="childLog">-</pre>
+        </section>
+    </div>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
