@@ -367,3 +367,35 @@ tasks:
       - echo "=== Cleaning Up Test Binaries ==="
       - task: clean:test:binaries
       - echo "✅ All tests completed successfully"
+
+  build:server:
+    summary: Build an application in server mode (no GUI, HTTP server only)
+    desc: |
+      Builds a Wails application in server mode using the -tags server build tag.
+      Server mode enables running the application as a pure HTTP server without
+      native GUI dependencies.
+
+      Usage: task build:server DIR=examples/server
+    dir: '{{.DIR | default "."}}'
+    cmds:
+      - echo "Building {{.DIR | default `.`}} in server mode..."
+      - go build -tags server -o '{{.OUTPUT | default "server-app"}}' .
+      - echo "Server mode build complete"
+
+  test:example:server:
+    summary: Build and test the server mode example
+    dir: 'examples/server'
+    cmds:
+      - echo "Building server example with -tags server..."
+      - go mod tidy
+      - go build -tags server -o "testbuild-server"
+      - echo "✅ Server example builds successfully"
+      - rm -f testbuild-server
+
+  test:server:
+    summary: Run server mode unit tests
+    dir: 'pkg/application'
+    cmds:
+      - echo "Running server mode tests..."
+      - go test -tags server -v -run TestServerMode .
+      - echo "✅ Server mode tests passed"
