@@ -190,44 +190,105 @@ import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
   }
 
   /* Text morphing effect */
-  .morph-container {
+  .morph-word {
     display: inline-block;
     position: relative;
-    min-width: 5em;
+    min-width: 4.5em;
+    text-align: left;
   }
 
-  .morph-text {
+  .morph-word span {
     display: inline-block;
-    animation: morph-cycle 8s ease-in-out infinite;
+    transition: all 0.8s ease-in-out;
   }
 
-  .morph-text::after {
-    content: 'Desktop';
-    animation: morph-words 8s ease-in-out infinite;
+  /* Fade transition */
+  .morph-word span.fade-out {
+    opacity: 0;
   }
 
-  @keyframes morph-words {
-    0%, 40% { content: 'Desktop'; }
-    45%, 50% { content: 'Server'; }
-    55%, 95% { content: 'Desktop'; }
-    100% { content: 'Desktop'; }
+  /* Blur transition */
+  .morph-word span.blur-out {
+    opacity: 0;
+    filter: blur(8px);
   }
 
-  @keyframes morph-cycle {
-    0%, 40% { opacity: 1; }
-    42% { opacity: 0; }
-    45% { opacity: 0; }
-    48% { opacity: 1; }
-    50%, 52% { opacity: 1; }
-    54% { opacity: 0; }
-    57% { opacity: 0; }
-    60%, 100% { opacity: 1; }
+  /* Scale transition */
+  .morph-word span.scale-out {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  /* Slide transition (vertical, in place) */
+  .morph-word span.slide-out {
+    opacity: 0;
+    transform: translateY(-0.3em);
   }
 `}</style>
 
-<div style="text-align: center; font-size: 1.5rem; margin: -1rem 0 2rem 0; color: var(--sl-color-gray-2);">
-  Build <span class="morph-container"><span class="morph-text"></span></span> Apps with Go
-</div>
+<script>{`
+  (function() {
+    const words = ['desktop', 'server'];
+    const transitions = ['fade-out', 'blur-out', 'scale-out', 'slide-out'];
+    let currentIndex = 0;
+
+    function init() {
+      // Find the tagline and replace 'desktop' with morphing element
+      const tagline = document.querySelector('.hero > div > p, .sl-markdown-content p:first-of-type, [class*="tagline"]');
+      if (!tagline) {
+        // Retry after a short delay if not found
+        setTimeout(init, 500);
+        return;
+      }
+
+      const html = tagline.innerHTML;
+      if (html.includes('morph-word')) return; // Already initialized
+
+      const newHtml = html.replace(
+        /desktop/i,
+        '<span class="morph-word"><span>desktop</span></span>'
+      );
+      tagline.innerHTML = newHtml;
+
+      // Start the morphing cycle
+      scheduleNext();
+    }
+
+    function scheduleNext() {
+      // Random interval between 3-5 seconds
+      const delay = 3000 + Math.random() * 2000;
+      setTimeout(morph, delay);
+    }
+
+    function morph() {
+      const morphSpan = document.querySelector('.morph-word span');
+      if (!morphSpan) return;
+
+      // Pick random transition
+      const transition = transitions[Math.floor(Math.random() * transitions.length)];
+
+      // Fade out with transition
+      morphSpan.classList.add(transition);
+
+      // After transition, swap text and fade in
+      setTimeout(() => {
+        currentIndex = (currentIndex + 1) % words.length;
+        morphSpan.textContent = words[currentIndex];
+        morphSpan.classList.remove(transition);
+
+        // Schedule next morph
+        scheduleNext();
+      }, 800);
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+`}</script>
 
 ## Quickstart
 
