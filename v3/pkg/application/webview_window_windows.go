@@ -1597,7 +1597,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				int(newWindowRect.Top),
 				int(newWindowRect.Right-newWindowRect.Left),
 				int(newWindowRect.Bottom-newWindowRect.Top),
-				flags)
+				uint(flags))
 			// For frameless windows with decorations, re-extend the frame into client area
 			// to ensure proper window frame styling after DPI change.
 			if w.framelessWithDecorations() {
