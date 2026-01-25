@@ -15,11 +15,12 @@ package notifications
 import "C"
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
 	"unsafe"
+
+	"encoding/json"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )

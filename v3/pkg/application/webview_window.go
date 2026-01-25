@@ -1,7 +1,6 @@
 package application
 
 import (
-	"encoding/json"
 	"fmt"
 	"runtime"
 	"slices"
@@ -10,9 +9,9 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"github.com/leaanthony/u"
+	"encoding/json"
 
-	"github.com/samber/lo"
+	"github.com/leaanthony/u"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
@@ -772,7 +771,9 @@ func (w *WebviewWindow) OnWindowEvent(
 	return func() {
 		// Check if eventListener is already locked
 		w.eventListenersLock.Lock()
-		w.eventListeners[eventID] = lo.Without(w.eventListeners[eventID], windowEventListener)
+		w.eventListeners[eventID] = slices.DeleteFunc(w.eventListeners[eventID], func(l *WindowEventListener) bool {
+			return l == windowEventListener
+		})
 		w.eventListenersLock.Unlock()
 	}
 }
@@ -793,7 +794,9 @@ func (w *WebviewWindow) RegisterHook(
 	return func() {
 		w.eventHooksLock.Lock()
 		defer w.eventHooksLock.Unlock()
-		w.eventHooks[eventID] = lo.Without(w.eventHooks[eventID], windowEventHook)
+		w.eventHooks[eventID] = slices.DeleteFunc(w.eventHooks[eventID], func(l *WindowEventListener) bool {
+			return l == windowEventHook
+		})
 	}
 }
 
@@ -1177,7 +1180,7 @@ func (w *WebviewWindow) SetFrameless(frameless bool) Window {
 }
 
 func (w *WebviewWindow) DispatchWailsEvent(event *CustomEvent) {
-	msg := fmt.Sprintf("_wails.dispatchWailsEvent(%s);", event.ToJSON())
+	msg := fmt.Sprintf("window._wails.dispatchWailsEvent(%s);", event.ToJSON())
 	w.ExecJS(msg)
 }
 
@@ -1202,37 +1205,16 @@ func (w *WebviewWindow) Error(message string, args ...any) {
 	globalApplication.error("in window '%s': "+message, args...)
 }
 
-func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string, dropZone *DropZoneDetails) {
-	globalApplication.debug(
-		"[DragDropDebug] HandleDragAndDropMessage called",
-		"files", filenames,
-		"dropZone", dropZone,
-	)
+func (w *WebviewWindow) handleDragAndDropMessage(filenames []string, dropTarget *DropTargetDetails) {
 	thisEvent := NewWindowEvent()
-	globalApplication.debug(
-		"[DragDropDebug] HandleDragAndDropMessage: thisEvent created",
-		"ctx", thisEvent.ctx,
-	)
 	ctx := newWindowEventContext()
 	ctx.setDroppedFiles(filenames)
-	if dropZone != nil { // Check if dropZone details are available
-		ctx.setDropZoneDetails(dropZone)
+	if dropTarget != nil {
+		ctx.setDropTargetDetails(dropTarget)
 	}
 	thisEvent.ctx = ctx
-	globalApplication.debug(
-		"[DragDropDebug] HandleDragAndDropMessage: thisEvent.ctx assigned",
-		"thisEvent.ctx", thisEvent.ctx,
-		"ctx", ctx,
-	)
-	listeners := w.eventListeners[uint(events.Common.WindowDropZoneFilesDropped)]
-	globalApplication.debug(
-		"[DragDropDebug] HandleDragAndDropMessage: Found listeners for WindowDropZoneFilesDropped",
-		"count", len(listeners),
-	)
-	globalApplication.debug(
-		"[DragDropDebug] HandleDragAndDropMessage: Before calling listeners",
-		"thisEvent.ctx", thisEvent.ctx,
-	)
+
+	listeners := w.eventListeners[uint(events.Common.WindowFilesDropped)]
 	for _, listener := range listeners {
 		if listener == nil {
 			continue
@@ -1451,11 +1433,6 @@ func (w *WebviewWindow) ToggleMenuBar() {
 }
 
 func (w *WebviewWindow) InitiateFrontendDropProcessing(filenames []string, x int, y int) {
-	globalApplication.debug(
-		"[DragDropDebug] InitiateFrontendDropProcessing called",
-		"x", x,
-		"y", y,
-	)
 	if w.impl == nil || w.isDestroyed() {
 		return
 	}
@@ -1467,7 +1444,7 @@ func (w *WebviewWindow) InitiateFrontendDropProcessing(filenames []string, x int
 	}
 
 	jsCall := fmt.Sprintf(
-		"window._wails.handlePlatformFileDrop(%s, %d, %d);",
+		"window.wails.Window.HandlePlatformFileDrop(%s, %d, %d);",
 		string(filenamesJSON),
 		x,
 		y,
@@ -1482,6 +1459,65 @@ func (w *WebviewWindow) InitiateFrontendDropProcessing(filenames []string, x int
 	InvokeSync(func() {
 		w.impl.execJS(jsCall)
 	})
+}
+
+// HandleDragEnter is called when drag enters the window (Linux only, since GTK intercepts drag events)
+func (w *WebviewWindow) HandleDragEnter() {
+	if w.impl == nil || w.isDestroyed() || !w.runtimeLoaded {
+		return
+	}
+
+	// Reset drag hover state for new drag session
+	dragHover.lastSentX = 0
+	dragHover.lastSentY = 0
+
+	w.impl.execJS("window._wails.handleDragEnter();")
+}
+
+// Drag hover throttle state
+var dragHover struct {
+	lastSentX int
+	lastSentY int
+}
+
+// HandleDragOver is called during drag-motion to update hover state in JS
+// This is called from the GTK main thread, so we can call execJS directly
+func (w *WebviewWindow) HandleDragOver(x int, y int) {
+	if w.impl == nil || w.isDestroyed() || !w.runtimeLoaded {
+		return
+	}
+
+	// Throttle: only send if moved at least 5 pixels
+	dx := x - dragHover.lastSentX
+	dy := y - dragHover.lastSentY
+	if dx < 0 {
+		dx = -dx
+	}
+	if dy < 0 {
+		dy = -dy
+	}
+	if dx < 5 && dy < 5 {
+		return
+	}
+	dragHover.lastSentX = x
+	dragHover.lastSentY = y
+
+	// Use platform-specific zero-alloc implementation if available
+	if impl, ok := w.impl.(interface{ execJSDragOver(x, y int) }); ok {
+		impl.execJSDragOver(x, y)
+	} else {
+		w.impl.execJS(fmt.Sprintf("window._wails.handleDragOver(%d,%d)", x, y))
+	}
+}
+
+// HandleDragLeave is called when drag leaves the window
+func (w *WebviewWindow) HandleDragLeave() {
+	if w.impl == nil || w.isDestroyed() || !w.runtimeLoaded {
+		return
+	}
+
+	// Don't use InvokeSync - execJS already handles main thread dispatch internally
+	w.impl.execJS("window._wails.handleDragLeave();")
 }
 
 // SnapAssist triggers the Windows Snap Assist feature by simulating Win+Z key combination.

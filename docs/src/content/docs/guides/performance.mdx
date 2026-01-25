@@ -116,10 +116,10 @@ func (s *Service) ProcessLargeFile(path string) error {
     go func() {
         result, err := s.process(path)
         if err != nil {
-            s.app.EmitEvent("process-error", err.Error())
+            s.app.Event.Emit("process-error", err.Error())
             return
         }
-        s.app.EmitEvent("process-complete", result)
+        s.app.Event.Emit("process-complete", result)
     }()
     
     return nil

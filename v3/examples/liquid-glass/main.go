@@ -61,15 +61,15 @@ func main() {
 
 	// Window 1: Light style with no tint
 	window1 := app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title:             "Light Glass",
-		Width:             350,
-		Height:            280,
-		X:                 100,
-		Y:                 100,
-		Frameless:         true,
-		EnableDragAndDrop: false,
-		HTML:              lightHTML,
-		InitialPosition:   application.WindowXY,
+		Title:           "Light Glass",
+		Width:           350,
+		Height:          280,
+		X:               100,
+		Y:               100,
+		Frameless:       true,
+		EnableFileDrop:  false,
+		HTML:            lightHTML,
+		InitialPosition: application.WindowXY,
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropLiquidGlass,
 			InvisibleTitleBarHeight: 500,
@@ -84,15 +84,15 @@ func main() {
 
 	// Window 2: Dark style
 	window2 := app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title:             "Dark Glass",
-		Width:             350,
-		Height:            280,
-		X:                 500,
-		Y:                 100,
-		Frameless:         true,
-		EnableDragAndDrop: false,
-		HTML:              darkHTML,
-		InitialPosition:   application.WindowXY,
+		Title:           "Dark Glass",
+		Width:           350,
+		Height:          280,
+		X:               500,
+		Y:               100,
+		Frameless:       true,
+		EnableFileDrop:  false,
+		HTML:            darkHTML,
+		InitialPosition: application.WindowXY,
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropLiquidGlass,
 			InvisibleTitleBarHeight: 500,
@@ -107,15 +107,15 @@ func main() {
 
 	// Window 3: Vibrant style
 	window3 := app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title:             "Vibrant Glass",
-		Width:             350,
-		Height:            280,
-		X:                 900,
-		Y:                 100,
-		Frameless:         true,
-		EnableDragAndDrop: false,
-		HTML:              vibrantHTML,
-		InitialPosition:   application.WindowXY,
+		Title:           "Vibrant Glass",
+		Width:           350,
+		Height:          280,
+		X:               900,
+		Y:               100,
+		Frameless:       true,
+		EnableFileDrop:  false,
+		HTML:            vibrantHTML,
+		InitialPosition: application.WindowXY,
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropLiquidGlass,
 			InvisibleTitleBarHeight: 500,
@@ -130,15 +130,15 @@ func main() {
 
 	// Window 4: Blue tinted glass
 	window4 := app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title:             "Tinted Glass",
-		Width:             350,
-		Height:            280,
-		X:                 300,
-		Y:                 420,
-		Frameless:         true,
-		EnableDragAndDrop: false,
-		HTML:              tintedHTML,
-		InitialPosition:   application.WindowXY,
+		Title:           "Tinted Glass",
+		Width:           350,
+		Height:          280,
+		X:               300,
+		Y:               420,
+		Frameless:       true,
+		EnableFileDrop:  false,
+		HTML:            tintedHTML,
+		InitialPosition: application.WindowXY,
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropLiquidGlass,
 			InvisibleTitleBarHeight: 500,
@@ -153,15 +153,15 @@ func main() {
 
 	// Window 5: Using specific NSVisualEffectMaterial
 	window5 := app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title:             "Sheet Material",
-		Width:             350,
-		Height:            280,
-		X:                 700,
-		Y:                 420,
-		Frameless:         true,
-		EnableDragAndDrop: false,
-		HTML:              sheetHTML,
-		InitialPosition:   application.WindowXY,
+		Title:           "Sheet Material",
+		Width:           350,
+		Height:          280,
+		X:               700,
+		Y:               420,
+		Frameless:       true,
+		EnableFileDrop:  false,
+		HTML:            sheetHTML,
+		InitialPosition: application.WindowXY,
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropLiquidGlass,
 			InvisibleTitleBarHeight: 500,
@@ -176,15 +176,15 @@ func main() {
 
 	// Window 6: HUD Window Material (very light, translucent)
 	window6 := app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title:             "HUD Window",
-		Width:             350,
-		Height:            280,
-		X:                 100,
-		Y:                 740,
-		Frameless:         true,
-		EnableDragAndDrop: false,
-		HTML:              hudHTML,
-		InitialPosition:   application.WindowXY,
+		Title:           "HUD Window",
+		Width:           350,
+		Height:          280,
+		X:               100,
+		Y:               740,
+		Frameless:       true,
+		EnableFileDrop:  false,
+		HTML:            hudHTML,
+		InitialPosition: application.WindowXY,
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropLiquidGlass,
 			InvisibleTitleBarHeight: 500,
@@ -199,15 +199,15 @@ func main() {
 
 	// Window 7: Content Background Material
 	window7 := app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title:             "Content Background",
-		Width:             350,
-		Height:            280,
-		X:                 500,
-		Y:                 740,
-		Frameless:         true,
-		EnableDragAndDrop: false,
-		HTML:              contentHTML,
-		InitialPosition:   application.WindowXY,
+		Title:           "Content Background",
+		Width:           350,
+		Height:          280,
+		X:               500,
+		Y:               740,
+		Frameless:       true,
+		EnableFileDrop:  false,
+		HTML:            contentHTML,
+		InitialPosition: application.WindowXY,
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropLiquidGlass,
 			InvisibleTitleBarHeight: 500,

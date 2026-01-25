@@ -482,7 +482,7 @@ func main() {
     textMenu := createTextMenu(app)
     app.RegisterContextMenu("text-menu", textMenu)
 
-    app.NewWebviewWindow()
+    app.Window.New()
     app.Run()
 }
 
