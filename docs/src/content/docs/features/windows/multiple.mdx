@@ -32,7 +32,7 @@ func main() {
     })
     
     // Create main window
-    app.mainWindow = app.app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    app.mainWindow = app.app.Window.NewWithOptions(application.WebviewWindowOptions{
         Name:   "main",
         Title:  "Main Application",
         Width:  1200,
@@ -40,7 +40,7 @@ func main() {
     })
     
     // Create settings window (hidden initially)
-    app.settingsWindow = app.app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    app.settingsWindow = app.app.Window.NewWithOptions(application.WebviewWindowOptions{
         Name:   "settings",
         Title:  "Settings",
         Width:  600,
@@ -71,7 +71,7 @@ func (a *App) ShowSettings() {
 ### Get All Windows
 
 ```go
-windows := app.GetAllWindows()
+windows := app.Window.GetAll()
 fmt.Printf("Total windows: %d\n", len(windows))
 
 for _, window := range windows {
@@ -92,7 +92,7 @@ if settings != nil {
 window := app.GetWindowByID(123)
 
 // Current (focused) window
-current := app.CurrentWindow()
+current := app.Window.Current()
 ```
 
 ### Window Registry Pattern
@@ -132,13 +132,13 @@ Windows communicate via the event system:
 
 ```go
 // In main window - emit event
-app.EmitEvent("settings-changed", map[string]interface{}{
+app.Event.Emit("settings-changed", map[string]interface{}{
     "theme": "dark",
     "fontSize": 14,
 })
 
 // In settings window - listen for event
-app.OnEvent("settings-changed", func(event *application.WailsEvent) {
+app.Event.On("settings-changed", func(event *application.WailsEvent) {
     data := event.Data.(map[string]interface{})
     theme := data["theme"].(string)
     fontSize := data["fontSize"].(int)
@@ -170,7 +170,7 @@ func (s *AppState) SetTheme(theme string) {
     s.mu.Unlock()
     
     // Notify all windows
-    app.EmitEvent("theme-changed", theme)
+    app.Event.Emit("theme-changed", theme)
 }
 
 func (s *AppState) GetTheme() string {
@@ -204,7 +204,7 @@ var settingsWindow *application.WebviewWindow
 func ShowSettings(app *application.Application) {
     // Create if doesn't exist
     if settingsWindow == nil {
-        settingsWindow = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        settingsWindow = app.Window.NewWithOptions(application.WebviewWindowOptions{
             Name:   "settings",
             Title:  "Settings",
             Width:  600,
@@ -245,7 +245,7 @@ func OpenDocument(app *application.Application, filePath string) {
     }
     
     // Create new document window
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:  filepath.Base(filePath),
         Width:  800,
         Height: 600,
@@ -275,7 +275,7 @@ Floating windows that stay on top:
 
 ```go
 func CreateToolPalette(app *application.Application) *application.WebviewWindow {
-    palette := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    palette := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Name:        "tools",
         Title:       "Tools",
         Width:       200,
@@ -294,7 +294,7 @@ Child windows that block parent:
 
 ```go
 func ShowModaldialog(parent *application.WebviewWindow, title string) {
-    dialog := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:       title,
         Width:       400,
         Height:      200,
@@ -332,7 +332,7 @@ func (e *EditorApp) UpdatePreview(content string) {
 
 func (e *EditorApp) TogglePreview() {
     if e.preview == nil {
-        e.preview = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        e.preview = app.Window.NewWithOptions(application.WebviewWindowOptions{
             Name:   "preview",
             Title:  "Preview",
             Width:  600,
@@ -357,7 +357,7 @@ func (e *EditorApp) TogglePreview() {
 ### Creating Child Windows
 
 ```go
-childWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:  "Child Window",
     Parent: parentWindow,
 })
@@ -382,7 +382,7 @@ Create modal-like behaviour:
 
 ```go
 func ShowModal(parent *application.WebviewWindow) {
-    modal := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    modal := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:       "Modal dialog",
         Width:       400,
         Height:      200,
@@ -463,7 +463,7 @@ Always clean up window references:
 var windows = make(map[string]*application.WebviewWindow)
 
 func CreateWindow(name string) {
-    window := app.NewWebviewWindow()
+    window := app.Window.New()
     windows[name] = window
     
     // IMPORTANT: Clean up on destroy
@@ -530,7 +530,7 @@ func (wp *WindowPool) Acquire() *application.WebviewWindow {
     }
     
     // Create new window
-    window := app.NewWebviewWindow()
+    window := app.Window.New()
     wp.inUse[window.ID()] = window
     return window
 }
@@ -598,7 +598,7 @@ type WindowState struct {
 func SaveLayout() *WindowLayout {
     layout := &WindowLayout{}
     
-    for _, window := range app.GetAllWindows() {
+    for _, window := range app.Window.GetAll() {
         x, y := window.Position()
         width, height := window.Size()
         
@@ -667,7 +667,7 @@ func main() {
 }
 
 func (mwa *MultiWindowApp) CreateMainWindow() {
-    window := mwa.app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := mwa.app.Window.NewWithOptions(application.WebviewWindowOptions{
         Name:   "main",
         Title:  "Main Application",
         Width:  1200,
@@ -684,7 +684,7 @@ func (mwa *MultiWindowApp) ShowSettings() {
         return
     }
     
-    window := mwa.app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := mwa.app.Window.NewWithOptions(application.WebviewWindowOptions{
         Name:   "settings",
         Title:  "Settings",
         Width:  600,
@@ -703,7 +703,7 @@ func (mwa *MultiWindowApp) OpenDocument(path string) {
         return
     }
     
-    window := mwa.app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := mwa.app.Window.NewWithOptions(application.WebviewWindowOptions{
         Name:  name,
         Title: path,
         Width: 800,

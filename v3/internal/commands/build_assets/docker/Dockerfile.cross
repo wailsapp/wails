@@ -46,7 +46,7 @@ for arg in "$@"; do
         *) ARGS="$ARGS $arg" ;;
     esac
 done
-exec zig cc -target aarch64-macos-none -isysroot /opt/macos-sdk -I/opt/macos-sdk/usr/include -L/opt/macos-sdk/usr/lib -F/opt/macos-sdk/System/Library/Frameworks -w $ARGS
+exec zig cc -fno-sanitize=all -target aarch64-macos-none -isysroot /opt/macos-sdk -I/opt/macos-sdk/usr/include -L/opt/macos-sdk/usr/lib -F/opt/macos-sdk/System/Library/Frameworks -w $ARGS
 ZIGWRAP
 RUN chmod +x /usr/local/bin/zcc-darwin-arm64
 
@@ -66,7 +66,7 @@ for arg in "$@"; do
         *) ARGS="$ARGS $arg" ;;
     esac
 done
-exec zig cc -target x86_64-macos-none -isysroot /opt/macos-sdk -I/opt/macos-sdk/usr/include -L/opt/macos-sdk/usr/lib -F/opt/macos-sdk/System/Library/Frameworks -w $ARGS
+exec zig cc -fno-sanitize=all -target x86_64-macos-none -isysroot /opt/macos-sdk -I/opt/macos-sdk/usr/include -L/opt/macos-sdk/usr/lib -F/opt/macos-sdk/System/Library/Frameworks -w $ARGS
 ZIGWRAP
 RUN chmod +x /usr/local/bin/zcc-darwin-amd64
 

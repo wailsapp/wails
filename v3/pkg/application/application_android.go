@@ -139,7 +139,6 @@ static void executeJavaScriptOnBridge(const char* js) {
 import "C"
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -148,6 +147,8 @@ import (
 	"sync"
 	"time"
 	"unsafe"
+
+	"encoding/json"
 
 	"github.com/wailsapp/wails/v3/internal/runtime"
 )

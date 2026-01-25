@@ -5,7 +5,6 @@ package application
 import (
 	"fmt"
 	"os"
-	"strings"
 	"unsafe"
 
 	"github.com/ebitengine/purego"
@@ -106,6 +105,7 @@ var (
 	gBytesUnref           func(uintptr)
 	gFree                 func(pointer)
 	gIdleAdd              func(uintptr)
+	gListFree             func(*GList)
 	gObjectRefSink        func(pointer)
 	gObjectUnref          func(pointer)
 	gSignalConnectData    func(pointer, string, uintptr, pointer, bool, int) int
@@ -139,6 +139,8 @@ var (
 	gtkCheckMenuItemNewWithLabel    func(string) pointer
 	gtkCheckMenuItemSetActive       func(pointer, int)
 	gtkContainerAdd                 func(pointer, pointer)
+	gtkContainerGetChildren         func(pointer) *GList
+	gtkContainerRemove              func(pointer, pointer)
 	gtkCSSProviderLoadFromData      func(pointer, string, int, pointer)
 	gtkCSSProviderNew               func() pointer
 	gtkDialogAddButton              func(pointer, string, int)
@@ -152,6 +154,7 @@ var (
 	gtkFileChooserSetAction         func(pointer, int)
 	gtkFileChooserSetCreateFolders  func(pointer, bool)
 	gtkFileChooserSetCurrentFolder  func(pointer, string)
+	gtkFileChooserSetCurrentName    func(pointer, string)
 	gtkFileChooserSetSelectMultiple func(pointer, bool)
 	gtkFileChooserSetShowHidden     func(pointer, bool)
 	gtkFileFilterAddPattern         func(pointer, string)
@@ -260,6 +263,7 @@ func init() {
 	purego.RegisterLibFunc(&gBytesUnref, gtk, "g_bytes_unref")
 	purego.RegisterLibFunc(&gFree, gtk, "g_free")
 	purego.RegisterLibFunc(&gIdleAdd, gtk, "g_idle_add")
+	purego.RegisterLibFunc(&gListFree, gtk, "g_list_free")
 	purego.RegisterLibFunc(&gObjectRefSink, gtk, "g_object_ref_sink")
 	purego.RegisterLibFunc(&gObjectUnref, gtk, "g_object_unref")
 	purego.RegisterLibFunc(&gSignalConnectData, gtk, "g_signal_connect_data")
@@ -293,6 +297,8 @@ func init() {
 	purego.RegisterLibFunc(&gtkCheckMenuItemNewWithLabel, gtk, "gtk_check_menu_item_new_with_label")
 	purego.RegisterLibFunc(&gtkCheckMenuItemSetActive, gtk, "gtk_check_menu_item_set_active")
 	purego.RegisterLibFunc(&gtkContainerAdd, gtk, "gtk_container_add")
+	purego.RegisterLibFunc(&gtkContainerGetChildren, gtk, "gtk_container_get_children")
+	purego.RegisterLibFunc(&gtkContainerRemove, gtk, "gtk_container_remove")
 	purego.RegisterLibFunc(&gtkCSSProviderLoadFromData, gtk, "gtk_css_provider_load_from_data")
 	purego.RegisterLibFunc(&gtkDialogAddButton, gtk, "gtk_dialog_add_button")
 	purego.RegisterLibFunc(&gtkDialogGetContentArea, gtk, "gtk_dialog_get_content_area")
@@ -305,6 +311,7 @@ func init() {
 	purego.RegisterLibFunc(&gtkFileChooserSetAction, gtk, "gtk_file_chooser_set_action")
 	purego.RegisterLibFunc(&gtkFileChooserSetCreateFolders, gtk, "gtk_file_chooser_set_create_folders")
 	purego.RegisterLibFunc(&gtkFileChooserSetCurrentFolder, gtk, "gtk_file_chooser_set_current_folder")
+	purego.RegisterLibFunc(&gtkFileChooserSetCurrentName, gtk, "gtk_file_chooser_set_current_name")
 	purego.RegisterLibFunc(&gtkFileChooserSetSelectMultiple, gtk, "gtk_file_chooser_set_select_multiple")
 	purego.RegisterLibFunc(&gtkFileChooserSetShowHidden, gtk, "gtk_file_chooser_set_show_hidden")
 	purego.RegisterLibFunc(&gtkFileFilterAddPattern, gtk, "gtk_file_filter_add_pattern")
@@ -393,12 +400,15 @@ func appName() string {
 }
 
 func appNew(name string) pointer {
-	GApplicationDefaultFlags := uint(0)
+	// Use NON_UNIQUE to allow multiple instances of the application to run
+	// This matches the behavior of gtk_init/gtk_main used in v2
+	// G_APPLICATION_NON_UNIQUE = (1 << 5) = 32
+	GApplicationNonUnique := uint(32)
 
 	// Name is already sanitized by sanitizeAppName() in application_linux.go
 	identifier := fmt.Sprintf("org.wails.%s", name)
 
-	return pointer(gtkApplicationNew(identifier, GApplicationDefaultFlags))
+	return pointer(gtkApplicationNew(identifier, GApplicationNonUnique))
 }
 
 func appRun(application pointer) error {
@@ -514,6 +524,24 @@ func menuSetSubmenu(item *MenuItem, menu *Menu) {
 
 func menuGetRadioGroup(item *linuxMenuItem) *GSList {
 	return (*GSList)(gtkRadioMenuItemGetGroup(pointer(item.native)))
+}
+
+func menuClear(menu *Menu) {
+	menuShell := pointer((menu.impl).(*linuxMenu).native)
+	children := gtkContainerGetChildren(menuShell)
+	if children != nil {
+		// Save the original pointer to free later
+		originalList := children
+		// Iterate through all children and remove them
+		for children != nil {
+			child := children.data
+			if child != nilPointer {
+				gtkContainerRemove(menuShell, child)
+			}
+			children = children.next
+		}
+		gListFree(originalList)
+	}
 }
 
 func attachMenuHandler(item *MenuItem) {
@@ -1024,7 +1052,7 @@ func windowMove(window pointer, x, y int) {
 	gtkWindowMove(window, x, y)
 }
 
-func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFolder, title string, action int, acceptLabel string, filters []FileFilter) ([]string, error) {
+func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFolder, title string, action int, acceptLabel string, filters []FileFilter, currentName string) ([]string, error) {
 	GtkResponseCancel := 0
 	GtkResponseAccept := 1
 
@@ -1054,6 +1082,12 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 
 	if currentFolder != "" {
 		gtkFileChooserSetCurrentFolder(fc, currentFolder)
+	}
+
+	// Set the current name for save dialogs to pre-populate the filename
+	const GtkFileChooserActionSave = 1
+	if currentName != "" && action == GtkFileChooserActionSave {
+		gtkFileChooserSetCurrentName(fc, currentName)
 	}
 
 	buildStringAndFree := func(s pointer) string {
@@ -1125,7 +1159,8 @@ func runOpenFileDialog(dialog *OpenFileDialogStruct) ([]string, error) {
 		dialog.title,
 		GtkFileChooserActionOpen,
 		buttonText,
-		dialog.filters)
+		dialog.filters,
+		"")
 }
 
 func runQuestionDialog(parent pointer, options *MessageDialog) int {
@@ -1206,7 +1241,8 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
 		dialog.title,
 		GtkFileChooserActionSave,
 		buttonText,
-		dialog.filters)
+		dialog.filters,
+		dialog.filename)
 
 	if err != nil || len(results) == 0 {
 		return "", err

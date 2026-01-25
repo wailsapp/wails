@@ -14,7 +14,7 @@ Create **custom dialog windows** using regular Wails windows with dialog-like be
 
 ```go
 // Create custom dialog window
-dialog := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:       "Custom dialog",
     Width:       400,
     Height:      300,
@@ -48,7 +48,7 @@ func NewCustomdialog(app *application.Application) *Customdialog {
         result: make(chan string, 1),
     }
     
-    dialog.window = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    dialog.window = app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:       "Custom dialog",
         Width:       400,
         Height:      300,
@@ -79,7 +79,7 @@ func (d *Customdialog) Close(result string) {
 ```go
 func ShowModaldialog(parent *application.WebviewWindow, title string) string {
     // Create dialog
-    dialog := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:       title,
         Width:       400,
         Height:      200,
@@ -119,7 +119,7 @@ func NewFormdialog(app *application.Application) *Formdialog {
         done: make(chan bool, 1),
     }
     
-    fd.window = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    fd.window = app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:     "Enter Information",
         Width:     500,
         Height:    400,
@@ -156,7 +156,7 @@ func (fd *Formdialog) Cancel() {
 
 ```go
 func ShowConfirmdialog(message string) bool {
-    dialog := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:       "Confirm",
         Width:       400,
         Height:      150,
@@ -172,12 +172,12 @@ func ShowConfirmdialog(message string) bool {
     result := make(chan bool, 1)
     
     // Handle responses
-    app.OnEvent("confirm-yes", func(e *application.CustomEvent) {
+    app.Event.On("confirm-yes", func(e *application.CustomEvent) {
         result <- true
         dialog.Close()
     })
     
-    app.OnEvent("confirm-no", func(e *application.CustomEvent) {
+    app.Event.On("confirm-no", func(e *application.CustomEvent) {
         result <- false
         dialog.Close()
     })
@@ -215,7 +215,7 @@ function confirm(result) {
 
 ```go
 func ShowInputdialog(prompt string, defaultValue string) (string, bool) {
-    dialog := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:     "Input",
         Width:     400,
         Height:    150,
@@ -234,7 +234,7 @@ func ShowInputdialog(prompt string, defaultValue string) (string, bool) {
         })
     })
     
-    app.OnEvent("input-submit", func(e *application.CustomEvent) {
+    app.Event.On("input-submit", func(e *application.CustomEvent) {
         result <- struct {
             value string
             ok    bool
@@ -242,7 +242,7 @@ func ShowInputdialog(prompt string, defaultValue string) (string, bool) {
         dialog.Close()
     })
     
-    app.OnEvent("input-cancel", func(e *application.CustomEvent) {
+    app.Event.On("input-cancel", func(e *application.CustomEvent) {
         result <- struct {
             value string
             ok    bool
@@ -266,7 +266,7 @@ type Progressdialog struct {
 func NewProgressdialog(title string) *Progressdialog {
     pd := &Progressdialog{}
     
-    pd.window = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    pd.window = app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:     title,
         Width:     400,
         Height:    150,
@@ -336,7 +336,7 @@ func NewLogindialog(app *application.Application) *Logindialog {
         }, 1),
     }
     
-    ld.window = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    ld.window = app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:     "Login",
         Width:     400,
         Height:    250,
@@ -421,7 +421,7 @@ func NewSettingsdialog(app *application.Application, current map[string]interfac
         done:     make(chan bool, 1),
     }
     
-    sd.window = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    sd.window = app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:  "Settings",
         Width:  600,
         Height: 500,
@@ -470,7 +470,7 @@ func NewWizarddialog(app *application.Application) *Wizarddialog {
         done:        make(chan bool, 1),
     }
     
-    wd.window = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    wd.window = app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:     "Setup Wizard",
         Width:     600,
         Height:    400,

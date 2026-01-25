@@ -16,7 +16,7 @@ Wails provides a **unified event system** for pub/sub communication. Emit events
 **Go (emit):**
 
 ```go
-app.EmitEvent("user-logged-in", map[string]interface{}{
+app.Event.Emit("user-logged-in", map[string]interface{}{
     "userId": 123,
     "name": "Alice",
 })
@@ -42,9 +42,9 @@ Your application-specific events:
 
 ```go
 // Emit from Go
-app.EmitEvent("order-created", order)
-app.EmitEvent("payment-processed", payment)
-app.EmitEvent("notification", message)
+app.Event.Emit("order-created", order)
+app.Event.Emit("payment-processed", payment)
+app.Event.Emit("notification", message)
 ```
 
 ```javascript
@@ -62,14 +62,14 @@ Built-in OS and application events:
 import "github.com/wailsapp/wails/v3/pkg/events"
 
 // Theme changes
-app.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
     if e.Context().IsDarkMode() {
         app.Logger.Info("Dark mode enabled")
     }
 })
 
 // Application lifecycle
-app.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
     app.Logger.Info("Application started")
 })
 ```
@@ -95,29 +95,29 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 **Basic emit:**
 
 ```go
-app.EmitEvent("event-name", data)
+app.Event.Emit("event-name", data)
 ```
 
 **With different data types:**
 
 ```go
 // String
-app.EmitEvent("message", "Hello")
+app.Event.Emit("message", "Hello")
 
 // Number
-app.EmitEvent("count", 42)
+app.Event.Emit("count", 42)
 
 // Struct
-app.EmitEvent("user", User{ID: 1, Name: "Alice"})
+app.Event.Emit("user", User{ID: 1, Name: "Alice"})
 
 // Map
-app.EmitEvent("config", map[string]interface{}{
+app.Event.Emit("config", map[string]interface{}{
     "theme": "dark",
     "fontSize": 14,
 })
 
 // Array
-app.EmitEvent("items", []string{"a", "b", "c"})
+app.Event.Emit("items", []string{"a", "b", "c"})
 ```
 
 **To specific window:**
@@ -145,7 +145,7 @@ Emit("broadcast-message", "Hello everyone")
 **Application events:**
 
 ```go
-app.OnEvent("custom-event", func(e *application.CustomEvent) {
+app.Event.On("custom-event", func(e *application.CustomEvent) {
     data := e.Data
     // Handle event
 })
@@ -154,7 +154,7 @@ app.OnEvent("custom-event", func(e *application.CustomEvent) {
 **With type assertion:**
 
 ```go
-app.OnEvent("user-updated", func(e *application.CustomEvent) {
+app.Event.On("user-updated", func(e *application.CustomEvent) {
     user := e.Data.(User)
     app.Logger.Info("User updated", "name", user.Name)
 })
@@ -164,9 +164,9 @@ app.OnEvent("user-updated", func(e *application.CustomEvent) {
 
 ```go
 // All handlers will be called
-app.OnEvent("order-created", logOrder)
-app.OnEvent("order-created", sendEmail)
-app.OnEvent("order-created", updateInventory)
+app.Event.On("order-created", logOrder)
+app.Event.On("order-created", sendEmail)
+app.Event.On("order-created", updateInventory)
 ```
 
 ### In JavaScript
@@ -208,18 +208,18 @@ OnEvent("data-updated", logChange)
 import "github.com/wailsapp/wails/v3/pkg/events"
 
 // Application started
-app.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
     app.Logger.Info("App started")
 })
 
 // Theme changed
-app.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
     isDark := e.Context().IsDarkMode()
-    app.EmitEvent("theme-changed", isDark)
+    app.Event.Emit("theme-changed", isDark)
 })
 
 // File opened
-app.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *application.ApplicationEvent) {
     filePath := e.Context().OpenedFile()
     openFile(filePath)
 })
@@ -231,12 +231,12 @@ app.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *applicat
   <TabItem label="macOS" icon="apple">
     ```go
     // Application became active
-    app.OnApplicationEvent(events.Mac.ApplicationDidBecomeActive, func(e *application.ApplicationEvent) {
+    app.Event.OnApplicationEvent(events.Mac.ApplicationDidBecomeActive, func(e *application.ApplicationEvent) {
         app.Logger.Info("App became active")
     })
     
     // Application will terminate
-    app.OnApplicationEvent(events.Mac.ApplicationWillTerminate, func(e *application.ApplicationEvent) {
+    app.Event.OnApplicationEvent(events.Mac.ApplicationWillTerminate, func(e *application.ApplicationEvent) {
         cleanup()
     })
     ```
@@ -245,12 +245,12 @@ app.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *applicat
   <TabItem label="Windows" icon="seti:windows">
     ```go
     // Power status changed
-    app.OnApplicationEvent(events.Windows.APMPowerStatusChange, func(e *application.ApplicationEvent) {
+    app.Event.OnApplicationEvent(events.Windows.APMPowerStatusChange, func(e *application.ApplicationEvent) {
         app.Logger.Info("Power status changed")
     })
     
     // System suspending
-    app.OnApplicationEvent(events.Windows.APMSuspend, func(e *application.ApplicationEvent) {
+    app.Event.OnApplicationEvent(events.Windows.APMSuspend, func(e *application.ApplicationEvent) {
         saveState()
     })
     ```
@@ -259,12 +259,12 @@ app.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *applicat
   <TabItem label="Linux" icon="linux">
     ```go
     // Application startup
-    app.OnApplicationEvent(events.Linux.ApplicationStartup, func(e *application.ApplicationEvent) {
+    app.Event.OnApplicationEvent(events.Linux.ApplicationStartup, func(e *application.ApplicationEvent) {
         app.Logger.Info("App starting")
     })
     
     // Theme changed
-    app.OnApplicationEvent(events.Linux.SystemThemeChanged, func(e *application.ApplicationEvent) {
+    app.Event.OnApplicationEvent(events.Linux.SystemThemeChanged, func(e *application.ApplicationEvent) {
         updateTheme()
     })
     ```
@@ -347,23 +347,23 @@ func (o *OrderService) CreateOrder(items []Item) (*Order, error) {
     }
     
     // Publish event
-    o.app.EmitEvent("order-created", order)
+    o.app.Event.Emit("order-created", order)
     
     return order, nil
 }
 
 // Subscribers
-app.OnEvent("order-created", func(e *application.CustomEvent) {
+app.Event.On("order-created", func(e *application.CustomEvent) {
     order := e.Data.(*Order)
     sendConfirmationEmail(order)
 })
 
-app.OnEvent("order-created", func(e *application.CustomEvent) {
+app.Event.On("order-created", func(e *application.CustomEvent) {
     order := e.Data.(*Order)
     updateInventory(order)
 })
 
-app.OnEvent("order-created", func(e *application.CustomEvent) {
+app.Event.On("order-created", func(e *application.CustomEvent) {
     order := e.Data.(*Order)
     logOrder(order)
 })
@@ -376,14 +376,14 @@ app.OnEvent("order-created", func(e *application.CustomEvent) {
 Emit("get-user-data", { userId: 123 })
 
 // Backend responds
-app.OnEvent("get-user-data", func(e *application.CustomEvent) {
+app.Event.On("get-user-data", func(e *application.CustomEvent) {
     data := e.Data.(map[string]interface{})
     userId := int(data["userId"].(float64))
     
     user := getUserFromDB(userId)
     
     // Send response
-    app.EmitEvent("user-data-response", user)
+    app.Event.Emit("user-data-response", user)
 })
 
 // Frontend receives response
@@ -398,7 +398,7 @@ OnEvent("user-data-response", (user) => {
 
 ```go
 // Broadcast to all windows
-app.EmitEvent("global-notification", "System update available")
+app.Event.Emit("global-notification", "System update available")
 
 // Each window handles it
 OnEvent("global-notification", (message) => {
@@ -422,7 +422,7 @@ func (ea *EventAggregator) Add(event Event) {
     
     // Emit batch every 100 events
     if len(ea.events) >= 100 {
-        app.EmitEvent("event-batch", ea.events)
+        app.Event.Emit("event-batch", ea.events)
         ea.events = nil
     }
 }
@@ -446,7 +446,7 @@ type NotificationService struct {
 
 func (n *NotificationService) Notify(message string) {
     // Emit to all windows
-    n.app.EmitEvent("notification", map[string]interface{}{
+    n.app.Event.Emit("notification", map[string]interface{}{
         "message":   message,
         "timestamp": time.Now(),
     })
@@ -460,13 +460,13 @@ func main() {
     notifService := &NotificationService{app: app}
     
     // System events
-    app.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
         isDark := e.Context().IsDarkMode()
-        app.EmitEvent("theme-changed", isDark)
+        app.Event.Emit("theme-changed", isDark)
     })
     
     // Custom events from frontend
-    app.OnEvent("user-action", func(e *application.CustomEvent) {
+    app.Event.On("user-action", func(e *application.CustomEvent) {
         data := e.Data.(map[string]interface{})
         action := data["action"].(string)
         
@@ -477,15 +477,15 @@ func main() {
     })
     
     // Window events
-    window := app.NewWebviewWindow()
+    window := app.Window.New()
     
     window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
-        app.EmitEvent("window-focused", window.Name())
+        app.Event.Emit("window-focused", window.Name())
     })
     
     window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
         // Confirm before close
-        app.EmitEvent("confirm-close", nil)
+        app.Event.Emit("confirm-close", nil)
         e.Cancel()  // Wait for confirmation
     })
     

@@ -1,6 +1,6 @@
 # Unreleased Changes
 
-<!-- 
+<!--
 This file is used to collect changelog entries for the next v3-alpha release.
 Add your changes under the appropriate sections below.
 
@@ -25,6 +25,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Bug fixes -->
 - Fix macOS system tray menu real-time updates using NSMenuDelegate (#4630)
 - Implement macOS system tray onMenuOpen/onMenuClose callbacks for parity with Windows and Linux
+- Fix `Position()` and `SetPosition()` using inconsistent coordinate systems on macOS, causing window position drift when saving/restoring state (#4816) by @leaanthony
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

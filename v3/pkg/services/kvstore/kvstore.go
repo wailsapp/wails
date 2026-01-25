@@ -2,10 +2,10 @@ package kvstore
 
 import (
 	"context"
-	"encoding/json"
 	"os"
 	"sync"
 
+	"encoding/json"
 	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )

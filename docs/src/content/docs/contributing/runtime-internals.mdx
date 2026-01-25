@@ -39,7 +39,7 @@ win := app.Window.New(&application.WebviewWindowOptions{
 win.Show()
 ```
 
-`NewWebviewWindow` delegates to `internal/runtime/webview_window_*.go` where
+`app.Window.New()` delegates to `internal/runtime/webview_window_*.go` where
 platform-specific constructors live:
 
 ```
@@ -167,6 +167,80 @@ Key principles:
 5. Update at least one example in `v3/examples/` exercising the feature.
 
 Follow this checklist and you'll keep the cross-platform contract intact.
+
+---
+
+## 9. Drag-and-Drop
+
+File drag-and-drop uses a **JavaScript-first approach** on all platforms. The native layer intercepts OS drag events, but the actual drop handling and DOM interaction happens in JavaScript.
+
+### Flow
+
+1. User drags files from OS over the Wails window
+2. Native layer detects the drag and notifies JavaScript for hover effects
+3. User drops files
+4. Native layer sends file paths + coordinates to JavaScript
+5. JavaScript finds the drop target element (`data-file-drop-target`)
+6. JavaScript sends file paths + element details to Go backend
+7. Go emits `WindowFilesDropped` event with full context
+
+### Platform Implementations
+
+| Platform | Native Layer | Key Challenge |
+|----------|--------------|---------------|
+| **Windows** | WebView2's built-in drag support | Coordinates in CSS pixels, no conversion needed |
+| **macOS** | NSWindow drag delegates | Convert window-relative to webview-relative coords |
+| **Linux** | GTK3 drag signals | Must distinguish file drags from internal HTML5 drags |
+
+### Linux: Distinguishing Drag Types
+
+GTK and WebKit both want to handle drag events. The key is checking the drag target type:
+
+```c
+static gboolean is_file_drag(GdkDragContext *context) {
+    GList *targets = gdk_drag_context_list_targets(context);
+    for (GList *l = targets; l != NULL; l = l->next) {
+        GdkAtom atom = GDK_POINTER_TO_ATOM(l->data);
+        gchar *name = gdk_atom_name(atom);
+        if (name && g_strcmp0(name, "text/uri-list") == 0) {
+            g_free(name);
+            return TRUE;  // External file drag
+        }
+        g_free(name);
+    }
+    return FALSE;  // Internal HTML5 drag
+}
+```
+
+Signal handlers return `FALSE` for internal drags (letting WebKit handle them) and `TRUE` for file drags (handling them ourselves).
+
+### Blocking File Drops
+
+When `EnableFileDrop` is `false`, we still need to prevent the browser from navigating to dropped files. Each platform handles this differently:
+
+- **Windows**: JavaScript calls `preventDefault()` on drag events
+- **macOS**: JavaScript calls `preventDefault()` on drag events  
+- **Linux**: GTK signal handlers intercept and reject file drags at the native level
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `pkg/application/linux_cgo.go` | GTK drag signal handlers (C code in cgo preamble) |
+| `pkg/application/webview_window_darwin.go` | macOS drag delegates |
+| `pkg/application/webview_window_windows.go` | WebView2 message handling |
+| `internal/runtime/desktop/@wailsio/runtime/src/window.ts` | JavaScript drop handling |
+
+### Debugging
+
+- **Linux**: Add `printf` in C code (remember `fflush(stdout)`)
+- **Windows**: Use `globalApplication.debug()`
+- **JavaScript**: Check browser console, enable debug mode
+
+Common issues:
+1. **Internal HTML5 drag not working**: Native handler intercepting it (return `FALSE` for non-file drags)
+2. **Hover effects not showing**: JavaScript handlers not being called
+3. **Wrong coordinates**: Check coordinate space conversions
 
 ---
 

@@ -1,4 +1,6 @@
 name: Test Nightly Releases (Dry Run)
+permissions:
+  contents: read
 
 on:
   workflow_dispatch:

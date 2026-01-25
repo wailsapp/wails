@@ -3,10 +3,11 @@
 package application
 
 import (
-	"encoding/json"
 	"fmt"
 	"sync"
 	"unsafe"
+
+	"encoding/json"
 )
 
 var (

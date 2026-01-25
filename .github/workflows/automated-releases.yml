@@ -23,6 +23,7 @@ env:
 jobs:
   check-permissions:
     name: Check Release Permissions
+    permissions: {}
     runs-on: ubuntu-latest
     outputs:
       authorized: ${{ steps.check.outputs.authorized }}

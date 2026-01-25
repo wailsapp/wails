@@ -86,7 +86,7 @@ Name: "main-window"
 **Example:**
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Name: "settings-window",
 })
 
@@ -161,7 +161,7 @@ Y: 100,  // 100px from top edge
 **Example:**
 
 ```go
-settings := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Name: "coordinate-window",
     InitialPosition: application.WindowXY, // use coordinate system
     X:    100,
@@ -171,7 +171,7 @@ settings := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 **Best practice:** Use `Center()` to center the window:
 
 ```go
-window := app.NewWebviewWindow()
+window := app.Window.New()
 window.Center()
 ```
 
@@ -248,7 +248,7 @@ Hidden: true,
 
 ```go
 // Create hidden window
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Name:   "main-window",
     Hidden: true,
     BackgroundColour: application.RGBA{R: 30, G: 30, B: 30, A: 255}, // Match your theme
@@ -264,7 +264,7 @@ window.Show()
 **Example:**
 
 ```go
-settings := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Name:   "settings",
     Hidden: true,
 })
@@ -546,6 +546,61 @@ Assets: application.AssetOptions{
 
 **See [Build System](/concepts/build-system) for details.**
 
+## Input Options
+
+### EnableFileDrop
+
+**Type:** `bool`  
+**Default:** `false`  
+**Platform:** All
+
+```go
+EnableFileDrop: true,
+```
+
+**Purpose:** Enable drag-and-drop of files from the operating system into the window.
+
+When enabled:
+- Files dragged from file managers can be dropped into your application
+- The `WindowFilesDropped` event fires with the dropped file paths
+- Elements with `data-file-drop-target` attribute provide detailed drop information
+
+**Use cases:**
+- File upload interfaces
+- Document editors
+- Media importers
+- Any app that accepts files
+
+**Example:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "File Uploader",
+    EnableFileDrop: true,
+})
+
+// Handle dropped files
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    details := event.Context().DropTargetDetails()
+    
+    for _, file := range files {
+        fmt.Println("Dropped:", file)
+    }
+})
+```
+
+**HTML drop zones:**
+
+```html
+<!-- Mark elements as drop targets -->
+<div id="upload" data-file-drop-target>
+    Drop files here
+</div>
+```
+
+**See [File Drop](/features/drag-and-drop/files) for complete documentation.**
+
 ## Security Options
 
 ### ContentProtectionEnabled
@@ -580,7 +635,7 @@ ContentProtectionEnabled: true,
 **Example:**
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title: "Secure Window",
     ContentProtectionEnabled: true,
 })
@@ -665,39 +720,85 @@ OnDestroy: func() {
 ### Mac Options
 
 ```go
-Mac: application.MacOptions{
-    TitleBarAppearsTransparent: true,
-    Backdrop:                   application.MacBackdropTranslucent,
-    InvisibleTitleBarHeight:    50,
-    TitleBarStyle:              application.MacTitleBarStyleHidden,
+Mac: application.MacWindow{
+    TitleBar: application.MacTitleBar{
+        AppearsTransparent: true,
+        Hide:               false,
+        HideTitle:          true,
+        FullSizeContent:    true,
+    },
+    Backdrop:                application.MacBackdropTranslucent,
+    InvisibleTitleBarHeight: 50,
+    WindowLevel:             application.MacWindowLevelNormal,
+    CollectionBehavior:      application.MacWindowCollectionBehaviorDefault,
 },
 ```
 
-**TitleBarAppearsTransparent** (`bool`)
-- Makes title bar transparent
-- Content extends into title bar area
+**TitleBar** (`MacTitleBar`)
+- `AppearsTransparent` - Makes title bar transparent, content extends into title bar area
+- `Hide` - Hides the title bar completely
+- `HideTitle` - Hides only the title text
+- `FullSizeContent` - Extends content to full window size
 
 **Backdrop** (`MacBackdrop`)
-- `MacBackdropNormal` - Standard
-- `MacBackdropTranslucent` - Blurred translucent
-- `MacBackdropTransparent` - Fully transparent
+- `MacBackdropNormal` - Standard opaque background
+- `MacBackdropTranslucent` - Blurred translucent background
+- `MacBackdropTransparent` - Fully transparent background
 
 **InvisibleTitleBarHeight** (`int`)
-- Height of invisible title bar (for dragging)
-- Only when `TitleBarStyle` is `MacTitleBarStyleHidden`
+- Height of invisible title bar area (for dragging)
+- Useful when title bar is hidden
 
-**TitleBarStyle** (`MacTitleBarStyle`)
-- `MacTitleBarStyleDefault` - Standard title bar
-- `MacTitleBarStyleHidden` - Hidden title bar
-- `MacTitleBarStyleHiddenInset` - Hidden with inset
+**WindowLevel** (`MacWindowLevel`)
+- `MacWindowLevelNormal` - Standard window level (default)
+- `MacWindowLevelFloating` - Floats above normal windows
+- `MacWindowLevelTornOffMenu` - Torn-off menu level
+- `MacWindowLevelModalPanel` - Modal panel level
+- `MacWindowLevelMainMenu` - Main menu level
+- `MacWindowLevelStatus` - Status window level
+- `MacWindowLevelPopUpMenu` - Pop-up menu level
+- `MacWindowLevelScreenSaver` - Screen saver level
 
-**Example:**
+**CollectionBehavior** (`MacWindowCollectionBehavior`)
+
+Controls how the window behaves across macOS Spaces and fullscreen. These are bitmask values that can be combined using bitwise OR (`|`).
+
+**Space behavior:**
+- `MacWindowCollectionBehaviorDefault` - Uses FullScreenPrimary (default, backwards compatible)
+- `MacWindowCollectionBehaviorCanJoinAllSpaces` - Window appears on all Spaces
+- `MacWindowCollectionBehaviorMoveToActiveSpace` - Moves to active Space when shown
+- `MacWindowCollectionBehaviorManaged` - Default managed window behavior
+- `MacWindowCollectionBehaviorTransient` - Temporary/transient window
+- `MacWindowCollectionBehaviorStationary` - Stays stationary during Space switches
+
+**Window cycling:**
+- `MacWindowCollectionBehaviorParticipatesInCycle` - Included in Cmd+` cycling
+- `MacWindowCollectionBehaviorIgnoresCycle` - Excluded from Cmd+` cycling
+
+**Fullscreen behavior:**
+- `MacWindowCollectionBehaviorFullScreenPrimary` - Can enter fullscreen mode
+- `MacWindowCollectionBehaviorFullScreenAuxiliary` - Can overlay fullscreen apps
+- `MacWindowCollectionBehaviorFullScreenNone` - Disables fullscreen capability
+- `MacWindowCollectionBehaviorFullScreenAllowsTiling` - Allows side-by-side tiling (macOS 10.11+)
+- `MacWindowCollectionBehaviorFullScreenDisallowsTiling` - Prevents tiling (macOS 10.11+)
+
+**Example - Spotlight-like window:**
 
 ```go
-Mac: application.MacOptions{
-    TitleBarAppearsTransparent: true,
-    Backdrop:                   application.MacBackdropTranslucent,
-    InvisibleTitleBarHeight:    50,
+// Window that appears on all Spaces AND can overlay fullscreen apps
+Mac: application.MacWindow{
+    CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces |
+                        application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+    WindowLevel:        application.MacWindowLevelFloating,
+},
+```
+
+**Example - Single behavior:**
+
+```go
+// Window that can appear over fullscreen applications
+Mac: application.MacWindow{
+    CollectionBehavior: application.MacWindowCollectionBehaviorFullScreenAuxiliary,
 },
 ```
 
@@ -791,7 +892,7 @@ func main() {
         Name: "My Application",
     })
 
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         // Identity
         Name:  "main-window",
         Title: "My Application",

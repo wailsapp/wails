@@ -14,7 +14,7 @@ Wails provides **frameless window support** with CSS-based drag regions and plat
 ## Quick Start
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:     "Frameless App",
     Width:     800,
     Height:    600,
@@ -52,7 +52,7 @@ window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 ### Basic Frameless Window
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Frameless: true,
     Width:     800,
     Height:    600,
@@ -73,7 +73,7 @@ window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 ### With Transparent Background
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Frameless:      true,
     BackgroundType: application.BackgroundTypeTransparent,
 })
@@ -336,7 +336,7 @@ body {
     **Windows frameless windows:**
     
     ```go
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Frameless: true,
         Windows: application.WindowsOptions{
             DisableFramelessWindowDecorations: false,
@@ -371,7 +371,7 @@ body {
     **macOS frameless windows:**
     
     ```go
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Frameless: true,
         Mac: application.MacOptions{
             TitleBarAppearsTransparent: true,
@@ -406,7 +406,7 @@ body {
     **Linux frameless windows:**
     
     ```go
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Frameless: true,
     })
     ```
@@ -500,7 +500,7 @@ body {
 ### Pattern 2: Splash Screen
 
 ```go
-splash := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+splash := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:          "Loading...",
     Width:          400,
     Height:         300,
@@ -530,7 +530,7 @@ body {
 ### Pattern 3: Rounded Window
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Frameless:      true,
     BackgroundType: application.BackgroundTypeTransparent,
 })
@@ -560,7 +560,7 @@ body {
 ### Pattern 4: Overlay Window
 
 ```go
-overlay := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+overlay := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Frameless:      true,
     AlwaysOnTop:    true,
     BackgroundType: application.BackgroundTypeTransparent,
@@ -602,7 +602,7 @@ func main() {
         Name: "Frameless App",
     })
 
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:     "Frameless Application",
         Width:     1000,
         Height:    700,
