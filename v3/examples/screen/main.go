@@ -51,16 +51,18 @@ func main() {
 					cleanPath := filepath.Clean(r.URL.Path)
 					fullPath := filepath.Join(assetsDir, cleanPath)
 
-					// Ensure the resolved path is still within the assets directory
+					// Ensure the resolved path is still within the assets directory.
+					// This check prevents path traversal attacks like "/../../../etc/passwd"
 					if !strings.HasPrefix(fullPath, assetsDir+string(filepath.Separator)) && fullPath != assetsDir {
 						// Path traversal attempt detected, fall back to default handler
 						next.ServeHTTP(w, r)
 						return
 					}
 
-					if _, err := os.Stat(fullPath); err == nil {
+					// Path is validated to be within assetsDir above
+					if _, err := os.Stat(fullPath); err == nil { // #nosec G304 -- path validated
 						// Serve file from disk to make testing easy
-						http.ServeFile(w, r, fullPath)
+						http.ServeFile(w, r, fullPath) // #nosec G304 -- path validated
 					} else {
 						// Passthrough to the default asset handler if file not found on disk
 						next.ServeHTTP(w, r)
