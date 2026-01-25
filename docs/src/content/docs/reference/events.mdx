@@ -24,12 +24,12 @@ The Events API provides methods to emit and listen to events, enabling communica
 
 ## Event Methods (Go)
 
-### EmitEvent()
+### app.Event.Emit()
 
 Emits a custom event to all windows.
 
 ```go
-func (a *App) EmitEvent(name string, data ...interface{})
+func (em *EventManager) Emit(name string, data ...interface{})
 ```
 
 **Parameters:**
@@ -39,24 +39,24 @@ func (a *App) EmitEvent(name string, data ...interface{})
 **Example:**
 ```go
 // Emit simple event
-app.EmitEvent("user-logged-in")
+app.Event.Emit("user-logged-in")
 
 // Emit with data
-app.EmitEvent("data-updated", map[string]interface{}{
+app.Event.Emit("data-updated", map[string]interface{}{
     "count": 42,
     "status": "success",
 })
 
 // Emit multiple values
-app.EmitEvent("progress", 75, "Processing files...")
+app.Event.Emit("progress", 75, "Processing files...")
 ```
 
-### OnEvent()
+### app.Event.On()
 
 Listens for custom events in Go.
 
 ```go
-func (a *App) OnEvent(name string, callback func(*CustomEvent)) func()
+func (em *EventManager) On(name string, callback func(*CustomEvent)) func()
 ```
 
 **Parameters:**
@@ -68,7 +68,7 @@ func (a *App) OnEvent(name string, callback func(*CustomEvent)) func()
 **Example:**
 ```go
 // Listen for events
-cleanup := app.OnEvent("user-action", func(e *application.CustomEvent) {
+cleanup := app.Event.On("user-action", func(e *application.CustomEvent) {
     data := e.Data.(map[string]interface{})
     action := data["action"].(string)
     app.Logger.Info("User action", "action", action)
@@ -87,7 +87,7 @@ Emit events to a specific window:
 window.EmitEvent("notification", "Hello from Go!")
 
 // Emit to all windows
-app.EmitEvent("global-update", data)
+app.Event.Emit("global-update", data)
 ```
 
 ## Event Methods (Frontend)
@@ -187,12 +187,12 @@ OffAll('data-updated')
 
 ## Application Events
 
-### OnApplicationEvent()
+### app.Event.OnApplicationEvent()
 
 Listens for application lifecycle events.
 
 ```go
-func (a *App) OnApplicationEvent(eventType ApplicationEventType, callback func(*ApplicationEvent)) func()
+func (em *EventManager) OnApplicationEvent(eventType ApplicationEventType, callback func(*ApplicationEvent)) func()
 ```
 
 **Event Types:**
@@ -203,13 +203,13 @@ func (a *App) OnApplicationEvent(eventType ApplicationEventType, callback func(*
 **Example:**
 ```go
 // Handle application startup
-app.OnApplicationEvent(application.EventApplicationStarted, func(e *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(application.EventApplicationStarted, func(e *application.ApplicationEvent) {
     app.Logger.Info("Application started")
     // Initialize resources
 })
 
 // Handle application shutdown
-app.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
     app.Logger.Info("Application shutting down")
     // Cleanup resources, save state
     database.Close()
@@ -268,7 +268,7 @@ func (s *DataService) FetchData(query string) ([]Item, error) {
     items := fetchFromDatabase(query)
 
     // Emit event when done
-    s.app.EmitEvent("data-fetched", map[string]interface{}{
+    s.app.Event.Emit("data-fetched", map[string]interface{}{
         "query": query,
         "count": len(items),
     })
@@ -309,7 +309,7 @@ func (s *Service) ProcessFiles(files []string) error {
         processFile(file)
 
         // Emit progress event
-        s.app.EmitEvent("progress", map[string]interface{}{
+        s.app.Event.Emit("progress", map[string]interface{}{
             "current": i + 1,
             "total":   total,
             "percent": float64(i+1) / float64(total) * 100,
@@ -317,7 +317,7 @@ func (s *Service) ProcessFiles(files []string) error {
         })
     }
 
-    s.app.EmitEvent("processing-complete")
+    s.app.Event.Emit("processing-complete")
     return nil
 }
 ```
@@ -349,7 +349,7 @@ Perfect for applications with multiple windows like settings panels, dashboards,
 
 ```go
 // Broadcast to all windows
-app.EmitEvent("theme-changed", "dark")
+app.Event.Emit("theme-changed", "dark")
 
 // Send to specific window
 preferencesWindow.EmitEvent("settings-updated", settings)
@@ -391,7 +391,7 @@ func (s *StateService) UpdateState(key string, value interface{}) {
     s.mu.Unlock()
 
     // Notify all windows
-    s.app.EmitEvent("state-updated", map[string]interface{}{
+    s.app.Event.Emit("state-updated", map[string]interface{}{
         "key":   key,
         "value": value,
     })
@@ -435,21 +435,21 @@ type NotificationService struct {
 }
 
 func (s *NotificationService) Success(message string) {
-    s.app.EmitEvent("notification", map[string]interface{}{
+    s.app.Event.Emit("notification", map[string]interface{}{
         "type":    "success",
         "message": message,
     })
 }
 
 func (s *NotificationService) Error(message string) {
-    s.app.EmitEvent("notification", map[string]interface{}{
+    s.app.Event.Emit("notification", map[string]interface{}{
         "type":    "error",
         "message": message,
     })
 }
 
 func (s *NotificationService) Info(message string) {
-    s.app.EmitEvent("notification", map[string]interface{}{
+    s.app.Event.Emit("notification", map[string]interface{}{
         "type":    "info",
         "message": message,
     })
@@ -498,7 +498,7 @@ func NewEventDemoService(app *application.Application) *EventDemoService {
     service := &EventDemoService{app: app}
 
     // Listen for custom events
-    app.OnEvent("user-action", func(e *application.CustomEvent) {
+    app.Event.On("user-action", func(e *application.CustomEvent) {
         data := e.Data.(map[string]interface{})
         app.Logger.Info("User action received", "data", data)
     })
@@ -508,26 +508,26 @@ func NewEventDemoService(app *application.Application) *EventDemoService {
 
 func (s *EventDemoService) StartLongTask() {
     go func() {
-        s.app.EmitEvent("task-started")
+        s.app.Event.Emit("task-started")
 
         for i := 1; i <= 10; i++ {
             time.Sleep(500 * time.Millisecond)
 
-            s.app.EmitEvent("task-progress", map[string]interface{}{
+            s.app.Event.Emit("task-progress", map[string]interface{}{
                 "step":    i,
                 "total":   10,
                 "percent": i * 10,
             })
         }
 
-        s.app.EmitEvent("task-completed", map[string]interface{}{
+        s.app.Event.Emit("task-completed", map[string]interface{}{
             "message": "Task finished successfully!",
         })
     }()
 }
 
 func (s *EventDemoService) BroadcastMessage(message string) {
-    s.app.EmitEvent("broadcast", message)
+    s.app.Event.Emit("broadcast", message)
 }
 
 func main() {
@@ -536,11 +536,11 @@ func main() {
     })
 
     // Handle application lifecycle
-    app.OnApplicationEvent(application.EventApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Event.OnApplicationEvent(application.EventApplicationStarted, func(e *application.ApplicationEvent) {
         app.Logger.Info("Application started!")
     })
 
-    app.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
+    app.Event.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
         app.Logger.Info("Application shutting down...")
     })
 
@@ -549,7 +549,7 @@ func main() {
     app.RegisterService(application.NewService(service))
 
     // Create window
-    window := app.NewWebviewWindow()
+    window := app.Window.New()
 
     // Handle window events
     window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
@@ -673,11 +673,11 @@ This mapping happens automatically in the background, so when you listen for `ev
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
 
-app.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
     app.Logger.Info("Application ready!")
 })
 
-app.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
     // Update app theme
 })
 ```
@@ -720,7 +720,7 @@ window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent)
 
 // Cancel window close
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
-    result, _ := app.QuestionDialog().
+    result, _ := app.Dialog.Question().
         SetMessage("Close window?").
         SetButtons("Yes", "No").
         Show()
@@ -749,14 +749,14 @@ window.OnWindowEvent(events.Common.WindowRuntimeReady, func(e *application.Windo
 
 ```go
 // Good - descriptive and specific
-app.EmitEvent("user:logged-in", user)
-app.EmitEvent("data:fetch:complete", results)
-app.EmitEvent("ui:theme:changed", theme)
+app.Event.Emit("user:logged-in", user)
+app.Event.Emit("data:fetch:complete", results)
+app.Event.Emit("ui:theme:changed", theme)
 
 // Bad - vague and unclear
-app.EmitEvent("event1", data)
-app.EmitEvent("update", stuff)
-app.EmitEvent("e", value)
+app.Event.Emit("event1", data)
+app.Event.Emit("update", stuff)
+app.Event.Emit("e", value)
 ```
 
 ## Performance Considerations
@@ -776,7 +776,7 @@ func (s *Service) EmitWithDebounce(event string, data interface{}) {
         return // Skip this emission
     }
 
-    s.app.EmitEvent(event, data)
+    s.app.Event.Emit(event, data)
     s.lastEmit = now
 }
 ```

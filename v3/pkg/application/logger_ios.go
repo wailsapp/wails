@@ -12,18 +12,19 @@ import "C"
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"log/slog"
 	"strings"
 	"time"
 	"unsafe"
+
+	"encoding/json"
 )
 
 // iosConsoleHandler implements slog.Handler and forwards records to the WKWebView console.
 type iosConsoleHandler struct {
-	level   slog.Leveler
-	attrs   []slog.Attr
-	group   string
+	level slog.Leveler
+	attrs []slog.Attr
+	group string
 }
 
 func (h *iosConsoleHandler) Enabled(_ context.Context, lvl slog.Level) bool {

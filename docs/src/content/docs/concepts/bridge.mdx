@@ -538,7 +538,7 @@ func ProcessLargeFile(path string) error {
     for scanner.Scan() {
         lineNum++
         // Emit progress events
-        app.EmitEvent("file-progress", map[string]interface{}{
+        app.Event.Emit("file-progress", map[string]interface{}{
             "line": lineNum,
             "text": scanner.Text(),
         })

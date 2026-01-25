@@ -34,8 +34,8 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 		backing:NSBackingStoreBuffered
 		defer:NO];
 
-	// Allow fullscreen. Needed for frameless windows
-	window.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary;
+	// Note: collectionBehavior is set later via windowSetCollectionBehavior()
+	// to allow user configuration of Space and fullscreen behavior
 
 	// Create delegate
 	WebviewWindowDelegate* delegate = [[WebviewWindowDelegate alloc] init];
@@ -234,6 +234,19 @@ void setModalPanelWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLev
 void setScreenSaverWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSScreenSaverWindowLevel]; }
 void setTornOffMenuWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSTornOffMenuWindowLevel]; }
 
+// Set NSWindow collection behavior for Spaces and fullscreen
+// The behavior parameter is a bitmask that can combine multiple NSWindowCollectionBehavior values
+void windowSetCollectionBehavior(void* nsWindow, int behavior) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	if (behavior == 0) {
+		// Default: use FullScreenPrimary for backwards compatibility
+		window.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary;
+	} else {
+		// Pass through the combined bitmask directly
+		window.collectionBehavior = (NSWindowCollectionBehavior)behavior;
+	}
+}
+
 // Load URL in NSWindow
 void navigationLoadURL(void* nsWindow, char* url) {
 	// Load URL on main thread
@@ -337,6 +350,12 @@ void windowExecJS(void* nsWindow, const char* js) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
 	[window.webView evaluateJavaScript:[NSString stringWithUTF8String:js] completionHandler:nil];
 	free((void*)js);
+}
+
+// Execute JS without allocation - buffer is NOT freed
+void windowExecJSNoAlloc(void* nsWindow, const char* js) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	[window.webView evaluateJavaScript:[NSString stringWithUTF8String:js] completionHandler:nil];
 }
 
 // Make NSWindow backdrop translucent
@@ -834,6 +853,7 @@ static void setContentProtection(void *nsWindow, bool enabled) {
 */
 import "C"
 import (
+	"fmt"
 	"sync"
 	"sync/atomic"
 	"unsafe"
@@ -1081,6 +1101,17 @@ func (w *macosWebviewWindow) execJS(js string) {
 	})
 }
 
+// execJSDragOver executes JS for drag-over events with zero allocations
+// Must be called from main thread
+func (w *macosWebviewWindow) execJSDragOver(buffer []byte) {
+	if w.nsWindow == nil {
+		return
+	}
+	// Pass buffer directly to C without allocation
+	// Buffer must be null-terminated
+	C.windowExecJSNoAlloc(w.nsWindow, (*C.char)(unsafe.Pointer(&buffer[0])))
+}
+
 func (w *macosWebviewWindow) setURL(uri string) {
 	C.navigationLoadURL(w.nsWindow, C.CString(uri))
 }
@@ -1094,7 +1125,10 @@ func newWindowImpl(parent *WebviewWindow) *macosWebviewWindow {
 		parent: parent,
 	}
 	result.parent.RegisterHook(events.Mac.WebViewDidFinishNavigation, func(event *WindowEvent) {
-		result.execJS(runtime.Core(globalApplication.impl.GetFlags(globalApplication.options)))
+		// Inject runtime core
+		js := runtime.Core(globalApplication.impl.GetFlags(globalApplication.options))
+		js += fmt.Sprintf("window._wails.flags.enableFileDrop=%v;", result.parent.options.EnableFileDrop)
+		result.execJS(js)
 	})
 	return result
 }
@@ -1162,6 +1196,10 @@ func (w *macosWebviewWindow) setWindowLevel(level MacWindowLevel) {
 	}
 }
 
+func (w *macosWebviewWindow) setCollectionBehavior(behavior MacWindowCollectionBehavior) {
+	C.windowSetCollectionBehavior(w.nsWindow, C.int(behavior))
+}
+
 func (w *macosWebviewWindow) width() int {
 	var width C.int
 	var wg sync.WaitGroup
@@ -1224,7 +1262,7 @@ func (w *macosWebviewWindow) run() {
 			C.int(options.Height),
 			C.bool(macOptions.EnableFraudulentWebsiteWarnings),
 			C.bool(options.Frameless),
-			C.bool(options.EnableDragAndDrop),
+			C.bool(options.EnableFileDrop),
 			w.getWebviewPreferences(),
 		)
 		w.setTitle(options.Title)
@@ -1259,6 +1297,9 @@ func (w *macosWebviewWindow) run() {
 			macOptions.WindowLevel = MacWindowLevelNormal
 		}
 		w.setWindowLevel(macOptions.WindowLevel)
+
+		// Set collection behavior (defaults to FullScreenPrimary for backwards compatibility)
+		w.setCollectionBehavior(macOptions.CollectionBehavior)
 
 		// Initialise the window buttons
 		w.setMinimiseButtonState(options.MinimiseButtonState)
@@ -1457,6 +1498,8 @@ func (w *macosWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
 
 func (w *macosWebviewWindow) destroy() {
 	w.parent.markAsDestroyed()
+	// Clear caches for this window
+	clearWindowDragCache(w.parent.id)
 	C.windowDestroy(w.nsWindow)
 }
 

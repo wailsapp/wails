@@ -264,7 +264,7 @@ Frontend2 -> EventBus: "On('data-updated', handler)"
 **Example:**
 ```go
 // Go: Emit an event
-app.EmitEvent("user-logged-in", user)
+app.Event.Emit("user-logged-in", user)
 ```
 
 ```javascript
