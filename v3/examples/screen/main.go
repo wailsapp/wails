@@ -59,10 +59,10 @@ func main() {
 						return
 					}
 
-					// Path is validated to be within assetsDir above
-					if _, err := os.Stat(fullPath); err == nil { // #nosec G304 -- path validated
+					// Path is validated to be within assetsDir above (lines 55-60)
+					if _, err := os.Stat(fullPath); err == nil { // #nosec G304 // lgtm[go/path-injection] -- path validated above
 						// Serve file from disk to make testing easy
-						http.ServeFile(w, r, fullPath) // #nosec G304 -- path validated
+						http.ServeFile(w, r, fullPath) // #nosec G304 // lgtm[go/path-injection] -- path validated above
 					} else {
 						// Passthrough to the default asset handler if file not found on disk
 						next.ServeHTTP(w, r)
