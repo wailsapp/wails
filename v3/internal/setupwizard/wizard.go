@@ -544,15 +544,90 @@ type InstallResponse struct {
 	Error   string `json:"error,omitempty"`
 }
 
+// allowedCommands is a whitelist of commands that can be executed for dependency installation.
+// This prevents arbitrary command execution even though commands originate from backend detection.
+var allowedCommands = map[string]bool{
+	// Package managers (may be called directly or via sudo)
+	"apt":           true,
+	"apt-get":       true,
+	"apk":           true, // Alpine Linux
+	"dnf":           true,
+	"yum":           true,
+	"pacman":        true,
+	"zypper":        true,
+	"emerge":        true,
+	"eopkg":         true,
+	"nix-env":       true,
+	"brew":          true,
+	"port":          true, // MacPorts
+	"winget":        true,
+	"choco":         true,
+	"scoop":         true,
+	"snap":          true,
+	"flatpak":       true,
+	"xcode-select":  true, // macOS Xcode CLI tools
+	// Privilege escalation (validated separately)
+	"sudo":   true,
+	"pkexec": true,
+	"doas":   true,
+}
+
+// allowedSudoCommands are commands allowed to be run after sudo/pkexec/doas.
+// This is a subset of allowedCommands - privilege escalation wrappers are not allowed here.
+var allowedSudoCommands = map[string]bool{
+	"apt":          true,
+	"apt-get":      true,
+	"apk":          true,
+	"dnf":          true,
+	"yum":          true,
+	"pacman":       true,
+	"zypper":       true,
+	"emerge":       true,
+	"eopkg":        true,
+	"nix-env":      true,
+	"brew":         true,
+	"port":         true,
+	"snap":         true,
+	"flatpak":      true,
+	"xcode-select": true,
+}
+
+// isCommandAllowed checks if a command is in the whitelist.
+// For sudo/pkexec/doas, it validates the actual command being elevated.
+// To avoid bypass attacks via flag parsing (e.g., "sudo -u apt bash"),
+// we reject any sudo invocation where the second argument starts with "-".
+func isCommandAllowed(parts []string) bool {
+	if len(parts) == 0 {
+		return false
+	}
+
+	cmd := parts[0]
+	if !allowedCommands[cmd] {
+		return false
+	}
+
+	// If it's a privilege escalation command, validate the actual command
+	if cmd == "sudo" || cmd == "pkexec" || cmd == "doas" {
+		if len(parts) < 2 {
+			return false
+		}
+		// Reject any flags before the command to prevent bypass attacks
+		// like "sudo -u apt bash" where -u takes "apt" as its argument
+		actualCmd := parts[1]
+		if strings.HasPrefix(actualCmd, "-") {
+			return false
+		}
+		return allowedSudoCommands[actualCmd]
+	}
+
+	return true
+}
+
 // handleInstallDependency executes dependency installation commands.
 //
 // Security note: This endpoint executes commands that originate from the backend's
 // package manager detection (see packagemanager.InstallCommand). The commands are
-// generated server-side based on the detected OS package manager, not from arbitrary
-// user input. This is a local development tool where the explicit purpose is to help
-// users install dependencies on their own machine. The frontend currently only uses
-// this data to copy commands to clipboard - this endpoint exists for potential future
-// use or automation scenarios.
+// validated against a whitelist of allowed package managers before execution.
 func (w *Wizard) handleInstallDependency(rw http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
@@ -578,7 +653,16 @@ func (w *Wizard) handleInstallDependency(rw http.ResponseWriter, r *http.Request
 		return
 	}
 
-	cmd := exec.Command(parts[0], parts[1:]...) // #nosec G204 -- commands originate from backend package manager detection, not user input
+	// Validate command against whitelist before execution
+	if !isCommandAllowed(parts) {
+		json.NewEncoder(rw).Encode(InstallResponse{
+			Success: false,
+			Error:   "Command not allowed: only package manager commands are permitted",
+		})
+		return
+	}
+
+	cmd := exec.Command(parts[0], parts[1:]...) // #nosec G204 -- validated against allowedCommands whitelist
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
