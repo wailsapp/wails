@@ -64,6 +64,18 @@ export function OpenChildWindow() {
     return $Call.ByID(4214282726);
 }
 
+/**
+ * ReportCurrent returns which window made this call (Caller) and what
+ * App.Window.Current() returns at that moment (Current).
+ * @returns {$CancellablePromise<$models.CurrentWindowReport>}
+ */
+export function ReportCurrent() {
+    return $Call.ByID(3281355303).then(/** @type {($result: any) => any} */(($result) => {
+        return $$createType2($result);
+    }));
+}
+
 // Private type creation functions
 const $$createType0 = $models.WindowSummary.createFrom;
 const $$createType1 = $Create.Array($$createType0);
+const $$createType2 = $models.CurrentWindowReport.createFrom;

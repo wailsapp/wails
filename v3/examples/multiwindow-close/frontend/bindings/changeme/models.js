@@ -6,6 +6,56 @@
 // @ts-ignore: Unused imports
 import { Create as $Create } from "@wailsio/runtime";
 
+export class CurrentWindowReport {
+    /**
+     * Creates a new CurrentWindowReport instance.
+     * @param {Partial<CurrentWindowReport>} [$$source = {}] - The source object to create the CurrentWindowReport.
+     */
+    constructor($$source = {}) {
+        if (!("caller" in $$source)) {
+            /**
+             * @member
+             * @type {WindowSummary}
+             */
+            this["caller"] = (new WindowSummary());
+        }
+        if (/** @type {any} */(false)) {
+            /**
+             * @member
+             * @type {WindowSummary | null | undefined}
+             */
+            this["current"] = undefined;
+        }
+        if (!("currentMatchesCaller" in $$source)) {
+            /**
+             * @member
+             * @type {boolean}
+             */
+            this["currentMatchesCaller"] = false;
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new CurrentWindowReport instance from a string or object.
+     * @param {any} [$$source = {}]
+     * @returns {CurrentWindowReport}
+     */
+    static createFrom($$source = {}) {
+        const $$createField0_0 = $$createType0;
+        const $$createField1_0 = $$createType1;
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        if ("caller" in $$parsedSource) {
+            $$parsedSource["caller"] = $$createField0_0($$parsedSource["caller"]);
+        }
+        if ("current" in $$parsedSource) {
+            $$parsedSource["current"] = $$createField1_0($$parsedSource["current"]);
+        }
+        return new CurrentWindowReport(/** @type {Partial<CurrentWindowReport>} */($$parsedSource));
+    }
+}
+
 export class WindowSummary {
     /**
      * Creates a new WindowSummary instance.
@@ -40,3 +90,7 @@ export class WindowSummary {
         return new WindowSummary(/** @type {Partial<WindowSummary>} */($$parsedSource));
     }
 }
+
+// Private type creation functions
+const $$createType0 = WindowSummary.createFrom;
+const $$createType1 = $Create.Nullable($$createType0);

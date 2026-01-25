@@ -6,6 +6,7 @@ const childView = document.getElementById('childView');
 const params = new URLSearchParams(window.location.search);
 const isChild = params.get('child') === '1';
 const childName = params.get('name') || '';
+const mainName = params.get('name') || '';
 
 if (mainView && childView) {
     mainView.style.display = isChild ? 'none' : '';
@@ -14,6 +15,9 @@ if (mainView && childView) {
 
 const windowsListEl = document.getElementById('windowsList');
 const lastChildNameEl = document.getElementById('lastChildName');
+const mainNameEl = document.getElementById('mainName');
+const mainCurrentEl = document.getElementById('mainCurrent');
+const childCurrentEl = document.getElementById('childCurrent');
 
 window.refreshWindowList = async () => {
     try {
@@ -29,12 +33,37 @@ window.refreshWindowList = async () => {
     }
 };
 
+function setCurrentLog(obj) {
+    const el = isChild ? childCurrentEl : mainCurrentEl;
+    if (!el) return;
+    if (typeof obj === 'string') {
+        el.textContent = obj;
+        return;
+    }
+    try {
+        el.textContent = JSON.stringify(obj, null, 2);
+    } catch (e) {
+        el.textContent = String(obj);
+    }
+}
+
+window.checkCurrent = async () => {
+    try {
+        const report = await Call.ByName('main.GreetService.ReportCurrent');
+        setCurrentLog(report);
+    } catch (err) {
+        console.error(err);
+        setCurrentLog(String(err));
+    }
+};
+
 window.openChildWindow = async () => {
     try {
         const name = await Call.ByName('main.GreetService.OpenChildWindow');
         if (lastChildNameEl) {
             lastChildNameEl.textContent = name || '-';
         }
+        await window.checkCurrent();
         await window.refreshWindowList();
     } catch (err) {
         console.error(err);
@@ -49,6 +78,9 @@ const childNameEl = document.getElementById('childName');
 const childLogEl = document.getElementById('childLog');
 if (isChild && childNameEl) {
     childNameEl.textContent = childName || '(missing ?name=...)';
+}
+if (!isChild && mainNameEl) {
+    mainNameEl.textContent = mainName || '(missing ?name=...)';
 }
 
 function setChildLog(obj) {
@@ -98,3 +130,11 @@ window.closeUsingCurrent = async () => {
 if (!isChild) {
     window.refreshWindowList();
 }
+
+// Update the "current window" report whenever this window gains focus.
+window.addEventListener('focus', () => {
+    window.checkCurrent();
+});
+
+// Also run once on load.
+window.checkCurrent();

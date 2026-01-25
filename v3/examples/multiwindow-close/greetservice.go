@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net/url"
 	"time"
 
@@ -15,6 +17,12 @@ type GreetService struct {
 type WindowSummary struct {
 	ID   uint   `json:"id"`
 	Name string `json:"name"`
+}
+
+type CurrentWindowReport struct {
+	Caller               WindowSummary  `json:"caller"`
+	Current              *WindowSummary `json:"current,omitempty"`
+	CurrentMatchesCaller bool           `json:"currentMatchesCaller"`
 }
 
 func (g *GreetService) Greet(name string) string {
@@ -94,4 +102,39 @@ func (g *GreetService) CloseUsingCurrent() WindowSummary {
 	info := WindowSummary{ID: w.ID(), Name: w.Name()}
 	w.Close()
 	return info
+}
+
+// ReportCurrent returns which window made this call (Caller) and what
+// App.Window.Current() returns at that moment (Current).
+func (g *GreetService) ReportCurrent(ctx context.Context) CurrentWindowReport {
+	var caller application.Window
+	if ctx != nil {
+		if w, ok := ctx.Value(application.WindowKey).(application.Window); ok {
+			caller = w
+		}
+	}
+
+	report := CurrentWindowReport{
+		Caller: WindowSummary{
+			ID:   0,
+			Name: "(unknown)",
+		},
+	}
+	if caller != nil {
+		report.Caller = WindowSummary{ID: caller.ID(), Name: caller.Name()}
+	}
+
+	if g.app == nil {
+		return report
+	}
+
+	current := g.app.Window.Current()
+	if current != nil {
+		s := WindowSummary{ID: current.ID(), Name: current.Name()}
+		report.Current = &s
+		report.CurrentMatchesCaller = caller != nil && caller.ID() == current.ID()
+	}
+
+	log.Printf("[ReportCurrent] caller=%+v current=%+v match=%v", report.Caller, report.Current, report.CurrentMatchesCaller)
+	return report
 }

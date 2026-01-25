@@ -21,12 +21,21 @@
             <div class="row">
                 <button class="btn btn-primary" onclick="openChildWindow()">Open child window</button>
                 <button class="btn" onclick="refreshWindowList()">Refresh window list</button>
+                <button class="btn" onclick="checkCurrent()">Check app.Window.Current()</button>
+            </div>
+
+            <div class="kv">
+                <div class="k">This window (from URL)</div>
+                <div class="v" id="mainName">-</div>
             </div>
 
             <div class="kv">
                 <div class="k">Last opened child name</div>
                 <div class="v" id="lastChildName">-</div>
             </div>
+
+            <div class="sectionTitle">Current Window (from Go)</div>
+            <pre class="code" id="mainCurrent">Click "Check app.Window.Current()"</pre>
 
             <div class="sectionTitle">Windows (from Go)</div>
             <pre class="code" id="windowsList">Click "Refresh window list"</pre>
@@ -64,7 +73,11 @@
                 <button class="btn" onclick="closeNoCurrent()">Close (no Current)</button>
                 <button class="btn btn-danger" onclick="closeAfterCurrent()">Close (after Current)</button>
                 <button class="btn" onclick="closeUsingCurrent()">Close (using Current)</button>
+                <button class="btn" onclick="checkCurrent()">Check app.Window.Current()</button>
             </div>
+
+            <div class="sectionTitle">Current Window (from Go)</div>
+            <pre class="code" id="childCurrent">Click "Check app.Window.Current()"</pre>
 
             <div class="sectionTitle">Last action</div>
             <pre class="code" id="childLog">-</pre>

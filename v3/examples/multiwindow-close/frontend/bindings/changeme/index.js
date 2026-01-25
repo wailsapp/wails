@@ -8,5 +8,6 @@ export {
 };
 
 export {
+    CurrentWindowReport,
     WindowSummary
 } from "./models.js";
