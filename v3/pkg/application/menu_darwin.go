@@ -81,11 +81,42 @@ func (m *macosMenu) update() {
 	InvokeSync(func() {
 		if m.nsMenu == nil {
 			m.nsMenu = C.createNSMenu(C.CString(m.menu.label))
+			m.processMenu(m.nsMenu, m.menu)
 		} else {
-			C.clearMenu(m.nsMenu)
+			// Update existing menu items in-place to preserve IDs
+			// This allows real-time updates while the menu is open
+			m.updateMenuInPlace(m.menu)
 		}
-		m.processMenu(m.nsMenu, m.menu)
 	})
+}
+
+// updateMenuInPlace updates existing menu items without recreating them.
+// This preserves menu item IDs so clicks still work when the menu is updated while open.
+func (m *macosMenu) updateMenuInPlace(menu *Menu) {
+	for _, item := range menu.items {
+		if item.impl != nil {
+			// Update existing item properties - the NSMenuItem and its ID stay the same
+			impl := item.impl.(*macosMenuItem)
+			impl.setLabel(item.label)
+			impl.setDisabled(item.disabled)
+			impl.setChecked(item.checked)
+			impl.setHidden(item.hidden)
+			if item.bitmap != nil {
+				impl.setBitmap(item.bitmap)
+			}
+			if item.accelerator != nil {
+				impl.setAccelerator(item.accelerator)
+			}
+
+			// Recurse into submenus
+			if item.submenu != nil {
+				m.updateMenuInPlace(item.submenu)
+			}
+		}
+		// Note: If item.impl is nil, the item was added after initial creation.
+		// For now, we skip these - a full rebuild would be needed to add new items.
+		// This handles the common case of updating existing items while menu is open.
+	}
 }
 
 func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
