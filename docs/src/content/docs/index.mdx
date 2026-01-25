@@ -188,7 +188,46 @@ import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   }
+
+  /* Text morphing effect */
+  .morph-container {
+    display: inline-block;
+    position: relative;
+    min-width: 5em;
+  }
+
+  .morph-text {
+    display: inline-block;
+    animation: morph-cycle 8s ease-in-out infinite;
+  }
+
+  .morph-text::after {
+    content: 'Desktop';
+    animation: morph-words 8s ease-in-out infinite;
+  }
+
+  @keyframes morph-words {
+    0%, 40% { content: 'Desktop'; }
+    45%, 50% { content: 'Server'; }
+    55%, 95% { content: 'Desktop'; }
+    100% { content: 'Desktop'; }
+  }
+
+  @keyframes morph-cycle {
+    0%, 40% { opacity: 1; }
+    42% { opacity: 0; }
+    45% { opacity: 0; }
+    48% { opacity: 1; }
+    50%, 52% { opacity: 1; }
+    54% { opacity: 0; }
+    57% { opacity: 0; }
+    60%, 100% { opacity: 1; }
+  }
 `}</style>
+
+<div style="text-align: center; font-size: 1.5rem; margin: -1rem 0 2rem 0; color: var(--sl-color-gray-2);">
+  Build <span class="morph-container"><span class="morph-text"></span></span> Apps with Go
+</div>
 
 ## Quickstart
 
