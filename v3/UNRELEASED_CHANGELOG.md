@@ -22,7 +22,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Changes in existing functionality -->
 
 ## Fixed
-<!-- Bug fixes -->
+- Fix App Exposé shows “ghost” window after calling `App.Window.Current()` on macOS
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
