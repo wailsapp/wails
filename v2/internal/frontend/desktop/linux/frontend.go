@@ -73,6 +73,16 @@ static void install_signal_handlers()
 #endif
 }
 
+static gboolean install_signal_handlers_idle(gpointer data) {
+    (void)data;
+    install_signal_handlers();
+    return G_SOURCE_REMOVE;
+}
+
+static void fix_signal_handlers_after_gtk_init() {
+    g_idle_add(install_signal_handlers_idle, NULL);
+}
+
 */
 import "C"
 import (
@@ -204,7 +214,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 
 	result.mainWindow = NewWindow(appoptions, result.debug, result.devtoolsEnabled)
 
-	C.install_signal_handlers()
+	C.fix_signal_handlers_after_gtk_init()
 
 	if appoptions.Linux != nil && appoptions.Linux.ProgramName != "" {
 		prgname := C.CString(appoptions.Linux.ProgramName)
