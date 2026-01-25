@@ -327,6 +327,7 @@ func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/signing/status", w.handleSigningStatus)
 	mux.HandleFunc("/api/complete", w.handleComplete)
 	mux.HandleFunc("/api/close", w.handleClose)
+	mux.HandleFunc("/api/report-bug", w.handleReportBug)
 
 	mux.HandleFunc("/assets/apple-sdk-license.pdf", func(rw http.ResponseWriter, r *http.Request) {
 		rw.Header().Set("Content-Type", "application/pdf")
@@ -515,6 +516,45 @@ func (w *Wizard) handleClose(rw http.ResponseWriter, r *http.Request) {
 		w.buildWg.Wait()
 		close(w.shutdown)
 	}()
+}
+
+func (w *Wizard) handleReportBug(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+
+	// Get current step from query parameter
+	currentStep := r.URL.Query().Get("step")
+	if currentStep == "" {
+		currentStep = "unknown"
+	}
+
+	// Gather system info
+	w.stateMu.RLock()
+	system := w.state.System
+	w.stateMu.RUnlock()
+
+	// Build a concise comment body - description first, then details table
+	var sb strings.Builder
+	sb.WriteString("**What went wrong?**\n\n\n\n")
+	sb.WriteString("**What were you doing when the issue occurred?**\n\n\n\n")
+	sb.WriteString("---\n\n")
+	sb.WriteString("| | |\n")
+	sb.WriteString("|--|--|\n")
+	sb.WriteString(fmt.Sprintf("| Platform | %s |\n", system.OS))
+	sb.WriteString(fmt.Sprintf("| Arch | %s |\n", system.Arch))
+	sb.WriteString(fmt.Sprintf("| Wails | %s |\n", system.WailsVersion))
+	sb.WriteString(fmt.Sprintf("| Go | %s |\n", system.GoVersion))
+	sb.WriteString(fmt.Sprintf("| Step | %s |\n", currentStep))
+
+	issueURL := "https://github.com/wailsapp/wails/issues/4904#issue-comment-box"
+	commentBody := sb.String()
+
+	// Return the body for the frontend to copy to clipboard
+	// Frontend will handle opening the browser after showing the overlay
+	json.NewEncoder(rw).Encode(map[string]interface{}{
+		"status": "ready",
+		"url":    issueURL,
+		"body":   commentBody,
+	})
 }
 
 // execCommand runs a command and returns its output

@@ -1,0 +1,71 @@
+---
+title: Setup
+sidebar:
+  order: 15
+  badge:
+    text: Experimental
+    variant: caution
+---
+
+import { Tabs, TabItem, Aside, Steps } from "@astrojs/starlight/components";
+
+The `wails3 setup` command provides an interactive wizard that helps configure your development environment for building Wails applications.
+
+<Aside type="caution" title="Experimental Feature">
+  The setup wizard is new and primarily tested on Linux. If you encounter issues on macOS or Windows, please [report them](https://github.com/wailsapp/wails/issues/4904) and follow the [manual installation steps](/docs/getting-started/installation#platform-specific-dependencies) instead.
+</Aside>
+
+## Quick Start
+
+After [installing the Wails CLI](/docs/getting-started/installation#installation), run:
+
+```bash
+wails3 setup
+```
+
+This launches a browser-based wizard that guides you through:
+
+<Steps>
+1. **System Check** - Verifies required dependencies (Go, npm, platform tooling)
+2. **Cross-Platform Builds** - Optional Docker setup for building Windows/macOS/Linux from any host
+3. **Project Defaults** - Configure author info, bundle ID prefix, preferred templates
+4. **Code Signing** - Optional setup for macOS, Windows, and Linux signing
+</Steps>
+
+## What It Configures
+
+The setup wizard creates a global configuration file at `~/.config/wails/config.yaml` containing:
+
+- **Author defaults** - Name and company for new projects
+- **Project defaults** - Bundle ID prefix, default template, version format
+- **Signing configuration** - Platform-specific code signing settings
+
+These defaults are used when running `wails3 init` to create new projects.
+
+## Sub-Commands
+
+The setup command also includes focused wizards for specific tasks:
+
+### Code Signing Setup
+
+```bash
+wails3 setup signing
+```
+
+Interactive wizard for configuring code signing on your current platform.
+
+### macOS Entitlements
+
+```bash
+wails3 setup entitlements
+```
+
+Configure macOS entitlements for your application (sandbox, hardened runtime, etc).
+
+## Having Issues?
+
+If the setup wizard doesn't work on your system:
+
+1. Run `wails3 doctor` to diagnose dependency issues
+2. Follow the [manual installation steps](/docs/getting-started/installation#platform-specific-dependencies) for your platform
+3. [Report the issue](https://github.com/wailsapp/wails/issues/4904) with your `wails3 doctor` output so we can improve the wizard

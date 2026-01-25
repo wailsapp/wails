@@ -3,6 +3,7 @@
 package setupwizard
 
 import (
+	"os/exec"
 	"strconv"
 	"strings"
 
@@ -12,7 +13,6 @@ import (
 
 func (w *Wizard) checkAllDependencies() []DependencyStatus {
 	var deps []DependencyStatus
-	hasNpm := false
 
 	deps = append(deps, checkGo())
 
@@ -22,8 +22,9 @@ func (w *Wizard) checkAllDependencies() []DependencyStatus {
 	if pm != nil {
 		platformDeps, _ := packagemanager.Dependencies(pm)
 		for _, dep := range platformDeps {
+			// Skip npm from package manager - we'll check it via PATH instead
 			if dep.Name == "npm" {
-				hasNpm = true
+				continue
 			}
 			status := DependencyStatus{
 				Name:     dep.Name,
@@ -35,18 +36,23 @@ func (w *Wizard) checkAllDependencies() []DependencyStatus {
 				status.Status = "installed"
 				status.Version = dep.Version
 			} else {
-				status.Installed = false
-				status.Status = "not_installed"
-				status.InstallCommand = dep.InstallCommand
+				// Also check if the binary is in PATH (might be installed via other means)
+				if _, err := exec.LookPath(dep.Name); err == nil {
+					status.Installed = true
+					status.Status = "installed"
+				} else {
+					status.Installed = false
+					status.Status = "not_installed"
+					status.InstallCommand = dep.InstallCommand
+				}
 			}
 
 			deps = append(deps, status)
 		}
 	}
 
-	if !hasNpm {
-		deps = append(deps, checkNpm())
-	}
+	// Always check npm via PATH (might be installed via nvm, fnm, etc.)
+	deps = append(deps, checkNpm())
 
 	deps = append(deps, checkDocker())
 

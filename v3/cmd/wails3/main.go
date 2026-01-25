@@ -109,7 +109,7 @@ func main() {
 	})
 
 	// Setup commands
-	setup := app.NewSubCommand("setup", "Project setup wizards")
+	setup := app.NewSubCommandFunction("setup", "Project setup wizards", commands.Setup)
 	setupSigning := setup.NewSubCommand("signing", "Configure code signing")
 	var setupSigningFlags flags.SigningSetup
 	setupSigning.AddFlags(&setupSigningFlags)

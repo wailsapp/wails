@@ -91,6 +91,8 @@ function Sidebar({ currentStep, dockerStatus, buildingDocker }: {
   const { theme, toggleTheme } = useTheme();
   const currentStage = getWizardStage(currentStep);
   const currentIndex = getStageIndex(currentStage);
+  const [showBugOverlay, setShowBugOverlay] = useState(false);
+  const [bugReportUrl, setBugReportUrl] = useState('');
 
   const stages = [
     { key: 'welcome' as const, label: 'Welcome' },
@@ -103,6 +105,25 @@ function Sidebar({ currentStep, dockerStatus, buildingDocker }: {
 
   const handleSponsorClick = () => {
     window.open('https://github.com/sponsors/leaanthony', '_blank', 'noopener,noreferrer');
+  };
+
+  const handleReportBug = async () => {
+    try {
+      const { reportBug } = await import('./api');
+      const result = await reportBug(currentStep);
+      if (result.body && result.url) {
+        await navigator.clipboard.writeText(result.body);
+        setBugReportUrl(result.url);
+        setShowBugOverlay(true);
+      }
+    } catch (e) {
+      console.error('Failed to report bug:', e);
+    }
+  };
+
+  const handleOpenGitHub = () => {
+    window.open(bugReportUrl, '_blank', 'noopener,noreferrer');
+    setShowBugOverlay(false);
   };
 
   const isDockerBuilding = buildingDocker;
@@ -196,6 +217,16 @@ function Sidebar({ currentStep, dockerStatus, buildingDocker }: {
 
       <div className="p-4 flex justify-center gap-3">
         <button
+          onClick={handleReportBug}
+          className="p-1 hover:opacity-70 transition-opacity focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded"
+          aria-label="Report a bug"
+          title="Report a bug"
+        >
+          <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </button>
+        <button
           onClick={handleSponsorClick}
           className="p-1 hover:opacity-70 transition-opacity focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded"
           aria-label="Sponsor Wails on GitHub"
@@ -220,6 +251,39 @@ function Sidebar({ currentStep, dockerStatus, buildingDocker }: {
           )}
         </button>
       </div>
+
+      {/* Bug Report Overlay */}
+      {showBugOverlay && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm mx-4 shadow-xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Template Copied!</h3>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              The issue template has been copied to your clipboard. Click below to open the GitHub issue and paste it into a new comment.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowBugOverlay(false)}
+                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleOpenGitHub}
+                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Open GitHub
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }

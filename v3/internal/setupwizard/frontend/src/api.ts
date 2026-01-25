@@ -158,3 +158,8 @@ export async function saveSigning(signing: SigningDefaults): Promise<{ status: s
   });
   return response.json();
 }
+
+export async function reportBug(currentStep: string): Promise<{ status: string; body?: string; url?: string }> {
+  const response = await fetch(`${API_BASE}/report-bug?step=${encodeURIComponent(currentStep)}`);
+  return response.json();
+}
