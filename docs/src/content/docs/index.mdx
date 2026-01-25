@@ -192,55 +192,20 @@ import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
 
 ## Quickstart
 
-<Tabs syncKey="os">
-  <TabItem label="macOS" icon="apple">
 ```bash
-# Install Wails
+# 1. Install the Wails CLI
 go install github.com/wailsapp/wails/v3/cmd/wails3@latest
 
-# Setup your environment (experimental)
+# 2. Run the setup wizard (experimental)
 wails3 setup
+```
 
-# Create your application
+Then you're ready for your first project:
+
+```bash
 wails3 init -n myapp -t vanilla
-
-# Run with hot reload
 cd myapp && wails3 dev
 ```
-  </TabItem>
-
-  <TabItem label="Windows" icon="seti:windows">
-```powershell
-# Install Wails
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
-
-# Setup your environment (experimental)
-wails3 setup
-
-# Create your application
-wails3 init -n myapp -t vanilla
-
-# Run with hot reload
-cd myapp; wails3 dev
-```
-  </TabItem>
-
-  <TabItem label="Linux" icon="linux">
-```bash
-# Install Wails
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
-
-# Setup your environment (experimental)
-wails3 setup
-
-# Create your application
-wails3 init -n myapp -t vanilla
-
-# Run with hot reload
-cd myapp && wails3 dev
-```
-  </TabItem>
-</Tabs>
 
 **Your application is now running** with hot reload and type-safe Go-to-JS bindings.
 
