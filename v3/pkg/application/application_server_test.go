@@ -131,7 +131,7 @@ func TestServerMode_Defaults(t *testing.T) {
 			Port: 18083, // Use specific port to avoid conflicts
 		},
 		Assets: AssetOptions{
-			task: [build:docker] docker build -t server-example:latest -f examples/server/Dockerfile .	Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
 			}),
 		},

@@ -71,4 +71,4 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
 
-replace github.com/wailsapp/wails/v3 v3.0.0-alpha.9 => ../..
+replace github.com/wailsapp/wails/v3 => ../..

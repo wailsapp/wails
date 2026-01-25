@@ -1,4 +1,4 @@
-module changeme
+module ios-example
 
 go 1.25
 

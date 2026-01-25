@@ -25,12 +25,14 @@ RUN sed -i '/^replace/d' go.mod 2>/dev/null || true
 # Download dependencies
 RUN go mod tidy
 
-# Build the server binary
+# Build the server binary and prepare assets
 # When building from v3 root, change to example dir
 RUN if [ -d "examples/server" ]; then \
-      cd examples/server && go build -tags server -ldflags="-s -w" -o /app/server .; \
+      cd examples/server && go build -tags server -ldflags="-s -w" -o /app/server . && \
+      cp -r frontend/dist /app/frontend_dist; \
     else \
-      go build -tags server -ldflags="-s -w" -o /app/server .; \
+      go build -tags server -ldflags="-s -w" -o /app/server . && \
+      cp -r frontend/dist /app/frontend_dist; \
     fi
 
 # Runtime stage - minimal image
@@ -40,7 +42,7 @@ FROM gcr.io/distroless/static-debian12
 COPY --from=builder /app/server /server
 
 # Copy frontend assets
-COPY --from=builder /app/examples/server/frontend/dist /frontend/dist
+COPY --from=builder /app/frontend_dist /frontend/dist
 
 # Expose the default port
 EXPOSE 8080

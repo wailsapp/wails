@@ -298,7 +298,7 @@ func (h *serverApp) getPrimaryScreen() (*Screen, error) {
 	return nil, errors.New("screen information not available in server mode")
 }
 
-// getScreens returns empty slice in server mode.
+// getScreens returns an error in server mode (screen info unavailable).
 func (h *serverApp) getScreens() ([]*Screen, error) {
 	return nil, errors.New("screen information not available in server mode")
 }

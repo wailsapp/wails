@@ -1,4 +1,4 @@
-module gin-example
+module gin-routing
 
 go 1.25
 

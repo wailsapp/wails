@@ -165,6 +165,9 @@ tasks:
     desc: |
       Builds the Docker image and runs it, exposing port 8080.
       Usage: task run:docker [TAG=myapp:latest] [PORT=8080]
+      Note: The internal container port is always 8080. The PORT variable
+      only changes the host port mapping. Ensure your app uses port 8080
+      or modify the Dockerfile to match your ServerOptions.Port setting.
     deps:
       - task: build:docker
         vars:

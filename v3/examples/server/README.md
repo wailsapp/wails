@@ -35,7 +35,7 @@ go build -tags server -o myapp-server .
 go run -tags server .
 ```
 
-Then open http://localhost:8080 in your browser.
+Then open <http://localhost:8080> in your browser.
 
 ## Key Differences from Desktop Mode
 
