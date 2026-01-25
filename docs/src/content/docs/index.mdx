@@ -6,7 +6,7 @@ banner:
         Wails v3 is in ALPHA. <a href="https://wails.io">v2 docs</a>
 template: splash
 hero:
-  tagline: Build beautiful, performant desktop applications using Go and modern web technologies. One codebase. Three platforms. No browsers.
+  tagline: Build beautiful, performant applications using Go and modern web technologies. One codebase. Three platforms. No browsers.*
   image:
     dark: ../../assets/wails-logo-dark.svg
     light: ../../assets/wails-logo-light.svg
@@ -23,6 +23,7 @@ hero:
 ---
 {/* Updated 2025-11-23 */}
 import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+import MorphText from "@components/MorphText.astro";
 
 <style>{`
   /* Row 1 - Fastest */
@@ -189,106 +190,9 @@ import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
     -webkit-backdrop-filter: blur(10px);
   }
 
-  /* Text morphing effect */
-  .morph-word {
-    display: inline-block;
-    position: relative;
-    width: 4.1em;
-    text-align: center;
-  }
-
-  .morph-word span {
-    display: inline-block;
-    transition: all 0.8s ease-in-out;
-  }
-
-  /* Fade transition */
-  .morph-word span.fade-out {
-    opacity: 0;
-  }
-
-  /* Blur transition */
-  .morph-word span.blur-out {
-    opacity: 0;
-    filter: blur(8px);
-  }
-
-  /* Scale transition */
-  .morph-word span.scale-out {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-
-  /* Slide transition (vertical, in place) */
-  .morph-word span.slide-out {
-    opacity: 0;
-    transform: translateY(-0.3em);
-  }
 `}</style>
 
-<script>{`
-  (function() {
-    const words = ['desktop', 'server'];
-    const transitions = ['fade-out', 'blur-out', 'scale-out', 'slide-out'];
-    let currentIndex = 0;
-
-    function init() {
-      // Find the tagline and replace 'desktop' with morphing element
-      const tagline = document.querySelector('.hero > div > p, .sl-markdown-content p:first-of-type, [class*="tagline"]');
-      if (!tagline) {
-        // Retry after a short delay if not found
-        setTimeout(init, 500);
-        return;
-      }
-
-      const html = tagline.innerHTML;
-      if (html.includes('morph-word')) return; // Already initialized
-
-      const newHtml = html.replace(
-        /desktop/i,
-        '<span class="morph-word"><span>desktop</span></span>'
-      );
-      tagline.innerHTML = newHtml;
-
-      // Start the morphing cycle
-      scheduleNext();
-    }
-
-    function scheduleNext() {
-      // Random interval between 3-5 seconds
-      const delay = 3000 + Math.random() * 2000;
-      setTimeout(morph, delay);
-    }
-
-    function morph() {
-      const morphSpan = document.querySelector('.morph-word span');
-      if (!morphSpan) return;
-
-      // Pick random transition
-      const transition = transitions[Math.floor(Math.random() * transitions.length)];
-
-      // Fade out with transition
-      morphSpan.classList.add(transition);
-
-      // After transition, swap text and fade in
-      setTimeout(() => {
-        currentIndex = (currentIndex + 1) % words.length;
-        morphSpan.textContent = words[currentIndex];
-        morphSpan.classList.remove(transition);
-
-        // Schedule next morph
-        scheduleNext();
-      }, 800);
-    }
-
-    // Initialize when DOM is ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
-    } else {
-      init();
-    }
-  })();
-`}</script>
+<MorphText />
 
 ## Quickstart
 

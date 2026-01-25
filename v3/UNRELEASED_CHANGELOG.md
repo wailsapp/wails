@@ -1,6 +1,6 @@
 # Unreleased Changes
 
-<!-- 
+<!--
 This file is used to collect changelog entries for the next v3-alpha release.
 Add your changes under the appropriate sections below.
 
@@ -17,21 +17,19 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add experimental server mode for headless/web deployments (`-tags server`). Enables running Wails apps as HTTP servers without native GUI dependencies. Build with `wails3 task build:server`. See `examples/server` for details.
-- Add origin to raw message handler by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/4710)
-- Add universal link support for macOS by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/4712)
-- Refactor binding transport layer by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/4702)
-- Add aria-label identifiers to the helloworld templates so that the example app can be easily tested by Appium test clients by @chinenual in [PR](https://github.com/wailsapp/wails/pull/4760)
-- Add code signing configuration to GlobalDefaults for all platforms (macOS, Windows, Linux)
-- Add signing status section to `wails3 doctor` command showing configured signing identities
+- Add experimental `wails3 setup` wizard for interactive project setup and dependency checking
+- Add Docker-based cross-platform build configuration to setup wizard
+- Add code signing configuration for macOS, Windows, and Linux in setup wizard
+- Add TypeScript binding style selection (interfaces vs classes) to setup wizard
 - Add `--json` flag to `wails3 doctor` for machine-readable output
-- Add signing step to setup wizard with platform-specific status display
+- Add signing status section to `wails3 doctor` command
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix npm detection on Linux to check PATH in addition to package manager
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
