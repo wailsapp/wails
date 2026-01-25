@@ -198,6 +198,9 @@ import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
 # Install Wails
 go install github.com/wailsapp/wails/v3/cmd/wails3@latest
 
+# Setup your environment (experimental)
+wails3 setup
+
 # Create your application
 wails3 init -n myapp -t vanilla
 
@@ -205,11 +208,14 @@ wails3 init -n myapp -t vanilla
 cd myapp && wails3 dev
 ```
   </TabItem>
-  
+
   <TabItem label="Windows" icon="seti:windows">
 ```powershell
 # Install Wails
 go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+# Setup your environment (experimental)
+wails3 setup
 
 # Create your application
 wails3 init -n myapp -t vanilla
@@ -218,11 +224,14 @@ wails3 init -n myapp -t vanilla
 cd myapp; wails3 dev
 ```
   </TabItem>
-  
+
   <TabItem label="Linux" icon="linux">
 ```bash
 # Install Wails
 go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+# Setup your environment (experimental)
+wails3 setup
 
 # Create your application
 wails3 init -n myapp -t vanilla
