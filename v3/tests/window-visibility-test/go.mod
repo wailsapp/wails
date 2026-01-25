@@ -1,6 +1,6 @@
 module window-visibility-test
 
-go 1.25
+go 1.24
 
 replace github.com/wailsapp/wails/v3 => ../../
 

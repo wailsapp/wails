@@ -284,6 +284,10 @@ services:
       retries: 3
 ```
 
+:::note
+The healthcheck example uses `wget`. If you're using a distroless base image, you'll need to either include a healthcheck binary in your image or use an external health check mechanism (e.g., Docker's `curl` option or a sidecar container).
+:::
+
 ### Custom Dockerfile
 
 If you need more control, you can create your own Dockerfile. The key thing to remember is setting `WAILS_SERVER_HOST=0.0.0.0` so the server accepts connections from outside the container:
