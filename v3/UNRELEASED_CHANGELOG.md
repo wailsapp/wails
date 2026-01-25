@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add experimental server mode for headless/web deployments (`-tags server`). Enables running Wails apps as HTTP servers without native GUI dependencies. Build with `wails3 task build:server`. See `examples/server` for details.
 
 ## Changed
 <!-- Changes in existing functionality -->

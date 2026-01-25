@@ -1,4 +1,4 @@
-//go:build linux && production && !devtools && !android
+//go:build linux && production && !devtools && !android && !server
 
 package application
 

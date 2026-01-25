@@ -1,10 +1,8 @@
-module print
+module github.com/wailsapp/wails/v3/examples/server
 
 go 1.25
 
-replace github.com/wailsapp/wails/v3 => ../../
-
-require github.com/wailsapp/wails/v3 v3.0.0-alpha.0
+require github.com/wailsapp/wails/v3 v3.0.0-alpha.62
 
 require (
 	dario.cat/mergo v1.0.2 // indirect
@@ -47,3 +45,6 @@ require (
 	golang.org/x/text v0.33.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
+
+// For local development - remove this line before publishing
+replace github.com/wailsapp/wails/v3 => ../..
