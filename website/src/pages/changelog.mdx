@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed missing `EventsOffAll` in runtime templates for all frontend frameworks [#4883](https://github.com/wailsapp/wails/pull/4883) by @narcilee7
+- Fixed Linux crash on panic in JS-bound Go methods due to WebKit overriding signal handlers [#3965](https://github.com/wailsapp/wails/issues/3965) by @leaanthony
+- Fixed code block range in "How Does It Work?" documentation [#4884](https://github.com/wailsapp/wails/pull/4884) by @msal4
 - Fixed WebView crash on macOS 26 (Tahoe) during rapid UI updates [#4592](https://github.com/wailsapp/wails/issues/4592) by @leaanthony
 - Updated menu reference docs with complete imports by @agilgur5 in [#4727](https://github.com/wailsapp/wails/pull/4727) and [#4742](https://github.com/wailsapp/wails/pull/4742)
 - Fixed menu reference syntax by @agilgur5 in [#4726](https://github.com/wailsapp/wails/pull/4726)
@@ -25,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed link to CoC in Community Guide when there was a trailing slash by @agilgur5 in [#4732](https://github.com/wailsapp/wails/pull/4732)
 - Fixed indentation in "How does it work?" page by @agilgur5 in [#4733](https://github.com/wailsapp/wails/pull/4733)
 - Updated wails installation documentation to allow copying the `install wails` command with one click by @tilak999 in [#4692](https://github.com/wailsapp/wails/pull/4692)
+- Remove ioutl.Discard and replace it with io.Discard by @xjh22222228 in [#4877](https://github.com/wailsapp/wails/pull/4877)
 
 ## v2.11.0 - 2025-11-08
 
@@ -41,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added url validation for BrowserOpenURL by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/4484)
 - Fixed C compilation error in onWayland on Linux due to declaration after label [#4446](https://github.com/wailsapp/wails/pull/4446) by [@jaesung9507](https://github.com/jaesung9507)
 - Use computed style when adding 'wails-drop-target-active' [PR](https://github.com/wailsapp/wails/pull/4420) by [@riannucci](https://github.com/riannucci)
+- Fixed initialisation templates to the correct Go version [PR](https://github.com/wailsapp/wails/pull/4618) by [@Xelus22](https://github.com/Xelus22)
 - Fixed panic when adding menuroles on Linux [#4558](https://github.com/wailsapp/wails/pull/4558) by [@jaesung9507](https://github.com/jaesung9507)
 - Fixed generated enums ordering [#4664](https://github.com/wailsapp/wails/pull/4664) by [@rprtr258](https://github.com/rprtr258).
 - Fixed Discord badge in README by @sharkmu in [PR](https://github.com/wailsapp/wails/pull/4626)
