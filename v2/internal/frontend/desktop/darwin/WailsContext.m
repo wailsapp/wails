@@ -224,7 +224,13 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
 
     // Webview stuff here!
     WKWebViewConfiguration *config = [WKWebViewConfiguration new];
-    config.suppressesIncrementalRendering = true;
+    // Disable suppressesIncrementalRendering on macOS 26+ to prevent WebView crashes
+    // during rapid UI updates. See: https://github.com/wailsapp/wails/issues/4592
+    if (@available(macOS 26.0, *)) {
+        config.suppressesIncrementalRendering = false;
+    } else {
+        config.suppressesIncrementalRendering = true;
+    }
     config.applicationNameForUserAgent = @"wails.io";
     [config setURLSchemeHandler:self forURLScheme:@"wails"];
 
