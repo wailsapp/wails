@@ -23,7 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix fullscreen click-through on Windows when using `Frameless: true` with `BackgroundTypeTransparent` (#4408) by @anthropic-vibekanban
+- Fix fullscreen click-through on Windows when using `Frameless: true` with `BackgroundTypeTransparent` (#4408) by @leaanthony
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
