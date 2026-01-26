@@ -725,6 +725,11 @@ func (w *Wizard) startDockerPull() {
 	}()
 }
 
+// pullViaDockerAPI attempts to pull the image using Docker's HTTP API directly.
+// This provides detailed progress tracking with layer-by-layer download status.
+// Uses API v1.44 (Docker 25.0+). If this fails for any reason (older Docker version,
+// permission issues, etc.), the caller falls back to pullViaDockerCLI which works
+// with any Docker version but provides less detailed progress.
 func (w *Wizard) pullViaDockerAPI() error {
 	socketPath := "/var/run/docker.sock"
 	if runtime.GOOS == "windows" {
