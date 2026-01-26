@@ -707,6 +707,13 @@ func (w *Wizard) startDockerPull() {
 	w.dockerStatus.PullStatus = "pulling"
 	w.dockerStatus.PullProgress = 0
 	w.dockerStatus.PullMessage = "Connecting"
+	// Reset stale state from previous attempts
+	w.dockerStatus.PullError = ""
+	w.dockerStatus.BytesTotal = 0
+	w.dockerStatus.BytesDone = 0
+	w.dockerStatus.LayerCount = 0
+	w.dockerStatus.LayersDone = 0
+	w.dockerBuildLogs = ""
 	w.dockerMu.Unlock()
 
 	w.buildWg.Add(1)
