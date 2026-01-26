@@ -889,7 +889,7 @@ function DockerOptionsPage({
         </button>
 
         <a
-          href="https://wails.io/docs/guides/build/cross-platform#build-your-own-image"
+          href="https://v3.wails.io/guides/build/cross-platform#build-your-own-image"
           target="_blank"
           rel="noopener noreferrer"
           className="w-full px-5 py-3 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
@@ -1010,7 +1010,7 @@ function DockerBuildError({
             Try again
           </button>
           <a
-            href="https://wails.io/docs/guides/build/cross-platform#build-your-own-image"
+            href="https://v3.wails.io/guides/build/cross-platform#build-your-own-image"
             target="_blank"
             rel="noopener noreferrer"
             className="px-5 py-2.5 rounded-lg border border-blue-500 text-blue-600 dark:text-blue-400 text-sm font-medium hover:bg-blue-500/10 transition-colors"
