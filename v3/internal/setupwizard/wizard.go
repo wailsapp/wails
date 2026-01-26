@@ -594,7 +594,6 @@ func (w *Wizard) handleDockerStatusStream(rw http.ResponseWriter, r *http.Reques
 	rw.Header().Set("Content-Type", "text/event-stream")
 	rw.Header().Set("Cache-Control", "no-cache")
 	rw.Header().Set("Connection", "keep-alive")
-	rw.Header().Set("Access-Control-Allow-Origin", "*")
 
 	flusher, ok := rw.(http.Flusher)
 	if !ok {
@@ -790,7 +789,7 @@ func (w *Wizard) pullViaDockerAPI() error {
 			w.dockerStatus.PullMessage = "Failed"
 			w.dockerBuildLogs = logs.String()
 			w.dockerMu.Unlock()
-			return nil
+			return fmt.Errorf("docker pull error: %s", event.Error)
 		}
 
 		if event.ID != "" {
