@@ -842,11 +842,9 @@ function CrossPlatformPage({
 
 function DockerBuildError({
   onBuildImage,
-  onUseLocalSDK,
   onSkip
 }: {
   onBuildImage: () => void;
-  onUseLocalSDK: (file: File) => void;
   onSkip: () => void;
 }) {
   const [showLogs, setShowLogs] = useState(false);
@@ -927,26 +925,15 @@ function DockerBuildError({
           >
             Try again
           </button>
-          <label className="px-5 py-2.5 rounded-lg border border-blue-500 text-blue-600 dark:text-blue-400 text-sm font-medium hover:bg-blue-500/10 transition-colors cursor-pointer">
-            Use local file
-            <input
-              type="file"
-              accept=".tar.xz"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) onUseLocalSDK(file);
-              }}
-            />
-          </label>
+          <a
+            href="https://wails.io/docs/guides/build/cross-platform#build-your-own-image"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-5 py-2.5 rounded-lg border border-blue-500 text-blue-600 dark:text-blue-400 text-sm font-medium hover:bg-blue-500/10 transition-colors"
+          >
+            Build your own
+          </a>
         </div>
-        <a
-          href="https://github.com/wailsapp/macosx-sdks/releases/download/26.1/MacOSX26.1.sdk.tar.xz"
-          download
-          className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-        >
-          Download SDK manually
-        </a>
         <button
           onClick={onSkip}
           className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
@@ -1055,7 +1042,6 @@ function DockerSetupPage({
   onBuildImage,
   onCheckAgain,
   onContinueBackground,
-  onUseLocalSDK,
   onSkip,
   onBack,
   canGoBack
@@ -1065,7 +1051,6 @@ function DockerSetupPage({
   onBuildImage: () => void;
   onCheckAgain: () => void;
   onContinueBackground: () => void;
-  onUseLocalSDK: (file: File) => void;
   onSkip: () => void;
   onBack?: () => void;
   canGoBack?: boolean;
@@ -1245,7 +1230,6 @@ function DockerSetupPage({
     return (
       <DockerBuildError
         onBuildImage={onBuildImage}
-        onUseLocalSDK={onUseLocalSDK}
         onSkip={onSkip}
       />
     );
@@ -2059,26 +2043,6 @@ export default function App() {
     navigateTo('projects');
   };
 
-  const handleDockerUseLocalSDK = async (file: File) => {
-    setBuildingImage(true);
-    
-    const formData = new FormData();
-    formData.append('sdk', file);
-    
-    await fetch('/api/docker/build-with-sdk', {
-      method: 'POST',
-      body: formData
-    });
-
-    const unsubscribe = subscribeDockerStatus((status) => {
-      setDockerStatus(status);
-      if (status.pullStatus !== 'pulling') {
-        setBuildingImage(false);
-        unsubscribe();
-      }
-    });
-  };
-
   const handleProjectsNext = () => {
     navigateTo('signing');
   };
@@ -2246,7 +2210,6 @@ export default function App() {
                     onBuildImage={handleDockerBuildImage}
                     onCheckAgain={handleDockerCheckAgain}
                     onContinueBackground={handleDockerContinueBackground}
-                    onUseLocalSDK={handleDockerUseLocalSDK}
                     onSkip={handleDockerSkip}
                     onBack={goBack}
                     canGoBack={canGoBack}

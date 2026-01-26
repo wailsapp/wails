@@ -1,7 +1,6 @@
 package setupwizard
 
 import (
-	"bufio"
 	"context"
 	"embed"
 	"encoding/json"
@@ -16,7 +15,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
-	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -30,9 +28,6 @@ import (
 
 //go:embed frontend/dist/*
 var frontendFS embed.FS
-
-//go:embed docker/Dockerfile.cross
-var dockerfileContent string
 
 //go:embed assets/apple-sdk-license.pdf
 var appleLicensePDF []byte
@@ -320,7 +315,6 @@ func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/docker/status", w.handleDockerStatus)
 	mux.HandleFunc("/api/docker/status/stream", w.handleDockerStatusStream)
 	mux.HandleFunc("/api/docker/build", w.handleDockerBuild)
-	mux.HandleFunc("/api/docker/build-with-sdk", w.handleDockerBuildWithSDK)
 	mux.HandleFunc("/api/docker/logs", w.handleDockerLogs)
 	mux.HandleFunc("/api/docker/start-background", w.handleDockerStartBackground)
 	mux.HandleFunc("/api/wails-config", w.handleWailsConfig)
@@ -1001,142 +995,6 @@ func formatBytesMB(b int64) string {
 	return fmt.Sprintf("%.0f MB", mb)
 }
 
-func (w *Wizard) startDockerBuildLocal(localSDKPath string) {
-	w.dockerMu.Lock()
-	if w.dockerStatus.PullStatus == "pulling" {
-		w.dockerMu.Unlock()
-		return
-	}
-	w.dockerStatus.PullStatus = "pulling"
-	w.dockerStatus.PullProgress = 0
-	w.dockerMu.Unlock()
-
-	w.buildWg.Add(1)
-	go func() {
-		defer w.buildWg.Done()
-
-		tmpDir, err := os.MkdirTemp("", "wails-docker-build-*")
-		if err != nil {
-			w.dockerMu.Lock()
-			w.dockerStatus.PullStatus = "error"
-			w.dockerStatus.PullError = fmt.Sprintf("Failed to create temp dir: %v", err)
-			w.dockerMu.Unlock()
-			return
-		}
-		defer os.RemoveAll(tmpDir)
-
-		dockerfile := dockerfileContent
-		sdkFileName := filepath.Base(localSDKPath)
-		destPath := filepath.Join(tmpDir, sdkFileName)
-
-		srcFile, err := os.Open(localSDKPath)
-		if err != nil {
-			w.dockerMu.Lock()
-			w.dockerStatus.PullStatus = "error"
-			w.dockerStatus.PullError = fmt.Sprintf("Failed to open SDK file: %v", err)
-			w.dockerMu.Unlock()
-			return
-		}
-		defer srcFile.Close()
-
-		destFile, err := os.Create(destPath)
-		if err != nil {
-			w.dockerMu.Lock()
-			w.dockerStatus.PullStatus = "error"
-			w.dockerStatus.PullError = fmt.Sprintf("Failed to create SDK copy: %v", err)
-			w.dockerMu.Unlock()
-			return
-		}
-
-		if _, err := destFile.ReadFrom(srcFile); err != nil {
-			destFile.Close()
-			w.dockerMu.Lock()
-			w.dockerStatus.PullStatus = "error"
-			w.dockerStatus.PullError = fmt.Sprintf("Failed to copy SDK file: %v", err)
-			w.dockerMu.Unlock()
-			return
-		}
-		destFile.Close()
-
-		sdkDirName := strings.TrimSuffix(strings.TrimSuffix(sdkFileName, ".xz"), ".tar")
-		localSDKDockerfile := strings.Replace(dockerfile,
-			`RUN curl -L "https://github.com/wailsapp/macosx-sdks/releases/download/${MACOS_SDK_VERSION}/MacOSX${MACOS_SDK_VERSION}.sdk.tar.xz" \
-    | tar -xJ -C /opt \
-    && mv /opt/MacOSX${MACOS_SDK_VERSION}.sdk /opt/macos-sdk`,
-			fmt.Sprintf(`COPY %s /tmp/sdk.tar.xz
-RUN tar -xJf /tmp/sdk.tar.xz -C /opt \
-    && mv /opt/%s /opt/macos-sdk \
-    && rm /tmp/sdk.tar.xz`, sdkFileName, sdkDirName),
-			1)
-
-		dockerfilePath := filepath.Join(tmpDir, "Dockerfile")
-		if err := os.WriteFile(dockerfilePath, []byte(localSDKDockerfile), 0644); err != nil {
-			w.dockerMu.Lock()
-			w.dockerStatus.PullStatus = "error"
-			w.dockerStatus.PullError = fmt.Sprintf("Failed to write Dockerfile: %v", err)
-			w.dockerMu.Unlock()
-			return
-		}
-
-		cmd := exec.Command("docker", "build", "--progress=plain", "-t", crossImageName, "-f", dockerfilePath, tmpDir)
-		stdout, err := cmd.StdoutPipe()
-		if err != nil {
-			w.dockerMu.Lock()
-			w.dockerStatus.PullStatus = "error"
-			w.dockerStatus.PullError = fmt.Sprintf("Failed to create stdout pipe: %v", err)
-			w.dockerMu.Unlock()
-			return
-		}
-		cmd.Stderr = cmd.Stdout
-
-		if err := cmd.Start(); err != nil {
-			w.dockerMu.Lock()
-			w.dockerStatus.PullStatus = "error"
-			w.dockerStatus.PullError = fmt.Sprintf("Failed to start build: %v", err)
-			w.dockerMu.Unlock()
-			return
-		}
-
-		scanner := bufio.NewScanner(stdout)
-		stepProgressRegex := regexp.MustCompile(`\[\s*(\d+)/(\d+)\]`)
-		var lastOutput strings.Builder
-
-		for scanner.Scan() {
-			line := scanner.Text()
-			lastOutput.WriteString(line + "\n")
-
-			if matches := stepProgressRegex.FindStringSubmatch(line); len(matches) == 3 {
-				current, err1 := strconv.Atoi(matches[1])
-				total, err2 := strconv.Atoi(matches[2])
-				if err1 == nil && err2 == nil && total > 0 {
-					progress := int(float64(current) / float64(total) * 90)
-					w.dockerMu.Lock()
-					if progress > w.dockerStatus.PullProgress {
-						w.dockerStatus.PullProgress = progress
-					}
-					w.dockerMu.Unlock()
-				}
-			}
-		}
-
-		err = cmd.Wait()
-		w.dockerMu.Lock()
-		w.dockerBuildLogs = lastOutput.String()
-		if err != nil {
-			w.dockerStatus.PullStatus = "error"
-			w.dockerStatus.PullError = fmt.Sprintf("Build failed: %v", err)
-		} else {
-			w.dockerStatus.PullStatus = "complete"
-			w.dockerStatus.ImageBuilt = true
-			w.dockerStatus.PullProgress = 100
-			if sizeOutput, sizeErr := execCommand("docker", "images", crossImageName, "--format", "{{.Size}}"); sizeErr == nil && len(sizeOutput) > 0 {
-				w.dockerStatus.ImageSize = strings.TrimSpace(sizeOutput)
-			}
-		}
-		w.dockerMu.Unlock()
-	}()
-}
-
 func (w *Wizard) handleDockerBuild(rw http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
@@ -1144,52 +1002,6 @@ func (w *Wizard) handleDockerBuild(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	w.startDockerPull()
-
-	rw.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(rw).Encode(map[string]string{"status": "started"})
-}
-
-func (w *Wizard) handleDockerBuildWithSDK(rw http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	if err := r.ParseMultipartForm(200 << 20); err != nil {
-		http.Error(rw, "Failed to parse form", http.StatusBadRequest)
-		return
-	}
-
-	file, header, err := r.FormFile("sdk")
-	if err != nil {
-		http.Error(rw, "No SDK file provided", http.StatusBadRequest)
-		return
-	}
-	defer file.Close()
-
-	tmpFile, err := os.CreateTemp("", "macos-sdk-*.tar.xz")
-	if err != nil {
-		http.Error(rw, "Failed to create temp file", http.StatusInternalServerError)
-		return
-	}
-	tmpPath := tmpFile.Name()
-
-	if _, err := tmpFile.ReadFrom(file); err != nil {
-		tmpFile.Close()
-		os.Remove(tmpPath)
-		http.Error(rw, "Failed to save SDK file", http.StatusInternalServerError)
-		return
-	}
-	tmpFile.Close()
-
-	_ = header
-	w.startDockerBuildLocal(tmpPath)
-
-	// Clean up temp file after build has had time to copy it
-	go func() {
-		time.Sleep(5 * time.Second)
-		os.Remove(tmpPath)
-	}()
 
 	rw.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(rw).Encode(map[string]string{"status": "started"})
