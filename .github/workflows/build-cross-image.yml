@@ -10,7 +10,7 @@ on:
       sdk_version:
         description: 'macOS SDK version'
         required: true
-        default: '26.1'
+        default: '14.5'
       zig_version:
         description: 'Zig version'
         required: true
@@ -18,7 +18,12 @@ on:
       image_version:
         description: 'Image version tag'
         required: true
-        default: '1.0.0'
+        default: 'latest'
+  push:
+    branches:
+      - v3-alpha
+    paths:
+      - 'v3/internal/commands/build_assets/docker/Dockerfile.cross'
 
 env:
   REGISTRY: ghcr.io
@@ -35,7 +40,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.branch }}
+          ref: ${{ inputs.branch || github.ref }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -47,6 +55,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set build variables
+        id: vars
+        run: |
+          echo "sdk_version=${{ inputs.sdk_version || '14.5' }}" >> $GITHUB_OUTPUT
+          echo "zig_version=${{ inputs.zig_version || '0.14.0' }}" >> $GITHUB_OUTPUT
+          echo "image_version=${{ inputs.image_version || 'latest' }}" >> $GITHUB_OUTPUT
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -54,20 +69,23 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest
-            type=raw,value=${{ inputs.image_version }}
-            type=raw,value=sdk-${{ inputs.sdk_version }}
+            type=raw,value=${{ steps.vars.outputs.image_version }}
+            type=raw,value=sdk-${{ steps.vars.outputs.sdk_version }}
 
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: v3/internal/setupwizard/docker
-          file: v3/internal/setupwizard/docker/Dockerfile.cross
+          context: v3/internal/commands/build_assets/docker
+          file: v3/internal/commands/build_assets/docker/Dockerfile.cross
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          labels: |
+            ${{ steps.meta.outputs.labels }}
+            io.wails.zig.version=${{ steps.vars.outputs.zig_version }}
+            io.wails.sdk.version=${{ steps.vars.outputs.sdk_version }}
           build-args: |
-            ZIG_VERSION=${{ inputs.zig_version }}
-            MACOS_SDK_VERSION=${{ inputs.sdk_version }}
-            IMAGE_VERSION=${{ inputs.image_version }}
+            ZIG_VERSION=${{ steps.vars.outputs.zig_version }}
+            MACOS_SDK_VERSION=${{ steps.vars.outputs.sdk_version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
