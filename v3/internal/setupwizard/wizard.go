@@ -982,19 +982,6 @@ func (w *Wizard) pullViaDockerCLI() {
 	w.dockerMu.Unlock()
 }
 
-func formatBytes(b int64) string {
-	const unit = 1024
-	if b < unit {
-		return fmt.Sprintf("%d B", b)
-	}
-	div, exp := int64(unit), 0
-	for n := b / unit; n >= unit; n /= unit {
-		div *= unit
-		exp++
-	}
-	return fmt.Sprintf("%.1f %cB", float64(b)/float64(div), "KMGTPE"[exp])
-}
-
 func formatBytesMB(b int64) string {
 	mb := float64(b) / (1024 * 1024)
 	if mb < 1 {
