@@ -243,6 +243,7 @@ type Wizard struct {
 	dockerMu        sync.RWMutex
 	done            chan struct{}
 	shutdown        chan struct{}
+	shutdownOnce    sync.Once
 	buildWg         sync.WaitGroup
 }
 
@@ -510,7 +511,7 @@ func (w *Wizard) handleClose(rw http.ResponseWriter, r *http.Request) {
 	// Wait for any running Docker builds to complete before shutting down
 	go func() {
 		w.buildWg.Wait()
-		close(w.shutdown)
+		w.shutdownOnce.Do(func() { close(w.shutdown) })
 	}()
 }
 

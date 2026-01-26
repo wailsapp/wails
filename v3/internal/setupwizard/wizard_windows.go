@@ -105,8 +105,20 @@ func checkGo() DependencyStatus {
 
 		versionParts := strings.Split(versionStr, ".")
 		if len(versionParts) >= 2 {
-			major, _ := strconv.Atoi(versionParts[0])
-			minor, _ := strconv.Atoi(versionParts[1])
+			major, majorErr := strconv.Atoi(versionParts[0])
+			// Handle versions like "25beta1" by extracting leading digits
+			minorStr := versionParts[1]
+			for i, c := range minorStr {
+				if c < '0' || c > '9' {
+					minorStr = minorStr[:i]
+					break
+				}
+			}
+			minor, minorErr := strconv.Atoi(minorStr)
+			if majorErr != nil || minorErr != nil {
+				// Couldn't parse version; assume it's acceptable
+				return dep
+			}
 			if major < 1 || (major == 1 && minor < 25) {
 				dep.Status = "needs_update"
 				dep.Message = "Go 1.25+ is required (found " + versionStr + ")"
