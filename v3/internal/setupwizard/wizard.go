@@ -1218,9 +1218,10 @@ func (w *Wizard) handleSigning(rw http.ResponseWriter, r *http.Request) {
 }
 
 type signingStatusResponse struct {
-	Darwin  darwinSigningStatus  `json:"darwin"`
-	Windows windowsSigningStatus `json:"windows"`
-	Linux   linuxSigningStatus   `json:"linux"`
+	Darwin       darwinSigningStatus  `json:"darwin"`
+	Windows      windowsSigningStatus `json:"windows"`
+	Linux        linuxSigningStatus   `json:"linux"`
+	ConfigError  string               `json:"configError,omitempty"`
 }
 
 type darwinSigningStatus struct {
@@ -1247,13 +1248,19 @@ type linuxSigningStatus struct {
 }
 
 func checkSigningStatus() signingStatusResponse {
-	globalDefaults, _ := LoadGlobalDefaults()
+	globalDefaults, err := LoadGlobalDefaults()
 
-	return signingStatusResponse{
+	resp := signingStatusResponse{
 		Darwin:  checkDarwinSigningStatus(globalDefaults),
 		Windows: checkWindowsSigningStatus(globalDefaults),
 		Linux:   checkLinuxSigningStatus(globalDefaults),
 	}
+
+	if err != nil {
+		resp.ConfigError = err.Error()
+	}
+
+	return resp
 }
 
 func checkDarwinSigningStatus(cfg GlobalDefaults) darwinSigningStatus {
