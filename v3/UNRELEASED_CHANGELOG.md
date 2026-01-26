@@ -18,9 +18,6 @@ After processing, the content will be moved to the main changelog and this file 
 ## Added
 <!-- New features, capabilities, or enhancements -->
 - Add experimental `wails3 setup` wizard for interactive project setup and dependency checking
-- Add Docker-based cross-platform build configuration to setup wizard
-- Add code signing configuration for macOS, Windows, and Linux in setup wizard
-- Add TypeScript binding style selection (interfaces vs classes) to setup wizard
 - Add `--json` flag to `wails3 doctor` for machine-readable output
 - Add signing status section to `wails3 doctor` command
 
