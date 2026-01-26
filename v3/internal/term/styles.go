@@ -77,14 +77,23 @@ func RenderTable(rows [][]string) string {
 	var b strings.Builder
 	maxKeyLen := 0
 	for _, row := range rows {
+		if len(row) == 0 {
+			continue
+		}
 		if len(row[0]) > maxKeyLen {
 			maxKeyLen = len(row[0])
 		}
 	}
 
 	for _, row := range rows {
+		if len(row) == 0 {
+			continue
+		}
 		key := MutedStyle.Render(padRight(row[0], maxKeyLen))
-		val := row[1]
+		val := ""
+		if len(row) > 1 {
+			val = row[1]
+		}
 		b.WriteString("  " + key + "  " + val + "\n")
 	}
 

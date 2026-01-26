@@ -1,6 +1,8 @@
 package doctor
 
 import (
+	"fmt"
+	"os"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -38,7 +40,12 @@ type LinuxSigningStatus struct {
 }
 
 func CheckSigning() SigningStatus {
-	globalDefaults, _ := defaults.Load()
+	globalDefaults, err := defaults.Load()
+	if err != nil {
+		// Log warning but continue with empty defaults
+		// This allows the check to proceed even if config is invalid
+		fmt.Fprintf(os.Stderr, "Warning: could not load global defaults: %v\n", err)
+	}
 
 	return SigningStatus{
 		Darwin:  checkDarwinSigning(globalDefaults),

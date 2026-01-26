@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Cross-compile Wails v3 apps to macOS from Linux
 #
 # Uses Zig as C compiler + full macOS SDK

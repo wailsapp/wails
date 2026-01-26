@@ -5,7 +5,9 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"net"
 	"net/http"
@@ -771,7 +773,7 @@ func (w *Wizard) pullViaDockerAPI() error {
 	for {
 		var event dockerPullEvent
 		if err := decoder.Decode(&event); err != nil {
-			if err.Error() == "EOF" {
+			if errors.Is(err, io.EOF) {
 				break
 			}
 			break
@@ -1182,6 +1184,12 @@ func (w *Wizard) handleDockerBuildWithSDK(rw http.ResponseWriter, r *http.Reques
 
 	_ = header
 	w.startDockerBuildLocal(tmpPath)
+
+	// Clean up temp file after build has had time to copy it
+	go func() {
+		time.Sleep(5 * time.Second)
+		os.Remove(tmpPath)
+	}()
 
 	rw.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(rw).Encode(map[string]string{"status": "started"})
