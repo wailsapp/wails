@@ -39,6 +39,8 @@ type systemTrayImpl interface {
 	openMenu()
 	Show()
 	Hide()
+	onAttachedWindowHidden()
+	onAttachedWindowShown()
 }
 
 type SystemTray struct {
@@ -109,6 +111,8 @@ func (s *SystemTray) Run() {
 		// Setup listener
 		s.attachedWindow.Window.OnWindowEvent(events.Common.WindowLostFocus, func(event *WindowEvent) {
 			s.attachedWindow.Window.Hide()
+			// Notify impl that attached window was hidden (e.g., to update highlight state on macOS)
+			s.impl.onAttachedWindowHidden()
 			// Special handler for Windows
 			if runtime.GOOS == "windows" {
 				// We don't do this unless the window has already been shown
@@ -322,10 +326,13 @@ func (s *SystemTray) defaultClickHandler() {
 
 	if s.attachedWindow.Window.IsVisible() {
 		s.attachedWindow.Window.Hide()
+		// onAttachedWindowHidden is called via WindowLostFocus event handler
 	} else {
 		s.attachedWindow.hasBeenShown = true
 		_ = s.PositionWindow(s.attachedWindow.Window, s.attachedWindow.Offset)
 		s.attachedWindow.Window.Show().Focus()
+		// Set highlight after window is shown (important for macOS)
+		s.impl.onAttachedWindowShown()
 	}
 }
 

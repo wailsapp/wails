@@ -461,6 +461,8 @@ func (t *serverSystemTray) positionWindow(w Window, o int) error { return errors
 func (t *serverSystemTray) openMenu()                         {}
 func (t *serverSystemTray) Show()                             {}
 func (t *serverSystemTray) Hide()                             {}
+func (t *serverSystemTray) onAttachedWindowHidden()           {}
+func (t *serverSystemTray) onAttachedWindowShown()            {}
 
 // newWindowImpl creates a webview window implementation for server mode.
 func newWindowImpl(parent *WebviewWindow) *serverWebviewWindow {

@@ -100,3 +100,11 @@ func (s *androidSystemTray) Show() {
 func (s *androidSystemTray) Hide() {
 	// Android doesn't have system tray
 }
+
+func (s *androidSystemTray) onAttachedWindowHidden() {
+	// Android doesn't have system tray
+}
+
+func (s *androidSystemTray) onAttachedWindowShown() {
+	// Android doesn't have system tray
+}

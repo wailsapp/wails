@@ -140,10 +140,32 @@ void systemTrayDestroy(void* nsStatusItem) {
 	});
 }
 
+void systemTraySetHighlight(void* nsStatusItem, bool highlight) {
+	NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+	if (highlight) {
+		// Use dispatch_after to set highlight AFTER mouse up event clears it
+		// This is a known workaround for NSStatusBarButton highlight persistence
+		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.05 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+			[statusItem.button highlight:YES];
+		});
+	} else {
+		// For turning off highlight, do it immediately
+		if ([NSThread isMainThread]) {
+			[statusItem.button highlight:NO];
+		} else {
+			dispatch_async(dispatch_get_main_queue(), ^{
+				[statusItem.button highlight:NO];
+			});
+		}
+	}
+}
+
 void showMenu(void* nsStatusItem, void *nsMenu) {
 	// Show the menu on the main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
 		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+		// Highlight the button before showing the menu
+		[statusItem.button highlight:YES];
 		[statusItem popUpStatusItemMenu:(NSMenu *)nsMenu];
         // Post a mouse up event so the statusitem defocuses
         NSEvent *event = [NSEvent mouseEventWithType:NSEventTypeLeftMouseUp
@@ -201,25 +223,25 @@ int statusBarHeight() {
 void systemTrayPositionWindow(void* nsStatusItem, void* nsWindow, int offset) {
     // Get the status item's button
     NSStatusBarButton *button = [(NSStatusItem*)nsStatusItem button];
-    
+
     // Get the frame in screen coordinates
     NSRect frame = [button.window convertRectToScreen:button.frame];
-    
+
     // Get the screen that contains the status item
     NSScreen *screen = [button.window screen];
     if (screen == nil) {
         screen = [NSScreen mainScreen];
     }
-    
+
     // Get screen's backing scale factor (DPI)
     CGFloat scaleFactor = [screen backingScaleFactor];
-    
+
     // Get the window's frame
     NSRect windowFrame = [(NSWindow*)nsWindow frame];
-    
+
     // Calculate the horizontal position (centered under the status item)
     CGFloat windowX = frame.origin.x + (frame.size.width - windowFrame.size.width) / 2;
-    
+
     // If the window would go off the right edge of the screen, adjust it
     if (windowX + windowFrame.size.width > screen.frame.origin.x + screen.frame.size.width) {
         windowX = screen.frame.origin.x + screen.frame.size.width - windowFrame.size.width;
@@ -228,17 +250,23 @@ void systemTrayPositionWindow(void* nsStatusItem, void* nsWindow, int offset) {
     if (windowX < screen.frame.origin.x) {
         windowX = screen.frame.origin.x;
     }
-    
+
     // Get screen metrics
     NSRect screenFrame = [screen frame];
     NSRect visibleFrame = [screen visibleFrame];
-    
+
     // Calculate the vertical position
     CGFloat scaledOffset = offset * scaleFactor;
     CGFloat windowY = visibleFrame.origin.y + visibleFrame.size.height - windowFrame.size.height - scaledOffset;
-    
+
     // Set the window's frame
     windowFrame.origin.x = windowX;
     windowFrame.origin.y = windowY;
     [(NSWindow*)nsWindow setFrame:windowFrame display:YES animate:NO];
+
+    // Set window level to popup menu level so it appears above other windows
+    [(NSWindow*)nsWindow setLevel:NSPopUpMenuWindowLevel];
+
+    // Bring window to front
+    [(NSWindow*)nsWindow orderFrontRegardless];
 }
