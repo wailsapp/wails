@@ -12,7 +12,7 @@ LABEL org.opencontainers.image.version="${IMAGE_VERSION}"
 LABEL io.wails.sdk.version="${MACOS_SDK_VERSION}"
 LABEL io.wails.zig.version="${ZIG_VERSION}"
 
-RUN apk add --no-cache curl xz nodejs npm
+RUN apk add --no-cache curl xz nodejs npm gcompat
 
 RUN curl -L "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" \
     | tar -xJ -C /opt \

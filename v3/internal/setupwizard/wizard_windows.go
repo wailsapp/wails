@@ -20,7 +20,13 @@ func refreshPath() {
 
 	// Get system PATH from HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment
 	if key, err := registry.OpenKey(registry.LOCAL_MACHINE, `SYSTEM\CurrentControlSet\Control\Session Manager\Environment`, registry.QUERY_VALUE); err == nil {
-		if systemPath, _, err := key.GetStringValue("Path"); err == nil {
+		if systemPath, valType, err := key.GetStringValue("Path"); err == nil {
+			// Expand environment variables if the value is REG_EXPAND_SZ
+			if valType == registry.EXPAND_SZ {
+				if expanded, err := registry.ExpandString(systemPath); err == nil {
+					systemPath = expanded
+				}
+			}
 			paths = append(paths, strings.Split(systemPath, ";")...)
 		}
 		key.Close()
@@ -28,7 +34,13 @@ func refreshPath() {
 
 	// Get user PATH from HKEY_CURRENT_USER\Environment
 	if key, err := registry.OpenKey(registry.CURRENT_USER, `Environment`, registry.QUERY_VALUE); err == nil {
-		if userPath, _, err := key.GetStringValue("Path"); err == nil {
+		if userPath, valType, err := key.GetStringValue("Path"); err == nil {
+			// Expand environment variables if the value is REG_EXPAND_SZ
+			if valType == registry.EXPAND_SZ {
+				if expanded, err := registry.ExpandString(userPath); err == nil {
+					userPath = expanded
+				}
+			}
 			paths = append(paths, strings.Split(userPath, ";")...)
 		}
 		key.Close()

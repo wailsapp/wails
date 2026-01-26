@@ -126,8 +126,12 @@ func applyGlobalDefaults(options *flags.Init, globalDefaults defaults.GlobalDefa
 		options.ProductVersion = globalDefaults.GetDefaultVersion()
 	}
 
-	options.UseInterfaces = globalDefaults.Project.UseInterfaces
-	options.UseInterfacesFromDefaults = true
+	// Only apply UseInterfaces from defaults if not explicitly set via CLI flag
+	// (default value is false, so we check if it's still false and defaults say true)
+	if !options.UseInterfaces && globalDefaults.Project.UseInterfaces {
+		options.UseInterfaces = globalDefaults.Project.UseInterfaces
+		options.UseInterfacesFromDefaults = true
+	}
 }
 
 func Init(options *flags.Init) error {

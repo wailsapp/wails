@@ -9,7 +9,7 @@
 
 FROM golang:1.25-alpine
 
-RUN apk add --no-cache curl xz nodejs npm
+RUN apk add --no-cache curl xz nodejs npm gcompat
 
 # Install Zig
 ARG ZIG_VERSION=0.14.0

@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from "astro/config";
+import { fileURLToPath } from "node:url";
 import starlight from "@astrojs/starlight";
 import sitemap from "@astrojs/sitemap";
 import starlightLinksValidator from "starlight-links-validator";
@@ -15,7 +16,7 @@ export default defineConfig({
   vite: {
     resolve: {
       alias: {
-        '@components': '/src/components'
+        '@components': fileURLToPath(new URL('./src/components', import.meta.url))
       }
     }
   },

@@ -18,7 +18,7 @@ func Header(header string) {
 	mutedStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#666666"))
 
-	fmt.Println(brandStyle.Render("Wails") + mutedStyle.Render(" "+version.String()+" ›") + " " + header)
+	pterm.Println(brandStyle.Render("Wails") + mutedStyle.Render(" "+version.String()+" ›") + " " + header)
 }
 
 func IsTerminal() bool {
@@ -87,7 +87,7 @@ func Success(input any) {
 }
 
 func Section(s string) {
-	fmt.Println(SectionStyle.Render("# " + s))
+	pterm.Println(SectionStyle.Render("# " + s))
 }
 
 func DisableColor() {
