@@ -778,7 +778,7 @@ func (w *Wizard) pullViaDockerAPI() error {
 			if errors.Is(err, io.EOF) {
 				break
 			}
-			break
+			return fmt.Errorf("docker API stream error: %w", err)
 		}
 
 		logs.WriteString(fmt.Sprintf("%s %s %s\n", event.ID, event.Status, event.Progress))

@@ -167,7 +167,7 @@ func checkDocker() DependencyStatus {
 
 	// Check for wails-cross image
 	// docker image inspect returns "[]" (empty JSON array) on stdout when image doesn't exist
-	imageCheck, _ := execCommand("docker", "image", "inspect", "wails-cross")
+	imageCheck, _ := execCommand("docker", "image", "inspect", crossImageName)
 	if imageCheck == "" || imageCheck == "[]" || strings.Contains(imageCheck, "Error") {
 		dep.Installed = true
 		dep.Status = "installed"
