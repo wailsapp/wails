@@ -169,9 +169,18 @@ jobs:
 
       - name: Pull and tag Docker image
         run: |
-          # Pull the image from ghcr.io and tag it as 'wails-cross' for the task system
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image_tag || 'latest' }}
-          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image_tag || 'latest' }} wails-cross
+          # Pull both platform variants and tag them for the task system
+          # The task uses --platform flag which requires matching arch variant
+          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image_tag || 'latest' }}"
+
+          # For Linux arm64 test, we need the arm64 variant
+          if [ "${{ matrix.os }}" = "linux" ] && [ "${{ matrix.arch }}" = "arm64" ]; then
+            docker pull --platform linux/arm64 "$IMAGE"
+            docker tag "$IMAGE" wails-cross
+          else
+            docker pull "$IMAGE"
+            docker tag "$IMAGE" wails-cross
+          fi
 
       - name: Generate wails3 test project
         run: |
