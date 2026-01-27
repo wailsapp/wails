@@ -62,8 +62,11 @@ export {
     clientId,
 } from "./runtime.js";
 
+import { clientId } from "./runtime.js";
+
 // Notify backend
 window._wails.invoke = System.invoke;
+window._wails.clientId = clientId;
 
 // Register platform handlers (internal API)
 // Note: Window is the thisWindow instance (default export from window.ts)
@@ -77,20 +80,25 @@ window._wails.handleDragOver = handleDragOver;
 
 System.invoke("wails:runtime:ready");
 
-// Load optional window init scripts (fire and forget, matching current async behavior)
-// The backend identifies the window from the x-wails-window-id header
-fetch('/wails/init.js')
-    .then(r => r.ok && r.status !== 204 ? r.text() : null)
-    .then(js => { if (js) eval(js); })
-    .catch(() => {}); // Silently ignore errors
 
-fetch('/wails/init.css')
-    .then(r => r.ok && r.status !== 204 ? r.text() : null)
-    .then(css => {
-        if (css) {
-            const style = document.createElement('style');
-            style.textContent = css;
-            document.head.appendChild(style);
-        }
-    })
-    .catch(() => {}); // Silently ignore errors
+/**
+ * Loads a script from the given URL if it exists.
+ * Uses HEAD request to check existence, then injects a script tag.
+ * Silently ignores if the script doesn't exist.
+ */
+export function loadOptionalScript(url: string): Promise<void> {
+    return fetch(url, { method: 'HEAD' })
+        .then(response => {
+            if (response.ok) {
+                const script = document.createElement('script');
+                script.src = url;
+                document.head.appendChild(script);
+            }
+        })
+        .catch(() => {}); // Silently ignore - script is optional
+}
+
+// Load custom.js if available (used by server mode for WebSocket events, etc.)
+loadOptionalScript('/wails/custom.js');
+loadOptionalScript('/wails/init.js');
+loadOptionalScript('/wails/init.css');

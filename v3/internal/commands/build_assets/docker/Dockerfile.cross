@@ -1,6 +1,7 @@
 # Cross-compile Wails v3 apps to any platform
 #
 # Uses Zig as C compiler + macOS SDK for darwin targets
+# Supports both amd64 and arm64 host architectures
 #
 # Usage:
 #   docker build -t wails-cross -f Dockerfile.cross .
@@ -10,16 +11,21 @@
 #   docker run --rm -v $(pwd):/app wails-cross linux arm64
 #   docker run --rm -v $(pwd):/app wails-cross windows amd64
 #   docker run --rm -v $(pwd):/app wails-cross windows arm64
+#
+# Multi-arch build:
+#   docker buildx build --platform linux/amd64,linux/arm64 -t wails-cross -f Dockerfile.cross .
 
 FROM golang:1.25-alpine
 
 RUN apk add --no-cache curl xz nodejs npm
 
-# Install Zig
+# Install Zig - automatically selects correct binary for host architecture
 ARG ZIG_VERSION=0.14.0
-RUN curl -L "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" \
+ARG TARGETARCH
+RUN ZIG_ARCH=$(case "${TARGETARCH}" in arm64) echo "aarch64" ;; *) echo "x86_64" ;; esac) && \
+    curl -L "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}.tar.xz" \
     | tar -xJ -C /opt \
-    && ln -s /opt/zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/zig
+    && ln -s /opt/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}/zig /usr/local/bin/zig
 
 # Download macOS SDK (required for darwin targets)
 ARG MACOS_SDK_VERSION=14.5

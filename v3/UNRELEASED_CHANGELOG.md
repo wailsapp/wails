@@ -24,7 +24,6 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 - Fix JS/CSS options in WebviewWindowOptions not being executed when using URL navigation (not just HTML)
-- Fix SetProcessDpiAwarenessContext "Access is denied" error when DPI awareness is already set via application manifest (#4803)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
