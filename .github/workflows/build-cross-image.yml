@@ -97,7 +97,11 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Test cross-compilation for all platforms (3 parallel jobs, each builds both architectures)
+  # Test cross-compilation using wails3 task system (3 parallel jobs)
+  # Runs on Linux/amd64 runner - tests actual cross-compilation only:
+  # - darwin: cross-platform (arm64)
+  # - windows: cross-platform (arm64)
+  # - linux: cross-architecture (arm64 from amd64 runner)
   test-cross-compile:
     needs: build
     if: ${{ inputs.skip_tests != 'true' }}
@@ -105,7 +109,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [darwin, linux, windows]
+        include:
+          - os: darwin
+            arch: arm64
+            expected: "Mach-O 64-bit.*arm64"
+          - os: windows
+            arch: arm64
+            expected: "PE32.*Aarch64"
+          - os: linux
+            arch: arm64
+            expected: "ELF 64-bit LSB.*ARM aarch64"
 
     steps:
       - name: Checkout
@@ -155,111 +168,59 @@ jobs:
           echo "" >> go.mod
           echo "replace github.com/wailsapp/wails/v3 => ${{ github.workspace }}/v3" >> go.mod
 
-          # Generate bindings (required for frontend build)
-          wails3 generate bindings
-
-          # Build frontend (so Docker doesn't need wails3 CLI)
-          cd frontend && npm install && npm run build && cd ..
-
-      - name: Build ${{ matrix.os }}/amd64
+      - name: Cross-compile ${{ matrix.os }}/${{ matrix.arch }} via task
         run: |
           cd /tmp/test-wails-app
-          PLATFORM_FLAG=""
-          if [ "${{ matrix.os }}" = "linux" ]; then
-            PLATFORM_FLAG="--platform linux/amd64"
-          fi
+          wails3 task ${{ matrix.os }}:build ARCH=${{ matrix.arch }}
 
-          docker run --rm $PLATFORM_FLAG \
-            -v "$(pwd):/app" \
-            -v "${{ github.workspace }}/v3:${{ github.workspace }}/v3:ro" \
-            -e APP_NAME="test-wails-app" \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image_tag || 'latest' }} \
-            ${{ matrix.os }} amd64
-
-      - name: Build ${{ matrix.os }}/arm64
-        run: |
-          cd /tmp/test-wails-app
-          PLATFORM_FLAG=""
-          if [ "${{ matrix.os }}" = "linux" ]; then
-            PLATFORM_FLAG="--platform linux/arm64"
-          fi
-
-          docker run --rm $PLATFORM_FLAG \
-            -v "$(pwd):/app" \
-            -v "${{ github.workspace }}/v3:${{ github.workspace }}/v3:ro" \
-            -e APP_NAME="test-wails-app" \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image_tag || 'latest' }} \
-            ${{ matrix.os }} arm64
-
-      - name: Verify binaries
+      - name: Verify binary
         run: |
           cd /tmp/test-wails-app/bin
           ls -la
 
-          verify_binary() {
-            local binary="$1"
-            local expected="$2"
+          if [ "${{ matrix.os }}" = "windows" ]; then
+            BINARY="test-wails-app.exe"
+          else
+            BINARY="test-wails-app"
+          fi
 
-            echo "Checking: $binary"
-            FILE_OUTPUT=$(file "$binary")
-            echo "  $FILE_OUTPUT"
+          echo "Checking: $BINARY"
+          FILE_OUTPUT=$(file "$BINARY")
+          echo "  $FILE_OUTPUT"
 
-            if echo "$FILE_OUTPUT" | grep -qE "$expected"; then
-              echo "  ✅ Format verified"
-            else
-              echo "  ❌ Format mismatch! Expected: $expected"
-              exit 1
-            fi
-          }
-
-          case "${{ matrix.os }}" in
-            darwin)
-              verify_binary "test-wails-app-darwin-amd64" "Mach-O 64-bit.*x86_64"
-              verify_binary "test-wails-app-darwin-arm64" "Mach-O 64-bit.*arm64"
-              ;;
-            linux)
-              verify_binary "test-wails-app-linux-amd64" "ELF 64-bit LSB.*x86-64"
-              verify_binary "test-wails-app-linux-arm64" "ELF 64-bit LSB.*ARM aarch64"
-              ;;
-            windows)
-              verify_binary "test-wails-app-windows-amd64.exe" "PE32.*executable.*x86-64"
-              verify_binary "test-wails-app-windows-arm64.exe" "PE32.*executable.*Aarch64"
-              ;;
-          esac
+          if echo "$FILE_OUTPUT" | grep -qE "${{ matrix.expected }}"; then
+            echo "  ✅ Cross-compilation verified: ${{ matrix.os }}/${{ matrix.arch }}"
+          else
+            echo "  ❌ Format mismatch! Expected: ${{ matrix.expected }}"
+            exit 1
+          fi
 
       - name: Check library dependencies (Linux only)
         if: matrix.os == 'linux'
         run: |
           cd /tmp/test-wails-app/bin
 
-          check_libs() {
-            local binary="$1"
-            echo "## $binary"
-            echo ""
-            echo "### NEEDED libraries:"
-            readelf -d "$binary" | grep NEEDED || echo "No dynamic dependencies"
-            echo ""
+          echo "## Library Dependencies"
+          echo ""
+          echo "### NEEDED libraries:"
+          readelf -d test-wails-app | grep NEEDED || echo "No dynamic dependencies"
+          echo ""
 
-            NEEDED=$(readelf -d "$binary" | grep NEEDED)
-            MISSING=""
-            for lib in libwebkit2gtk-4.1.so libgtk-3.so libglib-2.0.so libc.so; do
-              if echo "$NEEDED" | grep -q "$lib"; then
-                echo "✅ $lib"
-              else
-                echo "❌ $lib MISSING"
-                MISSING="$MISSING $lib"
-              fi
-            done
-
-            if [ -n "$MISSING" ]; then
-              echo "ERROR: Missing required libraries:$MISSING"
-              exit 1
+          NEEDED=$(readelf -d test-wails-app | grep NEEDED)
+          MISSING=""
+          for lib in libwebkit2gtk-4.1.so libgtk-3.so libglib-2.0.so libc.so; do
+            if echo "$NEEDED" | grep -q "$lib"; then
+              echo "✅ $lib"
+            else
+              echo "❌ $lib MISSING"
+              MISSING="$MISSING $lib"
             fi
-            echo ""
-          }
+          done
 
-          check_libs "test-wails-app-linux-amd64"
-          check_libs "test-wails-app-linux-arm64"
+          if [ -n "$MISSING" ]; then
+            echo "ERROR: Missing required libraries:$MISSING"
+            exit 1
+          fi
 
   # Summary job
   test-summary:
@@ -279,12 +240,12 @@ jobs:
           fi
 
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Tested Platforms" >> $GITHUB_STEP_SUMMARY
-          echo "| Platform | amd64 | arm64 |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------|-------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Darwin | ✅ | ✅ |" >> $GITHUB_STEP_SUMMARY
-          echo "| Linux | ✅ | ✅ |" >> $GITHUB_STEP_SUMMARY
-          echo "| Windows | ✅ | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "### Cross-Compilation Tests (from Linux/amd64 runner)" >> $GITHUB_STEP_SUMMARY
+          echo "| Target | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Darwin/arm64 | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Windows/arm64 | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Linux/arm64 | ✅ |" >> $GITHUB_STEP_SUMMARY
 
           # Fail if any test failed
           if [ "${{ needs.test-cross-compile.result }}" != "success" ]; then
