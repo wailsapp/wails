@@ -185,7 +185,12 @@ jobs:
       - name: Cross-compile ${{ matrix.os }}/${{ matrix.arch }} via task
         run: |
           cd /tmp/test-wails-app
-          wails3 task ${{ matrix.os }}:build ARCH=${{ matrix.arch }}
+          # For Linux arm64 on amd64 runner, must use docker build (native gcc can't cross-compile)
+          if [ "${{ matrix.os }}" = "linux" ] && [ "${{ matrix.arch }}" = "arm64" ]; then
+            wails3 task linux:build:docker ARCH=arm64
+          else
+            wails3 task ${{ matrix.os }}:build ARCH=${{ matrix.arch }}
+          fi
 
       - name: Verify binary
         run: |
