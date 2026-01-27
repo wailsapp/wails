@@ -173,9 +173,8 @@ jobs:
           wails3 init -n test-wails-app -t vanilla
           cd test-wails-app
 
-          # Add replace directive to use the checked-out wails source
-          echo "" >> go.mod
-          echo "replace github.com/wailsapp/wails/v3 => ${{ github.workspace }}/v3" >> go.mod
+          # Update replace directive to use absolute path (wails3 init adds relative path)
+          sed -i 's|replace github.com/wailsapp/wails/v3 => .*|replace github.com/wailsapp/wails/v3 => ${{ github.workspace }}/v3|' go.mod
 
       - name: Cross-compile ${{ matrix.os }}/${{ matrix.arch }} via task
         run: |
