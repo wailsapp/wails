@@ -101,11 +101,3 @@ func (s *iosSystemTray) Show() {
 func (s *iosSystemTray) Hide() {
 	// iOS doesn't have system tray
 }
-
-func (s *iosSystemTray) onAttachedWindowHidden() {
-	// iOS doesn't have system tray
-}
-
-func (s *iosSystemTray) onAttachedWindowShown() {
-	// iOS doesn't have system tray
-}

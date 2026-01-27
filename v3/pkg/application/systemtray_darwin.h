@@ -17,7 +17,6 @@ NSImage* imageFromBytes(const unsigned char *bytes, int length);
 void systemTraySetIcon(void* nsStatusItem, void* nsImage, int position, bool isTemplate);
 void systemTrayDestroy(void* nsStatusItem);
 void showMenu(void* nsStatusItem, void *nsMenu);
-void systemTraySetHighlight(void* nsStatusItem, bool highlight);
 void systemTrayGetBounds(void* nsStatusItem, NSRect *rect, void **screen);
 NSRect NSScreen_frame(void* screen);
 void windowSetScreen(void* window, void* screen, int yOffset);

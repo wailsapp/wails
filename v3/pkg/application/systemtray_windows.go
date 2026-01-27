@@ -588,14 +588,6 @@ func (s *windowsSystemTray) Hide() {
 	}
 }
 
-func (s *windowsSystemTray) onAttachedWindowHidden() {
-	// No-op - Windows doesn't need special handling when attached window is hidden
-}
-
-func (s *windowsSystemTray) onAttachedWindowShown() {
-	// No-op - Windows doesn't need special handling when attached window is shown
-}
-
 func (s *windowsSystemTray) show() (w32.NOTIFYICONDATA, error) {
 	nid := s.newNotifyIconData()
 	nid.UFlags = w32.NIF_ICON | w32.NIF_MESSAGE

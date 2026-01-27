@@ -140,26 +140,6 @@ void systemTrayDestroy(void* nsStatusItem) {
 	});
 }
 
-void systemTraySetHighlight(void* nsStatusItem, bool highlight) {
-	NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
-	if (highlight) {
-		// Use dispatch_after to set highlight AFTER mouse up event clears it
-		// This is a known workaround for NSStatusBarButton highlight persistence
-		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.05 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-			[statusItem.button highlight:YES];
-		});
-	} else {
-		// For turning off highlight, do it immediately
-		if ([NSThread isMainThread]) {
-			[statusItem.button highlight:NO];
-		} else {
-			dispatch_async(dispatch_get_main_queue(), ^{
-				[statusItem.button highlight:NO];
-			});
-		}
-	}
-}
-
 void showMenu(void* nsStatusItem, void *nsMenu) {
 	// Show the menu on the main thread
 	dispatch_async(dispatch_get_main_queue(), ^{

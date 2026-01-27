@@ -72,18 +72,6 @@ func (s *macosSystemTray) openMenu() {
 	C.showMenu(s.nsStatusItem, s.nsMenu)
 }
 
-func (s *macosSystemTray) setHighlight(highlight bool) {
-	C.systemTraySetHighlight(s.nsStatusItem, C.bool(highlight))
-}
-
-func (s *macosSystemTray) onAttachedWindowHidden() {
-	s.setHighlight(false)
-}
-
-func (s *macosSystemTray) onAttachedWindowShown() {
-	s.setHighlight(true)
-}
-
 type button int
 
 const (

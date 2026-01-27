@@ -751,14 +751,6 @@ func (s *linuxSystemTray) Hide() {
 	// No-op
 }
 
-func (s *linuxSystemTray) onAttachedWindowHidden() {
-	// No-op - Linux doesn't need special handling when attached window is hidden
-}
-
-func (s *linuxSystemTray) onAttachedWindowShown() {
-	// No-op - Linux doesn't need special handling when attached window is shown
-}
-
 // tooltip is our data for a tooltip property.
 // Param names need to match the generated code...
 type tooltip = struct {
