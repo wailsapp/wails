@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/linux"
@@ -69,6 +70,12 @@ type App struct {
 	// ErrorFormatter overrides the formatting of errors returned by backend methods
 	ErrorFormatter ErrorFormatter
 
+	// PanicHandler is called when a panic occurs in a bound method.
+	// If not set, the panic will be logged and the application will continue.
+	// This is particularly useful on Linux where panics in cgo callbacks
+	// can cause signal handler issues.
+	PanicHandler PanicHandler
+
 	// CSS property to test for draggable elements. Default "--wails-draggable"
 	CSSDragProperty string
 
@@ -101,6 +108,18 @@ type App struct {
 }
 
 type ErrorFormatter func(error) any
+
+// PanicDetails contains information about a panic that occurred in a bound method
+type PanicDetails struct {
+	StackTrace     string
+	Error          error
+	Time           time.Time
+	FullStackTrace string
+}
+
+// PanicHandler is a function that handles panics in bound methods.
+// If not set, panics will be logged to the application logger.
+type PanicHandler func(*PanicDetails)
 
 type RGBA struct {
 	R uint8 `json:"r"`

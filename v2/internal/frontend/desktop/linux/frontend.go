@@ -466,6 +466,8 @@ func (f *Frontend) processMessage(message string) {
 	}
 
 	go func() {
+		defer handlePanic(f.frontendOptions.PanicHandler, f.logger)
+
 		result, err := f.dispatcher.ProcessMessage(message, f)
 		if err != nil {
 			f.logger.Error(err.Error())
