@@ -110,21 +110,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Darwin - both archs are cross-platform from Linux
-          - os: darwin
-            arch: amd64
-            expected: "Mach-O 64-bit.*x86_64"
+          # Darwin arm64 (Intel Macs are EOL, skip amd64)
           - os: darwin
             arch: arm64
             expected: "Mach-O 64-bit.*arm64"
-          # Windows - both archs are cross-platform from Linux
+          # Windows - both archs
           - os: windows
             arch: amd64
             expected: "PE32.*x86-64"
           - os: windows
             arch: arm64
             expected: "PE32.*Aarch64"
-          # Linux - only arm64 is cross-arch (amd64 would be native)
+          # Linux arm64 (amd64 would be native on runner)
           - os: linux
             arch: arm64
             expected: "ELF 64-bit LSB.*ARM aarch64"
@@ -271,7 +268,6 @@ jobs:
           echo "### Cross-Compilation Tests (from Linux/amd64 runner)" >> $GITHUB_STEP_SUMMARY
           echo "| Target | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Darwin/amd64 | ✅ |" >> $GITHUB_STEP_SUMMARY
           echo "| Darwin/arm64 | ✅ |" >> $GITHUB_STEP_SUMMARY
           echo "| Windows/amd64 | ✅ |" >> $GITHUB_STEP_SUMMARY
           echo "| Windows/arm64 | ✅ |" >> $GITHUB_STEP_SUMMARY
