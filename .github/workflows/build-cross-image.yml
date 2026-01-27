@@ -167,6 +167,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Pull and tag Docker image
+        run: |
+          # Pull the image from ghcr.io and tag it as 'wails-cross' for the task system
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image_tag || 'latest' }}
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image_tag || 'latest' }} wails-cross
+
       - name: Generate wails3 test project
         run: |
           cd /tmp
