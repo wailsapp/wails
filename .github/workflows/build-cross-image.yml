@@ -155,7 +155,10 @@ jobs:
           echo "" >> go.mod
           echo "replace github.com/wailsapp/wails/v3 => ${{ github.workspace }}/v3" >> go.mod
 
-          # Build frontend
+          # Generate bindings (required for frontend build)
+          wails3 generate bindings
+
+          # Build frontend (so Docker doesn't need wails3 CLI)
           cd frontend && npm install && npm run build && cd ..
 
       - name: Build ${{ matrix.os }}/amd64
