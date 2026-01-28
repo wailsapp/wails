@@ -13,10 +13,10 @@ import { Card, CardGrid, Tabs, TabItem, Steps } from "@astrojs/starlight/compone
 ```bash
 # Install Go 1.25+, then:
 go install github.com/wailsapp/wails/v3/cmd/wails3@latest
-wails3 doctor  # Verify installation
+wails3 setup   # Interactive setup wizard (experimental)
 ```
 
-If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/first-app)
+Or manually verify with `wails3 doctor`. [Skip to First App →](/quick-start/first-app)
 :::
 
 ## Step-by-Step Installation
@@ -173,7 +173,19 @@ If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/fir
 
    This installs the `wails3` command to `~/go/bin` (or `%USERPROFILE%\go\bin` on Windows).
 
-4. **Verify Installation**
+4. **Run Setup Wizard (Recommended)**
+
+   ```bash
+   wails3 setup
+   ```
+
+   The setup wizard will check your dependencies, help install missing ones, and configure project defaults.
+
+   :::caution[Experimental]
+   The setup wizard is new and primarily tested on Linux. If you encounter issues, [report them](https://github.com/wailsapp/wails/issues/4904) and use `wails3 doctor` instead.
+   :::
+
+5. **Verify Installation**
 
    ```bash
    wails3 doctor
@@ -228,7 +240,7 @@ If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/fir
    Your `~/go/bin` isn't in PATH. See step 1 above to fix this, then restart your terminal.
    :::
 
-5. **Install npm (Optional but Recommended)**
+6. **Install npm (Optional but Recommended)**
 
    Most Wails templates use npm for frontend tooling.
 

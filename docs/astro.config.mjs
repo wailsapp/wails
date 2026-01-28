@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from "astro/config";
+import { fileURLToPath } from "node:url";
 import starlight from "@astrojs/starlight";
 import sitemap from "@astrojs/sitemap";
 import starlightLinksValidator from "starlight-links-validator";
@@ -12,6 +13,13 @@ import react from '@astrojs/react';
 // https://astro.build/config
 export default defineConfig({
   site: "https://wails.io",
+  vite: {
+    resolve: {
+      alias: {
+        '@components': fileURLToPath(new URL('./src/components', import.meta.url))
+      }
+    }
+  },
   trailingSlash: "ignore",
   compressHTML: true,
   output: "static",

@@ -4,7 +4,7 @@ sidebar:
   order: 10
 ---
 
-import { Tabs, TabItem } from "@astrojs/starlight/components";
+import { Tabs, TabItem, Aside } from "@astrojs/starlight/components";
 
 ## Supported Platforms
 
@@ -15,7 +15,11 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 ## Dependencies
 
-Wails has a number of common dependencies that are required before installation:
+Wails has a number of common dependencies that are required before installation.
+
+<Aside type="tip">
+After installing the Wails CLI, you can run `wails3 setup` to automatically check and help install these dependencies.
+</Aside>
 
 <Tabs>
   <TabItem label="Go (At least 1.24)" icon="seti:go">
@@ -98,11 +102,35 @@ When using the development version, all generated projects will use Go's
 [replace](https://go.dev/ref/mod#go-mod-file-replace) directive to ensure
 projects use the development version of Wails.
 
-## System Check
+## Next Steps
 
-Running `wails3 doctor` will check if you have the correct dependencies
-installed. If not, it will advise on what is missing and help on how to rectify
-any problems.
+After installing the CLI, run the setup wizard to configure your development environment:
+
+```shell
+wails3 setup
+```
+
+<Aside type="caution" title="Experimental">
+The setup wizard is new and primarily tested on Linux. If you encounter issues, please [report them](https://github.com/wailsapp/wails/issues/4904) and use the manual dependency installation steps below.
+</Aside>
+
+The setup wizard will:
+- Check and help install platform dependencies
+- Configure project defaults (author info, bundle ID prefix)
+- Optionally set up Docker for cross-platform builds
+- Configure code signing (if needed)
+
+See the [Setup Guide](/docs/getting-started/setup) for more details.
+
+## Manual Dependency Installation
+
+If you prefer to install dependencies manually, or if the setup wizard doesn't work on your system, follow the platform-specific instructions above and then run:
+
+```shell
+wails3 doctor
+```
+
+This will check if you have the correct dependencies installed and advise on what is missing.
 
 ## The `wails3` command appears to be missing?
 

@@ -9,4 +9,4 @@ cmd/wails3/wails
 /cmd/wails3/ui/.task/
 !internal/commands/webview2/MicrosoftEdgeWebview2Setup.exe
 internal/commands/appimage_testfiles/appimage_testfiles
-testiosapp/
+testiosapp/wails3

@@ -1,6 +1,6 @@
 # Unreleased Changes
 
-<!-- 
+<!--
 This file is used to collect changelog entries for the next v3-alpha release.
 Add your changes under the appropriate sections below.
 
@@ -17,12 +17,16 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add experimental `wails3 setup` wizard for interactive project setup and dependency checking
+- Add `--json` flag to `wails3 doctor` for machine-readable output
+- Add signing status section to `wails3 doctor` command
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix npm detection on Linux to check PATH in addition to package manager
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

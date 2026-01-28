@@ -2,7 +2,9 @@ package doctor
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
@@ -24,51 +26,84 @@ import (
 	"github.com/wailsapp/wails/v3/internal/version"
 )
 
-func Run() (err error) {
+type DoctorReport struct {
+	System       SystemReport       `json:"system"`
+	Build        BuildReport        `json:"build"`
+	Dependencies map[string]string  `json:"dependencies"`
+	Signing      SigningStatus      `json:"signing"`
+	Diagnostics  []DiagnosticResult `json:"diagnostics"`
+	Ready        bool               `json:"ready"`
+}
 
-	get, err := buildinfo.Get()
+type SystemReport struct {
+	Name         string            `json:"name"`
+	Version      string            `json:"version"`
+	ID           string            `json:"id"`
+	Branding     string            `json:"branding,omitempty"`
+	Platform     string            `json:"platform"`
+	Architecture string            `json:"architecture"`
+	CPU          string            `json:"cpu,omitempty"`
+	GPU          string            `json:"gpu,omitempty"`
+	Memory       string            `json:"memory,omitempty"`
+	Extras       map[string]string `json:"extras,omitempty"`
+}
+
+type BuildReport struct {
+	WailsVersion string            `json:"wailsVersion"`
+	GoVersion    string            `json:"goVersion"`
+	Settings     map[string]string `json:"settings,omitempty"`
+}
+
+func Run(jsonOutput bool) (err error) {
+	report, err := collectReport(jsonOutput)
 	if err != nil {
 		return err
 	}
-	_ = get
 
-	term.Header("Wails Doctor")
+	if jsonOutput {
+		encoder := json.NewEncoder(os.Stdout)
+		encoder.SetIndent("", "  ")
+		return encoder.Encode(report)
+	}
 
-	spinner, _ := pterm.DefaultSpinner.WithRemoveWhenDone().Start("Scanning system - Please wait (this may take a long time)...")
+	return renderReport(report)
+}
 
-	defer func() {
-		if err != nil {
+func collectReport(quiet bool) (*DoctorReport, error) {
+	report := &DoctorReport{
+		Dependencies: make(map[string]string),
+		Ready:        true,
+	}
+
+	_, err := buildinfo.Get()
+	if err != nil {
+		return nil, err
+	}
+
+	var spinner *pterm.SpinnerPrinter
+	if !quiet {
+		term.Header("Wails Doctor")
+		spinner, _ = pterm.DefaultSpinner.WithRemoveWhenDone().Start("Scanning system - Please wait (this may take a long time)...")
+	}
+
+	BuildInfo, ok := debug.ReadBuildInfo()
+	if !ok {
+		if spinner != nil {
 			spinner.Fail()
 		}
-	}()
-
-	/** Build **/
-
-	// BuildSettings contains the build settings for the application
-	var BuildSettings map[string]string
-
-	// BuildInfo contains the build info for the application
-	var BuildInfo *debug.BuildInfo
-
-	var ok bool
-	BuildInfo, ok = debug.ReadBuildInfo()
-	if !ok {
-		return fmt.Errorf("could not read build info from binary")
+		return nil, fmt.Errorf("could not read build info from binary")
 	}
-	BuildSettings = lo.Associate(BuildInfo.Settings, func(setting debug.BuildSetting) (string, string) {
+	BuildSettings := lo.Associate(BuildInfo.Settings, func(setting debug.BuildSetting) (string, string) {
 		return setting.Key, setting.Value
 	})
 
-	/** Operating System **/
-
-	// Get system info
 	info, err := operatingsystem.Info()
 	if err != nil {
-		term.Error("Failed to get system information")
-		return err
+		if spinner != nil {
+			spinner.Fail()
+		}
+		return nil, err
 	}
-
-	/** Wails **/
 
 	wailsPackage, _ := lo.Find(BuildInfo.Deps, func(dep *debug.Module) bool {
 		return dep.Path == "github.com/wailsapp/wails/v3"
@@ -77,7 +112,6 @@ func Run() (err error) {
 	wailsVersion := strings.TrimSpace(version.String())
 	if wailsPackage != nil && wailsPackage.Replace != nil {
 		wailsVersion = "(local) => " + filepath.ToSlash(wailsPackage.Replace.Path)
-		// Get the latest commit hash
 		repo, err := git.PlainOpen(filepath.Join(wailsPackage.Replace.Path, ".."))
 		if err == nil {
 			head, err := repo.Head()
@@ -87,157 +121,140 @@ func Run() (err error) {
 		}
 	}
 
-	platformExtras, ok := getInfo()
-
-	dependencies := make(map[string]string)
-	checkPlatformDependencies(dependencies, &ok)
-
-	spinner.Success()
-
-	/** Output **/
-
-	term.Section("System")
-
-	systemTabledata := pterm.TableData{
-		{pterm.Sprint("Name"), info.Name},
-		{pterm.Sprint("Version"), info.Version},
-		{pterm.Sprint("ID"), info.ID},
-		{pterm.Sprint("Branding"), info.Branding},
-
-		{pterm.Sprint("Platform"), runtime.GOOS},
-		{pterm.Sprint("Architecture"), runtime.GOARCH},
+	platformExtras, platformOK := getInfo()
+	if !platformOK {
+		report.Ready = false
 	}
 
-	mapKeys := lo.Keys(platformExtras)
-	slices.Sort(mapKeys)
-	for _, key := range mapKeys {
-		systemTabledata = append(systemTabledata, []string{key, platformExtras[key]})
+	checkPlatformDependencies(report.Dependencies, &report.Ready)
+
+	report.System = SystemReport{
+		Name:         info.Name,
+		Version:      info.Version,
+		ID:           info.ID,
+		Branding:     info.Branding,
+		Platform:     runtime.GOOS,
+		Architecture: runtime.GOARCH,
+		Extras:       platformExtras,
 	}
 
-	// Probe CPU
 	cpus, _ := ghw.CPU()
-	if cpus != nil {
-		prefix := "CPU"
-		for idx, cpu := range cpus.Processors {
-			if len(cpus.Processors) > 1 {
-				prefix = "CPU " + strconv.Itoa(idx+1)
-			}
-			systemTabledata = append(systemTabledata, []string{prefix, cpu.Model})
-		}
-	} else {
-		systemTabledata = append(systemTabledata, []string{"CPU", "Unknown"})
+	if cpus != nil && len(cpus.Processors) > 0 {
+		report.System.CPU = cpus.Processors[0].Model
 	}
 
-	// Probe GPU
 	gpu, _ := ghw.GPU(ghw.WithDisableWarnings())
-	if gpu != nil {
-		for idx, card := range gpu.GraphicsCards {
-			details := "Unknown"
-			prefix := "GPU " + strconv.Itoa(idx+1)
-			if card.DeviceInfo != nil {
-				details = fmt.Sprintf("%s (%s) - Driver: %s ", card.DeviceInfo.Product.Name, card.DeviceInfo.Vendor.Name, card.DeviceInfo.Driver)
-			}
-			systemTabledata = append(systemTabledata, []string{prefix, details})
+	if gpu != nil && len(gpu.GraphicsCards) > 0 {
+		card := gpu.GraphicsCards[0]
+		if card.DeviceInfo != nil {
+			report.System.GPU = fmt.Sprintf("%s (%s)", card.DeviceInfo.Product.Name, card.DeviceInfo.Vendor.Name)
 		}
-	} else {
-		if runtime.GOOS == "darwin" {
-			var numCoresValue string
-			cmd := exec.Command("sh", "-c", "ioreg -l | grep gpu-core-count")
-			output, err := cmd.Output()
-			if err == nil {
-				// Look for an `=` sign, optional spaces and then an integer
-				re := regexp.MustCompile(`= *(\d+)`)
-				matches := re.FindAllStringSubmatch(string(output), -1)
-				numCoresValue = "Unknown"
-				if len(matches) > 0 {
-					numCoresValue = matches[0][1]
-				}
-
+	} else if runtime.GOOS == "darwin" {
+		cmd := exec.Command("sh", "-c", "ioreg -l | grep gpu-core-count")
+		output, err := cmd.Output()
+		if err == nil {
+			re := regexp.MustCompile(`= *(\d+)`)
+			matches := re.FindAllStringSubmatch(string(output), -1)
+			if len(matches) > 0 {
+				report.System.GPU = matches[0][1] + " cores"
 			}
-
-			// Run `system_profiler SPDisplaysDataType | grep Metal`
-			var metalSupport string
-			cmd = exec.Command("sh", "-c", "system_profiler SPDisplaysDataType | grep Metal")
-			output, err = cmd.Output()
-			if err == nil {
-				metalSupport = ", " + strings.TrimSpace(string(output))
-			}
-			systemTabledata = append(systemTabledata, []string{"GPU", numCoresValue + " cores" + metalSupport})
-
-		} else {
-			systemTabledata = append(systemTabledata, []string{"GPU", "Unknown"})
 		}
 	}
 
 	memory, _ := ghw.Memory()
-	var memoryText = "Unknown"
 	if memory != nil {
-		memoryText = strconv.Itoa(int(memory.TotalPhysicalBytes/1024/1024/1024)) + "GB"
-	} else {
-		if runtime.GOOS == "darwin" {
-			cmd := exec.Command("sh", "-c", "system_profiler SPHardwareDataType | grep 'Memory'")
-			output, err := cmd.Output()
-			if err == nil {
-				output = bytes.Replace(output, []byte("Memory: "), []byte(""), 1)
-				memoryText = strings.TrimSpace(string(output))
-			}
+		report.System.Memory = strconv.Itoa(int(memory.TotalPhysicalBytes/1024/1024/1024)) + "GB"
+	} else if runtime.GOOS == "darwin" {
+		cmd := exec.Command("sh", "-c", "system_profiler SPHardwareDataType | grep 'Memory'")
+		output, err := cmd.Output()
+		if err == nil {
+			output = bytes.Replace(output, []byte("Memory: "), []byte(""), 1)
+			report.System.Memory = strings.TrimSpace(string(output))
 		}
 	}
-	systemTabledata = append(systemTabledata, []string{"Memory", memoryText})
 
-	err = pterm.DefaultTable.WithBoxed().WithData(systemTabledata).Render()
-	if err != nil {
-		return err
+	report.Build = BuildReport{
+		WailsVersion: wailsVersion,
+		GoVersion:    runtime.Version(),
+		Settings:     BuildSettings,
 	}
 
-	// Build Environment
+	report.Signing = CheckSigning()
+	report.Diagnostics = RunDiagnostics()
+
+	if len(report.Diagnostics) > 0 {
+		report.Ready = false
+	}
+
+	if spinner != nil {
+		spinner.Success()
+	}
+
+	return report, nil
+}
+
+func renderReport(report *DoctorReport) error {
+	term.Section("System")
+
+	systemTabledata := pterm.TableData{
+		{"Name", report.System.Name},
+		{"Version", report.System.Version},
+		{"ID", report.System.ID},
+		{"Branding", report.System.Branding},
+		{"Platform", report.System.Platform},
+		{"Architecture", report.System.Architecture},
+	}
+
+	mapKeys := lo.Keys(report.System.Extras)
+	slices.Sort(mapKeys)
+	for _, key := range mapKeys {
+		systemTabledata = append(systemTabledata, []string{key, report.System.Extras[key]})
+	}
+
+	if report.System.CPU != "" {
+		systemTabledata = append(systemTabledata, []string{"CPU", report.System.CPU})
+	}
+	if report.System.GPU != "" {
+		systemTabledata = append(systemTabledata, []string{"GPU", report.System.GPU})
+	}
+	if report.System.Memory != "" {
+		systemTabledata = append(systemTabledata, []string{"Memory", report.System.Memory})
+	}
+
+	if err := pterm.DefaultTable.WithBoxed().WithData(systemTabledata).Render(); err != nil {
+		return err
+	}
 
 	term.Section("Build Environment")
 
 	tableData := pterm.TableData{
-		{"Wails CLI", wailsVersion},
-		{"Go Version", runtime.Version()},
+		{"Wails CLI", report.Build.WailsVersion},
+		{"Go Version", report.Build.GoVersion},
 	}
 
-	if buildInfo, _ := debug.ReadBuildInfo(); buildInfo != nil {
-		buildSettingToName := map[string]string{
-			"vcs.revision": "Revision",
-			"vcs.modified": "Modified",
-		}
-		for _, buildSetting := range buildInfo.Settings {
-			name := buildSettingToName[buildSetting.Key]
-			if name == "" {
-				continue
-			}
-			tableData = append(tableData, []string{name, buildSetting.Value})
-		}
-	}
-
-	mapKeys = lo.Keys(BuildSettings)
+	mapKeys = lo.Keys(report.Build.Settings)
 	slices.Sort(mapKeys)
 	for _, key := range mapKeys {
-		tableData = append(tableData, []string{key, BuildSettings[key]})
+		tableData = append(tableData, []string{key, report.Build.Settings[key]})
 	}
 
-	err = pterm.DefaultTable.WithBoxed(true).WithData(tableData).Render()
-	if err != nil {
+	if err := pterm.DefaultTable.WithBoxed(true).WithData(tableData).Render(); err != nil {
 		return err
 	}
 
-	// Dependencies
 	term.Section("Dependencies")
 	dependenciesBox := pterm.DefaultBox.WithTitleBottomCenter().WithTitle(pterm.Gray("*") + " - Optional Dependency")
-	dependencyTableData := pterm.TableData{}
-	if len(dependencies) == 0 {
+	if len(report.Dependencies) == 0 {
 		pterm.Info.Println("No dependencies found")
 	} else {
+		var dependencyTableData pterm.TableData
 		var optionals pterm.TableData
-		mapKeys = lo.Keys(dependencies)
+		mapKeys = lo.Keys(report.Dependencies)
 		for _, key := range mapKeys {
-			if strings.HasPrefix(dependencies[key], "*") {
-				optionals = append(optionals, []string{key, dependencies[key]})
+			if strings.HasPrefix(report.Dependencies[key], "*") {
+				optionals = append(optionals, []string{key, report.Dependencies[key]})
 			} else {
-				dependencyTableData = append(dependencyTableData, []string{key, dependencies[key]})
+				dependencyTableData = append(dependencyTableData, []string{key, report.Dependencies[key]})
 			}
 		}
 		dependencyTableData = append(dependencyTableData, optionals...)
@@ -245,15 +262,22 @@ func Run() (err error) {
 		dependenciesBox.Println(dependenciesTableString)
 	}
 
-	// Run diagnostics after system info
-	term.Section("Checking for issues")
+	term.Section("Signing")
+	signingTableData := pterm.TableData{}
+	signingMap := formatSigningStatus(report.Signing)
+	for key, value := range signingMap {
+		signingTableData = append(signingTableData, []string{key, value})
+	}
+	if err := pterm.DefaultTable.WithBoxed(true).WithData(signingTableData).Render(); err != nil {
+		return err
+	}
 
-	diagnosticResults := RunDiagnostics()
-	if len(diagnosticResults) == 0 {
+	term.Section("Checking for issues")
+	if len(report.Diagnostics) == 0 {
 		pterm.Success.Println("No issues found")
 	} else {
 		pterm.Warning.Println("Found potential issues:")
-		for _, result := range diagnosticResults {
+		for _, result := range report.Diagnostics {
 			pterm.Printf("• %s: %s\n", result.TestName, result.ErrorMsg)
 			url := result.HelpURL
 			if strings.HasPrefix(url, "/") {
@@ -264,7 +288,7 @@ func Run() (err error) {
 	}
 
 	term.Section("Diagnosis")
-	if !ok {
+	if !report.Ready {
 		term.Warning("There are some items above that need addressing!")
 	} else {
 		term.Success("Your system is ready for Wails development!")

@@ -49,7 +49,12 @@ func main() {
 	pkg.Action(func() error {
 		return commands.Package(&pkgFlags, pkg.OtherArgs())
 	})
-	app.NewSubCommandFunction("doctor", "System status report", commands.Doctor)
+	doctorCmd := app.NewSubCommand("doctor", "System status report")
+	var doctorFlags flags.Doctor
+	doctorCmd.AddFlags(&doctorFlags)
+	doctorCmd.Action(func() error {
+		return commands.Doctor(&doctorFlags)
+	})
 	app.NewSubCommandFunction("releasenotes", "Show release notes", commands.ReleaseNotes)
 
 	task := app.NewSubCommand("task", "Run and list tasks")
@@ -104,7 +109,7 @@ func main() {
 	})
 
 	// Setup commands
-	setup := app.NewSubCommand("setup", "Project setup wizards")
+	setup := app.NewSubCommandFunction("setup", "Project setup wizards", commands.Setup)
 	setupSigning := setup.NewSubCommand("signing", "Configure code signing")
 	var setupSigningFlags flags.SigningSetup
 	setupSigning.AddFlags(&setupSigningFlags)
@@ -127,10 +132,10 @@ func main() {
 		return commands.SignWrapper(&signWrapperFlags, sign.OtherArgs())
 	})
 
-    // iOS tools
-    ios := app.NewSubCommand("ios", "iOS tooling")
-    ios.NewSubCommandFunction("overlay:gen", "Generate Go overlay for iOS bridge shim", commands.IOSOverlayGen)
-    ios.NewSubCommandFunction("xcode:gen", "Generate Xcode project in output directory", commands.IOSXcodeGen)
+	// iOS tools
+	ios := app.NewSubCommand("ios", "iOS tooling")
+	ios.NewSubCommandFunction("overlay:gen", "Generate Go overlay for iOS bridge shim", commands.IOSOverlayGen)
+	ios.NewSubCommandFunction("xcode:gen", "Generate Xcode project in output directory", commands.IOSXcodeGen)
 
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)
