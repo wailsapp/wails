@@ -137,6 +137,12 @@ func (m *MessageProcessor) HandleRuntimeCallWithIDs(ctx context.Context, req *Ru
 }
 
 func (m *MessageProcessor) getTargetWindow(req *RuntimeRequest) (Window, string) {
+	// Check for browser window first (server mode)
+	if req.ClientID != "" {
+		if browserWindow := GetBrowserWindow(req.ClientID); browserWindow != nil {
+			return browserWindow, browserWindow.Name()
+		}
+	}
 	if req.WebviewWindowName != "" {
 		window, _ := globalApplication.Window.GetByName(req.WebviewWindowName)
 		return window, req.WebviewWindowName

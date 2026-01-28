@@ -1,6 +1,8 @@
 # Cross-compile Wails v3 apps to any platform
 #
-# Uses Zig as C compiler + macOS SDK for darwin targets
+# Darwin: Zig + macOS SDK
+# Linux: GCC (use --platform to match target arch)
+# Windows: Zig + bundled mingw
 #
 # Usage:
 #   docker build -t wails-cross -f Dockerfile.cross .
@@ -10,16 +12,30 @@
 #   docker run --rm -v $(pwd):/app wails-cross linux arm64
 #   docker run --rm -v $(pwd):/app wails-cross windows amd64
 #   docker run --rm -v $(pwd):/app wails-cross windows arm64
+#
+# Multi-arch build:
+#   docker buildx build --platform linux/amd64,linux/arm64 -t wails-cross -f Dockerfile.cross .
 
-FROM golang:1.25-alpine
+FROM golang:1.25-bookworm
 
-RUN apk add --no-cache curl xz nodejs npm
+ARG TARGETARCH
 
-# Install Zig
+# Install base tools, GCC, and GTK/WebKit dev packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl xz-utils nodejs npm pkg-config gcc libc6-dev \
+    libgtk-3-dev libwebkit2gtk-4.1-dev \
+    libgtk-4-dev libwebkitgtk-6.0-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Note: For Linux cross-compilation, use --platform to match target architecture
+# e.g., docker run --platform linux/amd64 ... for amd64 targets
+
+# Install Zig - automatically selects correct binary for host architecture
 ARG ZIG_VERSION=0.14.0
-RUN curl -L "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" \
+RUN ZIG_ARCH=$(case "${TARGETARCH}" in arm64) echo "aarch64" ;; *) echo "x86_64" ;; esac) && \
+    curl -L "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}.tar.xz" \
     | tar -xJ -C /opt \
-    && ln -s /opt/zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/zig
+    && ln -s /opt/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}/zig /usr/local/bin/zig
 
 # Download macOS SDK (required for darwin targets)
 ARG MACOS_SDK_VERSION=14.5
@@ -29,7 +45,9 @@ RUN curl -L "https://github.com/joseluisq/macosx-sdks/releases/download/${MACOS_
 
 ENV MACOS_SDK_PATH=/opt/macos-sdk
 
-# Create zig cc wrappers for each target
+# Create Zig CC wrappers for Darwin and Windows targets
+# (Linux uses native GCC with --platform flag for architecture matching)
+
 # Darwin arm64
 COPY <<'ZIGWRAP' /usr/local/bin/zcc-darwin-arm64
 #!/bin/sh
@@ -70,45 +88,7 @@ exec zig cc -fno-sanitize=all -target x86_64-macos-none -isysroot /opt/macos-sdk
 ZIGWRAP
 RUN chmod +x /usr/local/bin/zcc-darwin-amd64
 
-# Linux amd64
-COPY <<'ZIGWRAP' /usr/local/bin/zcc-linux-amd64
-#!/bin/sh
-ARGS=""
-SKIP_NEXT=0
-for arg in "$@"; do
-    if [ $SKIP_NEXT -eq 1 ]; then
-        SKIP_NEXT=0
-        continue
-    fi
-    case "$arg" in
-        -target) SKIP_NEXT=1 ;;
-        *) ARGS="$ARGS $arg" ;;
-    esac
-done
-exec zig cc -target x86_64-linux-musl $ARGS
-ZIGWRAP
-RUN chmod +x /usr/local/bin/zcc-linux-amd64
-
-# Linux arm64
-COPY <<'ZIGWRAP' /usr/local/bin/zcc-linux-arm64
-#!/bin/sh
-ARGS=""
-SKIP_NEXT=0
-for arg in "$@"; do
-    if [ $SKIP_NEXT -eq 1 ]; then
-        SKIP_NEXT=0
-        continue
-    fi
-    case "$arg" in
-        -target) SKIP_NEXT=1 ;;
-        *) ARGS="$ARGS $arg" ;;
-    esac
-done
-exec zig cc -target aarch64-linux-musl $ARGS
-ZIGWRAP
-RUN chmod +x /usr/local/bin/zcc-linux-arm64
-
-# Windows amd64
+# Windows amd64 - uses Zig's bundled mingw
 COPY <<'ZIGWRAP' /usr/local/bin/zcc-windows-amd64
 #!/bin/sh
 ARGS=""
@@ -128,7 +108,7 @@ exec zig cc -target x86_64-windows-gnu $ARGS
 ZIGWRAP
 RUN chmod +x /usr/local/bin/zcc-windows-amd64
 
-# Windows arm64
+# Windows arm64 - uses Zig's bundled mingw
 COPY <<'ZIGWRAP' /usr/local/bin/zcc-windows-arm64
 #!/bin/sh
 ARGS=""
@@ -157,13 +137,42 @@ OS=${1:-darwin}
 ARCH=${2:-arm64}
 
 case "${OS}-${ARCH}" in
-    darwin-arm64|darwin-aarch64) export CC=zcc-darwin-arm64; export GOARCH=arm64; export GOOS=darwin ;;
-    darwin-amd64|darwin-x86_64)  export CC=zcc-darwin-amd64; export GOARCH=amd64; export GOOS=darwin ;;
-    linux-arm64|linux-aarch64)   export CC=zcc-linux-arm64;  export GOARCH=arm64; export GOOS=linux ;;
-    linux-amd64|linux-x86_64)    export CC=zcc-linux-amd64;  export GOARCH=amd64; export GOOS=linux ;;
-    windows-arm64|windows-aarch64) export CC=zcc-windows-arm64; export GOARCH=arm64; export GOOS=windows ;;
-    windows-amd64|windows-x86_64)  export CC=zcc-windows-amd64; export GOARCH=amd64; export GOOS=windows ;;
-    *) echo "Usage: <os> <arch>"; echo "  os: darwin, linux, windows"; echo "  arch: amd64, arm64"; exit 1 ;;
+    darwin-arm64|darwin-aarch64)
+        export CC=zcc-darwin-arm64
+        export GOARCH=arm64
+        export GOOS=darwin
+        ;;
+    darwin-amd64|darwin-x86_64)
+        export CC=zcc-darwin-amd64
+        export GOARCH=amd64
+        export GOOS=darwin
+        ;;
+    linux-arm64|linux-aarch64)
+        export CC=gcc
+        export GOARCH=arm64
+        export GOOS=linux
+        ;;
+    linux-amd64|linux-x86_64)
+        export CC=gcc
+        export GOARCH=amd64
+        export GOOS=linux
+        ;;
+    windows-arm64|windows-aarch64)
+        export CC=zcc-windows-arm64
+        export GOARCH=arm64
+        export GOOS=windows
+        ;;
+    windows-amd64|windows-x86_64)
+        export CC=zcc-windows-amd64
+        export GOARCH=amd64
+        export GOOS=windows
+        ;;
+    *)
+        echo "Usage: <os> <arch>"
+        echo "  os: darwin, linux, windows"
+        echo "  arch: amd64, arm64"
+        exit 1
+        ;;
 esac
 
 export CGO_ENABLED=1

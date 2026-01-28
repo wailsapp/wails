@@ -64,8 +64,11 @@ export {
     clientId,
 } from "./runtime.js";
 
+import { clientId } from "./runtime.js";
+
 // Notify backend
 window._wails.invoke = System.invoke;
+window._wails.clientId = clientId;
 
 // Register platform handlers (internal API)
 // Note: Window is the thisWindow instance (default export from window.ts)
@@ -78,3 +81,23 @@ window._wails.handleDragLeave = handleDragLeave;
 window._wails.handleDragOver = handleDragOver;
 
 System.invoke("wails:runtime:ready");
+
+/**
+ * Loads a script from the given URL if it exists.
+ * Uses HEAD request to check existence, then injects a script tag.
+ * Silently ignores if the script doesn't exist.
+ */
+export function loadOptionalScript(url: string): Promise<void> {
+    return fetch(url, { method: 'HEAD' })
+        .then(response => {
+            if (response.ok) {
+                const script = document.createElement('script');
+                script.src = url;
+                document.head.appendChild(script);
+            }
+        })
+        .catch(() => {}); // Silently ignore - script is optional
+}
+
+// Load custom.js if available (used by server mode for WebSocket events, etc.)
+loadOptionalScript('/wails/custom.js');
