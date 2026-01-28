@@ -1,0 +1,75 @@
+# This file contains the configuration for this project.
+# When you update `info` or `fileAssociations`, run `wails3 task common:update:build-assets` to update the assets.
+# Note that this will overwrite any changes you have made to the assets.
+version: '3'
+
+# This information is used to generate the build assets.
+info:
+  companyName: "My Company" # The name of the company
+  productName: "My Product" # The name of the application
+  productIdentifier: "com.mycompany.myproduct" # The unique product identifier
+  description: "A program that does X" # The application description
+  copyright: "(c) 2025, My Company" # Copyright text
+  comments: "Some Product Comments" # Comments
+  version: "0.0.1" # The application version
+
+# iOS build configuration (uncomment to customise iOS project generation)
+# Note: Keys under `ios` OVERRIDE values under `info` when set.
+# ios:
+#   # The iOS bundle identifier used in the generated Xcode project (CFBundleIdentifier)
+#   bundleID: "com.mycompany.myproduct"
+#   # The display name shown under the app icon (CFBundleDisplayName/CFBundleName)
+#   displayName: "My Product"
+#   # The app version to embed in Info.plist (CFBundleShortVersionString/CFBundleVersion)
+#   version: "0.0.1"
+#   # The company/organisation name for templates and project settings
+#   company: "My Company"
+#   # Additional comments to embed in Info.plist metadata
+#   comments: "Some Product Comments"
+
+# Dev mode configuration
+dev_mode:
+  root_path: .
+  log_level: warn
+  debounce: 1000
+  ignore:
+    dir:
+      - .git
+      - node_modules
+      - frontend
+      - bin
+    file:
+      - .DS_Store
+      - .gitignore
+      - .gitkeep
+    watched_extension:
+      - "*.go"
+      - "*.js" # Watch for changes to JS/TS files included using the //wails:include directive.
+      - "*.ts" # The frontend directory will be excluded entirely by the setting above.
+    git_ignore: true
+  executes:
+    - cmd: wails3 build DEV=true
+      type: blocking
+    - cmd: wails3 task common:dev:frontend
+      type: background
+    - cmd: wails3 task run
+      type: primary
+
+# File Associations
+# More information at: https://v3.wails.io/noit/done/yet
+fileAssociations:
+#  - ext: wails
+#    name: Wails
+#    description: Wails Application File
+#    iconName: wailsFileIcon
+#    role: Editor
+#  - ext: jpg
+#    name: JPEG
+#    description: Image File
+#    iconName: jpegFileIcon
+#    role: Editor
+#    mimeType: image/jpeg  # (optional)
+
+# Other data
+other:
+  - name: My Other Data

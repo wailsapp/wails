@@ -1,0 +1,192 @@
+:root {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+        "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+        sans-serif;
+    font-size: 16px;
+    line-height: 1.4;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.92);
+    background-color: rgba(27, 38, 54, 1);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+}
+
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 400;
+    src: local(""),
+    url("./Inter-Medium.ttf") format("truetype");
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.app {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 18px;
+    box-sizing: border-box;
+}
+
+.container {
+    width: min(860px, 100%);
+}
+
+.header {
+    margin-bottom: 14px;
+}
+
+.title {
+    font-size: 22px;
+    font-weight: 650;
+    letter-spacing: 0.2px;
+}
+
+.subtitle {
+    margin-top: 6px;
+    opacity: 0.9;
+    font-size: 14px;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.25);
+}
+
+.row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    appearance: none;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.92);
+    padding: 9px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.24);
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-primary {
+    background: rgba(99, 102, 241, 0.35);
+    border-color: rgba(99, 102, 241, 0.50);
+}
+
+.btn-primary:hover {
+    background: rgba(99, 102, 241, 0.45);
+    border-color: rgba(99, 102, 241, 0.65);
+}
+
+.btn-danger {
+    background: rgba(239, 68, 68, 0.32);
+    border-color: rgba(239, 68, 68, 0.48);
+}
+
+.btn-danger:hover {
+    background: rgba(239, 68, 68, 0.42);
+    border-color: rgba(239, 68, 68, 0.62);
+}
+
+.kv {
+    margin-top: 14px;
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 10px;
+    align-items: baseline;
+}
+
+.k {
+    opacity: 0.85;
+    font-size: 13px;
+}
+
+.v {
+    font-weight: 650;
+    overflow-wrap: anywhere;
+}
+
+.sectionTitle {
+    margin-top: 14px;
+    font-size: 13px;
+    opacity: 0.85;
+    font-weight: 650;
+    letter-spacing: 0.2px;
+}
+
+.code {
+    margin: 10px 0 0 0;
+    padding: 12px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    white-space: pre-wrap;
+    overflow-x: auto;
+    user-select: text;
+}
+
+.hint {
+    margin-top: 12px;
+    opacity: 0.9;
+    font-size: 13px;
+}
+
+code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.95em;
+}
+
+.steps {
+    margin: 10px 0 0 18px;
+    padding: 0;
+}
+
+.steps li {
+    margin: 6px 0;
+}
+
+.kbd {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(0, 0, 0, 0.22);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.note {
+    margin-top: 10px;
+    opacity: 0.9;
+}
+}
