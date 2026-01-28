@@ -2,21 +2,26 @@
 
 This example demonstrates the **WebviewPanel** feature - embedding multiple independent webview panels within a single window. This is similar to Electron's BrowserView/WebContentsView and addresses [GitHub issue #1997](https://github.com/wailsapp/wails/issues/1997).
 
-## Features
+## Features Demonstrated
 
-- Create multiple webview panels within a single window
-- Panels are absolutely positioned with X, Y, Width, Height
-- Each panel can load different URLs or HTML content
-- Independent JavaScript execution in each panel
-- Z-index support for panel stacking
-- Layout helper methods for common patterns (DockLeft, DockRight, etc.)
+- **URL Loading**: Load external websites (like https://wails.io) in an embedded panel
+- **Responsive Layout**: Panel automatically resizes with the window using anchor settings
+- **Dynamic Switching**: Switch panel content between different URLs at runtime
+- **Custom UI Integration**: Panel embedded within a custom HTML interface
 
 ## Running
 
 ```bash
 cd v3/examples/webview-panel
-go run main.go
+go run .
 ```
+
+## What This Example Shows
+
+1. **Embedded Webview**: The main window displays a custom UI with a header and navigation buttons
+2. **Panel Inside Window**: An embedded webview panel shows https://wails.io inside the window
+3. **URL Switching**: Click the "Wails.io" or "Google.com" buttons to switch the panel content
+4. **Responsive Behavior**: Resize the window to see the panel automatically adjust its size
 
 ## Use Cases
 
@@ -34,33 +39,90 @@ WebviewPanel is ideal for:
 ### Creating Panels
 
 ```go
-// Create a panel with explicit positioning
+// Create a panel with URL and positioning
+panel := window.NewPanel(application.WebviewPanelOptions{
+    Name:   "content",
+    URL:    "https://example.com",
+    X:      20,
+    Y:      60,
+    Width:  800,
+    Height: 500,
+})
+
+// Panel with anchoring (responsive to window resize)
 panel := window.NewPanel(application.WebviewPanelOptions{
     Name:   "sidebar",
+    URL:    "/sidebar.html",
     X:      0,
-    Y:      50,
+    Y:      0,
     Width:  200,
     Height: 600,
-    URL:    "https://example.com",
-    // Or use HTML:
-    // HTML: "<h1>Hello Panel!</h1>",
+    Anchor: application.AnchorTop | application.AnchorBottom | application.AnchorLeft,
+})
+
+// Panel that fills the entire window
+panel := window.NewPanel(application.WebviewPanelOptions{
+    Name:   "fullscreen",
+    URL:    "https://wails.io",
+    X:      0,
+    Y:      0,
+    Width:  800,
+    Height: 600,
+    Anchor: application.AnchorFill,
 })
 ```
 
-### Layout Helpers
+### Anchor Types
+
+Anchors control how panels respond to window resizing:
+
+| Anchor | Behavior |
+|--------|----------|
+| `AnchorNone` | Fixed position and size |
+| `AnchorTop` | Maintains distance from top edge |
+| `AnchorBottom` | Maintains distance from bottom edge |
+| `AnchorLeft` | Maintains distance from left edge |
+| `AnchorRight` | Maintains distance from right edge |
+| `AnchorFill` | Anchored to all edges (fills window with margins) |
+
+Combine anchors with `|` for complex layouts:
+```go
+// Left sidebar that stretches vertically
+Anchor: application.AnchorTop | application.AnchorBottom | application.AnchorLeft
+```
+
+### Panel Options
 
 ```go
-// Dock to edges
-sidebar := window.NewPanel(opts).DockLeft(200)    // Left sidebar
-inspector := window.NewPanel(opts).DockRight(300) // Right panel
-toolbar := window.NewPanel(opts).DockTop(50)      // Top toolbar
-statusBar := window.NewPanel(opts).DockBottom(30) // Bottom status
-
-// Fill remaining space
-content := window.NewPanel(opts).FillBeside(sidebar, "right")
-
-// Fill entire window
-fullPanel := window.NewPanel(opts).FillWindow()
+application.WebviewPanelOptions{
+    // Identity
+    Name: "panel-name",           // Unique identifier
+    
+    // Content
+    URL:     "https://example.com", // URL to load
+    Headers: map[string]string{     // Custom HTTP headers (optional)
+        "Authorization": "Bearer token",
+    },
+    UserAgent: "Custom UA",         // Custom user agent (optional)
+    
+    // Position & Size
+    X:      100,                    // X position (CSS pixels)
+    Y:      50,                     // Y position (CSS pixels)  
+    Width:  800,                    // Width (CSS pixels)
+    Height: 600,                    // Height (CSS pixels)
+    ZIndex: 1,                      // Stacking order
+    Anchor: application.AnchorFill, // Resize behavior
+    
+    // Appearance
+    Visible:         boolPtr(true),  // Initially visible
+    BackgroundColour: application.NewRGB(255, 255, 255),
+    Transparent:     false,          // Transparent background
+    Zoom:            1.0,            // Zoom level (1.0 = 100%)
+    
+    // Developer
+    DevToolsEnabled:        boolPtr(true),
+    OpenInspectorOnStartup: false,
+}
 ```
 
 ### Panel Manipulation
@@ -68,14 +130,12 @@ fullPanel := window.NewPanel(opts).FillWindow()
 ```go
 // Position and size
 panel.SetBounds(application.Rect{X: 100, Y: 50, Width: 400, Height: 300})
-panel.SetPosition(200, 100)
-panel.SetSize(500, 400)
+bounds := panel.Bounds()
 
 // Content
 panel.SetURL("https://wails.io")
-panel.SetHTML("<h1>Dynamic content</h1>")
-panel.ExecJS("console.log('Hello from panel!')")
 panel.Reload()
+panel.ForceReload() // Bypass cache
 
 // Visibility
 panel.Show()
@@ -87,9 +147,11 @@ panel.SetZIndex(10)
 
 // Focus
 panel.Focus()
+focused := panel.IsFocused()
 
 // Zoom
 panel.SetZoom(1.5)
+zoom := panel.Zoom()
 
 // Developer tools
 panel.OpenDevTools()
@@ -114,23 +176,6 @@ panels := window.GetPanels()
 window.RemovePanel("sidebar")
 ```
 
-## TypeScript/Frontend API
-
-```typescript
-import { Panel } from '@wailsio/runtime';
-
-// Get a reference to a panel
-const panel = Panel.Get("content");
-
-// Manipulate from frontend
-await panel.SetBounds({ x: 100, y: 50, width: 500, height: 400 });
-await panel.SetURL("https://wails.io");
-await panel.ExecJS("document.body.style.background = 'red'");
-await panel.Show();
-await panel.Hide();
-await panel.Focus();
-```
-
 ## Key Differences from Windows
 
 | Feature | WebviewWindow | WebviewPanel |
@@ -141,3 +186,4 @@ await panel.Focus();
 | Can show external URLs | ✅ | ✅ |
 | Multiple per app | ✅ | ✅ (multiple per window) |
 | Position relative to | Screen | Parent window |
+| Responsive anchoring | ❌ | ✅ |
