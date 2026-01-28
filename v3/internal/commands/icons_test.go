@@ -123,6 +123,45 @@ func TestGenerateIcon(t *testing.T) {
 				return nil
 			},
 		},
+
+		{
+			name: "should generate a Assets.car file when using the `IconComposerInput` flag and `MacAssetDir` flag",
+			setup: func() *IconsOptions {
+				// Get the directory of this file
+				_, thisFile, _, _ := runtime.Caller(1)
+				localDir := filepath.Dir(thisFile)
+				// Get the path to the example icon
+				exampleIcon := filepath.Join(localDir, "build_assets", "appicon.icon")
+				return &IconsOptions{
+					IconComposerInput: exampleIcon,
+					MacAssetDir:       localDir,
+				}
+			},
+			wantErr: false,
+			test: func() error {
+				// the file `Assets.car` should be created in the current directory
+				// check for the existence of the file
+				f, err := os.Stat("Assets.car")
+				if err != nil {
+					return err
+				}
+				defer func() {
+					// Remove the file
+					err = os.Remove("Assets.car")
+					if err != nil {
+						panic(err)
+					}
+				}()
+				if f.IsDir() {
+					return fmt.Errorf("Assets.car is a directory")
+				}
+				if f.Size() == 0 {
+					return fmt.Errorf("Assets.car is empty")
+				}
+
+				return nil
+			},
+		},
 		{
 			name: "should generate a small .ico file when using the `input` flag and `sizes` flag",
 			setup: func() *IconsOptions {
