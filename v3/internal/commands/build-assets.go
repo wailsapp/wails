@@ -42,6 +42,7 @@ type BuildAssetsOptions struct {
 	ProductCopyright      string `description:"The copyright notice" default:"\u00a9 now, My Company"`
 	ProductComments       string `description:"Comments to add to the generated files" default:"This is a comment"`
 	ProductIdentifier     string `description:"The product identifier, e.g com.mycompany.myproduct"`
+	CFBundleIconName      string `description:"The macOS icon name (for Assets.car icon bundles)"`
 	Publisher             string `description:"Publisher name for MSIX package (e.g., CN=CompanyName)"`
 	ProcessorArchitecture string `description:"Processor architecture for MSIX package" default:"x64"`
 	ExecutablePath        string `description:"Path to executable for MSIX package"`
@@ -71,6 +72,7 @@ type UpdateBuildAssetsOptions struct {
 	ProductCopyright   string `description:"The copyright notice"                                default:"© now, My Company"`
 	ProductComments    string `description:"Comments to add to the generated files"              default:"This is a comment"`
 	ProductIdentifier  string `description:"The product identifier, e.g com.mycompany.myproduct"`
+	CFBundleIconName   string `description:"The macOS icon name (for Assets.car icon bundles)"`
 	Config             string `description:"The path to the config file"`
 	Silent             bool   `description:"Suppress output to console"`
 }
@@ -146,10 +148,17 @@ func GenerateBuildAssets(options *BuildAssetsOptions) error {
 	if err != nil {
 		return err
 	}
+	// Check if Assets.car exists - if so, set CFBundleIconName if not already set
+	// This must happen BEFORE template extraction so CFBundleIconName is available in the template
+	checkAndSetCFBundleIconName(options.Dir, options, &config)
+	// Update config with the potentially modified options
+	config.BuildAssetsOptions = *options
+
 	tfs, err = fs.Sub(updatableBuildAssets, "updatable_build_assets")
 	if err != nil {
 		return err
 	}
+
 	err = gosod.New(tfs).Extract(options.Dir, config)
 	if err != nil {
 		return err
@@ -185,6 +194,7 @@ type WailsConfig struct {
 		Copyright         string `yaml:"copyright"`
 		Comments          string `yaml:"comments"`
 		Version           string `yaml:"version"`
+		CFBundleIconName  string `yaml:"cfBundleIconName,omitempty"`
 	} `yaml:"info"`
 	FileAssociations []FileAssociation `yaml:"fileAssociations,omitempty"`
 	Protocols        []ProtocolConfig  `yaml:"protocols,omitempty"`
@@ -233,6 +243,9 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 		if options.ProductVersion == "0.1.0" && wailsConfig.Info.Version != "" {
 			options.ProductVersion = wailsConfig.Info.Version
 		}
+		if wailsConfig.Info.CFBundleIconName != "" {
+			options.CFBundleIconName = wailsConfig.Info.CFBundleIconName
+		}
 		config.FileAssociations = wailsConfig.FileAssociations
 		config.Protocols = wailsConfig.Protocols
 	}
@@ -246,6 +259,11 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 			return err
 		}
 	}
+
+	// Check if Assets.car exists - if so, set CFBundleIconName if not already set
+	checkAndSetCFBundleIconNameUpdate(options.Dir, options, &config)
+	// Update config with the potentially modified options
+	config.UpdateBuildAssetsOptions = *options
 
 	tfs, err := fs.Sub(updatableBuildAssets, "updatable_build_assets")
 	if err != nil {
@@ -282,6 +300,32 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 
 func normaliseName(name string) string {
 	return strings.ToLower(strings.ReplaceAll(name, " ", "-"))
+}
+
+// checkAndSetCFBundleIconName checks if Assets.car exists in the darwin folder
+// and sets CFBundleIconName to "Icon" if not already set.
+func checkAndSetCFBundleIconName(dir string, options *BuildAssetsOptions, config *BuildConfig) {
+	darwinDir := filepath.Join(dir, "darwin")
+	assetsCarPath := filepath.Join(darwinDir, "Assets.car")
+	if _, err := os.Stat(assetsCarPath); err == nil {
+		if options.CFBundleIconName == "" {
+			options.CFBundleIconName = "Icon"
+			config.CFBundleIconName = "Icon"
+		}
+	}
+}
+
+// checkAndSetCFBundleIconNameUpdate checks if Assets.car exists in the darwin folder
+// and sets CFBundleIconName to "Icon" if not already set (for UpdateBuildAssets).
+func checkAndSetCFBundleIconNameUpdate(dir string, options *UpdateBuildAssetsOptions, config *UpdateConfig) {
+	darwinDir := filepath.Join(dir, "darwin")
+	assetsCarPath := filepath.Join(darwinDir, "Assets.car")
+	if _, err := os.Stat(assetsCarPath); err == nil {
+		if options.CFBundleIconName == "" {
+			options.CFBundleIconName = "Icon"
+			config.CFBundleIconName = "Icon"
+		}
+	}
 }
 
 // mergeMaps recursively merges src into dst.

@@ -168,6 +168,7 @@ func TestUpdateBuildAssets(t *testing.T) {
 			Copyright         string `yaml:"copyright"`
 			Comments          string `yaml:"comments"`
 			Version           string `yaml:"version"`
+			CFBundleIconName  string `yaml:"cfBundleIconName,omitempty"`
 		}{
 			CompanyName:       "Config Company",
 			ProductName:       "Config Product",
@@ -348,6 +349,161 @@ func TestPlistMerge(t *testing.T) {
 
 	if mergedDict["CFBundleIdentifier"] != "com.test.app" {
 		t.Errorf("Expected CFBundleIdentifier to be 'com.test.app', got %v", mergedDict["CFBundleIdentifier"])
+	}
+}
+
+func TestCFBundleIconNameDetection(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "wails-icon-name-test-*")
+	if err != nil {
+		t.Fatalf("Failed to create temp directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	tests := []struct {
+		name                string
+		createAssetsCar     bool
+		configIconName      string
+		expectedIconName    string
+		expectIconNameInPlist bool
+	}{
+		{
+			name:                "Assets.car exists, no config - should default to Icon",
+			createAssetsCar:     true,
+			configIconName:      "",
+			expectedIconName:    "Icon",
+			expectIconNameInPlist: true,
+		},
+		{
+			name:                "Assets.car exists, config set - should use config",
+			createAssetsCar:     true,
+			configIconName:      "custom-icon",
+			expectedIconName:    "custom-icon",
+			expectIconNameInPlist: true,
+		},
+		{
+			name:                "No Assets.car, no config - should not set",
+			createAssetsCar:     false,
+			configIconName:      "",
+			expectedIconName:    "",
+			expectIconNameInPlist: false,
+		},
+		{
+			name:                "No Assets.car, config set - should use config",
+			createAssetsCar:     false,
+			configIconName:      "config-icon",
+			expectedIconName:    "config-icon",
+			expectIconNameInPlist: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			buildDir := filepath.Join(tempDir, tt.name)
+			darwinDir := filepath.Join(buildDir, "darwin")
+			err := os.MkdirAll(darwinDir, 0755)
+			if err != nil {
+				t.Fatalf("Failed to create darwin directory: %v", err)
+			}
+
+			// Create Assets.car BEFORE calling UpdateBuildAssets if needed
+			// The check happens before template extraction, so CFBundleIconName will be available in the template
+			if tt.createAssetsCar {
+				assetsCarPath := filepath.Join(darwinDir, "Assets.car")
+				err = os.WriteFile(assetsCarPath, []byte("fake assets.car content"), 0644)
+				if err != nil {
+					t.Fatalf("Failed to create Assets.car: %v", err)
+				}
+			}
+
+			// Create config file if icon name is set
+			configFile := ""
+			if tt.configIconName != "" {
+				configDir := filepath.Join(tempDir, "config-"+tt.name)
+				err = os.MkdirAll(configDir, 0755)
+				if err != nil {
+					t.Fatalf("Failed to create config directory: %v", err)
+				}
+
+				configFile = filepath.Join(configDir, "wails.yaml")
+				config := WailsConfig{
+					Info: struct {
+						CompanyName       string `yaml:"companyName"`
+						ProductName       string `yaml:"productName"`
+						ProductIdentifier string `yaml:"productIdentifier"`
+						Description       string `yaml:"description"`
+						Copyright         string `yaml:"copyright"`
+						Comments          string `yaml:"comments"`
+						Version           string `yaml:"version"`
+						CFBundleIconName  string `yaml:"cfBundleIconName,omitempty"`
+					}{
+						CompanyName:       "Test Company",
+						ProductName:       "Test Product",
+						ProductIdentifier: "com.test.product",
+						CFBundleIconName:  tt.configIconName,
+					},
+				}
+
+				configBytes, err := yaml.Marshal(config)
+				if err != nil {
+					t.Fatalf("Failed to marshal config: %v", err)
+				}
+
+				err = os.WriteFile(configFile, configBytes, 0644)
+				if err != nil {
+					t.Fatalf("Failed to write config file: %v", err)
+				}
+			}
+
+			options := &UpdateBuildAssetsOptions{
+				Dir:               buildDir,
+				Name:               "TestApp",
+				ProductName:        "Test App",
+				ProductVersion:     "1.0.0",
+				ProductCompany:     "Test Company",
+				ProductIdentifier:  "com.test.app",
+				CFBundleIconName:   tt.configIconName,
+				Config:             configFile,
+				Silent:             true,
+			}
+
+			err = UpdateBuildAssets(options)
+			if err != nil {
+				t.Fatalf("UpdateBuildAssets failed: %v", err)
+			}
+
+			// Verify CFBundleIconName was set correctly in options
+			if options.CFBundleIconName != tt.expectedIconName {
+				t.Errorf("Expected CFBundleIconName to be '%s', got '%s'", tt.expectedIconName, options.CFBundleIconName)
+			}
+
+			// Check Info.plist if it exists
+			infoPlistPath := filepath.Join(darwinDir, "Info.plist")
+			if _, err := os.Stat(infoPlistPath); err == nil {
+				plistContent, err := os.ReadFile(infoPlistPath)
+				if err != nil {
+					t.Fatalf("Failed to read Info.plist: %v", err)
+				}
+
+				var plistDict map[string]any
+				_, err = plist.Unmarshal(plistContent, &plistDict)
+				if err != nil {
+					t.Fatalf("Failed to parse Info.plist: %v", err)
+				}
+
+				iconName, exists := plistDict["CFBundleIconName"]
+				if tt.expectIconNameInPlist {
+					if !exists {
+						t.Errorf("Expected CFBundleIconName to be present in Info.plist")
+					} else if iconName != tt.expectedIconName {
+						t.Errorf("Expected CFBundleIconName in Info.plist to be '%s', got '%v'", tt.expectedIconName, iconName)
+					}
+				} else {
+					if exists {
+						t.Errorf("Expected CFBundleIconName to not be present in Info.plist, but found '%v'", iconName)
+					}
+				}
+			}
+		})
 	}
 }
 
