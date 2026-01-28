@@ -57,11 +57,11 @@ export namespace binding_test {
                     }
                 }
                 export class DeepElements {
-                    Single: number[];
-                    Double: string[][];
-                    FourDouble: number[][];
-                    DoubleFour: number[][];
-                    Triple: number[][][];
+                    Single: number[] | null;
+                    Double: string[][] | null;
+                    FourDouble: number[][] | null;
+                    DoubleFour: number[][] | null;
+                    Triple: number[][][] | null;
                     SingleMap: Record<string, number>;
                     SliceMap: Record<string, Array<number>>;
                     DoubleSliceMap: Record<string, Array<Array<number>>>;
@@ -69,9 +69,9 @@ export namespace binding_test {
                     DoubleArrayMap1: Record<string, Array<Array<number>>>;
                     DoubleArrayMap2: Record<string, Array<Array<number>>>;
                     DoubleArrayMap3: Record<string, Array<Array<number>>>;
-                    OneStructs: DeepMessage[];
-                    TwoStructs: DeepMessage[][];
-                    ThreeStructs: DeepMessage[][][];
+                    OneStructs: DeepMessage[] | null;
+                    TwoStructs: DeepMessage[][] | null;
+                    ThreeStructs: DeepMessage[][][] | null;
                     MapStructs: Record<string, Array<DeepMessage>>;
                     MapTwoStructs: Record<string, Array<Array<DeepMessage>>>;
                     MapThreeStructs: Record<string, Array<Array<Array<DeepMessage>>>>;

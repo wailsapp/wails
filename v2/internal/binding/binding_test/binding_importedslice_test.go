@@ -50,7 +50,7 @@ export namespace binding_test {
 
 export namespace binding_test_import {
 	export class ASliceWrapper {
-		ASlice: binding_test_nestedimport.A[];
+		ASlice: binding_test_nestedimport.A[] | null;
 		static createFrom(source: any = {}) {
 			return new ASliceWrapper(source);
 		}
