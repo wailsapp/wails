@@ -92,7 +92,7 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 				for count, input := range methodDetails.Inputs {
 					arg := fmt.Sprintf("arg%d", count+1)
 					entityName := entityFullReturnType(input.TypeName, b.tsPrefix, b.tsSuffix, &importNamespaces)
-					args.Add(arg + ":" + goTypeToTypescriptType(entityName, &importNamespaces))
+					args.Add(arg + ":" + b.goTypeToTypescriptType(entityName, &importNamespaces))
 				}
 				tsBody.WriteString(args.Join(",") + "):")
 				// now build Typescript return types
@@ -108,11 +108,11 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 					returnType = "Promise<void>"
 				} else {
 					outputTypeName := entityFullReturnType(methodDetails.Outputs[0].TypeName, b.tsPrefix, b.tsSuffix, &importNamespaces)
-					firstType := goTypeToTypescriptType(outputTypeName, &importNamespaces)
+					firstType := b.goTypeToTypescriptType(outputTypeName, &importNamespaces)
 					returnType = "Promise<" + firstType
 					if methodDetails.OutputCount() == 2 && methodDetails.Outputs[1].TypeName != "error" {
 						outputTypeName = entityFullReturnType(methodDetails.Outputs[1].TypeName, b.tsPrefix, b.tsSuffix, &importNamespaces)
-						secondType := goTypeToTypescriptType(outputTypeName, &importNamespaces)
+						secondType := b.goTypeToTypescriptType(outputTypeName, &importNamespaces)
 						returnType += "|" + secondType
 					}
 					returnType += ">"
@@ -175,7 +175,7 @@ var (
 	jsVariableUnsafeChars = regexp.MustCompile(`[^A-Za-z0-9_]`)
 )
 
-func arrayifyValue(valueArray string, valueType string) string {
+func arrayifyValue(valueArray string, valueType string, useNullableSlices bool) string {
 	valueType = strings.ReplaceAll(valueType, "*", "")
 	gidx := strings.IndexRune(valueType, '[')
 	if gidx > 0 { // its a generic type
@@ -187,23 +187,20 @@ func arrayifyValue(valueArray string, valueType string) string {
 		return valueType
 	}
 
-	return "Array<" + valueType + "> | null"
+	result := "Array<" + valueType + ">"
+	if useNullableSlices {
+		result += " | null"
+	}
+	return result
 }
 
-func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) string {
+func (b *Bindings) goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) string {
 	matches := mapRegex.FindStringSubmatch(input)
 	keyPackage := matches[keyPackageIndex]
 	keyType := matches[keyTypeIndex]
 	valueArray := matches[valueArrayIndex]
 	valuePackage := matches[valuePackageIndex]
 	valueType := matches[valueTypeIndex]
-	// fmt.Printf("input=%s, keyPackage=%s, keyType=%s, valueArray=%s, valuePackage=%s, valueType=%s\n",
-	//	input,
-	//	keyPackage,
-	//	keyType,
-	//	valueArray,
-	//	valuePackage,
-	//	valueType)
 
 	// byte array is special case
 	if valueArray == "[]" && valueType == "byte" {
@@ -222,20 +219,20 @@ func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) stri
 	key := fullyQualifiedName(keyPackage, keyType)
 	var value string
 	if strings.HasPrefix(valueType, "map") {
-		value = goTypeToJSDocType(valueType, importNamespaces)
+		value = b.goTypeToJSDocType(valueType, importNamespaces)
 	} else {
 		value = fullyQualifiedName(valuePackage, valueType)
 	}
 
 	if len(key) > 0 {
-		return fmt.Sprintf("Record<%s, %s>", key, arrayifyValue(valueArray, value))
+		return fmt.Sprintf("Record<%s, %s>", key, arrayifyValue(valueArray, value, b.useNullableSlices))
 	}
 
-	return arrayifyValue(valueArray, value)
+	return arrayifyValue(valueArray, value, b.useNullableSlices)
 }
 
-func goTypeToTypescriptType(input string, importNamespaces *slicer.StringSlicer) string {
-	return goTypeToJSDocType(input, importNamespaces)
+func (b *Bindings) goTypeToTypescriptType(input string, importNamespaces *slicer.StringSlicer) string {
+	return b.goTypeToJSDocType(input, importNamespaces)
 }
 
 func entityFullReturnType(input, prefix, suffix string, importNamespaces *slicer.StringSlicer) string {
