@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sync"
 	"sync/atomic"
+
+	"github.com/wailsapp/wails/v3/internal/assetserver"
 )
 
 // webviewPanelImpl is the platform-specific interface for WebviewPanel
@@ -94,6 +96,12 @@ func NewPanel(options WebviewPanelOptions) *WebviewPanel {
 		options.Visible = &visible
 	}
 
+	// Normalize URL via asset server for local paths
+	if options.URL != "" {
+		normalizedURL, _ := assetserver.GetStartURL(options.URL)
+		options.URL = normalizedURL
+	}
+
 	// Store original bounds for anchor calculations
 	originalBounds := Rect{
 		X:      options.X,
@@ -125,12 +133,16 @@ func (p *WebviewPanel) Parent() *WebviewWindow {
 	return p.parent
 }
 
-// SetBounds sets the position and size of the panel within its parent window
+// SetBounds sets the position and size of the panel within its parent window.
+// This also updates the anchor baseline so future window resizes calculate from the new position.
 func (p *WebviewPanel) SetBounds(bounds Rect) *WebviewPanel {
 	p.options.X = bounds.X
 	p.options.Y = bounds.Y
 	p.options.Width = bounds.Width
 	p.options.Height = bounds.Height
+
+	// Update anchor baseline so future resizes calculate from the new position
+	p.updateAnchorBaseline(bounds)
 
 	if p.impl != nil && !p.isDestroyed() {
 		InvokeSync(func() {
@@ -138,6 +150,15 @@ func (p *WebviewPanel) SetBounds(bounds Rect) *WebviewPanel {
 		})
 	}
 	return p
+}
+
+// updateAnchorBaseline updates the original bounds and window size used for anchor calculations.
+// Called when the user manually changes panel bounds.
+func (p *WebviewPanel) updateAnchorBaseline(bounds Rect) {
+	p.originalBounds = bounds
+	if p.parent != nil {
+		p.originalWindowWidth, p.originalWindowHeight = p.parent.Size()
+	}
 }
 
 // Bounds returns the current bounds of the panel
@@ -198,11 +219,14 @@ func (p *WebviewPanel) ZIndex() int {
 }
 
 // SetURL navigates the panel to the specified URL
+// Local paths (e.g., "/panel.html") are normalized via the asset server.
 func (p *WebviewPanel) SetURL(url string) *WebviewPanel {
-	p.options.URL = url
+	// Normalize URL via asset server for local paths
+	normalizedURL, _ := assetserver.GetStartURL(url)
+	p.options.URL = normalizedURL
 	if p.impl != nil && !p.isDestroyed() {
 		InvokeSync(func() {
-			p.impl.setURL(url)
+			p.impl.setURL(normalizedURL)
 		})
 	}
 	return p
@@ -485,7 +509,23 @@ func (p *WebviewPanel) handleWindowResize(newWindowWidth, newWindowHeight int) {
 	}
 
 	newBounds := p.calculateAnchoredBounds(newWindowWidth, newWindowHeight)
-	p.SetBounds(newBounds)
+	// Use internal setBounds to avoid updating anchor baseline during resize
+	p.setBoundsInternal(newBounds)
+}
+
+// setBoundsInternal sets bounds without updating anchor baseline.
+// Used internally during window resize handling.
+func (p *WebviewPanel) setBoundsInternal(bounds Rect) {
+	p.options.X = bounds.X
+	p.options.Y = bounds.Y
+	p.options.Width = bounds.Width
+	p.options.Height = bounds.Height
+
+	if p.impl != nil && !p.isDestroyed() {
+		InvokeSync(func() {
+			p.impl.setBounds(bounds)
+		})
+	}
 }
 
 // calculateAnchoredBounds computes the new bounds based on anchor settings.

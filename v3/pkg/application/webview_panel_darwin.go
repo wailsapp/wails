@@ -64,6 +64,9 @@ void* panelNew(unsigned int panelId, unsigned int windowId, void* parentWindow, 
 	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
 	delegate.webView = webView;
 
+	// Set navigation delegate so didFinishNavigation callback fires
+	[webView setNavigationDelegate:delegate];
+
 	// Configure webview
 	[webView setAutoresizingMask:NSViewNotSizable];
 

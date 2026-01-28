@@ -4,7 +4,7 @@ This example demonstrates the **WebviewPanel** feature - embedding multiple inde
 
 ## Features Demonstrated
 
-- **URL Loading**: Load external websites (like https://wails.io) in an embedded panel
+- **URL Loading**: Load external websites (like <https://wails.io>) in an embedded panel
 - **Responsive Layout**: Panel automatically resizes with the window using anchor settings
 - **Dynamic Switching**: Switch panel content between different URLs at runtime
 - **Custom UI Integration**: Panel embedded within a custom HTML interface
@@ -19,7 +19,7 @@ go run .
 ## What This Example Shows
 
 1. **Embedded Webview**: The main window displays a custom UI with a header and navigation buttons
-2. **Panel Inside Window**: An embedded webview panel shows https://wails.io inside the window
+2. **Panel Inside Window**: An embedded webview panel shows <https://wails.io> inside the window
 3. **URL Switching**: Click the "Wails.io" or "Google.com" buttons to switch the panel content
 4. **Responsive Behavior**: Resize the window to see the panel automatically adjust its size
 
@@ -151,7 +151,7 @@ focused := panel.IsFocused()
 
 // Zoom
 panel.SetZoom(1.5)
-zoom := panel.Zoom()
+zoom := panel.GetZoom()
 
 // Developer tools
 panel.OpenDevTools()

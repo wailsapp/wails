@@ -51,8 +51,15 @@ func main() {
 		URL:              "/index.html",
 	})
 
-	// Create the embedded panel after the window is shown
+	// Create the embedded panel after the window is shown (only once)
+	var panelCreated bool
 	window.OnWindowEvent(events.Common.WindowShow, func(*application.WindowEvent) {
+		// Guard against creating multiple panels on repeated WindowShow events
+		if panelCreated {
+			return
+		}
+		panelCreated = true
+
 		// Based on actual HTML measurements:
 		// - Header: 41px height (with 15px/25px padding already included)
 		// - Content area: padding 20px
