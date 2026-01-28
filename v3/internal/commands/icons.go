@@ -25,7 +25,7 @@ type IconsOptions struct {
 	WindowsFilename   string `description:"The output filename for the Windows icon"`
 	MacFilename       string `description:"The output filename for the Mac icon bundle"`
 	IconComposerInput string `description:"The input Icon Composer file (.icon)"`
-	MacAssetDir       string `description:"The output directory for the Mac asset file (assets.car)"`
+	MacAssetDir       string `description:"The output directory for the Mac asset file (Assets.car)"`
 }
 
 func GenerateIcons(options *IconsOptions) error {
@@ -193,10 +193,20 @@ func generateMacAsset(options *IconsOptions) error {
 		return fmt.Errorf("actool version %s is not supported, version 26 or later is required", shortVersion)
 	}
 
-	cmd = exec.Command("actool", fmt.Sprintf("./%s", options.IconComposerInput),
-		"--compile", fmt.Sprintf("./%s", options.MacAssetDir),
+	// Handle absolute and relative paths correctly
+	iconComposerPath := options.IconComposerInput
+	if !filepath.IsAbs(iconComposerPath) {
+		iconComposerPath = fmt.Sprintf("./%s", iconComposerPath)
+	}
+	macAssetDirPath := options.MacAssetDir
+	if !filepath.IsAbs(macAssetDirPath) {
+		macAssetDirPath = fmt.Sprintf("./%s", macAssetDirPath)
+	}
+
+	cmd = exec.Command("actool", iconComposerPath,
+		"--compile", macAssetDirPath,
 		"--notices", "--warnings", "--errors",
-		"--output-partial-info-plist", fmt.Sprintf("./%s/temp.plist", options.MacAssetDir),
+		"--output-partial-info-plist", filepath.Join(macAssetDirPath, "/temp.plist"),
 		"--app-icon", "Icon",
 		"--include-all-app-icons",
 		"--enable-on-demand-resources", "NO",
