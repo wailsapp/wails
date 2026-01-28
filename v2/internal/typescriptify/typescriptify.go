@@ -863,7 +863,7 @@ func (t *typeScriptClassBuilder) AddSimpleArrayField(fieldName string, field ref
 			t.addInitializerFieldLine(strippedFieldName, fmt.Sprintf("source[\"%s\"]", strippedFieldName))
 			return nil
 		} else if len(typeScriptType) > 0 {
-			t.addField(fieldName, fmt.Sprint(typeScriptType, strings.Repeat("[]", arrayDepth)), false)
+			t.addField(fieldName, fmt.Sprint(typeScriptType, strings.Repeat("[]", arrayDepth), " | null"), false)
 			t.addInitializerFieldLine(strippedFieldName, fmt.Sprintf("source[\"%s\"]", strippedFieldName))
 			return nil
 		}
@@ -936,7 +936,7 @@ func (t *typeScriptClassBuilder) AddArrayOfStructsField(fieldName string, field 
 		fieldType = field.Type.Elem().String()
 	}
 	strippedFieldName := strings.ReplaceAll(fieldName, "?", "")
-	t.addField(fieldName, fmt.Sprint(t.prefix+fieldType+t.suffix, strings.Repeat("[]", arrayDepth)), false)
+	t.addField(fieldName, fmt.Sprint(t.prefix+fieldType+t.suffix, strings.Repeat("[]", arrayDepth), " | null"), false)
 	t.addInitializerFieldLine(strippedFieldName, fmt.Sprintf("this.convertValues(source[\"%s\"], %s)", strippedFieldName, t.prefix+fieldType+t.suffix))
 }
 
