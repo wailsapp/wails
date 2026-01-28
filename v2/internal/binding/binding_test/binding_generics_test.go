@@ -29,7 +29,7 @@ export namespace binding_test {
                     Total: number;
                     TotalPage: number;
                     PageNum: number;
-                    List?: string[] | null;
+                    List?: string[];
         
                     static createFrom(source: any = {}) {
                         return new ListData_string_(source);
@@ -63,7 +63,7 @@ export namespace binding_test {
                     Total: number;
                     TotalPage: number;
                     PageNum: number;
-                    List?: float_package.SomeStruct[] | null;
+                    List?: float_package.SomeStruct[];
         
                     static createFrom(source: any = {}) {
                         return new ListData__github_com_wailsapp_wails_v2_internal_binding_binding_test_binding_test_import_float_package_SomeStruct_(source);
@@ -99,7 +99,7 @@ export namespace binding_test {
                     Total: number;
                     TotalPage: number;
                     PageNum: number;
-                    List?: float_package.SomeStruct[] | null;
+                    List?: float_package.SomeStruct[];
         
                     static createFrom(source: any = {}) {
                         return new ListData_github_com_wailsapp_wails_v2_internal_binding_binding_test_binding_test_import_float_package_SomeStruct_(source);

@@ -21,9 +21,9 @@ export function MapAlias():Promise<binding_test.MapAlias>;
 
 export function MapWithImportedStructValue():Promise<Record<string, int_package.SomeStruct>>;
 
-export function Slice():Promise<Array<string> | null>;
+export function Slice():Promise<Array<string>>;
 
-export function SliceImportedStruct():Promise<Array<int_package.SomeStruct> | null>;
+export function SliceImportedStruct():Promise<Array<int_package.SomeStruct>>;
 `
 
 type AliasTest struct{}

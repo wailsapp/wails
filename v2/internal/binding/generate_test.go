@@ -101,12 +101,12 @@ func Test_goTypeToJSDocType(t *testing.T) {
 		{
 			name:  "[]int",
 			input: "[]int",
-			want:  "Array<number> | null",
+			want:  "Array<number>",
 		},
 		{
 			name:  "[]bool",
 			input: "[]bool",
-			want:  "Array<boolean> | null",
+			want:  "Array<boolean>",
 		},
 		{
 			name:  "anything else",
@@ -139,10 +139,44 @@ func Test_goTypeToJSDocType(t *testing.T) {
 			want:  "main.ListData_net_http_Request_",
 		},
 	}
+	b := &Bindings{}
 	var importNamespaces slicer.StringSlicer
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := goTypeToJSDocType(tt.input, &importNamespaces); got != tt.want {
+			if got := b.goTypeToJSDocType(tt.input, &importNamespaces); got != tt.want {
+				t.Errorf("goTypeToJSDocType() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_goTypeToJSDocType_nullable(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{
+			name:  "[]int nullable",
+			input: "[]int",
+			want:  "Array<number> | null",
+		},
+		{
+			name:  "[]bool nullable",
+			input: "[]bool",
+			want:  "Array<boolean> | null",
+		},
+		{
+			name:  "[]byte still string",
+			input: "[]byte",
+			want:  "string",
+		},
+	}
+	b := &Bindings{useNullableSlices: true}
+	var importNamespaces slicer.StringSlicer
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := b.goTypeToJSDocType(tt.input, &importNamespaces); got != tt.want {
 				t.Errorf("goTypeToJSDocType() = %v, want %v", got, tt.want)
 			}
 		})

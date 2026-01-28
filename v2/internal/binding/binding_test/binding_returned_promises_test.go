@@ -23,9 +23,9 @@ export function SingleReturnStruct(arg1:any):Promise<binding_test.PromisesTestRe
 
 export function SingleReturnStructPointer(arg1:any):Promise<binding_test.PromisesTestReturnStruct>;
 
-export function SingleReturnStructPointerSlice(arg1:any):Promise<Array<binding_test.PromisesTestReturnStruct> | null>;
+export function SingleReturnStructPointerSlice(arg1:any):Promise<Array<binding_test.PromisesTestReturnStruct>>;
 
-export function SingleReturnStructSlice(arg1:any):Promise<Array<binding_test.PromisesTestReturnStruct> | null>;
+export function SingleReturnStructSlice(arg1:any):Promise<Array<binding_test.PromisesTestReturnStruct>>;
 
 export function SingleReturnWithError(arg1:number):Promise<string>;
 
