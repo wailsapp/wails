@@ -19,8 +19,6 @@ type webviewPanelImpl interface {
 
 	// Content
 	setURL(url string)
-	setHTML(html string)
-	execJS(js string)
 	reload()
 	forceReload()
 
@@ -62,10 +60,11 @@ type WebviewPanel struct {
 	destroyed     bool
 	destroyedLock sync.RWMutex
 
-	// Track if runtime has been loaded (protected by runtimeLock)
-	runtimeLoaded bool
-	pendingJS     []string
-	runtimeLock   sync.Mutex
+	// Original window size when panel was created (for anchor calculations)
+	originalWindowWidth  int
+	originalWindowHeight int
+	// Original panel bounds (for anchor calculations)
+	originalBounds Rect
 }
 
 // NewPanel creates a new WebviewPanel with the given options.
@@ -95,10 +94,19 @@ func NewPanel(options WebviewPanelOptions) *WebviewPanel {
 		options.Visible = &visible
 	}
 
+	// Store original bounds for anchor calculations
+	originalBounds := Rect{
+		X:      options.X,
+		Y:      options.Y,
+		Width:  options.Width,
+		Height: options.Height,
+	}
+
 	return &WebviewPanel{
-		id:      id,
-		name:    options.Name,
-		options: options,
+		id:             id,
+		name:           options.Name,
+		options:        options,
+		originalBounds: originalBounds,
 	}
 }
 
@@ -203,35 +211,6 @@ func (p *WebviewPanel) SetURL(url string) *WebviewPanel {
 // URL returns the current URL of the panel
 func (p *WebviewPanel) URL() string {
 	return p.options.URL
-}
-
-// SetHTML sets the HTML content of the panel
-func (p *WebviewPanel) SetHTML(html string) *WebviewPanel {
-	p.options.HTML = html
-	if p.impl != nil && !p.isDestroyed() {
-		InvokeSync(func() {
-			p.impl.setHTML(html)
-		})
-	}
-	return p
-}
-
-// ExecJS executes JavaScript in the panel's context
-func (p *WebviewPanel) ExecJS(js string) {
-	if p.impl == nil || p.isDestroyed() {
-		return
-	}
-
-	p.runtimeLock.Lock()
-	if p.runtimeLoaded {
-		p.runtimeLock.Unlock()
-		InvokeSync(func() {
-			p.impl.execJS(js)
-		})
-	} else {
-		p.pendingJS = append(p.pendingJS, js)
-		p.runtimeLock.Unlock()
-	}
 }
 
 // Reload reloads the current page
@@ -347,31 +326,40 @@ func (p *WebviewPanel) isDestroyed() bool {
 // run initializes the platform-specific implementation
 // This is called by the parent window when the panel is added
 func (p *WebviewPanel) run() {
+	globalApplication.debug("[Panel] run() called", "panelID", p.id, "panelName", p.name)
+
 	p.destroyedLock.Lock()
 	if p.impl != nil || p.destroyed {
+		globalApplication.debug("[Panel] run() skipped - impl already exists or destroyed",
+			"panelID", p.id, "hasImpl", p.impl != nil, "destroyed", p.destroyed)
 		p.destroyedLock.Unlock()
 		return
 	}
+
+	// Check parent window state before creating impl
+	if p.parent == nil {
+		globalApplication.error("[Panel] run() failed - parent window is nil", "panelID", p.id)
+		p.destroyedLock.Unlock()
+		return
+	}
+	if p.parent.impl == nil {
+		globalApplication.error("[Panel] run() failed - parent window impl is nil", "panelID", p.id, "windowID", p.parent.id)
+		p.destroyedLock.Unlock()
+		return
+	}
+
+	globalApplication.debug("[Panel] Creating platform impl", "panelID", p.id, "parentWindowID", p.parent.id)
 	p.impl = newPanelImpl(p)
 	p.destroyedLock.Unlock()
 
-	InvokeSync(p.impl.create)
-}
-
-// markRuntimeLoaded is called when the runtime JavaScript has been loaded
-func (p *WebviewPanel) markRuntimeLoaded() {
-	p.runtimeLock.Lock()
-	p.runtimeLoaded = true
-	pendingJS := p.pendingJS
-	p.pendingJS = nil
-	p.runtimeLock.Unlock()
-
-	// Execute any pending JavaScript outside the lock
-	for _, js := range pendingJS {
-		InvokeSync(func() {
-			p.impl.execJS(js)
-		})
+	if p.impl == nil {
+		globalApplication.error("[Panel] newPanelImpl returned nil", "panelID", p.id)
+		return
 	}
+
+	globalApplication.debug("[Panel] Calling impl.create()", "panelID", p.id)
+	InvokeSync(p.impl.create)
+	globalApplication.debug("[Panel] impl.create() completed", "panelID", p.id)
 }
 
 // =========================================================================
@@ -474,4 +462,98 @@ func (p *WebviewPanel) FillBeside(refPanel *WebviewPanel, direction string) *Web
 	}
 
 	return p.SetBounds(bounds)
+}
+
+// =========================================================================
+// Anchor/Responsive Layout Methods
+// =========================================================================
+
+// initializeAnchor stores the original window size for anchor calculations.
+// This is called when the panel is first attached to a window.
+func (p *WebviewPanel) initializeAnchor() {
+	if p.parent == nil {
+		return
+	}
+	p.originalWindowWidth, p.originalWindowHeight = p.parent.Size()
+}
+
+// handleWindowResize recalculates the panel's bounds based on its anchor settings.
+// This is called automatically when the parent window is resized.
+func (p *WebviewPanel) handleWindowResize(newWindowWidth, newWindowHeight int) {
+	if p.isDestroyed() || p.options.Anchor == AnchorNone {
+		return
+	}
+
+	newBounds := p.calculateAnchoredBounds(newWindowWidth, newWindowHeight)
+	p.SetBounds(newBounds)
+}
+
+// calculateAnchoredBounds computes the new bounds based on anchor settings.
+func (p *WebviewPanel) calculateAnchoredBounds(newWindowWidth, newWindowHeight int) Rect {
+	anchor := p.options.Anchor
+	orig := p.originalBounds
+	origWinW := p.originalWindowWidth
+	origWinH := p.originalWindowHeight
+
+	// If original window size was not recorded, use current bounds
+	if origWinW == 0 || origWinH == 0 {
+		return Rect{
+			X:      p.options.X,
+			Y:      p.options.Y,
+			Width:  p.options.Width,
+			Height: p.options.Height,
+		}
+	}
+
+	// Calculate distances from edges
+	distanceFromRight := origWinW - (orig.X + orig.Width)
+	distanceFromBottom := origWinH - (orig.Y + orig.Height)
+
+	newX := orig.X
+	newY := orig.Y
+	newWidth := orig.Width
+	newHeight := orig.Height
+
+	// Handle horizontal anchoring
+	hasLeft := anchor.HasAnchor(AnchorLeft)
+	hasRight := anchor.HasAnchor(AnchorRight)
+
+	if hasLeft && hasRight {
+		// Anchored to both sides - stretch horizontally
+		newX = orig.X
+		newWidth = newWindowWidth - orig.X - distanceFromRight
+	} else if hasRight {
+		// Anchored to right only - maintain distance from right
+		newX = newWindowWidth - distanceFromRight - orig.Width
+	}
+	// If hasLeft only or no horizontal anchor, X stays the same
+
+	// Handle vertical anchoring
+	hasTop := anchor.HasAnchor(AnchorTop)
+	hasBottom := anchor.HasAnchor(AnchorBottom)
+
+	if hasTop && hasBottom {
+		// Anchored to both sides - stretch vertically
+		newY = orig.Y
+		newHeight = newWindowHeight - orig.Y - distanceFromBottom
+	} else if hasBottom {
+		// Anchored to bottom only - maintain distance from bottom
+		newY = newWindowHeight - distanceFromBottom - orig.Height
+	}
+	// If hasTop only or no vertical anchor, Y stays the same
+
+	// Ensure minimum dimensions
+	if newWidth < 1 {
+		newWidth = 1
+	}
+	if newHeight < 1 {
+		newHeight = 1
+	}
+
+	return Rect{
+		X:      newX,
+		Y:      newY,
+		Width:  newWidth,
+		Height: newHeight,
+	}
 }

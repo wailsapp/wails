@@ -38,14 +38,6 @@ func (p *androidPanelImpl) setURL(_ string) {
 	// Not implemented on Android
 }
 
-func (p *androidPanelImpl) setHTML(_ string) {
-	// Not implemented on Android
-}
-
-func (p *androidPanelImpl) execJS(_ string) {
-	// Not implemented on Android
-}
-
 func (p *androidPanelImpl) reload() {
 	// Not implemented on Android
 }

@@ -140,18 +140,6 @@ void panelLoadURL(void* panel, const char* url) {
 	[webView loadRequest:request];
 }
 
-// Load HTML string
-void panelLoadHTML(void* panel, const char* html) {
-	WKWebView* webView = (WKWebView*)panel;
-	[webView loadHTMLString:[NSString stringWithUTF8String:html] baseURL:nil];
-}
-
-// Execute JavaScript
-void panelExecJS(void* panel, const char* js) {
-	WKWebView* webView = (WKWebView*)panel;
-	[webView evaluateJavaScript:[NSString stringWithUTF8String:js] completionHandler:nil];
-}
-
 // Reload
 void panelReload(void* panel) {
 	WKWebView* webView = (WKWebView*)panel;
@@ -255,22 +243,8 @@ func newPanelImpl(panel *WebviewPanel) webviewPanelImpl {
 
 //export panelNavigationCompleted
 func panelNavigationCompleted(windowID C.uint, panelID C.uint) {
-	// Find the window first
-	window, ok := globalApplication.Window.GetByID(uint(windowID))
-	if !ok || window == nil {
-		globalApplication.debug("panelNavigationCompleted: could not find window", "windowID", uint(windowID))
-		return
-	}
-
-	// Find the panel in the window
-	panel := window.GetPanelByID(uint(panelID))
-	if panel == nil {
-		globalApplication.debug("panelNavigationCompleted: could not find panel", "panelID", uint(panelID))
-		return
-	}
-
-	// Mark runtime as loaded so that pending JS can execute
-	panel.markRuntimeLoaded()
+	// Navigation completed callback - could be used for future functionality
+	globalApplication.debug("panelNavigationCompleted", "windowID", uint(windowID), "panelID", uint(panelID))
 }
 
 func (p *darwinPanelImpl) create() {
@@ -310,19 +284,22 @@ func (p *darwinPanelImpl) create() {
 		C.panelSetZoom(p.webview, C.double(options.Zoom))
 	}
 
-	// Load initial content
-	if options.HTML != "" {
-		html := C.CString(options.HTML)
-		C.panelLoadHTML(p.webview, html)
-		C.free(unsafe.Pointer(html))
-	} else if options.URL != "" {
+	// Navigate to initial URL
+	if options.URL != "" {
+		// TODO: Add support for custom headers when WKWebView supports it
+		if len(options.Headers) > 0 {
+			globalApplication.debug("[Panel-Darwin] Custom headers specified (not yet supported)",
+				"panelID", p.panel.id,
+				"headers", options.Headers)
+		}
+
 		url := C.CString(options.URL)
 		C.panelLoadURL(p.webview, url)
 		C.free(unsafe.Pointer(url))
 	}
 
 	// Note: markRuntimeLoaded() is called in panelNavigationCompleted callback
-	// when the navigation (for either HTML or URL) completes
+	// when the navigation completes
 }
 
 func (p *darwinPanelImpl) destroy() {
@@ -374,24 +351,6 @@ func (p *darwinPanelImpl) setURL(url string) {
 	urlStr := C.CString(url)
 	defer C.free(unsafe.Pointer(urlStr))
 	C.panelLoadURL(p.webview, urlStr)
-}
-
-func (p *darwinPanelImpl) setHTML(html string) {
-	if p.webview == nil {
-		return
-	}
-	htmlStr := C.CString(html)
-	defer C.free(unsafe.Pointer(htmlStr))
-	C.panelLoadHTML(p.webview, htmlStr)
-}
-
-func (p *darwinPanelImpl) execJS(js string) {
-	if p.webview == nil {
-		return
-	}
-	jsStr := C.CString(js)
-	defer C.free(unsafe.Pointer(jsStr))
-	C.panelExecJS(p.webview, jsStr)
 }
 
 func (p *darwinPanelImpl) reload() {

@@ -175,8 +175,9 @@ type WebviewWindow struct {
 	unconditionallyClose uint32
 
 	// Embedded panels management
-	panels     map[uint]*WebviewPanel
-	panelsLock sync.RWMutex
+	panels                       map[uint]*WebviewPanel
+	panelsLock                   sync.RWMutex
+	panelResizeHandlerRegistered bool // Tracks if resize handler is registered
 }
 
 func (w *WebviewWindow) SetMenu(menu *Menu) {
@@ -1556,6 +1557,12 @@ func (w *WebviewWindow) SnapAssist() {
 //		URL:    "https://example.com",
 //	})
 func (w *WebviewWindow) NewPanel(options WebviewPanelOptions) *WebviewPanel {
+	globalApplication.debug("[Window] NewPanel() called",
+		"windowID", w.id,
+		"panelName", options.Name,
+		"windowImplNil", w.impl == nil,
+		"windowDestroyed", w.isDestroyed())
+
 	panel := NewPanel(options)
 	panel.parent = w
 
@@ -1563,9 +1570,30 @@ func (w *WebviewWindow) NewPanel(options WebviewPanelOptions) *WebviewPanel {
 	w.panels[panel.id] = panel
 	w.panelsLock.Unlock()
 
+	globalApplication.debug("[Window] Panel registered",
+		"windowID", w.id,
+		"panelID", panel.id,
+		"panelName", panel.name)
+
 	// If window is already running, start the panel immediately
 	if w.impl != nil && !w.isDestroyed() {
+		globalApplication.debug("[Window] Window impl exists, starting panel immediately",
+			"windowID", w.id,
+			"panelID", panel.id)
+		// Initialize anchor with current window size
+		panel.initializeAnchor()
 		InvokeSync(panel.run)
+
+		// Ensure resize handler is registered if this panel has anchoring
+		if options.Anchor != AnchorNone {
+			w.ensurePanelResizeHandler()
+		}
+	} else {
+		globalApplication.debug("[Window] Window impl not ready, panel will be started later",
+			"windowID", w.id,
+			"panelID", panel.id,
+			"implNil", w.impl == nil,
+			"destroyed", w.isDestroyed())
 	}
 
 	return panel
@@ -1635,6 +1663,8 @@ func (w *WebviewWindow) removePanel(id uint) {
 // runPanels starts all panels that haven't been started yet.
 // This is called after the window's impl is created.
 func (w *WebviewWindow) runPanels() {
+	globalApplication.debug("[Window] runPanels() called", "windowID", w.id)
+
 	// Collect panels under lock, then run them outside the lock
 	w.panelsLock.RLock()
 	panels := make([]*WebviewPanel, 0, len(w.panels))
@@ -1645,8 +1675,77 @@ func (w *WebviewWindow) runPanels() {
 	}
 	w.panelsLock.RUnlock()
 
+	globalApplication.debug("[Window] runPanels() found panels to start",
+		"windowID", w.id,
+		"panelCount", len(panels))
+
 	for _, panel := range panels {
+		globalApplication.debug("[Window] runPanels() starting panel",
+			"windowID", w.id,
+			"panelID", panel.id,
+			"panelName", panel.name)
+		panel.initializeAnchor()
 		panel.run()
+	}
+
+	// Register resize event handler for panel responsive layout if needed
+	w.ensurePanelResizeHandler()
+
+	globalApplication.debug("[Window] runPanels() completed", "windowID", w.id)
+}
+
+// ensurePanelResizeHandler registers the resize event handler if there are anchored panels
+// and the handler hasn't been registered yet.
+func (w *WebviewWindow) ensurePanelResizeHandler() {
+	w.panelsLock.Lock()
+	if w.panelResizeHandlerRegistered {
+		w.panelsLock.Unlock()
+		return
+	}
+
+	// Check if we have any anchored panels
+	hasAnchoredPanels := false
+	for _, panel := range w.panels {
+		if panel.options.Anchor != AnchorNone {
+			hasAnchoredPanels = true
+			break
+		}
+	}
+
+	if !hasAnchoredPanels {
+		w.panelsLock.Unlock()
+		return
+	}
+
+	w.panelResizeHandlerRegistered = true
+	w.panelsLock.Unlock()
+
+	w.OnWindowEvent(events.Common.WindowDidResize, func(event *WindowEvent) {
+		w.handlePanelResize()
+	})
+}
+
+// handlePanelResize updates all anchored panels when the window is resized.
+// This should be called when the window size changes.
+func (w *WebviewWindow) handlePanelResize() {
+	w.panelsLock.RLock()
+	panels := make([]*WebviewPanel, 0, len(w.panels))
+	for _, panel := range w.panels {
+		if panel.options.Anchor != AnchorNone {
+			panels = append(panels, panel)
+		}
+	}
+	w.panelsLock.RUnlock()
+
+	if len(panels) == 0 {
+		return
+	}
+
+	// Get new window size
+	newWidth, newHeight := w.Size()
+
+	for _, panel := range panels {
+		panel.handleWindowResize(newWidth, newHeight)
 	}
 }
 

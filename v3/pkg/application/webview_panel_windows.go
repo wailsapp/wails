@@ -4,7 +4,8 @@ package application
 
 import (
 	"fmt"
-	"strings"
+	"os"
+	"path/filepath"
 
 	"github.com/wailsapp/go-webview2/pkg/edge"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
@@ -24,14 +25,21 @@ type windowsPanelImpl struct {
 func newPanelImpl(panel *WebviewPanel) webviewPanelImpl {
 	parentWindow := panel.parent
 	if parentWindow == nil || parentWindow.impl == nil {
+		globalApplication.error("[Panel-Windows] newPanelImpl: parent or parent.impl is nil",
+			"parentNil", parentWindow == nil,
+			"parentImplNil", parentWindow != nil && parentWindow.impl == nil)
 		return nil
 	}
 
 	windowsParent, ok := parentWindow.impl.(*windowsWebviewWindow)
 	if !ok {
+		globalApplication.error("[Panel-Windows] newPanelImpl: parent.impl is not *windowsWebviewWindow")
 		return nil
 	}
 
+	globalApplication.debug("[Panel-Windows] newPanelImpl: created impl",
+		"panelID", panel.id,
+		"parentHWND", windowsParent.hwnd)
 	return &windowsPanelImpl{
 		panel:  panel,
 		parent: windowsParent,
@@ -40,6 +48,12 @@ func newPanelImpl(panel *WebviewPanel) webviewPanelImpl {
 
 func (p *windowsPanelImpl) create() {
 	options := p.panel.options
+
+	globalApplication.debug("[Panel-Windows] create() starting",
+		"panelID", p.panel.id,
+		"panelName", p.panel.name,
+		"bounds", fmt.Sprintf("x=%d,y=%d,w=%d,h=%d", options.X, options.Y, options.Width, options.Height),
+		"parentHWND", p.parent.hwnd)
 
 	// Create a child window to host the WebView2
 	// We use WS_CHILD style to make it a child of the parent window
@@ -55,6 +69,10 @@ func (p *windowsPanelImpl) create() {
 		Width:  options.Width,
 		Height: options.Height,
 	})
+
+	globalApplication.debug("[Panel-Windows] Physical bounds after DIP conversion",
+		"panelID", p.panel.id,
+		"physicalBounds", fmt.Sprintf("x=%d,y=%d,w=%d,h=%d", bounds.X, bounds.Y, bounds.Width, bounds.Height))
 
 	// Create the child window
 	p.hwnd = w32.CreateWindowEx(
@@ -73,39 +91,62 @@ func (p *windowsPanelImpl) create() {
 	)
 
 	if p.hwnd == 0 {
-		globalApplication.error("failed to create panel child window")
+		lastErr := w32.GetLastError()
+		globalApplication.error("[Panel-Windows] failed to create panel child window",
+			"panelID", p.panel.id,
+			"lastError", lastErr)
 		return
 	}
+
+	globalApplication.debug("[Panel-Windows] Child window created",
+		"panelID", p.panel.id,
+		"panelHWND", p.hwnd)
 
 	// Setup WebView2 (Chromium)
 	p.setupChromium()
 }
 
 func (p *windowsPanelImpl) setupChromium() {
+	globalApplication.debug("[Panel-Windows] setupChromium() starting", "panelID", p.panel.id)
+
 	p.chromium = edge.NewChromium()
 
 	if globalApplication.options.ErrorHandler != nil {
 		p.chromium.SetErrorCallback(globalApplication.options.ErrorHandler)
 	}
 
-	// Configure chromium
-	p.chromium.DataPath = globalApplication.options.Windows.WebviewUserDataPath
+	// Configure chromium with a unique data path for this panel
+	// WebView2 requires separate user data folders when multiple WebView2 instances
+	// are created in the same process with different environments
+	baseDataPath := globalApplication.options.Windows.WebviewUserDataPath
+	if baseDataPath == "" {
+		// Use default path based on app name
+		baseDataPath = filepath.Join(os.Getenv("AppData"), "wails-panels")
+	}
+	// Create a unique subdirectory for this panel
+	p.chromium.DataPath = filepath.Join(baseDataPath, fmt.Sprintf("panel-%d", p.panel.id))
 	p.chromium.BrowserPath = globalApplication.options.Windows.WebviewBrowserPath
+
+	globalApplication.debug("[Panel-Windows] Using DataPath", "panelID", p.panel.id, "dataPath", p.chromium.DataPath)
 
 	// Set up callbacks
 	p.chromium.MessageCallback = p.processMessage
 	p.chromium.NavigationCompletedCallback = p.navigationCompletedCallback
 
+	globalApplication.debug("[Panel-Windows] Calling Embed()", "panelID", p.panel.id, "hwnd", p.hwnd)
 	// Embed the WebView2 into our child window
 	p.chromium.Embed(p.hwnd)
+	globalApplication.debug("[Panel-Windows] Embed() completed, calling Resize()", "panelID", p.panel.id)
 	p.chromium.Resize()
 
 	// Configure settings
 	settings, err := p.chromium.GetSettings()
 	if err != nil {
-		globalApplication.error("failed to get chromium settings: %v", err)
+		globalApplication.error("[Panel-Windows] failed to get chromium settings", "panelID", p.panel.id, "error", err)
 		return
 	}
+
+	globalApplication.debug("[Panel-Windows] Settings obtained successfully", "panelID", p.panel.id)
 
 	debugMode := globalApplication.isDebugMode
 
@@ -116,12 +157,12 @@ func (p *windowsPanelImpl) setupChromium() {
 	}
 	err = settings.PutAreDefaultContextMenusEnabled(devToolsEnabled)
 	if err != nil {
-		globalApplication.error("failed to configure context menus: %v", err)
+		globalApplication.error("[Panel-Windows] failed to configure context menus", "panelID", p.panel.id, "error", err)
 	}
 
 	err = settings.PutAreDevToolsEnabled(devToolsEnabled)
 	if err != nil {
-		globalApplication.error("failed to configure devtools: %v", err)
+		globalApplication.error("[Panel-Windows] failed to configure devtools", "panelID", p.panel.id, "error", err)
 	}
 
 	// Set zoom if specified
@@ -141,44 +182,48 @@ func (p *windowsPanelImpl) setupChromium() {
 		)
 	}
 
-	// Navigate to initial content
-	if p.panel.options.HTML != "" {
-		p.loadHTMLWithScripts()
-	} else if p.panel.options.URL != "" {
+	// Navigate to initial URL
+	if p.panel.options.URL != "" {
+		globalApplication.debug("[Panel-Windows] Navigating to URL", "panelID", p.panel.id, "url", p.panel.options.URL)
 		startURL, err := assetserver.GetStartURL(p.panel.options.URL)
 		if err != nil {
-			globalApplication.error("failed to get start URL: %v", err)
+			globalApplication.error("[Panel-Windows] failed to get start URL", "panelID", p.panel.id, "error", err)
 			return
 		}
+		globalApplication.debug("[Panel-Windows] Resolved start URL", "panelID", p.panel.id, "startURL", startURL)
+
+		// TODO: Add support for custom headers when WebView2 supports it
+		// For now, headers are logged but not applied
+		if len(p.panel.options.Headers) > 0 {
+			globalApplication.debug("[Panel-Windows] Custom headers specified (not yet supported)",
+				"panelID", p.panel.id,
+				"headers", p.panel.options.Headers)
+		}
+
 		p.chromium.Navigate(startURL)
+	} else {
+		globalApplication.debug("[Panel-Windows] No URL specified", "panelID", p.panel.id)
 	}
+
+	globalApplication.debug("[Panel-Windows] setupChromium() completed", "panelID", p.panel.id)
+
+	// Force show the panel window and bring it to the top
+	w32.ShowWindow(p.hwnd, w32.SW_SHOW)
+	w32.SetWindowPos(
+		p.hwnd,
+		w32.HWND_TOP,
+		0, 0, 0, 0,
+		w32.SWP_NOMOVE|w32.SWP_NOSIZE|w32.SWP_NOACTIVATE|w32.SWP_SHOWWINDOW,
+	)
+	globalApplication.debug("[Panel-Windows] Panel window shown and brought to top",
+		"panelID", p.panel.id,
+		"hwnd", p.hwnd,
+		"isVisible", w32.IsWindowVisible(p.hwnd))
 
 	// Open inspector if requested
 	if debugMode && p.panel.options.OpenInspectorOnStartup {
 		p.chromium.OpenDevToolsWindow()
 	}
-}
-
-func (p *windowsPanelImpl) loadHTMLWithScripts() {
-	var script string
-	if p.panel.options.JS != "" {
-		script = p.panel.options.JS
-	}
-	if p.panel.options.CSS != "" {
-		// Escape CSS for safe injection into JavaScript string
-		escapedCSS := strings.ReplaceAll(p.panel.options.CSS, `\`, `\\`)
-		escapedCSS = strings.ReplaceAll(escapedCSS, `"`, `\"`)
-		escapedCSS = strings.ReplaceAll(escapedCSS, "\n", `\n`)
-		escapedCSS = strings.ReplaceAll(escapedCSS, "\r", `\r`)
-		script += fmt.Sprintf(
-			"; addEventListener(\"DOMContentLoaded\", (event) => { document.head.appendChild(document.createElement('style')).innerHTML=\"%s\"; });",
-			escapedCSS,
-		)
-	}
-	if script != "" {
-		p.chromium.Init(script)
-	}
-	p.chromium.NavigateToString(p.panel.options.HTML)
 }
 
 func (p *windowsPanelImpl) processMessage(message string, _ *edge.ICoreWebView2, _ *edge.ICoreWebView2WebMessageReceivedEventArgs) {
@@ -191,24 +236,7 @@ func (p *windowsPanelImpl) navigationCompletedCallback(_ *edge.ICoreWebView2, _ 
 	p.navigationCompleted = true
 
 	// Execute any pending JS
-	if p.panel.options.JS != "" && p.panel.options.HTML == "" {
-		p.execJS(p.panel.options.JS)
-	}
-	if p.panel.options.CSS != "" && p.panel.options.HTML == "" {
-		// Escape CSS for safe injection into JavaScript string
-		escapedCSS := strings.ReplaceAll(p.panel.options.CSS, `\`, `\\`)
-		escapedCSS = strings.ReplaceAll(escapedCSS, `'`, `\'`)
-		escapedCSS = strings.ReplaceAll(escapedCSS, "\n", `\n`)
-		escapedCSS = strings.ReplaceAll(escapedCSS, "\r", `\r`)
-		js := fmt.Sprintf(
-			"(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('%s')); document.head.appendChild(style); })();",
-			escapedCSS,
-		)
-		p.execJS(js)
-	}
-
-	// Mark runtime as loaded
-	p.panel.markRuntimeLoaded()
+	// Navigation completed - no additional action needed
 }
 
 func (p *windowsPanelImpl) destroy() {
@@ -314,24 +342,13 @@ func (p *windowsPanelImpl) setURL(url string) {
 	p.chromium.Navigate(startURL)
 }
 
-func (p *windowsPanelImpl) setHTML(html string) {
-	if p.chromium == nil {
-		return
-	}
-	p.chromium.NavigateToString(html)
-}
-
-func (p *windowsPanelImpl) execJS(js string) {
+func (p *windowsPanelImpl) reload() {
 	if p.chromium == nil {
 		return
 	}
 	globalApplication.dispatchOnMainThread(func() {
-		p.chromium.Eval(js)
+		p.chromium.Eval("window.location.reload();")
 	})
-}
-
-func (p *windowsPanelImpl) reload() {
-	p.execJS("window.location.reload();")
 }
 
 func (p *windowsPanelImpl) forceReload() {

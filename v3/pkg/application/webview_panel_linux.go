@@ -43,16 +43,6 @@ static void panel_load_url(GtkWidget *webview, const char *url) {
     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(webview), url);
 }
 
-// Load HTML in webview
-static void panel_load_html(GtkWidget *webview, const char *html) {
-    webkit_web_view_load_html(WEBKIT_WEB_VIEW(webview), html, NULL);
-}
-
-// Execute JavaScript
-static void panel_exec_js(GtkWidget *webview, const char *js) {
-    webkit_web_view_run_javascript(WEBKIT_WEB_VIEW(webview), js, NULL, NULL, NULL);
-}
-
 // Reload webview
 static void panel_reload(GtkWidget *webview) {
     webkit_web_view_reload(WEBKIT_WEB_VIEW(webview));
@@ -219,12 +209,15 @@ func (p *linuxPanelImpl) create() {
 		C.gtk_widget_show_all(p.fixed)
 	}
 
-	// Load initial content
-	if options.HTML != "" {
-		html := C.CString(options.HTML)
-		defer C.free(unsafe.Pointer(html))
-		C.panel_load_html(p.webview, html)
-	} else if options.URL != "" {
+	// Navigate to initial URL
+	if options.URL != "" {
+		// TODO: Add support for custom headers when WebKitWebView supports it
+		if len(options.Headers) > 0 {
+			globalApplication.debug("[Panel-Linux] Custom headers specified (not yet supported)",
+				"panelID", p.panel.id,
+				"headers", options.Headers)
+		}
+
 		url := C.CString(options.URL)
 		defer C.free(unsafe.Pointer(url))
 		C.panel_load_url(p.webview, url)
@@ -234,9 +227,6 @@ func (p *linuxPanelImpl) create() {
 	if debugMode && options.OpenInspectorOnStartup {
 		C.panel_open_devtools(p.webview)
 	}
-
-	// Mark runtime as loaded
-	p.panel.markRuntimeLoaded()
 }
 
 func boolToInt(b bool) int {
@@ -289,24 +279,6 @@ func (p *linuxPanelImpl) setURL(url string) {
 	urlStr := C.CString(url)
 	defer C.free(unsafe.Pointer(urlStr))
 	C.panel_load_url(p.webview, urlStr)
-}
-
-func (p *linuxPanelImpl) setHTML(html string) {
-	if p.webview == nil {
-		return
-	}
-	htmlStr := C.CString(html)
-	defer C.free(unsafe.Pointer(htmlStr))
-	C.panel_load_html(p.webview, htmlStr)
-}
-
-func (p *linuxPanelImpl) execJS(js string) {
-	if p.webview == nil {
-		return
-	}
-	jsStr := C.CString(js)
-	defer C.free(unsafe.Pointer(jsStr))
-	C.panel_exec_js(p.webview, jsStr)
 }
 
 func (p *linuxPanelImpl) reload() {

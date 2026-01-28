@@ -12,20 +12,18 @@ const (
 	PanelGetBounds    = 1
 	PanelSetZIndex    = 2
 	PanelSetURL       = 3
-	PanelSetHTML      = 4
-	PanelExecJS       = 5
-	PanelReload       = 6
-	PanelForceReload  = 7
-	PanelShow         = 8
-	PanelHide         = 9
-	PanelIsVisible    = 10
-	PanelSetZoom      = 11
-	PanelGetZoom      = 12
-	PanelFocus        = 13
-	PanelIsFocused    = 14
-	PanelOpenDevTools = 15
-	PanelDestroy      = 16
-	PanelName         = 17
+	PanelReload       = 4
+	PanelForceReload  = 5
+	PanelShow         = 6
+	PanelHide         = 7
+	PanelIsVisible    = 8
+	PanelSetZoom      = 9
+	PanelGetZoom      = 10
+	PanelFocus        = 11
+	PanelIsFocused    = 12
+	PanelOpenDevTools = 13
+	PanelDestroy      = 14
+	PanelName         = 15
 )
 
 var panelMethodNames = map[int]string{
@@ -33,8 +31,6 @@ var panelMethodNames = map[int]string{
 	PanelGetBounds:    "GetBounds",
 	PanelSetZIndex:    "SetZIndex",
 	PanelSetURL:       "SetURL",
-	PanelSetHTML:      "SetHTML",
-	PanelExecJS:       "ExecJS",
 	PanelReload:       "Reload",
 	PanelForceReload:  "ForceReload",
 	PanelShow:         "Show",
@@ -58,8 +54,6 @@ var panelMethodHandlers = map[int]panelMethodHandler{
 	PanelGetBounds:    handlePanelGetBounds,
 	PanelSetZIndex:    handlePanelSetZIndex,
 	PanelSetURL:       handlePanelSetURL,
-	PanelSetHTML:      handlePanelSetHTML,
-	PanelExecJS:       handlePanelExecJS,
 	PanelReload:       handlePanelReload,
 	PanelForceReload:  handlePanelForceReload,
 	PanelShow:         handlePanelShow,
@@ -149,24 +143,6 @@ func handlePanelSetURL(panel *WebviewPanel, args *MapArgs) (any, error) {
 		return nil, errs.NewInvalidRuntimeCallErrorf("url is required")
 	}
 	panel.SetURL(*url)
-	return unit, nil
-}
-
-func handlePanelSetHTML(panel *WebviewPanel, args *MapArgs) (any, error) {
-	html := args.String("html")
-	if html == nil {
-		return nil, errs.NewInvalidRuntimeCallErrorf("html is required")
-	}
-	panel.SetHTML(*html)
-	return unit, nil
-}
-
-func handlePanelExecJS(panel *WebviewPanel, args *MapArgs) (any, error) {
-	js := args.String("js")
-	if js == nil {
-		return nil, errs.NewInvalidRuntimeCallErrorf("js is required")
-	}
-	panel.ExecJS(*js)
 	return unit, nil
 }
 

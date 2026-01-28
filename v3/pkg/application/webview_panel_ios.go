@@ -38,14 +38,6 @@ func (p *iosPanelImpl) setURL(_ string) {
 	// Not implemented on iOS
 }
 
-func (p *iosPanelImpl) setHTML(_ string) {
-	// Not implemented on iOS
-}
-
-func (p *iosPanelImpl) execJS(_ string) {
-	// Not implemented on iOS
-}
-
 func (p *iosPanelImpl) reload() {
 	// Not implemented on iOS
 }
