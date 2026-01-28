@@ -187,7 +187,7 @@ func arrayifyValue(valueArray string, valueType string) string {
 		return valueType
 	}
 
-	return "Array<" + valueType + ">"
+	return "Array<" + valueType + "> | null"
 }
 
 func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) string {
