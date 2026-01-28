@@ -10,10 +10,11 @@ import (
 
 func TestGenerateIcon(t *testing.T) {
 	tests := []struct {
-		name    string
-		setup   func() *IconsOptions
-		wantErr bool
-		test    func() error
+		name          string
+		setup         func() *IconsOptions
+		wantErr       bool
+		requireDarwin bool
+		test          func() error
 	}{
 		{
 			name: "should generate an icon when using the `example` flag",
@@ -125,7 +126,8 @@ func TestGenerateIcon(t *testing.T) {
 		},
 
 		{
-			name: "should generate a Assets.car file when using the `IconComposerInput` flag and `MacAssetDir` flag",
+			name:          "should generate a Assets.car file when using the `IconComposerInput` flag and `MacAssetDir` flag",
+			requireDarwin: true,
 			setup: func() *IconsOptions {
 				// Get the directory of this file
 				_, thisFile, _, _ := runtime.Caller(1)
@@ -305,6 +307,10 @@ func TestGenerateIcon(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.requireDarwin && runtime.GOOS != "darwin" {
+				t.Skip("Assets.car generation is only supported on macOS")
+			}
+
 			options := tt.setup()
 			err := GenerateIcons(options)
 			if (err != nil) != tt.wantErr {

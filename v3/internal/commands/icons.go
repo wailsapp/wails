@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -84,7 +85,10 @@ func GenerateIcons(options *IconsOptions) error {
 		if options.MacAssetDir != "" {
 			err := generateMacAsset(options)
 			if err != nil {
-				return err
+				//Ignore error if the error is "mac asset generation is only supported on macOS" to allow for non-macOS systems to build
+				if err.Error() != "mac asset generation is only supported on macOS" {
+					return err
+				}
 			}
 		}
 	}
@@ -141,6 +145,10 @@ func generateMacIcon(iconData []byte, options *IconsOptions) error {
 }
 
 func generateMacAsset(options *IconsOptions) error {
+	//Check if running on darwin (macOS), because this will only run on a mac
+	if runtime.GOOS != "darwin" {
+		return fmt.Errorf("mac asset generation is only supported on macOS")
+	}
 	// Get system info, because this will only run on macOS 26 or later
 	info, err := operatingsystem.Info()
 	if err != nil {
