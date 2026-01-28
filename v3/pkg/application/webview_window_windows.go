@@ -2060,19 +2060,6 @@ func (w *windowsWebviewWindow) setupChromium() {
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
 
 	if w.parent.options.HTML != "" {
-		var script string
-		if w.parent.options.JS != "" {
-			script = w.parent.options.JS
-		}
-		if w.parent.options.CSS != "" {
-			script += fmt.Sprintf(
-				"; addEventListener(\"DOMContentLoaded\", (event) => { document.head.appendChild(document.createElement('style')).innerHTML=\"%s\"; });",
-				strings.ReplaceAll(w.parent.options.CSS, `"`, `\"`),
-			)
-		}
-		if script != "" {
-			chromium.Init(script)
-		}
 		chromium.NavigateToString(w.parent.options.HTML)
 	} else {
 		startURL, err := assetserver.GetStartURL(w.parent.options.URL)

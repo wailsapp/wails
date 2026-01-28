@@ -97,5 +97,25 @@ export function loadOptionalScript(url: string): Promise<void> {
         .catch(() => {}); // Silently ignore - script is optional
 }
 
+/**
+ * Loads a stylesheet from the given URL if it exists.
+ * Uses HEAD request to check existence, then injects a link tag.
+ * Silently ignores if the stylesheet doesn't exist.
+ */
+export function loadOptionalStylesheet(url: string): Promise<void> {
+    return fetch(url, { method: 'HEAD' })
+        .then(response => {
+            if (response.ok) {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = url;
+                document.head.appendChild(link);
+            }
+        })
+        .catch(() => {}); // Silently ignore - stylesheet is optional
+}
+
 // Load custom.js if available (used by server mode for WebSocket events, etc.)
 loadOptionalScript('/wails/custom.js');
+loadOptionalScript('/wails/init.js');
+loadOptionalStylesheet('/wails/init.css');
