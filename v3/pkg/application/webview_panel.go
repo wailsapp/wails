@@ -70,7 +70,7 @@ type WebviewPanel struct {
 }
 
 // NewPanel creates a new WebviewPanel with the given options.
-// The panel must be associated with a parent window via window.AddPanel().
+// Typically called via window.NewPanel() to associate the panel with a parent window.
 func NewPanel(options WebviewPanelOptions) *WebviewPanel {
 	id := getNextPanelID()
 
@@ -98,8 +98,9 @@ func NewPanel(options WebviewPanelOptions) *WebviewPanel {
 
 	// Normalize URL via asset server for local paths
 	if options.URL != "" {
-		normalizedURL, _ := assetserver.GetStartURL(options.URL)
-		options.URL = normalizedURL
+		if normalizedURL, err := assetserver.GetStartURL(options.URL); err == nil && normalizedURL != "" {
+			options.URL = normalizedURL
+		}
 	}
 
 	// Store original bounds for anchor calculations
@@ -222,7 +223,10 @@ func (p *WebviewPanel) ZIndex() int {
 // Local paths (e.g., "/panel.html") are normalized via the asset server.
 func (p *WebviewPanel) SetURL(url string) *WebviewPanel {
 	// Normalize URL via asset server for local paths
-	normalizedURL, _ := assetserver.GetStartURL(url)
+	normalizedURL := url
+	if normalized, err := assetserver.GetStartURL(url); err == nil && normalized != "" {
+		normalizedURL = normalized
+	}
 	p.options.URL = normalizedURL
 	if p.impl != nil && !p.isDestroyed() {
 		InvokeSync(func() {

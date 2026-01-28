@@ -176,7 +176,7 @@ panels := window.GetPanels()
 window.RemovePanel("sidebar")
 ```
 
-## Key Differences from Windows
+## Key Differences: WebviewWindow vs WebviewPanel
 
 | Feature | WebviewWindow | WebviewPanel |
 |---------|---------------|--------------|
