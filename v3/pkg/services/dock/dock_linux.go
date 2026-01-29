@@ -68,3 +68,8 @@ func (l *linuxDock) RemoveBadge() error {
 	// No-op: Linux doesn't have standardized badge support
 	return nil
 }
+
+func (l *linuxDock) GetBadge() *string {
+	// No-op: Linux doesn't have standardized badge support
+	return nil
+}
