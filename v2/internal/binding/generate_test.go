@@ -3,7 +3,6 @@ package binding
 import (
 	"testing"
 
-	"github.com/leaanthony/slicer"
 	"github.com/stretchr/testify/assert"
 	"github.com/wailsapp/wails/v2/internal/logger"
 )
@@ -138,11 +137,40 @@ func Test_goTypeToJSDocType(t *testing.T) {
 			input: "main.ListData[*net/http.Request]",
 			want:  "main.ListData_net_http_Request_",
 		},
+		{
+			name:  "time.Time mapped to string",
+			input: "time.Time",
+			want:  "string",
+		},
+		{
+			name:  "url.URL mapped to string",
+			input: "url.URL",
+			want:  "string",
+		},
+		{
+			name:  "uuid.UUID mapped to string",
+			input: "uuid.UUID",
+			want:  "string",
+		},
+		{
+			name:  "slice of time.Time",
+			input: "[]time.Time",
+			want:  "Array<string>",
+		},
+		{
+			name:  "map of uuid.UUID",
+			input: "map[string]uuid.UUID",
+			want:  "Record<string, string>",
+		},
+		{
+			name:  "pointer to time.Time",
+			input: "*time.Time",
+			want:  "string",
+		},
 	}
-	var importNamespaces slicer.StringSlicer
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := goTypeToJSDocType(tt.input, &importNamespaces); got != tt.want {
+			if got := goTypeToJSDocType(tt.input); got != tt.want {
 				t.Errorf("goTypeToJSDocType() = %v, want %v", got, tt.want)
 			}
 		})
