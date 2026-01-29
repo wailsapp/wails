@@ -544,6 +544,131 @@ type InstallResponse struct {
 	Error   string `json:"error,omitempty"`
 }
 
+// allowedCommands is a whitelist of commands that can be executed for dependency installation.
+// This prevents arbitrary command execution even though commands originate from backend detection.
+var allowedCommands = map[string]bool{
+	// Package managers (may be called directly or via sudo)
+	"apt":           true,
+	"apt-get":       true,
+	"apk":           true, // Alpine Linux
+	"dnf":           true,
+	"yum":           true,
+	"pacman":        true,
+	"zypper":        true,
+	"emerge":        true,
+	"eopkg":         true,
+	"nix-env":       true,
+	"brew":          true,
+	"port":          true, // MacPorts
+	"winget":        true,
+	"choco":         true,
+	"scoop":         true,
+	"snap":          true,
+	"flatpak":       true,
+	"xcode-select":  true, // macOS Xcode CLI tools
+	// Privilege escalation (validated separately)
+	"sudo":   true,
+	"pkexec": true,
+	"doas":   true,
+}
+
+// allowedSudoCommands are commands allowed to be run after sudo/pkexec/doas.
+// This is a subset of allowedCommands - privilege escalation wrappers are not allowed here.
+var allowedSudoCommands = map[string]bool{
+	"apt":          true,
+	"apt-get":      true,
+	"apk":          true,
+	"dnf":          true,
+	"yum":          true,
+	"pacman":       true,
+	"zypper":       true,
+	"emerge":       true,
+	"eopkg":        true,
+	"nix-env":      true,
+	"brew":         true,
+	"port":         true,
+	"snap":         true,
+	"flatpak":      true,
+	"xcode-select": true,
+}
+
+// safeCommandLookup maps user input command names to safe executable names.
+// This allows CodeQL to trace that executed commands come from a static whitelist.
+var safeCommandLookup = map[string]string{
+	"apt":          "apt",
+	"apt-get":      "apt-get",
+	"apk":          "apk",
+	"dnf":          "dnf",
+	"yum":          "yum",
+	"pacman":       "pacman",
+	"zypper":       "zypper",
+	"emerge":       "emerge",
+	"eopkg":        "eopkg",
+	"nix-env":      "nix-env",
+	"brew":         "brew",
+	"port":         "port",
+	"winget":       "winget",
+	"choco":        "choco",
+	"scoop":        "scoop",
+	"snap":         "snap",
+	"flatpak":      "flatpak",
+	"xcode-select": "xcode-select",
+	"sudo":         "sudo",
+	"pkexec":       "pkexec",
+	"doas":         "doas",
+}
+
+// getSafeCommand validates and returns a safe command from the whitelist.
+// Returns the safe command name and true if valid, or empty string and false if not.
+// For sudo/pkexec/doas, also returns the safe elevated command.
+func getSafeCommand(parts []string) (safeCmd string, safeElevatedCmd string, args []string, ok bool) {
+	if len(parts) == 0 {
+		return "", "", nil, false
+	}
+
+	cmd := parts[0]
+	safeCmd, ok = safeCommandLookup[cmd]
+	if !ok || !allowedCommands[cmd] {
+		return "", "", nil, false
+	}
+
+	// If it's a privilege escalation command, validate the actual command
+	if cmd == "sudo" || cmd == "pkexec" || cmd == "doas" {
+		if len(parts) < 2 {
+			return "", "", nil, false
+		}
+		// Reject any flags before the command to prevent bypass attacks
+		// like "sudo -u apt bash" where -u takes "apt" as its argument
+		actualCmd := parts[1]
+		if strings.HasPrefix(actualCmd, "-") {
+			return "", "", nil, false
+		}
+		safeElevatedCmd, ok = safeCommandLookup[actualCmd]
+		if !ok || !allowedSudoCommands[actualCmd] {
+			return "", "", nil, false
+		}
+		// Return: sudo/pkexec/doas, the elevated command, remaining args
+		return safeCmd, safeElevatedCmd, parts[2:], true
+	}
+
+	// Return: command, empty elevated cmd, remaining args
+	return safeCmd, "", parts[1:], true
+}
+
+// isCommandAllowed checks if a command is in the whitelist.
+// For sudo/pkexec/doas, it validates the actual command being elevated.
+// To avoid bypass attacks via flag parsing (e.g., "sudo -u apt bash"),
+// we reject any sudo invocation where the second argument starts with "-".
+func isCommandAllowed(parts []string) bool {
+	_, _, _, ok := getSafeCommand(parts)
+	return ok
+}
+
+// handleInstallDependency executes dependency installation commands.
+//
+// Security note: This endpoint executes commands that originate from the backend's
+// package manager detection (see packagemanager.InstallCommand). The commands are
+// validated against a whitelist of allowed package managers before execution.
 func (w *Wizard) handleInstallDependency(rw http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
@@ -569,7 +694,27 @@ func (w *Wizard) handleInstallDependency(rw http.ResponseWriter, r *http.Request
 		return
 	}
 
-	cmd := exec.Command(parts[0], parts[1:]...)
+	// Get safe command from whitelist - this ensures the executable comes from
+	// a static whitelist, not from user input
+	safeCmd, safeElevatedCmd, remainingArgs, ok := getSafeCommand(parts)
+	if !ok {
+		json.NewEncoder(rw).Encode(InstallResponse{
+			Success: false,
+			Error:   "Command not allowed: only package manager commands are permitted",
+		})
+		return
+	}
+
+	// Build command arguments using safe values from the whitelist
+	var cmdArgs []string
+	if safeElevatedCmd != "" {
+		// For sudo/pkexec/doas: use safe elevated command from whitelist
+		cmdArgs = append([]string{safeElevatedCmd}, remainingArgs...)
+	} else {
+		cmdArgs = remainingArgs
+	}
+
+	cmd := exec.Command(safeCmd, cmdArgs...) // #nosec G204 -- safeCmd comes from safeCommandLookup whitelist
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {

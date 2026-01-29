@@ -3,6 +3,10 @@ on:
     branches: ['v3-alpha']
   workflow_dispatch:
 
+# Restrict default GITHUB_TOKEN permissions
+permissions:
+  contents: read
+
 concurrency:
   group: publish-npm-v3
   cancel-in-progress: true
@@ -11,6 +15,8 @@ jobs:
   detect:
     name: Detect committed changes
     if: github.event_name != 'workflow_dispatch'
+    permissions:
+      contents: read
     outputs:
       changed: ${{ steps.package-json-changes.outputs.any_modified == 'true' || steps.source-changes.outputs.any_modified == 'true' }}
     runs-on: ubuntu-latest

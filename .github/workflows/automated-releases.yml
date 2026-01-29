@@ -20,6 +20,10 @@ on:
 env:
   GO_VERSION: '1.24'
 
+# Restrict default GITHUB_TOKEN permissions
+permissions:
+  contents: read
+
 jobs:
   check-permissions:
     name: Check Release Permissions
@@ -45,6 +49,8 @@ jobs:
   detect-v2-changes:
     name: Detect v2 Changes
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: check-permissions
     if: needs.check-permissions.outputs.authorized == 'true'
     outputs:
@@ -90,8 +96,10 @@ jobs:
           fi
 
   detect-v3-changes:
-    name: Detect v3-alpha Changes  
+    name: Detect v3-alpha Changes
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: check-permissions
     if: needs.check-permissions.outputs.authorized == 'true'
     outputs:
@@ -140,6 +148,8 @@ jobs:
   release-v2:
     name: Create v2 Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     needs: [check-permissions, detect-v2-changes]
     if: |
       needs.check-permissions.outputs.authorized == 'true' &&
@@ -232,6 +242,8 @@ jobs:
   release-v3:
     name: Create v3-alpha Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     needs: [check-permissions, detect-v3-changes]
     if: |
       needs.check-permissions.outputs.authorized == 'true' &&
@@ -326,6 +338,7 @@ jobs:
   summary:
     name: Release Summary
     runs-on: ubuntu-latest
+    permissions: {}
     needs: [check-permissions, detect-v2-changes, detect-v3-changes, release-v2, release-v3]
     if: always() && needs.check-permissions.outputs.authorized == 'true'
     steps:
