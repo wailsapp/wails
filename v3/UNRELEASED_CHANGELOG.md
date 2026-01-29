@@ -22,7 +22,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Changes in existing functionality -->
 
 ## Fixed
-<!-- Bug fixes -->
+- Make menus to be displayed on Windows OS in `v3\examples\dialogs` by @ndianabasi
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

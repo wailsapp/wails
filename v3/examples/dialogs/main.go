@@ -27,7 +27,14 @@ func main() {
 
 	// Create a custom menu
 	menu := app.NewMenu()
-	menu.AddRole(application.AppMenu)
+
+	// macOS: Add application menu
+	if runtime.GOOS == "darwin" {
+		menu.AddRole(application.AppMenu)
+	}
+
+	// All platforms: Add standard menus
+	menu.AddRole(application.FileMenu)
 	menu.AddRole(application.EditMenu)
 	menu.AddRole(application.WindowMenu)
 	menu.AddRole(application.ServicesMenu)
@@ -350,9 +357,13 @@ func main() {
 		}
 	})
 
-	app.Menu.Set(menu)
+	window := app.Window.New()
 
-	app.Window.New()
+	if runtime.GOOS == "darwin" {
+		app.Menu.Set(menu)
+	} else {
+		window.SetMenu(menu)
+	}
 
 	err := app.Run()
 
