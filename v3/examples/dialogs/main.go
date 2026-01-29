@@ -83,39 +83,65 @@ func main() {
 		dialog := app.Dialog.Question()
 		dialog.SetTitle("Quit")
 		dialog.SetMessage("You have unsaved work. Are you sure you want to quit?")
-		dialog.AddButton("Yes").OnClick(func() {
-			app.Quit()
-		})
+		dialog.AddButton("Yes")
 		no := dialog.AddButton("No")
 		dialog.SetDefaultButton(no)
-		dialog.Show()
+		// Show() returns the clicked button's label
+		result, _ := dialog.Show()
+		if result == "Yes" {
+			app.Quit()
+		}
 	})
 	questionMenu.Add("Question (With Cancel)").OnClick(func(ctx *application.Context) {
 		dialog := app.Dialog.Question().
 			SetTitle("Update").
 			SetMessage("The cancel button is selected when pressing escape")
 		download := dialog.AddButton("📥 Download")
-		download.OnClick(func() {
-			app.Dialog.Info().SetMessage("Downloading...").Show()
-		})
 		no := dialog.AddButton("Cancel")
 		dialog.SetDefaultButton(download)
 		dialog.SetCancelButton(no)
-		dialog.Show()
+		// Show() returns the clicked button's label - use switch for multiple options
+		switch result, _ := dialog.Show(); result {
+		case "📥 Download":
+			app.Dialog.Info().SetMessage("Downloading...").Show()
+		case "Cancel":
+			// User cancelled
+		}
+	})
+	questionMenu.Add("Question (Fluent Cancel/Default)").OnClick(func(ctx *application.Context) {
+		// Fluent API using WithDefaultButton and WithCancelButton
+		result, _ := app.Dialog.Question().
+			SetTitle("Save Changes?").
+			SetMessage("You have unsaved changes. What would you like to do?").
+			WithDefaultButton("Save").
+			WithButton("Don't Save").
+			WithCancelButton("Cancel").
+			Show()
+
+		switch result {
+		case "Save":
+			app.Dialog.Info().SetMessage("Changes saved!").Show()
+		case "Don't Save":
+			app.Dialog.Info().SetMessage("Changes discarded.").Show()
+		case "Cancel":
+			// User cancelled - do nothing
+		}
 	})
 	questionMenu.Add("Question (Custom Icon)").OnClick(func(ctx *application.Context) {
 		dialog := app.Dialog.Question()
 		dialog.SetTitle("Custom Icon Example")
 		dialog.SetMessage("Using a custom icon")
 		dialog.SetIcon(icons.WailsLogoWhiteTransparent)
-		likeIt := dialog.AddButton("I like it!").OnClick(func() {
-			app.Dialog.Info().SetMessage("Thanks!").Show()
-		})
-		dialog.AddButton("Not so keen...").OnClick(func() {
-			app.Dialog.Info().SetMessage("Too bad!").Show()
-		})
+		likeIt := dialog.AddButton("I like it!")
+		dialog.AddButton("Not so keen...")
 		dialog.SetDefaultButton(likeIt)
-		dialog.Show()
+		// Show() returns the clicked button's label
+		switch result, _ := dialog.Show(); result {
+		case "I like it!":
+			app.Dialog.Info().SetMessage("Thanks!").Show()
+		case "Not so keen...":
+			app.Dialog.Info().SetMessage("Too bad!").Show()
+		}
 	})
 
 	warningMenu := menu.AddSubmenu("Warning")

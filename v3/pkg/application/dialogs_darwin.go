@@ -371,7 +371,10 @@ type macosDialog struct {
 	nsDialog unsafe.Pointer
 }
 
-func (m *macosDialog) show() {
+func (m *macosDialog) show() (string, error) {
+	// Channel to receive the result
+	resultChan := make(chan string, 1)
+
 	InvokeAsync(func() {
 
 		// Mac can only have 4 Buttons on a dialog
@@ -429,19 +432,24 @@ func (m *macosDialog) show() {
 
 		var callBackID int
 		callBackID = addDialogCallback(func(buttonPressed int) {
+			var buttonLabel string
 			if len(m.dialog.Buttons) > buttonPressed {
 				button := reversedButtons[buttonPressed]
+				buttonLabel = button.Label
 				if button.Callback != nil {
 					button.Callback()
 				}
 			}
 			removeDialogCallback(callBackID)
+			resultChan <- buttonLabel
 		})
 
 		C.dialogRunModal(m.nsDialog, parent, C.int(callBackID))
 
 	})
 
+	// Wait for and return the result
+	return <-resultChan, nil
 }
 
 func newDialogImpl(d *MessageDialog) *macosDialog {

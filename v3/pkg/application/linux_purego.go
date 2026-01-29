@@ -1210,6 +1210,7 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 		gtkContainerAdd(contentArea, image)
 	}
 
+	cancelButtonIndex := -1
 	for i, button := range options.Buttons {
 		gtkDialogAddButton(
 			dialog,
@@ -1219,9 +1220,19 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 		if button.IsDefault {
 			gtkDialogSetDefaultResponse(dialog, i)
 		}
+		if button.IsCancel {
+			cancelButtonIndex = i
+		}
 	}
 	defer gtkWidgetDestroy(dialog)
-	return gtkDialogRun(dialog)
+	response := gtkDialogRun(dialog)
+
+	// GTK_RESPONSE_DELETE_EVENT (-4) is triggered by Escape key or window close button.
+	// If a cancel button is defined, return its index instead.
+	if response == -4 && cancelButtonIndex >= 0 {
+		return cancelButtonIndex
+	}
+	return response
 }
 
 func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
