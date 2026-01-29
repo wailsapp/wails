@@ -303,27 +303,33 @@ func normaliseName(name string) string {
 }
 
 // checkAndSetCFBundleIconName checks if Assets.car exists in the darwin folder
-// and sets CFBundleIconName to "Icon" if not already set.
+// and sets CFBundleIconName if not already set. The icon name should be configured
+// in config.yml under info.cfBundleIconName and should match the name of the .icon file without the extension
+// with which Assets.car was generated. If not set, defaults to "appicon".
 func checkAndSetCFBundleIconName(dir string, options *BuildAssetsOptions, config *BuildConfig) {
 	darwinDir := filepath.Join(dir, "darwin")
 	assetsCarPath := filepath.Join(darwinDir, "Assets.car")
 	if _, err := os.Stat(assetsCarPath); err == nil {
+		// Only set default if not already configured (e.g., from config.yml)
 		if options.CFBundleIconName == "" {
-			options.CFBundleIconName = "Icon"
-			config.CFBundleIconName = "Icon"
+			options.CFBundleIconName = "appicon"
+			config.CFBundleIconName = "appicon"
 		}
 	}
 }
 
 // checkAndSetCFBundleIconNameUpdate checks if Assets.car exists in the darwin folder
-// and sets CFBundleIconName to "Icon" if not already set (for UpdateBuildAssets).
+// and sets CFBundleIconName if not already set (for UpdateBuildAssets). The icon name should be configured
+// in config.yml under info.cfBundleIconName and should match the name of the .icon file without the extension
+// with which Assets.car was generated. If not set, defaults to "appicon".
 func checkAndSetCFBundleIconNameUpdate(dir string, options *UpdateBuildAssetsOptions, config *UpdateConfig) {
 	darwinDir := filepath.Join(dir, "darwin")
 	assetsCarPath := filepath.Join(darwinDir, "Assets.car")
 	if _, err := os.Stat(assetsCarPath); err == nil {
+		// Only set default if not already configured (e.g., from config.yml)
 		if options.CFBundleIconName == "" {
-			options.CFBundleIconName = "Icon"
-			config.CFBundleIconName = "Icon"
+			options.CFBundleIconName = "appicon"
+			config.CFBundleIconName = "appicon"
 		}
 	}
 }

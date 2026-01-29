@@ -367,10 +367,10 @@ func TestCFBundleIconNameDetection(t *testing.T) {
 		expectIconNameInPlist bool
 	}{
 		{
-			name:                "Assets.car exists, no config - should default to Icon",
+			name:                "Assets.car exists, no config - should default to appicon",
 			createAssetsCar:     true,
 			configIconName:      "",
-			expectedIconName:    "Icon",
+			expectedIconName:    "appicon",
 			expectIconNameInPlist: true,
 		},
 		{
