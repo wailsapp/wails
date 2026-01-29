@@ -228,14 +228,10 @@ func generateMacAsset(options *IconsOptions) error {
 		"--target-device", "mac",
 		"--minimum-deployment-target", "26.0",
 		"--platform", "macosx")
-
-	fmt.Printf("cmd: %s\n", cmd.String())
 	out, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("failed to run actool: %w", err)
 	}
-
-	fmt.Printf("actool output: %s\n", string(out))
 
 	// Parse the plist output to verify compilation results
 	var compilationResults map[string]any
