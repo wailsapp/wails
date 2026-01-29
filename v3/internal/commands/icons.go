@@ -169,7 +169,7 @@ func generateMacAsset(options *IconsOptions) error {
 		return fmt.Errorf("mac asset generation is only supported on macOS 26 or later")
 	}
 
-	cmd := exec.Command("actool", "--version")
+	cmd := exec.Command("/usr/bin/actool", "--version")
 	versionPlist, err := cmd.Output()
 
 	if err != nil {
@@ -218,7 +218,7 @@ func generateMacAsset(options *IconsOptions) error {
 	iconComposerFilename := filepath.Base(iconComposerPath)
 	iconComposerFilename = strings.TrimSuffix(iconComposerFilename, filepath.Ext(iconComposerFilename))
 
-	cmd = exec.Command("actool", iconComposerPath,
+	cmd = exec.Command("/usr/bin/actool", iconComposerPath,
 		"--compile", macAssetDirPath,
 		"--notices", "--warnings", "--errors",
 		"--output-partial-info-plist", filepath.Join(macAssetDirPath, "/temp.plist"),
