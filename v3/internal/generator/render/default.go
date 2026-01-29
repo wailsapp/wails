@@ -123,18 +123,32 @@ func (m *module) renderNamedDefault(typ aliasOrNamed, quoted bool) (result strin
 	} else if collect.MaybeTextMarshaler(typ) != collect.NonMarshaler {
 		return `""`, true
 	} else if collect.IsClass(typ) && !istpalias(typ) {
-		if typ.Obj().Pkg().Path() == m.Imports.Self {
+		pkgPath := typ.Obj().Pkg().Path()
+		if pkgPath == m.Imports.Self {
 			return fmt.Sprintf("(new %s%s())", prefix, jsid(typ.Obj().Name())), true
 		} else {
-			return fmt.Sprintf("(new %s.%s())", jsimport(m.Imports.External[typ.Obj().Pkg().Path()]), jsid(typ.Obj().Name())), true
+			info := m.Imports.External[pkgPath]
+			if info.Name == "" {
+				// Package not in imports - add dynamically to avoid generating invalid code.
+				m.Imports.Add(m.collector.Package(typ.Obj().Pkg()))
+				info = m.Imports.External[pkgPath]
+			}
+			return fmt.Sprintf("(new %s.%s())", jsimport(info), jsid(typ.Obj().Name())), true
 		}
 	} else if _, isAlias := typ.(*types.Alias); isAlias {
 		return m.JSDefault(types.Unalias(typ), quoted), true
 	} else if len(m.collector.Model(typ.Obj()).Collect().Values) > 0 {
-		if typ.Obj().Pkg().Path() == m.Imports.Self {
+		pkgPath := typ.Obj().Pkg().Path()
+		if pkgPath == m.Imports.Self {
 			return fmt.Sprintf("%s%s.$zero", prefix, jsid(typ.Obj().Name())), true
 		} else {
-			return fmt.Sprintf("%s.%s.$zero", jsimport(m.Imports.External[typ.Obj().Pkg().Path()]), jsid(typ.Obj().Name())), true
+			info := m.Imports.External[pkgPath]
+			if info.Name == "" {
+				// Package not in imports - add dynamically to avoid generating invalid code.
+				m.Imports.Add(m.collector.Package(typ.Obj().Pkg()))
+				info = m.Imports.External[pkgPath]
+			}
+			return fmt.Sprintf("%s.%s.$zero", jsimport(info), jsid(typ.Obj().Name())), true
 		}
 	} else {
 		return m.JSDefault(typ.Underlying(), quoted), true

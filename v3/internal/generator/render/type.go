@@ -204,12 +204,20 @@ func (m *module) renderNamedType(typ aliasOrNamed, quoted bool) (result string, 
 
 	var builder strings.Builder
 
-	if typ.Obj().Pkg().Path() == m.Imports.Self {
+	pkgPath := typ.Obj().Pkg().Path()
+	if pkgPath == m.Imports.Self {
 		if m.Imports.ImportModels {
 			builder.WriteString("$models.")
 		}
 	} else {
-		builder.WriteString(jsimport(m.Imports.External[typ.Obj().Pkg().Path()]))
+		info := m.Imports.External[pkgPath]
+		if info.Name == "" {
+			// Package not in imports - this should not happen if AddType was called correctly.
+			// Add the package dynamically to avoid generating invalid code.
+			m.Imports.Add(m.collector.Package(typ.Obj().Pkg()))
+			info = m.Imports.External[pkgPath]
+		}
+		builder.WriteString(jsimport(info))
 		builder.WriteRune('.')
 	}
 	builder.WriteString(jsid(typ.Obj().Name()))

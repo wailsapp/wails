@@ -281,12 +281,20 @@ func (m *module) PostponedCreates() []string {
 
 			builder.WriteString(pre)
 
-			if t.Obj().Pkg().Path() == m.Imports.Self {
+			pkgPath := t.Obj().Pkg().Path()
+			if pkgPath == m.Imports.Self {
 				if m.Imports.ImportModels {
 					builder.WriteString("$models.")
 				}
 			} else {
-				builder.WriteString(jsimport(m.Imports.External[t.Obj().Pkg().Path()]))
+				info := m.Imports.External[pkgPath]
+				if info.Name == "" {
+					// Package not in imports - this should not happen if AddType was called correctly.
+					// Add the package dynamically to avoid generating invalid code.
+					m.Imports.Add(m.collector.Package(t.Obj().Pkg()))
+					info = m.Imports.External[pkgPath]
+				}
+				builder.WriteString(jsimport(info))
 				builder.WriteRune('.')
 			}
 			builder.WriteString(jsid(t.Obj().Name()))
