@@ -10,8 +10,10 @@ The electron alternative for Go
 
 import {newRuntimeCaller, objectNames} from "./runtime.js";
 
-// setup
-window._wails = window._wails || {};
+// setup - SSR guard: only access window in browser environment
+if (typeof window !== "undefined") {
+    window._wails = window._wails || {};
+}
 
 const call = newRuntimeCaller(objectNames.Dialog);
 

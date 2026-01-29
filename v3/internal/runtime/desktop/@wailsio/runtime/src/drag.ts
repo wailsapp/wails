@@ -25,19 +25,24 @@ let defaultCursor = "auto";
 let buttons = 0;
 const buttonsTracked = canTrackButtons();
 
-window._wails = window._wails || {};
-window._wails.setResizable = (value: boolean): void => {
-    resizable = value;
-    if (!resizable) {
-        // Stop resizing if in progress.
-        canResize = resizing = false;
-        setResize();
-    }
-};
+// SSR guard: only access window in browser environment
+if (typeof window !== "undefined") {
+    window._wails = window._wails || {};
+    window._wails.setResizable = (value: boolean): void => {
+        resizable = value;
+        if (!resizable) {
+            // Stop resizing if in progress.
+            canResize = resizing = false;
+            setResize();
+        }
+    };
+}
 
 // Defer attaching mouse listeners until we know we're not on mobile.
 let dragInitDone = false;
 function isMobile(): boolean {
+    // SSR guard: return true in non-browser environment to skip drag initialization
+    if (typeof window === "undefined") return true;
     const os = (window as any)._wails?.environment?.OS;
     if (os === "ios" || os === "android") return true;
     // Fallback heuristic if environment not yet set
@@ -47,6 +52,8 @@ function isMobile(): boolean {
 function tryInitDragHandlers(): void {
     if (dragInitDone) return;
     if (isMobile()) return;
+    // SSR guard: only add event listeners in browser environment
+    if (typeof window === "undefined") return;
     window.addEventListener('mousedown', update, { capture: true });
     window.addEventListener('mousemove', update, { capture: true });
     window.addEventListener('mouseup', update, { capture: true });
@@ -55,17 +62,20 @@ function tryInitDragHandlers(): void {
     }
     dragInitDone = true;
 }
-// Attempt immediate init (in case environment already present)
-tryInitDragHandlers();
-// Also attempt on DOM ready
-document.addEventListener('DOMContentLoaded', tryInitDragHandlers, { once: true });
-// As a last resort, poll for environment for a short period
-let dragEnvPolls = 0;
-const dragEnvPoll = window.setInterval(() => {
-    if (dragInitDone) { window.clearInterval(dragEnvPoll); return; }
+// SSR guard: only initialize in browser environment
+if (typeof window !== "undefined" && typeof document !== "undefined") {
+    // Attempt immediate init (in case environment already present)
     tryInitDragHandlers();
-    if (++dragEnvPolls > 100) { window.clearInterval(dragEnvPoll); }
-}, 50);
+    // Also attempt on DOM ready
+    document.addEventListener('DOMContentLoaded', tryInitDragHandlers, { once: true });
+    // As a last resort, poll for environment for a short period
+    let dragEnvPolls = 0;
+    const dragEnvPoll = window.setInterval(() => {
+        if (dragInitDone) { window.clearInterval(dragEnvPoll); return; }
+        tryInitDragHandlers();
+        if (++dragEnvPolls > 100) { window.clearInterval(dragEnvPoll); }
+    }, 50);
+}
 
 function suppressEvent(event: Event) {
     // Suppress click events while resizing or dragging.

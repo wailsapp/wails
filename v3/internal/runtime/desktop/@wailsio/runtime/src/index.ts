@@ -8,8 +8,10 @@ The electron alternative for Go
 (c) Lea Anthony 2019-present
 */
 
-// Setup
-window._wails = window._wails || {};
+// Setup - SSR guard: only access window in browser environment
+if (typeof window !== "undefined") {
+    window._wails = window._wails || {};
+}
 
 import "./contextmenu.js";
 import "./drag.js";
@@ -64,21 +66,24 @@ export {
 
 import { clientId } from "./runtime.js";
 
-// Notify backend
-window._wails.invoke = System.invoke;
-window._wails.clientId = clientId;
+// SSR guard: only access window and invoke runtime in browser environment
+if (typeof window !== "undefined") {
+    // Notify backend
+    window._wails.invoke = System.invoke;
+    window._wails.clientId = clientId;
 
-// Register platform handlers (internal API)
-// Note: Window is the thisWindow instance (default export from window.ts)
-// Binding ensures 'this' correctly refers to the current window instance
-window._wails.handlePlatformFileDrop = Window.HandlePlatformFileDrop.bind(Window);
+    // Register platform handlers (internal API)
+    // Note: Window is the thisWindow instance (default export from window.ts)
+    // Binding ensures 'this' correctly refers to the current window instance
+    window._wails.handlePlatformFileDrop = Window.HandlePlatformFileDrop.bind(Window);
 
-// Linux-specific drag handlers (GTK intercepts DOM drag events)
-window._wails.handleDragEnter = handleDragEnter;
-window._wails.handleDragLeave = handleDragLeave;
-window._wails.handleDragOver = handleDragOver;
+    // Linux-specific drag handlers (GTK intercepts DOM drag events)
+    window._wails.handleDragEnter = handleDragEnter;
+    window._wails.handleDragLeave = handleDragLeave;
+    window._wails.handleDragOver = handleDragOver;
 
-System.invoke("wails:runtime:ready");
+    System.invoke("wails:runtime:ready");
+}
 
 /**
  * Loads a script from the given URL if it exists.
@@ -86,6 +91,10 @@ System.invoke("wails:runtime:ready");
  * Silently ignores if the script doesn't exist.
  */
 export function loadOptionalScript(url: string): Promise<void> {
+    // SSR guard: only load scripts in browser environment
+    if (typeof window === "undefined" || typeof document === "undefined") {
+        return Promise.resolve();
+    }
     return fetch(url, { method: 'HEAD' })
         .then(response => {
             if (response.ok) {
@@ -98,4 +107,7 @@ export function loadOptionalScript(url: string): Promise<void> {
 }
 
 // Load custom.js if available (used by server mode for WebSocket events, etc.)
-loadOptionalScript('/wails/custom.js');
+// SSR guard: only load in browser environment
+if (typeof window !== "undefined") {
+    loadOptionalScript('/wails/custom.js');
+}

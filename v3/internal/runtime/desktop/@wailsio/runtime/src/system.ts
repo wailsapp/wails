@@ -17,6 +17,10 @@ const SystemEnvironment = 1;
 const SystemCapabilities = 2;
 
 const _invoke = (function () {
+    // SSR guard: skip in non-browser environment
+    if (typeof window === "undefined") {
+        return null;
+    }
     try {
         // Windows WebView2
         if ((window as any).chrome?.webview?.postMessage) {

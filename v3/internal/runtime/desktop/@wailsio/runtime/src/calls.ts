@@ -12,8 +12,10 @@ import { CancellablePromise, type CancellablePromiseWithResolvers } from "./canc
 import { newRuntimeCaller, objectNames } from "./runtime.js";
 import { nanoid } from "./nanoid.js";
 
-// Setup
-window._wails = window._wails || {};
+// Setup - SSR guard: only access window in browser environment
+if (typeof window !== "undefined") {
+    window._wails = window._wails || {};
+}
 
 type PromiseResolvers = Omit<CancellablePromiseWithResolvers<any>, "promise" | "oncancelled">
 

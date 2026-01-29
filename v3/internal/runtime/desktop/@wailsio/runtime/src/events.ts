@@ -13,9 +13,11 @@ import { eventListeners, Listener, listenerOff } from "./listener.js";
 import { Events as Create } from "./create.js";
 import { Types } from "./event_types.js";
 
-// Setup
-window._wails = window._wails || {};
-window._wails.dispatchWailsEvent = dispatchWailsEvent;
+// Setup - SSR guard: only access window in browser environment
+if (typeof window !== "undefined") {
+    window._wails = window._wails || {};
+    window._wails.dispatchWailsEvent = dispatchWailsEvent;
+}
 
 const call = newRuntimeCaller(objectNames.Events);
 const EmitMethod = 0;

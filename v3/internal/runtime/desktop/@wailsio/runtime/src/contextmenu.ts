@@ -12,8 +12,10 @@ import { newRuntimeCaller, objectNames } from "./runtime.js";
 import { IsDebug } from "./system.js";
 import { eventTarget } from "./utils.js";
 
-// setup
-window.addEventListener('contextmenu', contextMenuHandler);
+// setup - SSR guard: only add event listener in browser environment
+if (typeof window !== "undefined") {
+    window.addEventListener('contextmenu', contextMenuHandler);
+}
 
 const call = newRuntimeCaller(objectNames.ContextMenu);
 

@@ -10,7 +10,8 @@ The electron alternative for Go
 
 import { nanoid } from "./nanoid.js";
 
-const runtimeURL = window.location.origin + "/wails/runtime";
+// SSR guard: only access window.location in browser environment
+const runtimeURL = typeof window !== "undefined" ? window.location.origin + "/wails/runtime" : "";
 
 // Re-export nanoid for custom transport implementations
 export { nanoid };

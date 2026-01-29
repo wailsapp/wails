@@ -94,9 +94,16 @@ export function eventTarget(event: Event): HTMLElement {
  ***/
 
 let isReady = false;
-document.addEventListener('DOMContentLoaded', () => { isReady = true });
+// SSR guard: only add event listener in browser environment
+if (typeof document !== "undefined") {
+    document.addEventListener('DOMContentLoaded', () => { isReady = true });
+}
 
 export function whenReady(callback: () => void) {
+    // SSR guard: skip in non-browser environment
+    if (typeof document === "undefined") {
+        return;
+    }
     if (isReady || document.readyState === 'complete') {
         callback();
     } else {
