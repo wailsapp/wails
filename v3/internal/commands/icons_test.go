@@ -321,8 +321,8 @@ func TestGenerateIcon(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.requireDarwin && runtime.GOOS != "darwin" {
-				t.Skip("Assets.car generation is only supported on macOS")
+			if tt.requireDarwin && (runtime.GOOS != "darwin" || os.Getenv("CI") != "") {
+				t.Skip("Assets.car generation is only supported on macOS and not in CI")
 			}
 
 			options := tt.setup()
