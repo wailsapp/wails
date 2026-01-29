@@ -24,6 +24,14 @@ export function ByteSlice(source: any): string {
 }
 
 /**
+ * Date is a creation function that converts RFC3339 strings
+ * (from Go's time.Time JSON marshaling) to JavaScript Date objects.
+ */
+export function Date(source: any): globalThis.Date | null {
+    return ((source == null) ? null : new globalThis.Date(source));
+}
+
+/**
  * Array takes a creation function for an arbitrary type
  * and returns an in-place creation function for an array
  * whose elements are of that type.

@@ -102,6 +102,12 @@ func (m *module) renderNamedDefault(typ aliasOrNamed, quoted bool) (result strin
 		return m.JSDefault(typ.Underlying(), quoted), true
 	}
 
+	// Special case: time.Time renders as JS Date, default to null
+	// (Go's zero time doesn't map cleanly to JS Date)
+	if typ.Obj().Pkg().Path() == "time" && typ.Obj().Name() == "Time" {
+		return "null", true
+	}
+
 	if quoted {
 		// WARN: Do not test with IsAny/IsStringAlias here!! We only want to catch marshalers.
 		if collect.MaybeJSONMarshaler(typ) == collect.NonMarshaler && collect.MaybeTextMarshaler(typ) == collect.NonMarshaler {

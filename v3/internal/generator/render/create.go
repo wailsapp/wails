@@ -54,6 +54,11 @@ func (m *module) needsCreateImpl(typ types.Type, visited *typeutil.Map) bool {
 			return false
 		}
 
+		// Special case: time.Time renders as JS Date, needs creation to parse string to Date
+		if t.Obj().Pkg().Path() == "time" && t.Obj().Name() == "Time" {
+			return true
+		}
+
 		if collect.IsAny(typ) || collect.IsStringAlias(typ) {
 			break
 		} else if collect.IsClass(typ) {
@@ -149,6 +154,12 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 
 		if m.collector.IsVoidAlias(t.Obj()) {
 			return "$Create.Any"
+		}
+
+		// Special case: time.Time renders as JS Date
+		// JSON marshals time.Time as RFC3339 string, which Date constructor can parse
+		if t.Obj().Pkg().Path() == "time" && t.Obj().Name() == "Time" {
+			return "$Create.Date"
 		}
 
 		if !m.NeedsCreate(typ) {

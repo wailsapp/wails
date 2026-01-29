@@ -181,6 +181,13 @@ func (m *module) renderNamedType(typ aliasOrNamed, quoted bool) (result string, 
 		return "void", false
 	}
 
+	// Special case: time.Time renders as JS Date
+	// time.Time implements json.Marshaler and normally renders as 'any',
+	// but it actually marshals to an RFC3339 string that JS Date can parse.
+	if typ.Obj().Pkg().Path() == "time" && typ.Obj().Name() == "Time" {
+		return "Date", false
+	}
+
 	if quoted {
 		switch a := types.Unalias(typ).(type) {
 		case *types.Basic:

@@ -426,6 +426,13 @@ func IsAny(typ types.Type) bool {
 	// Follow alias chain.
 	typ = types.Unalias(typ)
 
+	// Special case: time.Time renders as JS Date, not any
+	if named, ok := typ.(*types.Named); ok {
+		if obj := named.Obj(); obj.Pkg() != nil && obj.Pkg().Path() == "time" && obj.Name() == "Time" {
+			return false
+		}
+	}
+
 	if MaybeJSONMarshaler(typ) != NonMarshaler {
 		// If typ is either a named type, an interface, a pointer or a struct,
 		// it will be rendered as (possibly an alias for) the TS any type.
