@@ -16,7 +16,7 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
-- Add support for using `.icon` files (Apple Icon Composer format) for generating Liquid Glass icons and asset catalogs (macOS)
+- Add support for using `.icon` files (Apple Icon Composer format) for generating Liquid Glass icons and asset catalogs (macOS) (#4934)
 
 ## Changed
 <!-- Changes in existing functionality -->
