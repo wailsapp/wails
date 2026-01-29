@@ -26,7 +26,7 @@ type IconsOptions struct {
 	WindowsFilename   string `description:"The output filename for the Windows icon"`
 	MacFilename       string `description:"The output filename for the Mac icon bundle"`
 	IconComposerInput string `description:"The input Icon Composer file (.icon)"`
-	MacAssetDir       string `description:"The output directory for the Mac asset file (Assets.car)"`
+	MacAssetDir       string `description:"The output directory for the Mac assets (Assets.car and icons.icns)"`
 }
 
 func GenerateIcons(options *IconsOptions) error {
@@ -58,6 +58,21 @@ func GenerateIcons(options *IconsOptions) error {
 		}
 	}
 
+	// Generate Icons from Icon Composer input
+	macIconsGenerated := false
+	if options.IconComposerInput != "" {
+		if options.MacAssetDir != "" {
+			err := generateMacAsset(options)
+			if err != nil {
+				//Ignore error if the error is "mac asset generation is only supported on macOS" to allow for non-macOS systems to build
+				if err.Error() != "mac asset generation is only supported on macOS" {
+					return err
+				}
+			}
+			macIconsGenerated = true
+		}
+	}
+
 	// Generate Icons from input image
 	if options.Input != "" {
 		iconData, err := os.ReadFile(options.Input)
@@ -72,23 +87,11 @@ func GenerateIcons(options *IconsOptions) error {
 			}
 		}
 
-		if options.MacFilename != "" {
+		// Generate Icons from input image if no Mac icons were generated from Icon Composer input
+		if options.MacFilename != "" && !macIconsGenerated {
 			err := generateMacIcon(iconData, options)
 			if err != nil {
 				return err
-			}
-		}
-	}
-
-	// Generate Icons from Icon Composer input
-	if options.IconComposerInput != "" {
-		if options.MacAssetDir != "" {
-			err := generateMacAsset(options)
-			if err != nil {
-				//Ignore error if the error is "mac asset generation is only supported on macOS" to allow for non-macOS systems to build
-				if err.Error() != "mac asset generation is only supported on macOS" {
-					return err
-				}
 			}
 		}
 	}
@@ -201,31 +204,38 @@ func generateMacAsset(options *IconsOptions) error {
 		return fmt.Errorf("actool version %s is not supported, version 26 or later is required", shortVersion)
 	}
 
-	// Handle absolute and relative paths correctly
-	iconComposerPath := options.IconComposerInput
-	if !filepath.IsAbs(iconComposerPath) {
-		iconComposerPath = fmt.Sprintf("./%s", iconComposerPath)
+	// Convert paths to absolute paths (required for actool)
+	iconComposerPath, err := filepath.Abs(options.IconComposerInput)
+	if err != nil {
+		return fmt.Errorf("failed to get absolute path for icon composer input: %w", err)
 	}
-	macAssetDirPath := options.MacAssetDir
-	if !filepath.IsAbs(macAssetDirPath) {
-		macAssetDirPath = fmt.Sprintf("./%s", macAssetDirPath)
+	macAssetDirPath, err := filepath.Abs(options.MacAssetDir)
+	if err != nil {
+		return fmt.Errorf("failed to get absolute path for mac asset directory: %w", err)
 	}
+
+	// Get Filename from Icon Composer input without extension
+	iconComposerFilename := filepath.Base(iconComposerPath)
+	iconComposerFilename = strings.TrimSuffix(iconComposerFilename, filepath.Ext(iconComposerFilename))
 
 	cmd = exec.Command("actool", iconComposerPath,
 		"--compile", macAssetDirPath,
 		"--notices", "--warnings", "--errors",
 		"--output-partial-info-plist", filepath.Join(macAssetDirPath, "/temp.plist"),
-		"--app-icon", "Icon",
-		"--include-all-app-icons",
+		"--app-icon", iconComposerFilename,
 		"--enable-on-demand-resources", "NO",
 		"--development-region", "en",
 		"--target-device", "mac",
 		"--minimum-deployment-target", "26.0",
 		"--platform", "macosx")
+
+	fmt.Printf("cmd: %s\n", cmd.String())
 	out, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("failed to run actool: %w", err)
 	}
+
+	fmt.Printf("actool output: %s\n", string(out))
 
 	// Parse the plist output to verify compilation results
 	var compilationResults map[string]any
@@ -244,12 +254,12 @@ func generateMacAsset(options *IconsOptions) error {
 		return fmt.Errorf("failed to find output-files array in compilation results")
 	}
 
-	if len(outputFiles) != 2 {
-		return fmt.Errorf("expected 2 output files, got %d", len(outputFiles))
+	if len(outputFiles) != 3 {
+		return fmt.Errorf("expected 3 output files, got %d", len(outputFiles))
 	}
 
 	// Check that we have one .car file and one .plist file
-	var carFile, plistFile string
+	var carFile, plistFile, icnsFile string
 	for _, file := range outputFiles {
 		filePath, ok := file.(string)
 		if !ok {
@@ -261,6 +271,8 @@ func generateMacAsset(options *IconsOptions) error {
 			carFile = filePath
 		case ".plist":
 			plistFile = filePath
+		case ".icns":
+			icnsFile = filePath
 		default:
 			return fmt.Errorf("unexpected output file extension: %s", ext)
 		}
@@ -272,10 +284,18 @@ func generateMacAsset(options *IconsOptions) error {
 	if plistFile == "" {
 		return fmt.Errorf("no .plist file found in output files")
 	}
+	if icnsFile == "" {
+		return fmt.Errorf("no .icns file found in output files")
+	}
 
 	// Remove the temporary plist file since compilation was successful
 	if err := os.Remove(plistFile); err != nil {
 		return fmt.Errorf("failed to remove temporary plist file: %w", err)
+	}
+
+	// Rename the .icns file to icons.icns
+	if err := os.Rename(icnsFile, filepath.Join(macAssetDirPath, "icons.icns")); err != nil {
+		return fmt.Errorf("failed to rename .icns file to icons.icns: %w", err)
 	}
 
 	return nil

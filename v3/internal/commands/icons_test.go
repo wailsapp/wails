@@ -126,7 +126,7 @@ func TestGenerateIcon(t *testing.T) {
 		},
 
 		{
-			name:          "should generate a Assets.car file when using the `IconComposerInput` flag and `MacAssetDir` flag",
+			name:          "should generate a Assets.car and icons.icns file when using the `IconComposerInput` flag and `MacAssetDir` flag",
 			requireDarwin: true,
 			setup: func() *IconsOptions {
 				// Get the directory of this file
@@ -141,24 +141,38 @@ func TestGenerateIcon(t *testing.T) {
 			},
 			wantErr: false,
 			test: func() error {
-				// the file `Assets.car` should be created in the current directory
-				// check for the existence of the file
-				f, err := os.Stat("Assets.car")
-				if err != nil {
-					return err
-				}
 				defer func() {
 					// Remove the file
-					err = os.Remove("Assets.car")
+					err := os.Remove("Assets.car")
+					if err != nil {
+						panic(err)
+					}
+					err = os.Remove("icons.icns")
 					if err != nil {
 						panic(err)
 					}
 				}()
+				// the files `Assets.car` and `icons.icns` should be created in the current directory
+				// check for the existence of the files
+				f, err := os.Stat("Assets.car")
+				if err != nil {
+					return err
+				}
 				if f.IsDir() {
 					return fmt.Errorf("Assets.car is a directory")
 				}
 				if f.Size() == 0 {
 					return fmt.Errorf("Assets.car is empty")
+				}
+				f, err = os.Stat("icons.icns")
+				if err != nil {
+					return err
+				}
+				if f.IsDir() {
+					return fmt.Errorf("icons.icns is a directory")
+				}
+				if f.Size() == 0 {
+					return fmt.Errorf("icons.icns is empty")
 				}
 
 				return nil
