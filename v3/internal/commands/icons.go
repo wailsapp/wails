@@ -2,6 +2,7 @@ package commands
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"image"
 	"image/color"
@@ -18,6 +19,10 @@ import (
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"howett.net/plist"
 )
+
+// ErrMacAssetNotSupported is returned by generateMacAsset when mac asset generation
+// is not supported on the current platform (e.g., non-macOS systems).
+var ErrMacAssetNotSupported = errors.New("mac asset generation is only supported on macOS")
 
 type IconsOptions struct {
 	Example           bool   `description:"Generate example icon file (appicon.png) in the current directory"`
@@ -64,12 +69,14 @@ func GenerateIcons(options *IconsOptions) error {
 		if options.MacAssetDir != "" {
 			err := generateMacAsset(options)
 			if err != nil {
-				//Ignore error if the error is "mac asset generation is only supported on macOS" to allow for non-macOS systems to build
-				if err.Error() != "mac asset generation is only supported on macOS" {
+				// Ignore error if mac asset generation is not supported on this platform
+				// to allow for non-macOS systems to build and fall back to Input-based generation
+				if !errors.Is(err, ErrMacAssetNotSupported) {
 					return err
 				}
+			} else {
+				macIconsGenerated = true
 			}
-			macIconsGenerated = true
 		}
 	}
 
@@ -150,58 +157,57 @@ func generateMacIcon(iconData []byte, options *IconsOptions) error {
 func generateMacAsset(options *IconsOptions) error {
 	//Check if running on darwin (macOS), because this will only run on a mac
 	if runtime.GOOS != "darwin" {
-		return fmt.Errorf("mac asset generation is only supported on macOS")
+		return ErrMacAssetNotSupported
 	}
 	// Get system info, because this will only run on macOS 26 or later
 	info, err := operatingsystem.Info()
 	if err != nil {
-		return fmt.Errorf("failed to get system information: %w", err)
+		return ErrMacAssetNotSupported
 	}
 	majorStr, _, found := strings.Cut(info.Version, ".")
 	if !found {
-		return fmt.Errorf("failed to get major version from system information")
+		return ErrMacAssetNotSupported
 	}
 	major, err := strconv.Atoi(majorStr)
 	if err != nil {
-		return fmt.Errorf("failed to convert major version to integer: %w", err)
+		return ErrMacAssetNotSupported
 	}
 	if major < 26 {
-		return fmt.Errorf("mac asset generation is only supported on macOS 26 or later")
+		return ErrMacAssetNotSupported
 	}
 
 	cmd := exec.Command("/usr/bin/actool", "--version")
 	versionPlist, err := cmd.Output()
-
 	if err != nil {
-		return fmt.Errorf("failed to get actool version: %w", err)
+		return ErrMacAssetNotSupported
 	}
 
 	// Parse the plist to extract short-bundle-version
 	var plistData map[string]any
 	if _, err := plist.Unmarshal(versionPlist, &plistData); err != nil {
-		return fmt.Errorf("failed to parse actool version plist: %w", err)
+		return ErrMacAssetNotSupported
 	}
 
 	// Navigate to com.apple.actool.version -> short-bundle-version
 	actoolVersion, ok := plistData["com.apple.actool.version"].(map[string]any)
 	if !ok {
-		return fmt.Errorf("failed to find com.apple.actool.version in plist")
+		return ErrMacAssetNotSupported
 	}
 
 	shortVersion, ok := actoolVersion["short-bundle-version"].(string)
 	if !ok {
-		return fmt.Errorf("failed to find short-bundle-version in plist")
+		return ErrMacAssetNotSupported
 	}
 
 	// Parse the major version number (e.g., "26.2" -> 26)
 	actoolMajorStr, _, _ := strings.Cut(shortVersion, ".")
 	actoolMajor, err := strconv.Atoi(actoolMajorStr)
 	if err != nil {
-		return fmt.Errorf("failed to parse major version from short-bundle-version %q: %w", shortVersion, err)
+		return ErrMacAssetNotSupported
 	}
 
 	if actoolMajor < 26 {
-		return fmt.Errorf("actool version %s is not supported, version 26 or later is required", shortVersion)
+		return ErrMacAssetNotSupported
 	}
 
 	// Convert paths to absolute paths (required for actool)

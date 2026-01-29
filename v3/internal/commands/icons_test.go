@@ -141,20 +141,15 @@ func TestGenerateIcon(t *testing.T) {
 			},
 			wantErr: false,
 			test: func() error {
+				_, thisFile, _, _ := runtime.Caller(1)
+				localDir := filepath.Dir(thisFile)
+				carPath := filepath.Join(localDir, "Assets.car")
+				icnsPath := filepath.Join(localDir, "icons.icns")
 				defer func() {
-					// Remove the file
-					err := os.Remove("Assets.car")
-					if err != nil {
-						panic(err)
-					}
-					err = os.Remove("icons.icns")
-					if err != nil {
-						panic(err)
-					}
+					_ = os.Remove(carPath)
+					_ = os.Remove(icnsPath)
 				}()
-				// the files `Assets.car` and `icons.icns` should be created in the current directory
-				// check for the existence of the files
-				f, err := os.Stat("Assets.car")
+				f, err := os.Stat(carPath)
 				if err != nil {
 					return err
 				}
@@ -164,7 +159,7 @@ func TestGenerateIcon(t *testing.T) {
 				if f.Size() == 0 {
 					return fmt.Errorf("Assets.car is empty")
 				}
-				f, err = os.Stat("icons.icns")
+				f, err = os.Stat(icnsPath)
 				if err != nil {
 					return err
 				}
@@ -174,7 +169,6 @@ func TestGenerateIcon(t *testing.T) {
 				if f.Size() == 0 {
 					return fmt.Errorf("icons.icns is empty")
 				}
-
 				return nil
 			},
 		},
