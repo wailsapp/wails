@@ -20,6 +20,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Updated to use go v1.25 and wails3 instead of go v1.24 and wails in ..docs/getting-started/installation.mdx 
+- Updated to use of GTK WebKit Dev v4.1 instead v4.0 according to alpha.64 (v4.0 dev is depricated on some latest releases of linux distros) in ..docs/quick-start/installation.mdx
 
 ## Fixed
 <!-- Bug fixes -->
