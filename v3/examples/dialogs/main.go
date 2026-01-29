@@ -339,12 +339,15 @@ func main() {
 			app.Dialog.Info().SetMessage(result).Show()
 		}
 	})
+
+	userHomeDir, _ := os.UserHomeDir()
+
 	saveMenu.Add("Select File (Full Example)").OnClick(func(ctx *application.Context) {
 		result, _ := app.Dialog.SaveFile().
 			CanCreateDirectories(false).
 			ShowHiddenFiles(true).
 			SetMessage("Select a file").
-			SetDirectory("/Applications").
+			SetDirectory(userHomeDir).
 			SetButtonText("Let's do this!").
 			SetFilename("README.md").
 			HideExtension(true).
