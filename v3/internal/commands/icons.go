@@ -69,9 +69,13 @@ func GenerateIcons(options *IconsOptions) error {
 		if options.MacAssetDir != "" {
 			err := generateMacAsset(options)
 			if err != nil {
-				// Ignore error if mac asset generation is not supported on this platform
-				// to allow for non-macOS systems to build and fall back to Input-based generation
-				if !errors.Is(err, ErrMacAssetNotSupported) {
+				if errors.Is(err, ErrMacAssetNotSupported) {
+					// No fallback: Icon Composer path requires macOS; return so callers see unsupported-platform failure
+					if options.Input == "" {
+						return fmt.Errorf("icon composer input requires macOS for mac asset generation: %w", err)
+					}
+					// Fallback to input-based generation will run below
+				} else {
 					return err
 				}
 			} else {

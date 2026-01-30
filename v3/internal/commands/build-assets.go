@@ -243,7 +243,7 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 		if options.ProductVersion == "0.1.0" && wailsConfig.Info.Version != "" {
 			options.ProductVersion = wailsConfig.Info.Version
 		}
-		if wailsConfig.Info.CFBundleIconName != "" {
+		if options.CFBundleIconName == "" && wailsConfig.Info.CFBundleIconName != "" {
 			options.CFBundleIconName = wailsConfig.Info.CFBundleIconName
 		}
 		config.FileAssociations = wailsConfig.FileAssociations
