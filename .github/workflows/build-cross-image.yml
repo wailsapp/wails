@@ -94,8 +94,12 @@ jobs:
           build-args: |
             ZIG_VERSION=${{ steps.vars.outputs.zig_version }}
             MACOS_SDK_VERSION=${{ steps.vars.outputs.sdk_version }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: |
+            type=gha
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
+          cache-to: |
+            type=gha,mode=max
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
 
   # Test cross-compilation using wails3 task system (3 parallel jobs)
   # Runs on Linux/amd64 runner - tests actual cross-compilation only:
