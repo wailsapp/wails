@@ -121,7 +121,10 @@ jobs:
           - os: windows
             arch: arm64
             expected: "PE32.*Aarch64"
-          # Linux arm64 (amd64 would be native on runner)
+          # Linux - both archs via Docker
+          - os: linux
+            arch: amd64
+            expected: "ELF 64-bit LSB.*x86-64"
           - os: linux
             arch: arm64
             expected: "ELF 64-bit LSB.*ARM aarch64"
@@ -191,9 +194,9 @@ jobs:
       - name: Cross-compile ${{ matrix.os }}/${{ matrix.arch }} via task
         run: |
           cd /tmp/test-wails-app
-          # For Linux arm64 on amd64 runner, must use docker build (native gcc can't cross-compile)
-          if [ "${{ matrix.os }}" = "linux" ] && [ "${{ matrix.arch }}" = "arm64" ]; then
-            wails3 task linux:build:docker ARCH=arm64
+          # For Linux, always use docker build to test the Docker image
+          if [ "${{ matrix.os }}" = "linux" ]; then
+            wails3 task linux:build:docker ARCH=${{ matrix.arch }}
           else
             wails3 task ${{ matrix.os }}:build ARCH=${{ matrix.arch }}
           fi
@@ -271,6 +274,7 @@ jobs:
           echo "| Darwin/arm64 | ✅ |" >> $GITHUB_STEP_SUMMARY
           echo "| Windows/amd64 | ✅ |" >> $GITHUB_STEP_SUMMARY
           echo "| Windows/arm64 | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Linux/amd64 | ✅ |" >> $GITHUB_STEP_SUMMARY
           echo "| Linux/arm64 | ✅ |" >> $GITHUB_STEP_SUMMARY
 
           # Fail if any test failed
