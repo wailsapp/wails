@@ -227,7 +227,7 @@ func generateMacAsset(options *IconsOptions) error {
 	cmd = exec.Command("/usr/bin/actool", iconComposerPath,
 		"--compile", macAssetDirPath,
 		"--notices", "--warnings", "--errors",
-		"--output-partial-info-plist", filepath.Join(macAssetDirPath, "/temp.plist"),
+		"--output-partial-info-plist", filepath.Join(macAssetDirPath, "temp.plist"),
 		"--app-icon", iconComposerFilename,
 		"--enable-on-demand-resources", "NO",
 		"--development-region", "en",
@@ -256,10 +256,6 @@ func generateMacAsset(options *IconsOptions) error {
 		return fmt.Errorf("failed to find output-files array in compilation results")
 	}
 
-	if len(outputFiles) != 3 {
-		return fmt.Errorf("expected 3 output files, got %d", len(outputFiles))
-	}
-
 	// Check that we have one .car file and one .plist file
 	var carFile, plistFile, icnsFile string
 	for _, file := range outputFiles {
@@ -275,8 +271,7 @@ func generateMacAsset(options *IconsOptions) error {
 			plistFile = filePath
 		case ".icns":
 			icnsFile = filePath
-		default:
-			return fmt.Errorf("unexpected output file extension: %s", ext)
+			// Ignore other output files that may be added in future actool versions
 		}
 	}
 

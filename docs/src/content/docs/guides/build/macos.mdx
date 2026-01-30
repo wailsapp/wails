@@ -46,7 +46,7 @@ The app icon is generated from assets in the `build/` directory. Use the `genera
 wails3 task generate:icons
 ```
 
-This uses `build/appicon.png` to produce `darwin/icons.icns` and `windows/icon.ico`. On macOS you can also provide `build/appicon.icon` (Icon Composer format): the task passes `-iconcomposerinput appicon.icon -macassetdir darwin`, which produces `Assets.car` and `darwin/icons.icns` from the `.icon` file (skipped on Windows). When `Assets.car` is present, run the `update:build-assets` task so that `Info.plist` and `CFBundleIconName` are updated accordingly:
+This uses `build/appicon.png` to produce `darwin/icons.icns` and `windows/icon.ico`. On macOS you can also provide `build/appicon.icon` (Icon Composer format): the task passes `-iconcomposerinput appicon.icon -macassetdir darwin`, which produces `Assets.car` and `darwin/icons.icns` from the `.icon` file (skipped on non-macOS platforms). When `Assets.car` is present, run the `update:build-assets` task so that `Info.plist` and `CFBundleIconName` are updated accordingly:
 
 ```bash
 wails3 task update:build-assets

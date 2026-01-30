@@ -149,8 +149,8 @@ func GenerateBuildAssets(options *BuildAssetsOptions) error {
 		return err
 	}
 	// Check if Assets.car exists - if so, set CFBundleIconName if not already set
-	// This must happen BEFORE template extraction so CFBundleIconName is available in the template
-	checkAndSetCFBundleIconName(options.Dir, options, &config)
+	// This must happen BEFORE the updatable_build_assets extraction so CFBundleIconName is available in Info.plist templates
+	checkAndSetCFBundleIconNameCommon(options.Dir, &buildCFBundleIconNameSetter{options, &config})
 	// Update config with the potentially modified options
 	config.BuildAssetsOptions = *options
 
@@ -261,7 +261,7 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 	}
 
 	// Check if Assets.car exists - if so, set CFBundleIconName if not already set
-	checkAndSetCFBundleIconNameUpdate(options.Dir, options, &config)
+	checkAndSetCFBundleIconNameCommon(options.Dir, &updateCFBundleIconNameSetter{options, &config})
 	// Update config with the potentially modified options
 	config.UpdateBuildAssetsOptions = *options
 
@@ -302,36 +302,49 @@ func normaliseName(name string) string {
 	return strings.ToLower(strings.ReplaceAll(name, " ", "-"))
 }
 
-// checkAndSetCFBundleIconName checks if Assets.car exists in the darwin folder
-// and sets CFBundleIconName if not already set. The icon name should be configured
+// CFBundleIconNameSetter is implemented by types that can get and set CFBundleIconName
+// (used to keep options and config in sync when defaulting the macOS icon name).
+type CFBundleIconNameSetter interface {
+	GetCFBundleIconName() string
+	SetCFBundleIconName(string)
+}
+
+// checkAndSetCFBundleIconNameCommon checks if Assets.car exists in the darwin folder
+// and sets CFBundleIconName via setter if not already set. The icon name should be configured
 // in config.yml under info.cfBundleIconName and should match the name of the .icon file without the extension
 // with which Assets.car was generated. If not set, defaults to "appicon".
-func checkAndSetCFBundleIconName(dir string, options *BuildAssetsOptions, config *BuildConfig) {
+func checkAndSetCFBundleIconNameCommon(dir string, setter CFBundleIconNameSetter) {
 	darwinDir := filepath.Join(dir, "darwin")
 	assetsCarPath := filepath.Join(darwinDir, "Assets.car")
 	if _, err := os.Stat(assetsCarPath); err == nil {
-		// Only set default if not already configured (e.g., from config.yml)
-		if options.CFBundleIconName == "" {
-			options.CFBundleIconName = "appicon"
-			config.CFBundleIconName = "appicon"
+		if setter.GetCFBundleIconName() == "" {
+			setter.SetCFBundleIconName("appicon")
 		}
 	}
 }
 
-// checkAndSetCFBundleIconNameUpdate checks if Assets.car exists in the darwin folder
-// and sets CFBundleIconName if not already set (for UpdateBuildAssets). The icon name should be configured
-// in config.yml under info.cfBundleIconName and should match the name of the .icon file without the extension
-// with which Assets.car was generated. If not set, defaults to "appicon".
-func checkAndSetCFBundleIconNameUpdate(dir string, options *UpdateBuildAssetsOptions, config *UpdateConfig) {
-	darwinDir := filepath.Join(dir, "darwin")
-	assetsCarPath := filepath.Join(darwinDir, "Assets.car")
-	if _, err := os.Stat(assetsCarPath); err == nil {
-		// Only set default if not already configured (e.g., from config.yml)
-		if options.CFBundleIconName == "" {
-			options.CFBundleIconName = "appicon"
-			config.CFBundleIconName = "appicon"
-		}
-	}
+// buildCFBundleIconNameSetter sets CFBundleIconName on both options and config for GenerateBuildAssets.
+type buildCFBundleIconNameSetter struct {
+	options *BuildAssetsOptions
+	config  *BuildConfig
+}
+
+func (s *buildCFBundleIconNameSetter) GetCFBundleIconName() string { return s.options.CFBundleIconName }
+func (s *buildCFBundleIconNameSetter) SetCFBundleIconName(v string) {
+	s.options.CFBundleIconName = v
+	s.config.CFBundleIconName = v
+}
+
+// updateCFBundleIconNameSetter sets CFBundleIconName on both options and config for UpdateBuildAssets.
+type updateCFBundleIconNameSetter struct {
+	options *UpdateBuildAssetsOptions
+	config  *UpdateConfig
+}
+
+func (s *updateCFBundleIconNameSetter) GetCFBundleIconName() string { return s.options.CFBundleIconName }
+func (s *updateCFBundleIconNameSetter) SetCFBundleIconName(v string) {
+	s.options.CFBundleIconName = v
+	s.config.CFBundleIconName = v
 }
 
 // mergeMaps recursively merges src into dst.
