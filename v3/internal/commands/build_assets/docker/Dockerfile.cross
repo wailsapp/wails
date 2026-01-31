@@ -1,7 +1,7 @@
 # Cross-compile Wails v3 apps to any platform
 #
 # Darwin: Zig + macOS SDK
-# Linux: GCC (use --platform to match target arch)
+# Linux: Native GCC when host matches target, Zig for cross-arch
 # Windows: Zig + bundled mingw
 #
 # Usage:
@@ -12,9 +12,6 @@
 #   docker run --rm -v $(pwd):/app wails-cross linux arm64
 #   docker run --rm -v $(pwd):/app wails-cross windows amd64
 #   docker run --rm -v $(pwd):/app wails-cross windows arm64
-#
-# Multi-arch build:
-#   docker buildx build --platform linux/amd64,linux/arm64 -t wails-cross -f Dockerfile.cross .
 
 FROM golang:1.25-bookworm
 
@@ -26,9 +23,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgtk-3-dev libwebkit2gtk-4.1-dev \
     libgtk-4-dev libwebkitgtk-6.0-dev \
     && rm -rf /var/lib/apt/lists/*
-
-# Note: For Linux cross-compilation, use --platform to match target architecture
-# e.g., docker run --platform linux/amd64 ... for amd64 targets
 
 # Install Zig - automatically selects correct binary for host architecture
 ARG ZIG_VERSION=0.14.0
@@ -45,8 +39,8 @@ RUN curl -L "https://github.com/joseluisq/macosx-sdks/releases/download/${MACOS_
 
 ENV MACOS_SDK_PATH=/opt/macos-sdk
 
-# Create Zig CC wrappers for Darwin and Windows targets
-# (Linux uses native GCC with --platform flag for architecture matching)
+# Create Zig CC wrappers for cross-compilation targets
+# Darwin and Windows always use Zig; Linux uses Zig when cross-compiling to different arch
 
 # Darwin arm64
 COPY <<'ZIGWRAP' /usr/local/bin/zcc-darwin-arm64
@@ -128,6 +122,44 @@ exec zig cc -target aarch64-windows-gnu $ARGS
 ZIGWRAP
 RUN chmod +x /usr/local/bin/zcc-windows-arm64
 
+# Linux arm64 - uses Zig for cross-compilation from x86_64 host
+COPY <<'ZIGWRAP' /usr/local/bin/zcc-linux-arm64
+#!/bin/sh
+ARGS=""
+SKIP_NEXT=0
+for arg in "$@"; do
+    if [ $SKIP_NEXT -eq 1 ]; then
+        SKIP_NEXT=0
+        continue
+    fi
+    case "$arg" in
+        -target) SKIP_NEXT=1 ;;
+        *) ARGS="$ARGS $arg" ;;
+    esac
+done
+exec zig cc -target aarch64-linux-gnu $ARGS
+ZIGWRAP
+RUN chmod +x /usr/local/bin/zcc-linux-arm64
+
+# Linux amd64 - uses Zig for cross-compilation from arm64 host
+COPY <<'ZIGWRAP' /usr/local/bin/zcc-linux-amd64
+#!/bin/sh
+ARGS=""
+SKIP_NEXT=0
+for arg in "$@"; do
+    if [ $SKIP_NEXT -eq 1 ]; then
+        SKIP_NEXT=0
+        continue
+    fi
+    case "$arg" in
+        -target) SKIP_NEXT=1 ;;
+        *) ARGS="$ARGS $arg" ;;
+    esac
+done
+exec zig cc -target x86_64-linux-gnu $ARGS
+ZIGWRAP
+RUN chmod +x /usr/local/bin/zcc-linux-amd64
+
 # Build script
 COPY <<'SCRIPT' /usr/local/bin/build.sh
 #!/bin/sh
@@ -148,14 +180,26 @@ case "${OS}-${ARCH}" in
         export GOOS=darwin
         ;;
     linux-arm64|linux-aarch64)
-        export CC=gcc
         export GOARCH=arm64
         export GOOS=linux
+        # Use native GCC if host matches target, otherwise use Zig for cross-compilation
+        HOST_ARCH=$(uname -m)
+        if [ "$HOST_ARCH" = "aarch64" ] || [ "$HOST_ARCH" = "arm64" ]; then
+            export CC=gcc
+        else
+            export CC=zcc-linux-arm64
+        fi
         ;;
     linux-amd64|linux-x86_64)
-        export CC=gcc
         export GOARCH=amd64
         export GOOS=linux
+        # Use native GCC if host matches target, otherwise use Zig for cross-compilation
+        HOST_ARCH=$(uname -m)
+        if [ "$HOST_ARCH" = "x86_64" ] || [ "$HOST_ARCH" = "amd64" ]; then
+            export CC=gcc
+        else
+            export CC=zcc-linux-amd64
+        fi
         ;;
     windows-arm64|windows-aarch64)
         export CC=zcc-windows-arm64
