@@ -74,6 +74,12 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install Linux dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
+          version: 1.0
+
       - name: Install Wails3 CLI
         working-directory: v3
         run: |
