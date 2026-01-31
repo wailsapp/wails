@@ -1,0 +1,143 @@
+name: Cross-Compile Test v3
+
+on:
+  pull_request_review:
+    types: [submitted]
+    branches:
+      - v3-alpha
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to test (optional, uses current branch if not specified)'
+        required: false
+        type: string
+
+jobs:
+  check_approval:
+    name: Check PR Approval
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.review.state == 'approved'
+    outputs:
+      approved: ${{ steps.check.outputs.approved }}
+    steps:
+      - name: Check if PR is approved or manual dispatch
+        id: check
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "Manual dispatch, proceeding with cross-compile tests"
+          else
+            echo "PR approved, proceeding with cross-compile tests"
+          fi
+          echo "approved=true" >> $GITHUB_OUTPUT
+
+  cross_compile_linux:
+    name: Cross-Compile Linux (${{ matrix.arch }})
+    needs: check_approval
+    runs-on: ubuntu-latest
+    if: needs.check_approval.outputs.approved == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64, arm64]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Checkout PR (if specified)
+        if: github.event_name == 'workflow_dispatch' && inputs.pr_number != ''
+        run: gh pr checkout ${{ inputs.pr_number }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set up QEMU for ARM64 emulation
+        if: matrix.arch == 'arm64'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/arm64
+
+      - name: Build Docker image for Linux ${{ matrix.arch }}
+        working-directory: v3
+        run: |
+          docker build \
+            -f test/docker/Dockerfile.linux-${{ matrix.arch }} \
+            -t wails-test-linux-${{ matrix.arch }} \
+            .
+
+      - name: Run cross-compile test for Linux ${{ matrix.arch }}
+        working-directory: v3
+        run: |
+          if [ "${{ matrix.arch }}" == "arm64" ]; then
+            docker run --platform linux/arm64 --rm wails-test-linux-${{ matrix.arch }}
+          else
+            docker run --rm wails-test-linux-${{ matrix.arch }}
+          fi
+
+  cross_compile_all_platforms:
+    name: Cross-Compile All Platforms (Zig)
+    needs: check_approval
+    runs-on: ubuntu-latest
+    if: needs.check_approval.outputs.approved == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: darwin
+            arch: arm64
+          - os: darwin
+            arch: amd64
+          - os: linux
+            arch: arm64
+          - os: linux
+            arch: amd64
+          - os: windows
+            arch: arm64
+          - os: windows
+            arch: amd64
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Checkout PR (if specified)
+        if: github.event_name == 'workflow_dispatch' && inputs.pr_number != ''
+        run: gh pr checkout ${{ inputs.pr_number }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build cross-compile Docker image
+        working-directory: v3/internal/commands/build_assets/docker
+        run: |
+          docker build -t wails-cross -f Dockerfile.cross .
+
+      - name: Test cross-compile for ${{ matrix.os }}/${{ matrix.arch }}
+        working-directory: v3/examples/gin-example
+        run: |
+          echo "Testing cross-compilation for ${{ matrix.os }}/${{ matrix.arch }}..."
+          docker run --rm -v "$(pwd)":/app wails-cross ${{ matrix.os }} ${{ matrix.arch }}
+          echo "Cross-compilation successful for ${{ matrix.os }}/${{ matrix.arch }}"
+
+  cross_compile_results:
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    name: Cross-Compile Results
+    needs: [cross_compile_linux, cross_compile_all_platforms]
+    steps:
+      - run: |
+          linux_result="${{ needs.cross_compile_linux.result }}"
+          all_platforms_result="${{ needs.cross_compile_all_platforms.result }}"
+
+          echo "Linux native compilation: $linux_result"
+          echo "All platforms cross-compilation: $all_platforms_result"
+
+          if [[ $linux_result == "success" ]] && [[ $all_platforms_result == "success" ]]; then
+            echo "All cross-compile tests passed!"
+            exit 0
+          else
+            echo "One or more cross-compile tests failed"
+            exit 1
+          fi
