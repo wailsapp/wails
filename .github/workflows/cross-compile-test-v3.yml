@@ -64,7 +64,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25'
           cache: true
           cache-dependency-path: "v3/go.sum"
 
@@ -83,7 +83,7 @@ jobs:
       - name: Install Wails3 CLI
         working-directory: v3
         run: |
-          task install
+          go install ./cmd/wails3
           wails3 version
 
       - name: Create test project
