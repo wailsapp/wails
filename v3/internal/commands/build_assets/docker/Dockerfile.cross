@@ -18,10 +18,17 @@ FROM golang:1.25-bookworm
 ARG TARGETARCH
 
 # Install base tools, GCC, and GTK/WebKit dev packages
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Enable multi-arch for ARM64 cross-compilation
+RUN dpkg --add-architecture arm64 && \
+    apt-get update && apt-get install -y --no-install-recommends \
     curl xz-utils nodejs npm pkg-config gcc libc6-dev \
+    # Native GTK/WebKit for x86_64 builds
     libgtk-3-dev libwebkit2gtk-4.1-dev \
     libgtk-4-dev libwebkitgtk-6.0-dev \
+    # Cross-compilation toolchain for ARM64
+    gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross \
+    # ARM64 GTK/WebKit libraries for cross-compilation
+    libgtk-3-dev:arm64 libwebkit2gtk-4.1-dev:arm64 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Zig - automatically selects correct binary for host architecture
@@ -122,42 +129,19 @@ exec zig cc -target aarch64-windows-gnu $ARGS
 ZIGWRAP
 RUN chmod +x /usr/local/bin/zcc-windows-arm64
 
-# Linux arm64 - uses Zig for cross-compilation from x86_64 host
-COPY <<'ZIGWRAP' /usr/local/bin/zcc-linux-arm64
+# Linux arm64 - wrapper for aarch64-linux-gnu-gcc cross-compiler
+COPY <<'WRAPPER' /usr/local/bin/zcc-linux-arm64
 #!/bin/sh
-ARGS=""
-SKIP_NEXT=0
-for arg in "$@"; do
-    if [ $SKIP_NEXT -eq 1 ]; then
-        SKIP_NEXT=0
-        continue
-    fi
-    case "$arg" in
-        -target) SKIP_NEXT=1 ;;
-        *) ARGS="$ARGS $arg" ;;
-    esac
-done
-exec zig cc -target aarch64-linux-gnu $ARGS
-ZIGWRAP
+exec aarch64-linux-gnu-gcc "$@"
+WRAPPER
 RUN chmod +x /usr/local/bin/zcc-linux-arm64
 
-# Linux amd64 - uses Zig for cross-compilation from arm64 host
-COPY <<'ZIGWRAP' /usr/local/bin/zcc-linux-amd64
+# Linux amd64 - placeholder for potential arm64->x86_64 cross-compilation
+# (Not commonly needed since most CI/CD runs on x86_64)
+COPY <<'WRAPPER' /usr/local/bin/zcc-linux-amd64
 #!/bin/sh
-ARGS=""
-SKIP_NEXT=0
-for arg in "$@"; do
-    if [ $SKIP_NEXT -eq 1 ]; then
-        SKIP_NEXT=0
-        continue
-    fi
-    case "$arg" in
-        -target) SKIP_NEXT=1 ;;
-        *) ARGS="$ARGS $arg" ;;
-    esac
-done
-exec zig cc -target x86_64-linux-gnu $ARGS
-ZIGWRAP
+exec gcc "$@"
+WRAPPER
 RUN chmod +x /usr/local/bin/zcc-linux-amd64
 
 # Build script
@@ -182,12 +166,15 @@ case "${OS}-${ARCH}" in
     linux-arm64|linux-aarch64)
         export GOARCH=arm64
         export GOOS=linux
-        # Use native GCC if host matches target, otherwise use Zig for cross-compilation
+        # Use native GCC if host matches target, otherwise use cross-compiler
         HOST_ARCH=$(uname -m)
         if [ "$HOST_ARCH" = "aarch64" ] || [ "$HOST_ARCH" = "arm64" ]; then
             export CC=gcc
         else
-            export CC=zcc-linux-arm64
+            export CC=aarch64-linux-gnu-gcc
+            export CXX=aarch64-linux-gnu-g++
+            export PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig
+            export PKG_CONFIG_LIBDIR=/usr/lib/aarch64-linux-gnu/pkgconfig
         fi
         ;;
     linux-amd64|linux-x86_64)
