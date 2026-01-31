@@ -96,12 +96,12 @@ jobs:
         working-directory: test-cross-compile/crosstest
         run: task common:setup:docker
 
-      - name: Remove replace directive for Docker build
+      - name: Fix replace directive for Docker build
         working-directory: test-cross-compile/crosstest
         run: |
-          # Remove the replace directive since Docker won't have access to the local v3 path
+          # Change the replace directive to use absolute path that matches Docker mount
           go mod edit -dropreplace github.com/wailsapp/wails/v3
-          go mod tidy
+          go mod edit -replace github.com/wailsapp/wails/v3=${{ github.workspace }}/v3
 
       - name: Cross-compile for ${{ matrix.target_os }}/${{ matrix.target_arch }}
         working-directory: test-cross-compile/crosstest
