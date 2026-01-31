@@ -33,7 +33,7 @@ jobs:
   cross_compile:
     name: Cross-Compile (${{ matrix.target_os }}/${{ matrix.target_arch }})
     needs: check_approval
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     if: needs.check_approval.outputs.approved == 'true'
     strategy:
       fail-fast: false
@@ -41,16 +41,22 @@ jobs:
         include:
           - target_os: darwin
             target_arch: arm64
+            runner: ubuntu-latest
           - target_os: darwin
             target_arch: amd64
+            runner: ubuntu-latest
           - target_os: linux
             target_arch: arm64
+            runner: ubuntu-24.04-arm  # Native ARM64 runner - much faster than QEMU
           - target_os: linux
             target_arch: amd64
+            runner: ubuntu-latest
           - target_os: windows
             target_arch: arm64
+            runner: ubuntu-latest
           - target_os: windows
             target_arch: amd64
+            runner: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -92,23 +98,9 @@ jobs:
           cd test-cross-compile
           wails3 init -n crosstest -t vanilla
 
-      - name: Set up QEMU for cross-platform emulation
-        if: matrix.target_os == 'linux' && matrix.target_arch != 'amd64'
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Setup Docker cross-compile image
         working-directory: test-cross-compile/crosstest
-        run: |
-          # For Linux cross-arch builds, build the Docker image for the target platform
-          if [[ "${{ matrix.target_os }}" == "linux" && "${{ matrix.target_arch }}" != "amd64" ]]; then
-            echo "Building Docker image for linux/${{ matrix.target_arch }}..."
-            docker buildx build --platform linux/${{ matrix.target_arch }} --load -t wails-cross -f build/docker/Dockerfile.cross build/docker/
-          else
-            task common:setup:docker
-          fi
+        run: task common:setup:docker
 
       - name: Fix replace directive for Docker build
         working-directory: test-cross-compile/crosstest
