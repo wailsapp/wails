@@ -60,7 +60,7 @@ tasks:
       GOARCH: '{{.ARCH | default ARCH}}'
 
   build:docker:
-    summary: Cross-compiles for Linux using Docker with Zig (for macOS/Windows hosts)
+    summary: Cross-compiles for Linux using Docker (uses QEMU for cross-arch builds)
     internal: true
     deps:
       - task: common:build:frontend
@@ -74,8 +74,8 @@ tasks:
           Docker image '{{.CROSS_IMAGE}}' not found.
           Build it first: wails3 task setup:docker
     cmds:
-      # Note: No --platform flag needed - wails-cross is an x86_64 image that uses Zig for cross-compilation
-      - docker run --rm -v "{{.ROOT_DIR}}:/app" {{.GO_CACHE_MOUNT}} {{.REPLACE_MOUNTS}} -e APP_NAME="{{.APP_NAME}}" "{{.CROSS_IMAGE}}" linux {{.DOCKER_ARCH}}
+      # Use --platform to enable QEMU emulation when target arch differs from host
+      - docker run --rm --platform linux/{{.DOCKER_ARCH}} -v "{{.ROOT_DIR}}:/app" {{.GO_CACHE_MOUNT}} {{.REPLACE_MOUNTS}} -e APP_NAME="{{.APP_NAME}}" "{{.CROSS_IMAGE}}" linux {{.DOCKER_ARCH}}
       - docker run --rm -v "{{.ROOT_DIR}}:/app" alpine chown -R $(id -u):$(id -g) /app/bin
       - mkdir -p {{.BIN_DIR}}
       - mv "bin/{{.APP_NAME}}-linux-{{.DOCKER_ARCH}}" "{{.OUTPUT}}"

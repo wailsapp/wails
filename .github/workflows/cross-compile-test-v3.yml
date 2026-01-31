@@ -92,9 +92,23 @@ jobs:
           cd test-cross-compile
           wails3 init -n crosstest -t vanilla
 
+      - name: Set up QEMU for cross-platform emulation
+        if: matrix.target_os == 'linux' && matrix.target_arch != 'amd64'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Setup Docker cross-compile image
         working-directory: test-cross-compile/crosstest
-        run: task common:setup:docker
+        run: |
+          # For Linux cross-arch builds, build the Docker image for the target platform
+          if [[ "${{ matrix.target_os }}" == "linux" && "${{ matrix.target_arch }}" != "amd64" ]]; then
+            echo "Building Docker image for linux/${{ matrix.target_arch }}..."
+            docker buildx build --platform linux/${{ matrix.target_arch }} --load -t wails-cross -f build/docker/Dockerfile.cross build/docker/
+          else
+            task common:setup:docker
+          fi
 
       - name: Fix replace directive for Docker build
         working-directory: test-cross-compile/crosstest
