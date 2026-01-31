@@ -94,13 +94,13 @@ jobs:
 
       - name: Setup Docker cross-compile image
         working-directory: test-cross-compile/crosstest
-        run: task setup:docker
+        run: task common:setup:docker
 
       - name: Cross-compile for ${{ matrix.target_os }}/${{ matrix.target_arch }}
         working-directory: test-cross-compile/crosstest
         run: |
           echo "Cross-compiling for ${{ matrix.target_os }}/${{ matrix.target_arch }}..."
-          task build:${{ matrix.target_os }} ARCH=${{ matrix.target_arch }}
+          task ${{ matrix.target_os }}:build ARCH=${{ matrix.target_arch }}
           echo "Cross-compilation successful!"
           ls -la bin/
 
