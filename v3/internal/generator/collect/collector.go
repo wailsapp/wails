@@ -43,7 +43,7 @@ type Collector struct {
 
 	// events holds collected information about registered custom events.
 	events *EventMap
-	// appVoidTypes caches the application.Void named type that stands in for the void TS type.
+	// appVoidType caches the application.Void named type that stands in for the void TS type.
 	appVoidType atomic.Value
 
 	systemPaths *config.SystemPaths
