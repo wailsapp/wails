@@ -1193,7 +1193,7 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 
 	GdkColorspaceRGB := 0
 
-	if img, err := pngToImage(options.Icon); err == nil {
+	if img, err := pngToImage(options.Icon); err == nil && len(img.Pix) > 0 {
 		// Use gBytesNew instead of gBytesNewStatic because Go memory can be
 		// moved or freed by the GC. gBytesNew copies the data to C-owned memory.
 		gbytes := gBytesNew(uintptr(unsafe.Pointer(&img.Pix[0])), len(img.Pix))
