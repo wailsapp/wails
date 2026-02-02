@@ -17,6 +17,10 @@
             <string>{{.ProductVersion}}</string>
         <key>CFBundleIconFile</key>
             <string>icons</string>
+        {{- if .CFBundleIconName}}
+        <key>CFBundleIconName</key>
+            <string>{{.CFBundleIconName}}</string>
+        {{- end}}
         <key>LSMinimumSystemVersion</key>
             <string>10.15.0</string>
         <key>NSHighResolutionCapable</key>
