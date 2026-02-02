@@ -396,6 +396,61 @@ app := application.New(application.Options{
 
 For more details, see the [Raw Messages Guide](/guides/raw-messages).
 
+## Platform-Specific Options
+
+### Windows Options
+
+Configure Windows-specific behavior at the application level:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Windows: application.WindowsOptions{
+        // WebView2 browser flags (apply to ALL windows)
+        EnabledFeatures:       []string{"msWebView2EnableDraggableRegions"},
+        DisabledFeatures:      []string{"msExperimentalFeature"},
+        AdditionalBrowserArgs: []string{"--remote-debugging-port=9222"},
+
+        // Other Windows options
+        WndClass:                      "MyAppClass",
+        WebviewUserDataPath:           "",  // Default: %APPDATA%\[BinaryName.exe]
+        WebviewBrowserPath:            "",  // Default: system WebView2
+        DisableQuitOnLastWindowClosed: false,
+    },
+})
+```
+
+**Browser Flags:**
+- `EnabledFeatures` - WebView2 feature flags to enable
+- `DisabledFeatures` - WebView2 feature flags to disable
+- `AdditionalBrowserArgs` - Chromium command-line arguments
+
+See [Window Options - Application-Level Windows Options](/features/windows/options#application-level-windows-options) for detailed documentation.
+
+### Mac Options
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Mac: application.MacOptions{
+        ActivationPolicy: application.ActivationPolicyRegular,
+        ApplicationShouldTerminateAfterLastWindowClosed: true,
+    },
+})
+```
+
+### Linux Options
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Linux: application.LinuxOptions{
+        ProgramName:                   "my-app",
+        DisableQuitOnLastWindowClosed: false,
+    },
+})
+```
+
 ## Complete Application Example
 
 ```go
