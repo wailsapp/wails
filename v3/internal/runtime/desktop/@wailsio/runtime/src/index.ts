@@ -88,7 +88,8 @@ System.invoke("wails:runtime:ready");
 export function loadOptionalScript(url: string): Promise<void> {
     return fetch(url, { method: 'HEAD' })
         .then(response => {
-            if (response.ok) {
+            // Only load if status is 200; treat 204 (no content) as "not present"
+            if (response.status === 200) {
                 const script = document.createElement('script');
                 script.src = url;
                 document.head.appendChild(script);
@@ -105,7 +106,8 @@ export function loadOptionalScript(url: string): Promise<void> {
 export function loadOptionalStylesheet(url: string): Promise<void> {
     return fetch(url, { method: 'HEAD' })
         .then(response => {
-            if (response.ok) {
+            // Only load if status is 200; treat 204 (no content) as "not present"
+            if (response.status === 200) {
                 const link = document.createElement('link');
                 link.rel = 'stylesheet';
                 link.href = url;

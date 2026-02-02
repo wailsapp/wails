@@ -144,7 +144,8 @@ func New(appOptions Options) *App {
 						return
 					}
 
-					rw.Header().Set("Cache-Control", "no-cache")
+					rw.Header().Set("Cache-Control", "no-store")
+					rw.Header().Set("Vary", webViewRequestHeaderWindowId)
 					if path == "/wails/init.js" {
 						if webviewWindow.options.JS != "" {
 							rw.Header().Set("Content-Type", "application/javascript")
