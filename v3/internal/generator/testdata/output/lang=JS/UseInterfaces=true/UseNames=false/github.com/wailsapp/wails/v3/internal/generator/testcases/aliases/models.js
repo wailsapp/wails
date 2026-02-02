@@ -61,7 +61,7 @@ import * as subpkg$0 from "./subpkg/models.js";
 /**
  * A generic alias that wraps a map.
  * @template T,U
- * @typedef {{ [_: string]: U } | null} GenericMapAlias
+ * @typedef {{ [_ in string]?: U } | null} GenericMapAlias
  */
 
 /**

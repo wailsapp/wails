@@ -16,6 +16,8 @@ export type {
     EmbeddedValue,
     EmbeddedValuePtr,
     GoodTildeCstrAlias,
+    IntAlias,
+    IntType,
     InterfaceCstrAlias,
     Maps,
     MixedCstrAlias,
