@@ -7,6 +7,64 @@ import (
 	"testing"
 )
 
+func TestGetAbsoluteTargetDir(t *testing.T) {
+	tests := []struct {
+		name      string
+		targetDir string
+		wantEmpty bool
+		wantErr   bool
+	}{
+		{
+			name:      "empty string returns empty",
+			targetDir: "",
+			wantEmpty: true,
+			wantErr:   false,
+		},
+		{
+			name:      "relative path returns absolute",
+			targetDir: "relative/path",
+			wantEmpty: false,
+			wantErr:   false,
+		},
+		{
+			name:      "absolute path returns absolute",
+			targetDir: "/absolute/path",
+			wantEmpty: false,
+			wantErr:   false,
+		},
+		{
+			name:      "current directory returns absolute",
+			targetDir: ".",
+			wantEmpty: false,
+			wantErr:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := GetAbsoluteTargetDir(tt.targetDir)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetAbsoluteTargetDir() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantEmpty && result != "" {
+				t.Errorf("GetAbsoluteTargetDir() = %v, want empty string", result)
+			}
+
+			if !tt.wantEmpty {
+				if result == "" {
+					t.Error("GetAbsoluteTargetDir() returned empty string, want non-empty")
+				}
+				if !filepath.IsAbs(result) {
+					t.Errorf("GetAbsoluteTargetDir() = %v, want absolute path", result)
+				}
+			}
+		})
+	}
+}
+
 func TestCheckDirectorySafety(t *testing.T) {
 	// Create a temporary directory for testing
 	tempDir := t.TempDir()
@@ -14,7 +72,7 @@ func TestCheckDirectorySafety(t *testing.T) {
 	tests := []struct {
 		name    string
 		force   bool
-		setup   func(t *testing.T) string // returns path to use, may create files
+		setup   func(t *testing.T) string // returns absolute path to use, may create files
 		wantErr bool
 		errMsg  string // substring to check in error message
 	}{
@@ -98,9 +156,9 @@ func TestCheckDirectorySafety(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			targetDir := tt.setup(t)
+			absTargetDir := tt.setup(t)
 
-			err := CheckDirectorySafety(targetDir, tt.force)
+			err := CheckDirectorySafety(absTargetDir, tt.force)
 
 			// Check error expectation
 			if (err != nil) != tt.wantErr {

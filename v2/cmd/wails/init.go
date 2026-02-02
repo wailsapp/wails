@@ -106,7 +106,11 @@ func initProject(f *flags.Init) error {
 	findAuthorDetails(options)
 
 	// Safety check: fail if target directory is non-empty
-	if err := CheckDirectorySafety(f.ProjectDir, f.Force); err != nil {
+	absTargetDir, err := GetAbsoluteTargetDir(f.ProjectDir)
+	if err != nil {
+		return fmt.Errorf("failed to resolve target directory path: %w", err)
+	}
+	if err := CheckDirectorySafety(absTargetDir, f.Force); err != nil {
 		return err
 	}
 
