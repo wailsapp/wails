@@ -33,6 +33,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Fix race condition causing TypeError during page reload (#4872) by @ddmoney420
 - Fix incorrect output from binding generator tests by removing global state in the `Collector.IsVoidAlias()` method (#4941) by @fbbdev
 - Fix `<input type="file">` file picker not working on macOS (#4862) by @leaanthony
+- Fix binding generation for cross-package type aliases (#4578) by @fbbdev
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
