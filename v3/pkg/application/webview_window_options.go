@@ -288,14 +288,19 @@ type WindowsWindow struct {
 	// PasswordAutosaveEnabled enables autosaving passwords
 	PasswordAutosaveEnabled bool
 
-	// EnabledFeatures, DisabledFeatures and AdditionalLaunchArgs are used to enable or disable specific features in the WebView2 browser.
-	// Available flags: https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags?tabs=dotnetcsharp#available-webview2-browser-flags
-	// WARNING: Apps in production shouldn't use WebView2 browser flags,
-	// because these flags might be removed or altered at any time,
-	// and aren't necessarily supported long-term.
-	// AdditionalLaunchArgs should always be preceded by "--"
-	EnabledFeatures      []string
-	DisabledFeatures     []string
+	// Deprecated: EnabledFeatures has been moved to application.Options.Windows.EnabledFeatures.
+	// Browser flags apply globally to the shared WebView2 environment, not per-window.
+	// This field is ignored. Use application-level options instead.
+	EnabledFeatures []string
+
+	// Deprecated: DisabledFeatures has been moved to application.Options.Windows.DisabledFeatures.
+	// Browser flags apply globally to the shared WebView2 environment, not per-window.
+	// This field is ignored. Use application-level options instead.
+	DisabledFeatures []string
+
+	// Deprecated: AdditionalLaunchArgs has been moved to application.Options.Windows.AdditionalBrowserArgs.
+	// Browser flags apply globally to the shared WebView2 environment, not per-window.
+	// This field is ignored. Use application-level options instead.
 	AdditionalLaunchArgs []string
 }
 

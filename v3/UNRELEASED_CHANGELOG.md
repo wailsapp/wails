@@ -21,6 +21,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Move `EnabledFeatures`, `DisabledFeatures`, and `AdditionalBrowserArgs` from per-window options to application-level `Options.Windows` (#4559) by @leaanthony
 
 ## Fixed
 <!-- Bug fixes -->
@@ -31,6 +32,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
+- Per-window `EnabledFeatures`, `DisabledFeatures`, and `AdditionalLaunchArgs` in `WindowsWindow` are deprecated; use application-level `Options.Windows` instead (#4559)
 
 ## Removed
 <!-- Features removed in this release -->

@@ -1925,23 +1925,27 @@ func (w *windowsWebviewWindow) setupChromium() {
 	}
 	globalApplication.capabilities = capabilities.NewCapabilities(webview2version)
 
+	// Browser flags apply globally to the shared WebView2 environment
+	// Use application-level options, not per-window options
+	appOpts := globalApplication.options.Windows
+
 	// We disable this by default. Can be overridden with the `EnableFraudulentWebsiteWarnings` option
-	opts.DisabledFeatures = append(opts.DisabledFeatures, "msSmartScreenProtection")
+	disabledFeatures := append([]string{"msSmartScreenProtection"}, appOpts.DisabledFeatures...)
 
-	if len(opts.DisabledFeatures) > 0 {
-		opts.DisabledFeatures = sliceutil.Unique(opts.DisabledFeatures)
-		arg := fmt.Sprintf("--disable-features=%s", strings.Join(opts.DisabledFeatures, ","))
+	if len(disabledFeatures) > 0 {
+		disabledFeatures = sliceutil.Unique(disabledFeatures)
+		arg := fmt.Sprintf("--disable-features=%s", strings.Join(disabledFeatures, ","))
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
 
-	if len(opts.EnabledFeatures) > 0 {
-		opts.EnabledFeatures = sliceutil.Unique(opts.EnabledFeatures)
-		arg := fmt.Sprintf("--enable-features=%s", strings.Join(opts.EnabledFeatures, ","))
+	if len(appOpts.EnabledFeatures) > 0 {
+		enabledFeatures := sliceutil.Unique(appOpts.EnabledFeatures)
+		arg := fmt.Sprintf("--enable-features=%s", strings.Join(enabledFeatures, ","))
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
 
-	if len(opts.AdditionalLaunchArgs) > 0 {
-		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, opts.AdditionalLaunchArgs...)
+	if len(appOpts.AdditionalBrowserArgs) > 0 {
+		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, appOpts.AdditionalBrowserArgs...)
 	}
 
 	chromium.DataPath = globalApplication.options.Windows.WebviewUserDataPath

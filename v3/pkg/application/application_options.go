@@ -273,6 +273,20 @@ type WindowsOptions struct {
 
 	// Path to the directory with WebView2 executables. If empty WebView2 installed in the system will be used.
 	WebviewBrowserPath string
+
+	// WebviewGpuPolicy is the GPU acceleration policy for WebView2.
+	// 0 = Auto (default), 1 = Always, 2 = Never
+	WebviewGpuPolicy int
+
+	// EnabledFeatures, DisabledFeatures and AdditionalBrowserArgs are used to enable or disable
+	// specific features in the WebView2 browser. These apply globally to ALL windows because
+	// WebView2 shares a single browser environment per user data path.
+	// Available flags: https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags
+	// WARNING: These flags are experimental and may be removed or altered at any time.
+	// AdditionalBrowserArgs should always be preceded by "--"
+	EnabledFeatures      []string
+	DisabledFeatures     []string
+	AdditionalBrowserArgs []string
 }
 
 /********* Linux Options *********/
