@@ -2109,6 +2109,7 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 		// Extract results on GTK thread BEFORE destroying widget
 		var results []string
 		if response == C.GTK_RESPONSE_ACCEPT {
+			// No artificial limit - consistent with Windows/macOS behavior
 			filenames := C.gtk_file_chooser_get_filenames((*C.GtkFileChooser)(fc))
 			for iter := filenames; iter != nil; iter = iter.next {
 				results = append(results, buildStringAndFree(C.gpointer(iter.data)))
