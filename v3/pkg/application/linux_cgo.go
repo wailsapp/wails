@@ -2117,25 +2117,27 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 	// run this on the gtk thread
 	InvokeAsync(func() {
 		response := C.gtk_dialog_run((*C.GtkDialog)(fc))
+		// Extract results on GTK thread BEFORE destroying widget
+		var results []string
+		if response == C.GTK_RESPONSE_ACCEPT {
+			// No artificial limit - consistent with Windows/macOS behavior
+			filenames := C.gtk_file_chooser_get_filenames((*C.GtkFileChooser)(fc))
+			for iter := filenames; iter != nil; iter = iter.next {
+				results = append(results, buildStringAndFree(C.gpointer(iter.data)))
+			}
+			C.g_slist_free(filenames)
+		}
+		// Destroy widget after extracting results (on GTK thread)
+		C.gtk_widget_destroy((*C.GtkWidget)(unsafe.Pointer(fc)))
+		// Send results from goroutine (safe - no GTK calls)
 		go func() {
 			defer handlePanic()
-			if response == C.GTK_RESPONSE_ACCEPT {
-				filenames := C.gtk_file_chooser_get_filenames((*C.GtkFileChooser)(fc))
-				iter := filenames
-				count := 0
-				for {
-					selections <- buildStringAndFree(C.gpointer(iter.data))
-					iter = iter.next
-					if iter == nil || count == 1024 {
-						break
-					}
-					count++
-				}
+			for _, result := range results {
+				selections <- result
 			}
 			close(selections)
 		}()
 	})
-	C.gtk_widget_destroy((*C.GtkWidget)(unsafe.Pointer(fc)))
 	return selections, nil
 }
 
