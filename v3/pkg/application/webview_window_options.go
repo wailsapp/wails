@@ -287,21 +287,6 @@ type WindowsWindow struct {
 
 	// PasswordAutosaveEnabled enables autosaving passwords
 	PasswordAutosaveEnabled bool
-
-	// Deprecated: EnabledFeatures has been moved to application.Options.Windows.EnabledFeatures.
-	// Browser flags apply globally to the shared WebView2 environment, not per-window.
-	// This field is ignored. Use application-level options instead.
-	EnabledFeatures []string
-
-	// Deprecated: DisabledFeatures has been moved to application.Options.Windows.DisabledFeatures.
-	// Browser flags apply globally to the shared WebView2 environment, not per-window.
-	// This field is ignored. Use application-level options instead.
-	DisabledFeatures []string
-
-	// Deprecated: AdditionalLaunchArgs has been moved to application.Options.Windows.AdditionalBrowserArgs.
-	// Browser flags apply globally to the shared WebView2 environment, not per-window.
-	// This field is ignored. Use application-level options instead.
-	AdditionalLaunchArgs []string
 }
 
 type Theme int

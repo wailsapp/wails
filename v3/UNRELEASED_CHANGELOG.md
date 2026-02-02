@@ -32,10 +32,10 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
-- Per-window `EnabledFeatures`, `DisabledFeatures`, and `AdditionalLaunchArgs` in `WindowsWindow` are deprecated; use application-level `Options.Windows` instead. Note: `AdditionalLaunchArgs` has been renamed to `AdditionalBrowserArgs` at the application level (#4559)
 
 ## Removed
 <!-- Features removed in this release -->
+- **BREAKING**: Remove `EnabledFeatures`, `DisabledFeatures`, and `AdditionalLaunchArgs` from per-window `WindowsWindow` options. Use application-level `Options.Windows.EnabledFeatures`, `Options.Windows.DisabledFeatures`, and `Options.Windows.AdditionalBrowserArgs` instead. These flags apply globally to the shared WebView2 environment (#4559) by @leaanthony
 
 ## Security
 <!-- Security-related changes -->
