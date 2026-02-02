@@ -142,6 +142,13 @@ type WebviewWindowOptions struct {
 	// Effective on Windows and macOS only; no-op on Linux.
 	// Best-effort protection with platform-specific caveats (see docs).
 	ContentProtectionEnabled bool
+
+	// UseApplicationMenu indicates this window should use the application menu
+	// set via app.Menu.Set() instead of requiring a window-specific menu.
+	// On macOS this has no effect as the application menu is always global.
+	// On Windows/Linux, if true and no explicit window menu is set, the window
+	// will use the application menu. Defaults to false for backwards compatibility.
+	UseApplicationMenu bool
 }
 
 type RGBA struct {

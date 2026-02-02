@@ -52,11 +52,14 @@ type WebviewWindowOptions struct {
     
     // Security
     ContentProtectionEnabled bool
-    
+
+    // Menu
+    UseApplicationMenu bool
+
     // Lifecycle
     OnClose   func() bool
     OnDestroy func()
-    
+
     // Platform-Specific
     Mac     MacOptions
     Windows WindowsOptions
@@ -545,6 +548,48 @@ Assets: application.AssetOptions{
 **Purpose:** Serve embedded frontend assets.
 
 **See [Build System](/concepts/build-system) for details.**
+
+### UseApplicationMenu
+
+**Type:** `bool`
+**Default:** `false`
+**Platform:** Windows, Linux (no effect on macOS)
+
+```go
+UseApplicationMenu: true,
+```
+
+**Purpose:** Use the application menu (set via `app.Menu.Set()`) for this window.
+
+On **macOS**, this option has no effect because macOS always uses a global application menu at the top of the screen.
+
+On **Windows** and **Linux**, windows don't display a menu by default. Setting `UseApplicationMenu: true` tells the window to use the application-level menu, providing a simple cross-platform solution.
+
+**Example:**
+
+```go
+// Set the application menu once
+menu := app.NewMenu()
+menu.AddRole(application.FileMenu)
+menu.AddRole(application.EditMenu)
+app.Menu.Set(menu)
+
+// All windows with UseApplicationMenu will display this menu
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:              "Main Window",
+    UseApplicationMenu: true,
+})
+
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:              "Second Window",
+    UseApplicationMenu: true,  // Also gets the app menu
+})
+```
+
+**Notes:**
+- If both `UseApplicationMenu` and a window-specific menu are set, the window-specific menu takes priority
+- This simplifies cross-platform code by eliminating the need for runtime OS checks
+- See [Application Menus](/features/menus/application) for complete menu documentation
 
 ## Input Options
 

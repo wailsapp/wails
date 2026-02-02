@@ -362,8 +362,15 @@ func (w *windowsWebviewWindow) run() {
 	if !options.Frameless {
 		userMenu := w.parent.options.Windows.Menu
 		if userMenu != nil {
+			// Explicit window menu takes priority
 			userMenu.Update()
 			w.menu = NewApplicationMenu(w, userMenu)
+			w.menu.parentWindow = w
+			appMenu = w.menu.menu
+		} else if options.UseApplicationMenu && globalApplication.applicationMenu != nil {
+			// Use the global application menu if opted in
+			globalApplication.applicationMenu.Update()
+			w.menu = NewApplicationMenu(w, globalApplication.applicationMenu)
 			w.menu.parentWindow = w
 			appMenu = w.menu.menu
 		}
