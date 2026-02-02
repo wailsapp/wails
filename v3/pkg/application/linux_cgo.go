@@ -663,9 +663,6 @@ func (a *linuxApp) showAllWindows() {
 }
 
 func (a *linuxApp) setIcon(icon []byte) {
-	if len(icon) == 0 {
-		return
-	}
 	gbytes := C.g_bytes_new_static(C.gconstpointer(unsafe.Pointer(&icon[0])), C.ulong(len(icon)))
 	stream := C.g_memory_input_stream_new_from_bytes(gbytes)
 	var gerror *C.GError
@@ -834,7 +831,7 @@ func menuItemAddProperties(menuItem *C.GtkWidget, label string, bitmap []byte) p
 		(*C.GtkWidget)(unsafe.Pointer(menuItem)))
 
 	box := C.gtk_box_new(C.GTK_ORIENTATION_HORIZONTAL, 6)
-	if img, err := pngToImage(bitmap); err == nil && len(img.Pix) > 0 {
+	if img, err := pngToImage(bitmap); err == nil {
 		gbytes := C.g_bytes_new_static(C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
 			C.ulong(len(img.Pix)))
 		defer C.g_bytes_unref(gbytes)
@@ -914,7 +911,7 @@ func menuItemRemoveBitmap(widget pointer) {
 func menuItemSetBitmap(widget pointer, bitmap []byte) {
 	menuItemRemoveBitmap(widget)
 	box := C.gtk_bin_get_child((*C.GtkBin)(widget))
-	if img, err := pngToImage(bitmap); err == nil && len(img.Pix) > 0 {
+	if img, err := pngToImage(bitmap); err == nil {
 		gbytes := C.g_bytes_new_static(C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
 			C.ulong(len(img.Pix)))
 		defer C.g_bytes_unref(gbytes)
@@ -933,6 +930,7 @@ func menuItemSetBitmap(widget pointer, bitmap []byte) {
 			(*C.GtkContainer)(unsafe.Pointer(box)),
 			(*C.GtkWidget)(unsafe.Pointer(image)))
 	}
+
 }
 
 func menuItemSetToolTip(widget pointer, tooltip string) {
@@ -2193,7 +2191,7 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 			cTitle)
 	}
 
-	if img, err := pngToImage(options.Icon); err == nil && len(img.Pix) > 0 {
+	if img, err := pngToImage(options.Icon); err == nil {
 		gbytes := C.g_bytes_new_static(
 			C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
 			C.ulong(len(img.Pix)))
