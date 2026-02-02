@@ -25,6 +25,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Bug fixes -->
 - Fix potential panic when setting empty icon or bitmap on Linux (#4923) by @ddmoney420
 - Fix ErrorDialog crash when called from service binding on macOS (#3631) by @leaanthony
+- Make menus to be displayed on Windows OS in `v3\examples\dialogs` by @ndianabasi
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
