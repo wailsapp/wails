@@ -340,7 +340,10 @@ func main() {
 		}
 	})
 
-	userHomeDir, _ := os.UserHomeDir()
+	userHomeDir, err := os.UserHomeDir()
+	if err != nil || userHomeDir == "" {
+		userHomeDir = os.TempDir()
+	}
 
 	saveMenu.Add("Select File (Full Example)").OnClick(func(ctx *application.Context) {
 		result, _ := app.Dialog.SaveFile().
