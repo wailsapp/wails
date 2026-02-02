@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Build Linux binaries for Wails v3 examples using Ubuntu 24.04 (x86_64 native)
 FROM --platform=linux/amd64 ubuntu:24.04
 
