@@ -396,7 +396,7 @@ app.Event.On("get-user-data", func(e *application.CustomEvent) {
 ```javascript
 // Frontend receives response
 Events.On("user-data-response", (event) => {
-    user = event.data
+    const user = event.data
     displayUser(user)
 })
 ```
@@ -410,7 +410,8 @@ Events.On("user-data-response", (event) => {
 app.Event.Emit("global-notification", "System update available")
 
 // Each window handles it
-OnEvent("global-notification", (message) => {
+Events.On("global-notification", (event) => {
+    const message = event.data
     showNotification(message)
 })
 ```
