@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>body{ text-align: center; color: white; background-color: #191919;}</style>
+    <style>.region{ width: 100%; border: 3px solid #00a4db; }</style>
+    <script type="module" src="/wails/runtime.js"></script>
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', (event) => {
+            let copyButton = document.querySelector('#copyButton');
+            copyButton.addEventListener('click', function(event) {
+                let preElement = document.querySelector('#cmd');
+                let text = preElement.textContent.trim();
+                navigator.clipboard.writeText(text).then(function() {
+                    console.log('Copying to clipboard was successful!');
+                    // Select the text in the pre element
+                    let selection = window.getSelection();
+                    selection.selectAllChildren(preElement);
+                }, function(err) {
+                    console.error('Could not copy text: ', err);
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+<h1>Context Menu Demo</h1>
+<p>
+    You need to run this example in production for it to work :
+<pre id="cmd" style="color: rgb(219, 219, 134)">go run -tags production .</pre>
+<button id="copyButton" style="pointer-events: auto;">Copy</button>
+<br/>
+<div class="region" id="123abc" style="--custom-contextmenu: test; --custom-contextmenu-data: 1">
+    <h1>1</h1>
+</div>
+<div class="region" id="234abc" style="--custom-contextmenu: test; --custom-contextmenu-data: 2">
+    <h1>2</h1>
+</div>
+<div class="region" id="123abcg" style="--default-contextmenu: show">
+    <h1>Default Context Menu shown here</h1>
+    <label>
+        <input type="text" placeholder="context menu hidden here" style="--default-contextmenu: hide"/>
+    </label>
+</div>
+<div class="region" id="123abcgr">
+    <h1>Default auto (smart) Context Menu here</h1>
+    <label>
+        <input type="text" placeholder="context menu shown here"/>
+    </label>
+    <br/>
+    <div style="user-select: text">
+        <p>Context menu shown here only if you select text</p>
+        <p>Selecting text here and right-clicking the box below or its border shouldn't show the context menu</p>
+        <div style="user-select: none; padding: 10px; width: 50px; margin: auto; background: #00a4db;">
+            <div style="user-select: auto; height: 20px; background: white;">
+            </div>
+        </div>
+    </div>
+    <div>
+        <input type="text" value="input">
+        <input type="text" value="disabled" disabled>
+        <input type="text" value="readonly" readonly>
+        <textarea placeholder="context menu shown here"></textarea>
+        <p contenteditable="true">content editable</p>
+    </div>
+</div>
+<div class="region" id="234abcs" style="--default-contextmenu: hide">
+    <h1>Default Context Menu hidden here</h1>
+    <p style="user-select: text">Context Menu hidden here even if text is selected</p>
+    <label>
+        <input type="text" placeholder="context menu works here" style="--default-contextmenu: show"/>
+    </label>
+    <div style="--default-contextmenu: auto">
+        <div style="border: solid 2px white; margin: 10px">
+            <h2>Nested section reverted to auto (smart) default Context Menu</h2>
+            <p style="user-select: text">Context menu shown here only if you select text</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

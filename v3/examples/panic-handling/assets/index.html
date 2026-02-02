@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Window Call Demo</title>
+  <style>
+    body {
+      color: white;
+    }
+  </style>
+  <script src="/wails/runtime.js" type="module"></script>
+  <script>
+    async function callBinding(name, ...params) {
+      return wails.Call.ByName(name, ...params)
+    }
+  </script>
+</head>
+<body>
+  <button onclick="panic()">Create a panic</button>
+  <script>
+    async function panic() {
+      await callBinding('main.WindowService.GeneratePanic')
+    }
+  </script>
+</body>
+</html>

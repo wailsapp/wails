@@ -1,0 +1,726 @@
+//go:build darwin && !ios && !server
+
+package application
+
+/*
+
+#cgo CFLAGS: -mmacosx-version-min=10.13 -x objective-c
+#cgo LDFLAGS: -framework Cocoa -mmacosx-version-min=10.13
+
+#include "application_darwin.h"
+#include "application_darwin_delegate.h"
+#include "webview_window_darwin.h"
+#include <stdlib.h>
+
+extern void registerListener(unsigned int event);
+
+#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
+
+static AppDelegate *appDelegate = nil;
+
+static void init(void) {
+    [NSApplication sharedApplication];
+    appDelegate = [[AppDelegate alloc] init];
+    [NSApp setDelegate:appDelegate];
+
+	[NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskLeftMouseDown handler:^NSEvent * _Nullable(NSEvent * _Nonnull event) {
+		NSWindow* eventWindow = [event window];
+		if (eventWindow == nil ) {
+			return event;
+        }
+		WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[eventWindow delegate];
+		if (windowDelegate == nil) {
+			return event;
+		}
+		if ([windowDelegate respondsToSelector:@selector(handleLeftMouseDown:)]) {
+			[windowDelegate handleLeftMouseDown:event];
+		}
+		return event;
+	}];
+
+	[NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskLeftMouseUp handler:^NSEvent * _Nullable(NSEvent * _Nonnull event) {
+		NSWindow* eventWindow = [event window];
+		if (eventWindow == nil ) {
+			return event;
+        }
+		WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[eventWindow delegate];
+		if (windowDelegate == nil) {
+			return event;
+		}
+		if ([windowDelegate respondsToSelector:@selector(handleLeftMouseUp:)]) {
+			[windowDelegate handleLeftMouseUp:eventWindow];
+		}
+		return event;
+	}];
+
+	NSDistributedNotificationCenter *center = [NSDistributedNotificationCenter defaultCenter];
+	[center addObserver:appDelegate selector:@selector(themeChanged:) name:@"AppleInterfaceThemeChangedNotification" object:nil];
+
+	// Register the custom URL scheme handler
+	StartCustomProtocolHandler();
+}
+
+static bool isDarkMode(void) {
+	NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+	if (userDefaults == nil) {
+		return false;
+	}
+
+	NSString *interfaceStyle = [userDefaults stringForKey:@"AppleInterfaceStyle"];
+	if (interfaceStyle == nil) {
+		return false;
+	}
+
+	return [interfaceStyle isEqualToString:@"Dark"];
+}
+
+static char* getAccentColor(void) {
+	@autoreleasepool {
+		NSColor *accentColor;
+		if (@available(macOS 10.14, *)) {
+			accentColor = [NSColor controlAccentColor];
+		} else {
+			// Fallback to system blue for older macOS versions
+			accentColor = [NSColor systemBlueColor];
+		}
+		// Convert to RGB color space
+		NSColor *rgbColor = [accentColor colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
+		if (rgbColor == nil) {
+			rgbColor = accentColor;
+		}
+		// Get RGB components
+		CGFloat red, green, blue, alpha;
+		[rgbColor getRed:&red green:&green blue:&blue alpha:&alpha];
+		// Convert to 0-255 range and format as rgb() string
+		int r = (int)(red * 255);
+		int g = (int)(green * 255);
+		int b = (int)(blue * 255);
+		NSString *colorString = [NSString stringWithFormat:@"rgb(%d,%d,%d)", r, g, b];
+		return strdup([colorString UTF8String]);
+	}
+}
+
+static void setApplicationShouldTerminateAfterLastWindowClosed(bool shouldTerminate) {
+	// Get the NSApp delegate
+	AppDelegate *appDelegate = (AppDelegate*)[NSApp delegate];
+	// Set the applicationShouldTerminateAfterLastWindowClosed boolean
+	appDelegate.shouldTerminateWhenLastWindowClosed = shouldTerminate;
+}
+
+static void setActivationPolicy(int policy) {
+    [NSApp setActivationPolicy:policy];
+}
+
+static void activateIgnoringOtherApps() {
+	[NSApp activateIgnoringOtherApps:YES];
+}
+
+static void run(void) {
+    @autoreleasepool {
+        [NSApp run];
+        [appDelegate release];
+		[NSApp abortModal];
+    }
+}
+
+// destroyApp destroys the application
+static void destroyApp(void) {
+	[NSApp terminate:nil];
+}
+
+// Set the application menu
+static void setApplicationMenu(void *menu) {
+	NSMenu *nsMenu = (__bridge NSMenu *)menu;
+	[NSApp setMainMenu:menu];
+}
+
+// Get the application name
+static char* getAppName(void) {
+	NSString *appName = [NSRunningApplication currentApplication].localizedName;
+	if( appName == nil ) {
+		appName = [[NSProcessInfo processInfo] processName];
+	}
+	return strdup([appName UTF8String]);
+}
+
+// get the current window ID
+static unsigned int getCurrentWindowID(void) {
+	NSWindow *window = [NSApp keyWindow];
+	// Get the window delegate
+	WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)[window delegate];
+	return delegate.windowId;
+}
+
+// Set the application icon
+static void setApplicationIcon(void *icon, int length) {
+    // On main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		NSImage *image = [[NSImage alloc] initWithData:[NSData dataWithBytes:icon length:length]];
+		[NSApp setApplicationIconImage:image];
+	});
+}
+
+// Hide the application
+static void hide(void) {
+	[NSApp hide:nil];
+}
+
+// Show the application
+static void show(void) {
+	[NSApp unhide:nil];
+}
+
+static const char* serializationNSDictionary(void *dict) {
+	@autoreleasepool {
+		NSDictionary *nsDict = (__bridge NSDictionary *)dict;
+
+		if ([NSJSONSerialization isValidJSONObject:nsDict]) {
+			NSError *error;
+			NSData *data = [NSJSONSerialization dataWithJSONObject:nsDict options:kNilOptions error:&error];
+			NSString *result = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
+
+			return strdup([result UTF8String]);
+		}
+	}
+
+	return nil;
+}
+
+static void startSingleInstanceListener(const char *uniqueID) {
+	// Convert to NSString
+	NSString *uid = [NSString stringWithUTF8String:uniqueID];
+	[[NSDistributedNotificationCenter defaultCenter] addObserver:appDelegate
+          selector:@selector(handleSecondInstanceNotification:) name:uid object:nil];
+}
+*/
+import "C"
+import (
+	"sync"
+	"time"
+	"unsafe"
+
+	"encoding/json"
+
+	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
+	"github.com/wailsapp/wails/v3/internal/operatingsystem"
+	"github.com/wailsapp/wails/v3/pkg/events"
+)
+
+type macosApp struct {
+	applicationMenu unsafe.Pointer
+	parent          *App
+}
+
+func (m *macosApp) isDarkMode() bool {
+	return bool(C.isDarkMode())
+}
+
+func (m *macosApp) getAccentColor() string {
+	accentColorC := C.getAccentColor()
+	defer C.free(unsafe.Pointer(accentColorC))
+	return C.GoString(accentColorC)
+}
+
+func getNativeApplication() *macosApp {
+	return globalApplication.impl.(*macosApp)
+}
+
+func (m *macosApp) hide() {
+	C.hide()
+}
+
+func (m *macosApp) show() {
+	C.show()
+}
+
+func (m *macosApp) on(eventID uint) {
+	C.registerListener(C.uint(eventID))
+}
+
+func (m *macosApp) setIcon(icon []byte) {
+	C.setApplicationIcon(unsafe.Pointer(&icon[0]), C.int(len(icon)))
+}
+
+func (m *macosApp) name() string {
+	appName := C.getAppName()
+	defer C.free(unsafe.Pointer(appName))
+	return C.GoString(appName)
+}
+
+func (m *macosApp) getCurrentWindowID() uint {
+	return uint(C.getCurrentWindowID())
+}
+
+func (m *macosApp) setApplicationMenu(menu *Menu) {
+	if menu == nil {
+		// Create a default menu for mac
+		menu = DefaultApplicationMenu()
+	}
+	menu.Update()
+
+	// Convert impl to macosMenu object
+	m.applicationMenu = (menu.impl).(*macosMenu).nsMenu
+	C.setApplicationMenu(m.applicationMenu)
+}
+
+func (m *macosApp) run() error {
+	if m.parent.options.SingleInstance != nil {
+		cUniqueID := C.CString(m.parent.options.SingleInstance.UniqueID)
+		defer C.free(unsafe.Pointer(cUniqueID))
+		C.startSingleInstanceListener(cUniqueID)
+	}
+	// Add a hook to the ApplicationDidFinishLaunching event
+	m.parent.Event.OnApplicationEvent(
+		events.Mac.ApplicationDidFinishLaunching,
+		func(*ApplicationEvent) {
+			C.setApplicationShouldTerminateAfterLastWindowClosed(
+				C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed),
+			)
+			C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
+			C.activateIgnoringOtherApps()
+		},
+	)
+	m.setupCommonEvents()
+	// setup event listeners
+	for eventID := range m.parent.applicationEventListeners {
+		m.on(eventID)
+	}
+	C.run()
+	return nil
+}
+
+func (m *macosApp) destroy() {
+	C.destroyApp()
+}
+
+func (m *macosApp) GetFlags(options Options) map[string]any {
+	if options.Flags == nil {
+		options.Flags = make(map[string]any)
+	}
+	return options.Flags
+}
+
+func newPlatformApp(app *App) *macosApp {
+	C.init()
+	return &macosApp{
+		parent: app,
+	}
+}
+
+//export processApplicationEvent
+func processApplicationEvent(eventID C.uint, data unsafe.Pointer) {
+	event := newApplicationEvent(events.ApplicationEventType(eventID))
+
+	if data != nil {
+		dataCStrJSON := C.serializationNSDictionary(data)
+		if dataCStrJSON != nil {
+			defer C.free(unsafe.Pointer(dataCStrJSON))
+
+			dataJSON := C.GoString(dataCStrJSON)
+			var result map[string]any
+			err := json.Unmarshal([]byte(dataJSON), &result)
+
+			if err != nil {
+				panic(err)
+			}
+
+			event.Context().setData(result)
+		}
+	}
+
+	switch event.Id {
+	case uint(events.Mac.ApplicationDidChangeTheme):
+		isDark := globalApplication.Env.IsDarkMode()
+		event.Context().setIsDarkMode(isDark)
+	}
+	applicationEvents <- event
+}
+
+//export processWindowEvent
+func processWindowEvent(windowID C.uint, eventID C.uint) {
+	windowEvents <- &windowEvent{
+		WindowID: uint(windowID),
+		EventID:  uint(eventID),
+	}
+}
+
+//export processMessage
+func processMessage(windowID C.uint, message *C.char, origin *C.char, isMainFrame bool) {
+	o := ""
+	if origin != nil {
+		o = C.GoString(origin)
+	}
+	windowMessageBuffer <- &windowMessage{
+		windowId: uint(windowID),
+		message:  C.GoString(message),
+		originInfo: &OriginInfo{
+			Origin:      o,
+			IsMainFrame: isMainFrame,
+		},
+	}
+}
+
+//export processURLRequest
+func processURLRequest(windowID C.uint, wkUrlSchemeTask unsafe.Pointer) {
+	window, ok := globalApplication.Window.GetByID(uint(windowID))
+	if !ok || window == nil {
+		globalApplication.debug("could not find window with id", "windowID", windowID)
+		return
+	}
+
+	webviewRequests <- &webViewAssetRequest{
+		Request:    webview.NewRequest(wkUrlSchemeTask),
+		windowId:   uint(windowID),
+		windowName: window.Name(),
+	}
+}
+
+//export processWindowKeyDownEvent
+func processWindowKeyDownEvent(windowID C.uint, acceleratorString *C.char) {
+	windowKeyEvents <- &windowKeyEvent{
+		windowId:          uint(windowID),
+		acceleratorString: C.GoString(acceleratorString),
+	}
+}
+
+//export processDragItems
+func processDragItems(windowID C.uint, arr **C.char, length C.int, x C.int, y C.int) {
+	var filenames []string
+	// Convert the C array to a Go slice
+	goSlice := (*[1 << 30]*C.char)(unsafe.Pointer(arr))[:length:length]
+	for _, str := range goSlice {
+		filenames = append(filenames, C.GoString(str))
+	}
+
+	globalApplication.debug(
+		"[DragDropDebug] processDragItems called",
+		"windowID",
+		windowID,
+		"fileCount",
+		len(filenames),
+		"x",
+		x,
+		"y",
+		y,
+	)
+	targetWindow, ok := globalApplication.Window.GetByID(uint(windowID))
+	if !ok || targetWindow == nil {
+		println("Error: processDragItems could not find window with ID:", uint(windowID))
+		return
+	}
+
+	globalApplication.debug(
+		"[DragDropDebug] processDragItems: Calling targetWindow.InitiateFrontendDropProcessing",
+	)
+	targetWindow.InitiateFrontendDropProcessing(filenames, int(x), int(y))
+}
+
+//export macosOnDragEnter
+func macosOnDragEnter(windowID C.uint) {
+	window, ok := globalApplication.Window.GetByID(uint(windowID))
+	if !ok || window == nil {
+		return
+	}
+
+	// Call JavaScript to show drag entered state
+	window.ExecJS("window._wails.handleDragEnter();")
+}
+
+//export macosOnDragExit
+func macosOnDragExit(windowID C.uint) {
+	window, ok := globalApplication.Window.GetByID(uint(windowID))
+	if !ok || window == nil {
+		return
+	}
+
+	// Call JavaScript to clean up drag state
+	window.ExecJS("window._wails.handleDragLeave();")
+}
+
+var (
+	// Pre-allocated buffer for drag JS calls to avoid allocations
+	dragOverJSBuffer = make([]byte, 128) // Increased for safety
+	dragOverJSMutex  sync.Mutex          // Protects dragOverJSBuffer
+	dragOverJSPrefix = []byte("window._wails.handleDragOver(")
+
+	// Cache window references to avoid repeated lookups
+	windowImplCache sync.Map // windowID -> *macosWebviewWindow
+
+	// Per-window drag throttle state
+	dragThrottle sync.Map // windowID -> *dragThrottleState
+)
+
+type dragThrottleState struct {
+	mu           sync.Mutex // Protects all fields below
+	lastX, lastY int
+	timer        *time.Timer
+	pendingX     int
+	pendingY     int
+	hasPending   bool
+}
+
+// clearWindowDragCache removes cached references for a window
+func clearWindowDragCache(windowID uint) {
+	windowImplCache.Delete(windowID)
+
+	// Cancel any pending timer
+	if throttleVal, ok := dragThrottle.Load(windowID); ok {
+		if throttle, ok := throttleVal.(*dragThrottleState); ok {
+			throttle.mu.Lock()
+			if throttle.timer != nil {
+				throttle.timer.Stop()
+			}
+			throttle.mu.Unlock()
+		}
+	}
+	dragThrottle.Delete(windowID)
+}
+
+// writeInt writes an integer to a byte slice and returns the number of bytes written
+func writeInt(buf []byte, n int) int {
+	if n < 0 {
+		if len(buf) == 0 {
+			return 0
+		}
+		buf[0] = '-'
+		return 1 + writeInt(buf[1:], -n)
+	}
+	if n == 0 {
+		if len(buf) == 0 {
+			return 0
+		}
+		buf[0] = '0'
+		return 1
+	}
+
+	// Count digits
+	tmp := n
+	digits := 0
+	for tmp > 0 {
+		digits++
+		tmp /= 10
+	}
+
+	// Bounds check
+	if digits > len(buf) {
+		return 0
+	}
+
+	// Write digits in reverse
+	for i := digits - 1; i >= 0; i-- {
+		buf[i] = byte('0' + n%10)
+		n /= 10
+	}
+	return digits
+}
+
+//export macosOnDragOver
+func macosOnDragOver(windowID C.uint, x C.int, y C.int) {
+	winID := uint(windowID)
+	intX, intY := int(x), int(y)
+
+	// Get or create throttle state
+	throttleKey := winID
+	throttleVal, _ := dragThrottle.LoadOrStore(throttleKey, &dragThrottleState{
+		lastX: intX,
+		lastY: intY,
+	})
+	throttle := throttleVal.(*dragThrottleState)
+
+	throttle.mu.Lock()
+
+	// Update pending position
+	throttle.pendingX = intX
+	throttle.pendingY = intY
+	throttle.hasPending = true
+
+	// If timer is already running, just update the pending position
+	if throttle.timer != nil {
+		throttle.mu.Unlock()
+		return
+	}
+
+	// Apply 5-pixel threshold for immediate update
+	dx := intX - throttle.lastX
+	dy := intY - throttle.lastY
+	if dx < 0 {
+		dx = -dx
+	}
+	if dy < 0 {
+		dy = -dy
+	}
+
+	// Check if we should send an immediate update
+	shouldSendNow := dx >= 5 || dy >= 5
+
+	if shouldSendNow {
+		// Update last position
+		throttle.lastX = intX
+		throttle.lastY = intY
+		throttle.hasPending = false
+
+		// Send this update immediately (unlock before JS call to avoid deadlock)
+		throttle.mu.Unlock()
+		sendDragUpdate(winID, intX, intY)
+		throttle.mu.Lock()
+	}
+
+	// Start 50ms timer for next update (whether we sent now or not)
+	throttle.timer = time.AfterFunc(50*time.Millisecond, func() {
+		// Execute on main thread to ensure UI updates
+		InvokeSync(func() {
+			throttle.mu.Lock()
+			// Clear timer reference
+			throttle.timer = nil
+
+			// Send pending update if any
+			if throttle.hasPending {
+				pendingX, pendingY := throttle.pendingX, throttle.pendingY
+				throttle.lastX = pendingX
+				throttle.lastY = pendingY
+				throttle.hasPending = false
+				throttle.mu.Unlock()
+				sendDragUpdate(winID, pendingX, pendingY)
+			} else {
+				throttle.mu.Unlock()
+			}
+		})
+	})
+	throttle.mu.Unlock()
+}
+
+// sendDragUpdate sends the actual drag update to JavaScript
+func sendDragUpdate(winID uint, x, y int) {
+	// Try cached implementation first
+	var darwinImpl *macosWebviewWindow
+	var needsExecJS bool
+
+	if cached, found := windowImplCache.Load(winID); found {
+		darwinImpl = cached.(*macosWebviewWindow)
+		if darwinImpl != nil && darwinImpl.nsWindow != nil {
+			needsExecJS = true
+		} else {
+			// Invalid cache entry, remove it
+			windowImplCache.Delete(winID)
+		}
+	}
+
+	if !needsExecJS {
+		// Fallback to full lookup
+		window, ok := globalApplication.Window.GetByID(winID)
+		if !ok || window == nil {
+			return
+		}
+
+		// Type assert to WebviewWindow
+		webviewWindow, ok := window.(*WebviewWindow)
+		if !ok || webviewWindow == nil {
+			return
+		}
+
+		// Get implementation
+		darwinImpl, ok = webviewWindow.impl.(*macosWebviewWindow)
+		if !ok {
+			return
+		}
+
+		// Cache for next time
+		windowImplCache.Store(winID, darwinImpl)
+		needsExecJS = true
+	}
+
+	if !needsExecJS || darwinImpl == nil {
+		return
+	}
+
+	// Protect shared buffer access
+	dragOverJSMutex.Lock()
+
+	// Build JS string with zero allocations
+	// Format: "window._wails.handleDragOver(X,Y)"
+	// Max length with int32 coords: 30 + 11 + 1 + 11 + 1 + 1 = 55 bytes
+	n := copy(dragOverJSBuffer[:], dragOverJSPrefix)
+	n += writeInt(dragOverJSBuffer[n:], x)
+	if n < len(dragOverJSBuffer) {
+		dragOverJSBuffer[n] = ','
+		n++
+	}
+	n += writeInt(dragOverJSBuffer[n:], y)
+	if n < len(dragOverJSBuffer) {
+		dragOverJSBuffer[n] = ')'
+		n++
+	}
+	if n < len(dragOverJSBuffer) {
+		dragOverJSBuffer[n] = 0 // null terminate for C
+	} else {
+		// Buffer overflow - this should not happen with 128 byte buffer
+		dragOverJSMutex.Unlock()
+		return
+	}
+
+	// Call JavaScript with zero allocations
+	darwinImpl.execJSDragOver(dragOverJSBuffer[:n+1]) // Include null terminator
+	dragOverJSMutex.Unlock()
+}
+
+//export processMenuItemClick
+func processMenuItemClick(menuID C.uint) {
+	menuItemClicked <- uint(menuID)
+}
+
+//export shouldQuitApplication
+func shouldQuitApplication() C.bool {
+	// TODO: This should be configurable
+	return C.bool(globalApplication.shouldQuit())
+}
+
+//export cleanup
+func cleanup() {
+	globalApplication.cleanup()
+}
+
+func (a *App) logPlatformInfo() {
+	info, err := operatingsystem.Info()
+	if err != nil {
+		a.error("error getting OS info: %w", err)
+		return
+	}
+
+	a.info("Platform Info:", info.AsLogSlice()...)
+
+}
+
+func (a *App) platformEnvironment() map[string]any {
+	return map[string]any{}
+}
+
+func fatalHandler(errFunc func(error)) {
+	return
+}
+
+//export HandleOpenFile
+func HandleOpenFile(filePath *C.char) {
+	goFilepath := C.GoString(filePath)
+	// Create new application event context
+	eventContext := newApplicationEventContext()
+	eventContext.setOpenedWithFile(goFilepath)
+	// EmitEvent application started event
+	applicationEvents <- &ApplicationEvent{
+		Id:  uint(events.Common.ApplicationOpenedWithFile),
+		ctx: eventContext,
+	}
+}
+
+//export HandleOpenURL
+func HandleOpenURL(urlCString *C.char) {
+	urlString := C.GoString(urlCString)
+	eventContext := newApplicationEventContext()
+	eventContext.setURL(urlString)
+
+	// Emit the standard event with the URL string as data
+	applicationEvents <- &ApplicationEvent{
+		Id:  uint(events.Common.ApplicationLaunchedWithUrl),
+		ctx: eventContext,
+	}
+}

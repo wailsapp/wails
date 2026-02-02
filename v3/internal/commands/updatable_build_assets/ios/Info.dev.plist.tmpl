@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleExecutable</key>
+    <string>{{.BinaryName}}</string>
+    <key>CFBundleIdentifier</key>
+    <string>{{.ProductIdentifier}}.dev</string>
+    <key>CFBundleName</key>
+    <string>{{.ProductName}} (Dev)</string>
+    <key>CFBundleDisplayName</key>
+    <string>{{.ProductName}} (Dev)</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>{{.ProductVersion}}-dev</string>
+    <key>CFBundleVersion</key>
+    <string>{{.ProductVersion}}</string>
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+    <key>MinimumOSVersion</key>
+    <string>15.0</string>
+    <key>UILaunchStoryboardName</key>
+    <string>LaunchScreen</string>
+    <key>UIRequiredDeviceCapabilities</key>
+    <array>
+        <string>armv7</string>
+        <string>arm64</string>
+    </array>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+        <key>NSAllowsLocalNetworking</key>
+        <true/>
+    </dict>
+    <!-- Development mode enabled -->
+    <key>WailsDevelopmentMode</key>
+    <true/>
+    {{if .ProductCopyright}}
+    <key>NSHumanReadableCopyright</key>
+    <string>{{.ProductCopyright}}</string>
+    {{end}}
+    {{if .ProductComments}}
+    <key>CFBundleGetInfoString</key>
+    <string>{{.ProductComments}}</string>
+    {{end}}
+</dict>
+</plist>

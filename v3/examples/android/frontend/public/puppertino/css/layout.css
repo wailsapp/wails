@@ -1,0 +1,45 @@
+.p-large-title{
+  font-size: 2.75rem;
+}
+
+.p-layout h1 {
+  font-size: 2.25rem;
+}
+
+.p-layout h2 {
+  font-size: 1.75rem;
+}
+
+.p-layout h3 {
+  font-size: 1.58rem;
+}
+
+.p-headline {
+  font-size: 1.34rem;
+  font-weight: bold;
+}
+
+.p-layout p {
+  font-size: 1.15rem;
+}
+
+.p-layout .link,
+.p-layout input {
+  font-size: 0.813rem;
+}
+
+.p-callout {
+  font-size: 1.14rem;
+}
+
+.p-subhead {
+  font-size: 1.167rem;
+}
+
+.p-footnote {
+  font-size: 1.07rem;
+}
+
+.p-caption {
+  font-size: 0.91rem;
+}

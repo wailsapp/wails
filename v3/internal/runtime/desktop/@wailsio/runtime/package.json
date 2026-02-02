@@ -1,0 +1,69 @@
+{
+  "name": "@wailsio/runtime",
+  "type": "module",
+  "version": "3.0.0-alpha.79",
+  "description": "Wails Runtime",
+  "types": "types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./plugins/*": {
+      "types": "./types/plugins/*.d.ts",
+      "default": "./dist/plugins/*.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wailsapp/wails.git",
+    "directory": "v3/internal/runtime/desktop/@wailsio/runtime"
+  },
+  "author": "The Wails Team",
+  "license": "MIT",
+  "homepage": "https://v3.wails.io",
+  "bugs": {
+    "url": "https://github.com/wailsapp/wails/issues"
+  },
+  "files": [
+    "./dist",
+    "./types"
+  ],
+  "sideEffects": [
+    "./dist/index.js",
+    "./dist/contextmenu.js",
+    "./dist/drag.js"
+  ],
+  "scripts": {
+    "check": "npx tsc --noEmit",
+    "test": "npx vitest run",
+    "clean": "npx rimraf ./dist ./docs ./types ./tsconfig.tsbuildinfo",
+    "generate:events": "task generate:events",
+    "generate": "npm run generate:events",
+    "prebuild": "npm run clean && npm run generate",
+    "build:code": "npx tsc",
+    "build:docs": "npx typedoc --gitRevision v3-alpha --plugin typedoc-plugin-mdn-links --plugin typedoc-plugin-missing-exports ./src/index.ts",
+    "build:docs:md": "npx typedoc --gitRevision v3-alpha --plugin typedoc-plugin-markdown --plugin typedoc-plugin-mdn-links --plugin typedoc-plugin-missing-exports ./src/index.ts",
+    "build": "npm run build:code & npm run build:docs & wait",
+    "prepack": "npm run build"
+  },
+  "devDependencies": {
+    "happy-dom": "^17.1.1",
+    "promises-aplus-tests": "2.1.2",
+    "rimraf": "^5.0.5",
+    "typedoc": "^0.27.7",
+    "typedoc-plugin-markdown": "^4.4.2",
+    "typedoc-plugin-mdn-links": "^4.0.13",
+    "typedoc-plugin-missing-exports": "^3.1.0",
+    "typescript": "^5.7.3",
+    "vite": "^5.2.0",
+    "vitest": "^3.0.6"
+  },
+  "overrides": {
+    "promises-aplus-tests": {
+      "mocha": "^11.1.0",
+      "sinon": "^19.0.2",
+      "underscore": "^1.13.7"
+    }
+  }
+}

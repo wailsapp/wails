@@ -1,0 +1,445 @@
+//go:build linux && !android && !server
+
+package application
+
+import (
+	"fmt"
+	"time"
+
+	"unsafe"
+
+	"github.com/bep/debounce"
+	"github.com/wailsapp/wails/v3/internal/assetserver"
+	"github.com/wailsapp/wails/v3/internal/capabilities"
+	"github.com/wailsapp/wails/v3/internal/runtime"
+	"github.com/wailsapp/wails/v3/pkg/events"
+)
+
+type dragInfo struct {
+	XRoot       int
+	YRoot       int
+	DragTime    uint32
+	MouseButton uint
+}
+
+type linuxWebviewWindow struct {
+	id            uint
+	application   pointer
+	window        pointer
+	webview       pointer
+	parent        *WebviewWindow
+	menubar       pointer
+	vbox          pointer
+	accels        pointer
+	lastWidth     int
+	lastHeight    int
+	drag          dragInfo
+	lastX, lastY  int
+	gtkmenu       pointer
+	ctxMenuOpened bool
+
+	moveDebouncer     func(func())
+	resizeDebouncer   func(func())
+	ignoreMouseEvents bool
+}
+
+var (
+	registered bool = false // avoid 'already registered message' about 'wails://'
+)
+
+func (w *linuxWebviewWindow) endDrag(button uint, x, y int) {
+	w.drag.XRoot = 0.0
+	w.drag.YRoot = 0.0
+	w.drag.DragTime = 0
+}
+
+func (w *linuxWebviewWindow) connectSignals() {
+	cb := func(e events.WindowEventType) {
+		w.parent.emit(e)
+	}
+	w.setupSignalHandlers(cb)
+}
+
+func (w *linuxWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData) {
+	// Create the menu manually because we don't want a gtk_menu_bar
+	// as the top-level item
+	ctxMenu := &linuxMenu{
+		menu: menu,
+	}
+	if menu.impl == nil {
+		ctxMenu.update()
+
+		native := ctxMenu.menu.impl.(*linuxMenu).native
+		w.contextMenuSignals(native)
+	}
+
+	native := ctxMenu.menu.impl.(*linuxMenu).native
+	w.contextMenuShow(native, data)
+}
+
+func (w *linuxWebviewWindow) focus() {
+	w.present()
+}
+
+func (w *linuxWebviewWindow) isNormal() bool {
+	return !w.isMinimised() && !w.isMaximised() && !w.isFullscreen()
+}
+
+func (w *linuxWebviewWindow) setCloseButtonEnabled(enabled bool) {
+	//	C.enableCloseButton(w.nsWindow, C.bool(enabled))
+}
+
+func (w *linuxWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
+	// Not implemented
+}
+
+func (w *linuxWebviewWindow) setMinimiseButtonEnabled(enabled bool) {
+	//C.enableMinimiseButton(w.nsWindow, C.bool(enabled))
+}
+
+func (w *linuxWebviewWindow) setMaximiseButtonEnabled(enabled bool) {
+	//C.enableMaximiseButton(w.nsWindow, C.bool(enabled))
+}
+
+func (w *linuxWebviewWindow) disableSizeConstraints() {
+	x, y, width, height, scaleFactor := w.getCurrentMonitorGeometry()
+	w.setMinMaxSize(x, y, width*scaleFactor, height*scaleFactor)
+}
+
+func (w *linuxWebviewWindow) unminimise() {
+	w.present()
+}
+
+func (w *linuxWebviewWindow) on(eventID uint) {
+	// TODO: Test register/unregister listener for linux events
+	//C.registerListener(C.uint(eventID))
+}
+
+func (w *linuxWebviewWindow) zoom() {
+	w.zoomIn()
+}
+
+func (w *linuxWebviewWindow) windowZoom() {
+	w.zoom() // FIXME> This should be removed
+}
+
+func (w *linuxWebviewWindow) forceReload() {
+	w.reload()
+}
+
+func (w *linuxWebviewWindow) center() {
+	x, y, width, height, _ := w.getCurrentMonitorGeometry()
+	if x == -1 && y == -1 && width == -1 && height == -1 {
+		return
+	}
+	windowWidth, windowHeight := w.size()
+
+	newX := ((width - windowWidth) / 2) + x
+	newY := ((height - windowHeight) / 2) + y
+
+	// Place the window at the center of the monitor
+	w.move(newX, newY)
+}
+
+func (w *linuxWebviewWindow) restore() {
+	// restore window to normal size
+	// FIXME: never called!  - remove from webviewImpl interface
+}
+
+func newWindowImpl(parent *WebviewWindow) *linuxWebviewWindow {
+	//	(*C.struct__GtkWidget)(m.native)
+	//var menubar *C.struct__GtkWidget
+	result := &linuxWebviewWindow{
+		application: getNativeApplication().application,
+		parent:      parent,
+		//		menubar:     menubar,
+	}
+	return result
+}
+
+func (w *linuxWebviewWindow) setMinMaxSize(minWidth, minHeight, maxWidth, maxHeight int) {
+	// Get current screen for window
+	_, _, monitorwidth, monitorheight, _ := w.getCurrentMonitorGeometry()
+	if monitorwidth == -1 {
+		monitorwidth = 1920
+	}
+	if monitorheight == -1 {
+		monitorheight = 1080
+	}
+	if maxWidth == 0 {
+		maxWidth = monitorwidth
+	}
+	if maxHeight == 0 {
+		maxHeight = monitorheight
+	}
+	windowSetGeometryHints(w.window, minWidth, minHeight, maxWidth, maxHeight)
+}
+
+func (w *linuxWebviewWindow) setMinSize(width, height int) {
+	w.setMinMaxSize(width, height, w.parent.options.MaxWidth, w.parent.options.MaxHeight)
+}
+
+func (w *linuxWebviewWindow) getBorderSizes() *LRTB {
+	return &LRTB{}
+}
+
+func (w *linuxWebviewWindow) setMaxSize(width, height int) {
+	w.setMinMaxSize(w.parent.options.MinWidth, w.parent.options.MinHeight, width, height)
+}
+
+func (w *linuxWebviewWindow) setRelativePosition(x, y int) {
+	mx, my, _, _, _ := w.getCurrentMonitorGeometry()
+	w.move(x+mx, y+my)
+}
+
+func (w *linuxWebviewWindow) width() int {
+	width, _ := w.size()
+	return width
+}
+
+func (w *linuxWebviewWindow) height() int {
+	_, height := w.size()
+	return height
+}
+
+func (w *linuxWebviewWindow) setPosition(x int, y int) {
+	// Set the window's absolute position
+	w.move(x, y)
+}
+
+func (w *linuxWebviewWindow) bounds() Rect {
+	// DOTO: do it in a single step + proper DPI scaling
+	x, y := w.position()
+	width, height := w.size()
+
+	return Rect{
+		X:      x,
+		Y:      y,
+		Width:  width,
+		Height: height,
+	}
+}
+
+func (w *linuxWebviewWindow) setBounds(bounds Rect) {
+	// DOTO: do it in a single step + proper DPI scaling
+	w.move(bounds.X, bounds.Y)
+	w.setSize(bounds.Width, bounds.Height)
+
+}
+
+func (w *linuxWebviewWindow) physicalBounds() Rect {
+	// TODO: proper DPI scaling
+	return w.bounds()
+}
+
+func (w *linuxWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
+	// TODO: proper DPI scaling
+	w.setBounds(physicalBounds)
+}
+
+func (w *linuxWebviewWindow) setMenu(menu *Menu) {
+	if menu == nil {
+		w.gtkmenu = nil
+		return
+	}
+	w.parent.options.Linux.Menu = menu
+	w.gtkmenu = (menu.impl).(*linuxMenu).native
+}
+
+func (w *linuxWebviewWindow) run() {
+	for eventId := range w.parent.eventListeners {
+		w.on(eventId)
+	}
+
+	if w.moveDebouncer == nil {
+		debounceMS := w.parent.options.Linux.WindowDidMoveDebounceMS
+		if debounceMS == 0 {
+			debounceMS = 50 // Default value
+		}
+		w.moveDebouncer = debounce.New(time.Duration(debounceMS) * time.Millisecond)
+	}
+	if w.resizeDebouncer == nil {
+		debounceMS := w.parent.options.Linux.WindowDidMoveDebounceMS
+		if debounceMS == 0 {
+			debounceMS = 50 // Default value
+		}
+		w.resizeDebouncer = debounce.New(time.Duration(debounceMS) * time.Millisecond)
+	}
+
+	// Register the capabilities
+	globalApplication.capabilities = capabilities.NewCapabilities()
+
+	app := getNativeApplication()
+
+	var menu = w.parent.options.Linux.Menu
+	if menu != nil {
+		// Explicit window menu takes priority
+		InvokeSync(func() {
+			menu.Update()
+		})
+		w.gtkmenu = (menu.impl).(*linuxMenu).native
+	} else if w.parent.options.UseApplicationMenu && globalApplication.applicationMenu != nil {
+		// Use the global application menu if opted in
+		InvokeSync(func() {
+			globalApplication.applicationMenu.Update()
+		})
+		w.gtkmenu = (globalApplication.applicationMenu.impl).(*linuxMenu).native
+	}
+
+	w.window, w.webview, w.vbox = windowNew(app.application, w.gtkmenu, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)
+	app.registerWindow(w.window, w.parent.id) // record our mapping
+	w.connectSignals()
+	if w.parent.options.EnableFileDrop {
+		w.enableDND()
+	} else {
+		w.disableDND()
+	}
+	w.setTitle(w.parent.options.Title)
+	w.setIcon(app.icon)
+	w.setAlwaysOnTop(w.parent.options.AlwaysOnTop)
+	w.setResizable(!w.parent.options.DisableResize)
+	// Set min/max size with defaults
+	// Default min: 1x1 (smallest possible)
+	// Default max: 0x0 (uses screen size)
+	minWidth := w.parent.options.MinWidth
+	if minWidth == 0 {
+		minWidth = 1
+	}
+	minHeight := w.parent.options.MinHeight
+	if minHeight == 0 {
+		minHeight = 1
+	}
+	maxWidth := w.parent.options.MaxWidth
+	maxHeight := w.parent.options.MaxHeight
+
+	w.setMinMaxSize(minWidth, minHeight, maxWidth, maxHeight)
+	w.setDefaultSize(w.parent.options.Width, w.parent.options.Height)
+	w.setSize(w.parent.options.Width, w.parent.options.Height)
+	w.setZoom(w.parent.options.Zoom)
+	if w.parent.options.BackgroundType != BackgroundTypeSolid {
+		w.setTransparent()
+		w.setBackgroundColour(w.parent.options.BackgroundColour)
+	}
+
+	w.setFrameless(w.parent.options.Frameless)
+
+	if w.parent.options.InitialPosition == WindowCentered {
+		w.center()
+	} else {
+		w.setPosition(w.parent.options.X, w.parent.options.Y)
+	}
+
+	switch w.parent.options.StartState {
+	case WindowStateMaximised:
+		w.maximise()
+	case WindowStateMinimised:
+		w.minimise()
+	case WindowStateFullscreen:
+		w.fullscreen()
+	case WindowStateNormal:
+	}
+
+	// Ignore mouse events if requested
+	w.setIgnoreMouseEvents(w.parent.options.IgnoreMouseEvents)
+
+	startURL, err := assetserver.GetStartURL(w.parent.options.URL)
+	if err != nil {
+		globalApplication.handleFatalError(err)
+	}
+
+	w.setURL(startURL)
+	w.parent.OnWindowEvent(events.Linux.WindowLoadFinished, func(_ *WindowEvent) {
+		InvokeAsync(func() {
+			if w.parent.options.JS != "" {
+				w.execJS(w.parent.options.JS)
+			}
+			if w.parent.options.CSS != "" {
+				js := fmt.Sprintf("(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('%s')); document.head.appendChild(style); })();", w.parent.options.CSS)
+				w.execJS(js)
+			}
+		})
+	})
+
+	w.parent.RegisterHook(events.Linux.WindowLoadFinished, func(e *WindowEvent) {
+		// Inject runtime core and EnableFileDrop flag together
+		js := runtime.Core(globalApplication.impl.GetFlags(globalApplication.options))
+		js += fmt.Sprintf("window._wails.flags.enableFileDrop=%v;", w.parent.options.EnableFileDrop)
+		w.execJS(js)
+	})
+	if w.parent.options.HTML != "" {
+		w.setHTML(w.parent.options.HTML)
+	}
+	if !w.parent.options.Hidden {
+		w.show()
+		if w.parent.options.InitialPosition == WindowCentered {
+			w.center()
+		} else {
+			w.setRelativePosition(w.parent.options.X, w.parent.options.Y)
+		}
+	}
+	if w.parent.options.DevToolsEnabled || globalApplication.isDebugMode {
+		w.enableDevTools()
+		if w.parent.options.OpenInspectorOnStartup {
+			w.openDevTools()
+		}
+	}
+}
+
+func (w *linuxWebviewWindow) startResize(border string) error {
+	// FIXME: what do we need to do here?
+	return nil
+}
+
+func (w *linuxWebviewWindow) nativeWindow() unsafe.Pointer {
+	return unsafe.Pointer(w.window)
+}
+
+func (w *linuxWebviewWindow) print() error {
+	w.execJS("window.print();")
+	return nil
+}
+
+func (w *linuxWebviewWindow) handleKeyEvent(acceleratorString string) {
+	// Parse acceleratorString
+	// accelerator, err := parseAccelerator(acceleratorString)
+	// if err != nil {
+	// 	globalApplication.error("unable to parse accelerator: %w", err)
+	// 	return
+	// }
+	w.parent.processKeyBinding(acceleratorString)
+}
+
+// SetMinimiseButtonState is unsupported on Linux
+func (w *linuxWebviewWindow) setMinimiseButtonState(state ButtonState) {}
+
+// SetMaximiseButtonState is unsupported on Linux
+func (w *linuxWebviewWindow) setMaximiseButtonState(state ButtonState) {}
+
+// SetCloseButtonState is unsupported on Linux
+func (w *linuxWebviewWindow) setCloseButtonState(state ButtonState) {}
+
+func (w *linuxWebviewWindow) isIgnoreMouseEvents() bool {
+	return w.ignoreMouseEvents
+}
+
+func (w *linuxWebviewWindow) setIgnoreMouseEvents(ignore bool) {
+	w.ignoreMouse(w.ignoreMouseEvents)
+}
+
+func (w *linuxWebviewWindow) show() {
+	// Linux implementation is robust - window shows immediately
+	// This is the preferred pattern that Windows should follow
+	w.windowShow()
+}
+
+func (w *linuxWebviewWindow) hide() {
+	// Save position before hiding (consistent with CGO implementation)
+	w.lastX, w.lastY = w.position()
+	w.windowHide()
+}
+
+func (w *linuxWebviewWindow) showMenuBar()                      {}
+func (w *linuxWebviewWindow) hideMenuBar()                      {}
+func (w *linuxWebviewWindow) toggleMenuBar()                    {}
+func (w *linuxWebviewWindow) snapAssist()                       {} // No-op on Linux
+func (w *linuxWebviewWindow) setContentProtection(enabled bool) {}

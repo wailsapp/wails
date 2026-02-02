@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag and Drop Demo</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+        }
+        h1 {
+            margin-top: 40px;
+            text-align: center;
+            color: #fff;
+        }
+        h2 {
+            color: #888;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 40px 0 20px;
+            text-align: center;
+        }
+        .instructions {
+            max-width: 900px;
+            margin: 0 auto 20px;
+            text-align: center;
+            color: #888;
+            line-height: 1.6;
+        }
+        .instructions code {
+            background: #16213e;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #4a9eff;
+        }
+        
+        /* ===== External File Drop Section ===== */
+        .external-section {
+            max-width: 900px;
+            margin: 0 auto 40px;
+        }
+        .drop-zone {
+            padding: 40px;
+            border: 3px dashed #444;
+            border-radius: 16px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        .drop-zone p {
+            margin: 0;
+            color: #666;
+            font-size: 18px;
+        }
+        /* Wails adds this class when dragging files over */
+        .file-drop-target-active {
+            border-color: #4a9eff !important;
+            background: rgba(74, 158, 255, 0.1) !important;
+            box-shadow: 0 0 30px rgba(74, 158, 255, 0.2);
+        }
+        .file-drop-target-active p {
+            color: #4a9eff;
+        }
+        .buckets {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .bucket {
+            flex: 1;
+            min-height: 150px;
+            background: #16213e;
+            border-radius: 12px;
+            padding: 15px;
+        }
+        .bucket h3 {
+            margin: 0 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #2a3a5e;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .bucket.documents h3 { color: #4a9eff; }
+        .bucket.images h3 { color: #9b59b6; }
+        .bucket.other h3 { color: #27ae60; }
+        .bucket ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .bucket li {
+            padding: 6px 0;
+            font-family: monospace;
+            font-size: 12px;
+            color: #aaa;
+            word-break: break-all;
+        }
+        .bucket .empty {
+            color: #444;
+            font-style: italic;
+            font-family: inherit;
+        }
+        
+        /* ===== Internal Drag Section ===== */
+        .internal-section {
+            max-width: 900px;
+            margin: 0 auto 40px;
+        }
+        .internal-container {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        .draggable-items {
+            flex: 1;
+            background: #16213e;
+            border-radius: 12px;
+            padding: 15px;
+            min-height: 200px;
+        }
+        .draggable-items h3 {
+            margin: 0 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #2a3a5e;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #e67e22;
+        }
+        .draggable-item {
+            background: #2a3a5e;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: grab;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .draggable-item:hover {
+            background: #3a4a6e;
+        }
+        .draggable-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+        .drop-targets {
+            flex: 2;
+            display: flex;
+            gap: 15px;
+        }
+        .internal-drop-zone {
+            flex: 1;
+            min-height: 200px;
+            background: #16213e;
+            border: 2px dashed #333;
+            border-radius: 12px;
+            padding: 15px;
+            transition: all 0.2s ease;
+        }
+        .internal-drop-zone h3 {
+            margin: 0 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #2a3a5e;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .internal-drop-zone.priority-high h3 { color: #e74c3c; }
+        .internal-drop-zone.priority-medium h3 { color: #f39c12; }
+        .internal-drop-zone.priority-low h3 { color: #27ae60; }
+        .internal-drop-zone.drag-over {
+            border-color: #4a9eff;
+            background: rgba(74, 158, 255, 0.1);
+        }
+        .internal-drop-zone ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .internal-drop-zone li {
+            background: #2a3a5e;
+            padding: 10px 14px;
+            margin-bottom: 6px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        .internal-drop-zone .empty {
+            color: #444;
+            font-style: italic;
+            background: none;
+            padding: 0;
+        }
+        
+        /* ===== Info Section ===== */
+        .drop-info {
+            max-width: 900px;
+            margin: 20px auto 0;
+            padding: 15px;
+            background: #16213e;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+        }
+        .drop-info strong {
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <h1>Drag and Drop Demo</h1>
+    
+    <!-- ===== External File Drop ===== -->
+    <h2>External File Drop</h2>
+    <div class="instructions">
+        <p>
+            Drop files from your operating system (Finder, Explorer, file managers).
+            Uses <code>EnableFileDrop: true</code> and <code>data-file-drop-target</code>
+        </p>
+    </div>
+    
+    <div class="external-section">
+        <div class="drop-zone" data-file-drop-target>
+            <p>Drop files from your desktop or file manager here</p>
+        </div>
+        
+        <div class="buckets">
+            <div class="bucket documents">
+                <h3>Documents</h3>
+                <ul id="documents-list">
+                    <li class="empty">No documents yet</li>
+                </ul>
+            </div>
+            
+            <div class="bucket images">
+                <h3>Images</h3>
+                <ul id="images-list">
+                    <li class="empty">No images yet</li>
+                </ul>
+            </div>
+            
+            <div class="bucket other">
+                <h3>Other Files</h3>
+                <ul id="other-list">
+                    <li class="empty">No other files yet</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ===== Internal Drag and Drop ===== -->
+    <h2>Internal Drag and Drop</h2>
+    <div class="instructions">
+        <p>
+            Drag items between zones using the HTML5 Drag and Drop API.
+            Uses <code>draggable="true"</code> and standard DOM events.
+        </p>
+    </div>
+    
+    <div class="internal-section">
+        <div class="internal-container">
+            <div class="draggable-items">
+                <h3>Tasks</h3>
+                <div class="draggable-item" draggable="true" data-task="1">Fix login bug</div>
+                <div class="draggable-item" draggable="true" data-task="2">Update documentation</div>
+                <div class="draggable-item" draggable="true" data-task="3">Add dark mode</div>
+                <div class="draggable-item" draggable="true" data-task="4">Refactor API calls</div>
+                <div class="draggable-item" draggable="true" data-task="5">Write unit tests</div>
+            </div>
+            
+            <div class="drop-targets">
+                <div class="internal-drop-zone priority-high" data-priority="high">
+                    <h3>High Priority</h3>
+                    <ul></ul>
+                </div>
+                
+                <div class="internal-drop-zone priority-medium" data-priority="medium">
+                    <h3>Medium Priority</h3>
+                    <ul></ul>
+                </div>
+                
+                <div class="internal-drop-zone priority-low" data-priority="low">
+                    <h3>Low Priority</h3>
+                    <ul></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="drop-info" id="drop-info">
+        <strong>Last action:</strong> <span id="drop-details">No actions yet</span>
+    </div>
+
+    <script type="module">
+        import { Events } from '/wails/runtime.js';
+        
+        const documentsEl = document.getElementById('documents-list');
+        const imagesEl = document.getElementById('images-list');
+        const otherEl = document.getElementById('other-list');
+        const dropDetails = document.getElementById('drop-details');
+        
+        // ===== External File Drop =====
+        const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg', '.webp', '.ico', '.tiff', '.tif'];
+        const documentExtensions = ['.pdf', '.doc', '.docx', '.txt', '.rtf', '.odt', '.xls', '.xlsx', '.ppt', '.pptx', '.md', '.csv', '.json', '.xml', '.html', '.htm'];
+        
+        function getFileName(path) {
+            return path.split(/[/\\]/).pop();
+        }
+        
+        function getExtension(path) {
+            const name = getFileName(path);
+            const idx = name.lastIndexOf('.');
+            return idx > 0 ? name.substring(idx).toLowerCase() : '';
+        }
+        
+        function categoriseFile(path) {
+            const ext = getExtension(path);
+            if (imageExtensions.includes(ext)) return 'images';
+            if (documentExtensions.includes(ext)) return 'documents';
+            return 'other';
+        }
+        
+        function addFileToList(listEl, fileName) {
+            const empty = listEl.querySelector('.empty');
+            if (empty) empty.remove();
+            
+            const li = document.createElement('li');
+            li.textContent = fileName;
+            listEl.appendChild(li);
+        }
+        
+        Events.On('files-dropped', (event) => {
+            const { files, details } = event.data;
+            
+            files.forEach(filePath => {
+                const fileName = getFileName(filePath);
+                const category = categoriseFile(filePath);
+                
+                switch (category) {
+                    case 'documents':
+                        addFileToList(documentsEl, fileName);
+                        break;
+                    case 'images':
+                        addFileToList(imagesEl, fileName);
+                        break;
+                    default:
+                        addFileToList(otherEl, fileName);
+                }
+            });
+            
+            let info = `External: ${files.length} file(s) dropped`;
+            if (details) {
+                info += ` at (${details.x}, ${details.y})`;
+            }
+            dropDetails.textContent = info;
+        });
+        
+        // ===== Internal Drag and Drop =====
+        const draggableItems = document.querySelectorAll('.draggable-item');
+        const dropZones = document.querySelectorAll('.internal-drop-zone');
+        
+        let draggedItem = null;
+        
+        draggableItems.forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                draggedItem = item;
+                item.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', item.dataset.task);
+            });
+            
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging');
+                draggedItem = null;
+            });
+        });
+        
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragenter', (e) => {
+                // Ignore external file drags - only respond to internal HTML drags
+                if (e.dataTransfer?.types.includes('Files')) return;
+                e.preventDefault();
+                zone.classList.add('drag-over');
+            });
+            
+            zone.addEventListener('dragover', (e) => {
+                // Ignore external file drags - only respond to internal HTML drags
+                if (e.dataTransfer?.types.includes('Files')) return;
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+            });
+            
+            zone.addEventListener('dragleave', (e) => {
+                // Ignore external file drags - only respond to internal HTML drags
+                if (e.dataTransfer?.types.includes('Files')) return;
+                // Only remove if leaving the zone entirely
+                if (!zone.contains(e.relatedTarget)) {
+                    zone.classList.remove('drag-over');
+                }
+            });
+            
+            zone.addEventListener('drop', (e) => {
+                // Ignore external file drags - only respond to internal HTML drags
+                if (e.dataTransfer?.types.includes('Files')) return;
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                
+                if (draggedItem) {
+                    const taskText = draggedItem.textContent;
+                    const priority = zone.dataset.priority;
+                    
+                    // Add to drop zone
+                    const li = document.createElement('li');
+                    li.textContent = taskText;
+                    zone.querySelector('ul').appendChild(li);
+                    
+                    // Remove from source
+                    draggedItem.remove();
+                    
+                    dropDetails.textContent = `Internal: "${taskText}" moved to ${priority} priority`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
