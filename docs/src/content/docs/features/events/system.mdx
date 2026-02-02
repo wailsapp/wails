@@ -174,17 +174,17 @@ app.Event.On("order-created", updateInventory)
 **Basic listener:**
 
 ```javascript
-import { OnEvent } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-OnEvent("event-name", (data) => {
-    console.log("Event received:", data)
+Events.On("event-name", (event) => {
+    console.log("Event received:", event.data)
 })
 ```
 
 **With cleanup:**
 
 ```javascript
-const unsubscribe = OnEvent("event-name", handleEvent)
+const unsubscribe = Events.On("event-name", handleEvent)
 
 // Later, stop listening
 unsubscribe()
@@ -193,9 +193,15 @@ unsubscribe()
 **Multiple handlers:**
 
 ```javascript
-OnEvent("data-updated", updateUI)
-OnEvent("data-updated", saveToCache)
-OnEvent("data-updated", logChange)
+Events.On("data-updated", updateUI)
+Events.On("data-updated", saveToCache)
+Events.On("data-updated", logChange)
+```
+
+**One Time handlers:**
+
+```javascript
+Events.Once("data-updated", updateVariable)
 ```
 
 ## System Events

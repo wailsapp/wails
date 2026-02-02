@@ -18,10 +18,12 @@ After processing, the content will be moved to the main changelog and this file 
 ## Added
 <!-- New features, capabilities, or enhancements -->
 - Add `UseApplicationMenu` option to `WebviewWindowOptions` allowing windows on Windows/Linux to inherit the application menu set via `app.Menu.Set()` by @leaanthony
+- Added how to do `One Time Handlers` in the docs for `Listening to Events in JavaScript` by @AbdelhadiSeddar 
 
 ## Changed
 <!-- Changes in existing functionality -->
 - Move `EnabledFeatures`, `DisabledFeatures`, and `AdditionalBrowserArgs` from per-window options to application-level `Options.Windows` (#4559) by @leaanthony
+- Changed the use of `Event` into `Events` according to changes in `@wailsio/runtime` and appropriate function calls in the docs in `Listening to Events in Javascript` by @AbdelhadiSeddar
 
 ## Fixed
 <!-- Bug fixes -->
