@@ -33,6 +33,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Fix race condition causing TypeError during page reload (#4872) by @ddmoney420
 - Fix incorrect output from binding generator tests by removing global state in the `Collector.IsVoidAlias()` method (#4941) by @fbbdev
 - Fix `<input type="file">` file picker not working on macOS (#4862) by @leaanthony
+- Fix "ghost windows" issue on macOS caused by not accessing AppKit APIs from the Main Thread, (#xxxx) by @wimaha
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
