@@ -780,6 +780,23 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     }
 }
 // GENERATED EVENTS END
+
+// WKUIDelegate - Handle file input element clicks
+- (void)webView:(WKWebView *)webView runOpenPanelWithParameters:(WKOpenPanelParameters *)parameters
+    initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSArray<NSURL *> * URLs))completionHandler {
+    NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+    openPanel.allowsMultipleSelection = parameters.allowsMultipleSelection;
+    if (@available(macOS 10.14, *)) {
+        openPanel.canChooseDirectories = parameters.allowsDirectories;
+    }
+    [openPanel beginSheetModalForWindow:webView.window
+        completionHandler:^(NSInteger result) {
+            if (result == NSModalResponseOK)
+                completionHandler(openPanel.URLs);
+            else
+                completionHandler(nil);
+        }];
+}
 @end
 void windowSetScreen(void* window, void* screen, int yOffset) {
     WebviewWindow* nsWindow = (WebviewWindow*)window;

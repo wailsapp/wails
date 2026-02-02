@@ -111,6 +111,7 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 
     // support webview events
     [webView setNavigationDelegate:delegate];
+    [webView setUIDelegate:delegate];
 
 	// Ensure webview resizes with the window
 	[webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
