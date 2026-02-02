@@ -23,7 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Changed
 <!-- Changes in existing functionality -->
 - Move `EnabledFeatures`, `DisabledFeatures`, and `AdditionalBrowserArgs` from per-window options to application-level `Options.Windows` (#4559) by @leaanthony
-- Changed the use of `Event` into `Events` according to changes in `@wailsio/runtime` and appropriate function calls in the docs in `Listening to Events in Javascript` by @AbdelhadiSeddar
+- Changed the use of `Event` into `Events` according to changes in `@wailsio/runtime` and appropriate function calls in the docs in `Features/Events/Event System` by @AbdelhadiSeddar
 
 ## Fixed
 <!-- Bug fixes -->

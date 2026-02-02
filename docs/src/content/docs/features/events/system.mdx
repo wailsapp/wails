@@ -25,10 +25,10 @@ app.Event.Emit("user-logged-in", map[string]interface{}{
 **JavaScript (listen):**
 
 ```javascript
-import { OnEvent } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-OnEvent("user-logged-in", (data) => {
-    console.log(`User ${data.name} logged in`)
+Events.On("user-logged-in", (event) => {
+    console.log(`User ${event.data.name} logged in`)
 })
 ```
 
@@ -49,9 +49,9 @@ app.Event.Emit("notification", message)
 
 ```javascript
 // Listen in JavaScript
-OnEvent("order-created", handleOrder)
-OnEvent("payment-processed", handlePayment)
-OnEvent("notification", showNotification)
+Events.On("order-created", handleOrder)
+Events.On("payment-processed", handlePayment)
+Events.On("notification", showNotification)
 ```
 
 ### System Events
@@ -391,9 +391,12 @@ app.Event.On("get-user-data", func(e *application.CustomEvent) {
     // Send response
     app.Event.Emit("user-data-response", user)
 })
+```
 
+```javascript
 // Frontend receives response
-OnEvent("user-data-response", (user) => {
+Events.On("user-data-response", (event) => {
+    user = event.data
     displayUser(user)
 })
 ```
@@ -502,25 +505,27 @@ func main() {
 **JavaScript:**
 
 ```javascript
-import { OnEvent, Emit } from '@wailsio/runtime'
+import { Events, Emit } from '@wailsio/runtime'
 
 // Listen for notifications
-OnEvent("notification", (data) => {
-    showNotification(data.message)
+Events.On("notification", (event) => {
+    showNotification(event.data.message)
 })
 
 // Listen for theme changes
-OnEvent("theme-changed", (isDark) => {
+Events.On("theme-changed", (event) => {
+    isDark = event.data
     document.body.classList.toggle('dark', isDark)
 })
 
 // Listen for window focus
-OnEvent("window-focused", (windowName) => {
+Events.On("window-focused", (event) => {
+    windowName = event.data
     console.log(`Window ${windowName} focused`)
 })
 
 // Handle close confirmation
-OnEvent("confirm-close", () => {
+Events.On("confirm-close", (event) => {
     if (confirm("Close window?")) {
         Emit("close-confirmed", true)
     }
