@@ -277,6 +277,7 @@ type WindowsOptions struct {
 	// EnabledFeatures, DisabledFeatures and AdditionalBrowserArgs configure the WebView2 browser.
 	// These apply globally to ALL windows because WebView2 shares a single browser environment.
 	// See: https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags
+	// AdditionalBrowserArgs must include the "--" prefix, e.g. "--remote-debugging-port=9222"
 	EnabledFeatures       []string
 	DisabledFeatures      []string
 	AdditionalBrowserArgs []string

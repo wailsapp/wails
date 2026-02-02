@@ -957,8 +957,8 @@ app := application.New(application.Options{
 
 **AdditionalBrowserArgs** (`[]string`)
 - Chromium command-line arguments passed to the browser process
+- Must include the `--` prefix (e.g., `"--remote-debugging-port=9222"`)
 - See [Chromium command line switches](https://peter.sh/experiments/chromium-command-line-switches/) for available arguments
-- Example: `"--remote-debugging-port=9222"`
 
 :::caution[Important]
 These flags apply globally to ALL windows because WebView2 shares a single browser environment per user data path. You cannot have different browser flags for different windows.
