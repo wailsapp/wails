@@ -27,7 +27,14 @@ func main() {
 
 	// Create a custom menu
 	menu := app.NewMenu()
-	menu.AddRole(application.AppMenu)
+
+	// macOS: Add application menu
+	if runtime.GOOS == "darwin" {
+		menu.AddRole(application.AppMenu)
+	}
+
+	// All platforms: Add standard menus
+	menu.AddRole(application.FileMenu)
 	menu.AddRole(application.EditMenu)
 	menu.AddRole(application.WindowMenu)
 	menu.AddRole(application.ServicesMenu)
@@ -332,12 +339,18 @@ func main() {
 			app.Dialog.Info().SetMessage(result).Show()
 		}
 	})
+
+	userHomeDir, err := os.UserHomeDir()
+	if err != nil || userHomeDir == "" {
+		userHomeDir = os.TempDir()
+	}
+
 	saveMenu.Add("Select File (Full Example)").OnClick(func(ctx *application.Context) {
 		result, _ := app.Dialog.SaveFile().
 			CanCreateDirectories(false).
 			ShowHiddenFiles(true).
 			SetMessage("Select a file").
-			SetDirectory("/Applications").
+			SetDirectory(userHomeDir).
 			SetButtonText("Let's do this!").
 			SetFilename("README.md").
 			HideExtension(true).
@@ -350,11 +363,15 @@ func main() {
 		}
 	})
 
+	// Set the application menu
 	app.Menu.Set(menu)
 
-	app.Window.New()
+	// Create window with UseApplicationMenu to inherit the app menu on Windows/Linux
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
+		UseApplicationMenu: true,
+	})
 
-	err := app.Run()
+	err = app.Run()
 
 	if err != nil {
 		log.Fatal(err.Error())

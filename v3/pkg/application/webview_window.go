@@ -1180,7 +1180,10 @@ func (w *WebviewWindow) SetFrameless(frameless bool) Window {
 }
 
 func (w *WebviewWindow) DispatchWailsEvent(event *CustomEvent) {
-	msg := fmt.Sprintf("window._wails.dispatchWailsEvent(%s);", event.ToJSON())
+	// Guard against race condition where event fires before runtime is initialized
+	// This can happen during page reload when WindowLoadFinished fires before
+	// the JavaScript runtime has mounted dispatchWailsEvent on window._wails
+	msg := fmt.Sprintf("if(window._wails&&window._wails.dispatchWailsEvent){window._wails.dispatchWailsEvent(%s);}", event.ToJSON())
 	w.ExecJS(msg)
 }
 
