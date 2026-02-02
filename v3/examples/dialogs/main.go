@@ -363,13 +363,13 @@ func main() {
 		}
 	})
 
-	window := app.Window.New()
+	// Set the application menu
+	app.Menu.Set(menu)
 
-	if runtime.GOOS == "darwin" {
-		app.Menu.Set(menu)
-	} else {
-		window.SetMenu(menu)
-	}
+	// Create window with UseApplicationMenu to inherit the app menu on Windows/Linux
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
+		UseApplicationMenu: true,
+	})
 
 	err = app.Run()
 
