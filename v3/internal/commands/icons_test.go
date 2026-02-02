@@ -10,10 +10,11 @@ import (
 
 func TestGenerateIcon(t *testing.T) {
 	tests := []struct {
-		name    string
-		setup   func() *IconsOptions
-		wantErr bool
-		test    func() error
+		name          string
+		setup         func() *IconsOptions
+		wantErr       bool
+		requireDarwin bool
+		test          func() error
 	}{
 		{
 			name: "should generate an icon when using the `example` flag",
@@ -120,6 +121,54 @@ func TestGenerateIcon(t *testing.T) {
 				}
 				// Remove the file
 
+				return nil
+			},
+		},
+
+		{
+			name:          "should generate a Assets.car and icons.icns file when using the `IconComposerInput` flag and `MacAssetDir` flag",
+			requireDarwin: true,
+			setup: func() *IconsOptions {
+				// Get the directory of this file
+				_, thisFile, _, _ := runtime.Caller(1)
+				localDir := filepath.Dir(thisFile)
+				// Get the path to the example icon
+				exampleIcon := filepath.Join(localDir, "build_assets", "appicon.icon")
+				return &IconsOptions{
+					IconComposerInput: exampleIcon,
+					MacAssetDir:       localDir,
+				}
+			},
+			wantErr: false,
+			test: func() error {
+				_, thisFile, _, _ := runtime.Caller(1)
+				localDir := filepath.Dir(thisFile)
+				carPath := filepath.Join(localDir, "Assets.car")
+				icnsPath := filepath.Join(localDir, "icons.icns")
+				defer func() {
+					_ = os.Remove(carPath)
+					_ = os.Remove(icnsPath)
+				}()
+				f, err := os.Stat(carPath)
+				if err != nil {
+					return err
+				}
+				if f.IsDir() {
+					return fmt.Errorf("Assets.car is a directory")
+				}
+				if f.Size() == 0 {
+					return fmt.Errorf("Assets.car is empty")
+				}
+				f, err = os.Stat(icnsPath)
+				if err != nil {
+					return err
+				}
+				if f.IsDir() {
+					return fmt.Errorf("icons.icns is a directory")
+				}
+				if f.Size() == 0 {
+					return fmt.Errorf("icons.icns is empty")
+				}
 				return nil
 			},
 		},
@@ -266,6 +315,10 @@ func TestGenerateIcon(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.requireDarwin && (runtime.GOOS != "darwin" || os.Getenv("CI") != "") {
+				t.Skip("Assets.car generation is only supported on macOS and not in CI")
+			}
+
 			options := tt.setup()
 			err := GenerateIcons(options)
 			if (err != nil) != tt.wantErr {

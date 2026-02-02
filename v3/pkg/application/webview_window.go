@@ -1253,6 +1253,9 @@ func (w *WebviewWindow) shouldUnconditionallyClose() bool {
 }
 
 func (w *WebviewWindow) Focus() {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
 	InvokeSync(w.impl.focus)
 }
 
