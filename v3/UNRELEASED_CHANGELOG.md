@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix OpenFileDialog crash on Linux due to GTK thread safety violation (#3683) by @ddmoney420
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
