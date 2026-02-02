@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix race condition causing TypeError during page reload (#4872) by @ddmoney420
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
