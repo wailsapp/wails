@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix potential panic when setting empty icon or bitmap on Linux (#4923) by @ddmoney420
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
