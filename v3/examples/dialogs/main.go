@@ -371,7 +371,7 @@ func main() {
 		window.SetMenu(menu)
 	}
 
-	err := app.Run()
+	err = app.Run()
 
 	if err != nil {
 		log.Fatal(err.Error())
