@@ -29,6 +29,8 @@ After processing, the content will be moved to the main changelog and this file 
 - Make menus to be displayed on Windows OS in `v3\examples\dialogs` by @ndianabasi
 - Fix race condition causing TypeError during page reload (#4872) by @ddmoney420
 
+- Fix incorrect output from binding generator tests by removing global state in the `Collector.IsVoidAlias()` method (#4941) by @fbbdev
+
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
