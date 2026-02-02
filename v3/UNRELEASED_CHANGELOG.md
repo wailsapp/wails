@@ -24,6 +24,8 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 
+- Fix incorrect output from binding generator tests by removing global state in the `Collector.IsVoidAlias()` method (#4941) by @fbbdev
+
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
