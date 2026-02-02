@@ -515,13 +515,13 @@ Events.On("notification", (event) => {
 
 // Listen for theme changes
 Events.On("theme-changed", (event) => {
-    isDark = event.data
+    const isDark = event.data
     document.body.classList.toggle('dark', isDark)
 })
 
 // Listen for window focus
 Events.On("window-focused", (event) => {
-    windowName = event.data
+    const windowName = event.data
     console.log(`Window ${windowName} focused`)
 })
 
