@@ -105,6 +105,26 @@ func initProject(f *flags.Init) error {
 	// Try to discover author details from git config
 	findAuthorDetails(options)
 
+	// Safety check: warn user if target directory is non-empty
+	safetyResult, err := CheckDirectorySafety(f.ProjectDir, f.CIMode, f.Force)
+	if err != nil {
+		return err
+	}
+	if safetyResult == DirectoryNeedsConfirmation {
+		absTargetDir, _ := GetAbsoluteTargetDir(f.ProjectDir)
+		pterm.Warning.Printf("Target directory '%s' is not empty!\n", absTargetDir)
+		pterm.Warning.Println("Proceeding may overwrite existing files and cause data loss.")
+		pterm.Println()
+		result, _ := pterm.DefaultInteractiveConfirm.
+			WithDefaultText("Do you want to continue?").
+			WithDefaultValue(false).
+			Show()
+		if !result {
+			pterm.Info.Println("Aborted.")
+			return nil
+		}
+	}
+
 	// Start Time
 	start := time.Now()
 

@@ -11,6 +11,7 @@ type Init struct {
 	InitGit      bool   `name:"g" description:"Initialise git repository"`
 	IDE          string `name:"ide" description:"Generate IDE project files"`
 	List         bool   `name:"l" description:"List templates"`
+	Force        bool   `name:"f" description:"Force init in non-empty directory (use with caution)"`
 }
 
 func (i *Init) Default() *Init {
