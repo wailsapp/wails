@@ -1191,7 +1191,7 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 
 	GdkColorspaceRGB := 0
 
-	if img, err := pngToImage(options.Icon); err == nil {
+	if img, err := pngToImage(options.Icon); err == nil && len(img.Pix) > 0 {
 		gbytes := gBytesNewStatic(uintptr(unsafe.Pointer(&img.Pix[0])), len(img.Pix))
 
 		defer gBytesUnref(gbytes)
