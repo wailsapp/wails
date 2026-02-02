@@ -2110,12 +2110,14 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 		var results []string
 		if response == C.GTK_RESPONSE_ACCEPT {
 			filenames := C.gtk_file_chooser_get_filenames((*C.GtkFileChooser)(fc))
-			iter := filenames
-			count := 0
-			for iter != nil && count < 1024 {
-				results = append(results, buildStringAndFree(C.gpointer(iter.data)))
-				iter = iter.next
-				count++
+			const maxSelections = 1024
+			for iter := filenames; iter != nil; iter = iter.next {
+				if len(results) < maxSelections {
+					results = append(results, buildStringAndFree(C.gpointer(iter.data)))
+				} else {
+					// Free remaining filenames to prevent memory leak
+					C.g_free(iter.data)
+				}
 			}
 			C.g_slist_free(filenames)
 		}
