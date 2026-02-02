@@ -25,7 +25,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix JS/CSS options in WebviewWindowOptions not being executed when using URL navigation (not just HTML)
+- Fix JS/CSS options in WebviewWindowOptions not being executed when using URL navigation (not just HTML) (#4888) by @leaanthony
 - Fix OpenFileDialog crash on Linux due to GTK thread safety violation (#3683) by @ddmoney420
 - Fix SIGSEGV crash when calling `Focus()` on a hidden or destroyed window (#4890) by @ddmoney420
 - Fix potential panic when setting empty icon or bitmap on Linux (#4923) by @ddmoney420
