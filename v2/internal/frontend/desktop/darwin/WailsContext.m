@@ -215,7 +215,13 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 
     // Webview stuff here!
     WKWebViewConfiguration *config = [WKWebViewConfiguration new];
-    config.suppressesIncrementalRendering = true;
+    // Disable suppressesIncrementalRendering on macOS 26+ to prevent WebView crashes
+    // during rapid UI updates. See: https://github.com/wailsapp/wails/issues/4592
+    if (@available(macOS 26.0, *)) {
+        config.suppressesIncrementalRendering = false;
+    } else {
+        config.suppressesIncrementalRendering = true;
+    }
     config.applicationNameForUserAgent = @"wails.io";
     [config setURLSchemeHandler:self forURLScheme:@"wails"];
 
@@ -477,6 +483,15 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 }
 
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
+    // Get the origin from the message's frame
+    NSString *origin = nil;
+    if (message.frameInfo && message.frameInfo.request && message.frameInfo.request.URL) {
+        NSURL *url = message.frameInfo.request.URL;
+        if (url.scheme && url.host) {
+            origin = [url absoluteString];
+        }
+    }
+
     NSString *m = message.body;
 
     // Check for drag
@@ -491,10 +506,10 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     }
 
     const char *_m = [m UTF8String];
+    const char *_origin = [origin UTF8String];
 
-    processMessage(_m);
+    processBindingMessage(_m, _origin, message.frameInfo.isMainFrame);
 }
-
 
 /***** Dialogs ******/
 -(void) MessageDialog :(NSString*)dialogType :(NSString*)title :(NSString*)message :(NSString*)button1 :(NSString*)button2 :(NSString*)button3 :(NSString*)button4 :(NSString*)defaultButton :(NSString*)cancelButton :(void*)iconData :(int)iconDataLength {
@@ -594,9 +609,8 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
         }
 
         [dialog setAllowsMultipleSelection: allowMultipleSelection];
-        [dialog setShowsHiddenFiles: showHiddenFiles];
-
     }
+    [dialog setShowsHiddenFiles: showHiddenFiles];
 
     // Default Directory
     if( defaultDirectory != nil ) {

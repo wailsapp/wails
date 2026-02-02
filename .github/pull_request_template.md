@@ -6,7 +6,6 @@
 *     YOUR PR MAY BE REJECTED IF IT DOES NOT FOLLOW THESE STEPS     *
 *********************************************************************
 
-- *DO NOT* submit bugs for a source install of v3, ONLY tagged versions, e.g. v3.0.0-alpha.11
 - *DO NOT* submit PRs for v3 alpha enhancements, unless you have opened a post on the discord channel.
   All enhancements must be discussed first.
   The feedback guide for v3 is here: https://v3alpha.wails.io/getting-started/feedback/
@@ -48,7 +47,7 @@ Please paste the output of `wails doctor`. If you are unable to run this command
 
 # Checklist:
 
-- [ ] I have updated `v3/UNRELEASED_CHANGELOG.md` with details of this PR
+- [ ] I have updated `website/src/pages/changelog.mdx` with details of this PR
 - [ ] My code follows the general coding style of this project
 - [ ] I have performed a self-review of my own code
 - [ ] I have commented my code, particularly in hard-to-understand areas
