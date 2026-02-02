@@ -14,20 +14,20 @@ func TestCheckDirectorySafety(t *testing.T) {
 	tests := []struct {
 		name    string
 		force   bool
-		setup   func() string // returns path to use, may create files
+		setup   func(t *testing.T) string // returns path to use, may create files
 		wantErr bool
 		errMsg  string // substring to check in error message
 	}{
 		{
 			name:    "empty target dir string - should be safe",
 			force:   false,
-			setup:   func() string { return "" },
+			setup:   func(t *testing.T) string { return "" },
 			wantErr: false,
 		},
 		{
 			name:  "non-existent directory - should be safe",
 			force: false,
-			setup: func() string {
+			setup: func(t *testing.T) string {
 				return filepath.Join(tempDir, "nonexistent")
 			},
 			wantErr: false,
@@ -35,9 +35,11 @@ func TestCheckDirectorySafety(t *testing.T) {
 		{
 			name:  "empty existing directory - should be safe",
 			force: false,
-			setup: func() string {
+			setup: func(t *testing.T) string {
 				dir := filepath.Join(tempDir, "empty_dir")
-				os.Mkdir(dir, 0755)
+				if err := os.Mkdir(dir, 0755); err != nil {
+					t.Fatalf("failed to create test directory: %v", err)
+				}
 				return dir
 			},
 			wantErr: false,
@@ -45,10 +47,14 @@ func TestCheckDirectorySafety(t *testing.T) {
 		{
 			name:  "non-empty directory with force flag - should be safe",
 			force: true,
-			setup: func() string {
+			setup: func(t *testing.T) string {
 				dir := filepath.Join(tempDir, "nonempty_force")
-				os.Mkdir(dir, 0755)
-				os.WriteFile(filepath.Join(dir, "file.txt"), []byte("content"), 0644)
+				if err := os.Mkdir(dir, 0755); err != nil {
+					t.Fatalf("failed to create test directory: %v", err)
+				}
+				if err := os.WriteFile(filepath.Join(dir, "file.txt"), []byte("content"), 0644); err != nil {
+					t.Fatalf("failed to create test file: %v", err)
+				}
 				return dir
 			},
 			wantErr: false,
@@ -56,10 +62,14 @@ func TestCheckDirectorySafety(t *testing.T) {
 		{
 			name:  "non-empty directory without force - should return error",
 			force: false,
-			setup: func() string {
+			setup: func(t *testing.T) string {
 				dir := filepath.Join(tempDir, "nonempty_no_force")
-				os.Mkdir(dir, 0755)
-				os.WriteFile(filepath.Join(dir, "file.txt"), []byte("content"), 0644)
+				if err := os.Mkdir(dir, 0755); err != nil {
+					t.Fatalf("failed to create test directory: %v", err)
+				}
+				if err := os.WriteFile(filepath.Join(dir, "file.txt"), []byte("content"), 0644); err != nil {
+					t.Fatalf("failed to create test file: %v", err)
+				}
 				return dir
 			},
 			wantErr: true,
@@ -68,11 +78,17 @@ func TestCheckDirectorySafety(t *testing.T) {
 		{
 			name:  "non-empty directory with .git folder - should return error",
 			force: false,
-			setup: func() string {
+			setup: func(t *testing.T) string {
 				dir := filepath.Join(tempDir, "with_git")
-				os.Mkdir(dir, 0755)
-				os.Mkdir(filepath.Join(dir, ".git"), 0755)
-				os.WriteFile(filepath.Join(dir, ".git", "config"), []byte("[core]"), 0644)
+				if err := os.Mkdir(dir, 0755); err != nil {
+					t.Fatalf("failed to create test directory: %v", err)
+				}
+				if err := os.Mkdir(filepath.Join(dir, ".git"), 0755); err != nil {
+					t.Fatalf("failed to create .git directory: %v", err)
+				}
+				if err := os.WriteFile(filepath.Join(dir, ".git", "config"), []byte("[core]"), 0644); err != nil {
+					t.Fatalf("failed to create test file: %v", err)
+				}
 				return dir
 			},
 			wantErr: true,
@@ -82,7 +98,7 @@ func TestCheckDirectorySafety(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			targetDir := tt.setup()
+			targetDir := tt.setup(t)
 
 			err := CheckDirectorySafety(targetDir, tt.force)
 
