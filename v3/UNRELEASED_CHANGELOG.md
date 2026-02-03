@@ -22,8 +22,8 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Changes in existing functionality -->
 
 ## Fixed
-- Fix "ghost windows" issue on macOS caused by not accessing AppKit APIs from the Main Thread in App.Window.Current(), (#4947) by @wimaha
 <!-- Bug fixes -->
+- Fix "ghost windows" issue on macOS caused by not accessing AppKit APIs from the Main Thread in App.Window.Current() (#4947) by @wimaha
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

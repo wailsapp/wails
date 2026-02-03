@@ -147,30 +147,30 @@ static char* getAppName(void) {
 // get the current window ID
 static unsigned int getCurrentWindowID(void) {
 	// AppKit must be accessed on the main thread. This function may be called
-    // from arbitrary Go goroutines, so we hop to the main queue when needed.
-    __block unsigned int result = 0;
-    if (NSApp == nil) {
-        return result;
-    }
-    void (^resolve)(void) = ^{
-        NSWindow *window = [NSApp keyWindow];
-        if (window == nil) {
-            window = [NSApp mainWindow];
-        }
-        if (window == nil) {
-            return;
-        }
-        WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)[window delegate];
-        if (delegate != nil) {
-            result = delegate.windowId;
-        }
-    };
-    if ([NSThread isMainThread]) {
-        resolve();
-    } else {
-        dispatch_sync(dispatch_get_main_queue(), resolve);
-    }
-    return result;
+	// from arbitrary Go goroutines, so we hop to the main queue when needed.
+	__block unsigned int result = 0;
+	if (NSApp == nil) {
+		return result;
+	}
+	void (^resolve)(void) = ^{
+		NSWindow *window = [NSApp keyWindow];
+		if (window == nil) {
+			window = [NSApp mainWindow];
+		}
+		if (window == nil) {
+			return;
+		}
+		WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)[window delegate];
+		if (delegate != nil) {
+			result = delegate.windowId;
+		}
+	};
+	if ([NSThread isMainThread]) {
+		resolve();
+	} else {
+		dispatch_sync(dispatch_get_main_queue(), resolve);
+	}
+	return result;
 }
 
 // Set the application icon
