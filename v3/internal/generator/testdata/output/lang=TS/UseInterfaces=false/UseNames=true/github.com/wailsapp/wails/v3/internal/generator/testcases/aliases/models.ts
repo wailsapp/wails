@@ -5,6 +5,10 @@
 // @ts-ignore: Unused imports
 import { Create as $Create } from "/wails/runtime.js";
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import * as subpkg$0 from "./subpkg/models.js";
+
 /**
  * A nice type Alias.
  */
@@ -22,6 +26,7 @@ export class AliasGroup {
     "GPA": GenericPersonAlias<boolean>;
     "IPA": IndirectPersonAlias;
     "TPIPA": TPIndirectPersonAlias;
+    "SPA": SubPackageAlias;
 
     /** Creates a new AliasGroup instance. */
     constructor($$source: Partial<AliasGroup> = {}) {
@@ -49,6 +54,9 @@ export class AliasGroup {
         if (!("TPIPA" in $$source)) {
             this["TPIPA"] = (new TPIndirectPersonAlias());
         }
+        if (!("SPA" in $$source)) {
+            this["SPA"] = (new SubPackageAlias());
+        }
 
         Object.assign(this, $$source);
     }
@@ -64,6 +72,7 @@ export class AliasGroup {
         const $$createField5_0 = $$createType8;
         const $$createField6_0 = $$createType8;
         const $$createField7_0 = $$createType0;
+        const $$createField8_0 = $$createType9;
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         if ("GAP" in $$parsedSource) {
             $$parsedSource["GAP"] = $$createField1_0($$parsedSource["GAP"]);
@@ -85,6 +94,9 @@ export class AliasGroup {
         }
         if ("TPIPA" in $$parsedSource) {
             $$parsedSource["TPIPA"] = $$createField7_0($$parsedSource["TPIPA"]);
+        }
+        if ("SPA" in $$parsedSource) {
+            $$parsedSource["SPA"] = $$createField8_0($$parsedSource["SPA"]);
         }
         return new AliasGroup($$parsedSource as Partial<AliasGroup>);
     }
@@ -269,6 +281,16 @@ export const StrangelyAliasedPerson = Person;
 export type StrangelyAliasedPerson = Person;
 
 /**
+ * An alias referencing another package that is not used elsewhere.
+ */
+export const SubPackageAlias = subpkg$0.SubStruct;
+
+/**
+ * An alias referencing another package that is not used elsewhere.
+ */
+export type SubPackageAlias = subpkg$0.SubStruct;
+
+/**
  * An alias that wraps a class through a typeparam alias.
  */
 export const TPIndirectPersonAlias = GenericPerson;
@@ -288,3 +310,4 @@ const $$createType5 = $Create.Nullable($$createType4);
 const $$createType6 = $Create.Map($Create.Any, $Create.Any);
 const $$createType7 = $Create.Array($Create.Any);
 const $$createType8 = GenericPerson.createFrom($$createType7);
+const $$createType9 = subpkg$0.SubStruct.createFrom;
