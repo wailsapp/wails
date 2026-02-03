@@ -1,6 +1,6 @@
 # File Input Example
 
-Tests HTML `<input type="file">` and Wails JS runtime Dialog API functionality (#4862).
+Tests HTML `<input type="file">` and Wails Dialog API functionality (#4862).
 
 ## Test Cases
 
@@ -9,12 +9,16 @@ Tests HTML `<input type="file">` and Wails JS runtime Dialog API functionality (
 2. **Multiple Files** - Multi-select with `multiple` attribute
 3. **Files or Directories** - Selection with `webkitdirectory` attribute
 
-**Wails JS Runtime Dialog API:**
-4. **Directory Only** - Using `wails.Dialogs.OpenFile()` with `CanChooseDirectories: true, CanChooseFiles: false`
-5. **Filtered (.txt)** - Using `wails.Dialogs.OpenFile()` with `Filters` option
+**Wails Dialog API (via generated bindings):**
+4. **Directory Only** - `CanChooseDirectories(true)` + `CanChooseFiles(false)`
+5. **Filtered (.txt)** - Using `AddFilter()` for file type filtering
 
 ## Run
 
 ```bash
+# Generate bindings (already included)
+wails3 generate bindings -d assets/bindings
+
+# Run the app
 go run .
 ```
