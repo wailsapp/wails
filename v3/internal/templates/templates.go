@@ -293,12 +293,12 @@ func Install(options *flags.Init) error {
 
 	templateData.ProjectDir = projectDir
 
-	// If project directory already exists and is not empty, error
+	// If project directory already exists and is not empty, error (unless --force is used)
 	if _, err := os.Stat(templateData.ProjectDir); !os.IsNotExist(err) {
 		// Check if the directory is empty
 		files := lo.Must(os.ReadDir(templateData.ProjectDir))
-		if len(files) > 0 {
-			return fmt.Errorf("project directory '%s' already exists and is not empty", templateData.ProjectDir)
+		if len(files) > 0 && !options.Force {
+			return fmt.Errorf("project directory '%s' already exists and is not empty. Use -f to force initialization", templateData.ProjectDir)
 		}
 	}
 
