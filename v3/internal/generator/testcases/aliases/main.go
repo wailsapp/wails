@@ -5,6 +5,7 @@ import (
 	"encoding"
 	"log"
 
+	"github.com/wailsapp/wails/v3/internal/generator/testcases/aliases/subpkg"
 	nobindingshere "github.com/wailsapp/wails/v3/internal/generator/testcases/no_bindings_here"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -75,6 +76,9 @@ type IndirectPersonAlias = GenericPersonAlias[bool]
 // An alias that wraps a class through a typeparam alias.
 type TPIndirectPersonAlias = GenericAlias[GenericPerson[bool]]
 
+// An alias referencing another package that is not used elsewhere.
+type SubPackageAlias = subpkg.SubStruct
+
 // A class whose fields have various aliased types.
 type AliasGroup struct {
 	GAi   GenericAlias[int]
@@ -85,6 +89,7 @@ type AliasGroup struct {
 	GPA   GenericPersonAlias[bool]
 	IPA   IndirectPersonAlias
 	TPIPA TPIndirectPersonAlias
+	SPA   SubPackageAlias
 }
 
 // Get someone.
@@ -103,6 +108,10 @@ func (GreetService) GetButAliased(p AliasedPerson) StrangelyAliasedPerson {
 }
 
 func (GreetService) GetButForeignPrivateAlias() (_ nobindingshere.PrivatePerson) {
+	return
+}
+
+func (GreetService) GetButSubPackageAlias() (_ SubPackageAlias) {
 	return
 }
 

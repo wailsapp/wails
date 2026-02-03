@@ -16,6 +16,7 @@ export {
     IndirectPersonAlias,
     Person,
     StrangelyAliasedPerson,
+    SubPackageAlias,
     TPIndirectPersonAlias
 } from "./models.js";
 
