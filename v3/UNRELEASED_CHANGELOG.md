@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix binding generation for cross-package type aliases (#4578) by @fbbdev
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

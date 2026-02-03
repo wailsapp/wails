@@ -12,6 +12,9 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
+import * as subpkg$0 from "./subpkg/models.js";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
 import * as nobindingshere$0 from "../no_bindings_here/models.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -57,12 +60,18 @@ export function GetButGenericAliases(): $CancellablePromise<$models.AliasGroup> 
     });
 }
 
+export function GetButSubPackageAlias(): $CancellablePromise<$models.SubPackageAlias> {
+    return $Call.ByName("main.GreetService.GetButSubPackageAlias").then(($result: any) => {
+        return $$createType4($result);
+    });
+}
+
 /**
  * Greet a lot of unusual things.
  */
 export function Greet($0: $models.EmptyAliasStruct, $1: $models.EmptyStruct): $CancellablePromise<$models.AliasStruct> {
     return $Call.ByName("main.GreetService.Greet", $0, $1).then(($result: any) => {
-        return $$createType7($result);
+        return $$createType8($result);
     });
 }
 
@@ -71,12 +80,13 @@ const $$createType0 = $models.Person.createFrom;
 const $$createType1 = $models.GenericPerson.createFrom($Create.Any);
 const $$createType2 = nobindingshere$0.personImpl.createFrom;
 const $$createType3 = $models.AliasGroup.createFrom;
-const $$createType4 = $Create.Array($Create.Any);
+const $$createType4 = subpkg$0.SubStruct.createFrom;
 const $$createType5 = $Create.Array($Create.Any);
-const $$createType6 = $Create.Struct({
-    "NoMoreIdeas": $$createType5,
-});
+const $$createType6 = $Create.Array($Create.Any);
 const $$createType7 = $Create.Struct({
-    "Foo": $$createType4,
-    "Other": $$createType6,
+    "NoMoreIdeas": $$createType6,
+});
+const $$createType8 = $Create.Struct({
+    "Foo": $$createType5,
+    "Other": $$createType7,
 });
