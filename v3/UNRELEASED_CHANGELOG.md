@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix native file drag-and-drop not working when using `@wailsio/runtime` npm module on macOS/Linux (#4953)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
