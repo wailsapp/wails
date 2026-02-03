@@ -1450,7 +1450,7 @@ func (w *WebviewWindow) InitiateFrontendDropProcessing(filenames []string, x int
 	}
 
 	jsCall := fmt.Sprintf(
-		"window.wails.Window.HandlePlatformFileDrop(%s, %d, %d);",
+		"window._wails.handlePlatformFileDrop(%s, %d, %d);",
 		string(filenamesJSON),
 		x,
 		y,
