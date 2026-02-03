@@ -22,15 +22,23 @@ Changed `v3/pkg/application/webview_window.go` to call the internal path that bo
 
 ## Running the Test
 
+The frontend is pre-built, so you can run directly:
+
 ```bash
-cd frontend
-npm install
-npm run build
-cd ..
 go run .
 ```
 
 Then drag files from Finder/Explorer onto the drop zone. Files should be categorized and displayed.
+
+### Rebuilding the Frontend (optional)
+
+Only needed if you modify the frontend code:
+
+```bash
+cd frontend
+npm install
+npm run build
+```
 
 ## What This Tests
 
