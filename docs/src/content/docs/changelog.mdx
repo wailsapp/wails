@@ -30,6 +30,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha.66 - 2026-02-03
+
+## Added
+- Add `UseApplicationMenu` option to `WebviewWindowOptions` allowing windows on Windows/Linux to inherit the application menu set via `app.Menu.Set()` by @leaanthony
+
+## Changed
+- Move `EnabledFeatures`, `DisabledFeatures`, and `AdditionalBrowserArgs` from per-window options to application-level `Options.Windows` (#4559) by @leaanthony
+
+## Fixed
+- Fix OpenFileDialog crash on Linux due to GTK thread safety violation (#3683) by @ddmoney420
+- Fix SIGSEGV crash when calling `Focus()` on a hidden or destroyed window (#4890) by @ddmoney420
+- Fix potential panic when setting empty icon or bitmap on Linux (#4923) by @ddmoney420
+- Fix ErrorDialog crash when called from service binding on macOS (#3631) by @leaanthony
+- Make menus to be displayed on Windows OS in `v3\examples\dialogs` by @ndianabasi
+- Fix race condition causing TypeError during page reload (#4872) by @ddmoney420
+- Fix incorrect output from binding generator tests by removing global state in the `Collector.IsVoidAlias()` method (#4941) by @fbbdev
+- Fix `<input type="file">` file picker not working on macOS (#4862) by @leaanthony
+
+## Removed
+- **BREAKING**: Remove `EnabledFeatures`, `DisabledFeatures`, and `AdditionalLaunchArgs` from per-window `WindowsWindow` options. Use application-level `Options.Windows.EnabledFeatures`, `Options.Windows.DisabledFeatures`, and `Options.Windows.AdditionalBrowserArgs` instead. These flags apply globally to the shared WebView2 environment (#4559) by @leaanthony
+
 ## v3.0.0-alpha.65 - 2026-02-01
 
 ## Added
