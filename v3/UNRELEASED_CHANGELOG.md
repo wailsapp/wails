@@ -24,7 +24,8 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 - Fix HTML `<input type="file">` not working on macOS by implementing WKUIDelegate runOpenPanelWithParameters (#4862)
-- Fix native file drag-and-drop not working when using `@wailsio/runtime` npm module on macOS/Linux (#4953)
+- Fix native file drag-and-drop not working when using `@wailsio/runtime` npm module on macOS/Linux (#4953) by @leaanthony
+- Fix binding generation for cross-package type aliases (#4578) by @fbbdev
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
