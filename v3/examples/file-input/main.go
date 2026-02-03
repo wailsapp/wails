@@ -44,6 +44,7 @@ const html = `<!DOCTYPE html>
 <html>
 <head>
     <title>File Input Test</title>
+    <script src="/wails/runtime.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
@@ -64,6 +65,7 @@ const html = `<!DOCTYPE html>
         }
         .card h2 { font-size: 14px; margin: 0 0 10px 0; }
         input[type="file"] { font-size: 12px; width: 100%; }
+        button { font-size: 12px; padding: 6px 12px; cursor: pointer; }
         #result {
             margin-top: 15px;
             padding: 10px;
@@ -77,7 +79,7 @@ const html = `<!DOCTYPE html>
     </style>
 </head>
 <body>
-    <h1>HTML File Input Test (#4862)</h1>
+    <h1>File Input Test (#4862)</h1>
     <div class="grid">
         <div class="card">
             <h2>1. Single File</h2>
@@ -91,8 +93,16 @@ const html = `<!DOCTYPE html>
             <h2>3. Files or Directories</h2>
             <input type="file" webkitdirectory onchange="show(this)">
         </div>
+        <div class="card">
+            <h2>4. Directory Only (Wails API)</h2>
+            <button onclick="openDir()">Choose Directory</button>
+        </div>
+        <div class="card">
+            <h2>5. Filtered .txt (Wails API)</h2>
+            <button onclick="openFiltered()">Choose .txt File</button>
+        </div>
     </div>
-    <div id="result">Click a file input to test...</div>
+    <div id="result">Click a file input or button to test...</div>
     <script>
         function show(input) {
             const r = document.getElementById('result');
@@ -105,6 +115,31 @@ const html = `<!DOCTYPE html>
                 t += '• ' + f.name + ' (' + f.size + ' bytes)\n';
             }
             r.textContent = t;
+        }
+        async function openDir() {
+            const r = document.getElementById('result');
+            try {
+                const path = await wails.Dialogs.OpenFile({
+                    Title: 'Select Directory',
+                    CanChooseDirectories: true,
+                    CanChooseFiles: false
+                });
+                r.textContent = path || 'Cancelled';
+            } catch (e) {
+                r.textContent = 'Error: ' + e;
+            }
+        }
+        async function openFiltered() {
+            const r = document.getElementById('result');
+            try {
+                const path = await wails.Dialogs.OpenFile({
+                    Title: 'Select Text File',
+                    Filters: [{ DisplayName: 'Text Files', Pattern: '*.txt' }]
+                });
+                r.textContent = path || 'Cancelled';
+            } catch (e) {
+                r.textContent = 'Error: ' + e;
+            }
         }
     </script>
 </body>
