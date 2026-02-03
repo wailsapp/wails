@@ -1,4 +1,4 @@
-//go:build linux && cgo && !android
+//go:build linux && cgo && !android && !server
 
 package application
 
@@ -663,8 +663,15 @@ func (a *linuxApp) showAllWindows() {
 }
 
 func (a *linuxApp) setIcon(icon []byte) {
-	gbytes := C.g_bytes_new_static(C.gconstpointer(unsafe.Pointer(&icon[0])), C.ulong(len(icon)))
+	if len(icon) == 0 {
+		return
+	}
+	// Use g_bytes_new instead of g_bytes_new_static because Go memory can be
+	// moved or freed by the GC. g_bytes_new copies the data to C-owned memory.
+	gbytes := C.g_bytes_new(C.gconstpointer(unsafe.Pointer(&icon[0])), C.ulong(len(icon)))
+	defer C.g_bytes_unref(gbytes)
 	stream := C.g_memory_input_stream_new_from_bytes(gbytes)
+	defer C.g_object_unref(C.gpointer(stream))
 	var gerror *C.GError
 	pixbuf := C.gdk_pixbuf_new_from_stream(stream, nil, &gerror)
 	if gerror != nil {
@@ -831,8 +838,10 @@ func menuItemAddProperties(menuItem *C.GtkWidget, label string, bitmap []byte) p
 		(*C.GtkWidget)(unsafe.Pointer(menuItem)))
 
 	box := C.gtk_box_new(C.GTK_ORIENTATION_HORIZONTAL, 6)
-	if img, err := pngToImage(bitmap); err == nil {
-		gbytes := C.g_bytes_new_static(C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
+	if img, err := pngToImage(bitmap); err == nil && len(img.Pix) > 0 {
+		// Use g_bytes_new instead of g_bytes_new_static because Go memory can be
+		// moved or freed by the GC. g_bytes_new copies the data to C-owned memory.
+		gbytes := C.g_bytes_new(C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
 			C.ulong(len(img.Pix)))
 		defer C.g_bytes_unref(gbytes)
 		pixBuf := C.gdk_pixbuf_new_from_bytes(
@@ -911,8 +920,10 @@ func menuItemRemoveBitmap(widget pointer) {
 func menuItemSetBitmap(widget pointer, bitmap []byte) {
 	menuItemRemoveBitmap(widget)
 	box := C.gtk_bin_get_child((*C.GtkBin)(widget))
-	if img, err := pngToImage(bitmap); err == nil {
-		gbytes := C.g_bytes_new_static(C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
+	if img, err := pngToImage(bitmap); err == nil && len(img.Pix) > 0 {
+		// Use g_bytes_new instead of g_bytes_new_static because Go memory can be
+		// moved or freed by the GC. g_bytes_new copies the data to C-owned memory.
+		gbytes := C.g_bytes_new(C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
 			C.ulong(len(img.Pix)))
 		defer C.g_bytes_unref(gbytes)
 		pixBuf := C.gdk_pixbuf_new_from_bytes(
@@ -2106,25 +2117,27 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 	// run this on the gtk thread
 	InvokeAsync(func() {
 		response := C.gtk_dialog_run((*C.GtkDialog)(fc))
+		// Extract results on GTK thread BEFORE destroying widget
+		var results []string
+		if response == C.GTK_RESPONSE_ACCEPT {
+			// No artificial limit - consistent with Windows/macOS behavior
+			filenames := C.gtk_file_chooser_get_filenames((*C.GtkFileChooser)(fc))
+			for iter := filenames; iter != nil; iter = iter.next {
+				results = append(results, buildStringAndFree(C.gpointer(iter.data)))
+			}
+			C.g_slist_free(filenames)
+		}
+		// Destroy widget after extracting results (on GTK thread)
+		C.gtk_widget_destroy((*C.GtkWidget)(unsafe.Pointer(fc)))
+		// Send results from goroutine (safe - no GTK calls)
 		go func() {
 			defer handlePanic()
-			if response == C.GTK_RESPONSE_ACCEPT {
-				filenames := C.gtk_file_chooser_get_filenames((*C.GtkFileChooser)(fc))
-				iter := filenames
-				count := 0
-				for {
-					selections <- buildStringAndFree(C.gpointer(iter.data))
-					iter = iter.next
-					if iter == nil || count == 1024 {
-						break
-					}
-					count++
-				}
+			for _, result := range results {
+				selections <- result
 			}
 			close(selections)
 		}()
 	})
-	C.gtk_widget_destroy((*C.GtkWidget)(unsafe.Pointer(fc)))
 	return selections, nil
 }
 
@@ -2191,8 +2204,10 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 			cTitle)
 	}
 
-	if img, err := pngToImage(options.Icon); err == nil {
-		gbytes := C.g_bytes_new_static(
+	if img, err := pngToImage(options.Icon); err == nil && len(img.Pix) > 0 {
+		// Use g_bytes_new instead of g_bytes_new_static because Go memory can be
+		// moved or freed by the GC. g_bytes_new copies the data to C-owned memory.
+		gbytes := C.g_bytes_new(
 			C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
 			C.ulong(len(img.Pix)))
 		defer C.g_bytes_unref(gbytes)

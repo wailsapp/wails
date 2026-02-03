@@ -1,0 +1,289 @@
+name: Build Cross-Compiler Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch containing Dockerfile'
+        required: true
+        default: 'v3-alpha'
+      sdk_version:
+        description: 'macOS SDK version'
+        required: true
+        default: '14.5'
+      zig_version:
+        description: 'Zig version'
+        required: true
+        default: '0.14.0'
+      image_version:
+        description: 'Image version tag'
+        required: true
+        default: 'latest'
+      skip_tests:
+        description: 'Skip cross-compilation tests'
+        required: false
+        default: 'false'
+        type: boolean
+  push:
+    branches:
+      - v3-alpha
+    paths:
+      - 'v3/internal/commands/build_assets/docker/Dockerfile.cross'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: wailsapp/wails-cross
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image_tag: ${{ steps.vars.outputs.image_version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch || github.ref }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set build variables
+        id: vars
+        run: |
+          echo "sdk_version=${{ inputs.sdk_version || '14.5' }}" >> $GITHUB_OUTPUT
+          echo "zig_version=${{ inputs.zig_version || '0.14.0' }}" >> $GITHUB_OUTPUT
+          echo "image_version=${{ inputs.image_version || 'latest' }}" >> $GITHUB_OUTPUT
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ steps.vars.outputs.image_version }}
+            type=raw,value=sdk-${{ steps.vars.outputs.sdk_version }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: v3/internal/commands/build_assets/docker
+          file: v3/internal/commands/build_assets/docker/Dockerfile.cross
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: |
+            ${{ steps.meta.outputs.labels }}
+            io.wails.zig.version=${{ steps.vars.outputs.zig_version }}
+            io.wails.sdk.version=${{ steps.vars.outputs.sdk_version }}
+          build-args: |
+            ZIG_VERSION=${{ steps.vars.outputs.zig_version }}
+            MACOS_SDK_VERSION=${{ steps.vars.outputs.sdk_version }}
+          cache-from: |
+            type=gha
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
+          cache-to: |
+            type=gha,mode=max
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+
+  # Test cross-compilation using wails3 task system (3 parallel jobs)
+  # Runs on Linux/amd64 runner - tests actual cross-compilation only:
+  # - darwin: cross-platform (arm64)
+  # - windows: cross-platform (arm64)
+  # - linux: cross-architecture (arm64 from amd64 runner)
+  test-cross-compile:
+    needs: build
+    if: ${{ inputs.skip_tests != 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Darwin arm64 (Intel Macs are EOL, skip amd64)
+          - os: darwin
+            arch: arm64
+            expected: "Mach-O 64-bit.*arm64"
+          # Windows - both archs
+          - os: windows
+            arch: amd64
+            expected: "PE32.*x86-64"
+          - os: windows
+            arch: arm64
+            expected: "PE32.*Aarch64"
+          # Linux - both archs via Docker
+          - os: linux
+            arch: amd64
+            expected: "ELF 64-bit LSB.*x86-64"
+          - os: linux
+            arch: arm64
+            expected: "ELF 64-bit LSB.*ARM aarch64"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch || github.ref }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Linux dev dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
+
+      - name: Install wails3 CLI
+        run: |
+          cd v3
+          go install ./cmd/wails3
+
+      - name: Set up QEMU
+        if: matrix.os == 'linux'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull and tag Docker image
+        run: |
+          # Pull both platform variants and tag them for the task system
+          # The task uses --platform flag which requires matching arch variant
+          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image_tag || 'latest' }}"
+
+          # For Linux arm64 test, we need the arm64 variant
+          if [ "${{ matrix.os }}" = "linux" ] && [ "${{ matrix.arch }}" = "arm64" ]; then
+            docker pull --platform linux/arm64 "$IMAGE"
+            docker tag "$IMAGE" wails-cross
+          else
+            docker pull "$IMAGE"
+            docker tag "$IMAGE" wails-cross
+          fi
+
+      - name: Generate wails3 test project
+        run: |
+          cd /tmp
+          wails3 init -n test-wails-app -t vanilla
+          cd test-wails-app
+
+          # Update replace directive to use absolute path (wails3 init adds relative path)
+          sed -i 's|replace github.com/wailsapp/wails/v3 => .*|replace github.com/wailsapp/wails/v3 => ${{ github.workspace }}/v3|' go.mod
+
+      - name: Cross-compile ${{ matrix.os }}/${{ matrix.arch }} via task
+        run: |
+          cd /tmp/test-wails-app
+          # For Linux, always use docker build to test the Docker image
+          if [ "${{ matrix.os }}" = "linux" ]; then
+            wails3 task linux:build:docker ARCH=${{ matrix.arch }}
+          else
+            wails3 task ${{ matrix.os }}:build ARCH=${{ matrix.arch }}
+          fi
+
+      - name: Verify binary
+        run: |
+          cd /tmp/test-wails-app/bin
+          ls -la
+
+          if [ "${{ matrix.os }}" = "windows" ]; then
+            BINARY="test-wails-app.exe"
+          else
+            BINARY="test-wails-app"
+          fi
+
+          echo "Checking: $BINARY"
+          FILE_OUTPUT=$(file "$BINARY")
+          echo "  $FILE_OUTPUT"
+
+          if echo "$FILE_OUTPUT" | grep -qE "${{ matrix.expected }}"; then
+            echo "  ✅ Cross-compilation verified: ${{ matrix.os }}/${{ matrix.arch }}"
+          else
+            echo "  ❌ Format mismatch! Expected: ${{ matrix.expected }}"
+            exit 1
+          fi
+
+      - name: Check library dependencies (Linux only)
+        if: matrix.os == 'linux'
+        run: |
+          cd /tmp/test-wails-app/bin
+
+          echo "## Library Dependencies"
+          echo ""
+          echo "### NEEDED libraries:"
+          readelf -d test-wails-app | grep NEEDED || echo "No dynamic dependencies"
+          echo ""
+
+          NEEDED=$(readelf -d test-wails-app | grep NEEDED)
+          MISSING=""
+          for lib in libwebkit2gtk-4.1.so libgtk-3.so libglib-2.0.so libc.so; do
+            if echo "$NEEDED" | grep -q "$lib"; then
+              echo "✅ $lib"
+            else
+              echo "❌ $lib MISSING"
+              MISSING="$MISSING $lib"
+            fi
+          done
+
+          if [ -n "$MISSING" ]; then
+            echo "ERROR: Missing required libraries:$MISSING"
+            exit 1
+          fi
+
+  # Summary job
+  test-summary:
+    needs: [build, test-cross-compile]
+    if: always() && inputs.skip_tests != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check test results
+        run: |
+          echo "## Cross-Compilation Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.test-cross-compile.result }}" = "success" ]; then
+            echo "✅ **All Tests Passed**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Some Tests Failed**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Cross-Compilation Tests (from Linux/amd64 runner)" >> $GITHUB_STEP_SUMMARY
+          echo "| Target | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Darwin/arm64 | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Windows/amd64 | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Windows/arm64 | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Linux/amd64 | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Linux/arm64 | ✅ |" >> $GITHUB_STEP_SUMMARY
+
+          # Fail if any test failed
+          if [ "${{ needs.test-cross-compile.result }}" != "success" ]; then
+            echo ""
+            echo "❌ Some tests failed. Check the individual job logs for details."
+            exit 1
+          fi

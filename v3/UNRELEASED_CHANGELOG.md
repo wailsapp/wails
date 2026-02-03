@@ -17,13 +17,21 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Added how to do `One Time Handlers` in the docs for `Listening to Events in JavaScript` by @AbdelhadiSeddar 
+
+## Changed
+<!-- Changes in existing functionality -->
+- Changed the use of `Event` into `Events` according to changes in `@wailsio/runtime` and appropriate function calls in the docs in `Features/Events/Event System` by @AbdelhadiSeddar
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix SetProcessDpiAwarenessContext "Access is denied" error when DPI awareness is already set via application manifest (#4803)
+- Fix "ghost windows" issue on macOS caused by not accessing AppKit APIs from the Main Thread in App.Window.Current() (#4947) by @wimaha
+- Fix HTML `<input type="file">` not working on macOS by implementing WKUIDelegate runOpenPanelWithParameters (#4862)
+- Fix native file drag-and-drop not working when using `@wailsio/runtime` npm module on macOS/Linux (#4953) by @leaanthony
+- Fix binding generation for cross-package type aliases (#4578) by @fbbdev
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

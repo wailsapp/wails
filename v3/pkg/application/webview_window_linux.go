@@ -1,4 +1,4 @@
-//go:build linux && !android
+//go:build linux && !android && !server
 
 package application
 
@@ -273,10 +273,17 @@ func (w *linuxWebviewWindow) run() {
 
 	var menu = w.parent.options.Linux.Menu
 	if menu != nil {
+		// Explicit window menu takes priority
 		InvokeSync(func() {
 			menu.Update()
 		})
 		w.gtkmenu = (menu.impl).(*linuxMenu).native
+	} else if w.parent.options.UseApplicationMenu && globalApplication.applicationMenu != nil {
+		// Use the global application menu if opted in
+		InvokeSync(func() {
+			globalApplication.applicationMenu.Update()
+		})
+		w.gtkmenu = (globalApplication.applicationMenu.impl).(*linuxMenu).native
 	}
 
 	w.window, w.webview, w.vbox = windowNew(app.application, w.gtkmenu, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)

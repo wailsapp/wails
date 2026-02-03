@@ -257,6 +257,7 @@ export default defineConfig({
               label: "Advanced Topics",
               collapsed: true,
               items: [
+                { label: "Server Build", link: "/guides/server-build", badge: { text: "Experimental", variant: "caution" } },
                 { label: "Custom Templates", link: "/guides/advanced/custom-templates" },
                 { label: "WML (Wails Markup)", link: "/guides/advanced/wml" },
                 { label: "Panic Handling", link: "/guides/advanced/panic-handling" },

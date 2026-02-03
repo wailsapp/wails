@@ -4,6 +4,7 @@ import (
 	"go/ast"
 	"go/types"
 	"sync"
+	"sync/atomic"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/generator/config"
@@ -42,6 +43,8 @@ type Collector struct {
 
 	// events holds collected information about registered custom events.
 	events *EventMap
+	// appVoidType caches the application.Void named type that stands in for the void TS type.
+	appVoidType atomic.Value
 
 	systemPaths *config.SystemPaths
 	options     *flags.GenerateBindingsOptions

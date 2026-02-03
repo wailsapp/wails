@@ -101,6 +101,7 @@ var (
 	gApplicationName      func() string
 	gApplicationRelease   func(pointer)
 	gApplicationRun       func(pointer, int, []string) int
+	gBytesNew             func(uintptr, int) uintptr
 	gBytesNewStatic       func(uintptr, int) uintptr
 	gBytesUnref           func(uintptr)
 	gFree                 func(pointer)
@@ -259,6 +260,7 @@ func init() {
 	purego.RegisterLibFunc(&gApplicationQuit, gtk, "g_application_quit")
 	purego.RegisterLibFunc(&gApplicationRelease, gtk, "g_application_release")
 	purego.RegisterLibFunc(&gApplicationRun, gtk, "g_application_run")
+	purego.RegisterLibFunc(&gBytesNew, gtk, "g_bytes_new")
 	purego.RegisterLibFunc(&gBytesNewStatic, gtk, "g_bytes_new_static")
 	purego.RegisterLibFunc(&gBytesUnref, gtk, "g_bytes_unref")
 	purego.RegisterLibFunc(&gFree, gtk, "g_free")
@@ -1191,8 +1193,10 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 
 	GdkColorspaceRGB := 0
 
-	if img, err := pngToImage(options.Icon); err == nil {
-		gbytes := gBytesNewStatic(uintptr(unsafe.Pointer(&img.Pix[0])), len(img.Pix))
+	if img, err := pngToImage(options.Icon); err == nil && len(img.Pix) > 0 {
+		// Use gBytesNew instead of gBytesNewStatic because Go memory can be
+		// moved or freed by the GC. gBytesNew copies the data to C-owned memory.
+		gbytes := gBytesNew(uintptr(unsafe.Pointer(&img.Pix[0])), len(img.Pix))
 
 		defer gBytesUnref(gbytes)
 		pixBuf := gdkPixbufNewFromBytes(
