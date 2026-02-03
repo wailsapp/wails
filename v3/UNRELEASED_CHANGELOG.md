@@ -17,31 +17,26 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add `UseApplicationMenu` option to `WebviewWindowOptions` allowing windows on Windows/Linux to inherit the application menu set via `app.Menu.Set()` by @leaanthony
 - Added how to do `One Time Handlers` in the docs for `Listening to Events in JavaScript` by @AbdelhadiSeddar 
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Move `EnabledFeatures`, `DisabledFeatures`, and `AdditionalBrowserArgs` from per-window options to application-level `Options.Windows` (#4559) by @leaanthony
 - Changed the use of `Event` into `Events` according to changes in `@wailsio/runtime` and appropriate function calls in the docs in `Features/Events/Event System` by @AbdelhadiSeddar
+
+## Changed
+<!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix OpenFileDialog crash on Linux due to GTK thread safety violation (#3683) by @ddmoney420
-- Fix SIGSEGV crash when calling `Focus()` on a hidden or destroyed window (#4890) by @ddmoney420
-- Fix potential panic when setting empty icon or bitmap on Linux (#4923) by @ddmoney420
-- Fix ErrorDialog crash when called from service binding on macOS (#3631) by @leaanthony
-- Make menus to be displayed on Windows OS in `v3\examples\dialogs` by @ndianabasi
-- Fix race condition causing TypeError during page reload (#4872) by @ddmoney420
-- Fix incorrect output from binding generator tests by removing global state in the `Collector.IsVoidAlias()` method (#4941) by @fbbdev
-- Fix `<input type="file">` file picker not working on macOS (#4862) by @leaanthony
+- Fix HTML `<input type="file">` not working on macOS by implementing WKUIDelegate runOpenPanelWithParameters (#4862)
+- Fix native file drag-and-drop not working when using `@wailsio/runtime` npm module on macOS/Linux (#4953) by @leaanthony
+- Fix binding generation for cross-package type aliases (#4578) by @fbbdev
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
 ## Removed
 <!-- Features removed in this release -->
-- **BREAKING**: Remove `EnabledFeatures`, `DisabledFeatures`, and `AdditionalLaunchArgs` from per-window `WindowsWindow` options. Use application-level `Options.Windows.EnabledFeatures`, `Options.Windows.DisabledFeatures`, and `Options.Windows.AdditionalBrowserArgs` instead. These flags apply globally to the shared WebView2 environment (#4559) by @leaanthony
 
 ## Security
 <!-- Security-related changes -->
