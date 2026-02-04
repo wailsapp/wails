@@ -18,6 +18,9 @@ type GlobalDefaults struct {
 
 	// Default project settings
 	Project ProjectDefaults `json:"project" yaml:"project"`
+
+	// Code signing configuration (optional)
+	Signing SigningDefaults `json:"signing,omitempty" yaml:"signing,omitempty"`
 }
 
 // AuthorDefaults contains the author's information
@@ -28,20 +31,49 @@ type AuthorDefaults struct {
 
 // ProjectDefaults contains default project settings
 type ProjectDefaults struct {
-	// ProductIdentifierPrefix is the prefix for app identifiers (e.g., "com.mycompany")
 	ProductIdentifierPrefix string `json:"productIdentifierPrefix" yaml:"productIdentifierPrefix"`
+	DefaultTemplate         string `json:"defaultTemplate" yaml:"defaultTemplate"`
+	Framework               string `json:"framework" yaml:"framework"`
+	Language                string `json:"language" yaml:"language"`
+	CopyrightTemplate       string `json:"copyrightTemplate" yaml:"copyrightTemplate"`
+	DescriptionTemplate     string `json:"descriptionTemplate" yaml:"descriptionTemplate"`
+	DefaultVersion          string `json:"defaultVersion" yaml:"defaultVersion"`
+	UseInterfaces           bool   `json:"useInterfaces" yaml:"useInterfaces"`
+}
 
-	// DefaultTemplate is the default frontend template to use
-	DefaultTemplate string `json:"defaultTemplate" yaml:"defaultTemplate"`
+// SigningDefaults contains code signing configuration for all platforms
+type SigningDefaults struct {
+	Darwin  DarwinSigningDefaults  `json:"darwin,omitempty" yaml:"darwin,omitempty"`
+	Windows WindowsSigningDefaults `json:"windows,omitempty" yaml:"windows,omitempty"`
+	Linux   LinuxSigningDefaults   `json:"linux,omitempty" yaml:"linux,omitempty"`
+}
 
-	// Copyright template - can include {year} and {company} placeholders
-	CopyrightTemplate string `json:"copyrightTemplate" yaml:"copyrightTemplate"`
+// DarwinSigningDefaults contains macOS code signing configuration
+type DarwinSigningDefaults struct {
+	Identity        string `json:"identity,omitempty" yaml:"identity,omitempty"`
+	TeamID          string `json:"teamID,omitempty" yaml:"teamID,omitempty"`
+	KeychainProfile string `json:"keychainProfile,omitempty" yaml:"keychainProfile,omitempty"`
+	Entitlements    string `json:"entitlements,omitempty" yaml:"entitlements,omitempty"`
+	P12Path         string `json:"p12Path,omitempty" yaml:"p12Path,omitempty"`
+	APIKeyPath      string `json:"apiKeyPath,omitempty" yaml:"apiKeyPath,omitempty"`
+	APIKeyID        string `json:"apiKeyID,omitempty" yaml:"apiKeyID,omitempty"`
+	APIIssuerID     string `json:"apiIssuerID,omitempty" yaml:"apiIssuerID,omitempty"`
+}
 
-	// Description template for new projects - can include {name} placeholder
-	DescriptionTemplate string `json:"descriptionTemplate" yaml:"descriptionTemplate"`
+// WindowsSigningDefaults contains Windows code signing configuration
+type WindowsSigningDefaults struct {
+	CertificatePath string `json:"certificatePath,omitempty" yaml:"certificatePath,omitempty"`
+	Thumbprint      string `json:"thumbprint,omitempty" yaml:"thumbprint,omitempty"`
+	TimestampServer string `json:"timestampServer,omitempty" yaml:"timestampServer,omitempty"`
+	CloudProvider   string `json:"cloudProvider,omitempty" yaml:"cloudProvider,omitempty"`
+	CloudKeyID      string `json:"cloudKeyID,omitempty" yaml:"cloudKeyID,omitempty"`
+}
 
-	// Default product version for new projects
-	DefaultVersion string `json:"defaultVersion" yaml:"defaultVersion"`
+// LinuxSigningDefaults contains Linux package signing configuration
+type LinuxSigningDefaults struct {
+	GPGKeyPath string `json:"gpgKeyPath,omitempty" yaml:"gpgKeyPath,omitempty"`
+	GPGKeyID   string `json:"gpgKeyID,omitempty" yaml:"gpgKeyID,omitempty"`
+	SignRole   string `json:"signRole,omitempty" yaml:"signRole,omitempty"`
 }
 
 // Default returns sensible defaults for first-time users
@@ -57,6 +89,7 @@ func Default() GlobalDefaults {
 			CopyrightTemplate:       "© {year}, {company}",
 			DescriptionTemplate:     "A {name} application",
 			DefaultVersion:          "0.1.0",
+			UseInterfaces:           true,
 		},
 	}
 }
@@ -197,7 +230,42 @@ func replaceOnce(s, old, new string) string {
 	return s
 }
 
-// sanitizeIdentifier creates a valid identifier from a project name
+var (
+	Frameworks = []string{
+		"vanilla", "vue", "react", "react-swc", "svelte", "sveltekit",
+		"preact", "lit", "solid", "qwik", "ios",
+	}
+
+	Languages = []string{"JavaScript", "TypeScript"}
+)
+
+func IsValidFramework(f string) bool {
+	for _, fw := range Frameworks {
+		if fw == f {
+			return true
+		}
+	}
+	return false
+}
+
+func (d *GlobalDefaults) GetTemplateName() string {
+	framework := d.Project.Framework
+	lang := d.Project.Language
+
+	if framework != "" && IsValidFramework(framework) {
+		if lang == "TypeScript" {
+			return framework + "-ts"
+		}
+		return framework
+	}
+
+	if d.Project.DefaultTemplate != "" {
+		return d.Project.DefaultTemplate
+	}
+
+	return "vanilla"
+}
+
 func sanitizeIdentifier(name string) string {
 	var result []byte
 	for i := 0; i < len(name); i++ {

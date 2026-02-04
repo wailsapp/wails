@@ -1,4 +1,4 @@
-import type { WizardState, DependencyStatus, DockerStatus, UserConfig, WailsConfig, GlobalDefaults } from './types';
+import type { WizardState, DependencyStatus, DockerStatus, UserConfig, WailsConfig, GlobalDefaults, SigningDefaults, SigningStatus } from './types';
 
 const API_BASE = '/api';
 
@@ -15,6 +15,40 @@ export async function checkDependencies(): Promise<DependencyStatus[]> {
 export async function getDockerStatus(): Promise<DockerStatus> {
   const response = await fetch(`${API_BASE}/docker/status`);
   return response.json();
+}
+
+export function subscribeDockerStatus(onUpdate: (status: DockerStatus) => void): () => void {
+  let eventSource: EventSource | null = null;
+  let closed = false;
+
+  const connect = () => {
+    if (closed) return;
+    
+    eventSource = new EventSource(`${API_BASE}/docker/status/stream`);
+    
+    eventSource.onmessage = (event) => {
+      try {
+        const status = JSON.parse(event.data) as DockerStatus;
+        onUpdate(status);
+      } catch (e) {
+        console.error('Failed to parse docker status:', e);
+      }
+    };
+
+    eventSource.onerror = () => {
+      eventSource?.close();
+      if (!closed) {
+        setTimeout(connect, 1000);
+      }
+    };
+  };
+
+  connect();
+
+  return () => {
+    closed = true;
+    eventSource?.close();
+  };
 }
 
 export async function buildDockerImage(): Promise<{ status: string }> {
@@ -52,8 +86,15 @@ export async function complete(): Promise<{ status: string; duration: string }> 
   return response.json();
 }
 
-export async function close(): Promise<void> {
-  await fetch(`${API_BASE}/close`);
+export interface CloseResponse {
+  status: string;
+  dockerBuilding: boolean;
+  message?: string;
+}
+
+export async function close(): Promise<CloseResponse> {
+  const response = await fetch(`${API_BASE}/close`);
+  return response.json();
 }
 
 export async function getWailsConfig(): Promise<WailsConfig | null> {
@@ -96,5 +137,29 @@ export async function saveDefaults(defaults: GlobalDefaults): Promise<{ status: 
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(defaults),
   });
+  return response.json();
+}
+
+export async function getSigningStatus(): Promise<SigningStatus> {
+  const response = await fetch(`${API_BASE}/signing/status`);
+  return response.json();
+}
+
+export async function getSigning(): Promise<SigningDefaults | null> {
+  const response = await fetch(`${API_BASE}/signing`);
+  return response.json();
+}
+
+export async function saveSigning(signing: SigningDefaults): Promise<{ status: string }> {
+  const response = await fetch(`${API_BASE}/signing`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(signing),
+  });
+  return response.json();
+}
+
+export async function reportBug(currentStep: string): Promise<{ status: string; body?: string; url?: string }> {
+  const response = await fetch(`${API_BASE}/report-bug?step=${encodeURIComponent(currentStep)}`);
   return response.json();
 }

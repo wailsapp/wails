@@ -1,0 +1,55 @@
+---
+title: Setup
+sidebar:
+  order: 15
+  badge:
+    text: Experimental
+    variant: caution
+---
+
+import { Aside, Steps } from "@astrojs/starlight/components";
+
+<Aside type="caution" title="Experimental">
+  The setup wizard is new and primarily tested on Linux. If you encounter issues, please [report them](https://github.com/wailsapp/wails/issues/4904) and follow the [manual installation steps](/docs/getting-started/installation#platform-specific-dependencies) instead.
+</Aside>
+
+## Quick Start
+
+```bash
+# 1. Install the Wails CLI
+go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+# 2. Run the setup wizard
+wails3 setup
+```
+
+The wizard opens in your browser and guides you through dependency checks, project defaults, and optional cross-platform build setup.
+
+Then you're ready for your first project:
+
+```bash
+wails3 init -n myapp -t vanilla
+cd myapp && wails3 dev
+```
+
+## What It Does
+
+- **Checks dependencies** - Verifies Go, npm, and platform tooling
+- **Configures defaults** - Author info, bundle ID prefix, preferred templates
+- **Cross-platform builds** - Optional Docker setup for building from any host
+- **Code signing** - Optional setup for macOS, Windows, and Linux
+
+Configuration is saved to `~/.config/wails/config.yaml` and used by `wails3 init`.
+
+## Sub-Commands
+
+```bash
+wails3 setup signing      # Configure code signing
+wails3 setup entitlements # Configure macOS entitlements
+```
+
+## Having Issues?
+
+1. Run `wails3 doctor` to diagnose problems
+2. Follow the [manual installation steps](/docs/getting-started/installation#platform-specific-dependencies)
+3. [Report the issue](https://github.com/wailsapp/wails/issues/4904) with your `wails3 doctor` output

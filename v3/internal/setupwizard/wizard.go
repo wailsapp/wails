@@ -4,16 +4,20 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"net"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/pkg/browser"
@@ -25,6 +29,9 @@ import (
 //go:embed frontend/dist/*
 var frontendFS embed.FS
 
+//go:embed assets/apple-sdk-license.pdf
+var appleLicensePDF []byte
+
 // DependencyStatus represents the status of a dependency
 type DependencyStatus struct {
 	Name           string `json:"name"`
@@ -35,19 +42,162 @@ type DependencyStatus struct {
 	Message        string `json:"message,omitempty"`
 	InstallCommand string `json:"installCommand,omitempty"`
 	HelpURL        string `json:"helpUrl,omitempty"`
+	ImageBuilt     bool   `json:"imageBuilt"` // For Docker: whether wails-cross image exists
 }
 
 // DockerStatus represents Docker installation and image status
-type DockerStatus struct {
-	Installed    bool   `json:"installed"`
-	Running      bool   `json:"running"`
-	Version      string `json:"version,omitempty"`
-	ImageBuilt   bool   `json:"imageBuilt"`
-	ImageName    string `json:"imageName"`
-	PullProgress int    `json:"pullProgress"`
-	PullStatus   string `json:"pullStatus"` // "idle", "pulling", "complete", "error"
-	PullError    string `json:"pullError,omitempty"`
+type PullProgress struct {
+	Stage    string
+	Progress int
 }
+
+type pullParser struct {
+	layerSizes      map[string]float64
+	layerDownloaded map[string]float64
+	layerComplete   map[string]bool
+	layersPending   map[string]bool
+	stage           string
+}
+
+func newPullParser() *pullParser {
+	return &pullParser{
+		layerSizes:      make(map[string]float64),
+		layerDownloaded: make(map[string]float64),
+		layerComplete:   make(map[string]bool),
+		layersPending:   make(map[string]bool),
+		stage:           "Connecting",
+	}
+}
+
+func parseSize(s string) float64 {
+	s = strings.TrimSpace(s)
+	var val float64
+	var unit string
+	fmt.Sscanf(s, "%f%s", &val, &unit)
+	switch strings.ToUpper(unit) {
+	case "KB", "KIB":
+		return val * 1024
+	case "MB", "MIB":
+		return val * 1024 * 1024
+	case "GB", "GIB":
+		return val * 1024 * 1024 * 1024
+	case "B":
+		return val
+	}
+	return val
+}
+
+var sizeRegex = regexp.MustCompile(`(\d+(?:\.\d+)?[KMGT]?i?B)/(\d+(?:\.\d+)?[KMGT]?i?B)`)
+
+func (p *pullParser) ParseLine(line string) PullProgress {
+	if len(line) == 0 {
+		return PullProgress{Stage: p.stage, Progress: p.calculateProgress()}
+	}
+
+	parts := strings.Fields(line)
+	if len(parts) == 0 {
+		return PullProgress{Stage: p.stage, Progress: p.calculateProgress()}
+	}
+
+	layerID := strings.TrimSuffix(parts[0], ":")
+
+	switch {
+	case strings.Contains(line, "Pulling from"):
+		p.stage = "Connecting"
+	case strings.Contains(line, "Pulling fs layer"):
+		p.stage = "Downloading"
+		p.layersPending[layerID] = true
+	case strings.Contains(line, "Waiting"):
+		p.stage = "Downloading"
+		p.layersPending[layerID] = true
+	case strings.Contains(line, "Downloading"):
+		p.stage = "Downloading"
+		p.layersPending[layerID] = true
+		if matches := sizeRegex.FindStringSubmatch(line); len(matches) == 3 {
+			p.layerDownloaded[layerID] = parseSize(matches[1])
+			p.layerSizes[layerID] = parseSize(matches[2])
+		}
+	case strings.Contains(line, "Verifying"):
+		p.stage = "Verifying"
+	case strings.Contains(line, "Download complete"):
+		p.stage = "Extracting"
+		if size, ok := p.layerSizes[layerID]; ok {
+			p.layerDownloaded[layerID] = size
+		}
+	case strings.Contains(line, "Extracting"):
+		p.stage = "Extracting"
+		if matches := sizeRegex.FindStringSubmatch(line); len(matches) == 3 {
+			p.layerDownloaded[layerID] = parseSize(matches[1])
+			p.layerSizes[layerID] = parseSize(matches[2])
+		}
+	case strings.Contains(line, "Pull complete"):
+		p.stage = "Extracting"
+		p.layerComplete[layerID] = true
+		delete(p.layersPending, layerID)
+		if size, ok := p.layerSizes[layerID]; ok {
+			p.layerDownloaded[layerID] = size
+		}
+	}
+
+	return PullProgress{Stage: p.stage, Progress: p.calculateProgress()}
+}
+
+func (p *pullParser) calculateProgress() int {
+	totalLayers := len(p.layersPending) + len(p.layerComplete)
+	if totalLayers == 0 {
+		return 0
+	}
+
+	var totalSize, downloaded float64
+	hasSizeInfo := len(p.layerSizes) > 0
+
+	if hasSizeInfo {
+		for id, size := range p.layerSizes {
+			totalSize += size
+			if p.layerComplete[id] {
+				downloaded += size
+			} else if dl, ok := p.layerDownloaded[id]; ok {
+				downloaded += dl
+			}
+		}
+		if totalSize > 0 {
+			progress := int((downloaded / totalSize) * 100)
+			if progress > 95 && len(p.layerComplete) < len(p.layerSizes) {
+				progress = 95
+			}
+			return progress
+		}
+	}
+
+	progress := (len(p.layerComplete) * 100) / totalLayers
+	if progress > 95 && len(p.layersPending) > 0 {
+		progress = 95
+	}
+	return progress
+}
+
+type DockerStatus struct {
+	Installed     bool   `json:"installed"`
+	Running       bool   `json:"running"`
+	Version       string `json:"version,omitempty"`
+	ImageBuilt    bool   `json:"imageBuilt"`
+	ImageName     string `json:"imageName"`
+	ImageSize     string `json:"imageSize,omitempty"`
+	ImageVersion  string `json:"imageVersion,omitempty"`
+	SDKVersion    string `json:"sdkVersion,omitempty"`
+	UpdateAvail   bool   `json:"updateAvailable"`
+	LatestVersion string `json:"latestVersion,omitempty"`
+	PullProgress  int    `json:"pullProgress"`
+	PullMessage   string `json:"pullMessage,omitempty"`
+	PullStatus    string `json:"pullStatus"`
+	PullError     string `json:"pullError,omitempty"`
+	BytesTotal    int64  `json:"bytesTotal,omitempty"`
+	BytesDone     int64  `json:"bytesDone,omitempty"`
+	LayerCount    int    `json:"layerCount,omitempty"`
+	LayersDone    int    `json:"layersDone,omitempty"`
+}
+
+const crossImageName = "ghcr.io/wailsapp/wails-cross"
 
 // WailsConfigInfo represents the info section of wails.yaml
 type WailsConfigInfo struct {
@@ -85,13 +235,16 @@ type WizardState struct {
 
 // Wizard is the setup wizard server
 type Wizard struct {
-	server       *http.Server
-	state        WizardState
-	stateMu      sync.RWMutex
-	dockerStatus DockerStatus
-	dockerMu     sync.RWMutex
-	done         chan struct{}
-	shutdown     chan struct{}
+	server          *http.Server
+	state           WizardState
+	stateMu         sync.RWMutex
+	dockerStatus    DockerStatus
+	dockerBuildLogs string
+	dockerMu        sync.RWMutex
+	done            chan struct{}
+	shutdown        chan struct{}
+	shutdownOnce    sync.Once
+	buildWg         sync.WaitGroup
 }
 
 // New creates a new setup wizard
@@ -161,12 +314,22 @@ func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/dependencies/check", w.handleCheckDependencies)
 	mux.HandleFunc("/api/dependencies/install", w.handleInstallDependency)
 	mux.HandleFunc("/api/docker/status", w.handleDockerStatus)
+	mux.HandleFunc("/api/docker/status/stream", w.handleDockerStatusStream)
 	mux.HandleFunc("/api/docker/build", w.handleDockerBuild)
+	mux.HandleFunc("/api/docker/logs", w.handleDockerLogs)
 	mux.HandleFunc("/api/docker/start-background", w.handleDockerStartBackground)
 	mux.HandleFunc("/api/wails-config", w.handleWailsConfig)
 	mux.HandleFunc("/api/defaults", w.handleDefaults)
+	mux.HandleFunc("/api/signing", w.handleSigning)
+	mux.HandleFunc("/api/signing/status", w.handleSigningStatus)
 	mux.HandleFunc("/api/complete", w.handleComplete)
 	mux.HandleFunc("/api/close", w.handleClose)
+	mux.HandleFunc("/api/report-bug", w.handleReportBug)
+
+	mux.HandleFunc("/assets/apple-sdk-license.pdf", func(rw http.ResponseWriter, r *http.Request) {
+		rw.Header().Set("Content-Type", "application/pdf")
+		rw.Write(appleLicensePDF)
+	})
 
 	// Serve frontend
 	frontendDist, err := fs.Sub(frontendFS, "frontend/dist")
@@ -330,9 +493,65 @@ func (w *Wizard) handleComplete(rw http.ResponseWriter, r *http.Request) {
 
 func (w *Wizard) handleClose(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(rw).Encode(map[string]string{"status": "closing"})
 
-	close(w.shutdown)
+	// Check if Docker build is in progress
+	w.dockerMu.RLock()
+	dockerBuilding := w.dockerStatus.PullStatus == "pulling"
+	w.dockerMu.RUnlock()
+
+	response := map[string]interface{}{
+		"status":         "closing",
+		"dockerBuilding": dockerBuilding,
+	}
+	if dockerBuilding {
+		response["message"] = "Docker image build will continue in the background"
+	}
+	json.NewEncoder(rw).Encode(response)
+
+	// Wait for any running Docker builds to complete before shutting down
+	go func() {
+		w.buildWg.Wait()
+		w.shutdownOnce.Do(func() { close(w.shutdown) })
+	}()
+}
+
+func (w *Wizard) handleReportBug(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+
+	// Get current step from query parameter
+	currentStep := r.URL.Query().Get("step")
+	if currentStep == "" {
+		currentStep = "unknown"
+	}
+
+	// Gather system info
+	w.stateMu.RLock()
+	system := w.state.System
+	w.stateMu.RUnlock()
+
+	// Build a concise comment body - description first, then details table
+	var sb strings.Builder
+	sb.WriteString("**What went wrong?**\n\n\n\n")
+	sb.WriteString("**What were you doing when the issue occurred?**\n\n\n\n")
+	sb.WriteString("---\n\n")
+	sb.WriteString("| | |\n")
+	sb.WriteString("|--|--|\n")
+	sb.WriteString(fmt.Sprintf("| Platform | %s |\n", system.OS))
+	sb.WriteString(fmt.Sprintf("| Arch | %s |\n", system.Arch))
+	sb.WriteString(fmt.Sprintf("| Wails | %s |\n", system.WailsVersion))
+	sb.WriteString(fmt.Sprintf("| Go | %s |\n", system.GoVersion))
+	sb.WriteString(fmt.Sprintf("| Step | %s |\n", currentStep))
+
+	issueURL := "https://github.com/wailsapp/wails/issues/4904#issue-comment-box"
+	commentBody := sb.String()
+
+	// Return the body for the frontend to copy to clipboard
+	// Frontend will handle opening the browser after showing the overlay
+	json.NewEncoder(rw).Encode(map[string]interface{}{
+		"status": "ready",
+		"url":    issueURL,
+		"body":   commentBody,
+	})
 }
 
 // execCommand runs a command and returns its output
@@ -349,23 +568,76 @@ func commandExists(name string) bool {
 }
 
 func (w *Wizard) handleDockerStatus(rw http.ResponseWriter, r *http.Request) {
-	status := w.checkDocker()
+	// Get fresh Docker info (installed, running, image status)
+	freshStatus := w.checkDocker()
 
 	w.dockerMu.Lock()
-	w.dockerStatus = status
+	if w.dockerStatus.PullStatus == "pulling" || w.dockerStatus.PullStatus == "complete" || w.dockerStatus.PullStatus == "error" {
+		freshStatus.PullStatus = w.dockerStatus.PullStatus
+		freshStatus.PullProgress = w.dockerStatus.PullProgress
+		freshStatus.PullMessage = w.dockerStatus.PullMessage
+		freshStatus.PullError = w.dockerStatus.PullError
+		freshStatus.BytesTotal = w.dockerStatus.BytesTotal
+		freshStatus.BytesDone = w.dockerStatus.BytesDone
+		freshStatus.LayerCount = w.dockerStatus.LayerCount
+		freshStatus.LayersDone = w.dockerStatus.LayersDone
+	}
+	w.dockerStatus = freshStatus
+	status := w.dockerStatus
 	w.dockerMu.Unlock()
 
 	rw.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(rw).Encode(status)
 }
 
+func (w *Wizard) handleDockerStatusStream(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "text/event-stream")
+	rw.Header().Set("Cache-Control", "no-cache")
+	rw.Header().Set("Connection", "keep-alive")
+
+	flusher, ok := rw.(http.Flusher)
+	if !ok {
+		http.Error(rw, "SSE not supported", http.StatusInternalServerError)
+		return
+	}
+
+	sendStatus := func() (done bool) {
+		w.dockerMu.RLock()
+		status := w.dockerStatus
+		w.dockerMu.RUnlock()
+
+		data, _ := json.Marshal(status)
+		fmt.Fprintf(rw, "data: %s\n\n", data)
+		flusher.Flush()
+
+		return status.PullStatus == "complete" || status.PullStatus == "error"
+	}
+
+	if sendStatus() {
+		return
+	}
+
+	ticker := time.NewTicker(100 * time.Millisecond)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-r.Context().Done():
+			return
+		case <-ticker.C:
+			if sendStatus() {
+				return
+			}
+		}
+	}
+}
+
 func (w *Wizard) checkDocker() DockerStatus {
 	status := DockerStatus{
-		ImageName:  "wails-cross",
+		ImageName:  crossImageName,
 		PullStatus: "idle",
 	}
 
-	// Check if Docker is installed
 	output, err := execCommand("docker", "--version")
 	if err != nil {
 		status.Installed = false
@@ -373,24 +645,353 @@ func (w *Wizard) checkDocker() DockerStatus {
 	}
 
 	status.Installed = true
-	// Parse version from "Docker version 24.0.7, build afdd53b"
 	parts := strings.Split(output, ",")
 	if len(parts) > 0 {
 		status.Version = strings.TrimPrefix(strings.TrimSpace(parts[0]), "Docker version ")
 	}
 
-	// Check if Docker daemon is running
 	if _, err := execCommand("docker", "info"); err != nil {
 		status.Running = false
 		return status
 	}
 	status.Running = true
 
-	// Check if wails-cross image exists
-	imageOutput, err := execCommand("docker", "image", "inspect", "wails-cross")
+	imageOutput, err := execCommand("docker", "image", "inspect", crossImageName)
 	status.ImageBuilt = err == nil && len(imageOutput) > 0
 
+	if status.ImageBuilt {
+		sizeOutput, err := execCommand("docker", "images", crossImageName, "--format", "{{.Size}}")
+		if err == nil && len(sizeOutput) > 0 {
+			status.ImageSize = strings.TrimSpace(sizeOutput)
+		}
+		versionOutput, err := execCommand("docker", "inspect", crossImageName, "--format", "{{index .Config.Labels \"org.opencontainers.image.version\"}}")
+		if err == nil && len(versionOutput) > 0 {
+			status.ImageVersion = strings.TrimSpace(versionOutput)
+		}
+		sdkOutput, err := execCommand("docker", "inspect", crossImageName, "--format", "{{index .Config.Labels \"io.wails.sdk.version\"}}")
+		if err == nil && len(sdkOutput) > 0 {
+			status.SDKVersion = strings.TrimSpace(sdkOutput)
+		}
+	}
+
 	return status
+}
+
+type dockerPullEvent struct {
+	Status         string `json:"status"`
+	ID             string `json:"id"`
+	Progress       string `json:"progress"`
+	ProgressDetail struct {
+		Current int64 `json:"current"`
+		Total   int64 `json:"total"`
+	} `json:"progressDetail"`
+	Error string `json:"error"`
+}
+
+type layerProgress struct {
+	dlTotal   int64
+	dlCurrent int64
+	dlDone    bool
+	exTotal   int64
+	exCurrent int64
+	exDone    bool
+}
+
+func (w *Wizard) startDockerPull() {
+	w.dockerMu.Lock()
+	if w.dockerStatus.PullStatus == "pulling" {
+		w.dockerMu.Unlock()
+		return
+	}
+	w.dockerStatus.PullStatus = "pulling"
+	w.dockerStatus.PullProgress = 0
+	w.dockerStatus.PullMessage = "Connecting"
+	// Reset stale state from previous attempts
+	w.dockerStatus.PullError = ""
+	w.dockerStatus.BytesTotal = 0
+	w.dockerStatus.BytesDone = 0
+	w.dockerStatus.LayerCount = 0
+	w.dockerStatus.LayersDone = 0
+	w.dockerBuildLogs = ""
+	w.dockerMu.Unlock()
+
+	w.buildWg.Add(1)
+	go func() {
+		defer w.buildWg.Done()
+
+		if err := w.pullViaDockerAPI(); err != nil {
+			w.pullViaDockerCLI()
+		}
+	}()
+}
+
+// pullViaDockerAPI attempts to pull the image using Docker's HTTP API directly.
+// This provides detailed progress tracking with layer-by-layer download status.
+// Uses API v1.44 (Docker 25.0+). If this fails for any reason (older Docker version,
+// permission issues, etc.), the caller falls back to pullViaDockerCLI which works
+// with any Docker version but provides less detailed progress.
+func (w *Wizard) pullViaDockerAPI() error {
+	socketPath := "/var/run/docker.sock"
+	if runtime.GOOS == "windows" {
+		socketPath = "//./pipe/docker_engine"
+	}
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				if runtime.GOOS == "windows" {
+					return nil, fmt.Errorf("windows named pipes not supported, falling back to CLI")
+				}
+				return net.Dial("unix", socketPath)
+			},
+		},
+		Timeout: 30 * time.Minute,
+	}
+
+	imageParts := strings.SplitN(crossImageName, ":", 2)
+	imageName := imageParts[0]
+	tag := "latest"
+	if len(imageParts) > 1 {
+		tag = imageParts[1]
+	}
+
+	url := fmt.Sprintf("http://localhost/v1.44/images/create?fromImage=%s&tag=%s", imageName, tag)
+	req, err := http.NewRequest("POST", url, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to connect to Docker API: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("Docker API returned status %d", resp.StatusCode)
+	}
+
+	layers := make(map[string]*layerProgress)
+	var logs strings.Builder
+	var maxTotal int64
+	decoder := json.NewDecoder(resp.Body)
+
+	for {
+		var event dockerPullEvent
+		if err := decoder.Decode(&event); err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return fmt.Errorf("docker API stream error: %w", err)
+		}
+
+		logs.WriteString(fmt.Sprintf("%s %s %s\n", event.ID, event.Status, event.Progress))
+
+		if event.Error != "" {
+			w.dockerMu.Lock()
+			w.dockerStatus.PullStatus = "error"
+			w.dockerStatus.PullError = event.Error
+			w.dockerStatus.PullMessage = "Failed"
+			w.dockerBuildLogs = logs.String()
+			w.dockerMu.Unlock()
+			return fmt.Errorf("docker pull error: %s", event.Error)
+		}
+
+		if event.ID != "" {
+			if layers[event.ID] == nil {
+				layers[event.ID] = &layerProgress{}
+			}
+			lp := layers[event.ID]
+
+			switch event.Status {
+			case "Downloading":
+				lp.dlCurrent = event.ProgressDetail.Current
+				if event.ProgressDetail.Total > 0 {
+					lp.dlTotal = event.ProgressDetail.Total
+				}
+			case "Download complete":
+				lp.dlDone = true
+				lp.dlCurrent = lp.dlTotal
+			case "Extracting":
+				lp.exCurrent = event.ProgressDetail.Current
+				if event.ProgressDetail.Total > 0 {
+					lp.exTotal = event.ProgressDetail.Total
+				}
+			case "Pull complete":
+				lp.dlDone = true
+				lp.exDone = true
+				lp.dlCurrent = lp.dlTotal
+				lp.exCurrent = lp.exTotal
+			case "Already exists":
+				lp.dlDone = true
+				lp.exDone = true
+			}
+		}
+
+		var dlTotal, dlDone, exTotal, exDone int64
+		var layerCount, dlComplete, exComplete int
+		for _, lp := range layers {
+			layerCount++
+			if lp.dlTotal > 0 {
+				dlTotal += lp.dlTotal
+				dlDone += lp.dlCurrent
+			}
+			if lp.exTotal > 0 {
+				exTotal += lp.exTotal
+				exDone += lp.exCurrent
+			}
+			if lp.dlDone {
+				dlComplete++
+			}
+			if lp.exDone {
+				exComplete++
+			}
+		}
+
+		if dlTotal > maxTotal {
+			maxTotal = dlTotal
+		}
+
+		var progress int
+		var message string
+		downloadDone := maxTotal > 0 && dlDone >= maxTotal
+		allExtracted := layerCount > 0 && exComplete == layerCount
+
+		if allExtracted {
+			progress = 100
+			message = "Finalizing"
+		} else if downloadDone {
+			if exTotal > 0 {
+				progress = 90 + int(exDone*10/exTotal)
+			} else if layerCount > 0 {
+				progress = 90 + (exComplete * 10 / layerCount)
+			} else {
+				progress = 95
+			}
+			message = "Extracting"
+		} else if maxTotal > 0 {
+			progress = int(dlDone * 90 / maxTotal)
+			message = fmt.Sprintf("%s/%s", formatBytesMB(dlDone), formatBytesMB(maxTotal))
+		} else if layerCount > 0 {
+			message = fmt.Sprintf("Preparing %d layers", layerCount)
+		} else {
+			message = "Connecting"
+		}
+
+		w.dockerMu.Lock()
+		w.dockerStatus.PullProgress = progress
+		w.dockerStatus.PullMessage = message
+		w.dockerStatus.BytesTotal = maxTotal
+		w.dockerStatus.BytesDone = dlDone
+		w.dockerStatus.LayerCount = layerCount
+		w.dockerStatus.LayersDone = exComplete
+		w.dockerMu.Unlock()
+	}
+
+	w.dockerMu.Lock()
+	w.dockerBuildLogs = logs.String()
+	w.dockerStatus.PullStatus = "complete"
+	w.dockerStatus.ImageBuilt = true
+	w.dockerStatus.PullProgress = 100
+	w.dockerStatus.PullMessage = "Complete"
+	if sizeOutput, sizeErr := execCommand("docker", "images", crossImageName, "--format", "{{.Size}}"); sizeErr == nil && len(sizeOutput) > 0 {
+		w.dockerStatus.ImageSize = strings.TrimSpace(sizeOutput)
+	}
+	w.dockerMu.Unlock()
+	return nil
+}
+
+func (w *Wizard) pullViaDockerCLI() {
+	cmd := exec.Command("docker", "pull", crossImageName)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		w.dockerMu.Lock()
+		w.dockerStatus.PullStatus = "error"
+		w.dockerStatus.PullError = fmt.Sprintf("Failed to create pipe: %v", err)
+		w.dockerMu.Unlock()
+		return
+	}
+	cmd.Stderr = cmd.Stdout
+
+	if err := cmd.Start(); err != nil {
+		w.dockerMu.Lock()
+		w.dockerStatus.PullStatus = "error"
+		w.dockerStatus.PullError = fmt.Sprintf("Failed to start: %v", err)
+		w.dockerMu.Unlock()
+		return
+	}
+
+	done := make(chan struct{})
+	var downloadDetected atomic.Bool
+
+	go func() {
+		ticker := time.NewTicker(300 * time.Millisecond)
+		defer ticker.Stop()
+		progress := 0
+
+		for {
+			select {
+			case <-done:
+				return
+			case <-ticker.C:
+				if downloadDetected.Load() && progress < 80 {
+					progress++
+					w.dockerMu.Lock()
+					w.dockerStatus.PullProgress = progress
+					w.dockerMu.Unlock()
+				}
+			}
+		}
+	}()
+
+	var lastOutput strings.Builder
+	buf := make([]byte, 4096)
+
+	for {
+		n, readErr := stdout.Read(buf)
+		if n > 0 {
+			chunk := string(buf[:n])
+			lastOutput.WriteString(chunk)
+
+			if !downloadDetected.Load() && (strings.Contains(chunk, "Pulling") || strings.Contains(chunk, "Downloading")) {
+				downloadDetected.Store(true)
+				w.dockerMu.Lock()
+				w.dockerStatus.PullMessage = "Downloading"
+				w.dockerMu.Unlock()
+			}
+		}
+		if readErr != nil {
+			break
+		}
+	}
+
+	close(done)
+
+	err = cmd.Wait()
+	w.dockerMu.Lock()
+	w.dockerBuildLogs = lastOutput.String()
+	if err != nil {
+		w.dockerStatus.PullStatus = "error"
+		w.dockerStatus.PullError = fmt.Sprintf("Pull failed: %v", err)
+		w.dockerStatus.PullMessage = "Failed"
+	} else {
+		w.dockerStatus.PullStatus = "complete"
+		w.dockerStatus.ImageBuilt = true
+		w.dockerStatus.PullProgress = 100
+		w.dockerStatus.PullMessage = "Complete"
+		if sizeOutput, sizeErr := execCommand("docker", "images", crossImageName, "--format", "{{.Size}}"); sizeErr == nil && len(sizeOutput) > 0 {
+			w.dockerStatus.ImageSize = strings.TrimSpace(sizeOutput)
+		}
+	}
+	w.dockerMu.Unlock()
+}
+
+func formatBytesMB(b int64) string {
+	mb := float64(b) / (1024 * 1024)
+	if mb < 1 {
+		return fmt.Sprintf("%.1f MB", mb)
+	}
+	return fmt.Sprintf("%.0f MB", mb)
 }
 
 func (w *Wizard) handleDockerBuild(rw http.ResponseWriter, r *http.Request) {
@@ -399,60 +1000,30 @@ func (w *Wizard) handleDockerBuild(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.dockerMu.Lock()
-	w.dockerStatus.PullStatus = "pulling"
-	w.dockerStatus.PullProgress = 0
-	w.dockerMu.Unlock()
-
-	// Build the Docker image in background
-	go func() {
-		// Run: wails3 task setup:docker
-		cmd := exec.Command("wails3", "task", "setup:docker")
-		err := cmd.Run()
-
-		w.dockerMu.Lock()
-		if err != nil {
-			w.dockerStatus.PullStatus = "error"
-			w.dockerStatus.PullError = err.Error()
-		} else {
-			w.dockerStatus.PullStatus = "complete"
-			w.dockerStatus.ImageBuilt = true
-		}
-		w.dockerStatus.PullProgress = 100
-		w.dockerMu.Unlock()
-	}()
-
-	// Simulate progress updates while building
-	go func() {
-		for i := 0; i < 90; i += 5 {
-			time.Sleep(2 * time.Second)
-			w.dockerMu.Lock()
-			if w.dockerStatus.PullStatus != "pulling" {
-				w.dockerMu.Unlock()
-				return
-			}
-			w.dockerStatus.PullProgress = i
-			w.dockerMu.Unlock()
-		}
-	}()
+	w.startDockerPull()
 
 	rw.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(rw).Encode(map[string]string{"status": "started"})
 }
 
-// handleDockerStartBackground checks if Docker is available and starts building in background
-// This is called early in the wizard flow to get a head start on the image build
+func (w *Wizard) handleDockerLogs(rw http.ResponseWriter, r *http.Request) {
+	w.dockerMu.RLock()
+	logs := w.dockerBuildLogs
+	w.dockerMu.RUnlock()
+
+	rw.Header().Set("Content-Type", "text/plain")
+	rw.Write([]byte(logs))
+}
+
 func (w *Wizard) handleDockerStartBackground(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
 
-	// Check Docker status first
 	status := w.checkDocker()
 
 	w.dockerMu.Lock()
 	w.dockerStatus = status
 	w.dockerMu.Unlock()
 
-	// Only start build if Docker is installed, running, and image not built yet
 	if !status.Installed || !status.Running || status.ImageBuilt {
 		json.NewEncoder(rw).Encode(map[string]interface{}{
 			"started": false,
@@ -462,7 +1033,6 @@ func (w *Wizard) handleDockerStartBackground(rw http.ResponseWriter, r *http.Req
 		return
 	}
 
-	// Check if already building
 	w.dockerMu.RLock()
 	alreadyBuilding := w.dockerStatus.PullStatus == "pulling"
 	w.dockerMu.RUnlock()
@@ -476,42 +1046,7 @@ func (w *Wizard) handleDockerStartBackground(rw http.ResponseWriter, r *http.Req
 		return
 	}
 
-	// Start building in background
-	w.dockerMu.Lock()
-	w.dockerStatus.PullStatus = "pulling"
-	w.dockerStatus.PullProgress = 0
-	w.dockerMu.Unlock()
-
-	// Build the Docker image in background
-	go func() {
-		cmd := exec.Command("wails3", "task", "setup:docker")
-		err := cmd.Run()
-
-		w.dockerMu.Lock()
-		if err != nil {
-			w.dockerStatus.PullStatus = "error"
-			w.dockerStatus.PullError = err.Error()
-		} else {
-			w.dockerStatus.PullStatus = "complete"
-			w.dockerStatus.ImageBuilt = true
-		}
-		w.dockerStatus.PullProgress = 100
-		w.dockerMu.Unlock()
-	}()
-
-	// Simulate progress updates while building
-	go func() {
-		for i := 0; i < 90; i += 5 {
-			time.Sleep(2 * time.Second)
-			w.dockerMu.Lock()
-			if w.dockerStatus.PullStatus != "pulling" {
-				w.dockerMu.Unlock()
-				return
-			}
-			w.dockerStatus.PullProgress = i
-			w.dockerMu.Unlock()
-		}
-	}()
+	w.startDockerPull()
 
 	json.NewEncoder(rw).Encode(map[string]interface{}{
 		"started": true,
@@ -625,4 +1160,226 @@ func (w *Wizard) handleDefaults(rw http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
 	}
+}
+
+func (w *Wizard) handleSigningStatus(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+
+	status := checkSigningStatus()
+	json.NewEncoder(rw).Encode(status)
+}
+
+func (w *Wizard) handleSigning(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+
+	switch r.Method {
+	case http.MethodGet:
+		defaults, err := LoadGlobalDefaults()
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		json.NewEncoder(rw).Encode(defaults.Signing)
+
+	case http.MethodPost:
+		var signing SigningDefaults
+		if err := json.NewDecoder(r.Body).Decode(&signing); err != nil {
+			http.Error(rw, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		defaults, err := LoadGlobalDefaults()
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		defaults.Signing = signing
+
+		if err := SaveGlobalDefaults(defaults); err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		json.NewEncoder(rw).Encode(map[string]string{"status": "saved"})
+
+	default:
+		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+type signingStatusResponse struct {
+	Darwin       darwinSigningStatus  `json:"darwin"`
+	Windows      windowsSigningStatus `json:"windows"`
+	Linux        linuxSigningStatus   `json:"linux"`
+	ConfigError  string               `json:"configError,omitempty"`
+}
+
+type darwinSigningStatus struct {
+	HasIdentity     bool     `json:"hasIdentity"`
+	Identity        string   `json:"identity,omitempty"`
+	Identities      []string `json:"identities,omitempty"`
+	HasNotarization bool     `json:"hasNotarization"`
+	TeamID          string   `json:"teamID,omitempty"`
+	ConfigSource    string   `json:"configSource,omitempty"`
+}
+
+type windowsSigningStatus struct {
+	HasCertificate  bool   `json:"hasCertificate"`
+	CertificateType string `json:"certificateType,omitempty"`
+	HasSignTool     bool   `json:"hasSignTool"`
+	TimestampServer string `json:"timestampServer,omitempty"`
+	ConfigSource    string `json:"configSource,omitempty"`
+}
+
+type linuxSigningStatus struct {
+	HasGPGKey    bool   `json:"hasGpgKey"`
+	GPGKeyID     string `json:"gpgKeyID,omitempty"`
+	ConfigSource string `json:"configSource,omitempty"`
+}
+
+func checkSigningStatus() signingStatusResponse {
+	globalDefaults, err := LoadGlobalDefaults()
+
+	resp := signingStatusResponse{
+		Darwin:  checkDarwinSigningStatus(globalDefaults),
+		Windows: checkWindowsSigningStatus(globalDefaults),
+		Linux:   checkLinuxSigningStatus(globalDefaults),
+	}
+
+	if err != nil {
+		resp.ConfigError = err.Error()
+	}
+
+	return resp
+}
+
+func checkDarwinSigningStatus(cfg GlobalDefaults) darwinSigningStatus {
+	status := darwinSigningStatus{}
+
+	if cfg.Signing.Darwin.Identity != "" {
+		status.HasIdentity = true
+		status.Identity = cfg.Signing.Darwin.Identity
+		status.TeamID = cfg.Signing.Darwin.TeamID
+		status.ConfigSource = "defaults.yaml"
+	}
+
+	if cfg.Signing.Darwin.KeychainProfile != "" || cfg.Signing.Darwin.APIKeyID != "" {
+		status.HasNotarization = true
+	}
+
+	if runtime.GOOS == "darwin" {
+		identities := getMacOSSigningIdentities()
+		status.Identities = identities
+		if len(identities) > 0 && !status.HasIdentity {
+			status.HasIdentity = true
+			status.Identity = identities[0]
+			status.ConfigSource = "keychain"
+		}
+	}
+
+	return status
+}
+
+func checkWindowsSigningStatus(cfg GlobalDefaults) windowsSigningStatus {
+	status := windowsSigningStatus{}
+
+	if cfg.Signing.Windows.CertificatePath != "" {
+		status.HasCertificate = true
+		status.CertificateType = "file"
+		status.ConfigSource = "defaults.yaml"
+	} else if cfg.Signing.Windows.Thumbprint != "" {
+		status.HasCertificate = true
+		status.CertificateType = "store"
+		status.ConfigSource = "defaults.yaml"
+	} else if cfg.Signing.Windows.CloudProvider != "" {
+		status.HasCertificate = true
+		status.CertificateType = "cloud:" + cfg.Signing.Windows.CloudProvider
+		status.ConfigSource = "defaults.yaml"
+	}
+
+	status.TimestampServer = cfg.Signing.Windows.TimestampServer
+	if status.TimestampServer == "" {
+		status.TimestampServer = "http://timestamp.digicert.com"
+	}
+
+	if runtime.GOOS == "windows" {
+		_, err := exec.LookPath("signtool.exe")
+		status.HasSignTool = err == nil
+	}
+
+	return status
+}
+
+func checkLinuxSigningStatus(cfg GlobalDefaults) linuxSigningStatus {
+	status := linuxSigningStatus{}
+
+	if cfg.Signing.Linux.GPGKeyPath != "" {
+		status.HasGPGKey = true
+		status.GPGKeyID = cfg.Signing.Linux.GPGKeyID
+		status.ConfigSource = "defaults.yaml"
+	}
+
+	if !status.HasGPGKey {
+		keyID := getDefaultGPGKey()
+		if keyID != "" {
+			status.HasGPGKey = true
+			status.GPGKeyID = keyID
+			status.ConfigSource = "gpg"
+		}
+	}
+
+	return status
+}
+
+func getMacOSSigningIdentities() []string {
+	if runtime.GOOS != "darwin" {
+		return nil
+	}
+
+	cmd := exec.Command("security", "find-identity", "-v", "-p", "codesigning")
+	output, err := cmd.Output()
+	if err != nil {
+		return nil
+	}
+
+	var identities []string
+	lines := strings.Split(string(output), "\n")
+	for _, line := range lines {
+		if strings.Contains(line, "\"") && strings.Contains(line, "Developer ID") {
+			start := strings.Index(line, "\"")
+			end := strings.LastIndex(line, "\"")
+			if start != -1 && end > start {
+				identity := line[start+1 : end]
+				identities = append(identities, identity)
+			}
+		}
+	}
+
+	return identities
+}
+
+func getDefaultGPGKey() string {
+	cmd := exec.Command("gpg", "--list-secret-keys", "--keyid-format", "long")
+	output, err := cmd.Output()
+	if err != nil {
+		return ""
+	}
+
+	lines := strings.Split(string(output), "\n")
+	for _, line := range lines {
+		if strings.Contains(line, "sec") {
+			parts := strings.Fields(line)
+			for _, part := range parts {
+				if strings.Contains(part, "/") {
+					keyParts := strings.Split(part, "/")
+					if len(keyParts) > 1 {
+						return keyParts[1]
+					}
+				}
+			}
+		}
+	}
+
+	return ""
 }

@@ -3,6 +3,7 @@
 package setupwizard
 
 import (
+	"os/exec"
 	"strconv"
 	"strings"
 
@@ -12,19 +13,18 @@ import (
 
 func (w *Wizard) checkAllDependencies() []DependencyStatus {
 	var deps []DependencyStatus
-	hasNpm := false
 
-	// Get OS info for package manager detection
+	deps = append(deps, checkGo())
+
 	info, _ := operatingsystem.Info()
 
-	// Find the package manager
 	pm := packagemanager.Find(info.ID)
 	if pm != nil {
-		// Get platform dependencies from the doctor package
 		platformDeps, _ := packagemanager.Dependencies(pm)
 		for _, dep := range platformDeps {
+			// Skip npm from package manager - we'll check it via PATH instead
 			if dep.Name == "npm" {
-				hasNpm = true
+				continue
 			}
 			status := DependencyStatus{
 				Name:     dep.Name,
@@ -36,24 +36,78 @@ func (w *Wizard) checkAllDependencies() []DependencyStatus {
 				status.Status = "installed"
 				status.Version = dep.Version
 			} else {
-				status.Installed = false
-				status.Status = "not_installed"
-				status.InstallCommand = dep.InstallCommand
+				// Also check if the binary is in PATH (might be installed via other means)
+				if _, err := exec.LookPath(dep.Name); err == nil {
+					status.Installed = true
+					status.Status = "installed"
+				} else {
+					status.Installed = false
+					status.Status = "not_installed"
+					status.InstallCommand = dep.InstallCommand
+				}
 			}
 
 			deps = append(deps, status)
 		}
 	}
 
-	// Check npm (common dependency) - only if not already added by package manager
-	if !hasNpm {
-		deps = append(deps, checkNpm())
-	}
+	// Always check npm via PATH (might be installed via nvm, fnm, etc.)
+	deps = append(deps, checkNpm())
 
-	// Check Docker (optional)
 	deps = append(deps, checkDocker())
 
 	return deps
+}
+
+func checkGo() DependencyStatus {
+	dep := DependencyStatus{
+		Name:     "Go",
+		Required: true,
+	}
+
+	version, err := execCommand("go", "version")
+	if err != nil {
+		dep.Status = "not_installed"
+		dep.Installed = false
+		dep.Message = "Go 1.25+ is required"
+		dep.HelpURL = "https://go.dev/dl/"
+		dep.InstallCommand = "Download from https://go.dev/dl/"
+		return dep
+	}
+
+	dep.Installed = true
+	dep.Status = "installed"
+
+	parts := strings.Split(version, " ")
+	if len(parts) >= 3 {
+		versionStr := strings.TrimPrefix(parts[2], "go")
+		dep.Version = versionStr
+
+		versionParts := strings.Split(versionStr, ".")
+		if len(versionParts) >= 2 {
+			major, majorErr := strconv.Atoi(versionParts[0])
+			// Handle versions like "25beta1" by extracting leading digits
+			minorStr := versionParts[1]
+			for i, c := range minorStr {
+				if c < '0' || c > '9' {
+					minorStr = minorStr[:i]
+					break
+				}
+			}
+			minor, minorErr := strconv.Atoi(minorStr)
+			if majorErr != nil || minorErr != nil {
+				// Couldn't parse version; assume it's acceptable
+				return dep
+			}
+			if major < 1 || (major == 1 && minor < 25) {
+				dep.Status = "needs_update"
+				dep.Message = "Go 1.25+ is required (found " + versionStr + ")"
+				dep.HelpURL = "https://go.dev/dl/"
+			}
+		}
+	}
+
+	return dep
 }
 
 func checkNpm() DependencyStatus {
@@ -124,14 +178,17 @@ func checkDocker() DependencyStatus {
 	}
 
 	// Check for wails-cross image
-	imageCheck, _ := execCommand("docker", "image", "inspect", "wails-cross")
-	if imageCheck == "" || strings.Contains(imageCheck, "Error") {
+	// docker image inspect returns "[]" (empty JSON array) on stdout when image doesn't exist
+	imageCheck, _ := execCommand("docker", "image", "inspect", crossImageName)
+	if imageCheck == "" || imageCheck == "[]" || strings.Contains(imageCheck, "Error") {
 		dep.Installed = true
 		dep.Status = "installed"
+		dep.ImageBuilt = false
 		dep.Message = "Run 'wails3 task setup:docker' to build cross-compilation image"
 	} else {
 		dep.Installed = true
 		dep.Status = "installed"
+		dep.ImageBuilt = true
 		dep.Message = "Cross-compilation ready"
 	}
 

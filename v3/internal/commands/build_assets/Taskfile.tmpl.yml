@@ -94,7 +94,7 @@ tasks:
     generates:
       - frontend/bindings/**/*
     cmds:
-      - wails3 generate bindings -f {{ "'{{.BUILD_FLAGS}}'" }} -clean=true {{- if .Typescript}} -ts{{end}}
+      - wails3 generate bindings -f {{ "'{{.BUILD_FLAGS}}'" }} -clean=true {{- if .Typescript}} -ts{{end}}{{- if .UseInterfaces}} -i{{end}}
 
   generate:icons:
     summary: Generates Windows `.ico` and Mac `.icns` from an image; on macOS, `-iconcomposerinput appicon.icon -macassetdir darwin` also produces `Assets.car` from a `.icon` file (skipped on other platforms).
