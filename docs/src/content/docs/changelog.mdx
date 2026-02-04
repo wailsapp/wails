@@ -30,6 +30,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha.67 - 2026-02-04
+
+## Added
+- Added how to do `One Time Handlers` in the docs for `Listening to Events in JavaScript` by @AbdelhadiSeddar 
+
+## Changed
+- Changed the use of `Event` into `Events` according to changes in `@wailsio/runtime` and appropriate function calls in the docs in `Features/Events/Event System` by @AbdelhadiSeddar
+
+## Fixed
+- Fix "ghost windows" issue on macOS caused by not accessing AppKit APIs from the Main Thread in App.Window.Current() (#4947) by @wimaha
+- Fix HTML `<input type="file">` not working on macOS by implementing WKUIDelegate runOpenPanelWithParameters (#4862)
+- Fix native file drag-and-drop not working when using `@wailsio/runtime` npm module on macOS/Linux (#4953) by @leaanthony
+- Fix binding generation for cross-package type aliases (#4578) by @fbbdev
+
 ## v3.0.0-alpha.66 - 2026-02-03
 
 ## Added
