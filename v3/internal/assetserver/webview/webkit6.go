@@ -1,4 +1,4 @@
-//go:build linux && cgo && !gtk3 && !android
+//go:build linux && cgo && gtk4 && !android
 
 package webview
 

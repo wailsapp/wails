@@ -4,23 +4,24 @@
 
 This document tracks the implementation of WebKitGTK 6.0 (GTK4) support for Wails v3 on Linux.
 
-**Goal**: Make GTK4/WebKitGTK 6.0 the DEFAULT build target, with GTK3/WebKit2GTK 4.1 available via `-tags gtk3` for legacy systems.
+**Goal**: Provide GTK4/WebKitGTK 6.0 support as an EXPERIMENTAL opt-in via `-tags gtk4`, while maintaining GTK3/WebKit2GTK 4.1 as the stable default.
 
 ## Architecture Decisions
 
-### Decision 1: GTK4 as Default (2026-01-04)
-**Context**: Need to support modern Linux distributions with GTK4 while maintaining backward compatibility.
+### Decision 1: GTK3 as Default, GTK4 Opt-In (2026-02-04)
+**Context**: Need to support modern Linux distributions with GTK4 while maintaining stability for existing apps.
 
-**Decision**: GTK4 is the new default (no build tag required). GTK3 requires explicit `-tags gtk3`.
+**Decision**: GTK3 remains the stable default (no build tag required). GTK4 is available as experimental via `-tags gtk4`.
 
 **Rationale**:
-- Ubuntu 22.04+ now has WebKitGTK 6.0 in official repos
-- GTK4 is the future direction for Linux desktop
-- Matches the pattern used for other platform-specific features
+- GTK3/WebKit2GTK 4.1 is battle-tested and widely deployed
+- GTK4 support needs more community testing before becoming default
+- Allows gradual migration and feedback collection
+- Protects existing apps from unexpected breakage
 
 **Build Tags**:
-- Default (no tag): `//go:build linux && cgo && !gtk3 && !android`
-- Legacy: `//go:build linux && cgo && gtk3 && !android`
+- Default (no tag): `//go:build linux && cgo && !gtk4 && !android`
+- Experimental GTK4: `//go:build linux && cgo && gtk4 && !android`
 
 ### Decision 2: pkg-config Libraries (2026-01-04)
 **GTK4/WebKitGTK 6.0**:
@@ -98,7 +99,7 @@ All 7 package managers updated to check GTK4/WebKitGTK 6.0 as primary, GTK3 as o
 - `v3/internal/doctor/packagemanager/eopkg.go` ✅
 - `v3/internal/doctor/packagemanager/nixpkgs.go` ✅
 
-Package key naming convention: `gtk4`, `webkitgtk-6.0` (primary), `gtk3 (legacy)`, `webkit2gtk (legacy)` (optional)
+Package key naming convention: `gtk3`, `webkit2gtk-4.1` (primary/default), `gtk4`, `webkitgtk-6.0` (experimental, optional)
 
 #### 2.2 Capabilities Detection
 Files created/updated:
@@ -210,24 +211,24 @@ TODO (deferred to testing phase):
 
 #### 6.1 Docker Container Updates
 Updated both Dockerfile.linux-x86_64 and Dockerfile.linux-arm64 to install:
-- GTK4 + WebKitGTK 6.0 (default build target)
-- GTK3 + WebKit2GTK 4.1 (for legacy `-tags gtk3` builds)
+- GTK3 + WebKit2GTK 4.1 (default build target)
+- GTK4 + WebKitGTK 6.0 (for experimental `-tags gtk4` builds)
 
 Build scripts now support `BUILD_TAGS` environment variable:
-- Default: Builds with GTK4/WebKitGTK 6.0
-- `BUILD_TAGS=gtk3`: Builds with GTK3/WebKit2GTK 4.1
+- Default: Builds with GTK3/WebKit2GTK 4.1
+- `BUILD_TAGS=gtk4`: Builds with GTK4/WebKitGTK 6.0 (experimental)
 
 #### 6.2 Taskfile Targets
 New targets added to `v3/Taskfile.yaml`:
 
 | Target | Description |
 |--------|-------------|
-| `test:example:linux` | Build single example with GTK4 (native) |
-| `test:example:linux:gtk3` | Build single example with GTK3 (native, legacy) |
-| `test:examples:linux:docker:x86_64` | Build all examples with GTK4 in Docker |
-| `test:examples:linux:docker:x86_64:gtk3` | Build all examples with GTK3 in Docker |
-| `test:examples:linux:docker:arm64` | Build all examples with GTK4 in Docker (ARM64) |
-| `test:examples:linux:docker:arm64:gtk3` | Build all examples with GTK3 in Docker (ARM64) |
+| `test:example:linux` | Build single example with GTK3 (native, default) |
+| `test:example:linux:gtk4` | Build single example with GTK4 (native, experimental) |
+| `test:examples:linux:docker:x86_64` | Build all examples with GTK3 in Docker |
+| `test:examples:linux:docker:x86_64:gtk4` | Build all examples with GTK4 in Docker (experimental) |
+| `test:examples:linux:docker:arm64` | Build all examples with GTK3 in Docker (ARM64) |
+| `test:examples:linux:docker:arm64:gtk4` | Build all examples with GTK4 in Docker (ARM64, experimental) |
 
 TODO (deferred):
 - [ ] Update CI/CD workflows to test both GTK versions
@@ -354,40 +355,40 @@ TODO:
 
 ## Files Reference
 
-### GTK3 (Legacy) Files
+### GTK3 (Default) Files
 ```
 v3/pkg/application/
-  linux_cgo.go              # Main CGO (gtk3 tag)
-  application_linux.go       # App lifecycle (gtk3 tag)
+  linux_cgo.go              # Main CGO (!gtk4 tag - default)
+  application_linux.go       # App lifecycle (!gtk4 tag - default)
 
 v3/internal/assetserver/webview/
-  webkit2.go                 # WebKit2GTK helpers (gtk3 tag)
-  request_linux.go           # Request handling (gtk3 tag)
-  responsewriter_linux.go    # Response writing (gtk3 tag)
+  webkit2.go                 # WebKit2GTK helpers (!gtk4 tag - default)
+  request_linux.go           # Request handling (!gtk4 tag - default)
+  responsewriter_linux.go    # Response writing (!gtk4 tag - default)
 
 v3/internal/capabilities/
-  capabilities_linux_gtk3.go # GTK3 capabilities (gtk3 tag)
+  capabilities_linux_gtk3.go # GTK3 capabilities (!gtk4 tag - default)
 
 v3/internal/operatingsystem/
-  webkit_linux.go           # WebKit version info (gtk3 tag)
+  webkit_linux.go           # WebKit version info (!gtk4 tag - default)
 ```
 
-### GTK4 (Default) Files
+### GTK4 (Experimental) Files
 ```
 v3/pkg/application/
-  linux_cgo_gtk4.go          # Main CGO (!gtk3 tag)
-  application_linux_gtk4.go   # App lifecycle (!gtk3 tag)
+  linux_cgo_gtk4.go          # Main CGO (gtk4 tag - experimental)
+  application_linux_gtk4.go   # App lifecycle (gtk4 tag - experimental)
 
 v3/internal/assetserver/webview/
-  webkit6.go                 # WebKitGTK 6.0 helpers (!gtk3 tag)
-  request_linux_gtk4.go      # Request handling (!gtk3 tag)
-  responsewriter_linux_gtk4.go # Response writing (!gtk3 tag)
+  webkit6.go                 # WebKitGTK 6.0 helpers (gtk4 tag - experimental)
+  request_linux_gtk4.go      # Request handling (gtk4 tag - experimental)
+  responsewriter_linux_gtk4.go # Response writing (gtk4 tag - experimental)
 
 v3/internal/capabilities/
-  capabilities_linux.go      # GTK4 capabilities (!gtk3 tag)
+  capabilities_linux.go      # GTK4 capabilities (gtk4 tag - experimental)
 
 v3/internal/operatingsystem/
-  webkit_linux_gtk4.go       # WebKit version info (!gtk3 tag)
+  webkit_linux_gtk4.go       # WebKit version info (gtk4 tag - experimental)
 ```
 
 ### Shared Files (no GTK-specific code)

@@ -7,11 +7,11 @@ This benchmark suite compares the performance of Wails applications running on G
 Build both versions:
 
 ```bash
-# Build GTK4 version (default)
-go build -tags gtk4 -o benchmark-gtk4 .
+# Build GTK3 version (default)
+go build -o benchmark-gtk3 .
 
-# Build GTK3 version
-go build -tags gtk3 -o benchmark-gtk3 .
+# Build GTK4 version (experimental)
+go build -tags gtk4 -o benchmark-gtk4 .
 ```
 
 ## Running Benchmarks

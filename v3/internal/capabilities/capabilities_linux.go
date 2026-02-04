@@ -1,4 +1,4 @@
-//go:build linux && !gtk3
+//go:build linux && gtk4
 
 package capabilities
 
