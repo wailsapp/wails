@@ -44,10 +44,10 @@ func sanitizeAppName(name string) string {
 
 func init() {
 	// GTK4 experimental notice
-	fmt.Println("┌─────────────────────────────────────────────────────────────────┐")
-	fmt.Println("│  GTK4 + WebKitGTK 6.0 support is EXPERIMENTAL                   │")
-	fmt.Println("│  Please report issues: https://github.com/wailsapp/wails/issues/4957  │")
-	fmt.Println("└─────────────────────────────────────────────────────────────────┘")
+	fmt.Println("┌────────────────────────────────────────────────────────────────────────┐")
+	fmt.Println("│  GTK4 + WebKitGTK 6.0 support is EXPERIMENTAL                          │")
+	fmt.Println("│  Please report issues: https://github.com/wailsapp/wails/issues/4957   │")
+	fmt.Println("└────────────────────────────────────────────────────────────────────────┘")
 
 	if os.Getenv("WEBKIT_DISABLE_DMABUF_RENDERER") == "" &&
 		os.Getenv("XDG_SESSION_TYPE") == "wayland" &&
