@@ -26,17 +26,17 @@ func NewEopkg(osid string) *Eopkg {
 // They will potentially differ on different distributions or versions
 func (e *Eopkg) Packages() Packagemap {
 	return Packagemap{
-		"gtk4": []*Package{
-			{Name: "libgtk-4-devel", SystemPackage: true, Library: true},
+		"gtk3": []*Package{
+			{Name: "libgtk-3-devel", SystemPackage: true, Library: true},
 		},
-		"webkitgtk-6.0": []*Package{
-			{Name: "libwebkit-gtk6-devel", SystemPackage: true, Library: true},
+		"webkit2gtk": []*Package{
+			{Name: "libwebkit-gtk-devel", SystemPackage: true, Library: true},
 		},
-		"gtk3 (legacy)": []*Package{
-			{Name: "libgtk-3-devel", SystemPackage: true, Library: true, Optional: true},
+		"gtk4 (experimental)": []*Package{
+			{Name: "libgtk-4-devel", SystemPackage: true, Library: true, Optional: true},
 		},
-		"webkit2gtk (legacy)": []*Package{
-			{Name: "libwebkit-gtk-devel", SystemPackage: true, Library: true, Optional: true},
+		"webkitgtk-6.0 (experimental)": []*Package{
+			{Name: "libwebkit-gtk6-devel", SystemPackage: true, Library: true, Optional: true},
 		},
 		"gcc": []*Package{
 			{Name: "gcc", SystemPackage: true},

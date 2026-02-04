@@ -25,17 +25,17 @@ func NewApt(osid string) *Apt {
 // They will potentially differ on different distributions or versions
 func (a *Apt) Packages() Packagemap {
 	return Packagemap{
-		"gtk4": []*Package{
-			{Name: "libgtk-4-dev", SystemPackage: true, Library: true},
+		"gtk3": []*Package{
+			{Name: "libgtk-3-dev", SystemPackage: true, Library: true},
 		},
-		"webkitgtk-6.0": []*Package{
-			{Name: "libwebkitgtk-6.0-dev", SystemPackage: true, Library: true},
+		"webkit2gtk": []*Package{
+			{Name: "libwebkit2gtk-4.1-dev", SystemPackage: true, Library: true},
 		},
-		"gtk3 (legacy)": []*Package{
-			{Name: "libgtk-3-dev", SystemPackage: true, Library: true, Optional: true},
+		"gtk4 (experimental)": []*Package{
+			{Name: "libgtk-4-dev", SystemPackage: true, Library: true, Optional: true},
 		},
-		"webkit2gtk (legacy)": []*Package{
-			{Name: "libwebkit2gtk-4.1-dev", SystemPackage: true, Library: true, Optional: true},
+		"webkitgtk-6.0 (experimental)": []*Package{
+			{Name: "libwebkitgtk-6.0-dev", SystemPackage: true, Library: true, Optional: true},
 		},
 		"gcc": []*Package{
 			{Name: "build-essential", SystemPackage: true},
