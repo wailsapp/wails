@@ -184,7 +184,7 @@
                 li.innerHTML = `
                     <span class="key">${escapeHtml(key)}</span>
                     <span class="value">${escapeHtml(value.substring(0, 50))}${value.length > 50 ? '...' : ''}</span>
-                    <button onclick="deleteItem('${escapeHtml(key)}')" class="danger" style="padding: 5px 10px; font-size: 0.8rem;">Delete</button>
+                    <button onclick='deleteItem(${JSON.stringify(key)})' class="danger" style="padding: 5px 10px; font-size: 0.8rem;">Delete</button>
                 `;
                 list.appendChild(li);
             }

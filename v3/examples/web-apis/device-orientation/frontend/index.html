@@ -464,7 +464,7 @@
         checkSupport();
 
         // Auto-start on devices that don't require permission
-        if (!('requestPermission' in DeviceOrientationEvent)) {
+        if (!window.DeviceOrientationEvent || typeof DeviceOrientationEvent.requestPermission !== 'function') {
             log('Auto-starting orientation listener...', 'event');
             startListening();
         } else {

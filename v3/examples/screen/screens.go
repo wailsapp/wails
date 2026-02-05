@@ -63,7 +63,11 @@ func (s *ScreenService) ProcessExampleScreens(rawScreens []interface{}) []*appli
 		if !ok {
 			continue
 		}
-		bounds := parseRect(boundsVal.(map[string]interface{}))
+		boundsMap, ok := boundsVal.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		bounds := parseRect(boundsMap)
 
 		var id, name string
 		var isPrimary bool
