@@ -137,6 +137,30 @@ func (s *SystemTray) ToggleWindow() {
 	}
 }
 
+func (s *SystemTray) defaultClickHandler() {
+	if s.attachedWindow.Window == nil {
+		s.OpenMenu()
+		return
+	}
+
+	// Check the initial visibility state
+	s.attachedWindow.initialClick.Do(func() {
+		s.attachedWindow.hasBeenShown = s.attachedWindow.Window.IsVisible()
+	})
+
+	if runtime.GOOS == "windows" && s.attachedWindow.justClosed {
+		return
+	}
+
+	if s.attachedWindow.Window.IsVisible() {
+		s.attachedWindow.Window.Hide()
+	} else {
+		s.attachedWindow.hasBeenShown = true
+		_ = s.PositionWindow(s.attachedWindow.Window, s.attachedWindow.Offset)
+		s.attachedWindow.Window.Show().Focus()
+	}
+}
+
 func (s *SystemTray) ShowMenu() {
 	s.OpenMenu()
 }
