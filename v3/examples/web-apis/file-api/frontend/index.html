@@ -318,6 +318,12 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         // Drag and drop
         const dropZone = document.getElementById('dropZone');
 
@@ -348,8 +354,8 @@
                 div.className = 'file-item';
                 div.innerHTML = `
                     <div class="file-info">
-                        <div class="file-name">${file.name}</div>
-                        <div class="file-meta">${formatSize(file.size)} - ${file.type || 'unknown type'}</div>
+                        <div class="file-name">${escapeHtml(file.name)}</div>
+                        <div class="file-meta">${escapeHtml(formatSize(file.size))} - ${escapeHtml(file.type || 'unknown type')}</div>
                     </div>
                     <div class="file-actions">
                         <button onclick="selectFile(${i})" class="secondary">Select</button>

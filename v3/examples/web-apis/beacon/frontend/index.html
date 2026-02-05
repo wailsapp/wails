@@ -284,10 +284,16 @@
             document.getElementById('bytes').textContent = stats.bytes < 1024 ? stats.bytes : (stats.bytes/1024).toFixed(1)+'K';
         }
 
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         function log(type, msg, cls) {
             const el = document.getElementById('log');
             const t = new Date().toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' });
-            el.innerHTML += `<div class="log-entry ${cls}"><span class="log-time">${t}</span><span class="log-type ${cls}">${type}</span><span class="log-msg">${msg}</span></div>`;
+            el.innerHTML += `<div class="log-entry ${escapeHtml(cls)}"><span class="log-time">${escapeHtml(t)}</span><span class="log-type ${escapeHtml(cls)}">${escapeHtml(type)}</span><span class="log-msg">${escapeHtml(msg)}</span></div>`;
             el.scrollTop = el.scrollHeight;
         }
 

@@ -233,6 +233,12 @@
             log('API support check completed');
         }
 
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         // Define wails-card custom element
         class WailsCard extends HTMLElement {
             static get observedAttributes() {
@@ -279,12 +285,12 @@
                         }
                         .card {
                             background: rgba(0, 0, 0, 0.3);
-                            border-left: 4px solid ${color};
+                            border-left: 4px solid ${escapeHtml(color)};
                             border-radius: 8px;
                             padding: 15px;
                         }
                         .title {
-                            color: ${color};
+                            color: ${escapeHtml(color)};
                             font-weight: bold;
                             font-size: 1.1rem;
                             margin-bottom: 10px;
@@ -295,7 +301,7 @@
                         }
                     </style>
                     <div class="card">
-                        <div class="title">${title}</div>
+                        <div class="title">${escapeHtml(title)}</div>
                         <div class="content">
                             <slot></slot>
                         </div>

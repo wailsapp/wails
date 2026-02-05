@@ -336,8 +336,8 @@ EventSource.CLOSED      // 2 - Closed
             const entry = document.createElement('div');
             entry.className = `log-entry ${className}`;
             entry.innerHTML = `
-                <span class="log-time">${time}</span>
-                <span class="log-type">${type}</span>
+                <span class="log-time">${escapeHtml(time)}</span>
+                <span class="log-type">${escapeHtml(type)}</span>
                 <span class="log-message">${escapeHtml(message)}</span>
             `;
             log.appendChild(entry);

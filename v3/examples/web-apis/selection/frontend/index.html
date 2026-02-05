@@ -291,6 +291,12 @@
             document.getElementById('eventLog').textContent = 'Log cleared.';
         }
 
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         // Check API support
         function checkSupport() {
             const hasSelection = 'getSelection' in window;
@@ -515,10 +521,11 @@
             const text = element.textContent;
 
             const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            const escapedText = escapeHtml(text);
             const matches = text.match(regex);
 
             if (matches) {
-                element.innerHTML = text.replace(regex, '<span class="highlight">$1</span>');
+                element.innerHTML = escapedText.replace(regex, '<span class="highlight">$1</span>');
                 document.getElementById('searchResults').textContent = `Found ${matches.length} match(es)`;
                 log(`Found ${matches.length} matches for "${searchTerm}"`);
             } else {

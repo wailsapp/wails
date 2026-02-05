@@ -423,8 +423,8 @@
                 list.innerHTML = selectedFiles.map((file, i) => `
                     <li>
                         <span>
-                            <strong>${file.name}</strong>
-                            <span class="file-info"> - ${formatFileSize(file.size)} (${file.type || 'unknown type'})</span>
+                            <strong>${escapeHtml(file.name)}</strong>
+                            <span class="file-info"> - ${escapeHtml(formatFileSize(file.size))} (${escapeHtml(file.type || 'unknown type')})</span>
                         </span>
                         <button class="remove-btn" onclick="removeFile(${i})">Remove</button>
                     </li>
@@ -437,6 +437,12 @@
             if (bytes < 1024) return bytes + ' B';
             if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
             return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         function removeFile(index) {
