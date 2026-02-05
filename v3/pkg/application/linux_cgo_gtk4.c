@@ -1,4 +1,4 @@
-//go:build linux && !gtk3
+//go:build linux && gtk4
 
 #include "linux_cgo_gtk4.h"
 

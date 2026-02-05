@@ -1,4 +1,4 @@
-//go:build linux && !gtk3
+//go:build linux && gtk4
 
 #ifndef LINUX_CGO_GTK4_H
 #define LINUX_CGO_GTK4_H

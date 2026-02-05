@@ -92,24 +92,24 @@ tasks:
       GOARCH: amd64
 
   test:example:linux:
-    summary: Build example for Linux with GTK4 (default)
+    summary: Build example for Linux with GTK3 (default)
     dir: 'examples/{{.DIR}}'
     platforms:
       - linux
     cmds:
-      - echo "Building example {{.DIR}} for Linux (GTK4)"
+      - echo "Building example {{.DIR}} for Linux (GTK3)"
       - go mod tidy
       - go build -o "testbuild-{{.DIR}}-linux"
 
-  test:example:linux:gtk3:
-    summary: Build example for Linux with GTK3 (legacy)
+  test:example:linux:gtk4:
+    summary: Build example for Linux with GTK4 (experimental, opt-in via -tags gtk4)
     dir: 'examples/{{.DIR}}'
     platforms:
       - linux
     cmds:
-      - echo "Building example {{.DIR}} for Linux (GTK3 legacy)"
+      - echo "Building example {{.DIR}} for Linux (GTK4 experimental)"
       - go mod tidy
-      - go build -tags gtk3 -o "testbuild-{{.DIR}}-linux-gtk3"
+      - go build -tags gtk4 -o "testbuild-{{.DIR}}-linux-gtk4"
 
   test:example:linux:docker:arm64:
     summary: Build a single example for Linux ARM64 using Docker (Ubuntu 24.04)
@@ -365,11 +365,12 @@ tasks:
         vars:
           DIR: "{{.ITEM}}"
         platforms: [linux]
-      - for: { var: EXAMPLEDIRS }
-        task: test:example:linux:gtk3
-        vars:
-          DIR: "{{.ITEM}}"
-        platforms: [linux]
+      # GTK4 tests are run separately via Docker tasks since CI doesn't have GTK4 deps
+      # - for: { var: EXAMPLEDIRS }
+      #   task: test:example:linux:gtk4
+      #   vars:
+      #     DIR: "{{.ITEM}}"
+      #   platforms: [linux]
       - for: { var: EXAMPLEDIRS }
         task: test:example:windows
         vars:
