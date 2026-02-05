@@ -785,14 +785,14 @@ for native integration. This provides better desktop integration but means some 
 | `ResolvesAliases()` | ✅ Works | ❌ No effect | Portal handles symlink resolution |
 | `SetButtonText()` | ✅ Works | ✅ Works | Custom accept button text works |
 
-**Why these limitations exist:** GTK4's portal-based dialogs delegate UI control to the desktop 
-environment (GNOME, KDE, etc.). This is by design - the portal provides consistent UX across 
+**Why these limitations exist:** GTK4's portal-based dialogs delegate UI control to the desktop
+environment (GNOME, KDE, etc.). This is by design - the portal provides consistent UX across
 applications and respects user preferences.
 
-To build with GTK3 (legacy) instead of GTK4:
-```bash
-go build -tags gtk3 .
-```
+:::note
+The table above shows GTK4 behavior when building with `-tags gtk4`. By default, Wails uses GTK3
+which provides full control over these dialog options.
+:::
 
 ## Common Patterns
 
