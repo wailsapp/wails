@@ -1,4 +1,4 @@
-//go:build linux && cgo && !gtk4 && !android
+//go:build linux && cgo && !gtk4 && !android && !server
 
 package application
 
@@ -144,7 +144,7 @@ func (a *linuxApp) run() error {
 		arg1 := os.Args[1]
 		// Check if the argument is likely a URL from a custom protocol invocation
 		if strings.Contains(arg1, "://") {
-			a.parent.info("Application launched with argument, potentially a URL from custom protocol", "url", arg1)
+			a.parent.debug("Application launched with argument, potentially a URL from custom protocol", "url", arg1)
 			eventContext := newApplicationEventContext()
 			eventContext.setURL(arg1)
 			applicationEvents <- &ApplicationEvent{
@@ -156,7 +156,7 @@ func (a *linuxApp) run() error {
 			if a.parent.options.FileAssociations != nil {
 				ext := filepath.Ext(arg1)
 				if slices.Contains(a.parent.options.FileAssociations, ext) {
-					a.parent.info("File opened via file association", "file", arg1, "extension", ext)
+					a.parent.debug("File opened via file association", "file", arg1, "extension", ext)
 					eventContext := newApplicationEventContext()
 					eventContext.setOpenedWithFile(arg1)
 					applicationEvents <- &ApplicationEvent{
@@ -166,11 +166,11 @@ func (a *linuxApp) run() error {
 					return nil
 				}
 			}
-			a.parent.info("Application launched with single argument (not a URL), potential file open?", "arg", arg1)
+			a.parent.debug("Application launched with single argument (not a URL), potential file open?", "arg", arg1)
 		}
 	} else if len(os.Args) > 2 {
 		// Log if multiple arguments are passed
-		a.parent.info("Application launched with multiple arguments", "args", os.Args[1:])
+		a.parent.debug("Application launched with multiple arguments", "args", os.Args[1:])
 	}
 
 	a.parent.Event.OnApplicationEvent(events.Linux.ApplicationStartup, func(evt *ApplicationEvent) {
@@ -226,8 +226,8 @@ func (a *linuxApp) monitorThemeChanges() {
 		defer handlePanic()
 		conn, err := dbus.ConnectSessionBus()
 		if err != nil {
-			a.parent.info(
-				"[WARNING] Failed to connect to session bus; monitoring for theme changes will not function:",
+			a.parent.warning(
+				"[WARNING] Failed to connect to session bus; monitoring for theme changes will not function: %v",
 				err,
 			)
 			return

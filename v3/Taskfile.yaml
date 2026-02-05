@@ -401,27 +401,59 @@ tasks:
       - echo "✅ All tests completed successfully"
 
   sanity:
-    summary: Quick compilation sanity check for key examples (GTK4 + GTK3)
+    summary: Quick compilation sanity check for key examples (GTK3 default + GTK4 opt-in)
     platforms:
       - linux
     cmds:
-      - echo "🔍 Running quick sanity check (GTK4)..."
+      - echo "🔍 Running quick sanity check (GTK3 - default)..."
       - cd examples/menu && go build -o /dev/null .
       - cd examples/window && go build -o /dev/null .
       - cd examples/events && go build -o /dev/null .
       - cd examples/plain && go build -o /dev/null .
       - cd examples/dialogs-basic && go build -o /dev/null .
-      - echo "✅ GTK4 sanity check passed"
-      - task: sanity:gtk3
+      - echo "✅ GTK3 sanity check passed"
+      - task: sanity:gtk4
 
-  sanity:gtk3:
-    summary: Quick compilation sanity check for GTK3 (legacy)
+  sanity:gtk4:
+    summary: Quick compilation sanity check for GTK4 (experimental, opt-in via -tags gtk4)
     platforms:
       - linux
     cmds:
-      - echo "🔍 Running GTK3 sanity check..."
-      - cd examples/menu && go build -tags gtk3 -o /dev/null .
-      - cd examples/window && go build -tags gtk3 -o /dev/null .
-      - cd examples/events && go build -tags gtk3 -o /dev/null .
-      - cd examples/plain && go build -tags gtk3 -o /dev/null .
-      - echo "✅ GTK3 sanity check passed"
+      - echo "🔍 Running GTK4 sanity check..."
+      - cd examples/menu && go build -tags gtk4 -o /dev/null .
+      - cd examples/window && go build -tags gtk4 -o /dev/null .
+      - cd examples/events && go build -tags gtk4 -o /dev/null .
+      - cd examples/plain && go build -tags gtk4 -o /dev/null .
+      - echo "✅ GTK4 sanity check passed"
+
+  build:server:
+    summary: Build an application in server mode (no GUI, HTTP server only)
+    desc: |
+      Builds a Wails application in server mode using the -tags server build tag.
+      Server mode enables running the application as a pure HTTP server without
+      native GUI dependencies.
+
+      Usage: task build:server DIR=examples/server
+    dir: '{{.DIR | default "."}}'
+    cmds:
+      - echo "Building {{.DIR | default `.`}} in server mode..."
+      - go build -tags server -o '{{.OUTPUT | default "server-app"}}' .
+      - echo "Server mode build complete"
+
+  test:example:server:
+    summary: Build and test the server mode example
+    dir: 'examples/server'
+    cmds:
+      - echo "Building server example with -tags server..."
+      - go mod tidy
+      - go build -tags server -o "testbuild-server"
+      - echo "✅ Server example builds successfully"
+      - rm -f testbuild-server
+
+  test:server:
+    summary: Run server mode unit tests
+    dir: 'pkg/application'
+    cmds:
+      - echo "Running server mode tests..."
+      - go test -tags server -v -run TestServerMode .
+      - echo "✅ Server mode tests passed"

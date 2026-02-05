@@ -111,6 +111,7 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 
     // support webview events
     [webView setNavigationDelegate:delegate];
+    [webView setUIDelegate:delegate];
 
 	// Ensure webview resizes with the window
 	[webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
@@ -590,11 +591,19 @@ void windowGetRelativePosition(void* nsWindow, int* x, int* y) {
 	*y = screenFrame.size.height - frame.origin.y - frame.size.height;
 }
 
-// Get absolute window position
+// Get absolute window position (in screen coordinates with Y=0 at top, scaled for DPI)
 void windowGetPosition(void* nsWindow, int* x, int* y) {
-	NSRect frame = [(WebviewWindow*)nsWindow frame];
-	*x = frame.origin.x;
-	*y = frame.origin.y;
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSScreen* screen = [window screen];
+	if (screen == NULL) {
+		screen = [NSScreen mainScreen];
+	}
+	CGFloat scale = [screen backingScaleFactor];
+	NSRect frame = [window frame];
+	NSRect screenFrame = [screen frame];
+	// Convert to top-origin coordinates and apply scale (matching windowSetPosition)
+	*x = frame.origin.x * scale;
+	*y = (screenFrame.size.height - frame.origin.y - frame.size.height) * scale;
 }
 
 void windowSetPosition(void* nsWindow, int x, int y) {

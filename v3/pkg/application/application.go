@@ -151,7 +151,7 @@ func New(appOptions Options) *App {
 		if err != nil {
 			result.fatal("failed to configure transport for serving assets: %w", err)
 		}
-		result.info("Transport configured to serve assets")
+		result.debug("Transport configured to serve assets")
 	}
 
 	result.bindings = NewBindings(appOptions.MarshalError, appOptions.BindAliases)
@@ -501,16 +501,6 @@ func (a *App) Capabilities() capabilities.Capabilities {
 	return a.capabilities
 }
 
-//func (a *App) RegisterListener(listener WailsEventListener) {
-//	a.wailsEventListenerLock.Lock()
-//	a.wailsEventListeners = append(a.wailsEventListeners, listener)
-//	a.wailsEventListenerLock.Unlock()
-//}
-//
-//func (a *App) RegisterServiceHandler(prefix string, handler http.Handler) {
-//	a.assets.AttachServiceHandler(prefix, handler)
-//}
-
 func (a *App) GetPID() int {
 	return a.pid
 }
@@ -733,7 +723,7 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	}
 	a.windowsLock.RUnlock()
 
-	a.info("handleWindowMessage: Looking for window", "windowId", event.windowId, "availableIDs", ids)
+	a.debug("handleWindowMessage: Looking for window", "windowId", event.windowId, "availableIDs", ids)
 
 	if !ok {
 		a.warning("WebviewWindow #%d not found", event.windowId)
@@ -741,7 +731,7 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	}
 	// Check if the message starts with "wails:"
 	if strings.HasPrefix(event.message, "wails:") {
-		a.info("handleWindowMessage: Processing wails message", "message", event.message)
+		a.debug("handleWindowMessage: Processing wails message", "message", event.message)
 		window.HandleMessage(event.message)
 	} else {
 		if a.options.RawMessageHandler != nil {
@@ -754,10 +744,10 @@ func (a *App) handleWebViewRequest(request *webViewAssetRequest) {
 	defer handlePanic()
 	// Log that we're processing the request
 	url, _ := request.Request.URL()
-	a.info("handleWebViewRequest: Processing request", "url", url)
+	a.debug("handleWebViewRequest: Processing request", "url", url)
 	// IMPORTANT: pass the wrapper request so our injected headers (x-wails-window-id/name) are used
 	a.assets.ServeWebViewRequest(request)
-	a.info("handleWebViewRequest: Request processing complete", "url", url)
+	a.debug("handleWebViewRequest: Request processing complete", "url", url)
 }
 
 func (a *App) handleWindowEvent(event *windowEvent) {

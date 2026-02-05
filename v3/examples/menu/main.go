@@ -146,14 +146,12 @@ func main() {
 
 	app.Menu.Set(menu)
 
-	window := app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Name:  "menu-example",
-		Title: "Menu Example",
-		Linux: application.LinuxWindow{
-			MenuStyle: application.LinuxMenuStylePrimaryMenu,
-		},
+	// UseApplicationMenu allows Windows/Linux to inherit the app menu
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
+		Name:               "menu-example",
+		Title:              "Menu Example",
+		UseApplicationMenu: true,
 	}).SetBackgroundColour(application.NewRGB(33, 37, 41))
-	window.SetMenu(menu)
 
 	err := app.Run()
 

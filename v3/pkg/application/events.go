@@ -7,7 +7,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	json "github.com/goccy/go-json"
+	"encoding/json"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
@@ -76,8 +76,8 @@ func (e *CustomEvent) ToJSON() string {
 	return string(marshal)
 }
 
-// WailsEventListener is an interface that can be implemented to listen for Wails events
-// It is used by the RegisterListener method of the Application.
+// WailsEventListener is an interface for receiving all emitted Wails events.
+// Used by transport layers (IPC, WebSocket) to broadcast events.
 type WailsEventListener interface {
 	DispatchWailsEvent(event *CustomEvent)
 }

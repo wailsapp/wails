@@ -1,7 +1,7 @@
 package application
 
 import (
-	json "github.com/goccy/go-json"
+	"encoding/json"
 
 	"github.com/wailsapp/wails/v3/pkg/errs"
 )
@@ -38,7 +38,9 @@ func (m *MessageProcessor) processEventsMethod(req *RuntimeRequest, window Windo
 
 		event.Name = *options.Name
 		event.Data = data
-		event.Sender = window.Name()
+		if window != nil {
+			event.Sender = window.Name()
+		}
 		globalApplication.Event.EmitEvent(&event)
 
 		return event.IsCancelled(), nil

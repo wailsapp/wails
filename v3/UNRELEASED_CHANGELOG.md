@@ -20,18 +20,11 @@ After processing, the content will be moved to the main changelog and this file 
 - Add Web API examples in `v3/examples/web-apis/` demonstrating 41 browser APIs including Storage (localStorage, sessionStorage, IndexedDB, Cache API), Network (Fetch, WebSocket, XMLHttpRequest, EventSource, Beacon), Media (Canvas, WebGL, Web Audio, MediaDevices, MediaRecorder, Speech Synthesis), Device (Geolocation, Clipboard, Fullscreen, Device Orientation, Vibration, Gamepad), Performance (Performance API, Mutation Observer, Intersection/Resize Observer), UI (Web Components, Pointer Events, Selection, Dialog, Drag and Drop), and more
 - Add WebView API compatibility checker example (`v3/examples/webview-api-check/`) that tests 200+ browser APIs across platforms
 - Add `internal/libpath` package for finding native library paths on Linux with parallel search, caching, and support for Flatpak/Snap/Nix
-- **WIP:** Add WebKitGTK 6.0 / GTK4 support as new default for Linux (GTK3/WebKit2GTK 4.1 available via `-tags gtk3`)
+- **WIP:** Add experimental WebKitGTK 6.0 / GTK4 support for Linux, available via `-tags gtk4` (GTK3/WebKit2GTK 4.1 remains the default)
   - Note: On tiling window managers (e.g., Hyprland, Sway), Minimize/Maximize operations may not work as expected since the WM controls window geometry
 
 ## Changed
 <!-- Changes in existing functionality -->
-- **BREAKING:** Rename `EnableDragAndDrop` to `EnableFileDrop` in window options
-- **BREAKING:** Rename `DropZoneDetails` to `DropTargetDetails` in event context
-- **BREAKING:** Rename `DropZoneDetails()` method to `DropTargetDetails()` on `WindowEventContext`
-- **BREAKING:** Remove `WindowDropZoneFilesDropped` event, use `WindowFilesDropped` instead
-- **BREAKING:** Change HTML attribute from `data-wails-dropzone` to `data-file-drop-target`
-- **BREAKING:** Change CSS hover class from `wails-dropzone-hover` to `file-drop-target-active`
-- **BREAKING:** Remove `DragEffect`, `OnEnterEffect`, `OnOverEffect` options from Windows (were part of removed IDropTarget)
 
 ## Fixed
 <!-- Bug fixes -->
@@ -48,7 +41,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Removed
 <!-- Features removed in this release -->
-- Remove native `IDropTarget` implementation on Windows in favor of JavaScript-based approach (matches v2 behavior)
 
 ## Security
 <!-- Security-related changes -->

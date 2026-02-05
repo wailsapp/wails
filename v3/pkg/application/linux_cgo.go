@@ -1,4 +1,4 @@
-//go:build linux && cgo && !gtk4 && !android
+//go:build linux && cgo && !gtk4 && !android && !server
 
 package application
 
@@ -161,7 +161,16 @@ typedef struct Screen {
 	bool isPrimary;
 } Screen;
 
+// Signal handler fix for WebKit/GTK compatibility.
 // CREDIT: https://github.com/rainycape/magick
+//
+// WebKit/GTK may install signal handlers without SA_ONSTACK, which causes
+// Go to crash when handling signals (e.g., during panic recovery).
+// This code adds SA_ONSTACK to signal handlers after WebKit initialization.
+//
+// Known limitation: Due to Go issue #7227 (golang/go#7227), signals may still
+// be delivered on the wrong stack in some cases when C libraries are involved.
+// This is a fundamental Go runtime limitation that cannot be fully resolved here.
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
@@ -489,6 +498,7 @@ var (
 )
 
 var registerURIScheme sync.Once
+var fixSignalHandlers sync.Once
 
 func init() {
 	gtkSignalToMenuItem = map[uint]*MenuItem{}
@@ -553,8 +563,6 @@ func appName() string {
 }
 
 func appNew(name string) pointer {
-	C.install_signal_handlers()
-
 	// Name is already sanitized by sanitizeAppName() in application_linux.go
 	appId := fmt.Sprintf("org.wails.%s", name)
 	nameC := C.CString(appId)
@@ -655,8 +663,15 @@ func (a *linuxApp) showAllWindows() {
 }
 
 func (a *linuxApp) setIcon(icon []byte) {
-	gbytes := C.g_bytes_new_static(C.gconstpointer(unsafe.Pointer(&icon[0])), C.ulong(len(icon)))
+	if len(icon) == 0 {
+		return
+	}
+	// Use g_bytes_new instead of g_bytes_new_static because Go memory can be
+	// moved or freed by the GC. g_bytes_new copies the data to C-owned memory.
+	gbytes := C.g_bytes_new(C.gconstpointer(unsafe.Pointer(&icon[0])), C.ulong(len(icon)))
+	defer C.g_bytes_unref(gbytes)
 	stream := C.g_memory_input_stream_new_from_bytes(gbytes)
+	defer C.g_object_unref(C.gpointer(stream))
 	var gerror *C.GError
 	pixbuf := C.gdk_pixbuf_new_from_stream(stream, nil, &gerror)
 	if gerror != nil {
@@ -721,6 +736,24 @@ func menuSetSubmenu(item *MenuItem, menu *Menu) {
 
 func menuGetRadioGroup(item *linuxMenuItem) *GSList {
 	return (*GSList)(C.gtk_radio_menu_item_get_group((*C.GtkRadioMenuItem)(item.native)))
+}
+
+func menuClear(menu *Menu) {
+	menuShell := (*C.GtkMenuShell)((menu.impl).(*linuxMenu).native)
+	children := C.gtk_container_get_children((*C.GtkContainer)(unsafe.Pointer(menuShell)))
+	if children != nil {
+		// Save the original pointer to free later
+		originalList := children
+		// Iterate through all children and remove them
+		for children != nil {
+			child := (*C.GtkWidget)(children.data)
+			if child != nil {
+				C.gtk_container_remove((*C.GtkContainer)(unsafe.Pointer(menuShell)), child)
+			}
+			children = children.next
+		}
+		C.g_list_free(originalList)
+	}
 }
 
 //export handleClick
@@ -805,8 +838,10 @@ func menuItemAddProperties(menuItem *C.GtkWidget, label string, bitmap []byte) p
 		(*C.GtkWidget)(unsafe.Pointer(menuItem)))
 
 	box := C.gtk_box_new(C.GTK_ORIENTATION_HORIZONTAL, 6)
-	if img, err := pngToImage(bitmap); err == nil {
-		gbytes := C.g_bytes_new_static(C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
+	if img, err := pngToImage(bitmap); err == nil && len(img.Pix) > 0 {
+		// Use g_bytes_new instead of g_bytes_new_static because Go memory can be
+		// moved or freed by the GC. g_bytes_new copies the data to C-owned memory.
+		gbytes := C.g_bytes_new(C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
 			C.ulong(len(img.Pix)))
 		defer C.g_bytes_unref(gbytes)
 		pixBuf := C.gdk_pixbuf_new_from_bytes(
@@ -885,8 +920,10 @@ func menuItemRemoveBitmap(widget pointer) {
 func menuItemSetBitmap(widget pointer, bitmap []byte) {
 	menuItemRemoveBitmap(widget)
 	box := C.gtk_bin_get_child((*C.GtkBin)(widget))
-	if img, err := pngToImage(bitmap); err == nil {
-		gbytes := C.g_bytes_new_static(C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
+	if img, err := pngToImage(bitmap); err == nil && len(img.Pix) > 0 {
+		// Use g_bytes_new instead of g_bytes_new_static because Go memory can be
+		// moved or freed by the GC. g_bytes_new copies the data to C-owned memory.
+		gbytes := C.g_bytes_new(C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
 			C.ulong(len(img.Pix)))
 		defer C.g_bytes_unref(gbytes)
 		pixBuf := C.gdk_pixbuf_new_from_bytes(
@@ -1346,6 +1383,10 @@ func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
 	manager := C.webkit_user_content_manager_new()
 	C.webkit_user_content_manager_register_script_message_handler(manager, c.String("external"))
 	webView := C.webkit_web_view_new_with_user_content_manager(manager)
+
+	fixSignalHandlers.Do(func() {
+		C.install_signal_handlers()
+	})
 
 	C.save_webview_to_content_manager(unsafe.Pointer(manager), unsafe.Pointer(webView))
 
@@ -2003,7 +2044,7 @@ func messageDialogCB(button C.int) {
 	fmt.Println("messageDialogCB", button)
 }
 
-func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFolder, title string, action int, acceptLabel string, filters []FileFilter) (chan string, error) {
+func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFolder, title string, action int, acceptLabel string, filters []FileFilter, currentName string) (chan string, error) {
 	titleStr := C.CString(title)
 	defer C.free(unsafe.Pointer(titleStr))
 	cancelStr := C.CString("_Cancel")
@@ -2053,6 +2094,15 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 		C.free(unsafe.Pointer(path))
 	}
 
+	// Set the current name for save dialogs to pre-populate the filename
+	if currentName != "" && action == C.GTK_FILE_CHOOSER_ACTION_SAVE {
+		nameStr := C.CString(currentName)
+		C.gtk_file_chooser_set_current_name(
+			(*C.GtkFileChooser)(fc),
+			nameStr)
+		C.free(unsafe.Pointer(nameStr))
+	}
+
 	// FIXME: This should be consolidated - duplicate exists in linux_purego.go
 	buildStringAndFree := func(s C.gpointer) string {
 		bytes := []byte{}
@@ -2073,25 +2123,27 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 	// run this on the gtk thread
 	InvokeAsync(func() {
 		response := C.gtk_dialog_run((*C.GtkDialog)(fc))
+		// Extract results on GTK thread BEFORE destroying widget
+		var results []string
+		if response == C.GTK_RESPONSE_ACCEPT {
+			// No artificial limit - consistent with Windows/macOS behavior
+			filenames := C.gtk_file_chooser_get_filenames((*C.GtkFileChooser)(fc))
+			for iter := filenames; iter != nil; iter = iter.next {
+				results = append(results, buildStringAndFree(C.gpointer(iter.data)))
+			}
+			C.g_slist_free(filenames)
+		}
+		// Destroy widget after extracting results (on GTK thread)
+		C.gtk_widget_destroy((*C.GtkWidget)(unsafe.Pointer(fc)))
+		// Send results from goroutine (safe - no GTK calls)
 		go func() {
 			defer handlePanic()
-			if response == C.GTK_RESPONSE_ACCEPT {
-				filenames := C.gtk_file_chooser_get_filenames((*C.GtkFileChooser)(fc))
-				iter := filenames
-				count := 0
-				for {
-					selections <- buildStringAndFree(C.gpointer(iter.data))
-					iter = iter.next
-					if iter == nil || count == 1024 {
-						break
-					}
-					count++
-				}
+			for _, result := range results {
+				selections <- result
 			}
 			close(selections)
 		}()
 	})
-	C.gtk_widget_destroy((*C.GtkWidget)(unsafe.Pointer(fc)))
 	return selections, nil
 }
 
@@ -2126,7 +2178,8 @@ func runOpenFileDialog(dialog *OpenFileDialogStruct) (chan string, error) {
 		dialog.title,
 		action,
 		buttonText,
-		dialog.filters)
+		dialog.filters,
+		"")
 }
 
 func runQuestionDialog(parent pointer, options *MessageDialog) int {
@@ -2157,8 +2210,10 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 			cTitle)
 	}
 
-	if img, err := pngToImage(options.Icon); err == nil {
-		gbytes := C.g_bytes_new_static(
+	if img, err := pngToImage(options.Icon); err == nil && len(img.Pix) > 0 {
+		// Use g_bytes_new instead of g_bytes_new_static because Go memory can be
+		// moved or freed by the GC. g_bytes_new copies the data to C-owned memory.
+		gbytes := C.g_bytes_new(
 			C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
 			C.ulong(len(img.Pix)))
 		defer C.g_bytes_unref(gbytes)
@@ -2208,7 +2263,8 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (chan string, error) {
 		dialog.title,
 		C.GTK_FILE_CHOOSER_ACTION_SAVE,
 		buttonText,
-		dialog.filters)
+		dialog.filters,
+		dialog.filename)
 
 	return results, err
 }

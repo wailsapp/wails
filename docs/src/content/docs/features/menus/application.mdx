@@ -56,16 +56,19 @@ func main() {
     menu.AddRole(application.WindowMenu)
     menu.AddRole(application.HelpMenu)
 
-    // Set the menu
-    app.SetMenu(menu)
+    // Set the application menu
+    app.Menu.Set(menu)
 
-    // Create window and run
-    app.NewWebviewWindow()
+    // Create window with UseApplicationMenu to inherit the menu on Windows/Linux
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        UseApplicationMenu: true,
+    })
+
     app.Run()
 }
 ```
 
-**That's it!** You now have platform-native menus with standard items.
+**That's it!** You now have platform-native menus with standard items. The `UseApplicationMenu` option ensures Windows and Linux windows display the menu without additional code.
 
 ## Creating Menus
 
@@ -96,33 +99,63 @@ fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
 
 ### Setting the Menu
 
-Platform-specific API:
+**Recommended approach** — Use `UseApplicationMenu` for cross-platform consistency:
+
+```go
+// Set the application menu once
+app.Menu.Set(menu)
+
+// Create windows that inherit the menu on Windows/Linux
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    UseApplicationMenu: true,  // Window uses the app menu
+})
+```
+
+This approach:
+- On **macOS**: The menu appears at the top of screen (standard behaviour)
+- On **Windows/Linux**: Each window with `UseApplicationMenu: true` displays the app menu
+
+**Platform-specific details:**
 
 <Tabs syncKey="platform">
   <TabItem label="macOS" icon="apple">
     **Global menu bar** (one per application):
 
     ```go
-    app.SetMenu(menu)
+    app.Menu.Set(menu)
     ```
 
-    The menu appears at the top of the screen and persists even when all windows are closed.
+    The menu appears at the top of the screen and persists even when all windows are closed. The `UseApplicationMenu` option has no effect on macOS since all apps use the global menu.
   </TabItem>
 
   <TabItem label="Windows" icon="seti:windows">
     **Per-window menu bar**:
 
     ```go
+    // Option 1: Use application menu (recommended)
+    app.Menu.Set(menu)
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        UseApplicationMenu: true,
+    })
+
+    // Option 2: Set menu directly on window
     window.SetMenu(menu)
     ```
 
-    Each window can have its own menu. The menu appears in the window's title bar.
+    Each window can have its own menu, or inherit the application menu. The menu appears in the window's title bar.
   </TabItem>
 
   <TabItem label="Linux" icon="linux">
     **Per-window menu bar** (usually):
 
     ```go
+    // Option 1: Use application menu (recommended)
+    app.Menu.Set(menu)
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        UseApplicationMenu: true,
+    })
+
+    // Option 2: Set menu directly on window
     window.SetMenu(menu)
     ```
 
@@ -130,16 +163,24 @@ Platform-specific API:
   </TabItem>
 </Tabs>
 
-**Cross-platform helper:**
+:::tip[Simplify Cross-Platform Menus]
+Using `UseApplicationMenu: true` eliminates the need for platform-specific code like:
+```go
+// Old approach - no longer needed
+if runtime.GOOS == "darwin" {
+    app.Menu.Set(menu)
+} else {
+    window.SetMenu(menu)
+}
+```
+:::
+
+**Per-window custom menus:**
+
+If a window needs a different menu than the application menu, set it directly:
 
 ```go
-func setMenuForPlatform(app *application.Application, window *application.WebviewWindow, menu *application.Menu) {
-    if runtime.GOOS == "darwin" {
-        app.SetMenu(menu)
-    } else {
-        window.SetMenu(menu)
-    }
-}
+window.SetMenu(customMenu)  // Overrides UseApplicationMenu
 ```
 
 ## Menu Roles
@@ -486,8 +527,10 @@ func main() {
     // Create and set menu
     createMenu(app)
 
-    // Create main window
-    app.NewWebviewWindow()
+    // Create main window with UseApplicationMenu for cross-platform menu support
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        UseApplicationMenu: true,
+    })
 
     app.Run()
 }
@@ -543,8 +586,8 @@ func createMenu(app *application.Application) {
         helpMenu.Add("About").OnClick(showAbout)
     }
 
-    // Set the menu
-    app.SetMenu(menu)
+    // Set the application menu
+    app.Menu.Set(menu)
 }
 
 func handleImport(ctx *application.Context) {

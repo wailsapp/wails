@@ -133,6 +133,12 @@ func (m *MessageProcessor) HandleRuntimeCallWithIDs(ctx context.Context, req *Ru
 }
 
 func (m *MessageProcessor) getTargetWindow(req *RuntimeRequest) (Window, string) {
+	// Check for browser window first (server mode)
+	if req.ClientID != "" {
+		if browserWindow := GetBrowserWindow(req.ClientID); browserWindow != nil {
+			return browserWindow, browserWindow.Name()
+		}
+	}
 	if req.WebviewWindowName != "" {
 		window, _ := globalApplication.Window.GetByName(req.WebviewWindowName)
 		return window, req.WebviewWindowName
@@ -158,8 +164,8 @@ func (m *MessageProcessor) Error(message string, args ...any) {
 	m.logger.Error(message, args...)
 }
 
-func (m *MessageProcessor) Info(message string, args ...any) {
-	m.logger.Info(message, args...)
+func (m *MessageProcessor) Debug(message string, args ...any) {
+	m.logger.Debug(message, args...)
 }
 
 func (m *MessageProcessor) logRuntimeCall(req *RuntimeRequest) {
@@ -195,5 +201,5 @@ func (m *MessageProcessor) logRuntimeCall(req *RuntimeRequest) {
 		methodName = androidMethodNames[req.Method]
 	}
 
-	m.Info("Runtime call:", "method", objectName+"."+methodName, "args", req.Args.String())
+	m.Debug("Runtime call:", "method", objectName+"."+methodName, "args", req.Args.String())
 }

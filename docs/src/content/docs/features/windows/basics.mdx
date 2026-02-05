@@ -24,7 +24,7 @@ func main() {
     })
 
     // Create a window
-    window := app.NewWebviewWindow()
+    window := app.Window.New()
     
     // Configure it
     window.SetTitle("Hello Wails")
@@ -47,7 +47,7 @@ func main() {
 The simplest way to create a window:
 
 ```go
-window := app.NewWebviewWindow()
+window := app.Window.New()
 ```
 
 **What you get:**
@@ -61,7 +61,7 @@ window := app.NewWebviewWindow()
 Create a window with custom configuration:
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:  "My Application",
     Width:  1200,
     Height: 800,
@@ -101,7 +101,7 @@ window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 Give windows names for easy retrieval:
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Name:  "main-window",
     Title: "Main Application",
 })
@@ -259,7 +259,7 @@ foundWindow := app.GetWindowByID(id)
 Get the currently focused window:
 
 ```go
-current := app.CurrentWindow()
+current := app.Window.Current()
 if current != nil {
     current.SetTitle("Active Window")
 }
@@ -270,7 +270,7 @@ if current != nil {
 Get all windows:
 
 ```go
-windows := app.GetAllWindows()
+windows := app.Window.GetAll()
 fmt.Printf("Total windows: %d\n", len(windows))
 
 for _, w := range windows {
@@ -323,7 +323,7 @@ window.OnDestroy(func() {
 
 ```go
 // Main window
-mainWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+mainWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Name:   "main",
     Title:  "Main Application",
     Width:  1200,
@@ -331,7 +331,7 @@ mainWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 })
 
 // Settings window
-settingsWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Name:   "settings",
     Title:  "Settings",
     Width:  600,
@@ -349,12 +349,12 @@ Windows can communicate via events:
 
 ```go
 // In main window
-app.EmitEvent("data-updated", map[string]interface{}{
+app.Event.Emit("data-updated", map[string]interface{}{
     "value": 42,
 })
 
 // In settings window
-app.OnEvent("data-updated", func(event *application.WailsEvent) {
+app.Event.On("data-updated", func(event *application.WailsEvent) {
     data := event.Data.(map[string]interface{})
     value := data["value"].(int)
     fmt.Printf("Received: %d\n", value)
@@ -367,7 +367,7 @@ app.OnEvent("data-updated", func(event *application.WailsEvent) {
 
 ```go
 // Create child window
-childWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:  "Child Window",
     Parent: mainWindow,  // Set parent
 })
@@ -413,7 +413,7 @@ childWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 
     ```go
     // Transparent title bar
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Mac: application.MacWindow{
             TitleBar: application.MacTitleBar{
                 AppearsTransparent: true,
@@ -442,7 +442,7 @@ childWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 
     ```go
     // Set window icon
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Linux: application.LinuxOptions{
             Icon: iconBytes,
         },
@@ -469,7 +469,7 @@ childWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 
 ```go
 // Create splash screen
-splash := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+splash := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:     "Loading...",
     Width:     400,
     Height:    300,
@@ -495,7 +495,7 @@ var settingsWindow *application.WebviewWindow
 
 func showSettings() {
     if settingsWindow == nil {
-        settingsWindow = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        settingsWindow = app.Window.NewWithOptions(application.WebviewWindowOptions{
             Name:   "settings",
             Title:  "Settings",
             Width:  600,

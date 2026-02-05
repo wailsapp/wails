@@ -17,7 +17,7 @@ wails3 package GOOS=darwin
 
 This creates `bin/<AppName>.app` containing:
 - The compiled binary in `Contents/MacOS/`
-- App icon in `Contents/Resources/`
+- App icon in `Contents/Resources/` (from `icons.icns` or, when present, from an asset catalog `Assets.car`)
 - `Info.plist` with app metadata
 
 ### Universal Binary
@@ -40,10 +40,23 @@ Edit `build/darwin/Info.plist` to customize:
 - File associations
 - URL schemes
 
-The app icon is generated from `build/appicon.png`. Regenerate with:
+The app icon is generated from assets in the `build/` directory. Use the `generate:icons` task:
 
 ```bash
-wails3 generate icons -input build/appicon.png
+wails3 task generate:icons
+```
+
+This uses `build/appicon.png` to produce `darwin/icons.icns` and `windows/icon.ico`. On macOS you can also provide `build/appicon.icon` (Icon Composer format): the task passes `-iconcomposerinput appicon.icon -macassetdir darwin`, which produces `Assets.car` and `darwin/icons.icns` from the `.icon` file (skipped on non-macOS platforms). When `Assets.car` is present, run the `update:build-assets` task so that `Info.plist` and `CFBundleIconName` are updated accordingly:
+
+```bash
+wails3 task update:build-assets
+```
+
+To run the icon command manually from the `build/` directory:
+
+```bash
+cd build
+wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico -iconcomposerinput appicon.icon -macassetdir darwin
 ```
 
 ## Code Signing

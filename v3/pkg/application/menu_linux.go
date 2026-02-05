@@ -1,4 +1,4 @@
-//go:build linux && !android && !gtk4
+//go:build linux && !android && !gtk4 && !server
 
 package application
 
@@ -29,6 +29,9 @@ func (m *linuxMenu) processMenu(menu *Menu) {
 			menu:   menu,
 			native: menuNew(),
 		}
+	} else {
+		// Clear existing menu items before rebuilding (prevents appending on Update())
+		menuClear(menu)
 	}
 	var currentRadioGroup GSListPointer
 

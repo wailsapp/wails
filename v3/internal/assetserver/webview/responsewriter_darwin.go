@@ -71,7 +71,7 @@ import (
 	"net/http"
 	"unsafe"
 
-	json "github.com/goccy/go-json"
+	"encoding/json"
 )
 
 var _ ResponseWriter = &responseWriter{}

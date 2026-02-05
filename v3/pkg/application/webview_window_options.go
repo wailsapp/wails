@@ -152,6 +152,13 @@ type WebviewWindowOptions struct {
 	// HideOnEscape will hide the window when the Escape key is pressed.
 	// Useful for popup/transient windows that should dismiss on Escape.
 	HideOnEscape bool
+
+	// UseApplicationMenu indicates this window should use the application menu
+	// set via app.Menu.Set() instead of requiring a window-specific menu.
+	// On macOS this has no effect as the application menu is always global.
+	// On Windows/Linux, if true and no explicit window menu is set, the window
+	// will use the application menu. Defaults to false for backwards compatibility.
+	UseApplicationMenu bool
 }
 
 type RGBA struct {
@@ -290,16 +297,6 @@ type WindowsWindow struct {
 
 	// PasswordAutosaveEnabled enables autosaving passwords
 	PasswordAutosaveEnabled bool
-
-	// EnabledFeatures, DisabledFeatures and AdditionalLaunchArgs are used to enable or disable specific features in the WebView2 browser.
-	// Available flags: https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags?tabs=dotnetcsharp#available-webview2-browser-flags
-	// WARNING: Apps in production shouldn't use WebView2 browser flags,
-	// because these flags might be removed or altered at any time,
-	// and aren't necessarily supported long-term.
-	// AdditionalLaunchArgs should always be preceded by "--"
-	EnabledFeatures      []string
-	DisabledFeatures     []string
-	AdditionalLaunchArgs []string
 }
 
 type Theme int

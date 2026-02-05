@@ -9,7 +9,7 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	json "github.com/goccy/go-json"
+	"encoding/json"
 
 	"github.com/leaanthony/u"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
@@ -1214,7 +1214,10 @@ func (w *WebviewWindow) SetFrameless(frameless bool) Window {
 }
 
 func (w *WebviewWindow) DispatchWailsEvent(event *CustomEvent) {
-	msg := fmt.Sprintf("window._wails.dispatchWailsEvent(%s);", event.ToJSON())
+	// Guard against race condition where event fires before runtime is initialized
+	// This can happen during page reload when WindowLoadFinished fires before
+	// the JavaScript runtime has mounted dispatchWailsEvent on window._wails
+	msg := fmt.Sprintf("if(window._wails&&window._wails.dispatchWailsEvent){window._wails.dispatchWailsEvent(%s);}", event.ToJSON())
 	w.ExecJS(msg)
 }
 
@@ -1287,6 +1290,9 @@ func (w *WebviewWindow) shouldUnconditionallyClose() bool {
 }
 
 func (w *WebviewWindow) Focus() {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
 	InvokeSync(w.impl.focus)
 }
 
@@ -1493,7 +1499,7 @@ func (w *WebviewWindow) InitiateFrontendDropProcessing(filenames []string, x int
 	}
 
 	jsCall := fmt.Sprintf(
-		"window.wails.Window.HandlePlatformFileDrop(%s, %d, %d);",
+		"window._wails.handlePlatformFileDrop(%s, %d, %d);",
 		string(filenamesJSON),
 		x,
 		y,
