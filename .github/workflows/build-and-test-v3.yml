@@ -292,12 +292,8 @@ jobs:
           cd ..
           wails3 build
 
-      - name: Build template '${{ matrix.template }}' with GTK4
-        if: matrix.os == 'ubuntu-latest' && github.head_ref == 'feature/webkit-gtk6-support'
-        shell: bash
-        run: |
-          cd ./test-${{ matrix.template }}/${{ matrix.template }}
-          wails3 build -tags gtk4
+      # Note: GTK4 template builds are not tested here as wails build doesn't
+      # support -tags flag yet. GTK4 compilation is verified by Go tests.
 
   build_results:
     if: ${{ always() }}
