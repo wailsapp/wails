@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self-Update Example</title>
+    <script src="/wails/runtime.js"></script>
+    <style>
+        :root {
+            /* Light mode colors */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f7;
+            --text-primary: #1d1d1f;
+            --text-secondary: #86868b;
+            --accent: #0071e3;
+            --accent-hover: #0077ed;
+            --border: #d2d2d7;
+            --success: #34c759;
+            --warning: #ff9500;
+            --error: #ff3b30;
+            --progress-bg: #e5e5ea;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #1d1d1f;
+                --bg-secondary: #2d2d2f;
+                --text-primary: #f5f5f7;
+                --text-secondary: #86868b;
+                --accent: #0a84ff;
+                --accent-hover: #409cff;
+                --border: #424245;
+                --success: #30d158;
+                --warning: #ff9f0a;
+                --error: #ff453a;
+                --progress-bg: #3a3a3c;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .version {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 140px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--bg-secondary);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .status {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-top: 16px;
+        }
+
+        .status.info {
+            background: rgba(10, 132, 255, 0.1);
+            color: var(--accent);
+        }
+
+        .status.success {
+            background: rgba(52, 199, 89, 0.1);
+            color: var(--success);
+        }
+
+        .status.warning {
+            background: rgba(255, 149, 0, 0.1);
+            color: var(--warning);
+        }
+
+        .status.error {
+            background: rgba(255, 59, 48, 0.1);
+            color: var(--error);
+        }
+
+        .progress-container {
+            margin-top: 16px;
+            display: none;
+        }
+
+        .progress-container.visible {
+            display: block;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--progress-bg);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .update-info {
+            margin-top: 16px;
+            padding: 16px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            display: none;
+        }
+
+        .update-info.visible {
+            display: block;
+        }
+
+        .update-info h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .update-info .release-notes {
+            font-size: 14px;
+            color: var(--text-secondary);
+            max-height: 150px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .update-info .meta {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Self-Update Example</h1>
+        <p class="version">Current version: <span id="currentVersion">Loading...</span></p>
+
+        <div class="card">
+            <div class="card-title">Check for Updates</div>
+            <div class="btn-group">
+                <button id="checkBtn" class="btn btn-primary" onclick="checkForUpdates()">
+                    Check for Updates
+                </button>
+                <button id="checkPrereleaseBtn" class="btn btn-secondary" onclick="checkForUpdates(true)">
+                    Include Pre-releases
+                </button>
+            </div>
+
+            <div id="status" class="status hidden"></div>
+
+            <div id="updateInfo" class="update-info">
+                <h3>Version <span id="newVersion"></span> Available</h3>
+                <div class="release-notes" id="releaseNotes"></div>
+                <div class="meta">
+                    <span id="releaseDate"></span>
+                    <span id="fileSize"></span>
+                </div>
+            </div>
+
+            <div id="progressContainer" class="progress-container">
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                <div class="progress-text">
+                    <span id="progressPercent">0%</span>
+                    <span id="progressSpeed">-- MB/s</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Actions</div>
+            <div class="btn-group">
+                <button id="downloadBtn" class="btn btn-primary" onclick="downloadUpdate()" disabled>
+                    Download Update
+                </button>
+                <button id="installBtn" class="btn btn-success" onclick="installUpdate()" disabled>
+                    Install & Restart
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">System Info</div>
+            <p style="font-size: 14px; color: var(--text-secondary);">
+                Can update: <span id="canUpdate">Checking...</span>
+            </p>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import bindings (generated by Wails)
+        import { Service } from '/wails/bindings/github.com/wailsapp/wails/v3/pkg/services/selfupdate';
+
+        // Make service available globally
+        window.selfupdateService = Service;
+
+        // Initialize
+        async function init() {
+            try {
+                const version = await Service.GetCurrentVersion();
+                document.getElementById('currentVersion').textContent = version || 'Unknown';
+
+                const canUpdate = await Service.CanUpdate();
+                document.getElementById('canUpdate').textContent = canUpdate ? 'Yes' : 'No (insufficient permissions)';
+            } catch (err) {
+                console.error('Failed to initialize:', err);
+                document.getElementById('currentVersion').textContent = 'Error';
+            }
+        }
+
+        // Check for updates
+        window.checkForUpdates = async function(includePrerelease = false) {
+            const checkBtn = document.getElementById('checkBtn');
+            const checkPrereleaseBtn = document.getElementById('checkPrereleaseBtn');
+            const status = document.getElementById('status');
+
+            checkBtn.disabled = true;
+            checkPrereleaseBtn.disabled = true;
+            checkBtn.innerHTML = '<span class="spinner"></span>Checking...';
+
+            showStatus('Checking for updates...', 'info');
+            hideUpdateInfo();
+
+            try {
+                let result;
+                if (includePrerelease) {
+                    result = await Service.CheckWithPrerelease();
+                } else {
+                    result = await Service.Check();
+                }
+
+                if (result.updateAvailable) {
+                    showStatus('Update available!', 'success');
+                    showUpdateInfo(result);
+                    document.getElementById('downloadBtn').disabled = false;
+                } else {
+                    showStatus('You are running the latest version.', 'info');
+                }
+            } catch (err) {
+                showStatus('Failed to check for updates: ' + err.message, 'error');
+            } finally {
+                checkBtn.disabled = false;
+                checkPrereleaseBtn.disabled = false;
+                checkBtn.innerHTML = 'Check for Updates';
+            }
+        };
+
+        // Download update
+        window.downloadUpdate = async function() {
+            const downloadBtn = document.getElementById('downloadBtn');
+            const progressContainer = document.getElementById('progressContainer');
+
+            downloadBtn.disabled = true;
+            downloadBtn.innerHTML = '<span class="spinner"></span>Downloading...';
+            progressContainer.classList.add('visible');
+
+            try {
+                const success = await Service.Download();
+                if (success) {
+                    showStatus('Download complete! Ready to install.', 'success');
+                    document.getElementById('installBtn').disabled = false;
+                    downloadBtn.innerHTML = 'Downloaded';
+                } else {
+                    showStatus('Download failed.', 'error');
+                    downloadBtn.innerHTML = 'Download Update';
+                    downloadBtn.disabled = false;
+                }
+            } catch (err) {
+                showStatus('Download failed: ' + err.message, 'error');
+                downloadBtn.innerHTML = 'Download Update';
+                downloadBtn.disabled = false;
+            }
+        };
+
+        // Install update
+        window.installUpdate = async function() {
+            const installBtn = document.getElementById('installBtn');
+
+            if (!confirm('The application will restart to complete the update. Continue?')) {
+                return;
+            }
+
+            installBtn.disabled = true;
+            installBtn.innerHTML = '<span class="spinner"></span>Installing...';
+            showStatus('Installing update...', 'info');
+
+            try {
+                await Service.Install();
+                showStatus('Update installed! Restarting...', 'success');
+                await Service.Restart();
+            } catch (err) {
+                showStatus('Installation failed: ' + err.message, 'error');
+                installBtn.innerHTML = 'Install & Restart';
+                installBtn.disabled = false;
+            }
+        };
+
+        // UI Helpers
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+            status.classList.remove('hidden');
+        }
+
+        function showUpdateInfo(result) {
+            const updateInfo = document.getElementById('updateInfo');
+            document.getElementById('newVersion').textContent = result.version;
+            document.getElementById('releaseNotes').textContent = result.releaseNotes || 'No release notes available.';
+
+            if (result.releaseDate) {
+                const date = new Date(result.releaseDate);
+                document.getElementById('releaseDate').textContent = 'Released: ' + date.toLocaleDateString();
+            }
+
+            if (result.size) {
+                const sizeMB = (result.size / 1024 / 1024).toFixed(2);
+                document.getElementById('fileSize').textContent = 'Size: ' + sizeMB + ' MB';
+            }
+
+            updateInfo.classList.add('visible');
+        }
+
+        function hideUpdateInfo() {
+            document.getElementById('updateInfo').classList.remove('visible');
+            document.getElementById('downloadBtn').disabled = true;
+            document.getElementById('installBtn').disabled = true;
+        }
+
+        // Listen for progress events
+        wails.Events.On('selfupdate:progress', (event) => {
+            const data = event.data;
+            const progressFill = document.getElementById('progressFill');
+            const progressPercent = document.getElementById('progressPercent');
+            const progressSpeed = document.getElementById('progressSpeed');
+
+            if (data.percentage !== undefined) {
+                progressFill.style.width = data.percentage.toFixed(1) + '%';
+                progressPercent.textContent = data.percentage.toFixed(1) + '%';
+            }
+
+            if (data.bytesPerSecond !== undefined) {
+                const speedMB = (data.bytesPerSecond / 1024 / 1024).toFixed(2);
+                progressSpeed.textContent = speedMB + ' MB/s';
+            }
+        });
+
+        // Listen for update available event (from auto-check)
+        wails.Events.On('selfupdate:available', (event) => {
+            showStatus('Update available!', 'success');
+            showUpdateInfo(event.data);
+            document.getElementById('downloadBtn').disabled = false;
+        });
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
