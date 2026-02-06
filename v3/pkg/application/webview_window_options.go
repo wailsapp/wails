@@ -483,6 +483,9 @@ type MacWindow struct {
 	// CollectionBehavior controls how the window behaves across macOS Spaces and fullscreen
 	CollectionBehavior MacWindowCollectionBehavior
 
+	// TabbingMode sets the window tabbing mode (macOS 10.12+)
+	TabbingMode MacWindowTabbingMode
+
 	// LiquidGlass contains configuration for the Liquid Glass effect
 	LiquidGlass MacLiquidGlass
 }
@@ -498,6 +501,18 @@ const (
 	MacWindowLevelStatus      MacWindowLevel = "status"
 	MacWindowLevelPopUpMenu   MacWindowLevel = "popUpMenu"
 	MacWindowLevelScreenSaver MacWindowLevel = "screenSaver"
+)
+
+// MacWindowTabbingMode controls window tabbing behavior (macOS 10.12+)
+type MacWindowTabbingMode string
+
+const (
+	// MacWindowTabbingModeAutomatic allows the system to determine tabbing behavior (default)
+	MacWindowTabbingModeAutomatic MacWindowTabbingMode = ""
+	// MacWindowTabbingModePreferred indicates the window prefers to be in tabbing mode
+	MacWindowTabbingModePreferred MacWindowTabbingMode = "preferred"
+	// MacWindowTabbingModeDisallowed prevents the window from being tabbed
+	MacWindowTabbingModeDisallowed MacWindowTabbingMode = "disallowed"
 )
 
 // MacWindowCollectionBehavior controls window behavior across macOS Spaces and fullscreen.
