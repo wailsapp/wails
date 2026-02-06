@@ -28,6 +28,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix `InvisibleTitleBarHeight` being applied to all macOS windows instead of only frameless or transparent title bar windows (#4960)
+- Fix window shaking/jitter when resizing from top corners with `InvisibleTitleBarHeight` enabled, by skipping drag initiation near window edges (#4960)
 - Fix file drag-and-drop on Windows not working at non-100% display scaling
 - Fix HTML5 internal drag-and-drop being broken when file drop was enabled on Windows
 - Fix file drop coordinates being in wrong pixel space on Windows (physical vs CSS pixels)

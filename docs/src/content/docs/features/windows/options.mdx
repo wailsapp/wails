@@ -792,7 +792,8 @@ Mac: application.MacWindow{
 
 **InvisibleTitleBarHeight** (`int`)
 - Height of invisible title bar area (for dragging)
-- Useful when title bar is hidden
+- Only takes effect when the native title bar drag area is hidden — i.e. when the window is frameless (`Frameless: true`) or uses a transparent title bar (`AppearsTransparent: true`)
+- Has no effect on standard windows with a visible title bar
 
 **WindowLevel** (`MacWindowLevel`)
 - `MacWindowLevelNormal` - Standard window level (default)
