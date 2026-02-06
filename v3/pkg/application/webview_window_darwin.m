@@ -345,6 +345,15 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
         NSPoint location = [event locationInWindow];
         NSRect frame = [window frame];
         if( location.y > frame.size.height - self.invisibleTitleBarHeight ) {
+            // Skip drag if the click is near a window edge (resize zone).
+            // This prevents conflict between dragging and native top-corner resizing,
+            // which causes window content to shake/jitter (#4960).
+            CGFloat resizeThreshold = 5.0;
+            BOOL nearLeftEdge = location.x < resizeThreshold;
+            BOOL nearRightEdge = location.x > frame.size.width - resizeThreshold;
+            if( nearLeftEdge || nearRightEdge ) {
+                return;
+            }
             [window performWindowDragWithEvent:event];
             return;
         }
