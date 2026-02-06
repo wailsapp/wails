@@ -226,8 +226,8 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
         with:
-          packages: libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
-          version: 1.0
+          packages: libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config
+          version: 1.1
 
       - name: Setup Go
         uses: actions/setup-go@v5
