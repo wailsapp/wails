@@ -252,16 +252,42 @@ func (s *macosSystemTray) destroy() {
 	C.systemTrayDestroy(s.nsStatusItem)
 }
 
+// toggleAttachedWindow shows or hides the attached window without stealing
+// focus from other applications. On macOS, this uses orderFrontRegardless
+// instead of makeKeyAndOrderFront + activateIgnoringOtherApps.
+func (s *macosSystemTray) toggleAttachedWindow() {
+	w := s.parent.attachedWindow
+	if w.Window == nil {
+		return
+	}
+
+	w.initialClick.Do(func() {
+		w.hasBeenShown = w.Window.IsVisible()
+	})
+
+	if w.Window.IsVisible() {
+		w.Window.Hide()
+	} else {
+		w.hasBeenShown = true
+		_ = s.parent.PositionWindow(w.Window, w.Offset)
+		nativeWindow := w.Window.NativeWindow()
+		if nativeWindow != nil {
+			C.systemTrayShowWindowWithoutActivation(nativeWindow)
+		}
+	}
+}
+
 func (s *macosSystemTray) processClick(b button) {
 	switch b {
 	case leftButtonDown:
-		// Check if we have a callback
+		// Check if we have a user-set callback
 		if s.parent.clickHandler != nil {
 			s.parent.clickHandler()
 			return
 		}
+		// Handle attached window toggle without stealing focus
 		if s.parent.attachedWindow.Window != nil {
-			s.parent.defaultClickHandler()
+			s.toggleAttachedWindow()
 			return
 		}
 		if s.menu != nil {
@@ -280,8 +306,9 @@ func (s *macosSystemTray) processClick(b button) {
 			C.showMenu(s.nsStatusItem, s.nsMenu)
 			return
 		}
+		// Handle attached window toggle without stealing focus
 		if s.parent.attachedWindow.Window != nil {
-			s.parent.defaultClickHandler()
+			s.toggleAttachedWindow()
 		}
 	}
 }
