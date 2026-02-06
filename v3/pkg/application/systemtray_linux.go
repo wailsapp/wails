@@ -40,9 +40,12 @@ type linuxSystemTray struct {
 	props     *prop.Properties
 	menuProps *prop.Properties
 
-	menuVersion uint32 // need to bump this anytime we change anything
+	menuVersion uint32
 	itemMap     map[int32]*systrayMenuItem
 	tooltip     string
+
+	lastClickX int
+	lastClickY int
 }
 
 func (s *linuxSystemTray) getScreen() (*Screen, error) {
@@ -193,24 +196,7 @@ func (s *linuxSystemTray) refresh() {
 }
 
 func (s *linuxSystemTray) setMenu(menu *Menu) {
-	if s.parent.attachedWindow.Window != nil {
-		temp := menu
-		menu = NewMenu()
-		title := "Open"
-		if s.parent.attachedWindow.Window.Name() != "" {
-			title += " " + s.parent.attachedWindow.Window.Name()
-		} else {
-			title += " window"
-		}
-		openMenuItem := menu.Add(title)
-		openMenuItem.OnClick(func(*Context) {
-			s.parent.clickHandler()
-		})
-		menu.AddSeparator()
-		menu.Append(temp)
-	}
 	s.itemMap = map[int32]*systrayMenuItem{}
-	// our root menu element
 	s.itemMap[0] = &systrayMenuItem{
 		menuItem: nil,
 		dbusItem: &dbusMenu{
@@ -219,44 +205,72 @@ func (s *linuxSystemTray) setMenu(menu *Menu) {
 			V2: []dbus.Variant{},
 		},
 	}
-	menu.processRadioGroups()
-	s.processMenu(menu, 0)
+	if menu != nil {
+		menu.processRadioGroups()
+		s.processMenu(menu, 0)
+	}
 	s.menu = menu
 	s.refresh()
 }
 
 func (s *linuxSystemTray) positionWindow(window Window, offset int) error {
-	// Get the mouse location on the screen
-	mouseX, mouseY, currentScreen := getMousePosition()
-	screenBounds := currentScreen.Size
-
-	// Calculate new X position
-	newX := mouseX - (window.Width() / 2)
-
-	// Check if the window goes out of the screen bounds on the left side
-	if newX < 0 {
-		newX = 0
+	_, _, currentScreen := getMousePosition()
+	if currentScreen == nil {
+		return fmt.Errorf("unable to get screen information")
 	}
 
-	// Check if the window goes out of the screen bounds on the right side
-	if newX+window.Width() > screenBounds.Width {
-		newX = screenBounds.Width - window.Width()
+	screenX := currentScreen.X
+	screenY := currentScreen.Y
+	screenWidth := currentScreen.Size.Width
+	screenHeight := currentScreen.Size.Height
+	windowWidth := window.Width()
+	windowHeight := window.Height()
+
+	if isTilingWM() {
+		newX := screenX + (screenWidth-windowWidth)/2
+		newY := screenY + (screenHeight-windowHeight)/2
+		window.SetPosition(newX, newY)
+		return nil
 	}
 
-	// Calculate new Y position
-	newY := mouseY - (window.Height() / 2)
-
-	// Check if the window goes out of the screen bounds on the top
-	if newY < 0 {
-		newY = 0
+	clickX, clickY := s.lastClickX, s.lastClickY
+	if clickX == 0 && clickY == 0 {
+		if cx, cy, ok := getCursorPositionFromCompositor(); ok {
+			clickX, clickY = cx, cy
+		} else {
+			clickX = screenX + screenWidth/2
+			clickY = screenY + screenHeight/2
+		}
 	}
 
-	// Check if the window goes out of the screen bounds on the bottom
-	if newY+window.Height() > screenBounds.Height {
-		newY = screenBounds.Height - window.Height() - offset
+	newX := clickX - (windowWidth / 2)
+	if newX < screenX {
+		newX = screenX
+	}
+	if newX+windowWidth > screenX+screenWidth {
+		newX = screenX + screenWidth - windowWidth
 	}
 
-	// Set the new position of the window
+	relativeY := clickY - screenY
+	topThreshold := screenHeight / 5
+	bottomThreshold := screenHeight * 4 / 5
+
+	var newY int
+	if relativeY < topThreshold {
+		newY = clickY + offset
+	} else if relativeY > bottomThreshold {
+		newY = clickY - windowHeight - offset
+	} else {
+		newY = clickY - (windowHeight / 2)
+	}
+
+	if newY < screenY {
+		newY = screenY
+	}
+	if newY+windowHeight > screenY+screenHeight {
+		newY = screenY + screenHeight - windowHeight
+	}
+
 	window.SetPosition(newX, newY)
 	return nil
 }
@@ -547,14 +561,8 @@ func (s *linuxSystemTray) createPropSpec() map[string]map[string]*prop.Prop {
 			Callback: nil,
 		},
 		"ItemIsMenu": {
-			Value:    true,
+			Value:    false,
 			Writable: false,
-			Emit:     prop.EmitTrue,
-			Callback: nil,
-		},
-		"Menu": {
-			Value:    dbus.ObjectPath(menuPath),
-			Writable: true,
 			Emit:     prop.EmitTrue,
 			Callback: nil,
 		},
@@ -567,12 +575,20 @@ func (s *linuxSystemTray) createPropSpec() map[string]map[string]*prop.Prop {
 	}
 
 	if s.icon == nil {
-		// set a basic default one if one isn't set
 		s.icon = icons.WailsLogoWhiteTransparent
 	}
 	if iconPx, err := iconToPX(s.icon); err == nil {
 		props["IconPixmap"] = &prop.Prop{
 			Value:    []PX{iconPx},
+			Writable: true,
+			Emit:     prop.EmitTrue,
+			Callback: nil,
+		}
+	}
+
+	if s.menu != nil {
+		props["Menu"] = &prop.Prop{
+			Value:    dbus.ObjectPath(menuPath),
 			Writable: true,
 			Emit:     prop.EmitTrue,
 			Callback: nil,
@@ -638,8 +654,8 @@ func (s *linuxSystemTray) GetProperty(id int32, name string) (value dbus.Variant
 	return
 }
 
-// Event is com.canonical.dbusmenu.Event method.
 func (s *linuxSystemTray) Event(id int32, eventID string, data dbus.Variant, timestamp uint32) (err *dbus.Error) {
+	globalApplication.debug("systray Event called", "id", id, "eventID", eventID, "lastClick", fmt.Sprintf("(%d,%d)", s.lastClickX, s.lastClickY))
 	switch eventID {
 	case "clicked":
 		if item, ok := s.itemMap[id]; ok {
@@ -716,28 +732,34 @@ func (s *linuxSystemTray) GetLayout(parentID int32, recursionDepth int32, proper
 	return
 }
 
-// Activate implements org.kde.StatusNotifierItem.Activate method.
 func (s *linuxSystemTray) Activate(x int32, y int32) (err *dbus.Error) {
-	if s.parent.doubleClickHandler != nil {
-		s.parent.doubleClickHandler()
+	s.lastClickX = int(x)
+	s.lastClickY = int(y)
+	globalApplication.debug("systray Activate called", "x", x, "y", y)
+	if s.parent.clickHandler != nil {
+		s.parent.clickHandler()
 	}
 	return
 }
 
-// ContextMenu is org.kde.StatusNotifierItem.ContextMenu method
 func (s *linuxSystemTray) ContextMenu(x int32, y int32) (err *dbus.Error) {
-	fmt.Println("ContextMenu", x, y)
+	s.lastClickX = int(x)
+	s.lastClickY = int(y)
 	return nil
 }
 
 func (s *linuxSystemTray) Scroll(delta int32, orientation string) (err *dbus.Error) {
-	fmt.Println("Scroll", delta, orientation)
 	return
 }
 
-// SecondaryActivate implements org.kde.StatusNotifierItem.SecondaryActivate method.
 func (s *linuxSystemTray) SecondaryActivate(x int32, y int32) (err *dbus.Error) {
-	s.parent.rightClickHandler()
+	s.lastClickX = int(x)
+	s.lastClickY = int(y)
+	if s.parent.rightClickHandler != nil {
+		s.parent.rightClickHandler()
+	} else if s.menu != nil {
+		s.parent.OpenMenu()
+	}
 	return
 }
 

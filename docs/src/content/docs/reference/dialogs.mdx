@@ -773,6 +773,27 @@ func (s *Service) OpenWithDefaults(app *application.App) (string, error) {
 - Qt dialogs on Qt-based systems
 - Matches desktop environment
 
+#### Linux GTK4 Limitations
+
+On Linux with GTK4 (the default for modern distributions), file dialogs use the **xdg-desktop-portal** 
+for native integration. This provides better desktop integration but means some options have no effect:
+
+| Option | GTK3 | GTK4 | Notes |
+|--------|------|------|-------|
+| `ShowHiddenFiles()` | ✅ Works | ❌ No effect | User controls via dialog's UI toggle (Ctrl+H or menu) |
+| `CanCreateDirectories()` | ✅ Works | ❌ No effect | Always enabled in the portal |
+| `ResolvesAliases()` | ✅ Works | ❌ No effect | Portal handles symlink resolution |
+| `SetButtonText()` | ✅ Works | ✅ Works | Custom accept button text works |
+
+**Why these limitations exist:** GTK4's portal-based dialogs delegate UI control to the desktop
+environment (GNOME, KDE, etc.). This is by design - the portal provides consistent UX across
+applications and respects user preferences.
+
+:::note
+The table above shows GTK4 behavior when building with `-tags gtk4`. By default, Wails uses GTK3
+which provides full control over these dialog options.
+:::
+
 ## Common Patterns
 
 ### "Save As" Pattern

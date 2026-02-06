@@ -5,8 +5,6 @@ import (
 	"runtime"
 	"sync"
 	"time"
-
-	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 type IconPosition int
@@ -77,7 +75,6 @@ func newSystemTray(id uint) *SystemTray {
 			Debounce: 200 * time.Millisecond,
 		},
 	}
-	result.clickHandler = result.defaultClickHandler
 	return result
 }
 
@@ -96,36 +93,92 @@ func (s *SystemTray) Label() string {
 }
 
 func (s *SystemTray) Run() {
-
-	// exit early if application isn't running.
-	// app.Run() will call this
 	if globalApplication == nil || globalApplication.running == false {
 		return
 	}
 
+	s.applySmartDefaults()
 	s.impl = newSystemTrayImpl(s)
+	InvokeSync(s.impl.run)
+}
 
-	if s.attachedWindow.Window != nil {
-		// Setup listener
-		s.attachedWindow.Window.OnWindowEvent(events.Common.WindowLostFocus, func(event *WindowEvent) {
-			s.attachedWindow.Window.Hide()
-			// Special handler for Windows
-			if runtime.GOOS == "windows" {
-				// We don't do this unless the window has already been shown
-				if s.attachedWindow.hasBeenShown == false {
-					return
-				}
-				s.attachedWindow.justClosed = true
-				go func() {
-					defer handlePanic()
-					time.Sleep(s.attachedWindow.Debounce)
-					s.attachedWindow.justClosed = false
-				}()
-			}
-		})
+func (s *SystemTray) applySmartDefaults() {
+	hasWindow := s.attachedWindow.Window != nil
+	hasMenu := s.menu != nil
+
+	if s.clickHandler == nil && hasWindow {
+		s.clickHandler = s.ToggleWindow
 	}
 
-	InvokeSync(s.impl.run)
+	if s.rightClickHandler == nil && hasMenu {
+		s.rightClickHandler = s.ShowMenu
+	}
+}
+
+func (s *SystemTray) ToggleWindow() {
+	if s.attachedWindow.Window == nil {
+		return
+	}
+
+	s.attachedWindow.initialClick.Do(func() {
+		s.attachedWindow.hasBeenShown = s.attachedWindow.Window.IsVisible()
+	})
+
+	if runtime.GOOS == "windows" && s.attachedWindow.justClosed {
+		return
+	}
+
+	if s.attachedWindow.Window.IsVisible() {
+		s.attachedWindow.Window.Hide()
+	} else {
+		s.attachedWindow.hasBeenShown = true
+		_ = s.PositionWindow(s.attachedWindow.Window, s.attachedWindow.Offset)
+		s.attachedWindow.Window.Show().Focus()
+	}
+}
+
+func (s *SystemTray) defaultClickHandler() {
+	if s.attachedWindow.Window == nil {
+		s.OpenMenu()
+		return
+	}
+
+	// Check the initial visibility state
+	s.attachedWindow.initialClick.Do(func() {
+		s.attachedWindow.hasBeenShown = s.attachedWindow.Window.IsVisible()
+	})
+
+	if runtime.GOOS == "windows" && s.attachedWindow.justClosed {
+		return
+	}
+
+	if s.attachedWindow.Window.IsVisible() {
+		s.attachedWindow.Window.Hide()
+	} else {
+		s.attachedWindow.hasBeenShown = true
+		_ = s.PositionWindow(s.attachedWindow.Window, s.attachedWindow.Offset)
+		s.attachedWindow.Window.Show().Focus()
+	}
+}
+
+func (s *SystemTray) ShowMenu() {
+	s.OpenMenu()
+}
+
+func (s *SystemTray) ShowWindow() {
+	if s.attachedWindow.Window == nil {
+		return
+	}
+	s.attachedWindow.hasBeenShown = true
+	_ = s.PositionWindow(s.attachedWindow.Window, s.attachedWindow.Offset)
+	s.attachedWindow.Window.Show().Focus()
+}
+
+func (s *SystemTray) HideWindow() {
+	if s.attachedWindow.Window == nil {
+		return
+	}
+	s.attachedWindow.Window.Hide()
 }
 
 func (s *SystemTray) PositionWindow(window Window, offset int) error {
@@ -303,30 +356,6 @@ func (s *SystemTray) WindowOffset(offset int) *SystemTray {
 func (s *SystemTray) WindowDebounce(debounce time.Duration) *SystemTray {
 	s.attachedWindow.Debounce = debounce
 	return s
-}
-
-func (s *SystemTray) defaultClickHandler() {
-	if s.attachedWindow.Window == nil {
-		s.OpenMenu()
-		return
-	}
-
-	// Check the initial visibility state
-	s.attachedWindow.initialClick.Do(func() {
-		s.attachedWindow.hasBeenShown = s.attachedWindow.Window.IsVisible()
-	})
-
-	if runtime.GOOS == "windows" && s.attachedWindow.justClosed {
-		return
-	}
-
-	if s.attachedWindow.Window.IsVisible() {
-		s.attachedWindow.Window.Hide()
-	} else {
-		s.attachedWindow.hasBeenShown = true
-		_ = s.PositionWindow(s.attachedWindow.Window, s.attachedWindow.Offset)
-		s.attachedWindow.Window.Show().Focus()
-	}
 }
 
 func (s *SystemTray) OpenMenu() {

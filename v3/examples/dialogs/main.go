@@ -368,6 +368,7 @@ func main() {
 
 	// Create window with UseApplicationMenu to inherit the app menu on Windows/Linux
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
+		Title:              "Dialogs Demo",
 		UseApplicationMenu: true,
 	})
 

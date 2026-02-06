@@ -32,6 +32,12 @@ func (e *Eopkg) Packages() Packagemap {
 		"webkit2gtk": []*Package{
 			{Name: "libwebkit-gtk-devel", SystemPackage: true, Library: true},
 		},
+		"gtk4 (experimental)": []*Package{
+			{Name: "libgtk-4-devel", SystemPackage: true, Library: true, Optional: true},
+		},
+		"webkitgtk-6.0 (experimental)": []*Package{
+			{Name: "libwebkit-gtk6-devel", SystemPackage: true, Library: true, Optional: true},
+		},
 		"gcc": []*Package{
 			{Name: "gcc", SystemPackage: true},
 		},
