@@ -42,6 +42,14 @@
  */
 
 /**
+ * @typedef {number} IntAlias
+ */
+
+/**
+ * @typedef {number} IntType
+ */
+
+/**
  * @template Y
  * @typedef {Y} InterfaceCstrAlias
  */
@@ -49,151 +57,151 @@
 /**
  * @template R,S,T,U,V,W,X,Y,Z
  * @typedef {Object} Maps
- * @property {{ [_: string]: number } | null} Bool - Reject
- * @property {{ [_: `${number}`]: number } | null} Int - Accept
- * @property {{ [_: `${number}`]: number } | null} Uint - Accept
- * @property {{ [_: string]: number } | null} Float - Reject
- * @property {{ [_: string]: number } | null} Complex - Reject
- * @property {{ [_: `${number}`]: number } | null} Byte - Accept
- * @property {{ [_: `${number}`]: number } | null} Rune - Accept
- * @property {{ [_: string]: number } | null} String - Accept
- * @property {{ [_: string]: number } | null} IntPtr - Reject
- * @property {{ [_: string]: number } | null} UintPtr - Reject
- * @property {{ [_: string]: number } | null} FloatPtr - Reject
- * @property {{ [_: string]: number } | null} ComplexPtr - Reject
- * @property {{ [_: string]: number } | null} StringPtr - Reject
- * @property {{ [_: string]: number } | null} NTM - Reject
- * @property {{ [_: string]: number } | null} NTMPtr - Reject
- * @property {{ [_: ValueTextMarshaler]: number } | null} VTM - Accept
- * @property {{ [_: ValueTextMarshaler]: number } | null} VTMPtr - Accept
- * @property {{ [_: string]: number } | null} PTM - Reject
- * @property {{ [_: PointerTextMarshaler]: number } | null} PTMPtr - Accept
- * @property {{ [_: string]: number } | null} JTM - Accept, hide
- * @property {{ [_: string]: number } | null} JTMPtr - Accept, hide
- * @property {{ [_: string]: number } | null} A - Reject
- * @property {{ [_: string]: number } | null} APtr - Reject
- * @property {{ [_: string]: number } | null} TM - Accept, hide
- * @property {{ [_: string]: number } | null} TMPtr - Reject
- * @property {{ [_: string]: number } | null} CI - Accept, hide
- * @property {{ [_: string]: number } | null} CIPtr - Reject
- * @property {{ [_: string]: number } | null} EI - Accept, hide
- * @property {{ [_: string]: number } | null} EIPtr - Reject
- * @property {{ [_: EmbeddedValue]: number } | null} EV - Accept
- * @property {{ [_: EmbeddedValue]: number } | null} EVPtr - Accept
- * @property {{ [_: EmbeddedValuePtr]: number } | null} EVP - Accept
- * @property {{ [_: EmbeddedValuePtr]: number } | null} EVPPtr - Accept
- * @property {{ [_: string]: number } | null} EP - Reject
- * @property {{ [_: EmbeddedPointer]: number } | null} EPPtr - Accept
- * @property {{ [_: EmbeddedPointerPtr]: number } | null} EPP - Accept
- * @property {{ [_: EmbeddedPointerPtr]: number } | null} EPPPtr - Accept
- * @property {{ [_: EmbeddedCustomInterface]: number } | null} ECI - Accept
- * @property {{ [_: EmbeddedCustomInterface]: number } | null} ECIPtr - Accept
- * @property {{ [_: EmbeddedOriginalInterface]: number } | null} EOI - Accept
- * @property {{ [_: EmbeddedOriginalInterface]: number } | null} EOIPtr - Accept
- * @property {{ [_: string]: number } | null} WT - Reject
- * @property {{ [_: string]: number } | null} WA - Reject
- * @property {{ [_: StringType]: number } | null} ST - Accept
- * @property {{ [_: StringAlias]: number } | null} SA - Accept
- * @property {{ [_: `${number}`]: number } | null} IntT - Accept
- * @property {{ [_: `${number}`]: number } | null} IntA - Accept
- * @property {{ [_: string]: number } | null} VT - Reject
- * @property {{ [_: string]: number } | null} VTPtr - Reject
- * @property {{ [_: string]: number } | null} VPT - Reject
- * @property {{ [_: string]: number } | null} VPTPtr - Reject
- * @property {{ [_: ValueAlias]: number } | null} VA - Accept
- * @property {{ [_: ValueAlias]: number } | null} VAPtr - Accept
- * @property {{ [_: string]: number } | null} VPA - Accept, hide
- * @property {{ [_: string]: number } | null} VPAPtr - Reject
- * @property {{ [_: string]: number } | null} PT - Reject
- * @property {{ [_: string]: number } | null} PTPtr - Reject
- * @property {{ [_: string]: number } | null} PPT - Reject
- * @property {{ [_: string]: number } | null} PPTPtr - Reject
- * @property {{ [_: string]: number } | null} PA - Reject
- * @property {{ [_: PointerAlias]: number } | null} PAPtr - Accept
- * @property {{ [_: string]: number } | null} PPA - Accept, hide
- * @property {{ [_: string]: number } | null} PPAPtr - Reject
- * @property {{ [_: string]: number } | null} IT - Accept, hide
- * @property {{ [_: string]: number } | null} ITPtr - Reject
- * @property {{ [_: string]: number } | null} IPT - Reject
- * @property {{ [_: string]: number } | null} IPTPtr - Reject
- * @property {{ [_: string]: number } | null} IA - Accept, hide
- * @property {{ [_: string]: number } | null} IAPtr - Reject
- * @property {{ [_: string]: number } | null} IPA - Reject
- * @property {{ [_: string]: number } | null} IPAPtr - Reject
- * @property {{ [_: string]: number } | null} TPR - Soft reject
- * @property {{ [_: string]: number } | null} TPRPtr - Soft reject
- * @property {{ [_: string]: number } | null} TPS - Accept, hide
- * @property {{ [_: string]: number } | null} TPSPtr - Soft reject
- * @property {{ [_: string]: number } | null} TPT - Soft reject
- * @property {{ [_: string]: number } | null} TPTPtr - Soft reject
- * @property {{ [_: string]: number } | null} TPU - Accept, hide
- * @property {{ [_: string]: number } | null} TPUPtr - Soft reject
- * @property {{ [_: string]: number } | null} TPV - Accept, hide
- * @property {{ [_: string]: number } | null} TPVPtr - Soft reject
- * @property {{ [_: string]: number } | null} TPW - Soft reject
- * @property {{ [_: string]: number } | null} TPWPtr - Accept, hide
- * @property {{ [_: string]: number } | null} TPX - Accept, hide
- * @property {{ [_: string]: number } | null} TPXPtr - Soft reject
- * @property {{ [_: string]: number } | null} TPY - Accept, hide
- * @property {{ [_: string]: number } | null} TPYPtr - Soft reject
- * @property {{ [_: string]: number } | null} TPZ - Accept, hide
- * @property {{ [_: string]: number } | null} TPZPtr - Soft reject
- * @property {{ [_: string]: number } | null} GAR - Soft reject
- * @property {{ [_: string]: number } | null} GARPtr - Soft reject
- * @property {{ [_: string]: number } | null} GAS - Accept, hide
- * @property {{ [_: string]: number } | null} GASPtr - Soft reject
- * @property {{ [_: string]: number } | null} GAT - Soft reject
- * @property {{ [_: string]: number } | null} GATPtr - Soft reject
- * @property {{ [_: string]: number } | null} GAU - Accept, hide
- * @property {{ [_: string]: number } | null} GAUPtr - Soft reject
- * @property {{ [_: string]: number } | null} GAV - Accept, hide
- * @property {{ [_: string]: number } | null} GAVPtr - Soft reject
- * @property {{ [_: string]: number } | null} GAW - Soft reject
- * @property {{ [_: string]: number } | null} GAWPtr - Accept, hide
- * @property {{ [_: string]: number } | null} GAX - Accept, hide
- * @property {{ [_: string]: number } | null} GAXPtr - Soft reject
- * @property {{ [_: string]: number } | null} GAY - Accept, hide
- * @property {{ [_: string]: number } | null} GAYPtr - Soft reject
- * @property {{ [_: string]: number } | null} GAZ - Accept, hide
- * @property {{ [_: string]: number } | null} GAZPtr - Soft reject
- * @property {{ [_: `${number}`]: number } | null} GACi - Accept, hide
- * @property {{ [_: ComparableCstrAlias<ValueTextMarshaler>]: number } | null} GACV - Accept
- * @property {{ [_: string]: number } | null} GACP - Reject
- * @property {{ [_: string]: number } | null} GACiPtr - Reject
- * @property {{ [_: string]: number } | null} GACVPtr - Accept, hide
- * @property {{ [_: string]: number } | null} GACPPtr - Accept, hide
- * @property {{ [_: `${number}`]: number } | null} GABi - Accept, hide
- * @property {{ [_: BasicCstrAlias<string>]: number } | null} GABs - Accept
- * @property {{ [_: string]: number } | null} GABiPtr - Reject
- * @property {{ [_: string]: number } | null} GABT - Reject
- * @property {{ [_: string]: number } | null} GABTPtr - Reject
- * @property {{ [_: GoodTildeCstrAlias<ValueTextMarshaler>]: number } | null} GAGT - Accept
- * @property {{ [_: string]: number } | null} GAGTPtr - Accept, hide
- * @property {{ [_: NonBasicCstrAlias<ValueTextMarshaler>]: number } | null} GANBV - Accept
- * @property {{ [_: string]: number } | null} GANBP - Accept, hide
- * @property {{ [_: string]: number } | null} GANBVPtr - Accept, hide
- * @property {{ [_: string]: number } | null} GANBPPtr - Reject
- * @property {{ [_: PointableCstrAlias<ValueTextMarshaler>]: number } | null} GAPlV1 - Accept
- * @property {{ [_: PointableCstrAlias<ValueTextMarshaler>]: number } | null} GAPlV2 - Accept
- * @property {{ [_: string]: number } | null} GAPlP1 - Reject
- * @property {{ [_: PointableCstrAlias<PointerTextMarshaler>]: number } | null} GAPlP2 - Accept
- * @property {{ [_: string]: number } | null} GAPlVPtr - Accept, hide
- * @property {{ [_: string]: number } | null} GAPlPPtr - Accept, hide
- * @property {{ [_: `${number}`]: number } | null} GAMi - Accept, hide
- * @property {{ [_: MixedCstrAlias<StringType>]: number } | null} GAMS - Accept
- * @property {{ [_: MixedCstrAlias<ValueTextMarshaler>]: number } | null} GAMV - Accept
- * @property {{ [_: string]: number } | null} GAMSPtr - Reject
- * @property {{ [_: string]: number } | null} GAMVPtr - Accept, hide
- * @property {{ [_: string]: number } | null} GAII - Accept, hide
- * @property {{ [_: InterfaceCstrAlias<ValueTextMarshaler>]: number } | null} GAIV - Accept
- * @property {{ [_: string]: number } | null} GAIP - Accept, hide
- * @property {{ [_: string]: number } | null} GAIIPtr - Reject
- * @property {{ [_: string]: number } | null} GAIVPtr - Accept, hide
- * @property {{ [_: string]: number } | null} GAIPPtr - Reject
- * @property {{ [_: string]: number } | null} GAPrV - Accept, hide
- * @property {{ [_: string]: number } | null} GAPrP - Accept, hide
- * @property {{ [_: string]: number } | null} GAPrVPtr - Reject
- * @property {{ [_: string]: number } | null} GAPrPPtr - Reject
+ * @property {{ [_ in string]?: number } | null} Bool - Reject
+ * @property {{ [_ in `${number}`]?: number } | null} Int - Accept
+ * @property {{ [_ in `${number}`]?: number } | null} Uint - Accept
+ * @property {{ [_ in string]?: number } | null} Float - Reject
+ * @property {{ [_ in string]?: number } | null} Complex - Reject
+ * @property {{ [_ in `${number}`]?: number } | null} Byte - Accept
+ * @property {{ [_ in `${number}`]?: number } | null} Rune - Accept
+ * @property {{ [_ in string]?: number } | null} String - Accept
+ * @property {{ [_ in string]?: number } | null} IntPtr - Reject
+ * @property {{ [_ in string]?: number } | null} UintPtr - Reject
+ * @property {{ [_ in string]?: number } | null} FloatPtr - Reject
+ * @property {{ [_ in string]?: number } | null} ComplexPtr - Reject
+ * @property {{ [_ in string]?: number } | null} StringPtr - Reject
+ * @property {{ [_ in string]?: number } | null} NTM - Reject
+ * @property {{ [_ in string]?: number } | null} NTMPtr - Reject
+ * @property {{ [_ in ValueTextMarshaler]?: number } | null} VTM - Accept
+ * @property {{ [_ in ValueTextMarshaler]?: number } | null} VTMPtr - Accept
+ * @property {{ [_ in string]?: number } | null} PTM - Reject
+ * @property {{ [_ in PointerTextMarshaler]?: number } | null} PTMPtr - Accept
+ * @property {{ [_ in string]?: number } | null} JTM - Accept, hide
+ * @property {{ [_ in string]?: number } | null} JTMPtr - Accept, hide
+ * @property {{ [_ in string]?: number } | null} A - Reject
+ * @property {{ [_ in string]?: number } | null} APtr - Reject
+ * @property {{ [_ in string]?: number } | null} TM - Accept, hide
+ * @property {{ [_ in string]?: number } | null} TMPtr - Reject
+ * @property {{ [_ in string]?: number } | null} CI - Accept, hide
+ * @property {{ [_ in string]?: number } | null} CIPtr - Reject
+ * @property {{ [_ in string]?: number } | null} EI - Accept, hide
+ * @property {{ [_ in string]?: number } | null} EIPtr - Reject
+ * @property {{ [_ in EmbeddedValue]?: number } | null} EV - Accept
+ * @property {{ [_ in EmbeddedValue]?: number } | null} EVPtr - Accept
+ * @property {{ [_ in EmbeddedValuePtr]?: number } | null} EVP - Accept
+ * @property {{ [_ in EmbeddedValuePtr]?: number } | null} EVPPtr - Accept
+ * @property {{ [_ in string]?: number } | null} EP - Reject
+ * @property {{ [_ in EmbeddedPointer]?: number } | null} EPPtr - Accept
+ * @property {{ [_ in EmbeddedPointerPtr]?: number } | null} EPP - Accept
+ * @property {{ [_ in EmbeddedPointerPtr]?: number } | null} EPPPtr - Accept
+ * @property {{ [_ in EmbeddedCustomInterface]?: number } | null} ECI - Accept
+ * @property {{ [_ in EmbeddedCustomInterface]?: number } | null} ECIPtr - Accept
+ * @property {{ [_ in EmbeddedOriginalInterface]?: number } | null} EOI - Accept
+ * @property {{ [_ in EmbeddedOriginalInterface]?: number } | null} EOIPtr - Accept
+ * @property {{ [_ in string]?: number } | null} WT - Reject
+ * @property {{ [_ in string]?: number } | null} WA - Reject
+ * @property {{ [_ in StringType]?: number } | null} ST - Accept
+ * @property {{ [_ in StringAlias]?: number } | null} SA - Accept
+ * @property {{ [_ in IntType]?: number } | null} IntT - Accept
+ * @property {{ [_ in IntAlias]?: number } | null} IntA - Accept
+ * @property {{ [_ in string]?: number } | null} VT - Reject
+ * @property {{ [_ in string]?: number } | null} VTPtr - Reject
+ * @property {{ [_ in string]?: number } | null} VPT - Reject
+ * @property {{ [_ in string]?: number } | null} VPTPtr - Reject
+ * @property {{ [_ in ValueAlias]?: number } | null} VA - Accept
+ * @property {{ [_ in ValueAlias]?: number } | null} VAPtr - Accept
+ * @property {{ [_ in string]?: number } | null} VPA - Accept, hide
+ * @property {{ [_ in string]?: number } | null} VPAPtr - Reject
+ * @property {{ [_ in string]?: number } | null} PT - Reject
+ * @property {{ [_ in string]?: number } | null} PTPtr - Reject
+ * @property {{ [_ in string]?: number } | null} PPT - Reject
+ * @property {{ [_ in string]?: number } | null} PPTPtr - Reject
+ * @property {{ [_ in string]?: number } | null} PA - Reject
+ * @property {{ [_ in PointerAlias]?: number } | null} PAPtr - Accept
+ * @property {{ [_ in string]?: number } | null} PPA - Accept, hide
+ * @property {{ [_ in string]?: number } | null} PPAPtr - Reject
+ * @property {{ [_ in string]?: number } | null} IT - Accept, hide
+ * @property {{ [_ in string]?: number } | null} ITPtr - Reject
+ * @property {{ [_ in string]?: number } | null} IPT - Reject
+ * @property {{ [_ in string]?: number } | null} IPTPtr - Reject
+ * @property {{ [_ in string]?: number } | null} IA - Accept, hide
+ * @property {{ [_ in string]?: number } | null} IAPtr - Reject
+ * @property {{ [_ in string]?: number } | null} IPA - Reject
+ * @property {{ [_ in string]?: number } | null} IPAPtr - Reject
+ * @property {{ [_ in string]?: number } | null} TPR - Soft reject
+ * @property {{ [_ in string]?: number } | null} TPRPtr - Soft reject
+ * @property {{ [_ in string]?: number } | null} TPS - Accept, hide
+ * @property {{ [_ in string]?: number } | null} TPSPtr - Soft reject
+ * @property {{ [_ in string]?: number } | null} TPT - Soft reject
+ * @property {{ [_ in string]?: number } | null} TPTPtr - Soft reject
+ * @property {{ [_ in string]?: number } | null} TPU - Accept, hide
+ * @property {{ [_ in string]?: number } | null} TPUPtr - Soft reject
+ * @property {{ [_ in string]?: number } | null} TPV - Accept, hide
+ * @property {{ [_ in string]?: number } | null} TPVPtr - Soft reject
+ * @property {{ [_ in string]?: number } | null} TPW - Soft reject
+ * @property {{ [_ in string]?: number } | null} TPWPtr - Accept, hide
+ * @property {{ [_ in string]?: number } | null} TPX - Accept, hide
+ * @property {{ [_ in string]?: number } | null} TPXPtr - Soft reject
+ * @property {{ [_ in string]?: number } | null} TPY - Accept, hide
+ * @property {{ [_ in string]?: number } | null} TPYPtr - Soft reject
+ * @property {{ [_ in string]?: number } | null} TPZ - Accept, hide
+ * @property {{ [_ in string]?: number } | null} TPZPtr - Soft reject
+ * @property {{ [_ in string]?: number } | null} GAR - Soft reject
+ * @property {{ [_ in string]?: number } | null} GARPtr - Soft reject
+ * @property {{ [_ in string]?: number } | null} GAS - Accept, hide
+ * @property {{ [_ in string]?: number } | null} GASPtr - Soft reject
+ * @property {{ [_ in string]?: number } | null} GAT - Soft reject
+ * @property {{ [_ in string]?: number } | null} GATPtr - Soft reject
+ * @property {{ [_ in string]?: number } | null} GAU - Accept, hide
+ * @property {{ [_ in string]?: number } | null} GAUPtr - Soft reject
+ * @property {{ [_ in string]?: number } | null} GAV - Accept, hide
+ * @property {{ [_ in string]?: number } | null} GAVPtr - Soft reject
+ * @property {{ [_ in string]?: number } | null} GAW - Soft reject
+ * @property {{ [_ in string]?: number } | null} GAWPtr - Accept, hide
+ * @property {{ [_ in string]?: number } | null} GAX - Accept, hide
+ * @property {{ [_ in string]?: number } | null} GAXPtr - Soft reject
+ * @property {{ [_ in string]?: number } | null} GAY - Accept, hide
+ * @property {{ [_ in string]?: number } | null} GAYPtr - Soft reject
+ * @property {{ [_ in string]?: number } | null} GAZ - Accept, hide
+ * @property {{ [_ in string]?: number } | null} GAZPtr - Soft reject
+ * @property {{ [_ in ComparableCstrAlias<number>]?: number } | null} GACi - Accept
+ * @property {{ [_ in ComparableCstrAlias<ValueTextMarshaler>]?: number } | null} GACV - Accept
+ * @property {{ [_ in string]?: number } | null} GACP - Reject
+ * @property {{ [_ in string]?: number } | null} GACiPtr - Reject
+ * @property {{ [_ in string]?: number } | null} GACVPtr - Accept, hide
+ * @property {{ [_ in string]?: number } | null} GACPPtr - Accept, hide
+ * @property {{ [_ in BasicCstrAlias<number>]?: number } | null} GABi - Accept
+ * @property {{ [_ in BasicCstrAlias<string>]?: number } | null} GABs - Accept
+ * @property {{ [_ in string]?: number } | null} GABiPtr - Reject
+ * @property {{ [_ in string]?: number } | null} GABT - Reject
+ * @property {{ [_ in string]?: number } | null} GABTPtr - Reject
+ * @property {{ [_ in GoodTildeCstrAlias<ValueTextMarshaler>]?: number } | null} GAGT - Accept
+ * @property {{ [_ in string]?: number } | null} GAGTPtr - Accept, hide
+ * @property {{ [_ in NonBasicCstrAlias<ValueTextMarshaler>]?: number } | null} GANBV - Accept
+ * @property {{ [_ in string]?: number } | null} GANBP - Accept, hide
+ * @property {{ [_ in string]?: number } | null} GANBVPtr - Accept, hide
+ * @property {{ [_ in string]?: number } | null} GANBPPtr - Reject
+ * @property {{ [_ in PointableCstrAlias<ValueTextMarshaler>]?: number } | null} GAPlV1 - Accept
+ * @property {{ [_ in PointableCstrAlias<ValueTextMarshaler>]?: number } | null} GAPlV2 - Accept
+ * @property {{ [_ in string]?: number } | null} GAPlP1 - Reject
+ * @property {{ [_ in PointableCstrAlias<PointerTextMarshaler>]?: number } | null} GAPlP2 - Accept
+ * @property {{ [_ in string]?: number } | null} GAPlVPtr - Accept, hide
+ * @property {{ [_ in string]?: number } | null} GAPlPPtr - Accept, hide
+ * @property {{ [_ in MixedCstrAlias<number>]?: number } | null} GAMi - Accept
+ * @property {{ [_ in MixedCstrAlias<StringType>]?: number } | null} GAMS - Accept
+ * @property {{ [_ in MixedCstrAlias<ValueTextMarshaler>]?: number } | null} GAMV - Accept
+ * @property {{ [_ in string]?: number } | null} GAMSPtr - Reject
+ * @property {{ [_ in string]?: number } | null} GAMVPtr - Accept, hide
+ * @property {{ [_ in string]?: number } | null} GAII - Accept, hide
+ * @property {{ [_ in InterfaceCstrAlias<ValueTextMarshaler>]?: number } | null} GAIV - Accept
+ * @property {{ [_ in string]?: number } | null} GAIP - Accept, hide
+ * @property {{ [_ in string]?: number } | null} GAIIPtr - Reject
+ * @property {{ [_ in string]?: number } | null} GAIVPtr - Accept, hide
+ * @property {{ [_ in string]?: number } | null} GAIPPtr - Reject
+ * @property {{ [_ in string]?: number } | null} GAPrV - Accept, hide
+ * @property {{ [_ in string]?: number } | null} GAPrP - Accept, hide
+ * @property {{ [_ in string]?: number } | null} GAPrVPtr - Reject
+ * @property {{ [_ in string]?: number } | null} GAPrPPtr - Reject
  */
 
 /**

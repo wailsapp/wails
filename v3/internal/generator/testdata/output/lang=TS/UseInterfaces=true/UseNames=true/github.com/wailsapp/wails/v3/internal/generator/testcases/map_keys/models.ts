@@ -19,733 +19,737 @@ export type EmbeddedValuePtr = string;
 
 export type GoodTildeCstrAlias<U> = U;
 
+export type IntAlias = number;
+
+export type IntType = number;
+
 export type InterfaceCstrAlias<Y> = Y;
 
 export interface Maps<R, S, T, U, V, W, X, Y, Z> {
     /**
      * Reject
      */
-    "Bool": { [_: string]: number } | null;
+    "Bool": { [_ in string]?: number } | null;
 
     /**
      * Accept
      */
-    "Int": { [_: `${number}`]: number } | null;
+    "Int": { [_ in `${number}`]?: number } | null;
 
     /**
      * Accept
      */
-    "Uint": { [_: `${number}`]: number } | null;
+    "Uint": { [_ in `${number}`]?: number } | null;
 
     /**
      * Reject
      */
-    "Float": { [_: string]: number } | null;
+    "Float": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "Complex": { [_: string]: number } | null;
+    "Complex": { [_ in string]?: number } | null;
 
     /**
      * Accept
      */
-    "Byte": { [_: `${number}`]: number } | null;
+    "Byte": { [_ in `${number}`]?: number } | null;
 
     /**
      * Accept
      */
-    "Rune": { [_: `${number}`]: number } | null;
+    "Rune": { [_ in `${number}`]?: number } | null;
 
     /**
      * Accept
      */
-    "String": { [_: string]: number } | null;
+    "String": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "IntPtr": { [_: string]: number } | null;
+    "IntPtr": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "UintPtr": { [_: string]: number } | null;
+    "UintPtr": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "FloatPtr": { [_: string]: number } | null;
+    "FloatPtr": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "ComplexPtr": { [_: string]: number } | null;
+    "ComplexPtr": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "StringPtr": { [_: string]: number } | null;
+    "StringPtr": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "NTM": { [_: string]: number } | null;
+    "NTM": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "NTMPtr": { [_: string]: number } | null;
+    "NTMPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept
      */
-    "VTM": { [_: ValueTextMarshaler]: number } | null;
+    "VTM": { [_ in ValueTextMarshaler]?: number } | null;
 
     /**
      * Accept
      */
-    "VTMPtr": { [_: ValueTextMarshaler]: number } | null;
+    "VTMPtr": { [_ in ValueTextMarshaler]?: number } | null;
 
     /**
      * Reject
      */
-    "PTM": { [_: string]: number } | null;
+    "PTM": { [_ in string]?: number } | null;
 
     /**
      * Accept
      */
-    "PTMPtr": { [_: PointerTextMarshaler]: number } | null;
+    "PTMPtr": { [_ in PointerTextMarshaler]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "JTM": { [_: string]: number } | null;
+    "JTM": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "JTMPtr": { [_: string]: number } | null;
+    "JTMPtr": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "A": { [_: string]: number } | null;
+    "A": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "APtr": { [_: string]: number } | null;
+    "APtr": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "TM": { [_: string]: number } | null;
+    "TM": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "TMPtr": { [_: string]: number } | null;
+    "TMPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "CI": { [_: string]: number } | null;
+    "CI": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "CIPtr": { [_: string]: number } | null;
+    "CIPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "EI": { [_: string]: number } | null;
+    "EI": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "EIPtr": { [_: string]: number } | null;
+    "EIPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept
      */
-    "EV": { [_: EmbeddedValue]: number } | null;
+    "EV": { [_ in EmbeddedValue]?: number } | null;
 
     /**
      * Accept
      */
-    "EVPtr": { [_: EmbeddedValue]: number } | null;
+    "EVPtr": { [_ in EmbeddedValue]?: number } | null;
 
     /**
      * Accept
      */
-    "EVP": { [_: EmbeddedValuePtr]: number } | null;
+    "EVP": { [_ in EmbeddedValuePtr]?: number } | null;
 
     /**
      * Accept
      */
-    "EVPPtr": { [_: EmbeddedValuePtr]: number } | null;
+    "EVPPtr": { [_ in EmbeddedValuePtr]?: number } | null;
 
     /**
      * Reject
      */
-    "EP": { [_: string]: number } | null;
+    "EP": { [_ in string]?: number } | null;
 
     /**
      * Accept
      */
-    "EPPtr": { [_: EmbeddedPointer]: number } | null;
+    "EPPtr": { [_ in EmbeddedPointer]?: number } | null;
 
     /**
      * Accept
      */
-    "EPP": { [_: EmbeddedPointerPtr]: number } | null;
+    "EPP": { [_ in EmbeddedPointerPtr]?: number } | null;
 
     /**
      * Accept
      */
-    "EPPPtr": { [_: EmbeddedPointerPtr]: number } | null;
+    "EPPPtr": { [_ in EmbeddedPointerPtr]?: number } | null;
 
     /**
      * Accept
      */
-    "ECI": { [_: EmbeddedCustomInterface]: number } | null;
+    "ECI": { [_ in EmbeddedCustomInterface]?: number } | null;
 
     /**
      * Accept
      */
-    "ECIPtr": { [_: EmbeddedCustomInterface]: number } | null;
+    "ECIPtr": { [_ in EmbeddedCustomInterface]?: number } | null;
 
     /**
      * Accept
      */
-    "EOI": { [_: EmbeddedOriginalInterface]: number } | null;
+    "EOI": { [_ in EmbeddedOriginalInterface]?: number } | null;
 
     /**
      * Accept
      */
-    "EOIPtr": { [_: EmbeddedOriginalInterface]: number } | null;
+    "EOIPtr": { [_ in EmbeddedOriginalInterface]?: number } | null;
 
     /**
      * Reject
      */
-    "WT": { [_: string]: number } | null;
+    "WT": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "WA": { [_: string]: number } | null;
+    "WA": { [_ in string]?: number } | null;
 
     /**
      * Accept
      */
-    "ST": { [_: StringType]: number } | null;
+    "ST": { [_ in StringType]?: number } | null;
 
     /**
      * Accept
      */
-    "SA": { [_: StringAlias]: number } | null;
+    "SA": { [_ in StringAlias]?: number } | null;
 
     /**
      * Accept
      */
-    "IntT": { [_: `${number}`]: number } | null;
+    "IntT": { [_ in IntType]?: number } | null;
 
     /**
      * Accept
      */
-    "IntA": { [_: `${number}`]: number } | null;
+    "IntA": { [_ in IntAlias]?: number } | null;
 
     /**
      * Reject
      */
-    "VT": { [_: string]: number } | null;
+    "VT": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "VTPtr": { [_: string]: number } | null;
+    "VTPtr": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "VPT": { [_: string]: number } | null;
+    "VPT": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "VPTPtr": { [_: string]: number } | null;
+    "VPTPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept
      */
-    "VA": { [_: ValueAlias]: number } | null;
+    "VA": { [_ in ValueAlias]?: number } | null;
 
     /**
      * Accept
      */
-    "VAPtr": { [_: ValueAlias]: number } | null;
+    "VAPtr": { [_ in ValueAlias]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "VPA": { [_: string]: number } | null;
+    "VPA": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "VPAPtr": { [_: string]: number } | null;
+    "VPAPtr": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "PT": { [_: string]: number } | null;
+    "PT": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "PTPtr": { [_: string]: number } | null;
+    "PTPtr": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "PPT": { [_: string]: number } | null;
+    "PPT": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "PPTPtr": { [_: string]: number } | null;
+    "PPTPtr": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "PA": { [_: string]: number } | null;
+    "PA": { [_ in string]?: number } | null;
 
     /**
      * Accept
      */
-    "PAPtr": { [_: PointerAlias]: number } | null;
+    "PAPtr": { [_ in PointerAlias]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "PPA": { [_: string]: number } | null;
+    "PPA": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "PPAPtr": { [_: string]: number } | null;
+    "PPAPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "IT": { [_: string]: number } | null;
+    "IT": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "ITPtr": { [_: string]: number } | null;
+    "ITPtr": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "IPT": { [_: string]: number } | null;
+    "IPT": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "IPTPtr": { [_: string]: number } | null;
+    "IPTPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "IA": { [_: string]: number } | null;
+    "IA": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "IAPtr": { [_: string]: number } | null;
+    "IAPtr": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "IPA": { [_: string]: number } | null;
+    "IPA": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "IPAPtr": { [_: string]: number } | null;
+    "IPAPtr": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "TPR": { [_: string]: number } | null;
+    "TPR": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "TPRPtr": { [_: string]: number } | null;
+    "TPRPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "TPS": { [_: string]: number } | null;
+    "TPS": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "TPSPtr": { [_: string]: number } | null;
+    "TPSPtr": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "TPT": { [_: string]: number } | null;
+    "TPT": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "TPTPtr": { [_: string]: number } | null;
+    "TPTPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "TPU": { [_: string]: number } | null;
+    "TPU": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "TPUPtr": { [_: string]: number } | null;
+    "TPUPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "TPV": { [_: string]: number } | null;
+    "TPV": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "TPVPtr": { [_: string]: number } | null;
+    "TPVPtr": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "TPW": { [_: string]: number } | null;
+    "TPW": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "TPWPtr": { [_: string]: number } | null;
+    "TPWPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "TPX": { [_: string]: number } | null;
+    "TPX": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "TPXPtr": { [_: string]: number } | null;
+    "TPXPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "TPY": { [_: string]: number } | null;
+    "TPY": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "TPYPtr": { [_: string]: number } | null;
+    "TPYPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "TPZ": { [_: string]: number } | null;
+    "TPZ": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "TPZPtr": { [_: string]: number } | null;
+    "TPZPtr": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "GAR": { [_: string]: number } | null;
+    "GAR": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "GARPtr": { [_: string]: number } | null;
+    "GARPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "GAS": { [_: string]: number } | null;
+    "GAS": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "GASPtr": { [_: string]: number } | null;
+    "GASPtr": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "GAT": { [_: string]: number } | null;
+    "GAT": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "GATPtr": { [_: string]: number } | null;
+    "GATPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "GAU": { [_: string]: number } | null;
+    "GAU": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "GAUPtr": { [_: string]: number } | null;
+    "GAUPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "GAV": { [_: string]: number } | null;
+    "GAV": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "GAVPtr": { [_: string]: number } | null;
+    "GAVPtr": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "GAW": { [_: string]: number } | null;
+    "GAW": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "GAWPtr": { [_: string]: number } | null;
+    "GAWPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "GAX": { [_: string]: number } | null;
+    "GAX": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "GAXPtr": { [_: string]: number } | null;
+    "GAXPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "GAY": { [_: string]: number } | null;
+    "GAY": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "GAYPtr": { [_: string]: number } | null;
+    "GAYPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "GAZ": { [_: string]: number } | null;
+    "GAZ": { [_ in string]?: number } | null;
 
     /**
      * Soft reject
      */
-    "GAZPtr": { [_: string]: number } | null;
-
-    /**
-     * Accept, hide
-     */
-    "GACi": { [_: `${number}`]: number } | null;
+    "GAZPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept
      */
-    "GACV": { [_: ComparableCstrAlias<ValueTextMarshaler>]: number } | null;
-
-    /**
-     * Reject
-     */
-    "GACP": { [_: string]: number } | null;
-
-    /**
-     * Reject
-     */
-    "GACiPtr": { [_: string]: number } | null;
-
-    /**
-     * Accept, hide
-     */
-    "GACVPtr": { [_: string]: number } | null;
-
-    /**
-     * Accept, hide
-     */
-    "GACPPtr": { [_: string]: number } | null;
-
-    /**
-     * Accept, hide
-     */
-    "GABi": { [_: `${number}`]: number } | null;
+    "GACi": { [_ in ComparableCstrAlias<number>]?: number } | null;
 
     /**
      * Accept
      */
-    "GABs": { [_: BasicCstrAlias<string>]: number } | null;
+    "GACV": { [_ in ComparableCstrAlias<ValueTextMarshaler>]?: number } | null;
 
     /**
      * Reject
      */
-    "GABiPtr": { [_: string]: number } | null;
+    "GACP": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "GABT": { [_: string]: number } | null;
+    "GACiPtr": { [_ in string]?: number } | null;
 
     /**
-     * Reject
+     * Accept, hide
      */
-    "GABTPtr": { [_: string]: number } | null;
+    "GACVPtr": { [_ in string]?: number } | null;
+
+    /**
+     * Accept, hide
+     */
+    "GACPPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept
      */
-    "GAGT": { [_: GoodTildeCstrAlias<ValueTextMarshaler>]: number } | null;
-
-    /**
-     * Accept, hide
-     */
-    "GAGTPtr": { [_: string]: number } | null;
+    "GABi": { [_ in BasicCstrAlias<number>]?: number } | null;
 
     /**
      * Accept
      */
-    "GANBV": { [_: NonBasicCstrAlias<ValueTextMarshaler>]: number } | null;
-
-    /**
-     * Accept, hide
-     */
-    "GANBP": { [_: string]: number } | null;
-
-    /**
-     * Accept, hide
-     */
-    "GANBVPtr": { [_: string]: number } | null;
+    "GABs": { [_ in BasicCstrAlias<string>]?: number } | null;
 
     /**
      * Reject
      */
-    "GANBPPtr": { [_: string]: number } | null;
+    "GABiPtr": { [_ in string]?: number } | null;
+
+    /**
+     * Reject
+     */
+    "GABT": { [_ in string]?: number } | null;
+
+    /**
+     * Reject
+     */
+    "GABTPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept
      */
-    "GAPlV1": { [_: PointableCstrAlias<ValueTextMarshaler>]: number } | null;
+    "GAGT": { [_ in GoodTildeCstrAlias<ValueTextMarshaler>]?: number } | null;
+
+    /**
+     * Accept, hide
+     */
+    "GAGTPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept
      */
-    "GAPlV2": { [_: PointableCstrAlias<ValueTextMarshaler>]: number } | null;
+    "GANBV": { [_ in NonBasicCstrAlias<ValueTextMarshaler>]?: number } | null;
+
+    /**
+     * Accept, hide
+     */
+    "GANBP": { [_ in string]?: number } | null;
+
+    /**
+     * Accept, hide
+     */
+    "GANBVPtr": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "GAPlP1": { [_: string]: number } | null;
+    "GANBPPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept
      */
-    "GAPlP2": { [_: PointableCstrAlias<PointerTextMarshaler>]: number } | null;
-
-    /**
-     * Accept, hide
-     */
-    "GAPlVPtr": { [_: string]: number } | null;
-
-    /**
-     * Accept, hide
-     */
-    "GAPlPPtr": { [_: string]: number } | null;
-
-    /**
-     * Accept, hide
-     */
-    "GAMi": { [_: `${number}`]: number } | null;
+    "GAPlV1": { [_ in PointableCstrAlias<ValueTextMarshaler>]?: number } | null;
 
     /**
      * Accept
      */
-    "GAMS": { [_: MixedCstrAlias<StringType>]: number } | null;
+    "GAPlV2": { [_ in PointableCstrAlias<ValueTextMarshaler>]?: number } | null;
+
+    /**
+     * Reject
+     */
+    "GAPlP1": { [_ in string]?: number } | null;
 
     /**
      * Accept
      */
-    "GAMV": { [_: MixedCstrAlias<ValueTextMarshaler>]: number } | null;
-
-    /**
-     * Reject
-     */
-    "GAMSPtr": { [_: string]: number } | null;
+    "GAPlP2": { [_ in PointableCstrAlias<PointerTextMarshaler>]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "GAMVPtr": { [_: string]: number } | null;
+    "GAPlVPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "GAII": { [_: string]: number } | null;
+    "GAPlPPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept
      */
-    "GAIV": { [_: InterfaceCstrAlias<ValueTextMarshaler>]: number } | null;
+    "GAMi": { [_ in MixedCstrAlias<number>]?: number } | null;
 
     /**
-     * Accept, hide
+     * Accept
      */
-    "GAIP": { [_: string]: number } | null;
+    "GAMS": { [_ in MixedCstrAlias<StringType>]?: number } | null;
 
     /**
-     * Reject
+     * Accept
      */
-    "GAIIPtr": { [_: string]: number } | null;
-
-    /**
-     * Accept, hide
-     */
-    "GAIVPtr": { [_: string]: number } | null;
+    "GAMV": { [_ in MixedCstrAlias<ValueTextMarshaler>]?: number } | null;
 
     /**
      * Reject
      */
-    "GAIPPtr": { [_: string]: number } | null;
+    "GAMSPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "GAPrV": { [_: string]: number } | null;
+    "GAMVPtr": { [_ in string]?: number } | null;
 
     /**
      * Accept, hide
      */
-    "GAPrP": { [_: string]: number } | null;
+    "GAII": { [_ in string]?: number } | null;
+
+    /**
+     * Accept
+     */
+    "GAIV": { [_ in InterfaceCstrAlias<ValueTextMarshaler>]?: number } | null;
+
+    /**
+     * Accept, hide
+     */
+    "GAIP": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "GAPrVPtr": { [_: string]: number } | null;
+    "GAIIPtr": { [_ in string]?: number } | null;
+
+    /**
+     * Accept, hide
+     */
+    "GAIVPtr": { [_ in string]?: number } | null;
 
     /**
      * Reject
      */
-    "GAPrPPtr": { [_: string]: number } | null;
+    "GAIPPtr": { [_ in string]?: number } | null;
+
+    /**
+     * Accept, hide
+     */
+    "GAPrV": { [_ in string]?: number } | null;
+
+    /**
+     * Accept, hide
+     */
+    "GAPrP": { [_ in string]?: number } | null;
+
+    /**
+     * Reject
+     */
+    "GAPrVPtr": { [_ in string]?: number } | null;
+
+    /**
+     * Reject
+     */
+    "GAPrPPtr": { [_ in string]?: number } | null;
 }
 
 export type MixedCstrAlias<X> = X;

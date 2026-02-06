@@ -145,7 +145,7 @@ export function IntPointerInputNamedOutputs($in) {
 }
 
 /**
- * @param {{ [_: `${number}`]: number }} $in
+ * @param {{ [_ in `${number}`]?: number }} $in
  * @returns {$CancellablePromise<void>}
  */
 export function MapIntInt($in) {
@@ -153,7 +153,7 @@ export function MapIntInt($in) {
 }
 
 /**
- * @param {{ [_: `${number}`]: number | null }} $in
+ * @param {{ [_ in `${number}`]?: number | null }} $in
  * @returns {$CancellablePromise<void>}
  */
 export function MapIntIntPointer($in) {
@@ -161,7 +161,7 @@ export function MapIntIntPointer($in) {
 }
 
 /**
- * @param {{ [_: `${number}`]: number[] }} $in
+ * @param {{ [_ in `${number}`]?: number[] }} $in
  * @returns {$CancellablePromise<void>}
  */
 export function MapIntSliceInt($in) {
@@ -169,8 +169,8 @@ export function MapIntSliceInt($in) {
 }
 
 /**
- * @param {{ [_: `${number}`]: number[] }} $in
- * @returns {$CancellablePromise<{ [_: `${number}`]: number[] }>}
+ * @param {{ [_ in `${number}`]?: number[] }} $in
+ * @returns {$CancellablePromise<{ [_ in `${number}`]?: number[] }>}
  */
 export function MapIntSliceIntInMapIntSliceIntOut($in) {
     return $Call.ByName("main.GreetService.MapIntSliceIntInMapIntSliceIntOut", $in).then(/** @type {($result: any) => any} */(($result) => {
@@ -210,7 +210,7 @@ export function PointerFloat64InFloat64Out($in) {
 }
 
 /**
- * @param {{ [_: `${number}`]: number } | null} $in
+ * @param {{ [_ in `${number}`]?: number } | null} $in
  * @returns {$CancellablePromise<void>}
  */
 export function PointerMapIntInt($in) {

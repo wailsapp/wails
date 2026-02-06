@@ -19,7 +19,7 @@ declare module "/wails/runtime.js" {
     namespace Events {
         interface CustomEvents {
             "events_only:class": events_only$0.SomeClass;
-            "events_only:map": { [_: string]: number[] | null } | null;
+            "events_only:map": { [_ in string]?: number[] | null } | null;
             "events_only:nodata": void;
             "events_only:other": more$0.StringPtr[] | null;
             "events_only:string": string;

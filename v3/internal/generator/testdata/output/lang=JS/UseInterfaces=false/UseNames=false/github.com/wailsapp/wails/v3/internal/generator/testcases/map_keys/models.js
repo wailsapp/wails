@@ -46,6 +46,14 @@ import { Create as $Create } from "/wails/runtime.js";
  */
 
 /**
+ * @typedef {number} IntAlias
+ */
+
+/**
+ * @typedef {number} IntType
+ */
+
+/**
  * @template Y
  * @typedef {Y} InterfaceCstrAlias
  */
@@ -63,7 +71,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["Bool"] = {};
         }
@@ -71,7 +79,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: `${number}`]: number }}
+             * @type {{ [_ in `${number}`]?: number }}
              */
             this["Int"] = {};
         }
@@ -79,7 +87,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: `${number}`]: number }}
+             * @type {{ [_ in `${number}`]?: number }}
              */
             this["Uint"] = {};
         }
@@ -87,7 +95,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["Float"] = {};
         }
@@ -95,7 +103,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["Complex"] = {};
         }
@@ -103,7 +111,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: `${number}`]: number }}
+             * @type {{ [_ in `${number}`]?: number }}
              */
             this["Byte"] = {};
         }
@@ -111,7 +119,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: `${number}`]: number }}
+             * @type {{ [_ in `${number}`]?: number }}
              */
             this["Rune"] = {};
         }
@@ -119,7 +127,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["String"] = {};
         }
@@ -127,7 +135,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["IntPtr"] = {};
         }
@@ -135,7 +143,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["UintPtr"] = {};
         }
@@ -143,7 +151,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["FloatPtr"] = {};
         }
@@ -151,7 +159,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["ComplexPtr"] = {};
         }
@@ -159,7 +167,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["StringPtr"] = {};
         }
@@ -167,7 +175,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["NTM"] = {};
         }
@@ -175,7 +183,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["NTMPtr"] = {};
         }
@@ -183,7 +191,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: ValueTextMarshaler]: number }}
+             * @type {{ [_ in ValueTextMarshaler]?: number }}
              */
             this["VTM"] = {};
         }
@@ -191,7 +199,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: ValueTextMarshaler]: number }}
+             * @type {{ [_ in ValueTextMarshaler]?: number }}
              */
             this["VTMPtr"] = {};
         }
@@ -199,7 +207,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["PTM"] = {};
         }
@@ -207,7 +215,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: PointerTextMarshaler]: number }}
+             * @type {{ [_ in PointerTextMarshaler]?: number }}
              */
             this["PTMPtr"] = {};
         }
@@ -215,7 +223,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["JTM"] = {};
         }
@@ -223,7 +231,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["JTMPtr"] = {};
         }
@@ -231,7 +239,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["A"] = {};
         }
@@ -239,7 +247,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["APtr"] = {};
         }
@@ -247,7 +255,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["TM"] = {};
         }
@@ -255,7 +263,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["TMPtr"] = {};
         }
@@ -263,7 +271,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["CI"] = {};
         }
@@ -271,7 +279,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["CIPtr"] = {};
         }
@@ -279,7 +287,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["EI"] = {};
         }
@@ -287,7 +295,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["EIPtr"] = {};
         }
@@ -295,7 +303,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: EmbeddedValue]: number }}
+             * @type {{ [_ in EmbeddedValue]?: number }}
              */
             this["EV"] = {};
         }
@@ -303,7 +311,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: EmbeddedValue]: number }}
+             * @type {{ [_ in EmbeddedValue]?: number }}
              */
             this["EVPtr"] = {};
         }
@@ -311,7 +319,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: EmbeddedValuePtr]: number }}
+             * @type {{ [_ in EmbeddedValuePtr]?: number }}
              */
             this["EVP"] = {};
         }
@@ -319,7 +327,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: EmbeddedValuePtr]: number }}
+             * @type {{ [_ in EmbeddedValuePtr]?: number }}
              */
             this["EVPPtr"] = {};
         }
@@ -327,7 +335,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["EP"] = {};
         }
@@ -335,7 +343,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: EmbeddedPointer]: number }}
+             * @type {{ [_ in EmbeddedPointer]?: number }}
              */
             this["EPPtr"] = {};
         }
@@ -343,7 +351,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: EmbeddedPointerPtr]: number }}
+             * @type {{ [_ in EmbeddedPointerPtr]?: number }}
              */
             this["EPP"] = {};
         }
@@ -351,7 +359,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: EmbeddedPointerPtr]: number }}
+             * @type {{ [_ in EmbeddedPointerPtr]?: number }}
              */
             this["EPPPtr"] = {};
         }
@@ -359,7 +367,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: EmbeddedCustomInterface]: number }}
+             * @type {{ [_ in EmbeddedCustomInterface]?: number }}
              */
             this["ECI"] = {};
         }
@@ -367,7 +375,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: EmbeddedCustomInterface]: number }}
+             * @type {{ [_ in EmbeddedCustomInterface]?: number }}
              */
             this["ECIPtr"] = {};
         }
@@ -375,7 +383,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: EmbeddedOriginalInterface]: number }}
+             * @type {{ [_ in EmbeddedOriginalInterface]?: number }}
              */
             this["EOI"] = {};
         }
@@ -383,7 +391,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: EmbeddedOriginalInterface]: number }}
+             * @type {{ [_ in EmbeddedOriginalInterface]?: number }}
              */
             this["EOIPtr"] = {};
         }
@@ -391,7 +399,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["WT"] = {};
         }
@@ -399,7 +407,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["WA"] = {};
         }
@@ -407,7 +415,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: StringType]: number }}
+             * @type {{ [_ in StringType]?: number }}
              */
             this["ST"] = {};
         }
@@ -415,7 +423,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: StringAlias]: number }}
+             * @type {{ [_ in StringAlias]?: number }}
              */
             this["SA"] = {};
         }
@@ -423,7 +431,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: `${number}`]: number }}
+             * @type {{ [_ in IntType]?: number }}
              */
             this["IntT"] = {};
         }
@@ -431,7 +439,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: `${number}`]: number }}
+             * @type {{ [_ in IntAlias]?: number }}
              */
             this["IntA"] = {};
         }
@@ -439,7 +447,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["VT"] = {};
         }
@@ -447,7 +455,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["VTPtr"] = {};
         }
@@ -455,7 +463,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["VPT"] = {};
         }
@@ -463,7 +471,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["VPTPtr"] = {};
         }
@@ -471,7 +479,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: ValueAlias]: number }}
+             * @type {{ [_ in ValueAlias]?: number }}
              */
             this["VA"] = {};
         }
@@ -479,7 +487,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: ValueAlias]: number }}
+             * @type {{ [_ in ValueAlias]?: number }}
              */
             this["VAPtr"] = {};
         }
@@ -487,7 +495,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["VPA"] = {};
         }
@@ -495,7 +503,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["VPAPtr"] = {};
         }
@@ -503,7 +511,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["PT"] = {};
         }
@@ -511,7 +519,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["PTPtr"] = {};
         }
@@ -519,7 +527,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["PPT"] = {};
         }
@@ -527,7 +535,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["PPTPtr"] = {};
         }
@@ -535,7 +543,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["PA"] = {};
         }
@@ -543,7 +551,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: PointerAlias]: number }}
+             * @type {{ [_ in PointerAlias]?: number }}
              */
             this["PAPtr"] = {};
         }
@@ -551,7 +559,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["PPA"] = {};
         }
@@ -559,7 +567,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["PPAPtr"] = {};
         }
@@ -567,7 +575,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["IT"] = {};
         }
@@ -575,7 +583,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["ITPtr"] = {};
         }
@@ -583,7 +591,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["IPT"] = {};
         }
@@ -591,7 +599,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["IPTPtr"] = {};
         }
@@ -599,7 +607,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["IA"] = {};
         }
@@ -607,7 +615,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["IAPtr"] = {};
         }
@@ -615,7 +623,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["IPA"] = {};
         }
@@ -623,7 +631,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["IPAPtr"] = {};
         }
@@ -631,7 +639,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["TPR"] = {};
         }
@@ -639,7 +647,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["TPRPtr"] = {};
         }
@@ -647,7 +655,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["TPS"] = {};
         }
@@ -655,7 +663,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["TPSPtr"] = {};
         }
@@ -663,7 +671,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["TPT"] = {};
         }
@@ -671,7 +679,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["TPTPtr"] = {};
         }
@@ -679,7 +687,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["TPU"] = {};
         }
@@ -687,7 +695,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["TPUPtr"] = {};
         }
@@ -695,7 +703,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["TPV"] = {};
         }
@@ -703,7 +711,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["TPVPtr"] = {};
         }
@@ -711,7 +719,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["TPW"] = {};
         }
@@ -719,7 +727,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["TPWPtr"] = {};
         }
@@ -727,7 +735,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["TPX"] = {};
         }
@@ -735,7 +743,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["TPXPtr"] = {};
         }
@@ -743,7 +751,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["TPY"] = {};
         }
@@ -751,7 +759,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["TPYPtr"] = {};
         }
@@ -759,7 +767,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["TPZ"] = {};
         }
@@ -767,7 +775,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["TPZPtr"] = {};
         }
@@ -775,7 +783,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAR"] = {};
         }
@@ -783,7 +791,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GARPtr"] = {};
         }
@@ -791,7 +799,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAS"] = {};
         }
@@ -799,7 +807,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GASPtr"] = {};
         }
@@ -807,7 +815,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAT"] = {};
         }
@@ -815,7 +823,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GATPtr"] = {};
         }
@@ -823,7 +831,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAU"] = {};
         }
@@ -831,7 +839,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAUPtr"] = {};
         }
@@ -839,7 +847,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAV"] = {};
         }
@@ -847,7 +855,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAVPtr"] = {};
         }
@@ -855,7 +863,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAW"] = {};
         }
@@ -863,7 +871,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAWPtr"] = {};
         }
@@ -871,7 +879,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAX"] = {};
         }
@@ -879,7 +887,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAXPtr"] = {};
         }
@@ -887,7 +895,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAY"] = {};
         }
@@ -895,7 +903,7 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAYPtr"] = {};
         }
@@ -903,7 +911,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAZ"] = {};
         }
@@ -911,15 +919,15 @@ export class Maps {
             /**
              * Soft reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAZPtr"] = {};
         }
         if (!("GACi" in $$source)) {
             /**
-             * Accept, hide
+             * Accept
              * @member
-             * @type {{ [_: `${number}`]: number }}
+             * @type {{ [_ in ComparableCstrAlias<number>]?: number }}
              */
             this["GACi"] = {};
         }
@@ -927,7 +935,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: ComparableCstrAlias<ValueTextMarshaler>]: number }}
+             * @type {{ [_ in ComparableCstrAlias<ValueTextMarshaler>]?: number }}
              */
             this["GACV"] = {};
         }
@@ -935,7 +943,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GACP"] = {};
         }
@@ -943,7 +951,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GACiPtr"] = {};
         }
@@ -951,7 +959,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GACVPtr"] = {};
         }
@@ -959,15 +967,15 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GACPPtr"] = {};
         }
         if (!("GABi" in $$source)) {
             /**
-             * Accept, hide
+             * Accept
              * @member
-             * @type {{ [_: `${number}`]: number }}
+             * @type {{ [_ in BasicCstrAlias<number>]?: number }}
              */
             this["GABi"] = {};
         }
@@ -975,7 +983,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: BasicCstrAlias<string>]: number }}
+             * @type {{ [_ in BasicCstrAlias<string>]?: number }}
              */
             this["GABs"] = {};
         }
@@ -983,7 +991,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GABiPtr"] = {};
         }
@@ -991,7 +999,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GABT"] = {};
         }
@@ -999,7 +1007,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GABTPtr"] = {};
         }
@@ -1007,7 +1015,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: GoodTildeCstrAlias<ValueTextMarshaler>]: number }}
+             * @type {{ [_ in GoodTildeCstrAlias<ValueTextMarshaler>]?: number }}
              */
             this["GAGT"] = {};
         }
@@ -1015,7 +1023,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAGTPtr"] = {};
         }
@@ -1023,7 +1031,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: NonBasicCstrAlias<ValueTextMarshaler>]: number }}
+             * @type {{ [_ in NonBasicCstrAlias<ValueTextMarshaler>]?: number }}
              */
             this["GANBV"] = {};
         }
@@ -1031,7 +1039,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GANBP"] = {};
         }
@@ -1039,7 +1047,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GANBVPtr"] = {};
         }
@@ -1047,7 +1055,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GANBPPtr"] = {};
         }
@@ -1055,7 +1063,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: PointableCstrAlias<ValueTextMarshaler>]: number }}
+             * @type {{ [_ in PointableCstrAlias<ValueTextMarshaler>]?: number }}
              */
             this["GAPlV1"] = {};
         }
@@ -1063,7 +1071,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: PointableCstrAlias<ValueTextMarshaler>]: number }}
+             * @type {{ [_ in PointableCstrAlias<ValueTextMarshaler>]?: number }}
              */
             this["GAPlV2"] = {};
         }
@@ -1071,7 +1079,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAPlP1"] = {};
         }
@@ -1079,7 +1087,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: PointableCstrAlias<PointerTextMarshaler>]: number }}
+             * @type {{ [_ in PointableCstrAlias<PointerTextMarshaler>]?: number }}
              */
             this["GAPlP2"] = {};
         }
@@ -1087,7 +1095,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAPlVPtr"] = {};
         }
@@ -1095,15 +1103,15 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAPlPPtr"] = {};
         }
         if (!("GAMi" in $$source)) {
             /**
-             * Accept, hide
+             * Accept
              * @member
-             * @type {{ [_: `${number}`]: number }}
+             * @type {{ [_ in MixedCstrAlias<number>]?: number }}
              */
             this["GAMi"] = {};
         }
@@ -1111,7 +1119,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: MixedCstrAlias<StringType>]: number }}
+             * @type {{ [_ in MixedCstrAlias<StringType>]?: number }}
              */
             this["GAMS"] = {};
         }
@@ -1119,7 +1127,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: MixedCstrAlias<ValueTextMarshaler>]: number }}
+             * @type {{ [_ in MixedCstrAlias<ValueTextMarshaler>]?: number }}
              */
             this["GAMV"] = {};
         }
@@ -1127,7 +1135,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAMSPtr"] = {};
         }
@@ -1135,7 +1143,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAMVPtr"] = {};
         }
@@ -1143,7 +1151,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAII"] = {};
         }
@@ -1151,7 +1159,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_: InterfaceCstrAlias<ValueTextMarshaler>]: number }}
+             * @type {{ [_ in InterfaceCstrAlias<ValueTextMarshaler>]?: number }}
              */
             this["GAIV"] = {};
         }
@@ -1159,7 +1167,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAIP"] = {};
         }
@@ -1167,7 +1175,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAIIPtr"] = {};
         }
@@ -1175,7 +1183,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAIVPtr"] = {};
         }
@@ -1183,7 +1191,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAIPPtr"] = {};
         }
@@ -1191,7 +1199,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAPrV"] = {};
         }
@@ -1199,7 +1207,7 @@ export class Maps {
             /**
              * Accept, hide
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAPrP"] = {};
         }
@@ -1207,7 +1215,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAPrVPtr"] = {};
         }
@@ -1215,7 +1223,7 @@ export class Maps {
             /**
              * Reject
              * @member
-             * @type {{ [_: string]: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAPrPPtr"] = {};
         }
