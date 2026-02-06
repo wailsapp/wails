@@ -57,8 +57,8 @@ func main() {
 
 					// Clean the requested URL path and make it relative, to prevent directory traversal
 					cleanPath := filepath.Clean(r.URL.Path)
-					// Treat the request path as relative by stripping any leading slash.
-					relativePath := strings.TrimPrefix(cleanPath, string(filepath.Separator))
+					// Treat the request path as relative by stripping any leading forward slash (HTTP paths always use "/").
+					relativePath := strings.TrimPrefix(cleanPath, "/")
 
 					// Resolve the requested path against the absolute assets directory.
 					resolvedPath, err := filepath.Abs(filepath.Join(assetsDirAbs, relativePath))
@@ -76,7 +76,7 @@ func main() {
 						return
 					}
 
-					// Path is validated to be within assetsDirAbs above (lines 71-77).
+					// Path is validated to be within assetsDirAbs above.
 					if _, err := os.Stat(resolvedPath); err == nil { // #nosec G304 // lgtm[go/path-injection] -- path validated above
 						// Serve file from disk to make testing easy
 						http.ServeFile(w, r, resolvedPath) // #nosec G304 // lgtm[go/path-injection] -- path validated above
