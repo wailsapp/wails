@@ -470,6 +470,12 @@ Listens for window-specific events.
 func (w *Window) OnWindowEvent(eventType WindowEventType, callback func(*WindowEvent)) func()
 ```
 
+**Parameters:**
+- `eventType` - Type of the event to listen for (see [Window Events](#window-events))
+- `callback` - Function called when event is received
+
+**Returns:** Cleanup function
+
 **Example:**
 ```go
 // Handle window focus
@@ -478,10 +484,40 @@ window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent)
 })
 
 // Handle window resize
-window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
+cleanup := window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
     width, height := window.Size()
     app.Logger.Info("Window resized", "width", width, "height", height)
 })
+
+// Stop listening to resize events later
+cleanup()
+```
+
+### window.RegisterHook()
+
+Registers a hook to intercept and cancel window events. For cancelable events, canceling will prevent the default behaviour. For non-cancelable events, canceling will just stop propagation to later hooks and listeners.
+
+```go
+func (w *WebviewWindow) RegisterHook(eventType events.WindowEventType, callback func(event *WindowEvent)) func()
+```
+
+**Parameters:**
+- `eventType` - Type of the event to listen for (see [Window Events](#window-events))
+- `callback` - Function called when event is received
+
+**Returns:** Cleanup function
+
+**Example:**
+```go
+// Ask for confirmation before closing window
+cleanup := window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+		if !confirm("There is unsaved data! Do you want to quit?") {
+			e.Cancel()
+		}
+})
+
+// Stop asking for confirmation later
+cleanup()
 ```
 
 ## Common Patterns
