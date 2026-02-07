@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed `wails init` to prevent initialization in non-empty directories when using the `-d` flag, avoiding accidental data loss [`#4940`](https://github.com/wailsapp/wails/issues/4940) by `@leaanthony`
+- Fixed missing `EventsOffAll` in runtime templates for all frontend frameworks [#4883](https://github.com/wailsapp/wails/pull/4883) by @narcilee7
+- Fixed Linux crash on panic in JS-bound Go methods due to WebKit overriding signal handlers [#3965](https://github.com/wailsapp/wails/issues/3965) by @leaanthony
+- Fixed code block range in "How Does It Work?" documentation [#4884](https://github.com/wailsapp/wails/pull/4884) by @msal4
 - Fixed WebView crash on macOS 26 (Tahoe) during rapid UI updates [#4592](https://github.com/wailsapp/wails/issues/4592) by @leaanthony
 - Updated menu reference docs with complete imports by @agilgur5 in [#4727](https://github.com/wailsapp/wails/pull/4727) and [#4742](https://github.com/wailsapp/wails/pull/4742)
 - Fixed menu reference syntax by @agilgur5 in [#4726](https://github.com/wailsapp/wails/pull/4726)

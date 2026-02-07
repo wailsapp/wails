@@ -18,6 +18,13 @@ This method unregisters the listener for the given event name, optionally multip
 
 Go: `EventsOff(ctx context.Context, eventName string, additionalEventNames ...string)`<br/> JS: `EventsOff(eventName string, ...additionalEventNames)`
 
+### EventsOffAll  移除所有事件侦听器
+
+此方法注销所有事件侦听器。
+
+Go: `EventsOffAll(ctx context.Context)`<br/>
+JS: `EventsOffAll()`
+
 ### EventsOnce  添加只触发一次的事件侦听器
 
 此方法为给定的事件名称设置一个侦听器，但只会触发一次。 它返回 一个函数来取消侦听器。

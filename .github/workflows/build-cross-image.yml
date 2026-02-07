@@ -10,7 +10,7 @@ on:
       sdk_version:
         description: 'macOS SDK version'
         required: true
-        default: '26.1'
+        default: '14.5'
       zig_version:
         description: 'Zig version'
         required: true
@@ -18,7 +18,17 @@ on:
       image_version:
         description: 'Image version tag'
         required: true
-        default: '1.0.0'
+        default: 'latest'
+      skip_tests:
+        description: 'Skip cross-compilation tests'
+        required: false
+        default: 'false'
+        type: boolean
+  push:
+    branches:
+      - v3-alpha
+    paths:
+      - 'v3/internal/commands/build_assets/docker/Dockerfile.cross'
 
 env:
   REGISTRY: ghcr.io
@@ -30,12 +40,17 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      image_tag: ${{ steps.vars.outputs.image_version }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.branch }}
+          ref: ${{ inputs.branch || github.ref }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -47,6 +62,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set build variables
+        id: vars
+        run: |
+          echo "sdk_version=${{ inputs.sdk_version || '14.5' }}" >> $GITHUB_OUTPUT
+          echo "zig_version=${{ inputs.zig_version || '0.14.0' }}" >> $GITHUB_OUTPUT
+          echo "image_version=${{ inputs.image_version || 'latest' }}" >> $GITHUB_OUTPUT
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -54,20 +76,348 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest
-            type=raw,value=${{ inputs.image_version }}
-            type=raw,value=sdk-${{ inputs.sdk_version }}
+            type=raw,value=${{ steps.vars.outputs.image_version }}
+            type=raw,value=sdk-${{ steps.vars.outputs.sdk_version }}
 
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: v3/internal/setupwizard/docker
-          file: v3/internal/setupwizard/docker/Dockerfile.cross
+          context: v3/internal/commands/build_assets/docker
+          file: v3/internal/commands/build_assets/docker/Dockerfile.cross
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          labels: |
+            ${{ steps.meta.outputs.labels }}
+            io.wails.zig.version=${{ steps.vars.outputs.zig_version }}
+            io.wails.sdk.version=${{ steps.vars.outputs.sdk_version }}
           build-args: |
-            ZIG_VERSION=${{ inputs.zig_version }}
-            MACOS_SDK_VERSION=${{ inputs.sdk_version }}
-            IMAGE_VERSION=${{ inputs.image_version }}
+            ZIG_VERSION=${{ steps.vars.outputs.zig_version }}
+            MACOS_SDK_VERSION=${{ steps.vars.outputs.sdk_version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # Test cross-compilation for all platforms
+  test-cross-compile:
+    needs: build
+    if: ${{ inputs.skip_tests != 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Darwin targets (Zig + macOS SDK) - no platform emulation needed
+          - os: darwin
+            arch: arm64
+            platform: ""
+            expected_file: "Mach-O 64-bit.*arm64"
+          - os: darwin
+            arch: amd64
+            platform: ""
+            expected_file: "Mach-O 64-bit.*x86_64"
+          # Linux targets (GCC) - need platform to match architecture
+          - os: linux
+            arch: amd64
+            platform: "linux/amd64"
+            expected_file: "ELF 64-bit LSB.*x86-64"
+          - os: linux
+            arch: arm64
+            platform: "linux/arm64"
+            expected_file: "ELF 64-bit LSB.*ARM aarch64"
+          # Windows targets (Zig + mingw) - no platform emulation needed
+          - os: windows
+            arch: amd64
+            platform: ""
+            expected_file: "PE32\\+ executable.*x86-64"
+          - os: windows
+            arch: arm64
+            platform: ""
+            expected_file: "PE32\\+ executable.*Aarch64"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch || github.ref }}
+
+      - name: Set up QEMU
+        if: matrix.platform != ''
+        uses: docker/setup-qemu-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create test CGO project
+        run: |
+          mkdir -p test-project
+          cd test-project
+
+          # Create a minimal CGO test program
+          cat > main.go << 'EOF'
+          package main
+
+          /*
+          #include <stdlib.h>
+
+          int add(int a, int b) {
+              return a + b;
+          }
+          */
+          import "C"
+          import "fmt"
+
+          func main() {
+              result := C.add(1, 2)
+              fmt.Printf("CGO test: 1 + 2 = %d\n", result)
+          }
+          EOF
+
+          cat > go.mod << 'EOF'
+          module test-cgo
+
+          go 1.21
+          EOF
+
+      - name: Build ${{ matrix.os }}/${{ matrix.arch }} (CGO)
+        run: |
+          cd test-project
+          PLATFORM_FLAG=""
+          if [ -n "${{ matrix.platform }}" ]; then
+            PLATFORM_FLAG="--platform ${{ matrix.platform }}"
+          fi
+
+          docker run --rm $PLATFORM_FLAG \
+            -v "$(pwd):/app" \
+            -e APP_NAME="test-cgo" \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image_tag || 'latest' }} \
+            ${{ matrix.os }} ${{ matrix.arch }}
+
+      - name: Verify binary format
+        run: |
+          cd test-project/bin
+          ls -la
+
+          # Find the built binary
+          if [ "${{ matrix.os }}" = "windows" ]; then
+            BINARY=$(ls test-cgo-${{ matrix.os }}-${{ matrix.arch }}.exe 2>/dev/null || ls *.exe | head -1)
+          else
+            BINARY=$(ls test-cgo-${{ matrix.os }}-${{ matrix.arch }} 2>/dev/null || ls test-cgo* | grep -v '.exe' | head -1)
+          fi
+
+          echo "Binary: $BINARY"
+          FILE_OUTPUT=$(file "$BINARY")
+          echo "File output: $FILE_OUTPUT"
+
+          # Verify the binary format matches expected
+          if echo "$FILE_OUTPUT" | grep -qE "${{ matrix.expected_file }}"; then
+            echo "✅ Binary format verified: ${{ matrix.os }}/${{ matrix.arch }}"
+          else
+            echo "❌ Binary format mismatch!"
+            echo "Expected pattern: ${{ matrix.expected_file }}"
+            echo "Got: $FILE_OUTPUT"
+            exit 1
+          fi
+
+      - name: Check library dependencies (Linux only)
+        if: matrix.os == 'linux'
+        run: |
+          cd test-project/bin
+          BINARY=$(ls test-cgo-${{ matrix.os }}-${{ matrix.arch }} 2>/dev/null || ls test-cgo* | grep -v '.exe' | head -1)
+
+          echo "## Library Dependencies for $BINARY"
+          echo ""
+
+          # Use readelf to show dynamic dependencies
+          echo "### NEEDED libraries:"
+          readelf -d "$BINARY" | grep NEEDED || echo "No dynamic dependencies (statically linked)"
+
+          # Verify expected libraries are linked
+          echo ""
+          echo "### Verifying required libraries..."
+          NEEDED=$(readelf -d "$BINARY" | grep NEEDED)
+
+          MISSING=""
+          for lib in libwebkit2gtk-4.1.so libgtk-3.so libglib-2.0.so libc.so; do
+            if echo "$NEEDED" | grep -q "$lib"; then
+              echo "✅ $lib"
+            else
+              echo "❌ $lib MISSING"
+              MISSING="$MISSING $lib"
+            fi
+          done
+
+          if [ -n "$MISSING" ]; then
+            echo ""
+            echo "ERROR: Missing required libraries:$MISSING"
+            exit 1
+          fi
+
+  # Test non-CGO builds (pure Go cross-compilation)
+  test-non-cgo:
+    needs: build
+    if: ${{ inputs.skip_tests != 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: darwin
+            arch: arm64
+            expected_file: "Mach-O 64-bit.*arm64"
+          - os: darwin
+            arch: amd64
+            expected_file: "Mach-O 64-bit.*x86_64"
+          - os: linux
+            arch: amd64
+            expected_file: "ELF 64-bit LSB"
+          - os: linux
+            arch: arm64
+            expected_file: "ELF 64-bit LSB.*ARM aarch64"
+          - os: windows
+            arch: amd64
+            expected_file: "PE32\\+ executable.*x86-64"
+          - os: windows
+            arch: arm64
+            expected_file: "PE32\\+ executable.*Aarch64"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch || github.ref }}
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create test non-CGO project
+        run: |
+          mkdir -p test-project
+          cd test-project
+
+          # Create a pure Go test program (no CGO)
+          cat > main.go << 'EOF'
+          package main
+
+          import "fmt"
+
+          func main() {
+              fmt.Println("Pure Go cross-compilation test")
+          }
+          EOF
+
+          cat > go.mod << 'EOF'
+          module test-pure-go
+
+          go 1.21
+          EOF
+
+      - name: Build ${{ matrix.os }}/${{ matrix.arch }} (non-CGO)
+        run: |
+          cd test-project
+
+          # For non-CGO, we can use any platform since Go handles cross-compilation
+          # We set CGO_ENABLED=0 to ensure pure Go build
+          docker run --rm \
+            -v "$(pwd):/app" \
+            -e APP_NAME="test-pure-go" \
+            -e CGO_ENABLED=0 \
+            --entrypoint /bin/sh \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image_tag || 'latest' }} \
+            -c "GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o bin/test-pure-go-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.os == 'windows' && '.exe' || '' }} ."
+
+      - name: Verify binary format
+        run: |
+          cd test-project/bin
+          ls -la
+
+          # Find the built binary
+          if [ "${{ matrix.os }}" = "windows" ]; then
+            BINARY="test-pure-go-${{ matrix.os }}-${{ matrix.arch }}.exe"
+          else
+            BINARY="test-pure-go-${{ matrix.os }}-${{ matrix.arch }}"
+          fi
+
+          echo "Binary: $BINARY"
+          FILE_OUTPUT=$(file "$BINARY")
+          echo "File output: $FILE_OUTPUT"
+
+          # Verify the binary format matches expected
+          if echo "$FILE_OUTPUT" | grep -qE "${{ matrix.expected_file }}"; then
+            echo "✅ Binary format verified: ${{ matrix.os }}/${{ matrix.arch }} (non-CGO)"
+          else
+            echo "❌ Binary format mismatch!"
+            echo "Expected pattern: ${{ matrix.expected_file }}"
+            echo "Got: $FILE_OUTPUT"
+            exit 1
+          fi
+
+      - name: Check library dependencies (Linux only)
+        if: matrix.os == 'linux'
+        run: |
+          cd test-project/bin
+          BINARY="test-pure-go-${{ matrix.os }}-${{ matrix.arch }}"
+
+          echo "## Library Dependencies for $BINARY (non-CGO)"
+          echo ""
+
+          # Non-CGO builds should have minimal dependencies (just libc or statically linked)
+          echo "### NEEDED libraries:"
+          readelf -d "$BINARY" | grep NEEDED || echo "No dynamic dependencies (statically linked)"
+
+          # Verify NO GTK/WebKit libraries (since CGO is disabled)
+          NEEDED=$(readelf -d "$BINARY" | grep NEEDED || true)
+          if echo "$NEEDED" | grep -q "libwebkit\|libgtk"; then
+            echo "❌ ERROR: Non-CGO binary should not link to GTK/WebKit!"
+            exit 1
+          else
+            echo "✅ Confirmed: No GTK/WebKit dependencies (expected for non-CGO)"
+          fi
+
+  # Summary job
+  test-summary:
+    needs: [build, test-cross-compile, test-non-cgo]
+    if: always() && inputs.skip_tests != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check test results
+        run: |
+          echo "## Cross-Compilation Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.test-cross-compile.result }}" = "success" ]; then
+            echo "✅ **CGO Tests**: All passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **CGO Tests**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.test-non-cgo.result }}" = "success" ]; then
+            echo "✅ **Non-CGO Tests**: All passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Non-CGO Tests**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Tested Platforms" >> $GITHUB_STEP_SUMMARY
+          echo "| Platform | Architecture | CGO | Non-CGO |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------------|-----|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Darwin | arm64 | ✅ | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Darwin | amd64 | ✅ | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Linux | arm64 | ✅ | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Linux | amd64 | ✅ | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Windows | arm64 | ✅ | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Windows | amd64 | ✅ | ✅ |" >> $GITHUB_STEP_SUMMARY
+
+          # Fail if any test failed
+          if [ "${{ needs.test-cross-compile.result }}" != "success" ] || [ "${{ needs.test-non-cgo.result }}" != "success" ]; then
+            echo ""
+            echo "❌ Some tests failed. Check the individual job logs for details."
+            exit 1
+          fi
