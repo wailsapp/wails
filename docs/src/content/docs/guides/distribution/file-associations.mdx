@@ -1,7 +1,7 @@
 ---
 title: File Associations
 sidebar:
-  order: 20
+  order: 2
 ---
 
 import { Steps } from "@astrojs/starlight/components";
@@ -115,6 +115,8 @@ Let's walk through setting up file associations for a simple text editor:
 
     - For macOS add copy statement like `cp build/darwin/documenticon.icns {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/Resources` in the `create:app:bundle:` task.
 
+    <br />
+
 2. ### Configure File Associations
 
     Edit the `build/config.yml` file to add your file associations:
@@ -149,6 +151,7 @@ Let's walk through setting up file associations for a simple text editor:
     })
     ```
 
+    <br/>
     :::tip[Why are file extensions required in both the application config and config.yml?]
 
     On Windows, when a file is opened with a file association, the application is
