@@ -17,15 +17,10 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add Web API examples in `v3/examples/web-apis/` demonstrating 41 browser APIs including Storage (localStorage, sessionStorage, IndexedDB, Cache API), Network (Fetch, WebSocket, XMLHttpRequest, EventSource, Beacon), Media (Canvas, WebGL, Web Audio, MediaDevices, MediaRecorder, Speech Synthesis), Device (Geolocation, Clipboard, Fullscreen, Device Orientation, Vibration, Gamepad), Performance (Performance API, Mutation Observer, Intersection/Resize Observer), UI (Web Components, Pointer Events, Selection, Dialog, Drag and Drop), and more
-- Add WebView API compatibility checker example (`v3/examples/webview-api-check/`) that tests 200+ browser APIs across platforms
-- Add `internal/libpath` package for finding native library paths on Linux with parallel search, caching, and support for Flatpak/Snap/Nix
-- **WIP:** Add experimental WebKitGTK 6.0 / GTK4 support for Linux, available via `-tags gtk4` (GTK3/WebKit2GTK 4.1 remains the default)
-  - Note: On tiling window managers (e.g., Hyprland, Sway), Minimize/Maximize operations may not work as expected since the WM controls window geometry
+- Add `-tags` flag to `wails3 build` command for passing custom Go build tags (e.g., `wails3 build -tags gtk4`) (#4957)
 
 ## Changed
 <!-- Changes in existing functionality -->
-- **BREAKING**: Map keys in generated JS/TS bindings are now marked optional to accurately reflect Go map semantics. Map value access in Typescript now returns `T | undefined` instead of `T`, requiring null checks or assertions (#4943) by `@fbbdev`
 
 ## Fixed
 <!-- Bug fixes -->
@@ -36,6 +31,9 @@ After processing, the content will be moved to the main changelog and this file 
 - Fix file drop coordinates being in wrong pixel space on Windows (physical vs CSS pixels)
 - Fix file drag-and-drop on Linux not working reliably with hover effects
 - Fix HTML5 internal drag-and-drop being broken when file drop was enabled on Linux
+- Fix window show/hide on Linux/GTK4 sometimes restoring to minimized state by using `gtk_window_present()` (#4957)
+- Fix window position get/set on Linux/GTK4 always returning 0,0 by adding X11-conditional support via `XTranslateCoordinates`/`XMoveWindow` (#4957)
+- Fix max window size not being enforced on Linux/GTK4 by adding signal-based size clamping to replace removed `gtk_window_set_geometry_hints` (#4957)
 - Fix DPI scaling on Linux/GTK4 by implementing proper PhysicalBounds calculation and fractional scaling support via `gdk_monitor_get_scale` (GTK 4.14+)
 - Fix menu items duplicating when creating new windows on Linux/GTK4
 - Fix generation of mapped types with enum keys in JS/TS bindings (#4437) by @fbbdev
