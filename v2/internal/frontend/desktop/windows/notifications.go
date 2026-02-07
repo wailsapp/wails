@@ -30,6 +30,8 @@ var (
 	appGUID        string
 	iconPath       string = ""
 	exePath        string
+	iconOnce       sync.Once
+	iconErr        error
 
 	notificationResultCallback func(result frontend.NotificationResult)
 	callbackLock               sync.RWMutex
@@ -51,9 +53,9 @@ type NotificationPayload struct {
 }
 
 func (f *Frontend) InitializeNotifications() error {
-	categories = make(map[string]frontend.NotificationCategory)
 	categoriesLock.Lock()
 	defer categoriesLock.Unlock()
+	categories = make(map[string]frontend.NotificationCategory)
 
 	exe, err := os.Executable()
 	if err != nil {
@@ -117,16 +119,28 @@ func (f *Frontend) InitializeNotifications() error {
 		handleNotificationResult(result)
 	})
 
-	// Register the class factory for the toast activator
-	if err := registerFactoryInternal(wintoast.ClassFactory); err != nil {
+	// Register the COM class factory for toast activation.
+	// This is required for Windows to activate the app when users interact with notifications.
+	// The go-toast library's SetAppData and SetActivationCallback handle the callback setup,
+	// but the COM class factory registration is not exposed via public APIs, so we use
+	// go:linkname to access the internal registerClassFactory function.
+	if err := registerToastClassFactory(wintoast.ClassFactory); err != nil {
 		return fmt.Errorf("CoRegisterClassObject failed: %w", err)
 	}
 
 	return loadCategoriesFromRegistry()
 }
 
-//go:linkname registerFactoryInternal git.sr.ht/~jackmordaunt/go-toast/v2/wintoast.registerClassFactory
-func registerFactoryInternal(factory *wintoast.IClassFactory) error
+// registerToastClassFactory registers the COM class factory required for Windows toast notification activation.
+// This function uses go:linkname to access the unexported registerClassFactory function from go-toast.
+// The class factory is necessary for Windows COM activation when users click notification actions.
+// Without this registration, notification actions will not activate the application.
+//
+// This is a workaround until go-toast exports this functionality via a public API.
+// See: https://git.sr.ht/~jackmordaunt/go-toast
+//
+//go:linkname registerToastClassFactory git.sr.ht/~jackmordaunt/go-toast/v2/wintoast.registerClassFactory
+func registerToastClassFactory(factory *wintoast.IClassFactory) error
 
 // CleanupNotifications is a Windows stub that does nothing.
 // (Linux-specific cleanup)
@@ -296,16 +310,15 @@ func (f *Frontend) OnNotificationResponse(callback func(result frontend.Notifica
 }
 
 func (f *Frontend) saveIconToDir() error {
-	hIcon := w32.ExtractIcon(exePath, 0)
-	if hIcon == 0 {
-		return fmt.Errorf("ExtractIcon failed for %s", exePath)
-	}
-
-	if err := winc.SaveHIconAsPNG(hIcon, iconPath); err != nil {
-		return fmt.Errorf("SaveHIconAsPNG failed: %w", err)
-	}
-
-	return nil
+	iconOnce.Do(func() {
+		hIcon := w32.ExtractIcon(exePath, 0)
+		if hIcon == 0 {
+			iconErr = fmt.Errorf("ExtractIcon failed for %s", exePath)
+			return
+		}
+		iconErr = winc.SaveHIconAsPNG(hIcon, iconPath)
+	})
+	return iconErr
 }
 
 func saveCategoriesToRegistry() error {
@@ -426,9 +439,14 @@ func handleNotificationResult(result frontend.NotificationResult) {
 	callback := notificationResultCallback
 	callbackLock.Unlock()
 
-	if callback != nil {
-		go callback(result)
-	}
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Fprintf(os.Stderr, "panic in notification callback: %v\n", r)
+			}
+		}()
+		callback(result)
+	}()
 }
 
 // Helper functions

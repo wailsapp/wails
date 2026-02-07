@@ -46,6 +46,9 @@ const (
 
 // Creates a new Notifications Service.
 func (f *Frontend) InitializeNotifications() error {
+	// Clean up any previous initialization
+	f.CleanupNotifications()
+
 	exe, err := os.Executable()
 	if err != nil {
 		return fmt.Errorf("failed to get executable: %w", err)
@@ -103,6 +106,10 @@ func (f *Frontend) CheckNotificationAuthorization() (bool, error) {
 
 // SendNotification sends a basic notification with a unique identifier, title, subtitle, and body.
 func (f *Frontend) SendNotification(options frontend.NotificationOptions) error {
+	if conn == nil {
+		return fmt.Errorf("notifications not initialized")
+	}
+
 	hints := map[string]dbus.Variant{}
 
 	body := options.Body
@@ -169,6 +176,10 @@ func (f *Frontend) SendNotification(options frontend.NotificationOptions) error 
 
 // SendNotificationWithActions sends a notification with additional actions.
 func (f *Frontend) SendNotificationWithActions(options frontend.NotificationOptions) error {
+	if conn == nil {
+		return fmt.Errorf("notifications not initialized")
+	}
+
 	categoriesLock.RLock()
 	category, exists := categories[options.CategoryID]
 	categoriesLock.RUnlock()
@@ -337,6 +348,10 @@ func (f *Frontend) OnNotificationResponse(callback func(result frontend.Notifica
 
 // Helper method to close a notification.
 func (f *Frontend) closeNotification(id uint32) error {
+	if conn == nil {
+		return fmt.Errorf("notifications not initialized")
+	}
+
 	obj := conn.Object(dbusNotificationInterface, dbusNotificationPath)
 	call := obj.Call(dbusNotificationInterface+".CloseNotification", 0, id)
 
@@ -514,9 +529,14 @@ func handleNotificationResult(result frontend.NotificationResult) {
 	callback := notificationResultCallback
 	callbackLock.Unlock()
 
-	if callback != nil {
-		go callback(result)
-	}
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Fprintf(os.Stderr, "panic in notification callback: %v\n", r)
+			}
+		}()
+		callback(result)
+	}()
 }
 
 // Handle NotificationClosed signal.

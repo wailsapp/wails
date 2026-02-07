@@ -990,7 +990,13 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
         }
     }
     
-    if (hasReplyField && replyPlaceholder && replyButtonTitle) {
+    if (hasReplyField) {
+        // Defensive NULL checks: if hasReplyField is true, both strings must be non-NULL
+        if (!replyPlaceholder || !replyButtonTitle) {
+            NSString *errorMsg = @"hasReplyField is true but replyPlaceholder or replyButtonTitle is NULL";
+            captureResult(channelID, false, [errorMsg UTF8String]);
+            return;
+        }
         NSString *placeholder = [NSString stringWithUTF8String:replyPlaceholder];
         NSString *buttonTitle = [NSString stringWithUTF8String:replyButtonTitle];
         UNTextInputNotificationAction *textAction =
