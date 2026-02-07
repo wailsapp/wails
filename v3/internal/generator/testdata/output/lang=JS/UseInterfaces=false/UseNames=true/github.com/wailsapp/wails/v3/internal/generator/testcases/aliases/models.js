@@ -183,7 +183,7 @@ export class EmptyStruct {
 /**
  * A generic alias that wraps a map.
  * @template T,U
- * @typedef {{ [_: string]: U }} GenericMapAlias
+ * @typedef {{ [_ in string]?: U }} GenericMapAlias
  */
 
 /**

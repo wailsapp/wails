@@ -33,7 +33,12 @@ func (z *Zypper) Packages() Packagemap {
 		"webkit2gtk": []*Package{
 			{Name: "webkit2gtk4_1-devel", SystemPackage: true, Library: true},
 			{Name: "webkit2gtk3-soup2-devel", SystemPackage: true, Library: true},
-			{Name: "webkit2gtk3-devel", SystemPackage: true, Library: true},
+		},
+		"gtk4 (experimental)": []*Package{
+			{Name: "gtk4-devel", SystemPackage: true, Library: true, Optional: true},
+		},
+		"webkitgtk-6.0 (experimental)": []*Package{
+			{Name: "webkitgtk-6_0-devel", SystemPackage: true, Library: true, Optional: true},
 		},
 		"gcc": []*Package{
 			{Name: "gcc-c++", SystemPackage: true},

@@ -11,7 +11,7 @@ import { Create as $Create } from "/wails/runtime.js";
  */
 
 /**
- * @typedef {{ [_: string]: Alias }[]} Cyclic
+ * @typedef {{ [_ in string]?: Alias }[]} Cyclic
  */
 
 /**

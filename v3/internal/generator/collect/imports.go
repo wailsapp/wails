@@ -211,7 +211,7 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 
 		case *types.Map:
 			if IsMapKey(t.Key()) {
-				if IsStringAlias(t.Key()) {
+				if IsStringAlias(t.Key()) || IsNumberAlias(t.Key()) {
 					// This model type is always rendered as a string alias,
 					// hence we can generate it and use it as a type for JS object keys.
 					imports.addTypeImpl(t.Key(), visited)

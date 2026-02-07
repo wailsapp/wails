@@ -10,3 +10,4 @@ cmd/wails3/wails
 !internal/commands/webview2/MicrosoftEdgeWebview2Setup.exe
 internal/commands/appimage_testfiles/appimage_testfiles
 testiosapp/
+test/manual/systray/bin/

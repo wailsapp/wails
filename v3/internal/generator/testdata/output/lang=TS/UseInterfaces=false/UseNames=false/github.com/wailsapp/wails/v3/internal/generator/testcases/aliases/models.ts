@@ -158,7 +158,7 @@ export type GenericAlias<T> = T;
 /**
  * A generic alias that wraps a map.
  */
-export type GenericMapAlias<T, U> = { [_: string]: U };
+export type GenericMapAlias<T, U> = { [_ in string]?: U };
 
 /**
  * A generic struct containing an alias.

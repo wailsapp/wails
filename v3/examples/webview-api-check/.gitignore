@@ -1,0 +1,6 @@
+# Compiled binary
+webview-api-check
+webview-api-check.exe
+
+# Generated reports
+webview-api-report-*.json

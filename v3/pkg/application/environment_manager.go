@@ -54,3 +54,14 @@ func (em *EnvironmentManager) OpenFileManager(path string, selectFile bool) erro
 		return fileexplorer.OpenFileManager(path, selectFile)
 	})
 }
+
+func (em *EnvironmentManager) HasFocusFollowsMouse() bool {
+	if runtime.GOOS != "linux" {
+		return false
+	}
+	info := em.app.platformEnvironment()
+	if ffm, ok := info["focusFollowsMouse"].(bool); ok {
+		return ffm
+	}
+	return false
+}

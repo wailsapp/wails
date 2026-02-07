@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streams API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9rem; }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 1rem;
+        }
+        textarea { min-height: 80px; resize: vertical; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button.secondary { background: #60a5fa; }
+        button.danger { background: #f87171; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            word-break: break-all;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .feature {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .feature .name { font-weight: 600; margin-bottom: 5px; }
+        .feature .supported { color: #4ade80; }
+        .feature .unsupported { color: #f87171; }
+        .event-log {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .event-log .event { margin-bottom: 5px; padding: 5px; border-radius: 4px; }
+        .event-log .event.info { background: rgba(96, 165, 250, 0.2); color: #60a5fa; }
+        .event-log .event.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .event-log .event.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .event-log .event.data { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #0a0a1a;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #60a5fa);
+            transition: width 0.3s;
+        }
+        .demo-row { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; }
+        .demo-row input { flex: 1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Streams API Demo</h1>
+        <p class="description">
+            The Streams API allows JavaScript to programmatically access streams of data,
+            enabling efficient processing of large data sets chunk by chunk without loading everything into memory.
+        </p>
+
+        <div id="status" class="status success">
+            Streams API available: <span id="available">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>API Support</h2>
+            <div class="feature-grid" id="features"></div>
+        </div>
+
+        <div class="card">
+            <h2>ReadableStream Demo</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">
+                Create a custom ReadableStream that generates data chunks on demand.
+            </p>
+            <div class="demo-row">
+                <label style="white-space: nowrap;">Chunk count:</label>
+                <input type="number" id="chunkCount" value="5" min="1" max="20">
+                <label style="white-space: nowrap;">Delay (ms):</label>
+                <input type="number" id="chunkDelay" value="500" min="100" max="2000">
+            </div>
+            <button onclick="demoReadableStream()">Start ReadableStream</button>
+            <button class="secondary" onclick="demoReadableStreamCancel()" id="cancelReadable" disabled>Cancel</button>
+            <div class="progress-bar"><div class="fill" id="readableProgress" style="width: 0%"></div></div>
+            <div class="output" id="readableOutput">Click "Start ReadableStream" to begin...</div>
+        </div>
+
+        <div class="card">
+            <h2>WritableStream Demo</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">
+                Create a WritableStream that processes and logs each written chunk.
+            </p>
+            <div class="form-group">
+                <label for="writeInput">Text to write (each line becomes a chunk):</label>
+                <textarea id="writeInput">Hello World
+This is chunk 2
+Another chunk here
+Final chunk!</textarea>
+            </div>
+            <button onclick="demoWritableStream()">Write to Stream</button>
+            <div class="output" id="writableOutput">Click "Write to Stream" to begin...</div>
+        </div>
+
+        <div class="card">
+            <h2>TransformStream Demo</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">
+                Transform data as it flows through a stream pipeline.
+            </p>
+            <div class="form-group">
+                <label for="transformInput">Input text:</label>
+                <input type="text" id="transformInput" value="hello world from streams api">
+            </div>
+            <div class="form-group">
+                <label>Transform type:</label>
+                <select id="transformType">
+                    <option value="uppercase">Uppercase</option>
+                    <option value="reverse">Reverse Characters</option>
+                    <option value="double">Double Each Character</option>
+                    <option value="rot13">ROT13 Cipher</option>
+                </select>
+            </div>
+            <button onclick="demoTransformStream()">Transform</button>
+            <div class="output" id="transformOutput">Click "Transform" to see the result...</div>
+        </div>
+
+        <div class="card">
+            <h2>Pipe Chain Demo</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">
+                Chain multiple transforms together using pipeThrough and pipeTo.
+            </p>
+            <div class="form-group">
+                <label for="pipeInput">Input text:</label>
+                <input type="text" id="pipeInput" value="stream piping is powerful">
+            </div>
+            <button onclick="demoPipeChain()">Run Pipe Chain</button>
+            <p style="color: #aaa; margin: 10px 0; font-size: 0.9rem;">
+                Pipeline: Input -> Split into chars -> Uppercase -> Add index -> Collect
+            </p>
+            <div class="output" id="pipeOutput">Click "Run Pipe Chain" to see the result...</div>
+        </div>
+
+        <div class="card">
+            <h2>Fetch with Streams</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">
+                Use streams to process fetch response body progressively.
+            </p>
+            <div class="form-group">
+                <label for="fetchUrl">URL to fetch:</label>
+                <input type="text" id="fetchUrl" value="https://jsonplaceholder.typicode.com/posts">
+            </div>
+            <button onclick="demoFetchStream()">Fetch with Stream</button>
+            <button class="secondary" onclick="demoFetchStreamAbort()" id="abortFetch" disabled>Abort</button>
+            <div class="progress-bar"><div class="fill" id="fetchProgress" style="width: 0%"></div></div>
+            <div class="output" id="fetchOutput">Click "Fetch with Stream" to begin...</div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <button class="secondary" onclick="clearLog()">Clear Log</button>
+            <div class="event-log" id="eventLog">
+                <div class="event info">Ready to log stream events...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let readableController = null;
+        let fetchAbortController = null;
+
+        function checkSupport() {
+            const hasReadable = typeof ReadableStream !== 'undefined';
+            const hasWritable = typeof WritableStream !== 'undefined';
+            const hasTransform = typeof TransformStream !== 'undefined';
+            const available = hasReadable && hasWritable && hasTransform;
+
+            document.getElementById('available').textContent = available ? 'Yes' : 'Partial';
+            document.getElementById('status').className = available ? 'status success' : 'status error';
+
+            const features = document.getElementById('features');
+            const checks = [
+                { name: 'ReadableStream', supported: hasReadable },
+                { name: 'WritableStream', supported: hasWritable },
+                { name: 'TransformStream', supported: hasTransform },
+                { name: 'ReadableStreamDefaultReader', supported: typeof ReadableStreamDefaultReader !== 'undefined' },
+                { name: 'WritableStreamDefaultWriter', supported: typeof WritableStreamDefaultWriter !== 'undefined' },
+                { name: 'ByteLengthQueuingStrategy', supported: typeof ByteLengthQueuingStrategy !== 'undefined' },
+                { name: 'CountQueuingStrategy', supported: typeof CountQueuingStrategy !== 'undefined' },
+                { name: 'TextEncoderStream', supported: typeof TextEncoderStream !== 'undefined' },
+                { name: 'TextDecoderStream', supported: typeof TextDecoderStream !== 'undefined' },
+                { name: 'CompressionStream', supported: typeof CompressionStream !== 'undefined' },
+                { name: 'DecompressionStream', supported: typeof DecompressionStream !== 'undefined' },
+            ];
+
+            features.innerHTML = checks.map(c => `
+                <div class="feature">
+                    <div class="name">${c.name}</div>
+                    <div class="${c.supported ? 'supported' : 'unsupported'}">${c.supported ? 'Supported' : 'Not supported'}</div>
+                </div>
+            `).join('');
+        }
+
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('eventLog');
+            const time = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = `event ${type}`;
+            div.textContent = `[${time}] ${message}`;
+            logEl.insertBefore(div, logEl.firstChild);
+        }
+
+        function clearLog() {
+            document.getElementById('eventLog').innerHTML = '<div class="event info">Log cleared</div>';
+        }
+
+        async function demoReadableStream() {
+            const chunkCount = parseInt(document.getElementById('chunkCount').value);
+            const delay = parseInt(document.getElementById('chunkDelay').value);
+            const output = document.getElementById('readableOutput');
+            const progress = document.getElementById('readableProgress');
+            const cancelBtn = document.getElementById('cancelReadable');
+
+            output.textContent = 'Starting ReadableStream...\n';
+            progress.style.width = '0%';
+            cancelBtn.disabled = false;
+
+            let cancelled = false;
+
+            const stream = new ReadableStream({
+                start(controller) {
+                    readableController = controller;
+                    log('ReadableStream started', 'info');
+                },
+                async pull(controller) {
+                    for (let i = 0; i < chunkCount && !cancelled; i++) {
+                        await new Promise(r => setTimeout(r, delay));
+                        if (cancelled) break;
+
+                        const chunk = `Chunk ${i + 1}: Data generated at ${new Date().toISOString()}`;
+                        controller.enqueue(chunk);
+                        log(`Enqueued: ${chunk}`, 'data');
+                        output.textContent += `Received: ${chunk}\n`;
+                        progress.style.width = `${((i + 1) / chunkCount) * 100}%`;
+                    }
+                    controller.close();
+                    log('ReadableStream closed', 'success');
+                },
+                cancel(reason) {
+                    cancelled = true;
+                    log(`ReadableStream cancelled: ${reason}`, 'error');
+                }
+            });
+
+            const reader = stream.getReader();
+
+            try {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) {
+                        output.textContent += '\nStream completed!';
+                        break;
+                    }
+                }
+            } catch (e) {
+                output.textContent += `\nError: ${e.message}`;
+                log(`Read error: ${e.message}`, 'error');
+            } finally {
+                cancelBtn.disabled = true;
+                reader.releaseLock();
+            }
+        }
+
+        function demoReadableStreamCancel() {
+            if (readableController) {
+                readableController.error(new Error('Cancelled by user'));
+                document.getElementById('cancelReadable').disabled = true;
+                document.getElementById('readableOutput').textContent += '\n\nStream cancelled!';
+            }
+        }
+
+        async function demoWritableStream() {
+            const input = document.getElementById('writeInput').value;
+            const output = document.getElementById('writableOutput');
+            const chunks = input.split('\n').filter(c => c.trim());
+
+            output.textContent = 'Starting WritableStream...\n\n';
+            let processedChunks = [];
+
+            const stream = new WritableStream({
+                start(controller) {
+                    log('WritableStream started', 'info');
+                },
+                write(chunk, controller) {
+                    return new Promise(resolve => {
+                        setTimeout(() => {
+                            const processed = `[PROCESSED] ${chunk.toUpperCase()}`;
+                            processedChunks.push(processed);
+                            output.textContent += `Written: "${chunk}"\n`;
+                            output.textContent += `Processed: "${processed}"\n\n`;
+                            log(`Wrote chunk: ${chunk}`, 'data');
+                            resolve();
+                        }, 300);
+                    });
+                },
+                close() {
+                    output.textContent += 'WritableStream closed successfully!\n';
+                    output.textContent += `\nTotal chunks processed: ${processedChunks.length}`;
+                    log('WritableStream closed', 'success');
+                },
+                abort(reason) {
+                    log(`WritableStream aborted: ${reason}`, 'error');
+                }
+            });
+
+            const writer = stream.getWriter();
+
+            try {
+                for (const chunk of chunks) {
+                    await writer.write(chunk);
+                }
+                await writer.close();
+            } catch (e) {
+                output.textContent += `\nError: ${e.message}`;
+                log(`Write error: ${e.message}`, 'error');
+            }
+        }
+
+        async function demoTransformStream() {
+            const input = document.getElementById('transformInput').value;
+            const type = document.getElementById('transformType').value;
+            const output = document.getElementById('transformOutput');
+
+            const transforms = {
+                uppercase: (chunk) => chunk.toUpperCase(),
+                reverse: (chunk) => chunk.split('').reverse().join(''),
+                double: (chunk) => chunk.split('').map(c => c + c).join(''),
+                rot13: (chunk) => chunk.replace(/[a-zA-Z]/g, c => {
+                    const base = c <= 'Z' ? 65 : 97;
+                    return String.fromCharCode((c.charCodeAt(0) - base + 13) % 26 + base);
+                })
+            };
+
+            output.textContent = `Transform type: ${type}\n`;
+            output.textContent += `Input: "${input}"\n\n`;
+
+            log(`Starting ${type} transform`, 'info');
+
+            const transform = new TransformStream({
+                transform(chunk, controller) {
+                    const result = transforms[type](chunk);
+                    controller.enqueue(result);
+                    log(`Transformed: "${chunk}" -> "${result}"`, 'data');
+                }
+            });
+
+            const readable = new ReadableStream({
+                start(controller) {
+                    controller.enqueue(input);
+                    controller.close();
+                }
+            });
+
+            const reader = readable.pipeThrough(transform).getReader();
+            let result = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                result += value;
+            }
+
+            output.textContent += `Output: "${result}"`;
+            log('Transform complete', 'success');
+        }
+
+        async function demoPipeChain() {
+            const input = document.getElementById('pipeInput').value;
+            const output = document.getElementById('pipeOutput');
+
+            output.textContent = `Input: "${input}"\n\nProcessing through pipe chain...\n\n`;
+            log('Starting pipe chain demo', 'info');
+
+            // Transform 1: Split into characters
+            const splitTransform = new TransformStream({
+                transform(chunk, controller) {
+                    for (const char of chunk) {
+                        controller.enqueue(char);
+                    }
+                }
+            });
+
+            // Transform 2: Uppercase
+            const upperTransform = new TransformStream({
+                transform(chunk, controller) {
+                    controller.enqueue(chunk.toUpperCase());
+                }
+            });
+
+            // Transform 3: Add index
+            let index = 0;
+            const indexTransform = new TransformStream({
+                transform(chunk, controller) {
+                    controller.enqueue(`[${index++}]${chunk}`);
+                }
+            });
+
+            // Source stream
+            const source = new ReadableStream({
+                start(controller) {
+                    controller.enqueue(input);
+                    controller.close();
+                }
+            });
+
+            // Collect results
+            const results = [];
+            const sink = new WritableStream({
+                write(chunk) {
+                    results.push(chunk);
+                }
+            });
+
+            // Run the pipe chain
+            await source
+                .pipeThrough(splitTransform)
+                .pipeThrough(upperTransform)
+                .pipeThrough(indexTransform)
+                .pipeTo(sink);
+
+            output.textContent += `Stage 1 (Split): "${input}" -> [${input.split('').map(c => `"${c}"`).join(', ')}]\n`;
+            output.textContent += `Stage 2 (Upper): [${input.toUpperCase().split('').map(c => `"${c}"`).join(', ')}]\n`;
+            output.textContent += `Stage 3 (Index): [${results.slice(0, 10).join(', ')}${results.length > 10 ? '...' : ''}]\n\n`;
+            output.textContent += `Final result: ${results.join(' ')}`;
+
+            log(`Pipe chain complete: ${results.length} items processed`, 'success');
+        }
+
+        async function demoFetchStream() {
+            const url = document.getElementById('fetchUrl').value;
+            const output = document.getElementById('fetchOutput');
+            const progress = document.getElementById('fetchProgress');
+            const abortBtn = document.getElementById('abortFetch');
+
+            output.textContent = `Fetching: ${url}\n\n`;
+            progress.style.width = '0%';
+            abortBtn.disabled = false;
+
+            fetchAbortController = new AbortController();
+
+            try {
+                log(`Fetching: ${url}`, 'info');
+                const response = await fetch(url, { signal: fetchAbortController.signal });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const contentLength = response.headers.get('content-length');
+                const total = contentLength ? parseInt(contentLength) : 0;
+                let received = 0;
+
+                output.textContent += `Content-Length: ${total || 'unknown'}\n`;
+                output.textContent += `Status: ${response.status} ${response.statusText}\n\n`;
+                output.textContent += 'Reading stream chunks:\n';
+
+                const reader = response.body.getReader();
+                const chunks = [];
+
+                while (true) {
+                    const { done, value } = await reader.read();
+
+                    if (done) {
+                        log('Fetch stream complete', 'success');
+                        break;
+                    }
+
+                    received += value.length;
+                    chunks.push(value);
+
+                    const percent = total ? (received / total) * 100 : 50;
+                    progress.style.width = `${Math.min(percent, 100)}%`;
+
+                    output.textContent += `Chunk received: ${value.length} bytes (total: ${received})\n`;
+                    log(`Received chunk: ${value.length} bytes`, 'data');
+                }
+
+                progress.style.width = '100%';
+
+                // Combine chunks and decode
+                const allChunks = new Uint8Array(received);
+                let position = 0;
+                for (const chunk of chunks) {
+                    allChunks.set(chunk, position);
+                    position += chunk.length;
+                }
+
+                const text = new TextDecoder().decode(allChunks);
+                output.textContent += `\nTotal received: ${received} bytes\n`;
+                output.textContent += `\nDecoded content (first 500 chars):\n${text.substring(0, 500)}${text.length > 500 ? '...' : ''}`;
+
+            } catch (e) {
+                if (e.name === 'AbortError') {
+                    output.textContent += '\n\nFetch aborted by user!';
+                    log('Fetch aborted', 'error');
+                } else {
+                    output.textContent += `\nError: ${e.message}`;
+                    log(`Fetch error: ${e.message}`, 'error');
+                }
+            } finally {
+                abortBtn.disabled = true;
+            }
+        }
+
+        function demoFetchStreamAbort() {
+            if (fetchAbortController) {
+                fetchAbortController.abort();
+            }
+        }
+
+        checkSupport();
+    </script>
+</body>
+</html>

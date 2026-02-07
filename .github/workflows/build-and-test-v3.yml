@@ -120,12 +120,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install linux dependencies
+      - name: Install linux dependencies (GTK3)
         uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
         with:
           packages: libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk
           version: 1.0
+
+      - name: Install linux dependencies (GTK4) - webkit-gtk6-support branch only
+        if: matrix.os == 'ubuntu-latest' && github.head_ref == 'feature/webkit-gtk6-support'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-4-dev libwebkitgtk-6.0-dev
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -146,12 +152,20 @@ jobs:
           name: runtime-build-artifacts
           path: v3/internal/runtime/desktop/@wailsio/runtime/
 
-      - name: Build Examples
+      - name: Build Examples (GTK3 default)
         working-directory: v3
         run: |
-          echo "Starting example compilation tests..."
+          echo "Starting example compilation tests (GTK3)..."
           task test:examples
-          echo "Example compilation tests completed successfully"
+          echo "Example compilation tests (GTK3) completed successfully"
+
+      - name: Build Examples (GTK4 experimental)
+        if: matrix.os == 'ubuntu-latest' && github.head_ref == 'feature/webkit-gtk6-support'
+        working-directory: v3
+        run: |
+          echo "Starting example compilation tests (GTK4)..."
+          BUILD_TAGS=gtk4 task test:examples
+          echo "Example compilation tests (GTK4) completed successfully"
 
       - name: Run tests (mac)
         if: matrix.os == 'macos-latest'
@@ -165,7 +179,7 @@ jobs:
         working-directory: v3
         run: go test -v ./...
 
-      - name: Run tests (ubuntu)
+      - name: Run tests (ubuntu) - GTK3 default
         if: matrix.os == 'ubuntu-latest'
         working-directory: v3
         run: >
@@ -173,6 +187,18 @@ jobs:
           sh -c '
           dbus-update-activation-environment --systemd --all &&
           go test -v ./...
+          '
+
+      - name: Run tests (ubuntu) - GTK4 experimental
+        if: matrix.os == 'ubuntu-latest' && github.head_ref == 'feature/webkit-gtk6-support'
+        working-directory: v3
+        # Skip all service tests that hang in CI due to GTK4 display requirements
+        # The services tests require a fully functional GTK4 display which xvfb cannot provide
+        run: >
+          xvfb-run --auto-servernum
+          sh -c '
+          dbus-update-activation-environment --systemd --all &&
+          go test -tags gtk4 -v -skip "TestService" ./...
           '
 
       - name: Typecheck binding generator output
@@ -222,12 +248,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install linux dependencies
+      - name: Install linux dependencies (GTK3)
         uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
         with:
           packages: libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config
           version: 1.1
+
+      - name: Install linux dependencies (GTK4) - webkit-gtk6-support branch only
+        if: matrix.os == 'ubuntu-latest' && github.head_ref == 'feature/webkit-gtk6-support'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-4-dev libwebkitgtk-6.0-dev
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -254,7 +286,7 @@ jobs:
           name: runtime-package
           path: wails-runtime-temp
 
-      - name: Generate template '${{ matrix.template }}'
+      - name: Generate template '${{ matrix.template }}' (GTK3 default)
         shell: bash
         run: |
           # Get absolute path - use pwd -W on Windows for native paths, pwd elsewhere
@@ -271,6 +303,9 @@ jobs:
           npm pkg set dependencies.@wailsio/runtime="file://$RUNTIME_TGZ"
           cd ..
           wails3 build
+
+      # Note: GTK4 template builds are not tested here as wails build doesn't
+      # support -tags flag yet. GTK4 compilation is verified by Go tests.
 
   build_results:
     if: ${{ always() }}
