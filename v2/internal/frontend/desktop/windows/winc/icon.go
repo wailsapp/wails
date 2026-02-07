@@ -11,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"image"
-	"image/color"
 	"image/png"
 	"os"
 	"syscall"
@@ -142,14 +141,17 @@ func SaveHIconAsPNG(hIcon w32.HICON, filePath string) error {
 	}
 
 	// Create DC
-	hdc, _, _ := procCreateCompatibleDC.Call(0)
+	hdc, _, err := procCreateCompatibleDC.Call(0)
 	if hdc == 0 {
-		return syscall.EINVAL
+		return fmt.Errorf("failed to create compatible DC: %w", err)
 	}
 	defer procDeleteDC.Call(hdc)
 
 	// Select bitmap into DC
-	oldBitmap, _, _ := procSelectObject.Call(hdc, uintptr(iconInfo.HbmColor))
+	oldBitmap, _, err := procSelectObject.Call(hdc, uintptr(iconInfo.HbmColor))
+	if oldBitmap == 0 {
+		return fmt.Errorf("failed to select bitmap: %w", err)
+	}
 	defer procSelectObject.Call(hdc, oldBitmap)
 
 	// Prepare bitmap info header
@@ -188,15 +190,14 @@ func SaveHIconAsPNG(hIcon w32.HICON, filePath string) error {
 		for x := 0; x < width; x++ {
 			// DIB is bottom-up, so we need to invert Y
 			dibIndex := ((height-1-y)*width + x) * 4
+			// RGBA image is top-down
+			imgIndex := (y*width + x) * 4
 
 			// BGRA to RGBA
-			b := bits[dibIndex]
-			g := bits[dibIndex+1]
-			r := bits[dibIndex+2]
-			a := bits[dibIndex+3]
-
-			// Set pixel in the image
-			img.Set(x, y, color.RGBA{R: r, G: g, B: b, A: a})
+			img.Pix[imgIndex] = bits[dibIndex+2]   // R
+			img.Pix[imgIndex+1] = bits[dibIndex+1] // G
+			img.Pix[imgIndex+2] = bits[dibIndex]   // B
+			img.Pix[imgIndex+3] = bits[dibIndex+3] // A
 		}
 	}
 

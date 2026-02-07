@@ -857,6 +857,9 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 }
 
 - (UNMutableNotificationContent *)createNotificationContent:(const char *)title subtitle:(const char *)subtitle body:(const char *)body dataJSON:(const char *)dataJSON error:(NSError **)contentError API_AVAILABLE(macos(10.14)) {
+    if (title == NULL) title = "";
+    if (body == NULL) body = "";
+    
     NSString *nsTitle = [NSString stringWithUTF8String:title];
     NSString *nsSubtitle = subtitle ? [NSString stringWithUTF8String:subtitle] : @"";
     NSString *nsBody = [NSString stringWithUTF8String:body];

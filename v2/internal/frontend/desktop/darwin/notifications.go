@@ -19,6 +19,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"sync"
 	"time"
 	"unsafe"
@@ -62,10 +63,6 @@ type notificationChannel struct {
 	Error   error
 }
 
-type ChannelHandler interface {
-	GetChannel(id int) (chan notificationChannel, bool)
-}
-
 func (f *Frontend) InitializeNotifications() error {
 	if !f.IsNotificationAvailable() {
 		return fmt.Errorf("notifications are not available on this system")
@@ -83,6 +80,12 @@ func (f *Frontend) InitializeNotifications() error {
 	setCurrentFrontend(f)
 
 	return nil
+}
+
+// CleanupNotifications is a macOS stub that does nothing.
+// (Linux-specific cleanup)
+func (f *Frontend) CleanupNotifications() {
+	// No cleanup needed on macOS
 }
 
 func (f *Frontend) IsNotificationAvailable() bool {
@@ -103,6 +106,7 @@ func (f *Frontend) RequestNotificationAuthorization() (bool, error) {
 
 	select {
 	case result := <-resultCh:
+		close(resultCh)
 		return result.Success, result.Error
 	case <-ctx.Done():
 		f.cleanupChannel(id)
@@ -120,6 +124,7 @@ func (f *Frontend) CheckNotificationAuthorization() (bool, error) {
 
 	select {
 	case result := <-resultCh:
+		close(resultCh)
 		return result.Success, result.Error
 	case <-ctx.Done():
 		f.cleanupChannel(id)
@@ -156,6 +161,7 @@ func (f *Frontend) SendNotification(options frontend.NotificationOptions) error 
 
 	select {
 	case result := <-resultCh:
+		close(resultCh)
 		if !result.Success {
 			if result.Error != nil {
 				return result.Error
@@ -202,6 +208,7 @@ func (f *Frontend) SendNotificationWithActions(options frontend.NotificationOpti
 
 	select {
 	case result := <-resultCh:
+		close(resultCh)
 		if !result.Success {
 			if result.Error != nil {
 				return result.Error
@@ -245,6 +252,7 @@ func (f *Frontend) RegisterNotificationCategory(category frontend.NotificationCa
 
 	select {
 	case result := <-resultCh:
+		close(resultCh)
 		if !result.Success {
 			if result.Error != nil {
 				return result.Error
@@ -271,6 +279,7 @@ func (f *Frontend) RemoveNotificationCategory(categoryId string) error {
 
 	select {
 	case result := <-resultCh:
+		close(resultCh)
 		if !result.Success {
 			if result.Error != nil {
 				return result.Error
@@ -393,7 +402,15 @@ func handleNotificationResult(result frontend.NotificationResult) {
 	callbackLock.Unlock()
 
 	if callback != nil {
-		go callback(result)
+		go func() {
+			defer func() {
+				if r := recover(); r != nil {
+					// Log panic but don't crash the app
+					fmt.Fprintf(os.Stderr, "panic in notification callback: %v\n", r)
+				}
+			}()
+			callback(result)
+		}()
 	}
 }
 

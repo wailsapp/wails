@@ -187,6 +187,7 @@ type Frontend interface {
 
 	// Notifications
 	InitializeNotifications() error
+	CleanupNotifications()
 	IsNotificationAvailable() bool
 	RequestNotificationAuthorization() (bool, error)
 	CheckNotificationAuthorization() (bool, error)

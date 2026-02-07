@@ -72,6 +72,19 @@ func (f *Frontend) InitializeNotifications() error {
 	return nil
 }
 
+// CleanupNotifications cleans up notification resources
+func (f *Frontend) CleanupNotifications() {
+	if cancel != nil {
+		cancel()
+		cancel = nil
+	}
+
+	if conn != nil {
+		conn.Close()
+		conn = nil
+	}
+}
+
 func (f *Frontend) IsNotificationAvailable() bool {
 	return true
 }

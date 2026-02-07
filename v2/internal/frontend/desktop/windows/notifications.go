@@ -128,6 +128,12 @@ func (f *Frontend) InitializeNotifications() error {
 //go:linkname registerFactoryInternal git.sr.ht/~jackmordaunt/go-toast/v2/wintoast.registerClassFactory
 func registerFactoryInternal(factory *wintoast.IClassFactory) error
 
+// CleanupNotifications is a Windows stub that does nothing.
+// (Linux-specific cleanup)
+func (f *Frontend) CleanupNotifications() {
+	// No cleanup needed on Windows
+}
+
 func (f *Frontend) IsNotificationAvailable() bool {
 	return true
 }

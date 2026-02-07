@@ -27,6 +27,11 @@ func InitializeNotifications(ctx context.Context) error {
 	return appFrontend.InitializeNotifications()
 }
 
+func CleanupNotifications(ctx context.Context) {
+	appFrontend := getFrontend(ctx)
+	appFrontend.CleanupNotifications()
+}
+
 func IsNotificationAvailable(ctx context.Context) bool {
 	appFrontend := getFrontend(ctx)
 	return appFrontend.IsNotificationAvailable()
