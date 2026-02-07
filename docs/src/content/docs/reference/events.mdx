@@ -29,12 +29,14 @@ The Events API provides methods to emit and listen to events, enabling communica
 Emits a custom event to all windows.
 
 ```go
-func (em *EventManager) Emit(name string, data ...interface{})
+func (em *EventManager) Emit(name string, data ...any) bool
 ```
 
 **Parameters:**
 - `name` - Event name
 - `data` - Optional data to send with the event
+
+**Returns:** `true` if the event was cancelled by a hook; `false` otherwise
 
 **Example:**
 ```go
@@ -42,13 +44,22 @@ func (em *EventManager) Emit(name string, data ...interface{})
 app.Event.Emit("user-logged-in")
 
 // Emit with data
-app.Event.Emit("data-updated", map[string]interface{}{
+app.Event.Emit("data-updated", map[string]any{
     "count": 42,
     "status": "success",
 })
 
 // Emit multiple values
 app.Event.Emit("progress", 75, "Processing files...")
+
+// Detect cancellation
+cancelled := app.Event.Emit("document-closing", documentInfo)
+if cancelled {
+	return
+} else {
+	closeDocument()
+	app.Event.Emit("document-closed", documentInfo)
+}
 ```
 
 ### app.Event.On()
@@ -69,7 +80,7 @@ func (em *EventManager) On(name string, callback func(*CustomEvent)) func()
 ```go
 // Listen for events
 cleanup := app.Event.On("user-action", func(e *application.CustomEvent) {
-    data := e.Data.(map[string]interface{})
+    data := e.Data.(map[string]any)
     action := data["action"].(string)
     app.Logger.Info("User action", "action", action)
 })
@@ -80,26 +91,89 @@ cleanup()
 
 ### Window-Specific Events
 
-Emit events to a specific window:
+### window.EmitEvent()
+
+Emit events to all windows with a specific window reported as sender.
 
 ```go
-// Emit to specific window
-window.EmitEvent("notification", "Hello from Go!")
+func (w *WebviewWindow) Emit(name string, data ...any) bool
+```
 
-// Emit to all windows
-app.Event.Emit("global-update", data)
+**Parameters:**
+- `name` - Event name to emit
+- `...data` - Zero, one or more data items of any type
+
+**Returns:** `true` if the event was cancelled by a hook; `false` otherwise
+
+**Example:**
+```go
+// Backend
+window.EmitEvent("notification", "Hello from Go!")
+```
+
+```javascript
+// Frontend
+import { Events, Window } from '@wailsio/runtime'
+
+Events.On('notification', async (ev) => {
+  // The following comparison will be true only if window.EmitEvent was called on the webview we are running in
+  if (ev.sender === await Window.Name()) {
+    return
+  }
+
+  // Show global notifications or notifications from other windows.
+  showNotification(ev.data)
+})
 ```
 
 ## Event Methods (Frontend)
+
+### Emit()
+
+Emits a custom event with the current webview window as sender.
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.Emit(name)
+Events.Emit(name, data)
+```
+
+**Parameters:**
+- `name` - Event name
+- `data` - Optional data to send with the event
+
+**Returns:** A promise that resolves to `true` if the event was cancelled by a hook; to `false` otherwise
+
+**Example:**
+```javascript
+// Emit simple event
+Events.Emit("user-logged-in")
+
+// Emit with data
+Events.Emit("data-updated", {
+    "count": 42,
+    "status": "success",
+})
+
+// Detect cancellation
+const cancelled = await Events.Emit("document-closing", documentInfo)
+if cancelled {
+	return
+} else {
+	await closeDocument()
+	app.Event.Emit("document-closed", documentInfo)
+}
+```
 
 ### On()
 
 Listens for events from Go.
 
 ```javascript
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-On(eventName, callback)
+Events.On(eventName, callback)
 ```
 
 **Parameters:**
@@ -110,16 +184,16 @@ On(eventName, callback)
 
 **Example:**
 ```javascript
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 // Listen for events
-const cleanup = On('data-updated', (data) => {
-    console.log('Count:', data.count)
-    console.log('Status:', data.status)
-    updateUI(data)
+const cleanup = Events.On('data-updated', (ev) => {
+    console.log('Count:', ev.data.count)
+    console.log('Status:', ev.data.status)
+    updateUI(ev.data)
 })
 
-// Later, remove listener
+// Later, stop listening
 cleanup()
 ```
 
@@ -128,61 +202,69 @@ cleanup()
 Listens for a single event occurrence.
 
 ```javascript
-import { Once } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-Once(eventName, callback)
+Events.Once(eventName, callback)
 ```
+
+**Parameters:**
+- `eventName` - Name of the event to listen for
+- `callback` - Function called when event is received
+
+**Returns:** Cleanup function
 
 **Example:**
 ```javascript
-import { Once } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 // Listen for first occurrence only
-Once('initialization-complete', (data) => {
-    console.log('App initialized!', data)
+Events.Once('initialization-complete', (ev) => {
+    console.log('App initialized!', ev.data)
     // This will only fire once
 })
 ```
 
 ### Off()
 
-Removes an event listener.
+Removes _all event listeners_ for a given set of events.
 
 ```javascript
-import { Off } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-Off(eventName, callback)
+Events.Off(eventName1, ..., eventNameN)
 ```
+
+**Parameters:**
+- `...eventName` - One or more event names to stop listening to
 
 **Example:**
 ```javascript
-import { On, Off } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-const handler = (data) => {
-    console.log('Event received:', data)
+const handler1 = (ev) => {
+    console.log('Event received:', ev.name, ev.data)
 }
 
+const handler2 = () => console.log('Additional handler triggered')
+
 // Start listening
-On('my-event', handler)
+Events.On('my-event-1', handler1)
+Events.On('my-event-1', handler2)
+
+Events.On('my-event-2', handler1)
 
 // Stop listening
-Off('my-event', handler)
+Events.Off('my-event-1', 'my-event-2')
 ```
 
 ### OffAll()
 
-Removes all listeners for an event.
+Removes _all registered listeners_ for _all events_.
 
 ```javascript
-import { OffAll } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-OffAll(eventName)
-```
-
-**Example:**
-```javascript
-// Remove all listeners for this event
-OffAll('data-updated')
+Events.OffAll()
 ```
 
 ## Application Events
@@ -195,25 +277,17 @@ Listens for application lifecycle events.
 func (em *EventManager) OnApplicationEvent(eventType ApplicationEventType, callback func(*ApplicationEvent)) func()
 ```
 
-**Event Types:**
-- `EventApplicationStarted` - Application has started
-- `EventApplicationShutdown` - Application is shutting down
-- `EventApplicationDebug` - Debug event (dev mode only)
-
 **Example:**
 ```go
-// Handle application startup
-app.Event.OnApplicationEvent(application.EventApplicationStarted, func(e *application.ApplicationEvent) {
-    app.Logger.Info("Application started")
-    // Initialize resources
+// Handle file opening event
+app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *application.ApplicationEvent) {
+    app.Logger.Info("File opened", "name", e.Context().Filename())
+    loadDocument(e.Context().Filename())
 })
 
-// Handle application shutdown
-app.Event.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
-    app.Logger.Info("Application shutting down")
-    // Cleanup resources, save state
-    database.Close()
-    saveSettings()
+// Handle theme change
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Theme changed")
 })
 ```
 
@@ -227,22 +301,15 @@ Listens for window-specific events.
 func (w *Window) OnWindowEvent(eventType WindowEventType, callback func(*WindowEvent)) func()
 ```
 
-**Event Types:**
-- `EventWindowFocus` - Window gained focus
-- `EventWindowBlur` - Window lost focus
-- `EventWindowClose` - Window is closing
-- `EventWindowResize` - Window was resized
-- `EventWindowMove` - Window was moved
-
 **Example:**
 ```go
 // Handle window focus
-window.OnWindowEvent(application.EventWindowFocus, func(e *application.WindowEvent) {
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
     app.Logger.Info("Window focused")
 })
 
 // Handle window resize
-window.OnWindowEvent(application.EventWindowResize, func(e *application.WindowEvent) {
+window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
     width, height := window.Size()
     app.Logger.Info("Window resized", "width", width, "height", height)
 })
@@ -268,7 +335,7 @@ func (s *DataService) FetchData(query string) ([]Item, error) {
     items := fetchFromDatabase(query)
 
     // Emit event when done
-    s.app.Event.Emit("data-fetched", map[string]interface{}{
+    s.app.Event.Emit("data-fetched", map[string]any{
         "query": query,
         "count": len(items),
     })
@@ -281,10 +348,10 @@ func (s *DataService) FetchData(query string) ([]Item, error) {
 
 ```javascript
 import { FetchData } from './bindings/DataService'
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 // Listen for completion event
-On('data-fetched', (data) => {
+Events.On('data-fetched', ({ data }) => {
     console.log(`Fetched ${data.count} items for query: ${data.query}`)
     showNotification(`Found ${data.count} results`)
 })
@@ -309,7 +376,7 @@ func (s *Service) ProcessFiles(files []string) error {
         processFile(file)
 
         // Emit progress event
-        s.app.Event.Emit("progress", map[string]interface{}{
+        s.app.Event.Emit("progress", map[string]any{
             "current": i + 1,
             "total":   total,
             "percent": float64(i+1) / float64(total) * 100,
@@ -325,16 +392,17 @@ func (s *Service) ProcessFiles(files []string) error {
 **JavaScript:**
 
 ```javascript
-import { On, Once } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 // Update progress bar
-On('progress', (data) => {
+const cleanup = Events.On('progress', ({ data }) => {
     progressBar.style.width = `${data.percent}%`
     statusText.textContent = `Processing ${data.file}... (${data.current}/${data.total})`
 })
 
 // Handle completion
-Once('processing-complete', () => {
+Events.Once('processing-complete', () => {
+    cleanup()
     progressBar.style.width = '100%'
     statusText.textContent = 'Complete!'
     setTimeout(() => hideProgressBar(), 2000)
@@ -343,34 +411,42 @@ Once('processing-complete', () => {
 
 ### Multi-Window Communication
 
-Perfect for applications with multiple windows like settings panels, dashboards, or document viewers. Broadcast events to synchronize state across all windows (theme changes, user preferences) or send targeted events to specific windows for window-specific updates.
+Events can be sent from a specific window whose name will be reported in the `Sender` field of the event struct. Handlers will then be able to filter incoming events depending on the sending window. Perfect for applications with multiple windows like settings panels, dashboards, or document viewers.
 
 **Go:**
 
 ```go
-// Broadcast to all windows
-app.Event.Emit("theme-changed", "dark")
-
-// Send to specific window
+// Send from specific window
 preferencesWindow.EmitEvent("settings-updated", settings)
 
-// Window-specific listener
-window1.OnEvent("request-data", func(e *application.CustomEvent) {
-    // Only this window will receive this event
-    window1.EmitEvent("data-response", data)
+app.Event.On("settings-updated", func(e *application.CustomEvent) {
+		if (e.Sender === window1.EmitEvent()) {
+    	// Process changes
+		} else {
+			app.Logger.Warn("settings-updated event from unexpected sender", "sender", e.Sender)
+		}
 })
 ```
 
 **JavaScript:**
 
 ```javascript
-import { On } from '@wailsio/runtime'
+import { Events, Window } from '@wailsio/runtime'
 
-// Listen in any window
-On('theme-changed', (theme) => {
-    document.body.className = theme
+// Send from current window
+Events.Emit('status-changed', localStatus)
+
+// Process only events emitted from the current window
+Events.On('status-changed', async (ev) => {
+  if (ev.sender === await Window.Name()) {
+    console.log("Status changed:", ev.data)
+  }
 })
 ```
+
+:::note
+Events emitted from the frontend are always sent from the window the triggering code is running in.
+:::
 
 ### State Synchronization
 
@@ -381,46 +457,52 @@ Use when you need to keep frontend and backend state in sync, such as user sessi
 ```go
 type StateService struct {
     app   *application.Application
-    state map[string]interface{}
+    state map[string]any
     mu    sync.RWMutex
 }
 
-func (s *StateService) UpdateState(key string, value interface{}) {
+func (s *StateService) UpdateState(key string, value any) {
     s.mu.Lock()
     s.state[key] = value
     s.mu.Unlock()
 
     // Notify all windows
-    s.app.Event.Emit("state-updated", map[string]interface{}{
+    s.app.Event.Emit("state-updated", map[string]any{
         "key":   key,
         "value": value,
     })
 }
 
-func (s *StateService) GetState(key string) interface{} {
+func (s *StateService) GetState(key string) any {
     s.mu.RLock()
     defer s.mu.RUnlock()
     return s.state[key]
+}
+
+func (s *StateService) GetFullState() map[string]any {
+	s.mu.RLock()
+    defer s.mu.RUnlock()
+    return maps.Clone(s.state)
 }
 ```
 
 **JavaScript:**
 
 ```javascript
-import { On } from '@wailsio/runtime'
-import { GetState } from './bindings/StateService'
+import { Events } from '@wailsio/runtime'
+import { GetFullState } from './bindings/StateService'
 
 // Keep local state in sync
-let localState = {}
+const localState = {}
 
-On('state-updated', async (data) => {
+Events.On('state-updated', async ({ data }) => {
     localState[data.key] = data.value
     updateUI(data.key, data.value)
 })
 
 // Initialize state
-const initialState = await GetState("all")
-localState = initialState
+const initialState = await GetFullState()
+Object.assign(localState, initialState)
 ```
 
 ### Event-Driven Notifications
@@ -435,21 +517,21 @@ type NotificationService struct {
 }
 
 func (s *NotificationService) Success(message string) {
-    s.app.Event.Emit("notification", map[string]interface{}{
+    s.app.Event.Emit("notification", map[string]any{
         "type":    "success",
         "message": message,
     })
 }
 
 func (s *NotificationService) Error(message string) {
-    s.app.Event.Emit("notification", map[string]interface{}{
+    s.app.Event.Emit("notification", map[string]any{
         "type":    "error",
         "message": message,
     })
 }
 
 func (s *NotificationService) Info(message string) {
-    s.app.Event.Emit("notification", map[string]interface{}{
+    s.app.Event.Emit("notification", map[string]any{
         "type":    "info",
         "message": message,
     })
@@ -459,10 +541,10 @@ func (s *NotificationService) Info(message string) {
 **JavaScript:**
 
 ```javascript
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 // Unified notification handler
-On('notification', (data) => {
+Events.On('notification', ({ data }) => {
     const toast = document.createElement('div')
     toast.className = `toast toast-${data.type}`
     toast.textContent = data.message
@@ -486,7 +568,9 @@ package main
 import (
     "sync"
     "time"
+
     "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
 )
 
 type EventDemoService struct {
@@ -499,7 +583,7 @@ func NewEventDemoService(app *application.Application) *EventDemoService {
 
     // Listen for custom events
     app.Event.On("user-action", func(e *application.CustomEvent) {
-        data := e.Data.(map[string]interface{})
+        data := e.Data.(map[string]any)
         app.Logger.Info("User action received", "data", data)
     })
 
@@ -513,14 +597,14 @@ func (s *EventDemoService) StartLongTask() {
         for i := 1; i <= 10; i++ {
             time.Sleep(500 * time.Millisecond)
 
-            s.app.Event.Emit("task-progress", map[string]interface{}{
+            s.app.Event.Emit("task-progress", map[string]any{
                 "step":    i,
                 "total":   10,
                 "percent": i * 10,
             })
         }
 
-        s.app.Event.Emit("task-completed", map[string]interface{}{
+        s.app.Event.Emit("task-completed", map[string]any{
             "message": "Task finished successfully!",
         })
     }()
@@ -536,12 +620,8 @@ func main() {
     })
 
     // Handle application lifecycle
-    app.Event.OnApplicationEvent(application.EventApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
         app.Logger.Info("Application started!")
-    })
-
-    app.Event.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
-        app.Logger.Info("Application shutting down...")
     })
 
     // Register service
@@ -568,34 +648,34 @@ func main() {
 **JavaScript:**
 
 ```javascript
-import { On, Once } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 import { StartLongTask, BroadcastMessage } from './bindings/EventDemoService'
 
 // Task events
-On('task-started', () => {
+Events.On('task-started', () => {
     console.log('Task started...')
     document.getElementById('status').textContent = 'Running...'
 })
 
-On('task-progress', (data) => {
+Events.On('task-progress', ({ data }) => {
     const progressBar = document.getElementById('progress')
     progressBar.style.width = `${data.percent}%`
     console.log(`Step ${data.step} of ${data.total}`)
 })
 
-Once('task-completed', (data) => {
+Events.Once('task-completed', ({ data }) => {
     console.log('Task completed!', data.message)
     document.getElementById('status').textContent = data.message
 })
 
 // Broadcast events
-On('broadcast', (message) => {
+Events.On('broadcast', ({ data: message }) => {
     console.log('Broadcast:', message)
     alert(message)
 })
 
 // Window state events
-On('window-state', (state) => {
+Events.On('window-state', ({ data: state }) => {
     console.log('Window is now:', state)
     document.body.dataset.windowState = state
 })
@@ -761,18 +841,18 @@ app.Event.Emit("e", value)
 
 ## Performance Considerations
 
-### Debouncing High-Frequency Events
+### Throttling High-Frequency Events
 
 ```go
 type Service struct {
     app            *application.Application
     lastEmit       time.Time
-    debounceWindow time.Duration
+    minInterval    time.Duration
 }
 
-func (s *Service) EmitWithDebounce(event string, data interface{}) {
+func (s *Service) EmitThrottled(event string, data any) {
     now := time.Now()
-    if now.Sub(s.lastEmit) < s.debounceWindow {
+    if now.Sub(s.lastEmit) < s.minInterval {
         return // Skip this emission
     }
 
@@ -781,15 +861,15 @@ func (s *Service) EmitWithDebounce(event string, data interface{}) {
 }
 ```
 
-### Throttling Events
+### Throttling Event Processing
 
 ```javascript
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 let lastUpdate = 0
 const throttleMs = 100
 
-On('high-frequency-event', (data) => {
+Events.On('high-frequency-event', ({ data }) => {
     const now = Date.now()
     if (now - lastUpdate < throttleMs) {
         return // Skip this update
