@@ -503,16 +503,20 @@ const (
 	MacWindowLevelScreenSaver MacWindowLevel = "screenSaver"
 )
 
-// MacWindowTabbingMode controls window tabbing behavior (macOS 10.12+)
-type MacWindowTabbingMode string
+// MacWindowTabbingMode controls window tabbing behavior (macOS 10.12+).
+// Values map to NSWindowTabbingMode (offset by 1 so the zero value is an "unset" sentinel).
+type MacWindowTabbingMode int
 
 const (
-	// MacWindowTabbingModeAutomatic allows the system to determine tabbing behavior (default)
-	MacWindowTabbingModeAutomatic MacWindowTabbingMode = ""
+	// MacWindowTabbingModeDefault is the zero-value sentinel meaning "not explicitly set".
+	// At runtime it resolves to Disallowed.
+	MacWindowTabbingModeDefault MacWindowTabbingMode = iota
+	// MacWindowTabbingModeAutomatic allows the system to determine tabbing behavior
+	MacWindowTabbingModeAutomatic
 	// MacWindowTabbingModePreferred indicates the window prefers to be in tabbing mode
-	MacWindowTabbingModePreferred MacWindowTabbingMode = "preferred"
+	MacWindowTabbingModePreferred
 	// MacWindowTabbingModeDisallowed prevents the window from being tabbed
-	MacWindowTabbingModeDisallowed MacWindowTabbingMode = "disallowed"
+	MacWindowTabbingModeDisallowed
 )
 
 // MacWindowCollectionBehavior controls window behavior across macOS Spaces and fullscreen.

@@ -22,7 +22,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Add `internal/libpath` package for finding native library paths on Linux with parallel search, caching, and support for Flatpak/Snap/Nix
 - **WIP:** Add experimental WebKitGTK 6.0 / GTK4 support for Linux, available via `-tags gtk4` (GTK3/WebKit2GTK 4.1 remains the default)
   - Note: On tiling window managers (e.g., Hyprland, Sway), Minimize/Maximize operations may not work as expected since the WM controls window geometry
-
+- Add macOS window option to configure NSWindow tabbing behavior
 ## Changed
 <!-- Changes in existing functionality -->
 - **BREAKING**: Map keys in generated JS/TS bindings are now marked optional to accurately reflect Go map semantics. Map value access in Typescript now returns `T | undefined` instead of `T`, requiring null checks or assertions (#4943) by `@fbbdev`

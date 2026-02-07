@@ -1218,16 +1218,12 @@ func (w *macosWebviewWindow) setCollectionBehavior(behavior MacWindowCollectionB
 }
 
 func (w *macosWebviewWindow) setTabbingMode(mode MacWindowTabbingMode) {
-	var tabbingMode C.int
-	switch mode {
-	case MacWindowTabbingModePreferred:
-		tabbingMode = C.int(1) // NSWindowTabbingModePreferred
-	case MacWindowTabbingModeDisallowed:
-		tabbingMode = C.int(2) // NSWindowTabbingModeDisallowed
-	default:
-		tabbingMode = C.int(0) // NSWindowTabbingModeAutomatic
-	}
-	C.windowSetTabbingMode(w.nsWindow, tabbingMode)
+	// Our iota values are offset by 1 from NSWindowTabbingMode:
+	//   MacWindowTabbingModeAutomatic(1) -> NSWindowTabbingModeAutomatic(0)
+	//   MacWindowTabbingModePreferred(2) -> NSWindowTabbingModePreferred(1)
+	//   MacWindowTabbingModeDisallowed(3) -> NSWindowTabbingModeDisallowed(2)
+	// https://developer.apple.com/documentation/appkit/nswindow/tabbingmode-swift.enum
+	C.windowSetTabbingMode(w.nsWindow, C.int(mode-1))
 }
 
 func (w *macosWebviewWindow) width() int {
@@ -1331,11 +1327,12 @@ func (w *macosWebviewWindow) run() {
 		// Set collection behavior (defaults to FullScreenPrimary for backwards compatibility)
 		w.setCollectionBehavior(macOptions.CollectionBehavior)
 
-		// Set tabbing mode if specified (macOS 10.12+)
-		// Empty string means automatic (system default), so only call if explicitly set
-		if macOptions.TabbingMode != "" {
-			w.setTabbingMode(macOptions.TabbingMode)
+		// Set tabbing mode (macOS 10.12+)
+		// Default to disallowed unless explicitly configured.
+		if macOptions.TabbingMode == MacWindowTabbingModeDefault {
+			macOptions.TabbingMode = MacWindowTabbingModeDisallowed
 		}
+		w.setTabbingMode(macOptions.TabbingMode)
 
 		// Initialise the window buttons
 		w.setMinimiseButtonState(options.MinimiseButtonState)

@@ -265,16 +265,17 @@ func TestMacWindowTabbingMode_Constants(t *testing.T) {
 	tests := []struct {
 		name     string
 		value    MacWindowTabbingMode
-		expected string
+		expected MacWindowTabbingMode
 	}{
-		{"MacWindowTabbingModeAutomatic", MacWindowTabbingModeAutomatic, ""},
-		{"MacWindowTabbingModePreferred", MacWindowTabbingModePreferred, "preferred"},
-		{"MacWindowTabbingModeDisallowed", MacWindowTabbingModeDisallowed, "disallowed"},
+		{"MacWindowTabbingModeDefault", MacWindowTabbingModeDefault, 0},
+		{"MacWindowTabbingModeAutomatic", MacWindowTabbingModeAutomatic, 1},
+		{"MacWindowTabbingModePreferred", MacWindowTabbingModePreferred, 2},
+		{"MacWindowTabbingModeDisallowed", MacWindowTabbingModeDisallowed, 3},
 	}
 
 	for _, tt := range tests {
-		if string(tt.value) != tt.expected {
-			t.Errorf("%s = %q, want %q", tt.name, string(tt.value), tt.expected)
+		if tt.value != tt.expected {
+			t.Errorf("%s = %d, want %d", tt.name, tt.value, tt.expected)
 		}
 	}
 }
