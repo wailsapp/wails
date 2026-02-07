@@ -77,11 +77,11 @@ func (f *Frontend) InitializeNotifications() error {
 	if err != nil {
 		return fmt.Errorf("failed to create CLSID key: %w", err)
 	}
+	defer key.Close()
 
 	if err := key.SetStringValue("", fmt.Sprintf("\"%s\" %%1", exePath)); err != nil {
 		return fmt.Errorf("failed to set CLSID server path: %w", err)
 	}
-	key.Close()
 
 	toast.SetAppData(toast.AppData{
 		AppID:         appName,
@@ -435,9 +435,13 @@ func parseNotificationResponse(response string) (action string, options frontend
 }
 
 func handleNotificationResult(result frontend.NotificationResult) {
-	callbackLock.Lock()
+	callbackLock.RLock()
 	callback := notificationResultCallback
-	callbackLock.Unlock()
+	callbackLock.RUnlock()
+
+	if callback == nil {
+		return
+	}
 
 	go func() {
 		defer func() {
