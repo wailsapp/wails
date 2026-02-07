@@ -57,8 +57,20 @@ func main() {
 
 					// Clean the requested URL path and make it relative, to prevent directory traversal
 					cleanPath := filepath.Clean(r.URL.Path)
-					// Treat the request path as relative by stripping any leading forward slash (HTTP paths always use "/").
-					relativePath := strings.TrimPrefix(cleanPath, "/")
+
+					// Normalize to use forward slashes for leading-separator handling.
+					normalized := strings.ReplaceAll(cleanPath, "\\", "/")
+
+					// Strip all leading slashes so the path is always treated as relative.
+					normalized = strings.TrimLeft(normalized, "/")
+
+					// On Windows, also reject drive-letter or UNC-style absolute paths outright.
+					if strings.HasPrefix(normalized, ":") || strings.HasPrefix(normalized, "\\") {
+						next.ServeHTTP(w, r)
+						return
+					}
+
+					relativePath := normalized
 
 					// Resolve the requested path against the absolute assets directory.
 					resolvedPath, err := filepath.Abs(filepath.Join(assetsDirAbs, relativePath))
