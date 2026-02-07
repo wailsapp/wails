@@ -20,6 +20,8 @@ export type {
     EmbeddedValue,
     EmbeddedValuePtr,
     GoodTildeCstrAlias,
+    IntAlias,
+    IntType,
     InterfaceCstrAlias,
     MixedCstrAlias,
     NonBasicCstrAlias,

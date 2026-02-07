@@ -53,6 +53,14 @@ import * as $models from "./models.js";
  */
 
 /**
+ * @typedef {$models.IntAlias} IntAlias
+ */
+
+/**
+ * @typedef {$models.IntType} IntType
+ */
+
+/**
  * @template Y
  * @typedef {$models.InterfaceCstrAlias<Y>} InterfaceCstrAlias
  */

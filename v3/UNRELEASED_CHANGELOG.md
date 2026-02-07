@@ -25,6 +25,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- **BREAKING**: Map keys in generated JS/TS bindings are now marked optional to accurately reflect Go map semantics. Map value access in Typescript now returns `T | undefined` instead of `T`, requiring null checks or assertions (#4943) by `@fbbdev`
 
 ## Fixed
 <!-- Bug fixes -->
@@ -37,6 +38,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Fix HTML5 internal drag-and-drop being broken when file drop was enabled on Linux
 - Fix DPI scaling on Linux/GTK4 by implementing proper PhysicalBounds calculation and fractional scaling support via `gdk_monitor_get_scale` (GTK 4.14+)
 - Fix menu items duplicating when creating new windows on Linux/GTK4
+- Fix generation of mapped types with enum keys in JS/TS bindings (#4437) by @fbbdev
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
