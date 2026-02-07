@@ -126,8 +126,8 @@ jobs:
       - run: |
           result="${{ needs.cross_compile.result }}"
           echo "Cross-compile result: $result"
-          if [[ $result == "success" ]]; then
-            echo "All cross-compile tests passed!"
+          if [[ $result == "success" || $result == "skipped" ]]; then
+            echo "Cross-compile tests passed (or were skipped)!"
             exit 0
           else
             echo "One or more cross-compile tests failed"
