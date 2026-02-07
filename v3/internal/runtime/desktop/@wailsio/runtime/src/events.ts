@@ -109,7 +109,7 @@ function dispatchWailsEvent(event: any) {
  * @param maxCallbacks - The maximum number of times the callback can be called for the event. Once the maximum number is reached, the callback will no longer be called.
  * @returns A function that, when called, will unregister the callback from the event.
  */
-export function OnMultiple<E extends WailsEventName = WailsEventName>(eventName: E, callback: WailsEventCallback<E>, maxCallbacks: number) {
+export function OnMultiple<E extends WailsEventName = WailsEventName>(eventName: E, callback: WailsEventCallback<E>, maxCallbacks: number): () => void {
     let listeners = eventListeners.get(eventName) || [];
     const thisListener = new Listener(eventName, callback, maxCallbacks);
     listeners.push(thisListener);
@@ -164,7 +164,6 @@ export function OffAll(): void {
  */
 export function Emit<E extends WailsEventName = WailsEventName>(name: E, data: WailsEventData<E>): Promise<boolean>
 export function Emit<E extends WailsEventName = WailsEventName>(name: WailsEventData<E> extends null | void ? E : never): Promise<boolean>
-export function Emit<E extends WailsEventName = WailsEventName>(name: WailsEventData<E>, data?: any): Promise<boolean> {
-    return call(EmitMethod,  new WailsEvent(name, data))
+export function Emit<E extends WailsEventName = WailsEventName>(name: E, data?: any): Promise<boolean> {
+    return call(EmitMethod, new WailsEvent(name, data))
 }
-

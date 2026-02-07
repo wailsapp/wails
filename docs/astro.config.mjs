@@ -138,6 +138,7 @@ export default defineConfig({
               items: [
                 { label: "Method Binding", link: "/features/bindings/methods" },
                 { label: "Services", link: "/features/bindings/services" },
+                { label: "Data Models", link: "/features/bindings/models" },
                 { label: "Advanced Binding", link: "/features/bindings/advanced" },
                 { label: "Best Practices", link: "/features/bindings/best-practices" },
               ],
@@ -148,7 +149,6 @@ export default defineConfig({
               items: [
                 { label: "Event System", link: "/features/events/system" },
                 { label: "Application Events", link: "/features/events/application" },
-                { label: "Window Events", link: "/features/events/window" },
                 { label: "Custom Events", link: "/features/events/custom" },
               ],
             },
@@ -230,7 +230,6 @@ export default defineConfig({
                 { label: "Windows Packaging", link: "/guides/build/windows" },
                 { label: "macOS Packaging", link: "/guides/build/macos" },
                 { label: "Linux Packaging", link: "/guides/build/linux" },
-                { label: "MSIX Packaging", link: "/guides/build/msix" },
               ],
             },
             {

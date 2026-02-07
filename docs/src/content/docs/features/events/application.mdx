@@ -1,0 +1,142 @@
+---
+title: Application Events
+description: Handle application lifecycle events
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+Application events are triggered by application-level state changes such as application startup, theme changes, and power events. You can listen for these events using the `OnApplicationEvent` method:
+
+
+```go
+app.Event.OnApplicationEvent(events.Mac.ApplicationDidBecomeActive, func(event *application.ApplicationEvent) {
+    app.Logger.Info("Application started!")
+})
+
+app.Event.OnApplicationEvent(events.Windows.SystemThemeChanged, func(event *application.ApplicationEvent) {
+		app.Logger.Info("System theme changed!")
+		if event.Context().IsDarkMode() {
+			app.Logger.Info("System is now using dark mode!")
+		} else {
+			app.Logger.Info("System is now using light mode!")
+		}
+	})
+```
+
+## Common Application Events
+
+Common application events are aliases for platform-specific application events. These events are triggered by application-level state
+changes such as application startup, theme changes, and power events.
+
+Here is the same example as above, but using common application events to make it work across all platforms:
+
+```go
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
+    app.Logger.Info("Application started!")
+})
+
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
+    if event.Context().IsDarkMode() {
+        app.Logger.Info("System is now using dark mode!")
+    } else {
+        app.Logger.Info("System is now using light mode!")
+    }
+})
+```
+### Common Application Event List
+
+| Event Name                 | Description                                                                                                            |
+|----------------------------|------------------------------------------------------------------------------------------------------------------------|
+| ApplicationOpenedWithFile  | Application opened with a file. See [File Associations](/guides/distribution/file-associations) for more information.  |
+| ApplicationStarted         | Application has started                                                                                                |
+| ApplicationLaunchedWithUrl | Application opened with an URL. See [Custom Protocols](/guides/distribution/custom-protocols) for more information.    |
+| ThemeChanged               | System theme changed                                                                                                   |
+
+## Platform-Specific Application Events
+
+Below is a list of all platform-specific application events.
+
+<Tabs>
+  <TabItem label="macOS" icon="apple">
+
+      | Event Name | Common Event | Description |
+      |------------|--------------|-------------|
+      | ApplicationDidBecomeActive | - | Application became active |
+      | ApplicationDidChangeBackingProperties | - | Application backing properties changed |
+      | ApplicationDidChangeEffectiveAppearance | ThemeChanged | Application appearance changed |
+      | ApplicationDidChangeIcon | - | Application icon changed |
+      | ApplicationDidChangeOcclusionState | - | Application occlusion state changed |
+      | ApplicationDidChangeScreenParameters | - | Screen parameters changed |
+      | ApplicationDidChangeStatusBarFrame | - | Status bar frame changed |
+      | ApplicationDidChangeStatusBarOrientation | - | Status bar orientation changed |
+      | ApplicationDidChangeTheme | ThemeChanged | System theme changed |
+      | ApplicationDidFinishLaunching | ApplicationStarted | Application finished launching |
+      | ApplicationDidHide | - | Application hidden |
+      | ApplicationDidResignActiveNotification | - | Application resigned active state |
+      | ApplicationDidUnhide | - | Application unhidden |
+      | ApplicationDidUpdate | - | Application updated |
+      | ApplicationShouldHandleReopen | - | Application should handle reopen |
+      | ApplicationWillBecomeActive | - | Application is about to become active |
+      | ApplicationWillFinishLaunching | - | Application is about to finish launching |
+      | ApplicationWillHide | - | Application is about to hide |
+      | ApplicationWillResignActiveNotification | - | Application is about to resign active state |
+      | ApplicationWillTerminate | - | Application is about to terminate |
+      | ApplicationWillUnhide | - | Application is about to unhide |
+      | ApplicationWillUpdate | - | Application is about to update |
+
+
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    | Event Name | Common Event | Description |
+    |------------|--------------|-------------|
+    | APMPowerSettingChange | - | Power settings changed |
+    | APMPowerStatusChange | - | Power status changed |
+    | APMResumeAutomatic | - | System resuming automatically |
+    | APMResumeSuspend | - | System resuming from suspend |
+    | APMSuspend | - | System suspending |
+    | ApplicationStarted | ApplicationStarted | Application started |
+    | SystemThemeChanged | ThemeChanged | System theme changed |
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    | Event Name | Common Event | Description |
+    |------------|--------------|-------------|
+    | ApplicationStartup | ApplicationStarted | Application started |
+    | SystemThemeChanged | ThemeChanged | System theme changed |
+  </TabItem>
+</Tabs>
+
+## Next Steps
+
+<CardGrid>
+  <Card title="File associations" icon="document">
+    Handle specific file types when users open them.
+
+    [Learn More →](/guides/distribution/file-associations)
+  </Card>
+
+  <Card title="Custom Protocols" icon="external">
+    Launch your application by clicking on a link.
+
+    [Learn More →](/guides/distribution/custom-protocols)
+  </Card>
+
+  <Card title="Custom Events" icon="star">
+    Create your own event types.
+
+    [Learn More →](/features/events/custom)
+  </Card>
+
+  <Card title="Window Events" icon="laptop">
+    Handle window lifecycle events.
+
+    [Learn More →](/features/windows/events)
+  </Card>
+</CardGrid>
+
+---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [event examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/events).

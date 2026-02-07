@@ -1,8 +1,8 @@
 ---
-title: Event System
-description: Communicate between components with the event system
+title: Custom Events
+description: Notify windows about application-specific events with optional typing and autocompletion support
 sidebar:
-  order: 1
+  order: 3
 ---
 
 import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
@@ -313,7 +313,7 @@ window.OnWindowEvent(events.Common.WindowClosed, func(e *application.WindowEvent
 
 ## Event Hooks
 
-Hooks run **before** standard listeners and can **cancel** events, which also prevents triggering their default behaviour:
+Hooks run **before** standard listeners and can **cancel** events:
 
 ```go
 // Hook - runs first, can cancel
@@ -571,16 +571,16 @@ document.getElementById('button').addEventListener('click', () => {
 ## Next Steps
 
 <CardGrid>
-  <Card title="Custom Events" icon="star">
-    Create your own event types.
+  <Card title="Event patterns" icon="puzzle">
+    Common event patterns and best practices.
 
-    [Learn More →](/features/events/custom)
+    [Learn More →](/features/events/system#event-patterns)
   </Card>
 
-  <Card title="Bindings" icon="rocket">
-    Use bindings for request/response.
+  <Card title="Models" icon="document">
+    Bind complex data structures.
 
-    [Learn More →](/features/bindings/methods)
+    [Learn More →](/features/bindings/models)
   </Card>
 
   <Card title="Application Events" icon="setting">
