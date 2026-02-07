@@ -12,9 +12,9 @@ import { Card, CardGrid } from "@astrojs/starlight/components";
 The Events API provides methods to emit and listen to events, enabling communication between different parts of your application.
 
 **Event Types:**
+- **Custom Events** - User-defined events for app-specific communication
 - **Application Events** - App lifecycle events (startup, shutdown)
 - **Window Events** - Window state changes (focus, blur, resize)
-- **Custom Events** - User-defined events for app-specific communication
 
 **Communication Patterns:**
 - **Go to Frontend** - Emit events from Go, listen in JavaScript
@@ -22,11 +22,11 @@ The Events API provides methods to emit and listen to events, enabling communica
 - **Frontend to Frontend** - Via Go or local runtime events
 - **Window to Window** - Target specific windows or broadcast to all
 
-## Event Methods (Go)
+## Custom Event Methods (Go)
 
 ### app.Event.Emit()
 
-Emits a custom event to all windows.
+Emits a custom event.
 
 ```go
 func (em *EventManager) Emit(name string, data ...any) bool
@@ -62,38 +62,9 @@ if cancelled {
 }
 ```
 
-### app.Event.On()
-
-Listens for custom events in Go.
-
-```go
-func (em *EventManager) On(name string, callback func(*CustomEvent)) func()
-```
-
-**Parameters:**
-- `name` - Event name to listen for
-- `callback` - Function called when event is emitted
-
-**Returns:** Cleanup function to remove the event listener
-
-**Example:**
-```go
-// Listen for events
-cleanup := app.Event.On("user-action", func(e *application.CustomEvent) {
-    data := e.Data.(map[string]any)
-    action := data["action"].(string)
-    app.Logger.Info("User action", "action", action)
-})
-
-// Later, remove listener
-cleanup()
-```
-
-### Window-Specific Events
-
 ### window.EmitEvent()
 
-Emit events to all windows with a specific window reported as sender.
+Emits a custom event reporting a specific window as the sender.
 
 ```go
 func (w *WebviewWindow) Emit(name string, data ...any) bool
@@ -126,9 +97,73 @@ Events.On('notification', async (ev) => {
 })
 ```
 
-## Event Methods (Frontend)
+### app.Event.On()
 
-### Emit()
+Listens for custom events in Go.
+
+```go
+func (em *EventManager) On(name string, callback func(*CustomEvent)) func()
+```
+
+**Parameters:**
+- `name` - Event name to listen for
+- `callback` - Function called when event is emitted
+
+**Returns:** Cleanup function to remove the event listener
+
+**Example:**
+```go
+// Listen for events
+cleanup := app.Event.On("user-action", func(e *application.CustomEvent) {
+    data := e.Data.(map[string]any)
+    action := data["action"].(string)
+    app.Logger.Info("User action", "action", action)
+})
+
+// Later, remove listener
+cleanup()
+```
+
+### app.Event.Off()
+
+Removes all listeners for a custom event in Go.
+
+```go
+func (em *EventManager) Off(name string)
+```
+
+**Parameters:**
+- `name` - Event name to stop listening for
+
+**Example:**
+```go
+app.Event.On("user-action", listener1)
+app.Event.On("user-action", listener2)
+
+// Remove both listener1 and listener2
+app.Event.Off("user-action")
+```
+
+### app.Event.Reset()
+
+Removes all listeners for all custom events in Go.
+
+```go
+func (em *EventManager) Reset()
+```
+
+**Example:**
+```go
+app.Event.On("user-action", listener1)
+app.Event.On("settings-update", listener2)
+
+// Remove both listener1 and listener2 (as well as any other registered listener)
+app.Event.Reset()
+```
+
+## Custom Event Methods (Frontend)
+
+### Events.Emit()
 
 Emits a custom event with the current webview window as sender.
 
@@ -166,7 +201,7 @@ if cancelled {
 }
 ```
 
-### On()
+### Events.On()
 
 Listens for events from Go.
 
@@ -197,7 +232,7 @@ const cleanup = Events.On('data-updated', (ev) => {
 cleanup()
 ```
 
-### Once()
+### Events.Once()
 
 Listens for a single event occurrence.
 
@@ -224,7 +259,7 @@ Events.Once('initialization-complete', (ev) => {
 })
 ```
 
-### Off()
+### Events.Off()
 
 Removes _all event listeners_ for a given set of events.
 
@@ -257,7 +292,7 @@ Events.On('my-event-2', handler1)
 Events.Off('my-event-1', 'my-event-2')
 ```
 
-### OffAll()
+### Events.OffAll()
 
 Removes _all registered listeners_ for _all events_.
 
@@ -265,6 +300,103 @@ Removes _all registered listeners_ for _all events_.
 import { Events } from '@wailsio/runtime'
 
 Events.OffAll()
+```
+
+## Typed Event API
+
+Custom events may be registered at init time, enabling strict checking of correctness on names and data types, as well as generation and runtime translation of Typescript types on the frontend side.
+
+If a registered event is emitted with the wrong data type, an error will be reported through the application error handler (configurable through application options, the default handler logs errors to the configured logger) and the event will be dropped.
+
+By default, registering an event will only enable checking of data types. If the application is compiled with the `strictevents` tag, it will also log warnings when unregistered events are emitted (but will not drop them).
+
+### application.RegisterEvent()
+
+Registers an event with a specified data type. Duplicate calls for the same event name trigger a panic.
+
+```go
+func RegisterEvent[Data any](name string)
+```
+
+**Type Parameters:**
+- `Data` - Type of data associated to the registered event
+
+**Parameters:**
+- `name` - Event name to register
+
+**Example:**
+```go
+package auth
+
+type User struct{
+	Id   number `json:"id"`
+	Name string `json:"name"`
+}
+
+func init() {
+	application.RegisterEvent[User]("auth:login")
+}
+
+// Valid! Emits event
+app.Events.Emit("auth:login", User{ Id: 0, Name: "root" })
+
+// Invalid! Logs error and drops event
+app.Events.Emit("auth:login")
+app.Events.Emit("auth:login", "username")
+```
+
+```typescript
+import { Events } from '@wailsio/runtime'
+import { User } from './bindings/auth'
+
+Events.On('auth:login', ({ data }) => {
+  // data has type User, data.id has type number and data.name has type string.
+  // Without registration, their type would be any.
+})
+
+// Valid! Emits event. Go listeners will receive an instance of struct `auth.User`
+Events.Emit('auth:login', new User({ id: 0, name: 'root' }))
+
+// Invalid! Does not typecheck at compile time, and log an error at runtime
+Events.Emit('auth:login')
+Events.Emit('auth:login', "username")
+```
+
+### application.Void
+
+A placeholder type to register events that must have no associated data.
+
+```go
+type Void interface{
+	/* Private Methods */
+}
+```
+
+**Example:**
+```go
+func init() {
+	application.RegisterEvent[application.Void]("processing-complete")
+}
+
+// Valid! Emits event
+Events.Emit("processing-complete")
+
+// Invalid! Logs error and drops event
+Events.Emit("processing-complete", "100%")
+```
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.On('processing-complete', ({ data }) => {
+  // data has type void
+})
+
+// Valid! Emits event
+Events.Emit('processing-complete')
+
+// Invalid! Does not typecheck at compile time, and will log an error at runtime
+Events.Emit('processing-complete', 100)
 ```
 
 ## Application Events
