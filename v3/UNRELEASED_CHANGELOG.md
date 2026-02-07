@@ -18,6 +18,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Added
 <!-- New features, capabilities, or enhancements -->
 - Add `-tags` flag to `wails3 build` command for passing custom Go build tags (e.g., `wails3 build -tags gtk4`) (#4957)
+- Add documentation for automatic enum generation in binding generator, including dedicated Enums page and sidebar navigation (#4972)
 
 ## Changed
 <!-- Changes in existing functionality -->
