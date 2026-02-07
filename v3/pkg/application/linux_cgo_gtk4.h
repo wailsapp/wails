@@ -156,6 +156,13 @@ void beginWindowDrag(GtkWindow *window, int button, double x, double y, guint32 
 void beginWindowResize(GtkWindow *window, GdkSurfaceEdge edge, int button, double x, double y, guint32 timestamp);
 
 // ============================================================================
+// Window position (X11 only)
+// ============================================================================
+
+void window_move_x11(GtkWindow *window, int x, int y);
+void window_get_position_x11(GtkWindow *window, int *x, int *y);
+
+// ============================================================================
 // Drag and drop (GtkDropTarget for GTK4)
 // ============================================================================
 
@@ -188,6 +195,12 @@ void show_message_dialog(GtkWindow *parent, const char *heading, const char *bod
 
 char* clipboard_get_text_sync(void);
 void clipboard_free_text(char *text);
+
+// ============================================================================
+// Window size constraints
+// ============================================================================
+
+void window_set_max_size(GtkWindow *window, int maxWidth, int maxHeight);
 
 // ============================================================================
 // Misc

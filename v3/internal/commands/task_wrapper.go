@@ -18,7 +18,10 @@ var validPlatforms = map[string]bool{
 	"linux":   true,
 }
 
-func Build(_ *flags.Build, otherArgs []string) error {
+func Build(buildFlags *flags.Build, otherArgs []string) error {
+	if buildFlags.Tags != "" {
+		otherArgs = append(otherArgs, "EXTRA_TAGS="+buildFlags.Tags)
+	}
 	return wrapTask("build", otherArgs)
 }
 
