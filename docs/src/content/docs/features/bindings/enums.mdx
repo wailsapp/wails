@@ -252,6 +252,7 @@ Every named-type enum includes a special `$zero` member representing the **Go ze
 | `int`, `int8`, `int16`, `int32`, `int64` | `0` |
 | `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `0` |
 | `float32`, `float64` | `0` |
+| `bool` | `false` |
 
 When a struct field uses an enum type and no value is provided, the constructor defaults to `$zero`:
 
@@ -268,7 +269,7 @@ export class Person {
 }
 ```
 
-This ensures type-safe initialisation — fields are never `undefined`.
+This ensures type-safe initialisation when generating classes — enum fields are never `undefined`. When generating TypeScript interfaces (using `-i`), there is no constructor and fields may be absent as usual.
 
 ## Using Enums in Structs
 
@@ -332,7 +333,7 @@ package main
 import "myapp/services"
 
 func (*GreetService) Greet(name string, title services.Title) string {
-    return "Hello " + title.String() + " " + name
+    return "Hello " + string(title) + " " + name
 }
 ```
 
@@ -399,7 +400,7 @@ The following are **not** supported for enum generation:
 
 - **Generic types** — Type parameters prevent constant detection
 - **Types with custom `json.Marshaler` or `encoding.TextMarshaler`** — Custom serialisation means the generated values may not match runtime behaviour, so the generator skips these
-- **`iota`-only constants without explicit values** — Constants must have known, representable values. Standard `iota` patterns work fine since the compiler resolves them to concrete values
+- **Constants whose values cannot be statically evaluated or represented** — Constants must have known, representable values in their underlying type. Standard `iota` patterns work fine since the compiler resolves them to concrete values
 - **Complex number types** — `complex64` and `complex128` cannot be enum underlying types
 
 ## Complete Example
