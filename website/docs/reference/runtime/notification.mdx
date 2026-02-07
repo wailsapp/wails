@@ -6,125 +6,350 @@ sidebar_position: 6
 
 This part of the runtime provides access to native system notifications with support for interactive elements like action buttons and text input fields.
 
-:::info JavaScript
-
-Notifications are currently unsupported in the JS runtime.
-
-:::
-
 ### InitializeNotifications
 
 Initializes the notification system. It should be called during app startup.
-Go: `InitializeNotifications(ctx context.Context) error`
+
+**Go:** `InitializeNotifications(ctx context.Context) error`
+
+**JavaScript:** `InitializeNotifications(): Promise<void>`
 
 Returns: Error if initialization fails
+
+**Example:**
+```go
+err := runtime.InitializeNotifications(ctx)
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+```javascript
+await runtime.InitializeNotifications();
+```
 
 ### IsNotificationAvailable
 
 Checks if notifications are supported on the current platform.
 
-Go: `IsNotificationAvailable(ctx context.Context) bool`
+**Go:** `IsNotificationAvailable(ctx context.Context) bool`
+
+**JavaScript:** `IsNotificationAvailable(): Promise<boolean>`
 
 Returns: `true` if notifications are supported, `false` otherwise
+
+**Example:**
+```go
+if !runtime.IsNotificationAvailable(ctx) {
+    log.Println("Notifications not available on this platform")
+}
+```
+
+```javascript
+const available = await runtime.IsNotificationAvailable();
+if (!available) {
+    console.log("Notifications not available on this platform");
+}
+```
 
 ### RequestNotificationAuthorization
 
 Requests permission to display notifications (macOS only). On Windows and Linux, this always returns `true`.
 
-Go: `RequestNotificationAuthorization(ctx context.Context) (bool, error)`
+**Go:** `RequestNotificationAuthorization(ctx context.Context) (bool, error)`
+
+**JavaScript:** `RequestNotificationAuthorization(): Promise<boolean>`
 
 Returns: Authorization status and error
+
+**Example:**
+```go
+authorized, err := runtime.RequestNotificationAuthorization(ctx)
+```
+
+```javascript
+const authorized = await runtime.RequestNotificationAuthorization();
+```
 
 ### CheckNotificationAuthorization
 
 Checks the current notification authorization status (macOS only). On Windows and Linux, this always returns `true`.
 
-Go: `CheckNotificationAuthorization(ctx context.Context) (bool, error)`
+**Go:** `CheckNotificationAuthorization(ctx context.Context) (bool, error)`
+
+**JavaScript:** `CheckNotificationAuthorization(): Promise<boolean>`
 
 Returns: Authorization status and error
+
+**Example:**
+```go
+authorized, err := runtime.CheckNotificationAuthorization(ctx)
+```
+
+```javascript
+const authorized = await runtime.CheckNotificationAuthorization();
+```
+
+### CleanupNotifications
+
+Cleans up notification resources and releases any held connections. This should be called when shutting down the application, particularly on Linux where it closes the D-Bus connection.
+
+**Go:** `CleanupNotifications(ctx context.Context)`
+
+**JavaScript:** `CleanupNotifications(): Promise<void>`
+
+**Example:**
+```go
+runtime.CleanupNotifications(ctx)
+```
+
+```javascript
+await runtime.CleanupNotifications();
+```
 
 ### SendNotification
 
 Sends a basic notification to the system.
 
-Go: `SendNotification(ctx context.Context, options NotificationOptions) error`
+**Go:** `SendNotification(ctx context.Context, options NotificationOptions) error`
+
+**JavaScript:** `SendNotification(options: NotificationOptions): Promise<void>`
 
 Returns: Error if the notification fails to send
+
+**Example:**
+```go
+err := runtime.SendNotification(ctx, runtime.NotificationOptions{
+    ID:    "notif-1",
+    Title: "Hello",
+    Body:  "This is a notification",
+})
+```
+
+```javascript
+await runtime.SendNotification({
+    id: "notif-1",
+    title: "Hello",
+    body: "This is a notification"
+});
+```
 
 ### SendNotificationWithActions
 
 Sends an interactive notification with predefined actions. Requires a registered notification category. If the category is not found or `CategoryID` is empty, a basic notification will be sent instead.
 
-Go: `SendNotificationWithActions(ctx context.Context, options NotificationOptions) error`
+**Go:** `SendNotificationWithActions(ctx context.Context, options NotificationOptions) error`
+
+**JavaScript:** `SendNotificationWithActions(options: NotificationOptions): Promise<void>`
 
 Returns: Error if the notification fails to send
+
+**Example:**
+```go
+err := runtime.SendNotificationWithActions(ctx, runtime.NotificationOptions{
+    ID:         "notif-2",
+    Title:      "Task Reminder",
+    Body:       "Complete your task",
+    CategoryID: "TASK_CATEGORY",
+})
+```
+
+```javascript
+await runtime.SendNotificationWithActions({
+    id: "notif-2",
+    title: "Task Reminder",
+    body: "Complete your task",
+    categoryId: "TASK_CATEGORY"
+});
+```
 
 ### RegisterNotificationCategory
 
 Registers a notification category that can be used with interactive notifications. Registering a category with the same ID as a previously registered category will override it.
 
-Go: `RegisterNotificationCategory(ctx context.Context, category NotificationCategory) error`
+**Go:** `RegisterNotificationCategory(ctx context.Context, category NotificationCategory) error`
+
+**JavaScript:** `RegisterNotificationCategory(category: NotificationCategory): Promise<void>`
 
 Returns: Error if registration fails
+
+**Example:**
+```go
+err := runtime.RegisterNotificationCategory(ctx, runtime.NotificationCategory{
+    ID: "TASK_CATEGORY",
+    Actions: []runtime.NotificationAction{
+        {ID: "COMPLETE", Title: "Complete"},
+        {ID: "CANCEL", Title: "Cancel"},
+    },
+})
+```
+
+```javascript
+await runtime.RegisterNotificationCategory({
+    id: "TASK_CATEGORY",
+    actions: [
+        {id: "COMPLETE", title: "Complete"},
+        {id: "CANCEL", title: "Cancel"}
+    ]
+});
+```
 
 ### RemoveNotificationCategory
 
 Removes a previously registered notification category.
 
-Go: `RemoveNotificationCategory(ctx context.Context, categoryID string) error`
+**Go:** `RemoveNotificationCategory(ctx context.Context, categoryID string) error`
+
+**JavaScript:** `RemoveNotificationCategory(categoryId: string): Promise<void>`
 
 Returns: Error if removal fails
+
+**Example:**
+```go
+err := runtime.RemoveNotificationCategory(ctx, "TASK_CATEGORY")
+```
+
+```javascript
+await runtime.RemoveNotificationCategory("TASK_CATEGORY");
+```
 
 ### RemoveAllPendingNotifications
 
 Removes all pending notifications (macOS and Linux only).
 
-Go: `RemoveAllPendingNotifications(ctx context.Context) error`
+**Go:** `RemoveAllPendingNotifications(ctx context.Context) error`
+
+**JavaScript:** `RemoveAllPendingNotifications(): Promise<void>`
 
 Returns: Error if removal fails
+
+**Example:**
+```go
+err := runtime.RemoveAllPendingNotifications(ctx)
+```
+
+```javascript
+await runtime.RemoveAllPendingNotifications();
+```
 
 ### RemovePendingNotification
 
 Removes a specific pending notification (macOS and Linux only).
 
-Go: `RemovePendingNotification(ctx context.Context, identifier string) error`
+**Go:** `RemovePendingNotification(ctx context.Context, identifier string) error`
+
+**JavaScript:** `RemovePendingNotification(identifier: string): Promise<void>`
 
 Returns: Error if removal fails
+
+**Example:**
+```go
+err := runtime.RemovePendingNotification(ctx, "notif-1")
+```
+
+```javascript
+await runtime.RemovePendingNotification("notif-1");
+```
 
 ### RemoveAllDeliveredNotifications
 
 Removes all delivered notifications (macOS and Linux only).
 
-Go: `RemoveAllDeliveredNotifications(ctx context.Context) error`
+**Go:** `RemoveAllDeliveredNotifications(ctx context.Context) error`
+
+**JavaScript:** `RemoveAllDeliveredNotifications(): Promise<void>`
 
 Returns: Error if removal fails
+
+**Example:**
+```go
+err := runtime.RemoveAllDeliveredNotifications(ctx)
+```
+
+```javascript
+await runtime.RemoveAllDeliveredNotifications();
+```
 
 ### RemoveDeliveredNotification
 
 Removes a specific delivered notification (macOS and Linux only).
 
-Go: `RemoveDeliveredNotification(ctx context.Context, identifier string) error`
+**Go:** `RemoveDeliveredNotification(ctx context.Context, identifier string) error`
+
+**JavaScript:** `RemoveDeliveredNotification(identifier: string): Promise<void>`
 
 Returns: Error if removal fails
+
+**Example:**
+```go
+err := runtime.RemoveDeliveredNotification(ctx, "notif-1")
+```
+
+```javascript
+await runtime.RemoveDeliveredNotification("notif-1");
+```
 
 ### RemoveNotification
 
 Removes a notification by identifier (Linux only). On macOS and Windows, this is a stub that always returns `nil`.
 
-Go: `RemoveNotification(ctx context.Context, identifier string) error`
+**Go:** `RemoveNotification(ctx context.Context, identifier string) error`
+
+**JavaScript:** `RemoveNotification(identifier: string): Promise<void>`
 
 Returns: Error if removal fails
+
+**Example:**
+```go
+err := runtime.RemoveNotification(ctx, "notif-1")
+```
+
+```javascript
+await runtime.RemoveNotification("notif-1");
+```
 
 ### OnNotificationResponse
 
 Registers a callback function to handle notification responses when users interact with notifications.
 
-Go: `OnNotificationResponse(ctx context.Context, callback func(result NotificationResult))`
+**Go:** `OnNotificationResponse(ctx context.Context, callback func(result NotificationResult))`
+
+:::note JavaScript
+
+`OnNotificationResponse` is not available in the JavaScript runtime. Instead, JavaScript applications should use the [Events API](/docs/reference/runtime/events) to listen for notification responses. From your Go callback, emit an event that your JavaScript code can listen to.
+
+**Example:**
+```go
+runtime.OnNotificationResponse(ctx, func(result runtime.NotificationResult) {
+    if result.Error != nil {
+        return
+    }
+    // Emit an event that JavaScript can listen to
+    runtime.EventsEmit(ctx, "notification-response", result.Response)
+})
+```
+
+```javascript
+runtime.EventsOn("notification-response", (response) => {
+    console.log("Notification response:", response);
+    switch (response.actionIdentifier) {
+        case "COMPLETE":
+            // Handle complete action
+            break;
+        case "CANCEL":
+            // Handle cancel action
+            break;
+    }
+});
+```
+
+:::
 
 ## Options
 
 ### NotificationOptions
 
+**Go:**
 ```go
 type NotificationOptions struct {
     ID         string                 `json:"id"`
@@ -133,6 +358,18 @@ type NotificationOptions struct {
     Body       string                 `json:"body,omitempty"`
     CategoryID string                 `json:"categoryId,omitempty"`
     Data       map[string]interface{} `json:"data,omitempty"`
+}
+```
+
+**TypeScript:**
+```typescript
+interface NotificationOptions {
+    id: string;
+    title: string;
+    subtitle?: string; // macOS and Linux only
+    body?: string;
+    categoryId?: string;
+    data?: { [key: string]: any };
 }
 ```
 
@@ -147,6 +384,7 @@ type NotificationOptions struct {
 
 ### NotificationCategory
 
+**Go:**
 ```go
 type NotificationCategory struct {
     ID               string               `json:"id,omitempty"`
@@ -154,6 +392,17 @@ type NotificationCategory struct {
     HasReplyField    bool                 `json:"hasReplyField,omitempty"`
     ReplyPlaceholder string               `json:"replyPlaceholder,omitempty"`
     ReplyButtonTitle string               `json:"replyButtonTitle,omitempty"`
+}
+```
+
+**TypeScript:**
+```typescript
+interface NotificationCategory {
+    id?: string;
+    actions?: NotificationAction[];
+    hasReplyField?: boolean;
+    replyPlaceholder?: string;
+    replyButtonTitle?: string;
 }
 ```
 
@@ -167,11 +416,21 @@ type NotificationCategory struct {
 
 ### NotificationAction
 
+**Go:**
 ```go
 type NotificationAction struct {
     ID          string `json:"id,omitempty"`
     Title       string `json:"title,omitempty"`
     Destructive bool   `json:"destructive,omitempty"` // (macOS-specific)
+}
+```
+
+**TypeScript:**
+```typescript
+interface NotificationAction {
+    id?: string;
+    title?: string;
+    destructive?: boolean; // macOS-specific
 }
 ```
 
@@ -243,7 +502,7 @@ type NotificationResult struct {
 - **Styling**: Automatically adapts to system dark/light mode
 - **Center**: Notifications appear in macOS Notification Center
 
-Example:
+**Example:**
 ```go
 // Check and request authorization
 authorized, err := runtime.CheckNotificationAuthorization(ctx)
@@ -255,6 +514,19 @@ if !authorized {
     authorized, err = runtime.RequestNotificationAuthorization(ctx)
     if err != nil || !authorized {
         return fmt.Errorf("notification authorization denied")
+    }
+}
+
+// Now send notifications
+```
+
+```javascript
+// Check and request authorization
+let authorized = await runtime.CheckNotificationAuthorization();
+if (!authorized) {
+    authorized = await runtime.RequestNotificationAuthorization();
+    if (!authorized) {
+        throw new Error("Notification authorization denied");
     }
 }
 
@@ -277,11 +549,22 @@ if !authorized {
 - **Styling**: Follows desktop environment theme
 - **Behavior**: Uses native notification system when available
 
-Example:
+**Example:**
 ```go
 // Check system support
 if !runtime.IsNotificationAvailable(ctx) {
     return fmt.Errorf("notifications not supported on this Linux desktop")
+}
+
+// Linux notifications may not support text input
+// Only use actions that don't require user text
+```
+
+```javascript
+// Check system support
+const available = await runtime.IsNotificationAvailable();
+if (!available) {
+    throw new Error("Notifications not supported on this Linux desktop");
 }
 
 // Linux notifications may not support text input
