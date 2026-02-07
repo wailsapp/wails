@@ -29,7 +29,7 @@ typedef struct WindowEvent {
     uint event;
 } WindowEvent;
 
-typedef struct Screen {
+typedef struct WailsScreen {
     const char* id;
     const char* name;
     int p_width;
@@ -43,7 +43,7 @@ typedef struct Screen {
     float scaleFactor;
     double rotation;
     bool isPrimary;
-} Screen;
+} WailsScreen;
 
 typedef struct MenuItemData {
     guint id;

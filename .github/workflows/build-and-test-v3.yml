@@ -125,10 +125,10 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         with:
           packages: libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk
-          version: 1.0
+          version: 1.1
 
-      - name: Install linux dependencies (GTK4) - webkit-gtk6-support branch only
-        if: matrix.os == 'ubuntu-latest' && github.head_ref == 'feature/webkit-gtk6-support'
+      - name: Install linux dependencies (GTK4)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-4-dev libwebkitgtk-6.0-dev
@@ -160,7 +160,7 @@ jobs:
           echo "Example compilation tests (GTK3) completed successfully"
 
       - name: Build Examples (GTK4 experimental)
-        if: matrix.os == 'ubuntu-latest' && github.head_ref == 'feature/webkit-gtk6-support'
+        if: matrix.os == 'ubuntu-latest'
         working-directory: v3
         run: |
           echo "Starting example compilation tests (GTK4)..."
@@ -190,7 +190,7 @@ jobs:
           '
 
       - name: Run tests (ubuntu) - GTK4 experimental
-        if: matrix.os == 'ubuntu-latest' && github.head_ref == 'feature/webkit-gtk6-support'
+        if: matrix.os == 'ubuntu-latest'
         working-directory: v3
         # Skip all service tests that hang in CI due to GTK4 display requirements
         # The services tests require a fully functional GTK4 display which xvfb cannot provide
@@ -255,8 +255,8 @@ jobs:
           packages: libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config
           version: 1.1
 
-      - name: Install linux dependencies (GTK4) - webkit-gtk6-support branch only
-        if: matrix.os == 'ubuntu-latest' && github.head_ref == 'feature/webkit-gtk6-support'
+      - name: Install linux dependencies (GTK4)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-4-dev libwebkitgtk-6.0-dev
