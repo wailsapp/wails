@@ -399,7 +399,7 @@ Events.Emit('processing-complete')
 Events.Emit('processing-complete', 100)
 ```
 
-## Application Events
+## Application Event Methods
 
 ### app.Event.OnApplicationEvent()
 
@@ -408,6 +408,12 @@ Listens for application lifecycle events.
 ```go
 func (em *EventManager) OnApplicationEvent(eventType ApplicationEventType, callback func(*ApplicationEvent)) func()
 ```
+
+**Parameters:**
+- `eventType` - Type of the event to listen for (see [Application Events](#application-events))
+- `callback` - Function called when event is received
+
+**Returns:** Cleanup function
 
 **Example:**
 ```go
@@ -418,12 +424,43 @@ app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *ap
 })
 
 // Handle theme change
-app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+cleanup := app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
     app.Logger.Info("Theme changed")
 })
+
+// Stop listening to theme changes later
+cleanup()
 ```
 
-## Window Events
+### app.Event.RegisterApplicationEventHook()
+
+Registers a hook to intercept and cancel application events. For cancelable events, canceling will prevent the default behaviour. For non-cancelable events, canceling will just stop propagation to later hooks and listeners.
+
+```go
+func (em *EventManager) RegisterApplicationEventHook(eventType events.ApplicationEventType, callback func(event *ApplicationEvent)) func()
+```
+
+**Parameters:**
+- `eventType` - Type of the event to listen for (see [Application Events](#application-events))
+- `callback` - Function called when event is received
+
+**Returns:** Cleanup function
+
+**Example:**
+```go
+// Suppress theme change notifications conditionally
+cleanup := app.Event.RegisterApplicationEventHook(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+		if condition {
+			// If condition is met, stop propagation
+			e.Cancel()
+		}
+})
+
+// Stop filtering theme changes later
+cleanup()
+```
+
+## Window Event Methods
 
 ### OnWindowEvent()
 
