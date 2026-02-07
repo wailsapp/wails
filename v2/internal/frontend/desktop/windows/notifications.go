@@ -316,6 +316,7 @@ func (f *Frontend) saveIconToDir() error {
 			iconErr = fmt.Errorf("ExtractIcon failed for %s", exePath)
 			return
 		}
+		defer w32.DestroyIcon(hIcon)
 		iconErr = winc.SaveHIconAsPNG(hIcon, iconPath)
 	})
 	return iconErr
