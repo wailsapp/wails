@@ -1,0 +1,189 @@
+---
+title: Overview
+sidebar:
+  order: 1
+---
+
+import { ShowcaseImage } from "starlight-showcases";
+import { Steps } from "@astrojs/starlight/components";
+
+:::tip[See how to add your project]
+
+Check out the
+[How to add my project in showcase](#how-to-add-my-project-in-showcase) section.
+
+:::
+
+<ShowcaseImage
+  entries={[
+    {
+      thumbnail: import("../../../../assets/showcase-images/bboard.webp"),
+      href: "/community/showcase/bulletinboard",
+      title: "BulletinBoard",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/cfntracker.webp"),
+      href: "/community/showcase/cfntracker",
+      title: "CFN Tracker",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/clave.png"),
+      href: "/community/showcase/clave",
+      title: "Clave",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/emailit.webp"),
+      href: "/community/showcase/emailit",
+      title: "EmailIt",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/encrypteasy.webp"),
+      href: "/community/showcase/encrypteasy",
+      title: "EncryptEasy",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/esp-studio.png"),
+      href: "/community/showcase/espstudio",
+      title: "ESP Studio",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/filehound.webp"),
+      href: "/community/showcase/filehound",
+      title: "FileHound Export Utility",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/hiposter.webp"),
+      href: "/community/showcase/hiposter",
+      title: "hiposter",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/mchat.png"),
+      href: "/community/showcase/mchat",
+      title: "Mchat",
+    },
+    {
+      thumbnail: import(
+        "../../../../assets/showcase-images/minecraft-mod-updater.webp"
+      ),
+      href: "/community/showcase/minecraftupdater",
+      title: "Minecraft Updater",
+    },
+    {
+      thumbnail: import(
+        "../../../../assets/showcase-images/minesweeper-xp.webp"
+      ),
+      href: "/community/showcase/minesweeper-xp",
+      title: "Minesweeper XP",
+    },
+    {
+      thumbnail: import(
+        "../../../../assets/showcase-images/modalfilemanager.webp"
+      ),
+      href: "/community/showcase/modalfilemanager",
+      title: "Modal File Manager",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/mollywallet.webp"),
+      href: "/community/showcase/mollywallet",
+      title: "Molly Wallet",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/october.webp"),
+      href: "/community/showcase/october",
+      title: "October",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/optimus.webp"),
+      href: "/community/showcase/optimus",
+      title: "Optimus",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/portfall.webp"),
+      href: "/community/showcase/portfall",
+      title: "Portfall",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/resizem.webp"),
+      href: "/community/showcase/resizem",
+      title: "Resizem",
+    },
+    {
+      thumbnail: import(
+        "../../../../assets/showcase-images/restic-browser-2.png"
+      ),
+      href: "/community/showcase/restic-browser",
+      title: "Restic Browser",
+    },
+    {
+      thumbnail: import(
+        "../../../../assets/showcase-images/riftshare-main.webp"
+      ),
+      href: "/community/showcase/riftshare",
+      title: "RiftShare",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/scriptbar.webp"),
+      href: "/community/showcase/scriptbar",
+      title: "ScriptBar",
+    },
+    {
+      thumbnail: import(
+        "../../../../assets/showcase-images/snippetexpandergui-search-and-paste.png"
+      ),
+      href: "/community/showcase/snippetexpander",
+      title: "Snippet Expander",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/surge.png"),
+      href: "/community/showcase/surge",
+      title: "Surge",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/tiny-rdm1.webp"),
+      href: "/community/showcase/tinyrdm",
+      title: "Tiny RDM",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/wailsterm.webp"),
+      href: "/community/showcase/wailsterm",
+      title: "WailsTerm",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/wally.webp"),
+      href: "/community/showcase/wally",
+      title: "Wally",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/warmine1.png"),
+      href: "/community/showcase/warmine",
+      title: "WarMine",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/wombat.webp"),
+      href: "/community/showcase/wombat",
+      title: "Wombat",
+    },
+    {
+      thumbnail: import("../../../../assets/showcase-images/ytd.webp"),
+      href: "/community/showcase/ytd",
+      title: "Ytd",
+    },
+  ]}
+/>
+
+## How to add my project in showcase
+
+<Steps>
+
+1. Make a fork of the repository.
+2. Add the image(s) under `docs/src/assets/showcase-images` folder.
+3. Make a copy of the `_template.md` file under
+   `docs/src/content/docs/community/showcase` folder.
+4. Rename the copied file to the name of your project. (Name should not start
+   with `_`))
+5. Update the title, image, link and content of the file.
+6. Add it on the above list in
+   `docs/src/content/docs/community/showcase/index.mdx`.
+7. Submit a PR.
+
+</Steps>

@@ -1,0 +1,518 @@
+---
+title: Message dialogs
+description: Display information, warnings, errors, and questions
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Message dialogs
+
+Wails provides **native message dialogs** with platform-appropriate appearance: info, warning, error, and question dialogs with customisable titles, messages, and buttons. Simple API, native behaviour, accessible by default.
+## Information dialog
+
+Display informational messages:
+
+```go
+app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("File saved successfully!").
+    Show()
+```
+
+**Use cases:**
+- Success confirmations
+- Completion notices
+- Informational messages
+- Status updates
+
+**Example - Save confirmation:**
+
+```go
+func saveFile(path string, data []byte) error {
+    if err := os.WriteFile(path, data, 0644); err != nil {
+        return err
+    }
+
+    app.Dialog.Info().
+        SetTitle("File Saved").
+        SetMessage(fmt.Sprintf("Saved to %s", filepath.Base(path))).
+        Show()
+
+    return nil
+}
+```
+
+## Warning dialog
+
+Show warnings:
+
+```go
+app.Dialog.Warning().
+    SetTitle("Warning").
+    SetMessage("This action cannot be undone.").
+    Show()
+```
+
+**Use cases:**
+- Non-critical warnings
+- Deprecation notices
+- Caution messages
+- Potential issues
+
+**Example - Disk space warning:**
+
+```go
+func checkDiskSpace() {
+    available := getDiskSpace()
+
+    if available < 100*1024*1024 { // Less than 100MB
+        app.Dialog.Warning().
+            SetTitle("Low Disk Space").
+            SetMessage(fmt.Sprintf("Only %d MB available.", available/(1024*1024))).
+            Show()
+    }
+}
+```
+
+## Error dialog
+
+Display errors:
+
+```go
+app.Dialog.Error().
+    SetTitle("Error").
+    SetMessage("Failed to connect to server.").
+    Show()
+```
+
+**Use cases:**
+- Error messages
+- Failure notifications
+- Exception handling
+- Critical issues
+
+**Example - Network error:**
+
+```go
+func fetchData(url string) ([]byte, error) {
+    resp, err := http.Get(url)
+    if err != nil {
+        app.Dialog.Error().
+            SetTitle("Network Error").
+            SetMessage(fmt.Sprintf("Failed to connect: %v", err)).
+            Show()
+        return nil, err
+    }
+    defer resp.Body.Close()
+
+    return io.ReadAll(resp.Body)
+}
+```
+
+## Question dialog
+
+Ask users questions using button callbacks:
+
+```go
+dialog := app.Dialog.Question().
+    SetTitle("Confirm").
+    SetMessage("Save changes before closing?")
+
+saveBtn := dialog.AddButton("Save")
+dontSaveBtn := dialog.AddButton("Don't Save")
+cancelBtn := dialog.AddButton("Cancel")
+saveBtn.SetAsDefault()
+cancelBtn.SetAsCancel()
+
+saveBtn.OnClick(func() {
+    saveChanges()
+})
+
+dontSaveBtn.OnClick(func() {
+    // Continue without saving
+})
+
+cancelBtn.OnClick(func() {
+    // Don't close
+})
+
+dialog.Show()
+```
+
+**Use cases:**
+- Confirm actions
+- Yes/No questions
+- Multiple choice
+- User decisions
+
+**Example - Unsaved changes:**
+
+```go
+func closeDocument() {
+    if !hasUnsavedChanges() {
+        closeWindow()
+        return
+    }
+
+    dialog := app.Dialog.Question().
+        SetTitle("Unsaved Changes").
+        SetMessage("Do you want to save your changes?")
+
+    saveBtn := dialog.AddButton("Save")
+    dontSaveBtn := dialog.AddButton("Don't Save")
+    cancelBtn := dialog.AddButton("Cancel")
+    saveBtn.SetAsDefault()
+    cancelBtn.SetAsCancel()
+
+    saveBtn.OnClick(func() {
+        saveDocument()
+        closeWindow()
+    })
+
+    dontSaveBtn.OnClick(func() {
+        closeWindow()
+    })
+
+    // Cancel button does nothing - dialog just closes
+
+    dialog.Show()
+}
+```
+
+## dialog Options
+
+### Title and Message
+
+```go
+dialog := app.Dialog.Info().
+    SetTitle("Operation Complete").
+    SetMessage("All files have been processed successfully.")
+```
+
+**Best practices:**
+- **Title:** Short, descriptive (2-5 words)
+- **Message:** Clear, specific, actionable
+- **Avoid jargon:** Use plain language
+
+### Buttons
+
+**Single button (Info/Warning/Error):**
+
+```go
+// Default "OK" button
+app.Dialog.Info().
+    SetMessage("Done!").
+    Show()
+```
+
+**Multiple buttons (Question) with callbacks:**
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Choose an action")
+
+opt1Btn := dialog.AddButton("Option 1")
+opt2Btn := dialog.AddButton("Option 2")
+opt3Btn := dialog.AddButton("Option 3")
+
+opt1Btn.OnClick(func() {
+    // handle option 1
+})
+
+opt2Btn.OnClick(func() {
+    // handle option 2
+})
+
+opt3Btn.OnClick(func() {
+    // handle option 3
+})
+
+dialog.Show()
+```
+
+**Default button:**
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Delete file?")
+
+deleteBtn := dialog.AddButton("Delete")
+cancelBtn := dialog.AddButton("Cancel")
+cancelBtn.SetAsDefault()  // Safe option
+cancelBtn.SetAsCancel()
+
+deleteBtn.OnClick(func() {
+    // handle delete
+})
+
+dialog.Show()
+```
+
+**Best practices:**
+- **1-3 buttons:** Don't overwhelm users
+- **Clear labels:** "Save" not "OK"
+- **Safe default:** Non-destructive action
+- **Order matters:** Most likely action first (except Cancel)
+
+### Window Attachment
+
+Attach to specific window:
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Window-specific question").
+    AttachToWindow(window)
+
+dialog.Show()
+```
+
+**Benefits:**
+- dialog appears on correct window
+- Parent window disabled whilst shown
+- Better multi-window UX
+
+## Complete Examples
+
+### Confirm Destructive Action
+
+```go
+func deleteFiles(paths []string) {
+    // Confirm deletion
+    message := fmt.Sprintf("Delete %d file(s)?", len(paths))
+    if len(paths) == 1 {
+        message = fmt.Sprintf("Delete %s?", filepath.Base(paths[0]))
+    }
+
+    dialog := app.Dialog.Question().
+        SetTitle("Confirm Delete").
+        SetMessage(message)
+
+    deleteBtn := dialog.AddButton("Delete")
+    cancelBtn := dialog.AddButton("Cancel")
+    cancelBtn.SetAsDefault()
+    cancelBtn.SetAsCancel()
+
+    deleteBtn.OnClick(func() {
+        // Perform deletion
+        var errs []error
+        for _, path := range paths {
+            if err := os.Remove(path); err != nil {
+                errs = append(errs, err)
+            }
+        }
+
+        // Show result
+        if len(errs) > 0 {
+            app.Dialog.Error().
+                SetTitle("Delete Failed").
+                SetMessage(fmt.Sprintf("Failed to delete %d file(s)", len(errs))).
+                Show()
+        } else {
+            app.Dialog.Info().
+                SetTitle("Delete Complete").
+                SetMessage(fmt.Sprintf("Deleted %d file(s)", len(paths))).
+                Show()
+        }
+    })
+
+    dialog.Show()
+}
+```
+
+### Error Handling with Retry
+
+```go
+func connectToServer(url string, attempts int) {
+    if err := tryConnect(url); err == nil {
+        return
+    }
+
+    if attempts >= 3 {
+        app.Dialog.Error().
+            SetTitle("Connection Failed").
+            SetMessage("Could not connect after 3 attempts.").
+            Show()
+        return
+    }
+
+    dialog := app.Dialog.Question().
+        SetTitle("Connection Failed").
+        SetMessage("Failed to connect. Retry?")
+
+    retryBtn := dialog.AddButton("Retry")
+    cancelBtn := dialog.AddButton("Cancel")
+    cancelBtn.SetAsCancel()
+
+    retryBtn.OnClick(func() {
+        connectToServer(url, attempts+1)
+    })
+
+    dialog.Show()
+}
+```
+
+### Multi-Step Workflow
+
+```go
+func exportAndEmail() {
+    // Step 1: Confirm export
+    dialog := app.Dialog.Question().
+        SetTitle("Export and Email").
+        SetMessage("Export data and send via email?")
+
+    continueBtn := dialog.AddButton("Continue")
+    cancelBtn := dialog.AddButton("Cancel")
+    cancelBtn.SetAsCancel()
+
+    continueBtn.OnClick(func() {
+        // Step 2: Export data
+        data, err := exportData()
+        if err != nil {
+            app.Dialog.Error().
+                SetTitle("Export Failed").
+                SetMessage(err.Error()).
+                Show()
+            return
+        }
+
+        // Step 3: Send email
+        if err := sendEmail(data); err != nil {
+            app.Dialog.Error().
+                SetTitle("Email Failed").
+                SetMessage(err.Error()).
+                Show()
+            return
+        }
+
+        // Step 4: Success
+        app.Dialog.Info().
+            SetTitle("Success").
+            SetMessage("Data exported and emailed successfully!").
+            Show()
+    })
+
+    dialog.Show()
+}
+```
+
+### Validation with Feedback
+
+```go
+func validateAndSave(data string) {
+    // Validate
+    if err := validate(data); err != nil {
+        app.Dialog.Warning().
+            SetTitle("Validation Warning").
+            SetMessage(err.Error()).
+            Show()
+
+        dialog := app.Dialog.Question().
+            SetMessage("Save anyway?")
+
+        saveBtn := dialog.AddButton("Save")
+        cancelBtn := dialog.AddButton("Cancel")
+        cancelBtn.SetAsDefault()
+        cancelBtn.SetAsCancel()
+
+        saveBtn.OnClick(func() {
+            doSave(data)
+        })
+
+        dialog.Show()
+        return
+    }
+
+    doSave(data)
+}
+
+func doSave(data string) {
+    if err := save(data); err != nil {
+        app.Dialog.Error().
+            SetTitle("Save Failed").
+            SetMessage(err.Error()).
+            Show()
+        return
+    }
+
+    app.Dialog.Info().
+        SetTitle("Saved").
+        SetMessage("Data saved successfully!").
+        Show()
+}
+```
+
+## Best Practices
+
+### Do
+
+- **Be specific** - "File saved to Documents" not "Success"
+- **Use appropriate type** - Error for errors, Warning for warnings
+- **Provide context** - Include relevant details
+- **Use clear button labels** - "Delete" not "OK"
+- **Set safe defaults** - Non-destructive action
+- **Handle cancellation** - User might close dialog
+
+### Don't
+
+- **Don't overuse** - Interrupts workflow
+- **Don't use for frequent updates** - Use notifications instead
+- **Don't use generic messages** - "Error" tells nothing
+- **Don't block unnecessarily** - Consider async alternatives
+- **Don't use technical jargon** - Plain language
+
+## Platform Differences
+
+### macOS
+
+- Sheet-style when attached to window
+- Standard keyboard shortcuts (⌘. for Cancel)
+- Follows system theme automatically
+- Accessibility built-in
+
+### Windows
+
+- Modal dialogs
+- TaskDialog appearance
+- Esc for Cancel
+- Follows system theme
+
+### Linux
+
+- GTK dialogs
+- Varies by desktop environment
+- Follows desktop theme
+- Standard keyboard navigation
+
+## Next Steps
+
+<CardGrid>
+  <Card title="File dialogs" icon="document">
+    Open, save, and folder selection.
+
+    [Learn More →](/features/dialogs/file)
+  </Card>
+
+  <Card title="Custom dialogs" icon="puzzle">
+    Create custom dialog windows.
+
+    [Learn More →](/features/dialogs/custom)
+  </Card>
+
+  <Card title="Notifications" icon="bell">
+    Non-intrusive notifications.
+
+    [Learn More →](/features/notifications)
+  </Card>
+
+  <Card title="Events" icon="star">
+    Use events for non-blocking communication.
+
+    [Learn More →](/features/events/system)
+  </Card>
+</CardGrid>
+
+---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [dialog examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/dialogs).

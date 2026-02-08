@@ -1,0 +1,127 @@
+---
+title: Technical Overview
+description: High-level architecture and roadmap to the Wails v3 codebase
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Welcome to the Wails v3 Technical Documentation
+
+This section is **not** about community guidelines or how to open a pull-request.
+Instead, it dives into **how Wails v3 is built** so that you can quickly orient
+yourself in the codebase and start hacking with confidence.
+
+Whether you plan to patch the runtime, extend the CLI, craft new templates, or
+simply understand the internals, the pages that follow provide the technical
+context you need.
+
+---
+
+## High-Level Architecture
+
+<CardGrid>
+  <Card title="Go Backend" icon="seti:go">
+    The heart of every Wails app is Go code compiled into a native executable.
+    It owns application logic, system integration and performance-critical
+    operations.
+  </Card>
+
+  <Card title="Web Frontend" icon="seti:html">
+    UI is written with standard web tech (React, Vue, Svelte, Vanilla, …)
+    rendered by a lightweight system WebView (WebKit on Linux/macOS, WebView2 on
+    Windows).
+  </Card>
+
+  <Card title="Bridging Layer" icon="puzzle">
+    A zero-copy, in-memory bridge enables **Go⇄JavaScript** calls with automatic
+    type conversion, event propagation and error forwarding.
+  </Card>
+
+  <Card title="CLI & Tooling" icon="terminal">
+    `wails3` orchestrates project creation, live-reload dev server, asset
+    bundling, cross-compilation and packaging (deb, rpm, AppImage, msi, dmg…).
+  </Card>
+</CardGrid>
+
+---
+
+## Architectural Overview
+
+**Wails v3 – End-to-End Flow**
+
+```d2
+direction: right
+Developer: "wails3 CLI
+Init · Dev · Build · Package"
+Build: {
+  label: "Build-Time"
+  GEN: "Binding System
+(Static Analysis & Codegen)"
+  ASSET: "Asset Server
+(Dev Proxy · Embed FS)"
+  PKG: "Build & Packaging
+Pipeline"
+}
+Runtime: {
+  label: "Runtime"
+  RUNTIME: "Desktop Runtime
+(Window · Events · Dialogs)"
+  BRIDGE: "Bridge
+(Message Processor)"
+}
+Application: {
+  label: "Application"
+  GO: "Go Backend
+(App Logic)"
+  WEB: "Web Frontend
+(React/Vue/...)"
+}
+Developer -> GEN: "generate"
+Developer -> ASSET: "dev / build"
+Developer -> PKG: "compile & package"
+GEN -> GO: "Code Stubs + TS"
+GEN -> WEB: "Bindings JSON"
+PKG -> GO: "Final Binary + Installer"
+GO -> BRIDGE: "Function Calls"
+WEB -> BRIDGE: "Invoke / Events"
+BRIDGE <-> RUNTIME: "native messages"
+RUNTIME -> ASSET: "Serve Assets"
+WEB <-> ASSET: "HTTP / In-Memory"
+```
+
+The diagram shows the **end-to-end flow**:
+
+1. **CLI** drives generation, dev server, compilation, and packaging.  
+2. **Binding System** produces glue code that lets the **Web Frontend** call into the **Go Backend**.  
+3. During development the **Asset Server** proxies to the framework dev server; in production it serves embedded files.  
+4. At runtime the **Desktop Runtime** manages windows and OS APIs, while the **Bridge** shuttles messages between Go and JavaScript.
+
+---
+
+## What This Documentation Covers
+
+| Topic | Why It Matters |
+| ----- | -------------- |
+| **Codebase Layout** | Map of `/v3` directories and how modules interact. |
+| **Runtime Internals** | Window management, system APIs, message processor, and platform shims. |
+| **Asset & Dev Server** | How web assets are served in dev and embedded in production. |
+| **Build & Packaging Pipeline** | Taskfile-based workflow, cross-platform compilation, and installer generation. |
+| **Binding System** | Static analysis pipeline that generates type-safe Go⇄TS bindings. |
+| **Template System** | Generator architecture that powers `wails init -t <framework>`. |
+| **Testing & CI** | Unit/integration test harness, GitHub Actions, race detector guidance. |
+| **Extending Wails** | Adding services, templates, or CLI sub-commands. |
+
+Each subsequent page drills into these areas with concrete code samples,
+diagrams, and references to the relevant source files.
+
+---
+
+:::note
+Prerequisites: You should be comfortable with **Go 1.25+**, basic TypeScript,
+and modern frontend build tools. If you are new to Go, consider skimming the
+official tour first.
+:::
+
+Happy exploring — and welcome to the Wails v3 internals!

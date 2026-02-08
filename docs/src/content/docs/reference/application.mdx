@@ -1,0 +1,478 @@
+---
+title: Application API
+description: Complete reference for the Application API
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Overview
+
+The `Application` is the core of your Wails app. It manages windows, services, events, and provides access to all platform features through dedicated managers.
+
+## Creating an Application
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+app := application.New(application.Options{
+    Name:        "My App",
+    Description: "My awesome application",
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+    },
+})
+```
+
+## Core Methods
+
+### Run()
+
+Starts the application event loop.
+
+```go
+func (a *App) Run() error
+```
+
+**Example:**
+
+```go
+err := app.Run()
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+**Returns:** Error if startup fails
+
+### Quit()
+
+Gracefully shuts down the application.
+
+```go
+func (a *App) Quit()
+```
+
+**Example:**
+
+```go
+// In a menu handler
+menu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+```
+
+### Config()
+
+Returns the application configuration.
+
+```go
+func (a *App) Config() Options
+```
+
+**Example:**
+
+```go
+config := app.Config()
+fmt.Println("App name:", config.Name)
+```
+
+### Context()
+
+Returns the application context that is canceled when the application shuts down. Use this for graceful shutdown of goroutines and long-running operations.
+
+```go
+func (a *App) Context() context.Context
+```
+
+### OnShutdown()
+
+Adds a function to be run when the application is shutting down.
+
+```go
+func (a *App) OnShutdown(f func())
+```
+
+**Example:**
+
+```go
+app.OnShutdown(func() {
+    fmt.Println("Application shutting down...")
+    // Cleanup resources
+})
+```
+
+### Hide() / Show()
+
+Hides or shows the application.
+
+```go
+func (a *App) Hide()
+func (a *App) Show()
+```
+
+## Managers
+
+The Application provides access to various managers through properties:
+
+```go
+app.Window      // Window management
+app.Menu        // Menu management
+app.Dialog      // Dialog management
+app.Event       // Event management
+app.Clipboard   // Clipboard operations
+app.Screen      // Screen information
+app.SystemTray  // System tray
+app.Browser     // Browser operations
+app.Env         // Environment information
+app.ContextMenu // Context menu management
+app.KeyBinding  // Key binding management
+```
+
+### Example Usage
+
+```go
+// Create window
+window := app.Window.New()
+
+// Show dialog
+app.Dialog.Info().SetMessage("Hello!").Show()
+
+// Copy to clipboard
+app.Clipboard.SetText("Copied text")
+
+// Get screens
+screens, _ := app.Screen.GetAll()
+```
+
+## Window Management
+
+### app.Window.New()
+
+Creates a new webview window with default options.
+
+```go
+func (wm *WindowManager) New() *WebviewWindow
+```
+
+**Example:**
+
+```go
+window := app.Window.New()
+```
+
+### app.Window.NewWithOptions()
+
+Creates a new webview window with custom options.
+
+```go
+func (wm *WindowManager) NewWithOptions(options WebviewWindowOptions) *WebviewWindow
+```
+
+**Example:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My Window",
+    Width:  800,
+    Height: 600,
+    BackgroundColour: application.NewRGB(255, 255, 255),
+})
+```
+
+### app.Window.GetByName()
+
+Gets a window by its name.
+
+```go
+func (wm *WindowManager) GetByName(name string) (Window, bool)
+```
+
+**Example:**
+
+```go
+window, exists := app.Window.GetByName("main")
+if exists {
+    window.Show()
+}
+```
+
+### app.Window.GetAll()
+
+Returns all application windows.
+
+```go
+func (wm *WindowManager) GetAll() []Window
+```
+
+**Example:**
+
+```go
+windows := app.Window.GetAll()
+for _, window := range windows {
+    fmt.Println("Window:", window.Name())
+}
+```
+
+### app.Window.Current()
+
+Returns the current active window (may be nil).
+
+```go
+func (wm *WindowManager) Current() Window
+```
+
+## Service Management
+
+### RegisterService()
+
+Registers a service with the application. Must be called before `Run()`.
+
+```go
+func (a *App) RegisterService(service Service)
+```
+
+**Example:**
+
+```go
+type MyService struct{}
+
+// Register after app creation but before Run()
+app.RegisterService(application.NewService(&MyService{}))
+```
+
+**Note:** Services can also be registered via the `Services` field in `Options` when creating the application.
+
+## Event Management
+
+### app.Event.Emit()
+
+Emits a custom event.
+
+```go
+func (em *EventManager) Emit(name string, data ...any) bool
+```
+
+**Returns:** `true` if the event was cancelled by a hook.
+
+**Example:**
+
+```go
+// Emit event with data
+app.Event.Emit("user-logged-in", map[string]any{
+    "username": "john",
+    "timestamp": time.Now(),
+})
+```
+
+### app.Event.On()
+
+Listens for custom events. Returns a cleanup function to remove the listener.
+
+```go
+func (em *EventManager) On(name string, callback func(event *CustomEvent)) func()
+```
+
+**Example:**
+
+```go
+cancel := app.Event.On("user-logged-in", func(e *application.CustomEvent) {
+    fmt.Println("User logged in:", e.Data)
+})
+
+// Later, to stop listening:
+cancel()
+```
+
+### app.Event.OnApplicationEvent()
+
+Listens for application lifecycle events. Returns a cleanup function.
+
+```go
+func (em *EventManager) OnApplicationEvent(
+    eventType events.ApplicationEventType,
+    callback func(*ApplicationEvent),
+) func()
+```
+
+**Example:**
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// Listen for theme change
+cancel := app.Event.OnApplicationEvent(events.Mac.ApplicationDidChangeTheme, func(e *application.ApplicationEvent) {
+    fmt.Println("Theme changed")
+})
+```
+
+### app.Event.Off()
+
+Removes all listeners for a custom event.
+
+```go
+func (em *EventManager) Off(name string)
+```
+
+## Dialog Methods
+
+### app.Dialog.Info()
+
+Creates an information dialog.
+
+```go
+func (dm *DialogManager) Info() *MessageDialog
+```
+
+**Example:**
+
+```go
+app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("Operation completed!").
+    Show()
+```
+
+### app.Dialog.Question()
+
+Creates a question dialog.
+
+```go
+func (dm *DialogManager) Question() *MessageDialog
+```
+
+**Example:**
+
+```go
+dialog := app.Dialog.Question().
+    SetTitle("Confirm").
+    SetMessage("Continue?")
+
+yesBtn := dialog.AddButton("Yes")
+noBtn := dialog.AddButton("No")
+
+yesBtn.SetAsDefault()
+noBtn.SetAsCancel()
+
+yesBtn.OnClick(func() {
+    // Continue
+})
+
+noBtn.OnClick(func() {
+    // Cancel
+})
+
+dialog.Show()
+```
+
+### app.Dialog.Error()
+
+Creates an error dialog.
+
+```go
+func (dm *DialogManager) Error() *MessageDialog
+```
+
+### app.Dialog.Warning()
+
+Creates a warning dialog.
+
+```go
+func (dm *DialogManager) Warning() *MessageDialog
+```
+
+### app.Dialog.OpenFile()
+
+Creates a file open dialog.
+
+```go
+func (dm *DialogManager) OpenFile() *OpenFileDialogStruct
+```
+
+**Example:**
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select File").
+    AddFilter("Images", "*.png;*.jpg").
+    PromptForSingleSelection()
+```
+
+### app.Dialog.SaveFile()
+
+Creates a file save dialog.
+
+```go
+func (dm *DialogManager) SaveFile() *SaveFileDialogStruct
+```
+
+**Example:**
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetTitle("Save File").
+    SetFilename("document.txt").
+    AddFilter("Text Files", "*.txt").
+    PromptForSingleSelection()
+```
+
+**Note:** To select a folder, use `OpenFile()` with directory selection:
+
+```go
+folder, err := app.Dialog.OpenFile().
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+```
+
+## Logger
+
+The application provides a structured logger:
+
+```go
+app.Logger.Info("Message", "key", "value")
+app.Logger.Error("Error occurred", "error", err)
+app.Logger.Debug("Debug info")
+app.Logger.Warn("Warning message")
+```
+
+## Complete Example
+
+```go
+package main
+
+import (
+    "log"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "My Application",
+        Description: "A demo application",
+        Mac: application.MacOptions{
+            ApplicationShouldTerminateAfterLastWindowClosed: true,
+        },
+    })
+
+    // Create main window
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:            "My App",
+        Width:            1024,
+        Height:           768,
+        MinWidth:         800,
+        MinHeight:        600,
+        BackgroundColour: application.NewRGB(255, 255, 255),
+        URL:              "/",
+    })
+
+    window.Center()
+
+    err := app.Run()
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+```

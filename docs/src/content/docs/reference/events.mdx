@@ -1,0 +1,626 @@
+---
+title: Events API
+description: Complete reference for the Events API
+sidebar:
+  order: 4
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Overview
+
+The Events API provides methods to emit and listen to events, enabling communication between different parts of your application. Events are managed through the `app.Event` manager.
+
+**Event Types:**
+- **Application Events** - App lifecycle events (startup, theme change)
+- **Window Events** - Window state changes (focus, blur, resize)
+- **Custom Events** - User-defined events for app-specific communication
+
+**Communication Patterns:**
+- **Go to Frontend** - Emit events from Go, listen in JavaScript
+- **Frontend to Go** - Not directly (use service bindings instead)
+- **Frontend to Frontend** - Via Go or local runtime events
+- **Window to Window** - Target specific windows or broadcast to all
+
+## Event Methods (Go)
+
+### app.Event.Emit()
+
+Emits a custom event to all listeners.
+
+```go
+func (em *EventManager) Emit(name string, data ...any) bool
+```
+
+**Parameters:**
+- `name` - Event name
+- `data` - Optional data to send with the event
+
+**Returns:** `true` if the event was cancelled by a hook
+
+**Example:**
+```go
+// Emit simple event
+app.Event.Emit("user-logged-in")
+
+// Emit with data
+app.Event.Emit("data-updated", map[string]any{
+    "count": 42,
+    "status": "success",
+})
+
+// Emit multiple values (received as slice)
+app.Event.Emit("progress", 75, "Processing files...")
+```
+
+### app.Event.On()
+
+Listens for custom events in Go. Returns a cleanup function.
+
+```go
+func (em *EventManager) On(name string, callback func(event *CustomEvent)) func()
+```
+
+**Parameters:**
+- `name` - Event name to listen for
+- `callback` - Function called when event is emitted
+
+**Returns:** Cleanup function to remove the event listener
+
+**Example:**
+```go
+// Listen for events
+cleanup := app.Event.On("user-action", func(e *application.CustomEvent) {
+    data := e.Data.(map[string]any)
+    action := data["action"].(string)
+    app.Logger.Info("User action", "action", action)
+})
+
+// Later, remove listener
+cleanup()
+```
+
+### app.Event.OnMultiple()
+
+Listens for custom events a specified number of times.
+
+```go
+func (em *EventManager) OnMultiple(name string, callback func(event *CustomEvent), counter int)
+```
+
+### app.Event.Off()
+
+Removes all listeners for a custom event.
+
+```go
+func (em *EventManager) Off(name string)
+```
+
+### app.Event.Reset()
+
+Removes all custom event listeners.
+
+```go
+func (em *EventManager) Reset()
+```
+
+### Window-Specific Events
+
+Emit events from a specific window:
+
+```go
+// Emit from specific window (sender field set to window name)
+window.EmitEvent("notification", "Hello from Go!")
+
+// Emit to all listeners (no specific sender)
+app.Event.Emit("global-update", data)
+```
+
+## Event Methods (Frontend)
+
+### On()
+
+Listens for events from Go.
+
+```javascript
+import { On } from '@wailsio/runtime'
+
+On(eventName, callback)
+```
+
+**Parameters:**
+- `eventName` - Name of the event to listen for
+- `callback` - Function called when event is received
+
+**Returns:** Cleanup function
+
+**Example:**
+```javascript
+import { On } from '@wailsio/runtime'
+
+// Listen for events
+const cleanup = On('data-updated', (data) => {
+    console.log('Count:', data.count)
+    console.log('Status:', data.status)
+    updateUI(data)
+})
+
+// Later, remove listener
+cleanup()
+```
+
+### Once()
+
+Listens for a single event occurrence.
+
+```javascript
+import { Once } from '@wailsio/runtime'
+
+Once(eventName, callback)
+```
+
+**Example:**
+```javascript
+import { Once } from '@wailsio/runtime'
+
+// Listen for first occurrence only
+Once('initialization-complete', (data) => {
+    console.log('App initialized!', data)
+    // This will only fire once
+})
+```
+
+### Off()
+
+Removes event listeners.
+
+```javascript
+import { Off } from '@wailsio/runtime'
+
+Off(...eventNames)
+```
+
+**Example:**
+```javascript
+import { Off } from '@wailsio/runtime'
+
+Off('my-event', 'other-event')
+```
+
+### OffAll()
+
+Removes all event listeners.
+
+```javascript
+import { OffAll } from '@wailsio/runtime'
+
+OffAll()
+```
+
+## Application Events
+
+### app.Event.OnApplicationEvent()
+
+Listens for application lifecycle events. Returns a cleanup function.
+
+```go
+func (em *EventManager) OnApplicationEvent(
+    eventType events.ApplicationEventType,
+    callback func(event *ApplicationEvent),
+) func()
+```
+
+**Example:**
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// Handle application startup
+cancel := app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Application started")
+})
+
+// Handle theme change
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Theme changed")
+})
+```
+
+### app.Event.RegisterApplicationEventHook()
+
+Registers an application event hook that can cancel the event.
+
+```go
+func (em *EventManager) RegisterApplicationEventHook(
+    eventType events.ApplicationEventType,
+    callback func(event *ApplicationEvent),
+) func()
+```
+
+## Window Events
+
+### window.OnWindowEvent()
+
+Listens for window-specific events. Returns a cleanup function.
+
+```go
+func (w *WebviewWindow) OnWindowEvent(
+    eventType events.WindowEventType,
+    callback func(event *WindowEvent),
+) func()
+```
+
+**Example:**
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// Handle window focus
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window focused")
+})
+
+// Handle window resize
+window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
+    width, height := window.Size()
+    app.Logger.Info("Window resized", "width", width, "height", height)
+})
+```
+
+### window.RegisterHook()
+
+Registers a hook that can cancel window events.
+
+```go
+func (w *WebviewWindow) RegisterHook(
+    eventType events.WindowEventType,
+    callback func(event *WindowEvent),
+) func()
+```
+
+**Example - Prevent window close:**
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    dialog := app.Dialog.Question().
+        SetTitle("Confirm Close").
+        SetMessage("Close window?")
+
+    yesBtn := dialog.AddButton("Yes")
+    noBtn := dialog.AddButton("No")
+
+    noBtn.OnClick(func() {
+        e.Cancel() // Prevent close
+    })
+
+    dialog.Show()
+})
+```
+
+## Common Patterns
+
+### Progress Updates
+
+**Go:**
+
+```go
+func (s *Service) ProcessFiles(files []string) error {
+    total := len(files)
+
+    for i, file := range files {
+        processFile(file)
+
+        // Emit progress event
+        app.Event.Emit("progress", map[string]any{
+            "current": i + 1,
+            "total":   total,
+            "percent": float64(i+1) / float64(total) * 100,
+            "file":    file,
+        })
+    }
+
+    app.Event.Emit("processing-complete")
+    return nil
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { On, Once } from '@wailsio/runtime'
+
+On('progress', (data) => {
+    progressBar.style.width = `${data.percent}%`
+    statusText.textContent = `Processing ${data.file}... (${data.current}/${data.total})`
+})
+
+Once('processing-complete', () => {
+    progressBar.style.width = '100%'
+    statusText.textContent = 'Complete!'
+})
+```
+
+### Multi-Window Communication
+
+**Go:**
+
+```go
+// Broadcast to all windows via app-level event
+app.Event.Emit("theme-changed", "dark")
+
+// Send from specific window (sender field identifies origin)
+preferencesWindow.EmitEvent("settings-updated", settings)
+```
+
+**JavaScript:**
+
+```javascript
+import { On } from '@wailsio/runtime'
+
+On('theme-changed', (theme) => {
+    document.body.className = theme
+})
+```
+
+### State Synchronization
+
+**Go:**
+
+```go
+type StateService struct {
+    app   *application.App
+    state map[string]any
+    mu    sync.RWMutex
+}
+
+func (s *StateService) UpdateState(key string, value any) {
+    s.mu.Lock()
+    s.state[key] = value
+    s.mu.Unlock()
+
+    // Notify all listeners
+    s.app.Event.Emit("state-updated", map[string]any{
+        "key":   key,
+        "value": value,
+    })
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { On } from '@wailsio/runtime'
+
+On('state-updated', (data) => {
+    localState[data.key] = data.value
+    updateUI(data.key, data.value)
+})
+```
+
+## Built-in Events
+
+Wails provides built-in system events for application and window lifecycle. These events are emitted automatically by the framework.
+
+### Common Events vs Platform-Native Events
+
+Wails provides two types of system events:
+
+**Common Events** (`events.Common.*`) are cross-platform abstractions that work consistently across macOS, Windows, and Linux. These are the events you should use in your application for maximum portability.
+
+**Platform-Native Events** (`events.Mac.*`, `events.Windows.*`, `events.Linux.*`) are the underlying OS-specific events. These provide access to platform-specific behaviors and edge cases.
+
+**How They Work:**
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// RECOMMENDED: Use Common Events for cross-platform code
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    // This works on all platforms
+})
+
+// Platform-specific events for advanced use cases
+window.OnWindowEvent(events.Mac.WindowWillClose, func(e *application.WindowEvent) {
+    // macOS-specific "will close" event
+})
+```
+
+**Event Mapping:**
+
+Platform-native events are automatically mapped to Common Events:
+
+- macOS: `events.Mac.WindowShouldClose` maps to `events.Common.WindowClosing`
+- Windows: `events.Windows.WindowClosing` maps to `events.Common.WindowClosing`
+- Linux: `events.Linux.WindowDeleteEvent` maps to `events.Common.WindowClosing`
+
+### Application Events
+
+| Event | Description |
+|-------|-------------|
+| `events.Common.ApplicationOpenedWithFile` | App launched with a file |
+| `events.Common.ApplicationStarted` | App initialization complete |
+| `events.Common.ApplicationLaunchedWithUrl` | App launched via URL scheme |
+| `events.Common.ThemeChanged` | System theme changed |
+
+**Usage:**
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Application ready!")
+})
+
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    // Update app theme
+})
+```
+
+### Window Events
+
+| Event | Description | Cancellable |
+|-------|-------------|-------------|
+| `WindowClosing` | Window is about to close | Yes |
+| `WindowDidMove` | Window moved | No |
+| `WindowDidResize` | Window was resized | No |
+| `WindowDPIChanged` | DPI scaling changed (Windows) | No |
+| `WindowFilesDropped` | Files dropped onto window | No |
+| `WindowFocus` | Window gained focus | No |
+| `WindowFullscreen` | Entered fullscreen | No |
+| `WindowHide` | Window was hidden | No |
+| `WindowLostFocus` | Window lost focus | No |
+| `WindowMaximise` | Window maximized | Yes (macOS) |
+| `WindowMinimise` | Window minimized | Yes (macOS) |
+| `WindowRestore` | Restored from min/max | No |
+| `WindowRuntimeReady` | Wails runtime loaded | No |
+| `WindowShow` | Window became visible | No |
+| `WindowUnFullscreen` | Exited fullscreen | No |
+| `WindowUnMaximise` | Exited maximized state | Yes (macOS) |
+| `WindowUnMinimise` | Exited minimized state | Yes (macOS) |
+| `WindowZoomIn` | Zoom increased | Yes (macOS) |
+| `WindowZoomOut` | Zoom decreased | Yes (macOS) |
+| `WindowZoomReset` | Zoom reset to 100% | Yes (macOS) |
+
+All window events are accessed via `events.Common.*`:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window focused")
+})
+
+// Wait for runtime ready before emitting events to frontend
+window.OnWindowEvent(events.Common.WindowRuntimeReady, func(e *application.WindowEvent) {
+    app.Logger.Info("Runtime ready, safe to emit events to frontend")
+    window.EmitEvent("app-initialized", data)
+})
+```
+
+**Important Notes:**
+
+- **WindowRuntimeReady** is critical - wait for this event before emitting events to the frontend
+- **WindowDidMove** and **WindowDidResize** are debounced to prevent event flooding
+- **Cancellable events** can be prevented by calling `event.Cancel()` in a `RegisterHook()` handler
+
+## Complete Example
+
+**Go:**
+
+```go
+package main
+
+import (
+    "time"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+
+type EventDemoService struct {
+    app *application.App
+}
+
+func (s *EventDemoService) StartLongTask() {
+    go func() {
+        s.app.Event.Emit("task-started")
+
+        for i := 1; i <= 10; i++ {
+            time.Sleep(500 * time.Millisecond)
+
+            s.app.Event.Emit("task-progress", map[string]any{
+                "step":    i,
+                "total":   10,
+                "percent": i * 10,
+            })
+        }
+
+        s.app.Event.Emit("task-completed", map[string]any{
+            "message": "Task finished successfully!",
+        })
+    }()
+}
+
+func (s *EventDemoService) BroadcastMessage(message string) {
+    s.app.Event.Emit("broadcast", message)
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Event Demo",
+        Services: []application.Service{
+            application.NewService(&EventDemoService{}),
+        },
+    })
+
+    // Handle application lifecycle
+    app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+        app.Logger.Info("Application started!")
+    })
+
+    // Listen for custom events
+    app.Event.On("user-action", func(e *application.CustomEvent) {
+        app.Logger.Info("User action received", "data", e.Data)
+    })
+
+    // Create window
+    window := app.Window.New()
+
+    // Handle window events
+    window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+        window.EmitEvent("window-state", "focused")
+    })
+
+    window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+        window.EmitEvent("window-state", "blurred")
+    })
+
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { On, Once } from '@wailsio/runtime'
+import { StartLongTask, BroadcastMessage } from './bindings/EventDemoService'
+
+// Task events
+On('task-started', () => {
+    document.getElementById('status').textContent = 'Running...'
+})
+
+On('task-progress', (data) => {
+    const progressBar = document.getElementById('progress')
+    progressBar.style.width = `${data.percent}%`
+})
+
+Once('task-completed', (data) => {
+    document.getElementById('status').textContent = data.message
+})
+
+// Window state events
+On('window-state', (state) => {
+    document.body.dataset.windowState = state
+})
+
+// Trigger long task
+document.getElementById('startTask').addEventListener('click', async () => {
+    await StartLongTask()
+})
+```
+
+## Event Naming Conventions
+
+```go
+// Good - descriptive and specific
+app.Event.Emit("user:logged-in", user)
+app.Event.Emit("data:fetch:complete", results)
+app.Event.Emit("ui:theme:changed", theme)
+
+// Bad - vague and unclear
+app.Event.Emit("event1", data)
+app.Event.Emit("update", stuff)
+```

@@ -1,0 +1,787 @@
+---
+title: Services
+description: Build modular, reusable application components with services
+sidebar:
+  order: 2
+---
+
+## Service Architecture
+
+Wails **services** provide a structured way to organise application logic with modular, self-contained components. Services are lifecycle-aware with startup and shutdown hooks, automatically bound to the frontend, dependency-injectable, and fully testable in isolation.
+
+## Quick Start
+
+```go
+type GreetService struct {
+    prefix string
+}
+
+func NewGreetService(prefix string) *GreetService {
+    return &GreetService{prefix: prefix}
+}
+
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+
+// Register
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(NewGreetService("Hello, ")),
+    },
+})
+```
+
+**That's it!** `Greet` is now callable from JavaScript.
+
+## Creating Services
+
+### Basic Service
+
+```go
+type CalculatorService struct{}
+
+func (c *CalculatorService) Add(a, b int) int {
+    return a + b
+}
+
+func (c *CalculatorService) Subtract(a, b int) int {
+    return a - b
+}
+```
+
+**Register:**
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&CalculatorService{}),
+    },
+})
+```
+
+**Key points:**
+- Only **exported methods** (PascalCase) are bound
+- Services are **singletons** (one instance)
+- Methods can return `(value, error)`
+
+### Service with State
+
+```go
+type CounterService struct {
+    count int
+    mu    sync.RWMutex
+}
+
+func (c *CounterService) Increment() int {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count++
+    return c.count
+}
+
+func (c *CounterService) GetCount() int {
+    c.mu.RLock()
+    defer c.mu.RUnlock()
+    return c.count
+}
+
+func (c *CounterService) Reset() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count = 0
+}
+```
+
+**Important:** Services are shared across all windows. Always use mutexes for thread safety.
+
+### Service with Dependencies
+
+```go
+type UserService struct {
+    db     *sql.DB
+    logger *slog.Logger
+}
+
+func NewUserService(db *sql.DB, logger *slog.Logger) *UserService {
+    return &UserService{
+        db:     db,
+        logger: logger,
+    }
+}
+
+func (u *UserService) GetUser(id int) (*User, error) {
+    u.logger.Info("Getting user", "id", id)
+    
+    var user User
+    err := u.db.QueryRow("SELECT * FROM users WHERE id = ?", id).Scan(&user)
+    if err != nil {
+        return nil, fmt.Errorf("failed to get user: %w", err)
+    }
+    
+    return &user, nil
+}
+```
+
+**Register with dependencies:**
+
+```go
+db, _ := sql.Open("sqlite3", "app.db")
+logger := slog.Default()
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(NewUserService(db, logger)),
+    },
+})
+```
+
+## Service Lifecycle
+
+### ServiceStartup
+
+Called when application starts:
+
+```go
+func (u *UserService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    u.logger.Info("UserService starting up")
+    
+    // Initialise resources
+    if err := u.db.Ping(); err != nil {
+        return fmt.Errorf("database not available: %w", err)
+    }
+    
+    // Run migrations
+    if err := u.runMigrations(); err != nil {
+        return fmt.Errorf("migrations failed: %w", err)
+    }
+    
+    // Start background tasks
+    go u.backgroundSync(ctx)
+    
+    return nil
+}
+```
+
+**Use cases:**
+- Initialise resources
+- Validate configuration
+- Run migrations
+- Start background tasks
+- Connect to external services
+
+**Important:**
+- Services start in **registration order**
+- Return error to **prevent app startup**
+- Use `ctx` for cancellation
+
+### ServiceShutdown
+
+Called when application shuts down:
+
+```go
+func (u *UserService) ServiceShutdown() error {
+    u.logger.Info("UserService shutting down")
+    
+    // Close database
+    if err := u.db.Close(); err != nil {
+        return fmt.Errorf("failed to close database: %w", err)
+    }
+    
+    // Cleanup resources
+    u.cleanup()
+    
+    return nil
+}
+```
+
+**Use cases:**
+- Close connections
+- Save state
+- Cleanup resources
+- Flush buffers
+- Cancel background tasks
+
+**Important:**
+- Services shutdown in **reverse order**
+- Application context already cancelled
+- Return error to **log warning** (doesn't prevent shutdown)
+
+### Complete Lifecycle Example
+
+```go
+type DatabaseService struct {
+    db     *sql.DB
+    logger *slog.Logger
+    cancel context.CancelFunc
+}
+
+func NewDatabaseService(logger *slog.Logger) *DatabaseService {
+    return &DatabaseService{logger: logger}
+}
+
+func (d *DatabaseService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    d.logger.Info("Starting database service")
+    
+    // Open database
+    db, err := sql.Open("sqlite3", "app.db")
+    if err != nil {
+        return fmt.Errorf("failed to open database: %w", err)
+    }
+    d.db = db
+    
+    // Test connection
+    if err := db.Ping(); err != nil {
+        return fmt.Errorf("database not available: %w", err)
+    }
+    
+    // Start background cleanup
+    ctx, cancel := context.WithCancel(ctx)
+    d.cancel = cancel
+    go d.periodicCleanup(ctx)
+    
+    return nil
+}
+
+func (d *DatabaseService) ServiceShutdown() error {
+    d.logger.Info("Shutting down database service")
+    
+    // Cancel background tasks
+    if d.cancel != nil {
+        d.cancel()
+    }
+    
+    // Close database
+    if d.db != nil {
+        if err := d.db.Close(); err != nil {
+            return fmt.Errorf("failed to close database: %w", err)
+        }
+    }
+    
+    return nil
+}
+
+func (d *DatabaseService) periodicCleanup(ctx context.Context) {
+    ticker := time.NewTicker(1 * time.Hour)
+    defer ticker.Stop()
+    
+    for {
+        select {
+        case <-ctx.Done():
+            return
+        case <-ticker.C:
+            d.cleanup()
+        }
+    }
+}
+```
+
+## Service Options
+
+### Custom Name
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceWithOptions(&MyService{}, application.ServiceOptions{
+            Name: "CustomServiceName",
+        }),
+    },
+})
+```
+
+**Use cases:**
+- Multiple instances of same service type
+- Clearer logging
+- Better debugging
+
+### HTTP Routes
+
+Services can handle HTTP requests:
+
+```go
+type FileService struct {
+    root string
+}
+
+func (f *FileService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    // Serve files from root directory
+    http.FileServer(http.Dir(f.root)).ServeHTTP(w, r)
+}
+
+// Register with route
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceWithOptions(&FileService{root: "./files"}, application.ServiceOptions{
+            Route: "/files",
+        }),
+    },
+})
+```
+
+**Access:** `http://wails.localhost/files/...`
+
+**Use cases:**
+- File serving
+- Custom APIs
+- WebSocket endpoints
+- Media streaming
+
+## Service Patterns
+
+### Repository Pattern
+
+```go
+type UserRepository struct {
+    db *sql.DB
+}
+
+func (r *UserRepository) GetByID(id int) (*User, error) {
+    // Database query
+}
+
+func (r *UserRepository) Create(user *User) error {
+    // Insert user
+}
+
+func (r *UserRepository) Update(user *User) error {
+    // Update user
+}
+
+func (r *UserRepository) Delete(id int) error {
+    // Delete user
+}
+```
+
+### Service Layer Pattern
+
+```go
+type UserService struct {
+    repo   *UserRepository
+    logger *slog.Logger
+}
+
+func (s *UserService) RegisterUser(email, password string) (*User, error) {
+    // Validate
+    if !isValidEmail(email) {
+        return nil, errors.New("invalid email")
+    }
+    
+    // Hash password
+    hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+    if err != nil {
+        return nil, err
+    }
+    
+    // Create user
+    user := &User{
+        Email:        email,
+        PasswordHash: string(hash),
+        CreatedAt:    time.Now(),
+    }
+    
+    if err := s.repo.Create(user); err != nil {
+        return nil, err
+    }
+    
+    s.logger.Info("User registered", "email", email)
+    return user, nil
+}
+```
+
+### Factory Pattern
+
+```go
+type ServiceFactory struct {
+    db     *sql.DB
+    logger *slog.Logger
+}
+
+func (f *ServiceFactory) CreateUserService() *UserService {
+    return &UserService{
+        repo:   &UserRepository{db: f.db},
+        logger: f.logger,
+    }
+}
+
+func (f *ServiceFactory) CreateOrderService() *OrderService {
+    return &OrderService{
+        repo:   &OrderRepository{db: f.db},
+        logger: f.logger,
+    }
+}
+```
+
+### Event-Driven Pattern
+
+```go
+type OrderService struct {
+    app *application.App
+}
+
+func (o *OrderService) CreateOrder(items []Item) (*Order, error) {
+    order := &Order{
+        Items:     items,
+        CreatedAt: time.Now(),
+    }
+    
+    // Save order
+    if err := o.saveOrder(order); err != nil {
+        return nil, err
+    }
+    
+    // Emit event
+    o.app.Event.Emit("order-created", order)
+    
+    return order, nil
+}
+```
+
+## Dependency Injection
+
+### Constructor Injection
+
+```go
+type EmailService struct {
+    smtp   *smtp.Client
+    logger *slog.Logger
+}
+
+func NewEmailService(smtp *smtp.Client, logger *slog.Logger) *EmailService {
+    return &EmailService{
+        smtp:   smtp,
+        logger: logger,
+    }
+}
+
+// Register
+smtpClient := createSMTPClient()
+logger := slog.Default()
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(NewEmailService(smtpClient, logger)),
+    },
+})
+```
+
+### Application Injection
+
+```go
+type NotificationService struct {
+    app *application.App
+}
+
+func NewNotificationService(app *application.App) *NotificationService {
+    return &NotificationService{app: app}
+}
+
+func (n *NotificationService) Notify(message string) {
+    // Use application to emit events
+    n.app.Event.Emit("notification", message)
+}
+
+// Register after app creation
+app := application.New(application.Options{})
+app.RegisterService(application.NewService(NewNotificationService(app)))
+```
+
+### Service-to-Service Dependencies
+
+```go
+type OrderService struct {
+    userService  *UserService
+    emailService *EmailService
+}
+
+func NewOrderService(userService *UserService, emailService *EmailService) *OrderService {
+    return &OrderService{
+        userService:  userService,
+        emailService: emailService,
+    }
+}
+
+// Register in order
+userService := &UserService{}
+emailService := &EmailService{}
+orderService := NewOrderService(userService, emailService)
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(userService),
+        application.NewService(emailService),
+        application.NewService(orderService),
+    },
+})
+```
+
+## Testing Services
+
+### Unit Testing
+
+```go
+func TestCalculatorService_Add(t *testing.T) {
+    calc := &CalculatorService{}
+    
+    result := calc.Add(2, 3)
+    
+    if result != 5 {
+        t.Errorf("expected 5, got %d", result)
+    }
+}
+```
+
+### Testing with Dependencies
+
+```go
+func TestUserService_GetUser(t *testing.T) {
+    // Create mock database
+    db, mock, _ := sqlmock.New()
+    defer db.Close()
+    
+    // Set expectations
+    rows := sqlmock.NewRows([]string{"id", "name"}).
+        AddRow(1, "Alice")
+    mock.ExpectQuery("SELECT").WillReturnRows(rows)
+    
+    // Create service
+    service := NewUserService(db, slog.Default())
+    
+    // Test
+    user, err := service.GetUser(1)
+    
+    if err != nil {
+        t.Fatalf("unexpected error: %v", err)
+    }
+    if user.Name != "Alice" {
+        t.Errorf("expected Alice, got %s", user.Name)
+    }
+}
+```
+
+### Testing Lifecycle
+
+```go
+func TestDatabaseService_Lifecycle(t *testing.T) {
+    service := NewDatabaseService(slog.Default())
+    
+    // Test startup
+    ctx := context.Background()
+    err := service.ServiceStartup(ctx, application.ServiceOptions{})
+    if err != nil {
+        t.Fatalf("startup failed: %v", err)
+    }
+    
+    // Test functionality
+    // ...
+    
+    // Test shutdown
+    err = service.ServiceShutdown()
+    if err != nil {
+        t.Fatalf("shutdown failed: %v", err)
+    }
+}
+```
+
+## Best Practices
+
+### ✅ Do
+
+- **Single responsibility** - One service, one purpose
+- **Constructor injection** - Pass dependencies explicitly
+- **Thread-safe state** - Use mutexes
+- **Return errors** - Don't panic
+- **Log important events** - Use structured logging
+- **Test in isolation** - Mock dependencies
+
+### ❌ Don't
+
+- **Don't use global state** - Pass dependencies
+- **Don't block startup** - Keep ServiceStartup fast
+- **Don't ignore shutdown** - Always cleanup
+- **Don't create circular dependencies** - Design carefully
+- **Don't expose internal methods** - Keep them private
+- **Don't forget thread safety** - Services are shared
+
+## Complete Example
+
+```go
+package main
+
+import (
+    "context"
+    "database/sql"
+    "fmt"
+    "log/slog"
+    "sync"
+    "time"
+    
+    "github.com/wailsapp/wails/v3/pkg/application"
+    _ "github.com/mattn/go-sqlite3"
+)
+
+type User struct {
+    ID        int       `json:"id"`
+    Name      string    `json:"name"`
+    Email     string    `json:"email"`
+    CreatedAt time.Time `json:"createdAt"`
+}
+
+type UserService struct {
+    db     *sql.DB
+    logger *slog.Logger
+    cache  map[int]*User
+    mu     sync.RWMutex
+}
+
+func NewUserService(logger *slog.Logger) *UserService {
+    return &UserService{
+        logger: logger,
+        cache:  make(map[int]*User),
+    }
+}
+
+func (u *UserService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    u.logger.Info("Starting UserService")
+    
+    // Open database
+    db, err := sql.Open("sqlite3", "users.db")
+    if err != nil {
+        return fmt.Errorf("failed to open database: %w", err)
+    }
+    u.db = db
+    
+    // Create table
+    _, err = db.Exec(`
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `)
+    if err != nil {
+        return fmt.Errorf("failed to create table: %w", err)
+    }
+    
+    // Preload cache
+    if err := u.loadCache(); err != nil {
+        return fmt.Errorf("failed to load cache: %w", err)
+    }
+    
+    return nil
+}
+
+func (u *UserService) ServiceShutdown() error {
+    u.logger.Info("Shutting down UserService")
+    
+    if u.db != nil {
+        return u.db.Close()
+    }
+    
+    return nil
+}
+
+func (u *UserService) GetUser(id int) (*User, error) {
+    // Check cache first
+    u.mu.RLock()
+    if user, ok := u.cache[id]; ok {
+        u.mu.RUnlock()
+        return user, nil
+    }
+    u.mu.RUnlock()
+    
+    // Query database
+    var user User
+    err := u.db.QueryRow(
+        "SELECT id, name, email, created_at FROM users WHERE id = ?",
+        id,
+    ).Scan(&user.ID, &user.Name, &user.Email, &user.CreatedAt)
+    
+    if err == sql.ErrNoRows {
+        return nil, fmt.Errorf("user %d not found", id)
+    }
+    if err != nil {
+        return nil, fmt.Errorf("database error: %w", err)
+    }
+    
+    // Update cache
+    u.mu.Lock()
+    u.cache[id] = &user
+    u.mu.Unlock()
+    
+    return &user, nil
+}
+
+func (u *UserService) CreateUser(name, email string) (*User, error) {
+    result, err := u.db.Exec(
+        "INSERT INTO users (name, email) VALUES (?, ?)",
+        name, email,
+    )
+    if err != nil {
+        return nil, fmt.Errorf("failed to create user: %w", err)
+    }
+    
+    id, _ := result.LastInsertId()
+    
+    user := &User{
+        ID:        int(id),
+        Name:      name,
+        Email:     email,
+        CreatedAt: time.Now(),
+    }
+    
+    // Update cache
+    u.mu.Lock()
+    u.cache[int(id)] = user
+    u.mu.Unlock()
+    
+    u.logger.Info("User created", "id", id, "email", email)
+    
+    return user, nil
+}
+
+func (u *UserService) loadCache() error {
+    rows, err := u.db.Query("SELECT id, name, email, created_at FROM users")
+    if err != nil {
+        return err
+    }
+    defer rows.Close()
+    
+    u.mu.Lock()
+    defer u.mu.Unlock()
+    
+    for rows.Next() {
+        var user User
+        if err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.CreatedAt); err != nil {
+            return err
+        }
+        u.cache[user.ID] = &user
+    }
+    
+    return rows.Err()
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "User Management",
+        Services: []application.Service{
+            application.NewService(NewUserService(slog.Default())),
+        },
+    })
+    
+    app.Window.New()
+    app.Run()
+}
+```
+
+## Next Steps
+
+- [Method Bindings](/features/bindings/methods) - Learn how to bind Go methods to JavaScript
+- [Models](/features/bindings/models) - Bind complex data structures
+- [Events](/features/events/system) - Use events for pub/sub communication
+- [Best Practices](/features/bindings/best-practices) - Service design patterns and best practices
+
+---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [service examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples).

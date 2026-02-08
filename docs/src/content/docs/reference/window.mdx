@@ -1,0 +1,746 @@
+---
+title: Window API
+description: Complete reference for the Window API
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Overview
+
+The Window API provides methods to control window appearance, behaviour, and lifecycle. Windows are created via `app.Window.New()` or `app.Window.NewWithOptions()` and return a `*WebviewWindow` which implements the `Window` interface.
+
+Many setter methods return `Window` to allow method chaining.
+
+**Common operations:**
+- Create and show windows
+- Control size, position, and state
+- Handle window events
+- Manage window content
+- Configure appearance and behaviour
+
+## Visibility
+
+### Show()
+
+Shows the window. If the window was hidden, it becomes visible.
+
+```go
+func (w *WebviewWindow) Show() Window
+```
+
+**Example:**
+```go
+window := app.Window.New()
+window.Show()
+```
+
+### Hide()
+
+Hides the window without closing it. The window remains in memory and can be shown again.
+
+```go
+func (w *WebviewWindow) Hide() Window
+```
+
+**Example:**
+```go
+// Hide window temporarily
+window.Hide()
+
+// Show it again later
+window.Show()
+```
+
+**Use cases:**
+- System tray applications that hide to tray
+- Wizard flows where windows are reused
+- Temporary hiding during operations
+
+### Close()
+
+Closes the window. This triggers the `WindowClosing` event.
+
+```go
+func (w *WebviewWindow) Close()
+```
+
+**Example:**
+```go
+window.Close()
+```
+
+**Note:** If a registered hook calls `event.Cancel()`, the close will be prevented.
+
+## Window Properties
+
+### SetTitle()
+
+Sets the window title bar text. Returns `Window` for chaining.
+
+```go
+func (w *WebviewWindow) SetTitle(title string) Window
+```
+
+**Parameters:**
+- `title` - The new window title
+
+**Example:**
+```go
+window.SetTitle("My Application - Document.txt")
+```
+
+### Name()
+
+Returns the window's unique name identifier.
+
+```go
+func (w *WebviewWindow) Name() string
+```
+
+**Example:**
+```go
+name := window.Name()
+fmt.Println("Window name:", name)
+
+// Retrieve window by name later
+window, exists := app.Window.GetByName(name)
+```
+
+## Size and Position
+
+### SetSize()
+
+Sets the window dimensions in logical pixels. Returns `Window` for chaining.
+
+```go
+func (w *WebviewWindow) SetSize(width, height int) Window
+```
+
+**Parameters:**
+- `width` - Window width in pixels
+- `height` - Window height in pixels
+
+**Example:**
+```go
+window.SetSize(1024, 768)
+```
+
+### Size()
+
+Returns the current window dimensions.
+
+```go
+func (w *WebviewWindow) Size() (int, int)
+```
+
+**Example:**
+```go
+width, height := window.Size()
+fmt.Printf("Window is %dx%d\n", width, height)
+```
+
+### SetMinSize() / SetMaxSize()
+
+Sets minimum and maximum window dimensions. Returns `Window` for chaining.
+
+```go
+func (w *WebviewWindow) SetMinSize(minWidth, minHeight int) Window
+func (w *WebviewWindow) SetMaxSize(maxWidth, maxHeight int) Window
+```
+
+**Example:**
+```go
+// Prevent window from being too small
+window.SetMinSize(800, 600)
+
+// Prevent window from being too large
+window.SetMaxSize(1920, 1080)
+```
+
+### SetPosition()
+
+Sets the absolute window position.
+
+```go
+func (w *WebviewWindow) SetPosition(x, y int)
+```
+
+**Parameters:**
+- `x` - Horizontal position in pixels
+- `y` - Vertical position in pixels
+
+**Example:**
+```go
+window.SetPosition(100, 100)
+```
+
+### Position()
+
+Returns the current absolute window position.
+
+```go
+func (w *WebviewWindow) Position() (int, int)
+```
+
+**Example:**
+```go
+x, y := window.Position()
+fmt.Printf("Window is at (%d, %d)\n", x, y)
+```
+
+### SetRelativePosition()
+
+Sets the position of the window relative to the screen work area. Returns `Window` for chaining.
+
+```go
+func (w *WebviewWindow) SetRelativePosition(x, y int) Window
+```
+
+### RelativePosition()
+
+Returns the position of the window relative to the screen work area.
+
+```go
+func (w *WebviewWindow) RelativePosition() (int, int)
+```
+
+### Center()
+
+Centers the window on the screen.
+
+```go
+func (w *WebviewWindow) Center()
+```
+
+**Example:**
+```go
+window := app.Window.New()
+window.Center()
+```
+
+### Focus()
+
+Brings the window to the front and gives it keyboard focus.
+
+```go
+func (w *WebviewWindow) Focus()
+```
+
+**Example:**
+```go
+// Bring window to front
+window.Focus()
+```
+
+## Window State
+
+### Minimise() / UnMinimise()
+
+Minimizes the window to the taskbar/dock or restores it.
+
+```go
+func (w *WebviewWindow) Minimise() Window
+func (w *WebviewWindow) UnMinimise()
+```
+
+**Example:**
+```go
+// Minimize window
+window.Minimise()
+
+// Restore from minimized state
+window.UnMinimise()
+```
+
+### Maximise() / UnMaximise()
+
+Maximizes the window to fill the screen or restores it to its previous size.
+
+```go
+func (w *WebviewWindow) Maximise() Window
+func (w *WebviewWindow) UnMaximise()
+```
+
+**Example:**
+```go
+// Maximize window
+window.Maximise()
+
+// Restore to previous size
+window.UnMaximise()
+```
+
+### Fullscreen() / UnFullscreen()
+
+Enters or exits fullscreen mode. Min/Max size constraints are automatically disabled/re-enabled.
+
+```go
+func (w *WebviewWindow) Fullscreen() Window
+func (w *WebviewWindow) UnFullscreen()
+```
+
+**Example:**
+```go
+// Enter fullscreen
+window.Fullscreen()
+
+// Exit fullscreen
+window.UnFullscreen()
+```
+
+### Restore()
+
+Restores the window to its previous state if it was minimised, maximised, or fullscreen.
+
+```go
+func (w *WebviewWindow) Restore()
+```
+
+### IsMinimised() / IsMaximised() / IsFullscreen()
+
+Checks the current window state.
+
+```go
+func (w *WebviewWindow) IsMinimised() bool
+func (w *WebviewWindow) IsMaximised() bool
+func (w *WebviewWindow) IsFullscreen() bool
+```
+
+**Example:**
+```go
+if window.IsMinimised() {
+    window.UnMinimise()
+}
+
+if window.IsMaximised() {
+    fmt.Println("Window is maximized")
+}
+
+if window.IsFullscreen() {
+    window.UnFullscreen()
+}
+```
+
+### IsVisible() / IsFocused()
+
+```go
+func (w *WebviewWindow) IsVisible() bool
+func (w *WebviewWindow) IsFocused() bool
+```
+
+## Window Content
+
+### SetURL()
+
+Navigates to a specific URL within the window. Returns `Window` for chaining.
+
+```go
+func (w *WebviewWindow) SetURL(s string) Window
+```
+
+**Parameters:**
+- `s` - URL to navigate to (use `/` for embedded assets root)
+
+**Example:**
+```go
+// Navigate to embedded page
+window.SetURL("/settings.html")
+
+// Navigate to external URL
+window.SetURL("https://wails.io")
+```
+
+### SetHTML()
+
+Sets the window content directly from an HTML string. Returns `Window` for chaining.
+
+```go
+func (w *WebviewWindow) SetHTML(html string) Window
+```
+
+**Parameters:**
+- `html` - HTML content to display
+
+**Example:**
+```go
+html := `
+<!DOCTYPE html>
+<html>
+<head><title>Dynamic Content</title></head>
+<body>
+    <h1>Hello from Go!</h1>
+    <p>This content was generated dynamically.</p>
+</body>
+</html>
+`
+window.SetHTML(html)
+```
+
+**Use cases:**
+- Dynamic content generation
+- Simple windows without frontend build process
+- Error pages or splash screens
+
+### ExecJS()
+
+Executes JavaScript in the context of the window.
+
+```go
+func (w *WebviewWindow) ExecJS(js string)
+```
+
+**Example:**
+```go
+window.ExecJS("document.title = 'Updated Title'")
+```
+
+### Reload()
+
+Reloads the current window content.
+
+```go
+func (w *WebviewWindow) Reload()
+```
+
+## Window Events
+
+Wails provides two methods for handling window events:
+
+- **OnWindowEvent()** - Listen to window events (cannot prevent them)
+- **RegisterHook()** - Hook into window events (can prevent them by calling `event.Cancel()`)
+
+### OnWindowEvent()
+
+Registers a callback for window events. Returns a cleanup function.
+
+```go
+func (w *WebviewWindow) OnWindowEvent(
+    eventType events.WindowEventType,
+    callback func(event *WindowEvent),
+) func()
+```
+
+**Returns:** Cleanup function to remove the event listener
+
+**Example:**
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// Listen for window focus
+cancel := window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window gained focus")
+})
+
+// Listen for window lost focus
+window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window lost focus")
+})
+
+// Listen for window resize
+window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
+    app.Logger.Info("Window resized")
+})
+```
+
+**Common Window Events:**
+- `events.Common.WindowClosing` - Window is about to close
+- `events.Common.WindowFocus` - Window gained focus
+- `events.Common.WindowLostFocus` - Window lost focus
+- `events.Common.WindowDidMove` - Window moved
+- `events.Common.WindowDidResize` - Window resized
+- `events.Common.WindowMinimise` - Window minimized
+- `events.Common.WindowMaximise` - Window maximized
+- `events.Common.WindowFullscreen` - Window entered fullscreen
+- `events.Common.WindowFilesDropped` - Files were dropped onto the window
+
+### RegisterHook()
+
+Registers a hook for window events. Hooks run before listeners and can prevent the event by calling `event.Cancel()`. Returns a cleanup function.
+
+```go
+func (w *WebviewWindow) RegisterHook(
+    eventType events.WindowEventType,
+    callback func(event *WindowEvent),
+) func()
+```
+
+**Returns:** Cleanup function to remove the hook
+
+**Example - Prevent window close:**
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    // Show a confirmation dialog
+    dialog := app.Dialog.Question().
+        SetTitle("Confirm Close").
+        SetMessage("Are you sure you want to close this window?")
+
+    yesBtn := dialog.AddButton("Yes")
+    noBtn := dialog.AddButton("No")
+
+    noBtn.OnClick(func() {
+        e.Cancel()  // Prevent window from closing
+    })
+
+    dialog.Show()
+})
+```
+
+### EmitEvent()
+
+Emits a custom event from this window. The event's `Sender` field will be set to the window name.
+
+```go
+func (w *WebviewWindow) EmitEvent(name string, data ...any) bool
+```
+
+**Parameters:**
+- `name` - Event name
+- `data` - Optional data to send with the event
+
+**Returns:** `true` if the event was cancelled
+
+**Example:**
+```go
+// Send data from specific window
+window.EmitEvent("data-updated", map[string]any{
+    "count": 42,
+    "status": "success",
+})
+```
+
+**Frontend (JavaScript):**
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.On('data-updated', (data) => {
+    console.log('Count:', data.count)
+    console.log('Status:', data.status)
+})
+```
+
+## Appearance
+
+### SetBackgroundColour()
+
+Sets the window background colour. Returns `Window` for chaining.
+
+```go
+func (w *WebviewWindow) SetBackgroundColour(colour RGBA) Window
+```
+
+**Parameters:**
+- `colour` - An `RGBA` struct
+
+**Example:**
+```go
+// Set white background
+window.SetBackgroundColour(application.NewRGB(255, 255, 255))
+
+// Set dark background with full opacity
+window.SetBackgroundColour(application.NewRGBA(30, 30, 30, 255))
+```
+
+### SetResizable()
+
+Controls whether the window can be resized by the user. Returns `Window` for chaining.
+
+```go
+func (w *WebviewWindow) SetResizable(b bool) Window
+```
+
+**Example:**
+```go
+// Make window fixed size
+window.SetResizable(false)
+```
+
+### SetAlwaysOnTop()
+
+Sets whether the window stays above other windows. Returns `Window` for chaining.
+
+```go
+func (w *WebviewWindow) SetAlwaysOnTop(b bool) Window
+```
+
+**Example:**
+```go
+// Keep window on top
+window.SetAlwaysOnTop(true)
+```
+
+### SetFrameless()
+
+Removes or adds the window frame. Returns `Window` for chaining.
+
+```go
+func (w *WebviewWindow) SetFrameless(frameless bool) Window
+```
+
+### SetEnabled()
+
+Enables or disables user interaction with the window.
+
+```go
+func (w *WebviewWindow) SetEnabled(enabled bool)
+```
+
+**Example:**
+```go
+// Disable window during long operation
+window.SetEnabled(false)
+
+// Perform operation
+performLongOperation()
+
+// Re-enable window
+window.SetEnabled(true)
+```
+
+### SetIgnoreMouseEvents()
+
+Makes the window ignore mouse events (click-through). Returns `Window` for chaining. Windows and Mac only.
+
+```go
+func (w *WebviewWindow) SetIgnoreMouseEvents(ignore bool) Window
+```
+
+### SetContentProtection()
+
+Prevents screen capture and recording of the window content. Returns `Window` for chaining. Windows and Mac only.
+
+```go
+func (w *WebviewWindow) SetContentProtection(b bool) Window
+```
+
+## Zoom
+
+```go
+func (w *WebviewWindow) SetZoom(magnification float64) Window
+func (w *WebviewWindow) GetZoom() float64
+func (w *WebviewWindow) ZoomIn()
+func (w *WebviewWindow) ZoomOut()
+func (w *WebviewWindow) ZoomReset() Window
+```
+
+## Menu
+
+### SetMenu()
+
+Sets the window menu.
+
+```go
+func (w *WebviewWindow) SetMenu(menu *Menu)
+```
+
+**Note:** On macOS, the application menu is global and set via `app.Menu`. Window-level menus are used on Windows and Linux.
+
+## Other Methods
+
+### Print()
+
+Prints the window content.
+
+```go
+func (w *WebviewWindow) Print() error
+```
+
+### Flash()
+
+Flashes the window's taskbar button/icon. Windows only.
+
+```go
+func (w *WebviewWindow) Flash(enabled bool)
+```
+
+### GetScreen()
+
+Returns the screen that the window is on.
+
+```go
+func (w *WebviewWindow) GetScreen() (*Screen, error)
+```
+
+### NativeWindow()
+
+Returns the platform-specific native window handle.
+
+```go
+func (w *WebviewWindow) NativeWindow() unsafe.Pointer
+```
+
+### RegisterKeyBinding()
+
+Registers a key binding for the window.
+
+```go
+func (w *WebviewWindow) RegisterKeyBinding(binding string, callback func(window Window)) *WebviewWindow
+```
+
+**Example:**
+```go
+window.RegisterKeyBinding("CmdOrCtrl+S", func(w application.Window) {
+    fmt.Println("Save triggered!")
+})
+```
+
+## Complete Example
+
+```go
+package main
+
+import (
+    "log"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Window API Demo",
+    })
+
+    // Create window with options
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:            "My Application",
+        Width:            1024,
+        Height:           768,
+        MinWidth:         800,
+        MinHeight:        600,
+        BackgroundColour: application.NewRGB(255, 255, 255),
+        URL:              "/",
+    })
+
+    // Configure window behavior
+    window.SetResizable(true)
+    window.SetMinSize(800, 600)
+    window.SetMaxSize(1920, 1080)
+
+    // Set up event hooks
+    window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+        // Custom close logic
+        fmt.Println("Window closing...")
+    })
+
+    // Listen for window events
+    window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+        window.SetTitle("My Application (Active)")
+    })
+
+    window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+        window.SetTitle("My Application")
+    })
+
+    // Position window
+    window.Center()
+
+    err := app.Run()
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+```

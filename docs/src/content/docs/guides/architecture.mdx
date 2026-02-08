@@ -1,0 +1,199 @@
+---
+title: Architecture Patterns
+description: Design patterns for Wails applications
+sidebar:
+  order: 7
+---
+
+## Overview
+
+Proven patterns for organising your Wails application.
+
+## Service Layer Pattern
+
+### Structure
+
+```
+app/
+├── main.go
+├── services/
+│   ├── user_service.go
+│   ├── data_service.go
+│   └── file_service.go
+└── models/
+    └── user.go
+```
+
+### Implementation
+
+```go
+// Service interface
+type UserService interface {
+    Create(email, password string) (*User, error)
+    GetByID(id int) (*User, error)
+    Update(user *User) error
+    Delete(id int) error
+}
+
+// Implementation
+type userService struct {
+    app *application.App
+    db  *sql.DB
+}
+
+func NewUserService(app *application.App, db *sql.DB) UserService {
+    return &userService{app: app, db: db}
+}
+```
+
+## Repository Pattern
+
+### Structure
+
+```go
+// Repository interface
+type UserRepository interface {
+    Create(user *User) error
+    FindByID(id int) (*User, error)
+    Update(user *User) error
+    Delete(id int) error
+}
+
+// Service uses repository
+type UserService struct {
+    repo UserRepository
+}
+
+func (s *UserService) Create(email, password string) (*User, error) {
+    user := &User{Email: email}
+    return user, s.repo.Create(user)
+}
+```
+
+## Event-Driven Architecture
+
+### Event Bus
+
+```go
+type EventBus struct {
+    app       *application.Application
+    listeners map[string][]func(interface{})
+    mu        sync.RWMutex
+}
+
+func (eb *EventBus) Subscribe(event string, handler func(interface{})) {
+    eb.mu.Lock()
+    defer eb.mu.Unlock()
+    eb.listeners[event] = append(eb.listeners[event], handler)
+}
+
+func (eb *EventBus) Publish(event string, data interface{}) {
+    eb.mu.RLock()
+    handlers := eb.listeners[event]
+    eb.mu.RUnlock()
+    
+    for _, handler := range handlers {
+        go handler(data)
+    }
+}
+```
+
+### Usage
+
+```go
+// Subscribe
+eventBus.Subscribe("user.created", func(data interface{}) {
+    user := data.(*User)
+    sendWelcomeEmail(user)
+})
+
+// Publish
+eventBus.Publish("user.created", user)
+```
+
+## Dependency Injection
+
+### Manual DI
+
+```go
+type App struct {
+    userService *UserService
+    fileService *FileService
+    db          *sql.DB
+}
+
+func NewApp() *App {
+    db := openDatabase()
+    
+    return &App{
+        db:          db,
+        userService: NewUserService(db),
+        fileService: NewFileService(db),
+    }
+}
+```
+
+### Using Wire
+
+```go
+// wire.go
+//go:build wireinject
+
+func InitializeApp() (*App, error) {
+    wire.Build(
+        openDatabase,
+        NewUserService,
+        NewFileService,
+        NewApp,
+    )
+    return nil, nil
+}
+```
+
+## State Management
+
+### Centralised State
+
+```go
+type AppState struct {
+    currentUser *User
+    settings    *Settings
+    mu          sync.RWMutex
+}
+
+func (s *AppState) SetUser(user *User) {
+    s.mu.Lock()
+    defer s.mu.Unlock()
+    s.currentUser = user
+}
+
+func (s *AppState) GetUser() *User {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+    return s.currentUser
+}
+```
+
+## Best Practices
+
+### ✅ Do
+
+- Separate concerns
+- Use interfaces
+- Inject dependencies
+- Handle errors properly
+- Keep services focused
+- Document architecture
+
+### ❌ Don't
+
+- Don't create god objects
+- Don't tightly couple components
+- Don't skip error handling
+- Don't ignore concurrency
+- Don't over-engineer
+
+## Next Steps
+
+- [Security](/guides/security) - Security best practices
+- [Best Practices](/features/bindings/best-practices) - Bindings best practices

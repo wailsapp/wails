@@ -1,0 +1,170 @@
+---
+title: Wails v3 Architecture
+description: Deep-dive diagrams and explanations of every moving part inside Wails v3
+sidebar:
+  order: 1
+---
+
+
+Wails v3 is a **full-stack desktop framework** consisting of a Go runtime,
+a JavaScript bridge, a task-driven tool-chain and a collection of templates that
+let you ship native applications powered by modern web tech.
+
+This page presents the *big picture* in four diagrams:
+
+1. **Overall Architecture** – how every subsystem connects  
+2. **Runtime Flow** – what happens when JS calls Go and vice-versa  
+3. **Development vs Production** – two modes of the asset server  
+4. **Platform Implementations** – where OS-specific code lives  
+
+---
+
+## 1 · Overall Architecture
+
+**Wails v3 – High-Level Stack**
+
+```d2
+direction: right
+Developer: "wails3 CLI"
+Build: {
+  label: "Build-time Tool-chain"
+  GEN: "Binding Generator
+(static analysis)"
+  TMP: "Template Engine"
+  ASSETDEV: "Asset Server (dev)"
+  PKG: "Cross-compilation & Packaging"
+}
+Runtime: {
+  label: "Native Runtime"
+  RT: "Desktop Runtime
+(window, dialogs, tray, …)"
+  BRIDGE: "Message Bridge
+(JSON channel)"
+}
+App: {
+  label: "Your Application"
+  BACKEND: "Go Backend"
+  FRONTEND: "Web Frontend
+(React/Vue/…)"
+}
+Developer -> TMP: "init"
+Developer -> GEN: "generate"
+Developer -> ASSETDEV: "dev"
+Developer -> PKG: "build / package"
+GEN -> BACKEND: "Go & TS stubs"
+GEN -> FRONTEND: "bindings.json"
+ASSETDEV <-> FRONTEND: "HTTP"
+BACKEND <-> BRIDGE: "calls / events"
+FRONTEND <-> BRIDGE: "invoke / emit"
+BRIDGE <-> RT: "native API"
+RT -> ASSETDEV: "serve assets"
+```
+
+---
+
+## 2 · Runtime Call Flow
+
+**Runtime – JavaScript ⇄ Go Calling Path**
+
+```d2
+direction: right
+JS: "JavaScript
+(frontend)"
+Bridge: "Bridge
+(WebView callback)"
+MP: "Message Processor
+(Go)"
+GoNode: "Bound Go Function"
+JS -> Bridge: "invoke(\"Greet\",\"Alice\")"
+Bridge -> MP: "JSON call {t:c,id:42,…}"
+MP -> GoNode: "call Greet(\"Alice\")"
+GoNode -> MP: "\"Hello Alice\""
+MP -> Bridge: "JSON {t:r,id:42,result:\"Hello Alice\"}"
+Bridge -> JS: "Promise.resolve(\"Hello Alice\")"
+```
+
+Key points:
+
+* **No HTTP / IPC** – the bridge uses the native WebView’s in-memory channel  
+* **Method IDs** – deterministic FNV-hash enables O(1) lookup in Go  
+* **Promises** – errors propagate as rejections with stack & code
+
+---
+
+## 3 · Development vs Production Asset Flow
+
+**Dev ↔ Prod Asset Server**
+
+```d2
+direction: right
+Dev: {
+  label: "`wails3 dev`"
+  VITE: "Framework Dev Server
+(port 5173)"
+  ASDEV: "Asset Server (dev)
+(proxy + disk)"
+  FRONTENDDEV: "Browser"
+}
+Prod: {
+  label: "`wails3 build`"
+  EMBED: "Embedded FS
+(go:embed)"
+  ASPROD: "Asset Server (prod)
+(read-only)"
+  FRONTENDPROD: "WebView Window"
+}
+VITE <-> ASDEV: "proxy / HMR"
+ASDEV <-> FRONTENDDEV: "HTTP"
+EMBED -> ASPROD: "serve assets"
+ASPROD <-> FRONTENDPROD: "in-memory"
+```
+
+* In **dev** the server proxies unknown paths to the framework’s live-reload
+  server and serves static assets from disk.  
+* In **prod** the same API is backed by `go:embed`, producing a zero-dependency
+  binary.
+
+---
+
+## 4 · Platform-Specific Runtime Split
+
+**Per-OS Runtime Files**
+
+```d2
+direction: right
+Window: "runtime::Window
+Shared interface (pkg/application)"
+WindowDarwin: "Window_darwin
+//go:build darwin
+Objective-C (cgo)
+NSWindow* ptr"
+WindowLinux: "Window_linux
+//go:build linux
+Pure Go GTK calls
+GtkWindow* ptr"
+WindowWindows: "Window_windows
+//go:build windows
+Win32 API via syscall
+HWND ptr"
+Window -> WindowDarwin
+Window -> WindowLinux
+Window -> WindowWindows
+```
+
+Every feature follows this pattern:
+
+1. **Common interface** in `pkg/application`  
+2. **Message processor** entry in `pkg/application/messageprocessor_*.go`  
+3. **Implementation** per OS under `internal/runtime/*.go` guarded by build tags  
+
+Missing functionality on an OS should return `ErrCapability` and register
+availability via `internal/capabilities`.
+
+---
+
+## Summary
+
+These diagrams outline **where the code lives**, **how data moves**, and
+**which layers own which responsibilities**.  
+Keep them handy while exploring the detailed pages that follow – they are your
+map to the Wails v3 source tree.
