@@ -25,6 +25,9 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix `InvisibleTitleBarHeight` being applied to all macOS windows instead of only frameless or transparent title bar windows (#4960)
+- Fix window shaking/jitter when resizing from top corners with `InvisibleTitleBarHeight` enabled, by skipping drag initiation near window edges (#4960)
+- Fix generation of mapped types with enum keys in JS/TS bindings (#4437) by @fbbdev
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
