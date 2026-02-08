@@ -245,13 +245,13 @@ type Maps[R comparable, S BasicConstraint, T BadTildeConstraint, U GoodTildeCons
 	GAZ    map[PointerCstrAlias[R, Z]]int    // Accept, hide
 	GAZPtr map[PointerCstrPtrAlias[R, Z]]int // Soft reject
 
-	GACi     map[ComparableCstrAlias[int]]int                                         // Accept, hide
+	GACi     map[ComparableCstrAlias[int]]int                                         // Accept
 	GACV     map[ComparableCstrAlias[ValueTextMarshaler]]int                          // Accept
 	GACP     map[ComparableCstrAlias[PointerTextMarshaler]]int                        // Reject
 	GACiPtr  map[ComparableCstrPtrAlias[int]]int                                      // Reject
 	GACVPtr  map[ComparableCstrPtrAlias[ValueTextMarshaler]]int                       // Accept, hide
 	GACPPtr  map[ComparableCstrPtrAlias[PointerTextMarshaler]]int                     // Accept, hide
-	GABi     map[BasicCstrAlias[int]]int                                              // Accept, hide
+	GABi     map[BasicCstrAlias[int]]int                                              // Accept
 	GABs     map[BasicCstrAlias[string]]int                                           // Accept
 	GABiPtr  map[BasicCstrPtrAlias[int]]int                                           // Reject
 	GABT     map[BadTildeCstrAlias[struct{}]]int                                      // Reject
@@ -268,7 +268,7 @@ type Maps[R comparable, S BasicConstraint, T BadTildeConstraint, U GoodTildeCons
 	GAPlP2   map[*PointableCstrAlias[PointerTextMarshaler]]int                        // Accept
 	GAPlVPtr map[PointableCstrPtrAlias[ValueTextMarshaler]]int                        // Accept, hide
 	GAPlPPtr map[PointableCstrPtrAlias[PointerTextMarshaler]]int                      // Accept, hide
-	GAMi     map[MixedCstrAlias[uint]]int                                             // Accept, hide
+	GAMi     map[MixedCstrAlias[uint]]int                                             // Accept
 	GAMS     map[MixedCstrAlias[StringType]]int                                       // Accept
 	GAMV     map[MixedCstrAlias[ValueTextMarshaler]]int                               // Accept
 	GAMSPtr  map[MixedCstrPtrAlias[StringType]]int                                    // Reject

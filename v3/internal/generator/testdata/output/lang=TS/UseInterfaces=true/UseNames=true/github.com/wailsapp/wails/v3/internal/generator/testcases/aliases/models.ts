@@ -72,7 +72,7 @@ export type GenericAlias<T> = T;
 /**
  * A generic alias that wraps a map.
  */
-export type GenericMapAlias<T, U> = { [_: string]: U } | null;
+export type GenericMapAlias<T, U> = { [_ in string]?: U } | null;
 
 /**
  * A generic struct containing an alias.

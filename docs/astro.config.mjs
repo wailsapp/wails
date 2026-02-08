@@ -138,6 +138,8 @@ export default defineConfig({
               items: [
                 { label: "Method Binding", link: "/features/bindings/methods" },
                 { label: "Services", link: "/features/bindings/services" },
+                { label: "Data Models", link: "/features/bindings/models" },
+                { label: "Enums", link: "/features/bindings/enums" },
                 { label: "Advanced Binding", link: "/features/bindings/advanced" },
                 { label: "Best Practices", link: "/features/bindings/best-practices" },
               ],
