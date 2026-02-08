@@ -67,7 +67,7 @@ notifier.SendNotification(notifications.NotificationOptions{
 ```
 
 ### Interactive Notifications
-Send a notification with action buttons and text inputs. These notifications require a notification category to be resgistered first:
+Send a notification with action buttons and text inputs. These notifications require a notification category to be registered first:
 
 ```go
 // Define a unique category id
@@ -155,7 +155,7 @@ notifier.SendNotification(notifications.NotificationOptions{
     On macOS, notifications:
     
     - Require user authorization
-    - Require the app to be notorized for distribution
+    - Require the app to be notarized for distribution
     - Use system-standard notification appearances
     - Support `subtitle`
     - Support user text input
@@ -178,7 +178,7 @@ notifier.SendNotification(notifications.NotificationOptions{
   
   <TabItem label="Linux" icon="fa-brands:linux">
     
-    On Linux, dialog behaviour depends on the desktop environment:
+    On Linux, notification behaviour depends on the desktop environment:
     
     - Use native notifications when available
     - Follow desktop environment theme
@@ -225,25 +225,25 @@ Explore this example:
 | `CheckNotificationAuthorization()`           | Checks current notification authorization status (macOS)   |
 
 ### Sending Notifications
-| Method                                                     | Description                                       |
-|------------------------------------------------------------|---------------------------------------------------|
-| `SendNotification(options NotificationOptions)`            | Sends a basic notification                        |
-| `SendNotificationWithActions(options NotificationOptions)` | Sends an interactive notification with actions    |
+| Method                                                     | Returns | Description                                    |
+|------------------------------------------------------------|---------|------------------------------------------------|
+| `SendNotification(options NotificationOptions)`            | `error` | Sends a basic notification                     |
+| `SendNotificationWithActions(options NotificationOptions)` | `error` | Sends an interactive notification with actions |
 
 ### Notification Categories
-| Method                                                        | Description                                       |
-|---------------------------------------------------------------|---------------------------------------------------|
-| `RegisterNotificationCategory(category NotificationCategory)` | Registers a reusable notification category        |
-| `RemoveNotificationCategory(categoryID string)`               | Removes a previously registered category          |
+| Method                                                        | Returns | Description                                |
+|---------------------------------------------------------------|---------|------------------------------------------- |
+| `RegisterNotificationCategory(category NotificationCategory)` | `error` | Registers a reusable notification category |
+| `RemoveNotificationCategory(categoryID string)`               | `error` | Removes a previously registered category   |
 
 ### Managing Notifications
-| Method                                          | Description                                                         |
-|-------------------------------------------------|---------------------------------------------------------------------|
-| `RemoveAllPendingNotifications()`               | Removes all pending notifications (macOS and Linux only)            |
-| `RemovePendingNotification(identifier string)`  | Removes a specific pending notification (macOS and Linux only)      |
-| `RemoveAllDeliveredNotifications()`             | Removes all delivered notifications (macOS and Linux only)          |
-| `RemoveDeliveredNotification(identifier string)`| Removes a specific delivered notification (macOS and Linux only)    |
-| `RemoveNotification(identifier string)`         | Removes a notification (Linux-specific)                             |
+| Method                                          | Returns | Description                                                         |
+|-------------------------------------------------|---------|---------------------------------------------------------------------|
+| `RemoveAllPendingNotifications()`               | `error` | Removes all pending notifications (macOS and Linux only)            |
+| `RemovePendingNotification(identifier string)`  | `error` | Removes a specific pending notification (macOS and Linux only)      |
+| `RemoveAllDeliveredNotifications()`             | `error` | Removes all delivered notifications (macOS and Linux only)          |
+| `RemoveDeliveredNotification(identifier string)`| `error` | Removes a specific delivered notification (macOS and Linux only)    |
+| `RemoveNotification(identifier string)`         | `error` | Removes a notification (Linux-specific)                             |
 
 ### Event Handling
 | Method                                                             | Description                                     |

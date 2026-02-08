@@ -45,6 +45,7 @@ In this tutorial, you'll build a notes application that demonstrates file operat
    package main
 
    import (
+   	"context"
    	"encoding/json"
    	"errors"
    	"os"
@@ -63,11 +64,13 @@ In this tutorial, you'll build a notes application that demonstrates file operat
 
    type NotesService struct {
    	notes []Note
+   	app   *application.App
    }
 
-   func NewNotesService() *NotesService {
+   func NewNotesService(app *application.App) *NotesService {
    	return &NotesService{
    		notes: make([]Note, 0),
+   		app:   app,
    	}
    }
 
@@ -115,7 +118,7 @@ In this tutorial, you'll build a notes application that demonstrates file operat
 
    // SaveToFile saves notes to a file
    func (n *NotesService) SaveToFile() error {
-   	path, err := application.SaveFileDialog().
+   	path, err := n.app.Dialog.SaveFile().
    		SetFilename("notes.json").
    		AddFilter("JSON Files", "*.json").
    		PromptForSingleSelection()
@@ -133,7 +136,7 @@ In this tutorial, you'll build a notes application that demonstrates file operat
    		return err
    	}
 
-   	application.InfoDialog().
+   	n.app.Dialog.Info().
    		SetTitle("Success").
    		SetMessage("Notes saved successfully!").
    		Show()
@@ -143,7 +146,7 @@ In this tutorial, you'll build a notes application that demonstrates file operat
 
    // LoadFromFile loads notes from a file
    func (n *NotesService) LoadFromFile() error {
-   	path, err := application.OpenFileDialog().
+   	path, err := n.app.Dialog.OpenFile().
    		AddFilter("JSON Files", "*.json").
    		PromptForSingleSelection()
 
@@ -163,7 +166,7 @@ In this tutorial, you'll build a notes application that demonstrates file operat
 
    	n.notes = notes
 
-   	application.InfoDialog().
+   	n.app.Dialog.Info().
    		SetTitle("Success").
    		SetMessage("Notes loaded successfully!").
    		Show()
@@ -180,8 +183,8 @@ In this tutorial, you'll build a notes application that demonstrates file operat
 
    - **Note struct**: Defines the data structure with JSON tags (lowercase) for proper serialization
    - **CRUD operations**: GetAll, Create, Update, and Delete for managing notes in memory
-   - **File dialogs**: Uses package-level functions `application.SaveFileDialog()` and `application.OpenFileDialog()`
-   - **Info dialogs**: Shows success messages using `application.InfoDialog()`
+   - **File dialogs**: Uses `app.Dialog.SaveFile()` and `app.Dialog.OpenFile()` via the DialogManager
+   - **Info dialogs**: Shows success messages using `app.Dialog.Info()`
    - **ID generation**: Simple timestamp-based ID generator
 
 3. **Update main.go**
@@ -206,9 +209,6 @@ In this tutorial, you'll build a notes application that demonstrates file operat
    	app := application.New(application.Options{
    		Name:        "Notes App",
    		Description: "A simple notes application",
-   		Services: []application.Service{
-   			application.NewService(NewNotesService()),
-   		},
    		Assets: application.AssetOptions{
    			Handler: application.AssetFileServerFS(assets),
    		},
@@ -216,6 +216,9 @@ In this tutorial, you'll build a notes application that demonstrates file operat
    			ApplicationShouldTerminateAfterLastWindowClosed: true,
    		},
    	})
+
+   	// Register service after app creation so we can pass the app reference
+   	app.RegisterService(application.NewService(NewNotesService(app)))
 
    	app.Window.NewWithOptions(application.WebviewWindowOptions{
    		Title:            "Notes App",
@@ -234,7 +237,7 @@ In this tutorial, you'll build a notes application that demonstrates file operat
 
    **What's happening here:**
 
-   - Registers `NotesService` with the application
+   - Creates the application, then registers `NotesService` with `app.RegisterService()` so the service can access the app for dialogs
    - Creates a window with dimensions (1000x700) mimicking Apple Notes
    - Sets up proper macOS behavior to quit when the last window closes
 
@@ -650,19 +653,22 @@ In this tutorial, you'll build a notes application that demonstrates file operat
 
 ## Key Concepts
 
-### Package-Level Dialog Functions
+### Dialog Functions
 
-In Wails v3, file and message dialogs are package-level functions, not methods on the app instance:
+In Wails v3, file and message dialogs are accessed through the app's `Dialog` manager:
 
 ```go
-// Correct - package-level function
-path, err := application.SaveFileDialog().
+// Use the DialogManager on the app instance
+path, err := app.Dialog.SaveFile().
     SetFilename("notes.json").
     AddFilter("JSON Files", "*.json").
     PromptForSingleSelection()
 
-// Wrong - not available
-path, err := app.Dialog.SaveFile() // This doesn't exist
+// Info dialog
+app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("Notes saved successfully!").
+    Show()
 ```
 
 ### JSON Tag Mapping

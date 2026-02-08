@@ -15,7 +15,7 @@ Wails provides **native message dialogs** with platform-appropriate appearance: 
 Display informational messages:
 
 ```go
-app.InfoDialog().
+app.Dialog.Info().
     SetTitle("Success").
     SetMessage("File saved successfully!").
     Show()
@@ -34,12 +34,12 @@ func saveFile(path string, data []byte) error {
     if err := os.WriteFile(path, data, 0644); err != nil {
         return err
     }
-    
-    app.InfoDialog().
+
+    app.Dialog.Info().
         SetTitle("File Saved").
         SetMessage(fmt.Sprintf("Saved to %s", filepath.Base(path))).
         Show()
-    
+
     return nil
 }
 ```
@@ -49,7 +49,7 @@ func saveFile(path string, data []byte) error {
 Show warnings:
 
 ```go
-app.WarningDialog().
+app.Dialog.Warning().
     SetTitle("Warning").
     SetMessage("This action cannot be undone.").
     Show()
@@ -66,9 +66,9 @@ app.WarningDialog().
 ```go
 func checkDiskSpace() {
     available := getDiskSpace()
-    
+
     if available < 100*1024*1024 { // Less than 100MB
-        app.WarningDialog().
+        app.Dialog.Warning().
             SetTitle("Low Disk Space").
             SetMessage(fmt.Sprintf("Only %d MB available.", available/(1024*1024))).
             Show()
@@ -81,7 +81,7 @@ func checkDiskSpace() {
 Display errors:
 
 ```go
-app.ErrorDialog().
+app.Dialog.Error().
     SetTitle("Error").
     SetMessage("Failed to connect to server.").
     Show()
@@ -99,38 +99,46 @@ app.ErrorDialog().
 func fetchData(url string) ([]byte, error) {
     resp, err := http.Get(url)
     if err != nil {
-        app.ErrorDialog().
+        app.Dialog.Error().
             SetTitle("Network Error").
             SetMessage(fmt.Sprintf("Failed to connect: %v", err)).
             Show()
         return nil, err
     }
     defer resp.Body.Close()
-    
+
     return io.ReadAll(resp.Body)
 }
 ```
 
 ## Question dialog
 
-Ask users questions:
+Ask users questions using button callbacks:
 
 ```go
-result, err := app.QuestionDialog().
+dialog := app.Dialog.Question().
     SetTitle("Confirm").
-    SetMessage("Save changes before closing?").
-    SetButtons("Save", "Don't Save", "Cancel").
-    SetDefaultButton("Save").
-    Show()
+    SetMessage("Save changes before closing?")
 
-switch result {
-case "Save":
+saveBtn := dialog.AddButton("Save")
+dontSaveBtn := dialog.AddButton("Don't Save")
+cancelBtn := dialog.AddButton("Cancel")
+saveBtn.SetAsDefault()
+cancelBtn.SetAsCancel()
+
+saveBtn.OnClick(func() {
     saveChanges()
-case "Don't Save":
+})
+
+dontSaveBtn.OnClick(func() {
     // Continue without saving
-case "Cancel":
+})
+
+cancelBtn.OnClick(func() {
     // Don't close
-}
+})
+
+dialog.Show()
 ```
 
 **Use cases:**
@@ -142,32 +150,34 @@ case "Cancel":
 **Example - Unsaved changes:**
 
 ```go
-func closeDocument() bool {
+func closeDocument() {
     if !hasUnsavedChanges() {
-        return true
+        closeWindow()
+        return
     }
-    
-    result, err := app.QuestionDialog().
+
+    dialog := app.Dialog.Question().
         SetTitle("Unsaved Changes").
-        SetMessage("Do you want to save your changes?").
-        SetButtons("Save", "Don't Save", "Cancel").
-        SetDefaultButton("Save").
-        Show()
-    
-    if err != nil {
-        return false
-    }
-    
-    switch result {
-    case "Save":
-        return saveDocument()
-    case "Don't Save":
-        return true
-    case "Cancel":
-        return false
-    }
-    
-    return false
+        SetMessage("Do you want to save your changes?")
+
+    saveBtn := dialog.AddButton("Save")
+    dontSaveBtn := dialog.AddButton("Don't Save")
+    cancelBtn := dialog.AddButton("Cancel")
+    saveBtn.SetAsDefault()
+    cancelBtn.SetAsCancel()
+
+    saveBtn.OnClick(func() {
+        saveDocument()
+        closeWindow()
+    })
+
+    dontSaveBtn.OnClick(func() {
+        closeWindow()
+    })
+
+    // Cancel button does nothing - dialog just closes
+
+    dialog.Show()
 }
 ```
 
@@ -176,7 +186,7 @@ func closeDocument() bool {
 ### Title and Message
 
 ```go
-dialog := app.InfoDialog().
+dialog := app.Dialog.Info().
     SetTitle("Operation Complete").
     SetMessage("All files have been processed successfully.")
 ```
@@ -192,28 +202,52 @@ dialog := app.InfoDialog().
 
 ```go
 // Default "OK" button
-app.InfoDialog().
+app.Dialog.Info().
     SetMessage("Done!").
     Show()
 ```
 
-**Multiple buttons (Question):**
+**Multiple buttons (Question) with callbacks:**
 
 ```go
-result, _ := app.QuestionDialog().
-    SetMessage("Choose an action").
-    SetButtons("Option 1", "Option 2", "Option 3").
-    Show()
+dialog := app.Dialog.Question().
+    SetMessage("Choose an action")
+
+opt1Btn := dialog.AddButton("Option 1")
+opt2Btn := dialog.AddButton("Option 2")
+opt3Btn := dialog.AddButton("Option 3")
+
+opt1Btn.OnClick(func() {
+    // handle option 1
+})
+
+opt2Btn.OnClick(func() {
+    // handle option 2
+})
+
+opt3Btn.OnClick(func() {
+    // handle option 3
+})
+
+dialog.Show()
 ```
 
 **Default button:**
 
 ```go
-app.QuestionDialog().
-    SetMessage("Delete file?").
-    SetButtons("Delete", "Cancel").
-    SetDefaultButton("Cancel").  // Safe option
-    Show()
+dialog := app.Dialog.Question().
+    SetMessage("Delete file?")
+
+deleteBtn := dialog.AddButton("Delete")
+cancelBtn := dialog.AddButton("Cancel")
+cancelBtn.SetAsDefault()  // Safe option
+cancelBtn.SetAsCancel()
+
+deleteBtn.OnClick(func() {
+    // handle delete
+})
+
+dialog.Show()
 ```
 
 **Best practices:**
@@ -227,11 +261,11 @@ app.QuestionDialog().
 Attach to specific window:
 
 ```go
-dialog := app.QuestionDialog().
+dialog := app.Dialog.Question().
     SetMessage("Window-specific question").
     AttachToWindow(window)
 
-result, _ := dialog.Show()
+dialog.Show()
 ```
 
 **Benefits:**
@@ -244,78 +278,78 @@ result, _ := dialog.Show()
 ### Confirm Destructive Action
 
 ```go
-func deleteFiles(paths []string) error {
+func deleteFiles(paths []string) {
     // Confirm deletion
     message := fmt.Sprintf("Delete %d file(s)?", len(paths))
     if len(paths) == 1 {
         message = fmt.Sprintf("Delete %s?", filepath.Base(paths[0]))
     }
-    
-    result, err := app.QuestionDialog().
+
+    dialog := app.Dialog.Question().
         SetTitle("Confirm Delete").
-        SetMessage(message).
-        SetButtons("Delete", "Cancel").
-        SetDefaultButton("Cancel").
-        Show()
-    
-    if err != nil || result != "Delete" {
-        return errors.New("cancelled")
-    }
-    
-    // Perform deletion
-    var errors []error
-    for _, path := range paths {
-        if err := os.Remove(path); err != nil {
-            errors = append(errors, err)
+        SetMessage(message)
+
+    deleteBtn := dialog.AddButton("Delete")
+    cancelBtn := dialog.AddButton("Cancel")
+    cancelBtn.SetAsDefault()
+    cancelBtn.SetAsCancel()
+
+    deleteBtn.OnClick(func() {
+        // Perform deletion
+        var errs []error
+        for _, path := range paths {
+            if err := os.Remove(path); err != nil {
+                errs = append(errs, err)
+            }
         }
-    }
-    
-    // Show result
-    if len(errors) > 0 {
-        app.ErrorDialog().
-            SetTitle("Delete Failed").
-            SetMessage(fmt.Sprintf("Failed to delete %d file(s)", len(errors))).
-            Show()
-        return fmt.Errorf("%d errors", len(errors))
-    }
-    
-    app.InfoDialog().
-        SetTitle("Delete Complete").
-        SetMessage(fmt.Sprintf("Deleted %d file(s)", len(paths))).
-        Show()
-    
-    return nil
+
+        // Show result
+        if len(errs) > 0 {
+            app.Dialog.Error().
+                SetTitle("Delete Failed").
+                SetMessage(fmt.Sprintf("Failed to delete %d file(s)", len(errs))).
+                Show()
+        } else {
+            app.Dialog.Info().
+                SetTitle("Delete Complete").
+                SetMessage(fmt.Sprintf("Deleted %d file(s)", len(paths))).
+                Show()
+        }
+    })
+
+    dialog.Show()
 }
 ```
 
 ### Error Handling with Retry
 
 ```go
-func connectToServer(url string) error {
-    for attempts := 0; attempts < 3; attempts++ {
-        if err := tryConnect(url); err == nil {
-            return nil
-        }
-        
-        if attempts < 2 {
-            result, _ := app.QuestionDialog().
-                SetTitle("Connection Failed").
-                SetMessage("Failed to connect. Retry?").
-                SetButtons("Retry", "Cancel").
-                Show()
-            
-            if result != "Retry" {
-                return errors.New("cancelled")
-            }
-        }
+func connectToServer(url string, attempts int) {
+    if err := tryConnect(url); err == nil {
+        return
     }
-    
-    app.ErrorDialog().
+
+    if attempts >= 3 {
+        app.Dialog.Error().
+            SetTitle("Connection Failed").
+            SetMessage("Could not connect after 3 attempts.").
+            Show()
+        return
+    }
+
+    dialog := app.Dialog.Question().
         SetTitle("Connection Failed").
-        SetMessage("Could not connect after 3 attempts.").
-        Show()
-    
-    return errors.New("connection failed")
+        SetMessage("Failed to connect. Retry?")
+
+    retryBtn := dialog.AddButton("Retry")
+    cancelBtn := dialog.AddButton("Cancel")
+    cancelBtn.SetAsCancel()
+
+    retryBtn.OnClick(func() {
+        connectToServer(url, attempts+1)
+    })
+
+    dialog.Show()
 }
 ```
 
@@ -324,86 +358,94 @@ func connectToServer(url string) error {
 ```go
 func exportAndEmail() {
     // Step 1: Confirm export
-    result, _ := app.QuestionDialog().
+    dialog := app.Dialog.Question().
         SetTitle("Export and Email").
-        SetMessage("Export data and send via email?").
-        SetButtons("Continue", "Cancel").
-        Show()
-    
-    if result != "Continue" {
-        return
-    }
-    
-    // Step 2: Export data
-    data, err := exportData()
-    if err != nil {
-        app.ErrorDialog().
-            SetTitle("Export Failed").
-            SetMessage(err.Error()).
+        SetMessage("Export data and send via email?")
+
+    continueBtn := dialog.AddButton("Continue")
+    cancelBtn := dialog.AddButton("Cancel")
+    cancelBtn.SetAsCancel()
+
+    continueBtn.OnClick(func() {
+        // Step 2: Export data
+        data, err := exportData()
+        if err != nil {
+            app.Dialog.Error().
+                SetTitle("Export Failed").
+                SetMessage(err.Error()).
+                Show()
+            return
+        }
+
+        // Step 3: Send email
+        if err := sendEmail(data); err != nil {
+            app.Dialog.Error().
+                SetTitle("Email Failed").
+                SetMessage(err.Error()).
+                Show()
+            return
+        }
+
+        // Step 4: Success
+        app.Dialog.Info().
+            SetTitle("Success").
+            SetMessage("Data exported and emailed successfully!").
             Show()
-        return
-    }
-    
-    // Step 3: Send email
-    if err := sendEmail(data); err != nil {
-        app.ErrorDialog().
-            SetTitle("Email Failed").
-            SetMessage(err.Error()).
-            Show()
-        return
-    }
-    
-    // Step 4: Success
-    app.InfoDialog().
-        SetTitle("Success").
-        SetMessage("Data exported and emailed successfully!").
-        Show()
+    })
+
+    dialog.Show()
 }
 ```
 
 ### Validation with Feedback
 
 ```go
-func validateAndSave(data string) error {
+func validateAndSave(data string) {
     // Validate
     if err := validate(data); err != nil {
-        app.WarningDialog().
+        app.Dialog.Warning().
             SetTitle("Validation Warning").
             SetMessage(err.Error()).
             Show()
-        
-        result, _ := app.QuestionDialog().
-            SetMessage("Save anyway?").
-            SetButtons("Save", "Cancel").
-            SetDefaultButton("Cancel").
-            Show()
-        
-        if result != "Save" {
-            return errors.New("cancelled")
-        }
+
+        dialog := app.Dialog.Question().
+            SetMessage("Save anyway?")
+
+        saveBtn := dialog.AddButton("Save")
+        cancelBtn := dialog.AddButton("Cancel")
+        cancelBtn.SetAsDefault()
+        cancelBtn.SetAsCancel()
+
+        saveBtn.OnClick(func() {
+            doSave(data)
+        })
+
+        dialog.Show()
+        return
     }
-    
-    // Save
+
+    doSave(data)
+}
+
+func doSave(data string) {
     if err := save(data); err != nil {
-        app.ErrorDialog().
+        app.Dialog.Error().
             SetTitle("Save Failed").
             SetMessage(err.Error()).
             Show()
-        return err
+        return
     }
-    
-    app.InfoDialog().
+
+    app.Dialog.Info().
         SetTitle("Saved").
         SetMessage("Data saved successfully!").
         Show()
-    
-    return nil
 }
 ```
 
 ## Best Practices
 
-### ✅ Do
+### Do
 
 - **Be specific** - "File saved to Documents" not "Success"
 - **Use appropriate type** - Error for errors, Warning for warnings
@@ -412,12 +454,11 @@ func validateAndSave(data string) error {
 - **Set safe defaults** - Non-destructive action
 - **Handle cancellation** - User might close dialog
 
-### ❌ Don't
+### Don't
 
 - **Don't overuse** - Interrupts workflow
 - **Don't use for frequent updates** - Use notifications instead
 - **Don't use generic messages** - "Error" tells nothing
-- **Don't ignore errors** - Handle dialog.Show() errors
 - **Don't block unnecessarily** - Consider async alternatives
 - **Don't use technical jargon** - Plain language
 
@@ -449,25 +490,25 @@ func validateAndSave(data string) error {
 <CardGrid>
   <Card title="File dialogs" icon="document">
     Open, save, and folder selection.
-    
+
     [Learn More →](/features/dialogs/file)
   </Card>
 
   <Card title="Custom dialogs" icon="puzzle">
     Create custom dialog windows.
-    
+
     [Learn More →](/features/dialogs/custom)
   </Card>
 
   <Card title="Notifications" icon="bell">
     Non-intrusive notifications.
-    
+
     [Learn More →](/features/notifications)
   </Card>
 
   <Card title="Events" icon="star">
     Use events for non-blocking communication.
-    
+
     [Learn More →](/features/events/system)
   </Card>
 </CardGrid>

@@ -305,17 +305,17 @@ func main() {
     })
 
     // Custom event handling
-    app.Events.On("myevent", func(e *application.WailsEvent) {
-        log.Printf("[Go] WailsEvent received: %+v\n", e)
+    app.Event.On("myevent", func(e *application.CustomEvent) {
+        log.Printf("[Go] CustomEvent received: %+v\n", e)
     })
 
     // OS specific application events
-    app.Events.On(events.Mac.ApplicationDidFinishLaunching, func(event *application.Event) {
+    app.Event.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(event *application.ApplicationEvent) {
         println("events.Mac.ApplicationDidFinishLaunching fired!")
     })
 
     // Platform agnostic events
-    app.Events.On(events.Common.ApplicationStarted, func(event *application.Event) {
+    app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
         println("events.Common.ApplicationStarted fired!")
     })
 

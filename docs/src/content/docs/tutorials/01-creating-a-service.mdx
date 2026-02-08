@@ -459,7 +459,7 @@ In this tutorial, we'll create a QR code generator service to demonstrate these 
             Description: "A demo of using raw HTML & CSS",
             LogLevel:    slog.LevelDebug,
             Services: []application.Service{
-                application.NewService(NewQRService(), application.ServiceOptions{
+                application.NewServiceWithOptions(NewQRService(), application.ServiceOptions{
                     Route: "/qrservice",
                 }),
             },
@@ -549,7 +549,7 @@ In this tutorial, we'll create a QR code generator service to demonstrate these 
 
     ```go title="main.go" ins={3}
             // ...
-                application.NewService(NewQRService(), application.ServiceOptions{
+                application.NewServiceWithOptions(NewQRService(), application.ServiceOptions{
                     Route: "/services/qr",
                 }),
             // ...

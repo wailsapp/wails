@@ -459,7 +459,7 @@ During release automation (see `v3/tasks/release`), these commands are orchestra
 ### Application Startup Timeline
 1. CLI entry (user application) calls `wails.Run()` (inside user code) → constructs `application.Options`.
 2. `application.New` merges defaults, sets up asset server, bindings, single-instance manager, event processor.
-3. User code configures windows/services (often via `app.NewWebviewWindow` or `app.RegisterService`).
+3. User code configures windows/services (often via `app.Window.New()` or services via `application.NewService()`).
 4. `App.Run`:
    - Validates no concurrent runs.
    - Instantiates platform app (calls Objective-C/Win32/GTK setup).

@@ -175,6 +175,18 @@ func (u *UserService) ServiceStartup(ctx context.Context, options application.Se
 - Return error to **prevent app startup**
 - Use `ctx` for cancellation
 
+### ServiceName
+
+Optional interface to provide a custom name for logging and debugging:
+
+```go
+func (u *UserService) ServiceName() string {
+    return "User Management Service"
+}
+```
+
+If a non-empty name is provided via `ServiceOptions.Name`, it takes precedence over this method. If neither is provided, the type name is used.
+
 ### ServiceShutdown
 
 Called when application shuts down:
@@ -277,6 +289,14 @@ func (d *DatabaseService) periodicCleanup(ctx context.Context) {
 ```
 
 ## Service Options
+
+`ServiceOptions` configures individual service behaviour:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `Name` | `string` | Override the service name for logging and debugging. Defaults to `ServiceName()` interface or type name |
+| `Route` | `string` | Mount the service as an HTTP handler at this route prefix (service must implement `http.Handler`) |
+| `MarshalError` | `func(error) []byte` | Custom error marshalling for this service's methods. Return nil to fall back to the global handler |
 
 ### Custom Name
 
@@ -416,7 +436,7 @@ func (f *ServiceFactory) CreateOrderService() *OrderService {
 
 ```go
 type OrderService struct {
-    app *application.Application
+    app *application.App
 }
 
 func (o *OrderService) CreateOrder(items []Item) (*Order, error) {
@@ -431,7 +451,7 @@ func (o *OrderService) CreateOrder(items []Item) (*Order, error) {
     }
     
     // Emit event
-    o.app.EmitEvent("order-created", order)
+    o.app.Event.Emit("order-created", order)
     
     return order, nil
 }
@@ -469,19 +489,16 @@ app := application.New(application.Options{
 
 ```go
 type NotificationService struct {
-    app *application.Application
+    app *application.App
 }
 
-func NewNotificationService(app *application.Application) *NotificationService {
+func NewNotificationService(app *application.App) *NotificationService {
     return &NotificationService{app: app}
 }
 
 func (n *NotificationService) Notify(message string) {
     // Use application to emit events
-    n.app.EmitEvent("notification", message)
-    
-    // Or show system notification
-    n.app.ShowNotification(message)
+    n.app.Event.Emit("notification", message)
 }
 
 // Register after app creation
@@ -773,7 +790,7 @@ func main() {
         },
     })
     
-    app.NewWebviewWindow()
+    app.Window.New()
     app.Run()
 }
 ```

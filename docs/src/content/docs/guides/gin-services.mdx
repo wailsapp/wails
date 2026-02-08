@@ -140,7 +140,7 @@ func (s *GinService) ServiceStartup(ctx context.Context, options application.Ser
 }
 
 // ServiceShutdown is called when the service shuts down
-func (s *GinService) ServiceShutdown(ctx context.Context) error {
+func (s *GinService) ServiceShutdown() error {
 	// Clean up resources if needed
 	return nil
 }
@@ -349,10 +349,7 @@ Then use it in your code:
 import * as wails from '@wailsio/runtime';
 
 // Event emission
-wails.Events.Emit({
-    name: 'gin-api-event',
-    data: eventData,
-});
+wails.Events.Emit('gin-api-event', eventData);
 ```
 
 Here's an example of how to set up frontend integration:
@@ -528,7 +525,7 @@ Here's an example of how to set up frontend integration:
                 message: "Hello from the frontend!",
                 timestamp: new Date().toISOString()
             };
-            wails.Events.Emit({name: 'gin-api-event', data: eventData});
+            wails.Events.Emit('gin-api-event', eventData);
         });
         
         // Set up event listener for responses from the backend

@@ -15,15 +15,15 @@ Wails provides a **unified screen API** that works across all platforms. Get scr
 
 ```go
 // Get all screens
-screens := app.Screens.GetAll()
+screens := app.Screen.GetAll()
 
 for _, screen := range screens {
-    fmt.Printf("Screen: %s (%dx%d)\n", 
-        screen.Name, screen.Width, screen.Height)
+    fmt.Printf("Screen: %s (%dx%d)\n",
+        screen.Name, screen.Size.Width, screen.Size.Height)
 }
 
 // Get primary screen
-primary := app.Screens.GetPrimary()
+primary := app.Screen.GetPrimary()
 fmt.Printf("Primary: %s\n", primary.Name)
 ```
 
@@ -34,12 +34,12 @@ fmt.Printf("Primary: %s\n", primary.Name)
 ### All Screens
 
 ```go
-screens := app.Screens.GetAll()
+screens := app.Screen.GetAll()
 
 for _, screen := range screens {
     fmt.Printf("ID: %s\n", screen.ID)
     fmt.Printf("Name: %s\n", screen.Name)
-    fmt.Printf("Size: %dx%d\n", screen.Width, screen.Height)
+    fmt.Printf("Size: %dx%d\n", screen.Size.Width, screen.Size.Height)
     fmt.Printf("Position: %d,%d\n", screen.X, screen.Y)
     fmt.Printf("Scale: %.2f\n", screen.ScaleFactor)
     fmt.Printf("Primary: %v\n", screen.IsPrimary)
@@ -50,30 +50,11 @@ for _, screen := range screens {
 ### Primary Screen
 
 ```go
-primary := app.Screens.GetPrimary()
+primary := app.Screen.GetPrimary()
 
 fmt.Printf("Primary screen: %s\n", primary.Name)
-fmt.Printf("Resolution: %dx%d\n", primary.Width, primary.Height)
+fmt.Printf("Resolution: %dx%d\n", primary.Size.Width, primary.Size.Height)
 fmt.Printf("Scale factor: %.2f\n", primary.ScaleFactor)
-```
-
-### Current Screen
-
-Get the screen containing a window:
-
-```go
-screen := app.Screens.GetCurrent(window)
-
-fmt.Printf("Window is on: %s\n", screen.Name)
-```
-
-### Screen by ID
-
-```go
-screen := app.Screens.GetByID("screen-id")
-if screen != nil {
-    fmt.Printf("Found screen: %s\n", screen.Name)
-}
 ```
 
 ## Screen Properties
@@ -82,29 +63,45 @@ if screen != nil {
 
 ```go
 type Screen struct {
-    ID          string  // Unique identifier
-    Name        string  // Display name
-    X           int     // X position
-    Y           int     // Y position
-    Width       int     // Width in pixels
-    Height      int     // Height in pixels
-    ScaleFactor float32 // DPI scale (1.0, 1.5, 2.0, etc.)
-    IsPrimary   bool    // Is this the primary screen?
+    ID               string  // A unique identifier for the display
+    Name             string  // The name of the display
+    ScaleFactor      float32 // The scale factor of the display (DPI/96)
+    X                int     // The x-coordinate of the top-left corner
+    Y                int     // The y-coordinate of the top-left corner
+    Size             Size    // The size of the display
+    Bounds           Rect    // The bounds of the display
+    PhysicalBounds   Rect    // The physical bounds (before scaling)
+    WorkArea         Rect    // The work area of the display
+    PhysicalWorkArea Rect    // The physical work area (before scaling)
+    IsPrimary        bool    // Whether this is the primary display
+    Rotation         float32 // The rotation of the display
+}
+
+type Rect struct {
+    X      int
+    Y      int
+    Width  int
+    Height int
+}
+
+type Size struct {
+    Width  int
+    Height int
 }
 ```
 
 ### Physical vs Logical Pixels
 
 ```go
-screen := app.Screens.GetPrimary()
+screen := app.Screen.GetPrimary()
 
-// Logical pixels (what you use)
-logicalWidth := screen.Width
-logicalHeight := screen.Height
+// Logical pixels (DIP - what you use)
+logicalWidth := screen.Bounds.Width
+logicalHeight := screen.Bounds.Height
 
 // Physical pixels (actual display)
-physicalWidth := int(float32(screen.Width) * screen.ScaleFactor)
-physicalHeight := int(float32(screen.Height) * screen.ScaleFactor)
+physicalWidth := screen.PhysicalBounds.Width
+physicalHeight := screen.PhysicalBounds.Height
 
 fmt.Printf("Logical: %dx%d\n", logicalWidth, logicalHeight)
 fmt.Printf("Physical: %dx%d\n", physicalWidth, physicalHeight)
@@ -125,10 +122,10 @@ fmt.Printf("Scale: %.2f\n", screen.ScaleFactor)
 ```go
 func centreOnScreen(window *application.WebviewWindow, screen *Screen) {
     windowWidth, windowHeight := window.Size()
-    
-    x := screen.X + (screen.Width-windowWidth)/2
-    y := screen.Y + (screen.Height-windowHeight)/2
-    
+
+    x := screen.X + (screen.Size.Width-windowWidth)/2
+    y := screen.Y + (screen.Size.Height-windowHeight)/2
+
     window.SetPosition(x, y)
 }
 ```
@@ -137,7 +134,7 @@ func centreOnScreen(window *application.WebviewWindow, screen *Screen) {
 
 ```go
 func moveToScreen(window *application.WebviewWindow, screenIndex int) {
-    screens := app.Screens.GetAll()
+    screens := app.Screen.GetAll()
     
     if screenIndex < 0 || screenIndex >= len(screens) {
         return
@@ -161,15 +158,15 @@ func positionTopLeft(window *application.WebviewWindow, screen *Screen) {
 // Top-right corner
 func positionTopRight(window *application.WebviewWindow, screen *Screen) {
     windowWidth, _ := window.Size()
-    window.SetPosition(screen.X+screen.Width-windowWidth-10, screen.Y+10)
+    window.SetPosition(screen.X+screen.Size.Width-windowWidth-10, screen.Y+10)
 }
 
 // Bottom-right corner
 func positionBottomRight(window *application.WebviewWindow, screen *Screen) {
     windowWidth, windowHeight := window.Size()
     window.SetPosition(
-        screen.X+screen.Width-windowWidth-10,
-        screen.Y+screen.Height-windowHeight-10,
+        screen.X+screen.Size.Width-windowWidth-10,
+        screen.Y+screen.Size.Height-windowHeight-10,
     )
 }
 ```
@@ -180,11 +177,11 @@ func positionBottomRight(window *application.WebviewWindow, screen *Screen) {
 
 ```go
 func hasMultipleMonitors() bool {
-    return len(app.Screens.GetAll()) > 1
+    return len(app.Screen.GetAll()) > 1
 }
 
 func getMonitorCount() int {
-    return len(app.Screens.GetAll())
+    return len(app.Screen.GetAll())
 }
 ```
 
@@ -192,7 +189,7 @@ func getMonitorCount() int {
 
 ```go
 func listMonitors() {
-    screens := app.Screens.GetAll()
+    screens := app.Screen.GetAll()
     
     fmt.Printf("Found %d monitor(s):\n", len(screens))
     
@@ -203,7 +200,7 @@ func listMonitors() {
         }
         
         fmt.Printf("%d. %s%s\n", i+1, screen.Name, primary)
-        fmt.Printf("   Resolution: %dx%d\n", screen.Width, screen.Height)
+        fmt.Printf("   Resolution: %dx%d\n", screen.Size.Width, screen.Size.Height)
         fmt.Printf("   Position: %d,%d\n", screen.X, screen.Y)
         fmt.Printf("   Scale: %.2fx\n", screen.ScaleFactor)
     }
@@ -214,7 +211,7 @@ func listMonitors() {
 
 ```go
 func chooseMonitor() (*Screen, error) {
-    screens := app.Screens.GetAll()
+    screens := app.Screen.GetAll()
     
     if len(screens) == 1 {
         return screens[0], nil
@@ -229,7 +226,7 @@ func chooseMonitor() (*Screen, error) {
         }
         options = append(options, 
             fmt.Sprintf("%d. %s%s - %dx%d", 
-                i+1, screen.Name, primary, screen.Width, screen.Height))
+                i+1, screen.Name, primary, screen.Size.Width, screen.Size.Height))
     }
     
     // Use dialog to select
@@ -245,11 +242,11 @@ func chooseMonitor() (*Screen, error) {
 
 ```go
 type MultiMonitorManager struct {
-    app     *application.Application
+    app     *application.App
     windows map[int]*application.WebviewWindow
 }
 
-func NewMultiMonitorManager(app *application.Application) *MultiMonitorManager {
+func NewMultiMonitorManager(app *application.App) *MultiMonitorManager {
     return &MultiMonitorManager{
         app:     app,
         windows: make(map[int]*application.WebviewWindow),
@@ -257,7 +254,7 @@ func NewMultiMonitorManager(app *application.Application) *MultiMonitorManager {
 }
 
 func (m *MultiMonitorManager) CreateWindowOnScreen(screenIndex int) error {
-    screens := m.app.Screens.GetAll()
+    screens := m.app.Screen.GetAll()
     
     if screenIndex < 0 || screenIndex >= len(screens) {
         return errors.New("invalid screen index")
@@ -266,15 +263,15 @@ func (m *MultiMonitorManager) CreateWindowOnScreen(screenIndex int) error {
     screen := screens[screenIndex]
     
     // Create window
-    window := m.app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := m.app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:  fmt.Sprintf("Window on %s", screen.Name),
         Width:  800,
         Height: 600,
     })
     
     // Centre on screen
-    x := screen.X + (screen.Width-800)/2
-    y := screen.Y + (screen.Height-600)/2
+    x := screen.X + (screen.Size.Width-800)/2
+    y := screen.Y + (screen.Size.Height-600)/2
     window.SetPosition(x, y)
     
     window.Show()
@@ -284,7 +281,7 @@ func (m *MultiMonitorManager) CreateWindowOnScreen(screenIndex int) error {
 }
 
 func (m *MultiMonitorManager) CreateWindowOnEachScreen() {
-    screens := m.app.Screens.GetAll()
+    screens := m.app.Screen.GetAll()
     
     for i := range screens {
         m.CreateWindowOnScreen(i)
@@ -296,15 +293,15 @@ func (m *MultiMonitorManager) CreateWindowOnEachScreen() {
 
 ```go
 type ScreenMonitor struct {
-    app           *application.Application
+    app           *application.App
     lastScreens   []*Screen
     changeHandler func([]*Screen)
 }
 
-func NewScreenMonitor(app *application.Application) *ScreenMonitor {
+func NewScreenMonitor(app *application.App) *ScreenMonitor {
     return &ScreenMonitor{
         app:         app,
-        lastScreens: app.Screens.GetAll(),
+        lastScreens: app.Screen.GetAll(),
     }
 }
 
@@ -323,7 +320,7 @@ func (sm *ScreenMonitor) Start() {
 }
 
 func (sm *ScreenMonitor) checkScreens() {
-    current := sm.app.Screens.GetAll()
+    current := sm.app.Screen.GetAll()
     
     if len(current) != len(sm.lastScreens) {
         sm.lastScreens = current
@@ -341,22 +338,22 @@ func createDPIAwareWindow(screen *Screen) *application.WebviewWindow {
     // Base size at 1.0 scale
     baseWidth := 800
     baseHeight := 600
-    
+
     // Adjust for DPI
     width := int(float32(baseWidth) * screen.ScaleFactor)
     height := int(float32(baseHeight) * screen.ScaleFactor)
-    
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:  "DPI-Aware Window",
         Width:  width,
         Height: height,
     })
-    
+
     // Centre on screen
-    x := screen.X + (screen.Width-width)/2
-    y := screen.Y + (screen.Height-height)/2
+    x := screen.X + (screen.Size.Width-width)/2
+    y := screen.Y + (screen.Size.Height-height)/2
     window.SetPosition(x, y)
-    
+
     return window
 }
 ```
@@ -365,7 +362,7 @@ func createDPIAwareWindow(screen *Screen) *application.WebviewWindow {
 
 ```go
 func visualiseScreenLayout() string {
-    screens := app.Screens.GetAll()
+    screens := app.Screen.GetAll()
     
     var layout strings.Builder
     layout.WriteString("Screen Layout:\n\n")
@@ -378,11 +375,11 @@ func visualiseScreenLayout() string {
         
         layout.WriteString(fmt.Sprintf("Screen %d: %s%s\n", i+1, screen.Name, primary))
         layout.WriteString(fmt.Sprintf("  Position: (%d, %d)\n", screen.X, screen.Y))
-        layout.WriteString(fmt.Sprintf("  Size: %dx%d\n", screen.Width, screen.Height))
+        layout.WriteString(fmt.Sprintf("  Size: %dx%d\n", screen.Size.Width, screen.Size.Height))
         layout.WriteString(fmt.Sprintf("  Scale: %.2fx\n", screen.ScaleFactor))
-        layout.WriteString(fmt.Sprintf("  Physical: %dx%d\n", 
-            int(float32(screen.Width)*screen.ScaleFactor),
-            int(float32(screen.Height)*screen.ScaleFactor)))
+        layout.WriteString(fmt.Sprintf("  Physical: %dx%d\n",
+            screen.PhysicalBounds.Width,
+            screen.PhysicalBounds.Height))
         layout.WriteString("\n")
     }
     

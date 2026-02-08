@@ -26,23 +26,19 @@ Define custom protocols in your application options:
 ```go
 package main
 
-import "github.com/wailsapp/wails/v3/pkg/application"
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
 
 func main() {
     app := application.New(application.Options{
         Name:        "My Application",
         Description: "My awesome application",
-        Protocols: []application.Protocol{
-            {
-                Scheme:      "myapp",
-                Description: "My Application Protocol",
-                Role:        "Editor",  // macOS only
-            },
-        },
     })
 
     // Register handler for protocol events
-    app.OnEvent(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+    app.Event.OnApplicationEvent(events.Common.ApplicationLaunchedWithUrl, func(event *application.ApplicationEvent) {
         url := event.Context().ClickedURL()
         handleCustomURL(url)
     })
@@ -57,12 +53,18 @@ func handleCustomURL(url string) {
 }
 ```
 
+:::note
+Custom protocol schemes are registered at the OS level through your application's build assets
+(Info.plist on macOS, NSIS installer on Windows, .desktop files on Linux),
+not through `application.Options`. See the [Platform Registration](#platform-registration) section below for details.
+:::
+
 ## Protocol Handler
 
 Listen for protocol events to handle incoming URLs:
 
 ```go
-app.OnEvent(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(events.Common.ApplicationLaunchedWithUrl, func(event *application.ApplicationEvent) {
     url := event.Context().ClickedURL()
 
     // Parse the URL
@@ -120,7 +122,7 @@ Custom protocols are registered differently on each platform.
 #### Automatic Registration
 
 When you build your application with `wails3 build`, the NSIS installer:
-1. Automatically registers all protocols defined in `application.Options.Protocols`
+1. Automatically registers all protocols defined in your build assets configuration
 2. Associates protocols with your application executable
 3. Sets up proper registry entries
 4. Removes protocol associations during uninstall
@@ -133,7 +135,7 @@ The NSIS template includes built-in macros:
 - `wails.associateCustomProtocols` - Registers protocols during installation
 - `wails.unassociateCustomProtocols` - Removes protocols during uninstall
 
-These macros are automatically called based on your `Protocols` configuration.
+These macros are automatically called based on your build assets protocol configuration.
 
 #### Manual Registry (Advanced)
 
@@ -171,7 +173,7 @@ On macOS, protocols are registered via your `Info.plist` file.
 
 Wails automatically generates the `Info.plist` with your protocols when you build with `wails3 build`.
 
-The protocols from `application.Options.Protocols` are added to:
+The protocols from your build assets configuration are added to:
 
 ```xml
 <key>CFBundleURLTypes</key>
@@ -263,10 +265,11 @@ import (
     "net/url"
     "strings"
     "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
 )
 
 type App struct {
-    app    *application.Application
+    app    *application.App
     window *application.WebviewWindow
 }
 
@@ -274,13 +277,6 @@ func main() {
     app := application.New(application.Options{
         Name:        "DeepLink Demo",
         Description: "Custom protocol demonstration",
-        Protocols: []application.Protocol{
-            {
-                Scheme:      "deeplink",
-                Description: "DeepLink Demo Protocol",
-                Role:        "Editor",
-            },
-        },
     })
 
     myApp := &App{app: app}
@@ -291,7 +287,7 @@ func main() {
 
 func (a *App) setup() {
     // Create window
-    a.window = a.app.NewWebviewWindow(application.WebviewWindowOptions{
+    a.window = a.app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:  "DeepLink Demo",
         Width:  800,
         Height: 600,
@@ -299,7 +295,7 @@ func (a *App) setup() {
     })
 
     // Handle custom protocol URLs
-    a.app.OnEvent(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+    a.app.Event.OnApplicationEvent(events.Common.ApplicationLaunchedWithUrl, func(event *application.ApplicationEvent) {
         customURL := event.Context().ClickedURL()
         a.handleDeepLink(customURL)
     })
@@ -315,7 +311,7 @@ func (a *App) handleDeepLink(rawURL string) {
 
     // Bring window to front
     a.window.Show()
-    a.window.SetFocus()
+    a.window.Focus()
 
     // Extract path and query
     path := strings.Trim(parsedURL.Path, "/")
@@ -552,8 +548,10 @@ Create a test HTML page:
 
 **Check logs:**
 ```go
+import "log/slog"
+
 app := application.New(application.Options{
-    Logger: application.NewLogger(application.LogLevelDebug),
+    LogLevel: slog.LevelDebug,
     // ...
 })
 ```

@@ -38,12 +38,12 @@ func main() {
     })
 
     // Create system tray
-    systray := app.NewSystemTray()
+    systray := app.SystemTray.New()
     systray.SetIcon(icon)
     systray.SetLabel("My App")
 
     // Add menu
-    menu := app.NewMenu()
+    menu := application.NewMenu()
     menu.Add("Show").OnClick(func(ctx *application.Context) {
         // Show main window
     })
@@ -53,7 +53,7 @@ func main() {
     systray.SetMenu(menu)
 
     // Create hidden window
-    window := app.NewWebviewWindow()
+    window := app.Window.New()
     window.Hide()
 
     app.Run()
@@ -68,7 +68,7 @@ func main() {
 
 ```go
 // Create system tray
-systray := app.NewSystemTray()
+systray := app.SystemTray.New()
 
 // Set icon
 systray.SetIcon(iconBytes)
@@ -95,7 +95,7 @@ func main() {
         Name: "My App",
     })
 
-    systray := app.NewSystemTray()
+    systray := app.SystemTray.New()
     systray.SetIcon(icon)
     systray.SetDarkModeIcon(iconDark)  // macOS dark mode
     
@@ -130,7 +130,7 @@ systray.SetTemplateIcon(iconBytes)
 System tray menus work like application menus:
 
 ```go
-menu := app.NewMenu()
+menu := application.NewMenu()
 
 // Add items
 menu.Add("Open").OnClick(func(ctx *application.Context) {
@@ -162,14 +162,14 @@ Attach a window to the tray icon for automatic show/hide:
 
 ```go
 // Create window
-window := app.NewWebviewWindow()
+window := app.Window.New()
 
 // Attach to tray
 systray.AttachWindow(window)
 
 // Configure behaviour
-systray.SetWindowOffset(10)  // Pixels from tray icon
-systray.SetWindowDebounce(200 * time.Millisecond)  // Click debounce
+systray.WindowOffset(10)  // Pixels from tray icon
+systray.WindowDebounce(200 * time.Millisecond)  // Click debounce
 ```
 
 **Behaviour:**
@@ -181,7 +181,7 @@ systray.SetWindowDebounce(200 * time.Millisecond)  // Click debounce
 **Example: Popup window**
 
 ```go
-window := app.NewWebviewWindow(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:  "Quick Access",
     Width:  300,
     Height: 400,
@@ -190,7 +190,7 @@ window := app.NewWebviewWindow(application.WebviewWindowOptions{
 })
 
 systray.AttachWindow(window)
-systray.SetWindowOffset(5)
+systray.WindowOffset(5)
 ```
 
 ## Click Handlers
@@ -198,7 +198,7 @@ systray.SetWindowOffset(5)
 Handle tray icon clicks:
 
 ```go
-systray := app.NewSystemTray()
+systray := app.SystemTray.New()
 
 // Left click
 systray.OnClick(func() {
@@ -232,6 +232,7 @@ systray.OnMouseLeave(func() {
 | OnClick | ✅ | ✅ | ✅ |
 | OnRightClick | ✅ | ✅ | ✅ |
 | OnDoubleClick | ✅ | ✅ | ⚠️ Varies |
+| OnRightDoubleClick | ✅ | ✅ | ⚠️ Varies |
 | OnMouseEnter | ✅ | ✅ | ⚠️ Varies |
 | OnMouseLeave | ✅ | ✅ | ⚠️ Varies |
 
@@ -285,8 +286,8 @@ For major changes, rebuild the entire menu:
 
 ```go
 func rebuildTrayMenu(status string) {
-    menu := app.NewMenu()
-    
+    menu := application.NewMenu()
+
     // Status-specific items
     switch status {
     case "syncing":
@@ -318,19 +319,24 @@ func rebuildTrayMenu(status string) {
     ```go
     // Set label (appears next to icon)
     systray.SetLabel("My App")
-    
+
     // Use template icon (adapts to dark mode)
     systray.SetTemplateIcon(iconBytes)
-    
+
     // Set icon position
-    systray.SetIconPosition(application.IconPositionRight)
+    systray.SetIconPosition(application.NSImageLeading)
     ```
-    
+
     **Icon positions:**
-    - `IconPositionLeft` - Icon left of label
-    - `IconPositionRight` - Icon right of label
-    - `IconPositionOnly` - Icon only, no label
-    - `IconPositionNone` - Label only, no icon
+    - `NSImageLeading` - Icon leading edge of label (default)
+    - `NSImageTrailing` - Icon trailing edge of label
+    - `NSImageLeft` - Icon left of label
+    - `NSImageRight` - Icon right of label
+    - `NSImageOnly` - Icon only, no label
+    - `NSImageNone` - Label only, no icon
+    - `NSImageAbove` - Icon above label
+    - `NSImageBelow` - Icon below label
+    - `NSImageOverlaps` - Icon overlaps label
     
     **Best practices:**
     - Use template icons (black + transparent)
@@ -422,7 +428,7 @@ var icon []byte
 var iconActive []byte
 
 type TrayApp struct {
-    app     *application.Application
+    app     *application.App
     systray *application.SystemTray
     window  *application.WebviewWindow
     menu    *application.Menu
@@ -445,7 +451,7 @@ func main() {
 
 func (t *TrayApp) setup() {
     // Create system tray
-    t.systray = t.app.NewSystemTray()
+    t.systray = t.app.SystemTray.New()
     t.systray.SetIcon(icon)
     t.systray.SetLabel("Inactive")
     
@@ -453,7 +459,7 @@ func (t *TrayApp) setup() {
     t.createMenu()
     
     // Create window (hidden by default)
-    t.window = t.app.NewWebviewWindow(application.WebviewWindowOptions{
+    t.window = t.app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:  "Tray Application",
         Width:  400,
         Height: 600,
@@ -462,7 +468,7 @@ func (t *TrayApp) setup() {
     
     // Attach window to tray
     t.systray.AttachWindow(t.window)
-    t.systray.SetWindowOffset(10)
+    t.systray.WindowOffset(10)
     
     // Handle tray clicks
     t.systray.OnRightClick(func() {
@@ -474,7 +480,7 @@ func (t *TrayApp) setup() {
 }
 
 func (t *TrayApp) createMenu() {
-    t.menu = t.app.NewMenu()
+    t.menu = application.NewMenu()
     
     // Status item (disabled)
     statusItem := t.menu.Add("Status: Inactive")
@@ -490,7 +496,7 @@ func (t *TrayApp) createMenu() {
     // Show window
     t.menu.Add("Show Window").OnClick(func(ctx *application.Context) {
         t.window.Show()
-        t.window.SetFocus()
+        t.window.Focus()
     })
     
     t.menu.AddSeparator()
@@ -557,11 +563,6 @@ systray.Hide()
 
 // Show tray icon
 systray.Show()
-
-// Check visibility
-if systray.IsVisible() {
-    fmt.Println("Tray icon is visible")
-}
 ```
 
 **Platform Support:**
@@ -647,14 +648,9 @@ app := application.New(application.Options{
 3. System tray not supported (Linux)
 
 **Solution:**
-
-```go
-// Check if system tray is supported
-if !application.SystemTraySupported() {
-    fmt.Println("System tray not supported")
-    // Fallback to window-only mode
-}
-```
+- Verify icon format and size match platform requirements (see icon table above)
+- On Linux, ensure your desktop environment supports StatusNotifierItem or has an AppIndicator extension installed
+- Test with a known-good PNG icon to rule out format issues
 
 ### Icon Looks Wrong on macOS
 

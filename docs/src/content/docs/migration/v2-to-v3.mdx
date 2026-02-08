@@ -49,7 +49,7 @@ app := application.New(application.Options{
     },
 })
 
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:  "My App",
     Width:  1024,
     Height: 768,
@@ -133,16 +133,16 @@ runtime.EventsEmit(a.ctx, "event-name", data)
 ```go
 // Store app reference
 type MyService struct {
-    app *application.Application
+    app *application.App
 }
 
 func (s *MyService) UpdateTitle() {
-    window := s.app.CurrentWindow()
+    window := s.app.Window.Current()
     window.SetTitle("New Title")
 }
 
 func (s *MyService) EmitEvent() {
-    s.app.EmitEvent("event-name", data)
+    s.app.Event.Emit("event-name", data)
 }
 ```
 
@@ -203,19 +203,19 @@ runtime.EventsEmit(ctx, "event-name", data)
 **v3:**
 
 ```go
-app.OnEvent("event-name", func(e *application.CustomEvent) {
+app.Event.On("event-name", func(e *application.CustomEvent) {
     data := e.Data
     // Handle event
 })
 
-app.EmitEvent("event-name", data)
+app.Event.Emit("event-name", data)
 ```
 
 **Why this is better:**
 
 - **Type safety**: Events use proper event objects instead of `...interface{}`
 - **Better debugging**: Event objects contain metadata like event name, making debugging easier
-- **Clearer API**: `app.OnEvent()` and `app.EmitEvent()` are more intuitive than runtime functions
+- **Clearer API**: `app.Event.On()` and `app.Event.Emit()` are more intuitive than runtime functions
 - **No context needed**: Events work directly on the app object without threading context
 - **Simpler handlers**: Event handlers have a clear signature instead of variadic parameters
 
@@ -236,10 +236,10 @@ runtime.WindowSetSize(ctx, 800, 600)
 
 ```go
 // Multiple windows supported
-window1 := app.NewWebviewWindow()
+window1 := app.Window.New()
 window1.SetSize(800, 600)
 
-window2 := app.NewWebviewWindow()
+window2 := app.Window.New()
 window2.SetSize(1024, 768)
 ```
 
@@ -339,7 +339,7 @@ func main() {
         },
     })
 
-    app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:  "My App",
         Width:  1024,
         Height: 768,
@@ -379,10 +379,10 @@ func (a *App) Greet(name string) string {
 
 ```go
 type MyService struct {
-    app *application.Application
+    app *application.App
 }
 
-func NewMyService(app *application.Application) *MyService {
+func NewMyService(app *application.App) *MyService {
     return &MyService{app: app}
 }
 
@@ -416,11 +416,11 @@ func (a *App) DoSomething() {
 
 ```go
 func (s *MyService) DoSomething() {
-    window := s.app.CurrentWindow()
+    window := s.app.Window.Current()
     window.SetTitle("New Title")
-    
-    s.app.EmitEvent("update", data)
-    
+
+    s.app.Event.Emit("update", data)
+
     s.app.Logger.Info("Message")
 }
 ```
@@ -456,13 +456,13 @@ EventsOn("update", (data) => {
 EventsEmit("action", data)
 
 // v3
-import { OnEvent, Emit } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-OnEvent("update", (data) => {
+Events.On("update", (data) => {
     console.log(data)
 })
 
-Emit("action", data)
+Events.Emit("action", data)
 ```
 
 ### Step 6: Update Configuration
@@ -510,9 +510,9 @@ selection, err := runtime.OpenFileDialog(ctx, runtime.OpenDialogOptions{
 **v3:**
 
 ```go
-selection, err := app.OpenFileDialog(application.OpenFileDialogOptions{
-    Title: "Select File",
-})
+selection, err := app.Dialog.OpenFile().
+    SetTitle("Select File").
+    PromptForSingleSelection()
 ```
 
 ### Menus
@@ -531,9 +531,9 @@ menu.Append(menu.Text("File", nil, []*menu.MenuItem{
 **v3:**
 
 ```go
-menu := app.NewMenu()
+menu := application.NewMenu()
 fileMenu := menu.AddSubmenu("File")
-fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+fileMenu.Add("Quit").OnClick(func(_ *application.Context) {
     app.Quit()
 })
 ```
@@ -549,13 +549,13 @@ fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
 **v3:**
 
 ```go
-systray := app.NewSystemTray()
+systray := app.SystemTray.New()
 systray.SetIcon(iconBytes)
 systray.SetLabel("My App")
 
-menu := app.NewMenu()
-menu.Add("Show").OnClick(showWindow)
-menu.Add("Quit").OnClick(app.Quit)
+menu := application.NewMenu()
+menu.Add("Show").OnClick(func(_ *application.Context) { showWindow() })
+menu.Add("Quit").OnClick(func(_ *application.Context) { app.Quit() })
 systray.SetMenu(menu)
 ```
 
@@ -585,10 +585,10 @@ Store app reference instead:
 
 ```go
 type MyService struct {
-    app *application.Application
+    app *application.App
 }
 
-func NewMyService(app *application.Application) *MyService {
+func NewMyService(app *application.App) *MyService {
     return &MyService{app: app}
 }
 ```
@@ -602,7 +602,7 @@ func NewMyService(app *application.Application) *MyService {
 Use window methods directly:
 
 ```go
-window := s.app.CurrentWindow()
+window := s.app.Window.Current()
 window.SetTitle("New Title")
 ```
 
@@ -616,10 +616,11 @@ Check event names match exactly:
 
 ```go
 // Go
-app.EmitEvent("my-event", data)
+app.Event.Emit("my-event", data)
 
 // JavaScript
-OnEvent("my-event", handler)  // Must match exactly
+import { Events } from '@wailsio/runtime'
+Events.On("my-event", handler)  // Must match exactly
 ```
 
 ## Testing Migration

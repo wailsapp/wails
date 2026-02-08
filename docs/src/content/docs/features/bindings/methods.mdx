@@ -101,7 +101,7 @@ app := application.New(application.Options{
 ```go
 type CounterService struct {
     count int
-    mu    sync.Mutex
+    mu    sync.RWMutex
 }
 
 func (c *CounterService) Increment() int {
@@ -220,13 +220,15 @@ wails3 dev
 ```javascript
 // frontend/bindings/myapp/calculatorservice.js
 
+import { Call as $Call, CancellablePromise as $CancellablePromise } from "@wailsio/runtime";
+
 /**
  * @param {number} a
  * @param {number} b
- * @returns {Promise<number>}
+ * @returns {$CancellablePromise<number>}
  */
 export function Add(a, b) {
-    return window.wails.Call('CalculatorService.Add', a, b)
+    return $Call.ByID(1411160069, a, b);
 }
 ```
 
@@ -255,10 +257,15 @@ try {
 ```typescript
 // frontend/bindings/myapp/calculatorservice.ts
 
-export function Add(a: number, b: number): Promise<number>
-export function Subtract(a: number, b: number): Promise<number>
-export function Multiply(a: number, b: number): Promise<number>
-export function Divide(a: number, b: number): Promise<number>
+import { Call as $Call, CancellablePromise as $CancellablePromise } from "@wailsio/runtime";
+
+export function Add(a: number, b: number): $CancellablePromise<number> {
+    return $Call.ByID(1411160069, a, b);
+}
+
+export function Subtract(a: number, b: number): $CancellablePromise<number> {
+    return $Call.ByID(1411160070, a, b);
+}
 ```
 
 **Usage:**
@@ -461,7 +468,7 @@ const config = await GetConfig()
 func ProcessLargeFile(path string) error {
     // Emit progress events
     for line := range lines {
-        app.EmitEvent("progress", line)
+        app.Event.Emit("progress", line)
     }
     return nil
 }
@@ -530,7 +537,7 @@ func main() {
         },
     })
     
-    app.NewWebviewWindow()
+    app.Window.New()
     app.Run()
 }
 ```

@@ -20,15 +20,45 @@ The Menu API provides methods to create and manage application menus, context me
 
 ### NewMenu()
 
-Creates a new menu.
+Creates a new menu. This is a package-level function.
 
 ```go
-func (a *App) NewMenu() *Menu
+func NewMenu() *Menu
 ```
 
 **Example:**
 ```go
-menu := app.NewMenu()
+menu := application.NewMenu()
+```
+
+You can also create a menu via the manager:
+
+```go
+menu := app.Menu.New()
+```
+
+### NewMenuFromItems()
+
+Creates a menu from one or more existing menu items.
+
+```go
+func NewMenuFromItems(item *MenuItem, items ...*MenuItem) *Menu
+```
+
+### NewSubmenu()
+
+Creates a submenu menu item with an existing menu as its content.
+
+```go
+func NewSubmenu(label string, items *Menu) *MenuItem
+```
+
+### NewContextMenu()
+
+Creates a new context menu and auto-registers it by name.
+
+```go
+func NewContextMenu(name string) *ContextMenu
 ```
 
 ## Menu Methods
@@ -65,7 +95,7 @@ func (m *Menu) AddSubmenu(label string) *Menu
 **Parameters:**
 - `label` - The submenu label
 
-**Returns:** The created submenu
+**Returns:** The created submenu (a `*Menu`)
 
 **Example:**
 ```go
@@ -91,8 +121,6 @@ menu.AddSeparator()
 menu.Add("Select All")
 ```
 
-**Best practice:** Use separators to group related menu items.
-
 ### AddCheckbox()
 
 Adds a checkable menu item.
@@ -116,7 +144,7 @@ darkMode.OnClick(func(ctx *application.Context) {
 
 ### AddRadio()
 
-Adds a radio menu item (mutually exclusive group).
+Adds a radio menu item. Consecutive radio items in a menu form a mutually exclusive group.
 
 ```go
 func (m *Menu) AddRadio(label string, checked bool) *MenuItem
@@ -142,6 +170,41 @@ gridView.OnClick(func(ctx *application.Context) {
 })
 ```
 
+### AddRole()
+
+Adds a predefined role-based menu item (platform-aware standard items).
+
+```go
+func (m *Menu) AddRole(role Role) *Menu
+```
+
+**Example:**
+```go
+// Add standard edit menu roles
+editMenu := menu.AddSubmenu("Edit")
+editMenu.AddRole(application.Undo)
+editMenu.AddRole(application.Redo)
+editMenu.AddSeparator()
+editMenu.AddRole(application.Cut)
+editMenu.AddRole(application.Copy)
+editMenu.AddRole(application.Paste)
+editMenu.AddRole(application.SelectAll)
+```
+
+**Available Roles:**
+
+| Category | Roles |
+|----------|-------|
+| **Complete Menus** | `AppMenu`, `EditMenu`, `FileMenu`, `ViewMenu`, `WindowMenu`, `SpeechMenu`, `HelpMenu`, `ServicesMenu` |
+| **Window Actions** | `CloseWindow`, `Minimise`, `Zoom`, `FullScreen`, `ToggleFullscreen`, `Front`, `ShowAll`, `BringAllToFront` |
+| **Edit Actions** | `Undo`, `Redo`, `Cut`, `Copy`, `Paste`, `PasteAndMatchStyle`, `SelectAll`, `Delete` |
+| **File Actions** | `NewFile`, `Open`, `Save`, `SaveAs`, `Revert`, `Print`, `PageLayout` |
+| **View Actions** | `Reload`, `ForceReload`, `OpenDevTools`, `ResetZoom`, `ZoomIn`, `ZoomOut` |
+| **App Actions** | `About`, `Quit`, `Hide`, `HideOthers`, `UnHide` |
+| **Find Actions** | `Find`, `FindAndReplace`, `FindNext`, `FindPrevious` |
+| **Speech Actions** | `StartSpeaking`, `StopSpeaking` |
+| **Other** | `Help`, `NoRole` |
+
 ### Update()
 
 Updates the menu to reflect any changes made to menu items.
@@ -158,6 +221,86 @@ menu.Update()  // Must call to apply changes
 
 **Important:** Always call `Update()` after modifying menu item properties.
 
+### FindByLabel()
+
+Recursively searches for a menu item by its label.
+
+```go
+func (m *Menu) FindByLabel(label string) *MenuItem
+```
+
+### FindByRole()
+
+Recursively searches for a menu item by its role.
+
+```go
+func (m *Menu) FindByRole(role Role) *MenuItem
+```
+
+### Clear()
+
+Removes all menu items.
+
+```go
+func (m *Menu) Clear()
+```
+
+### Destroy()
+
+Destroys the menu and all its items, releasing resources.
+
+```go
+func (m *Menu) Destroy()
+```
+
+### SetLabel()
+
+Sets the label for the menu.
+
+```go
+func (m *Menu) SetLabel(label string)
+```
+
+### RemoveMenuItem()
+
+Removes a specific menu item from the menu.
+
+```go
+func (m *Menu) RemoveMenuItem(target *MenuItem)
+```
+
+### ItemAt()
+
+Returns the menu item at the given index, or nil if out of bounds.
+
+```go
+func (m *Menu) ItemAt(index int) *MenuItem
+```
+
+### Clone()
+
+Recursively clones the menu and all its submenus.
+
+```go
+func (m *Menu) Clone() *Menu
+```
+
+### Append()
+
+Appends another menu's items to this menu.
+
+```go
+func (m *Menu) Append(in *Menu)
+```
+
+### Prepend()
+
+Prepends another menu's items before this menu's items.
+
+```go
+func (m *Menu) Prepend(in *Menu)
+```
+
 ## Menu Item Methods
 
 ### OnClick()
@@ -165,11 +308,11 @@ menu.Update()  // Must call to apply changes
 Registers a click handler for the menu item.
 
 ```go
-func (mi *MenuItem) OnClick(callback func(ctx *application.Context)) *MenuItem
+func (mi *MenuItem) OnClick(f func(*Context)) *MenuItem
 ```
 
 **Parameters:**
-- `callback` - Function called when item is clicked
+- `f` - Function called when item is clicked, receives a `*Context`
 
 **Returns:** The menu item (for chaining)
 
@@ -177,7 +320,6 @@ func (mi *MenuItem) OnClick(callback func(ctx *application.Context)) *MenuItem
 ```go
 item.OnClick(func(ctx *application.Context) {
     fmt.Println("Menu item clicked")
-    app.Logger.Info("User clicked menu item")
 })
 ```
 
@@ -186,13 +328,12 @@ item.OnClick(func(ctx *application.Context) {
 Changes the menu item's label.
 
 ```go
-func (mi *MenuItem) SetLabel(label string) *MenuItem
+func (mi *MenuItem) SetLabel(s string) *MenuItem
 ```
 
 **Example:**
 ```go
 item.SetLabel("Save As...")
-menu.Update()
 ```
 
 ### SetEnabled()
@@ -207,18 +348,6 @@ func (mi *MenuItem) SetEnabled(enabled bool) *MenuItem
 ```go
 // Disable save when no document is open
 saveItem.SetEnabled(hasOpenDocument)
-menu.Update()
-```
-
-**Common pattern:**
-```go
-// Update menu state based on application state
-func updateMenuState() {
-    saveItem.SetEnabled(hasUnsavedChanges)
-    undoItem.SetEnabled(canUndo)
-    redoItem.SetEnabled(canRedo)
-    menu.Update()
-}
 ```
 
 ### SetChecked()
@@ -229,12 +358,6 @@ Sets the checked state for checkbox/radio menu items.
 func (mi *MenuItem) SetChecked(checked bool) *MenuItem
 ```
 
-**Example:**
-```go
-darkModeItem.SetChecked(isDarkModeEnabled)
-menu.Update()
-```
-
 ### Checked()
 
 Returns the current checked state.
@@ -243,47 +366,28 @@ Returns the current checked state.
 func (mi *MenuItem) Checked() bool
 ```
 
-**Example:**
-```go
-if darkModeItem.Checked() {
-    // Dark mode is enabled
-}
-```
-
 ### SetAccelerator()
 
 Sets a keyboard shortcut for the menu item.
 
 ```go
-func (mi *MenuItem) SetAccelerator(accelerator string) *MenuItem
+func (mi *MenuItem) SetAccelerator(shortcut string) *MenuItem
 ```
 
 **Parameters:**
-- `accelerator` - Keyboard shortcut (e.g., "Ctrl+S", "Cmd+Q")
+- `shortcut` - Keyboard shortcut string
 
-**Accelerator format:**
-- **Modifiers:** `Ctrl`, `Cmd`, `Alt`, `Shift`
-- **Keys:** `A-Z`, `0-9`, `F1-F12`, `Enter`, `Backspace`, etc.
-- **Platform:** Use `Cmd` on macOS, `Ctrl` on Windows/Linux
+**Accelerator format:** `Modifier+Key` joined by `+`. Modifiers are case-insensitive.
+
+- **Modifiers:** `CmdOrCtrl` (aliases: `Cmd`, `Command`), `Ctrl`, `Alt` (aliases: `Option`, `OptionOrAlt`), `Shift`, `Super`
+- **Keys:** `A-Z`, `0-9`, `F1-F35`, `Plus`, and named keys: `Backspace`, `Tab`, `Return`, `Enter`, `Escape`, `Space`, `Delete`, `Home`, `End`, `Page Up`, `Page Down`, `Left`, `Right`, `Up`, `Down`, `NumLock`
+- **Cross-platform:** Use `CmdOrCtrl` for `Cmd` on macOS and `Ctrl` on Windows/Linux
 
 **Example:**
 ```go
-saveItem.SetAccelerator("Ctrl+S")
-quitItem.SetAccelerator("Ctrl+Q")
-newItem.SetAccelerator("Ctrl+N")
-```
-
-**Platform-aware example:**
-```go
-import "runtime"
-
-var quitShortcut string
-if runtime.GOOS == "darwin" {
-    quitShortcut = "Cmd+Q"
-} else {
-    quitShortcut = "Ctrl+Q"
-}
-quitItem.SetAccelerator(quitShortcut)
+saveItem.SetAccelerator("CmdOrCtrl+S")
+quitItem.SetAccelerator("CmdOrCtrl+Q")
+newItem.SetAccelerator("CmdOrCtrl+N")
 ```
 
 ### SetTooltip()
@@ -291,12 +395,7 @@ quitItem.SetAccelerator(quitShortcut)
 Sets a tooltip that appears when hovering over the menu item.
 
 ```go
-func (mi *MenuItem) SetTooltip(tooltip string) *MenuItem
-```
-
-**Example:**
-```go
-item.SetTooltip("Opens a file from disk")
+func (mi *MenuItem) SetTooltip(s string) *MenuItem
 ```
 
 ### SetHidden()
@@ -311,43 +410,147 @@ func (mi *MenuItem) SetHidden(hidden bool) *MenuItem
 ```go
 // Hide debug menu in production
 debugItem.SetHidden(!isDevelopment)
-menu.Update()
+```
+
+### SetBitmap()
+
+Sets an icon for the menu item.
+
+```go
+func (mi *MenuItem) SetBitmap(bitmap []byte) *MenuItem
+```
+
+### GetSubmenu()
+
+Returns the submenu of the item, or nil if it's not a submenu.
+
+```go
+func (mi *MenuItem) GetSubmenu() *Menu
+```
+
+### Label()
+
+Returns the current label text.
+
+```go
+func (mi *MenuItem) Label() string
+```
+
+### Tooltip()
+
+Returns the current tooltip text.
+
+```go
+func (mi *MenuItem) Tooltip() string
+```
+
+### Enabled()
+
+Returns whether the menu item is enabled.
+
+```go
+func (mi *MenuItem) Enabled() bool
+```
+
+### Hidden()
+
+Returns whether the menu item is hidden.
+
+```go
+func (mi *MenuItem) Hidden() bool
+```
+
+### SetRole()
+
+Sets the role for the menu item.
+
+```go
+func (mi *MenuItem) SetRole(role Role) *MenuItem
+```
+
+### GetAccelerator()
+
+Returns the current accelerator string, or empty if none.
+
+```go
+func (mi *MenuItem) GetAccelerator() string
+```
+
+### RemoveAccelerator()
+
+Removes the keyboard shortcut from the menu item.
+
+```go
+func (mi *MenuItem) RemoveAccelerator()
+```
+
+### IsSeparator() / IsSubmenu() / IsCheckbox() / IsRadio()
+
+Type checking methods for menu items.
+
+```go
+func (mi *MenuItem) IsSeparator() bool
+func (mi *MenuItem) IsSubmenu() bool
+func (mi *MenuItem) IsCheckbox() bool
+func (mi *MenuItem) IsRadio() bool
+```
+
+### Clone()
+
+Returns a deep copy of the menu item.
+
+```go
+func (mi *MenuItem) Clone() *MenuItem
+```
+
+### Destroy()
+
+Destroys the menu item and releases resources.
+
+```go
+func (mi *MenuItem) Destroy()
 ```
 
 ## Application Menu
 
-### SetApplicationMenu()
+### app.Menu.SetApplicationMenu()
 
 Sets the application's main menu bar.
 
 ```go
-func (a *App) SetApplicationMenu(menu *Menu)
+func (mm *MenuManager) SetApplicationMenu(menu *Menu)
+```
+
+You can also use the shorthand:
+
+```go
+func (mm *MenuManager) Set(menu *Menu)
 ```
 
 **Example:**
 ```go
-menu := app.NewMenu()
+menu := application.NewMenu()
 
 // File menu
 fileMenu := menu.AddSubmenu("File")
-fileMenu.Add("New").SetAccelerator("Ctrl+N").OnClick(newFile)
-fileMenu.Add("Open").SetAccelerator("Ctrl+O").OnClick(openFile)
-fileMenu.Add("Save").SetAccelerator("Ctrl+S").OnClick(saveFile)
+fileMenu.Add("New").SetAccelerator("CmdOrCtrl+N").OnClick(newFile)
+fileMenu.Add("Open").SetAccelerator("CmdOrCtrl+O").OnClick(openFile)
+fileMenu.Add("Save").SetAccelerator("CmdOrCtrl+S").OnClick(saveFile)
 fileMenu.AddSeparator()
-fileMenu.Add("Exit").SetAccelerator("Ctrl+Q").OnClick(func(ctx *application.Context) {
+fileMenu.Add("Exit").OnClick(func(ctx *application.Context) {
     app.Quit()
 })
 
 // Edit menu
 editMenu := menu.AddSubmenu("Edit")
-editMenu.Add("Undo").SetAccelerator("Ctrl+Z").OnClick(undo)
-editMenu.Add("Redo").SetAccelerator("Ctrl+Y").OnClick(redo)
+editMenu.AddRole(application.Undo)
+editMenu.AddRole(application.Redo)
 editMenu.AddSeparator()
-editMenu.Add("Cut").SetAccelerator("Ctrl+X").OnClick(cut)
-editMenu.Add("Copy").SetAccelerator("Ctrl+C").OnClick(copy)
-editMenu.Add("Paste").SetAccelerator("Ctrl+V").OnClick(paste)
+editMenu.AddRole(application.Cut)
+editMenu.AddRole(application.Copy)
+editMenu.AddRole(application.Paste)
 
-app.SetApplicationMenu(menu)
+app.Menu.SetApplicationMenu(menu)
 ```
 
 **Platform notes:**
@@ -357,80 +560,63 @@ app.SetApplicationMenu(menu)
 
 ## Context Menus
 
-### RegisterContextMenu()
+Context menus are right-click menus associated with HTML elements via the `--custom-contextmenu` CSS property.
 
-Registers a context menu (right-click menu) with a specific name.
+### Creating Context Menus
 
-```go
-func (a *App) RegisterContextMenu(name string, menu *Menu)
-```
-
-**Parameters:**
-- `name` - Unique identifier for the context menu
-- `menu` - The menu to show
-
-**Go:**
+Use `NewContextMenu(name)` to create and auto-register a context menu:
 
 ```go
-// Create context menu
-contextMenu := app.NewMenu()
+contextMenu := application.NewContextMenu("editor")
 contextMenu.Add("Cut").OnClick(cut)
 contextMenu.Add("Copy").OnClick(copy)
 contextMenu.Add("Paste").OnClick(paste)
 contextMenu.AddSeparator()
 contextMenu.Add("Select All").OnClick(selectAll)
+contextMenu.Update()
+```
 
-// Register it
-app.RegisterContextMenu("editor", contextMenu)
+Or use the manager to create and then register:
+
+```go
+contextMenu := app.ContextMenu.New()
+contextMenu.Add("Cut").OnClick(cut)
+// ... add items
+app.ContextMenu.Add("editor", contextMenu)
 ```
 
 **HTML:**
 
 ```html
 <!-- Trigger context menu on right-click -->
-<div data-wails-context-menu="editor">
+<div style="--custom-contextmenu: editor">
     Right-click here for context menu
 </div>
 ```
 
-**Dynamic context menus:**
-```go
-// Update context menu based on selection
-func updateContextMenu() {
-    contextMenu := app.NewMenu()
+## System Tray
 
-    if hasSelection {
-        contextMenu.Add("Cut").OnClick(cut)
-        contextMenu.Add("Copy").OnClick(copy)
-    }
-
-    contextMenu.Add("Paste").SetEnabled(hasClipboardContent).OnClick(paste)
-
-    app.RegisterContextMenu("editor", contextMenu)
-}
-```
-
-## System Tray Menu
-
-### NewSystemTray()
+### app.SystemTray.New()
 
 Creates a new system tray icon.
 
 ```go
-func (a *App) NewSystemTray() *SystemTray
+func (stm *SystemTrayManager) New() *SystemTray
 ```
 
 **Example:**
 ```go
-tray := app.NewSystemTray()
+tray := app.SystemTray.New()
 ```
 
-### SetIcon()
+### SystemTray Methods
 
-Sets the system tray icon.
+#### SetIcon()
+
+Sets the system tray icon. Returns `*SystemTray` for chaining.
 
 ```go
-func (st *SystemTray) SetIcon(icon []byte) *SystemTray
+func (s *SystemTray) SetIcon(icon []byte) *SystemTray
 ```
 
 **Example:**
@@ -439,61 +625,184 @@ iconData, _ := os.ReadFile("icon.png")
 tray.SetIcon(iconData)
 ```
 
-### SetMenu()
+#### SetDarkModeIcon()
 
-Sets the menu for the system tray.
+Sets an alternative icon for dark mode. Returns `*SystemTray` for chaining.
 
 ```go
-func (st *SystemTray) SetMenu(menu *Menu) *SystemTray
+func (s *SystemTray) SetDarkModeIcon(icon []byte) *SystemTray
 ```
 
-**Example:**
+#### SetTemplateIcon()
+
+Sets a template icon (macOS). Returns `*SystemTray` for chaining.
+
 ```go
-trayMenu := app.NewMenu()
-trayMenu.Add("Show Window").OnClick(func(ctx *application.Context) {
-    window.Show()
-    window.SetFocus()
-})
-trayMenu.Add("Settings").OnClick(openSettings)
-trayMenu.AddSeparator()
-trayMenu.Add("Quit").OnClick(func(ctx *application.Context) {
-    app.Quit()
-})
-
-tray.SetMenu(trayMenu)
+func (s *SystemTray) SetTemplateIcon(icon []byte) *SystemTray
 ```
 
-### SetTooltip()
+#### SetMenu()
+
+Sets the menu for the system tray. Returns `*SystemTray` for chaining.
+
+```go
+func (s *SystemTray) SetMenu(menu *Menu) *SystemTray
+```
+
+#### SetIconPosition()
+
+Sets the icon position relative to the label (macOS). Returns `*SystemTray` for chaining.
+
+```go
+func (s *SystemTray) SetIconPosition(iconPosition IconPosition) *SystemTray
+```
+
+**Icon position constants:** `NSImageNone`, `NSImageOnly`, `NSImageLeft`, `NSImageRight`, `NSImageBelow`, `NSImageAbove`, `NSImageOverlaps`, `NSImageLeading` (default), `NSImageTrailing`
+
+#### SetLabel()
+
+Sets the tray label text (shown next to icon on macOS).
+
+```go
+func (s *SystemTray) SetLabel(label string)
+```
+
+#### Label()
+
+Returns the current label text.
+
+```go
+func (s *SystemTray) Label() string
+```
+
+#### SetTooltip()
 
 Sets the tooltip shown when hovering over the tray icon.
 
 ```go
-func (st *SystemTray) SetTooltip(tooltip string) *SystemTray
+func (s *SystemTray) SetTooltip(tooltip string)
 ```
 
-**Example:**
+#### OnClick()
+
+Handles left-click on the tray icon. Returns `*SystemTray` for chaining.
+
 ```go
-tray.SetTooltip("My Application - Running")
+func (s *SystemTray) OnClick(handler func()) *SystemTray
 ```
 
-### OnClick()
+#### OnRightClick()
 
-Handles left-click on the tray icon.
+Handles right-click on the tray icon. Returns `*SystemTray` for chaining.
 
 ```go
-func (st *SystemTray) OnClick(callback func()) *SystemTray
+func (s *SystemTray) OnRightClick(handler func()) *SystemTray
 ```
 
-**Example:**
+#### OnDoubleClick()
+
+Handles double-click on the tray icon. Returns `*SystemTray` for chaining.
+
 ```go
-tray.OnClick(func() {
-    if window.IsVisible() {
-        window.Hide()
-    } else {
-        window.Show()
-        window.SetFocus()
-    }
-})
+func (s *SystemTray) OnDoubleClick(handler func()) *SystemTray
+```
+
+#### OnRightDoubleClick()
+
+Handles right-double-click on the tray icon. Returns `*SystemTray` for chaining.
+
+```go
+func (s *SystemTray) OnRightDoubleClick(handler func()) *SystemTray
+```
+
+#### OnMouseEnter() / OnMouseLeave()
+
+Handle mouse enter/leave on the tray icon. Return `*SystemTray` for chaining.
+
+```go
+func (s *SystemTray) OnMouseEnter(handler func()) *SystemTray
+func (s *SystemTray) OnMouseLeave(handler func()) *SystemTray
+```
+
+#### AttachWindow()
+
+Attaches a window to the system tray. The window will toggle visibility when the tray icon is clicked. Returns `*SystemTray` for chaining.
+
+```go
+func (s *SystemTray) AttachWindow(window Window) *SystemTray
+```
+
+#### WindowOffset()
+
+Sets the gap in pixels between the tray and the attached window. Returns `*SystemTray` for chaining.
+
+```go
+func (s *SystemTray) WindowOffset(offset int) *SystemTray
+```
+
+#### WindowDebounce()
+
+Sets the debounce duration for click events on Windows. Returns `*SystemTray` for chaining.
+
+```go
+func (s *SystemTray) WindowDebounce(debounce time.Duration) *SystemTray
+```
+
+#### OpenMenu()
+
+Programmatically opens the tray menu.
+
+```go
+func (s *SystemTray) OpenMenu()
+```
+
+#### ShowWindow()
+
+Shows the attached window near the tray icon.
+
+```go
+func (s *SystemTray) ShowWindow()
+```
+
+#### HideWindow()
+
+Hides the attached window.
+
+```go
+func (s *SystemTray) HideWindow()
+```
+
+#### ToggleWindow()
+
+Toggles the visibility of the attached window.
+
+```go
+func (s *SystemTray) ToggleWindow()
+```
+
+#### PositionWindow()
+
+Positions a window near the system tray icon.
+
+```go
+func (s *SystemTray) PositionWindow(window Window, offset int) error
+```
+
+#### Show() / Hide()
+
+Shows or hides the tray icon.
+
+```go
+func (s *SystemTray) Show()
+func (s *SystemTray) Hide()
+```
+
+#### Destroy()
+
+Destroys the system tray.
+
+```go
+func (s *SystemTray) Destroy()
 ```
 
 ## Complete Examples
@@ -507,23 +816,23 @@ import (
     "github.com/wailsapp/wails/v3/pkg/application"
 )
 
-func createMenu(app *application.Application) *application.Menu {
-    menu := app.NewMenu()
+func createMenu() *application.Menu {
+    menu := application.NewMenu()
 
     // File menu
     fileMenu := menu.AddSubmenu("File")
     fileMenu.Add("New").
-        SetAccelerator("Ctrl+N").
+        SetAccelerator("CmdOrCtrl+N").
         OnClick(func(ctx *application.Context) {
             // Create new document
         })
     fileMenu.Add("Open").
-        SetAccelerator("Ctrl+O").
+        SetAccelerator("CmdOrCtrl+O").
         OnClick(func(ctx *application.Context) {
-            // Open file dialog
+            // Open file
         })
     fileMenu.Add("Save").
-        SetAccelerator("Ctrl+S").
+        SetAccelerator("CmdOrCtrl+S").
         OnClick(func(ctx *application.Context) {
             // Save document
         })
@@ -532,20 +841,20 @@ func createMenu(app *application.Application) *application.Menu {
         app.Quit()
     })
 
-    // Edit menu
+    // Edit menu with roles
     editMenu := menu.AddSubmenu("Edit")
-    editMenu.Add("Undo").SetAccelerator("Ctrl+Z")
-    editMenu.Add("Redo").SetAccelerator("Ctrl+Y")
+    editMenu.AddRole(application.Undo)
+    editMenu.AddRole(application.Redo)
     editMenu.AddSeparator()
-    editMenu.Add("Cut").SetAccelerator("Ctrl+X")
-    editMenu.Add("Copy").SetAccelerator("Ctrl+C")
-    editMenu.Add("Paste").SetAccelerator("Ctrl+V")
+    editMenu.AddRole(application.Cut)
+    editMenu.AddRole(application.Copy)
+    editMenu.AddRole(application.Paste)
+    editMenu.AddRole(application.SelectAll)
 
     // View menu
     viewMenu := menu.AddSubmenu("View")
     darkMode := viewMenu.AddCheckbox("Dark Mode", false)
     darkMode.OnClick(func(ctx *application.Context) {
-        // Toggle dark mode
         isChecked := darkMode.Checked()
         app.Logger.Info("Dark mode", "enabled", isChecked)
     })
@@ -553,15 +862,6 @@ func createMenu(app *application.Application) *application.Menu {
     viewMenu.AddRadio("List View", true)
     viewMenu.AddRadio("Grid View", false)
     viewMenu.AddRadio("Detail View", false)
-
-    // Help menu
-    helpMenu := menu.AddSubmenu("Help")
-    helpMenu.Add("Documentation").OnClick(func(ctx *application.Context) {
-        // Open docs
-    })
-    helpMenu.Add("About").OnClick(func(ctx *application.Context) {
-        // Show about dialog
-    })
 
     return menu
 }
@@ -571,55 +871,42 @@ func main() {
         Name: "Menu Demo",
     })
 
-    menu := createMenu(app)
-    app.SetApplicationMenu(menu)
+    menu := createMenu()
+    app.Menu.SetApplicationMenu(menu)
 
-    window := app.NewWebviewWindow()
-    window.Show()
+    window := app.Window.New()
+    window.Center()
 
-    app.Run()
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
 }
 ```
 
 ### System Tray Application
 
 ```go
-func setupSystemTray(app *application.Application, window *application.Window) {
-    // Create system tray
-    tray := app.NewSystemTray()
+func setupSystemTray(app *application.App, window application.Window) {
+    tray := app.SystemTray.New()
 
     // Set icon
     iconData, _ := os.ReadFile("icon.png")
     tray.SetIcon(iconData)
     tray.SetTooltip("My App - Running")
 
-    // Handle left-click on tray icon
-    tray.OnClick(func() {
-        if window.IsVisible() {
-            window.Hide()
-        } else {
-            window.Show()
-            window.SetFocus()
-        }
+    // Attach window - toggles on click automatically
+    tray.AttachWindow(window).WindowOffset(5)
+
+    // Create tray menu (shown on right-click by default when window is attached)
+    trayMenu := application.NewMenu()
+
+    trayMenu.Add("Show Window").OnClick(func(ctx *application.Context) {
+        window.Show().Focus()
     })
-
-    // Create tray menu
-    trayMenu := app.NewMenu()
-
-    showItem := trayMenu.Add("Show Window")
-    showItem.OnClick(func(ctx *application.Context) {
-        window.Show()
-        window.SetFocus()
-    })
-
-    trayMenu.AddSeparator()
 
     trayMenu.Add("Settings").OnClick(func(ctx *application.Context) {
-        // Open settings window
-    })
-
-    trayMenu.Add("About").OnClick(func(ctx *application.Context) {
-        // Show about dialog
+        // Open settings
     })
 
     trayMenu.AddSeparator()
@@ -636,89 +923,71 @@ func setupSystemTray(app *application.Application, window *application.Window) {
 
 ```go
 type Editor struct {
-    app         *application.Application
-    menu        *application.Menu
-    undoItem    *application.MenuItem
-    redoItem    *application.MenuItem
-    saveItem    *application.MenuItem
-    undoStack   []string
-    redoStack   []string
-    hasChanges  bool
+    app        *application.App
+    menu       *application.Menu
+    undoItem   *application.MenuItem
+    redoItem   *application.MenuItem
+    saveItem   *application.MenuItem
+    hasChanges bool
 }
 
 func (e *Editor) createMenu() {
-    e.menu = e.app.NewMenu()
+    e.menu = application.NewMenu()
 
     fileMenu := e.menu.AddSubmenu("File")
-    e.saveItem = fileMenu.Add("Save").SetAccelerator("Ctrl+S")
+    e.saveItem = fileMenu.Add("Save").SetAccelerator("CmdOrCtrl+S")
     e.saveItem.OnClick(func(ctx *application.Context) {
         e.save()
     })
 
     editMenu := e.menu.AddSubmenu("Edit")
-    e.undoItem = editMenu.Add("Undo").SetAccelerator("Ctrl+Z")
+    e.undoItem = editMenu.Add("Undo").SetAccelerator("CmdOrCtrl+Z")
     e.undoItem.OnClick(func(ctx *application.Context) {
         e.undo()
     })
 
-    e.redoItem = editMenu.Add("Redo").SetAccelerator("Ctrl+Y")
+    e.redoItem = editMenu.Add("Redo").SetAccelerator("CmdOrCtrl+Shift+Z")
     e.redoItem.OnClick(func(ctx *application.Context) {
         e.redo()
     })
 
     e.updateMenuState()
-    e.app.SetApplicationMenu(e.menu)
+    e.app.Menu.SetApplicationMenu(e.menu)
 }
 
 func (e *Editor) updateMenuState() {
-    // Update menu items based on current state
     e.saveItem.SetEnabled(e.hasChanges)
-    e.undoItem.SetEnabled(len(e.undoStack) > 0)
-    e.redoItem.SetEnabled(len(e.redoStack) > 0)
     e.menu.Update()
-}
-
-func (e *Editor) onChange() {
-    e.hasChanges = true
-    e.updateMenuState()
-}
-
-func (e *Editor) save() {
-    // Save logic
-    e.hasChanges = false
-    e.updateMenuState()
 }
 ```
 
 ## Best Practices
 
-### ✅ Do
+### Do
 
-- **Use standard accelerators** - Follow platform conventions (Ctrl+C for copy, etc.)
-- **Call Update() after changes** - Menu won't reflect changes otherwise
+- **Use `CmdOrCtrl` for accelerators** - Automatically maps to Cmd on macOS and Ctrl on Windows/Linux
+- **Call `Update()` after changes** - Menu won't reflect changes otherwise
+- **Use `AddRole()` for standard items** - Gets correct platform behavior automatically
 - **Group related items** - Use separators to organize menu items
-- **Disable unavailable actions** - Don't hide, disable with SetEnabled(false)
-- **Use clear labels** - Be concise and descriptive
-- **Follow platform conventions** - macOS vs Windows/Linux menu patterns
+- **Disable unavailable actions** - Don't hide, disable with `SetEnabled(false)`
 
-### ❌ Don't
+### Don't
 
-- **Don't forget Update()** - Most common mistake
+- **Don't forget `Update()`** - Most common mistake
 - **Don't nest too deeply** - Keep menus 2-3 levels maximum
 - **Don't use ambiguous labels** - "Process" vs "Process Document"
-- **Don't overcomplicate** - Keep menus simple and focused
-- **Don't mix metaphors** - Consistent naming and organization
 
 ## Platform-Specific Notes
 
 ### macOS
 
 - Application menu automatically added with app name
-- Use `Cmd` instead of `Ctrl` for accelerators
-- "About", "Preferences", and "Quit" in application menu by default
+- Use `Cmd` for accelerators (or `CmdOrCtrl` for cross-platform)
+- "About", "Services", "Hide/Show", and "Quit" in application menu by default
+- Use `AddRole(application.AppMenu)` for the standard app menu
 
 ### Windows/Linux
 
 - No automatic application menu
-- Use `Ctrl` for accelerators
+- Use `Ctrl` for accelerators (or `CmdOrCtrl` for cross-platform)
 - "Exit" typically in File menu

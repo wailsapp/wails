@@ -212,12 +212,11 @@ By default, the binding generator uses hash-based IDs for method calls. You can 
 wails3 generate bindings -names
 ```
 
-This will generate code that uses method names instead of IDs:
+This will generate code that uses fully qualified method names instead of IDs:
 
 ```javascript
 export function Greet(name) {
-    let $resultPromise = $Call.ByName("Greet", name);
-    return $resultPromise;
+    return $Call.ByName("main.MyService.Greet", name);
 }
 ```
 
@@ -286,9 +285,9 @@ func (s *AuthService) GetCurrentUser() User {
     // Implementation...
 }
 
-// Internal helper method
+// Internal helper method - not exported to frontend
 //wails:internal
-func (s *AuthService) validateCredentials(username, password string) bool {
+func (s *AuthService) ValidateCredentials(username, password string) bool {
     // Implementation...
 }
 ```
@@ -317,9 +316,9 @@ func (s *DataService) ProcessBatch(data []string) ProcessingResult[[]map[string]
     // Implementation...
 }
 
-// Internal helper method
+// Internal helper method - not exported to frontend
 //wails:internal
-func (s *DataService) parseData(data string) (map[string]int, error) {
+func (s *DataService) ParseData(data string) (map[string]int, error) {
     // Implementation...
 }
 ```

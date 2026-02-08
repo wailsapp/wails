@@ -9,7 +9,7 @@ import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
 
 ## Overview
 
-Wails provides simple commands to build your application for development and production.
+Wails uses [Task](https://taskfile.dev) as its build system. The `wails3 build`, `wails3 package`, and `wails3 dev` commands are wrappers around tasks defined in your project's `Taskfile.yml`. You can customize the build process by editing the Taskfile.
 
 ## Development Build
 
@@ -28,15 +28,21 @@ wails3 dev
 ### Dev Options
 
 ```bash
-# Specify frontend dev server
-wails3 dev -devserver http://localhost:5173
+# Custom config file
+wails3 dev -config ./build/config.yml
 
-# Skip frontend dev server
-wails3 dev -nofrontend
+# Custom vite dev server port
+wails3 dev -port 3000
 
-# Custom build flags
-wails3 dev -tags dev
+# Enable HTTPS for the dev server
+wails3 dev -s
 ```
+
+The dev server port defaults to `9245`. You can also set the port via the `WAILS_VITE_PORT` environment variable.
+
+    :::note
+    `wails3 dev` is equivalent to running `wails3 task dev` and runs the `dev` task in the project's main Taskfile. You can customise this by editing the `Taskfile.yml` file.
+    :::
 
 ## Production Build
 
@@ -46,105 +52,103 @@ wails3 dev -tags dev
 wails3 build
 ```
 
-**Output:** Optimized binary in `build/bin/`
+**Output:** Binary in `bin/` directory.
 
-### Build Options
+### Build with Tags
 
 ```bash
-# Build for specific platform
-wails3 build -platform windows/amd64
-
-# Custom output directory
-wails3 build -o ./dist/myapp
-
-# Skip frontend build
-wails3 build -nofrontend
-
-# Production optimizations
-wails3 build -ldflags "-s -w"
+# Pass additional Go build tags
+wails3 build -tags production,debug
 ```
 
-## Build Configuration
+### Build with CLI Variables
 
-### wails.json
+You can pass CLI variables to customize the build via the underlying Taskfile:
 
-```json
-{
-  "name": "myapp",
-  "frontend": {
-    "dir": "./frontend",
-    "install": "npm install",
-    "build": "npm run build",
-    "dev": "npm run dev",
-    "devServerUrl": "http://localhost:5173"
-  },
-  "build": {
-    "output": "myapp",
-    "ldflags": "-s -w"
-  }
-}
+```bash
+wails3 build PRODUCTION=true
 ```
+
+These variables can be accessed in your `Taskfile.yml` using Go template syntax.
+
+    :::note
+    `wails3 build` is equivalent to running `wails3 task build` which runs the `build` task in the project's main Taskfile. Any CLI variables are forwarded to the underlying task. You can customise the build process by editing the `Taskfile.yml` file.
+    :::
 
 ## Platform-Specific Builds
 
+Platform-specific build tasks are defined in the Taskfiles under `build/<platform>/Taskfile.yml`. The main `Taskfile.yml` dispatches to the correct platform automatically based on the current OS.
+
 <Tabs syncKey="platform">
   <TabItem label="Windows" icon="seti:windows">
+    The Windows Taskfile handles:
+    - Building the binary with appropriate flags
+    - Generating `.ico` icon file
+    - Generating Windows `.syso` file
+    - Creating NSIS installers for packaging
+
     ```bash
-    # Windows executable
-    wails3 build -platform windows/amd64
-    
-    # With icon
-    wails3 build -platform windows/amd64 -icon icon.ico
-    
-    # Console app (shows terminal)
-    wails3 build -platform windows/amd64 -windowsconsole
+    # Build for Windows (runs automatically on Windows)
+    wails3 build
     ```
   </TabItem>
 
   <TabItem label="macOS" icon="apple">
+    The macOS Taskfile handles:
+    - Building binaries for amd64, arm64, and universal architectures
+    - Generating `.icns` icon file
+    - Creating `.app` bundles
+    - Ad-hoc code signing
+
     ```bash
-    # macOS app bundle
-    wails3 build -platform darwin/amd64
-    
-    # Universal binary (Intel + Apple Silicon)
-    wails3 build -platform darwin/universal
-    
-    # With icon
-    wails3 build -platform darwin/amd64 -icon icon.icns
+    # Build for macOS (runs automatically on macOS)
+    wails3 build
     ```
   </TabItem>
 
   <TabItem label="Linux" icon="linux">
+    The Linux Taskfile handles:
+    - Building the binary with appropriate flags
+    - Generating `.desktop` files
+    - Creating AppImage, deb, rpm, and Arch Linux packages
+
     ```bash
-    # Linux executable
-    wails3 build -platform linux/amd64
-    
-    # With icon
-    wails3 build -platform linux/amd64 -icon icon.png
+    # Build for Linux (runs automatically on Linux)
+    wails3 build
     ```
   </TabItem>
 </Tabs>
+
+## Packaging
+
+```bash
+wails3 package
+```
+
+This creates platform-specific packages for distribution. Like `build`, it is a wrapper around `wails3 task package`.
+
+| Platform | Package Types                             |
+|----------|-------------------------------------------|
+| Windows  | `.exe`, NSIS installer                    |
+| macOS    | `.app` bundle                             |
+| Linux    | `.AppImage`, `.deb`, `.rpm`, `.archlinux` |
 
 ## Optimization
 
 ### Binary Size
 
 ```bash
-# Strip debug symbols
-wails3 build -ldflags "-s -w"
-
 # UPX compression (external tool)
-upx --best --lzma build/bin/myapp
+upx --best --lzma bin/myapp
 ```
 
-### Performance
+The default Taskfiles already include `-ldflags "-s -w"` to strip debug symbols.
+
+### Build Tags
 
 ```bash
-# Enable optimizations
+# Pass build tags to the Go compiler
 wails3 build -tags production
-
-# Disable debug features
-wails3 build -ldflags "-X main.debug=false"
 ```
 
 ## Troubleshooting
@@ -157,20 +161,19 @@ wails3 build -ldflags "-X main.debug=false"
 - Check `go.mod` is up to date
 - Run `go mod tidy`
 - Verify frontend builds: `cd frontend && npm run build`
-- Check wails.json configuration
+- Run `wails3 doctor` to check your environment
 
 ### Large Binary Size
 
 **Problem:** Binary is too large
 
 **Solutions:**
-- Use `-ldflags "-s -w"` to strip symbols
+- Ensure Taskfile includes `-ldflags "-s -w"` to strip symbols (default Taskfiles do this)
 - Remove unused dependencies
 - Use UPX compression
 - Check embedded assets size
 
 ## Next Steps
 
-- [Cross-Platform Building](/guides/cross-platform) - Build for multiple platforms
-- [Distribution](/guides/installers) - Create installers and packages
-- [Build System](/concepts/build-system) - Understand the build system
+- [Build Customization](/guides/build/customization) - Customize the build process with Taskfiles
+- [Build System](/concepts/build-system) - Understand how the build system works
