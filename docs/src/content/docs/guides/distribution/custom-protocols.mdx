@@ -35,13 +35,6 @@ func main() {
     app := application.New(application.Options{
         Name:        "My Application",
         Description: "My awesome application",
-        Protocols: []application.Protocol{
-            {
-                Scheme:      "myapp",
-                Description: "My Application Protocol",
-                Role:        "Editor",  // macOS only
-            },
-        },
     })
 
     // Register handler for protocol events
@@ -59,6 +52,12 @@ func handleCustomURL(url string) {
     println("Received URL:", url)
 }
 ```
+
+:::note
+Custom protocol schemes are registered at the OS level through your application's build assets
+(Info.plist on macOS, NSIS installer on Windows, .desktop files on Linux),
+not through `application.Options`. See the [Platform Registration](#platform-registration) section below for details.
+:::
 
 ## Protocol Handler
 
@@ -123,7 +122,7 @@ Custom protocols are registered differently on each platform.
 #### Automatic Registration
 
 When you build your application with `wails3 build`, the NSIS installer:
-1. Automatically registers all protocols defined in `application.Options.Protocols`
+1. Automatically registers all protocols defined in your build assets configuration
 2. Associates protocols with your application executable
 3. Sets up proper registry entries
 4. Removes protocol associations during uninstall
@@ -136,7 +135,7 @@ The NSIS template includes built-in macros:
 - `wails.associateCustomProtocols` - Registers protocols during installation
 - `wails.unassociateCustomProtocols` - Removes protocols during uninstall
 
-These macros are automatically called based on your `Protocols` configuration.
+These macros are automatically called based on your build assets protocol configuration.
 
 #### Manual Registry (Advanced)
 
@@ -174,7 +173,7 @@ On macOS, protocols are registered via your `Info.plist` file.
 
 Wails automatically generates the `Info.plist` with your protocols when you build with `wails3 build`.
 
-The protocols from `application.Options.Protocols` are added to:
+The protocols from your build assets configuration are added to:
 
 ```xml
 <key>CFBundleURLTypes</key>
@@ -278,13 +277,6 @@ func main() {
     app := application.New(application.Options{
         Name:        "DeepLink Demo",
         Description: "Custom protocol demonstration",
-        Protocols: []application.Protocol{
-            {
-                Scheme:      "deeplink",
-                Description: "DeepLink Demo Protocol",
-                Role:        "Editor",
-            },
-        },
     })
 
     myApp := &App{app: app}
@@ -556,8 +548,10 @@ Create a test HTML page:
 
 **Check logs:**
 ```go
+import "log/slog"
+
 app := application.New(application.Options{
-    Logger: application.NewLogger(application.LogLevelDebug),
+    LogLevel: slog.LevelDebug,
     // ...
 })
 ```

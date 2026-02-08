@@ -202,17 +202,27 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 | Event | Description |
 |-------|-------------|
 | `events.Common.WindowClosing` | Window is about to close |
-| `events.Common.WindowFocus` | Window gained focus |
-| `events.Common.WindowLostFocus` | Window lost focus |
 | `events.Common.WindowDidMove` | Window moved |
 | `events.Common.WindowDidResize` | Window resized |
-| `events.Common.WindowMinimise` | Window minimised |
-| `events.Common.WindowUnMinimise` | Window restored from minimised |
-| `events.Common.WindowMaximise` | Window maximised |
-| `events.Common.WindowUnMaximise` | Window restored from maximised |
-| `events.Common.WindowFullscreen` | Window entered fullscreen |
-| `events.Common.WindowUnFullscreen` | Window exited fullscreen |
+| `events.Common.WindowDPIChanged` | DPI scaling changed |
 | `events.Common.WindowFilesDropped` | Files were dropped onto the window |
+| `events.Common.WindowFocus` | Window gained focus |
+| `events.Common.WindowFullscreen` | Window entered fullscreen |
+| `events.Common.WindowHide` | Window was hidden |
+| `events.Common.WindowLostFocus` | Window lost focus |
+| `events.Common.WindowMaximise` | Window maximised |
+| `events.Common.WindowMinimise` | Window minimised |
+| `events.Common.WindowToggleFrameless` | Frameless mode toggled |
+| `events.Common.WindowRestore` | Window restored from min/max |
+| `events.Common.WindowRuntimeReady` | Wails runtime loaded in window |
+| `events.Common.WindowShow` | Window became visible |
+| `events.Common.WindowUnFullscreen` | Window exited fullscreen |
+| `events.Common.WindowUnMaximise` | Window restored from maximised |
+| `events.Common.WindowUnMinimise` | Window restored from minimised |
+| `events.Common.WindowZoom` | Window zoom changed |
+| `events.Common.WindowZoomIn` | Zoom level increased |
+| `events.Common.WindowZoomOut` | Zoom level decreased |
+| `events.Common.WindowZoomReset` | Zoom reset to default |
 
 ## Complete Example
 

@@ -533,7 +533,7 @@ menu.Append(menu.Text("File", nil, []*menu.MenuItem{
 ```go
 menu := application.NewMenu()
 fileMenu := menu.AddSubmenu("File")
-fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+fileMenu.Add("Quit").OnClick(func(_ *application.Context) {
     app.Quit()
 })
 ```

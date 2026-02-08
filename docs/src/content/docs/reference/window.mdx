@@ -290,6 +290,22 @@ window.Fullscreen()
 window.UnFullscreen()
 ```
 
+### ToggleFullscreen()
+
+Toggles the window between fullscreen and normal.
+
+```go
+func (w *WebviewWindow) ToggleFullscreen()
+```
+
+### ToggleMaximise()
+
+Toggles the window between maximised and normal.
+
+```go
+func (w *WebviewWindow) ToggleMaximise()
+```
+
 ### Restore()
 
 Restores the window to its previous state if it was minimised, maximised, or fullscreen.
@@ -404,6 +420,90 @@ Reloads the current window content.
 func (w *WebviewWindow) Reload()
 ```
 
+### ForceReload()
+
+Forces the window to reload the page assets.
+
+```go
+func (w *WebviewWindow) ForceReload()
+```
+
+## Size Helpers
+
+### Width() / Height()
+
+Returns the current window width or height individually.
+
+```go
+func (w *WebviewWindow) Width() int
+func (w *WebviewWindow) Height() int
+```
+
+### Bounds() / SetBounds()
+
+Gets or sets the DIP (device-independent pixel) bounds of the window as a `Rect`.
+
+```go
+func (w *WebviewWindow) Bounds() Rect
+func (w *WebviewWindow) SetBounds(bounds Rect)
+```
+
+### PhysicalBounds() / SetPhysicalBounds()
+
+Gets or sets the physical pixel bounds of the window.
+
+```go
+func (w *WebviewWindow) PhysicalBounds() Rect
+func (w *WebviewWindow) SetPhysicalBounds(physicalBounds Rect)
+```
+
+### GetBorderSizes()
+
+Returns the border sizes of the window.
+
+```go
+func (w *WebviewWindow) GetBorderSizes() *LRTB
+```
+
+### Resizable()
+
+Returns `true` if the window is resizable.
+
+```go
+func (w *WebviewWindow) Resizable() bool
+```
+
+### DisableSizeConstraints() / EnableSizeConstraints()
+
+Temporarily disables or re-enables the min/max size constraints (used internally during maximise/fullscreen).
+
+```go
+func (w *WebviewWindow) DisableSizeConstraints()
+func (w *WebviewWindow) EnableSizeConstraints()
+```
+
+## Window Frame
+
+### ToggleFrameless()
+
+Toggles the window between frameless and normal.
+
+```go
+func (w *WebviewWindow) ToggleFrameless()
+```
+
+## Menu Bar
+
+### ShowMenuBar() / HideMenuBar() / ToggleMenuBar()
+
+Controls the visibility of the window menu bar.
+
+```go
+func (w *WebviewWindow) ShowMenuBar()
+func (w *WebviewWindow) HideMenuBar()
+func (w *WebviewWindow) ToggleMenuBar()
+```
+
 ## Window Events
 
 Wails provides two methods for handling window events:
@@ -501,7 +601,7 @@ func (w *WebviewWindow) EmitEvent(name string, data ...any) bool
 - `name` - Event name
 - `data` - Optional data to send with the event
 
-**Returns:** `true` if the event was cancelled
+**Returns:** `true` if the event was emitted successfully (not cancelled by a hook)
 
 **Example:**
 ```go
@@ -600,12 +700,13 @@ performLongOperation()
 window.SetEnabled(true)
 ```
 
-### SetIgnoreMouseEvents()
+### SetIgnoreMouseEvents() / IsIgnoreMouseEvents()
 
 Makes the window ignore mouse events (click-through). Returns `Window` for chaining. Windows and Mac only.
 
 ```go
 func (w *WebviewWindow) SetIgnoreMouseEvents(ignore bool) Window
+func (w *WebviewWindow) IsIgnoreMouseEvents() bool
 ```
 
 ### SetContentProtection()
@@ -654,6 +755,14 @@ Flashes the window's taskbar button/icon. Windows only.
 
 ```go
 func (w *WebviewWindow) Flash(enabled bool)
+```
+
+### SnapAssist()
+
+Triggers the Windows Snap Assist feature by simulating Win+Z key combination. On Windows 11, this opens the snap layout options. On Linux and macOS, this is a no-op.
+
+```go
+func (w *WebviewWindow) SnapAssist()
 ```
 
 ### GetScreen()

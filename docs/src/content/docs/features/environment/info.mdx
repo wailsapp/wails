@@ -107,6 +107,16 @@ func updateApplicationTheme(theme string) {
 }
 ```
 
+### Accent Colour
+
+Get the system accent colour:
+
+```go
+accentColor := app.Env.GetAccentColor()
+app.Logger.Info("System accent colour", "color", accentColor)
+// Returns a CSS-compatible colour string, e.g. "rgb(0,122,255)"
+```
+
 ## File Manager Integration
 
 ### Open File Manager

@@ -348,17 +348,27 @@ Shutdown.Save -> End
 **Lifecycle hooks:**
 
 ```go
+// Services provide startup/shutdown hooks
+type AppService struct{}
+
+func (s *AppService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    // Initialise database, load config, etc.
+    return nil
+}
+
+func (s *AppService) ServiceShutdown() error {
+    // Save state, close connections, etc.
+    return nil
+}
+
 app := application.New(application.Options{
     Name: "My App",
-    
-    // Called before windows are created
-    OnStartup: func(ctx context.Context) {
-        // Initialise database, load config, etc.
+    Services: []application.Service{
+        application.NewService(&AppService{}),
     },
-    
-    // Called when app is about to quit
+    // Called when app is about to quit (before service shutdown)
     OnShutdown: func() {
-        // Save state, close connections, etc.
+        // Additional cleanup
     },
 })
 ```

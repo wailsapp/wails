@@ -444,17 +444,14 @@ func CreateWindow(name string) {
 }
 ```
 
-### Closing vs Destroying
+### Closing Windows
 
 ```go
 // Close - triggers WindowClosing event, can be cancelled via RegisterHook
 window.Close()
-
-// Destroy - immediate, cannot be cancelled
-window.Destroy()
 ```
 
-**Best practice:** Use `Close()` for user-initiated closes, `Destroy()` for cleanup.
+**Note:** `Close()` emits a `WindowClosing` event. Use `RegisterHook` to intercept and optionally cancel the close.
 
 ### Resource Cleanup
 
@@ -464,14 +461,14 @@ type ManagedWindow struct {
     resources  []io.Closer
 }
 
-func (mw *ManagedWindow) Destroy() {
+func (mw *ManagedWindow) CleanupAndClose() {
     // Close all resources
     for _, resource := range mw.resources {
         resource.Close()
     }
-    
-    // Destroy window
-    mw.window.Destroy()
+
+    // Close window
+    mw.window.Close()
 }
 ```
 

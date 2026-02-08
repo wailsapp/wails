@@ -118,83 +118,83 @@ app.Event.Emit("global-update", data)
 
 ## Event Methods (Frontend)
 
-### On()
+### Events.On()
 
 Listens for events from Go.
 
 ```javascript
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-On(eventName, callback)
+Events.On(eventName, callback)
 ```
 
 **Parameters:**
 - `eventName` - Name of the event to listen for
-- `callback` - Function called when event is received
+- `callback` - Function called with a `WailsEvent` object (`{ name, data, sender }`)
 
 **Returns:** Cleanup function
 
 **Example:**
 ```javascript
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 // Listen for events
-const cleanup = On('data-updated', (data) => {
-    console.log('Count:', data.count)
-    console.log('Status:', data.status)
-    updateUI(data)
+const cleanup = Events.On('data-updated', (event) => {
+    console.log('Count:', event.data.count)
+    console.log('Status:', event.data.status)
+    updateUI(event.data)
 })
 
 // Later, remove listener
 cleanup()
 ```
 
-### Once()
+### Events.Once()
 
 Listens for a single event occurrence.
 
 ```javascript
-import { Once } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-Once(eventName, callback)
+Events.Once(eventName, callback)
 ```
 
 **Example:**
 ```javascript
-import { Once } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 // Listen for first occurrence only
-Once('initialization-complete', (data) => {
-    console.log('App initialized!', data)
+Events.Once('initialization-complete', (event) => {
+    console.log('App initialized!', event.data)
     // This will only fire once
 })
 ```
 
-### Off()
+### Events.Off()
 
-Removes event listeners.
+Removes event listeners for the specified event names.
 
 ```javascript
-import { Off } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-Off(...eventNames)
+Events.Off(...eventNames)
 ```
 
 **Example:**
 ```javascript
-import { Off } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-Off('my-event', 'other-event')
+Events.Off('my-event', 'other-event')
 ```
 
-### OffAll()
+### Events.OffAll()
 
 Removes all event listeners.
 
 ```javascript
-import { OffAll } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-OffAll()
+Events.OffAll()
 ```
 
 ## Application Events
@@ -326,14 +326,14 @@ func (s *Service) ProcessFiles(files []string) error {
 **JavaScript:**
 
 ```javascript
-import { On, Once } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-On('progress', (data) => {
-    progressBar.style.width = `${data.percent}%`
-    statusText.textContent = `Processing ${data.file}... (${data.current}/${data.total})`
+Events.On('progress', (event) => {
+    progressBar.style.width = `${event.data.percent}%`
+    statusText.textContent = `Processing ${event.data.file}... (${event.data.current}/${event.data.total})`
 })
 
-Once('processing-complete', () => {
+Events.Once('processing-complete', () => {
     progressBar.style.width = '100%'
     statusText.textContent = 'Complete!'
 })
@@ -354,10 +354,10 @@ preferencesWindow.EmitEvent("settings-updated", settings)
 **JavaScript:**
 
 ```javascript
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-On('theme-changed', (theme) => {
-    document.body.className = theme
+Events.On('theme-changed', (event) => {
+    document.body.className = event.data
 })
 ```
 
@@ -388,11 +388,11 @@ func (s *StateService) UpdateState(key string, value any) {
 **JavaScript:**
 
 ```javascript
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-On('state-updated', (data) => {
-    localState[data.key] = data.value
-    updateUI(data.key, data.value)
+Events.On('state-updated', (event) => {
+    localState[event.data.key] = event.data.value
+    updateUI(event.data.key, event.data.value)
 })
 ```
 
@@ -462,7 +462,7 @@ app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.App
 | `WindowClosing` | Window is about to close | Yes |
 | `WindowDidMove` | Window moved | No |
 | `WindowDidResize` | Window was resized | No |
-| `WindowDPIChanged` | DPI scaling changed (Windows) | No |
+| `WindowDPIChanged` | DPI scaling changed | No |
 | `WindowFilesDropped` | Files dropped onto window | No |
 | `WindowFocus` | Window gained focus | No |
 | `WindowFullscreen` | Entered fullscreen | No |
@@ -470,12 +470,14 @@ app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.App
 | `WindowLostFocus` | Window lost focus | No |
 | `WindowMaximise` | Window maximized | Yes (macOS) |
 | `WindowMinimise` | Window minimized | Yes (macOS) |
+| `WindowToggleFrameless` | Frameless mode toggled | No |
 | `WindowRestore` | Restored from min/max | No |
 | `WindowRuntimeReady` | Wails runtime loaded | No |
 | `WindowShow` | Window became visible | No |
 | `WindowUnFullscreen` | Exited fullscreen | No |
 | `WindowUnMaximise` | Exited maximized state | Yes (macOS) |
 | `WindowUnMinimise` | Exited minimized state | Yes (macOS) |
+| `WindowZoom` | Zoom level changed | No |
 | `WindowZoomIn` | Zoom increased | Yes (macOS) |
 | `WindowZoomOut` | Zoom decreased | Yes (macOS) |
 | `WindowZoomReset` | Zoom reset to 100% | Yes (macOS) |
@@ -584,26 +586,26 @@ func main() {
 **JavaScript:**
 
 ```javascript
-import { On, Once } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 import { StartLongTask, BroadcastMessage } from './bindings/EventDemoService'
 
 // Task events
-On('task-started', () => {
+Events.On('task-started', () => {
     document.getElementById('status').textContent = 'Running...'
 })
 
-On('task-progress', (data) => {
+Events.On('task-progress', (event) => {
     const progressBar = document.getElementById('progress')
-    progressBar.style.width = `${data.percent}%`
+    progressBar.style.width = `${event.data.percent}%`
 })
 
-Once('task-completed', (data) => {
-    document.getElementById('status').textContent = data.message
+Events.Once('task-completed', (event) => {
+    document.getElementById('status').textContent = event.data.message
 })
 
 // Window state events
-On('window-state', (state) => {
-    document.body.dataset.windowState = state
+Events.On('window-state', (event) => {
+    document.body.dataset.windowState = event.data
 })
 
 // Trigger long task

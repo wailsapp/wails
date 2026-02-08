@@ -150,10 +150,13 @@ Wails provides **predefined menu roles** that create platform-appropriate menu s
 
 | Role | Description | Platform Notes |
 |------|-------------|----------------|
-| `AppMenu` | Application menu with About, Preferences, Quit | **macOS only** |
+| `AppMenu` | Application menu with About, Services, Hide/Show, and Quit | **macOS only** |
 | `FileMenu` | File menu with Close Window (macOS) or Quit (Windows/Linux) | All platforms |
-| `EditMenu` | Text editing (Undo, Redo, Cut, Copy, Paste) | All platforms |
+| `EditMenu` | Text editing (Undo, Redo, Cut, Copy, Paste, etc.) | All platforms |
+| `ViewMenu` | View menu with Reload, Zoom, and Fullscreen controls | All platforms |
 | `WindowMenu` | Window management (Minimise, Zoom, etc.) | All platforms |
+| `ServicesMenu` | macOS Services submenu | **macOS only** |
+| `SpeechMenu` | Speech menu with Start/Stop Speaking | **macOS only** |
 | `HelpMenu` | Help and information | All platforms |
 
 ### Using Roles
@@ -421,7 +424,6 @@ menuItem.OnClick(func(ctx *application.Context) {
 
 **Standard locations:**
 - **About**: Application menu
-- **Preferences**: Application menu (⌘,)
 - **Quit**: Application menu (⌘Q)
 - **Help**: Help menu
 
@@ -429,8 +431,8 @@ menuItem.OnClick(func(ctx *application.Context) {
 
 ```go
 if runtime.GOOS == "darwin" {
-    menu.AddRole(application.AppMenu)  // Adds About, Preferences, Quit
-    
+    menu.AddRole(application.AppMenu)  // Adds About, Services, Hide/Show, Quit
+
     // Don't add Quit to File menu on macOS
     // Don't add About to Help menu on macOS
 }
@@ -522,10 +524,8 @@ func createMenu(app *application.App) {
     // Tools menu
     toolsMenu := menu.AddSubmenu("Tools")
     
-    // Settings location varies by platform
-    if runtime.GOOS == "darwin" {
-        // On macOS, Preferences is in Application menu (added by AppMenu role)
-    } else {
+    // Settings location varies by platform convention
+    if runtime.GOOS != "darwin" {
         toolsMenu.Add("Settings").SetAccelerator("CmdOrCtrl+,").OnClick(showSettings)
     }
     

@@ -514,22 +514,6 @@ HTML: `
 `,
 ```
 
-### Assets
-
-**Type:** `AssetOptions`  
-**Default:** Inherited from application  
-**Platform:** All
-
-```go
-Assets: application.AssetOptions{
-    Handler: application.AssetFileServerFS(assets),
-},
-```
-
-**Purpose:** Serve embedded frontend assets.
-
-**See [Build System](/concepts/build-system) for details.**
-
 ## Security Options
 
 ### ContentProtectionEnabled
@@ -638,10 +622,14 @@ Mac: application.MacWindow{
 - `MacTitleBarHiddenInset` - Hidden with inset traffic lights
 - `MacTitleBarHiddenInsetUnified` - Hidden with unified toolbar style
 
+**DisableShadow** (`bool`)
+- Disable the window shadow
+
 **Backdrop** (`MacBackdrop`)
-- `MacBackdropNormal` - Standard
-- `MacBackdropTranslucent` - Blurred translucent
+- `MacBackdropNormal` - Standard opaque background
 - `MacBackdropTransparent` - Fully transparent
+- `MacBackdropTranslucent` - Blurred translucent
+- `MacBackdropLiquidGlass` - Apple's Liquid Glass effect (macOS 15.0+, falls back to translucent)
 
 **InvisibleTitleBarHeight** (`int`)
 - Height of invisible title bar (for dragging)
@@ -650,6 +638,35 @@ Mac: application.MacWindow{
 - `DefaultAppearance` - System default
 - `NSAppearanceNameAqua` - Light appearance
 - `NSAppearanceNameDarkAqua` - Dark appearance
+- `NSAppearanceNameVibrantLight` - Light vibrant appearance
+- `NSAppearanceNameAccessibilityHighContrastAqua` - High-contrast light
+- `NSAppearanceNameAccessibilityHighContrastDarkAqua` - High-contrast dark
+- `NSAppearanceNameAccessibilityHighContrastVibrantLight` - High-contrast vibrant light
+- `NSAppearanceNameAccessibilityHighContrastVibrantDark` - High-contrast vibrant dark
+
+**EnableFraudulentWebsiteWarnings** (`bool`)
+- Enable warnings for fraudulent websites
+
+**WebviewPreferences** (`MacWebviewPreferences`)
+- `TabFocusesLinks` - Enable tabbing to links
+- `TextInteractionEnabled` - Enable text interaction
+- `FullscreenEnabled` - Enable fullscreen
+- `AllowsBackForwardNavigationGestures` - Enable horizontal swipe gestures for back/forward navigation
+
+**WindowLevel** (`MacWindowLevel`)
+- Controls the window level ordering. Values: `MacWindowLevelNormal`, `MacWindowLevelFloating`, `MacWindowLevelTornOffMenu`, `MacWindowLevelModalPanel`, `MacWindowLevelMainMenu`, `MacWindowLevelStatus`, `MacWindowLevelPopUpMenu`, `MacWindowLevelScreenSaver`
+
+**CollectionBehavior** (`MacWindowCollectionBehavior`)
+- Controls how the window behaves across macOS Spaces and fullscreen. Values can be combined with bitwise OR. Includes: `MacWindowCollectionBehaviorCanJoinAllSpaces`, `MacWindowCollectionBehaviorMoveToActiveSpace`, `MacWindowCollectionBehaviorFullScreenPrimary`, `MacWindowCollectionBehaviorFullScreenAuxiliary`, etc.
+
+**EventMapping** (`map[events.WindowEventType]events.WindowEventType`)
+- Maps platform-specific events to common event types
+
+**LiquidGlass** (`MacLiquidGlass`)
+- Configuration for the Liquid Glass effect: `Style`, `Material`, `CornerRadius`, `TintColor`, `GroupID`, `GroupSpacing`
+
+**ShowToolbarWhenFullscreen** (in `MacTitleBar`)
+- Keep the toolbar visible when the window is in fullscreen mode
 
 **Example:**
 
@@ -696,6 +713,42 @@ Windows: application.WindowsWindow{
 - Disable default frameless decorations (shadow and rounded corners)
 - For custom window chrome
 
+**WindowMask** (`[]byte`)
+- Set the window shape using a PNG with an alpha channel
+
+**WindowMaskDraggable** (`bool`)
+- Make the window draggable by clicking on the window mask
+
+**ResizeDebounceMS** (`uint16`)
+- Amount of time in milliseconds to debounce redraws of webview2 when resizing
+
+**WindowDidMoveDebounceMS** (`uint16`)
+- Amount of time in milliseconds to debounce the WindowDidMove event when moving
+
+**EventMapping** (`map[events.WindowEventType]events.WindowEventType`)
+- Maps platform-specific events to common event types
+
+**HiddenOnTaskbar** (`bool`)
+- Hide the window from the taskbar
+
+**EnableSwipeGestures** (`bool`)
+- Enable swipe gestures for the window
+
+**Menu** (`*Menu`)
+- The menu to use for the window
+
+**Permissions** (`map[CoreWebView2PermissionKind]CoreWebView2PermissionState`)
+- WebView2 permissions map. If empty, default permissions will be granted.
+
+**ExStyle** (`int`)
+- Extended window style
+
+**GeneralAutofillEnabled** (`bool`)
+- Enable general autofill
+
+**PasswordAutosaveEnabled** (`bool`)
+- Enable autosaving passwords
+
 **Example:**
 
 ```go
@@ -727,6 +780,16 @@ Linux: application.LinuxWindow{
 - `WebviewGpuPolicyAlways` - Hardware acceleration always enabled
 - `WebviewGpuPolicyOnDemand` - Enabled/disabled as requested by web contents
 - `WebviewGpuPolicyNever` - Hardware acceleration always disabled
+
+**WindowDidMoveDebounceMS** (`uint16`)
+- Debounce time in milliseconds for the WindowDidMove event
+
+**Menu** (`*Menu`)
+- The window's menu
+
+**MenuStyle** (`LinuxMenuStyle`) - GTK4 only, ignored on GTK3
+- `LinuxMenuStyleMenuBar` - Traditional menu bar below the title bar (default)
+- `LinuxMenuStylePrimaryMenu` - Primary menu button in the header bar (GNOME style)
 
 **Example:**
 

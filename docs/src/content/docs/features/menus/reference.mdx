@@ -232,12 +232,21 @@ quitMenuItem := menu.Add("Quit")
 quitMenuItem.SetAccelerator("CmdOrCtrl+Q")
 ```
 
-**Accelerator format:**
-- `CmdOrCtrl` - Cmd on macOS, Ctrl on Windows/Linux
-- `Shift`, `Alt`, `Option` - Modifier keys
-- `A-Z`, `0-9` - Letter/number keys
-- `F1-F12` - Function keys
-- `Enter`, `Space`, `Backspace`, etc. - Special keys
+**Accelerator format:** `Modifier+Key` joined by `+`. Modifiers are case-insensitive.
+
+**Modifiers:**
+- `CmdOrCtrl` (aliases: `Cmd`, `Command`) - Cmd on macOS, Ctrl on Windows/Linux
+- `Ctrl` - Control key on all platforms
+- `Alt` (aliases: `Option`, `OptionOrAlt`) - Alt on Windows/Linux, Option on macOS
+- `Shift` - Shift key on all platforms
+- `Super` - Cmd on macOS, Windows key on Windows/Linux
+
+**Keys:**
+- `A-Z`, `0-9` - Letter and number keys
+- `F1-F35` - Function keys
+- `Plus` - The `+` character (since `+` is the separator)
+- Named keys: `Backspace`, `Tab`, `Return`, `Enter`, `Escape`, `Left`, `Right`, `Up`, `Down`, `Space`, `Delete`, `Home`, `End`, `Page Up`, `Page Down`, `NumLock`
+- Any single printable character
 
 **Examples:**
 
@@ -306,10 +315,10 @@ menuItem.OnClick(func(ctx *application.Context) {
 })
 ```
 
-**Context provides:**
-- `ctx.ClickedMenuItem()` - The menu item that was clicked
-- Window context (if from window menu)
-- Application context
+**Context methods:**
+- `ctx.ClickedMenuItem() *MenuItem` - Returns the menu item that was clicked
+- `ctx.IsChecked() bool` - Returns the checked state of the clicked item (for checkbox/radio items)
+- `ctx.ContextMenuData() string` - Returns the context data string from the HTML element (context menus only)
 
 **Example: Access menu item in handler**
 
@@ -317,7 +326,7 @@ menuItem.OnClick(func(ctx *application.Context) {
 checkbox := menu.AddCheckbox("Feature", false)
 checkbox.OnClick(func(ctx *application.Context) {
     item := ctx.ClickedMenuItem()
-    isChecked := item.Checked()
+    isChecked := ctx.IsChecked()
     fmt.Printf("Feature is now: %v\n", isChecked)
 })
 ```
@@ -433,12 +442,12 @@ onUndoStackChanged(updateEditMenu)
 
 **macOS:**
 - Has "Application" menu (with app name)
-- "Preferences" in Application menu
+- `AppMenu` role adds: About, Services, Hide/Show, Quit
 - "Quit" in Application menu
 
 **Windows/Linux:**
 - No Application menu
-- "Preferences" in Edit or Tools menu
+- "Settings" typically in Edit or Tools menu
 - "Exit" in File menu
 
 **Example: Platform-appropriate structure**
@@ -456,13 +465,11 @@ fileMenu := menu.AddSubmenu("File")
 fileMenu.Add("New")
 fileMenu.Add("Open")
 
-// Preferences location varies
-if runtime.GOOS == "darwin" {
-    // On macOS, preferences are in Application menu (added by AppMenu role)
-} else {
+// Settings location varies by platform convention
+if runtime.GOOS != "darwin" {
     // On Windows/Linux, add to Edit or Tools menu
     editMenu := menu.AddSubmenu("Edit")
-    editMenu.Add("Preferences")
+    editMenu.Add("Settings")
 }
 ```
 

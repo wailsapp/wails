@@ -112,6 +112,62 @@ Sets whether hidden files are shown.
 func (d *OpenFileDialogStruct) ShowHiddenFiles(showHiddenFiles bool) *OpenFileDialogStruct
 ```
 
+#### ResolvesAliases()
+
+Sets whether aliases (symlinks) are resolved.
+
+```go
+func (d *OpenFileDialogStruct) ResolvesAliases(resolvesAliases bool) *OpenFileDialogStruct
+```
+
+#### AllowsOtherFileTypes()
+
+Sets whether file types other than those in filters are allowed.
+
+```go
+func (d *OpenFileDialogStruct) AllowsOtherFileTypes(allowsOtherFileTypes bool) *OpenFileDialogStruct
+```
+
+#### HideExtension()
+
+Sets whether the file extension is hidden.
+
+```go
+func (d *OpenFileDialogStruct) HideExtension(hideExtension bool) *OpenFileDialogStruct
+```
+
+#### TreatsFilePackagesAsDirectories()
+
+Sets whether file packages are treated as directories (macOS).
+
+```go
+func (d *OpenFileDialogStruct) TreatsFilePackagesAsDirectories(treatsFilePackagesAsDirectories bool) *OpenFileDialogStruct
+```
+
+#### CanSelectHiddenExtension()
+
+Sets whether hidden extensions can be selected.
+
+```go
+func (d *OpenFileDialogStruct) CanSelectHiddenExtension(canSelectHiddenExtension bool) *OpenFileDialogStruct
+```
+
+#### SetMessage()
+
+Sets the dialog message text.
+
+```go
+func (d *OpenFileDialogStruct) SetMessage(message string) *OpenFileDialogStruct
+```
+
+#### SetButtonText()
+
+Sets the text for the dialog's confirmation button.
+
+```go
+func (d *OpenFileDialogStruct) SetButtonText(text string) *OpenFileDialogStruct
+```
+
 #### AttachToWindow()
 
 Attaches the dialog to a specific window (sheet on macOS).
@@ -200,6 +256,14 @@ if err != nil {
 outputDir = folder
 ```
 
+### app.Dialog.OpenFileWithOptions()
+
+Creates a file open dialog with pre-set options.
+
+```go
+func (dm *DialogManager) OpenFileWithOptions(options *OpenFileDialogOptions) *OpenFileDialogStruct
+```
+
 ### app.Dialog.SaveFile()
 
 Creates a file save dialog.
@@ -213,15 +277,15 @@ func (dm *DialogManager) SaveFile() *SaveFileDialogStruct
 dialog := app.Dialog.SaveFile()
 ```
 
-### SaveFileDialogStruct Methods
+### app.Dialog.SaveFileWithOptions()
 
-#### SetTitle()
-
-Sets the dialog title.
+Creates a file save dialog with pre-set options.
 
 ```go
-func (d *SaveFileDialogStruct) SetTitle(title string) *SaveFileDialogStruct
+func (dm *DialogManager) SaveFileWithOptions(options *SaveFileDialogOptions) *SaveFileDialogStruct
 ```
+
+### SaveFileDialogStruct Methods
 
 #### SetFilename()
 
@@ -250,6 +314,78 @@ Sets the initial directory.
 
 ```go
 func (d *SaveFileDialogStruct) SetDirectory(directory string) *SaveFileDialogStruct
+```
+
+#### SetMessage()
+
+Sets the dialog message text.
+
+```go
+func (d *SaveFileDialogStruct) SetMessage(message string) *SaveFileDialogStruct
+```
+
+#### SetButtonText()
+
+Sets the text for the dialog's confirmation button.
+
+```go
+func (d *SaveFileDialogStruct) SetButtonText(text string) *SaveFileDialogStruct
+```
+
+#### CanCreateDirectories()
+
+Sets whether new directories can be created in the dialog.
+
+```go
+func (d *SaveFileDialogStruct) CanCreateDirectories(canCreateDirectories bool) *SaveFileDialogStruct
+```
+
+#### ShowHiddenFiles()
+
+Sets whether hidden files are shown.
+
+```go
+func (d *SaveFileDialogStruct) ShowHiddenFiles(showHiddenFiles bool) *SaveFileDialogStruct
+```
+
+#### CanSelectHiddenExtension()
+
+Sets whether hidden extensions can be selected.
+
+```go
+func (d *SaveFileDialogStruct) CanSelectHiddenExtension(canSelectHiddenExtension bool) *SaveFileDialogStruct
+```
+
+#### HideExtension()
+
+Sets whether the file extension is hidden.
+
+```go
+func (d *SaveFileDialogStruct) HideExtension(hideExtension bool) *SaveFileDialogStruct
+```
+
+#### TreatsFilePackagesAsDirectories()
+
+Sets whether file packages are treated as directories (macOS).
+
+```go
+func (d *SaveFileDialogStruct) TreatsFilePackagesAsDirectories(treatsFilePackagesAsDirectories bool) *SaveFileDialogStruct
+```
+
+#### AllowsOtherFileTypes()
+
+Sets whether file types other than those in filters are allowed.
+
+```go
+func (d *SaveFileDialogStruct) AllowsOtherFileTypes(allowOtherFileTypes bool) *SaveFileDialogStruct
+```
+
+#### AttachToWindow()
+
+Attaches the dialog to a specific window (sheet on macOS).
+
+```go
+func (d *SaveFileDialogStruct) AttachToWindow(window Window) *SaveFileDialogStruct
 ```
 
 #### PromptForSingleSelection()
@@ -352,6 +488,14 @@ func (d *MessageDialog) AddButton(s string) *Button
 ```
 
 **Returns:** `*Button` - The created button
+
+#### AddButtons()
+
+Sets all buttons for the dialog at once, replacing any existing buttons.
+
+```go
+func (d *MessageDialog) AddButtons(buttons []*Button) *MessageDialog
+```
 
 #### SetDefaultButton()
 

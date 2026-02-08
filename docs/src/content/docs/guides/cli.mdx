@@ -37,7 +37,11 @@ wails3 init [flags]
 | `-productcopyright`   | Copyright notice     | ` now, My Company`       |
 | `-productcomments`    | File comments        | `This is a comment`      |
 | `-productidentifier`  | Product identifier   |                          |
+| `-s`                  | Skip warning for remote templates | `false`      |
 | `-skipgomodtidy`      | Skip go mod tidy     | `false`                   |
+| `-mod`                | Go module path       |                          |
+
+The `-mod` flag sets the Go module path for the project. If omitted and `-git` is provided, the module path will be computed from the Git URL.
 
 The `-git` flag accepts various Git URL formats:
 - HTTPS: `https://github.com/username/project`
@@ -77,12 +81,22 @@ wails3 dev [flags]
 Builds a debug version of your application. It defaults to building for the current platform and architecture.
 
 ```bash
-wails3 build [CLI variables...]
+wails3 build [flags] [CLI variables...]
 ```
+
+#### Flags
+| Flag      | Description                                              | Default |
+|-----------|----------------------------------------------------------|---------|
+| `-tags`   | Additional build tags to pass to the Go compiler (comma-separated) |         |
 
 You can pass CLI variables to customize the build:
 ```bash
 wails3 build PLATFORM=linux CONFIG=production
+```
+
+You can also pass additional Go build tags:
+```bash
+wails3 build -tags production,debug
 ```
 
     :::note
@@ -215,11 +229,12 @@ wails3 generate bindings [flags] [patterns...]
 | `-i`        | Use TS interfaces         | `false`             |
 | `-b`        | Use bundled runtime       | `false`             |
 | `-names`    | Use names instead of IDs  | `false`             |
+| `-noevents` | Skip custom event types   | `false`             |
 | `-noindex`  | Skip index files          | `false`             |
 | `-dry`      | Dry run                   | `false`             |
 | `-silent`   | Silent mode               | `false`             |
 | `-v`        | Debug output              | `false`             |
-| `-clean`    | Clean output directory    | `false`             |
+| `-clean`    | Clean output directory    | `true`              |
 
 ### `generate build-assets`
 Generates build assets for your application.
@@ -308,8 +323,14 @@ wails3 generate runtime
 Generates JavaScript constants from Go code.
 
 ```bash
-wails3 generate constants
+wails3 generate constants [flags]
 ```
+
+#### Flags
+| Flag | Description                    | Default        |
+|------|--------------------------------|----------------|
+| `-f` | The Go constants filename      | `constants.go` |
+| `-o` | The output JavaScript file     | `constants.js` |
 
 ### `generate appimage`
 Generates a Linux AppImage.
@@ -435,20 +456,60 @@ wails3 tool package [flags]
 ```
 
 #### Flags
-| Flag      | Description                          | Default  |
-|-----------|--------------------------------------|----------|
-| `-format` | Package format (deb, rpm, archlinux) | `deb`    |
-| `-name`   | Executable name                      | Required |
-| `-config` | Config file path                     | Required |
-| `-out`    | Output directory                     | `.`      |
+| Flag           | Description                                    | Default |
+|----------------|------------------------------------------------|---------|
+| `-format`      | Package format (deb, rpm, archlinux, dmg)      | `deb`   |
+| `-name`        | Executable name                                | `myapp` |
+| `-config`      | Config file path                               |         |
+| `-out`         | Output directory                               | `.`     |
+| `-background`  | Path to optional background image for DMG      |         |
+| `-create-dmg`  | Create a DMG file (macOS only)                 | `false` |
+
+### `tool lipo`
+Creates a macOS universal binary from multiple architecture-specific binaries.
+
+```bash
+wails3 tool lipo [flags]
+```
 
 #### Flags
-| Flag      | Description                          | Default |
-|-----------|--------------------------------------|---------|
-| `-format` | Package format (deb, rpm, archlinux) | `deb`   |
-| `-name`   | Executable name                      | `myapp` |
-| `-config` | Config file path                     |         |
-| `-out`    | Output directory                     | `.`     |
+| Flag       | Description                                     | Default |
+|------------|-------------------------------------------------|---------|
+| `-output` (`-o`)  | Output path for the universal binary     |         |
+| `-input` (`-i`)   | Input binaries to combine (specify multiple times) |  |
+
+### `tool capabilities`
+Checks system build capabilities (GTK4/GTK3 availability on Linux).
+
+```bash
+wails3 tool capabilities
+```
+
+### `tool sign`
+Signs a binary or package directly.
+
+```bash
+wails3 tool sign [flags]
+```
+
+#### Flags
+| Flag                 | Description                                          | Default |
+|----------------------|------------------------------------------------------|---------|
+| `-input`             | Path to the file to sign                             |         |
+| `-output`            | Output path (defaults to in-place signing)           |         |
+| `-verbose`           | Enable verbose output                                | `false` |
+| `-certificate`       | Path to PKCS#12 (.pfx/.p12) certificate file         |         |
+| `-password`          | Certificate password                                 |         |
+| `-thumbprint`        | Certificate thumbprint in Windows certificate store   |         |
+| `-timestamp`         | Timestamp server URL                                 |         |
+| `-identity`          | macOS signing identity                               |         |
+| `-entitlements`      | Path to entitlements plist file                      |         |
+| `-hardened-runtime`  | Enable hardened runtime                              | `false` |
+| `-notarize`          | Submit for Apple notarization after signing           | `false` |
+| `-keychain-profile`  | Keychain profile for notarization credentials         |         |
+| `-pgp-key`           | Path to PGP private key file                         |         |
+| `-pgp-password`      | PGP key password                                     |         |
+| `-role`              | DEB signing role (origin, maint, archive, builder)    |         |
 
 Base command: `wails3 update`
 
@@ -537,3 +598,99 @@ Opens the Wails sponsorship page in your default browser.
 
 ```bash
 wails3 sponsor
+```
+
+### `doctor-ng`
+System status report using the new TUI interface.
+
+```bash
+wails3 doctor-ng
+```
+
+## Setup Commands
+
+Setup commands provide project configuration wizards. All setup commands use the base command: `wails3 setup <command>`.
+
+### `setup signing`
+Configures code signing for your project.
+
+```bash
+wails3 setup signing [flags]
+```
+
+#### Flags
+| Flag         | Description                                                  | Default |
+|--------------|--------------------------------------------------------------|---------|
+| `-platform`  | Platform(s) to configure (darwin, windows, linux). Auto-detects if not specified. |         |
+
+### `setup entitlements`
+Configures macOS entitlements for your project.
+
+```bash
+wails3 setup entitlements [flags]
+```
+
+#### Flags
+| Flag       | Description                          | Default                             |
+|------------|--------------------------------------|-------------------------------------|
+| `-output`  | Output path for entitlements.plist   | `build/darwin/entitlements.plist`    |
+
+## Sign Command
+
+### `sign`
+Signs binaries and packages for the current or specified platform. This is a wrapper that calls platform-specific signing tasks.
+
+```bash
+wails3 sign [flags] [args...]
+```
+
+## Generate Commands (continued)
+
+### `generate template`
+Generates a new Wails template from an existing project.
+
+```bash
+wails3 generate template [flags]
+```
+
+#### Flags
+| Flag            | Description              | Default  |
+|-----------------|--------------------------|----------|
+| `-name`         | Template name            |          |
+| `-shortname`    | Short name               |          |
+| `-author`       | Template author          |          |
+| `-description`  | Template description     |          |
+| `-helpurl`      | Help URL                 |          |
+| `-version`      | Template version         | `v0.0.1` |
+| `-dir`          | Output directory         | `.`      |
+| `-frontend`     | Frontend directory to migrate |     |
+
+### `generate webview2bootstrapper`
+Generates the WebView2 bootstrapper executable for Windows.
+
+```bash
+wails3 generate webview2bootstrapper [flags]
+```
+
+#### Flags
+| Flag   | Description                     | Default |
+|--------|---------------------------------|---------|
+| `-dir` | Directory to write the file to  |         |
+
+## iOS Commands
+
+iOS commands provide tooling for iOS development. All iOS commands use the base command: `wails3 ios <command>`.
+
+### `ios overlay:gen`
+Generates a Go overlay for the iOS bridge shim.
+
+```bash
+wails3 ios overlay:gen
+```
+
+### `ios xcode:gen`
+Generates an Xcode project in the output directory.
+
+```bash
+wails3 ios xcode:gen
+```

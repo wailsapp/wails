@@ -37,6 +37,30 @@ You can also create a menu via the manager:
 menu := app.Menu.New()
 ```
 
+### NewMenuFromItems()
+
+Creates a menu from one or more existing menu items.
+
+```go
+func NewMenuFromItems(item *MenuItem, items ...*MenuItem) *Menu
+```
+
+### NewSubmenu()
+
+Creates a submenu menu item with an existing menu as its content.
+
+```go
+func NewSubmenu(label string, items *Menu) *MenuItem
+```
+
+### NewContextMenu()
+
+Creates a new context menu and auto-registers it by name.
+
+```go
+func NewContextMenu(name string) *ContextMenu
+```
+
 ## Menu Methods
 
 ### Add()
@@ -167,7 +191,19 @@ editMenu.AddRole(application.Paste)
 editMenu.AddRole(application.SelectAll)
 ```
 
-**Available Roles:** `AppMenu`, `EditMenu`, `FileMenu`, `ViewMenu`, `WindowMenu`, `HelpMenu`, `Undo`, `Redo`, `Cut`, `Copy`, `Paste`, `PasteAndMatchStyle`, `SelectAll`, `Delete`, `Quit`, `CloseWindow`, `About`, `Reload`, `ForceReload`, `ToggleFullscreen`, `OpenDevTools`, `ResetZoom`, `ZoomIn`, `ZoomOut`, `Minimise`, `Print`, and more.
+**Available Roles:**
+
+| Category | Roles |
+|----------|-------|
+| **Complete Menus** | `AppMenu`, `EditMenu`, `FileMenu`, `ViewMenu`, `WindowMenu`, `SpeechMenu`, `HelpMenu`, `ServicesMenu` |
+| **Window Actions** | `CloseWindow`, `Minimise`, `Zoom`, `FullScreen`, `ToggleFullscreen`, `Front`, `ShowAll`, `BringAllToFront` |
+| **Edit Actions** | `Undo`, `Redo`, `Cut`, `Copy`, `Paste`, `PasteAndMatchStyle`, `SelectAll`, `Delete` |
+| **File Actions** | `NewFile`, `Open`, `Save`, `SaveAs`, `Revert`, `Print`, `PageLayout` |
+| **View Actions** | `Reload`, `ForceReload`, `OpenDevTools`, `ResetZoom`, `ZoomIn`, `ZoomOut` |
+| **App Actions** | `About`, `Quit`, `Hide`, `HideOthers`, `UnHide` |
+| **Find Actions** | `Find`, `FindAndReplace`, `FindNext`, `FindPrevious` |
+| **Speech Actions** | `StartSpeaking`, `StopSpeaking` |
+| **Other** | `Help`, `NoRole` |
 
 ### Update()
 
@@ -341,9 +377,10 @@ func (mi *MenuItem) SetAccelerator(shortcut string) *MenuItem
 **Parameters:**
 - `shortcut` - Keyboard shortcut string
 
-**Accelerator format:**
-- **Modifiers:** `Ctrl`, `Cmd`, `Alt`, `Shift`, `CmdOrCtrl`
-- **Keys:** `A-Z`, `0-9`, `F1-F12`, `Enter`, `Backspace`, etc.
+**Accelerator format:** `Modifier+Key` joined by `+`. Modifiers are case-insensitive.
+
+- **Modifiers:** `CmdOrCtrl` (aliases: `Cmd`, `Command`), `Ctrl`, `Alt` (aliases: `Option`, `OptionOrAlt`), `Shift`, `Super`
+- **Keys:** `A-Z`, `0-9`, `F1-F35`, `Plus`, and named keys: `Backspace`, `Tab`, `Return`, `Enter`, `Escape`, `Space`, `Delete`, `Home`, `End`, `Page Up`, `Page Down`, `Left`, `Right`, `Up`, `Down`, `NumLock`
 - **Cross-platform:** Use `CmdOrCtrl` for `Cmd` on macOS and `Ctrl` on Windows/Linux
 
 **Example:**
@@ -612,12 +649,30 @@ Sets the menu for the system tray. Returns `*SystemTray` for chaining.
 func (s *SystemTray) SetMenu(menu *Menu) *SystemTray
 ```
 
+#### SetIconPosition()
+
+Sets the icon position relative to the label (macOS). Returns `*SystemTray` for chaining.
+
+```go
+func (s *SystemTray) SetIconPosition(iconPosition IconPosition) *SystemTray
+```
+
+**Icon position constants:** `NSImageNone`, `NSImageOnly`, `NSImageLeft`, `NSImageRight`, `NSImageBelow`, `NSImageAbove`, `NSImageOverlaps`, `NSImageLeading` (default), `NSImageTrailing`
+
 #### SetLabel()
 
 Sets the tray label text (shown next to icon on macOS).
 
 ```go
 func (s *SystemTray) SetLabel(label string)
+```
+
+#### Label()
+
+Returns the current label text.
+
+```go
+func (s *SystemTray) Label() string
 ```
 
 #### SetTooltip()
@@ -928,7 +983,7 @@ func (e *Editor) updateMenuState() {
 
 - Application menu automatically added with app name
 - Use `Cmd` for accelerators (or `CmdOrCtrl` for cross-platform)
-- "About", "Preferences", and "Quit" in application menu by default
+- "About", "Services", "Hide/Show", and "Quit" in application menu by default
 - Use `AddRole(application.AppMenu)` for the standard app menu
 
 ### Windows/Linux

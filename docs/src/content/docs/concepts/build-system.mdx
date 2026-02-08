@@ -196,7 +196,7 @@ var assets embed.FS
     ```
     
     **What happens:**
-    1. Starts frontend dev server (Vite on port 5173)
+    1. Starts frontend dev server (Vite on port 9245)
     2. Compiles Go without optimisations
     3. Launches app pointing to dev server
     4. Enables hot reload
@@ -245,118 +245,87 @@ var assets embed.FS
 wails3 build
 ```
 
-**Output:** `build/bin/myapp[.exe]`
+**Output:** Binary in `bin/` directory.
 
-### Build for Specific Platform
+`wails3 build` is a wrapper for `wails3 task build`. It runs the `build` task defined in your project's `Taskfile.yml`, which dispatches to the appropriate platform-specific Taskfile.
+
+### Build with Tags
 
 ```bash
-# Build for Windows (from any OS)
-wails3 build -platform windows/amd64
-
-# Build for macOS
-wails3 build -platform darwin/amd64
-wails3 build -platform darwin/arm64
-
-# Build for Linux
-wails3 build -platform linux/amd64
+# Pass additional Go build tags
+wails3 build -tags production
 ```
 
-**Cross-compilation:** Build for any platform from any platform.
+### Build with CLI Variables
 
-### Build with Options
+You can pass CLI variables to customize the build:
 
 ```bash
-# Custom output directory
-wails3 build -o ./dist/myapp
-
-# Skip frontend build (use existing)
-wails3 build -skipbindings
-
-# Clean build (remove cache)
-wails3 build -clean
-
-# Verbose output
-wails3 build -v
+wails3 build PRODUCTION=true
 ```
 
-### Build Modes
+These variables are forwarded to the underlying task and can be accessed in your `Taskfile.yml` using Go template syntax.
+
+### Platform-Specific Tasks
+
+The default project structure includes platform-specific Taskfiles. The main `Taskfile.yml` dispatches to the correct one based on `{{OS}}`:
 
 ```bash
-# Debug build (includes symbols)
-wails3 build -debug
-
-# Production build (default, optimised)
-wails3 build
-
-# Development build (fast, unoptimised)
-wails3 build -devbuild
+# Run platform-specific tasks directly
+wails3 task darwin:build
+wails3 task windows:build
+wails3 task linux:build
 ```
 
 ## Build Configuration
 
 ### Taskfile.yml
 
-Wails uses [Taskfile](https://taskfile.dev/) for build configuration:
+Wails uses [Taskfile](https://taskfile.dev/) for build configuration. The main `Taskfile.yml` in the project root includes platform-specific Taskfiles:
 
 ```yaml
 # Taskfile.yml
 version: '3'
 
+includes:
+  common: ./build/Taskfile.yml
+  windows: ./build/windows/Taskfile.yml
+  darwin: ./build/darwin/Taskfile.yml
+  linux: ./build/linux/Taskfile.yml
+
+vars:
+  APP_NAME: "myproject"
+  BIN_DIR: "bin"
+  VITE_PORT: '{{.WAILS_VITE_PORT | default 9245}}'
+
 tasks:
   build:
-    desc: Build the application
+    summary: Builds the application
     cmds:
-      - wails3 build
-  
-  build:windows:
-    desc: Build for Windows
+      - task: "{{OS}}:build"
+
+  package:
+    summary: Packages a production build of the application
     cmds:
-      - wails3 build -platform windows/amd64
-  
-  build:macos:
-    desc: Build for macOS (Universal)
+      - task: "{{OS}}:package"
+
+  run:
+    summary: Runs the application
     cmds:
-      - wails3 build -platform darwin/amd64
-      - wails3 build -platform darwin/arm64
-      - lipo -create -output build/bin/myapp.app build/bin/myapp-amd64.app build/bin/myapp-arm64.app
-  
-  build:linux:
-    desc: Build for Linux
+      - task: "{{OS}}:run"
+
+  dev:
+    summary: Runs the application in development mode
     cmds:
-      - wails3 build -platform linux/amd64
+      - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
 ```
 
 **Run tasks:**
 
 ```bash
-task build:windows
-task build:macos
-task build:linux
-```
-
-### Build Options File
-
-Create `build/build.json` for persistent configuration:
-
-```json
-{
-  "name": "My Application",
-  "version": "1.0.0",
-  "author": "Your Name",
-  "description": "Application description",
-  "icon": "build/appicon.png",
-  "outputFilename": "myapp",
-  "platforms": ["windows/amd64", "darwin/amd64", "linux/amd64"],
-  "frontend": {
-    "dir": "./frontend",
-    "install": "npm install",
-    "build": "npm run build",
-    "dev": "npm run dev"
-  },
-  "go": {
-    "ldflags": "-s -w -X main.version={{.Version}}"
-  }
-}
+wails3 task build
+wails3 task package
+wails3 task run
 ```
 
 ## Asset Embedding
@@ -476,7 +445,7 @@ export default {
 
 ```bash
 # After building
-upx --best build/bin/myapp.exe
+upx --best bin/myapp.exe
 ```
 
 **Results:**
@@ -497,12 +466,7 @@ upx --best build/bin/myapp.exe
 
 **Icon:**
 
-```bash
-# Specify icon
-wails3 build -icon build/appicon.png
-```
-
-Wails converts PNG to `.ico` automatically.
+Icon generation is handled by the platform-specific Taskfile. The default Windows Taskfile generates an `.ico` file from `build/appicon.png` using the `wails3 generate icons` command.
 
 **Manifest:**
 
@@ -557,15 +521,10 @@ myapp.app/
 
 **Universal Binary:**
 
-```bash
-# Build for both architectures
-wails3 build -platform darwin/amd64
-wails3 build -platform darwin/arm64
+The macOS Taskfile supports building universal binaries. You can also use the `wails3 tool lipo` command to combine architecture-specific binaries:
 
-# Combine into universal binary
-lipo -create -output myapp-universal \
-    build/bin/myapp-amd64 \
-    build/bin/myapp-arm64
+```bash
+wails3 tool lipo -i bin/myapp-amd64 -i bin/myapp-arm64 -output bin/myapp-universal
 ```
 
 ### Linux
@@ -625,24 +584,7 @@ sudo cp icon.png /usr/share/icons/hicolor/256x256/apps/myapp.png
 npm run build  # Uses cache by default
 ```
 
-**2. Skip unchanged steps:**
-
-```bash
-# Skip frontend if unchanged
-wails3 build -skipbindings
-```
-
-**3. Parallel builds:**
-
-```bash
-# Build multiple platforms in parallel
-wails3 build -platform windows/amd64 &
-wails3 build -platform darwin/amd64 &
-wails3 build -platform linux/amd64 &
-wait
-```
-
-**4. Use faster tools:**
+**2. Use faster tools:**
 
 ```bash
 # Use esbuild instead of webpack
@@ -684,9 +626,7 @@ wait
 **Solutions:**
 
 1. **Strip debug symbols** (should be automatic)
-   ```bash
-   wails3 build  # Already includes -ldflags="-s -w"
-   ```
+   The default Taskfiles include `-ldflags="-s -w"` in the build task.
 
 2. **Check embedded assets**
    ```bash
@@ -696,7 +636,7 @@ wait
 
 3. **Use UPX compression**
    ```bash
-   upx --best build/bin/myapp.exe
+   upx --best bin/myapp.exe
    ```
 
 ### Slow Builds
@@ -709,12 +649,7 @@ wait
    - Go cache is automatic
    - Frontend cache (Vite) is automatic
 
-2. **Skip unchanged steps**
-   ```bash
-   wails3 build -skipbindings
-   ```
-
-3. **Optimise frontend build**
+2. **Optimise frontend build**
    ```javascript
    // vite.config.js
    export default {
@@ -730,7 +665,7 @@ wait
 
 - **Use `wails3 dev` during development** - Fast iteration
 - **Use `wails3 build` for releases** - Optimised output
-- **Version your builds** - Use `-ldflags` to embed version
+- **Version your builds** - Use `-ldflags` in your Taskfile to embed version
 - **Test builds on target platforms** - Cross-compilation isn't perfect
 - **Keep frontend builds fast** - Optimise bundler config
 - **Use build cache** - Speeds up subsequent builds
