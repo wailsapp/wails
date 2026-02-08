@@ -25,9 +25,9 @@ app.Event.Emit("user-logged-in", map[string]interface{}{
 **JavaScript (listen):**
 
 ```javascript
-import { OnEvent } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-OnEvent("user-logged-in", (data) => {
+Events.On("user-logged-in", (data) => {
     console.log(`User ${data.name} logged in`)
 })
 ```
@@ -49,9 +49,9 @@ app.Event.Emit("notification", message)
 
 ```javascript
 // Listen in JavaScript
-OnEvent("order-created", handleOrder)
-OnEvent("payment-processed", handlePayment)
-OnEvent("notification", showNotification)
+Events.On("order-created", handleOrder)
+Events.On("payment-processed", handlePayment)
+Events.On("notification", showNotification)
 ```
 
 ### System Events
@@ -129,13 +129,13 @@ window.EmitEvent("window-specific-event", data)
 ### From JavaScript
 
 ```javascript
-import { Emit } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 // Emit to Go
-Emit("button-clicked", { buttonId: "submit" })
+Events.Emit("button-clicked", { buttonId: "submit" })
 
 // Emit to all windows
-Emit("broadcast-message", "Hello everyone")
+Events.Emit("broadcast-message", "Hello everyone")
 ```
 
 ## Listening to Events
@@ -174,9 +174,9 @@ app.Event.On("order-created", updateInventory)
 **Basic listener:**
 
 ```javascript
-import { OnEvent } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-OnEvent("event-name", (data) => {
+Events.On("event-name", (data) => {
     console.log("Event received:", data)
 })
 ```
@@ -184,7 +184,7 @@ OnEvent("event-name", (data) => {
 **With cleanup:**
 
 ```javascript
-const unsubscribe = OnEvent("event-name", handleEvent)
+const unsubscribe = Events.On("event-name", handleEvent)
 
 // Later, stop listening
 unsubscribe()
@@ -193,9 +193,9 @@ unsubscribe()
 **Multiple handlers:**
 
 ```javascript
-OnEvent("data-updated", updateUI)
-OnEvent("data-updated", saveToCache)
-OnEvent("data-updated", logChange)
+Events.On("data-updated", updateUI)
+Events.On("data-updated", saveToCache)
+Events.On("data-updated", logChange)
 ```
 
 ## System Events
@@ -220,7 +220,7 @@ app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.App
 
 // File opened
 app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *application.ApplicationEvent) {
-    filePath := e.Context().OpenedFile()
+    filePath := e.Context().Filename()
     openFile(filePath)
 })
 ```
@@ -281,9 +281,9 @@ window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent)
     app.Logger.Info("Window focused")
 })
 
-// Window blur
-window.OnWindowEvent(events.Common.WindowBlur, func(e *application.WindowEvent) {
-    app.Logger.Info("Window blurred")
+// Window lost focus
+window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window lost focus")
 })
 
 // Window closing
@@ -293,8 +293,8 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
     }
 })
 
-// Window closed
-window.OnWindowEvent(events.Common.WindowClosed, func(e *application.WindowEvent) {
+// Window closing (use a hook to cancel if needed)
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
     cleanup()
 })
 ```
@@ -336,7 +336,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 ```go
 // Publisher (service)
 type OrderService struct {
-    app *application.Application
+    app *application.App
 }
 
 func (o *OrderService) CreateOrder(items []Item) (*Order, error) {
@@ -371,10 +371,12 @@ app.Event.On("order-created", func(e *application.CustomEvent) {
 
 ### Request/Response Pattern
 
-```go
+```javascript
 // Frontend requests data
-Emit("get-user-data", { userId: 123 })
+Events.Emit("get-user-data", { userId: 123 })
+```
 
+```go
 // Backend responds
 app.Event.On("get-user-data", func(e *application.CustomEvent) {
     data := e.Data.(map[string]interface{})
@@ -385,9 +387,11 @@ app.Event.On("get-user-data", func(e *application.CustomEvent) {
     // Send response
     app.Event.Emit("user-data-response", user)
 })
+```
 
+```javascript
 // Frontend receives response
-OnEvent("user-data-response", (user) => {
+Events.On("user-data-response", (user) => {
     displayUser(user)
 })
 ```
@@ -399,9 +403,11 @@ OnEvent("user-data-response", (user) => {
 ```go
 // Broadcast to all windows
 app.Event.Emit("global-notification", "System update available")
+```
 
+```javascript
 // Each window handles it
-OnEvent("global-notification", (message) => {
+Events.On("global-notification", (message) => {
     showNotification(message)
 })
 ```
@@ -441,7 +447,7 @@ import (
 )
 
 type NotificationService struct {
-    app *application.Application
+    app *application.App
 }
 
 func (n *NotificationService) Notify(message string) {
@@ -496,33 +502,33 @@ func main() {
 **JavaScript:**
 
 ```javascript
-import { OnEvent, Emit } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 // Listen for notifications
-OnEvent("notification", (data) => {
+Events.On("notification", (data) => {
     showNotification(data.message)
 })
 
 // Listen for theme changes
-OnEvent("theme-changed", (isDark) => {
+Events.On("theme-changed", (isDark) => {
     document.body.classList.toggle('dark', isDark)
 })
 
 // Listen for window focus
-OnEvent("window-focused", (windowName) => {
+Events.On("window-focused", (windowName) => {
     console.log(`Window ${windowName} focused`)
 })
 
 // Handle close confirmation
-OnEvent("confirm-close", () => {
+Events.On("confirm-close", () => {
     if (confirm("Close window?")) {
-        Emit("close-confirmed", true)
+        Events.Emit("close-confirmed", true)
     }
 })
 
 // Emit user actions
 document.getElementById('button').addEventListener('click', () => {
-    Emit("user-action", { action: "button-clicked" })
+    Events.Emit("user-action", { action: "button-clicked" })
 })
 ```
 

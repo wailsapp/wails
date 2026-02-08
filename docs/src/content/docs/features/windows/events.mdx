@@ -9,13 +9,53 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 ## Window Events
 
-Wails provides **comprehensive event hooks** for window lifecycle and state changes: creation, focus/blur, resize/move, minimise/maximise, and close events. Register callbacks, handle events, and coordinate between windows with simple, consistent APIs.
+Wails provides **comprehensive event handling** for window lifecycle and state changes: creation, focus/blur, resize/move, minimise/maximise, and close events. Register callbacks, handle events, and coordinate between windows with simple, consistent APIs.
+
+## Event Registration Methods
+
+Wails provides two methods for handling window events:
+
+- **`OnWindowEvent()`** - Listen to window events (cannot prevent them)
+- **`RegisterHook()`** - Hook into window events (can prevent them by calling `event.Cancel()`)
+
+Both methods return a cleanup function that can be called to remove the listener/hook.
+
+### OnWindowEvent
+
+Registers a callback for window events. The callback receives a `*WindowEvent` argument.
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// Listen for window focus
+cancel := window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    fmt.Println("Window gained focus")
+})
+
+// Later, remove the listener
+cancel()
+```
+
+### RegisterHook
+
+Registers a hook that runs **before** listeners and can prevent the event by calling `event.Cancel()`.
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// Prevent window from closing
+cancel := window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    if hasUnsavedChanges() {
+        e.Cancel() // Prevent the close
+    }
+})
+```
 
 ## Lifecycle Events
 
 ### OnCreate
 
-Called when a window is created:
+Called when a window is created. Register via the window manager:
 
 ```go
 app.Window.OnCreate(func(window application.Window) {
@@ -23,11 +63,6 @@ app.Window.OnCreate(func(window application.Window) {
 
     // Configure all new windows
     window.SetMinSize(400, 300)
-
-    // Register window-specific handlers
-    window.OnClose(func() bool {
-        return confirmClose()
-    })
 })
 ```
 
@@ -37,361 +72,147 @@ app.Window.OnCreate(func(window application.Window) {
 - Track window creation
 - Initialise window-specific resources
 
-### OnClose
+### WindowClosing
 
-Called when user attempts to close window:
+Fired when the user attempts to close a window. Use `RegisterHook` to cancel the close.
 
 ```go
-window.OnClose(func() bool {
-    // Return false to cancel close
-    // Return true to allow close
-    
+// Prevent close with a hook
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
     if hasUnsavedChanges() {
-        result := showConfirmdialog("Unsaved changes. Close anyway?")
-        return result == "yes"
+        e.Cancel() // Prevent the window from closing
     }
-    return true
+})
+
+// React to close with a listener (cannot cancel)
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    fmt.Println("Window is closing, cleaning up...")
+    cleanup()
 })
 ```
 
 **Important:**
-- Only triggered by user actions (clicking X button)
-- NOT triggered by `window.Destroy()`
-- Can cancel the close by returning `false`
-
-**Use cases:**
-- Confirm before closing
-- Save state
-- Prevent accidental closure
-- Cleanup before close
-
-**Example with dialog:**
-
-```go
-window.OnClose(func() bool {
-    if !hasUnsavedChanges() {
-        return true
-    }
-    
-    // Show confirmation dialog
-    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
-        Title:       "Confirm Close",
-        Width:       400,
-        Height:      150,
-        Parent:      window,
-        AlwaysOnTop: true,
-    })
-    
-    // Wait for user response
-    result := waitFordialogResult(dialog)
-    
-    return result == "yes"
-})
-```
-
-### OnDestroy
-
-Called when window is destroyed:
-
-```go
-window.OnDestroy(func() {
-    fmt.Printf("Window destroyed: %s\n", window.Name())
-    
-    // Cleanup resources
-    closeDatabase()
-    
-    // Remove from tracking
-    removeWindowFromRegistry(window.Name())
-    
-    // Update application state
-    updateWindowCount()
-})
-```
-
-**Important:**
-- Always called when window is destroyed
-- Cannot be cancelled
-- Last chance to cleanup
-
-**Use cases:**
-- Release resources
-- Close connections
-- Update application state
-- Remove from tracking
-
-**Example with resource cleanup:**
-
-```go
-type ManagedWindow struct {
-    window    *application.WebviewWindow
-    db        *sql.DB
-    listeners []func()
-}
-
-func (mw *ManagedWindow) Setup() {
-    mw.window.OnDestroy(func() {
-        // Close database
-        if mw.db != nil {
-            mw.db.Close()
-        }
-        
-        // Remove event listeners
-        for _, listener := range mw.listeners {
-            listener()
-        }
-        
-        // Clear references
-        mw.db = nil
-        mw.listeners = nil
-    })
-}
-```
+- Hooks run before listeners and can call `e.Cancel()` to prevent the close
+- Listeners cannot cancel the event
 
 ## Focus Events
 
-### OnFocus
-
-Called when window gains focus:
+### WindowFocus / WindowLostFocus
 
 ```go
-window.OnFocus(func() {
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
     fmt.Println("Window gained focus")
-    
-    // Update UI
     updateTitleBar(true)
-    
-    // Refresh data
-    refreshContent()
-    
-    // Notify other windows
-    app.Event.Emit("window-focused", window.Name())
 })
-```
 
-**Use cases:**
-- Update UI appearance
-- Refresh data
-- Resume operations
-- Coordinate with other windows
-
-### OnBlur
-
-Called when window loses focus:
-
-```go
-window.OnBlur(func() {
+window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
     fmt.Println("Window lost focus")
-    
-    // Update UI
     updateTitleBar(false)
-    
-    // Pause operations
-    pauseAnimations()
-    
-    // Save state
-    saveCurrentState()
 })
 ```
 
 **Use cases:**
 - Update UI appearance
-- Pause operations
-- Save state
-- Reduce resource usage
+- Refresh data on focus
+- Pause operations on blur
+- Coordinate with other windows
 
 **Example: Focus-aware UI:**
 
 ```go
-type FocusAwareWindow struct {
-    window  *application.WebviewWindow
-    focused bool
-}
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    window.EmitEvent("update-theme", "active")
+})
 
-func (fw *FocusAwareWindow) Setup() {
-    fw.window.OnFocus(func() {
-        fw.focused = true
-        fw.updateAppearance()
-    })
-    
-    fw.window.OnBlur(func() {
-        fw.focused = false
-        fw.updateAppearance()
-    })
-}
-
-func (fw *FocusAwareWindow) updateAppearance() {
-    if fw.focused {
-        fw.window.EmitEvent("update-theme", "active")
-    } else {
-        fw.window.EmitEvent("update-theme", "inactive")
-    }
-}
+window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+    window.EmitEvent("update-theme", "inactive")
+})
 ```
 
 ## State Change Events
 
-### OnMinimise / OnUnMinimise
-
-Called when window is minimised or restored:
+### WindowMinimise / WindowUnMinimise
 
 ```go
-window.OnMinimise(func() {
+window.OnWindowEvent(events.Common.WindowMinimise, func(e *application.WindowEvent) {
     fmt.Println("Window minimised")
-    
-    // Pause expensive operations
     pauseRendering()
-    
-    // Save state
-    saveWindowState()
 })
 
-window.OnUnMinimise(func() {
+window.OnWindowEvent(events.Common.WindowUnMinimise, func(e *application.WindowEvent) {
     fmt.Println("Window restored from minimised")
-    
-    // Resume operations
     resumeRendering()
-    
-    // Refresh data
-    refreshContent()
 })
 ```
 
-**Use cases:**
-- Pause/resume operations
-- Save/restore state
-- Reduce resource usage
-- Update UI
-
-### OnMaximise / OnUnMaximise
-
-Called when window is maximised or restored:
+### WindowMaximise / WindowUnMaximise
 
 ```go
-window.OnMaximise(func() {
+window.OnWindowEvent(events.Common.WindowMaximise, func(e *application.WindowEvent) {
     fmt.Println("Window maximised")
-    
-    // Adjust layout
     window.EmitEvent("layout-mode", "maximised")
-    
-    // Update button icon
-    updateMaximiseButton("restore")
 })
 
-window.OnUnMaximise(func() {
+window.OnWindowEvent(events.Common.WindowUnMaximise, func(e *application.WindowEvent) {
     fmt.Println("Window restored from maximised")
-    
-    // Adjust layout
     window.EmitEvent("layout-mode", "normal")
-    
-    // Update button icon
-    updateMaximiseButton("maximise")
 })
 ```
 
-**Use cases:**
-- Adjust layout
-- Update UI
-- Save window state
-- Coordinate with other windows
-
-### OnFullscreen / OnUnFullscreen
-
-Called when window enters or exits fullscreen:
+### WindowFullscreen / WindowUnFullscreen
 
 ```go
-window.OnFullscreen(func() {
+window.OnWindowEvent(events.Common.WindowFullscreen, func(e *application.WindowEvent) {
     fmt.Println("Window entered fullscreen")
-    
-    // Hide UI chrome
     window.EmitEvent("chrome-visibility", false)
-    
-    // Adjust layout
-    window.EmitEvent("layout-mode", "fullscreen")
 })
 
-window.OnUnFullscreen(func() {
+window.OnWindowEvent(events.Common.WindowUnFullscreen, func(e *application.WindowEvent) {
     fmt.Println("Window exited fullscreen")
-    
-    // Show UI chrome
     window.EmitEvent("chrome-visibility", true)
-    
-    // Restore layout
-    window.EmitEvent("layout-mode", "normal")
 })
 ```
-
-**Use cases:**
-- Show/hide UI elements
-- Adjust layout
-- Update controls
-- Save preferences
 
 ## Position and Size Events
 
-### OnMove
-
-Called when window is moved:
+### WindowDidMove
 
 ```go
-window.OnMove(func(x, y int) {
+window.OnWindowEvent(events.Common.WindowDidMove, func(e *application.WindowEvent) {
+    x, y := window.Position()
     fmt.Printf("Window moved to: %d, %d\n", x, y)
-    
-    // Save position
     saveWindowPosition(x, y)
-    
-    // Update related windows
-    updateRelatedWindowPositions(x, y)
 })
 ```
 
-**Use cases:**
-- Save window position
-- Update related windows
-- Snap to edges
-- Multi-monitor handling
-
-### OnResize
-
-Called when window is resized:
+### WindowDidResize
 
 ```go
-window.OnResize(func(width, height int) {
+window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
+    width, height := window.Size()
     fmt.Printf("Window resized to: %dx%d\n", width, height)
-    
-    // Save size
     saveWindowSize(width, height)
-    
-    // Adjust layout
-    window.EmitEvent("window-size", map[string]int{
-        "width":  width,
-        "height": height,
-    })
 })
 ```
 
-**Use cases:**
-- Save window size
-- Adjust layout
-- Update UI
-- Responsive design
+**Note:** The move and resize event callbacks receive a `*WindowEvent` argument. To get the new position or size, call `window.Position()` or `window.Size()` inside the callback.
 
-**Example: Responsive layout:**
+## Common Window Events Reference
 
-```go
-window.OnResize(func(width, height int) {
-    var layout string
-    
-    if width < 600 {
-        layout = "compact"
-    } else if width < 1200 {
-        layout = "normal"
-    } else {
-        layout = "wide"
-    }
-    
-    window.EmitEvent("layout-changed", layout)
-})
-```
+| Event | Description |
+|-------|-------------|
+| `events.Common.WindowClosing` | Window is about to close |
+| `events.Common.WindowFocus` | Window gained focus |
+| `events.Common.WindowLostFocus` | Window lost focus |
+| `events.Common.WindowDidMove` | Window moved |
+| `events.Common.WindowDidResize` | Window resized |
+| `events.Common.WindowMinimise` | Window minimised |
+| `events.Common.WindowUnMinimise` | Window restored from minimised |
+| `events.Common.WindowMaximise` | Window maximised |
+| `events.Common.WindowUnMaximise` | Window restored from maximised |
+| `events.Common.WindowFullscreen` | Window entered fullscreen |
+| `events.Common.WindowUnFullscreen` | Window exited fullscreen |
+| `events.Common.WindowFilesDropped` | Files were dropped onto the window |
 
 ## Complete Example
 
@@ -404,7 +225,9 @@ import (
     "encoding/json"
     "fmt"
     "os"
+
     "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
 )
 
 type WindowState struct {
@@ -447,76 +270,63 @@ func (mw *ManagedWindow) CreateWindow() {
 
 func (mw *ManagedWindow) SetupEventHandlers() {
     // Focus events
-    mw.window.OnFocus(func() {
+    mw.window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
         fmt.Println("Window focused")
         mw.window.EmitEvent("focus-state", true)
     })
-    
-    mw.window.OnBlur(func() {
+
+    mw.window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
         fmt.Println("Window blurred")
         mw.window.EmitEvent("focus-state", false)
     })
-    
+
     // State change events
-    mw.window.OnMinimise(func() {
+    mw.window.OnWindowEvent(events.Common.WindowMinimise, func(e *application.WindowEvent) {
         fmt.Println("Window minimised")
         mw.SaveState()
     })
-    
-    mw.window.OnUnMinimise(func() {
-        fmt.Println("Window restored")
-    })
-    
-    mw.window.OnMaximise(func() {
+
+    mw.window.OnWindowEvent(events.Common.WindowMaximise, func(e *application.WindowEvent) {
         fmt.Println("Window maximised")
         mw.state.Maximised = true
         mw.dirty = true
     })
-    
-    mw.window.OnUnMaximise(func() {
+
+    mw.window.OnWindowEvent(events.Common.WindowUnMaximise, func(e *application.WindowEvent) {
         fmt.Println("Window restored from maximised")
         mw.state.Maximised = false
         mw.dirty = true
     })
-    
-    mw.window.OnFullscreen(func() {
+
+    mw.window.OnWindowEvent(events.Common.WindowFullscreen, func(e *application.WindowEvent) {
         fmt.Println("Window fullscreen")
         mw.state.Fullscreen = true
         mw.dirty = true
     })
-    
-    mw.window.OnUnFullscreen(func() {
+
+    mw.window.OnWindowEvent(events.Common.WindowUnFullscreen, func(e *application.WindowEvent) {
         fmt.Println("Window exited fullscreen")
         mw.state.Fullscreen = false
         mw.dirty = true
     })
-    
+
     // Position and size events
-    mw.window.OnMove(func(x, y int) {
-        mw.state.X = x
-        mw.state.Y = y
+    mw.window.OnWindowEvent(events.Common.WindowDidMove, func(e *application.WindowEvent) {
+        mw.state.X, mw.state.Y = mw.window.Position()
         mw.dirty = true
     })
-    
-    mw.window.OnResize(func(width, height int) {
-        mw.state.Width = width
-        mw.state.Height = height
+
+    mw.window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
+        mw.state.Width, mw.state.Height = mw.window.Size()
         mw.dirty = true
     })
-    
-    // Lifecycle events
-    mw.window.OnClose(func() bool {
+
+    // Lifecycle: save state on close
+    mw.window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
         if mw.dirty {
             mw.SaveState()
         }
-        return true
-    })
-    
-    mw.window.OnDestroy(func() {
-        fmt.Println("Window destroyed")
-        if mw.dirty {
-            mw.SaveState()
-        }
+        fmt.Println("Window closing")
     })
 }
 
@@ -525,19 +335,19 @@ func (mw *ManagedWindow) LoadState() {
     if err != nil {
         return
     }
-    
+
     if err := json.Unmarshal(data, &mw.state); err != nil {
         return
     }
-    
+
     // Restore window state
     mw.window.SetPosition(mw.state.X, mw.state.Y)
     mw.window.SetSize(mw.state.Width, mw.state.Height)
-    
+
     if mw.state.Maximised {
         mw.window.Maximise()
     }
-    
+
     if mw.state.Fullscreen {
         mw.window.Fullscreen()
     }
@@ -548,10 +358,10 @@ func (mw *ManagedWindow) SaveState() {
     if err != nil {
         return
     }
-    
+
     os.WriteFile("window-state.json", data, 0644)
     mw.dirty = false
-    
+
     fmt.Println("Window state saved")
 }
 ```
@@ -564,14 +374,13 @@ Coordinate between multiple windows:
 
 ```go
 // In main window
-mainWindow.OnFocus(func() {
-    // Notify all windows
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    // Notify all windows via the application event system
     app.Event.Emit("main-window-focused", nil)
 })
 
 // In other windows
 app.Event.On("main-window-focused", func(event *application.CustomEvent) {
-    // Update UI
     updateRelativeToMain()
 })
 ```
@@ -581,13 +390,13 @@ app.Event.On("main-window-focused", func(event *application.CustomEvent) {
 Chain events together:
 
 ```go
-window.OnMaximise(func() {
+window.OnWindowEvent(events.Common.WindowMaximise, func(e *application.WindowEvent) {
     // Save state
     saveWindowState()
-    
+
     // Update layout
     window.EmitEvent("layout-changed", "maximised")
-    
+
     // Notify other windows
     app.Event.Emit("window-maximised", window.Name())
 })
@@ -600,13 +409,13 @@ Debounce frequent events:
 ```go
 var resizeTimer *time.Timer
 
-window.OnResize(func(width, height int) {
+window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
     if resizeTimer != nil {
         resizeTimer.Stop()
     }
-    
+
     resizeTimer = time.AfterFunc(500*time.Millisecond, func() {
-        // Save after resize stops
+        width, height := window.Size()
         saveWindowSize(width, height)
     })
 })
@@ -614,16 +423,16 @@ window.OnResize(func(width, height int) {
 
 ## Best Practices
 
-### ✅ Do
+### Do
 
 - **Save state on close** - Restore window position/size
-- **Cleanup on destroy** - Release resources
+- **Cleanup on close** - Release resources via `OnWindowEvent(events.Common.WindowClosing, ...)`
 - **Debounce frequent events** - Resize, move
 - **Handle focus changes** - Update UI appropriately
 - **Coordinate windows** - Use events for communication
 - **Test all events** - Ensure handlers work correctly
 
-### ❌ Don't
+### Don't
 
 - **Don't block event handlers** - Keep them fast
 - **Don't forget cleanup** - Memory leaks
@@ -634,18 +443,18 @@ window.OnResize(func(width, height int) {
 
 ## Troubleshooting
 
-### OnClose Not Firing
+### Close Not Being Prevented
 
-**Cause:** Using `window.Destroy()` instead of `window.Close()`
+**Cause:** Using `OnWindowEvent` instead of `RegisterHook`
 
 **Solution:**
 
 ```go
-// ✅ Triggers OnClose
-window.Close()
-
-// ❌ Doesn't trigger OnClose
-window.Destroy()
+// OnWindowEvent cannot cancel events
+// Use RegisterHook instead:
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    e.Cancel() // This prevents the close
+})
 ```
 
 ### Events Not Firing
@@ -657,36 +466,40 @@ window.Destroy()
 ```go
 // Register handlers immediately after creation
 window := app.Window.New()
-window.OnClose(func() bool { return true })
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    // handle close
+})
 ```
 
 ### Memory Leaks
 
-**Cause:** Not cleaning up in OnDestroy
+**Cause:** Not calling the cleanup function returned by event registration
 
 **Solution:**
 
 ```go
-window.OnDestroy(func() {
-    // Always cleanup
-    closeResources()
-    removeReferences()
+// Store and call the cancel function when done
+cancel := window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    // handle focus
 })
+
+// Later, remove the listener
+cancel()
 ```
 
 ## Next Steps
 
-**Window Basics** - Learn the fundamentals of window management  
-[Learn More →](/features/windows/basics)
+**Window Basics** - Learn the fundamentals of window management
+[Learn More ->](/features/windows/basics)
 
-**Multiple Windows** - Patterns for multi-window applications  
-[Learn More →](/features/windows/multiple)
+**Multiple Windows** - Patterns for multi-window applications
+[Learn More ->](/features/windows/multiple)
 
-**Events System** - Deep dive into the event system  
-[Learn More →](/features/events/system)
+**Events System** - Deep dive into the event system
+[Learn More ->](/features/events/system)
 
-**Application Lifecycle** - Understand the application lifecycle  
-[Learn More →](/concepts/lifecycle)
+**Application Lifecycle** - Understand the application lifecycle
+[Learn More ->](/concepts/lifecycle)
 
 ---
 

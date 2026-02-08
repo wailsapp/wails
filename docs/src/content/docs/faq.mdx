@@ -142,7 +142,7 @@ tray.SetMenu(menu)
 Yes! Wails provides native dialogs:
 
 ```go
-path, _ := app.OpenFileDialog().
+path, _ := app.Dialog.OpenFile().
     SetTitle("Select File").
     PromptForSingleSelection()
 ```

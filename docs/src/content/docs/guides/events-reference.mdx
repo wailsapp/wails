@@ -501,11 +501,11 @@ useEffect(() => {
         // Handle event
     };
 
-    Events.On('common:WindowResize', handler);
+    Events.On('common:WindowDidResize', handler);
 
     // Cleanup
     return () => {
-        Events.Off('common:WindowResize', handler);
+        Events.Off('common:WindowDidResize', handler);
     };
 }, []);
 ```

@@ -76,7 +76,7 @@ func (s *UserService) Create(email, password string) (*User, error) {
 
 ```go
 type EventBus struct {
-    app       *application.Application
+    app       *application.App
     listeners map[string][]func(interface{})
     mu        sync.RWMutex
 }

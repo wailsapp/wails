@@ -18,7 +18,7 @@ type WebviewWindowOptions struct {
     // Identity
     Name  string
     Title string
-    
+
     // Size and Position
     Width     int
     Height    int
@@ -28,39 +28,58 @@ type WebviewWindowOptions struct {
     MinHeight int
     MaxWidth  int
     MaxHeight int
-    
+    InitialPosition WindowStartPosition
+
     // Initial State
-    Hidden          bool
-    Frameless       bool
-    Resizable       bool
-    AlwaysOnTop     bool
-    Fullscreen      bool
-    Minimised       bool
-    Maximised       bool
-    WindowState     WindowState
-    
+    Hidden        bool
+    Frameless     bool
+    DisableResize bool
+    AlwaysOnTop   bool
+    StartState    WindowState
+
     // Appearance
     BackgroundColour RGBA
     BackgroundType   BackgroundType
-    
+
     // Content
     URL  string
     HTML string
-    
-    // Assets
-    Assets application.AssetOptions
-    
+    JS   string
+    CSS  string
+
+    // Zoom
+    Zoom               float64
+    ZoomControlEnabled bool
+
+    // Features
+    EnableFileDrop             bool
+    OpenInspectorOnStartup     bool
+    DevToolsEnabled            bool
+    DefaultContextMenuDisabled bool
+    IgnoreMouseEvents          bool
+
     // Security
     ContentProtectionEnabled bool
-    
-    // Lifecycle
-    OnClose   func() bool
-    OnDestroy func()
-    
+
+    // Toolbar button states
+    MinimiseButtonState ButtonState
+    MaximiseButtonState ButtonState
+    CloseButtonState    ButtonState
+
+    // Key Bindings
+    KeyBindings map[string]func(window Window)
+
+    // Focus/Escape behaviour
+    HideOnFocusLost bool
+    HideOnEscape    bool
+
+    // Menu
+    UseApplicationMenu bool
+
     // Platform-Specific
-    Mac     MacOptions
-    Windows WindowsOptions
-    Linux   LinuxOptions
+    Mac     MacWindow
+    Windows WindowsWindow
+    Linux   LinuxWindow
 }
 ```
 
@@ -68,8 +87,8 @@ type WebviewWindowOptions struct {
 
 ### Name
 
-**Type:** `string`  
-**Default:** Auto-generated UUID  
+**Type:** `string`
+**Default:** Auto-generated (`window-{id}`)
 **Platform:** All
 
 ```go
@@ -288,24 +307,31 @@ Frameless: true,
 
 **See [Frameless Windows](/features/windows/frameless) for details.**
 
-### Resizable
+### DisableResize
 
-**Type:** `bool`  
-**Default:** `true`  
+**Type:** `bool`
+**Default:** `false`
 **Platform:** All
 
 ```go
-Resizable: false,
+DisableResize: true,
 ```
 
-**Purpose:** Allow/prevent window resizing.
+**Purpose:** Prevent window resizing when set to `true`.
 
 **Use cases:**
 - Fixed-size applications
 - Splash screens
-- dialogs
+- Dialogs
 
 **Note:** Users can still maximise/fullscreen unless you prevent those too.
+
+**Runtime control:**
+
+```go
+window.SetResizable(false) // Disable resizing
+window.SetResizable(true)  // Enable resizing
+```
 
 ### AlwaysOnTop
 
@@ -330,19 +356,25 @@ AlwaysOnTop: true,
 - **Windows:** Full support
 - **Linux:** Depends on window manager
 
-### Fullscreen
+### StartState
 
-**Type:** `bool`  
-**Default:** `false`  
+**Type:** `WindowState` enum
+**Default:** `WindowStateNormal`
 **Platform:** All
 
 ```go
-Fullscreen: true,
+StartState: application.WindowStateMaximised,
 ```
 
-**Purpose:** Start in fullscreen mode.
+**Purpose:** Set the initial window state.
 
-**Platform behaviour:**
+**Values:**
+- `WindowStateNormal` - Normal window
+- `WindowStateMinimised` - Minimised
+- `WindowStateMaximised` - Maximised
+- `WindowStateFullscreen` - Fullscreen
+
+**Platform behaviour for fullscreen:**
 - **macOS:** Creates new Space (virtual desktop)
 - **Windows:** Covers taskbar
 - **Linux:** Varies by desktop environment
@@ -352,48 +384,10 @@ Fullscreen: true,
 ```go
 window.Fullscreen()
 window.UnFullscreen()
-```
-
-### Minimised / Maximised
-
-**Type:** `bool`  
-**Default:** `false`  
-**Platform:** All
-
-```go
-Minimised: true,  // Start minimised
-Maximised: true,  // Start maximised
-```
-
-**Purpose:** Set initial window state.
-
-**Note:** Don't set both to `true` - behaviour is undefined.
-
-### WindowState
-
-**Type:** `WindowState` enum  
-**Default:** `WindowStateNormal`  
-**Platform:** All
-
-```go
-WindowState: application.WindowStateMaximised,
-```
-
-**Values:**
-- `WindowStateNormal` - Normal window
-- `WindowStateMinimised` - Minimised
-- `WindowStateMaximised` - Maximised
-- `WindowStateFullscreen` - Fullscreen
-- `WindowStateHidden` - Hidden
-
-**Preferred over individual flags:**
-
-```go
-// ✅ Preferred
-WindowState: application.WindowStateMaximised,
-
-// ❌ Avoid
-Maximised: true,
+window.Maximise()
+window.UnMaximise()
+window.Minimise()
+window.UnMinimise()
 ```
 
 ## Appearance Options
@@ -455,7 +449,7 @@ BackgroundType: application.BackgroundTypeTranslucent,
 
 ```go
 BackgroundType: application.BackgroundTypeTranslucent,
-Mac: application.MacOptions{
+Mac: application.MacWindow{
     Backdrop: application.MacBackdropTranslucent,
 },
 ```
@@ -579,93 +573,70 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetContentProtection(true)
 ```
 
-## Lifecycle Options
+## Lifecycle Handling
 
-### OnClose
+Window lifecycle events are handled via `OnWindowEvent` and `RegisterHook` methods after window creation, not through options fields.
 
-**Type:** `func() bool`  
-**Default:** `nil` (always allow close)  
-**Platform:** All
+### Preventing Close
 
-```go
-OnClose: func() bool {
-    // Return false to cancel close
-    // Return true to allow close
-    return true
-},
-```
-
-**Purpose:** Handle window close events, optionally prevent closing.
-
-**Use cases:**
-- Confirm before closing with unsaved changes
-- Save state before closing
-- Prevent accidental closure
-
-**Example:**
+Use `RegisterHook` to intercept close events and optionally cancel them:
 
 ```go
-OnClose: func() bool {
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
     if hasUnsavedChanges() {
-        result := showConfirmdialog("Unsaved changes. Close anyway?")
-        return result == "yes"
+        e.Cancel() // Prevent the window from closing
     }
-    return true
-},
+})
 ```
 
-**Important:** Only triggered by user actions (clicking X), not `window.Destroy()`.
+### Cleanup on Close
 
-### OnDestroy
-
-**Type:** `func()`  
-**Default:** `nil`  
-**Platform:** All
+Use `OnWindowEvent` for cleanup when the window closes:
 
 ```go
-OnDestroy: func() {
-    // Cleanup code
-    fmt.Println("Window destroyed")
-},
-```
-
-**Purpose:** Cleanup when window is destroyed.
-
-**Use cases:**
-- Release resources
-- Close connections
-- Update application state
-
-**Example:**
-
-```go
-OnDestroy: func() {
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
     // Close database connection
     if db != nil {
         db.Close()
     }
-    
+
     // Remove from window list
     removeWindow(window.Name())
-},
+})
 ```
+
+**See [Window Events](/features/windows/events) for details.**
 
 ## Platform-Specific Options
 
 ### Mac Options
 
 ```go
-Mac: application.MacOptions{
-    TitleBarAppearsTransparent: true,
-    Backdrop:                   application.MacBackdropTranslucent,
-    InvisibleTitleBarHeight:    50,
-    TitleBarStyle:              application.MacTitleBarStyleHidden,
+Mac: application.MacWindow{
+    TitleBar: application.MacTitleBar{
+        AppearsTransparent: true,
+        HideTitle:          true,
+        FullSizeContent:    true,
+    },
+    Backdrop:                application.MacBackdropTranslucent,
+    InvisibleTitleBarHeight: 50,
 },
 ```
 
-**TitleBarAppearsTransparent** (`bool`)
-- Makes title bar transparent
-- Content extends into title bar area
+**TitleBar** (`MacTitleBar`)
+- `AppearsTransparent` - Makes title bar transparent
+- `Hide` - Hides the entire title bar
+- `HideTitle` - Hides just the title text
+- `FullSizeContent` - Extends content to full window size
+- `UseToolbar` - Uses a toolbar instead of title bar
+- `HideToolbarSeparator` - Hides the toolbar separator
+- `ToolbarStyle` - Style of toolbar (`MacToolbarStyleAutomatic`, `MacToolbarStyleExpanded`, etc.)
+
+**Predefined title bar configurations:**
+- `MacTitleBarDefault` - Standard title bar
+- `MacTitleBarHidden` - Hidden title bar with traffic lights
+- `MacTitleBarHiddenInset` - Hidden with inset traffic lights
+- `MacTitleBarHiddenInsetUnified` - Hidden with unified toolbar style
 
 **Backdrop** (`MacBackdrop`)
 - `MacBackdropNormal` - Standard
@@ -674,66 +645,71 @@ Mac: application.MacOptions{
 
 **InvisibleTitleBarHeight** (`int`)
 - Height of invisible title bar (for dragging)
-- Only when `TitleBarStyle` is `MacTitleBarStyleHidden`
 
-**TitleBarStyle** (`MacTitleBarStyle`)
-- `MacTitleBarStyleDefault` - Standard title bar
-- `MacTitleBarStyleHidden` - Hidden title bar
-- `MacTitleBarStyleHiddenInset` - Hidden with inset
+**Appearance** (`MacAppearanceType`)
+- `DefaultAppearance` - System default
+- `NSAppearanceNameAqua` - Light appearance
+- `NSAppearanceNameDarkAqua` - Dark appearance
 
 **Example:**
 
 ```go
-Mac: application.MacOptions{
-    TitleBarAppearsTransparent: true,
-    Backdrop:                   application.MacBackdropTranslucent,
-    InvisibleTitleBarHeight:    50,
+Mac: application.MacWindow{
+    TitleBar: application.MacTitleBarHidden,
+    Backdrop: application.MacBackdropTranslucent,
+    InvisibleTitleBarHeight: 50,
 },
 ```
 
 ### Windows Options
 
 ```go
-Windows: application.WindowsOptions{
-    DisableWindowIcon:      false,
-    WindowBackdropType:     application.WindowsBackdropTypeAuto,
-    CustomTheme:            nil,
+Windows: application.WindowsWindow{
+    DisableIcon:  false,
+    BackdropType: application.Mica,
+    CustomTheme:  nil,
     DisableFramelessWindowDecorations: false,
 },
 ```
 
-**DisableWindowIcon** (`bool`)
+**DisableIcon** (`bool`)
 - Remove icon from title bar
 - Cleaner appearance
 
-**WindowBackdropType** (`WindowsBackdropType`)
-- `WindowsBackdropTypeAuto` - System default
-- `WindowsBackdropTypeNone` - No backdrop
-- `WindowsBackdropTypeMica` - Mica material (Windows 11)
-- `WindowsBackdropTypeAcrylic` - Acrylic material (Windows 11)
-- `WindowsBackdropTypeTabbed` - Tabbed material (Windows 11)
+**BackdropType** (`BackdropType`)
+- `Auto` - System default
+- `None` - No backdrop
+- `Mica` - Mica material (Windows 11 22621+)
+- `Acrylic` - Acrylic material (Windows 11 22621+)
+- `Tabbed` - Tabbed material (Windows 11 22621+)
 
-**CustomTheme** (`*WindowsTheme`)
-- Custom colour theme
+**Theme** (`Theme`)
+- `SystemDefault` - Follow system theme
+- `Dark` - Dark mode
+- `Light` - Light mode
+
+**CustomTheme** (`ThemeSettings`)
+- Custom colour theme for dark/light mode
 - Override system colours
 
 **DisableFramelessWindowDecorations** (`bool`)
-- Disable default frameless decorations
+- Disable default frameless decorations (shadow and rounded corners)
 - For custom window chrome
 
 **Example:**
 
 ```go
-Windows: application.WindowsOptions{
-    WindowBackdropType: application.WindowsBackdropTypeMica,
-    DisableWindowIcon:  true,
+Windows: application.WindowsWindow{
+    BackdropType: application.Mica,
+    DisableIcon:  true,
+    Theme:        application.Dark,
 },
 ```
 
 ### Linux Options
 
 ```go
-Linux: application.LinuxOptions{
+Linux: application.LinuxWindow{
     Icon:                []byte{/* PNG data */},
     WindowIsTranslucent: false,
 },
@@ -747,13 +723,18 @@ Linux: application.LinuxOptions{
 - Enable window translucency
 - Requires compositor support
 
+**WebviewGpuPolicy** (`WebviewGpuPolicy`)
+- `WebviewGpuPolicyAlways` - Hardware acceleration always enabled
+- `WebviewGpuPolicyOnDemand` - Enabled/disabled as requested by web contents
+- `WebviewGpuPolicyNever` - Hardware acceleration always disabled
+
 **Example:**
 
 ```go
 //go:embed icon.png
 var icon []byte
 
-Linux: application.LinuxOptions{
+Linux: application.LinuxWindow{
     Icon: icon,
 },
 ```
@@ -768,10 +749,8 @@ package main
 import (
     _ "embed"
     "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
 )
-
-//go:embed frontend/dist
-var assets embed.FS
 
 //go:embed icon.png
 var icon []byte
@@ -785,52 +764,42 @@ func main() {
         // Identity
         Name:  "main-window",
         Title: "My Application",
-        
+
         // Size and Position
         Width:     1200,
         Height:    800,
         MinWidth:  800,
         MinHeight: 600,
-        
+
         // Initial State
-        WindowState: application.WindowStateNormal,
-        Resizable:   true,
-        
+        StartState: application.WindowStateNormal,
+
         // Appearance
         BackgroundColour: application.NewRGB(255, 255, 255),
-        
-        // Content
-        Assets: application.AssetOptions{
-            Handler: application.AssetFileServerFS(assets),
-        },
-        
-        // Lifecycle
-        OnClose: func() bool {
-            if hasUnsavedChanges() {
-                result := showConfirmdialog("Unsaved changes. Close anyway?")
-                return result == "yes"
-            }
-            return true
-        },
-        
-        OnDestroy: func() {
-            cleanup()
-        },
-        
+
         // Platform-Specific
-        Mac: application.MacOptions{
-            TitleBarAppearsTransparent: true,
-            Backdrop:                   application.MacBackdropTranslucent,
+        Mac: application.MacWindow{
+            TitleBar: application.MacTitleBar{
+                AppearsTransparent: true,
+            },
+            Backdrop: application.MacBackdropTranslucent,
         },
-        
-        Windows: application.WindowsOptions{
-            WindowBackdropType: application.WindowsBackdropTypeMica,
-            DisableWindowIcon:  false,
+
+        Windows: application.WindowsWindow{
+            BackdropType: application.Mica,
+            DisableIcon:  false,
         },
-        
-        Linux: application.LinuxOptions{
+
+        Linux: application.LinuxWindow{
             Icon: icon,
         },
+    })
+
+    // Handle close events after creation
+    window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+        if hasUnsavedChanges() {
+            e.Cancel()
+        }
     })
 
     window.Center()

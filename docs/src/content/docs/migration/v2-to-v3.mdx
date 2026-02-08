@@ -510,9 +510,9 @@ selection, err := runtime.OpenFileDialog(ctx, runtime.OpenDialogOptions{
 **v3:**
 
 ```go
-selection, err := app.OpenFileDialog(application.OpenFileDialogOptions{
-    Title: "Select File",
-})
+selection, err := app.Dialog.OpenFile().
+    SetTitle("Select File").
+    PromptForSingleSelection()
 ```
 
 ### Menus

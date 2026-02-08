@@ -232,6 +232,7 @@ systray.OnMouseLeave(func() {
 | OnClick | ✅ | ✅ | ✅ |
 | OnRightClick | ✅ | ✅ | ✅ |
 | OnDoubleClick | ✅ | ✅ | ⚠️ Varies |
+| OnRightDoubleClick | ✅ | ✅ | ⚠️ Varies |
 | OnMouseEnter | ✅ | ✅ | ⚠️ Varies |
 | OnMouseLeave | ✅ | ✅ | ⚠️ Varies |
 
@@ -318,19 +319,24 @@ func rebuildTrayMenu(status string) {
     ```go
     // Set label (appears next to icon)
     systray.SetLabel("My App")
-    
+
     // Use template icon (adapts to dark mode)
     systray.SetTemplateIcon(iconBytes)
-    
+
     // Set icon position
-    systray.SetIconPosition(application.IconPositionRight)
+    systray.SetIconPosition(application.NSImageLeading)
     ```
-    
+
     **Icon positions:**
-    - `IconPositionLeft` - Icon left of label
-    - `IconPositionRight` - Icon right of label
-    - `IconPositionOnly` - Icon only, no label
-    - `IconPositionNone` - Label only, no icon
+    - `NSImageLeading` - Icon leading edge of label (default)
+    - `NSImageTrailing` - Icon trailing edge of label
+    - `NSImageLeft` - Icon left of label
+    - `NSImageRight` - Icon right of label
+    - `NSImageOnly` - Icon only, no label
+    - `NSImageNone` - Label only, no icon
+    - `NSImageAbove` - Icon above label
+    - `NSImageBelow` - Icon below label
+    - `NSImageOverlaps` - Icon overlaps label
     
     **Best practices:**
     - Use template icons (black + transparent)

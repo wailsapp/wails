@@ -274,14 +274,14 @@ Floating windows that stay on top:
 ```go
 func CreateToolPalette(app *application.App) *application.WebviewWindow {
     palette := app.Window.NewWithOptions(application.WebviewWindowOptions{
-        Name:        "tools",
-        Title:       "Tools",
-        Width:       200,
-        Height:      400,
-        AlwaysOnTop: true,
-        Resizable:   false,
+        Name:          "tools",
+        Title:         "Tools",
+        Width:         200,
+        Height:        400,
+        AlwaysOnTop:   true,
+        DisableResize: true,
     })
-    
+
     return palette
 }
 ```
@@ -293,17 +293,16 @@ Child windows that block parent:
 ```go
 func ShowModaldialog(parent *application.WebviewWindow, title string) {
     dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
-        Title:       title,
-        Width:       400,
-        Height:      200,
-        Parent:      parent,
-        AlwaysOnTop: true,
-        Resizable:   false,
+        Title:         title,
+        Width:         400,
+        Height:        200,
+        AlwaysOnTop:   true,
+        DisableResize: true,
     })
-    
+
     // Disable parent (platform-specific)
     parent.SetEnabled(false)
-    
+
     // Re-enable parent on close
     dialog.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
         parent.SetEnabled(true)
@@ -350,33 +349,9 @@ func (e *EditorApp) TogglePreview() {
 }
 ```
 
-## Parent-Child Relationships
+## Modal-like Behaviour
 
-### Creating Child Windows
-
-```go
-childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
-    Title:  "Child Window",
-    Parent: parentWindow,
-})
-```
-
-**Behaviour:**
-- Child closes when parent closes
-- Child stays above parent (on some platforms)
-- Child minimises with parent (on some platforms)
-
-**Platform support:**
-
-| Feature | macOS | Windows | Linux |
-|---------|-------|---------|-------|
-| Auto-close | ✅ | ✅ | ⚠️ Varies |
-| Stay above | ✅ | ⚠️ Partial | ⚠️ Varies |
-| Minimise together | ✅ | ❌ | ⚠️ Varies |
-
-### Modal Behaviour
-
-Create modal-like behaviour:
+Create modal-like behaviour by disabling the parent window:
 
 ```go
 func ShowModal(parent *application.WebviewWindow) {
@@ -384,13 +359,12 @@ func ShowModal(parent *application.WebviewWindow) {
         Title:       "Modal dialog",
         Width:       400,
         Height:      200,
-        Parent:      parent,
         AlwaysOnTop: true,
     })
-    
+
     // Disable parent interaction
     parent.SetEnabled(false)
-    
+
     // Re-enable on close
     modal.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
         parent.SetEnabled(true)

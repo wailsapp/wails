@@ -209,6 +209,62 @@ Removes all menu items.
 func (m *Menu) Clear()
 ```
 
+### Destroy()
+
+Destroys the menu and all its items, releasing resources.
+
+```go
+func (m *Menu) Destroy()
+```
+
+### SetLabel()
+
+Sets the label for the menu.
+
+```go
+func (m *Menu) SetLabel(label string)
+```
+
+### RemoveMenuItem()
+
+Removes a specific menu item from the menu.
+
+```go
+func (m *Menu) RemoveMenuItem(target *MenuItem)
+```
+
+### ItemAt()
+
+Returns the menu item at the given index, or nil if out of bounds.
+
+```go
+func (m *Menu) ItemAt(index int) *MenuItem
+```
+
+### Clone()
+
+Recursively clones the menu and all its submenus.
+
+```go
+func (m *Menu) Clone() *Menu
+```
+
+### Append()
+
+Appends another menu's items to this menu.
+
+```go
+func (m *Menu) Append(in *Menu)
+```
+
+### Prepend()
+
+Prepends another menu's items before this menu's items.
+
+```go
+func (m *Menu) Prepend(in *Menu)
+```
+
 ## Menu Item Methods
 
 ### OnClick()
@@ -335,6 +391,89 @@ Returns the submenu of the item, or nil if it's not a submenu.
 func (mi *MenuItem) GetSubmenu() *Menu
 ```
 
+### Label()
+
+Returns the current label text.
+
+```go
+func (mi *MenuItem) Label() string
+```
+
+### Tooltip()
+
+Returns the current tooltip text.
+
+```go
+func (mi *MenuItem) Tooltip() string
+```
+
+### Enabled()
+
+Returns whether the menu item is enabled.
+
+```go
+func (mi *MenuItem) Enabled() bool
+```
+
+### Hidden()
+
+Returns whether the menu item is hidden.
+
+```go
+func (mi *MenuItem) Hidden() bool
+```
+
+### SetRole()
+
+Sets the role for the menu item.
+
+```go
+func (mi *MenuItem) SetRole(role Role) *MenuItem
+```
+
+### GetAccelerator()
+
+Returns the current accelerator string, or empty if none.
+
+```go
+func (mi *MenuItem) GetAccelerator() string
+```
+
+### RemoveAccelerator()
+
+Removes the keyboard shortcut from the menu item.
+
+```go
+func (mi *MenuItem) RemoveAccelerator()
+```
+
+### IsSeparator() / IsSubmenu() / IsCheckbox() / IsRadio()
+
+Type checking methods for menu items.
+
+```go
+func (mi *MenuItem) IsSeparator() bool
+func (mi *MenuItem) IsSubmenu() bool
+func (mi *MenuItem) IsCheckbox() bool
+func (mi *MenuItem) IsRadio() bool
+```
+
+### Clone()
+
+Returns a deep copy of the menu item.
+
+```go
+func (mi *MenuItem) Clone() *MenuItem
+```
+
+### Destroy()
+
+Destroys the menu item and releases resources.
+
+```go
+func (mi *MenuItem) Destroy()
+```
+
 ## Application Menu
 
 ### app.Menu.SetApplicationMenu()
@@ -384,11 +523,11 @@ app.Menu.SetApplicationMenu(menu)
 
 ## Context Menus
 
-Context menus are right-click menus associated with HTML elements via the `data-wails-context-menu` attribute.
+Context menus are right-click menus associated with HTML elements via the `--custom-contextmenu` CSS property.
 
 ### Creating Context Menus
 
-Use `NewContextMenu()` to create and auto-register a context menu:
+Use `NewContextMenu(name)` to create and auto-register a context menu:
 
 ```go
 contextMenu := application.NewContextMenu("editor")
@@ -400,19 +539,20 @@ contextMenu.Add("Select All").OnClick(selectAll)
 contextMenu.Update()
 ```
 
-Or use the manager:
+Or use the manager to create and then register:
 
 ```go
 contextMenu := app.ContextMenu.New()
 contextMenu.Add("Cut").OnClick(cut)
 // ... add items
+app.ContextMenu.Add("editor", contextMenu)
 ```
 
 **HTML:**
 
 ```html
 <!-- Trigger context menu on right-click -->
-<div data-wails-context-menu="editor">
+<div style="--custom-contextmenu: editor">
     Right-click here for context menu
 </div>
 ```
@@ -512,6 +652,14 @@ Handles double-click on the tray icon. Returns `*SystemTray` for chaining.
 func (s *SystemTray) OnDoubleClick(handler func()) *SystemTray
 ```
 
+#### OnRightDoubleClick()
+
+Handles right-double-click on the tray icon. Returns `*SystemTray` for chaining.
+
+```go
+func (s *SystemTray) OnRightDoubleClick(handler func()) *SystemTray
+```
+
 #### OnMouseEnter() / OnMouseLeave()
 
 Handle mouse enter/leave on the tray icon. Return `*SystemTray` for chaining.
@@ -535,6 +683,54 @@ Sets the gap in pixels between the tray and the attached window. Returns `*Syste
 
 ```go
 func (s *SystemTray) WindowOffset(offset int) *SystemTray
+```
+
+#### WindowDebounce()
+
+Sets the debounce duration for click events on Windows. Returns `*SystemTray` for chaining.
+
+```go
+func (s *SystemTray) WindowDebounce(debounce time.Duration) *SystemTray
+```
+
+#### OpenMenu()
+
+Programmatically opens the tray menu.
+
+```go
+func (s *SystemTray) OpenMenu()
+```
+
+#### ShowWindow()
+
+Shows the attached window near the tray icon.
+
+```go
+func (s *SystemTray) ShowWindow()
+```
+
+#### HideWindow()
+
+Hides the attached window.
+
+```go
+func (s *SystemTray) HideWindow()
+```
+
+#### ToggleWindow()
+
+Toggles the visibility of the attached window.
+
+```go
+func (s *SystemTray) ToggleWindow()
+```
+
+#### PositionWindow()
+
+Positions a window near the system tray icon.
+
+```go
+func (s *SystemTray) PositionWindow(window Window, offset int) error
 ```
 
 #### Show() / Hide()

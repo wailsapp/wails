@@ -208,7 +208,7 @@ Normal ←→ Fullscreen
 window.SetTitle("My Application - Document.txt")
 
 // Set background colour
-window.SetBackgroundColour(0, 0, 0, 255) // RGBA
+window.SetBackgroundColour(application.NewRGBA(0, 0, 0, 255))
 
 // Set always on top
 window.SetAlwaysOnTop(true)
@@ -220,16 +220,9 @@ window.SetResizable(false)
 ### Closing Windows
 
 ```go
-// Close window
+// Close window (triggers WindowClosing event, can be cancelled via RegisterHook)
 window.Close()
-
-// Destroy window (force close)
-window.Destroy()
 ```
-
-**Difference:**
-- `Close()` - Triggers close event, can be cancelled
-- `Destroy()` - Immediate destruction, cannot be cancelled
 
 ## Finding Windows
 
@@ -279,28 +272,27 @@ app.Window.OnCreate(func(window application.Window) {
 })
 ```
 
-### Closing
+### Preventing Close
+
+Use `RegisterHook` to intercept the window close event and optionally cancel it:
 
 ```go
-window.OnClose(func() bool {
-    // Return false to cancel close
-    // Return true to allow close
-    
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
     if hasUnsavedChanges() {
-        result := showConfirmdialog("Unsaved changes. Close anyway?")
-        return result == "yes"
+        e.Cancel() // Prevent the window from closing
     }
-    return true
 })
 ```
 
-**Important:** `OnClose` only works for user-initiated closes (clicking X button). It doesn't prevent `window.Destroy()`.
+### Cleanup on Close
 
-### Destruction
+Use `OnWindowEvent` to run cleanup logic when the window closes:
 
 ```go
-window.OnDestroy(func() {
-    fmt.Println("Window destroyed")
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    fmt.Println("Window closing, cleaning up...")
     // Cleanup resources
 })
 ```
@@ -351,25 +343,9 @@ app.Event.On("data-updated", func(event *application.CustomEvent) {
 
 **See [Events](/features/events/system) for more.**
 
-### Parent-Child Windows
+### Multiple Window Communication
 
-```go
-// Create child window
-childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
-    Title:  "Child Window",
-    Parent: mainWindow,  // Set parent
-})
-```
-
-**Behaviour:**
-- Child closes when parent closes
-- Child stays above parent (on some platforms)
-- Child minimises with parent (on some platforms)
-
-**Platform support:**
-- **macOS:** Full support
-- **Windows:** Partial support
-- **Linux:** Varies by desktop environment
+Windows can communicate via the event system. See [Multiple Windows](/features/windows/multiple) for patterns.
 
 ## Platform-Specific Features
 
@@ -381,17 +357,14 @@ childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
     // Flash taskbar button
     window.Flash(true)  // Start flashing
     window.Flash(false) // Stop flashing
-    
+
     // Trigger Windows 11 Snap Assist (Win+Z)
     window.SnapAssist()
-    
-    // Set window icon
-    window.SetIcon(iconBytes)
     ```
-    
+
     **Snap Assist:**
     Shows Windows 11 snap layout options for the window.
-    
+
     **Taskbar flashing:**
     Useful for notifications when window is minimised.
   </TabItem>
@@ -402,18 +375,20 @@ childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
     ```go
     // Transparent title bar
     window := app.Window.NewWithOptions(application.WebviewWindowOptions{
-        Mac: application.MacOptions{
-            TitleBarAppearsTransparent: true,
-            Backdrop:                   application.MacBackdropTranslucent,
+        Mac: application.MacWindow{
+            TitleBar: application.MacTitleBar{
+                AppearsTransparent: true,
+            },
+            Backdrop: application.MacBackdropTranslucent,
         },
     })
     ```
-    
+
     **Backdrop types:**
     - `MacBackdropNormal` - Standard window
     - `MacBackdropTranslucent` - Translucent background
     - `MacBackdropTransparent` - Fully transparent
-    
+
     **Native fullscreen:**
     macOS fullscreen creates a new Space (virtual desktop).
   </TabItem>
@@ -424,7 +399,7 @@ childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
     ```go
     // Set window icon
     window := app.Window.NewWithOptions(application.WebviewWindowOptions{
-        Linux: application.LinuxOptions{
+        Linux: application.LinuxWindow{
             Icon: iconBytes,
         },
     })
@@ -490,13 +465,12 @@ func showSettings() {
 ### Confirm Before Close
 
 ```go
-window.OnClose(func() bool {
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
     if hasUnsavedChanges() {
-        // Show dialog
-        result := showConfirmdialog("Unsaved changes. Close anyway?")
-        return result == "yes"
+        e.Cancel() // Prevent the window from closing
     }
-    return true
 })
 ```
 

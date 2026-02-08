@@ -151,7 +151,7 @@ Wails provides **predefined menu roles** that create platform-appropriate menu s
 | Role | Description | Platform Notes |
 |------|-------------|----------------|
 | `AppMenu` | Application menu with About, Preferences, Quit | **macOS only** |
-| `FileMenu` | File operations (New, Open, Save, etc.) | All platforms |
+| `FileMenu` | File menu with Close Window (macOS) or Quit (Windows/Linux) | All platforms |
 | `EditMenu` | Text editing (Undo, Redo, Cut, Copy, Paste) | All platforms |
 | `WindowMenu` | Window management (Minimise, Zoom, etc.) | All platforms |
 | `HelpMenu` | Help and information | All platforms |
@@ -179,20 +179,16 @@ menu.AddRole(application.HelpMenu)
   <TabItem label="macOS" icon="apple">
     **AppMenu** (with app name):
     - About [App Name]
-    - Preferences... (⌘,)
     - ---
     - Services
     - ---
     - Hide [App Name] (⌘H)
     - Hide Others (⌥⌘H)
-    - Show All
+    - Unhide
     - ---
     - Quit [App Name] (⌘Q)
 
     **FileMenu**:
-    - New (⌘N)
-    - Open... (⌘O)
-    - ---
     - Close Window (⌘W)
 
     **EditMenu**:
@@ -202,7 +198,11 @@ menu.AddRole(application.HelpMenu)
     - Cut (⌘X)
     - Copy (⌘C)
     - Paste (⌘V)
+    - Paste and Match Style
+    - Delete
     - Select All (⌘A)
+    - ---
+    - Speech
 
     **WindowMenu**:
     - Minimise (⌘M)
@@ -211,15 +211,12 @@ menu.AddRole(application.HelpMenu)
     - Bring All to Front
 
     **HelpMenu**:
-    - [App Name] Help
+    - Learn More
   </TabItem>
 
   <TabItem label="Windows" icon="seti:windows">
     **FileMenu**:
-    - New (Ctrl+N)
-    - Open... (Ctrl+O)
-    - ---
-    - Exit (Alt+F4)
+    - Quit
 
     **EditMenu**:
     - Undo (Ctrl+Z)
@@ -228,14 +225,17 @@ menu.AddRole(application.HelpMenu)
     - Cut (Ctrl+X)
     - Copy (Ctrl+C)
     - Paste (Ctrl+V)
+    - Delete
+    - ---
     - Select All (Ctrl+A)
 
     **WindowMenu**:
     - Minimise
-    - Maximise
+    - Zoom
+    - Close Window
 
     **HelpMenu**:
-    - About [App Name]
+    - Learn More
   </TabItem>
 
   <TabItem label="Linux" icon="linux">
@@ -245,15 +245,18 @@ menu.AddRole(application.HelpMenu)
 
 ### Customising Role Menus
 
-Add items to role menus:
+Add items to role menus by finding the submenu after adding the role:
 
 ```go
-fileMenu := menu.AddRole(application.FileMenu)
+menu.AddRole(application.FileMenu)
 
-// Add custom items
+// Find the File submenu and add custom items
+fileMenu := menu.FindByLabel("File").GetSubmenu()
 fileMenu.Add("Import...").OnClick(handleImport)
 fileMenu.Add("Export...").OnClick(handleExport)
 ```
+
+Note: `AddRole()` returns the receiver `*Menu` (for chaining), not the role submenu. Use `FindByLabel()` to access the submenu.
 
 ## Custom Menus
 
@@ -401,7 +404,7 @@ viewMenu.Add("Reset Zoom").SetAccelerator("CmdOrCtrl+0").OnClick(func(ctx *appli
 
 ```go
 menuItem.OnClick(func(ctx *application.Context) {
-    window := application.ContextWindow(ctx)
+    window := app.Window.Current()
     // Use window
 })
 ```
@@ -449,10 +452,10 @@ if runtime.GOOS == "darwin" {
 
 ```go
 if runtime.GOOS == "windows" {
-    fileMenu := menu.AddRole(application.FileMenu)
+    menu.AddRole(application.FileMenu)
     // Exit is added automatically
-    
-    helpMenu := menu.AddRole(application.HelpMenu)
+
+    menu.AddRole(application.HelpMenu)
     // About is added automatically
 }
 ```
@@ -501,7 +504,8 @@ func createMenu(app *application.App) {
     }
 
     // File menu
-    fileMenu := menu.AddRole(application.FileMenu)
+    menu.AddRole(application.FileMenu)
+    fileMenu := menu.FindByLabel("File").GetSubmenu()
     fileMenu.Add("Import...").SetAccelerator("CmdOrCtrl+I").OnClick(handleImport)
     fileMenu.Add("Export...").SetAccelerator("CmdOrCtrl+E").OnClick(handleExport)
 
@@ -532,9 +536,10 @@ func createMenu(app *application.App) {
     menu.AddRole(application.WindowMenu)
 
     // Help menu
-    helpMenu := menu.AddRole(application.HelpMenu)
+    menu.AddRole(application.HelpMenu)
+    helpMenu := menu.FindByLabel("Help").GetSubmenu()
     helpMenu.Add("Documentation").OnClick(openDocumentation)
-    
+
     // About location varies by platform
     if runtime.GOOS == "darwin" {
         // On macOS, About is in Application menu (added by AppMenu role)
@@ -556,8 +561,7 @@ func handleExport(ctx *application.Context) {
 }
 
 func toggleFullscreen(ctx *application.Context) {
-    window := application.ContextWindow(ctx)
-    window.ToggleFullscreen()
+    // Use a reference to the window captured during menu setup
 }
 
 func toggleSidebar(ctx *application.Context) {
