@@ -616,9 +616,9 @@ window.EmitEvent("data-updated", map[string]any{
 ```javascript
 import { Events } from '@wailsio/runtime'
 
-Events.On('data-updated', (data) => {
-    console.log('Count:', data.count)
-    console.log('Status:', data.status)
+Events.On('data-updated', (event) => {
+    console.log('Count:', event.data.count)
+    console.log('Status:', event.data.status)
 })
 ```
 

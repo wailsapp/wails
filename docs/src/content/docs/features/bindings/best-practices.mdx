@@ -286,8 +286,8 @@ func (s *Service) ProcessLargeFile(path string) error {
 
 // JavaScript listens
 import { Events } from '@wailsio/runtime'
-Events.On("progress", (data) => {
-    updateProgress(data.percent)
+Events.On("progress", (event) => {
+    updateProgress(event.data.percent)
 })
 ```
 

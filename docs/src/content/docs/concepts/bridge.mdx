@@ -553,8 +553,8 @@ import { Events } from '@wailsio/runtime'
 import { ProcessLargeFile } from './bindings/FileService'
 
 // Listen for progress
-Events.On('file-progress', (data) => {
-    console.log(`Line ${data.line}: ${data.text}`)
+Events.On('file-progress', (event) => {
+    console.log(`Line ${event.data.line}: ${event.data.text}`)
 })
 
 // Start processing

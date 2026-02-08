@@ -271,8 +271,8 @@ app.Event.Emit("user-logged-in", user)
 // JavaScript: Listen for event
 import { Events } from '@wailsio/runtime'
 
-Events.On('user-logged-in', (user) => {
-    console.log('User logged in:', user)
+Events.On('user-logged-in', (event) => {
+    console.log('User logged in:', event.data)
 })
 ```
 

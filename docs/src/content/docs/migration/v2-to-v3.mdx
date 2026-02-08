@@ -458,8 +458,8 @@ EventsEmit("action", data)
 // v3
 import { Events } from '@wailsio/runtime'
 
-Events.On("update", (data) => {
-    console.log(data)
+Events.On("update", (event) => {
+    console.log(event.data)
 })
 
 Events.Emit("action", data)

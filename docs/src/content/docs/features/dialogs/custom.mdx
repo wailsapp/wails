@@ -201,8 +201,8 @@ func ShowConfirmdialog(message string) bool {
 <script>
 import { Events } from '@wailsio/runtime'
 
-Events.On("set-message", (message) => {
-    document.getElementById("message").textContent = message
+Events.On("set-message", (event) => {
+    document.getElementById("message").textContent = event.data
 })
 
 function confirm(result) {

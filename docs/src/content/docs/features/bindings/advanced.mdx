@@ -46,7 +46,9 @@ This directive is typically used in package documentation comments to include ad
 
 ### Marking Internal Types and Methods
 
-The `//wails:internal` directive marks a type or method as internal, preventing it from being exported to the frontend:
+The `//wails:internal` directive marks a type or method as module-private. The method or type **is still generated** in the JavaScript/TypeScript bindings, but it is **not re-exported** from the package's index file. This means it is accessible within the generated service module but not part of the public API.
+
+This is primarily useful in combination with `//wails:inject` to create custom JavaScript wrappers around internal methods (see [The Internal + Inject Pattern](#the-internal--inject-pattern) below).
 
 ```go
 //wails:internal
@@ -58,18 +60,16 @@ type InternalModel struct {
 func (s *MyService) InternalMethod() {}
 ```
 
-This is useful for types and methods that are only used internally by your Go code and should not be exposed to the frontend.
-
 ### Ignoring Methods
 
-The `//wails:ignore` directive completely ignores a method during binding generation:
+The `//wails:ignore` directive **completely excludes** a method from binding generation. No JavaScript/TypeScript code is generated for the method at all - it exists only in Go:
 
 ```go
 //wails:ignore
 func (s *MyService) IgnoredMethod() {}
 ```
 
-This is similar to `//wails:internal`, but it completely ignores the method rather than marking it as internal.
+Use `//wails:ignore` when a method should have no frontend presence whatsoever. Use `//wails:internal` when the method needs to be available in JS but should not be part of the public API (e.g., to be wrapped by injected code).
 
 ### Custom Method IDs
 
@@ -285,7 +285,7 @@ func (s *AuthService) GetCurrentUser() User {
     // Implementation...
 }
 
-// Internal helper method - not exported to frontend
+// Module-private method - available in JS but not re-exported from public API
 //wails:internal
 func (s *AuthService) ValidateCredentials(username, password string) bool {
     // Implementation...
@@ -316,7 +316,7 @@ func (s *DataService) ProcessBatch(data []string) ProcessingResult[[]map[string]
     // Implementation...
 }
 
-// Internal helper method - not exported to frontend
+// Module-private method - available in JS but not re-exported from public API
 //wails:internal
 func (s *DataService) ParseData(data string) (map[string]int, error) {
     // Implementation...
@@ -340,3 +340,55 @@ type Service struct{}
 ```
 
 This injects different code for JavaScript and TypeScript outputs, providing appropriate type annotations for each language.
+
+### The Internal + Inject Pattern
+
+The `//wails:internal` and `//wails:inject` directives combine to create a powerful pattern: you mark Go methods as internal (module-private in JS) and then inject custom JavaScript that wraps them with a better API.
+
+The built-in SQLite service uses this pattern extensively. Here is a simplified view:
+
+```go
+package sqlite
+
+//wails:inject export {
+//wails:inject     ExecContext as Execute,
+//wails:inject     QueryContext as Query
+//wails:inject };
+
+type SQLiteService struct {
+    // ...
+}
+
+// Execute is Go-only — frontend uses the injected re-export above.
+//wails:ignore
+func (s *SQLiteService) Execute(query string, args ...any) error {
+    return s.ExecContext(context.Background(), query, args...)
+}
+
+// ExecContext is generated in JS but not publicly re-exported.
+// The injected code above re-exports it as "Execute".
+//wails:internal
+func (s *SQLiteService) ExecContext(ctx context.Context, query string, args ...any) error {
+    // Implementation...
+}
+
+// Query is Go-only — frontend uses the injected re-export above.
+//wails:ignore
+func (s *SQLiteService) Query(query string, args ...any) (Rows, error) {
+    return s.QueryContext(context.Background(), query, args...)
+}
+
+// QueryContext is generated in JS but not publicly re-exported.
+// The injected code above re-exports it as "Query".
+//wails:internal
+func (s *SQLiteService) QueryContext(ctx context.Context, query string, args ...any) (Rows, error) {
+    // Implementation...
+}
+```
+
+In this pattern:
+- `//wails:ignore` on `Execute` and `Query` means they have **no JS presence at all** (Go-only convenience wrappers)
+- `//wails:internal` on `ExecContext` and `QueryContext` means they **are generated in JS** but **not re-exported** from the index
+- `//wails:inject` re-exports the internal methods under friendlier names (`Execute`, `Query`)
+
+The SQLite service also uses `//wails:inject` to create a custom `Prepare()` function that wraps the internal `PrepareContext` method, transforming its return value into a rich `Stmt` object with `Close`, `Exec`, and `Query` methods — something that would not be possible with plain bindings alone.
