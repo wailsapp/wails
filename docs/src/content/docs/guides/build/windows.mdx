@@ -293,24 +293,18 @@ Configure in `wails.json`:
 
 ## Building for Different Architectures
 
+The target architecture is controlled by the `GOARCH` environment variable and the platform-specific Taskfile. The default Windows Taskfile builds for the current architecture.
+
 ### AMD64 (64-bit)
 
 ```bash
-wails3 build -platform windows/amd64
+GOARCH=amd64 wails3 build
 ```
 
 ### ARM64
 
 ```bash
-wails3 build -platform windows/arm64
-```
-
-### Universal Build
-
-Build for all architectures:
-
-```bash
-wails3 build -platform windows/amd64,windows/arm64
+GOARCH=arm64 wails3 build
 ```
 
 ## Distribution Checklist

@@ -399,7 +399,6 @@ func (d *SaveFileDialogStruct) PromptForSingleSelection() (string, error)
 **Example:**
 ```go
 path, err := app.Dialog.SaveFile().
-    SetTitle("Save Document").
     SetFilename("untitled.pdf").
     AddFilter("PDF Document", "*.pdf").
     PromptForSingleSelection()
@@ -416,6 +415,15 @@ if path == "" {
 // Save to the selected path
 saveDocument(path)
 ```
+
+:::note
+`SaveFileDialogStruct` does not have a `SetTitle()` method. To set the title, use `SaveFileWithOptions()`:
+```go
+dialog := app.Dialog.SaveFileWithOptions(&application.SaveFileDialogOptions{
+    Title: "Save Document",
+})
+```
+:::
 
 ## Message Dialogs
 
@@ -613,8 +621,9 @@ func (s *FileService) OpenImage(app *application.App) (string, error) {
 }
 
 func (s *FileService) SaveDocument(app *application.App, defaultName string) (string, error) {
-    return app.Dialog.SaveFile().
-        SetTitle("Save Document").
+    return app.Dialog.SaveFileWithOptions(&application.SaveFileDialogOptions{
+        Title: "Save Document",
+    }).
         SetFilename(defaultName).
         AddFilter("PDF Document", "*.pdf").
         AddFilter("Text Document", "*.txt").
@@ -658,7 +667,6 @@ func confirmDelete(app *application.App) {
 func saveFile(app *application.App, data []byte) error {
     // Select save location
     path, err := app.Dialog.SaveFile().
-        SetTitle("Save File").
         SetFilename("data.json").
         AddFilter("JSON File", "*.json").
         PromptForSingleSelection()

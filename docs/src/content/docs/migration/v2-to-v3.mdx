@@ -554,8 +554,8 @@ systray.SetIcon(iconBytes)
 systray.SetLabel("My App")
 
 menu := application.NewMenu()
-menu.Add("Show").OnClick(showWindow)
-menu.Add("Quit").OnClick(app.Quit)
+menu.Add("Show").OnClick(func(_ *application.Context) { showWindow() })
+menu.Add("Quit").OnClick(func(_ *application.Context) { app.Quit() })
 systray.SetMenu(menu)
 ```
 

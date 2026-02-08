@@ -175,6 +175,18 @@ func (u *UserService) ServiceStartup(ctx context.Context, options application.Se
 - Return error to **prevent app startup**
 - Use `ctx` for cancellation
 
+### ServiceName
+
+Optional interface to provide a custom name for logging and debugging:
+
+```go
+func (u *UserService) ServiceName() string {
+    return "User Management Service"
+}
+```
+
+If a non-empty name is provided via `ServiceOptions.Name`, it takes precedence over this method. If neither is provided, the type name is used.
+
 ### ServiceShutdown
 
 Called when application shuts down:
@@ -277,6 +289,14 @@ func (d *DatabaseService) periodicCleanup(ctx context.Context) {
 ```
 
 ## Service Options
+
+`ServiceOptions` configures individual service behaviour:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `Name` | `string` | Override the service name for logging and debugging. Defaults to `ServiceName()` interface or type name |
+| `Route` | `string` | Mount the service as an HTTP handler at this route prefix (service must implement `http.Handler`) |
+| `MarshalError` | `func(error) []byte` | Custom error marshalling for this service's methods. Return nil to fall back to the global handler |
 
 ### Custom Name
 

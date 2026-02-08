@@ -27,8 +27,8 @@ app.Event.Emit("user-logged-in", map[string]interface{}{
 ```javascript
 import { Events } from '@wailsio/runtime'
 
-Events.On("user-logged-in", (data) => {
-    console.log(`User ${data.name} logged in`)
+Events.On("user-logged-in", (event) => {
+    console.log(`User ${event.data.name} logged in`)
 })
 ```
 
@@ -176,8 +176,8 @@ app.Event.On("order-created", updateInventory)
 ```javascript
 import { Events } from '@wailsio/runtime'
 
-Events.On("event-name", (data) => {
-    console.log("Event received:", data)
+Events.On("event-name", (event) => {
+    console.log("Event received:", event.data)
 })
 ```
 
@@ -286,14 +286,14 @@ window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEv
     app.Logger.Info("Window lost focus")
 })
 
-// Window closing
-window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
+// Window closing - use a hook to cancel if needed
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
     if hasUnsavedChanges() {
         e.Cancel()  // Prevent close
     }
 })
 
-// Window closing (use a hook to cancel if needed)
+// Window closing - use a listener for cleanup (cannot cancel)
 window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
     cleanup()
 })
@@ -391,8 +391,8 @@ app.Event.On("get-user-data", func(e *application.CustomEvent) {
 
 ```javascript
 // Frontend receives response
-Events.On("user-data-response", (user) => {
-    displayUser(user)
+Events.On("user-data-response", (event) => {
+    displayUser(event.data)
 })
 ```
 
@@ -407,8 +407,8 @@ app.Event.Emit("global-notification", "System update available")
 
 ```javascript
 // Each window handles it
-Events.On("global-notification", (message) => {
-    showNotification(message)
+Events.On("global-notification", (event) => {
+    showNotification(event.data)
 })
 ```
 
@@ -505,18 +505,18 @@ func main() {
 import { Events } from '@wailsio/runtime'
 
 // Listen for notifications
-Events.On("notification", (data) => {
-    showNotification(data.message)
+Events.On("notification", (event) => {
+    showNotification(event.data.message)
 })
 
 // Listen for theme changes
-Events.On("theme-changed", (isDark) => {
-    document.body.classList.toggle('dark', isDark)
+Events.On("theme-changed", (event) => {
+    document.body.classList.toggle('dark', event.data)
 })
 
 // Listen for window focus
-Events.On("window-focused", (windowName) => {
-    console.log(`Window ${windowName} focused`)
+Events.On("window-focused", (event) => {
+    console.log(`Window ${event.data} focused`)
 })
 
 // Handle close confirmation

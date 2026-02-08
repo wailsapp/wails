@@ -25,6 +25,78 @@ app := application.New(application.Options{
 })
 ```
 
+## Application Options
+
+The `Options` struct configures the application:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `Name` | `string` | Application name (used in default about box). Default: `"My Wails Application"` |
+| `Description` | `string` | Application description (used in default about box). Default: `"An application written using Wails"` |
+| `Icon` | `[]byte` | Application icon (used in default about box) |
+| `Mac` | `MacOptions` | macOS-specific configuration |
+| `Windows` | `WindowsOptions` | Windows-specific configuration |
+| `Linux` | `LinuxOptions` | Linux-specific configuration |
+| `IOS` | `IOSOptions` | iOS-specific configuration |
+| `Android` | `AndroidOptions` | Android-specific configuration |
+| `Services` | `[]Service` | Services to bind to the frontend |
+| `MarshalError` | `func(error) []byte` | Custom error marshalling for service method errors. Return nil to fall back to default |
+| `BindAliases` | `map[uint32]uint32` | Alias IDs for bound methods |
+| `Logger` | `*slog.Logger` | Custom logger for Wails system messages |
+| `LogLevel` | `slog.Level` | Log level for the Wails system logger |
+| `Assets` | `AssetOptions` | Application assets configuration |
+| `Flags` | `map[string]any` | Key-value pairs available to the frontend |
+| `PanicHandler` | `func(*PanicDetails)` | Called when a panic occurs |
+| `DisableDefaultSignalHandler` | `bool` | Disables the default signal handler |
+| `KeyBindings` | `map[string]func(window Window)` | Global key bindings |
+| `OnShutdown` | `func()` | Called when the application is about to terminate. Blocks shutdown until it returns |
+| `PostShutdown` | `func()` | Called after shutdown completes, just before process exit. The app instance is no longer usable |
+| `ShouldQuit` | `func() bool` | Called when user tries to quit. Return `false` to prevent quit |
+| `RawMessageHandler` | `func(window Window, message string, originInfo *OriginInfo)` | Called when the frontend sends a raw (non-wails) message |
+| `WarningHandler` | `func(string)` | Custom warning handler |
+| `ErrorHandler` | `func(err error)` | Custom error handler |
+| `FileAssociations` | `[]string` | File extensions associated with the app (e.g., `[".txt", ".md"]`) |
+| `SingleInstance` | `*SingleInstanceOptions` | Single instance configuration |
+| `Transport` | `Transport` | Custom IPC transport layer (default: HTTP fetch-based) |
+| `Server` | `ServerOptions` | HTTP server configuration for server mode (build with `server` tag) |
+
+### AssetOptions
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `Handler` | `http.Handler` | Serves all content to the WebView |
+| `Middleware` | `Middleware` | HTTP middleware for the asset server request chain |
+| `DisableLogging` | `bool` | Disables asset server request logging |
+
+### Platform Options
+
+#### MacOptions
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ActivationPolicy` | `ActivationPolicy` | Application activation policy. Default: `ActivationPolicyRegular` |
+| `ApplicationShouldTerminateAfterLastWindowClosed` | `bool` | Terminate when last window closes |
+
+#### WindowsOptions
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `WndClass` | `string` | Window class name. Default: `"WailsWebviewWindow"` |
+| `WndProcInterceptor` | `func(...)` | Intercept main message loop messages |
+| `DisableQuitOnLastWindowClosed` | `bool` | Keep app running after last window closes |
+| `WebviewUserDataPath` | `string` | WebView2 user data path. Default: `%APPDATA%\[BinaryName.exe]` |
+| `WebviewBrowserPath` | `string` | Path to WebView2 executables |
+| `EnabledFeatures` | `[]string` | WebView2 browser features to enable |
+| `DisabledFeatures` | `[]string` | WebView2 browser features to disable |
+| `AdditionalBrowserArgs` | `[]string` | Additional browser arguments (include `--` prefix) |
+
+#### LinuxOptions
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `DisableQuitOnLastWindowClosed` | `bool` | Keep app running after last window closes |
+| `ProgramName` | `string` | Program name for GTK window manager |
+
 ## Core Methods
 
 ### Run()
@@ -110,6 +182,30 @@ Hides or shows the application.
 ```go
 func (a *App) Hide()
 func (a *App) Show()
+```
+
+### SetIcon()
+
+Sets the application icon.
+
+```go
+func (a *App) SetIcon(icon []byte)
+```
+
+### GetPID()
+
+Returns the process ID of the application.
+
+```go
+func (a *App) GetPID() int
+```
+
+### Capabilities()
+
+Returns the application's capabilities information.
+
+```go
+func (a *App) Capabilities() capabilities.Capabilities
 ```
 
 ## Managers

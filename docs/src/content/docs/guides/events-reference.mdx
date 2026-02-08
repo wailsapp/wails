@@ -148,21 +148,39 @@ Events.On('common:WindowFocus', () => {
 
 ### 2. Responding to Theme Changes
 
-Keep your app in sync with the system theme:
+Handle theme changes in Go and forward to the frontend:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    isDark := e.Context().IsDarkMode()
+    app.Event.Emit("theme-changed", isDark)
+})
+```
+
+Then listen in JavaScript:
 
 ```javascript
 import { Events } from '@wailsio/runtime';
 
-Events.On('common:ThemeChanged', (event) => {
-    const isDarkMode = event.data.isDark;
-
-    if (isDarkMode) {
+Events.On('theme-changed', (event) => {
+    if (event.data) {
         document.body.classList.add('dark-theme');
         document.body.classList.remove('light-theme');
     } else {
         document.body.classList.add('light-theme');
         document.body.classList.remove('dark-theme');
     }
+});
+```
+
+You can also listen for the system event directly in JavaScript, but note that the theme data is not included:
+
+```javascript
+Events.On('common:ThemeChanged', () => {
+    // Theme changed, but isDark is not available
+    // Use CSS media queries or query the System API instead
 });
 ```
 
