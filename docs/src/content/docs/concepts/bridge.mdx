@@ -612,10 +612,12 @@ func ProcessItems(items []Item) ([]Result, error) {
 ### Enable Debug Logging
 
 ```go
+import "log/slog"
+
 app := application.New(application.Options{
     Name: "My App",
-    Logger: application.NewDefaultLogger(),
-    LogLevel: logger.DEBUG,
+    Logger: application.DefaultLogger(slog.LevelDebug),
+    LogLevel: slog.LevelDebug,
 })
 ```
 

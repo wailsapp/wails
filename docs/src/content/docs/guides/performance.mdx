@@ -236,11 +236,9 @@ func (b *BatchProcessor) flush() {
 
 ### Binary Size
 
-```bash
-# Strip debug symbols
-wails3 build -ldflags "-s -w"
+The default Taskfiles already include `-ldflags "-s -w"` to strip debug symbols. You can further reduce binary size by adding `-trimpath` to the `go build` command in your Taskfile:
 
-# Reduce binary size further
+```bash
 go build -ldflags="-s -w" -trimpath
 ```
 

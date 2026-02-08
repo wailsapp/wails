@@ -84,9 +84,7 @@ time then injects them using `go build -ldflags`.
 | macOS   | amd64 / arm64 | `darwin`  | cgo enabled (Objective-C) | Codesign & notarisation tasks available |
 | Linux   | amd64 / arm64 | `linux`   | pure Go (webkit option)   | GTK/WebKitGTK headers required for CGO build |
 
-`wails3 build -platform darwin/arm64` overrides GOOS/GOARCH.  
-If CGO is needed on the host that can't compile the target (e.g. building
-Windows from Linux), the CLI falls back to **Docker** images (`ghcr.io/wailsapp/cross-compiler`).
+Cross-compilation is done by setting `GOOS` and `GOARCH` environment variables. If CGO is needed on the host that can't compile the target (e.g. building Windows from Linux), a cross-compiler toolchain (like `mingw-w64`) is required.
 
 ---
 
@@ -120,11 +118,11 @@ Task targets: `sign:mac`, `sign:windows`.
 | **AppImage** (default) | `internal/commands/appimage.go` | `linuxdeploy` + `linuxdeploy-plugin-gtk` |
 | **deb / rpm / pacman** | `internal/packager` | `fpm` (invoked via Go) |
 
-Flags:
+Linux packages can be generated using `wails3 tool package`:
 
 ```
-wails3 build -package deb   # produces myapp_1.0.0_amd64.deb
-wails3 build -package rpm
+wails3 tool package -format deb -name myapp -config build/linux/nfpm/nfpm.yaml
+wails3 tool package -format rpm -name myapp -config build/linux/nfpm/nfpm.yaml
 ```
 
 ### macOS
@@ -151,15 +149,12 @@ Extra resources:
 After a successful build the CLI prints:
 
 ```
-build/bin/
-├── myapp-linux-amd64
-└── myapp-linux-amd64.AppImage
-
-build/package/
-└── myapp_1.0.0_amd64.deb
+bin/
+├── myapp
+└── myapp.AppImage
 ```
 
-The exact files depend on `-platform` and `-package` flags.
+The exact files depend on the platform and the tasks executed.
 
 ---
 
@@ -168,9 +163,9 @@ The exact files depend on `-platform` and `-package` flags.
 | Need | Approach |
 |------|----------|
 | Run a linter before build | Add a `lint` task in **Taskfile.yml** and make `build` depend on it. |
-| Extra linker flags | `wails3 build -ldflags "-H windowsgui"` |
-| Skip packaging | `wails3 build -skip-package` (keeps raw binary). |
-| Bring your own packager | Implement `internal/packager/<name>.go`, register in `packager.go`. |
+| Extra linker flags | Add `-ldflags` to the `go build` command in your platform Taskfile. |
+| Skip packaging | Run `wails3 build` instead of `wails3 package` to get a raw binary. |
+| Bring your own packager | Add custom packaging tasks to your platform Taskfile. |
 
 All Taskfile targets use environment variables exported by the CLI, so you can
 reference values like `$WAILS_VERSION` or `$WAILS_PLATFORM` inside custom tasks.
@@ -186,7 +181,7 @@ reference values like `$WAILS_VERSION` or `$WAILS_PLATFORM` inside custom tasks.
 | **`wixl` not found** (Linux MSI cross-build) | WiX toolset not installed in Docker image | Use `--docker` build or install WiX manually. |
 | **Duplicated symbol `_WinMain`** | Mixed `windowsgui` flag and syso | Remove custom `-ldflags` or let Wails manage resources. |
 
-Verbose mode: `wails3 build -verbose` dumps every command executed.
+For verbose output, use `wails3 task -v build` to see every command executed.
 
 ---
 

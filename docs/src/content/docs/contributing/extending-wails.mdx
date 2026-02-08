@@ -210,9 +210,9 @@ Example: **Wayland** clipboard on Linux.
 
 ## 6. Debug Builds & Iteration Speed
 
-* `wails3 dev -tags debug` adds extra log hooks (`logger_dev*.go`).
-* Use `task reload` to rebuild runtime without restarting the whole app.
-* Race detector: `wails3 dev -race` (see `pkg/application/RACE.md`).
+* `wails3 build -tags debug` adds extra log hooks (`logger_dev*.go`).
+* Use `wails3 task reload` to rebuild runtime without restarting the whole app.
+* Race detector: add `-race` to the `go build` command in your Taskfile (see `pkg/application/RACE.md`).
 
 ---
 

@@ -140,7 +140,7 @@ func (s *GinService) ServiceStartup(ctx context.Context, options application.Ser
 }
 
 // ServiceShutdown is called when the service shuts down
-func (s *GinService) ServiceShutdown(ctx context.Context) error {
+func (s *GinService) ServiceShutdown() error {
 	// Clean up resources if needed
 	return nil
 }
