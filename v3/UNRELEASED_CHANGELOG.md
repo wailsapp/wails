@@ -17,24 +17,12 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add `-tags` flag to `wails3 build` command for passing custom Go build tags (e.g., `wails3 build -tags gtk4`) (#4957)
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix file drag-and-drop on Windows not working at non-100% display scaling
-- Fix HTML5 internal drag-and-drop being broken when file drop was enabled on Windows
-- Fix file drop coordinates being in wrong pixel space on Windows (physical vs CSS pixels)
-- Fix file drag-and-drop on Linux not working reliably with hover effects
-- Fix HTML5 internal drag-and-drop being broken when file drop was enabled on Linux
-- Fix window show/hide on Linux/GTK4 sometimes restoring to minimized state by using `gtk_window_present()` (#4957)
-- Fix window position get/set on Linux/GTK4 always returning 0,0 by adding X11-conditional support via `XTranslateCoordinates`/`XMoveWindow` (#4957)
-- Fix max window size not being enforced on Linux/GTK4 by adding signal-based size clamping to replace removed `gtk_window_set_geometry_hints` (#4957)
-- Fix DPI scaling on Linux/GTK4 by implementing proper PhysicalBounds calculation and fractional scaling support via `gdk_monitor_get_scale` (GTK 4.14+)
-- Fix menu items duplicating when creating new windows on Linux/GTK4
-- Fix generation of mapped types with enum keys in JS/TS bindings (#4437) by @fbbdev
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
