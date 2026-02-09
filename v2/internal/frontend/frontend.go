@@ -106,7 +106,7 @@ type NotificationCategory struct {
 type NotificationResponse struct {
 	ID               string                 `json:"id,omitempty"`
 	ActionIdentifier string                 `json:"actionIdentifier,omitempty"`
-	CategoryID       string                 `json:"categoryIdentifier,omitempty"`
+	CategoryID       string                 `json:"categoryId,omitempty"` // Consistent with NotificationOptions
 	Title            string                 `json:"title,omitempty"`
 	Subtitle         string                 `json:"subtitle,omitempty"` // (macOS and Linux only)
 	Body             string                 `json:"body,omitempty"`

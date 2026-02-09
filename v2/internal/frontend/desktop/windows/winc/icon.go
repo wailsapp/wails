@@ -145,19 +145,12 @@ func SaveHIconAsPNG(hIcon w32.HICON, filePath string) error {
 		return err
 	}
 
-	// Create DC
-	hdc, _, err := procCreateCompatibleDC.Call(0)
-	if hdc == 0 {
-		return fmt.Errorf("failed to create compatible DC: %w", err)
+	// Get screen DC for GetDIBits (bitmap must not be selected into a DC)
+	screenDC := w32.GetDC(0)
+	if screenDC == 0 {
+		return fmt.Errorf("failed to get screen DC")
 	}
-	defer procDeleteDC.Call(hdc)
-
-	// Select bitmap into DC
-	oldBitmap, _, err := procSelectObject.Call(hdc, uintptr(iconInfo.HbmColor))
-	if oldBitmap == 0 {
-		return fmt.Errorf("failed to select bitmap: %w", err)
-	}
-	defer procSelectObject.Call(hdc, oldBitmap)
+	defer w32.ReleaseDC(0, screenDC)
 
 	// Prepare bitmap info header
 	var bi BITMAPINFO
@@ -173,9 +166,9 @@ func SaveHIconAsPNG(hIcon w32.HICON, filePath string) error {
 	bufferSize := width * height * 4
 	bits := make([]byte, bufferSize)
 
-	// Get bitmap bits
+	// Get bitmap bits using screen DC (bitmap must not be selected into any DC)
 	ret, _, err = procGetDIBits.Call(
-		hdc,
+		uintptr(screenDC),
 		uintptr(iconInfo.HbmColor),
 		0,
 		uintptr(bmp.BmHeight),

@@ -776,7 +776,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     [payload setObject:response.notification.request.content.body ?: @"" forKey:@"body"];
     
     if (response.notification.request.content.categoryIdentifier) {
-        [payload setObject:response.notification.request.content.categoryIdentifier forKey:@"categoryIdentifier"];
+        [payload setObject:response.notification.request.content.categoryIdentifier forKey:@"categoryId"];
     }
 
     if (response.notification.request.content.subtitle) {
