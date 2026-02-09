@@ -264,15 +264,15 @@ Frontend2 -> EventBus: "On('data-updated', handler)"
 **Example:**
 ```go
 // Go: Emit an event
-app.EmitEvent("user-logged-in", user)
+app.Event.Emit("user-logged-in", user)
 ```
 
 ```javascript
 // JavaScript: Listen for event
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-On('user-logged-in', (user) => {
-    console.log('User logged in:', user)
+Events.On('user-logged-in', (event) => {
+    console.log('User logged in:', event.data)
 })
 ```
 
@@ -345,22 +345,42 @@ Shutdown.Cleanup -> Shutdown.Save
 Shutdown.Save -> End
 ```
 
-**Lifecycle hooks:**
+**Application lifecycle events:**
 
 ```go
+// React to application lifecycle using events
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
+    // Application has fully started - safe to show notifications, check for updates, etc.
+})
+
+// Shutdown and quit control via application options
 app := application.New(application.Options{
     Name: "My App",
-    
-    // Called before windows are created
-    OnStartup: func(ctx context.Context) {
-        // Initialise database, load config, etc.
-    },
-    
-    // Called when app is about to quit
     OnShutdown: func() {
-        // Save state, close connections, etc.
+        // Cleanup before shutdown
+    },
+    ShouldQuit: func() bool {
+        // Return false to prevent quit
+        return true
     },
 })
+```
+
+**Service initialisation** (for resource setup, not lifecycle hooks):
+
+```go
+// Services initialise their own resources during startup
+type AppService struct{ db *sql.DB }
+
+func (s *AppService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    var err error
+    s.db, err = sql.Open("sqlite3", "app.db")
+    return err
+}
+
+func (s *AppService) ServiceShutdown() error {
+    return s.db.Close()
+}
 ```
 
 [Learn more about lifecycle →](/concepts/lifecycle)

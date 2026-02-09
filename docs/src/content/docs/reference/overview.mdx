@@ -37,18 +37,10 @@ This is the complete API reference for Wails v3. It documents every public type,
 Most methods that can fail return `error` as the last return value:
 
 ```go
-window, err := app.NewWebviewWindow()
+err := app.Run()
 if err != nil {
     log.Fatal(err)
 }
-```
-
-#### Context
-
-Methods that may block or need cancellation accept `context.Context`:
-
-```go
-err := app.RunWithContext(ctx)
 ```
 
 #### Options Pattern
@@ -146,8 +138,8 @@ import (
 import { MyMethod } from './bindings/MyService'
 
 // Runtime APIs
-import { On, Emit } from '@wailsio/runtime'
-import { WindowSetTitle } from '@wailsio/runtime/window'
+import { Events } from '@wailsio/runtime'
+import Window from '@wailsio/runtime/window'
 ```
 
 ## Type Reference
@@ -158,24 +150,26 @@ import { WindowSetTitle } from '@wailsio/runtime/window'
   <TabItem label="Go" icon="seti:go">
     ```go
     // Application
-    type Application struct { /* ... */ }
+    type App struct { /* ... */ }
     type Options struct { /* ... */ }
-    
+
     // Window
     type WebviewWindow struct { /* ... */ }
     type WebviewWindowOptions struct { /* ... */ }
-    
+
     // Menu
     type Menu struct { /* ... */ }
     type MenuItem struct { /* ... */ }
-    
+
     // Events
-    type Event struct { /* ... */ }
-    type EventListener func(*Event)
-    
+    type CustomEvent struct { /* ... */ }
+    type ApplicationEvent struct { /* ... */ }
+    type WindowEvent struct { /* ... */ }
+
     // Dialogs
-    type OpenDialogOptions struct { /* ... */ }
-    type SaveDialogOptions struct { /* ... */ }
+    type OpenFileDialogStruct struct { /* ... */ }
+    type SaveFileDialogStruct struct { /* ... */ }
+    type MessageDialog struct { /* ... */ }
     ```
   </TabItem>
 

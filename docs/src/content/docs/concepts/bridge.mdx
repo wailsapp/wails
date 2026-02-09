@@ -538,10 +538,7 @@ func ProcessLargeFile(path string) error {
     for scanner.Scan() {
         lineNum++
         // Emit progress events
-        app.EmitEvent("file-progress", map[string]interface{}{
-            "line": lineNum,
-            "text": scanner.Text(),
-        })
+        app.Event.Emit("file-progress", lineNum, scanner.Text())
     }
     
     return scanner.Err()
@@ -549,12 +546,14 @@ func ProcessLargeFile(path string) error {
 ```
 
 ```javascript
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 import { ProcessLargeFile } from './bindings/FileService'
 
 // Listen for progress
-On('file-progress', (data) => {
-    console.log(`Line ${data.line}: ${data.text}`)
+// event.data is an array of the variadic args: [lineNum, text]
+Events.On('file-progress', (event) => {
+    const [line, text] = event.data
+    console.log(`Line ${line}: ${text}`)
 })
 
 // Start processing
@@ -612,10 +611,12 @@ func ProcessItems(items []Item) ([]Result, error) {
 ### Enable Debug Logging
 
 ```go
+import "log/slog"
+
 app := application.New(application.Options{
     Name: "My App",
-    Logger: application.NewDefaultLogger(),
-    LogLevel: logger.DEBUG,
+    Logger: application.DefaultLogger(slog.LevelDebug),
+    LogLevel: slog.LevelDebug,
 })
 ```
 

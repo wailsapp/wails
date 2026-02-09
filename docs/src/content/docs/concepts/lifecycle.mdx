@@ -33,13 +33,18 @@ PreInit: "Pre-Initialisation" {
   }
 }
 
-OnStartup: "OnStartup Hook" {
+ServiceInit: "Service Initialisation" {
   shape: rectangle
   style.fill: "#3B82F6"
 }
 
 CreateWindows: "Create Windows" {
   shape: rectangle
+}
+
+AppStarted: "ApplicationStarted Event" {
+  shape: rectangle
+  style.fill: "#3B82F6"
 }
 
 EventLoop: "Event Loop" {
@@ -59,12 +64,12 @@ QuitSignal: "Quit Signal" {
   style.fill: "#F59E0B"
 }
 
-OnBeforeClose: "OnBeforeClose Hook" {
+ShouldQuit: "ShouldQuit Check" {
   shape: rectangle
   style.fill: "#3B82F6"
 }
 
-OnShutdown: "OnShutdown Hook" {
+OnShutdown: "Shutdown Hooks" {
   shape: rectangle
   style.fill: "#3B82F6"
 }
@@ -86,16 +91,17 @@ End: "Application End" {
 Start -> PreInit.Parse
 PreInit.Parse -> PreInit.Register
 PreInit.Register -> PreInit.Validate
-PreInit.Validate -> OnStartup
-OnStartup -> CreateWindows
-CreateWindows -> EventLoop.Process
+PreInit.Validate -> ServiceInit
+ServiceInit -> CreateWindows
+CreateWindows -> AppStarted
+AppStarted -> EventLoop.Process
 EventLoop.Process -> EventLoop.Handle
 EventLoop.Handle -> EventLoop.Update
 EventLoop.Update -> EventLoop.Process: "Loop"
 EventLoop.Process -> QuitSignal: "User quits"
-QuitSignal -> OnBeforeClose: "Can cancel?"
-OnBeforeClose -> EventLoop.Process: "Cancelled"
-OnBeforeClose -> OnShutdown: "Confirmed"
+QuitSignal -> ShouldQuit: "Can cancel?"
+ShouldQuit -> EventLoop.Process: "Cancelled"
+ShouldQuit -> OnShutdown: "Confirmed"
 OnShutdown -> Cleanup.Close
 Cleanup.Close -> Cleanup.Release
 Cleanup.Release -> End
@@ -111,49 +117,83 @@ Before your code runs, Wails:
 
 **You don't control this phase** - it happens automatically.
 
-### 2. OnStartup Hook
+### 2. Service Initialisation
 
-Your first opportunity to run code:
+Services that implement `ServiceStartup` initialise their own resources during `app.Run()`. This is for **service-specific setup** (database connections, config loading), not for reacting to application lifecycle events:
 
 ```go
+type AppService struct {
+    db     *sql.DB
+    config *Config
+}
+
+func (s *AppService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    // Initialise database
+    var err error
+    s.db, err = sql.Open("sqlite3", "app.db")
+    if err != nil {
+        return fmt.Errorf("failed to open database: %w", err)
+    }
+
+    // Load configuration
+    s.config, err = loadConfig()
+    if err != nil {
+        return fmt.Errorf("failed to load config: %w", err)
+    }
+
+    return nil
+}
+
 app := application.New(application.Options{
     Name: "My App",
-    OnStartup: func(ctx context.Context) {
-        // Initialise database
-        db, err := sql.Open("sqlite3", "app.db")
-        if err != nil {
-            log.Fatal(err)
-        }
-        
-        // Load configuration
-        config, err := loadConfig()
-        if err != nil {
-            log.Fatal(err)
-        }
-        
-        // Store in context for services to access
-        ctx = context.WithValue(ctx, "db", db)
-        ctx = context.WithValue(ctx, "config", config)
+    Services: []application.Service{
+        application.NewService(&AppService{}),
     },
 })
 ```
 
-**When it runs:** After Wails initialisation, before windows are created
+**When it runs:** During `app.Run()`, before the event loop starts
 
 **Use it for:**
 - Database connections
 - Configuration loading
 - Resource initialisation
-- Authentication checks
 
-**Context:** The `context.Context` is passed to all services and can store shared state.
+**Context:** The `context.Context` is valid as long as the application is running and is cancelled right before shutdown.
 
-### 3. Window Creation
+### 3. Application Lifecycle Events
 
-After `OnStartup`, you create windows:
+To react to application lifecycle stages, use **events** — not services:
 
 ```go
-window := app.NewWebviewWindow()
+// React to application start
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
+    // Application is fully running - safe to show notifications, check for updates, etc.
+    log.Println("Application started")
+})
+
+// React to theme changes
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
+    log.Println("Theme changed")
+})
+```
+
+**Available common application events:**
+- `events.Common.ApplicationStarted` — Application has fully started
+- `events.Common.ThemeChanged` — System theme changed (light/dark)
+
+**Platform-specific events** are also available (e.g. `events.Mac.ApplicationDidFinishLaunching`, `events.Windows.ApplicationStarted`).
+
+**Key distinction:**
+- **`ServiceStartup`** = initialise your service's resources (DB, config)
+- **Application events** = react to lifecycle stages (app started, theme changed)
+
+### 4. Window Creation
+
+After services start up, you create windows:
+
+```go
+window := app.Window.New()
 ```
 
 **What happens:**
@@ -162,7 +202,7 @@ window := app.NewWebviewWindow()
 3. Frontend assets are loaded
 4. Window is shown (unless `Hidden: true`)
 
-### 4. Event Loop
+### 5. Event Loop
 
 The application enters the event loop:
 
@@ -178,29 +218,38 @@ err := app.Run()  // Blocks here until quit
 
 **This is where your application spends most of its time.**
 
-### 5. Quit Signal
+### 6. Quit Signal
 
 User triggers quit via:
 - Closing last window (default behaviour)
 - Cmd+Q / Alt+F4 / File → Quit
 - Your code calling `app.Quit()`
 
-### 6. OnBeforeClose Hook
+### 7. ShouldQuit / Window Close Prevention
 
-**Optional hook to prevent quit:**
+**Application-level quit prevention with `ShouldQuit`:**
 
 ```go
-window := app.NewWebviewWindow(application.WebviewWindowOptions{
-    OnBeforeClose: func() bool {
+app := application.New(application.Options{
+    ShouldQuit: func() bool {
         // Return false to cancel quit
         // Return true to allow quit
-        
         if hasUnsavedChanges() {
-            result := showConfirmDialog("Unsaved changes. Quit anyway?")
-            return result == "yes"
+            return false
         }
         return true
     },
+})
+```
+
+**Window-level close prevention with `RegisterHook`:**
+
+```go
+window := app.Window.New()
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    if hasUnsavedChanges() {
+        e.Cancel() // Prevent the window from closing
+    }
 })
 ```
 
@@ -209,76 +258,128 @@ window := app.NewWebviewWindow(application.WebviewWindowOptions{
 - Prevent accidental closure
 - Save state before quitting
 
-**Important:** Only works for window close events, not `app.Quit()`.
+### 8. Shutdown Hooks
 
-### 7. OnShutdown Hook
+There are multiple hooks for shutdown:
 
-Your last opportunity to run code:
+**`OnShutdown` (application option)** - runs first during shutdown:
 
 ```go
 app := application.New(application.Options{
     OnShutdown: func() {
         // Save application state
         saveState()
-        
-        // Close database
-        db.Close()
-        
-        // Release resources
-        cleanup()
     },
 })
 ```
 
-**When it runs:** After quit confirmed, before application exits
+**`app.OnShutdown()` (runtime registration)** - add shutdown tasks dynamically:
 
-**Use it for:**
-- Saving state
-- Closing connections
-- Releasing resources
-- Final cleanup
+```go
+app.OnShutdown(func() {
+    // Additional cleanup
+    cleanup()
+})
+```
 
-**Important:** Keep it fast (&lt;1 second). OS may force-kill if too slow.
+**`ServiceShutdown` (service interface)** - services shut down in reverse registration order:
 
-### 8. Cleanup & Exit
+```go
+func (s *MyService) ServiceShutdown() error {
+    // Close database, release resources
+    return s.db.Close()
+}
+```
+
+**`PostShutdown` (application option)** - runs after everything else, just before process exit:
+
+```go
+app := application.New(application.Options{
+    PostShutdown: func() {
+        log.Println("Application has finished shutting down")
+    },
+})
+```
+
+**Shutdown order:**
+1. `OnShutdown` callbacks (in order added)
+2. `ServiceShutdown` (reverse registration order)
+3. Windows closed, system trays destroyed
+4. `PostShutdown` callback
+
+**Important:** Keep shutdown fast. OS may force-kill if too slow.
+
+### 9. Cleanup & Exit
 
 Wails automatically:
 1. Closes all windows
 2. Releases WebView resources
 3. Exits the process
 
-## Lifecycle Hooks Reference
+## Lifecycle Reference
+
+**Application events** (react to lifecycle stages):
+
+| Event | When | Use For |
+|-------|------|---------|
+| `events.Common.ApplicationStarted` | App fully running | Post-start tasks (notifications, update checks) |
+| `events.Common.ThemeChanged` | System theme changed | Theme adaptation |
+
+**Service interfaces** (resource management):
+
+| Interface | When | Can Cancel? | Use For |
+|-----------|------|-------------|---------|
+| `ServiceStartup` | During `app.Run()`, before event loop | Yes (return error) | Resource initialisation |
+| `ServiceShutdown` | During shutdown, reverse order | No | Resource cleanup |
+
+**Application options** (shutdown/quit control):
+
+| Option | When | Can Cancel? | Use For |
+|--------|------|-------------|---------|
+| `ShouldQuit` | App quit requested | Yes (return false) | Confirm quit |
+| `OnShutdown` | After quit confirmed | No | Cleanup |
+| `PostShutdown` | After shutdown complete | No | Logging, testing |
+
+**Window hooks** (per-window lifecycle):
 
 | Hook | When | Can Cancel? | Use For |
 |------|------|-------------|---------|
-| `OnStartup` | Before windows created | No | Initialisation |
-| `OnBeforeClose` | Window closing | Yes | Confirm quit |
-| `OnShutdown` | After quit confirmed | No | Cleanup |
+| `events.Common.WindowClosing` | Window closing | Yes (`e.Cancel()`) | Prevent window close |
 
 ## Common Patterns
 
 ### Pattern 1: Database Lifecycle
 
 ```go
-var db *sql.DB
+type DatabaseService struct {
+    db *sql.DB
+}
+
+func (d *DatabaseService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    var err error
+    d.db, err = sql.Open("sqlite3", "app.db")
+    if err != nil {
+        return fmt.Errorf("failed to open database: %w", err)
+    }
+
+    // Run migrations
+    if err := runMigrations(d.db); err != nil {
+        return fmt.Errorf("migrations failed: %w", err)
+    }
+
+    return nil
+}
+
+func (d *DatabaseService) ServiceShutdown() error {
+    if d.db != nil {
+        return d.db.Close()
+    }
+    return nil
+}
 
 app := application.New(application.Options{
-    OnStartup: func(ctx context.Context) {
-        var err error
-        db, err = sql.Open("sqlite3", "app.db")
-        if err != nil {
-            log.Fatal(err)
-        }
-        
-        // Run migrations
-        if err := runMigrations(db); err != nil {
-            log.Fatal(err)
-        }
-    },
-    OnShutdown: func() {
-        if db != nil {
-            db.Close()
-        }
+    Services: []application.Service{
+        application.NewService(&DatabaseService{}),
     },
 })
 ```
@@ -287,69 +388,92 @@ app := application.New(application.Options{
 
 ```go
 type Config struct {
-    Theme string
-    Language string
+    Theme     string
+    Language  string
     WindowPos Point
 }
 
-var config *Config
+type ConfigService struct {
+    config *Config
+}
+
+func (c *ConfigService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    var err error
+    c.config, err = loadConfig()  // Load from disk
+    if err != nil {
+        return fmt.Errorf("failed to load config: %w", err)
+    }
+    return nil
+}
+
+func (c *ConfigService) ServiceShutdown() error {
+    return saveConfig(c.config)  // Save to disk
+}
 
 app := application.New(application.Options{
-    OnStartup: func(ctx context.Context) {
-        config = loadConfig()  // Load from disk
-    },
-    OnShutdown: func() {
-        saveConfig(config)  // Save to disk
+    Services: []application.Service{
+        application.NewService(&ConfigService{}),
     },
 })
 ```
 
 ### Pattern 3: Confirm Quit with Unsaved Changes
 
+Use `RegisterHook` with `events.Common.WindowClosing` to prevent window close, or `ShouldQuit` on the application options:
+
 ```go
-type AppState struct {
-    hasUnsavedChanges bool
-}
-
-var state AppState
-
-window := app.NewWebviewWindow(application.WebviewWindowOptions{
-    OnBeforeClose: func() bool {
-        if state.hasUnsavedChanges {
-            // Show dialog (blocks until user responds)
-            result := showConfirmdialog("Unsaved changes. Quit anyway?")
-            return result == "yes"
+// Application-level: prevent quit
+app := application.New(application.Options{
+    ShouldQuit: func() bool {
+        if hasUnsavedChanges {
+            // Return false to prevent quit
+            return false
         }
         return true
     },
+})
+
+// Window-level: prevent individual window close
+window := app.Window.New()
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    if hasUnsavedChanges {
+        e.Cancel() // Prevent window from closing
+    }
 })
 ```
 
 ### Pattern 4: Background Tasks
 
 ```go
-app := application.New(application.Options{
-    OnStartup: func(ctx context.Context) {
-        // Start background task
-        go func() {
-            ticker := time.NewTicker(5 * time.Minute)
-            defer ticker.Stop()
-            
-            for {
-                select {
-                case <-ticker.C:
-                    performBackgroundSync()
-                case <-ctx.Done():
-                    // Context cancelled, quit
-                    return
-                }
+type SyncService struct{}
+
+func (s *SyncService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    // Start background task
+    go func() {
+        ticker := time.NewTicker(5 * time.Minute)
+        defer ticker.Stop()
+
+        for {
+            select {
+            case <-ticker.C:
+                performBackgroundSync()
+            case <-ctx.Done():
+                // Context cancelled, quit
+                return
             }
-        }()
+        }
+    }()
+    return nil
+}
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&SyncService{}),
     },
 })
 ```
 
-**Important:** Use `ctx.Done()` to know when to stop background tasks.
+**Important:** Use `ctx.Done()` to know when to stop background tasks. The context is cancelled right before shutdown.
 
 ## Window Lifecycle
 
@@ -382,7 +506,7 @@ CloseRequest: "Close Request" {
   style.fill: "#F59E0B"
 }
 
-OnBeforeClose: "OnBeforeClose" {
+CloseHook: "WindowClosing Hook" {
   shape: rectangle
   style.fill: "#3B82F6"
 }
@@ -401,9 +525,9 @@ Load -> Show
 Show -> Active.Events
 Active.Events -> Active.Events: "Loop"
 Active.Events -> CloseRequest: "User closes"
-CloseRequest -> OnBeforeClose
-OnBeforeClose -> Active.Events: "Cancelled"
-OnBeforeClose -> Destroy: "Confirmed"
+CloseRequest -> CloseHook
+CloseHook -> Active.Events: "Cancelled"
+CloseHook -> Destroy: "Confirmed"
 Destroy -> End
 ```
 
@@ -418,10 +542,10 @@ With multiple windows:
 
 ```go
 // Create main window
-mainWindow := app.NewWebviewWindow()
+mainWindow := app.Window.New()
 
 // Create secondary window
-secondaryWindow := app.NewWebviewWindow(application.WebviewWindowOptions{
+secondaryWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title: "Settings",
     Width: 400,
     Height: 600,
@@ -453,34 +577,38 @@ app := application.New(application.Options{
 
 ### Startup Errors
 
+Return an error from `ServiceStartup` to abort application startup. The error is propagated from `app.Run()`:
+
 ```go
-app := application.New(application.Options{
-    OnStartup: func(ctx context.Context) {
-        if err := initialise(); err != nil {
-            // Show error dialog
-            showErrordialog("Initialisation failed: " + err.Error())
-            
-            // Quit application
-            app.Quit()
-        }
-    },
-})
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    if err := initialise(); err != nil {
+        return fmt.Errorf("initialisation failed: %w", err)
+    }
+    return nil
+}
+
+// In main:
+err := app.Run()
+if err != nil {
+    log.Fatal("Failed to start:", err)
+}
 ```
 
 ### Shutdown Errors
 
+Errors returned from `ServiceShutdown` are logged but do not prevent shutdown:
+
 ```go
-app := application.New(application.Options{
-    OnShutdown: func() {
-        if err := saveState(); err != nil {
-            // Log error (can't show dialog, app is quitting)
-            log.Printf("Failed to save state: %v", err)
-        }
-    },
-})
+func (s *MyService) ServiceShutdown() error {
+    if err := saveState(); err != nil {
+        // Error will be logged by Wails
+        return fmt.Errorf("failed to save state: %w", err)
+    }
+    return nil
+}
 ```
 
-**Important:** `OnShutdown` runs during quit - don't show dialogs or try to cancel.
+**Important:** Shutdown hooks run during quit - don't show dialogs or try to cancel.
 
 ## Platform Differences
 
@@ -507,15 +635,14 @@ app := application.New(application.Options{
 
 **Symptom:** Database connections left open, files not closed
 
-**Solution:** Use `OnShutdown`:
+**Solution:** Implement `ServiceShutdown` on your services:
 
 ```go
-app := application.New(application.Options{
-    OnShutdown: func() {
-        log.Println("Cleaning up...")
-        // Your cleanup code
-    },
-})
+func (s *MyService) ServiceShutdown() error {
+    log.Println("Cleaning up...")
+    // Your cleanup code
+    return s.db.Close()
+}
 ```
 
 ### Problem: Application Won't Quit
@@ -523,28 +650,31 @@ app := application.New(application.Options{
 **Symptom:** App hangs when trying to quit
 
 **Causes:**
-1. `OnBeforeClose` returning `false`
-2. `OnShutdown` taking too long
-3. Background goroutines not stopping
+1. `ShouldQuit` returning `false`
+2. Window close hook cancelling close events
+3. Shutdown tasks taking too long
+4. Background goroutines not stopping
 
 **Solution:**
 
 ```go
-// 1. Check OnBeforeClose logic
-OnBeforeClose: func() bool {
-    log.Println("OnBeforeClose called")
-    return true  // Allow quit
-}
+// 1. Check ShouldQuit logic
+app := application.New(application.Options{
+    ShouldQuit: func() bool {
+        log.Println("ShouldQuit called")
+        return true  // Allow quit
+    },
+})
 
-// 2. Keep OnShutdown fast
-OnShutdown: func() {
-    log.Println("OnShutdown started")
+// 2. Keep shutdown fast
+app.OnShutdown(func() {
+    log.Println("Shutdown started")
     // Fast cleanup only
-    log.Println("OnShutdown finished")
-}
+    log.Println("Shutdown finished")
+})
 
-// 3. Stop background tasks
-OnStartup: func(ctx context.Context) {
+// 3. Stop background tasks using context
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
     go func() {
         for {
             select {
@@ -556,6 +686,7 @@ OnStartup: func(ctx context.Context) {
             }
         }
     }()
+    return nil
 }
 ```
 
@@ -563,14 +694,19 @@ OnStartup: func(ctx context.Context) {
 
 **Symptom:** App starts but doesn't work correctly
 
-**Solution:** Check errors in `OnStartup`:
+**Solution:** Return errors from `ServiceStartup` to abort startup:
 
 ```go
-OnStartup: func(ctx context.Context) {
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
     if err := initialise(); err != nil {
-        log.Fatal("Initialisation failed:", err)
-        // Or show dialog and quit
+        return fmt.Errorf("initialisation failed: %w", err)
     }
+    return nil
+}
+
+// In main - app.Run() returns the error:
+if err := app.Run(); err != nil {
+    log.Fatal("Failed to start:", err)
 }
 ```
 
@@ -578,20 +714,22 @@ OnStartup: func(ctx context.Context) {
 
 ### ✅ Do
 
-- **Initialise in OnStartup** - Database, config, resources
-- **Clean up in OnShutdown** - Close connections, save state
-- **Keep OnShutdown fast** - &lt;1 second
+- **Use `ServiceStartup` for resource init** - Database, config, connections
+- **Use application events for lifecycle** - `events.Common.ApplicationStarted` for post-start tasks
+- **Clean up in `ServiceShutdown`** - Close connections, save state
+- **Keep shutdown fast** - &lt;1 second
 - **Use context for cancellation** - Stop background tasks
-- **Handle errors gracefully** - Show dialogs, log errors
+- **Handle errors gracefully** - Return errors from ServiceStartup
 - **Test quit scenarios** - Unsaved changes, background tasks
 
 ### ❌ Don't
 
-- **Don't block OnStartup** - Keep it fast (&lt;2 seconds)
-- **Don't show dialogs in OnShutdown** - App is quitting
-- **Don't ignore errors** - Log or show them
-- **Don't leak resources** - Always clean up
-- **Don't forget background tasks** - Stop them on quit
+- **Don't use `ServiceStartup` for lifecycle hooks** - Use application events instead
+- **Don't block ServiceStartup** - Keep it fast (&lt;2 seconds)
+- **Don't show dialogs during shutdown** - App is quitting
+- **Don't ignore errors** - Log or return them
+- **Don't leak resources** - Always clean up in ServiceShutdown
+- **Don't forget background tasks** - Stop them using ctx.Done()
 
 ## Next Steps
 

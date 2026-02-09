@@ -15,12 +15,10 @@ Wails provides **native file dialogs** with platform-appropriate appearance for 
 Select files to open:
 
 ```go
-path, err := app.OpenFileDialog().
+path, err := app.Dialog.OpenFile().
     SetTitle("Select Image").
-    SetFilters([]application.FileFilter{
-        {DisplayName: "Images", Pattern: "*.png;*.jpg;*.gif"},
-        {DisplayName: "All Files", Pattern: "*.*"},
-    }).
+    AddFilter("Images", "*.png;*.jpg;*.gif").
+    AddFilter("All Files", "*.*").
     PromptForSingleSelection()
 
 if err != nil {
@@ -39,12 +37,10 @@ openFile(path)
 ### Single File Selection
 
 ```go
-path, err := app.OpenFileDialog().
+path, err := app.Dialog.OpenFile().
     SetTitle("Open Document").
-    SetFilters([]application.FileFilter{
-        {DisplayName: "Text Files", Pattern: "*.txt"},
-        {DisplayName: "All Files", Pattern: "*.*"},
-    }).
+    AddFilter("Text Files", "*.txt").
+    AddFilter("All Files", "*.*").
     PromptForSingleSelection()
 
 if err != nil {
@@ -59,11 +55,9 @@ data, _ := os.ReadFile(path)
 ### Multiple File Selection
 
 ```go
-paths, err := app.OpenFileDialog().
+paths, err := app.Dialog.OpenFile().
     SetTitle("Select Images").
-    SetFilters([]application.FileFilter{
-        {DisplayName: "Images", Pattern: "*.png;*.jpg;*.jpeg;*.gif"},
-    }).
+    AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif").
     PromptForMultipleSelection()
 
 if err != nil {
@@ -79,7 +73,7 @@ for _, path := range paths {
 ### With Default Directory
 
 ```go
-path, err := app.OpenFileDialog().
+path, err := app.Dialog.OpenFile().
     SetTitle("Open File").
     SetDirectory("/Users/me/Documents").
     PromptForSingleSelection()
@@ -90,13 +84,11 @@ path, err := app.OpenFileDialog().
 Choose where to save:
 
 ```go
-path, err := app.SaveFileDialog().
+path, err := app.Dialog.SaveFile().
     SetTitle("Save Document").
-    SetDefaultFilename("document.txt").
-    SetFilters([]application.FileFilter{
-        {DisplayName: "Text Files", Pattern: "*.txt"},
-        {DisplayName: "All Files", Pattern: "*.*"},
-    }).
+    SetFilename("document.txt").
+    AddFilter("Text Files", "*.txt").
+    AddFilter("All Files", "*.*").
     PromptForSingleSelection()
 
 if err != nil {
@@ -115,31 +107,29 @@ saveFile(path, data)
 ### With Default Filename
 
 ```go
-path, err := app.SaveFileDialog().
+path, err := app.Dialog.SaveFile().
     SetTitle("Export Data").
-    SetDefaultFilename("export.csv").
-    SetFilters([]application.FileFilter{
-        {DisplayName: "CSV Files", Pattern: "*.csv"},
-    }).
+    SetFilename("export.csv").
+    AddFilter("CSV Files", "*.csv").
     PromptForSingleSelection()
 ```
 
 ### With Default Directory
 
 ```go
-path, err := app.SaveFileDialog().
+path, err := app.Dialog.SaveFile().
     SetTitle("Save File").
     SetDirectory("/Users/me/Documents").
-    SetDefaultFilename("untitled.txt").
+    SetFilename("untitled.txt").
     PromptForSingleSelection()
 ```
 
 ### Overwrite Confirmation
 
 ```go
-path, err := app.SaveFileDialog().
+path, err := app.Dialog.SaveFile().
     SetTitle("Save File").
-    SetDefaultFilename("document.txt").
+    SetFilename("document.txt").
     PromptForSingleSelection()
 
 if err != nil {
@@ -148,15 +138,21 @@ if err != nil {
 
 // Check if file exists
 if _, err := os.Stat(path); err == nil {
-    result, _ := app.QuestionDialog().
+    dialog := app.Dialog.Question().
         SetTitle("Confirm Overwrite").
-        SetMessage("File already exists. Overwrite?").
-        SetButtons("Overwrite", "Cancel").
-        Show()
-    
-    if result != "Overwrite" {
-        return
-    }
+        SetMessage("File already exists. Overwrite?")
+
+    overwriteBtn := dialog.AddButton("Overwrite")
+    cancelBtn := dialog.AddButton("Cancel")
+    cancelBtn.SetAsDefault()
+    cancelBtn.SetAsCancel()
+
+    overwriteBtn.OnClick(func() {
+        saveFile(path, data)
+    })
+
+    dialog.Show()
+    return
 }
 
 saveFile(path, data)
@@ -167,7 +163,9 @@ saveFile(path, data)
 Choose a directory:
 
 ```go
-path, err := app.SelectFolderDialog().
+path, err := app.Dialog.OpenFile().
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
     SetTitle("Select Output Folder").
     PromptForSingleSelection()
 
@@ -187,7 +185,9 @@ exportToFolder(path)
 ### With Default Directory
 
 ```go
-path, err := app.SelectFolderDialog().
+path, err := app.Dialog.OpenFile().
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
     SetTitle("Select Folder").
     SetDirectory("/Users/me/Documents").
     PromptForSingleSelection()
@@ -198,33 +198,20 @@ path, err := app.SelectFolderDialog().
 ### Basic Filters
 
 ```go
-filters := []application.FileFilter{
-    {DisplayName: "Text Files", Pattern: "*.txt"},
-    {DisplayName: "All Files", Pattern: "*.*"},
-}
-
-path, _ := app.OpenFileDialog().
-    SetFilters(filters).
+path, _ := app.Dialog.OpenFile().
+    AddFilter("Text Files", "*.txt").
+    AddFilter("All Files", "*.*").
     PromptForSingleSelection()
 ```
 
 ### Multiple Extensions
 
 ```go
-filters := []application.FileFilter{
-    {
-        DisplayName: "Images",
-        Pattern:     "*.png;*.jpg;*.jpeg;*.gif;*.bmp",
-    },
-    {
-        DisplayName: "Documents",
-        Pattern:     "*.txt;*.doc;*.docx;*.pdf",
-    },
-    {
-        DisplayName: "All Files",
-        Pattern:     "*.*",
-    },
-}
+path, _ := app.Dialog.OpenFile().
+    AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif;*.bmp").
+    AddFilter("Documents", "*.txt;*.doc;*.docx;*.pdf").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
 ```
 
 ### Platform-Specific Patterns
@@ -232,21 +219,21 @@ filters := []application.FileFilter{
 **Windows:**
 ```go
 // Semicolon-separated
-Pattern: "*.png;*.jpg;*.gif"
+// Pattern: "*.png;*.jpg;*.gif"
 ```
 
 **macOS/Linux:**
 ```go
 // Space or comma-separated (both work)
-Pattern: "*.png *.jpg *.gif"
+// Pattern: "*.png *.jpg *.gif"
 // or
-Pattern: "*.png,*.jpg,*.gif"
+// Pattern: "*.png,*.jpg,*.gif"
 ```
 
 **Cross-platform (recommended):**
 ```go
 // Use semicolons (works on all platforms)
-Pattern: "*.png;*.jpg;*.gif"
+// Pattern: "*.png;*.jpg;*.gif"
 ```
 
 ## Complete Examples
@@ -255,40 +242,35 @@ Pattern: "*.png;*.jpg;*.gif"
 
 ```go
 func openImage() (image.Image, error) {
-    path, err := app.OpenFileDialog().
+    path, err := app.Dialog.OpenFile().
         SetTitle("Select Image").
-        SetFilters([]application.FileFilter{
-            {
-                DisplayName: "Images",
-                Pattern:     "*.png;*.jpg;*.jpeg;*.gif;*.bmp",
-            },
-        }).
+        AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif;*.bmp").
         PromptForSingleSelection()
-    
+
     if err != nil {
         return nil, err
     }
-    
+
     // Open and decode image
     file, err := os.Open(path)
     if err != nil {
-        app.ErrorDialog().
+        app.Dialog.Error().
             SetTitle("Open Failed").
             SetMessage(err.Error()).
             Show()
         return nil, err
     }
     defer file.Close()
-    
+
     img, _, err := image.Decode(file)
     if err != nil {
-        app.ErrorDialog().
+        app.Dialog.Error().
             SetTitle("Invalid Image").
             SetMessage("Could not decode image file.").
             Show()
         return nil, err
     }
-    
+
     return img, nil
 }
 ```
@@ -297,48 +279,58 @@ func openImage() (image.Image, error) {
 
 ```go
 func saveDocument(content string) error {
-    path, err := app.SaveFileDialog().
+    path, err := app.Dialog.SaveFile().
         SetTitle("Save Document").
-        SetDefaultFilename("document.txt").
-        SetFilters([]application.FileFilter{
-            {DisplayName: "Text Files", Pattern: "*.txt"},
-            {DisplayName: "Markdown Files", Pattern: "*.md"},
-            {DisplayName: "All Files", Pattern: "*.*"},
-        }).
+        SetFilename("document.txt").
+        AddFilter("Text Files", "*.txt").
+        AddFilter("Markdown Files", "*.md").
+        AddFilter("All Files", "*.*").
         PromptForSingleSelection()
-    
+
     if err != nil {
         return err
     }
-    
+
     // Validate extension
     ext := filepath.Ext(path)
     if ext != ".txt" && ext != ".md" {
-        result, _ := app.QuestionDialog().
+        dialog := app.Dialog.Question().
             SetTitle("Confirm Extension").
-            SetMessage(fmt.Sprintf("Save as %s file?", ext)).
-            SetButtons("Save", "Cancel").
-            Show()
-        
-        if result != "Save" {
+            SetMessage(fmt.Sprintf("Save as %s file?", ext))
+
+        saveBtn := dialog.AddButton("Save")
+        cancelBtn := dialog.AddButton("Cancel")
+        cancelBtn.SetAsCancel()
+
+        confirmed := make(chan bool, 1)
+        saveBtn.OnClick(func() {
+            confirmed <- true
+        })
+        cancelBtn.OnClick(func() {
+            confirmed <- false
+        })
+
+        dialog.Show()
+
+        if !<-confirmed {
             return errors.New("cancelled")
         }
     }
-    
+
     // Save file
     if err := os.WriteFile(path, []byte(content), 0644); err != nil {
-        app.ErrorDialog().
+        app.Dialog.Error().
             SetTitle("Save Failed").
             SetMessage(err.Error()).
             Show()
         return err
     }
-    
-    app.InfoDialog().
+
+    app.Dialog.Info().
         SetTitle("Saved").
         SetMessage("Document saved successfully!").
         Show()
-    
+
     return nil
 }
 ```
@@ -347,98 +339,102 @@ func saveDocument(content string) error {
 
 ```go
 func processMultipleFiles() {
-    paths, err := app.OpenFileDialog().
+    paths, err := app.Dialog.OpenFile().
         SetTitle("Select Files to Process").
-        SetFilters([]application.FileFilter{
-            {DisplayName: "Images", Pattern: "*.png;*.jpg"},
-        }).
+        AddFilter("Images", "*.png;*.jpg").
         PromptForMultipleSelection()
-    
+
     if err != nil || len(paths) == 0 {
         return
     }
-    
+
     // Confirm processing
-    result, _ := app.QuestionDialog().
+    dialog := app.Dialog.Question().
         SetTitle("Confirm Processing").
-        SetMessage(fmt.Sprintf("Process %d file(s)?", len(paths))).
-        SetButtons("Process", "Cancel").
-        Show()
-    
-    if result != "Process" {
-        return
-    }
-    
-    // Process files
-    var errors []error
-    for i, path := range paths {
-        if err := processFile(path); err != nil {
-            errors = append(errors, err)
+        SetMessage(fmt.Sprintf("Process %d file(s)?", len(paths)))
+
+    processBtn := dialog.AddButton("Process")
+    cancelBtn := dialog.AddButton("Cancel")
+    cancelBtn.SetAsCancel()
+
+    processBtn.OnClick(func() {
+        // Process files
+        var errs []error
+        for i, path := range paths {
+            if err := processFile(path); err != nil {
+                errs = append(errs, err)
+            }
+
+            // Update progress
+            app.Event.Emit("progress", map[string]interface{}{
+                "current": i + 1,
+                "total":   len(paths),
+            })
         }
-        
-        // Update progress
-        app.EmitEvent("progress", map[string]interface{}{
-            "current": i + 1,
-            "total":   len(paths),
-        })
-    }
-    
-    // Show results
-    if len(errors) > 0 {
-        app.WarningDialog().
-            SetTitle("Processing Complete").
-            SetMessage(fmt.Sprintf("Processed %d files with %d errors.", 
-                len(paths), len(errors))).
-            Show()
-    } else {
-        app.InfoDialog().
-            SetTitle("Success").
-            SetMessage(fmt.Sprintf("Processed %d files successfully!", len(paths))).
-            Show()
-    }
+
+        // Show results
+        if len(errs) > 0 {
+            app.Dialog.Warning().
+                SetTitle("Processing Complete").
+                SetMessage(fmt.Sprintf("Processed %d files with %d errors.",
+                    len(paths), len(errs))).
+                Show()
+        } else {
+            app.Dialog.Info().
+                SetTitle("Success").
+                SetMessage(fmt.Sprintf("Processed %d files successfully!", len(paths))).
+                Show()
+        }
+    })
+
+    dialog.Show()
 }
 ```
 
 ### Export with Folder Selection
 
 ```go
-func exportData(data []byte) error {
+func exportData(data []byte) {
     // Select output folder
-    folder, err := app.SelectFolderDialog().
+    folder, err := app.Dialog.OpenFile().
+        CanChooseDirectories(true).
+        CanChooseFiles(false).
         SetTitle("Select Export Folder").
         SetDirectory(getDefaultExportFolder()).
         PromptForSingleSelection()
-    
+
     if err != nil {
-        return err
+        return
     }
-    
+
     // Generate filename
-    filename := fmt.Sprintf("export_%s.csv", 
+    filename := fmt.Sprintf("export_%s.csv",
         time.Now().Format("2006-01-02_15-04-05"))
     path := filepath.Join(folder, filename)
-    
+
     // Save file
     if err := os.WriteFile(path, data, 0644); err != nil {
-        app.ErrorDialog().
+        app.Dialog.Error().
             SetTitle("Export Failed").
             SetMessage(err.Error()).
             Show()
-        return err
+        return
     }
-    
+
     // Show success with option to open folder
-    result, _ := app.QuestionDialog().
+    dialog := app.Dialog.Question().
         SetTitle("Export Complete").
-        SetMessage(fmt.Sprintf("Exported to %s", filename)).
-        SetButtons("Open Folder", "OK").
-        Show()
-    
-    if result == "Open Folder" {
+        SetMessage(fmt.Sprintf("Exported to %s", filename))
+
+    openFolderBtn := dialog.AddButton("Open Folder")
+    okBtn := dialog.AddButton("OK")
+    okBtn.SetAsDefault()
+
+    openFolderBtn.OnClick(func() {
         openFolder(folder)
-    }
-    
-    return nil
+    })
+
+    dialog.Show()
 }
 ```
 
@@ -446,70 +442,80 @@ func exportData(data []byte) error {
 
 ```go
 func importConfiguration() error {
-    path, err := app.OpenFileDialog().
+    path, err := app.Dialog.OpenFile().
         SetTitle("Import Configuration").
-        SetFilters([]application.FileFilter{
-            {DisplayName: "JSON Files", Pattern: "*.json"},
-            {DisplayName: "YAML Files", Pattern: "*.yaml;*.yml"},
-        }).
+        AddFilter("JSON Files", "*.json").
+        AddFilter("YAML Files", "*.yaml;*.yml").
         PromptForSingleSelection()
-    
+
     if err != nil {
         return err
     }
-    
+
     // Read file
     data, err := os.ReadFile(path)
     if err != nil {
-        app.ErrorDialog().
+        app.Dialog.Error().
             SetTitle("Read Failed").
             SetMessage(err.Error()).
             Show()
         return err
     }
-    
+
     // Validate configuration
     config, err := parseConfig(data)
     if err != nil {
-        app.ErrorDialog().
+        app.Dialog.Error().
             SetTitle("Invalid Configuration").
             SetMessage("File is not a valid configuration.").
             Show()
         return err
     }
-    
+
     // Confirm import
-    result, _ := app.QuestionDialog().
+    dialog := app.Dialog.Question().
         SetTitle("Confirm Import").
-        SetMessage("Import this configuration?").
-        SetButtons("Import", "Cancel").
-        Show()
-    
-    if result != "Import" {
+        SetMessage("Import this configuration?")
+
+    importBtn := dialog.AddButton("Import")
+    cancelBtn := dialog.AddButton("Cancel")
+    cancelBtn.SetAsCancel()
+
+    importResult := make(chan bool, 1)
+    importBtn.OnClick(func() {
+        importResult <- true
+    })
+    cancelBtn.OnClick(func() {
+        importResult <- false
+    })
+
+    dialog.Show()
+
+    if !<-importResult {
         return errors.New("cancelled")
     }
-    
+
     // Apply configuration
     if err := applyConfig(config); err != nil {
-        app.ErrorDialog().
+        app.Dialog.Error().
             SetTitle("Import Failed").
             SetMessage(err.Error()).
             Show()
         return err
     }
-    
-    app.InfoDialog().
+
+    app.Dialog.Info().
         SetTitle("Success").
         SetMessage("Configuration imported successfully!").
         Show()
-    
+
     return nil
 }
 ```
 
 ## Best Practices
 
-### ✅ Do
+### Do
 
 - **Provide file filters** - Help users find files
 - **Set appropriate titles** - Clear context
@@ -519,7 +525,7 @@ func importConfiguration() error {
 - **Show confirmation** - For destructive actions
 - **Provide feedback** - Success/error messages
 
-### ❌ Don't
+### Don't
 
 - **Don't skip validation** - Check file types
 - **Don't ignore errors** - Handle cancellation
@@ -557,25 +563,25 @@ func importConfiguration() error {
 <CardGrid>
   <Card title="Message dialogs" icon="information">
     Info, warning, and error dialogs.
-    
+
     [Learn More →](/features/dialogs/message)
   </Card>
 
   <Card title="Custom dialogs" icon="puzzle">
     Create custom dialog windows.
-    
+
     [Learn More →](/features/dialogs/custom)
   </Card>
 
   <Card title="Bindings" icon="rocket">
     Call Go functions from JavaScript.
-    
+
     [Learn More →](/features/bindings/methods)
   </Card>
 
   <Card title="Events" icon="star">
     Use events for progress updates.
-    
+
     [Learn More →](/features/events/system)
   </Card>
 </CardGrid>

@@ -205,12 +205,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `app.NewSystemTray()` → `app.SystemTray.New()`
   - `app.GetSystemTray()` → `app.SystemTray.Get()`
   - `app.ShowContextMenu()` → `app.ContextMenu.Show()`
-  - `app.RegisterKeybinding()` → `app.KeyBinding.Register()`
-  - `app.UnregisterKeybinding()` → `app.KeyBinding.Unregister()`
+  - `app.RegisterKeybinding()` → `app.KeyBinding.Add()`
+  - `app.UnregisterKeybinding()` → `app.KeyBinding.Remove()`
   - `app.GetPrimaryScreen()` → `app.Screen.GetPrimary()`
   - `app.GetAllScreens()` → `app.Screen.GetAll()`
   - `app.BrowserOpenURL()` → `app.Browser.OpenURL()`
-  - `app.Environment()` → `app.Env.GetAll()`
+  - `app.Environment()` → `app.Env.Info()`
   - `app.ClipboardGetText()` → `app.Clipboard.Text()`
   - `app.ClipboardSetText()` → `app.Clipboard.SetText()`
 - Renamed Service methods: `Name` -> `ServiceName`, `OnStartup` -> `ServiceStartup`, `OnShutdown` -> `ServiceShutdown` by [@leaanthony](https://github.com/leaanthony)

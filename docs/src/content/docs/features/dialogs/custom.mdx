@@ -14,7 +14,7 @@ Create **custom dialog windows** using regular Wails windows with dialog-like be
 
 ```go
 // Create custom dialog window
-dialog := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:       "Custom dialog",
     Width:       400,
     Height:      300,
@@ -28,7 +28,7 @@ dialog.SetURL("http://wails.localhost/dialog.html")
 
 // Show as modal
 dialog.Show()
-dialog.SetFocus()
+dialog.Focus()
 ```
 
 **That's it!** Custom UI with dialog behaviour.
@@ -43,12 +43,12 @@ type Customdialog struct {
     result chan string
 }
 
-func NewCustomdialog(app *application.Application) *Customdialog {
+func NewCustomdialog(app *application.App) *Customdialog {
     dialog := &Customdialog{
         result: make(chan string, 1),
     }
-    
-    dialog.window = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+
+    dialog.window = app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:       "Custom dialog",
         Width:       400,
         Height:      300,
@@ -56,14 +56,14 @@ func NewCustomdialog(app *application.Application) *Customdialog {
         Resizable:   false,
         Hidden:      true,
     })
-    
+
     return dialog
 }
 
 func (d *Customdialog) Show() string {
     d.window.Show()
-    d.window.SetFocus()
-    
+    d.window.Focus()
+
     // Wait for result
     return <-d.result
 }
@@ -79,7 +79,7 @@ func (d *Customdialog) Close(result string) {
 ```go
 func ShowModaldialog(parent *application.WebviewWindow, title string) string {
     // Create dialog
-    dialog := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:       title,
         Width:       400,
         Height:      200,
@@ -87,19 +87,19 @@ func ShowModaldialog(parent *application.WebviewWindow, title string) string {
         AlwaysOnTop: true,
         Resizable:   false,
     })
-    
+
     // Disable parent
     parent.SetEnabled(false)
-    
+
     // Re-enable parent on close
     dialog.OnClose(func() bool {
         parent.SetEnabled(true)
-        parent.SetFocus()
+        parent.Focus()
         return true
     })
-    
+
     dialog.Show()
-    
+
     return waitForResult(dialog)
 }
 ```
@@ -113,27 +113,27 @@ type Formdialog struct {
     done   chan bool
 }
 
-func NewFormdialog(app *application.Application) *Formdialog {
+func NewFormdialog(app *application.App) *Formdialog {
     fd := &Formdialog{
         data: make(map[string]interface{}),
         done: make(chan bool, 1),
     }
-    
-    fd.window = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+
+    fd.window = app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:     "Enter Information",
         Width:     500,
         Height:    400,
         Frameless: true,
         Hidden:    true,
     })
-    
+
     return fd
 }
 
 func (fd *Formdialog) Show() (map[string]interface{}, bool) {
     fd.window.Show()
-    fd.window.SetFocus()
-    
+    fd.window.Focus()
+
     ok := <-fd.done
     return fd.data, ok
 }
@@ -156,32 +156,32 @@ func (fd *Formdialog) Cancel() {
 
 ```go
 func ShowConfirmdialog(message string) bool {
-    dialog := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:       "Confirm",
         Width:       400,
         Height:      150,
         AlwaysOnTop: true,
         Frameless:   true,
     })
-    
+
     // Pass message to dialog
     dialog.OnReady(func() {
         dialog.EmitEvent("set-message", message)
     })
-    
+
     result := make(chan bool, 1)
-    
+
     // Handle responses
-    app.OnEvent("confirm-yes", func(e *application.CustomEvent) {
+    app.Event.On("confirm-yes", func(e *application.CustomEvent) {
         result <- true
         dialog.Close()
     })
-    
-    app.OnEvent("confirm-no", func(e *application.CustomEvent) {
+
+    app.Event.On("confirm-no", func(e *application.CustomEvent) {
         result <- false
         dialog.Close()
     })
-    
+
     dialog.Show()
     return <-result
 }
@@ -199,14 +199,14 @@ func ShowConfirmdialog(message string) bool {
 </div>
 
 <script>
-import { OnEvent, Emit } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-OnEvent("set-message", (message) => {
-    document.getElementById("message").textContent = message
+Events.On("set-message", (event) => {
+    document.getElementById("message").textContent = event.data
 })
 
 function confirm(result) {
-    Emit(result ? "confirm-yes" : "confirm-no")
+    Events.Emit(result ? "confirm-yes" : "confirm-no")
 }
 </script>
 ```
@@ -215,41 +215,41 @@ function confirm(result) {
 
 ```go
 func ShowInputdialog(prompt string, defaultValue string) (string, bool) {
-    dialog := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:     "Input",
         Width:     400,
         Height:    150,
         Frameless: true,
     })
-    
+
     result := make(chan struct {
         value string
         ok    bool
     }, 1)
-    
+
     dialog.OnReady(func() {
         dialog.EmitEvent("set-prompt", map[string]string{
             "prompt":  prompt,
             "default": defaultValue,
         })
     })
-    
-    app.OnEvent("input-submit", func(e *application.CustomEvent) {
+
+    app.Event.On("input-submit", func(e *application.CustomEvent) {
         result <- struct {
             value string
             ok    bool
         }{e.Data.(string), true}
         dialog.Close()
     })
-    
-    app.OnEvent("input-cancel", func(e *application.CustomEvent) {
+
+    app.Event.On("input-cancel", func(e *application.CustomEvent) {
         result <- struct {
             value string
             ok    bool
         }{"", false}
         dialog.Close()
     })
-    
+
     dialog.Show()
     r := <-result
     return r.value, r.ok
@@ -265,14 +265,14 @@ type Progressdialog struct {
 
 func NewProgressdialog(title string) *Progressdialog {
     pd := &Progressdialog{}
-    
-    pd.window = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+
+    pd.window = app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:     title,
         Width:     400,
         Height:    150,
         Frameless: true,
     })
-    
+
     return pd
 }
 
@@ -299,14 +299,14 @@ func (pd *Progressdialog) Close() {
 func processFiles(files []string) {
     progress := NewProgressdialog("Processing Files")
     progress.Show()
-    
+
     for i, file := range files {
-        progress.UpdateProgress(i+1, len(files), 
+        progress.UpdateProgress(i+1, len(files),
             fmt.Sprintf("Processing %s...", filepath.Base(file)))
-        
+
         processFile(file)
     }
-    
+
     progress.Close()
 }
 ```
@@ -327,7 +327,7 @@ type Logindialog struct {
     }
 }
 
-func NewLogindialog(app *application.Application) *Logindialog {
+func NewLogindialog(app *application.App) *Logindialog {
     ld := &Logindialog{
         result: make(chan struct {
             username string
@@ -335,21 +335,21 @@ func NewLogindialog(app *application.Application) *Logindialog {
             ok       bool
         }, 1),
     }
-    
-    ld.window = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+
+    ld.window = app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:     "Login",
         Width:     400,
         Height:    250,
         Frameless: true,
     })
-    
+
     return ld
 }
 
 func (ld *Logindialog) Show() (string, string, bool) {
     ld.window.Show()
-    ld.window.SetFocus()
-    
+    ld.window.Focus()
+
     r := <-ld.result
     return r.username, r.password, r.ok
 }
@@ -389,17 +389,17 @@ func (ld *Logindialog) Cancel() {
 </div>
 
 <script>
-import { Emit } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 document.getElementById('login-form').addEventListener('submit', (e) => {
     e.preventDefault()
     const username = document.getElementById('username').value
     const password = document.getElementById('password').value
-    Emit('login-submit', { username, password })
+    Events.Emit('login-submit', { username, password })
 })
 
 function cancel() {
-    Emit('login-cancel')
+    Events.Emit('login-cancel')
 }
 </script>
 ```
@@ -415,28 +415,28 @@ type Settingsdialog struct {
     done     chan bool
 }
 
-func NewSettingsdialog(app *application.Application, current map[string]interface{}) *Settingsdialog {
+func NewSettingsdialog(app *application.App, current map[string]interface{}) *Settingsdialog {
     sd := &Settingsdialog{
         settings: current,
         done:     make(chan bool, 1),
     }
-    
-    sd.window = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+
+    sd.window = app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:  "Settings",
         Width:  600,
         Height: 500,
     })
-    
+
     sd.window.OnReady(func() {
         sd.window.EmitEvent("load-settings", current)
     })
-    
+
     return sd
 }
 
 func (sd *Settingsdialog) Show() (map[string]interface{}, bool) {
     sd.window.Show()
-    
+
     ok := <-sd.done
     return sd.settings, ok
 }
@@ -463,26 +463,26 @@ type Wizarddialog struct {
     done        chan bool
 }
 
-func NewWizarddialog(app *application.Application) *Wizarddialog {
+func NewWizarddialog(app *application.App) *Wizarddialog {
     wd := &Wizarddialog{
         currentStep: 0,
         data:        make(map[string]interface{}),
         done:        make(chan bool, 1),
     }
-    
-    wd.window = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+
+    wd.window = app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:     "Setup Wizard",
         Width:     600,
         Height:    400,
         Resizable: false,
     })
-    
+
     return wd
 }
 
 func (wd *Wizarddialog) Show() (map[string]interface{}, bool) {
     wd.window.Show()
-    
+
     ok := <-wd.done
     return wd.data, ok
 }
@@ -492,7 +492,7 @@ func (wd *Wizarddialog) NextStep(stepData map[string]interface{}) {
     for k, v := range stepData {
         wd.data[k] = v
     }
-    
+
     wd.currentStep++
     wd.window.EmitEvent("next-step", wd.currentStep)
 }
@@ -508,7 +508,7 @@ func (wd *Wizarddialog) Finish(finalData map[string]interface{}) {
     for k, v := range finalData {
         wd.data[k] = v
     }
-    
+
     wd.done <- true
     wd.window.Close()
 }
@@ -521,7 +521,7 @@ func (wd *Wizarddialog) Cancel() {
 
 ## Best Practices
 
-### ✅ Do
+### Do
 
 - **Use appropriate window options** - AlwaysOnTop, Frameless, etc.
 - **Handle cancellation** - Always provide a way to cancel
@@ -530,7 +530,7 @@ func (wd *Wizarddialog) Cancel() {
 - **Use events for communication** - Clean separation
 - **Clean up resources** - Close windows, remove listeners
 
-### ❌ Don't
+### Don't
 
 - **Don't block the main thread** - Use channels for results
 - **Don't forget to close** - Memory leaks
@@ -598,25 +598,25 @@ button.secondary {
 <CardGrid>
   <Card title="Message dialogs" icon="information">
     Standard info, warning, error dialogs.
-    
+
     [Learn More →](/features/dialogs/message)
   </Card>
 
   <Card title="File dialogs" icon="document">
     Open, save, folder selection.
-    
+
     [Learn More →](/features/dialogs/file)
   </Card>
 
   <Card title="Windows" icon="laptop">
     Learn about window management.
-    
+
     [Learn More →](/features/windows/basics)
   </Card>
 
   <Card title="Events" icon="star">
     Use events for dialog communication.
-    
+
     [Learn More →](/features/events/system)
   </Card>
 </CardGrid>

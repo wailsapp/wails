@@ -88,8 +88,8 @@ The binding system supports several directives that can be used to customize the
 
 - `//wails:inject`: Injects custom JavaScript/TypeScript code into the generated bindings
 - `//wails:include`: Includes additional files with the generated bindings
-- `//wails:internal`: Marks a type or method as internal, preventing it from being exported to the frontend
-- `//wails:ignore`: Completely ignores a method during binding generation
+- `//wails:internal`: Marks a type or method as module-private — it is still generated in JS/TS bindings but not re-exported from the package index file. Useful with `//wails:inject` for wrapping methods with custom JS
+- `//wails:ignore`: Completely excludes a method from binding generation — no JS/TS code is generated for it at all
 - `//wails:id`: Specifies a custom ID for a method, overriding the default hash-based ID
 
 ### Directive Processing

@@ -140,7 +140,7 @@ func (s *GinService) ServiceStartup(ctx context.Context, options application.Ser
 }
 
 // ServiceShutdown is called when the service shuts down
-func (s *GinService) ServiceShutdown(ctx context.Context) error {
+func (s *GinService) ServiceShutdown() error {
 	// Clean up resources if needed
 	return nil
 }
@@ -349,10 +349,7 @@ Then use it in your code:
 import * as wails from '@wailsio/runtime';
 
 // Event emission
-wails.Events.Emit({
-    name: 'gin-api-event',
-    data: eventData,
-});
+wails.Events.Emit('gin-api-event', eventData);
 ```
 
 Here's an example of how to set up frontend integration:
@@ -528,21 +525,21 @@ Here's an example of how to set up frontend integration:
                 message: "Hello from the frontend!",
                 timestamp: new Date().toISOString()
             };
-            wails.Events.Emit({name: 'gin-api-event', data: eventData});
+            wails.Events.Emit('gin-api-event', eventData);
         });
         
         // Set up event listener for responses from the backend
         window.addEventListener('DOMContentLoaded', () => {
             // Register event listener using Wails runtime
-            wails.Events.On("gin-api-response", (data) => {
-                document.getElementById('eventResponse').textContent = JSON.stringify(data, null, 2);
+            wails.Events.On("gin-api-response", (event) => {
+                document.getElementById('eventResponse').textContent = JSON.stringify(event.data, null, 2);
             });
-            
+
             // Also listen for user-created events
-            wails.Events.On("user-created", (data) => {
+            wails.Events.On("user-created", (event) => {
                 document.getElementById('eventResponse').textContent = JSON.stringify({
                     event: "user-created",
-                    user: data
+                    user: event.data
                 }, null, 2);
             });
 

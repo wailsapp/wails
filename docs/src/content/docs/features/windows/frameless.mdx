@@ -14,7 +14,7 @@ Wails provides **frameless window support** with CSS-based drag regions and plat
 ## Quick Start
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:     "Frameless App",
     Width:     800,
     Height:    600,
@@ -52,7 +52,7 @@ window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 ### Basic Frameless Window
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Frameless: true,
     Width:     800,
     Height:    600,
@@ -73,7 +73,7 @@ window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 ### With Transparent Background
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Frameless:      true,
     BackgroundType: application.BackgroundTypeTransparent,
 })
@@ -336,9 +336,9 @@ body {
     **Windows frameless windows:**
     
     ```go
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Frameless: true,
-        Windows: application.WindowsOptions{
+        Windows: application.WindowsWindow{
             DisableFramelessWindowDecorations: false,
         },
     })
@@ -352,7 +352,7 @@ body {
     
     **Disable decorations:**
     ```go
-    Windows: application.WindowsOptions{
+    Windows: application.WindowsWindow{
         DisableFramelessWindowDecorations: true,
     },
     ```
@@ -371,32 +371,34 @@ body {
     **macOS frameless windows:**
     
     ```go
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Frameless: true,
-        Mac: application.MacOptions{
-            TitleBarAppearsTransparent: true,
-            InvisibleTitleBarHeight:    40,
+        Mac: application.MacWindow{
+            TitleBar: application.MacTitleBar{
+                AppearsTransparent: true,
+            },
+            InvisibleTitleBarHeight: 40,
         },
     })
     ```
-    
+
     **Features:**
     - Native fullscreen support
     - Traffic light buttons (optional)
     - Vibrancy effects
     - Transparent title bar
-    
+
     **Hide traffic lights:**
     ```go
-    Mac: application.MacOptions{
-        TitleBarStyle: application.MacTitleBarStyleHidden,
+    Mac: application.MacWindow{
+        TitleBar: application.MacTitleBarHidden,
     },
     ```
-    
+
     **Invisible title bar:**
     Allows dragging whilst hiding the title bar:
     ```go
-    Mac: application.MacOptions{
+    Mac: application.MacWindow{
         InvisibleTitleBarHeight: 40,
     },
     ```
@@ -406,7 +408,7 @@ body {
     **Linux frameless windows:**
     
     ```go
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Frameless: true,
     })
     ```
@@ -500,7 +502,7 @@ body {
 ### Pattern 2: Splash Screen
 
 ```go
-splash := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+splash := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:          "Loading...",
     Width:          400,
     Height:         300,
@@ -530,7 +532,7 @@ body {
 ### Pattern 3: Rounded Window
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Frameless:      true,
     BackgroundType: application.BackgroundTypeTransparent,
 })
@@ -560,7 +562,7 @@ body {
 ### Pattern 4: Overlay Window
 
 ```go
-overlay := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+overlay := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Frameless:      true,
     AlwaysOnTop:    true,
     BackgroundType: application.BackgroundTypeTransparent,
@@ -602,24 +604,22 @@ func main() {
         Name: "Frameless App",
     })
 
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:     "Frameless Application",
         Width:     1000,
         Height:    700,
         MinWidth:  800,
         MinHeight: 600,
         Frameless: true,
-        
-        Assets: application.AssetOptions{
-            Handler: application.AssetFileServerFS(assets),
+
+        Mac: application.MacWindow{
+            TitleBar: application.MacTitleBar{
+                AppearsTransparent: true,
+            },
+            InvisibleTitleBarHeight: 40,
         },
-        
-        Mac: application.MacOptions{
-            TitleBarAppearsTransparent: true,
-            InvisibleTitleBarHeight:    40,
-        },
-        
-        Windows: application.WindowsOptions{
+
+        Windows: application.WindowsWindow{
             DisableFramelessWindowDecorations: false,
         },
     })

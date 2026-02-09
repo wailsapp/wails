@@ -19,7 +19,7 @@ package main
 import "github.com/wailsapp/wails/v3/pkg/application"
 
 type App struct {
-    app            *application.Application
+    app            *application.App
     mainWindow     *application.WebviewWindow
     settingsWindow *application.WebviewWindow
 }
@@ -32,15 +32,15 @@ func main() {
     })
     
     // Create main window
-    app.mainWindow = app.app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    app.mainWindow = app.app.Window.NewWithOptions(application.WebviewWindowOptions{
         Name:   "main",
         Title:  "Main Application",
         Width:  1200,
         Height: 800,
     })
-    
+
     // Create settings window (hidden initially)
-    app.settingsWindow = app.app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    app.settingsWindow = app.app.Window.NewWithOptions(application.WebviewWindowOptions{
         Name:   "settings",
         Title:  "Settings",
         Width:  600,
@@ -55,7 +55,7 @@ func main() {
 func (a *App) ShowSettings() {
     if a.settingsWindow != nil {
         a.settingsWindow.Show()
-        a.settingsWindow.SetFocus()
+        a.settingsWindow.Focus()
     }
 }
 ```
@@ -71,11 +71,11 @@ func (a *App) ShowSettings() {
 ### Get All Windows
 
 ```go
-windows := app.GetAllWindows()
+windows := app.Window.GetAll()
 fmt.Printf("Total windows: %d\n", len(windows))
 
 for _, window := range windows {
-    fmt.Printf("- %s (ID: %d)\n", window.Name(), window.ID())
+    fmt.Printf("- %s\n", window.Name())
 }
 ```
 
@@ -83,16 +83,13 @@ for _, window := range windows {
 
 ```go
 // By name
-settings := app.GetWindowByName("settings")
-if settings != nil {
+settings, ok := app.Window.GetByName("settings")
+if ok {
     settings.Show()
 }
 
-// By ID
-window := app.GetWindowByID(123)
-
 // Current (focused) window
-current := app.CurrentWindow()
+current := app.Window.Current()
 ```
 
 ### Window Registry Pattern
@@ -132,13 +129,13 @@ Windows communicate via the event system:
 
 ```go
 // In main window - emit event
-app.EmitEvent("settings-changed", map[string]interface{}{
+app.Event.Emit("settings-changed", map[string]interface{}{
     "theme": "dark",
     "fontSize": 14,
 })
 
 // In settings window - listen for event
-app.OnEvent("settings-changed", func(event *application.WailsEvent) {
+app.Event.On("settings-changed", func(event *application.CustomEvent) {
     data := event.Data.(map[string]interface{})
     theme := data["theme"].(string)
     fontSize := data["fontSize"].(int)
@@ -170,7 +167,7 @@ func (s *AppState) SetTheme(theme string) {
     s.mu.Unlock()
     
     // Notify all windows
-    app.EmitEvent("theme-changed", theme)
+    app.Event.Emit("theme-changed", theme)
 }
 
 func (s *AppState) GetTheme() string {
@@ -186,10 +183,11 @@ Send messages between specific windows:
 
 ```go
 // Get target window
-targetWindow := app.GetWindowByName("preview")
-
-// Emit event to specific window
-targetWindow.EmitEvent("update-preview", previewData)
+targetWindow, ok := app.Window.GetByName("preview")
+if ok {
+    // Emit event to specific window
+    targetWindow.EmitEvent("update-preview", previewData)
+}
 ```
 
 ## Common Patterns
@@ -201,25 +199,25 @@ Ensure only one instance of a window exists:
 ```go
 var settingsWindow *application.WebviewWindow
 
-func ShowSettings(app *application.Application) {
+func ShowSettings(app *application.App) {
     // Create if doesn't exist
     if settingsWindow == nil {
-        settingsWindow = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        settingsWindow = app.Window.NewWithOptions(application.WebviewWindowOptions{
             Name:   "settings",
             Title:  "Settings",
             Width:  600,
             Height: 400,
         })
-        
+
         // Cleanup on close
-        settingsWindow.OnDestroy(func() {
+        settingsWindow.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
             settingsWindow = nil
         })
     }
-    
+
     // Show and focus
     settingsWindow.Show()
-    settingsWindow.SetFocus()
+    settingsWindow.Focus()
 }
 ```
 
@@ -236,16 +234,16 @@ type DocumentWindow struct {
 
 var documents = make(map[string]*DocumentWindow)
 
-func OpenDocument(app *application.Application, filePath string) {
+func OpenDocument(app *application.App, filePath string) {
     // Check if already open
     if doc, exists := documents[filePath]; exists {
         doc.window.Show()
-        doc.window.SetFocus()
+        doc.window.Focus()
         return
     }
-    
+
     // Create new document window
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:  filepath.Base(filePath),
         Width:  800,
         Height: 600,
@@ -260,7 +258,7 @@ func OpenDocument(app *application.Application, filePath string) {
     documents[filePath] = doc
     
     // Cleanup on close
-    window.OnDestroy(func() {
+    window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
         delete(documents, filePath)
     })
     
@@ -274,16 +272,16 @@ func OpenDocument(app *application.Application, filePath string) {
 Floating windows that stay on top:
 
 ```go
-func CreateToolPalette(app *application.Application) *application.WebviewWindow {
-    palette := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-        Name:        "tools",
-        Title:       "Tools",
-        Width:       200,
-        Height:      400,
-        AlwaysOnTop: true,
-        Resizable:   false,
+func CreateToolPalette(app *application.App) *application.WebviewWindow {
+    palette := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Name:          "tools",
+        Title:         "Tools",
+        Width:         200,
+        Height:        400,
+        AlwaysOnTop:   true,
+        DisableResize: true,
     })
-    
+
     return palette
 }
 ```
@@ -294,22 +292,21 @@ Child windows that block parent:
 
 ```go
 func ShowModaldialog(parent *application.WebviewWindow, title string) {
-    dialog := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-        Title:       title,
-        Width:       400,
-        Height:      200,
-        Parent:      parent,
-        AlwaysOnTop: true,
-        Resizable:   false,
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:         title,
+        Width:         400,
+        Height:        200,
+        AlwaysOnTop:   true,
+        DisableResize: true,
     })
-    
+
     // Disable parent (platform-specific)
     parent.SetEnabled(false)
-    
+
     // Re-enable parent on close
-    dialog.OnDestroy(func() {
+    dialog.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
         parent.SetEnabled(true)
-        parent.SetFocus()
+        parent.Focus()
     })
 }
 ```
@@ -332,14 +329,14 @@ func (e *EditorApp) UpdatePreview(content string) {
 
 func (e *EditorApp) TogglePreview() {
     if e.preview == nil {
-        e.preview = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        e.preview = app.Window.NewWithOptions(application.WebviewWindowOptions{
             Name:   "preview",
             Title:  "Preview",
             Width:  600,
             Height: 800,
         })
         
-        e.preview.OnDestroy(func() {
+        e.preview.OnWindowEvent(events.Common.WindowClosing, func(e2 *application.WindowEvent) {
             e.preview = nil
         })
     }
@@ -352,52 +349,26 @@ func (e *EditorApp) TogglePreview() {
 }
 ```
 
-## Parent-Child Relationships
+## Modal-like Behaviour
 
-### Creating Child Windows
-
-```go
-childWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-    Title:  "Child Window",
-    Parent: parentWindow,
-})
-```
-
-**Behaviour:**
-- Child closes when parent closes
-- Child stays above parent (on some platforms)
-- Child minimises with parent (on some platforms)
-
-**Platform support:**
-
-| Feature | macOS | Windows | Linux |
-|---------|-------|---------|-------|
-| Auto-close | ✅ | ✅ | ⚠️ Varies |
-| Stay above | ✅ | ⚠️ Partial | ⚠️ Varies |
-| Minimise together | ✅ | ❌ | ⚠️ Varies |
-
-### Modal Behaviour
-
-Create modal-like behaviour:
+Create modal-like behaviour by disabling the parent window:
 
 ```go
 func ShowModal(parent *application.WebviewWindow) {
-    modal := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    modal := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:       "Modal dialog",
         Width:       400,
         Height:      200,
-        Parent:      parent,
         AlwaysOnTop: true,
     })
-    
+
     // Disable parent interaction
     parent.SetEnabled(false)
-    
+
     // Re-enable on close
-    modal.OnClose(func() bool {
+    modal.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
         parent.SetEnabled(true)
-        parent.SetFocus()
-        return true
+        parent.Focus()
     })
 }
 ```
@@ -411,25 +382,25 @@ func ShowModal(parent *application.WebviewWindow) {
 Be notified when windows are created:
 
 ```go
-app.OnWindowCreation(func(window *application.WebviewWindow) {
+app.Window.OnCreate(func(window application.Window) {
     fmt.Printf("Window created: %s\n", window.Name())
-    
+
     // Configure all new windows
     window.SetMinSize(400, 300)
 })
 ```
 
-### Destruction Callbacks
+### Window Close Callbacks
 
-Cleanup when windows are destroyed:
+Cleanup when windows are closed:
 
 ```go
-window.OnDestroy(func() {
-    fmt.Printf("Window %s destroyed\n", window.Name())
-    
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    fmt.Printf("Window %s closing\n", window.Name())
+
     // Cleanup resources
-    cleanup(window.ID())
-    
+    cleanup(window.Name())
+
     // Remove from tracking
     removeFromRegistry(window.Name())
 })
@@ -463,27 +434,24 @@ Always clean up window references:
 var windows = make(map[string]*application.WebviewWindow)
 
 func CreateWindow(name string) {
-    window := app.NewWebviewWindow()
+    window := app.Window.New()
     windows[name] = window
     
-    // IMPORTANT: Clean up on destroy
-    window.OnDestroy(func() {
+    // IMPORTANT: Clean up on close
+    window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
         delete(windows, name)
     })
 }
 ```
 
-### Closing vs Destroying
+### Closing Windows
 
 ```go
-// Close - triggers OnClose, can be cancelled
+// Close - triggers WindowClosing event, can be cancelled via RegisterHook
 window.Close()
-
-// Destroy - immediate, cannot be cancelled
-window.Destroy()
 ```
 
-**Best practice:** Use `Close()` for user-initiated closes, `Destroy()` for cleanup.
+**Note:** `Close()` emits a `WindowClosing` event. Use `RegisterHook` to intercept and optionally cancel the close.
 
 ### Resource Cleanup
 
@@ -493,14 +461,14 @@ type ManagedWindow struct {
     resources  []io.Closer
 }
 
-func (mw *ManagedWindow) Destroy() {
+func (mw *ManagedWindow) CleanupAndClose() {
     // Close all resources
     for _, resource := range mw.resources {
         resource.Close()
     }
-    
-    // Destroy window
-    mw.window.Destroy()
+
+    // Close window
+    mw.window.Close()
 }
 ```
 
@@ -513,33 +481,33 @@ Reuse windows instead of creating new ones:
 ```go
 type WindowPool struct {
     available []*application.WebviewWindow
-    inUse     map[uint]*application.WebviewWindow
+    inUse     map[string]*application.WebviewWindow
     mu        sync.Mutex
 }
 
 func (wp *WindowPool) Acquire() *application.WebviewWindow {
     wp.mu.Lock()
     defer wp.mu.Unlock()
-    
+
     // Reuse available window
     if len(wp.available) > 0 {
         window := wp.available[0]
         wp.available = wp.available[1:]
-        wp.inUse[window.ID()] = window
+        wp.inUse[window.Name()] = window
         return window
     }
-    
+
     // Create new window
-    window := app.NewWebviewWindow()
-    wp.inUse[window.ID()] = window
+    window := app.Window.New()
+    wp.inUse[window.Name()] = window
     return window
 }
 
 func (wp *WindowPool) Release(window *application.WebviewWindow) {
     wp.mu.Lock()
     defer wp.mu.Unlock()
-    
-    delete(wp.inUse, window.ID())
+
+    delete(wp.inUse, window.Name())
     window.Hide()
     wp.available = append(wp.available, window)
 }
@@ -598,7 +566,7 @@ type WindowState struct {
 func SaveLayout() *WindowLayout {
     layout := &WindowLayout{}
     
-    for _, window := range app.GetAllWindows() {
+    for _, window := range app.Window.GetAll() {
         x, y := window.Position()
         width, height := window.Size()
         
@@ -616,8 +584,8 @@ func SaveLayout() *WindowLayout {
 
 func RestoreLayout(layout *WindowLayout) {
     for _, state := range layout.Windows {
-        window := app.GetWindowByName(state.Name)
-        if window != nil {
+        window, ok := app.Window.GetByName(state.Name)
+        if ok {
             window.SetPosition(state.X, state.Y)
             window.SetSize(state.Width, state.Height)
         }
@@ -637,10 +605,11 @@ import (
     "os"
     "sync"
     "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
 )
 
 type MultiWindowApp struct {
-    app     *application.Application
+    app     *application.App
     windows map[string]*application.WebviewWindow
     mu      sync.RWMutex
 }
@@ -667,24 +636,24 @@ func main() {
 }
 
 func (mwa *MultiWindowApp) CreateMainWindow() {
-    window := mwa.app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := mwa.app.Window.NewWithOptions(application.WebviewWindowOptions{
         Name:   "main",
         Title:  "Main Application",
         Width:  1200,
         Height: 800,
     })
-    
+
     mwa.RegisterWindow("main", window)
 }
 
 func (mwa *MultiWindowApp) ShowSettings() {
     if window := mwa.GetWindow("settings"); window != nil {
         window.Show()
-        window.SetFocus()
+        window.Focus()
         return
     }
-    
-    window := mwa.app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+
+    window := mwa.app.Window.NewWithOptions(application.WebviewWindowOptions{
         Name:   "settings",
         Title:  "Settings",
         Width:  600,
@@ -699,11 +668,11 @@ func (mwa *MultiWindowApp) OpenDocument(path string) {
     
     if window := mwa.GetWindow(name); window != nil {
         window.Show()
-        window.SetFocus()
+        window.Focus()
         return
     }
-    
-    window := mwa.app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+
+    window := mwa.app.Window.NewWithOptions(application.WebviewWindowOptions{
         Name:  name,
         Title: path,
         Width: 800,
@@ -718,7 +687,7 @@ func (mwa *MultiWindowApp) RegisterWindow(name string, window *application.Webvi
     mwa.windows[name] = window
     mwa.mu.Unlock()
     
-    window.OnDestroy(func() {
+    window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
         mwa.UnregisterWindow(name)
     })
 }
@@ -788,7 +757,7 @@ type WindowState struct {
 ### ✅ Do
 
 - **Track windows** - Keep references for easy access
-- **Clean up on destroy** - Prevent memory leaks
+- **Clean up on close** - Use `OnWindowEvent` with `WindowClosing` to prevent memory leaks
 - **Use events for communication** - Decoupled architecture
 - **Reuse windows** - Don't create duplicates
 - **Save/restore layouts** - Better UX

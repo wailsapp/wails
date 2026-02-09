@@ -9,37 +9,37 @@ import { Card, CardGrid } from "@astrojs/starlight/components";
 
 ## Overview
 
-The Dialogs API provides methods to show native file dialogs and message dialogs.
+The Dialogs API provides methods to show native file dialogs and message dialogs. All dialogs are accessed through the `app.Dialog` manager.
 
 **Dialog Types:**
-- **File Dialogs** - Open, Save, and Select Folder dialogs
+- **File Dialogs** - Open and Save dialogs
 - **Message Dialogs** - Info, Error, Warning, and Question dialogs
 
 All dialogs are **native OS dialogs** that match the platform's look and feel.
 
 ## File Dialogs
 
-### OpenFileDialog()
+### app.Dialog.OpenFile()
 
 Creates a file open dialog.
 
 ```go
-func (a *App) OpenFileDialog() *OpenFileDialog
+func (dm *DialogManager) OpenFile() *OpenFileDialogStruct
 ```
 
 **Example:**
 ```go
-dialog := app.OpenFileDialog()
+dialog := app.Dialog.OpenFile()
 ```
 
-### OpenFileDialog Methods
+### OpenFileDialogStruct Methods
 
 #### SetTitle()
 
 Sets the dialog title.
 
 ```go
-func (d *OpenFileDialog) SetTitle(title string) *OpenFileDialog
+func (d *OpenFileDialogStruct) SetTitle(title string) *OpenFileDialogStruct
 ```
 
 **Example:**
@@ -47,43 +47,133 @@ func (d *OpenFileDialog) SetTitle(title string) *OpenFileDialog
 dialog.SetTitle("Select Image")
 ```
 
-#### SetFilters()
+#### AddFilter()
 
-Sets file type filters.
+Adds a file type filter. Call multiple times to add multiple filters.
 
 ```go
-func (d *OpenFileDialog) SetFilters(filters []FileFilter) *OpenFileDialog
+func (d *OpenFileDialogStruct) AddFilter(displayName, pattern string) *OpenFileDialogStruct
 ```
 
-**FileFilter structure:**
-```go
-type FileFilter struct {
-    DisplayName string // "Images", "Documents", etc.
-    Pattern     string // "*.png;*.jpg", "*.pdf;*.doc", etc.
-}
-```
+**Parameters:**
+- `displayName` - Filter label (e.g., "Image Files")
+- `pattern` - Semicolon-separated extensions (e.g., `"*.png;*.jpg"`)
 
 **Example:**
 ```go
-dialog.SetFilters([]application.FileFilter{
-    {DisplayName: "Images", Pattern: "*.png;*.jpg;*.gif"},
-    {DisplayName: "Documents", Pattern: "*.pdf;*.docx"},
-    {DisplayName: "All Files", Pattern: "*.*"},
-})
+dialog.AddFilter("Images", "*.png;*.jpg;*.gif").
+    AddFilter("Documents", "*.pdf;*.docx").
+    AddFilter("All Files", "*.*")
 ```
 
-#### SetDefaultDirectory()
+#### SetDirectory()
 
 Sets the initial directory.
 
 ```go
-func (d *OpenFileDialog) SetDefaultDirectory(path string) *OpenFileDialog
+func (d *OpenFileDialogStruct) SetDirectory(directory string) *OpenFileDialogStruct
 ```
 
 **Example:**
 ```go
 homeDir, _ := os.UserHomeDir()
-dialog.SetDefaultDirectory(homeDir)
+dialog.SetDirectory(homeDir)
+```
+
+#### CanChooseDirectories()
+
+Sets whether directories can be selected.
+
+```go
+func (d *OpenFileDialogStruct) CanChooseDirectories(canChooseDirectories bool) *OpenFileDialogStruct
+```
+
+#### CanChooseFiles()
+
+Sets whether files can be selected (default: true).
+
+```go
+func (d *OpenFileDialogStruct) CanChooseFiles(canChooseFiles bool) *OpenFileDialogStruct
+```
+
+#### CanCreateDirectories()
+
+Sets whether new directories can be created in the dialog.
+
+```go
+func (d *OpenFileDialogStruct) CanCreateDirectories(canCreateDirectories bool) *OpenFileDialogStruct
+```
+
+#### ShowHiddenFiles()
+
+Sets whether hidden files are shown.
+
+```go
+func (d *OpenFileDialogStruct) ShowHiddenFiles(showHiddenFiles bool) *OpenFileDialogStruct
+```
+
+#### ResolvesAliases()
+
+Sets whether aliases (symlinks) are resolved.
+
+```go
+func (d *OpenFileDialogStruct) ResolvesAliases(resolvesAliases bool) *OpenFileDialogStruct
+```
+
+#### AllowsOtherFileTypes()
+
+Sets whether file types other than those in filters are allowed.
+
+```go
+func (d *OpenFileDialogStruct) AllowsOtherFileTypes(allowsOtherFileTypes bool) *OpenFileDialogStruct
+```
+
+#### HideExtension()
+
+Sets whether the file extension is hidden.
+
+```go
+func (d *OpenFileDialogStruct) HideExtension(hideExtension bool) *OpenFileDialogStruct
+```
+
+#### TreatsFilePackagesAsDirectories()
+
+Sets whether file packages are treated as directories (macOS).
+
+```go
+func (d *OpenFileDialogStruct) TreatsFilePackagesAsDirectories(treatsFilePackagesAsDirectories bool) *OpenFileDialogStruct
+```
+
+#### CanSelectHiddenExtension()
+
+Sets whether hidden extensions can be selected.
+
+```go
+func (d *OpenFileDialogStruct) CanSelectHiddenExtension(canSelectHiddenExtension bool) *OpenFileDialogStruct
+```
+
+#### SetMessage()
+
+Sets the dialog message text.
+
+```go
+func (d *OpenFileDialogStruct) SetMessage(message string) *OpenFileDialogStruct
+```
+
+#### SetButtonText()
+
+Sets the text for the dialog's confirmation button.
+
+```go
+func (d *OpenFileDialogStruct) SetButtonText(text string) *OpenFileDialogStruct
+```
+
+#### AttachToWindow()
+
+Attaches the dialog to a specific window (sheet on macOS).
+
+```go
+func (d *OpenFileDialogStruct) AttachToWindow(window Window) *OpenFileDialogStruct
 ```
 
 #### PromptForSingleSelection()
@@ -91,24 +181,27 @@ dialog.SetDefaultDirectory(homeDir)
 Shows the dialog and returns the selected file.
 
 ```go
-func (d *OpenFileDialog) PromptForSingleSelection() (string, error)
+func (d *OpenFileDialogStruct) PromptForSingleSelection() (string, error)
 ```
 
 **Returns:**
-- `string` - Selected file path
-- `error` - Error if cancelled or failed
+- `string` - Selected file path (empty if cancelled)
+- `error` - Error if failed
 
 **Example:**
 ```go
-path, err := app.OpenFileDialog().
+path, err := app.Dialog.OpenFile().
     SetTitle("Select Image").
-    SetFilters([]application.FileFilter{
-        {DisplayName: "Images", Pattern: "*.png;*.jpg;*.gif"},
-    }).
+    AddFilter("Images", "*.png;*.jpg;*.gif").
     PromptForSingleSelection()
 
 if err != nil {
-    // User cancelled or error occurred
+    // Handle error
+    return
+}
+
+if path == "" {
+    // User cancelled
     return
 }
 
@@ -121,20 +214,18 @@ processFile(path)
 Shows the dialog and returns multiple selected files.
 
 ```go
-func (d *OpenFileDialog) PromptForMultipleSelection() ([]string, error)
+func (d *OpenFileDialogStruct) PromptForMultipleSelection() ([]string, error)
 ```
 
 **Returns:**
 - `[]string` - Array of selected file paths
-- `error` - Error if cancelled or failed
+- `error` - Error if failed
 
 **Example:**
 ```go
-paths, err := app.OpenFileDialog().
+paths, err := app.Dialog.OpenFile().
     SetTitle("Select Images").
-    SetFilters([]application.FileFilter{
-        {DisplayName: "Images", Pattern: "*.png;*.jpg"},
-    }).
+    AddFilter("Images", "*.png;*.jpg").
     PromptForMultipleSelection()
 
 if err != nil {
@@ -146,56 +237,155 @@ for _, path := range paths {
 }
 ```
 
-### SaveFileDialog()
+### Selecting Folders
+
+There is no separate folder dialog. Use `OpenFile()` with directory selection enabled:
+
+```go
+folder, err := app.Dialog.OpenFile().
+    SetTitle("Select Output Folder").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+
+if err != nil {
+    return
+}
+
+// Use the selected folder
+outputDir = folder
+```
+
+### app.Dialog.OpenFileWithOptions()
+
+Creates a file open dialog with pre-set options.
+
+```go
+func (dm *DialogManager) OpenFileWithOptions(options *OpenFileDialogOptions) *OpenFileDialogStruct
+```
+
+### app.Dialog.SaveFile()
 
 Creates a file save dialog.
 
 ```go
-func (a *App) SaveFileDialog() *SaveFileDialog
+func (dm *DialogManager) SaveFile() *SaveFileDialogStruct
 ```
 
 **Example:**
 ```go
-dialog := app.SaveFileDialog()
+dialog := app.Dialog.SaveFile()
 ```
 
-### SaveFileDialog Methods
+### app.Dialog.SaveFileWithOptions()
 
-#### SetTitle()
-
-Sets the dialog title.
+Creates a file save dialog with pre-set options.
 
 ```go
-func (d *SaveFileDialog) SetTitle(title string) *SaveFileDialog
+func (dm *DialogManager) SaveFileWithOptions(options *SaveFileDialogOptions) *SaveFileDialogStruct
 ```
 
-#### SetDefaultFilename()
+### SaveFileDialogStruct Methods
+
+#### SetFilename()
 
 Sets the default filename.
 
 ```go
-func (d *SaveFileDialog) SetDefaultFilename(filename string) *SaveFileDialog
+func (d *SaveFileDialogStruct) SetFilename(filename string) *SaveFileDialogStruct
 ```
 
 **Example:**
 ```go
-dialog.SetDefaultFilename("document.pdf")
+dialog.SetFilename("document.pdf")
 ```
 
-#### SetFilters()
+#### AddFilter()
 
-Sets file type filters (same as OpenFileDialog).
+Adds a file type filter (same as OpenFileDialogStruct).
 
 ```go
-func (d *SaveFileDialog) SetFilters(filters []FileFilter) *SaveFileDialog
+func (d *SaveFileDialogStruct) AddFilter(displayName, pattern string) *SaveFileDialogStruct
 ```
 
-#### SetDefaultDirectory()
+#### SetDirectory()
 
-Sets the initial directory (same as OpenFileDialog).
+Sets the initial directory.
 
 ```go
-func (d *SaveFileDialog) SetDefaultDirectory(path string) *SaveFileDialog
+func (d *SaveFileDialogStruct) SetDirectory(directory string) *SaveFileDialogStruct
+```
+
+#### SetMessage()
+
+Sets the dialog message text.
+
+```go
+func (d *SaveFileDialogStruct) SetMessage(message string) *SaveFileDialogStruct
+```
+
+#### SetButtonText()
+
+Sets the text for the dialog's confirmation button.
+
+```go
+func (d *SaveFileDialogStruct) SetButtonText(text string) *SaveFileDialogStruct
+```
+
+#### CanCreateDirectories()
+
+Sets whether new directories can be created in the dialog.
+
+```go
+func (d *SaveFileDialogStruct) CanCreateDirectories(canCreateDirectories bool) *SaveFileDialogStruct
+```
+
+#### ShowHiddenFiles()
+
+Sets whether hidden files are shown.
+
+```go
+func (d *SaveFileDialogStruct) ShowHiddenFiles(showHiddenFiles bool) *SaveFileDialogStruct
+```
+
+#### CanSelectHiddenExtension()
+
+Sets whether hidden extensions can be selected.
+
+```go
+func (d *SaveFileDialogStruct) CanSelectHiddenExtension(canSelectHiddenExtension bool) *SaveFileDialogStruct
+```
+
+#### HideExtension()
+
+Sets whether the file extension is hidden.
+
+```go
+func (d *SaveFileDialogStruct) HideExtension(hideExtension bool) *SaveFileDialogStruct
+```
+
+#### TreatsFilePackagesAsDirectories()
+
+Sets whether file packages are treated as directories (macOS).
+
+```go
+func (d *SaveFileDialogStruct) TreatsFilePackagesAsDirectories(treatsFilePackagesAsDirectories bool) *SaveFileDialogStruct
+```
+
+#### AllowsOtherFileTypes()
+
+Sets whether file types other than those in filters are allowed.
+
+```go
+func (d *SaveFileDialogStruct) AllowsOtherFileTypes(allowOtherFileTypes bool) *SaveFileDialogStruct
+```
+
+#### AttachToWindow()
+
+Attaches the dialog to a specific window (sheet on macOS).
+
+```go
+func (d *SaveFileDialogStruct) AttachToWindow(window Window) *SaveFileDialogStruct
 ```
 
 #### PromptForSingleSelection()
@@ -203,20 +393,21 @@ func (d *SaveFileDialog) SetDefaultDirectory(path string) *SaveFileDialog
 Shows the dialog and returns the save path.
 
 ```go
-func (d *SaveFileDialog) PromptForSingleSelection() (string, error)
+func (d *SaveFileDialogStruct) PromptForSingleSelection() (string, error)
 ```
 
 **Example:**
 ```go
-path, err := app.SaveFileDialog().
-    SetTitle("Save Document").
-    SetDefaultFilename("untitled.pdf").
-    SetFilters([]application.FileFilter{
-        {DisplayName: "PDF Document", Pattern: "*.pdf"},
-    }).
+path, err := app.Dialog.SaveFile().
+    SetFilename("untitled.pdf").
+    AddFilter("PDF Document", "*.pdf").
     PromptForSingleSelection()
 
 if err != nil {
+    return
+}
+
+if path == "" {
     // User cancelled
     return
 }
@@ -225,83 +416,59 @@ if err != nil {
 saveDocument(path)
 ```
 
-### SelectFolderDialog()
-
-Creates a folder selection dialog.
-
+:::note
+`SaveFileDialogStruct` does not have a `SetTitle()` method. To set the title, use `SaveFileWithOptions()`:
 ```go
-func (a *App) SelectFolderDialog() *SelectFolderDialog
+dialog := app.Dialog.SaveFileWithOptions(&application.SaveFileDialogOptions{
+    Title: "Save Document",
+})
 ```
-
-**Example:**
-```go
-dialog := app.SelectFolderDialog()
-```
-
-### SelectFolderDialog Methods
-
-#### SetTitle()
-
-Sets the dialog title.
-
-```go
-func (d *SelectFolderDialog) SetTitle(title string) *SelectFolderDialog
-```
-
-#### SetDefaultDirectory()
-
-Sets the initial directory.
-
-```go
-func (d *SelectFolderDialog) SetDefaultDirectory(path string) *SelectFolderDialog
-```
-
-#### PromptForSingleSelection()
-
-Shows the dialog and returns the selected folder.
-
-```go
-func (d *SelectFolderDialog) PromptForSingleSelection() (string, error)
-```
-
-**Example:**
-```go
-path, err := app.SelectFolderDialog().
-    SetTitle("Select Output Folder").
-    PromptForSingleSelection()
-
-if err != nil {
-    // User cancelled
-    return
-}
-
-// Use the selected folder
-outputDir = path
-```
+:::
 
 ## Message Dialogs
 
-### InfoDialog()
+All message dialogs are created through the `app.Dialog` manager and return a `*MessageDialog`. The dialog type (Info, Question, Warning, Error) is set internally.
+
+### app.Dialog.Info()
 
 Creates an information dialog.
 
 ```go
-func (a *App) InfoDialog() *InfoDialog
+func (dm *DialogManager) Info() *MessageDialog
 ```
 
-**Example:**
+### app.Dialog.Question()
+
+Creates a question dialog.
+
 ```go
-dialog := app.InfoDialog()
+func (dm *DialogManager) Question() *MessageDialog
 ```
 
-### InfoDialog Methods
+### app.Dialog.Warning()
+
+Creates a warning dialog.
+
+```go
+func (dm *DialogManager) Warning() *MessageDialog
+```
+
+### app.Dialog.Error()
+
+Creates an error dialog.
+
+```go
+func (dm *DialogManager) Error() *MessageDialog
+```
+
+### MessageDialog Methods
 
 #### SetTitle()
 
 Sets the dialog title.
 
 ```go
-func (d *InfoDialog) SetTitle(title string) *InfoDialog
+func (d *MessageDialog) SetTitle(title string) *MessageDialog
 ```
 
 #### SetMessage()
@@ -309,166 +476,133 @@ func (d *InfoDialog) SetTitle(title string) *InfoDialog
 Sets the dialog message.
 
 ```go
-func (d *InfoDialog) SetMessage(message string) *InfoDialog
+func (d *MessageDialog) SetMessage(message string) *MessageDialog
+```
+
+#### SetIcon()
+
+Sets a custom icon for the dialog.
+
+```go
+func (d *MessageDialog) SetIcon(icon []byte) *MessageDialog
+```
+
+#### AddButton()
+
+Adds a button to the dialog. Returns the created `*Button` for further configuration.
+
+```go
+func (d *MessageDialog) AddButton(s string) *Button
+```
+
+**Returns:** `*Button` - The created button
+
+#### AddButtons()
+
+Sets all buttons for the dialog at once, replacing any existing buttons.
+
+```go
+func (d *MessageDialog) AddButtons(buttons []*Button) *MessageDialog
+```
+
+#### SetDefaultButton()
+
+Sets the default button (activated by pressing Enter).
+
+```go
+func (d *MessageDialog) SetDefaultButton(button *Button) *MessageDialog
+```
+
+**Note:** Takes a `*Button` pointer, not an index.
+
+#### SetCancelButton()
+
+Sets the cancel button (activated by pressing Escape).
+
+```go
+func (d *MessageDialog) SetCancelButton(button *Button) *MessageDialog
+```
+
+**Note:** Takes a `*Button` pointer, not an index.
+
+#### AttachToWindow()
+
+Attaches the dialog to a window (sheet on macOS).
+
+```go
+func (d *MessageDialog) AttachToWindow(window Window) *MessageDialog
 ```
 
 #### Show()
 
-Shows the dialog.
+Shows the dialog. This method does not return a value; use button callbacks to handle user responses.
 
 ```go
-func (d *InfoDialog) Show()
+func (d *MessageDialog) Show()
 ```
 
-**Example:**
+### Button Methods
+
+Each button returned by `AddButton()` supports:
+
 ```go
-app.InfoDialog().
+func (b *Button) OnClick(callback func()) *Button
+func (b *Button) SetAsDefault() *Button
+func (b *Button) SetAsCancel() *Button
+```
+
+### Message Dialog Examples
+
+**Simple info dialog:**
+```go
+app.Dialog.Info().
     SetTitle("Success").
     SetMessage("File saved successfully!").
     Show()
 ```
 
-### ErrorDialog()
-
-Creates an error dialog.
-
+**Error dialog:**
 ```go
-func (a *App) ErrorDialog() *ErrorDialog
-```
-
-**Methods:** Same as InfoDialog (SetTitle, SetMessage, Show)
-
-**Example:**
-```go
-app.ErrorDialog().
+app.Dialog.Error().
     SetTitle("Error").
     SetMessage("Failed to save file: " + err.Error()).
     Show()
 ```
 
-### WarningDialog()
-
-Creates a warning dialog.
-
+**Warning dialog:**
 ```go
-func (a *App) WarningDialog() *WarningDialog
-```
-
-**Methods:** Same as InfoDialog (SetTitle, SetMessage, Show)
-
-**Example:**
-```go
-app.WarningDialog().
+app.Dialog.Warning().
     SetTitle("Warning").
     SetMessage("This action cannot be undone.").
     Show()
 ```
 
-### QuestionDialog()
-
-Creates a question dialog with custom buttons.
-
+**Question dialog with buttons:**
 ```go
-func (a *App) QuestionDialog() *QuestionDialog
-```
-
-### QuestionDialog Methods
-
-#### SetTitle()
-
-Sets the dialog title.
-
-```go
-func (d *QuestionDialog) SetTitle(title string) *QuestionDialog
-```
-
-#### SetMessage()
-
-Sets the dialog message.
-
-```go
-func (d *QuestionDialog) SetMessage(message string) *QuestionDialog
-```
-
-#### SetButtons()
-
-Sets the button labels.
-
-```go
-func (d *QuestionDialog) SetButtons(buttons ...string) *QuestionDialog
-```
-
-**Parameters:**
-- `buttons` - Variable number of button labels
-
-**Example:**
-```go
-dialog.SetButtons("Yes", "No")
-dialog.SetButtons("Save", "Don't Save", "Cancel")
-```
-
-#### SetDefaultButton()
-
-Sets which button is the default (activated by pressing Enter).
-
-```go
-func (d *QuestionDialog) SetDefaultButton(index int) *QuestionDialog
-```
-
-**Example:**
-```go
-// Make "Yes" the default button
-dialog.SetButtons("Yes", "No").SetDefaultButton(0)
-```
-
-#### SetCancelButton()
-
-Sets which button is the cancel button (activated by pressing Escape).
-
-```go
-func (d *QuestionDialog) SetCancelButton(index int) *QuestionDialog
-```
-
-**Example:**
-```go
-// Make "Cancel" the cancel button
-dialog.SetButtons("Save", "Don't Save", "Cancel").SetCancelButton(2)
-```
-
-#### Show()
-
-Shows the dialog and returns the selected button.
-
-```go
-func (d *QuestionDialog) Show() (string, error)
-```
-
-**Returns:**
-- `string` - The label of the button that was clicked
-- `error` - Error if dialog failed to show
-
-**Example:**
-```go
-result, err := app.QuestionDialog().
+dialog := app.Dialog.Question().
     SetTitle("Confirm").
-    SetMessage("Do you want to save changes?").
-    SetButtons("Save", "Don't Save", "Cancel").
-    SetDefaultButton(0).
-    SetCancelButton(2).
-    Show()
+    SetMessage("Do you want to save changes?")
 
-if err != nil {
-    return
-}
+saveBtn := dialog.AddButton("Save")
+dontSaveBtn := dialog.AddButton("Don't Save")
+cancelBtn := dialog.AddButton("Cancel")
 
-switch result {
-case "Save":
+saveBtn.SetAsDefault()
+cancelBtn.SetAsCancel()
+
+saveBtn.OnClick(func() {
     saveDocument()
-case "Don't Save":
+})
+
+dontSaveBtn.OnClick(func() {
     // Continue without saving
-case "Cancel":
-    return
-}
+})
+
+cancelBtn.OnClick(func() {
+    // Do nothing - cancel
+})
+
+dialog.Show()
 ```
 
 ## Complete Examples
@@ -476,173 +610,72 @@ case "Cancel":
 ### File Selection Example
 
 ```go
-type FileService struct {
-    app *application.Application
-}
+type FileService struct{}
 
-func (s *FileService) OpenImage() (string, error) {
-    path, err := s.app.OpenFileDialog().
+func (s *FileService) OpenImage(app *application.App) (string, error) {
+    return app.Dialog.OpenFile().
         SetTitle("Select Image").
-        SetFilters([]application.FileFilter{
-            {DisplayName: "Images", Pattern: "*.png;*.jpg;*.jpeg;*.gif"},
-            {DisplayName: "All Files", Pattern: "*.*"},
-        }).
+        AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif").
+        AddFilter("All Files", "*.*").
         PromptForSingleSelection()
-
-    if err != nil {
-        return "", err
-    }
-
-    return path, nil
 }
 
-func (s *FileService) SaveDocument(defaultName string) (string, error) {
-    path, err := s.app.SaveFileDialog().
-        SetTitle("Save Document").
-        SetDefaultFilename(defaultName).
-        SetFilters([]application.FileFilter{
-            {DisplayName: "PDF Document", Pattern: "*.pdf"},
-            {DisplayName: "Text Document", Pattern: "*.txt"},
-        }).
+func (s *FileService) SaveDocument(app *application.App, defaultName string) (string, error) {
+    return app.Dialog.SaveFileWithOptions(&application.SaveFileDialogOptions{
+        Title: "Save Document",
+    }).
+        SetFilename(defaultName).
+        AddFilter("PDF Document", "*.pdf").
+        AddFilter("Text Document", "*.txt").
         PromptForSingleSelection()
-
-    if err != nil {
-        return "", err
-    }
-
-    return path, nil
 }
 
-func (s *FileService) SelectOutputFolder() (string, error) {
-    path, err := s.app.SelectFolderDialog().
+func (s *FileService) SelectOutputFolder(app *application.App) (string, error) {
+    return app.Dialog.OpenFile().
         SetTitle("Select Output Folder").
+        CanChooseDirectories(true).
+        CanChooseFiles(false).
         PromptForSingleSelection()
-
-    if err != nil {
-        return "", err
-    }
-
-    return path, nil
 }
 ```
 
 ### Confirmation Dialog Example
 
 ```go
-func (s *Service) DeleteItem(id string) error {
-    // Confirm before deleting
-    result, err := s.app.QuestionDialog().
+func confirmDelete(app *application.App) {
+    dialog := app.Dialog.Question().
         SetTitle("Confirm Delete").
-        SetMessage("Are you sure you want to delete this item?").
-        SetButtons("Delete", "Cancel").
-        SetDefaultButton(1). // Default to Cancel
-        SetCancelButton(1).
-        Show()
+        SetMessage("Are you sure you want to delete this item?")
 
-    if err != nil || result == "Cancel" {
-        return nil // User cancelled
-    }
+    deleteBtn := dialog.AddButton("Delete")
+    cancelBtn := dialog.AddButton("Cancel")
 
-    // Perform deletion
-    return deleteFromDatabase(id)
-}
-```
+    cancelBtn.SetAsDefault() // Default to Cancel for safety
+    cancelBtn.SetAsCancel()
 
-### Save Changes Dialog
+    deleteBtn.OnClick(func() {
+        deleteFromDatabase(id)
+    })
 
-```go
-func (s *Editor) PromptSaveChanges() (bool, error) {
-    result, err := s.app.QuestionDialog().
-        SetTitle("Unsaved Changes").
-        SetMessage("Do you want to save your changes before closing?").
-        SetButtons("Save", "Don't Save", "Cancel").
-        SetDefaultButton(0).
-        SetCancelButton(2).
-        Show()
-
-    if err != nil {
-        return false, err
-    }
-
-    switch result {
-    case "Save":
-        return s.Save()
-    case "Don't Save":
-        return true, nil
-    case "Cancel":
-        return false, nil
-    }
-
-    return false, nil
-}
-```
-
-### Multi-File Processing
-
-```go
-func (s *Service) ProcessMultipleFiles() error {
-    // Select multiple files
-    paths, err := s.app.OpenFileDialog().
-        SetTitle("Select Files to Process").
-        SetFilters([]application.FileFilter{
-            {DisplayName: "Images", Pattern: "*.png;*.jpg"},
-        }).
-        PromptForMultipleSelection()
-
-    if err != nil {
-        return err
-    }
-
-    if len(paths) == 0 {
-        s.app.InfoDialog().
-            SetTitle("No Files Selected").
-            SetMessage("Please select at least one file.").
-            Show()
-        return nil
-    }
-
-    // Process files
-    for i, path := range paths {
-        err := processFile(path)
-        if err != nil {
-            s.app.ErrorDialog().
-                SetTitle("Processing Error").
-                SetMessage(fmt.Sprintf("Failed to process %s: %v", path, err)).
-                Show()
-            continue
-        }
-
-        // Show progress
-        s.app.EmitEvent("progress", map[string]interface{}{
-            "current": i + 1,
-            "total":   len(paths),
-        })
-    }
-
-    // Show completion
-    s.app.InfoDialog().
-        SetTitle("Complete").
-        SetMessage(fmt.Sprintf("Successfully processed %d files", len(paths))).
-        Show()
-
-    return nil
+    dialog.Show()
 }
 ```
 
 ### Error Handling with Dialogs
 
 ```go
-func (s *Service) SaveFile(data []byte) error {
+func saveFile(app *application.App, data []byte) error {
     // Select save location
-    path, err := s.app.SaveFileDialog().
-        SetTitle("Save File").
-        SetDefaultFilename("data.json").
-        SetFilters([]application.FileFilter{
-            {DisplayName: "JSON File", Pattern: "*.json"},
-        }).
+    path, err := app.Dialog.SaveFile().
+        SetFilename("data.json").
+        AddFilter("JSON File", "*.json").
         PromptForSingleSelection()
 
     if err != nil {
+        return err
+    }
+
+    if path == "" {
         // User cancelled - not an error
         return nil
     }
@@ -650,16 +683,14 @@ func (s *Service) SaveFile(data []byte) error {
     // Attempt to save
     err = os.WriteFile(path, data, 0644)
     if err != nil {
-        // Show error dialog
-        s.app.ErrorDialog().
+        app.Dialog.Error().
             SetTitle("Save Failed").
             SetMessage(fmt.Sprintf("Could not save file: %v", err)).
             Show()
         return err
     }
 
-    // Show success
-    s.app.InfoDialog().
+    app.Dialog.Info().
         SetTitle("Success").
         SetMessage("File saved successfully!").
         Show()
@@ -668,124 +699,19 @@ func (s *Service) SaveFile(data []byte) error {
 }
 ```
 
-### Platform-Specific Defaults
-
-```go
-import (
-    "os"
-    "path/filepath"
-    "runtime"
-)
-
-func (s *Service) GetDefaultDirectory() string {
-    homeDir, _ := os.UserHomeDir()
-
-    switch runtime.GOOS {
-    case "windows":
-        return filepath.Join(homeDir, "Documents")
-    case "darwin":
-        return filepath.Join(homeDir, "Documents")
-    case "linux":
-        return filepath.Join(homeDir, "Documents")
-    default:
-        return homeDir
-    }
-}
-
-func (s *Service) OpenWithDefaults() (string, error) {
-    return s.app.OpenFileDialog().
-        SetTitle("Open File").
-        SetDefaultDirectory(s.GetDefaultDirectory()).
-        SetFilters([]application.FileFilter{
-            {DisplayName: "All Files", Pattern: "*.*"},
-        }).
-        PromptForSingleSelection()
-}
-```
-
 ## Best Practices
 
-### ✅ Do
+### Do
 
 - **Use native dialogs** - They match the platform's look and feel
 - **Provide clear titles** - Help users understand the purpose
-- **Set appropriate filters** - Guide users to correct file types
-- **Handle cancellation** - Check for errors (user may cancel)
-- **Show confirmation for destructive actions** - Use QuestionDialog
-- **Provide feedback** - Use InfoDialog for success messages
+- **Set appropriate filters** - Guide users to correct file types using `AddFilter()`
+- **Handle empty results** - User cancellation returns an empty string (not an error)
+- **Show confirmation for destructive actions** - Use question dialogs
 - **Set sensible defaults** - Default directory, filename, etc.
 
-### ❌ Don't
+### Don't
 
-- **Don't ignore errors** - User cancellation returns an error
-- **Don't use ambiguous button labels** - "OK" vs "Save"/"Cancel"
+- **Don't hardcode paths** - Use `os.UserHomeDir()` or similar
 - **Don't overuse dialogs** - They interrupt workflow
-- **Don't show errors for cancellation** - It's a normal action
-- **Don't forget file filters** - Help users find the right files
-- **Don't hardcode paths** - Use os.UserHomeDir() or similar
-
-## Dialog Types by Platform
-
-### macOS
-
-- Dialogs slide down from title bar
-- "Sheet" style attached to parent window
-- Native macOS appearance
-
-### Windows
-
-- Standard Windows dialogs
-- Follows Windows design guidelines
-- Modern Windows 10/11 appearance
-
-### Linux
-
-- GTK dialogs on GTK-based systems
-- Qt dialogs on Qt-based systems
-- Matches desktop environment
-
-## Common Patterns
-
-### "Save As" Pattern
-
-```go
-func (s *Service) SaveAs(currentPath string) (string, error) {
-    // Extract filename from current path
-    filename := filepath.Base(currentPath)
-
-    // Show save dialog
-    path, err := s.app.SaveFileDialog().
-        SetTitle("Save As").
-        SetDefaultFilename(filename).
-        PromptForSingleSelection()
-
-    if err != nil {
-        return "", err
-    }
-
-    return path, nil
-}
-```
-
-### "Open Recent" Pattern
-
-```go
-func (s *Service) OpenRecent(recentPath string) error {
-    // Check if file still exists
-    if _, err := os.Stat(recentPath); os.IsNotExist(err) {
-        result, _ := s.app.QuestionDialog().
-            SetTitle("File Not Found").
-            SetMessage("The file no longer exists. Remove from recent files?").
-            SetButtons("Remove", "Cancel").
-            Show()
-
-        if result == "Remove" {
-            s.removeFromRecent(recentPath)
-        }
-
-        return err
-    }
-
-    return s.openFile(recentPath)
-}
-```
+- **Don't use ambiguous button labels** - Be specific: "Save" vs "OK"

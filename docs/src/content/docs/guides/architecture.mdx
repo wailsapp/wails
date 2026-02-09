@@ -37,11 +37,11 @@ type UserService interface {
 
 // Implementation
 type userService struct {
-    app *application.Application
+    app *application.App
     db  *sql.DB
 }
 
-func NewUserService(app *application.Application, db *sql.DB) UserService {
+func NewUserService(app *application.App, db *sql.DB) UserService {
     return &userService{app: app, db: db}
 }
 ```
@@ -76,7 +76,7 @@ func (s *UserService) Create(email, password string) (*User, error) {
 
 ```go
 type EventBus struct {
-    app       *application.Application
+    app       *application.App
     listeners map[string][]func(interface{})
     mu        sync.RWMutex
 }

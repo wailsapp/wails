@@ -148,15 +148,24 @@ Events.On('common:WindowFocus', () => {
 
 ### 2. Responding to Theme Changes
 
-Keep your app in sync with the system theme:
+Handle theme changes in Go and forward to the frontend:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    isDark := e.Context().IsDarkMode()
+    app.Event.Emit("theme-changed", isDark)
+})
+```
+
+Then listen in JavaScript:
 
 ```javascript
 import { Events } from '@wailsio/runtime';
 
-Events.On('common:ThemeChanged', (event) => {
-    const isDarkMode = event.data.isDark;
-
-    if (isDarkMode) {
+Events.On('theme-changed', (event) => {
+    if (event.data) {
         document.body.classList.add('dark-theme');
         document.body.classList.remove('light-theme');
     } else {
@@ -166,23 +175,58 @@ Events.On('common:ThemeChanged', (event) => {
 });
 ```
 
+You can also listen for the system event directly in JavaScript, but note that the theme data is not included:
+
+```javascript
+Events.On('common:ThemeChanged', () => {
+    // Theme changed, but isDark is not available
+    // Use CSS media queries or query the System API instead
+});
+```
+
 ### 3. Handling File Drops
 
-Make your app accept dragged files:
+Handle file drops in Go using the `WindowEventContext`:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(e *application.WindowEvent) {
+    files := e.Context().DroppedFiles()
+    for _, file := range files {
+        fmt.Println("File dropped:", file)
+    }
+
+    // Optionally get drop target details
+    details := e.Context().DropTargetDetails()
+    if details != nil {
+        fmt.Println("Dropped on element:", details.ID)
+    }
+
+    // Notify the frontend
+    window.EmitEvent("files-dropped", files)
+})
+```
+
+Then listen in JavaScript:
 
 ```javascript
 import { Events } from '@wailsio/runtime';
 
-Events.On('common:WindowFilesDropped', (event) => {
-    const files = event.data.files;
-
+Events.On('files-dropped', (event) => {
+    // EmitEvent is variadic, so event.data is a []any wrapping the args.
+    // The files array is the first element.
+    const files = event.data[0];
     files.forEach(file => {
         console.log('File dropped:', file);
-        // Process the dropped files
         handleFileUpload(file);
     });
 });
 ```
+
+:::note
+The `common:WindowFilesDropped` system event is dispatched to the JS frontend but does not include the file paths in its data. Use a Go event handler to access the dropped files via `event.Context().DroppedFiles()` and forward them to the frontend with a custom event.
+:::
 
 ### 4. Window Lifecycle Management
 
@@ -194,9 +238,6 @@ import { Events } from '@wailsio/runtime';
 Events.On('common:WindowClosing', () => {
     // Save user data before closing
     saveApplicationState();
-
-    // You could also prevent closing by returning false
-    // from a registered window close handler
 });
 
 Events.On('common:WindowMaximise', () => {
@@ -327,12 +368,8 @@ func init() {
 
 :::caution
 `RegisterEvent` is meant to be called at init time and will panic if:
-- Arguments are not valid
-- The same event name is registered twice with different data types
-:::
-
-:::note
-It is safe to register the same event multiple times as long as the data type is always the same. This can be useful to ensure an event is registered when any of multiple packages is loaded.
+- The event name conflicts with a known system event name
+- The same event name is registered more than once
 :::
 
 ### Benefits of Event Registration
@@ -421,18 +458,32 @@ These events work on all platforms:
 
 | Event | Description | When to Use |
 |-------|-------------|-------------|
+| `common:ApplicationOpenedWithFile` | App launched with a file | Open file passed at launch |
 | `common:ApplicationStarted` | Application has fully started | Initialize your app, load saved state |
-| `common:WindowRuntimeReady` | Wails runtime is ready | Start making Wails API calls |
+| `common:ApplicationLaunchedWithUrl` | App launched via URL scheme | Handle custom URL schemes |
 | `common:ThemeChanged` | System theme changed | Update app appearance |
-| `common:WindowFocus` | Window gained focus | Resume activities, refresh data |
-| `common:WindowLostFocus` | Window lost focus | Pause activities, save state |
-| `common:WindowMinimise` | Window was minimized | Pause rendering, reduce resource usage |
-| `common:WindowMaximise` | Window was maximized | Adjust layout for full screen |
-| `common:WindowRestore` | Window restored from min/max | Return to normal layout |
 | `common:WindowClosing` | Window is about to close | Save data, cleanup resources |
-| `common:WindowFilesDropped` | Files dropped on window | Handle file imports |
-| `common:WindowDidResize` | Window was resized | Adjust layout, rerender charts |
 | `common:WindowDidMove` | Window was moved | Update position-dependent features |
+| `common:WindowDidResize` | Window was resized | Adjust layout, rerender charts |
+| `common:WindowDPIChanged` | DPI scaling changed | Adjust rendering for new DPI |
+| `common:WindowFilesDropped` | Files dropped on window | Handle file imports |
+| `common:WindowFocus` | Window gained focus | Resume activities, refresh data |
+| `common:WindowFullscreen` | Window entered fullscreen | Adjust layout for fullscreen |
+| `common:WindowHide` | Window was hidden | Pause rendering |
+| `common:WindowLostFocus` | Window lost focus | Pause activities, save state |
+| `common:WindowMaximise` | Window was maximized | Adjust layout for full screen |
+| `common:WindowMinimise` | Window was minimized | Pause rendering, reduce resource usage |
+| `common:WindowToggleFrameless` | Frameless mode toggled | Update window chrome |
+| `common:WindowRestore` | Window restored from min/max | Return to normal layout |
+| `common:WindowRuntimeReady` | Wails runtime is ready | Start making Wails API calls |
+| `common:WindowShow` | Window became visible | Resume rendering |
+| `common:WindowUnFullscreen` | Window exited fullscreen | Restore normal layout |
+| `common:WindowUnMaximise` | Window restored from maximized | Restore normal layout |
+| `common:WindowUnMinimise` | Window restored from minimized | Resume rendering |
+| `common:WindowZoom` | Window zoom changed | Adjust content scaling |
+| `common:WindowZoomIn` | Zoom level increased | Update zoom indicator |
+| `common:WindowZoomOut` | Zoom level decreased | Update zoom indicator |
+| `common:WindowZoomReset` | Zoom reset to default | Update zoom indicator |
 
 ### Platform-Specific Events
 
@@ -501,11 +552,11 @@ useEffect(() => {
         // Handle event
     };
 
-    Events.On('common:WindowResize', handler);
+    Events.On('common:WindowDidResize', handler);
 
     // Cleanup
     return () => {
-        Events.Off('common:WindowResize', handler);
+        Events.Off('common:WindowDidResize', handler);
     };
 }, []);
 ```

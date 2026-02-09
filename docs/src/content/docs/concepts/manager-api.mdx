@@ -136,7 +136,7 @@ result, err := app.Dialog.OpenFile().
     PromptForSingleSelection()
 
 result, err = app.Dialog.SaveFile().
-    SetDefaultFilename("document.txt").
+    SetFilename("document.txt").
     PromptForSingleSelection()
 
 // Message dialogs
@@ -175,11 +175,11 @@ Dynamic management of global key bindings.
 
 ```go
 // Add key bindings
-app.KeyBinding.Add("ctrl+n", func(window *WebviewWindow) {
+app.KeyBinding.Add("ctrl+n", func(window application.Window) {
     // Handle Ctrl+N
 })
 
-app.KeyBinding.Add("ctrl+q", func(window *WebviewWindow) {
+app.KeyBinding.Add("ctrl+q", func(window application.Window) {
     app.Quit()
 })
 

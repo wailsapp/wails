@@ -228,9 +228,11 @@ These roles create entire menu structures with common functionality:
 | Role | Description | Platform Notes |
 |------|-------------|----------------|
 | `AppMenu` | Application menu with About, Services, Hide/Show, and Quit | macOS only |
+| `FileMenu` | File menu with Close Window (macOS) or Quit (Windows/Linux) | All platforms |
 | `EditMenu` | Standard Edit menu with Undo, Redo, Cut, Copy, Paste, etc. | All platforms |
 | `ViewMenu` | View menu with Reload, Zoom, and Fullscreen controls | All platforms |
 | `WindowMenu` | Window controls (Minimise, Zoom, etc.) | All platforms |
+| `SpeechMenu` | Speech menu with Start/Stop Speaking | macOS only |
 | `HelpMenu` | Help menu with "Learn More" link to Wails website | All platforms |
 
 #### Individual Menu Items
@@ -261,6 +263,24 @@ These roles can be used to add individual menu items:
 | `ResetZoom` | Reset zoom level | All platforms |
 | `ZoomIn` | Increase zoom | All platforms |
 | `ZoomOut` | Decrease zoom | All platforms |
+| `OpenDevTools` | Open developer tools | All platforms |
+| `FullScreen` | Enter full screen | All platforms |
+| `NewFile` | New file | All platforms |
+| `Open` | Open file | All platforms |
+| `Save` | Save file | All platforms |
+| `SaveAs` | Save file as | All platforms |
+| `Revert` | Revert file | All platforms |
+| `Print` | Print | All platforms |
+| `PageLayout` | Page layout | All platforms |
+| `Find` | Find | All platforms |
+| `FindAndReplace` | Find and replace | All platforms |
+| `FindNext` | Find next | All platforms |
+| `FindPrevious` | Find previous | All platforms |
+| `ShowAll` | Show all windows | macOS only |
+| `BringAllToFront` | Bring all windows to front | macOS only |
+| `StartSpeaking` | Start speaking | macOS only |
+| `StopSpeaking` | Stop speaking | macOS only |
+| `Help` | Help | All platforms |
 
 Here's an example showing how to use both complete menus and individual roles:
 
@@ -310,7 +330,7 @@ func main() {
     fileMenu := appMenu.AddSubmenu("File")
     fileMenu.Add("New").OnClick(func(ctx *application.Context) {
         // This will be available in all windows unless overridden
-        window := app.Windows.Current()
+        window := app.Window.Current()
         window.SetTitle("New Window")
     })
     
@@ -415,8 +435,13 @@ When creating a custom context menu, you provide a unique identifier (name) that
 
 ```go
 // Create a context menu with identifier "imageMenu"
-contextMenu := application.NewContextMenu()
-app.ContextMenus.Add("imageMenu", contextMenu)
+contextMenu := application.NewContextMenu("imageMenu")
+
+// Add items and call Update() to apply changes
+contextMenu.Add("Cut")
+contextMenu.Add("Copy")
+contextMenu.Add("Paste")
+contextMenu.Update()
 ```
 
 The name parameter ("imageMenu" in this example) serves as a unique identifier that will be used to:
@@ -474,9 +499,8 @@ After calling `Destroy()`, using the context menu reference again will result in
 Here's a complete example of implementing a custom context menu for an image gallery:
 
 ```go
-// Backend: Create the context menu
-imageMenu := application.NewContextMenu()
-app.ContextMenus.Add("imageMenu", imageMenu)
+// Backend: Create the context menu (auto-registered by name)
+imageMenu := application.NewContextMenu("imageMenu")
 
 // Add relevant operations
 imageMenu.Add("View Full Size").OnClick(func(ctx *application.Context) {
@@ -497,6 +521,8 @@ imageMenu.Add("Share").OnClick(func(ctx *application.Context) {
         showShareDialog(imageID)
     }
 })
+
+imageMenu.Update()
 ```
 
 ```html

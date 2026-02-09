@@ -204,7 +204,7 @@ Call from JavaScript using the runtime:
     import { Events } from '@wailsio/runtime';
 
     Events.Emit("my-event", { message: "Hello from frontend" });
-    Events.On("response-event", (data) => console.log(data));
+    Events.On("response-event", (event) => console.log(event.data));
 </script>
 ```
 

@@ -25,14 +25,12 @@ Wails provides **declarative context menus** using CSS properties. Associate men
 **Go code:**
 
 ```go
-// Create context menu
-contextMenu := app.NewContextMenu()
+// Create and register context menu (auto-registered by name)
+contextMenu := application.NewContextMenu("editor-menu")
 contextMenu.Add("Cut").OnClick(handleCut)
 contextMenu.Add("Copy").OnClick(handleCopy)
 contextMenu.Add("Paste").OnClick(handlePaste)
-
-// Register with ID
-app.RegisterContextMenu("editor-menu", contextMenu)
+contextMenu.Update()
 ```
 
 **HTML:**
@@ -50,8 +48,8 @@ app.RegisterContextMenu("editor-menu", contextMenu)
 ### Basic Context Menu
 
 ```go
-// Create menu
-contextMenu := app.NewContextMenu()
+// Create menu (auto-registered by the name passed to NewContextMenu)
+contextMenu := application.NewContextMenu("text-menu")
 
 // Add items
 contextMenu.Add("Cut").SetAccelerator("CmdOrCtrl+X").OnClick(func(ctx *application.Context) {
@@ -66,16 +64,15 @@ contextMenu.Add("Paste").SetAccelerator("CmdOrCtrl+V").OnClick(func(ctx *applica
     // Handle paste
 })
 
-// Register with unique ID
-app.RegisterContextMenu("text-menu", contextMenu)
+contextMenu.Update()
 ```
 
-**Menu ID:** Must be unique. Used to associate menu with HTML elements.
+**Menu name:** Must be unique. Used to associate menu with HTML elements.
 
 ### With Submenus
 
 ```go
-contextMenu := app.NewContextMenu()
+contextMenu := application.NewContextMenu("image-menu")
 
 // Add regular items
 contextMenu.Add("Open").OnClick(handleOpen)
@@ -89,13 +86,13 @@ exportMenu.Add("PNG").OnClick(exportPNG)
 exportMenu.Add("JPEG").OnClick(exportJPEG)
 exportMenu.Add("SVG").OnClick(exportSVG)
 
-app.RegisterContextMenu("image-menu", contextMenu)
+contextMenu.Update()
 ```
 
 ### With Checkboxes and Radio Groups
 
 ```go
-contextMenu := app.NewContextMenu()
+contextMenu := application.NewContextMenu("view-menu")
 
 // Checkbox
 contextMenu.AddCheckbox("Show Grid", true).OnClick(func(ctx *application.Context) {
@@ -110,7 +107,7 @@ contextMenu.AddRadio("Small", false).OnClick(handleSize)
 contextMenu.AddRadio("Medium", true).OnClick(handleSize)
 contextMenu.AddRadio("Large", false).OnClick(handleSize)
 
-app.RegisterContextMenu("view-menu", contextMenu)
+contextMenu.Update()
 ```
 
 **For all menu item types**, see [Menu Reference](/features/menus/reference).
@@ -142,13 +139,12 @@ Pass data from HTML to Go:
 **Go handler:**
 
 ```go
-contextMenu := app.NewContextMenu()
+contextMenu := application.NewContextMenu("file-menu")
 contextMenu.Add("Open").OnClick(func(ctx *application.Context) {
     fileID := ctx.ContextMenuData()  // "file-123"
     openFile(fileID)
 })
-
-app.RegisterContextMenu("file-menu", contextMenu)
+contextMenu.Update()
 ```
 
 **CSS properties:**
@@ -328,17 +324,17 @@ var cutMenuItem *application.MenuItem
 var copyMenuItem *application.MenuItem
 
 func createContextMenu() {
-    contextMenu := app.NewContextMenu()
-    
+    contextMenu := application.NewContextMenu("editor-menu")
+
     cutMenuItem = contextMenu.Add("Cut")
     cutMenuItem.SetEnabled(false)  // Initially disabled
     cutMenuItem.OnClick(handleCut)
-    
+
     copyMenuItem = contextMenu.Add("Copy")
     copyMenuItem.SetEnabled(false)
     copyMenuItem.OnClick(handleCopy)
-    
-    app.RegisterContextMenu("editor-menu", contextMenu)
+
+    contextMenu.Update()
 }
 
 func onSelectionChanged(hasSelection bool) {
@@ -375,14 +371,14 @@ For major changes, rebuild the entire menu:
 
 ```go
 func rebuildContextMenu(fileType string) {
-    contextMenu := app.NewContextMenu()
-    
+    contextMenu := application.NewContextMenu("file-menu")
+
     // Common items
     contextMenu.Add("Open").OnClick(handleOpen)
     contextMenu.Add("Delete").OnClick(handleDelete)
-    
+
     contextMenu.AddSeparator()
-    
+
     // Type-specific items
     switch fileType {
     case "image":
@@ -395,8 +391,8 @@ func rebuildContextMenu(fileType string) {
         contextMenu.Add("Print").OnClick(printDocument)
         contextMenu.Add("Export PDF").OnClick(exportPDF)
     }
-    
-    app.RegisterContextMenu("file-menu", contextMenu)
+
+    contextMenu.Update()
 }
 ```
 
@@ -470,76 +466,69 @@ func main() {
         Name: "Context Menu Demo",
     })
 
-    // Create file context menu
-    fileMenu := createFileMenu(app)
-    app.RegisterContextMenu("file-menu", fileMenu)
+    // Create context menus (auto-registered by name)
+    createFileMenu()
+    createImageMenu()
+    createTextMenu()
 
-    // Create image context menu
-    imageMenu := createImageMenu(app)
-    app.RegisterContextMenu("image-menu", imageMenu)
-
-    // Create text context menu
-    textMenu := createTextMenu(app)
-    app.RegisterContextMenu("text-menu", textMenu)
-
-    app.NewWebviewWindow()
+    app.Window.New()
     app.Run()
 }
 
-func createFileMenu(app *application.Application) *application.ContextMenu {
-    menu := app.NewContextMenu()
-    
+func createFileMenu() {
+    menu := application.NewContextMenu("file-menu")
+
     menu.Add("Open").OnClick(func(ctx *application.Context) {
         data := parseFileData(ctx.ContextMenuData())
         openFile(data.ID)
     })
-    
+
     menu.Add("Rename").OnClick(func(ctx *application.Context) {
         data := parseFileData(ctx.ContextMenuData())
         renameFile(data.ID)
     })
-    
+
     menu.AddSeparator()
-    
+
     menu.Add("Delete").OnClick(func(ctx *application.Context) {
         data := parseFileData(ctx.ContextMenuData())
         deleteFile(data.ID)
     })
-    
-    return menu
+
+    menu.Update()
 }
 
-func createImageMenu(app *application.Application) *application.ContextMenu {
-    menu := app.NewContextMenu()
-    
+func createImageMenu() {
+    menu := application.NewContextMenu("image-menu")
+
     menu.Add("View").OnClick(func(ctx *application.Context) {
         data := parseFileData(ctx.ContextMenuData())
         viewImage(data.ID)
     })
-    
+
     menu.Add("Edit").OnClick(func(ctx *application.Context) {
         data := parseFileData(ctx.ContextMenuData())
         editImage(data.ID)
     })
-    
+
     menu.AddSeparator()
-    
+
     exportMenu := menu.AddSubmenu("Export As")
     exportMenu.Add("PNG").OnClick(exportPNG)
     exportMenu.Add("JPEG").OnClick(exportJPEG)
     exportMenu.Add("WebP").OnClick(exportWebP)
-    
-    return menu
+
+    menu.Update()
 }
 
-func createTextMenu(app *application.Application) *application.ContextMenu {
-    menu := app.NewContextMenu()
-    
+func createTextMenu() {
+    menu := application.NewContextMenu("text-menu")
+
     menu.Add("Cut").SetAccelerator("CmdOrCtrl+X").OnClick(handleCut)
     menu.Add("Copy").SetAccelerator("CmdOrCtrl+C").OnClick(handleCopy)
     menu.Add("Paste").SetAccelerator("CmdOrCtrl+V").OnClick(handlePaste)
-    
-    return menu
+
+    menu.Update()
 }
 
 func parseFileData(dataStr string) FileData {
@@ -656,8 +645,10 @@ func handlePaste(ctx *application.Context) { /* ... */ }
 **Solution:**
 
 ```go
-// Check menu is registered
-app.RegisterContextMenu("my-menu", contextMenu)
+// Check menu is created and registered with the correct name
+contextMenu := application.NewContextMenu("my-menu")
+// ... add items ...
+contextMenu.Update()
 ```
 
 ```html

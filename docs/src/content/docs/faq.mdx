@@ -33,7 +33,7 @@ Yes! Wails v3 is suitable for production applications. Many companies use Wails 
 
 - Windows (7+)
 - macOS (10.13+)
-- Linux (GTK3)
+- Linux (GTK3 and GTK4)
 
 ## Development
 
@@ -85,16 +85,15 @@ Use your browser's dev tools:
 wails3 build
 ```
 
-Your application will be in `build/bin/`.
+Your application will be in `bin/`.
 
 ### Can I cross-compile?
 
-Yes! Build for other platforms:
+Cross-compilation is controlled by setting the `GOOS` and `GOARCH` environment variables. Note that CGo cross-compilation may require additional tooling:
 
 ```bash
-wails3 build -platform windows/amd64
-wails3 build -platform darwin/universal
-wails3 build -platform linux/amd64
+GOOS=windows GOARCH=amd64 wails3 build
+GOOS=linux GOARCH=amd64 wails3 build
 ```
 
 ### How do I create an installer?
@@ -123,8 +122,8 @@ Use SignTool with your certificate.
 Yes! Wails v3 has native multi-window support:
 
 ```go
-window1 := app.NewWebviewWindow()
-window2 := app.NewWebviewWindow()
+window1 := app.Window.New()
+window2 := app.Window.New()
 ```
 
 ### Does Wails support system tray?
@@ -132,7 +131,7 @@ window2 := app.NewWebviewWindow()
 Yes! Create system tray applications:
 
 ```go
-tray := app.NewSystemTray()
+tray := app.SystemTray.New()
 tray.SetIcon(iconBytes)
 tray.SetMenu(menu)
 ```
@@ -142,7 +141,7 @@ tray.SetMenu(menu)
 Yes! Wails provides native dialogs:
 
 ```go
-path, _ := app.OpenFileDialog().
+path, _ := app.Dialog.OpenFile().
     SetTitle("Select File").
     PromptForSingleSelection()
 ```
@@ -155,10 +154,10 @@ Wails doesn't include auto-update functionality, but you can implement it yourse
 
 ### Why is my binary large?
 
-Go binaries include the runtime. Reduce size:
+Go binaries include the runtime. The default Taskfiles already include `-ldflags "-s -w"` to strip debug symbols. You can further reduce size with UPX compression:
 
 ```bash
-wails3 build -ldflags "-s -w"
+upx --best bin/myapp
 ```
 
 ### How do I improve performance?
@@ -194,7 +193,7 @@ wails3 generate bindings
 Check if you called `Show()`:
 
 ```go
-window := app.NewWebviewWindow()
+window := app.Window.New()
 window.Show()  // Don't forget this!
 ```
 
@@ -204,10 +203,11 @@ Ensure event names match exactly:
 
 ```go
 // Go
-app.EmitEvent("my-event", data)
+app.Event.Emit("my-event", data)
 
 // JavaScript
-OnEvent("my-event", handler)  // Must match
+import { Events } from '@wailsio/runtime'
+Events.On("my-event", handler)  // Must match
 ```
 
 ### Build fails

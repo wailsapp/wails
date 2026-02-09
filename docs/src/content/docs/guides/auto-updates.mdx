@@ -43,14 +43,15 @@ func (a *App) startUpdateChecker() {
 
 ```go
 func (a *App) CheckForUpdates() {
-    result, _ := a.app.QuestionDialog().
-        SetMessage("Check for updates?").
-        SetButtons("Check", "Cancel").
-        Show()
-    
-    if result == "Check" {
+    dialog := a.app.Dialog.Question().
+        SetMessage("Check for updates?")
+
+    dialog.AddButton("Check").OnClick(func() {
         a.checkForUpdates()
-    }
+    })
+    dialog.AddButton("Cancel")
+
+    dialog.Show()
 }
 ```
 

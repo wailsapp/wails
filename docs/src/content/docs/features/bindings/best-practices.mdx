@@ -274,7 +274,7 @@ func (s *Service) ProcessLargeFile(path string) error {
         processed++
         
         // Emit progress
-        s.app.EmitEvent("progress", map[string]interface{}{
+        s.app.Event.Emit("progress", map[string]interface{}{
             "processed": processed,
             "total":     total,
             "percent":   int(float64(processed) / float64(total) * 100),
@@ -285,8 +285,9 @@ func (s *Service) ProcessLargeFile(path string) error {
 }
 
 // JavaScript listens
-OnEvent("progress", (data) => {
-    updateProgress(data.percent)
+import { Events } from '@wailsio/runtime'
+Events.On("progress", (event) => {
+    updateProgress(event.data.percent)
 })
 ```
 
