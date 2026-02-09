@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Bumped ghw version for better Apple device support by @leaanthony (#4977)
 - Add `GetBadge` method to the dock service
 
 ## Changed
