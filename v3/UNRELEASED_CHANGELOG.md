@@ -17,12 +17,14 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add `GetBadge` method to the dock service
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix dock badge methods consistency on macOS
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
