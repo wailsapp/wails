@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix GTK4 build failure caused by C `Screen` typedef colliding with X11 Xlib.h (#4957)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
