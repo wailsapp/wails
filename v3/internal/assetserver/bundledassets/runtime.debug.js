@@ -96,6 +96,54 @@ function setTransport(transport) {
 function getTransport() {
   return customTransport;
 }
+function hasAndroidBridge() {
+  var _a2;
+  return typeof window !== "undefined" && typeof ((_a2 = window.wails) == null ? void 0 : _a2.invoke) === "function";
+}
+function parseAndroidInvokeResponse(responseText) {
+  if (!responseText) {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(responseText);
+    if (parsed && typeof parsed === "object" && "ok" in parsed) {
+      if (parsed.ok === false) {
+        throw new Error(parsed.error || "runtime call failed");
+      }
+      return parsed.data;
+    }
+    return parsed;
+  } catch (err) {
+    if (err instanceof Error) {
+      throw err;
+    }
+    return responseText;
+  }
+}
+function configureAndroidTransport() {
+  if (customTransport || !hasAndroidBridge()) {
+    return;
+  }
+  customTransport = {
+    call: async (objectID, method, windowName, args) => {
+      const payload = {
+        type: "runtime",
+        object: objectID,
+        method,
+        clientId
+      };
+      if (windowName) {
+        payload.windowName = windowName;
+      }
+      if (args !== null && args !== void 0) {
+        payload.args = args;
+      }
+      const responseText = window.wails.invoke(JSON.stringify(payload));
+      return parseAndroidInvokeResponse(responseText);
+    }
+  };
+}
+configureAndroidTransport();
 function newRuntimeCaller(object, windowName = "") {
   return function(method, args = null) {
     return runtimeCallWithID(object, method, windowName, args);

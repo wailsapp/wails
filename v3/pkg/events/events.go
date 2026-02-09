@@ -763,4 +763,5 @@ var eventToJS = map[uint]string{
 	1256: "ios:WebViewDidFinishNavigation",
 	1257: "ios:WebViewDidFailNavigation",
 	1258: "ios:WebViewDecidePolicyForNavigationAction",
+	1259: "android:ActivityCreated",
 }

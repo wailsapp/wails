@@ -139,6 +139,7 @@ static void executeJavaScriptOnBridge(const char* js) {
 import "C"
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -433,7 +434,11 @@ func Java_com_wails_app_WailsBridge_nativeOnPageFinished(env *C.JNIEnv, obj C.jo
 		if win != nil {
 			androidLogf("info", "🤖 [JNI] Injecting runtime.Core() into window %d", id)
 			// Get the runtime core JavaScript
-			runtimeJS := runtime.Core()
+			flags := map[string]any{}
+			if app.impl != nil {
+				flags = app.impl.GetFlags(app.options)
+			}
+			runtimeJS := runtime.Core(flags)
 			androidLogf("info", "🤖 [JNI] Runtime JS length: %d bytes", len(runtimeJS))
 			app.windowsLock.RUnlock()
 			// IMPORTANT: We must bypass win.ExecJS because it queues if runtimeLoaded is false.
@@ -622,15 +627,64 @@ func serveAssetForAndroid(app *App, path string) ([]byte, error) {
 }
 
 func handleMessageForAndroid(app *App, message string) string {
-	// Parse the message
-	var msg map[string]interface{}
-	if err := json.Unmarshal([]byte(message), &msg); err != nil {
-		return fmt.Sprintf(`{"error":"%s"}`, err.Error())
+	if strings.HasPrefix(message, "wails:") {
+		windows := app.Window.GetAll()
+		if len(windows) > 0 {
+			windows[0].HandleMessage(message)
+		}
+		return marshalAndroidInvokeResponse(nil, nil)
 	}
 
-	// TODO: Route to appropriate handler based on message type
-	// For now, return success
-	return `{"success":true}`
+	var payload androidRuntimeMessage
+	if err := json.Unmarshal([]byte(message), &payload); err != nil {
+		return marshalAndroidInvokeResponse(nil, fmt.Errorf("invalid message: %w", err))
+	}
+
+	if payload.Type != "runtime" {
+		return marshalAndroidInvokeResponse(nil, fmt.Errorf("unsupported message type: %s", payload.Type))
+	}
+
+	processor := NewMessageProcessor(app.Logger)
+	request := &RuntimeRequest{
+		Object:            payload.Object,
+		Method:            payload.Method,
+		Args:              &Args{payload.Args},
+		WebviewWindowName: payload.WindowName,
+		ClientID:          payload.ClientID,
+	}
+
+	response, err := processor.HandleRuntimeCallWithIDs(context.Background(), request)
+	return marshalAndroidInvokeResponse(response, err)
+}
+
+type androidRuntimeMessage struct {
+	Type       string          `json:"type"`
+	Object     int             `json:"object"`
+	Method     int             `json:"method"`
+	Args       json.RawMessage `json:"args,omitempty"`
+	WindowName string          `json:"windowName,omitempty"`
+	ClientID   string          `json:"clientId,omitempty"`
+}
+
+type androidInvokeResponse struct {
+	Ok    bool   `json:"ok"`
+	Data  any    `json:"data,omitempty"`
+	Error string `json:"error,omitempty"`
+}
+
+func marshalAndroidInvokeResponse(data any, err error) string {
+	response := androidInvokeResponse{Ok: err == nil}
+	if err != nil {
+		response.Error = err.Error()
+	} else {
+		response.Data = data
+	}
+
+	payload, marshalErr := json.Marshal(response)
+	if marshalErr != nil {
+		return fmt.Sprintf(`{"ok":false,"error":"%s"}`, marshalErr.Error())
+	}
+	return string(payload)
 }
 
 func getMimeTypeForPath(path string) string {

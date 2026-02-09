@@ -4,6 +4,18 @@ package events
 
 // Android events implementation
 
+var Android = newAndroidEvents()
+
+type androidEvents struct {
+	ActivityCreated ApplicationEventType
+}
+
+func newAndroidEvents() androidEvents {
+	return androidEvents{
+		ActivityCreated: 1259,
+	}
+}
+
 const MAX_EVENTS = 100
 
 var hasListener [MAX_EVENTS]bool
