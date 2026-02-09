@@ -29,22 +29,6 @@ typedef struct WindowEvent {
     uint event;
 } WindowEvent;
 
-typedef struct Screen {
-    const char* id;
-    const char* name;
-    int p_width;
-    int p_height;
-    int x;
-    int y;
-    int w_width;
-    int w_height;
-    int w_x;
-    int w_y;
-    float scaleFactor;
-    double rotation;
-    bool isPrimary;
-} Screen;
-
 typedef struct MenuItemData {
     guint id;
     GSimpleAction *action;
