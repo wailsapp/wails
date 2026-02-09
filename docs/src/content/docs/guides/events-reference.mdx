@@ -214,7 +214,10 @@ Then listen in JavaScript:
 import { Events } from '@wailsio/runtime';
 
 Events.On('files-dropped', (event) => {
-    event.data.forEach(file => {
+    // EmitEvent is variadic, so event.data is a []any wrapping the args.
+    // The files array is the first element.
+    const files = event.data[0];
+    files.forEach(file => {
         console.log('File dropped:', file);
         handleFileUpload(file);
     });

@@ -538,10 +538,7 @@ func ProcessLargeFile(path string) error {
     for scanner.Scan() {
         lineNum++
         // Emit progress events
-        app.Event.Emit("file-progress", map[string]interface{}{
-            "line": lineNum,
-            "text": scanner.Text(),
-        })
+        app.Event.Emit("file-progress", lineNum, scanner.Text())
     }
     
     return scanner.Err()
@@ -553,8 +550,10 @@ import { Events } from '@wailsio/runtime'
 import { ProcessLargeFile } from './bindings/FileService'
 
 // Listen for progress
+// event.data is an array of the variadic args: [lineNum, text]
 Events.On('file-progress', (event) => {
-    console.log(`Line ${event.data.line}: ${event.data.text}`)
+    const [line, text] = event.data
+    console.log(`Line ${line}: ${text}`)
 })
 
 // Start processing

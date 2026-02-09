@@ -436,6 +436,12 @@ When creating a custom context menu, you provide a unique identifier (name) that
 ```go
 // Create a context menu with identifier "imageMenu"
 contextMenu := application.NewContextMenu("imageMenu")
+
+// Add items and call Update() to apply changes
+contextMenu.Add("Cut")
+contextMenu.Add("Copy")
+contextMenu.Add("Paste")
+contextMenu.Update()
 ```
 
 The name parameter ("imageMenu" in this example) serves as a unique identifier that will be used to:

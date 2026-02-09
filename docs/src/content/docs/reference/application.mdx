@@ -347,10 +347,8 @@ app.RegisterService(application.NewService(&MyService{}))
 Emits a custom event.
 
 ```go
-func (em *EventManager) Emit(name string, data ...any) bool
+func (em *EventManager) Emit(name string, data ...any)
 ```
-
-**Returns:** `true` if the event was cancelled by a hook.
 
 **Example:**
 
