@@ -6,8 +6,11 @@ require (
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3
 	github.com/Masterminds/semver v1.5.0
 	github.com/adrg/xdg v0.5.3
+	github.com/atotto/clipboard v0.1.4
 	github.com/atterpac/refresh v0.8.6
 	github.com/bep/debounce v1.2.1
+	github.com/charmbracelet/bubbles v0.21.1-0.20250623103423-23b8fd6302d7
+	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/glamour v0.10.0
 	github.com/charmbracelet/huh v0.8.0
 	github.com/coder/websocket v1.8.14
@@ -22,7 +25,7 @@ require (
 	github.com/goreleaser/nfpm/v2 v2.44.1
 	github.com/gorilla/websocket v1.5.3
 	github.com/jackmordaunt/icns/v2 v2.2.7
-	github.com/jaypipes/ghw v0.21.2
+	github.com/jaypipes/ghw v0.21.3
 	github.com/konoui/lipo v0.10.0
 	github.com/leaanthony/clir v1.7.0
 	github.com/leaanthony/go-ansi-parser v1.6.1
@@ -52,10 +55,7 @@ require (
 require (
 	al.essio.dev/pkg/shellescape v1.6.0 // indirect
 	atomicgo.dev/schedule v0.1.0 // indirect
-	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/catppuccin/go v0.3.0 // indirect
-	github.com/charmbracelet/bubbles v0.21.1-0.20250623103423-23b8fd6302d7 // indirect
-	github.com/charmbracelet/bubbletea v1.3.10 // indirect
 	github.com/charmbracelet/colorprofile v0.4.1 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.14 // indirect
 	github.com/charmbracelet/x/exp/slice v0.0.0-20260122224438-b01af16209d9 // indirect
@@ -93,7 +93,7 @@ require (
 	github.com/blakesmith/ar v0.0.0-20190502131153-809d4375e1fb // indirect
 	github.com/cavaliergopher/cpio v1.0.1 // indirect
 	github.com/chainguard-dev/git-urls v1.0.2 // indirect
-	github.com/charmbracelet/lipgloss v1.1.1-0.20250404203927-76690c660834 // indirect
+	github.com/charmbracelet/lipgloss v1.1.1-0.20250404203927-76690c660834
 	github.com/charmbracelet/x/ansi v0.11.4 // indirect
 	github.com/cloudflare/circl v1.6.3 // indirect
 	github.com/containerd/console v1.0.5 // indirect

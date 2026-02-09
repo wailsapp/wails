@@ -17,6 +17,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Bumped ghw version for better Apple device support by @leaanthony (#4977)
+- Add `GetBadge` method to the dock service
 
 ## Changed
 <!-- Changes in existing functionality -->
@@ -24,6 +26,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 - Fix GTK4 build failure caused by C `Screen` typedef colliding with X11 Xlib.h (#4957)
+- Fix dock badge methods consistency on macOS
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
