@@ -33,13 +33,18 @@ PreInit: "Pre-Initialisation" {
   }
 }
 
-ServiceStartup: "Service Startup" {
+ServiceInit: "Service Initialisation" {
   shape: rectangle
   style.fill: "#3B82F6"
 }
 
 CreateWindows: "Create Windows" {
   shape: rectangle
+}
+
+AppStarted: "ApplicationStarted Event" {
+  shape: rectangle
+  style.fill: "#3B82F6"
 }
 
 EventLoop: "Event Loop" {
@@ -86,9 +91,10 @@ End: "Application End" {
 Start -> PreInit.Parse
 PreInit.Parse -> PreInit.Register
 PreInit.Register -> PreInit.Validate
-PreInit.Validate -> ServiceStartup
-ServiceStartup -> CreateWindows
-CreateWindows -> EventLoop.Process
+PreInit.Validate -> ServiceInit
+ServiceInit -> CreateWindows
+CreateWindows -> AppStarted
+AppStarted -> EventLoop.Process
 EventLoop.Process -> EventLoop.Handle
 EventLoop.Handle -> EventLoop.Update
 EventLoop.Update -> EventLoop.Process: "Loop"
@@ -111,9 +117,9 @@ Before your code runs, Wails:
 
 **You don't control this phase** - it happens automatically.
 
-### 2. Service Startup
+### 2. Service Initialisation
 
-Your first opportunity to run code is through the `ServiceStartup` interface. Services that implement this interface receive a startup notification during `app.Run()`:
+Services that implement `ServiceStartup` initialise their own resources during `app.Run()`. This is for **service-specific setup** (database connections, config loading), not for reacting to application lifecycle events:
 
 ```go
 type AppService struct {
@@ -152,11 +158,37 @@ app := application.New(application.Options{
 - Database connections
 - Configuration loading
 - Resource initialisation
-- Authentication checks
 
 **Context:** The `context.Context` is valid as long as the application is running and is cancelled right before shutdown.
 
-### 3. Window Creation
+### 3. Application Lifecycle Events
+
+To react to application lifecycle stages, use **events** — not services:
+
+```go
+// React to application start
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
+    // Application is fully running - safe to show notifications, check for updates, etc.
+    log.Println("Application started")
+})
+
+// React to theme changes
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
+    log.Println("Theme changed")
+})
+```
+
+**Available common application events:**
+- `events.Common.ApplicationStarted` — Application has fully started
+- `events.Common.ThemeChanged` — System theme changed (light/dark)
+
+**Platform-specific events** are also available (e.g. `events.Mac.ApplicationDidFinishLaunching`, `events.Windows.ApplicationStarted`).
+
+**Key distinction:**
+- **`ServiceStartup`** = initialise your service's resources (DB, config)
+- **Application events** = react to lifecycle stages (app started, theme changed)
+
+### 4. Window Creation
 
 After services start up, you create windows:
 
@@ -170,7 +202,7 @@ window := app.Window.New()
 3. Frontend assets are loaded
 4. Window is shown (unless `Hidden: true`)
 
-### 4. Event Loop
+### 5. Event Loop
 
 The application enters the event loop:
 
@@ -186,14 +218,14 @@ err := app.Run()  // Blocks here until quit
 
 **This is where your application spends most of its time.**
 
-### 5. Quit Signal
+### 6. Quit Signal
 
 User triggers quit via:
 - Closing last window (default behaviour)
 - Cmd+Q / Alt+F4 / File → Quit
 - Your code calling `app.Quit()`
 
-### 6. ShouldQuit / Window Close Prevention
+### 7. ShouldQuit / Window Close Prevention
 
 **Application-level quit prevention with `ShouldQuit`:**
 
@@ -226,7 +258,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 - Prevent accidental closure
 - Save state before quitting
 
-### 7. Shutdown Hooks
+### 8. Shutdown Hooks
 
 There are multiple hooks for shutdown:
 
@@ -277,22 +309,42 @@ app := application.New(application.Options{
 
 **Important:** Keep shutdown fast. OS may force-kill if too slow.
 
-### 8. Cleanup & Exit
+### 9. Cleanup & Exit
 
 Wails automatically:
 1. Closes all windows
 2. Releases WebView resources
 3. Exits the process
 
-## Lifecycle Hooks Reference
+## Lifecycle Reference
+
+**Application events** (react to lifecycle stages):
+
+| Event | When | Use For |
+|-------|------|---------|
+| `events.Common.ApplicationStarted` | App fully running | Post-start tasks (notifications, update checks) |
+| `events.Common.ThemeChanged` | System theme changed | Theme adaptation |
+
+**Service interfaces** (resource management):
+
+| Interface | When | Can Cancel? | Use For |
+|-----------|------|-------------|---------|
+| `ServiceStartup` | During `app.Run()`, before event loop | Yes (return error) | Resource initialisation |
+| `ServiceShutdown` | During shutdown, reverse order | No | Resource cleanup |
+
+**Application options** (shutdown/quit control):
+
+| Option | When | Can Cancel? | Use For |
+|--------|------|-------------|---------|
+| `ShouldQuit` | App quit requested | Yes (return false) | Confirm quit |
+| `OnShutdown` | After quit confirmed | No | Cleanup |
+| `PostShutdown` | After shutdown complete | No | Logging, testing |
+
+**Window hooks** (per-window lifecycle):
 
 | Hook | When | Can Cancel? | Use For |
 |------|------|-------------|---------|
-| `ServiceStartup` | During `app.Run()`, before event loop | Yes (return error) | Initialisation |
-| `ShouldQuit` | App quit requested | Yes (return false) | Confirm quit |
-| `ShouldClose` | Window closing | Yes (return false) | Prevent window close |
-| `OnShutdown` | After quit confirmed | No | Cleanup |
-| `PostShutdown` | After shutdown complete | No | Logging, testing |
+| `events.Common.WindowClosing` | Window closing | Yes (`e.Cancel()`) | Prevent window close |
 
 ## Common Patterns
 
@@ -662,8 +714,9 @@ if err := app.Run(); err != nil {
 
 ### ✅ Do
 
-- **Initialise in ServiceStartup** - Database, config, resources
-- **Clean up in ServiceShutdown** - Close connections, save state
+- **Use `ServiceStartup` for resource init** - Database, config, connections
+- **Use application events for lifecycle** - `events.Common.ApplicationStarted` for post-start tasks
+- **Clean up in `ServiceShutdown`** - Close connections, save state
 - **Keep shutdown fast** - &lt;1 second
 - **Use context for cancellation** - Stop background tasks
 - **Handle errors gracefully** - Return errors from ServiceStartup
@@ -671,6 +724,7 @@ if err := app.Run(); err != nil {
 
 ### ❌ Don't
 
+- **Don't use `ServiceStartup` for lifecycle hooks** - Use application events instead
 - **Don't block ServiceStartup** - Keep it fast (&lt;2 seconds)
 - **Don't show dialogs during shutdown** - App is quitting
 - **Don't ignore errors** - Log or return them

@@ -345,32 +345,42 @@ Shutdown.Cleanup -> Shutdown.Save
 Shutdown.Save -> End
 ```
 
-**Lifecycle hooks:**
+**Application lifecycle events:**
 
 ```go
-// Services provide startup/shutdown hooks
-type AppService struct{}
+// React to application lifecycle using events
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
+    // Application has fully started - safe to show notifications, check for updates, etc.
+})
+
+// Shutdown and quit control via application options
+app := application.New(application.Options{
+    Name: "My App",
+    OnShutdown: func() {
+        // Cleanup before shutdown
+    },
+    ShouldQuit: func() bool {
+        // Return false to prevent quit
+        return true
+    },
+})
+```
+
+**Service initialisation** (for resource setup, not lifecycle hooks):
+
+```go
+// Services initialise their own resources during startup
+type AppService struct{ db *sql.DB }
 
 func (s *AppService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
-    // Initialise database, load config, etc.
-    return nil
+    var err error
+    s.db, err = sql.Open("sqlite3", "app.db")
+    return err
 }
 
 func (s *AppService) ServiceShutdown() error {
-    // Save state, close connections, etc.
-    return nil
+    return s.db.Close()
 }
-
-app := application.New(application.Options{
-    Name: "My App",
-    Services: []application.Service{
-        application.NewService(&AppService{}),
-    },
-    // Called when app is about to quit (before service shutdown)
-    OnShutdown: func() {
-        // Additional cleanup
-    },
-})
 ```
 
 [Learn more about lifecycle →](/concepts/lifecycle)
