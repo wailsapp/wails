@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geolocation API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.danger { background: #f87171; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .status.warning { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .location-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .location-item {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .location-item .label { color: #aaa; font-size: 0.85rem; margin-bottom: 5px; }
+        .location-item .value { font-size: 1.5rem; color: #4ade80; font-family: monospace; }
+        .location-item .unit { font-size: 0.85rem; color: #666; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .map-placeholder {
+            width: 100%;
+            height: 200px;
+            background: #0a0a1a;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            margin-top: 15px;
+        }
+        .history { list-style: none; }
+        .history li {
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            margin-bottom: 5px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+        .history .time { color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Geolocation API Demo</h1>
+        <p class="description">
+            The Geolocation API allows web applications to access the user's geographical location.
+            It requires user permission and works best with GPS-enabled devices.
+        </p>
+
+        <div id="status" class="status">
+            Geolocation: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Current Position</h2>
+            <button onclick="getPosition()">Get Current Position</button>
+            <button id="watchBtn" onclick="toggleWatch()">Start Watching</button>
+            <button class="danger" onclick="clearHistory()">Clear History</button>
+
+            <div class="location-display" id="locationDisplay" style="margin-top: 20px; display: none;">
+                <div class="location-item">
+                    <div class="label">Latitude</div>
+                    <div class="value" id="latitude">-</div>
+                </div>
+                <div class="location-item">
+                    <div class="label">Longitude</div>
+                    <div class="value" id="longitude">-</div>
+                </div>
+                <div class="location-item">
+                    <div class="label">Accuracy</div>
+                    <div class="value" id="accuracy">-</div>
+                    <div class="unit">meters</div>
+                </div>
+                <div class="location-item">
+                    <div class="label">Altitude</div>
+                    <div class="value" id="altitude">-</div>
+                    <div class="unit">meters</div>
+                </div>
+                <div class="location-item">
+                    <div class="label">Speed</div>
+                    <div class="value" id="speed">-</div>
+                    <div class="unit">m/s</div>
+                </div>
+                <div class="location-item">
+                    <div class="label">Heading</div>
+                    <div class="value" id="heading">-</div>
+                    <div class="unit">degrees</div>
+                </div>
+            </div>
+
+            <div class="map-placeholder" id="mapPlaceholder">
+                Get location to see coordinates
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Position Options</h2>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <label style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="highAccuracy"> High Accuracy (GPS)
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px;">
+                    Timeout: <input type="number" id="timeout" value="10000" style="width: 80px; padding: 5px; background: #1a1a2e; border: 1px solid #333; color: #eee; border-radius: 4px;"> ms
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px;">
+                    Max Age: <input type="number" id="maxAge" value="0" style="width: 80px; padding: 5px; background: #1a1a2e; border: 1px solid #333; color: #eee; border-radius: 4px;"> ms
+                </label>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Position History</h2>
+            <ul class="history" id="history">
+                <li style="color: #666;">No positions recorded yet...</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Raw Position Data</h2>
+            <div class="output" id="rawData">Position data will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        let watchId = null;
+        let history = [];
+
+        function checkSupport() {
+            const supported = 'geolocation' in navigator;
+            document.getElementById('supported').textContent = supported ? 'Available' : 'Not available';
+            document.getElementById('status').className = supported ? 'status success' : 'status error';
+            return supported;
+        }
+
+        function getOptions() {
+            return {
+                enableHighAccuracy: document.getElementById('highAccuracy').checked,
+                timeout: parseInt(document.getElementById('timeout').value) || 10000,
+                maximumAge: parseInt(document.getElementById('maxAge').value) || 0
+            };
+        }
+
+        function getPosition() {
+            updateStatus('Requesting position...', 'warning');
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    updateStatus('Position acquired', 'success');
+                    displayPosition(position);
+                    addToHistory(position);
+                },
+                (error) => {
+                    handleError(error);
+                },
+                getOptions()
+            );
+        }
+
+        function toggleWatch() {
+            const btn = document.getElementById('watchBtn');
+
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+                btn.textContent = 'Start Watching';
+                btn.classList.remove('danger');
+                updateStatus('Watch stopped', 'success');
+            } else {
+                updateStatus('Watching position...', 'warning');
+                btn.textContent = 'Stop Watching';
+                btn.classList.add('danger');
+
+                watchId = navigator.geolocation.watchPosition(
+                    (position) => {
+                        updateStatus('Position updated', 'success');
+                        displayPosition(position);
+                        addToHistory(position);
+                    },
+                    (error) => {
+                        handleError(error);
+                    },
+                    getOptions()
+                );
+            }
+        }
+
+        function displayPosition(position) {
+            document.getElementById('locationDisplay').style.display = 'grid';
+
+            const coords = position.coords;
+            document.getElementById('latitude').textContent = coords.latitude.toFixed(6);
+            document.getElementById('longitude').textContent = coords.longitude.toFixed(6);
+            document.getElementById('accuracy').textContent = coords.accuracy ? coords.accuracy.toFixed(0) : '-';
+            document.getElementById('altitude').textContent = coords.altitude ? coords.altitude.toFixed(1) : '-';
+            document.getElementById('speed').textContent = coords.speed ? coords.speed.toFixed(2) : '-';
+            document.getElementById('heading').textContent = coords.heading ? coords.heading.toFixed(0) : '-';
+
+            // Update map placeholder
+            const mapUrl = `https://www.openstreetmap.org/?mlat=${coords.latitude}&mlon=${coords.longitude}#map=15/${coords.latitude}/${coords.longitude}`;
+            document.getElementById('mapPlaceholder').innerHTML = `
+                <a href="${mapUrl}" target="_blank" style="color: #4ade80;">
+                    View on OpenStreetMap: ${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}
+                </a>
+            `;
+
+            // Raw data
+            document.getElementById('rawData').textContent = JSON.stringify({
+                coords: {
+                    latitude: coords.latitude,
+                    longitude: coords.longitude,
+                    accuracy: coords.accuracy,
+                    altitude: coords.altitude,
+                    altitudeAccuracy: coords.altitudeAccuracy,
+                    heading: coords.heading,
+                    speed: coords.speed
+                },
+                timestamp: position.timestamp,
+                timestampISO: new Date(position.timestamp).toISOString()
+            }, null, 2);
+        }
+
+        function addToHistory(position) {
+            const time = new Date(position.timestamp).toLocaleTimeString();
+            const coords = position.coords;
+            history.unshift({
+                time,
+                lat: coords.latitude.toFixed(6),
+                lng: coords.longitude.toFixed(6),
+                accuracy: coords.accuracy ? coords.accuracy.toFixed(0) : '-'
+            });
+
+            if (history.length > 10) history.pop();
+
+            const historyEl = document.getElementById('history');
+            historyEl.innerHTML = history.map(h => `
+                <li>
+                    <span class="time">${h.time}</span> -
+                    Lat: ${h.lat}, Lng: ${h.lng} (±${h.accuracy}m)
+                </li>
+            `).join('');
+        }
+
+        function clearHistory() {
+            history = [];
+            document.getElementById('history').innerHTML = '<li style="color: #666;">No positions recorded yet...</li>';
+        }
+
+        function handleError(error) {
+            const messages = {
+                1: 'Permission denied - User declined location access',
+                2: 'Position unavailable - Location information unavailable',
+                3: 'Timeout - Request took too long'
+            };
+            updateStatus(messages[error.code] || error.message, 'error');
+            document.getElementById('rawData').textContent = `Error ${error.code}: ${messages[error.code] || error.message}`;
+        }
+
+        function updateStatus(message, type) {
+            const status = document.getElementById('status');
+            status.innerHTML = `Geolocation: ${message}`;
+            status.className = `status ${type}`;
+        }
+
+        checkSupport();
+    </script>
+</body>
+</html>

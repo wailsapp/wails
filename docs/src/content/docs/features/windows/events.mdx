@@ -74,7 +74,7 @@ window.OnClose(func() bool {
     }
     
     // Show confirmation dialog
-    dialog := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:       "Confirm Close",
         Width:       400,
         Height:      150,
@@ -164,7 +164,7 @@ window.OnFocus(func() {
     refreshContent()
     
     // Notify other windows
-    app.EmitEvent("window-focused", window.ID())
+    app.Event.Emit("window-focused", window.ID())
 })
 ```
 
@@ -437,7 +437,7 @@ func main() {
 }
 
 func (mw *ManagedWindow) CreateWindow() {
-    mw.window = mw.app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    mw.window = mw.app.Window.NewWithOptions(application.WebviewWindowOptions{
         Name:   "main",
         Title:  "Event Demo",
         Width:  800,
@@ -566,11 +566,11 @@ Coordinate between multiple windows:
 // In main window
 mainWindow.OnFocus(func() {
     // Notify all windows
-    app.EmitEvent("main-window-focused", nil)
+    app.Event.Emit("main-window-focused", nil)
 })
 
 // In other windows
-app.OnEvent("main-window-focused", func(event *application.WailsEvent) {
+app.Event.On("main-window-focused", func(event *application.WailsEvent) {
     // Update UI
     updateRelativeToMain()
 })
@@ -589,7 +589,7 @@ window.OnMaximise(func() {
     window.EmitEvent("layout-changed", "maximised")
     
     // Notify other windows
-    app.EmitEvent("window-maximised", window.ID())
+    app.Event.Emit("window-maximised", window.ID())
 })
 ```
 
@@ -656,7 +656,7 @@ window.Destroy()
 
 ```go
 // Register handlers immediately after creation
-window := app.NewWebviewWindow()
+window := app.Window.New()
 window.OnClose(func() bool { return true })
 ```
 

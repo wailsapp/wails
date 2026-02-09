@@ -1,4 +1,4 @@
-//go:build linux && !android
+//go:build linux && cgo && !gtk4 && !android && !server
 
 package application
 
@@ -338,6 +338,11 @@ func (a *App) platformEnvironment() map[string]any {
 		C.webkit_get_minor_version(),
 		C.webkit_get_micro_version(),
 	)
+
+	result["compositor"] = detectCompositor()
+	result["wayland"] = isWayland()
+	result["focusFollowsMouse"] = detectFocusFollowsMouse()
+
 	return result
 }
 

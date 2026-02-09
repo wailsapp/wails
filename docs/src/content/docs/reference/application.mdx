@@ -80,33 +80,33 @@ fmt.Println("App name:", config.Name)
 
 ## Window Management
 
-### NewWebviewWindow()
+### app.Window.New()
 
 Creates a new webview window with default options.
 
 ```go
-func (a *App) NewWebviewWindow() *WebviewWindow
+func (wm *WindowManager) New() *WebviewWindow
 ```
 
 **Example:**
 
 ```go
-window := app.NewWebviewWindow()
+window := app.Window.New()
 window.Show()
 ```
 
-### NewWebviewWindowWithOptions()
+### app.Window.NewWithOptions()
 
 Creates a new webview window with custom options.
 
 ```go
-func (a *App) NewWebviewWindowWithOptions(options WebviewWindowOptions) *WebviewWindow
+func (wm *WindowManager) NewWithOptions(options WebviewWindowOptions) *WebviewWindow
 ```
 
 **Example:**
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:  "My Window",
     Width:  800,
     Height: 600,
@@ -114,35 +114,35 @@ window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-### GetWindowByName()
+### app.Window.GetByName()
 
 Gets a window by its name.
 
 ```go
-func (a *App) GetWindowByName(name string) Window
+func (wm *WindowManager) GetByName(name string) Window
 ```
 
 **Example:**
 
 ```go
-window := app.GetWindowByName("main")
+window := app.Window.GetByName("main")
 if window != nil {
     window.Show()
 }
 ```
 
-### GetWindows()
+### app.Window.GetAll()
 
 Returns all application windows.
 
 ```go
-func (a *App) GetWindows() []Window
+func (wm *WindowManager) GetAll() []Window
 ```
 
 **Example:**
 
 ```go
-windows := app.GetWindows()
+windows := app.Window.GetAll()
 for _, window := range windows {
     fmt.Println("Window:", window.Name())
 }
@@ -168,7 +168,7 @@ app.Env         // Environment variables
 
 ```go
 // Create window
-window := app.Window.NewWebviewWindow()
+window := app.Window.New()
 
 // Show dialog
 app.Dialog.Info().SetMessage("Hello!").Show()
@@ -207,55 +207,55 @@ app.RegisterService(application.NewService(NewMyService(app)))
 
 ## Event Management
 
-### EmitEvent()
+### app.Event.Emit()
 
 Emits a custom event.
 
 ```go
-func (a *App) EmitEvent(name string, data ...interface{})
+func (em *EventManager) Emit(name string, data ...interface{})
 ```
 
 **Example:**
 
 ```go
 // Emit event with data
-app.EmitEvent("user-logged-in", map[string]interface{}{
+app.Event.Emit("user-logged-in", map[string]interface{}{
     "username": "john",
     "timestamp": time.Now(),
 })
 ```
 
-### OnEvent()
+### app.Event.On()
 
 Listens for custom events.
 
 ```go
-func (a *App) OnEvent(name string, callback func(*CustomEvent))
+func (em *EventManager) On(name string, callback func(*CustomEvent))
 ```
 
 **Example:**
 
 ```go
-app.OnEvent("user-logged-in", func(e *application.CustomEvent) {
+app.Event.On("user-logged-in", func(e *application.CustomEvent) {
     data := e.Data.(map[string]interface{})
     username := data["username"].(string)
     fmt.Println("User logged in:", username)
 })
 ```
 
-### OnApplicationEvent()
+### app.Event.OnApplicationEvent()
 
 Listens for application lifecycle events.
 
 ```go
-func (a *App) OnApplicationEvent(eventType ApplicationEventType, callback func(*ApplicationEvent)) func()
+func (em *EventManager) OnApplicationEvent(eventType ApplicationEventType, callback func(*ApplicationEvent)) func()
 ```
 
 **Example:**
 
 ```go
 // Listen for shutdown
-app.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
     fmt.Println("Application shutting down")
     // Cleanup
 })
@@ -396,6 +396,61 @@ app := application.New(application.Options{
 
 For more details, see the [Raw Messages Guide](/guides/raw-messages).
 
+## Platform-Specific Options
+
+### Windows Options
+
+Configure Windows-specific behavior at the application level:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Windows: application.WindowsOptions{
+        // WebView2 browser flags (apply to ALL windows)
+        EnabledFeatures:       []string{"msWebView2EnableDraggableRegions"},
+        DisabledFeatures:      []string{"msExperimentalFeature"},
+        AdditionalBrowserArgs: []string{"--remote-debugging-port=9222"},
+
+        // Other Windows options
+        WndClass:                      "MyAppClass",
+        WebviewUserDataPath:           "",  // Default: %APPDATA%\[BinaryName.exe]
+        WebviewBrowserPath:            "",  // Default: system WebView2
+        DisableQuitOnLastWindowClosed: false,
+    },
+})
+```
+
+**Browser Flags:**
+- `EnabledFeatures` - WebView2 feature flags to enable
+- `DisabledFeatures` - WebView2 feature flags to disable
+- `AdditionalBrowserArgs` - Chromium command-line arguments
+
+See [Window Options - Application-Level Windows Options](/features/windows/options#application-level-windows-options) for detailed documentation.
+
+### Mac Options
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Mac: application.MacOptions{
+        ActivationPolicy: application.ActivationPolicyRegular,
+        ApplicationShouldTerminateAfterLastWindowClosed: true,
+    },
+})
+```
+
+### Linux Options
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Linux: application.LinuxOptions{
+        ProgramName:                   "my-app",
+        DisableQuitOnLastWindowClosed: false,
+    },
+})
+```
+
 ## Complete Application Example
 
 ```go
@@ -415,7 +470,7 @@ func main() {
     })
 
     // Create main window
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:            "My App",
         Width:            1024,
         Height:           768,

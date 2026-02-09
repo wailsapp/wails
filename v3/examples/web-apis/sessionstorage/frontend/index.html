@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Storage API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9rem; }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 1rem;
+        }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.danger { background: #f87171; }
+        button.secondary { background: #60a5fa; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .items-list { list-style: none; }
+        .items-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+        .items-list .key { color: #4ade80; font-family: monospace; }
+        .items-list .value { color: #aaa; font-family: monospace; max-width: 300px; overflow: hidden; text-overflow: ellipsis; }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .comparison-item {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .comparison-item h3 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        .comparison-item.session h3 { color: #4ade80; }
+        .comparison-item.local h3 { color: #60a5fa; }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .feature {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .feature .name { font-weight: 600; margin-bottom: 5px; }
+        .feature .supported { color: #4ade80; }
+        .feature .unsupported { color: #f87171; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Session Storage API Demo</h1>
+        <p class="description">
+            The Web Storage API provides sessionStorage for key-value storage that persists only
+            for the duration of the page session (until the tab or browser is closed).
+        </p>
+
+        <div id="status" class="status success">
+            sessionStorage is available: <span id="available">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Store Data</h2>
+            <div class="form-group">
+                <label for="key">Key</label>
+                <input type="text" id="key" placeholder="Enter key name">
+            </div>
+            <div class="form-group">
+                <label for="value">Value</label>
+                <textarea id="value" rows="3" placeholder="Enter value (can be JSON)"></textarea>
+            </div>
+            <button onclick="saveItem()">Save to sessionStorage</button>
+            <button onclick="loadItem()">Load from sessionStorage</button>
+        </div>
+
+        <div class="card">
+            <h2>Stored Items (<span id="count">0</span>)</h2>
+            <button onclick="refreshList()">Refresh List</button>
+            <button class="danger" onclick="clearAll()">Clear All</button>
+            <ul class="items-list" id="itemsList"></ul>
+        </div>
+
+        <div class="card">
+            <h2>Session vs Local Storage Comparison</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Save the same key to both storages to compare behavior:</p>
+            <div class="form-group">
+                <label for="compareKey">Comparison Key</label>
+                <input type="text" id="compareKey" value="testKey" placeholder="Key for comparison">
+            </div>
+            <button onclick="saveToBoth()">Save to Both</button>
+            <button class="secondary" onclick="compareStorages()">Compare</button>
+            <div class="comparison" style="margin-top: 15px;">
+                <div class="comparison-item session">
+                    <h3>sessionStorage</h3>
+                    <div id="sessionValue">-</div>
+                </div>
+                <div class="comparison-item local">
+                    <h3>localStorage</h3>
+                    <div id="localValue">-</div>
+                </div>
+            </div>
+            <p style="color: #888; font-size: 0.85rem; margin-top: 10px;">
+                Tip: Refresh the page or open a new tab to see the difference - sessionStorage is unique per tab!
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>Storage Info</h2>
+            <div class="output" id="info"></div>
+        </div>
+
+        <div class="card">
+            <h2>API Support</h2>
+            <div class="feature-grid" id="features"></div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <button onclick="clearLog()">Clear Log</button>
+            <div class="output" id="eventLog">Storage events will appear here...
+
+Note: Storage events fire when data is changed from ANOTHER tab/window of the same origin.</div>
+        </div>
+    </div>
+
+    <script>
+        let logEntries = [];
+
+        // Check if sessionStorage is available
+        function checkStorage() {
+            try {
+                sessionStorage.setItem('__test__', 'test');
+                sessionStorage.removeItem('__test__');
+                document.getElementById('available').textContent = 'Yes';
+                document.getElementById('status').className = 'status success';
+                return true;
+            } catch (e) {
+                document.getElementById('available').textContent = 'No - ' + e.message;
+                document.getElementById('status').className = 'status error';
+                return false;
+            }
+        }
+
+        function checkFeatures() {
+            const features = document.getElementById('features');
+            const checks = [
+                { name: 'sessionStorage', supported: 'sessionStorage' in window },
+                { name: 'localStorage', supported: 'localStorage' in window },
+                { name: 'setItem()', supported: 'sessionStorage' in window && typeof sessionStorage.setItem === 'function' },
+                { name: 'getItem()', supported: 'sessionStorage' in window && typeof sessionStorage.getItem === 'function' },
+                { name: 'removeItem()', supported: 'sessionStorage' in window && typeof sessionStorage.removeItem === 'function' },
+                { name: 'clear()', supported: 'sessionStorage' in window && typeof sessionStorage.clear === 'function' },
+                { name: 'key()', supported: 'sessionStorage' in window && typeof sessionStorage.key === 'function' },
+                { name: 'Storage Events', supported: 'onstorage' in window },
+            ];
+
+            features.innerHTML = checks.map(c => `
+                <div class="feature">
+                    <div class="name">${c.name}</div>
+                    <div class="${c.supported ? 'supported' : 'unsupported'}">${c.supported ? 'Supported' : 'Not supported'}</div>
+                </div>
+            `).join('');
+        }
+
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            logEntries.unshift(`[${time}] ${message}`);
+            if (logEntries.length > 20) logEntries.pop();
+            document.getElementById('eventLog').textContent = logEntries.join('\n');
+        }
+
+        function clearLog() {
+            logEntries = [];
+            document.getElementById('eventLog').textContent = 'Log cleared.';
+        }
+
+        function saveItem() {
+            const key = document.getElementById('key').value;
+            const value = document.getElementById('value').value;
+            if (!key) {
+                alert('Please enter a key');
+                return;
+            }
+            try {
+                sessionStorage.setItem(key, value);
+                log(`Saved: "${key}" = "${value.substring(0, 50)}${value.length > 50 ? '...' : ''}"`);
+                refreshList();
+                updateInfo();
+            } catch (e) {
+                alert('Error saving: ' + e.message);
+                log(`Error saving "${key}": ${e.message}`);
+            }
+        }
+
+        function loadItem() {
+            const key = document.getElementById('key').value;
+            if (!key) {
+                alert('Please enter a key');
+                return;
+            }
+            const value = sessionStorage.getItem(key);
+            if (value !== null) {
+                document.getElementById('value').value = value;
+                log(`Loaded: "${key}"`);
+            } else {
+                alert('Key not found');
+                log(`Key "${key}" not found`);
+            }
+        }
+
+        function deleteItem(key) {
+            sessionStorage.removeItem(key);
+            log(`Deleted: "${key}"`);
+            refreshList();
+            updateInfo();
+        }
+
+        function clearAll() {
+            if (confirm('Clear all sessionStorage data?')) {
+                sessionStorage.clear();
+                log('Cleared all sessionStorage data');
+                refreshList();
+                updateInfo();
+            }
+        }
+
+        function refreshList() {
+            const list = document.getElementById('itemsList');
+            list.innerHTML = '';
+            const count = sessionStorage.length;
+            document.getElementById('count').textContent = count;
+
+            for (let i = 0; i < count; i++) {
+                const key = sessionStorage.key(i);
+                const value = sessionStorage.getItem(key);
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span class="key">${escapeHtml(key)}</span>
+                    <span class="value">${escapeHtml(value.substring(0, 50))}${value.length > 50 ? '...' : ''}</span>
+                    <button onclick='deleteItem(${JSON.stringify(key)})' class="danger" style="padding: 5px 10px; font-size: 0.8rem;">Delete</button>
+                `;
+                list.appendChild(li);
+            }
+        }
+
+        function saveToBoth() {
+            const key = document.getElementById('compareKey').value || 'testKey';
+            const timestamp = new Date().toLocaleTimeString();
+            const value = `Saved at ${timestamp} (Tab ID: ${getTabId()})`;
+
+            sessionStorage.setItem(key, value);
+            localStorage.setItem(key, value);
+            log(`Saved to both storages: "${key}"`);
+            compareStorages();
+        }
+
+        function getTabId() {
+            let tabId = sessionStorage.getItem('__tabId__');
+            if (!tabId) {
+                tabId = Math.random().toString(36).substring(2, 8);
+                sessionStorage.setItem('__tabId__', tabId);
+            }
+            return tabId;
+        }
+
+        function compareStorages() {
+            const key = document.getElementById('compareKey').value || 'testKey';
+            const sessionVal = sessionStorage.getItem(key);
+            const localVal = localStorage.getItem(key);
+
+            document.getElementById('sessionValue').textContent = sessionVal || '(not set)';
+            document.getElementById('localValue').textContent = localVal || '(not set)';
+            log(`Compared storages for key "${key}"`);
+        }
+
+        function updateInfo() {
+            const info = document.getElementById('info');
+            let totalSize = 0;
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                totalSize += key.length + sessionStorage.getItem(key).length;
+            }
+            info.textContent = `Items: ${sessionStorage.length}
+Total size: ~${(totalSize * 2 / 1024).toFixed(2)} KB (UTF-16)
+Typical quota: 5-10 MB per origin
+Tab ID: ${getTabId()}
+
+Key Differences from localStorage:
+- Data persists only for the page session
+- Each tab/window has its own sessionStorage
+- Data is cleared when tab/window closes
+- Not shared between tabs (unlike localStorage)
+
+API Methods:
+- sessionStorage.setItem(key, value)
+- sessionStorage.getItem(key)
+- sessionStorage.removeItem(key)
+- sessionStorage.clear()
+- sessionStorage.key(index)
+- sessionStorage.length`;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Listen for storage events (from other tabs)
+        window.addEventListener('storage', (e) => {
+            if (e.storageArea === sessionStorage) {
+                log(`Storage event: "${e.key}" changed from "${e.oldValue}" to "${e.newValue}"`);
+                refreshList();
+                updateInfo();
+            }
+        });
+
+        // Initialize
+        if (checkStorage()) {
+            checkFeatures();
+            refreshList();
+            updateInfo();
+            compareStorages();
+        }
+    </script>
+</body>
+</html>

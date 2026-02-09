@@ -12,6 +12,9 @@ info:
   copyright: "(c) 2025, My Company" # Copyright text
   comments: "Some Product Comments" # Comments
   version: "0.0.1" # The application version
+  # cfBundleIconName: "appicon" # The macOS icon name in Assets.car icon bundles (optional)
+  #                               # Should match the name of your .icon file without the extension
+  #                               # If not set and Assets.car exists, defaults to "appicon"
 
 # iOS build configuration (uncomment to customise iOS project generation)
 # Note: Keys under `ios` OVERRIDE values under `info` when set.

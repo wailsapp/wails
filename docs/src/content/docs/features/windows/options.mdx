@@ -52,11 +52,14 @@ type WebviewWindowOptions struct {
     
     // Security
     ContentProtectionEnabled bool
-    
+
+    // Menu
+    UseApplicationMenu bool
+
     // Lifecycle
     OnClose   func() bool
     OnDestroy func()
-    
+
     // Platform-Specific
     Mac     MacOptions
     Windows WindowsOptions
@@ -86,7 +89,7 @@ Name: "main-window"
 **Example:**
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Name: "settings-window",
 })
 
@@ -161,7 +164,7 @@ Y: 100,  // 100px from top edge
 **Example:**
 
 ```go
-settings := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Name: "coordinate-window",
     InitialPosition: application.WindowXY, // use coordinate system
     X:    100,
@@ -171,7 +174,7 @@ settings := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 **Best practice:** Use `Center()` to center the window:
 
 ```go
-window := app.NewWebviewWindow()
+window := app.Window.New()
 window.Center()
 ```
 
@@ -248,7 +251,7 @@ Hidden: true,
 
 ```go
 // Create hidden window
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Name:   "main-window",
     Hidden: true,
     BackgroundColour: application.RGBA{R: 30, G: 30, B: 30, A: 255}, // Match your theme
@@ -264,7 +267,7 @@ window.Show()
 **Example:**
 
 ```go
-settings := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Name:   "settings",
     Hidden: true,
 })
@@ -546,6 +549,48 @@ Assets: application.AssetOptions{
 
 **See [Build System](/concepts/build-system) for details.**
 
+### UseApplicationMenu
+
+**Type:** `bool`
+**Default:** `false`
+**Platform:** Windows, Linux (no effect on macOS)
+
+```go
+UseApplicationMenu: true,
+```
+
+**Purpose:** Use the application menu (set via `app.Menu.Set()`) for this window.
+
+On **macOS**, this option has no effect because macOS always uses a global application menu at the top of the screen.
+
+On **Windows** and **Linux**, windows don't display a menu by default. Setting `UseApplicationMenu: true` tells the window to use the application-level menu, providing a simple cross-platform solution.
+
+**Example:**
+
+```go
+// Set the application menu once
+menu := app.NewMenu()
+menu.AddRole(application.FileMenu)
+menu.AddRole(application.EditMenu)
+app.Menu.Set(menu)
+
+// All windows with UseApplicationMenu will display this menu
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:              "Main Window",
+    UseApplicationMenu: true,
+})
+
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:              "Second Window",
+    UseApplicationMenu: true,  // Also gets the app menu
+})
+```
+
+**Notes:**
+- If both `UseApplicationMenu` and a window-specific menu are set, the window-specific menu takes priority
+- This simplifies cross-platform code by eliminating the need for runtime OS checks
+- See [Application Menus](/features/menus/application) for complete menu documentation
+
 ## Input Options
 
 ### EnableFileDrop
@@ -574,7 +619,7 @@ When enabled:
 **Example:**
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:          "File Uploader",
     EnableFileDrop: true,
 })
@@ -635,7 +680,7 @@ ContentProtectionEnabled: true,
 **Example:**
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title: "Secure Window",
     ContentProtectionEnabled: true,
 })
@@ -747,7 +792,8 @@ Mac: application.MacWindow{
 
 **InvisibleTitleBarHeight** (`int`)
 - Height of invisible title bar area (for dragging)
-- Useful when title bar is hidden
+- Only takes effect when the native title bar drag area is hidden — i.e. when the window is frameless (`Frameless: true`) or uses a transparent title bar (`AppearsTransparent: true`)
+- Has no effect on standard windows with a visible title bar
 
 **WindowLevel** (`MacWindowLevel`)
 - `MacWindowLevelNormal` - Standard window level (default)
@@ -869,6 +915,92 @@ Linux: application.LinuxOptions{
 },
 ```
 
+## Application-Level Windows Options
+
+Some Windows-specific options must be configured at the application level rather than per-window. This is because WebView2 shares a single browser environment per user data path.
+
+### Browser Flags
+
+WebView2 browser flags control experimental features and behavior across **all windows** in your application. These must be set in `application.Options.Windows`:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Windows: application.WindowsOptions{
+        // Enable experimental WebView2 features
+        EnabledFeatures: []string{
+            "msWebView2EnableDraggableRegions",
+        },
+
+        // Disable specific features
+        DisabledFeatures: []string{
+            "msSmartScreenProtection",  // Always disabled by Wails
+        },
+
+        // Additional Chromium command-line arguments
+        AdditionalBrowserArgs: []string{
+            "--disable-gpu",
+            "--remote-debugging-port=9222",
+        },
+    },
+})
+```
+
+**EnabledFeatures** (`[]string`)
+- List of WebView2 feature flags to enable
+- See [WebView2 browser flags](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags) for available flags
+- Example: `"msWebView2EnableDraggableRegions"`
+
+**DisabledFeatures** (`[]string`)
+- List of WebView2 feature flags to disable
+- Wails automatically disables `msSmartScreenProtection`
+- Example: `"msExperimentalFeature"`
+
+**AdditionalBrowserArgs** (`[]string`)
+- Chromium command-line arguments passed to the browser process
+- Must include the `--` prefix (e.g., `"--remote-debugging-port=9222"`)
+- See [Chromium command line switches](https://peter.sh/experiments/chromium-command-line-switches/) for available arguments
+
+:::caution[Important]
+These flags apply globally to ALL windows because WebView2 shares a single browser environment per user data path. You cannot have different browser flags for different windows.
+:::
+
+**Complete Example:**
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        Windows: application.WindowsOptions{
+            // Enable draggable regions feature
+            EnabledFeatures: []string{
+                "msWebView2EnableDraggableRegions",
+            },
+            // Enable remote debugging
+            AdditionalBrowserArgs: []string{
+                "--remote-debugging-port=9222",
+            },
+        },
+    })
+
+    // All windows will use the browser flags configured above
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  "Main Window",
+        Width:  1024,
+        Height: 768,
+    })
+
+    window.Show()
+    app.Run()
+}
+```
+
 ## Complete Example
 
 Here's a production-ready window configuration:
@@ -892,7 +1024,7 @@ func main() {
         Name: "My Application",
     })
 
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         // Identity
         Name:  "main-window",
         Title: "My Application",

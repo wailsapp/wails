@@ -89,27 +89,51 @@ func (t *HTTPTransport) Handler() func(next http.Handler) http.Handler {
 }
 
 func (t *HTTPTransport) handleRuntimeRequest(rw http.ResponseWriter, r *http.Request) {
-	// Use pooled buffer to reduce allocations
+	var body request
+	var err error
+
+	// Try to read from request body first (standard POST)
 	buf := bufferPool.Get().(*bytes.Buffer)
 	buf.Reset()
 	defer func() {
-		// Don't return large buffers to pool to prevent memory bloat
 		if buf.Cap() <= maxPooledBufferSize {
 			bufferPool.Put(buf)
 		}
 	}()
 
-	_, err := io.Copy(buf, r.Body)
+	_, err = io.Copy(buf, r.Body)
 	if err != nil {
 		t.httpError(rw, errs.WrapInvalidRuntimeCallErrorf(err, "Unable to read request body"))
 		return
 	}
 
-	var body request
-	err = json.Unmarshal(buf.Bytes(), &body)
-	if err != nil {
-		t.httpError(rw, errs.WrapInvalidRuntimeCallErrorf(err, "Unable to parse request body as JSON"))
-		return
+	if buf.Len() > 0 {
+		err = json.Unmarshal(buf.Bytes(), &body)
+		if err != nil {
+			t.httpError(rw, errs.WrapInvalidRuntimeCallErrorf(err, "Unable to parse request body as JSON"))
+			return
+		}
+	} else {
+		// Fallback: WebKitGTK 6.0 may send POST data as query params for custom URI schemes
+		query := r.URL.Query()
+		if objStr := query.Get("object"); objStr != "" {
+			obj, parseErr := strconv.Atoi(objStr)
+			if parseErr == nil {
+				body.Object = &obj
+			}
+		}
+		if methStr := query.Get("method"); methStr != "" {
+			meth, parseErr := strconv.Atoi(methStr)
+			if parseErr == nil {
+				body.Method = &meth
+			}
+		}
+		if argsStr := query.Get("args"); argsStr != "" {
+			var args json.RawMessage
+			if json.Unmarshal([]byte(argsStr), &args) == nil {
+				body.Args = args
+			}
+		}
 	}
 
 	if body.Object == nil {
