@@ -27,6 +27,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Bug fixes -->
 - Fix GTK4 build failure caused by C `Screen` typedef colliding with X11 Xlib.h (#4957)
 - Fix dock badge methods consistency on macOS
+- Bumped ghw version for better Apple device support by @leaanthony (#4977)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
