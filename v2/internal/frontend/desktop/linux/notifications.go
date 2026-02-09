@@ -62,7 +62,7 @@ func (f *Frontend) InitializeNotifications() error {
 	conn = _conn
 
 	if err := f.loadCategories(); err != nil {
-		fmt.Printf("Failed to load notification categories: %v\n", err)
+		f.logger.Warning("Failed to load notification categories: %v", err)
 	}
 
 	var signalCtx context.Context
@@ -267,7 +267,7 @@ func (f *Frontend) RegisterNotificationCategory(category frontend.NotificationCa
 	categoriesLock.Unlock()
 
 	if err := f.saveCategories(); err != nil {
-		fmt.Printf("Failed to save notification categories: %v\n", err)
+		f.logger.Warning("Failed to save notification categories: %v", err)
 	}
 
 	return nil
@@ -280,7 +280,7 @@ func (f *Frontend) RemoveNotificationCategory(categoryId string) error {
 	categoriesLock.Unlock()
 
 	if err := f.saveCategories(); err != nil {
-		fmt.Printf("Failed to save notification categories: %v\n", err)
+		f.logger.Warning("Failed to save notification categories: %v", err)
 	}
 
 	return nil
@@ -529,14 +529,17 @@ func handleNotificationResult(result frontend.NotificationResult) {
 	callback := notificationResultCallback
 	callbackLock.Unlock()
 
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				fmt.Fprintf(os.Stderr, "panic in notification callback: %v\n", r)
-			}
+	if callback != nil {
+		go func() {
+			defer func() {
+				if r := recover(); r != nil {
+					// Log panic but don't crash the app
+					fmt.Fprintf(os.Stderr, "panic in notification callback: %v\n", r)
+				}
+			}()
+			callback(result)
 		}()
-		callback(result)
-	}()
+	}
 }
 
 // Handle NotificationClosed signal.

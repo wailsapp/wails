@@ -752,7 +752,7 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center
        willPresentNotification:(UNNotification *)notification
          withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler API_AVAILABLE(macos(10.14)) {
-    UNNotificationPresentationOptions options = 0;
+    UNNotificationPresentationOptions options = UNNotificationPresentationOptionSound;
     
     if (@available(macOS 11.0, *)) {
         // These options are only available in macOS 11.0+
@@ -888,6 +888,18 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     return content;
 }
 
+- (void) sendNotificationWithRequest:(UNNotificationRequest *)request channelID:(int)channelID API_AVAILABLE(macos(10.14)) {
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
+        if (error) {
+            NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
+            captureResult(channelID, false, [errorMsg UTF8String]);
+        } else {
+            captureResult(channelID, true, NULL);
+        }
+    }];
+}
+
 - (void) SendNotification:(int)channelID :(const char *)identifier :(const char *)title :(const char *)subtitle :(const char *)body :(const char *)dataJSON API_AVAILABLE(macos(10.14)) {
     if (![self EnsureDelegateInitialized]) {
         NSString *errorMsg = @"Notification delegate has been lost. Reinitialize the notification service.";
@@ -895,7 +907,6 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
         return;
     }
     
-    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     NSString *nsIdentifier = [NSString stringWithUTF8String:identifier];
     
     NSError *contentError = nil;
@@ -909,14 +920,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     UNTimeIntervalNotificationTrigger *trigger = nil;
     UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:nsIdentifier content:content trigger:trigger];
     
-    [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
-        if (error) {
-            NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
-            captureResult(channelID, false, [errorMsg UTF8String]);
-        } else {
-            captureResult(channelID, true, NULL);
-        }
-    }];
+    [self sendNotificationWithRequest:request channelID:channelID];
 }
 
 - (void) SendNotificationWithActions:(int)channelID :(const char *)identifier :(const char *)title :(const char *)subtitle :(const char *)body :(const char *)categoryId :(const char *)dataJSON API_AVAILABLE(macos(10.14)) {
@@ -926,7 +930,6 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
         return;
     }
     
-    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     NSString *nsIdentifier = [NSString stringWithUTF8String:identifier];
     NSString *nsCategoryId = [NSString stringWithUTF8String:categoryId];
     
@@ -943,14 +946,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     UNTimeIntervalNotificationTrigger *trigger = nil;
     UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:nsIdentifier content:content trigger:trigger];
     
-    [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
-        if (error) {
-            NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
-            captureResult(channelID, false, [errorMsg UTF8String]);
-        } else {
-            captureResult(channelID, true, NULL);
-        }
-    }];
+    [self sendNotificationWithRequest:request channelID:channelID];
 }
 
 - (void) RegisterNotificationCategory:(int)channelID :(const char *)categoryId :(const char *)actionsJSON :(bool)hasReplyField :(const char *)replyPlaceholder :(const char *)replyButtonTitle API_AVAILABLE(macos(10.14)) {

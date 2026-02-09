@@ -6,6 +6,7 @@ package windows
 import (
 	"encoding/base64"
 	"encoding/json"
+	"log"
 	"sync"
 
 	wintoast "git.sr.ht/~jackmordaunt/go-toast/v2/wintoast"
@@ -164,7 +165,7 @@ func (f *Frontend) CheckNotificationAuthorization() (bool, error) {
 // (subtitle is only available on macOS and Linux)
 func (f *Frontend) SendNotification(options frontend.NotificationOptions) error {
 	if err := f.saveIconToDir(); err != nil {
-		fmt.Printf("Error saving icon: %v\n", err)
+		f.logger.Warning("Error saving icon: %v", err)
 	}
 
 	n := toast.Notification{
@@ -189,7 +190,7 @@ func (f *Frontend) SendNotification(options frontend.NotificationOptions) error 
 // (subtitle is only available on macOS and Linux)
 func (f *Frontend) SendNotificationWithActions(options frontend.NotificationOptions) error {
 	if err := f.saveIconToDir(); err != nil {
-		fmt.Printf("Error saving icon: %v\n", err)
+		f.logger.Warning("Error saving icon: %v", err)
 	}
 
 	categoriesLock.RLock()
@@ -197,7 +198,7 @@ func (f *Frontend) SendNotificationWithActions(options frontend.NotificationOpti
 	categoriesLock.RUnlock()
 
 	if options.CategoryID == "" || !categoryExists {
-		fmt.Printf("Category '%s' not found, sending basic notification without actions\n", options.CategoryID)
+		f.logger.Warning("Category '%s' not found, sending basic notification without actions", options.CategoryID)
 		return f.SendNotification(options)
 	}
 
@@ -254,7 +255,7 @@ func (f *Frontend) RegisterNotificationCategory(category frontend.NotificationCa
 	categories[category.ID] = frontend.NotificationCategory{
 		ID:               category.ID,
 		Actions:          category.Actions,
-		HasReplyField:    bool(category.HasReplyField),
+		HasReplyField:    category.HasReplyField,
 		ReplyPlaceholder: category.ReplyPlaceholder,
 		ReplyButtonTitle: category.ReplyButtonTitle,
 	}
@@ -428,7 +429,7 @@ func parseNotificationResponse(response string) (action string, options frontend
 	actionID, options, err := decodePayload(response)
 
 	if err != nil {
-		fmt.Printf("Warning: Failed to decode notification response: %v\n", err)
+		log.Printf("Warning: Failed to decode notification response: %v", err)
 		return response, frontend.NotificationOptions{}, err
 	}
 
@@ -440,18 +441,17 @@ func handleNotificationResult(result frontend.NotificationResult) {
 	callback := notificationResultCallback
 	callbackLock.RUnlock()
 
-	if callback == nil {
-		return
-	}
-
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				fmt.Fprintf(os.Stderr, "panic in notification callback: %v\n", r)
-			}
+	if callback != nil {
+		go func() {
+			defer func() {
+				if r := recover(); r != nil {
+					// Log panic but don't crash the app
+					fmt.Fprintf(os.Stderr, "panic in notification callback: %v\n", r)
+				}
+			}()
+			callback(result)
 		}()
-		callback(result)
-	}()
+	}
 }
 
 // Helper functions

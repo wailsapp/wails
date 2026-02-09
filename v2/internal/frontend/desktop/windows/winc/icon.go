@@ -31,6 +31,16 @@ var (
 	procDeleteDC           = gdi32.NewProc("DeleteDC")
 )
 
+func init() {
+	// Validate DLL loads at initialization time to surface missing APIs early
+	if err := user32.Load(); err != nil {
+		panic(fmt.Sprintf("failed to load user32.dll: %v", err))
+	}
+	if err := gdi32.Load(); err != nil {
+		panic(fmt.Sprintf("failed to load gdi32.dll: %v", err))
+	}
+}
+
 // ICONINFO mirrors the Win32 ICONINFO struct
 type ICONINFO struct {
 	FIcon    int32
@@ -79,11 +89,6 @@ type BITMAP struct {
 	BmBitsPixel  uint16
 	BmBits       unsafe.Pointer
 }
-
-const (
-	BI_RGB         = 0
-	DIB_RGB_COLORS = 0
-)
 
 type Icon struct {
 	handle w32.HICON
@@ -161,7 +166,7 @@ func SaveHIconAsPNG(hIcon w32.HICON, filePath string) error {
 	bi.BmiHeader.BiHeight = bmp.BmHeight
 	bi.BmiHeader.BiPlanes = 1
 	bi.BmiHeader.BiBitCount = 32
-	bi.BmiHeader.BiCompression = BI_RGB
+	bi.BmiHeader.BiCompression = w32.BI_RGB
 
 	// Allocate memory for bitmap bits
 	width, height := int(bmp.BmWidth), int(bmp.BmHeight)
@@ -176,7 +181,7 @@ func SaveHIconAsPNG(hIcon w32.HICON, filePath string) error {
 		uintptr(bmp.BmHeight),
 		uintptr(unsafe.Pointer(&bits[0])),
 		uintptr(unsafe.Pointer(&bi)),
-		DIB_RGB_COLORS,
+		w32.DIB_RGB_COLORS,
 	)
 	if ret == 0 {
 		return fmt.Errorf("failed to get bitmap bits: %w", err)
