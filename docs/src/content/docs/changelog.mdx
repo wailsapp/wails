@@ -30,6 +30,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha.70 - 2026-02-09
+
+## Added
+- Add `-tags` flag to `wails3 build` command for passing custom Go build tags (e.g., `wails3 build -tags gtk4`) (#4957)
+- Add documentation for automatic enum generation in binding generator, including dedicated Enums page and sidebar navigation (#4972)
+
+## Fixed
+- Fix `InvisibleTitleBarHeight` being applied to all macOS windows instead of only frameless or transparent title bar windows (#4960)
+- Fix window shaking/jitter when resizing from top corners with `InvisibleTitleBarHeight` enabled, by skipping drag initiation near window edges (#4960)
+- Fix generation of mapped types with enum keys in JS/TS bindings (#4437) by @fbbdev
+
 ## v3.0.0-alpha.69 - 2026-02-08
 
 ## Added
