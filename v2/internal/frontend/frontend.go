@@ -195,7 +195,7 @@ type Frontend interface {
 	SendNotification(options NotificationOptions) error
 	SendNotificationWithActions(options NotificationOptions) error
 	RegisterNotificationCategory(category NotificationCategory) error
-	RemoveNotificationCategory(categoryID string) error
+	RemoveNotificationCategory(categoryId string) error
 	RemoveAllPendingNotifications() error
 	RemovePendingNotification(identifier string) error
 	RemoveAllDeliveredNotifications() error
