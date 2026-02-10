@@ -39,7 +39,12 @@ func main() {
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 		Android: application.AndroidOptions{
-			// Android-specific options will go here
+			EnableNativeTabs: true,
+			NativeTabsItems: []application.NativeTabItem{
+				{Title: "Bindings"},
+				{Title: "Go Runtime"},
+				{Title: "JS Runtime"},
+			},
 		},
 	})
 

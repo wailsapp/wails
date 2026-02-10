@@ -16,6 +16,11 @@ static jobject g_bridge = NULL;
 // Cached method ID for executeJavaScript
 static jmethodID g_executeJsMethod = NULL;
 
+// Cached method IDs for native tabs
+static jmethodID g_setNativeTabsEnabledMethod = NULL;
+static jmethodID g_setNativeTabsItemsMethod = NULL;
+static jmethodID g_selectNativeTabIndexMethod = NULL;
+
 // Helper function to convert Java String to C string
 static const char* jstringToC(JNIEnv *env, jstring jstr) {
     if (jstr == NULL) return NULL;
@@ -62,6 +67,9 @@ static void storeBridgeRef(JNIEnv *env, jobject bridge) {
     jclass bridgeClass = (*env)->GetObjectClass(env, g_bridge);
     if (bridgeClass != NULL) {
         g_executeJsMethod = (*env)->GetMethodID(env, bridgeClass, "executeJavaScript", "(Ljava/lang/String;)V");
+		g_setNativeTabsEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setNativeTabsEnabled", "(Z)V");
+		g_setNativeTabsItemsMethod = (*env)->GetMethodID(env, bridgeClass, "setNativeTabsItemsJson", "(Ljava/lang/String;)V");
+		g_selectNativeTabIndexMethod = (*env)->GetMethodID(env, bridgeClass, "selectNativeTabIndex", "(I)V");
         (*env)->DeleteLocalRef(env, bridgeClass);
     }
 }
@@ -134,6 +142,100 @@ static void executeJavaScriptOnBridge(const char* js) {
     }
 
     LOGD("executeJavaScriptOnBridge: Done");
+}
+
+static void setNativeTabsEnabledOnBridge(jboolean enabled) {
+	if (g_jvm == NULL || g_bridge == NULL || g_setNativeTabsEnabledMethod == NULL) {
+		return;
+	}
+
+	JNIEnv *env = NULL;
+	int needsDetach = 0;
+
+	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
+	if (result == JNI_EDETACHED) {
+		if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
+			return;
+		}
+		needsDetach = 1;
+	} else if (result != JNI_OK) {
+		return;
+	}
+
+	(*env)->CallVoidMethod(env, g_bridge, g_setNativeTabsEnabledMethod, enabled);
+
+	if ((*env)->ExceptionCheck(env)) {
+		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+	}
+
+	if (needsDetach) {
+		(*g_jvm)->DetachCurrentThread(g_jvm);
+	}
+}
+
+static void setNativeTabsItemsJsonOnBridge(const char* json) {
+	if (g_jvm == NULL || g_bridge == NULL || g_setNativeTabsItemsMethod == NULL || json == NULL) {
+		return;
+	}
+
+	JNIEnv *env = NULL;
+	int needsDetach = 0;
+
+	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
+	if (result == JNI_EDETACHED) {
+		if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
+			return;
+		}
+		needsDetach = 1;
+	} else if (result != JNI_OK) {
+		return;
+	}
+
+	jstring jJson = (*env)->NewStringUTF(env, json);
+	if (jJson != NULL) {
+		(*env)->CallVoidMethod(env, g_bridge, g_setNativeTabsItemsMethod, jJson);
+		(*env)->DeleteLocalRef(env, jJson);
+	}
+
+	if ((*env)->ExceptionCheck(env)) {
+		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+	}
+
+	if (needsDetach) {
+		(*g_jvm)->DetachCurrentThread(g_jvm);
+	}
+}
+
+static void selectNativeTabIndexOnBridge(jint index) {
+	if (g_jvm == NULL || g_bridge == NULL || g_selectNativeTabIndexMethod == NULL) {
+		return;
+	}
+
+	JNIEnv *env = NULL;
+	int needsDetach = 0;
+
+	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
+	if (result == JNI_EDETACHED) {
+		if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
+			return;
+		}
+		needsDetach = 1;
+	} else if (result != JNI_OK) {
+		return;
+	}
+
+	(*env)->CallVoidMethod(env, g_bridge, g_selectNativeTabIndexMethod, index);
+
+	if ((*env)->ExceptionCheck(env)) {
+		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+	}
+
+	if (needsDetach) {
+		(*g_jvm)->DetachCurrentThread(g_jvm);
+	}
 }
 */
 import "C"
@@ -252,6 +354,7 @@ type androidApp struct {
 
 func newPlatformApp(app *App) *androidApp {
 	androidLogf("info", "🤖 [application_android.go] newPlatformApp() called")
+	configureNativeTabs(app)
 	return &androidApp{
 		parent: app,
 	}
@@ -738,4 +841,49 @@ func executeJavaScript(js string) {
 
 	C.executeJavaScriptOnBridge(cJs)
 	androidLogf("info", "🤖 executeJavaScript: done")
+}
+
+func configureNativeTabs(app *App) {
+	if app == nil {
+		return
+	}
+
+	items := app.options.Android.NativeTabsItems
+	if len(items) > 0 {
+		if data, err := json.Marshal(items); err == nil {
+			androidSetNativeTabsItemsJSON(string(data))
+			androidSetNativeTabsEnabled(true)
+		} else if globalApplication != nil {
+			globalApplication.error("Failed to marshal Android.NativeTabsItems: %v", err)
+		}
+		return
+	}
+
+	if app.options.Android.EnableNativeTabs {
+		androidSetNativeTabsEnabled(true)
+	}
+}
+
+func androidSetNativeTabsEnabled(enabled bool) {
+	C.setNativeTabsEnabledOnBridge(C.jboolean(boolToJNI(enabled)))
+}
+
+func androidSetNativeTabsItemsJSON(jsonString string) {
+	if jsonString == "" {
+		return
+	}
+	cJson := C.CString(jsonString)
+	defer C.free(unsafe.Pointer(cJson))
+	C.setNativeTabsItemsJsonOnBridge(cJson)
+}
+
+func androidSelectNativeTabIndex(index int) {
+	C.selectNativeTabIndexOnBridge(C.jint(index))
+}
+
+func boolToJNI(value bool) C.jboolean {
+	if value {
+		return C.jboolean(1)
+	}
+	return C.jboolean(0)
 }
