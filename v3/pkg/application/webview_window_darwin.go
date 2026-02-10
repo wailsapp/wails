@@ -1358,7 +1358,10 @@ func (w *macosWebviewWindow) run() {
 			C.windowSetAppearanceTypeByName(w.nsWindow, C.CString(string(macOptions.Appearance)))
 		}
 
-		if macOptions.InvisibleTitleBarHeight != 0 {
+		// Only apply invisible title bar when the native drag area is hidden
+		// (frameless window or transparent/hidden title bar presets like HiddenInset)
+		if macOptions.InvisibleTitleBarHeight != 0 &&
+			(w.parent.options.Frameless || titleBarOptions.AppearsTransparent) {
 			C.windowSetInvisibleTitleBar(w.nsWindow, C.uint(macOptions.InvisibleTitleBarHeight))
 		}
 

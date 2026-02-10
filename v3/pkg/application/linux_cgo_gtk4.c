@@ -2,6 +2,31 @@
 
 #include "linux_cgo_gtk4.h"
 
+#ifdef GDK_WINDOWING_X11
+#include <gdk/x11/gdkx.h>
+#include <dlfcn.h>
+
+// Function pointer types for Xlib functions loaded at runtime via dlsym.
+// This avoids a direct link dependency on libX11 - the symbols are resolved
+// from GTK4's already-loaded X11 backend.
+typedef int (*WailsXMoveWindowFunc)(Display*, Window, int, int);
+typedef int (*WailsXFlushFunc)(Display*);
+typedef Bool (*WailsXTranslateCoordinatesFunc)(Display*, Window, Window, int, int, int*, int*, Window*);
+
+static WailsXMoveWindowFunc wails_XMoveWindow = NULL;
+static WailsXFlushFunc wails_XFlush = NULL;
+static WailsXTranslateCoordinatesFunc wails_XTranslateCoordinates = NULL;
+static gboolean x11_funcs_resolved = FALSE;
+
+static void resolve_x11_funcs(void) {
+    if (x11_funcs_resolved) return;
+    x11_funcs_resolved = TRUE;
+    wails_XMoveWindow = (WailsXMoveWindowFunc)dlsym(RTLD_DEFAULT, "XMoveWindow");
+    wails_XFlush = (WailsXFlushFunc)dlsym(RTLD_DEFAULT, "XFlush");
+    wails_XTranslateCoordinates = (WailsXTranslateCoordinatesFunc)dlsym(RTLD_DEFAULT, "XTranslateCoordinates");
+}
+#endif
+
 #ifdef WAILS_GTK_DEBUG
 #define DEBUG_LOG(fmt, ...) fprintf(stderr, "[GTK4] " fmt "\n", ##__VA_ARGS__)
 #else
@@ -865,6 +890,102 @@ void clipboard_free_text(char *text) {
     if (text != NULL) {
         g_free(text);
     }
+}
+
+// ============================================================================
+// Window position (X11 only)
+// ============================================================================
+
+void window_move_x11(GtkWindow *window, int x, int y) {
+#ifdef GDK_WINDOWING_X11
+    GtkNative *native = gtk_widget_get_native(GTK_WIDGET(window));
+    if (native == NULL) return;
+
+    GdkSurface *surface = gtk_native_get_surface(native);
+    if (surface == NULL) return;
+
+    GdkDisplay *display = gdk_surface_get_display(surface);
+    if (!GDK_IS_X11_DISPLAY(display)) return;
+
+    resolve_x11_funcs();
+    if (wails_XMoveWindow == NULL) return;
+
+    Display *xdisplay = gdk_x11_display_get_xdisplay(display);
+    Window xwindow = gdk_x11_surface_get_xid(GDK_X11_SURFACE(surface));
+    wails_XMoveWindow(xdisplay, xwindow, x, y);
+    if (wails_XFlush != NULL) wails_XFlush(xdisplay);
+#endif
+}
+
+void window_get_position_x11(GtkWindow *window, int *x, int *y) {
+    *x = 0;
+    *y = 0;
+#ifdef GDK_WINDOWING_X11
+    GtkNative *native = gtk_widget_get_native(GTK_WIDGET(window));
+    if (native == NULL) return;
+
+    GdkSurface *surface = gtk_native_get_surface(native);
+    if (surface == NULL) return;
+
+    GdkDisplay *display = gdk_surface_get_display(surface);
+    if (!GDK_IS_X11_DISPLAY(display)) return;
+
+    resolve_x11_funcs();
+    if (wails_XTranslateCoordinates == NULL) return;
+
+    Display *xdisplay = gdk_x11_display_get_xdisplay(display);
+    Window xwindow = gdk_x11_surface_get_xid(GDK_X11_SURFACE(surface));
+
+    Window child;
+    Window root = DefaultRootWindow(xdisplay);
+    int abs_x, abs_y;
+    if (wails_XTranslateCoordinates(xdisplay, xwindow, root, 0, 0, &abs_x, &abs_y, &child)) {
+        *x = abs_x;
+        *y = abs_y;
+    }
+#endif
+}
+
+// ============================================================================
+// Window size constraints (max size enforcement for GTK4)
+// ============================================================================
+
+static void on_window_size_changed(GObject *object, GParamSpec *pspec, gpointer data) {
+    GtkWindow *window = GTK_WINDOW(object);
+
+    // Don't clamp during fullscreen or maximize - these should bypass max size
+    // constraints, matching V2 behaviour where geometry hints are suspended.
+    if (gtk_window_is_fullscreen(window) || gtk_window_is_maximized(window)) return;
+
+    int maxW = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(window), "wails-max-width"));
+    int maxH = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(window), "wails-max-height"));
+
+    if (maxW <= 0 && maxH <= 0) return;
+
+    int w = gtk_widget_get_width(GTK_WIDGET(window));
+    int h = gtk_widget_get_height(GTK_WIDGET(window));
+
+    gboolean needs_clamp = FALSE;
+    if (maxW > 0 && w > maxW) { w = maxW; needs_clamp = TRUE; }
+    if (maxH > 0 && h > maxH) { h = maxH; needs_clamp = TRUE; }
+
+    if (needs_clamp) {
+        gtk_window_set_default_size(window, w, h);
+    }
+}
+
+void window_set_max_size(GtkWindow *window, int maxWidth, int maxHeight) {
+    g_object_set_data(G_OBJECT(window), "wails-max-width", GINT_TO_POINTER(maxWidth));
+    g_object_set_data(G_OBJECT(window), "wails-max-height", GINT_TO_POINTER(maxHeight));
+
+    // Check if we already connected the signal
+    gpointer connected = g_object_get_data(G_OBJECT(window), "wails-max-size-connected");
+    if (connected == NULL) {
+        g_signal_connect(window, "notify::default-width", G_CALLBACK(on_window_size_changed), NULL);
+        g_signal_connect(window, "notify::default-height", G_CALLBACK(on_window_size_changed), NULL);
+        g_object_set_data(G_OBJECT(window), "wails-max-size-connected", GINT_TO_POINTER(1));
+    }
+
 }
 
 // ============================================================================
