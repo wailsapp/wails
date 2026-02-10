@@ -6,6 +6,10 @@ const timeElement = document.getElementById('time');
 const deviceInfoElement = document.getElementById('deviceInfo');
 const Events = Runtime.Events;
 const IOS = Runtime.IOS; // May be undefined in published package; we guard usages below.
+const WML = Runtime.WML;
+
+// Enable WML triggers (e.g. data-wml-openurl) so logo clicks call OpenURL.
+WML?.Enable?.();
 
 window.doGreet = () => {
     let name = document.getElementById('name').value;

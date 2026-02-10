@@ -1,5 +1,7 @@
 package com.wails.app;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
@@ -108,6 +110,25 @@ public class WailsJSBridge {
     @JavascriptInterface
     public boolean isDebug() {
         return BuildConfig.DEBUG;
+    }
+
+    /**
+     * Open a URL using an external browser.
+     * Called from JavaScript: wails.openURL(url)
+     */
+    @JavascriptInterface
+    public void openURL(String url) {
+        if (url == null || url.trim().isEmpty()) {
+            Log.w(TAG, "openURL called with empty url");
+            return;
+        }
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            webView.getContext().startActivity(intent);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to open URL: " + url, e);
+        }
     }
 
     /**
