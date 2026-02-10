@@ -1063,9 +1063,14 @@ func (w *linuxWebviewWindow) size() (int, int) {
 }
 
 func (w *linuxWebviewWindow) relativePosition() (int, int) {
-	// GTK4/Wayland: Window positioning is not reliable
-	// This is a documented limitation
-	return 0, 0
+	x, y := w.position()
+	monitor := w.getCurrentMonitor()
+	if monitor == nil {
+		return x, y
+	}
+	var geometry C.GdkRectangle
+	C.gdk_monitor_get_geometry(monitor, &geometry)
+	return x - int(geometry.x), y - int(geometry.y)
 }
 
 func (w *linuxWebviewWindow) gtkWidget() *C.GtkWidget {
@@ -1228,6 +1233,9 @@ func windowSetGeometryHints(window pointer, minWidth, minHeight, maxWidth, maxHe
 	if minWidth > 0 && minHeight > 0 {
 		C.gtk_widget_set_size_request(w, C.int(minWidth), C.int(minHeight))
 	}
+	if maxWidth > 0 || maxHeight > 0 {
+		C.window_set_max_size((*C.GtkWindow)(window), C.int(maxWidth), C.int(maxHeight))
+	}
 }
 
 func (w *linuxWebviewWindow) setResizable(resizable bool) {
@@ -1235,11 +1243,17 @@ func (w *linuxWebviewWindow) setResizable(resizable bool) {
 }
 
 func (w *linuxWebviewWindow) move(x, y int) {
+	// C-side GDK_IS_X11_DISPLAY check handles X11 vs Wayland correctly,
+	// including XWayland and GDK_BACKEND=x11 scenarios.
+	C.window_move_x11(w.gtkWindow(), C.int(x), C.int(y))
 }
 
 func (w *linuxWebviewWindow) position() (int, int) {
-	// GTK4/Wayland: Cannot reliably get window position
-	return 0, 0
+	// C-side GDK_IS_X11_DISPLAY check handles X11 vs Wayland correctly,
+	// returning 0,0 on non-X11 displays.
+	var x, y C.int
+	C.window_get_position_x11(w.gtkWindow(), &x, &y)
+	return int(x), int(y)
 }
 
 func (w *linuxWebviewWindow) unfullscreen() {
@@ -1255,7 +1269,7 @@ func (w *linuxWebviewWindow) windowShow() {
 	if w.gtkWidget() == nil {
 		return
 	}
-	C.gtk_widget_set_visible(w.gtkWidget(), gtkBool(true))
+	C.gtk_window_present(w.gtkWindow())
 }
 
 func (w *linuxWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
