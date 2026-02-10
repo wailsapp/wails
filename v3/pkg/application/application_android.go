@@ -20,6 +20,12 @@ static jmethodID g_executeJsMethod = NULL;
 static jmethodID g_setNativeTabsEnabledMethod = NULL;
 static jmethodID g_setNativeTabsItemsMethod = NULL;
 static jmethodID g_selectNativeTabIndexMethod = NULL;
+static jmethodID g_setScrollEnabledMethod = NULL;
+static jmethodID g_setBounceEnabledMethod = NULL;
+static jmethodID g_setScrollIndicatorsEnabledMethod = NULL;
+static jmethodID g_setBackForwardGesturesEnabledMethod = NULL;
+static jmethodID g_setLinkPreviewEnabledMethod = NULL;
+static jmethodID g_setCustomUserAgentMethod = NULL;
 
 // Helper function to convert Java String to C string
 static const char* jstringToC(JNIEnv *env, jstring jstr) {
@@ -70,6 +76,12 @@ static void storeBridgeRef(JNIEnv *env, jobject bridge) {
 		g_setNativeTabsEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setNativeTabsEnabled", "(Z)V");
 		g_setNativeTabsItemsMethod = (*env)->GetMethodID(env, bridgeClass, "setNativeTabsItemsJson", "(Ljava/lang/String;)V");
 		g_selectNativeTabIndexMethod = (*env)->GetMethodID(env, bridgeClass, "selectNativeTabIndex", "(I)V");
+		g_setScrollEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setScrollEnabled", "(Z)V");
+		g_setBounceEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setBounceEnabled", "(Z)V");
+		g_setScrollIndicatorsEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setScrollIndicatorsEnabled", "(Z)V");
+		g_setBackForwardGesturesEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setBackForwardGesturesEnabled", "(Z)V");
+		g_setLinkPreviewEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setLinkPreviewEnabled", "(Z)V");
+		g_setCustomUserAgentMethod = (*env)->GetMethodID(env, bridgeClass, "setCustomUserAgent", "(Ljava/lang/String;)V");
         (*env)->DeleteLocalRef(env, bridgeClass);
     }
 }
@@ -227,6 +239,195 @@ static void selectNativeTabIndexOnBridge(jint index) {
 	}
 
 	(*env)->CallVoidMethod(env, g_bridge, g_selectNativeTabIndexMethod, index);
+
+	if ((*env)->ExceptionCheck(env)) {
+		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+	}
+
+	if (needsDetach) {
+		(*g_jvm)->DetachCurrentThread(g_jvm);
+	}
+}
+
+static void setScrollEnabledOnBridge(jboolean enabled) {
+	if (g_jvm == NULL || g_bridge == NULL || g_setScrollEnabledMethod == NULL) {
+		return;
+	}
+
+	JNIEnv *env = NULL;
+	int needsDetach = 0;
+
+	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
+	if (result == JNI_EDETACHED) {
+		if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
+			return;
+		}
+		needsDetach = 1;
+	} else if (result != JNI_OK) {
+		return;
+	}
+
+	(*env)->CallVoidMethod(env, g_bridge, g_setScrollEnabledMethod, enabled);
+
+	if ((*env)->ExceptionCheck(env)) {
+		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+	}
+
+	if (needsDetach) {
+		(*g_jvm)->DetachCurrentThread(g_jvm);
+	}
+}
+
+static void setBounceEnabledOnBridge(jboolean enabled) {
+	if (g_jvm == NULL || g_bridge == NULL || g_setBounceEnabledMethod == NULL) {
+		return;
+	}
+
+	JNIEnv *env = NULL;
+	int needsDetach = 0;
+
+	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
+	if (result == JNI_EDETACHED) {
+		if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
+			return;
+		}
+		needsDetach = 1;
+	} else if (result != JNI_OK) {
+		return;
+	}
+
+	(*env)->CallVoidMethod(env, g_bridge, g_setBounceEnabledMethod, enabled);
+
+	if ((*env)->ExceptionCheck(env)) {
+		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+	}
+
+	if (needsDetach) {
+		(*g_jvm)->DetachCurrentThread(g_jvm);
+	}
+}
+
+static void setScrollIndicatorsEnabledOnBridge(jboolean enabled) {
+	if (g_jvm == NULL || g_bridge == NULL || g_setScrollIndicatorsEnabledMethod == NULL) {
+		return;
+	}
+
+	JNIEnv *env = NULL;
+	int needsDetach = 0;
+
+	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
+	if (result == JNI_EDETACHED) {
+		if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
+			return;
+		}
+		needsDetach = 1;
+	} else if (result != JNI_OK) {
+		return;
+	}
+
+	(*env)->CallVoidMethod(env, g_bridge, g_setScrollIndicatorsEnabledMethod, enabled);
+
+	if ((*env)->ExceptionCheck(env)) {
+		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+	}
+
+	if (needsDetach) {
+		(*g_jvm)->DetachCurrentThread(g_jvm);
+	}
+}
+
+static void setBackForwardGesturesEnabledOnBridge(jboolean enabled) {
+	if (g_jvm == NULL || g_bridge == NULL || g_setBackForwardGesturesEnabledMethod == NULL) {
+		return;
+	}
+
+	JNIEnv *env = NULL;
+	int needsDetach = 0;
+
+	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
+	if (result == JNI_EDETACHED) {
+		if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
+			return;
+		}
+		needsDetach = 1;
+	} else if (result != JNI_OK) {
+		return;
+	}
+
+	(*env)->CallVoidMethod(env, g_bridge, g_setBackForwardGesturesEnabledMethod, enabled);
+
+	if ((*env)->ExceptionCheck(env)) {
+		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+	}
+
+	if (needsDetach) {
+		(*g_jvm)->DetachCurrentThread(g_jvm);
+	}
+}
+
+static void setLinkPreviewEnabledOnBridge(jboolean enabled) {
+	if (g_jvm == NULL || g_bridge == NULL || g_setLinkPreviewEnabledMethod == NULL) {
+		return;
+	}
+
+	JNIEnv *env = NULL;
+	int needsDetach = 0;
+
+	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
+	if (result == JNI_EDETACHED) {
+		if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
+			return;
+		}
+		needsDetach = 1;
+	} else if (result != JNI_OK) {
+		return;
+	}
+
+	(*env)->CallVoidMethod(env, g_bridge, g_setLinkPreviewEnabledMethod, enabled);
+
+	if ((*env)->ExceptionCheck(env)) {
+		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+	}
+
+	if (needsDetach) {
+		(*g_jvm)->DetachCurrentThread(g_jvm);
+	}
+}
+
+static void setCustomUserAgentOnBridge(const char* ua) {
+	if (g_jvm == NULL || g_bridge == NULL || g_setCustomUserAgentMethod == NULL) {
+		return;
+	}
+
+	JNIEnv *env = NULL;
+	int needsDetach = 0;
+
+	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
+	if (result == JNI_EDETACHED) {
+		if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
+			return;
+		}
+		needsDetach = 1;
+	} else if (result != JNI_OK) {
+		return;
+	}
+
+	jstring jUa = NULL;
+	if (ua != NULL && strlen(ua) > 0) {
+		jUa = (*env)->NewStringUTF(env, ua);
+	}
+
+	(*env)->CallVoidMethod(env, g_bridge, g_setCustomUserAgentMethod, jUa);
+
+	if (jUa != NULL) {
+		(*env)->DeleteLocalRef(env, jUa);
+	}
 
 	if ((*env)->ExceptionCheck(env)) {
 		(*env)->ExceptionDescribe(env);
@@ -879,6 +1080,36 @@ func androidSetNativeTabsItemsJSON(jsonString string) {
 
 func androidSelectNativeTabIndex(index int) {
 	C.selectNativeTabIndexOnBridge(C.jint(index))
+}
+
+func androidSetScrollEnabled(enabled bool) {
+	C.setScrollEnabledOnBridge(C.jboolean(boolToJNI(enabled)))
+}
+
+func androidSetBounceEnabled(enabled bool) {
+	C.setBounceEnabledOnBridge(C.jboolean(boolToJNI(enabled)))
+}
+
+func androidSetScrollIndicatorsEnabled(enabled bool) {
+	C.setScrollIndicatorsEnabledOnBridge(C.jboolean(boolToJNI(enabled)))
+}
+
+func androidSetBackForwardGesturesEnabled(enabled bool) {
+	C.setBackForwardGesturesEnabledOnBridge(C.jboolean(boolToJNI(enabled)))
+}
+
+func androidSetLinkPreviewEnabled(enabled bool) {
+	C.setLinkPreviewEnabledOnBridge(C.jboolean(boolToJNI(enabled)))
+}
+
+func androidSetCustomUserAgent(ua string) {
+	if ua == "" {
+		C.setCustomUserAgentOnBridge((*C.char)(nil))
+		return
+	}
+	cUa := C.CString(ua)
+	defer C.free(unsafe.Pointer(cUa))
+	C.setCustomUserAgentOnBridge(cUa)
 }
 
 func boolToJNI(value bool) C.jboolean {

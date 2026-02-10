@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MotionEvent;
 import android.view.View;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -44,6 +46,17 @@ public class WailsBridge {
     private BottomNavigationView nativeTabsView;
     private List<String> nativeTabTitles = new ArrayList<>();
     private boolean nativeTabsEnabled = false;
+    private boolean scrollEnabled = true;
+    private boolean bounceEnabled = true;
+    private boolean scrollIndicatorsEnabled = true;
+    private boolean backForwardGesturesEnabled = false;
+    private boolean linkPreviewEnabled = true;
+    private String customUserAgent = null;
+    private float touchStartX = 0f;
+    private float touchStartY = 0f;
+    private int swipeThresholdPx = 120;
+    private View.OnTouchListener touchListener;
+    private final View.OnLongClickListener blockLongClickListener = v -> true;
 
     private static final List<String> DEFAULT_NATIVE_TAB_TITLES = Collections.emptyList();
 
@@ -183,6 +196,7 @@ public class WailsBridge {
      */
     public void injectRuntime(WebView webView, String url) {
         this.webView = webView;
+        applyWebViewSettings();
         // Notify Go side that page has finished loading so it can inject the runtime
         Log.d(TAG, "Page finished loading: " + url + ", notifying Go side");
         if (initialized) {
@@ -197,6 +211,115 @@ public class WailsBridge {
     public void executeJavaScript(String js) {
         if (webView != null) {
             webView.post(() -> webView.evaluateJavascript(js, null));
+        }
+    }
+
+    public void setScrollEnabled(boolean enabled) {
+        scrollEnabled = enabled;
+        applyWebViewSettings();
+    }
+
+    public void setBounceEnabled(boolean enabled) {
+        bounceEnabled = enabled;
+        applyWebViewSettings();
+    }
+
+    public void setScrollIndicatorsEnabled(boolean enabled) {
+        scrollIndicatorsEnabled = enabled;
+        applyWebViewSettings();
+    }
+
+    public void setBackForwardGesturesEnabled(boolean enabled) {
+        backForwardGesturesEnabled = enabled;
+        applyWebViewSettings();
+    }
+
+    public void setLinkPreviewEnabled(boolean enabled) {
+        linkPreviewEnabled = enabled;
+        applyWebViewSettings();
+    }
+
+    public void setCustomUserAgent(String userAgent) {
+        customUserAgent = userAgent;
+        applyWebViewSettings();
+    }
+
+    private void applyWebViewSettings() {
+        if (webView == null) {
+            return;
+        }
+
+        webView.post(() -> {
+            if (webView == null) {
+                return;
+            }
+
+            WebSettings settings = webView.getSettings();
+            if (customUserAgent == null || customUserAgent.trim().isEmpty()) {
+                settings.setUserAgentString(null);
+            } else {
+                settings.setUserAgentString(customUserAgent);
+            }
+
+            webView.setVerticalScrollBarEnabled(scrollIndicatorsEnabled);
+            webView.setHorizontalScrollBarEnabled(scrollIndicatorsEnabled);
+            webView.setOverScrollMode(bounceEnabled ? View.OVER_SCROLL_IF_CONTENT_SCROLLS : View.OVER_SCROLL_NEVER);
+
+            if (!linkPreviewEnabled) {
+                webView.setOnLongClickListener(blockLongClickListener);
+            } else {
+                webView.setOnLongClickListener(null);
+            }
+
+            float density = webView.getResources().getDisplayMetrics().density;
+            swipeThresholdPx = (int) (density * 120f);
+            updateTouchListener();
+        });
+    }
+
+    private void updateTouchListener() {
+        if (webView == null) {
+            return;
+        }
+
+        if (!scrollEnabled || backForwardGesturesEnabled) {
+            if (touchListener == null) {
+                touchListener = (v, event) -> {
+                    if (webView == null) {
+                        return false;
+                    }
+
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            touchStartX = event.getX();
+                            touchStartY = event.getY();
+                            return false;
+                        case MotionEvent.ACTION_MOVE:
+                            return !scrollEnabled;
+                        case MotionEvent.ACTION_UP:
+                            if (backForwardGesturesEnabled) {
+                                float dx = event.getX() - touchStartX;
+                                float dy = event.getY() - touchStartY;
+                                if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > swipeThresholdPx) {
+                                    if (dx > 0 && webView.canGoBack()) {
+                                        webView.goBack();
+                                        return true;
+                                    }
+                                    if (dx < 0 && webView.canGoForward()) {
+                                        webView.goForward();
+                                        return true;
+                                    }
+                                }
+                            }
+                            return false;
+                        default:
+                            return false;
+                    }
+                };
+            }
+            webView.setOnTouchListener(touchListener);
+        } else {
+            webView.setOnTouchListener(null);
         }
     }
 

@@ -5,8 +5,9 @@ const resultElement = document.getElementById('result');
 const timeElement = document.getElementById('time');
 const deviceInfoElement = document.getElementById('deviceInfo');
 const Events = Runtime.Events;
-const IOS = Runtime.IOS; // May be undefined in published package; we guard usages below.
 const WML = Runtime.WML;
+
+const Android = Runtime.Android; // May be undefined in published package; we guard usages below.
 
 // Enable WML triggers (e.g. data-wml-openurl) so logo clicks call OpenURL.
 WML?.Enable?.();
@@ -24,45 +25,53 @@ window.doGreet = () => {
 }
 
 window.doHaptic = (style) => {
-    if (!IOS || !IOS.Haptics?.Impact) {
-        console.warn('IOS runtime not available in @wailsio/runtime. Skipping haptic call.');
+    if (!Android || !Android.Haptics?.Vibrate) {
+        console.warn('Android runtime not available in @wailsio/runtime. Skipping haptic call.');
         return;
     }
-    IOS.Haptics.Impact(style).catch((err) => {
+    const duration = style === 'light' ? 50 : style === 'heavy' ? 200 : 100;
+    Android.Haptics.Vibrate(duration).catch((err) => {
         console.error('Haptics error:', err);
     });
 }
 
 window.getDeviceInfo = async () => {
-    if (!IOS || !IOS.Device?.Info) {
-        deviceInfoElement.innerText = 'iOS runtime not available; cannot fetch device info.';
-        return;
-    }
     try {
-        const info = await IOS.Device.Info();
+        if (!Android || !Android.Device?.Info) {
+            deviceInfoElement.innerText = 'Android runtime not available; cannot fetch device info.';
+            return;
+        }
+        const info = await Android.Device.Info();
         deviceInfoElement.innerText = JSON.stringify(info, null, 2);
     } catch (e) {
         deviceInfoElement.innerText = `Error: ${e?.message || e}`;
     }
 }
-
-// Generic caller for IOS.<Group>.<Method>(args)
-window.iosJsSet = async (methodPath, args) => {
-    if (!IOS) {
-        console.warn('IOS runtime not available in @wailsio/runtime.');
+// Generic caller for Android.<Group>.<Method>(args)
+window.androidJsSet = async (methodPath, args) => {
+    if (!Android) {
+        console.warn('Android runtime not available in @wailsio/runtime.');
         return;
     }
     try {
         const [group, method] = methodPath.split('.');
-        const target = IOS?.[group];
+        const target = Android?.[group];
         const fn = target?.[method];
         if (typeof fn !== 'function') {
-            console.warn('IOS method not found:', methodPath);
+            console.warn('Android method not found:', methodPath);
             return;
         }
-        await fn(args);
+        let payload = args;
+        if (args && typeof args === 'object') {
+            if ('enabled' in args) {
+                payload = !!args.enabled;
+            } else if ('ua' in args) {
+                payload = args.ua;
+            }
+        }
+        await fn(payload);
     } catch (e) {
-        console.error('iosJsSet error for', methodPath, e);
+        console.error('androidJsSet error for', methodPath, e);
     }
 }
 
@@ -81,7 +90,7 @@ window.setGoToggle = (eventName, enabled) => {
 }
 
 window.setJsToggle = (methodPath, enabled) => {
-  iosJsSet(methodPath, { enabled: !!enabled });
+    androidJsSet(methodPath, { enabled: !!enabled });
 }
 
 Events.On('time', (payload) => {
@@ -105,7 +114,7 @@ function showPaneByIndex(index) {
   });
 }
 
-// Listen for native tab selection events posted by the iOS layer
+// Listen for native tab selection events posted by the native layer
 window.addEventListener('nativeTabSelected', (e) => {
   const idx = (e && e.detail && typeof e.detail.index === 'number') ? e.detail.index : 0;
   showPaneByIndex(idx);

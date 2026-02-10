@@ -25,6 +25,7 @@ import * as Events from "./events.js";
 import * as Flags from "./flags.js";
 import * as Screens from "./screens.js";
 import * as System from "./system.js";
+import * as Android from "./android.js";
 import * as IOS from "./ios.js";
 import Window, { handleDragEnter, handleDragLeave, handleDragOver } from "./window.js";
 import * as WML from "./wml.js";
@@ -39,6 +40,7 @@ export {
     Flags,
     Screens,
     System,
+    Android,
     IOS,
     Window,
     WML

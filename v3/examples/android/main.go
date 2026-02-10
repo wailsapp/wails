@@ -48,6 +48,8 @@ func main() {
 		},
 	})
 
+	registerAndroidRuntimeEventHandlers(app)
+
 	// Create a new window with the necessary options.
 	// 'Title' is the title of the window.
 	// 'BackgroundColour' is the background colour of the window.
