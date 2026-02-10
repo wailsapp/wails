@@ -853,9 +853,10 @@ Mac: application.MacWindow{
 Controls window tabbing behavior on macOS 10.12 and later. Window tabbing allows multiple windows to be grouped as tabs.
 
 **Options:**
-- `MacWindowTabbingModeAutomatic` - System determines tabbing behavior (default/empty string)
+- `MacWindowTabbingModeDefault` - Zero-value sentinel (not explicitly set). At runtime, defaults to disallowing tabbing
+- `MacWindowTabbingModeAutomatic` - System determines tabbing behavior
 - `MacWindowTabbingModePreferred` - Window prefers to be in tabbing mode
-- `MacWindowTabbingModeDisallowed` - Window cannot be tabbed
+- `MacWindowTabbingModeDisallowed` - Disables window tabbing
 
 **Example - Disable window tabbing:**
 
