@@ -26,6 +26,7 @@ static jmethodID g_setScrollIndicatorsEnabledMethod = NULL;
 static jmethodID g_setBackForwardGesturesEnabledMethod = NULL;
 static jmethodID g_setLinkPreviewEnabledMethod = NULL;
 static jmethodID g_setCustomUserAgentMethod = NULL;
+static jmethodID g_getDeviceInfoJsonMethod = NULL;
 
 // Helper function to convert Java String to C string
 static const char* jstringToC(JNIEnv *env, jstring jstr) {
@@ -82,6 +83,7 @@ static void storeBridgeRef(JNIEnv *env, jobject bridge) {
 		g_setBackForwardGesturesEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setBackForwardGesturesEnabled", "(Z)V");
 		g_setLinkPreviewEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setLinkPreviewEnabled", "(Z)V");
 		g_setCustomUserAgentMethod = (*env)->GetMethodID(env, bridgeClass, "setCustomUserAgent", "(Ljava/lang/String;)V");
+		g_getDeviceInfoJsonMethod = (*env)->GetMethodID(env, bridgeClass, "getDeviceInfoJson", "()Ljava/lang/String;");
         (*env)->DeleteLocalRef(env, bridgeClass);
     }
 }
@@ -437,6 +439,47 @@ static void setCustomUserAgentOnBridge(const char* ua) {
 	if (needsDetach) {
 		(*g_jvm)->DetachCurrentThread(g_jvm);
 	}
+}
+
+static char* getDeviceInfoJsonOnBridge() {
+	if (g_jvm == NULL || g_bridge == NULL || g_getDeviceInfoJsonMethod == NULL) {
+		return NULL;
+	}
+
+	JNIEnv *env = NULL;
+	int needsDetach = 0;
+
+	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
+	if (result == JNI_EDETACHED) {
+		if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
+			return NULL;
+		}
+		needsDetach = 1;
+	} else if (result != JNI_OK) {
+		return NULL;
+	}
+
+	jstring jInfo = (jstring)(*env)->CallObjectMethod(env, g_bridge, g_getDeviceInfoJsonMethod);
+	char *resultStr = NULL;
+	if (jInfo != NULL) {
+		const char* cInfo = jstringToC(env, jInfo);
+		if (cInfo != NULL) {
+			resultStr = strdup(cInfo);
+			releaseJString(env, jInfo, cInfo);
+		}
+		(*env)->DeleteLocalRef(env, jInfo);
+	}
+
+	if ((*env)->ExceptionCheck(env)) {
+		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+	}
+
+	if (needsDetach) {
+		(*g_jvm)->DetachCurrentThread(g_jvm);
+	}
+
+	return resultStr;
 }
 */
 import "C"
@@ -1110,6 +1153,34 @@ func androidSetCustomUserAgent(ua string) {
 	cUa := C.CString(ua)
 	defer C.free(unsafe.Pointer(cUa))
 	C.setCustomUserAgentOnBridge(cUa)
+}
+
+func androidDeviceInfoViaJNI() map[string]interface{} {
+	info := map[string]interface{}{
+		"platform": "android",
+		"model":    "Unknown",
+		"version":  "Unknown",
+	}
+
+	cInfo := C.getDeviceInfoJsonOnBridge()
+	if cInfo == nil {
+		return info
+	}
+	defer C.free(unsafe.Pointer(cInfo))
+
+	jsonStr := C.GoString(cInfo)
+	if jsonStr == "" {
+		return info
+	}
+
+	var parsed map[string]interface{}
+	if err := json.Unmarshal([]byte(jsonStr), &parsed); err != nil {
+		return info
+	}
+	if len(parsed) == 0 {
+		return info
+	}
+	return parsed
 }
 
 func boolToJNI(value bool) C.jboolean {

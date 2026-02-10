@@ -2,6 +2,7 @@ package com.wails.app;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Build;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MotionEvent;
@@ -212,6 +213,23 @@ public class WailsBridge {
         if (webView != null) {
             webView.post(() -> webView.evaluateJavascript(js, null));
         }
+    }
+
+    public String getDeviceInfoJson() {
+        JSONObject info = new JSONObject();
+        try {
+            info.put("platform", "android");
+            info.put("model", Build.MODEL);
+            info.put("version", Build.VERSION.RELEASE);
+            info.put("manufacturer", Build.MANUFACTURER);
+            info.put("brand", Build.BRAND);
+            info.put("device", Build.DEVICE);
+            info.put("product", Build.PRODUCT);
+            info.put("sdkInt", Build.VERSION.SDK_INT);
+        } catch (JSONException e) {
+            Log.w(TAG, "Failed to build device info JSON", e);
+        }
+        return info.toString();
     }
 
     public void setScrollEnabled(boolean enabled) {

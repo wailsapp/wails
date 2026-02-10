@@ -114,12 +114,7 @@ func androidHapticsVibrate(durationMs int) {
 }
 
 func androidDeviceInfo() map[string]interface{} {
-	// TODO: Implement via JNI to get actual device info
-	return map[string]interface{}{
-		"platform": "android",
-		"model":    "Unknown",
-		"version":  "Unknown",
-	}
+	return androidDeviceInfoViaJNI()
 }
 
 func androidShowToast(message string) {

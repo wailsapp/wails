@@ -58,6 +58,14 @@ func (a *App) isWindows() bool {
 	return false
 }
 
+func androidDeviceInfoViaJNI() map[string]interface{} {
+	return map[string]interface{}{
+		"platform": "android",
+		"model":    "Unknown",
+		"version":  "Unknown",
+	}
+}
+
 // Platform-specific app implementation for Android
 type androidApp struct {
 	parent *App
