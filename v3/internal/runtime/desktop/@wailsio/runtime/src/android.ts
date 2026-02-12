@@ -84,4 +84,5 @@ export namespace UserAgent {
     }
 }
 
-export const Set = UserAgent.SetUserAgent;
+// Re-export for convenience (avoid shadowing global Set)
+export const SetUserAgent = UserAgent.SetUserAgent;
