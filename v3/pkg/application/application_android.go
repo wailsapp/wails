@@ -58,34 +58,60 @@ static jstring createJString(JNIEnv *env, const char* str) {
 }
 
 // Store JavaVM and create global reference to bridge
-static void storeBridgeRef(JNIEnv *env, jobject bridge) {
+static jboolean storeBridgeRef(JNIEnv *env, jobject bridge) {
     // Get JavaVM
     if ((*env)->GetJavaVM(env, &g_jvm) != 0) {
-        return;
+		return JNI_FALSE;
     }
 
     // Create global reference to bridge object
-    g_bridge = (*env)->NewGlobalRef(env, bridge);
-    if (g_bridge == NULL) {
-        return;
-    }
+	g_bridge = (*env)->NewGlobalRef(env, bridge);
+	if (g_bridge == NULL) {
+		return JNI_FALSE;
+	}
 
     // Cache the executeJavaScript method ID
-    jclass bridgeClass = (*env)->GetObjectClass(env, g_bridge);
-    if (bridgeClass != NULL) {
-        g_executeJsMethod = (*env)->GetMethodID(env, bridgeClass, "executeJavaScript", "(Ljava/lang/String;)V");
-		g_setNativeTabsEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setNativeTabsEnabled", "(Z)V");
-		g_setNativeTabsItemsMethod = (*env)->GetMethodID(env, bridgeClass, "setNativeTabsItemsJson", "(Ljava/lang/String;)V");
-		g_selectNativeTabIndexMethod = (*env)->GetMethodID(env, bridgeClass, "selectNativeTabIndex", "(I)V");
-		g_setScrollEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setScrollEnabled", "(Z)V");
-		g_setBounceEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setBounceEnabled", "(Z)V");
-		g_setScrollIndicatorsEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setScrollIndicatorsEnabled", "(Z)V");
-		g_setBackForwardGesturesEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setBackForwardGesturesEnabled", "(Z)V");
-		g_setLinkPreviewEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setLinkPreviewEnabled", "(Z)V");
-		g_setCustomUserAgentMethod = (*env)->GetMethodID(env, bridgeClass, "setCustomUserAgent", "(Ljava/lang/String;)V");
-		g_getDeviceInfoJsonMethod = (*env)->GetMethodID(env, bridgeClass, "getDeviceInfoJson", "()Ljava/lang/String;");
-        (*env)->DeleteLocalRef(env, bridgeClass);
-    }
+	jclass bridgeClass = (*env)->GetObjectClass(env, g_bridge);
+	if (bridgeClass == NULL) {
+		(*env)->DeleteGlobalRef(env, g_bridge);
+		g_bridge = NULL;
+		return JNI_FALSE;
+	}
+
+	g_executeJsMethod = (*env)->GetMethodID(env, bridgeClass, "executeJavaScript", "(Ljava/lang/String;)V");
+	g_setNativeTabsEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setNativeTabsEnabled", "(Z)V");
+	g_setNativeTabsItemsMethod = (*env)->GetMethodID(env, bridgeClass, "setNativeTabsItemsJson", "(Ljava/lang/String;)V");
+	g_selectNativeTabIndexMethod = (*env)->GetMethodID(env, bridgeClass, "selectNativeTabIndex", "(I)V");
+	g_setScrollEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setScrollEnabled", "(Z)V");
+	g_setBounceEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setBounceEnabled", "(Z)V");
+	g_setScrollIndicatorsEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setScrollIndicatorsEnabled", "(Z)V");
+	g_setBackForwardGesturesEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setBackForwardGesturesEnabled", "(Z)V");
+	g_setLinkPreviewEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setLinkPreviewEnabled", "(Z)V");
+	g_setCustomUserAgentMethod = (*env)->GetMethodID(env, bridgeClass, "setCustomUserAgent", "(Ljava/lang/String;)V");
+	g_getDeviceInfoJsonMethod = (*env)->GetMethodID(env, bridgeClass, "getDeviceInfoJson", "()Ljava/lang/String;");
+
+	if ((*env)->ExceptionCheck(env)) {
+		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+		(*env)->DeleteLocalRef(env, bridgeClass);
+		(*env)->DeleteGlobalRef(env, g_bridge);
+		g_bridge = NULL;
+		g_executeJsMethod = NULL;
+		g_setNativeTabsEnabledMethod = NULL;
+		g_setNativeTabsItemsMethod = NULL;
+		g_selectNativeTabIndexMethod = NULL;
+		g_setScrollEnabledMethod = NULL;
+		g_setBounceEnabledMethod = NULL;
+		g_setScrollIndicatorsEnabledMethod = NULL;
+		g_setBackForwardGesturesEnabledMethod = NULL;
+		g_setLinkPreviewEnabledMethod = NULL;
+		g_setCustomUserAgentMethod = NULL;
+		g_getDeviceInfoJsonMethod = NULL;
+		return JNI_FALSE;
+	}
+
+	(*env)->DeleteLocalRef(env, bridgeClass);
+	return JNI_TRUE;
 }
 
 // Android logging via __android_log_print
@@ -158,277 +184,94 @@ static void executeJavaScriptOnBridge(const char* js) {
     LOGD("executeJavaScriptOnBridge: Done");
 }
 
-static void setNativeTabsEnabledOnBridge(jboolean enabled) {
-	if (g_jvm == NULL || g_bridge == NULL || g_setNativeTabsEnabledMethod == NULL) {
-		return;
+static int getJNIEnvForCall(JNIEnv **env, int *needsDetach) {
+	if (g_jvm == NULL) {
+		return 0;
 	}
 
-	JNIEnv *env = NULL;
-	int needsDetach = 0;
-
-	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
+	*needsDetach = 0;
+	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)env, JNI_VERSION_1_6);
 	if (result == JNI_EDETACHED) {
-		if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
-			return;
+		if ((*g_jvm)->AttachCurrentThread(g_jvm, env, NULL) != 0) {
+			return 0;
 		}
-		needsDetach = 1;
+		*needsDetach = 1;
 	} else if (result != JNI_OK) {
-		return;
+		return 0;
 	}
 
-	(*env)->CallVoidMethod(env, g_bridge, g_setNativeTabsEnabledMethod, enabled);
+	return 1;
+}
 
-	if ((*env)->ExceptionCheck(env)) {
-		(*env)->ExceptionDescribe(env);
-		(*env)->ExceptionClear(env);
-	}
-
+static void detachJNIEnvIfNeeded(int needsDetach) {
 	if (needsDetach) {
 		(*g_jvm)->DetachCurrentThread(g_jvm);
 	}
 }
 
-static void setNativeTabsItemsJsonOnBridge(const char* json) {
-	if (g_jvm == NULL || g_bridge == NULL || g_setNativeTabsItemsMethod == NULL || json == NULL) {
+static void callBridgeVoidBool(jmethodID method, jboolean value) {
+	if (g_jvm == NULL || g_bridge == NULL || method == NULL) {
 		return;
 	}
 
 	JNIEnv *env = NULL;
 	int needsDetach = 0;
-
-	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
-	if (result == JNI_EDETACHED) {
-		if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
-			return;
-		}
-		needsDetach = 1;
-	} else if (result != JNI_OK) {
+	if (!getJNIEnvForCall(&env, &needsDetach)) {
 		return;
 	}
 
-	jstring jJson = (*env)->NewStringUTF(env, json);
-	if (jJson != NULL) {
-		(*env)->CallVoidMethod(env, g_bridge, g_setNativeTabsItemsMethod, jJson);
-		(*env)->DeleteLocalRef(env, jJson);
-	}
-
+	(*env)->CallVoidMethod(env, g_bridge, method, value);
 	if ((*env)->ExceptionCheck(env)) {
 		(*env)->ExceptionDescribe(env);
 		(*env)->ExceptionClear(env);
 	}
 
-	if (needsDetach) {
-		(*g_jvm)->DetachCurrentThread(g_jvm);
-	}
+	detachJNIEnvIfNeeded(needsDetach);
 }
 
-static void selectNativeTabIndexOnBridge(jint index) {
-	if (g_jvm == NULL || g_bridge == NULL || g_selectNativeTabIndexMethod == NULL) {
+static void callBridgeVoidInt(jmethodID method, jint value) {
+	if (g_jvm == NULL || g_bridge == NULL || method == NULL) {
 		return;
 	}
 
 	JNIEnv *env = NULL;
 	int needsDetach = 0;
-
-	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
-	if (result == JNI_EDETACHED) {
-		if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
-			return;
-		}
-		needsDetach = 1;
-	} else if (result != JNI_OK) {
+	if (!getJNIEnvForCall(&env, &needsDetach)) {
 		return;
 	}
 
-	(*env)->CallVoidMethod(env, g_bridge, g_selectNativeTabIndexMethod, index);
-
+	(*env)->CallVoidMethod(env, g_bridge, method, value);
 	if ((*env)->ExceptionCheck(env)) {
 		(*env)->ExceptionDescribe(env);
 		(*env)->ExceptionClear(env);
 	}
 
-	if (needsDetach) {
-		(*g_jvm)->DetachCurrentThread(g_jvm);
-	}
+	detachJNIEnvIfNeeded(needsDetach);
 }
 
-static void setScrollEnabledOnBridge(jboolean enabled) {
-	if (g_jvm == NULL || g_bridge == NULL || g_setScrollEnabledMethod == NULL) {
+static void callBridgeVoidString(jmethodID method, const char* value, jboolean allowNull) {
+	if (g_jvm == NULL || g_bridge == NULL || method == NULL) {
+		return;
+	}
+	if (value == NULL && !allowNull) {
 		return;
 	}
 
 	JNIEnv *env = NULL;
 	int needsDetach = 0;
-
-	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
-	if (result == JNI_EDETACHED) {
-		if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
-			return;
-		}
-		needsDetach = 1;
-	} else if (result != JNI_OK) {
+	if (!getJNIEnvForCall(&env, &needsDetach)) {
 		return;
 	}
 
-	(*env)->CallVoidMethod(env, g_bridge, g_setScrollEnabledMethod, enabled);
-
-	if ((*env)->ExceptionCheck(env)) {
-		(*env)->ExceptionDescribe(env);
-		(*env)->ExceptionClear(env);
+	jstring jValue = NULL;
+	if (value != NULL && strlen(value) > 0) {
+		jValue = (*env)->NewStringUTF(env, value);
 	}
 
-	if (needsDetach) {
-		(*g_jvm)->DetachCurrentThread(g_jvm);
-	}
-}
+	(*env)->CallVoidMethod(env, g_bridge, method, jValue);
 
-static void setBounceEnabledOnBridge(jboolean enabled) {
-	if (g_jvm == NULL || g_bridge == NULL || g_setBounceEnabledMethod == NULL) {
-		return;
-	}
-
-	JNIEnv *env = NULL;
-	int needsDetach = 0;
-
-	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
-	if (result == JNI_EDETACHED) {
-		if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
-			return;
-		}
-		needsDetach = 1;
-	} else if (result != JNI_OK) {
-		return;
-	}
-
-	(*env)->CallVoidMethod(env, g_bridge, g_setBounceEnabledMethod, enabled);
-
-	if ((*env)->ExceptionCheck(env)) {
-		(*env)->ExceptionDescribe(env);
-		(*env)->ExceptionClear(env);
-	}
-
-	if (needsDetach) {
-		(*g_jvm)->DetachCurrentThread(g_jvm);
-	}
-}
-
-static void setScrollIndicatorsEnabledOnBridge(jboolean enabled) {
-	if (g_jvm == NULL || g_bridge == NULL || g_setScrollIndicatorsEnabledMethod == NULL) {
-		return;
-	}
-
-	JNIEnv *env = NULL;
-	int needsDetach = 0;
-
-	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
-	if (result == JNI_EDETACHED) {
-		if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
-			return;
-		}
-		needsDetach = 1;
-	} else if (result != JNI_OK) {
-		return;
-	}
-
-	(*env)->CallVoidMethod(env, g_bridge, g_setScrollIndicatorsEnabledMethod, enabled);
-
-	if ((*env)->ExceptionCheck(env)) {
-		(*env)->ExceptionDescribe(env);
-		(*env)->ExceptionClear(env);
-	}
-
-	if (needsDetach) {
-		(*g_jvm)->DetachCurrentThread(g_jvm);
-	}
-}
-
-static void setBackForwardGesturesEnabledOnBridge(jboolean enabled) {
-	if (g_jvm == NULL || g_bridge == NULL || g_setBackForwardGesturesEnabledMethod == NULL) {
-		return;
-	}
-
-	JNIEnv *env = NULL;
-	int needsDetach = 0;
-
-	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
-	if (result == JNI_EDETACHED) {
-		if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
-			return;
-		}
-		needsDetach = 1;
-	} else if (result != JNI_OK) {
-		return;
-	}
-
-	(*env)->CallVoidMethod(env, g_bridge, g_setBackForwardGesturesEnabledMethod, enabled);
-
-	if ((*env)->ExceptionCheck(env)) {
-		(*env)->ExceptionDescribe(env);
-		(*env)->ExceptionClear(env);
-	}
-
-	if (needsDetach) {
-		(*g_jvm)->DetachCurrentThread(g_jvm);
-	}
-}
-
-static void setLinkPreviewEnabledOnBridge(jboolean enabled) {
-	if (g_jvm == NULL || g_bridge == NULL || g_setLinkPreviewEnabledMethod == NULL) {
-		return;
-	}
-
-	JNIEnv *env = NULL;
-	int needsDetach = 0;
-
-	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
-	if (result == JNI_EDETACHED) {
-		if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
-			return;
-		}
-		needsDetach = 1;
-	} else if (result != JNI_OK) {
-		return;
-	}
-
-	(*env)->CallVoidMethod(env, g_bridge, g_setLinkPreviewEnabledMethod, enabled);
-
-	if ((*env)->ExceptionCheck(env)) {
-		(*env)->ExceptionDescribe(env);
-		(*env)->ExceptionClear(env);
-	}
-
-	if (needsDetach) {
-		(*g_jvm)->DetachCurrentThread(g_jvm);
-	}
-}
-
-static void setCustomUserAgentOnBridge(const char* ua) {
-	if (g_jvm == NULL || g_bridge == NULL || g_setCustomUserAgentMethod == NULL) {
-		return;
-	}
-
-	JNIEnv *env = NULL;
-	int needsDetach = 0;
-
-	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
-	if (result == JNI_EDETACHED) {
-		if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
-			return;
-		}
-		needsDetach = 1;
-	} else if (result != JNI_OK) {
-		return;
-	}
-
-	jstring jUa = NULL;
-	if (ua != NULL && strlen(ua) > 0) {
-		jUa = (*env)->NewStringUTF(env, ua);
-	}
-
-	(*env)->CallVoidMethod(env, g_bridge, g_setCustomUserAgentMethod, jUa);
-
-	if (jUa != NULL) {
-		(*env)->DeleteLocalRef(env, jUa);
+	if (jValue != NULL) {
+		(*env)->DeleteLocalRef(env, jValue);
 	}
 
 	if ((*env)->ExceptionCheck(env)) {
@@ -436,30 +279,28 @@ static void setCustomUserAgentOnBridge(const char* ua) {
 		(*env)->ExceptionClear(env);
 	}
 
-	if (needsDetach) {
-		(*g_jvm)->DetachCurrentThread(g_jvm);
-	}
+	detachJNIEnvIfNeeded(needsDetach);
 }
 
-static char* getDeviceInfoJsonOnBridge() {
-	if (g_jvm == NULL || g_bridge == NULL || g_getDeviceInfoJsonMethod == NULL) {
+static char* callBridgeGetString(jmethodID method) {
+	if (g_jvm == NULL || g_bridge == NULL || method == NULL) {
 		return NULL;
 	}
 
 	JNIEnv *env = NULL;
 	int needsDetach = 0;
-
-	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)&env, JNI_VERSION_1_6);
-	if (result == JNI_EDETACHED) {
-		if ((*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL) != 0) {
-			return NULL;
-		}
-		needsDetach = 1;
-	} else if (result != JNI_OK) {
+	if (!getJNIEnvForCall(&env, &needsDetach)) {
 		return NULL;
 	}
 
-	jstring jInfo = (jstring)(*env)->CallObjectMethod(env, g_bridge, g_getDeviceInfoJsonMethod);
+	jstring jInfo = (jstring)(*env)->CallObjectMethod(env, g_bridge, method);
+	if ((*env)->ExceptionCheck(env)) {
+		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+		detachJNIEnvIfNeeded(needsDetach);
+		return NULL;
+	}
+
 	char *resultStr = NULL;
 	if (jInfo != NULL) {
 		const char* cInfo = jstringToC(env, jInfo);
@@ -470,16 +311,48 @@ static char* getDeviceInfoJsonOnBridge() {
 		(*env)->DeleteLocalRef(env, jInfo);
 	}
 
-	if ((*env)->ExceptionCheck(env)) {
-		(*env)->ExceptionDescribe(env);
-		(*env)->ExceptionClear(env);
-	}
-
-	if (needsDetach) {
-		(*g_jvm)->DetachCurrentThread(g_jvm);
-	}
-
+	detachJNIEnvIfNeeded(needsDetach);
 	return resultStr;
+}
+
+static void setNativeTabsEnabledOnBridge(jboolean enabled) {
+	callBridgeVoidBool(g_setNativeTabsEnabledMethod, enabled);
+}
+
+static void setNativeTabsItemsJsonOnBridge(const char* json) {
+	callBridgeVoidString(g_setNativeTabsItemsMethod, json, JNI_FALSE);
+}
+
+static void selectNativeTabIndexOnBridge(jint index) {
+	callBridgeVoidInt(g_selectNativeTabIndexMethod, index);
+}
+
+static void setScrollEnabledOnBridge(jboolean enabled) {
+	callBridgeVoidBool(g_setScrollEnabledMethod, enabled);
+}
+
+static void setBounceEnabledOnBridge(jboolean enabled) {
+	callBridgeVoidBool(g_setBounceEnabledMethod, enabled);
+}
+
+static void setScrollIndicatorsEnabledOnBridge(jboolean enabled) {
+	callBridgeVoidBool(g_setScrollIndicatorsEnabledMethod, enabled);
+}
+
+static void setBackForwardGesturesEnabledOnBridge(jboolean enabled) {
+	callBridgeVoidBool(g_setBackForwardGesturesEnabledMethod, enabled);
+}
+
+static void setLinkPreviewEnabledOnBridge(jboolean enabled) {
+	callBridgeVoidBool(g_setLinkPreviewEnabledMethod, enabled);
+}
+
+static void setCustomUserAgentOnBridge(const char* ua) {
+	callBridgeVoidString(g_setCustomUserAgentMethod, ua, JNI_TRUE);
+}
+
+static char* getDeviceInfoJsonOnBridge() {
+	return callBridgeGetString(g_getDeviceInfoJsonMethod);
 }
 */
 import "C"
@@ -700,7 +573,10 @@ func Java_com_wails_app_WailsBridge_nativeInit(env *C.JNIEnv, obj C.jobject, bri
 	bridgeObject = unsafe.Pointer(bridge)
 
 	// Store JavaVM and bridge global reference for JNI callbacks
-	C.storeBridgeRef(env, bridge)
+	if C.storeBridgeRef(env, bridge) == C.JNI_FALSE {
+		androidLogf("error", "🤖 [JNI] Failed to cache JNI method IDs")
+		return
+	}
 	androidLogf("info", "🤖 [JNI] Bridge reference stored for JNI callbacks")
 
 	// Start the registered main function in a goroutine
@@ -1000,7 +876,9 @@ func handleMessageForAndroid(app *App, message string) string {
 		ClientID:          payload.ClientID,
 	}
 
-	response, err := processor.HandleRuntimeCallWithIDs(context.Background(), request)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	response, err := processor.HandleRuntimeCallWithIDs(ctx, request)
 	return marshalAndroidInvokeResponse(response, err)
 }
 
@@ -1029,7 +907,14 @@ func marshalAndroidInvokeResponse(data any, err error) string {
 
 	payload, marshalErr := json.Marshal(response)
 	if marshalErr != nil {
-		return fmt.Sprintf(`{"ok":false,"error":"%s"}`, marshalErr.Error())
+		fallbackPayload, fallbackErr := json.Marshal(androidInvokeResponse{
+			Ok:    false,
+			Error: marshalErr.Error(),
+		})
+		if fallbackErr != nil {
+			return `{"ok":false,"error":"Failed to marshal response"}`
+		}
+		return string(fallbackPayload)
 	}
 	return string(payload)
 }

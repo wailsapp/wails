@@ -34,6 +34,11 @@ export namespace Device {
         platform: string;
         model: string;
         version: string;
+        manufacturer: string;
+        brand: string;
+        device: string;
+        product: string;
+        sdkInt: number;
     }
 
     export function Info(): Promise<Info> {

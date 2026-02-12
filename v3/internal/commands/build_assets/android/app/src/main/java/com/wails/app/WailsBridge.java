@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -45,18 +46,18 @@ public class WailsBridge {
     private WebView webView;
     private volatile boolean initialized = false;
     private BottomNavigationView nativeTabsView;
-    private List<String> nativeTabTitles = new ArrayList<>();
-    private boolean nativeTabsEnabled = false;
-    private boolean scrollEnabled = true;
-    private boolean bounceEnabled = true;
-    private boolean scrollIndicatorsEnabled = true;
-    private boolean backForwardGesturesEnabled = false;
-    private boolean linkPreviewEnabled = true;
-    private String customUserAgent = null;
-    private float touchStartX = 0f;
-    private float touchStartY = 0f;
-    private int swipeThresholdPx = 120;
-    private View.OnTouchListener touchListener;
+    private final CopyOnWriteArrayList<String> nativeTabTitles = new CopyOnWriteArrayList<>();
+    private volatile boolean nativeTabsEnabled = false;
+    private volatile boolean scrollEnabled = true;
+    private volatile boolean bounceEnabled = true;
+    private volatile boolean scrollIndicatorsEnabled = true;
+    private volatile boolean backForwardGesturesEnabled = false;
+    private volatile boolean linkPreviewEnabled = true;
+    private volatile String customUserAgent = null;
+    private volatile float touchStartX = 0f;
+    private volatile float touchStartY = 0f;
+    private volatile int swipeThresholdPx = 120;
+    private volatile View.OnTouchListener touchListener;
     private final View.OnLongClickListener blockLongClickListener = v -> true;
 
     private static final List<String> DEFAULT_NATIVE_TAB_TITLES = Collections.emptyList();
@@ -371,7 +372,8 @@ public class WailsBridge {
             }
         }
 
-        nativeTabTitles = titles;
+        nativeTabTitles.clear();
+        nativeTabTitles.addAll(titles);
         if (!nativeTabTitles.isEmpty()) {
             nativeTabsEnabled = true;
         }
@@ -425,15 +427,15 @@ public class WailsBridge {
                 return;
             }
 
-            boolean shouldShow = nativeTabsEnabled || (nativeTabTitles != null && !nativeTabTitles.isEmpty());
+            List<String> titles = nativeTabTitles;
+            if (titles.isEmpty()) {
+                titles = DEFAULT_NATIVE_TAB_TITLES;
+            }
+
+            boolean shouldShow = nativeTabsEnabled && !titles.isEmpty();
             if (!shouldShow) {
                 tabs.setVisibility(View.GONE);
                 return;
-            }
-
-            List<String> titles = nativeTabTitles;
-            if (titles == null || titles.isEmpty()) {
-                titles = DEFAULT_NATIVE_TAB_TITLES;
             }
 
             Menu menu = tabs.getMenu();

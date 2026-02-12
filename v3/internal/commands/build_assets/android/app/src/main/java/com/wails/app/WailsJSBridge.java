@@ -6,6 +6,7 @@ import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import com.wails.app.BuildConfig;
+import java.util.Locale;
 
 /**
  * WailsJSBridge provides the JavaScript interface that allows the web frontend
@@ -123,7 +124,16 @@ public class WailsJSBridge {
             return;
         }
         try {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            Uri uri = Uri.parse(url);
+            String scheme = uri.getScheme();
+            if (scheme != null && !scheme.trim().isEmpty()) {
+                String normalizedScheme = scheme.toLowerCase(Locale.ROOT);
+                if ("intent".equals(normalizedScheme) || "file".equals(normalizedScheme)) {
+                    Log.w(TAG, "openURL blocked for scheme: " + normalizedScheme);
+                    return;
+                }
+            }
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             webView.getContext().startActivity(intent);
         } catch (Exception e) {
