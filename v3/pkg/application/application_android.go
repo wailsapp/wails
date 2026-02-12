@@ -1065,7 +1065,10 @@ func androidDeviceInfoViaJNI() map[string]interface{} {
 	if len(parsed) == 0 {
 		return info
 	}
-	return parsed
+	for key, value := range parsed {
+		info[key] = value
+	}
+	return info
 }
 
 func boolToJNI(value bool) C.jboolean {

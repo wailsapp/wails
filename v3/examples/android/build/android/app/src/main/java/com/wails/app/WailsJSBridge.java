@@ -128,7 +128,7 @@ public class WailsJSBridge {
             String scheme = uri.getScheme();
             if (scheme != null && !scheme.trim().isEmpty()) {
                 String normalizedScheme = scheme.toLowerCase(Locale.ROOT);
-                if ("intent".equals(normalizedScheme) || "file".equals(normalizedScheme)) {
+                if ("intent".equals(normalizedScheme) || "file".equals(normalizedScheme) || "content".equals(normalizedScheme)) {
                     Log.w(TAG, "openURL blocked for scheme: " + normalizedScheme);
                     return;
                 }

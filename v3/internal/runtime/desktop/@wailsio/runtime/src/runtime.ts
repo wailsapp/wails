@@ -75,7 +75,7 @@ function parseAndroidInvokeResponse(responseText: string): any {
         }
         return parsed;
     } catch (err) {
-        if (err instanceof Error) {
+        if (err instanceof Error && err.name !== "SyntaxError") {
             throw err;
         }
         return responseText;

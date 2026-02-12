@@ -79,7 +79,9 @@ export namespace Links {
 }
 
 export namespace UserAgent {
-    export function Set(ua: string): Promise<void> {
+    export function SetUserAgent(ua: string): Promise<void> {
         return call(UserAgentSet, { ua });
     }
 }
+
+export const Set = UserAgent.SetUserAgent;
