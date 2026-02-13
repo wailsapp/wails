@@ -173,6 +173,11 @@ type WebviewWindow struct {
 
 	// unconditionallyClose marks the window to be unconditionally closed (atomic)
 	unconditionallyClose uint32
+
+	// Embedded panels management
+	panels                       map[uint]*WebviewPanel
+	panelsLock                   sync.RWMutex
+	panelResizeHandlerRegistered bool // Tracks if resize handler is registered
 }
 
 func (w *WebviewWindow) SetMenu(menu *Menu) {
@@ -289,13 +294,15 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 		eventListeners: make(map[uint][]*WindowEventListener),
 		eventHooks:     make(map[uint][]*WindowEventListener),
 		menuBindings:   make(map[string]*MenuItem),
+		panels:         make(map[uint]*WebviewPanel),
 	}
 
 	result.setupEventMapping()
 
-	// Listen for window closing events and de
+	// Listen for window closing events and cleanup panels
 	result.OnWindowEvent(events.Common.WindowClosing, func(event *WindowEvent) {
 		atomic.StoreUint32(&result.unconditionallyClose, 1)
+		InvokeSync(result.destroyAllPanels)
 		InvokeSync(result.markAsDestroyed)
 		InvokeSync(result.impl.close)
 		globalApplication.Window.Remove(result.id)
@@ -428,6 +435,9 @@ func (w *WebviewWindow) Run() {
 	}
 
 	InvokeSync(w.impl.run)
+
+	// Start any panels that were added before the window was run
+	w.runPanels()
 }
 
 // SetAlwaysOnTop sets the window to be always on top.
@@ -1584,4 +1594,229 @@ func (w *WebviewWindow) SnapAssist() {
 		return
 	}
 	InvokeSync(w.impl.snapAssist)
+}
+
+// ============================================================================
+// Panel Management Methods
+// ============================================================================
+
+// NewPanel creates a new WebviewPanel with the given options and adds it to this window.
+// The panel is a secondary webview that can be positioned anywhere within the window.
+// This is similar to Electron's BrowserView or the deprecated webview tag.
+//
+// Example:
+//
+//	panel := window.NewPanel(application.WebviewPanelOptions{
+//		X:      0,
+//		Y:      0,
+//		Width:  300,
+//		Height: 400,
+//		URL:    "https://example.com",
+//	})
+func (w *WebviewWindow) NewPanel(options WebviewPanelOptions) *WebviewPanel {
+	globalApplication.debug("[Window] NewPanel() called",
+		"windowID", w.id,
+		"panelName", options.Name,
+		"windowImplNil", w.impl == nil,
+		"windowDestroyed", w.isDestroyed())
+
+	panel := NewPanel(options)
+	panel.parent = w
+
+	w.panelsLock.Lock()
+	w.panels[panel.id] = panel
+	w.panelsLock.Unlock()
+
+	globalApplication.debug("[Window] Panel registered",
+		"windowID", w.id,
+		"panelID", panel.id,
+		"panelName", panel.name)
+
+	// If window is already running, start the panel immediately
+	if w.impl != nil && !w.isDestroyed() {
+		globalApplication.debug("[Window] Window impl exists, starting panel immediately",
+			"windowID", w.id,
+			"panelID", panel.id)
+		// Initialize anchor with current window size
+		panel.initializeAnchor()
+		InvokeSync(panel.run)
+
+		// Ensure resize handler is registered if this panel has anchoring
+		if options.Anchor != AnchorNone {
+			w.ensurePanelResizeHandler()
+		}
+	} else {
+		globalApplication.debug("[Window] Window impl not ready, panel will be started later",
+			"windowID", w.id,
+			"panelID", panel.id,
+			"implNil", w.impl == nil,
+			"destroyed", w.isDestroyed())
+	}
+
+	return panel
+}
+
+// GetPanel returns a panel by its name, or nil if not found.
+func (w *WebviewWindow) GetPanel(name string) *WebviewPanel {
+	w.panelsLock.RLock()
+	defer w.panelsLock.RUnlock()
+
+	for _, panel := range w.panels {
+		if panel.name == name {
+			return panel
+		}
+	}
+	return nil
+}
+
+// GetPanelByID returns a panel by its ID, or nil if not found.
+func (w *WebviewWindow) GetPanelByID(id uint) *WebviewPanel {
+	w.panelsLock.RLock()
+	defer w.panelsLock.RUnlock()
+	return w.panels[id]
+}
+
+// GetPanels returns all panels attached to this window.
+func (w *WebviewWindow) GetPanels() []*WebviewPanel {
+	w.panelsLock.RLock()
+	defer w.panelsLock.RUnlock()
+
+	panels := make([]*WebviewPanel, 0, len(w.panels))
+	for _, panel := range w.panels {
+		panels = append(panels, panel)
+	}
+	return panels
+}
+
+// RemovePanel removes a panel from this window by its name.
+// Returns true if the panel was found and removed.
+func (w *WebviewWindow) RemovePanel(name string) bool {
+	panel := w.GetPanel(name)
+	if panel == nil {
+		return false
+	}
+	panel.Destroy()
+	return true
+}
+
+// RemovePanelByID removes a panel from this window by its ID.
+// Returns true if the panel was found and removed.
+func (w *WebviewWindow) RemovePanelByID(id uint) bool {
+	panel := w.GetPanelByID(id)
+	if panel == nil {
+		return false
+	}
+	panel.Destroy()
+	return true
+}
+
+// removePanel is called by WebviewPanel.Destroy() to remove itself from the parent
+func (w *WebviewWindow) removePanel(id uint) {
+	w.panelsLock.Lock()
+	defer w.panelsLock.Unlock()
+	delete(w.panels, id)
+}
+
+// runPanels starts all panels that haven't been started yet.
+// This is called after the window's impl is created.
+func (w *WebviewWindow) runPanels() {
+	globalApplication.debug("[Window] runPanels() called", "windowID", w.id)
+
+	// Collect panels under lock, then run them outside the lock
+	w.panelsLock.RLock()
+	panels := make([]*WebviewPanel, 0, len(w.panels))
+	for _, panel := range w.panels {
+		if panel.impl == nil {
+			panels = append(panels, panel)
+		}
+	}
+	w.panelsLock.RUnlock()
+
+	globalApplication.debug("[Window] runPanels() found panels to start",
+		"windowID", w.id,
+		"panelCount", len(panels))
+
+	for _, panel := range panels {
+		globalApplication.debug("[Window] runPanels() starting panel",
+			"windowID", w.id,
+			"panelID", panel.id,
+			"panelName", panel.name)
+		panel.initializeAnchor()
+		panel.run()
+	}
+
+	// Register resize event handler for panel responsive layout if needed
+	w.ensurePanelResizeHandler()
+
+	globalApplication.debug("[Window] runPanels() completed", "windowID", w.id)
+}
+
+// ensurePanelResizeHandler registers the resize event handler if there are anchored panels
+// and the handler hasn't been registered yet.
+func (w *WebviewWindow) ensurePanelResizeHandler() {
+	w.panelsLock.Lock()
+	if w.panelResizeHandlerRegistered {
+		w.panelsLock.Unlock()
+		return
+	}
+
+	// Check if we have any anchored panels
+	hasAnchoredPanels := false
+	for _, panel := range w.panels {
+		if panel.options.Anchor != AnchorNone {
+			hasAnchoredPanels = true
+			break
+		}
+	}
+
+	if !hasAnchoredPanels {
+		w.panelsLock.Unlock()
+		return
+	}
+
+	w.panelResizeHandlerRegistered = true
+	w.panelsLock.Unlock()
+
+	w.OnWindowEvent(events.Common.WindowDidResize, func(event *WindowEvent) {
+		w.handlePanelResize()
+	})
+}
+
+// handlePanelResize updates all anchored panels when the window is resized.
+// This should be called when the window size changes.
+func (w *WebviewWindow) handlePanelResize() {
+	w.panelsLock.RLock()
+	panels := make([]*WebviewPanel, 0, len(w.panels))
+	for _, panel := range w.panels {
+		if panel.options.Anchor != AnchorNone {
+			panels = append(panels, panel)
+		}
+	}
+	w.panelsLock.RUnlock()
+
+	if len(panels) == 0 {
+		return
+	}
+
+	// Get new window size
+	newWidth, newHeight := w.Size()
+
+	for _, panel := range panels {
+		panel.handleWindowResize(newWidth, newHeight)
+	}
+}
+
+// destroyAllPanels destroys all panels in this window.
+// This is called when the window is closing.
+func (w *WebviewWindow) destroyAllPanels() {
+	w.panelsLock.Lock()
+	panels := make([]*WebviewPanel, 0, len(w.panels))
+	for _, panel := range w.panels {
+		panels = append(panels, panel)
+	}
+	w.panelsLock.Unlock()
+
+	for _, panel := range panels {
+		panel.Destroy()
+	}
 }
