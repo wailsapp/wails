@@ -91,6 +91,11 @@ import * as $models from "./models.js";
  */
 
 /**
+ * An alias referencing another package that is not used elsewhere.
+ * @typedef {$models.SubPackageAlias} SubPackageAlias
+ */
+
+/**
  * An alias that wraps a class through a typeparam alias.
  * @typedef {$models.TPIndirectPersonAlias} TPIndirectPersonAlias
  */

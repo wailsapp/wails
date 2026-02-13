@@ -480,6 +480,8 @@ if (user.nickname) {
 
 ### Enums
 
+The binding generator automatically detects Go named types with constants and generates TypeScript enums or JavaScript const objects — including a `$zero` member for Go's zero value and full JSDoc preservation.
+
 ```go
 type UserRole string
 
@@ -488,26 +490,16 @@ const (
     RoleUser  UserRole = "user"
     RoleGuest UserRole = "guest"
 )
-
-type User struct {
-    ID   int      `json:"id"`
-    Name string   `json:"name"`
-    Role UserRole `json:"role"`
-}
 ```
 
-**Generated:**
+**Generated TypeScript:**
 
-```javascript
-export const UserRole = {
-    Admin: "admin",
-    User: "user",
-    Guest: "guest"
-}
-
-export class User {
-    /** @type {string} */
-    role = UserRole.User
+```typescript
+export enum UserRole {
+    $zero = "",
+    RoleAdmin = "admin",
+    RoleUser = "user",
+    RoleGuest = "guest",
 }
 ```
 
@@ -518,9 +510,11 @@ import { User, UserRole } from './bindings/myapp/models'
 
 const admin = new User({
     name: "Admin",
-    role: UserRole.Admin
+    role: UserRole.RoleAdmin
 })
 ```
+
+For comprehensive coverage of string enums, integer enums, type aliases, imported package enums, and limitations, see the dedicated **[Enums](/features/bindings/enums)** page.
 
 ### Validation
 

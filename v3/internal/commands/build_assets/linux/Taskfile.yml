@@ -26,6 +26,7 @@ tasks:
           ARCH: '{{.ARCH}}'
           DEV: '{{.DEV}}'
           OUTPUT: '{{.OUTPUT}}'
+          EXTRA_TAGS: '{{.EXTRA_TAGS}}'
     vars:
       DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
       OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
@@ -51,7 +52,7 @@ tasks:
     cmds:
       - go build {{.BUILD_FLAGS}} -o {{.OUTPUT}}
     vars:
-      BUILD_FLAGS: '{{if eq .DEV "true"}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production -trimpath -buildvcs=false -ldflags="-w -s"{{end}}'
+      BUILD_FLAGS: '{{if eq .DEV "true"}}{{if .EXTRA_TAGS}}-tags {{.EXTRA_TAGS}} {{end}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production{{if .EXTRA_TAGS}},{{.EXTRA_TAGS}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s"{{end}}'
       DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
       OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
     env:
@@ -74,7 +75,7 @@ tasks:
           Docker image '{{.CROSS_IMAGE}}' not found.
           Build it first: wails3 task setup:docker
     cmds:
-      - docker run --rm -v "{{.ROOT_DIR}}:/app" {{.GO_CACHE_MOUNT}} {{.REPLACE_MOUNTS}} -e APP_NAME="{{.APP_NAME}}" "{{.CROSS_IMAGE}}" linux {{.DOCKER_ARCH}}
+      - docker run --rm -v "{{.ROOT_DIR}}:/app" {{.GO_CACHE_MOUNT}} {{.REPLACE_MOUNTS}} -e APP_NAME="{{.APP_NAME}}" {{if .EXTRA_TAGS}}-e EXTRA_TAGS="{{.EXTRA_TAGS}}"{{end}} "{{.CROSS_IMAGE}}" linux {{.DOCKER_ARCH}}
       - docker run --rm -v "{{.ROOT_DIR}}:/app" alpine chown -R $(id -u):$(id -g) /app/bin
       - mkdir -p {{.BIN_DIR}}
       - mv "bin/{{.APP_NAME}}-linux-{{.DOCKER_ARCH}}" "{{.OUTPUT}}"
