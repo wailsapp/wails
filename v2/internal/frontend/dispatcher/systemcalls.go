@@ -61,6 +61,102 @@ func (d *Dispatcher) processSystemCall(payload callMessage, sender frontend.Fron
 			return false, err
 		}
 		return true, nil
+	case "InitializeNotifications":
+		err := sender.InitializeNotifications()
+		return nil, err
+	case "CleanupNotifications":
+		sender.CleanupNotifications()
+		return nil, nil
+	case "IsNotificationAvailable":
+		return sender.IsNotificationAvailable(), nil
+	case "RequestNotificationAuthorization":
+		authorized, err := sender.RequestNotificationAuthorization()
+		if err != nil {
+			return nil, err
+		}
+		return authorized, nil
+	case "CheckNotificationAuthorization":
+		authorized, err := sender.CheckNotificationAuthorization()
+		if err != nil {
+			return nil, err
+		}
+		return authorized, nil
+	case "SendNotification":
+		if len(payload.Args) < 1 {
+			return nil, errors.New("empty argument, cannot send notification")
+		}
+		var options frontend.NotificationOptions
+		if err := json.Unmarshal(payload.Args[0], &options); err != nil {
+			return nil, err
+		}
+		err := sender.SendNotification(options)
+		return nil, err
+	case "SendNotificationWithActions":
+		if len(payload.Args) < 1 {
+			return nil, errors.New("empty argument, cannot send notification")
+		}
+		var options frontend.NotificationOptions
+		if err := json.Unmarshal(payload.Args[0], &options); err != nil {
+			return nil, err
+		}
+		err := sender.SendNotificationWithActions(options)
+		return nil, err
+	case "RegisterNotificationCategory":
+		if len(payload.Args) < 1 {
+			return nil, errors.New("empty argument, cannot register category")
+		}
+		var category frontend.NotificationCategory
+		if err := json.Unmarshal(payload.Args[0], &category); err != nil {
+			return nil, err
+		}
+		err := sender.RegisterNotificationCategory(category)
+		return nil, err
+	case "RemoveNotificationCategory":
+		if len(payload.Args) < 1 {
+			return nil, errors.New("empty argument, cannot remove category")
+		}
+		var categoryId string
+		if err := json.Unmarshal(payload.Args[0], &categoryId); err != nil {
+			return nil, err
+		}
+		err := sender.RemoveNotificationCategory(categoryId)
+		return nil, err
+	case "RemoveAllPendingNotifications":
+		err := sender.RemoveAllPendingNotifications()
+		return nil, err
+	case "RemovePendingNotification":
+		if len(payload.Args) < 1 {
+			return nil, errors.New("empty argument, cannot remove notification")
+		}
+		var identifier string
+		if err := json.Unmarshal(payload.Args[0], &identifier); err != nil {
+			return nil, err
+		}
+		err := sender.RemovePendingNotification(identifier)
+		return nil, err
+	case "RemoveAllDeliveredNotifications":
+		err := sender.RemoveAllDeliveredNotifications()
+		return nil, err
+	case "RemoveDeliveredNotification":
+		if len(payload.Args) < 1 {
+			return nil, errors.New("empty argument, cannot remove notification")
+		}
+		var identifier string
+		if err := json.Unmarshal(payload.Args[0], &identifier); err != nil {
+			return nil, err
+		}
+		err := sender.RemoveDeliveredNotification(identifier)
+		return nil, err
+	case "RemoveNotification":
+		if len(payload.Args) < 1 {
+			return nil, errors.New("empty argument, cannot remove notification")
+		}
+		var identifier string
+		if err := json.Unmarshal(payload.Args[0], &identifier); err != nil {
+			return nil, err
+		}
+		err := sender.RemoveNotification(identifier)
+		return nil, err
 	default:
 		return nil, fmt.Errorf("unknown systemcall message: %s", payload.Name)
 	}
