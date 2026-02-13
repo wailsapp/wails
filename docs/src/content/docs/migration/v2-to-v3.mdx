@@ -456,13 +456,13 @@ EventsOn("update", (data) => {
 EventsEmit("action", data)
 
 // v3
-import { OnEvent, Emit } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-OnEvent("update", (data) => {
+Events.On("update", (data) => {
     console.log(data)
 })
 
-Emit("action", data)
+Events.Emit("action", data)
 ```
 
 ### Step 6: Update Configuration

@@ -498,9 +498,9 @@ window.EmitEvent("data-updated", map[string]interface{}{
 
 **Frontend (JavaScript):**
 ```javascript
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-On('data-updated', (data) => {
+Events.On('data-updated', (data) => {
     console.log('Count:', data.count)
     console.log('Status:', data.status)
 })
