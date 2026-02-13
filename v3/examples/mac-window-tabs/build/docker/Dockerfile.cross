@@ -1,0 +1,198 @@
+# Cross-compile Wails v3 apps to any platform
+#
+# Darwin: Zig + macOS SDK
+# Linux: Native GCC when host matches target, Zig for cross-arch
+# Windows: Zig + bundled mingw
+#
+# Usage:
+#   docker build -t wails-cross -f Dockerfile.cross .
+#   docker run --rm -v $(pwd):/app wails-cross darwin arm64
+#   docker run --rm -v $(pwd):/app wails-cross darwin amd64
+#   docker run --rm -v $(pwd):/app wails-cross linux amd64
+#   docker run --rm -v $(pwd):/app wails-cross linux arm64
+#   docker run --rm -v $(pwd):/app wails-cross windows amd64
+#   docker run --rm -v $(pwd):/app wails-cross windows arm64
+
+FROM golang:1.25-bookworm
+
+ARG TARGETARCH
+
+# Install base tools, GCC, and GTK/WebKit dev packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl xz-utils nodejs npm pkg-config gcc libc6-dev \
+    libgtk-3-dev libwebkit2gtk-4.1-dev \
+    libgtk-4-dev libwebkitgtk-6.0-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Zig - automatically selects correct binary for host architecture
+ARG ZIG_VERSION=0.14.0
+RUN ZIG_ARCH=$(case "${TARGETARCH}" in arm64) echo "aarch64" ;; *) echo "x86_64" ;; esac) && \
+    curl -L "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}.tar.xz" \
+    | tar -xJ -C /opt \
+    && ln -s /opt/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}/zig /usr/local/bin/zig
+
+# Download macOS SDK (required for darwin targets)
+ARG MACOS_SDK_VERSION=14.5
+RUN curl -L "https://github.com/joseluisq/macosx-sdks/releases/download/${MACOS_SDK_VERSION}/MacOSX${MACOS_SDK_VERSION}.sdk.tar.xz" \
+    | tar -xJ -C /opt \
+    && mv /opt/MacOSX${MACOS_SDK_VERSION}.sdk /opt/macos-sdk
+
+ENV MACOS_SDK_PATH=/opt/macos-sdk
+
+# Create Zig CC wrappers for cross-compilation targets
+# Darwin and Windows use Zig; Linux uses native GCC (run with --platform for cross-arch)
+
+# Darwin arm64
+COPY <<'ZIGWRAP' /usr/local/bin/zcc-darwin-arm64
+#!/bin/sh
+ARGS=""
+SKIP_NEXT=0
+for arg in "$@"; do
+    if [ $SKIP_NEXT -eq 1 ]; then
+        SKIP_NEXT=0
+        continue
+    fi
+    case "$arg" in
+        -target) SKIP_NEXT=1 ;;
+        -mmacosx-version-min=*) ;;
+        *) ARGS="$ARGS $arg" ;;
+    esac
+done
+exec zig cc -fno-sanitize=all -target aarch64-macos-none -isysroot /opt/macos-sdk -I/opt/macos-sdk/usr/include -L/opt/macos-sdk/usr/lib -F/opt/macos-sdk/System/Library/Frameworks -w $ARGS
+ZIGWRAP
+RUN chmod +x /usr/local/bin/zcc-darwin-arm64
+
+# Darwin amd64
+COPY <<'ZIGWRAP' /usr/local/bin/zcc-darwin-amd64
+#!/bin/sh
+ARGS=""
+SKIP_NEXT=0
+for arg in "$@"; do
+    if [ $SKIP_NEXT -eq 1 ]; then
+        SKIP_NEXT=0
+        continue
+    fi
+    case "$arg" in
+        -target) SKIP_NEXT=1 ;;
+        -mmacosx-version-min=*) ;;
+        *) ARGS="$ARGS $arg" ;;
+    esac
+done
+exec zig cc -fno-sanitize=all -target x86_64-macos-none -isysroot /opt/macos-sdk -I/opt/macos-sdk/usr/include -L/opt/macos-sdk/usr/lib -F/opt/macos-sdk/System/Library/Frameworks -w $ARGS
+ZIGWRAP
+RUN chmod +x /usr/local/bin/zcc-darwin-amd64
+
+# Windows amd64 - uses Zig's bundled mingw
+COPY <<'ZIGWRAP' /usr/local/bin/zcc-windows-amd64
+#!/bin/sh
+ARGS=""
+SKIP_NEXT=0
+for arg in "$@"; do
+    if [ $SKIP_NEXT -eq 1 ]; then
+        SKIP_NEXT=0
+        continue
+    fi
+    case "$arg" in
+        -target) SKIP_NEXT=1 ;;
+        -Wl,*) ;;
+        *) ARGS="$ARGS $arg" ;;
+    esac
+done
+exec zig cc -target x86_64-windows-gnu $ARGS
+ZIGWRAP
+RUN chmod +x /usr/local/bin/zcc-windows-amd64
+
+# Windows arm64 - uses Zig's bundled mingw
+COPY <<'ZIGWRAP' /usr/local/bin/zcc-windows-arm64
+#!/bin/sh
+ARGS=""
+SKIP_NEXT=0
+for arg in "$@"; do
+    if [ $SKIP_NEXT -eq 1 ]; then
+        SKIP_NEXT=0
+        continue
+    fi
+    case "$arg" in
+        -target) SKIP_NEXT=1 ;;
+        -Wl,*) ;;
+        *) ARGS="$ARGS $arg" ;;
+    esac
+done
+exec zig cc -target aarch64-windows-gnu $ARGS
+ZIGWRAP
+RUN chmod +x /usr/local/bin/zcc-windows-arm64
+
+# Build script
+COPY <<'SCRIPT' /usr/local/bin/build.sh
+#!/bin/sh
+set -e
+
+OS=${1:-darwin}
+ARCH=${2:-arm64}
+
+case "${OS}-${ARCH}" in
+    darwin-arm64|darwin-aarch64)
+        export CC=zcc-darwin-arm64
+        export GOARCH=arm64
+        export GOOS=darwin
+        ;;
+    darwin-amd64|darwin-x86_64)
+        export CC=zcc-darwin-amd64
+        export GOARCH=amd64
+        export GOOS=darwin
+        ;;
+    linux-arm64|linux-aarch64)
+        export CC=gcc
+        export GOARCH=arm64
+        export GOOS=linux
+        ;;
+    linux-amd64|linux-x86_64)
+        export CC=gcc
+        export GOARCH=amd64
+        export GOOS=linux
+        ;;
+    windows-arm64|windows-aarch64)
+        export CC=zcc-windows-arm64
+        export GOARCH=arm64
+        export GOOS=windows
+        ;;
+    windows-amd64|windows-x86_64)
+        export CC=zcc-windows-amd64
+        export GOARCH=amd64
+        export GOOS=windows
+        ;;
+    *)
+        echo "Usage: <os> <arch>"
+        echo "  os: darwin, linux, windows"
+        echo "  arch: amd64, arm64"
+        exit 1
+        ;;
+esac
+
+export CGO_ENABLED=1
+export CGO_CFLAGS="-w"
+
+# Build frontend if exists and not already built (host may have built it)
+if [ -d "frontend" ] && [ -f "frontend/package.json" ] && [ ! -d "frontend/dist" ]; then
+    (cd frontend && npm install --silent && npm run build --silent)
+fi
+
+# Build
+APP=${APP_NAME:-$(basename $(pwd))}
+mkdir -p bin
+
+EXT=""
+LDFLAGS="-s -w"
+if [ "$GOOS" = "windows" ]; then
+    EXT=".exe"
+    LDFLAGS="-s -w -H windowsgui"
+fi
+
+go build -ldflags="$LDFLAGS" -o bin/${APP}-${GOOS}-${GOARCH}${EXT} .
+echo "Built: bin/${APP}-${GOOS}-${GOARCH}${EXT}"
+SCRIPT
+RUN chmod +x /usr/local/bin/build.sh
+
+WORKDIR /app
+ENTRYPOINT ["/usr/local/bin/build.sh"]
+CMD ["darwin", "arm64"]

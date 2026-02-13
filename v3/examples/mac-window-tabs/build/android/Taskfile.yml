@@ -1,0 +1,237 @@
+version: '3'
+
+includes:
+  common: ../Taskfile.yml
+
+vars:
+  APP_ID: '{{.APP_ID | default "com.wails.app"}}'
+  MIN_SDK: '21'
+  TARGET_SDK: '34'
+  NDK_VERSION: 'r26d'
+
+tasks:
+  install:deps:
+    summary: Check and install Android development dependencies
+    cmds:
+      - go run build/android/scripts/deps/install_deps.go
+    env:
+      TASK_FORCE_YES: '{{if .YES}}true{{else}}false{{end}}'
+    prompt: This will check and install Android development dependencies. Continue?
+
+  build:
+    summary: Creates a build of the application for Android
+    deps:
+      - task: common:go:mod:tidy
+      - task: generate:android:bindings
+        vars:
+          BUILD_FLAGS:
+            ref: .BUILD_FLAGS
+      - task: common:build:frontend
+        vars:
+          BUILD_FLAGS:
+            ref: .BUILD_FLAGS
+          PRODUCTION:
+            ref: .PRODUCTION
+      - task: common:generate:icons
+    cmds:
+      - echo "Building Android app {{.APP_NAME}}..."
+      - task: compile:go:shared
+        vars:
+          ARCH: '{{.ARCH | default "arm64"}}'
+    vars:
+      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,android -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-tags android,debug -buildvcs=false -gcflags=all="-l"{{end}}'
+    env:
+      PRODUCTION: '{{.PRODUCTION | default "false"}}'
+
+  compile:go:shared:
+    summary: Compile Go code to shared library (.so)
+    cmds:
+      - |
+        NDK_ROOT="${ANDROID_NDK_HOME:-$ANDROID_HOME/ndk/{{.NDK_VERSION}}}"
+        if [ ! -d "$NDK_ROOT" ]; then
+          echo "Error: Android NDK not found at $NDK_ROOT"
+          echo "Please set ANDROID_NDK_HOME or install NDK {{.NDK_VERSION}} via Android Studio"
+          exit 1
+        fi
+
+        # Determine toolchain based on host OS
+        case "$(uname -s)" in
+          Darwin) HOST_TAG="darwin-x86_64" ;;
+          Linux)  HOST_TAG="linux-x86_64" ;;
+          *)      echo "Unsupported host OS"; exit 1 ;;
+        esac
+
+        TOOLCHAIN="$NDK_ROOT/toolchains/llvm/prebuilt/$HOST_TAG"
+
+        # Set compiler based on architecture
+        case "{{.ARCH}}" in
+          arm64)
+            export CC="$TOOLCHAIN/bin/aarch64-linux-android{{.MIN_SDK}}-clang"
+            export CXX="$TOOLCHAIN/bin/aarch64-linux-android{{.MIN_SDK}}-clang++"
+            export GOARCH=arm64
+            JNI_DIR="arm64-v8a"
+            ;;
+          amd64|x86_64)
+            export CC="$TOOLCHAIN/bin/x86_64-linux-android{{.MIN_SDK}}-clang"
+            export CXX="$TOOLCHAIN/bin/x86_64-linux-android{{.MIN_SDK}}-clang++"
+            export GOARCH=amd64
+            JNI_DIR="x86_64"
+            ;;
+          *)
+            echo "Unsupported architecture: {{.ARCH}}"
+            exit 1
+            ;;
+        esac
+
+        export CGO_ENABLED=1
+        export GOOS=android
+
+        mkdir -p {{.BIN_DIR}}
+        mkdir -p build/android/app/src/main/jniLibs/$JNI_DIR
+
+        go build -buildmode=c-shared {{.BUILD_FLAGS}} \
+          -o build/android/app/src/main/jniLibs/$JNI_DIR/libwails.so
+    vars:
+      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,android -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-tags android,debug -buildvcs=false -gcflags=all="-l"{{end}}'
+
+  compile:go:all-archs:
+    summary: Compile Go code for all Android architectures (fat APK)
+    cmds:
+      - task: compile:go:shared
+        vars:
+          ARCH: arm64
+      - task: compile:go:shared
+        vars:
+          ARCH: amd64
+
+  package:
+    summary: Packages a production build of the application into an APK
+    deps:
+      - task: build
+        vars:
+          PRODUCTION: "true"
+    cmds:
+      - task: assemble:apk
+
+  package:fat:
+    summary: Packages a production build for all architectures (fat APK)
+    cmds:
+      - task: compile:go:all-archs
+      - task: assemble:apk
+
+  assemble:apk:
+    summary: Assembles the APK using Gradle
+    cmds:
+      - |
+        cd build/android
+        ./gradlew assembleDebug
+        cp app/build/outputs/apk/debug/app-debug.apk "../../{{.BIN_DIR}}/{{.APP_NAME}}.apk"
+        echo "APK created: {{.BIN_DIR}}/{{.APP_NAME}}.apk"
+
+  assemble:apk:release:
+    summary: Assembles a release APK using Gradle
+    cmds:
+      - |
+        cd build/android
+        ./gradlew assembleRelease
+        cp app/build/outputs/apk/release/app-release-unsigned.apk "../../{{.BIN_DIR}}/{{.APP_NAME}}-release.apk"
+        echo "Release APK created: {{.BIN_DIR}}/{{.APP_NAME}}-release.apk"
+
+  generate:android:bindings:
+    internal: true
+    summary: Generates bindings for Android
+    sources:
+      - "**/*.go"
+      - go.mod
+      - go.sum
+    generates:
+      - frontend/bindings/**/*
+    cmds:
+      - wails3 generate bindings -f '{{.BUILD_FLAGS}}' -clean=true
+    env:
+      GOOS: android
+      CGO_ENABLED: 1
+      GOARCH: '{{.ARCH | default "arm64"}}'
+
+  ensure-emulator:
+    internal: true
+    summary: Ensure Android Emulator is running
+    silent: true
+    cmds:
+      - |
+        # Check if an emulator is already running
+        if adb devices | grep -q "emulator"; then
+          echo "Emulator already running"
+          exit 0
+        fi
+
+        # Get first available AVD
+        AVD_NAME=$(emulator -list-avds | head -1)
+        if [ -z "$AVD_NAME" ]; then
+          echo "No Android Virtual Devices found."
+          echo "Create one using: Android Studio > Tools > Device Manager"
+          exit 1
+        fi
+
+        echo "Starting emulator: $AVD_NAME"
+        emulator -avd "$AVD_NAME" -no-snapshot-load &
+
+        # Wait for emulator to boot (max 60 seconds)
+        echo "Waiting for emulator to boot..."
+        adb wait-for-device
+
+        for i in {1..60}; do
+          BOOT_COMPLETED=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+          if [ "$BOOT_COMPLETED" = "1" ]; then
+            echo "Emulator booted successfully"
+            exit 0
+          fi
+          sleep 1
+        done
+
+        echo "Emulator boot timeout"
+        exit 1
+    preconditions:
+      - sh: command -v adb
+        msg: "adb not found. Please install Android SDK and add platform-tools to PATH"
+      - sh: command -v emulator
+        msg: "emulator not found. Please install Android SDK and add emulator to PATH"
+
+  deploy-emulator:
+    summary: Deploy to Android Emulator
+    deps: [package]
+    cmds:
+      - adb uninstall {{.APP_ID}} 2>/dev/null || true
+      - adb install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
+      - adb shell am start -n {{.APP_ID}}/.MainActivity
+
+  run:
+    summary: Run the application in Android Emulator
+    deps:
+      - task: ensure-emulator
+      - task: build
+        vars:
+          ARCH: x86_64
+    cmds:
+      - task: assemble:apk
+      - adb uninstall {{.APP_ID}} 2>/dev/null || true
+      - adb install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
+      - adb shell am start -n {{.APP_ID}}/.MainActivity
+
+  logs:
+    summary: Stream Android logcat filtered to this app
+    cmds:
+      - adb logcat -v time | grep -E "(Wails|{{.APP_NAME}})"
+
+  logs:all:
+    summary: Stream all Android logcat (verbose)
+    cmds:
+      - adb logcat -v time
+
+  clean:
+    summary: Clean build artifacts
+    cmds:
+      - rm -rf {{.BIN_DIR}}
+      - rm -rf build/android/app/build
+      - rm -rf build/android/app/src/main/jniLibs/*/libwails.so
+      - rm -rf build/android/.gradle
