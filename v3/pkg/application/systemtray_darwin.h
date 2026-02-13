@@ -22,3 +22,5 @@ NSRect NSScreen_frame(void* screen);
 void windowSetScreen(void* window, void* screen, int yOffset);
 int statusBarHeight();
 void systemTrayPositionWindow(void* nsStatusItem, void* nsWindow, int offset);
+void systemTraySetHighlight(void* nsStatusItem, bool highlighted);
+void systemTrayShowWindowWithoutActivation(void* nsWindow);
