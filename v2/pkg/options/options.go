@@ -28,23 +28,32 @@ const (
 	Fullscreen WindowStartState = 3
 )
 
+type WindowCloseBehaviour int
+
+const (
+	CloseWindow       WindowCloseBehaviour = 0
+	HideWindow        WindowCloseBehaviour = 1
+	HideWindowAndDock WindowCloseBehaviour = 2
+)
+
 type Experimental struct{}
 
 // App contains options for creating the App
 type App struct {
-	Title             string
-	Width             int
-	Height            int
-	DisableResize     bool
-	Fullscreen        bool
-	Frameless         bool
-	MinWidth          int
-	MinHeight         int
-	MaxWidth          int
-	MaxHeight         int
-	StartHidden       bool
-	HideWindowOnClose bool
-	AlwaysOnTop       bool
+	Title                string
+	Width                int
+	Height               int
+	DisableResize        bool
+	Fullscreen           bool
+	Frameless            bool
+	MinWidth             int
+	MinHeight            int
+	MaxWidth             int
+	MaxHeight            int
+	StartHidden          bool
+	HideWindowOnClose    bool
+	WindowCloseBehaviour WindowCloseBehaviour
+	AlwaysOnTop          bool
 	// BackgroundColour is the background colour of the window
 	// You can use the options.NewRGB and options.NewRGBA functions to create a new colour
 	BackgroundColour *RGBA

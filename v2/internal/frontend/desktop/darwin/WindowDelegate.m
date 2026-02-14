@@ -14,8 +14,13 @@
 
 @implementation WindowDelegate
 - (BOOL)windowShouldClose:(WailsWindow *)sender {
-    if( self.hideOnClose ) {
+    if( self.hideOnClose == 1 ) {
         [NSApp hide:nil];
+        return false;
+    }
+    if( self.hideOnClose == 2 ) {
+        [sender orderOut:nil];
+        [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
         return false;
     }
     processMessage("Q");

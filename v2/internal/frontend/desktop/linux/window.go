@@ -98,10 +98,15 @@ func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Windo
 		webviewGpuPolicy = int(linux.WebviewGpuPolicyNever)
 	}
 
+	hideWindowOnClose := int(appoptions.WindowCloseBehaviour)
+	if hideWindowOnClose == int(options.CloseWindow) && appoptions.HideWindowOnClose {
+		hideWindowOnClose = int(options.HideWindow)
+	}
+
 	webview := C.SetupWebview(
 		result.contentManager,
 		result.asGTKWindow(),
-		bool2Cint(appoptions.HideWindowOnClose),
+		C.int(hideWindowOnClose),
 		C.int(webviewGpuPolicy),
 		bool2Cint(appoptions.DragAndDrop != nil && appoptions.DragAndDrop.DisableWebViewDrop),
 		bool2Cint(appoptions.DragAndDrop != nil && appoptions.DragAndDrop.EnableFileDrop),

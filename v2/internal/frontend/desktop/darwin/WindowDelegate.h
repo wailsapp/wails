@@ -12,7 +12,7 @@
 
 @interface WindowDelegate : NSObject <NSWindowDelegate>
 
-@property bool hideOnClose;
+@property int hideOnClose;
 
 @property (assign) WailsContext* ctx;
 
