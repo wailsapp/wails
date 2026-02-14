@@ -4,12 +4,13 @@
 package linux
 
 /*
-#cgo linux pkg-config: gtk+-3.0
+#cgo linux pkg-config: gtk+-3.0 ayatana-appindicator3-0.1
 #cgo !webkit2_41 pkg-config: webkit2gtk-4.0
 #cgo webkit2_41 pkg-config: webkit2gtk-4.1
 
 #include <JavaScriptCore/JavaScript.h>
 #include <gtk/gtk.h>
+#include <libayatana-appindicator/app-indicator.h>
 #include <webkit2/webkit2.h>
 #include <stdio.h>
 #include <limits.h>

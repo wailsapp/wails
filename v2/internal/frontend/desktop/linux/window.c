@@ -1,11 +1,13 @@
 #include <JavaScriptCore/JavaScript.h>
 #include <gtk/gtk.h>
+#include <libayatana-appindicator/app-indicator.h>
 #include <webkit2/webkit2.h>
 #include <stdio.h>
 #include <limits.h>
 #include <stdint.h>
 #include <string.h>
 #include <locale.h>
+#include <unistd.h>
 #include "window.h"
 
 // These are the x,y,time & button of the last mouse down event
@@ -18,10 +20,11 @@ static int wmIsWayland = -1;
 static int decoratorWidth = -1;
 static int decoratorHeight = -1;
 
-// Structs for passing multiple arguments to main thread functions
-static GtkStatusIcon *statusItem = NULL;
+// Tray management
+static AppIndicator *indicator = NULL;
+static char *indicator_temp_icon_path = NULL;
+static GtkWidget *current_window = NULL;
 
-// casts
 void ExecuteOnMainThread(void *f, gpointer jscallback)
 {
     g_idle_add((GSourceFunc)f, (gpointer)jscallback);
@@ -893,33 +896,32 @@ void InstallF12Hotkey(void *window)
     gtk_accel_group_connect(accel_group, GDK_KEY_F12, GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE, closure);
 }
 
-static void on_status_icon_popup_menu(GtkStatusIcon *status_icon, guint button, guint activate_time, gpointer user_data)
+static void on_status_icon_activate(AppIndicator *indicator, gpointer user_data)
 {
-    GtkWidget *menu = (GtkWidget *)user_data;
-    if (menu)
+    if (current_window)
     {
-        gtk_menu_popup(GTK_MENU(menu), NULL, NULL, gtk_status_icon_position_menu, status_icon, button, activate_time);
-    }
-}
-
-static void on_status_icon_activate(GtkStatusIcon *status_icon, gpointer user_data)
-{
-    GtkWidget *window = (GtkWidget *)user_data;
-    if (window)
-    {
-        gtk_window_present(GTK_WINDOW(window));
+        gtk_window_present(GTK_WINDOW(current_window));
     }
 }
 
 void TraySetSystemTray(GtkWindow *window, const char *label, const guchar *image, gsize imageLen, const char *tooltip, GtkWidget *menu)
 {
-    if (statusItem == NULL)
+    current_window = GTK_WIDGET(window);
+
+    if (indicator == NULL)
     {
-        statusItem = gtk_status_icon_new();
+        indicator = app_indicator_new("wails-tray-indicator", "", APP_INDICATOR_CATEGORY_APPLICATION_STATUS);
+        app_indicator_set_status(indicator, APP_INDICATOR_STATUS_ACTIVE);
+
+        // Connect the secondary activate signal (usually middle click or scroll)
+        // to show the window.
+        g_signal_connect(indicator, "X-AYATANA-SECONDARY-ACTIVATE", G_CALLBACK(on_status_icon_activate), NULL);
     }
 
-    g_signal_handlers_disconnect_matched(statusItem, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, G_CALLBACK(on_status_icon_activate), NULL);
-    g_signal_connect(statusItem, "activate", G_CALLBACK(on_status_icon_activate), window);
+    if (label != NULL)
+    {
+        app_indicator_set_label(indicator, label, "");
+    }
 
     if (image != NULL && imageLen > 0)
     {
@@ -929,7 +931,27 @@ void TraySetSystemTray(GtkWindow *window, const char *label, const guchar *image
             GdkPixbuf *pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
             if (pixbuf)
             {
-                gtk_status_icon_set_from_pixbuf(statusItem, pixbuf);
+                if (indicator_temp_icon_path != NULL)
+                {
+                    unlink(indicator_temp_icon_path);
+                    g_free(indicator_temp_icon_path);
+                    indicator_temp_icon_path = NULL;
+                }
+                char *filename = NULL;
+                int fd = g_file_open_tmp("wails-tray-XXXXXX.png", &filename, NULL);
+                if (fd != -1)
+                {
+                    close(fd);
+                    if (gdk_pixbuf_save(pixbuf, filename, "png", NULL, NULL))
+                    {
+                        indicator_temp_icon_path = filename;
+                        app_indicator_set_icon_full(indicator, indicator_temp_icon_path, "tray icon");
+                    }
+                    else
+                    {
+                        g_free(filename);
+                    }
+                }
             }
         }
         g_object_unref(loader);
@@ -937,13 +959,12 @@ void TraySetSystemTray(GtkWindow *window, const char *label, const guchar *image
 
     if (tooltip != NULL)
     {
-        gtk_status_icon_set_tooltip_text(statusItem, tooltip);
+        app_indicator_set_title(indicator, tooltip);
     }
 
     if (menu != NULL)
     {
-        g_signal_handlers_disconnect_matched(statusItem, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, G_CALLBACK(on_status_icon_popup_menu), NULL);
-        g_signal_connect(statusItem, "popup-menu", G_CALLBACK(on_status_icon_popup_menu), menu);
+        app_indicator_set_menu(indicator, GTK_MENU(menu));
     }
 }
 
