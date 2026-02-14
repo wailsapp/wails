@@ -45,58 +45,60 @@ func GtkRadioMenuItemWithLabel(label string, group *C.GSList) *C.GtkWidget {
 
 //export handleMenuItemClick
 func handleMenuItemClick(gtkWidget unsafe.Pointer) {
-	// Make sure to execute the final callback on a new goroutine otherwise if the callback e.g. tries to open a dialog, the
-	// main thread will get blocked and so the message loop blocks. As a result the app will block and shows a
-	// "not responding" dialog.
+	invokeOnMainThread(func() {
+		// Make sure to execute the final callback on a new goroutine otherwise if the callback e.g. tries to open a dialog, the
+		// main thread will get blocked and so the message loop blocks. As a result the app will block and shows a
+		// "not responding" dialog.
 
-	widget := (*C.GtkWidget)(gtkWidget)
-	item := appMenuCache.gtkSignalToMenuItem[widget]
-	if item == nil {
-		item = trayMenuCache.gtkSignalToMenuItem[widget]
-	}
-	if item == nil {
-		return
-	}
-
-	switch item.Type {
-	case menu.CheckboxType:
-		item.Checked = !item.Checked
-		checked := C.int(0)
-		if item.Checked {
-			checked = C.int(1)
+		widget := (*C.GtkWidget)(gtkWidget)
+		item := appMenuCache.gtkSignalToMenuItem[widget]
+		if item == nil {
+			item = trayMenuCache.gtkSignalToMenuItem[widget]
+		}
+		if item == nil {
+			return
 		}
 
-		updateCheckbox := func(cache *menuCache) {
-			for _, gtkCheckbox := range cache.gtkCheckboxCache[item] {
-				handler := cache.gtkSignalHandlers[gtkCheckbox]
-				C.blockClick(gtkCheckbox, handler)
-				C.gtk_check_menu_item_set_active(C.toGtkCheckMenuItem(unsafe.Pointer(gtkCheckbox)), checked)
-				C.unblockClick(gtkCheckbox, handler)
+		switch item.Type {
+		case menu.CheckboxType:
+			item.Checked = !item.Checked
+			checked := C.int(0)
+			if item.Checked {
+				checked = C.int(1)
 			}
-		}
-		updateCheckbox(appMenuCache)
-		updateCheckbox(trayMenuCache)
 
-		go item.Click(&menu.CallbackData{MenuItem: item})
-	case menu.RadioType:
-		active := C.gtk_check_menu_item_get_active(C.toGtkCheckMenuItem(gtkWidget))
-		if int(active) == 1 {
-			updateRadio := func(cache *menuCache) {
-				for _, gtkRadioItem := range cache.gtkRadioMenuCache[item] {
-					handler := cache.gtkSignalHandlers[gtkRadioItem]
-					C.blockClick(gtkRadioItem, handler)
-					C.gtk_check_menu_item_set_active(C.toGtkCheckMenuItem(unsafe.Pointer(gtkRadioItem)), 1)
-					C.unblockClick(gtkRadioItem, handler)
+			updateCheckbox := func(cache *menuCache) {
+				for _, gtkCheckbox := range cache.gtkCheckboxCache[item] {
+					handler := cache.gtkSignalHandlers[gtkCheckbox]
+					C.blockClick(gtkCheckbox, handler)
+					C.gtk_check_menu_item_set_active(C.toGtkCheckMenuItem(unsafe.Pointer(gtkCheckbox)), checked)
+					C.unblockClick(gtkCheckbox, handler)
 				}
 			}
-			updateRadio(appMenuCache)
-			updateRadio(trayMenuCache)
-			item.Checked = true
+			updateCheckbox(appMenuCache)
+			updateCheckbox(trayMenuCache)
+
 			go item.Click(&menu.CallbackData{MenuItem: item})
-		} else {
-			item.Checked = false
+		case menu.RadioType:
+			active := C.gtk_check_menu_item_get_active(C.toGtkCheckMenuItem(gtkWidget))
+			if int(active) == 1 {
+				updateRadio := func(cache *menuCache) {
+					for _, gtkRadioItem := range cache.gtkRadioMenuCache[item] {
+						handler := cache.gtkSignalHandlers[gtkRadioItem]
+						C.blockClick(gtkRadioItem, handler)
+						C.gtk_check_menu_item_set_active(C.toGtkCheckMenuItem(unsafe.Pointer(gtkRadioItem)), 1)
+						C.unblockClick(gtkRadioItem, handler)
+					}
+				}
+				updateRadio(appMenuCache)
+				updateRadio(trayMenuCache)
+				item.Checked = true
+				go item.Click(&menu.CallbackData{MenuItem: item})
+			} else {
+				item.Checked = false
+			}
+		default:
+			go item.Click(&menu.CallbackData{MenuItem: item})
 		}
-	default:
-		go item.Click(&menu.CallbackData{MenuItem: item})
-	}
+	})
 }

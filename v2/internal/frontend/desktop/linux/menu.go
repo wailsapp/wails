@@ -85,9 +85,8 @@ func (f *Frontend) TraySetSystemTray(trayMenu *menu.TrayMenu) {
 		return
 	}
 
-	trayMenuCache = newMenuCache()
-
 	invokeOnMainThread(func() {
+		trayMenuCache = newMenuCache()
 		var label *C.char
 		if trayMenu.Label != "" {
 			label = C.CString(trayMenu.Label)
