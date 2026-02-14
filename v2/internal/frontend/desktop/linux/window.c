@@ -159,7 +159,9 @@ void SetWindowIcon(GtkWindow *window, const guchar *buf, gsize len)
     {
         return;
     }
-    if (gdk_pixbuf_loader_write(loader, buf, len, NULL) && gdk_pixbuf_loader_close(loader, NULL))
+    gboolean write_success = gdk_pixbuf_loader_write(loader, buf, len, NULL);
+    gboolean close_success = gdk_pixbuf_loader_close(loader, NULL);
+    if (write_success && close_success)
     {
         GdkPixbuf *pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
         if (pixbuf)
