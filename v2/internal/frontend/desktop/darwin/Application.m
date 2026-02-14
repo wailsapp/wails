@@ -353,21 +353,25 @@ void TraySetSystemTray(void *inctx, const char* label, const char* image, int is
         if (nstooltip != nil) {
             ctx.trayItem.button.toolTip = nstooltip;
         }
-        if (nsimage != nil && [nsimage length] > 0) {
-            NSImage *icon = [[NSImage alloc] initWithContentsOfFile:nsimage];
-            if (icon == nil) {
-                // Try as base64
-                NSData *data = [[NSData alloc] initWithBase64EncodedString:nsimage options:NSDataBase64DecodingIgnoreUnknownCharacters];
-                if (data != nil) {
-                    icon = [[NSImage alloc] initWithData:data];
+        if (nsimage != nil) {
+            if ([nsimage length] > 0) {
+                NSImage *icon = [[NSImage alloc] initWithContentsOfFile:nsimage];
+                if (icon == nil) {
+                    // Try as base64
+                    NSData *data = [[NSData alloc] initWithBase64EncodedString:nsimage options:NSDataBase64DecodingIgnoreUnknownCharacters];
+                    if (data != nil) {
+                        icon = [[NSImage alloc] initWithData:data];
+                    }
                 }
-            }
-            if (icon != nil) {
-                if (isTemplate) {
-                    [icon setTemplate:YES];
+                if (icon != nil) {
+                    if (isTemplate) {
+                        [icon setTemplate:YES];
+                    }
+                    ctx.trayItem.button.image = icon;
+                    ctx.trayItem.button.imagePosition = NSImageLeft;
                 }
-                ctx.trayItem.button.image = icon;
-                ctx.trayItem.button.imagePosition = NSImageLeft;
+            } else {
+                ctx.trayItem.button.image = nil;
             }
         }
         if (menu != nil) {

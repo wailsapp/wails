@@ -125,4 +125,7 @@ void sendShowInspectorMessage();
 void ShowInspector(void *webview);
 void InstallF12Hotkey(void *window);
 
+void SetWindowIcon(GtkWindow *window, const guchar *buf, gsize len);
+void TraySetSystemTray(GtkWindow *window, const char *label, const guchar *image, gsize imageLen, const char *tooltip, GtkWidget *menu);
+
 #endif /* window_h */

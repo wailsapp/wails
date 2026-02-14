@@ -11,11 +11,20 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 
+	"encoding/base64"
+	"fmt"
+	"os"
+	"syscall"
+
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	winoptions "github.com/wailsapp/wails/v2/pkg/options/windows"
+)
+
+const (
+	WM_WAILS_TRAY_MESSAGE = w32.WM_APP + 500
 )
 
 type Window struct {
@@ -38,6 +47,11 @@ type Window struct {
 	OnResume  func()
 
 	chromium *edge.Chromium
+
+	// Tray
+	trayID   uint32
+	trayIcon w32.HICON
+	trayMenu *menu.TrayMenu
 
 	// isMinimizing indicates whether the window is currently being minimized
 	// 标识窗口是否处于最小化状态,用于解决最小化/恢复时的闪屏问题
@@ -203,6 +217,21 @@ func (w *Window) IsVisible() bool {
 func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 
 	switch msg {
+	case WM_WAILS_TRAY_MESSAGE:
+		switch uint32(lparam) {
+		case w32.WM_RBUTTONUP:
+			if w.trayMenu != nil && w.trayMenu.Menu != nil {
+				w.showTrayMenu()
+			}
+		case w32.WM_LBUTTONUP:
+			w32.ShowWindow(w.Handle(), w32.SW_SHOW)
+			w32.SetForegroundWindow(w.Handle())
+		}
+		return 0
+	case w32.WM_DESTROY:
+		if w.trayIcon != 0 {
+			w.deleteTrayIcon()
+		}
 	case win32.WM_POWERBROADCAST:
 		switch wparam {
 		case win32.PBT_APMSUSPEND:
@@ -315,6 +344,102 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 		}
 	}
 	return w.Form.WndProc(msg, wparam, lparam)
+}
+
+func (w *Window) showTrayMenu() {
+	if w.trayMenu == nil || w.trayMenu.Menu == nil {
+		return
+	}
+
+	wincMenu := winc.NewContextMenu()
+	for _, item := range w.trayMenu.Menu.Items {
+		processMenuItem(wincMenu, item)
+	}
+
+	x, y, _ := w32.GetCursorPos()
+
+	w32.SetForegroundWindow(w.Handle())
+	w32.TrackPopupMenuEx(w32.HMENU(wincMenu.Handle()), w32.TPM_LEFTALIGN|w32.TPM_RIGHTBUTTON, int32(x), int32(y), w.Handle(), nil)
+	w32.PostMessage(w.Handle(), w32.WM_NULL, 0, 0)
+}
+
+func (w *Window) deleteTrayIcon() {
+	if w.trayIcon == 0 {
+		return
+	}
+	var nid win32.NOTIFYICONDATA
+	nid.CbSize = uint32(unsafe.Sizeof(nid))
+	nid.HWnd = win32.HWND(w.Handle())
+	nid.UID = w.trayID
+
+	win32.ShellNotifyIcon(win32.NIM_DELETE, &nid)
+	w32.DestroyIcon(w.trayIcon)
+	w.trayIcon = 0
+}
+
+func (w *Window) TraySetSystemTray(trayMenu *menu.TrayMenu) {
+	if trayMenu == nil {
+		return
+	}
+	w.trayMenu = trayMenu
+
+	var nid win32.NOTIFYICONDATA
+	nid.CbSize = uint32(unsafe.Sizeof(nid))
+	nid.HWnd = win32.HWND(w.Handle())
+	nid.UID = w.trayID
+	nid.UFlags = win32.NIF_MESSAGE | win32.NIF_TIP
+	nid.UCallbackMessage = WM_WAILS_TRAY_MESSAGE
+
+	if trayMenu.Tooltip != "" {
+		u16, _ := syscall.UTF16FromString(trayMenu.Tooltip)
+		copy(nid.SzTip[:], u16)
+	}
+
+	if trayMenu.Image != "" {
+		icon, err := w.loadTrayIcon(trayMenu.Image)
+		if err == nil {
+			if w.trayIcon != 0 {
+				w32.DestroyIcon(w.trayIcon)
+			}
+			w.trayIcon = icon
+			nid.HIcon = win32.HICON(icon)
+			nid.UFlags |= win32.NIF_ICON
+		}
+	}
+
+	cmd := win32.NIM_ADD
+	if w.trayID != 0 {
+		cmd = win32.NIM_MODIFY
+	} else {
+		w.trayID = 1
+		nid.UID = w.trayID
+	}
+
+	win32.ShellNotifyIcon(uintptr(cmd), &nid)
+}
+
+func (w *Window) loadTrayIcon(image string) (w32.HICON, error) {
+	if _, err := os.Stat(image); err == nil {
+		ico, err := winc.NewIconFromFile(image)
+		if err == nil {
+			return w32.HICON(ico.Handle()), nil
+		}
+	}
+
+	data, err := base64.StdEncoding.DecodeString(image)
+	if err == nil {
+		return w.createIconFromBytes(data)
+	}
+
+	return 0, fmt.Errorf("could not load icon")
+}
+
+func (w *Window) createIconFromBytes(data []byte) (w32.HICON, error) {
+	icon := win32.CreateIconFromResourceEx(uintptr(unsafe.Pointer(&data[0])), uint32(len(data)), true, 0x00030000, 0, 0)
+	if icon == 0 {
+		return 0, fmt.Errorf("could not create icon from bytes")
+	}
+	return w32.HICON(icon), nil
 }
 
 func (w *Window) IsMaximised() bool {

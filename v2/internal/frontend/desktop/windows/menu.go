@@ -132,5 +132,7 @@ func (f *Frontend) MenuUpdateApplicationMenu() {
 }
 
 func (f *Frontend) TraySetSystemTray(trayMenu *menu.TrayMenu) {
-	// Not implemented
+	if f.mainWindow != nil {
+		f.mainWindow.TraySetSystemTray(trayMenu)
+	}
 }

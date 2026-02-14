@@ -9,6 +9,7 @@ package linux
 #cgo webkit2_41 pkg-config: webkit2gtk-4.1
 
 #include "gtk/gtk.h"
+#include "window.h"
 
 static GtkMenuItem *toGtkMenuItem(void *pointer) { return (GTK_MENU_ITEM(pointer)); }
 static GtkMenuShell *toGtkMenuShell(void *pointer) { return (GTK_MENU_SHELL(pointer)); }
@@ -35,6 +36,8 @@ void addAccelerator(GtkWidget* menuItem, GtkAccelGroup* group, guint key, GdkMod
 */
 import "C"
 import (
+	"encoding/base64"
+	"os"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v2/pkg/menu"
@@ -58,7 +61,51 @@ func (f *Frontend) MenuUpdateApplicationMenu() {
 }
 
 func (f *Frontend) TraySetSystemTray(trayMenu *menu.TrayMenu) {
-	// Not implemented
+	if trayMenu == nil {
+		return
+	}
+
+	var label *C.char
+	if trayMenu.Label != "" {
+		label = C.CString(trayMenu.Label)
+		defer C.free(unsafe.Pointer(label))
+	}
+
+	var tooltip *C.char
+	if trayMenu.Tooltip != "" {
+		tooltip = C.CString(trayMenu.Tooltip)
+		defer C.free(unsafe.Pointer(tooltip))
+	}
+
+	var imageData *C.guchar
+	var imageLen C.gsize
+	if trayMenu.Image != "" {
+		// Try file
+		if _, err := os.Stat(trayMenu.Image); err == nil {
+			data, err := os.ReadFile(trayMenu.Image)
+			if err == nil {
+				imageData = (*C.guchar)(unsafe.Pointer(&data[0]))
+				imageLen = C.gsize(len(data))
+			}
+		} else {
+			// Try base64
+			data, err := base64.StdEncoding.DecodeString(trayMenu.Image)
+			if err == nil {
+				imageData = (*C.guchar)(unsafe.Pointer(&data[0]))
+				imageLen = C.gsize(len(data))
+			}
+		}
+	}
+
+	var gtkMenu *C.GtkWidget
+	if trayMenu.Menu != nil {
+		gtkMenu = C.gtk_menu_new()
+		for _, item := range trayMenu.Menu.Items {
+			processMenuItem(gtkMenu, item, nil)
+		}
+	}
+
+	C.TraySetSystemTray(f.mainWindow.asGTKWindow(), label, imageData, imageLen, tooltip, gtkMenu)
 }
 
 func (w *Window) SetApplicationMenu(inmenu *menu.Menu) {

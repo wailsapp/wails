@@ -18,6 +18,9 @@ static int wmIsWayland = -1;
 static int decoratorWidth = -1;
 static int decoratorHeight = -1;
 
+// Structs for passing multiple arguments to main thread functions
+GtkStatusIcon *statusItem = NULL;
+
 // casts
 void ExecuteOnMainThread(void *f, gpointer jscallback)
 {
@@ -889,3 +892,56 @@ void InstallF12Hotkey(void *window)
     GClosure *closure = g_cclosure_new(G_CALLBACK(sendShowInspectorMessage), window, NULL);
     gtk_accel_group_connect(accel_group, GDK_KEY_F12, GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE, closure);
 }
+
+static void on_status_icon_popup_menu(GtkStatusIcon *status_icon, guint button, guint activate_time, gpointer user_data)
+{
+    GtkWidget *menu = (GtkWidget *)user_data;
+    if (menu)
+    {
+        gtk_menu_popup(GTK_MENU(menu), NULL, NULL, gtk_status_icon_position_menu, status_icon, button, activate_time);
+    }
+}
+
+static void on_status_icon_activate(GtkStatusIcon *status_icon, gpointer user_data)
+{
+    GtkWidget *window = (GtkWidget *)user_data;
+    if (window)
+    {
+        gtk_window_present(GTK_WINDOW(window));
+    }
+}
+
+void TraySetSystemTray(GtkWindow *window, const char *label, const guchar *image, gsize imageLen, const char *tooltip, GtkWidget *menu)
+{
+    if (statusItem == NULL)
+    {
+        statusItem = gtk_status_icon_new();
+        g_signal_connect(statusItem, "activate", G_CALLBACK(on_status_icon_activate), window);
+    }
+
+    if (image != NULL && imageLen > 0)
+    {
+        GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
+        if (gdk_pixbuf_loader_write(loader, image, imageLen, NULL) && gdk_pixbuf_loader_close(loader, NULL))
+        {
+            GdkPixbuf *pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
+            if (pixbuf)
+            {
+                gtk_status_icon_set_from_pixbuf(statusItem, pixbuf);
+            }
+        }
+        g_object_unref(loader);
+    }
+
+    if (tooltip != NULL)
+    {
+        gtk_status_icon_set_tooltip_text(statusItem, tooltip);
+    }
+
+    if (menu != NULL)
+    {
+        g_signal_handlers_disconnect_by_func(statusItem, G_CALLBACK(on_status_icon_popup_menu), menu);
+        g_signal_connect(statusItem, "popup-menu", G_CALLBACK(on_status_icon_popup_menu), menu);
+    }
+}
+
