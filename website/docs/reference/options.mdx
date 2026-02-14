@@ -42,6 +42,7 @@ func main() {
             Middleware: assetsMidldeware,
 		},
         Menu:               app.applicationMenu(),
+        Tray:               app.trayMenu(),
         Logger:             nil,
         LogLevel:           logger.DEBUG,
         LogLevelProduction: logger.ERROR,
@@ -248,6 +249,19 @@ hide the window instead.
 Name: HideWindowOnClose<br/>
 Type: `bool`
 
+### WindowCloseBehaviour
+
+This defines the behavior of the window when it is closed.
+
+| Value | Description |
+| :--- | :--- |
+| `options.CloseWindow` | Closes the window and the application (Default) |
+| `options.HideWindow` | Hides the window instead of closing it |
+| `options.HideWindowAndDock` | (macOS only) Hides the window and the app stays in the dock |
+
+Name: WindowCloseBehaviour<br/>
+Type: `options.WindowCloseBehaviour`
+
 ### BackgroundColour
 
 This value is the default background colour of the window.
@@ -364,6 +378,13 @@ On Mac, if no menu is specified, a default menu will be created.
 
 Name: Menu<br/>
 Type: `*menu.Menu`
+
+### Tray
+
+The tray menu to be used by the application. More details about Tray in the [Tray Reference](../reference/runtime/tray.mdx).
+
+Name: Tray<br/>
+Type: `*menu.TrayMenu`
 
 ### Logger
 
