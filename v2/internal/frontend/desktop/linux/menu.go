@@ -191,7 +191,7 @@ func processSubmenu(menuItem *menu.MenuItem, group *C.GtkAccelGroup) *C.GtkWidge
 		processMenuItem(gtkMenu, menuItem, group)
 	}
 	C.gtk_menu_item_set_submenu(C.toGtkMenuItem(unsafe.Pointer(submenu)), gtkMenu)
-	gtkMenuCache[menuItem] = existingMenu
+	gtkMenuCache[menuItem] = gtkMenu
 	return submenu
 }
 
