@@ -968,10 +968,6 @@ void TraySetSystemTray(GtkWindow *window, const char *label, const guchar *image
                     else
                     {
                         unlink(filename);
-                        if (indicator_temp_icon_path == filename)
-                        {
-                            indicator_temp_icon_path = NULL;
-                        }
                         g_free(filename);
                     }
                 }
