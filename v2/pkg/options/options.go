@@ -40,17 +40,19 @@ type Experimental struct{}
 
 // App contains options for creating the App
 type App struct {
-	Title                string
-	Width                int
-	Height               int
-	DisableResize        bool
-	Fullscreen           bool
-	Frameless            bool
-	MinWidth             int
-	MinHeight            int
-	MaxWidth             int
-	MaxHeight            int
-	StartHidden          bool
+	Title         string
+	Width         int
+	Height        int
+	DisableResize bool
+	Fullscreen    bool
+	Frameless     bool
+	MinWidth      int
+	MinHeight     int
+	MaxWidth      int
+	MaxHeight     int
+	StartHidden   bool
+	// HideWindowOnClose is deprecated. Use WindowCloseBehaviour instead.
+	// If set to true, WindowCloseBehaviour will be set to HideWindow if it is currently CloseWindow.
 	HideWindowOnClose    bool
 	WindowCloseBehaviour WindowCloseBehaviour
 	AlwaysOnTop          bool
@@ -185,6 +187,10 @@ func MergeDefaults(appoptions *App) {
 			B: 255,
 			A: 255,
 		}
+	}
+
+	if appoptions.HideWindowOnClose && appoptions.WindowCloseBehaviour == CloseWindow {
+		appoptions.WindowCloseBehaviour = HideWindow
 	}
 
 	// Ensure max and min are valid

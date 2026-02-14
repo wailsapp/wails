@@ -433,9 +433,10 @@ func (w *Window) TraySetSystemTray(trayMenu *menu.TrayMenu) {
 func (w *Window) loadTrayIcon(image string) (w32.HICON, error) {
 	if _, err := os.Stat(image); err == nil {
 		ico, err := winc.NewIconFromFile(image)
-		if err == nil {
-			return w32.HICON(ico.Handle()), nil
+		if err != nil {
+			return 0, fmt.Errorf("failed to load icon from file %q: %w", image, err)
 		}
+		return w32.HICON(ico.Handle()), nil
 	}
 
 	data, err := base64.StdEncoding.DecodeString(image)

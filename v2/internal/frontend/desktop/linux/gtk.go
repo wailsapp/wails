@@ -22,6 +22,8 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/menu"
 )
 
+var radioUpdating bool
+
 func GtkMenuItemWithLabel(label string) *C.GtkWidget {
 	cLabel := C.CString(label)
 	result := C.gtk_menu_item_new_with_label(cLabel)
@@ -90,12 +92,16 @@ func handleMenuItemClick(gtkWidget unsafe.Pointer) {
 						C.unblockClick(gtkRadioItem, handler)
 					}
 				}
+				radioUpdating = true
 				updateRadio(appMenuCache)
 				updateRadio(trayMenuCache)
+				radioUpdating = false
 				item.Checked = true
 				go item.Click(&menu.CallbackData{MenuItem: item})
 			} else {
-				item.Checked = false
+				if !radioUpdating {
+					item.Checked = false
+				}
 			}
 		default:
 			go item.Click(&menu.CallbackData{MenuItem: item})
