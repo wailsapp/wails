@@ -127,12 +127,15 @@ func (f *Frontend) TraySetSystemTray(trayMenu *menu.TrayMenu) {
 			}
 		}
 
+		if f.mainWindow.trayAccelGroup != nil {
+			C.gtk_window_remove_accel_group(C.toGtkWindow(f.mainWindow.gtkWindow), f.mainWindow.trayAccelGroup)
+			C.g_object_unref(C.gpointer(f.mainWindow.trayAccelGroup))
+			f.mainWindow.trayAccelGroup = nil
+		}
+
 		var gtkMenu *C.GtkWidget
 		if trayMenu.Menu != nil {
 			gtkMenu = C.gtk_menu_new()
-			if f.mainWindow.trayAccelGroup != nil {
-				C.gtk_window_remove_accel_group(C.toGtkWindow(f.mainWindow.gtkWindow), f.mainWindow.trayAccelGroup)
-			}
 			f.mainWindow.trayAccelGroup = C.gtk_accel_group_new()
 			C.gtk_window_add_accel_group(C.toGtkWindow(f.mainWindow.gtkWindow), f.mainWindow.trayAccelGroup)
 			C.gtk_menu_set_accel_group(C.toGtkMenu(unsafe.Pointer(gtkMenu)), f.mainWindow.trayAccelGroup)

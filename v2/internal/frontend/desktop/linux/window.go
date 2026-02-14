@@ -187,6 +187,10 @@ func (w *Window) UnFullscreen() {
 func (w *Window) Destroy() {
 	C.gtk_widget_destroy(w.asGTKWidget())
 	C.g_object_unref(C.gpointer(w.gtkWindow))
+	if w.trayAccelGroup != nil {
+		C.g_object_unref(C.gpointer(w.trayAccelGroup))
+		w.trayAccelGroup = nil
+	}
 }
 
 func (w *Window) Close() {
