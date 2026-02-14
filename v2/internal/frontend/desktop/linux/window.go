@@ -50,6 +50,7 @@ type Window struct {
 	webviewBox                               *C.GtkWidget
 	vbox                                     *C.GtkWidget
 	accels                                   *C.GtkAccelGroup
+	trayAccelGroup                           *C.GtkAccelGroup
 	minWidth, minHeight, maxWidth, maxHeight int
 }
 

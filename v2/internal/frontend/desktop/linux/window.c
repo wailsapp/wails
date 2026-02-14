@@ -930,7 +930,9 @@ void TraySetSystemTray(GtkWindow *window, const char *label, const guchar *image
     if (image != NULL && imageLen > 0)
     {
         GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
-        if (gdk_pixbuf_loader_write(loader, image, imageLen, NULL) && gdk_pixbuf_loader_close(loader, NULL))
+        gboolean write_success = gdk_pixbuf_loader_write(loader, image, imageLen, NULL);
+        gboolean close_success = gdk_pixbuf_loader_close(loader, NULL);
+        if (write_success && close_success)
         {
             GdkPixbuf *pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
             if (pixbuf)
@@ -977,9 +979,15 @@ void TraySetSystemTray(GtkWindow *window, const char *label, const guchar *image
         app_indicator_set_title(indicator, tooltip);
     }
 
+    static GtkWidget *prev_menu = NULL;
     if (menu != NULL)
     {
+        if (prev_menu != NULL)
+        {
+            gtk_widget_destroy(prev_menu);
+        }
         app_indicator_set_menu(indicator, GTK_MENU(menu));
+        prev_menu = menu;
     }
 }
 

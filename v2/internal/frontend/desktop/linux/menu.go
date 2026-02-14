@@ -54,19 +54,7 @@ var gtkRadioMenuCache map[*menu.MenuItem][]*C.GtkWidget
 var gtkSignalHandlers map[*C.GtkWidget]C.gulong
 var gtkSignalToMenuItem map[*C.GtkWidget]*menu.MenuItem
 
-func (f *Frontend) MenuSetApplicationMenu(menu *menu.Menu) {
-	f.mainWindow.SetApplicationMenu(menu)
-}
-
-func (f *Frontend) MenuUpdateApplicationMenu() {
-	f.mainWindow.SetApplicationMenu(f.mainWindow.applicationMenu)
-}
-
-func (f *Frontend) TraySetSystemTray(trayMenu *menu.TrayMenu) {
-	if trayMenu == nil {
-		return
-	}
-
+func initMaps() {
 	// Ensure maps are initialized (they may not be if no application menu was set)
 	if gtkSignalHandlers == nil {
 		gtkSignalHandlers = make(map[*C.GtkWidget]C.gulong)
@@ -89,6 +77,22 @@ func (f *Frontend) TraySetSystemTray(trayMenu *menu.TrayMenu) {
 	if menuIdToItem == nil {
 		menuIdToItem = make(map[int]*menu.MenuItem)
 	}
+}
+
+func (f *Frontend) MenuSetApplicationMenu(menu *menu.Menu) {
+	f.mainWindow.SetApplicationMenu(menu)
+}
+
+func (f *Frontend) MenuUpdateApplicationMenu() {
+	f.mainWindow.SetApplicationMenu(f.mainWindow.applicationMenu)
+}
+
+func (f *Frontend) TraySetSystemTray(trayMenu *menu.TrayMenu) {
+	if trayMenu == nil {
+		return
+	}
+
+	initMaps()
 
 	invokeOnMainThread(func() {
 		var label *C.char
@@ -126,11 +130,14 @@ func (f *Frontend) TraySetSystemTray(trayMenu *menu.TrayMenu) {
 		var gtkMenu *C.GtkWidget
 		if trayMenu.Menu != nil {
 			gtkMenu = C.gtk_menu_new()
-			accelGroup := C.gtk_accel_group_new()
-			C.gtk_window_add_accel_group(C.toGtkWindow(f.mainWindow.gtkWindow), accelGroup)
-			C.gtk_menu_set_accel_group(C.toGtkMenu(unsafe.Pointer(gtkMenu)), accelGroup)
+			if f.mainWindow.trayAccelGroup != nil {
+				C.gtk_window_remove_accel_group(C.toGtkWindow(f.mainWindow.gtkWindow), f.mainWindow.trayAccelGroup)
+			}
+			f.mainWindow.trayAccelGroup = C.gtk_accel_group_new()
+			C.gtk_window_add_accel_group(C.toGtkWindow(f.mainWindow.gtkWindow), f.mainWindow.trayAccelGroup)
+			C.gtk_menu_set_accel_group(C.toGtkMenu(unsafe.Pointer(gtkMenu)), f.mainWindow.trayAccelGroup)
 			for _, item := range trayMenu.Menu.Items {
-				processMenuItem(gtkMenu, item, accelGroup)
+				processMenuItem(gtkMenu, item, f.mainWindow.trayAccelGroup)
 			}
 		}
 
@@ -147,13 +154,7 @@ func (w *Window) SetApplicationMenu(inmenu *menu.Menu) {
 	w.accels = C.gtk_accel_group_new()
 	C.gtk_window_add_accel_group(w.asGTKWindow(), w.accels)
 
-	menuItemToId = make(map[*menu.MenuItem]int)
-	menuIdToItem = make(map[int]*menu.MenuItem)
-	gtkCheckboxCache = make(map[*menu.MenuItem][]*C.GtkWidget)
-	gtkMenuCache = make(map[*menu.MenuItem]*C.GtkWidget)
-	gtkRadioMenuCache = make(map[*menu.MenuItem][]*C.GtkWidget)
-	gtkSignalHandlers = make(map[*C.GtkWidget]C.gulong)
-	gtkSignalToMenuItem = make(map[*C.GtkWidget]*menu.MenuItem)
+	initMaps()
 
 	// Increase ref count?
 	w.menubar = C.gtk_menu_bar_new()
