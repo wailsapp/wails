@@ -134,6 +134,7 @@ func (f *Frontend) TraySetSystemTray(trayMenu *menu.TrayMenu) {
 			f.mainWindow.trayAccelGroup = C.gtk_accel_group_new()
 			C.gtk_window_add_accel_group(C.toGtkWindow(f.mainWindow.gtkWindow), f.mainWindow.trayAccelGroup)
 			C.gtk_menu_set_accel_group(C.toGtkMenu(unsafe.Pointer(gtkMenu)), f.mainWindow.trayAccelGroup)
+			currentRadioGroup = nil
 			for _, item := range trayMenu.Menu.Items {
 				processMenuItem(gtkMenu, item, f.mainWindow.trayAccelGroup, trayMenuCache)
 			}
@@ -164,6 +165,7 @@ func (w *Window) SetApplicationMenu(inmenu *menu.Menu) {
 }
 
 func processMenu(window *Window, menu *menu.Menu) {
+	currentRadioGroup = nil
 	for _, menuItem := range menu.Items {
 		if menuItem.SubMenu != nil {
 			submenu := processSubmenu(menuItem, window.accels, appMenuCache)
