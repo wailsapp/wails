@@ -942,12 +942,6 @@ void TraySetSystemTray(GtkWindow *window, const char *label, const guchar *image
                     close(fd);
                     if (gdk_pixbuf_save(pixbuf, filename, "png", NULL, NULL))
                     {
-                        if (indicator_temp_icon_path != NULL)
-                        {
-                            unlink(indicator_temp_icon_path);
-                            g_free(indicator_temp_icon_path);
-                        }
-                        indicator_temp_icon_path = filename;
                         char *dir = g_path_get_dirname(filename);
                         char *base = g_path_get_basename(filename);
                         char *dot = strrchr(base, '.');
@@ -959,6 +953,13 @@ void TraySetSystemTray(GtkWindow *window, const char *label, const guchar *image
                         app_indicator_set_icon_full(indicator, base, "tray icon");
                         g_free(dir);
                         g_free(base);
+
+                        if (indicator_temp_icon_path != NULL)
+                        {
+                            unlink(indicator_temp_icon_path);
+                            g_free(indicator_temp_icon_path);
+                        }
+                        indicator_temp_icon_path = filename;
                     }
                     else
                     {
