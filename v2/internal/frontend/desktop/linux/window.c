@@ -935,12 +935,6 @@ void TraySetSystemTray(GtkWindow *window, const char *label, const guchar *image
             GdkPixbuf *pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
             if (pixbuf)
             {
-                if (indicator_temp_icon_path != NULL)
-                {
-                    unlink(indicator_temp_icon_path);
-                    g_free(indicator_temp_icon_path);
-                    indicator_temp_icon_path = NULL;
-                }
                 char *filename = NULL;
                 int fd = g_file_open_tmp("wails-tray-XXXXXX.png", &filename, NULL);
                 if (fd != -1)
@@ -948,6 +942,11 @@ void TraySetSystemTray(GtkWindow *window, const char *label, const guchar *image
                     close(fd);
                     if (gdk_pixbuf_save(pixbuf, filename, "png", NULL, NULL))
                     {
+                        if (indicator_temp_icon_path != NULL)
+                        {
+                            unlink(indicator_temp_icon_path);
+                            g_free(indicator_temp_icon_path);
+                        }
                         indicator_temp_icon_path = filename;
                         char *dir = g_path_get_dirname(filename);
                         char *base = g_path_get_basename(filename);
@@ -963,6 +962,7 @@ void TraySetSystemTray(GtkWindow *window, const char *label, const guchar *image
                     }
                     else
                     {
+                        unlink(filename);
                         g_free(filename);
                     }
                 }

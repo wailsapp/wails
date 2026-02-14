@@ -126,6 +126,7 @@ func (f *Frontend) TraySetSystemTray(trayMenu *menu.TrayMenu) {
 		if trayMenu.Menu != nil {
 			gtkMenu = C.gtk_menu_new()
 			accelGroup := C.gtk_accel_group_new()
+			C.gtk_window_add_accel_group(f.mainWindow.asGTKWindow(), accelGroup)
 			C.gtk_menu_set_accel_group(C.toGtkMenu(unsafe.Pointer(gtkMenu)), accelGroup)
 			for _, item := range trayMenu.Menu.Items {
 				processMenuItem(gtkMenu, item, accelGroup)
