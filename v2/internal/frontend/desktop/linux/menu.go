@@ -40,44 +40,37 @@ import "C"
 import (
 	"encoding/base64"
 	"os"
+	"runtime"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v2/pkg/menu"
 )
 
-var menuIdCounter int
-var menuItemToId map[*menu.MenuItem]int
-var menuIdToItem map[int]*menu.MenuItem
-var gtkCheckboxCache map[*menu.MenuItem][]*C.GtkWidget
-var gtkMenuCache map[*menu.MenuItem]*C.GtkWidget
-var gtkRadioMenuCache map[*menu.MenuItem][]*C.GtkWidget
-var gtkSignalHandlers map[*C.GtkWidget]C.gulong
-var gtkSignalToMenuItem map[*C.GtkWidget]*menu.MenuItem
+type menuCache struct {
+	menuIdCounter       int
+	menuItemToId        map[*menu.MenuItem]int
+	menuIdToItem        map[int]*menu.MenuItem
+	gtkCheckboxCache    map[*menu.MenuItem][]*C.GtkWidget
+	gtkMenuCache        map[*menu.MenuItem]*C.GtkWidget
+	gtkRadioMenuCache   map[*menu.MenuItem][]*C.GtkWidget
+	gtkSignalHandlers   map[*C.GtkWidget]C.gulong
+	gtkSignalToMenuItem map[*C.GtkWidget]*menu.MenuItem
+}
 
-func initMaps() {
-	// Ensure maps are initialized (they may not be if no application menu was set)
-	if gtkSignalHandlers == nil {
-		gtkSignalHandlers = make(map[*C.GtkWidget]C.gulong)
-	}
-	if gtkSignalToMenuItem == nil {
-		gtkSignalToMenuItem = make(map[*C.GtkWidget]*menu.MenuItem)
-	}
-	if gtkCheckboxCache == nil {
-		gtkCheckboxCache = make(map[*menu.MenuItem][]*C.GtkWidget)
-	}
-	if gtkRadioMenuCache == nil {
-		gtkRadioMenuCache = make(map[*menu.MenuItem][]*C.GtkWidget)
-	}
-	if gtkMenuCache == nil {
-		gtkMenuCache = make(map[*menu.MenuItem]*C.GtkWidget)
-	}
-	if menuItemToId == nil {
-		menuItemToId = make(map[*menu.MenuItem]int)
-	}
-	if menuIdToItem == nil {
-		menuIdToItem = make(map[int]*menu.MenuItem)
+func newMenuCache() *menuCache {
+	return &menuCache{
+		menuItemToId:        make(map[*menu.MenuItem]int),
+		menuIdToItem:        make(map[int]*menu.MenuItem),
+		gtkCheckboxCache:    make(map[*menu.MenuItem][]*C.GtkWidget),
+		gtkMenuCache:        make(map[*menu.MenuItem]*C.GtkWidget),
+		gtkRadioMenuCache:   make(map[*menu.MenuItem][]*C.GtkWidget),
+		gtkSignalHandlers:   make(map[*C.GtkWidget]C.gulong),
+		gtkSignalToMenuItem: make(map[*C.GtkWidget]*menu.MenuItem),
 	}
 }
+
+var appMenuCache = newMenuCache()
+var trayMenuCache = newMenuCache()
 
 func (f *Frontend) MenuSetApplicationMenu(menu *menu.Menu) {
 	f.mainWindow.SetApplicationMenu(menu)
@@ -92,7 +85,7 @@ func (f *Frontend) TraySetSystemTray(trayMenu *menu.TrayMenu) {
 		return
 	}
 
-	initMaps()
+	trayMenuCache = newMenuCache()
 
 	invokeOnMainThread(func() {
 		var label *C.char
@@ -109,21 +102,24 @@ func (f *Frontend) TraySetSystemTray(trayMenu *menu.TrayMenu) {
 
 		var imageData *C.guchar
 		var imageLen C.gsize
+		var imageBytes []byte
 		if trayMenu.Image != "" {
 			// Try file
 			if _, err := os.Stat(trayMenu.Image); err == nil {
 				data, err := os.ReadFile(trayMenu.Image)
 				if err == nil && len(data) > 0 {
-					imageData = (*C.guchar)(unsafe.Pointer(&data[0]))
-					imageLen = C.gsize(len(data))
+					imageBytes = data
 				}
 			} else {
 				// Try base64
 				data, err := base64.StdEncoding.DecodeString(trayMenu.Image)
 				if err == nil && len(data) > 0 {
-					imageData = (*C.guchar)(unsafe.Pointer(&data[0]))
-					imageLen = C.gsize(len(data))
+					imageBytes = data
 				}
+			}
+			if len(imageBytes) > 0 {
+				imageData = (*C.guchar)(unsafe.Pointer(&imageBytes[0]))
+				imageLen = C.gsize(len(imageBytes))
 			}
 		}
 
@@ -140,11 +136,12 @@ func (f *Frontend) TraySetSystemTray(trayMenu *menu.TrayMenu) {
 			C.gtk_window_add_accel_group(C.toGtkWindow(f.mainWindow.gtkWindow), f.mainWindow.trayAccelGroup)
 			C.gtk_menu_set_accel_group(C.toGtkMenu(unsafe.Pointer(gtkMenu)), f.mainWindow.trayAccelGroup)
 			for _, item := range trayMenu.Menu.Items {
-				processMenuItem(gtkMenu, item, f.mainWindow.trayAccelGroup)
+				processMenuItem(gtkMenu, item, f.mainWindow.trayAccelGroup, trayMenuCache)
 			}
 		}
 
 		C.TraySetSystemTray(C.toGtkWindow(f.mainWindow.gtkWindow), label, imageData, imageLen, tooltip, gtkMenu)
+		runtime.KeepAlive(imageBytes)
 	})
 }
 
@@ -157,14 +154,7 @@ func (w *Window) SetApplicationMenu(inmenu *menu.Menu) {
 	w.accels = C.gtk_accel_group_new()
 	C.gtk_window_add_accel_group(w.asGTKWindow(), w.accels)
 
-	menuIdCounter = 0
-	gtkSignalHandlers = make(map[*C.GtkWidget]C.gulong)
-	gtkSignalToMenuItem = make(map[*C.GtkWidget]*menu.MenuItem)
-	gtkCheckboxCache = make(map[*menu.MenuItem][]*C.GtkWidget)
-	gtkRadioMenuCache = make(map[*menu.MenuItem][]*C.GtkWidget)
-	gtkMenuCache = make(map[*menu.MenuItem]*C.GtkWidget)
-	menuItemToId = make(map[*menu.MenuItem]int)
-	menuIdToItem = make(map[int]*menu.MenuItem)
+	appMenuCache = newMenuCache()
 
 	// Increase ref count?
 	w.menubar = C.gtk_menu_bar_new()
@@ -177,34 +167,34 @@ func (w *Window) SetApplicationMenu(inmenu *menu.Menu) {
 func processMenu(window *Window, menu *menu.Menu) {
 	for _, menuItem := range menu.Items {
 		if menuItem.SubMenu != nil {
-			submenu := processSubmenu(menuItem, window.accels)
+			submenu := processSubmenu(menuItem, window.accels, appMenuCache)
 			C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(window.menubar)), submenu)
 		}
 	}
 }
 
-func processSubmenu(menuItem *menu.MenuItem, group *C.GtkAccelGroup) *C.GtkWidget {
-	existingMenu := gtkMenuCache[menuItem]
+func processSubmenu(menuItem *menu.MenuItem, group *C.GtkAccelGroup, cache *menuCache) *C.GtkWidget {
+	existingMenu := cache.gtkMenuCache[menuItem]
 	if existingMenu != nil {
 		return existingMenu
 	}
 	gtkMenu := C.gtk_menu_new()
 	submenu := GtkMenuItemWithLabel(menuItem.Label)
 	for _, menuItem := range menuItem.SubMenu.Items {
-		menuID := menuIdCounter
-		menuIdToItem[menuID] = menuItem
-		menuItemToId[menuItem] = menuID
-		menuIdCounter++
-		processMenuItem(gtkMenu, menuItem, group)
+		menuID := cache.menuIdCounter
+		cache.menuIdToItem[menuID] = menuItem
+		cache.menuItemToId[menuItem] = menuID
+		cache.menuIdCounter++
+		processMenuItem(gtkMenu, menuItem, group, cache)
 	}
 	C.gtk_menu_item_set_submenu(C.toGtkMenuItem(unsafe.Pointer(submenu)), gtkMenu)
-	gtkMenuCache[menuItem] = gtkMenu
+	cache.gtkMenuCache[menuItem] = gtkMenu
 	return submenu
 }
 
 var currentRadioGroup *C.GSList
 
-func processMenuItem(parent *C.GtkWidget, menuItem *menu.MenuItem, group *C.GtkAccelGroup) {
+func processMenuItem(parent *C.GtkWidget, menuItem *menu.MenuItem, group *C.GtkAccelGroup, cache *menuCache) {
 	if menuItem.Hidden {
 		return
 	}
@@ -229,7 +219,7 @@ func processMenuItem(parent *C.GtkWidget, menuItem *menu.MenuItem, group *C.GtkA
 		if menuItem.Checked {
 			C.gtk_check_menu_item_set_active(C.toGtkCheckMenuItem(unsafe.Pointer(result)), 1)
 		}
-		gtkCheckboxCache[menuItem] = append(gtkCheckboxCache[menuItem], result)
+		cache.gtkCheckboxCache[menuItem] = append(cache.gtkCheckboxCache[menuItem], result)
 
 	case menu.RadioType:
 		result = GtkRadioMenuItemWithLabel(menuItem.Label, currentRadioGroup)
@@ -237,17 +227,17 @@ func processMenuItem(parent *C.GtkWidget, menuItem *menu.MenuItem, group *C.GtkA
 		if menuItem.Checked {
 			C.gtk_check_menu_item_set_active(C.toGtkCheckMenuItem(unsafe.Pointer(result)), 1)
 		}
-		gtkRadioMenuCache[menuItem] = append(gtkRadioMenuCache[menuItem], result)
+		cache.gtkRadioMenuCache[menuItem] = append(cache.gtkRadioMenuCache[menuItem], result)
 	case menu.SubmenuType:
-		result = processSubmenu(menuItem, group)
+		result = processSubmenu(menuItem, group, cache)
 	}
 	C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(parent)), result)
 	C.gtk_widget_show(result)
 
 	if menuItem.Click != nil {
 		handler := C.connectClick(result)
-		gtkSignalHandlers[result] = handler
-		gtkSignalToMenuItem[result] = menuItem
+		cache.gtkSignalHandlers[result] = handler
+		cache.gtkSignalToMenuItem[result] = menuItem
 	}
 
 	if menuItem.Disabled {
