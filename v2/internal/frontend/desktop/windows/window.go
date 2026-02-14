@@ -424,7 +424,7 @@ func (w *Window) TraySetSystemTray(trayMenu *menu.TrayMenu) {
 
 		if !win32.ShellNotifyIcon(uintptr(cmd), &nid) {
 			if w.frontendOptions.Logger != nil {
-				w.frontendOptions.Logger.Error("Could not set system tray icon")
+				w.frontendOptions.Logger.Error(fmt.Sprintf("Could not set system tray icon (cmd=%d, id=%d)", cmd, nid.UID))
 			}
 		}
 	})

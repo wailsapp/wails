@@ -12,6 +12,7 @@ package linux
 #include "window.h"
 
 static GtkMenuItem *toGtkMenuItem(void *pointer) { return (GTK_MENU_ITEM(pointer)); }
+static GtkMenu *toGtkMenu(void *pointer) { return (GTK_MENU(pointer)); }
 static GtkMenuShell *toGtkMenuShell(void *pointer) { return (GTK_MENU_SHELL(pointer)); }
 static GtkCheckMenuItem *toGtkCheckMenuItem(void *pointer) { return (GTK_CHECK_MENU_ITEM(pointer)); }
 static GtkRadioMenuItem *toGtkRadioMenuItem(void *pointer) { return (GTK_RADIO_MENU_ITEM(pointer)); }
@@ -100,8 +101,10 @@ func (f *Frontend) TraySetSystemTray(trayMenu *menu.TrayMenu) {
 	var gtkMenu *C.GtkWidget
 	if trayMenu.Menu != nil {
 		gtkMenu = C.gtk_menu_new()
+		accelGroup := C.gtk_accel_group_new()
+		C.gtk_menu_set_accel_group(C.toGtkMenu(unsafe.Pointer(gtkMenu)), accelGroup)
 		for _, item := range trayMenu.Menu.Items {
-			processMenuItem(gtkMenu, item, nil)
+			processMenuItem(gtkMenu, item, accelGroup)
 		}
 	}
 
