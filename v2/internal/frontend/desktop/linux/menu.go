@@ -157,7 +157,14 @@ func (w *Window) SetApplicationMenu(inmenu *menu.Menu) {
 	w.accels = C.gtk_accel_group_new()
 	C.gtk_window_add_accel_group(w.asGTKWindow(), w.accels)
 
-	initMaps()
+	menuIdCounter = 0
+	gtkSignalHandlers = make(map[*C.GtkWidget]C.gulong)
+	gtkSignalToMenuItem = make(map[*C.GtkWidget]*menu.MenuItem)
+	gtkCheckboxCache = make(map[*menu.MenuItem][]*C.GtkWidget)
+	gtkRadioMenuCache = make(map[*menu.MenuItem][]*C.GtkWidget)
+	gtkMenuCache = make(map[*menu.MenuItem]*C.GtkWidget)
+	menuItemToId = make(map[*menu.MenuItem]int)
+	menuIdToItem = make(map[int]*menu.MenuItem)
 
 	// Increase ref count?
 	w.menubar = C.gtk_menu_bar_new()
