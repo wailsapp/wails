@@ -911,6 +911,10 @@ void TraySetSystemTray(GtkWindow *window, const char *label, const guchar *image
     if (indicator == NULL)
     {
         indicator = app_indicator_new("wails-tray-indicator", "", APP_INDICATOR_CATEGORY_APPLICATION_STATUS);
+        if (indicator == NULL)
+        {
+            return;
+        }
         app_indicator_set_status(indicator, APP_INDICATOR_STATUS_ACTIVE);
 
         // Connect the secondary activate signal (usually middle click or scroll)
@@ -945,7 +949,17 @@ void TraySetSystemTray(GtkWindow *window, const char *label, const guchar *image
                     if (gdk_pixbuf_save(pixbuf, filename, "png", NULL, NULL))
                     {
                         indicator_temp_icon_path = filename;
-                        app_indicator_set_icon_full(indicator, indicator_temp_icon_path, "tray icon");
+                        char *dir = g_path_get_dirname(filename);
+                        char *base = g_path_get_basename(filename);
+                        char *dot = strrchr(base, '.');
+                        if (dot)
+                        {
+                            *dot = '\0';
+                        }
+                        app_indicator_set_icon_theme_path(indicator, dir);
+                        app_indicator_set_icon_full(indicator, base, "tray icon");
+                        g_free(dir);
+                        g_free(base);
                     }
                     else
                     {

@@ -66,49 +66,74 @@ func (f *Frontend) TraySetSystemTray(trayMenu *menu.TrayMenu) {
 		return
 	}
 
-	var label *C.char
-	if trayMenu.Label != "" {
-		label = C.CString(trayMenu.Label)
-		defer C.free(unsafe.Pointer(label))
+	// Ensure maps are initialized (they may not be if no application menu was set)
+	if gtkSignalHandlers == nil {
+		gtkSignalHandlers = make(map[*C.GtkWidget]C.gulong)
+	}
+	if gtkSignalToMenuItem == nil {
+		gtkSignalToMenuItem = make(map[*C.GtkWidget]*menu.MenuItem)
+	}
+	if gtkCheckboxCache == nil {
+		gtkCheckboxCache = make(map[*menu.MenuItem][]*C.GtkWidget)
+	}
+	if gtkRadioMenuCache == nil {
+		gtkRadioMenuCache = make(map[*menu.MenuItem][]*C.GtkWidget)
+	}
+	if gtkMenuCache == nil {
+		gtkMenuCache = make(map[*menu.MenuItem]*C.GtkWidget)
+	}
+	if menuItemToId == nil {
+		menuItemToId = make(map[*menu.MenuItem]int)
+	}
+	if menuIdToItem == nil {
+		menuIdToItem = make(map[int]*menu.MenuItem)
 	}
 
-	var tooltip *C.char
-	if trayMenu.Tooltip != "" {
-		tooltip = C.CString(trayMenu.Tooltip)
-		defer C.free(unsafe.Pointer(tooltip))
-	}
+	invokeOnMainThread(func() {
+		var label *C.char
+		if trayMenu.Label != "" {
+			label = C.CString(trayMenu.Label)
+			defer C.free(unsafe.Pointer(label))
+		}
 
-	var imageData *C.guchar
-	var imageLen C.gsize
-	if trayMenu.Image != "" {
-		// Try file
-		if _, err := os.Stat(trayMenu.Image); err == nil {
-			data, err := os.ReadFile(trayMenu.Image)
-			if err == nil && len(data) > 0 {
-				imageData = (*C.guchar)(unsafe.Pointer(&data[0]))
-				imageLen = C.gsize(len(data))
-			}
-		} else {
-			// Try base64
-			data, err := base64.StdEncoding.DecodeString(trayMenu.Image)
-			if err == nil && len(data) > 0 {
-				imageData = (*C.guchar)(unsafe.Pointer(&data[0]))
-				imageLen = C.gsize(len(data))
+		var tooltip *C.char
+		if trayMenu.Tooltip != "" {
+			tooltip = C.CString(trayMenu.Tooltip)
+			defer C.free(unsafe.Pointer(tooltip))
+		}
+
+		var imageData *C.guchar
+		var imageLen C.gsize
+		if trayMenu.Image != "" {
+			// Try file
+			if _, err := os.Stat(trayMenu.Image); err == nil {
+				data, err := os.ReadFile(trayMenu.Image)
+				if err == nil && len(data) > 0 {
+					imageData = (*C.guchar)(unsafe.Pointer(&data[0]))
+					imageLen = C.gsize(len(data))
+				}
+			} else {
+				// Try base64
+				data, err := base64.StdEncoding.DecodeString(trayMenu.Image)
+				if err == nil && len(data) > 0 {
+					imageData = (*C.guchar)(unsafe.Pointer(&data[0]))
+					imageLen = C.gsize(len(data))
+				}
 			}
 		}
-	}
 
-	var gtkMenu *C.GtkWidget
-	if trayMenu.Menu != nil {
-		gtkMenu = C.gtk_menu_new()
-		accelGroup := C.gtk_accel_group_new()
-		C.gtk_menu_set_accel_group(C.toGtkMenu(unsafe.Pointer(gtkMenu)), accelGroup)
-		for _, item := range trayMenu.Menu.Items {
-			processMenuItem(gtkMenu, item, accelGroup)
+		var gtkMenu *C.GtkWidget
+		if trayMenu.Menu != nil {
+			gtkMenu = C.gtk_menu_new()
+			accelGroup := C.gtk_accel_group_new()
+			C.gtk_menu_set_accel_group(C.toGtkMenu(unsafe.Pointer(gtkMenu)), accelGroup)
+			for _, item := range trayMenu.Menu.Items {
+				processMenuItem(gtkMenu, item, accelGroup)
+			}
 		}
-	}
 
-	C.TraySetSystemTray(f.mainWindow.asGTKWindow(), label, imageData, imageLen, tooltip, gtkMenu)
+		C.TraySetSystemTray(f.mainWindow.asGTKWindow(), label, imageData, imageLen, tooltip, gtkMenu)
+	})
 }
 
 func (w *Window) SetApplicationMenu(inmenu *menu.Menu) {
