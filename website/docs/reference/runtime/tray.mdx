@@ -1,0 +1,37 @@
+---
+sidebar_position: 11
+---
+
+# Tray
+
+These methods give control of the system tray.
+
+### TraySetSystemTray
+
+Sets the system tray menu.
+
+Go: `TraySetSystemTray(ctx context.Context, trayMenu *menu.TrayMenu)`
+
+#### TrayMenu
+
+The `TrayMenu` struct defines the system tray icon and its associated menu.
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| Label | string | The text to display in the tray (platform dependent) |
+| Image | string | The name of the tray icon or base64 image data |
+| MacTemplateImage | bool | (macOS only) Indicates if the image is a template image |
+| Tooltip | string | The tooltip text to show when hovering over the tray icon |
+| Menu | [*Menu](./menu.mdx) | The menu to display when the tray icon is clicked |
+
+:::info Windows
+On Windows, the icon is displayed in the notification area.
+:::
+
+:::info macOS
+On macOS, the icon is displayed in the menu bar. If `MacTemplateImage` is true, the icon will automatically adapt to light/dark mode.
+:::
+
+:::info Linux
+On Linux, support depends on the desktop environment and its support for system tray icons (StatusNotifierItem).
+:::

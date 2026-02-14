@@ -4,12 +4,13 @@
 package linux
 
 /*
-#cgo linux pkg-config: gtk+-3.0
+#cgo linux pkg-config: gtk+-3.0 ayatana-appindicator3-0.1
 #cgo !webkit2_41 pkg-config: webkit2gtk-4.0
 #cgo webkit2_41 pkg-config: webkit2gtk-4.1
 
 #include <JavaScriptCore/JavaScript.h>
 #include <gtk/gtk.h>
+#include <libayatana-appindicator/app-indicator.h>
 #include <webkit2/webkit2.h>
 #include <stdio.h>
 #include <limits.h>
@@ -49,6 +50,7 @@ type Window struct {
 	webviewBox                               *C.GtkWidget
 	vbox                                     *C.GtkWidget
 	accels                                   *C.GtkAccelGroup
+	trayAccelGroup                           *C.GtkAccelGroup
 	minWidth, minHeight, maxWidth, maxHeight int
 }
 
@@ -98,10 +100,15 @@ func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Windo
 		webviewGpuPolicy = int(linux.WebviewGpuPolicyNever)
 	}
 
+	hideWindowOnClose := int(appoptions.WindowCloseBehaviour)
+	if hideWindowOnClose == int(options.CloseWindow) && appoptions.HideWindowOnClose {
+		hideWindowOnClose = int(options.HideWindow)
+	}
+
 	webview := C.SetupWebview(
 		result.contentManager,
 		result.asGTKWindow(),
-		bool2Cint(appoptions.HideWindowOnClose),
+		C.int(hideWindowOnClose),
 		C.int(webviewGpuPolicy),
 		bool2Cint(appoptions.DragAndDrop != nil && appoptions.DragAndDrop.DisableWebViewDrop),
 		bool2Cint(appoptions.DragAndDrop != nil && appoptions.DragAndDrop.EnableFileDrop),
@@ -180,6 +187,10 @@ func (w *Window) UnFullscreen() {
 func (w *Window) Destroy() {
 	C.gtk_widget_destroy(w.asGTKWidget())
 	C.g_object_unref(C.gpointer(w.gtkWindow))
+	if w.trayAccelGroup != nil {
+		C.g_object_unref(C.gpointer(w.trayAccelGroup))
+		w.trayAccelGroup = nil
+	}
 }
 
 func (w *Window) Close() {

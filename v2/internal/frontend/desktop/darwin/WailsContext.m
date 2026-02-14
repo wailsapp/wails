@@ -109,6 +109,10 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     [self.mouseEvent release];
     [self.userContentController release];
     [self.applicationMenu release];
+    if (self.trayItem != nil) {
+        [[NSStatusBar systemStatusBar] removeStatusItem:self.trayItem];
+        [self.trayItem release];
+    }
     [super dealloc];
 }
 
@@ -136,7 +140,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     return NO;
 }
 
-- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)zoomable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString*)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight :(bool)fraudulentWebsiteWarningEnabled :(struct Preferences)preferences :(bool)enableDragAndDrop :(bool)disableWebViewDragAndDrop  {
+- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)zoomable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(int)hideWindowOnClose :(NSString*)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight :(bool)fraudulentWebsiteWarningEnabled :(struct Preferences)preferences :(bool)enableDragAndDrop :(bool)disableWebViewDragAndDrop  {
     NSWindowStyleMask styleMask = 0;
 
     if( !frameless ) {
@@ -397,6 +401,9 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 }
 
 - (void) Show {
+    if ([NSApp activationPolicy] == NSApplicationActivationPolicyAccessory) {
+        [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+    }
     [self.mainWindow makeKeyAndOrderFront:nil];
     [NSApp activateIgnoringOtherApps:YES];
 }
