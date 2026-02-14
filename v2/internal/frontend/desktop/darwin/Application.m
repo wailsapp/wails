@@ -361,6 +361,7 @@ void TraySetSystemTray(void *inctx, const char* label, const char* image, int is
                     NSData *data = [[NSData alloc] initWithBase64EncodedString:nsimage options:NSDataBase64DecodingIgnoreUnknownCharacters];
                     if (data != nil) {
                         icon = [[NSImage alloc] initWithData:data];
+                        [data release];
                     }
                 }
                 if (icon != nil) {
@@ -369,6 +370,7 @@ void TraySetSystemTray(void *inctx, const char* label, const char* image, int is
                     }
                     ctx.trayItem.button.image = icon;
                     ctx.trayItem.button.imagePosition = NSImageLeft;
+                    [icon release];
                 }
             } else {
                 ctx.trayItem.button.image = nil;

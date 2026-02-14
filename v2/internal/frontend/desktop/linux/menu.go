@@ -83,14 +83,14 @@ func (f *Frontend) TraySetSystemTray(trayMenu *menu.TrayMenu) {
 		// Try file
 		if _, err := os.Stat(trayMenu.Image); err == nil {
 			data, err := os.ReadFile(trayMenu.Image)
-			if err == nil {
+			if err == nil && len(data) > 0 {
 				imageData = (*C.guchar)(unsafe.Pointer(&data[0]))
 				imageLen = C.gsize(len(data))
 			}
 		} else {
 			// Try base64
 			data, err := base64.StdEncoding.DecodeString(trayMenu.Image)
-			if err == nil {
+			if err == nil && len(data) > 0 {
 				imageData = (*C.guchar)(unsafe.Pointer(&data[0]))
 				imageLen = C.gsize(len(data))
 			}
@@ -213,7 +213,7 @@ func processMenuItem(parent *C.GtkWidget, menuItem *menu.MenuItem, group *C.GtkA
 		C.gtk_widget_set_sensitive(result, 0)
 	}
 
-	if menuItem.Accelerator != nil {
+	if menuItem.Accelerator != nil && group != nil {
 		key, mods := acceleratorToGTK(menuItem.Accelerator)
 		C.addAccelerator(result, group, key, mods)
 	}

@@ -352,6 +352,7 @@ func (w *Window) showTrayMenu() {
 	}
 
 	wincMenu := winc.NewContextMenu()
+	defer w32.DestroyMenu(w32.HMENU(wincMenu.Handle()))
 	for _, item := range w.trayMenu.Menu.Items {
 		processMenuItem(wincMenu, item)
 	}
@@ -375,47 +376,58 @@ func (w *Window) deleteTrayIcon() {
 	win32.ShellNotifyIcon(win32.NIM_DELETE, &nid)
 	w32.DestroyIcon(w.trayIcon)
 	w.trayIcon = 0
+	w.trayID = 0
 }
 
 func (w *Window) TraySetSystemTray(trayMenu *menu.TrayMenu) {
 	if trayMenu == nil {
 		return
 	}
-	w.trayMenu = trayMenu
+	w.Invoke(func() {
+		w.trayMenu = trayMenu
 
-	var nid win32.NOTIFYICONDATA
-	nid.CbSize = uint32(unsafe.Sizeof(nid))
-	nid.HWnd = win32.HWND(w.Handle())
-	nid.UID = w.trayID
-	nid.UFlags = win32.NIF_MESSAGE | win32.NIF_TIP
-	nid.UCallbackMessage = WM_WAILS_TRAY_MESSAGE
-
-	if trayMenu.Tooltip != "" {
-		u16, _ := syscall.UTF16FromString(trayMenu.Tooltip)
-		copy(nid.SzTip[:], u16)
-	}
-
-	if trayMenu.Image != "" {
-		icon, err := w.loadTrayIcon(trayMenu.Image)
-		if err == nil {
-			if w.trayIcon != 0 {
-				w32.DestroyIcon(w.trayIcon)
-			}
-			w.trayIcon = icon
-			nid.HIcon = win32.HICON(icon)
-			nid.UFlags |= win32.NIF_ICON
-		}
-	}
-
-	cmd := win32.NIM_ADD
-	if w.trayID != 0 {
-		cmd = win32.NIM_MODIFY
-	} else {
-		w.trayID = 1
+		var nid win32.NOTIFYICONDATA
+		nid.CbSize = uint32(unsafe.Sizeof(nid))
+		nid.HWnd = win32.HWND(w.Handle())
 		nid.UID = w.trayID
-	}
+		nid.UFlags = win32.NIF_MESSAGE | win32.NIF_TIP
+		nid.UCallbackMessage = WM_WAILS_TRAY_MESSAGE
 
-	win32.ShellNotifyIcon(uintptr(cmd), &nid)
+		if trayMenu.Tooltip != "" {
+			u16, _ := syscall.UTF16FromString(trayMenu.Tooltip)
+			copy(nid.SzTip[:], u16)
+		}
+
+		if trayMenu.Image != "" {
+			icon, err := w.loadTrayIcon(trayMenu.Image)
+			if err == nil {
+				if w.trayIcon != 0 {
+					w32.DestroyIcon(w.trayIcon)
+				}
+				w.trayIcon = icon
+				nid.HIcon = win32.HICON(icon)
+				nid.UFlags |= win32.NIF_ICON
+			} else {
+				if w.frontendOptions.Logger != nil {
+					w.frontendOptions.Logger.Error(fmt.Sprintf("Could not load tray icon: %s", err))
+				}
+			}
+		}
+
+		cmd := win32.NIM_ADD
+		if w.trayID != 0 {
+			cmd = win32.NIM_MODIFY
+		} else {
+			w.trayID = 1
+			nid.UID = w.trayID
+		}
+
+		if !win32.ShellNotifyIcon(uintptr(cmd), &nid) {
+			if w.frontendOptions.Logger != nil {
+				w.frontendOptions.Logger.Error("Could not set system tray icon")
+			}
+		}
+	})
 }
 
 func (w *Window) loadTrayIcon(image string) (w32.HICON, error) {
@@ -435,6 +447,9 @@ func (w *Window) loadTrayIcon(image string) (w32.HICON, error) {
 }
 
 func (w *Window) createIconFromBytes(data []byte) (w32.HICON, error) {
+	if len(data) == 0 {
+		return 0, fmt.Errorf("empty icon data")
+	}
 	icon := win32.CreateIconFromResourceEx(uintptr(unsafe.Pointer(&data[0])), uint32(len(data)), true, 0x00030000, 0, 0)
 	if icon == 0 {
 		return 0, fmt.Errorf("could not create icon from bytes")

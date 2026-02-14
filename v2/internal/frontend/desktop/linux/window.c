@@ -19,7 +19,7 @@ static int decoratorWidth = -1;
 static int decoratorHeight = -1;
 
 // Structs for passing multiple arguments to main thread functions
-GtkStatusIcon *statusItem = NULL;
+static GtkStatusIcon *statusItem = NULL;
 
 // casts
 void ExecuteOnMainThread(void *f, gpointer jscallback)
@@ -916,8 +916,10 @@ void TraySetSystemTray(GtkWindow *window, const char *label, const guchar *image
     if (statusItem == NULL)
     {
         statusItem = gtk_status_icon_new();
-        g_signal_connect(statusItem, "activate", G_CALLBACK(on_status_icon_activate), window);
     }
+
+    g_signal_handlers_disconnect_matched(statusItem, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, G_CALLBACK(on_status_icon_activate), NULL);
+    g_signal_connect(statusItem, "activate", G_CALLBACK(on_status_icon_activate), window);
 
     if (image != NULL && imageLen > 0)
     {
@@ -940,7 +942,7 @@ void TraySetSystemTray(GtkWindow *window, const char *label, const guchar *image
 
     if (menu != NULL)
     {
-        g_signal_handlers_disconnect_by_func(statusItem, G_CALLBACK(on_status_icon_popup_menu), menu);
+        g_signal_handlers_disconnect_matched(statusItem, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, G_CALLBACK(on_status_icon_popup_menu), NULL);
         g_signal_connect(statusItem, "popup-menu", G_CALLBACK(on_status_icon_popup_menu), menu);
     }
 }
