@@ -52,10 +52,10 @@ var AllMMiddleEnumValues = []struct {
 }
 
 type EntityWithMultipleEnums struct {
-	Name   string      `json:"name"`
-	EnumZ  ZFirstEnum  `json:"enumZ"`
-	EnumA  ASecondEnum `json:"enumA"`
-	EnumM  MMiddleEnum `json:"enumM"`
+	Name  string      `json:"name"`
+	EnumZ ZFirstEnum  `json:"enumZ"`
+	EnumA ASecondEnum `json:"enumA"`
+	EnumM MMiddleEnum `json:"enumM"`
 }
 
 func (e EntityWithMultipleEnums) Get() EntityWithMultipleEnums {
