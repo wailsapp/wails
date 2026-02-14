@@ -109,6 +109,10 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     [self.mouseEvent release];
     [self.userContentController release];
     [self.applicationMenu release];
+    if (self.trayItem != nil) {
+        [[NSStatusBar systemStatusBar] removeStatusItem:self.trayItem];
+        [self.trayItem release];
+    }
     [super dealloc];
 }
 

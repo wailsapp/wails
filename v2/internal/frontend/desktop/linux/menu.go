@@ -57,6 +57,10 @@ func (f *Frontend) MenuUpdateApplicationMenu() {
 	f.mainWindow.SetApplicationMenu(f.mainWindow.applicationMenu)
 }
 
+func (f *Frontend) TraySetSystemTray(trayMenu *menu.TrayMenu) {
+	// Not implemented
+}
+
 func (w *Window) SetApplicationMenu(inmenu *menu.Menu) {
 	if inmenu == nil {
 		return

@@ -55,6 +55,8 @@
 
 @property (retain) NSMenu* applicationMenu;
 
+@property (retain) NSStatusItem* trayItem;
+
 @property (retain) NSImage* aboutImage;
 @property (retain) NSString* aboutTitle;
 @property (retain) NSString* aboutDescription;

@@ -55,6 +55,7 @@ type App struct {
 	// AssetServer configures the Assets for the application
 	AssetServer        *assetserver.Options
 	Menu               *menu.Menu
+	Tray               *menu.TrayMenu
 	Logger             logger.Logger `json:"-"`
 	LogLevel           logger.LogLevel
 	LogLevelProduction logger.LogLevel

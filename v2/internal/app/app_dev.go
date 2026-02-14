@@ -30,6 +30,9 @@ import (
 
 func (a *App) Run() error {
 	err := a.frontend.Run(a.ctx)
+	if a.options.Tray != nil {
+		a.frontend.TraySetSystemTray(a.options.Tray)
+	}
 	a.frontend.RunMainLoop()
 	a.frontend.WindowClose()
 	if a.shutdownCallback != nil {

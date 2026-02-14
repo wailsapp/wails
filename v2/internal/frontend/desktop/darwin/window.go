@@ -308,6 +308,37 @@ func (w *Window) UpdateApplicationMenu() {
 	C.UpdateApplicationMenu(w.context)
 }
 
+func (w *Window) TraySetSystemTray(trayMenu *menu.TrayMenu) {
+	if w == nil || w.context == nil {
+		return
+	}
+	if trayMenu == nil {
+		return
+	}
+	label := C.CString(trayMenu.Label)
+	defer C.free(unsafe.Pointer(label))
+
+	image := C.CString(trayMenu.Image)
+	defer C.free(unsafe.Pointer(image))
+
+	tooltip := C.CString(trayMenu.Tooltip)
+	defer C.free(unsafe.Pointer(tooltip))
+
+	var nsmenu unsafe.Pointer
+	if trayMenu.Menu != nil {
+		appMenu := NewNSMenu(w.context, "")
+		processMenu(appMenu, trayMenu.Menu)
+		nsmenu = appMenu.nsmenu
+	}
+
+	isTemplate := 0
+	if trayMenu.MacTemplateImage {
+		isTemplate = 1
+	}
+
+	C.TraySetSystemTray(w.context, label, image, C.int(isTemplate), tooltip, nsmenu)
+}
+
 func (w Window) Print() {
 	C.WindowPrint(w.context)
 }

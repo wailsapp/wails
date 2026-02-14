@@ -129,6 +129,7 @@ type Frontend interface {
 	// Menus
 	MenuSetApplicationMenu(menu *menu.Menu)
 	MenuUpdateApplicationMenu()
+	TraySetSystemTray(trayMenu *menu.TrayMenu)
 
 	// Events
 	Notify(name string, data ...interface{})
