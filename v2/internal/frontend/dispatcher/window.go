@@ -25,6 +25,9 @@ func (d *Dispatcher) processWindowMessage(message string, sender frontend.Fronte
 
 	switch message[1] {
 	case 'A':
+		if len(message) < 4 {
+			return "", errors.New("Invalid Window Message: " + message)
+		}
 		switch message[2:] {
 		case "SDT":
 			go sender.WindowSetSystemDefaultTheme()
@@ -42,6 +45,9 @@ func (d *Dispatcher) processWindowMessage(message string, sender frontend.Fronte
 	case 'c':
 		go sender.WindowCenter()
 	case 'T':
+		if len(message) < 3 {
+			return "", errors.New("Invalid Window Message: " + message)
+		}
 		title := message[2:]
 		go sender.WindowSetTitle(title)
 	case 'F':
@@ -49,12 +55,24 @@ func (d *Dispatcher) processWindowMessage(message string, sender frontend.Fronte
 	case 'f':
 		go sender.WindowUnfullscreen()
 	case 's':
+		if len(message) < 4 {
+			return "", errors.New("Invalid Window Message: " + message)
+		}
 		parts := strings.Split(message[3:], ":")
+		if len(parts) != 2 {
+			return "", errors.New("Invalid Window Message: " + message)
+		}
 		w := d.mustAtoI(parts[0])
 		h := d.mustAtoI(parts[1])
 		go sender.WindowSetSize(w, h)
 	case 'p':
+		if len(message) < 4 {
+			return "", errors.New("Invalid Window Message: " + message)
+		}
 		parts := strings.Split(message[3:], ":")
+		if len(parts) != 2 {
+			return "", errors.New("Invalid Window Message: " + message)
+		}
 		x := d.mustAtoI(parts[0])
 		y := d.mustAtoI(parts[1])
 		go sender.WindowSetPosition(x, y)
@@ -65,6 +83,9 @@ func (d *Dispatcher) processWindowMessage(message string, sender frontend.Fronte
 	case 'R':
 		go sender.WindowReloadApp()
 	case 'r':
+		if len(message) < 4 {
+			return "", errors.New("Invalid Window Message: " + message)
+		}
 		var rgba options.RGBA
 		err := json.Unmarshal([]byte(message[3:]), &rgba)
 		if err != nil {
@@ -82,12 +103,24 @@ func (d *Dispatcher) processWindowMessage(message string, sender frontend.Fronte
 	case 'u':
 		go sender.WindowUnminimise()
 	case 'Z':
+		if len(message) < 4 {
+			return "", errors.New("Invalid Window Message: " + message)
+		}
 		parts := strings.Split(message[3:], ":")
+		if len(parts) != 2 {
+			return "", errors.New("Invalid Window Message: " + message)
+		}
 		w := d.mustAtoI(parts[0])
 		h := d.mustAtoI(parts[1])
 		go sender.WindowSetMaxSize(w, h)
 	case 'z':
+		if len(message) < 4 {
+			return "", errors.New("Invalid Window Message: " + message)
+		}
 		parts := strings.Split(message[3:], ":")
+		if len(parts) != 2 {
+			return "", errors.New("Invalid Window Message: " + message)
+		}
 		w := d.mustAtoI(parts[0])
 		h := d.mustAtoI(parts[1])
 		go sender.WindowSetMinSize(w, h)
