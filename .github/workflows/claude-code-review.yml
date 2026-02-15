@@ -12,6 +12,10 @@ on:
 
 jobs:
   claude-review:
+    # Temporarily disabled until ANTHROPIC_API_KEY secret is configured
+    # To enable: Remove the 'if: false' line below and add ANTHROPIC_API_KEY to repository secrets
+    if: false
+
     # Optional: Filter by PR author
     # if: |
     #   github.event.pull_request.user.login == 'external-contributor' ||
