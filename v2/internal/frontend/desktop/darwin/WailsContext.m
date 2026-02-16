@@ -519,7 +519,19 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     NSString *m = message.body;
 
     if ( [m isEqualToString:@"titlebar-doubleclick"] ) {
-        [self ToggleMaximise];
+        if ( [self IsFullScreen] ) {
+            return;
+        }
+
+        NSString *action = [[NSUserDefaults standardUserDefaults]
+            stringForKey:@"AppleActionOnDoubleClick"];
+
+        if (action == nil || [action isEqualToString:@"Maximize"]) {
+            [self ToggleMaximise];
+        } else if ([action isEqualToString:@"Minimize"]) {
+            [self Minimise];
+        }
+
         return;
     }
 
