@@ -256,6 +256,30 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     config.userContentController = userContentController;
     self.userContentController = userContentController;
 
+    WKUserScript *doubleClickScript = [[WKUserScript alloc] 
+    initWithSource:@"document.addEventListener('dblclick', function(e) { \
+        let el = e.target; \
+        while (el) { \
+            if (el.hasAttribute && el.hasAttribute('data-wails-drag')) { \
+                window.webkit.messageHandlers.external.postMessage('titlebar-doubleclick'); \
+                e.preventDefault(); \
+                return; \
+            } \
+            const style = window.getComputedStyle(el); \
+            if (style.getPropertyValue('-webkit-app-region') === 'drag' || \
+                style.getPropertyValue('--wails-draggable') === 'drag') { \
+                window.webkit.messageHandlers.external.postMessage('titlebar-doubleclick'); \
+                e.preventDefault(); \
+                return; \
+            } \
+            el = el.parentElement; \
+        } \
+    }, true);" 
+    injectionTime:WKUserScriptInjectionTimeAtDocumentEnd 
+    forMainFrameOnly:false];
+[userContentController addUserScript:doubleClickScript];
+[doubleClickScript release];
+
     if (self.devtoolsEnabled) {
         [config.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
     }
@@ -494,13 +518,18 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 
     NSString *m = message.body;
 
+    if ( [m isEqualToString:@"titlebar-doubleclick"] ) {
+        [self ToggleMaximise];
+        return;
+    }
+
     // Check for drag
     if ( [m isEqualToString:@"drag"] ) {
         if( [self IsFullScreen] ) {
             return;
         }
         if( self.mouseEvent != nil ) {
-           [self.mainWindow performWindowDragWithEvent:self.mouseEvent];
+            [self.mainWindow performWindowDragWithEvent:self.mouseEvent];
         }
         return;
     }
