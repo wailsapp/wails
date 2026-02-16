@@ -24,8 +24,6 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 
-- Fix 20-30 minute hangs during `wails3 build` and `wails3 dev` by excluding `node_modules/` from go-task's up-to-date checking. Previously, the `sources: "**/*"` glob caused go-task to enumerate and checksum every file in `node_modules/` (50-100k+ files with heavy dependencies like MUI), especially slow on Windows/NTFS (#4939)
-
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
