@@ -1,0 +1,365 @@
+# OAuth Authentication
+
+Desktop apps need to use the user's default browser for OAuth so that existing sessions (Google, Apple, GitHub, etc.)
+are available. This is known as the "Loopback Redirect" pattern and it's the same approach used by VS Code, Slack,
+Docker Desktop, and the GitHub CLI.
+
+The general flow is:
+
+1. Your Go backend generates PKCE parameters and opens the provider's authorize URL in the system browser
+2. The user authenticates (often one-click since they're already logged in)
+3. The provider redirects to `http://localhost:{port}/callback` with an authorization code
+4. Your Go backend exchanges the code for tokens
+
+Your app never sees the user's password. It only receives a short-lived authorization code.
+
+## A Note on Webview Popups
+
+It may be tempting to open a Wails webview window for a polished popup experience, but the webview is an isolated
+WebKit/WebView2 instance. It doesn't share cookies or sessions with the user's browser, so they would need to
+re-enter credentials and redo 2FA. Google also [discourages](https://developers.google.com/identity/protocols/oauth2/policies#embedded-webviews)
+embedded webviews for OAuth and may block sign-in attempts from them. Use the system browser instead.
+
+## PKCE Helpers
+
+[PKCE (Proof Key for Code Exchange)](https://www.rfc-editor.org/rfc/rfc7636) prevents authorization code interception
+attacks. It's required for public clients like desktop apps that can't safely store a client secret.
+
+```go title="oauth.go"
+package main
+
+import (
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
+)
+
+func generateCodeVerifier() string {
+	b := make([]byte, 32)
+	rand.Read(b)
+	return base64.RawURLEncoding.EncodeToString(b)
+}
+
+func computeCodeChallenge(verifier string) string {
+	h := sha256.Sum256([]byte(verifier))
+	return base64.RawURLEncoding.EncodeToString(h[:])
+}
+
+func generateState() string {
+	b := make([]byte, 16)
+	rand.Read(b)
+	return base64.RawURLEncoding.EncodeToString(b)
+}
+```
+
+## Tracking Pending Flows
+
+Since the OAuth redirect arrives as a separate HTTP request, you need shared state between the handler that starts the
+flow and the callback that finishes it. A `sync.Map` keyed by the `state` parameter works well for this. It's also
+a good idea to clean up expired flows so they don't accumulate in memory.
+
+```go title="oauth.go"
+import (
+	"sync"
+	"time"
+)
+
+const oauthFlowTimeout = 10 * time.Minute
+
+type oauthFlowState struct {
+	CodeVerifier string
+	CreatedAt    time.Time
+	Completed    bool
+	Error        string
+	Email        string
+	DisplayName  string
+}
+
+var pendingFlows sync.Map // state -> *oauthFlowState
+
+func init() {
+	go func() {
+		ticker := time.NewTicker(1 * time.Minute)
+		for range ticker.C {
+			now := time.Now()
+			pendingFlows.Range(func(key, value any) bool {
+				if flow, ok := value.(*oauthFlowState); ok {
+					if now.Sub(flow.CreatedAt) > oauthFlowTimeout {
+						pendingFlows.Delete(key)
+					}
+				}
+				return true
+			})
+		}
+	}()
+}
+```
+
+## Starting the OAuth Flow
+
+This handler generates PKCE parameters, stores the flow state, and opens the authorize URL in the system browser.
+
+```go title="oauth.go"
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/url"
+	"os/exec"
+	"runtime"
+	"strings"
+)
+
+func openBrowser(targetURL string) {
+	var cmd *exec.Cmd
+	switch runtime.GOOS {
+	case "darwin":
+		cmd = exec.Command("open", targetURL)
+	case "windows":
+		cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", targetURL)
+	default:
+		cmd = exec.Command("xdg-open", targetURL)
+	}
+	cmd.Start()
+}
+
+func oauthStartHandler(w http.ResponseWriter, r *http.Request) {
+	state := generateState()
+	verifier := generateCodeVerifier()
+	challenge := computeCodeChallenge(verifier)
+
+	pendingFlows.Store(state, &oauthFlowState{
+		CodeVerifier: verifier,
+		CreatedAt:    time.Now(),
+	})
+
+	redirectURI := fmt.Sprintf("http://localhost:%d/auth/callback", appPort)
+
+	params := url.Values{
+		"response_type":         {"code"},
+		"client_id":             {"your_client_id"},
+		"redirect_uri":          {redirectURI},
+		"scope":                 {"openid profile email"},
+		"state":                 {state},
+		"code_challenge":        {challenge},
+		"code_challenge_method": {"S256"},
+	}
+
+	authorizeURL := "https://provider.example.com/oauth/authorize?" + params.Encode()
+
+	openBrowser(authorizeURL)
+
+	// Return the state so the frontend can poll for completion
+	json.NewEncoder(w).Encode(map[string]string{
+		"authorize_url": authorizeURL,
+		"state":         state,
+	})
+}
+```
+
+:::info
+Wails apps already run an HTTP server for the frontend. You can use that same server for
+the OAuth callback rather than spinning up a temporary listener.
+:::
+
+## Handling the Callback
+
+When the provider redirects to your localhost, exchange the authorization code for tokens. The callback handler
+also serves a small HTML page that tells the user they can close the tab.
+
+```go title="oauth.go"
+func oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
+	state := r.URL.Query().Get("state")
+	code := r.URL.Query().Get("code")
+	errParam := r.URL.Query().Get("error")
+
+	flowVal, ok := pendingFlows.Load(state)
+	if !ok {
+		serveCallbackHTML(w, "Invalid or expired OAuth state")
+		return
+	}
+	flow := flowVal.(*oauthFlowState)
+
+	if errParam != "" {
+		flow.Error = errParam
+		flow.Completed = true
+		serveCallbackHTML(w, "Authentication was denied: "+errParam)
+		return
+	}
+
+	// Exchange code for tokens
+	tokenResp, err := exchangeCode(r.Context(), code, flow.CodeVerifier)
+	if err != nil {
+		flow.Error = err.Error()
+		flow.Completed = true
+		serveCallbackHTML(w, "Token exchange failed")
+		return
+	}
+
+	// Use the access token (fetch profile, store credentials, etc.)
+	_ = tokenResp
+
+	flow.Completed = true
+	serveCallbackHTML(w, "")
+}
+```
+
+## Token Exchange
+
+```go title="oauth.go"
+import (
+	"context"
+	"io"
+)
+
+type tokenResponse struct {
+	AccessToken  string `json:"access_token"`
+	TokenType    string `json:"token_type"`
+	ExpiresIn    int    `json:"expires_in"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+func exchangeCode(ctx context.Context, code, codeVerifier string) (*tokenResponse, error) {
+	body, _ := json.Marshal(map[string]string{
+		"grant_type":    "authorization_code",
+		"code":          code,
+		"redirect_uri":  fmt.Sprintf("http://localhost:%d/auth/callback", appPort),
+		"client_id":     "your_client_id",
+		"code_verifier": codeVerifier,
+	})
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
+		"https://provider.example.com/oauth/token",
+		strings.NewReader(string(body)))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("token request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		b, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("token endpoint returned %d: %s", resp.StatusCode, b)
+	}
+
+	var result tokenResponse
+	json.NewDecoder(resp.Body).Decode(&result)
+	return &result, nil
+}
+```
+
+## Callback HTML
+
+After the OAuth redirect, this serves a brief confirmation page that attempts to auto-close the browser tab.
+
+```go title="oauth.go"
+func serveCallbackHTML(w http.ResponseWriter, errMsg string) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	message := "Connected! You can close this window."
+	if errMsg != "" {
+		message = "Sign-in failed: " + errMsg
+	}
+
+	fmt.Fprintf(w, `<!DOCTYPE html>
+<html><head><title>Authentication</title>
+<style>
+body { font-family: -apple-system, sans-serif; display: flex;
+  align-items: center; justify-content: center; min-height: 100vh;
+  margin: 0; background: #f5f5f5; }
+p { font-size: 16px; color: #333; }
+</style></head>
+<body><p>%s</p>
+<script>setTimeout(function() { window.close(); }, 1500);</script>
+</body></html>`, message)
+}
+```
+
+## Frontend Polling
+
+The frontend can't listen for the browser callback directly. A polling endpoint lets it detect when the flow completes.
+
+```go title="oauth.go"
+func oauthStatusHandler(w http.ResponseWriter, r *http.Request) {
+	state := r.URL.Query().Get("state")
+
+	flowVal, ok := pendingFlows.Load(state)
+	if !ok {
+		json.NewEncoder(w).Encode(map[string]string{"status": "expired"})
+		return
+	}
+
+	flow := flowVal.(*oauthFlowState)
+	if !flow.Completed {
+		json.NewEncoder(w).Encode(map[string]string{"status": "pending"})
+		return
+	}
+
+	if flow.Error != "" {
+		json.NewEncoder(w).Encode(map[string]string{
+			"status": "error",
+			"error":  flow.Error,
+		})
+	} else {
+		json.NewEncoder(w).Encode(map[string]string{
+			"status": "complete",
+			"email":  flow.Email,
+		})
+	}
+
+	pendingFlows.Delete(state)
+}
+```
+
+On the frontend side, something like this works with any framework:
+
+```javascript title="frontend/src/auth.js"
+async function startOAuth() {
+  const resp = await fetch('/auth/start', { method: 'POST' });
+  const { state } = await resp.json();
+
+  const poll = setInterval(async () => {
+    const status = await fetch(`/auth/status?state=${state}`);
+    const result = await status.json();
+
+    if (result.status === 'complete') {
+      clearInterval(poll);
+      // Update your UI
+    } else if (result.status === 'error' || result.status === 'expired') {
+      clearInterval(poll);
+    }
+  }, 1000);
+}
+```
+
+## Wiring It Up
+
+Register the handlers on your Wails app's existing HTTP server:
+
+```go title="main.go"
+mux := http.NewServeMux()
+mux.HandleFunc("POST /auth/start", oauthStartHandler)
+mux.HandleFunc("GET /auth/callback", oauthCallbackHandler)
+mux.HandleFunc("GET /auth/status", oauthStatusHandler)
+```
+
+## Things to Watch Out For
+
+- The Wails webview is isolated from the system browser. If you open the authorize URL in a webview window, the user
+  won't have their existing sessions and will need to log in from scratch. Some providers like Google may block
+  sign-in attempts from embedded webviews entirely.
+
+- PKCE is important for desktop apps. Without it, another application on the same machine could intercept the
+  authorization code from the localhost redirect.
+
+- If your port is configurable, make sure the `redirect_uri` in the start handler matches what the callback handler
+  listens on. You'll also need to register all possible redirect URIs with your OAuth provider.
+
+- Remember to clean up expired flows. Without the cleanup goroutine, abandoned flows will accumulate in memory.
+
+- Binding your callback listener to `127.0.0.1` rather than `0.0.0.0` ensures only local processes can reach it.
