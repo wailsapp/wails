@@ -64,7 +64,10 @@ import (
 	"time"
 )
 
-const oauthFlowTimeout = 10 * time.Minute
+const (
+	oauthFlowTimeout = 10 * time.Minute
+	appPort          = 34115 // your Wails app's HTTP server port
+)
 
 type oauthFlowState struct {
 	CodeVerifier string
@@ -101,16 +104,17 @@ This handler generates PKCE parameters, stores the flow state, and opens the aut
 
 ```go title="oauth.go"
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"html"
 	"net/http"
 	"net/url"
 	"os/exec"
 	"runtime"
-	"strings"
 )
 
-func openBrowser(targetURL string) {
+func openBrowser(targetURL string) error {
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "darwin":
@@ -120,7 +124,7 @@ func openBrowser(targetURL string) {
 	default:
 		cmd = exec.Command("xdg-open", targetURL)
 	}
-	cmd.Start()
+	return cmd.Start()
 }
 
 func oauthStartHandler(w http.ResponseWriter, r *http.Request) {
@@ -147,7 +151,10 @@ func oauthStartHandler(w http.ResponseWriter, r *http.Request) {
 
 	authorizeURL := "https://provider.example.com/oauth/authorize?" + params.Encode()
 
-	openBrowser(authorizeURL)
+	if err := openBrowser(authorizeURL); err != nil {
+		http.Error(w, "Failed to open browser", http.StatusInternalServerError)
+		return
+	}
 
 	// Return the state so the frontend can poll for completion
 	json.NewEncoder(w).Encode(map[string]string{
@@ -178,7 +185,11 @@ func oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		serveCallbackHTML(w, "Invalid or expired OAuth state")
 		return
 	}
-	flow := flowVal.(*oauthFlowState)
+	flow, ok := flowVal.(*oauthFlowState)
+	if !ok {
+		serveCallbackHTML(w, "Invalid or expired OAuth state")
+		return
+	}
 
 	if errParam != "" {
 		flow.Error = errParam
@@ -220,17 +231,20 @@ type tokenResponse struct {
 }
 
 func exchangeCode(ctx context.Context, code, codeVerifier string) (*tokenResponse, error) {
-	body, _ := json.Marshal(map[string]string{
+	body, err := json.Marshal(map[string]string{
 		"grant_type":    "authorization_code",
 		"code":          code,
 		"redirect_uri":  fmt.Sprintf("http://localhost:%d/auth/callback", appPort),
 		"client_id":     "your_client_id",
 		"code_verifier": codeVerifier,
 	})
+	if err != nil {
+		return nil, fmt.Errorf("marshal token request: %w", err)
+	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
 		"https://provider.example.com/oauth/token",
-		strings.NewReader(string(body)))
+		bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
@@ -248,7 +262,9 @@ func exchangeCode(ctx context.Context, code, codeVerifier string) (*tokenRespons
 	}
 
 	var result tokenResponse
-	json.NewDecoder(resp.Body).Decode(&result)
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("decode token response: %w", err)
+	}
 	return &result, nil
 }
 ```
@@ -263,7 +279,7 @@ func serveCallbackHTML(w http.ResponseWriter, errMsg string) {
 
 	message := "Connected! You can close this window."
 	if errMsg != "" {
-		message = "Sign-in failed: " + errMsg
+		message = "Sign-in failed: " + html.EscapeString(errMsg)
 	}
 
 	fmt.Fprintf(w, `<!DOCTYPE html>
@@ -294,7 +310,13 @@ func oauthStatusHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	flow := flowVal.(*oauthFlowState)
+	flow, ok := flowVal.(*oauthFlowState)
+	if !ok {
+		json.NewEncoder(w).Encode(map[string]string{"status": "expired"})
+		pendingFlows.Delete(state)
+		return
+	}
+
 	if !flow.Completed {
 		json.NewEncoder(w).Encode(map[string]string{"status": "pending"})
 		return
@@ -323,7 +345,15 @@ async function startOAuth() {
   const resp = await fetch('/auth/start', { method: 'POST' });
   const { state } = await resp.json();
 
+  let attempts = 0;
+  const maxAttempts = 120; // stop after 2 minutes
+
   const poll = setInterval(async () => {
+    if (++attempts > maxAttempts) {
+      clearInterval(poll);
+      return;
+    }
+
     const status = await fetch(`/auth/status?state=${state}`);
     const result = await status.json();
 
