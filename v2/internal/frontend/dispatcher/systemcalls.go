@@ -46,6 +46,8 @@ func (d *Dispatcher) processSystemCall(payload callMessage, sender frontend.Fron
 		return sender.WindowIsFullscreen(), nil
 	case "Environment":
 		return runtime.Environment(d.ctx), nil
+	case "ProductInfo":
+		return runtime.ProductInfo(d.ctx), nil
 	case "ClipboardGetText":
 		t, err := sender.ClipboardGetText()
 		return t, err
