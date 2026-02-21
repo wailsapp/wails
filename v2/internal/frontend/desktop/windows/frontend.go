@@ -951,6 +951,14 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 		win32.ShowWindow(f.mainWindow.Handle())
 	}
 
+		// Ensure initial keyboard focus goes into the WebView so typing works without a click.
+	if !f.frontendOptions.StartHidden && f.frontendOptions.WindowStartState != options.Minimised {
+		if ctrl := f.chromium.GetController(); ctrl != nil {
+			_ = ctrl.MoveFocus(edge.COREWEBVIEW2_MOVE_FOCUS_REASON_PROGRAMMATIC)
+			// _ = ctrl.MoveFocus(0)
+		}
+	}
+
 	f.mainWindow.hasBeenShown = true
 
 }
