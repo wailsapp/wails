@@ -20,6 +20,8 @@ func (w *iosWebContentsView) setURL(url string)     {}
 func (w *iosWebContentsView) execJS(js string)      {}
 func (w *iosWebContentsView) goBack() {}
 func (w *iosWebContentsView) getURL() string { return "" }
+func (w *iosWebContentsView) takeSnapshot() string { return "" }
+
 
 func (w *iosWebContentsView) attach(window application.Window) {}
 func (w *iosWebContentsView) detach() {}

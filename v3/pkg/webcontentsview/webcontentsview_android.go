@@ -20,6 +20,8 @@ func (w *androidWebContentsView) setURL(url string)     {}
 func (w *androidWebContentsView) execJS(js string)      {}
 func (w *androidWebContentsView) goBack() {}
 func (w *androidWebContentsView) getURL() string { return "" }
+func (w *androidWebContentsView) takeSnapshot() string { return "" }
+
 
 func (w *androidWebContentsView) attach(window application.Window) {}
 func (w *androidWebContentsView) detach() {}

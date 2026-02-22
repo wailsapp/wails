@@ -45,6 +45,10 @@ func (v *WebContentsView) SetURL(url string) {
 }
 
 // ExecJS executes the given javascript in the WebContentsView.
+func (v *WebContentsView) ExecJS(js string) {
+	v.impl.execJS(js)
+}
+
 // GoBack navigates to the previous page in history.
 func (v *WebContentsView) GoBack() {
 	v.impl.goBack()
@@ -55,8 +59,9 @@ func (v *WebContentsView) GetURL() string {
 	return v.impl.getURL()
 }
 
-func (v *WebContentsView) ExecJS(js string) {
-	v.impl.execJS(js)
+// TakeSnapshot returns a base64 encoded PNG of the current view.
+func (v *WebContentsView) TakeSnapshot() string {
+	return v.impl.takeSnapshot()
 }
 
 // Attach binds the WebContentsView to a Wails Window.
@@ -76,7 +81,7 @@ type webContentsViewImpl interface {
 	execJS(js string)
 	goBack()
 	getURL() string
-
+	takeSnapshot() string
 	attach(window application.Window)
 	detach()
 	nativeView() unsafe.Pointer
