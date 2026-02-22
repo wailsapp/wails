@@ -45,6 +45,16 @@ func (v *WebContentsView) SetURL(url string) {
 }
 
 // ExecJS executes the given javascript in the WebContentsView.
+// GoBack navigates to the previous page in history.
+func (v *WebContentsView) GoBack() {
+	v.impl.goBack()
+}
+
+// GetURL returns the current URL of the view.
+func (v *WebContentsView) GetURL() string {
+	return v.impl.getURL()
+}
+
 func (v *WebContentsView) ExecJS(js string) {
 	v.impl.execJS(js)
 }
@@ -64,6 +74,9 @@ type webContentsViewImpl interface {
 	setBounds(bounds application.Rect)
 	setURL(url string)
 	execJS(js string)
+	goBack()
+	getURL() string
+
 	attach(window application.Window)
 	detach()
 	nativeView() unsafe.Pointer

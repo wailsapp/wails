@@ -86,3 +86,30 @@ void windowRemoveWebContentsView(void* nsWindow, void* view) {
     WKWebView* webView = (WKWebView*)view;
     [webView removeFromSuperview];
 }
+
+void webContentsViewGoBack(void* view) {
+    WKWebView* webView = (WKWebView*)view;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([webView canGoBack]) {
+            [webView goBack];
+        }
+    });
+}
+
+const char* webContentsViewGetURL(void* view) {
+    __block const char* result = NULL;
+    WKWebView* webView = (WKWebView*)view;
+    
+    if ([NSThread isMainThread]) {
+        if (webView.URL != nil) {
+            result = strdup(webView.URL.absoluteString.UTF8String);
+        }
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            if (webView.URL != nil) {
+                result = strdup(webView.URL.absoluteString.UTF8String);
+            }
+        });
+    }
+    return result;
+}

@@ -28,3 +28,5 @@ extern void windowAddWebContentsView(void* nsWindow, void* view);
 extern void windowRemoveWebContentsView(void* nsWindow, void* view);
 
 #endif /* webcontentsview_darwin_h */
+extern void webContentsViewGoBack(void* view);
+extern const char* webContentsViewGetURL(void* view);
