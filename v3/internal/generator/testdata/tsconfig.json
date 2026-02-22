@@ -1,0 +1,41 @@
+{
+  "include": [
+    "output/**/*.js",
+    "output/**/*.ts"
+  ],
+  "exclude": [
+    "output/**/*.d.ts",
+    "output/**/*.got.?s"
+  ],
+  "references": [
+    { "path": "../../runtime/desktop/@wailsio/runtime" }
+  ],
+  "compilerOptions": {
+    "allowJs": true,
+
+    "noEmit": true,
+    "skipLibCheck": false,
+
+    "target": "ES2015",
+    "module": "ES2015",
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+
+    "lib": [
+      "DOM",
+      "ESNext"
+    ],
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+
+    "paths": {
+      "/wails/runtime.js": ["../../runtime/desktop/@wailsio/runtime"]
+    }
+  }
+}
