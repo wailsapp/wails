@@ -30,11 +30,11 @@ void* createWebContentsView(int x, int y, int w, int h, WebContentsViewPreferenc
 
     WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
     [webView setValue:@(NO) forKey:@"drawsTransparentBackground"];
+    
     if (prefs.userAgent != NULL) {
         NSString* customUA = [NSString stringWithUTF8String:prefs.userAgent];
         [webView setCustomUserAgent:customUA];
     }
-
     
     return webView;
 }
@@ -44,7 +44,6 @@ void webContentsViewSetBounds(void* view, int x, int y, int w, int h) {
     NSView* superview = [webView superview];
     
     if (superview != nil) {
-        // macOS standard coordinates: 0,0 is bottom-left
         CGFloat superHeight = superview.bounds.size.height;
         CGFloat cocoaY = superHeight - y - h;
         [webView setFrame:NSMakeRect(x, cocoaY, w, h)];
@@ -73,11 +72,7 @@ void webContentsViewExecJS(void* view, const char* js) {
 void windowAddWebContentsView(void* nsWindow, void* view) {
     NSWindow* window = (NSWindow*)nsWindow;
     WKWebView* webView = (WKWebView*)view;
-    
-    // Add directly to the window's root view so we avoid clipping issues
     [window.contentView addSubview:webView];
-    
-    // Force to front by giving it a high zPosition
     [webView setWantsLayer:YES];
     webView.layer.zPosition = 9999.0;
 }
@@ -112,4 +107,62 @@ const char* webContentsViewGetURL(void* view) {
         });
     }
     return result;
+}
+
+extern void browserViewSnapshotCallback(uintptr_t callbackID, const char* base64);
+
+void webContentsViewTakeSnapshot(void* view, uintptr_t callbackID) {
+    WKWebView* webView = (WKWebView*)view;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        @try {
+            if (@available(macOS 10.13, *)) {
+                WKSnapshotConfiguration *config = [[WKSnapshotConfiguration alloc] init];
+                [webView takeSnapshotWithConfiguration:config completionHandler:^(NSImage *image, NSError *error) {
+                    if (error != nil || image == nil) {
+                        browserViewSnapshotCallback(callbackID, NULL);
+                        return;
+                    }
+                    
+                    @try {
+                        CGImageRef cgRef = [image CGImageForProposedRect:NULL context:nil hints:nil];
+                        if (cgRef == NULL) {
+                            browserViewSnapshotCallback(callbackID, NULL);
+                            return;
+                        }
+                        
+                        NSBitmapImageRep *newRep = [[NSBitmapImageRep alloc] initWithCGImage:cgRef];
+                        if (newRep == nil) {
+                            browserViewSnapshotCallback(callbackID, NULL);
+                            return;
+                        }
+                        
+                        [newRep setSize:[image size]];
+                        NSData *pngData = [newRep representationUsingType:NSBitmapImageFileTypePNG properties:@{}];
+                        
+                        if (pngData == nil) {
+                            browserViewSnapshotCallback(callbackID, NULL);
+                            return;
+                        }
+                        
+                        NSString *base64String = [pngData base64EncodedStringWithOptions:0];
+                        if (base64String == nil) {
+                            browserViewSnapshotCallback(callbackID, NULL);
+                            return;
+                        }
+                        
+                        NSString *fullBase64 = [NSString stringWithFormat:@"data:image/png;base64,%@", base64String];
+                        browserViewSnapshotCallback(callbackID, [fullBase64 UTF8String]);
+                    } @catch (NSException *innerException) {
+                        NSLog(@"Error processing snapshot image: %@", innerException.reason);
+                        browserViewSnapshotCallback(callbackID, NULL);
+                    }
+                }];
+            } else {
+                browserViewSnapshotCallback(callbackID, NULL);
+            }
+        } @catch (NSException *e) {
+            NSLog(@"Exception in snapshot configuration: %@", e.reason);
+            browserViewSnapshotCallback(callbackID, NULL);
+        }
+    });
 }

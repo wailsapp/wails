@@ -78,6 +78,15 @@ func (w *macosWebContentsView) goBack() {
 	C.webContentsViewGoBack(w.nsView)
 }
 
+func (w *macosWebContentsView) takeSnapshot() string {
+	ch := make(chan string, 1)
+	id := registerSnapshotCallback(ch)
+	application.InvokeSync(func() {
+		C.webContentsViewTakeSnapshot(w.nsView, C.uintptr_t(id))
+	})
+	return <-ch
+}
+
 func (w *macosWebContentsView) getURL() string {
 	cUrl := C.webContentsViewGetURL(w.nsView)
 	if cUrl == nil {
@@ -109,4 +118,13 @@ func (w *macosWebContentsView) detach() {
 
 func (w *macosWebContentsView) nativeView() unsafe.Pointer {
 	return w.nsView
+}
+//export browserViewSnapshotCallback
+func browserViewSnapshotCallback(callbackID C.uintptr_t, base64 *C.char) {
+    id := uintptr(callbackID)
+    str := ""
+    if base64 != nil {
+        str = C.GoString(base64)
+    }
+    dispatchSnapshotResult(id, str)
 }

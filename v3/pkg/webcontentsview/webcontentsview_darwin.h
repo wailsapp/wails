@@ -23,10 +23,13 @@ extern void* createWebContentsView(int x, int y, int w, int h, WebContentsViewPr
 extern void webContentsViewSetBounds(void* view, int x, int y, int w, int h);
 extern void webContentsViewSetURL(void* view, const char* url);
 extern void webContentsViewExecJS(void* view, const char* js);
+extern void webContentsViewGoBack(void* view);
+extern const char* webContentsViewGetURL(void* view);
 
 extern void windowAddWebContentsView(void* nsWindow, void* view);
 extern void windowRemoveWebContentsView(void* nsWindow, void* view);
 
+// Async snapshot
+extern void webContentsViewTakeSnapshot(void* view, uintptr_t callbackID);
+
 #endif /* webcontentsview_darwin_h */
-extern void webContentsViewGoBack(void* view);
-extern const char* webContentsViewGetURL(void* view);

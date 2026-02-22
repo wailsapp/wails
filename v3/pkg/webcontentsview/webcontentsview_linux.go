@@ -115,6 +115,11 @@ func (w *linuxWebContentsView) goBack() {
 func (w *linuxWebContentsView) getURL() string {
 	return ""
 }
+func (w *linuxWebContentsView) takeSnapshot() string {
+	return ""
+
+	return ""
+}
 
 func (w *linuxWebContentsView) execJS(js string) {
 	cJs := C.CString(js)
