@@ -45,4 +45,7 @@ type WebPreferences struct {
 	
 	// DefaultEncoding sets the default character encoding. Default is "UTF-8".
 	DefaultEncoding string
+	// UserAgent sets a custom user agent for the webview.
+	UserAgent string
+
 }

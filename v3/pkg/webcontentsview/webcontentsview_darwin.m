@@ -30,6 +30,11 @@ void* createWebContentsView(int x, int y, int w, int h, WebContentsViewPreferenc
 
     WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
     [webView setValue:@(NO) forKey:@"drawsTransparentBackground"];
+    if (prefs.userAgent != NULL) {
+        NSString* customUA = [NSString stringWithUTF8String:prefs.userAgent];
+        [webView setCustomUserAgent:customUA];
+    }
+
     
     return webView;
 }

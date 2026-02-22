@@ -21,7 +21,12 @@ type macosWebContentsView struct {
 }
 
 func newWebContentsViewImpl(parent *WebContentsView) webContentsViewImpl {
-	// Setup preferences
+	var cUserAgent *C.char
+	if parent.options.WebPreferences.UserAgent != "" {
+		cUserAgent = C.CString(parent.options.WebPreferences.UserAgent)
+		defer C.free(unsafe.Pointer(cUserAgent))
+	}
+
 	prefs := C.WebContentsViewPreferences{
 		devTools:                 C.bool(parent.options.WebPreferences.DevTools != application.Disabled),
 		javascript:               C.bool(parent.options.WebPreferences.Javascript != application.Disabled),
@@ -32,6 +37,7 @@ func newWebContentsViewImpl(parent *WebContentsView) webContentsViewImpl {
 		defaultFontSize:          C.int(parent.options.WebPreferences.DefaultFontSize),
 		defaultMonospaceFontSize: C.int(parent.options.WebPreferences.DefaultMonospaceFontSize),
 		minimumFontSize:          C.int(parent.options.WebPreferences.MinimumFontSize),
+		userAgent:                cUserAgent,
 	}
 
 	if prefs.zoomFactor == 0 {

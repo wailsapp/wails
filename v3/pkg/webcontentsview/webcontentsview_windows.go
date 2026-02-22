@@ -24,7 +24,6 @@ func newWebContentsViewImpl(parent *WebContentsView) webContentsViewImpl {
 		chromium: chromium,
 	}
 	
-	// Default preferences based on the parent's options
 	settings, err := chromium.GetSettings()
 	if err == nil {
 		if parent.options.WebPreferences.DevTools != application.Disabled {
@@ -43,6 +42,10 @@ func newWebContentsViewImpl(parent *WebContentsView) webContentsViewImpl {
 		
 		if parent.options.WebPreferences.ZoomFactor > 0 {
 			chromium.PutZoomFactor(parent.options.WebPreferences.ZoomFactor)
+		}
+
+		if parent.options.WebPreferences.UserAgent != "" {
+			settings.PutUserAgent(parent.options.WebPreferences.UserAgent)
 		}
 	}
 
