@@ -15,6 +15,8 @@ typedef struct {
     int defaultFontSize;
     int defaultMonospaceFontSize;
     int minimumFontSize;
+    const char* userAgent;
+
 } WebContentsViewPreferences;
 
 extern void* createWebContentsView(int x, int y, int w, int h, WebContentsViewPreferences prefs);
