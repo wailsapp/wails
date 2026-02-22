@@ -18,6 +18,9 @@ func newWebContentsViewImpl(parent *WebContentsView) webContentsViewImpl {
 func (w *androidWebContentsView) setBounds(bounds application.Rect) {}
 func (w *androidWebContentsView) setURL(url string)     {}
 func (w *androidWebContentsView) execJS(js string)      {}
+func (w *androidWebContentsView) goBack() {}
+func (w *androidWebContentsView) getURL() string { return "" }
+
 func (w *androidWebContentsView) attach(window application.Window) {}
 func (w *androidWebContentsView) detach() {}
 func (w *androidWebContentsView) nativeView() unsafe.Pointer { return nil }

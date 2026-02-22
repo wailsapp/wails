@@ -70,6 +70,19 @@ func (w *windowsWebContentsView) setURL(url string) {
 	}
 }
 
+func (w *windowsWebContentsView) goBack() {
+	if w.chromium != nil {
+		// w.chromium.GoBack() // Requires wrapping edge GoBack if available, or just execJS
+		w.execJS("window.history.back();")
+	}
+}
+
+func (w *windowsWebContentsView) getURL() string {
+	// Synchronous URL reading isn't trivial without a dedicated edge mapping, 
+	// returning last known or empty for now.
+	return w.parent.options.URL
+}
+
 func (w *windowsWebContentsView) execJS(js string) {
 	if w.chromium != nil {
 		w.chromium.Eval(js)

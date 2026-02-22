@@ -108,6 +108,14 @@ func (w *linuxWebContentsView) setURL(url string) {
 	C.webContentsViewSetURL_linux(w.widget, cUrl)
 }
 
+func (w *linuxWebContentsView) goBack() {
+	// TODO: webkit_web_view_go_back
+}
+
+func (w *linuxWebContentsView) getURL() string {
+	return ""
+}
+
 func (w *linuxWebContentsView) execJS(js string) {
 	cJs := C.CString(js)
 	defer C.free(unsafe.Pointer(cJs))

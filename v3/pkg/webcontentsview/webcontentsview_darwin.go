@@ -74,6 +74,19 @@ func (w *macosWebContentsView) setURL(url string) {
 	C.webContentsViewSetURL(w.nsView, cUrl)
 }
 
+func (w *macosWebContentsView) goBack() {
+	C.webContentsViewGoBack(w.nsView)
+}
+
+func (w *macosWebContentsView) getURL() string {
+	cUrl := C.webContentsViewGetURL(w.nsView)
+	if cUrl == nil {
+		return ""
+	}
+	defer C.free(unsafe.Pointer(cUrl))
+	return C.GoString(cUrl)
+}
+
 func (w *macosWebContentsView) execJS(js string) {
 	cJs := C.CString(js)
 	defer C.free(unsafe.Pointer(cJs))
