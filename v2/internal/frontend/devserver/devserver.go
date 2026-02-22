@@ -20,22 +20,16 @@ import (
 
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 
-	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"golang.org/x/net/websocket"
 )
 
 type Screen = frontend.Screen
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin:     func(r *http.Request) bool { return true },
-}
 
 type DevWebServer struct {
 	server           *echo.Echo
@@ -161,64 +155,51 @@ func (d *DevWebServer) handleReloadApp(c echo.Context) error {
 }
 
 func (d *DevWebServer) handleIPCWebSocket(c echo.Context) error {
-	conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
-	if err != nil {
-		d.logger.Error("WebSocket upgrade failed %v", err)
-		return err
-	}
-	d.LogDebug(fmt.Sprintf("WebSocket client %p connected", conn))
-
-	d.socketMutex.Lock()
-	d.websocketClients[conn] = &sync.Mutex{}
-	locker := d.websocketClients[conn]
-	d.socketMutex.Unlock()
-
-	var wg sync.WaitGroup
-
-	defer func() {
-		wg.Wait()
+	websocket.Handler(func(c *websocket.Conn) {
+		d.LogDebug(fmt.Sprintf("Websocket client %p connected", c))
 		d.socketMutex.Lock()
-		delete(d.websocketClients, conn)
+		d.websocketClients[c] = &sync.Mutex{}
+		locker := d.websocketClients[c]
 		d.socketMutex.Unlock()
-		d.LogDebug(fmt.Sprintf("WebSocket client %p disconnected", conn))
-		conn.Close()
-	}()
 
-	for {
-		_, msgBytes, err := conn.ReadMessage()
-		if err != nil {
-			break
-		}
+		defer func() {
+			d.socketMutex.Lock()
+			delete(d.websocketClients, c)
+			d.socketMutex.Unlock()
+			d.LogDebug(fmt.Sprintf("Websocket client %p disconnected", c))
+		}()
 
-		msg := string(msgBytes)
-		wg.Add(1)
-
-		go func(m string) {
-			defer wg.Done()
-
-			if m == "drag" {
-				return
+		var msg string
+		defer c.Close()
+		for {
+			if err := websocket.Message.Receive(c, &msg); err != nil {
+				break
+			}
+			// We do not support drag in browsers
+			if msg == "drag" {
+				continue
 			}
 
-			if len(m) > 2 && strings.HasPrefix(m, "EE") {
-				d.notifyExcludingSender([]byte(m), conn)
+			// Notify the other browsers of "EventEmit"
+			if len(msg) > 2 && strings.HasPrefix(string(msg), "EE") {
+				d.notifyExcludingSender([]byte(msg), c)
 			}
 
-			result, err := d.dispatcher.ProcessMessage(m, d)
+			// Send the message to dispatch to the frontend
+			result, err := d.dispatcher.ProcessMessage(string(msg), d)
 			if err != nil {
 				d.logger.Error(err.Error())
 			}
-
 			if result != "" {
 				locker.Lock()
-				defer locker.Unlock()
-				if err := conn.WriteMessage(websocket.TextMessage, []byte(result)); err != nil {
-					d.logger.Error("Websocket write message failed %v", err)
+				if err = websocket.Message.Send(c, result); err != nil {
+					locker.Unlock()
+					break
 				}
+				locker.Unlock()
 			}
-		}(msg)
-	}
-
+		}
+	}).ServeHTTP(c.Response(), c.Request())
 	return nil
 }
 
@@ -241,7 +222,7 @@ func (d *DevWebServer) broadcast(message string) {
 				return
 			}
 			locker.Lock()
-			err := client.WriteMessage(websocket.TextMessage, []byte(message))
+			err := websocket.Message.Send(client, message)
 			if err != nil {
 				locker.Unlock()
 				d.logger.Error(err.Error())
@@ -275,7 +256,7 @@ func (d *DevWebServer) broadcastExcludingSender(message string, sender *websocke
 				return
 			}
 			locker.Lock()
-			err := client.WriteMessage(websocket.TextMessage, []byte(message))
+			err := websocket.Message.Send(client, message)
 			if err != nil {
 				locker.Unlock()
 				d.logger.Error(err.Error())

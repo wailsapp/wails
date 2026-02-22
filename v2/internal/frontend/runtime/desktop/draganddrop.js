@@ -44,27 +44,14 @@ function checkStyleDropTarget(style) {
 
 /**
  * onDragOver is called when the dragover event is emitted.
- * @param {DragEvent} e
- * @returns
+ * @param {DragEvent} e 
+ * @returns 
  */
 function onDragOver(e) {
-    // Check if this is an external file drop or internal HTML drag
-    // External file drops will have "Files" in the types array
-    // Internal HTML drags typically have "text/plain", "text/html" or custom types
-    const isFileDrop = e.dataTransfer.types.includes("Files");
-
-    // Only handle external file drops, let internal HTML5 drag-and-drop work normally
-    if (!isFileDrop) {
-        return;
-    }
-
-    // ALWAYS prevent default for file drops to stop browser navigation
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
-
     if (!window.wails.flags.enableWailsDragAndDrop) {
         return;
     }
+    e.preventDefault();
 
     if (!flags.useDropTarget) {
         return;
@@ -83,7 +70,7 @@ function onDragOver(e) {
     let currentElement = element;
     while (currentElement) {
         // check if currentElement is drop target element
-        if (checkStyleDropTarget(getComputedStyle(currentElement))) {
+        if (checkStyleDropTarget(currentElement.style)) {
             currentElement.classList.add(DROP_TARGET_ACTIVE);
         }
         currentElement = currentElement.parentElement;
@@ -92,24 +79,14 @@ function onDragOver(e) {
 
 /**
  * onDragLeave is called when the dragleave event is emitted.
- * @param {DragEvent} e
- * @returns
+ * @param {DragEvent} e 
+ * @returns 
  */
 function onDragLeave(e) {
-    // Check if this is an external file drop or internal HTML drag
-    const isFileDrop = e.dataTransfer.types.includes("Files");
-
-    // Only handle external file drops, let internal HTML5 drag-and-drop work normally
-    if (!isFileDrop) {
-        return;
-    }
-
-    // ALWAYS prevent default for file drops to stop browser navigation
-    e.preventDefault();
-
     if (!window.wails.flags.enableWailsDragAndDrop) {
         return;
     }
+    e.preventDefault();
 
     if (!flags.useDropTarget) {
         return;
@@ -144,24 +121,24 @@ function onDragLeave(e) {
 
 /**
  * onDrop is called when the drop event is emitted.
- * @param {DragEvent} e
- * @returns
+ * @param {DragEvent} e 
+ * @returns 
  */
 function onDrop(e) {
-    // Check if this is an external file drop or internal HTML drag
-    const isFileDrop = e.dataTransfer.types.includes("Files");
-
-    // Only handle external file drops, let internal HTML5 drag-and-drop work normally
-    if (!isFileDrop) {
-        return;
-    }
-
-    // ALWAYS prevent default for file drops to stop browser navigation
-    e.preventDefault();
-
     if (!window.wails.flags.enableWailsDragAndDrop) {
         return;
     }
+    e.preventDefault();
+
+    if (!flags.useDropTarget) {
+        return;
+    }
+
+    // Trigger debounce function to deactivate drop targets
+    if(flags.nextDeactivate) flags.nextDeactivate();
+
+    // Deactivate all drop targets
+    Array.from(document.getElementsByClassName(DROP_TARGET_ACTIVE)).forEach(el => el.classList.remove(DROP_TARGET_ACTIVE));
 
     if (CanResolveFilePaths()) {
         // process files
@@ -177,16 +154,6 @@ function onDrop(e) {
         }
         window.runtime.ResolveFilePaths(e.x, e.y, files);
     }
-
-    if (!flags.useDropTarget) {
-        return;
-    }
-
-    // Trigger debounce function to deactivate drop targets
-    if(flags.nextDeactivate) flags.nextDeactivate();
-
-    // Deactivate all drop targets
-    Array.from(document.getElementsByClassName(DROP_TARGET_ACTIVE)).forEach(el => el.classList.remove(DROP_TARGET_ACTIVE));
 }
 
 /**

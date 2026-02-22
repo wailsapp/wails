@@ -1,0 +1,735 @@
+---
+title: Data Models
+description: Bind complex data structures between Go and JavaScript
+sidebar:
+  order: 3
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Data Model Bindings
+
+Wails **automatically generates JavaScript/TypeScript classes** from Go structs, providing full type safety when passing complex data between backend and frontend. Write Go structs, generate bindings, and get fully-typed frontend models complete with constructors, type annotations, and JSDoc comments.
+
+## Quick Start
+
+**Go struct:**
+
+```go
+type User struct {
+    ID        int       `json:"id"`
+    Name      string    `json:"name"`
+    Email     string    `json:"email"`
+    CreatedAt time.Time `json:"createdAt"`
+}
+
+func (s *UserService) GetUser(id int) (*User, error) {
+    // Return user
+}
+```
+
+**Generate:**
+
+```bash
+wails3 generate bindings
+```
+
+**JavaScript:**
+
+```javascript
+import { GetUser } from './bindings/myapp/userservice'
+import { User } from './bindings/myapp/models'
+
+const user = await GetUser(1)
+console.log(user.Name)  // Type-safe!
+```
+
+**That's it!** Full type safety across the bridge.
+
+## Defining Models
+
+### Basic Struct
+
+```go
+type Person struct {
+    Name string
+    Age  int
+}
+```
+
+**Generated JavaScript:**
+
+```javascript
+export class Person {
+    /** @type {string} */
+    Name = ""
+    
+    /** @type {number} */
+    Age = 0
+    
+    constructor(source = {}) {
+        Object.assign(this, source)
+    }
+    
+    static createFrom(source = {}) {
+        return new Person(source)
+    }
+}
+```
+
+### With JSON Tags
+
+```go
+type User struct {
+    ID        int       `json:"id"`
+    Name      string    `json:"name"`
+    Email     string    `json:"email"`
+    CreatedAt time.Time `json:"createdAt"`
+}
+```
+
+**Generated JavaScript:**
+
+```javascript
+export class User {
+    /** @type {number} */
+    id = 0
+    
+    /** @type {string} */
+    name = ""
+    
+    /** @type {string} */
+    email = ""
+    
+    /** @type {Date} */
+    createdAt = new Date()
+    
+    constructor(source = {}) {
+        Object.assign(this, source)
+    }
+}
+```
+
+**JSON tags control field names** in JavaScript.
+
+### With Comments
+
+```go
+// User represents an application user
+type User struct {
+    // Unique identifier
+    ID int `json:"id"`
+    
+    // Full name of the user
+    Name string `json:"name"`
+    
+    // Email address (must be unique)
+    Email string `json:"email"`
+}
+```
+
+**Generated JavaScript:**
+
+```javascript
+/**
+ * User represents an application user
+ */
+export class User {
+    /**
+     * Unique identifier
+     * @type {number}
+     */
+    id = 0
+    
+    /**
+     * Full name of the user
+     * @type {string}
+     */
+    name = ""
+    
+    /**
+     * Email address (must be unique)
+     * @type {string}
+     */
+    email = ""
+}
+```
+
+**Comments become JSDoc!** Your IDE shows them.
+
+### Nested Structs
+
+```go
+type Address struct {
+    Street  string `json:"street"`
+    City    string `json:"city"`
+    Country string `json:"country"`
+}
+
+type User struct {
+    ID      int     `json:"id"`
+    Name    string  `json:"name"`
+    Address Address `json:"address"`
+}
+```
+
+**Generated JavaScript:**
+
+```javascript
+export class Address {
+    /** @type {string} */
+    street = ""
+    
+    /** @type {string} */
+    city = ""
+    
+    /** @type {string} */
+    country = ""
+}
+
+export class User {
+    /** @type {number} */
+    id = 0
+    
+    /** @type {string} */
+    name = ""
+    
+    /** @type {Address} */
+    address = new Address()
+}
+```
+
+**Usage:**
+
+```javascript
+const user = new User({
+    id: 1,
+    name: "Alice",
+    address: new Address({
+        street: "123 Main St",
+        city: "Springfield",
+        country: "USA"
+    })
+})
+```
+
+### Arrays and Slices
+
+```go
+type Team struct {
+    Name    string   `json:"name"`
+    Members []string `json:"members"`
+}
+```
+
+**Generated JavaScript:**
+
+```javascript
+export class Team {
+    /** @type {string} */
+    name = ""
+    
+    /** @type {string[]} */
+    members = []
+}
+```
+
+**Usage:**
+
+```javascript
+const team = new Team({
+    name: "Engineering",
+    members: ["Alice", "Bob", "Charlie"]
+})
+```
+
+### Maps
+
+```go
+type Config struct {
+    Settings map[string]string `json:"settings"`
+}
+```
+
+**Generated JavaScript:**
+
+```javascript
+export class Config {
+    /** @type {Record<string, string>} */
+    settings = {}
+}
+```
+
+**Usage:**
+
+```javascript
+const config = new Config({
+    settings: {
+        theme: "dark",
+        language: "en"
+    }
+})
+```
+
+## Type Mapping
+
+### Primitive Types
+
+| Go Type | JavaScript Type |
+|---------|----------------|
+| `string` | `string` |
+| `bool` | `boolean` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `number` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `number` |
+| `float32`, `float64` | `number` |
+| `byte` | `number` |
+| `rune` | `number` |
+
+### Special Types
+
+| Go Type | JavaScript Type |
+|---------|----------------|
+| `time.Time` | `Date` |
+| `[]byte` | `Uint8Array` |
+| `*T` | `T` (pointers transparent) |
+| `interface{}` | `any` |
+
+### Collections
+
+| Go Type | JavaScript Type |
+|---------|----------------|
+| `[]T` | `T[]` |
+| `[N]T` | `T[]` |
+| `map[string]T` | `Record<string, T>` |
+| `map[K]V` | `Map<K, V>` |
+
+### Unsupported Types
+
+- `chan T` (channels)
+- `func()` (functions)
+- Complex interfaces (except `interface{}`)
+- Unexported fields (lowercase)
+
+## Using Models
+
+### Creating Instances
+
+```javascript
+import { User } from './bindings/myapp/models'
+
+// Empty instance
+const user1 = new User()
+
+// With data
+const user2 = new User({
+    id: 1,
+    name: "Alice",
+    email: "alice@example.com"
+})
+
+// From JSON string
+const user3 = User.createFrom('{"id":1,"name":"Alice"}')
+
+// From object
+const user4 = User.createFrom({ id: 1, name: "Alice" })
+```
+
+### Passing to Go
+
+```javascript
+import { CreateUser } from './bindings/myapp/userservice'
+import { User } from './bindings/myapp/models'
+
+const user = new User({
+    name: "Bob",
+    email: "bob@example.com"
+})
+
+const created = await CreateUser(user)
+console.log("Created user:", created.id)
+```
+
+### Receiving from Go
+
+```javascript
+import { GetUser } from './bindings/myapp/userservice'
+
+const user = await GetUser(1)
+
+// user is already a User instance
+console.log(user.name)
+console.log(user.email)
+console.log(user.createdAt.toISOString())
+```
+
+### Updating Models
+
+```javascript
+import { GetUser, UpdateUser } from './bindings/myapp/userservice'
+
+// Get user
+const user = await GetUser(1)
+
+// Modify
+user.name = "Alice Smith"
+user.email = "alice.smith@example.com"
+
+// Save
+await UpdateUser(user)
+```
+
+## TypeScript Support
+
+### Generated TypeScript
+
+```bash
+wails3 generate bindings -ts
+```
+
+**Generated:**
+
+```typescript
+/**
+ * User represents an application user
+ */
+export class User {
+    /**
+     * Unique identifier
+     */
+    id: number = 0
+    
+    /**
+     * Full name of the user
+     */
+    name: string = ""
+    
+    /**
+     * Email address (must be unique)
+     */
+    email: string = ""
+    
+    /**
+     * Account creation date
+     */
+    createdAt: Date = new Date()
+    
+    constructor(source: Partial<User> = {}) {
+        Object.assign(this, source)
+    }
+    
+    static createFrom(source: string | Partial<User> = {}): User {
+        const parsedSource = typeof source === 'string' 
+            ? JSON.parse(source) 
+            : source
+        return new User(parsedSource)
+    }
+}
+```
+
+### Usage in TypeScript
+
+```typescript
+import { GetUser, CreateUser } from './bindings/myapp/userservice'
+import { User } from './bindings/myapp/models'
+
+async function example() {
+    // Create user
+    const newUser = new User({
+        name: "Alice",
+        email: "alice@example.com"
+    })
+    
+    const created: User = await CreateUser(newUser)
+    
+    // Get user
+    const user: User = await GetUser(created.id)
+    
+    // Type-safe access
+    console.log(user.name.toUpperCase())  // ✅ string method
+    console.log(user.id + 1)              // ✅ number operation
+    console.log(user.createdAt.getTime()) // ✅ Date method
+}
+```
+
+## Advanced Patterns
+
+### Optional Fields
+
+```go
+type User struct {
+    ID       int     `json:"id"`
+    Name     string  `json:"name"`
+    Nickname *string `json:"nickname,omitempty"`
+}
+```
+
+**JavaScript:**
+
+```javascript
+const user = new User({
+    id: 1,
+    name: "Alice",
+    nickname: "Ally"  // Optional
+})
+
+// Check if set
+if (user.nickname) {
+    console.log("Nickname:", user.nickname)
+}
+```
+
+### Enums
+
+The binding generator automatically detects Go named types with constants and generates TypeScript enums or JavaScript const objects — including a `$zero` member for Go's zero value and full JSDoc preservation.
+
+```go
+type UserRole string
+
+const (
+    RoleAdmin UserRole = "admin"
+    RoleUser  UserRole = "user"
+    RoleGuest UserRole = "guest"
+)
+```
+
+**Generated TypeScript:**
+
+```typescript
+export enum UserRole {
+    $zero = "",
+    RoleAdmin = "admin",
+    RoleUser = "user",
+    RoleGuest = "guest",
+}
+```
+
+**Usage:**
+
+```javascript
+import { User, UserRole } from './bindings/myapp/models'
+
+const admin = new User({
+    name: "Admin",
+    role: UserRole.RoleAdmin
+})
+```
+
+For comprehensive coverage of string enums, integer enums, type aliases, imported package enums, and limitations, see the dedicated **[Enums](/features/bindings/enums)** page.
+
+### Validation
+
+```javascript
+class User {
+    validate() {
+        if (!this.name) {
+            throw new Error("Name is required")
+        }
+        if (!this.email.includes('@')) {
+            throw new Error("Invalid email")
+        }
+        return true
+    }
+}
+
+// Use
+const user = new User({ name: "Alice", email: "alice@example.com" })
+user.validate()  // ✅
+
+const invalid = new User({ name: "", email: "invalid" })
+invalid.validate()  // ❌ Throws
+```
+
+### Serialisation
+
+```javascript
+// To JSON
+const json = JSON.stringify(user)
+
+// From JSON
+const user = User.createFrom(json)
+
+// To plain object
+const obj = { ...user }
+
+// From plain object
+const user2 = new User(obj)
+```
+
+## Complete Example
+
+**Go:**
+
+```go
+package main
+
+import (
+    "time"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type Address struct {
+    Street  string `json:"street"`
+    City    string `json:"city"`
+    Country string `json:"country"`
+}
+
+type User struct {
+    ID        int       `json:"id"`
+    Name      string    `json:"name"`
+    Email     string    `json:"email"`
+    Address   Address   `json:"address"`
+    CreatedAt time.Time `json:"createdAt"`
+}
+
+type UserService struct {
+    users []User
+}
+
+func (s *UserService) GetAll() []User {
+    return s.users
+}
+
+func (s *UserService) GetByID(id int) (*User, error) {
+    for _, user := range s.users {
+        if user.ID == id {
+            return &user, nil
+        }
+    }
+    return nil, fmt.Errorf("user %d not found", id)
+}
+
+func (s *UserService) Create(user User) User {
+    user.ID = len(s.users) + 1
+    user.CreatedAt = time.Now()
+    s.users = append(s.users, user)
+    return user
+}
+
+func (s *UserService) Update(user User) error {
+    for i, u := range s.users {
+        if u.ID == user.ID {
+            s.users[i] = user
+            return nil
+        }
+    }
+    return fmt.Errorf("user %d not found", user.ID)
+}
+
+func main() {
+    app := application.New(application.Options{
+        Services: []application.Service{
+            application.NewService(&UserService{}),
+        },
+    })
+    
+    app.Window.New()
+    app.Run()
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { GetAll, GetByID, Create, Update } from './bindings/myapp/userservice'
+import { User, Address } from './bindings/myapp/models'
+
+class UserManager {
+    async loadUsers() {
+        const users = await GetAll()
+        this.renderUsers(users)
+    }
+    
+    async createUser(name, email, address) {
+        const user = new User({
+            name,
+            email,
+            address: new Address(address)
+        })
+        
+        try {
+            const created = await Create(user)
+            console.log("Created user:", created.id)
+            this.loadUsers()
+        } catch (error) {
+            console.error("Failed to create user:", error)
+        }
+    }
+    
+    async updateUser(id, updates) {
+        try {
+            const user = await GetByID(id)
+            Object.assign(user, updates)
+            await Update(user)
+            this.loadUsers()
+        } catch (error) {
+            console.error("Failed to update user:", error)
+        }
+    }
+    
+    renderUsers(users) {
+        const list = document.getElementById('users')
+        list.innerHTML = users.map(user => `
+            <div class="user">
+                <h3>${user.name}</h3>
+                <p>${user.email}</p>
+                <p>${user.address.city}, ${user.address.country}</p>
+                <small>Created: ${user.createdAt.toLocaleDateString()}</small>
+            </div>
+        `).join('')
+    }
+}
+
+const manager = new UserManager()
+manager.loadUsers()
+```
+
+## Best Practices
+
+### ✅ Do
+
+- **Use JSON tags** - Control field names
+- **Add comments** - They become JSDoc
+- **Use time.Time** - Converts to Date
+- **Validate on Go side** - Don't trust frontend
+- **Keep models simple** - Data containers only
+- **Use pointers for optional** - `*string` for nullable
+
+### ❌ Don't
+
+- **Don't add methods to Go structs** - Keep them as data
+- **Don't use unexported fields** - Won't be bound
+- **Don't use complex interfaces** - Not supported
+- **Don't forget JSON tags** - Field names matter
+- **Don't nest too deeply** - Keep it simple
+
+## Next Steps
+
+<CardGrid>
+  <Card title="Method Bindings" icon="rocket">
+    Learn how to bind Go methods.
+    
+    [Learn More →](/features/bindings/methods)
+  </Card>
+
+  <Card title="Services" icon="puzzle">
+    Organise code with services.
+    
+    [Learn More →](/features/bindings/services)
+  </Card>
+
+  <Card title="Best Practices" icon="approve-check">
+    Binding design patterns.
+    
+    [Learn More →](/features/bindings/best-practices)
+  </Card>
+
+  <Card title="Go-Frontend Bridge" icon="star">
+    Understand the bridge mechanism.
+    
+    [Learn More →](/concepts/bridge)
+  </Card>
+</CardGrid>
+
+---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [binding examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/binding).

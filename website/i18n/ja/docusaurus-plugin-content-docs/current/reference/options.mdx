@@ -98,9 +98,7 @@ func main() {
             // OnResume is called when Windows resumes from low power mode
             OnResume: func(),
             // Disable GPU hardware acceleration for the webview
-                  WebviewGpuDisabled: false,
-                  // Class name for the window. If empty, 'wailsWindow' will be used.
-                  WindowClassName: "MyWindow",
+            WebviewGpuDisabled: false,
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -422,6 +420,18 @@ EnableFraudulentWebsiteDetectionは、マルウェアやフィッシング詐欺
 
 名前: EnableFraudulentWebsiteDetection<br/> データ型: `bool`
 
+### ZoomFactor
+
+名前: ZoomFactor<br/> データ型: `float64`
+
+WebView2の拡大率を定義します。 これは、Edgeのユーザによるズームインまたはズームアウトに対応するオプションです。
+
+### IsZoomControlEnabled
+
+名前: IsZoomControlEnabled<br/> データ型: `bool`
+
+このオプションを有効にすると、拡大率をユーザによって変更することができます。 拡大率の変更がユーザに許可されていない間は、オプションで拡大率を設定することができますのでご注意ください (例:  キオスクアプリケーションなど)。
+
 ### Bind
 
 フロントエンドにバインドする必要があるメソッドが定義された、構造体インスタンスのスライスです。
@@ -535,18 +545,6 @@ Name: CSSDropValue<br/> Type: `string`<br/> Default: `drop`
 | Acrylic | [アクリル](https://learn.microsoft.com/ja-jp/windows/apps/design/style/acrylic)の効果を使用する |
 | Mica    | [マイカ](https://learn.microsoft.com/ja-jp/windows/apps/design/style/mica)の効果を使用する     |
 | Tabbed  | タブを使用する。 これはマイカに似ている背景です。                                                           |
-
-#### ZoomFactor
-
-名前: ZoomFactor<br/> データ型: `float64`
-
-WebView2の拡大率を定義します。 これは、Edgeのユーザによるズームインまたはズームアウトに対応するオプションです。
-
-#### IsZoomControlEnabled
-
-名前: IsZoomControlEnabled<br/> データ型: `bool`
-
-このオプションを有効にすると、拡大率をユーザによって変更することができます。 拡大率の変更がユーザに許可されていない間は、オプションで拡大率を設定することができますのでご注意ください (例:  キオスクアプリケーションなど)。
 
 #### DisablePinchZoom
 
@@ -691,12 +689,6 @@ Windowsがローパワーモード(サスペンド/休止状態) から復帰し
 Setting this to `true` will enable swipe gestures for the webview.
 
 Name: EnableSwipeGestures<br/> Type: `bool`
-
-#### WindowClassName
-
-Class name for the window. If empty, 'wailsWindow' will be used.
-
-Name: WindowClassName<br/> Type: `string`
 
 ### Mac
 

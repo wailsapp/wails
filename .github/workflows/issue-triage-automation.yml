@@ -2,7 +2,7 @@ name: Issue Triage Automation
 
 on:
   issues:
-    types: [opened]
+    types: [opened, reopened, labeled, unlabeled]
 
 jobs:
   triage:

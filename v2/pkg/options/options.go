@@ -98,12 +98,6 @@ type App struct {
 
 	// DragAndDrop options for drag and drop behavior
 	DragAndDrop *DragAndDrop
-
-	// DisablePanicRecovery disables the panic recovery system in messages processing
-	DisablePanicRecovery bool
-
-	// List of additional allowed origins for bindings in format "https://*.myapp.com,https://example.com"
-	BindingsAllowedOrigins string
 }
 
 type ErrorFormatter func(error) any

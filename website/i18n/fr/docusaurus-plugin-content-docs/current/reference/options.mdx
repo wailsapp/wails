@@ -98,9 +98,7 @@ func main() {
             // OnResume is called when Windows resumes from low power mode
             OnResume: func(),
             // Disable GPU hardware acceleration for the webview
-                  WebviewGpuDisabled: false,
-                  // Class name for the window. If empty, 'wailsWindow' will be used.
-                  WindowClassName: "MyWindow",
+            WebviewGpuDisabled: false,
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -422,6 +420,18 @@ EnableFraudulentWebWebDetection permet de rechercher des contenus frauduleux, te
 
 Nom: EnableFraudulentWebsiteDetection<br/> Type: `bool`
 
+### ZoomFactor
+
+Nom: ZoomFactor<br/> Type: `float64`
+
+Ceci définit le facteur de zoom pour WebView2. Il s'agit de l'option correspondant au zoom avant ou arrière défini par l'utilisateur.
+
+### IsZoomControlEnabled
+
+Nom : IsZoomControlEnabled<br/> Type : `bool`
+
+Cela permet de modifier le facteur de zoom par l'utilisateur. Veuillez noter que le facteur de zoom peut être défini dans les options tandis que ne permet pas à l'utilisateur de le modifier à l'exécution (f.e. pour une application vitrine ou similaire).
+
 ### Bind
 
 La liste des structs Go définissant des méthodes qui doivent être liées au frontend.
@@ -535,18 +545,6 @@ La valeur peut être l'une des valeurs suivantes :
 | Acrylic | Utilisez l'effet [Acrylique](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic) |
 | Mica    | Utiliser l'effet [Mica](https://learn.microsoft.com/en-us/windows/apps/design/style/mica)         |
 | Tabbed  | Utiliser Tabbed. C'est un arrière-plan qui est similaire à Mica.                                  |
-
-#### ZoomFactor
-
-Nom: ZoomFactor<br/> Type: `float64`
-
-Ceci définit le facteur de zoom pour WebView2. Il s'agit de l'option correspondant au zoom avant ou arrière défini par l'utilisateur.
-
-#### IsZoomControlEnabled
-
-Nom : IsZoomControlEnabled<br/> Type : `bool`
-
-Cela permet de modifier le facteur de zoom par l'utilisateur. Veuillez noter que le facteur de zoom peut être défini dans les options tandis que ne permet pas à l'utilisateur de le modifier à l'exécution (f.e. pour une application vitrine ou similaire).
 
 #### DisablePinchZoom
 
@@ -691,12 +689,6 @@ Nom: WebviewGpuIsDisabled<br/> Type: `bool`
 Définir à `true` activera les gestes de balayage pour la webview.
 
 Nom: EnableSwipeGestures<br/> Type: `bool`
-
-#### WindowClassName
-
-Class name for the window. If empty, 'wailsWindow' will be used.
-
-Name: WindowClassName<br/> Type: `string`
 
 ### Mac
 
@@ -961,4 +953,4 @@ Définir cette option à `true` ouvrira l'inspecteur Web au démarrage de l'appl
 Nom: OpenInspectorOnStartup<br/> Type: `bool`
 
 [^1]: Cela nécessite la prise en charge de WebKit2GTK 2.36+ et votre application doit être construite avec la balise de compilation `webkit2_36` pour activer le support de cette fonctionnalité. Cela augmente aussi la version minnimale de WebKit2GTK à 2.36 pour votre application.
-[^2]: Cela nécessite la prise en charge de WebKit2GTK 2.40+ et votre application doit être construite avec la balise de compilation `webkit2_40` pour activer le support de cette fonctionnalité. Cela augmente aussi la version minnimale de WebKit2GTK à 2.40 pour votre application.
+[^2]: Cela nécessite la prise en charge de WebKit2GTK 2.40+ et votre application doit être construite avec la balise de compilation `webkit2_40` pour activer le support de cette fonctionnalité. Cela augmente aussi la version minnimale de WebKit2GTK à 2.40 pour votre application.&#160;[ [    &#8617;](#fnref2:2){.footnote-backref} &#8617;](#fnref:2){.footnote-backref}

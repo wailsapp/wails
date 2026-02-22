@@ -1,0 +1,99 @@
+---
+title: Wails v3 Architecture
+description: Deep-dive diagrams and explanations of every moving part inside Wails v3
+sidebar:
+  order: 1
+---
+
+
+Wails v3 is a **full-stack desktop framework** consisting of a Go runtime,
+a JavaScript bridge, a task-driven tool-chain and a collection of templates that
+let you ship native applications powered by modern web tech.
+
+This page presents the *big picture* in four diagrams:
+
+1. **Overall Architecture** – how every subsystem connects  
+2. **Runtime Flow** – what happens when JS calls Go and vice-versa  
+3. **Development vs Production** – two modes of the asset server  
+4. **Platform Implementations** – where OS-specific code lives  
+
+---
+
+## 1 · Overall Architecture
+
+**Wails v3 – High-Level Stack**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[High-Level Stack Diagram Placeholder]**
+
+---
+
+## 2 · Runtime Call Flow
+
+**Runtime – JavaScript ⇄ Go Calling Path**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[Runtime Call Flow Diagram Placeholder]**
+
+Key points:
+
+* **No HTTP / IPC** – the bridge uses the native WebView’s in-memory channel  
+* **Method IDs** – deterministic FNV-hash enables O(1) lookup in Go  
+* **Promises** – errors propagate as rejections with stack & code
+
+---
+
+## 3 · Development vs Production Asset Flow
+
+**Dev ↔ Prod Asset Server**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[Asset Flow Diagram Placeholder]**
+
+* In **dev** the server proxies unknown paths to the framework’s live-reload
+  server and serves static assets from disk.  
+* In **prod** the same API is backed by `go:embed`, producing a zero-dependency
+  binary.
+
+---
+
+## 4 · Platform-Specific Runtime Split
+
+**Per-OS Runtime Files**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[Platform Split Diagram Placeholder]**
+
+Every feature follows this pattern:
+
+1. **Common interface** in `pkg/application`  
+2. **Message processor** entry in `pkg/application/messageprocessor_*.go`  
+3. **Implementation** per OS under `internal/runtime/*.go` guarded by build tags  
+
+Missing functionality on an OS should return `ErrCapability` and register
+availability via `internal/capabilities`.
+
+---
+
+## Summary
+
+These diagrams outline **where the code lives**, **how data moves**, and
+**which layers own which responsibilities**.  
+Keep them handy while exploring the detailed pages that follow – they are your
+map to the Wails v3 source tree.

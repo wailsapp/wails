@@ -4,7 +4,7 @@
 package linux
 
 /*
-#cgo linux pkg-config: gtk+-3.0
+#cgo linux pkg-config: gtk+-3.0 
 #cgo !webkit2_41 pkg-config: webkit2gtk-4.0
 #cgo webkit2_41 pkg-config: webkit2gtk-4.1
 
@@ -73,16 +73,6 @@ static void install_signal_handlers()
 #endif
 }
 
-static gboolean install_signal_handlers_idle(gpointer data) {
-    (void)data;
-    install_signal_handlers();
-    return G_SOURCE_REMOVE;
-}
-
-static void fix_signal_handlers_after_gtk_init() {
-    g_idle_add(install_signal_handlers_idle, NULL);
-}
-
 */
 import "C"
 import (
@@ -105,7 +95,6 @@ import (
 
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
-	"github.com/wailsapp/wails/v2/internal/frontend/originvalidator"
 	wailsruntime "github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -135,8 +124,6 @@ type Frontend struct {
 	mainWindow *Window
 	bindings   *binding.Bindings
 	dispatcher frontend.Dispatcher
-
-	originValidator *originvalidator.OriginValidator
 }
 
 func (f *Frontend) RunMainLoop() {
@@ -169,15 +156,12 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		ctx:             ctx,
 	}
 	result.startURL, _ = url.Parse(startURL)
-	result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
-		result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 	} else {
 		if port, _ := ctx.Value("assetserverport").(string); port != "" {
 			result.startURL.Host = net.JoinHostPort(result.startURL.Host+".localhost", port)
-			result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 		}
 
 		var bindings string
@@ -200,7 +184,6 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	}
 
 	go result.startMessageProcessor()
-	go result.startBindingsMessageProcessor()
 
 	var _debug = ctx.Value("debug")
 	var _devtoolsEnabled = ctx.Value("devtoolsEnabled")
@@ -214,7 +197,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 
 	result.mainWindow = NewWindow(appoptions, result.debug, result.devtoolsEnabled)
 
-	C.fix_signal_handlers_after_gtk_init()
+	C.install_signal_handlers()
 
 	if appoptions.Linux != nil && appoptions.Linux.ProgramName != "" {
 		prgname := C.CString(appoptions.Linux.ProgramName)
@@ -230,24 +213,6 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 func (f *Frontend) startMessageProcessor() {
 	for message := range messageBuffer {
 		f.processMessage(message)
-	}
-}
-
-func (f *Frontend) startBindingsMessageProcessor() {
-	for msg := range bindingsMessageBuffer {
-		origin, err := f.originValidator.GetOriginFromURL(msg.source)
-		if err != nil {
-			f.logger.Error(fmt.Sprintf("failed to get origin for URL %q: %v", msg.source, err))
-			continue
-		}
-
-		allowed := f.originValidator.IsOriginAllowed(origin)
-		if !allowed {
-			f.logger.Error("Blocked request from unauthorized origin: %s", origin)
-			continue
-		}
-
-		f.processMessage(msg.message)
 	}
 }
 
@@ -542,28 +507,12 @@ func (f *Frontend) ExecJS(js string) {
 	f.mainWindow.ExecJS(js)
 }
 
-type bindingsMessage struct {
-	message string
-	source  string
-}
-
 var messageBuffer = make(chan string, 100)
-var bindingsMessageBuffer = make(chan *bindingsMessage, 100)
 
 //export processMessage
 func processMessage(message *C.char) {
 	goMessage := C.GoString(message)
 	messageBuffer <- goMessage
-}
-
-//export processBindingMessage
-func processBindingMessage(message *C.char, source *C.char) {
-	goMessage := C.GoString(message)
-	goSource := C.GoString(source)
-	bindingsMessageBuffer <- &bindingsMessage{
-		message: goMessage,
-		source:  goSource,
-	}
 }
 
 var requestBuffer = make(chan webview.Request, 100)

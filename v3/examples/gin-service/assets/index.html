@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gin Service Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        h1 {
+            color: #0078d7;
+            text-align: center;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        button {
+            background-color: #0078d7;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        
+        button:hover {
+            background-color: #0063b1;
+        }
+        
+        pre {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        
+        input {
+            padding: 8px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+        
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gin Service Example</h1>
+    
+    <div class="card">
+        <h2>API Endpoints</h2>
+        <p>Try the Gin API endpoints mounted at /api:</p>
+        
+        <button id="getInfo">Get Service Info</button>
+        <button id="getUsers">Get All Users</button>
+        <button id="getUser">Get User by ID</button>
+        <button id="createUser">Create User</button>
+        <button id="deleteUser">Delete User</button>
+        
+        <div id="apiResult" style="margin-top: 1rem;">
+            <pre id="apiResponse">Results will appear here...</pre>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>Event Communication</h2>
+        <p>Trigger an event to communicate with the Gin service:</p>
+        
+        <button id="triggerEvent">Trigger Event</button>
+        
+        <div id="eventResult" style="margin-top: 1rem;">
+            <pre id="eventResponse">Event responses will appear here...</pre>
+        </div>
+    </div>
+    
+    <div class="card" id="createUserForm" style="display: none; border: 2px solid #0078d7;">
+        <h2>Create New User</h2>
+        
+        <div>
+            <label for="userName">Name:</label>
+            <input type="text" id="userName" placeholder="Enter name">
+        </div>
+        
+        <div>
+            <label for="userEmail">Email:</label>
+            <input type="email" id="userEmail" placeholder="Enter email">
+        </div>
+        
+        <button id="submitUser">Submit</button>
+        <button id="cancelCreate">Cancel</button>
+    </div>
+    
+    <script type="module">
+        // Import the Wails runtime
+        import * as wails from "/wails/runtime.js";
+        
+        // Helper function to fetch API endpoints
+        async function fetchAPI(endpoint, options = {}) {
+            try {
+                const response = await fetch(`/api${endpoint}`, options);
+                const data = await response.json();
+                
+                document.getElementById('apiResponse').textContent = JSON.stringify(data, null, 2);
+                return data;
+            } catch (error) {
+                document.getElementById('apiResponse').textContent = `Error: ${error.message}`;
+                console.error('API Error:', error);
+            }
+        }
+        
+        // Event listeners for API buttons
+        document.getElementById('getInfo').addEventListener('click', () => {
+            fetchAPI('/info');
+        });
+        
+        document.getElementById('getUsers').addEventListener('click', () => {
+            fetchAPI('/users');
+        });
+        
+        document.getElementById('getUser').addEventListener('click', async () => {
+            const userId = prompt('Enter user ID:');
+            if (userId) {
+                await fetchAPI(`/users/${userId}`);
+            }
+        });
+        
+        document.getElementById('createUser').addEventListener('click', () => {
+            const form = document.getElementById('createUserForm');
+            form.style.display = 'block';
+            form.scrollIntoView({ behavior: 'smooth' });
+        });
+        
+        document.getElementById('cancelCreate').addEventListener('click', () => {
+            document.getElementById('createUserForm').style.display = 'none';
+        });
+        
+        document.getElementById('submitUser').addEventListener('click', async () => {
+            const name = document.getElementById('userName').value;
+            const email = document.getElementById('userEmail').value;
+            
+            if (!name || !email) {
+                alert('Please enter both name and email');
+                return;
+            }
+            
+            try {
+                await fetchAPI('/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, email })
+                });
+                
+                document.getElementById('createUserForm').style.display = 'none';
+                document.getElementById('userName').value = '';
+                document.getElementById('userEmail').value = '';
+                
+                // Automatically fetch the updated user list
+                await fetchAPI('/users');
+                
+                // Show a success message
+                const apiResponse = document.getElementById('apiResponse');
+                const currentData = JSON.parse(apiResponse.textContent);
+                apiResponse.textContent = JSON.stringify({
+                    message: "User created successfully!",
+                    users: currentData
+                }, null, 2);
+            } catch (error) {
+                console.error('Error creating user:', error);
+            }
+        });
+        
+        document.getElementById('deleteUser').addEventListener('click', async () => {
+            const userId = prompt('Enter user ID to delete:');
+            if (userId) {
+                try {
+                    await fetchAPI(`/users/${userId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    // Show success message
+                    document.getElementById('apiResponse').textContent = JSON.stringify({
+                        message: `User with ID ${userId} deleted successfully`
+                    }, null, 2);
+                    
+                    // Refresh the user list
+                    setTimeout(() => fetchAPI('/users'), 1000);
+                } catch (error) {
+                    console.error('Error deleting user:', error);
+                }
+            }
+        });
+        
+        // Using Wails Events API for event communication
+        document.getElementById('triggerEvent').addEventListener('click', async () => {
+            // Display the event being sent
+            document.getElementById('eventResponse').textContent = JSON.stringify({
+                status: "Sending event to backend...",
+                data: { timestamp: new Date().toISOString() }
+            }, null, 2);
+            
+            // Use the Wails runtime to emit an event - matching the format in the events demo
+            const eventData = {
+                message: "Hello from the frontend!",
+                timestamp: new Date().toISOString()
+            };
+            wails.Events.Emit('gin-api-event', eventData);
+        });
+        
+        // Set up event listener for responses from the backend
+        window.addEventListener('DOMContentLoaded', () => {
+            // Register event listener using Wails runtime
+            wails.Events.On("gin-api-response", (data) => {
+                document.getElementById('eventResponse').textContent = JSON.stringify(data, null, 2);
+            });
+            
+            // Also listen for user-created events
+            wails.Events.On("user-created", (data) => {
+                document.getElementById('eventResponse').textContent = JSON.stringify({
+                    event: "user-created",
+                    user: data
+                }, null, 2);
+            });
+            
+            // Initial API call to get service info
+            fetchAPI('/info');
+        });
+    </script>
+</body>
+</html>

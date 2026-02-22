@@ -32,8 +32,6 @@ func init() {
 
 type Window struct {
 	context unsafe.Pointer
-
-	applicationMenu *menu.Menu
 }
 
 func bool2Cint(value bool) C.int {
@@ -63,7 +61,7 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 	singleInstanceEnabled := bool2Cint(frontendOptions.SingleInstanceLock != nil)
 
 	var fullSizeContent, hideTitleBar, zoomable, hideTitle, useToolbar, webviewIsTransparent C.int
-	var titlebarAppearsTransparent, hideToolbarSeparator, windowIsTranslucent, contentProtection C.int
+	var titlebarAppearsTransparent, hideToolbarSeparator, windowIsTranslucent C.int
 	var appearance, title *C.char
 	var preferences C.struct_Preferences
 
@@ -117,13 +115,12 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 
 		windowIsTranslucent = bool2Cint(mac.WindowIsTranslucent)
 		webviewIsTransparent = bool2Cint(mac.WebviewIsTransparent)
-		contentProtection = bool2Cint(mac.ContentProtection)
 
 		appearance = c.String(string(mac.Appearance))
 	}
 	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, zoomable, fullscreen, fullSizeContent,
 		hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent,
-		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, contentProtection, devtoolsEnabled, defaultContextMenuEnabled,
+		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, devtoolsEnabled, defaultContextMenuEnabled,
 		windowStartState, startsHidden, minWidth, minHeight, maxWidth, maxHeight, enableFraudulentWebsiteWarnings,
 		preferences, singleInstanceEnabled, singleInstanceUniqueId, enableDragAndDrop, disableWebViewDragAndDrop,
 	)
@@ -295,16 +292,12 @@ func (w *Window) Size() (int, int) {
 }
 
 func (w *Window) SetApplicationMenu(inMenu *menu.Menu) {
-	w.applicationMenu = inMenu
-	w.UpdateApplicationMenu()
+	mainMenu := NewNSMenu(w.context, "")
+	processMenu(mainMenu, inMenu)
+	C.SetAsApplicationMenu(w.context, mainMenu.nsmenu)
 }
 
 func (w *Window) UpdateApplicationMenu() {
-	mainMenu := NewNSMenu(w.context, "")
-	if w.applicationMenu != nil {
-		processMenu(mainMenu, w.applicationMenu)
-	}
-	C.SetAsApplicationMenu(w.context, mainMenu.nsmenu)
 	C.UpdateApplicationMenu(w.context)
 }
 

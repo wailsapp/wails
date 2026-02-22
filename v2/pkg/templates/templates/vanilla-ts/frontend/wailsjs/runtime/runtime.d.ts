@@ -52,10 +52,6 @@ export function EventsOnce(eventName: string, callback: (...data: any) => void):
 // unregisters the listener for the given event name.
 export function EventsOff(eventName: string): void;
 
-// [EventsOffAll](https://wails.io/docs/reference/runtime/events#eventsoffall)
-// unregisters all event listeners.
-export function EventsOffAll(): void;
-
 // [LogPrint](https://wails.io/docs/reference/runtime/log#logprint)
 // logs the given message as a raw message
 export function LogPrint(message: string): void;
@@ -130,7 +126,7 @@ export function WindowUnfullscreen(): void;
 
 // [WindowSetSize](https://wails.io/docs/reference/runtime/window#windowsetsize)
 // Sets the width and height of the window.
-export function WindowSetSize(width: number, height: number): void;
+export function WindowSetSize(width: number, height: number): Promise<Size>;
 
 // [WindowGetSize](https://wails.io/docs/reference/runtime/window#windowgetsize)
 // Gets the width and height of the window.

@@ -7,7 +7,8 @@ import styles from "./index.module.css";
 import HomepageFeatures from "../components/HomepageFeatures";
 import {translate} from "@docusaurus/Translate"; // i18n component
 import useBaseUrl from "@docusaurus/useBaseUrl";
-import { Carousel } from "react-responsive-carousel";
+
+var Carousel = require("react-responsive-carousel").Carousel;
 
 function HomepageHeader() {
     const {siteConfig} = useDocusaurusContext();

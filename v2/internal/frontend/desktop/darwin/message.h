@@ -15,7 +15,6 @@ extern "C"
 #endif
 
 void processMessage(const char *);
-void processBindingMessage(const char *, const char *, bool);
 void processURLRequest(void *, void*);
 void processMessageDialogResponse(int);
 void processOpenFileDialogResponse(const char*);

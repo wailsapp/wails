@@ -34,11 +34,8 @@ void addAccelerator(GtkWidget* menuItem, GtkAccelGroup* group, guint key, GdkMod
 }
 */
 import "C"
-import (
-	"unsafe"
-
-	"github.com/wailsapp/wails/v2/pkg/menu"
-)
+import "github.com/wailsapp/wails/v2/pkg/menu"
+import "unsafe"
 
 var menuIdCounter int
 var menuItemToId map[*menu.MenuItem]int
@@ -84,10 +81,8 @@ func (w *Window) SetApplicationMenu(inmenu *menu.Menu) {
 
 func processMenu(window *Window, menu *menu.Menu) {
 	for _, menuItem := range menu.Items {
-		if menuItem.SubMenu != nil {
-			submenu := processSubmenu(menuItem, window.accels)
-			C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(window.menubar)), submenu)
-		}
+		submenu := processSubmenu(menuItem, window.accels)
+		C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(window.menubar)), submenu)
 	}
 }
 

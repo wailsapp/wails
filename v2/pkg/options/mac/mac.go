@@ -18,7 +18,6 @@ type AboutInfo struct {
 type Options struct {
 	TitleBar             *TitleBar
 	Appearance           AppearanceType
-	ContentProtection    bool
 	WebviewIsTransparent bool
 	WindowIsTranslucent  bool
 	Preferences          *Preferences

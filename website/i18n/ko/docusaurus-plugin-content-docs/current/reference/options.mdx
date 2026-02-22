@@ -98,9 +98,7 @@ func main() {
             // OnResume is called when Windows resumes from low power mode
             OnResume: func(),
             // Disable GPU hardware acceleration for the webview
-                  WebviewGpuDisabled: false,
-                  // Class name for the window. If empty, 'wailsWindow' will be used.
-                  WindowClassName: "MyWindow",
+            WebviewGpuDisabled: false,
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -422,6 +420,18 @@ EnableFraudulentWebsiteDetection enables scan services for fraudulent content, s
 
 Name: EnableFraudulentWebsiteDetection<br/> Type: `bool`
 
+### ZoomFactor
+
+Name: ZoomFactor<br/> Type: `float64`
+
+This defines the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
+
+### IsZoomControlEnabled
+
+Name: IsZoomControlEnabled<br/> Type: `bool`
+
+This enables the zoom factor to be changed by the user. Please note that the zoom factor can be set in the options while disallowing the user to change it at runtime (f.e. for a kiosk application or similar).
+
 ### Bind
 
 A slice of struct instances defining methods that need to be bound to the frontend.
@@ -535,18 +545,6 @@ The value can be one of the following:
 | Acrylic | Use [Acrylic](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic) effect |
 | Mica    | Use [Mica](https://learn.microsoft.com/en-us/windows/apps/design/style/mica) effect       |
 | Tabbed  | Use Tabbed. This is a backdrop that is similar to Mica.                                   |
-
-#### ZoomFactor
-
-Name: ZoomFactor<br/> Type: `float64`
-
-This defines the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
-
-#### IsZoomControlEnabled
-
-Name: IsZoomControlEnabled<br/> Type: `bool`
-
-This enables the zoom factor to be changed by the user. Please note that the zoom factor can be set in the options while disallowing the user to change it at runtime (f.e. for a kiosk application or similar).
 
 #### DisablePinchZoom
 
@@ -691,12 +689,6 @@ Name: WebviewGpuIsDisabled<br/> Type: `bool`
 Setting this to `true` will enable swipe gestures for the webview.
 
 Name: EnableSwipeGestures<br/> Type: `bool`
-
-#### WindowClassName
-
-Class name for the window. If empty, 'wailsWindow' will be used.
-
-Name: WindowClassName<br/> Type: `string`
 
 ### Mac
 

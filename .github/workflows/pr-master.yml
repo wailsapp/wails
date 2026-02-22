@@ -1,26 +1,17 @@
-# Updated to ensure "Run Go Tests" runs for pull requests as expected.
-# Key fix: the test_go job previously required github.event.review.state == 'approved'
-# which only exists on pull_request_review events. That prevented the job from
-# running for regular pull_request events (opened / synchronize / reopened).
-# New logic: run tests for pull_request events, and also allow running when a
-# pull_request_review is submitted with state == 'approved'.
+name: PR Checks (master)
+
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
     branches:
       - master
   pull_request_review:
     types: [submitted]
     branches:
       - master
-  workflow_dispatch: {}
-
-name: PR Checks (master)
-
 jobs:
   check_docs:
     name: Check Docs
-    if: ${{ github.repository == 'wailsapp/wails' && github.base_ref == 'master' }}
+    if: ${{github.repository == 'wailsapp/wails' && github.base_ref == 'master'}}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -32,6 +23,7 @@ jobs:
           files: |
             website/**/*.mdx
             website/**/*.md
+
       - name: Run step only when files change.
         if: steps.verify-changed-files.outputs.files_changed != 'true'
         run: |
@@ -40,18 +32,11 @@ jobs:
   test_go:
     name: Run Go Tests
     runs-on: ${{ matrix.os }}
-    # Run when:
-    #  - the event is a pull_request (opened/synchronize/reopened) OR
-    #  - the event is a pull_request_review AND the review state is 'approved'
-    # plus other existing filters (not the update-sponsors branch, repo and base_ref)
     if: >
-      github.repository == 'wailsapp/wails' &&
+      github.event.review.state == 'approved' && 
+      github.repository == 'wailsapp/wails' && 
       github.base_ref == 'master' &&
-      github.event.pull_request.head.ref != 'update-sponsors' &&
-      (
-        github.event_name == 'pull_request' ||
-        (github.event_name == 'pull_request_review' && github.event.review.state == 'approved')
-      )
+      github.event.pull_request.head.ref != 'update-sponsors'
     strategy:
       matrix:
         os: [ubuntu-22.04, windows-latest, macos-latest, ubuntu-24.04]
@@ -67,7 +52,7 @@ jobs:
 
       - name: Install linux dependencies (24.04)
         if: matrix.os == 'ubuntu-24.04'
-        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
+        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config
 
       - name: Setup Go
         uses: actions/setup-go@v3
@@ -90,15 +75,3 @@ jobs:
         if: matrix.os == 'ubuntu-24.04'
         working-directory: ./v2
         run: go test -v -tags webkit2_41 ./...
-
-  # This job will run instead of test_go for the update-sponsors branch
-  skip_tests:
-    name: Skip Tests (Sponsor Update)
-    if: github.event.pull_request.head.ref == 'update-sponsors'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Skip tests for sponsor updates
-        run: |
-          echo "Skipping tests for sponsor update branch"
-          echo "This is an automated update of the sponsors image."
-        continue-on-error: true

@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,7 +29,7 @@ func checkError(err error) {
 
 func mute() {
 	originalOutput = Output
-	Output = io.Discard
+	Output = ioutil.Discard
 }
 
 func unmute() {

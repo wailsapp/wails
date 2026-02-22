@@ -1,8 +1,10 @@
 //go:build windows
+// +build windows
 
 package cfd
 
 import (
+	"fmt"
 	"github.com/go-ole/go-ole"
 	"strings"
 	"syscall"
@@ -17,23 +19,27 @@ func hresultToError(hr uintptr) error {
 }
 
 func (vtbl *iUnknownVtbl) release(objPtr unsafe.Pointer) error {
-	ret, _, _ := syscall.SyscallN(vtbl.Release,
+	ret, _, _ := syscall.Syscall(vtbl.Release,
+		0,
 		uintptr(objPtr),
+		0,
 		0)
 	return hresultToError(ret)
 }
 
 func (vtbl *iModalWindowVtbl) show(objPtr unsafe.Pointer, hwnd uintptr) error {
-	ret, _, _ := syscall.SyscallN(vtbl.Show,
+	ret, _, _ := syscall.Syscall(vtbl.Show,
+		1,
 		uintptr(objPtr),
-		hwnd)
+		hwnd,
+		0)
 	return hresultToError(ret)
 }
 
 func (vtbl *iFileDialogVtbl) setFileTypes(objPtr unsafe.Pointer, filters []FileFilter) error {
 	cFileTypes := len(filters)
 	if cFileTypes < 0 {
-		return ErrEmptyFilters
+		return fmt.Errorf("must specify at least one filter")
 	}
 	comDlgFilterSpecs := make([]comDlgFilterSpec, cFileTypes)
 	for i := 0; i < cFileTypes; i++ {
@@ -43,16 +49,8 @@ func (vtbl *iFileDialogVtbl) setFileTypes(objPtr unsafe.Pointer, filters []FileF
 			pszSpec: ole.SysAllocString(filter.Pattern),
 		}
 	}
-
-	// Ensure memory is freed after use
-	defer func() {
-		for _, spec := range comDlgFilterSpecs {
-			ole.SysFreeString(spec.pszName)
-			ole.SysFreeString(spec.pszSpec)
-		}
-	}()
-
-	ret, _, _ := syscall.SyscallN(vtbl.SetFileTypes,
+	ret, _, _ := syscall.Syscall(vtbl.SetFileTypes,
+		2,
 		uintptr(objPtr),
 		uintptr(cFileTypes),
 		uintptr(unsafe.Pointer(&comDlgFilterSpecs[0])))
@@ -84,17 +82,21 @@ func (vtbl *iFileDialogVtbl) setFileTypes(objPtr unsafe.Pointer, filters []FileF
 // FOS_FORCEPREVIEWPANEON = 0x40000000,
 // FOS_SUPPORTSTREAMABLEITEMS = 0x80000000
 func (vtbl *iFileDialogVtbl) setOptions(objPtr unsafe.Pointer, options uint32) error {
-	ret, _, _ := syscall.SyscallN(vtbl.SetOptions,
+	ret, _, _ := syscall.Syscall(vtbl.SetOptions,
+		1,
 		uintptr(objPtr),
-		uintptr(options))
+		uintptr(options),
+		0)
 	return hresultToError(ret)
 }
 
 func (vtbl *iFileDialogVtbl) getOptions(objPtr unsafe.Pointer) (uint32, error) {
 	var options uint32
-	ret, _, _ := syscall.SyscallN(vtbl.GetOptions,
+	ret, _, _ := syscall.Syscall(vtbl.GetOptions,
+		1,
 		uintptr(objPtr),
-		uintptr(unsafe.Pointer(&options)))
+		uintptr(unsafe.Pointer(&options)),
+		0)
 	return options, hresultToError(ret)
 }
 
@@ -120,9 +122,11 @@ func (vtbl *iFileDialogVtbl) setDefaultFolder(objPtr unsafe.Pointer, path string
 		return err
 	}
 	defer shellItem.vtbl.release(unsafe.Pointer(shellItem))
-	ret, _, _ := syscall.SyscallN(vtbl.SetDefaultFolder,
+	ret, _, _ := syscall.Syscall(vtbl.SetDefaultFolder,
+		1,
 		uintptr(objPtr),
-		uintptr(unsafe.Pointer(shellItem)))
+		uintptr(unsafe.Pointer(shellItem)),
+		0)
 	return hresultToError(ret)
 }
 
@@ -132,32 +136,40 @@ func (vtbl *iFileDialogVtbl) setFolder(objPtr unsafe.Pointer, path string) error
 		return err
 	}
 	defer shellItem.vtbl.release(unsafe.Pointer(shellItem))
-	ret, _, _ := syscall.SyscallN(vtbl.SetFolder,
+	ret, _, _ := syscall.Syscall(vtbl.SetFolder,
+		1,
 		uintptr(objPtr),
-		uintptr(unsafe.Pointer(shellItem)))
+		uintptr(unsafe.Pointer(shellItem)),
+		0)
 	return hresultToError(ret)
 }
 
 func (vtbl *iFileDialogVtbl) setTitle(objPtr unsafe.Pointer, title string) error {
 	titlePtr := ole.SysAllocString(title)
-	defer ole.SysFreeString(titlePtr) // Ensure the string is freed
-	ret, _, _ := syscall.SyscallN(vtbl.SetTitle,
+	ret, _, _ := syscall.Syscall(vtbl.SetTitle,
+		1,
 		uintptr(objPtr),
-		uintptr(unsafe.Pointer(titlePtr)))
+		uintptr(unsafe.Pointer(titlePtr)),
+		0)
 	return hresultToError(ret)
 }
 
 func (vtbl *iFileDialogVtbl) close(objPtr unsafe.Pointer) error {
-	ret, _, _ := syscall.SyscallN(vtbl.Close,
-		uintptr(objPtr))
+	ret, _, _ := syscall.Syscall(vtbl.Close,
+		1,
+		uintptr(objPtr),
+		0,
+		0)
 	return hresultToError(ret)
 }
 
 func (vtbl *iFileDialogVtbl) getResult(objPtr unsafe.Pointer) (*iShellItem, error) {
 	var shellItem *iShellItem
-	ret, _, _ := syscall.SyscallN(vtbl.GetResult,
+	ret, _, _ := syscall.Syscall(vtbl.GetResult,
+		1,
 		uintptr(objPtr),
-		uintptr(unsafe.Pointer(&shellItem)))
+		uintptr(unsafe.Pointer(&shellItem)),
+		0)
 	return shellItem, hresultToError(ret)
 }
 
@@ -174,51 +186,42 @@ func (vtbl *iFileDialogVtbl) getResultString(objPtr unsafe.Pointer) (string, err
 }
 
 func (vtbl *iFileDialogVtbl) setClientGuid(objPtr unsafe.Pointer, guid *ole.GUID) error {
-	// Ensure the GUID is not nil
-	if guid == nil {
-		return ErrInvalidGUID
-	}
-
-	// Call the SetClientGuid method
-	ret, _, _ := syscall.SyscallN(vtbl.SetClientGuid,
+	ret, _, _ := syscall.Syscall(vtbl.SetClientGuid,
+		1,
 		uintptr(objPtr),
-		uintptr(unsafe.Pointer(guid)))
-
-	// Convert the HRESULT to a Go error
+		uintptr(unsafe.Pointer(guid)),
+		0)
 	return hresultToError(ret)
 }
 
 func (vtbl *iFileDialogVtbl) setDefaultExtension(objPtr unsafe.Pointer, defaultExtension string) error {
-	// Ensure the string is not empty before accessing the first character
-	if len(defaultExtension) > 0 && defaultExtension[0] == '.' {
+	if defaultExtension[0] == '.' {
 		defaultExtension = strings.TrimPrefix(defaultExtension, ".")
 	}
-
-	// Allocate memory for the default extension string
 	defaultExtensionPtr := ole.SysAllocString(defaultExtension)
-	defer ole.SysFreeString(defaultExtensionPtr) // Ensure the string is freed
-
-	// Call the SetDefaultExtension method
-	ret, _, _ := syscall.SyscallN(vtbl.SetDefaultExtension,
+	ret, _, _ := syscall.Syscall(vtbl.SetDefaultExtension,
+		1,
 		uintptr(objPtr),
-		uintptr(unsafe.Pointer(defaultExtensionPtr)))
-
-	// Convert the HRESULT to a Go error
+		uintptr(unsafe.Pointer(defaultExtensionPtr)),
+		0)
 	return hresultToError(ret)
 }
 
 func (vtbl *iFileDialogVtbl) setFileName(objPtr unsafe.Pointer, fileName string) error {
 	fileNamePtr := ole.SysAllocString(fileName)
-	defer ole.SysFreeString(fileNamePtr) // Ensure the string is freed
-	ret, _, _ := syscall.SyscallN(vtbl.SetFileName,
+	ret, _, _ := syscall.Syscall(vtbl.SetFileName,
+		1,
 		uintptr(objPtr),
-		uintptr(unsafe.Pointer(fileNamePtr)))
+		uintptr(unsafe.Pointer(fileNamePtr)),
+		0)
 	return hresultToError(ret)
 }
 
 func (vtbl *iFileDialogVtbl) setSelectedFileFilterIndex(objPtr unsafe.Pointer, index uint) error {
-	ret, _, _ := syscall.SyscallN(vtbl.SetFileTypeIndex,
+	ret, _, _ := syscall.Syscall(vtbl.SetFileTypeIndex,
+		1,
 		uintptr(objPtr),
-		uintptr(index+1)) // SetFileTypeIndex counts from 1
+		uintptr(index+1), // SetFileTypeIndex counts from 1
+		0)
 	return hresultToError(ret)
 }

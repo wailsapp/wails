@@ -3,7 +3,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-extern void HandleOpenURL(char*);
+extern void HandleCustomProtocol(char*);
 
 @interface CustomProtocolSchemeHandler : NSObject
 + (void)handleGetURLEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent;

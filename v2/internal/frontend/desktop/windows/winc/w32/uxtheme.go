@@ -69,7 +69,7 @@ var (
 	setWindowTheme      uintptr
 )
 
-func Init() {
+func init() {
 	// Library
 	libuxtheme = MustLoadLibrary("uxtheme.dll")
 
@@ -83,7 +83,7 @@ func Init() {
 }
 
 func CloseThemeData(hTheme HTHEME) HRESULT {
-	ret, _, _ := syscall.SyscallN(closeThemeData,
+	ret, _, _ := syscall.Syscall(closeThemeData, 1,
 		uintptr(hTheme),
 		0,
 		0)
@@ -134,7 +134,7 @@ func GetThemeTextExtent(hTheme HTHEME, hdc HDC, iPartId, iStateId int32, pszText
 }
 
 func OpenThemeData(hwnd HWND, pszClassList *uint16) HTHEME {
-	ret, _, _ := syscall.SyscallN(openThemeData,
+	ret, _, _ := syscall.Syscall(openThemeData, 2,
 		uintptr(hwnd),
 		uintptr(unsafe.Pointer(pszClassList)),
 		0)
@@ -143,7 +143,7 @@ func OpenThemeData(hwnd HWND, pszClassList *uint16) HTHEME {
 }
 
 func SetWindowTheme(hwnd HWND, pszSubAppName, pszSubIdList *uint16) HRESULT {
-	ret, _, _ := syscall.SyscallN(setWindowTheme,
+	ret, _, _ := syscall.Syscall(setWindowTheme, 3,
 		uintptr(hwnd),
 		uintptr(unsafe.Pointer(pszSubAppName)),
 		uintptr(unsafe.Pointer(pszSubIdList)))

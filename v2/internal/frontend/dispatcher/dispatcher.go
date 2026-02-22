@@ -2,7 +2,6 @@ package dispatcher
 
 import (
 	"context"
-	"fmt"
 	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -11,43 +10,26 @@ import (
 )
 
 type Dispatcher struct {
-	log                  *logger.Logger
-	bindings             *binding.Bindings
-	events               frontend.Events
-	bindingsDB           *binding.DB
-	ctx                  context.Context
-	errfmt               options.ErrorFormatter
-	disablePanicRecovery bool
+	log        *logger.Logger
+	bindings   *binding.Bindings
+	events     frontend.Events
+	bindingsDB *binding.DB
+	ctx        context.Context
+	errfmt     options.ErrorFormatter
 }
 
-func NewDispatcher(ctx context.Context, log *logger.Logger, bindings *binding.Bindings, events frontend.Events, errfmt options.ErrorFormatter, disablePanicRecovery bool) *Dispatcher {
+func NewDispatcher(ctx context.Context, log *logger.Logger, bindings *binding.Bindings, events frontend.Events, errfmt options.ErrorFormatter) *Dispatcher {
 	return &Dispatcher{
-		log:                  log,
-		bindings:             bindings,
-		events:               events,
-		bindingsDB:           bindings.DB(),
-		ctx:                  ctx,
-		errfmt:               errfmt,
-		disablePanicRecovery: disablePanicRecovery,
+		log:        log,
+		bindings:   bindings,
+		events:     events,
+		bindingsDB: bindings.DB(),
+		ctx:        ctx,
+		errfmt:     errfmt,
 	}
 }
 
-func (d *Dispatcher) ProcessMessage(message string, sender frontend.Frontend) (_ string, err error) {
-	if !d.disablePanicRecovery {
-		defer func() {
-			if e := recover(); e != nil {
-				if errPanic, ok := e.(error); ok {
-					err = errPanic
-				} else {
-					err = fmt.Errorf("%v", e)
-				}
-			}
-			if err != nil {
-				d.log.Error("process message error: %s -> %s", message, err)
-			}
-		}()
-	}
-
+func (d *Dispatcher) ProcessMessage(message string, sender frontend.Frontend) (string, error) {
 	if message == "" {
 		return "", errors.New("No message to process")
 	}

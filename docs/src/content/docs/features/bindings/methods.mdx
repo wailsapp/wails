@@ -1,0 +1,643 @@
+---
+title: Method Bindings
+description: Call Go methods from JavaScript with type safety
+sidebar:
+  order: 1
+---
+
+import { FileTree, Card, CardGrid } from "@astrojs/starlight/components";
+
+## Type-Safe Go-JavaScript Bindings
+
+Wails **automatically generates type-safe JavaScript/TypeScript bindings** for your Go methods. Write Go code, run one command, and get fully-typed frontend functions with no HTTP overhead, no manual work, and zero boilerplate.
+
+## Quick Start
+
+**1. Write Go service:**
+
+```go
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+    return "Hello, " + name + "!"
+}
+```
+
+**2. Register service:**
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+})
+```
+
+**3. Generate bindings:**
+
+```bash
+wails3 generate bindings
+```
+
+**4. Use in JavaScript:**
+
+```javascript
+import { Greet } from './bindings/myapp/greetservice'
+
+const message = await Greet("World")
+console.log(message)  // "Hello, World!"
+```
+
+**That's it!** Type-safe Go-to-JavaScript calls.
+
+## Creating Services
+
+### Basic Service
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+type CalculatorService struct{}
+
+func (c *CalculatorService) Add(a, b int) int {
+    return a + b
+}
+
+func (c *CalculatorService) Subtract(a, b int) int {
+    return a - b
+}
+
+func (c *CalculatorService) Multiply(a, b int) int {
+    return a * b
+}
+
+func (c *CalculatorService) Divide(a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, errors.New("division by zero")
+    }
+    return a / b, nil
+}
+```
+
+**Register:**
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&CalculatorService{}),
+    },
+})
+```
+
+**Key points:**
+- Only **exported methods** (PascalCase) are bound
+- Methods can return values or `(value, error)`
+- Services are **singletons** (one instance per application)
+
+### Service with State
+
+```go
+type CounterService struct {
+    count int
+    mu    sync.Mutex
+}
+
+func (c *CounterService) Increment() int {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count++
+    return c.count
+}
+
+func (c *CounterService) Decrement() int {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count--
+    return c.count
+}
+
+func (c *CounterService) GetCount() int {
+    c.mu.RLock()
+    defer c.mu.RUnlock()
+    return c.count
+}
+
+func (c *CounterService) Reset() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count = 0
+}
+```
+
+**Important:** Services are shared across all windows. Use mutexes for thread safety.
+
+### Service with Dependencies
+
+```go
+type DatabaseService struct {
+    db *sql.DB
+}
+
+func NewDatabaseService(db *sql.DB) *DatabaseService {
+    return &DatabaseService{db: db}
+}
+
+func (d *DatabaseService) GetUser(id int) (*User, error) {
+    var user User
+    err := d.db.QueryRow("SELECT * FROM users WHERE id = ?", id).Scan(&user)
+    return &user, err
+}
+```
+
+**Register with dependencies:**
+
+```go
+db, _ := sql.Open("sqlite3", "app.db")
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(NewDatabaseService(db)),
+    },
+})
+```
+
+## Generating Bindings
+
+### Basic Generation
+
+```bash
+wails3 generate bindings
+```
+
+**Output:**
+
+```
+INFO  347 Packages, 3 Services, 12 Methods, 0 Enums, 0 Models in 1.98s
+INFO  Output directory: /myproject/frontend/bindings
+```
+
+**Generated structure:**
+
+<FileTree>
+- frontend/bindings
+  - myapp
+    - calculatorservice.js
+    - counterservice.js
+    - databaseservice.js
+    - index.js
+</FileTree>
+
+### TypeScript Generation
+
+```bash
+wails3 generate bindings -ts
+```
+
+**Generates `.ts` files** with full TypeScript types.
+
+### Custom Output Directory
+
+```bash
+wails3 generate bindings -d ./src/bindings
+```
+
+### Watch Mode (Development)
+
+```bash
+wails3 dev
+```
+
+**Automatically regenerates bindings** when Go code changes.
+
+## Using Bindings
+
+### JavaScript
+
+**Generated binding:**
+
+```javascript
+// frontend/bindings/myapp/calculatorservice.js
+
+/**
+ * @param {number} a
+ * @param {number} b
+ * @returns {Promise<number>}
+ */
+export function Add(a, b) {
+    return window.wails.Call('CalculatorService.Add', a, b)
+}
+```
+
+**Usage:**
+
+```javascript
+import { Add, Subtract, Multiply, Divide } from './bindings/myapp/calculatorservice'
+
+// Simple calls
+const sum = await Add(5, 3)        // 8
+const diff = await Subtract(10, 4)  // 6
+const product = await Multiply(7, 6) // 42
+
+// Error handling
+try {
+    const result = await Divide(10, 0)
+} catch (error) {
+    console.error("Error:", error)  // "division by zero"
+}
+```
+
+### TypeScript
+
+**Generated binding:**
+
+```typescript
+// frontend/bindings/myapp/calculatorservice.ts
+
+export function Add(a: number, b: number): Promise<number>
+export function Subtract(a: number, b: number): Promise<number>
+export function Multiply(a: number, b: number): Promise<number>
+export function Divide(a: number, b: number): Promise<number>
+```
+
+**Usage:**
+
+```typescript
+import { Add, Divide } from './bindings/myapp/calculatorservice'
+
+const sum: number = await Add(5, 3)
+
+try {
+    const result = await Divide(10, 0)
+} catch (error: unknown) {
+    if (error instanceof Error) {
+        console.error(error.message)
+    }
+}
+```
+
+**Benefits:**
+- Full type checking
+- IDE autocomplete
+- Compile-time errors
+- Better refactoring
+
+### Index Files
+
+**Generated index:**
+
+```javascript
+// frontend/bindings/myapp/index.js
+
+export * as CalculatorService from './calculatorservice.js'
+export * as CounterService from './counterservice.js'
+export * as DatabaseService from './databaseservice.js'
+```
+
+**Simplified imports:**
+
+```javascript
+import { CalculatorService } from './bindings/myapp'
+
+const sum = await CalculatorService.Add(5, 3)
+```
+
+## Type Mapping
+
+### Primitive Types
+
+| Go Type | JavaScript/TypeScript |
+|---------|----------------------|
+| `string` | `string` |
+| `bool` | `boolean` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `number` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `number` |
+| `float32`, `float64` | `number` |
+| `byte` | `number` |
+| `rune` | `number` |
+
+### Complex Types
+
+| Go Type | JavaScript/TypeScript |
+|---------|----------------------|
+| `[]T` | `T[]` |
+| `[N]T` | `T[]` |
+| `map[string]T` | `Record<string, T>` |
+| `map[K]V` | `Map<K, V>` |
+| `struct` | `class` (with fields) |
+| `time.Time` | `Date` |
+| `*T` | `T` (pointers transparent) |
+| `interface{}` | `any` |
+| `error` | Exception (thrown) |
+
+### Unsupported Types
+
+These types **cannot** be passed across the bridge:
+- `chan T` (channels)
+- `func()` (functions)
+- Complex interfaces (except `interface{}`)
+- Unexported fields (lowercase)
+
+**Workaround:** Use IDs or handles:
+
+```go
+// ❌ Can't return file handle
+func OpenFile(path string) (*os.File, error)
+
+// ✅ Return file ID instead
+var files = make(map[string]*os.File)
+
+func OpenFile(path string) (string, error) {
+    file, err := os.Open(path)
+    if err != nil {
+        return "", err
+    }
+    id := generateID()
+    files[id] = file
+    return id, nil
+}
+
+func ReadFile(id string) ([]byte, error) {
+    file := files[id]
+    return io.ReadAll(file)
+}
+
+func CloseFile(id string) error {
+    file := files[id]
+    delete(files, id)
+    return file.Close()
+}
+```
+
+## Error Handling
+
+### Go Side
+
+```go
+func (d *DatabaseService) GetUser(id int) (*User, error) {
+    if id <= 0 {
+        return nil, errors.New("invalid user ID")
+    }
+    
+    var user User
+    err := d.db.QueryRow("SELECT * FROM users WHERE id = ?", id).Scan(&user)
+    if err == sql.ErrNoRows {
+        return nil, fmt.Errorf("user %d not found", id)
+    }
+    if err != nil {
+        return nil, fmt.Errorf("database error: %w", err)
+    }
+    
+    return &user, nil
+}
+```
+
+### JavaScript Side
+
+```javascript
+import { GetUser } from './bindings/myapp/databaseservice'
+
+try {
+    const user = await GetUser(123)
+    console.log("User:", user)
+} catch (error) {
+    console.error("Error:", error)
+    // Error: "user 123 not found"
+}
+```
+
+**Error types:**
+- Go `error` → JavaScript exception
+- Error message preserved
+- Stack trace available
+
+## Performance
+
+### Call Overhead
+
+**Typical call:** &lt;1ms
+
+```
+JavaScript → Bridge → Go → Bridge → JavaScript
+    ↓           ↓       ↓       ↓           ↓
+  &lt;0.1ms    &lt;0.1ms  [varies] &lt;0.1ms    &lt;0.1ms
+```
+
+**Compared to alternatives:**
+- HTTP/REST: 5-50ms
+- IPC: 1-10ms
+- Wails: &lt;1ms
+
+### Optimisation Tips
+
+**✅ Batch operations:**
+
+```javascript
+// ❌ Slow: N calls
+for (const item of items) {
+    await ProcessItem(item)
+}
+
+// ✅ Fast: 1 call
+await ProcessItems(items)
+```
+
+**✅ Cache results:**
+
+```javascript
+// ❌ Repeated calls
+const config1 = await GetConfig()
+const config2 = await GetConfig()
+
+// ✅ Cache
+const config = await GetConfig()
+// Use config multiple times
+```
+
+**✅ Use events for streaming:**
+
+```go
+func ProcessLargeFile(path string) error {
+    // Emit progress events
+    for line := range lines {
+        app.Event.Emit("progress", line)
+    }
+    return nil
+}
+```
+
+## Complete Example
+
+**Go:**
+
+```go
+package main
+
+import (
+    "fmt"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type TodoService struct {
+    todos []Todo
+}
+
+type Todo struct {
+    ID        int    `json:"id"`
+    Title     string `json:"title"`
+    Completed bool   `json:"completed"`
+}
+
+func (t *TodoService) GetAll() []Todo {
+    return t.todos
+}
+
+func (t *TodoService) Add(title string) Todo {
+    todo := Todo{
+        ID:        len(t.todos) + 1,
+        Title:     title,
+        Completed: false,
+    }
+    t.todos = append(t.todos, todo)
+    return todo
+}
+
+func (t *TodoService) Toggle(id int) error {
+    for i := range t.todos {
+        if t.todos[i].ID == id {
+            t.todos[i].Completed = !t.todos[i].Completed
+            return nil
+        }
+    }
+    return fmt.Errorf("todo %d not found", id)
+}
+
+func (t *TodoService) Delete(id int) error {
+    for i := range t.todos {
+        if t.todos[i].ID == id {
+            t.todos = append(t.todos[:i], t.todos[i+1:]...)
+            return nil
+        }
+    }
+    return fmt.Errorf("todo %d not found", id)
+}
+
+func main() {
+    app := application.New(application.Options{
+        Services: []application.Service{
+            application.NewService(&TodoService{}),
+        },
+    })
+    
+    app.Window.New()
+    app.Run()
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { GetAll, Add, Toggle, Delete } from './bindings/myapp/todoservice'
+
+class TodoApp {
+    async loadTodos() {
+        const todos = await GetAll()
+        this.renderTodos(todos)
+    }
+    
+    async addTodo(title) {
+        try {
+            const todo = await Add(title)
+            this.loadTodos()
+        } catch (error) {
+            console.error("Failed to add todo:", error)
+        }
+    }
+    
+    async toggleTodo(id) {
+        try {
+            await Toggle(id)
+            this.loadTodos()
+        } catch (error) {
+            console.error("Failed to toggle todo:", error)
+        }
+    }
+    
+    async deleteTodo(id) {
+        try {
+            await Delete(id)
+            this.loadTodos()
+        } catch (error) {
+            console.error("Failed to delete todo:", error)
+        }
+    }
+    
+    renderTodos(todos) {
+        const list = document.getElementById('todo-list')
+        list.innerHTML = todos.map(todo => `
+            <div class="todo ${todo.Completed ? 'completed' : ''}">
+                <input type="checkbox" 
+                       ${todo.Completed ? 'checked' : ''}
+                       onchange="app.toggleTodo(${todo.ID})">
+                <span>${todo.Title}</span>
+                <button onclick="app.deleteTodo(${todo.ID})">Delete</button>
+            </div>
+        `).join('')
+    }
+}
+
+const app = new TodoApp()
+app.loadTodos()
+```
+
+## Best Practices
+
+### ✅ Do
+
+- **Keep methods simple** - Single responsibility
+- **Return errors** - Don't panic
+- **Use thread-safe state** - Mutexes for shared data
+- **Batch operations** - Reduce bridge calls
+- **Cache on Go side** - Avoid repeated work
+- **Document methods** - Comments become JSDoc
+
+### ❌ Don't
+
+- **Don't block** - Use goroutines for long operations
+- **Don't return channels** - Use events instead
+- **Don't return functions** - Not supported
+- **Don't ignore errors** - Always handle them
+- **Don't use unexported fields** - Won't be bound
+
+## Next Steps
+
+<CardGrid>
+  <Card title="Services" icon="puzzle">
+    Deep dive into the service system.
+    
+    [Learn More →](/features/bindings/services)
+  </Card>
+
+  <Card title="Models" icon="document">
+    Bind complex data structures.
+    
+    [Learn More →](/features/bindings/models)
+  </Card>
+
+  <Card title="Go-Frontend Bridge" icon="rocket">
+    Understand the bridge mechanism.
+    
+    [Learn More →](/concepts/bridge)
+  </Card>
+
+  <Card title="Events" icon="star">
+    Use events for pub/sub communication.
+    
+    [Learn More →](/features/events/system)
+  </Card>
+</CardGrid>
+
+---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [binding examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/binding).

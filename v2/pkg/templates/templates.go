@@ -186,16 +186,7 @@ func Install(options *Options) (bool, *Template, error) {
 			return false, nil, err
 		}
 		options.TargetDir = targetDir
-		if fs.DirExists(options.TargetDir) {
-			// Check if directory is non-empty
-			entries, err := os.ReadDir(options.TargetDir)
-			if err != nil {
-				return false, nil, err
-			}
-			if len(entries) > 0 {
-				return false, nil, fmt.Errorf("cannot initialise project in non-empty directory: %s", options.TargetDir)
-			}
-		} else {
+		if !fs.DirExists(options.TargetDir) {
 			err := fs.Mkdir(options.TargetDir)
 			if err != nil {
 				return false, nil, err

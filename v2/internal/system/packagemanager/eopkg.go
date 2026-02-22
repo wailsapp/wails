@@ -40,7 +40,7 @@ func (e *Eopkg) Packages() packagemap {
 			{Name: "gcc", SystemPackage: true},
 		},
 		"pkg-config": []*Package{
-			{Name: "pkgconf", SystemPackage: true},
+			{Name: "pkg-config", SystemPackage: true},
 		},
 		"npm": []*Package{
 			{Name: "nodejs", SystemPackage: true},

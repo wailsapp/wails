@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 	"os"
 	"runtime"
 	"strings"
@@ -60,13 +59,6 @@ func buildApplication(f *flags.Build) error {
 		f.GarbleArgs = projectOptions.GarbleArgs
 	}
 
-	projectTags, err := buildtags.Parse(projectOptions.BuildTags)
-	if err != nil {
-		return err
-	}
-	userTags := f.GetTags()
-	compiledTags := append(projectTags, userTags...)
-
 	// Create BuildOptions
 	buildOptions := &build.Options{
 		Logger:            logger,
@@ -84,7 +76,7 @@ func buildApplication(f *flags.Build) error {
 		IgnoreFrontend:    f.SkipFrontend,
 		Compress:          f.Upx,
 		CompressFlags:     f.UpxFlags,
-		UserTags:          compiledTags,
+		UserTags:          f.GetTags(),
 		WebView2Strategy:  f.GetWebView2Strategy(),
 		TrimPath:          f.TrimPath,
 		RaceDetector:      f.RaceDetector,
@@ -93,7 +85,6 @@ func buildApplication(f *flags.Build) error {
 		GarbleArgs:        f.GarbleArgs,
 		SkipBindings:      f.SkipBindings,
 		ProjectData:       projectOptions,
-		SkipEmbedCreate:   f.SkipEmbedCreate,
 	}
 
 	tableData := pterm.TableData{
@@ -114,7 +105,7 @@ func buildApplication(f *flags.Build) error {
 		{"Package", bool2Str(!f.NoPackage)},
 		{"Clean Bin Dir", bool2Str(f.Clean)},
 		{"LDFlags", f.LdFlags},
-		{"Tags", "[" + strings.Join(compiledTags, ",") + "]"},
+		{"Tags", "[" + strings.Join(f.GetTags(), ",") + "]"},
 		{"Race Detector", bool2Str(f.RaceDetector)},
 	}...)
 	if len(buildOptions.OutputFile) > 0 && f.GetTargets().Length() == 1 {

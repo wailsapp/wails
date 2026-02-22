@@ -1,8 +1,7 @@
 package git
 
 import (
-	"encoding/json"
-	"fmt"
+	"html/template"
 	"runtime"
 	"strings"
 
@@ -31,31 +30,9 @@ func Email() (string, error) {
 
 // Name tries to retrieve the
 func Name() (string, error) {
-	errMsg := "failed to retrieve git user name: %w"
 	stdout, _, err := shell.RunCommand(".", gitcommand(), "config", "user.name")
-	if err != nil {
-		return "", fmt.Errorf(errMsg, err)
-	}
-	name := strings.TrimSpace(stdout)
-	return EscapeName(name)
-}
-
-func EscapeName(str string) (string, error) {
-	b, err := json.Marshal(str)
-	if err != nil {
-		return "", err
-	}
-	// Remove the surrounding quotes
-	escaped := string(b[1 : len(b)-1])
-
-	// Check if username is JSON compliant
-	var js json.RawMessage
-	jsonVal := fmt.Sprintf(`{"name": "%s"}`, escaped)
-	err = json.Unmarshal([]byte(jsonVal), &js)
-	if err != nil {
-		return "", fmt.Errorf("failed to retrieve git user name: %w", err)
-	}
-	return escaped, nil
+	name := template.JSEscapeString(strings.TrimSpace(stdout))
+	return name, err
 }
 
 func InitRepo(projectDir string) error {

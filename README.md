@@ -25,7 +25,7 @@
     <img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome" />
   </a>
   <a href="https://discord.gg/BrRSWTaxVK">
-    <img alt="Discord" src="https://img.shields.io/discord/1042734330029547630?logo=discord"/>
+    <img alt="Discord" src="https://dcbadge.vercel.app/api/server/BrRSWTaxVK?style=flat"/>
   </a>
   <br/>
   <a href="https://github.com/wailsapp/wails/actions/workflows/build-and-test.yml" rel="nofollow">
@@ -98,9 +98,9 @@ The installation instructions are on the [official website](https://wails.io/doc
 This project is supported by these kind people / companies:
 <img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
 
-## Powered By
-
-[![JetBrains logo.](https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.svg)](https://jb.gg/OpenSource)
+<p align="center">
+<img src="https://wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
+</p>
 
 ## FAQ
 

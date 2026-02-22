@@ -1,0 +1,518 @@
+---
+title: dialogs Overview
+description: Display native system dialogs in your application
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## Native dialogs
+
+Wails provides **native system dialogs** that work across all platforms: message dialogs (info, warning, error, question), file dialogs (open, save, folder), and custom dialog windows with platform-native appearance and behaviour.
+
+## Quick Start
+
+```go
+// Information dialog
+app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("File saved successfully!").
+    Show()
+
+// Question dialog with button callbacks
+dialog := app.Dialog.Question().
+    SetTitle("Confirm").
+    SetMessage("Delete this file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    deleteFile()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)
+dialog.SetCancelButton(cancelBtn)
+dialog.Show()
+
+// File open dialog
+path, _ := app.Dialog.OpenFile().
+    SetTitle("Select Image").
+    AddFilter("Images", "*.png;*.jpg").
+    PromptForSingleSelection()
+```
+
+**That's it!** Native dialogs with minimal code.
+
+## Accessing Dialogs
+
+Dialogs are accessed through the `app.Dialog` manager:
+
+```go
+app.Dialog.Info()
+app.Dialog.Question()
+app.Dialog.Warning()
+app.Dialog.Error()
+app.Dialog.OpenFile()
+app.Dialog.SaveFile()
+```
+
+## dialog Types
+
+### Information dialog
+
+Display simple messages:
+
+```go
+app.Dialog.Info().
+    SetTitle("Welcome").
+    SetMessage("Welcome to our application!").
+    Show()
+```
+
+**Use cases:**
+- Success messages
+- Informational notices
+- Completion confirmations
+
+### Warning dialog
+
+Show warnings:
+
+```go
+app.Dialog.Warning().
+    SetTitle("Warning").
+    SetMessage("This action cannot be undone.").
+    Show()
+```
+
+**Use cases:**
+- Non-critical warnings
+- Deprecation notices
+- Caution messages
+
+### Error dialog
+
+Display errors:
+
+```go
+app.Dialog.Error().
+    SetTitle("Error").
+    SetMessage("Failed to save file: " + err.Error()).
+    Show()
+```
+
+**Use cases:**
+- Error messages
+- Failure notifications
+- Exception handling
+
+### Question dialog
+
+Ask users questions and handle responses via button callbacks:
+
+```go
+dialog := app.Dialog.Question().
+    SetTitle("Confirm Delete").
+    SetMessage("Are you sure you want to delete this file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    deleteFile()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)
+dialog.SetCancelButton(cancelBtn)
+dialog.Show()
+```
+
+**Use cases:**
+- Confirm actions
+- Yes/No questions
+- Multiple choice
+
+## File dialogs
+
+### Open File dialog
+
+Select files to open:
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Image").
+    AddFilter("Images", "*.png;*.jpg;*.gif").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
+
+if err == nil && path != "" {
+    openFile(path)
+}
+```
+
+**Multiple selection:**
+
+```go
+paths, err := app.Dialog.OpenFile().
+    SetTitle("Select Images").
+    AddFilter("Images", "*.png;*.jpg").
+    PromptForMultipleSelection()
+
+if err == nil {
+    for _, path := range paths {
+        processFile(path)
+    }
+}
+```
+
+### Save File dialog
+
+Choose where to save:
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("document.txt").
+    AddFilter("Text Files", "*.txt").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
+
+if err == nil && path != "" {
+    saveFile(path)
+}
+```
+
+### Select Folder dialog
+
+Choose a directory using the open file dialog with directory selection enabled:
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Output Folder").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+
+if err == nil && path != "" {
+    exportToFolder(path)
+}
+```
+
+## dialog Options
+
+### Title and Message
+
+```go
+dialog := app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("Operation completed successfully!")
+```
+
+### Buttons
+
+**Default button for simple dialogs:**
+
+Info, warning, and error dialogs display a default "OK" button:
+
+```go
+app.Dialog.Info().
+    SetMessage("Done!").
+    Show()
+```
+
+**Custom buttons for question dialogs:**
+
+Use `AddButton()` to add buttons, which returns a `*Button` you can configure with callbacks:
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Choose action")
+
+save := dialog.AddButton("Save")
+save.OnClick(func() {
+    saveDocument()
+})
+
+dontSave := dialog.AddButton("Don't Save")
+dontSave.OnClick(func() {
+    discardChanges()
+})
+
+cancel := dialog.AddButton("Cancel")
+// No callback needed - just dismisses dialog
+
+dialog.SetDefaultButton(save)
+dialog.SetCancelButton(cancel)
+dialog.Show()
+```
+
+**Default and Cancel buttons:**
+
+Use `SetDefaultButton()` to specify which button is highlighted and triggered by Enter.
+Use `SetCancelButton()` to specify which button is triggered by Escape.
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Delete file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    performDelete()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)  // Safe option highlighted by default
+dialog.SetCancelButton(cancelBtn)   // Escape triggers Cancel
+dialog.Show()
+```
+
+### Window Attachment
+
+Attach dialog to specific window:
+
+```go
+dialog := app.Dialog.Info().
+    SetMessage("Window-specific message").
+    AttachToWindow(window)
+
+dialog.Show()
+```
+
+**Behaviour:**
+- dialog appears centred on parent window
+- Parent window disabled whilst dialog shown
+- dialog moves with parent window (macOS)
+
+## Platform Behaviour
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    **macOS dialogs:**
+    
+    - Native NSAlert appearance
+    - Follow system theme (light/dark)
+    - Support keyboard navigation
+    - Standard shortcuts (⌘. for Cancel)
+    - Accessibility features built-in
+    - Sheet-style when attached to window
+    
+    **Example:**
+    ```go
+    // Appears as sheet on macOS
+    dialog := app.Dialog.Question().
+        SetMessage("Save changes?").
+        AttachToWindow(window)
+    dialog.AddButton("Yes")
+    dialog.AddButton("No")
+    dialog.Show()
+    ```
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    **Windows dialogs:**
+    
+    - Native TaskDialog appearance
+    - Follow system theme
+    - Support keyboard navigation
+    - Standard shortcuts (Esc for Cancel)
+    - Accessibility features built-in
+    - Modal to parent window
+    
+    **Example:**
+    ```go
+    // Modal dialog on Windows
+    app.Dialog.Error().
+        SetTitle("Error").
+        SetMessage("Operation failed").
+        Show()
+    ```
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **Linux dialogs:**
+    
+    - GTK dialog appearance
+    - Follow desktop theme
+    - Support keyboard navigation
+    - Desktop environment integration
+    - Varies by DE (GNOME, KDE, etc.)
+    
+    **Example:**
+    ```go
+    // GTK dialog on Linux
+    app.Dialog.Info().
+        SetMessage("Update complete").
+        Show()
+    ```
+  </TabItem>
+</Tabs>
+
+## Common Patterns
+
+### Confirm Before Destructive Action
+
+```go
+func deleteFile(app *application.App, path string) {
+    dialog := app.Dialog.Question().
+        SetTitle("Confirm Delete").
+        SetMessage(fmt.Sprintf("Delete %s?", filepath.Base(path)))
+
+    deleteBtn := dialog.AddButton("Delete")
+    deleteBtn.OnClick(func() {
+        if err := os.Remove(path); err != nil {
+            app.Dialog.Error().
+                SetTitle("Delete Failed").
+                SetMessage(err.Error()).
+                Show()
+        }
+    })
+
+    cancelBtn := dialog.AddButton("Cancel")
+    dialog.SetDefaultButton(cancelBtn)
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+}
+```
+
+### Error Handling with dialog
+
+```go
+func saveDocument(app *application.App, path string, data []byte) {
+    if err := os.WriteFile(path, data, 0644); err != nil {
+        app.Dialog.Error().
+            SetTitle("Save Failed").
+            SetMessage(fmt.Sprintf("Could not save file: %v", err)).
+            Show()
+        return
+    }
+
+    app.Dialog.Info().
+        SetTitle("Success").
+        SetMessage("File saved successfully!").
+        Show()
+}
+```
+
+### File Selection with Validation
+
+```go
+func selectImageFile(app *application.App) (string, error) {
+    path, err := app.Dialog.OpenFile().
+        SetTitle("Select Image").
+        AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif").
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    if path == "" {
+        return "", errors.New("no file selected")
+    }
+
+    // Validate file
+    if !isValidImage(path) {
+        app.Dialog.Error().
+            SetTitle("Invalid File").
+            SetMessage("Selected file is not a valid image.").
+            Show()
+        return "", errors.New("invalid image")
+    }
+
+    return path, nil
+}
+```
+
+### Multi-Step dialog Flow
+
+```go
+func exportData(app *application.App) {
+    // Step 1: Confirm export
+    dialog := app.Dialog.Question().
+        SetTitle("Export Data").
+        SetMessage("Export all data to CSV?")
+
+    exportBtn := dialog.AddButton("Export")
+    exportBtn.OnClick(func() {
+        // Step 2: Select destination
+        path, err := app.Dialog.SaveFile().
+            SetFilename("export.csv").
+            AddFilter("CSV Files", "*.csv").
+            PromptForSingleSelection()
+
+        if err != nil || path == "" {
+            return
+        }
+
+        // Step 3: Perform export
+        if err := performExport(path); err != nil {
+            app.Dialog.Error().
+                SetTitle("Export Failed").
+                SetMessage(err.Error()).
+                Show()
+            return
+        }
+
+        // Step 4: Success
+        app.Dialog.Info().
+            SetTitle("Export Complete").
+            SetMessage("Data exported successfully!").
+            Show()
+    })
+
+    cancelBtn := dialog.AddButton("Cancel")
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+}
+```
+
+## Best Practices
+
+### ✅ Do
+
+- **Use native dialogs** - Better UX than custom
+- **Provide clear messages** - Be specific
+- **Set appropriate titles** - Context matters
+- **Use default buttons wisely** - Safe option as default
+- **Handle cancellation** - User might cancel
+- **Validate file selections** - Check file types
+
+### ❌ Don't
+
+- **Don't overuse dialogs** - Interrupts workflow
+- **Don't use for frequent messages** - Use notifications
+- **Don't forget error handling** - User might cancel
+- **Don't block unnecessarily** - Consider alternatives
+- **Don't use generic messages** - Be specific
+- **Don't ignore platform differences** - Test on all platforms
+
+## Next Steps
+
+<CardGrid>
+  <Card title="Message dialogs" icon="information">
+    Info, warning, and error dialogs.
+    
+    [Learn More →](/features/dialogs/message)
+  </Card>
+
+  <Card title="File dialogs" icon="document">
+    Open, save, and folder selection.
+    
+    [Learn More →](/features/dialogs/file)
+  </Card>
+
+  <Card title="Custom dialogs" icon="puzzle">
+    Create custom dialog windows.
+    
+    [Learn More →](/features/dialogs/custom)
+  </Card>
+
+  <Card title="Windows" icon="laptop">
+    Learn about window management.
+    
+    [Learn More →](/features/windows/basics)
+  </Card>
+</CardGrid>
+
+---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [dialog examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/dialogs).

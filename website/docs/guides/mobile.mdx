@@ -1,0 +1,342 @@
+# Mobile Support
+
+:::danger EXPERIMENTAL
+Mobile support in Wails v3 is currently **EXPERIMENTAL**. The API and build process may change significantly before the final release. Use at your own risk in production environments.
+:::
+
+Wails v3 introduces experimental support for building native mobile applications for iOS and Android platforms. This allows you to use the same Go codebase and web frontend across desktop and mobile platforms.
+
+## Overview
+
+Mobile support enables you to build native iOS and Android applications using:
+- **Go** for business logic and services
+- **Web technologies** (HTML/CSS/JavaScript) for the UI
+- Native WebView components for rendering
+
+### Architecture
+
+| Platform | WebView | Bridge Technology | Build Output |
+|----------|---------|-------------------|--------------|
+| iOS | WKWebView | CGO (C headers) | .app / .ipa |
+| Android | Android WebView | JNI | .apk |
+
+## Prerequisites
+
+### iOS Development
+
+:::warning macOS Required
+iOS development requires macOS with Xcode installed.
+:::
+
+- **macOS** 12.0 or later
+- **Xcode** 14.0 or later
+- **Go** 1.21+ with CGO support
+- **iOS SDK** (included with Xcode)
+
+### Android Development
+
+Android development is supported on macOS, Linux, and Windows.
+
+**Required Components:**
+- **Go** 1.21+ with CGO support
+- **Android SDK** with:
+  - Platform Tools (adb)
+  - Build Tools
+  - Android Emulator (optional, for testing)
+- **Android NDK** r26d or later
+- **Java JDK** 11+
+
+### Environment Setup
+
+#### Android Environment Variables
+
+Add these to your shell profile (`~/.bashrc`, `~/.zshrc`, etc.):
+
+```bash
+# macOS
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+
+# Linux
+export ANDROID_HOME="$HOME/Android/Sdk"
+
+# NDK (adjust version as needed)
+export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/29.0.14206865"
+
+# Add tools to PATH
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+export PATH=$PATH:$ANDROID_HOME/emulator
+```
+
+#### Installing Android SDK
+
+You can install the Android SDK through:
+- **Android Studio** (easiest method - includes all tools)
+- **Command line tools** from [developer.android.com](https://developer.android.com/studio#command-tools)
+
+After installing, use SDK Manager to install:
+- Android SDK Platform (API 34 or later)
+- Android SDK Build-Tools
+- Android NDK (if not already included)
+
+## Building for Mobile
+
+### iOS Build
+
+```bash
+# Build for iOS
+task ios:build
+
+# Build and run on simulator
+task ios:run
+
+# Build for device (requires code signing)
+task ios:build:device
+```
+
+The build process will:
+1. Compile Go code as a static library (`.a` file)
+2. Generate Xcode project
+3. Build the app using `xcodebuild`
+4. Create an `.app` bundle (or `.ipa` for distribution)
+
+### Android Build
+
+```bash
+# Build for Android (default: arm64 for device)
+task android:build
+
+# Build for emulator (x86_64)
+task android:build ARCH=x86_64
+
+# Build for all architectures
+task android:compile:go:all-archs
+
+# Package APK
+task android:package
+
+# Run on emulator/device
+task android:run
+
+# View logs
+task android:logs
+```
+
+The build process will:
+1. Compile Go code as a shared library (`.so` file)
+2. Build Java/Kotlin code using Gradle
+3. Package everything into an APK
+
+### Build Architectures
+
+**iOS:**
+- `arm64` - iPhone 5s and later, all iPads with Apple Silicon
+
+**Android:**
+| Architecture | Use Case | GOARCH |
+|--------------|----------|---------|
+| arm64-v8a | Modern devices (most common) | arm64 |
+| x86_64 | Emulator | amd64 |
+| armeabi-v7a | Older devices (optional) | arm |
+| x86 | Older emulators (optional) | 386 |
+
+## Platform-Specific Configuration
+
+### iOS Options
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    iOS: application.IOSOptions{
+        // Disable bounce scroll effect
+        DisableBounce: true,
+
+        // Enable zoom gestures
+        EnableZoom: false,
+
+        // Custom user agent
+        UserAgent: "MyApp/1.0",
+
+        // Background color
+        BackgroundColour: application.NewRGB(255, 255, 255),
+    },
+})
+```
+
+### Android Options
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Android: application.AndroidOptions{
+        // Disable scrolling
+        DisableScroll: false,
+
+        // Disable overscroll bounce effect
+        DisableOverscroll: true,
+
+        // Enable pinch-to-zoom
+        EnableZoom: false,
+
+        // Custom user agent
+        UserAgent: "MyApp/1.0",
+
+        // Background color
+        BackgroundColour: application.NewRGB(255, 255, 255),
+
+        // Disable hardware acceleration (not recommended)
+        DisableHardwareAcceleration: false,
+    },
+})
+```
+
+## Testing
+
+### iOS Testing
+
+```bash
+# List available simulators
+xcrun simctl list devices
+
+# Run on specific simulator
+task ios:run SIMULATOR="iPhone 15 Pro"
+```
+
+### Android Testing
+
+```bash
+# List available emulators
+emulator -list-avds
+
+# Start emulator
+emulator -avd Pixel_7_API_34
+
+# Install and run
+task android:run
+```
+
+## Platform Detection
+
+Your frontend JavaScript can detect the platform:
+
+```javascript
+const platform = window.wails.System.Platform();
+
+if (platform === 'ios') {
+    // iOS-specific code
+} else if (platform === 'android') {
+    // Android-specific code
+} else {
+    // Desktop code
+}
+```
+
+## Limitations
+
+:::warning Current Limitations
+The following features are not yet fully implemented on mobile platforms:
+:::
+
+### iOS Limitations
+- System tray/menu bar (not applicable)
+- Multiple windows (single full-screen window only)
+- File dialogs (limited by iOS sandboxing)
+- Window manipulation (position, size, etc.)
+
+### Android Limitations
+- System tray (not applicable)
+- Multiple windows (single full-screen window only)
+- File dialogs (use Storage Access Framework)
+- Window manipulation (fullscreen only)
+- Clipboard operations (partial support)
+
+## Architecture Documentation
+
+For detailed technical information about the mobile implementations:
+
+- **Android Architecture**: See [`ANDROID_ARCHITECTURE.md`](https://github.com/wailsapp/wails/blob/v3-alpha/v3/ANDROID_ARCHITECTURE.md) in the repository
+- **iOS Architecture**: See [`IOS_ARCHITECTURE.md`](https://github.com/wailsapp/wails/blob/v3-alpha/v3/IOS_ARCHITECTURE.md) in the repository
+
+These documents provide comprehensive information about:
+- Architecture and design patterns
+- Build system internals
+- Bridge implementations (JNI for Android, CGO for iOS)
+- Asset serving mechanisms
+- JavaScript bridge details
+- Security considerations
+
+## Troubleshooting
+
+### iOS Issues
+
+**"Code signing required"**
+- You need an Apple Developer account to run on physical devices
+- Simulators don't require code signing
+
+**"Command Line Tools not found"**
+```bash
+# Install Xcode Command Line Tools
+xcode-select --install
+```
+
+### Android Issues
+
+**"NDK not found"**
+```bash
+# Verify NDK installation
+ls $ANDROID_HOME/ndk
+
+# Set NDK path explicitly
+export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125
+```
+
+**"UnsatisfiedLinkError: dlopen failed"**
+- Architecture mismatch between Go library and device
+- Rebuild for correct architecture (arm64 for device, x86_64 for emulator)
+
+**Blank WebView**
+1. Enable WebView debugging (in development builds)
+2. Use Chrome DevTools: `chrome://inspect/#devices`
+3. Check asset serving in logcat: `task android:logs`
+
+### Build Issues
+
+**"cannot find package"**
+```bash
+# Clear and rebuild Go modules
+go clean -modcache
+go mod tidy
+go mod download
+```
+
+**"CGO_ENABLED required"**
+```bash
+# Ensure CGO is enabled
+export CGO_ENABLED=1
+```
+
+## Examples
+
+Check out the example projects in the Wails repository:
+
+- **iOS Example**: `v3/examples/ios/`
+- **Android Example**: `v3/examples/android/`
+
+These examples demonstrate:
+- Basic app structure
+- Service integration
+- Event handling
+- Asset serving
+- Platform-specific features
+
+## Getting Help
+
+If you encounter issues with mobile support:
+
+1. Check the [GitHub Issues](https://github.com/wailsapp/wails/issues) for known problems
+2. Review the architecture documentation linked above
+3. Ask in the [Wails Discord](https://discord.gg/BrRSWTaxVK) #mobile channel
+4. Report bugs with detailed logs and environment information
+
+:::info Feedback Welcome
+Mobile support is actively being developed. Your feedback and bug reports are valuable for improving the implementation. Please share your experiences on GitHub or Discord!
+:::

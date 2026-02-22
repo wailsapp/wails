@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gamepad API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        h3 { font-size: 1rem; margin-bottom: 10px; color: #60a5fa; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.danger { background: #f87171; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .status.warning { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .controller-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .controller-slot {
+            background: rgba(0,0,0,0.2);
+            border: 2px dashed #333;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .controller-slot.connected {
+            border-style: solid;
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+        }
+        .controller-slot .index { font-size: 2rem; color: #333; }
+        .controller-slot.connected .index { color: #4ade80; }
+        .controller-slot .name { font-size: 0.85rem; color: #aaa; margin-top: 5px; }
+        .gamepad-visual {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            aspect-ratio: 16/9;
+            background: #0a0a1a;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .stick-container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+        }
+        .stick {
+            width: 100px;
+            height: 100px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid #333;
+            border-radius: 50%;
+            position: relative;
+        }
+        .stick-label {
+            text-align: center;
+            color: #666;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+        .stick-dot {
+            width: 30px;
+            height: 30px;
+            background: #4ade80;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.05s ease;
+        }
+        .stick-values {
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: #666;
+            text-align: center;
+            margin-top: 5px;
+        }
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 8px;
+            margin-top: 20px;
+        }
+        .gamepad-btn {
+            aspect-ratio: 1;
+            background: #222;
+            border: 2px solid #333;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: #666;
+            transition: all 0.1s;
+        }
+        .gamepad-btn.pressed {
+            background: #4ade80;
+            border-color: #4ade80;
+            color: #1a1a2e;
+            transform: scale(0.95);
+        }
+        .gamepad-btn.analog {
+            background: linear-gradient(to top, #4ade80 var(--pressure, 0%), #222 var(--pressure, 0%));
+        }
+        .triggers-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .trigger {
+            width: 80px;
+            height: 30px;
+            background: #222;
+            border: 2px solid #333;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        .trigger-fill {
+            height: 100%;
+            background: #4ade80;
+            width: 0%;
+            transition: width 0.05s ease;
+        }
+        .trigger-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.7rem;
+            color: #666;
+            z-index: 1;
+        }
+        .dpad {
+            display: grid;
+            grid-template-columns: repeat(3, 30px);
+            grid-template-rows: repeat(3, 30px);
+            gap: 2px;
+            justify-content: center;
+        }
+        .dpad-btn {
+            background: #222;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            color: #666;
+        }
+        .dpad-btn.pressed { background: #4ade80; color: #1a1a2e; }
+        .dpad-center { background: transparent; border: none; }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .info-item {
+            background: rgba(0,0,0,0.2);
+            padding: 10px 15px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .info-item .label { color: #aaa; }
+        .info-item .value { color: #4ade80; font-family: monospace; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .log-entry .time { color: #666; margin-right: 10px; }
+        .log-entry.event { color: #60a5fa; }
+        .log-entry.data { color: #4ade80; }
+        .log-entry.error { color: #f87171; }
+        .log-entry.button { color: #fbbf24; }
+        .axes-visual {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .axis-bar {
+            flex: 1;
+            min-width: 100px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            height: 24px;
+        }
+        .axis-bar .fill {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            background: #4ade80;
+            transition: all 0.05s ease;
+        }
+        .axis-bar .center-line {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 2px;
+            height: 100%;
+            background: #666;
+        }
+        .axis-bar .label {
+            position: absolute;
+            top: 50%;
+            left: 5px;
+            transform: translateY(-50%);
+            font-size: 0.7rem;
+            color: #fff;
+            z-index: 1;
+        }
+        .no-gamepad {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .no-gamepad .icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        .rumble-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .rumble-slider {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .rumble-slider label { color: #aaa; font-size: 0.9rem; }
+        input[type="range"] {
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gamepad API Demo</h1>
+        <p class="description">
+            The Gamepad API provides access to game controllers. Connect a gamepad and press any button to activate it.
+            Supports standard controllers, analog sticks, triggers, and rumble feedback.
+        </p>
+
+        <div id="status" class="status">
+            Gamepad API: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Connected Controllers</h2>
+            <div class="controller-list" id="controllerList">
+                <div class="controller-slot" id="slot0">
+                    <div class="index">1</div>
+                    <div class="name">No controller</div>
+                </div>
+                <div class="controller-slot" id="slot1">
+                    <div class="index">2</div>
+                    <div class="name">No controller</div>
+                </div>
+                <div class="controller-slot" id="slot2">
+                    <div class="index">3</div>
+                    <div class="name">No controller</div>
+                </div>
+                <div class="controller-slot" id="slot3">
+                    <div class="index">4</div>
+                    <div class="name">No controller</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="gamepadDisplay" style="display: none;">
+            <h2>Active Gamepad: <span id="activeGamepadName">-</span></h2>
+
+            <div class="gamepad-visual">
+                <div class="triggers-container">
+                    <div>
+                        <div class="trigger" id="triggerL2">
+                            <div class="trigger-fill" id="triggerL2Fill"></div>
+                            <span class="trigger-label">L2</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="trigger" id="triggerR2">
+                            <div class="trigger-fill" id="triggerR2Fill"></div>
+                            <span class="trigger-label">R2</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stick-container">
+                    <div>
+                        <div class="stick" id="leftStick">
+                            <div class="stick-dot" id="leftStickDot"></div>
+                        </div>
+                        <div class="stick-label">Left Stick</div>
+                        <div class="stick-values" id="leftStickValues">X: 0.00, Y: 0.00</div>
+                    </div>
+                    <div class="dpad" id="dpad">
+                        <div class="dpad-btn"></div>
+                        <div class="dpad-btn" id="dpadUp">^</div>
+                        <div class="dpad-btn"></div>
+                        <div class="dpad-btn" id="dpadLeft">&lt;</div>
+                        <div class="dpad-btn dpad-center"></div>
+                        <div class="dpad-btn" id="dpadRight">&gt;</div>
+                        <div class="dpad-btn"></div>
+                        <div class="dpad-btn" id="dpadDown">v</div>
+                        <div class="dpad-btn"></div>
+                    </div>
+                    <div>
+                        <div class="stick" id="rightStick">
+                            <div class="stick-dot" id="rightStickDot"></div>
+                        </div>
+                        <div class="stick-label">Right Stick</div>
+                        <div class="stick-values" id="rightStickValues">X: 0.00, Y: 0.00</div>
+                    </div>
+                </div>
+
+                <div class="buttons-grid" id="buttonsGrid">
+                    <div class="gamepad-btn" id="btn0">A</div>
+                    <div class="gamepad-btn" id="btn1">B</div>
+                    <div class="gamepad-btn" id="btn2">X</div>
+                    <div class="gamepad-btn" id="btn3">Y</div>
+                    <div class="gamepad-btn" id="btn4">L1</div>
+                    <div class="gamepad-btn" id="btn5">R1</div>
+                    <div class="gamepad-btn" id="btn6">L2</div>
+                    <div class="gamepad-btn" id="btn7">R2</div>
+                    <div class="gamepad-btn" id="btn8">Sel</div>
+                    <div class="gamepad-btn" id="btn9">Sta</div>
+                    <div class="gamepad-btn" id="btn10">L3</div>
+                    <div class="gamepad-btn" id="btn11">R3</div>
+                    <div class="gamepad-btn" id="btn12">Up</div>
+                    <div class="gamepad-btn" id="btn13">Dn</div>
+                    <div class="gamepad-btn" id="btn14">Lt</div>
+                    <div class="gamepad-btn" id="btn15">Rt</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="rumbleCard" style="display: none;">
+            <h2>Rumble / Haptic Feedback</h2>
+            <div class="rumble-controls">
+                <div class="rumble-slider">
+                    <label>Weak Motor:</label>
+                    <input type="range" id="weakMotor" min="0" max="1" step="0.1" value="0.5">
+                    <span id="weakValue">0.5</span>
+                </div>
+                <div class="rumble-slider">
+                    <label>Strong Motor:</label>
+                    <input type="range" id="strongMotor" min="0" max="1" step="0.1" value="0.5">
+                    <span id="strongValue">0.5</span>
+                </div>
+                <div class="rumble-slider">
+                    <label>Duration:</label>
+                    <input type="range" id="rumbleDuration" min="100" max="2000" step="100" value="500">
+                    <span id="durationValue">500ms</span>
+                </div>
+                <button onclick="testRumble()">Test Rumble</button>
+                <button onclick="pulseRumble()">Pulse</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Axes Values</h2>
+            <div class="axes-visual" id="axesVisual">
+                <div class="no-gamepad">Connect a gamepad to see axis values</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Gamepad Info</h2>
+            <div class="info-grid" id="infoGrid">
+                <div class="info-item">
+                    <span class="label">ID</span>
+                    <span class="value" id="infoId">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Mapping</span>
+                    <span class="value" id="infoMapping">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Buttons</span>
+                    <span class="value" id="infoButtons">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Axes</span>
+                    <span class="value" id="infoAxes">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Timestamp</span>
+                    <span class="value" id="infoTimestamp">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Vibration</span>
+                    <span class="value" id="infoVibration">-</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <button onclick="clearLog()">Clear Log</button>
+            <div class="output" id="eventLog">
+                <div class="log-entry">Waiting for gamepad events... Press a button on your controller.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let activeGamepadIndex = null;
+        let animationFrame = null;
+        let previousButtonStates = {};
+
+        function checkSupport() {
+            const supported = 'getGamepads' in navigator;
+            document.getElementById('supported').textContent = supported ? 'Supported' : 'Not supported';
+            document.getElementById('status').className = supported ? 'status success' : 'status error';
+            return supported;
+        }
+
+        function log(message, type = 'event') {
+            const logEl = document.getElementById('eventLog');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `<span class="time">${time}</span>${message}`;
+            logEl.insertBefore(entry, logEl.firstChild);
+
+            while (logEl.children.length > 100) {
+                logEl.removeChild(logEl.lastChild);
+            }
+        }
+
+        function clearLog() {
+            document.getElementById('eventLog').innerHTML = '<div class="log-entry">Log cleared.</div>';
+        }
+
+        function updateControllerSlots() {
+            const gamepads = navigator.getGamepads();
+
+            for (let i = 0; i < 4; i++) {
+                const slot = document.getElementById(`slot${i}`);
+                const gamepad = gamepads[i];
+
+                if (gamepad) {
+                    slot.classList.add('connected');
+                    slot.querySelector('.name').textContent = gamepad.id.substring(0, 30) + (gamepad.id.length > 30 ? '...' : '');
+                } else {
+                    slot.classList.remove('connected');
+                    slot.querySelector('.name').textContent = 'No controller';
+                }
+            }
+        }
+
+        function handleGamepadConnected(event) {
+            log(`Gamepad connected: ${event.gamepad.id} (index: ${event.gamepad.index})`, 'data');
+            updateControllerSlots();
+
+            if (activeGamepadIndex === null) {
+                setActiveGamepad(event.gamepad.index);
+            }
+        }
+
+        function handleGamepadDisconnected(event) {
+            log(`Gamepad disconnected: ${event.gamepad.id} (index: ${event.gamepad.index})`, 'error');
+            updateControllerSlots();
+
+            if (activeGamepadIndex === event.gamepad.index) {
+                activeGamepadIndex = null;
+                document.getElementById('gamepadDisplay').style.display = 'none';
+                document.getElementById('rumbleCard').style.display = 'none';
+
+                // Find another connected gamepad
+                const gamepads = navigator.getGamepads();
+                for (let i = 0; i < gamepads.length; i++) {
+                    if (gamepads[i]) {
+                        setActiveGamepad(i);
+                        break;
+                    }
+                }
+            }
+        }
+
+        function setActiveGamepad(index) {
+            activeGamepadIndex = index;
+            const gamepad = navigator.getGamepads()[index];
+
+            if (!gamepad) return;
+
+            document.getElementById('gamepadDisplay').style.display = 'block';
+            document.getElementById('activeGamepadName').textContent = gamepad.id;
+
+            // Update info
+            document.getElementById('infoId').textContent = gamepad.id.substring(0, 40);
+            document.getElementById('infoMapping').textContent = gamepad.mapping || 'non-standard';
+            document.getElementById('infoButtons').textContent = gamepad.buttons.length;
+            document.getElementById('infoAxes').textContent = gamepad.axes.length;
+
+            // Check vibration support
+            const hasVibration = gamepad.vibrationActuator !== undefined;
+            document.getElementById('infoVibration').textContent = hasVibration ? 'Supported' : 'Not supported';
+            document.getElementById('rumbleCard').style.display = hasVibration ? 'block' : 'none';
+
+            // Create axes visual
+            const axesVisual = document.getElementById('axesVisual');
+            axesVisual.innerHTML = '';
+            for (let i = 0; i < gamepad.axes.length; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'axis-bar';
+                bar.id = `axis${i}`;
+                bar.innerHTML = `
+                    <div class="center-line"></div>
+                    <div class="fill" id="axisFill${i}"></div>
+                    <span class="label">Axis ${i}</span>
+                `;
+                axesVisual.appendChild(bar);
+            }
+
+            log(`Active gamepad set to: ${gamepad.id}`, 'event');
+        }
+
+        function updateGamepadState() {
+            if (activeGamepadIndex === null) {
+                animationFrame = requestAnimationFrame(updateGamepadState);
+                return;
+            }
+
+            const gamepad = navigator.getGamepads()[activeGamepadIndex];
+            if (!gamepad) {
+                animationFrame = requestAnimationFrame(updateGamepadState);
+                return;
+            }
+
+            // Update timestamp
+            document.getElementById('infoTimestamp').textContent = gamepad.timestamp.toFixed(0);
+
+            // Update buttons
+            gamepad.buttons.forEach((button, i) => {
+                const btnEl = document.getElementById(`btn${i}`);
+                if (btnEl) {
+                    if (button.pressed) {
+                        btnEl.classList.add('pressed');
+                    } else {
+                        btnEl.classList.remove('pressed');
+                    }
+
+                    // For analog buttons
+                    if (button.value > 0 && button.value < 1) {
+                        btnEl.classList.add('analog');
+                        btnEl.style.setProperty('--pressure', (button.value * 100) + '%');
+                    } else {
+                        btnEl.classList.remove('analog');
+                    }
+
+                    // Log button press/release
+                    const prevState = previousButtonStates[i];
+                    if (button.pressed && !prevState) {
+                        log(`Button ${i} pressed (value: ${button.value.toFixed(2)})`, 'button');
+                    } else if (!button.pressed && prevState) {
+                        log(`Button ${i} released`, 'button');
+                    }
+                    previousButtonStates[i] = button.pressed;
+                }
+            });
+
+            // Update D-pad (buttons 12-15 on standard mapping)
+            const dpadMap = { 12: 'dpadUp', 13: 'dpadDown', 14: 'dpadLeft', 15: 'dpadRight' };
+            Object.entries(dpadMap).forEach(([btnIndex, dpadId]) => {
+                const btn = gamepad.buttons[btnIndex];
+                const dpadEl = document.getElementById(dpadId);
+                if (btn && dpadEl) {
+                    if (btn.pressed) {
+                        dpadEl.classList.add('pressed');
+                    } else {
+                        dpadEl.classList.remove('pressed');
+                    }
+                }
+            });
+
+            // Update triggers (L2: button 6, R2: button 7)
+            if (gamepad.buttons[6]) {
+                document.getElementById('triggerL2Fill').style.width = (gamepad.buttons[6].value * 100) + '%';
+            }
+            if (gamepad.buttons[7]) {
+                document.getElementById('triggerR2Fill').style.width = (gamepad.buttons[7].value * 100) + '%';
+            }
+
+            // Update sticks
+            if (gamepad.axes.length >= 2) {
+                const leftX = gamepad.axes[0];
+                const leftY = gamepad.axes[1];
+                const leftDot = document.getElementById('leftStickDot');
+                leftDot.style.left = (50 + leftX * 35) + '%';
+                leftDot.style.top = (50 + leftY * 35) + '%';
+                document.getElementById('leftStickValues').textContent =
+                    `X: ${leftX.toFixed(2)}, Y: ${leftY.toFixed(2)}`;
+            }
+
+            if (gamepad.axes.length >= 4) {
+                const rightX = gamepad.axes[2];
+                const rightY = gamepad.axes[3];
+                const rightDot = document.getElementById('rightStickDot');
+                rightDot.style.left = (50 + rightX * 35) + '%';
+                rightDot.style.top = (50 + rightY * 35) + '%';
+                document.getElementById('rightStickValues').textContent =
+                    `X: ${rightX.toFixed(2)}, Y: ${rightY.toFixed(2)}`;
+            }
+
+            // Update axes visual
+            gamepad.axes.forEach((value, i) => {
+                const fill = document.getElementById(`axisFill${i}`);
+                if (fill) {
+                    if (value >= 0) {
+                        fill.style.left = '50%';
+                        fill.style.width = (value * 50) + '%';
+                    } else {
+                        fill.style.left = (50 + value * 50) + '%';
+                        fill.style.width = (-value * 50) + '%';
+                    }
+                }
+            });
+
+            animationFrame = requestAnimationFrame(updateGamepadState);
+        }
+
+        async function testRumble() {
+            if (activeGamepadIndex === null) {
+                log('No active gamepad', 'error');
+                return;
+            }
+
+            const gamepad = navigator.getGamepads()[activeGamepadIndex];
+            if (!gamepad || !gamepad.vibrationActuator) {
+                log('Gamepad does not support vibration', 'error');
+                return;
+            }
+
+            const weak = parseFloat(document.getElementById('weakMotor').value);
+            const strong = parseFloat(document.getElementById('strongMotor').value);
+            const duration = parseInt(document.getElementById('rumbleDuration').value);
+
+            try {
+                await gamepad.vibrationActuator.playEffect('dual-rumble', {
+                    startDelay: 0,
+                    duration: duration,
+                    weakMagnitude: weak,
+                    strongMagnitude: strong
+                });
+                log(`Rumble: weak=${weak}, strong=${strong}, duration=${duration}ms`, 'data');
+            } catch (err) {
+                log(`Rumble error: ${err.message}`, 'error');
+            }
+        }
+
+        async function pulseRumble() {
+            if (activeGamepadIndex === null) return;
+
+            const gamepad = navigator.getGamepads()[activeGamepadIndex];
+            if (!gamepad || !gamepad.vibrationActuator) return;
+
+            for (let i = 0; i < 3; i++) {
+                await gamepad.vibrationActuator.playEffect('dual-rumble', {
+                    startDelay: 0,
+                    duration: 100,
+                    weakMagnitude: 0.5,
+                    strongMagnitude: 0.5
+                });
+                await new Promise(r => setTimeout(r, 150));
+            }
+            log('Pulse rumble played', 'data');
+        }
+
+        // Setup slider value displays
+        document.getElementById('weakMotor').addEventListener('input', (e) => {
+            document.getElementById('weakValue').textContent = e.target.value;
+        });
+        document.getElementById('strongMotor').addEventListener('input', (e) => {
+            document.getElementById('strongValue').textContent = e.target.value;
+        });
+        document.getElementById('rumbleDuration').addEventListener('input', (e) => {
+            document.getElementById('durationValue').textContent = e.target.value + 'ms';
+        });
+
+        // Initialize
+        if (checkSupport()) {
+            window.addEventListener('gamepadconnected', handleGamepadConnected);
+            window.addEventListener('gamepaddisconnected', handleGamepadDisconnected);
+
+            // Check for already connected gamepads
+            const gamepads = navigator.getGamepads();
+            for (let i = 0; i < gamepads.length; i++) {
+                if (gamepads[i]) {
+                    updateControllerSlots();
+                    setActiveGamepad(i);
+                    break;
+                }
+            }
+
+            // Start polling loop
+            updateGamepadState();
+        }
+    </script>
+</body>
+</html>

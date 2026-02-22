@@ -16,6 +16,11 @@ includes:
     dir: v3
     optional: true
 
+  docs:
+    taskfile: docs
+    dir: docs
+    optional: true
+
 tasks:
   contributors:check:
     cmds:

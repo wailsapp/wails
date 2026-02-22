@@ -90,17 +90,17 @@ function notifyListeners(eventData) {
     // Get the event name
     let eventName = eventData.name;
 
-    // Keep a list of listener indexes to destroy
-    const newEventListenerList = eventListeners[eventName]?.slice() || [];
-
     // Check if we have any listeners for this event
-    if (newEventListenerList.length) {
+    if (eventListeners[eventName]) {
+
+        // Keep a list of listener indexes to destroy
+        const newEventListenerList = eventListeners[eventName].slice();
 
         // Iterate listeners
-        for (let count = newEventListenerList.length - 1; count >= 0; count -= 1) {
+        for (let count = eventListeners[eventName].length - 1; count >= 0; count -= 1) {
 
             // Get next listener
-            const listener = newEventListenerList[count];
+            const listener = eventListeners[eventName][count];
 
             let data = eventData.data;
 
@@ -190,9 +190,9 @@ export function EventsOff(eventName, ...additionalEventNames) {
  */
  export function EventsOffAll() {
     const eventNames = Object.keys(eventListeners);
-    eventNames.forEach(eventName => {
-        removeListener(eventName)
-    })
+    for (let i = 0; i !== eventNames.length; i++) {
+        removeListener(eventNames[i]);
+    }
 }
 
 /**
@@ -202,8 +202,6 @@ export function EventsOff(eventName, ...additionalEventNames) {
  */
  function listenerOff(listener) {
     const eventName = listener.eventName;
-    if (eventListeners[eventName] === undefined) return;
-
     // Remove local listener
     eventListeners[eventName] = eventListeners[eventName].filter(l => l !== listener);
 

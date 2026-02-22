@@ -23,7 +23,7 @@ type ProcessedMenuItem struct {
 	Hidden bool `json:",omitempty"`
 	// Checked indicates if the item is selected (used by Checkbox and Radio types only)
 	Checked bool `json:",omitempty"`
-	// SubMenu contains a list of menu items that will be shown as a submenu
+	// Submenu contains a list of menu items that will be shown as a submenu
 	// SubMenu []*MenuItem `json:"SubMenu,omitempty"`
 	SubMenu *ProcessedMenu `json:",omitempty"`
 	/*

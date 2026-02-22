@@ -5,8 +5,6 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - v3-alpha
-    paths:
-      - 'v3/**'
   pull_request_review:
     types: [submitted]
     branches:
@@ -29,70 +27,6 @@ jobs:
             echo "approved=false" >> $GITHUB_OUTPUT
           fi
 
-  test_go:
-    name: Run Go Tests v3
-    needs: check_approval
-    runs-on: ${{ matrix.os }}
-    if: github.base_ref == 'v3-alpha'
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
-        go-version: [1.24]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install linux dependencies
-        uses: awalsh128/cache-apt-pkgs-action@latest
-        if: matrix.os == 'ubuntu-latest'
-        with:
-          packages: libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk
-          version: 1.0
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ matrix.go-version }}
-          cache-dependency-path: "v3/go.sum"
-
-      - name: Install Task
-        uses: arduino/setup-task@v2
-        with:
-          version: 3.x
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build Examples
-        working-directory: v3
-        run: task test:examples
-
-      - name: Run tests (mac)
-        if: matrix.os == 'macos-latest'
-        env:
-          CGO_LDFLAGS: -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
-        working-directory: v3
-        run: go test -v ./...
-
-      - name: Run tests (windows)
-        if: matrix.os == 'windows-latest'
-        working-directory: v3
-        run: go test -v ./...
-
-      - name: Run tests (ubuntu)
-        if: matrix.os == 'ubuntu-latest'
-        working-directory: v3
-        run: >
-          xvfb-run --auto-servernum
-          sh -c '
-          dbus-update-activation-environment --systemd --all &&
-          go test -v ./...
-          '
-
-      - name: Typecheck binding generator output
-        working-directory: v3
-        run: task generator:test:check
-
   test_js:
     name: Run JS Tests
     needs: check_approval
@@ -111,17 +45,172 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Install dependencies
-        run: npm install
-        working-directory: v2/internal/frontend/runtime
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run tests
-        run: npm test
-        working-directory: v2/internal/frontend/runtime
+      - name: Install dependencies
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: |
+          npm ci
+          npx --yes esbuild@latest --version
+
+      - name: Clean build artifacts
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: npm run clean
+
+      - name: Type-check runtime
+        working-directory: v3
+        run: task runtime:check
+
+      - name: Test runtime
+        working-directory: v3
+        run: task runtime:test
+
+      - name: Check that the bundled runtime builds
+        working-directory: v3
+        run: task runtime:build
+
+      - name: Check that the npm package builds
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: npm run build
+
+      - name: Pack runtime for template tests
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: npm pack
+
+      - name: Store runtime build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-build-artifacts
+          path: |
+            v3/internal/runtime/desktop/@wailsio/runtime/dist/
+            v3/internal/runtime/desktop/@wailsio/runtime/types/
+            v3/internal/runtime/desktop/@wailsio/runtime/tsconfig.tsbuildinfo
+
+      - name: Store runtime package
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-package
+          path: v3/internal/runtime/desktop/@wailsio/runtime/*.tgz
+
+  test_go:
+    name: Run Go Tests v3
+    needs: [check_approval, test_js]
+    runs-on: ${{ matrix.os }}
+    if: github.base_ref == 'v3-alpha'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        go-version: [1.24]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install linux dependencies (GTK3)
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          packages: libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk
+          version: 1.0
+
+      - name: Install linux dependencies (GTK4)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-4-dev libwebkitgtk-6.0-dev
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: true
+          cache-dependency-path: "v3/go.sum"
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Retrieve runtime build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: runtime-build-artifacts
+          path: v3/internal/runtime/desktop/@wailsio/runtime/
+
+      - name: Build Examples (GTK3 default)
+        working-directory: v3
+        run: |
+          echo "Starting example compilation tests (GTK3)..."
+          task test:examples
+          echo "Example compilation tests (GTK3) completed successfully"
+
+      - name: Build Examples (GTK4)
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: v3
+        run: |
+          echo "Starting example compilation tests (GTK4)..."
+          BUILD_TAGS=gtk4 task test:examples
+          echo "Example compilation tests (GTK4) completed successfully"
+
+      - name: Run tests (mac)
+        if: matrix.os == 'macos-latest'
+        env:
+          CGO_LDFLAGS: -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
+        working-directory: v3
+        run: go test -v ./...
+
+      - name: Run tests (windows)
+        if: matrix.os == 'windows-latest'
+        working-directory: v3
+        run: go test -v ./...
+
+      - name: Run tests (ubuntu) - GTK3 default
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: v3
+        run: >
+          xvfb-run --auto-servernum
+          sh -c '
+          dbus-update-activation-environment --systemd --all &&
+          go test -v ./...
+          '
+
+      - name: Run tests (ubuntu) - GTK4
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: v3
+        # Skip service tests that hang in CI due to GTK4 display requirements
+        run: >
+          xvfb-run --auto-servernum
+          sh -c '
+          dbus-update-activation-environment --systemd --all &&
+          go test -tags gtk4 -v -skip "TestService" ./...
+          '
+
+      - name: Typecheck binding generator output
+        working-directory: v3
+        run: task generator:test:check
+
+  cleanup:
+    name: Cleanup build artifacts
+    if: always()
+    needs: [test_js, test_go, test_templates]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: geekyeggo/delete-artifact@v5
+        with:
+          name: |
+            runtime-build-artifacts
+            runtime-package
+          failOnError: false
 
   test_templates:
     name: Test Templates
-    needs: test_go
+    needs: [test_js, test_go]
     runs-on: ${{ matrix.os }}
     if: github.base_ref == 'v3-alpha'
     strategy:
@@ -146,17 +235,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install linux dependencies
+      - name: Install linux dependencies (GTK3)
         uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
         with:
-          packages: libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
+          packages: libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config
           version: 1.0
+
+      - name: Install linux dependencies (GTK4)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-4-dev libwebkitgtk-6.0-dev
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
+          cache: true
           cache-dependency-path: "v3/go.sum"
 
       - name: Install Task
@@ -171,13 +267,31 @@ jobs:
           task install
           wails3 doctor
 
-      - name: Generate template '${{ matrix.template }}'
+      - name: Download runtime package
+        uses: actions/download-artifact@v4
+        with:
+          name: runtime-package
+          path: wails-runtime-temp
+
+      - name: Generate template '${{ matrix.template }}' (GTK3 default)
+        shell: bash
         run: |
+          # Get absolute path - use pwd -W on Windows for native paths, pwd elsewhere
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            RUNTIME_TGZ="$(cd wails-runtime-temp && pwd -W)/$(ls wails-runtime-temp/*.tgz | xargs basename)"
+          else
+            RUNTIME_TGZ="$(cd wails-runtime-temp && pwd)/$(ls wails-runtime-temp/*.tgz | xargs basename)"
+          fi
           mkdir -p ./test-${{ matrix.template }}
           cd ./test-${{ matrix.template }}
           wails3 init -n ${{ matrix.template }} -t ${{ matrix.template }}
-          cd ${{ matrix.template }}
+          cd ${{ matrix.template }}/frontend
+          # Replace @wailsio/runtime version with local tarball
+          npm pkg set dependencies.@wailsio/runtime="file://$RUNTIME_TGZ"
+          cd ..
           wails3 build
+
+      # GTK4 template builds are covered by the Go example compilation tests above.
 
   build_results:
     if: ${{ always() }}

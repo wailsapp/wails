@@ -6,24 +6,14 @@ import (
 	"reflect"
 )
 
-type BoundedMethodPath struct {
-	Package string
-	Struct  string
-	Name    string
-}
-
-func (p *BoundedMethodPath) FullName() string {
-	return fmt.Sprintf("%s.%s.%s", p.Package, p.Struct, p.Name)
-}
-
 // BoundMethod defines all the data related to a Go method that is
 // bound to the Wails application
 type BoundMethod struct {
-	Path     *BoundedMethodPath `json:"path"`
-	Inputs   []*Parameter       `json:"inputs,omitempty"`
-	Outputs  []*Parameter       `json:"outputs,omitempty"`
-	Comments string             `json:"comments,omitempty"`
-	Method   reflect.Value      `json:"-"`
+	Name     string        `json:"name"`
+	Inputs   []*Parameter  `json:"inputs,omitempty"`
+	Outputs  []*Parameter  `json:"outputs,omitempty"`
+	Comments string        `json:"comments,omitempty"`
+	Method   reflect.Value `json:"-"`
 }
 
 // InputCount returns the number of inputs this bound method has
@@ -40,7 +30,7 @@ func (b *BoundMethod) OutputCount() int {
 func (b *BoundMethod) ParseArgs(args []json.RawMessage) ([]interface{}, error) {
 	result := make([]interface{}, b.InputCount())
 	if len(args) != b.InputCount() {
-		return nil, fmt.Errorf("received %d arguments to method '%s', expected %d", len(args), b.Path.FullName(), b.InputCount())
+		return nil, fmt.Errorf("received %d arguments to method '%s', expected %d", len(args), b.Name, b.InputCount())
 	}
 	for index, arg := range args {
 		typ := b.Inputs[index].reflectType
@@ -64,7 +54,7 @@ func (b *BoundMethod) Call(args []interface{}) (interface{}, error) {
 	expectedInputLength := len(b.Inputs)
 	actualInputLength := len(args)
 	if expectedInputLength != actualInputLength {
-		return nil, fmt.Errorf("%s takes %d inputs. Received %d", b.Path.FullName(), expectedInputLength, actualInputLength)
+		return nil, fmt.Errorf("%s takes %d inputs. Received %d", b.Name, expectedInputLength, actualInputLength)
 	}
 
 	/** Convert inputs to reflect values **/

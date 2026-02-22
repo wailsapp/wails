@@ -18,8 +18,6 @@ The project config resides in the `wails.json` file in the project directory. Th
   "reloaddirs": "",
   // The directory where the build files reside. Defaults to 'build'
   "build:dir": "",
-  // Additional tags to include at build time regardless of environment
-  "build:tags": "",
   // Relative path to the frontend directory. Defaults to 'frontend'
   "frontend:dir": "",
   // The command to install node dependencies, run in the frontend directory - often `npm install`
@@ -36,8 +34,6 @@ The project config resides in the `wails.json` file in the project directory. Th
   "frontend:dev:watcher": "",
   // URL to a 3rd party dev server to be used to serve assets, EG Vite. \nIf this is set to 'auto' then the devServerUrl will be inferred from the Vite output
   "frontend:dev:serverUrl": "",
-  // The timeout in seconds for Vite server detection when frontend:dev:serverUrl is set to 'auto'. Default: 10
-  "viteServerTimeout": 10,
   // Relative path to the directory that the auto-generated JS modules will be created
   "wailsjsdir": "",
   // The name of the binary
@@ -128,7 +124,7 @@ The project config resides in the `wails.json` file in the project directory. Th
 
 This file is read by the Wails CLI when running `wails build` or `wails dev`.
 
-The `assetdir`, `reloaddirs`, `wailsjsdir`, `debounceMS`, `devserver`, `frontenddevserverurl` and `viteservertimeout` flags in `wails build/dev` will update the project config
+The `assetdir`, `reloaddirs`, `wailsjsdir`, `debounceMS`, `devserver` and `frontenddevserverurl` flags in `wails build/dev` will update the project config
 and thus become defaults for subsequent runs.
 
 The JSON Schema for this file is located [here](https://wails.io/schemas/config.v2.json).

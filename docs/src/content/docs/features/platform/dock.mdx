@@ -1,0 +1,241 @@
+---
+title: Dock & Taskbar
+description: Manage dock icon visibility and display badges on macOS and Windows
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Introduction
+
+Wails provides a cross-platform Dock service for desktop applications. This service allows you to:
+
+- Hide and show the application icon in the macOS Dock
+- Display badges on your application tile or dock/taskbar icon (macOS and Windows)
+
+## Basic Usage
+
+### Creating the Service
+
+First, initialize the dock service:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/dock"
+
+// Create a new Dock service
+dockService := dock.New()
+
+// Register the service with the application
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(dockService),
+    },
+})
+```
+
+### Creating the Service with Custom Badge Options (Windows Only)
+
+On Windows, you can customize the badge appearance with various options:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/dock"
+import "image/color"
+
+// Create a dock service with custom badge options
+options := dock.BadgeOptions{
+    TextColour:       color.RGBA{255, 255, 255, 255}, // White text
+    BackgroundColour: color.RGBA{0, 0, 255, 255},     // Blue background
+    FontName:         "consolab.ttf",                 // Bold Consolas font
+    FontSize:         20,                             // Font size for single character
+    SmallFontSize:    14,                             // Font size for multiple characters
+}
+
+dockService := dock.NewWithOptions(options)
+
+// Register the service with the application
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(dockService),
+    },
+})
+```
+
+## Dock Operations
+
+### Hiding the dock app icon
+
+Hide the app icon from the macOS Dock:
+
+```go
+// Hide the app icon
+dockService.HideAppIcon()
+```
+
+### Showing the dock app icon
+
+Show the app icon in the macOS Dock:
+
+```go
+// Show the app icon
+dockService.ShowAppIcon()
+```
+
+## Badge Operations
+
+### Setting a Badge
+
+Set a badge on the application tile/dock icon:
+
+```go
+// Set a default badge
+dockService.SetBadge("")
+
+// Set a numeric badge
+dockService.SetBadge("3")
+
+// Set a text badge
+dockService.SetBadge("New")
+```
+
+### Setting a Custom Badge (Windows Only)
+
+Set a badge with one-off options applied:
+
+```go
+options := dock.BadgeOptions{
+    BackgroundColour: color.RGBA{0, 255, 255, 255},
+    FontName:         "arialb.ttf", // System font
+    FontSize:         16,
+    SmallFontSize:    10,
+    TextColour:       color.RGBA{0, 0, 0, 255},
+}
+
+// Set a default badge
+dockService.SetCustomBadge("", options)
+
+// Set a numeric badge
+dockService.SetCustomBadge("3", options)
+
+// Set a text badge
+dockService.SetCustomBadge("New", options)
+```
+
+### Removing a Badge
+
+Remove the badge from the application icon:
+
+```go
+dockService.RemoveBadge()
+```
+
+### Getting the set badge
+```go
+dockService.GetBadge()
+``` 
+
+## Platform Considerations
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    On macOS:
+    
+    - The dock icon can be **hidden** and **shown**
+    - Badges are displayed directly on the dock icon
+    - Badge options are **not customizable** (any options passed to `NewWithOptions`/`SetCustomBadge` are ignored)
+    - The standard macOS dock badge styling is used and automatically adapts to appearance
+    - Label overflow is handled by the system
+    - Providing an empty label displays a default badge of "●"
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    On Windows:
+    
+    - Hiding/showing the taskbar icon is not currently supported by this service
+    - Badges are displayed as an overlay icon in the taskbar
+    - Badges support text values
+    - Badge appearance can be customized via `BadgeOptions`
+    - The application must have a window for badges to display
+    - A smaller font size is automatically used for multi-character labels
+    - Label overflow is not handled
+    - Customization options:
+      - **TextColour**: Text color (default: white)
+      - **BackgroundColour**: Badge background color (default: red)
+      - **FontName**: Font file name (default: "segoeuib.ttf")
+      - **FontSize**: Font size for single character (default: 18)
+      - **SmallFontSize**: Font size for multiple characters (default: 14)
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    On Linux:
+    
+    - Dock icon visibility and badge functionality are not available
+    
+  </TabItem>
+</Tabs>
+
+## Best Practices
+
+1. **When hiding the dock icon (macOS):**
+   - Ensure users can still access your app (e.g., via [system tray](https://v3alpha.wails.io/learn/systray/))
+   - Include a "Quit" option in your alternative UI
+   - The app won't appear in Command+Tab switcher
+   - Open windows remain visible and functional
+   - Closing all windows may not quit the app (macOS behavior varies)
+   - Users lose the standard way to quit via Dock right-click
+
+2. **Use badges sparingly:**
+   - Too many badge updates can distract users
+   - Reserve badges for important notifications
+
+3. **Keep badge text short:**
+   - Numeric badges are most effective
+   - On macOS, text badges should be brief
+
+4. **For Windows badge customization:**
+   - Ensure high contrast between text and background colors
+   - Test with different text lengths as font size decreases with length
+   - Use common system fonts to ensure availability
+
+
+## API Reference
+
+### Service Management
+| Method                                     | Description                                           |
+|--------------------------------------------|-------------------------------------------------------|
+| `New()`                                    | Creates a new dock service                            |
+| `NewWithOptions(options BadgeOptions)`     | Creates a new dock service with custom badge options (Windows only; options are ignored on macOS and Linux) |
+
+### Dock Operations
+| Method                                       | Description                                                |
+|--------------------------------|-------------------------------------------------------------|
+| `HideAppIcon()`                | Hides the app icon from the macOS Dock (macOS only)         |
+| `ShowAppIcon()`                | Shows the app icon in the macOS Dock (macOS only)           |
+
+### Badge Operations
+| Method                                            | Description                                                |
+|---------------------------------------------------|------------------------------------------------------------|
+| `SetBadge(label string) error`                    | Sets a badge with the specified label                      |
+| `SetCustomBadge(label string, options BadgeOptions) error` | Sets a badge with the specified label and custom styling options (Windows only) |
+| `RemoveBadge() error`                             | Removes the badge from the application icon                |
+| `GetBadge() *string`                             | Gets the current badge                |
+
+### Structs and Types
+
+```go
+// Options for customizing badge appearance (Windows only)
+type BadgeOptions struct {
+    TextColour       color.RGBA  // Color of the badge text
+    BackgroundColour color.RGBA  // Color of the badge background
+    FontName         string      // Font file name (e.g., "segoeuib.ttf")
+    FontSize         int         // Font size for single character
+    SmallFontSize    int         // Font size for multiple characters
+}
+```

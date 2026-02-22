@@ -59,24 +59,6 @@ func main() {
 }
 ```
 
-If you want to handle universal links as well, follow this [guide](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app) to add required entitlements, add required keys to Info.plist and configure `apple-app-site-association` on your website.
-
-Here is example for Info.plist:
-```xml
-<key>NSUserActivityTypes</key>
-<array>
-  <string>NSUserActivityTypeBrowsingWeb</string>
-</array>
-```
-
-And for entitlements.plist
-```xml
-<key>com.apple.developer.associated-domains</key>
-<array>
-  <string>applinks:myawesomeapp.com</string>
-</array>
-```
-
 
 ### Windows
 On Windows Custom Protocol Schemes is supported only with NSIS installer. During installation, the installer will create a

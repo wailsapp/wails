@@ -5,6 +5,7 @@ package cfd
 
 import (
 	"github.com/go-ole/go-ole"
+	"github.com/wailsapp/wails/v2/internal/go-common-file-dialog/util"
 	"unsafe"
 )
 
@@ -76,7 +77,7 @@ func (fileSaveDialog *iFileSaveDialog) SetFileFilters(filter []FileFilter) error
 }
 
 func (fileSaveDialog *iFileSaveDialog) SetRole(role string) error {
-	return fileSaveDialog.vtbl.setClientGuid(unsafe.Pointer(fileSaveDialog), StringToUUID(role))
+	return fileSaveDialog.vtbl.setClientGuid(unsafe.Pointer(fileSaveDialog), util.StringToUUID(role))
 }
 
 func (fileSaveDialog *iFileSaveDialog) SetDefaultExtension(defaultExtension string) error {

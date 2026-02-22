@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            height: 100%;
+        }
+
+        .quarter {
+            flex: 50%; /* This will cause elements to take up 50% of the container's width, causing them to wrap into 4 equal sections. */
+            box-sizing: border-box; /* This makes the padding part of the element's total width and height, ensuring they don't exceed 50%. */
+            padding: 20px;
+        }
+    </style>
+    <script type="module" src="/wails/runtime.js"></script>
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', (event) => {
+            let minimiseButton = document.querySelector('#min');
+            minimiseButton.addEventListener('click', function(event) {
+                window.wails.Window.Minimise();
+                setTimeout(function() {
+                    window.wails.Window.UnMinimise();
+                }, 3000);
+            });
+            let closeButton = document.querySelector('#close');
+            closeButton.addEventListener('click', function(event) {
+                window.wails.Window.Close();
+            });
+            let toggleFramelessButton = document.querySelector('#toggle-frameless');
+            toggleFramelessButton.addEventListener('click', function(event) {
+                window.wails.Window.ToggleFrameless();
+            });
+        });
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="quarter" style="background-color: lightblue; --wails-draggable: drag">Draggable</div>
+    <div class="quarter" style="background-color: lightgreen;"><div>Not Draggable</div><button id="min">Minimise for 3s</button></div>
+    <div class="quarter" style="background-color: lightpink;"><div>Not Draggable</div><button id="close">Close</button></div>
+    <div class="quarter" style="background-color: lightred;"><div>Not Draggable</div><button id="toggle-frameless">Toggle Frameless</button></div>
+    <div class="quarter" style="background-color: lightyellow; --wails-draggable: drag">Draggable</div>
+</div>
+</body>
+</html>

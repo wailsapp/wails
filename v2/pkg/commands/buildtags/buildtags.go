@@ -8,7 +8,7 @@ import (
 )
 
 // Parse parses the given tags string and returns
-// a cleaned slice of strings. Both comma and space delimited
+// a cleaned slice of strings. Both comma and space delimeted
 // tags are supported but not mixed. If mixed, an error is returned.
 func Parse(tags string) ([]string, error) {
 	if tags == "" {
