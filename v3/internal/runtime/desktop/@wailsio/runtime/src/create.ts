@@ -49,7 +49,7 @@ export function Array<T = any>(element: (source: any) => T): (source: any) => T[
  * and returns an in-place creation function for an object
  * whose keys and values are of those types.
  */
-export function Map<V = any>(key: (source: any) => string, value: (source: any) => V): (source: any) => Record<string, V> {
+export function Map<K extends PropertyKey = any, V = any>(key: (source: any) => K, value: (source: any) => V): (source: any) => Record<K, V> {
     if (value === Any) {
         return (source) => (source === null ? {} : source);
     }

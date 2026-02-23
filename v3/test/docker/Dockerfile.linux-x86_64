@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Build Linux binaries for Wails v3 examples using Ubuntu 24.04 (x86_64 native)
 FROM --platform=linux/amd64 ubuntu:24.04
 
@@ -5,6 +6,8 @@ FROM --platform=linux/amd64 ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install system dependencies for Wails v3 (x86_64 native)
+# GTK4/WebKitGTK 6.0 is the default build target
+# GTK3/WebKit2GTK 4.1 is available for legacy builds with -tags gtk3
 RUN apt-get update && apt-get install -y \
     --no-install-recommends \
     # Core build tools for x86_64
@@ -12,7 +15,10 @@ RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     pkg-config \
-    # GTK and WebKit dependencies for Ubuntu 24.04
+    # GTK4 and WebKitGTK 6.0 dependencies (DEFAULT)
+    libgtk-4-dev \
+    libwebkitgtk-6.0-dev \
+    # GTK3 and WebKit2GTK 4.1 dependencies (LEGACY - for -tags gtk3)
     libgtk-3-dev \
     libwebkit2gtk-4.1-dev \
     # Additional dependencies that might be needed
@@ -100,10 +106,19 @@ build_example() {
     fi
     
     # Build the example for x86_64
-    echo "  Compiling for x86_64..."
-    if go build -o "testbuild-$example_name-linux-x86_64"; then
+    # Use BUILD_TAGS environment variable for GTK3 legacy builds
+    local build_tags="${BUILD_TAGS:-}"
+    local suffix="linux-x86_64"
+    if [ -n "$build_tags" ]; then
+        suffix="linux-x86_64-${build_tags}"
+        echo "  Compiling for x86_64 with tags: $build_tags..."
+    else
+        echo "  Compiling for x86_64 (GTK4 default)..."
+    fi
+    
+    if go build ${build_tags:+-tags "$build_tags"} -o "testbuild-$example_name-$suffix"; then
         echo -e "${GREEN}✓${NC} Successfully built $example_name for x86_64"
-        ls -la "testbuild-$example_name-linux-x86_64"
+        ls -la "testbuild-$example_name-$suffix"
         return 0
     else
         echo -e "${RED}✗${NC} Build failed for $example_name"

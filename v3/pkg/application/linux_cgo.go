@@ -1,4 +1,4 @@
-//go:build linux && cgo && !android && !server
+//go:build linux && cgo && !gtk4 && !android && !server
 
 package application
 
@@ -663,8 +663,15 @@ func (a *linuxApp) showAllWindows() {
 }
 
 func (a *linuxApp) setIcon(icon []byte) {
-	gbytes := C.g_bytes_new_static(C.gconstpointer(unsafe.Pointer(&icon[0])), C.ulong(len(icon)))
+	if len(icon) == 0 {
+		return
+	}
+	// Use g_bytes_new instead of g_bytes_new_static because Go memory can be
+	// moved or freed by the GC. g_bytes_new copies the data to C-owned memory.
+	gbytes := C.g_bytes_new(C.gconstpointer(unsafe.Pointer(&icon[0])), C.ulong(len(icon)))
+	defer C.g_bytes_unref(gbytes)
 	stream := C.g_memory_input_stream_new_from_bytes(gbytes)
+	defer C.g_object_unref(C.gpointer(stream))
 	var gerror *C.GError
 	pixbuf := C.gdk_pixbuf_new_from_stream(stream, nil, &gerror)
 	if gerror != nil {
@@ -831,8 +838,10 @@ func menuItemAddProperties(menuItem *C.GtkWidget, label string, bitmap []byte) p
 		(*C.GtkWidget)(unsafe.Pointer(menuItem)))
 
 	box := C.gtk_box_new(C.GTK_ORIENTATION_HORIZONTAL, 6)
-	if img, err := pngToImage(bitmap); err == nil {
-		gbytes := C.g_bytes_new_static(C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
+	if img, err := pngToImage(bitmap); err == nil && len(img.Pix) > 0 {
+		// Use g_bytes_new instead of g_bytes_new_static because Go memory can be
+		// moved or freed by the GC. g_bytes_new copies the data to C-owned memory.
+		gbytes := C.g_bytes_new(C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
 			C.ulong(len(img.Pix)))
 		defer C.g_bytes_unref(gbytes)
 		pixBuf := C.gdk_pixbuf_new_from_bytes(
@@ -911,8 +920,10 @@ func menuItemRemoveBitmap(widget pointer) {
 func menuItemSetBitmap(widget pointer, bitmap []byte) {
 	menuItemRemoveBitmap(widget)
 	box := C.gtk_bin_get_child((*C.GtkBin)(widget))
-	if img, err := pngToImage(bitmap); err == nil {
-		gbytes := C.g_bytes_new_static(C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
+	if img, err := pngToImage(bitmap); err == nil && len(img.Pix) > 0 {
+		// Use g_bytes_new instead of g_bytes_new_static because Go memory can be
+		// moved or freed by the GC. g_bytes_new copies the data to C-owned memory.
+		gbytes := C.g_bytes_new(C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
 			C.ulong(len(img.Pix)))
 		defer C.g_bytes_unref(gbytes)
 		pixBuf := C.gdk_pixbuf_new_from_bytes(
@@ -1182,8 +1193,10 @@ func (w *linuxWebviewWindow) fullscreen() {
 	if x == -1 && y == -1 && width == -1 && height == -1 {
 		return
 	}
-	w.setMinMaxSize(0, 0, width*scaleFactor, height*scaleFactor)
-	w.setSize(width*scaleFactor, height*scaleFactor)
+	physicalWidth := int(float64(width) * scaleFactor)
+	physicalHeight := int(float64(height) * scaleFactor)
+	w.setMinMaxSize(0, 0, physicalWidth, physicalHeight)
+	w.setSize(physicalWidth, physicalHeight)
 	C.gtk_window_fullscreen(w.gtkWindow())
 	w.setRelativePosition(0, 0)
 }
@@ -1262,7 +1275,7 @@ func (w *linuxWebviewWindow) getScreen() (*Screen, error) {
 	}, nil
 }
 
-func (w *linuxWebviewWindow) getCurrentMonitorGeometry() (x int, y int, width int, height int, scaleFactor int) {
+func (w *linuxWebviewWindow) getCurrentMonitorGeometry() (x int, y int, width int, height int, scaleFactor float64) {
 	monitor := w.getCurrentMonitor()
 	if monitor == nil {
 		// Best effort to find screen resolution of default monitor
@@ -1274,7 +1287,8 @@ func (w *linuxWebviewWindow) getCurrentMonitorGeometry() (x int, y int, width in
 	}
 	var result C.GdkRectangle
 	C.gdk_monitor_get_geometry(monitor, &result)
-	scaleFactor = int(C.gdk_monitor_get_scale_factor(monitor))
+	// GTK3 only supports integer scale factors
+	scaleFactor = float64(C.gdk_monitor_get_scale_factor(monitor))
 	return int(result.x), int(result.y), int(result.width), int(result.height), scaleFactor
 }
 
@@ -1346,7 +1360,7 @@ func (w *linuxWebviewWindow) minimise() {
 	C.gtk_window_iconify(w.gtkWindow())
 }
 
-func windowNew(application pointer, menu pointer, windowId uint, gpuPolicy WebviewGpuPolicy) (window, webview, vbox pointer) {
+func windowNew(application pointer, menu pointer, _ LinuxMenuStyle, windowId uint, gpuPolicy WebviewGpuPolicy) (window, webview, vbox pointer) {
 	window = pointer(C.gtk_application_window_new((*C.GtkApplication)(application)))
 	C.g_object_ref_sink(C.gpointer(window))
 	webview = windowNewWebview(windowId, gpuPolicy)
@@ -1537,7 +1551,10 @@ func (w *linuxWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
 }
 
 func (w *linuxWebviewWindow) flash(_ bool) {
-	// Not supported on Linux
+}
+
+func (w *linuxWebviewWindow) setOpacity(opacity float64) {
+	C.gtk_widget_set_opacity(w.gtkWidget(), C.double(opacity))
 }
 
 func (w *linuxWebviewWindow) setTitle(title string) {
@@ -2106,25 +2123,27 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 	// run this on the gtk thread
 	InvokeAsync(func() {
 		response := C.gtk_dialog_run((*C.GtkDialog)(fc))
+		// Extract results on GTK thread BEFORE destroying widget
+		var results []string
+		if response == C.GTK_RESPONSE_ACCEPT {
+			// No artificial limit - consistent with Windows/macOS behavior
+			filenames := C.gtk_file_chooser_get_filenames((*C.GtkFileChooser)(fc))
+			for iter := filenames; iter != nil; iter = iter.next {
+				results = append(results, buildStringAndFree(C.gpointer(iter.data)))
+			}
+			C.g_slist_free(filenames)
+		}
+		// Destroy widget after extracting results (on GTK thread)
+		C.gtk_widget_destroy((*C.GtkWidget)(unsafe.Pointer(fc)))
+		// Send results from goroutine (safe - no GTK calls)
 		go func() {
 			defer handlePanic()
-			if response == C.GTK_RESPONSE_ACCEPT {
-				filenames := C.gtk_file_chooser_get_filenames((*C.GtkFileChooser)(fc))
-				iter := filenames
-				count := 0
-				for {
-					selections <- buildStringAndFree(C.gpointer(iter.data))
-					iter = iter.next
-					if iter == nil || count == 1024 {
-						break
-					}
-					count++
-				}
+			for _, result := range results {
+				selections <- result
 			}
 			close(selections)
 		}()
 	})
-	C.gtk_widget_destroy((*C.GtkWidget)(unsafe.Pointer(fc)))
 	return selections, nil
 }
 
@@ -2191,8 +2210,10 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 			cTitle)
 	}
 
-	if img, err := pngToImage(options.Icon); err == nil {
-		gbytes := C.g_bytes_new_static(
+	if img, err := pngToImage(options.Icon); err == nil && len(img.Pix) > 0 {
+		// Use g_bytes_new instead of g_bytes_new_static because Go memory can be
+		// moved or freed by the GC. g_bytes_new copies the data to C-owned memory.
+		gbytes := C.g_bytes_new(
 			C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
 			C.ulong(len(img.Pix)))
 		defer C.g_bytes_unref(gbytes)

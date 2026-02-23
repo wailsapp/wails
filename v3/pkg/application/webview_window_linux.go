@@ -15,6 +15,10 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
+func init() {
+	shouldSkipHideOnFocusLost = detectFocusFollowsMouse
+}
+
 type dragInfo struct {
 	XRoot       int
 	YRoot       int
@@ -103,7 +107,7 @@ func (w *linuxWebviewWindow) setMaximiseButtonEnabled(enabled bool) {
 
 func (w *linuxWebviewWindow) disableSizeConstraints() {
 	x, y, width, height, scaleFactor := w.getCurrentMonitorGeometry()
-	w.setMinMaxSize(x, y, width*scaleFactor, height*scaleFactor)
+	w.setMinMaxSize(x, y, int(float64(width)*scaleFactor), int(float64(height)*scaleFactor))
 }
 
 func (w *linuxWebviewWindow) unminimise() {
@@ -116,11 +120,16 @@ func (w *linuxWebviewWindow) on(eventID uint) {
 }
 
 func (w *linuxWebviewWindow) zoom() {
-	w.zoomIn()
+	// Zoom toggles between maximized and normal state (like macOS green button)
+	if w.isMaximised() {
+		w.unmaximise()
+	} else {
+		w.maximise()
+	}
 }
 
 func (w *linuxWebviewWindow) windowZoom() {
-	w.zoom() // FIXME> This should be removed
+	w.zoom()
 }
 
 func (w *linuxWebviewWindow) forceReload() {
@@ -272,14 +281,24 @@ func (w *linuxWebviewWindow) run() {
 	app := getNativeApplication()
 
 	var menu = w.parent.options.Linux.Menu
+	if menu == nil {
+		menu = globalApplication.applicationMenu
+	}
 	if menu != nil {
+		// Explicit window menu takes priority
 		InvokeSync(func() {
 			menu.Update()
 		})
 		w.gtkmenu = (menu.impl).(*linuxMenu).native
+	} else if w.parent.options.UseApplicationMenu && globalApplication.applicationMenu != nil {
+		// Use the global application menu if opted in
+		InvokeSync(func() {
+			globalApplication.applicationMenu.Update()
+		})
+		w.gtkmenu = (globalApplication.applicationMenu.impl).(*linuxMenu).native
 	}
 
-	w.window, w.webview, w.vbox = windowNew(app.application, w.gtkmenu, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)
+	w.window, w.webview, w.vbox = windowNew(app.application, w.gtkmenu, w.parent.options.Linux.MenuStyle, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)
 	app.registerWindow(w.window, w.parent.id) // record our mapping
 	w.connectSignals()
 	if w.parent.options.EnableFileDrop {
@@ -287,7 +306,11 @@ func (w *linuxWebviewWindow) run() {
 	} else {
 		w.disableDND()
 	}
-	w.setTitle(w.parent.options.Title)
+	title := w.parent.options.Title
+	if title == "" {
+		title = w.parent.options.Name
+	}
+	w.setTitle(title)
 	w.setIcon(app.icon)
 	w.setAlwaysOnTop(w.parent.options.AlwaysOnTop)
 	w.setResizable(!w.parent.options.DisableResize)

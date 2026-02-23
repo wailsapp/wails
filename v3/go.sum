@@ -218,8 +218,8 @@ github.com/huandu/xstrings v1.5.0 h1:2ag3IFq9ZDANvthTwTiqSSZLjDc+BedvHPAp5tJy2TI
 github.com/huandu/xstrings v1.5.0/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq4ovT0aE=
 github.com/jackmordaunt/icns/v2 v2.2.7 h1:K/RbfvuzjmjVY5y4g+XENRs8ZZatwz4YnLHypa2KwQg=
 github.com/jackmordaunt/icns/v2 v2.2.7/go.mod h1:ovoTxGguSuoUGKMk5Nn3R7L7BgMQkylsO+bblBuI22A=
-github.com/jaypipes/ghw v0.21.2 h1:woW0lqNMPbYk59sur6thOVM8YFP9Hxxr8PM+JtpUrNU=
-github.com/jaypipes/ghw v0.21.2/go.mod h1:GPrvwbtPoxYUenr74+nAnWbardIZq600vJDD5HnPsPE=
+github.com/jaypipes/ghw v0.21.3 h1:v5mUHM+RN854Vqmk49Uh213jyUA4+8uqaRajlYESsh8=
+github.com/jaypipes/ghw v0.21.3/go.mod h1:GPrvwbtPoxYUenr74+nAnWbardIZq600vJDD5HnPsPE=
 github.com/jaypipes/pcidb v1.1.1 h1:QmPhpsbmmnCwZmHeYAATxEaoRuiMAJusKYkUncMC0ro=
 github.com/jaypipes/pcidb v1.1.1/go.mod h1:x27LT2krrUgjf875KxQXKB0Ha/YXLdZRVmw6hH0G7g8=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=

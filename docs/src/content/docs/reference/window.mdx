@@ -604,6 +604,34 @@ if err != nil {
 
 **Note:** This triggers the native OS print dialog, allowing the user to select printer settings and print the current window content.
 
+## Platform-Specific Options
+
+### Linux
+
+Linux windows support the following platform-specific options via `LinuxWindow`:
+
+#### MenuStyle
+
+Controls how the application menu is displayed. This option is only available on GTK4 builds and is ignored on GTK3.
+
+| Value | Description |
+|-------|-------------|
+| `LinuxMenuStyleMenuBar` | Traditional menu bar below the title bar (default) |
+| `LinuxMenuStylePrimaryMenu` | Primary menu button in the header bar (GNOME style) |
+
+**Example:**
+```go
+window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Title: "My Application",
+    Linux: application.LinuxWindow{
+        MenuStyle: application.LinuxMenuStylePrimaryMenu,
+    },
+})
+window.SetMenu(menu)
+```
+
+**Note:** The primary menu style displays a hamburger button (☰) in the header bar, following GNOME Human Interface Guidelines. This is the recommended style for modern GNOME applications.
+
 ## Complete Example
 
 ```go

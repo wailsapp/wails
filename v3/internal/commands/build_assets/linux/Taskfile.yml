@@ -17,15 +17,21 @@ tasks:
   build:
     summary: Builds the application for Linux
     cmds:
-      # Linux requires CGO - use Docker when cross-compiling from non-Linux OR when no C compiler is available
-      - task: '{{if and (eq OS "linux") (eq .HAS_CC "true")}}build:native{{else}}build:docker{{end}}'
+      # Linux requires CGO - use Docker when:
+      # 1. Cross-compiling from non-Linux, OR
+      # 2. No C compiler is available, OR
+      # 3. Target architecture differs from host architecture (cross-arch compilation)
+      - task: '{{if and (eq OS "linux") (eq .HAS_CC "true") (eq .TARGET_ARCH ARCH)}}build:native{{else}}build:docker{{end}}'
         vars:
           ARCH: '{{.ARCH}}'
           DEV: '{{.DEV}}'
           OUTPUT: '{{.OUTPUT}}'
+          EXTRA_TAGS: '{{.EXTRA_TAGS}}'
     vars:
       DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
       OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
+      # Determine target architecture (defaults to host ARCH if not specified)
+      TARGET_ARCH: '{{.ARCH | default ARCH}}'
       # Check if a C compiler is available (gcc or clang)
       HAS_CC:
         sh: '(command -v gcc >/dev/null 2>&1 || command -v clang >/dev/null 2>&1) && echo "true" || echo "false"'
@@ -46,7 +52,7 @@ tasks:
     cmds:
       - go build {{.BUILD_FLAGS}} -o {{.OUTPUT}}
     vars:
-      BUILD_FLAGS: '{{if eq .DEV "true"}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production -trimpath -buildvcs=false -ldflags="-w -s"{{end}}'
+      BUILD_FLAGS: '{{if eq .DEV "true"}}{{if .EXTRA_TAGS}}-tags {{.EXTRA_TAGS}} {{end}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production{{if .EXTRA_TAGS}},{{.EXTRA_TAGS}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s"{{end}}'
       DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
       OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
     env:
@@ -55,7 +61,7 @@ tasks:
       GOARCH: '{{.ARCH | default ARCH}}'
 
   build:docker:
-    summary: Cross-compiles for Linux using Docker with Zig (for macOS/Windows hosts)
+    summary: Builds for Linux using Docker (for non-Linux hosts or when no C compiler available)
     internal: true
     deps:
       - task: common:build:frontend
@@ -69,7 +75,7 @@ tasks:
           Docker image '{{.CROSS_IMAGE}}' not found.
           Build it first: wails3 task setup:docker
     cmds:
-      - docker run --rm -v "{{.ROOT_DIR}}:/app" {{.GO_CACHE_MOUNT}} {{.REPLACE_MOUNTS}} -e APP_NAME="{{.APP_NAME}}" "{{.CROSS_IMAGE}}" linux {{.DOCKER_ARCH}}
+      - docker run --rm -v "{{.ROOT_DIR}}:/app" {{.GO_CACHE_MOUNT}} {{.REPLACE_MOUNTS}} -e APP_NAME="{{.APP_NAME}}" {{if .EXTRA_TAGS}}-e EXTRA_TAGS="{{.EXTRA_TAGS}}"{{end}} "{{.CROSS_IMAGE}}" linux {{.DOCKER_ARCH}}
       - docker run --rm -v "{{.ROOT_DIR}}:/app" alpine chown -R $(id -u):$(id -g) /app/bin
       - mkdir -p {{.BIN_DIR}}
       - mv "bin/{{.APP_NAME}}-linux-{{.DOCKER_ARCH}}" "{{.OUTPUT}}"

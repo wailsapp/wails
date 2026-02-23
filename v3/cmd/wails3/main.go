@@ -50,6 +50,7 @@ func main() {
 		return commands.Package(&pkgFlags, pkg.OtherArgs())
 	})
 	app.NewSubCommandFunction("doctor", "System status report", commands.Doctor)
+	app.NewSubCommandFunction("doctor-ng", "System status report (new TUI)", commands.DoctorNg)
 	app.NewSubCommandFunction("releasenotes", "Show release notes", commands.ReleaseNotes)
 
 	task := app.NewSubCommand("task", "Run and list tasks")
@@ -94,6 +95,7 @@ func main() {
 	tool.NewSubCommandFunction("package", "Generate Linux packages (deb, rpm, archlinux)", commands.ToolPackage)
 	tool.NewSubCommandFunction("version", "Bump semantic version", commands.ToolVersion)
 	tool.NewSubCommandFunction("lipo", "Create macOS universal binary from multiple architectures", commands.ToolLipo)
+	tool.NewSubCommandFunction("capabilities", "Check system build capabilities (GTK4/GTK3 availability)", commands.ToolCapabilities)
 
 	// Low-level sign tool (used by Taskfiles)
 	toolSign := tool.NewSubCommand("sign", "Sign a binary or package directly")
@@ -127,10 +129,10 @@ func main() {
 		return commands.SignWrapper(&signWrapperFlags, sign.OtherArgs())
 	})
 
-    // iOS tools
-    ios := app.NewSubCommand("ios", "iOS tooling")
-    ios.NewSubCommandFunction("overlay:gen", "Generate Go overlay for iOS bridge shim", commands.IOSOverlayGen)
-    ios.NewSubCommandFunction("xcode:gen", "Generate Xcode project in output directory", commands.IOSXcodeGen)
+	// iOS tools
+	ios := app.NewSubCommand("ios", "iOS tooling")
+	ios.NewSubCommandFunction("overlay:gen", "Generate Go overlay for iOS bridge shim", commands.IOSOverlayGen)
+	ios.NewSubCommandFunction("xcode:gen", "Generate Xcode project in output directory", commands.IOSXcodeGen)
 
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)

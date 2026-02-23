@@ -1,0 +1,135 @@
+name: Cross-Compile Test v3
+
+on:
+  pull_request_review:
+    types: [submitted]
+    branches:
+      - v3-alpha
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to test (optional, uses current branch if not specified)'
+        required: false
+        type: string
+
+jobs:
+  check_approval:
+    name: Check PR Approval
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.review.state == 'approved'
+    outputs:
+      approved: ${{ steps.check.outputs.approved }}
+    steps:
+      - name: Check if PR is approved or manual dispatch
+        id: check
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "Manual dispatch, proceeding with cross-compile tests"
+          else
+            echo "PR approved, proceeding with cross-compile tests"
+          fi
+          echo "approved=true" >> $GITHUB_OUTPUT
+
+  cross_compile:
+    name: Cross-Compile (${{ matrix.target_os }}/${{ matrix.target_arch }})
+    needs: check_approval
+    runs-on: ${{ matrix.runner }}
+    if: needs.check_approval.outputs.approved == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target_os: darwin
+            target_arch: arm64
+            runner: ubuntu-latest
+          - target_os: darwin
+            target_arch: amd64
+            runner: ubuntu-latest
+          - target_os: linux
+            target_arch: arm64
+            runner: ubuntu-24.04-arm  # Native ARM64 runner - much faster than QEMU
+          - target_os: linux
+            target_arch: amd64
+            runner: ubuntu-latest
+          - target_os: windows
+            target_arch: arm64
+            runner: ubuntu-latest
+          - target_os: windows
+            target_arch: amd64
+            runner: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Checkout PR (if specified)
+        if: github.event_name == 'workflow_dispatch' && inputs.pr_number != ''
+        run: gh pr checkout ${{ inputs.pr_number }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache: true
+          cache-dependency-path: "v3/go.sum"
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Linux dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config
+          version: 1.0
+
+      - name: Install Wails3 CLI
+        working-directory: v3
+        run: |
+          go install ./cmd/wails3
+          wails3 version
+
+      - name: Create test project
+        run: |
+          mkdir -p test-cross-compile
+          cd test-cross-compile
+          wails3 init -n crosstest -t vanilla
+
+      - name: Setup Docker cross-compile image
+        working-directory: test-cross-compile/crosstest
+        run: task common:setup:docker
+
+      - name: Fix replace directive for Docker build
+        working-directory: test-cross-compile/crosstest
+        run: |
+          # Change the replace directive to use absolute path that matches Docker mount
+          go mod edit -dropreplace github.com/wailsapp/wails/v3
+          go mod edit -replace github.com/wailsapp/wails/v3=${{ github.workspace }}/v3
+
+      - name: Cross-compile for ${{ matrix.target_os }}/${{ matrix.target_arch }}
+        working-directory: test-cross-compile/crosstest
+        run: |
+          echo "Cross-compiling for ${{ matrix.target_os }}/${{ matrix.target_arch }}..."
+          task ${{ matrix.target_os }}:build ARCH=${{ matrix.target_arch }}
+          echo "Cross-compilation successful!"
+          ls -la bin/
+
+  cross_compile_results:
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    name: Cross-Compile Results
+    needs: [cross_compile]
+    steps:
+      - run: |
+          result="${{ needs.cross_compile.result }}"
+          echo "Cross-compile result: $result"
+          if [[ $result == "success" || $result == "skipped" ]]; then
+            echo "Cross-compile tests passed (or were skipped)!"
+            exit 0
+          else
+            echo "One or more cross-compile tests failed"
+            exit 1
+          fi
