@@ -13,12 +13,10 @@ import (
 // an ASCII-compatible encoding that mangles non-ASCII text.
 func ensureUTF8Env() []string {
 	env := os.Environ()
-	for _, e := range env {
-		if len(e) > 5 && e[:5] == "LANG=" {
-			return env
-		}
+	if _, ok := os.LookupEnv("LANG"); !ok {
+		env = append(env, "LANG=en_US.UTF-8")
 	}
-	return append(env, "LANG=en_US.UTF-8")
+	return env
 }
 
 func (f *Frontend) ClipboardGetText() (string, error) {
