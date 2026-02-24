@@ -1,4 +1,4 @@
-//go:build android && !server
+//go:build android
 
 package application
 

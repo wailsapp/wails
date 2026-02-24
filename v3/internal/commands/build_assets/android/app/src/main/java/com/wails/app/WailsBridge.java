@@ -60,7 +60,7 @@ public class WailsBridge {
     private volatile View.OnTouchListener touchListener;
     private final View.OnLongClickListener blockLongClickListener = v -> true;
 
-    private static final List<String> DEFAULT_NATIVE_TAB_TITLES = Collections.emptyList();
+    private static final List<String> DEFAULT_NATIVE_TAB_TITLES = Collections.singletonList("Home");
 
     // Native methods - implemented in Go
     private static native void nativeInit(WailsBridge bridge);
@@ -432,8 +432,7 @@ public class WailsBridge {
                 titles = DEFAULT_NATIVE_TAB_TITLES;
             }
 
-            boolean shouldShow = nativeTabsEnabled && !titles.isEmpty();
-            if (!shouldShow) {
+            if (!nativeTabsEnabled) {
                 tabs.setVisibility(View.GONE);
                 return;
             }

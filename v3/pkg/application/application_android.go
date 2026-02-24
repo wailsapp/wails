@@ -867,7 +867,7 @@ func handleMessageForAndroid(app *App, message string) string {
 		return marshalAndroidInvokeResponse(nil, fmt.Errorf("unsupported message type: %s", payload.Type))
 	}
 
-	processor := NewMessageProcessor(app.Logger)
+	processor := app.messageProcessor
 	request := &RuntimeRequest{
 		Object:            payload.Object,
 		Method:            payload.Method,

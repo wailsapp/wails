@@ -128,7 +128,7 @@ tasks:
 
         # ./gradlew doesn't work on windows
         case "$(uname -s)" in
-          MINGW*|MSYS*|CYGWIN*) gradlew="powershell ./gradlew" ;;
+          MINGW*|MSYS*|CYGWIN*) gradlew="powershell ./gradlew.bat" ;;
           *)      gradlew="./gradlew" ;;
         esac
 
@@ -144,7 +144,7 @@ tasks:
 
         # ./gradlew doesn't work on windows
         case "$(uname -s)" in
-          MINGW*|MSYS*|CYGWIN*) gradlew="powershell ./gradlew" ;;
+          MINGW*|MSYS*|CYGWIN*) gradlew="powershell ./gradlew.bat" ;;
           *)      gradlew="./gradlew" ;;
         esac
 
