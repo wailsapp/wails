@@ -46,6 +46,8 @@ The 2 files generated are `tasks.json` and `launch.json`. Below are the files ge
 }
 ```
 
+### Windows configuration
+
 ```json title="launch.json"
 {
   "version": "0.2.0",
@@ -61,6 +63,29 @@ The 2 files generated are `tasks.json` and `launch.json`. Below are the files ge
       "env": {}
     }
   ]
+}
+```
+
+### MacOS configuration
+
+```json title="launch.json"
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Wails: Debug myproject (macOS)",
+            "type": "go",
+            "request": "launch",
+            "mode": "exec",
+            "program": "${workspaceFolder}/build/bin/myproject",
+            "preLaunchTask": "build",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "GOOS": "darwin",
+                "GOARCH": "amd64"
+            }
+        }
+    ]
 }
 ```
 
