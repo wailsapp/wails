@@ -60,7 +60,7 @@ func (w *windowsWebContentsView) setBounds(bounds application.Rect) {
 			Right:  int32(bounds.X + bounds.Width),
 			Bottom: int32(bounds.Y + bounds.Height),
 		}
-		w.chromium.ResizeWithBounds(edgeBounds)
+		w.chromium.ResizeWithBounds(&edgeBounds)
 	}
 }
 
@@ -87,6 +87,10 @@ func (w *windowsWebContentsView) execJS(js string) {
 	if w.chromium != nil {
 		w.chromium.Eval(js)
 	}
+}
+
+func (w *windowsWebContentsView) takeSnapshot() string {
+	return ""
 }
 
 func (w *windowsWebContentsView) attach(window application.Window) {
