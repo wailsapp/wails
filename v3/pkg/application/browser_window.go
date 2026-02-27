@@ -55,6 +55,7 @@ func (b *BrowserWindow) Info(message string, args ...any) {
 
 // No-op methods - these don't apply to browser windows
 
+
 func (b *BrowserWindow) Center()                                      {}
 func (b *BrowserWindow) Close()                                       {}
 func (b *BrowserWindow) DisableSizeConstraints()                      {}
