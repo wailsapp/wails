@@ -58,6 +58,12 @@ func New(appOptions Options) *App {
 		}
 	}
 
+	// Initialize sanitizer and wrap logger
+	result.sanitizer = NewSanitizer(appOptions.SanitizeOptions)
+	if !result.sanitizer.IsDisabled() {
+		result.Logger = WrapLoggerWithSanitizer(result.Logger, result.sanitizer)
+	}
+
 	// Set up signal handling (platform-specific)
 	result.setupSignalHandler(appOptions)
 
@@ -378,6 +384,7 @@ type App struct {
 	clipboard            *Clipboard
 	customEventProcessor *EventProcessor
 	Logger               *slog.Logger
+	sanitizer            *Sanitizer
 
 	contextMenus     map[string]*ContextMenu
 	contextMenusLock sync.RWMutex
@@ -420,6 +427,12 @@ type App struct {
 
 func (a *App) Config() Options {
 	return a.options
+}
+
+// Sanitizer returns the application's sanitizer for redacting sensitive data.
+// Use this to sanitize your own data using the same rules as the application's log sanitization.
+func (a *App) Sanitizer() *Sanitizer {
+	return a.sanitizer
 }
 
 // Context returns the application context that is canceled when the application shuts down.

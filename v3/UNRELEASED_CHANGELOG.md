@@ -17,6 +17,9 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+## Added
+<!-- New features, capabilities, or enhancements -->
+- Support for automatic and configurable log sanitizing to prevent private data from being logged by @atterpac in [#4807]
 
 ## Changed
 <!-- Changes in existing functionality -->
