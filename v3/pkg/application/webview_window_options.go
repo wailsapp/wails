@@ -486,48 +486,33 @@ type MacWindow struct {
 	// LiquidGlass contains configuration for the Liquid Glass effect
 	LiquidGlass MacLiquidGlass
 
-	// WindowClass specifies whether to create an NSWindow or NSPanel.
-	// Use NSPanel for auxiliary windows that can appear over fullscreen
-	// apps without activating the application.
-	// Default: NSWindow
+	// WindowClass is the window class for the window
 	WindowClass MacWindowClass
 
-	// PanelOptions configures NSPanel-specific behavior (only used when WindowClass == NSPanel)
+	// PanelOptions contains options for NSPanel windows
 	PanelOptions MacPanelOptions
 }
 
-// MacWindowClass specifies the underlying macOS window class to use
+// MacWindowClass is the window class for macOS
 type MacWindowClass int
 
 const (
-	// NSWindow creates a standard NSWindow (default)
+	// NSWindow - The default value. A window that an app displays on the screen.
 	NSWindow MacWindowClass = iota
-	// NSPanel creates an NSPanel for auxiliary windows
+	// NSPanel - The window will be an NSPanel, a special kind of window that typically performs a function that is auxiliary to the main window
 	NSPanel
 )
 
-// MacPanelOptions contains NSPanel-specific configuration.
-// These options only apply when MacWindow.WindowClass == NSPanel.
+// MacPanelOptions contains options for NSPanel windows
 type MacPanelOptions struct {
-	// FloatingPanel makes the panel float above other windows.
-	// Equivalent to [panel setFloatingPanel:YES]
+	// FloatingPanel will make the panel float above other windows
 	FloatingPanel bool
-
-	// NonactivatingPanel uses NSWindowStyleMaskNonactivatingPanel style.
-	// This allows the panel to receive keyboard input without activating the app.
-	NonactivatingPanel bool
-
-	// BecomesKeyOnlyIfNeeded controls when the panel becomes key window.
-	// If true, the panel only becomes key when a view that needs keyboard input is clicked.
-	// If false (default), the panel becomes key immediately when shown.
+	// BecomesKeyOnlyIfNeeded will make the panel become key only when needed
 	BecomesKeyOnlyIfNeeded bool
-
-	// HidesOnDeactivate controls whether the panel hides when the app loses focus.
-	// NSPanel defaults to YES, unlike NSWindow which defaults to NO.
-	HidesOnDeactivate bool
-
-	// WorksWhenModal allows the panel to receive events during modal sessions.
-	WorksWhenModal bool
+	// NonactivatingPanel will apply the NSWindowStyleMaskNonactivatingPanel style
+	NonactivatingPanel bool
+	// UtilityWindow will apply the NSWindowStyleMaskUtilityWindow style
+	UtilityWindow bool
 }
 
 type MacWindowLevel string
