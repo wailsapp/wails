@@ -261,6 +261,25 @@ func TestMacWindowLevel_Constants(t *testing.T) {
 	}
 }
 
+func TestMacWindowTabbingMode_Constants(t *testing.T) {
+	tests := []struct {
+		name     string
+		value    MacWindowTabbingMode
+		expected MacWindowTabbingMode
+	}{
+		{"MacWindowTabbingModeDefault", MacWindowTabbingModeDefault, 0},
+		{"MacWindowTabbingModeAutomatic", MacWindowTabbingModeAutomatic, 1},
+		{"MacWindowTabbingModePreferred", MacWindowTabbingModePreferred, 2},
+		{"MacWindowTabbingModeDisallowed", MacWindowTabbingModeDisallowed, 3},
+	}
+
+	for _, tt := range tests {
+		if tt.value != tt.expected {
+			t.Errorf("%s = %d, want %d", tt.name, tt.value, tt.expected)
+		}
+	}
+}
+
 func TestWebviewWindowOptions_Defaults(t *testing.T) {
 	opts := WebviewWindowOptions{}
 

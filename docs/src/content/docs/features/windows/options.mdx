@@ -776,6 +776,7 @@ Mac: application.MacWindow{
     InvisibleTitleBarHeight: 50,
     WindowLevel:             application.MacWindowLevelNormal,
     CollectionBehavior:      application.MacWindowCollectionBehaviorDefault,
+    TabbingMode:             application.MacWindowTabbingModeAutomatic,
 },
 ```
 
@@ -845,6 +846,32 @@ Mac: application.MacWindow{
 // Window that can appear over fullscreen applications
 Mac: application.MacWindow{
     CollectionBehavior: application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+},
+```
+
+**TabbingMode** (`MacWindowTabbingMode`)
+
+Controls window tabbing behavior on macOS 10.12 and later. Window tabbing allows multiple windows to be grouped as tabs.
+
+**Options:**
+- `MacWindowTabbingModeDefault` - Zero-value sentinel (not explicitly set). At runtime, defaults to disallowing tabbing
+- `MacWindowTabbingModeAutomatic` - System determines tabbing behavior
+- `MacWindowTabbingModePreferred` - Window prefers to be in tabbing mode
+- `MacWindowTabbingModeDisallowed` - Disables window tabbing
+
+**Example - Disable window tabbing:**
+
+```go
+Mac: application.MacWindow{
+    TabbingMode: application.MacWindowTabbingModeDisallowed,
+},
+```
+
+**Example - Prefer window tabbing:**
+
+```go
+Mac: application.MacWindow{
+    TabbingMode: application.MacWindowTabbingModePreferred,
 },
 ```
 

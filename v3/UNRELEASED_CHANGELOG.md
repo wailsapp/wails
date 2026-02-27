@@ -17,7 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-
+- Add macOS window option to configure NSWindow tabbing behavior (#4966)
 ## Changed
 <!-- Changes in existing functionality -->
 

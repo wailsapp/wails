@@ -248,6 +248,14 @@ void windowSetCollectionBehavior(void* nsWindow, int behavior) {
 	}
 }
 
+// Set NSWindow tabbing mode (macOS 10.12+)
+void windowSetTabbingMode(void* nsWindow, int mode) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	if (@available(macOS 10.12, *)) {
+		[window setTabbingMode:mode];
+	}
+}
+
 // Load URL in NSWindow
 void navigationLoadURL(void* nsWindow, char* url) {
 	// Load URL on main thread
@@ -1209,6 +1217,15 @@ func (w *macosWebviewWindow) setCollectionBehavior(behavior MacWindowCollectionB
 	C.windowSetCollectionBehavior(w.nsWindow, C.int(behavior))
 }
 
+func (w *macosWebviewWindow) setTabbingMode(mode MacWindowTabbingMode) {
+	// Our iota values are offset by 1 from NSWindowTabbingMode:
+	//   MacWindowTabbingModeAutomatic(1) -> NSWindowTabbingModeAutomatic(0)
+	//   MacWindowTabbingModePreferred(2) -> NSWindowTabbingModePreferred(1)
+	//   MacWindowTabbingModeDisallowed(3) -> NSWindowTabbingModeDisallowed(2)
+	// https://developer.apple.com/documentation/appkit/nswindow/tabbingmode-swift.enum
+	C.windowSetTabbingMode(w.nsWindow, C.int(mode-1))
+}
+
 func (w *macosWebviewWindow) width() int {
 	var width C.int
 	var wg sync.WaitGroup
@@ -1309,6 +1326,13 @@ func (w *macosWebviewWindow) run() {
 
 		// Set collection behavior (defaults to FullScreenPrimary for backwards compatibility)
 		w.setCollectionBehavior(macOptions.CollectionBehavior)
+
+		// Set tabbing mode (macOS 10.12+)
+		// Default to disallowed unless explicitly configured.
+		if macOptions.TabbingMode == MacWindowTabbingModeDefault {
+			macOptions.TabbingMode = MacWindowTabbingModeDisallowed
+		}
+		w.setTabbingMode(macOptions.TabbingMode)
 
 		// Initialise the window buttons
 		w.setMinimiseButtonState(options.MinimiseButtonState)
