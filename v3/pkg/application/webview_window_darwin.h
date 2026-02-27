@@ -18,6 +18,21 @@
 
 @end
 
+// WebviewPanel is an NSPanel variant for Spotlight-like auxiliary windows.
+// NSPanel supports NSWindowStyleMaskNonactivatingPanel which allows the panel
+// to receive keyboard input without activating the owning application.
+@interface WebviewPanel : NSPanel
+- (BOOL) canBecomeKeyWindow;
+- (BOOL) canBecomeMainWindow;
+- (BOOL) acceptsFirstResponder;
+- (BOOL) becomeFirstResponder;
+- (BOOL) resignFirstResponder;
+- (WebviewPanel*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
+
+@property (assign) WKWebView* webView;
+
+@end
+
 @interface WebviewWindowDelegate : NSObject <NSWindowDelegate, WKScriptMessageHandler, WKNavigationDelegate, WKURLSchemeHandler, NSDraggingDestination, WKUIDelegate>
 
 @property unsigned int windowId;
