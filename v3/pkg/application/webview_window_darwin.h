@@ -18,7 +18,7 @@
 
 @end
 
-// WebviewPanel is an NSPanel variant for Spotlight-like auxiliary windows.
+// WebviewPanel is an NSPanel variant for auxiliary windows.
 // NSPanel supports NSWindowStyleMaskNonactivatingPanel which allows the panel
 // to receive keyboard input without activating the owning application.
 @interface WebviewPanel : NSPanel

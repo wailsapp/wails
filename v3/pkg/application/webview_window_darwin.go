@@ -180,14 +180,14 @@ void printWindowStyle(void *window) {
 	printf("\n");
 }
 
-// Create a new Panel (NSPanel variant for Spotlight-like windows)
+// Create a new Panel (NSPanel variant for auxiliary windows)
 void* panelNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences,
                bool floatingPanel, bool nonactivatingPanel, bool becomesKeyOnlyIfNeeded, bool hidesOnDeactivate, bool worksWhenModal) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 	if (frameless) {
 		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable;
 	}
-	// Add NonactivatingPanel style for Spotlight-like behavior (key feature!)
+	// Add NonactivatingPanel style to receive keyboard input without activating the app
 	if (nonactivatingPanel) {
 		styleMask |= NSWindowStyleMaskNonactivatingPanel;
 	}
@@ -1373,8 +1373,8 @@ func (w *macosWebviewWindow) run() {
 		options := w.parent.options
 		macOptions := options.Mac
 
-		// Create either NSPanel or NSWindow based on UsePanel option
-		if macOptions.UsePanel {
+		// Create either NSPanel or NSWindow based on WindowClass
+		if macOptions.WindowClass == NSPanel {
 			panelOpts := macOptions.PanelOptions
 			w.nsWindow = C.panelNew(C.uint(w.parent.id),
 				C.int(options.Width),
