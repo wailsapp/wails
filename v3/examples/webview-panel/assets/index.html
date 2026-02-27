@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebviewPanel Demo</title>
+    <script src="/wails/runtime.js" type="module"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e94560;
+        }
+        
+        .header .subtitle {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            margin-left: auto;
+        }
+        
+        .nav-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-btn.wails {
+            background: linear-gradient(135deg, #e94560 0%, #c73e54 100%);
+            color: white;
+        }
+        
+        .nav-btn.wails:hover {
+            background: linear-gradient(135deg, #ff5a75 0%, #e94560 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
+        }
+        
+        .nav-btn.google {
+            background: linear-gradient(135deg, #4285f4 0%, #3367d6 100%);
+            color: white;
+        }
+        
+        .nav-btn.google:hover {
+            background: linear-gradient(135deg, #5a9aff 0%, #4285f4 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(66, 133, 244, 0.4);
+        }
+        
+        .nav-btn.active {
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+        }
+        
+        .nav-btn .icon {
+            font-size: 16px;
+        }
+        
+        .content-area {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .panel-container {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .panel-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        .panel-label .url {
+            color: #e94560;
+            font-family: monospace;
+        }
+        
+        .info-bar {
+            margin-top: 15px;
+            padding: 12px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .info-bar .tip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-bar .tip::before {
+            content: "💡";
+        }
+        
+        .info-bar .size {
+            font-family: monospace;
+            color: #4ade80;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>🪟 WebviewPanel Demo</h1>
+            <div class="subtitle">Embedded webviews with responsive layout</div>
+        </div>
+        <div class="nav-buttons">
+            <button class="nav-btn wails active" onclick="switchTo('wails')">
+                <span class="icon">🚀</span>
+                Wails.io
+            </button>
+            <button class="nav-btn google" onclick="switchTo('google')">
+                <span class="icon">🔍</span>
+                Google.com
+            </button>
+        </div>
+    </div>
+    
+    <div class="content-area">
+        <div class="panel-container" id="panelContainer">
+            <div class="panel-label">
+                Embedded Panel: <span class="url" id="currentUrl">https://wails.io</span>
+            </div>
+            <!-- The WebviewPanel will be positioned here -->
+        </div>
+        
+        <div class="info-bar">
+            <div class="tip">Resize the window to see the panel respond dynamically</div>
+            <div class="size" id="sizeInfo">Loading...</div>
+        </div>
+    </div>
+
+    <script>
+        let currentSite = 'wails';
+        
+        async function switchTo(site) {
+            if (site === currentSite) return;
+            
+            currentSite = site;
+            const url = site === 'wails' ? 'https://wails.io' : 'https://www.google.com';
+            
+            // Update UI
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.nav-btn.${site}`).classList.add('active');
+            document.getElementById('currentUrl').textContent = url;
+            
+            // Call Go to switch the panel URL
+            try {
+                await wails.Call.ByName("main.App.SwitchPanel", url);
+                console.log('Switched to:', url);
+            } catch (err) {
+                console.error('Failed to switch panel:', err);
+            }
+        }
+        
+        // Update size display
+        function updateSize() {
+            const container = document.getElementById('panelContainer');
+            const rect = container.getBoundingClientRect();
+            document.getElementById('sizeInfo').textContent = 
+                `Panel area: ${Math.round(rect.width)} × ${Math.round(rect.height)} px`;
+        }
+        
+        // Update on resize
+        window.addEventListener('resize', updateSize);
+        
+        // Initial update
+        setTimeout(updateSize, 100);
+    </script>
+</body>
+</html>
