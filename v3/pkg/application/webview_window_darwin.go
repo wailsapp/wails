@@ -129,6 +129,57 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	return window;
 }
 
+void printWindowStyle(void *window) {
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+    NSWindowStyleMask styleMask = [nsWindow styleMask];
+	// Get delegate
+	WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
+
+	printf("Window %d style mask: ", windowDelegate.windowId);
+
+    if (styleMask & NSWindowStyleMaskTitled)
+    {
+        printf("NSWindowStyleMaskTitled ");
+    }
+
+    if (styleMask & NSWindowStyleMaskClosable)
+    {
+        printf("NSWindowStyleMaskClosable ");
+    }
+
+    if (styleMask & NSWindowStyleMaskMiniaturizable)
+    {
+        printf("NSWindowStyleMaskMiniaturizable ");
+    }
+
+    if (styleMask & NSWindowStyleMaskResizable)
+    {
+        printf("NSWindowStyleMaskResizable ");
+    }
+
+    if (styleMask & NSWindowStyleMaskFullSizeContentView)
+    {
+        printf("NSWindowStyleMaskFullSizeContentView ");
+    }
+
+    if (styleMask & NSWindowStyleMaskNonactivatingPanel)
+    {
+        printf("NSWindowStyleMaskNonactivatingPanel ");
+    }
+
+	if (styleMask & NSWindowStyleMaskFullScreen)
+	{
+		printf("NSWindowStyleMaskFullScreen ");
+	}
+
+	if (styleMask & NSWindowStyleMaskBorderless)
+	{
+		printf("MSWindowStyleMaskBorderless ");
+	}
+
+	printf("\n");
+}
+
 // Create a new Panel (NSPanel variant for Spotlight-like windows)
 void* panelNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences,
                bool floatingPanel, bool nonactivatingPanel, bool becomesKeyOnlyIfNeeded, bool hidesOnDeactivate, bool worksWhenModal) {
