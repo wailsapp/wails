@@ -255,7 +255,6 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 }
 @end
 
-// WebviewPanel implementation - NSPanel variant for auxiliary windows
 @implementation WebviewPanel
 - (WebviewPanel*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
 {

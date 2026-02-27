@@ -180,16 +180,18 @@ void printWindowStyle(void *window) {
 	printf("\n");
 }
 
-// Create a new Panel (NSPanel variant for auxiliary windows)
+// Create a new Panel
 void* panelNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences,
-               bool floatingPanel, bool nonactivatingPanel, bool becomesKeyOnlyIfNeeded, bool hidesOnDeactivate, bool worksWhenModal) {
+               bool floatingPanel, bool becomesKeyOnlyIfNeeded, bool nonactivatingPanel, bool utilityWindow) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 	if (frameless) {
 		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable;
 	}
-	// Add NonactivatingPanel style to receive keyboard input without activating the app
 	if (nonactivatingPanel) {
 		styleMask |= NSWindowStyleMaskNonactivatingPanel;
+	}
+	if (utilityWindow) {
+		styleMask |= NSWindowStyleMaskUtilityWindow;
 	}
 
 	WebviewPanel* panel = [[WebviewPanel alloc] initWithContentRect:NSMakeRect(0, 0, width-1, height-1)
@@ -197,11 +199,8 @@ void* panelNew(unsigned int id, int width, int height, bool fraudulentWebsiteWar
 		backing:NSBackingStoreBuffered
 		defer:NO];
 
-	// Configure panel-specific properties
 	[panel setFloatingPanel:floatingPanel];
 	[panel setBecomesKeyOnlyIfNeeded:becomesKeyOnlyIfNeeded];
-	[panel setHidesOnDeactivate:hidesOnDeactivate];
-	[panel setWorksWhenModal:worksWhenModal];
 
 	// Create delegate (same as window)
 	WebviewWindowDelegate* delegate = [[WebviewWindowDelegate alloc] init];
@@ -1384,10 +1383,9 @@ func (w *macosWebviewWindow) run() {
 				C.bool(options.EnableFileDrop),
 				w.getWebviewPreferences(),
 				C.bool(panelOpts.FloatingPanel),
-				C.bool(panelOpts.NonactivatingPanel),
 				C.bool(panelOpts.BecomesKeyOnlyIfNeeded),
-				C.bool(panelOpts.HidesOnDeactivate),
-				C.bool(panelOpts.WorksWhenModal),
+				C.bool(panelOpts.NonactivatingPanel),
+				C.bool(panelOpts.UtilityWindow),
 			)
 		} else {
 			w.nsWindow = C.windowNew(C.uint(w.parent.id),
