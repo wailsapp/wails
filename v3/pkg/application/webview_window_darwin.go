@@ -238,90 +238,6 @@ void* panelNew(unsigned int id, int width, int height, bool fraudulentWebsiteWar
 	return panel;
 }
 
-void printWindowStyle(void *window) {
-	WebviewWindow* nsWindow = (WebviewWindow*)window;
-    NSWindowStyleMask styleMask = [nsWindow styleMask];
-	// Get delegate
-	WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
-
-	printf("Window %d style mask: ", windowDelegate.windowId);
-
-    if (styleMask & NSWindowStyleMaskTitled)
-    {
-        printf("NSWindowStyleMaskTitled ");
-    }
-
-    if (styleMask & NSWindowStyleMaskClosable)
-    {
-        printf("NSWindowStyleMaskClosable ");
-    }
-
-    if (styleMask & NSWindowStyleMaskMiniaturizable)
-    {
-        printf("NSWindowStyleMaskMiniaturizable ");
-    }
-
-    if (styleMask & NSWindowStyleMaskResizable)
-    {
-        printf("NSWindowStyleMaskResizable ");
-    }
-
-    if (styleMask & NSWindowStyleMaskFullSizeContentView)
-    {
-        printf("NSWindowStyleMaskFullSizeContentView ");
-    }
-
-    if (styleMask & NSWindowStyleMaskNonactivatingPanel)
-    {
-        printf("NSWindowStyleMaskNonactivatingPanel ");
-    }
-
-	if (styleMask & NSWindowStyleMaskFullScreen)
-	{
-		printf("NSWindowStyleMaskFullScreen ");
-	}
-
-	if (styleMask & NSWindowStyleMaskBorderless)
-	{
-		printf("MSWindowStyleMaskBorderless ");
-	}
-
-	printf("\n");
-}
-
-void printWindowInfo(void *window) {
-	NSWindow* nsWindow = (NSWindow*)window;
-	WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[nsWindow delegate];
-	NSWindowStyleMask styleMask = [nsWindow styleMask];
-	NSWindowCollectionBehavior behavior = [nsWindow collectionBehavior];
-	NSInteger level = [nsWindow level];
-	BOOL isKeyWindow = [nsWindow isKeyWindow];
-	BOOL canBecomeKey = [nsWindow canBecomeKeyWindow];
-	BOOL isPanel = [nsWindow isKindOfClass:[NSPanel class]];
-
-	printf("\n=== Window %d Info ===\n", delegate.windowId);
-	printf("Is NSPanel: %s\n", isPanel ? "YES" : "NO");
-	printf("Window Level: %ld\n", (long)level);
-	printf("Is Key Window: %s\n", isKeyWindow ? "YES" : "NO");
-	printf("Can Become Key: %s\n", canBecomeKey ? "YES" : "NO");
-
-	printf("Style Mask: ");
-	if (styleMask & NSWindowStyleMaskBorderless) printf("Borderless ");
-	if (styleMask & NSWindowStyleMaskTitled) printf("Titled ");
-	if (styleMask & NSWindowStyleMaskNonactivatingPanel) printf("NonactivatingPanel ");
-	if (styleMask & NSWindowStyleMaskResizable) printf("Resizable ");
-	printf("\n");
-
-	printf("Collection Behavior: ");
-	if (behavior & NSWindowCollectionBehaviorCanJoinAllSpaces) printf("CanJoinAllSpaces ");
-	if (behavior & NSWindowCollectionBehaviorFullScreenAuxiliary) printf("FullScreenAuxiliary ");
-	if (behavior & NSWindowCollectionBehaviorTransient) printf("Transient ");
-	if (behavior & NSWindowCollectionBehaviorIgnoresCycle) printf("IgnoresCycle ");
-	if (behavior & NSWindowCollectionBehaviorFullScreenPrimary) printf("FullScreenPrimary ");
-	printf("\n");
-	printf("======================\n\n");
-}
-
 // setInvisibleTitleBarHeight sets the invisible title bar height
 void setInvisibleTitleBarHeight(void* window, unsigned int height) {
 	WebviewWindow* nsWindow = (WebviewWindow*)window;
@@ -1097,10 +1013,6 @@ func (w *macosWebviewWindow) getScreen() (*Screen, error) {
 
 func (w *macosWebviewWindow) show() {
 	C.windowShow(w.nsWindow)
-}
-
-func (w *macosWebviewWindow) printInfo() {
-	C.printWindowInfo(w.nsWindow)
 }
 
 func (w *macosWebviewWindow) hide() {
