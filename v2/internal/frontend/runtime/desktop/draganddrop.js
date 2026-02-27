@@ -245,9 +245,6 @@ export function OnFileDrop(callback, useDropTarget) {
 
     const uDTPT = typeof useDropTarget;
     flags.useDropTarget = uDTPT === "undefined" || uDTPT !== "boolean" ? flags.defaultUseDropTarget : useDropTarget;
-    window.addEventListener('dragover', onDragOver);
-    window.addEventListener('dragleave', onDragLeave);
-    window.addEventListener('drop', onDrop);
 
     let cb = callback;
     if (flags.useDropTarget) {
@@ -273,4 +270,17 @@ export function OnFileDropOff() {
     window.removeEventListener('drop', onDrop);
     EventsOff("wails:file-drop");
     flags.registered = false;
+}
+
+/**
+ * setup installs the drag and drop handlers to prevent browser navigation
+ * when files are dropped. This is called from the runtime initialization to ensure
+ * handlers are in place before the user has a chance to drop files.
+ * The actual file processing only happens when enableWailsDragAndDrop flag is true.
+ * This runs on every DOM load to ensure handlers are always registered.
+ */
+export function setup() {
+    window.addEventListener('dragover', onDragOver);
+    window.addEventListener('dragleave', onDragLeave);
+    window.addEventListener('drop', onDrop);
 }

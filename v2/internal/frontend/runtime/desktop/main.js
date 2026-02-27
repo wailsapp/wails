@@ -216,4 +216,10 @@ window.addEventListener('contextmenu', function(e) {
     }
 });
 
+// Setup drag and drop handlers early to prevent browser navigation when files are dropped.
+// This must be done before the user has a chance to drop files on the window.
+// The actual file processing only happens when enableWailsDragAndDrop flag is set to true
+// by the backend (via runtime:ready response).
+DragAndDrop.setup();
+
 window.WailsInvoke("runtime:ready");
