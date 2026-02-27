@@ -23,7 +23,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix frameless window cannot be minimized on darwin (#4294)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
