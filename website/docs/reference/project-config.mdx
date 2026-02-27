@@ -103,7 +103,12 @@ The project config resides in the `wails.json` file in the project directory. Th
         // macOS-only. The app’s role with respect to the type. Corresponds to CFBundleTypeRole.
         "role": "Editor"
       }
-    ]
+    ],
+    // Windows-specific configuration
+    "windows": {
+      // UAC execution level for Windows applications. Valid values: "requireAdministrator", "highestAvailable", "asInvoker"
+      "executionLevel": ""
+    }
   },
   // 'multiple': One installer per architecture. 'single': Single universal installer for all architectures being built. Default: 'multiple'
   "nsisType": "",
