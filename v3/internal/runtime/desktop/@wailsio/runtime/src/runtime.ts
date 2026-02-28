@@ -29,6 +29,7 @@ export const objectNames = Object.freeze({
     Browser: 9,
     CancelCall: 10,
     IOS: 11,
+    Android: 12,
 });
 export let clientId = nanoid();
 
@@ -54,6 +55,62 @@ export interface RuntimeTransport {
  * Custom transport implementation (can be set by user)
  */
 let customTransport: RuntimeTransport | null = null;
+
+function hasAndroidBridge(): boolean {
+    return typeof window !== "undefined" && typeof (window as any).wails?.invoke === "function";
+}
+
+function parseAndroidInvokeResponse(responseText: string): any {
+    if (!responseText) {
+        return null;
+    }
+
+    try {
+        const parsed = JSON.parse(responseText);
+        if (parsed && typeof parsed === "object" && "ok" in parsed) {
+            if (parsed.ok === false) {
+                throw new Error(parsed.error || "runtime call failed");
+            }
+            return parsed.data;
+        }
+        return parsed;
+    } catch (err) {
+        if (err instanceof Error && err.name !== "SyntaxError") {
+            throw err;
+        }
+        return responseText;
+    }
+}
+
+function configureAndroidTransport(): void {
+    if (customTransport || !hasAndroidBridge()) {
+        return;
+    }
+
+    customTransport = {
+        call: async (objectID: number, method: number, windowName: string, args: any): Promise<any> => {
+            const payload: Record<string, any> = {
+                type: "runtime",
+                object: objectID,
+                method,
+                clientId,
+            };
+
+            if (windowName) {
+                payload.windowName = windowName;
+            }
+
+            if (args !== null && args !== undefined) {
+                payload.args = args;
+            }
+
+            const responseText = (window as any).wails.invoke(JSON.stringify(payload));
+            return parseAndroidInvokeResponse(responseText);
+        }
+    };
+}
+
+configureAndroidTransport();
 
 /**
  * Set a custom transport for all Wails runtime calls.

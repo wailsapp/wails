@@ -58,6 +58,7 @@ tasks:
         case "$(uname -s)" in
           Darwin) HOST_TAG="darwin-x86_64" ;;
           Linux)  HOST_TAG="linux-x86_64" ;;
+          MINGW*|MSYS*|CYGWIN*) HOST_TAG="windows-x86_64" ;;
           *)      echo "Unsupported host OS"; exit 1 ;;
         esac
 
@@ -124,7 +125,14 @@ tasks:
     cmds:
       - |
         cd build/android
-        ./gradlew assembleDebug
+
+        # ./gradlew doesn't work on windows
+        case "$(uname -s)" in
+          MINGW*|MSYS*|CYGWIN*) gradlew="powershell ./gradlew.bat" ;;
+          *)      gradlew="./gradlew" ;;
+        esac
+
+        $gradlew assembleDebug
         cp app/build/outputs/apk/debug/app-debug.apk "../../{{.BIN_DIR}}/{{.APP_NAME}}.apk"
         echo "APK created: {{.BIN_DIR}}/{{.APP_NAME}}.apk"
 
@@ -133,7 +141,14 @@ tasks:
     cmds:
       - |
         cd build/android
-        ./gradlew assembleRelease
+
+        # ./gradlew doesn't work on windows
+        case "$(uname -s)" in
+          MINGW*|MSYS*|CYGWIN*) gradlew="powershell ./gradlew.bat" ;;
+          *)      gradlew="./gradlew" ;;
+        esac
+
+        $gradlew assembleRelease
         cp app/build/outputs/apk/release/app-release-unsigned.apk "../../{{.BIN_DIR}}/{{.APP_NAME}}-release.apk"
         echo "Release APK created: {{.BIN_DIR}}/{{.APP_NAME}}-release.apk"
 

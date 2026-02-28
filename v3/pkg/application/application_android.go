@@ -16,6 +16,18 @@ static jobject g_bridge = NULL;
 // Cached method ID for executeJavaScript
 static jmethodID g_executeJsMethod = NULL;
 
+// Cached method IDs for native tabs
+static jmethodID g_setNativeTabsEnabledMethod = NULL;
+static jmethodID g_setNativeTabsItemsMethod = NULL;
+static jmethodID g_selectNativeTabIndexMethod = NULL;
+static jmethodID g_setScrollEnabledMethod = NULL;
+static jmethodID g_setBounceEnabledMethod = NULL;
+static jmethodID g_setScrollIndicatorsEnabledMethod = NULL;
+static jmethodID g_setBackForwardGesturesEnabledMethod = NULL;
+static jmethodID g_setLinkPreviewEnabledMethod = NULL;
+static jmethodID g_setCustomUserAgentMethod = NULL;
+static jmethodID g_getDeviceInfoJsonMethod = NULL;
+
 // Helper function to convert Java String to C string
 static const char* jstringToC(JNIEnv *env, jstring jstr) {
     if (jstr == NULL) return NULL;
@@ -46,24 +58,60 @@ static jstring createJString(JNIEnv *env, const char* str) {
 }
 
 // Store JavaVM and create global reference to bridge
-static void storeBridgeRef(JNIEnv *env, jobject bridge) {
+static jboolean storeBridgeRef(JNIEnv *env, jobject bridge) {
     // Get JavaVM
     if ((*env)->GetJavaVM(env, &g_jvm) != 0) {
-        return;
+		return JNI_FALSE;
     }
 
     // Create global reference to bridge object
-    g_bridge = (*env)->NewGlobalRef(env, bridge);
-    if (g_bridge == NULL) {
-        return;
-    }
+	g_bridge = (*env)->NewGlobalRef(env, bridge);
+	if (g_bridge == NULL) {
+		return JNI_FALSE;
+	}
 
     // Cache the executeJavaScript method ID
-    jclass bridgeClass = (*env)->GetObjectClass(env, g_bridge);
-    if (bridgeClass != NULL) {
-        g_executeJsMethod = (*env)->GetMethodID(env, bridgeClass, "executeJavaScript", "(Ljava/lang/String;)V");
-        (*env)->DeleteLocalRef(env, bridgeClass);
-    }
+	jclass bridgeClass = (*env)->GetObjectClass(env, g_bridge);
+	if (bridgeClass == NULL) {
+		(*env)->DeleteGlobalRef(env, g_bridge);
+		g_bridge = NULL;
+		return JNI_FALSE;
+	}
+
+	g_executeJsMethod = (*env)->GetMethodID(env, bridgeClass, "executeJavaScript", "(Ljava/lang/String;)V");
+	g_setNativeTabsEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setNativeTabsEnabled", "(Z)V");
+	g_setNativeTabsItemsMethod = (*env)->GetMethodID(env, bridgeClass, "setNativeTabsItemsJson", "(Ljava/lang/String;)V");
+	g_selectNativeTabIndexMethod = (*env)->GetMethodID(env, bridgeClass, "selectNativeTabIndex", "(I)V");
+	g_setScrollEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setScrollEnabled", "(Z)V");
+	g_setBounceEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setBounceEnabled", "(Z)V");
+	g_setScrollIndicatorsEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setScrollIndicatorsEnabled", "(Z)V");
+	g_setBackForwardGesturesEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setBackForwardGesturesEnabled", "(Z)V");
+	g_setLinkPreviewEnabledMethod = (*env)->GetMethodID(env, bridgeClass, "setLinkPreviewEnabled", "(Z)V");
+	g_setCustomUserAgentMethod = (*env)->GetMethodID(env, bridgeClass, "setCustomUserAgent", "(Ljava/lang/String;)V");
+	g_getDeviceInfoJsonMethod = (*env)->GetMethodID(env, bridgeClass, "getDeviceInfoJson", "()Ljava/lang/String;");
+
+	if ((*env)->ExceptionCheck(env)) {
+		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+		(*env)->DeleteLocalRef(env, bridgeClass);
+		(*env)->DeleteGlobalRef(env, g_bridge);
+		g_bridge = NULL;
+		g_executeJsMethod = NULL;
+		g_setNativeTabsEnabledMethod = NULL;
+		g_setNativeTabsItemsMethod = NULL;
+		g_selectNativeTabIndexMethod = NULL;
+		g_setScrollEnabledMethod = NULL;
+		g_setBounceEnabledMethod = NULL;
+		g_setScrollIndicatorsEnabledMethod = NULL;
+		g_setBackForwardGesturesEnabledMethod = NULL;
+		g_setLinkPreviewEnabledMethod = NULL;
+		g_setCustomUserAgentMethod = NULL;
+		g_getDeviceInfoJsonMethod = NULL;
+		return JNI_FALSE;
+	}
+
+	(*env)->DeleteLocalRef(env, bridgeClass);
+	return JNI_TRUE;
 }
 
 // Android logging via __android_log_print
@@ -135,10 +183,182 @@ static void executeJavaScriptOnBridge(const char* js) {
 
     LOGD("executeJavaScriptOnBridge: Done");
 }
+
+static int getJNIEnvForCall(JNIEnv **env, int *needsDetach) {
+	if (g_jvm == NULL) {
+		return 0;
+	}
+
+	*needsDetach = 0;
+	jint result = (*g_jvm)->GetEnv(g_jvm, (void**)env, JNI_VERSION_1_6);
+	if (result == JNI_EDETACHED) {
+		if ((*g_jvm)->AttachCurrentThread(g_jvm, env, NULL) != 0) {
+			return 0;
+		}
+		*needsDetach = 1;
+	} else if (result != JNI_OK) {
+		return 0;
+	}
+
+	return 1;
+}
+
+static void detachJNIEnvIfNeeded(int needsDetach) {
+	if (needsDetach) {
+		(*g_jvm)->DetachCurrentThread(g_jvm);
+	}
+}
+
+static void callBridgeVoidBool(jmethodID method, jboolean value) {
+	if (g_jvm == NULL || g_bridge == NULL || method == NULL) {
+		return;
+	}
+
+	JNIEnv *env = NULL;
+	int needsDetach = 0;
+	if (!getJNIEnvForCall(&env, &needsDetach)) {
+		return;
+	}
+
+	(*env)->CallVoidMethod(env, g_bridge, method, value);
+	if ((*env)->ExceptionCheck(env)) {
+		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+	}
+
+	detachJNIEnvIfNeeded(needsDetach);
+}
+
+static void callBridgeVoidInt(jmethodID method, jint value) {
+	if (g_jvm == NULL || g_bridge == NULL || method == NULL) {
+		return;
+	}
+
+	JNIEnv *env = NULL;
+	int needsDetach = 0;
+	if (!getJNIEnvForCall(&env, &needsDetach)) {
+		return;
+	}
+
+	(*env)->CallVoidMethod(env, g_bridge, method, value);
+	if ((*env)->ExceptionCheck(env)) {
+		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+	}
+
+	detachJNIEnvIfNeeded(needsDetach);
+}
+
+static void callBridgeVoidString(jmethodID method, const char* value, jboolean allowNull) {
+	if (g_jvm == NULL || g_bridge == NULL || method == NULL) {
+		return;
+	}
+	if (value == NULL && !allowNull) {
+		return;
+	}
+
+	JNIEnv *env = NULL;
+	int needsDetach = 0;
+	if (!getJNIEnvForCall(&env, &needsDetach)) {
+		return;
+	}
+
+	jstring jValue = NULL;
+	if (value != NULL && strlen(value) > 0) {
+		jValue = (*env)->NewStringUTF(env, value);
+	}
+
+	(*env)->CallVoidMethod(env, g_bridge, method, jValue);
+
+	if (jValue != NULL) {
+		(*env)->DeleteLocalRef(env, jValue);
+	}
+
+	if ((*env)->ExceptionCheck(env)) {
+		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+	}
+
+	detachJNIEnvIfNeeded(needsDetach);
+}
+
+static char* callBridgeGetString(jmethodID method) {
+	if (g_jvm == NULL || g_bridge == NULL || method == NULL) {
+		return NULL;
+	}
+
+	JNIEnv *env = NULL;
+	int needsDetach = 0;
+	if (!getJNIEnvForCall(&env, &needsDetach)) {
+		return NULL;
+	}
+
+	jstring jInfo = (jstring)(*env)->CallObjectMethod(env, g_bridge, method);
+	if ((*env)->ExceptionCheck(env)) {
+		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+		detachJNIEnvIfNeeded(needsDetach);
+		return NULL;
+	}
+
+	char *resultStr = NULL;
+	if (jInfo != NULL) {
+		const char* cInfo = jstringToC(env, jInfo);
+		if (cInfo != NULL) {
+			resultStr = strdup(cInfo);
+			releaseJString(env, jInfo, cInfo);
+		}
+		(*env)->DeleteLocalRef(env, jInfo);
+	}
+
+	detachJNIEnvIfNeeded(needsDetach);
+	return resultStr;
+}
+
+static void setNativeTabsEnabledOnBridge(jboolean enabled) {
+	callBridgeVoidBool(g_setNativeTabsEnabledMethod, enabled);
+}
+
+static void setNativeTabsItemsJsonOnBridge(const char* json) {
+	callBridgeVoidString(g_setNativeTabsItemsMethod, json, JNI_FALSE);
+}
+
+static void selectNativeTabIndexOnBridge(jint index) {
+	callBridgeVoidInt(g_selectNativeTabIndexMethod, index);
+}
+
+static void setScrollEnabledOnBridge(jboolean enabled) {
+	callBridgeVoidBool(g_setScrollEnabledMethod, enabled);
+}
+
+static void setBounceEnabledOnBridge(jboolean enabled) {
+	callBridgeVoidBool(g_setBounceEnabledMethod, enabled);
+}
+
+static void setScrollIndicatorsEnabledOnBridge(jboolean enabled) {
+	callBridgeVoidBool(g_setScrollIndicatorsEnabledMethod, enabled);
+}
+
+static void setBackForwardGesturesEnabledOnBridge(jboolean enabled) {
+	callBridgeVoidBool(g_setBackForwardGesturesEnabledMethod, enabled);
+}
+
+static void setLinkPreviewEnabledOnBridge(jboolean enabled) {
+	callBridgeVoidBool(g_setLinkPreviewEnabledMethod, enabled);
+}
+
+static void setCustomUserAgentOnBridge(const char* ua) {
+	callBridgeVoidString(g_setCustomUserAgentMethod, ua, JNI_TRUE);
+}
+
+static char* getDeviceInfoJsonOnBridge() {
+	return callBridgeGetString(g_getDeviceInfoJsonMethod);
+}
 */
 import "C"
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -251,6 +471,7 @@ type androidApp struct {
 
 func newPlatformApp(app *App) *androidApp {
 	androidLogf("info", "🤖 [application_android.go] newPlatformApp() called")
+	configureNativeTabs(app)
 	return &androidApp{
 		parent: app,
 	}
@@ -352,7 +573,10 @@ func Java_com_wails_app_WailsBridge_nativeInit(env *C.JNIEnv, obj C.jobject, bri
 	bridgeObject = unsafe.Pointer(bridge)
 
 	// Store JavaVM and bridge global reference for JNI callbacks
-	C.storeBridgeRef(env, bridge)
+	if C.storeBridgeRef(env, bridge) == C.JNI_FALSE {
+		androidLogf("error", "🤖 [JNI] Failed to cache JNI method IDs")
+		return
+	}
 	androidLogf("info", "🤖 [JNI] Bridge reference stored for JNI callbacks")
 
 	// Start the registered main function in a goroutine
@@ -433,7 +657,11 @@ func Java_com_wails_app_WailsBridge_nativeOnPageFinished(env *C.JNIEnv, obj C.jo
 		if win != nil {
 			androidLogf("info", "🤖 [JNI] Injecting runtime.Core() into window %d", id)
 			// Get the runtime core JavaScript
-			runtimeJS := runtime.Core()
+			flags := map[string]any{}
+			if app.impl != nil {
+				flags = app.impl.GetFlags(app.options)
+			}
+			runtimeJS := runtime.Core(flags)
 			androidLogf("info", "🤖 [JNI] Runtime JS length: %d bytes", len(runtimeJS))
 			app.windowsLock.RUnlock()
 			// IMPORTANT: We must bypass win.ExecJS because it queues if runtimeLoaded is false.
@@ -622,15 +850,73 @@ func serveAssetForAndroid(app *App, path string) ([]byte, error) {
 }
 
 func handleMessageForAndroid(app *App, message string) string {
-	// Parse the message
-	var msg map[string]interface{}
-	if err := json.Unmarshal([]byte(message), &msg); err != nil {
-		return fmt.Sprintf(`{"error":"%s"}`, err.Error())
+	if strings.HasPrefix(message, "wails:") {
+		windows := app.Window.GetAll()
+		if len(windows) > 0 {
+			windows[0].HandleMessage(message)
+		}
+		return marshalAndroidInvokeResponse(nil, nil)
 	}
 
-	// TODO: Route to appropriate handler based on message type
-	// For now, return success
-	return `{"success":true}`
+	var payload androidRuntimeMessage
+	if err := json.Unmarshal([]byte(message), &payload); err != nil {
+		return marshalAndroidInvokeResponse(nil, fmt.Errorf("invalid message: %w", err))
+	}
+
+	if payload.Type != "runtime" {
+		return marshalAndroidInvokeResponse(nil, fmt.Errorf("unsupported message type: %s", payload.Type))
+	}
+
+	processor := app.messageProcessor
+	request := &RuntimeRequest{
+		Object:            payload.Object,
+		Method:            payload.Method,
+		Args:              &Args{payload.Args},
+		WebviewWindowName: payload.WindowName,
+		ClientID:          payload.ClientID,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	response, err := processor.HandleRuntimeCallWithIDs(ctx, request)
+	return marshalAndroidInvokeResponse(response, err)
+}
+
+type androidRuntimeMessage struct {
+	Type       string          `json:"type"`
+	Object     int             `json:"object"`
+	Method     int             `json:"method"`
+	Args       json.RawMessage `json:"args,omitempty"`
+	WindowName string          `json:"windowName,omitempty"`
+	ClientID   string          `json:"clientId,omitempty"`
+}
+
+type androidInvokeResponse struct {
+	Ok    bool   `json:"ok"`
+	Data  any    `json:"data,omitempty"`
+	Error string `json:"error,omitempty"`
+}
+
+func marshalAndroidInvokeResponse(data any, err error) string {
+	response := androidInvokeResponse{Ok: err == nil}
+	if err != nil {
+		response.Error = err.Error()
+	} else {
+		response.Data = data
+	}
+
+	payload, marshalErr := json.Marshal(response)
+	if marshalErr != nil {
+		fallbackPayload, fallbackErr := json.Marshal(androidInvokeResponse{
+			Ok:    false,
+			Error: marshalErr.Error(),
+		})
+		if fallbackErr != nil {
+			return `{"ok":false,"error":"Failed to marshal response"}`
+		}
+		return string(fallbackPayload)
+	}
+	return string(payload)
 }
 
 func getMimeTypeForPath(path string) string {
@@ -684,4 +970,110 @@ func executeJavaScript(js string) {
 
 	C.executeJavaScriptOnBridge(cJs)
 	androidLogf("info", "🤖 executeJavaScript: done")
+}
+
+func configureNativeTabs(app *App) {
+	if app == nil {
+		return
+	}
+
+	items := app.options.Android.NativeTabsItems
+	if len(items) > 0 {
+		if data, err := json.Marshal(items); err == nil {
+			androidSetNativeTabsItemsJSON(string(data))
+			androidSetNativeTabsEnabled(true)
+		} else if globalApplication != nil {
+			globalApplication.error("Failed to marshal Android.NativeTabsItems: %v", err)
+		}
+		return
+	}
+
+	if app.options.Android.EnableNativeTabs {
+		androidSetNativeTabsEnabled(true)
+	}
+}
+
+func androidSetNativeTabsEnabled(enabled bool) {
+	C.setNativeTabsEnabledOnBridge(C.jboolean(boolToJNI(enabled)))
+}
+
+func androidSetNativeTabsItemsJSON(jsonString string) {
+	if jsonString == "" {
+		return
+	}
+	cJson := C.CString(jsonString)
+	defer C.free(unsafe.Pointer(cJson))
+	C.setNativeTabsItemsJsonOnBridge(cJson)
+}
+
+func androidSelectNativeTabIndex(index int) {
+	C.selectNativeTabIndexOnBridge(C.jint(index))
+}
+
+func androidSetScrollEnabled(enabled bool) {
+	C.setScrollEnabledOnBridge(C.jboolean(boolToJNI(enabled)))
+}
+
+func androidSetBounceEnabled(enabled bool) {
+	C.setBounceEnabledOnBridge(C.jboolean(boolToJNI(enabled)))
+}
+
+func androidSetScrollIndicatorsEnabled(enabled bool) {
+	C.setScrollIndicatorsEnabledOnBridge(C.jboolean(boolToJNI(enabled)))
+}
+
+func androidSetBackForwardGesturesEnabled(enabled bool) {
+	C.setBackForwardGesturesEnabledOnBridge(C.jboolean(boolToJNI(enabled)))
+}
+
+func androidSetLinkPreviewEnabled(enabled bool) {
+	C.setLinkPreviewEnabledOnBridge(C.jboolean(boolToJNI(enabled)))
+}
+
+func androidSetCustomUserAgent(ua string) {
+	if ua == "" {
+		C.setCustomUserAgentOnBridge((*C.char)(nil))
+		return
+	}
+	cUa := C.CString(ua)
+	defer C.free(unsafe.Pointer(cUa))
+	C.setCustomUserAgentOnBridge(cUa)
+}
+
+func androidDeviceInfoViaJNI() map[string]interface{} {
+	info := map[string]interface{}{
+		"platform": "android",
+		"model":    "Unknown",
+		"version":  "Unknown",
+	}
+
+	cInfo := C.getDeviceInfoJsonOnBridge()
+	if cInfo == nil {
+		return info
+	}
+	defer C.free(unsafe.Pointer(cInfo))
+
+	jsonStr := C.GoString(cInfo)
+	if jsonStr == "" {
+		return info
+	}
+
+	var parsed map[string]interface{}
+	if err := json.Unmarshal([]byte(jsonStr), &parsed); err != nil {
+		return info
+	}
+	if len(parsed) == 0 {
+		return info
+	}
+	for key, value := range parsed {
+		info[key] = value
+	}
+	return info
+}
+
+func boolToJNI(value bool) C.jboolean {
+	if value {
+		return C.jboolean(1)
+	}
+	return C.jboolean(0)
 }

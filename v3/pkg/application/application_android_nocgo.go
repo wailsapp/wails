@@ -58,6 +58,14 @@ func (a *App) isWindows() bool {
 	return false
 }
 
+func androidDeviceInfoViaJNI() map[string]interface{} {
+	return map[string]interface{}{
+		"platform": "android",
+		"model":    "Unknown",
+		"version":  "Unknown",
+	}
+}
+
 // Platform-specific app implementation for Android
 type androidApp struct {
 	parent *App
@@ -65,6 +73,7 @@ type androidApp struct {
 
 func newPlatformApp(app *App) *androidApp {
 	androidLogf("info", "🤖 [application_android.go] newPlatformApp() called")
+	configureNativeTabs(app)
 	return &androidApp{
 		parent: app,
 	}
@@ -222,4 +231,14 @@ func endsWith(s, suffix string) bool {
 // executeJavaScript is a stub for non-cgo builds
 func executeJavaScript(js string) {
 	androidLogf("warn", "executeJavaScript called but cgo is not enabled")
+}
+
+func configureNativeTabs(app *App) {
+	if app == nil {
+		return
+	}
+
+	if len(app.options.Android.NativeTabsItems) > 0 || app.options.Android.EnableNativeTabs {
+		androidLogf("warn", "native tabs are not available without cgo on Android")
+	}
 }
