@@ -362,10 +362,11 @@ func (w *windowsWebviewWindow) run() {
 	if options.AlwaysOnTop {
 		exStyle |= w32.WS_EX_TOPMOST
 	}
-	// If we're frameless, we need to add the WS_EX_TOOLWINDOW style to hide the window from the taskbar
+	// WS_EX_TOOLWINDOW hides the window from the taskbar without blocking keyboard focus.
+	// WS_EX_NOACTIVATE (previously used here) prevents the window from being activated,
+	// which blocks keyboard focus and input.
 	if options.Windows.HiddenOnTaskbar {
-		//exStyle |= w32.WS_EX_TOOLWINDOW
-		exStyle |= w32.WS_EX_NOACTIVATE
+		exStyle |= w32.WS_EX_TOOLWINDOW
 	} else {
 		exStyle |= w32.WS_EX_APPWINDOW
 	}
@@ -692,6 +693,13 @@ func (w *windowsWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
 		w32.SWP_NOZORDER|w32.SWP_NOACTIVATE,
 	)
 	w.ignoreDPIChangeResizing = previousFlag
+
+	// For WS_EX_LAYERED windows (frameless+transparent or IgnoreMouseEvents), the hit-test
+	// region is not updated by SetWindowPos alone. Calling SetLayeredWindowAttributes refreshes
+	// the layered region so that the full new window area responds to mouse events.
+	if exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE); exStyle&w32.WS_EX_LAYERED != 0 {
+		w32.SetLayeredWindowAttributes(w.hwnd, 0, 255, w32.LWA_ALPHA)
+	}
 }
 
 // Get window dip bounds
