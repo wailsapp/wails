@@ -6,7 +6,7 @@ import (
 	"unsafe"
 )
 
-func CreateIconFromResourceEx(presbits uintptr, dwResSize uint32, isIcon bool, version uint32, cxDesired int, cyDesired int, flags uint) (uintptr, error) {
+func CreateIconFromResourceEx(presbits uintptr, dwResSize uint32, isIcon bool, version uint32, cxDesired int, cyDesired int, flags uint) (HICON, error) {
 	icon := 0
 	if isIcon {
 		icon = 1
@@ -24,12 +24,12 @@ func CreateIconFromResourceEx(presbits uintptr, dwResSize uint32, isIcon bool, v
 	if r == 0 {
 		return 0, err
 	}
-	return r, nil
+	return HICON(r), nil
 }
 
 // CreateHIconFromPNG creates a HICON from a PNG file
 func CreateHIconFromPNG(pngData []byte) (HICON, error) {
-	icon, err := CreateIconFromResourceEx(
+	return CreateIconFromResourceEx(
 		uintptr(unsafe.Pointer(&pngData[0])),
 		uint32(len(pngData)),
 		true,
@@ -37,5 +37,4 @@ func CreateHIconFromPNG(pngData []byte) (HICON, error) {
 		0,
 		0,
 		LR_DEFAULTSIZE)
-	return HICON(icon), err
 }

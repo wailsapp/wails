@@ -205,6 +205,10 @@ func (mi *MenuItem) OnClick() *EventManager {
 	return &mi.onClick
 }
 
+func (mi *MenuItem) Handle() w32.HMENU {
+	return mi.hMenu
+}
+
 func (mi *MenuItem) AddSeparator() {
 	addMenuItem(mi.hSubMenu, 0, "-", Shortcut{}, nil, false)
 }

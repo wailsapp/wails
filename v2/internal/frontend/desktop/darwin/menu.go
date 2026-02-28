@@ -132,3 +132,12 @@ func (f *Frontend) MenuSetApplicationMenu(menu *menu.Menu) {
 func (f *Frontend) MenuUpdateApplicationMenu() {
 	f.mainWindow.UpdateApplicationMenu()
 }
+
+func (f *Frontend) TraySetSystemTray(trayMenu *menu.TrayMenu) {
+	if trayMenu != nil {
+		f.trayMenu = trayMenu
+	}
+	if f.mainWindow != nil && f.trayMenu != nil {
+		f.mainWindow.TraySetSystemTray(f.trayMenu)
+	}
+}

@@ -56,7 +56,6 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 	resizable := bool2Cint(!frontendOptions.DisableResize)
 	fullscreen := bool2Cint(frontendOptions.Fullscreen)
 	alwaysOnTop := bool2Cint(frontendOptions.AlwaysOnTop)
-	hideWindowOnClose := bool2Cint(frontendOptions.HideWindowOnClose)
 	startsHidden := bool2Cint(frontendOptions.StartHidden)
 	devtoolsEnabled := bool2Cint(devtools)
 	defaultContextMenuEnabled := bool2Cint(debug || frontendOptions.EnableDefaultContextMenu)
@@ -121,9 +120,15 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 
 		appearance = c.String(string(mac.Appearance))
 	}
+
+	hideWindowOnClose := int(frontendOptions.WindowCloseBehaviour)
+	if hideWindowOnClose == int(options.CloseWindow) && frontendOptions.HideWindowOnClose {
+		hideWindowOnClose = int(options.HideWindow)
+	}
+
 	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, zoomable, fullscreen, fullSizeContent,
 		hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent,
-		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, contentProtection, devtoolsEnabled, defaultContextMenuEnabled,
+		alwaysOnTop, C.int(hideWindowOnClose), appearance, windowIsTranslucent, contentProtection, devtoolsEnabled, defaultContextMenuEnabled,
 		windowStartState, startsHidden, minWidth, minHeight, maxWidth, maxHeight, enableFraudulentWebsiteWarnings,
 		preferences, singleInstanceEnabled, singleInstanceUniqueId, enableDragAndDrop, disableWebViewDragAndDrop,
 	)
@@ -306,6 +311,37 @@ func (w *Window) UpdateApplicationMenu() {
 	}
 	C.SetAsApplicationMenu(w.context, mainMenu.nsmenu)
 	C.UpdateApplicationMenu(w.context)
+}
+
+func (w *Window) TraySetSystemTray(trayMenu *menu.TrayMenu) {
+	if w == nil || w.context == nil {
+		return
+	}
+	if trayMenu == nil {
+		return
+	}
+	label := C.CString(trayMenu.Label)
+	defer C.free(unsafe.Pointer(label))
+
+	image := C.CString(trayMenu.Image)
+	defer C.free(unsafe.Pointer(image))
+
+	tooltip := C.CString(trayMenu.Tooltip)
+	defer C.free(unsafe.Pointer(tooltip))
+
+	var nsmenu unsafe.Pointer
+	if trayMenu.Menu != nil {
+		appMenu := NewNSMenu(w.context, "")
+		processMenu(appMenu, trayMenu.Menu)
+		nsmenu = appMenu.nsmenu
+	}
+
+	isTemplate := 0
+	if trayMenu.MacTemplateImage {
+		isTemplate = 1
+	}
+
+	C.TraySetSystemTray(w.context, label, image, C.int(isTemplate), tooltip, nsmenu)
 }
 
 func (w Window) Print() {
