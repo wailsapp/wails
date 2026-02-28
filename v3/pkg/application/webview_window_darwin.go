@@ -1381,15 +1381,9 @@ func (w *macosWebviewWindow) run() {
 
 		w.setURL(startURL)
 
-		// We need to wait for the HTML to load before we can execute the javascript
+		// We need to wait for the HTML to load before we can show the window
 		w.parent.OnWindowEvent(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEvent) {
 			InvokeAsync(func() {
-				if options.JS != "" {
-					w.execJS(options.JS)
-				}
-				if options.CSS != "" {
-					C.windowInjectCSS(w.nsWindow, C.CString(options.CSS))
-				}
 				if !options.Hidden {
 					w.parent.Show()
 					w.setHasShadow(!options.Mac.DisableShadow)

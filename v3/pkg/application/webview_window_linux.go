@@ -364,17 +364,6 @@ func (w *linuxWebviewWindow) run() {
 	}
 
 	w.setURL(startURL)
-	w.parent.OnWindowEvent(events.Linux.WindowLoadFinished, func(_ *WindowEvent) {
-		InvokeAsync(func() {
-			if w.parent.options.JS != "" {
-				w.execJS(w.parent.options.JS)
-			}
-			if w.parent.options.CSS != "" {
-				js := fmt.Sprintf("(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('%s')); document.head.appendChild(style); })();", w.parent.options.CSS)
-				w.execJS(js)
-			}
-		})
-	})
 
 	w.parent.RegisterHook(events.Linux.WindowLoadFinished, func(e *WindowEvent) {
 		// Inject runtime core and EnableFileDrop flag together

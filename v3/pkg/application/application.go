@@ -116,6 +116,51 @@ func New(appOptions Options) *App {
 					if err != nil {
 						result.fatal("unable to serve transport.js: %w", err)
 					}
+				case "/wails/init.js", "/wails/init.css":
+					// Serve window-specific init JS/CSS based on x-wails-window-id header
+					windowIdStr := req.Header.Get(webViewRequestHeaderWindowId)
+					if windowIdStr == "" {
+						rw.WriteHeader(http.StatusNoContent)
+						return
+					}
+					windowId, err := strconv.Atoi(windowIdStr)
+					if err != nil || windowId < 0 {
+						rw.WriteHeader(http.StatusNoContent)
+						return
+					}
+
+					result.windowsLock.RLock()
+					window, exists := result.windows[uint(windowId)]
+					result.windowsLock.RUnlock()
+
+					if !exists {
+						rw.WriteHeader(http.StatusNoContent)
+						return
+					}
+
+					webviewWindow, ok := window.(*WebviewWindow)
+					if !ok {
+						rw.WriteHeader(http.StatusNoContent)
+						return
+					}
+
+					rw.Header().Set("Cache-Control", "no-store")
+					rw.Header().Set("Vary", webViewRequestHeaderWindowId)
+					if path == "/wails/init.js" {
+						if webviewWindow.options.JS != "" {
+							rw.Header().Set("Content-Type", "application/javascript")
+							rw.Write([]byte(webviewWindow.options.JS))
+						} else {
+							rw.WriteHeader(http.StatusNoContent)
+						}
+					} else { // init.css
+						if webviewWindow.options.CSS != "" {
+							rw.Header().Set("Content-Type", "text/css")
+							rw.Write([]byte(webviewWindow.options.CSS))
+						} else {
+							rw.WriteHeader(http.StatusNoContent)
+						}
+					}
 				default:
 					next.ServeHTTP(rw, req)
 				}
