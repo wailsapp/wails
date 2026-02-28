@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add support for modal sheets (macOS) 
 
 ## Changed
 <!-- Changes in existing functionality -->
@@ -25,6 +26,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Bug fixes -->
 - Fix system tray menu highlight state on macOS - icon now shows selected state when menu is open (#4910)
 - Fix system tray attached window appearing behind other windows on macOS - now uses proper popup window level (#4910)
+- Fix incorrect `@wailsio/runtime` import examples across documentation (#4989)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
