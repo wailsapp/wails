@@ -5,6 +5,7 @@
 //  Created by Lea Anthony on 10/10/21.
 //
 
+#include "Application.h"
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 #import "WailsContext.h"
@@ -35,6 +36,14 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 }
 
 @end
+
+// Notifications
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 101400
+#import <UserNotifications/UserNotifications.h>
+#endif
+
+extern void captureResult(int channelID, bool success, const char* error);
+extern void didReceiveNotificationResponse(const char *jsonPayload, const char* error);
 
 @implementation WailsContext
 
@@ -723,6 +732,357 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 
 }
 
+/***** Notifications ******/
+- (bool) IsNotificationAvailable {
+    if (@available(macOS 10.14, *)) {
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
+- (bool) CheckBundleIdentifier {
+    NSBundle *main = [NSBundle mainBundle];
+    if (main.bundleIdentifier == nil) {
+        return NO;
+    }
+    return YES;
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+       willPresentNotification:(UNNotification *)notification
+         withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler API_AVAILABLE(macos(10.14)) {
+    UNNotificationPresentationOptions options = UNNotificationPresentationOptionSound;
+    
+    if (@available(macOS 11.0, *)) {
+        // These options are only available in macOS 11.0+
+        options = UNNotificationPresentationOptionList | 
+                  UNNotificationPresentationOptionBanner | 
+                  UNNotificationPresentationOptionSound;
+    }
+    
+    completionHandler(options);
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+didReceiveNotificationResponse:(UNNotificationResponse *)response
+         withCompletionHandler:(void (^)(void))completionHandler API_AVAILABLE(macos(10.14)) {
+
+    NSMutableDictionary *payload = [NSMutableDictionary dictionary];
+    
+    [payload setObject:response.notification.request.identifier forKey:@"id"];
+    [payload setObject:response.actionIdentifier forKey:@"actionIdentifier"];
+    [payload setObject:response.notification.request.content.title ?: @"" forKey:@"title"];
+    [payload setObject:response.notification.request.content.body ?: @"" forKey:@"body"];
+    
+    if (response.notification.request.content.categoryIdentifier) {
+        [payload setObject:response.notification.request.content.categoryIdentifier forKey:@"categoryId"];
+    }
+
+    if (response.notification.request.content.subtitle) {
+        [payload setObject:response.notification.request.content.subtitle forKey:@"subtitle"];
+    }
+    
+    if (response.notification.request.content.userInfo) {
+        [payload setObject:response.notification.request.content.userInfo forKey:@"userInfo"];
+    }
+    
+    if ([response isKindOfClass:[UNTextInputNotificationResponse class]]) {
+        UNTextInputNotificationResponse *textResponse = (UNTextInputNotificationResponse *)response;
+        [payload setObject:textResponse.userText forKey:@"userText"];
+    }
+    
+    NSError *error = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:payload options:0 error:&error];
+    if (error) {
+        NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
+        didReceiveNotificationResponse(NULL, [errorMsg UTF8String]);
+    } else {
+        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        didReceiveNotificationResponse([jsonString UTF8String], NULL);
+    }
+    
+    completionHandler();
+}
+
+- (bool) EnsureDelegateInitialized {
+    if (@available(macOS 10.14, *)) {
+        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+        center.delegate = (id<UNUserNotificationCenterDelegate>)self;
+        return YES;
+    }
+    return NO;
+}
+
+- (void) RequestNotificationAuthorization :(int)channelID {
+    if (@available(macOS 10.14, *)) {
+        if (![self EnsureDelegateInitialized]) {
+            NSString *errorMsg = @"Notification delegate has been lost. Reinitialize the notification service.";
+            captureResult(channelID, false, [errorMsg UTF8String]);
+            return;
+        }
+        
+        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+        UNAuthorizationOptions options = UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
+        
+        [center requestAuthorizationWithOptions:options completionHandler:^(BOOL granted, NSError * _Nullable error) {
+            if (error) {
+                NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
+                captureResult(channelID, false, [errorMsg UTF8String]);
+            } else {
+                captureResult(channelID, granted, NULL);
+            }
+        }];
+    } else {
+        captureResult(channelID, false, "Notifications not available on macOS versions prior to 10.14");
+    }
+}
+
+- (void) CheckNotificationAuthorization :(int) channelID {
+    if (@available(macOS 10.14, *)) {
+        if (![self EnsureDelegateInitialized]) {
+            NSString *errorMsg = @"Notification delegate has been lost. Reinitialize the notification service.";
+            captureResult(channelID, false, [errorMsg UTF8String]);
+            return;
+        }
+        
+        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+        [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings *settings) {
+            BOOL isAuthorized = (settings.authorizationStatus == UNAuthorizationStatusAuthorized);
+            captureResult(channelID, isAuthorized, NULL);
+        }];
+    } else {
+        captureResult(channelID, false, "Notifications not available on macOS versions prior to 10.14");
+    }
+}
+
+- (UNMutableNotificationContent *)createNotificationContent:(const char *)title subtitle:(const char *)subtitle body:(const char *)body dataJSON:(const char *)dataJSON error:(NSError **)contentError API_AVAILABLE(macos(10.14)) {
+    if (title == NULL) title = "";
+    if (body == NULL) body = "";
+    
+    NSString *nsTitle = [NSString stringWithUTF8String:title];
+    NSString *nsSubtitle = subtitle ? [NSString stringWithUTF8String:subtitle] : @"";
+    NSString *nsBody = [NSString stringWithUTF8String:body];
+    
+    UNMutableNotificationContent *content = [[[UNMutableNotificationContent alloc] init] autorelease];
+    content.title = nsTitle;
+    if (![nsSubtitle isEqualToString:@""]) {
+        content.subtitle = nsSubtitle;
+    }
+    content.body = nsBody;
+    content.sound = [UNNotificationSound defaultSound];
+    
+    // Parse JSON data if provided
+    if (dataJSON) {
+        NSString *dataJsonStr = [NSString stringWithUTF8String:dataJSON];
+        NSData *jsonData = [dataJsonStr dataUsingEncoding:NSUTF8StringEncoding];
+        NSError *error = nil;
+        NSDictionary *parsedData = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
+        if (!error && parsedData) {
+            content.userInfo = parsedData;
+        } else if (error) {
+            if (contentError) *contentError = error;
+        }
+    }
+    
+    return content;
+}
+
+- (void) sendNotificationWithRequest:(UNNotificationRequest *)request channelID:(int)channelID API_AVAILABLE(macos(10.14)) {
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
+        if (error) {
+            NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
+            captureResult(channelID, false, [errorMsg UTF8String]);
+        } else {
+            captureResult(channelID, true, NULL);
+        }
+    }];
+}
+
+- (void) SendNotification:(int)channelID :(const char *)identifier :(const char *)title :(const char *)subtitle :(const char *)body :(const char *)dataJSON API_AVAILABLE(macos(10.14)) {
+    if (![self EnsureDelegateInitialized]) {
+        NSString *errorMsg = @"Notification delegate has been lost. Reinitialize the notification service.";
+        captureResult(channelID, false, [errorMsg UTF8String]);
+        return;
+    }
+    
+    NSString *nsIdentifier = [NSString stringWithUTF8String:identifier];
+    
+    NSError *contentError = nil;
+    UNMutableNotificationContent *content = [self createNotificationContent:title subtitle:subtitle body:body dataJSON:dataJSON error:&contentError];
+    if (contentError) {
+        NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [contentError localizedDescription]];
+        captureResult(channelID, false, [errorMsg UTF8String]);
+        return;
+    }
+    
+    UNTimeIntervalNotificationTrigger *trigger = nil;
+    UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:nsIdentifier content:content trigger:trigger];
+    
+    [self sendNotificationWithRequest:request channelID:channelID];
+}
+
+- (void) SendNotificationWithActions:(int)channelID :(const char *)identifier :(const char *)title :(const char *)subtitle :(const char *)body :(const char *)categoryId :(const char *)dataJSON API_AVAILABLE(macos(10.14)) {
+    if (![self EnsureDelegateInitialized]) {
+        NSString *errorMsg = @"Notification delegate has been lost. Reinitialize the notification service.";
+        captureResult(channelID, false, [errorMsg UTF8String]);
+        return;
+    }
+    
+    NSString *nsIdentifier = [NSString stringWithUTF8String:identifier];
+    NSString *nsCategoryId = [NSString stringWithUTF8String:categoryId];
+    
+    NSError *contentError = nil;
+    UNMutableNotificationContent *content = [self createNotificationContent:title subtitle:subtitle body:body dataJSON:dataJSON error:&contentError];
+    if (contentError) {
+        NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [contentError localizedDescription]];
+        captureResult(channelID, false, [errorMsg UTF8String]);
+        return;
+    }
+    
+    content.categoryIdentifier = nsCategoryId;
+    
+    UNTimeIntervalNotificationTrigger *trigger = nil;
+    UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:nsIdentifier content:content trigger:trigger];
+    
+    [self sendNotificationWithRequest:request channelID:channelID];
+}
+
+- (void) RegisterNotificationCategory:(int)channelID :(const char *)categoryId :(const char *)actionsJSON :(bool)hasReplyField :(const char *)replyPlaceholder :(const char *)replyButtonTitle API_AVAILABLE(macos(10.14)) {
+    if (![self EnsureDelegateInitialized]) {
+        NSString *errorMsg = @"Notification delegate has been lost. Reinitialize the notification service.";
+        captureResult(channelID, false, [errorMsg UTF8String]);
+        return;
+    }
+    
+    NSString *nsCategoryId = [NSString stringWithUTF8String:categoryId];
+    NSString *actionsJsonStr = actionsJSON ? [NSString stringWithUTF8String:actionsJSON] : @"[]";
+    
+    NSData *jsonData = [actionsJsonStr dataUsingEncoding:NSUTF8StringEncoding];
+    NSError *error = nil;
+    NSArray *actionsArray = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
+    
+    if (error) {
+        NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
+        captureResult(channelID, false, [errorMsg UTF8String]);
+        return;
+    }
+    
+    NSMutableArray *actions = [NSMutableArray array];
+    for (NSDictionary *actionDict in actionsArray) {
+        NSString *actionId = actionDict[@"id"];
+        NSString *actionTitle = actionDict[@"title"];
+        BOOL destructive = [actionDict[@"destructive"] boolValue];
+        
+        if (actionId && actionTitle) {
+            UNNotificationActionOptions options = UNNotificationActionOptionNone;
+            if (destructive) options |= UNNotificationActionOptionDestructive;
+            
+            UNNotificationAction *action = [UNNotificationAction actionWithIdentifier:actionId
+                                                                                  title:actionTitle
+                                                                                options:options];
+            [actions addObject:action];
+        }
+    }
+    
+    if (hasReplyField) {
+        // Defensive NULL checks: if hasReplyField is true, both strings must be non-NULL
+        if (!replyPlaceholder || !replyButtonTitle) {
+            NSString *errorMsg = @"hasReplyField is true but replyPlaceholder or replyButtonTitle is NULL";
+            captureResult(channelID, false, [errorMsg UTF8String]);
+            return;
+        }
+        NSString *placeholder = [NSString stringWithUTF8String:replyPlaceholder];
+        NSString *buttonTitle = [NSString stringWithUTF8String:replyButtonTitle];
+        UNTextInputNotificationAction *textAction =
+            [UNTextInputNotificationAction actionWithIdentifier:@"TEXT_REPLY"
+                                                           title:buttonTitle
+                                                         options:UNNotificationActionOptionNone
+                                            textInputButtonTitle:buttonTitle
+                                            textInputPlaceholder:placeholder];
+        [actions addObject:textAction];
+    }
+    
+    UNNotificationCategory *newCategory = [UNNotificationCategory categoryWithIdentifier:nsCategoryId
+                                                                                  actions:actions
+                                                                        intentIdentifiers:@[]
+                                                                                  options:UNNotificationCategoryOptionNone];
+    
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    [center getNotificationCategoriesWithCompletionHandler:^(NSSet<UNNotificationCategory *> *categories) {
+        NSMutableSet *updatedCategories = [NSMutableSet setWithSet:categories];
+        
+        // Remove existing category with same identifier if found
+        UNNotificationCategory *existingCategory = nil;
+        for (UNNotificationCategory *category in updatedCategories) {
+            if ([category.identifier isEqualToString:nsCategoryId]) {
+                existingCategory = category;
+                break;
+            }
+        }
+        if (existingCategory) {
+            [updatedCategories removeObject:existingCategory];
+        }
+        
+        // Add the new category
+        [updatedCategories addObject:newCategory];
+        [center setNotificationCategories:updatedCategories];
+        
+        captureResult(channelID, true, NULL);
+    }];
+}
+
+- (void) RemoveNotificationCategory:(int)channelID :(const char *)categoryId API_AVAILABLE(macos(10.14)) {
+    NSString *nsCategoryId = [NSString stringWithUTF8String:categoryId];
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    
+    [center getNotificationCategoriesWithCompletionHandler:^(NSSet<UNNotificationCategory *> *categories) {
+        NSMutableSet *updatedCategories = [NSMutableSet setWithSet:categories];
+        
+        // Find and remove the matching category
+        UNNotificationCategory *categoryToRemove = nil;
+        for (UNNotificationCategory *category in updatedCategories) {
+            if ([category.identifier isEqualToString:nsCategoryId]) {
+                categoryToRemove = category;
+                break;
+            }
+        }
+        
+        if (categoryToRemove) {
+            [updatedCategories removeObject:categoryToRemove];
+            [center setNotificationCategories:updatedCategories];
+            captureResult(channelID, true, NULL);
+        } else {
+            NSString *errorMsg = [NSString stringWithFormat:@"Category '%@' not found", nsCategoryId];
+            captureResult(channelID, false, [errorMsg UTF8String]);
+        }
+    }];
+}
+
+- (void) RemoveAllPendingNotifications API_AVAILABLE(macos(10.14)) {
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    [center removeAllPendingNotificationRequests];
+}
+
+- (void) RemovePendingNotification:(const char *)identifier API_AVAILABLE(macos(10.14)) {
+    NSString *nsIdentifier = [NSString stringWithUTF8String:identifier];
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    [center removePendingNotificationRequestsWithIdentifiers:@[nsIdentifier]];
+}
+
+- (void) RemoveAllDeliveredNotifications API_AVAILABLE(macos(10.14)) {
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    [center removeAllDeliveredNotifications];
+}
+
+- (void) RemoveDeliveredNotification:(const char *)identifier API_AVAILABLE(macos(10.14)) {
+    NSString *nsIdentifier = [NSString stringWithUTF8String:identifier];
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    [center removeDeliveredNotificationsWithIdentifiers:@[nsIdentifier]];
+}
+
+
 - (void) SetAbout :(NSString*)title :(NSString*)description :(void*)imagedata :(int)datalen {
     self.aboutTitle = title;
     self.aboutDescription = description;
@@ -731,7 +1091,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     self.aboutImage = [[NSImage alloc] initWithData:imageData];
 }
 
--(void) About {
+- (void) About {
 
     WailsAlert *alert = [WailsAlert new];
     [alert setAlertStyle:NSAlertStyleInformational];
