@@ -30,6 +30,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha.73 - 2026-02-27
+
+## Fixed
+- Fix frameless window cannot be minimized on darwin (#4294)
+
+## v3.0.0-alpha.72 - 2026-02-16
+
+## Fixed
+- Fix 20-30 minute hangs during `wails3 build` and `wails3 dev` by excluding `node_modules/` from go-task's up-to-date checking. Previously, the `sources: "**/*"` glob caused go-task to enumerate and checksum every file in `node_modules/` (50-100k+ files with heavy dependencies like MUI), especially slow on Windows/NTFS (#4939)
+
 ## v3.0.0-alpha.71 - 2026-02-10
 
 ## Added
