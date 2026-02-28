@@ -24,6 +24,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix system tray menu highlight state on macOS - icon now shows selected state when menu is open (#4910)
+- Fix system tray attached window appearing behind other windows on macOS - now uses proper popup window level (#4910)
 - Fix incorrect `@wailsio/runtime` import examples across documentation (#4989)
 
 ## Deprecated
