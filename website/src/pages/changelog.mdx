@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- [macOS] Added NSPanel support for Spotlight-like auxiliary windows. Panels can appear over fullscreen apps without activating the application using `NSWindowStyleMaskNonactivatingPanel`. Configure via `Mac.WindowClass` and `Mac.PanelOptions` in window options. Added by [@Grantmartin2002](https://github.com/Grantmartin2002) in [PR](https://github.com/wailsapp/wails/pull/5024)
+
 ### Fixed
 - Fixed locking issue on Windows when multiselect dialog returns an error. Fixed in [PR](https://github.com/wailsapp/wails/pull/4156) by @johannes-luebke
 
