@@ -107,7 +107,11 @@ func (s *SystemTray) applySmartDefaults() {
 	hasMenu := s.menu != nil
 
 	if s.clickHandler == nil && hasWindow {
-		s.clickHandler = s.ToggleWindow
+		// On macOS, processClick handles attached window toggling directly
+		// to show the window without stealing focus from other apps.
+		if runtime.GOOS != "darwin" {
+			s.clickHandler = s.ToggleWindow
+		}
 	}
 
 	if s.rightClickHandler == nil && hasMenu {

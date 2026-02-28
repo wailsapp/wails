@@ -144,6 +144,7 @@ void showMenu(void* nsStatusItem, void *nsMenu) {
 	// Show the menu on the main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
 		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+		[statusItem.button highlight:YES];
 		[statusItem popUpStatusItemMenu:(NSMenu *)nsMenu];
         // Post a mouse up event so the statusitem defocuses
         NSEvent *event = [NSEvent mouseEventWithType:NSEventTypeLeftMouseUp
@@ -158,6 +159,16 @@ void showMenu(void* nsStatusItem, void *nsMenu) {
         [NSApp postEvent:event atStart:NO];
         [statusItem.button highlight:NO];
 	});
+}
+
+void systemTraySetHighlight(void* nsStatusItem, bool highlighted) {
+	NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+	[statusItem.button highlight:highlighted];
+}
+
+void systemTrayShowWindowWithoutActivation(void* nsWindow) {
+	NSWindow *window = (NSWindow *)nsWindow;
+	[window orderFrontRegardless];
 }
 
 void systemTrayGetBounds(void* nsStatusItem, NSRect *rect, void **outScreen) {
