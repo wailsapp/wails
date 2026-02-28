@@ -501,16 +501,6 @@ func (a *App) Capabilities() capabilities.Capabilities {
 	return a.capabilities
 }
 
-//func (a *App) RegisterListener(listener WailsEventListener) {
-//	a.wailsEventListenerLock.Lock()
-//	a.wailsEventListeners = append(a.wailsEventListeners, listener)
-//	a.wailsEventListenerLock.Unlock()
-//}
-//
-//func (a *App) RegisterServiceHandler(prefix string, handler http.Handler) {
-//	a.assets.AttachServiceHandler(prefix, handler)
-//}
-
 func (a *App) GetPID() int {
 	return a.pid
 }
@@ -808,12 +798,12 @@ func (a *App) cleanup() {
 	}
 	InvokeSync(func() {
 		a.shutdownServices()
-		a.windowsLock.RLock()
+		a.windowsLock.Lock()
 		for _, window := range a.windows {
 			window.Close()
 		}
 		a.windows = nil
-		a.windowsLock.RUnlock()
+		a.windowsLock.Unlock()
 		a.systemTraysLock.Lock()
 		for _, systray := range a.systemTrays {
 			systray.destroy()

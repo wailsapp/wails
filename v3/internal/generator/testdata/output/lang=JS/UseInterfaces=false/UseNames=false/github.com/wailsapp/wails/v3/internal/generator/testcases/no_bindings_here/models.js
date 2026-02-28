@@ -33,7 +33,7 @@ export class HowDifferent {
             /**
              * But they may have many differences.
              * @member
-             * @type {{ [_: string]: How }[]}
+             * @type {{ [_ in string]?: How }[]}
              */
             this["Differences"] = [];
         }

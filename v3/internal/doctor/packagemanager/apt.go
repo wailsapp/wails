@@ -30,7 +30,12 @@ func (a *Apt) Packages() Packagemap {
 		},
 		"webkit2gtk": []*Package{
 			{Name: "libwebkit2gtk-4.1-dev", SystemPackage: true, Library: true},
-			{Name: "libwebkit2gtk-4.0-dev", SystemPackage: true, Library: true},
+		},
+		"gtk4 (experimental)": []*Package{
+			{Name: "libgtk-4-dev", SystemPackage: true, Library: true, Optional: true},
+		},
+		"webkitgtk-6.0 (experimental)": []*Package{
+			{Name: "libwebkitgtk-6.0-dev", SystemPackage: true, Library: true, Optional: true},
 		},
 		"gcc": []*Package{
 			{Name: "build-essential", SystemPackage: true},

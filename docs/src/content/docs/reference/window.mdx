@@ -30,7 +30,7 @@ func (w *Window) Show()
 
 **Example:**
 ```go
-window := app.NewWebviewWindow()
+window := app.Window.New()
 window.Show()
 ```
 
@@ -202,7 +202,7 @@ func (w *Window) Centre()
 
 **Example:**
 ```go
-window := app.NewWebviewWindow()
+window := app.Window.New()
 window.Centre()
 window.Show()
 ```
@@ -441,7 +441,7 @@ func (w *Window) RegisterHook(
 import "github.com/wailsapp/wails/v3/pkg/events"
 
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
-    result, _ := app.QuestionDialog().
+    result, _ := app.Dialog.Question().
         SetTitle("Confirm Close").
         SetMessage("Are you sure you want to close this window?").
         SetButtons("Yes", "No").
@@ -457,7 +457,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
     if hasUnsavedChanges {
-        result, _ := app.QuestionDialog().
+        result, _ := app.Dialog.Question().
             SetMessage("Save changes before closing?").
             SetButtons("Save", "Don't Save", "Cancel").
             Show()
@@ -619,6 +619,34 @@ modalWindow := app.Window.New()
 window.AttachModal(modalWindow)
 ```
 
+## Platform-Specific Options
+
+### Linux
+
+Linux windows support the following platform-specific options via `LinuxWindow`:
+
+#### MenuStyle
+
+Controls how the application menu is displayed. This option is only available on GTK4 builds and is ignored on GTK3.
+
+| Value | Description |
+|-------|-------------|
+| `LinuxMenuStyleMenuBar` | Traditional menu bar below the title bar (default) |
+| `LinuxMenuStylePrimaryMenu` | Primary menu button in the header bar (GNOME style) |
+
+**Example:**
+```go
+window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Title: "My Application",
+    Linux: application.LinuxWindow{
+        MenuStyle: application.LinuxMenuStylePrimaryMenu,
+    },
+})
+window.SetMenu(menu)
+```
+
+**Note:** The primary menu style displays a hamburger button (☰) in the header bar, following GNOME Human Interface Guidelines. This is the recommended style for modern GNOME applications.
+
 ## Complete Example
 
 ```go
@@ -635,7 +663,7 @@ func main() {
     })
 
     // Create window with options
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:            "My Application",
         Width:            1024,
         Height:           768,
@@ -653,7 +681,7 @@ func main() {
     // Set up event hooks
     window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
         // Confirm before closing
-        result, _ := app.QuestionDialog().
+        result, _ := app.Dialog.Question().
             SetTitle("Confirm Close").
             SetMessage("Are you sure you want to close this window?").
             SetButtons("Yes", "No").

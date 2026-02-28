@@ -199,6 +199,150 @@ func TestBuildCommand(t *testing.T) {
 	assert.Equal(t, []string{"CONFIG=release", "ARCH=" + currentArch}, capturedOtherArgs)
 }
 
+func TestBuildCommandWithTags(t *testing.T) {
+	currentOS := runtime.GOOS
+	currentArch := runtime.GOARCH
+
+	// Save original RunTask
+	originalRunTask := runTaskFunc
+	defer func() { runTaskFunc = originalRunTask }()
+
+	// Mock RunTask to capture the arguments
+	var capturedOptions *RunTaskOptions
+	var capturedOtherArgs []string
+	runTaskFunc = func(options *RunTaskOptions, otherArgs []string) error {
+		capturedOptions = options
+		capturedOtherArgs = otherArgs
+		return nil
+	}
+
+	// Save original os.Args and environment
+	originalArgs := os.Args
+	defer func() { os.Args = originalArgs }()
+
+	originalGOOS := os.Getenv("GOOS")
+	originalGOARCH := os.Getenv("GOARCH")
+	defer func() {
+		if originalGOOS == "" {
+			os.Unsetenv("GOOS")
+		} else {
+			os.Setenv("GOOS", originalGOOS)
+		}
+		if originalGOARCH == "" {
+			os.Unsetenv("GOARCH")
+		} else {
+			os.Setenv("GOARCH", originalGOARCH)
+		}
+	}()
+	os.Unsetenv("GOOS")
+	os.Unsetenv("GOARCH")
+
+	// Test Build command with tags
+	buildFlags := &flags.Build{}
+	buildFlags.Tags = "gtk4"
+	otherArgs := []string{"CONFIG=release"}
+
+	err := Build(buildFlags, otherArgs)
+	assert.NoError(t, err)
+	assert.Equal(t, currentOS+":build", capturedOptions.Name)
+	assert.Equal(t, []string{"CONFIG=release", "EXTRA_TAGS=gtk4", "ARCH=" + currentArch}, capturedOtherArgs)
+}
+
+func TestBuildCommandWithMultipleTags(t *testing.T) {
+	currentOS := runtime.GOOS
+	currentArch := runtime.GOARCH
+
+	// Save original RunTask
+	originalRunTask := runTaskFunc
+	defer func() { runTaskFunc = originalRunTask }()
+
+	// Mock RunTask to capture the arguments
+	var capturedOptions *RunTaskOptions
+	var capturedOtherArgs []string
+	runTaskFunc = func(options *RunTaskOptions, otherArgs []string) error {
+		capturedOptions = options
+		capturedOtherArgs = otherArgs
+		return nil
+	}
+
+	// Save original os.Args and environment
+	originalArgs := os.Args
+	defer func() { os.Args = originalArgs }()
+
+	originalGOOS := os.Getenv("GOOS")
+	originalGOARCH := os.Getenv("GOARCH")
+	defer func() {
+		if originalGOOS == "" {
+			os.Unsetenv("GOOS")
+		} else {
+			os.Setenv("GOOS", originalGOOS)
+		}
+		if originalGOARCH == "" {
+			os.Unsetenv("GOARCH")
+		} else {
+			os.Setenv("GOARCH", originalGOARCH)
+		}
+	}()
+	os.Unsetenv("GOOS")
+	os.Unsetenv("GOARCH")
+
+	// Test Build command with multiple comma-separated tags
+	buildFlags := &flags.Build{}
+	buildFlags.Tags = "gtk4,server"
+
+	err := Build(buildFlags, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, currentOS+":build", capturedOptions.Name)
+	assert.Equal(t, []string{"EXTRA_TAGS=gtk4,server", "ARCH=" + currentArch}, capturedOtherArgs)
+}
+
+func TestBuildCommandWithoutTags(t *testing.T) {
+	currentOS := runtime.GOOS
+	currentArch := runtime.GOARCH
+
+	// Save original RunTask
+	originalRunTask := runTaskFunc
+	defer func() { runTaskFunc = originalRunTask }()
+
+	// Mock RunTask to capture the arguments
+	var capturedOptions *RunTaskOptions
+	var capturedOtherArgs []string
+	runTaskFunc = func(options *RunTaskOptions, otherArgs []string) error {
+		capturedOptions = options
+		capturedOtherArgs = otherArgs
+		return nil
+	}
+
+	// Save original os.Args and environment
+	originalArgs := os.Args
+	defer func() { os.Args = originalArgs }()
+
+	originalGOOS := os.Getenv("GOOS")
+	originalGOARCH := os.Getenv("GOARCH")
+	defer func() {
+		if originalGOOS == "" {
+			os.Unsetenv("GOOS")
+		} else {
+			os.Setenv("GOOS", originalGOOS)
+		}
+		if originalGOARCH == "" {
+			os.Unsetenv("GOARCH")
+		} else {
+			os.Setenv("GOARCH", originalGOARCH)
+		}
+	}()
+	os.Unsetenv("GOOS")
+	os.Unsetenv("GOARCH")
+
+	// Test Build command without tags - no EXTRA_TAGS should be present
+	buildFlags := &flags.Build{}
+
+	err := Build(buildFlags, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, currentOS+":build", capturedOptions.Name)
+	assert.Equal(t, []string{"ARCH=" + currentArch}, capturedOtherArgs)
+}
+
 func TestPackageCommand(t *testing.T) {
 	currentOS := runtime.GOOS
 	currentArch := runtime.GOARCH

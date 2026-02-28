@@ -30,6 +30,154 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha.73 - 2026-02-27
+
+## Fixed
+- Fix frameless window cannot be minimized on darwin (#4294)
+
+## v3.0.0-alpha.72 - 2026-02-16
+
+## Fixed
+- Fix 20-30 minute hangs during `wails3 build` and `wails3 dev` by excluding `node_modules/` from go-task's up-to-date checking. Previously, the `sources: "**/*"` glob caused go-task to enumerate and checksum every file in `node_modules/` (50-100k+ files with heavy dependencies like MUI), especially slow on Windows/NTFS (#4939)
+
+## v3.0.0-alpha.71 - 2026-02-10
+
+## Added
+- Bumped ghw version for better Apple device support by @leaanthony (#4977)
+- Add `GetBadge` method to the dock service
+
+## Fixed
+- Fix GTK4 build failure caused by C `Screen` typedef colliding with X11 Xlib.h (#4957)
+- Fix dock badge methods consistency on macOS
+
+## v3.0.0-alpha.70 - 2026-02-09
+
+## Added
+- Add `-tags` flag to `wails3 build` command for passing custom Go build tags (e.g., `wails3 build -tags gtk4`) (#4957)
+- Add documentation for automatic enum generation in binding generator, including dedicated Enums page and sidebar navigation (#4972)
+
+## Fixed
+- Fix `InvisibleTitleBarHeight` being applied to all macOS windows instead of only frameless or transparent title bar windows (#4960)
+- Fix window shaking/jitter when resizing from top corners with `InvisibleTitleBarHeight` enabled, by skipping drag initiation near window edges (#4960)
+- Fix generation of mapped types with enum keys in JS/TS bindings (#4437) by @fbbdev
+
+## v3.0.0-alpha.69 - 2026-02-08
+
+## Added
+- Add `-tags` flag to `wails3 build` command for passing custom Go build tags (e.g., `wails3 build -tags gtk4`) (#4957)
+
+## Fixed
+- Fix file drag-and-drop on Windows not working at non-100% display scaling
+- Fix HTML5 internal drag-and-drop being broken when file drop was enabled on Windows
+- Fix file drop coordinates being in wrong pixel space on Windows (physical vs CSS pixels)
+- Fix file drag-and-drop on Linux not working reliably with hover effects
+- Fix HTML5 internal drag-and-drop being broken when file drop was enabled on Linux
+- Fix window show/hide on Linux/GTK4 sometimes restoring to minimized state by using `gtk_window_present()` (#4957)
+- Fix window position get/set on Linux/GTK4 always returning 0,0 by adding X11-conditional support via `XTranslateCoordinates`/`XMoveWindow` (#4957)
+- Fix max window size not being enforced on Linux/GTK4 by adding signal-based size clamping to replace removed `gtk_window_set_geometry_hints` (#4957)
+- Fix DPI scaling on Linux/GTK4 by implementing proper PhysicalBounds calculation and fractional scaling support via `gdk_monitor_get_scale` (GTK 4.14+)
+- Fix menu items duplicating when creating new windows on Linux/GTK4
+- Fix generation of mapped types with enum keys in JS/TS bindings (#4437) by @fbbdev
+
+## v3.0.0-alpha.68 - 2026-02-07
+
+## Added
+- Add Web API examples in `v3/examples/web-apis/` demonstrating 41 browser APIs including Storage (localStorage, sessionStorage, IndexedDB, Cache API), Network (Fetch, WebSocket, XMLHttpRequest, EventSource, Beacon), Media (Canvas, WebGL, Web Audio, MediaDevices, MediaRecorder, Speech Synthesis), Device (Geolocation, Clipboard, Fullscreen, Device Orientation, Vibration, Gamepad), Performance (Performance API, Mutation Observer, Intersection/Resize Observer), UI (Web Components, Pointer Events, Selection, Dialog, Drag and Drop), and more
+- Add WebView API compatibility checker example (`v3/examples/webview-api-check/`) that tests 200+ browser APIs across platforms
+- Add `internal/libpath` package for finding native library paths on Linux with parallel search, caching, and support for Flatpak/Snap/Nix
+- **WIP:** Add experimental WebKitGTK 6.0 / GTK4 support for Linux, available via `-tags gtk4` (GTK3/WebKit2GTK 4.1 remains the default)
+  - Note: On tiling window managers (e.g., Hyprland, Sway), Minimize/Maximize operations may not work as expected since the WM controls window geometry
+
+## Changed
+- **BREAKING**: Map keys in generated JS/TS bindings are now marked optional to accurately reflect Go map semantics. Map value access in Typescript now returns `T | undefined` instead of `T`, requiring null checks or assertions (#4943) by `@fbbdev`
+
+## Fixed
+- Fix file drag-and-drop on Windows not working at non-100% display scaling
+- Fix HTML5 internal drag-and-drop being broken when file drop was enabled on Windows
+- Fix file drop coordinates being in wrong pixel space on Windows (physical vs CSS pixels)
+- Fix file drag-and-drop on Linux not working reliably with hover effects
+- Fix HTML5 internal drag-and-drop being broken when file drop was enabled on Linux
+- Fix DPI scaling on Linux/GTK4 by implementing proper PhysicalBounds calculation and fractional scaling support via `gdk_monitor_get_scale` (GTK 4.14+)
+- Fix menu items duplicating when creating new windows on Linux/GTK4
+- Fix generation of mapped types with enum keys in JS/TS bindings (#4437) by @fbbdev
+
+## v3.0.0-alpha.67 - 2026-02-04
+
+## Added
+- Added how to do `One Time Handlers` in the docs for `Listening to Events in JavaScript` by @AbdelhadiSeddar 
+
+## Changed
+- Changed the use of `Event` into `Events` according to changes in `@wailsio/runtime` and appropriate function calls in the docs in `Features/Events/Event System` by @AbdelhadiSeddar
+
+## Fixed
+- Fix "ghost windows" issue on macOS caused by not accessing AppKit APIs from the Main Thread in App.Window.Current() (#4947) by @wimaha
+- Fix HTML `<input type="file">` not working on macOS by implementing WKUIDelegate runOpenPanelWithParameters (#4862)
+- Fix native file drag-and-drop not working when using `@wailsio/runtime` npm module on macOS/Linux (#4953) by @leaanthony
+- Fix binding generation for cross-package type aliases (#4578) by @fbbdev
+
+## v3.0.0-alpha.66 - 2026-02-03
+
+## Added
+- Add `UseApplicationMenu` option to `WebviewWindowOptions` allowing windows on Windows/Linux to inherit the application menu set via `app.Menu.Set()` by @leaanthony
+
+## Changed
+- Move `EnabledFeatures`, `DisabledFeatures`, and `AdditionalBrowserArgs` from per-window options to application-level `Options.Windows` (#4559) by @leaanthony
+
+## Fixed
+- Fix OpenFileDialog crash on Linux due to GTK thread safety violation (#3683) by @ddmoney420
+- Fix SIGSEGV crash when calling `Focus()` on a hidden or destroyed window (#4890) by @ddmoney420
+- Fix potential panic when setting empty icon or bitmap on Linux (#4923) by @ddmoney420
+- Fix ErrorDialog crash when called from service binding on macOS (#3631) by @leaanthony
+- Make menus to be displayed on Windows OS in `v3\examples\dialogs` by @ndianabasi
+- Fix race condition causing TypeError during page reload (#4872) by @ddmoney420
+- Fix incorrect output from binding generator tests by removing global state in the `Collector.IsVoidAlias()` method (#4941) by @fbbdev
+- Fix `<input type="file">` file picker not working on macOS (#4862) by @leaanthony
+
+## Removed
+- **BREAKING**: Remove `EnabledFeatures`, `DisabledFeatures`, and `AdditionalLaunchArgs` from per-window `WindowsWindow` options. Use application-level `Options.Windows.EnabledFeatures`, `Options.Windows.DisabledFeatures`, and `Options.Windows.AdditionalBrowserArgs` instead. These flags apply globally to the shared WebView2 environment (#4559) by @leaanthony
+
+## v3.0.0-alpha.65 - 2026-02-01
+
+## Added
+- Add support for using `.icon` files (Apple Icon Composer format) for generating Liquid Glass icons and asset catalogs (macOS) (#4934) by @wimaha
+
+## v3.0.0-alpha.64 - 2026-01-26
+
+## Added
+- Add experimental server mode for headless/web deployments (`-tags server`). Enables running Wails apps as HTTP servers without native GUI dependencies. Build with `wails3 task build:server`. See `examples/server` for details.
+
+## v3.0.0-alpha.63 - 2026-01-25
+
+## Fixed
+- Fix `Position()` and `SetPosition()` using inconsistent coordinate systems on macOS, causing window position drift when saving/restoring state (#4816) by @leaanthony
+
+## v3.0.0-alpha.62 - 2026-01-22
+
+## Fixed
+- Fix SetProcessDpiAwarenessContext "Access is denied" error when DPI awareness is already set via application manifest (#4803)
+
+## v3.0.0-alpha.61 - 2026-01-20
+
+## Fixed
+- Update the docs page for keyboard shortcuts and corrects the type of the callback parameter for `KeyBinding.Add` by @ndianabasi
+- Fix documentation regarding generating custom binding, must use `-d String` instead of `-o String`
+
+## v3.0.0-alpha.60 - 2026-01-14
+
+## Fixed
+- Fix menu not clearing children on `menu.Update()`
+
+## v3.0.0-alpha.59 - 2026-01-11
+
+## Changed
+- Update the README for the `Drag N Drop` example and highlights that `Internal Drag and Drop` is demonstrated with the example @ndianabasi
+
+## v3.0.0-alpha.58 - 2026-01-09
+
+## Fixed
+- Fix outdated Manager API references in documentation (31 files updated to use new pattern like `app.Window.New()`, `app.Event.Emit()`, etc.) by @leaanthony
+- Fix Linux crash on panic in JS-bound Go methods due to WebKit overriding signal handlers (#3965) by @leaanthony
+
 ## v3.0.0-alpha.57 - 2026-01-05
 
 ## Changed

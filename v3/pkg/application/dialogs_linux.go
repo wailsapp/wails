@@ -1,4 +1,4 @@
-//go:build linux && !android
+//go:build linux && !android && !server
 
 package application
 
@@ -38,7 +38,7 @@ func (m *linuxDialog) show() {
 		}
 	}
 
-	InvokeAsync(func() {
+	go func() {
 		response := runQuestionDialog(pointer(parent), m.dialog)
 		if response >= 0 && response < len(m.dialog.Buttons) {
 			button := m.dialog.Buttons[response]
@@ -49,7 +49,7 @@ func (m *linuxDialog) show() {
 				}()
 			}
 		}
-	})
+	}()
 }
 
 func newDialogImpl(d *MessageDialog) *linuxDialog {

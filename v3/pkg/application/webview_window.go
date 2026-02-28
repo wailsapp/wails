@@ -22,6 +22,8 @@ var Enabled = u.True
 // Disabled means the feature should be disabled
 var Disabled = u.False
 
+var shouldSkipHideOnFocusLost = func() bool { return false }
+
 // LRTB is a struct that holds Left, Right, Top, Bottom values
 type LRTB struct {
 	Left   int
@@ -166,11 +168,9 @@ type WebviewWindow struct {
 	destroyed     bool
 	destroyedLock sync.RWMutex
 
-	// Flags for managing the runtime
-	// runtimeLoaded indicates that the runtime has been loaded
-	runtimeLoaded bool
-	// pendingJS holds JS that was sent to the window before the runtime was loaded
-	pendingJS []string
+	runtimeLoaded  bool
+	pendingJS      []string
+	pendingJSMutex sync.Mutex
 
 	// unconditionallyClose marks the window to be unconditionally closed (atomic)
 	unconditionallyClose uint32
@@ -306,6 +306,15 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 	if result.options.KeyBindings != nil {
 		result.keyBindings = processKeyBindingOptions(result.options.KeyBindings)
 	}
+	if result.options.HideOnEscape {
+		result.RegisterKeyBinding("escape", func(window Window) {
+			window.Hide()
+		})
+	}
+
+	if result.options.HideOnFocusLost {
+		result.setupHideOnFocusLost()
+	}
 
 	return result
 }
@@ -325,6 +334,15 @@ func processKeyBindingOptions(
 		globalApplication.debug("Added Keybinding", "accelerator", acc.String())
 	}
 	return result
+}
+
+func (w *WebviewWindow) setupHideOnFocusLost() {
+	if runtime.GOOS == "linux" && shouldSkipHideOnFocusLost() {
+		return
+	}
+	w.OnWindowEvent(events.Common.WindowLostFocus, func(event *WindowEvent) {
+		w.Hide()
+	})
 }
 
 func (w *WebviewWindow) addCancellationFunction(canceller func()) {
@@ -401,6 +419,14 @@ func (w *WebviewWindow) Run() {
 		return
 	}
 	w.impl = newWindowImpl(w)
+
+	// On Linux GTK4, we must wait for the application to be activated
+	// before creating windows with gtk_application_window_new()
+	if nativeApp := globalApplication.impl; nativeApp != nil {
+		if waiter, ok := nativeApp.(interface{ waitForActivation() }); ok {
+			waiter.waitForActivation()
+		}
+	}
 
 	InvokeSync(w.impl.run)
 }
@@ -572,12 +598,15 @@ func (w *WebviewWindow) ExecJS(js string) {
 	if w.impl == nil || w.isDestroyed() {
 		return
 	}
+	w.pendingJSMutex.Lock()
 	if w.runtimeLoaded {
+		w.pendingJSMutex.Unlock()
 		InvokeSync(func() {
 			w.impl.execJS(js)
 		})
 	} else {
 		w.pendingJS = append(w.pendingJS, js)
+		w.pendingJSMutex.Unlock()
 	}
 }
 
@@ -724,12 +753,17 @@ func (w *WebviewWindow) HandleMessage(message string) {
 		}
 	case message == "wails:runtime:ready":
 		w.emit(events.Common.WindowRuntimeReady)
+		w.pendingJSMutex.Lock()
 		w.runtimeLoaded = true
-		w.SetResizable(!w.options.DisableResize)
-		for _, js := range w.pendingJS {
-			w.ExecJS(js)
-		}
+		pending := w.pendingJS
 		w.pendingJS = nil
+		w.pendingJSMutex.Unlock()
+		w.SetResizable(!w.options.DisableResize)
+		for _, js := range pending {
+			InvokeSync(func() {
+				w.impl.execJS(js)
+			})
+		}
 	default:
 		w.Error("unknown message sent via 'invoke' on frontend: %v", message)
 	}
@@ -1181,7 +1215,10 @@ func (w *WebviewWindow) SetFrameless(frameless bool) Window {
 }
 
 func (w *WebviewWindow) DispatchWailsEvent(event *CustomEvent) {
-	msg := fmt.Sprintf("window._wails.dispatchWailsEvent(%s);", event.ToJSON())
+	// Guard against race condition where event fires before runtime is initialized
+	// This can happen during page reload when WindowLoadFinished fires before
+	// the JavaScript runtime has mounted dispatchWailsEvent on window._wails
+	msg := fmt.Sprintf("if(window._wails&&window._wails.dispatchWailsEvent){window._wails.dispatchWailsEvent(%s);}", event.ToJSON())
 	w.ExecJS(msg)
 }
 
@@ -1270,6 +1307,9 @@ func (w *WebviewWindow) shouldUnconditionallyClose() bool {
 }
 
 func (w *WebviewWindow) Focus() {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
 	InvokeSync(w.impl.focus)
 }
 
@@ -1344,6 +1384,21 @@ func (w *WebviewWindow) isDestroyed() bool {
 	w.destroyedLock.RLock()
 	defer w.destroyedLock.RUnlock()
 	return w.destroyed
+}
+
+func (w *WebviewWindow) RegisterKeyBinding(binding string, callback func(window Window)) *WebviewWindow {
+	acc, err := parseAccelerator(binding)
+	if err != nil {
+		globalApplication.error("invalid keybinding: %w", err)
+		return w
+	}
+	w.keyBindingsLock.Lock()
+	defer w.keyBindingsLock.Unlock()
+	if w.keyBindings == nil {
+		w.keyBindings = make(map[string]func(Window))
+	}
+	w.keyBindings[acc.String()] = callback
+	return w
 }
 
 func (w *WebviewWindow) removeMenuBinding(a *accelerator) {
@@ -1461,17 +1516,19 @@ func (w *WebviewWindow) InitiateFrontendDropProcessing(filenames []string, x int
 	}
 
 	jsCall := fmt.Sprintf(
-		"window.wails.Window.HandlePlatformFileDrop(%s, %d, %d);",
+		"window._wails.handlePlatformFileDrop(%s, %d, %d);",
 		string(filenamesJSON),
 		x,
 		y,
 	)
 
-	// Ensure JS is executed after runtime is loaded
+	w.pendingJSMutex.Lock()
 	if !w.runtimeLoaded {
 		w.pendingJS = append(w.pendingJS, jsCall)
+		w.pendingJSMutex.Unlock()
 		return
 	}
+	w.pendingJSMutex.Unlock()
 
 	InvokeSync(func() {
 		w.impl.execJS(jsCall)

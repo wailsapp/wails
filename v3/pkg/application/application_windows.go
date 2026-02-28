@@ -1,4 +1,4 @@
-//go:build windows
+//go:build windows && !server
 
 package application
 
@@ -357,6 +357,18 @@ func (m *windowsApp) reshowSystrays() {
 func setupDPIAwareness() error {
 	// https://learn.microsoft.com/en-us/windows/win32/hidpi/setting-the-default-dpi-awareness-for-a-process
 	// https://learn.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows
+
+	// Check if DPI awareness has already been set (e.g., via application manifest).
+	// Windows only allows setting DPI awareness once per process - either via manifest
+	// or API, not both. If already set, skip the API call to avoid "Access is denied" errors.
+	// See: https://github.com/wailsapp/wails/issues/4803
+	if w32.HasGetProcessDpiAwarenessFunc() {
+		awareness, err := w32.GetProcessDpiAwareness()
+		if err == nil && awareness != w32.PROCESS_DPI_UNAWARE {
+			// DPI awareness already set (likely via manifest), skip API call
+			return nil
+		}
+	}
 
 	if w32.HasSetProcessDpiAwarenessContextFunc() {
 		// This is most recent version with the best results

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DND NPM Runtime Test</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+        }
+        h1 {
+            margin-top: 40px;
+            text-align: center;
+            color: #fff;
+        }
+        h2 {
+            color: #888;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 40px 0 20px;
+            text-align: center;
+        }
+        .instructions {
+            max-width: 900px;
+            margin: 0 auto 20px;
+            text-align: center;
+            color: #888;
+            line-height: 1.6;
+        }
+        .instructions code {
+            background: #16213e;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #4a9eff;
+        }
+        .test-badge {
+            background: #27ae60;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* ===== External File Drop Section ===== */
+        .external-section {
+            max-width: 900px;
+            margin: 0 auto 40px;
+        }
+        .drop-zone {
+            padding: 40px;
+            border: 3px dashed #444;
+            border-radius: 16px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        .drop-zone p {
+            margin: 0;
+            color: #666;
+            font-size: 18px;
+        }
+        /* Wails adds this class when dragging files over */
+        .file-drop-target-active {
+            border-color: #4a9eff !important;
+            background: rgba(74, 158, 255, 0.1) !important;
+            box-shadow: 0 0 30px rgba(74, 158, 255, 0.2);
+        }
+        .file-drop-target-active p {
+            color: #4a9eff;
+        }
+        .buckets {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .bucket {
+            flex: 1;
+            min-height: 150px;
+            background: #16213e;
+            border-radius: 12px;
+            padding: 15px;
+        }
+        .bucket h3 {
+            margin: 0 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #2a3a5e;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .bucket.documents h3 { color: #4a9eff; }
+        .bucket.images h3 { color: #9b59b6; }
+        .bucket.other h3 { color: #27ae60; }
+        .bucket ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .bucket li {
+            padding: 6px 0;
+            font-family: monospace;
+            font-size: 12px;
+            color: #aaa;
+            word-break: break-all;
+        }
+        .bucket .empty {
+            color: #444;
+            font-style: italic;
+            font-family: inherit;
+        }
+
+        /* ===== Info Section ===== */
+        .drop-info {
+            max-width: 900px;
+            margin: 20px auto 0;
+            padding: 15px;
+            background: #16213e;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+        }
+        .drop-info strong {
+            color: #888;
+        }
+    </style>
+  <script type="module" crossorigin src="/assets/index-sgSTKtcv.js"></script>
+</head>
+<body>
+    <h1>DND NPM Runtime Test <span class="test-badge">@wailsio/runtime</span></h1>
+
+    <!-- ===== External File Drop ===== -->
+    <h2>External File Drop</h2>
+    <div class="instructions">
+        <p>
+            This test uses the <code>@wailsio/runtime</code> npm module instead of the bundled <code>/wails/runtime.js</code>.
+            Drop files from your operating system to verify the fix works.
+        </p>
+    </div>
+
+    <div class="external-section">
+        <div class="drop-zone" data-file-drop-target>
+            <p>Drop files from your desktop or file manager here</p>
+        </div>
+
+        <div class="buckets">
+            <div class="bucket documents">
+                <h3>Documents</h3>
+                <ul id="documents-list">
+                    <li class="empty">No documents yet</li>
+                </ul>
+            </div>
+
+            <div class="bucket images">
+                <h3>Images</h3>
+                <ul id="images-list">
+                    <li class="empty">No images yet</li>
+                </ul>
+            </div>
+
+            <div class="bucket other">
+                <h3>Other Files</h3>
+                <ul id="other-list">
+                    <li class="empty">No other files yet</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="drop-info" id="drop-info">
+        <strong>Last action:</strong> <span id="drop-details">No actions yet</span>
+    </div>
+
+</body>
+</html>
