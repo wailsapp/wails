@@ -1,6 +1,6 @@
-# Mouse Buttons
+# Maustasten
 
-The Wails runtime intercepts mouse clicks to determine whether a frameless window needs resizing or a window needs to be moved. It has been asked how to detect when a mouse click has occurred, because `window.onclick` doesn't report the mouse buttons correctly. The following code shows how to detect mouse clicks:
+Die Wails Laufzeit fängt Mausklicks ab, um festzustellen, ob ein rahmenloses Fenster eine Größenänderung braucht, oder ein Fenster verschoben werden muss. Es wurde gefragt, wie man feststellen kann, wann ein Mausklick stattgefunden hat, da `window.onclick` die Maustasten nicht korrekt meldet. Der folgende Code zeigt, wie man Mausklicks erkennt:
 
 ```javascript
 window.addEventListener("mousedown", handleMouseButtonDown);
@@ -22,4 +22,4 @@ function handleMouseButtonDown(event) {
 }
 ```
 
-Reference: https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
+Referenz: https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button

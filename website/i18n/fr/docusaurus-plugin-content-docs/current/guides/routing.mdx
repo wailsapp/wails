@@ -30,16 +30,16 @@ RouterModule.forRoot(routes, { useHash: true });
 L'approche recommandée pour le routage dans React est [HashRouter](https://reactrouter.com/en/main/router-components/hash-router):
 
 ```jsx
-import { HashRouter, Routes, Route } from "react-router-dom";
+importer { HashRouter, Routes, Route } depuis "react-router-dom";
 
 ReactDOM.render(
   <HashRouter basename={"/"}>
-    {/* The rest of your app goes here */}
+    {/* Le reste de votre application vient ici */}
     <Routes>
       <Route path="/" element={<Page0 />} exact />
       <Route path="/page1" element={<Page1 />} />
       <Route path="/page2" element={<Page2 />} />
-      {/* more... */}
+      {/* plus. . */}
     </Routes>
   </HashRouter>,
   root
@@ -48,7 +48,7 @@ ReactDOM.render(
 
 ## Svelte
 
-The recommended approach for routing in Svelte is [svelte-spa-router](https://github.com/ItalyPaleAle/svelte-spa-router):
+L'approche recommandée pour le routage dans Svelte est [svelte-spa-router](https://github.com/ItalyPaleAle/svelte-spa-router):
 
 ```svelte
 <script>

@@ -2,22 +2,22 @@
 sidebar_position: 8
 ---
 
-# Clipboard
+# Zwischenablage
 
-This part of the runtime provides access to the operating system's clipboard.<br/> The current implementation only handles text.
+Dieser Teil der Laufzeit bietet Zugriff auf die Zwischenablage des Betriebssystems.<br/> Die aktuelle Implementierung verarbeitet nur Texte.
 
 ### ClipboardGetText
 
-This method reads the currently stored text from the clipboard.
+Diese Methode liest den aktuell gespeicherten Text aus der Zwischenablage aus.
 
-Go: `ClipboardGetText(ctx context.Context) (string, error)`<br/> Returns: a string (if the clipboard is empty an empty string will be returned) or an error.
+Go: `ClipboardGetText(ctx context.Context) (string, error)`<br/> Gibt einen String zurück (wenn die Zwischenablage leer ist, wird ein leerer String zurückgegeben) oder einen Fehler.
 
-JS: `ClipboardGetText(): Promise<string>`<br/> Returns: a promise with a string result (if the clipboard is empty an empty string will be returned).
+JS: `ClipboardGetText(): Promise<string>`<br/> Rückgabewert: Ein Promise mit einem String-Ergebnis (wenn die Zwischenablage leer ist, wird ein leerer String zurückgegeben).
 
 ### ClipboardSetText
 
-This method writes a text to the clipboard.
+Diese Methode schreibt einen Text in die Zwischenablage.
 
-Go: `ClipboardSetText(ctx context.Context, text string) error`<br/> Returns: an error if there is any.
+Go: `ClipboardSetText(ctx context.Context, text string) error`<br/> Gibt einen Fehler zurück, wenn es einen gibt.
 
-JS: `ClipboardSetText(text: string): Promise<boolean>`<br/> Returns: a promise with true result if the text was successfully set on the clipboard, false otherwise.
+JS: `ClipboardSetText(text: string): Promise<boolean>`<br/> Rückgabewert: Ein Promise mit dem Ergebnis true, wenn der Text erfolgreich in die Zwischenablage kopiert wurde, andernfalls false.

@@ -8,114 +8,114 @@ La configuration du projet se trouve dans le fichier `wails.json` du répertoire
 
 ```json5
 {
-  // Project config version
+  // Version de la configuration du projet
   "version": "",
-  // The project name
+  // Nom du projet
   "name": "",
-  // Relative path to the directory containing the compiled assets, this is normally inferred and could be left empty
+  // Chemin vers le dossier contenant les assets compilés. Cette variable est généralement déduite et peut être laissée vide
   "assetdir": "",
-  // Additional directories to trigger reloads (comma separated), this is only used for some advanced asset configurations
+  // Liste de dossiers séparés (séparés par une virgule) devant déclencher des rechargements, c'est uniquement utilisé pour certaines configurations avancées
   "reloaddirs": "",
-  // The directory where the build files reside. Defaults to 'build'
+  // Dossier où les fichiers de build se trouvent. Par défaut "build"
   "build:dir": "",
-  // Relative path to the frontend directory. Defaults to 'frontend'
+  // Chemin relative vers le dossier contenant le code frontend. Par défaut: "frontend"
   "frontend:dir": "",
-  // The command to install node dependencies, run in the frontend directory - often `npm install`
+  // La commande pour installer les dépendances nodes à rouler dans le dossier du code frontend - souvent `npm install`
   "frontend:install": "",
-  // The command to build the assets, run in the frontend directory - often `npm run build`
+  // La commande pour construire les assets. La commande est exécutée dans le dossier du code frontend - souvent `npm run build`
   "frontend:build": "",
-  // This command has been replaced by frontend:dev:build. If frontend:dev:build is not specified will falls back to this command. \nIf this command is also not specified will falls back to frontend:build
+  // Cette commande a été remplacée par frontend:dev:build. Si frontend:dev:build n'est pas définie, alors cette variable sera utilisée. \n Si cette commande n'est aussi pas définie, alors frontend:build sera utilisé.
   "frontend:dev": "",
-  // This command is the dev equivalent of frontend:build. If not specified falls back to frontend:dev
+  // Cette commande est l'équivalent dev de frontend:build. Si non défini, frontend:dev sera utilisé à la place
   "frontend:dev:build": "",
-  // This command is the dev equivalent of frontend:install. If not specified falls back to frontend:install
+  // Cette commande est l'équivalent dev de frontend:install. Si non défini, frontend:install sera utilisé à la place
   "frontend:dev:install": "",
-  // This command is run in a separate process on `wails dev`. Useful for 3rd party watchers or starting 3d party dev servers
+  // Cette commande est lancée dans un processus séparée de `wails dev`. Utile pour les observateurs tiers ou pour démarrer des serveurs de développement tiers
   "frontend:dev:watcher": "",
-  // URL to a 3rd party dev server to be used to serve assets, EG Vite. \nIf this is set to 'auto' then the devServerUrl will be inferred from the Vite output
+  // URL vers un serveur de développement tiers à utiliser pour diffuser des ressources, par exemple Vite. Si ce paramètre est défini sur "auto", l'URL du serveur de développement sera déduite de la sortie Vite.
   "frontend:dev:serverUrl": "",
-  // Relative path to the directory that the auto-generated JS modules will be created
+  // Chemin relatif vers le répertoire dans lequel les modules JS générés automatiquement seront créés
   "wailsjsdir": "",
-  // The name of the binary
+  // Nom du binaire
   "outputfilename": "",
-  // The default time the dev server waits to reload when it detects a change in assets
+  // Le temps par défaut pendant lequel le serveur de développement attend pour recharger lorsqu'il détecte un changement dans les ressources
   "debounceMS": 100,
-  // Address to bind the wails dev sever to. Default: localhost:34115
+  // Adresse à laquelle lier le serveur de développement Wails. Par défaut: localhost:34115
   "devServer": "",
-  // Arguments passed to the application in shell style when in dev mode
+  // Arguments passés à l'application dans le style shell en mode dev
   "appargs": "",
-  // Defines if build hooks should be run though they are defined for an OS other than the host OS.
+  // Définit si les hooks de build doivent être exécutés même s'ils sont définis pour un système d'exploitation autre que le système d'exploitation hôte.
   "runNonNativeBuildHooks": false,
   "preBuildHooks": {
-    // The command that will be executed before a build of the specified GOOS/GOARCH: ${platform} is replaced with the "GOOS/GOARCH". The "GOOS/GOARCH" hook is executed before the "GOOS/*" and "*/*" hook.
+    // La commande à exécuter avant la compilation du GOOS/GOARCH spécifié: ${platform} est remplacée par "GOOS/GOARCH". Le hook "GOOS/GOARCH" est exécuté avant les hooks "GOOS/*" et "*/*".
     "GOOS/GOARCH": "",
-    // The command that will be executed before a build of the specified GOOS: ${platform} is replaced with the "GOOS/GOARCH". The "GOOS/*" hook is executed before the "*/*" hook.
+    // La commande à exécuter avant la compilation du GOOS spécifié: ${platform} est remplacée par "GOOS/GOARCH". Le hook "GOOS/*" est exécuté avant le hook "*/*".
     "GOOS/*": "",
-    // The command that will be executed before every build: ${platform} is replaced with the "GOOS/GOARCH".
+    // La commande qui sera exécutée avant chaque build : ${platform} est remplacée par "GOOS/GOARCH".
     "*/*": ""
   },
   "postBuildHooks": {
-    // The command that will be executed after a build of the specified GOOS/GOARCH: ${platform} is replaced with the "GOOS/GOARCH" and ${bin} with the path to the compiled binary. The "GOOS/GOARCH" hook is executed before the "GOOS/*" and "*/*" hook.
+    // La commande sera exécutée après la compilation du GOOS/GOARCH spécifié: ${platform} est remplacé par "GOOS/GOARCH" et ${bin} par le chemin d'accès au binaire compilé. Le hook "GOOS/GOARCH" est exécuté avant les hooks "GOOS/*" et "*/*".
     "GOOS/GOARCH": "",
-    // The command that will be executed after a build of the specified GOOS: ${platform} is replaced with the "GOOS/GOARCH" and ${bin} with the path to the compiled binary. The "GOOS/*" hook is executed before the "*/*" hook.
+    // La commande qui sera exécutée après la compilation du GOOS spécifié: ${platform} est remplacé par "GOOS/GOARCH" et ${bin} par le chemin d'accès au binaire compilé. Le hook "GOOS/*" est exécuté avant le hook "*/*".
     "GOOS/*": "",
-    // The command that will be executed after every build: ${platform} is replaced with the "GOOS/GOARCH" and ${bin} with the path to the compiled binary.
+    // La commande qui sera exécutée après chaque build : ${platform} est remplacé par "GOOS/GOARCH" et ${bin} par le chemin vers le binaire compilé.
     "*/*": ""
   },
-  // Data used to populate manifests and version info.
+  // Données utilisées pour renseigner les manifestes et les informations de version.
   "info": {
-    // The company name. Default: [The project name]
+    // Nom de l'entreprise. Par défaut: [Nom du projet]
     "companyName": "",
-    // The product name. Default: [The project name]
+    // Nom du produit. Par défaut: [Nom du projet]
     "productName": "",
-    // The version of the product. Default: '1.0.0'
+    // Version du produit. Par défaut: "1.0.0"
     "productVersion": "",
-    // The copyright of the product. Default: 'Copyright.........'
+    // Copyright du produit. Valeur par défaut: "Copyright…"
     "copyright": "",
-    // A short comment of the app. Default: 'Built using Wails (https://wails.app)'
+    // Un bref commentaire sur l'application. Par défaut: "Créée avec Wails (https://wails.app)"
     "comments": "",
-    // File associations for the app
+    // Associations de fichiers pour l'application
     "fileAssociations": [
       {
-        // The extension (minus the leading period). e.g. png
+        // L'extension (moins le point initial). Par exemple, png
         "ext": "wails",
-        // The name. e.g. PNG File
+        // Le nom. Par exemple, fichier PNG
         "name": "Wails",
-        // Windows-only. The description. It is displayed on the `Type` column on Windows Explorer.
+        // Réservé à Windows. La description s'affiche dans la colonne "Type" de l'Explorateur Windows.
         "description": "Wails file",
-        // The icon name without extension. Icons should be located in build folder. Proper icons will be generated from .png file for both macOS and Windows)
+        // Le nom de l'icône sans l'extension. Les icônes doivent être situées dans le dossier de compilation. Les icônes appropriées seront générées à partir du fichier .png pour macOS et Windows.
         "iconName": "fileIcon",
-        // macOS-only. The app’s role with respect to the type. Corresponds to CFBundleTypeRole.
+        // Uniquement pour macOS. Rôle de l'application par rapport au type. Correspond à CFBundleTypeRole.
         "role": "Editor"
       },
     ],
-    // Custom URI protocols that should be opened by the application
+    // Protocoles URI personnalisés qui doivent être ouverts par l'application
     "protocols": [
       {
-        // protocol scheme. e.g. myapp
+        // schéma de protocole. par exemple myapp
         "scheme": "myapp",
-        // Windows-only. The description. It is displayed on the `Type` column on Windows Explorer.
+        // Réservé à Windows. La description s'affiche dans la colonne "Type" de l'Explorateur Windows.
         "description": "Myapp protocol",
         // macOS-only. The app’s role with respect to the type. Corresponds to CFBundleTypeRole.
         "role": "Editor"
       }
     ]
   },
-  // 'multiple': One installer per architecture. 'single': Single universal installer for all architectures being built. Default: 'multiple'
+  // "multiple": un installateur par architecture. "single": un installateur universel unique pour toutes les architectures en cours de construction. Par défaut: "multiple"
   "nsisType": "",
-  // Whether the app should be obfuscated. Default: false
+  // Indique si l'application doit être offusquée. Valeur par défaut: false.
   "obfuscated": "",
-  // The arguments to pass to the garble command when using the obfuscated flag
+  // Les arguments à passer à la commande garble lors de l'utilisation de l'indicateur d'offuscage
   "garbleargs": "",
-  // Bindings configurations
+  // Configuration de bindings
   "bindings": {
-    // model.ts file generation config
+    // configuration de génération du fichier model.ts
     "ts_generation": {
-      // All generated JavaScript entities will be prefixed with this value
+      // Toutes les entités JavaScript générées seront préfixées avec cette valeur
       "prefix": "",
-      // All generated JavaScript entities will be suffixed with this value
+      // Toutes les entités JavaScript générées seront suffixées avec cette valeur
       "suffix": "",
-      // Type of output to generate (classes|interfaces)
+      // Type de sortie à générer (classes|interfaces)
       "outputType": "classes",
     }
   }
