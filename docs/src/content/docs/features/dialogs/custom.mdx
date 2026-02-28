@@ -199,14 +199,14 @@ func ShowConfirmdialog(message string) bool {
 </div>
 
 <script>
-import { OnEvent, Emit } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-OnEvent("set-message", (message) => {
+Events.On("set-message", (message) => {
     document.getElementById("message").textContent = message
 })
 
 function confirm(result) {
-    Emit(result ? "confirm-yes" : "confirm-no")
+    Events.Emit(result ? "confirm-yes" : "confirm-no")
 }
 </script>
 ```
@@ -389,17 +389,17 @@ func (ld *Logindialog) Cancel() {
 </div>
 
 <script>
-import { Emit } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 document.getElementById('login-form').addEventListener('submit', (e) => {
     e.preventDefault()
     const username = document.getElementById('username').value
     const password = document.getElementById('password').value
-    Emit('login-submit', { username, password })
+    Events.Emit('login-submit', { username, password })
 })
 
 function cancel() {
-    Emit('login-cancel')
+    Events.Emit('login-cancel')
 }
 </script>
 ```
