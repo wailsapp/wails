@@ -45,3 +45,40 @@ This method emits the given event. Optional data may be passed with the event. T
 
 Go: `EventsEmit(ctx context.Context, eventName string, optionalData ...interface{})`<br/>
 JS: `EventsEmit(eventName: string, ...optionalData: any)`
+
+### Code Sample
+This shows how to trigger an event and listen on the frontend.
+
+Frontend
+```tsx
+  /* React */
+  import {EventsOn} from "../wailsjs/runtime";
+  import { Auth } from "../wailsjs/go/main/App";
+
+  useEffect(() => {
+      const handler = (event: any) => {
+        // Handle event
+        console.log(event);
+      };
+  
+      EventsOn("auth:success", handler);
+
+      return () => {
+        EventsOff("auth:success");
+      };
+  },[])
+
+
+ <button onClick={Auth}> verify auth </button>
+  
+```
+
+GO
+```go
+  //app.go
+  import "github.com/wailsapp/wails/v2/pkg/runtime"
+
+   func (a *App) Auth() {
+	   runtime.EventsEmit(a.ctx, "auth:success", "user-123")
+   }
+```
