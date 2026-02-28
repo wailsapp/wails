@@ -331,6 +331,24 @@ void windowZoomOut(void* nsWindow) {
 	}
 }
 
+// createModalWindow presents a modal window as a sheet attached to the parent window
+void createModalWindow(void* parentWindowPtr, void* modalWindowPtr) {
+	if (parentWindowPtr == NULL || modalWindowPtr == NULL) {
+		return;
+	}
+
+	NSWindow* parentWindow = (NSWindow*)parentWindowPtr;
+	NSWindow* modalWindow = (NSWindow*)modalWindowPtr;
+
+	// Present the modal window as a sheet attached to the parent window
+	// Must be dispatched to the main thread for UI thread safety
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[parentWindow beginSheet:modalWindow completionHandler:^(NSModalResponse returnCode) {
+			// Sheet was dismissed - window will be released automatically
+		}];
+	});
+}
+
 // set the window position relative to the screen
 void windowSetRelativePosition(void* nsWindow, int x, int y) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
@@ -1549,6 +1567,17 @@ func (w *macosWebviewWindow) setIgnoreMouseEvents(ignore bool) {
 
 func (w *macosWebviewWindow) setContentProtection(enabled bool) {
 	C.setContentProtection(w.nsWindow, C.bool(enabled))
+}
+
+func (w *macosWebviewWindow) attachModal(modalWindow *WebviewWindow) {
+	if modalWindow == nil || modalWindow.impl == nil || modalWindow.isDestroyed() {
+		return
+	}
+	modalNativeWindow := modalWindow.impl.nativeWindow()
+	if modalNativeWindow == nil {
+		return
+	}
+	C.createModalWindow(w.nsWindow, modalNativeWindow)
 }
 
 func (w *macosWebviewWindow) cut() {
