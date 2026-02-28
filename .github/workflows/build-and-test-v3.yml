@@ -10,10 +10,15 @@ on:
     branches:
       - v3-alpha
 
+# Restrict default GITHUB_TOKEN permissions
+permissions:
+  contents: read
+
 jobs:
   check_approval:
     name: Check PR Approval
     runs-on: ubuntu-latest
+    permissions: {}
     if: github.base_ref == 'v3-alpha'
     outputs:
       approved: ${{ steps.check.outputs.approved }}
@@ -31,6 +36,8 @@ jobs:
     name: Run JS Tests
     needs: check_approval
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     if: github.base_ref == 'v3-alpha'
     strategy:
       matrix:
@@ -100,6 +107,8 @@ jobs:
     name: Run Go Tests v3
     needs: [check_approval, test_js]
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     if: github.base_ref == 'v3-alpha'
     strategy:
       fail-fast: false
@@ -116,7 +125,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         with:
           packages: libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk
-          version: 1.0
+          version: 1.1
 
       - name: Install linux dependencies (GTK4)
         if: matrix.os == 'ubuntu-latest'
@@ -200,6 +209,8 @@ jobs:
     if: always()
     needs: [test_js, test_go, test_templates]
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
     steps:
       - uses: geekyeggo/delete-artifact@v5
         with:
@@ -212,6 +223,8 @@ jobs:
     name: Test Templates
     needs: [test_js, test_go]
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     if: github.base_ref == 'v3-alpha'
     strategy:
       fail-fast: false
@@ -240,7 +253,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         with:
           packages: libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config
-          version: 1.0
+          version: 1.1
 
       - name: Install linux dependencies (GTK4)
         if: matrix.os == 'ubuntu-latest'
@@ -296,6 +309,7 @@ jobs:
   build_results:
     if: ${{ always() }}
     runs-on: ubuntu-latest
+    permissions: {}
     name: v3 Build Results
     needs: [test_go, test_js, test_templates]
     steps:

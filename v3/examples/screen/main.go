@@ -6,8 +6,10 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -44,12 +46,50 @@ func main() {
 
 					_, filename, _, _ := runtime.Caller(0)
 					dir := filepath.Dir(filename)
-					url := r.URL.Path
-					path := dir + "/assets" + url
+					assetsDir := filepath.Join(dir, "assets")
 
-					if _, err := os.Stat(path); err == nil {
+					// Resolve the assets directory to an absolute, cleaned path.
+					assetsDirAbs, err := filepath.Abs(filepath.Clean(assetsDir))
+					if err != nil {
+						// If we cannot resolve the assets directory safely, fall back to default handler.
+						next.ServeHTTP(w, r)
+						return
+					}
+
+					// Clean the requested URL path using path.Clean (HTTP paths always use forward slashes).
+					cleanPath := path.Clean("/" + r.URL.Path)
+
+					// Reject Windows drive-letter (e.g. "C:/...") or UNC-style absolute paths.
+					if len(cleanPath) >= 2 && cleanPath[1] == ':' {
+						next.ServeHTTP(w, r)
+						return
+					}
+
+					// Treat the request path as relative by stripping the leading forward slash.
+					relativePath := strings.TrimPrefix(cleanPath, "/")
+					// Convert to OS-specific path separators for filesystem operations.
+					relativePath = filepath.FromSlash(relativePath)
+
+					// Resolve the requested path against the absolute assets directory.
+					resolvedPath, err := filepath.Abs(filepath.Join(assetsDirAbs, relativePath))
+					if err != nil {
+						// If the path cannot be resolved, fall back to default handler.
+						next.ServeHTTP(w, r)
+						return
+					}
+
+					// Ensure the resolved path is still within the assets directory.
+					// This check prevents path traversal attacks like "/../../../etc/passwd".
+					if resolvedPath != assetsDirAbs && !strings.HasPrefix(resolvedPath, assetsDirAbs+string(filepath.Separator)) {
+						// Path traversal attempt detected, fall back to default handler.
+						next.ServeHTTP(w, r)
+						return
+					}
+
+					// Path is validated to be within assetsDirAbs above.
+					if _, err := os.Stat(resolvedPath); err == nil { // #nosec G304 // lgtm[go/path-injection] -- path validated above
 						// Serve file from disk to make testing easy
-						http.ServeFile(w, r, path)
+						http.ServeFile(w, r, resolvedPath) // #nosec G304 // lgtm[go/path-injection] -- path validated above
 					} else {
 						// Passthrough to the default asset handler if file not found on disk
 						next.ServeHTTP(w, r)
