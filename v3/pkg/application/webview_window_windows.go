@@ -843,13 +843,15 @@ func (w *windowsWebviewWindow) fullscreen() {
 		w32.GWL_STYLE,
 		w.previousWindowStyle & ^uint32(w32.WS_OVERLAPPEDWINDOW) | (w32.WS_POPUP|w32.WS_VISIBLE),
 	)
-	// Remove WS_EX_TRANSPARENT and WS_EX_LAYERED to ensure mouse events are captured in fullscreen mode.
-	// Both flags must be removed to fix click-through issues when Frameless + BackgroundTypeTransparent are used.
+	// Remove WS_EX_DLGMODALFRAME and WS_EX_TRANSPARENT to prevent mouse click-through in fullscreen.
+	// WS_EX_LAYERED is intentionally kept: removing it dynamically breaks the layered window rendering
+	// and cannot be properly restored in unfullscreen() without re-initializing the compositing pipeline.
+	// Alpha-based hit-testing (from WS_EX_LAYERED) is handled separately via WM_NCHITTEST in WndProc.
 	// See: https://github.com/wailsapp/wails/issues/4408
 	w32.SetWindowLong(
 		w.hwnd,
 		w32.GWL_EXSTYLE,
-		w.previousWindowExStyle & ^uint32(w32.WS_EX_DLGMODALFRAME|w32.WS_EX_TRANSPARENT|w32.WS_EX_LAYERED),
+		w.previousWindowExStyle & ^uint32(w32.WS_EX_DLGMODALFRAME|w32.WS_EX_TRANSPARENT),
 	)
 	w.isCurrentlyFullscreen = true
 	w32.SetWindowPos(w.hwnd, w32.HWND_TOP,
@@ -1382,6 +1384,14 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	processed, code := w32.MenuBarWndProc(w.hwnd, msg, wparam, lparam, w.menubarTheme)
 	if processed {
 		return code
+	}
+
+	// Force mouse event capture in fullscreen mode for transparent/layered windows.
+	// WS_EX_LAYERED windows use alpha-based hit testing, so transparent pixels (alpha=0) would
+	// normally pass mouse events through. Returning HTCLIENT overrides this behavior.
+	// See: https://github.com/wailsapp/wails/issues/4408
+	if msg == w32.WM_NCHITTEST && w.isCurrentlyFullscreen {
+		return w32.HTCLIENT
 	}
 
 	switch msg {
