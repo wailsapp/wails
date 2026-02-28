@@ -159,7 +159,7 @@ jobs:
           task test:examples
           echo "Example compilation tests (GTK3) completed successfully"
 
-      - name: Build Examples (GTK4 experimental)
+      - name: Build Examples (GTK4)
         if: matrix.os == 'ubuntu-latest'
         working-directory: v3
         run: |
@@ -189,11 +189,10 @@ jobs:
           go test -v ./...
           '
 
-      - name: Run tests (ubuntu) - GTK4 experimental
+      - name: Run tests (ubuntu) - GTK4
         if: matrix.os == 'ubuntu-latest'
         working-directory: v3
-        # Skip all service tests that hang in CI due to GTK4 display requirements
-        # The services tests require a fully functional GTK4 display which xvfb cannot provide
+        # Skip service tests that hang in CI due to GTK4 display requirements
         run: >
           xvfb-run --auto-servernum
           sh -c '
@@ -210,7 +209,8 @@ jobs:
     if: always()
     needs: [test_js, test_go, test_templates]
     runs-on: ubuntu-latest
-    permissions: {}
+    permissions:
+      actions: write
     steps:
       - uses: geekyeggo/delete-artifact@v5
         with:
@@ -304,8 +304,7 @@ jobs:
           cd ..
           wails3 build
 
-      # Note: GTK4 template builds are not tested here as wails build doesn't
-      # support -tags flag yet. GTK4 compilation is verified by Go tests.
+      # GTK4 template builds are covered by the Go example compilation tests above.
 
   build_results:
     if: ${{ always() }}

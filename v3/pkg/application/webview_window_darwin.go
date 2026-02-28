@@ -27,7 +27,7 @@ extern void registerListener(unsigned int event);
 void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 	if (frameless) {
-		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable;
+		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable;
 	}
 	WebviewWindow* window = [[WebviewWindow alloc] initWithContentRect:NSMakeRect(0, 0, width-1, height-1)
 		styleMask:styleMask
@@ -329,6 +329,24 @@ void windowZoomOut(void* nsWindow) {
 	} else {
 		[window.webView setMagnification:1.0];
 	}
+}
+
+// createModalWindow presents a modal window as a sheet attached to the parent window
+void createModalWindow(void* parentWindowPtr, void* modalWindowPtr) {
+	if (parentWindowPtr == NULL || modalWindowPtr == NULL) {
+		return;
+	}
+
+	NSWindow* parentWindow = (NSWindow*)parentWindowPtr;
+	NSWindow* modalWindow = (NSWindow*)modalWindowPtr;
+
+	// Present the modal window as a sheet attached to the parent window
+	// Must be dispatched to the main thread for UI thread safety
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[parentWindow beginSheet:modalWindow completionHandler:^(NSModalResponse returnCode) {
+			// Sheet was dismissed - window will be released automatically
+		}];
+	});
 }
 
 // set the window position relative to the screen
@@ -1334,7 +1352,10 @@ func (w *macosWebviewWindow) run() {
 			C.windowSetAppearanceTypeByName(w.nsWindow, C.CString(string(macOptions.Appearance)))
 		}
 
-		if macOptions.InvisibleTitleBarHeight != 0 {
+		// Only apply invisible title bar when the native drag area is hidden
+		// (frameless window or transparent/hidden title bar presets like HiddenInset)
+		if macOptions.InvisibleTitleBarHeight != 0 &&
+			(w.parent.options.Frameless || titleBarOptions.AppearsTransparent) {
 			C.windowSetInvisibleTitleBar(w.nsWindow, C.uint(macOptions.InvisibleTitleBarHeight))
 		}
 
@@ -1546,6 +1567,17 @@ func (w *macosWebviewWindow) setIgnoreMouseEvents(ignore bool) {
 
 func (w *macosWebviewWindow) setContentProtection(enabled bool) {
 	C.setContentProtection(w.nsWindow, C.bool(enabled))
+}
+
+func (w *macosWebviewWindow) attachModal(modalWindow *WebviewWindow) {
+	if modalWindow == nil || modalWindow.impl == nil || modalWindow.isDestroyed() {
+		return
+	}
+	modalNativeWindow := modalWindow.impl.nativeWindow()
+	if modalNativeWindow == nil {
+		return
+	}
+	C.createModalWindow(w.nsWindow, modalNativeWindow)
 }
 
 func (w *macosWebviewWindow) cut() {

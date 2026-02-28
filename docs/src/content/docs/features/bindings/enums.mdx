@@ -1,0 +1,529 @@
+---
+title: Enums
+description: Automatic enum generation from Go constants
+sidebar:
+  order: 4
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Enum Bindings
+
+The Wails v3 binding generator **automatically detects Go constant types and generates TypeScript enums or JavaScript const objects**. No registration, no configuration — just define your types and constants in Go, and the generator handles the rest.
+
+:::note
+Unlike Wails v2, there is **no need to call `EnumBind`** or register enums manually. The generator discovers them automatically from your source code.
+:::
+
+## Quick Start
+
+**Define a named type with constants in Go:**
+
+```go
+type Status string
+
+const (
+    StatusActive  Status = "active"
+    StatusPending Status = "pending"
+    StatusClosed  Status = "closed"
+)
+```
+
+**Use the type in a struct or service method:**
+
+```go
+type Ticket struct {
+    ID     int    `json:"id"`
+    Title  string `json:"title"`
+    Status Status `json:"status"`
+}
+```
+
+**Generate bindings:**
+
+```bash
+wails3 generate bindings
+```
+
+The generator output will report enum counts alongside models:
+
+```
+3 Enums, 5 Models
+```
+
+**Use in your frontend:**
+
+```javascript
+import { Ticket, Status } from './bindings/myapp/models'
+
+const ticket = new Ticket({
+    id: 1,
+    title: "Bug report",
+    status: Status.StatusActive
+})
+```
+
+**That's it!** The enum type is enforced in both Go and JavaScript/TypeScript.
+
+## Defining Enums
+
+An enum in Wails is a **named type** with an underlying basic type, combined with **const declarations** of that type.
+
+### String Enums
+
+```go
+// Title is a title
+type Title string
+
+const (
+    // Mister is a title
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+    Ms     Title = "Ms"
+    Mrs    Title = "Mrs"
+    Dr     Title = "Dr"
+)
+```
+
+**Generated TypeScript:**
+
+```typescript
+/**
+ * Title is a title
+ */
+export enum Title {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = "",
+
+    /**
+     * Mister is a title
+     */
+    Mister = "Mr",
+    Miss = "Miss",
+    Ms = "Ms",
+    Mrs = "Mrs",
+    Dr = "Dr",
+}
+```
+
+**Generated JavaScript:**
+
+```javascript
+/**
+ * Title is a title
+ * @readonly
+ * @enum {string}
+ */
+export const Title = {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero: "",
+
+    /**
+     * Mister is a title
+     */
+    Mister: "Mr",
+    Miss: "Miss",
+    Ms: "Ms",
+    Mrs: "Mrs",
+    Dr: "Dr",
+};
+```
+
+### Integer Enums
+
+```go
+type Priority int
+
+const (
+    PriorityLow    Priority = 0
+    PriorityMedium Priority = 1
+    PriorityHigh   Priority = 2
+)
+```
+
+**Generated TypeScript:**
+
+```typescript
+export enum Priority {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = 0,
+
+    PriorityLow = 0,
+    PriorityMedium = 1,
+    PriorityHigh = 2,
+}
+```
+
+### Type Alias Enums
+
+Go type aliases (`=`) also work, but generate a slightly different output — a type definition plus a const object, rather than a native TypeScript `enum`:
+
+```go
+// Age is an integer with some predefined values
+type Age = int
+
+const (
+    NewBorn    Age = 0
+    Teenager   Age = 12
+    YoungAdult Age = 18
+
+    // Oh no, some grey hair!
+    MiddleAged Age = 50
+    Mathusalem Age = 1000 // Unbelievable!
+)
+```
+
+**Generated TypeScript:**
+
+```typescript
+/**
+ * Age is an integer with some predefined values
+ */
+export type Age = number;
+
+/**
+ * Predefined constants for type Age.
+ * @namespace
+ */
+export const Age = {
+    NewBorn: 0,
+    Teenager: 12,
+    YoungAdult: 18,
+
+    /**
+     * Oh no, some grey hair!
+     */
+    MiddleAged: 50,
+
+    /**
+     * Unbelievable!
+     */
+    Mathusalem: 1000,
+};
+```
+
+**Generated JavaScript:**
+
+```javascript
+/**
+ * Age is an integer with some predefined values
+ * @typedef {number} Age
+ */
+
+/**
+ * Predefined constants for type Age.
+ * @namespace
+ */
+export const Age = {
+    NewBorn: 0,
+    Teenager: 12,
+    YoungAdult: 18,
+
+    /**
+     * Oh no, some grey hair!
+     */
+    MiddleAged: 50,
+
+    /**
+     * Unbelievable!
+     */
+    Mathusalem: 1000,
+};
+```
+
+:::tip
+**Named types** (`type Title string`) generate native TypeScript `enum` declarations with a `$zero` member.
+**Type aliases** (`type Age = int`) generate a `type` + `const` namespace pair without `$zero`.
+:::
+
+## The `$zero` Value
+
+Every named-type enum includes a special `$zero` member representing the **Go zero value** for the underlying type:
+
+| Underlying Type | `$zero` Value |
+|----------------|---------------|
+| `string` | `""` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `0` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `0` |
+| `float32`, `float64` | `0` |
+| `bool` | `false` |
+
+When a struct field uses an enum type and no value is provided, the constructor defaults to `$zero`:
+
+```typescript
+export class Person {
+    "Title": Title;
+
+    constructor($$source: Partial<Person> = {}) {
+        if (!("Title" in $$source)) {
+            this["Title"] = Title.$zero;  // defaults to ""
+        }
+        Object.assign(this, $$source);
+    }
+}
+```
+
+This ensures type-safe initialisation when generating classes — enum fields are never `undefined`. When generating TypeScript interfaces (using `-i`), there is no constructor and fields may be absent as usual.
+
+## Using Enums in Structs
+
+When a struct field has an enum type, the generated code **preserves that type** rather than falling back to the primitive:
+
+```go
+type Person struct {
+    Title Title
+    Name  string
+    Age   Age
+}
+```
+
+**Generated TypeScript:**
+
+```typescript
+export class Person {
+    "Title": Title;
+    "Name": string;
+    "Age": Age;
+
+    constructor($$source: Partial<Person> = {}) {
+        if (!("Title" in $$source)) {
+            this["Title"] = Title.$zero;
+        }
+        if (!("Name" in $$source)) {
+            this["Name"] = "";
+        }
+        if (!("Age" in $$source)) {
+            this["Age"] = 0;
+        }
+
+        Object.assign(this, $$source);
+    }
+}
+```
+
+The `Title` field is typed as `Title`, not `string`. This gives your IDE full autocompletion and type checking on enum values.
+
+## Enums from Imported Packages
+
+Enums defined in separate packages are fully supported. They are generated into the corresponding package directory:
+
+```go
+// services/types.go
+package services
+
+type Title string
+
+const (
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+    Ms     Title = "Ms"
+)
+```
+
+```go
+// main.go
+package main
+
+import "myapp/services"
+
+func (*GreetService) Greet(name string, title services.Title) string {
+    return "Hello " + string(title) + " " + name
+}
+```
+
+The `Title` enum is generated in the `services` models file, and import paths are resolved automatically:
+
+```typescript
+// bindings/myapp/services/models.ts
+export enum Title {
+    $zero = "",
+    Mister = "Mr",
+    Miss = "Miss",
+    Ms = "Ms",
+}
+```
+
+## Enum Methods
+
+You can add methods to your enum types in Go. These don't affect binding generation but provide useful server-side functionality:
+
+```go
+type Title string
+
+func (t Title) String() string {
+    return string(t)
+}
+
+const (
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+)
+```
+
+The generated enum is identical whether or not Go methods exist on the type.
+
+## Comments and Documentation
+
+The generator preserves Go comments as JSDoc in the generated output:
+
+- **Type comments** become the enum's doc comment
+- **Const group comments** become section separators
+- **Individual const comments** become member doc comments
+- **Inline comments** are preserved where possible
+
+This means your IDE will show documentation for enum values on hover.
+
+## Supported Underlying Types
+
+The binding generator supports enums with the following Go underlying types:
+
+| Go Type | Works as Enum |
+|---------|:---:|
+| `string` | Yes |
+| `int`, `int8`, `int16`, `int32`, `int64` | Yes |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | Yes |
+| `float32`, `float64` | Yes |
+| `byte` (`uint8`) | Yes |
+| `rune` (`int32`) | Yes |
+| `bool` | Yes |
+| `complex64`, `complex128` | No |
+
+## Limitations
+
+The following are **not** supported for enum generation:
+
+- **Generic types** — Type parameters prevent constant detection
+- **Types with custom `json.Marshaler` or `encoding.TextMarshaler`** — Custom serialisation means the generated values may not match runtime behaviour, so the generator skips these
+- **Constants whose values cannot be statically evaluated or represented** — Constants must have known, representable values in their underlying type. Standard `iota` patterns work fine since the compiler resolves them to concrete values
+- **Complex number types** — `complex64` and `complex128` cannot be enum underlying types
+
+## Complete Example
+
+**Go:**
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+// BackgroundType defines the type of background
+type BackgroundType string
+
+const (
+    BackgroundSolid    BackgroundType = "solid"
+    BackgroundGradient BackgroundType = "gradient"
+    BackgroundImage    BackgroundType = "image"
+)
+
+type BackgroundConfig struct {
+    Type  BackgroundType `json:"type"`
+    Value string         `json:"value"`
+}
+
+type ThemeService struct{}
+
+func (*ThemeService) GetBackground() BackgroundConfig {
+    return BackgroundConfig{
+        Type:  BackgroundSolid,
+        Value: "#ffffff",
+    }
+}
+
+func (*ThemeService) SetBackground(config BackgroundConfig) error {
+    // Apply background
+    return nil
+}
+
+func main() {
+    app := application.New(application.Options{
+        Services: []application.Service{
+            application.NewService(&ThemeService{}),
+        },
+    })
+    app.Window.New()
+    app.Run()
+}
+```
+
+**Frontend (TypeScript):**
+
+```typescript
+import { GetBackground, SetBackground } from './bindings/myapp/themeservice'
+import { BackgroundConfig, BackgroundType } from './bindings/myapp/models'
+
+// Get current background
+const bg = await GetBackground()
+
+// Check the type using enum values
+if (bg.type === BackgroundType.BackgroundSolid) {
+    console.log("Solid background:", bg.value)
+}
+
+// Set a new background
+await SetBackground(new BackgroundConfig({
+    type: BackgroundType.BackgroundGradient,
+    value: "linear-gradient(to right, #000, #fff)"
+}))
+```
+
+**Frontend (JavaScript):**
+
+```javascript
+import { GetBackground, SetBackground } from './bindings/myapp/themeservice'
+import { BackgroundConfig, BackgroundType } from './bindings/myapp/models'
+
+// Use enum values for type-safe comparisons
+const bg = await GetBackground()
+
+switch (bg.type) {
+    case BackgroundType.BackgroundSolid:
+        applySolid(bg.value)
+        break
+    case BackgroundType.BackgroundGradient:
+        applyGradient(bg.value)
+        break
+    case BackgroundType.BackgroundImage:
+        applyImage(bg.value)
+        break
+}
+```
+
+## Next Steps
+
+<CardGrid>
+  <Card title="Data Models" icon="document">
+    Structs, type mapping, and model generation.
+
+    [Learn More →](/features/bindings/models)
+  </Card>
+
+  <Card title="Method Binding" icon="rocket">
+    Bind Go methods to the frontend.
+
+    [Learn More →](/features/bindings/methods)
+  </Card>
+
+  <Card title="Advanced Binding" icon="setting">
+    Directives, code injection, and custom IDs.
+
+    [Learn More →](/features/bindings/advanced)
+  </Card>
+
+  <Card title="Best Practices" icon="approve-check">
+    Binding design patterns.
+
+    [Learn More →](/features/bindings/best-practices)
+  </Card>
+</CardGrid>
+
+---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [binding examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/binding).
