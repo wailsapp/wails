@@ -18,10 +18,10 @@
 </p>
 ```
 
-[Snippet Expander](https://snippetexpander.org) is "Your little expandable text snippets helper", for Linux.
+[Snippet Expander](https://snippetexpander.org) est "Votre petit assistant de snippets extensibles", pour Linux.
 
-Snippet Expander comprises of a GUI application built with Wails for managing snippets and settings, with a Search & Paste window mode for quickly selecting and pasting a snippet.
+Snippet Expander comprend une application GUI construite avec Wails pour gérer les modules de texte et les paramètres, avec le mode Recherche & Coller pour sélectionner et coller rapidement un snippet.
 
-The Wails based GUI, go-lang CLI and vala-lang auto expander daemon all communicate with a go-lang daemon via D-Bus. The daemon does the majority of the work, managing the database of snippets and common settings, and providing services for expanding and pasting snippets etc.
+L'interface Wails, le CLI go-lang et le daemon vala-lang d'auto expansion de Wails communiquent tous avec un daemon go-lang via D-Bus. Le daemon fait la majorité du travail, gère la base de données des snippets et des paramètres communs, et fournit des services pour l'expansion et le collage des snippets, etc.
 
-Check out the [source code](https://git.sr.ht/~ianmjones/snippetexpander/tree/trunk/item/cmd/snippetexpandergui/app.go#L38) to see how the Wails app sends messages from the UI to the backend that are then sent to the daemon, and subscribes to a D-Bus event to monitor changes to snippets via another instance of the app or CLI and show them instantly in the UI via a Wails event.
+Consultez le [code source](https://git.sr.ht/~ianmjones/snippetexpander/tree/trunk/item/cmd/snippetexpandergui/app.go#L38) pour voir comment l'application Wails envoie des messages de l'interface utilisateur vers le backend qui sont ensuite envoyés au daemon, et s'abonne à un événement D-Bus pour surveiller les changements de snippets via une autre instance de l'application ou CLI et les afficher instantanément dans l'interface utilisateur via un événement Wails.

@@ -1,8 +1,8 @@
-# Linux Distro Support
+# Linux Distro Unterstützung
 
-## Overview
+## Übersicht
 
-Wails offers Linux support but providing installation instructions for all available distributions is an impossible task. Instead, Wails tries to determine if the packages you need to develop applications are available via your system's package manager. Currently, we support the following package managers:
+Wails bietet Linux-Unterstützung an, aber die Installationsanleitung für alle verfügbaren Distributionen ist eine unmögliche Aufgabe. Stattdessen versucht Wails herauszufinden, ob die Pakete, die zur Entwicklung von Anwendungen benötigt werden, über den System Paketmanager verfügbar sind. Zur Zeit unterstützen wir die folgenden Paketmanager:
 
 - apt
 - dnf
@@ -12,11 +12,11 @@ Wails offers Linux support but providing installation instructions for all avail
 - pacman
 - zypper
 
-## Adding package names
+## Paketnamen hinzufügen
 
-There may be circumstances where your distro uses one of the supported package managers but the package name is different. For example, you may use an Ubuntu derivative, but the package name for gtk may be different. Wails attempts to find the correct package by iterating through a list of package names. The list of packages are stored in the packagemanager specific file in the `v2/internal/system/packagemanager` directory. In our example, this would be `v2/internal/system/packagemanager/apt.go`.
+Es kann Situationen geben, in denen die Distribution einen der unterstützten Paketmanager verwendet, jedoch der Paketname ein anderer ist. Zum Beispiel kannst du eine Ubuntu-Ableitung verwenden, aber der Paketname für gtk kann anders sein. Wails versucht das richtige Paket zu finden, indem es durch eine Liste von Paketnamen iteriert. Die Liste der Pakete wird im Verzeichnis `v2/internal/system/packagemanager` gespeichert. In unserem Beispiel wäre dies `v2/internal/system/packagemanager/apt.go`.
 
-In this file, the list of packages are defined by the `Packages()` method:
+In dieser Datei wird die Liste der Pakete durch die `Packages()` Methode definiert:
 
 ```go
 func (a *Apt) Packages() packagemap {
@@ -43,7 +43,7 @@ func (a *Apt) Packages() packagemap {
 }
 ```
 
-Let's assume that in our linux distro, `libgtk-3` is packaged under the name `lib-gtk3-dev`. We could add support for this by adding the following line:
+Nehmen wir an, dass `libgtk-3` in unserer Linux-Distribution unter dem Namen `lib-gtk3-dev` paketiert ist. Wir könnten die Unterstützung dafür hinzufügen, indem wir die folgende Zeile hinzufügen:
 
 ```go {5}
 func (a *Apt) Packages() packagemap {
@@ -71,12 +71,12 @@ func (a *Apt) Packages() packagemap {
 }
 ```
 
-## Adding new package managers
+## Neue Paketmanager hinzufügen
 
-To add a new package manager, perform the following steps:
+Um einen neuen Paketmanager hinzuzufügen, führe folgende Schritte durch:
 
-- Create a new file in `v2/internal/system/packagemanager` called `<pm>.go`, where `<pm>` is the name of the package manager.
-- Define a struct that conforms to the package manager interface defined in `pm.go`:
+- Erstelle eine neue Datei in `v2/internal/system/packagemanager` mit dem Namen `<pm>.go`, wobei `<pm>` der Name des Paketmanagers ist.
+- Definiere ein Struct, das mit der Paketmanager-Schnittstelle übereinstimmt, die in `pm.go` definiert ist:
 
 ```go
 type PackageManager interface {
@@ -88,16 +88,16 @@ type PackageManager interface {
 }
 ```
 
-- `Name()` should return the name of the package manager
-- `Packages()` should return a `packagemap`, that provides candidate filenames for dependencies
-- `PackageInstalled()` should return `true` if the given package is installed
-- `PackageAvailable()` should return `true` if the given package is not installed but available for installation
-- `InstallCommand()` should return the exact command to install the given package name
+- `Name()` sollte den Namen des Paket-Managers zurückgeben
+- `Packages()` sollte eine `packagemap`zurückgeben, die Kandidaten-Dateinamen für Abhängigkeiten zur Verfügung stellt
+- `PackageInstalled()` sollte `true` zurückgeben, wenn das angegebene Paket installiert ist
+- `PackageAvailable()` sollte `true` zurückgeben, wenn das angegebene Paket nicht installiert ist, aber für die Installation verfügbar ist
+- `InstallCommand()` sollte den exakten Befehl zurückgeben, um den angegebenen Paketnamen zu installieren
 
-Take a look at the other package managers code to get an idea how this works.
+Werfe einen Blick auf den Code der anderen Paketmanager, um eine Vorstellung davon zu bekommen, wie es funktioniert.
 
-:::info Remember
+:::info Merke dir
 
-If you add support for a new package manager, don't forget to also update this page!
+Wenn du die Unterstützung für einen neuen Paketmanager hinzufügst, vergiss nicht, auch diese Seite zu aktualisieren!
 
 :::

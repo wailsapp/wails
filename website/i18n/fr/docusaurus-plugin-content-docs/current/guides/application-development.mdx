@@ -133,7 +133,7 @@ func main() {
 }
 ```
 
-Also you might want to use Enums in your structs and have models for them on frontend. In that case you should create array that will contain all possible enum values, instrument enum type and bind it to the app:
+Vous pouvez également utiliser des énums dans vos structures et avoir des modèles pour elles dans le frontend. Dans ce cas, vous devriez créer un tableau qui contiendra toutes les valeurs possibles de l'énumération, définir le type de l'énumération et lier le tout à l'application:
 
 ```go {16-18} title="app.go"
 type Weekday string
@@ -162,7 +162,7 @@ var AllWeekdays = []struct {
 }
 ```
 
-In the main application configuration, the `EnumBind` key is where we can tell Wails what we want to bind enums as well:
+Dans la configuration principale de l'application, le paramètre `EnumBind` est l'endroit où nous pouvons dire à Wails ce que nous voulons lier :
 
 ```go {11-13} title="main.go"
 func main() {
@@ -189,7 +189,7 @@ func main() {
 
 ```
 
-This will add missing enums to your `model.ts` file.
+Ceci ajoutera des enums manquants à votre fichier `model.ts`.
 
 Plus d'informations à sur Binding peuvent être trouvées [ici](../howdoesitwork.mdx#method-binding).
 
@@ -235,7 +235,7 @@ Si ces 2 clés ne sont pas fournies, alors Wails ne fait absolument rien avec le
 
 ### AssetsHandler
 
-Une application Wails v2 peut éventuellement définir un `http.Handler` dans `options.app`, qui permet de se connecter à l'AssetServer pour créer des fichiers à la volée ou traiter les requêtes POST/PUT. Les requêtes GET sont toujours traitées d'abord par le `assets` FS. Si le FS ne trouve pas le fichier demandé, la requête sera transmise au `http.Handler`. Toute requête autre que GET sera traitée directement par le `AssetsHandler` si spécifié. It's also possible to only use the `AssetsHandler` by specifying `nil` as the `Assets` option.
+Une application Wails v2 peut éventuellement définir un `http.Handler` dans `options.app`, qui permet de se connecter à l'AssetServer pour créer des fichiers à la volée ou traiter les requêtes POST/PUT. Les requêtes GET sont toujours traitées d'abord par le `assets` FS. Si le FS ne trouve pas le fichier demandé, la requête sera transmise au `http.Handler`. Toute requête autre que GET sera traitée directement par le `AssetsHandler` si spécifié. Il est également possible d'utiliser l'`AssetsHandler` uniquement en spécifiant `nil` dans l'option `Assets`.
 
 ## Serveur de développement embarqué
 

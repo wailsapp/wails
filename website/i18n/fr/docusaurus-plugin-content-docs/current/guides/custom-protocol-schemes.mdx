@@ -1,15 +1,15 @@
-# Custom Protocol Scheme association
+# Association de schéma de protocole personnalisé
 
-Custom Protocols feature allows you to associate specific custom protocol with your app so that when users open links with this protocol,
-your app is launched to handle them. This can be particularly useful to connect your desktop app with your web app.
-In this guide, we'll walk through the steps to implement custom protocols in Wails app.
+La fonction d'association de fichiers vous permet d'associer des types de fichiers spécifiques à votre application afin que lorsque les utilisateurs ouvrent ces fichiers,
+votre application est lancée pour les gérer. Cela peut être particulièrement utile pour connecter votre application de bureau à votre application web.
+Dans ce guide, nous allons parcourir les étapes pour implémenter l'association de fichiers dans l'application Wails.
 
-## Set Up Custom Protocol Schemes Association:
+## Configurer une association de schémas de protocoles personnalisés :
 
-To set up custom protocol, you need to modify your application's wails.json file.
-In "info" section add a "protocols" section specifying the protocols your app should be associated with.
+Pour configurer l'association de fichiers, vous devez modifier le fichier wails.json de votre application.
+Dans la section "info", ajoutez une section "fileAssociations" spécifiant les types de fichiers auxquels votre application doit être associée.
 
-For example:
+Par exemple :
 
 ```json
 {
@@ -25,17 +25,17 @@ For example:
 }
 ```
 
-| Propriété    | Description                                                                                 |
-| :----------- | :------------------------------------------------------------------------------------------ |
-| scheme       | Custom Protocol scheme. e.g. myapp                                                          |
-| description  | Windows seulement. La description.                                                          |
-| role         | macOS uniquement. The app’s role with respect to the type. Corresponds to CFBundleTypeRole. |
+| Propriété    | Description                                                                                       |
+| :----------- | :------------------------------------------------------------------------------------------------ |
+| scheme       | Le schéma de protocole personnalisé. ex: myapp                                                    |
+| description  | Windows seulement. La description.                                                                |
+| role         | macOS uniquement. Rôle de l'application par rapport au type. Correspond au rôle CFBundleTypeRole. |
 
 ## Spécificités par platefome :
 
 ### MacOS
 
-When you open custom protocol with your app, the system will launch your app and call the `OnUrlOpen` function in your Wails app. Example:
+Lorsque vous ouvrez un fichier (ou des fichiers) avec votre application, le système lancera votre application et appellera la fonction `OnFileOpen` dans votre application Wails. Exemple:
 
 ```go title="main.go"
 func main() {
@@ -64,9 +64,9 @@ func main() {
 
 ### Windows
 
-On Windows Custom Protocol Schemes is supported only with NSIS installer. During installation, the installer will create a
-registry entry for your schemes. When you open url with your app, new instance of app is launched and url is passed
-as argument to your app. To handle this you should parse command line arguments in your app. Example:
+L'association de fichiers dans Windows n'est prise en charge qu'avec l'installateur NSIS. Pendant l'installation, l'installateur créera une entrée de registre
+pour vos associations de fichiers. Lorsque vous ouvrez un fichier avec votre application, une nouvelle instance d'application est lancée et le chemin d'accès est passé à
+comme argument à votre application. Pour gérer cela, vous devez analyser les arguments de la ligne de commande dans votre application. Exemple:
 
 ```go title="main.go"
 func main() {
@@ -78,8 +78,8 @@ func main() {
 }
 ```
 
-You also can enable single instance lock for your app. In this case, when you open url with your app, new instance of app is not launched
-and arguments are passed to already running instance. Check single instance lock guide for details. Example:
+Vous pouvez également activer le verrouillage par instance unique pour votre application. Dans ce cas, lorsque vous ouvrez un fichier avec votre application, la nouvelle instance d'application n'est pas lancée
+et les arguments sont passés à l'instance déjà en cours d'exécution. Consultez le guide de verrouillage de l'instance unique pour plus de détails. Exemple:
 
 ```go title="main.go"
 func main() {
@@ -105,11 +105,11 @@ func main() {
 
 ### Linux
 
-Currently, Wails doesn't support bundling for Linux. So, you need to create file associations manually.
-For example if you distribute your app as a .deb package, you can create file associations by adding required files in you bundle.
-You can use [nfpm](https://nfpm.goreleaser.com/) to create .deb package for your app.
+Actuellement, Wails ne prend pas en charge l'association de fichiers pour Linux. Vous devez donc créer des associations de fichiers manuellement.
+Par exemple, si vous distribuez votre application en tant que package .deb, vous pouvez créer des associations de fichiers en ajoutant les fichiers requis dans votre bundle.
+Vous pouvez utiliser [nfpm](https://nfpm.goreleaser.com/) pour créer un package .deb pour votre application.
 
-1. Create a .desktop file for your app and specify file associations there (note that `%u` is important in Exec). Example:
+1. Créez un fichier .desktop pour votre application et spécifiez des associations de fichiers là-bas (notez que `%u` est important dans Executive). Exemple:
 
 ```ini
 [Desktop Entry]
@@ -122,14 +122,14 @@ Type=Application
 MimeType=x-scheme-handler/myapp;
 ```
 
-2. Prepare postInstall/postRemove scripts for your package. Example:
+2. Préparez les scripts postInstall/postRemove pour votre paquet. Exemple:
 
 ```sh
-# reload desktop database to load app in list of available
+# recharger la base de données du bureau pour charger l'application dans la liste des applications disponibles
 update-desktop-database /usr/share/applications
 ```
 
-3. Configure nfpm to use your scripts and files. Example:
+3. Configurez nfpm pour utiliser vos scripts et fichiers. Exemple:
 
 ```yaml
 name: "wails-open-file"
@@ -158,15 +158,14 @@ scripts:
   postremove: ./postRemove.sh
 ```
 
-6. Build your .deb package using nfpm:
+6. Construisez votre paquet .deb en utilisant nfpm:
 
 ```sh
 nfpm pkg --packager deb --target .
 ```
 
-7. Now when your package is installed, your app will be associated with custom protocol scheme. When you open url with your app,
-   new instance of app is launched and file path is passed as argument to your app.
-   To handle this you should parse command line arguments in your app. Example:
+7. Maintenant que votre paquet est installé, votre application sera associée aux types de fichiers qui ont été spécifiés. Lorsque vous ouvrez un fichier avec votre application, une nouvelle instance est lancée et le chemin du fichier est passé en argument à votre application.
+   Pour gérer cela, vous devez analyser les arguments de la ligne de commande dans votre application. Exemple:
 
 ```go title="main.go"
 func main() {
@@ -178,8 +177,8 @@ func main() {
 }
 ```
 
-You also can enable single instance lock for your app. In this case, when you open url with your app, new instance of app is not launched
-and arguments are passed to already running instance. Check single instance lock guide for details. Example:
+Vous pouvez également activer le verrouillage par instance unique pour votre application. Dans ce cas, lorsque vous ouvrez un fichier avec votre application, la nouvelle instance d'application n'est pas lancée
+et les arguments sont passés à l'instance déjà en cours d'exécution. Consultez le guide de verrouillage de l'instance unique pour plus de détails. Exemple:
 
 ```go title="main.go"
 func main() {

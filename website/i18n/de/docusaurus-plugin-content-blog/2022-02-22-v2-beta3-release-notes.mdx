@@ -1,6 +1,6 @@
 ---
 slug: wails-v2-beta-for-linux
-title: Wails v2 Beta for Linux
+title: Wails v2 Beta für Linux
 authors:
   - leaanthony
 tags:
@@ -19,9 +19,9 @@ tags:
 <br />
 ```
 
-I'm pleased to finally announce that Wails v2 is now in beta for Linux! It is somewhat ironic that the very first experiments with v2 was on Linux and yet it has ended up as the last release. That being said, the v2 we have today is very different from those first experiments. So without further ado, let's go over the new features:
+Ich freue mich, endlich ankündigen zu können, dass Wails v2 jetzt in der Beta für Linux ist! Es ist etwas ironisch, dass die ersten Experimente mit v2 unter Linux liefen und trotzdem als letzte veröffentlicht wurden. Die heutige v2 unterscheidet sich jedoch stark von diesen ersten Versuchen. Also, ohne weiteres drum rum Gerede, schauen wir uns die neuen Funktionen an:
 
-### New Features
+### Neue Funktionen
 
 ```mdx-code-block
 <div class="text--center">
@@ -34,38 +34,38 @@ I'm pleased to finally announce that Wails v2 is now in beta for Linux! It is so
 <br />
 ```
 
-There were a lot of requests for native menu support. Wails has finally got you covered. Application menus are now available and include support for most native menu features. This includes standard menu items, checkboxes, radio groups, submenus and separators.
+Es gab viele Anfragen für native Menüunterstützung. Wails hat endlich eine Lösung für dich. Anwendungsmenüs sind jetzt verfügbar und enthalten Unterstützung für die meisten nativen Menüfunktionen. Dazu gehören Standardmenüs, Kontrollkästchen, "Radio" gruppen, Untermenüs und Trenner.
 
-There were a huge number of requests in v1 for the ability to have greater control of the window itself. I'm happy to announce that there's new runtime APIs specifically for this. It's feature-rich and supports multi-monitor configurations. There is also an improved dialogs API: Now, you can have modern, native dialogs with rich configuration to cater for all your dialog needs.
+In v1 gab es eine große Anzahl von Bitten, das Fenster selbst besser kontrollieren zu können. Ich freue mich, mitteilen zu können, dass es speziell dafür neue Laufzeit-APIs gibt. Es verfügt über zahlreiche Funktionen und unterstützt Konfigurationen mit mehreren Monitoren. Es gibt auch eine verbesserte API: Du kannst jetzt moderne, native Dialoge mit reicher Konfiguration haben, um all deine Dialoganforderungen zu erfüllen.
 
-### No requirement to bundle assets
+### Keine Anforderung zum Bündeln von Assets
 
-A huge pain-point of v1 was the need to condense your entire application down to single JS & CSS files. I'm happy to announce that for v2, there is no requirement to bundle assets, in any way, shape or form. Want to load a local image? Use an `<img>` tag with a local src path. Want to use a cool font? Copy it in and add the path to it in your CSS.
+Ein großer Schmerzpunkt von Version 1 war die Notwendigkeit, die gesamte Anwendung in einzelne JS- & CSS-Dateien zu kondensieren. Ich freue mich, ankündigen zu können, dass es für Version 2 keine Anforderung mehr gibt, Assets in irgendeiner weise oder Form zu bündeln. Möchtest du ein lokales Bild laden? Verwende ein `<img>` Tag mit einem lokalen src Pfad. Möchtest du eine coole Schriftart verwenden? Kopiere sie in dein CSS und füge den Pfad hinzu.
 
-> Wow, that sounds like a webserver...
+> Wow, das klingt wie ein Webserver...
 
-Yes, it works just like a webserver, except it isn't.
+Ja, er funktioniert genau wie ein Webserver, nur dass er es nicht ist.
 
-> So how do I include my assets?
+> Wie füge ich also meine Assets ein?
 
-You just pass a single `embed.FS` that contains all your assets into your application configuration. They don't even need to be in the top directory - Wails will just work it out for you.
+Du übergibst ein einziges `embed.FS` mit all deinen Assets in deiner Anwendungskonfiguration. Es muss sich nicht einmal im obersten Verzeichnis befinden - Wails findet das für dich heraus.
 
-### New Development Experience
+### Neue Entwicklungserfahrung
 
-Now that assets don't need to be bundled, it's enabled a whole new development experience. The new `wails dev` command will build and run your application, but instead of using the assets in the `embed.FS`, it loads them directly from disk.
+Nun, da Assets nicht mehr gebündelt werden müssen, gibt es eine ganz neue Entwicklungserfahrung. Der neue `wails dev` Befehl wird deine Anwendung erstellen und ausführen, aber statt die Assets in die `embed.FS` einzubetten werden diese direkt von der Festplatte geladen.
 
-It also provides the additional features:
+Es bietet auch zusätzlichen Funktionen:
 
-- Hot reload - Any changes to frontend assets will trigger and auto reload of the application frontend
-- Auto rebuild - Any changes to your Go code will rebuild and relaunch your application
+- Hot Reload – Jede Änderung an Frontend-Assets löst ein automatisches Neuladen des Anwendungs-Frontends aus
+- Automatisches Neuerstellen - Alle Änderungen an deinem Go-Code werden deine Anwendung neu erstellen und neu starten
 
-In addition to this, a webserver will start on port 34115. This will serve your application to any browser that connects to it. All connected web browsers will respond to system events like hot reload on asset change.
+Zusätzlich startet ein Webserver auf Port 34115. Dadurch wird deine Anwendung jedem Browser zur Verfügung gestellt, der sich mit diesem verbindet. Alle angeschlossenen Web-Browser reagieren auf Systemereignisse, wie zum Beispiel den hot Reload bei der Änderung von Dateien.
 
-In Go, we are used to dealing with structs in our applications. It's often useful to send structs to our frontend and use them as state in our application. In v1, this was a very manual process and a bit of a burden on the developer. I'm happy to announce that in v2, any application run in dev mode will automatically generate TypeScript models for all structs that are input or output parameters to bound methods. This enables seamless interchange of data models between the two worlds.
+In Go sind wir an Structs, die wir in unseren Anwendungen haben, gewöhnt. Es ist oft nützlich, Anweisungen an unser Frontend zu senden und sie als Status in unserer Anwendung zu verwenden. In v1 war das ein sehr manueller Prozess und eine kleine Belastung für den Entwickler. Ich freue mich, ankündigen zu können, dass in v2, jede Anwendung, die im Dev-Modus ausgeführt wird, automatisch Modelle in TypeScript für alle Structs generiert, die Eingabe- oder Ausgabeparameter für verknüpfte Methoden sind. Dies ermöglicht den nahtlosen Austausch von Modellen zwischen den beiden Welten.
 
-In addition to this, another JS module is dynamically generated wrapping all your bound methods. This provides JSDoc for your methods, providing code completion and hinting in your IDE. It's really cool when you get data models auto-imported when hitting tab in an auto-generated module wrapping your Go code!
+Zusätzlich wird ein weiteres JS-Modul dynamisch generiert, welches alle verknüpften Methoden beinhaltet. Das stellt JSDoc für deine Methoden bereit und bietet Code-Vervollständigung und Hinweise in deiner IDE. Es ist wirklich cool, wenn Datenmodelle automatisch importiert werden, nachdem man Tab drückt und das alles dank automatisch generierten Module, die deinen Go code verpacken!
 
-### Remote Templates
+### Remote Vorlagen
 
 ```mdx-code-block
 <div class="text--center">
@@ -78,13 +78,13 @@ In addition to this, another JS module is dynamically generated wrapping all you
 <br />
 ```
 
-Getting an application up and running quickly was always a key goal for the Wails project. When we launched, we tried to cover a lot of the modern frameworks at the time: react, vue and angular. The world of frontend development is very opinionated, fast moving and hard to keep on top of! As a result, we found our base templates getting out of date pretty quickly and this caused a maintenance headache. It also meant that we didn't have cool modern templates for the latest and greatest tech stacks.
+Eine Anwendung schnell zum Laufen zu bringen, war immer ein zentrales Ziel für das Wails Projekt. Als wir starteten, haben wir versucht, viele der modernen Frameworks der Zeit abzudecken: react, vue und angular. Die Welt der Frontend-Entwicklung ist sehr eigenwillig, schnelllebig und schwer zu überblicken! Das führte dazu, dass unsere Basisvorlagen ziemlich schnell veraltet waren, was zu Wartungsproblemen führte. Es bedeutete auch, dass wir keine coolen modernen Vorlagen für die neuesten und die besten Technologie-Stacks hatten.
 
-With v2, I wanted to empower the community by giving you the ability to create and host templates yourselves, rather than rely on the Wails project. So now you can create projects using community supported templates! I hope this will inspire developers to create a vibrant ecosystem of project templates. I'm really quite excited about what our developer community can create!
+Mit v2 wollte ich die Community stärken, indem ich ihr die Möglichkeit gab, Vorlagen selbst zu erstellen und zu verwalten, statt sich auf das Wails Projekt verlassen zu müssen. So können jetzt Projekte mit Community-unterstützten Vorlagen erstellt werden! Ich hoffe, dass Entwickler dazu inspiriert werden, ein lebendiges Ökosystem von Projektvorlagen zu erstellen. Ich bin wirklich sehr gespannt darüber, was unsere Entwicklergemeinschaft erstellen kann!
 
-### Cross Compilation to Windows
+### Cross-Kompilierung für Windows
 
-Because Wails v2 for Windows is pure Go, you can target Windows builds without docker.
+Da Wails Version 2 für Windows aus reinem Go besteht, kannst du Windows Builds ohne Docker erzeugen.
 
 ```mdx-code-block
 <div class="text--center">
@@ -97,18 +97,18 @@ Because Wails v2 for Windows is pure Go, you can target Windows builds without d
 <br />
 ```
 
-### In Conclusion
+### Fazit
 
-As I'd said in the Windows release notes, Wails v2 represents a new foundation for the project. The aim of this release is to get feedback on the new approach, and to iron out any bugs before a full release. Your input would be most welcome! Please direct any feedback to the [v2 Beta](https://github.com/wailsapp/wails/discussions/828) discussion board.
+Wie ich in den Windows Release Notes gesagt hatte, ist Wails Version 2 eine neue Grundlage für das Projekt. Das Ziel dieser Veröffentlichung ist es, Rückmeldungen über den neuen Ansatz zu erhalten und Fehler vor einer vollständigen Veröffentlichung zu beseitigen. Dein Input ist willkommen! Bitte richte alle Rückmeldungen an das [v2 Beta](https://github.com/wailsapp/wails/discussions/828) Diskussionsforum.
 
-Linux is **hard** to support. We expect there to be a number of quirks with the beta. Please help us to help you by filing detailed bug reports!
+Linux ist **schwierig** zu unterstützen. Wir erwarten, dass es eine Reihe von Macken in der Beta gibt. Bitte hilf uns, dir zu helfen, indem du detaillierte Fehlerberichte einreichst!
 
-Finally, I'd like to give a special thank you to all the [project sponsors](/credits#sponsors) whose support drive the project in many ways behind the scenes.
+Abschließend möchte ich mich bei allen [Projektsponsoren](/credits#sponsors) bedanken, die das Projekt in vielerlei Hinsicht hinter den Kulissen unterstützen.
 
-I look forward to seeing what people build with Wails in this next exciting phase of the project!
+Ich freue mich darauf, zu sehen, was die Leute mit Wails in dieser nächsten aufregenden Phase des Projekts bauen!
 
 Lea.
 
-PS: The v2 release isn't far off now!
+PS: Der Version 2 Release ist jetzt nicht mehr weit entfernt!
 
-PPS: If you or your company find Wails useful, please consider [sponsoring the project](https://github.com/sponsors/leaanthony). Thanks!
+PPS: Wenn du oder dein Unternehmen Wails nützlich finden, erwäge bitte [das Projekt](https://github.com/sponsors/leaanthony) zu sponsern. Vielen Dank!

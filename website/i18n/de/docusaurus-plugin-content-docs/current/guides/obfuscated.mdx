@@ -1,32 +1,32 @@
-# Obfuscated Builds
+# Verschleierte Builds
 
-Wails includes support for obfuscating your application using [garble](https://github.com/burrowers/garble).
+Wails unterstützt das Verschleiern von Anwendungen mit [garble](https://github.com/burrowers/garble).
 
-To produce an obfuscated build, you can use the `-obfuscate` flag with the `wails build` command:
+Um eine verschleierte Version zu erzeugen, kann die `-obfuscate` Flag mit dem `wails build` Befehl verwendet werden:
 
 ```bash
 wails build -obfuscated
 ```
 
-To customise the obfuscation settings, you can use the `-garbleargs` flag:
+Um die Verschleierungseinstellungen anzupassen, kann die `garbleargs` Flag verwendet werden:
 
 ```bash
 wails build -obfuscated -garbleargs "-literals -tiny -seed=myrandomseed"
 ```
 
-These settings may be persisted in your [project config](../reference/project-config.mdx).
+Diese Einstellung kann auch in der [Projekt-Konfiguration](../reference/project-config.mdx) angegeben werden.
 
-## How it works
+## So funktioniert es
 
-In a standard build, all bound methods are available in the frontend under the `window.go` variable. When these methods are called, the corresponding backend method is called using the fully qualified function name. When using an obfuscated build, methods are bound using an ID instead of a name. The bindings generated in the `wailsjs` directory use these IDs to call the backend functions.
+In einer Standardversion sind alle verknüpften Methoden im Frontend unter der Variable `window.go` verfügbar. Wenn diese Methoden aufgerufen werden, wird die zugehörige Backend-Methode mit dem voll qualifizierten Funktionsnamen aufgerufen. Wenn ein verschleierter Build verwendet wird, werden Methoden mit einer Id anstelle eines Namens verknüpft. Die im Verzeichnis `wailsjs` erzeugten Verknüpfungen verwenden diese Ids um die Backend-Funktionen aufzurufen.
 
 :::note
 
-To ensure that your application will work in obfuscated mode, you must use the generated bindings under the `wailsjs` directory in your application.
+Um sicherzustellen, dass die Anwendung im verschleierten Modus funktioniert, müssen die generierten Verknüpfungen in dem `wailsjs` Verzeichnis der Anwendung verwendet werden.
 
 :::
 
-## Example
+## Beispiel
 
 Importing the "Greet" method from the bindings like this:
 
@@ -37,4 +37,4 @@ import { Greet } from "../../wailsjs/go/main/App";
 Greet("World");
 ```
 
-will ensure that the method will work correctly in obfuscated mode, as the bindings will be regenerated with IDs and the call mechanism updated.
+stelle sicher, dass die Methode im verschleierten Modus korrekt funktioniert, da die Bindungen mit Ids neu generiert und der Call Mechanismus aktualisiert wird.
