@@ -485,6 +485,34 @@ type MacWindow struct {
 
 	// LiquidGlass contains configuration for the Liquid Glass effect
 	LiquidGlass MacLiquidGlass
+
+	// WindowClass is the window class for the window
+	WindowClass MacWindowClass
+
+	// PanelOptions contains options for NSPanel windows
+	PanelOptions MacPanelOptions
+}
+
+// MacWindowClass is the window class for macOS
+type MacWindowClass int
+
+const (
+	// NSWindow - The default value. A window that an app displays on the screen.
+	NSWindow MacWindowClass = iota
+	// NSPanel - The window will be an NSPanel, a special kind of window that typically performs a function that is auxiliary to the main window
+	NSPanel
+)
+
+// MacPanelOptions contains options for NSPanel windows
+type MacPanelOptions struct {
+	// FloatingPanel will make the panel float above other windows
+	FloatingPanel bool
+	// BecomesKeyOnlyIfNeeded will make the panel become key only when needed
+	BecomesKeyOnlyIfNeeded bool
+	// NonactivatingPanel will apply the NSWindowStyleMaskNonactivatingPanel style
+	NonactivatingPanel bool
+	// UtilityWindow will apply the NSWindowStyleMaskUtilityWindow style
+	UtilityWindow bool
 }
 
 type MacWindowLevel string

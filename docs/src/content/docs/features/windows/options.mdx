@@ -828,8 +828,9 @@ Controls how the window behaves across macOS Spaces and fullscreen. These are bi
 - `MacWindowCollectionBehaviorFullScreenAllowsTiling` - Allows side-by-side tiling (macOS 10.11+)
 - `MacWindowCollectionBehaviorFullScreenDisallowsTiling` - Prevents tiling (macOS 10.11+)
 
-**Example - Spotlight-like window:**
+**Note:** NSWindow fullscreen overlay requires application.Options{ Mac: application.MacOptions{ ActivationPolicy: application.ActivationPolicyAccessory } }
 
+**Example - Spotlight-like window:**
 ```go
 // Window that appears on all Spaces AND can overlay fullscreen apps
 Mac: application.MacWindow{
@@ -845,6 +846,32 @@ Mac: application.MacWindow{
 // Window that can appear over fullscreen applications
 Mac: application.MacWindow{
     CollectionBehavior: application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+},
+```
+
+**WindowClass** (`MacWindowClass`)
+- `NSWindow` - Standard window (default)
+- `NSPanel` - Auxiliary window that can float above other windows and receive input without activating the application
+
+**PanelOptions** (`MacPanelOptions`)
+
+Options for NSPanel windows (only applies when `WindowClass` is `NSPanel`):
+- `FloatingPanel` - Panel floats above other windows
+- `BecomesKeyOnlyIfNeeded` - Panel becomes key only when needed
+- `NonactivatingPanel` - Panel receives input without activating the application
+- `UtilityWindow` - Panel uses utility window style
+
+**Note:** Unlike NSWindow, NSPanel fullscreen overlay does NOT require application.Options{ Mac: application.MacOptions{ ActivationPolicy: application.ActivationPolicyAccessory } }
+
+**Example - Spotlight-like panel:**
+```go
+Mac: application.MacWindow{
+    WindowClass: application.NSPanel,
+    PanelOptions: application.MacPanelOptions{
+        NonactivatingPanel: true,
+    },
+    CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces |
+                        application.MacWindowCollectionBehaviorFullScreenAuxiliary,
 },
 ```
 
