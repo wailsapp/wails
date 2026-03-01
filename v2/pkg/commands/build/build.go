@@ -158,7 +158,7 @@ func Build(options *Options) (string, error) {
 
 		err = CleanFrontendDist(cwd, options)
 		if err != nil {
-			pterm.Error.Printfln("Failed to clean built frontend files.")
+			pterm.Error.Println("Failed to clean built frontend files.")
 			return "", err
 		}
 
@@ -188,7 +188,7 @@ func AssertFrontendDist(cwd string, buildOptions *Options) error {
 		}
 	}
 
-	pterm.Warning.Printf(`Frontend directory %q is not embedded by your application. Is this intentional? Attempting to copy built frontend assets to "frontend/dist"`, buildOptions.ProjectData.GetFrontendDir())
+	pterm.Warning.Printfln(`Frontend directory %q is not embedded by your application. Is this intentional? Attempting to copy built frontend assets to "frontend/dist"`, buildOptions.ProjectData.GetFrontendDir())
 
 	// Try to find an embed that ends with "frontend/dist" and copy to that.
 	for _, embedDetail := range embedDetails {
