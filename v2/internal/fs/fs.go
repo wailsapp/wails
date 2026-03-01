@@ -210,7 +210,7 @@ func DirIsEmpty(dir string) (bool, error) {
 }
 
 // CopyDir recursively copies a directory tree, attempting to preserve permissions.
-// Source directory must exist, destination directory must *not* exist.
+// Source directory must exist, destination directory is created if it doesn't exist.
 // Symlinks are ignored and skipped.
 // Credit: https://gist.github.com/r0l1/92462b38df26839a3ca324697c8cba04
 func CopyDir(src string, dst string) (err error) {
@@ -226,16 +226,17 @@ func CopyDir(src string, dst string) (err error) {
 	}
 
 	_, err = os.Stat(dst)
-	if err != nil && !os.IsNotExist(err) {
-		return
-	}
-	if err == nil {
-		return fmt.Errorf("destination already exists")
-	}
-
-	err = MkDirs(dst)
 	if err != nil {
-		return
+		// Unknown error
+		if !os.IsNotExist(err) {
+			return
+		}
+
+		// Doesn't exist error. Make it exist.
+		err = MkDirs(dst)
+		if err != nil {
+			return
+		}
 	}
 
 	entries, err := os.ReadDir(src)
@@ -279,8 +280,8 @@ func SetPermissions(dir string, perm os.FileMode) error {
 }
 
 // CopyDirExtended recursively copies a directory tree, attempting to preserve permissions.
-// Source directory must exist, destination directory must *not* exist. It ignores any files or
-// directories that are given through the ignore parameter.
+// Source directory must exist, destination directory is created if it doesn't exist.
+// It ignores any files or directories that are given through the ignore parameter.
 // Symlinks are ignored and skipped.
 // Credit: https://gist.github.com/r0l1/92462b38df26839a3ca324697c8cba04
 func CopyDirExtended(src string, dst string, ignore []string) (err error) {
@@ -297,16 +298,17 @@ func CopyDirExtended(src string, dst string, ignore []string) (err error) {
 	}
 
 	_, err = os.Stat(dst)
-	if err != nil && !os.IsNotExist(err) {
-		return
-	}
-	if err == nil {
-		return fmt.Errorf("destination already exists")
-	}
-
-	err = MkDirs(dst)
 	if err != nil {
-		return
+		// Unknown error
+		if !os.IsNotExist(err) {
+			return
+		}
+
+		// Doesn't exist error. Make it exist.
+		err = MkDirs(dst)
+		if err != nil {
+			return
+		}
 	}
 
 	entries, err := os.ReadDir(src)
