@@ -188,6 +188,8 @@ func AssertFrontendDist(cwd string, buildOptions *Options) error {
 		}
 	}
 
+	pterm.Warning.Printf(`Frontend directory %q is not embedded by your application. Is this intentional? Attempting to copy built frontend assets to "frontend/dist"`, buildOptions.ProjectData.GetFrontendDir())
+
 	// Try to find an embed that ends with "frontend/dist" and copy to that.
 	for _, embedDetail := range embedDetails {
 		if embedDetail.EmbedPath == "frontend/dist" {
