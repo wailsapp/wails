@@ -3,9 +3,13 @@ name: Test Simple
 on:
   workflow_dispatch:
 
+# Restrict default GITHUB_TOKEN permissions
+permissions: {}
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions: {}
     steps:
     - name: Test
       run: echo "Hello World"
