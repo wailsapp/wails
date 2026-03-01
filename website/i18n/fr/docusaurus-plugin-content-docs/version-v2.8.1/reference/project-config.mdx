@@ -18,7 +18,7 @@ La configuration du projet se trouve dans le fichier `wails.json` du répertoire
   "reloaddirs": "",
   // The directory where the build files reside. Defaults to 'build'
   "build:dir": "",
-  // Relative path to the frontend directory. Defaults to 'frontend'
+  // Relative path to the frontend directory. Defaults to 'frontend'. If this value does not match an embed directive in your code, 'wails build' will attempt to copy built files to 'frontend/dist'. Either ensure your embed directive matches this or use 'frontend/dist' for your embed directive
   "frontend:dir": "",
   // The command to install node dependencies, run in the frontend directory - often `npm install`
   "frontend:install": "",
