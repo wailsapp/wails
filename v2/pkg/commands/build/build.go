@@ -216,12 +216,14 @@ func CleanFrontendDist(cwd string, buildOptions *Options) error {
 	}
 
 	// A frontend directory that doesn't have a corresponding embed will have been copied to "frontend/dist". Clean it and restore gitkeep.
-	os.RemoveAll("./frontend/dist")
-	err = os.MkdirAll("./frontend/dist", 0o755)
+	os.RemoveAll(filepath.Join(cwd, "frontend/dist"))
+	err = os.MkdirAll(filepath.Join(cwd, "frontend/dist"), 0o755)
 	if err != nil {
 		return err
 	}
-	f, err := os.Create("./frontend/dist/gitkeep")
+
+	// The rest of the project uses gitkeep without the dot. Project convention > community convention.
+	f, err := os.Create(filepath.Join(cwd, "frontend/dist/gitkeep"))
 	if err != nil {
 		return err
 	}
