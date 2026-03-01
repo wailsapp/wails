@@ -4,19 +4,24 @@ package events
 
 // Android events implementation
 
-const MAX_EVENTS = 100
+var Android = newAndroidEvents()
 
-var hasListener [MAX_EVENTS]bool
+type androidEvents struct {
+	ActivityCreated ApplicationEventType
+}
 
-func registerListener(event uint) {
-	if event < MAX_EVENTS {
-		hasListener[event] = true
+func newAndroidEvents() androidEvents {
+	return androidEvents{
+		ActivityCreated: 1259,
 	}
 }
 
+var hasListener = make(map[uint]bool)
+
+func registerListener(event uint) {
+	hasListener[event] = true
+}
+
 func hasListeners(event uint) bool {
-	if event < MAX_EVENTS {
-		return hasListener[event]
-	}
-	return false
+	return hasListener[event]
 }

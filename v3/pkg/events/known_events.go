@@ -219,4 +219,5 @@ var knownEvents = map[string]struct{}{
 	"windows:WindowUnMinimise":                                    {},
 	"windows:WindowMaximise":                                      {},
 	"windows:WindowUnMaximise":                                    {},
+	"android:ActivityCreated":                                     {},
 }

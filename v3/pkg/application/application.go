@@ -66,7 +66,7 @@ func New(appOptions Options) *App {
 
 	result.customEventProcessor = NewWailsEventProcessor(result.Event.dispatch)
 
-	messageProc := NewMessageProcessor(result.Logger)
+	result.messageProcessor = NewMessageProcessor(result.Logger)
 
 	// Initialize transport (default to HTTP if not specified)
 	transport := appOptions.Transport
@@ -74,7 +74,7 @@ func New(appOptions Options) *App {
 		transport = NewHTTPTransport(HTTPTransportWithLogger(result.Logger))
 	}
 
-	err := transport.Start(result.ctx, messageProc)
+	err := transport.Start(result.ctx, result.messageProcessor)
 	if err != nil {
 		result.fatal("failed to start custom transport: %w", err)
 	}
@@ -377,6 +377,7 @@ type App struct {
 
 	clipboard            *Clipboard
 	customEventProcessor *EventProcessor
+	messageProcessor     *MessageProcessor
 	Logger               *slog.Logger
 
 	contextMenus     map[string]*ContextMenu

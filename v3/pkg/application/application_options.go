@@ -304,66 +304,66 @@ type LinuxOptions struct {
 
 // IOSOptions contains options for iOS applications.
 type IOSOptions struct {
-    // DisableInputAccessoryView controls whether the iOS WKWebView shows the
-    // input accessory toolbar (the bar with Next/Previous/Done) above the keyboard.
-    // Default: false (accessory bar is shown).
-    // true  => accessory view is disabled/hidden
-    // false => accessory view is enabled/shown
-    DisableInputAccessoryView bool
+	// DisableInputAccessoryView controls whether the iOS WKWebView shows the
+	// input accessory toolbar (the bar with Next/Previous/Done) above the keyboard.
+	// Default: false (accessory bar is shown).
+	// true  => accessory view is disabled/hidden
+	// false => accessory view is enabled/shown
+	DisableInputAccessoryView bool
 
-    // Scrolling & Bounce (defaults: scroll/bounce/indicators are enabled on iOS)
-    // Use Disable* to keep default true behavior without surprising zero-values.
-    DisableScroll           bool
-    DisableBounce           bool
-    DisableScrollIndicators bool
+	// Scrolling & Bounce (defaults: scroll/bounce/indicators are enabled on iOS)
+	// Use Disable* to keep default true behavior without surprising zero-values.
+	DisableScroll           bool
+	DisableBounce           bool
+	DisableScrollIndicators bool
 
-    // Navigation gestures (default false)
-    EnableBackForwardNavigationGestures bool
+	// Navigation gestures (default false)
+	EnableBackForwardNavigationGestures bool
 
-    // Link previews (default true on iOS)
-    // Use Disable* so default (false) means previews are enabled.
-    DisableLinkPreview bool
+	// Link previews (default true on iOS)
+	// Use Disable* so default (false) means previews are enabled.
+	DisableLinkPreview bool
 
-    // Media playback
-    // Inline playback (default false) -> Enable*
-    EnableInlineMediaPlayback        bool
-    // Autoplay without user action (default false) -> Enable*
-    EnableAutoplayWithoutUserAction  bool
+	// Media playback
+	// Inline playback (default false) -> Enable*
+	EnableInlineMediaPlayback bool
+	// Autoplay without user action (default false) -> Enable*
+	EnableAutoplayWithoutUserAction bool
 
-    // Inspector / Debug (default true in dev)
-    // Use Disable* so default (false) keeps inspector enabled.
-    DisableInspectable bool
+	// Inspector / Debug (default true in dev)
+	// Use Disable* so default (false) keeps inspector enabled.
+	DisableInspectable bool
 
-    // User agent customization
-    // If empty, defaults apply. ApplicationNameForUserAgent defaults to "wails.io".
-    UserAgent                   string
-    ApplicationNameForUserAgent string
+	// User agent customization
+	// If empty, defaults apply. ApplicationNameForUserAgent defaults to "wails.io".
+	UserAgent                   string
+	ApplicationNameForUserAgent string
 
-    // App-wide background colour for the main iOS window prior to any WebView creation.
-    // If AppBackgroundColourSet is true, the delegate will apply this colour to the app window
-    // during didFinishLaunching. Otherwise, it defaults to white.
-    AppBackgroundColourSet bool
-    BackgroundColour       RGBA
+	// App-wide background colour for the main iOS window prior to any WebView creation.
+	// If AppBackgroundColourSet is true, the delegate will apply this colour to the app window
+	// during didFinishLaunching. Otherwise, it defaults to white.
+	AppBackgroundColourSet bool
+	BackgroundColour       RGBA
 
-    // EnableNativeTabs enables a native iOS UITabBar at the bottom of the screen.
-    // When enabled, the native tab bar will dispatch a 'nativeTabSelected' CustomEvent
-    // to the window with detail: { index: number }.
-    // NOTE: If NativeTabsItems has one or more entries, native tabs are auto-enabled
-    // regardless of this flag, and the provided items will be used.
-    EnableNativeTabs bool
+	// EnableNativeTabs enables a native iOS UITabBar at the bottom of the screen.
+	// When enabled, the native tab bar will dispatch a 'nativeTabSelected' CustomEvent
+	// to the window with detail: { index: number }.
+	// NOTE: If NativeTabsItems has one or more entries, native tabs are auto-enabled
+	// regardless of this flag, and the provided items will be used.
+	EnableNativeTabs bool
 
-    // NativeTabsItems configures the labels and optional SF Symbol icons for the
-    // native UITabBar. If one or more items are provided, native tabs are automatically
-    // enabled. If empty and EnableNativeTabs is true, default items are used.
-    NativeTabsItems []NativeTabItem
+	// NativeTabsItems configures the labels and optional SF Symbol icons for the
+	// native UITabBar. If one or more items are provided, native tabs are automatically
+	// enabled. If empty and EnableNativeTabs is true, default items are used.
+	NativeTabsItems []NativeTabItem
 }
 
 // NativeTabItem describes a single item in the iOS native UITabBar.
 // SystemImage is the SF Symbols name to use for the icon (iOS 13+). If empty or
 // unavailable on the current OS, no icon is shown.
 type NativeTabItem struct {
-    Title       string        `json:"Title"`
-    SystemImage NativeTabIcon `json:"SystemImage"`
+	Title       string        `json:"Title"`
+	SystemImage NativeTabIcon `json:"SystemImage"`
 }
 
 // NativeTabIcon is a string-based enum for SF Symbols.
@@ -371,23 +371,24 @@ type NativeTabItem struct {
 // any valid SF Symbols name as a plain string.
 //
 // Example:
-//  NativeTabsItems: []NativeTabItem{
-//    { Title: "Home", SystemImage: NativeTabIconHouse },
-//    { Title: "Settings", SystemImage: "gearshape" }, // arbitrary string still allowed
-//  }
+//
+//	NativeTabsItems: []NativeTabItem{
+//	  { Title: "Home", SystemImage: NativeTabIconHouse },
+//	  { Title: "Settings", SystemImage: "gearshape" }, // arbitrary string still allowed
+//	}
 type NativeTabIcon string
 
 const (
-    // Common icons
-    NativeTabIconNone    NativeTabIcon = ""
-    NativeTabIconHouse   NativeTabIcon = "house"
-    NativeTabIconGear    NativeTabIcon = "gear"
-    NativeTabIconStar    NativeTabIcon = "star"
-    NativeTabIconPerson  NativeTabIcon = "person"
-    NativeTabIconBell    NativeTabIcon = "bell"
-    NativeTabIconMagnify NativeTabIcon = "magnifyingglass"
-    NativeTabIconList    NativeTabIcon = "list.bullet"
-    NativeTabIconFolder  NativeTabIcon = "folder"
+	// Common icons
+	NativeTabIconNone    NativeTabIcon = ""
+	NativeTabIconHouse   NativeTabIcon = "house"
+	NativeTabIconGear    NativeTabIcon = "gear"
+	NativeTabIconStar    NativeTabIcon = "star"
+	NativeTabIconPerson  NativeTabIcon = "person"
+	NativeTabIconBell    NativeTabIcon = "bell"
+	NativeTabIconMagnify NativeTabIcon = "magnifyingglass"
+	NativeTabIconList    NativeTabIcon = "list.bullet"
+	NativeTabIconFolder  NativeTabIcon = "folder"
 )
 
 /********* Android Options *********/
@@ -411,4 +412,15 @@ type AndroidOptions struct {
 
 	// DisableHardwareAcceleration disables hardware acceleration for the WebView
 	DisableHardwareAcceleration bool
+
+	// EnableNativeTabs enables a native bottom tab bar on Android.
+	// When enabled, the native tab bar will dispatch a 'nativeTabSelected' CustomEvent
+	// to the window with detail: { index: number }.
+	// NOTE: If NativeTabsItems has one or more entries, native tabs are auto-enabled
+	// regardless of this flag, and the provided items will be used.
+	EnableNativeTabs bool
+
+	// NativeTabsItems configures the labels for the native Android tab bar.
+	// If empty and EnableNativeTabs is true, default items are used.
+	NativeTabsItems []NativeTabItem
 }

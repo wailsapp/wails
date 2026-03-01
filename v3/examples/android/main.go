@@ -39,9 +39,16 @@ func main() {
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 		Android: application.AndroidOptions{
-			// Android-specific options will go here
+			EnableNativeTabs: true,
+			NativeTabsItems: []application.NativeTabItem{
+				{Title: "Bindings"},
+				{Title: "Go Runtime"},
+				{Title: "JS Runtime"},
+			},
 		},
 	})
+
+	registerAndroidRuntimeEventHandlers(app)
 
 	// Create a new window with the necessary options.
 	// 'Title' is the title of the window.

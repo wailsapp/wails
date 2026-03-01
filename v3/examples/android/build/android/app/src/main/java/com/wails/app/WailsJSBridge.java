@@ -1,9 +1,12 @@
 package com.wails.app;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import com.wails.app.BuildConfig;
+import java.util.Locale;
 
 /**
  * WailsJSBridge provides the JavaScript interface that allows the web frontend
@@ -108,6 +111,34 @@ public class WailsJSBridge {
     @JavascriptInterface
     public boolean isDebug() {
         return BuildConfig.DEBUG;
+    }
+
+    /**
+     * Open a URL using an external browser.
+     * Called from JavaScript: wails.openURL(url)
+     */
+    @JavascriptInterface
+    public void openURL(String url) {
+        if (url == null || url.trim().isEmpty()) {
+            Log.w(TAG, "openURL called with empty url");
+            return;
+        }
+        try {
+            Uri uri = Uri.parse(url);
+            String scheme = uri.getScheme();
+            if (scheme != null && !scheme.trim().isEmpty()) {
+                String normalizedScheme = scheme.toLowerCase(Locale.ROOT);
+                if ("intent".equals(normalizedScheme) || "file".equals(normalizedScheme) || "content".equals(normalizedScheme)) {
+                    Log.w(TAG, "openURL blocked for scheme: " + normalizedScheme);
+                    return;
+                }
+            }
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            webView.getContext().startActivity(intent);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to open URL: " + url, e);
+        }
     }
 
     /**

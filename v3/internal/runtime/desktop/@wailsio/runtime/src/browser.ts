@@ -20,5 +20,15 @@ const BrowserOpenURL = 0;
  * @param url - The URL to open
  */
 export function OpenURL(url: string | URL): Promise<void> {
-    return call(BrowserOpenURL, {url: url.toString()});
+    const urlString = url.toString();
+    const androidOpenURL = (window as any)?.wails?.openURL;
+    if (typeof androidOpenURL === "function") {
+        try {
+            androidOpenURL.call((window as any).wails, urlString);
+            return Promise.resolve();
+        } catch (e) {
+            return Promise.reject(e);
+        }
+    }
+    return call(BrowserOpenURL, {url: urlString});
 }
