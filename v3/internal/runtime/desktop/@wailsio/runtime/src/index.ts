@@ -29,6 +29,8 @@ import * as IOS from "./ios.js";
 import Window, { handleDragEnter, handleDragLeave, handleDragOver } from "./window.js";
 import * as WML from "./wml.js";
 
+export { Panel } from "./panel.js";
+
 export {
     Application,
     Browser,
