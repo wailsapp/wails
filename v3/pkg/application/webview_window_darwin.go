@@ -23,6 +23,72 @@ struct WebviewPreferences {
 
 extern void registerListener(unsigned int event);
 
+// Shared helper to configure webview for a window or panel
+static WKWebView* configureWebviewForWindow(NSWindow* window, NSView* view, WebviewWindowDelegate* delegate,
+                                            int width, int height, bool fraudulentWebsiteWarningEnabled,
+                                            bool enableDragAndDrop, struct WebviewPreferences preferences) {
+	NSRect frame = NSMakeRect(0, 0, width, height);
+	WKWebViewConfiguration* config = [[WKWebViewConfiguration alloc] init];
+	[config autorelease];
+
+	if (preferences.TabFocusesLinks != NULL) {
+		config.preferences.tabFocusesLinks = *preferences.TabFocusesLinks;
+	}
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110300
+	if (@available(macOS 11.3, *)) {
+		if (preferences.TextInteractionEnabled != NULL) {
+			config.preferences.textInteractionEnabled = *preferences.TextInteractionEnabled;
+		}
+	}
+#endif
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 120300
+	if (@available(macOS 12.3, *)) {
+		if (preferences.FullscreenEnabled != NULL) {
+			config.preferences.elementFullscreenEnabled = *preferences.FullscreenEnabled;
+		}
+	}
+#endif
+
+	config.suppressesIncrementalRendering = true;
+	config.applicationNameForUserAgent = @"wails.io";
+	[config setURLSchemeHandler:delegate forURLScheme:@"wails"];
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
+	if (@available(macOS 10.15, *)) {
+		config.preferences.fraudulentWebsiteWarningEnabled = fraudulentWebsiteWarningEnabled;
+	}
+#endif
+
+	WKUserContentController* userContentController = [WKUserContentController new];
+	[userContentController autorelease];
+	[userContentController addScriptMessageHandler:delegate name:@"external"];
+	config.userContentController = userContentController;
+
+	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
+	[webView autorelease];
+
+	if (preferences.AllowsBackForwardNavigationGestures != NULL) {
+		webView.allowsBackForwardNavigationGestures = *preferences.AllowsBackForwardNavigationGestures;
+	}
+
+	[view addSubview:webView];
+	[webView setNavigationDelegate:delegate];
+	[webView setUIDelegate:delegate];
+	[webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+
+	if (enableDragAndDrop) {
+		WebviewDrag* dragView = [[WebviewDrag alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
+		[dragView autorelease];
+		[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+		[view addSubview:dragView];
+		dragView.windowId = delegate.windowId;
+	}
+
+	return webView;
+}
+
 // Create a new Window
 void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
@@ -56,76 +122,9 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	}
 	[window setContentView:view];
 
-	// Embed wkwebview in window
-	NSRect frame = NSMakeRect(0, 0, width, height);
-	WKWebViewConfiguration* config = [[WKWebViewConfiguration alloc] init];
-	[config autorelease];
-
-	// Set preferences
-    if (preferences.TabFocusesLinks != NULL) {
-		config.preferences.tabFocusesLinks = *preferences.TabFocusesLinks;
-	}
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110300
-	if (@available(macOS 11.3, *)) {
-		if (preferences.TextInteractionEnabled != NULL) {
-			config.preferences.textInteractionEnabled = *preferences.TextInteractionEnabled;
-		}
-	}
-#endif
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 120300
-	if (@available(macOS 12.3, *)) {
-         if (preferences.FullscreenEnabled != NULL) {
-             config.preferences.elementFullscreenEnabled = *preferences.FullscreenEnabled;
-         }
-     }
-#endif
-
-	config.suppressesIncrementalRendering = true;
-    config.applicationNameForUserAgent = @"wails.io";
-	[config setURLSchemeHandler:delegate forURLScheme:@"wails"];
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
- 	if (@available(macOS 10.15, *)) {
-         config.preferences.fraudulentWebsiteWarningEnabled = fraudulentWebsiteWarningEnabled;
-	}
-#endif
-
-	// Setup user content controller
-    WKUserContentController* userContentController = [WKUserContentController new];
-	[userContentController autorelease];
-
-    [userContentController addScriptMessageHandler:delegate name:@"external"];
-    config.userContentController = userContentController;
-
-	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
-	[webView autorelease];
-
-    // Set allowsBackForwardNavigationGestures if specified
-    if (preferences.AllowsBackForwardNavigationGestures != NULL) {
-        webView.allowsBackForwardNavigationGestures = *preferences.AllowsBackForwardNavigationGestures;
-    }
-
-	[view addSubview:webView];
-
-    // support webview events
-    [webView setNavigationDelegate:delegate];
-    [webView setUIDelegate:delegate];
-
-	// Ensure webview resizes with the window
-	[webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-
-	if( enableDragAndDrop ) {
-		WebviewDrag* dragView = [[WebviewDrag alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
-		[dragView autorelease];
-
-		[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-		[view addSubview:dragView];
-		dragView.windowId = id;
-	}
-
-	window.webView = webView;
+	// Configure webview using shared helper
+	window.webView = configureWebviewForWindow(window, view, delegate, width, height,
+	                                           fraudulentWebsiteWarningEnabled, enableDragAndDrop, preferences);
 	return window;
 }
 
@@ -220,71 +219,9 @@ void* panelNew(unsigned int id, int width, int height, bool fraudulentWebsiteWar
 	}
 	[panel setContentView:view];
 
-	// Embed wkwebview in panel (same as window)
-	NSRect frame = NSMakeRect(0, 0, width, height);
-	WKWebViewConfiguration* config = [[WKWebViewConfiguration alloc] init];
-	[config autorelease];
-
-	if (preferences.TabFocusesLinks != NULL) {
-		config.preferences.tabFocusesLinks = *preferences.TabFocusesLinks;
-	}
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110300
-	if (@available(macOS 11.3, *)) {
-		if (preferences.TextInteractionEnabled != NULL) {
-			config.preferences.textInteractionEnabled = *preferences.TextInteractionEnabled;
-		}
-	}
-#endif
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 120300
-	if (@available(macOS 12.3, *)) {
-		if (preferences.FullscreenEnabled != NULL) {
-			config.preferences.elementFullscreenEnabled = *preferences.FullscreenEnabled;
-		}
-	}
-#endif
-
-	config.suppressesIncrementalRendering = true;
-	config.applicationNameForUserAgent = @"wails.io";
-	[config setURLSchemeHandler:delegate forURLScheme:@"wails"];
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
-	if (@available(macOS 10.15, *)) {
-		config.preferences.fraudulentWebsiteWarningEnabled = fraudulentWebsiteWarningEnabled;
-	}
-#endif
-
-	WKUserContentController* userContentController = [WKUserContentController new];
-	[userContentController autorelease];
-
-	[userContentController addScriptMessageHandler:delegate name:@"external"];
-	config.userContentController = userContentController;
-
-	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
-	[webView autorelease];
-
-	if (preferences.AllowsBackForwardNavigationGestures != NULL) {
-		webView.allowsBackForwardNavigationGestures = *preferences.AllowsBackForwardNavigationGestures;
-	}
-
-	[view addSubview:webView];
-
-	[webView setNavigationDelegate:delegate];
-	[webView setUIDelegate:delegate];
-
-	[webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-
-	if( enableDragAndDrop ) {
-		WebviewDrag* dragView = [[WebviewDrag alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
-		[dragView autorelease];
-
-		[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-		[view addSubview:dragView];
-		dragView.windowId = id;
-	}
-
-	panel.webView = webView;
+	// Configure webview using shared helper
+	panel.webView = configureWebviewForWindow(panel, view, delegate, width, height,
+	                                          fraudulentWebsiteWarningEnabled, enableDragAndDrop, preferences);
 	return panel;
 }
 
