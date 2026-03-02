@@ -1425,10 +1425,13 @@ func (w *macosWebviewWindow) run() {
 		case MacBackdropNormal:
 		}
 
-		if macOptions.WindowLevel == "" {
-			macOptions.WindowLevel = MacWindowLevelNormal
+		// Only set window level if explicitly specified, or if not a floating panel
+		// (setFloatingPanel:YES already sets NSFloatingWindowLevel, so don't override it)
+		if macOptions.WindowLevel != "" {
+			w.setWindowLevel(macOptions.WindowLevel)
+		} else if !(macOptions.WindowClass == NSPanel && macOptions.PanelOptions.FloatingPanel) {
+			w.setWindowLevel(MacWindowLevelNormal)
 		}
-		w.setWindowLevel(macOptions.WindowLevel)
 
 		// Set collection behavior (defaults to FullScreenPrimary for backwards compatibility)
 		w.setCollectionBehavior(macOptions.CollectionBehavior)
