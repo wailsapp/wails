@@ -32,10 +32,7 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 // This ensures KeyBindings work regardless of first responder state
 - (void)sendEvent:(NSEvent *)event {
     if (event.type == NSEventTypeKeyDown) {
-        // Process through keybinding system first
         [self keyDown:event];
-        // Still pass to WKWebView for normal input handling
-        // (keybinding callbacks like Hide will take effect regardless)
     }
     [super sendEvent:event];
 }
@@ -269,10 +266,7 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 // This ensures KeyBindings work regardless of first responder state
 - (void)sendEvent:(NSEvent *)event {
     if (event.type == NSEventTypeKeyDown) {
-        // Process through keybinding system first
         [self keyDown:event];
-        // Still pass to WKWebView for normal input handling
-        // (keybinding callbacks like Hide will take effect regardless)
     }
     [super sendEvent:event];
 }
