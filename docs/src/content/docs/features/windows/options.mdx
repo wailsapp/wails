@@ -828,7 +828,7 @@ Controls how the window behaves across macOS Spaces and fullscreen. These are bi
 - `MacWindowCollectionBehaviorFullScreenAllowsTiling` - Allows side-by-side tiling (macOS 10.11+)
 - `MacWindowCollectionBehaviorFullScreenDisallowsTiling` - Prevents tiling (macOS 10.11+)
 
-**Note:** NSWindow fullscreen overlay requires application.Options{ Mac: application.MacOptions{ ActivationPolicy: application.ActivationPolicyAccessory } }
+**Note:** NSWindow fullscreen overlay requires `application.Options{ Mac: application.MacOptions{ ActivationPolicy: application.ActivationPolicyAccessory } }`
 
 **Example - Spotlight-like window:**
 ```go
@@ -861,7 +861,7 @@ Options for NSPanel windows (only applies when `WindowClass` is `NSPanel`):
 - `NonactivatingPanel` - Panel receives input without activating the application
 - `UtilityWindow` - Panel uses utility window style
 
-**Note:** Unlike NSWindow, NSPanel fullscreen overlay does NOT require application.Options{ Mac: application.MacOptions{ ActivationPolicy: application.ActivationPolicyAccessory } }
+**Note:** Unlike NSWindow, NSPanel fullscreen overlay does NOT require `application.Options{ Mac: application.MacOptions{ ActivationPolicy: application.ActivationPolicyAccessory } }`
 
 **Example - Spotlight-like panel:**
 ```go
