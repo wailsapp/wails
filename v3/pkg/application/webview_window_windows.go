@@ -1649,13 +1649,27 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	case w32.WM_DPICHANGED:
 		if !w.ignoreDPIChangeResizing {
 			newWindowRect := (*w32.RECT)(unsafe.Pointer(lparam))
+			flags := w32.SWP_NOZORDER | w32.SWP_NOACTIVATE
+			// For frameless windows, include SWP_FRAMECHANGED to trigger WM_NCCALCSIZE
+			// and recalculate hit-test regions for proper mouse interaction after DPI change.
+			// See: https://github.com/wailsapp/wails/issues/4691
+			if w.parent.options.Frameless {
+				flags |= w32.SWP_FRAMECHANGED
+			}
 			w32.SetWindowPos(w.hwnd,
 				uintptr(0),
 				int(newWindowRect.Left),
 				int(newWindowRect.Top),
 				int(newWindowRect.Right-newWindowRect.Left),
 				int(newWindowRect.Bottom-newWindowRect.Top),
-				w32.SWP_NOZORDER|w32.SWP_NOACTIVATE)
+				uint(flags))
+			// For frameless windows with decorations, re-extend the frame into client area
+			// to ensure proper window frame styling after DPI change.
+			if w.framelessWithDecorations() {
+				if err := w32.ExtendFrameIntoClientArea(w.hwnd, true); err != nil {
+					globalApplication.handleFatalError(err)
+				}
+			}
 		}
 		w.parent.emit(events.Windows.WindowDPIChanged)
 	}
