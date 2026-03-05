@@ -21,32 +21,39 @@ struct WebviewPreferences {
     bool *AllowsBackForwardNavigationGestures;
 };
 
+struct PanelPreferences {
+    bool *FloatingPanel;
+    bool *BecomesKeyOnlyIfNeeded;
+    bool *NonactivatingPanel;
+    bool *UtilityWindow;
+};
+
 extern void registerListener(unsigned int event);
 
 // Shared helper to configure webview for a window or panel
 static WKWebView* configureWebviewForWindow(NSWindow* window, NSView* view, WebviewWindowDelegate* delegate,
                                             int width, int height, bool fraudulentWebsiteWarningEnabled,
-                                            bool enableDragAndDrop, struct WebviewPreferences preferences) {
+                                            bool enableDragAndDrop, struct WebviewPreferences webviewPreferences) {
 	NSRect frame = NSMakeRect(0, 0, width, height);
 	WKWebViewConfiguration* config = [[WKWebViewConfiguration alloc] init];
 	[config autorelease];
 
-	if (preferences.TabFocusesLinks != NULL) {
-		config.preferences.tabFocusesLinks = *preferences.TabFocusesLinks;
+	if (webviewPreferences.TabFocusesLinks != NULL) {
+		config.preferences.tabFocusesLinks = *webviewPreferences.TabFocusesLinks;
 	}
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 110300
 	if (@available(macOS 11.3, *)) {
-		if (preferences.TextInteractionEnabled != NULL) {
-			config.preferences.textInteractionEnabled = *preferences.TextInteractionEnabled;
+		if (webviewPreferences.TextInteractionEnabled != NULL) {
+			config.preferences.textInteractionEnabled = *webviewPreferences.TextInteractionEnabled;
 		}
 	}
 #endif
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 120300
 	if (@available(macOS 12.3, *)) {
-		if (preferences.FullscreenEnabled != NULL) {
-			config.preferences.elementFullscreenEnabled = *preferences.FullscreenEnabled;
+		if (webviewPreferences.FullscreenEnabled != NULL) {
+			config.preferences.elementFullscreenEnabled = *webviewPreferences.FullscreenEnabled;
 		}
 	}
 #endif
@@ -69,8 +76,8 @@ static WKWebView* configureWebviewForWindow(NSWindow* window, NSView* view, Webv
 	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
 	[webView autorelease];
 
-	if (preferences.AllowsBackForwardNavigationGestures != NULL) {
-		webView.allowsBackForwardNavigationGestures = *preferences.AllowsBackForwardNavigationGestures;
+	if (webviewPreferences.AllowsBackForwardNavigationGestures != NULL) {
+		webView.allowsBackForwardNavigationGestures = *webviewPreferences.AllowsBackForwardNavigationGestures;
 	}
 
 	[view addSubview:webView];
@@ -90,7 +97,7 @@ static WKWebView* configureWebviewForWindow(NSWindow* window, NSView* view, Webv
 }
 
 // Create a new Window
-void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences) {
+void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences webviewPreferences) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 	if (frameless) {
 		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable;
@@ -124,7 +131,7 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 
 	// Configure webview using shared helper
 	window.webView = configureWebviewForWindow(window, view, delegate, width, height,
-	                                           fraudulentWebsiteWarningEnabled, enableDragAndDrop, preferences);
+	                                           fraudulentWebsiteWarningEnabled, enableDragAndDrop, webviewPreferences);
 	return window;
 }
 
@@ -180,26 +187,30 @@ void printWindowStyle(void *window) {
 }
 
 // Create a new Panel
-void* panelNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences,
-               bool floatingPanel, bool becomesKeyOnlyIfNeeded, bool nonactivatingPanel, bool utilityWindow) {
+void* panelNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop,
+               struct WebviewPreferences webviewPreferences, struct PanelPreferences panelPreferences) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 	if (frameless) {
 		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable;
 	}
-	if (nonactivatingPanel) {
+	if (panelPreferences.NonactivatingPanel != NULL && *panelPreferences.NonactivatingPanel) {
 		styleMask |= NSWindowStyleMaskNonactivatingPanel;
 	}
-	if (utilityWindow) {
+	if (panelPreferences.UtilityWindow != NULL && *panelPreferences.UtilityWindow) {
 		styleMask |= NSWindowStyleMaskUtilityWindow;
 	}
-
+	// if panel, create panel add panelpreferneces, else create window
 	WebviewPanel* panel = [[WebviewPanel alloc] initWithContentRect:NSMakeRect(0, 0, width-1, height-1)
 		styleMask:styleMask
 		backing:NSBackingStoreBuffered
 		defer:NO];
 
-	[panel setFloatingPanel:floatingPanel];
-	[panel setBecomesKeyOnlyIfNeeded:becomesKeyOnlyIfNeeded];
+	if (panelPreferences.FloatingPanel != NULL) {
+		[panel setFloatingPanel:*panelPreferences.FloatingPanel];
+	}
+	if (panelPreferences.BecomesKeyOnlyIfNeeded != NULL) {
+		[panel setBecomesKeyOnlyIfNeeded:*panelPreferences.BecomesKeyOnlyIfNeeded];
+	}
 
 	// Create delegate (same as window)
 	WebviewWindowDelegate* delegate = [[WebviewWindowDelegate alloc] init];
@@ -213,7 +224,7 @@ void* panelNew(unsigned int id, int width, int height, bool fraudulentWebsiteWar
 	[view autorelease];
 
 	[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-	if( frameless ) {
+	if (frameless) {
 		[view setWantsLayer:YES];
 		view.layer.cornerRadius = 8.0;
 	}
@@ -221,7 +232,7 @@ void* panelNew(unsigned int id, int width, int height, bool fraudulentWebsiteWar
 
 	// Configure webview using shared helper
 	panel.webView = configureWebviewForWindow(panel, view, delegate, width, height,
-	                                          fraudulentWebsiteWarningEnabled, enableDragAndDrop, preferences);
+	                                          fraudulentWebsiteWarningEnabled, enableDragAndDrop, webviewPreferences);
 	return panel;
 }
 
@@ -1301,6 +1312,27 @@ func (w *macosWebviewWindow) getWebviewPreferences() C.struct_WebviewPreferences
 	return result
 }
 
+func (w *macosWebviewWindow) getPanelPreferences() C.struct_PanelPreferences {
+	panelPrefs := w.parent.options.Mac.PanelPreferences
+
+	var result C.struct_PanelPreferences
+
+	if panelPrefs.FloatingPanel.IsSet() {
+		result.FloatingPanel = bool2CboolPtr(panelPrefs.FloatingPanel.Get())
+	}
+	if panelPrefs.BecomesKeyOnlyIfNeeded.IsSet() {
+		result.BecomesKeyOnlyIfNeeded = bool2CboolPtr(panelPrefs.BecomesKeyOnlyIfNeeded.Get())
+	}
+	if panelPrefs.NonactivatingPanel.IsSet() {
+		result.NonactivatingPanel = bool2CboolPtr(panelPrefs.NonactivatingPanel.Get())
+	}
+	if panelPrefs.UtilityWindow.IsSet() {
+		result.UtilityWindow = bool2CboolPtr(panelPrefs.UtilityWindow.Get())
+	}
+
+	return result
+}
+
 func (w *macosWebviewWindow) run() {
 	for eventId := range w.parent.eventListeners {
 		w.on(eventId)
@@ -1310,8 +1342,7 @@ func (w *macosWebviewWindow) run() {
 		macOptions := options.Mac
 
 		// Create either NSPanel or NSWindow based on WindowClass
-		if macOptions.WindowClass == NSPanel {
-			panelOpts := macOptions.PanelOptions
+		if macOptions.WindowClass == MacWindowClassPanel {
 			w.nsWindow = C.panelNew(C.uint(w.parent.id),
 				C.int(options.Width),
 				C.int(options.Height),
@@ -1319,10 +1350,7 @@ func (w *macosWebviewWindow) run() {
 				C.bool(options.Frameless),
 				C.bool(options.EnableFileDrop),
 				w.getWebviewPreferences(),
-				C.bool(panelOpts.FloatingPanel),
-				C.bool(panelOpts.BecomesKeyOnlyIfNeeded),
-				C.bool(panelOpts.NonactivatingPanel),
-				C.bool(panelOpts.UtilityWindow),
+				w.getPanelPreferences(),
 			)
 		} else {
 			w.nsWindow = C.windowNew(C.uint(w.parent.id),
@@ -1366,7 +1394,7 @@ func (w *macosWebviewWindow) run() {
 		// (setFloatingPanel:YES already sets NSFloatingWindowLevel, so don't override it)
 		if macOptions.WindowLevel != "" {
 			w.setWindowLevel(macOptions.WindowLevel)
-		} else if !(macOptions.WindowClass == NSPanel && macOptions.PanelOptions.FloatingPanel) {
+		} else if !(macOptions.WindowClass == MacWindowClassPanel && macOptions.PanelPreferences.FloatingPanel.IsSet() && macOptions.PanelPreferences.FloatingPanel.Get()) {
 			w.setWindowLevel(MacWindowLevelNormal)
 		}
 
