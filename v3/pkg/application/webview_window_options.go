@@ -489,7 +489,7 @@ type MacWindow struct {
 	// WindowClass is the window class for the window
 	WindowClass MacWindowClass
 
-	// PanelOptions contains options for NSPanel windows
+	// PanelPreferences contains configuration for panel windows
 	PanelPreferences MacPanelPreferences
 }
 
@@ -497,13 +497,13 @@ type MacWindow struct {
 type MacWindowClass int
 
 const (
-	// MacWindowClassWindow - The default value. The window will be a NSWindow, a window that an app displays on the screen.
+	// MacWindowClassWindow - The default value. A window that an app displays on the screen.
 	MacWindowClassWindow MacWindowClass = iota
-	// MacWindowClassPanel - The window will be a NSPanel, a special kind of window that typically performs a function that is auxiliary to the main window
+	// MacWindowClassPanel - A special kind of window that typically performs a function that is auxiliary to the main window
 	MacWindowClassPanel
 )
 
-// MacPanelOptions contains options for NSPanel windows
+// MacPanelPreferences contains options for MacWindowClassPanel windows
 type MacPanelPreferences struct {
 	// FloatingPanel will make the panel float above other windows
 	FloatingPanel u.Bool
