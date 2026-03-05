@@ -828,7 +828,7 @@ Controls how the window behaves across macOS Spaces and fullscreen. These are bi
 - `MacWindowCollectionBehaviorFullScreenAllowsTiling` - Allows side-by-side tiling (macOS 10.11+)
 - `MacWindowCollectionBehaviorFullScreenDisallowsTiling` - Prevents tiling (macOS 10.11+)
 
-**Note:** NSWindow fullscreen overlay requires `application.Options{ Mac: application.MacOptions{ ActivationPolicy: application.ActivationPolicyAccessory } }`
+**Note:** MacWindowClassWindow fullscreen overlay requires `application.Options{ Mac: application.MacOptions{ ActivationPolicy: application.ActivationPolicyAccessory } }`
 
 **Example - Spotlight-like window:**
 ```go
@@ -850,24 +850,24 @@ Mac: application.MacWindow{
 ```
 
 **WindowClass** (`MacWindowClass`)
-- `NSWindow` - Standard window (default)
-- `NSPanel` - Auxiliary window that can float above other windows and receive input without activating the application
+- `MacWindowClassWindow` - Standard window (default)
+- `MacWindowClassPanel` - Auxiliary window that can float above other windows and receive input without activating the application
 
-**PanelOptions** (`MacPanelOptions`)
+**PanelPreferences** (`MacPanelPreferences`)
 
-Options for NSPanel windows (only applies when `WindowClass` is `NSPanel`):
+Preferences for MacWindowClassPanel windows (only applies when `WindowClass` is `MacWindowClassPanel`):
 - `FloatingPanel` - Panel floats above other windows
 - `BecomesKeyOnlyIfNeeded` - Panel becomes key only when needed
 - `NonactivatingPanel` - Panel receives input without activating the application
 - `UtilityWindow` - Panel uses utility window style
 
-**Note:** Unlike NSWindow, NSPanel fullscreen overlay does NOT require `application.Options{ Mac: application.MacOptions{ ActivationPolicy: application.ActivationPolicyAccessory } }`
+**Note:** Unlike MacWindowClassWindow, MacWindowClassPanel fullscreen overlay does NOT require `application.Options{ Mac: application.MacOptions{ ActivationPolicy: application.ActivationPolicyAccessory } }`
 
 **Example - Spotlight-like panel:**
 ```go
 Mac: application.MacWindow{
-    WindowClass: application.NSPanel,
-    PanelOptions: application.MacPanelOptions{
+    WindowClass: application.MacWindowClassPanel,
+    PanelPreferences: application.MacPanelPreferences{
         NonactivatingPanel: true,
     },
     CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces |
