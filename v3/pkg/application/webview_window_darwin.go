@@ -22,10 +22,10 @@ struct WebviewPreferences {
 };
 
 struct PanelPreferences {
-    bool *FloatingPanel;
-    bool *BecomesKeyOnlyIfNeeded;
-    bool *NonactivatingPanel;
-    bool *UtilityWindow;
+    bool FloatingPanel;
+    bool BecomesKeyOnlyIfNeeded;
+    bool NonactivatingPanel;
+    bool UtilityWindow;
 };
 
 extern void registerListener(unsigned int event);
@@ -193,10 +193,10 @@ void* panelNew(unsigned int id, int width, int height, bool fraudulentWebsiteWar
 	if (frameless) {
 		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable;
 	}
-	if (panelPreferences.NonactivatingPanel != NULL && *panelPreferences.NonactivatingPanel) {
+	if (panelPreferences.NonactivatingPanel) {
 		styleMask |= NSWindowStyleMaskNonactivatingPanel;
 	}
-	if (panelPreferences.UtilityWindow != NULL && *panelPreferences.UtilityWindow) {
+	if (panelPreferences.UtilityWindow) {
 		styleMask |= NSWindowStyleMaskUtilityWindow;
 	}
 	// if panel, create panel add panelpreferneces, else create window
@@ -205,12 +205,8 @@ void* panelNew(unsigned int id, int width, int height, bool fraudulentWebsiteWar
 		backing:NSBackingStoreBuffered
 		defer:NO];
 
-	if (panelPreferences.FloatingPanel != NULL) {
-		[panel setFloatingPanel:*panelPreferences.FloatingPanel];
-	}
-	if (panelPreferences.BecomesKeyOnlyIfNeeded != NULL) {
-		[panel setBecomesKeyOnlyIfNeeded:*panelPreferences.BecomesKeyOnlyIfNeeded];
-	}
+	[panel setFloatingPanel:panelPreferences.FloatingPanel];
+	[panel setBecomesKeyOnlyIfNeeded:panelPreferences.BecomesKeyOnlyIfNeeded];
 
 	// Create delegate (same as window)
 	WebviewWindowDelegate* delegate = [[WebviewWindowDelegate alloc] init];
@@ -1315,22 +1311,12 @@ func (w *macosWebviewWindow) getWebviewPreferences() C.struct_WebviewPreferences
 func (w *macosWebviewWindow) getPanelPreferences() C.struct_PanelPreferences {
 	panelPrefs := w.parent.options.Mac.PanelPreferences
 
-	var result C.struct_PanelPreferences
-
-	if panelPrefs.FloatingPanel.IsSet() {
-		result.FloatingPanel = bool2CboolPtr(panelPrefs.FloatingPanel.Get())
+	return C.struct_PanelPreferences{
+		FloatingPanel:          C.bool(panelPrefs.FloatingPanel),
+		BecomesKeyOnlyIfNeeded: C.bool(panelPrefs.BecomesKeyOnlyIfNeeded),
+		NonactivatingPanel:     C.bool(panelPrefs.NonactivatingPanel),
+		UtilityWindow:          C.bool(panelPrefs.UtilityWindow),
 	}
-	if panelPrefs.BecomesKeyOnlyIfNeeded.IsSet() {
-		result.BecomesKeyOnlyIfNeeded = bool2CboolPtr(panelPrefs.BecomesKeyOnlyIfNeeded.Get())
-	}
-	if panelPrefs.NonactivatingPanel.IsSet() {
-		result.NonactivatingPanel = bool2CboolPtr(panelPrefs.NonactivatingPanel.Get())
-	}
-	if panelPrefs.UtilityWindow.IsSet() {
-		result.UtilityWindow = bool2CboolPtr(panelPrefs.UtilityWindow.Get())
-	}
-
-	return result
 }
 
 func (w *macosWebviewWindow) run() {
@@ -1394,7 +1380,7 @@ func (w *macosWebviewWindow) run() {
 		// (setFloatingPanel:YES already sets NSFloatingWindowLevel, so don't override it)
 		if macOptions.WindowLevel != "" {
 			w.setWindowLevel(macOptions.WindowLevel)
-		} else if !(macOptions.WindowClass == MacWindowClassPanel && macOptions.PanelPreferences.FloatingPanel.IsSet() && macOptions.PanelPreferences.FloatingPanel.Get()) {
+		} else if !(macOptions.WindowClass == MacWindowClassPanel && macOptions.PanelPreferences.FloatingPanel) {
 			w.setWindowLevel(MacWindowLevelNormal)
 		}
 

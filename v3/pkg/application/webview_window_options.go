@@ -506,13 +506,13 @@ const (
 // MacPanelPreferences contains options for MacWindowClassPanel windows
 type MacPanelPreferences struct {
 	// FloatingPanel will make the panel float above other windows
-	FloatingPanel u.Bool
+	FloatingPanel bool
 	// BecomesKeyOnlyIfNeeded will make the panel become key only when needed
-	BecomesKeyOnlyIfNeeded u.Bool
+	BecomesKeyOnlyIfNeeded bool
 	// NonactivatingPanel will apply the NSWindowStyleMaskNonactivatingPanel style
-	NonactivatingPanel u.Bool
+	NonactivatingPanel bool
 	// UtilityWindow will apply the NSWindowStyleMaskUtilityWindow style
-	UtilityWindow u.Bool
+	UtilityWindow bool
 }
 
 type MacWindowLevel string
