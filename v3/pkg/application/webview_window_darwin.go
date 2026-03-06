@@ -97,41 +97,56 @@ static WKWebView* configureWebviewForWindow(NSWindow* window, NSView* view, Webv
 }
 
 // Create a new Window
-void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences webviewPreferences) {
+void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop,
+                struct WebviewPreferences webviewPreferences, bool isPanel, struct PanelPreferences panelPreferences) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 	if (frameless) {
 		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable;
 	}
-	WebviewWindow* window = [[WebviewWindow alloc] initWithContentRect:NSMakeRect(0, 0, width-1, height-1)
-		styleMask:styleMask
-		backing:NSBackingStoreBuffered
-		defer:NO];
 
-	// Note: collectionBehavior is set later via windowSetCollectionBehavior()
-	// to allow user configuration of Space and fullscreen behavior
+	NSWindow* window;
+	if (isPanel) {
+		if (panelPreferences.NonactivatingPanel) {
+			styleMask |= NSWindowStyleMaskNonactivatingPanel;
+		}
+		if (panelPreferences.UtilityWindow) {
+			styleMask |= NSWindowStyleMaskUtilityWindow;
+		}
+		WebviewPanel* panel = [[WebviewPanel alloc] initWithContentRect:NSMakeRect(0, 0, width-1, height-1)
+			styleMask:styleMask
+			backing:NSBackingStoreBuffered
+			defer:NO];
+		[panel setFloatingPanel:panelPreferences.FloatingPanel];
+		[panel setBecomesKeyOnlyIfNeeded:panelPreferences.BecomesKeyOnlyIfNeeded];
+		window = panel;
+	} else {
+		window = [[WebviewWindow alloc] initWithContentRect:NSMakeRect(0, 0, width-1, height-1)
+			styleMask:styleMask
+			backing:NSBackingStoreBuffered
+			defer:NO];
+	}
 
-	// Create delegate
 	WebviewWindowDelegate* delegate = [[WebviewWindowDelegate alloc] init];
 	[delegate autorelease];
-
-	// Set delegate
 	[window setDelegate:delegate];
 	delegate.windowId = id;
 
-	// Add NSView to window
 	NSView* view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
 	[view autorelease];
-
 	[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-	if( frameless ) {
+	if (frameless) {
 		[view setWantsLayer:YES];
 		view.layer.cornerRadius = 8.0;
 	}
 	[window setContentView:view];
 
-	// Configure webview using shared helper
-	window.webView = configureWebviewForWindow(window, view, delegate, width, height,
-	                                           fraudulentWebsiteWarningEnabled, enableDragAndDrop, webviewPreferences);
+	WKWebView* webView = configureWebviewForWindow(window, view, delegate, width, height,
+	                                               fraudulentWebsiteWarningEnabled, enableDragAndDrop, webviewPreferences);
+	if (isPanel) {
+		((WebviewPanel*)window).webView = webView;
+	} else {
+		((WebviewWindow*)window).webView = webView;
+	}
 	return window;
 }
 
@@ -186,51 +201,6 @@ void printWindowStyle(void *window) {
 	printf("\n");
 }
 
-// Create a new Panel
-void* panelNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop,
-               struct WebviewPreferences webviewPreferences, struct PanelPreferences panelPreferences) {
-	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
-	if (frameless) {
-		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable;
-	}
-	if (panelPreferences.NonactivatingPanel) {
-		styleMask |= NSWindowStyleMaskNonactivatingPanel;
-	}
-	if (panelPreferences.UtilityWindow) {
-		styleMask |= NSWindowStyleMaskUtilityWindow;
-	}
-	// if panel, create panel add panelpreferneces, else create window
-	WebviewPanel* panel = [[WebviewPanel alloc] initWithContentRect:NSMakeRect(0, 0, width-1, height-1)
-		styleMask:styleMask
-		backing:NSBackingStoreBuffered
-		defer:NO];
-
-	[panel setFloatingPanel:panelPreferences.FloatingPanel];
-	[panel setBecomesKeyOnlyIfNeeded:panelPreferences.BecomesKeyOnlyIfNeeded];
-
-	// Create delegate (same as window)
-	WebviewWindowDelegate* delegate = [[WebviewWindowDelegate alloc] init];
-	[delegate autorelease];
-
-	[panel setDelegate:delegate];
-	delegate.windowId = id;
-
-	// Add NSView to panel
-	NSView* view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
-	[view autorelease];
-
-	[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-	if (frameless) {
-		[view setWantsLayer:YES];
-		view.layer.cornerRadius = 8.0;
-	}
-	[panel setContentView:view];
-
-	// Configure webview using shared helper
-	panel.webView = configureWebviewForWindow(panel, view, delegate, width, height,
-	                                          fraudulentWebsiteWarningEnabled, enableDragAndDrop, webviewPreferences);
-	return panel;
-}
 
 // setInvisibleTitleBarHeight sets the invisible title bar height
 void setInvisibleTitleBarHeight(void* window, unsigned int height) {
@@ -1327,27 +1297,16 @@ func (w *macosWebviewWindow) run() {
 		options := w.parent.options
 		macOptions := options.Mac
 
-		// Create either NSPanel or NSWindow based on WindowClass
-		if macOptions.WindowClass == MacWindowClassPanel {
-			w.nsWindow = C.panelNew(C.uint(w.parent.id),
-				C.int(options.Width),
-				C.int(options.Height),
-				C.bool(macOptions.EnableFraudulentWebsiteWarnings),
-				C.bool(options.Frameless),
-				C.bool(options.EnableFileDrop),
-				w.getWebviewPreferences(),
-				w.getPanelPreferences(),
-			)
-		} else {
-			w.nsWindow = C.windowNew(C.uint(w.parent.id),
-				C.int(options.Width),
-				C.int(options.Height),
-				C.bool(macOptions.EnableFraudulentWebsiteWarnings),
-				C.bool(options.Frameless),
-				C.bool(options.EnableFileDrop),
-				w.getWebviewPreferences(),
-			)
-		}
+		w.nsWindow = C.windowNew(C.uint(w.parent.id),
+			C.int(options.Width),
+			C.int(options.Height),
+			C.bool(macOptions.EnableFraudulentWebsiteWarnings),
+			C.bool(options.Frameless),
+			C.bool(options.EnableFileDrop),
+			w.getWebviewPreferences(),
+			C.bool(macOptions.WindowClass == MacWindowClassPanel),
+			w.getPanelPreferences(),
+		)
 		w.setTitle(options.Title)
 		w.setResizable(!options.DisableResize)
 		if options.MinWidth != 0 || options.MinHeight != 0 {
