@@ -139,14 +139,6 @@ static void dispatchKeyDownEvent(NSEvent *event, unsigned int windowId) {
     [self setMovableByWindowBackground:YES];
     return self;
 }
-// Override sendEvent to intercept key events BEFORE WKWebView consumes them
-// This ensures KeyBindings work regardless of first responder state
-- (void)sendEvent:(NSEvent *)event {
-    if (event.type == NSEventTypeKeyDown) {
-        [self keyDown:event];
-    }
-    [super sendEvent:event];
-}
 - (void)keyDown:(NSEvent *)event {
     WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)self.delegate;
     dispatchKeyDownEvent(event, delegate.windowId);
@@ -230,7 +222,6 @@ static void dispatchKeyDownEvent(NSEvent *event, unsigned int windowId) {
     return self;
 }
 // Override sendEvent to intercept key events BEFORE WKWebView consumes them
-// This ensures KeyBindings work regardless of first responder state
 - (void)sendEvent:(NSEvent *)event {
     if (event.type == NSEventTypeKeyDown) {
         [self keyDown:event];
