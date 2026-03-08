@@ -1,0 +1,222 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		C0DEBEEF0000000000000001 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C0DEBEEF0000000000000002 /* main.m */; };
+		C0DEBEEF00000000000000F1 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0DEBEEF0000000000000101 /* UIKit.framework */; };
+		C0DEBEEF00000000000000F2 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0DEBEEF0000000000000102 /* Foundation.framework */; };
+		C0DEBEEF00000000000000F3 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0DEBEEF0000000000000103 /* WebKit.framework */; };
+		C0DEBEEF00000000000000F4 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0DEBEEF0000000000000104 /* Security.framework */; };
+		C0DEBEEF00000000000000F5 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0DEBEEF0000000000000105 /* CoreFoundation.framework */; };
+		C0DEBEEF00000000000000F6 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C0DEBEEF0000000000000106 /* libresolv.tbd */; };
+		C0DEBEEF00000000000000F7 /* My Product.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C0DEBEEF0000000000000107 /* My Product.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		C0DEBEEF0000000000000002 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		C0DEBEEF0000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C0DEBEEF0000000000000004 /* My Product.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "My Product.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C0DEBEEF0000000000000101 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		C0DEBEEF0000000000000102 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		C0DEBEEF0000000000000103 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		C0DEBEEF0000000000000104 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		C0DEBEEF0000000000000105 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		C0DEBEEF0000000000000106 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.text-based-dylib-definition; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
+		C0DEBEEF0000000000000107 /* My Product.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "My Product.a"; path = ../../../bin/My Product.a; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		C0DEBEEF0000000000000010 = {
+			isa = PBXGroup;
+			children = (
+				C0DEBEEF0000000000000020 /* Products */,
+				C0DEBEEF0000000000000045 /* Frameworks */,
+				C0DEBEEF0000000000000030 /* main */,
+			);
+			sourceTree = "<group>";
+		};
+		C0DEBEEF0000000000000020 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C0DEBEEF0000000000000004 /* My Product.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C0DEBEEF0000000000000030 /* main */ = {
+			isa = PBXGroup;
+			children = (
+				C0DEBEEF0000000000000002 /* main.m */,
+				C0DEBEEF0000000000000003 /* Info.plist */,
+			);
+			path = main;
+			sourceTree = SOURCE_ROOT;
+		};
+		C0DEBEEF0000000000000045 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C0DEBEEF0000000000000101 /* UIKit.framework */,
+				C0DEBEEF0000000000000102 /* Foundation.framework */,
+				C0DEBEEF0000000000000103 /* WebKit.framework */,
+				C0DEBEEF0000000000000104 /* Security.framework */,
+				C0DEBEEF0000000000000105 /* CoreFoundation.framework */,
+				C0DEBEEF0000000000000106 /* libresolv.tbd */,
+				C0DEBEEF0000000000000107 /* My Product.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C0DEBEEF0000000000000040 /* My Product */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C0DEBEEF0000000000000070 /* Build configuration list for PBXNativeTarget "My Product" */;
+			buildPhases = (
+				C0DEBEEF0000000000000055 /* Prebuild: Wails Go Archive */,
+				C0DEBEEF0000000000000050 /* Sources */,
+				C0DEBEEF0000000000000056 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "My Product";
+			productName = "My Product";
+			productReference = C0DEBEEF0000000000000004 /* My Product.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C0DEBEEF0000000000000060 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1500;
+				ORGANIZATIONNAME = "My Company";
+				TargetAttributes = {
+					C0DEBEEF0000000000000040 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = C0DEBEEF0000000000000080 /* Build configuration list for PBXProject "main" */;
+			compatibilityVersion = "Xcode 15.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = C0DEBEEF0000000000000010;
+			productRefGroup = C0DEBEEF0000000000000020 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C0DEBEEF0000000000000040 /* My Product */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C0DEBEEF0000000000000056 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C0DEBEEF00000000000000F7 /* My Product.a in Frameworks */,
+				C0DEBEEF00000000000000F1 /* UIKit.framework in Frameworks */,
+				C0DEBEEF00000000000000F2 /* Foundation.framework in Frameworks */,
+				C0DEBEEF00000000000000F3 /* WebKit.framework in Frameworks */,
+				C0DEBEEF00000000000000F4 /* Security.framework in Frameworks */,
+				C0DEBEEF00000000000000F5 /* CoreFoundation.framework in Frameworks */,
+				C0DEBEEF00000000000000F6 /* libresolv.tbd in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		C0DEBEEF0000000000000055 /* Prebuild: Wails Go Archive */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Prebuild: Wails Go Archive";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nAPP_ROOT=\"${PROJECT_DIR}/../../..\"\nSDK_PATH=$(xcrun --sdk iphonesimulator --show-sdk-path)\nexport GOOS=ios\nexport GOARCH=arm64\nexport CGO_ENABLED=1\nexport CGO_CFLAGS=\"-isysroot ${SDK_PATH} -target arm64-apple-ios15.0-simulator -mios-simulator-version-min=15.0\"\nexport CGO_LDFLAGS=\"-isysroot ${SDK_PATH} -target arm64-apple-ios15.0-simulator\"\ncd \"${APP_ROOT}\"\n# Ensure overlay exists\nif [ ! -f build/ios/xcode/overlay.json ]; then\n  wails3 ios overlay:gen -out build/ios/xcode/overlay.json -config build/config.yml || true\nfi\n# Build Go c-archive if missing or older than sources\nif [ ! -f bin/My Product.a ]; then\n  echo \"Building Go c-archive...\"\n  go build -buildmode=c-archive -overlay build/ios/xcode/overlay.json -o bin/My Product.a\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C0DEBEEF0000000000000050 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C0DEBEEF0000000000000001 /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		C0DEBEEF0000000000000090 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = main/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.macwindowtabs";
+				PRODUCT_NAME = "My Product";
+				CODE_SIGNING_ALLOWED = NO;
+				SDKROOT = iphonesimulator;
+			};
+			name = Debug;
+		};
+		C0DEBEEF00000000000000A0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = main/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.macwindowtabs";
+				PRODUCT_NAME = "My Product";
+				CODE_SIGNING_ALLOWED = NO;
+				SDKROOT = iphonesimulator;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C0DEBEEF0000000000000070 /* Build configuration list for PBXNativeTarget "My Product" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C0DEBEEF0000000000000090 /* Debug */,
+				C0DEBEEF00000000000000A0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C0DEBEEF0000000000000080 /* Build configuration list for PBXProject "main" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C0DEBEEF0000000000000090 /* Debug */,
+				C0DEBEEF00000000000000A0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C0DEBEEF0000000000000060 /* Project object */;
+}
