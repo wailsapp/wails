@@ -124,6 +124,16 @@ func (m *windowsApp) on(_ uint) {
 func (m *windowsApp) setIcon(_ []byte) {
 }
 
+// Windows App implementation of Platform setTheme
+func (m *windowsApp) setTheme(theme AppTheme) {
+	// Apply theme to all windows
+	// m.windowMapLock.RLock()
+	// for _, window := range m.windowMap {
+	// 	window.SetTheme(theme)
+	// }
+	// m.windowMapLock.RUnlock()
+}
+
 func (m *windowsApp) name() string {
 	// appName := C.getAppName()
 	// defer C.free(unsafe.Pointer(appName))

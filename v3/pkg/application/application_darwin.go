@@ -263,6 +263,18 @@ func (m *macosApp) setIcon(icon []byte) {
 	C.setApplicationIcon(unsafe.Pointer(&icon[0]), C.int(len(icon)))
 }
 
+// Windows App implementation of Platform setTheme
+func (m *macosApp) setTheme(theme AppTheme) {
+	// Cycle thorougfh indiviudal window themes to trigger theme resolution
+	for _, window := range m.parent.windows {
+		if webviewWindow, ok := window.(*WebviewWindow); ok {
+			if impl, ok := webviewWindow.impl.(*macosWebviewWindow); ok {
+				impl.syncTheme()
+			}
+		}
+	}
+}
+
 func (m *macosApp) name() string {
 	appName := C.getAppName()
 	defer C.free(unsafe.Pointer(appName))

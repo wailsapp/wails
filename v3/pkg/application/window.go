@@ -102,4 +102,8 @@ type Window interface {
 	redo()
 	delete()
 	selectAll()
+
+	// Theme methods
+	GetTheme() string
+	SetTheme(theme WinTheme)
 }

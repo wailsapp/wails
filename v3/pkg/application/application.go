@@ -217,6 +217,7 @@ type (
 		isOnMainThread() bool
 		isDarkMode() bool
 		getAccentColor() string
+		setTheme(theme AppTheme)
 	}
 
 	runnable interface {
@@ -416,6 +417,9 @@ type App struct {
 
 	// singleInstanceManager handles single instance functionality
 	singleInstanceManager *singleInstanceManager
+
+	// ApplicationTheme is the application theme to use for the application and any windows that follow the application theme.
+	theme AppTheme
 }
 
 func (a *App) Config() Options {
@@ -641,6 +645,12 @@ func (a *App) Run() error {
 	}
 	if a.options.Icon != nil {
 		a.impl.setIcon(a.options.Icon)
+	}
+
+	// Set the application Theme
+	a.theme = AppSystemDefault
+	if a.options.Theme != "" {
+		a.theme = a.options.Theme
 	}
 
 	return a.impl.run()

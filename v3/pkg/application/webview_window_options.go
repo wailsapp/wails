@@ -240,8 +240,7 @@ type WindowsWindow struct {
 	// Default: false
 	DisableIcon bool
 
-	// Theme (Dark / Light / SystemDefault)
-	// Default: SystemDefault - The application will follow system theme changes.
+	// Theme (System / Dark / Light)
 	Theme Theme
 
 	// Specify custom colours to use for dark/light mode
@@ -302,12 +301,9 @@ type WindowsWindow struct {
 type Theme int
 
 const (
-	// SystemDefault will use whatever the system theme is. The application will follow system theme changes.
 	SystemDefault Theme = 0
-	// Dark Mode
-	Dark Theme = 1
-	// Light Mode
-	Light Theme = 2
+	Dark          Theme = 1
+	Light         Theme = 2
 )
 
 type WindowTheme struct {

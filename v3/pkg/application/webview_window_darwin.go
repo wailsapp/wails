@@ -548,6 +548,19 @@ void windowSetShowToolbarWhenFullscreen(void* window, bool setting) {
 	delegate.showToolbarWhenFullscreen = setting;
 }
 
+// Check If Windows has an explicit appearance override
+bool windowHasExplicitAppearance(void* nsWindow) {
+	NSAppearance* appearance = [(WebviewWindow*)nsWindow appearance];
+	return appearance != nil;
+}
+
+// Get Window Effective Appearance Name
+char* windowGetEffectiveAppearanceName(void* nsWindow) {
+	NSAppearance* appearance = [(WebviewWindow*)nsWindow effectiveAppearance];
+	NSString* appearanceName = [appearance bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
+	return strdup([appearanceName UTF8String]);
+}
+
 // Set Window appearance type
 void windowSetAppearanceTypeByName(void* nsWindow, const char *appearanceName) {
 	// set window appearance type by name
@@ -557,6 +570,11 @@ void windowSetAppearanceTypeByName(void* nsWindow, const char *appearanceName) {
 	[(WebviewWindow*)nsWindow setAppearance:[NSAppearance appearanceNamed:appearanceNameString]];
 
 	free((void*)appearanceName);
+}
+
+// Clear Window appearance type - revert to OS system Appearance
+void windowClearAppearanceType(void* nsWindow) {
+	[(WebviewWindow*)nsWindow setAppearance:nil];
 }
 
 // Center window on current monitor
@@ -1276,6 +1294,56 @@ func (w *macosWebviewWindow) getWebviewPreferences() C.struct_WebviewPreferences
 	return result
 }
 
+// getAppearanceName returns the effective macOS appearance name
+// currently applied to the window.
+func (w *macosWebviewWindow) getAppearanceName() string {
+	var result string
+	var wg sync.WaitGroup
+	wg.Add(1)
+	globalApplication.dispatchOnMainThread(func() {
+		cstr := C.windowGetEffectiveAppearanceName(w.nsWindow)
+		defer C.free(unsafe.Pointer(cstr))
+		result = C.GoString(cstr)
+		wg.Done()
+	})
+	wg.Wait()
+	return result
+}
+
+// hasExplicitAppearance returns true if the window has an explicit
+// macOS appearance override (light/dark).
+func (w *macosWebviewWindow) hasExplicitAppearance() bool {
+	var result bool
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	globalApplication.dispatchOnMainThread(func() {
+		result = bool(C.windowHasExplicitAppearance(w.nsWindow))
+		wg.Done()
+	})
+
+	wg.Wait()
+	return result
+}
+
+// setAppearanceByName applies an explicit macOS appearance override
+// to the window.
+func (w *macosWebviewWindow) setAppearanceByName(appearanceName MacAppearanceType) {
+	// Dispatching on GlobalApplication's main thread to ensure that the window is fully initialized before we try to set the appearance
+	// These are utilized in an event listener hence explicitly stating globalApplication
+	globalApplication.dispatchOnMainThread(func() {
+		C.windowSetAppearanceTypeByName(w.nsWindow, C.CString(string(appearanceName)))
+	})
+}
+
+// clearAppearance removes any explicit appearance override from the window.
+// Once cleared, the window implicitly follows the system appearance.
+func (w *macosWebviewWindow) clearAppearance() {
+	globalApplication.dispatchOnMainThread(func() {
+		C.windowClearAppearanceType(w.nsWindow)
+	})
+}
+
 func (w *macosWebviewWindow) run() {
 	for eventId := range w.parent.eventListeners {
 		w.on(eventId)
@@ -1348,8 +1416,13 @@ func (w *macosWebviewWindow) run() {
 			C.windowSetHideToolbarSeparator(w.nsWindow, C.bool(titleBarOptions.HideToolbarSeparator))
 		}
 
+		// if macOptions.Appearance != "" {
+		// 	C.windowSetAppearanceTypeByName(w.nsWindow, C.CString(string(macOptions.Appearance)))
+		// }
+		w.parent.followApplicationTheme = true
 		if macOptions.Appearance != "" {
-			C.windowSetAppearanceTypeByName(w.nsWindow, C.CString(string(macOptions.Appearance)))
+			w.parent.followApplicationTheme = false
+			w.setAppearanceByName(macOptions.Appearance)
 		}
 
 		// Only apply invisible title bar when the native drag area is hidden

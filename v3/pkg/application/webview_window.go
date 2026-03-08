@@ -114,6 +114,8 @@ type (
 		snapAssist()
 		setContentProtection(enabled bool)
 		attachModal(modalWindow *WebviewWindow)
+		getTheme() WinTheme
+		setTheme(theme WinTheme)
 	}
 )
 
@@ -174,6 +176,9 @@ type WebviewWindow struct {
 
 	// unconditionallyClose marks the window to be unconditionally closed (atomic)
 	unconditionallyClose uint32
+
+	// followApplicationTheme indicates whether the window should follow application theme changes
+	followApplicationTheme bool
 }
 
 func (w *WebviewWindow) SetMenu(menu *Menu) {
@@ -1290,12 +1295,12 @@ func (w *WebviewWindow) AttachModal(modalWindow Window) {
 	if w.impl == nil || w.isDestroyed() {
 		return
 	}
-	
+
 	modalWebviewWindow, ok := modalWindow.(*WebviewWindow)
 	if !ok || modalWebviewWindow == nil {
 		return
 	}
-	
+
 	InvokeSync(func() {
 		w.impl.attachModal(modalWebviewWindow)
 	})
