@@ -4,10 +4,10 @@ package application
 
 import "github.com/wailsapp/wails/v3/pkg/w32"
 
-// resolveTheme determines the realized Theme for the window by resolving
+// resolveWindowsEffectiveTheme determines the realized Theme for the window by resolving
 // application-level and window-level theme settings.
-func (w *windowsWebviewWindow) resolveTheme() Theme {
-	switch w.parent.options.Windows.Theme {
+func resolveWindowsEffectiveTheme(winTheme WinTheme, appTheme AppTheme) Theme {
+	switch winTheme {
 	case WinThemeDark:
 		return Dark
 	case WinThemeLight:
@@ -16,7 +16,7 @@ func (w *windowsWebviewWindow) resolveTheme() Theme {
 		return SystemDefault
 	default:
 		// For WinThemeApplication and/or Unset values we default to following
-		switch globalApplication.theme {
+		switch appTheme {
 		case AppDark:
 			return Dark
 		case AppLight:

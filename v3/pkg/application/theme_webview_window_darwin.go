@@ -4,9 +4,9 @@ package application
 
 import "fmt"
 
-// getOppositeAppearance returns the macOS appearance that represents
+// getOppositeMacAppearance returns the macOS appearance that represents
 // the opposite light/dark variant.
-func (w *macosWebviewWindow) getOppositeAppearance(name string) (MacAppearanceType, error) {
+func getOppositeMacAppearance(name string) (MacAppearanceType, error) {
 	if name == "NSAppearanceNameDarkAqua" {
 		return "NSAppearanceNameAqua", nil
 	}
@@ -16,10 +16,9 @@ func (w *macosWebviewWindow) getOppositeAppearance(name string) (MacAppearanceTy
 	return "NSAppearanceNameDarkAqua", err
 }
 
-// isAppearanceDark reports whether the current window appearance
+// isMacAppearanceDark reports whether the current window appearance
 // corresponds to a dark macOS appearance.
-func (w *macosWebviewWindow) isAppearanceDark() bool {
-	appr := w.getEffectiveAppearanceName()
+func isMacAppearanceDark(appr string) bool {
 	// Check if the appearance name contains "Dark"
 	switch appr {
 	case "NSAppearanceNameDarkAqua",
@@ -40,7 +39,7 @@ func (w *macosWebviewWindow) syncTheme() {
 	}
 
 	currentAppearance := w.getEffectiveAppearanceName()
-	currentDark := w.isAppearanceDark()
+	currentDark := isMacAppearanceDark(currentAppearance)
 
 	switch globalApplication.theme {
 	case AppSystemDefault:
@@ -48,12 +47,12 @@ func (w *macosWebviewWindow) syncTheme() {
 		return
 	case AppDark:
 		if !currentDark {
-			appr, _ := w.getOppositeAppearance(currentAppearance)
+			appr, _ := getOppositeMacAppearance(currentAppearance)
 			w.setAppearanceByName(appr)
 		}
 	case AppLight:
 		if currentDark {
-			appr, _ := w.getOppositeAppearance(currentAppearance)
+			appr, _ := getOppositeMacAppearance(currentAppearance)
 			w.setAppearanceByName(appr)
 		}
 	}
@@ -74,18 +73,18 @@ func (w *macosWebviewWindow) setTheme(theme WinTheme) {
 	}
 
 	currentAppearance := w.getEffectiveAppearanceName()
-	isDark := w.isAppearanceDark()
+	isDark := isMacAppearanceDark(currentAppearance)
 	w.parent.followApplicationTheme = false
 
 	switch theme {
 	case WinThemeDark:
 		if !isDark {
-			appr, _ := w.getOppositeAppearance(currentAppearance)
+			appr, _ := getOppositeMacAppearance(currentAppearance)
 			w.setAppearanceByName(appr)
 		}
 	case WinThemeLight:
 		if isDark {
-			appr, _ := w.getOppositeAppearance(currentAppearance)
+			appr, _ := getOppositeMacAppearance(currentAppearance)
 			w.setAppearanceByName(appr)
 		}
 	}
@@ -103,7 +102,7 @@ func (w *macosWebviewWindow) getTheme() WinTheme {
 		return WinThemeSystem
 	}
 
-	if w.isAppearanceDark() {
+	if isMacAppearanceDark(w.getEffectiveAppearanceName()) {
 		return WinThemeDark
 	}
 

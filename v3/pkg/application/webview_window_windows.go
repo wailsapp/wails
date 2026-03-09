@@ -515,7 +515,7 @@ func (w *windowsWebviewWindow) run() {
 	}
 
 	// System, Dark, Light - Resolved Theme to Apply
-	w.theme = w.resolveTheme()
+	w.theme = resolveWindowsEffectiveTheme(options.Windows.Theme, globalApplication.theme)
 	w.syncTheme()
 
 	// Always listen to OS theme changes but only update the theme if we are following the application theme
