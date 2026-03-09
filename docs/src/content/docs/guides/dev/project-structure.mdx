@@ -1,0 +1,122 @@
+---
+title: Project Structure
+description: Understand the layout of a Wails v3 project
+sidebar:
+  order: 1
+---
+
+A Wails v3 project follows a standard Go project layout with an embedded frontend directory.
+
+## Default Project Layout
+
+When you create a new project with `wails3 init`, you get the following structure:
+
+```
+myapp/
+├── main.go              # Application entry point
+├── greetservice.go      # Example bound service
+├── go.mod               # Go module definition
+├── go.sum               # Go dependency checksums
+├── Taskfile.yml         # Build tasks (used by wails3 build)
+├── frontend/            # Frontend source code
+│   ├── index.html       # HTML entry point
+│   ├── src/
+│   │   └── main.js      # Frontend JavaScript
+│   ├── public/
+│   │   └── style.css    # Styles
+│   ├── package.json     # Frontend dependencies
+│   └── vite.config.js   # Vite bundler config
+└── build/               # Build configuration
+    ├── appicon.png       # Application icon
+    └── ...               # Platform-specific build files
+```
+
+## Key Files
+
+### main.go
+
+The application entry point. It creates and configures the Wails application, registers services, sets up windows, and starts the event loop.
+
+```go
+package main
+
+import (
+    "embed"
+    "log"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed all:frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "myapp",
+        Description: "My Wails Application",
+        Services: []application.Service{
+            application.NewService(&GreetService{}),
+        },
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "My App",
+        URL:   "/",
+    })
+
+    if err := app.Run(); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+The `//go:embed all:frontend/dist` directive embeds the built frontend assets into the Go binary, producing a single executable.
+
+### Services
+
+Services are Go structs with exported methods that are callable from the frontend. Each service is registered with the application using `application.NewService()`.
+
+```go
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+    return fmt.Sprintf("Hello %s!", name)
+}
+```
+
+The binding generator creates TypeScript/JavaScript wrappers so you can call these methods directly from your frontend code.
+
+### frontend/
+
+Contains your web UI code. By default, Wails uses [Vite](https://vitejs.dev/) as the frontend bundler. You can use any frontend framework (React, Vue, Svelte, etc.) by choosing a different template at init time:
+
+```bash
+wails3 init -n myapp -t react
+wails3 init -n myapp -t vue
+wails3 init -n myapp -t svelte
+```
+
+Run `wails3 init -l` to see all available templates.
+
+### Taskfile.yml
+
+Wails v3 uses [Task](https://taskfile.dev) as its build system. The Taskfile defines tasks for building, developing, and packaging your application. The `wails3 build` and `wails3 dev` commands are wrappers around Task.
+
+### build/
+
+Contains build-time assets and platform-specific configuration:
+
+- `appicon.png` — Application icon used during packaging
+- Platform-specific files for Windows (`.rc`, `.manifest`), macOS (`Info.plist`), and Linux (`.desktop`)
+
+## Generated Files
+
+When you run `wails3 dev` or `wails3 build`, additional files are generated:
+
+- `frontend/dist/` — Built frontend assets (embedded into the binary)
+- `frontend/bindings/` — Generated TypeScript/JavaScript bindings for your Go services
+
+These generated files should typically be added to `.gitignore`.
