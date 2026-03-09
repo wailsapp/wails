@@ -2,7 +2,7 @@ package main
 
 import (
 	"embed"
-	"fmt"
+	// "fmt"
 	"log"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -29,9 +29,9 @@ func main() {
 	})
 
 	// Listen for the theme‑change event and log the payload
-	app.Event.On("applicationThemeChanged", func(ev *application.CustomEvent) {
-		fmt.Printf("[Go] applicationThemeChanged received, data = %v\n", ev.Data)
-	})
+	// app.Event.On("applicationThemeChanged", func(ev *application.CustomEvent) {
+	// 	fmt.Printf("[Go] applicationThemeChanged received, data = %v\n", ev.Data)
+	// })
 
 	windowService.app = app
 	app.Window.NewWithOptions(application.WebviewWindowOptions{

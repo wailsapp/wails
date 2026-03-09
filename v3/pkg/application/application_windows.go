@@ -124,14 +124,15 @@ func (m *windowsApp) on(_ uint) {
 func (m *windowsApp) setIcon(_ []byte) {
 }
 
-// Windows App implementation of Platform setTheme
+// setTheme sets the application-wide theme by synchronizing the theme
+// across all open windows.
 func (m *windowsApp) setTheme(theme AppTheme) {
 	// Apply theme to all windows
-	// m.windowMapLock.RLock()
-	// for _, window := range m.windowMap {
-	// 	window.SetTheme(theme)
-	// }
-	// m.windowMapLock.RUnlock()
+	m.windowMapLock.RLock()
+	for _, window := range m.windowMap {
+		window.syncTheme()
+	}
+	m.windowMapLock.RUnlock()
 }
 
 func (m *windowsApp) name() string {

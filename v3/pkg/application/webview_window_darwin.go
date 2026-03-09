@@ -548,20 +548,27 @@ void windowSetShowToolbarWhenFullscreen(void* window, bool setting) {
 	delegate.showToolbarWhenFullscreen = setting;
 }
 
-// Check If Windows has an explicit appearance override
-bool windowHasExplicitAppearance(void* nsWindow) {
+// windowGetExplicitAppearanceName returns the name of the explicit appearance override
+// currently applied to the window, or NULL if no override is set.
+char* windowGetExplicitAppearanceName(void* nsWindow) {
 	NSAppearance* appearance = [(WebviewWindow*)nsWindow appearance];
-	return appearance != nil;
+	if (appearance == nil) {
+		return NULL;
+	}
+	NSString* appearanceName = [appearance bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
+	return strdup([appearanceName UTF8String]);
 }
 
-// Get Window Effective Appearance Name
+// windowGetEffectiveAppearanceName returns the name of the effective appearance
+// currently applied to the window (taking into account system settings and overrides).
 char* windowGetEffectiveAppearanceName(void* nsWindow) {
 	NSAppearance* appearance = [(WebviewWindow*)nsWindow effectiveAppearance];
 	NSString* appearanceName = [appearance bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
 	return strdup([appearanceName UTF8String]);
 }
 
-// Set Window appearance type
+// windowSetAppearanceTypeByName applies an explicit appearance override to the window
+// using the specified appearance name (e.g., NSAppearanceNameDarkAqua).
 void windowSetAppearanceTypeByName(void* nsWindow, const char *appearanceName) {
 	// set window appearance type by name
 	// Convert appearance name to NSString
@@ -572,7 +579,8 @@ void windowSetAppearanceTypeByName(void* nsWindow, const char *appearanceName) {
 	free((void*)appearanceName);
 }
 
-// Clear Window appearance type - revert to OS system Appearance
+// windowClearAppearanceType removes any explicit appearance override from the window,
+// allowing it to follow the system or application theme.
 void windowClearAppearanceType(void* nsWindow) {
 	[(WebviewWindow*)nsWindow setAppearance:nil];
 }
@@ -1294,34 +1302,36 @@ func (w *macosWebviewWindow) getWebviewPreferences() C.struct_WebviewPreferences
 	return result
 }
 
-// getAppearanceName returns the effective macOS appearance name
-// currently applied to the window.
-func (w *macosWebviewWindow) getAppearanceName() string {
+// getEffectiveAppearanceName returns the name of the effective appearance
+func (w *macosWebviewWindow) getEffectiveAppearanceName() string {
 	var result string
 	var wg sync.WaitGroup
 	wg.Add(1)
 	globalApplication.dispatchOnMainThread(func() {
+		defer wg.Done()
 		cstr := C.windowGetEffectiveAppearanceName(w.nsWindow)
 		defer C.free(unsafe.Pointer(cstr))
 		result = C.GoString(cstr)
-		wg.Done()
 	})
 	wg.Wait()
 	return result
 }
 
-// hasExplicitAppearance returns true if the window has an explicit
-// macOS appearance override (light/dark).
-func (w *macosWebviewWindow) hasExplicitAppearance() bool {
-	var result bool
+// getExplicitAppearanceName reports whether the window has an explicit
+// appearance override.
+func (w *macosWebviewWindow) getExplicitAppearanceName() string {
+	var result string
 	var wg sync.WaitGroup
 	wg.Add(1)
 
 	globalApplication.dispatchOnMainThread(func() {
-		result = bool(C.windowHasExplicitAppearance(w.nsWindow))
-		wg.Done()
+		defer wg.Done()
+		cstr := C.windowGetExplicitAppearanceName(w.nsWindow)
+		if cstr != nil {
+			result = C.GoString(cstr)
+			C.free(unsafe.Pointer(cstr))
+		}
 	})
-
 	wg.Wait()
 	return result
 }

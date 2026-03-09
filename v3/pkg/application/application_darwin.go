@@ -263,7 +263,8 @@ func (m *macosApp) setIcon(icon []byte) {
 	C.setApplicationIcon(unsafe.Pointer(&icon[0]), C.int(len(icon)))
 }
 
-// Windows App implementation of Platform setTheme
+// setTheme sets the application-wide theme by synchronizing the theme
+// across all open windows.
 func (m *macosApp) setTheme(theme AppTheme) {
 	// Cycle thorougfh indiviudal window themes to trigger theme resolution
 	for _, window := range m.parent.windows {

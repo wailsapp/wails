@@ -5,33 +5,21 @@ package application
 import "fmt"
 
 // getOppositeAppearance returns the macOS appearance that represents
-// the opposite light/dark variant while preserving vibrancy and accessibility.
+// the opposite light/dark variant.
 func (w *macosWebviewWindow) getOppositeAppearance(name string) (MacAppearanceType, error) {
-	complementary := map[string]MacAppearanceType{
-		"NSAppearanceNameAqua":     "NSAppearanceNameDarkAqua",
-		"NSAppearanceNameDarkAqua": "NSAppearanceNameAqua",
-
-		"NSAppearanceNameVibrantLight": "NSAppearanceNameVibrantDark",
-		"NSAppearanceNameVibrantDark":  "NSAppearanceNameVibrantLight",
-
-		"NSAppearanceNameAccessibilityHighContrastAqua":     "NSAppearanceNameAccessibilityHighContrastDarkAqua",
-		"NSAppearanceNameAccessibilityHighContrastDarkAqua": "NSAppearanceNameAccessibilityHighContrastAqua",
-
-		"NSAppearanceNameAccessibilityHighContrastVibrantLight": "NSAppearanceNameAccessibilityHighContrastVibrantDark",
-		"NSAppearanceNameAccessibilityHighContrastVibrantDark":  "NSAppearanceNameAccessibilityHighContrastVibrantLight",
+	if name == "NSAppearanceNameDarkAqua" {
+		return "NSAppearanceNameAqua", nil
 	}
 
-	if result, ok := complementary[name]; ok {
-		return result, nil
-	}
-
-	return "", fmt.Errorf("unknown appearance name: %s", name)
+	// If opposite appearance doesnt match then send the default Dark Appearance
+	err := fmt.Errorf("unknown appearance name: %s", name)
+	return "NSAppearanceNameDarkAqua", err
 }
 
 // isAppearanceDark reports whether the current window appearance
 // corresponds to a dark macOS appearance.
 func (w *macosWebviewWindow) isAppearanceDark() bool {
-	appr := w.getAppearanceName()
+	appr := w.getEffectiveAppearanceName()
 	// Check if the appearance name contains "Dark"
 	switch appr {
 	case "NSAppearanceNameDarkAqua",
@@ -44,13 +32,14 @@ func (w *macosWebviewWindow) isAppearanceDark() bool {
 	}
 }
 
-// Sync Window Apperance with Application Theme if the window is set to follow application theme
+// syncTheme synchronizes the window's appearance with the application-wide theme
+// when the window is configured to follow global application theme settings.
 func (w *macosWebviewWindow) syncTheme() {
 	if !w.parent.followApplicationTheme {
 		return
 	}
 
-	currentAppearance := w.getAppearanceName()
+	currentAppearance := w.getEffectiveAppearanceName()
 	currentDark := w.isAppearanceDark()
 
 	switch globalApplication.theme {
@@ -70,6 +59,8 @@ func (w *macosWebviewWindow) syncTheme() {
 	}
 }
 
+// setTheme sets the theme for the window. If WinThemeApplication is provided,
+// the window will follow global application theme settings.
 func (w *macosWebviewWindow) setTheme(theme WinTheme) {
 	switch theme {
 	case WinThemeSystem:
@@ -82,7 +73,7 @@ func (w *macosWebviewWindow) setTheme(theme WinTheme) {
 		return
 	}
 
-	currentAppearance := w.getAppearanceName()
+	currentAppearance := w.getEffectiveAppearanceName()
 	isDark := w.isAppearanceDark()
 	w.parent.followApplicationTheme = false
 
@@ -100,12 +91,15 @@ func (w *macosWebviewWindow) setTheme(theme WinTheme) {
 	}
 }
 
+// getTheme returns the current theme configuration for the window.
 func (w *macosWebviewWindow) getTheme() WinTheme {
 	if w.parent.followApplicationTheme {
 		return WinThemeApplication
 	}
 
-	if !w.hasExplicitAppearance() {
+	explicitAppearance := w.getExplicitAppearanceName()
+
+	if !explicitAppearance {
 		return WinThemeSystem
 	}
 

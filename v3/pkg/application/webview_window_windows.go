@@ -81,6 +81,9 @@ type windowsWebviewWindow struct {
 
 	// Modal window tracking
 	parentHWND w32.HWND // Parent window HWND when this window is a modal
+
+	// Theme - Record the resolved theme for Windows
+	theme Theme
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
@@ -505,28 +508,25 @@ func (w *windowsWebviewWindow) run() {
 	}
 
 	// Process the theme
-	switch options.Windows.Theme {
-	case SystemDefault:
-		isDark := w32.IsCurrentlyDarkMode()
-		if isDark {
-			w32.AllowDarkModeForWindow(w.hwnd, true)
-		}
-		w.updateTheme(isDark)
-		// Don't initialize default dark theme here if custom theme might be set
-		// The updateTheme call above will handle both default and custom themes
-		w.parent.onApplicationEvent(events.Windows.SystemThemeChanged, func(*ApplicationEvent) {
-			InvokeAsync(func() {
-				w.updateTheme(w32.IsCurrentlyDarkMode())
-			})
-		})
-	case Light:
-		w.updateTheme(false)
-	case Dark:
-		w32.AllowDarkModeForWindow(w.hwnd, true)
-		w.updateTheme(true)
-		// Don't initialize default dark theme here if custom theme might be set
-		// The updateTheme call above will handle custom themes
+	// Resolve the Complicated App State to a simple theme
+	w.parent.followApplicationTheme = false
+	if options.Windows.Theme == WinThemeApplication || options.Windows.Theme == "" {
+		w.parent.followApplicationTheme = true
 	}
+
+	// System, Dark, Light - Resolved Theme to Apply
+	w.theme = w.resolveTheme()
+	w.syncTheme()
+
+	// Always listen to OS theme changes but only update the theme if we are following the application theme
+	w.parent.onApplicationEvent(events.Windows.SystemThemeChanged, func(*ApplicationEvent) {
+		if w.theme != SystemDefault {
+			return
+		}
+		InvokeAsync(func() {
+			w.updateTheme(w32.IsCurrentlyDarkMode())
+		})
+	})
 
 	w.setBackgroundColour(options.BackgroundColour)
 	if options.BackgroundType == BackgroundTypeTranslucent {
