@@ -98,7 +98,7 @@ func (w *macosWebviewWindow) getTheme() WinTheme {
 
 	explicitAppearance := w.getExplicitAppearanceName()
 
-	if !explicitAppearance {
+	if explicitAppearance == "" {
 		return WinThemeSystem
 	}
 

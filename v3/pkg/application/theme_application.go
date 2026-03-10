@@ -7,9 +7,9 @@ const (
 	// AppSystemDefault follows the system theme (light or dark).
 	AppSystemDefault AppTheme = "system"
 	// AppDark forces the application to use a dark theme.
-	AppDark          AppTheme = "dark"
+	AppDark AppTheme = "dark"
 	// AppLight forces the application to use a light theme.
-	AppLight         AppTheme = "light"
+	AppLight AppTheme = "light"
 )
 
 // String returns the string representation of the application theme.
@@ -48,7 +48,5 @@ func (a *App) SetTheme(theme AppTheme) {
 	}
 
 	// Notify listeners of the theme change
-	a.Event.Emit("applicationThemeChanged", map[string]any{
-		"theme": a.theme.String(),
-	})
+	a.Event.Emit("common:ApplicationThemeChanged")
 }

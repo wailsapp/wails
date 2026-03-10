@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -16,13 +18,12 @@ func (s *WindowService) GetAppTheme() string {
 	return s.app.GetTheme()
 }
 
-func (s *WindowService) SetWinTheme(theme string) {
+func (s *WindowService) SetWinTheme(ctx context.Context, theme string) {
 	win := s.app.Window.Current()
 	win.SetTheme((application.WinTheme(theme)))
 }
 
-func (s *WindowService) GetWinTheme() string {
-	win := s.app.Window.Current()
-	theme := win.GetTheme()
-	return theme
+func (s *WindowService) GetWinTheme(ctx context.Context) string {
+	win := ctx.Value(application.WindowKey).(application.Window)
+	return win.GetTheme()
 }

@@ -183,6 +183,12 @@ func New(appOptions Options) *App {
 		}
 	}
 
+	// Set the application Theme
+	result.theme = AppSystemDefault
+	if appOptions.Theme != "" {
+		result.theme = appOptions.Theme
+	}
+
 	return result
 }
 
@@ -645,12 +651,6 @@ func (a *App) Run() error {
 	}
 	if a.options.Icon != nil {
 		a.impl.setIcon(a.options.Icon)
-	}
-
-	// Set the application Theme
-	a.theme = AppSystemDefault
-	if a.options.Theme != "" {
-		a.theme = a.options.Theme
 	}
 
 	return a.impl.run()

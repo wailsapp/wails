@@ -5,26 +5,26 @@ package application
 import "github.com/wailsapp/wails/v3/pkg/w32"
 
 // resolveWindowsEffectiveTheme determines the realized Theme for the window by resolving
-// application-level and window-level theme settings.
-func resolveWindowsEffectiveTheme(winTheme WinTheme, appTheme AppTheme) Theme {
+// application-level and window-level theme settings. It also returns whether the window follows the application theme.
+func resolveWindowsEffectiveTheme(winTheme WinTheme, appTheme AppTheme) (Theme, bool) {
 	switch winTheme {
 	case WinThemeDark:
-		return Dark
+		return Dark, false
 	case WinThemeLight:
-		return Light
+		return Light, false
 	case WinThemeSystem:
-		return SystemDefault
+		return SystemDefault, false
 	default:
 		// For WinThemeApplication and/or Unset values we default to following
 		switch appTheme {
 		case AppDark:
-			return Dark
+			return Dark, true
 		case AppLight:
-			return Light
+			return Light, true
 		case AppSystemDefault:
-			return SystemDefault
+			return SystemDefault, true
 		default:
-			return SystemDefault
+			return SystemDefault, true
 		}
 	}
 }

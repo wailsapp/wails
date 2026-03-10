@@ -16,6 +16,8 @@ func main() {
 	app := application.New(application.Options{
 		Name:        "customEventProcessor Demo",
 		Description: "A demo of the customEventProcessor API",
+		// We Start With Dark Theme
+		Theme: application.AppDark,
 		Assets: application.AssetOptions{
 			Handler: application.BundledAssetFileServer(assets),
 		},
@@ -28,25 +30,35 @@ func main() {
 		},
 	})
 
-	// Listen for the theme‑change event and log the payload
-	// app.Event.On("applicationThemeChanged", func(ev *application.CustomEvent) {
-	// 	fmt.Printf("[Go] applicationThemeChanged received, data = %v\n", ev.Data)
-	// })
-
 	windowService.app = app
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Window 1",
 		Name:  "Window 1",
+		// Both Mac and Windows will follow light theme
+		Mac: application.MacWindow{
+			Appearance: "NSAppearanceNameAqua",
+		},
+		Windows: application.WindowsWindow{
+			Theme: "light",
+		},
 	})
 
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Window 2",
 		Name:  "Window 2",
+		// Both Mac and Widnows will follow Application Theme
 	})
 
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Window 3",
 		Name:  "Window 3",
+		// Both Mac and Widnows will follow Dark Theme
+		Mac: application.MacWindow{
+			Appearance: "NSAppearanceNameDarkAqua",
+		},
+		Windows: application.WindowsWindow{
+			Theme: "dark",
+		},
 	})
 
 	err := app.Run()

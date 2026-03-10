@@ -1,5 +1,5 @@
 import { Call, CancellablePromise, Create} from "/wails/runtime.js";
-import { Events } from "/wails/runtime.js";
+import { Events, Window} from "/wails/runtime.js";
 
 const resultsApp = document.getElementById("app-theme");
 const resultsWin = document.getElementById("win-theme");
@@ -38,9 +38,9 @@ document.getElementById("win-theme-light").addEventListener("click", () => setWi
 document.getElementById("win-theme-dark").addEventListener("click", () => setWinTheme("dark"));
 
 // Go Event Listeners
-Events.On("applicationThemeChanged", async (ev) => {
-    console.log("[JS] theme changed event", ev.data.theme);
-    resultsApp.innerText = ev.data.theme;
+Events.On("common:ApplicationThemeChanged", async (ev) => {
+    const appTheme = await callBinding("main.WindowService.GetAppTheme");
+    resultsApp.innerText = appTheme;
 });
 
 Events.On("common:ThemeChanged", async (ev) => {

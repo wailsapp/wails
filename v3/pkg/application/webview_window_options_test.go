@@ -297,8 +297,8 @@ func TestWindowsWindow_Defaults(t *testing.T) {
 	if opts.DisableIcon != false {
 		t.Error("DisableIcon should default to false")
 	}
-	if opts.Theme != WinThemeApplication {
-		t.Error("Theme should default to SystemDefault")
+	if opts.Theme != "" {
+		t.Error("Theme should default to empty string")
 	}
 }
 

@@ -508,21 +508,27 @@ func (w *windowsWebviewWindow) run() {
 	}
 
 	// Process the theme
-	// Resolve the Complicated App State to a simple theme
-	w.parent.followApplicationTheme = false
-	if options.Windows.Theme == WinThemeApplication || options.Windows.Theme == "" {
-		w.parent.followApplicationTheme = true
-	}
-
 	// System, Dark, Light - Resolved Theme to Apply
-	w.theme = resolveWindowsEffectiveTheme(options.Windows.Theme, globalApplication.theme)
-	w.syncTheme()
+	theme, followAppTheme := resolveWindowsEffectiveTheme(options.Windows.Theme, globalApplication.theme)
+	w.theme = theme
+	w.parent.followApplicationTheme = followAppTheme
+
+	switch w.theme {
+	case SystemDefault:
+		w.updateTheme(w32.IsCurrentlyDarkMode())
+	case Dark:
+		w32.AllowDarkModeForWindow(w.hwnd, true)
+		w.updateTheme(true)
+	case Light:
+		w.updateTheme(false)
+	}
 
 	// Always listen to OS theme changes but only update the theme if we are following the application theme
 	w.parent.onApplicationEvent(events.Windows.SystemThemeChanged, func(*ApplicationEvent) {
-		if w.theme != SystemDefault {
+		if !w.parent.followApplicationTheme || w.theme != SystemDefault {
 			return
 		}
+
 		InvokeAsync(func() {
 			w.updateTheme(w32.IsCurrentlyDarkMode())
 		})

@@ -1426,13 +1426,20 @@ func (w *macosWebviewWindow) run() {
 			C.windowSetHideToolbarSeparator(w.nsWindow, C.bool(titleBarOptions.HideToolbarSeparator))
 		}
 
-		// if macOptions.Appearance != "" {
-		// 	C.windowSetAppearanceTypeByName(w.nsWindow, C.CString(string(macOptions.Appearance)))
-		// }
+		// Does the Window follow Application Theme
 		w.parent.followApplicationTheme = true
 		if macOptions.Appearance != "" {
+			// Explicit Appearance has been provided
 			w.parent.followApplicationTheme = false
 			w.setAppearanceByName(macOptions.Appearance)
+		} else {
+			// If we do follow Application Resolve the Window to follow Application Theme
+			switch globalApplication.theme {
+			case AppDark:
+				w.setAppearanceByName(NSAppearanceNameDarkAqua)
+			case AppLight:
+				w.setAppearanceByName(NSAppearanceNameAqua)
+			}
 		}
 
 		// Only apply invisible title bar when the native drag area is hidden
