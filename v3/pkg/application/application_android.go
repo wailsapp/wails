@@ -240,6 +240,12 @@ func (a *App) isDarkMode() bool {
 	return false
 }
 
+// setTheme sets the application-wide theme.
+// Note: This is currently a stub implementation for Android.
+func (a *App) setTheme(theme AppTheme) {
+	// TODO: Implement theme setting for Android
+}
+
 func (a *App) isWindows() bool {
 	return false
 }

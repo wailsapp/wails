@@ -299,6 +299,12 @@ func (a *linuxApp) isDarkMode() bool {
 	return colorScheme == 1
 }
 
+// setTheme sets the application-wide theme.
+// Note: This is currently a stub implementation for Linux GTK4.
+func (a *linuxApp) setTheme(theme AppTheme) {
+	// TODO: Implement theme setting for Linux
+}
+
 func (a *linuxApp) getAccentColor() string {
 	return "rgb(0,122,255)"
 }

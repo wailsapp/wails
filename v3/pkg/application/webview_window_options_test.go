@@ -82,15 +82,18 @@ func TestBackdropType_Constants(t *testing.T) {
 	}
 }
 
-func TestTheme_Constants(t *testing.T) {
-	if SystemDefault != 0 {
-		t.Error("SystemDefault should be 0")
+func TestWinTheme_Constants(t *testing.T) {
+	if WinAppDefault != "application" {
+		t.Error("WinThemeApplication should be application")
 	}
-	if Dark != 1 {
-		t.Error("Dark should be 1")
+	if WinDark != "dark" {
+		t.Error("WinThemeDark should be dark")
 	}
-	if Light != 2 {
-		t.Error("Light should be 2")
+	if WinLight != "light" {
+		t.Error("WinThemeLight should be light")
+	}
+	if WinSystemDefault != "system" {
+		t.Error("WinThemeSystem should be system")
 	}
 }
 
@@ -294,8 +297,8 @@ func TestWindowsWindow_Defaults(t *testing.T) {
 	if opts.DisableIcon != false {
 		t.Error("DisableIcon should default to false")
 	}
-	if opts.Theme != SystemDefault {
-		t.Error("Theme should default to SystemDefault")
+	if opts.Theme != "" {
+		t.Error("Theme should default to empty string")
 	}
 }
 

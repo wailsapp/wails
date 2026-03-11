@@ -240,9 +240,14 @@ type WindowsWindow struct {
 	// Default: false
 	DisableIcon bool
 
-	// Theme (Dark / Light / SystemDefault)
-	// Default: SystemDefault - The application will follow system theme changes.
-	Theme Theme
+	// Theme specifies the theme preference for this window.
+	//   - WinAppDefault (default): the window follows the application theme
+	//   - WinSystemDefault: the window follows the operating system theme
+	//   - WinDark: the window uses dark mode
+	//   - WinLight: the window uses light mode
+	// If not specified, the window defaults to WinAppDefault and inherits
+	// the application theme.
+	Theme WinTheme
 
 	// Specify custom colours to use for dark/light mode
 	// Default: nil
@@ -298,17 +303,6 @@ type WindowsWindow struct {
 	// PasswordAutosaveEnabled enables autosaving passwords
 	PasswordAutosaveEnabled bool
 }
-
-type Theme int
-
-const (
-	// SystemDefault will use whatever the system theme is. The application will follow system theme changes.
-	SystemDefault Theme = 0
-	// Dark Mode
-	Dark Theme = 1
-	// Light Mode
-	Light Theme = 2
-)
 
 type WindowTheme struct {
 	// BorderColour is the colour of the window border

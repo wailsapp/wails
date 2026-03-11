@@ -1,0 +1,58 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --main-color: rgb(255, 255, 255);
+    --secondary-color: rgb(235, 235, 235);
+    --text-color: rgb(0, 0, 0);
+}
+
+.dark-theme {
+    --main-color: rgb(41, 41, 41);
+    --secondary-color: rgb(66, 66, 66);
+    --text-color: rgb(255, 255, 255);
+}
+
+body {
+    user-select: none;
+    -ms-user-select: none;
+    -webkit-user-select: none;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    color: var(--text-color);
+}
+
+.btn {
+    padding: 5px 10px;
+}
+
+.wrapper {
+    display: flex;
+    flex-direction: row;
+    width: 100vw;
+    height: 100vh;
+    gap: 1px;
+
+    background-color: var(--secondary-color);
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    width: 50%;
+
+    background-color: var(--main-color);
+}
+
+.control-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+}

@@ -326,6 +326,12 @@ func (h *serverApp) isDarkMode() bool {
 	return false
 }
 
+// setTheme sets the application-wide theme.
+// Note: This is currently a stub implementation for server mode.
+func (h *serverApp) setTheme(theme AppTheme) {
+	// TODO: Implement theme setting for Server
+}
+
 // getAccentColor returns empty string in server mode.
 func (h *serverApp) getAccentColor() string {
 	return ""
@@ -446,21 +452,27 @@ type serverSystemTray struct {
 	parent *SystemTray
 }
 
-func (t *serverSystemTray) setLabel(label string)             {}
-func (t *serverSystemTray) setTooltip(tooltip string)         {}
-func (t *serverSystemTray) run()                              {}
-func (t *serverSystemTray) setIcon(icon []byte)               {}
-func (t *serverSystemTray) setMenu(menu *Menu)                {}
-func (t *serverSystemTray) setIconPosition(pos IconPosition)  {}
-func (t *serverSystemTray) setTemplateIcon(icon []byte)       {}
-func (t *serverSystemTray) destroy()                          {}
-func (t *serverSystemTray) setDarkModeIcon(icon []byte)       {}
-func (t *serverSystemTray) bounds() (*Rect, error)            { return nil, errors.New("system tray not available in server mode") }
-func (t *serverSystemTray) getScreen() (*Screen, error)       { return nil, errors.New("system tray not available in server mode") }
-func (t *serverSystemTray) positionWindow(w Window, o int) error { return errors.New("system tray not available in server mode") }
-func (t *serverSystemTray) openMenu()                         {}
-func (t *serverSystemTray) Show()                             {}
-func (t *serverSystemTray) Hide()                             {}
+func (t *serverSystemTray) setLabel(label string)            {}
+func (t *serverSystemTray) setTooltip(tooltip string)        {}
+func (t *serverSystemTray) run()                             {}
+func (t *serverSystemTray) setIcon(icon []byte)              {}
+func (t *serverSystemTray) setMenu(menu *Menu)               {}
+func (t *serverSystemTray) setIconPosition(pos IconPosition) {}
+func (t *serverSystemTray) setTemplateIcon(icon []byte)      {}
+func (t *serverSystemTray) destroy()                         {}
+func (t *serverSystemTray) setDarkModeIcon(icon []byte)      {}
+func (t *serverSystemTray) bounds() (*Rect, error) {
+	return nil, errors.New("system tray not available in server mode")
+}
+func (t *serverSystemTray) getScreen() (*Screen, error) {
+	return nil, errors.New("system tray not available in server mode")
+}
+func (t *serverSystemTray) positionWindow(w Window, o int) error {
+	return errors.New("system tray not available in server mode")
+}
+func (t *serverSystemTray) openMenu() {}
+func (t *serverSystemTray) Show()     {}
+func (t *serverSystemTray) Hide()     {}
 
 // newWindowImpl creates a webview window implementation for server mode.
 func newWindowImpl(parent *WebviewWindow) *serverWebviewWindow {
@@ -473,82 +485,88 @@ type serverWebviewWindow struct {
 }
 
 // All webviewWindowImpl methods as no-ops for server mode
-func (w *serverWebviewWindow) setTitle(title string)                      {}
-func (w *serverWebviewWindow) setSize(width, height int)                  {}
-func (w *serverWebviewWindow) setAlwaysOnTop(alwaysOnTop bool)            {}
-func (w *serverWebviewWindow) setURL(url string)                          {}
-func (w *serverWebviewWindow) setResizable(resizable bool)                {}
-func (w *serverWebviewWindow) setMinSize(width, height int)               {}
-func (w *serverWebviewWindow) setMaxSize(width, height int)               {}
-func (w *serverWebviewWindow) execJS(js string)                           {}
-func (w *serverWebviewWindow) setBackgroundColour(color RGBA)             {}
-func (w *serverWebviewWindow) run()                                       {}
-func (w *serverWebviewWindow) center()                                    {}
-func (w *serverWebviewWindow) size() (int, int)                           { return 0, 0 }
-func (w *serverWebviewWindow) width() int                                 { return 0 }
-func (w *serverWebviewWindow) height() int                                { return 0 }
-func (w *serverWebviewWindow) destroy()                                   {}
-func (w *serverWebviewWindow) reload()                                    {}
-func (w *serverWebviewWindow) forceReload()                               {}
-func (w *serverWebviewWindow) openDevTools()                              {}
-func (w *serverWebviewWindow) zoomReset()                                 {}
-func (w *serverWebviewWindow) zoomIn()                                    {}
-func (w *serverWebviewWindow) zoomOut()                                   {}
-func (w *serverWebviewWindow) getZoom() float64                           { return 1.0 }
-func (w *serverWebviewWindow) setZoom(zoom float64)                       {}
-func (w *serverWebviewWindow) close()                                     {}
-func (w *serverWebviewWindow) zoom()                                      {}
-func (w *serverWebviewWindow) setHTML(html string)                        {}
-func (w *serverWebviewWindow) on(eventID uint)                            {}
-func (w *serverWebviewWindow) minimise()                                  {}
-func (w *serverWebviewWindow) unminimise()                                {}
-func (w *serverWebviewWindow) maximise()                                  {}
-func (w *serverWebviewWindow) unmaximise()                                {}
-func (w *serverWebviewWindow) fullscreen()                                {}
-func (w *serverWebviewWindow) unfullscreen()                              {}
-func (w *serverWebviewWindow) isMinimised() bool                          { return false }
-func (w *serverWebviewWindow) isMaximised() bool                          { return false }
-func (w *serverWebviewWindow) isFullscreen() bool                         { return false }
-func (w *serverWebviewWindow) isNormal() bool                             { return true }
-func (w *serverWebviewWindow) isVisible() bool                            { return false }
-func (w *serverWebviewWindow) isFocused() bool                            { return false }
-func (w *serverWebviewWindow) focus()                                     {}
-func (w *serverWebviewWindow) show()                                      {}
-func (w *serverWebviewWindow) hide()                                      {}
-func (w *serverWebviewWindow) getScreen() (*Screen, error)                { return nil, errors.New("screens not available in server mode") }
-func (w *serverWebviewWindow) setFrameless(frameless bool)                {}
+func (w *serverWebviewWindow) setTitle(title string)           {}
+func (w *serverWebviewWindow) setSize(width, height int)       {}
+func (w *serverWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {}
+func (w *serverWebviewWindow) setURL(url string)               {}
+func (w *serverWebviewWindow) setResizable(resizable bool)     {}
+func (w *serverWebviewWindow) setMinSize(width, height int)    {}
+func (w *serverWebviewWindow) setMaxSize(width, height int)    {}
+func (w *serverWebviewWindow) execJS(js string)                {}
+func (w *serverWebviewWindow) setBackgroundColour(color RGBA)  {}
+func (w *serverWebviewWindow) run()                            {}
+func (w *serverWebviewWindow) center()                         {}
+func (w *serverWebviewWindow) size() (int, int)                { return 0, 0 }
+func (w *serverWebviewWindow) width() int                      { return 0 }
+func (w *serverWebviewWindow) height() int                     { return 0 }
+func (w *serverWebviewWindow) destroy()                        {}
+func (w *serverWebviewWindow) reload()                         {}
+func (w *serverWebviewWindow) forceReload()                    {}
+func (w *serverWebviewWindow) openDevTools()                   {}
+func (w *serverWebviewWindow) zoomReset()                      {}
+func (w *serverWebviewWindow) zoomIn()                         {}
+func (w *serverWebviewWindow) zoomOut()                        {}
+func (w *serverWebviewWindow) getZoom() float64                { return 1.0 }
+func (w *serverWebviewWindow) setZoom(zoom float64)            {}
+func (w *serverWebviewWindow) close()                          {}
+func (w *serverWebviewWindow) zoom()                           {}
+func (w *serverWebviewWindow) setHTML(html string)             {}
+func (w *serverWebviewWindow) on(eventID uint)                 {}
+func (w *serverWebviewWindow) minimise()                       {}
+func (w *serverWebviewWindow) unminimise()                     {}
+func (w *serverWebviewWindow) maximise()                       {}
+func (w *serverWebviewWindow) unmaximise()                     {}
+func (w *serverWebviewWindow) fullscreen()                     {}
+func (w *serverWebviewWindow) unfullscreen()                   {}
+func (w *serverWebviewWindow) isMinimised() bool               { return false }
+func (w *serverWebviewWindow) isMaximised() bool               { return false }
+func (w *serverWebviewWindow) isFullscreen() bool              { return false }
+func (w *serverWebviewWindow) isNormal() bool                  { return true }
+func (w *serverWebviewWindow) isVisible() bool                 { return false }
+func (w *serverWebviewWindow) isFocused() bool                 { return false }
+func (w *serverWebviewWindow) focus()                          {}
+func (w *serverWebviewWindow) show()                           {}
+func (w *serverWebviewWindow) hide()                           {}
+func (w *serverWebviewWindow) getScreen() (*Screen, error) {
+	return nil, errors.New("screens not available in server mode")
+}
+func (w *serverWebviewWindow) setFrameless(frameless bool)                       {}
 func (w *serverWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData) {}
-func (w *serverWebviewWindow) nativeWindow() unsafe.Pointer               { return nil }
-func (w *serverWebviewWindow) startDrag() error                           { return errors.New("drag not available in server mode") }
-func (w *serverWebviewWindow) startResize(border string) error            { return errors.New("resize not available in server mode") }
-func (w *serverWebviewWindow) print() error                               { return errors.New("print not available in server mode") }
-func (w *serverWebviewWindow) setEnabled(enabled bool)                    {}
-func (w *serverWebviewWindow) physicalBounds() Rect                       { return Rect{} }
-func (w *serverWebviewWindow) setPhysicalBounds(bounds Rect)              {}
-func (w *serverWebviewWindow) bounds() Rect                               { return Rect{} }
-func (w *serverWebviewWindow) setBounds(bounds Rect)                      {}
-func (w *serverWebviewWindow) position() (int, int)                       { return 0, 0 }
-func (w *serverWebviewWindow) setPosition(x int, y int)                   {}
-func (w *serverWebviewWindow) relativePosition() (int, int)               { return 0, 0 }
-func (w *serverWebviewWindow) setRelativePosition(x int, y int)           {}
-func (w *serverWebviewWindow) flash(enabled bool)                         {}
-func (w *serverWebviewWindow) handleKeyEvent(acceleratorString string)    {}
-func (w *serverWebviewWindow) getBorderSizes() *LRTB                      { return &LRTB{} }
-func (w *serverWebviewWindow) setMinimiseButtonState(state ButtonState)   {}
-func (w *serverWebviewWindow) setMaximiseButtonState(state ButtonState)   {}
-func (w *serverWebviewWindow) setCloseButtonState(state ButtonState)      {}
-func (w *serverWebviewWindow) isIgnoreMouseEvents() bool                  { return false }
-func (w *serverWebviewWindow) setIgnoreMouseEvents(ignore bool)           {}
-func (w *serverWebviewWindow) cut()                                       {}
-func (w *serverWebviewWindow) copy()                                      {}
-func (w *serverWebviewWindow) paste()                                     {}
-func (w *serverWebviewWindow) undo()                                      {}
-func (w *serverWebviewWindow) delete()                                    {}
-func (w *serverWebviewWindow) selectAll()                                 {}
-func (w *serverWebviewWindow) redo()                                      {}
-func (w *serverWebviewWindow) showMenuBar()                               {}
-func (w *serverWebviewWindow) hideMenuBar()                               {}
-func (w *serverWebviewWindow) toggleMenuBar()                             {}
-func (w *serverWebviewWindow) setMenu(menu *Menu)                         {}
-func (w *serverWebviewWindow) snapAssist()                                {}
-func (w *serverWebviewWindow) setContentProtection(enabled bool)          {}
+func (w *serverWebviewWindow) nativeWindow() unsafe.Pointer                      { return nil }
+func (w *serverWebviewWindow) startDrag() error {
+	return errors.New("drag not available in server mode")
+}
+func (w *serverWebviewWindow) startResize(border string) error {
+	return errors.New("resize not available in server mode")
+}
+func (w *serverWebviewWindow) print() error                             { return errors.New("print not available in server mode") }
+func (w *serverWebviewWindow) setEnabled(enabled bool)                  {}
+func (w *serverWebviewWindow) physicalBounds() Rect                     { return Rect{} }
+func (w *serverWebviewWindow) setPhysicalBounds(bounds Rect)            {}
+func (w *serverWebviewWindow) bounds() Rect                             { return Rect{} }
+func (w *serverWebviewWindow) setBounds(bounds Rect)                    {}
+func (w *serverWebviewWindow) position() (int, int)                     { return 0, 0 }
+func (w *serverWebviewWindow) setPosition(x int, y int)                 {}
+func (w *serverWebviewWindow) relativePosition() (int, int)             { return 0, 0 }
+func (w *serverWebviewWindow) setRelativePosition(x int, y int)         {}
+func (w *serverWebviewWindow) flash(enabled bool)                       {}
+func (w *serverWebviewWindow) handleKeyEvent(acceleratorString string)  {}
+func (w *serverWebviewWindow) getBorderSizes() *LRTB                    { return &LRTB{} }
+func (w *serverWebviewWindow) setMinimiseButtonState(state ButtonState) {}
+func (w *serverWebviewWindow) setMaximiseButtonState(state ButtonState) {}
+func (w *serverWebviewWindow) setCloseButtonState(state ButtonState)    {}
+func (w *serverWebviewWindow) isIgnoreMouseEvents() bool                { return false }
+func (w *serverWebviewWindow) setIgnoreMouseEvents(ignore bool)         {}
+func (w *serverWebviewWindow) cut()                                     {}
+func (w *serverWebviewWindow) copy()                                    {}
+func (w *serverWebviewWindow) paste()                                   {}
+func (w *serverWebviewWindow) undo()                                    {}
+func (w *serverWebviewWindow) delete()                                  {}
+func (w *serverWebviewWindow) selectAll()                               {}
+func (w *serverWebviewWindow) redo()                                    {}
+func (w *serverWebviewWindow) showMenuBar()                             {}
+func (w *serverWebviewWindow) hideMenuBar()                             {}
+func (w *serverWebviewWindow) toggleMenuBar()                           {}
+func (w *serverWebviewWindow) setMenu(menu *Menu)                       {}
+func (w *serverWebviewWindow) snapAssist()                              {}
+func (w *serverWebviewWindow) setContentProtection(enabled bool)        {}
