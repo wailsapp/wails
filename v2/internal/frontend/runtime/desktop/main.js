@@ -27,6 +27,7 @@ import * as Browser from "./browser";
 import * as Clipboard from "./clipboard";
 import * as DragAndDrop from "./draganddrop";
 import * as ContextMenu from "./contextmenu";
+import * as Notifications from "./notifications";
 
 export function Quit() {
     window.WailsInvoke('Q');
@@ -52,6 +53,7 @@ window.runtime = {
     ...Screen,
     ...Clipboard,
     ...DragAndDrop,
+    ...Notifications,
     EventsOn,
     EventsOnce,
     EventsOnMultiple,
