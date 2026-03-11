@@ -62,11 +62,11 @@ func (w *macosWebviewWindow) syncTheme() {
 // the window will follow global application theme settings.
 func (w *macosWebviewWindow) setTheme(theme WinTheme) {
 	switch theme {
-	case WinThemeSystem:
+	case WinSystemDefault:
 		w.parent.followApplicationTheme = false
 		w.clearAppearance()
 		return
-	case WinThemeApplication:
+	case WinAppDefault:
 		w.parent.followApplicationTheme = true
 		w.syncTheme()
 		return
@@ -77,12 +77,12 @@ func (w *macosWebviewWindow) setTheme(theme WinTheme) {
 	w.parent.followApplicationTheme = false
 
 	switch theme {
-	case WinThemeDark:
+	case WinDark:
 		if !isDark {
 			appr, _ := getOppositeMacAppearance(currentAppearance)
 			w.setAppearanceByName(appr)
 		}
-	case WinThemeLight:
+	case WinLight:
 		if isDark {
 			appr, _ := getOppositeMacAppearance(currentAppearance)
 			w.setAppearanceByName(appr)
@@ -93,18 +93,18 @@ func (w *macosWebviewWindow) setTheme(theme WinTheme) {
 // getTheme returns the current theme configuration for the window.
 func (w *macosWebviewWindow) getTheme() WinTheme {
 	if w.parent.followApplicationTheme {
-		return WinThemeApplication
+		return WinAppDefault
 	}
 
 	explicitAppearance := w.getExplicitAppearanceName()
 
 	if explicitAppearance == "" {
-		return WinThemeSystem
+		return WinSystemDefault
 	}
 
 	if isMacAppearanceDark(w.getEffectiveAppearanceName()) {
-		return WinThemeDark
+		return WinDark
 	}
 
-	return WinThemeLight
+	return WinLight
 }
