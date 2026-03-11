@@ -266,7 +266,9 @@ func (m *macosApp) setIcon(icon []byte) {
 // setTheme sets the application-wide theme by synchronizing the theme
 // across all open windows.
 func (m *macosApp) setTheme(theme AppTheme) {
-	// Cycle thorougfh indiviudal window themes to trigger theme resolution
+	// Cycle through individual window themes to trigger theme resolution
+	m.parent.windowsLock.RLock()
+	defer m.parent.windowsLock.RUnlock()
 	for _, window := range m.parent.windows {
 		if webviewWindow, ok := window.(*WebviewWindow); ok {
 			if impl, ok := webviewWindow.impl.(*macosWebviewWindow); ok {

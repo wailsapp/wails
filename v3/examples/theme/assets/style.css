@@ -31,7 +31,6 @@ body {
 .wrapper {
     display: flex;
     flex-direction: row;
-    gap: 50px;
     width: 100vw;
     height: 100vh;
     gap: 1px;

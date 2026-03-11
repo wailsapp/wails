@@ -240,8 +240,13 @@ type WindowsWindow struct {
 	// Default: false
 	DisableIcon bool
 
-	// Theme (Application / Dark / Light / SystemDefault)
-	// Default: SystemDefault - The application will follow system theme changes.
+	// Theme specifies the theme preference for this window.
+	//   - WinAppDefault (default): the window follows the application theme
+	//   - WinSystemDefault: the window follows the operating system theme
+	//   - WinDark: the window uses dark mode
+	//   - WinLight: the window uses light mode
+	// If not specified, the window defaults to WinAppDefault and inherits
+	// the application theme.
 	Theme WinTheme
 
 	// Specify custom colours to use for dark/light mode

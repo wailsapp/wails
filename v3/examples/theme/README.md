@@ -1,12 +1,12 @@
 ### Theme System for V3 (Alpha Feature)
 
-This PR introduces the foundational **Theme system** for WINDOWS and MACOS theming in V3.
+This PR introduces the foundational **Theme system** for Windows and macOS theming in V3.
 
 ---
 
 ### Theme Architecture: Intent vs. Resolution
 
-This system implements a strict separation between **Theme Intent** (what the developer/user wants) and **Theme Resolution** (the actual values sent to the operating system APIs especially in case of Windows OS). 
+This system implements a strict separation between **Theme Intent** (what the developer/user wants) and **Theme Resolution** (the actual values sent to the operating system APIs, especially on Windows). 
 
 To achieve this cleanly, the architecture introduces three distinct theme enums across the application lifecycle:
 
@@ -15,12 +15,12 @@ To achieve this cleanly, the architecture introduces three distinct theme enums 
 
 `AppTheme` represents the global theme preference for the entire application. It resolves to a string-based enum for maximum flexibility.
 - **Available Values:** `AppSystemDefault` (Follow OS), `AppDark` (Force Dark), `AppLight` (Force Light).
-- **Behavior:** This value is initialized via `App.Options.Theme` and stored in `App.theme`. It dictates the fallback behavior for all windows unless explicitly overridden. It's value can be read via `app.GetTheme()` and set via `app.SetTheme()`.
+- **Behavior:** This value is initialized via `App.Options.Theme` and stored in `App.theme`. It dictates the fallback behavior for all windows unless explicitly overridden. Its value can be read via `app.GetTheme()` and set via `app.SetTheme()`.
 
 #### 2. `WinTheme` (Window Level Intent)
 *Defined in `theme_window.go`*
 
-`WinTheme` represents the theme preference for a specific, individual window cross-platform. It is also a string-based enum.
+`WinTheme` represents the theme preference for an individual window across platforms. It is also a string-based enum.
 - **Available Values:**
   - `WinThemeApplication` - Inherit the `AppTheme` resolving logic (Default).
   - `WinThemeSystem` - Force the window to follow the OS theme, completely ignoring the `AppTheme`.
@@ -62,28 +62,28 @@ This strict unidirectional flow guarantees that the frontend developer only inte
 
 ### macOS Theme Handling (Darwin)
 
-MacOS handles light and dark Themes by managing `NSAppearance`. macOS has different Appearances for both light and dark themes, such as `NSAppearanceNameAqua` (light) vs. `NSAppearanceNameDarkAqua` (dark) or their accessibility high-contrast equivalents.
+macOS handles light and dark themes by managing `NSAppearance`. macOS has different Appearances for both light and dark themes, such as `NSAppearanceNameAqua` (light) vs. `NSAppearanceNameDarkAqua` (dark) or their accessibility high-contrast equivalents.
 
-The macOS implementation handles light/dark/system swicthing by following the exact same Intent vs. Resolution flow as Windows, however rather than store the resolved theme, **it infers the resolved theme from Internal OS Mechanics.**
+The macOS implementation handles light/dark/system switching by following the exact same Intent vs. Resolution flow as Windows, however, rather than storing the resolved theme, **it infers the resolved theme from Internal OS Mechanics.**
 
-MacOS allows us to access the Appearance and Effective Appearance of the current window, and we use this to determine the current theme dynamically:
+macOS allows us to access the Appearance and Effective Appearance of the current window, and we use this to determine the current theme dynamically:
 
 1. We utilize `NSAppearance` names to represent UI appearance.
 2. The theme system divides different `NSAppearance` instances into light and dark variants.
 
-**MacOS Initialization & Resolution:**
+**macOS Initialization & Resolution:**
 - If the user does *not* set an explicit appearance in the Mac window options, we assume the window should follow the app, and `followApplicationTheme` is set to `true`.
 - If the Application's theme intent is System Default, we do nothing and keep appearance = `""` (which causes macOS to naturally inherit the OS appearance).
 - If the Application's theme intent is Light or Dark, we assign the corresponding Light or Dark appearance to the window.
 - Conversely, if the user explicitly set an appearance (e.g., `appearance = "NSAppearanceNameAqua"`) during window creation, `followApplicationTheme` is `false`, and we force that explicit appearance.
 
 **Inferring State for `GetTheme()` and `SetTheme()`:**
-Instead of saving what theme the window is, `win.GetTheme()` reverse-engineers the intent by querying macOS:
+Instead of saving what theme the window is, `win.GetTheme()` infers the intent by querying macOS:
 1. If `followApplicationTheme` is `true`, immediately return `WinThemeApplication`.
 2. If it is `false`, we check the window's explicit macOS appearance. If it represents an empty string (`""`), it means we are following the system, returning `WinThemeSystem`.
 3. If the appearance is explicitly populated, we check if that specific macOS Appearance is a dark variant or light variant, and return `WinThemeDark` or `WinThemeLight` accordingly.
 
-This reverse-inference means our Window struct stays incredibly lightweight, relying directly on the native OS source-of-truth.
+This inference keeps the Window struct lightweight, relying directly on the native OS as the source of truth.
 
 ---
 
@@ -104,11 +104,11 @@ This reverse-inference means our Window struct stays incredibly lightweight, rel
 6. `application_android.go`
 7. `application_ios.go`
 8. `application_linux.go`
-9. `application_linus_gtk4.go`
+9. `application_linux_gtk4.go`
 10. `application_server.go`
 
 ### Files Created
 1. `theme_application.go`
 2. `theme_window.go`
-4. `theme_webview_window_darwin.go`
-5. `theme_webview_window_windows.go`
+3. `theme_webview_window_darwin.go`
+4. `theme_webview_window_windows.go`

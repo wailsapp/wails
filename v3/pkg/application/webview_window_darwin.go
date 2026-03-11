@@ -1338,6 +1338,8 @@ func (w *macosWebviewWindow) getExplicitAppearanceName() string {
 
 // setAppearanceByName applies an explicit macOS appearance override
 // to the window.
+// This is dispatched asynchronously to the main thread, consistent with other
+// window setter operations in this file.
 func (w *macosWebviewWindow) setAppearanceByName(appearanceName MacAppearanceType) {
 	// Dispatching on GlobalApplication's main thread to ensure that the window is fully initialized before we try to set the appearance
 	// These are utilized in an event listener hence explicitly stating globalApplication
@@ -1348,6 +1350,8 @@ func (w *macosWebviewWindow) setAppearanceByName(appearanceName MacAppearanceTyp
 
 // clearAppearance removes any explicit appearance override from the window.
 // Once cleared, the window implicitly follows the system appearance.
+// This is dispatched asynchronously to the main thread, consistent with other
+// window setter operations in this file.
 func (w *macosWebviewWindow) clearAppearance() {
 	globalApplication.dispatchOnMainThread(func() {
 		C.windowClearAppearanceType(w.nsWindow)

@@ -1,12 +1,13 @@
 package application
 
-type Theme int
+type theme int
 
+// theme set to internal unexported enum
 const (
-	// SystemDefault will use whatever the system theme is. The application will follow system theme changes.
-	SystemDefault Theme = 0
-	// Dark Mode
-	Dark Theme = 1
-	// Light Mode
-	Light Theme = 2
+	// systemDefault will use whatever the system theme is. The application will follow system theme changes.
+	systemDefault theme = 0
+	// dark Mode
+	dark theme = 1
+	// light Mode
+	light theme = 2
 )

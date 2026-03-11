@@ -83,16 +83,16 @@ func TestBackdropType_Constants(t *testing.T) {
 }
 
 func TestWinTheme_Constants(t *testing.T) {
-	if WinThemeApplication != "application" {
+	if WinAppDefault != "application" {
 		t.Error("WinThemeApplication should be application")
 	}
-	if WinThemeDark != "dark" {
+	if WinDark != "dark" {
 		t.Error("WinThemeDark should be dark")
 	}
-	if WinThemeLight != "light" {
+	if WinLight != "light" {
 		t.Error("WinThemeLight should be light")
 	}
-	if WinThemeSystem != "system" {
+	if WinSystemDefault != "system" {
 		t.Error("WinThemeSystem should be system")
 	}
 }

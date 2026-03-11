@@ -27,8 +27,8 @@ func (t AppTheme) Valid() bool {
 }
 
 // GetTheme returns the current application-level theme setting.
-func (a *App) GetTheme() string {
-	return a.theme.String()
+func (a *App) GetTheme() AppTheme {
+	return a.theme
 }
 
 // SetTheme sets the application-level theme preference.
@@ -45,8 +45,15 @@ func (a *App) SetTheme(theme AppTheme) {
 
 	if a.impl != nil {
 		a.impl.setTheme(theme)
-	}
+		// Notify listeners of the theme change
+		// Use a dedicated application theme event instead of "common:ThemeChanged".
+		// If the same event were used for both application and window theme updates,
+		// the frontend would not be able to distinguish whether the change originated
+		// from the application theme or a specific window override.
 
-	// Notify listeners of the theme change
-	a.Event.Emit("common:ApplicationThemeChanged")
+		// An alternative would be to include additional information in the event
+		// payload, but that would complicate the event structure and could require
+		// emitting updates for windows whose effective theme did not actually change.
+		a.Event.Emit("common:ApplicationThemeChanged")
+	}
 }

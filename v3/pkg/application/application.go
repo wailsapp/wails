@@ -185,7 +185,7 @@ func New(appOptions Options) *App {
 
 	// Set the application Theme
 	result.theme = AppSystemDefault
-	if appOptions.Theme != "" {
+	if appOptions.Theme.Valid() {
 		result.theme = appOptions.Theme
 	}
 

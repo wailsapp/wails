@@ -328,7 +328,7 @@ func (h *serverApp) isDarkMode() bool {
 
 // setTheme sets the application-wide theme.
 // Note: This is currently a stub implementation for server mode.
-func (a *serverApp) setTheme(theme AppTheme) {
+func (h *serverApp) setTheme(theme AppTheme) {
 	// TODO: Implement theme setting for Server
 }
 

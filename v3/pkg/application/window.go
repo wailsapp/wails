@@ -104,6 +104,6 @@ type Window interface {
 	selectAll()
 
 	// Theme methods
-	GetTheme() string
+	GetTheme() WinTheme
 	SetTheme(theme WinTheme)
 }

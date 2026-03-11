@@ -83,7 +83,7 @@ type windowsWebviewWindow struct {
 	parentHWND w32.HWND // Parent window HWND when this window is a modal
 
 	// Theme - Record the resolved theme for Windows
-	theme Theme
+	theme theme
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
@@ -514,18 +514,18 @@ func (w *windowsWebviewWindow) run() {
 	w.parent.followApplicationTheme = followAppTheme
 
 	switch w.theme {
-	case SystemDefault:
+	case systemDefault:
 		w.updateTheme(w32.IsCurrentlyDarkMode())
-	case Dark:
+	case dark:
 		w32.AllowDarkModeForWindow(w.hwnd, true)
 		w.updateTheme(true)
-	case Light:
+	case light:
 		w.updateTheme(false)
 	}
 
 	// Always listen to OS theme changes but only update the theme if we are following the application theme
 	w.parent.onApplicationEvent(events.Windows.SystemThemeChanged, func(*ApplicationEvent) {
-		if !w.parent.followApplicationTheme || w.theme != SystemDefault {
+		if w.theme != systemDefault {
 			return
 		}
 

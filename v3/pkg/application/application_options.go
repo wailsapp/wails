@@ -133,7 +133,7 @@ type Options struct {
 	//   - Web-only access without desktop dependencies
 	Server ServerOptions
 
-	// ApplicationTheme is the application theme to use for the application and any windows that follow the application theme.
+	// Theme specifies the application-wide theme used by the application and by windows that inherit the application theme.
 	Theme AppTheme
 }
 

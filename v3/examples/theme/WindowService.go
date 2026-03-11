@@ -15,15 +15,21 @@ func (s *WindowService) SetAppTheme(theme string) {
 }
 
 func (s *WindowService) GetAppTheme() string {
-	return s.app.GetTheme()
+	return s.app.GetTheme().String()
 }
 
 func (s *WindowService) SetWinTheme(ctx context.Context, theme string) {
-	win := s.app.Window.Current()
+	win := ctx.Value(application.WindowKey).(application.Window)
+	if win == nil {
+		return
+	}
 	win.SetTheme((application.WinTheme(theme)))
 }
 
 func (s *WindowService) GetWinTheme(ctx context.Context) string {
 	win := ctx.Value(application.WindowKey).(application.Window)
-	return win.GetTheme()
+	if win == nil {
+		return ""
+	}
+	return win.GetTheme().String()
 }

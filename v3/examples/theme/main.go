@@ -14,8 +14,8 @@ var assets embed.FS
 func main() {
 	windowService := &WindowService{}
 	app := application.New(application.Options{
-		Name:        "customEventProcessor Demo",
-		Description: "A demo of the customEventProcessor API",
+		Name:        "Theme Demo",
+		Description: "A demo of the theme API",
 		// We Start With Dark Theme
 		Theme: application.AppDark,
 		Assets: application.AssetOptions{
@@ -39,7 +39,7 @@ func main() {
 			Appearance: "NSAppearanceNameAqua",
 		},
 		Windows: application.WindowsWindow{
-			Theme: "light",
+			Theme: application.WinLight,
 		},
 	})
 
@@ -54,10 +54,10 @@ func main() {
 		Name:  "Window 3",
 		// Both Mac and Widnows will follow Dark Theme
 		Mac: application.MacWindow{
-			Appearance: "NSAppearanceNameDarkAqua",
+			Appearance: application.NSAppearanceNameDarkAqua,
 		},
 		Windows: application.WindowsWindow{
-			Theme: "dark",
+			Theme: application.WinDark,
 		},
 	})
 
