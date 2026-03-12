@@ -178,13 +178,13 @@ Add the following lines to `frontend/src/App.svelte`:
     showBreedPhotos = false;
 
     GetRandomImageUrl().then((result) => {
-    randomImageUrl = result
+    randomImageUrl = result;
     showRandomPhoto = true;
     });
   }
 
   function getBreedList() {
-    GetBreedList().then((result) => (breeds = result));
+    GetBreedList();
   }
 
   function getImageUrlsByBreed() {
@@ -193,7 +193,7 @@ Add the following lines to `frontend/src/App.svelte`:
     showBreedPhotos = false;
 
     GetImageUrlsByBreed(selectedBreed).then((result) => {
-    photos = result
+    photos = result;
     showBreedPhotos = true;
     });
   }
