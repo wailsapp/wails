@@ -64,7 +64,7 @@ type RandomImage struct {
 }
 
 type AllBreeds struct {
-	Message map[string]map[string][]string
+	Message map[string][]string
 	Status  string
 }
 
@@ -77,16 +77,20 @@ type ImagesByBreed struct {
 Add the following functions to `app.go` (perhaps after the existing function definitions):
 
 ```go
+// INFO: application error handling
+func handleError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func (a *App) GetRandomImageUrl() string {
 	response, err := http.Get("https://dog.ceo/api/breeds/image/random")
-	if err != nil {
-		log.Fatal(err)
-	}
+	handleError(err)
+  defer response.Body.Close()
 
 	responseData, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
+	handleError(err)
 
 	var data RandomImage
 	json.Unmarshal(responseData, &data)
@@ -98,14 +102,11 @@ func (a *App) GetBreedList() []string {
 	var breeds []string
 
 	response, err := http.Get("https://dog.ceo/api/breeds/list/all")
-	if err != nil {
-		log.Fatal(err)
-	}
+	handleError(err)
+  defer response.Body.Close()
 
 	responseData, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
+	handleError(err)
 
 	var data AllBreeds
 	json.Unmarshal(responseData, &data)
@@ -123,14 +124,11 @@ func (a *App) GetImageUrlsByBreed(breed string) []string {
 
 	url := fmt.Sprintf("%s%s%s%s", "https://dog.ceo/api/", "breed/", breed, "/images")
 	response, err := http.Get(url)
-	if err != nil {
-		log.Fatal(err)
-	}
+	handleError(err)
+  defer response.Body.Close()
 
 	responseData, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
+	handleError(err)
 
 	var data ImagesByBreed
 	json.Unmarshal(responseData, &data)
@@ -170,7 +168,7 @@ Add the following lines to `frontend/src/App.svelte`:
   let showBreedPhotos = false;
 
   function init() {
-    getBreedList();
+    getBreedList().then(result => breeds = result);
   }
 
   init();
@@ -178,8 +176,11 @@ Add the following lines to `frontend/src/App.svelte`:
   function getRandomImageUrl() {
     showRandomPhoto = false;
     showBreedPhotos = false;
-    GetRandomImageUrl().then((result) => (randomImageUrl = result));
+
+    GetRandomImageUrl().then((result) => {
+    randomImageUrl = result
     showRandomPhoto = true;
+    });
   }
 
   function getBreedList() {
@@ -190,8 +191,11 @@ Add the following lines to `frontend/src/App.svelte`:
     init();
     showRandomPhoto = false;
     showBreedPhotos = false;
-    GetImageUrlsByBreed(selectedBreed).then((result) => (photos = result));
+
+    GetImageUrlsByBreed(selectedBreed).then((result) => {
+    photos = result
     showBreedPhotos = true;
+    });
   }
 </script>
 
