@@ -4,27 +4,27 @@ sidebar_position: 10
 
 # Hello World
 
-The aim of this tutorial is to get you up and running with the most basic application using Wails. You will be able to:
+Das Ziel dieses Tutorials ist es, den Einstieg in Wails mit einer sehr grundlegenden Anwendung zu ermöglichen. Du wirst in der Lage sein:
 
-- Create a new Wails application
-- Build the application
-- Run the application
+- Eine neue Wails Anwendung zu erstellen
+- Die Anwendung zu builden
+- Die Anwendung auszuführen
 
 :::note
 
-This tutorial uses Windows as the target platform. Output will vary slightly depending on your operating system.
+Dieses Tutorial verwendet Windows als Zielplattform. Die Ausgabe variiert je nach Betriebssystem leicht.
 
 :::
 
-## Create a new Wails application
+## Eine neue Wails Anwendung zu erstellen
 
-To create a new Wails application using the default vanilla JS template, you need to run the following command:
+Um eine neue Wails-Anwendung mit der Standardvorlage für Vanilla JS zu erstellen, muss folgender Befehl ausgeführt werden:
 
 ```bash
 wails init -n helloworld
 ```
 
-You should see something similar to the following:
+Etwas Ähnliches, wie folgt, sollte zu sehen sein:
 
 ```
 Wails CLI v2.0.0
@@ -40,7 +40,7 @@ Template Support:  https://wails.io
 Initialised project 'helloworld' in 232ms.
 ```
 
-This will create a new directory called `helloworld` in the current directory. In this directory, you will find a number of files:
+Dies wird ein neues Verzeichnis namens `helloworld` im aktuellen Verzeichnis erstellen. In diesem Verzeichnis sind eine Anzahl von Dateien zu finden:
 
 ```
 build/       - Contains the build files + compiled application
@@ -52,15 +52,15 @@ go.mod       - The go module file
 go.sum       - The go module checksum file
 ```
 
-## Build the application
+## Die Anwendung zu builden
 
-To build the application, change to the new `helloworld` project directory and run the following command:
+Um die Anwendung zu builden, wechsel in das neue `helloworld` Projektverzeichnis und führe den folgenden Befehl aus:
 
 ```bash
 wails build
 ```
 
-You should see something like the following:
+Etwas Ähnliches, wie folgt, sollte zu sehen sein:
 
 ```
 Wails CLI v2.0.0
@@ -87,11 +87,11 @@ Building target: windows/amd64
 Built 'C:\Users\leaan\tutorial\helloworld\build\bin\helloworld.exe' in 10.616s.
 ```
 
-This has compiled the application and saved it in the `build/bin` directory.
+Dies hat die Anwendung kompiliert und im Verzeichnis `build/bin` gespeichert.
 
-## Run the application
+## Die Anwendung auszuführen
 
-If we view the `build/bin` directory in Windows Explorer, we should see our project binary:
+Wenn wir das Verzeichnis `build/bin` im Windows Explorer ansehen, sollten wir unsere Projektdatei sehen:
 
 ```mdx-code-block
 <div class="text--center">
@@ -103,13 +103,13 @@ If we view the `build/bin` directory in Windows Explorer, we should see our proj
 <br />
 ```
 
-We can run it by simply double-clicking the `helloworld.exe` file.
+Wir können diese durch einen Doppelklick auf die `helloworld.exe` Datei ausführen.
 
-On Mac, Wails generates a `helloworld.app` file which can be run by double-clicking it.
+Auf Mac erzeugt Wails eine `helloworld.app` Datei, die durch einen Doppelklick ausgeführt werden kann.
 
-On Linux, you can run the application using `./helloworld` from the `build/bin` directory.
+Unter Linux kann die Anwendung mit `./helloworld` aus dem `build/bin` Verzeichnis ausgeführt werden.
 
-You should see the application working as expected:
+Die Anwendung sollte wie erwartet funktionieren:
 
 ```mdx-code-block
 <div class="text--center">

@@ -1,14 +1,14 @@
-# Migrating from v1
+# Migration von v1
 
-## Overview
+## Übersicht
 
-Wails v2 is a significant change from v1. This document aims to highlight the changes and the steps in migrating an existing project.
+Wails v2 beinhaltet wesentliche Änderung gegenüber v1. Dieses Dokument zielt darauf ab, die Änderungen und Schritte bei der Migration eines bestehenden Projekts hervorzuheben.
 
-### Creating the Application
+### Erstellen der Anwendung
 
-In v1, the main application is created using `wails.CreateApp`, bindings are added with `app.Bind`, then the application is run using `app.Run()`.
+In v1 wird die Hauptanwendung mit `wails.CreateApp` erstellt. Verknüpfungen werden mit `app.Bind` hinzugefügt, die Anwendung wird dann mit `app.Run()` ausgeführt.
 
-Example:
+Beispiel:
 
 ```go title="v1"
  app := wails.CreateApp(&wails.AppConfig{
@@ -23,7 +23,7 @@ Example:
   app.Run()
 ```
 
-In v2, there is just a single method, `wails.Run()`, that accepts [application options](../reference/options.mdx#application-options).
+In v2 gibt es nur eine einzige Methode, `wails.Run()`, die [Anwendungsoptionen](../reference/options.mdx#application-options) akzeptiert.
 
 ```go title="v2"
     err := wails.Run(&options.App{
@@ -39,9 +39,9 @@ In v2, there is just a single method, `wails.Run()`, that accepts [application o
     })
 ```
 
-### Binding
+### Verknüpfungen
 
-In v1, it was possible to bind both arbitrary functions and structs. In v2, this has been simplified to only binding structs. The struct instances that were previously passed to the `Bind()` method in v1, are now specified in the `Bind` field of the [application options](../reference/options.mdx#application-options):
+In v1 war es möglich, sowohl beliebige Funktionen als auch Structs zu verknüpfen. In v2 wurde dies vereinfacht, sodass nur noch Structs angenommen werden. Die Struct Instanzen, die zuvor an die `Bind()` Methode in v1 übergeben wurden sind nun im `Bind` Feld der [Anwendungsoptionen](../reference/options.mdx#application-options) spezifiziert:
 
 ```go title="v1"
   app := wails.CreateApp(/* options */)
@@ -57,19 +57,19 @@ In v1, it was possible to bind both arbitrary functions and structs. In v2, this
     })
 ```
 
-In v1, bound methods were available to the frontend at `window.backend`. This has changed to `window.go`.``
+In v1 standen gebundene Methoden im Frontend unter `window.backend` zur Verfügung. Dies hat sich zu `window.go` geändert
 
-### Application Lifecycle
+### Anwendungslebenszyklus
 
-In v1, there were 2 special methods in a bound struct: `WailsInit()` and `WailsShutdown()`. These have been replaced with 3 lifecycle hooks as part of the [application options](../reference/options.mdx#application-options):
+In v1 gab es 2 spezielle Methoden in einem gebundenen Struct: `WailsInit()` und `WailsShutdown()`. Diese wurden durch 3 Lebenszyklushaken als Teil der [Anwendungsoptionen](../reference/options.mdx#application-options) ersetzt:
 
 - [OnStartup](../reference/options.mdx#onstartup)
 - [OnShutdown](../reference/options.mdx#onshutdown)
 - [OnDomReady](../reference/options.mdx#ondomready)
 
-Note: [OnDomReady](../reference/options.mdx#ondomready) replaces the `wails:ready` system event in v1.
+Hinweis: [OnDomReady](../reference/options.mdx#ondomready) ersetzt das `Wails:ready` Systemereignis von v1.
 
-These methods can be standard functions, but a common practice is to have them part of a struct:
+Diese Methoden können Standardfunktionen sein, aber es ist eine gängige Praxis, diese als Teil eines Structs zu definieren:
 
 ```go title="v2"
     basic := NewBasicApp()
@@ -89,11 +89,11 @@ func (b *Basic) startup(ctx context.Context) {
 ...
 ```
 
-### Runtime
+### Laufzeit
 
-The runtime in v2 is much richer than v1 with support for menus, window manipulation and better dialogs. The signature of the methods has changed slightly - please refer to the [Runtime Reference](../reference/runtime/intro.mdx).
+Die Laufzeit in v2 ist viel reicher an Funktionen als v1, mit Unterstützung für Menüs, Fenstermanipulation und besseren Dialogen. Die Benennung der Methoden hat sich leicht geändert – bitte lese dir dafür die [Laufzeitreferenz](../reference/runtime/intro.mdx) durch.
 
-In v1, the [runtime](../reference/runtime/intro.mdx) was available via a struct passed to `WailsInit()`. In v2, the runtime has been moved out to its own package. Each method in the runtime takes the `context.Context` that is passed to the [OnStartup](../reference/options.mdx#onstartup) method.
+In v1 war die [Laufzeit](../reference/runtime/intro.mdx) über einen an `WailsInit()` übergebenen Struct verfügbar. In v2 wurde die Laufzeit in ein eigenes Paket verschoben. Jede Methode in der Laufzeit Methode verwendet die `context.Context` die an die [OnStartup](../reference/options.mdx#onstartup) Methode übergeben wird.
 
 ```go title="Runtime Example"
 package main
@@ -114,22 +114,22 @@ func (a *App) startup(ctx context.Context) {
 
 ### Assets
 
-The _biggest_ change in v2 is how assets are handled.
+Die _größte_ Änderung in v2 ist, wie mit assets umgegangen wird.
 
-In v1, assets were passed via 2 application options:
+In v1 wurden Assets über 2 Anwendungsoptionen übergeben:
 
-- `JS` - The application's JavaScript
-- `CSS` - The application's CSS
+- `JS` - JavaScript der Anwendung
+- `CSS` - CSS der Anwendung
 
-This meant that the responsibility of generating a single JS and CSS file was on the developer. This essentially required the use of complicated packers such as webpack.
+Dies bedeutete, dass die Verantwortung für die Erstellung einer einzigen JS- und CSS-Datei beim Entwickler lag. Dies erforderte im Wesentlichen den Einsatz von komplizierten Packern wie Webpack.
 
-In v2, Wails makes no assumptions about your frontend assets, just like a webserver. All of your application assets are passed to the application options as an `embed.FS`.
+In v2 macht Wails keine Annahmen über deine Frontend-Assets wie ein Webserver. Alle deine App-Assets werden als `embed.FS` an die Anwendungsoptionen übergeben.
 
-**This means there is no requirement to bundle your assets, encode images as Base64 or attempt the dark art of bundler configuration to use custom fonts**.
+**Das bedeutet, dass du deine Assets nicht bündeln, Bilder nicht als Base64 kodieren oder mit der komplizierten Konfiguration von Bundlern für die Verwendung benutzerdefinierter Schriftarten herumschlagen musst**.
 
-At startup, Wails will scan the given `embed.FS` for `index.html` and use its location as the root path for all the other application assets - just like a webserver would.
+Beim Start durchsucht Wails die angegebene `embed.FS` nach `Index.html` und verwenden seine Position als root Pfad für alle anderen App-Assets - genau wie ein Webserver.
 
-Example: An application has the following project layout. All final assets are placed in the `frontend/dist` directory:
+Beispiel: Eine Anwendung hat das folgende Projekt-Layout. Alle endgültigen Assets sind im `frontend/dist` Verzeichnis platziert:
 
 ```shell
 .
@@ -144,7 +144,7 @@ Example: An application has the following project layout. All final assets are p
 └── wails.json
 ```
 
-Those assets may be used by the application by simply creating an `embed.FS`:
+Diese Assets können von der Anwendung verwendet werden, indem einfach eine `embed.FS` erstellt wird:
 
 ```go title="Assets Example"
 //go:embed all:frontend/dist
@@ -160,13 +160,13 @@ func main() {
 }
 ```
 
-Of course, bundlers can be used if you wish to. The only requirement is to pass the final application assets directory to Wails using an `embed.FS` in the `Assets` key of the [application options](../reference/options.mdx#application-options).
+Natürlich können Bundler auch eingesetzt werden, wenn du das möchtest. Die einzige Voraussetzung ist, das endgültige Verzeichnis der Anwendungsressourcen mithilfe eines `embed.FS` im `Assets` Feld der [application options](../reference/options.mdx#application-options) an Wails zu übergeben.
 
-### Project Configuration
+### Projekt-Konfiguration
 
-In v1, the project configuration was stored in the `project.json` file in the project root. In v2, the project configuration is stored in the `wails.json` file in the project root.
+In v1 wurde die Projekt-Konfiguration in der Datei `project.json` im Projektverzeichnis gespeichert. In v2 wird die Projekt-Konfiguration in der `wails.json` Datei im Projektverzeichnis gespeichert.
 
-The format of the file is slightly different. Here is a comparison:
+Das Format der Datei ist leicht unterschiedlich. Hier ist ein Vergleich:
 
 <p align="center">
 
@@ -184,8 +184,8 @@ The format of the file is slightly different. Here is a comparison:
 | frontend / bridge  |                  | Removed                                                                                                                                                                    |
 | frontend / serve   |                  | Removed                                                                                                                                                                    |
 | tags               |                  | Removed                                                                                                                                                                    |
-|                    | wailsjsdir       | The directory to generate wailsjs modules                                                                                                                                  |
-|                    | assetdir         | The directory of the compiled frontend assets for `dev` mode. This is normally inferred and could be left empty.                                                           |
-|                    | reloaddirs       | Comma separated list of additional directories to watch for changes and to trigger reloads in `dev` mode. This is only needed for some more advanced asset configurations. |
+|                    | wailsjsdir       | Das Verzeichnis zum Generieren von wailsjs-Modulen                                                                                                                                  |
+|                    | assetdir         | Das Verzeichnis der kompilierten Frontend-Assets für den `dev`-Modus. Dies wird normalerweise abgeleitet und kann leer bleiben.                                                           |
+| | reloaddirs       | Durch Komma getrennte Liste zusätzlicher Verzeichnisse, die auf Änderungen achten und im `dev` Modus neu laden können. Dies wird nur für fortgeschrittenere Asset-Konfigurationen benötigt. |
 
 </p>

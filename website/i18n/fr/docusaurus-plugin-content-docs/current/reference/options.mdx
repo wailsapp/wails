@@ -87,19 +87,19 @@ func main() {
                 LightModeTitleText: windows.RGB(20, 20, 20),
                 LightModeBorder:    windows.RGB(200, 200, 200),
             },
-            // ZoomFactor is the zoom factor for the WebView2. Il s'agit de l'option correspondant au zoom avant ou arrière défini par l'utilisateur.
+            // ZoomFactor est le facteur de zoom pour WebView2. Il s'agit de l'option correspondant au zoom avant ou arrière défini par l'utilisateur.
             ZoomFactor:           float64,
-            // IsZoomControlEnabled enables the zoom factor to be changed by the user.
+            // IsZoomControlEnabled permet à l'utilisateur de changer le facteur de zoom.
             IsZoomControlEnabled: bool,
-            // User messages that can be customised
-            Messages: *windows.Messages
-            // OnSuspend is called when Windows enters low power mode
+            // Messages utilisateur qui peuvent être personnalisés
+            Messages: *fenêtres. essages
+            // OnSuspend est appelé lorsque Windows entre en mode basse puissance
             OnSuspend: func()
-            // OnResume is called when Windows resumes from low power mode
+            // OnResume est appelé lorsque Windows reprend le mode basse puissance
             OnResume: func(),
-            // Disable GPU hardware acceleration for the webview
+            // Désactive l'accélération matérielle GPU pour le webview
                   WebviewGpuDisabled: false,
-                  // Class name for the window. If empty, 'wailsWindow' will be used.
+                  // Nom de la classe pour la fenêtre. Si vide, 'wailsWindow' sera utilisé.
                   WindowClassName: "MyWindow",
         },
         Mac: &mac.Options{
@@ -290,7 +290,7 @@ Le gestionnaire sera appelé pour chaque requête GET qui ne peut pas être serv
 
 :::info
 
-This does not work with vite v5.0.0+ and wails v2 due to changes in vite. Changes are planned in v3 to support similar functionality under vite v5.0.0+. If you need this feature, stay with vite v4.0.0+. See [issue 3240](https://github.com/wailsapp/wails/issues/3240) for details
+Cela ne fonctionne pas avec la v5.0.0+ vite et wails v2 en raison des changements dans vite. Des changements sont prévus dans la v3 pour prendre en charge des fonctionnalités similaires sous la v5.0.0+. Si vous avez besoin de cette fonctionnalité, restez avec la v4.0.0+. Regardez l'[issue 3240](https://github.com/wailsapp/wails/issues/3240) pour les détails
 
 :::
 
@@ -430,9 +430,9 @@ Nom: Bind<br/> Type: `[]interface{}`
 
 ### EnumBind
 
-A slice of Enum arrays that need to be bound to the frontend.
+Un tableau d'Enum qui doivent être liés au frontend.
 
-Name: EnumBind<br/> Type: `[]interface{}`
+Nom: Bind<br/> Type: `[]interface{}`
 
 ### ErrorFormatter
 
@@ -442,57 +442,57 @@ Nom: ErrorFormatter<br/> Type: `func (error) any`
 
 ### SingleInstanceLock
 
-Enables single instance locking. This means that only one instance of your application can be running at a time.
+Active le verrouillage par instance unique. Cela signifie qu'une seule instance de votre application peut être exécutée à la fois.
 
-Name: SingleInstanceLock<br/> Type: `*options.SingleInstanceLock`
+Nom: SingleInstanceLock<br/> Type : `*options.SingleInstanceLock`
 
 #### UniqueId
 
-This id is used to generate the mutex name on Windows and macOS and the dbus name on Linux. Use a UUID to ensure that the id is unique.
+Cet id est utilisé pour générer le nom de mutex sous Windows et macOS et le nom dbus sous Linux. Utilisez un UUID pour vous assurer que l'id est unique.
 
-Name: UniqueId<br/> Type: `string`
+Nom: UniqueId<br/> Type: `string`
 
 #### OnSecondInstanceLaunch
 
-Callback that is called when a second instance of your app is launched.
+Callback appelé quand une seconde instance de votre application est lancée.
 
-Name: OnSecondInstanceLaunch<br/> Type: `func(secondInstanceData SecondInstanceData)`
+Nom: OnSecondInstanceLaunch<br/> Type: `func(secondInstanceData SecondInstanceData)`
 
 ### Drag and Drop
 
-Defines the behavior of drag and drop events on the window.
+Définit le comportement des événements de glisser-déposer sur la fenêtre.
 
-Name: DragAndDrop<br/> Type: `options.DragAndDrop`
+Nom: DragAndDrop<br/> Type: `options.DragAndDrop`
 
 #### EnableFileDrop
 
-EnableFileDrop enables wails' drag and drop functionality that returns the dropped in files' absolute paths.
+EnableFileDrop active la fonctionnalité de glisser-déposer des wails qui retourne les chemins absolus des fichiers déposés.
 
-When it is set to `true` the [runtime methods](../reference/runtime/draganddrop.mdx) can be used. <br/> Or you can listen for the `wails:file-drop` event with [runtime EventsOn method](../reference/runtime/events.mdx#eventson) both on the Javascript and GO side to implement any functionality you would like.
+Quand il est réglé sur `true` les [méthodes d'exécution](../reference/runtime/draganddrop.mdx) peuvent être utilisées. <br/> Ou vous pouvez écouter l'événement `wails:file-drop` avec la méthode [runtime EventsOn](../reference/runtime/events.mdx#eventson) dans Javascript et GO pour implémenter toutes les fonctionnalités que vous souhaitez.
 
-The event returns the coordinates of the drop and a file path slice.
+L'événement renvoie les coordonnées de la liste déroulante et le chemin d'accès du fichier.
 
-Name: EnableFileDrop<br/> Type: `bool`<br/> Default: `false`
+Nom : EnableFileDrop<br/> Type : `bool`<br/> Défaut : `false`
 
 #### DisableWebViewDrop
 
-Disables the webview's drag and drop functionality.
+Désactive la fonctionnalité de glisser-déposer de la vue Web.
 
-It can be used to prevent accidental opening of dragged in files in the webview, when there is no need for drag and drop.
+Il peut être utilisé pour éviter l'ouverture accidentelle des fichiers glissés dans la vue Web, quand il n'y a pas besoin de glisser-déposer.
 
-Name: DisableWebViewDrop<br/> Type: `bool`<br/> Default: `false`
+Nom: DisableWebViewDrop<br/> Type: `bool`<br/> Défaut: `false`
 
 #### CSSDropProperty
 
-CSS property to test for drag and drop target elements.
+Propriété CSS pour tester les éléments cibles par glisser-déposer.
 
-Name: CSSDropProperty<br/> Type: `string`<br/> Default: `--wails-drop-target`
+Nom: CSSDropProperty<br/> Type: `string`<br/> Défaut: `--wails-drop-target`
 
 #### CSSDropValue
 
-The CSS Value that the CSSDropProperty must have to be a valid drop target. Default "drop"
+La valeur CSS que la CSSDropProperty doit être une cible de drop valide. Défaut "drop"
 
-Name: CSSDropValue<br/> Type: `string`<br/> Default: `drop`
+Nom: CSSDropValue<br/> Type: `string`<br/> Défaut: `drop`
 
 ### Windows
 
@@ -550,9 +550,9 @@ Cela permet de modifier le facteur de zoom par l'utilisateur. Veuillez noter que
 
 #### DisablePinchZoom
 
-Setting this to `true` will disable pinch zoom gestures.
+Définir ceci à `true` désactivera les gestes de zoom pinchés.
 
-Name: DisablePinchZoom<br/> Type: `bool`
+Nom: DisablePinchZoom<br/> Type: `bool`
 
 #### DisableWindowIcon
 
@@ -694,9 +694,9 @@ Nom: EnableSwipeGestures<br/> Type: `bool`
 
 #### WindowClassName
 
-Class name for the window. If empty, 'wailsWindow' will be used.
+Nom de la classe pour la fenêtre. Si vide, 'wailsWindow' sera utilisé.
 
-Name: WindowClassName<br/> Type: `string`
+Nom : WindowClassName<br/> Type : `string`
 
 ### Mac
 
@@ -795,15 +795,15 @@ Nom: WindowIsTranslucent<br/> Type: `bool`
 
 #### OnFileOpen
 
-Callback that is called when a file is opened with the application.
+Callback qui est appelé quand un fichier est ouvert avec l'application.
 
-Name: OnFileOpen<br/> Type: `func(filePath string)`
+Nom: OnFileOpen<br/> Type: `func(filePath string)`
 
 #### OnUrlOpen
 
-Callback that is called when a URL is opened with the application.
+Callback qui est appelé quand une URL est ouverte avec l'application.
 
-Name: OnUrlOpen<br/> Type: `func(filePath string)`
+Nom: OnFileOpen<br/> Type: `func(filePath string)`
 
 #### Preferences
 
@@ -961,4 +961,4 @@ Définir cette option à `true` ouvrira l'inspecteur Web au démarrage de l'appl
 Nom: OpenInspectorOnStartup<br/> Type: `bool`
 
 [^1]: Cela nécessite la prise en charge de WebKit2GTK 2.36+ et votre application doit être construite avec la balise de compilation `webkit2_36` pour activer le support de cette fonctionnalité. Cela augmente aussi la version minnimale de WebKit2GTK à 2.36 pour votre application.
-[^2]: Cela nécessite la prise en charge de WebKit2GTK 2.40+ et votre application doit être construite avec la balise de compilation `webkit2_40` pour activer le support de cette fonctionnalité. Cela augmente aussi la version minnimale de WebKit2GTK à 2.40 pour votre application.
+[^2]: Cela nécessite la prise en charge de WebKit2GTK 2.40+ et votre application doit être construite avec la balise de compilation `webkit2_40` pour activer le support de cette fonctionnalité. Cela augmente aussi la version minnimale de WebKit2GTK à 2.40 pour votre application.&#160;[ [    &#8617;](#fnref2:2){.footnote-backref} &#8617;](#fnref:2){.footnote-backref}
