@@ -1,10 +1,10 @@
 # Routing
 
-Routing is a popular way to switch views in an application. This page offers some guidance around how to do that.
+Routing ist ein beliebter Weg, um Ansichten in einer Anwendung zu wechseln. Diese Seite bietet einige Hinweise dazu, wie das umgesetzt werden kann.
 
 ## Vue
 
-The recommended approach for routing in Vue is [Hash Mode](https://next.router.vuejs.org/guide/essentials/history-mode.html#hash-mode):
+Der empfohlene Ansatz für das Routen in Vue ist der [Hash-Modus](https://next.router.vuejs.org/guide/essentials/history-mode.html#hash-mode):
 
 ```js
 import { createRouter, createWebHashHistory } from "vue-router";
@@ -19,7 +19,7 @@ const router = createRouter({
 
 ## Angular
 
-The recommended approach for routing in Angular is [HashLocationStrategy](https://codecraft.tv/courses/angular/routing/routing-strategies#_hashlocationstrategy):
+Der empfohlene Ansatz für das Routen in Angular ist die [HashLocationStrategy](https://codecraft.tv/courses/angular/routing/routing-strategies#_hashlocationstrategy):
 
 ```ts
 RouterModule.forRoot(routes, { useHash: true });
@@ -27,7 +27,7 @@ RouterModule.forRoot(routes, { useHash: true });
 
 ## React
 
-The recommended approach for routing in React is [HashRouter](https://reactrouter.com/en/main/router-components/hash-router):
+Die empfohlene Vorgehensweise für das Routen in React ist der [HashRouter](https://reactrouter.com/en/main/router-components/hash-router):
 
 ```jsx
 import { HashRouter, Routes, Route } from "react-router-dom";
@@ -48,7 +48,7 @@ ReactDOM.render(
 
 ## Svelte
 
-The recommended approach for routing in Svelte is [svelte-spa-router](https://github.com/ItalyPaleAle/svelte-spa-router):
+Die empfohlene Vorgehensweise für das Routen in Svelte ist der [svelte-spa-router](https://github.com/ItalyPaleAle/svelte-spa-router):
 
 ```svelte
 <script>

@@ -4,7 +4,7 @@
     "description": "Navbar item with label Sponsor"
   },
   "item.label.Docs": {
-    "message": "Docs",
+    "message": "Dokumentation",
     "description": "Navbar item with label Docs"
   },
   "item.label.Blog": {
@@ -16,7 +16,7 @@
     "description": "Navbar item with label GitHub"
   },
   "item.label.About": {
-    "message": "About",
+    "message": "Über uns",
     "description": "Navbar item with label About"
   },
   "item.label.FAQ": {
@@ -24,19 +24,19 @@
     "description": "Navbar item with label FAQ"
   },
   "item.label.Changelog": {
-    "message": "Changelog",
+    "message": "Änderungsverlauf",
     "description": "Navbar item with label Changelog"
   },
   "item.label.Community Guide": {
-    "message": "Community Guide",
+    "message": "Community-Anleitung",
     "description": "Navbar item with label Community Guide"
   },
   "item.label.Credits": {
-    "message": "Credits",
+    "message": "Mitwirkende",
     "description": "Navbar item with label Credits"
   },
   "item.label.Code of Conduct": {
-    "message": "Code of Conduct",
+    "message": "Verhaltenskodex",
     "description": "Navbar item with label Code of Conduct"
   },
   "logo.alt": {
