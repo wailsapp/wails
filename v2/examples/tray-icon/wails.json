@@ -1,0 +1,5 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "tray-icon",
+  "outputfilename": "tray-icon"
+}
