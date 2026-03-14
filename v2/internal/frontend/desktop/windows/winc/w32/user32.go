@@ -820,7 +820,7 @@ func CreatePopupMenu() HMENU {
 }
 
 func TrackPopupMenuEx(hMenu HMENU, fuFlags uint32, x, y int32, hWnd HWND, lptpm *TPMPARAMS) BOOL {
-	ret, _, _ := syscall.Syscall6(trackPopupMenuEx, 6,
+	ret, _, _ := syscall.SyscallN(trackPopupMenuEx,
 		uintptr(hMenu),
 		uintptr(fuFlags),
 		uintptr(x),

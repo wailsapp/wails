@@ -11,6 +11,35 @@ import (
 type HRESULT int32
 type HANDLE uintptr
 type HMONITOR HANDLE
+type HWND HANDLE
+type HICON HANDLE
+
+type NOTIFYICONDATA struct {
+	CbSize           uint32
+	HWnd             HWND
+	UID              uint32
+	UFlags           uint32
+	UCallbackMessage uint32
+	HIcon            HICON
+	SzTip            [128]uint16
+	DwState          uint32
+	DwStateMask      uint32
+	SzInfo           [256]uint16
+	UVersion         uint32
+	SzInfoTitle      [64]uint16
+	DwInfoFlags      uint32
+	GuidItem         [16]byte
+}
+
+const (
+	NIM_ADD    = 0x00000000
+	NIM_MODIFY = 0x00000001
+	NIM_DELETE = 0x00000002
+
+	NIF_MESSAGE = 0x00000001
+	NIF_ICON    = 0x00000002
+	NIF_TIP     = 0x00000004
+)
 
 var (
 	moduser32                      = syscall.NewLazyDLL("user32.dll")
@@ -29,11 +58,16 @@ var (
 	procEmptyClipboard             = moduser32.NewProc("EmptyClipboard")
 	procGetClipboardData           = moduser32.NewProc("GetClipboardData")
 	procSetClipboardData           = moduser32.NewProc("SetClipboardData")
+	procCreateIconFromResourceEx   = moduser32.NewProc("CreateIconFromResourceEx")
 )
 var (
 	moddwmapi                        = syscall.NewLazyDLL("dwmapi.dll")
 	procDwmSetWindowAttribute        = moddwmapi.NewProc("DwmSetWindowAttribute")
 	procDwmExtendFrameIntoClientArea = moddwmapi.NewProc("DwmExtendFrameIntoClientArea")
+)
+var (
+	modshell32          = syscall.NewLazyDLL("shell32.dll")
+	procShellNotifyIcon = modshell32.NewProc("Shell_NotifyIconW")
 )
 var (
 	modwingdi            = syscall.NewLazyDLL("gdi32.dll")

@@ -100,7 +100,27 @@ func IsVisible(hwnd uintptr) bool {
 	ret, _, _ := procIsWindowVisible.Call(hwnd)
 	return ret != 0
 }
+func ShellNotifyIcon(dwMessage uintptr, lpdata *NOTIFYICONDATA) bool {
+	ret, _, _ := procShellNotifyIcon.Call(dwMessage, uintptr(unsafe.Pointer(lpdata)))
+	return ret != 0
+}
 
+func CreateIconFromResourceEx(presbits uintptr, dwResSize uint32, fIcon bool, dwVer uint32, cxDesired int, cyDesired int) HICON {
+	var fIconUint uintptr
+	if fIcon {
+		fIconUint = 1
+	}
+	ret, _, _ := procCreateIconFromResourceEx.Call(
+		presbits,
+		uintptr(dwResSize),
+		fIconUint,
+		uintptr(dwVer),
+		uintptr(cxDesired),
+		uintptr(cyDesired),
+		0,
+	)
+	return HICON(ret)
+}
 func IsWindowFullScreen(hwnd uintptr) bool {
 	wRect := GetWindowRect(hwnd)
 	m := MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY)
