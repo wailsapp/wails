@@ -100,9 +100,12 @@ func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Windo
 		webviewGpuPolicy = int(linux.WebviewGpuPolicyNever)
 	}
 
-	hideWindowOnClose := int(appoptions.WindowCloseBehaviour)
-	if hideWindowOnClose == int(options.CloseWindow) && appoptions.HideWindowOnClose {
-		hideWindowOnClose = int(options.HideWindow)
+	hideWindowOnClose := 0
+	if appoptions.HideWindowOnClose {
+		hideWindowOnClose = 1
+		if appoptions.Tray != nil {
+			hideWindowOnClose = 2
+		}
 	}
 
 	webview := C.SetupWebview(

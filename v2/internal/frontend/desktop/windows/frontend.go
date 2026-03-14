@@ -212,8 +212,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 	})
 
 	mainWindow.OnClose().Bind(func(arg *winc.Event) {
-		behaviour := f.frontendOptions.WindowCloseBehaviour
-		if behaviour == options.HideWindow || behaviour == options.HideWindowAndDock || (behaviour == options.CloseWindow && f.frontendOptions.HideWindowOnClose) {
+		if f.frontendOptions.HideWindowOnClose {
 			f.WindowHide()
 		} else {
 			f.Quit()

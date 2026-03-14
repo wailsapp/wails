@@ -121,9 +121,12 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 		appearance = c.String(string(mac.Appearance))
 	}
 
-	hideWindowOnClose := int(frontendOptions.WindowCloseBehaviour)
-	if hideWindowOnClose == int(options.CloseWindow) && frontendOptions.HideWindowOnClose {
-		hideWindowOnClose = int(options.HideWindow)
+	hideWindowOnClose := 0
+	if frontendOptions.HideWindowOnClose {
+		hideWindowOnClose = 1
+		if frontendOptions.Tray != nil {
+			hideWindowOnClose = 2
+		}
 	}
 
 	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, zoomable, fullscreen, fullSizeContent,

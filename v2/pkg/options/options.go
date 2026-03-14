@@ -28,14 +28,6 @@ const (
 	Fullscreen WindowStartState = 3
 )
 
-type WindowCloseBehaviour int
-
-const (
-	CloseWindow       WindowCloseBehaviour = 0
-	HideWindow        WindowCloseBehaviour = 1
-	HideWindowAndDock WindowCloseBehaviour = 2
-)
-
 type Experimental struct{}
 
 // App contains options for creating the App
@@ -51,11 +43,10 @@ type App struct {
 	MaxWidth      int
 	MaxHeight     int
 	StartHidden   bool
-	// HideWindowOnClose is deprecated. Use WindowCloseBehaviour instead.
-	// If set to true, WindowCloseBehaviour will be set to HideWindow if it is currently CloseWindow.
-	HideWindowOnClose    bool
-	WindowCloseBehaviour WindowCloseBehaviour
-	AlwaysOnTop          bool
+	// HideWindowOnClose controls close button behavior.
+	// If true and a tray icon is configured, close behaves like HideWindowAndDock.
+	HideWindowOnClose bool
+	AlwaysOnTop       bool
 	// BackgroundColour is the background colour of the window
 	// You can use the options.NewRGB and options.NewRGBA functions to create a new colour
 	BackgroundColour *RGBA
@@ -187,10 +178,6 @@ func MergeDefaults(appoptions *App) {
 			B: 255,
 			A: 255,
 		}
-	}
-
-	if appoptions.HideWindowOnClose && appoptions.WindowCloseBehaviour == CloseWindow {
-		appoptions.WindowCloseBehaviour = HideWindow
 	}
 
 	// Ensure max and min are valid
