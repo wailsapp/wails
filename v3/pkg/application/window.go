@@ -91,6 +91,7 @@ type Window interface {
 	Flash(enabled bool)
 	Print() error
 	RegisterHook(eventType events.WindowEventType, callback func(event *WindowEvent)) func()
+	AttachModal(modalWindow Window)
 	shouldUnconditionallyClose() bool
 
 	// Editing methods

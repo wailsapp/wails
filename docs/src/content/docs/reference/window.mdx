@@ -498,9 +498,9 @@ window.EmitEvent("data-updated", map[string]interface{}{
 
 **Frontend (JavaScript):**
 ```javascript
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-On('data-updated', (data) => {
+Events.On('data-updated', (data) => {
     console.log('Count:', data.count)
     console.log('Status:', data.status)
 })
@@ -597,12 +597,27 @@ if err != nil {
 }
 ```
 
-**Platform support:**
-- **macOS**: Full support
-- **Windows**: Full support
-- **Linux**: Full support
+### AttachModal()
 
-**Note:** This triggers the native OS print dialog, allowing the user to select printer settings and print the current window content.
+Attaches a second Window as a sheet modal.
+
+```go
+func (w *Window) AttachModal(modalWindow Window)
+```
+
+**Parameters:**
+- `modalWindow` - The window to attach as a modal
+
+**Platform support:**
+- **macOS**: Full support (presents as a sheet)
+- **Windows**: No support
+- **Linux**: No support
+
+**Example:**
+```go
+modalWindow := app.Window.New()
+window.AttachModal(modalWindow)
+```
 
 ## Platform-Specific Options
 

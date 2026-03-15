@@ -97,9 +97,9 @@ app.Event.Emit("global-update", data)
 Listens for events from Go.
 
 ```javascript
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-On(eventName, callback)
+Events.On(eventName, callback)
 ```
 
 **Parameters:**
@@ -110,10 +110,10 @@ On(eventName, callback)
 
 **Example:**
 ```javascript
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 // Listen for events
-const cleanup = On('data-updated', (data) => {
+const cleanup = Events.On('data-updated', (data) => {
     console.log('Count:', data.count)
     console.log('Status:', data.status)
     updateUI(data)
@@ -128,17 +128,17 @@ cleanup()
 Listens for a single event occurrence.
 
 ```javascript
-import { Once } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-Once(eventName, callback)
+Events.Once(eventName, callback)
 ```
 
 **Example:**
 ```javascript
-import { Once } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 // Listen for first occurrence only
-Once('initialization-complete', (data) => {
+Events.Once('initialization-complete', (data) => {
     console.log('App initialized!', data)
     // This will only fire once
 })
@@ -149,24 +149,24 @@ Once('initialization-complete', (data) => {
 Removes an event listener.
 
 ```javascript
-import { Off } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-Off(eventName, callback)
+Events.Off(eventName, callback)
 ```
 
 **Example:**
 ```javascript
-import { On, Off } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 const handler = (data) => {
     console.log('Event received:', data)
 }
 
 // Start listening
-On('my-event', handler)
+Events.On('my-event', handler)
 
 // Stop listening
-Off('my-event', handler)
+Events.Off('my-event', handler)
 ```
 
 ### OffAll()
@@ -174,9 +174,9 @@ Off('my-event', handler)
 Removes all listeners for an event.
 
 ```javascript
-import { OffAll } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-OffAll(eventName)
+Events.OffAll(eventName)
 ```
 
 **Example:**
@@ -281,10 +281,10 @@ func (s *DataService) FetchData(query string) ([]Item, error) {
 
 ```javascript
 import { FetchData } from './bindings/DataService'
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 // Listen for completion event
-On('data-fetched', (data) => {
+Events.On('data-fetched', (data) => {
     console.log(`Fetched ${data.count} items for query: ${data.query}`)
     showNotification(`Found ${data.count} results`)
 })
@@ -325,16 +325,16 @@ func (s *Service) ProcessFiles(files []string) error {
 **JavaScript:**
 
 ```javascript
-import { On, Once } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 // Update progress bar
-On('progress', (data) => {
+Events.On('progress', (data) => {
     progressBar.style.width = `${data.percent}%`
     statusText.textContent = `Processing ${data.file}... (${data.current}/${data.total})`
 })
 
 // Handle completion
-Once('processing-complete', () => {
+Events.Once('processing-complete', () => {
     progressBar.style.width = '100%'
     statusText.textContent = 'Complete!'
     setTimeout(() => hideProgressBar(), 2000)
@@ -364,10 +364,10 @@ window1.OnEvent("request-data", func(e *application.CustomEvent) {
 **JavaScript:**
 
 ```javascript
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 // Listen in any window
-On('theme-changed', (theme) => {
+Events.On('theme-changed', (theme) => {
     document.body.className = theme
 })
 ```
@@ -407,13 +407,13 @@ func (s *StateService) GetState(key string) interface{} {
 **JavaScript:**
 
 ```javascript
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 import { GetState } from './bindings/StateService'
 
 // Keep local state in sync
 let localState = {}
 
-On('state-updated', async (data) => {
+Events.On('state-updated', async (data) => {
     localState[data.key] = data.value
     updateUI(data.key, data.value)
 })
@@ -459,10 +459,10 @@ func (s *NotificationService) Info(message string) {
 **JavaScript:**
 
 ```javascript
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 // Unified notification handler
-On('notification', (data) => {
+Events.On('notification', (data) => {
     const toast = document.createElement('div')
     toast.className = `toast toast-${data.type}`
     toast.textContent = data.message
@@ -568,34 +568,34 @@ func main() {
 **JavaScript:**
 
 ```javascript
-import { On, Once } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 import { StartLongTask, BroadcastMessage } from './bindings/EventDemoService'
 
 // Task events
-On('task-started', () => {
+Events.On('task-started', () => {
     console.log('Task started...')
     document.getElementById('status').textContent = 'Running...'
 })
 
-On('task-progress', (data) => {
+Events.On('task-progress', (data) => {
     const progressBar = document.getElementById('progress')
     progressBar.style.width = `${data.percent}%`
     console.log(`Step ${data.step} of ${data.total}`)
 })
 
-Once('task-completed', (data) => {
+Events.Once('task-completed', (data) => {
     console.log('Task completed!', data.message)
     document.getElementById('status').textContent = data.message
 })
 
 // Broadcast events
-On('broadcast', (message) => {
+Events.On('broadcast', (message) => {
     console.log('Broadcast:', message)
     alert(message)
 })
 
 // Window state events
-On('window-state', (state) => {
+Events.On('window-state', (state) => {
     console.log('Window is now:', state)
     document.body.dataset.windowState = state
 })
@@ -784,12 +784,12 @@ func (s *Service) EmitWithDebounce(event string, data interface{}) {
 ### Throttling Events
 
 ```javascript
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 let lastUpdate = 0
 const throttleMs = 100
 
-On('high-frequency-event', (data) => {
+Events.On('high-frequency-event', (data) => {
     const now = Date.now()
     if (now - lastUpdate < throttleMs) {
         return // Skip this update

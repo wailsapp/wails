@@ -518,13 +518,12 @@ useEffect(() => {
 Check platform availability when using platform-specific events:
 
 ```javascript
-import { Platform, Events } from '@wailsio/runtime';
+import { Events } from '@wailsio/runtime';
 
-if (Platform.isWindows) {
-    Events.On('windows:APMSuspend', handleSuspend);
-} else if (Platform.isMac) {
-    Events.On('mac:ApplicationWillTerminate', handleTerminate);
-}
+// Platform-specific events can be registered unconditionally;
+// they will simply never fire on unsupported platforms.
+Events.On('windows:APMSuspend', handleSuspend);
+Events.On('mac:ApplicationWillTerminate', handleTerminate);
 ```
 
 ### 4. Don't Overuse Events

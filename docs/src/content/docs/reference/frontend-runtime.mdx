@@ -159,9 +159,7 @@ Events.Emit(UserUpdated({
 The runtime is organized into modules, each providing specific functionality. Import only what you need:
 
 ```javascript
-import { On, Emit } from '@wailsio/runtime/events'
-import Window from '@wailsio/runtime/window'
-import { SetText, Text } from '@wailsio/runtime/clipboard'
+import { Events, Window, Clipboard } from '@wailsio/runtime'
 ```
 
 ### Events
@@ -182,17 +180,17 @@ function On<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void
 **Example:**
 
 ```javascript
-import { On } from '@wailsio/runtime/events'
+import { Events } from '@wailsio/runtime'
 
 // Basic event listening
-const unsubscribe = On('user-logged-in', (event) => {
+const unsubscribe = Events.On('user-logged-in', (event) => {
     console.log('User:', event.data.username)
 })
 
 // With typed events (TypeScript)
 import { UserLogin } from './bindings/events'
 
-On(UserLogin, (event) => {
+Events.On(UserLogin, (event) => {
     // event.data is typed as UserLoginData
     console.log('User:', event.data.username)
 })
@@ -212,9 +210,9 @@ function Once<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => vo
 **Example:**
 
 ```javascript
-import { Once } from '@wailsio/runtime/events'
+import { Events } from '@wailsio/runtime'
 
-Once('app-ready', () => {
+Events.Once('app-ready', () => {
     console.log('App initialized')
 })
 ```
@@ -233,15 +231,15 @@ function Emit<T>(event: Event<T>): Promise<boolean>
 **Example:**
 
 ```javascript
-import { Emit } from '@wailsio/runtime/events'
+import { Events } from '@wailsio/runtime'
 
 // Basic event emission
-const wasCancelled = await Emit('button-clicked', { buttonId: 'submit' })
+const wasCancelled = await Events.Emit('button-clicked', { buttonId: 'submit' })
 
 // With typed events (TypeScript)
 import { UserLogin } from './bindings/events'
 
-const cancelled = await Emit(UserLogin({
+const cancelled = await Events.Emit(UserLogin({
     UserID: "123",
     Username: "john_doe",
     LoginTime: new Date().toISOString()
@@ -267,9 +265,9 @@ function Off(...eventNames: string[]): void
 **Example:**
 
 ```javascript
-import { Off } from '@wailsio/runtime/events'
+import { Events } from '@wailsio/runtime'
 
-Off('user-logged-in', 'user-logged-out')
+Events.Off('user-logged-in', 'user-logged-out')
 ```
 
 #### OffAll()
@@ -285,7 +283,7 @@ function OffAll(): void
 Window management methods. The default export is the current window.
 
 ```javascript
-import Window from '@wailsio/runtime/window'
+import { Window } from '@wailsio/runtime'
 
 // Current window
 await Window.SetTitle('New Title')
@@ -351,7 +349,7 @@ function Center(): Promise<void>
 **Example:**
 
 ```javascript
-import Window from '@wailsio/runtime/window'
+import { Window } from '@wailsio/runtime'
 
 // Resize and center
 await Window.SetSize(800, 600)
@@ -514,7 +512,7 @@ function Print(): Promise<void>
 **Example:**
 
 ```javascript
-import Window from '@wailsio/runtime/window'
+import { Window } from '@wailsio/runtime'
 
 // Open print dialog for current window
 await Window.Print()
@@ -537,9 +535,9 @@ function SetText(text: string): Promise<void>
 **Example:**
 
 ```javascript
-import { SetText } from '@wailsio/runtime/clipboard'
+import { Clipboard } from '@wailsio/runtime'
 
-await SetText('Hello from Wails!')
+await Clipboard.SetText('Hello from Wails!')
 ```
 
 #### Text()
@@ -553,9 +551,9 @@ function Text(): Promise<string>
 **Example:**
 
 ```javascript
-import { Text } from '@wailsio/runtime/clipboard'
+import { Clipboard } from '@wailsio/runtime'
 
-const clipboardText = await Text()
+const clipboardText = await Clipboard.Text()
 console.log('Clipboard:', clipboardText)
 ```
 
@@ -620,11 +618,11 @@ function Quit(): Promise<void>
 **Example:**
 
 ```javascript
-import { Quit } from '@wailsio/runtime/application'
+import { Application } from '@wailsio/runtime'
 
 // Add quit button
 document.getElementById('quit-btn').addEventListener('click', async () => {
-    await Quit()
+    await Application.Quit()
 })
 ```
 
@@ -643,9 +641,9 @@ function OpenURL(url: string | URL): Promise<void>
 **Example:**
 
 ```javascript
-import { OpenURL } from '@wailsio/runtime/browser'
+import { Browser } from '@wailsio/runtime'
 
-await OpenURL('https://wails.io')
+await Browser.OpenURL('https://wails.io')
 ```
 
 ### Screens
@@ -696,16 +694,16 @@ interface Screen {
 **Example:**
 
 ```javascript
-import { GetAll, GetPrimary } from '@wailsio/runtime/screens'
+import { Screens } from '@wailsio/runtime'
 
 // List all screens
-const screens = await GetAll()
+const screens = await Screens.GetAll()
 screens.forEach(screen => {
     console.log(`${screen.Name}: ${screen.Size.Width}x${screen.Size.Height}`)
 })
 
 // Get primary screen
-const primary = await GetPrimary()
+const primary = await Screens.GetPrimary()
 console.log('Primary screen:', primary.Name)
 ```
 
@@ -724,9 +722,9 @@ function Info(options: MessageDialogOptions): Promise<string>
 **Example:**
 
 ```javascript
-import { Info } from '@wailsio/runtime/dialogs'
+import { Dialogs } from '@wailsio/runtime'
 
-await Info({
+await Dialogs.Info({
     Title: 'Success',
     Message: 'Operation completed successfully!'
 })
@@ -759,9 +757,9 @@ function Question(options: QuestionDialogOptions): Promise<string>
 **Example:**
 
 ```javascript
-import { Question } from '@wailsio/runtime/dialogs'
+import { Dialogs } from '@wailsio/runtime'
 
-const result = await Question({
+const result = await Dialogs.Question({
     Title: 'Confirm Delete',
     Message: 'Are you sure you want to delete this file?',
     Buttons: [
@@ -786,9 +784,9 @@ function OpenFile(options: OpenFileDialogOptions): Promise<string | string[]>
 **Example:**
 
 ```javascript
-import { OpenFile } from '@wailsio/runtime/dialogs'
+import { Dialogs } from '@wailsio/runtime'
 
-const file = await OpenFile({
+const file = await Dialogs.OpenFile({
     Title: 'Select Image',
     Filters: [
         { DisplayName: 'Images', Pattern: '*.png;*.jpg;*.jpeg' },
@@ -864,14 +862,10 @@ WML provides declarative attributes for common actions. Add attributes to HTML e
 ## Complete Example
 
 ```javascript
-import { On, Emit } from '@wailsio/runtime/events'
-import Window from '@wailsio/runtime/window'
-import { SetText, Text } from '@wailsio/runtime/clipboard'
-import { Question } from '@wailsio/runtime/dialogs'
-import { GetAll } from '@wailsio/runtime/screens'
+import { Events, Window, Clipboard, Dialogs, Screens } from '@wailsio/runtime'
 
 // Listen for events from Go
-On('data-updated', (event) => {
+Events.On('data-updated', (event) => {
     console.log('Data:', event.data)
     updateUI(event.data)
 })
@@ -892,12 +886,12 @@ document.getElementById('fullscreen-btn').addEventListener('click', async () => 
 
 // Clipboard operations
 document.getElementById('copy-btn').addEventListener('click', async () => {
-    await SetText('Copied from Wails!')
+    await Clipboard.SetText('Copied from Wails!')
 })
 
 // Dialog with confirmation
 document.getElementById('delete-btn').addEventListener('click', async () => {
-    const result = await Question({
+    const result = await Dialogs.Question({
         Title: 'Confirm',
         Message: 'Delete this item?',
         Buttons: [
@@ -907,12 +901,12 @@ document.getElementById('delete-btn').addEventListener('click', async () => {
     })
 
     if (result === 'Delete') {
-        await Emit('delete-item', { id: currentItemId })
+        await Events.Emit('delete-item', { id: currentItemId })
     }
 })
 
 // Screen information
-const screens = await GetAll()
+const screens = await Screens.GetAll()
 console.log(`Detected ${screens.length} screen(s)`)
 screens.forEach(screen => {
     console.log(`- ${screen.Name}: ${screen.Size.Width}x${screen.Size.Height}`)
@@ -940,10 +934,9 @@ screens.forEach(screen => {
 The runtime includes full TypeScript definitions:
 
 ```typescript
-import { On, WailsEvent } from '@wailsio/runtime/events'
-import Window from '@wailsio/runtime/window'
+import { Events, Window } from '@wailsio/runtime'
 
-On('custom-event', (event: WailsEvent) => {
+Events.On('custom-event', (event) => {
     // TypeScript knows event.data, event.name, event.sender
     console.log(event.data)
 })
