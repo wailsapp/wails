@@ -367,6 +367,74 @@ void AppendSeparator(void* inMenu) {
 }
 
 
+bool IsNotificationAvailable(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    return [ctx IsNotificationAvailable];
+}
+
+bool CheckBundleIdentifier(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    return [ctx CheckBundleIdentifier];
+}
+
+bool EnsureDelegateInitialized(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    return [ctx EnsureDelegateInitialized];
+}
+
+void RequestNotificationAuthorization(void *inctx, int channelID) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    [ctx RequestNotificationAuthorization:channelID];
+}
+
+void CheckNotificationAuthorization(void *inctx, int channelID) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    [ctx CheckNotificationAuthorization:channelID];
+}
+
+void SendNotification(void *inctx, int channelID, const char *identifier, const char *title, const char *subtitle, const char *body, const char *data_json) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    [ctx SendNotification:channelID :identifier :title :subtitle :body :data_json];
+}
+
+void SendNotificationWithActions(void *inctx, int channelID, const char *identifier, const char *title, const char *subtitle, const char *body, const char *categoryId, const char *actions_json) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+
+    [ctx SendNotificationWithActions:channelID :identifier :title :subtitle :body :categoryId :actions_json];
+}
+
+void RegisterNotificationCategory(void *inctx, int channelID, const char *categoryId, const char *actions_json, bool hasReplyField, const char *replyPlaceholder, const char *replyButtonTitle) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+
+    [ctx RegisterNotificationCategory:channelID :categoryId :actions_json :hasReplyField :replyPlaceholder :replyButtonTitle];
+}
+
+void RemoveNotificationCategory(void *inctx, int channelID, const char *categoryId) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+
+    [ctx RemoveNotificationCategory:channelID :categoryId];
+}
+
+void RemoveAllPendingNotifications(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    [ctx RemoveAllPendingNotifications];
+}
+
+void RemovePendingNotification(void *inctx, const char *identifier) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    [ctx RemovePendingNotification:identifier];
+}
+
+void RemoveAllDeliveredNotifications(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    [ctx RemoveAllDeliveredNotifications];
+}
+
+void RemoveDeliveredNotification(void *inctx, const char *identifier) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    [ctx RemoveDeliveredNotification:identifier];
+}
+
 
 void Run(void *inctx, const char* url) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
