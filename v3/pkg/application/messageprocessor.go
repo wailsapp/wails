@@ -195,10 +195,8 @@ func (m *MessageProcessor) logRuntimeCall(req *RuntimeRequest) {
 		methodName = browserMethodNames[req.Method]
 	case cancelCallRequest:
 		methodName = "Cancel"
-	case iosRequest:
-		methodName = iosMethodNames[req.Method]
-	case androidRequest:
-		methodName = androidMethodNames[req.Method]
+	case iosRequest, androidRequest:
+		methodName = mobileMethodName(req)
 	}
 
 	m.Debug("Runtime call:", "method", objectName+"."+methodName, "args", req.Args.String())

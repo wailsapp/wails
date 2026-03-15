@@ -18,6 +18,13 @@ var androidMethodNames = map[int]string{
 	AndroidToast:          "Toast.Show",
 }
 
+func mobileMethodName(req *RuntimeRequest) string {
+	if req.Object == androidRequest {
+		return androidMethodNames[req.Method]
+	}
+	return ""
+}
+
 func (m *MessageProcessor) processAndroidMethod(req *RuntimeRequest, window Window) (any, error) {
 	args := req.Args.AsMap()
 
