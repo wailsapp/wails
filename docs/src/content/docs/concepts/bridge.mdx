@@ -549,11 +549,11 @@ func ProcessLargeFile(path string) error {
 ```
 
 ```javascript
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 import { ProcessLargeFile } from './bindings/FileService'
 
 // Listen for progress
-On('file-progress', (data) => {
+Events.On('file-progress', (data) => {
     console.log(`Line ${data.line}: ${data.text}`)
 })
 

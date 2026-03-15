@@ -2,8 +2,11 @@
 
 #include <Cocoa/Cocoa.h>
 
-@interface StatusItemController : NSObject
+@interface StatusItemController : NSObject <NSMenuDelegate>
 @property long id;
+@property (assign) NSStatusItem *statusItem;
+@property (assign) NSMenu *cachedMenu;
+@property (strong) id eventMonitor;
 - (void)statusItemClicked:(id)sender;
 @end
 
@@ -17,6 +20,7 @@ NSImage* imageFromBytes(const unsigned char *bytes, int length);
 void systemTraySetIcon(void* nsStatusItem, void* nsImage, int position, bool isTemplate);
 void systemTrayDestroy(void* nsStatusItem);
 void showMenu(void* nsStatusItem, void *nsMenu);
+void systemTraySetCachedMenu(void* nsStatusItem, void *nsMenu);
 void systemTrayGetBounds(void* nsStatusItem, NSRect *rect, void **screen);
 NSRect NSScreen_frame(void* screen);
 void windowSetScreen(void* window, void* screen, int yOffset);

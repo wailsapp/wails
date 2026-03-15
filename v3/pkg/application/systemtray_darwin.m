@@ -5,6 +5,7 @@
 #include "systemtray_darwin.h"
 
 extern void systrayClickCallback(long, int);
+extern int systrayPreClickCallback(long, int);
 
 // StatusItemController.m
 @implementation StatusItemController
@@ -14,6 +15,13 @@ extern void systrayClickCallback(long, int);
 	systrayClickCallback(self.id, event.type);
 }
 
+- (void)menuDidClose:(NSMenu *)menu {
+	// Remove the menu from the status item so future clicks invoke the
+	// action handler instead of re-showing the menu.
+	self.statusItem.menu = nil;
+	menu.delegate = nil;
+}
+
 @end
 
 // Create a new system tray
@@ -21,10 +29,29 @@ void* systemTrayNew(long id) {
 	StatusItemController *controller = [[StatusItemController alloc] init];
 	controller.id = id;
 	NSStatusItem *statusItem = [[[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength] retain];
+	controller.statusItem = statusItem;
 	[statusItem setTarget:controller];
 	[statusItem setAction:@selector(statusItemClicked:)];
 	NSButton *button = statusItem.button;
 	[button sendActionOn:(NSEventMaskLeftMouseDown|NSEventMaskRightMouseDown)];
+
+	// Install a local event monitor that fires BEFORE the button processes
+	// the mouse-down.  When the pre-click callback says "show menu", we
+	// temporarily set statusItem.menu so the button enters native menu
+	// tracking — this gives proper highlight and does not activate the app.
+	controller.eventMonitor = [NSEvent addLocalMonitorForEventsMatchingMask:
+		(NSEventMaskLeftMouseDown|NSEventMaskRightMouseDown)
+		handler:^NSEvent *(NSEvent *event) {
+			if (event.window != button.window) return event;
+
+			int action = systrayPreClickCallback((long)controller.id, (int)event.type);
+			if (action == 1 && controller.cachedMenu != nil) {
+				controller.cachedMenu.delegate = controller;
+				statusItem.menu = controller.cachedMenu;
+			}
+			return event;
+		}];
+
 	return (void*)statusItem;
 }
 
@@ -135,29 +162,54 @@ void systemTrayDestroy(void* nsStatusItem) {
 	// Remove the status item from the status bar and its associated menu
 	dispatch_async(dispatch_get_main_queue(), ^{
 		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+		StatusItemController *controller = (StatusItemController *)[statusItem target];
+		if (controller.eventMonitor) {
+			[NSEvent removeMonitor:controller.eventMonitor];
+			controller.eventMonitor = nil;
+		}
 		[[NSStatusBar systemStatusBar] removeStatusItem:statusItem];
+		[controller release];
 		[statusItem release];
 	});
 }
 
+// showMenu is used for programmatic OpenMenu() calls.  Click-triggered
+// menus are handled by the event monitor installed in systemTrayNew.
 void showMenu(void* nsStatusItem, void *nsMenu) {
-	// Show the menu on the main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
 		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
-		[statusItem popUpStatusItemMenu:(NSMenu *)nsMenu];
-        // Post a mouse up event so the statusitem defocuses
-        NSEvent *event = [NSEvent mouseEventWithType:NSEventTypeLeftMouseUp
-                                            location:[NSEvent mouseLocation]
-                                       modifierFlags:0
-                                           timestamp:[[NSProcessInfo processInfo] systemUptime]
-                                        windowNumber:0
-                                             context:nil
-                                         eventNumber:0
-                                          clickCount:1
-                                            pressure:1];
-        [NSApp postEvent:event atStart:NO];
-        [statusItem.button highlight:NO];
+		NSMenu *menu = (NSMenu *)nsMenu;
+		StatusItemController *controller = (StatusItemController *)[statusItem target];
+
+		// Temporarily assign the menu for native tracking.
+		menu.delegate = controller;
+		statusItem.menu = menu;
+
+		// Synthesize a mouse-down at the button centre to trigger native
+		// menu tracking (highlights the button, blocks until dismissed).
+		NSRect frame = [statusItem.button convertRect:statusItem.button.bounds toView:nil];
+		NSPoint loc = NSMakePoint(NSMidX(frame), NSMidY(frame));
+		NSEvent *event = [NSEvent mouseEventWithType:NSEventTypeLeftMouseDown
+		                                    location:loc
+		                               modifierFlags:0
+		                                   timestamp:[[NSProcessInfo processInfo] systemUptime]
+		                                windowNumber:statusItem.button.window.windowNumber
+		                                     context:nil
+		                                 eventNumber:0
+		                                  clickCount:1
+		                                    pressure:1.0];
+		[statusItem.button mouseDown:event];
+
+		// Menu dismissed — restore custom click handling.
+		statusItem.menu = nil;
+		menu.delegate = nil;
 	});
+}
+
+void systemTraySetCachedMenu(void* nsStatusItem, void *nsMenu) {
+	NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+	StatusItemController *controller = (StatusItemController *)[statusItem target];
+	controller.cachedMenu = (NSMenu *)nsMenu;
 }
 
 void systemTrayGetBounds(void* nsStatusItem, NSRect *rect, void **outScreen) {
@@ -201,25 +253,25 @@ int statusBarHeight() {
 void systemTrayPositionWindow(void* nsStatusItem, void* nsWindow, int offset) {
     // Get the status item's button
     NSStatusBarButton *button = [(NSStatusItem*)nsStatusItem button];
-    
+
     // Get the frame in screen coordinates
     NSRect frame = [button.window convertRectToScreen:button.frame];
-    
+
     // Get the screen that contains the status item
     NSScreen *screen = [button.window screen];
     if (screen == nil) {
         screen = [NSScreen mainScreen];
     }
-    
+
     // Get screen's backing scale factor (DPI)
     CGFloat scaleFactor = [screen backingScaleFactor];
-    
+
     // Get the window's frame
     NSRect windowFrame = [(NSWindow*)nsWindow frame];
-    
+
     // Calculate the horizontal position (centered under the status item)
     CGFloat windowX = frame.origin.x + (frame.size.width - windowFrame.size.width) / 2;
-    
+
     // If the window would go off the right edge of the screen, adjust it
     if (windowX + windowFrame.size.width > screen.frame.origin.x + screen.frame.size.width) {
         windowX = screen.frame.origin.x + screen.frame.size.width - windowFrame.size.width;
@@ -228,17 +280,23 @@ void systemTrayPositionWindow(void* nsStatusItem, void* nsWindow, int offset) {
     if (windowX < screen.frame.origin.x) {
         windowX = screen.frame.origin.x;
     }
-    
+
     // Get screen metrics
     NSRect screenFrame = [screen frame];
     NSRect visibleFrame = [screen visibleFrame];
-    
+
     // Calculate the vertical position
     CGFloat scaledOffset = offset * scaleFactor;
     CGFloat windowY = visibleFrame.origin.y + visibleFrame.size.height - windowFrame.size.height - scaledOffset;
-    
+
     // Set the window's frame
     windowFrame.origin.x = windowX;
     windowFrame.origin.y = windowY;
     [(NSWindow*)nsWindow setFrame:windowFrame display:YES animate:NO];
+
+    // Set window level to popup menu level so it appears above other windows
+    [(NSWindow*)nsWindow setLevel:NSPopUpMenuWindowLevel];
+
+    // Bring window to front
+    [(NSWindow*)nsWindow orderFrontRegardless];
 }

@@ -129,13 +129,13 @@ window.EmitEvent("window-specific-event", data)
 ### From JavaScript
 
 ```javascript
-import { Emit } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 // Emit to Go
-Emit("button-clicked", { buttonId: "submit" })
+Events.Emit("button-clicked", { buttonId: "submit" })
 
 // Emit to all windows
-Emit("broadcast-message", "Hello everyone")
+Events.Emit("broadcast-message", "Hello everyone")
 ```
 
 ## Listening to Events
@@ -506,7 +506,7 @@ func main() {
 **JavaScript:**
 
 ```javascript
-import { Events, Emit } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
 // Listen for notifications
 Events.On("notification", (event) => {
