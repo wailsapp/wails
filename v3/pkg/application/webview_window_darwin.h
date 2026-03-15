@@ -18,6 +18,18 @@
 
 @end
 
+@interface WebviewPanel : NSPanel
+- (BOOL) canBecomeKeyWindow;
+- (BOOL) canBecomeMainWindow;
+- (BOOL) acceptsFirstResponder;
+- (BOOL) becomeFirstResponder;
+- (BOOL) resignFirstResponder;
+- (WebviewPanel*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
+
+@property (assign) WKWebView* webView;
+
+@end
+
 @interface WebviewWindowDelegate : NSObject <NSWindowDelegate, WKScriptMessageHandler, WKNavigationDelegate, WKURLSchemeHandler, NSDraggingDestination, WKUIDelegate>
 
 @property unsigned int windowId;
