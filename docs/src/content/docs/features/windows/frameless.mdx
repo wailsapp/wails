@@ -166,11 +166,11 @@ Use the `--wails-draggable` CSS property:
 **JavaScript for buttons:**
 
 ```javascript
-import { WindowMinimise, WindowMaximise, WindowClose } from '@wailsio/runtime'
+import { Window } from '@wailsio/runtime'
 
-document.querySelector('.minimize').addEventListener('click', WindowMinimise)
-document.querySelector('.maximize').addEventListener('click', WindowMaximise)
-document.querySelector('.close').addEventListener('click', WindowClose)
+document.querySelector('.minimize').addEventListener('click', () => Window.Minimise())
+document.querySelector('.maximize').addEventListener('click', () => Window.Maximise())
+document.querySelector('.close').addEventListener('click', () => Window.Close())
 ```
 
 ## System Buttons
@@ -214,15 +214,11 @@ document.querySelector('.close').addEventListener('click', Close)
 **Or use runtime methods:**
 
 ```javascript
-import { 
-    WindowMinimise, 
-    WindowMaximise, 
-    WindowClose 
-} from '@wailsio/runtime'
+import { Window } from '@wailsio/runtime'
 
-document.querySelector('.minimize').addEventListener('click', WindowMinimise)
-document.querySelector('.maximize').addEventListener('click', WindowMaximise)
-document.querySelector('.close').addEventListener('click', WindowClose)
+document.querySelector('.minimize').addEventListener('click', () => Window.Minimise())
+document.querySelector('.maximize').addEventListener('click', () => Window.Maximise())
+document.querySelector('.close').addEventListener('click', () => Window.Close())
 ```
 
 ### Toggle Maximise State
@@ -230,22 +226,22 @@ document.querySelector('.close').addEventListener('click', WindowClose)
 Track maximise state for button icon:
 
 ```javascript
-import { WindowIsMaximised, WindowMaximise, WindowUnMaximise } from '@wailsio/runtime'
+import { Window } from '@wailsio/runtime'
 
 async function toggleMaximise() {
-    const isMaximised = await WindowIsMaximised()
-    
+    const isMaximised = await Window.IsMaximised()
+
     if (isMaximised) {
-        await WindowUnMaximise()
+        await Window.Restore()
     } else {
-        await WindowMaximise()
+        await Window.Maximise()
     }
-    
+
     updateMaximiseButton()
 }
 
 async function updateMaximiseButton() {
-    const isMaximised = await WindowIsMaximised()
+    const isMaximised = await Window.IsMaximised()
     const button = document.querySelector('.maximize')
     button.textContent = isMaximised ? '❐' : '□'
 }
@@ -737,41 +733,35 @@ body {
 **JavaScript:**
 
 ```javascript
-import { 
-    WindowMinimise, 
-    WindowMaximise,
-    WindowUnMaximise,
-    WindowIsMaximised,
-    WindowClose 
-} from '@wailsio/runtime'
+import { Window } from '@wailsio/runtime'
 
 // Minimise button
 document.querySelector('.minimize').addEventListener('click', () => {
-    WindowMinimise()
+    Window.Minimise()
 })
 
 // Maximise/restore button
 const maximiseBtn = document.querySelector('.maximize')
 maximiseBtn.addEventListener('click', async () => {
-    const isMaximised = await WindowIsMaximised()
-    
+    const isMaximised = await Window.IsMaximised()
+
     if (isMaximised) {
-        await WindowUnMaximise()
+        await Window.Restore()
     } else {
-        await WindowMaximise()
+        await Window.Maximise()
     }
-    
+
     updateMaximiseButton()
 })
 
 // Close button
 document.querySelector('.close').addEventListener('click', () => {
-    WindowClose()
+    Window.Close()
 })
 
 // Update maximise button icon
 async function updateMaximiseButton() {
-    const isMaximised = await WindowIsMaximised()
+    const isMaximised = await Window.IsMaximised()
     maximiseBtn.textContent = isMaximised ? '❐' : '□'
     maximiseBtn.title = isMaximised ? 'Restore' : 'Maximise'
 }

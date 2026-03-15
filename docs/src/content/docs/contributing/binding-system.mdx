@@ -139,9 +139,9 @@ export namespace backend {
 ### JavaScript Side
 
 ```ts
-import { invoke } from "@wailsio/runtime";
+import { System } from "@wailsio/runtime";
 
-await invoke(0x7a1201d3 /* ChatService.Send */, ["Hello"]);
+await System.invoke(0x7a1201d3 /* ChatService.Send */, ["Hello"]);
 ```
 
 Implementation: `runtime/desktop/@wailsio/runtime/invoke.ts`
