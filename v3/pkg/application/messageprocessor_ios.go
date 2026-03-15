@@ -30,6 +30,13 @@ var iosMethodNames = map[int]string{
 	IOSUserAgentSet:                     "UserAgent.Set",
 }
 
+func mobileMethodName(req *RuntimeRequest) string {
+	if req.Object == iosRequest {
+		return iosMethodNames[req.Method]
+	}
+	return ""
+}
+
 func (m *MessageProcessor) processIOSMethod(req *RuntimeRequest, window Window) (any, error) {
 	args := req.Args.AsMap()
 

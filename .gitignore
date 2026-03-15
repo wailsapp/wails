@@ -95,3 +95,6 @@ v2/cmd/wails/internal/commands/initialise/templates/testtemplates/
 
 # Ignore local iOS test app
 /v3/testiosapp/
+
+# Ignore local Copilot instructions file
+/.github/copilot-instructions.md
