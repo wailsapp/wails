@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix Android shared-library builds by decoupling mobile runtime logging from iOS-only symbols, allowing Android runtime message handling changes to compile correctly (#5022)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
