@@ -14,10 +14,10 @@
   "author": "Lea Anthony <lea.anthony@gmail.com>",
   "license": "ISC",
   "devDependencies": {
-    "esbuild": "^0.15.6",
-    "happy-dom": "^7.6.0",
+    "esbuild": "^0.27.3",
+    "happy-dom": "^20.7.0",
     "npm-run-all": "^4.1.5",
-    "svelte": "^3.49.0",
-    "vitest": "^0.24.3"
+    "svelte": "^5.53.5",
+    "vitest": "^4.0.18"
   }
 }
