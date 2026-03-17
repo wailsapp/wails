@@ -191,7 +191,10 @@ func (f *Frontend) MessageDialog(options frontend.MessageDialogOptions) (string,
 
 	flags := calculateMessageDialogFlags(options)
 
-	button, _ := windows.MessageBox(windows.HWND(f.getHandleForDialog()), message, title, flags|windows.MB_SETFOREGROUND)
+	button, msgErr := windows.MessageBox(windows.HWND(f.getHandleForDialog()), message, title, flags|windows.MB_SETFOREGROUND)
+	if msgErr != nil {
+		return "", msgErr
+	}
 	// This maps MessageBox return values to strings
 	responses := []string{"", "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "", "", "Try Again", "Continue"}
 	result := "Error"
