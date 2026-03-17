@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed clipboard mojibake on macOS by setting LANG environment variable for pbpaste/pbcopy operations [#5012](https://github.com/wailsapp/wails/pull/5012) by @veeceey
 - Fixed `wails init` to prevent initialization in non-empty directories when using the `-d` flag, avoiding accidental data loss [`#4940`](https://github.com/wailsapp/wails/issues/4940) by `@leaanthony`
 - Fixed missing `EventsOffAll` in runtime templates for all frontend frameworks [#4883](https://github.com/wailsapp/wails/pull/4883) by @narcilee7
 - Fixed Linux crash on panic in JS-bound Go methods due to WebKit overriding signal handlers [#3965](https://github.com/wailsapp/wails/issues/3965) by @leaanthony
