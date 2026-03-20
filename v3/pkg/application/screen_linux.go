@@ -19,6 +19,18 @@ func (a *linuxApp) processAndCacheScreens() error {
 	if err != nil {
 		return err
 	}
+	// gdk_monitor_is_primary is unreliable on Wayland (always returns false).
+	// If no screen reports as primary, default to index 0.
+	hasPrimary := false
+	for _, s := range screens {
+		if s.IsPrimary {
+			hasPrimary = true
+			break
+		}
+	}
+	if !hasPrimary && len(screens) > 0 {
+		screens[0].IsPrimary = true
+	}
 	return a.parent.Screen.LayoutScreens(screens)
 }
 
