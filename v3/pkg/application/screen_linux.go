@@ -6,20 +6,7 @@ import (
 	"sync"
 )
 
-func (a *linuxApp) getPrimaryScreen() (*Screen, error) {
-	var wg sync.WaitGroup
-	var screen *Screen
-	var err error
-	wg.Add(1)
-	InvokeSync(func() {
-		screen, err = getPrimaryScreen()
-		wg.Done()
-	})
-	wg.Wait()
-	return screen, err
-}
-
-func (a *linuxApp) getScreens() ([]*Screen, error) {
+func (a *linuxApp) processAndCacheScreens() error {
 	var wg sync.WaitGroup
 	var screens []*Screen
 	var err error
@@ -29,7 +16,18 @@ func (a *linuxApp) getScreens() ([]*Screen, error) {
 		wg.Done()
 	})
 	wg.Wait()
-	return screens, err
+	if err != nil {
+		return err
+	}
+	return a.parent.Screen.LayoutScreens(screens)
+}
+
+func (a *linuxApp) getPrimaryScreen() (*Screen, error) {
+	return a.parent.Screen.primaryScreen, nil
+}
+
+func (a *linuxApp) getScreens() ([]*Screen, error) {
+	return a.parent.Screen.screens, nil
 }
 
 func getScreenForWindow(window *linuxWebviewWindow) (*Screen, error) {
