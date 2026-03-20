@@ -6,20 +6,7 @@ import (
 	"sync"
 )
 
-func (a *linuxApp) getPrimaryScreen() (*Screen, error) {
-	var wg sync.WaitGroup
-	var screen *Screen
-	var err error
-	wg.Add(1)
-	InvokeSync(func() {
-		screen, err = getPrimaryScreen()
-		wg.Done()
-	})
-	wg.Wait()
-	return screen, err
-}
-
-func (a *linuxApp) getScreens() ([]*Screen, error) {
+func (a *linuxApp) processAndCacheScreens() error {
 	var wg sync.WaitGroup
 	var screens []*Screen
 	var err error
@@ -29,7 +16,30 @@ func (a *linuxApp) getScreens() ([]*Screen, error) {
 		wg.Done()
 	})
 	wg.Wait()
-	return screens, err
+	if err != nil {
+		return err
+	}
+	// gdk_monitor_is_primary is unreliable on Wayland (always returns false).
+	// If no screen reports as primary, default to index 0.
+	hasPrimary := false
+	for _, s := range screens {
+		if s.IsPrimary {
+			hasPrimary = true
+			break
+		}
+	}
+	if !hasPrimary && len(screens) > 0 {
+		screens[0].IsPrimary = true
+	}
+	return a.parent.Screen.LayoutScreens(screens)
+}
+
+func (a *linuxApp) getPrimaryScreen() (*Screen, error) {
+	return a.parent.Screen.primaryScreen, nil
+}
+
+func (a *linuxApp) getScreens() ([]*Screen, error) {
+	return a.parent.Screen.screens, nil
 }
 
 func getScreenForWindow(window *linuxWebviewWindow) (*Screen, error) {

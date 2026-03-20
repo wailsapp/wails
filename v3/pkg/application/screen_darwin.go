@@ -89,6 +89,7 @@ Screen* getAllScreens() {
 	for (int i = 0; i < screens.count; i++) {
 		NSScreen* screen = [screens objectAtIndex:i];
 		returnScreens[i] = processScreen(screen);
+		returnScreens[i].isPrimary = (i == 0);
 	}
 	return returnScreens;
 }
@@ -163,21 +164,34 @@ func cScreenToScreen(screen C.Screen) *Screen {
 	}
 }
 
-func (m *macosApp) getPrimaryScreen() (*Screen, error) {
-	cScreen := C.GetPrimaryScreen()
-	return cScreenToScreen(cScreen), nil
-}
-
-func (m *macosApp) getScreens() ([]*Screen, error) {
+func (m *macosApp) processAndCacheScreens() error {
 	cScreens := C.getAllScreens()
 	defer C.free(unsafe.Pointer(cScreens))
 	numScreens := int(C.GetNumScreens())
-	displays := make([]*Screen, numScreens)
+	screens := make([]*Screen, numScreens)
 	cScreenHeaders := (*[1 << 30]C.Screen)(unsafe.Pointer(cScreens))[:numScreens:numScreens]
 	for i := 0; i < numScreens; i++ {
-		displays[i] = cScreenToScreen(cScreenHeaders[i])
+		screens[i] = cScreenToScreen(cScreenHeaders[i])
 	}
-	return displays, nil
+	return m.parent.Screen.LayoutScreens(screens)
+}
+
+func (m *macosApp) getPrimaryScreen() (*Screen, error) {
+	if m.parent.Screen.primaryScreen == nil {
+		if err := m.processAndCacheScreens(); err != nil {
+			return nil, err
+		}
+	}
+	return m.parent.Screen.primaryScreen, nil
+}
+
+func (m *macosApp) getScreens() ([]*Screen, error) {
+	if len(m.parent.Screen.screens) == 0 {
+		if err := m.processAndCacheScreens(); err != nil {
+			return nil, err
+		}
+	}
+	return m.parent.Screen.screens, nil
 }
 
 func getScreenForWindow(window *macosWebviewWindow) (*Screen, error) {
