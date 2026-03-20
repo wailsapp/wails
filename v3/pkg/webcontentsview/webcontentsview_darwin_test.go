@@ -73,6 +73,9 @@ type mockWebContentsViewImpl struct{}
 func (m *mockWebContentsViewImpl) setBounds(bounds application.Rect) {}
 func (m *mockWebContentsViewImpl) setURL(url string) {}
 func (m *mockWebContentsViewImpl) execJS(js string) {}
+func (m *mockWebContentsViewImpl) goBack() {}
+func (m *mockWebContentsViewImpl) getURL() string { return "" }
+func (m *mockWebContentsViewImpl) takeSnapshot() string { return "" }
 func (m *mockWebContentsViewImpl) attach(window application.Window) {}
 func (m *mockWebContentsViewImpl) detach() {}
 func (m *mockWebContentsViewImpl) nativeView() unsafe.Pointer { return nil }
