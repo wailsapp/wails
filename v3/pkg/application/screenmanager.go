@@ -391,6 +391,24 @@ func (m *ScreenManager) GetPrimary() *Screen {
 	return m.primaryScreen
 }
 
+// GetByID returns the screen with the given display ID, or nil if not found.
+func (m *ScreenManager) GetByID(id string) *Screen {
+	for _, screen := range m.screens {
+		if screen.ID == id {
+			return screen
+		}
+	}
+	return nil
+}
+
+// GetByIndex returns the screen at the given index in the screen list, or nil if out of range.
+func (m *ScreenManager) GetByIndex(index int) *Screen {
+	if index < 0 || index >= len(m.screens) {
+		return nil
+	}
+	return m.screens[index]
+}
+
 // Reference: https://source.chromium.org/chromium/chromium/src/+/main:ui/display/win/screen_win.cc;l=317
 func (m *ScreenManager) calculateScreensDipCoordinates() error {
 	remainingScreens := []*Screen{}
@@ -872,4 +890,12 @@ func ScreenNearestPhysicalRect(physicalRect Rect) *Screen {
 
 func ScreenNearestDipRect(dipRect Rect) *Screen {
 	return globalApplication.Screen.ScreenNearestDipRect(dipRect)
+}
+
+func GetScreenByID(id string) *Screen {
+	return globalApplication.Screen.GetByID(id)
+}
+
+func GetScreenByIndex(index int) *Screen {
+	return globalApplication.Screen.GetByIndex(index)
 }
