@@ -1368,7 +1368,15 @@ func (w *macosWebviewWindow) run() {
 			w.fullscreen()
 		case WindowStateNormal:
 		}
-		if w.parent.options.InitialPosition == WindowCentered {
+		if options.Screen != nil {
+			workArea := options.Screen.WorkArea
+			if w.parent.options.InitialPosition == WindowCentered {
+				width, height := w.size()
+				w.setPosition(workArea.X+(workArea.Width-width)/2, workArea.Y+(workArea.Height-height)/2)
+			} else {
+				w.setPosition(workArea.X+options.X, workArea.Y+options.Y)
+			}
+		} else if w.parent.options.InitialPosition == WindowCentered {
 			C.windowCenter(w.nsWindow)
 		} else {
 			w.setPosition(options.X, options.Y)

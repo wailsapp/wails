@@ -950,6 +950,26 @@ func (w *WebviewWindow) SetPosition(x int, y int) {
 	})
 }
 
+// SetScreen moves the window to the center of the given screen's WorkArea.
+// If called before Run() (impl is nil), the screen is stored for deferred application.
+func (w *WebviewWindow) SetScreen(screen *Screen) Window {
+	if screen == nil {
+		return w
+	}
+	w.options.Screen = screen
+	if w.impl == nil || w.isDestroyed() {
+		return w
+	}
+	InvokeSync(func() {
+		width, height := w.impl.size()
+		workArea := screen.WorkArea
+		x := workArea.X + (workArea.Width-width)/2
+		y := workArea.Y + (workArea.Height-height)/2
+		w.impl.setPosition(x, y)
+	})
+	return w
+}
+
 // RelativePosition returns the position of the window relative to the screen WorkArea on which it is
 func (w *WebviewWindow) RelativePosition() (int, int) {
 	if w.impl == nil || w.isDestroyed() {

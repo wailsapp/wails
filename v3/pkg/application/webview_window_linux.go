@@ -339,7 +339,15 @@ func (w *linuxWebviewWindow) run() {
 
 	w.setFrameless(w.parent.options.Frameless)
 
-	if w.parent.options.InitialPosition == WindowCentered {
+	if w.parent.options.Screen != nil {
+		workArea := w.parent.options.Screen.WorkArea
+		if w.parent.options.InitialPosition == WindowCentered {
+			width, height := w.size()
+			w.setPosition(workArea.X+(workArea.Width-width)/2, workArea.Y+(workArea.Height-height)/2)
+		} else {
+			w.setPosition(workArea.X+w.parent.options.X, workArea.Y+w.parent.options.Y)
+		}
+	} else if w.parent.options.InitialPosition == WindowCentered {
 		w.center()
 	} else {
 		w.setPosition(w.parent.options.X, w.parent.options.Y)
@@ -387,7 +395,15 @@ func (w *linuxWebviewWindow) run() {
 	}
 	if !w.parent.options.Hidden {
 		w.show()
-		if w.parent.options.InitialPosition == WindowCentered {
+		if w.parent.options.Screen != nil {
+			workArea := w.parent.options.Screen.WorkArea
+			if w.parent.options.InitialPosition == WindowCentered {
+				width, height := w.size()
+				w.setPosition(workArea.X+(workArea.Width-width)/2, workArea.Y+(workArea.Height-height)/2)
+			} else {
+				w.setPosition(workArea.X+w.parent.options.X, workArea.Y+w.parent.options.Y)
+			}
+		} else if w.parent.options.InitialPosition == WindowCentered {
 			w.center()
 		} else {
 			w.setRelativePosition(w.parent.options.X, w.parent.options.Y)

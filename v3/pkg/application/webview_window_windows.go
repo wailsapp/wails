@@ -551,7 +551,15 @@ func (w *windowsWebviewWindow) run() {
 		w.setWindowMask(options.Windows.WindowMask)
 	}
 
-	if options.InitialPosition == WindowCentered {
+	if options.Screen != nil {
+		workArea := options.Screen.WorkArea
+		if options.InitialPosition == WindowCentered {
+			width, height := w.size()
+			w.setPosition(workArea.X+(workArea.Width-width)/2, workArea.Y+(workArea.Height-height)/2)
+		} else {
+			w.setPosition(workArea.X+options.X, workArea.Y+options.Y)
+		}
+	} else if options.InitialPosition == WindowCentered {
 		w.center()
 	} else {
 		w.setPosition(options.X, options.Y)
