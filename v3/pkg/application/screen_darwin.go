@@ -89,6 +89,7 @@ Screen* getAllScreens() {
 	for (int i = 0; i < screens.count; i++) {
 		NSScreen* screen = [screens objectAtIndex:i];
 		returnScreens[i] = processScreen(screen);
+		returnScreens[i].isPrimary = (i == 0);
 	}
 	return returnScreens;
 }
