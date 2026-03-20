@@ -88,8 +88,8 @@ func handleError(err error) {
 }
 
 func (a *App) GetRandomImageUrl() string {
-	response, err := http.Get("https://dog.ceo/api/breeds/image/random")
-	handleError(err)
+  response, err := http.Get("https://dog.ceo/api/breeds/image/random")
+  handleError(err)
   defer response.Body.Close()
 
 	responseData, err := ioutil.ReadAll(response.Body)
@@ -196,8 +196,8 @@ Add the following lines to `frontend/src/App.svelte`:
     showBreedPhotos = false;
 
     GetImageUrlsByBreed(selectedBreed).then((result) => {
-    photos = result;
-    showBreedPhotos = true;
+      photos = result;
+      showBreedPhotos = true;
     });
   }
 </script>
