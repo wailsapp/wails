@@ -768,12 +768,6 @@ func windowFullscreen(window pointer) {
 	gtkWindowFullScreen(window)
 }
 
-func windowGetPosition(window pointer) (int, int) {
-	var x, y int
-	gtkWindowGetPosition(window, &x, &y)
-	return x, y
-}
-
 func windowGetCurrentMonitor(window pointer) pointer {
 	// Get the monitor that the window is currently on
 	display := gtkWidgetGetDisplay(window)

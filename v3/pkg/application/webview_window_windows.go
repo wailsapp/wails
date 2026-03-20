@@ -552,11 +552,10 @@ func (w *windowsWebviewWindow) run() {
 	}
 
 	if options.Screen != nil {
-		workArea := options.Screen.WorkArea
 		if options.InitialPosition == WindowCentered {
-			width, height := w.size()
-			w.setPosition(workArea.X+(workArea.Width-width)/2, workArea.Y+(workArea.Height-height)/2)
+			w.centerOnScreen(options.Screen)
 		} else {
+			workArea := options.Screen.WorkArea
 			w.setPosition(workArea.X+options.X, workArea.Y+options.Y)
 		}
 	} else if options.InitialPosition == WindowCentered {
@@ -744,6 +743,14 @@ func (w *windowsWebviewWindow) setPosition(x int, y int) {
 	bounds.Y = y
 
 	w.setBounds(bounds)
+}
+
+func (w *windowsWebviewWindow) centerOnScreen(screen *Screen) {
+	workArea := screen.WorkArea
+	width, height := w.size()
+	x := workArea.X + (workArea.Width-width)/2
+	y := workArea.Y + (workArea.Height-height)/2
+	w.setPosition(x, y)
 }
 
 // Get window position relative to the screen WorkArea on which it is

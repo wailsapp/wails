@@ -1510,16 +1510,26 @@ func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
 
 func getPrimaryScreen() (*Screen, error) {
 	display := C.gdk_display_get_default()
-	monitor := C.gdk_display_get_primary_monitor(display)
+	primaryMonitor := C.gdk_display_get_primary_monitor(display)
+
+	// Find the index of the primary monitor so the ID matches getScreenByIndex's contract.
+	primaryIndex := 0
+	count := int(C.gdk_display_get_n_monitors(display))
+	for i := 0; i < count; i++ {
+		if C.gdk_display_get_monitor(display, C.int(i)) == primaryMonitor {
+			primaryIndex = i
+			break
+		}
+	}
 
 	var geometry C.GdkRectangle
-	C.gdk_monitor_get_geometry(monitor, &geometry)
+	C.gdk_monitor_get_geometry(primaryMonitor, &geometry)
 
 	var workarea C.GdkRectangle
-	C.gdk_monitor_get_workarea(monitor, &workarea)
+	C.gdk_monitor_get_workarea(primaryMonitor, &workarea)
 
-	scaleFactor := float32(C.gdk_monitor_get_scale_factor(monitor))
-	name := C.gdk_monitor_get_model(monitor)
+	scaleFactor := float32(C.gdk_monitor_get_scale_factor(primaryMonitor))
+	name := C.gdk_monitor_get_model(primaryMonitor)
 
 	x := int(geometry.x)
 	y := int(geometry.y)
@@ -1527,7 +1537,7 @@ func getPrimaryScreen() (*Screen, error) {
 	height := int(geometry.height)
 
 	return &Screen{
-		ID:          "0",
+		ID:          fmt.Sprintf("%d", primaryIndex),
 		Name:        C.GoString(name),
 		IsPrimary:   true,
 		ScaleFactor: scaleFactor,

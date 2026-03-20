@@ -90,6 +90,7 @@ type (
 		setBounds(bounds Rect)
 		position() (int, int)
 		setPosition(x int, y int)
+		centerOnScreen(screen *Screen)
 		relativePosition() (int, int)
 		setRelativePosition(x int, y int)
 		flash(enabled bool)
@@ -961,11 +962,7 @@ func (w *WebviewWindow) SetScreen(screen *Screen) Window {
 		return w
 	}
 	InvokeSync(func() {
-		width, height := w.impl.size()
-		workArea := screen.WorkArea
-		x := workArea.X + (workArea.Width-width)/2
-		y := workArea.Y + (workArea.Height-height)/2
-		w.impl.setPosition(x, y)
+		w.impl.centerOnScreen(screen)
 	})
 	return w
 }
