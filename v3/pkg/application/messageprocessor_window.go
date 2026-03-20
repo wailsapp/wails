@@ -59,6 +59,7 @@ const (
 	WindowSnapAssist                 = 49
 	WindowFilesDropped               = 50
 	WindowPrint                      = 51
+	WindowSetScreen                  = 52
 )
 
 var windowMethodNames = map[int]string{
@@ -114,6 +115,7 @@ var windowMethodNames = map[int]string{
 	WindowFilesDropped:               "FilesDropped",
 	WindowSnapAssist:                 "SnapAssist",
 	WindowPrint:                      "Print",
+	WindowSetScreen:                  "SetScreen",
 }
 
 var unit = struct{}{}
@@ -393,6 +395,17 @@ func (m *MessageProcessor) processWindowMethod(
 		if err != nil {
 			return nil, fmt.Errorf("Window.Print failed: %w", err)
 		}
+		return unit, nil
+	case WindowSetScreen:
+		screenID := args.String("screenID")
+		if screenID == nil {
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'screenID'")
+		}
+		screen := globalApplication.Screen.GetByID(*screenID)
+		if screen == nil {
+			return nil, errs.NewInvalidWindowCallErrorf("screen not found: %s", *screenID)
+		}
+		window.SetScreen(screen)
 		return unit, nil
 	default:
 		return nil, errs.NewInvalidWindowCallErrorf("Unknown method %d", req.Method)
