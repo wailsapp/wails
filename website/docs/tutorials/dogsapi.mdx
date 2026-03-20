@@ -181,13 +181,13 @@ Add the following lines to `frontend/src/App.svelte`:
     showBreedPhotos = false;
 
     GetRandomImageUrl().then((result) => {
-    randomImageUrl = result;
-    showRandomPhoto = true;
+      randomImageUrl = result;
+      showRandomPhoto = true;
     });
   }
 
   function getBreedList() {
-    GetBreedList().then(result => breeds = result);;
+    GetBreedList();
   }
 
   function getImageUrlsByBreed() {
