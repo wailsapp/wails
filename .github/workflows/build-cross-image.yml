@@ -102,6 +102,9 @@ jobs:
     needs: build
     if: ${{ inputs.skip_tests != 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     strategy:
       fail-fast: false
       matrix:
