@@ -30,6 +30,10 @@ type iShellItemVtbl struct {
 func newIShellItem(path string) (*iShellItem, error) {
 	var shellItem *iShellItem
 	pathPtr := ole.SysAllocString(path)
+	defer func(v *int16) {
+		_ = ole.SysFreeString(v)
+	}(pathPtr)
+
 	ret, _, _ := procSHCreateItemFromParsingName.Call(
 		uintptr(unsafe.Pointer(pathPtr)),
 		0,
@@ -42,7 +46,7 @@ func (vtbl *iShellItemVtbl) getDisplayName(objPtr unsafe.Pointer) (string, error
 	var ptr *uint16
 	ret, _, _ := syscall.SyscallN(vtbl.GetDisplayName,
 		uintptr(objPtr),
-		0x80058000, // SIGDN_FILESYSPATH
+		0x80058000, // SIGDN_FILESYSPATH,
 		uintptr(unsafe.Pointer(&ptr)))
 	if err := hresultToError(ret); err != nil {
 		return "", err

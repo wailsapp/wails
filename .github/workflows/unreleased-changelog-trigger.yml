@@ -39,6 +39,7 @@ jobs:
     name: Trigger v3-alpha Release
     permissions:
       contents: read
+      actions: write
     runs-on: ubuntu-latest
     needs: check-permissions
     if: needs.check-permissions.outputs.authorized == 'true'

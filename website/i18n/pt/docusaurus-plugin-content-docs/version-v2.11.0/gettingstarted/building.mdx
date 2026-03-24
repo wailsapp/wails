@@ -1,0 +1,26 @@
+---
+sidebar_position: 6
+---
+
+# Compilando seu projeto
+
+No diretório do projeto, execute `wails builds`. Isso compilará seu projeto e salvará o binário pronto para produção no diretório `build/bin`.
+
+:::info Linux
+If you are using a Linux distribution that does not have webkit2gtk-4.0 (such as Ubuntu 24.04), you will need to add `-tags webkit2_41`.
+:::
+
+Se você executar o binário, você verá a aplicação padrão:
+
+```mdx-code-block
+<div class="text--center">
+  <img
+    src={require("@site/static/img/defaultproject.webp").default}
+    width="50%"
+    class="screenshot"
+  />
+</div>
+<br />
+```
+
+Para mais detalhes sobre as opções de compilação, consulte a [Referência do CLI](../reference/cli.mdx#build).

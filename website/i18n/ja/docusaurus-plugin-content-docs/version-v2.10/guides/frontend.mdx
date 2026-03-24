@@ -1,0 +1,72 @@
+# フロントエンド
+
+## スクリプトの注入
+
+Wailsが`index.html`を提供するとき、デフォルトでは、`<body>`タグ内に`/wails/ipc.js`および`/wails/runtime.js`の2つのスクリプトを読み込む行を注入します。 これらのスクリプトファイルは、バインディングおよびランタイムを提供しています。
+
+デフォルトでどの位置にスクリプトが注入されるかを、下記のコードに示します:
+
+```html
+<html>
+  <head>
+    <title>injection example</title>
+    <link rel="stylesheet" href="/main.css" />
+    <!--     <script src="/wails/ipc.js"></script> -->
+    <!--     <script src="/wails/runtime.js"></script> -->
+  </head>
+
+  <body data-wails-drag>
+    <div class="logo"></div>
+    <div class="result" id="result">Please enter your name below 👇</div>
+    <div class="input-box" id="input" data-wails-no-drag>
+      <input class="input" id="name" type="text" autocomplete="off" />
+      <button class="btn" onclick="greet()">Greet</button>
+    </div>
+
+    <script src="/main.js"></script>
+  </body>
+</html>
+```
+
+### デフォルトのスクリプト注入の上書き
+
+開発者がより柔軟に対応できるように、これらの動作をカスタマイズするためのメタタグが用意されています:
+
+```html
+<meta name="wails-options" content="[options]" />
+```
+
+オプションは次のとおりです:
+
+| 値                   | 説明                              |
+| ------------------- | ------------------------------- |
+| noautoinjectruntime | `/wails/runtime.js`の自動注入を無効化します |
+| noautoinjectipc     | `/wails/ipc.js`の自動注入を無効化します     |
+| noautoinject        | すべてのスクリプトの自動注入を無効化します           |
+
+カンマで区切ることで、複数のオプションを指定できます。
+
+次のコードは、自動注入版のコードと完全に同じ挙動となります:
+
+```html
+<html>
+  <head>
+    <title>injection example</title>
+    <meta name="wails-options" content="noautoinject" />
+    <link rel="stylesheet" href="/main.css" />
+  </head>
+
+  <body data-wails-drag>
+    <div class="logo"></div>
+    <div class="result" id="result">Please enter your name below 👇</div>
+    <div class="input-box" id="input" data-wails-no-drag>
+      <input class="input" id="name" type="text" autocomplete="off" />
+      <button class="btn" onclick="greet()">Greet</button>
+    </div>
+
+    <script src="/wails/ipc.js"></script>
+    <script src="/wails/runtime.js"></script>
+    <script src="/main.js"></script>
+  </body>
+</html>
+```

@@ -1,0 +1,37 @@
+---
+sidebar_position: 2
+---
+
+# Events
+
+The Wails runtime provides a unified events system, where events can be emitted or received by either Go or JavaScript. Opcionalmente, dados podem ser passados com os eventos. Os ouvintes receberão os dados nos tipos de dados locais.
+
+### EventsOn
+
+Este método configura um ouvinte para o nome do evento. Quando um evento do tipo `eventName` é [emitted](#EventsEmit), a callback é acionada. Quaisquer dados adicionais enviados com o evento emitido serão passados para o retorno de chamada. Retorna uma função para cancelar o ouvinte.
+
+Go: `EventsOn(ctx context.Context, eventName string, callback func(optionalData ...interface{})) func()`<br/> JS: `EventsOn(eventName string, callback function(optionalData?: any)): () => void`
+
+### EventsOff
+
+Este método desregistra o listener para o nome do evento, opcionalmente várias listagens podem ser desregistradas via `adicionalEventNames`.
+
+Go: `EventsOff(ctx context.Context, eventName string, additionalEventNames ...string)`<br/> JS: `EventsOff(eventName string, ...additionalEventNames)`
+
+### EventsOnce
+
+Esse método configura um listener para o nome do evento, mas só será acionado uma vez. Retorna uma função para cancelar o ouvinte.
+
+Go: `EventsOnce(ctx context.Context, eventName string, callback func(optionalData ...interface{})) func()`<br/> JS: `EventsOnce(eventName string, callback function(optionalData?: any)): () => void`
+
+### EventsOnMultiple
+
+Este método configura um listener para o nome do evento, mas acionará apenas um máximo de `counter` vezes. Retorna uma função para cancelar o ouvinte.
+
+Go: `EventsOnMultiple(ctx context.Context, eventName string, callback func(optionalData ...interface{}), counter int) func()`<br/> JS: `EventsOnMultiple(eventName string, callback function(optionalData?: any), counter int): () => void`
+
+### EventsEmit
+
+Este método emite o evento fornecido. Os dados opcionais podem ser passados com o evento. Isto irá acionar quaisquer ouvintes de eventos.
+
+Go: `EventsEmit(ctx context.Context, eventName string, optionalData ...interface{})`<br/> JS: `EventsEmit(eventName: string, ...optionalData: any)`

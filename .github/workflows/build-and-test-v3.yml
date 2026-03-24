@@ -5,6 +5,8 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - v3-alpha
+    paths:
+      - 'v3/**'
   pull_request_review:
     types: [submitted]
     branches:
@@ -27,78 +29,9 @@ jobs:
             echo "approved=false" >> $GITHUB_OUTPUT
           fi
 
-  test_js:
-    name: Run JS Tests
-    needs: check_approval
-    runs-on: ubuntu-latest
-    if: github.base_ref == 'v3-alpha'
-    strategy:
-      matrix:
-        node-version: [20.x]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install Task
-        uses: arduino/setup-task@v2
-        with:
-          version: 3.x
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install dependencies
-        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
-        run: |
-          npm ci
-          npx --yes esbuild@latest --version
-
-      - name: Clean build artifacts
-        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
-        run: npm run clean
-
-      - name: Type-check runtime
-        working-directory: v3
-        run: task runtime:check
-
-      - name: Test runtime
-        working-directory: v3
-        run: task runtime:test
-
-      - name: Check that the bundled runtime builds
-        working-directory: v3
-        run: task runtime:build
-
-      - name: Check that the npm package builds
-        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
-        run: npm run build
-
-      - name: Pack runtime for template tests
-        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
-        run: npm pack
-
-      - name: Store runtime build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: runtime-build-artifacts
-          path: |
-            v3/internal/runtime/desktop/@wailsio/runtime/dist/
-            v3/internal/runtime/desktop/@wailsio/runtime/types/
-            v3/internal/runtime/desktop/@wailsio/runtime/tsconfig.tsbuildinfo
-
-      - name: Store runtime package
-        uses: actions/upload-artifact@v4
-        with:
-          name: runtime-package
-          path: v3/internal/runtime/desktop/@wailsio/runtime/*.tgz
-
   test_go:
     name: Run Go Tests v3
-    needs: [check_approval, test_js]
+    needs: check_approval
     runs-on: ${{ matrix.os }}
     if: github.base_ref == 'v3-alpha'
     strategy:
@@ -122,7 +55,6 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
-          cache: true
           cache-dependency-path: "v3/go.sum"
 
       - name: Install Task
@@ -131,18 +63,9 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Retrieve runtime build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: runtime-build-artifacts
-          path: v3/internal/runtime/desktop/@wailsio/runtime/
-
       - name: Build Examples
         working-directory: v3
-        run: |
-          echo "Starting example compilation tests..."
-          task test:examples
-          echo "Example compilation tests completed successfully"
+        run: task test:examples
 
       - name: Run tests (mac)
         if: matrix.os == 'macos-latest'
@@ -170,22 +93,35 @@ jobs:
         working-directory: v3
         run: task generator:test:check
 
-  cleanup:
-    name: Cleanup build artifacts
-    if: always()
-    needs: [test_js, test_go, test_templates]
+  test_js:
+    name: Run JS Tests
+    needs: check_approval
     runs-on: ubuntu-latest
+    if: github.base_ref == 'v3-alpha'
+    strategy:
+      matrix:
+        node-version: [20.x]
+
     steps:
-      - uses: geekyeggo/delete-artifact@v5
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
-          name: |
-            runtime-build-artifacts
-            runtime-package
-          failOnError: false
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: v2/internal/frontend/runtime
+
+      - name: Run tests
+        run: npm test
+        working-directory: v2/internal/frontend/runtime
 
   test_templates:
     name: Test Templates
-    needs: [test_js, test_go]
+    needs: test_go
     runs-on: ${{ matrix.os }}
     if: github.base_ref == 'v3-alpha'
     strategy:
@@ -221,7 +157,6 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
-          cache: true
           cache-dependency-path: "v3/go.sum"
 
       - name: Install Task
@@ -236,28 +171,12 @@ jobs:
           task install
           wails3 doctor
 
-      - name: Download runtime package
-        uses: actions/download-artifact@v4
-        with:
-          name: runtime-package
-          path: wails-runtime-temp
-
       - name: Generate template '${{ matrix.template }}'
-        shell: bash
         run: |
-          # Get absolute path - use pwd -W on Windows for native paths, pwd elsewhere
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            RUNTIME_TGZ="$(cd wails-runtime-temp && pwd -W)/$(ls wails-runtime-temp/*.tgz | xargs basename)"
-          else
-            RUNTIME_TGZ="$(cd wails-runtime-temp && pwd)/$(ls wails-runtime-temp/*.tgz | xargs basename)"
-          fi
           mkdir -p ./test-${{ matrix.template }}
           cd ./test-${{ matrix.template }}
           wails3 init -n ${{ matrix.template }} -t ${{ matrix.template }}
-          cd ${{ matrix.template }}/frontend
-          # Replace @wailsio/runtime version with local tarball
-          npm pkg set dependencies.@wailsio/runtime="file://$RUNTIME_TGZ"
-          cd ..
+          cd ${{ matrix.template }}
           wails3 build
 
   build_results:

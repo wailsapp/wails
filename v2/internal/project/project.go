@@ -42,6 +42,9 @@ type Project struct {
 	// Build directory
 	BuildDir string `json:"build:dir"`
 
+	// BuildTags Extra tags to process during build
+	BuildTags string `json:"build:tags"`
+
 	// The output filename
 	OutputFilename string `json:"outputfilename"`
 
@@ -92,6 +95,9 @@ type Project struct {
 
 	// Frontend directory
 	FrontendDir string `json:"frontend:dir"`
+
+	// The timeout in seconds for Vite server detection. Default 10
+	ViteServerTimeout int `json:"viteServerTimeout"`
 
 	Bindings Bindings `json:"bindings"`
 }
@@ -174,6 +180,9 @@ func (p *Project) setDefaults() {
 	}
 	if p.DevServer == "" {
 		p.DevServer = "localhost:34115"
+	}
+	if p.ViteServerTimeout == 0 {
+		p.ViteServerTimeout = 10
 	}
 	if p.NSISType == "" {
 		p.NSISType = "multiple"

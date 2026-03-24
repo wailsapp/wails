@@ -1,0 +1,97 @@
+# Templates
+
+Wails генерирует проекты из заранее созданных шаблонов. В v1 это было трудно поддерживать набор проектов, которые были подвержены устареванию. В v2 для расширения прав и возможностей сообщества добавлено несколько новых возможностей для шаблонов:
+
+- Возможность создания проектов из [удаленных шаблонов](../reference/cli.mdx#remote-templates)
+- Инструменты, которые помогут создать собственные шаблоны
+
+## Создание шаблонов
+
+Для создания шаблона вы можете использовать команду `wails generate template`. Для создания шаблона по умолчанию запустите:
+
+`wails generate template -name mytemplate`
+
+Это создает каталог "mytemplate" с файлами по умолчанию:
+
+```shell title=mytemplate/
+.
+|-- NEXTSTEPS.md
+|-- README.md
+|-- app.tmpl.go
+|-- frontend
+|   `-- dist
+|       |-- assets
+|       |   |-- fonts
+|       |   |   |-- OFL.txt
+|       |   |   `-- nunito-v16-latin-regular.woff2
+|       |   `-- images
+|       |       `-- logo-dark.svg
+|       |-- index.html
+|       |-- main.css
+|       `-- main.js
+|-- go.mod.tmpl
+|-- main.tmpl.go
+|-- template.json
+`-- wails.tmpl.json
+```
+
+### Обзор шаблона
+
+Шаблон по умолчанию состоит из следующих файлов и директорий:
+
+| Имя файла / Каталог | Описание                             |
+| ------------------- | ------------------------------------ |
+| NEXTSTEPS.md        | Инструкции по заполнению шаблона     |
+| README.md           | README публикуемый с шаблоном        |
+| app.tmpl.go         | `app.go` файл шаблона                |
+| frontend/           | Каталог, содержащий файлы интерфейса |
+| go.mod.tmpl         | `go.mod` файл шаблона                |
+| main.tmpl.go        | `main.go` файл шаблона               |
+| template.json       | Метаданные шаблона                   |
+| wails.tmpl.json     | `wails.json` файл шаблона            |
+
+На данный момент желательно выполнить шаги в `NEXTSTEPS.md`.
+
+## Создать шаблон из существующего проекта
+
+Можно создать шаблон из существующего проекта фронтенда, передав путь к проекту при генерации шаблона. Теперь мы рассмотрим как создать шаблон Vue 3:
+
+- Установите vue cli: `npm install -g @vue/cli`
+- Создайте проект по умолчанию: `vue create vue3-base`
+  - Выберите `Default (Vue 3) ([Vue 3] babel, eslint)`
+- После создания проекта, выполните:
+
+```shell
+> wails generate template -name wails-vue3-template -frontend .\vue3-base\
+Extracting base template files...
+Migrating existing project files to frontend directory...
+Updating package.json data...
+Renaming package.json -> package.tmpl.json...
+Updating package-lock.json data...
+Renaming package-lock.json -> package-lock.tmpl.json...
+```
+
+- Шаблон теперь может быть настроен как указано в файле `NEXTSTEPS.md`
+- Как только файлы будут готовы, их можно протестировать, запустив: `wails init -n my-vue3-project -t .\wails-vue3-template\`
+- Для тестирования нового проекта выполните: `cd my-vue3-project` затем `wails build`
+- Как только проект будет скомпилирован, запустите его: `.\build\bin\my-vue3-project.exe`
+- У вас должно получиться полностью работающее приложение Vue3:
+
+```mdx-code-block
+<div className="text--center">
+  <img
+    src={require("@site/static/img/vue3-template.png").default}
+    width="50%"
+  />
+</div>
+```
+
+## Публикация шаблона
+
+Для публикации шаблона просто загрузите файлы на GitHub. Поощряется следующая лучшая практика:
+
+- Удалите любые нежелательные файлы и каталоги (например, `.git`) из вашей frontend директории
+- Убедитесь, что `template.json` завершен, особенно `helpurl`
+- Отправить файлы на GitHub
+- Создайте PR на странице [Шаблоны сообщества](../community/templates.mdx)
+- Расскажите о своем шаблоне на [Template Announcement](https://github.com/wailsapp/wails/discussions/825) форуме

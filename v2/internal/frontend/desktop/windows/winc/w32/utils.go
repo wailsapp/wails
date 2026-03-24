@@ -75,7 +75,7 @@ func UTF16PtrToString(cstr *uint16) string {
 }
 
 func ComAddRef(unknown *IUnknown) int32 {
-	ret, _, _ := syscall.Syscall(unknown.lpVtbl.pAddRef, 1,
+	ret, _, _ := syscall.SyscallN(unknown.lpVtbl.pAddRef,
 		uintptr(unsafe.Pointer(unknown)),
 		0,
 		0)
@@ -83,7 +83,7 @@ func ComAddRef(unknown *IUnknown) int32 {
 }
 
 func ComRelease(unknown *IUnknown) int32 {
-	ret, _, _ := syscall.Syscall(unknown.lpVtbl.pRelease, 1,
+	ret, _, _ := syscall.SyscallN(unknown.lpVtbl.pRelease,
 		uintptr(unsafe.Pointer(unknown)),
 		0,
 		0)
@@ -92,7 +92,7 @@ func ComRelease(unknown *IUnknown) int32 {
 
 func ComQueryInterface(unknown *IUnknown, id *GUID) *IDispatch {
 	var disp *IDispatch
-	hr, _, _ := syscall.Syscall(unknown.lpVtbl.pQueryInterface, 3,
+	hr, _, _ := syscall.SyscallN(unknown.lpVtbl.pQueryInterface,
 		uintptr(unsafe.Pointer(unknown)),
 		uintptr(unsafe.Pointer(id)),
 		uintptr(unsafe.Pointer(&disp)))

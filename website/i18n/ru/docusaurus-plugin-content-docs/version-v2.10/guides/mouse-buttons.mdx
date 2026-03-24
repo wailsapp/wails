@@ -1,0 +1,25 @@
+# Клавиши мыши
+
+Время выполнения кода Wails перехватывает щелчки мыши для определения необходимости изменения размера окна или перемещения окна. Был задан вопрос о том, как определить, когда произошел клик мышки, потому что `window.onclick` не сообщит о кнопках мыши. Следующий код показывает, как обнаружить клики мышкой:
+
+```javascript
+window.addEventListener("mousedown", handleMouseButtonDown);
+
+function handleMouseButtonDown(event) {
+  if (event.button === 0) {
+    // left mouse button
+  } else if (event.button === 1) {
+    // middle mouse button
+  } else if (event.button === 2) {
+    // right mouse button
+  } else if (event.button === 3) {
+    // back mouse button
+  } else if (event.button === 4) {
+    // forward mouse button
+  } else {
+    // other mouse button
+  }
+}
+```
+
+Источник: https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button

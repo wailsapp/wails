@@ -1,0 +1,97 @@
+# Templates
+
+Wails gera projetos a partir de modelos pré-criados. Na v1, este era um conjunto de projetos que estavam sujeitos a sair de moda. No v2, para capacitar a comunidade, alguns novos recursos foram adicionados para os templates:
+
+- Capacidade de gerar projetos a partir de [Modelos Remotos](../reference/cli.mdx#remote-templates)
+- Ferramentas para ajudar a criar seus próprios modelos
+
+## Criando Templates
+
+Para criar um template, você pode usar o comando `wails generate template`. Para gerar um modelo padrão, execute:
+
+`wails generate template -name mytemplate`
+
+Isso cria o diretório "mytemplate" com os arquivos padrão:
+
+```shell title=mytemplate/
+.
+|-- NEXTSTEPS.md
+|-- README.md
+|-- app.tmpl.go
+|-- frontend
+|   `-- dist
+|       |-- assets
+|       |   |-- fonts
+|       |   |   |-- OFL.txt
+|       |   |   `-- nunito-v16-latin-regular.woff2
+|       |   `-- images
+|       |       `-- logo-dark.svg
+|       |-- index.html
+|       |-- main.css
+|       `-- main.js
+|-- go.mod.tmpl
+|-- main.tmpl.go
+|-- template.json
+`-- wails.tmpl.json
+```
+
+### Visão Geral do Modelo
+
+O modelo padrão consiste nos seguintes arquivos e diretórios:
+
+| Nome do arquivo / diretório | Descrição                                    |
+| --------------------------- | -------------------------------------------- |
+| NEXTSTEPS.md                | Instruções sobre como completar o modelo     |
+| README.md                   | O README publicado com o modelo              |
+| app.tmpl.go                 | Arquivo de modelo `app.go`                   |
+| frontend/                   | O diretório que contém os assets do frontend |
+| go.mod.tmpl                 | Arquivo de modelo `go.mod`                   |
+| main.tmpl.go                | Arquivo de modelo `main.go`                  |
+| template.json               | Os metadados do modelo                       |
+| wails.tmpl.json             | Arquivo de modelo `wails.json`               |
+
+Neste ponto é aconselhável seguir os passos em `NEXTSTEPS.md`.
+
+## Criando um Template de um Projeto Existente
+
+É possível criar um modelo a partir de um projeto de frontend existente, passando o caminho para o projeto ao gerar o template. Vamos agora andar sobre como criar um modelo do Vue 3:
+
+- Instale o vue cli: `npm install -g @vue/cli`
+- Crie o projeto padrão: `vue create vue3-base`
+  - Selecione `Padrão (Vue 3) ([Vue 3] babel, eslint)`
+- Depois que o projeto for gerado, execute:
+
+```shell
+> wails generate template -name wails-vue3-template -frontend .\vue3-base\
+Extracting base template files...
+Migrating existing project files to frontend directory...
+Updating package.json data...
+Renaming package.json -> package.tmpl.json...
+Updating package-lock.json data...
+Renaming package-lock.json -> package-lock.tmpl.json...
+```
+
+- O template agora pode ser personalizado conforme especificado no arquivo `NEXTSTEPS.md`
+- Uma vez que os arquivos estão prontos, eles podem ser testados executando: `wails init -n my-vue3-project -t .\wails-vue3-template\`
+- Para testar o novo projeto, execute: `cd meu-vue3-projeto` e `wails constroem`
+- Uma vez que o projeto tenha compilado, execute-o: `.\build\bin\my-vue3-project.exe`
+- Você deve ter um aplicativo Vue3 que funcione plenamente:
+
+```mdx-code-block
+<div className="text--center">
+  <img
+    src={require("@site/static/img/vue3-template.png").default}
+    width="50%"
+  />
+</div>
+```
+
+## Publicando Templates
+
+A publicação de um template está simplesmente enviando os arquivos para o GitHub. São encorajadas as seguintes melhores práticas:
+
+- Remova todos os arquivos e diretórios indesejados (como `.git`) do seu diretório no frontend
+- Certifique-se de que `template.json` esteja completo, especialmente `helpurl`
+- Faça push dos arquivos para o GitHub
+- Crie um PR na página [Templates de Comunidade](../community/templates.mdx)
+- Anuncie o modelo no fórum de discussão [de Anúncio de Modelo](https://github.com/wailsapp/wails/discussions/825)

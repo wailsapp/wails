@@ -6,7 +6,7 @@
 
    NSString *urlStr = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
 
-   HandleCustomProtocol((char*)[[[event paramDescriptorForKeyword:keyDirectObject] stringValue] UTF8String]);
+   HandleOpenURL((char*)[[[event paramDescriptorForKeyword:keyDirectObject] stringValue] UTF8String]);
 }
 @end
 

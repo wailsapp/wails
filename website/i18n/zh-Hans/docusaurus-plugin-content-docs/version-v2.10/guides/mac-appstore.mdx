@@ -1,0 +1,97 @@
+# Mac 应用商店指南
+
+本页面简要概述了如何将您的 Wails 应用程序提交到 Mac 应用商店。
+
+## 前提条件
+
+- 您需要有一个 Apple 开发者帐户。 请在 [Apple Developer Program](https://developer.apple.com/support/compare-memberships/) 网站上找到更多信息
+- 您需要在开发人员门户上创建证书（Certificates）、标识符（Identifiers）和应用程序。 更多内容请见下文
+- 你的本地机器上需要安装 Xcode 命令行工具
+
+#### 创建证书和标识符
+
+1. 前往您的 [Apple 开发者帐户](https://developer.apple.com/account/)
+2. 在 `证书（Certificates）、标识符（Identifiers）和个人资料（Profiles）` 下，单击 `标识符（Identifiers）` 并注册新的应用程序 ID。 使用格式 (com.example.app)
+3. 在同一页面下，单击 `证书（Certificates）`并为 Mac App Store 分发生成新证书（Certificates）。  下载它们并将证书导入本地计算机上的秘钥串。
+
+#### 创建应用程序提交
+
+1. 前往 [App Store Connect](https://appstoreconnect.apple.com/apps) 网站
+2. 注册一个新应用程序并链接您在上一步中创建的包 ID
+3. 根据 Apple 的要求，使用正确的屏幕截图、描述等填充您的应用程序
+4. 创建新版本的应用
+
+#### 创建配置文件
+1. 转到 [Apple 开发者资料](https://developer.apple.com/account/resources/profiles/list) 页面
+2. 为 Mac App Store Distribution 添加新的配置文件
+3. 将 Profile Type 设置为 Mac 并为上面创建的应用程序选择 App ID
+4. 选择 Mac App Distribution 证书
+5. 命名嵌入式配置文件并下载创建的配置文件。
+
+## Mac 应用商店流程
+
+#### 启用 Apple 的 App Sandbox
+
+提交到 Mac 应用商店的应用程序必须在 Apple 的 [App Sandbox](https://developer.apple.com/app-sandboxing/) 下运行。 您必须创建一个 `entitlements.plist` 文件才能使其工作。 建议在此路径 `{PROJECT_DIR}/build/darwin/entitlements.plist` 下创建此文件。
+
+**示例授权文件**
+
+这是来自 [RiftShare](https://github.com/achhabra2/riftshare) 应用程序的示例授权文件。 作为参考，请输入您的应用所需的权限。 有关详细信息，请参阅 [此站点](https://developer.apple.com/documentation/bundleresources/entitlements)。 您需要将团队 ID 和应用程序名称替换为您上面注册的名称。
+
+```xml title="entitlements.plist"
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+    <key>com.apple.security.network.client</key>
+    <true/>
+    <key>com.apple.security.network.server</key>
+    <true/>
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+    <key>com.apple.security.files.downloads.read-write</key>
+    <true/>
+    <key>com.apple.application-identifier</key>
+    <string>TEAM_ID.APP_NAME</string>
+    <key>com.apple.developer.team-identifier</key>
+    <string>TEAM_ID</string>
+</dict>
+</plist>
+```
+
+上面 **添加嵌入式配置文件** 创建的配置文件需要添加到应用程序的根目录中。 它需要命名为 embedded.provisionprofile。
+
+#### 构建并签署应用程序包
+
+以下是用于构建和签署您的应用程序以提交 Mac 应用商店的示例脚本。 它假定您正在从根项目目录运行脚本。
+
+请注意，用于签署应用程序和签署安装程序的证书是不同的。 请确保两者都导入到秘钥串中。 在秘钥串中找到字符串并将它们插入下面。 在下面填充您的证书名称和应用程序名称。 运行以下脚本将在您的应用程序的根目录中生成一个签名的 `app.pkg` 文件。
+
+```bash title="macappstore-build.sh"
+#!/bin/bash
+
+APP_CERTIFICATE="3rd Party Mac Developer Application: YOUR NAME (CODE)"
+PKG_CERTIFICATE="3rd Party Mac Developer Installer: YOUR NAME (CODE)"
+APP_NAME="YourApp"
+
+wails build -platform darwin/universal -clean
+
+cp ./embedded.provisionprofile "./build/bin/$APP_NAME.app/Contents"
+
+codesign --timestamp --options=runtime -s "$APP_CERTIFICATE" -v --entitlements ./build/darwin/entitlements.plist ./build/bin/$APP_NAME.app
+
+productbuild --sign "$PKG_CERTIFICATE" --component ./build/bin/$APP_NAME.app /Applications ./$APP_NAME.pkg
+```
+
+#### 上传应用程序包
+
+您需要上传生成的包文件并将其关联到您的应用程序，然后才能提交以供审核。
+
+1. 从 Mac 应用商店下载 [Transporter App](https://apps.apple.com/us/app/transporter/id1450874784)
+2. 打开它并使用您的 Apple ID 登录
+3. 单击 + 号并选择您在上一步中生成的 `APP_NAME.pkg` 文件。 上传它
+4. 返回 [App Store Connect](https://appstoreconnect.apple.com/apps) 站点并导航回您的应用程序提交。 选择您准备在 App 商店上提供的版本。 在 `Build` 下选择您通过 Transporter 上传的包。
+
+好了！ 您现在可以使用该网站提交您的应用程序以供审核。 几个工作日后，如果一切顺利，您应该会在 Mac 应用商店上看到您的应用程序。 

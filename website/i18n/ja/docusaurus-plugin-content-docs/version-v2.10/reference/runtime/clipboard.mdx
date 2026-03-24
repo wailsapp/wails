@@ -1,0 +1,23 @@
+---
+sidebar_position: 8
+---
+
+# クリップボード
+
+ランタイム機能の一部として、オペレーティングシステムのクリップボードへのアクセスを提供します。<br/> 現在は、テキストの処理のみに対応しています。
+
+### ClipboardGetText
+
+このメソッドは、クリップボードに現在保存されているテキストを読み込みます。
+
+Go: `ClipboardGetText(ctx context.Context) (string, error)`<br/> 返り値: 文字列(クリップボードが空の場合は、空文字)またはエラー。
+
+JS: `ClipboardGetText(): Promise<string>`<br/> 返り値: 文字列を待機するPromise(クリップボードが空の場合は、空文字)。
+
+### ClipboardSetText
+
+このメソッドは、クリップボードにテキストを書き込みます。
+
+Go: `ClipboardSetText(ctx context.Context, text string) error`<br/> 返り値: anyの場合はエラー。
+
+JS: `ClipboardSetText(text: string): Promise<boolean>`<br/> 返り値: クリップボードにテキストが正常に書き込まれた場合はtrue、そうでない場合はfalseを返すようなPromise。
