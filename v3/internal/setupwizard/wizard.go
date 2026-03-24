@@ -322,6 +322,8 @@ func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/defaults", w.handleDefaults)
 	mux.HandleFunc("/api/signing", w.handleSigning)
 	mux.HandleFunc("/api/signing/status", w.handleSigningStatus)
+	mux.HandleFunc("/api/signing/notarize/create", w.handleNotarizeCreate)
+	mux.HandleFunc("/api/signing/notarize/validate", w.handleNotarizeValidate)
 	mux.HandleFunc("/api/complete", w.handleComplete)
 	mux.HandleFunc("/api/close", w.handleClose)
 	mux.HandleFunc("/api/report-bug", w.handleReportBug)
@@ -1208,6 +1210,128 @@ func (w *Wizard) handleSigning(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (w *Wizard) handleNotarizeValidate(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+
+	if runtime.GOOS != "darwin" {
+		json.NewEncoder(rw).Encode(map[string]interface{}{
+			"valid": false,
+			"error": "Notarization profiles are only available on macOS",
+		})
+		return
+	}
+
+	profile := r.URL.Query().Get("profile")
+	if profile == "" {
+		json.NewEncoder(rw).Encode(map[string]interface{}{
+			"valid": false,
+			"error": "Profile name is required",
+		})
+		return
+	}
+
+	cmd := exec.Command("xcrun", "notarytool", "history", "--keychain-profile", profile)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		errMsg := string(output)
+		if strings.Contains(errMsg, "No Keychain password item found") {
+			json.NewEncoder(rw).Encode(map[string]interface{}{
+				"valid": false,
+				"error": "Profile not found in keychain",
+			})
+		} else {
+			json.NewEncoder(rw).Encode(map[string]interface{}{
+				"valid": false,
+				"error": strings.TrimSpace(errMsg),
+			})
+		}
+		return
+	}
+
+	json.NewEncoder(rw).Encode(map[string]interface{}{
+		"valid": true,
+	})
+}
+
+type notarizeCreateRequest struct {
+	ProfileName string `json:"profileName"`
+	AppleID     string `json:"appleID"`
+	TeamID      string `json:"teamID"`
+	Password    string `json:"password"`
+}
+
+func (w *Wizard) handleNotarizeCreate(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+
+	if r.Method != http.MethodPost {
+		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if runtime.GOOS != "darwin" {
+		json.NewEncoder(rw).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "Notarization profiles can only be created on macOS",
+		})
+		return
+	}
+
+	var req notarizeCreateRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		json.NewEncoder(rw).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "Invalid request: " + err.Error(),
+		})
+		return
+	}
+
+	if req.ProfileName == "" || req.AppleID == "" || req.TeamID == "" || req.Password == "" {
+		json.NewEncoder(rw).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "All fields are required",
+		})
+		return
+	}
+
+	cmd := exec.Command("xcrun", "notarytool", "store-credentials",
+		req.ProfileName,
+		"--apple-id", req.AppleID,
+		"--team-id", req.TeamID,
+		"--password", req.Password,
+		"--validate",
+	)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		errMsg := strings.TrimSpace(string(output))
+		// Clean up the error message
+		if strings.Contains(errMsg, "Error:") {
+			lines := strings.Split(errMsg, "\n")
+			for _, line := range lines {
+				if strings.Contains(line, "Error:") {
+					errMsg = strings.TrimSpace(strings.TrimPrefix(line, "Error:"))
+					break
+				}
+			}
+		}
+		json.NewEncoder(rw).Encode(map[string]interface{}{
+			"success": false,
+			"error":   errMsg,
+		})
+		return
+	}
+
+	// Save the profile name to defaults
+	defaults, _ := LoadGlobalDefaults()
+	defaults.Signing.Darwin.KeychainProfile = req.ProfileName
+	defaults.Signing.Darwin.TeamID = req.TeamID
+	_ = SaveGlobalDefaults(defaults)
+
+	json.NewEncoder(rw).Encode(map[string]interface{}{
+		"success": true,
+		"output":  strings.TrimSpace(string(output)),
+	})
+}
+
 type signingStatusResponse struct {
 	Darwin       darwinSigningStatus  `json:"darwin"`
 	Windows      windowsSigningStatus `json:"windows"`
@@ -1343,6 +1467,7 @@ func getMacOSSigningIdentities() []string {
 		return nil
 	}
 
+	seen := make(map[string]bool)
 	var identities []string
 	lines := strings.Split(string(output), "\n")
 	for _, line := range lines {
@@ -1351,7 +1476,10 @@ func getMacOSSigningIdentities() []string {
 			end := strings.LastIndex(line, "\"")
 			if start != -1 && end > start {
 				identity := line[start+1 : end]
-				identities = append(identities, identity)
+				if !seen[identity] {
+					seen[identity] = true
+					identities = append(identities, identity)
+				}
 			}
 		}
 	}

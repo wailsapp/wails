@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { SigningStatus, SigningDefaults } from '../types';
-import { getSigningStatus, getSigning, saveSigning, getState } from '../api';
+import { getSigningStatus, getSigning, saveSigning, getState, createNotarizationProfile } from '../api';
 
 const pageVariants = {
   initial: { opacity: 0 },
@@ -25,9 +25,15 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
   const [loading, setLoading] = useState(true);
   const [hostOS, setHostOS] = useState<HostOS>('linux');
   const [selectedPlatform, setSelectedPlatform] = useState<Platform>('darwin');
-  const [configuring, setConfiguring] = useState(false);
-  const [saving, setSaving] = useState(false);
+  // 'status' | 'identity' | 'notarize'
+  const [configStep, setConfigStep] = useState<'status' | 'identity' | 'notarize'>('status');
   const headingRef = useRef<HTMLHeadingElement>(null);
+
+  // Extract Team ID from identity string like "Developer ID Application: Name (TEAMID)"
+  const extractTeamID = (identity: string): string => {
+    const match = identity.match(/\(([A-Z0-9]+)\)$/);
+    return match ? match[1] : '';
+  };
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -49,17 +55,30 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
     }
   };
 
+  const enterConfigMode = () => {
+    // Pre-populate config from detected identities if no saved config exists
+    if (config && status && selectedPlatform === 'darwin') {
+      if (!config.darwin?.identity && status.darwin.identities && status.darwin.identities.length > 0) {
+        const identity = status.darwin.identities[0];
+        setConfig({
+          ...config,
+          darwin: {
+            ...config.darwin,
+            identity,
+            teamID: config.darwin?.teamID || extractTeamID(identity),
+          }
+        });
+      }
+    }
+    setConfigStep('identity');
+  };
+
   const handleSave = async () => {
     if (!config) return;
-    setSaving(true);
     try {
       await saveSigning(config);
-      await loadData();
-      setConfiguring(false);
     } catch (e) {
       console.error('Failed to save signing config:', e);
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -89,20 +108,63 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Signing Identity
             </label>
-            <input
-              type="text"
-              value={config.darwin?.identity || ''}
-              onChange={(e) => setConfig({
-                ...config,
-                darwin: { ...config.darwin, identity: e.target.value }
-              })}
-              placeholder="Developer ID Application: Your Name (TEAMID)"
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-            />
-            {isOnMac && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Find with: <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">security find-identity -v -p codesigning</code>
-              </p>
+            {isOnMac && status?.darwin.identities && status.darwin.identities.length > 0 ? (
+              <>
+                {status.darwin.identities.length === 1 ? (
+                  <div className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
+                    {status.darwin.identities[0]}
+                  </div>
+                ) : (
+                  <select
+                    value={config.darwin?.identity || ''}
+                    onChange={(e) => {
+                      const identity = e.target.value;
+                      setConfig({
+                        ...config,
+                        darwin: {
+                          ...config.darwin,
+                          identity,
+                          teamID: config.darwin?.teamID || extractTeamID(identity),
+                        }
+                      });
+                    }}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    <option value="" disabled>Select a signing identity...</option>
+                    {status.darwin.identities.map((id) => (
+                      <option key={id} value={id}>{id}</option>
+                    ))}
+                  </select>
+                )}
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {status.darwin.identities.length} {status.darwin.identities.length === 1 ? 'identity' : 'identities'} detected in keychain
+                </p>
+              </>
+            ) : (
+              <>
+                <input
+                  type="text"
+                  value={config.darwin?.identity || ''}
+                  onChange={(e) => {
+                    const identity = e.target.value;
+                    setConfig({
+                      ...config,
+                      darwin: {
+                        ...config.darwin,
+                        identity,
+                        teamID: config.darwin?.teamID || extractTeamID(identity),
+                      }
+                    });
+                  }}
+                  placeholder="Developer ID Application: Your Name (TEAMID)"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+                {isOnMac && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Find with: <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">security find-identity -v -p codesigning</code>
+                  </p>
+                )}
+              </>
             )}
           </div>
 
@@ -142,33 +204,6 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
               </p>
             </div>
           )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Notarization Profile {!isOnMac && '(Mac only)'}
-            </label>
-            <input
-              type="text"
-              value={config.darwin?.keychainProfile || ''}
-              onChange={(e) => setConfig({
-                ...config,
-                darwin: { ...config.darwin, keychainProfile: e.target.value }
-              })}
-              placeholder="notarytool-profile"
-              disabled={!isOnMac}
-              className={`w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500 ${!isOnMac ? 'opacity-50 cursor-not-allowed' : ''}`}
-            />
-            {isOnMac && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Create with: <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">xcrun notarytool store-credentials</code>
-              </p>
-            )}
-            {!isOnMac && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                For cross-platform notarization, use App Store Connect API keys instead
-              </p>
-            )}
-          </div>
 
           {!isOnMac && (
             <>
@@ -345,7 +380,6 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
             label="Code Signing Identity"
             configured={darwin.hasIdentity}
             value={darwin.hasIdentity ? (darwin.identity || 'Configured') : 'Not configured'}
-            source={darwin.configSource}
           />
           <StatusRow
             label="Notarization"
@@ -369,7 +403,6 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
             label="Code Signing Certificate"
             configured={windows.hasCertificate}
             value={windows.hasCertificate ? `Type: ${windows.certificateType}` : 'Not configured'}
-            source={windows.configSource}
           />
           <StatusRow
             label="SignTool"
@@ -393,7 +426,6 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
             label="GPG Signing Key"
             configured={linux.hasGpgKey}
             value={linux.hasGpgKey ? `Key ID: ${linux.gpgKeyID}` : 'Not configured'}
-            source={linux.configSource}
           />
         </div>
       );
@@ -423,23 +455,23 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
       className="flex-1 flex flex-col"
       aria-labelledby="signing-title"
     >
-      <header className="text-center mb-6 flex-shrink-0 px-10 pt-10">
-        <h1
-          ref={headingRef}
-          id="signing-title"
-          className="text-2xl font-semibold text-gray-900 dark:text-white mb-1.5 tracking-tight focus:outline-none"
-          tabIndex={-1}
-        >
-          Code Signing
-        </h1>
-        <p className="text-base text-gray-500 dark:text-gray-400">
-          {overallStatus.configured > 0 
-            ? `${overallStatus.configured} of ${overallStatus.total} platforms configured`
-            : 'Sign your apps for distribution'}
-        </p>
-      </header>
+      <div className="flex-1 overflow-y-auto scrollbar-thin min-h-0 px-10 pb-4 pt-10">
+        <header className="text-center mb-6">
+          <h1
+            ref={headingRef}
+            id="signing-title"
+            className="text-2xl font-semibold text-gray-900 dark:text-white mb-1.5 tracking-tight focus:outline-none"
+            tabIndex={-1}
+          >
+            Code Signing
+          </h1>
+          <p className="text-base text-gray-500 dark:text-gray-400">
+            {overallStatus.configured > 0
+              ? `${overallStatus.configured} of ${overallStatus.total} platforms configured`
+              : 'Sign your apps for distribution'}
+          </p>
+        </header>
 
-      <div className="flex-1 overflow-y-auto scrollbar-thin min-h-0 px-10">
         {loading ? (
           <div className="flex items-center justify-center h-48">
             <motion.div
@@ -456,26 +488,52 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                 label="macOS"
                 isActive={selectedPlatform === 'darwin'}
                 hasConfig={status?.darwin.hasIdentity}
-                onClick={() => { setSelectedPlatform('darwin'); setConfiguring(false); }}
+                onClick={() => { setSelectedPlatform('darwin'); setConfigStep('status'); }}
               />
               <PlatformTab
                 platform="windows"
                 label="Windows"
                 isActive={selectedPlatform === 'windows'}
                 hasConfig={status?.windows.hasCertificate}
-                onClick={() => { setSelectedPlatform('windows'); setConfiguring(false); }}
+                onClick={() => { setSelectedPlatform('windows'); setConfigStep('status'); }}
               />
               <PlatformTab
                 platform="linux"
                 label="Linux"
                 isActive={selectedPlatform === 'linux'}
                 hasConfig={status?.linux.hasGpgKey}
-                onClick={() => { setSelectedPlatform('linux'); setConfiguring(false); }}
+                onClick={() => { setSelectedPlatform('linux'); setConfigStep('status'); }}
               />
             </div>
 
             <AnimatePresence mode="wait">
-              {configuring ? (
+              {configStep === 'notarize' ? (
+                <motion.div
+                  key="notarize"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <NotarizationSetup
+                    config={config!}
+                    setConfig={setConfig as (c: SigningDefaults) => void}
+                    teamID={config?.darwin?.teamID || ''}
+                    onDone={async () => {
+                      // Backend already saved keychainProfile - just reload
+                      setConfigStep('status');
+                      await loadData();
+                    }}
+                    onSkip={async () => {
+                      // Save identity/teamID without notarization
+                      await handleSave();
+                      setConfigStep('status');
+                      await loadData();
+                    }}
+                    onBack={() => setConfigStep('identity')}
+                  />
+                </motion.div>
+              ) : configStep === 'identity' ? (
                 <motion.div
                   key="config"
                   initial={{ opacity: 0, y: 10 }}
@@ -486,17 +544,16 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                   {renderConfigForm()}
                   <div className="flex gap-3 mt-6">
                     <button
-                      onClick={() => setConfiguring(false)}
+                      onClick={() => setConfigStep('status')}
                       className="flex-1 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
                       Cancel
                     </button>
                     <button
-                      onClick={handleSave}
-                      disabled={saving}
-                      className="flex-1 px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600 disabled:opacity-50"
+                      onClick={() => setConfigStep('notarize')}
+                      className="flex-1 px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600"
                     >
-                      {saving ? 'Saving...' : 'Save'}
+                      Next
                     </button>
                   </div>
                 </motion.div>
@@ -511,7 +568,7 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                 >
                   {renderPlatformStatus()}
                   <button
-                    onClick={() => setConfiguring(true)}
+                    onClick={enterConfigMode}
                     className="w-full mt-4 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                   >
                     Configure {selectedPlatform === 'darwin' ? 'macOS' : selectedPlatform === 'windows' ? 'Windows' : 'Linux'} Signing
@@ -519,47 +576,164 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                 </motion.div>
               )}
             </AnimatePresence>
-
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-6 text-center">
-              Code signing ensures your app is trusted and hasn't been tampered with
-            </p>
           </div>
         )}
       </div>
 
-      <div className="flex-shrink-0 pt-4 pb-6 flex flex-col items-center gap-1.5">
-        <div className="flex items-center gap-3">
-          {canGoBack && onBack && (
+      {configStep === 'status' && (
+        <div className="flex-shrink-0 pt-4 pb-6 flex flex-col items-center gap-1.5">
+          <div className="flex items-center gap-3">
+            {canGoBack && onBack && (
+              <button
+                onClick={onBack}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+              >
+                Back
+              </button>
+            )}
             <button
-              onClick={onBack}
-              className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+              onClick={onNext}
+              className="px-5 py-2 rounded-lg text-sm font-medium transition-colors border border-red-500 text-red-600 dark:text-red-400 hover:bg-red-500/10 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
             >
-              Back
+              Continue
             </button>
-          )}
+          </div>
           <button
-            onClick={onNext}
-            className="px-5 py-2 rounded-lg text-sm font-medium transition-colors border border-red-500 text-red-600 dark:text-red-400 hover:bg-red-500/10 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+            onClick={onSkip}
+            className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded"
           >
-            Continue
+            Set up later
           </button>
         </div>
-        <button
-          onClick={onSkip}
-          className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded"
-        >
-          Set up later
-        </button>
-      </div>
+      )}
     </motion.main>
   );
 }
 
-function StatusRow({ label, configured, value, source }: { 
-  label: string; 
-  configured: boolean; 
-  value: string; 
-  source?: string;
+function NotarizationSetup({ config, setConfig, teamID, onDone, onSkip, onBack }: {
+  config: SigningDefaults;
+  setConfig: (c: SigningDefaults) => void;
+  teamID: string;
+  onDone: () => void;
+  onSkip: () => void;
+  onBack: () => void;
+}) {
+  const [creating, setCreating] = useState(false);
+  const [profileName, setProfileName] = useState(config.darwin?.keychainProfile || 'wails-notary');
+  const [appleID, setAppleID] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleCreate = async () => {
+    setError('');
+    setCreating(true);
+    try {
+      const result = await createNotarizationProfile({
+        profileName,
+        appleID,
+        teamID,
+        password,
+      });
+      if (result.success) {
+        setConfig({
+          ...config,
+          darwin: { ...config.darwin, keychainProfile: profileName }
+        });
+        onDone();
+      } else {
+        setError(result.error || 'Failed to create profile');
+      }
+    } catch (e) {
+      setError('Failed to create notarization profile');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-gray-500 dark:text-gray-400">
+        Stores your Apple notarization credentials securely in the macOS Keychain.
+        Requires an{' '}
+        <a href="https://support.apple.com/en-us/102654" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">app-specific password</a>.
+      </p>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Profile Name</label>
+        <input
+          type="text"
+          value={profileName}
+          onChange={(e) => setProfileName(e.target.value)}
+          placeholder="wails-notary"
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Apple ID</label>
+        <input
+          type="email"
+          value={appleID}
+          onChange={(e) => setAppleID(e.target.value)}
+          placeholder="you@example.com"
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">App-Specific Password</label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="xxxx-xxxx-xxxx-xxxx"
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+        />
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          Generate at{' '}
+          <a href="https://appleid.apple.com/account/manage" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">appleid.apple.com</a>
+          {' '}→ Sign-In and Security → App-Specific Passwords
+        </p>
+      </div>
+
+      {error && (
+        <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        </div>
+      )}
+
+      <div className="flex gap-3 pt-2">
+        <button
+          type="button"
+          onClick={onBack}
+          className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+        >
+          Back
+        </button>
+        <button
+          type="button"
+          onClick={onSkip}
+          className="flex-1 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+        >
+          Skip
+        </button>
+        <button
+          type="button"
+          onClick={handleCreate}
+          disabled={creating || !profileName || !appleID || !password}
+          className="flex-1 px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600 disabled:opacity-50"
+        >
+          {creating ? 'Saving...' : 'Save'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function StatusRow({ label, configured, value }: {
+  label: string;
+  configured: boolean;
+  value: string;
 }) {
   return (
     <div className="flex items-center gap-3 p-4 rounded-lg bg-gray-100 dark:bg-gray-900/50">
@@ -578,11 +752,6 @@ function StatusRow({ label, configured, value, source }: {
         <div className="text-sm font-medium text-gray-900 dark:text-white">{label}</div>
         <div className="text-xs text-gray-500 dark:text-gray-400">{value}</div>
       </div>
-      {source && (
-        <span className="text-xs px-2 py-1 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
-          {source}
-        </span>
-      )}
     </div>
   );
 }

@@ -143,6 +143,7 @@ func getMacOSSigningIdentities() []string {
 		return nil
 	}
 
+	seen := make(map[string]bool)
 	var identities []string
 	lines := strings.Split(string(output), "\n")
 	for _, line := range lines {
@@ -151,7 +152,10 @@ func getMacOSSigningIdentities() []string {
 			end := strings.LastIndex(line, "\"")
 			if start != -1 && end > start {
 				identity := line[start+1 : end]
-				identities = append(identities, identity)
+				if !seen[identity] {
+					seen[identity] = true
+					identities = append(identities, identity)
+				}
 			}
 		}
 	}

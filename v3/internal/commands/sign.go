@@ -9,9 +9,32 @@ import (
 	"strings"
 
 	"github.com/pterm/pterm"
+	"github.com/wailsapp/wails/v3/internal/defaults"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/keychain"
 )
+
+// resolveSigningDefaults fills in missing signing options from ~/.config/wails/defaults.yaml
+func resolveSigningDefaults(options *flags.Sign) {
+	if options.Identity != "" && options.KeychainProfile != "" {
+		return // all provided via flags
+	}
+
+	cfg, err := defaults.Load()
+	if err != nil {
+		return
+	}
+
+	if options.Identity == "" && cfg.Signing.Darwin.Identity != "" {
+		options.Identity = cfg.Signing.Darwin.Identity
+	}
+	if options.KeychainProfile == "" && cfg.Signing.Darwin.KeychainProfile != "" {
+		options.KeychainProfile = cfg.Signing.Darwin.KeychainProfile
+	}
+	if options.Entitlements == "" && cfg.Signing.Darwin.Entitlements != "" {
+		options.Entitlements = cfg.Signing.Darwin.Entitlements
+	}
+}
 
 // Sign signs a binary or package
 func Sign(options *flags.Sign) error {
@@ -55,8 +78,9 @@ func Sign(options *flags.Sign) error {
 }
 
 func signMacOSApp(options *flags.Sign) error {
+	resolveSigningDefaults(options)
 	if options.Identity == "" {
-		return fmt.Errorf("--identity is required for macOS signing")
+		return fmt.Errorf("--identity is required for macOS signing (set via `wails3 setup` or --identity flag)")
 	}
 
 	if options.Verbose {
@@ -99,8 +123,9 @@ func signMacOSApp(options *flags.Sign) error {
 }
 
 func signMacOSBinary(options *flags.Sign) error {
+	resolveSigningDefaults(options)
 	if options.Identity == "" {
-		return fmt.Errorf("--identity is required for macOS signing")
+		return fmt.Errorf("--identity is required for macOS signing (set via `wails3 setup` or --identity flag)")
 	}
 
 	if options.Verbose {
@@ -136,7 +161,7 @@ func signMacOSBinary(options *flags.Sign) error {
 
 func notarizeMacOSApp(options *flags.Sign) error {
 	if options.KeychainProfile == "" {
-		return fmt.Errorf("--keychain-profile is required for notarization")
+		return fmt.Errorf("--keychain-profile is required for notarization (set via `wails3 setup` or --keychain-profile flag)")
 	}
 
 	if options.Verbose {

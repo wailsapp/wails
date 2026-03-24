@@ -159,6 +159,25 @@ export async function saveSigning(signing: SigningDefaults): Promise<{ status: s
   return response.json();
 }
 
+export async function validateNotarizationProfile(profile: string): Promise<{ valid: boolean; error?: string }> {
+  const response = await fetch(`${API_BASE}/signing/notarize/validate?profile=${encodeURIComponent(profile)}`);
+  return response.json();
+}
+
+export async function createNotarizationProfile(data: {
+  profileName: string;
+  appleID: string;
+  teamID: string;
+  password: string;
+}): Promise<{ success: boolean; error?: string; output?: string }> {
+  const response = await fetch(`${API_BASE}/signing/notarize/create`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
 export async function reportBug(currentStep: string): Promise<{ status: string; body?: string; url?: string }> {
   const response = await fetch(`${API_BASE}/report-bug?step=${encodeURIComponent(currentStep)}`);
   return response.json();
