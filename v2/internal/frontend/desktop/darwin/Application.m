@@ -336,6 +336,52 @@ void UpdateApplicationMenu(void *inctx) {
     )
 }
 
+void TraySetSystemTray(void *inctx, const char* label, const char* image, int isTemplate, const char* tooltip, void *inMenu) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    WailsMenu *menu = (__bridge WailsMenu*) inMenu;
+    NSString *nslabel = safeInit(label);
+    NSString *nsimage = safeInit(image);
+    NSString *nstooltip = safeInit(tooltip);
+
+    ON_MAIN_THREAD(
+        if (ctx.trayItem == nil) {
+            ctx.trayItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
+        }
+        if (nslabel != nil) {
+            ctx.trayItem.button.title = nslabel;
+        }
+        if (nstooltip != nil) {
+            ctx.trayItem.button.toolTip = nstooltip;
+        }
+        if (nsimage != nil) {
+            if ([nsimage length] > 0) {
+                NSImage *icon = [[NSImage alloc] initWithContentsOfFile:nsimage];
+                if (icon == nil) {
+                    // Try as base64
+                    NSData *data = [[NSData alloc] initWithBase64EncodedString:nsimage options:NSDataBase64DecodingIgnoreUnknownCharacters];
+                    if (data != nil) {
+                        icon = [[NSImage alloc] initWithData:data];
+                        [data release];
+                    }
+                }
+                if (icon != nil) {
+                    if (isTemplate) {
+                        [icon setTemplate:YES];
+                    }
+                    ctx.trayItem.button.image = icon;
+                    ctx.trayItem.button.imagePosition = NSImageLeft;
+                    [icon release];
+                }
+            } else {
+                ctx.trayItem.button.image = nil;
+            }
+        }
+        if (menu != nil) {
+            [ctx.trayItem setMenu:menu];
+        }
+    );
+}
+
 void SetAbout(void *inctx, const char* title, const char* description, void* imagedata, int datalen) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     NSString *_title = safeInit(title);

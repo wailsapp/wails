@@ -32,17 +32,19 @@ type Experimental struct{}
 
 // App contains options for creating the App
 type App struct {
-	Title             string
-	Width             int
-	Height            int
-	DisableResize     bool
-	Fullscreen        bool
-	Frameless         bool
-	MinWidth          int
-	MinHeight         int
-	MaxWidth          int
-	MaxHeight         int
-	StartHidden       bool
+	Title         string
+	Width         int
+	Height        int
+	DisableResize bool
+	Fullscreen    bool
+	Frameless     bool
+	MinWidth      int
+	MinHeight     int
+	MaxWidth      int
+	MaxHeight     int
+	StartHidden   bool
+	// HideWindowOnClose controls close button behavior.
+	// If true and a tray icon is configured, close behaves like HideWindowAndDock.
 	HideWindowOnClose bool
 	AlwaysOnTop       bool
 	// BackgroundColour is the background colour of the window
@@ -55,6 +57,7 @@ type App struct {
 	// AssetServer configures the Assets for the application
 	AssetServer        *assetserver.Options
 	Menu               *menu.Menu
+	Tray               *menu.TrayMenu
 	Logger             logger.Logger `json:"-"`
 	LogLevel           logger.LogLevel
 	LogLevelProduction logger.LogLevel

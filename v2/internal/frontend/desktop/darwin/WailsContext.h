@@ -36,7 +36,7 @@
 @property (retain) WailsWebView* webview;
 @property (nonatomic, assign) id appdelegate;
 
-@property bool hideOnClose;
+@property int hideOnClose;
 @property bool shuttingDown;
 @property bool startHidden;
 @property bool startFullscreen;
@@ -55,6 +55,8 @@
 
 @property (retain) NSMenu* applicationMenu;
 
+@property (retain) NSStatusItem* trayItem;
+
 @property (retain) NSImage* aboutImage;
 @property (retain) NSString* aboutTitle;
 @property (retain) NSString* aboutDescription;
@@ -65,7 +67,7 @@ struct Preferences {
   bool *fullscreenEnabled;
 };
 
-- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)zoomable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent  :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString *)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight :(bool)fraudulentWebsiteWarningEnabled :(struct Preferences)preferences :(bool)enableDragAndDrop :(bool)disableWebViewDragAndDrop;
+- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)zoomable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent  :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(int)hideWindowOnClose :(NSString *)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight :(bool)fraudulentWebsiteWarningEnabled :(struct Preferences)preferences :(bool)enableDragAndDrop :(bool)disableWebViewDragAndDrop;
 - (void) SetSize:(int)width :(int)height;
 - (void) SetPosition:(int)x :(int) y;
 - (void) SetMinSize:(int)minWidth :(int)minHeight;
