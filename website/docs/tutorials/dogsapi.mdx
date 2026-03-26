@@ -17,21 +17,22 @@ sidebar_position: 20
 
 :::note
 
-This tutorial has been kindly provided by [@tatadan](https://twitter.com/tatadan) and forms part of
-their [Wails Examples Repository](https://github.com/tataDan/wails-v2-examples).
+This tutorial has been kindly provided by
+[@tatadan](https://twitter.com/tatadan) and forms part of their
+[Wails Examples Repository](https://github.com/tataDan/wails-v2-examples).
 
 :::
 
-In this tutorial we are going to develop an application that retrieves photos of dogs from the web
-and then displays them.
+In this tutorial we are going to develop an application that retrieves photos of
+dogs from the web and then displays them.
 
 ### Create the project
 
 Let's create the application. From a terminal enter:
 `wails init -n dogs-api -t svelte`
 
-Note: We could optionally add `-ide vscode` or `-ide goland` to the end of this command if you wanted
-to add IDE support.
+Note: We could optionally add `-ide vscode` or `-ide goland` to the end of this
+command if you wanted to add IDE support.
 
 Now let's `cd dogs-api` and start editing the project files.
 
@@ -55,7 +56,8 @@ func (a *App) Greet(name string) string {
 
 Now let's add our new Go code.
 
-Add the following struct declarations to `app.go` before the function definitions:
+Add the following struct declarations to `app.go` before the function
+definitions:
 
 ```go
 type RandomImage struct {
@@ -64,7 +66,7 @@ type RandomImage struct {
 }
 
 type AllBreeds struct {
-	Message map[string]map[string][]string
+	Message map[string][]string
 	Status  string
 }
 
@@ -74,19 +76,24 @@ type ImagesByBreed struct {
 }
 ```
 
-Add the following functions to `app.go` (perhaps after the existing function definitions):
+Add the following functions to `app.go` (perhaps after the existing function
+definitions):
 
 ```go
-func (a *App) GetRandomImageUrl() string {
-	response, err := http.Get("https://dog.ceo/api/breeds/image/random")
+// INFO: application error handling
+func handleError(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (a *App) GetRandomImageUrl() string {
+  response, err := http.Get("https://dog.ceo/api/breeds/image/random")
+  handleError(err)
+  defer response.Body.Close()
 
 	responseData, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
+	handleError(err)
 
 	var data RandomImage
 	json.Unmarshal(responseData, &data)
@@ -98,14 +105,11 @@ func (a *App) GetBreedList() []string {
 	var breeds []string
 
 	response, err := http.Get("https://dog.ceo/api/breeds/list/all")
-	if err != nil {
-		log.Fatal(err)
-	}
+	handleError(err)
+  defer response.Body.Close()
 
 	responseData, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
+	handleError(err)
 
 	var data AllBreeds
 	json.Unmarshal(responseData, &data)
@@ -123,14 +127,11 @@ func (a *App) GetImageUrlsByBreed(breed string) []string {
 
 	url := fmt.Sprintf("%s%s%s%s", "https://dog.ceo/api/", "breed/", breed, "/images")
 	response, err := http.Get(url)
-	if err != nil {
-		log.Fatal(err)
-	}
+	handleError(err)
+  defer response.Body.Close()
 
 	responseData, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
+	handleError(err)
 
 	var data ImagesByBreed
 	json.Unmarshal(responseData, &data)
@@ -178,20 +179,26 @@ Add the following lines to `frontend/src/App.svelte`:
   function getRandomImageUrl() {
     showRandomPhoto = false;
     showBreedPhotos = false;
-    GetRandomImageUrl().then((result) => (randomImageUrl = result));
-    showRandomPhoto = true;
+
+    GetRandomImageUrl().then((result) => {
+      randomImageUrl = result;
+      showRandomPhoto = true;
+    });
   }
 
   function getBreedList() {
-    GetBreedList().then((result) => (breeds = result));
+    GetBreedList();
   }
 
   function getImageUrlsByBreed() {
     init();
     showRandomPhoto = false;
     showBreedPhotos = false;
-    GetImageUrlsByBreed(selectedBreed).then((result) => (photos = result));
-    showBreedPhotos = true;
+
+    GetImageUrlsByBreed(selectedBreed).then((result) => {
+      photos = result;
+      showBreedPhotos = true;
+    });
   }
 </script>
 
@@ -246,4 +253,5 @@ To generate the bindings and test the application, run `wails dev`.
 
 ### Compiling the application
 
-To compile the application to a single, production grade binary, run `wails build`.
+To compile the application to a single, production grade binary, run
+`wails build`.
