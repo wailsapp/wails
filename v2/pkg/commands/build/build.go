@@ -1,6 +1,7 @@
 package build
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -141,12 +142,24 @@ func Build(options *Options) (string, error) {
 		if err != nil {
 			return "", err
 		}
+
+		err = AssertFrontendDist(cwd, options)
+		if err != nil {
+			pterm.Error.Printfln("Configured custom frontend directory is not embedded and could not copy the build to the default dist. Custom frontend directories inside the project directory should match an embed directive in your app, and frontend directories outside should use the default embed directive targeting \"frontend/dist\".")
+			return "", err
+		}
 	}
 
 	compileBinary := ""
 	if !options.IgnoreApplication {
 		compileBinary, err = execBuildApplication(builder, options)
 		if err != nil {
+			return "", err
+		}
+
+		err = CleanFrontendDist(cwd, options)
+		if err != nil {
+			pterm.Error.Println("Failed to clean built frontend files.")
 			return "", err
 		}
 
@@ -159,6 +172,64 @@ func Build(options *Options) (string, error) {
 
 	}
 	return compileBinary, nil
+}
+
+func AssertFrontendDist(cwd string, buildOptions *Options) error {
+	embedDetails, err := staticanalysis.GetEmbedDetails(cwd)
+	if err != nil {
+		return err
+	}
+
+	frontendDistDir := filepath.Join(buildOptions.ProjectData.GetFrontendDir(), "dist")
+
+	// Ensure the configured frontend directory is embedded by something.
+	for _, embedDetail := range embedDetails {
+		if frontendDistDir == embedDetail.GetFullPath() {
+			return nil
+		}
+	}
+
+	pterm.Warning.Printfln(`Frontend directory %q is not embedded by your application. Is this intentional? Attempting to copy built frontend assets to "frontend/dist"`, buildOptions.ProjectData.GetFrontendDir())
+
+	// Try to find an embed that ends with "frontend/dist" and copy to that.
+	for _, embedDetail := range embedDetails {
+		if embedDetail.EmbedPath == "frontend/dist" {
+			return fs.CopyDir(frontendDistDir, embedDetail.GetFullPath())
+		}
+	}
+
+	return errors.New("failed to assert frontend dist")
+}
+
+func CleanFrontendDist(cwd string, buildOptions *Options) error {
+	embedDetails, err := staticanalysis.GetEmbedDetails(cwd)
+	if err != nil {
+		return err
+	}
+
+	frontendDistDir := filepath.Join(buildOptions.ProjectData.GetFrontendDir(), "dist")
+
+	// Skip if the configured frontend directory is embedded by something.
+	for _, embedDetail := range embedDetails {
+		if frontendDistDir == embedDetail.GetFullPath() {
+			return nil
+		}
+	}
+
+	// A frontend directory that doesn't have a corresponding embed will have been copied to "frontend/dist". Clean it and restore gitkeep.
+	os.RemoveAll(filepath.Join(cwd, "frontend/dist"))
+	err = os.MkdirAll(filepath.Join(cwd, "frontend/dist"), 0o755)
+	if err != nil {
+		return err
+	}
+
+	// The rest of the project uses gitkeep without the dot. Project convention > community convention.
+	f, err := os.Create(filepath.Join(cwd, "frontend/dist/gitkeep"))
+	if err != nil {
+		return err
+	}
+	_ = f.Close()
+	return nil
 }
 
 func CreateEmbedDirectories(cwd string, buildOptions *Options) error {
