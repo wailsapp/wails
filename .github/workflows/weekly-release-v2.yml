@@ -1,0 +1,254 @@
+name: Weekly Release v2
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # Monday 9 AM UTC
+  workflow_dispatch:
+    inputs:
+      force_release:
+        description: 'Force release even if no unreleased changes detected'
+        required: false
+        default: false
+        type: boolean
+      dry_run:
+        description: 'Run in dry-run mode (no actual release)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  weekly-release:
+    runs-on: ubuntu-latest
+    if: github.repository == 'wailsapp/wails'
+
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: master
+        fetch-depth: 0
+        token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+
+    - name: Setup Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22'
+        cache: true
+        cache-dependency-path: 'v2/go.sum'
+
+    - name: Setup Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git config --global url."https://x-access-token:${{ secrets.WAILS_REPO_TOKEN || github.token }}@github.com/".insteadOf "https://github.com/"
+
+    - name: Check for unreleased changelog content
+      id: changelog_check
+      run: |
+        echo "Checking changelog for unreleased content..."
+
+        CHANGELOG="website/src/pages/changelog.mdx"
+        if [ ! -f "$CHANGELOG" ]; then
+          echo "has_content=false" >> $GITHUB_OUTPUT
+          echo "Changelog file not found"
+          exit 0
+        fi
+
+        # Extract content between ## [Unreleased] and the next ## heading
+        UNRELEASED=$(sed -n '/^## \[Unreleased\]/,/^## v/{/^## \[Unreleased\]/d;/^## v/d;p}' "$CHANGELOG")
+
+        # Check if there are actual content lines (not just blank lines or section headers)
+        CONTENT_LINES=$(echo "$UNRELEASED" | grep -cE '^\s*-\s+[^[:space:]]' || true)
+
+        if [ "$CONTENT_LINES" -gt 0 ]; then
+          echo "Found $CONTENT_LINES unreleased changelog entries"
+          echo "has_content=true" >> $GITHUB_OUTPUT
+        else
+          echo "No unreleased changelog entries found"
+          echo "has_content=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Check for commits since last release
+      id: commit_check
+      run: |
+        LATEST_V2_TAG=$(git tag --list "v2.*" --sort=-version:refname | head -1)
+        echo "latest_tag=$LATEST_V2_TAG" >> $GITHUB_OUTPUT
+
+        if [ -z "$LATEST_V2_TAG" ]; then
+          echo "No previous v2 release tag found"
+          echo "has_commits=true" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+
+        # Count commits touching v2/ since last tag
+        V2_COMMIT_COUNT=$(git rev-list "${LATEST_V2_TAG}..HEAD" --count -- v2/ website/ || echo "0")
+        echo "Found $V2_COMMIT_COUNT commits touching v2/ or website/ since $LATEST_V2_TAG"
+        echo "commit_count=$V2_COMMIT_COUNT" >> $GITHUB_OUTPUT
+
+        if [ "$V2_COMMIT_COUNT" -gt 0 ]; then
+          echo "has_commits=true" >> $GITHUB_OUTPUT
+        else
+          echo "has_commits=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Determine if release should proceed
+      id: should_release
+      run: |
+        HAS_CONTENT="${{ steps.changelog_check.outputs.has_content }}"
+        HAS_COMMITS="${{ steps.commit_check.outputs.has_commits }}"
+        FORCE="${{ github.event.inputs.force_release }}"
+
+        if [ "$FORCE" == "true" ]; then
+          echo "Force release requested"
+          echo "proceed=true" >> $GITHUB_OUTPUT
+          echo "reason=Force release requested" >> $GITHUB_OUTPUT
+        elif [ "$HAS_CONTENT" == "true" ] && [ "$HAS_COMMITS" == "true" ]; then
+          echo "Unreleased content and new commits found"
+          echo "proceed=true" >> $GITHUB_OUTPUT
+          echo "reason=Unreleased changelog content with ${{ steps.commit_check.outputs.commit_count }} new commits since ${{ steps.commit_check.outputs.latest_tag }}" >> $GITHUB_OUTPUT
+        elif [ "$HAS_CONTENT" == "false" ]; then
+          echo "No unreleased changelog content — skipping"
+          echo "proceed=false" >> $GITHUB_OUTPUT
+          echo "reason=No unreleased changelog content" >> $GITHUB_OUTPUT
+        else
+          echo "No new commits since last release — skipping"
+          echo "proceed=false" >> $GITHUB_OUTPUT
+          echo "reason=No commits touching v2/ or website/ since ${{ steps.commit_check.outputs.latest_tag }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Early exit - No release needed
+      if: steps.should_release.outputs.proceed == 'false'
+      run: |
+        echo "SKIP: ${{ steps.should_release.outputs.reason }}"
+        echo "## Skipped — No Release Needed" >> $GITHUB_STEP_SUMMARY
+        echo "**Reason:** ${{ steps.should_release.outputs.reason }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Last release:** ${{ steps.commit_check.outputs.latest_tag }}" >> $GITHUB_STEP_SUMMARY
+
+    - name: Read current version
+      if: steps.should_release.outputs.proceed == 'true'
+      id: current_version
+      run: |
+        CURRENT=$(cat v2/cmd/wails/internal/version.txt)
+        echo "version=$CURRENT" >> $GITHUB_OUTPUT
+        echo "Current version: $CURRENT"
+
+    - name: Compute new version
+      if: steps.should_release.outputs.proceed == 'true'
+      id: new_version
+      run: |
+        CURRENT="${{ steps.current_version.outputs.version }}"
+        # Increment last segment: v2.11.0 -> v2.11.1
+        PREFIX=$(echo "$CURRENT" | sed 's/\.[^.]*$//')
+        PATCH=$(echo "$CURRENT" | grep -oE '[0-9]+$')
+        NEW_PATCH=$((PATCH + 1))
+        NEW_VERSION="${PREFIX}.${NEW_PATCH}"
+        echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        echo "New version: $NEW_VERSION"
+
+    - name: Extract unreleased changelog
+      if: steps.should_release.outputs.proceed == 'true'
+      id: extract_changelog
+      run: |
+        # Extract the unreleased section content for the GitHub release body
+        CHANGELOG="website/src/pages/changelog.mdx"
+        UNRELEASED=$(sed -n '/^## \[Unreleased\]/,/^## v/{/^## \[Unreleased\]/d;/^## v/d;p}' "$CHANGELOG")
+        # Trim leading/trailing blank lines
+        UNRELEASED=$(echo "$UNRELEASED" | sed '/./,$!d' | sed -e :a -e '/^\s*$/{ $d; N; ba; }')
+
+        # Write to file for use in release body (avoids multiline env var issues)
+        echo "$UNRELEASED" > /tmp/unreleased_changelog.md
+        echo "Extracted unreleased changelog:"
+        cat /tmp/unreleased_changelog.md
+
+    - name: Update version file
+      if: steps.should_release.outputs.proceed == 'true' && github.event.inputs.dry_run != 'true'
+      run: |
+        echo -n "${{ steps.new_version.outputs.version }}" > v2/cmd/wails/internal/version.txt
+
+    - name: Update changelog
+      if: steps.should_release.outputs.proceed == 'true' && github.event.inputs.dry_run != 'true'
+      run: |
+        NEW_VERSION="${{ steps.new_version.outputs.version }}"
+        TODAY=$(date +%Y-%m-%d)
+        CHANGELOG="website/src/pages/changelog.mdx"
+
+        # Insert new version heading after ## [Unreleased]
+        # sed: find the line, append a blank line + new version heading after it
+        sed -i "s/^## \[Unreleased\]$/## [Unreleased]\n\n## ${NEW_VERSION} - ${TODAY}/" "$CHANGELOG"
+
+        # Verify the update worked
+        if grep -q "## ${NEW_VERSION} - ${TODAY}" "$CHANGELOG"; then
+          echo "Changelog updated: inserted ${NEW_VERSION} - ${TODAY}"
+        else
+          echo "ERROR: Failed to update changelog"
+          exit 1
+        fi
+
+    - name: Commit, tag, and push
+      if: steps.should_release.outputs.proceed == 'true' && github.event.inputs.dry_run != 'true'
+      run: |
+        NEW_VERSION="${{ steps.new_version.outputs.version }}"
+        TAG="${NEW_VERSION}"
+
+        git add v2/cmd/wails/internal/version.txt website/src/pages/changelog.mdx
+        git commit -m "release: ${NEW_VERSION}
+
+        Automated weekly v2 release."
+
+        git tag -a "${TAG}" -m "Release ${NEW_VERSION}"
+        git push origin master
+        git push origin "${TAG}"
+
+        echo "Pushed commit and tag ${TAG}"
+
+    - name: Create GitHub Release
+      if: steps.should_release.outputs.proceed == 'true' && github.event.inputs.dry_run != 'true'
+      env:
+        GH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+      run: |
+        NEW_VERSION="${{ steps.new_version.outputs.version }}"
+
+        # Build release notes file
+        {
+          echo "## Installation"
+          echo ""
+          echo '```bash'
+          echo "go install github.com/wailsapp/wails/v2/cmd/wails@${NEW_VERSION}"
+          echo '```'
+          echo ""
+          echo "## Changes"
+          echo ""
+          cat /tmp/unreleased_changelog.md
+        } > /tmp/release_notes.md
+
+        gh release create "${NEW_VERSION}" \
+          --repo wailsapp/wails \
+          --title "Wails ${NEW_VERSION}" \
+          --notes-file /tmp/release_notes.md \
+          --latest
+
+    - name: Dry run summary
+      if: steps.should_release.outputs.proceed == 'true' && github.event.inputs.dry_run == 'true'
+      run: |
+        echo "## DRY RUN — Would Release" >> $GITHUB_STEP_SUMMARY
+        echo "**Version:** ${{ steps.current_version.outputs.version }} -> ${{ steps.new_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Commits since last release:** ${{ steps.commit_check.outputs.commit_count }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Unreleased Changelog" >> $GITHUB_STEP_SUMMARY
+        cat /tmp/unreleased_changelog.md >> $GITHUB_STEP_SUMMARY
+
+    - name: Summary
+      if: always() && steps.should_release.outputs.proceed == 'true'
+      run: |
+        if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+          echo "(see dry run summary above)"
+        else
+          echo "## Weekly Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ steps.new_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag:** ${{ steps.new_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger:** ${{ steps.should_release.outputs.reason }}" >> $GITHUB_STEP_SUMMARY
+        fi
