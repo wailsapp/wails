@@ -57,7 +57,7 @@ func runCommand(name string, arg ...string) {
 }
 
 func updateDocs(newVersion string) {
-	runCommand("npx", "-y", "pnpm", "install")
+	runCommand("npx", "-y", "pnpm", "install", "--no-frozen-lockfile")
 
 	s.ECHO("Generating new Docs for version: " + newVersion)
 
