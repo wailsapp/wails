@@ -39,6 +39,17 @@ jobs:
         cache: true
         cache-dependency-path: 'v2/go.sum'
 
+    - name: Install Task
+      uses: arduino/setup-task@v2
+      with:
+        version: 3.x
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
     - name: Setup Git
       run: |
         git config --global user.name "github-actions[bot]"
@@ -80,10 +91,11 @@ jobs:
         if [ -z "$LATEST_V2_TAG" ]; then
           echo "No previous v2 release tag found"
           echo "has_commits=true" >> $GITHUB_OUTPUT
+          echo "docs_changed=true" >> $GITHUB_OUTPUT
           exit 0
         fi
 
-        # Count commits touching v2/ since last tag
+        # Count commits touching v2/ or website/ since last tag
         V2_COMMIT_COUNT=$(git rev-list "${LATEST_V2_TAG}..HEAD" --count -- v2/ website/ || echo "0")
         echo "Found $V2_COMMIT_COUNT commits touching v2/ or website/ since $LATEST_V2_TAG"
         echo "commit_count=$V2_COMMIT_COUNT" >> $GITHUB_OUTPUT
@@ -92,6 +104,16 @@ jobs:
           echo "has_commits=true" >> $GITHUB_OUTPUT
         else
           echo "has_commits=false" >> $GITHUB_OUTPUT
+        fi
+
+        # Check if docs changed since last release (website/docs/ content, not just config)
+        DOCS_COMMIT_COUNT=$(git rev-list "${LATEST_V2_TAG}..HEAD" --count -- website/docs/ website/versioned_docs/ || echo "0")
+        echo "Found $DOCS_COMMIT_COUNT commits touching docs since $LATEST_V2_TAG"
+
+        if [ "$DOCS_COMMIT_COUNT" -gt 0 ]; then
+          echo "docs_changed=true" >> $GITHUB_OUTPUT
+        else
+          echo "docs_changed=false" >> $GITHUB_OUTPUT
         fi
 
     - name: Determine if release should proceed
@@ -127,82 +149,52 @@ jobs:
         echo "**Reason:** ${{ steps.should_release.outputs.reason }}" >> $GITHUB_STEP_SUMMARY
         echo "**Last release:** ${{ steps.commit_check.outputs.latest_tag }}" >> $GITHUB_STEP_SUMMARY
 
-    - name: Read current version
-      if: steps.should_release.outputs.proceed == 'true'
-      id: current_version
-      run: |
-        CURRENT=$(cat v2/cmd/wails/internal/version.txt)
-        echo "version=$CURRENT" >> $GITHUB_OUTPUT
-        echo "Current version: $CURRENT"
-
-    - name: Compute new version
-      if: steps.should_release.outputs.proceed == 'true'
-      id: new_version
-      run: |
-        CURRENT="${{ steps.current_version.outputs.version }}"
-        # Increment last segment: v2.11.0 -> v2.11.1
-        PREFIX=$(echo "$CURRENT" | sed 's/\.[^.]*$//')
-        PATCH=$(echo "$CURRENT" | grep -oE '[0-9]+$')
-        NEW_PATCH=$((PATCH + 1))
-        NEW_VERSION="${PREFIX}.${NEW_PATCH}"
-        echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-        echo "New version: $NEW_VERSION"
-
     - name: Extract unreleased changelog
       if: steps.should_release.outputs.proceed == 'true'
-      id: extract_changelog
       run: |
-        # Extract the unreleased section content for the GitHub release body
         CHANGELOG="website/src/pages/changelog.mdx"
         UNRELEASED=$(sed -n '/^## \[Unreleased\]/,/^## v/{/^## \[Unreleased\]/d;/^## v/d;p}' "$CHANGELOG")
-        # Trim leading/trailing blank lines
         UNRELEASED=$(echo "$UNRELEASED" | sed '/./,$!d' | sed -e :a -e '/^\s*$/{ $d; N; ba; }')
-
-        # Write to file for use in release body (avoids multiline env var issues)
         echo "$UNRELEASED" > /tmp/unreleased_changelog.md
         echo "Extracted unreleased changelog:"
         cat /tmp/unreleased_changelog.md
 
-    - name: Update version file
+    - name: Run release script
       if: steps.should_release.outputs.proceed == 'true' && github.event.inputs.dry_run != 'true'
       run: |
-        echo -n "${{ steps.new_version.outputs.version }}" > v2/cmd/wails/internal/version.txt
-
-    - name: Update changelog
-      if: steps.should_release.outputs.proceed == 'true' && github.event.inputs.dry_run != 'true'
-      run: |
-        NEW_VERSION="${{ steps.new_version.outputs.version }}"
-        TODAY=$(date +%Y-%m-%d)
-        CHANGELOG="website/src/pages/changelog.mdx"
-
-        # Insert new version heading after ## [Unreleased]
-        # sed: find the line, append a blank line + new version heading after it
-        sed -i "s/^## \[Unreleased\]$/## [Unreleased]\n\n## ${NEW_VERSION} - ${TODAY}/" "$CHANGELOG"
-
-        # Verify the update worked
-        if grep -q "## ${NEW_VERSION} - ${TODAY}" "$CHANGELOG"; then
-          echo "Changelog updated: inserted ${NEW_VERSION} - ${TODAY}"
+        ARGS=""
+        if [ "${{ steps.commit_check.outputs.docs_changed }}" == "true" ]; then
+          echo "Docs changed since last release — will update versioned docs"
+          ARGS="--update-docs"
         else
-          echo "ERROR: Failed to update changelog"
-          exit 1
+          echo "No docs changes — skipping versioned docs update"
         fi
+
+        task v2:release -- ${ARGS}
+
+    - name: Read new version
+      if: steps.should_release.outputs.proceed == 'true'
+      id: new_version
+      run: |
+        NEW_VERSION=$(cat v2/cmd/wails/internal/version.txt)
+        echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        echo "New version: $NEW_VERSION"
 
     - name: Commit, tag, and push
       if: steps.should_release.outputs.proceed == 'true' && github.event.inputs.dry_run != 'true'
       run: |
         NEW_VERSION="${{ steps.new_version.outputs.version }}"
-        TAG="${NEW_VERSION}"
 
-        git add v2/cmd/wails/internal/version.txt website/src/pages/changelog.mdx
+        git add -A
         git commit -m "release: ${NEW_VERSION}
 
         Automated weekly v2 release."
 
-        git tag -a "${TAG}" -m "Release ${NEW_VERSION}"
+        git tag -a "${NEW_VERSION}" -m "Release ${NEW_VERSION}"
         git push origin master
-        git push origin "${TAG}"
+        git push origin "${NEW_VERSION}"
 
-        echo "Pushed commit and tag ${TAG}"
+        echo "Pushed commit and tag ${NEW_VERSION}"
 
     - name: Create GitHub Release
       if: steps.should_release.outputs.proceed == 'true' && github.event.inputs.dry_run != 'true'
@@ -211,7 +203,6 @@ jobs:
       run: |
         NEW_VERSION="${{ steps.new_version.outputs.version }}"
 
-        # Build release notes file
         {
           echo "## Installation"
           echo ""
@@ -233,22 +224,21 @@ jobs:
     - name: Dry run summary
       if: steps.should_release.outputs.proceed == 'true' && github.event.inputs.dry_run == 'true'
       run: |
+        CURRENT=$(cat v2/cmd/wails/internal/version.txt)
         echo "## DRY RUN — Would Release" >> $GITHUB_STEP_SUMMARY
-        echo "**Version:** ${{ steps.current_version.outputs.version }} -> ${{ steps.new_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Current version:** ${CURRENT}" >> $GITHUB_STEP_SUMMARY
         echo "**Commits since last release:** ${{ steps.commit_check.outputs.commit_count }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Docs changed:** ${{ steps.commit_check.outputs.docs_changed }}" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### Unreleased Changelog" >> $GITHUB_STEP_SUMMARY
         cat /tmp/unreleased_changelog.md >> $GITHUB_STEP_SUMMARY
 
     - name: Summary
-      if: always() && steps.should_release.outputs.proceed == 'true'
+      if: always() && steps.should_release.outputs.proceed == 'true' && github.event.inputs.dry_run != 'true'
       run: |
-        if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
-          echo "(see dry run summary above)"
-        else
-          echo "## Weekly Release Summary" >> $GITHUB_STEP_SUMMARY
-          echo "**Version:** ${{ steps.new_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Tag:** ${{ steps.new_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Trigger:** ${{ steps.should_release.outputs.reason }}" >> $GITHUB_STEP_SUMMARY
-        fi
+        echo "## Weekly Release Summary" >> $GITHUB_STEP_SUMMARY
+        echo "**Version:** ${{ steps.new_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Tag:** ${{ steps.new_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Docs updated:** ${{ steps.commit_check.outputs.docs_changed }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Trigger:** ${{ steps.should_release.outputs.reason }}" >> $GITHUB_STEP_SUMMARY
