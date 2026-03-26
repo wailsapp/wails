@@ -1,0 +1,25 @@
+---
+sidebar_position: 6
+---
+
+# 메뉴
+
+애플리케이션 메뉴는 이 메소드들과 관련 있습니다.
+
+:::info JavaScript
+
+현재 메뉴는 JS runtime을 지원하지 않습니다.
+
+:::
+
+### MenuSetApplicationMenu
+
+애플리케이션 메뉴는 [menu](../menus.mdx)를 통해 설정하세요.
+
+Go: `MenuSetApplicationMenu(ctx context.Context, menu *menu.Menu)`
+
+### MenuUpdateApplicationMenu
+
+애플리케이션 메뉴를 업데이트하여 `MenuSetApplicationMenu`에 전달된 메뉴에 대한 모든 변경 사항을 선택합니다.
+
+Go: `MenuUpdateApplicationMenu(ctx context.Context)`
