@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 	"os"
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 
 	"github.com/leaanthony/slicer"
 	"github.com/pterm/pterm"
@@ -94,6 +95,7 @@ func buildApplication(f *flags.Build) error {
 		SkipBindings:      f.SkipBindings,
 		ProjectData:       projectOptions,
 		SkipEmbedCreate:   f.SkipEmbedCreate,
+		InstallScope:      f.InstallScope,
 	}
 
 	tableData := pterm.TableData{
@@ -104,6 +106,7 @@ func buildApplication(f *flags.Build) error {
 		{"Devtools", bool2Str(buildOptions.Devtools)},
 		{"Frontend Directory", projectOptions.GetFrontendDir()},
 		{"Obfuscated", bool2Str(f.Obfuscated)},
+		{"Install Scope", f.InstallScope},
 	}
 	if f.Obfuscated {
 		tableData = append(tableData, []string{"Garble Args", f.GarbleArgs})
