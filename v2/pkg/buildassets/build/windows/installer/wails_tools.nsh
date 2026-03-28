@@ -158,7 +158,7 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
     Delete "$INSTDIR\uninstall.exe"
 
     SetRegView 64
-    
+
     !ifdef WAILS_INSTALL_SCOPE
       !if "${WAILS_INSTALL_SCOPE}" == "user"
         DeleteRegKey HKCU "${UNINST_KEY}"
@@ -219,7 +219,6 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
   ; Backup the previously associated file class
   ReadRegStr $R0 SHELL_CONTEXT "Software\Classes\.${EXT}" ""
   WriteRegStr SHELL_CONTEXT "Software\Classes\.${EXT}" "${FILECLASS}_backup" "$R0"
-f
   WriteRegStr SHELL_CONTEXT "Software\Classes\.${EXT}" "" "${FILECLASS}"
 
   WriteRegStr SHELL_CONTEXT "Software\Classes\${FILECLASS}" "" `${DESCRIPTION}`
