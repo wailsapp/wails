@@ -51,6 +51,7 @@ type Options struct {
 	SkipModTidy       bool                 //  Skip mod tidy before compile
 	IgnoreFrontend    bool                 // Indicates if the frontend does not need building
 	IgnoreApplication bool                 // Indicates if the application does not need building
+	InstallScope      string               // "machine" (default) or "user"
 	OutputFile        string               // Override the output filename
 	BinDirectory      string               // Directory to use to write the built applications
 	CleanBinDirectory bool                 // Indicates if the bin output directory should be cleaned before building
