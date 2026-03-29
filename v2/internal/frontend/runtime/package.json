@@ -15,7 +15,7 @@
   "license": "ISC",
   "devDependencies": {
     "esbuild": "^0.15.6",
-    "happy-dom": "^7.6.0",
+    "happy-dom": "^20.8.9",
     "npm-run-all": "^4.1.5",
     "svelte": "^3.49.0",
     "vitest": "^0.24.3"
