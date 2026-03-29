@@ -82,7 +82,7 @@ Cet exemple a les options suivantes :
 - `OnShutdown` - Nom de la fonction à appeler quand la fenêtre est sur le point d'être fermée
 - `Bind` - La liste des structures Go à exposer au frontend
 
-A full list of application options can be found in the [Options Reference](reference/options.mdx).
+Une liste complète des options de l'application peut être trouvée dans la [Référence des Options](reference/options.mdx).
 
 #### Ressources
 
@@ -182,7 +182,7 @@ Vous pouvez lier autant de structures que vous le souhaitez. Assurez-vous juste 
 
 ```
 
-You may bind enums types as well. In that case you should create array that will contain all possible enum values, instrument enum type and bind it to the app via `EnumBind`:
+Vous pouvez également lier des types d'énumérations. Dans ce cas, vous devriez créer un tableau qui contiendra toutes les valeurs possibles de l'énumération, définir le type de l'énumération et le lier à l'application via `EnumBind`:
 
 ```go {16-18} title="app.go"
 type Weekday string
@@ -414,6 +414,6 @@ Le runtime JavaScript se trouve dans `window.runtime` et contient de nombreuses 
 window.runtime.EventsEmit("my-event", 1);
 ```
 
-More details about the JS runtime can be found in the [Runtime Reference](reference/runtime/intro.mdx).
+Plus de détails sur l'exécutable JS peuvent être trouvés dans la [Référence d'exécution](reference/runtime/intro.mdx).
 
 [^1]: Il y a un très petit sous-ensemble de bibliothèques qui utilisent des fonctionnalités non prises en charge dans WebViews. Il y a souvent des alternatives et des solutions de contournement pour de tels cas.

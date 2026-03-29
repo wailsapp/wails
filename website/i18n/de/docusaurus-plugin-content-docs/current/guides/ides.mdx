@@ -1,8 +1,8 @@
 # IDEs
 
-Wails aims to provide a great development experience. To that aim, we now support generating IDE specific configuration to provide smoother project setup.
+Wails versucht eine gute Entwicklungserfahrung zu bieten. Zu diesem Zweck unterstützen wir die Erstellung einer IDE-spezifischen Konfiguration, um eine reibungslose Projekteinstellung zu ermöglichen.
 
-Currently, we support [Visual Studio Code](https://code.visualstudio.com/) and [Goland](https://www.jetbrains.com/go/).
+Derzeit unterstützen wir [Visual Studio Code](https://code.visualstudio.com/) und [Goland](https://www.jetbrains.com/go/).
 
 ## Visual Studio Code
 
@@ -15,9 +15,9 @@ Currently, we support [Visual Studio Code](https://code.visualstudio.com/) and [
 </p>
 ```
 
-When generating a project using the `-ide vscode` flags, IDE files will be created alongside the other project files. These files are placed into the `.vscode` directory and provide the correct configuration for debugging your application.
+Beim Generieren eines Projekts mit der `-Ide vscode` Flag werden IDE Dateien zusammen mit den anderen Projektdateien erstellt. Diese Dateien werden im Verzeichnis `.vscode` gespeichert und geben die richtige Konfiguration für das Debuggen der Anwendung an.
 
-The 2 files generated are `tasks.json` and `launch.json`. Below are the files generated for the default vanilla project:
+Die 2 erzeugten Dateien sind `tasks.json` und `launch.json`. Unten sind die Dateien, die für das Standardprojekt generiert wurden:
 
 ```json title="tasks.json"
 {
@@ -62,9 +62,9 @@ The 2 files generated are `tasks.json` and `launch.json`. Below are the files ge
 }
 ```
 
-### Configuring the install and build steps
+### Installations- und Buildschritte konfigurieren
 
-The `tasks.json` file is simple for the default project as there is no `npm install` or `npm run build` step needed. For projects that have a frontend build step, such as the svelte template, we would need to edit `tasks.json` to add the install and build steps:
+Die `tasks.json` Datei ist für das Standardprojekt, da kein `npm install` oder `npm build` Schritt benötigt wird. Für Projekte, die einen Frontend-Build-Schritt benötigen, wie zum Beispiel, das Svelte-Template, müssen wir `tasks.json` editieren und folgende Installations- und Build-Schritte hinzufügen:
 
 ```json title="tasks.json"
 {
@@ -120,8 +120,8 @@ The `tasks.json` file is simple for the default project as there is no `npm inst
 }
 ```
 
-:::info Future Enhancement
+:::info Zukünftige Verbesserung
 
-In the future, we hope to generate a `tasks.json` that includes the install and build steps automatically.
+In Zukunft hoffen wir, eine `tasks.json` zu generieren, die die Installations- und Bauschritte automatisch beinhaltet.
 
 :::
