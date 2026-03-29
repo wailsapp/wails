@@ -18,14 +18,14 @@ Wails prend en charge la génération d'installateurs Windows en utilisant l'ins
 
 L'installateur est disponible sur la page [de téléchargement NSIS](https://nsis.sourceforge.io/Download).
 
-You can install with [Scoop](https://scoop.sh/) (which will automatically add it to your PATH):
+Vous pouvez installer avec [Scoop](https://scoop.sh/) (qui l'ajoutera automatiquement à votre PATH):
 
 ```
 scoop bucket add extras
 scoop install nsis
 ```
 
-Or, you can use Winget (on Windows 10+):
+Ou, vous pouvez utiliser Winget (pour Windows 10+):
 
 ```
 winget install NSIS.NSIS --silent
@@ -37,7 +37,7 @@ Si vous utilisez le gestionnaire de paquets chocolatey, exécutez le script suiv
 choco install nsis
 ```
 
-**NOTE:** If you install NSIS manually, you need to add the _Bin_ folder, which contains `makensis.exe`, in your NSIS installation to your path. [Cette page](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/) est un bon tutoriel sur comment ajouter un dossier dans votre variable d'environnement PATH sur Windows.
+**NOTE:** Si vous installez NSIS manuellement, vous devez ajouter le dossier _Bin_ , qui contient `makensis.exe`, dans la variable d'environnement PATH. [Cette page](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/) est un bon tutoriel sur comment ajouter un dossier dans votre variable d'environnement PATH sur Windows.
 
 ### Linux
 

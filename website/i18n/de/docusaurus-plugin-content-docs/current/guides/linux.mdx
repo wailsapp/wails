@@ -1,10 +1,10 @@
 # Linux
 
-This page has miscellaneous guides related to developing Wails applications for Linux.
+Diese Seite enthält verschiedene Anleitungen zur Entwicklung von Wails Anwendungen für Linux.
 
-## Video tag doesn't fire "ended" event
+## Der Video-Tag löst nicht das "ended" Event aus
 
-When using a video tag, the "ended" event is not fired when the video is finished playing. This is a bug in WebkitGTK, however you can use the following workaround to fix it:
+Wenn ein Video-Tag verwendet wird, wird das "ended" Event nicht ausgelöst, wenn das Video beendet ist. Dies ist ein Fehler in WebkitGTK, aber du kannst den folgenden Workaround verwenden, um diesen zu beheben:
 
 ```js
 videoTag.addEventListener("timeupdate", (event) => {
@@ -15,19 +15,19 @@ videoTag.addEventListener("timeupdate", (event) => {
 });
 ```
 
-Source: [Lyimmi](https://github.com/Lyimmi) on the [discussions board](https://github.com/wailsapp/wails/issues/1729#issuecomment-1212291275)
+Quelle: [Lyimmi](https://github.com/Lyimmi) auf dem [Diskussion Board](https://github.com/wailsapp/wails/issues/1729#issuecomment-1212291275)
 
-## GStreamer error when using Audio or Video elements
+## GStreamer-Fehler bei Verwendung von Audio- oder Videoelementen
 
-If you are seeing the following error when including `<Audio>` or `<Video>` elements on Linux, you may need to install `gst-plugins-good`.
+Wenn der folgende Fehler beim Einfügen von `<Audio>` oder `<Video>` Elementen unter Linux erscheint, muss unter Umständen `gst-plugins-good` installiert werden.
 
 ```
 GStreamer element autoaudiosink not found. Please install it
 ```
 
-### Installing
+### Installieren
 
-Run the following distro relevant install command:
+Führe den folgenden distro relevanten Installationsbefehl aus:
 
 ```mdx-code-block
 import Tabs from "@theme/Tabs";
@@ -59,12 +59,12 @@ import TabItem from "@theme/TabItem";
 </Tabs>
 ```
 
-If the added package does not resolve the issue, additional GStreamer dependencies may be required. [See the GStreamer installation page for more details.](https://gstreamer.freedesktop.org/documentation/installing/on-linux.html)
+Wenn das hinzugefügte Paket das Problem nicht behebt, werden möglicherweise zusätzliche GStreamer-Abhängigkeiten benötigt. [Weitere Details sind auf der GStreamer Installationsseite zu finden.](https://gstreamer.freedesktop.org/documentation/installing/on-linux.html)
 
-### Additional Notes
+### Weitere Informationen
 
-- This issue is caused by [an upstream issue with WebkitGTK](https://bugs.webkit.org/show_bug.cgi?id=146351).
-- [Arch based systems](https://wiki.archlinux.org/title/Arch-based_distributions) seem to have this issue more often than other distributions.
-- This issue impacts [Tauri apps](https://tauri.app/).
+- Dieses Problem wird durch ein [Upstream-Problem mit WebkitGTK](https://bugs.webkit.org/show_bug.cgi?id=146351) verursacht.
+- [Arch basierte Systeme](https://wiki.archlinux.org/title/Arch-based_distributions) scheinen dieses Problem häufiger zu haben als andere Distributionen.
+- Dieses Problem wirkt sich auf [Tauri Apps](https://tauri.app/) aus.
 
-Source: [developomp](https://github.com/developomp) on the [Tauri discussion board](https://github.com/tauri-apps/tauri/issues/4642#issuecomment-1643229562).
+Quelle: [developomp](https://github.com/developomp) aus dem [Tauri Diskussionsforum](https://github.com/tauri-apps/tauri/issues/4642#issuecomment-1643229562).
