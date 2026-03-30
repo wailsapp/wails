@@ -22,6 +22,10 @@ type automationNativeCapable interface {
 	automationNativeCapabilities() automationNativeCapabilities
 	automationEvaluate(expression string, world automationExecutionWorld, awaitPromise bool) (automationRemoteObject, error)
 	automationInvoke(method string, params json.RawMessage) (any, error)
+	automationGetCookies() ([]AutomationCookie, error)
+	automationSetCookie(AutomationCookie) error
+	automationDeleteCookie(name, domain, path string) (bool, error)
+	automationClearCookies() error
 	automationCreatePDF() (string, error)
 	automationSetInspectable(enabled bool) error
 }
@@ -38,6 +42,10 @@ type automationTarget interface {
 	printToPDF() (string, error)
 	evaluate(expression string, world automationExecutionWorld, awaitPromise bool) (automationRemoteObject, error)
 	invoke(method string, params json.RawMessage) (any, error)
+	getCookies() ([]AutomationCookie, error)
+	setCookie(AutomationCookie) error
+	deleteCookie(name, domain, path string) (bool, error)
+	clearCookies() error
 	setInspectable(bool) error
 	bufferedConsoleMessages() []AutomationConsoleMessage
 }
@@ -178,6 +186,46 @@ func (v *WebContentsView) invoke(method string, params json.RawMessage) (any, er
 	return nil, ErrAutomationNotSupported
 }
 
+func (v *WebContentsView) getCookies() ([]AutomationCookie, error) {
+	if impl, ok := v.impl.(automationNativeCapable); ok {
+		if err := impl.automationEnsureReady(); err != nil {
+			return nil, err
+		}
+		return impl.automationGetCookies()
+	}
+	return nil, ErrAutomationNotSupported
+}
+
+func (v *WebContentsView) setCookie(cookie AutomationCookie) error {
+	if impl, ok := v.impl.(automationNativeCapable); ok {
+		if err := impl.automationEnsureReady(); err != nil {
+			return err
+		}
+		return impl.automationSetCookie(cookie)
+	}
+	return ErrAutomationNotSupported
+}
+
+func (v *WebContentsView) deleteCookie(name, domain, path string) (bool, error) {
+	if impl, ok := v.impl.(automationNativeCapable); ok {
+		if err := impl.automationEnsureReady(); err != nil {
+			return false, err
+		}
+		return impl.automationDeleteCookie(name, domain, path)
+	}
+	return false, ErrAutomationNotSupported
+}
+
+func (v *WebContentsView) clearCookies() error {
+	if impl, ok := v.impl.(automationNativeCapable); ok {
+		if err := impl.automationEnsureReady(); err != nil {
+			return err
+		}
+		return impl.automationClearCookies()
+	}
+	return ErrAutomationNotSupported
+}
+
 func (v *WebContentsView) setInspectable(enabled bool) error {
 	if impl, ok := v.impl.(automationNativeCapable); ok {
 		if err := impl.automationSetInspectable(enabled); err != nil {
@@ -275,6 +323,18 @@ func (v *WebContentsView) recordAutomationException(exception AutomationExceptio
 			"exception": exception,
 		},
 		Scope: automationEventScopeConsole,
+	})
+}
+
+func (v *WebContentsView) recordAutomationNetworkEvent(method string, event AutomationNetworkEvent) {
+	v.emitAutomationEvent(automationTargetEvent{
+		TargetID: v.targetID(),
+		Method:   method,
+		Params: map[string]any{
+			"targetId": v.targetID(),
+			"event":    event,
+		},
+		Scope: automationEventScopeNetwork,
 	})
 }
 

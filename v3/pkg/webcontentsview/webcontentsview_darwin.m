@@ -18,6 +18,51 @@ static NSString* WailsAutomationURLString(WKWebView* webView) {
     return webView.URL.absoluteString ?: @"";
 }
 
+static NSString* WailsAutomationString(id value) {
+    if (value == nil || value == [NSNull null]) {
+        return @"";
+    }
+    if ([value isKindOfClass:[NSString class]]) {
+        return value;
+    }
+    if ([value respondsToSelector:@selector(stringValue)]) {
+        return [value stringValue];
+    }
+    return [value description] ?: @"";
+}
+
+static NSString* WailsAutomationCookieSameSite(NSHTTPCookie* cookie) {
+    if (@available(macOS 10.15, *)) {
+        NSString* sameSite = cookie.properties[NSHTTPCookieSameSitePolicy];
+        return sameSite ?: @"";
+    }
+    return @"";
+}
+
+static NSDictionary* WailsAutomationCookieDictionary(NSHTTPCookie* cookie) {
+    NSMutableDictionary* result = [NSMutableDictionary dictionaryWithDictionary:@{
+        @"name": cookie.name ?: @"",
+        @"value": cookie.value ?: @"",
+        @"domain": cookie.domain ?: @"",
+        @"path": cookie.path ?: @"/",
+        @"secure": @(cookie.secure),
+        @"httpOnly": @(cookie.HTTPOnly),
+        @"sessionOnly": @(cookie.sessionOnly),
+    }];
+    if (cookie.expiresDate != nil) {
+        result[@"expires"] = @((int64_t)([cookie.expiresDate timeIntervalSince1970] * 1000.0));
+    }
+    NSString* sameSite = WailsAutomationCookieSameSite(cookie);
+    if (sameSite.length > 0) {
+        result[@"sameSite"] = sameSite;
+    }
+    return result;
+}
+
+static WKHTTPCookieStore* WailsAutomationCookieStore(WKWebView* webView) {
+    return webView.configuration.websiteDataStore.httpCookieStore;
+}
+
 static id WailsAutomationSanitizeJSONValue(id value) {
     if (value == nil) {
         return [NSNull null];
@@ -188,6 +233,22 @@ static NSString* WailsPageEvaluationFunctionBody(void) {
     }
     if ([type isEqualToString:@"exception"]) {
         [self emitMethod:@"Runtime.exceptionThrown" payload:payload];
+        return;
+    }
+    if ([type isEqualToString:@"networkRequest"]) {
+        [self emitMethod:@"Network.requestWillBeSent" payload:payload];
+        return;
+    }
+    if ([type isEqualToString:@"networkResponse"]) {
+        [self emitMethod:@"Network.responseReceived" payload:payload];
+        return;
+    }
+    if ([type isEqualToString:@"networkFinished"]) {
+        [self emitMethod:@"Network.loadingFinished" payload:payload];
+        return;
+    }
+    if ([type isEqualToString:@"networkFailed"]) {
+        [self emitMethod:@"Network.loadingFailed" payload:payload];
         return;
     }
     if ([type isEqualToString:@"domcontentloaded"]) {
@@ -414,6 +475,141 @@ void webContentsViewCreatePDF(void* view, uintptr_t callbackID) {
     });
 }
 
+void webContentsViewGetCookies(void* view, uintptr_t callbackID) {
+    WKWebView* webView = (WKWebView*)view;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [WailsAutomationCookieStore(webView) getAllCookies:^(NSArray<NSHTTPCookie*>* cookies) {
+            NSMutableArray* result = [NSMutableArray arrayWithCapacity:cookies.count];
+            for (NSHTTPCookie* cookie in cookies) {
+                [result addObject:WailsAutomationCookieDictionary(cookie)];
+            }
+            WailsAutomationCompleteCommand(callbackID, result, nil);
+        }];
+    });
+}
+
+void webContentsViewSetCookie(void* view, const char* cookieJSON, uintptr_t callbackID) {
+    WKWebView* webView = (WKWebView*)view;
+    NSData* data = cookieJSON != NULL ? [[NSString stringWithUTF8String:cookieJSON] dataUsingEncoding:NSUTF8StringEncoding] : nil;
+    NSError* jsonError = nil;
+    NSDictionary* cookiePayload = data != nil ? [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError] : nil;
+    if (![cookiePayload isKindOfClass:[NSDictionary class]]) {
+        WailsAutomationCompleteCommandMessage(callbackID, jsonError.localizedDescription ?: @"invalid cookie payload");
+        return;
+    }
+
+    NSMutableDictionary* properties = [NSMutableDictionary dictionary];
+    NSString* name = WailsAutomationString(cookiePayload[@"name"]);
+    NSString* value = WailsAutomationString(cookiePayload[@"value"]);
+    NSString* domain = WailsAutomationString(cookiePayload[@"domain"]);
+    NSString* path = WailsAutomationString(cookiePayload[@"path"]);
+    if (path.length == 0) {
+        path = @"/";
+    }
+
+    if (name.length == 0 || domain.length == 0) {
+        WailsAutomationCompleteCommandMessage(callbackID, @"cookie name and domain are required");
+        return;
+    }
+
+    properties[NSHTTPCookieName] = name;
+    properties[NSHTTPCookieValue] = value;
+    properties[NSHTTPCookieDomain] = domain;
+    properties[NSHTTPCookiePath] = path;
+
+    id secure = cookiePayload[@"secure"];
+    if (secure != nil) {
+        properties[NSHTTPCookieSecure] = [secure boolValue] ? @"TRUE" : @"FALSE";
+    }
+
+    id expires = cookiePayload[@"expires"];
+    if (expires != nil && expires != [NSNull null]) {
+        NSTimeInterval interval = [expires doubleValue] / 1000.0;
+        properties[NSHTTPCookieExpires] = [NSDate dateWithTimeIntervalSince1970:interval];
+    }
+
+    NSString* sameSite = WailsAutomationString(cookiePayload[@"sameSite"]);
+    if (@available(macOS 10.15, *)) {
+        if (sameSite.length > 0) {
+            properties[NSHTTPCookieSameSitePolicy] = sameSite;
+        }
+    }
+
+    NSHTTPCookie* cookie = [NSHTTPCookie cookieWithProperties:properties];
+    if (cookie == nil) {
+        WailsAutomationCompleteCommandMessage(callbackID, @"unable to create cookie from supplied properties");
+        return;
+    }
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [WailsAutomationCookieStore(webView) setCookie:cookie completionHandler:^{
+            WailsAutomationCompleteCommand(callbackID, @{ @"stored": @YES }, nil);
+        }];
+    });
+}
+
+void webContentsViewDeleteCookie(void* view, const char* name, const char* domain, const char* path, uintptr_t callbackID) {
+    WKWebView* webView = (WKWebView*)view;
+    NSString* cookieName = name != NULL ? [NSString stringWithUTF8String:name] : @"";
+    NSString* cookieDomain = domain != NULL ? [NSString stringWithUTF8String:domain] : @"";
+    NSString* cookiePath = path != NULL ? [NSString stringWithUTF8String:path] : @"";
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [WailsAutomationCookieStore(webView) getAllCookies:^(NSArray<NSHTTPCookie*>* cookies) {
+            NSMutableArray* matches = [NSMutableArray array];
+            for (NSHTTPCookie* cookie in cookies) {
+                if (cookieName.length > 0 && ![cookie.name isEqualToString:cookieName]) {
+                    continue;
+                }
+                if (cookieDomain.length > 0 && ![cookie.domain isEqualToString:cookieDomain]) {
+                    continue;
+                }
+                if (cookiePath.length > 0 && ![cookie.path isEqualToString:cookiePath]) {
+                    continue;
+                }
+                [matches addObject:cookie];
+            }
+
+            if (matches.count == 0) {
+                WailsAutomationCompleteCommand(callbackID, @{ @"deleted": @NO }, nil);
+                return;
+            }
+
+            __block NSUInteger remaining = matches.count;
+            for (NSHTTPCookie* cookie in matches) {
+                [WailsAutomationCookieStore(webView) deleteCookie:cookie completionHandler:^{
+                    remaining -= 1;
+                    if (remaining == 0) {
+                        WailsAutomationCompleteCommand(callbackID, @{ @"deleted": @YES }, nil);
+                    }
+                }];
+            }
+        }];
+    });
+}
+
+void webContentsViewClearCookies(void* view, uintptr_t callbackID) {
+    WKWebView* webView = (WKWebView*)view;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [WailsAutomationCookieStore(webView) getAllCookies:^(NSArray<NSHTTPCookie*>* cookies) {
+            if (cookies.count == 0) {
+                WailsAutomationCompleteCommand(callbackID, @{ @"cleared": @YES }, nil);
+                return;
+            }
+
+            __block NSUInteger remaining = cookies.count;
+            for (NSHTTPCookie* cookie in cookies) {
+                [WailsAutomationCookieStore(webView) deleteCookie:cookie completionHandler:^{
+                    remaining -= 1;
+                    if (remaining == 0) {
+                        WailsAutomationCompleteCommand(callbackID, @{ @"cleared": @YES }, nil);
+                    }
+                }];
+            }
+        }];
+    });
+}
+
 bool webContentsViewAutomationSetInspectable(void* view, bool enabled) {
     __block bool success = false;
     WKWebView* webView = (WKWebView*)view;
@@ -430,6 +626,13 @@ bool webContentsViewAutomationSetInspectable(void* view, bool enabled) {
 
 bool webContentsViewAutomationSupportsInspection(void) {
     if (@available(macOS 13.3, *)) {
+        return true;
+    }
+    return false;
+}
+
+bool webContentsViewAutomationSupportsProxyCapture(void) {
+    if (@available(macOS 14.0, *)) {
         return true;
     }
     return false;

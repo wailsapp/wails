@@ -18,8 +18,8 @@ import (
 )
 
 type macosWebContentsView struct {
-	parent *WebContentsView
-	nsView unsafe.Pointer
+	parent   *WebContentsView
+	nsView   unsafe.Pointer
 	nsWindow unsafe.Pointer
 }
 
@@ -145,6 +145,9 @@ func (w *macosWebContentsView) automationNativeCapabilities() automationNativeCa
 		AsyncRuntime:      true,
 		DOM:               true,
 		Storage:           true,
+		Cookies:           true,
+		NetworkBasic:      true,
+		NetworkProxy:      bool(C.webContentsViewAutomationSupportsProxyCapture()),
 		Accessibility:     true,
 		Inspection:        bool(C.webContentsViewAutomationSupportsInspection()),
 		PDF:               true,
@@ -187,6 +190,60 @@ func (w *macosWebContentsView) automationInvoke(method string, params json.RawMe
 		})
 	}, &result)
 	return result, err
+}
+
+func (w *macosWebContentsView) automationGetCookies() ([]AutomationCookie, error) {
+	var result []AutomationCookie
+	err := w.runAutomationCommand(func(callbackID uintptr) {
+		application.InvokeSync(func() {
+			C.webContentsViewGetCookies(w.nsView, C.uintptr_t(callbackID))
+		})
+	}, &result)
+	return result, err
+}
+
+func (w *macosWebContentsView) automationSetCookie(cookie AutomationCookie) error {
+	payload, err := json.Marshal(cookie)
+	if err != nil {
+		return err
+	}
+	cCookie := C.CString(string(payload))
+	defer C.free(unsafe.Pointer(cCookie))
+
+	return w.runAutomationCommand(func(callbackID uintptr) {
+		application.InvokeSync(func() {
+			C.webContentsViewSetCookie(w.nsView, cCookie, C.uintptr_t(callbackID))
+		})
+	}, nil)
+}
+
+func (w *macosWebContentsView) automationDeleteCookie(name, domain, path string) (bool, error) {
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cName))
+
+	cDomain := C.CString(domain)
+	defer C.free(unsafe.Pointer(cDomain))
+
+	cPath := C.CString(path)
+	defer C.free(unsafe.Pointer(cPath))
+
+	var result struct {
+		Deleted bool `json:"deleted"`
+	}
+	err := w.runAutomationCommand(func(callbackID uintptr) {
+		application.InvokeSync(func() {
+			C.webContentsViewDeleteCookie(w.nsView, cName, cDomain, cPath, C.uintptr_t(callbackID))
+		})
+	}, &result)
+	return result.Deleted, err
+}
+
+func (w *macosWebContentsView) automationClearCookies() error {
+	return w.runAutomationCommand(func(callbackID uintptr) {
+		application.InvokeSync(func() {
+			C.webContentsViewClearCookies(w.nsView, C.uintptr_t(callbackID))
+		})
+	}, nil)
 }
 
 func (w *macosWebContentsView) automationCreatePDF() (string, error) {

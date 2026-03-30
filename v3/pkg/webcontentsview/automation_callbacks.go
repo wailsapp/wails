@@ -48,6 +48,13 @@ func dispatchAutomationEvent(viewID uint, method string, payload string) {
 		}
 		view.recordAutomationException(exception)
 
+	case "Network.requestWillBeSent", "Network.responseReceived", "Network.loadingFinished", "Network.loadingFailed":
+		var event AutomationNetworkEvent
+		if payload == "" || json.Unmarshal([]byte(payload), &event) != nil {
+			return
+		}
+		view.recordAutomationNetworkEvent(method, event)
+
 	case "Page.domContentEventFired":
 		var event struct {
 			URL       string `json:"url"`

@@ -18,6 +18,7 @@ type mockAutomationTarget struct {
 	observers   map[uint64]automationObserver
 	nextID      uint64
 	console     []AutomationConsoleMessage
+	cookies     []AutomationCookie
 	lastEval    string
 	lastWorld   automationExecutionWorld
 	lastAwait   bool
@@ -40,6 +41,8 @@ func newMockAutomationTarget() *mockAutomationTarget {
 			AsyncRuntime:      true,
 			DOM:               true,
 			Storage:           true,
+			Cookies:           true,
+			NetworkBasic:      true,
 			Accessibility:     true,
 			Inspection:        true,
 			PDF:               true,
@@ -50,6 +53,14 @@ func newMockAutomationTarget() *mockAutomationTarget {
 				Level:     "log",
 				Text:      "buffered",
 				Timestamp: time.Now().UnixMilli(),
+			},
+		},
+		cookies: []AutomationCookie{
+			{
+				Name:   "session",
+				Value:  "abc123",
+				Domain: "example.com",
+				Path:   "/",
 			},
 		},
 	}
@@ -124,6 +135,60 @@ func (m *mockAutomationTarget) invoke(method string, params json.RawMessage) (an
 		"ok":     true,
 		"method": method,
 	}, nil
+}
+
+func (m *mockAutomationTarget) getCookies() ([]AutomationCookie, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	result := make([]AutomationCookie, len(m.cookies))
+	copy(result, m.cookies)
+	return result, nil
+}
+
+func (m *mockAutomationTarget) setCookie(cookie AutomationCookie) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	for index, existing := range m.cookies {
+		if existing.Name == cookie.Name && existing.Domain == cookie.Domain && existing.Path == cookie.Path {
+			m.cookies[index] = cookie
+			return nil
+		}
+	}
+	m.cookies = append(m.cookies, cookie)
+	return nil
+}
+
+func (m *mockAutomationTarget) deleteCookie(name, domain, path string) (bool, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	deleted := false
+	filtered := m.cookies[:0]
+	for _, cookie := range m.cookies {
+		if cookie.Name != name {
+			filtered = append(filtered, cookie)
+			continue
+		}
+		if domain != "" && cookie.Domain != domain {
+			filtered = append(filtered, cookie)
+			continue
+		}
+		if path != "" && cookie.Path != path {
+			filtered = append(filtered, cookie)
+			continue
+		}
+		deleted = true
+	}
+	m.cookies = append([]AutomationCookie(nil), filtered...)
+	return deleted, nil
+}
+
+func (m *mockAutomationTarget) clearCookies() error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.cookies = nil
+	return nil
 }
 
 func (m *mockAutomationTarget) setInspectable(enabled bool) error {
@@ -283,6 +348,92 @@ func TestAutomationServerRoutesPageAndConsoleEvents(t *testing.T) {
 	consoleEvent := readEnvelope(t, conn)
 	if consoleEvent.Method != "Console.messageAdded" || consoleEvent.SessionID != sessionID {
 		t.Fatalf("unexpected console event: %#v", consoleEvent)
+	}
+}
+
+func TestAutomationServerCookiesAndNetworkFlow(t *testing.T) {
+	server := NewAutomationServer(AutomationServerOptions{
+		Address: "127.0.0.1:0",
+	})
+	if err := server.Start(); err != nil {
+		t.Fatalf("start automation server: %v", err)
+	}
+	defer server.Stop(context.Background())
+
+	target := newMockAutomationTarget()
+	server.registerTarget(target)
+
+	conn := dialAutomationServer(t, server.Endpoint())
+	defer conn.Close(websocket.StatusNormalClosure, "")
+	_ = readEnvelope(t, conn)
+
+	writeRequest(t, conn, 1, "Target.attachToTarget", "", map[string]any{
+		"targetId": target.targetID(),
+	})
+	attach := readEnvelope(t, conn)
+	sessionID := attach.Result.(map[string]any)["sessionId"].(string)
+
+	writeRequest(t, conn, 2, "App.getCapabilities", "", nil)
+	capabilities := readEnvelope(t, conn)
+	result := capabilities.Result.(map[string]any)
+	if result["networkCaptureMode"] != "basic" {
+		t.Fatalf("unexpected network capture mode: %#v", result["networkCaptureMode"])
+	}
+
+	writeRequest(t, conn, 3, "Storage.getCookies", sessionID, nil)
+	cookies := readEnvelope(t, conn)
+	cookieResult := cookies.Result.(map[string]any)
+	list := cookieResult["cookies"].([]any)
+	if len(list) != 1 {
+		t.Fatalf("expected one cookie, got %d", len(list))
+	}
+
+	writeRequest(t, conn, 4, "Storage.setCookie", sessionID, map[string]any{
+		"cookie": map[string]any{
+			"name":   "auth",
+			"value":  "token",
+			"domain": "example.com",
+			"path":   "/",
+		},
+	})
+	stored := readEnvelope(t, conn)
+	if stored.Error != nil {
+		t.Fatalf("unexpected set cookie error: %#v", stored.Error)
+	}
+
+	writeRequest(t, conn, 5, "Storage.deleteCookie", sessionID, map[string]any{
+		"name":   "auth",
+		"domain": "example.com",
+		"path":   "/",
+	})
+	deleted := readEnvelope(t, conn)
+	if deleted.Result.(map[string]any)["deleted"] != true {
+		t.Fatalf("expected deleteCookie to delete the cookie: %#v", deleted.Result)
+	}
+
+	writeRequest(t, conn, 6, "Network.enable", sessionID, nil)
+	networkEnable := readEnvelope(t, conn)
+	if networkEnable.Result.(map[string]any)["captureMode"] != "basic" {
+		t.Fatalf("unexpected network enable result: %#v", networkEnable.Result)
+	}
+
+	target.emit(automationTargetEvent{
+		TargetID: target.targetID(),
+		Method:   "Network.requestWillBeSent",
+		Params: map[string]any{
+			"targetId": target.targetID(),
+			"event": map[string]any{
+				"requestId": "net-1",
+				"url":       "https://example.com/api",
+				"method":    "GET",
+				"type":      "fetch",
+			},
+		},
+		Scope: automationEventScopeNetwork,
+	})
+	networkEvent := readEnvelope(t, conn)
+	if networkEvent.Method != "Network.requestWillBeSent" || networkEvent.SessionID != sessionID {
+		t.Fatalf("unexpected network event: %#v", networkEvent)
 	}
 }
 

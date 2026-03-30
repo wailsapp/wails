@@ -47,6 +47,7 @@ type automationSession struct {
 	targetSessions       map[string]string
 	sessionTargets       map[string]string
 	consoleSubscriptions map[string]bool
+	networkSubscriptions map[string]bool
 	idleTimer            *time.Timer
 }
 
@@ -299,6 +300,7 @@ func (s *AutomationServer) handleWebSocket(rw http.ResponseWriter, req *http.Req
 		targetSessions:       make(map[string]string),
 		sessionTargets:       make(map[string]string),
 		consoleSubscriptions: make(map[string]bool),
+		networkSubscriptions: make(map[string]bool),
 	}
 	if s.options.IdleTimeout > 0 {
 		session.idleTimer = time.AfterFunc(s.options.IdleTimeout, func() {
@@ -602,6 +604,36 @@ func (s *AutomationServer) handleMessage(session *automationSession, message aut
 			"messages": target.bufferedConsoleMessages(),
 		})
 
+	case "Network.enable":
+		target, err := s.resolveTarget(session, message, targetIDFromParams(message.Params))
+		if err != nil {
+			return automationErrorResponse(message.ID, -32000, err.Error(), nil)
+		}
+		session.enableNetwork(target.targetID())
+		return automationResultResponse(message.ID, map[string]any{
+			"enabled":     true,
+			"captureMode": s.captureModeForTarget(target),
+		})
+
+	case "Network.disable":
+		target, err := s.resolveTarget(session, message, targetIDFromParams(message.Params))
+		if err != nil {
+			return automationErrorResponse(message.ID, -32000, err.Error(), nil)
+		}
+		session.disableNetwork(target.targetID())
+		return automationResultResponse(message.ID, map[string]any{
+			"enabled": false,
+		})
+
+	case "Network.getCaptureMode":
+		target, err := s.resolveTarget(session, message, targetIDFromParams(message.Params))
+		if err != nil {
+			return automationErrorResponse(message.ID, -32000, err.Error(), nil)
+		}
+		return automationResultResponse(message.ID, map[string]any{
+			"captureMode": s.captureModeForTarget(target),
+		})
+
 	case "Inspection.enable", "Inspection.disable", "Inspection.getStatus":
 		var params struct {
 			TargetID string `json:"targetId"`
@@ -660,6 +692,65 @@ func (s *AutomationServer) handleMessage(session *automationSession, message aut
 		if err != nil {
 			return automationErrorResponse(message.ID, -32000, err.Error(), nil)
 		}
+
+		switch message.Method {
+		case "Storage.getCookies":
+			cookies, err := target.getCookies()
+			if err != nil {
+				return automationErrorResponse(message.ID, -32000, err.Error(), nil)
+			}
+			return automationResultResponse(message.ID, map[string]any{
+				"cookies": cookies,
+			})
+
+		case "Storage.setCookie":
+			var params struct {
+				TargetID string           `json:"targetId"`
+				Cookie   AutomationCookie `json:"cookie"`
+			}
+			if err := decodeAutomationParams(message.Params, &params); err != nil {
+				return automationErrorResponse(message.ID, -32602, "invalid params", err.Error())
+			}
+			if params.Cookie.Name == "" {
+				return automationErrorResponse(message.ID, -32602, "missing cookie.name", nil)
+			}
+			if err := target.setCookie(params.Cookie); err != nil {
+				return automationErrorResponse(message.ID, -32000, err.Error(), nil)
+			}
+			return automationResultResponse(message.ID, map[string]any{
+				"stored": true,
+			})
+
+		case "Storage.deleteCookie":
+			var params struct {
+				TargetID string `json:"targetId"`
+				Name     string `json:"name"`
+				Domain   string `json:"domain"`
+				Path     string `json:"path"`
+			}
+			if err := decodeAutomationParams(message.Params, &params); err != nil {
+				return automationErrorResponse(message.ID, -32602, "invalid params", err.Error())
+			}
+			if params.Name == "" {
+				return automationErrorResponse(message.ID, -32602, "missing name", nil)
+			}
+			deleted, err := target.deleteCookie(params.Name, params.Domain, params.Path)
+			if err != nil {
+				return automationErrorResponse(message.ID, -32000, err.Error(), nil)
+			}
+			return automationResultResponse(message.ID, map[string]any{
+				"deleted": deleted,
+			})
+
+		case "Storage.clearCookies":
+			if err := target.clearCookies(); err != nil {
+				return automationErrorResponse(message.ID, -32000, err.Error(), nil)
+			}
+			return automationResultResponse(message.ID, map[string]any{
+				"cleared": true,
+			})
+		}
+
 		result, err := target.invoke(message.Method, message.Params)
 		if err != nil {
 			return automationErrorResponse(message.ID, -32000, err.Error(), nil)
@@ -680,6 +771,9 @@ func (s *AutomationServer) capabilities() AutomationCapabilities {
 		nativeCaps.AsyncRuntime = nativeCaps.AsyncRuntime || caps.AsyncRuntime
 		nativeCaps.DOM = nativeCaps.DOM || caps.DOM
 		nativeCaps.Storage = nativeCaps.Storage || caps.Storage
+		nativeCaps.Cookies = nativeCaps.Cookies || caps.Cookies
+		nativeCaps.NetworkBasic = nativeCaps.NetworkBasic || caps.NetworkBasic
+		nativeCaps.NetworkProxy = nativeCaps.NetworkProxy || caps.NetworkProxy
 		nativeCaps.Accessibility = nativeCaps.Accessibility || caps.Accessibility
 		nativeCaps.Inspection = nativeCaps.Inspection || caps.Inspection
 		nativeCaps.PDF = nativeCaps.PDF || caps.PDF
@@ -744,12 +838,31 @@ func (s *AutomationServer) capabilities() AutomationCapabilities {
 	if nativeCaps.Storage {
 		domains["Storage"] = AutomationDomainCapabilities{
 			Commands: []string{
+				"Storage.getCookies",
+				"Storage.setCookie",
+				"Storage.deleteCookie",
+				"Storage.clearCookies",
 				"Storage.getLocalStorage",
 				"Storage.setLocalStorageItem",
 				"Storage.removeLocalStorageItem",
 				"Storage.getSessionStorage",
 				"Storage.setSessionStorageItem",
 				"Storage.removeSessionStorageItem",
+			},
+		}
+	}
+	if nativeCaps.NetworkBasic || nativeCaps.NetworkProxy {
+		domains["Network"] = AutomationDomainCapabilities{
+			Commands: []string{"Network.enable", "Network.disable", "Network.getCaptureMode"},
+			Events: []string{
+				"Network.requestWillBeSent",
+				"Network.responseReceived",
+				"Network.loadingFinished",
+				"Network.loadingFailed",
+			},
+			Features: map[string]any{
+				"basic": nativeCaps.NetworkBasic,
+				"proxy": nativeCaps.NetworkProxy,
 			},
 		}
 	}
@@ -782,7 +895,7 @@ func (s *AutomationServer) capabilities() AutomationCapabilities {
 		Platform:           automationPlatform(),
 		SupportedDomains:   supportedDomains,
 		Domains:            domains,
-		NetworkCaptureMode: "none",
+		NetworkCaptureMode: captureModeFromCapabilities(nativeCaps),
 		Targets:            targets,
 	}
 }
@@ -865,6 +978,12 @@ func (s *AutomationServer) dispatchTargetEvent(event automationTargetEvent) {
 			Method: event.Method,
 			Params: event.Params,
 		})
+
+	case automationEventScopeNetwork:
+		s.broadcastNetworkToTarget(event.TargetID, automationProtocolEnvelope{
+			Method: event.Method,
+			Params: event.Params,
+		})
 	}
 }
 
@@ -887,6 +1006,21 @@ func (s *AutomationServer) broadcastToTarget(targetID string, consoleOnly bool, 
 			continue
 		}
 		if consoleOnly && !session.consoleEnabled(targetID) {
+			continue
+		}
+		outbound := message
+		outbound.SessionID = sessionID
+		session.trySend(outbound)
+	}
+}
+
+func (s *AutomationServer) broadcastNetworkToTarget(targetID string, message automationProtocolEnvelope) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	for session := range s.sessions {
+		sessionID, ok := session.sessionForTarget(targetID)
+		if !ok || !session.networkEnabled(targetID) {
 			continue
 		}
 		outbound := message
@@ -988,6 +1122,7 @@ func (s *automationSession) detachTarget(targetID string) {
 	delete(s.targetSessions, targetID)
 	delete(s.sessionTargets, sessionID)
 	delete(s.consoleSubscriptions, targetID)
+	delete(s.networkSubscriptions, targetID)
 }
 
 func (s *automationSession) detachSession(sessionID string) {
@@ -1001,6 +1136,7 @@ func (s *automationSession) detachSession(sessionID string) {
 	delete(s.sessionTargets, sessionID)
 	delete(s.targetSessions, targetID)
 	delete(s.consoleSubscriptions, targetID)
+	delete(s.networkSubscriptions, targetID)
 }
 
 func (s *automationSession) targetForSession(sessionID string) (string, bool) {
@@ -1045,6 +1181,24 @@ func (s *automationSession) consoleEnabled(targetID string) bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.consoleSubscriptions[targetID]
+}
+
+func (s *automationSession) enableNetwork(targetID string) {
+	s.mu.Lock()
+	s.networkSubscriptions[targetID] = true
+	s.mu.Unlock()
+}
+
+func (s *automationSession) disableNetwork(targetID string) {
+	s.mu.Lock()
+	delete(s.networkSubscriptions, targetID)
+	s.mu.Unlock()
+}
+
+func (s *automationSession) networkEnabled(targetID string) bool {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.networkSubscriptions[targetID]
 }
 
 func automationResultResponse(id json.RawMessage, result any) *automationProtocolEnvelope {
@@ -1097,6 +1251,20 @@ func targetIDFromParams(raw json.RawMessage) string {
 		return ""
 	}
 	return params.TargetID
+}
+
+func (s *AutomationServer) captureModeForTarget(target automationTarget) string {
+	return captureModeFromCapabilities(target.targetCapabilities())
+}
+
+func captureModeFromCapabilities(caps automationNativeCapabilities) string {
+	if caps.NetworkProxy {
+		return "proxy"
+	}
+	if caps.NetworkBasic {
+		return "basic"
+	}
+	return "none"
 }
 
 func isLoopbackRemote(remoteAddr string) bool {

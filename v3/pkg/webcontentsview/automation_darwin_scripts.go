@@ -84,6 +84,185 @@ const darwinPageAutomationScript = `
       timestamp: Date.now(),
     });
   }, { once: true });
+
+  let requestSequence = 0;
+  const nextRequestID = () => 'net-' + Date.now() + '-' + (++requestSequence);
+  const headerObject = (headers) => {
+    const result = {};
+    if (!headers) {
+      return result;
+    }
+
+    if (headers instanceof Headers) {
+      headers.forEach((value, key) => {
+        result[key] = value;
+      });
+      return result;
+    }
+
+    if (Array.isArray(headers)) {
+      for (const [key, value] of headers) {
+        result[String(key)] = String(value);
+      }
+      return result;
+    }
+
+    if (typeof headers === 'object') {
+      for (const [key, value] of Object.entries(headers)) {
+        result[String(key)] = String(value);
+      }
+    }
+    return result;
+  };
+
+  if (typeof window.fetch === 'function') {
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = async (...args) => {
+      const request = args[0] instanceof Request ? args[0] : new Request(args[0], args[1]);
+      const requestId = nextRequestID();
+      const startTime = Date.now();
+
+      post('networkRequest', {
+        requestId,
+        url: request.url,
+        method: request.method || 'GET',
+        requestHeaders: headerObject(request.headers),
+        type: 'fetch',
+        startTime,
+      });
+
+      try {
+        const response = await originalFetch(...args);
+        const endTime = Date.now();
+        const payload = {
+          requestId,
+          url: response.url || request.url,
+          method: request.method || 'GET',
+          status: response.status,
+          statusText: response.statusText || '',
+          headers: headerObject(response.headers),
+          requestHeaders: headerObject(request.headers),
+          type: 'fetch',
+          startTime,
+          endTime,
+          duration: endTime - startTime,
+        };
+        post('networkResponse', payload);
+        post('networkFinished', payload);
+        return response;
+      } catch (error) {
+        const endTime = Date.now();
+        post('networkFailed', {
+          requestId,
+          url: request.url,
+          method: request.method || 'GET',
+          requestHeaders: headerObject(request.headers),
+          errorText: error && error.message ? error.message : String(error),
+          type: 'fetch',
+          startTime,
+          endTime,
+          duration: endTime - startTime,
+        });
+        throw error;
+      }
+    };
+  }
+
+  if (typeof window.XMLHttpRequest === 'function') {
+    const OriginalXMLHttpRequest = window.XMLHttpRequest;
+    window.XMLHttpRequest = function WailsAutomationXMLHttpRequest() {
+      const xhr = new OriginalXMLHttpRequest();
+      const requestId = nextRequestID();
+      const requestHeaders = {};
+      let url = '';
+      let method = 'GET';
+      let startTime = 0;
+
+      const originalOpen = xhr.open;
+      xhr.open = function patchedOpen(nextMethod, nextURL, ...rest) {
+        method = nextMethod ? String(nextMethod) : 'GET';
+        url = nextURL ? String(nextURL) : '';
+        return originalOpen.call(this, nextMethod, nextURL, ...rest);
+      };
+
+      const originalSetRequestHeader = xhr.setRequestHeader;
+      xhr.setRequestHeader = function patchedSetRequestHeader(name, value) {
+        requestHeaders[String(name)] = String(value);
+        return originalSetRequestHeader.call(this, name, value);
+      };
+
+      xhr.addEventListener('loadstart', () => {
+        startTime = Date.now();
+        post('networkRequest', {
+          requestId,
+          url,
+          method,
+          requestHeaders,
+          type: 'xhr',
+          startTime,
+        });
+      });
+
+      xhr.addEventListener('loadend', () => {
+        const endTime = Date.now();
+        const rawHeaders = xhr.getAllResponseHeaders ? xhr.getAllResponseHeaders() : '';
+        const headers = {};
+        for (const line of rawHeaders.split(/\r?\n/)) {
+          if (!line) {
+            continue;
+          }
+          const index = line.indexOf(':');
+          if (index <= 0) {
+            continue;
+          }
+          const key = line.slice(0, index).trim();
+          const value = line.slice(index + 1).trim();
+          headers[key] = value;
+        }
+
+        const payload = {
+          requestId,
+          url: xhr.responseURL || url,
+          method,
+          status: xhr.status,
+          statusText: xhr.statusText || '',
+          headers,
+          requestHeaders,
+          type: 'xhr',
+          startTime,
+          endTime,
+          duration: startTime ? endTime - startTime : 0,
+        };
+
+        if (xhr.status === 0) {
+          payload.errorText = 'XMLHttpRequest failed';
+          post('networkFailed', payload);
+          return;
+        }
+
+        post('networkResponse', payload);
+        post('networkFinished', payload);
+      });
+
+      xhr.addEventListener('error', () => {
+        const endTime = Date.now();
+        post('networkFailed', {
+          requestId,
+          url,
+          method,
+          requestHeaders,
+          errorText: 'XMLHttpRequest error',
+          type: 'xhr',
+          startTime,
+          endTime,
+          duration: startTime ? endTime - startTime : 0,
+        });
+      });
+
+      return xhr;
+    };
+    window.XMLHttpRequest.prototype = OriginalXMLHttpRequest.prototype;
+  }
 })();
 `
 
