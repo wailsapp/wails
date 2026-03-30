@@ -17,9 +17,10 @@ type WebContentsViewOptions struct {
 
 // WebContentsView represents a native webview that can be embedded into a window.
 type WebContentsView struct {
-	options WebContentsViewOptions
-	id      uint
-	impl    webContentsViewImpl
+	options    WebContentsViewOptions
+	id         uint
+	impl       webContentsViewImpl
+	automation *automationState
 }
 
 var webContentsViewID uintptr
@@ -30,17 +31,22 @@ func NewWebContentsView(options WebContentsViewOptions) *WebContentsView {
 		id:      uint(atomic.AddUintptr(&webContentsViewID, 1)),
 		options: options,
 	}
+	result.automation = newAutomationState(result)
+	registerAutomationView(result)
 	result.impl = newWebContentsViewImpl(result)
 	return result
 }
 
 // SetBounds sets the position and size of the WebContentsView relative to its parent.
 func (v *WebContentsView) SetBounds(bounds application.Rect) {
+	v.updateBounds(bounds)
 	v.impl.setBounds(bounds)
 }
 
 // SetURL loads the given URL into the WebContentsView.
 func (v *WebContentsView) SetURL(url string) {
+	v.options.URL = url
+	v.updateAutomationURL(url)
 	v.impl.setURL(url)
 }
 
@@ -67,11 +73,13 @@ func (v *WebContentsView) TakeSnapshot() string {
 // Attach binds the WebContentsView to a Wails Window.
 func (v *WebContentsView) Attach(window application.Window) {
 	v.impl.attach(window)
+	v.updateAutomationAttached(true)
 }
 
 // Detach removes the WebContentsView from the Wails Window.
 func (v *WebContentsView) Detach() {
 	v.impl.detach()
+	v.updateAutomationAttached(false)
 }
 
 // webContentsViewImpl is the interface that platform-specific implementations must satisfy.

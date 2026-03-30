@@ -31,5 +31,11 @@ extern void windowRemoveWebContentsView(void* nsWindow, void* view);
 
 // Async snapshot
 extern void webContentsViewTakeSnapshot(void* view, uintptr_t callbackID);
+extern void webContentsViewConfigureAutomation(void* view, uintptr_t viewID, const char* pageScript, const char* automationScript);
+extern void webContentsViewAutomationEvaluate(void* view, const char* expression, int world, bool awaitPromise, uintptr_t callbackID);
+extern void webContentsViewAutomationInvoke(void* view, const char* method, const char* paramsJSON, uintptr_t callbackID);
+extern void webContentsViewCreatePDF(void* view, uintptr_t callbackID);
+extern bool webContentsViewAutomationSetInspectable(void* view, bool enabled);
+extern bool webContentsViewAutomationSupportsInspection(void);
 
 #endif /* webcontentsview_darwin_h */

@@ -33,6 +33,40 @@ Inspired by Electron, `WebContentsViewOptions` accepts a `WebPreferences` struct
 - `WebSecurity`: Disables cross-origin restrictions and allows local file URL access (crucial for local-dev previewing).
 - `ZoomFactor`: Scales the viewport.
 
+### 4. Automation Server
+The package now includes a loopback-only automation server for `WebContentsView` targets. On macOS, it exposes a CDP-inspired WebSocket protocol backed by `WKWebView`, an isolated `WKContentWorld`, and injected JavaScript helpers for DOM/storage/accessibility actions.
+
+Current foundation coverage:
+- `App` / `Target`: capabilities, target enumeration, attach/detach, auto-attach.
+- `Page`: navigate, lifecycle events, screenshot, PDF, navigation history, popup requests, process termination.
+- `Runtime`: evaluate in `page` or isolated `automation` world.
+- `Console`: buffered console capture and exception events.
+- `DOM` / `Storage` / `Accessibility`: high-value automation primitives implemented in the injected runtime on macOS.
+- `Inspection`: toggles Safari Web Inspector visibility via `WKWebView.isInspectable` when supported by the OS.
+
+Minimal setup:
+
+```go
+automationServer := webcontentsview.NewAutomationServer(webcontentsview.AutomationServerOptions{
+	AppName:    "My Wails App",
+	AppVersion: "0.1.0",
+})
+
+if err := automationServer.Start(); err != nil {
+	panic(err)
+}
+
+if err := automationServer.RegisterView(browserView); err != nil {
+	panic(err)
+}
+
+endpoint := automationServer.Endpoint()
+fmt.Println("automation websocket:", endpoint.URL)
+fmt.Println("automation token:", endpoint.Token)
+```
+
+The server only listens on loopback and requires the bearer token returned by `Endpoint()`.
+
 ---
 
 ## Usage Guide

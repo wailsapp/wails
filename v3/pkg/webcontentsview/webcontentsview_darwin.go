@@ -10,7 +10,10 @@ package webcontentsview
 */
 import "C"
 import (
+	"encoding/json"
+	"errors"
 	"unsafe"
+
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -21,6 +24,12 @@ type macosWebContentsView struct {
 }
 
 func newWebContentsViewImpl(parent *WebContentsView) webContentsViewImpl {
+	cPageScript := C.CString(darwinPageAutomationScript)
+	defer C.free(unsafe.Pointer(cPageScript))
+
+	cAutomationScript := C.CString(darwinRuntimeAutomationScript)
+	defer C.free(unsafe.Pointer(cAutomationScript))
+
 	var cUserAgent *C.char
 	if parent.options.WebPreferences.UserAgent != "" {
 		cUserAgent = C.CString(parent.options.WebPreferences.UserAgent)
@@ -45,22 +54,24 @@ func newWebContentsViewImpl(parent *WebContentsView) webContentsViewImpl {
 	}
 
 	var view = C.createWebContentsView(
-		C.int(parent.options.Bounds.X), 
-		C.int(parent.options.Bounds.Y), 
-		C.int(parent.options.Bounds.Width), 
+		C.int(parent.options.Bounds.X),
+		C.int(parent.options.Bounds.Y),
+		C.int(parent.options.Bounds.Width),
 		C.int(parent.options.Bounds.Height),
 		prefs,
 	)
-	
+
+	C.webContentsViewConfigureAutomation(view, C.uintptr_t(parent.id), cPageScript, cAutomationScript)
+
 	result := &macosWebContentsView{
 		parent: parent,
 		nsView: view,
 	}
-	
+
 	if parent.options.URL != "" {
 		result.setURL(parent.options.URL)
 	}
-	
+
 	return result
 }
 
@@ -119,12 +130,138 @@ func (w *macosWebContentsView) detach() {
 func (w *macosWebContentsView) nativeView() unsafe.Pointer {
 	return w.nsView
 }
+
+func (w *macosWebContentsView) automationEnsureReady() error {
+	if w.nsView == nil {
+		return ErrAutomationNotSupported
+	}
+	return nil
+}
+
+func (w *macosWebContentsView) automationNativeCapabilities() automationNativeCapabilities {
+	return automationNativeCapabilities{
+		PageRuntime:       true,
+		AutomationRuntime: true,
+		AsyncRuntime:      true,
+		DOM:               true,
+		Storage:           true,
+		Accessibility:     true,
+		Inspection:        bool(C.webContentsViewAutomationSupportsInspection()),
+		PDF:               true,
+	}
+}
+
+func (w *macosWebContentsView) automationEvaluate(expression string, world automationExecutionWorld, awaitPromise bool) (automationRemoteObject, error) {
+	cExpression := C.CString(expression)
+	defer C.free(unsafe.Pointer(cExpression))
+
+	var worldID C.int
+	if world == automationExecutionWorldAutomation {
+		worldID = 1
+	}
+
+	var result automationRemoteObject
+	err := w.runAutomationCommand(func(callbackID uintptr) {
+		application.InvokeSync(func() {
+			C.webContentsViewAutomationEvaluate(w.nsView, cExpression, worldID, C.bool(awaitPromise), C.uintptr_t(callbackID))
+		})
+	}, &result)
+	return result, err
+}
+
+func (w *macosWebContentsView) automationInvoke(method string, params json.RawMessage) (any, error) {
+	cMethod := C.CString(method)
+	defer C.free(unsafe.Pointer(cMethod))
+
+	paramJSON := string(params)
+	if len(params) == 0 {
+		paramJSON = "null"
+	}
+	cParams := C.CString(paramJSON)
+	defer C.free(unsafe.Pointer(cParams))
+
+	var result any
+	err := w.runAutomationCommand(func(callbackID uintptr) {
+		application.InvokeSync(func() {
+			C.webContentsViewAutomationInvoke(w.nsView, cMethod, cParams, C.uintptr_t(callbackID))
+		})
+	}, &result)
+	return result, err
+}
+
+func (w *macosWebContentsView) automationCreatePDF() (string, error) {
+	var result string
+	err := w.runAutomationCommand(func(callbackID uintptr) {
+		application.InvokeSync(func() {
+			C.webContentsViewCreatePDF(w.nsView, C.uintptr_t(callbackID))
+		})
+	}, &result)
+	return result, err
+}
+
+func (w *macosWebContentsView) automationSetInspectable(enabled bool) error {
+	if !bool(C.webContentsViewAutomationSupportsInspection()) {
+		return ErrAutomationNotSupported
+	}
+
+	var ok bool
+	application.InvokeSync(func() {
+		ok = bool(C.webContentsViewAutomationSetInspectable(w.nsView, C.bool(enabled)))
+	})
+	if !ok {
+		return errors.New("unable to update inspectable state")
+	}
+	return nil
+}
+
+func (w *macosWebContentsView) runAutomationCommand(invoke func(uintptr), target any) error {
+	ch := make(chan automationCommandResult, 1)
+	callbackID := registerAutomationCommandCallback(ch)
+	invoke(callbackID)
+	result := <-ch
+	if result.err != "" {
+		return errors.New(result.err)
+	}
+	if target == nil {
+		return nil
+	}
+	if result.payload == "" {
+		return nil
+	}
+	return json.Unmarshal([]byte(result.payload), target)
+}
+
 //export browserViewSnapshotCallback
 func browserViewSnapshotCallback(callbackID C.uintptr_t, base64 *C.char) {
-    id := uintptr(callbackID)
-    str := ""
-    if base64 != nil {
-        str = C.GoString(base64)
-    }
-    dispatchSnapshotResult(id, str)
+	id := uintptr(callbackID)
+	str := ""
+	if base64 != nil {
+		str = C.GoString(base64)
+	}
+	dispatchSnapshotResult(id, str)
+}
+
+//export browserViewAutomationCommandCallback
+func browserViewAutomationCommandCallback(callbackID C.uintptr_t, resultJSON *C.char, errMsg *C.char) {
+	result := automationCommandResult{}
+	if resultJSON != nil {
+		result.payload = C.GoString(resultJSON)
+	}
+	if errMsg != nil {
+		result.err = C.GoString(errMsg)
+	}
+	dispatchAutomationCommandResult(uintptr(callbackID), result)
+}
+
+//export browserViewAutomationEventCallback
+func browserViewAutomationEventCallback(viewID C.uintptr_t, method *C.char, payloadJSON *C.char) {
+	if method == nil {
+		return
+	}
+
+	payload := ""
+	if payloadJSON != nil {
+		payload = C.GoString(payloadJSON)
+	}
+	dispatchAutomationEvent(uint(viewID), C.GoString(method), payload)
 }
