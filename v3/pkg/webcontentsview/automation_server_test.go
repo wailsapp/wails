@@ -12,18 +12,20 @@ import (
 )
 
 type mockAutomationTarget struct {
-	mu          sync.Mutex
-	info        TargetInfo
-	caps        automationNativeCapabilities
-	observers   map[uint64]automationObserver
-	nextID      uint64
-	console     []AutomationConsoleMessage
-	cookies     []AutomationCookie
-	lastEval    string
-	lastWorld   automationExecutionWorld
-	lastAwait   bool
-	lastInvoke  string
-	lastPayload json.RawMessage
+	mu             sync.Mutex
+	info           TargetInfo
+	caps           automationNativeCapabilities
+	observers      map[uint64]automationObserver
+	nextID         uint64
+	console        []AutomationConsoleMessage
+	cookies        []AutomationCookie
+	lastEval       string
+	lastWorld      automationExecutionWorld
+	lastAwait      bool
+	lastInvoke     string
+	lastPayload    json.RawMessage
+	responseBodies map[string]map[string]any
+	extraHeaders   map[string]string
 }
 
 func newMockAutomationTarget() *mockAutomationTarget {
@@ -63,6 +65,14 @@ func newMockAutomationTarget() *mockAutomationTarget {
 				Path:   "/",
 			},
 		},
+		responseBodies: map[string]map[string]any{
+			"net-1": {
+				"body":          "{\"ok\":true}",
+				"base64Encoded": false,
+				"found":         true,
+			},
+		},
+		extraHeaders: map[string]string{},
 	}
 }
 
@@ -131,6 +141,35 @@ func (m *mockAutomationTarget) invoke(method string, params json.RawMessage) (an
 	m.lastInvoke = method
 	m.lastPayload = append(json.RawMessage(nil), params...)
 	m.mu.Unlock()
+
+	switch method {
+	case "Network.getResponseBody":
+		var payload struct {
+			RequestID string `json:"requestId"`
+		}
+		_ = json.Unmarshal(params, &payload)
+		if result, ok := m.responseBodies[payload.RequestID]; ok {
+			return result, nil
+		}
+		return map[string]any{
+			"body":          "",
+			"base64Encoded": false,
+			"found":         false,
+		}, nil
+
+	case "Network.setExtraHTTPHeaders":
+		var payload struct {
+			Headers map[string]string `json:"headers"`
+		}
+		_ = json.Unmarshal(params, &payload)
+		m.mu.Lock()
+		m.extraHeaders = payload.Headers
+		m.mu.Unlock()
+		return map[string]any{
+			"headers": payload.Headers,
+		}, nil
+	}
+
 	return map[string]any{
 		"ok":     true,
 		"method": method,
@@ -415,6 +454,25 @@ func TestAutomationServerCookiesAndNetworkFlow(t *testing.T) {
 	networkEnable := readEnvelope(t, conn)
 	if networkEnable.Result.(map[string]any)["captureMode"] != "basic" {
 		t.Fatalf("unexpected network enable result: %#v", networkEnable.Result)
+	}
+
+	writeRequest(t, conn, 7, "Network.setExtraHTTPHeaders", sessionID, map[string]any{
+		"headers": map[string]any{
+			"X-Test": "1",
+		},
+	})
+	setHeaders := readEnvelope(t, conn)
+	if setHeaders.Error != nil {
+		t.Fatalf("unexpected setExtraHTTPHeaders error: %#v", setHeaders.Error)
+	}
+
+	writeRequest(t, conn, 8, "Network.getResponseBody", sessionID, map[string]any{
+		"requestId": "net-1",
+	})
+	responseBody := readEnvelope(t, conn)
+	bodyResult := responseBody.Result.(map[string]any)
+	if bodyResult["body"] != "{\"ok\":true}" {
+		t.Fatalf("unexpected response body: %#v", bodyResult)
 	}
 
 	target.emit(automationTargetEvent{

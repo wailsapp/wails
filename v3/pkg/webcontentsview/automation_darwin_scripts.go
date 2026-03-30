@@ -86,7 +86,15 @@ const darwinPageAutomationScript = `
   }, { once: true });
 
   let requestSequence = 0;
+  const capturedResponseBodies = new Map();
+  const extraHTTPHeaders = {};
   const nextRequestID = () => 'net-' + Date.now() + '-' + (++requestSequence);
+  const trimCapturedBodies = () => {
+    while (capturedResponseBodies.size > 50) {
+      const oldestKey = capturedResponseBodies.keys().next().value;
+      capturedResponseBodies.delete(oldestKey);
+    }
+  };
   const headerObject = (headers) => {
     const result = {};
     if (!headers) {
@@ -115,10 +123,32 @@ const darwinPageAutomationScript = `
     return result;
   };
 
+  const mergeExtraHeaders = (headers) => {
+    const merged = { ...extraHTTPHeaders };
+    for (const [key, value] of Object.entries(headerObject(headers))) {
+      merged[key] = value;
+    }
+    return merged;
+  };
+
   if (typeof window.fetch === 'function') {
     const originalFetch = window.fetch.bind(window);
     window.fetch = async (...args) => {
-      const request = args[0] instanceof Request ? args[0] : new Request(args[0], args[1]);
+      const init = args[0] instanceof Request ? {
+        method: args[0].method,
+        headers: mergeExtraHeaders(args[0].headers),
+        body: args[1] && args[1].body !== undefined ? args[1].body : undefined,
+        credentials: args[1] && args[1].credentials ? args[1].credentials : args[0].credentials,
+        mode: args[1] && args[1].mode ? args[1].mode : args[0].mode,
+        cache: args[1] && args[1].cache ? args[1].cache : args[0].cache,
+        redirect: args[1] && args[1].redirect ? args[1].redirect : args[0].redirect,
+        referrer: args[1] && args[1].referrer ? args[1].referrer : args[0].referrer,
+        referrerPolicy: args[1] && args[1].referrerPolicy ? args[1].referrerPolicy : args[0].referrerPolicy,
+      } : {
+        ...(args[1] || {}),
+        headers: mergeExtraHeaders(args[1] && args[1].headers),
+      };
+      const request = args[0] instanceof Request ? new Request(args[0], init) : new Request(args[0], init);
       const requestId = nextRequestID();
       const startTime = Date.now();
 
@@ -132,8 +162,19 @@ const darwinPageAutomationScript = `
       });
 
       try {
-        const response = await originalFetch(...args);
+        const response = await originalFetch(request);
         const endTime = Date.now();
+        let responseBody = '';
+        try {
+          responseBody = await response.clone().text();
+        } catch (_) {
+        }
+        capturedResponseBodies.set(requestId, {
+          body: responseBody,
+          base64Encoded: false,
+          timestamp: endTime,
+        });
+        trimCapturedBodies();
         const payload = {
           requestId,
           url: response.url || request.url,
@@ -193,6 +234,15 @@ const darwinPageAutomationScript = `
 
       xhr.addEventListener('loadstart', () => {
         startTime = Date.now();
+        for (const [name, value] of Object.entries(extraHTTPHeaders)) {
+          if (!(name in requestHeaders)) {
+            requestHeaders[name] = value;
+            try {
+              originalSetRequestHeader.call(xhr, name, value);
+            } catch (_) {
+            }
+          }
+        }
         post('networkRequest', {
           requestId,
           url,
@@ -233,6 +283,18 @@ const darwinPageAutomationScript = `
           endTime,
           duration: startTime ? endTime - startTime : 0,
         };
+
+        try {
+          if (xhr.responseType === '' || xhr.responseType === 'text') {
+            capturedResponseBodies.set(requestId, {
+              body: xhr.responseText || '',
+              base64Encoded: false,
+              timestamp: endTime,
+            });
+            trimCapturedBodies();
+          }
+        } catch (_) {
+        }
 
         if (xhr.status === 0) {
           payload.errorText = 'XMLHttpRequest failed';
@@ -797,6 +859,30 @@ const darwinRuntimeAutomationScript = `
     evaluate: evaluateExpression,
     dispatch,
     serializeValue,
+  };
+
+  const originalDispatch = globalThis.__wailsAutomation.dispatch;
+  globalThis.__wailsAutomation.dispatch = async (method, params = {}) => {
+    if (method === 'Network.getResponseBody') {
+      const entry = capturedResponseBodies.get(String(params.requestId || ''));
+      if (!entry) {
+        return { body: '', base64Encoded: false, found: false };
+      }
+      return { body: entry.body || '', base64Encoded: !!entry.base64Encoded, found: true };
+    }
+
+    if (method === 'Network.setExtraHTTPHeaders') {
+      for (const key of Object.keys(extraHTTPHeaders)) {
+        delete extraHTTPHeaders[key];
+      }
+      const headers = params.headers || {};
+      for (const [key, value] of Object.entries(headers)) {
+        extraHTTPHeaders[String(key)] = String(value);
+      }
+      return { headers: { ...extraHTTPHeaders } };
+    }
+
+    return originalDispatch(method, params);
   };
 })();
 `

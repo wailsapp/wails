@@ -43,7 +43,7 @@ Current foundation coverage:
 - `Console`: buffered console capture and exception events.
 - `DOM` / `Storage` / `Accessibility`: high-value automation primitives implemented in the injected runtime on macOS.
 - `Storage` cookies: native `WKHTTPCookieStore` get/set/delete/clear commands on macOS.
-- `Network`: `basic` capture mode on macOS using injected `fetch` / `XMLHttpRequest` instrumentation.
+- `Network`: `basic` capture mode on macOS using injected `fetch` / `XMLHttpRequest` instrumentation, plus `Network.getResponseBody` and `Network.setExtraHTTPHeaders`.
 - `Inspection`: toggles Safari Web Inspector visibility via `WKWebView.isInspectable` when supported by the OS.
 
 Minimal setup:

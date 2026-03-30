@@ -634,6 +634,17 @@ func (s *AutomationServer) handleMessage(session *automationSession, message aut
 			"captureMode": s.captureModeForTarget(target),
 		})
 
+	case "Network.getResponseBody", "Network.setExtraHTTPHeaders":
+		target, err := s.resolveTarget(session, message, targetIDFromParams(message.Params))
+		if err != nil {
+			return automationErrorResponse(message.ID, -32000, err.Error(), nil)
+		}
+		result, err := target.invoke(message.Method, message.Params)
+		if err != nil {
+			return automationErrorResponse(message.ID, -32000, err.Error(), nil)
+		}
+		return automationResultResponse(message.ID, result)
+
 	case "Inspection.enable", "Inspection.disable", "Inspection.getStatus":
 		var params struct {
 			TargetID string `json:"targetId"`
@@ -853,7 +864,13 @@ func (s *AutomationServer) capabilities() AutomationCapabilities {
 	}
 	if nativeCaps.NetworkBasic || nativeCaps.NetworkProxy {
 		domains["Network"] = AutomationDomainCapabilities{
-			Commands: []string{"Network.enable", "Network.disable", "Network.getCaptureMode"},
+			Commands: []string{
+				"Network.enable",
+				"Network.disable",
+				"Network.getCaptureMode",
+				"Network.getResponseBody",
+				"Network.setExtraHTTPHeaders",
+			},
 			Events: []string{
 				"Network.requestWillBeSent",
 				"Network.responseReceived",
@@ -861,8 +878,10 @@ func (s *AutomationServer) capabilities() AutomationCapabilities {
 				"Network.loadingFailed",
 			},
 			Features: map[string]any{
-				"basic": nativeCaps.NetworkBasic,
-				"proxy": nativeCaps.NetworkProxy,
+				"basic":            nativeCaps.NetworkBasic,
+				"proxy":            nativeCaps.NetworkProxy,
+				"responseBody":     nativeCaps.NetworkBasic || nativeCaps.NetworkProxy,
+				"extraHTTPHeaders": nativeCaps.NetworkBasic || nativeCaps.NetworkProxy,
 			},
 		}
 	}

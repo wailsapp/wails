@@ -147,7 +147,7 @@ func (w *macosWebContentsView) automationNativeCapabilities() automationNativeCa
 		Storage:           true,
 		Cookies:           true,
 		NetworkBasic:      true,
-		NetworkProxy:      bool(C.webContentsViewAutomationSupportsProxyCapture()),
+		NetworkProxy:      false,
 		Accessibility:     true,
 		Inspection:        bool(C.webContentsViewAutomationSupportsInspection()),
 		PDF:               true,

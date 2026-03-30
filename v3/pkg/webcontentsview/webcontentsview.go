@@ -1,9 +1,9 @@
 package webcontentsview
 
 import (
+	"github.com/wailsapp/wails/v3/pkg/application"
 	"sync/atomic"
 	"unsafe"
-	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // WebContentsViewOptions represents the options for creating a WebContentsView.
