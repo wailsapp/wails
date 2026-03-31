@@ -491,6 +491,10 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
     processMessage("DomReady");
 }
 
+- (void)webView:(WKWebView *)webView requestMediaCapturePermissionForOrigin:(WKSecurityOrigin *)origin initiatedByFrame:(WKFrameInfo *)frame type:(WKMediaCaptureType)type decisionHandler:(void (^)(enum WKPermissionDecision))decisionHandler API_AVAILABLE(macos(12.0)) {
+    decisionHandler(WKPermissionDecisionGrant);
+}
+
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
     // Get the origin from the message's frame
     NSString *origin = nil;
