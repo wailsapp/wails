@@ -16,6 +16,10 @@
 #import "message.h"
 #import "Role.h"
 
+@interface WKWebView (WailsPrivate)
+@property (nonatomic, setter=_setOverrideDeviceScaleFactor:) CGFloat _overrideDeviceScaleFactor;
+@end
+
 typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 
 @implementation WailsWindow
@@ -288,6 +292,16 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
     [self.webview setAutoresizingMask: NSViewWidthSizable|NSViewHeightSizable];
     CGRect contentViewBounds = [contentView bounds];
     [self.webview setFrame:contentViewBounds];
+
+    // Force WKWebView to report correct devicePixelRatio on HiDPI displays.
+    // The _overrideDeviceScaleFactor SPI sets WebPageProxy's customDeviceScaleFactor,
+    // which is the authoritative source for window.devicePixelRatio in JavaScript.
+    // Without this, custom URL schemes (wails://) cause DPR to report 1 on Retina.
+    // This SPI is stable since macOS 10.11 and used by Electron and Playwright.
+    CGFloat scaleFactor = [self.mainWindow backingScaleFactor];
+    if (scaleFactor > 1.0) {
+        [self.webview _setOverrideDeviceScaleFactor:scaleFactor];
+    }
 
     if (webviewIsTransparent) {
         [self.webview setValue:[NSNumber numberWithBool:!webviewIsTransparent] forKey:@"drawsBackground"];
