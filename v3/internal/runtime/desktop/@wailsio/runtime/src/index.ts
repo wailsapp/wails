@@ -89,9 +89,14 @@ export function loadOptionalScript(url: string): Promise<void> {
     return fetch(url, { method: 'HEAD' })
         .then(response => {
             if (response.ok) {
-                const script = document.createElement('script');
-                script.src = url;
-                document.head.appendChild(script);
+                // Verify the response is actually JavaScript and not an HTML fallback
+                // (e.g. Vite dev server returns index.html for unknown routes)
+                const contentType = response.headers.get('content-type') || '';
+                if (contentType.includes('javascript')) {
+                    const script = document.createElement('script');
+                    script.src = url;
+                    document.head.appendChild(script);
+                }
             }
         })
         .catch(() => {}); // Silently ignore - script is optional
