@@ -1,39 +1,39 @@
 # Windows
 
-This page has miscellaneous guides related to developing Wails applications for Windows.
+Diese Seite enthält verschiedene Anleitungen zur Entwicklung von Wails Anwendungen für Windows.
 
-## Handling the WebView2 Runtime Dependency
+## Umgang mit der Laufzeitabhängigkeit von WebView2
 
-Wails applications built for Windows have a runtime requirement on the Microsoft [WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/). Windows 11 will have this installed by default, but some machines won't. Wails offers an easy approach to dealing with this dependency.
+Für builds auf Windows von Wails Anwendungen gibt es eine Laufzeitvoraussetzung von Microsoft für die [WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/). Windows 11 wird diese standardmäßig installiert haben, dennoch gibt es einige Maschinen, die das nicht haben. Wails bietet einen einfachen Ansatz, um mit dieser Abhängigkeit umzugehen.
 
-By using the `-webview2` flag when building, you can decide what your application will do when a suitable runtime is not detected (including if the installed runtime is too old). The four options are:
+Durch Verwendung der `-webview2` flag beim builden kann entschieden werden, was die Anwendung tun soll, wenn eine geeignete Laufzeit nicht erkannt wird (einschließlich, wenn die installierte Laufzeit zu alt ist). Die vier Optionen sind:
 
-1. Download
-2. Embed
+1. Herunterladen
+2. Einbetten
 3. Browser
-4. Error
+4. Fehler
 
-### Download
+### Herunterladen
 
-This option will prompt the user that no suitable runtime has been found and then offer to download and run the official bootstrapper from Microsoft's WebView2 site. If the user proceeds, the official bootstrapper will be downloaded and run.
+Diese Option weist den Benutzer darauf hin, dass keine passende Laufzeitumgebung gefunden wurde, und bietet anschließend den Download und die Ausführung des offiziellen Bootstrappers von der Microsoft WebView2-Website an. Wenn der Benutzer fortfährt, wird der offizielle Bootstrapper heruntergeladen und ausgeführt.
 
-### Embed
+### Einbetten
 
-This option embeds the official bootstrapper within the application. If no suitable runtime has been found, the application will offer to run the bootstrapper. This adds ~150k to the binary size.
+Diese Option fügt den offiziellen Bootstrapper in die Anwendung ein. Wenn keine passende Laufzeit gefunden wurde, bietet die Anwendung an, den Bootstrapper auszuführen. Damit wird die Binärgröße um ~150k erhöht.
 
 ### Browser
 
-This option will prompt the user that no suitable runtime has been found and then offer to open a browser to the official WebView2 page where the bootstrapper can be downloaded and installed. The application will then exit, leaving the installation up to the user.
+Diese Option weist den Benutzer darauf hin, dass keine passende Laufzeitumgebung gefunden wurde, und bietet anschließend an, einen Browser zur offiziellen WebView2-Seite zu öffnen, auf der das Bootstrapper-Programm heruntergeladen und installiert werden kann. Die Anwendung wird anschließend beendet und die Installation wird dem Benutzer überlassen.
 
-### Error
+### Fehler
 
-If no suitable runtime is found, an error is given to the user and no further action taken.
+Wenn keine passende Laufzeit gefunden wird, wird dem Benutzer ein Fehler gemeldet und es wird keine weitere Aktion durchgeführt.
 
-## Fixed version runtime
+## Feste Version der Laufzeit
 
-Another way of dealing with webview2 dependency is shipping it yourself. You can download [fixed version runtime](https://developer.microsoft.com/microsoft-edge/webview2/#download-section) and bundle or download it with your application.
+Eine andere Möglichkeit, mit Webview2-Abhängigkeiten umzugehen, besteht darin, diese mit der Anwendung mit zu verschicken. [Feste Laufzeit Versionen](https://developer.microsoft.com/microsoft-edge/webview2/#download-section) können heruntergeladen und gebündelt, oder mit deiner Anwendung heruntergeladen werden.
 
-Also, you should specify path to fixed version of webview2 runtime in the `windows.Options` structure when launching wails.
+Außerdem sollte der Pfad zur festen Version von der webview2 Laufzeit im `windows.Optionen` struct beim Starten von Wails angegeben werden.
 
 ```go
     wails.Run(&options.App{
@@ -43,17 +43,17 @@ Also, you should specify path to fixed version of webview2 runtime in the `windo
     })
 ```
 
-Note: When `WebviewBrowserPath` is specified, `error` strategy will be forced in case of minimal required version mismatch or invalid path to a runtime.
+Hinweis: Wenn `WebviewBrowserPath` angegeben ist, wird die `Fehler` Strategie erzwungen, um im Falle eines Fehlers mit der minimal benötigten Version oder eines ungültigen Pfades zu der Laufzeit reagieren zu können.
 
-The downloaded file will be compressed (extension `.cab`), so you must extract it before using it, according to the instructions on the [official site](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#details-about-the-fixed-version-runtime-distribution-mode) should run in a terminal the following command to extract the file:
+Die heruntergeladene Datei ist komprimiert (Erweiterung `.cab`). Daher muss diese entpackt werden, bevor diese verwendet werden kann. Den Anweisungen auf der [offiziellen Seite](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#details-about-the-fixed-version-runtime-distribution-mode) zufolge soll folgender Befehl in einem Terminalfenster ausgeführt werden, um die Datei zu entpacken:
 
 ```
 expand {path to the package} -F:* {path to the destination folder}
 ```
 
-## Spawning other programs
+## Andere Programme ausführen
 
-When spawning other programs, such as scripts, you will see the window appear on the screen. To hide the window, you can use the following code:
+Wenn andere Programme wie z. B. Skripte aufgerufen werden, erscheint das Fenster auf dem Bildschirm. Um das Fenster zu verstecken, kann folgender Code verwendet werden:
 
 ```go
 cmd := exec.Command("your_script.exe")
@@ -64,4 +64,4 @@ cmd.SysProcAttr = &syscall.SysProcAttr{
 cmd.Start()
 ```
 
-Solution provided by [sithembiso](https://github.com/sithembiso) on the [discussions board](https://github.com/wailsapp/wails/discussions/1734#discussioncomment-3386172).
+Lösung von [sithembiso](https://github.com/sithembiso) aus dem [Diskussionsforum](https://github.com/wailsapp/wails/discussions/1734#discussioncomment-3386172).

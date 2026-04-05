@@ -18,10 +18,10 @@
 </p>
 ```
 
-[Snippet Expander](https://snippetexpander.org) is "Your little expandable text snippets helper", for Linux.
+[Snippet Expander](https://snippetexpander.org) ist "Dein kleiner erweiterbarer Text-Snippets Helfer", für Linux.
 
-Snippet Expander comprises of a GUI application built with Wails for managing snippets and settings, with a Search & Paste window mode for quickly selecting and pasting a snippet.
+Snippet Expander besteht aus einer GUI-Anwendung, die mit Wails erstellt wurde, um Snippets und Einstellungen zu verwalten, mit einem Such- & Einfügen-Fenstermodus, um ein Snippet schnell auszuwählen und einzufügen.
 
-The Wails based GUI, go-lang CLI and vala-lang auto expander daemon all communicate with a go-lang daemon via D-Bus. The daemon does the majority of the work, managing the database of snippets and common settings, and providing services for expanding and pasting snippets etc.
+Der Wails basierende GUI, Go-lang CLI und vala-lang auto expander Daemon kommunizieren mit einem Go-lang Daemon über D-Bus. Der Daemon erledigt den Großteil der Arbeit, die Verwaltung der Datenbank von Snippets und gemeinsamen Einstellungen, die Bereitstellung von Diensten zum Aus- und Einfügen von Snippets usw.
 
-Check out the [source code](https://git.sr.ht/~ianmjones/snippetexpander/tree/trunk/item/cmd/snippetexpandergui/app.go#L38) to see how the Wails app sends messages from the UI to the backend that are then sent to the daemon, and subscribes to a D-Bus event to monitor changes to snippets via another instance of the app or CLI and show them instantly in the UI via a Wails event.
+Schauen dir den [source code](https://git.sr.ht/~ianmjones/snippetexpander/tree/trunk/item/cmd/snippetexpandergui/app.go#L38) an, um zu sehen, wie die Wails-App Nachrichten von der Benutzeroberfläche an das Backend sendet, die dann an den Daemon gesendet werden, und wie sie ein D-Bus-Ereignis abonniert, um Änderungen an Snippets über eine andere Instanz der App oder CLI zu überwachen und diese sofort über ein Wails-Ereignis in der Benutzeroberfläche anzuzeigen.

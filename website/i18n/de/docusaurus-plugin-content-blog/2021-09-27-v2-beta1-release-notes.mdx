@@ -1,6 +1,6 @@
 ---
 slug: wails-v2-beta-for-windows
-title: Wails v2 Beta for Windows
+title: Wails v2 Beta für Windows
 authors:
   - leaanthony
 tags:
@@ -19,17 +19,17 @@ tags:
 <br />
 ```
 
-When I first announced Wails on Reddit, just over 2 years ago from a train in Sydney, I did not expect it to get much attention. A few days later, a prolific tech vlogger released a tutorial video, gave it a positive review and from that point on, interest in the project has skyrocketed.
+Als ich vor etwas mehr als 2 Jahren Wails auf Reddit von einem Zug aus in Sydney ankündigte, habe ich nicht erwartet, dass Wails viel Aufmerksamkeit bekommt. Ein paar Tage später veröffentlichte ein Techvideo Blogger ein Tutorial Video, worauf hin ich ihm eine positive Bewertung gab und von diesem Punkt an ist das Interesse an dem Projekt in die Höhe geschossen.
 
-It was clear that people were excited about adding web frontends to their Go projects, and almost immediately pushed the project beyond the proof of concept that I had created. At the time, Wails used the [webview](https://github.com/webview/webview) project to handle the frontend, and the only option for Windows was the IE11 renderer. Many bug reports were rooted in this limitation: poor JavaScript/CSS support and no dev tools to debug it. This was a frustrating development experience but there wasn't much that could have been done to rectify it.
+Es war klar, dass die Leute begeistert davon waren, Web-Frontends zu ihren Go-Projekten hinzuzufügen, und das Projekt fast sofort über den von mir erstellten Proof of Concept hinaus vorantrieben. Damals verwendete Wails das [Webview](https://github.com/webview/webview) Projekt, um das Frontend zu verwalten, und die einzige Option für Windows war der IE11 Renderer. Viele Fehlerberichte waren auf diese Einschränkung zurückzuführen: schlechte JavaScript/CSS-Unterstützung und keine Entwicklungswerkzeuge zur Fehlerbehebung. Das war eine frustrierende Erfahrung bei der Entwicklung, aber es gab nicht viel, was man hätte tun können, um das zu korrigieren.
 
-For a long time, I'd firmly believed that Microsoft would eventually have to sort out their browser situation. The world was moving on, frontend development was booming and IE wasn't cutting it. When Microsoft announced the move to using Chromium as the basis for their new browser direction, I knew it was only a matter of time until Wails could use it, and move the Windows developer experience to the next level.
+Lange Zeit war ich fest davon überzeugt, dass Microsoft irgendwann seine Browser-Situation klären müsste. Die Welt entwickelte sich weiter, die Frontend-Entwicklung boomte und der IE war nicht mehr zeitgemäß. Als Microsoft angekündigt hat, Chromium als Grundlage für ihre neue Browserrichtung zu verwenden wusste ich, dass es nur eine Frage der Zeit war, bis Wails diese nutzen konnte, und die Windows-Entwicklererfahrung auf das nächste Level heben konnte.
 
-Today, I am pleased to announce: **Wails v2 Beta for Windows**! There's a huge amount to unpack in this release, so grab a drink, take a seat and we'll begin...
+Heute freue ich mich die **Wails v2 Beta für Windows** ankündigen zu können! In dieser Veröffentlichung gibt es eine ganze Menge auszupacken, also schnapp dir einen Drink, setz dich gemütlich hin und wir beginnen …
 
-### No CGO Dependency!
+### Keine CGO Abhängigkeit!
 
-No, I'm not joking: _No_ _CGO_ _dependency_ 🤯! The thing about Windows is that, unlike MacOS and Linux, it doesn't come with a default compiler. In addition, CGO requires a mingw compiler and there's a ton of different installation options. Removing the CGO requirement has massively simplified setup, as well as making debugging an awful lot easier. Whilst I have put a fair bit of effort in getting this working, the majority of the credit should go to [John Chadwick](https://github.com/jchv) for not only starting a couple of projects to make this possible, but also being open to someone taking those projects and building on them. Credit also to [Tad Vizbaras](https://github.com/tadvi) whose [winc](https://github.com/tadvi/winc) project started me down this path.
+Nein, das ist kein Witz: _Keine_ _CGO_ _Abhängigkeit_🤯! Die Sache an Windows ist, dass es im Gegensatz zu MacOS und Linux nicht mit einem Standard-Compiler kommt. Zusätzlich benötigt CGO einen mingw-Compiler und es gibt eine Menge verschiedener Optionen. Das Entfernen der CGO-Anforderung hat die Einrichtung massiv vereinfacht und auch die Fehlersuche erheblich erleichtert. Obwohl ich mich ziemlich angestrengt habe, um dies zum Laufen zu bringen, gebührt die meiste Anerkennung [John Chadwick](https://github.com/jchv) dafür, dass er nicht nur eine Reihe von Projekten ins Leben gerufen hat, um dies zu ermöglichen, sondern auch offen dafür ist, dass jemand diese Projekte übernimmt und darauf aufbaut. Der Dank geht auch an [Tad Vizbaras](https://github.com/tadvi), dessen <0>winc</0> Projekt mich auf diesen Weg gebracht hat.
 
 ### WebView2 Chromium Renderer
 
@@ -44,15 +44,15 @@ No, I'm not joking: _No_ _CGO_ _dependency_ 🤯! The thing about Windows is tha
 <br />
 ```
 
-Finally, Windows developers get a first class rendering engine for their applications! Gone are the days of contorting your frontend code to work on Windows. On top of that, you get a first-class developer tools experience!
+Endlich erhalten Windows-Entwickler eine erstklassige Rendering-Engine für ihre Anwendungen! Vorbei sind die Tage der Verfälschung von deinem Frontend-Code, um unter Windows zu arbeiten. Darüber hinaus erhältst du eine erstklassige Entwickler-Tool-Erfahrung!
 
-The WebView2 component does, however, have a requirement to have the `WebView2Loader.dll` sitting alongside the binary. This makes distribution just that little bit more painful than we gophers are used to. All solutions and libraries (that I know of) that use WebView2 have this dependency.
+Die WebView2 Komponente benötigt jedoch die `WebView2Loader.dll` im selben Ordner wie die Binärdatei. Das macht die Distribution ein wenig anstrengender, als wir Gopher gewohnt sind. Alle Lösungen und Bibliotheken (die ich kenne), die WebView2 verwenden, haben diese Abhängigkeit.
 
-However, I'm really excited to announce that Wails applications _have no such requirement_! Thanks to the wizardry of [John Chadwick](https://github.com/jchv), we are able to bundle this dll inside the binary and get Windows to load it as if it were present on disk.
+Allerdings bin ich wirklich gespannt anzukündigen, dass Wails Anwendungen _keine solche Anforderung_ haben! Dank des Zauberspruchs von [John Chadwick](https://github.com/jchv), sind wir in der Lage, dieses dll in der Binärdatei zu bündeln und Windows dazu zu bringen, diese zu laden, als wäre sie auf der Festplatte vorhanden.
 
-Gophers rejoice! The single binary dream lives on!
+Die Gopher freuen sich! Der einzelne Binärdatei-Traum lebt weiter!
 
-### New Features
+### Neue Funktionen
 
 ```mdx-code-block
 <div class="text--center">
@@ -65,11 +65,11 @@ Gophers rejoice! The single binary dream lives on!
 <br />
 ```
 
-There were a lot of requests for native menu support. Wails has finally got you covered. Application menus are now available and include support for most native menu features. This includes standard menu items, checkboxes, radio groups, submenus and separators.
+Es gab viele Anfragen für native Menüunterstützung. Wails hat endlich eine Lösung für dich. Anwendungsmenüs sind jetzt verfügbar und enthalten Unterstützung für die meisten nativen Menüfunktionen. Dazu gehören Standardmenüs, Kontrollkästchen, "Radio" gruppen, Untermenüs und Trenner.
 
-There were a huge number of requests in v1 for the ability to have greater control of the window itself. I'm happy to announce that there's new runtime APIs specifically for this. It's feature-rich and supports multi-monitor configurations. There is also an improved dialogs API: Now, you can have modern, native dialogs with rich configuration to cater for all your dialog needs.
+In v1 gab es eine große Anzahl von Bitten, das Fenster selbst besser kontrollieren zu können. Ich freue mich, mitteilen zu können, dass es speziell dafür neue Laufzeit-APIs gibt. Es verfügt über zahlreiche Funktionen und unterstützt Konfigurationen mit mehreren Monitoren. Es gibt auch eine verbesserte API: Du kannst jetzt moderne, native Dialoge mit reicher Konfiguration haben, um all deine Dialoganforderungen zu erfüllen.
 
-There is now the option to generate IDE configuration along with your project. This means that if you open your project in a supported IDE, it will already be configured for building and debugging your application. Currently VSCode is supported but we hope to support other IDEs such as Goland soon.
+Es gibt jetzt die Möglichkeit, IDE-Konfiguration zusammen mit deinem Projekt zu generieren. Das bedeutet, wenn du dein Projekt in einer unterstützten IDE öffnest, wird es bereits für das Erstellen und Debuggen deiner Anwendung konfiguriert. Momentan wird VSCode unterstützt, aber wir hoffen, bald andere IDEs wie Goland zu unterstützen.
 
 ```mdx-code-block
 <div class="text--center">
@@ -82,19 +82,19 @@ There is now the option to generate IDE configuration along with your project. T
 <br />
 ```
 
-### No requirement to bundle assets
+### Keine Anforderung zum Bündeln von Assets
 
-A huge pain-point of v1 was the need to condense your entire application down to single JS & CSS files. I'm happy to announce that for v2, there is no requirement to bundle assets, in any way, shape or form. Want to load a local image? Use an `<img>` tag with a local src path. Want to use a cool font? Copy it in and add the path to it in your CSS.
+Ein großer Schmerzpunkt von v1 war die Notwendigkeit, die gesamte Anwendung in einzelne JS- & CSS-Dateien zu kondensieren. Ich freue mich, ankündigen zu können, dass es für v2 keine Anforderung mehr gibt, Assets in irgendeiner weise oder Form zu bündeln. Möchtest du ein lokales Bild laden? Verwende ein `<img>` Tag mit einem lokalen src Pfad. Möchtest du eine coole Schriftart verwenden? Kopiere sie in dein CSS und füge den Pfad hinzu.
 
-> Wow, that sounds like a webserver...
+> Wow, das klingt wie ein Webserver...
 
-Yes, it works just like a webserver, except it isn't.
+Ja, es funktioniert auch genau wie ein Webserver, nur dass es keiner ist.
 
-> So how do I include my assets?
+> Wie füge ich also meine Assets ein?
 
-You just pass a single `embed.FS` that contains all your assets into your application configuration. They don't even need to be in the top directory - Wails will just work it out for you.
+Du übergibst ein einziges `embed.FS` mit all deinen Assets in deiner Anwendungskonfiguration. Es muss sich nicht einmal im obersten Verzeichnis befinden - Wails findet das für dich heraus.
 
-### New Development Experience
+### Neue Entwicklungserfahrung
 
 ```mdx-code-block
 <div class="text--center">
@@ -107,20 +107,20 @@ You just pass a single `embed.FS` that contains all your assets into your applic
 <br />
 ```
 
-Now that assets don't need to be bundled, it's enabled a whole new development experience. The new `wails dev` command will build and run your application, but instead of using the assets in the `embed.FS`, it loads them directly from disk.
+Nun, da Assets nicht mehr gebündelt werden müssen, ist es eine ganz neue Entwicklungserfahrung. Der neue `wails dev` Befehl wird deine Anwendung erstellen und ausführen, aber statt die Assets in die `embed.FS` einzubetten werden diese direkt von der Festplatte geladen.
 
-It also provides the additional features:
+Es bietet auch zusätzlichen Funktionen:
 
-- Hot reload - Any changes to frontend assets will trigger and auto reload of the application frontend
-- Auto rebuild - Any changes to your Go code will rebuild and relaunch your application
+- Hot reload - Änderungen an Frontend-Assets lösen ein neu laden des Anwendungsfrontends aus
+- Automatisches Neuerstellen - Alle Änderungen an deinem Go-Code werden deine Anwendung neu erstellen und neu starten
 
-In addition to this, a webserver will start on port 34115. This will serve your application to any browser that connects to it. All connected web browsers will respond to system events like hot reload on asset change.
+Zusätzlich startet ein Webserver auf Port 34115. Dadurch wird deine Anwendung jedem Browser zur Verfügung gestellt, der sich mit diesem verbindet. Alle angeschlossenen Web-Browser reagieren auf Systemereignisse, wie zum Beispiel den hot Reload bei der Änderung von Dateien.
 
-In Go, we are used to dealing with structs in our applications. It's often useful to send structs to our frontend and use them as state in our application. In v1, this was a very manual process and a bit of a burden on the developer. I'm happy to announce that in v2, any application run in dev mode will automatically generate TypeScript models for all structs that are input or output parameters to bound methods. This enables seamless interchange of data models between the two worlds.
+In Go sind wir an Structs, die wir in unseren Anwendungen haben, gewöhnt. Es ist oft hilfreich, Anweisungen an das Frontend zu senden und diese als Status in unserer Anwendung zu verwenden. In v1 war das ein sehr manueller Prozess und eine kleine Belastung für den Entwickler. Ich freue mich, ankündigen zu können, dass in v2, jede Anwendung, die im Dev-Modus ausgeführt wird, automatisch Modelle in TypeScript für alle Structs generiert, die Eingabe- oder Ausgabeparameter für verknüpfte Methoden sind. Dies ermöglicht den nahtlosen Austausch von Modellen zwischen den beiden Welten.
 
-In addition to this, another JS module is dynamically generated wrapping all your bound methods. This provides JSDoc for your methods, providing code completion and hinting in your IDE. It's really cool when you get data models auto-imported when hitting tab in an auto-generated module wrapping your Go code!
+Zusätzlich wird ein weiteres JS-Modul dynamisch generiert, welches alle verknüpften Methoden beinhaltet. Das stellt JSDoc für deine Methoden bereit und bietet Code-Vervollständigung und Hinweise in deiner IDE an. Es ist wirklich cool, wenn Datenmodelle automatisch importiert werden, nachdem man Tab drückt und das alles dank automatisch generierten Modulen, die deinen Go code verpacken!
 
-### Remote Templates
+### Remote Vorlagen
 
 ```mdx-code-block
 <div class="text--center">
@@ -133,29 +133,29 @@ In addition to this, another JS module is dynamically generated wrapping all you
 <br />
 ```
 
-Getting an application up and running quickly was always a key goal for the Wails project. When we launched, we tried to cover a lot of the modern frameworks at the time: react, vue and angular. The world of frontend development is very opinionated, fast moving and hard to keep on top of! As a result, we found our base templates getting out of date pretty quickly and this caused a maintenance headache. It also meant that we didn't have cool modern templates for the latest and greatest tech stacks.
+Eine Anwendung schnell zum Laufen zu bringen, war immer ein zentrales Ziel für das Wails Projekt. Als wir starteten, haben wir versucht, viele der modernen Frameworks der Zeit abzudecken: react, vue und angular. Die Welt der Frontend-Entwicklung ist sehr eigenwillig, schnelllebig und schwer zu überblicken! Das führte dazu, dass unsere Basisvorlagen ziemlich schnell veraltet waren, was zu Wartungsproblemen führte. Es bedeutete auch, dass wir keine coolen modernen Vorlagen für die neuesten und die besten Technologie-Stacks hatten.
 
-With v2, I wanted to empower the community by giving you the ability to create and host templates yourselves, rather than rely on the Wails project. So now you can create projects using community supported templates! I hope this will inspire developers to create a vibrant ecosystem of project templates. I'm really quite excited about what our developer community can create!
+Mit v2 wollte ich die Community stärken, indem ich ihr die Möglichkeit gab, Vorlagen selbst zu erstellen und zu verwalten, statt sich auf das Wails Projekt verlassen zu müssen. So können jetzt Projekte mit Community-unterstützten Vorlagen erstellt werden! Ich hoffe, dass Entwickler dazu inspirieren werden, ein lebendiges Ökosystem von Projektvorlagen zu erstellen. Ich bin wirklich sehr gespannt darüber, was unsere Entwicklergemeinschaft erstellen kann!
 
-### In Conclusion
+### Fazit
 
-Wails v2 represents a new foundation for the project. The aim of this release is to get feedback on the new approach, and to iron out any bugs before a full release. Your input would be most welcome. Please direct any feedback to the [v2 Beta](https://github.com/wailsapp/wails/discussions/828) discussion board.
+Wails v2 stellt eine neue Grundlage für das Projekt dar. Das Ziel dieser Veröffentlichung ist es, Rückmeldungen über den neuen Ansatz zu erhalten und Fehler vor einer vollständigen Veröffentlichung zu beseitigen. Dein Input ist willkommen. Bitte sende jegliches Feedback an das [v2 Beta](https://github.com/wailsapp/wails/discussions/828) Diskussionsforum.
 
-There were many twists and turns, pivots and u-turns to get to this point. This was due partly to early technical decisions that needed changing, and partly because some core problems we had spent time building workarounds for were fixed upstream: Go’s embed feature is a good example. Fortunately, everything came together at the right time, and today we have the very best solution that we can have. I believe the wait has been worth it - this would not have been possible even 2 months ago.
+Es gab viele Drehungen und Wendungen, Schwenker und U-Turns, um zu diesem Punkt zu gelangen. Das lag zum Teil an frühen technischen Entscheidungen, die geändert werden mussten, und auch daran, dass einige Kernprobleme, für die wir viel Zeit mit der Entwicklung von Umgehungslösungen verbracht hatten, im Vorfeld behoben wurden: Die Einbettungsfunktion von Go ist ein gutes Beispiel dafür. Glücklicherweise ist alles zur richtigen Zeit zusammengekommen, und heute haben wir die beste Lösung, die wir haben können. Ich glaube, das Warten hat sich gelohnt - noch vor 2 Monaten wäre dies nicht möglich gewesen.
 
-I also need to give a huge thank you :pray: to the following people because without them, this release just wouldn't exist:
+Ich muss auch einen großen Dank :pray: an die folgenden Leute richten, denn ohne sie würde diese Version einfach nicht existieren:
 
-- [Misite Bao](https://github.com/misitebao) - An absolute workhorse on the Chinese translations and an incredible bug finder.
-- [John Chadwick](https://github.com/jchv) - His amazing work on [go-webview2](https://github.com/jchv/go-webview2) and [go-winloader](https://github.com/jchv/go-winloader) have made the Windows version we have today possible.
-- [Tad Vizbaras](https://github.com/tadvi) - Experimenting with his [winc](https://github.com/tadvi/winc) project was the first step down the path to a pure Go Wails.
-- [Mat Ryer](https://github.com/matryer) - His support, encouragement and feedback has really helped drive the project forward.
+- [Misite Bao](https://github.com/misitebao) - Ein absolutes Arbeitstier bei den chinesischen Übersetzungen und ein unglaublicher Fehlerfinder.
+- [John Chadwick](https://github.com/jchv) - Seine erstaunliche Arbeit an [go-webview2](https://github.com/jchv/go-webview2) und [go-winloader](https://github.com/jchv/go-winloader) haben die Windows-Version ermöglicht, die wir heute haben.
+- [Tad Vizbaras](https://github.com/tadvi) - Experimentierte mit seinem [winc](https://github.com/tadvi/winc) Projekt war der erste Schritt auf dem Weg zu einem reinen Go-Wails.
+- [Mat Ryer](https://github.com/matryer) - Seine Unterstützung, Ermutigung und sein Feedback haben das Projekt wirklich vorangetrieben.
 
-And finally, I'd like to give a special thank you to all the [project sponsors](/credits#sponsors), including [JetBrains](https://www.jetbrains.com?from=Wails), whose support drive the project in many ways behind the scenes.
+Abschließend möchte ich mich bei allen [Projektsponsoren](/credits#sponsors)ganz besonders bedanken, einschließlich [JetBrains](https://www.jetbrains.com?from=Wails), dessen Unterstützung das Projekt in vielerlei Hinsicht hinter den Kulissen antreibt.
 
-I look forward to seeing what people build with Wails in this next exciting phase of the project!
+Ich freue mich darauf, zu sehen, was die Leute mit Wails in dieser nächsten aufregenden Phase des Projekts bauen!
 
 Lea.
 
-PS: MacOS and Linux users need not feel left out - porting to this new foundation is actively under way and most of the hard work has already been done. Hang in there!
+PS: MacOS- und Linux-Benutzer müssen sich nicht ausgeschlossen fühlen - die Portierung auf diese neue Grundlage ist in vollem Gange und die meiste harte Arbeit wurde bereits geleistet. Haltet weiter durch!
 
-PPS: If you or your company find Wails useful, please consider [sponsoring the project](https://github.com/sponsors/leaanthony). Thanks!
+PPS: Wenn du oder dein Unternehmen Wails nützlich finden, erwäge bitte [das Projekt](https://github.com/sponsors/leaanthony) zu sponsern. Vielen Dank!

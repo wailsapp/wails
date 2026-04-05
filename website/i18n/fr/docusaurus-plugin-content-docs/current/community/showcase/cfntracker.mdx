@@ -7,33 +7,31 @@
 </p>
 ```
 
-[CFN Tracker](https://github.com/williamsjokvist/cfn-tracker) - Track any Street
-Fighter 6 or V CFN profile's live matches. Check
-[the website](https://cfn.williamsjokvist.se/) to get started.
+[CFN Tracker](https://github.com/williamsjokvist/cfn-tracker) - Suivez les matchs en direct de n'importe quel profil CFN Street
+Fighter 6 ou V. Allez sur
+[le site web](https://cfn.williamsjokvist.se/) pour commencer.
 
-## Features
+## Fonctionnalités
 
-- Real-time match tracking
-- Storing match logs and statistics
-- Support for displaying live stats to OBS via Browser Source
-- Support for both SF6 and SFV
-- Ability for users to create their own OBS Browser themes with CSS
+- Suivi des matchs en temps réel
+- Affichage des logs et des statistiques des matchs
+- Prise en charge de l'affichage des statistiques en direct à OBS via la source Browser
+- Support de SF6 et SFV
+- Possibilité pour les utilisateurs de créer leurs propres thèmes OBS avec du CSS
 
-### Major tech used alongside Wails
+### Technologies principales utilisées aux côtés de Wails
 
-- [Task](https://github.com/go-task/task) - wrapping the Wails CLI to make
-  common commands easy to use
-- [React](https://github.com/facebook/react) - chosen for its rich ecosystem
+- [Task](https://github.com/go-task/task) - encapsuler le CLI Wails pour rendre
+  des commandes communes faciles à utiliser
+- [React](https://github.com/facebook/react) - choisi pour son écosystème riche
   (radix, framer-motion)
-- [Bun](https://github.com/oven-sh/bun) - used for its fast dependency
-  resolution and build-time
-- [Rod](https://github.com/go-rod/rod) - headless browser automation for
-  authentication and polling changes
-- [SQLite](https://github.com/mattn/go-sqlite3) - used for storing matches,
-  sessions and profiles
-- [Server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) -
-  a http stream to send tracking updates to OBS browser sources
-- [i18next](https://github.com/i18next/) - with backend connector to serve
-  localization objects from the Go layer
-- [xstate](https://github.com/statelyai/xstate) - state machines for auth
-  process and tracking
+- [Bun](https://github.com/oven-sh/bun) - utilisé pour sa résolution de dépendance
+  rapide et temps de compilation
+- [Rod](https://github.com/go-rod/rod) - Outil d'automatisation du navigateur sans fenêtre pour les modifications d'authentification et de sondage
+- [SQLite](https://github.com/mattn/go-sqlite3) - utilisé pour stocker des matches,
+  sessions et profils
+- [Server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) - Stream HTTP pour suivant les mises à jour et envoyant les modifications aux sources OBS
+- [i18next](https://github.com/i18next/) - avec le connecteur backend pour servir les objets de localisation
+  depuis Go
+- [xstate](https://github.com/statelyai/xstate) - des machines à états pour le processus d'authentification
+  et le suivi

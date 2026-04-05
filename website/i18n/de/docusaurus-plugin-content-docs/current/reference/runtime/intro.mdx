@@ -2,49 +2,49 @@
 sidebar_position: 1
 ---
 
-# Introduction
+# Einführung
 
-The runtime is a library that provides utility methods for your application. There is both a Go and JavaScript runtime and the aim is to try and keep them at parity where possible.
+Die Laufzeit ist eine Bibliothek, die Hilfsmethoden für deine Anwendung bereitstellt. Es gibt sowohl eine Go- als auch JavaScript-Laufzeit und das Ziel ist es, sie möglichst auf dem gleichen Stand zu halten.
 
-It has utility methods for:
+Es hat nützliche Methoden für:
 
-- [Window](window.mdx)
-- [Menu](menu.mdx)
-- [Dialog](dialog.mdx)
+- [Fenster](window.mdx)
+- [Menüs](menu.mdx)
+- [Dialoge](dialog.mdx)
 - [Events](events.mdx)
 - [Browser](browser.mdx)
-- [Log](log.mdx)
-- [Clipboard](clipboard.mdx)
+- [Logs](log.mdx)
+- [Zwischenablagen](clipboard.mdx)
 
-The Go Runtime is available through importing `github.com/wailsapp/wails/v2/pkg/runtime`. All methods in this package take a context as the first parameter. This context should be obtained from the [OnStartup](../options.mdx#onstartup) or [OnDomReady](../options.mdx#ondomready) hooks.
+Die Go Runtime ist verfügbar durch das Importieren von `github.com/wailsapp/wails/v2/pkg/runtime`. Alle Methoden in diesem Paket nehmen einen Kontext als ersten Parameter. Dieser Kontext sollte von den [OnStartup](../options.mdx#onstartup) oder [OnDomReady](../options.mdx#ondomready) Hooks abgerufen werden.
 
-:::info Note
+:info Notiz
 
-Whilst the context will be provided to the [OnStartup](../options.mdx#onstartup) method, there's no guarantee the runtime will work in this method as the window is initialising in a different thread. If you wish to call runtime methods at startup, use [OnDomReady](../options.mdx#ondomready).
+Während der Kontext der [OnStartup](../options.mdx#onstartup) Methode zur Verfügung gestellt wird, gibt es keine Garantie dafür, dass die Laufzeit in dieser Methode funktioniert, da das Fenster in einem anderen Thread initialisiert wird. Wenn du beim Start Laufzeitmethoden aufrufen möchtest, verwende [OnDomReady](../options.mdx#ondomready).
 
 :::
 
-The JavaScript library is available to the frontend via the `window.runtime` map. There is a runtime package generated when using `dev` mode that provides TypeScript declarations for the runtime. This should be located in the `wailsjs` directory in your frontend directory.
+Die JavaScript-Bibliothek ist im Frontend über die `window.runtime` map verfügbar. Es wird ein Laufzeitpaket generiert, wenn der `dev` Modus verwendet wird, die TypeScript-Deklarationen für die Laufzeit werden ebenfalls bereitgestellt. Diese sollten sich im `wailsjs` Verzeichnis deines Frontend-Verzeichnisses befinden.
 
 ### Hide
 
 Go: `Hide(ctx context.Context)`<br/> JS: `Hide()`
 
-Hides the application.
+Versteckt die Anwendung.
 
-:::info Note
+:info Notiz
 
-On Mac, this will hide the application in the same way as the `Hide` menu item in standard Mac applications. This is different to hiding the window, but the application still being in the foreground. For Windows and Linux, this is currently the same as `WindowHide`.
+Auf dem Mac wird die Anwendung auf die gleiche Weise versteckt wie im `Menüpunkt` in Standard-Mac-Anwendungen. Das ist anders als das Verstecken des Fensters, jedoch die Anwendung steht immer noch im Vordergrund. Für Windows und Linux ist dies derselbe wie `WindowHide`.
 
 :::
 
 ### Show
 
-Shows the application.
+Zeigt die Anwendung.
 
-:::info Note
+:info Notiz
 
-On Mac, this will bring the application back into the foreground. For Windows and Linux, this is currently the same as `WindowShow`.
+Auf dem Mac wird die Anwendung wieder in den Vordergrund gerückt. Für Windows und Linux ist dies derselbe wie `WindowShow`.
 
 :::
 
@@ -52,13 +52,13 @@ Go: `Show(ctx context.Context)`<br/> JS: `Show()`
 
 ### Quit
 
-Quits the application.
+Schließt die Anwendung.
 
 Go: `Quit(ctx context.Context)`<br/> JS: `Quit()`
 
 ### Environment
 
-Returns details of the current environment.
+Gibt Details der aktuellen Umgebung zurück.
 
 Go: `Environment(ctx context.Context) EnvironmentInfo`<br/> JS: `Environment(): Promise<EnvironmentInfo>`
 

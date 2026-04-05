@@ -45,10 +45,10 @@ En outre, vous devez spécifier le chemin vers la version corrigée de webview2 
 
 Note: Quand `WebviewBrowserPath` est spécifié, une ` strategy error` sera lancée si la version minimale à utiliser n'est pas requise ou si le chemin vers le runtime est incorrect.
 
-The downloaded file will be compressed (extension `.cab`), so you must extract it before using it, according to the instructions on the [official site](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#details-about-the-fixed-version-runtime-distribution-mode) should run in a terminal the following command to extract the file:
+Le fichier téléchargé sera compressé (extension `.cab`), donc vous devez l'extraire avant de l'utiliser. En suivant les instructions sur le [site officiel](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#details-about-the-fixed-version-runtime-distribution-mode), la commande pour extraire le fichier est :
 
 ```
-expand {path to the package} -F:* {path to the destination folder}
+expand {chemin vers le package} -F:* {chemin vers le dossier de destination}
 ```
 
 ## Faire apparaître d'autres programmes
