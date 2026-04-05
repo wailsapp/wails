@@ -1,12 +1,12 @@
-# Application Development
+# Entwicklung von Anwendungen
 
-There are no hard and fast rules for developing applications with Wails, but there are some basic guidelines.
+Es gibt keine festen Regeln für die Entwicklung von Anwendungen mit Wails, aber einige grundlegende Richtlinien.
 
-## Application Setup
+## Anwendungseinrichtung
 
-The pattern used by the default templates are that `main.go` is used for configuring and running the application, whilst `app.go` is used for defining the application logic.
+Das von den Standardvorlagen verwendete Muster ist, dass `main.go` zum Konfigurieren und Ausführen der Anwendung verwendet wird, während `app.go` zur Definition der Anwendungslogik verwendet wird.
 
-The `app.go` file will define a struct that has 2 methods which act as hooks into the main application:
+Die `app.go` Datei definiert einen Struct mit 2 Methoden, die als Hooks in der Hauptanwendung fungieren:
 
 ```go title="app.go"
 type App struct {
@@ -25,11 +25,11 @@ func (a *App) shutdown(ctx context.Context) {
 }
 ```
 
-- The startup method is called as soon as Wails allocates the resources it needs and is a good place for creating resources, setting up event listeners and anything else the application needs at startup. It is given a `context.Context` which is usually saved in a struct field. This context is needed for calling the [runtime](../reference/runtime/intro.mdx). If this method returns an error, the application will terminate. In dev mode, the error will be output to the console.
+- Die startup Methode wird aufgerufen, sobald Wails die benötigten Ressourcen angefordert hat und ist ein guter Ort für die Erstellung von eigenen Ressourcen sowie die Konfigurierung von Events und alles andere, was die Anwendung beim Start braucht. Es wird ein `context.Context` übergeben, der normalerweise in einem Struct-Feld gespeichert wird. Dieser Kontext wird benötigt, um die [Laufzeit](../reference/runtime/intro.mdx) aufzurufen. Gibt diese Methode einen Fehler zurück, wird die Anwendung beendet. Im Dev-Modus wird der Fehler in die Konsole ausgegeben.
 
-- The shutdown method will be called by Wails right at the end of the shutdown process. This is a good place to deallocate memory and perform any shutdown tasks.
+- Die shutdown Methode wird von Wails direkt am Ende des Shutdown-Prozesses aufgerufen. Dies ist ein guter Ort, um Ressourcen wieder freizugeben und um alle anderen Aufgaben zu beenden.
 
-The `main.go` file generally consists of a single call to `wails.Run()`, which accepts the application configuration. The pattern used by the templates is that before the call to `wails.Run()`, an instance of the struct we defined in `app.go` is created and saved in a variable called `app`. This configuration is where we add our callbacks:
+Die `main.go` Datei besteht im Allgemeinen aus einem einzigen Aufruf von `wails.Run()`, der die Anwendungskonfiguration akzeptiert. Das Muster, das in den Vorlagen verwendet wird, besteht darin, dass vor dem Aufruf von `wails.Run()` eine Instanz des Structs, die wir in `app.go` definiert haben, erstellt und in einer Variable namens `app` gespeichert wird. Diese Konfiguration ist der Ort, an dem wir unsere Callbacks hinzufügen:
 
 ```go {3,9,10} title="main.go"
 func main() {
@@ -50,11 +50,11 @@ func main() {
 
 ```
 
-More information on application lifecycle hooks can be found [here](../howdoesitwork.mdx#application-lifecycle-callbacks).
+Weitere Informationen zu Anwendungslaufzeit hooks sind [hier](../howdoesitwork.mdx#application-lifecycle-callbacks) zu finden.
 
-## Binding Methods
+## Methoden Verknüpfen
 
-It is likely that you will want to call Go methods from the frontend. This is normally done by adding public methods to the already defined struct in `app.go`:
+Es ist wahrscheinlich, dass Go-Methoden vom Frontend aufgerufen werden sollen. Normalerweise wird das durch das Hinzufügen öffentlicher Methoden zu den bereits definierten structs in `app.go` gemacht:
 
 ```go {16-18} title="app.go"
 type App struct {
@@ -77,7 +77,7 @@ func (a *App) Greet(name string) string {
 }
 ```
 
-In the main application configuration, the `Bind` key is where we can tell Wails what we want to bind:
+In der Hauptanwendungskonfiguration ist der `Bind` Key, der, bei dem wir Wails sagen können, was wir verknüpfen wollen:
 
 ```go {11-13} title="main.go"
 func main() {
@@ -101,11 +101,11 @@ func main() {
 
 ```
 
-This will bind all public methods in our `App` struct (it will never bind the startup and shutdown methods).
+Das wird alle öffentlichen Methoden in unserem `App` struct verknüpfen (ausgenommen davon sind die Start- und Herunterfahrmethoden).
 
-### Dealing with context when binding multiple structs
+### Umgang mit dem Kontext, wenn mehrere structs verknüpft werden
 
-If you want to bind methods for multiple structs but want each struct to keep a reference to the context so that you can use the runtime functions, a good pattern is to pass the context from the `OnStartup` method to your struct instances :
+Solltest du mehrmals den Anwendungskontext in verschiedenen Structs referenzieren wollen, ist es sinnvoll, das in der `OnStartup` Methode zu machen:
 
 ```go
 func main() {
@@ -133,7 +133,7 @@ func main() {
 }
 ```
 
-Also you might want to use Enums in your structs and have models for them on frontend. In that case you should create array that will contain all possible enum values, instrument enum type and bind it to the app:
+Auch Enums können in Structs verwendet werden, diese erhalten im Frontend entsprechende Modelle. In diesem Fall sollte ein Array erstellt werden, das alle möglichen Enum-Werte enthält:
 
 ```go {16-18} title="app.go"
 type Weekday string
@@ -162,7 +162,7 @@ var AllWeekdays = []struct {
 }
 ```
 
-In the main application configuration, the `EnumBind` key is where we can tell Wails what we want to bind enums as well:
+In der Hauptanwendungskonfiguration ist der `EnumBind` Key, der, bei dem wir Wails sagen können, welche Emums wir verknüpfen wollen:
 
 ```go {11-13} title="main.go"
 func main() {
@@ -189,13 +189,13 @@ func main() {
 
 ```
 
-This will add missing enums to your `model.ts` file.
+Dadurch werden fehlende Enums zu der `model.ts` Datei hinzugefügt.
 
-More information on Binding can be found [here](../howdoesitwork.mdx#method-binding).
+Weitere Informationen dazu [hier](../howdoesitwork.mdx#method-binding).
 
-## Application Menu
+## Anwendungsmenü
 
-Wails supports adding a menu to your application. This is done by passing a [Menu](../reference/menus.mdx#menu) struct to application config. It's common to use a method that returns a Menu, and even more common for that to be a method on the `App` struct used for the lifecycle hooks.
+Wails unterstützt das Hinzufügen eines Menüs zur Anwendung. Das geschieht durch die Übergabe eines [Menu](../reference/menus.mdx#menu)-Structs an die Anwendungskonfiguration. Es ist üblich, eine Methode zu verwenden, die ein Menü zurückgibt, vorzugsweise eine Methode im `App` struct, die für die Laufzeit Hooks verwendet wird.
 
 ```go {11} title="main.go"
 func main() {
@@ -222,41 +222,41 @@ func main() {
 
 ## Assets
 
-The great thing about the way Wails v2 handles assets is that it doesn't! The only thing you need to give Wails is an `embed.FS`. How you get to that is entirely up to you. You can use vanilla html/css/js files like the vanilla template. You could have some complicated build system, it doesn't matter.
+Das Großartige an der Art und Weise, wie Wails v2 mit Assets umgeht, ist, dass es das nicht tut! Das Einzige, was Wails benötigt, ist `embed.FS`. Wie ein embed.FS erzeugt wird, ist dir überlassen. Du kannst Vanilla html/css/js Dateien wie das Vanilla Template verwenden. Oder auch ein kompliziertes Build-System, es spielt keine Rolle.
 
-When `wails build` is run, it will check the `wails.json` project file at the project root. There are 2 keys in the project file that are read:
+Wenn `wails build` ausführt wird, wird die `wails.json` Projektdatei im Projektverzeichnis überprüft. Es gibt 2 Schlüssel in der Projektdatei, die gelesen werden:
 
 - "frontend:install"
 - "frontend:build"
 
-The first, if given, will be executed in the `frontend` directory to install the node modules. The second, if given, will be executed in the `frontend` directory to build the frontend project.
+Der erste, falls angegeben, wird im `Frontend` Verzeichnis ausgeführt, um die node Modules zu installieren. Der zweite, falls angegeben, wird im `frontend`-Verzeichnis ausgeführt, um das Frontend-Projekt zu erstellen.
 
-If these 2 keys aren't given, then Wails does absolutely nothing with the frontend. It is only expecting that `embed.FS`.
+Wenn diese 2 Keys nicht gegeben werden, dann tut Wails absolut nichts mit dem Frontend. Es wird nur erwartet, dass `embed.FS` vorhanden ist.
 
 ### AssetsHandler
 
-A Wails v2 app can optionally define a `http.Handler` in the `options.App`, which allows hooking into the AssetServer to create files on the fly or process POST/PUT requests. GET requests are always first handled by the `assets` FS. If the FS doesn't find the requested file the request will be forwarded to the `http.Handler` for serving. Any requests other than GET will be directly processed by the `AssetsHandler` if specified. It's also possible to only use the `AssetsHandler` by specifying `nil` as the `Assets` option.
+Eine Wails v2 App kann optional einen `http.Handler` in den `options.App` definieren, der das Hooking in den AssetServer erlaubt, um Dateien zu erstellen oder POST/PUT-Anfragen zu verarbeiten. GET-Anfragen werden immer zuerst vom `assets` FS bearbeitet. Wenn der FS die angeforderte Datei nicht findet, wird die Anfrage an den `http.Handler` weitergeleitet, um diese zu verarbeiten. Alle anderen Anfragen als GET werden direkt vom `AssetsHandler` bearbeitet, sofern angegeben. Es ist auch möglich, nur den `AssetsHandler` zu verwenden, indem `nil` als `Assets` Option angegeben wird.
 
-## Built in Dev Server
+## Eingebauter Dev Server
 
-Running `wails dev` will start the built in dev server which will start a file watcher in your project directory. By default, if any file changes, wails checks if it was an application file (default: `.go`, configurable with `-e` flag). If it was, then it will rebuild your application and relaunch it. If the changed file was in the assets, it will issue a reload after a short amount of time.
+Das Ausführen von `wails dev` startet den eingebauten Entwicklungsserver, der einen Dateibeobachter im Projektverzeichnis startet. Standardmäßig prüft wails bei Änderungen an Dateien, ob es sich um eine Anwendungsdatei handelt (Standard: `.go`, konfigurierbar mit der `-e`-Flagge). Wenn das der Fall ist, wird wails automatisch die Anwendung neu builden und neu starten. Wenn sich die geänderte Datei in den Assets befindet, wird nach kurzer Zeit neu geladen.
 
-The dev server uses a technique called "debouncing" which means it doesn't reload straight away, as there may be multiple files changed in a short amount of time. When a trigger occurs, it waits for a set amount of time before issuing a reload. If another trigger happens, it resets to the wait time again. By default this value is `100ms`. If this value doesn't work for your project, it can be configured using the `-debounce` flag. If used, this value will be saved to your project config and become the default.
+Der Dev-Server verwendet eine Technik namens "debouncing", was bedeutet, dass er nicht sofort neu geladen wird, da mehrere Dateien in kurzer Zeit geändert werden können. Wenn ein Trigger ausgelöst wird, wartet er eine festgelegte Zeit, bevor er ein Nachladen ausführt. Falls ein anderer Trigger auftritt, wird die Wartezeit erneut gesetzt. Standardmäßig ist dieser Wert `100ms`. Wenn dieser Wert für dein Projekt nicht funktioniert, kann er mit der `-debounce` Flag konfiguriert werden. Wenn verwendet, wird dieser Wert in deiner Projekt-Konfiguration gespeichert und zur Standardeinstellung.
 
-## External Dev Server
+## Externer Dev Server
 
-Some frameworks come with their own live-reloading server, however they will not be able to take advantage of the Wails Go bindings. In this scenario, it is best to run a watcher script that rebuilds the project into the build directory, which Wails will be watching. For an example, see the default svelte template that uses [rollup](https://rollupjs.org/guide/en/).
+Einige Frameworks haben ihren eigenen Live-Reloading-Server, aber diese werden nicht in der Lage sein, die Wails Go-Verknüpfungen zu nutzen. In diesem Szenario ist es am besten, ein Watcher-Skript auszuführen, das das Projekt in das Build-Verzeichnis umbaut, welches Wails beobachten wird. Siehe die svelte Standardvorlage, die [rollup](https://rollupjs.org/guide/en/) verwendet.
 
 ### Create React App
 
-The process for a Create-React-App project is slightly more complicated. In order to support live frontend reloading the following configuration needs to be added to your `wails.json`:
+Der Prozess für ein Create-React-App-Projekt ist etwas komplizierter. Um das Live-Frontend neu laden zu können, muss die folgende Konfiguration zur `wails.json` hinzugefügt werden:
 
 ```json
   "frontend:dev:watcher": "yarn start",
   "frontend:dev:serverUrl": "http://localhost:3000",
 ```
 
-The `frontend:dev:watcher` command will start the Create-React-App development server (hosted on port `3000` typically). The `frontend:dev:serverUrl` command then instructs Wails to serve assets from the development server when loading the frontend rather than from the build folder. In addition to the above, the `index.html` needs to be updated with the following:
+Der `frontend:dev:watcher` Befehl startet den Create-React-App Entwicklungsserver (typischerweise auf Port `3000` gehostet). Der Befehl `frontend:dev:serverUrl` weist Wails dann an, beim Laden des Frontends Assets vom Entwicklungsserver zu verwenden, anstatt aus dem Build-Ordner. Zusätzlich zu den oben genannten Schritten muss die `index.html` mit folgendem aktualisiert werden:
 
 ```html
     <head>
@@ -266,8 +266,8 @@ The `frontend:dev:watcher` command will start the Create-React-App development s
     </head>
 ```
 
-This is required as the watcher command that rebuilds the frontend prevents Wails from injecting the required scripts. This circumvents that issue by ensuring the scripts are always injected. With this configuration, `wails dev` can be run which will appropriately build the frontend and backend with hot-reloading enabled. Additionally, when accessing the application from a browser the React developer tools can now be used on a non-minified version of the application for straightforward debugging. Finally, for faster builds, `wails dev -s` can be run to skip the default building of the frontend by Wails as this is an unnecessary step.
+Dies wird benötigt, da der Watcher-Befehl, der das Frontend neu aufbaut, Wails daran hindert, die benötigten Skripte zu injizieren. Dies umgeht diese Fehlermeldung, indem sichergestellt wird, dass die Skripte immer injiziert werden. Mit dieser Konfiguration kann `wails dev` ausgeführt werden, wodurch Frontend und Backend mit aktiviertem Hot-Reloading entsprechend erstellt werden. Zusätzlich beim Zugriff auf die Anwendung von einem Browser aus können die React Entwicklerwerkzeuge jetzt auf einer nicht minifizierten Version der Anwendung für einfaches Debuggen verwendet werden. Schließlich kann zur Beschleunigung der Builds `wails dev -s` ausgeführt werden, um den standardmäßigen Build des Frontends durch Wails zu überspringen, da dies ein unnötiger Schritt ist.
 
 ## Go Module
 
-The default Wails templates generate a `go.mod` file that contains the module name "changeme". You should change this to something more appropriate after project generation.
+Die Standard-Wails Vorlagen erzeugen eine `go.mod` Datei, die den Modulnamen "changeme" enthält. Du solltest dies nach der Projekterstellung in etwas passenderes ändern.

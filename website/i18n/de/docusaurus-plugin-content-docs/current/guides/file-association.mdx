@@ -1,15 +1,13 @@
-# File Association
+# Dateizuordnung
 
-File association feature allows you to associate specific file types with your app so that when users open those files,
-your app is launched to handle them. This can be particularly useful for text editors, image viewers, or any application
-that works with specific file formats. In this guide, we'll walk through the steps to implement file association in Wails app.
+Die Funktion zur Dateizuordnung ermöglicht es dir, bestimmte Dateitypen mit deiner App zu verknüpfen, sodass die App gestartet wird, wenn Benutzer diese Dateien öffnen. Dies kann besonders nützlich für Texteditoren, Bild Viewer oder beliebige Anwendungen sein, die mit spezifischen Dateiformaten arbeiten. In dieser Anleitung werden wir die Schritte zur Implementierung von Datei-Assoziationen in Wails App durchlaufen.
 
-## Set Up File Association:
+## Dateizuordnung einrichten:
 
-To set up file association, you need to modify your application's wails.json file.
-In "info" section add a "fileAssociations" section specifying the file types your app should be associated with.
+Um eine Datei-Assoziation einzurichten, muss die wails.json Datei der Anwendung angepasst werden.
+Füge im Abschnitt "info" einen Abschnitt mit dem Namen "fileAssociations" hinzu, in diesem werden die Dateien angegeben, die mit der App verknüpft werden sollen.
 
-For example:
+Zum Beispiel:
 
 ```json
 {
@@ -34,19 +32,19 @@ For example:
 }
 ```
 
-| Property    | Description                                                                                                                                        |
-| :---------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ext         | The extension (minus the leading period). e.g. png                                                                                                 |
-| name        | The name. e.g. PNG File                                                                                                                            |
-| iconName    | The icon name without extension. Icons should be located in build folder. Proper icons will be generated from .png file for both macOS and Windows |
-| description | Windows-only. The description. It is displayed on the `Type` column on Windows Explorer.                                                           |
-| role        | macOS-only. The app’s role with respect to the type. Corresponds to CFBundleTypeRole.                                                              |
+| Eigenschaft    | Beschreibung                                                                                                                                                           |
+| :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ext            | Die Dateiendung (ohne den Punkt). e.g. png                                                                                                                             |
+| name           | Der Name. z.B. PNG Datei                                                                                                                                               |
+| iconName       | Der Symbolname ohne Erweiterung. Icons sollten sich im Build-Ordner befinden. Richtige Icons werden aus der .png-Datei sowohl für macOS als auch für Windows generiert |
+| description    | Nur für Windows. Die Beschreibung. Es wird in der Spalte `Type` im Windows Explorer angezeigt.                                                                         |
+| role           | Nur für macOS. Die Rolle der App in Bezug auf den Typ. Entspricht CFBundleTypeRoll.                                                                                    |
 
-## Platform Specifics:
+## Plattformspezifisches:
 
 ### macOS
 
-When you open file (or files) with your app, the system will launch your app and call the `OnFileOpen` function in your Wails app. Example:
+Wenn du die Datei (oder Dateien) mit deiner App öffnest, startet das System deine App und ruft die "OnFileOpen"-Funktion in deiner Wails App auf. Beispiel:
 
 ```go title="main.go"
 func main() {
@@ -75,9 +73,7 @@ func main() {
 
 ### Windows
 
-On Windows file association is supported only with NSIS installer. During installation, the installer will create a
-registry entry for your file associations. When you open file with your app, new instance of app is launched and file path is passed
-as argument to your app. To handle this you should parse command line arguments in your app. Example:
+Unter Windows wird die Verknüpfung nur mit dem NSIS Installer unterstützt. Während der Installation wird der Installer einen Registrierungseintrag für deine Datei-Assoziation erstellen. Wenn eine Datei mit deiner App geöffnet wird, wird eine neue Instanz der App gestartet und der Dateipfad wird als Argument an deine App übergeben. Um dies zu verarbeiten, solltest du Kommandozeilenargumente in der App parsen. Beispiel:
 
 ```go title="main.go"
 func main() {
@@ -89,8 +85,7 @@ func main() {
 }
 ```
 
-You also can enable single instance lock for your app. In this case, when you open file with your app, new instance of app is not launched
-and arguments are passed to already running instance. Check single instance lock guide for details. Example:
+Du kannst auch Einzel-Instanzsperren für deine App aktivieren. In diesem Fall, wird, wenn die Datei mit deiner App geöffnet wird, keine neue Instanz der App gestartet und Argumente werden an die bereits laufende Instanz übergeben. Überprüfe die Einzel-Instanz sperren Anleitung für Details. Beispiel:
 
 ```go title="main.go"
 func main() {
@@ -116,11 +111,11 @@ func main() {
 
 ### Linux
 
-Currently, Wails doesn't support bundling for Linux. So, you need to create file associations manually.
-For example if you distribute your app as a .deb package, you can create file associations by adding required files in you bundle.
-You can use [nfpm](https://nfpm.goreleaser.com/) to create .deb package for your app.
+Derzeit unterstützt Wails kein Bundling für Linux. Dateiassoziationen müssen dem nach manuell erstellt werden.
+Zum Beispiel, wenn du deine App als .deb-Paket verteilst, können Datei-Assoziationen erstellt werden, indem du benötigte Dateien in deinem Bundle hinzufügst.
+Du kannst [nfpm](https://nfpm.goreleaser.com/) verwenden, um .deb-Paket für deine App zu erstellen.
 
-1. Create a .desktop file for your app and specify file associations there. Example:
+1. Erstelle eine .desktop Datei für deine App und gib dort die Datei-Assoziationen an. Beispiel:
 
 ```ini
 [Desktop Entry]
@@ -133,7 +128,7 @@ Type=Application
 MimeType=application/x-wails;application/x-test
 ```
 
-2. Create mime types file. Example:
+2. Erstelle eine Datei für Mime-Typen. Beispiel:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -145,19 +140,19 @@ MimeType=application/x-wails;application/x-test
 </mime-info>
 ```
 
-3. Create icons for your file types. SVG icons are recommended.
-4. Prepare postInstall/postRemove scripts for your package. Example:
+3. Erstelle Icons für deine Dateitypen. SVG-Icons werden empfohlen.
+4. Bereite PostInstall/PostRemove Skripte für dein Paket vor. Beispiel:
 
 ```sh
-# reload mime types to register file associations
+# Mime-Typen neu laden, um Dateizuordnungen zu registrieren
 update-mime-database /usr/share/mime
-# reload desktop database to load app in list of available
+# Desktop-Datenbank neu laden, um die App in der Liste der verfügbaren Apps anzuzeigen.
 update-desktop-database /usr/share/applications
-# update icons
+# Icons aktualisieren
 update-icon-caches /usr/share/icons/*
 ```
 
-5. Configure nfpm to use your scripts and files. Example:
+5. Konfiguriere nfpm, um deine Skripte und Dateien zu verwenden. Beispiel:
 
 ```yaml
 name: "wails-open-file"
@@ -186,7 +181,7 @@ contents:
   dst: /usr/share/icons/hicolor/scalable/mimetypes/application-x-wails.svg
 - src: ../testFileIcon.svg
   dst: /usr/share/icons/hicolor/scalable/mimetypes/application-x-test.svg
-# copy icons to Yaru theme as well. For some reason Ubuntu didn't pick up fileicons from hicolor theme
+# Kopiere Symbole auch in das Yaru-Theme. Aus irgendeinem Grund hat Ubuntu die Datei-Icons aus dem hicolor-Theme nicht übernommen.
 - src: ../appicon.svg
   dst: /usr/share/icons/Yaru/scalable/apps/wails-open-file.svg
 - src: ../wailsFileIcon.svg
@@ -198,15 +193,14 @@ scripts:
   postremove: ./postRemove.sh
 ```
 
-6. Build your .deb package using nfpm:
+6. Erstelle dein .deb-Paket mit nfpm:
 
 ```sh
 nfpm pkg --packager deb --target .
 ```
 
-7. Now when your package is installed, your app will be associated with specified file types. When you open file with your app,
-   new instance of app is launched and file path is passed as argument to your app.
-   To handle this you should parse command line arguments in your app. Example:
+7. Nachdem dein Paket installiert ist, wird deine App den angegebenen Dateitypen zugeordnet. Wenn eine Datei mit deiner App geöffnet wird, wird eine neue Instanz der App gestartet und der Dateipfad wird als Argument an deine App übergeben.
+   Um dies zu verarbeiten, solltest du Kommandozeilenargumente in der App parsen. Beispiel:
 
 ```go title="main.go"
 func main() {
@@ -218,8 +212,7 @@ func main() {
 }
 ```
 
-You also can enable single instance lock for your app. In this case, when you open file with your app, new instance of app is not launched
-and arguments are passed to already running instance. Check single instance lock guide for details. Example:
+Du kannst auch Einzel-Instanzsperren für deine App aktivieren. In diesem Fall, wird, wenn die Datei mit deiner App geöffnet wird, keine neue Instanz der App gestartet und Argumente werden an die bereits laufende Instanz übergeben. Überprüfe die Einzel-Instanz sperren Anleitung für Details. Beispiel:
 
 ```go title="main.go"
 func main() {

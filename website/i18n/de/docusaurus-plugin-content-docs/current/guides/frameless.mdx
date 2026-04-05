@@ -1,8 +1,8 @@
-# Frameless Applications
+# Rahmenlose Anwendungen
 
-Wails supports application that have no frames. This can be achieved by using the [frameless](../reference/options.mdx#frameless) field in [Application Options](../reference/options.mdx#application-options).
+Wails unterstützt Anwendungen, die keine Rahmen haben. Dies kann über das Feld [frameless](../reference/options.mdx#frameless) in den [Anwendungsoptionen](../reference/options.mdx#application-options) erreicht werden.
 
-Wails offers a simple solution for dragging the window: Any HTML element that has the CSS style `--wails-draggable:drag` will act as a "drag handle". This property applies to all child elements. If you need to indicate that a nested element should not drag, then use the attribute '--wails-draggable:no-drag' on that element.
+Wails bietet eine einfache Lösung zum Ziehen des Fensters: Jedes HTML-Element, das den CSS-Stil `--wails-draggable:drag` besitzt, fungiert als "Ziehpunkt". Diese Eigenschaft gilt für alle untergeordneten Elemente. Wenn du angeben musst, dass ein verschachteltes Element nicht ziehbar sein soll, dann verwende das Attribut '--wails-draggable:no-drag' auf diesem Element.
 
 ```html
 <html>
@@ -23,7 +23,7 @@ Wails offers a simple solution for dragging the window: Any HTML element that ha
 </html>
 ```
 
-For some projects, using a CSS variable may not be possible due to dynamic styling. In this case, you can use the `CSSDragProperty` and `CSSDragValue` application options to define a property and value that will be used to indicate draggable regions:
+Bei einigen Projekten ist die Verwendung einer CSS-Variable aufgrund des dynamischen Stylings möglicherweise nicht möglich. In diesem Fall kann die Anwendungsoptionen `CSSDragProperty` und `CSSDragValue` verwendet werden, um eine Eigenschaft und einen Wert zu definieren, der zur Angabe von ziehbaren Regionen verwendet wird:
 
 ```go title=main.go
 package main
@@ -80,8 +80,8 @@ func main() {
 </html>
 ```
 
-:::info Fullscreen
+:info Vollbildmodus
 
-If you allow your application to go fullscreen, this drag functionality will be disabled.
+Wenn zugelassen wird, dass die Anwendung im Vollbildmodus geöffnet wird, wird diese Funktion deaktiviert.
 
 :::

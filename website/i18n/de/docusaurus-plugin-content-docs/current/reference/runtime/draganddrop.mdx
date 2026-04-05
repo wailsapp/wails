@@ -6,32 +6,30 @@ sidebar_position: 10
 
 :::
 
-This part of the runtime handles dragging and dropping files and or folders in to the window.<br/>
+Dieser Teil der Laufzeit verarbeitet das Ziehen und Ablegen von Dateien oder Ordnern in das Fenster.<br/>
 
-To enable this functionality you have to set [EnableFileDrop](../../reference/options.mdx#enablefiledrop) to `true`
-in [Application Options](../../reference/options.mdx#drag-and-drop).
+Um diese Funktion zu aktivieren, musst du in den [Anwendungsoptionen](../../reference/options.mdx#drag-and-drop) [EnableFileDrop](../../reference/options.mdx#enablefiledrop) auf `true`
+setzen.
 
 ### OnFileDrop
 
-This method handles the drop event on the window.
+Diese Methode verarbeitet das Drop-Event im Fenster.
 
 Go: `OnFileDrop(ctx context.Context, callback func(x, y int, paths []string))`<br/>
-Calls the callback function with the coordinates inside the window where the drag was released and a slice of absolute file paths.
+Ruft die Callback-Funktion mit den Koordinaten innerhalb des Fensters, an denen der Dragvorgang beendet wurde, und einer Liste absoluter Dateipfade auf.
 
 JS: `OnFileDrop(callback: (x: number, y: number, paths: string[]) => void, useDropTarget: boolean) :void`<br/>
-Calls the callback function with the coordinates inside the window where the drag was released and a slice of absolute file paths.
+Ruft die Callback-Funktion mit den Koordinaten innerhalb des Fensters auf, in dem die Ziehung freigegeben wurde, und ein slice mit den absoluten Dateipfaden auf.
 
-When the `useDropTarget` is `true` in addition to calling the callback when the drop happens, it registers event listeners on
-the window that are listening for the drag coordinates and checks if the mouse is over an element that has the
-[CSSDropProperty](../../reference/options.mdx#cssdropproperty) style. If the element has the required property
-it adds the `wails-drop-target-active` class to the element's class list and removes it when the mouse moves off of it.
+Wenn `useDropTarget` auf `true` gesetzt ist, werden zusätzlich zum Aufruf des Callbacks beim Ablegen Event-Listener am Fenster registriert, die die Drag-Koordinaten überwachen und prüfen, ob sich die Maus über einem Element befindet, welches den [CSSDropProperty](../../reference/options.mdx#cssdropproperty) Stil aufweist. Wenn das Element die erforderliche Eigenschaft
+besitzt, fügt es die `wails-drop-target-active` Klasse zur Klassenliste des Elements hinzu und entfernt sie, wenn sich die Maus davon bewegt.
 
 ### OnFileDropOff
 
-This method removes all registered listeners and handlers for drag and drop events.
+Diese Methode entfernt alle registrierten listener und Handler für Drag & Drop Ereignisse.
 
 Go: `OnFileDropOff(ctx context.Context)`<br/>
-Returns: has no return value.
+Returns: hat keinen Rückgabewert.
 
 JS: `OnFileDropOff(): void`<br/>
-Returns: has no return value.
+Returns: hat keinen Rückgabewert.

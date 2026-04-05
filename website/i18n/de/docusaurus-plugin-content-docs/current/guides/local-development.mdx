@@ -1,36 +1,36 @@
-# Local Development
+# Lokale Entwicklung
 
-## Overview
+## Übersicht
 
-Wails is in constant development and new releases are regularly "tagged". This usually happens when all the newer code on `master` has been tested and confirmed working. If you need a bugfix or feature that has not yet made it to a release, it's possible to use the latest "bleeding edge" version using the following steps:
+Wails ist in ständiger Entwicklung und neue Versionen werden regelmäßig "getagged". Dies geschieht in der Regel, wenn der neuere Code auf `Master` getestet und bestätigt wurde. Wenn du einen Bugfix oder ein Feature brauchst, das es noch nicht zu einer Veröffentlichung gemacht hat, ist es möglich, die neueste Version mit den folgenden Schritten zu verwenden:
 
 - `git clone https://github.com/wailsapp/wails`
 - `cd wails/v2/cmd/wails`
 - `go install`
 
-NOTE: The directory that you cloned the project into will now be called "clonedir".
+HINWEIS: Das Verzeichnis, in das, das Projekt geklont wird, wird nun "clonedir" genannt.
 
-The Wails CLI will now be at the very latest version.
+Das Wails CLI sollte jetzt auf dem neusten Stand sein.
 
-### Updating your project
+### Aktualisierung des Projektes
 
-To update projects to use the latest version of the Wails library, update the project's `go.mod` and ensure the following line is at the bottom of the file:
+Um Projekte zu aktualisieren, damit die neueste Version der Wails Bibliothek verwendet wird, aktualisiere die `go.mod` Datei deines Projektes und stelle sicher, dass die folgende Zeile am unteren Ende der Datei steht:
 
 `replace github.com/wailsapp/wails/v2 => <clonedir>`
 
-Example:
+Beispiel:
 
-On Windows: `replace github.com/wailsapp/wails/v2 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2`
+Unter Windows: `replace github.com/wailsapp/wails/v2 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2`
 
-On 'nix: `replace github.com/wailsapp/wails/v2 => /home/me/projects/wails/v2`
+Auf 'nix: `replace github.com/wailsapp/wails/v2 => /home/me/projects/wails/v2`
 
-To revert to a stable version, run:
+Um zu einer stabilen Version zurückzukehren, führe Folgendes aus:
 
 `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
 
-## Testing a Branch
+## Einen Branch testen
 
-If you want to test a branch, follow the instructions above, but ensure you switch the branch you want to test before installing:
+Wenn du eine Branch testen möchtest, folge den obigen Anweisungen, aber stelle sicher, dass die Branch gewechselt wird, den du vor der Installation testen willst:
 
 - `git clone https://github.com/wailsapp/wails`
 - `cd wails`
@@ -38,11 +38,11 @@ If you want to test a branch, follow the instructions above, but ensure you swit
 - `cd v2/cmd/wails`
 - `go install`
 
-Make sure you [update your project](#updating-your-project) as described above.
+Stelle sicher, dass du [dein Projekt](#updating-your-project) aktualisierst, wie oben beschrieben.
 
-## Testing a PR
+## Testen eines PR
 
-If you want to test a PR, follow the instructions above, but ensure you fetch the PR and switch the branch before installing. Please replace `[IDofThePR]` with the ID of the PR shown on github.com:
+Wenn du einen PR testen möchtest, folge den obigen Anweisungen und stelle sicher, dass du den PR ziehst, bevor du diesen installierst. Bitte ersetze `[IDofThePR]` mit der ID des PR auf github.com:
 
 - `git clone https://github.com/wailsapp/wails`
 - `cd wails`
@@ -52,4 +52,4 @@ If you want to test a PR, follow the instructions above, but ensure you fetch th
 - `cd v2/cmd/wails`
 - `go install`
 
-Make sure you [update your project](#updating-your-project) as described above.
+Stelle sicher, dass du [dein Projekt](#updating-your-project) aktualisierst, wie oben beschrieben.

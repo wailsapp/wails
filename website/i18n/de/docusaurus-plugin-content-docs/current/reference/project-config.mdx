@@ -2,9 +2,9 @@
 sidebar_position: 5
 ---
 
-# Project Config
+# Projekt-Konfiguration
 
-The project config resides in the `wails.json` file in the project directory. The structure of the config is:
+Die Projekt-Konfiguration befindet sich in der `wails.json` Datei im Projektverzeichnis. Die Struktur der Konfiguration sieht wie folgt aus:
 
 ```json5
 {
@@ -122,9 +122,9 @@ The project config resides in the `wails.json` file in the project directory. Th
 }
 ```
 
-This file is read by the Wails CLI when running `wails build` or `wails dev`.
+Diese Datei wird vom Wails CLI gelesen, wenn `wails build` oder `wails dev` ausgeführt wird.
 
-The `assetdir`, `reloaddirs`, `wailsjsdir`, `debounceMS`, `devserver` and `frontenddevserverurl` flags in `wails build/dev` will update the project config
-and thus become defaults for subsequent runs.
+Die Flags `assetdir`, `reloaddirs`, `wailsjsdir`, `debounceMS`, `devserver` und `frontenddevserverurl` in `wails build/dev` aktualisieren die Projektkonfiguration
+und werden daher als Standard für spätere Ausführungen verwendet.
 
-The JSON Schema for this file is located [here](https://wails.io/schemas/config.v2.json).
+Das JSON Schema für diese Datei befindet sich [hier](https://wails.io/schemas/config.v2.json).

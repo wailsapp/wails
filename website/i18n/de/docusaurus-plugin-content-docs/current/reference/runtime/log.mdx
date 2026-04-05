@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Log
 
-The Wails runtime provides a logging mechanism that may be called from Go or JavaScript. Like most loggers, there are a number of log levels:
+Die Wails Laufzeit bietet einen Logging-Mechanismus, der von Go oder JavaScript aufgerufen werden kann. Wie die meisten Logger gibt es eine Reihe von Log-Ebenen:
 
 - Trace
 - Debug
@@ -13,109 +13,109 @@ The Wails runtime provides a logging mechanism that may be called from Go or Jav
 - Error
 - Fatal
 
-The logger will output any log message at the current, or higher, log level. Example: The `Debug` log level will output all messages except `Trace` messages.
+Der Logger gibt jede Logmeldung auf der aktuellen oder höheren Log-Ebene aus. Beispiel: Die `Debug` Log Ebene gibt alle Nachrichten außer `Trace` Nachrichten aus.
 
 ### LogPrint
 
-Logs the given message as a raw message.
+Protokolliert die gegebene Nachricht als Rohnachricht.
 
 Go: `LogPrint(ctx context.Context, message string)`<br/> JS: `LogPrint(message: string)`
 
 ### LogPrintf
 
-Logs the given message as a raw message.
+Protokolliert die gegebene Nachricht als Rohnachricht.
 
 Go: `LogPrintf(ctx context.Context, format string, args ...interface{})`<br/>
 
 ### LogTrace
 
-Logs the given message at the `Trace` log level.
+Protokolliert die angegebene Nachricht im `Trace` Log-Level.
 
 Go: `LogTrace(ctx context.Context, message string)`<br/> JS: `LogTrace(message: string)`
 
 ### LogTracef
 
-Logs the given message at the `Trace` log level.
+Protokolliert die angegebene Nachricht im `Trace` Log-Level.
 
 Go: `LogTracef(ctx context.Context, format string, args ...interface{})`<br/>
 
 ### LogDebug
 
-Logs the given message at the `Debug` log level.
+Protokolliert die gegebene Nachricht im `Debug` Log-Level.
 
 Go: `LogDebug(ctx context.Context, message string)`<br/> JS: `LogDebug(message: string)`
 
 ### LogDebugf
 
-Logs the given message at the `Debug` log level.
+Protokolliert die gegebene Nachricht im `Debug` Log-Level.
 
 Go: `LogDebugf(ctx context.Context, format string, args ...interface{})`<br/>
 
 ### LogInfo
 
-Logs the given message at the `Info` log level.
+Protokolliert die angegebene Nachricht im `Info` Log-Level.
 
 Go: `LogInfo(ctx context.Context, message string)`<br/> JS: `LogInfo(message: string)`
 
 ### LogInfof
 
-Logs the given message at the `Info` log level.
+Protokolliert die angegebene Nachricht im `Info` Log-Level.
 
 Go: `LogInfof(ctx context.Context, format string, args ...interface{})`<br/>
 
 ### LogWarning
 
-Logs the given message at the `Warning` log level.
+Protokolliert die gegebene Nachricht auf der `Warnungs-` Log-Ebene.
 
 Go: `LogWarning(ctx context.Context, message string)`<br/> JS: `LogWarning(message: string)`
 
 ### LogWarningf
 
-Logs the given message at the `Warning` log level.
+Protokolliert die gegebene Nachricht auf der `Warnungs-` Log-Ebene.
 
 Go: `LogWarningf(ctx context.Context, format string, args ...interface{})`<br/>
 
 ### LogError
 
-Logs the given message at the `Error` log level.
+Protokolliert die angegebene Nachricht auf der `Error` Log-Ebene.
 
 Go: `LogError(ctx context.Context, message string)`<br/> JS: `LogError(message: string)`
 
 ### LogErrorf
 
-Logs the given message at the `Error` log level.
+Protokolliert die angegebene Nachricht auf der `Error` Log-Ebene.
 
 Go: `LogErrorf(ctx context.Context, format string, args ...interface{})`<br/>
 
 ### LogFatal
 
-Logs the given message at the `Fatal` log level.
+Protokolliert die angegebene Nachricht im `Fatal` Log-Level.
 
 Go: `LogFatal(ctx context.Context, message string)`<br/> JS: `LogFatal(message: string)`
 
 ### LogFatalf
 
-Logs the given message at the `Fatal` log level.
+Protokolliert die angegebene Nachricht im `Fatal` Log-Level.
 
 Go: `LogFatalf(ctx context.Context, format string, args ...interface{})`<br/>
 
 ### LogSetLogLevel
 
-Sets the log level. In JavaScript, the number relates to the following log levels:
+Legt den Log-Level fest. In JavaScript bezieht sich die Zahl auf die folgenden Log-Ebenen:
 
-| Value | Log Level |
-| ----- | --------- |
-| 1     | Trace     |
-| 2     | Debug     |
-| 3     | Info      |
-| 4     | Warning   |
-| 5     | Error     |
+| Wert | Log-Level |
+| ---- | --------- |
+| 1    | Trace     |
+| 2    | Debug     |
+| 3    | Info      |
+| 4    | Warning   |
+| 5    | Error     |
 
 Go: `LogSetLogLevel(ctx context.Context, level logger.LogLevel)`<br/> JS: `LogSetLogLevel(level: number)`
 
-## Using a Custom Logger
+## Benutze einen eigenen Logger
 
-A custom logger may be used by providing it using the [Logger](../options.mdx#logger) application option. The only requirement is that the logger implements the `logger.Logger` interface defined in `github.com/wailsapp/wails/v2/pkg/logger`:
+Ein benutzerdefinierter Logger kann verwendet werden, indem er die [Logger](../options.mdx#logger) Anwendungsoption verwendet. Die einzige Voraussetzung ist, dass der Logger die `logger.Logger` Schnittstelle implementiert, die in `github.com/wailsapp/wails/v2/pkg/logger` definiert ist:
 
 ```go title="logger.go"
 type Logger interface {

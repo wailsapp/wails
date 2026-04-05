@@ -2,7 +2,7 @@
 sidebar_position: 20
 ---
 
-# Dogs API
+# Hunde API
 
 ```mdx-code-block
 <div class="text--center">
@@ -17,25 +17,25 @@ sidebar_position: 20
 
 :::note
 
-This tutorial has been kindly provided by [@tatadan](https://twitter.com/tatadan) and forms part of their [Wails Examples Repository](https://github.com/tataDan/wails-v2-examples).
+Dieses Tutorial wurde freundlicherweise von [@tatadan](https://twitter.com/tatadan) bereitgestellt und ist Teil des [Wails Beispiel Repository](https://github.com/tataDan/wails-v2-examples).
 
 :::
 
-In this tutorial we are going to develop an application that retrieves photos of dogs from the web and then displays them.
+In diesem Tutorial werden wir eine Anwendung entwickeln, die Fotos von Hunden aus dem Web abruft und diese dann anzeigt.
 
-### Create the project
+### Das Projekt erstellen
 
-Let's create the application. From a terminal enter: `wails init -n dogs-api -t svelte`
+Erstellen wir die Anwendung. Gebe folgendes im Terminal deiner Wahl ein: `wails init -n dogs-api -t svelte`
 
-Note: We could optionally add `-ide vscode` or `-ide goland` to the end of this command if you wanted to add IDE support.
+Notiz: Wir könnten optional `-ide vscode` oder `-ide goland` zum Ende des Befehls hinzufügen, sollten wir IDE-Support hinzufügen wollten.
 
-Now let's `cd dogs-api` and start editing the project files.
+Jetzt geben wir `cd dogs-api` ein und starten mit dem Editieren der Projektdateien.
 
-### Remove unused code
+### Unbenutzten Code entfernen
 
-We will start by removing some elements that we know we will not use:
+Wir werden damit beginnen, einige Elemente zu entfernen, von denen wir wissen, dass wir sie nicht verwenden werden:
 
-- Open `app.go` and remove the following lines:
+- Öffne `app.go` und entferne die folgenden Zeilen:
 
 ```go
 // Greet returns a greeting for the given name
@@ -44,14 +44,14 @@ func (a *App) Greet(name string) string {
 }
 ```
 
-- Open `frontend/src/App.svelte` and delete all lines.
-- Delete the `frontend/src/assets/images/logo-universal.png` file
+- Öffne `frontend/src/App.svelte` und lösche alle Zeilen.
+- Lösche die `frontend/src/assets/images/logo-universal.png` Datei
 
-### Creating our application
+### Erstellen der Anwendung
 
-Now let's add our new Go code.
+Jetzt fügen wir unseren neuen Go-Code hinzu.
 
-Add the following struct declarations to `app.go` before the function definitions:
+Füge vor den Funktionsdefinitionen folgende struct Deklarationen zu `app.go` hinzu:
 
 ```go
 type RandomImage struct {
@@ -70,7 +70,7 @@ type ImagesByBreed struct {
 }
 ```
 
-Add the following functions to `app.go` (perhaps after the existing function definitions):
+Füge die folgenden Funktionen zu `app.go` hinzu (nach den vorhandenen Funktionsdefinitionen):
 
 ```go
 func (a *App) GetRandomImageUrl() string {
@@ -135,7 +135,7 @@ func (a *App) GetImageUrlsByBreed(breed string) []string {
 }
 ```
 
-Modify the `import` section of `app.go` to look like this:
+Ändere den `Import` Abschnitt von `app.go`, wie folgt ab:
 
 ```go
 import (
@@ -149,7 +149,7 @@ import (
 )
 ```
 
-Add the following lines to `frontend/src/App.svelte`:
+Füge folgende Zeilen zu `frontend/src/App.svelte` hinzu:
 
 <!-- prettier-ignore-start -->
 ```html
@@ -236,10 +236,10 @@ Add the following lines to `frontend/src/App.svelte`:
 ```
 <!-- prettier-ignore-end -->
 
-### Testing the application
+### Testen der Anwendung
 
-To generate the bindings and test the application, run `wails dev`.
+Um die Verknüpfungen zu generieren und die Anwendung zu testen, führe `wails dev` aus.
 
-### Compiling the application
+### Kompilieren der Anwendung
 
-To compile the application to a single, production grade binary, run `wails build`.
+Um die Anwendung in eine einzelne Anwendung zu kompilieren, führe `wails build` aus.
