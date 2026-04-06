@@ -1,31 +1,30 @@
-# Single Instance Lock
+# Einzelinstanz-Sperre
 
-Single instance lock is a mechanism that allows you to prevent multiple instances of your app from running at the same time.
-It is useful for apps that are designed to open files from the command line or from the OS file explorer.
+Die Einzelinstanz-Sperre ist ein Mechanismus, mit dem verhindert werden kann, dass mehrere Instanzen der App zur gleichen Zeit laufen.
+Es ist nützlich für Apps, die darauf ausgelegt sind, Dateien von der Kommandozeile oder vom OS-Datei-Explorer aus zu öffnen.
 
-## Important
+## Wichtig
 
-Single Instance Lock does not implement a secure communications protocol between instances. When using single instance lock,
-your app should treat any data passed to it from second instance callback as untrusted.
-You should verify that args that you receive are valid and don't contain any malicious data.
+Die Einzelinstanz-Sperre implementiert kein sicheres Kommunikationsprotokoll zwischen Instanzen. Wenn Einzelinstanz-Sperren verwendet werden, sollte die App alle Daten, die von einer zweiten Instanz über einen Callback geliefert werden, als nicht vertrauenswürdig behandeln.
+Es sollte sichergestellt, dass die empfangenen Args gültig sind und keine bösartigen Daten enthalten.
 
-## How it works
+## So funktioniert es
 
-Windows: Single instance lock is implemented using a named mutex. The mutex name is generated from the unique id that you provide. Data is passed to the first instance via a shared window using [SendMessage](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage)
-macOS: Single instance lock is implemented using a named mutex. The mutex name is generated from the unique id that you provide. Data is passed to the first instance via [NSDistributedNotificationCenter](https://developer.apple.com/documentation/foundation/nsdistributednotificationcenter)
-Linux: Single instance lock is implemented using [dbus](https://www.freedesktop.org/wiki/Software/dbus/). The dbus name is generated from the unique id that you provide. Data is passed to the first instance via [dbus](https://www.freedesktop.org/wiki/Software/dbus/)
+Windows: Einzelinstanz-Sperre wird mit einem benannten Mutex implementiert. Der Mutex-Name wird aus einer angegebenen eindeutigen Id generiert. Daten werden in einem geteilten Fenster über [SendMessage](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage) an die erste Instanz gesendet.
+macOS: Die Einzelinstanz-Sperre wird mit einem benannten Mutex implementiert. Der Mutex-Name wird aus einer angegebenen eindeutigen Id generiert. Daten werden an die erste Instanz über [NSDistributedNotificationCenter](https://developer.apple.com/documentation/foundation/nsdistributednotificationcenter) übergeben.
+Linux: Eine Einzelinstanz-Sperre wird mittels [dbus](https://www.freedesktop.org/wiki/Software/dbus/) implementiert. Der Mutex-Name wird aus einer angegebenen eindeutigen Id generiert. Daten werden an die erste Instanz über [dbus](https://www.freedesktop.org/wiki/Software/dbus/) weitergegeben
 
-## Usage
+## Benutzung
 
-When creating your app, you can enable single instance lock by passing a `SingleInstanceLock` struct to the `App` struct.
-Use the `UniqueId` field to specify a unique id for your app.
-This id is used to generate the mutex name on Windows and macOS and the dbus name on Linux. Use a UUID to ensure that the id is unique.
-The `OnSecondInstanceLaunch` field is used to specify a callback that is called when a second instance of your app is launched.
-The callback receives a `SecondInstanceData` struct that contains the command line arguments passed to the second instance and the working directory of the second instance.
+Beim Erstellen deiner App kannst du einzelne Instanzsperren aktivieren, indem du einen `SingleInstanceLock` struct an die `App` struct übergibst.
+Benutze das Feld `UniqueId` um eine eindeutige Id für deine App anzugeben.
+Diese Id wird verwendet, um den Mutex-Namen unter Windows und macOS und den dbus-Namen unter Linux zu erzeugen. Verwende eine UUID, um sicherzustellen, dass die Id einzigartig ist.
+Das Feld „OnSecondInstanceLaunch“ wird verwendet, um einen Callback anzugeben, der aufgerufen wird, wenn eine zweite Instanz deiner App gestartet wird.
+Der Callback erhält einen `SecondInstanceData` Struct der die an die zweite Instanz übergebenen Kommandozeilenargumente und das Arbeitsverzeichnis der zweiten Instanz enthält.
 
-Note that OnSecondInstanceLaunch don't trigger windows focus.
-You need to call `runtime.WindowUnminimise` and `runtime.Show` to bring your app to the front.
-Note that on linux systems window managers may prevent your app from being brought to the front to avoid stealing focus.
+Beachte, dass OnSecondInstanceLaunch keinen Fensterfokus auslöst.
+Du musst `runtime.WindowUnminimise` und `runtime.Show` aufrufen, um deine App nach vorne zu bringen.
+Beachte, dass Fenstermanager auf Linux-Systemen verhindern können, dass die App nach vorne gebracht wird, um den Fokus nicht zu stehlen.
 
 ```go title="main.go"
 var wailsContext *context.Context

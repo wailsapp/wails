@@ -1,6 +1,6 @@
 {
   "link.title.Docs": {
-    "message": "Docs",
+    "message": "Dokumentation",
     "description": "The title of the footer links column with title=Docs in the footer"
   },
   "link.title.Community": {
@@ -8,19 +8,19 @@
     "description": "The title of the footer links column with title=Community in the footer"
   },
   "link.title.More": {
-    "message": "More",
+    "message": "Mehr",
     "description": "The title of the footer links column with title=More in the footer"
   },
   "link.item.label.Introduction": {
-    "message": "Introduction",
+    "message": "Einführung",
     "description": "The label of footer link with label=Introduction linking to /docs/introduction"
   },
   "link.item.label.Getting Started": {
-    "message": "Getting Started",
+    "message": "Erste Schritte",
     "description": "The label of footer link with label=Getting Started linking to /docs/gettingstarted/installation"
   },
   "link.item.label.Changelog": {
-    "message": "Changelog",
+    "message": "Änderungsverlauf",
     "description": "The label of footer link with label=Changelog linking to /changelog"
   },
   "link.item.label.Github": {
@@ -36,7 +36,7 @@
     "description": "The label of footer link with label=Slack linking to https://gophers.slack.com/messages/CJ4P9F7MZ/"
   },
   "link.item.label.Slack invite": {
-    "message": "Slack invite",
+    "message": "Slack Einladung",
     "description": "The label of footer link with label=Slack invite linking to https://invite.slack.golangbridge.org/"
   },
   "link.item.label.Blog": {
@@ -44,7 +44,7 @@
     "description": "The label of footer link with label=Blog linking to /blog"
   },
   "copyright": {
-    "message": "Copyright © 2025 Lea Anthony",
+    "message": "Copyright © 2022 Lea Anthony",
     "description": "The footer copyright"
   },
   "link.item.label.Awesome": {

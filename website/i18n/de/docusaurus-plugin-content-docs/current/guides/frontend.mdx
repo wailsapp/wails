@@ -1,10 +1,10 @@
 # Frontend
 
-## Script Injection
+## Skript-Injektion
 
-When Wails serves your `index.html`, by default, it will inject 2 script entries into the `<body>` tag to load `/wails/ipc.js` and `/wails/runtime.js`. These files install the bindings and runtime respectively.
+Wenn Wails die `index.html` served, werden standardmäßig zwei Skript-Einträge in die `<body>` tags eingefügt, um `/wails/ipc.js` und `/wails/runtime.js` zu laden. Diese Dateien installieren die Verknüpfungen bzw. die Laufzeit.
 
-The code below shows where these are injected by default:
+Der folgende Code zeigt an, wo diese standardmäßig injiziert werden:
 
 ```html
 <html>
@@ -28,25 +28,25 @@ The code below shows where these are injected by default:
 </html>
 ```
 
-### Overriding Default Script Injection
+### Standardskript-Injektion überschreiben
 
-To provide more flexibility to developers, there is a meta tag that may be used to customise this behaviour:
+Um den Entwicklern mehr Flexibilität zu bieten, gibt es einen Meta-Tag, der verwendet werden kann, um dieses Verhalten anzupassen:
 
 ```html
 <meta name="wails-options" content="[options]" />
 ```
 
-The options are as follows:
+Die Optionen sind folgende:
 
-| Value               | Description                                      |
-| ------------------- | ------------------------------------------------ |
-| noautoinjectruntime | Disable the autoinjection of `/wails/runtime.js` |
-| noautoinjectipc     | Disable the autoinjection of `/wails/ipc.js`     |
-| noautoinject        | Disable all autoinjection of scripts             |
+| Wert                | Beschreibung                                                       |
+| ------------------- | ------------------------------------------------------------------ |
+| noautoinjectruntime | Deaktiviert die automatische Injektion von der `/wails/runtime.js` |
+| noautoinjectipc     | Deaktiviert die automatische Injektion von der `/wails/ipc.js`     |
+| noautoinject        | Deaktiviert die automatische Injektion von allen Skripts           |
 
-Multiple options may be used provided they are comma separated.
+Mehrere Optionen können verwendet werden, sofern sie durch Kommata getrennt werden.
 
-This code is perfectly valid and operates the same as the autoinjection version:
+Dieser Code ist vollkommen gültig und funktioniert genauso wie die autoinjection Version:
 
 ```html
 <html>
