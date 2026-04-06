@@ -1,42 +1,42 @@
-# Single Instance Lock
+# Verrouillage Instance unique
 
-Single instance lock is a mechanism that allows you to prevent multiple instances of your app from running at the same time.
-It is useful for apps that are designed to open files from the command line or from the OS file explorer.
+Le verrouillage par instance unique est un mécanisme qui vous permet d'empêcher plusieurs instances de votre application de fonctionner en même temps.
+Il est utile pour les applications qui sont conçues pour ouvrir des fichiers depuis la ligne de commande ou depuis l'explorateur de fichiers du système d'exploitation.
 
 ## Important
 
-Single Instance Lock does not implement a secure communications protocol between instances. When using single instance lock,
-your app should treat any data passed to it from second instance callback as untrusted.
-You should verify that args that you receive are valid and don't contain any malicious data.
+Le verrouillage par instance unique n'implémente pas de protocole de communication sécurisé entre instances. Lorsque vous utilisez le verrouillage d'une instance unique,
+votre application devrait traiter toutes les données qui lui sont transmises à partir de la deuxième instance de callback comme étant des données non fiables.
+Vous devriez vérifier que les arguments que vous recevez sont valides et ne contiennent aucunes données malveillantes.
 
-## How it works
+## Comment ça fonctionne
 
-Windows: Single instance lock is implemented using a named mutex. The mutex name is generated from the unique id that you provide. Data is passed to the first instance via a shared window using [SendMessage](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage)
-macOS: Single instance lock is implemented using a named mutex. The mutex name is generated from the unique id that you provide. Data is passed to the first instance via [NSDistributedNotificationCenter](https://developer.apple.com/documentation/foundation/nsdistributednotificationcenter)
-Linux: Single instance lock is implemented using [dbus](https://www.freedesktop.org/wiki/Software/dbus/). The dbus name is generated from the unique id that you provide. Data is passed to the first instance via [dbus](https://www.freedesktop.org/wiki/Software/dbus/)
+Windows: Le verrou de l'instance unique est implémenté en utilisant un mutex. Le nom du mutex est généré à partir de l'identifiant unique que vous fournissez. Les données sont passées à la première instance via une fenêtre partagée à l'aide de [SendMessage](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage)
+macOS : Le verrou de l'instance unique est implémenté à l'aide d'un mutex. Le nom du mutex est généré à partir de l'identifiant unique que vous fournissez. Les données sont passées à la première instance via [NSDistributedNotificationCenter](https://developer.apple.com/documentation/foundation/nsdistributednotificationcenter)
+Linux : le verrou de l'instance unique est implémenté en utilisant [dbus](https://www.freedesktop.org/wiki/Software/dbus/). Le nom de l'instance dbus est généré à partir de l'identifiant unique que vous fournissez. Les données sont passées à la première instance via [dbus](https://www.freedesktop.org/wiki/Software/dbus/)
 
-## Usage
+## Utilisation
 
-When creating your app, you can enable single instance lock by passing a `SingleInstanceLock` struct to the `App` struct.
-Use the `UniqueId` field to specify a unique id for your app.
-This id is used to generate the mutex name on Windows and macOS and the dbus name on Linux. Use a UUID to ensure that the id is unique.
-The `OnSecondInstanceLaunch` field is used to specify a callback that is called when a second instance of your app is launched.
-The callback receives a `SecondInstanceData` struct that contains the command line arguments passed to the second instance and the working directory of the second instance.
+Lors de la création de votre application, vous pouvez activer le verrouillage d'une instance unique en passant un struct `SingleInstanceLock` à la structure `App`.
+Utilisez le champ `UniqueId` pour spécifier un id unique pour votre application.
+Cet id est utilisé pour générer le nom de mutex sous Windows et macOS et le nom dbus sous Linux. Utilisez un UUID pour vous assurer que l'id est unique.
+Le champ `OnSecondInstanceLaunch` est utilisé pour spécifier un callback qui sera appelé quand une seconde instance de votre application est lancée.
+Le callback reçoit un struct `SecondInstanceData` qui contient les arguments de ligne de commande passés à la seconde instance et le chemin vers le répertoire de travail de la seconde instance.
 
-Note that OnSecondInstanceLaunch don't trigger windows focus.
-You need to call `runtime.WindowUnminimise` and `runtime.Show` to bring your app to the front.
-Note that on linux systems window managers may prevent your app from being brought to the front to avoid stealing focus.
+Notez que OnSecondInstanceLaunch ne déclenche pas le focus sur les fenêtres.
+Vous devez appeler `runtime.WindowUnminimise` et `runtime.Show` pour amener votre application au front.
+Notez que sur linux les gestionnaires de fenêtres peuvent empêcher votre application d'être mise au premier plan pour éviter de voler le focus.
 
 ```go title="main.go"
 var wailsContext *context.Context
 
-// NewApp creates a new App application struct
+// NewApp crées une nouvelle instance d'App
 func NewApp() *App {
 	return &App{}
 }
 
-// startup is called when the app starts. The context is saved
-// so we can call the runtime methods
+// startup est appelé quand l'app démarre. Le context est sauvegardé,
+// donc on peut appeler les méthodes runtime
 func (a *App) startup(ctx context.Context) {
 	wailsContext = &ctx
 }
@@ -52,10 +52,10 @@ func (a *App) onSecondInstanceLaunch(secondInstanceData options.SecondInstanceDa
 }
 
 func main() {
-	// Create an instance of the app structure
+	// Créé l'instance de l'app
 	app := NewApp()
 
-	// Create application with options
+	// Créé l'application avec les options
 	err := wails.Run(&options.App{
 		Title:  "wails-open-file",
 		Width:  1024,
