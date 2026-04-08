@@ -115,23 +115,59 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
     WriteUninstaller "$INSTDIR\uninstall.exe"
 
     SetRegView 64
-    WriteRegStr HKLM "${UNINST_KEY}" "Publisher" "${INFO_COMPANYNAME}"
-    WriteRegStr HKLM "${UNINST_KEY}" "DisplayName" "${INFO_PRODUCTNAME}"
-    WriteRegStr HKLM "${UNINST_KEY}" "DisplayVersion" "${INFO_PRODUCTVERSION}"
-    WriteRegStr HKLM "${UNINST_KEY}" "DisplayIcon" "$INSTDIR\${PRODUCT_EXECUTABLE}"
-    WriteRegStr HKLM "${UNINST_KEY}" "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
-    WriteRegStr HKLM "${UNINST_KEY}" "QuietUninstallString" "$\"$INSTDIR\uninstall.exe$\" /S"
+    !ifdef WAILS_INSTALL_SCOPE
+      !if "${WAILS_INSTALL_SCOPE}" == "user"
+        WriteRegStr HKCU "${UNINST_KEY}" "Publisher" "${INFO_COMPANYNAME}"
+        WriteRegStr HKCU "${UNINST_KEY}" "DisplayName" "${INFO_PRODUCTNAME}"
+        WriteRegStr HKCU "${UNINST_KEY}" "DisplayVersion" "${INFO_PRODUCTVERSION}"
+        WriteRegStr HKCU "${UNINST_KEY}" "DisplayIcon" "$INSTDIR\${PRODUCT_EXECUTABLE}"
+        WriteRegStr HKCU "${UNINST_KEY}" "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
+        WriteRegStr HKCU "${UNINST_KEY}" "QuietUninstallString" "$\"$INSTDIR\uninstall.exe$\" /S"
+      !else
+        WriteRegStr HKLM "${UNINST_KEY}" "Publisher" "${INFO_COMPANYNAME}"
+        WriteRegStr HKLM "${UNINST_KEY}" "DisplayName" "${INFO_PRODUCTNAME}"
+        WriteRegStr HKLM "${UNINST_KEY}" "DisplayVersion" "${INFO_PRODUCTVERSION}"
+        WriteRegStr HKLM "${UNINST_KEY}" "DisplayIcon" "$INSTDIR\${PRODUCT_EXECUTABLE}"
+        WriteRegStr HKLM "${UNINST_KEY}" "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
+        WriteRegStr HKLM "${UNINST_KEY}" "QuietUninstallString" "$\"$INSTDIR\uninstall.exe$\" /S"
+      !endif
+    !else
+        WriteRegStr HKLM "${UNINST_KEY}" "Publisher" "${INFO_COMPANYNAME}"
+        WriteRegStr HKLM "${UNINST_KEY}" "DisplayName" "${INFO_PRODUCTNAME}"
+        WriteRegStr HKLM "${UNINST_KEY}" "DisplayVersion" "${INFO_PRODUCTVERSION}"
+        WriteRegStr HKLM "${UNINST_KEY}" "DisplayIcon" "$INSTDIR\${PRODUCT_EXECUTABLE}"
+        WriteRegStr HKLM "${UNINST_KEY}" "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
+        WriteRegStr HKLM "${UNINST_KEY}" "QuietUninstallString" "$\"$INSTDIR\uninstall.exe$\" /S"
+    !endif
 
     ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
     IntFmt $0 "0x%08X" $0
-    WriteRegDWORD HKLM "${UNINST_KEY}" "EstimatedSize" "$0"
+
+    !ifdef WAILS_INSTALL_SCOPE
+      !if "${WAILS_INSTALL_SCOPE}" == "user"
+        WriteRegDWORD HKCU "${UNINST_KEY}" "EstimatedSize" "$0"
+      !else
+        WriteRegDWORD HKLM "${UNINST_KEY}" "EstimatedSize" "$0"
+      !endif
+    !else
+        WriteRegDWORD HKLM "${UNINST_KEY}" "EstimatedSize" "$0"
+    !endif
 !macroend
 
 !macro wails.deleteUninstaller
     Delete "$INSTDIR\uninstall.exe"
 
     SetRegView 64
-    DeleteRegKey HKLM "${UNINST_KEY}"
+
+    !ifdef WAILS_INSTALL_SCOPE
+      !if "${WAILS_INSTALL_SCOPE}" == "user"
+        DeleteRegKey HKCU "${UNINST_KEY}"
+      !else
+        DeleteRegKey HKLM "${UNINST_KEY}"
+      !endif
+    !else
+        DeleteRegKey HKLM "${UNINST_KEY}"
+    !endif
 !macroend
 
 !macro wails.setShellContext
@@ -183,7 +219,6 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
   ; Backup the previously associated file class
   ReadRegStr $R0 SHELL_CONTEXT "Software\Classes\.${EXT}" ""
   WriteRegStr SHELL_CONTEXT "Software\Classes\.${EXT}" "${FILECLASS}_backup" "$R0"
-
   WriteRegStr SHELL_CONTEXT "Software\Classes\.${EXT}" "" "${FILECLASS}"
 
   WriteRegStr SHELL_CONTEXT "Software\Classes\${FILECLASS}" "" `${DESCRIPTION}`
