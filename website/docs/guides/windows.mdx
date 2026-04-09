@@ -75,3 +75,59 @@ cmd.Start()
 
 Solution provided by [sithembiso](https://github.com/sithembiso) on the
 [discussions board](https://github.com/wailsapp/wails/discussions/1734#discussioncomment-3386172).
+
+## UAC Execution Level
+
+Windows applications can request specific User Account Control (UAC) execution levels through the application manifest. Wails supports configuring UAC execution levels that will persist when your application is distributed to other machines.
+
+### Configuring Execution Level
+
+You can configure the UAC execution level in your `wails.json` project configuration:
+
+```json
+{
+  "info": {
+    "companyName": "My Company",
+    "productName": "My App",
+    "productVersion": "1.0.0",
+    "windows": {
+      "executionLevel": "requireAdministrator"
+    }
+  }
+}
+```
+
+### Supported Execution Levels
+
+| Level | Description |
+|-------|-------------|
+| `requireAdministrator` | The application requires administrator privileges and will prompt for elevation |
+| `highestAvailable` | The application runs with the highest privileges available to the user |
+| `asInvoker` | The application runs with the same privileges as the calling process (default behavior) |
+
+### Example: Admin-Required Application
+
+For applications that need administrator privileges (e.g., system utilities, installers):
+
+```json
+{
+  "name": "SystemTool",
+  "info": {
+    "companyName": "My Company",
+    "productName": "System Administration Tool",
+    "productVersion": "1.0.0",
+    "windows": {
+      "executionLevel": "requireAdministrator"
+    }
+  }
+}
+```
+
+When built, this application will:
+- Display a UAC prompt when launched on Windows
+- Request administrator privileges before starting
+- Persist this behavior when copied to other machines
+
+### Backward Compatibility
+
+If no `executionLevel` is specified, no UAC requirements are added to the manifest, maintaining the default Windows behavior where applications run with the same privileges as the launching process.
