@@ -9,6 +9,10 @@ tasks:
 
   install:frontend:deps:
     summary: Install frontend dependencies
+    cmds:
+      - task: install:frontend:deps:{{.Opn}}.PACKAGE_MANAGER{{.Cls}}
+
+  install:frontend:deps:npm:
     dir: frontend
     sources:
       - package.json
@@ -21,8 +25,48 @@ tasks:
     cmds:
       - npm install
 
+  install:frontend:deps:bun:
+    dir: frontend
+    sources:
+      - package.json
+      - bun.lock
+      - bun.lockb
+    generates:
+      - node_modules
+    preconditions:
+      - sh: bun --version
+        msg: "bun not found"
+    cmds:
+      - bun install
+
+  install:frontend:deps:pnpm:
+    dir: frontend
+    sources:
+      - package.json
+      - pnpm-lock.yaml
+    generates:
+      - node_modules
+    preconditions:
+      - sh: pnpm --version
+        msg: "pnpm not found"
+    cmds:
+      - pnpm install
+
+  install:frontend:deps:yarn:
+    dir: frontend
+    sources:
+      - package.json
+      - yarn.lock
+    status:
+      - test -d node_modules || test -f .pnp.cjs
+    preconditions:
+      - sh: yarn --version
+        msg: "yarn not found"
+    cmds:
+      - yarn install
+
   build:frontend:
-    label: build:frontend (DEV={{ "{{.DEV}}" }})
+    label: build:frontend (DEV={{.Opn}}.DEV{{.Cls}} RUNNER={{.Opn}}.PACKAGE_MANAGER{{.Cls}})
     summary: Build the frontend project
     dir: frontend
     sources:
@@ -37,12 +81,48 @@ tasks:
           BUILD_FLAGS:
             ref: .BUILD_FLAGS
     cmds:
-      - npm run {{ "{{.BUILD_COMMAND}}" }} -q
+      - task: frontend:run
+        vars:
+          SCRIPT: '{{.Opn}}if eq .DEV "true"{{.Cls}}build:dev{{.Opn}}else{{.Cls}}build{{.Opn}}end{{.Cls}}'
     env:
-      PRODUCTION: {{ "'{{if eq .DEV \"true\"}}false{{else}}true{{end}}'" }}
-    vars:
-      BUILD_COMMAND: {{ "'{{if eq .DEV \"true\"}}build:dev{{else}}build{{end}}'" }}
+      PRODUCTION: '{{.Opn}}if eq .DEV "true"{{.Cls}}false{{.Opn}}else{{.Cls}}true{{.Opn}}end{{.Cls}}'
 
+  frontend:run:
+    summary: Run a frontend script with selected runner
+    cmds:
+      - task: frontend:run:{{.Opn}}.PACKAGE_MANAGER{{.Cls}}
+        vars:
+          SCRIPT: "{{.Opn}}.SCRIPT{{.Cls}}"
+    vars:
+      SCRIPT: "{{.Opn}}.SCRIPT{{.Cls}}"
+
+  frontend:run:npm:
+    dir: frontend
+    cmds:
+      - npm run {{.Opn}}.SCRIPT{{.Cls}} -q
+    vars:
+      SCRIPT: "{{.Opn}}.SCRIPT{{.Cls}}"
+
+  frontend:run:yarn:
+    dir: frontend
+    cmds:
+      - yarn {{.Opn}}.SCRIPT{{.Cls}}
+    vars:
+      SCRIPT: "{{.Opn}}.SCRIPT{{.Cls}}"
+
+  frontend:run:pnpm:
+    dir: frontend
+    cmds:
+      - pnpm run {{.Opn}}.SCRIPT{{.Cls}}
+    vars:
+      SCRIPT: "{{.Opn}}.SCRIPT{{.Cls}}"
+
+  frontend:run:bun:
+    dir: frontend
+    cmds:
+      - bun run {{.Opn}}.SCRIPT{{.Cls}}
+    vars:
+      SCRIPT: "{{.Opn}}.SCRIPT{{.Cls}}"
 
   frontend:vendor:puppertino:
     summary: Fetches Puppertino CSS into frontend/public for consistent mobile styling
@@ -80,8 +160,9 @@ tasks:
         fi
 
 
+
   generate:bindings:
-    label: generate:bindings (BUILD_FLAGS={{ "{{.BUILD_FLAGS}}" }})
+    label: generate:bindings (BUILD_FLAGS={{.Opn}}.BUILD_FLAGS{{.Cls}})
     summary: Generates bindings for the frontend
     deps:
       - task: go:mod:tidy
@@ -95,7 +176,7 @@ tasks:
     generates:
       - frontend/bindings/**/*
     cmds:
-      - wails3 generate bindings -f {{ "'{{.BUILD_FLAGS}}'" }} -clean=true {{- if .Typescript}} -ts{{end}}
+      - wails3 generate bindings -f '{{.Opn}}.BUILD_FLAGS{{.Cls}}' -clean=true {{- if .Typescript}}-ts{{end}}
 
   generate:icons:
     summary: Generates Windows `.ico` and Mac `.icns` from an image; on macOS, `-iconcomposerinput appicon.icon -macassetdir darwin` also produces `Assets.car` from a `.icon` file (skipped on other platforms).
@@ -111,17 +192,36 @@ tasks:
 
   dev:frontend:
     summary: Runs the frontend in development mode
-    dir: frontend
     deps:
       - task: install:frontend:deps
     cmds:
-      - npm run dev -- --port {{ "{{.VITE_PORT}}" }} --strictPort
+      - task: frontend:dev:{{.Opn}}.PACKAGE_MANAGER{{.Cls}}
+
+  frontend:dev:npm:
+    dir: frontend
+    cmds:
+      - npm run dev -- --port {{.Opn}}.VITE_PORT{{.Cls}} --strictPort
+
+  frontend:dev:yarn:
+    dir: frontend
+    cmds:
+      - yarn dev --port {{.Opn}}.VITE_PORT{{.Cls}} --strictPort
+
+  frontend:dev:pnpm:
+    dir: frontend
+    cmds:
+      - pnpm dev --port {{.Opn}}.VITE_PORT{{.Cls}} --strictPort
+
+  frontend:dev:bun:
+    dir: frontend
+    cmds:
+      - bun run dev --port {{.Opn}}.VITE_PORT{{.Cls}} --strictPort
 
   update:build-assets:
     summary: Updates the build assets
     dir: build
     cmds:
-      - wails3 update build-assets -name {{ "\"{{.APP_NAME}}\"" }} -binaryname {{ "\"{{.APP_NAME}}\"" }} -config config.yml -dir .
+      - wails3 update build-assets -name "{{.Opn}}.APP_NAME{{.Cls}}" -binaryname "{{.Opn}}.APP_NAME{{.Cls}}" -config config.yml -dir .
 
   build:server:
     summary: Builds the application in server mode (no GUI, HTTP server only)
@@ -135,16 +235,16 @@ tasks:
           BUILD_FLAGS:
             ref: .BUILD_FLAGS
     cmds:
-      - go build -tags server {{ "{{.BUILD_FLAGS}}" }} -o {{ "{{.BIN_DIR}}" }}/{{ "{{.APP_NAME}}" }}-server{{ "{{exeExt}}" }}
+      - go build -tags server {{.Opn}}.BUILD_FLAGS{{.Cls}} -o {{.Opn}}.BIN_DIR{{.Cls}}/{{.Opn}}.APP_NAME{{.Cls}}-server{{.Opn}}exeExt{{.Cls}}
     vars:
-      BUILD_FLAGS: {{ "\"{{.BUILD_FLAGS}}\"" }}
+      BUILD_FLAGS: "{{.Opn}}.BUILD_FLAGS{{.Cls}}"
 
   run:server:
     summary: Builds and runs the application in server mode
     deps:
       - task: build:server
     cmds:
-      - ./{{ "{{.BIN_DIR}}" }}/{{ "{{.APP_NAME}}" }}-server{{ "{{exeExt}}" }}
+      - ./{{.Opn}}.BIN_DIR{{.Cls}}/{{.Opn}}.APP_NAME{{.Cls}}-server{{.Opn}}exeExt{{.Cls}}
 
   build:docker:
     summary: Builds a Docker image for server mode deployment
@@ -153,9 +253,9 @@ tasks:
       The image is based on distroless for security and small size.
       Usage: task build:docker [TAG=myapp:latest]
     cmds:
-      - docker build -t {{ "{{.TAG | default (printf \"%s:latest\" .APP_NAME)}}" }} -f build/docker/Dockerfile.server .
+      - docker build -t {{.Opn}}.TAG | default (printf "%s:latest" .APP_NAME){{.Cls}} -f build/docker/Dockerfile.server .
     vars:
-      TAG: {{ "\"{{.TAG}}\"" }}
+      TAG: "{{.Opn}}.TAG{{.Cls}}"
     preconditions:
       - sh: docker info > /dev/null 2>&1
         msg: "Docker is required. Please install Docker first."
@@ -176,10 +276,10 @@ tasks:
           TAG:
             ref: .TAG
     cmds:
-      - docker run --rm -p {{ "{{.PORT | default \"8080\"}}" }}:8080 {{ "{{.TAG | default (printf \"%s:latest\" .APP_NAME)}}" }}
+      - docker run --rm -p {{.Opn}}.PORT | default "8080"{{.Cls}}:8080 {{.Opn}}.TAG | default (printf "%s:latest" .APP_NAME){{.Cls}}
     vars:
-      TAG: {{ "\"{{.TAG}}\"" }}
-      PORT: {{ "\"{{.PORT}}\"" }}
+      TAG: "{{.Opn}}.TAG{{.Cls}}"
+      PORT: "{{.Opn}}.PORT{{.Cls}}"
 
   setup:docker:
     summary: Builds Docker image for cross-compilation (~800MB download)
@@ -200,54 +300,54 @@ tasks:
   ios:run:device:
     summary: Build, install, and launch on a physical iPhone using Apple tools (xcodebuild/devicectl)
     vars:
-      PROJECT: {{ "'{{.PROJECT}}'" }}   # e.g., build/ios/xcode/<YourProject>.xcodeproj
-      SCHEME: {{ "'{{.SCHEME}}'" }}     # e.g., ios.dev
-      CONFIG: {{ "'{{.CONFIG | default \"Debug\"}}'" }}
-      DERIVED: {{ "'{{.DERIVED | default \"build/ios/DerivedData\"}}'" }}
-      UDID: {{ "'{{.UDID}}'" }}         # from `task ios:device:list`
-      BUNDLE_ID: {{ "'{{.BUNDLE_ID}}'" }} # e.g., com.yourco.wails.ios.dev
-      TEAM_ID: {{ "'{{.TEAM_ID}}'" }}   # optional, if your project is not already set up for signing
+      PROJECT: '{{.Opn}}.PROJECT{{.Cls}}'   # e.g., build/ios/xcode/<YourProject>.xcodeproj
+      SCHEME: '{{.Opn}}.SCHEME{{.Cls}}'     # e.g., ios.dev
+      CONFIG: '{{.Opn}}.CONFIG | default "Debug"{{.Cls}}'
+      DERIVED: '{{.Opn}}.DERIVED | default "build/ios/DerivedData"{{.Cls}}'
+      UDID: '{{.Opn}}.UDID{{.Cls}}'         # from `task ios:device:list`
+      BUNDLE_ID: '{{.Opn}}.BUNDLE_ID{{.Cls}}' # e.g., com.yourco.wails.ios.dev
+      TEAM_ID: '{{.Opn}}.TEAM_ID{{.Cls}}'   # optional, if your project is not already set up for signing
     preconditions:
       - sh: xcrun -f xcodebuild
         msg: "xcodebuild not found. Please install Xcode."
       - sh: xcrun -f devicectl
         msg: "devicectl not found. Please update to Xcode 15+ (which includes devicectl)."
-      - sh: test -n {{ "'{{.PROJECT}}'" }}
+      - sh: test -n '{{.Opn}}.PROJECT{{.Cls}}'
         msg: "Set PROJECT to your .xcodeproj path (e.g., PROJECT=build/ios/xcode/App.xcodeproj)."
-      - sh: test -n {{ "'{{.SCHEME}}'" }}
+      - sh: test -n '{{.Opn}}.SCHEME{{.Cls}}'
         msg: "Set SCHEME to your app scheme (e.g., SCHEME=ios.dev)."
-      - sh: test -n {{ "'{{.UDID}}'" }}
+      - sh: test -n '{{.Opn}}.UDID{{.Cls}}'
         msg: "Set UDID to your device UDID (see: task ios:device:list)."
-      - sh: test -n {{ "'{{.BUNDLE_ID}}'" }}
+      - sh: test -n '{{.Opn}}.BUNDLE_ID{{.Cls}}'
         msg: "Set BUNDLE_ID to your app's bundle identifier (e.g., com.yourco.wails.ios.dev)."
     cmds:
       - |
         set -euo pipefail
-        echo "Building for device: UDID={{ "{{.UDID}}" }} SCHEME={{ "{{.SCHEME}}" }} PROJECT={{ "{{.PROJECT}}" }}"
+        echo "Building for device: UDID={{.Opn}}.UDID{{.Cls}} SCHEME={{.Opn}}.SCHEME{{.Cls}} PROJECT={{.Opn}}.PROJECT{{.Cls}}"
         XCB_ARGS=(
-          -project {{ "\"{{.PROJECT}}\"" }}
-          -scheme {{ "\"{{.SCHEME}}\"" }}
-          -configuration {{ "\"{{.CONFIG}}\"" }}
-          -destination {{ "\"id={{.UDID}}\"" }}
-          -derivedDataPath {{ "\"{{.DERIVED}}\"" }}
+          -project "{{.Opn}}.PROJECT{{.Cls}}"
+          -scheme "{{.Opn}}.SCHEME{{.Cls}}"
+          -configuration "{{.Opn}}.CONFIG{{.Cls}}"
+          -destination "id={{.Opn}}.UDID{{.Cls}}"
+          -derivedDataPath "{{.Opn}}.DERIVED{{.Cls}}"
           -allowProvisioningUpdates
           -allowProvisioningDeviceRegistration
         )
         # Optionally inject signing identifiers if provided
-        if [ -n {{ "'{{.TEAM_ID}}'" }} ]; then XCB_ARGS+=(DEVELOPMENT_TEAM={{ "{{.TEAM_ID}}" }}); fi
-        if [ -n {{ "'{{.BUNDLE_ID}}'" }} ]; then XCB_ARGS+=(PRODUCT_BUNDLE_IDENTIFIER={{ "{{.BUNDLE_ID}}" }}); fi
+        if [ -n '{{.Opn}}.TEAM_ID{{.Cls}}' ]; then XCB_ARGS+=(DEVELOPMENT_TEAM={{.Opn}}.TEAM_ID{{.Cls}}); fi
+        if [ -n '{{.Opn}}.BUNDLE_ID{{.Cls}}' ]; then XCB_ARGS+=(PRODUCT_BUNDLE_IDENTIFIER={{.Opn}}.BUNDLE_ID{{.Cls}}); fi
         xcodebuild "${XCB_ARGS[@]}" build | xcpretty || true
         # If xcpretty isn't installed, run without it
         if [ "${PIPESTATUS[0]}" -ne 0 ]; then
           xcodebuild "${XCB_ARGS[@]}" build
         fi
         # Find built .app
-        APP_PATH=$(find {{ "\"{{.DERIVED}}/Build/Products\"" }} -type d -name "*.app" -maxdepth 3 | head -n 1)
+        APP_PATH=$(find "{{.Opn}}.DERIVED{{.Cls}}/Build/Products" -type d -name "*.app" -maxdepth 3 | head -n 1)
         if [ -z "$APP_PATH" ]; then
-          echo "Could not locate built .app under {{ "{{.DERIVED}}" }}/Build/Products" >&2
+          echo "Could not locate built .app under {{.Opn}}.DERIVED{{.Cls}}/Build/Products" >&2
           exit 1
         fi
         echo "Installing: $APP_PATH"
-        xcrun devicectl device install app --device {{ "\"{{.UDID}}\"" }} "$APP_PATH"
-        echo "Launching: {{ "{{.BUNDLE_ID}}" }}"
-        xcrun devicectl device process launch --device {{ "\"{{.UDID}}\"" }} --stderr console --stdout console {{ "\"{{.BUNDLE_ID}}\"" }}
+        xcrun devicectl device install app --device "{{.Opn}}.UDID{{.Cls}}" "$APP_PATH"
+        echo "Launching: {{.Opn}}.BUNDLE_ID{{.Cls}}"
+        xcrun devicectl device process launch --device "{{.Opn}}.UDID{{.Cls}}" --stderr console --stdout console "{{.Opn}}.BUNDLE_ID{{.Cls}}"
