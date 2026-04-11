@@ -232,6 +232,7 @@ type macEvents struct {
 	WindowZoomIn                                            WindowEventType
 	WindowZoomOut                                           WindowEventType
 	WindowZoomReset                                         WindowEventType
+	WebViewWebContentProcessDidTerminate                    WindowEventType
 }
 
 func newMacEvents() macEvents {
@@ -368,6 +369,7 @@ func newMacEvents() macEvents {
 		WindowZoomIn:                                            1190,
 		WindowZoomOut:                                           1191,
 		WindowZoomReset:                                         1192,
+		WebViewWebContentProcessDidTerminate:                    1259,
 	}
 }
 
@@ -763,4 +765,5 @@ var eventToJS = map[uint]string{
 	1256: "ios:WebViewDidFinishNavigation",
 	1257: "ios:WebViewDidFailNavigation",
 	1258: "ios:WebViewDecidePolicyForNavigationAction",
+	1259: "mac:WebViewWebContentProcessDidTerminate",
 }
