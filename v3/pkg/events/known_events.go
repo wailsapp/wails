@@ -92,6 +92,7 @@ var knownEvents = map[string]struct{}{
 	"mac:WebViewDidFinishNavigation":                              {},
 	"mac:WebViewDidReceiveServerRedirectForProvisionalNavigation": {},
 	"mac:WebViewDidStartProvisionalNavigation":                    {},
+	"mac:WebViewWebContentProcessDidTerminate":                    {},
 	"mac:WindowDidBecomeKey":                                      {},
 	"mac:WindowDidBecomeMain":                                     {},
 	"mac:WindowDidBeginSheet":                                     {},

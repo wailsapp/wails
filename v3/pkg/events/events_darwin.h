@@ -138,8 +138,9 @@ extern void processWindowEvent(unsigned int, unsigned int);
 #define EventWindowZoomIn 1190
 #define EventWindowZoomOut 1191
 #define EventWindowZoomReset 1192
+#define EventWebViewWebContentProcessDidTerminate 1259
 
-#define MAX_EVENTS 1193
+#define MAX_EVENTS 1260
 
 
 #endif
