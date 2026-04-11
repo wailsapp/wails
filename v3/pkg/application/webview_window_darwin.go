@@ -331,6 +331,18 @@ void windowZoomOut(void* nsWindow) {
 	}
 }
 
+// windowReload reloads the current page using the cached version.
+void windowReload(void* nsWindow) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	[window.webView reload];
+}
+
+// windowForceReload reloads the current page bypassing the cache.
+void windowForceReload(void* nsWindow) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	[window.webView reloadFromOrigin];
+}
+
 // createModalWindow presents a modal window as a sheet attached to the parent window
 void createModalWindow(void* parentWindowPtr, void* modalWindowPtr) {
 	if (parentWindowPtr == NULL || modalWindowPtr == NULL) {
@@ -1048,13 +1060,17 @@ func (w *macosWebviewWindow) zoomReset() {
 }
 
 func (w *macosWebviewWindow) reload() {
-	//TODO: Implement
 	globalApplication.debug("reload called on WebviewWindow", "parentID", w.parent.id)
+	InvokeAsync(func() {
+		C.windowReload(w.nsWindow)
+	})
 }
 
 func (w *macosWebviewWindow) forceReload() {
-	//TODO: Implement
 	globalApplication.debug("force reload called on WebviewWindow", "parentID", w.parent.id)
+	InvokeAsync(func() {
+		C.windowForceReload(w.nsWindow)
+	})
 }
 
 func (w *macosWebviewWindow) center() {

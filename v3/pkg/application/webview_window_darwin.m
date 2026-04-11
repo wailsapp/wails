@@ -789,6 +789,16 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     }
 }
 // GENERATED EVENTS END
+// WKNavigationDelegate - Recover from WebContent process termination.
+// WebKit invokes this on the main thread when the WebContent (renderer) process
+// crashes or is jetsammed — notably after macOS sleep. Without this handler the
+// WKWebView is left showing an unresponsive blank page.
+- (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView {
+    if( hasListeners(EventWebViewWebContentProcessDidTerminate) ) {
+        processWindowEvent(self.windowId, EventWebViewWebContentProcessDidTerminate);
+    }
+    [webView reload];
+}
 // WKUIDelegate - Handle file input element clicks
 - (void)webView:(WKWebView *)webView runOpenPanelWithParameters:(WKOpenPanelParameters *)parameters
     initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSArray<NSURL *> * URLs))completionHandler {
