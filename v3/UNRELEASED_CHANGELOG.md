@@ -16,7 +16,7 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
-<!-- New features, capabilities, or enhancements -->
+- Add debugging page and working with `runtime/trace`
 
 ## Changed
 <!-- Changes in existing functionality -->
