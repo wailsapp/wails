@@ -19,7 +19,8 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- New features, capabilities, or enhancements -->
 
 ## Changed
-<!-- Changes in existing functionality -->
+Docs: Change to a couple of diagrams on architecture page to use sequence diagram for cleaner display
+Docs: Include note about installing D2 as a prerequisite for running 
 
 ## Fixed
 <!-- Bug fixes -->
