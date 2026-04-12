@@ -2,6 +2,18 @@
 
 [![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
 
+## Prerequisites
+
+* [D2 Diagram Library](https://d2lang.com/). You can download the binary manually from [Github releases](https://github.com/terrastruct/d2/releases) or use the following
+
+```
+# Use install script:
+curl -fsSL https://d2lang.com/install.sh | sh -s --
+
+# Install from source with Go
+go install oss.terrastruct.com/d2@latest
+```
+
 World-class documentation for Wails v3, redesigned following Netflix documentation principles.
 
 ## 📚 Documentation Redesign (2025-10-01)
