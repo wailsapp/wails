@@ -16,10 +16,11 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
-<!-- New features, capabilities, or enhancements -->
+- Modify the Taskfiles to allow control of frontend package manager used via `PACKAGE_MANAGER` option 
+- Enrich template data with `{{.Opn}}` and `{{.Cls}}` to make writing Taskfile templates more predictable
 
 ## Changed
-<!-- Changes in existing functionality -->
+- Modified a couple of the existing Taskfiles to make use of `{{.Opn}} and {{.Cls}}`
 
 ## Fixed
 <!-- Bug fixes -->

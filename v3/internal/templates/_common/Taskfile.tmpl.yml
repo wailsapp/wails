@@ -1,5 +1,11 @@
 version: '3'
 
+vars:
+  APP_NAME: "{{.ProjectName}}"
+  BIN_DIR: "bin"
+  PACKAGE_MANAGER: '{{.Opn}}.PACKAGE_MANAGER | default "npm"{{.Cls}}'
+  VITE_PORT: '{{.Opn}}.WAILS_VITE_PORT | default 9245{{.Cls}}'
+
 includes:
   common: ./build/Taskfile.yml
   windows: ./build/windows/Taskfile.yml
@@ -8,31 +14,26 @@ includes:
   ios: ./build/ios/Taskfile.yml
   android: ./build/android/Taskfile.yml
 
-vars:
-  APP_NAME: "{{.ProjectName}}"
-  BIN_DIR: "bin"
-  VITE_PORT: {{ "'{{.WAILS_VITE_PORT | default 9245}}'" }}
-
 tasks:
   build:
     summary: Builds the application
     cmds:
-      - task: "{{ "{{OS}}" }}:build"
+      - task: "{{.Opn}}OS{{.Cls}}:build"
 
   package:
     summary: Packages a production build of the application
     cmds:
-      - task: "{{ "{{OS}}" }}:package"
+      - task: "{{.Opn}}OS{{.Cls}}:package"
 
   run:
     summary: Runs the application
     cmds:
-      - task: "{{ "{{OS}}" }}:run"
+      - task: "{{.Opn}}OS{{.Cls}}:run"
 
   dev:
     summary: Runs the application in development mode
     cmds:
-      - wails3 dev -config ./build/config.yml -port {{ "{{.VITE_PORT}}" }}
+      - wails3 dev -config ./build/config.yml -port {{.Opn}}.VITE_PORT{{.Cls}}
 
   setup:docker:
     summary: Builds Docker image for cross-compilation (~800MB download)
