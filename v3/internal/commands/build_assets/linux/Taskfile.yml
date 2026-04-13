@@ -12,6 +12,7 @@ vars:
 
   # Docker image for cross-compilation (used when building on non-Linux or no CC available)
   CROSS_IMAGE: wails-cross
+  DEBUG_MODE: '{{default "false" .DEBUG_MODE}}'
 
 tasks:
   build:
@@ -182,7 +183,14 @@ tasks:
 
   run:
     cmds:
-      - '{{.BIN_DIR}}/{{.APP_NAME}}'
+      - |
+        if [ "{{.DEBUG_MODE}}" = "true" ]; then
+          echo "Running in debug mode"
+          dlv exec {{.BIN_DIR}}/{{.APP_NAME}} --headless --listen=:2345 --api-version=2 --accept-multiclient 
+        else
+          echo "Running in normal mode"
+          '{{.BIN_DIR}}/{{.APP_NAME}}'
+        fi
 
   sign:deb:
     summary: Signs the DEB package

@@ -11,6 +11,7 @@ vars:
 
   # Docker image for cross-compilation (used when building on non-macOS)
   CROSS_IMAGE: wails-cross
+  DEBUG_MODE: '{{default "false" .DEBUG_MODE}}'
 
 tasks:
   build:
@@ -174,7 +175,14 @@ tasks:
       - cp "{{.BIN_DIR}}/{{.APP_NAME}}" "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Contents/MacOS"
       - cp "build/darwin/Info.dev.plist" "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Contents/Info.plist"
       - codesign --force --deep --sign - "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"
-      - '{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Contents/MacOS/{{.APP_NAME}}'
+      - |
+        if [ "{{.DEBUG_MODE}}" = "true" ]; then
+          echo "Running in debug mode"
+          dlv exec {{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Contents/MacOS/{{.APP_NAME}} --headless --listen=:2345 --api-version=2 --accept-multiclient 
+        else
+          echo "Running in normal mode"
+          "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Contents/MacOS/{{.APP_NAME}}"
+        fi
 
   sign:
     summary: Signs the application bundle with Developer ID
