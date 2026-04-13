@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "embed"
 	"log"
 
 	"github.com/wailsapp/wails/v3/internal/generator/testcases/struct_literal_multiple_other/services"

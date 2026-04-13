@@ -3,7 +3,6 @@
 package assetserver
 
 import (
-	_ "embed"
 	"io/fs"
 	"net/http"
 	"net/http/httputil"

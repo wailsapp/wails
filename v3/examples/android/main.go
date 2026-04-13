@@ -2,7 +2,7 @@ package main
 
 import (
 	"embed"
-	_ "embed"
+
 	"log"
 	"time"
 

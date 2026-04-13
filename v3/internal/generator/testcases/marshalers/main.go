@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "embed"
 	"encoding"
 	"encoding/json"
 	"log"

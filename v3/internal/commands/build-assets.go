@@ -2,7 +2,7 @@ package commands
 
 import (
 	"embed"
-	_ "embed"
+
 	"fmt"
 	"io/fs"
 	"os"
@@ -341,7 +341,9 @@ type updateCFBundleIconNameSetter struct {
 	config  *UpdateConfig
 }
 
-func (s *updateCFBundleIconNameSetter) GetCFBundleIconName() string { return s.options.CFBundleIconName }
+func (s *updateCFBundleIconNameSetter) GetCFBundleIconName() string {
+	return s.options.CFBundleIconName
+}
 func (s *updateCFBundleIconNameSetter) SetCFBundleIconName(v string) {
 	s.options.CFBundleIconName = v
 	s.config.CFBundleIconName = v
