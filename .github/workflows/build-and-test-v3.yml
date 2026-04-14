@@ -11,25 +11,8 @@ on:
       - v3-alpha
 
 jobs:
-  check_approval:
-    name: Check PR Approval
-    runs-on: ubuntu-latest
-    if: github.base_ref == 'v3-alpha'
-    outputs:
-      approved: ${{ steps.check.outputs.approved }}
-    steps:
-      - name: Check if PR is approved
-        id: check
-        run: |
-          if [[ "${{ github.event.review.state }}" == "approved" || "${{ github.event.pull_request.approved }}" == "true" ]]; then
-            echo "approved=true" >> $GITHUB_OUTPUT
-          else
-            echo "approved=false" >> $GITHUB_OUTPUT
-          fi
-
   test_js:
     name: Run JS Tests
-    needs: check_approval
     runs-on: ubuntu-latest
     if: github.base_ref == 'v3-alpha'
     strategy:
@@ -50,6 +33,14 @@ jobs:
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cache npm packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-runtime-${{ hashFiles('v3/internal/runtime/desktop/@wailsio/runtime/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-runtime-
 
       - name: Install dependencies
         working-directory: v3/internal/runtime/desktop/@wailsio/runtime
@@ -98,9 +89,10 @@ jobs:
 
   test_go:
     name: Run Go Tests v3
-    needs: [check_approval, test_js]
+    needs: [test_js]
     runs-on: ${{ matrix.os }}
     if: github.base_ref == 'v3-alpha'
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
@@ -163,33 +155,23 @@ jobs:
         env:
           CGO_LDFLAGS: -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
         working-directory: v3
-        run: go test -v ./...
+        run: go test -v -timeout 10m ./...
 
       - name: Run tests (windows)
         if: matrix.os == 'windows-latest'
         working-directory: v3
-        run: go test -v ./...
+        run: go test -v -timeout 10m ./...
 
       - name: Run tests (ubuntu) - GTK3 default
         if: matrix.os == 'ubuntu-latest'
         working-directory: v3
-        run: >
-          xvfb-run --auto-servernum
-          sh -c '
-          dbus-update-activation-environment --systemd --all &&
-          go test -v ./...
-          '
+        run: dbus-run-session -- xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" go test -v -timeout 10m ./...
 
       - name: Run tests (ubuntu) - GTK4
         if: matrix.os == 'ubuntu-latest'
         working-directory: v3
         # Skip service tests that hang in CI due to GTK4 display requirements
-        run: >
-          xvfb-run --auto-servernum
-          sh -c '
-          dbus-update-activation-environment --systemd --all &&
-          go test -tags gtk4 -v -skip "TestService" ./...
-          '
+        run: dbus-run-session -- xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" go test -tags gtk4 -v -timeout 10m -skip "TestService" ./...
 
       - name: Typecheck binding generator output
         working-directory: v3
