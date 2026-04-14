@@ -1,0 +1,337 @@
+---
+title: Database Integration
+description: Best practices for integrating databases with Wails v3 applications
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Database integration is essential for most desktop applications. This guide demonstrates how to work with popular database solutions in Wails v3.
+
+## Overview
+
+Wails v3 provides flexible options for database integration. You can use:
+
+- **SQL Databases:** SQLite, PostgreSQL, MySQL (via drivers)
+- **ORMs:** GORM, sqlc, or raw database/sql
+- **Document Stores:** MongoDB drivers
+- **Embedded Databases:** SQLite, BadgerDB, BoltDB
+
+## Using SQLite with GORM
+
+SQLite is an excellent choice for desktop applications due to its embedded nature and simplicity.
+
+### 1. Install Dependencies
+
+```bash
+go get -u gorm.io/gorm
+go get -u gorm.io/driver/sqlite
+```
+
+### 2. Define Your Models
+
+```go
+package models
+
+import "gorm.io/gorm"
+
+type User struct {
+	ID    uint   `gorm:"primaryKey"`
+	Name  string
+	Email string
+	Phone string
+}
+
+type Product struct {
+	ID    uint
+	Name  string
+	Price float64
+	Stock int
+}
+```
+
+### 3. Initialize the Database
+
+```go
+package database
+
+import (
+	"github.com/yourapp/models"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+)
+
+var DB *gorm.DB
+
+func InitDB(dbPath string) error {
+	var err error
+	DB, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
+	if err != nil {
+		return err
+	}
+
+	// Auto-migrate models
+	return DB.AutoMigrate(&models.User{}, &models.Product{})
+}
+```
+
+### 4. Use in Your Application
+
+```go
+package main
+
+import (
+	"github.com/yourapp/database"
+	"github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+	// Initialize database
+	if err := database.InitDB("app.db"); err != nil {
+		panic(err)
+	}
+
+	app := application.New(application.Options{
+		Name:        "My App",
+		Description: "Database-backed application",
+	})
+
+	// Create window
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
+		Title:  "My App",
+		URL:    "/",
+		Width:  800,
+		Height: 600,
+	})
+
+	if err := app.Run(); err != nil {
+		panic(err)
+	}
+}
+```
+
+## Creating Database Services
+
+Encapsulate database operations in services for better organization and testability.
+
+### User Service Example
+
+```go
+package services
+
+import (
+	"github.com/yourapp/database"
+	"github.com/yourapp/models"
+	"gorm.io/gorm"
+)
+
+type UserService struct{}
+
+// GetAllUsers returns all users
+func (s *UserService) GetAllUsers() ([]models.User, error) {
+	var users []models.User
+	if err := database.DB.Find(&users).Error; err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
+// GetUser returns a single user by ID
+func (s *UserService) GetUser(id uint) (*models.User, error) {
+	var user models.User
+	if err := database.DB.First(&user, id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &user, nil
+}
+
+// CreateUser creates a new user
+func (s *UserService) CreateUser(name, email, phone string) (*models.User, error) {
+	user := models.User{
+		Name:  name,
+		Email: email,
+		Phone: phone,
+	}
+	if err := database.DB.Create(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+// UpdateUser updates an existing user
+func (s *UserService) UpdateUser(id uint, name, email, phone string) (*models.User, error) {
+	user := models.User{ID: id}
+	if err := database.DB.Model(&user).Updates(models.User{
+		Name:  name,
+		Email: email,
+		Phone: phone,
+	}).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+// DeleteUser deletes a user
+func (s *UserService) DeleteUser(id uint) error {
+	return database.DB.Delete(&models.User{}, id).Error
+}
+```
+
+## Exposing Database Operations to Frontend
+
+Use Wails binding system to expose database services to your frontend:
+
+```go
+package main
+
+import (
+	"github.com/yourapp/services"
+	"github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+	userService := &services.UserService{}
+
+	app := application.New(application.Options{
+		Name: "My App",
+		Bind: []interface{}{
+			userService,
+		},
+	})
+
+	// ... rest of application setup
+}
+```
+
+Call from frontend:
+
+<Tabs>
+  <TabItem label="TypeScript">
+```typescript
+import { UserService } from './services/user-service';
+
+// Get all users
+const users = await UserService.GetAllUsers();
+
+// Create a user
+const newUser = await UserService.CreateUser('John Doe', 'john@example.com', '123-456-7890');
+
+// Update a user
+const updated = await UserService.UpdateUser(1, 'Jane Doe', 'jane@example.com', '098-765-4321');
+
+// Delete a user
+await UserService.DeleteUser(1);
+```
+  </TabItem>
+  <TabItem label="JavaScript">
+```javascript
+// Get all users
+const users = await window.go.services.UserService.GetAllUsers();
+
+// Create a user
+const newUser = await window.go.services.UserService.CreateUser(
+    'John Doe',
+    'john@example.com',
+    '123-456-7890'
+);
+
+// Update a user
+const updated = await window.go.services.UserService.UpdateUser(
+    1,
+    'Jane Doe',
+    'jane@example.com',
+    '098-765-4321'
+);
+
+// Delete a user
+await window.go.services.UserService.DeleteUser(1);
+```
+  </TabItem>
+</Tabs>
+
+## Migration Management
+
+Use GORM migrations or a dedicated migration tool for schema management.
+
+### Automatic Migration
+
+GORM's `AutoMigrate` handles schema updates automatically:
+
+```go
+db.AutoMigrate(&models.User{}, &models.Product{})
+```
+
+### Manual Migration Control
+
+For more control, create explicit migrations:
+
+```go
+type User struct {
+	ID        uint
+	Name      string
+	Email     string `gorm:"uniqueIndex"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+// Run migrations with hooks
+if err := db.Migrator().CreateTable(&User{}); err != nil {
+	return err
+}
+
+if err := db.Migrator().CreateIndex(&User{}, "email"); err != nil {
+	return err
+}
+```
+
+## Transactions
+
+Use transactions for operations that require atomicity:
+
+```go
+// Begin transaction
+tx := database.DB.BeginTx(ctx, nil)
+
+// Perform operations
+if err := tx.Create(&user1).Error; err != nil {
+	tx.Rollback()
+	return err
+}
+
+if err := tx.Create(&user2).Error; err != nil {
+	tx.Rollback()
+	return err
+}
+
+// Commit if all successful
+if err := tx.Commit().Error; err != nil {
+	return err
+}
+```
+
+## Best Practices
+
+- **Separate Concerns:** Keep database logic in service layers
+- **Handle Errors:** Always check and handle database errors
+- **Use Transactions:** For multi-operation workflows
+- **Index Strategically:** Create indexes on frequently queried columns
+- **Connection Pooling:** Configure connection limits for networked databases
+- **Backup Regularly:** Implement backup strategies for important data
+- **Encrypt Sensitive Data:** Use encryption for passwords and sensitive information
+- **Validate Input:** Always validate and sanitize user input before database operations
+
+## Performance Considerations
+
+- Use GORM's eager loading to avoid N+1 queries
+- Create appropriate indexes for commonly filtered columns
+- Use pagination for large result sets
+- Consider denormalization for read-heavy workloads
+- Profile your queries to identify bottlenecks
+
+## Additional Resources
+
+- [GORM Documentation](https://gorm.io/)
+- [SQLite Documentation](https://www.sqlite.org/)
+- [Database/SQL Package](https://pkg.go.dev/database/sql)

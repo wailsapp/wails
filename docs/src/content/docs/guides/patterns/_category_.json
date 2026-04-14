@@ -1,0 +1,8 @@
+{
+  "label": "Patterns",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "Common patterns and architectures for Wails applications"
+  }
+}

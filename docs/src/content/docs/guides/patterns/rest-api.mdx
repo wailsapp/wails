@@ -1,0 +1,496 @@
+---
+title: Building REST APIs
+description: Build robust REST APIs with Wails v3 using best practices and common patterns
+---
+
+import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
+
+This guide demonstrates best practices for building REST APIs in Wails v3 applications. Whether you're building a simple HTTP interface or a comprehensive API, these patterns will help you create maintainable and scalable solutions.
+
+## Overview
+
+Wails v3 provides multiple approaches for building REST APIs:
+
+1. **Direct HTTP Binding** - Expose Go methods directly to frontend
+2. **Service with Router** - Use a framework like Gin for complex APIs
+3. **HTTP Middleware** - Custom request/response handling
+4. **REST Service Pattern** - Organized REST endpoints with proper status codes
+
+## Direct HTTP Binding
+
+The simplest approach for basic CRUD operations.
+
+### Define Your Types
+
+```go
+package models
+
+type User struct {
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+type CreateUserRequest struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+```
+
+### Create Your API Service
+
+```go
+package api
+
+import (
+	"fmt"
+	"sync"
+)
+
+type UserAPI struct {
+	users   map[int]User
+	nextID  int
+	mu      sync.RWMutex
+}
+
+func NewUserAPI() *UserAPI {
+	return &UserAPI{
+		users:  make(map[int]User),
+		nextID: 1,
+	}
+}
+
+// GetUsers returns all users
+func (api *UserAPI) GetUsers() []User {
+	api.mu.RLock()
+	defer api.mu.RUnlock()
+
+	result := make([]User, 0)
+	for _, user := range api.users {
+		result = append(result, user)
+	}
+	return result
+}
+
+// GetUser returns a single user
+func (api *UserAPI) GetUser(id int) (*User, error) {
+	api.mu.RLock()
+	defer api.mu.RUnlock()
+
+	user, ok := api.users[id]
+	if !ok {
+		return nil, fmt.Errorf("user not found")
+	}
+	return &user, nil
+}
+
+// CreateUser creates a new user
+func (api *UserAPI) CreateUser(name, email string) (*User, error) {
+	if name == "" || email == "" {
+		return nil, fmt.Errorf("name and email required")
+	}
+
+	api.mu.Lock()
+	defer api.mu.Unlock()
+
+	user := User{
+		ID:    api.nextID,
+		Name:  name,
+		Email: email,
+	}
+	api.users[api.nextID] = user
+	api.nextID++
+
+	return &user, nil
+}
+
+// UpdateUser updates an existing user
+func (api *UserAPI) UpdateUser(id int, name, email string) (*User, error) {
+	api.mu.Lock()
+	defer api.mu.Unlock()
+
+	user, ok := api.users[id]
+	if !ok {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	if name != "" {
+		user.Name = name
+	}
+	if email != "" {
+		user.Email = email
+	}
+
+	api.users[id] = user
+	return &user, nil
+}
+
+// DeleteUser deletes a user
+func (api *UserAPI) DeleteUser(id int) error {
+	api.mu.Lock()
+	defer api.mu.Unlock()
+
+	if _, ok := api.users[id]; !ok {
+		return fmt.Errorf("user not found")
+	}
+	delete(api.users, id)
+	return nil
+}
+```
+
+### Register in Wails Application
+
+```go
+package main
+
+import (
+	"github.com/yourapp/api"
+	"github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+	userAPI := api.NewUserAPI()
+
+	app := application.New(application.Options{
+		Name: "API Example",
+		Bind: []interface{}{
+			userAPI,
+		},
+	})
+
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
+		Title: "API Example",
+		URL:   "/",
+	})
+
+	if err := app.Run(); err != nil {
+		panic(err)
+	}
+}
+```
+
+### Frontend Usage
+
+<Tabs>
+  <TabItem label="TypeScript">
+```typescript
+import { UserAPI } from './services/user-api';
+
+// Get all users
+const users = await UserAPI.GetUsers();
+
+// Get a single user
+try {
+  const user = await UserAPI.GetUser(1);
+} catch (error) {
+  console.error('User not found:', error);
+}
+
+// Create a user
+const newUser = await UserAPI.CreateUser('John Doe', 'john@example.com');
+
+// Update a user
+const updated = await UserAPI.UpdateUser(1, 'Jane Doe', 'jane@example.com');
+
+// Delete a user
+try {
+  await UserAPI.DeleteUser(1);
+} catch (error) {
+  console.error('Failed to delete:', error);
+}
+```
+  </TabItem>
+  <TabItem label="JavaScript">
+```javascript
+// Get all users
+const users = await window.go.api.UserAPI.GetUsers();
+
+// Get a single user
+try {
+  const user = await window.go.api.UserAPI.GetUser(1);
+} catch (error) {
+  console.error('User not found:', error);
+}
+
+// Create a user
+const newUser = await window.go.api.UserAPI.CreateUser(
+  'John Doe',
+  'john@example.com'
+);
+
+// Update a user
+const updated = await window.go.api.UserAPI.UpdateUser(
+  1,
+  'Jane Doe',
+  'jane@example.com'
+);
+
+// Delete a user
+try {
+  await window.go.api.UserAPI.DeleteUser(1);
+} catch (error) {
+  console.error('Failed to delete:', error);
+}
+```
+  </TabItem>
+</Tabs>
+
+## REST API with Gin Framework
+
+For more complex APIs, use a dedicated framework like Gin.
+
+### Set Up Routes
+
+```go
+package api
+
+import (
+	"net/http"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+)
+
+func SetupRoutes(router *gin.Engine, api *UserAPI) {
+	users := router.Group("/users")
+	{
+		users.GET("", func(c *gin.Context) {
+			users := api.GetUsers()
+			c.JSON(http.StatusOK, users)
+		})
+
+		users.GET("/:id", func(c *gin.Context) {
+			id, err := strconv.Atoi(c.Param("id"))
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+				return
+			}
+
+			user, err := api.GetUser(id)
+			if err != nil {
+				c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+				return
+			}
+
+			c.JSON(http.StatusOK, user)
+		})
+
+		users.POST("", func(c *gin.Context) {
+			var req struct {
+				Name  string `json:"name" binding:"required"`
+				Email string `json:"email" binding:"required,email"`
+			}
+
+			if err := c.ShouldBindJSON(&req); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+
+			user, err := api.CreateUser(req.Name, req.Email)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+
+			c.JSON(http.StatusCreated, user)
+		})
+
+		users.PATCH("/:id", func(c *gin.Context) {
+			id, err := strconv.Atoi(c.Param("id"))
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+				return
+			}
+
+			var req struct {
+				Name  string `json:"name"`
+				Email string `json:"email"`
+			}
+
+			if err := c.ShouldBindJSON(&req); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+
+			user, err := api.UpdateUser(id, req.Name, req.Email)
+			if err != nil {
+				c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+				return
+			}
+
+			c.JSON(http.StatusOK, user)
+		})
+
+		users.DELETE("/:id", func(c *gin.Context) {
+			id, err := strconv.Atoi(c.Param("id"))
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+				return
+			}
+
+			if err := api.DeleteUser(id); err != nil {
+				c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+				return
+			}
+
+			c.JSON(http.StatusNoContent, nil)
+		})
+	}
+}
+```
+
+## Error Handling
+
+Implement consistent error handling across your API:
+
+```go
+package api
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+type ErrorResponse struct {
+	Error  string `json:"error"`
+	Code   int    `json:"code"`
+	Detail string `json:"detail,omitempty"`
+}
+
+func HandleError(c *gin.Context, statusCode int, message, detail string) {
+	c.JSON(statusCode, ErrorResponse{
+		Error:  message,
+		Code:   statusCode,
+		Detail: detail,
+	})
+}
+
+// Usage in handlers
+if !found {
+	HandleError(c, http.StatusNotFound, "Resource not found", "The requested user does not exist")
+	return
+}
+
+if err := validate(data); err != nil {
+	HandleError(c, http.StatusBadRequest, "Validation error", err.Error())
+	return
+}
+```
+
+## API Middleware
+
+Add middleware for common concerns like logging and authentication:
+
+```go
+// Logging middleware
+func LoggingMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		startTime := time.Now()
+
+		c.Next()
+
+		latency := time.Since(startTime)
+		log.Printf("[%s] %s %s (%d) - %v",
+			time.Now().Format(time.RFC3339),
+			c.Request.Method,
+			c.Request.URL.Path,
+			c.Writer.Status(),
+			latency,
+		)
+	}
+}
+
+// Use in router
+router.Use(LoggingMiddleware())
+```
+
+## Input Validation
+
+Always validate input from clients:
+
+```go
+type CreateUserRequest struct {
+	Name  string `json:"name" binding:"required,min=2,max=100"`
+	Email string `json:"email" binding:"required,email"`
+	Phone string `json:"phone" binding:"omitempty,max=20"`
+}
+
+func (api *UserAPI) HandleCreateUser(c *gin.Context) {
+	var req CreateUserRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := api.CreateUser(req.Name, req.Email)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, user)
+}
+```
+
+## Response Formatting
+
+Use consistent response formats:
+
+```go
+// Successful response
+type SuccessResponse struct {
+	Data   interface{} `json:"data"`
+	Status string      `json:"status"`
+}
+
+// List response with pagination
+type ListResponse struct {
+	Data       interface{} `json:"data"`
+	Page       int         `json:"page"`
+	PageSize   int         `json:"pageSize"`
+	Total      int         `json:"total"`
+	HasMore    bool        `json:"hasMore"`
+}
+```
+
+## Best Practices
+
+<CardGrid>
+  <Card title="Use Proper HTTP Methods" icon="list">
+    - GET for retrieving data
+    - POST for creating resources
+    - PATCH for partial updates
+    - DELETE for removing resources
+  </Card>
+  <Card title="Status Codes" icon="list">
+    - 200 OK for successful GET
+    - 201 Created for POST
+    - 204 No Content for DELETE
+    - 400 Bad Request for invalid input
+    - 404 Not Found for missing resources
+    - 500 Internal Server Error
+  </Card>
+  <Card title="Security" icon="lock">
+    - Validate all input
+    - Implement rate limiting
+    - Use HTTPS in production
+    - Implement authentication
+    - Sanitize responses
+  </Card>
+  <Card title="Performance" icon="rocket">
+    - Use pagination for large datasets
+    - Cache responses appropriately
+    - Optimize database queries
+    - Use compression for responses
+    - Monitor API metrics
+  </Card>
+</CardGrid>
+
+## Additional Resources
+
+- [Gin Framework Documentation](https://github.com/gin-gonic/gin)
+- [REST API Best Practices](https://restfulapi.net/)
+- [JSON API Specification](https://jsonapi.org/)
+- [HTTP Status Codes Reference](https://httpwg.org/specs/rfc9110.html)
