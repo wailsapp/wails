@@ -1,5 +1,6 @@
 ---
 title: Optimus
+description: "A desktop application built with Wails"
 ---
 
 ![Optimus](../../../../assets/showcase-images/optimus.webp)
