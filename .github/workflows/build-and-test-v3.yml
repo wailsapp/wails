@@ -13,27 +13,11 @@ on:
       - v3-alpha
 
 jobs:
-  check_approval:
-    name: Check PR Approval
-    runs-on: ubuntu-latest
-    if: github.base_ref == 'v3-alpha'
-    outputs:
-      approved: ${{ steps.check.outputs.approved }}
-    steps:
-      - name: Check if PR is approved
-        id: check
-        run: |
-          if [[ "${{ github.event.review.state }}" == "approved" || "${{ github.event.pull_request.approved }}" == "true" ]]; then
-            echo "approved=true" >> $GITHUB_OUTPUT
-          else
-            echo "approved=false" >> $GITHUB_OUTPUT
-          fi
-
   test_go:
     name: Run Go Tests v3
-    needs: check_approval
     runs-on: ${{ matrix.os }}
     if: github.base_ref == 'v3-alpha'
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -72,22 +56,17 @@ jobs:
         env:
           CGO_LDFLAGS: -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
         working-directory: v3
-        run: go test -v ./...
+        run: go test -v -timeout 10m ./...
 
       - name: Run tests (windows)
         if: matrix.os == 'windows-latest'
         working-directory: v3
-        run: go test -v ./...
+        run: go test -v -timeout 10m ./...
 
       - name: Run tests (ubuntu)
         if: matrix.os == 'ubuntu-latest'
         working-directory: v3
-        run: >
-          xvfb-run --auto-servernum
-          sh -c '
-          dbus-update-activation-environment --systemd --all &&
-          go test -v ./...
-          '
+        run: dbus-run-session -- xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" go test -v -timeout 10m ./...
 
       - name: Typecheck binding generator output
         working-directory: v3
@@ -95,7 +74,6 @@ jobs:
 
   test_js:
     name: Run JS Tests
-    needs: check_approval
     runs-on: ubuntu-latest
     if: github.base_ref == 'v3-alpha'
     strategy:
@@ -110,6 +88,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: v2/internal/frontend/runtime/package-lock.json
 
       - name: Install dependencies
         run: npm install
@@ -159,6 +139,14 @@ jobs:
           go-version: ${{ matrix.go-version }}
           cache-dependency-path: "v3/go.sum"
 
+      - name: Cache npm packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-wails3-templates-${{ hashFiles('v3/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-wails3-templates-
+
       - name: Install Task
         uses: arduino/setup-task@v2
         with:
@@ -189,7 +177,7 @@ jobs:
           go_result="${{ needs.test_go.result }}"
           js_result="${{ needs.test_js.result }}"
           templates_result="${{ needs.test_templates.result }}"
-          
+
           if [[ $go_result == "success" || $go_result == "skipped" ]] && \
              [[ $js_result == "success" || $js_result == "skipped" ]] && \
              [[ $templates_result == "success" || $templates_result == "skipped" ]]; then
