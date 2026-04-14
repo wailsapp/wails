@@ -8,6 +8,7 @@ package application
 
 #include "application_darwin.h"
 #include "webview_window_darwin.h"
+#include "webview_panel_darwin.h"
 #include <stdlib.h>
 #include "Cocoa/Cocoa.h"
 #import <WebKit/WebKit.h>

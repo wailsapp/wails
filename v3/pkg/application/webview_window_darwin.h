@@ -18,18 +18,6 @@
 
 @end
 
-@interface WebviewPanel : NSPanel
-- (BOOL) canBecomeKeyWindow;
-- (BOOL) canBecomeMainWindow;
-- (BOOL) acceptsFirstResponder;
-- (BOOL) becomeFirstResponder;
-- (BOOL) resignFirstResponder;
-- (WebviewPanel*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
-
-@property (assign) WKWebView* webView;
-
-@end
-
 @interface WebviewWindowDelegate : NSObject <NSWindowDelegate, WKScriptMessageHandler, WKNavigationDelegate, WKURLSchemeHandler, NSDraggingDestination, WKUIDelegate>
 
 @property unsigned int windowId;
@@ -43,6 +31,10 @@
 - (void)startDrag:(WebviewWindow*)window;
 
 @end
+
+// Shared key event helpers (used by both WebviewWindow and WebviewPanel)
+NSString* keyStringFromKeyEvent(NSEvent *event);
+void dispatchKeyDownEvent(NSEvent *event, unsigned int windowId);
 
 void windowSetScreen(void* window, void* screen, int yOffset);
 
