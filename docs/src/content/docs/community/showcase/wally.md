@@ -1,5 +1,6 @@
 ---
 title: Wally
+description: "A desktop application built with Wails"
 ---
 
 ![Wally Screenshot](../../../../assets/showcase-images/wally.webp)

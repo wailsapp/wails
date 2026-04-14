@@ -1,5 +1,6 @@
 ---
 title: Minecraft launcher for WarMine
+description: "A desktop application built with Wails"
 ---
 
 ![WarMine Screenshot](../../../../assets/showcase-images/warmine1.png)
