@@ -1,5 +1,6 @@
 ---
 title: hiposter
+description: "A desktop application built with Wails"
 ---
 
 ![hiposter](../../../../assets/showcase-images/hiposter.webp)
