@@ -111,10 +111,11 @@ jobs:
           version: 1.0
 
       - name: Install linux dependencies (GTK4)
+        uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-4-dev libwebkitgtk-6.0-dev
+        with:
+          packages: libgtk-4-dev libwebkitgtk-6.0-dev
+          version: 1.0
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -225,10 +226,11 @@ jobs:
           version: 1.0
 
       - name: Install linux dependencies (GTK4)
+        uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-4-dev libwebkitgtk-6.0-dev
+        with:
+          packages: libgtk-4-dev libwebkitgtk-6.0-dev
+          version: 1.0
 
       - name: Setup Go
         uses: actions/setup-go@v5
