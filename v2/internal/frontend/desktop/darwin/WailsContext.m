@@ -149,7 +149,7 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
     return NO;
 }
 
-- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)zoomable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString*)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight :(bool)fraudulentWebsiteWarningEnabled :(struct Preferences)preferences :(bool)enableDragAndDrop :(bool)disableWebViewDragAndDrop  {
+- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)zoomable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString*)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight :(bool)fraudulentWebsiteWarningEnabled :(struct Preferences)preferences :(bool)enableDragAndDrop :(bool)disableWebViewDragAndDrop :(bool)enableRetinaDevicePixelRatio {
     NSWindowStyleMask styleMask = 0;
 
     if( !frameless ) {
@@ -294,13 +294,16 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
     [self.webview setFrame:contentViewBounds];
 
     // Force WKWebView to report correct devicePixelRatio on HiDPI displays.
-    // The _overrideDeviceScaleFactor SPI sets WebPageProxy's customDeviceScaleFactor,
-    // which is the authoritative source for window.devicePixelRatio in JavaScript.
-    // Without this, custom URL schemes (wails://) cause DPR to report 1 on Retina.
-    // This SPI is stable since macOS 10.11 and used by Electron and Playwright.
-    CGFloat scaleFactor = [self.mainWindow backingScaleFactor];
-    if (scaleFactor > 1.0) {
-        [self.webview _setOverrideDeviceScaleFactor:scaleFactor];
+    // Uses the _setOverrideDeviceScaleFactor: SPI which sets WebPageProxy's
+    // customDeviceScaleFactor — the authoritative source for window.devicePixelRatio
+    // in JavaScript. Without this, custom URL schemes (wails://) cause DPR to
+    // report 1 on Retina. This is opt-in because it uses a private Apple API
+    // which may cause App Store rejection.
+    if (enableRetinaDevicePixelRatio) {
+        SEL sel = NSSelectorFromString(@"_setOverrideDeviceScaleFactor:");
+        if ([self.webview respondsToSelector:sel]) {
+            [self.webview _setOverrideDeviceScaleFactor:[self.mainWindow backingScaleFactor]];
+        }
     }
 
     if (webviewIsTransparent) {
