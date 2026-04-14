@@ -193,7 +193,7 @@ jobs:
 
   test_templates:
     name: Test Templates
-    needs: [test_js, test_go]
+    needs: [test_js]
     runs-on: ${{ matrix.os }}
     if: github.base_ref == 'v3-alpha'
     strategy:
