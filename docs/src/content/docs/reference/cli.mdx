@@ -1,0 +1,565 @@
+---
+title: CLI Reference
+description: Complete reference for the Wails CLI commands and options
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Steps, Card, CardGrid } from "@astrojs/starlight/components";
+
+The Wails CLI (`wails3`) provides commands for creating, developing, building, and managing Wails applications.
+
+## General Syntax
+
+```bash
+wails3 [command] [subcommand] [flags] [arguments]
+```
+
+## Common Flags
+
+The following flags are available on most commands:
+
+| Flag | Description |
+|------|-------------|
+| `--no-colour` | Disable colour in output |
+| `-h, --help` | Show help for the command |
+
+## Commands
+
+### docs
+
+Opens the Wails documentation in your default browser.
+
+```bash
+wails3 docs
+```
+
+### version
+
+Prints the version of the Wails CLI.
+
+```bash
+wails3 version
+```
+
+### sponsor
+
+Opens the Wails project sponsorship page in your default browser.
+
+```bash
+wails3 sponsor
+```
+
+## Project Commands
+
+### init
+
+Initializes a new Wails project.
+
+```bash
+wails3 init [flags]
+```
+
+Use this command to scaffold a new Wails application with all necessary project structure and configuration.
+
+### dev
+
+Runs your Wails application in development mode with hot reload.
+
+```bash
+wails3 dev [flags]
+```
+
+This command starts your application in development mode, enabling:
+- Live code reloading when you save changes
+- Enhanced error messages
+- Access to browser developer tools
+
+### build
+
+Builds your Wails application for production.
+
+```bash
+wails3 build [flags] [extra-args]
+```
+
+**Flags:**
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--platform` | current OS | Target platform (windows, macos, linux) |
+| `--arch` | current arch | Target architecture (amd64, arm64, 386) |
+| `--output` | ./build | Output directory for the built application |
+| `--dev` | false | Build in development mode |
+| `--skipFrontend` | false | Skip building frontend assets |
+| `--compiler` | | C compiler to use (for CGO) |
+| `--upx` | false | Use UPX to compress the binary (if available) |
+| `--verbose` | false | Enable verbose output |
+
+**Extra arguments** are passed directly to the Go build command.
+
+### package
+
+Packages your built application for distribution.
+
+```bash
+wails3 package [flags]
+```
+
+**Flags:**
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--format` | deb | Package format (deb, rpm, archlinux, dmg, zip, nsis) |
+| `--name` | myapp | Name of the executable to package |
+| `--config` | | Path to the package configuration file |
+| `--out` | . | Output directory for the package |
+| `--background` | | Optional background image path for DMG files |
+| `--create-dmg` | false | Create a DMG file (macOS only) |
+
+## Development & Diagnostics
+
+### doctor
+
+Displays a system status report showing your development environment configuration.
+
+```bash
+wails3 doctor
+```
+
+This command checks:
+- Go version and installation
+- Node.js version and installation
+- Required system dependencies
+- Platform-specific tools (Visual Studio, Xcode, etc.)
+
+### doctor-ng
+
+Displays a system status report using an interactive terminal UI (TUI).
+
+```bash
+wails3 doctor-ng
+```
+
+### releasenotes
+
+Shows the release notes for the current version of Wails.
+
+```bash
+wails3 releasenotes
+```
+
+## Code Generation
+
+### generate
+
+Provides various code generation tools.
+
+```bash
+wails3 generate [subcommand] [flags]
+```
+
+#### generate bindings
+
+Generates TypeScript bindings and models from your Go code.
+
+```bash
+wails3 generate bindings [flags] [patterns...]
+```
+
+**Flags:**
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--output` | ./frontend/src | Output directory for generated files |
+| `--packagename` | wailsruntime | Go package name for bindings |
+| `--types` | true | Generate TypeScript types |
+| `--verbose` | false | Enable verbose output |
+
+**Patterns** match packages to scan (e.g., `./...` for current dir and subdirs).
+
+#### generate icons
+
+Generates application icons in all required formats from a source icon.
+
+```bash
+wails3 generate icons [flags]
+```
+
+#### generate runtime
+
+Generates the pre-built version of the Wails runtime.
+
+```bash
+wails3 generate runtime [flags]
+```
+
+#### generate syso
+
+Generates a Windows .syso file for embedding version information and icons.
+
+```bash
+wails3 generate syso [flags]
+```
+
+#### generate webview2bootstrapper
+
+Generates a WebView2 bootstrapper for Windows.
+
+```bash
+wails3 generate webview2bootstrapper [flags]
+```
+
+#### generate template
+
+Generates a new Wails template.
+
+```bash
+wails3 generate template [flags]
+```
+
+#### generate constants
+
+Generates JavaScript constants from your Go code.
+
+```bash
+wails3 generate constants [flags]
+```
+
+#### generate .desktop
+
+Generates a `.desktop` file for Linux application integration.
+
+```bash
+wails3 generate .desktop [flags]
+```
+
+#### generate appimage
+
+Generates a Linux AppImage from your built application.
+
+```bash
+wails3 generate appimage [flags]
+```
+
+#### generate build-assets
+
+Generates build assets from your project configuration.
+
+```bash
+wails3 generate build-assets [flags]
+```
+
+### update
+
+Provides tools for updating Wails and build assets.
+
+```bash
+wails3 update [subcommand]
+```
+
+#### update build-assets
+
+Updates build assets using a given configuration file.
+
+```bash
+wails3 update build-assets [config-file]
+```
+
+#### update cli
+
+Updates the Wails CLI to the latest version.
+
+```bash
+wails3 update cli
+```
+
+## Task Management
+
+### task
+
+Runs and lists tasks defined in your `Taskfile.yaml`.
+
+```bash
+wails3 task [taskname] [flags]
+```
+
+**Flags:**
+
+| Flag | Description |
+|------|-------------|
+| `--list` | List all available tasks |
+| `--verbose` | Show detailed output |
+
+Tasks are defined in the `Taskfile.yaml` file. See [taskfile.dev](https://taskfile.dev) for more information.
+
+## Service Tools
+
+### service
+
+Provides service-related tools.
+
+```bash
+wails3 service [subcommand]
+```
+
+#### service init
+
+Initializes a new Wails service.
+
+```bash
+wails3 service init [flags]
+```
+
+## Utility Tools
+
+### tool
+
+Provides various utility tools.
+
+```bash
+wails3 tool [subcommand] [flags]
+```
+
+#### tool checkport
+
+Checks if a port is open. Useful for testing if your development server is running.
+
+```bash
+wails3 tool checkport [port]
+```
+
+**Example:**
+
+```bash
+wails3 tool checkport 5173  # Check if Vite dev server is running
+```
+
+#### tool watcher
+
+Watches files and runs a command when they change.
+
+```bash
+wails3 tool watcher [flags]
+```
+
+**Flags:**
+
+| Flag | Description |
+|------|-------------|
+| `--path` | Path to watch |
+| `--command` | Command to run on change |
+| `--extensions` | File extensions to watch |
+
+#### tool cp
+
+Copies files (cross-platform file copying utility).
+
+```bash
+wails3 tool cp [source] [destination]
+```
+
+#### tool buildinfo
+
+Shows build information for your project.
+
+```bash
+wails3 tool buildinfo
+```
+
+#### tool package
+
+Generates Linux packages (deb, rpm, archlinux) from built applications.
+
+```bash
+wails3 tool package [flags]
+```
+
+**Flags:**
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--format` | deb | Package format (deb, rpm, archlinux) |
+| `--name` | | Name of the executable |
+| `--config` | | Path to package config file |
+| `--out` | . | Output directory |
+
+#### tool version
+
+Bumps semantic version numbers.
+
+```bash
+wails3 tool version [flags]
+```
+
+#### tool lipo
+
+Creates macOS universal binaries from multiple architectures.
+
+```bash
+wails3 tool lipo [flags]
+```
+
+**Flags:**
+
+| Flag | Description |
+|------|-------------|
+| `--output` | Output file path |
+| `--arch` | Architectures to combine |
+
+#### tool capabilities
+
+Checks system build capabilities (GTK4/GTK3 availability on Linux).
+
+```bash
+wails3 tool capabilities
+```
+
+#### tool sign
+
+Signs a binary or package directly (low-level tool for Taskfiles).
+
+```bash
+wails3 tool sign [flags]
+```
+
+**Flags:**
+
+| Flag | Description |
+|------|-------------|
+| `--file` | File to sign |
+| `--identity` | Code signing identity |
+| `--timestamp` | Add timestamp |
+
+## Project Setup
+
+### setup
+
+Provides project setup wizards.
+
+```bash
+wails3 setup [subcommand]
+```
+
+#### setup signing
+
+Configures code signing for your project.
+
+```bash
+wails3 setup signing [flags]
+```
+
+**Flags:**
+
+| Flag | Description |
+|------|-------------|
+| `--platform` | Target platform |
+| `--identity` | Code signing identity to use |
+
+#### setup entitlements
+
+Configures macOS entitlements.
+
+```bash
+wails3 setup entitlements [flags]
+```
+
+## Code Signing
+
+### sign
+
+Signs binaries and packages for the current or specified platform.
+
+```bash
+wails3 sign [flags] [extra-args]
+```
+
+**Flags:**
+
+| Flag | Description |
+|------|-------------|
+| `--platform` | Target platform (windows, macos, linux) |
+| `--file` | File to sign |
+| `--identity` | Code signing identity |
+
+## Platform-Specific Commands
+
+### ios
+
+Provides iOS-specific tooling.
+
+```bash
+wails3 ios [subcommand]
+```
+
+#### ios overlay:gen
+
+Generates a Go overlay for the iOS bridge shim.
+
+```bash
+wails3 ios overlay:gen [flags]
+```
+
+#### ios xcode:gen
+
+Generates an Xcode project in the output directory.
+
+```bash
+wails3 ios xcode:gen [flags]
+```
+
+---
+
+## Help
+
+For help with any command, use the `-h` or `--help` flag:
+
+```bash
+wails3 --help                  # General help
+wails3 [command] --help        # Command-specific help
+wails3 [command] [subcommand] --help  # Subcommand help
+```
+
+## Examples
+
+Create and develop a new Wails application:
+
+<Steps>
+
+1. Initialize a new project
+   ```bash
+   wails3 init
+   ```
+
+2. Navigate to your project directory
+   ```bash
+   cd my-app
+   ```
+
+3. Check your development environment
+   ```bash
+   wails3 doctor
+   ```
+
+4. Start development server
+   ```bash
+   wails3 dev
+   ```
+
+5. Build for production
+   ```bash
+   wails3 build
+   ```
+
+6. Package for distribution
+   ```bash
+   wails3 package --format dmg  # macOS
+   wails3 package --format deb  # Linux
+   wails3 package --format nsis  # Windows
+   ```
+
+</Steps>
+
+---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples).
