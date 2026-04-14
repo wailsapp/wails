@@ -1,5 +1,6 @@
 ---
 title: ESP Studio
+description: "A desktop application built with Wails"
 ---
 
 ![ESP Studio](../../../../assets/showcase-images/esp-studio.png)
