@@ -11,7 +11,7 @@ import react from '@astrojs/react';
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://wails.io",
+  site: "https://v3.wails.io",
   trailingSlash: "ignore",
   compressHTML: true,
   output: "static",
@@ -43,6 +43,69 @@ export default defineConfig({
         { icon: 'x.com', label: 'X', href: 'https://x.com/wailsapp' },
       ],
       head: [
+        // Open Graph Meta Tags
+        { tag: 'meta', attrs: { property: 'og:type', content: 'website' } },
+        { tag: 'meta', attrs: { property: 'og:site_name', content: 'Wails' } },
+        { tag: 'meta', attrs: { property: 'og:image', content: 'https://v3.wails.io/og-image.png' } },
+        { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
+        { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
+        { tag: 'meta', attrs: { property: 'og:image:type', content: 'image/png' } },
+        { tag: 'meta', attrs: { property: 'og:locale', content: 'en_US' } },
+        // Twitter Card Meta Tags
+        { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
+        { tag: 'meta', attrs: { name: 'twitter:site', content: '@wailsapp' } },
+        { tag: 'meta', attrs: { name: 'twitter:creator', content: '@leaanthony' } },
+        // Additional SEO Meta Tags
+        { tag: 'meta', attrs: { name: 'robots', content: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1' } },
+        { tag: 'meta', attrs: { name: 'googlebot', content: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1' } },
+        // Schema.org Structured Data for SoftwareApplication
+        {
+          tag: 'script',
+          attrs: { type: 'application/ld+json' },
+          content: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'SoftwareApplication',
+            name: 'Wails',
+            description: 'Build beautiful desktop applications using Go and modern web technologies.',
+            url: 'https://v3.wails.io',
+            applicationCategory: 'DeveloperApplication',
+            downloadUrl: 'https://github.com/wailsapp/wails/releases',
+            softwareVersion: '3.0',
+            operatingSystem: ['Windows', 'macOS', 'Linux'],
+            offers: {
+              '@type': 'Offer',
+              price: '0',
+              priceCurrency: 'USD',
+            },
+            author: {
+              '@type': 'Organization',
+              name: 'Wails Contributors',
+              url: 'https://github.com/wailsapp/wails',
+            },
+            provider: {
+              '@type': 'Organization',
+              name: 'Wails Contributors',
+              url: 'https://github.com/wailsapp/wails',
+            },
+          }),
+        },
+        // Schema.org Structured Data for Organization
+        {
+          tag: 'script',
+          attrs: { type: 'application/ld+json' },
+          content: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'Wails',
+            url: 'https://v3.wails.io',
+            logo: 'https://v3.wails.io/favicon.svg',
+            sameAs: [
+              'https://github.com/wailsapp/wails',
+              'https://x.com/wailsapp',
+              'https://discord.gg/JDdSxwjhGf',
+            ],
+          }),
+        },
         {
           tag: 'script',
           content: `

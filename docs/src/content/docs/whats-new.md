@@ -1,5 +1,6 @@
 ---
 title: What's New in Wails v3
+description: Discover the major improvements and new features in Wails v3
 ---
 
 Wails v3 introduces significant changes from v2. It replaces the

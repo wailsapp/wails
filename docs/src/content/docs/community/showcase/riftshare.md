@@ -1,5 +1,6 @@
 ---
 title: RiftShare
+description: "A desktop application built with Wails"
 ---
 
 ![RiftShare](../../../../assets/showcase-images/riftshare-main.webp)
