@@ -11,7 +11,7 @@ import react from '@astrojs/react';
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://wails.io",
+  site: "https://v3.wails.io",
   trailingSlash: "ignore",
   compressHTML: true,
   output: "static",
