@@ -1,6 +1,7 @@
 ---
 slug: blog/wails-v2-released
 title: Wails v2 Released
+description: "Release notes and announcements for Wails"
 authors: [leaanthony]
 tags: [wails, v2]
 date: 2022-09-22
