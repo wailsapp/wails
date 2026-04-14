@@ -153,8 +153,8 @@ func main() {
 
 	app := application.New(application.Options{
 		Name: "API Example",
-		Bind: []interface{}{
-			userAPI,
+		Services: []application.Service{
+			application.NewService(userAPI),
 		},
 	})
 

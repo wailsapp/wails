@@ -196,8 +196,8 @@ func main() {
 
 	app := application.New(application.Options{
 		Name: "My App",
-		Bind: []interface{}{
-			userService,
+		Services: []application.Service{
+			application.NewService(userService),
 		},
 	})
 
