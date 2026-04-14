@@ -828,8 +828,9 @@ Controls how the window behaves across macOS Spaces and fullscreen. These are bi
 - `MacWindowCollectionBehaviorFullScreenAllowsTiling` - Allows side-by-side tiling (macOS 10.11+)
 - `MacWindowCollectionBehaviorFullScreenDisallowsTiling` - Prevents tiling (macOS 10.11+)
 
-**Example - Spotlight-like window:**
+**Note:** MacWindowClassWindow fullscreen overlay requires `application.Options{ Mac: application.MacOptions{ ActivationPolicy: application.ActivationPolicyAccessory } }`
 
+**Example - Spotlight-like window:**
 ```go
 // Window that appears on all Spaces AND can overlay fullscreen apps
 Mac: application.MacWindow{
@@ -845,6 +846,32 @@ Mac: application.MacWindow{
 // Window that can appear over fullscreen applications
 Mac: application.MacWindow{
     CollectionBehavior: application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+},
+```
+
+**WindowClass** (`MacWindowClass`)
+- `MacWindowClassWindow` - Standard window (default)
+- `MacWindowClassPanel` - Auxiliary window that can float above other windows and receive input without activating the application
+
+**PanelPreferences** (`MacPanelPreferences`)
+
+Preferences for MacWindowClassPanel windows (only applies when `WindowClass` is `MacWindowClassPanel`):
+- `FloatingPanel` - Panel floats above other windows
+- `BecomesKeyOnlyIfNeeded` - Panel becomes key only when needed
+- `NonactivatingPanel` - Panel receives input without activating the application
+- `UtilityWindow` - Panel uses utility window style
+
+**Note:** Unlike MacWindowClassWindow, MacWindowClassPanel fullscreen overlay does NOT require `application.Options{ Mac: application.MacOptions{ ActivationPolicy: application.ActivationPolicyAccessory } }`
+
+**Example - Spotlight-like panel:**
+```go
+Mac: application.MacWindow{
+    WindowClass: application.MacWindowClassPanel,
+    PanelPreferences: application.MacPanelPreferences{
+        NonactivatingPanel: true,
+    },
+    CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces |
+                        application.MacWindowCollectionBehaviorFullScreenAuxiliary,
 },
 ```
 

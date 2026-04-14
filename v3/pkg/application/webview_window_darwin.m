@@ -18,81 +18,22 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     LiquidGlassStyleDark = 2,
     LiquidGlassStyleVibrant = 3
 };
-@implementation WebviewWindow
-- (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
-{
-    self = [super initWithContentRect:contentRect styleMask:windowStyle backing:bufferingType defer:deferCreation];
-    [self setAlphaValue:1.0];
-    [self setBackgroundColor:[NSColor clearColor]];
-    [self setOpaque:NO];
-    [self setMovableByWindowBackground:YES];
-    return self;
-}
-- (void)keyDown:(NSEvent *)event {
-    NSUInteger modifierFlags = event.modifierFlags;
-    // Create an array to hold the modifier strings
-    NSMutableArray *modifierStrings = [NSMutableArray array];
-    // Check for modifier flags and add corresponding strings to the array
-    if (modifierFlags & NSEventModifierFlagShift) {
-        [modifierStrings addObject:@"shift"];
-    }
-    if (modifierFlags & NSEventModifierFlagControl) {
-        [modifierStrings addObject:@"ctrl"];
-    }
-    if (modifierFlags & NSEventModifierFlagOption) {
-        [modifierStrings addObject:@"option"];
-    }
-    if (modifierFlags & NSEventModifierFlagCommand) {
-        [modifierStrings addObject:@"cmd"];
-    }
-    NSString *keyString = [self keyStringFromEvent:event];
-    if (keyString.length > 0) {
-        [modifierStrings addObject:keyString];
-    }
-    // Combine the modifier strings with the key character
-    NSString *keyEventString = [modifierStrings componentsJoinedByString:@"+"];
-    const char* utf8String = [keyEventString UTF8String];
-    WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)self.delegate;
-    processWindowKeyDownEvent(delegate.windowId, utf8String);
-}
-- (NSString *)keyStringFromEvent:(NSEvent *)event {
-    // Get the pressed key
-    // Check for special keys like escape and tab
+
+// Shared key event handling functions
+static NSString* keyStringFromKeyEvent(NSEvent *event) {
     NSString *characters = [event characters];
     if (characters.length == 0) {
         return @"";
     }
-    if ([characters isEqualToString:@"\r"]) {
-        return @"enter";
-    }
-    if ([characters isEqualToString:@"\b"]) {
-        return @"backspace";
-    }
-    if ([characters isEqualToString:@"\e"]) {
-        return @"escape";
-    }
-    // page down
-    if ([characters isEqualToString:@"\x0B"]) {
-        return @"page down";
-    }
-    // page up
-    if ([characters isEqualToString:@"\x0E"]) {
-        return @"page up";
-    }
-    // home
-    if ([characters isEqualToString:@"\x01"]) {
-        return @"home";
-    }
-    // end
-    if ([characters isEqualToString:@"\x04"]) {
-        return @"end";
-    }
-    // clear
-    if ([characters isEqualToString:@"\x0C"]) {
-        return @"clear";
-    }
+    if ([characters isEqualToString:@"\r"]) return @"enter";
+    if ([characters isEqualToString:@"\b"]) return @"backspace";
+    if ([characters isEqualToString:@"\e"]) return @"escape";
+    if ([characters isEqualToString:@"\x0B"]) return @"page down";
+    if ([characters isEqualToString:@"\x0E"]) return @"page up";
+    if ([characters isEqualToString:@"\x01"]) return @"home";
+    if ([characters isEqualToString:@"\x04"]) return @"end";
+    if ([characters isEqualToString:@"\x0C"]) return @"clear";
     switch ([event keyCode]) {
-        // Function keys
         case 122: return @"f1";
         case 120: return @"f2";
         case 99: return @"f3";
@@ -113,7 +54,6 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
         case 79: return @"f18";
         case 80: return @"f19";
         case 90: return @"f20";
-        // Letter keys
         case 0: return @"a";
         case 11: return @"b";
         case 8: return @"c";
@@ -140,7 +80,6 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
         case 7: return @"x";
         case 16: return @"y";
         case 6: return @"z";
-        // Number keys
         case 29: return @"0";
         case 18: return @"1";
         case 19: return @"2";
@@ -151,7 +90,6 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
         case 26: return @"7";
         case 28: return @"8";
         case 25: return @"9";
-        // Other special keys
         case 51: return @"delete";
         case 117: return @"forward delete";
         case 123: return @"left";
@@ -161,7 +99,6 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
         case 48: return @"tab";
         case 53: return @"escape";
         case 49: return @"space";
-        // Punctuation and other keys (for a standard US layout)
         case 33: return @"[";
         case 30: return @"]";
         case 43: return @",";
@@ -175,6 +112,36 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
         case 42: return @"\\";
         default: return @"";
     }
+}
+
+static void dispatchKeyDownEvent(NSEvent *event, unsigned int windowId) {
+    NSUInteger modifierFlags = event.modifierFlags;
+    NSMutableArray *modifierStrings = [NSMutableArray array];
+    if (modifierFlags & NSEventModifierFlagShift) [modifierStrings addObject:@"shift"];
+    if (modifierFlags & NSEventModifierFlagControl) [modifierStrings addObject:@"ctrl"];
+    if (modifierFlags & NSEventModifierFlagOption) [modifierStrings addObject:@"option"];
+    if (modifierFlags & NSEventModifierFlagCommand) [modifierStrings addObject:@"cmd"];
+    NSString *keyString = keyStringFromKeyEvent(event);
+    if (keyString.length > 0) {
+        [modifierStrings addObject:keyString];
+    }
+    NSString *keyEventString = [modifierStrings componentsJoinedByString:@"+"];
+    processWindowKeyDownEvent(windowId, [keyEventString UTF8String]);
+}
+
+@implementation WebviewWindow
+- (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
+{
+    self = [super initWithContentRect:contentRect styleMask:windowStyle backing:bufferingType defer:deferCreation];
+    [self setAlphaValue:1.0];
+    [self setBackgroundColor:[NSColor clearColor]];
+    [self setOpaque:NO];
+    [self setMovableByWindowBackground:YES];
+    return self;
+}
+- (void)keyDown:(NSEvent *)event {
+    WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)self.delegate;
+    dispatchKeyDownEvent(event, delegate.windowId);
 }
 - (BOOL)canBecomeKeyWindow {
     return YES;
@@ -243,6 +210,59 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     }
 }
 @end
+
+@implementation WebviewPanel
+- (WebviewPanel*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
+{
+    self = [super initWithContentRect:contentRect styleMask:windowStyle backing:bufferingType defer:deferCreation];
+    [self setAlphaValue:1.0];
+    [self setBackgroundColor:[NSColor clearColor]];
+    [self setOpaque:NO];
+    [self setMovableByWindowBackground:YES];
+    return self;
+}
+// Override sendEvent to intercept key events BEFORE WKWebView consumes them
+- (void)sendEvent:(NSEvent *)event {
+    if (event.type == NSEventTypeKeyDown) {
+        [self keyDown:event];
+    }
+    [super sendEvent:event];
+}
+- (void)keyDown:(NSEvent *)event {
+    WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)self.delegate;
+    dispatchKeyDownEvent(event, delegate.windowId);
+}
+- (BOOL)canBecomeKeyWindow {
+    return YES;
+}
+- (BOOL) canBecomeMainWindow {
+    return NO;  // Panels typically don't become main window
+}
+- (BOOL) acceptsFirstResponder {
+    return YES;
+}
+- (BOOL) becomeFirstResponder {
+    return YES;
+}
+- (BOOL) resignFirstResponder {
+    return YES;
+}
+- (void) setDelegate:(id<NSWindowDelegate>) delegate {
+    [delegate retain];
+    [super setDelegate: delegate];
+    if ([delegate isKindOfClass:[WebviewWindowDelegate class]]) {
+        [self registerForDraggedTypes:@[NSFilenamesPboardType]];
+    }
+}
+- (void) dealloc {
+    [self.webView.configuration.userContentController removeScriptMessageHandlerForName:@"external"];
+    if (self.delegate) {
+        [self.delegate release];
+    }
+    [super dealloc];
+}
+@end
+
 @implementation WebviewWindowDelegate
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
     NSPasteboard *pasteboard = [sender draggingPasteboard];
