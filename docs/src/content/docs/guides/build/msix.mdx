@@ -1,0 +1,224 @@
+---
+title: MSIX Packaging
+description: Package your Wails application as an MSIX for Microsoft Store and enterprise deployment
+sidebar:
+  order: 8
+---
+
+import { Tabs, TabItem, Steps, Aside, Card, CardGrid } from '@astrojs/starlight/components';
+
+MSIX is a Windows application packaging format that supports Microsoft Store distribution, silent enterprise deployment via Intune/SCCM, and clean uninstallation. Wails builds MSIX packages using `MakeAppx.exe` from the Windows SDK.
+
+<Aside type="caution">
+MSIX packaging is only supported on Windows. Run these commands on a Windows machine or in a Windows CI environment.
+</Aside>
+
+## Prerequisites
+
+Install the Windows SDK to get `MakeAppx.exe`:
+
+```bash
+wails3 tool msix-install-tools
+```
+
+This opens the Microsoft Store to install the MSIX Packaging Tool and the Windows SDK download page if `MakeAppx.exe` is not already in your PATH.
+
+You can also install manually:
+- **Windows SDK**: includes `MakeAppx.exe` and `signtool.exe`
+- **MSIX Packaging Tool**: available from the Microsoft Store (optional, alternative to `MakeAppx.exe`)
+
+## Quick Start
+
+<Steps>
+1. Configure your project identity in `wails.json`:
+
+   ```json
+   {
+     "info": {
+       "companyName": "My Company",
+       "productName": "MyApp",
+       "productIdentifier": "com.mycompany.myapp",
+       "description": "My awesome application",
+       "version": "1.0.0"
+     }
+   }
+   ```
+
+2. Build your application:
+
+   ```bash
+   wails3 build GOOS=windows
+   ```
+
+3. Create the MSIX package:
+
+   ```bash
+   wails3 tool msix --executable bin/myapp.exe --name myapp.exe
+   ```
+
+   Output: `myapp.msix` in the current directory.
+</Steps>
+
+## CLI Reference
+
+```bash
+wails3 tool msix [flags]
+```
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--config` | Path to project config file | `wails.json` |
+| `--executable` | Path to the `.exe` to package | — |
+| `--name` | Executable filename inside the package | — |
+| `--out` | Output path for the `.msix` file | `<ProductName>.msix` |
+| `--arch` | Target architecture: `x64`, `x86`, `arm64` | `x64` |
+| `--publisher` | Publisher string (e.g. `CN=My Company`) | Derived from `companyName` |
+| `--cert` | Path to `.pfx` certificate for signing | — |
+| `--cert-password` | Password for the `.pfx` certificate | — |
+| `--use-makeappx` | Use `MakeAppx.exe` (default) | `true` |
+| `--use-msix-tool` | Use Microsoft MSIX Packaging Tool | `false` |
+
+## Signing
+
+MSIX packages must be signed to install outside the Microsoft Store. Unsigned packages require enabling Developer Mode on the target machine.
+
+### Sign with a Certificate File
+
+```bash
+wails3 tool msix \
+  --executable bin/myapp.exe \
+  --name myapp.exe \
+  --cert path/to/certificate.pfx \
+  --cert-password "your-password"
+```
+
+`signtool.exe` (included with the Windows SDK) signs the package with SHA256.
+
+### Publisher Must Match Certificate
+
+The `--publisher` value must exactly match the `Subject` field of your certificate:
+
+```bash
+# Get the Subject from your certificate
+powershell -Command "(Get-PfxCertificate -FilePath cert.pfx).Subject"
+# Example output: CN=My Company, O=My Company, C=US
+
+wails3 tool msix \
+  --executable bin/myapp.exe \
+  --name myapp.exe \
+  --publisher "CN=My Company, O=My Company, C=US" \
+  --cert cert.pfx \
+  --cert-password "password"
+```
+
+If `--publisher` is not specified, Wails derives it from `companyName` in `wails.json` as `CN=<companyName>`.
+
+## File Associations in MSIX
+
+MSIX supports registering file type associations. Define them in `wails.json`:
+
+```json
+{
+  "info": {
+    "productName": "MyEditor",
+    "productIdentifier": "com.example.myeditor",
+    "companyName": "Example Corp",
+    "version": "1.0.0"
+  },
+  "fileAssociations": [
+    {
+      "ext": ".myext",
+      "name": "My Document",
+      "description": "A document for MyEditor",
+      "iconName": "fileicon"
+    }
+  ]
+}
+```
+
+Place your file type icon at `build/windows/fileicon.ico`. Wails includes it in the MSIX package as `Assets/FileIcon.png`.
+
+See [File Associations](/guides/distribution/file-associations) for the full guide on handling files at runtime.
+
+## Package Assets
+
+Wails generates placeholder MSIX assets automatically. Replace them with your own branding by placing files at these paths in your project before running the MSIX tool:
+
+| Asset | Size | Purpose |
+|-------|------|---------|
+| `Assets/Square150x150Logo.png` | 150×150 px | Start menu tile |
+| `Assets/Square44x44Logo.png` | 44×44 px | Taskbar icon |
+| `Assets/Wide310x150Logo.png` | 310×150 px | Wide start menu tile |
+| `Assets/StoreLogo.png` | 50×50 px | Microsoft Store listing |
+| `Assets/SplashScreen.png` | 620×300 px | Splash screen |
+| `Assets/FileIcon.png` | 256×256 px | File type icon (if using file associations) |
+
+## Microsoft Store Submission
+
+To submit to the Microsoft Store:
+
+1. Register in the [Microsoft Partner Center](https://partner.microsoft.com/dashboard)
+2. Reserve your app name and get your Publisher identity
+3. Use your Store publisher string as `--publisher`
+4. Sign with a certificate from a trusted CA (required for Store)
+5. Upload the `.msix` to Partner Center for certification
+
+<Aside type="note">
+The Microsoft Store re-signs packages during ingestion, so your signing certificate does not need to be the Store certificate — it just needs to match your `--publisher` value for local validation.
+</Aside>
+
+## CI/CD Example
+
+```yaml title=".github/workflows/release.yml"
+- name: Build MSIX
+  if: runner.os == 'Windows'
+  run: |
+    wails3 build GOOS=windows
+    wails3 tool msix `
+      --executable bin/myapp.exe `
+      --name myapp.exe `
+      --cert "$env:CERT_PATH" `
+      --cert-password "$env:CERT_PASSWORD"
+  env:
+    CERT_PATH: ${{ secrets.WINDOWS_CERT_PATH }}
+    CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
+```
+
+## Troubleshooting
+
+### MakeAppx.exe not found
+
+Install the Windows SDK. After installation, `MakeAppx.exe` is typically at:
+
+```
+C:\Program Files (x86)\Windows Kits\10\bin\<version>\x64\MakeAppx.exe
+```
+
+Add this directory to your `PATH`, or run:
+
+```bash
+wails3 tool msix-install-tools
+```
+
+### signtool.exe not found
+
+`signtool.exe` ships with the Windows SDK alongside `MakeAppx.exe`. Install or repair the Windows SDK.
+
+### Publisher mismatch error
+
+The `--publisher` value must exactly match the certificate Subject. Use the PowerShell command above to retrieve the exact Subject string from your certificate.
+
+### Package fails to install (0x800B0101)
+
+The certificate is not trusted on the target machine. Either:
+- Install the certificate into the machine's Trusted Root store, or
+- Enable Developer Mode on the target machine (`Settings → System → Developer Mode`)
+
+<CardGrid>
+  <Card title="Windows Packaging" icon="seti:windows">
+    [NSIS installers and general Windows packaging](/guides/build/windows)
+  </Card>
+  <Card title="Code Signing" icon="approve-check">
+    [Sign executables and installers](/guides/build/signing)
+  </Card>
+</CardGrid>

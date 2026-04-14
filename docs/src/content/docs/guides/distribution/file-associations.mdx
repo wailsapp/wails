@@ -1,0 +1,177 @@
+---
+title: File Associations
+description: Open files directly in your Wails application by registering file type associations
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem, Steps, Aside, Card, CardGrid } from '@astrojs/starlight/components';
+
+File associations let users open files directly in your application by double-clicking them in a file manager or dragging them onto your app icon. When a user opens a file with a registered extension, the OS launches your application with the file path as an argument.
+
+## Register File Types
+
+Define which file extensions your application handles in `application.Options`:
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "MyEditor",
+        Description: "A document editor",
+        FileAssociations: []string{".myext", ".myproj"},
+    })
+
+    app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(event *application.ApplicationEvent) {
+        filename := event.Context().Filename()
+        // Open the file in your application
+        openDocument(filename)
+    })
+
+    app.Run()
+}
+```
+
+`FileAssociations` takes a slice of file extensions, each starting with a dot.
+
+## Handle File Open Events
+
+When the OS launches your application with a file, or sends a file to an already-running instance, Wails fires `events.Common.ApplicationOpenedWithFile`:
+
+```go
+app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(event *application.ApplicationEvent) {
+    filename := event.Context().Filename()
+    app.Logger.Info("Opening file", "path", filename)
+    // Load file contents, update UI, etc.
+})
+```
+
+`event.Context().Filename()` returns the absolute path to the file.
+
+<Aside type="note">
+On macOS, the event fires after the application finishes launching. Register your handler before calling `app.Run()`.
+</Aside>
+
+## Configure Build Assets
+
+File associations also need to be registered at the OS level through build asset configuration. Add a `fileAssociations` section to your `wails.json` or `wails.yaml`:
+
+<Tabs syncKey="config-format">
+<TabItem label="wails.yaml">
+```yaml
+fileAssociations:
+  - ext: .myext
+    name: My Document
+    description: A document for MyEditor
+    iconName: fileicon
+    role: Editor
+    mimeType: application/x-myext
+  - ext: .myproj
+    name: My Project
+    description: A project file for MyEditor
+    iconName: projicon
+    role: Editor
+```
+</TabItem>
+<TabItem label="wails.json">
+```json
+{
+  "fileAssociations": [
+    {
+      "ext": ".myext",
+      "name": "My Document",
+      "description": "A document for MyEditor",
+      "iconName": "fileicon",
+      "role": "Editor",
+      "mimeType": "application/x-myext"
+    },
+    {
+      "ext": ".myproj",
+      "name": "My Project",
+      "description": "A project file for MyEditor",
+      "iconName": "projicon",
+      "role": "Editor"
+    }
+  ]
+}
+```
+</TabItem>
+</Tabs>
+
+### Configuration Fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `ext` | Yes | File extension including leading dot (e.g. `.myext`) |
+| `name` | Yes | Human-readable file type name |
+| `description` | Yes | Short description of the file type |
+| `iconName` | Yes | Base name of the icon file (without extension) |
+| `role` | No | macOS role: `Editor`, `Viewer`, or `Shell` (default: `Editor`) |
+| `mimeType` | No | MIME type for Linux desktop integration |
+
+## Regenerate Build Assets
+
+After adding file associations to your config, regenerate the platform build assets:
+
+```bash
+wails3 generate build-assets
+```
+
+This updates platform-specific files:
+- **macOS**: `Info.plist` — adds `CFBundleDocumentTypes` entries
+- **Windows**: `build/windows/nsis/project.nsi` — registers extensions in the registry
+- **Linux**: `build/linux/*.desktop` — adds `MimeType` entries
+
+## Platform Behaviour
+
+<Tabs syncKey="os">
+<TabItem label="macOS" icon="apple">
+macOS registers associations in `Info.plist`. When a user double-clicks a file, macOS sends an `openFile:` Apple Event to your application. Wails translates this into `events.Common.ApplicationOpenedWithFile`.
+
+Place your icon file at `build/darwin/<iconName>.icns`.
+</TabItem>
+<TabItem label="Windows" icon="seti:windows">
+Windows registers associations in the system registry via the NSIS installer. When a user opens a file, Windows passes the path as a command-line argument. Wails detects this argument and fires `events.Common.ApplicationOpenedWithFile`.
+
+Place your icon file at `build/windows/<iconName>.ico`.
+</TabItem>
+<TabItem label="Linux" icon="linux">
+Linux uses `.desktop` file MIME type entries and `xdg-mime` for registration. When a user opens a file, the desktop environment passes the path as a command-line argument.
+
+Place your icon file at `build/linux/<iconName>.png`.
+</TabItem>
+</Tabs>
+
+## Combining with Single Instance
+
+When using [single instance mode](/guides/distribution/single-instance), a second launch with a file forwards the file path to the running instance instead of opening a new window. Handle this in `OnSecondInstanceLaunch`:
+
+```go
+app := application.New(application.Options{
+    FileAssociations: []string{".myext"},
+    SingleInstance: &application.SingleInstanceOptions{
+        UniqueID: "com.example.myeditor",
+        OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+            if len(data.Args) > 0 {
+                // data.Args[0] is the file path passed by the OS
+                openDocument(data.Args[0])
+            }
+        },
+    },
+})
+```
+
+<CardGrid>
+  <Card title="Single Instance" icon="rocket">
+    [Prevent duplicate app windows](/guides/distribution/single-instance) when opening multiple files
+  </Card>
+  <Card title="Custom Protocols" icon="external">
+    [Handle custom URL schemes](/guides/distribution/custom-protocols) for deep linking
+  </Card>
+</CardGrid>
