@@ -55,145 +55,20 @@ jobs:
           echo "ℹ️ Changelog not updated — auto-filling."
         fi
 
-    - name: Fetch CodeRabbit summary
-      id: coderabbit
+    - name: Setup Go
+      if: steps.check.outputs.skip == 'false'
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+
+    - name: Auto-fill changelog entry
       if: steps.check.outputs.skip == 'false'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PR_NUMBER: ${{ steps.pr.outputs.number }}
-      run: |
-        # Fetch all PR comments and find the CodeRabbit summary
-        COMMENTS=$(curl -sf \
-          -H "Authorization: Bearer $GITHUB_TOKEN" \
-          -H "Accept: application/vnd.github+json" \
-          "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments?per_page=100")
-
-        SUMMARY=$(echo "$COMMENTS" | jq -r '
-          [ .[] | select(.user.login == "coderabbitai[bot]") ]
-          | sort_by(.created_at)
-          | first
-          | .body // ""
-        ')
-
-        if [ -n "$SUMMARY" ] && [ "$SUMMARY" != "null" ]; then
-          echo "found=true" >> $GITHUB_OUTPUT
-          echo "✅ Found CodeRabbit summary"
-        else
-          echo "found=false" >> $GITHUB_OUTPUT
-          echo "ℹ️ No CodeRabbit summary found"
-        fi
-
-        # Write to file to avoid env var size limits
-        echo "$SUMMARY" > /tmp/coderabbit_summary.txt
-
-    - name: Generate changelog entry via LLM
-      id: generate
-      if: steps.check.outputs.skip == 'false'
-      env:
         OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-        PR_TITLE: ${{ github.event.pull_request.title }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
         PR_NUMBER: ${{ steps.pr.outputs.number }}
-        CODERABBIT_FOUND: ${{ steps.coderabbit.outputs.found }}
-      run: |
-        if [ "$CODERABBIT_FOUND" = "true" ]; then
-          CONTEXT=$(cat /tmp/coderabbit_summary.txt)
-        else
-          CONTEXT="PR Title: ${PR_TITLE}"
-        fi
-
-        PROMPT_HEADER="You are a changelog writer for Wails, a Go framework for building desktop apps with web frontends.\n\nGiven the following PR information, output ONLY a JSON object (no markdown, no explanation) with exactly these two fields:\n- \"section\": one of: Added, Changed, Fixed, Deprecated, Removed, Security\n- \"entry\": a concise changelog bullet (max 100 chars, no leading dash, no trailing period, present tense)\n\n"
-        printf "${PROMPT_HEADER}%s" "$CONTEXT" > /tmp/prompt.txt
-        PROMPT=$(cat /tmp/prompt.txt)
-
-        # Build JSON payload safely via jq to handle special chars in prompt
-        jq -n \
-          --arg model "google/gemini-2.0-flash-lite-001" \
-          --arg content "$PROMPT" \
-          '{model: $model, temperature: 0.1, messages: [{role: "user", content: $content}]}' \
-          > /tmp/payload.json
-
-        RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" https://openrouter.ai/api/v1/chat/completions \
-          -H "Authorization: Bearer $OPENROUTER_API_KEY" \
-          -H "Content-Type: application/json" \
-          --data-binary @/tmp/payload.json)
-
-        HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS:" | cut -d: -f2)
-        BODY=$(echo "$RESPONSE" | sed '/HTTP_STATUS:/d')
-        echo "HTTP status: $HTTP_STATUS"
-        echo "Response body: $BODY"
-
-        if [ "$HTTP_STATUS" != "200" ]; then
-          echo "❌ OpenRouter API error"
-          exit 1
-        fi
-
-        RAW=$(echo "$BODY" | jq -r '.choices[0].message.content')
-        echo "LLM response: $RAW"
-
-        # Extract JSON robustly — handles code fences, extra text, whitespace
-        PARSED=$(echo "$RAW" | python3 -c "
-import sys, json, re
-text = sys.stdin.read()
-match = re.search(r'\{.*?\}', text, re.DOTALL)
-if not match:
-    print(json.dumps({'section': 'Changed', 'entry': ''}))
-    sys.exit(0)
-try:
-    data = json.loads(match.group())
-    print(json.dumps(data))
-except Exception as e:
-    print(json.dumps({'section': 'Changed', 'entry': ''}))
-")
-
-        SECTION=$(echo "$PARSED" | jq -r '.section')
-        ENTRY=$(echo "$PARSED" | jq -r '.entry')
-
-        # Validate section
-        case "$SECTION" in
-          Added|Changed|Fixed|Deprecated|Removed|Security) ;;
-          *) SECTION="Changed" ;;
-        esac
-
-        echo "section=$SECTION" >> $GITHUB_OUTPUT
-        echo "entry=$ENTRY" >> $GITHUB_OUTPUT
-        echo "✅ Section: $SECTION"
-        echo "✅ Entry: $ENTRY"
-
-    - name: Insert entry into UNRELEASED_CHANGELOG.md
-      if: steps.check.outputs.skip == 'false'
-      env:
-        SECTION: ${{ steps.generate.outputs.section }}
-        ENTRY: ${{ steps.generate.outputs.entry }}
-        PR_NUMBER: ${{ steps.pr.outputs.number }}
-      run: |
-        FILE="v3/UNRELEASED_CHANGELOG.md"
-        BULLET="- ${ENTRY} (#${PR_NUMBER})"
-
-        # Insert bullet after the matching ## Section heading
-        python3 - <<'PYEOF'
-        import os, re, sys
-
-        section = os.environ["SECTION"]
-        bullet = os.environ["BULLET"]
-        filepath = os.environ["FILE"]
-
-        with open(filepath, "r") as f:
-            content = f.read()
-
-        # Find "## <Section>" and insert bullet after it (before the next comment/blank or next ##)
-        pattern = rf"(## {re.escape(section)}\n(?:<!--[^>]*-->\n)?)"
-        replacement = rf"\g<1>{bullet}\n"
-
-        new_content, count = re.subn(pattern, replacement, content)
-        if count == 0:
-            # Section not found — append before the --- footer
-            new_content = content.replace("\n---\n", f"\n## {section}\n{bullet}\n\n---\n", 1)
-
-        with open(filepath, "w") as f:
-            f.write(new_content)
-
-        print(f"Inserted under ## {section}: {bullet}")
-        PYEOF
+      run: go run v3/scripts/auto-changelog.go
 
     - name: Commit and push
       if: steps.check.outputs.skip == 'false'
