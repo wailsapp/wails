@@ -35,28 +35,63 @@ jobs:
           echo "ℹ️ Changelog not updated — auto-filling."
         fi
 
+    - name: Fetch CodeRabbit summary
+      id: coderabbit
+      if: steps.check.outputs.skip == 'false'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: |
+        # Fetch all PR comments and find the CodeRabbit summary
+        COMMENTS=$(curl -sf \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments?per_page=100")
+
+        SUMMARY=$(echo "$COMMENTS" | jq -r '
+          [ .[] | select(.user.login == "coderabbitai[bot]") ]
+          | sort_by(.created_at)
+          | first
+          | .body // ""
+        ')
+
+        if [ -n "$SUMMARY" ] && [ "$SUMMARY" != "null" ]; then
+          echo "found=true" >> $GITHUB_OUTPUT
+          echo "✅ Found CodeRabbit summary"
+        else
+          echo "found=false" >> $GITHUB_OUTPUT
+          echo "ℹ️ No CodeRabbit summary found"
+        fi
+
+        # Write to file to avoid env var size limits
+        echo "$SUMMARY" > /tmp/coderabbit_summary.txt
+
     - name: Generate changelog entry via LLM
       id: generate
       if: steps.check.outputs.skip == 'false'
       env:
         OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         PR_TITLE: ${{ github.event.pull_request.title }}
-        PR_BODY: ${{ github.event.pull_request.body }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
+        CODERABBIT_FOUND: ${{ steps.coderabbit.outputs.found }}
       run: |
-        # Truncate PR body to avoid token waste
-        BODY_TRUNCATED=$(echo "$PR_BODY" | head -c 2000)
+        if [ "$CODERABBIT_FOUND" = "true" ]; then
+          SUMMARY=$(cat /tmp/coderabbit_summary.txt)
+          CONTEXT="CodeRabbit PR Summary:
+${SUMMARY}"
+        else
+          CONTEXT="PR Title: ${PR_TITLE}"
+        fi
 
         PROMPT="You are a changelog writer for Wails, a Go framework for building desktop apps with web frontends.
 
-Given a GitHub PR, output ONLY a JSON object (no markdown, no explanation) with exactly these two fields:
+Given the following PR information, output ONLY a JSON object (no markdown, no explanation) with exactly these two fields:
 - \"section\": one of: Added, Changed, Fixed, Deprecated, Removed, Security
 - \"entry\": a concise changelog bullet (max 100 chars, no leading dash, no trailing period, present tense)
 
-PR #${PR_NUMBER}: ${PR_TITLE}
+PR #${PR_NUMBER}
 
-PR Body:
-${BODY_TRUNCATED}"
+${CONTEXT}"
 
         RESPONSE=$(curl -sf https://openrouter.ai/api/v1/chat/completions \
           -H "Authorization: Bearer $OPENROUTER_API_KEY" \
