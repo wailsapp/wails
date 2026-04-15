@@ -138,8 +138,13 @@ If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/fir
      <TabItem label="Linux" icon="linux">
        **Build tools and WebKit**
 
+       :::caution[Minimum distro versions]
+       Wails v3 requires **WebKitGTK 4.1** (uses libsoup3). Older releases that only ship 4.0 — Ubuntu 20.04, Debian 11, RHEL 8/9 and their derivatives — are not supported.
+       :::
+
        <Tabs syncKey="distro">
          <TabItem label="Ubuntu/Debian">
+           Requires Ubuntu 22.04+ or Debian 12+.
            ```bash
            sudo apt update
            sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev
@@ -154,7 +159,26 @@ If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/fir
 
          <TabItem label="Arch">
            ```bash
-           sudo pacman -S base-devel gtk3 webkit2gtk
+           sudo pacman -S base-devel gtk3 webkit2gtk-4.1
+           ```
+         </TabItem>
+
+         <TabItem label="openSUSE">
+           ```bash
+           sudo zypper install gcc pkg-config gtk3-devel webkit2gtk4_1-devel
+           ```
+         </TabItem>
+
+         <TabItem label="Gentoo">
+           ```bash
+           sudo emerge --ask net-libs/webkit-gtk:4.1
+           ```
+         </TabItem>
+
+         <TabItem label="NixOS">
+           Add to your `shell.nix` or `devShell`:
+           ```nix
+           buildInputs = [ pkgs.webkitgtk_4_1 pkgs.gtk3 pkgs.pkg-config ];
            ```
          </TabItem>
 
