@@ -76,9 +76,7 @@ jobs:
         CODERABBIT_FOUND: ${{ steps.coderabbit.outputs.found }}
       run: |
         if [ "$CODERABBIT_FOUND" = "true" ]; then
-          SUMMARY=$(cat /tmp/coderabbit_summary.txt)
-          CONTEXT="CodeRabbit PR Summary:
-${SUMMARY}"
+          CONTEXT=$(cat /tmp/coderabbit_summary.txt)
         else
           CONTEXT="PR Title: ${PR_TITLE}"
         fi
@@ -88,8 +86,6 @@ ${SUMMARY}"
 Given the following PR information, output ONLY a JSON object (no markdown, no explanation) with exactly these two fields:
 - \"section\": one of: Added, Changed, Fixed, Deprecated, Removed, Security
 - \"entry\": a concise changelog bullet (max 100 chars, no leading dash, no trailing period, present tense)
-
-PR #${PR_NUMBER}
 
 ${CONTEXT}"
 
