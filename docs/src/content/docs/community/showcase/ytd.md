@@ -1,5 +1,6 @@
 ---
 title: Ytd
+description: "A desktop application built with Wails"
 ---
 
 ![Ytd Screenshot](../../../../assets/showcase-images/ytd.webp)

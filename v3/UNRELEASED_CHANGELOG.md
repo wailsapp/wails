@@ -25,6 +25,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Bug fixes -->
 - Fix `wails3 doctor` reporting incorrect WebKitGTK packages on Fedora, openSUSE, Arch, and NixOS — 4.0 fallback entries have been removed since v3 requires the 4.1 API at compile time (#5071)
 - Fix openSUSE webkit2gtk doctor package name (`webkit2gtk4_1-devel` → `webkit2gtk3-devel`, the correct openSUSE package name) (#5071)
+- Fix `Unexpected token '<'` error when `/wails/custom.js` is missing in desktop dev mode. Added explicit 404 handler for `/wails/custom.js` and case-insensitive `Content-Type` validation in `loadOptionalScript` to prevent HTML SPA fallbacks from being injected as JavaScript. ([#5068](https://github.com/wailsapp/wails/issues/5068))
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

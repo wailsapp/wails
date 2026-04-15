@@ -1,5 +1,6 @@
 ---
 title: Portfall
+description: "A desktop application built with Wails"
 ---
 
 ![Portfall](../../../../assets/showcase-images/portfall.webp)

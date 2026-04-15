@@ -1,5 +1,6 @@
 ---
 title: CFN Tracker
+description: "A desktop application built with Wails"
 ---
 
 ![CFN Tracker](../../../../assets/showcase-images/cfntracker.webp)

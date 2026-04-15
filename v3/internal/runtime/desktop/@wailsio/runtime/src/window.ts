@@ -68,6 +68,7 @@ const ZoomResetMethod                   = 48;
 const SnapAssistMethod                  = 49;
 const FilesDropped                      = 50;
 const PrintMethod                       = 51;
+const SetScreenMethod                   = 52;
 
 /**
  * Finds the nearest drop target element by walking up the DOM tree.
@@ -671,6 +672,15 @@ class Window {
         cleanupNativeDrag();
     }
   
+    /**
+     * Moves the window to the center of the specified screen's work area.
+     *
+     * @param screenID - The ID of the target screen.
+     */
+    SetScreen(screenID: string): Promise<void> {
+        return this[callerSym](SetScreenMethod, { screenID });
+    }
+
     /* Triggers Windows 11 Snap Assist feature (Windows only).
      * This is equivalent to pressing Win+Z and shows snap layout options.
      */

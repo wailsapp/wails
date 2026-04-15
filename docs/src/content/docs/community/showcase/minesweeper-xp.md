@@ -1,5 +1,6 @@
 ---
 title: Minesweeper XP
+description: "A desktop application built with Wails"
 ---
 
 ![Minesweeper XP](../../../../assets/showcase-images/minesweeper-xp.webp)
