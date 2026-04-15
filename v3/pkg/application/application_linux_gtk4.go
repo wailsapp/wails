@@ -90,6 +90,11 @@ func (a *linuxApp) name() string {
 }
 
 func (a *linuxApp) run() error {
+	a.parent.Event.OnApplicationEvent(events.Linux.ApplicationStartup, func(evt *ApplicationEvent) {
+		if err := a.processAndCacheScreens(); err != nil {
+			a.parent.handleError(err)
+		}
+	})
 	return appRun(a.application)
 }
 

@@ -392,6 +392,10 @@ func (w *iosWebviewWindow) setPosition(_ int, _ int) {
 	// iOS doesn't support window positioning - apps are fullscreen
 }
 
+func (w *iosWebviewWindow) centerOnScreen(_ *Screen) {
+	// iOS doesn't support window positioning
+}
+
 func (w *iosWebviewWindow) setURL(url string) {
 	if w.nativeHandle == nil || url == "" {
 		return

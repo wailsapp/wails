@@ -653,6 +653,58 @@ void windowSetPosition(void* nsWindow, int x, int y) {
 }
 
 
+// Center window on a specific screen identified by display ID
+void windowCenterOnScreen(void* nsWindow, const char* screenID) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSString* targetID = [NSString stringWithUTF8String:screenID];
+	NSScreen* targetScreen = nil;
+	for (NSScreen* s in [NSScreen screens]) {
+		NSDictionary* desc = [s deviceDescription];
+		NSNumber* num = [desc objectForKey:@"NSScreenNumber"];
+		CGDirectDisplayID displayID = [num unsignedIntValue];
+		NSString* sid = [NSString stringWithFormat:@"%d", displayID];
+		if ([sid isEqualToString:targetID]) {
+			targetScreen = s;
+			break;
+		}
+	}
+	if (targetScreen == nil) {
+		targetScreen = [NSScreen mainScreen];
+	}
+	NSRect visibleFrame = [targetScreen visibleFrame];
+	NSRect windowFrame = [window frame];
+	CGFloat x = visibleFrame.origin.x + (visibleFrame.size.width - windowFrame.size.width) / 2;
+	CGFloat y = visibleFrame.origin.y + (visibleFrame.size.height - windowFrame.size.height) / 2;
+	[window setFrameOrigin:NSMakePoint(x, y)];
+}
+
+// Position window relative to a specific screen's visible frame
+void windowSetPositionOnScreen(void* nsWindow, int x, int y, const char* screenID) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSString* targetID = [NSString stringWithUTF8String:screenID];
+	NSScreen* targetScreen = nil;
+	for (NSScreen* s in [NSScreen screens]) {
+		NSDictionary* desc = [s deviceDescription];
+		NSNumber* num = [desc objectForKey:@"NSScreenNumber"];
+		CGDirectDisplayID displayID = [num unsignedIntValue];
+		NSString* sid = [NSString stringWithFormat:@"%d", displayID];
+		if ([sid isEqualToString:targetID]) {
+			targetScreen = s;
+			break;
+		}
+	}
+	if (targetScreen == nil) {
+		targetScreen = [NSScreen mainScreen];
+	}
+	CGFloat scale = [targetScreen backingScaleFactor];
+	NSRect visibleFrame = [targetScreen visibleFrame];
+	NSRect windowFrame = [window frame];
+	// x,y are in DIP top-origin coords relative to the screen's work area
+	CGFloat newX = visibleFrame.origin.x + (x / scale);
+	CGFloat newY = visibleFrame.origin.y + visibleFrame.size.height - windowFrame.size.height - (y / scale);
+	[window setFrameOrigin:NSMakePoint(newX, newY)];
+}
+
 // Destroy window
 void windowDestroy(void* nsWindow) {
 	[(WebviewWindow*)nsWindow close];
@@ -928,6 +980,12 @@ func (w *macosWebviewWindow) isFocused() bool {
 
 func (w *macosWebviewWindow) setPosition(x int, y int) {
 	C.windowSetPosition(w.nsWindow, C.int(x), C.int(y))
+}
+
+func (w *macosWebviewWindow) centerOnScreen(screen *Screen) {
+	cID := C.CString(screen.ID)
+	defer C.free(unsafe.Pointer(cID))
+	C.windowCenterOnScreen(w.nsWindow, cID)
 }
 
 func (w *macosWebviewWindow) print() error {
@@ -1384,7 +1442,15 @@ func (w *macosWebviewWindow) run() {
 			w.fullscreen()
 		case WindowStateNormal:
 		}
-		if w.parent.options.InitialPosition == WindowCentered {
+		if options.Screen != nil {
+			cID := C.CString(options.Screen.ID)
+			if w.parent.options.InitialPosition == WindowCentered {
+				C.windowCenterOnScreen(w.nsWindow, cID)
+			} else {
+				C.windowSetPositionOnScreen(w.nsWindow, C.int(options.X), C.int(options.Y), cID)
+			}
+			C.free(unsafe.Pointer(cID))
+		} else if w.parent.options.InitialPosition == WindowCentered {
 			C.windowCenter(w.nsWindow)
 		} else {
 			w.setPosition(options.X, options.Y)
