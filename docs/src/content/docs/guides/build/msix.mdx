@@ -30,18 +30,15 @@ You can also install manually:
 ## Quick Start
 
 <Steps>
-1. Configure your project identity in `wails.json`:
+1. Configure your project identity in `build/config.yml`:
 
-   ```json
-   {
-     "info": {
-       "companyName": "My Company",
-       "productName": "MyApp",
-       "productIdentifier": "com.mycompany.myapp",
-       "description": "My awesome application",
-       "version": "1.0.0"
-     }
-   }
+   ```yaml title="build/config.yml"
+   info:
+     companyName: "My Company"
+     productName: "MyApp"
+     productIdentifier: "com.mycompany.myapp"
+     description: "My awesome application"
+     version: "1.0.0"
    ```
 
 2. Build your application:
@@ -67,7 +64,7 @@ wails3 tool msix [flags]
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--config` | Path to project config file | `wails.json` |
+| `--config` | Path to project config file | `build/config.yml` |
 | `--executable` | Path to the `.exe` to package | — |
 | `--name` | Executable filename inside the package | — |
 | `--out` | Output path for the `.msix` file | `<ProductName>.msix` |
@@ -111,29 +108,24 @@ wails3 tool msix \
   --cert-password "password"
 ```
 
-If `--publisher` is not specified, Wails derives it from `companyName` in `wails.json` as `CN=<companyName>`.
+If `--publisher` is not specified, Wails derives it from `companyName` in `build/config.yml` as `CN=<companyName>`.
 
 ## File Associations in MSIX
 
-MSIX supports registering file type associations. Define them in `wails.json`:
+MSIX supports registering file type associations. Define them in `build/config.yml`:
 
-```json
-{
-  "info": {
-    "productName": "MyEditor",
-    "productIdentifier": "com.example.myeditor",
-    "companyName": "Example Corp",
-    "version": "1.0.0"
-  },
-  "fileAssociations": [
-    {
-      "ext": ".myext",
-      "name": "My Document",
-      "description": "A document for MyEditor",
-      "iconName": "fileicon"
-    }
-  ]
-}
+```yaml title="build/config.yml"
+info:
+  productName: "MyEditor"
+  productIdentifier: "com.example.myeditor"
+  companyName: "Example Corp"
+  version: "1.0.0"
+
+fileAssociations:
+  - ext: myext
+    name: My Document
+    description: A document for MyEditor
+    iconName: fileicon
 ```
 
 Place your file type icon at `build/windows/fileicon.ico`. Wails includes it in the MSIX package as `Assets/FileIcon.png`.

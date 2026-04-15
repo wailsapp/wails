@@ -60,55 +60,28 @@ On macOS, the event fires after the application finishes launching. Register you
 
 ## Configure Build Assets
 
-File associations also need to be registered at the OS level through build asset configuration. Add a `fileAssociations` section to your `wails.json` or `wails.yaml`:
+File associations also need to be registered at the OS level through build asset configuration. Add a `fileAssociations` section to `build/config.yml`:
 
-<Tabs syncKey="config-format">
-<TabItem label="wails.yaml">
-```yaml
+```yaml title="build/config.yml"
 fileAssociations:
-  - ext: .myext
+  - ext: myext
     name: My Document
     description: A document for MyEditor
     iconName: fileicon
     role: Editor
     mimeType: application/x-myext
-  - ext: .myproj
+  - ext: myproj
     name: My Project
     description: A project file for MyEditor
     iconName: projicon
     role: Editor
 ```
-</TabItem>
-<TabItem label="wails.json">
-```json
-{
-  "fileAssociations": [
-    {
-      "ext": ".myext",
-      "name": "My Document",
-      "description": "A document for MyEditor",
-      "iconName": "fileicon",
-      "role": "Editor",
-      "mimeType": "application/x-myext"
-    },
-    {
-      "ext": ".myproj",
-      "name": "My Project",
-      "description": "A project file for MyEditor",
-      "iconName": "projicon",
-      "role": "Editor"
-    }
-  ]
-}
-```
-</TabItem>
-</Tabs>
 
 ### Configuration Fields
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `ext` | Yes | File extension including leading dot (e.g. `.myext`) |
+| `ext` | Yes | File extension **without** the leading dot (e.g. `myext`) |
 | `name` | Yes | Human-readable file type name |
 | `description` | Yes | Short description of the file type |
 | `iconName` | Yes | Base name of the icon file (without extension) |
@@ -120,7 +93,7 @@ fileAssociations:
 After adding file associations to your config, regenerate the platform build assets:
 
 ```bash
-wails3 generate build-assets
+wails3 update build-assets
 ```
 
 This updates platform-specific files:
