@@ -1,5 +1,6 @@
 ---
 title: Snippet Expander
+description: "A desktop application built with Wails"
 ---
 
 ![Snippet Expander Screenshot](../../../../assets/showcase-images/snippetexpandergui-select-snippet.png)

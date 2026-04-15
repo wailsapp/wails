@@ -1,5 +1,6 @@
 ---
 title: Surge
+description: "A desktop application built with Wails"
 ---
 
 ![Surge Screenshot](../../../../assets/showcase-images/surge.png)

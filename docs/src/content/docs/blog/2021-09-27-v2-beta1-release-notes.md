@@ -1,6 +1,7 @@
 ---
 slug: blog/wails-v2-beta-for-windows
 title: Wails v2 Beta for Windows
+description: "Release notes and announcements for Wails"
 authors: [leaanthony]
 tags: [wails, v2]
 date: 2021-09-27
