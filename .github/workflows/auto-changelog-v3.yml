@@ -25,7 +25,7 @@ jobs:
       with:
         ref: v3-alpha
         fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.CHANGELOG_PUSH_TOKEN || secrets.GITHUB_TOKEN }}
 
     - name: Resolve PR number
       id: pr
@@ -80,4 +80,4 @@ jobs:
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git add v3/UNRELEASED_CHANGELOG.md
         git commit -m "chore(changelog): auto-add entry for PR #${PR_NUMBER} — ${PR_TITLE}"
-        git push origin v3-alpha
+        git push https://x-access-token:${{ secrets.CHANGELOG_PUSH_TOKEN || secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git v3-alpha
