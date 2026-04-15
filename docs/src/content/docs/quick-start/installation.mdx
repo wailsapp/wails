@@ -165,7 +165,7 @@ If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/fir
 
          <TabItem label="openSUSE">
            ```bash
-           sudo zypper install gcc pkg-config gtk3-devel webkit2gtk3-devel
+           sudo zypper install gcc pkg-config gtk3-devel webkit2gtk4_1-devel
            ```
          </TabItem>
 
@@ -178,7 +178,7 @@ If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/fir
          <TabItem label="NixOS">
            Add to your `shell.nix` or `devShell`:
            ```nix
-           buildInputs = with pkgs; [ webkitgtk_4_1 gtk3 pkg-config gcc ];
+           buildInputs = [ pkgs.webkitgtk_4_1 pkgs.gtk3 pkgs.pkg-config ];
            ```
          </TabItem>
 
