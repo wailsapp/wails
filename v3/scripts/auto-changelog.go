@@ -29,14 +29,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	pr, err := fetchPR(repo, prNumber, githubToken)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "❌ Could not fetch PR info: %v\n", err)
+		os.Exit(1)
+	}
+
 	context, err := fetchCodeRabbitSummary(repo, prNumber, githubToken)
 	if err != nil {
 		fmt.Printf("⚠️  Could not fetch CodeRabbit summary: %v — falling back to PR title\n", err)
-		context, err = fetchPRTitle(repo, prNumber, githubToken)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "❌ Could not fetch PR info: %v\n", err)
-			os.Exit(1)
-		}
+		context = "PR Title: " + pr.Title
 	}
 
 	fmt.Printf("📝 Context length: %d chars\n", len(context))
@@ -50,7 +52,10 @@ func main() {
 	fmt.Printf("✅ Section: %s\n", section)
 	fmt.Printf("✅ Entry:   %s\n", entry)
 
-	if err := insertEntry(changelogPath, section, fmt.Sprintf("- %s (#%s)", entry, prNumber)); err != nil {
+	prURL := fmt.Sprintf("https://github.com/%s/pull/%s", repo, prNumber)
+	bullet := fmt.Sprintf("- %s in [PR](%s) by @%s", entry, prURL, pr.Author)
+
+	if err := insertEntry(changelogPath, section, bullet); err != nil {
 		fmt.Fprintf(os.Stderr, "❌ Failed to update changelog: %v\n", err)
 		os.Exit(1)
 	}
@@ -84,20 +89,27 @@ func fetchCodeRabbitSummary(repo, prNumber, token string) (string, error) {
 	return "", fmt.Errorf("no CodeRabbit comment found")
 }
 
-func fetchPRTitle(repo, prNumber, token string) (string, error) {
+type prInfo struct {
+	Title  string
+	Author string
+}
+
+func fetchPR(repo, prNumber, token string) (prInfo, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/pulls/%s", repo, prNumber)
 	body, err := githubGet(url, token)
 	if err != nil {
-		return "", err
+		return prInfo{}, err
 	}
-	var pr struct {
+	var raw struct {
 		Title string `json:"title"`
+		User  struct {
+			Login string `json:"login"`
+		} `json:"user"`
 	}
-	if err := json.Unmarshal(body, &pr); err != nil {
-		return "", fmt.Errorf("parse PR: %w", err)
+	if err := json.Unmarshal(body, &raw); err != nil {
+		return prInfo{}, fmt.Errorf("parse PR: %w", err)
 	}
-	fmt.Println("ℹ️  Using PR title as fallback")
-	return "PR Title: " + pr.Title, nil
+	return prInfo{Title: raw.Title, Author: raw.User.Login}, nil
 }
 
 func githubGet(url, token string) ([]byte, error) {
@@ -120,7 +132,7 @@ func generateEntry(context, apiKey string) (string, string, error) {
 
 Given the following PR information, output ONLY a raw JSON object (no markdown, no code fences, no explanation) with exactly these two fields:
 - "section": one of: Added, Changed, Fixed, Deprecated, Removed, Security
-- "entry": a concise changelog bullet (max 100 chars, no leading dash, no trailing period, present tense)
+- "entry": a concise description of the change (max 100 chars, no leading dash, no trailing period, present tense, no PR links or usernames)
 
 ` + context
 
