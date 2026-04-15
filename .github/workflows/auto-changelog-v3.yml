@@ -101,13 +101,16 @@ jobs:
           CONTEXT="PR Title: ${PR_TITLE}"
         fi
 
-        PROMPT="You are a changelog writer for Wails, a Go framework for building desktop apps with web frontends.
+        cat > /tmp/prompt.txt << 'PROMPTEOF'
+You are a changelog writer for Wails, a Go framework for building desktop apps with web frontends.
 
 Given the following PR information, output ONLY a JSON object (no markdown, no explanation) with exactly these two fields:
-- \"section\": one of: Added, Changed, Fixed, Deprecated, Removed, Security
-- \"entry\": a concise changelog bullet (max 100 chars, no leading dash, no trailing period, present tense)
+- "section": one of: Added, Changed, Fixed, Deprecated, Removed, Security
+- "entry": a concise changelog bullet (max 100 chars, no leading dash, no trailing period, present tense)
 
-${CONTEXT}"
+PROMPTEOF
+        echo "$CONTEXT" >> /tmp/prompt.txt
+        PROMPT=$(cat /tmp/prompt.txt)
 
         RESPONSE=$(curl -sf https://openrouter.ai/api/v1/chat/completions \
           -H "Authorization: Bearer $OPENROUTER_API_KEY" \
@@ -143,7 +146,7 @@ ${CONTEXT}"
       env:
         SECTION: ${{ steps.generate.outputs.section }}
         ENTRY: ${{ steps.generate.outputs.entry }}
-        PR_NUMBER: ${{ github.event.pull_request.number }}
+        PR_NUMBER: ${{ steps.pr.outputs.number }}
       run: |
         FILE="v3/UNRELEASED_CHANGELOG.md"
         BULLET="- ${ENTRY} (#${PR_NUMBER})"
