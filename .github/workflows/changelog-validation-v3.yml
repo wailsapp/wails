@@ -41,5 +41,6 @@ jobs:
           echo "✅ v3/UNRELEASED_CHANGELOG.md updated."
         else
           echo "❌ v3/UNRELEASED_CHANGELOG.md must be updated for all v3 PRs."
+          echo "   Add a bullet point describing your changes under the appropriate section."
           exit 1
         fi
