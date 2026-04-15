@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix `Unexpected token '<'` error when `/wails/custom.js` is missing in desktop dev mode. Added explicit 404 handler for `/wails/custom.js` and case-insensitive `Content-Type` validation in `loadOptionalScript` to prevent HTML SPA fallbacks from being injected as JavaScript. ([#5068](https://github.com/wailsapp/wails/issues/5068))
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
