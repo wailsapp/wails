@@ -101,15 +101,8 @@ jobs:
           CONTEXT="PR Title: ${PR_TITLE}"
         fi
 
-        cat > /tmp/prompt.txt << 'PROMPTEOF'
-You are a changelog writer for Wails, a Go framework for building desktop apps with web frontends.
-
-Given the following PR information, output ONLY a JSON object (no markdown, no explanation) with exactly these two fields:
-- "section": one of: Added, Changed, Fixed, Deprecated, Removed, Security
-- "entry": a concise changelog bullet (max 100 chars, no leading dash, no trailing period, present tense)
-
-PROMPTEOF
-        echo "$CONTEXT" >> /tmp/prompt.txt
+        PROMPT_HEADER="You are a changelog writer for Wails, a Go framework for building desktop apps with web frontends.\n\nGiven the following PR information, output ONLY a JSON object (no markdown, no explanation) with exactly these two fields:\n- \"section\": one of: Added, Changed, Fixed, Deprecated, Removed, Security\n- \"entry\": a concise changelog bullet (max 100 chars, no leading dash, no trailing period, present tense)\n\n"
+        printf "${PROMPT_HEADER}%s" "$CONTEXT" > /tmp/prompt.txt
         PROMPT=$(cat /tmp/prompt.txt)
 
         RESPONSE=$(curl -sf https://openrouter.ai/api/v1/chat/completions \
