@@ -4,10 +4,16 @@ on:
   pull_request:
     branches: [ v3-alpha ]
     types: [ closed ]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to process'
+        required: true
+        type: string
 
 jobs:
   auto-changelog:
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     permissions:
@@ -21,13 +27,27 @@ jobs:
         fetch-depth: 0
         token: ${{ secrets.GITHUB_TOKEN }}
 
+    - name: Resolve PR number
+      id: pr
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "number=${{ github.event.inputs.pr_number }}" >> $GITHUB_OUTPUT
+        else
+          echo "number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+        fi
+
     - name: Check if changelog was updated in PR
       id: check
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PR_NUMBER: ${{ steps.pr.outputs.number }}
       run: |
-        git fetch origin ${{ github.event.pull_request.base.sha }} 2>/dev/null || true
-        CHANGED=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.merge_commit_sha }} 2>/dev/null || \
-                  git log --name-only --format="" origin/v3-alpha~1..origin/v3-alpha | head -50)
-        if echo "$CHANGED" | grep -q "^v3/UNRELEASED_CHANGELOG.md$"; then
+        FILES=$(curl -sf \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}/files?per_page=100" \
+          | jq -r '.[].filename')
+        if echo "$FILES" | grep -q "^v3/UNRELEASED_CHANGELOG.md$"; then
           echo "skip=true" >> $GITHUB_OUTPUT
           echo "✅ Changelog was updated in PR — skipping auto-fill."
         else
@@ -40,7 +60,7 @@ jobs:
       if: steps.check.outputs.skip == 'false'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PR_NUMBER: ${{ github.event.pull_request.number }}
+        PR_NUMBER: ${{ steps.pr.outputs.number }}
       run: |
         # Fetch all PR comments and find the CodeRabbit summary
         COMMENTS=$(curl -sf \
@@ -72,7 +92,7 @@ jobs:
       env:
         OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         PR_TITLE: ${{ github.event.pull_request.title }}
-        PR_NUMBER: ${{ github.event.pull_request.number }}
+        PR_NUMBER: ${{ steps.pr.outputs.number }}
         CODERABBIT_FOUND: ${{ steps.coderabbit.outputs.found }}
       run: |
         if [ "$CODERABBIT_FOUND" = "true" ]; then
@@ -157,7 +177,7 @@ ${CONTEXT}"
     - name: Commit and push
       if: steps.check.outputs.skip == 'false'
       env:
-        PR_NUMBER: ${{ github.event.pull_request.number }}
+        PR_NUMBER: ${{ steps.pr.outputs.number }}
         PR_TITLE: ${{ github.event.pull_request.title }}
       run: |
         git config user.name "github-actions[bot]"
