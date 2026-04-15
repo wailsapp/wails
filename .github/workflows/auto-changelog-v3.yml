@@ -105,7 +105,7 @@ jobs:
         printf "${PROMPT_HEADER}%s" "$CONTEXT" > /tmp/prompt.txt
         PROMPT=$(cat /tmp/prompt.txt)
 
-        RESPONSE=$(curl -sf https://openrouter.ai/api/v1/chat/completions \
+        RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" https://openrouter.ai/api/v1/chat/completions \
           -H "Authorization: Bearer $OPENROUTER_API_KEY" \
           -H "Content-Type: application/json" \
           -d "{
@@ -114,7 +114,17 @@ jobs:
             \"temperature\": 0.1
           }")
 
-        CONTENT=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
+        HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS:" | cut -d: -f2)
+        BODY=$(echo "$RESPONSE" | sed '/HTTP_STATUS:/d')
+        echo "HTTP status: $HTTP_STATUS"
+        echo "Response body: $BODY"
+
+        if [ "$HTTP_STATUS" != "200" ]; then
+          echo "❌ OpenRouter API error"
+          exit 1
+        fi
+
+        CONTENT=$(echo "$BODY" | jq -r '.choices[0].message.content')
         echo "LLM response: $CONTENT"
 
         # Strip markdown code fences if present
