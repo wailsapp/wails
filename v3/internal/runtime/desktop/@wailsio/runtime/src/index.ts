@@ -91,7 +91,7 @@ export function loadOptionalScript(url: string): Promise<void> {
             if (response.ok) {
                 // Verify the response is actually JavaScript and not an HTML fallback
                 // (e.g. Vite dev server returns index.html for unknown routes)
-                const contentType = response.headers.get('content-type') || '';
+                const contentType = (response.headers.get('content-type') || '').toLowerCase();
                 if (contentType.includes('javascript')) {
                     const script = document.createElement('script');
                     script.src = url;
