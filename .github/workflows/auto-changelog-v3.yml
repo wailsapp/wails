@@ -1,0 +1,187 @@
+name: Auto Changelog (v3)
+
+on:
+  pull_request:
+    branches: [ v3-alpha ]
+    types: [ closed ]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to process'
+        required: true
+        type: string
+
+jobs:
+  auto-changelog:
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout v3-alpha
+      uses: actions/checkout@v4
+      with:
+        ref: v3-alpha
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Resolve PR number
+      id: pr
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "number=${{ github.event.inputs.pr_number }}" >> $GITHUB_OUTPUT
+        else
+          echo "number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Check if changelog was updated in PR
+      id: check
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PR_NUMBER: ${{ steps.pr.outputs.number }}
+      run: |
+        FILES=$(curl -sf \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}/files?per_page=100" \
+          | jq -r '.[].filename')
+        if echo "$FILES" | grep -q "^v3/UNRELEASED_CHANGELOG.md$"; then
+          echo "skip=true" >> $GITHUB_OUTPUT
+          echo "✅ Changelog was updated in PR — skipping auto-fill."
+        else
+          echo "skip=false" >> $GITHUB_OUTPUT
+          echo "ℹ️ Changelog not updated — auto-filling."
+        fi
+
+    - name: Fetch CodeRabbit summary
+      id: coderabbit
+      if: steps.check.outputs.skip == 'false'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PR_NUMBER: ${{ steps.pr.outputs.number }}
+      run: |
+        # Fetch all PR comments and find the CodeRabbit summary
+        COMMENTS=$(curl -sf \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments?per_page=100")
+
+        SUMMARY=$(echo "$COMMENTS" | jq -r '
+          [ .[] | select(.user.login == "coderabbitai[bot]") ]
+          | sort_by(.created_at)
+          | first
+          | .body // ""
+        ')
+
+        if [ -n "$SUMMARY" ] && [ "$SUMMARY" != "null" ]; then
+          echo "found=true" >> $GITHUB_OUTPUT
+          echo "✅ Found CodeRabbit summary"
+        else
+          echo "found=false" >> $GITHUB_OUTPUT
+          echo "ℹ️ No CodeRabbit summary found"
+        fi
+
+        # Write to file to avoid env var size limits
+        echo "$SUMMARY" > /tmp/coderabbit_summary.txt
+
+    - name: Generate changelog entry via LLM
+      id: generate
+      if: steps.check.outputs.skip == 'false'
+      env:
+        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        PR_TITLE: ${{ github.event.pull_request.title }}
+        PR_NUMBER: ${{ steps.pr.outputs.number }}
+        CODERABBIT_FOUND: ${{ steps.coderabbit.outputs.found }}
+      run: |
+        if [ "$CODERABBIT_FOUND" = "true" ]; then
+          CONTEXT=$(cat /tmp/coderabbit_summary.txt)
+        else
+          CONTEXT="PR Title: ${PR_TITLE}"
+        fi
+
+        PROMPT="You are a changelog writer for Wails, a Go framework for building desktop apps with web frontends.
+
+Given the following PR information, output ONLY a JSON object (no markdown, no explanation) with exactly these two fields:
+- \"section\": one of: Added, Changed, Fixed, Deprecated, Removed, Security
+- \"entry\": a concise changelog bullet (max 100 chars, no leading dash, no trailing period, present tense)
+
+${CONTEXT}"
+
+        RESPONSE=$(curl -sf https://openrouter.ai/api/v1/chat/completions \
+          -H "Authorization: Bearer $OPENROUTER_API_KEY" \
+          -H "Content-Type: application/json" \
+          -d "{
+            \"model\": \"google/gemini-flash-1.5-8b\",
+            \"messages\": [{\"role\": \"user\", \"content\": $(echo "$PROMPT" | jq -Rs .)}],
+            \"temperature\": 0.1
+          }")
+
+        CONTENT=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
+        echo "LLM response: $CONTENT"
+
+        # Strip markdown code fences if present
+        CONTENT=$(echo "$CONTENT" | sed 's/^```json//;s/^```//' | sed '/^```/d' | tr -d '\n' | xargs)
+
+        SECTION=$(echo "$CONTENT" | jq -r '.section')
+        ENTRY=$(echo "$CONTENT" | jq -r '.entry')
+
+        # Validate section
+        case "$SECTION" in
+          Added|Changed|Fixed|Deprecated|Removed|Security) ;;
+          *) SECTION="Changed" ;;
+        esac
+
+        echo "section=$SECTION" >> $GITHUB_OUTPUT
+        echo "entry=$ENTRY" >> $GITHUB_OUTPUT
+        echo "✅ Section: $SECTION"
+        echo "✅ Entry: $ENTRY"
+
+    - name: Insert entry into UNRELEASED_CHANGELOG.md
+      if: steps.check.outputs.skip == 'false'
+      env:
+        SECTION: ${{ steps.generate.outputs.section }}
+        ENTRY: ${{ steps.generate.outputs.entry }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: |
+        FILE="v3/UNRELEASED_CHANGELOG.md"
+        BULLET="- ${ENTRY} (#${PR_NUMBER})"
+
+        # Insert bullet after the matching ## Section heading
+        python3 - <<'PYEOF'
+        import os, re, sys
+
+        section = os.environ["SECTION"]
+        bullet = os.environ["BULLET"]
+        filepath = os.environ["FILE"]
+
+        with open(filepath, "r") as f:
+            content = f.read()
+
+        # Find "## <Section>" and insert bullet after it (before the next comment/blank or next ##)
+        pattern = rf"(## {re.escape(section)}\n(?:<!--[^>]*-->\n)?)"
+        replacement = rf"\g<1>{bullet}\n"
+
+        new_content, count = re.subn(pattern, replacement, content)
+        if count == 0:
+            # Section not found — append before the --- footer
+            new_content = content.replace("\n---\n", f"\n## {section}\n{bullet}\n\n---\n", 1)
+
+        with open(filepath, "w") as f:
+            f.write(new_content)
+
+        print(f"Inserted under ## {section}: {bullet}")
+        PYEOF
+
+    - name: Commit and push
+      if: steps.check.outputs.skip == 'false'
+      env:
+        PR_NUMBER: ${{ steps.pr.outputs.number }}
+        PR_TITLE: ${{ github.event.pull_request.title }}
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add v3/UNRELEASED_CHANGELOG.md
+        git commit -m "chore(changelog): auto-add entry for PR #${PR_NUMBER} — ${PR_TITLE}"
+        git push origin v3-alpha
