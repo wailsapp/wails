@@ -178,7 +178,7 @@ If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/fir
          <TabItem label="NixOS">
            Add to your `shell.nix` or `devShell`:
            ```nix
-           buildInputs = [ pkgs.webkitgtk_4_1 pkgs.gtk3 pkgs.pkg-config ];
+           buildInputs = with pkgs; [ webkitgtk_4_1 gtk3 pkg-config gcc ];
            ```
          </TabItem>
 
