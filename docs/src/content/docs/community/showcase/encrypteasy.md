@@ -1,5 +1,6 @@
 ---
 title: EncryptEasy
+description: "A desktop application built with Wails"
 ---
 
 ![EncryptEasy](../../../../assets/showcase-images/encrypteasy.webp)

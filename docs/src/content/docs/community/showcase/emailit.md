@@ -1,5 +1,6 @@
 ---
 title: EmailIt
+description: "A desktop application built with Wails"
 ---
 
 ![EmailIt](../../../../assets/showcase-images/emailit.webp)

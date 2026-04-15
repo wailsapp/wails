@@ -1,4 +1,4 @@
-//go:build darwin && !ios
+//go:build darwin && !ios && !server
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>

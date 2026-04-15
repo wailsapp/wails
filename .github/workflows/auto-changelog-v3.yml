@@ -1,0 +1,83 @@
+name: Auto Changelog (v3)
+
+on:
+  pull_request:
+    branches: [ v3-alpha ]
+    types: [ closed ]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to process'
+        required: true
+        type: string
+
+jobs:
+  auto-changelog:
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout v3-alpha
+      uses: actions/checkout@v4
+      with:
+        ref: v3-alpha
+        fetch-depth: 0
+        token: ${{ secrets.CHANGELOG_PUSH_TOKEN || secrets.GITHUB_TOKEN }}
+
+    - name: Resolve PR number
+      id: pr
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "number=${{ github.event.inputs.pr_number }}" >> $GITHUB_OUTPUT
+        else
+          echo "number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Check if changelog was updated in PR
+      id: check
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PR_NUMBER: ${{ steps.pr.outputs.number }}
+      run: |
+        FILES=$(curl -sf \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}/files?per_page=100" \
+          | jq -r '.[].filename')
+        if echo "$FILES" | grep -q "^v3/UNRELEASED_CHANGELOG.md$"; then
+          echo "skip=true" >> $GITHUB_OUTPUT
+          echo "✅ Changelog was updated in PR — skipping auto-fill."
+        else
+          echo "skip=false" >> $GITHUB_OUTPUT
+          echo "ℹ️ Changelog not updated — auto-filling."
+        fi
+
+    - name: Setup Go
+      if: steps.check.outputs.skip == 'false'
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+
+    - name: Auto-fill changelog entry
+      if: steps.check.outputs.skip == 'false'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        PR_NUMBER: ${{ steps.pr.outputs.number }}
+      run: go run v3/scripts/auto-changelog.go
+
+    - name: Commit and push
+      if: steps.check.outputs.skip == 'false'
+      env:
+        PR_NUMBER: ${{ steps.pr.outputs.number }}
+        PR_TITLE: ${{ github.event.pull_request.title }}
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add v3/UNRELEASED_CHANGELOG.md
+        git commit -m "chore(changelog): auto-add entry for PR #${PR_NUMBER} — ${PR_TITLE}"
+        git push https://x-access-token:${{ secrets.CHANGELOG_PUSH_TOKEN || secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git v3-alpha

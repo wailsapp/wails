@@ -1,5 +1,6 @@
 ---
 title: October
+description: "A desktop application built with Wails"
 ---
 
 ![October](../../../../assets/showcase-images/october.webp)
