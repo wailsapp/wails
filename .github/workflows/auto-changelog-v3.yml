@@ -105,14 +105,17 @@ jobs:
         printf "${PROMPT_HEADER}%s" "$CONTEXT" > /tmp/prompt.txt
         PROMPT=$(cat /tmp/prompt.txt)
 
+        # Build JSON payload safely via jq to handle special chars in prompt
+        jq -n \
+          --arg model "google/gemini-2.0-flash-lite-001" \
+          --arg content "$PROMPT" \
+          '{model: $model, temperature: 0.1, messages: [{role: "user", content: $content}]}' \
+          > /tmp/payload.json
+
         RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" https://openrouter.ai/api/v1/chat/completions \
           -H "Authorization: Bearer $OPENROUTER_API_KEY" \
           -H "Content-Type: application/json" \
-          -d "{
-            \"model\": \"google/gemini-2.0-flash-lite-001\",
-            \"messages\": [{\"role\": \"user\", \"content\": $(echo "$PROMPT" | jq -Rs .)}],
-            \"temperature\": 0.1
-          }")
+          --data-binary @/tmp/payload.json)
 
         HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS:" | cut -d: -f2)
         BODY=$(echo "$RESPONSE" | sed '/HTTP_STATUS:/d')
