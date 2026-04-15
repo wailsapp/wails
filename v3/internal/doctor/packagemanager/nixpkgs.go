@@ -45,7 +45,7 @@ func (n *Nixpkgs) Packages() Packagemap {
 			{Name: channel + ".gtk3", SystemPackage: true, Library: true},
 		},
 		"webkit2gtk": []*Package{
-			{Name: channel + ".webkitgtk", SystemPackage: true, Library: true},
+			{Name: channel + ".webkitgtk_4_1", SystemPackage: true, Library: true},
 		},
 		// GTK4 + WebKitGTK 6.0 (experimental - requires -tags gtk4)
 		"gtk4 (experimental)": []*Package{

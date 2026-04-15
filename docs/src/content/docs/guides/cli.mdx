@@ -77,13 +77,32 @@ wails3 dev [flags]
 Builds a debug version of your application. It defaults to building for the current platform and architecture.
 
 ```bash
-wails3 build [CLI variables...]
+wails3 build [flags] [CLI variables...]
 ```
+
+#### Flags
+| Flag     | Description                                              | Default |
+|----------|----------------------------------------------------------|---------|
+| `-tags`  | Additional Go build tags (comma-separated)               |         |
 
 You can pass CLI variables to customize the build:
 ```bash
 wails3 build PLATFORM=linux CONFIG=production
 ```
+
+Use the `-tags` flag to pass custom Go build tags:
+```bash
+# Build with GTK4 support on Linux
+wails3 build -tags gtk4
+
+# Build in server mode (no GUI)
+wails3 build -tags server
+
+# Multiple tags
+wails3 build -tags gtk4,customtag
+```
+
+Tags are forwarded as `EXTRA_TAGS` to the underlying Taskfile.
 
     :::note
     This is equivalent to running `wails3 task build` which runs the `build` task in the project's main Taskfile. Any CLI variables passed to `build` are forwarded to the underlying task. You can customise the build process by editing the `Taskfile.yml` file.
@@ -250,13 +269,34 @@ wails3 generate icons [flags]
 ```
 
 #### Flags
-| Flag               | Description                  | Default               |
-|--------------------|------------------------------|-----------------------|
-| `-input`           | Input PNG file               | Required              |
-| `-windowsfilename` | Windows output filename      |                       |
-| `-macfilename`     | macOS output filename        |                       |
-| `-sizes`           | Icon sizes (comma-separated) | `256,128,64,48,32,16` |
-| `-example`         | Generate example icon        | `false`               |
+| Flag                   | Description                                          | Default               |
+|------------------------|------------------------------------------------------|-----------------------|
+| `-input`               | Input PNG file                                       | Required              |
+| `-windowsfilename`     | Windows output filename                              |                       |
+| `-macfilename`         | macOS output filename                                |                       |
+| `-sizes`               | Icon sizes (comma-separated)                         | `256,128,64,48,32,16` |
+| `-example`             | Generate example icon                                | `false`               |
+| `-iconcomposerinput`   | Input Icon Composer file (`.icon`)                   |                       |
+| `-macassetdir`         | Output directory for Mac assets (Assets.car + icns)  |                       |
+
+#### Icon Composer (macOS)
+
+On macOS 26+, you can use Icon Composer `.icon` files to generate `Assets.car` and `icons.icns`:
+
+```bash
+wails3 generate icons -iconcomposerinput build/appicon.icon -macassetdir build
+```
+
+This compiles the `.icon` file using Apple's `actool` command. Requires Xcode with `actool` version 26 or later.
+
+When using Icon Composer, set `cfBundleIconName` in your `build/config.yml` to match the `.icon` filename (without extension):
+
+```yaml
+info:
+  cfBundleIconName: "appicon"
+```
+
+If not set and `Assets.car` exists, this defaults to `"appicon"`.
 
 ### `generate syso`
 Generates Windows .syso file.
