@@ -104,6 +104,55 @@ wails3 package GOOS=linux GOARCH=arm64
 ARM64 builds from x86_64 hosts use Docker for CGO cross-compilation.
 </Aside>
 
+## GTK4 Support (Experimental)
+
+Wails v3 includes experimental support for GTK4 with WebKitGTK 6.0. By default, Wails uses GTK3 with WebKit2GTK 4.1. GTK4 support is opt-in via a build tag.
+
+<Aside type="caution" title="Experimental">
+GTK4 support is experimental and may have issues. Please report problems to [GitHub issue #4957](https://github.com/wailsapp/wails/issues/4957).
+</Aside>
+
+### Dependencies
+
+Install GTK4 and WebKitGTK 6.0 development libraries:
+
+```bash
+# Ubuntu/Debian
+sudo apt install libgtk-4-dev libwebkitgtk-6.0-dev
+
+# Fedora
+sudo dnf install gtk4-devel webkitgtk6.0-devel
+
+# Arch
+sudo pacman -S gtk4 webkitgtk-6.0
+```
+
+The required pkg-config packages are `gtk4` and `webkitgtk-6.0`.
+
+### Building with GTK4
+
+Use the `-tags gtk4` flag:
+
+```bash
+wails3 build -tags gtk4
+```
+
+Or directly with Go:
+
+```bash
+go build -tags gtk4 -o myapp .
+```
+
+### Known Differences from GTK3
+
+- **File dialogs**: GTK4 uses `xdg-desktop-portal` for file dialogs, which means some dialog options (like default directory, custom filters display) behave differently. See [Dialogs Reference - Linux GTK4 Limitations](/reference/dialogs#linux-gtk4-limitations) for details.
+- **Menu style**: GTK4 supports a `LinuxMenuStylePrimaryMenu` option that displays a hamburger button (☰) in the header bar, following GNOME HIG. See [Window API - Linux MenuStyle](/reference/window#linux).
+- **DPI scaling**: GTK4 uses `gdk_monitor_get_scale` (GTK 4.14+) for fractional scaling support.
+
+### Checking Your Build
+
+Run `wails3 doctor` to verify your setup. GTK4 dependencies will be shown as optional/experimental.
+
 ## Troubleshooting
 
 ### AppImage won't run

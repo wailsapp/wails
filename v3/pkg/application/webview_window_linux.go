@@ -216,6 +216,30 @@ func (w *linuxWebviewWindow) setPosition(x int, y int) {
 	w.move(x, y)
 }
 
+func (w *linuxWebviewWindow) applyScreenPlacement() {
+	opts := w.parent.options
+	if opts.Screen != nil {
+		if opts.InitialPosition == WindowCentered {
+			w.centerOnScreen(opts.Screen)
+		} else {
+			workArea := opts.Screen.WorkArea
+			w.setPosition(workArea.X+opts.X, workArea.Y+opts.Y)
+		}
+	} else if opts.InitialPosition == WindowCentered {
+		w.center()
+	} else {
+		w.setRelativePosition(opts.X, opts.Y)
+	}
+}
+
+func (w *linuxWebviewWindow) centerOnScreen(screen *Screen) {
+	workArea := screen.WorkArea
+	width, height := w.size()
+	x := workArea.X + (workArea.Width-width)/2
+	y := workArea.Y + (workArea.Height-height)/2
+	w.setPosition(x, y)
+}
+
 func (w *linuxWebviewWindow) bounds() Rect {
 	// DOTO: do it in a single step + proper DPI scaling
 	x, y := w.position()
@@ -339,11 +363,7 @@ func (w *linuxWebviewWindow) run() {
 
 	w.setFrameless(w.parent.options.Frameless)
 
-	if w.parent.options.InitialPosition == WindowCentered {
-		w.center()
-	} else {
-		w.setPosition(w.parent.options.X, w.parent.options.Y)
-	}
+	w.applyScreenPlacement()
 
 	switch w.parent.options.StartState {
 	case WindowStateMaximised:
@@ -387,11 +407,7 @@ func (w *linuxWebviewWindow) run() {
 	}
 	if !w.parent.options.Hidden {
 		w.show()
-		if w.parent.options.InitialPosition == WindowCentered {
-			w.center()
-		} else {
-			w.setRelativePosition(w.parent.options.X, w.parent.options.Y)
-		}
+		w.applyScreenPlacement()
 	}
 	if w.parent.options.DevToolsEnabled || globalApplication.isDebugMode {
 		w.enableDevTools()
