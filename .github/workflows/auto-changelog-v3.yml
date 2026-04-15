@@ -109,7 +109,7 @@ jobs:
           -H "Authorization: Bearer $OPENROUTER_API_KEY" \
           -H "Content-Type: application/json" \
           -d "{
-            \"model\": \"google/gemini-flash-1.5\",
+            \"model\": \"google/gemini-2.0-flash-lite-001\",
             \"messages\": [{\"role\": \"user\", \"content\": $(echo "$PROMPT" | jq -Rs .)}],
             \"temperature\": 0.1
           }")
