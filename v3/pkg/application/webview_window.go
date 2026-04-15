@@ -1232,6 +1232,9 @@ func (w *WebviewWindow) SetFrameless(frameless bool) Window {
 }
 
 func (w *WebviewWindow) DispatchWailsEvent(event *CustomEvent) {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
 	// Guard against race condition where event fires before runtime is initialized
 	// This can happen during page reload when WindowLoadFinished fires before
 	// the JavaScript runtime has mounted dispatchWailsEvent on window._wails
