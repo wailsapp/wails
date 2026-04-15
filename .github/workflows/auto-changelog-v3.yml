@@ -127,14 +127,26 @@ jobs:
           exit 1
         fi
 
-        CONTENT=$(echo "$BODY" | jq -r '.choices[0].message.content')
-        echo "LLM response: $CONTENT"
+        RAW=$(echo "$BODY" | jq -r '.choices[0].message.content')
+        echo "LLM response: $RAW"
 
-        # Strip markdown code fences if present
-        CONTENT=$(echo "$CONTENT" | sed 's/^```json//;s/^```//' | sed '/^```/d' | tr -d '\n' | xargs)
+        # Extract JSON robustly — handles code fences, extra text, whitespace
+        PARSED=$(echo "$RAW" | python3 -c "
+import sys, json, re
+text = sys.stdin.read()
+match = re.search(r'\{.*?\}', text, re.DOTALL)
+if not match:
+    print(json.dumps({'section': 'Changed', 'entry': ''}))
+    sys.exit(0)
+try:
+    data = json.loads(match.group())
+    print(json.dumps(data))
+except Exception as e:
+    print(json.dumps({'section': 'Changed', 'entry': ''}))
+")
 
-        SECTION=$(echo "$CONTENT" | jq -r '.section')
-        ENTRY=$(echo "$CONTENT" | jq -r '.entry')
+        SECTION=$(echo "$PARSED" | jq -r '.section')
+        ENTRY=$(echo "$PARSED" | jq -r '.entry')
 
         # Validate section
         case "$SECTION" in
