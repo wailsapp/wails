@@ -22,7 +22,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Changes in existing functionality -->
 
 ## Fixed
-<!-- Bug fixes -->
+- Invalid default processor architecture within build-assets
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

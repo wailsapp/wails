@@ -117,7 +117,7 @@ func GenerateBuildAssets(options *BuildAssetsOptions) error {
 	}
 
 	if options.ProcessorArchitecture == "" {
-		options.ProcessorArchitecture = "x64"
+		options.ProcessorArchitecture = runtime.GOARCH
 	}
 
 	if options.ExecutableName == "" {
@@ -341,7 +341,9 @@ type updateCFBundleIconNameSetter struct {
 	config  *UpdateConfig
 }
 
-func (s *updateCFBundleIconNameSetter) GetCFBundleIconName() string { return s.options.CFBundleIconName }
+func (s *updateCFBundleIconNameSetter) GetCFBundleIconName() string {
+	return s.options.CFBundleIconName
+}
 func (s *updateCFBundleIconNameSetter) SetCFBundleIconName(v string) {
 	s.options.CFBundleIconName = v
 	s.config.CFBundleIconName = v
