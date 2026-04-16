@@ -19,7 +19,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- New features, capabilities, or enhancements -->
 
 ## Changed
-<!-- Changes in existing functionality -->
+- Remove some unnecessary `_ "embed"` imports tidying the code a little
 
 ## Fixed
 <!-- Bug fixes -->
