@@ -74,6 +74,8 @@ func GetDefaultTemplates() []TemplateData {
 }
 
 type TemplateOptions struct {
+	Cls string `description:"A helper for using close template tags safely }}" default:"}}"`
+	Opn string `description:"A helper for using open template tags safely {{" default:"{{"`
 	*flags.Init
 	LocalModulePath string
 	UseTypescript   bool
@@ -263,6 +265,8 @@ func Install(options *flags.Init) error {
 		LocalModulePath: localModulePath,
 		UseTypescript:   UseTypescript,
 		WailsVersion:    version.String(),
+		Opn:             "{{",
+		Cls:             "}}",
 	}
 
 	defer func() {
