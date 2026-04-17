@@ -93,11 +93,22 @@ void setMenuItemTooltip(void* nsMenuItem, char *tooltip) {
 }
 
 // Check menu item
+//
+// Apply the state change synchronously so a subsequent menu open reflects it.
+// dispatch_async enqueues the assignment for the next runloop turn, which can
+// land *after* the menu has already been rendered if the user reopens the menu
+// quickly (see wailsapp/wails#5002). dispatch_sync from the main thread would
+// deadlock, so short-circuit when we are already on the main thread.
 void setMenuItemChecked(void* nsMenuItem, bool checked) {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        MenuItem *menuItem = (MenuItem *)nsMenuItem;
-        menuItem.state = checked ? NSControlStateValueOn : NSControlStateValueOff;
-    });
+    MenuItem *menuItem = (MenuItem *)nsMenuItem;
+    NSControlStateValue newState = checked ? NSControlStateValueOn : NSControlStateValueOff;
+    if ([NSThread isMainThread]) {
+        menuItem.state = newState;
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            menuItem.state = newState;
+        });
+    }
 }
 
 NSString* translateKey(NSString* key) {
