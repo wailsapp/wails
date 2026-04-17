@@ -177,21 +177,21 @@ func (m *macosApp) processAndCacheScreens() error {
 }
 
 func (m *macosApp) getPrimaryScreen() (*Screen, error) {
-	if m.parent.Screen.primaryScreen == nil {
+	if m.parent.Screen.GetPrimary() == nil {
 		if err := m.processAndCacheScreens(); err != nil {
 			return nil, err
 		}
 	}
-	return m.parent.Screen.primaryScreen, nil
+	return m.parent.Screen.GetPrimary(), nil
 }
 
 func (m *macosApp) getScreens() ([]*Screen, error) {
-	if len(m.parent.Screen.screens) == 0 {
+	if len(m.parent.Screen.GetAll()) == 0 {
 		if err := m.processAndCacheScreens(); err != nil {
 			return nil, err
 		}
 	}
-	return m.parent.Screen.screens, nil
+	return m.parent.Screen.GetAll(), nil
 }
 
 func getScreenForWindow(window *macosWebviewWindow) (*Screen, error) {

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math"
 	"sort"
+	"sync"
 )
 
 // Heavily inspired by the Chromium project (Copyright 2015 The Chromium Authors)
@@ -11,6 +12,7 @@ import (
 
 type ScreenManager struct {
 	app           *App
+	mu            sync.RWMutex // guards screens and primaryScreen against concurrent display-change events
 	screens       []*Screen
 	primaryScreen *Screen
 }
@@ -374,6 +376,9 @@ func (m *ScreenManager) LayoutScreens(screens []*Screen) error {
 		return errors.New("screens parameter is nil or empty")
 	}
 
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	// Store screens before DIP calculation so calculateScreensDipCoordinates
 	// can find the primary and mutate the slice in-place.
 	oldScreens := m.screens
@@ -392,15 +397,21 @@ func (m *ScreenManager) LayoutScreens(screens []*Screen) error {
 }
 
 func (m *ScreenManager) GetAll() []*Screen {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 	return m.screens
 }
 
 func (m *ScreenManager) GetPrimary() *Screen {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 	return m.primaryScreen
 }
 
 // GetByID returns the screen with the given display ID, or nil if not found.
 func (m *ScreenManager) GetByID(id string) *Screen {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 	for _, screen := range m.screens {
 		if screen.ID == id {
 			return screen
@@ -411,6 +422,8 @@ func (m *ScreenManager) GetByID(id string) *Screen {
 
 // GetByIndex returns the screen at the given index in the screen list, or nil if out of range.
 func (m *ScreenManager) GetByIndex(index int) *Screen {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 	if index < 0 || index >= len(m.screens) {
 		return nil
 	}
