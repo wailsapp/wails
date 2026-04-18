@@ -1,0 +1,35 @@
+version: '3'
+
+includes:
+  common: ./build/Taskfile.yml
+  darwin: ./build/darwin/Taskfile.yml
+
+vars:
+  APP_NAME: "single-instance-url-scheme"
+  BIN_DIR: "bin"
+
+tasks:
+  build:
+    summary: Builds the application
+    cmds:
+      - task: "{{OS}}:build"
+
+  package:
+    summary: Packages a production build of the application
+    cmds:
+      - task: "{{OS}}:package"
+
+  run:
+    summary: Runs the application from a dev .app bundle (required so macOS routes URL scheme to it)
+    cmds:
+      - task: "{{OS}}:run"
+
+  trigger:
+    summary: 'Launch the custom URL. Usage: wails3 task trigger URL=wails-single-url://hello?n=1'
+    cmds:
+      - 'open "{{.URL | default "wails-single-url://hello?n=1"}}"'
+
+  tail:
+    summary: Tail the repro logfile written by main.go
+    cmds:
+      - tail -f /tmp/wails-single-instance-url.log
