@@ -3,8 +3,8 @@
 package application
 
 /*
-#cgo CFLAGS: -x objective-c -fblocks
-#cgo LDFLAGS: -framework Foundation -framework Cocoa
+#cgo CFLAGS: -mmacosx-version-min=10.13 -x objective-c -fblocks
+#cgo LDFLAGS: -mmacosx-version-min=10.13 -framework Foundation -framework Cocoa
 
 #include <stdlib.h>
 #import <Foundation/Foundation.h>
@@ -97,12 +97,16 @@ static char *CaptureLaunchURL(double timeoutSeconds) {
 import "C"
 import "unsafe"
 
+// launchURLCaptureTimeout is the maximum time the second instance will wait
+// for a kAEGetURL Apple Event before assuming no URL was launched.
+const launchURLCaptureTimeout = 0.3
+
 // captureLaunchURL briefly runs an NSApplication event loop so that
 // LaunchServices can deliver any pending kAEGetURL Apple Event (e.g. when
 // this process was force-launched via "open -n URL").
 // Returns the URL string, or "" if none arrived within the timeout.
 func captureLaunchURL() string {
-	cURL := C.CaptureLaunchURL(C.double(0.3))
+	cURL := C.CaptureLaunchURL(C.double(launchURLCaptureTimeout))
 	if cURL == nil {
 		return ""
 	}

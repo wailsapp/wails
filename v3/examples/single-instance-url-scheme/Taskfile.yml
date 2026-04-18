@@ -44,7 +44,7 @@ tasks:
       Apple Event, and relays it to the first instance via SecondInstanceData.Args.
       OnSecondInstanceLaunch fires on the first instance with url-in-args?=true.
     cmds:
-      - 'open -n -u "{{.URL | default "wails-single-url://hello?n=1"}}" "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"'
+      - 'open -n -a "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app" "{{.URL | default "wails-single-url://hello?n=1"}}"'
 
   tail:
     summary: Tail the repro logfile written by main.go
