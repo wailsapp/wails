@@ -3,12 +3,13 @@
 package application
 
 /*
-#cgo CFLAGS: -x objective-c
+#cgo CFLAGS: -x objective-c -fblocks
 #cgo LDFLAGS: -framework Foundation -framework Cocoa
 
 #include <stdlib.h>
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
+#import <dispatch/dispatch.h>
 
 static char *g_wailsCapturedLaunchURL = NULL;
 

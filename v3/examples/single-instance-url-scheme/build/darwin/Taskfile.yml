@@ -23,7 +23,7 @@ tasks:
     deps:
       - task: build
         vars:
-          PRODUCTION: "false"
+          PRODUCTION: "true"
     cmds:
       - task: create:app:bundle
 

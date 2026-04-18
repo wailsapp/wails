@@ -89,7 +89,7 @@ wails3 task trigger:force URL='wails-single-url://hello?n=1'
 After applying the fix, triggered via `trigger:force` (or via plain `trigger`
 on macOS 14/15), the first instance log shows:
 
-```
+```text
 [first] OnSecondInstanceLaunch fired
 [first]   Args           = [.../single-instance-url-scheme wails-single-url://hello?n=1]
 [first]   url-in-args?   = true  (url="wails-single-url://hello?n=1")
@@ -106,7 +106,7 @@ Timing (measured on macOS 26, Apple Silicon):
 
 Triggered via `trigger:force` on the unfixed branch, the first instance logged:
 
-```
+```text
 [first] OnSecondInstanceLaunch fired
 [first]   Args           = [.../single-instance-url-scheme]
 [first]   url-in-args?   = false  (url="")
@@ -121,7 +121,7 @@ Triggered via `trigger:force` on the unfixed branch, the first instance logged:
   bundle registered with LaunchServices. Use `wails3 task run`.
 - If `open 'wails-single-url://…'` launches a different app, the scheme
   is claimed by a previously-registered bundle. Re-register this one:
-  `lsregister -f bin/single-instance-url-scheme.dev.app`.
+  `/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -f bin/single-instance-url-scheme.dev.app`.
 - Fresh launches (first instance) already go through the
   `NSAppleEventManager` path and work correctly; the fix is specific to
   the second-instance relay.
