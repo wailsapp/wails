@@ -15,14 +15,15 @@ import (
 
 // Options for generating bindings
 type Options struct {
-	Filename         string
-	Tags             []string
-	ProjectDirectory string
-	Compiler         string
-	GoModTidy        bool
-	TsPrefix         string
-	TsSuffix         string
-	TsOutputType     string
+	Filename          string
+	Tags              []string
+	ProjectDirectory  string
+	Compiler          string
+	GoModTidy         bool
+	TsPrefix          string
+	TsSuffix          string
+	TsOutputType      string
+	UseNullableSlices bool
 }
 
 // GenerateBindings generates bindings for the Wails project in the given ProjectDirectory.
@@ -83,6 +84,9 @@ func GenerateBindings(options Options) (string, error) {
 	env = shell.SetEnv(env, "tsprefix", options.TsPrefix)
 	env = shell.SetEnv(env, "tssuffix", options.TsSuffix)
 	env = shell.SetEnv(env, "tsoutputtype", options.TsOutputType)
+	if options.UseNullableSlices {
+		env = shell.SetEnv(env, "usenullableslices", "true")
+	}
 
 	stdout, stderr, err = shell.RunCommandWithEnv(env, workingDirectory, filename)
 	if err != nil {
