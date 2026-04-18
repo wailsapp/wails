@@ -77,7 +77,12 @@ func (v *OriginValidator) matchesOriginPattern(pattern, origin string) bool {
 	return false
 }
 
-// wildcardPatternToRegex converts wildcard pattern to regex
+// wildcardPatternToRegex converts wildcard pattern to regex.
+//
+// Wildcards are only expanded when they represent a full domain component,
+// i.e. immediately after "://", ".", or ":". A wildcard appended to a
+// partial label (e.g. "com*") is stripped so that it cannot match across
+// domain boundaries (GHSA-47hv-j4px-h3c9).
 func (v *OriginValidator) wildcardPatternToRegex(wildcardPattern string) string {
 	// Escape special regex characters except *
 	specialChars := []string{"\\", ".", "+", "?", "^", "$", "{", "}", "(", ")", "|", "[", "]"}
@@ -87,8 +92,17 @@ func (v *OriginValidator) wildcardPatternToRegex(wildcardPattern string) string 
 		escaped = strings.ReplaceAll(escaped, specialChar, "\\"+specialChar)
 	}
 
-	// Replace * with .* (matches any characters)
-	escaped = strings.ReplaceAll(escaped, "*", ".*")
+	// Replace * only when preceded by a separator so it matches a full
+	// component. Order matters: handle :// before : to avoid partial overlap.
+	// Use {0,} instead of * as the regex quantifier to avoid collision with
+	// the literal * cleanup in the next step.
+	escaped = strings.ReplaceAll(escaped, "//*", "//[^.:/]{0,}")
+	escaped = strings.ReplaceAll(escaped, "\\.*", "\\.[^.:/]{0,}")
+	escaped = strings.ReplaceAll(escaped, ":*", ":[^.:/]{0,}")
+
+	// Strip any remaining * that is not preceded by a separator.
+	// This prevents suffix-based bypasses like "com*" matching "community".
+	escaped = strings.ReplaceAll(escaped, "*", "")
 
 	// Anchor the pattern to match the entire string
 	return "^" + escaped + "$"
