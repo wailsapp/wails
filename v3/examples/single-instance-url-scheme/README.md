@@ -1,15 +1,9 @@
-# single-instance-url-scheme — reproduction for issue #5089
+# single-instance-url-scheme — fix for issue #5089
 
-Reproduces [wailsapp/wails#5089](https://github.com/wailsapp/wails/issues/5089):
-when `SingleInstance` is combined with a custom URL scheme on macOS, a
-URL-scheme launch that arrives while a first instance is already running
-is **dropped** — neither `OnSecondInstanceLaunch` nor
-`ApplicationLaunchedWithUrl` sees it.
+Demonstrates (and formerly reproduced) [wailsapp/wails#5089](https://github.com/wailsapp/wails/issues/5089):
+combining `SingleInstance` with a custom URL scheme on macOS.
 
-This example is the **failing** test case. No fix has been applied yet;
-running these steps is expected to demonstrate the bug.
-
-## Why this happens (short form)
+## What the bug was
 
 On macOS, URL-scheme launches do not place the URL in `os.Args`.
 LaunchServices delivers the URL via an Apple Event (`kAEGetURL`) that is
@@ -17,15 +11,35 @@ dispatched by the target process's `NSAppleEventManager` — which is only
 wired up once `NSApplication.run` is executing.
 
 When a second instance hits the flock in `newSingleInstanceManager` it
-immediately calls `notifyFirstInstance()` and `os.Exit`. The Apple Event
-handler is never installed, so the URL is discarded. The payload relayed
+immediately called `notifyFirstInstance()` and `os.Exit`. The Apple Event
+handler was never installed, so the URL was discarded. The payload relayed
 to the first instance (`SecondInstanceData{Args, WorkingDir, …}`) only
-contains what was in `os.Args`, which on macOS does not include the URL.
+contained what was in `os.Args`, which on macOS does not include the URL.
 
 On Windows and Linux the URL is passed through `argv`, so it surfaces
-naturally as `SecondInstanceData.Args[1]`. macOS is the odd one out.
+naturally as `SecondInstanceData.Args[1]`. macOS was the odd one out.
 
-## Reproducing the bug
+## The fix
+
+`v3/pkg/application/single_instance_darwin_url.go` adds a `captureLaunchURL()`
+helper that:
+
+1. Creates `[NSApplication sharedApplication]` with `NSApplicationActivationPolicyProhibited` (no dock icon).
+2. Registers a `kAEGetURL` Apple Event handler **before** calling `[NSApp run]`.
+3. Calls `[NSApp run]` — which triggers `finishLaunching`, signalling to
+   LaunchServices that this process is ready to receive Apple Events.
+4. Stops the run loop immediately when the URL event arrives (or after a
+   300 ms safety-net timeout if no event arrives).
+5. Returns the captured URL (or `""` on timeout).
+
+`notifyFirstInstance()` (in `single_instance.go`) calls `captureLaunchURL()`
+on darwin and appends the URL to `SecondInstanceData.Args` before notifying
+the first instance, matching the Windows/Linux behaviour.
+
+`ApplicationLaunchedWithUrl` is **not** fired on the second-instance relay
+path, consistent with Windows and Linux behaviour.
+
+## Running the example
 
 Requirements: macOS, Go, `wails3` CLI (`task` runner), Xcode command-line
 tools. Uses `codesign --sign -` (ad-hoc) so no certificate needed.
@@ -54,34 +68,43 @@ open 'wails-single-url://hello?n=1'
 
 ### macOS version behaviour differences
 
-**macOS 14 / 15 (original report):** `open 'wails-single-url://...'` causes
-LaunchServices to spawn a *new* process (because `LSMultipleInstancesProhibited`
-is not set). That second process detects the flock, relays `os.Args`, and exits
-before the Apple Event handler is registered. The URL is dropped.
+**macOS 14 / 15:** `open 'wails-single-url://...'` causes LaunchServices to
+spawn a second process (because `LSMultipleInstancesProhibited` is not set).
+That second process detects the flock, captures the URL via the fix, and
+relays it to the first instance.
 
-**macOS 26+ (observed on 26.0/25A354, Apple Silicon):** LaunchServices routes
-the Apple Event *directly* to the already-running instance without spawning a
-new process. `ApplicationLaunchedWithUrl` fires correctly — the bug is not
-visible via plain `open` on this OS version.
+**macOS 26+ (observed on 26.0/25A354, Apple Silicon):** `open 'wails-single-url://…'`
+without `-n` routes the Apple Event directly to the running first instance
+(`ApplicationLaunchedWithUrl` fires). No second process is spawned.
 
-To reproduce the bug on macOS 26+, use `trigger:force` which forces a new
-process via `open -n`:
+To trigger the second-instance relay path on macOS 26+, use `trigger:force`
+which forces a new process via `open -n`:
 
 ```sh
 wails3 task trigger:force URL='wails-single-url://hello?n=1'
 ```
 
-### Expected (desired) behaviour
+### Fixed behaviour
 
-The first instance's log contains either a line from
-`OnSecondInstanceLaunch` with the URL visible in `Args`, **or** a line
-from `ApplicationLaunchedWithUrl`, or both.
+After applying the fix, triggered via `trigger:force` (or via plain `trigger`
+on macOS 14/15), the first instance log shows:
 
-### Actual (buggy) behaviour
+```
+[first] OnSecondInstanceLaunch fired
+[first]   Args           = [.../single-instance-url-scheme wails-single-url://hello?n=1]
+[first]   url-in-args?   = true  (url="wails-single-url://hello?n=1")
+```
 
-Triggered via `trigger:force` (or via plain `trigger` on macOS 14/15):
-you will see a second process start and exit (pid differs from the first
-instance's pid). The first instance logs:
+`ApplicationLaunchedWithUrl` does **not** fire on either instance for the
+second-instance relay path.
+
+Timing (measured on macOS 26, Apple Silicon):
+- URL captured: second instance exits in **~120–160 ms** (early-exit on event arrival).
+- No URL (e.g. `open -n app.app`): second instance exits in **~320–430 ms** (300 ms timeout).
+
+## Unfixed behaviour (pre-PR, for historical reference)
+
+Triggered via `trigger:force` on the unfixed branch, the first instance logged:
 
 ```
 [first] OnSecondInstanceLaunch fired
@@ -89,17 +112,7 @@ instance's pid). The first instance logs:
 [first]   url-in-args?   = false  (url="")
 ```
 
-`ApplicationLaunchedWithUrl` does **not** fire on either instance.
-
-The UI mirrors this: the `ApplicationLaunchedWithUrl` row stays
-`(never fired)`, and the `OnSecondInstanceLaunch` row shows
-`"found": false`.
-
-## What a fix must demonstrate
-
-When re-running the same steps against a fixed Wails build, the first
-instance must receive the URL `wails-single-url://hello?n=1` via one of
-the existing callbacks (exact surface is still open — see issue #5089).
+`ApplicationLaunchedWithUrl` did **not** fire on either instance.
 
 ## Notes / gotchas for testing
 
@@ -110,9 +123,5 @@ the existing callbacks (exact surface is still open — see issue #5089).
   is claimed by a previously-registered bundle. Re-register this one:
   `lsregister -f bin/single-instance-url-scheme.dev.app`.
 - Fresh launches (first instance) already go through the
-  `NSAppleEventManager` path and work correctly; the bug is specific to
+  `NSAppleEventManager` path and work correctly; the fix is specific to
   the second-instance relay.
-- The issue was originally reported against `v3.0.0-alpha.67`. The code
-  paths involved (`v3/pkg/application/single_instance.go`,
-  `single_instance_darwin.go`, `application_darwin_delegate.m`) are
-  unchanged on `v3-alpha` HEAD at the time this example was written.
