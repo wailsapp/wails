@@ -52,6 +52,25 @@ wails3 task trigger URL='wails-single-url://hello?n=1'
 open 'wails-single-url://hello?n=1'
 ```
 
+### macOS version behaviour differences
+
+**macOS 14 / 15 (original report):** `open 'wails-single-url://...'` causes
+LaunchServices to spawn a *new* process (because `LSMultipleInstancesProhibited`
+is not set). That second process detects the flock, relays `os.Args`, and exits
+before the Apple Event handler is registered. The URL is dropped.
+
+**macOS 26+ (observed on 26.0/25A354, Apple Silicon):** LaunchServices routes
+the Apple Event *directly* to the already-running instance without spawning a
+new process. `ApplicationLaunchedWithUrl` fires correctly — the bug is not
+visible via plain `open` on this OS version.
+
+To reproduce the bug on macOS 26+, use `trigger:force` which forces a new
+process via `open -n`:
+
+```sh
+wails3 task trigger:force URL='wails-single-url://hello?n=1'
+```
+
 ### Expected (desired) behaviour
 
 The first instance's log contains either a line from
@@ -60,7 +79,8 @@ from `ApplicationLaunchedWithUrl`, or both.
 
 ### Actual (buggy) behaviour
 
-You will see a second process start and exit (pid differs from the first
+Triggered via `trigger:force` (or via plain `trigger` on macOS 14/15):
+you will see a second process start and exit (pid differs from the first
 instance's pid). The first instance logs:
 
 ```

@@ -26,8 +26,24 @@ tasks:
 
   trigger:
     summary: 'Launch the custom URL. Usage: wails3 task trigger URL=wails-single-url://hello?n=1'
+    desc: |
+      On macOS 14/15, this routes the URL to a second process (which then hits the
+      SingleInstance lock and exits), dropping the URL — the bug in action.
+      On macOS 26+, LaunchServices sends the Apple Event to the already-running
+      process instead, so ApplicationLaunchedWithUrl fires correctly (no bug seen).
+      Use trigger:force to reproduce the bug on macOS 26+.
     cmds:
       - 'open "{{.URL | default "wails-single-url://hello?n=1"}}"'
+
+  trigger:force:
+    summary: 'Force a new process launch with URL (reproduces bug on macOS 26+). Usage: wails3 task trigger:force URL=wails-single-url://hello?n=1'
+    desc: |
+      Uses open -n to bypass LaunchServices reuse behaviour and force a new process.
+      The new process hits the SingleInstance lock, relays os.Args (no URL), and exits.
+      The Apple Event carrying the URL is queued for the dying process and dropped.
+      OnSecondInstanceLaunch fires on the first instance with url-in-args?=false.
+    cmds:
+      - 'open -n -u "{{.URL | default "wails-single-url://hello?n=1"}}" "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"'
 
   tail:
     summary: Tail the repro logfile written by main.go
