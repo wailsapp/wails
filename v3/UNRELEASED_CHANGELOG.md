@@ -23,7 +23,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix data race in ScreenManager that causes WebKit DisplayLink deadlock on display configuration change (e.g. external monitor hot-plug during sleep/wake)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
