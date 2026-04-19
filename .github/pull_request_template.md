@@ -8,7 +8,7 @@
 
 - *DO NOT* submit PRs for v3 alpha enhancements, unless you have opened a post on the discord channel.
   All enhancements must be discussed first.
-  The feedback guide for v3 is here: https://v3alpha.wails.io/getting-started/feedback/
+  The feedback guide for v3 is here: https://v3alpha.wails.io/feedback
 
 - Before submitting your PR, please ensure you have created and linked the PR to an issue.
 - If a relevant issue already exists, please reference it in your PR by including `Fixes #<issue number>` in your PR description.
