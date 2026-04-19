@@ -109,8 +109,6 @@ app := application.New(application.Options{
 })
 ```
 
-For a complete working example of panic handling in a Wails application, see the panic-handling example in `v3/examples/panic-handling`.
-
 ## Handling Panics in Your Own Goroutines
 
 Wails can only install its deferred recovery at sites it controls — bound
@@ -178,9 +176,12 @@ go func() {
 Both the wails-caught path and the user-goroutine path now end up at
 `reportPanic`, so reporting stays centralised.
 
-A runnable version of this pattern is in `v3/examples/user-panic-handling`
-— a bound-method panic and a background-goroutine panic both flow through
-the same handler.
+Two runnable examples ship with Wails:
+
+- `v3/examples/panic-handling` — minimal: bound-method panic only, routed
+  through `PanicHandler`.
+- `v3/examples/user-panic-handling` — bound-method panic and
+  background-goroutine panic both flowing through the same handler.
 
 :::caution[Stack trace fidelity]
 
