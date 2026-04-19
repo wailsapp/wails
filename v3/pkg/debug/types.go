@@ -3,7 +3,7 @@ package debug
 import (
 	"time"
 
-	"github.com/wailsapp/wails/v3/pkg/doctor-ng"
+	doctor "github.com/wailsapp/wails/v3/pkg/doctor-ng"
 )
 
 type SystemInfo = doctor.SystemInfo

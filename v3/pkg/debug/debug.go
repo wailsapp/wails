@@ -5,7 +5,7 @@ import (
 	"runtime/debug"
 	"time"
 
-	"github.com/wailsapp/wails/v3/pkg/doctor-ng"
+	doctor "github.com/wailsapp/wails/v3/pkg/doctor-ng"
 )
 
 type Collector struct {

@@ -41,7 +41,8 @@ func collectProcessInfo(info *CrashInfo) {
 					}
 				}
 			} else if strings.HasPrefix(line, "Threads:") {
-				if val := strings.TrimSpace(strings.TrimPrefix(line, "Threads:")); v, err := strconv.Atoi(val); err == nil {
+				val := strings.TrimSpace(strings.TrimPrefix(line, "Threads:"))
+				if v, err := strconv.Atoi(val); err == nil {
 					info.ProcessInfo.Threads = v
 				}
 			}
@@ -55,12 +56,10 @@ func collectMemoryInfo(info *CrashInfo) {
 
 	info.MemorySummary = MemorySummary{
 		TotalVirtual: m.TotalAlloc + m.Mallocs,
-		HeapAlloc:    m.HeapAlloc,
-		HeapObjects:  m.HeapObjects,
 		GarbageCollector: GCStats{
 			NumGC:       int(m.NumGC),
-			LastGC:      m.LastGC,
-			TotalPause:  m.TotalPause,
+			LastGC:      uint32(m.LastGC),
+			TotalPause:  m.PauseTotalNs,
 			TotalAlloc:  m.TotalAlloc,
 			HeapAlloc:   m.HeapAlloc,
 			HeapObjects: m.HeapObjects,
@@ -92,6 +91,8 @@ func loadModules(info *CrashInfo) {
 func collectNetworkConnections(info *CrashInfo) {
 }
 
-func writeCoreDump(path string, pid int) error {
-	return fmt.Errorf("not implemented for %s", runtime.GOOS)
+// writeCoreDump is Windows-only for now. On other platforms it returns an
+// error so callers can fall back to stack-trace-only reporting.
+func writeCoreDump(path string) (string, error) {
+	return "", fmt.Errorf("core dump not implemented for %s", runtime.GOOS)
 }
