@@ -105,6 +105,7 @@ type assetData struct {
 	Name           string
 	Info           project.Info
 	OutputFilename string
+	ExecutionLevel string
 }
 
 func resolveProjectData(content []byte, projectData *project.Project) ([]byte, error) {
@@ -113,10 +114,17 @@ func resolveProjectData(content []byte, projectData *project.Project) ([]byte, e
 		return nil, err
 	}
 
+	// Extract Windows execution level if specified
+	executionLevel := ""
+	if projectData.Info.Windows != nil && projectData.Info.Windows.ExecutionLevel != "" {
+		executionLevel = projectData.Info.Windows.ExecutionLevel
+	}
+
 	data := &assetData{
 		Name:           projectData.Name,
 		Info:           projectData.Info,
 		OutputFilename: projectData.OutputFilename,
+		ExecutionLevel: executionLevel,
 	}
 
 	var out bytes.Buffer
