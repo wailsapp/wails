@@ -19,6 +19,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
+	"github.com/wailsapp/wails/v3/internal/startuptrace"
 )
 
 //go:embed assets/*
@@ -541,6 +542,7 @@ func (a *App) error(message string, args ...any) {
 }
 
 func (a *App) Run() error {
+	startuptrace.Mark("app.Run.start")
 	a.runLock.Lock()
 	// Prevent double invocations.
 	if a.starting || a.running {
@@ -559,8 +561,10 @@ func (a *App) Run() error {
 	if err != nil {
 		return err
 	}
+	startuptrace.Mark("app.preRun.done")
 
 	a.impl = newPlatformApp(a)
+	startuptrace.Mark("app.newPlatformApp.done")
 
 	// Ensure services are shut down in case of failures.
 	defer a.shutdownServices()
@@ -579,6 +583,7 @@ func (a *App) Run() error {
 		// Schedule started services for shutdown.
 		a.options.Services = services[:i+1]
 	}
+	startuptrace.Mark("app.services.ready")
 
 	go func() {
 		for {
@@ -647,10 +652,15 @@ func (a *App) Run() error {
 		a.impl.setIcon(a.options.Icon)
 	}
 
+	startuptrace.Mark("app.impl.run.enter")
+	defer startuptrace.Flush()
 	return a.impl.run()
 }
 
 func (a *App) startupService(service Service) error {
+	startuptrace.Mark("service.start:" + getServiceName(service))
+	defer startuptrace.Mark("service.done:" + getServiceName(service))
+
 	err := a.bindings.Add(service)
 	if err != nil {
 		return fmt.Errorf("cannot bind service methods: %w", err)

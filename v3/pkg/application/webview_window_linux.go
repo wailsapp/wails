@@ -12,6 +12,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/internal/runtime"
+	"github.com/wailsapp/wails/v3/internal/startuptrace"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -280,6 +281,7 @@ func (w *linuxWebviewWindow) setMenu(menu *Menu) {
 }
 
 func (w *linuxWebviewWindow) run() {
+	startuptrace.MarkWindow(w.parent.id, "window.run.start")
 	for eventId := range w.parent.eventListeners {
 		w.on(eventId)
 	}
@@ -383,6 +385,7 @@ func (w *linuxWebviewWindow) run() {
 		globalApplication.handleFatalError(err)
 	}
 
+	startuptrace.MarkWindow(w.parent.id, "webview.Navigate.start")
 	w.setURL(startURL)
 	w.parent.OnWindowEvent(events.Linux.WindowLoadFinished, func(_ *WindowEvent) {
 		InvokeAsync(func() {
@@ -397,10 +400,12 @@ func (w *linuxWebviewWindow) run() {
 	})
 
 	w.parent.RegisterHook(events.Linux.WindowLoadFinished, func(e *WindowEvent) {
+		startuptrace.MarkWindow(w.parent.id, "navigationCompleted")
 		// Inject runtime core and EnableFileDrop flag together
 		js := runtime.Core(globalApplication.impl.GetFlags(globalApplication.options))
 		js += fmt.Sprintf("window._wails.flags.enableFileDrop=%v;", w.parent.options.EnableFileDrop)
 		w.execJS(js)
+		startuptrace.MarkWindow(w.parent.id, "runtime.injected")
 	})
 	if w.parent.options.HTML != "" {
 		w.setHTML(w.parent.options.HTML)

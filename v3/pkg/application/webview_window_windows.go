@@ -20,6 +20,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/internal/sliceutil"
+	"github.com/wailsapp/wails/v3/internal/startuptrace"
 
 	"github.com/wailsapp/go-webview2/pkg/edge"
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -336,6 +337,7 @@ func (w *windowsWebviewWindow) framelessWithDecorations() bool {
 }
 
 func (w *windowsWebviewWindow) run() {
+	startuptrace.MarkWindow(w.parent.id, "window.run.start")
 
 	options := w.parent.options
 
@@ -2026,7 +2028,9 @@ func (w *windowsWebviewWindow) setupChromium() {
 	chromium.NavigationCompletedCallback = w.navigationCompleted
 	chromium.AcceleratorKeyCallback = w.processKeyBinding
 
+	startuptrace.MarkWindow(w.parent.id, "chromium.Embed.start")
 	chromium.Embed(w.hwnd)
+	startuptrace.MarkWindow(w.parent.id, "chromium.Embed.done")
 
 	// Prevent efficiency mode by keeping WebView2 visible (fixes issue #2861)
 	// Microsoft recommendation: keep IsVisible = true to avoid efficiency mode
@@ -2152,6 +2156,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 			globalApplication.handleFatalError(err)
 		}
 		w.webviewNavigationCompleted = false
+		startuptrace.MarkWindow(w.parent.id, "chromium.Navigate.start")
 		chromium.Navigate(startURL)
 	}
 
@@ -2180,9 +2185,11 @@ func (w *windowsWebviewWindow) navigationCompleted(
 	sender *edge.ICoreWebView2,
 	args *edge.ICoreWebView2NavigationCompletedEventArgs,
 ) {
+	startuptrace.MarkWindow(w.parent.id, "navigationCompleted")
 
 	// Install the runtime core
 	w.execJS(runtime.Core(globalApplication.impl.GetFlags(globalApplication.options)))
+	startuptrace.MarkWindow(w.parent.id, "runtime.injected")
 
 	// Set the EnableFileDrop flag for this window (Windows-specific)
 	// The JS runtime checks this before processing file drops

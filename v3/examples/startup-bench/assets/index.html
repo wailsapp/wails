@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Wails v3 startup benchmark</title>
+<script>
+    // Record the earliest moment the HTML parser can execute inline script.
+    // The value is in milliseconds since document fetch start (performance.now()).
+    window.__wailsBenchMarks = { scriptHead: performance.now() };
+    document.addEventListener("DOMContentLoaded", () => {
+        window.__wailsBenchMarks.domContentLoaded = performance.now();
+    });
+    window.addEventListener("load", () => {
+        window.__wailsBenchMarks.onLoad = performance.now();
+        const el = document.getElementById("marks");
+        if (el) {
+            el.textContent = JSON.stringify(window.__wailsBenchMarks, null, 2);
+        }
+    });
+</script>
+<style>
+    body { font-family: system-ui, sans-serif; padding: 2rem; }
+    pre  { background: #f4f4f4; padding: 1rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<h1>startup-bench</h1>
+<p>Five services, each sleeping 200ms in <code>ServiceStartup</code>. This page logs
+in-browser timing marks; combine with <code>WAILS_TRACE_STARTUP_OUTPUT</code> to
+correlate with the Go-side trace.</p>
+<pre id="marks">(waiting for window.onload)</pre>
+</body>
+</html>

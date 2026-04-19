@@ -939,6 +939,7 @@ import (
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/runtime"
+	"github.com/wailsapp/wails/v3/internal/startuptrace"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
@@ -1210,10 +1211,12 @@ func newWindowImpl(parent *WebviewWindow) *macosWebviewWindow {
 		parent: parent,
 	}
 	result.parent.RegisterHook(events.Mac.WebViewDidFinishNavigation, func(event *WindowEvent) {
+		startuptrace.MarkWindow(result.parent.id, "navigationCompleted")
 		// Inject runtime core
 		js := runtime.Core(globalApplication.impl.GetFlags(globalApplication.options))
 		js += fmt.Sprintf("window._wails.flags.enableFileDrop=%v;", result.parent.options.EnableFileDrop)
 		result.execJS(js)
+		startuptrace.MarkWindow(result.parent.id, "runtime.injected")
 	})
 	return result
 }
@@ -1335,6 +1338,7 @@ func (w *macosWebviewWindow) getWebviewPreferences() C.struct_WebviewPreferences
 }
 
 func (w *macosWebviewWindow) run() {
+	startuptrace.MarkWindow(w.parent.id, "window.run.start")
 	for eventId := range w.parent.eventListeners {
 		w.on(eventId)
 	}
@@ -1445,6 +1449,7 @@ func (w *macosWebviewWindow) run() {
 			globalApplication.handleFatalError(err)
 		}
 
+		startuptrace.MarkWindow(w.parent.id, "webview.Navigate.start")
 		w.setURL(startURL)
 
 		// We need to wait for the HTML to load before we can execute the javascript
