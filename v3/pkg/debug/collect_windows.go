@@ -74,12 +74,14 @@ const (
 
 // writeCoreDump writes a Windows minidump of the current process to path.
 // If path is empty, <TempDir>/wails-crash-<pid>-<unix>.dmp is used.
+// If fullMemory is true, the dump includes the full process address space
+// (large but preserves everything for postmortem analysis).
 // Returns the absolute path of the dump on success.
 //
 // Runs under the calling user's token — no elevation, no SeDebugPrivilege,
 // no OpenProcess: dumping the current process uses the
 // GetCurrentProcess() pseudo-handle which bypasses ACL checks.
-func writeCoreDump(path string) (string, error) {
+func writeCoreDump(path string, fullMemory bool) (string, error) {
 	if path == "" {
 		name := fmt.Sprintf("wails-crash-%d-%d.dmp", os.Getpid(), time.Now().Unix())
 		path = filepath.Join(os.TempDir(), name)
@@ -126,12 +128,17 @@ func writeCoreDump(path string) (string, error) {
 	//   PMINIDUMP_EXCEPTION_INFORMATION ExceptionParam,      // arg4: nil
 	//   PMINIDUMP_USER_STREAM_INFORMATION UserStreamParam,   // arg5: nil
 	//   PMINIDUMP_CALLBACK_INFORMATION CallbackParam)        // arg6: nil
+	flags := uintptr(defaultDumpFlags)
+	if fullMemory {
+		flags |= miniDumpWithFullMemory
+	}
+
 	ret, _, callErr := syscall.SyscallN(
 		proc,
 		uintptr(windows.CurrentProcess()),
 		uintptr(windows.GetCurrentProcessId()),
 		uintptr(hFile),
-		uintptr(defaultDumpFlags),
+		flags,
 		0, 0, 0,
 	)
 	if ret == 0 {

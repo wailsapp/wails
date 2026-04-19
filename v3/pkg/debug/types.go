@@ -108,16 +108,13 @@ type ConnInfo struct {
 	UID       uint32 `json:"uid,omitempty"`
 }
 
-type Report struct {
-	Timestamp    time.Time     `json:"timestamp"`
-	System       SystemInfo    `json:"system"`
-	Build        BuildInfo      `json:"build"`
-	CrashInfo    *CrashInfo     `json:"crash_info,omitempty"`
-	Diagnostics  []DiagnosticResult `json:"diagnostics,omitempty"`
-}
-
-func NewReport() *Report {
-	return &Report{
-		Timestamp: time.Now(),
-	}
+// CrashReport is the top-level structure returned by Report. It aggregates
+// everything the debug package collects about the current process.
+type CrashReport struct {
+	Timestamp   time.Time          `json:"timestamp"`
+	System      SystemInfo         `json:"system"`
+	Build       BuildInfo          `json:"build"`
+	Crash       *CrashInfo         `json:"crash,omitempty"`
+	Diagnostics []DiagnosticResult `json:"diagnostics,omitempty"`
+	DumpPath    string             `json:"dump_path,omitempty"`
 }

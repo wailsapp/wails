@@ -93,6 +93,8 @@ func collectNetworkConnections(info *CrashInfo) {
 
 // writeCoreDump is Windows-only for now. On other platforms it returns an
 // error so callers can fall back to stack-trace-only reporting.
-func writeCoreDump(path string) (string, error) {
+//
+//nolint:unused // fullMemory kept in signature for parity with Windows impl
+func writeCoreDump(path string, fullMemory bool) (string, error) {
 	return "", fmt.Errorf("core dump not implemented for %s", runtime.GOOS)
 }

@@ -193,6 +193,34 @@ full stack. That is usually what you want for goroutines you spawned.
 
 :::
 
+## Capturing Diagnostics on Panic
+
+The `PanicHandler` receives the panic itself, but often you'll want to
+capture the process's full state — system info, build info, process/memory/
+module state, and (on Windows) a minidump — so you can reconstruct what
+happened later.
+
+Wails ships a dedicated package for that:
+[Debugging Crashes](./debugging-crashes). Typical integration:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/debug"
+
+app := application.New(application.Options{
+    PanicHandler: func(pd *application.PanicDetails) {
+        report, _ := debug.Report(debug.WithDump())
+        // pd holds the wails-side panic info; report adds system context
+        // and (on Windows) a minidump at report.DumpPath.
+        mycrashservice.Upload(pd, report)
+    },
+})
+```
+
+`debug.Report` is opt-in — wails will never automatically persist a dump or
+system snapshot, because crash reporting often involves user consent or PII
+redaction. See the [Debugging Crashes](./debugging-crashes) guide for the
+full API.
+
 ## Final Notes
 
 Remember that the Wails panic handler is specifically for managing panics in bound methods and internal runtime errors. For other parts of your application, you should use Go's standard error handling patterns and panic recovery mechanisms where appropriate. As with all Go applications, it's better to prevent panics through proper error handling where possible.
