@@ -23,7 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix stale checked state in macOS menus by applying `setMenuItemChecked()` synchronously, eliminating the `dispatch_async` race that left the menu rendering the previous state when reopened quickly (#5002)
+- Fix stale state in macOS menus by applying the menu item mutators (`setMenuItemChecked()`, `setMenuItemLabel()`, `setMenuItemDisabled()`, `setMenuItemHidden()`, `setMenuItemTooltip()`) synchronously on the main thread, eliminating the `dispatch_async` race that left menus rendering the previous state when reopened quickly (#5002)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

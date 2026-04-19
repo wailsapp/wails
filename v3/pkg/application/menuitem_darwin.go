@@ -44,52 +44,81 @@ void* newMenuItem(unsigned int menuItemID, char *label, bool disabled, char* too
 }
 
 // set menu item label
+//
+// Apply on the main thread synchronously so a menu reopen reflects the new
+// title. See setMenuItemChecked() below / wailsapp/wails#5002 for the stale-
+// state race that motivates the isMainThread/dispatch_sync pattern.
 void setMenuItemLabel(void* nsMenuItem, char *label) {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        MenuItem *menuItem = (MenuItem *)nsMenuItem;
+    MenuItem *menuItem = (MenuItem *)nsMenuItem;
+    if ([NSThread isMainThread]) {
         menuItem.title = [NSString stringWithUTF8String:label];
-		free(label);
-    });
+        free(label);
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            menuItem.title = [NSString stringWithUTF8String:label];
+            free(label);
+        });
+    }
 }
 
 // set menu item disabled
+//
+// Apply synchronously (see setMenuItemChecked() / wailsapp/wails#5002).
 void setMenuItemDisabled(void* nsMenuItem, bool disabled) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		MenuItem *menuItem = (MenuItem *)nsMenuItem;
-		[menuItem setEnabled:!disabled];
-		// Handle target based on whether item uses custom selector or handleClick
-		if( disabled ) {
-			[menuItem setTarget:nil];
-		} else {
-			// Check if this menu item uses a custom selector (role-based)
-			// by checking if the action is handleClick or something else
-			if ([menuItem action] == @selector(handleClick)) {
-				// This is a custom callback menu item, set target to self
-				[menuItem setTarget:menuItem];
-			} else {
-				// This is a role-based menu item, target should be nil
-				// to allow the action to be sent up the responder chain
-				[menuItem setTarget:nil];
-			}
-		}
-	});
+    MenuItem *menuItem = (MenuItem *)nsMenuItem;
+    void (^apply)(void) = ^{
+        [menuItem setEnabled:!disabled];
+        // Handle target based on whether item uses custom selector or handleClick
+        if( disabled ) {
+            [menuItem setTarget:nil];
+        } else {
+            // Check if this menu item uses a custom selector (role-based)
+            // by checking if the action is handleClick or something else
+            if ([menuItem action] == @selector(handleClick)) {
+                // This is a custom callback menu item, set target to self
+                [menuItem setTarget:menuItem];
+            } else {
+                // This is a role-based menu item, target should be nil
+                // to allow the action to be sent up the responder chain
+                [menuItem setTarget:nil];
+            }
+        }
+    };
+    if ([NSThread isMainThread]) {
+        apply();
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), apply);
+    }
 }
 
 // set menu item hidden
+//
+// Apply synchronously (see setMenuItemChecked() / wailsapp/wails#5002).
 void setMenuItemHidden(void* nsMenuItem, bool hidden) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		MenuItem *menuItem = (MenuItem *)nsMenuItem;
-		[menuItem setHidden:hidden];
-	});
+    MenuItem *menuItem = (MenuItem *)nsMenuItem;
+    if ([NSThread isMainThread]) {
+        [menuItem setHidden:hidden];
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            [menuItem setHidden:hidden];
+        });
+    }
 }
 
 // set menu item tooltip
+//
+// Apply synchronously (see setMenuItemChecked() / wailsapp/wails#5002).
 void setMenuItemTooltip(void* nsMenuItem, char *tooltip) {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        MenuItem *menuItem = (MenuItem *)nsMenuItem;
+    MenuItem *menuItem = (MenuItem *)nsMenuItem;
+    if ([NSThread isMainThread]) {
         menuItem.toolTip = [NSString stringWithUTF8String:tooltip];
         free(tooltip);
-    });
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            menuItem.toolTip = [NSString stringWithUTF8String:tooltip];
+            free(tooltip);
+        });
+    }
 }
 
 // Check menu item
