@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "embed"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"log"
 
