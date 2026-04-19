@@ -141,6 +141,11 @@ func Build(options *Options) (string, error) {
 		if err != nil {
 			return "", err
 		}
+
+		err = syncFrontendToEmbedTarget(options)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	compileBinary := ""
@@ -159,6 +164,88 @@ func Build(options *Options) (string, error) {
 
 	}
 	return compileBinary, nil
+}
+
+func syncFrontendToEmbedTarget(options *Options) error {
+	projectData := options.ProjectData
+	frontendDir := projectData.GetFrontendDir()
+	projectPath := projectData.Path
+
+	defaultFrontendDir := filepath.Join(projectPath, "frontend")
+	if frontendDir == defaultFrontendDir {
+		return nil
+	}
+
+	frontendDistDir := filepath.Join(frontendDir, "dist")
+	if !fs.DirExists(frontendDistDir) {
+		return nil
+	}
+
+	embedDetails, err := staticanalysis.GetEmbedDetails(projectPath)
+	if err != nil {
+		return nil
+	}
+
+	for _, detail := range embedDetails {
+		embedFullPath := detail.GetFullPath()
+		if !strings.HasSuffix(embedFullPath, "dist") {
+			continue
+		}
+		if embedFullPath == frontendDistDir {
+			continue
+		}
+
+		if err := os.RemoveAll(embedFullPath); err != nil {
+			return fmt.Errorf("failed to clear embed target directory %s: %w", embedFullPath, err)
+		}
+		if err := fs.MkDirs(embedFullPath, 0o755); err != nil {
+			return fmt.Errorf("failed to create embed target directory %s: %w", embedFullPath, err)
+		}
+
+		entries, err := os.ReadDir(frontendDistDir)
+		if err != nil {
+			return fmt.Errorf("failed to read frontend dist directory %s: %w", frontendDistDir, err)
+		}
+		for _, entry := range entries {
+			src := filepath.Join(frontendDistDir, entry.Name())
+			dst := filepath.Join(embedFullPath, entry.Name())
+			if entry.IsDir() {
+				if err := copyDir(src, dst); err != nil {
+					return fmt.Errorf("failed to copy %s to %s: %w", src, dst, err)
+				}
+			} else {
+				if err := fs.CopyFile(src, dst); err != nil {
+					return fmt.Errorf("failed to copy %s to %s: %w", src, dst, err)
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func copyDir(src string, dst string) error {
+	if err := fs.MkDirs(dst, 0o755); err != nil {
+		return err
+	}
+	entries, err := os.ReadDir(src)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		s := filepath.Join(src, entry.Name())
+		d := filepath.Join(dst, entry.Name())
+		if entry.IsDir() {
+			if err := copyDir(s, d); err != nil {
+				return err
+			}
+		} else {
+			if err := fs.CopyFile(s, d); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func CreateEmbedDirectories(cwd string, buildOptions *Options) error {
