@@ -72,7 +72,7 @@ func (a *Apt) PackageInstalled(pkg *Package) (bool, error) {
 	cmd.Env = append(os.Environ(), "LC_ALL=C")
 	err := cmd.Run()
 	output := a.removeEscapeSequences(stdo.String())
-	return strings.Contains(output, "[installed]"), err
+	return strings.Contains(output, "[installed"), err
 }
 
 // PackageAvailable tests if the given package is available for installation
