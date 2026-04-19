@@ -111,6 +111,87 @@ app := application.New(application.Options{
 
 For a complete working example of panic handling in a Wails application, see the panic-handling example in `v3/examples/panic-handling`.
 
+## Handling Panics in Your Own Goroutines
+
+Wails can only install its deferred recovery at sites it controls — bound
+service methods invoked from the frontend, internal runtime callbacks, and
+so on. If your own code does this:
+
+```go
+go func() {
+    // your work
+}()
+```
+
+Wails has no way to inject a `defer handlePanic()` into that goroutine. If it
+panics, the whole process crashes as per Go's default behaviour — your
+registered `PanicHandler` is **not** invoked.
+
+To route user-goroutine panics through the same handler as wails-caught
+panics, add a small helper that builds a `PanicDetails` manually and calls
+whatever function you registered as `PanicHandler`:
+
+```go
+import (
+    "fmt"
+    "runtime/debug"
+    "time"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+// reportPanic is the function you register as application.Options.PanicHandler.
+func reportPanic(pd *application.PanicDetails) {
+    // log to file / send to Sentry / show dialog / etc.
+}
+
+// recoverAndReport funnels goroutine panics to reportPanic. Defer it as the
+// first statement of every goroutine you spawn in user code.
+func recoverAndReport() {
+    r := recover()
+    if r == nil {
+        return
+    }
+    err, ok := r.(error)
+    if !ok {
+        err = fmt.Errorf("%v", r)
+    }
+    stack := string(debug.Stack())
+    reportPanic(&application.PanicDetails{
+        Error:          err,
+        Time:           time.Now(),
+        StackTrace:     stack,
+        FullStackTrace: stack,
+    })
+}
+```
+
+Use it at the top of every goroutine you own:
+
+```go
+go func() {
+    defer recoverAndReport()
+    // your work
+}()
+```
+
+Both the wails-caught path and the user-goroutine path now end up at
+`reportPanic`, so reporting stays centralised.
+
+A runnable version of this pattern is in `v3/examples/user-panic-handling`
+— a bound-method panic and a background-goroutine panic both flow through
+the same handler.
+
+:::caution[Stack trace fidelity]
+
+`PanicDetails.StackTrace` is trimmed by wails to hide its own wrapper frames
+so the top of the trace is your code. When you build a `PanicDetails`
+yourself from `runtime/debug.Stack()`, no trimming is applied — `StackTrace`
+and `FullStackTrace` will be identical and will include your goroutine's
+full stack. That is usually what you want for goroutines you spawned.
+
+:::
+
 ## Final Notes
 
 Remember that the Wails panic handler is specifically for managing panics in bound methods and internal runtime errors. For other parts of your application, you should use Go's standard error handling patterns and panic recovery mechanisms where appropriate. As with all Go applications, it's better to prevent panics through proper error handling where possible.
