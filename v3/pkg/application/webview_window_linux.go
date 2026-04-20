@@ -417,11 +417,6 @@ func (w *linuxWebviewWindow) run() {
 	}
 }
 
-func (w *linuxWebviewWindow) startResize(border string) error {
-	// FIXME: what do we need to do here?
-	return nil
-}
-
 func (w *linuxWebviewWindow) nativeWindow() unsafe.Pointer {
 	return unsafe.Pointer(w.window)
 }

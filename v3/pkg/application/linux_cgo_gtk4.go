@@ -1307,8 +1307,38 @@ func (w *linuxWebviewWindow) startDrag() error {
 	return nil
 }
 
-// startResize is handled by webview_window_linux.go
-// GTK4-specific resize using beginWindowResize can be added via a helper function
+// gdkSurfaceEdgeForBorder maps the border strings sent by the Wails runtime
+// (as injected by drag.ts — "n-resize", "ne-resize", etc.) to the
+// corresponding GdkSurfaceEdge value expected by gdk_toplevel_begin_resize.
+// GdkSurfaceEdge in GTK4 uses the same numeric values as the GTK3
+// GdkWindowEdge enum.
+var gdkSurfaceEdgeForBorder = map[string]C.GdkSurfaceEdge{
+	"n-resize":  C.GDK_SURFACE_EDGE_NORTH,
+	"ne-resize": C.GDK_SURFACE_EDGE_NORTH_EAST,
+	"e-resize":  C.GDK_SURFACE_EDGE_EAST,
+	"se-resize": C.GDK_SURFACE_EDGE_SOUTH_EAST,
+	"s-resize":  C.GDK_SURFACE_EDGE_SOUTH,
+	"sw-resize": C.GDK_SURFACE_EDGE_SOUTH_WEST,
+	"w-resize":  C.GDK_SURFACE_EDGE_WEST,
+	"nw-resize": C.GDK_SURFACE_EDGE_NORTH_WEST,
+}
+
+func (w *linuxWebviewWindow) startResize(border string) error {
+	edge, ok := gdkSurfaceEdgeForBorder[border]
+	if !ok {
+		return fmt.Errorf("unknown resize border: %q", border)
+	}
+	// Drag state (mouse button, root coords, timestamp) was captured by
+	// the click gesture in the GTK4 controller and stored on w.drag.
+	C.beginWindowResize(
+		w.gtkWindow(),
+		edge,
+		C.int(w.drag.MouseButton),
+		C.double(w.drag.XRoot),
+		C.double(w.drag.YRoot),
+		C.guint32(w.drag.DragTime))
+	return nil
+}
 
 func (w *linuxWebviewWindow) getZoom() float64 {
 	return float64(C.webkit_web_view_get_zoom_level(w.webKitWebView()))
