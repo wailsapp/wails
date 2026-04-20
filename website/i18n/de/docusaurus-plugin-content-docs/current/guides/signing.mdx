@@ -41,13 +41,13 @@ jobs:
           wails build
       - name: upload artifacts macOS
         if: matrix.platform == 'macos-latest'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: wails-binaries-macos
           path: build/bin/*
       - name: upload artifacts windows
         if: matrix.platform == 'windows-latest'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: wails-binaries-windows
           path: build/bin/*
@@ -134,13 +134,13 @@ jobs:
 
       - name: upload artifacts macOS
         if: matrix.platform == 'macos-latest'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: wails-binaries-macos
           path: build/bin/*
       - name: upload artifacts windows
         if: matrix.platform == 'windows-latest'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: wails-binaries-windows
           path: build/bin/*
@@ -199,13 +199,13 @@ jobs:
           wails build
       - name: upload artifacts macOS
         if: matrix.platform == 'macos-latest'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: wails-binaries-macos
           path: build/bin/*
       - name: upload artifacts windows
         if: matrix.platform == 'windows-latest'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: wails-binaries-windows
           path: build/bin/*
@@ -384,13 +384,13 @@ jobs:
           & 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe' sign /fd sha256 /tr http://ts.ssl.com /f certificate\certificate.pfx /p '${{ secrets.WIN_SIGNING_CERT_PASSWORD }}' .\build\bin\Monitor.exe
       - name: upload artifacts macOS
         if: matrix.platform == 'macos-latest'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: wails-binaries-macos
           path: build/bin/*
       - name: upload artifacts windows
         if: matrix.platform == 'windows-latest'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: wails-binaries-windows
           path: build/bin/*
