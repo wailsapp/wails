@@ -1,15 +1,13 @@
-//go:build linux && !webkit_6
-// +build linux,!webkit_6
+//go:build linux && webkit_6
+// +build linux,webkit_6
 
 package linux
 
 /*
-#cgo pkg-config: gtk+-3.0
-#cgo !webkit2_41 pkg-config: webkit2gtk-4.0
-#cgo webkit2_41 pkg-config: webkit2gtk-4.1
+#cgo pkg-config: gtk4 webkitgtk-6.0
 
 #include "gtk/gtk.h"
-#include "webkit2/webkit2.h"
+#include "webkit/webkit.h"
 
 // CREDIT: https://github.com/rainycape/magick
 #include <errno.h>
@@ -73,16 +71,6 @@ static void install_signal_handlers()
 #endif
 }
 
-static gboolean install_signal_handlers_idle(gpointer data) {
-    (void)data;
-    install_signal_handlers();
-    return G_SOURCE_REMOVE;
-}
-
-static void fix_signal_handlers_after_gtk_init() {
-    g_idle_add(install_signal_handlers_idle, NULL);
-}
-
 */
 import "C"
 import (
@@ -139,8 +127,11 @@ type Frontend struct {
 	originValidator *originvalidator.OriginValidator
 }
 
+var mainLoop *C.GMainLoop
+
 func (f *Frontend) RunMainLoop() {
-	C.gtk_main()
+	mainLoop = C.g_main_loop_new(nil, C.gboolean(1))
+	C.g_main_loop_run(mainLoop)
 }
 
 func (f *Frontend) WindowClose() {
@@ -156,7 +147,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 			_ = os.Setenv("GDK_BACKEND", "x11")
 		}
 
-		if ok := C.gtk_init_check(nil, nil); ok != 1 {
+		if ok := C.gtk_init_check(); ok != 1 {
 			panic(errors.New("failed to init GTK"))
 		}
 	})
@@ -214,7 +205,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 
 	result.mainWindow = NewWindow(appoptions, result.debug, result.devtoolsEnabled)
 
-	C.fix_signal_handlers_after_gtk_init()
+	C.install_signal_handlers()
 
 	if appoptions.Linux != nil && appoptions.Linux.ProgramName != "" {
 		prgname := C.CString(appoptions.Linux.ProgramName)
@@ -430,14 +421,14 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 }
 
 var edgeMap = map[string]uintptr{
-	"n-resize":  C.GDK_WINDOW_EDGE_NORTH,
-	"ne-resize": C.GDK_WINDOW_EDGE_NORTH_EAST,
-	"e-resize":  C.GDK_WINDOW_EDGE_EAST,
-	"se-resize": C.GDK_WINDOW_EDGE_SOUTH_EAST,
-	"s-resize":  C.GDK_WINDOW_EDGE_SOUTH,
-	"sw-resize": C.GDK_WINDOW_EDGE_SOUTH_WEST,
-	"w-resize":  C.GDK_WINDOW_EDGE_WEST,
-	"nw-resize": C.GDK_WINDOW_EDGE_NORTH_WEST,
+	"n-resize":  C.GDK_SURFACE_EDGE_NORTH,
+	"ne-resize": C.GDK_SURFACE_EDGE_NORTH_EAST,
+	"e-resize":  C.GDK_SURFACE_EDGE_EAST,
+	"se-resize": C.GDK_SURFACE_EDGE_SOUTH_EAST,
+	"s-resize":  C.GDK_SURFACE_EDGE_SOUTH,
+	"sw-resize": C.GDK_SURFACE_EDGE_SOUTH_WEST,
+	"w-resize":  C.GDK_SURFACE_EDGE_WEST,
+	"nw-resize": C.GDK_SURFACE_EDGE_NORTH_WEST,
 }
 
 func (f *Frontend) processMessage(message string) {
