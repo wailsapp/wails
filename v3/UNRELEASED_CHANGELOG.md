@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add frontend routing guide with framework-specific recommendations in [PR](https://github.com/wailsapp/wails/pull/5185) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
