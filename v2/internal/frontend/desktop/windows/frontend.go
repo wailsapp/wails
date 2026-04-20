@@ -454,8 +454,7 @@ func (f *Frontend) Quit() {
 	if f.frontendOptions.OnBeforeClose != nil && f.frontendOptions.OnBeforeClose(f.ctx) {
 		return
 	}
-	// Exit must be called on the Main-Thread. It calls PostQuitMessage which sends the WM_QUIT message to the thread's
-	// message queue and our message queue runs on the Main-Thread.
+	w32.ReleaseCapture()
 	f.mainWindow.Invoke(winc.Exit)
 }
 
