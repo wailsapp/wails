@@ -31,6 +31,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha.77 - 2026-04-18
+
+## Fixed
+- Fix data race in ScreenManager that causes WebKit DisplayLink deadlock on display configuration change (e.g. external monitor hot-plug during sleep/wake)
+
+## v3.0.0-alpha.76 - 2026-04-17
+
+## Fixed
+- Directly sets CFBundleIconName to appicon when Assets.car exists in [PR](https://github.com/wailsapp/wails/pull/5154) by @symball
+
 ## v3.0.0-alpha.75 - 2026-04-16
 
 ## Fixed

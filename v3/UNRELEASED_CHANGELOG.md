@@ -23,7 +23,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Directly sets CFBundleIconName to appicon when Assets.car exists in [PR](https://github.com/wailsapp/wails/pull/5154) by @symball
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
@@ -49,7 +48,6 @@ After processing, the content will be moved to the main changelog and this file 
 **Fixed:**
 - Fix memory leak in event system during window close operations (#5678)
 - Fix crash when using context menus on Linux with Wayland
-- Fix deadlock EventIPCTransport.DispatchWailsEvent holding RLock during InvokeSync (#5106)
 
 **Security:**
 - Update dependencies to address CVE-2024-12345 in third-party library

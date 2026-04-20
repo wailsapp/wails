@@ -35,11 +35,11 @@ func (a *linuxApp) processAndCacheScreens() error {
 }
 
 func (a *linuxApp) getPrimaryScreen() (*Screen, error) {
-	return a.parent.Screen.primaryScreen, nil
+	return a.parent.Screen.GetPrimary(), nil
 }
 
 func (a *linuxApp) getScreens() ([]*Screen, error) {
-	return a.parent.Screen.screens, nil
+	return a.parent.Screen.GetAll(), nil
 }
 
 func getScreenForWindow(window *linuxWebviewWindow) (*Screen, error) {
