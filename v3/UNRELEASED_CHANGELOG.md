@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix halved `Screen.Bounds`, `WorkArea`, and `Size` on Retina Macs by converting NSScreen point values to device pixels in the `Physical*` fields, and populate top-level `Screen.X`/`Y` so multi-monitor touching detection and work-area placement are correct
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
