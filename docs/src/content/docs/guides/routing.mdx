@@ -47,19 +47,19 @@ Using hash-based URLs ensures routing works correctly with Wails' window handlin
 The recommended approach for routing in React is [HashRouter](https://reactrouter.com/en/main/router-components/hash-router):
 
 ```jsx
+import ReactDOM from "react-dom/client";
 import { HashRouter, Routes, Route } from "react-router-dom";
 
-ReactDOM.render(
+ReactDOM.createRoot(root).render(
   <HashRouter basename={"/"}>
     {/* The rest of your app goes here */}
     <Routes>
-      <Route path="/" element={<Page0 />} exact />
+      <Route path="/" element={<Page0 />} />
       <Route path="/page1" element={<Page1 />} />
       <Route path="/page2" element={<Page2 />} />
       {/* more... */}
     </Routes>
-  </HashRouter>,
-  root
+  </HashRouter>
 );
 ```
 
