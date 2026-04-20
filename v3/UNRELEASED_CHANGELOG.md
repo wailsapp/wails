@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add Frontend Routing entry to the sidebar navigation in [PR](https://github.com/wailsapp/wails/pull/5196) by @leaanthony
 - Add frontend routing guide with framework-specific recommendations in [PR](https://github.com/wailsapp/wails/pull/5185) by @leaanthony
 
 ## Changed
