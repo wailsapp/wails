@@ -58,6 +58,7 @@ type Window interface {
 	SetMaxSize(maxWidth, maxHeight int) Window
 	SetMinSize(minWidth, minHeight int) Window
 	SetRelativePosition(x, y int) Window
+	SetScreen(screen *Screen) Window
 	SetResizable(b bool) Window
 	SetIgnoreMouseEvents(ignore bool) Window
 	SetSize(width, height int) Window

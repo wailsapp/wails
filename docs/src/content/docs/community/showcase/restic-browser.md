@@ -1,5 +1,6 @@
 ---
 title: Restic Browser
+description: "A desktop application built with Wails"
 ---
 
 ![Restic Browser](../../../../assets/showcase-images/restic-browser-2.png)

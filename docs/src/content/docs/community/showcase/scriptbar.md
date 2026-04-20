@@ -1,5 +1,6 @@
 ---
 title: ScriptBar
+description: "A desktop application built with Wails"
 ---
 
 ![ScriptBar](../../../../assets/showcase-images/scriptbar.webp)

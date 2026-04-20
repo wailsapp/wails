@@ -354,6 +354,10 @@ func (w *androidWebviewWindow) setPosition(_ int, _ int) {
 	// Android doesn't support window positioning - apps are fullscreen
 }
 
+func (w *androidWebviewWindow) centerOnScreen(_ *Screen) {
+	// Android doesn't support window positioning
+}
+
 func (w *androidWebviewWindow) setURL(url string) {
 	// TODO: Implement via JNI
 	androidLogf("debug", "setURL: %s", url)

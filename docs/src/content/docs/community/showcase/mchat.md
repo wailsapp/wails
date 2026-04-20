@@ -1,5 +1,6 @@
 ---
 title: Mchat
+description: "A desktop application built with Wails"
 ---
 
 ![Mchat](../../../../assets/showcase-images/mchat.png)

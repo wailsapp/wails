@@ -1,6 +1,6 @@
 // File: v3/pkg/application/menuitem_selectors_darwin.go
 
-//go:build darwin
+//go:build darwin && !server
 
 package application
 

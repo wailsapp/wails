@@ -120,6 +120,7 @@ var (
 	gdkDisplayGetMonitorAtWindow func(pointer, pointer) pointer
 	gdkDisplayGetNMonitors       func(pointer) int
 	gdkMonitorGetGeometry        func(pointer, pointer) pointer
+	gdkMonitorGetWorkarea        func(pointer, pointer) pointer
 	gdkMonitorGetScaleFactor     func(pointer) int
 	gdkMonitorIsPrimary          func(pointer) int
 	gdkPixbufNewFromBytes        func(uintptr, int, int, int, int, int, int) pointer
@@ -279,6 +280,7 @@ func init() {
 	purego.RegisterLibFunc(&gdkDisplayGetMonitorAtWindow, gtk, "gdk_display_get_monitor_at_window")
 	purego.RegisterLibFunc(&gdkDisplayGetNMonitors, gtk, "gdk_display_get_n_monitors")
 	purego.RegisterLibFunc(&gdkMonitorGetGeometry, gtk, "gdk_monitor_get_geometry")
+	purego.RegisterLibFunc(&gdkMonitorGetWorkarea, gtk, "gdk_monitor_get_workarea")
 	purego.RegisterLibFunc(&gdkMonitorGetScaleFactor, gtk, "gdk_monitor_get_scale_factor")
 	purego.RegisterLibFunc(&gdkMonitorIsPrimary, gtk, "gdk_monitor_is_primary")
 	purego.RegisterLibFunc(&gdkPixbufNewFromBytes, gtk, "gdk_pixbuf_new_from_bytes")
@@ -632,32 +634,66 @@ func menuRadioItemNew(group GSListPointer, label string) pointer {
 
 func getScreenByIndex(display pointer, index int) *Screen {
 	monitor := gdkDisplayGetMonitor(display, index)
-	// TODO: Do we need to update Screen to contain current info?
-	//	currentMonitor := C.gdk_display_get_monitor_at_window(display, window)
 
-	geometry := struct {
-		x      int32
-		y      int32
-		width  int32
-		height int32
-	}{}
-	result := pointer(unsafe.Pointer(&geometry))
-	gdkMonitorGetGeometry(monitor, result)
-
-	primary := false
-	if gdkMonitorIsPrimary(monitor) == 1 {
-		primary = true
+	type gdkRect struct {
+		x, y, width, height int32
 	}
 
+	var geometry gdkRect
+	gdkMonitorGetGeometry(monitor, pointer(unsafe.Pointer(&geometry)))
+
+	var workarea gdkRect
+	gdkMonitorGetWorkarea(monitor, pointer(unsafe.Pointer(&workarea)))
+
+	scaleFactor := float32(gdkMonitorGetScaleFactor(monitor))
+	primary := gdkMonitorIsPrimary(monitor) == 1
+
+	x := int(geometry.x)
+	y := int(geometry.y)
+	width := int(geometry.width)
+	height := int(geometry.height)
+
+	waX := int(workarea.x)
+	waY := int(workarea.y)
+	waWidth := int(workarea.width)
+	waHeight := int(workarea.height)
+
 	return &Screen{
+		ID:          fmt.Sprintf("%d", index),
+		Name:        "",
 		IsPrimary:   primary,
-		ScaleFactor: 1.0,
-		X:           int(geometry.x),
-		Y:           int(geometry.y),
+		ScaleFactor: scaleFactor,
+		X:           x,
+		Y:           y,
 		Size: Size{
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			Height: height,
+			Width:  width,
 		},
+		Bounds: Rect{
+			X:      x,
+			Y:      y,
+			Height: height,
+			Width:  width,
+		},
+		PhysicalBounds: Rect{
+			X:      int(float32(x) * scaleFactor),
+			Y:      int(float32(y) * scaleFactor),
+			Height: int(float32(height) * scaleFactor),
+			Width:  int(float32(width) * scaleFactor),
+		},
+		WorkArea: Rect{
+			X:      waX,
+			Y:      waY,
+			Height: waHeight,
+			Width:  waWidth,
+		},
+		PhysicalWorkArea: Rect{
+			X:      int(float32(waX) * scaleFactor),
+			Y:      int(float32(waY) * scaleFactor),
+			Height: int(float32(waHeight) * scaleFactor),
+			Width:  int(float32(waWidth) * scaleFactor),
+		},
+		Rotation: 0.0,
 	}
 }
 
@@ -730,12 +766,6 @@ func windowDestroy(window pointer) {
 
 func windowFullscreen(window pointer) {
 	gtkWindowFullScreen(window)
-}
-
-func windowGetPosition(window pointer) (int, int) {
-	var x, y int
-	gtkWindowGetPosition(window, &x, &y)
-	return x, y
 }
 
 func windowGetCurrentMonitor(window pointer) pointer {
