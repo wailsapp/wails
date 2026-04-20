@@ -237,6 +237,14 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 			//}
 		}
 
+		if w.isActive && w.chromium != nil {
+			if ctrl := w.chromium.GetController(); ctrl != nil {
+				// Push keyboard focus into WebView2 when activated
+				_ = ctrl.MoveFocus(edge.COREWEBVIEW2_MOVE_FOCUS_REASON_PROGRAMMATIC)
+				// _ = ctrl.MoveFocus(0) // fallback if your bindings lack the constant
+			}
+		}
+
 	case 0x02E0: //w32.WM_DPICHANGED
 		newWindowSize := (*w32.RECT)(unsafe.Pointer(lparam))
 		w32.SetWindowPos(w.Handle(),
