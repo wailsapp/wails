@@ -312,6 +312,7 @@ export default defineConfig({
               label: "Integration Patterns",
               collapsed: true,
               items: [
+                { label: "Frontend Routing", link: "/guides/routing" },
                 { label: "Using Gin Router", link: "/guides/patterns/gin-routing" },
                 { label: "Gin Services", link: "/guides/patterns/gin-services" },
                 { label: "Database Integration", link: "/guides/patterns/database" },
