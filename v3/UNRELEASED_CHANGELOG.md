@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix `wails3 dev` triggering rebuilds when modifying `_test.go` or benchmark files (#3243)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

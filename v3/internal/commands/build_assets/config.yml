@@ -45,6 +45,7 @@ dev_mode:
       - .DS_Store
       - .gitignore
       - .gitkeep
+      - "*_test.go"
     watched_extension:
       - "*.go"
       - "*.js" # Watch for changes to JS/TS files included using the //wails:include directive.
