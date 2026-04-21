@@ -41,7 +41,7 @@
     ]
   },
   "devDependencies": {
-    "@crowdin/cli": "^3.19.4",
+    "@crowdin/cli": "^4.14.1",
     "prettier": "^2.8.7"
   }
 }
