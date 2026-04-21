@@ -83,20 +83,27 @@
   }
   function notifyListeners(eventData) {
     let eventName = eventData.name;
-    const newEventListenerList = eventListeners[eventName]?.slice() || [];
-    if (newEventListenerList.length) {
-      for (let count = newEventListenerList.length - 1; count >= 0; count -= 1) {
-        const listener = newEventListenerList[count];
+    const listenersCopy = eventListeners[eventName]?.slice() || [];
+    if (listenersCopy.length) {
+      const destroyed = new Set();
+      for (let count = listenersCopy.length - 1; count >= 0; count -= 1) {
+        const listener = listenersCopy[count];
         let data = eventData.data;
         const destroy = listener.Callback(data);
         if (destroy) {
-          newEventListenerList.splice(count, 1);
+          destroyed.add(listener);
         }
       }
-      if (newEventListenerList.length === 0) {
+      const live = eventListeners[eventName];
+      if (!live || live.length === 0) {
         removeListener(eventName);
       } else {
-        eventListeners[eventName] = newEventListenerList;
+        const filtered = live.filter(l => !destroyed.has(l));
+        if (filtered.length === 0) {
+          removeListener(eventName);
+        } else {
+          eventListeners[eventName] = filtered;
+        }
       }
     }
   }
