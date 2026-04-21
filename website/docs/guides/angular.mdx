@@ -12,3 +12,12 @@ To get dev mode working with Angular, you need to add the following to your `wai
   "frontend:dev:watcher": "npx ng serve",
   "frontend:dev:serverUrl": "http://localhost:4200",
 ```
+
+You also need to change the `index.html` file and add the following entries to your header section:
+```html
+<head>
+ <meta name="wails-options" content="noautoinject" />
+ <script src="/wails/ipc.js"></script>
+ <script src="/wails/runtime.js"></script>
+</head>
+```
