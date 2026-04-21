@@ -244,7 +244,7 @@
     clearTimeout(callbackData.timeoutHandle);
     delete callbacks[callbackID];
     if (message.error) {
-      callbackData.reject(message.error);
+      callbackData.reject(typeof message.error === 'string' ? new Error(message.error) : message.error);
     } else {
       callbackData.resolve(message.result);
     }
