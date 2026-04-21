@@ -4,13 +4,13 @@ package debug
 
 import (
 	"encoding/binary"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 )
 
-// minidump files start with the 4-byte signature "MDMP" (0x504D444D LE).
 const miniDumpMagic uint32 = 0x504D444D
 
 func TestDump_WritesValidMinidump(t *testing.T) {
@@ -75,5 +75,109 @@ func TestReport_WithDump_SetsDumpPath(t *testing.T) {
 	}
 	if _, err := os.Stat(r.DumpPath); err != nil {
 		t.Errorf("dump not at reported path %q: %v", r.DumpPath, err)
+	}
+}
+
+func TestReport_Windows_ProcessInfo(t *testing.T) {
+	r, err := Report()
+	if err != nil {
+		t.Fatalf("Report: %v", err)
+	}
+	pi := r.Crash.ProcessInfo
+
+	if pi.Handles <= 0 {
+		t.Errorf("Handles = %d, expected > 0", pi.Handles)
+	}
+	if pi.MemoryBytes == 0 {
+		t.Error("MemoryBytes = 0, expected non-zero from GetProcessMemoryInfo")
+	}
+}
+
+func TestReport_Windows_MemoryFromOS(t *testing.T) {
+	r, err := Report()
+	if err != nil {
+		t.Fatalf("Report: %v", err)
+	}
+	ms := r.Crash.MemorySummary
+
+	if ms.TotalVirtual == 0 {
+		t.Error("TotalVirtual = 0, expected PagefileUsage from GetProcessMemoryInfo")
+	}
+	if ms.TotalWorkingSet == 0 {
+		t.Error("TotalWorkingSet = 0, expected WorkingSetSize from GetProcessMemoryInfo")
+	}
+	if ms.PrivateBytes == 0 {
+		t.Error("PrivateBytes = 0, expected PrivateUsage from GetProcessMemoryInfo")
+	}
+}
+
+func TestReport_Windows_LoadedModules(t *testing.T) {
+	r, err := Report()
+	if err != nil {
+		t.Fatalf("Report: %v", err)
+	}
+
+	if len(r.Crash.LoadedModules) == 0 {
+		t.Fatal("LoadedModules empty, expected at least the executable module")
+	}
+
+	found := false
+	for _, mod := range r.Crash.LoadedModules {
+		if mod.Name == "" {
+			t.Error("ModuleInfo.Name empty")
+		}
+		if mod.Path == "" {
+			t.Error("ModuleInfo.Path empty")
+		}
+		if mod.Size == 0 {
+			t.Errorf("ModuleInfo.Size = 0 for %s", mod.Name)
+		}
+		if !mod.Loaded {
+			t.Errorf("ModuleInfo.Loaded = false for %s", mod.Name)
+		}
+		if strings.EqualFold(mod.Name, "ntdll.dll") {
+			found = true
+		}
+	}
+	if !found {
+		t.Error("ntdll.dll not found in LoadedModules — module enumeration may be broken")
+	}
+}
+
+func TestReport_Windows_ThreadCount(t *testing.T) {
+	r, err := Report()
+	if err != nil {
+		t.Fatalf("Report: %v", err)
+	}
+	if r.Crash.ProcessInfo.Threads <= 0 {
+		t.Errorf("Threads = %d, expected > 0 from CreateToolhelp32Snapshot", r.Crash.ProcessInfo.Threads)
+	}
+}
+
+func TestReport_Windows_JSONRoundTrip(t *testing.T) {
+	r, err := Report(WithDump())
+	if err != nil {
+		t.Fatalf("Report: %v", err)
+	}
+	defer func() {
+		if r.DumpPath != "" {
+			os.Remove(r.DumpPath)
+		}
+	}()
+
+	data, err := json.Marshal(r)
+	if err != nil {
+		t.Fatalf("Marshal: %v", err)
+	}
+
+	var r2 CrashReport
+	if err := json.Unmarshal(data, &r2); err != nil {
+		t.Fatalf("Unmarshal: %v", err)
+	}
+	if len(r2.Crash.LoadedModules) != len(r.Crash.LoadedModules) {
+		t.Errorf("LoadedModules count mismatch: got %d, want %d", len(r2.Crash.LoadedModules), len(r.Crash.LoadedModules))
+	}
+	if r2.Crash.ProcessInfo.Handles != r.Crash.ProcessInfo.Handles {
+		t.Errorf("Handles mismatch: got %d, want %d", r2.Crash.ProcessInfo.Handles, r.Crash.ProcessInfo.Handles)
 	}
 }

@@ -10,9 +10,32 @@ import (
 	"strings"
 	"syscall"
 	"time"
+	"unsafe"
 
 	"golang.org/x/sys/windows"
 )
+
+var (
+	psapi    = windows.NewLazyDLL("psapi.dll")
+	kernel32 = windows.NewLazyDLL("kernel32.dll")
+
+	procGetProcessMemoryInfo  = psapi.NewProc("GetProcessMemoryInfo")
+	procGetProcessHandleCount = kernel32.NewProc("GetProcessHandleCount")
+)
+
+type processMemoryCountersEx struct {
+	CB                         uint32
+	PageFaultCount             uint32
+	PeakWorkingSetSize         uintptr
+	WorkingSetSize             uintptr
+	QuotaPeakPagedPoolUsage    uintptr
+	QuotaPagedPoolUsage        uintptr
+	QuotaPeakNonPagedPoolUsage uintptr
+	QuotaNonPagedPoolUsage     uintptr
+	PagefileUsage              uintptr
+	PeakPagefileUsage          uintptr
+	PrivateUsage               uintptr
+}
 
 func collectEnvironmentVars() map[string]string {
 	env := make(map[string]string)
@@ -30,6 +53,32 @@ func collectProcessInfo(info *CrashInfo) {
 		PID:        os.Getpid(),
 		Goroutines: runtime.NumGoroutine(),
 	}
+
+	h := windows.CurrentProcess()
+
+	var memCounters processMemoryCountersEx
+	memCounters.CB = uint32(unsafe.Sizeof(memCounters))
+	ret, _, _ := procGetProcessMemoryInfo.Call(
+		uintptr(h),
+		uintptr(unsafe.Pointer(&memCounters)),
+		uintptr(memCounters.CB),
+	)
+	if ret != 0 {
+		info.ProcessInfo.MemoryBytes = uint64(memCounters.WorkingSetSize)
+	}
+
+	var handleCount uint32
+	ret, _, _ = procGetProcessHandleCount.Call(uintptr(h), uintptr(unsafe.Pointer(&handleCount)))
+	if ret != 0 {
+		info.ProcessInfo.Handles = int(handleCount)
+	}
+
+	var creationTime, exitTime, kernelTime, userTime windows.Filetime
+	if err := windows.GetProcessTimes(h, &creationTime, &exitTime, &kernelTime, &userTime); err == nil {
+		info.ProcessInfo.StartTime = time.Unix(0, creationTime.Nanoseconds())
+		info.ProcessInfo.UserTime = float64(userTime.Nanoseconds()) / 1e6
+		info.ProcessInfo.SystemTime = float64(kernelTime.Nanoseconds()) / 1e6
+	}
 }
 
 func collectMemoryInfo(info *CrashInfo) {
@@ -37,7 +86,8 @@ func collectMemoryInfo(info *CrashInfo) {
 	runtime.ReadMemStats(&m)
 
 	info.MemorySummary = MemorySummary{
-		TotalVirtual: m.TotalAlloc + m.Mallocs,
+		TotalWorkingSet: m.HeapAlloc,
+		PrivateBytes:    m.HeapInuse,
 		GarbageCollector: GCStats{
 			NumGC:       int(m.NumGC),
 			LastGC:      uint32(m.LastGC),
@@ -47,18 +97,81 @@ func collectMemoryInfo(info *CrashInfo) {
 			HeapObjects: m.HeapObjects,
 		},
 	}
+
+	h := windows.CurrentProcess()
+	var memCounters processMemoryCountersEx
+	memCounters.CB = uint32(unsafe.Sizeof(memCounters))
+	ret, _, _ := procGetProcessMemoryInfo.Call(
+		uintptr(h),
+		uintptr(unsafe.Pointer(&memCounters)),
+		uintptr(memCounters.CB),
+	)
+	if ret != 0 {
+		info.MemorySummary.TotalVirtual = uint64(memCounters.PagefileUsage)
+		info.MemorySummary.TotalWorkingSet = uint64(memCounters.WorkingSetSize)
+		info.MemorySummary.PrivateBytes = uint64(memCounters.PrivateUsage)
+	}
 }
 
 func collectThreadInfo(info *CrashInfo) {
+	snap, err := windows.CreateToolhelp32Snapshot(windows.TH32CS_SNAPTHREAD, 0)
+	if err != nil {
+		return
+	}
+	defer windows.CloseHandle(snap)
+
+	pid := uint32(os.Getpid())
+	var te windows.ThreadEntry32
+	te.Size = uint32(unsafe.Sizeof(te))
+
+	if err := windows.Thread32First(snap, &te); err != nil {
+		return
+	}
+
+	ownThreadCount := 0
+	for {
+		if te.OwnerProcessID == pid {
+			ownThreadCount++
+		}
+		te.Size = uint32(unsafe.Sizeof(te))
+		if err := windows.Thread32Next(snap, &te); err != nil {
+			break
+		}
+	}
+	info.ProcessInfo.Threads = ownThreadCount
 }
 
 func loadModules(info *CrashInfo) {
+	snap, err := windows.CreateToolhelp32Snapshot(windows.TH32CS_SNAPMODULE|windows.TH32CS_SNAPMODULE32, uint32(os.Getpid()))
+	if err != nil {
+		return
+	}
+	defer windows.CloseHandle(snap)
+
+	var me windows.ModuleEntry32
+	me.Size = uint32(unsafe.Sizeof(me))
+
+	if err := windows.Module32First(snap, &me); err != nil {
+		return
+	}
+
+	for {
+		modPath := windows.UTF16ToString(me.ExePath[:])
+		modName := windows.UTF16ToString(me.Module[:])
+		info.LoadedModules = append(info.LoadedModules, ModuleInfo{
+			Name:   modName,
+			Path:   modPath,
+			Base:   uint64(me.ModBaseAddr),
+			Size:   uint64(me.ModBaseSize),
+			Loaded: true,
+		})
+		me.Size = uint32(unsafe.Sizeof(me))
+		if err := windows.Module32Next(snap, &me); err != nil {
+			break
+		}
+	}
 }
 
-// Minidump type flags (subset of MINIDUMP_TYPE from dbghelp.h).
-// We default to a "rich but not huge" mix: thread info, handle data, and
-// unloaded modules — enough for WinDbg/Visual Studio postmortem without
-// writing the entire process address space to disk.
 const (
 	miniDumpNormal              = 0x00000000
 	miniDumpWithFullMemory      = 0x00000002
@@ -72,15 +185,6 @@ const (
 		miniDumpWithUnloadedModules
 )
 
-// writeCoreDump writes a Windows minidump of the current process to path.
-// If path is empty, <TempDir>/wails-crash-<pid>-<unix>.dmp is used.
-// If fullMemory is true, the dump includes the full process address space
-// (large but preserves everything for postmortem analysis).
-// Returns the absolute path of the dump on success.
-//
-// Runs under the calling user's token — no elevation, no SeDebugPrivilege,
-// no OpenProcess: dumping the current process uses the
-// GetCurrentProcess() pseudo-handle which bypasses ACL checks.
 func writeCoreDump(path string, fullMemory bool) (string, error) {
 	if path == "" {
 		name := fmt.Sprintf("wails-crash-%d-%d.dmp", os.Getpid(), time.Now().Unix())
@@ -120,14 +224,6 @@ func writeCoreDump(path string, fullMemory bool) (string, error) {
 		return "", fmt.Errorf("resolve MiniDumpWriteDump: %w", err)
 	}
 
-	// BOOL MiniDumpWriteDump(
-	//   HANDLE hProcess,           // arg0: pseudo-handle to self
-	//   DWORD  ProcessId,          // arg1: current pid
-	//   HANDLE hFile,              // arg2: destination file
-	//   MINIDUMP_TYPE DumpType,    // arg3: flags
-	//   PMINIDUMP_EXCEPTION_INFORMATION ExceptionParam,      // arg4: nil
-	//   PMINIDUMP_USER_STREAM_INFORMATION UserStreamParam,   // arg5: nil
-	//   PMINIDUMP_CALLBACK_INFORMATION CallbackParam)        // arg6: nil
 	flags := uintptr(defaultDumpFlags)
 	if fullMemory {
 		flags |= miniDumpWithFullMemory

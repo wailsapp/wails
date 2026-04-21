@@ -25,7 +25,6 @@ func collectEnvironmentVars() map[string]string {
 func collectProcessInfo(info *CrashInfo) {
 	info.ProcessInfo = ProcessInfo{
 		PID:        os.Getpid(),
-		MemoryBytes: 0,
 		Goroutines: runtime.NumGoroutine(),
 	}
 
@@ -34,13 +33,16 @@ func collectProcessInfo(info *CrashInfo) {
 		scanner := bufio.NewScanner(pf)
 		for scanner.Scan() {
 			line := scanner.Text()
-			if strings.HasPrefix(line, "VmSize:") {
-				if val := strings.TrimSpace(strings.TrimPrefix(line, "VmSize:")); strings.HasSuffix(val, "kB") {
-					if v, err := strconv.ParseInt(strings.TrimSuffix(val, "kB"), 10, 64); err == nil {
-						info.ProcessInfo.MemoryBytes = uint64(v * 1024)
-					}
+			switch {
+			case strings.HasPrefix(line, "VmSize:"):
+				if v := parseProcKB(line); v > 0 {
+					info.ProcessInfo.MemoryBytes = v
 				}
-			} else if strings.HasPrefix(line, "Threads:") {
+			case strings.HasPrefix(line, "VmRSS:"):
+				if v := parseProcKB(line); v > 0 {
+					info.ProcessInfo.MemoryBytes = v
+				}
+			case strings.HasPrefix(line, "Threads:"):
 				val := strings.TrimSpace(strings.TrimPrefix(line, "Threads:"))
 				if v, err := strconv.Atoi(val); err == nil {
 					info.ProcessInfo.Threads = v
@@ -50,12 +52,22 @@ func collectProcessInfo(info *CrashInfo) {
 	}
 }
 
+func parseProcKB(line string) uint64 {
+	val := strings.TrimSpace(strings.TrimPrefix(line, strings.SplitN(line, ":", 2)[0]+":"))
+	val = strings.TrimSuffix(val, " kB")
+	v, err := strconv.ParseUint(val, 10, 64)
+	if err != nil {
+		return 0
+	}
+	return v * 1024
+}
+
 func collectMemoryInfo(info *CrashInfo) {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 
 	info.MemorySummary = MemorySummary{
-		TotalVirtual: m.TotalAlloc + m.Mallocs,
+		PrivateBytes: m.HeapInuse,
 		GarbageCollector: GCStats{
 			NumGC:       int(m.NumGC),
 			LastGC:      uint32(m.LastGC),
@@ -64,6 +76,28 @@ func collectMemoryInfo(info *CrashInfo) {
 			HeapAlloc:   m.HeapAlloc,
 			HeapObjects: m.HeapObjects,
 		},
+	}
+
+	if pf, err := os.Open("/proc/self/status"); err == nil {
+		defer pf.Close()
+		scanner := bufio.NewScanner(pf)
+		for scanner.Scan() {
+			line := scanner.Text()
+			switch {
+			case strings.HasPrefix(line, "VmSize:"):
+				if v := parseProcKB(line); v > 0 {
+					info.MemorySummary.TotalVirtual = v
+				}
+			case strings.HasPrefix(line, "VmRSS:"):
+				if v := parseProcKB(line); v > 0 {
+					info.MemorySummary.TotalWorkingSet = v
+				}
+			case strings.HasPrefix(line, "VmData:"):
+				if v := parseProcKB(line); v > 0 {
+					info.MemorySummary.PrivateBytes = v
+				}
+			}
+		}
 	}
 }
 
