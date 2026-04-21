@@ -13,6 +13,7 @@ vars:
 
   # Docker image for cross-compilation with CGO (used when CGO_ENABLED=1 on non-Windows)
   CROSS_IMAGE: wails-cross
+  DEBUG_MODE: '{{default "false" .DEBUG_MODE}}'
 
 tasks:
   build:
@@ -153,7 +154,14 @@ tasks:
 
   run:
     cmds:
-      - '{{.BIN_DIR}}/{{.APP_NAME}}.exe'
+      - |
+        if [ "{{.DEBUG_MODE}}" = "true" ]; then
+          echo "Running in debug mode"
+          dlv exec {{.BIN_DIR}}/{{.APP_NAME}}.exe --headless --listen=:2345 --api-version=2 --accept-multiclient 
+        else
+          echo "Running in normal mode"
+          '{{.BIN_DIR}}/{{.APP_NAME}}.exe'
+        fi
 
   sign:
     summary: Signs the Windows executable

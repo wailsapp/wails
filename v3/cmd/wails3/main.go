@@ -42,6 +42,7 @@ func main() {
 	})
 
 	app.NewSubCommandFunction("dev", "Run in Dev mode", commands.Dev)
+	app.NewSubCommandFunction("debug", "Run in debug mode with delve", commands.Delve)
 
 	pkg := app.NewSubCommand("package", "Package application")
 	var pkgFlags flags.Package

@@ -18,6 +18,7 @@ type DevOptions struct {
 	Config   string `description:"The config file including path" default:"./build/config.yml"`
 	VitePort int    `name:"port" description:"Specify the vite dev server port"`
 	Secure   bool   `name:"s" description:"Enable HTTPS"`
+	UseDelve bool   `name:"debug" description:"Use delve for development"`
 }
 
 func Dev(options *DevOptions) error {
@@ -52,7 +53,13 @@ func Dev(options *DevOptions) error {
 		os.Setenv("FRONTEND_DEVSERVER_URL", fmt.Sprintf("http://%s:%d", host, port))
 	}
 
+	opMode := "dev"
+	if options.UseDelve {
+		opMode = "debug"
+	}
+
 	return Watcher(&WatcherOptions{
+		Mode:   opMode,
 		Config: options.Config,
 	})
 }
