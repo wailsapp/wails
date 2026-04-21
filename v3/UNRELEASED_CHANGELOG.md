@@ -17,15 +17,12 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add Frontend Routing entry to the sidebar navigation in [PR](https://github.com/wailsapp/wails/pull/5196) by @leaanthony
-- Add frontend routing guide with framework-specific recommendations in [PR](https://github.com/wailsapp/wails/pull/5185) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix halved `Screen.Bounds`, `WorkArea`, and `Size` on Retina Macs by converting NSScreen point values to device pixels in the `Physical*` fields, and populate top-level `Screen.X`/`Y` so multi-monitor touching detection and work-area placement are correct in [PR](https://github.com/wailsapp/wails/pull/5168) by @wayneforrest
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
