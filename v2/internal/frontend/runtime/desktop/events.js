@@ -91,32 +91,43 @@ function notifyListeners(eventData) {
     let eventName = eventData.name;
 
     // Keep a list of listener indexes to destroy
-    const newEventListenerList = eventListeners[eventName]?.slice() || [];
+    const listenersCopy = eventListeners[eventName]?.slice() || [];
 
     // Check if we have any listeners for this event
-    if (newEventListenerList.length) {
+    if (listenersCopy.length) {
+
+        // Track listeners that self-destruct via maxCallbacks
+        const destroyed = new Set();
 
         // Iterate listeners
-        for (let count = newEventListenerList.length - 1; count >= 0; count -= 1) {
+        for (let count = listenersCopy.length - 1; count >= 0; count -= 1) {
 
             // Get next listener
-            const listener = newEventListenerList[count];
+            const listener = listenersCopy[count];
 
             let data = eventData.data;
 
-            // Do the callback
+            // Do the callback. A callback may call listenerOff() which
+            // modifies eventListeners[eventName] directly. We reconcile below.
             const destroy = listener.Callback(data);
             if (destroy) {
-                // if the listener indicated to destroy itself, add it to the destroy list
-                newEventListenerList.splice(count, 1);
+                destroyed.add(listener);
             }
         }
 
-        // Update callbacks with new list of listeners
-        if (newEventListenerList.length === 0) {
+        // Reconcile: start from the live list (which may have had listeners
+        // removed by listenerOff during callbacks), then remove any that
+        // self-destructed via maxCallbacks.
+        const live = eventListeners[eventName];
+        if (!live || live.length === 0) {
             removeListener(eventName);
         } else {
-            eventListeners[eventName] = newEventListenerList;
+            const filtered = live.filter(l => !destroyed.has(l));
+            if (filtered.length === 0) {
+                removeListener(eventName);
+            } else {
+                eventListeners[eventName] = filtered;
+            }
         }
     }
 }

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test #4393 - Event listener removal during event handling</title>
+</head>
+<body>
+<h1>Test #4393: Event listener removal during event handling</h1>
+<pre id="output"></pre>
+<script type="module">
+import {
+    eventListeners,
+    EventsOnMultiple,
+    EventsOn,
+    EventsEmit,
+    EventsNotify
+} from '../../internal/frontend/runtime/desktop/events.js';
+
+const log = document.getElementById('output');
+let passed = 0;
+let failed = 0;
+
+function assert(condition, message) {
+    if (condition) {
+        log.textContent += `PASS: ${message}\n`;
+        passed++;
+    } else {
+        log.textContent += `FAIL: ${message}\n`;
+        failed++;
+    }
+}
+
+function reset() {
+    const keys = Object.keys(eventListeners);
+    for (const k of keys) delete eventListeners[k];
+}
+
+// Test 1: Removing a listener via its cancel function during callback
+// should actually remove it (not restore it)
+{
+    reset();
+    const cancel1 = EventsOn('test1', () => {});
+    const cancel2 = EventsOn('test1', () => {
+        cancel1();
+    });
+    EventsEmit('test1');
+    const listeners = eventListeners['test1'];
+    assert(listeners !== undefined && listeners.length === 1,
+        'Test 1: After cancelling listener1 in listener2 callback, only 1 listener remains');
+    assert(listeners !== undefined && !listeners.includes(undefined),
+        'Test 1: No undefined entries in listener list');
+    cancel2();
+}
+
+// Test 2: Listener removed via cancel during event should stay removed after multiple emits
+{
+    reset();
+    let callCount = 0;
+    const cancel1 = EventsOn('test2', () => { callCount++; });
+    const cancel2 = EventsOn('test2', () => {
+        cancel1();
+    });
+    EventsEmit('test2');
+    EventsEmit('test2');
+    assert(callCount === 1,
+        'Test 2: Cancelled listener called exactly once (not restored on second emit)');
+}
+
+// Test 3: EventsOnce should still work correctly after the fix
+{
+    reset();
+    let onceCount = 0;
+    EventsOnMultiple('test3', () => { onceCount++; }, 1);
+    EventsEmit('test3');
+    EventsEmit('test3');
+    assert(onceCount === 1, 'Test 3: EventsOnce called exactly once');
+    assert(eventListeners['test3'] === undefined,
+        'Test 3: Event listener cleaned up after maxCallbacks reached');
+}
+
+// Test 4: Multiple listeners, one cancels itself via maxCallbacks, another cancels via cancel func
+{
+    reset();
+    let count1 = 0, count2 = 0, count3 = 0;
+    EventsOnMultiple('test4', () => { count1++; }, 1); // self-destructs after 1 call
+    const cancel2 = EventsOn('test4', () => { count2++; });
+    EventsOn('test4', () => {
+        count3++;
+        cancel2();
+    });
+    EventsEmit('test4');
+    assert(count1 === 1, 'Test 4a: maxCallbacks=1 listener called once');
+    assert(count2 === 1, 'Test 4b: cancelled listener called once');
+    assert(count3 === 1, 'Test 4c: third listener called once');
+
+    const remaining = eventListeners['test4'];
+    assert(remaining !== undefined && remaining.length === 1,
+        'Test 4d: Only 1 listener remains after emit');
+}
+
+// Test 5: EventsNotify (used by Go->JS events) also handles removal correctly
+{
+    reset();
+    let count = 0;
+    const cancel = EventsOn('test5', () => { count++; });
+    EventsOn('test5', () => {
+        cancel();
+    });
+    EventsNotify(JSON.stringify({ name: 'test5', data: [] }));
+    EventsNotify(JSON.stringify({ name: 'test5', data: [] }));
+    assert(count === 1,
+        'Test 5: Listener cancelled during EventsNotify stays removed');
+}
+
+log.textContent += `\n${passed} passed, ${failed} failed\n`;
+if (failed === 0) {
+    log.textContent += 'ALL TESTS PASSED\n';
+} else {
+    log.textContent += 'SOME TESTS FAILED\n';
+}
+</script>
+</body>
+</html>
