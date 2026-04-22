@@ -70,7 +70,7 @@ type ProcessInfo struct {
 type ThreadInfo struct {
 	ID         int       `json:"id"`
 	State      string    `json:"state"`
-	WaitReason string    `json:"wait_reason,omitempty"`
+	WaitReason string    `json:"wait_reason"`
 	Stack      StackInfo `json:"stack,omitempty"`
 	UserTime   float64   `json:"user_time_ms,omitempty"`
 	SystemTime float64   `json:"system_time_ms,omitempty"`

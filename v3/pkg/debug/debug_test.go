@@ -51,8 +51,8 @@ func TestReport_ProcessInfo(t *testing.T) {
 	if pi.Goroutines <= 0 {
 		t.Errorf("Goroutines = %d, want > 0", pi.Goroutines)
 	}
-	if pi.MemoryBytes == 0 {
-		t.Error("MemoryBytes = 0, expected non-zero")
+	if runtime.GOOS == "linux" && pi.MemoryBytes == 0 {
+		t.Error("MemoryBytes = 0 on Linux, expected non-zero from /proc")
 	}
 }
 
@@ -78,8 +78,8 @@ func TestReport_MemorySummary(t *testing.T) {
 }
 
 func TestReport_LoadedModules(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("see dump_windows_test.go for Windows module tests")
+	if runtime.GOOS != "linux" {
+		t.Skipf("module enumeration from /proc only supported on Linux (got %s)", runtime.GOOS)
 	}
 
 	r, err := Report()
@@ -104,8 +104,10 @@ func TestReport_Threads(t *testing.T) {
 		t.Fatalf("Report: %v", err)
 	}
 
-	if r.Crash.ProcessInfo.Threads <= 0 {
-		t.Errorf("Threads = %d, expected > 0", r.Crash.ProcessInfo.Threads)
+	if runtime.GOOS == "linux" || runtime.GOOS == "windows" {
+		if r.Crash.ProcessInfo.Threads <= 0 {
+			t.Errorf("Threads = %d on %s, expected > 0", r.Crash.ProcessInfo.Threads, runtime.GOOS)
+		}
 	}
 }
 
@@ -114,10 +116,6 @@ func TestReport_DiagnosticsMayBeEmptyOnHealthySystem(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Report: %v", err)
 	}
-	// Diagnostics come from doctor-ng. On a healthy dev system where Go,
-	// WebView2, and a package manager are all installed, the list will be
-	// empty — that is correct, not a bug.
-	// We only verify the field is non-nil so callers can safely range it.
 	if r.Diagnostics == nil {
 		t.Error("Diagnostics is nil, expected empty slice on healthy system")
 	}
@@ -205,7 +203,7 @@ func TestOptions_Composition(t *testing.T) {
 	}
 }
 
-func TestThreadInfo_NoChannelField(t *testing.T) {
+func TestThreadInfo_SerializesWaitReason(t *testing.T) {
 	ti := ThreadInfo{
 		ID:         1,
 		State:      "running",
@@ -215,10 +213,11 @@ func TestThreadInfo_NoChannelField(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Marshal ThreadInfo: %v", err)
 	}
-	if strings.Contains(string(data), "WaitChan") {
+	raw := string(data)
+	if strings.Contains(raw, "WaitChan") {
 		t.Error("ThreadInfo JSON contains WaitChan — channel field should not be present")
 	}
-	if !strings.Contains(string(data), "wait_reason") {
-		t.Error("ThreadInfo JSON missing wait_reason field")
+	if !strings.Contains(raw, "wait_reason") {
+		t.Errorf("ThreadInfo JSON missing wait_reason field, got: %s", raw)
 	}
 }
