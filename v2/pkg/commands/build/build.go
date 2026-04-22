@@ -448,7 +448,7 @@ func executeBuildHook(_ *clilogger.CLILogger, options *Options, hookIdentifier s
 		}
 	}
 
-	stdout, stderr, err := shell.RunCommand(options.BinDirectory, args[0], args[1:]...)
+	stdout, stderr, err := shell.RunCommand(options.ProjectData.Path, args[0], args[1:]...)
 	if options.Verbosity == VERBOSE {
 		pterm.Info.Println(stdout)
 	}
