@@ -289,6 +289,13 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
     CGRect contentViewBounds = [contentView bounds];
     [self.webview setFrame:contentViewBounds];
 
+    // Propagate the screen's backing scale factor to WKWebView so that
+    // window.devicePixelRatio returns the correct value (e.g. 2 on Retina)
+    // when content is loaded via the custom wails:// URL scheme.
+    // Without this, WKWebView reports devicePixelRatio=1 on Retina displays,
+    // causing blurry canvas rendering.
+    [self.webview _setOverrideDeviceScaleFactor:[[NSScreen mainScreen] backingScaleFactor]];
+
     if (webviewIsTransparent) {
         [self.webview setValue:[NSNumber numberWithBool:!webviewIsTransparent] forKey:@"drawsBackground"];
     }
