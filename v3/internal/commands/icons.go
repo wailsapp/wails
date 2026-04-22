@@ -20,9 +20,15 @@ import (
 	"howett.net/plist"
 )
 
-// ErrMacAssetNotSupported is returned by generateMacAsset when mac asset generation
-// is not supported on the current platform (e.g., non-macOS systems).
-var ErrMacAssetNotSupported = errors.New("mac asset generation is only supported on macOS")
+// macAssetNotSupportedError is returned by generateMacAsset when mac asset generation
+// is not supported in the current environment.
+type macAssetNotSupportedError struct {
+	message string
+}
+
+func (e *macAssetNotSupportedError) Error() string {
+	return e.message
+}
 
 type IconsOptions struct {
 	Example           bool   `description:"Generate example icon file (appicon.png) in the current directory"`
@@ -69,10 +75,11 @@ func GenerateIcons(options *IconsOptions) error {
 		if options.MacAssetDir != "" {
 			err := generateMacAsset(options)
 			if err != nil {
-				if errors.Is(err, ErrMacAssetNotSupported) {
+				var notSupported *macAssetNotSupportedError
+				if errors.As(err, &notSupported) {
 					// No fallback: Icon Composer path requires macOS; return so callers see unsupported-platform failure
 					if options.Input == "" {
-						return fmt.Errorf("icon composer input requires macOS for mac asset generation: %w", err)
+						return err
 					}
 					// Fallback to input-based generation will run below
 				} else {
@@ -161,57 +168,57 @@ func generateMacIcon(iconData []byte, options *IconsOptions) error {
 func generateMacAsset(options *IconsOptions) error {
 	//Check if running on darwin (macOS), because this will only run on a mac
 	if runtime.GOOS != "darwin" {
-		return ErrMacAssetNotSupported
+		return &macAssetNotSupportedError{message: "mac asset generation requires macOS 26 or later"}
 	}
 	// Get system info, because this will only run on macOS 26 or later
 	info, err := operatingsystem.Info()
 	if err != nil {
-		return ErrMacAssetNotSupported
+		return &macAssetNotSupportedError{message: "failed to determine macOS version"}
 	}
 	majorStr, _, found := strings.Cut(info.Version, ".")
 	if !found {
-		return ErrMacAssetNotSupported
+		return &macAssetNotSupportedError{message: fmt.Sprintf("failed to parse macOS version %q", info.Version)}
 	}
 	major, err := strconv.Atoi(majorStr)
 	if err != nil {
-		return ErrMacAssetNotSupported
+		return &macAssetNotSupportedError{message: fmt.Sprintf("failed to parse macOS version %q", info.Version)}
 	}
 	if major < 26 {
-		return ErrMacAssetNotSupported
+		return &macAssetNotSupportedError{message: fmt.Sprintf("mac asset generation requires macOS 26 or later (detected macOS %s)", info.Version)}
 	}
 
 	cmd := exec.Command("/usr/bin/actool", "--version")
 	versionPlist, err := cmd.Output()
 	if err != nil {
-		return ErrMacAssetNotSupported
+		return &macAssetNotSupportedError{message: "actool 26+ is required (install Xcode 26+)"}
 	}
 
 	// Parse the plist to extract short-bundle-version
 	var plistData map[string]any
 	if _, err := plist.Unmarshal(versionPlist, &plistData); err != nil {
-		return ErrMacAssetNotSupported
+		return &macAssetNotSupportedError{message: "failed to parse actool version output"}
 	}
 
 	// Navigate to com.apple.actool.version -> short-bundle-version
 	actoolVersion, ok := plistData["com.apple.actool.version"].(map[string]any)
 	if !ok {
-		return ErrMacAssetNotSupported
+		return &macAssetNotSupportedError{message: "failed to read actool version from plist"}
 	}
 
 	shortVersion, ok := actoolVersion["short-bundle-version"].(string)
 	if !ok {
-		return ErrMacAssetNotSupported
+		return &macAssetNotSupportedError{message: "failed to read actool short-bundle-version from plist"}
 	}
 
 	// Parse the major version number (e.g., "26.2" -> 26)
 	actoolMajorStr, _, _ := strings.Cut(shortVersion, ".")
 	actoolMajor, err := strconv.Atoi(actoolMajorStr)
 	if err != nil {
-		return ErrMacAssetNotSupported
+		return &macAssetNotSupportedError{message: fmt.Sprintf("failed to parse actool version %q", shortVersion)}
 	}
 
 	if actoolMajor < 26 {
-		return ErrMacAssetNotSupported
+		return &macAssetNotSupportedError{message: fmt.Sprintf("mac asset generation requires actool 26 or later (detected actool %s)", shortVersion)}
 	}
 
 	// Convert paths to absolute paths (required for actool)
