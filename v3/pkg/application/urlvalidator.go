@@ -19,16 +19,6 @@ func ValidateAndSanitizeURL(rawURL string) (string, error) {
 		}
 	}
 
-	shellDangerous := `[;|` + "`" + `$\\<>*{}\[\]()~! \t\n\r]`
-	if matched, _ := regexp.MatchString(shellDangerous, rawURL); matched {
-		return "", errors.New("shell metacharacters not allowed")
-	}
-
-	unicodeDangerous := "[\u0000-\u001F\u007F\u00A0\u1680\u2000-\u200F\u2028-\u202F\u205F\u3000\uFEFF\u200B-\u200D\u2060\u2061\u2062\u2063\u2064\u206A-\u206F\uFFF0-\uFFFF]"
-	if matched, _ := regexp.MatchString(unicodeDangerous, rawURL); matched {
-		return "", errors.New("dangerous unicode characters not allowed")
-	}
-
 	parsedURL, err := url.Parse(rawURL)
 	if err != nil {
 		return "", fmt.Errorf("invalid URL format: %v", err)
@@ -44,6 +34,15 @@ func ValidateAndSanitizeURL(rawURL string) (string, error) {
 		return "", fmt.Errorf("missing host for %s URL", scheme)
 	}
 
-	sanitizedURL := parsedURL.String()
-	return sanitizedURL, nil
+	shellDangerous := `[;|` + "`" + `$\\<> \t\n\r]`
+	if matched, _ := regexp.MatchString(shellDangerous, rawURL); matched {
+		return "", errors.New("shell metacharacters not allowed")
+	}
+
+	unicodeDangerous := "[\u0000-\u001F\u007F\u00A0\u1680\u2000-\u200F\u2028-\u202F\u205F\u3000\uFEFF\u200B-\u200D\u2060\u2061\u2062\u2063\u2064\u206A-\u206F\uFFF0-\uFFFF]"
+	if matched, _ := regexp.MatchString(unicodeDangerous, rawURL); matched {
+		return "", errors.New("dangerous unicode characters not allowed")
+	}
+
+	return parsedURL.String(), nil
 }
