@@ -6,9 +6,9 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
-// Empty method name maps for logging on non-mobile platforms
-var iosMethodNames = map[int]string{}
-var androidMethodNames = map[int]string{}
+func mobileMethodName(req *RuntimeRequest) string {
+	return ""
+}
 
 // processIOSMethod is a stub for non-mobile platforms
 func (m *MessageProcessor) processIOSMethod(req *RuntimeRequest, window Window) (any, error) {
