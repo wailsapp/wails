@@ -875,6 +875,27 @@ func (w *windowsWebviewWindow) unmaximise() {
 func (w *windowsWebviewWindow) restore() {
 	w32.ShowWindow(w.hwnd, w32.SW_RESTORE)
 	w.chromium.Focus()
+	w.enforceMinSizeConstraints()
+}
+
+func (w *windowsWebviewWindow) enforceMinSizeConstraints() {
+	options := w.parent.options
+	if options.MinWidth <= 0 && options.MinHeight <= 0 {
+		return
+	}
+	b := w.bounds()
+	changed := false
+	if options.MinWidth > 0 && b.Width < options.MinWidth {
+		b.Width = options.MinWidth
+		changed = true
+	}
+	if options.MinHeight > 0 && b.Height < options.MinHeight {
+		b.Height = options.MinHeight
+		changed = true
+	}
+	if changed {
+		w.setBounds(b)
+	}
 }
 
 func (w *windowsWebviewWindow) fullscreen() {
