@@ -908,7 +908,7 @@ func (w *windowsWebviewWindow) fullscreen() {
 	w32.SetWindowLong(
 		w.hwnd,
 		w32.GWL_EXSTYLE,
-		w.previousWindowExStyle & ^uint32(w32.WS_EX_DLGMODALFRAME),
+		w.previousWindowExStyle & ^uint32(w32.WS_EX_DLGMODALFRAME|w32.WS_EX_TRANSPARENT),
 	)
 	w.isCurrentlyFullscreen = true
 	w32.SetWindowPos(w.hwnd, w32.HWND_TOP,
@@ -1441,6 +1441,10 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	processed, code := w32.MenuBarWndProc(w.hwnd, msg, wparam, lparam, w.menubarTheme)
 	if processed {
 		return code
+	}
+
+	if msg == w32.WM_NCHITTEST && w.isCurrentlyFullscreen {
+		return w32.HTCLIENT
 	}
 
 	switch msg {
