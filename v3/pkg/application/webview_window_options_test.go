@@ -360,6 +360,41 @@ func TestMacLiquidGlassStyle_Constants(t *testing.T) {
 	}
 }
 
+func TestFullscreenButtonState_OptionExists(t *testing.T) {
+	opts := WebviewWindowOptions{
+		FullscreenButtonState: ButtonHidden,
+	}
+	if opts.FullscreenButtonState != ButtonHidden {
+		t.Errorf("FullscreenButtonState = %d, want %d", opts.FullscreenButtonState, ButtonHidden)
+	}
+
+	opts = WebviewWindowOptions{
+		FullscreenButtonState: ButtonDisabled,
+	}
+	if opts.FullscreenButtonState != ButtonDisabled {
+		t.Errorf("FullscreenButtonState = %d, want %d", opts.FullscreenButtonState, ButtonDisabled)
+	}
+
+	opts = WebviewWindowOptions{
+		FullscreenButtonState: ButtonEnabled,
+	}
+	if opts.FullscreenButtonState != ButtonEnabled {
+		t.Errorf("FullscreenButtonState = %d, want %d", opts.FullscreenButtonState, ButtonEnabled)
+	}
+}
+
+func TestFullscreenButtonState_ButtonStateValues(t *testing.T) {
+	if ButtonEnabled != 0 {
+		t.Errorf("ButtonEnabled should be 0, got %d", ButtonEnabled)
+	}
+	if ButtonDisabled != 1 {
+		t.Errorf("ButtonDisabled should be 1, got %d", ButtonDisabled)
+	}
+	if ButtonHidden != 2 {
+		t.Errorf("ButtonHidden should be 2, got %d", ButtonHidden)
+	}
+}
+
 func TestNSVisualEffectMaterial_Constants(t *testing.T) {
 	if NSVisualEffectMaterialAppearanceBased != 0 {
 		t.Error("NSVisualEffectMaterialAppearanceBased should be 0")

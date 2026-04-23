@@ -142,20 +142,20 @@ func (w *iosWebviewWindow) setAbsolutePosition(_ int, _ int) {}
 func (w *iosWebviewWindow) setAlwaysOnTop(_ bool) {}
 
 func (w *iosWebviewWindow) setBackgroundColour(col RGBA) {
-    if w.nativeHandle == nil {
-        return
-    }
-    C.ios_window_set_background_color(
-        w.nativeHandle,
-        C.uchar(col.Red), C.uchar(col.Green), C.uchar(col.Blue), C.uchar(col.Alpha),
-    )
+	if w.nativeHandle == nil {
+		return
+	}
+	C.ios_window_set_background_color(
+		w.nativeHandle,
+		C.uchar(col.Red), C.uchar(col.Green), C.uchar(col.Blue), C.uchar(col.Alpha),
+	)
 }
 
 func (w *iosWebviewWindow) setEnabled(_ bool) {}
 
 func (w *iosWebviewWindow) setFrameless(_ bool) {}
 
-func (w *iosWebviewWindow) setFullscreenButtonEnabled(_ bool) {}
+func (w *iosWebviewWindow) setFullscreenButtonState(_ ButtonState) {}
 
 func (w *iosWebviewWindow) setMaxSize(_ int, _ int) {}
 
