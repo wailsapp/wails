@@ -3,6 +3,7 @@ package commands
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"gopkg.in/yaml.v3"
@@ -360,38 +361,38 @@ func TestCFBundleIconNameDetection(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	tests := []struct {
-		name                string
-		createAssetsCar     bool
-		configIconName      string
-		expectedIconName    string
+		name                  string
+		createAssetsCar       bool
+		configIconName        string
+		expectedIconName      string
 		expectIconNameInPlist bool
 	}{
 		{
-			name:                "Assets.car exists, no config - should default to appicon",
-			createAssetsCar:     true,
-			configIconName:      "",
-			expectedIconName:    "appicon",
+			name:                  "Assets.car exists, no config - should default to appicon",
+			createAssetsCar:       true,
+			configIconName:        "",
+			expectedIconName:      "appicon",
 			expectIconNameInPlist: true,
 		},
 		{
-			name:                "Assets.car exists, config set - should use config",
-			createAssetsCar:     true,
-			configIconName:      "custom-icon",
-			expectedIconName:    "custom-icon",
+			name:                  "Assets.car exists, config set - should use config",
+			createAssetsCar:       true,
+			configIconName:        "custom-icon",
+			expectedIconName:      "custom-icon",
 			expectIconNameInPlist: true,
 		},
 		{
-			name:                "No Assets.car, no config - should not set",
-			createAssetsCar:     false,
-			configIconName:      "",
-			expectedIconName:    "",
+			name:                  "No Assets.car, no config - should not set",
+			createAssetsCar:       false,
+			configIconName:        "",
+			expectedIconName:      "",
 			expectIconNameInPlist: false,
 		},
 		{
-			name:                "No Assets.car, config set - should use config",
-			createAssetsCar:     false,
-			configIconName:      "config-icon",
-			expectedIconName:    "config-icon",
+			name:                  "No Assets.car, config set - should use config",
+			createAssetsCar:       false,
+			configIconName:        "config-icon",
+			expectedIconName:      "config-icon",
 			expectIconNameInPlist: true,
 		},
 	}
@@ -456,14 +457,14 @@ func TestCFBundleIconNameDetection(t *testing.T) {
 
 			options := &UpdateBuildAssetsOptions{
 				Dir:               buildDir,
-				Name:               "TestApp",
-				ProductName:        "Test App",
-				ProductVersion:     "1.0.0",
-				ProductCompany:     "Test Company",
-				ProductIdentifier:  "com.test.app",
-				CFBundleIconName:   tt.configIconName,
-				Config:             configFile,
-				Silent:             true,
+				Name:              "TestApp",
+				ProductName:       "Test App",
+				ProductVersion:    "1.0.0",
+				ProductCompany:    "Test Company",
+				ProductIdentifier: "com.test.app",
+				CFBundleIconName:  tt.configIconName,
+				Config:            configFile,
+				Silent:            true,
 			}
 
 			err = UpdateBuildAssets(options)
@@ -633,6 +634,92 @@ func TestNestedPlistMerge(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMacOSMinimumVersion(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "wails-min-version-test-*")
+	if err != nil {
+		t.Fatalf("Failed to create temp directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	options := &BuildAssetsOptions{
+		Dir:                filepath.Join(tempDir, "build"),
+		Name:               "TestApp",
+		ProductName:        "Test App",
+		ProductDescription: "A test application",
+		ProductVersion:     "1.0.0",
+		ProductCompany:     "Test Company",
+		ProductCopyright:   "© 2024 Test Company",
+		ProductComments:    "Test comments",
+		ProductIdentifier:  "com.test.app",
+		Silent:             true,
+	}
+
+	err = GenerateBuildAssets(options)
+	if err != nil {
+		t.Fatalf("GenerateBuildAssets failed: %v", err)
+	}
+
+	t.Run("Info.plist has macOS 12 minimum version", func(t *testing.T) {
+		plistPath := filepath.Join(tempDir, "build", "darwin", "Info.plist")
+		content, err := os.ReadFile(plistPath)
+		if err != nil {
+			t.Fatalf("Failed to read Info.plist: %v", err)
+		}
+
+		var plistDict map[string]any
+		_, err = plist.Unmarshal(content, &plistDict)
+		if err != nil {
+			t.Fatalf("Failed to parse Info.plist: %v", err)
+		}
+
+		minVersion, ok := plistDict["LSMinimumSystemVersion"]
+		if !ok {
+			t.Fatal("LSMinimumSystemVersion not found in Info.plist")
+		}
+		if minVersion != "12.0.0" {
+			t.Errorf("Expected LSMinimumSystemVersion to be '12.0.0', got '%v'", minVersion)
+		}
+	})
+
+	t.Run("Info.dev.plist has macOS 12 minimum version", func(t *testing.T) {
+		plistPath := filepath.Join(tempDir, "build", "darwin", "Info.dev.plist")
+		content, err := os.ReadFile(plistPath)
+		if err != nil {
+			t.Fatalf("Failed to read Info.dev.plist: %v", err)
+		}
+
+		var plistDict map[string]any
+		_, err = plist.Unmarshal(content, &plistDict)
+		if err != nil {
+			t.Fatalf("Failed to parse Info.dev.plist: %v", err)
+		}
+
+		minVersion, ok := plistDict["LSMinimumSystemVersion"]
+		if !ok {
+			t.Fatal("LSMinimumSystemVersion not found in Info.dev.plist")
+		}
+		if minVersion != "12.0.0" {
+			t.Errorf("Expected LSMinimumSystemVersion to be '12.0.0', got '%v'", minVersion)
+		}
+	})
+
+	t.Run("darwin Taskfile has macOS 12 deployment target", func(t *testing.T) {
+		taskfilePath := filepath.Join(tempDir, "build", "darwin", "Taskfile.yml")
+		content, err := os.ReadFile(taskfilePath)
+		if err != nil {
+			t.Fatalf("Failed to read darwin Taskfile.yml: %v", err)
+		}
+
+		strContent := string(content)
+		if !strings.Contains(strContent, "mmacosx-version-min=12.0") {
+			t.Error("Expected 'mmacosx-version-min=12.0' in darwin Taskfile.yml")
+		}
+		if !strings.Contains(strContent, "MACOSX_DEPLOYMENT_TARGET: \"12.0\"") {
+			t.Error("Expected 'MACOSX_DEPLOYMENT_TARGET: \"12.0\"' in darwin Taskfile.yml")
+		}
+	})
 }
 
 func deepCopyMap(m map[string]any) map[string]any {
