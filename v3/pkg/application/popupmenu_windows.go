@@ -161,8 +161,18 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 }
 
 func (p *Win32Menu) Update() {
+	if p.menu != 0 {
+		// DestroyMenu recursively destroys attached submenus, releasing the
+		// HMENU tree allocated by the previous buildMenu pass.
+		w32.DestroyMenu(p.menu)
+	}
 	p.menu = p.newMenu()
 	p.menuMapping = make(map[int]*MenuItem)
+	// checkboxItems / radioGroups index MenuItems by pointer. Without
+	// resetting, repeated Update calls accumulate entries whose itemIDs
+	// reference HMENUs that no longer exist.
+	p.checkboxItems = make(map[*MenuItem][]int)
+	p.radioGroups = make(map[*MenuItem][]*RadioGroup)
 	p.currentMenuID = MenuItemMsgID
 	p.buildMenu(p.menu, p.menuData)
 	p.updateRadioGroups()
