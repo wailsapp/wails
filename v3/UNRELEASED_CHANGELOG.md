@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix frameless transparent window hit-test regions not updating after DPI change on Windows (#4691) by @leaanthony
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
