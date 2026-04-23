@@ -20,6 +20,10 @@ type windowsMenuItem struct {
 	itemType menuItemType
 	hidden   bool
 	submenu  w32.HMENU
+
+	// bitmap holds the HBITMAP handle installed by the most recent
+	// setBitmap call so it can be released before a new one is installed.
+	bitmap w32.HBITMAP
 }
 
 func (m *windowsMenuItem) setHidden(hidden bool) {
@@ -104,11 +108,18 @@ func (m *windowsMenuItem) setBitmap(bitmap []byte) {
 		return
 	}
 
-	// Set the icon
-	err := w32.SetMenuIcons(m.hMenu, m.id, bitmap, nil)
+	handles, err := w32.SetMenuIcons(m.hMenu, m.id, bitmap, nil)
 	if err != nil {
 		globalApplication.error("unable to set bitmap on menu item: %w", err)
 		return
+	}
+	// Release the previous HBITMAP, if any, before replacing it.
+	if m.bitmap != 0 {
+		w32.DeleteObject(w32.HGDIOBJ(m.bitmap))
+	}
+	m.bitmap = 0
+	if len(handles) > 0 {
+		m.bitmap = handles[0]
 	}
 	m.update()
 }

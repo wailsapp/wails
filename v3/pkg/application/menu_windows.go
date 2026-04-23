@@ -15,6 +15,17 @@ type windowsMenu struct {
 	currentMenuID int
 	menuMapping   map[int]*MenuItem
 	checkboxItems []*Menu
+
+	// bitmaps tracks HBITMAP handles allocated by SetMenuIcons during
+	// processMenu so they can be released when the menu is rebuilt.
+	bitmaps []w32.HBITMAP
+}
+
+func (w *windowsMenu) freeBitmaps() {
+	for _, h := range w.bitmaps {
+		w32.DeleteObject(w32.HGDIOBJ(h))
+	}
+	w.bitmaps = nil
 }
 
 func newMenuImpl(menu *Menu) *windowsMenu {
@@ -28,6 +39,7 @@ func newMenuImpl(menu *Menu) *windowsMenu {
 
 func (w *windowsMenu) update() {
 	if w.hMenu != 0 {
+		w.freeBitmaps()
 		w32.DestroyMenu(w.hMenu)
 	}
 	w.hMenu = w32.NewPopupMenu()
@@ -93,11 +105,14 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 			continue
 		}
 
-		w32.AppendMenu(parentMenu, flags, uintptr(itemID), menuText) 
+		w32.AppendMenu(parentMenu, flags, uintptr(itemID), menuText)
 		if item.bitmap != nil {
-			if err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil); err != nil {
-				globalApplication.fatal("error setting menu icons: %w", err)
+			handles, err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil)
+			if err != nil {
+				globalApplication.error("SetMenuIcons failed: %v", err)
+				continue
 			}
+			w.bitmaps = append(w.bitmaps, handles...)
 		}
 	}
 }
