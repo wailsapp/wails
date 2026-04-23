@@ -23,7 +23,7 @@ func newWebContentsViewImpl(parent *WebContentsView) webContentsViewImpl {
 		parent:   parent,
 		chromium: chromium,
 	}
-	
+
 	settings, err := chromium.GetSettings()
 	if err == nil {
 		if parent.options.WebPreferences.DevTools != application.Disabled {
@@ -39,7 +39,7 @@ func newWebContentsViewImpl(parent *WebContentsView) webContentsViewImpl {
 		} else {
 			settings.PutIsScriptEnabled(false)
 		}
-		
+
 		if parent.options.WebPreferences.ZoomFactor > 0 {
 			chromium.PutZoomFactor(parent.options.WebPreferences.ZoomFactor)
 		}
@@ -78,7 +78,7 @@ func (w *windowsWebContentsView) goBack() {
 }
 
 func (w *windowsWebContentsView) getURL() string {
-	// Synchronous URL reading isn't trivial without a dedicated edge mapping, 
+	// Synchronous URL reading isn't trivial without a dedicated edge mapping,
 	// returning last known or empty for now.
 	return w.parent.options.URL
 }
@@ -97,7 +97,7 @@ func (w *windowsWebContentsView) attach(window application.Window) {
 	if window.NativeWindow() != nil {
 		w.hwnd = w32.HWND(window.NativeWindow())
 		w.chromium.Embed(w.hwnd)
-		
+
 		w.chromium.Resize()
 		w.chromium.Show()
 
@@ -110,6 +110,17 @@ func (w *windowsWebContentsView) attach(window application.Window) {
 func (w *windowsWebContentsView) detach() {
 	if w.chromium != nil {
 		w.chromium.Hide()
+	}
+}
+
+func (w *windowsWebContentsView) layoutReferenceRect() application.Rect {
+	if w.hwnd == 0 {
+		return application.Rect{}
+	}
+	clientRect := w32.GetClientRect(w.hwnd)
+	return application.Rect{
+		Width:  int(clientRect.Right - clientRect.Left),
+		Height: int(clientRect.Bottom - clientRect.Top),
 	}
 }
 

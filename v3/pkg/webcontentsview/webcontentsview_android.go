@@ -3,8 +3,8 @@
 package webcontentsview
 
 import (
-	"unsafe"
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"unsafe"
 )
 
 type androidWebContentsView struct {
@@ -16,13 +16,13 @@ func newWebContentsViewImpl(parent *WebContentsView) webContentsViewImpl {
 }
 
 func (w *androidWebContentsView) setBounds(bounds application.Rect) {}
-func (w *androidWebContentsView) setURL(url string)     {}
-func (w *androidWebContentsView) execJS(js string)      {}
-func (w *androidWebContentsView) goBack() {}
-func (w *androidWebContentsView) getURL() string { return "" }
-func (w *androidWebContentsView) takeSnapshot() string { return "" }
+func (w *androidWebContentsView) setURL(url string)                 {}
+func (w *androidWebContentsView) execJS(js string)                  {}
+func (w *androidWebContentsView) goBack()                           {}
+func (w *androidWebContentsView) getURL() string                    { return "" }
+func (w *androidWebContentsView) takeSnapshot() string              { return "" }
 
-
-func (w *androidWebContentsView) attach(window application.Window) {}
-func (w *androidWebContentsView) detach() {}
-func (w *androidWebContentsView) nativeView() unsafe.Pointer { return nil }
+func (w *androidWebContentsView) attach(window application.Window)      {}
+func (w *androidWebContentsView) detach()                               {}
+func (w *androidWebContentsView) layoutReferenceRect() application.Rect { return application.Rect{} }
+func (w *androidWebContentsView) nativeView() unsafe.Pointer            { return nil }

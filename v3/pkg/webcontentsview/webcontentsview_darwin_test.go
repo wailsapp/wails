@@ -9,7 +9,7 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-// Dummy mock window that satisfies the interface 
+// Dummy mock window that satisfies the interface
 // and returns a nil NativeWindow so we can test the Attach nil-handling safely
 // without spinning up the full NSApplication runloop in a headless test environment.
 type mockWindow struct {
@@ -22,7 +22,7 @@ func (m *mockWindow) NativeWindow() unsafe.Pointer {
 
 func TestWebContentsView_APISurface(t *testing.T) {
 	// We primarily want to ensure that the API surface compiles and functions
-	// correctly at a struct level. Note: Full WKWebView instantiation without an NSApplication 
+	// correctly at a struct level. Note: Full WKWebView instantiation without an NSApplication
 	// runloop will crash on macOS, so we test the struct wiring here instead of the native allocations.
 
 	options := WebContentsViewOptions{
@@ -42,7 +42,7 @@ func TestWebContentsView_APISurface(t *testing.T) {
 		},
 	}
 
-	// Because calling NewWebContentsView invokes C.createWebContentsView which 
+	// Because calling NewWebContentsView invokes C.createWebContentsView which
 	// traps without a runloop during go test, we will just manually instantiate
 	// the Go wrapper to verify the methods.
 	view := &WebContentsView{
@@ -70,12 +70,13 @@ func TestWebContentsView_APISurface(t *testing.T) {
 
 type mockWebContentsViewImpl struct{}
 
-func (m *mockWebContentsViewImpl) setBounds(bounds application.Rect) {}
-func (m *mockWebContentsViewImpl) setURL(url string) {}
-func (m *mockWebContentsViewImpl) execJS(js string) {}
-func (m *mockWebContentsViewImpl) goBack() {}
-func (m *mockWebContentsViewImpl) getURL() string { return "" }
-func (m *mockWebContentsViewImpl) takeSnapshot() string { return "" }
-func (m *mockWebContentsViewImpl) attach(window application.Window) {}
-func (m *mockWebContentsViewImpl) detach() {}
-func (m *mockWebContentsViewImpl) nativeView() unsafe.Pointer { return nil }
+func (m *mockWebContentsViewImpl) setBounds(bounds application.Rect)     {}
+func (m *mockWebContentsViewImpl) setURL(url string)                     {}
+func (m *mockWebContentsViewImpl) execJS(js string)                      {}
+func (m *mockWebContentsViewImpl) goBack()                               {}
+func (m *mockWebContentsViewImpl) getURL() string                        { return "" }
+func (m *mockWebContentsViewImpl) takeSnapshot() string                  { return "" }
+func (m *mockWebContentsViewImpl) attach(window application.Window)      {}
+func (m *mockWebContentsViewImpl) detach()                               {}
+func (m *mockWebContentsViewImpl) layoutReferenceRect() application.Rect { return application.Rect{} }
+func (m *mockWebContentsViewImpl) nativeView() unsafe.Pointer            { return nil }

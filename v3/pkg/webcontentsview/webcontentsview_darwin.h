@@ -21,6 +21,7 @@ typedef struct {
 
 extern void* createWebContentsView(int x, int y, int w, int h, WebContentsViewPreferences prefs);
 extern void webContentsViewSetBounds(void* view, int x, int y, int w, int h);
+extern void webContentsViewGetLayoutReferenceRect(void* view, int* width, int* height);
 extern void webContentsViewSetURL(void* view, const char* url);
 extern void webContentsViewExecJS(void* view, const char* js);
 extern void webContentsViewGoBack(void* view);

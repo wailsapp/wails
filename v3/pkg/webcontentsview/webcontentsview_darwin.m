@@ -370,6 +370,19 @@ void webContentsViewSetBounds(void* view, int x, int y, int w, int h) {
     }
 }
 
+void webContentsViewGetLayoutReferenceRect(void* view, int* width, int* height) {
+    WKWebView* webView = (WKWebView*)view;
+    NSView* container = [webView superview];
+    NSRect frame = container != nil ? [container bounds] : [webView frame];
+
+    if (width != NULL) {
+        *width = (int)frame.size.width;
+    }
+    if (height != NULL) {
+        *height = (int)frame.size.height;
+    }
+}
+
 void webContentsViewSetURL(void* view, const char* url) {
     WKWebView* webView = (WKWebView*)view;
     NSString* nsURL = [NSString stringWithUTF8String:url];

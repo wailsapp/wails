@@ -9,11 +9,11 @@ package webcontentsview
 
 static void* createWebContentsView_linux(int x, int y, int w, int h, int devTools, int js, int images) {
     WebKitSettings *settings = webkit_settings_new();
-    
+
     webkit_settings_set_enable_developer_extras(settings, devTools ? TRUE : FALSE);
     webkit_settings_set_enable_javascript(settings, js ? TRUE : FALSE);
     webkit_settings_set_auto_load_images(settings, images ? TRUE : FALSE);
-    
+
     GtkWidget *webview = webkit_web_view_new_with_settings(settings);
     gtk_widget_set_size_request(webview, w, h);
     return webview;
@@ -24,6 +24,18 @@ static void webContentsViewSetBounds_linux(void* view, void* parentFixed, int x,
     gtk_widget_set_size_request(webview, w, h);
     if (parentFixed != NULL) {
         gtk_fixed_move(GTK_FIXED(parentFixed), webview, x, y);
+    }
+}
+
+static void webContentsViewGetLayoutReferenceRect_linux(void* view, int* width, int* height) {
+    GtkWidget *webview = (GtkWidget*)view;
+    GtkWidget *parent = gtk_widget_get_parent(webview);
+    GtkWidget *reference = parent != NULL ? parent : webview;
+    if (width != NULL) {
+        *width = gtk_widget_get_allocated_width(reference);
+    }
+    if (height != NULL) {
+        *height = gtk_widget_get_allocated_height(reference);
     }
 }
 
@@ -55,8 +67,8 @@ static void webContentsViewDetach_linux(void* view) {
 */
 import "C"
 import (
-	"unsafe"
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"unsafe"
 )
 
 type linuxWebContentsView struct {
@@ -69,17 +81,17 @@ func newWebContentsViewImpl(parent *WebContentsView) webContentsViewImpl {
 	if parent.options.WebPreferences.DevTools == application.Disabled {
 		devTools = 0
 	}
-	
+
 	js := 1
 	if parent.options.WebPreferences.Javascript == application.Disabled {
 		js = 0
 	}
-	
+
 	images := 1
 	if parent.options.WebPreferences.Images == application.Disabled {
 		images = 0
 	}
-	
+
 	view := C.createWebContentsView_linux(
 		C.int(parent.options.Bounds.X),
 		C.int(parent.options.Bounds.Y),
@@ -138,6 +150,15 @@ func (w *linuxWebContentsView) attach(window application.Window) {
 
 func (w *linuxWebContentsView) detach() {
 	C.webContentsViewDetach_linux(w.widget)
+}
+
+func (w *linuxWebContentsView) layoutReferenceRect() application.Rect {
+	var width, height C.int
+	C.webContentsViewGetLayoutReferenceRect_linux(w.widget, &width, &height)
+	return application.Rect{
+		Width:  int(width),
+		Height: int(height),
+	}
 }
 
 func (w *linuxWebContentsView) nativeView() unsafe.Pointer {

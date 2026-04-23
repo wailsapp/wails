@@ -17,6 +17,7 @@ The `webcontentsview` package exposes a structured API for managing the view lif
 - **`NewWebContentsView(options)`**: Initializes the native OS webview but does not display it.
 - **`Attach(window)`**: Mounts the webview to the provided Wails `application.Window` using its raw `NativeWindow()` pointer.
 - **`SetBounds(rect)`**: Dynamically positions and sizes the view.
+- **`SetLayout(layout)`**: Positions and sizes the view using fixed coordinates, percentages, and bottom/right anchoring relative to the parent window.
 - **`SetURL(url)`**: Navigates the view.
 - **`ExecJS(js)`**: Evaluates JavaScript inside the context of the secondary view.
 - **`Detach()`**: Unmounts and hides the view.
@@ -107,6 +108,16 @@ func (a *App) SetBrowserViewBounds(x, y, width, height int) {
 		browserView.SetBounds(application.Rect{ X: x, Y: y, Width: width, Height: height })
 	})
 }
+
+func (a *App) DockBrowserViewToBottomHalf() {
+	application.InvokeSync(func() {
+		browserView.SetLayout(webcontentsview.Layout{
+			Width:          webcontentsview.LayoutValue{Percent: 100},
+			Height:         webcontentsview.LayoutValue{Percent: 50},
+			VerticalAnchor: webcontentsview.LayoutAnchorEnd,
+		})
+	})
+}
 ```
 
 ### 2. React Frontend setup
@@ -176,3 +187,5 @@ export default function BrowserTab({ active, url }) {
 ```
 
 This pattern ensures the native `WebContentsView` stays perfectly synchronized with your React layout, mimicking the behaviour of a built-in browser component.
+
+`SetLayout` is useful when the view should stay docked to the parent window itself instead of tracking a DOM placeholder. For example, you can anchor the view to the bottom edge and size it to `50%` of the parent height. Calling `SetBounds` switches back to explicit coordinates.

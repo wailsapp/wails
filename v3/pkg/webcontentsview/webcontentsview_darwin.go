@@ -127,6 +127,15 @@ func (w *macosWebContentsView) detach() {
 	}
 }
 
+func (w *macosWebContentsView) layoutReferenceRect() application.Rect {
+	var width, height C.int
+	C.webContentsViewGetLayoutReferenceRect(w.nsView, &width, &height)
+	return application.Rect{
+		Width:  int(width),
+		Height: int(height),
+	}
+}
+
 func (w *macosWebContentsView) nativeView() unsafe.Pointer {
 	return w.nsView
 }
