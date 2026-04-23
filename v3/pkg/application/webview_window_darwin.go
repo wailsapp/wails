@@ -102,6 +102,16 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
 	[webView autorelease];
 
+	// Ensure WKWebView reports correct devicePixelRatio on Retina displays
+	// when using custom URL scheme (wails://). Without this, the web process
+	// does not inherit the native backing scale factor.
+	[webView setWantsLayer:YES];
+	if (webView.layer) {
+		webView.layer.contentsScale = [[NSScreen mainScreen] backingScaleFactor];
+		webView.layer.rasterizationScale = [[NSScreen mainScreen] backingScaleFactor];
+		webView.layer.shouldRasterize = YES;
+	}
+
     // Set allowsBackForwardNavigationGestures if specified
     if (preferences.AllowsBackForwardNavigationGestures != NULL) {
         webView.allowsBackForwardNavigationGestures = *preferences.AllowsBackForwardNavigationGestures;
