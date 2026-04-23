@@ -66,6 +66,18 @@ func (p *Win32Menu) freeBitmaps() {
 		w32.DeleteObject(w32.HGDIOBJ(h))
 	}
 	p.bitmaps = nil
+	// HBITMAPs allocated at runtime via MenuItem.SetBitmap live on the
+	// windowsMenuItem impl, not in p.bitmaps. Walk the menuMapping to
+	// release them before DestroyMenu — otherwise every rebuild leaks
+	// one HBITMAP per item that had a runtime SetBitmap call.
+	for _, item := range p.menuMapping {
+		impl, ok := item.impl.(*windowsMenuItem)
+		if !ok || impl.bitmap == 0 {
+			continue
+		}
+		w32.DeleteObject(w32.HGDIOBJ(impl.bitmap))
+		impl.bitmap = 0
+	}
 }
 
 func (p *Win32Menu) newMenu() w32.HMENU {
