@@ -233,3 +233,4 @@ ios:WebViewDidStartNavigation
 ios:WebViewDidFinishNavigation
 ios:WebViewDidFailNavigation
 ios:WebViewDecidePolicyForNavigationAction!
+mac:WebViewWebContentProcessDidTerminate!

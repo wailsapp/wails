@@ -17,12 +17,15 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add `mac:WebViewWebContentProcessDidTerminate` event, emitted when WebKit's WebContent (renderer) process terminates.
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
+- Implement `WebviewWindow.Reload()` and `WebviewWindow.ForceReload()` on macOS — they were previously no-op TODOs.
+- Recover from WebContent process termination on macOS by handling `webViewWebContentProcessDidTerminate:` and automatically reloading the web view. Fixes the unresponsive blank window observed after long macOS sleeps.
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
