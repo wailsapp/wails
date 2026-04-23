@@ -419,6 +419,12 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     }
 }
 - (void)windowDidChangeBackingProperties:(NSNotification *)notification {
+    WebviewWindow* window = (WebviewWindow*)[self delegate];
+    if (window && window.webView && window.webView.layer) {
+        CGFloat scale = [window screen].backingScaleFactor;
+        window.webView.layer.contentsScale = scale;
+        window.webView.layer.rasterizationScale = scale;
+    }
     if( hasListeners(EventWindowDidChangeBackingProperties) ) {
         processWindowEvent(self.windowId, EventWindowDidChangeBackingProperties);
     }
