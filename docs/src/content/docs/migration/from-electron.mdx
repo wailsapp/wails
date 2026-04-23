@@ -1,0 +1,634 @@
+---
+title: Migrating from Electron
+description: Comprehensive guide for developers moving from Electron to Wails v3
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid, Tabs, TabItem, Steps } from "@astrojs/starlight/components";
+
+If you're an Electron developer considering Wails, you'll find many familiar patterns alongside significant improvements in bundle size, startup time, and memory usage. This guide helps you transition your Electron skills to Wails v3.
+
+**Why Wails?**
+
+- **Smaller bundles** - 10-40x smaller than Electron (typically 10-40MB vs 150-300MB)
+- **Native bindings** - Direct Go integration without Node.js overhead
+- **Better performance** - Lower memory footprint, faster startup
+- **Type safety** - Full TypeScript + Go static typing
+- **Integrated features** - Built-in menus, dialogs, and system tray
+
+**Migration time:** 2-8 hours depending on app complexity
+
+## Architecture Comparison
+
+### Electron Architecture
+Electron bundles Chromium (browser engine) and Node.js, giving you full JavaScript everywhere but at the cost of bundle size and memory usage.
+
+```
+Your App Code (JavaScript)
+    ↓
+Chromium Renderer (Browser engine) + Node.js Runtime
+    ↓
+Operating System
+```
+
+### Wails Architecture
+Wails uses Go for backend logic and leverages the system's native webview (WebKit/Webview2), pairing it with a lightweight bridge to your frontend.
+
+```
+Frontend Code (HTML/CSS/TypeScript)
+    ↓
+Wails Runtime Bridge
+    ↓
+Go Backend + System Webview
+    ↓
+Operating System
+```
+
+**Key differences:**
+- **Backend language**: JavaScript/Node.js → Go
+- **UI rendering**: Chromium → System webview (smaller, faster)
+- **Process model**: Single combined process → Frontend + backend process
+- **Dependencies**: npm packages → Go modules
+- **Distribution**: npm builds → native executables
+
+## Core Concept Mapping
+
+| Electron | Wails | Notes |
+|----------|-------|-------|
+| Main process (Node.js) | Go backend | Business logic runs here |
+| Renderer process | Web frontend | Same HTML/CSS/JS pattern |
+| `ipcMain.handle()` | Service methods | RPC-style method binding |
+| `ipcRenderer.invoke()` | Auto-generated bindings | Type-safe RPC calls |
+| IPC events | Event system | Pub/sub events |
+| Electron APIs | Application/Window/Menu objects | More intuitive, object-oriented |
+| `preload.js` | Auto-generated bindings | No manual bridge code needed |
+| npm dependencies | Go dependencies | Compiled into binary |
+
+## Application Structure
+
+### Electron Structure
+```
+my-app/
+├── main.js                    # Main process
+├── preload.js                 # Preload script
+├── src/
+│   └── renderer/              # Frontend code
+│       ├── index.html
+│       └── app.js
+├── package.json
+└── node_modules/
+```
+
+### Wails Structure
+```
+my-app/
+├── main.go                    # Entry point
+├── internal/
+│   └── services/              # Go services (backend)
+│       └── app.go
+├── frontend/                  # Frontend code
+│   ├── src/
+│   │   └── App.tsx
+│   ├── package.json
+│   └── vite.config.ts
+├── wails.json                 # Config
+└── go.mod
+```
+
+## Workflow Comparison
+
+### Main Process → Go Backend
+
+In Electron, your main process handles window management, menus, and app lifecycle. In Wails, this logic moves to Go services.
+
+**Electron (main.js):**
+```javascript
+const { app, BrowserWindow, ipcMain, Menu } = require('electron')
+
+let mainWindow
+
+app.on('ready', () => {
+  mainWindow = new BrowserWindow({
+    width: 1024,
+    height: 768,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js')
+    }
+  })
+  mainWindow.loadFile('src/renderer/index.html')
+})
+
+ipcMain.handle('greet', (event, name) => {
+  return `Hello ${name}!`
+})
+
+const menu = Menu.buildFromTemplate([
+  {
+    label: 'File',
+    submenu: [
+      { label: 'Quit', accelerator: 'CmdOrCtrl+Q', click: () => app.quit() }
+    ]
+  }
+])
+Menu.setApplicationMenu(menu)
+```
+
+**Wails (main.go):**
+```go
+package main
+
+import (
+    "context"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        Services: []application.Service{
+            application.NewService(&GreetService{}),
+        },
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  "My App",
+        Width:  1024,
+        Height: 768,
+    })
+
+    menu := app.NewMenu()
+    fileMenu := menu.AddSubmenu("File")
+    fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+
+    app.Run()
+}
+
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+    return "Hello " + name + "!"
+}
+```
+
+### IPC → Method Binding
+
+Electron requires manual IPC setup with channels. Wails auto-generates type-safe bindings.
+
+**Electron:**
+```javascript
+// preload.js
+const { contextBridge, ipcRenderer } = require('electron')
+
+contextBridge.exposeInMainWorld('api', {
+  greet: (name) => ipcRenderer.invoke('greet', name)
+})
+
+// renderer/app.js
+async function handleGreet() {
+  const result = await window.api.greet('World')
+  console.log(result)
+}
+```
+
+**Wails:**
+```go
+// main.go - Services are automatically bound
+type UserService struct{}
+
+func (u *UserService) Greet(name string) string {
+    return "Hello " + name + "!"
+}
+```
+
+```typescript
+// frontend/src/App.tsx - Auto-generated bindings
+import { Greet } from './bindings/myapp/userservice'
+
+async function handleGreet() {
+    const result = await Greet('World')
+    console.log(result)
+}
+```
+
+## Feature-by-Feature Migration
+
+### Windows
+
+**Electron:**
+```javascript
+const { BrowserWindow } = require('electron')
+
+const mainWindow = new BrowserWindow({
+  width: 1024,
+  height: 768,
+  show: false
+})
+
+mainWindow.loadFile('index.html')
+mainWindow.show()
+
+// Secondary window
+const settingsWindow = new BrowserWindow({
+  width: 500,
+  height: 400
+})
+settingsWindow.loadFile('settings.html')
+```
+
+**Wails:**
+```go
+app := application.New(application.Options{
+    Name: "My App",
+})
+
+// Main window
+mainWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My App",
+    Width:  1024,
+    Height: 768,
+    Hidden: true,
+})
+mainWindow.Show()
+
+// Secondary window
+settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "Settings",
+    Width:  500,
+    Height: 400,
+})
+```
+
+### Menus
+
+**Electron:**
+```javascript
+const { Menu } = require('electron')
+
+const template = [
+  {
+    label: 'File',
+    submenu: [
+      {
+        label: 'Open',
+        accelerator: 'CmdOrCtrl+O',
+        click: () => console.log('Opening...')
+      },
+      { type: 'separator' },
+      {
+        label: 'Exit',
+        accelerator: 'CmdOrCtrl+Q',
+        click: () => app.quit()
+      }
+    ]
+  }
+]
+
+const menu = Menu.buildFromTemplate(template)
+Menu.setApplicationMenu(menu)
+```
+
+**Wails:**
+```go
+menu := app.NewMenu()
+
+fileMenu := menu.AddSubmenu("File")
+
+openItem := fileMenu.Add("Open")
+openItem.Accelerator = "Ctrl+O"
+openItem.OnClick(func(ctx *application.Context) {
+    println("Opening...")
+})
+
+fileMenu.AddSeparator()
+
+quitItem := fileMenu.Add("Exit")
+quitItem.Accelerator = "Ctrl+Q"
+quitItem.OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+```
+
+### System Tray
+
+**Electron:**
+```javascript
+const { Tray, Menu, app, BrowserWindow } = require('electron')
+
+const tray = new Tray('icon.png')
+const contextMenu = Menu.buildFromTemplate([
+  { label: 'Show', click: () => mainWindow.show() },
+  { label: 'Quit', click: () => app.quit() }
+])
+tray.setContextMenu(contextMenu)
+```
+
+**Wails:**
+```go
+systray := app.SystemTray.New()
+systray.SetIcon(iconBytes)
+
+menu := app.NewMenu()
+menu.Add("Show").OnClick(func(ctx *application.Context) {
+    mainWindow.Show()
+})
+menu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+systray.SetMenu(menu)
+```
+
+### Dialogs
+
+**Electron:**
+```javascript
+const { dialog } = require('electron')
+
+const result = await dialog.showOpenDialog(mainWindow, {
+  properties: ['openFile'],
+  filters: [{ name: 'Images', extensions: ['png', 'jpg'] }]
+})
+```
+
+**Wails:**
+```go
+result, err := app.Dialog.OpenFile(application.OpenFileDialogOptions{
+    Title: "Select an image",
+    Filters: []application.FileFilter{
+        {
+            DisplayName: "Images",
+            Pattern:     "*.png;*.jpg",
+        },
+    },
+})
+```
+
+### Events (IPC)
+
+**Electron:**
+```javascript
+// Main process
+ipcMain.on('update-status', (event, status) => {
+  console.log(status)
+  event.reply('status-updated', { success: true })
+})
+
+// Renderer process
+ipcRenderer.send('update-status', 'processing')
+ipcRenderer.on('status-updated', (event, result) => {
+  console.log(result)
+})
+```
+
+**Wails:**
+```go
+// Go backend
+app.Event.On("update-status", func(e *application.CustomEvent) {
+    status := e.Data.(string)
+    println(status)
+    app.Event.Emit("status-updated", map[string]bool{"success": true})
+})
+```
+
+```typescript
+// TypeScript frontend
+import { Events } from '@wailsio/runtime'
+
+Events.On("update-status", (data) => {
+    console.log(data)
+})
+
+Events.Emit("update-status", "processing")
+```
+
+## Migration Steps
+
+<Steps>
+
+1. **Set up Wails project**
+   ```bash
+   go install github.com/wailsapp/wails/v3/cmd/wails@latest
+   wails3 create
+   ```
+
+2. **Move frontend code**
+   - Copy your existing HTML/CSS/TypeScript to `frontend/`
+   - Keep your framework (React, Vue, Svelte) - Wails supports all of them
+   - Install dependencies: `cd frontend && npm install`
+
+3. **Convert main.go**
+   - Create `main.go` with application initialization
+   - Move window setup from Electron's main.js
+   - Set up services for backend logic
+
+4. **Convert services**
+   - Export Electron's main process logic as Go services
+   - Replace IPC handlers with struct methods
+   - Use dependency injection for service initialization
+
+5. **Update IPC calls**
+   - Replace manual IPC with auto-generated bindings
+   - Update imports: `from './bindings/<appname>/<service>'`
+   - Keep event patterns similar to Electron
+
+6. **Configure build**
+   - Update `wails.json` with frontend build commands
+   - Adjust for your frontend framework (Vite, Webpack, etc.)
+   - Test build process
+
+7. **Build and test**
+   ```bash
+   wails3 dev        # Development
+   wails3 build      # Production build
+   ```
+
+</Steps>
+
+## Common Patterns
+
+### Accessing Frontend from Backend
+
+**Electron:** Use IPC events
+**Wails:** Use events or window methods
+
+```go
+// Emit event to all windows
+app.Event.Emit("update-status", "ready")
+
+// Access specific window
+window := app.Window.Current()
+window.SetTitle("New Title")
+```
+
+### Configuration Management
+
+**Electron:** Often stored in userData directory
+**Wails:** Use any approach - Wails provides app paths
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/options"
+
+// Access app directories
+configDir := app.Paths.AppData
+```
+
+### Background Tasks
+
+**Electron:** Fork worker processes or use Node.js async
+**Wails:** Use goroutines (much lighter weight)
+
+```go
+func (s *MyService) LongRunningTask() {
+    go func() {
+        // Do work
+        s.app.Event.Emit("task-complete", result)
+    }()
+}
+```
+
+## File Size Comparison
+
+A typical "Hello World" application:
+
+| | Electron | Wails |
+|----------|----------|-------|
+| **macOS (Universal)** | ~200MB | 15-25MB |
+| **Windows (x64)** | ~200MB | 15-25MB |
+| **Linux (x64)** | ~180MB | 12-20MB |
+| **Startup time** | 1-2 seconds | 100-300ms |
+| **Memory (idle)** | 100-200MB | 30-60MB |
+
+## Troubleshooting Migration
+
+### Issue: Bindings not working
+
+**Problem:** Frontend can't call backend methods
+
+**Solution:**
+```bash
+# Regenerate bindings
+wails3 generate bindings
+
+# Check bindings were created
+ls frontend/bindings/
+```
+
+### Issue: Type mismatches in Go
+
+**Problem:** Exported method not available in bindings
+
+**Solution:**
+- Method must be public (capitalized): `func (s *Service) PublicMethod()`
+- Parameters must be JSON-serializable
+- Return values must be JSON-serializable
+- Use `*application.Context` parameter if needed
+
+```go
+// ✓ Works
+func (s *MyService) Greet(name string) string {
+    return "Hello " + name
+}
+
+// ✗ Doesn't work - private
+func (s *MyService) secret() {
+}
+```
+
+### Issue: Events not firing
+
+**Problem:** Events sent from backend not received in frontend
+
+**Solution:**
+```go
+// Go: Check event names match
+app.Event.Emit("my-event", data)
+
+// TypeScript: Must listen before emit
+Events.On("my-event", (data) => {
+    console.log(data)
+})
+```
+
+### Issue: Build size still large
+
+**Problem:** Resulting binary is too large
+
+**Solution:**
+- Strip symbols: Use `-ldflags="-s -w"` in build
+- Use UPX compression (carefully - test thoroughly)
+- Check dependencies don't have unnecessary CGO
+
+### Issue: Windows native features
+
+**Problem:** Electron has more built-in APIs
+
+**Solution:**
+- Wails covers common cases (menus, dialogs, system tray)
+- For specialized Windows APIs, use Cgo or Windows-specific Go libraries
+- Consider syscall package for low-level access
+
+## Benefits You'll Gain
+
+### Development
+- **Faster builds** - Go compilation is quick
+- **Better tooling** - IDE support for both Go and TypeScript
+- **Type safety** - Compile-time errors instead of runtime
+- **Easier debugging** - Separate backend and frontend concerns
+
+### Performance
+- **Instant startup** - 5-10x faster than Electron
+- **Lower memory** - 2-3x less RAM usage
+- **Better responsiveness** - Direct native APIs
+
+### Distribution
+- **Smaller installers** - 10-40x smaller
+- **Faster downloads** - Better for auto-updates
+- **Native feel** - Uses system native components
+
+## Resources
+
+### Documentation
+- [Wails Documentation](/quick-start/installation)
+- [Bindings Guide](/features/bindings/methods)
+- [Events System](/features/events/system)
+- [API Reference](/reference/application)
+
+### Community
+- [Discord Community](https://discord.gg/JDdSxwjhGf)
+- [GitHub Repository](https://github.com/wailsapp/wails)
+- [Examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples)
+
+## Next Steps
+
+<CardGrid>
+  <Card title="Quick Start" icon="rocket">
+    Set up your first Wails app.
+
+    [Get Started →](/quick-start/installation)
+  </Card>
+
+  <Card title="Bindings" icon="puzzle">
+    Learn how to bind Go to frontend.
+
+    [Learn Bindings →](/features/bindings/methods)
+  </Card>
+
+  <Card title="Events" icon="broadcast">
+    Master the event system.
+
+    [Event Guide →](/features/events/system)
+  </Card>
+
+  <Card title="Windows" icon="window">
+    Multi-window applications.
+
+    [Window Guide →](/features/windows/basics)
+  </Card>
+</CardGrid>
+
+---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or [open an issue](https://github.com/wailsapp/wails/issues).
