@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "embed"
 	"log"
 
 	nobindingshere "github.com/wailsapp/wails/v3/internal/generator/testcases/no_bindings_here"

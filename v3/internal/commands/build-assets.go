@@ -2,7 +2,6 @@ package commands
 
 import (
 	"embed"
-	_ "embed"
 	"fmt"
 	"io/fs"
 	"os"
