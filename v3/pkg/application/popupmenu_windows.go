@@ -53,6 +53,19 @@ type Win32Menu struct {
 	onMenuClose   func()
 	onMenuOpen    func()
 	isShowing     atomic.Bool // guards against concurrent TrackPopupMenuEx calls
+
+	// bitmaps tracks HBITMAP handles allocated by SetMenuIcons during
+	// buildMenu so they can be released when the menu is rebuilt or
+	// destroyed. DestroyMenu does not free bitmaps set via
+	// SetMenuItemBitmaps.
+	bitmaps []w32.HBITMAP
+}
+
+func (p *Win32Menu) freeBitmaps() {
+	for _, h := range p.bitmaps {
+		w32.DeleteObject(w32.HGDIOBJ(h))
+	}
+	p.bitmaps = nil
 }
 
 func (p *Win32Menu) newMenu() w32.HMENU {
@@ -148,10 +161,12 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 			return
 		}
 		if item.bitmap != nil {
-			if err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil); err != nil {
+			handles, err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil)
+			if err != nil {
 				globalApplication.error("SetMenuIcons failed for '%s': %v", menuText, err)
 				return
 			}
+			p.bitmaps = append(p.bitmaps, handles...)
 		}
 	}
 	if len(currentRadioGroup) > 0 {
@@ -165,6 +180,9 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 
 func (p *Win32Menu) Update() {
 	if p.menu != 0 {
+		// Release HBITMAPs attached to the previous HMENU tree before
+		// destroying it — DestroyMenu does not free associated bitmaps.
+		p.freeBitmaps()
 		// DestroyMenu recursively destroys attached submenus, releasing the
 		// HMENU tree allocated by the previous buildMenu pass.
 		w32.DestroyMenu(p.menu)
@@ -282,6 +300,7 @@ func (p *Win32Menu) ProcessCommand(cmdMsgID int) bool {
 }
 
 func (p *Win32Menu) Destroy() {
+	p.freeBitmaps()
 	w32.DestroyMenu(p.menu)
 }
 
