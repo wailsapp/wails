@@ -1,0 +1,76 @@
+---
+title: Debugging
+description: Investigating issues and profiling app performance
+sidebar:
+  order: 3
+---
+
+import { Steps, Tabs, TabItem } from "@astrojs/starlight/components";
+
+
+We will demonstrate use of various tools to provide how to inspect and investigate possible performance issues within your Wails app using
+- [`runtime/trace`](https://pkg.go.dev/runtime/trace) to create performance graphs and inspect them in a browser
+
+## Creating performance traces
+
+<Steps>
+
+1. **Prepare your app for Tracing**
+
+    Close to your program entrypoint, ensure code along the following lines exists
+
+    ```go
+    // Create the file to store our trace data within
+    traceFile, err := os.Create("trace.out")
+    if err != nil {
+      log.Fatalf("trace.out could not be created: %v", err)
+    }
+
+    // Start the trace
+    if err := trace.Start(traceFile); err != nil {
+      _ = traceFile.Close()
+      log.Fatalf("trace.start could not start: %v", err)
+    }
+
+    // Trace cleanup on exit. Alternatively,
+    defer func() {
+      trace.Stop()
+      _ = traceFile.Close()
+    }()
+
+    ...Start your wails app here...
+    ```
+
+    Output will be saved to `trace.out` within your working path with metrics covering the complete runtime of your app. The default trace is quite raw; you are well advised to do further reading on trace to add more contextual information and limit what you actually record. For example: `WithRegion, NewTask, Log`
+
+2.  **Run your app to create the trace**
+
+    With your app running, a continuous trace will be produced up to the point of exit so go ahead and perform some actions in your app and exit when complete
+
+3. **Install Visualisation helpers**
+
+    Some views need [Graphviz](https://graphviz.org/). You can verify it is installed by running `dot -V`
+
+    ```bash
+    # macOS
+    brew install graphviz
+
+    # Ubuntu/Debian
+    sudo apt-get install graphviz
+
+    # Arch
+    sudo pacman -S graphviz
+    ```
+
+4. **Visualize your trace**
+
+    With your trace data available, we can start up the web interface
+
+    ```bash
+    go tool trace trace.out
+    ```
+
+    This should open up your default browser (recommended to use Chrome based) with the trace event viewer home page.
+
+    For first time users, the `Syscall profile` screen is probably the most useful. This provides a breakdown of exactly what the program is doing along with timings
+</Steps>
