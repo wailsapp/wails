@@ -20,10 +20,25 @@ import (
 )
 
 // systray-stress is a test harness that exercises SystemTray.SetMenu and
-// SystemTray.OpenMenu under three workloads that reproduce the Windows
-// systray crash family described in the investigation handoff. It emits
-// line-based log events to stderr so a supervisor can record iterations,
+// SystemTray.OpenMenu under workloads that reproduce the Windows systray
+// crash family described in the investigation handoff. It emits line-based
+// log events to stderr so a supervisor can record iterations,
 // GetGuiResources deltas, and exit cause.
+//
+// Modes:
+//   - churn        rebuild a fresh Menu every iteration and SetMenu it.
+//   - show         repeatedly OpenMenu + ESC-dismiss.
+//   - churn+show   both of the above concurrently.
+//   - mutate       keep the same Menu across iterations and call SetBitmap
+//                  on items that have already been built. The first build
+//                  assigns impls to the items; subsequent SetMenu calls
+//                  destroy the prior Win32Menu and rebuild fresh impls.
+//                  Any HBITMAP stored on an impl via setBitmap is orphaned
+//                  when the impl is replaced — this is the "runtime
+//                  SetBitmap" leak path that the -bitmaps churn workload
+//                  does NOT exercise (churn allocates a fresh Menu each
+//                  iteration, so items never have an impl at SetBitmap
+//                  time and the call is a no-op on the native side).
 
 const (
 	GR_GDIOBJECTS  = 0
@@ -114,6 +129,27 @@ func buildMenu(app *application.App, iter uint64, bitmaps bool) *application.Men
 	return m
 }
 
+// buildMutableMenu constructs a Menu whose items are returned separately
+// so the caller can keep references to them across SetMenu rebuilds. The
+// mutate workload uses these references to call SetBitmap after the
+// initial build — that is the code path where windowsMenuItem.setBitmap
+// runs with a non-nil impl and allocates an HBITMAP that is only tracked
+// on impl.bitmap.
+func buildMutableMenu(app *application.App, targetCount int) (*application.Menu, []*application.MenuItem) {
+	m := app.NewMenu()
+	m.Add("Mutable menu").SetEnabled(false)
+	m.AddSeparator()
+	targets := make([]*application.MenuItem, 0, targetCount)
+	for i := 0; i < targetCount; i++ {
+		targets = append(targets, m.Add(fmt.Sprintf("Mutable %d", i)))
+	}
+	m.AddSeparator()
+	m.Add("Quit").OnClick(func(ctx *application.Context) {
+		os.Exit(0)
+	})
+	return m, targets
+}
+
 type config struct {
 	mode        string
 	iters       int
@@ -128,7 +164,7 @@ type config struct {
 
 func parseFlags() config {
 	cfg := config{}
-	flag.StringVar(&cfg.mode, "mode", "churn", "workload: churn | show | churn+show")
+	flag.StringVar(&cfg.mode, "mode", "churn", "workload: churn | show | churn+show | mutate")
 	flag.IntVar(&cfg.iters, "iters", 50000, "max SetMenu iterations before exiting cleanly (0 = no cap)")
 	flag.UintVar(&cfg.handleCap, "handle-cap", 5000, "exit if GR_USEROBJECTS delta exceeds this")
 	flag.DurationVar(&cfg.churnGap, "churn-gap", 2*time.Millisecond, "sleep between SetMenu calls")
@@ -177,8 +213,17 @@ func main() {
 	if len(logo) > 0 {
 		tray.SetIcon(logo)
 	}
-	initial := buildMenu(app, 0, cfg.bitmaps)
-	tray.SetMenu(initial)
+
+	// Mutate mode owns its own Menu + item references, built once and reused.
+	var mutateMenu *application.Menu
+	var mutateTargets []*application.MenuItem
+	if cfg.mode == "mutate" {
+		mutateMenu, mutateTargets = buildMutableMenu(app, 5)
+		tray.SetMenu(mutateMenu)
+	} else {
+		initial := buildMenu(app, 0, cfg.bitmaps)
+		tray.SetMenu(initial)
+	}
 
 	baseHandles := getGuiResources(GR_USEROBJECTS)
 	baseGDI := getGuiResources(GR_GDIOBJECTS)
@@ -242,6 +287,50 @@ func main() {
 		}
 	}
 
+	mutate := func() {
+		for {
+			n := atomic.AddUint64(&iter, 1)
+			// Mutate bitmap on each target BEFORE rebuilding. Because the
+			// items already have impls from the prior build, this dispatches
+			// into windowsMenuItem.setBitmap, which allocates an HBITMAP
+			// tracked only on impl.bitmap.
+			for _, t := range mutateTargets {
+				t.SetBitmap(logo)
+			}
+			// Rebuild the tray menu. updateMenu destroys the prior Win32Menu,
+			// whose freeBitmaps walks p.bitmaps but not item impls — orphaning
+			// every HBITMAP installed in the SetBitmap loop above.
+			tray.SetMenu(mutateMenu)
+
+			if cfg.logEvery > 0 && n%uint64(cfg.logEvery) == 0 {
+				h := getGuiResources(GR_USEROBJECTS)
+				g := getGuiResources(GR_GDIOBJECTS)
+				logJSON("progress", map[string]any{
+					"iter":          n,
+					"handles":       h,
+					"handles_delta": int64(h) - int64(baseHandles),
+					"gdi":           g,
+					"gdi_delta":     int64(g) - int64(baseGDI),
+				})
+				userOver := cfg.handleCap > 0 && h > baseHandles+uint32(cfg.handleCap)
+				gdiOver := cfg.handleCap > 0 && g > baseGDI+uint32(cfg.handleCap)
+				if userOver || gdiOver {
+					kind := "user"
+					if gdiOver {
+						kind = "gdi"
+					}
+					exit(2, "handle_cap_exceeded", map[string]any{"handles": h, "gdi": g, "kind": kind})
+				}
+			}
+			if cfg.iters > 0 && n >= uint64(cfg.iters) {
+				exit(0, "iter_target_reached", nil)
+			}
+			if cfg.churnGap > 0 {
+				time.Sleep(cfg.churnGap)
+			}
+		}
+	}
+
 	show := func() {
 		for atomic.LoadInt32(&exitCode) == -1 {
 			// Fire a dismiss goroutine that presses ESC shortly after the popup appears.
@@ -273,6 +362,8 @@ func main() {
 		case "churn+show":
 			go churn()
 			go show()
+		case "mutate":
+			go mutate()
 		default:
 			logJSON("fatal", map[string]any{"reason": "unknown_mode", "mode": cfg.mode})
 			os.Exit(64)
