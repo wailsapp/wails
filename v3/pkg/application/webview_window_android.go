@@ -136,6 +136,8 @@ func (w *androidWebviewWindow) setFrameless(_ bool) {}
 
 func (w *androidWebviewWindow) setFullscreenButtonEnabled(_ bool) {}
 
+func (w *androidWebviewWindow) setFullscreenButtonState(_ ButtonState) {}
+
 func (w *androidWebviewWindow) setMaxSize(_ int, _ int) {}
 
 func (w *androidWebviewWindow) setMinSize(_ int, _ int) {}

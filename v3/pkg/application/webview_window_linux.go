@@ -97,6 +97,10 @@ func (w *linuxWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
 	// Not implemented
 }
 
+func (w *linuxWebviewWindow) setFullscreenButtonState(state ButtonState) {
+	// Not implemented
+}
+
 func (w *linuxWebviewWindow) setMinimiseButtonEnabled(enabled bool) {
 	//C.enableMinimiseButton(w.nsWindow, C.bool(enabled))
 }
