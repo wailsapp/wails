@@ -22,7 +22,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Changes in existing functionality -->
 
 ## Fixed
-<!-- Bug fixes -->
+* Fixed variable handling when passing command-line arguments to tasks. CLI variables specified as KEY=VALUE pairs are now properly initialized and propagated throughout task execution.
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

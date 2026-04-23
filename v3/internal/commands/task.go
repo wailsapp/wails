@@ -3,11 +3,12 @@ package commands
 import (
 	"context"
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/term"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/wailsapp/wails/v3/internal/term"
 
 	"github.com/wailsapp/task/v3"
 	"github.com/wailsapp/task/v3/taskfile/ast"
@@ -123,9 +124,13 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 		return nil
 	}
 
+	if e.Taskfile != nil && e.Taskfile.Vars == nil {
+		e.Taskfile.Vars = &ast.Vars{}
+	}
+
 	// Parse task name and CLI variables from otherArgs or os.Args
 	var tasksAndVars []string
-	
+
 	// Check if we have a task name specified in options
 	if options.Name != "" {
 		// If task name is provided via options, use it and treat otherArgs as CLI variables
@@ -159,13 +164,13 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 	// Parse task name and CLI variables
 	taskName := tasksAndVars[0]
 	cliVars := tasksAndVars[1:]
-	
+
 	// Create call with CLI variables
 	call := &ast.Call{
 		Task: taskName,
 		Vars: &ast.Vars{},
 	}
-	
+
 	// Parse CLI variables (format: KEY=VALUE)
 	for _, v := range cliVars {
 		if strings.Contains(v, "=") {
@@ -174,6 +179,11 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 				call.Vars.Set(parts[0], ast.Var{
 					Value: parts[1],
 				})
+				if e.Taskfile != nil {
+					e.Taskfile.Vars.Set(parts[0], ast.Var{
+						Value: parts[1],
+					})
+				}
 			}
 		}
 	}
