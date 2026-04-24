@@ -350,12 +350,15 @@ func (w *windowsWebviewWindow) run() {
 
 	exStyle := w32.WS_EX_CONTROLPARENT
 	if options.BackgroundType != BackgroundTypeSolid {
-		if (options.Frameless && options.BackgroundType == BackgroundTypeTransparent) ||
-			w.parent.options.IgnoreMouseEvents {
-			// Always if transparent and frameless
+		if w.parent.options.IgnoreMouseEvents {
+			// WS_EX_TRANSPARENT makes WM_NCHITTEST return HTTRANSPARENT, so the window
+			// passes mouse input through to whatever is behind it. Only apply it when
+			// the caller explicitly opts in via IgnoreMouseEvents — applying it to every
+			// frameless + transparent window causes clicks to fall through to the desktop
+			// in any area the child WebView2 HWND does not currently cover (issue #4871).
 			exStyle |= w32.WS_EX_TRANSPARENT | w32.WS_EX_LAYERED
 		} else {
-			// Only WS_EX_NOREDIRECTIONBITMAP if not (and not solid)
+			// Transparent/translucent composition via DirectComposition.
 			exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
 		}
 	}
