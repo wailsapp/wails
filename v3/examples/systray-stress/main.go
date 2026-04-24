@@ -33,12 +33,15 @@ import (
 //                  on items that have already been built. The first build
 //                  assigns impls to the items; subsequent SetMenu calls
 //                  destroy the prior Win32Menu and rebuild fresh impls.
-//                  Any HBITMAP stored on an impl via setBitmap is orphaned
-//                  when the impl is replaced — this is the "runtime
-//                  SetBitmap" leak path that the -bitmaps churn workload
-//                  does NOT exercise (churn allocates a fresh Menu each
-//                  iteration, so items never have an impl at SetBitmap
-//                  time and the call is a no-op on the native side).
+//                  This is the "runtime SetBitmap" path the -bitmaps
+//                  churn workload does NOT exercise (churn allocates a
+//                  fresh Menu each iteration, so items never have an
+//                  impl at SetBitmap time and the call is a no-op on
+//                  the native side). The leak that previously orphaned
+//                  an HBITMAP per SetBitmap call was fixed by having
+//                  freeBitmaps walk menuMapping and release impl.bitmap
+//                  before DestroyMenu — this workload regression-guards
+//                  that cleanup path.
 
 const (
 	GR_GDIOBJECTS  = 0
@@ -298,9 +301,11 @@ func main() {
 			for _, t := range mutateTargets {
 				t.SetBitmap(logo)
 			}
-			// Rebuild the tray menu. updateMenu destroys the prior Win32Menu,
-			// whose freeBitmaps walks p.bitmaps but not item impls — orphaning
-			// every HBITMAP installed in the SetBitmap loop above.
+			// Rebuild the tray menu. updateMenu destroys the prior Win32Menu;
+			// freeBitmaps walks menuMapping and releases each impl.bitmap
+			// before DestroyMenu. This workload regression-guards that path:
+			// if freeBitmaps ever stops walking menuMapping, GR_GDIOBJECTS
+			// will climb one HBITMAP per iteration.
 			tray.SetMenu(mutateMenu)
 
 			if cfg.logEvery > 0 && n%uint64(cfg.logEvery) == 0 {
