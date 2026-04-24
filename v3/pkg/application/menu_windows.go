@@ -3,6 +3,8 @@
 package application
 
 import (
+	"syscall"
+
 	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
@@ -122,12 +124,15 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 			continue
 		}
 
-		w32.AppendMenu(parentMenu, flags, uintptr(itemID), menuText)
+		if ok := w32.AppendMenu(parentMenu, flags, uintptr(itemID), menuText); !ok {
+			globalApplication.error("AppendMenu failed for '%s': %v", thisText, syscall.GetLastError())
+			return
+		}
 		if item.bitmap != nil {
 			handles, err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil)
 			if err != nil {
-				globalApplication.error("SetMenuIcons failed: %v", err)
-				continue
+				globalApplication.error("SetMenuIcons failed for '%s': %v", thisText, err)
+				return
 			}
 			w.bitmaps = append(w.bitmaps, handles...)
 		}
