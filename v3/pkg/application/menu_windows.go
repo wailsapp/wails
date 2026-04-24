@@ -55,6 +55,11 @@ func (w *windowsMenu) update() {
 		w32.DestroyMenu(w.hMenu)
 	}
 	w.hMenu = w32.NewPopupMenu()
+	// menuMapping and currentMenuID index items built during processMenu.
+	// Without resetting, repeated update calls accumulate stale *MenuItem
+	// entries keyed by IDs that reference HMENUs that no longer exist.
+	w.menuMapping = make(map[int]*MenuItem)
+	w.currentMenuID = 0
 	w.processMenu(w.hMenu, w.menu)
 }
 
