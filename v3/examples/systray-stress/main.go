@@ -230,6 +230,7 @@ func main() {
 
 	var iter uint64
 	var exitCode int32 = -1 // set by the first terminating branch
+	start := time.Now()
 	exit := func(code int, reason string, extra map[string]any) {
 		if !atomic.CompareAndSwapInt32(&exitCode, -1, int32(code)) {
 			return
@@ -245,7 +246,7 @@ func main() {
 			"gdi_start":     baseGDI,
 			"gdi_end":       endGDI,
 			"gdi_delta":     int64(endGDI) - int64(baseGDI),
-			"runtime_ms":    0,
+			"runtime_ms":    time.Since(start).Milliseconds(),
 		}
 		for k, v := range extra {
 			fields[k] = v
@@ -347,11 +348,10 @@ func main() {
 
 	// Launch workloads once the app has fully started.
 	app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(*application.ApplicationEvent) {
-		start := time.Now()
 		if cfg.runDuration > 0 {
 			go func() {
 				time.Sleep(cfg.runDuration)
-				exit(0, "duration_reached", map[string]any{"runtime_ms": time.Since(start).Milliseconds()})
+				exit(0, "duration_reached", nil)
 			}()
 		}
 		switch cfg.mode {
