@@ -168,7 +168,7 @@ func (fm *Form) Center() {
 	winHeight := winRect.Bottom - winRect.Top
 	windowX := screenMiddleW - (winWidth / 2)
 	windowY := screenMiddleH - (winHeight / 2)
-	w32.SetWindowPos(fm.hwnd, w32.HWND_TOP, int(windowX), int(windowY), int(winWidth), int(winHeight), w32.SWP_NOSIZE)
+	w32.SetWindowPos(fm.hwnd, w32.HWND_TOP, int(windowX), int(windowY), int(winWidth), int(winHeight), w32.SWP_NOSIZE|w32.SWP_NOACTIVATE)
 }
 
 func (fm *Form) Fullscreen() {
