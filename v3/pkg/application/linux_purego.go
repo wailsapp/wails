@@ -1189,7 +1189,7 @@ func runOpenFileDialog(dialog *OpenFileDialogStruct) ([]string, error) {
 		dialog.showHiddenFiles,
 		dialog.directory,
 		dialog.title,
-		GtkFileChooserActionOpen,
+		action,
 		buttonText,
 		dialog.filters,
 		"")
