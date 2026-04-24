@@ -221,3 +221,44 @@ func TestSaveFileDialogOptions_Fields(t *testing.T) {
 		t.Error("Filename not set correctly")
 	}
 }
+
+func TestOpenFileDialogSetOptions_CanChooseFilesDefault(t *testing.T) {
+	t.Run("zero-value options defaults canChooseFiles to true", func(t *testing.T) {
+		dialog := newOpenFileDialog()
+		dialog.SetOptions(&OpenFileDialogOptions{})
+
+		if !dialog.canChooseFiles {
+			t.Error("canChooseFiles should default to true when neither CanChooseFiles nor CanChooseDirectories is set")
+		}
+	})
+
+	t.Run("explicit CanChooseFiles true is preserved", func(t *testing.T) {
+		dialog := newOpenFileDialog()
+		dialog.SetOptions(&OpenFileDialogOptions{CanChooseFiles: true})
+
+		if !dialog.canChooseFiles {
+			t.Error("canChooseFiles should be true when explicitly set")
+		}
+	})
+
+	t.Run("CanChooseDirectories=true CanChooseFiles=false works", func(t *testing.T) {
+		dialog := newOpenFileDialog()
+		dialog.SetOptions(&OpenFileDialogOptions{CanChooseDirectories: true, CanChooseFiles: false})
+
+		if dialog.canChooseFiles {
+			t.Error("canChooseFiles should be false when CanChooseDirectories is explicitly true and CanChooseFiles is false")
+		}
+		if !dialog.canChooseDirectories {
+			t.Error("canChooseDirectories should be true")
+		}
+	})
+
+	t.Run("explicit CanChooseFiles false without directories still defaults to true", func(t *testing.T) {
+		dialog := newOpenFileDialog()
+		dialog.SetOptions(&OpenFileDialogOptions{CanChooseFiles: false})
+
+		if !dialog.canChooseFiles {
+			t.Error("canChooseFiles should default to true when neither option is explicitly enabled")
+		}
+	})
+}
