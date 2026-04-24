@@ -19,6 +19,7 @@ var pmcommands = []string{
 	"emerge",
 	"zypper",
 	"nix-env",
+	"xbps-install",
 }
 
 // Find will attempt to find the system package manager
@@ -49,6 +50,8 @@ func newPackageManager(pmname string, osid string) PackageManager {
 		return NewZypper(osid)
 	case "nix-env":
 		return NewNixpkgs(osid)
+	case "xbps-install":
+		return NewXbps(osid)		
 	}
 	return nil
 }
