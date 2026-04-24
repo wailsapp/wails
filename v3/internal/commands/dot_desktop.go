@@ -63,14 +63,12 @@ func GenerateDotDesktop(options *DotDesktopOptions) error {
 		return fmt.Errorf("name is required")
 	}
 
-	options.Name = normaliseName(options.Name)
-
 	if options.Exec == "" {
 		return fmt.Errorf("exec is required")
 	}
 
 	if options.OutputFile == "" {
-		options.OutputFile = options.Name + ".desktop"
+		options.OutputFile = normaliseName(options.Name) + ".desktop"
 	}
 
 	// Write to file
