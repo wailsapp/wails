@@ -141,6 +141,10 @@ func Build(options *Options) (string, error) {
 		if err != nil {
 			return "", err
 		}
+
+		if err := syncFrontendAssetsToEmbedDir(options); err != nil {
+			return "", err
+		}
 	}
 
 	compileBinary := ""
@@ -189,6 +193,89 @@ func CreateEmbedDirectories(cwd string, buildOptions *Options) error {
 		}
 	}
 
+	return nil
+}
+
+func syncFrontendAssetsToEmbedDir(options *Options) error {
+	frontendDir := options.ProjectData.GetFrontendDir()
+	defaultEmbedDir := filepath.Join(options.ProjectData.Path, "frontend")
+	absFrontendDir, err := filepath.Abs(frontendDir)
+	if err != nil {
+		return err
+	}
+	absDefaultDir, err := filepath.Abs(defaultEmbedDir)
+	if err != nil {
+		return err
+	}
+
+	if absFrontendDir == absDefaultDir {
+		return nil
+	}
+
+	embedDetails, err := staticanalysis.GetEmbedDetails(options.ProjectData.Path)
+	if err != nil {
+		return nil
+	}
+
+	for _, ed := range embedDetails {
+		if filepath.Ext(ed.GetFullPath()) != "" {
+			continue
+		}
+		relPath, err := filepath.Rel(options.ProjectData.Path, ed.GetFullPath())
+		if err != nil {
+			continue
+		}
+		if !strings.HasPrefix(relPath, "frontend"+string(filepath.Separator)) {
+			continue
+		}
+		frontendSubPath := strings.TrimPrefix(relPath, "frontend"+string(filepath.Separator))
+		srcDir := filepath.Join(absFrontendDir, frontendSubPath)
+
+		if !fs.DirExists(srcDir) {
+			continue
+		}
+
+		destDir := ed.GetFullPath()
+		if fs.DirExists(destDir) {
+			if err := os.RemoveAll(destDir); err != nil {
+				return fmt.Errorf("failed to clear embed directory %s: %w", destDir, err)
+			}
+		}
+		if err := fs.MkDirs(destDir, 0o755); err != nil {
+			return fmt.Errorf("failed to create embed directory %s: %w", destDir, err)
+		}
+		if err := copyDirContents(srcDir, destDir); err != nil {
+			return fmt.Errorf("failed to copy frontend assets from %s to %s: %w", srcDir, destDir, err)
+		}
+	}
+	return nil
+}
+
+func copyDirContents(src, dst string) error {
+	entries, err := os.ReadDir(src)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		srcPath := filepath.Join(src, entry.Name())
+		dstPath := filepath.Join(dst, entry.Name())
+		if entry.IsDir() {
+			if err := fs.MkDirs(dstPath, 0o755); err != nil {
+				return err
+			}
+			if err := copyDirContents(srcPath, dstPath); err != nil {
+				return err
+			}
+		} else {
+			data, err := os.ReadFile(srcPath)
+			if err != nil {
+				return err
+			}
+			if err := os.WriteFile(dstPath, data, 0o644); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
