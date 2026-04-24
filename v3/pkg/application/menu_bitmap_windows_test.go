@@ -9,6 +9,8 @@ import (
 	"image/png"
 	"syscall"
 	"testing"
+
+	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
 const testGR_GDIOBJECTS = 0
@@ -91,5 +93,45 @@ func TestMenuRuntimeSetBitmapDoesNotLeak(t *testing.T) {
 	const tolerance = 50
 	if delta > tolerance {
 		t.Errorf("GDI handle delta %d exceeds tolerance %d across %d iterations — runtime SetBitmap HBITMAPs likely leaking", delta, tolerance, iters)
+	}
+}
+
+// TestWin32MenuChurnDoesNotLeak mirrors the systray-stress "churn" workload
+// at the unit level: allocate a fresh Win32Menu per iteration with
+// build-time bitmaps, then Destroy. Exercises the pkg/application-level
+// path (freeBitmaps releasing p.bitmaps + DestroyMenu tearing down the
+// HMENU tree) that the systray's tray.SetMenu flow hits — the harness
+// covers this only via a live Windows session.
+//
+// NewPopupMenu only stores the parent HWND; it's not dereferenced unless
+// ShowAt runs, so w32.GetDesktopWindow is a safe stand-in for a real
+// window.
+func TestWin32MenuChurnDoesNotLeak(t *testing.T) {
+	bitmap := encodeTestBitmapPNG(t)
+	parent := w32.GetDesktopWindow()
+
+	const iters = 500
+	start := getGDIObjectCount(t)
+
+	for range iters {
+		menu := NewMenu()
+		menu.Add("Item A").SetBitmap(bitmap)
+		menu.Add("Item B").SetBitmap(bitmap)
+		menu.Add("Item C").SetBitmap(bitmap)
+
+		win32Menu := NewPopupMenu(parent, menu)
+		win32Menu.Destroy()
+	}
+
+	end := getGDIObjectCount(t)
+	delta := int64(end) - int64(start)
+
+	// Each iteration allocates three SetMenuIcons HBITMAPs plus an HMENU;
+	// a leak in freeBitmaps or DestroyMenu would grow the handle count by
+	// at least one per iteration. 50 is well below 500 while absorbing
+	// GDI-internal churn.
+	const tolerance = 50
+	if delta > tolerance {
+		t.Errorf("GDI handle delta %d exceeds tolerance %d across %d iterations — Win32Menu churn likely leaking", delta, tolerance, iters)
 	}
 }
