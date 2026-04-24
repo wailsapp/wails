@@ -16,7 +16,6 @@ import (
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
-	"github.com/wailsapp/wails/v3/pkg/icons"
 )
 
 // systray-stress is a test harness that exercises SystemTray.SetMenu and
@@ -213,7 +212,6 @@ func main() {
 	})
 
 	tray := app.SystemTray.New()
-	_ = icons.SystrayLight // ensure icons module is wired; tray uses defaults if we set nothing
 	if len(logo) > 0 {
 		tray.SetIcon(logo)
 	}
