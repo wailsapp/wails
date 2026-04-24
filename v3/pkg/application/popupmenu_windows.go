@@ -1,6 +1,7 @@
 package application
 
 import (
+	"fmt"
 	"sync/atomic"
 	"syscall"
 	"unsafe"
@@ -61,16 +62,18 @@ type Win32Menu struct {
 	bitmaps []w32.HBITMAP
 }
 
-func (p *Win32Menu) freeBitmaps() {
-	for _, h := range p.bitmaps {
+// releaseMenuBitmaps frees every HBITMAP in bitmaps and every runtime-
+// SetBitmap handle reachable via mapping, clearing impl.bitmap to 0 as it
+// goes. Ownership invariant: the two collections must be disjoint — bitmaps
+// holds handles allocated by SetMenuIcons during buildMenu/processMenu, while
+// impl.bitmap holds handles allocated by MenuItem.SetBitmap after the build.
+// If a handle ever ended up in both, this function would double-free it
+// (undefined behaviour on Win32 GDI), so callers must preserve the split.
+func releaseMenuBitmaps(bitmaps []w32.HBITMAP, mapping map[int]*MenuItem) {
+	for _, h := range bitmaps {
 		w32.DeleteObject(w32.HGDIOBJ(h))
 	}
-	p.bitmaps = nil
-	// HBITMAPs allocated at runtime via MenuItem.SetBitmap live on the
-	// windowsMenuItem impl, not in p.bitmaps. Walk the menuMapping to
-	// release them before DestroyMenu — otherwise every rebuild leaks
-	// one HBITMAP per item that had a runtime SetBitmap call.
-	for _, item := range p.menuMapping {
+	for _, item := range mapping {
 		impl, ok := item.impl.(*windowsMenuItem)
 		if !ok || impl.bitmap == 0 {
 			continue
@@ -80,6 +83,11 @@ func (p *Win32Menu) freeBitmaps() {
 	}
 }
 
+func (p *Win32Menu) freeBitmaps() {
+	releaseMenuBitmaps(p.bitmaps, p.menuMapping)
+	p.bitmaps = nil
+}
+
 func (p *Win32Menu) newMenu() w32.HMENU {
 	if p.isPopup {
 		return w32.NewPopupMenu()
@@ -87,7 +95,11 @@ func (p *Win32Menu) newMenu() w32.HMENU {
 	return w32.CreateMenu()
 }
 
-func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
+// buildMenu populates parentMenu from inputMenu. Any native AppendMenu or
+// SetMenuIcons failure returns an error; recursive submenu builds propagate
+// the error so the outer Update can back out cleanly instead of attaching a
+// half-built submenu via MF_POPUP.
+func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 	currentRadioGroup := RadioGroup{}
 	for _, item := range inputMenu.items {
 		p.currentMenuID++
@@ -143,7 +155,13 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 		if item.submenu != nil {
 			flags = flags | w32.MF_POPUP
 			newSubmenu := p.newMenu()
-			p.buildMenu(newSubmenu, item.submenu)
+			if err := p.buildMenu(newSubmenu, item.submenu); err != nil {
+				// Submenu was allocated but never attached via AppendMenu, so
+				// the outer DestroyMenu on parentMenu won't reach it. Free it
+				// here to avoid leaking the HMENU.
+				w32.DestroyMenu(newSubmenu)
+				return err
+			}
 			itemID = int(newSubmenu)
 			menuItemImpl.submenu = newSubmenu
 		}
@@ -169,14 +187,12 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 
 		ok := w32.AppendMenu(parentMenu, flags, uintptr(itemID), w32.MustStringToUTF16Ptr(menuText))
 		if !ok {
-			globalApplication.error("AppendMenu failed for '%s': %v", menuText, syscall.GetLastError())
-			return
+			return fmt.Errorf("AppendMenu failed for %q: %v", menuText, syscall.GetLastError())
 		}
 		if item.bitmap != nil {
 			handles, err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil)
 			if err != nil {
-				globalApplication.error("SetMenuIcons failed for '%s': %v", menuText, err)
-				return
+				return fmt.Errorf("SetMenuIcons failed for %q: %w", menuText, err)
 			}
 			p.bitmaps = append(p.bitmaps, handles...)
 		}
@@ -188,26 +204,51 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 		}
 		currentRadioGroup = RadioGroup{}
 	}
+	return nil
 }
 
 func (p *Win32Menu) Update() {
-	if p.menu != 0 {
-		// Release HBITMAPs attached to the previous HMENU tree before
-		// destroying it — DestroyMenu does not free associated bitmaps.
-		p.freeBitmaps()
-		// DestroyMenu recursively destroys attached submenus, releasing the
-		// HMENU tree allocated by the previous buildMenu pass.
-		w32.DestroyMenu(p.menu)
-	}
-	p.menu = p.newMenu()
+	// Stage the rebuild into a fresh HMENU and fresh maps, only swapping the
+	// old state out once buildMenu returns successfully. On failure, the
+	// previous menu (if any) stays displayed and usable. Note: buildMenu
+	// replaces item.impl during the build, so on failure any MenuItem that
+	// was processed before the failure point will hold a stale impl pointing
+	// at the destroyed partial HMENU. Runtime mutations like SetBitmap on
+	// such items will no-op until the next successful Update — acceptable
+	// for a path that only triggers on Win32 resource exhaustion.
+	newHMENU := p.newMenu()
+	oldHMENU := p.menu
+	oldMapping := p.menuMapping
+	oldCheckboxes := p.checkboxItems
+	oldRadios := p.radioGroups
+	oldBitmaps := p.bitmaps
+
+	p.menu = newHMENU
 	p.menuMapping = make(map[int]*MenuItem)
-	// checkboxItems / radioGroups index MenuItems by pointer. Without
-	// resetting, repeated Update calls accumulate entries whose itemIDs
-	// reference HMENUs that no longer exist.
 	p.checkboxItems = make(map[*MenuItem][]int)
 	p.radioGroups = make(map[*MenuItem][]*RadioGroup)
 	p.currentMenuID = MenuItemMsgID
-	p.buildMenu(p.menu, p.menuData)
+	p.bitmaps = nil
+
+	if err := p.buildMenu(newHMENU, p.menuData); err != nil {
+		globalApplication.error("menu rebuild failed, keeping previous menu: %v", err)
+		// Release bitmaps allocated during the partial build, destroy the
+		// partial HMENU, then restore the previous state.
+		p.freeBitmaps()
+		w32.DestroyMenu(newHMENU)
+		p.menu = oldHMENU
+		p.menuMapping = oldMapping
+		p.checkboxItems = oldCheckboxes
+		p.radioGroups = oldRadios
+		p.bitmaps = oldBitmaps
+		return
+	}
+
+	// Success: release the previous menu's bitmaps and HMENU tree.
+	if oldHMENU != 0 {
+		releaseMenuBitmaps(oldBitmaps, oldMapping)
+		w32.DestroyMenu(oldHMENU)
+	}
 	p.updateRadioGroups()
 }
 

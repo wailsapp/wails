@@ -3,6 +3,7 @@
 package application
 
 import (
+	"fmt"
 	"syscall"
 
 	"github.com/wailsapp/wails/v3/pkg/w32"
@@ -24,22 +25,8 @@ type windowsMenu struct {
 }
 
 func (w *windowsMenu) freeBitmaps() {
-	for _, h := range w.bitmaps {
-		w32.DeleteObject(w32.HGDIOBJ(h))
-	}
+	releaseMenuBitmaps(w.bitmaps, w.menuMapping)
 	w.bitmaps = nil
-	// HBITMAPs allocated at runtime via MenuItem.SetBitmap live on the
-	// windowsMenuItem impl, not in w.bitmaps. Walk the menuMapping to
-	// release them before DestroyMenu — otherwise every rebuild leaks
-	// one HBITMAP per item that had a runtime SetBitmap call.
-	for _, item := range w.menuMapping {
-		impl, ok := item.impl.(*windowsMenuItem)
-		if !ok || impl.bitmap == 0 {
-			continue
-		}
-		w32.DeleteObject(w32.HGDIOBJ(impl.bitmap))
-		impl.bitmap = 0
-	}
 }
 
 func newMenuImpl(menu *Menu) *windowsMenu {
@@ -52,20 +39,40 @@ func newMenuImpl(menu *Menu) *windowsMenu {
 }
 
 func (w *windowsMenu) update() {
-	if w.hMenu != 0 {
-		w.freeBitmaps()
-		w32.DestroyMenu(w.hMenu)
-	}
-	w.hMenu = w32.NewPopupMenu()
-	// menuMapping and currentMenuID index items built during processMenu.
-	// Without resetting, repeated update calls accumulate stale *MenuItem
-	// entries keyed by IDs that reference HMENUs that no longer exist.
+	// Stage the rebuild into a fresh HMENU and fresh mapping, only swapping
+	// the old state out once processMenu returns successfully. See
+	// Win32Menu.Update for the item.impl caveat on the failure path.
+	newHMENU := w32.NewPopupMenu()
+	oldHMENU := w.hMenu
+	oldMapping := w.menuMapping
+	oldBitmaps := w.bitmaps
+
+	w.hMenu = newHMENU
 	w.menuMapping = make(map[int]*MenuItem)
 	w.currentMenuID = 0
-	w.processMenu(w.hMenu, w.menu)
+	w.bitmaps = nil
+
+	if err := w.processMenu(newHMENU, w.menu); err != nil {
+		globalApplication.error("menu rebuild failed, keeping previous menu: %v", err)
+		w.freeBitmaps()
+		w32.DestroyMenu(newHMENU)
+		w.hMenu = oldHMENU
+		w.menuMapping = oldMapping
+		w.bitmaps = oldBitmaps
+		return
+	}
+
+	if oldHMENU != 0 {
+		releaseMenuBitmaps(oldBitmaps, oldMapping)
+		w32.DestroyMenu(oldHMENU)
+	}
 }
 
-func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) {
+// processMenu populates parentMenu from inputMenu. Any native AppendMenu or
+// SetMenuIcons failure returns an error; recursive submenu builds propagate
+// the error so the outer update can back out cleanly instead of attaching a
+// half-built submenu via MF_POPUP.
+func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 	for _, item := range inputMenu.items {
 		w.currentMenuID++
 		itemID := w.currentMenuID
@@ -102,7 +109,12 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 		if item.submenu != nil {
 			flags = flags | w32.MF_POPUP
 			newSubmenu := w32.CreateMenu()
-			w.processMenu(newSubmenu, item.submenu)
+			if err := w.processMenu(newSubmenu, item.submenu); err != nil {
+				// Submenu was allocated but never attached, so the outer
+				// DestroyMenu on parentMenu won't reach it. Free it here.
+				w32.DestroyMenu(newSubmenu)
+				return err
+			}
 			itemID = int(newSubmenu)
 		}
 
@@ -125,18 +137,17 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 		}
 
 		if ok := w32.AppendMenu(parentMenu, flags, uintptr(itemID), menuText); !ok {
-			globalApplication.error("AppendMenu failed for '%s': %v", thisText, syscall.GetLastError())
-			return
+			return fmt.Errorf("AppendMenu failed for %q: %v", thisText, syscall.GetLastError())
 		}
 		if item.bitmap != nil {
 			handles, err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil)
 			if err != nil {
-				globalApplication.error("SetMenuIcons failed for '%s': %v", thisText, err)
-				return
+				return fmt.Errorf("SetMenuIcons failed for %q: %w", thisText, err)
 			}
 			w.bitmaps = append(w.bitmaps, handles...)
 		}
 	}
+	return nil
 }
 
 func (w *windowsMenu) ShowAtCursor() {
