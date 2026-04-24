@@ -83,21 +83,24 @@
   }
   function notifyListeners(eventData) {
     let eventName = eventData.name;
-    const newEventListenerList = eventListeners[eventName]?.slice() || [];
-    if (newEventListenerList.length) {
-      for (let count = newEventListenerList.length - 1; count >= 0; count -= 1) {
-        const listener = newEventListenerList[count];
-        let data = eventData.data;
-        const destroy = listener.Callback(data);
-        if (destroy) {
-          newEventListenerList.splice(count, 1);
-        }
+    let listeners = eventListeners[eventName];
+    if (!listeners || listeners.length === 0) {
+      return;
+    }
+    const snapshot = listeners.slice();
+    for (let count = snapshot.length - 1; count >= 0; count -= 1) {
+      const listener = snapshot[count];
+      if (!eventListeners[eventName] || !eventListeners[eventName].includes(listener)) {
+        continue;
       }
-      if (newEventListenerList.length === 0) {
-        removeListener(eventName);
-      } else {
-        eventListeners[eventName] = newEventListenerList;
+      let data = eventData.data;
+      const destroy = listener.Callback(data);
+      if (destroy) {
+        eventListeners[eventName] = eventListeners[eventName].filter((l) => l !== listener);
       }
+    }
+    if (!eventListeners[eventName] || eventListeners[eventName].length === 0) {
+      removeListener(eventName);
     }
   }
   function EventsNotify(notifyMessage) {
