@@ -339,6 +339,27 @@ func main() {
 			}).Show()
 			windowCounter++
 		})
+	myMenu.Add("New WebviewWindow (Frameless + Transparent)").
+		OnClick(func(ctx *application.Context) {
+			app.Window.NewWithOptions(application.WebviewWindowOptions{
+				HTML: `<html><body style="margin:0;background:rgba(20,20,20,0.35);color:#fff;font-family:sans-serif;">
+<div style="padding:12px;">
+  <p>Frameless transparent window. Click the button and resize the window to exercise input handling.</p>
+  <button id="b" onclick="document.getElementById('c').innerText=++window._n||1">Click me</button>
+  <span id="c">0</span>
+</div></body></html>`,
+				X:              rand.Intn(1000),
+				Y:              rand.Intn(800),
+				Width:          400,
+				Height:         300,
+				Frameless:      true,
+				BackgroundType: application.BackgroundTypeTransparent,
+				Mac: application.MacWindow{
+					InvisibleTitleBarHeight: 50,
+				},
+			}).Show()
+			windowCounter++
+		})
 	if runtime.GOOS == "darwin" {
 		myMenu.Add("New WebviewWindow (MacTitleBarHiddenInset)").
 			OnClick(func(ctx *application.Context) {
