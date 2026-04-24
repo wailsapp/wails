@@ -11,10 +11,7 @@ import (
 	"testing"
 )
 
-const (
-	testGR_GDIOBJECTS  = 0
-	testGR_USEROBJECTS = 1
-)
+const testGR_GDIOBJECTS = 0
 
 var (
 	testUser32            = syscall.NewLazyDLL("user32.dll")
@@ -26,7 +23,14 @@ var (
 func getGDIObjectCount(t *testing.T) uint32 {
 	t.Helper()
 	hProc, _, _ := testGetCurrentProcess.Call()
-	n, _, _ := testGetGuiResources.Call(hProc, uintptr(testGR_GDIOBJECTS))
+	n, _, callErr := testGetGuiResources.Call(hProc, uintptr(testGR_GDIOBJECTS))
+	// GetGuiResources returns 0 on failure; any live Windows process has
+	// non-zero GDI objects from the Go runtime alone, so a 0 here means the
+	// probe is broken (locked-down container, WinAPI change, bad handle).
+	// Fail loudly rather than silently pass the regression guard.
+	if n == 0 {
+		t.Fatalf("GetGuiResources returned 0 — probe broken, regression guard cannot measure: %v", callErr)
+	}
 	return uint32(n)
 }
 
