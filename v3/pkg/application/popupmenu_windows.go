@@ -223,6 +223,16 @@ func (p *Win32Menu) Update() {
 	oldRadios := p.radioGroups
 	oldBitmaps := p.bitmaps
 
+	// Transfer runtime SetBitmap handles off the old impls now, before
+	// buildMenu reassigns item.impl and makes them unreachable via the
+	// mapping walk. Every handle lives in oldBitmaps from here on.
+	for _, item := range oldMapping {
+		if impl, ok := item.impl.(*windowsMenuItem); ok && impl.bitmap != 0 {
+			oldBitmaps = append(oldBitmaps, impl.bitmap)
+			impl.bitmap = 0
+		}
+	}
+
 	p.menu = newHMENU
 	p.menuMapping = make(map[int]*MenuItem)
 	p.checkboxItems = make(map[*MenuItem][]int)
