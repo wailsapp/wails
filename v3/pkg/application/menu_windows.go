@@ -47,6 +47,16 @@ func (w *windowsMenu) update() {
 	oldMapping := w.menuMapping
 	oldBitmaps := w.bitmaps
 
+	// Transfer runtime SetBitmap handles off the old impls now, before
+	// processMenu reassigns item.impl and makes them unreachable via the
+	// mapping walk. Every handle lives in oldBitmaps from here on.
+	for _, item := range oldMapping {
+		if impl, ok := item.impl.(*windowsMenuItem); ok && impl.bitmap != 0 {
+			oldBitmaps = append(oldBitmaps, impl.bitmap)
+			impl.bitmap = 0
+		}
+	}
+
 	w.hMenu = newHMENU
 	w.menuMapping = make(map[int]*MenuItem)
 	w.currentMenuID = 0
