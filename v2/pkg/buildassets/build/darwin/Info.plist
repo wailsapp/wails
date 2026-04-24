@@ -4,17 +4,17 @@
         <key>CFBundlePackageType</key>
         <string>APPL</string>
         <key>CFBundleName</key>
-        <string>{{.Info.ProductName}}</string>
+        <string>{{xml .Info.ProductName}}</string>
         <key>CFBundleExecutable</key>
-        <string>{{.OutputFilename}}</string>
+        <string>{{xml .OutputFilename}}</string>
         <key>CFBundleIdentifier</key>
-        <string>com.wails.{{.Name}}</string>
+        <string>com.wails.{{xml .Name}}</string>
         <key>CFBundleVersion</key>
-        <string>{{.Info.ProductVersion}}</string>
+        <string>{{xml .Info.ProductVersion}}</string>
         <key>CFBundleGetInfoString</key>
-        <string>{{.Info.Comments}}</string>
+        <string>{{xml .Info.Comments}}</string>
         <key>CFBundleShortVersionString</key>
-        <string>{{.Info.ProductVersion}}</string>
+        <string>{{xml .Info.ProductVersion}}</string>
         <key>CFBundleIconFile</key>
         <string>iconfile</string>
         <key>LSMinimumSystemVersion</key>
@@ -22,7 +22,7 @@
         <key>NSHighResolutionCapable</key>
         <string>true</string>
         <key>NSHumanReadableCopyright</key>
-        <string>{{.Info.Copyright}}</string>
+        <string>{{xml .Info.Copyright}}</string>
         {{if .Info.FileAssociations}}
         <key>CFBundleDocumentTypes</key>
         <array>
