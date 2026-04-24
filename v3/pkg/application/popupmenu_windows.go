@@ -143,11 +143,12 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 
 		ok := w32.AppendMenu(parentMenu, flags, uintptr(itemID), w32.MustStringToUTF16Ptr(menuText))
 		if !ok {
-			globalApplication.fatal("error adding menu item '%s'", menuText)
+			globalApplication.error("error adding menu item '%s'", menuText)
+			continue
 		}
 		if item.bitmap != nil {
 			if err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil); err != nil {
-				globalApplication.fatal("error setting menu icons: %w", err)
+				globalApplication.error("error setting menu icons: %v", err)
 			}
 		}
 	}
