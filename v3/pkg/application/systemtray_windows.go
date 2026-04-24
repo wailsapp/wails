@@ -486,10 +486,12 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 }
 
 func (s *windowsSystemTray) updateMenu(menu *Menu) {
+	if s.menu != nil {
+		s.menu.Destroy()
+	}
 	s.menu = NewPopupMenu(s.hwnd, menu)
 	s.menu.onMenuOpen = s.parent.onMenuOpen
 	s.menu.onMenuClose = s.parent.onMenuClose
-	s.menu.Update()
 }
 
 func (s *windowsSystemTray) setTooltip(tooltip string) {
