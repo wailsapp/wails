@@ -180,8 +180,9 @@ func parseFlags() config {
 	return cfg
 }
 
-func logJSON(event string, fields map[string]any) {
-	// Plain prefix=value log line. Keeps parsing trivial for the supervisor.
+func logEvent(event string, fields map[string]any) {
+	// Plain event=... key=value log line (not JSON, despite the older name).
+	// Keeps parsing trivial for the supervisor.
 	out := fmt.Sprintf("event=%s", event)
 	for k, v := range fields {
 		out += fmt.Sprintf(" %s=%v", k, v)
@@ -193,7 +194,7 @@ func main() {
 	runtime.LockOSThread()
 	cfg := parseFlags()
 
-	logJSON("start", map[string]any{
+	logEvent("start", map[string]any{
 		"mode":        cfg.mode,
 		"iters":       cfg.iters,
 		"handle_cap":  cfg.handleCap,
@@ -254,7 +255,7 @@ func main() {
 		for k, v := range extra {
 			fields[k] = v
 		}
-		logJSON("exit", fields)
+		logEvent("exit", fields)
 		os.Exit(code)
 	}
 
@@ -265,7 +266,7 @@ func main() {
 			if cfg.logEvery > 0 && n%uint64(cfg.logEvery) == 0 {
 				h := getGuiResources(GR_USEROBJECTS)
 				g := getGuiResources(GR_GDIOBJECTS)
-				logJSON("progress", map[string]any{
+				logEvent("progress", map[string]any{
 					"iter":          n,
 					"handles":       h,
 					"handles_delta": int64(h) - int64(baseHandles),
@@ -311,7 +312,7 @@ func main() {
 			if cfg.logEvery > 0 && n%uint64(cfg.logEvery) == 0 {
 				h := getGuiResources(GR_USEROBJECTS)
 				g := getGuiResources(GR_GDIOBJECTS)
-				logJSON("progress", map[string]any{
+				logEvent("progress", map[string]any{
 					"iter":          n,
 					"handles":       h,
 					"handles_delta": int64(h) - int64(baseHandles),
@@ -370,13 +371,13 @@ func main() {
 		case "mutate":
 			go mutate()
 		default:
-			logJSON("fatal", map[string]any{"reason": "unknown_mode", "mode": cfg.mode})
+			logEvent("fatal", map[string]any{"reason": "unknown_mode", "mode": cfg.mode})
 			os.Exit(64)
 		}
 	})
 
 	if err := app.Run(); err != nil {
-		logJSON("fatal", map[string]any{"reason": "app_run_error", "err": err.Error()})
+		logEvent("fatal", map[string]any{"reason": "app_run_error", "err": err.Error()})
 		log.Fatal(err)
 	}
 }
