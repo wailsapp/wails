@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix halved Screen Bounds, WorkArea, and Size values on Retina Macs -  (#5168)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
