@@ -117,6 +117,64 @@ describe('EventsOff', () => {
   })
 })
 
+describe('notifyListeners - listenerOff during callback', () => {
+  it('should keep listener removed when cancelled during notification (issue #4393)', () => {
+    const cb1 = vi.fn()
+    const cb2 = vi.fn()
+    const cb3 = vi.fn()
+
+    let cancelCb2 = null
+
+    EventsOn('a', cb1)
+    cancelCb2 = EventsOn('a', () => {
+      cb2()
+      cancelCb2()
+    })
+    EventsOn('a', cb3)
+
+    EventsNotify(JSON.stringify({name: 'a', data: []}))
+
+    expect(cb1).toBeCalledTimes(1)
+    expect(cb2).toBeCalledTimes(1)
+    expect(cb3).toBeCalledTimes(1)
+
+    expect(eventListeners['a'].length).toBe(2)
+
+    EventsNotify(JSON.stringify({name: 'a', data: []}))
+
+    expect(cb1).toBeCalledTimes(2)
+    expect(cb2).toBeCalledTimes(1)
+    expect(cb3).toBeCalledTimes(2)
+  })
+
+  it('should handle all listeners being removed during notification', () => {
+    const cb1 = vi.fn()
+    const cb2 = vi.fn()
+
+    let cancelCb1 = null
+    let cancelCb2 = null
+
+    cancelCb1 = EventsOn('a', () => {
+      cb1()
+      cancelCb1()
+    })
+    cancelCb2 = EventsOn('a', () => {
+      cb2()
+      cancelCb2()
+    })
+
+    EventsNotify(JSON.stringify({name: 'a', data: []}))
+
+    expect(cb1).toBeCalledTimes(1)
+    expect(cb2).toBeCalledTimes(1)
+
+    expect(eventListeners['a']).toBeUndefined()
+
+    expect(window.WailsInvoke).toBeCalledTimes(1);
+    expect(window.WailsInvoke).toHaveBeenLastCalledWith('EXa');
+  })
+})
+
 describe('EventsOffAll', () => {
   it('should cancel all event listeners', () => {
     EventsOn('a', () => {})

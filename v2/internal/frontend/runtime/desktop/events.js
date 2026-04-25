@@ -90,33 +90,36 @@ function notifyListeners(eventData) {
     // Get the event name
     let eventName = eventData.name;
 
-    // Keep a list of listener indexes to destroy
-    const newEventListenerList = eventListeners[eventName]?.slice() || [];
+    // Keep a list of listeners to destroy (maxCallbacks reached)
+    const listeners = eventListeners[eventName]?.slice() || [];
 
     // Check if we have any listeners for this event
-    if (newEventListenerList.length) {
+    if (listeners.length) {
+
+        const toRemove = new Set();
 
         // Iterate listeners
-        for (let count = newEventListenerList.length - 1; count >= 0; count -= 1) {
+        for (let count = listeners.length - 1; count >= 0; count -= 1) {
 
             // Get next listener
-            const listener = newEventListenerList[count];
+            const listener = listeners[count];
 
             let data = eventData.data;
 
             // Do the callback
             const destroy = listener.Callback(data);
             if (destroy) {
-                // if the listener indicated to destroy itself, add it to the destroy list
-                newEventListenerList.splice(count, 1);
+                toRemove.add(listener);
             }
         }
 
-        // Update callbacks with new list of listeners
-        if (newEventListenerList.length === 0) {
-            removeListener(eventName);
-        } else {
-            eventListeners[eventName] = newEventListenerList;
+        // Remove destroyed listeners from the current live list
+        // This respects any removals that happened via listenerOff during callbacks
+        if (toRemove.size > 0 && eventListeners[eventName]) {
+            eventListeners[eventName] = eventListeners[eventName].filter(l => !toRemove.has(l));
+            if (eventListeners[eventName].length === 0) {
+                removeListener(eventName);
+            }
         }
     }
 }
