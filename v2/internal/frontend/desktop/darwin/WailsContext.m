@@ -35,6 +35,13 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     [self setMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
 }
 
+- (void)cancelOperation:(id)sender {
+    if ((self.styleMask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen) {
+        return;
+    }
+    [super cancelOperation:sender];
+}
+
 @end
 
 // Notifications
