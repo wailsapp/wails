@@ -358,6 +358,7 @@ func Install(options *flags.Init) error {
 			Typescript         bool
 		}{
 			Name:               options.ProjectName,
+			BinaryName:         strings.ToLower(strings.ReplaceAll(options.ProjectName, " ", "-")),
 			Silent:             true,
 			ProductCompany:     options.ProductCompany,
 			ProductName:        options.ProductName,
