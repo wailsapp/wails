@@ -178,7 +178,8 @@ export function Callback(incomingMessage) {
 	delete callbacks[callbackID];
 
 	if (message.error) {
-		callbackData.reject(message.error);
+		const err = message.error instanceof Error ? message.error : new Error(message.error);
+		callbackData.reject(err);
 	} else {
 		callbackData.resolve(message.result);
 	}
