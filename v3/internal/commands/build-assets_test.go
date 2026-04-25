@@ -3,6 +3,7 @@ package commands
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"gopkg.in/yaml.v3"
@@ -360,38 +361,38 @@ func TestCFBundleIconNameDetection(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	tests := []struct {
-		name                string
-		createAssetsCar     bool
-		configIconName      string
-		expectedIconName    string
+		name                  string
+		createAssetsCar       bool
+		configIconName        string
+		expectedIconName      string
 		expectIconNameInPlist bool
 	}{
 		{
-			name:                "Assets.car exists, no config - should default to appicon",
-			createAssetsCar:     true,
-			configIconName:      "",
-			expectedIconName:    "appicon",
+			name:                  "Assets.car exists, no config - should default to appicon",
+			createAssetsCar:       true,
+			configIconName:        "",
+			expectedIconName:      "appicon",
 			expectIconNameInPlist: true,
 		},
 		{
-			name:                "Assets.car exists, config set - should use config",
-			createAssetsCar:     true,
-			configIconName:      "custom-icon",
-			expectedIconName:    "custom-icon",
+			name:                  "Assets.car exists, config set - should use config",
+			createAssetsCar:       true,
+			configIconName:        "custom-icon",
+			expectedIconName:      "custom-icon",
 			expectIconNameInPlist: true,
 		},
 		{
-			name:                "No Assets.car, no config - should not set",
-			createAssetsCar:     false,
-			configIconName:      "",
-			expectedIconName:    "",
+			name:                  "No Assets.car, no config - should not set",
+			createAssetsCar:       false,
+			configIconName:        "",
+			expectedIconName:      "",
 			expectIconNameInPlist: false,
 		},
 		{
-			name:                "No Assets.car, config set - should use config",
-			createAssetsCar:     false,
-			configIconName:      "config-icon",
-			expectedIconName:    "config-icon",
+			name:                  "No Assets.car, config set - should use config",
+			createAssetsCar:       false,
+			configIconName:        "config-icon",
+			expectedIconName:      "config-icon",
 			expectIconNameInPlist: true,
 		},
 	}
@@ -456,14 +457,14 @@ func TestCFBundleIconNameDetection(t *testing.T) {
 
 			options := &UpdateBuildAssetsOptions{
 				Dir:               buildDir,
-				Name:               "TestApp",
-				ProductName:        "Test App",
-				ProductVersion:     "1.0.0",
-				ProductCompany:     "Test Company",
-				ProductIdentifier:  "com.test.app",
-				CFBundleIconName:   tt.configIconName,
-				Config:             configFile,
-				Silent:             true,
+				Name:              "TestApp",
+				ProductName:       "Test App",
+				ProductVersion:    "1.0.0",
+				ProductCompany:    "Test Company",
+				ProductIdentifier: "com.test.app",
+				CFBundleIconName:  tt.configIconName,
+				Config:            configFile,
+				Silent:            true,
 			}
 
 			err = UpdateBuildAssets(options)
@@ -669,4 +670,55 @@ func mapsEqual(a, b map[string]any) bool {
 		}
 	}
 	return true
+}
+
+func TestProcessorArchitectureDefault(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "wails-arch-test-*")
+	if err != nil {
+		t.Fatalf("Failed to create temp directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	t.Run("defaults to runtime.GOARCH when not specified", func(t *testing.T) {
+		options := &BuildAssetsOptions{
+			Dir:                filepath.Join(tempDir, "default-arch"),
+			Name:               "ArchTest",
+			ProductName:        "Arch Test",
+			ProductDescription: "Test default arch",
+			ProductVersion:     "1.0.0",
+			ProductCompany:     "Test Co",
+			Silent:             true,
+		}
+
+		err := GenerateBuildAssets(options)
+		if err != nil {
+			t.Fatalf("GenerateBuildAssets() error = %v", err)
+		}
+
+		if options.ProcessorArchitecture != runtime.GOARCH {
+			t.Errorf("Expected ProcessorArchitecture to be %q, got %q", runtime.GOARCH, options.ProcessorArchitecture)
+		}
+	})
+
+	t.Run("respects explicit architecture when specified", func(t *testing.T) {
+		options := &BuildAssetsOptions{
+			Dir:                   filepath.Join(tempDir, "explicit-arch"),
+			Name:                  "ArchTest2",
+			ProductName:           "Arch Test 2",
+			ProductDescription:    "Test explicit arch",
+			ProductVersion:        "1.0.0",
+			ProductCompany:        "Test Co",
+			ProcessorArchitecture: "arm64",
+			Silent:                true,
+		}
+
+		err := GenerateBuildAssets(options)
+		if err != nil {
+			t.Fatalf("GenerateBuildAssets() error = %v", err)
+		}
+
+		if options.ProcessorArchitecture != "arm64" {
+			t.Errorf("Expected ProcessorArchitecture to be %q, got %q", "arm64", options.ProcessorArchitecture)
+		}
+	})
 }

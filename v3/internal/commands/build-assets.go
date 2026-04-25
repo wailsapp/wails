@@ -44,7 +44,7 @@ type BuildAssetsOptions struct {
 	ProductIdentifier     string `description:"The product identifier, e.g com.mycompany.myproduct"`
 	CFBundleIconName      string `description:"The macOS icon name (for Assets.car icon bundles)"`
 	Publisher             string `description:"Publisher name for MSIX package (e.g., CN=CompanyName)"`
-	ProcessorArchitecture string `description:"Processor architecture for MSIX package" default:"x64"`
+	ProcessorArchitecture string `description:"Processor architecture for MSIX package"`
 	ExecutablePath        string `description:"Path to executable for MSIX package"`
 	ExecutableName        string `description:"Name of executable for MSIX package"`
 	OutputPath            string `description:"Output path for MSIX package"`
@@ -117,7 +117,7 @@ func GenerateBuildAssets(options *BuildAssetsOptions) error {
 	}
 
 	if options.ProcessorArchitecture == "" {
-		options.ProcessorArchitecture = "x64"
+		options.ProcessorArchitecture = runtime.GOARCH
 	}
 
 	if options.ExecutableName == "" {
@@ -341,7 +341,9 @@ type updateCFBundleIconNameSetter struct {
 	config  *UpdateConfig
 }
 
-func (s *updateCFBundleIconNameSetter) GetCFBundleIconName() string { return s.options.CFBundleIconName }
+func (s *updateCFBundleIconNameSetter) GetCFBundleIconName() string {
+	return s.options.CFBundleIconName
+}
 func (s *updateCFBundleIconNameSetter) SetCFBundleIconName(v string) {
 	s.options.CFBundleIconName = v
 	s.config.CFBundleIconName = v
