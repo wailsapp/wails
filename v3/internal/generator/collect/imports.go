@@ -151,6 +151,11 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 				return
 			}
 
+			// Special case: time.Time renders as TS Date hence no dependencies and no model
+			if obj.Pkg().Path() == "time" && obj.Name() == "Time" {
+				return
+			}
+
 			if obj.Pkg().Path() == imports.Self {
 				imports.ImportModels = true
 			}

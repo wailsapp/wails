@@ -181,6 +181,11 @@ func (m *module) renderNamedType(typ aliasOrNamed, quoted bool) (result string, 
 		return "void", false
 	}
 
+	// Special case: time.Time renders as TS Date
+	if typ.Obj().Pkg().Path() == "time" && typ.Obj().Name() == "Time" {
+		return "Date", false
+	}
+
 	if quoted {
 		switch a := types.Unalias(typ).(type) {
 		case *types.Basic:
