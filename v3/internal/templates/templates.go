@@ -76,6 +76,7 @@ func GetDefaultTemplates() []TemplateData {
 type TemplateOptions struct {
 	*flags.Init
 	LocalModulePath string
+	BinaryName      string
 	UseTypescript   bool
 	WailsVersion    string
 }
@@ -261,6 +262,7 @@ func Install(options *flags.Init) error {
 	templateData := TemplateOptions{
 		Init:            options,
 		LocalModulePath: localModulePath,
+		BinaryName:      strings.ToLower(strings.ReplaceAll(options.ProjectName, " ", "-")),
 		UseTypescript:   UseTypescript,
 		WailsVersion:    version.String(),
 	}
