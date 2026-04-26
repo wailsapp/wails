@@ -141,6 +141,11 @@ func Build(options *Options) (string, error) {
 		if err != nil {
 			return "", err
 		}
+
+		err = SyncFrontendDistToEmbedTarget(options)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	compileBinary := ""
@@ -159,6 +164,71 @@ func Build(options *Options) (string, error) {
 
 	}
 	return compileBinary, nil
+}
+
+func SyncFrontendDistToEmbedTarget(options *Options) error {
+	projectData := options.ProjectData
+	if projectData == nil {
+		return nil
+	}
+
+	frontendDir := projectData.GetFrontendDir()
+	defaultFrontendDir := filepath.Join(projectData.Path, "frontend")
+
+	absFrontendDir, err := filepath.Abs(frontendDir)
+	if err != nil {
+		return nil
+	}
+	absDefaultFrontendDir, err := filepath.Abs(defaultFrontendDir)
+	if err != nil {
+		return nil
+	}
+
+	if absFrontendDir == absDefaultFrontendDir {
+		return nil
+	}
+
+	embedDetails, err := staticanalysis.GetEmbedDetails(projectData.Path)
+	if err != nil {
+		return nil
+	}
+
+	if len(embedDetails) == 0 {
+		return nil
+	}
+
+	frontendDistDir := filepath.Join(frontendDir, "dist")
+	if !fs.DirExists(frontendDistDir) {
+		return nil
+	}
+
+	embedDistDirs := []string{}
+	for _, detail := range embedDetails {
+		if filepath.Ext(detail.EmbedPath) != "" {
+			continue
+		}
+		if filepath.Base(detail.EmbedPath) == "dist" {
+			embedDistDirs = append(embedDistDirs, detail.GetFullPath())
+		}
+	}
+
+	if len(embedDistDirs) == 0 {
+		return nil
+	}
+
+	for _, embedDistDir := range embedDistDirs {
+		absEmbedDistDir, _ := filepath.Abs(embedDistDir)
+		absFrontendDistDir, _ := filepath.Abs(frontendDistDir)
+		if absEmbedDistDir == absFrontendDistDir {
+			continue
+		}
+		os.RemoveAll(embedDistDir)
+		if err := fs.CopyDir(frontendDistDir, embedDistDir); err != nil {
+			return fmt.Errorf("failed to copy frontend build output to embed target %s: %w", embedDistDir, err)
+		}
+	}
+
+	return nil
 }
 
 func CreateEmbedDirectories(cwd string, buildOptions *Options) error {
