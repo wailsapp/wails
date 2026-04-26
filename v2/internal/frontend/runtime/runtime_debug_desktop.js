@@ -93,10 +93,18 @@
           newEventListenerList.splice(count, 1);
         }
       }
-      if (newEventListenerList.length === 0) {
-        removeListener(eventName);
+      const currentListeners = eventListeners[eventName];
+      if (currentListeners) {
+        const survivingListeners = newEventListenerList.filter(
+          (l) => currentListeners.includes(l)
+        );
+        if (survivingListeners.length === 0) {
+          removeListener(eventName);
+        } else {
+          eventListeners[eventName] = survivingListeners;
+        }
       } else {
-        eventListeners[eventName] = newEventListenerList;
+        removeListener(eventName);
       }
     }
   }

@@ -112,11 +112,20 @@ function notifyListeners(eventData) {
             }
         }
 
-        // Update callbacks with new list of listeners
-        if (newEventListenerList.length === 0) {
-            removeListener(eventName);
+        // Filter out any listeners that were removed during the callbacks
+        // (e.g. via EventsOff or listenerOff called from within a callback)
+        const currentListeners = eventListeners[eventName];
+        if (currentListeners) {
+            const survivingListeners = newEventListenerList.filter(
+                l => currentListeners.includes(l)
+            );
+            if (survivingListeners.length === 0) {
+                removeListener(eventName);
+            } else {
+                eventListeners[eventName] = survivingListeners;
+            }
         } else {
-            eventListeners[eventName] = newEventListenerList;
+            removeListener(eventName);
         }
     }
 }
