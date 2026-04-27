@@ -187,6 +187,10 @@ func generateMacAsset(options *IconsOptions) error {
 		return &macAssetNotSupportedError{message: fmt.Sprintf("mac asset generation requires macOS 26 or later (detected macOS %s)", info.Version)}
 	}
 
+	if _, statErr := os.Stat("/usr/bin/actool"); statErr != nil {
+		return &macAssetNotSupportedError{message: "actool not found at /usr/bin/actool (install Xcode 26+)"}
+	}
+
 	cmd := exec.Command("/usr/bin/actool", "--version")
 	versionPlist, err := cmd.Output()
 	if err != nil {

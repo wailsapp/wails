@@ -16,6 +16,7 @@ func TestGenerateIcon(t *testing.T) {
 		setup            func(t *testing.T) *IconsOptions
 		wantErr          bool
 		wantErrContains  string
+		wantUnsupported  bool
 		requireDarwin    bool
 		requireNonDarwin bool
 		test             func(t *testing.T, options *IconsOptions) error
@@ -169,6 +170,28 @@ func TestGenerateIcon(t *testing.T) {
 				}
 				return nil
 			},
+		},
+		{
+			name:          "should return a typed unsupported error when actool is missing",
+			requireDarwin: true,
+			setup: func(t *testing.T) *IconsOptions {
+				if _, err := os.Stat("/usr/bin/actool"); err == nil {
+					t.Skip("actool is installed")
+				} else if !os.IsNotExist(err) {
+					t.Fatalf("failed to stat /usr/bin/actool: %v", err)
+				}
+
+				_, thisFile, _, _ := runtime.Caller(1)
+				localDir := filepath.Dir(thisFile)
+				exampleIcon := filepath.Join(localDir, "build_assets", "appicon.icon")
+				return &IconsOptions{
+					IconComposerInput: exampleIcon,
+					MacAssetDir:       t.TempDir(),
+				}
+			},
+			wantErr:         true,
+			wantErrContains: "actool not found at /usr/bin/actool",
+			wantUnsupported: true,
 		},
 		{
 			name:             "should return a descriptive error when icon composer assets are unsupported without fallback input",
@@ -373,7 +396,7 @@ func TestGenerateIcon(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.requireDarwin && (runtime.GOOS != "darwin" || os.Getenv("CI") != "") {
-				t.Skip("Assets.car generation is only supported on macOS and not in CI")
+				t.Skip("Assets.car generation requires a supported macOS toolchain and is not run in CI")
 			}
 			if tt.requireNonDarwin && runtime.GOOS == "darwin" {
 				t.Skip("unsupported-platform behavior is only exercised on non-macOS hosts")
@@ -381,7 +404,7 @@ func TestGenerateIcon(t *testing.T) {
 
 			options := tt.setup(t)
 			err := GenerateIcons(options)
-			if tt.requireDarwin && err != nil {
+			if tt.requireDarwin && !tt.wantErr && err != nil {
 				var notSupported *macAssetNotSupportedError
 				if errors.As(err, &notSupported) {
 					t.Skip(notSupported.Error())
@@ -394,6 +417,13 @@ func TestGenerateIcon(t *testing.T) {
 			if tt.wantErrContains != "" && (err == nil || !strings.Contains(err.Error(), tt.wantErrContains)) {
 				t.Errorf("GenerateIcon() error = %v, want error containing %q", err, tt.wantErrContains)
 				return
+			}
+			if tt.wantUnsupported {
+				var notSupported *macAssetNotSupportedError
+				if !errors.As(err, &notSupported) {
+					t.Errorf("GenerateIcon() error = %T (%v), want *macAssetNotSupportedError", err, err)
+					return
+				}
 			}
 			if tt.test != nil {
 				if err := tt.test(t, options); err != nil {
