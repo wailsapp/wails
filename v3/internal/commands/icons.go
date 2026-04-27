@@ -168,7 +168,7 @@ func generateMacIcon(iconData []byte, options *IconsOptions) error {
 func generateMacAsset(options *IconsOptions) error {
 	//Check if running on darwin (macOS), because this will only run on a mac
 	if runtime.GOOS != "darwin" {
-		return &macAssetNotSupportedError{message: "mac asset generation requires macOS 26 or later"}
+		return &macAssetNotSupportedError{message: "mac asset generation is only supported on macOS 26 or later"}
 	}
 	// Get system info, because this will only run on macOS 26 or later
 	info, err := operatingsystem.Info()

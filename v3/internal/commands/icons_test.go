@@ -184,7 +184,7 @@ func TestGenerateIcon(t *testing.T) {
 				}
 			},
 			wantErr:         true,
-			wantErrContains: "mac asset generation requires macOS 26 or later",
+			wantErrContains: "macOS 26 or later",
 		},
 		{
 			name:             "should fall back to image-based mac icon generation when icon composer assets are unsupported",
