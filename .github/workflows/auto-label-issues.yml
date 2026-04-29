@@ -3,7 +3,7 @@ name: Auto Label Issues
 on:
   issues:
     types: [opened, edited, reopened]
-  pull_request:
+  pull_request_target:
     types: [opened, edited, reopened, synchronize]
 
 jobs:
