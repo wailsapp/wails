@@ -2,7 +2,7 @@ name: Nightly Release v3-alpha
 
 on:
   schedule:
-    - cron: '0 2 * * *'  # 2 AM UTC daily
+    - cron: '0 15 * * *'  # 3 PM UTC daily
   workflow_dispatch:
     inputs:
       force_release:
