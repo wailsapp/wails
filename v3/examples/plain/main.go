@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "embed"
 	"log"
 	"net/http"
 	"time"
