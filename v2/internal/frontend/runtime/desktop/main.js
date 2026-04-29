@@ -81,6 +81,9 @@ window.wails = {
         borderThickness: 6,
         shouldDrag: false,
         deferDragToMouseMove: true,
+        dragStartX: 0,
+        dragStartY: 0,
+        dragThreshold: 3,
         cssDragProperty: "--wails-draggable",
         cssDragValue: "drag",
         cssDropProperty: "--wails-drop-target",
@@ -150,6 +153,8 @@ window.addEventListener('mousedown', (e) => {
         }
         if (window.wails.flags.deferDragToMouseMove) {
             window.wails.flags.shouldDrag = true;
+            window.wails.flags.dragStartX = e.clientX;
+            window.wails.flags.dragStartY = e.clientY;
         } else {
             e.preventDefault()
             window.WailsInvoke("drag");
@@ -171,6 +176,11 @@ function setResize(cursor) {
 
 window.addEventListener('mousemove', function(e) {
     if (window.wails.flags.shouldDrag) {
+        let dx = Math.abs(e.clientX - window.wails.flags.dragStartX);
+        let dy = Math.abs(e.clientY - window.wails.flags.dragStartY);
+        if (dx < window.wails.flags.dragThreshold && dy < window.wails.flags.dragThreshold) {
+            return;
+        }
         window.wails.flags.shouldDrag = false;
         let mousePressed = e.buttons !== undefined ? e.buttons : e.which;
         if (mousePressed > 0) {
