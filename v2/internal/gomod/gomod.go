@@ -3,7 +3,7 @@ package gomod
 import (
 	"fmt"
 
-	"github.com/Masterminds/semver"
+	"github.com/Masterminds/semver/v3"
 	"golang.org/x/mod/modfile"
 )
 

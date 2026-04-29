@@ -3,7 +3,8 @@ module github.com/wailsapp/wails/v2
 go 1.22.0
 
 require (
-	github.com/Masterminds/semver v1.5.0
+	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3
+	github.com/Masterminds/semver/v3 v3.3.1
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/bep/debounce v1.2.1
 	github.com/bitfield/script v0.24.0
@@ -51,7 +52,6 @@ require (
 	atomicgo.dev/keyboard v0.2.9 // indirect
 	atomicgo.dev/schedule v0.1.0 // indirect
 	dario.cat/mergo v1.0.0 // indirect
-	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/ProtonMail/go-crypto v1.1.5 // indirect
 	github.com/alecthomas/chroma/v2 v2.14.0 // indirect

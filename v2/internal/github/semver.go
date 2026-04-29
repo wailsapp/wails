@@ -3,7 +3,7 @@ package github
 import (
 	"fmt"
 
-	"github.com/Masterminds/semver"
+	"github.com/Masterminds/semver/v3"
 )
 
 // SemanticVersion is a struct containing a semantic version
