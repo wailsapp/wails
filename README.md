@@ -91,7 +91,14 @@ it before creating an enhancement request.
 
 ## Getting Started
 
-The installation instructions are on the [official website](https://wails.io/docs/gettingstarted/installation).
+Wails has two active versions:
+
+| Version | Status | Install | Docs |
+|---|---|---|---|
+| v2 | Stable | `go install github.com/wailsapp/wails/v2/cmd/wails@latest` | [wails.io](https://wails.io/) |
+| v3 | Alpha | `go install github.com/wailsapp/wails/v3/cmd/wails3@latest` | [v3.wails.io](https://v3.wails.io/) |
+
+Full installation instructions are available for [v2](https://wails.io/docs/gettingstarted/installation) and [v3](https://v3.wails.io).
 
 ## Sponsors
 
