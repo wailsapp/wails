@@ -48,7 +48,7 @@ Please paste the output of `wails doctor`. If you are unable to run this command
 
 # Checklist:
 
-- [ ] I have updated `v3/UNRELEASED_CHANGELOG.md` with details of this PR
+- [ ] (v2 only) I have updated `website/src/pages/changelog.mdx` with details of this PR (v3 changelog entries are added automatically)
 - [ ] My code follows the general coding style of this project
 - [ ] I have performed a self-review of my own code
 - [ ] I have commented my code, particularly in hard-to-understand areas

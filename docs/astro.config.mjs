@@ -35,7 +35,7 @@ export default defineConfig({
       lastUpdated: true,
       pagination: true,
       editLink: {
-        baseUrl: "https://github.com/wailsapp/wails/edit/v3-alpha/docs",
+        baseUrl: "https://github.com/wailsapp/wails/edit/master/docs",
       },
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/wailsapp/wails' },
