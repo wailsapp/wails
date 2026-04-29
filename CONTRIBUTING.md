@@ -11,7 +11,7 @@ Thanks for your interest in contributing! Wails has two active tracks. Pick the 
 
 ## v3 (alpha)
 
-- Source: the `v3-alpha` branch (will move to the `v3/` directory on `master` after the v3 → master merge).
+- Source: the `v3/` directory on tthe `master` branch.
 - Docs: [v3.wails.io](https://v3.wails.io/).
 - Detailed contributor guide: [v3.wails.io/contributing](https://v3.wails.io/contributing/).
 - Changelog: update `v3/UNRELEASED_CHANGELOG.md`.
@@ -23,7 +23,3 @@ Thanks for your interest in contributing! Wails has two active tracks. Pick the 
 - Update the relevant changelog file (see above).
 - Follow the existing coding style in the area you're touching.
 - Add tests where it makes sense.
-
-## Code of conduct
-
-By participating in this project you agree to abide by the [Code of Conduct](CODE_OF_CONDUCT.md).
