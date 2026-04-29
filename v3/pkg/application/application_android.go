@@ -139,16 +139,17 @@ static void executeJavaScriptOnBridge(const char* js) {
 import "C"
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"sync"
 	"time"
 	"unsafe"
-
-	"encoding/json"
 
 	"github.com/wailsapp/wails/v3/internal/runtime"
 )
@@ -221,6 +222,12 @@ func (a *App) platformRun() {
 	globalApp = a
 	globalAppLock.Unlock()
 
+	// Create MessageProcessor so JNI message callbacks can route runtime calls
+	messageProc := NewMessageProcessor(slog.Default())
+	globalMessageProcLock.Lock()
+	globalMessageProc = messageProc
+	globalMessageProcLock.Unlock()
+
 	// Signal that the app is ready to serve requests
 	signalAppReady()
 
@@ -258,6 +265,9 @@ func newPlatformApp(app *App) *androidApp {
 
 func (a *androidApp) run() error {
 	androidLogf("info", "🤖 [application_android.go] androidApp.run() called")
+
+	// Wire platform events → common events (same as non-CGO build)
+	a.setupCommonEvents()
 
 	// Emit application started event
 	a.parent.Event.Emit("ApplicationStarted")
@@ -433,7 +443,7 @@ func Java_com_wails_app_WailsBridge_nativeOnPageFinished(env *C.JNIEnv, obj C.jo
 		if win != nil {
 			androidLogf("info", "🤖 [JNI] Injecting runtime.Core() into window %d", id)
 			// Get the runtime core JavaScript
-			runtimeJS := runtime.Core()
+			runtimeJS := runtime.Core(app.impl.GetFlags(app.options))
 			androidLogf("info", "🤖 [JNI] Runtime JS length: %d bytes", len(runtimeJS))
 			app.windowsLock.RUnlock()
 			// IMPORTANT: We must bypass win.ExecJS because it queues if runtimeLoaded is false.
@@ -621,16 +631,60 @@ func serveAssetForAndroid(app *App, path string) ([]byte, error) {
 	return body, nil
 }
 
+// Global MessageProcessor for Android JNI callbacks
+var (
+	globalMessageProc     *MessageProcessor
+	globalMessageProcLock sync.RWMutex
+)
+
 func handleMessageForAndroid(app *App, message string) string {
-	// Parse the message
-	var msg map[string]interface{}
-	if err := json.Unmarshal([]byte(message), &msg); err != nil {
+	// Some messages are plain strings (e.g. "wails:runtime:ready"), not JSON.
+	// The JS bridge sends: typeof m==='string' ? m : JSON.stringify(m)
+	if len(message) == 0 || message[0] != '{' {
+		androidLogf("debug", "🤖 [handleMessageForAndroid] Non-JSON message: %s", message)
+		return `{"success":true}`
+	}
+
+	var req RuntimeRequest
+	if err := json.Unmarshal([]byte(message), &req); err != nil {
+		androidLogf("error", "🤖 [handleMessageForAndroid] Failed to parse: %v", err)
 		return fmt.Sprintf(`{"error":"%s"}`, err.Error())
 	}
 
-	// TODO: Route to appropriate handler based on message type
-	// For now, return success
-	return `{"success":true}`
+	// Fill in a window ID if none was provided (Android typically has one window)
+	if req.WebviewWindowID == 0 && req.WebviewWindowName == "" {
+		windows := app.Window.GetAll()
+		if len(windows) > 0 {
+			req.WebviewWindowID = uint32(windows[0].ID())
+		}
+	}
+
+	globalMessageProcLock.RLock()
+	messageProc := globalMessageProc
+	globalMessageProcLock.RUnlock()
+
+	if messageProc == nil {
+		androidLogf("error", "🤖 [handleMessageForAndroid] MessageProcessor not initialized")
+		return `{"error":"MessageProcessor not initialized"}`
+	}
+
+	ctx := context.Background()
+	result, err := messageProc.HandleRuntimeCallWithIDs(ctx, &req)
+	if err != nil {
+		androidLogf("error", "🤖 [handleMessageForAndroid] Error: %v", err)
+		return fmt.Sprintf(`{"error":"%s"}`, err.Error())
+	}
+
+	if result == nil {
+		return `{"success":true}`
+	}
+
+	resp, err := json.Marshal(result)
+	if err != nil {
+		androidLogf("error", "🤖 [handleMessageForAndroid] Marshal error: %v", err)
+		return fmt.Sprintf(`{"error":"%s"}`, err.Error())
+	}
+	return string(resp)
 }
 
 func getMimeTypeForPath(path string) string {
