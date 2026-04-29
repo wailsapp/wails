@@ -230,6 +230,11 @@ type Info struct {
 	Comments         *string           `json:"comments"`
 	FileAssociations []FileAssociation `json:"fileAssociations"`
 	Protocols        []Protocol        `json:"protocols"`
+	Windows          *WindowsInfo      `json:"windows,omitempty"`
+}
+
+type WindowsInfo struct {
+	ExecutionLevel string `json:"executionLevel,omitempty"`
 }
 
 type FileAssociation struct {
