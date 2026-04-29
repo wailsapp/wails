@@ -104,6 +104,7 @@ func (b *BrowserWindow) SetMinSize(minWidth, minHeight int) Window    { return b
 func (b *BrowserWindow) SetRelativePosition(x, y int) Window          { return b }
 func (b *BrowserWindow) SetResizable(b2 bool) Window                  { return b }
 func (b *BrowserWindow) SetIgnoreMouseEvents(ignore bool) Window      { return b }
+func (b *BrowserWindow) SetScreen(screen *Screen) Window              { return b }
 func (b *BrowserWindow) SetSize(width, height int) Window             { return b }
 func (b *BrowserWindow) SetTitle(title string) Window                 { return b }
 func (b *BrowserWindow) SetURL(s string) Window                       { return b }
