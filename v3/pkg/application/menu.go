@@ -66,6 +66,9 @@ func (m *Menu) Update() {
 	if m.impl == nil {
 		m.impl = newMenuImpl(m)
 	}
+	if globalApplication == nil || !globalApplication.running {
+		return
+	}
 	m.impl.update()
 }
 
