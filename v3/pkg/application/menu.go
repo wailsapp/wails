@@ -62,12 +62,20 @@ func (m *Menu) AddRadio(label string, enabled bool) *MenuItem {
 }
 
 func (m *Menu) Update() {
+	app := globalApplication
+	if app == nil {
+		return
+	}
+	app.runLock.Lock()
+	running := app.running
+	app.runLock.Unlock()
+	if !running {
+		return
+	}
+
 	m.processRadioGroups()
 	if m.impl == nil {
 		m.impl = newMenuImpl(m)
-	}
-	if globalApplication == nil || !globalApplication.running {
-		return
 	}
 	m.impl.update()
 }
