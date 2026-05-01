@@ -36,11 +36,16 @@ func TestDarwinInfoPlistMinVersion(t *testing.T) {
 
 			var plistDict map[string]any
 			_, err = plist.Unmarshal(data, &plistDict)
-			if err == nil {
-				minVer, ok := plistDict["LSMinimumSystemVersion"]
-				if ok && minVer != expectedVersion {
-					t.Errorf("LSMinimumSystemVersion = %v, want %s", minVer, expectedVersion)
-				}
+			if err != nil {
+				t.Fatalf("Failed to unmarshal plist template %s: %v", tmpl, err)
+			}
+
+			minVer, ok := plistDict["LSMinimumSystemVersion"]
+			if !ok {
+				t.Fatalf("Template %s is missing LSMinimumSystemVersion", tmpl)
+			}
+			if minVer != expectedVersion {
+				t.Errorf("LSMinimumSystemVersion = %v, want %s", minVer, expectedVersion)
 			}
 		})
 	}
