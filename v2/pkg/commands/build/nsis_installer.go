@@ -99,6 +99,13 @@ func makeNSIS(options *Options, installerKind string, amd64Binary string, arm64B
 	if arm64Binary != "" {
 		args = append(args, "-DARG_WAILS_ARM64_BINARY="+arm64Binary)
 	}
+
+	// Install scope support
+	if options.InstallScope == "user" {
+		args = append(args, "-DWAILS_INSTALL_SCOPE=user")
+		args = append(args, "-DREQUEST_EXECUTION_LEVEL=user")
+	}
+
 	args = append(args, nsisProjectFile)
 
 	if verbose {
