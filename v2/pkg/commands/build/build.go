@@ -3,6 +3,7 @@ package build
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -50,6 +51,7 @@ type Options struct {
 	SkipModTidy       bool                 //  Skip mod tidy before compile
 	IgnoreFrontend    bool                 // Indicates if the frontend does not need building
 	IgnoreApplication bool                 // Indicates if the application does not need building
+	InstallScope      string               // "machine" (default) or "user"
 	OutputFile        string               // Override the output filename
 	BinDirectory      string               // Directory to use to write the built applications
 	CleanBinDirectory bool                 // Indicates if the bin output directory should be cleaned before building
@@ -69,6 +71,7 @@ type Options struct {
 	Obfuscated        bool                 // Indicates that bound methods should be obfuscated
 	GarbleArgs        string               // The arguments for Garble
 	SkipBindings      bool                 // Skip binding generation
+	SkipEmbedCreate   bool                 // Skip creation of embed files
 }
 
 // Build the project!
@@ -120,8 +123,10 @@ func Build(options *Options) (string, error) {
 	}
 
 	// Create embed directories if they don't exist
-	if err := CreateEmbedDirectories(cwd, options); err != nil {
-		return "", err
+	if !options.SkipEmbedCreate {
+		if err := CreateEmbedDirectories(cwd, options); err != nil {
+			return "", err
+		}
 	}
 
 	// Generate bindings
@@ -350,6 +355,16 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		err := packageProject(options, runtime.GOOS)
 		if err != nil {
 			return "", err
+		}
+		pterm.Println("Done.")
+	}
+
+	if runtime.GOOS == "darwin" && options.Platform == "darwin" {
+		// On macOS, self-sign the .app bundle so notifications work
+		printBulletPoint("Self-signing application: ")
+		cmd := exec.Command("/usr/bin/codesign", "--force", "--deep", "--sign", "-", options.CompiledBinary)
+		if out, err := cmd.CombinedOutput(); err != nil {
+			return "", fmt.Errorf("codesign failed: %v – %s", err, out)
 		}
 		pterm.Println("Done.")
 	}

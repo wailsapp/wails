@@ -404,5 +404,5 @@ An experimental feature to call runtime methods using plain html, similar to
 ## Examples
 
 There are more examples available in the
-[examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples)
+[examples](https://github.com/wailsapp/wails/tree/master/v3/examples)
 directory. Check them out!
