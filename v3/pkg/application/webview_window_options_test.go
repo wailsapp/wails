@@ -369,12 +369,9 @@ func TestFullscreenButtonState_OptionExists(t *testing.T) {
 		{name: "disabled", state: ButtonDisabled},
 		{name: "enabled", state: ButtonEnabled},
 	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opts := WebviewWindowOptions{
-				FullscreenButtonState: tt.state,
-			}
+			opts := WebviewWindowOptions{FullscreenButtonState: tt.state}
 			if opts.FullscreenButtonState != tt.state {
 				t.Errorf("FullscreenButtonState = %d, want %d", opts.FullscreenButtonState, tt.state)
 			}

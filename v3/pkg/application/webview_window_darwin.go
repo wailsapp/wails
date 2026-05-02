@@ -1393,7 +1393,9 @@ func (w *macosWebviewWindow) run() {
 		w.setMinimiseButtonState(options.MinimiseButtonState)
 		w.setMaximiseButtonState(options.MaximiseButtonState)
 		w.setCloseButtonState(options.CloseButtonState)
-		w.setFullscreenButtonState(options.FullscreenButtonState)
+		if options.FullscreenButtonState != ButtonEnabled {
+			w.setFullscreenButtonState(options.FullscreenButtonState)
+		}
 
 		// Ignore mouse events if requested
 		w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
