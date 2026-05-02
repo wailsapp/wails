@@ -155,8 +155,6 @@ func (w *iosWebviewWindow) setEnabled(_ bool) {}
 
 func (w *iosWebviewWindow) setFrameless(_ bool) {}
 
-func (w *iosWebviewWindow) setFullscreenButtonState(_ ButtonState) {}
-
 func (w *iosWebviewWindow) setMaxSize(_ int, _ int) {}
 
 func (w *iosWebviewWindow) setMinSize(_ int, _ int) {}
@@ -365,6 +363,10 @@ func (w *iosWebviewWindow) setMaximiseButtonState(_ ButtonState) {
 
 func (w *iosWebviewWindow) setCloseButtonState(_ ButtonState) {
 	// iOS doesn't have close buttons like desktop platforms
+}
+
+func (w *iosWebviewWindow) setFullscreenButtonState(_ ButtonState) {
+	// iOS doesn't have a fullscreen button like desktop platforms
 }
 
 func (w *iosWebviewWindow) setContentProtection(_ bool) {
