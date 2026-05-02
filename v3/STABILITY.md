@@ -61,7 +61,7 @@ A breaking change is any change that requires callers to modify their source cod
 The following are **not** considered breaking:
 
 - Adding new exported identifiers.
-- Adding new fields to a struct (callers should not rely on struct literal positional initialisation).
+- Adding new fields to a struct (callers should not rely on unkeyed struct literals, which can break if fields are added or reordered).
 - Fixing behaviour that was clearly a bug.
 - Changes to internal packages.
 
@@ -69,11 +69,11 @@ The following are **not** considered breaking:
 
 | Version bump | Meaning |
 |---|---|
-| `v3.0.0-beta.N+1` | May contain deprecations; no removals of previously stable API |
+| `v3.0.0-beta.(N+1)` | May contain deprecations; no removals of previously stable API |
 | `v3.0.0-rc.N` | API frozen; only bug fixes |
 | `v3.0.0` | Full stable release |
 | `v3.1.0` | Backwards-compatible additions |
-| `v3.x.0` where x > 0 | May remove previously deprecated identifiers |
+| `v4.0.0` | May remove previously deprecated identifiers |
 
 ### Communication Process
 
@@ -84,7 +84,7 @@ The following are **not** considered breaking:
 
 ## Known Beta Limitations
 
-- **Wayland window positioning** is a no-op by Wayland protocol design. Windows cannot set arbitrary positions under the Wayland compositor; this is not a Wails bug and will not be "fixed."
+- **Wayland window positioning** on native Wayland sessions may be ignored (effectively a no-op, depending on compositor behaviour), so applications should not rely on setting arbitrary window positions. This is not a Wails bug and will not be "fixed."
 - **GTK4 phase-10 testing** is pending. GTK4 behaviour on edge-case display configurations is not yet fully validated.
 - **iOS and Android** are deferred. Mobile targets will be promoted to stable after their APIs stabilise and platform-specific testing is complete.
 - **`v3/pkg/services`** interfaces are subject to revision based on Beta feedback before being locked down.
