@@ -1,0 +1,46 @@
+{
+  "item.label.Sponsor": {
+    "message": "Sponsor ❤",
+    "description": "Navbar item with label Sponsor"
+  },
+  "item.label.Docs": {
+    "message": "Docs",
+    "description": "Navbar item with label Docs"
+  },
+  "item.label.Blog": {
+    "message": "Blog",
+    "description": "Navbar item with label Blog"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Navbar item with label GitHub"
+  },
+  "item.label.About": {
+    "message": "About",
+    "description": "Navbar item with label About"
+  },
+  "item.label.FAQ": {
+    "message": "FAQ",
+    "description": "Navbar item with label FAQ"
+  },
+  "item.label.Changelog": {
+    "message": "Changelog",
+    "description": "Navbar item with label Changelog"
+  },
+  "item.label.Community Guide": {
+    "message": "Community Guide",
+    "description": "Navbar item with label Community Guide"
+  },
+  "item.label.Credits": {
+    "message": "Credits",
+    "description": "Navbar item with label Credits"
+  },
+  "item.label.Code of Conduct": {
+    "message": "Code of Conduct",
+    "description": "Navbar item with label Code of Conduct"
+  },
+  "logo.alt": {
+    "message": "Wails Logo",
+    "description": "The alt text of navbar logo"
+  }
+}

@@ -1,4 +1,4 @@
-//go:build darwin && !ios
+//go:build darwin && !ios && !server
 
 #include "Cocoa/Cocoa.h"
 #include "menuitem_darwin.h"

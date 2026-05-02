@@ -1,0 +1,97 @@
+# Mac App Storeガイド
+
+このページでは、WailsアプリをMac App Storeで公開する方法について、概要を説明します。
+
+## 前提条件
+
+- Apple Developerアカウントを所持しておく必要があります。 詳しくは、[Apple Developer Program](https://developer.apple.com/support/compare-memberships/)のサイトを確認してください。
+- 開発者ポータルで、証明書、ID、アプリを作成しておく必要があります。 詳しくは以下の手順に従ってください。
+- Xcodeコマンドラインツールを、あなたのローカルマシンにインストールしておく必要があります。
+
+#### 証明書とIDの作成
+
+1. [Apple Developerアカウント](https://developer.apple.com/account/)へアクセスします。
+2. `Certificates, Identifiers & Profiles`内にある`Identifiers`をクリックし、新しいApp IDを登録します。 (com.example.app) のような形式にしてください。
+3. 同じページで`Certificates`をクリックし、Mac App Storeディストリビューション用の新しい証明書を生成します。  それらの証明書をダウンロードし、ローカルマシンのKeychainにインポートしてください。
+
+#### アプリ提出物の作成
+
+1. [App Store Connectサイト](https://appstoreconnect.apple.com/apps)へアクセスします。
+2. 新しいアプリケーションを登録し、前のステップで作成済みのバンドルIDをリンクします。
+3. Appleの要求する正規のスクリーンショットや説明文などを、アプリに追加します。
+4. アプリの新しいバージョンを作成します。
+
+#### プロビジョニングプロファイルの作成
+1. [Apple Developerプロフィール](https://developer.apple.com/account/resources/profiles/list)ページへアクセスします。
+2. Mac App Storeへの配布用に、新しいプロビジョニングプロファイルを追加します。
+3. プロファイルタイプをMacに設定し、先ほど作成したアプリケーションのApp IDを選択します。
+4. Mac App Distribution証明書を選択します。
+5. 埋め込みプロビジョニングプロファイルに名前をつけ、作成されたプロファイルをダウンロードします。
+
+## Mac App Storeへの公開手順
+
+#### AppleのApp Sandboxの有効化
+
+Mac App Storeへ提出されるアプリは、Appleの[App Sandbox](https://developer.apple.com/app-sandboxing/)内で動作する必要があります。 そのためには、`entitlements.plist`ファイルを作成しておく必要があります。 ファイルは、`{PROJECT_DIR}/build/darwin/entitlements.plist`配下に作成することを推奨します。
+
+**entitlementsファイルの例**
+
+ここでは、[RiftShare](https://github.com/achhabra2/riftshare)というアプリのentitlementsファイルを例として示します。 参考として、アプリが必要とする権限を入力してください。 詳しくは、[こちらのサイト](https://developer.apple.com/documentation/bundleresources/entitlements)をご覧ください。 チーム ID とアプリケーション名を上記で登録したものに置き換える必要があります。
+
+```xml title="entitlements.plist"
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+    <key>com.apple.security.network.client</key>
+    <true/>
+    <key>com.apple.security.network.server</key>
+    <true/>
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+    <key>com.apple.security.files.downloads.read-write</key>
+    <true/>
+    <key>com.apple.application-identifier</key>
+    <string>TEAM_ID.APP_NAME</string>
+    <key>com.apple.developer.team-identifier</key>
+    <string>TEAM_ID</string>
+</dict>
+</plist>
+```
+
+**組み込みプロビジョニング プロファイルの追加** 上記で作成したプロビジョニング プロファイルは、アプリケーションのルートに追加する必要があります。 embedded.provisionprofile という名前にする必要があります。
+
+#### アプリパッケージのビルドと署名
+
+以下は、Mac App Storeへの提出用に、アプリをビルドおよび署名するスクリプトの例です。 プロジェクトのルートディレクトリからスクリプトを実行することを前提としています。
+
+アプリへ署名するための証明書と、インストーラへ署名するための証明書は異なりますので、ご注意ください。 両方の証明書がKeychainにインポートされていることを確認してください。 Keychainで文字列を探し、下記スクリプトに挿入してください。 具体的には、証明書名およびアプリ名を入力します。 以下のスクリプトを実行すると、アプリケーションのルートディレクトリに、署名済みの`app.pkg`ファイルが生成されます。
+
+```bash title="macappstore-build.sh"
+#!/bin/bash
+
+APP_CERTIFICATE="3rd Party Mac Developer Application: YOUR NAME (CODE)"
+PKG_CERTIFICATE="3rd Party Mac Developer Installer: YOUR NAME (CODE)"
+APP_NAME="YourApp"
+
+wails build -platform darwin/universal -clean
+
+cp ./embedded.provisionprofile "./build/bin/$APP_NAME.app/Contents"
+
+codesign --timestamp --options=runtime -s "$APP_CERTIFICATE" -v --entitlements ./build/darwin/entitlements.plist ./build/bin/$APP_NAME.app
+
+productbuild --sign "$PKG_CERTIFICATE" --component ./build/bin/$APP_NAME.app /Applications ./$APP_NAME.pkg
+```
+
+#### アプリバンドルのアップロード
+
+審査向けに提出が可能となる前に、生成されたパッケージファイルをアップロードし、アプリケーションに関連付ける必要があります。
+
+1. Mac App Storeから[Transporter App](https://apps.apple.com/us/app/transporter/id1450874784)をダウンロードします。
+2. アプリを起動し、Apple IDでサインインします。
+3. +マークをクリックし、前のステップで生成済みの`APP_NAME.pkg`ファイルを選択します。 そしてアップロードします。
+4. [App Store Connect](https://appstoreconnect.apple.com/apps)サイトへ戻り、アプリ提出物ページへ戻ります。 App Storeで公開する準備できているバージョンを選択します。 `Build`内で、Transporter経由でアップロードしたパッケージを選択します。
+
+以上で終了です! サイトで、アプリを審査のために提出できるようになりました。 数営業日後、審査結果に問題が無ければ、アプリがMac App Storeに公開されます。 

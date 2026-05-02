@@ -31,7 +31,6 @@ func (p *Pacman) Packages() Packagemap {
 		},
 		"webkit2gtk": []*Package{
 			{Name: "webkit2gtk-4.1", SystemPackage: true, Library: true},
-			{Name: "webkit2gtk", SystemPackage: true, Library: true},
 		},
 		"gtk4 (experimental)": []*Package{
 			{Name: "gtk4", SystemPackage: true, Library: true, Optional: true},
