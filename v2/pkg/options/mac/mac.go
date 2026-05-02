@@ -23,6 +23,11 @@ type Options struct {
 	WindowIsTranslucent  bool
 	Preferences          *Preferences
 	DisableZoom          bool
+	// DisableEscapeExitsFullscreen, when true, prevents the Esc key from
+	// exiting fullscreen mode. The keypress is swallowed by the window so
+	// web content can handle it (e.g. closing modals). Default false
+	// preserves standard macOS fullscreen behaviour.
+	DisableEscapeExitsFullscreen bool
 	// ActivationPolicy     ActivationPolicy
 	About      *AboutInfo
 	OnFileOpen func(filePath string) `json:"-"`
