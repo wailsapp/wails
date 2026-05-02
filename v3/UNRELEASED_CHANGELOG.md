@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add InstallScope flag and build option for machine/user install in [PR](https://github.com/wailsapp/wails/pull/5094) by @symball
 - Add no-op SetScreen method to BrowserWindow to satisfy Window interface in [PR](https://github.com/wailsapp/wails/pull/5294) by @leaanthony
 
 ## Changed
