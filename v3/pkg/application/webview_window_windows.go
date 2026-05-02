@@ -2457,6 +2457,7 @@ func (w *windowsWebviewWindow) setFullscreenButtonState(state ButtonState) {
 	case ButtonDisabled, ButtonHidden:
 		w.setStyle(false, w32.WS_MAXIMIZEBOX)
 	case ButtonEnabled:
+		w.setStyle(true, w32.WS_SYSMENU)
 		w.setStyle(true, w32.WS_MAXIMIZEBOX)
 	}
 }
