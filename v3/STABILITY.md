@@ -88,3 +88,4 @@ The following are **not** considered breaking:
 - **GTK4 phase-10 testing** is pending. GTK4 behaviour on edge-case display configurations is not yet fully validated.
 - **iOS and Android** are deferred. Mobile targets will be promoted to stable after their APIs stabilise and platform-specific testing is complete.
 - **`v3/pkg/services`** interfaces are subject to revision based on Beta feedback before being locked down.
+
