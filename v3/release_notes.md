@@ -1,0 +1,2 @@
+## Added
+- Add native Liquid Glass effect support for macOS with NSGlassEffectView (macOS 15.0+) and NSVisualEffectView fallback, including comprehensive material customization options by @leaanthony in [#4534](https://github.com/wailsapp/wails/pull/4534)

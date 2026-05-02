@@ -1,0 +1,24 @@
+# Build outputs
+bin/
+*.apk
+*.aab
+
+# Android build artifacts
+build/android/.gradle/
+build/android/app/build/
+build/android/local.properties
+
+# JNI libraries (generated during build)
+build/android/app/src/main/jniLibs/*/libwails.so
+
+# IDE
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Frontend build
+frontend/dist/
+frontend/node_modules/

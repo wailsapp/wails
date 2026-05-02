@@ -1,0 +1,113 @@
+//go:build linux
+
+package fileexplorer
+
+import (
+	"bytes"
+	"fmt"
+	"net/url"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"syscall"
+)
+
+// when possible; the fallback method does not support selecting a file.
+func explorerBinArgs(path string, selectFile bool) (string, []string, error) {
+	// Map of field codes to their replacements
+	var fieldCodes = map[string]string{
+		"%d": "",
+		"%D": "",
+		"%n": "",
+		"%N": "",
+		"%v": "",
+		"%m": "",
+		"%f": path,
+		"%F": path,
+		"%u": pathToURI(path),
+		"%U": pathToURI(path),
+	}
+	fileManagerQuery := exec.Command("xdg-mime", "query", "default", "inode/directory")
+	buf := new(bytes.Buffer)
+	fileManagerQuery.Stdout = buf
+	fileManagerQuery.Stderr = nil
+
+	if err := fileManagerQuery.Run(); err != nil {
+		return fallbackExplorerBinArgs(path, selectFile)
+	}
+
+	desktopFilePath, err := findDesktopFile(strings.TrimSpace((buf.String())))
+	if err != nil {
+		return fallbackExplorerBinArgs(path, selectFile)
+	}
+
+	entry, err := ParseDesktopFile(desktopFilePath)
+	if err != nil {
+		// Opting to fallback rather than fail
+		return fallbackExplorerBinArgs(path, selectFile)
+	}
+
+	execCmd := entry.Exec
+	for fieldCode, replacement := range fieldCodes {
+		execCmd = strings.ReplaceAll(execCmd, fieldCode, replacement)
+	}
+	args := strings.Fields(execCmd)
+	if !strings.Contains(strings.Join(args, " "), path) {
+		args = append(args, path)
+	}
+
+	return args[0], args[1:], nil
+}
+
+func sysProcAttr(path string, selectFile bool) *syscall.SysProcAttr {
+	return &syscall.SysProcAttr{}
+}
+
+func fallbackExplorerBinArgs(path string, selectFile bool) (string, []string, error) {
+	// NOTE: The linux fallback explorer opening does not support file selection
+
+	stat, err := os.Stat(path)
+	if err != nil {
+		return "", []string{}, fmt.Errorf("stat path: %w", err)
+	}
+
+	// If the path is a file, we want to open the directory containing the file
+	if !stat.IsDir() {
+		path = filepath.Dir(path)
+	}
+
+	return "xdg-open", []string{path}, nil
+}
+
+func pathToURI(path string) string {
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return path
+	}
+	// Use url.URL to properly construct file URIs.
+	// url.PathEscape incorrectly escapes forward slashes (/ -> %2F),
+	// which breaks file manager path parsing.
+	u := &url.URL{
+		Scheme: "file",
+		Path:   absPath,
+	}
+	return u.String()
+}
+
+func findDesktopFile(xdgFileName string) (string, error) {
+	paths := []string{
+		filepath.Join(os.Getenv("XDG_DATA_HOME"), "applications"),
+		filepath.Join(os.Getenv("HOME"), ".local", "share", "applications"),
+		"/usr/share/applications",
+	}
+
+	for _, path := range paths {
+		desktopFile := filepath.Join(path, xdgFileName)
+		if _, err := os.Stat(desktopFile); err == nil {
+			return desktopFile, nil
+		}
+	}
+	err := fmt.Errorf("desktop file not found: %s", xdgFileName)
+	return "", err
+}
