@@ -65,6 +65,7 @@ func (b *BrowserWindow) ForceReload()                                 {}
 func (b *BrowserWindow) Fullscreen() Window                           { return b }
 func (b *BrowserWindow) GetBorderSizes() *LRTB                        { return nil }
 func (b *BrowserWindow) GetScreen() (*Screen, error)                  { return nil, nil }
+func (b *BrowserWindow) SetScreen(screen *Screen) Window              { return b }
 func (b *BrowserWindow) GetZoom() float64                             { return 1.0 }
 func (b *BrowserWindow) handleDragAndDropMessage(filenames []string, dropTarget *DropTargetDetails) {}
 func (b *BrowserWindow) InitiateFrontendDropProcessing(filenames []string, x int, y int) {}

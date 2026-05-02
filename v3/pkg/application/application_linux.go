@@ -59,12 +59,12 @@ func init() {
 		_ = os.Setenv("GDK_BACKEND", "x11")
 	}
 
-	// Disable DMA-BUF renderer on Wayland with NVIDIA to prevent "Error 71 (Protocol error)" crashes.
-	// This is a known WebKitGTK issue with NVIDIA proprietary drivers on Wayland.
+	// Disable DMA-BUF renderer on any session type with NVIDIA to prevent blank windows and
+	// "Error 71 (Protocol error)" crashes. NVIDIA proprietary drivers fail gbm_bo_map() when
+	// importing DMA-BUF, causing blank/white screens on both X11 and Wayland.
 	// See: https://bugs.webkit.org/show_bug.cgi?id=262607
-	if os.Getenv("WEBKIT_DISABLE_DMABUF_RENDERER") == "" &&
-		os.Getenv("XDG_SESSION_TYPE") == "wayland" &&
-		isNVIDIAGPU() {
+	// See: https://github.com/wailsapp/wails/issues/4985
+	if os.Getenv("WEBKIT_DISABLE_DMABUF_RENDERER") == "" && isNVIDIAGPU() {
 		_ = os.Setenv("WEBKIT_DISABLE_DMABUF_RENDERER", "1")
 	}
 }
