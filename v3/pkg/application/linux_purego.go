@@ -233,6 +233,17 @@ var (
 func init() {
 	// needed for GTK4 to function
 	_ = os.Setenv("GDK_BACKEND", "x11")
+
+	// Disable DMA-BUF renderer on any session type with NVIDIA to prevent blank windows and
+	// "Error 71 (Protocol error)" crashes. NVIDIA proprietary drivers fail gbm_bo_map() when
+	// importing DMA-BUF, causing blank/white screens on both X11 and Wayland.
+	// See: https://bugs.webkit.org/show_bug.cgi?id=262607
+	// See: https://github.com/wailsapp/wails/issues/4985
+	if os.Getenv("WEBKIT_DISABLE_DMABUF_RENDERER") == "" {
+		if _, err := os.Stat("/sys/module/nvidia"); err == nil {
+			_ = os.Setenv("WEBKIT_DISABLE_DMABUF_RENDERER", "1")
+		}
+	}
 	var err error
 
 	// gtk, err = purego.Dlopen(gtk4, purego.RTLD_NOW|purego.RTLD_GLOBAL)
