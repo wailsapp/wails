@@ -1,0 +1,125 @@
+version: "3"
+
+vars:
+  BIN_DIR: "{{.ROOT_DIR}}/bin"
+
+tasks:
+  default:
+    desc: Build all dialog tests for GTK3 and GTK4
+    cmds:
+      - task: build:all
+
+  build:all:
+    desc: Build all tests for both GTK3 and GTK4
+    deps:
+      - build:gtk4
+      - build:gtk3
+
+  build:gtk4:
+    desc: Build all tests for GTK4
+    cmds:
+      - task: build:message-info-gtk4
+      - task: build:message-question-gtk4
+      - task: build:message-warning-gtk4
+      - task: build:message-error-gtk4
+      - task: build:file-open-gtk4
+      - task: build:file-open-multi-gtk4
+      - task: build:file-save-gtk4
+      - task: build:file-directory-gtk4
+
+  build:gtk3:
+    desc: Build all tests for GTK3
+    cmds:
+      - task: build:message-info-gtk3
+      - task: build:message-question-gtk3
+      - task: build:message-warning-gtk3
+      - task: build:message-error-gtk3
+      - task: build:file-open-gtk3
+      - task: build:file-open-multi-gtk3
+      - task: build:file-save-gtk3
+      - task: build:file-directory-gtk3
+
+  build:message-info-gtk4:
+    dir: message-info
+    cmds:
+      - go build -o "{{.BIN_DIR}}/message-info-gtk4" .
+
+  build:message-info-gtk3:
+    dir: message-info
+    cmds:
+      - go build -tags gtk3 -o "{{.BIN_DIR}}/message-info-gtk3" .
+
+  build:message-question-gtk4:
+    dir: message-question
+    cmds:
+      - go build -o "{{.BIN_DIR}}/message-question-gtk4" .
+
+  build:message-question-gtk3:
+    dir: message-question
+    cmds:
+      - go build -tags gtk3 -o "{{.BIN_DIR}}/message-question-gtk3" .
+
+  build:message-warning-gtk4:
+    dir: message-warning
+    cmds:
+      - go build -o "{{.BIN_DIR}}/message-warning-gtk4" .
+
+  build:message-warning-gtk3:
+    dir: message-warning
+    cmds:
+      - go build -tags gtk3 -o "{{.BIN_DIR}}/message-warning-gtk3" .
+
+  build:message-error-gtk4:
+    dir: message-error
+    cmds:
+      - go build -o "{{.BIN_DIR}}/message-error-gtk4" .
+
+  build:message-error-gtk3:
+    dir: message-error
+    cmds:
+      - go build -tags gtk3 -o "{{.BIN_DIR}}/message-error-gtk3" .
+
+  build:file-open-gtk4:
+    dir: file-open
+    cmds:
+      - go build -o "{{.BIN_DIR}}/file-open-gtk4" .
+
+  build:file-open-gtk3:
+    dir: file-open
+    cmds:
+      - go build -tags gtk3 -o "{{.BIN_DIR}}/file-open-gtk3" .
+
+  build:file-open-multi-gtk4:
+    dir: file-open-multi
+    cmds:
+      - go build -o "{{.BIN_DIR}}/file-open-multi-gtk4" .
+
+  build:file-open-multi-gtk3:
+    dir: file-open-multi
+    cmds:
+      - go build -tags gtk3 -o "{{.BIN_DIR}}/file-open-multi-gtk3" .
+
+  build:file-save-gtk4:
+    dir: file-save
+    cmds:
+      - go build -o "{{.BIN_DIR}}/file-save-gtk4" .
+
+  build:file-save-gtk3:
+    dir: file-save
+    cmds:
+      - go build -tags gtk3 -o "{{.BIN_DIR}}/file-save-gtk3" .
+
+  build:file-directory-gtk4:
+    dir: file-directory
+    cmds:
+      - go build -o "{{.BIN_DIR}}/file-directory-gtk4" .
+
+  build:file-directory-gtk3:
+    dir: file-directory
+    cmds:
+      - go build -tags gtk3 -o "{{.BIN_DIR}}/file-directory-gtk3" .
+
+  clean:
+    desc: Remove all built binaries
+    cmds:
+      - rm -rf "{{.BIN_DIR}}"

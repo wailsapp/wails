@@ -1,0 +1,246 @@
+---
+title: Extending Wails
+description: Practical guide to adding new features and platforms to Wails v3
+sidebar:
+  order: 8
+---
+
+> Wails is designed to be **hackable**.  
+> Every major subsystem lives in Go code you can read, modify, and ship.  
+> This page shows _where_ to start and _how_ to stay cross-platform when you:
+
+* Add a **Service** (file server, KV store, custom IPC…)
+* Create a **new CLI command** (`wails3 <foo>`)
+* Extend the **Runtime** (window API, dialogs, events)
+* Introduce a **Platform capability** (Wayland, Apple Vision OS…)
+* Keep **cross-platform compatibility** without drowning in `//go:build` tags
+
+---
+
+## 1. Adding a Service
+
+Services are background Go components exposed to apps via the `application.Context`.
+
+```
+internal/service/
+├── template/            # Boilerplate for new services
+│   ├── template.go
+│   └── README.md
+└── service.go           # Registration + lifecycle interfaces
+```
+
+### 1.1 Define the Service
+
+```go
+package chat
+
+type Service struct {
+    messages []string
+}
+
+func New() *Service { return &Service{} }
+
+func (s *Service) Send(msg string) string {
+    s.messages = append(s.messages, msg)
+    return "ok"
+}
+```
+
+### 1.2 Implement `service.Service`
+
+```go
+func (s *Service) Init(ctx *application.Context) error { return nil }
+func (s *Service) Shutdown() error                     { return nil }
+```
+
+### 1.3 Register Generator
+
+*Add to* `internal/generator/collect/services.go`
+
+```go
+services.Register("chat", chat.New)
+```
+
+> Now `wails3 generate` emits bindings so JS can call
+> `window.backend.chat.Send("hi")`.
+
+### 1.4 Ship an Example
+
+Copy `v3/examples/services/` and adjust.
+
+---
+
+## 2. Writing a New CLI Command
+
+CLI logic lives under `internal/commands/`.  
+Each command is **one file** that mounts itself in `init()`.
+
+### 2.1 Create the File
+
+`v3/internal/commands/hello.go`
+
+```go
+package commands
+
+import (
+    "github.com/spf13/cobra"
+)
+
+func init() {
+    Add(&cobra.Command{
+        Use:   "hello",
+        Short: "Prints Hello World",
+        RunE: func(cmd *cobra.Command, args []string) error {
+            cmd.Println("Hello Wails!")
+            return nil
+        },
+    })
+}
+```
+
+`Add()` registers with the root in `cmd/wails3/main.go`.
+
+### 2.2 Re-compile CLI
+
+```
+go install ./v3/cmd/wails3
+wails3 hello
+```
+
+If your command needs **Taskfile** integration, reuse helpers in
+`internal/commands/task_wrapper.go`.
+
+---
+
+## 3. Modifying the Runtime
+
+Common reasons:
+
+* New window feature (`SetOpacity`, `Shake`, …)
+* Extra dialog (`ColorPicker`)
+* System-level API (screen brightness)
+
+### 3.1 Public API
+
+Add to `pkg/application/window.go`:
+
+```go
+func (w *WebviewWindow) SetOpacity(o float32) {
+    w.ctx.Call("window:setOpacity", o)
+}
+```
+
+### 3.2 Message Processor
+
+Create `messageprocessor_window_opacity.go`:
+
+```go
+const MsgSetOpacity = "window:setOpacity"
+
+func init() { register(MsgSetOpacity, handleSetOpacity) }
+
+func handleSetOpacity(ctx *Context, params json.RawMessage) ([]byte, error) {
+    var req struct {
+        ID      uint64  `json:"id"`
+        Opacity float32 `json:"o"`
+    }
+    json.Unmarshal(params, &req)
+    return nil, runtime.SetOpacity(req.ID, req.Opacity)
+}
+```
+
+### 3.3 Platform Implementation
+
+```
+internal/runtime/
+    webview_window_darwin.go
+    webview_window_linux.go
+    webview_window_windows.go
+```
+
+Add `SetOpacity()` to each, guarded by build tags.  
+If a platform can’t support it, return `ErrCapability`.
+
+### 3.4 Capability Flag
+
+Expose via `internal/capabilities`.
+
+```go
+const CapOpacity = "window:opacity"
+```
+
+Runtime files `*_darwin.go` etc. should `registerCapability(CapOpacity)` when
+successfully initialised.
+
+Apps can query:
+
+```go
+if application.HasCapability(application.CapOpacity) { ... }
+```
+
+---
+
+## 4. Adding New Platform Capabilities
+
+Example: **Wayland** clipboard on Linux.
+
+1. Fork `internal/runtime/clipboard_linux.go`.
+2. Split file:
+   * `clipboard_linux_x11.go` → `//go:build linux && !wayland`
+   * `clipboard_linux_wayland.go` → `//go:build linux && wayland`
+3. Add CLI flag `--tags wayland` in `internal/commands/dev.go`
+   (`goEnv.BuildTags += ",wayland"`).
+4. Document in **Asset Server** & README.
+
+> Keep default build tags minimal; reserve opt-in tags for niche features.
+
+---
+
+## 5. Cross-Platform Compatibility Checklist
+
+| ✅ Step | Why |
+|---------|-----|
+| Provide **every** public method in all platform files (even if stub) | Keeps build green on all OS/arch |
+| Gate platform specifics behind **capabilities** | Let apps degrade gracefully |
+| Use **pure Go** first, CGO only when needed | Simplifies cross-compiles |
+| Test with `task matrix:test` | Runs `go test ./...` on linux/mac/windows in Docker |
+| Document new build tags in `docs/getting-started/installation.mdx` | Users must know flags |
+
+---
+
+## 6. Debug Builds & Iteration Speed
+
+* `wails3 dev -tags debug` adds extra log hooks (`logger_dev*.go`).
+* Use `task reload` to rebuild runtime without restarting the whole app.
+* Race detector: `wails3 dev -race` (see `pkg/application/RACE.md`).
+
+---
+
+## 7. Upstream Contributions
+
+1. Open an **issue** to discuss the idea & design.
+2. Follow the techniques above to implement.
+3. Add:
+   * Unit tests (`*_test.go`)
+   * Example (`v3/examples/<feat>/`)
+   * Docs (this file or API reference)
+4. Ensure `go vet`, `golangci-lint`, and CI matrix pass.
+
+---
+
+### Quick Links
+
+| Area | Location |
+|------|----------|
+| Services framework | `internal/service/` |
+| CLI core          | `internal/commands/` |
+| Runtime per-OS    | `internal/runtime/` |
+| Capability helpers| `internal/capabilities/` |
+| Taskfile DSL      | `tasks/Taskfile.yml` |
+| Dev matrix tests  | `tasks/events/generate.go` |
+
+---
+
+You now have a **roadmap** for bending Wails to your will—add services, sprinkle
+CLI magic, hack the runtime, or bring entirely new OS features.  
+Happy extending!  

@@ -1,0 +1,261 @@
+:root {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 400;
+    color-scheme: light dark;
+    /* Desktop defaults (mobile overrides below) */
+    --bg: #1C222F; /* rgb(28,34,47) */
+    --fg: rgba(255,255,255,0.88);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* Prefer system fonts on mobile; remove custom font to reduce bundle size */
+
+h3 {
+    font-size: 3em;
+    line-height: 1.1;
+}
+
+a {
+    font-weight: 500;
+    color: #646cff;
+    text-decoration: inherit;
+}
+
+a:hover {
+    color: #535bf2;
+}
+
+/* Remove generic button styling to allow Puppertino .btn to control buttons */
+
+.result {
+    height: 20px;
+    line-height: 20px;
+}
+
+html,
+body {
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden; /* prevent horizontal overflow */
+    overflow-y: auto;   /* allow vertical scroll if needed */
+}
+
+body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 320px;
+    /* Use small viewport units to avoid iOS Safari URL bar issues */
+    min-height: 100svh;
+    height: auto; /* avoid forcing overflow */
+    /* Equal responsive spacing top & bottom */
+    padding-block: clamp(8px, 4vh, 48px);
+    color: var(--fg);
+    background-color: var(--bg);
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* Responsive spacing between elements */
+    gap: clamp(8px, 2vh, 24px);
+    width: 100%;
+    max-width: 480px;
+    padding-inline: 16px;
+}
+
+h1 {
+    /* Responsive heading size */
+    font-size: clamp(1.6rem, 6vw, 3.2rem);
+    line-height: 1.1;
+}
+
+#app {
+    max-width: 1280px;
+    margin: 0 auto;
+    /* Responsive inner padding: horizontal only, no extra top/bottom */
+    padding: 0 clamp(12px, 4vw, 32px);
+    text-align: center;
+}
+
+.logo {
+    /* Consistent visual size across images: fix height, auto width */
+    height: clamp(80px, 18vh, 140px);
+    width: auto;
+    max-width: 80vw;
+    padding: 0.5em;
+    will-change: filter;
+}
+
+.logo:hover {
+    filter: drop-shadow(0 0 2em #e80000aa);
+}
+
+.logo.vanilla:hover {
+    filter: drop-shadow(0 0 2em #f7df1eaa);
+}
+
+.result {
+    height: 20px;
+    line-height: 20px;
+    margin: 1.5rem auto;
+    text-align: center;
+}
+
+.footer {
+    margin-top: 1rem;
+    align-content: center;
+    text-align: center;
+}
+
+/* Mobile-specific light mode */
+@media (max-width: 768px) and (prefers-color-scheme: light) {
+    :root {
+        --fg: rgba(255,255,255,0.88);
+        --bg: #1C222F; /* rgb(28,34,47) */
+    }
+
+    a:hover {
+        color: #747bff;
+    }
+
+    /* allow Puppertino to style .btn */
+
+    .input-box .input {
+        color: #111827;
+        background-color: #f3f4f6;
+        border: 1px solid #e5e7eb; /* show border in light mode */
+        border-radius: 8px;
+    }
+
+    button:hover {
+        border-color: #d1d5db; /* slate-300 */
+    }
+
+    .input-box .input:focus {
+        border-color: #9ca3af; /* gray-400 */
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); /* subtle focus ring */
+    }
+}
+
+/* let Puppertino handle .btn hover */
+
+.input-box .input {
+    border: 1px solid transparent; /* default; themed in media queries */
+    border-radius: 8px;
+    outline: none;
+    height: 30px;
+    line-height: 30px;
+    padding: 0 10px;
+    color: black;
+    background-color: rgba(240, 240, 240, 1);
+    -webkit-font-smoothing: antialiased;
+}
+
+.input-box .input:hover {
+    background-color: rgba(255, 255, 255, 1);
+}
+
+.input-box .input:focus {
+    background-color: rgba(255, 255, 255, 1);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+}
+
+/* Mobile-specific dark mode */
+@media (max-width: 768px) and (prefers-color-scheme: dark) {
+    :root {
+        color: rgba(255, 255, 255, 0.88);
+        --fg: rgba(255, 255, 255, 0.88);
+        --bg: #1C222F; /* rgb(28,34,47) */
+    }
+
+    a {
+        color: #8ea2ff;
+    }
+
+    a:hover {
+        color: #aab6ff;
+    }
+
+    /* allow Puppertino to style .btn in dark mode */
+
+    .input-box .input {
+        background-color: #111827; /* gray-900 */
+        color: #e5e7eb;
+        caret-color: #ffffff;
+        border: 1px solid #374151; /* slate-700 */
+    }
+
+    .input-box .input:hover,
+    .input-box .input:focus {
+        background-color: #0b1220;
+        border-color: #4b5563; /* slate-600 */
+    }
+
+    /* allow Puppertino to handle active state */
+}
+
+/* Mobile baseline overrides (apply to both light and dark) */
+@media (max-width: 768px) {
+  /* Prevent iOS zoom on focus */
+  input, textarea, select, button { font-size: 16px; }
+
+  /* let Puppertino define .btn sizing */
+
+  /* Align input with button and center text nicely */
+  .input-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .input-box .input {
+    height: 36px;         /* slightly shorter to match button */
+    line-height: 1.2;
+    padding: 0 10px;
+  }
+
+  /* Lock viewport to device height and remove overflow on mobile */
+  html, body {
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;          /* disable scroll chaining/bounce */
+    -webkit-overflow-scrolling: auto;   /* avoid momentum scrolling */
+  }
+
+  body {
+    padding-block: 0; /* avoid extra height from block padding */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    height: 100dvh;
+    min-height: 100dvh;
+    position: fixed;      /* lock body to viewport */
+    inset: 0;             /* fill viewport */
+  }
+
+  .container {
+    min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    justify-content: center; /* vertical center without needing extra padding */
+  }
+}

@@ -1,0 +1,50 @@
+# Feel free to remove those if you don't want/need to use them.
+# Make sure to check the documentation at https://nfpm.goreleaser.com
+#
+# The lines below are called `modelines`. See `:help modeline`
+
+name: "custom-protocol-example"
+arch: ${GOARCH}
+platform: "linux"
+version: "0.0.1"
+section: "default"
+priority: "extra"
+maintainer: ${GIT_COMMITTER_NAME} <${GIT_COMMITTER_EMAIL}>
+description: "A program that does X"
+vendor: "My Company"
+homepage: "https://wails.io"
+license: "MIT"
+release: "1"
+
+contents:
+  - src: "./bin/custom-protocol-example"
+    dst: "/usr/local/bin/custom-protocol-example"
+  - src: "./build/appicon.png"
+    dst: "/usr/share/icons/hicolor/128x128/apps/custom-protocol-example.png"
+  - src: "./build/linux/custom-protocol-example.desktop"
+    dst: "/usr/share/applications/custom-protocol-example.desktop"
+
+depends:
+  - gtk3
+  - libwebkit2gtk
+
+# replaces:
+#   - foobar
+# provides:
+#   - bar
+# depends:
+#   - gtk3
+#   - libwebkit2gtk
+# recommends:
+#   - whatever
+# suggests:
+#   - something-else
+# conflicts:
+#   - not-foo
+#   - not-bar
+# changelog: "changelog.yaml"
+# scripts:
+#   preinstall: ./build/linux/nfpm/scripts/preinstall.sh
+#   postinstall: ./build/linux/nfpm/scripts/postinstall.sh
+#   preremove: ./build/linux/nfpm/scripts/preremove.sh
+#   postremove: ./build/linux/nfpm/scripts/postremove.sh

@@ -1,0 +1,107 @@
+version: '3'
+
+vars:
+  APP_NAME: "buildtest{{exeExt}}"
+
+
+tasks:
+
+  build:
+    summary: Builds the application
+    cmds:
+      - go build -gcflags=all="-N -l" -o bin/{{.APP_NAME}}
+    env:
+      CGO_CFLAGS: "-mmacosx-version-min=10.13"
+      CGO_LDFLAGS: "-mmacosx-version-min=10.13"
+      MACOSX_DEPLOYMENT_TARGET: "10.13"
+
+  package:
+    summary: Packages a production build of the application into a `.app` or `.exe` bundle
+    cmds:
+      - task: package:darwin
+      - task: package:windows
+
+# ------------------------------------------------------------------------------
+
+  generate:icons:
+    summary: Generates Windows `.ico` and Mac `.icns` files from an image
+    dir: build
+    cmds:
+      # Generates both .ico and .icns files
+      - wails3 generate icons -input appicon.png
+
+  build:production:darwin:
+    summary: Creates a production build of the application
+    cmds:
+      - GOOS=darwin GOARCH={{.GOARCH}} go build -tags production -ldflags="-w -s" -o build/bin/{{.APP_NAME}}
+    env:
+      CGO_CFLAGS: "-mmacosx-version-min=10.13"
+      CGO_LDFLAGS: "-mmacosx-version-min=10.13"
+      MACOSX_DEPLOYMENT_TARGET: "10.13"
+      GOARCH: '{{.GOARCH}}'
+
+  generate:app_bundle:
+    summary: Builds a `.app` bundle
+    cmds:
+      - mkdir -p {{.APP_NAME}}.app/Contents/{MacOS,Resources}
+      - cp build/icons.icns {{.APP_NAME}}.app/Contents/Resources
+      - cp build/bin/{{.APP_NAME}} {{.APP_NAME}}.app/Contents/MacOS
+      - cp build/Info.plist {{.APP_NAME}}.app/Contents
+
+  package:darwin:arm64:
+    summary: Packages a production build of the application into a `.app` bundle
+    platforms:
+      - darwin
+    deps:
+      - task: build:production:darwin
+        vars:
+          ARCH: arm64
+      - generate:icons
+    cmds:
+      - task: generate:app_bundle
+
+  package:darwin:
+    summary: Packages a production build of the application into a `.app` bundle
+    platforms:
+      - darwin
+    deps:
+      - task: build:production:darwin
+      - generate:icons
+    cmds:
+      - task: generate:app_bundle
+
+  generate:syso:
+    dir: build
+    platforms:
+      - windows
+    cmds:
+      - wails3 generate syso -arch {{.GOARCH}} -icon icon.ico -manifest wails.exe.manifest -info info.json
+    vars:
+      GOARCH: '{{.GOARCH}}'
+
+  package:windows:
+    summary: Packages a production build of the application into a `.exe` bundle
+    platforms:
+      - windows/amd64
+    deps:
+      - generate:icons
+    cmds:
+      - task: generate:syso
+        vars:
+            GOARCH: amd64
+      - go build -tags production -gcflags=all="-N -l" -o bin/{{.APP_NAME}}
+      - powershell Remove-item *.syso
+
+
+  package:windows:arm64:
+    summary: Packages a production build of the application into a `.exe` bundle (ARM64)
+    platforms:
+      - windows
+    cmds:
+      - task: generate:syso
+        vars:
+          GOARCH: arm64
+      - go build -tags production -ldflags="-w -s -H windowsgui" -o bin/buildtest.arm64.exe
+      - powershell Remove-item *.syso
+    env:
+      GOARCH: arm64
