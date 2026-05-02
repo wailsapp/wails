@@ -361,25 +361,24 @@ func TestMacLiquidGlassStyle_Constants(t *testing.T) {
 }
 
 func TestFullscreenButtonState_OptionExists(t *testing.T) {
-	opts := WebviewWindowOptions{
-		FullscreenButtonState: ButtonHidden,
-	}
-	if opts.FullscreenButtonState != ButtonHidden {
-		t.Errorf("FullscreenButtonState = %d, want %d", opts.FullscreenButtonState, ButtonHidden)
-	}
-
-	opts = WebviewWindowOptions{
-		FullscreenButtonState: ButtonDisabled,
-	}
-	if opts.FullscreenButtonState != ButtonDisabled {
-		t.Errorf("FullscreenButtonState = %d, want %d", opts.FullscreenButtonState, ButtonDisabled)
+	tests := []struct {
+		name  string
+		state ButtonState
+	}{
+		{name: "hidden", state: ButtonHidden},
+		{name: "disabled", state: ButtonDisabled},
+		{name: "enabled", state: ButtonEnabled},
 	}
 
-	opts = WebviewWindowOptions{
-		FullscreenButtonState: ButtonEnabled,
-	}
-	if opts.FullscreenButtonState != ButtonEnabled {
-		t.Errorf("FullscreenButtonState = %d, want %d", opts.FullscreenButtonState, ButtonEnabled)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			opts := WebviewWindowOptions{
+				FullscreenButtonState: tt.state,
+			}
+			if opts.FullscreenButtonState != tt.state {
+				t.Errorf("FullscreenButtonState = %d, want %d", opts.FullscreenButtonState, tt.state)
+			}
+		})
 	}
 }
 
