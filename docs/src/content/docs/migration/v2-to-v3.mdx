@@ -124,7 +124,7 @@ app := application.New(application.Options{
 
 In v2, application-level lifecycle hooks (`OnStartup`, `OnShutdown`, `OnDomReady`) were function fields set directly on `options.App`. These hooks received a `context.Context` and were typically used to initialize or tear down the single monolithic `App` struct.
 
-In v3, lifecycle hooks are optional interface methods on individual services: `ServiceStartup` and `ServiceShutdown`. This allows each service to manage its own initialization and cleanup independently, and makes it clear which service owns which resources.
+In v3, the preferred pattern is optional interface methods on individual services: `ServiceStartup` and `ServiceShutdown`. This allows each service to manage its own initialization and cleanup independently, and makes it clear which service owns which resources. For application-level shutdown logic (e.g. flushing logs), `application.Options.OnShutdown` is still available as a global hook.
 
 **v2:**
 
@@ -144,6 +144,7 @@ func (a *App) shutdown(ctx context.Context) {
 }
 
 // Hooks registered on options
+app := &App{}
 err := wails.Run(&options.App{
     OnStartup:  app.startup,
     OnShutdown: app.shutdown,
@@ -181,7 +182,7 @@ Both methods are **optional** — implement only the ones you need. Services tha
 | `OnStartup func(ctx context.Context)` on `options.App` | `ServiceStartup(ctx context.Context, options ServiceOptions) error` on service |
 | `OnShutdown func(ctx context.Context)` on `options.App` | `ServiceShutdown() error` on service |
 | Single global hook | Per-service lifecycle |
-| Context stored as field | Context used only during startup |
+| Context stored as field | Context is valid for the application lifetime; cancelled just before shutdown |
 
 ### OnDomReady
 
@@ -214,7 +215,7 @@ app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *applicati
 import { Events } from '@wailsio/runtime'
 
 document.addEventListener('DOMContentLoaded', () => {
-    Events.Emit({ name: 'app:ready', data: null })
+    Events.Emit('app:ready', null)
 })
 ```
 
@@ -328,7 +329,7 @@ Events.On("event-name", (event) => {
     console.log(event.data)
 })
 
-Events.Emit({ name: "action", data: payload })
+Events.Emit("action", payload)
 ```
 
 **Why this is better:**
@@ -389,20 +390,32 @@ In v3, menus are created with `app.NewMenu()` and set on the application after c
 **v2:**
 
 ```go
-import "github.com/wailsapp/wails/v2/pkg/menu"
+import (
+    "context"
+    "github.com/wailsapp/wails/v2/pkg/menu"
+    "github.com/wailsapp/wails/v2/pkg/menu/keys"
+    "github.com/wailsapp/wails/v2/pkg/runtime"
+)
 
-func buildMenu(ctx context.Context) *menu.Menu {
+type App struct{ ctx context.Context }
+
+func (a *App) startup(ctx context.Context) { a.ctx = ctx }
+
+func buildMenu(a *App) *menu.Menu {
     appMenu := menu.NewMenu()
     fileMenu := appMenu.AddSubmenu("File")
     fileMenu.AddText("Quit", keys.CmdOrCtrl("q"), func(_ *menu.CallbackData) {
-        runtime.Quit(ctx)
+        runtime.Quit(a.ctx)
     })
     return appMenu
 }
 
-// Set on options — must be done before Run
+// The menu must be built before Run; ctx is not yet available here,
+// so a reference to the App struct is captured instead.
+a := &App{}
 err := wails.Run(&options.App{
-    Menu: buildMenu(ctx),
+    OnStartup: a.startup,
+    Menu:      buildMenu(a),
 })
 ```
 
@@ -851,7 +864,7 @@ Events.On("update", (event) => {
     console.log(event.data)
 })
 
-Events.Emit({ name: "action", data: data })
+Events.Emit("action", data)
 ```
 
 ### Step 6: Update Build Configuration
@@ -905,12 +918,17 @@ selection, err := app.Dialog.OpenFile(application.OpenFileDialogOptions{
 **v2:**
 
 ```go
-import "github.com/wailsapp/wails/v2/pkg/menu"
+import (
+    "github.com/wailsapp/wails/v2/pkg/menu"
+    "github.com/wailsapp/wails/v2/pkg/menu/keys"
+    "github.com/wailsapp/wails/v2/pkg/runtime"
+)
 
+// ctx is stored on App.startup(ctx) and referenced here via closure
 appMenu := menu.NewMenu()
 fileMenu := appMenu.AddSubmenu("File")
 fileMenu.AddText("Quit", keys.CmdOrCtrl("q"), func(_ *menu.CallbackData) {
-    runtime.Quit(ctx)
+    runtime.Quit(a.ctx)
 })
 
 // Set on options before Run
