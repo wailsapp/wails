@@ -66,6 +66,8 @@ app.Run()
 - **More testable**: You can test application setup without running the event loop
 - **More flexible**: Windows can be created, destroyed, and recreated throughout the application lifecycle
 
+→ [Application Lifecycle](/concepts/lifecycle)
+
 ### Bind → Services
 
 In v2, the `Bind` field in `options.App` accepted a flat slice of `interface{}` values. Every bound struct required a context field and a `startup(ctx)` method to receive the runtime context. This created tight coupling between your business logic and the Wails runtime, making code harder to test and understand.
@@ -119,6 +121,8 @@ app := application.New(application.Options{
 - **Clearer code**: Dependencies are explicit (passed as constructor arguments) rather than hidden in a context field
 - **Better organization**: Services can be grouped by domain rather than all living in a single `App` struct
 - **Proper initialization**: Use `ServiceStartup()` method when you need initialization, making it explicit
+
+→ [Services](/features/bindings/services)
 
 ### Service Lifecycle (OnStartup / OnShutdown)
 
@@ -184,6 +188,8 @@ Both methods are **optional** — implement only the ones you need. Services tha
 | Single global hook | Per-service lifecycle |
 | Context stored as field | Context is valid for the application lifetime; cancelled just before shutdown |
 
+→ [Application Lifecycle](/concepts/lifecycle)
+
 ### OnDomReady
 
 In v2, `OnDomReady` was a hook on `options.App` called once the frontend DOM was fully loaded and ready to receive calls from Go. It was commonly used to kick off initial data loading or emit a "ready" event to the frontend.
@@ -218,6 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
     Events.Emit('app:ready', null)
 })
 ```
+
+→ [Event System](/features/events/system)
 
 ### OnBeforeClose / Window Close Interception
 
@@ -258,6 +266,8 @@ app := application.New(application.Options{
     },
 })
 ```
+
+→ [Window Events](/features/windows/events)
 
 ### Logging
 
@@ -340,6 +350,8 @@ Events.Emit("action", payload)
 - **No context needed**: Events work directly on the app object without threading context
 - **Consistent frontend/backend API**: Both sides use the same `On`/`Emit` naming
 
+→ [Event System](/features/events/system)
+
 ### Runtime
 
 In v2, all runtime operations required passing a context to global functions from the `runtime` package. This created tight coupling to the context object throughout your codebase and made the API feel procedural rather than object-oriented.
@@ -380,6 +392,8 @@ func (s *MyService) EmitEvent() {
 - **Better IDE support**: Autocomplete works properly when methods are on objects
 - **Multi-window clarity**: With multiple windows, you explicitly choose which window to operate on
 - **No context threading**: You don't need to pass context through every function
+
+→ [Window Basics](/features/windows/basics)
 
 ### Menus
 
@@ -440,6 +454,8 @@ app.Menu.Set(menu)
 - **Chainable API**: `menu.Add("Item").SetAccelerator("...").OnClick(...)` is more readable
 - **Roles built-in**: Use `menu.AddRole(application.AppMenu)` for standard platform menus
 
+→ [Application Menus](/features/menus/application)
+
 ### Window Creation
 
 In v2, there was only a single window and it was configured entirely through `options.App`. All window properties (title, size, etc.) were part of the top-level options struct.
@@ -486,6 +502,8 @@ window.Hide()
 - **Independent window state**: Each window has its own events, properties, and lifecycle
 - **Better architecture**: Window management is object-oriented rather than context-based
 
+→ [Window Basics](/features/windows/basics) · [Multiple Windows](/features/windows/multiple)
+
 ### Generated Bindings Path
 
 In v2, bindings were organized by Go package and struct name, typically resulting in paths like `wailsjs/go/main/App`. This structure didn't reflect logical grouping and made it hard to find related functionality.
@@ -515,6 +533,8 @@ const result = await GreetService.Greet("World")
 - **Better discoverability**: You can navigate bindings by feature rather than by technical structure
 - **Consistent naming**: Service-based organization matches your backend architecture
 - **Simpler paths**: No more `../wailsjs/go` prefix — just `./bindings`
+
+→ [Method Bindings](/features/bindings/methods)
 
 ### Configuration File
 
@@ -603,6 +623,8 @@ wails3 init -n myapp -t svelte
 # Then update build/config.yml with your app metadata
 ```
 
+→ [Build System](/concepts/build-system)
+
 ### Build Command
 
 In v2, applications were built with `wails build`. In v3, the build system is **task-based**. Always use `wails3 task build` (or `wails3 build`) to build your application — never use `go build` directly, as this skips the asset embedding and frontend compilation steps.
@@ -639,6 +661,8 @@ wails3 generate bindings
 :::caution
 Never use `go build` or `go run .` for production builds. These skip the frontend compilation and asset embedding steps, producing a binary that cannot load your UI.
 :::
+
+→ [Build System](/concepts/build-system)
 
 ## Migration Steps
 
@@ -913,6 +937,8 @@ selection, err := app.Dialog.OpenFile(application.OpenFileDialogOptions{
 })
 ```
 
+→ [Dialogs Overview](/features/dialogs/overview)
+
 ### Menus
 
 **v2:**
@@ -950,6 +976,8 @@ fileMenu.Add("Quit").SetAccelerator("CmdOrCtrl+q").OnClick(func(ctx *application
 app.Menu.Set(menu)
 ```
 
+→ [Application Menus](/features/menus/application)
+
 ### System Tray
 
 **v2:**
@@ -970,6 +998,8 @@ menu.Add("Show").OnClick(showWindow)
 menu.Add("Quit").OnClick(func(ctx *application.Context) { app.Quit() })
 systray.SetMenu(menu)
 ```
+
+→ [System Tray Menus](/features/menus/systray)
 
 ## Common Issues
 
