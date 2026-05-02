@@ -529,6 +529,7 @@ func (w *serverWebviewWindow) bounds() Rect                               { retu
 func (w *serverWebviewWindow) setBounds(bounds Rect)                      {}
 func (w *serverWebviewWindow) position() (int, int)                       { return 0, 0 }
 func (w *serverWebviewWindow) setPosition(x int, y int)                   {}
+func (w *serverWebviewWindow) centerOnScreen(_ *Screen)                   {}
 func (w *serverWebviewWindow) relativePosition() (int, int)               { return 0, 0 }
 func (w *serverWebviewWindow) setRelativePosition(x int, y int)           {}
 func (w *serverWebviewWindow) flash(enabled bool)                         {}
@@ -551,4 +552,5 @@ func (w *serverWebviewWindow) hideMenuBar()                               {}
 func (w *serverWebviewWindow) toggleMenuBar()                             {}
 func (w *serverWebviewWindow) setMenu(menu *Menu)                         {}
 func (w *serverWebviewWindow) snapAssist()                                {}
+func (w *serverWebviewWindow) attachModal(modalWindow *WebviewWindow)     {}
 func (w *serverWebviewWindow) setContentProtection(enabled bool)          {}

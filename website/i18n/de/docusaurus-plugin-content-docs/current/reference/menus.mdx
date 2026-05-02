@@ -1,0 +1,236 @@
+---
+sidebar_position: 4
+---
+
+# Menus
+
+Es ist möglich, ein Anwendungsmenü zu Wails Projekten hinzuzufügen. Dies wird durch die Definition eines [Menu](#menu) Struct und in der [`Menu`](../reference/options.mdx#menu) Anwendung Konfiguration erreicht, oder beim Aufrufen der Laufzeitmethode [MenuSetApplicationMenu](../reference/runtime/menu.mdx#menusetapplicationmenu).
+
+Ein Beispiel dafür, wie man ein Menü erstellt:
+
+```go
+
+    app := NewApp()
+
+    AppMenu := menu.NewMenu()
+    if runtime.GOOS == "darwin" {
+        AppMenu.Append(menu.AppMenu()) // On macOS platform, this must be done right after `NewMenu()`
+    }
+    FileMenu := AppMenu.AddSubmenu("File")
+    FileMenu.AddText("&Open", keys.CmdOrCtrl("o"), func(_ *menu.CallbackData) {
+        // do something
+    })
+    FileMenu.AddSeparator()
+    FileMenu.AddText("Quit", keys.CmdOrCtrl("q"), func(_ *menu.CallbackData) {
+        // `rt` is an alias of "github.com/wailsapp/wails/v2/pkg/runtime" to prevent collision with standard package
+        rt.Quit(app.ctx)
+    })
+
+    if runtime.GOOS == "darwin" {
+    AppMenu.Append(menu.EditMenu())  // On macOS platform, EditMenu should be appended to enable Cmd+C, Cmd+V, Cmd+Z... shortcuts
+    }
+
+    err := wails.Run(&options.App{
+        Title:             "Menus Demo",
+        Width:             800,
+        Height:            600,
+        Menu:              AppMenu, // reference the menu above
+        Bind: []interface{}{
+            app,
+        },
+    )
+    // ...
+```
+
+Es ist auch möglich, das Menü dynamisch zu aktualisieren, indem du das Menü Struct aktualisierst, und [MenuUpdateApplicationMenu](../reference/runtime/menu.mdx#menuupdateapplicationmenu) aufrufst.
+
+Das obige Beispiel verwendet Hilfsmethoden, es ist jedoch möglich, die Menu Struct manuell zu erstellen.
+
+## Menu
+
+Ein Menü ist eine Sammlung von MenuItems:
+
+```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
+type Menu struct {
+    Items []*MenuItem
+}
+```
+
+Für das Anwendungsmenü repräsentiert jedes MenuItem ein einzelnes Menü, wie z. B. "Bearbeiten".
+
+Eine einfache Hilfsmethode ist für das Erstellen von Menüs verfügbar:
+
+```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
+func NewMenuFromItems(first *MenuItem, rest ...*MenuItem) *Menu
+```
+
+Dadurch ähnelt das Layout des Codes dem eines Menüs, ohne dass die Menüpunkte nach ihrer Erstellung manuell hinzugefügt werden müssen. Alternativ können die Menüeinträge erstellt und manuell im Menü hinzugefügt werden.
+
+## MenuItem
+
+Ein MenuItem stellt einen Eintrag in einem Menü dar.
+
+```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
+// MenuItem represents a menu item contained in a menu
+type MenuItem struct {
+    Label string
+    Role Role
+    Accelerator *keys.Accelerator
+    Type Type
+    Disabled bool
+    Hidden bool
+    Checked bool
+    SubMenu *Menu
+    Click Callback
+}
+```
+
+| Feld        | Typ                                  | Anmerkungen                                                        |
+| ----------- | ------------------------------------ | ------------------------------------------------------------------ |
+| Label       | string                               | Der Menütext                                                       |
+| Accelerator | [\*keys.Accelerator](#accelerator) | Tastenbelegung für diesen Menüeintrag                              |
+| Typ         | [Typ](#type)                         | Typ des MenuItem                                                   |
+| Disabled    | bool                                 | Deaktiviert den Menüpunkt                                          |
+| Hidden      | bool                                 | Versteckt diesen Menüpunkt                                         |
+| Checked     | bool                                 | Fügt ein Element zum Menüpunkt hinzu (Checkbox & Radio-Buttons)    |
+| SubMenu     | [\*Menu](#menu)                    | Legt das Untermenü fest                                            |
+| Click       | [Callback](#callback)                | Callback-Funktion beim Anklicken des Menüs                         |
+| Role        | string                               | Definiert eine [Rolle](#role) für diesen Menüeintrag. Nur für Mac. |
+
+### Accelerator
+
+Accelerators (manchmal auch Tastaturkürzel genannt) definieren eine Verknüpfung zwischen einem Tastendruck und einem Menüpunkt. Wails definiert einen Accelerator als Kombination oder Taste + [Modifikator](#modifier). Diese sind im `"github.com/wailsapp/wails/v2/pkg/menu/keys"` Paket verfügbar.
+
+Beispiel:
+
+```go title="Package: github.com/wailsapp/wails/v2/pkg/menu/keys"
+    // Defines cmd+o on Mac and ctrl-o on Window/Linux
+    myShortcut := keys.CmdOrCtrl("o")
+```
+
+Tasten sind jedes einzelne Zeichen auf einer Tastatur mit Ausnahme von `+`, das als `plus` definiert ist. Einige Schlüssel können nicht als Zeichen dargestellt werden, daher gibt es eine Reihe von benannten Zeichen, die verwendet werden können:
+
+|             |       |       |           |
+|:-----------:|:-----:|:-----:|:---------:|
+| `backspace` | `f1`  | `f16` |   `f31`   |
+|    `tab`    | `f2`  | `f17` |   `f32`   |
+|  `return`   | `f3`  | `f18` |   `f33`   |
+|   `enter`   | `f4`  | `f19` |   `f34`   |
+|  `escape`   | `f5`  | `f20` |   `f35`   |
+|   `left`    | `f6`  | `f21` | `numlock` |
+|   `right`   | `f7`  | `f22` |           |
+|    `up`     | `f8`  | `f23` |           |
+|   `down`    | `f9`  | `f24` |           |
+|   `space`   | `f10` | `f25` |           |
+|  `delete`   | `f11` | `f36` |           |
+|   `home`    | `f12` | `f37` |           |
+|    `end`    | `f13` | `f38` |           |
+|  `page up`  | `f14` | `f39` |           |
+| `page down` | `f15` | `f30` |           |
+
+Wails unterstützt auch das Parsen von Accelerators mit der gleichen Syntax wie bei Electron. Das ist besonders nützlich, um Accelerators in Konfigurationsdateien zu speichern.
+
+Beispiel:
+
+```go title="Package: github.com/wailsapp/wails/v2/pkg/menu/keys"
+    // Defines cmd+o on Mac and ctrl-o on Window/Linux
+    myShortcut, err := keys.Parse("Ctrl+Option+A")
+```
+
+#### Modifier
+
+Die folgenden Modifikatoren sind Schlüssel, die in Kombination mit dem Beschleunigungsschlüssel verwendet werden können:
+
+```go title="Package: github.com/wailsapp/wails/v2/pkg/menu/keys"
+const (
+    // CmdOrCtrlKey represents Command on Mac and Control on other platforms
+    CmdOrCtrlKey Modifier = "cmdorctrl"
+    // OptionOrAltKey represents Option on Mac and Alt on other platforms
+    OptionOrAltKey Modifier = "optionoralt"
+    // ShiftKey represents the shift key on all systems
+    ShiftKey Modifier = "shift"
+    // ControlKey represents the control key on all systems
+    ControlKey Modifier = "ctrl"
+)
+```
+
+Eine Reihe von Hilfsmethoden stehen zur Verfügung, um Accelerators mithilfe von Modifikatoren zu erstellen:
+
+```go title="Package: github.com/wailsapp/wails/v2/pkg/menu/keys"
+func CmdOrCtrl(key string) *Accelerator
+func OptionOrAlt(key string) *Accelerator
+func Shift(key string) *Accelerator
+func Control(key string) *Accelerator
+```
+
+Modifikatoren können mit `keys.Combo(key string, modifier1 Modifier, modifier2 Modifier, rest ...Modifier)` kombiniert werden:
+
+```go title="Package: github.com/wailsapp/wails/v2/pkg/menu/keys"
+    // Defines "Ctrl+Option+A" on Mac and "Ctrl+Alt+A" on Window/Linux
+    myShortcut := keys.Combo("a", ControlKey, OptionOrAltKey)
+```
+
+### Typ
+
+Jeder Menüpunkt muss einem der 5 Typen entsprechen:
+
+```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
+const (
+    TextType Type = "Text"
+    SeparatorType Type = "Separator"
+    SubmenuType Type = "Submenu"
+    CheckboxType Type = "Checkbox"
+    RadioType Type = "Radio"
+)
+```
+
+Zur Bequemlichkeit werden Hilfsmethoden angeboten, um schnell einen Menüpunkt zu erstellen:
+
+```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
+func Text(label string, accelerator *keys.Accelerator, click Callback) *MenuItem
+func Separator() *MenuItem
+func Radio(label string, selected bool, accelerator *keys.Accelerator, click Callback) *MenuItem
+func Checkbox(label string, checked bool, accelerator *keys.Accelerator, click Callback) *MenuItem
+func SubMenu(label string, menu *Menu) *Menu
+```
+
+Du kannst Menüpunkte auch direkt in einem Menü erstellen, indem du die "Add" Helfer verwendest:
+
+```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
+func (m *Menu) AddText(label string, accelerator *keys.Accelerator, click Callback) *MenuItem
+func (m *Menu) AddSeparator() *MenuItem
+func (m *Menu) AddRadio(label string, selected bool, accelerator *keys.Accelerator, click Callback) *MenuItem
+func (m *Menu) AddCheckbox(label string, checked bool, accelerator *keys.Accelerator, click Callback) *MenuItem
+func (m *Menu) AddSubMenu(label string, menu *Menu) *MenuI
+```
+
+Eine Notiz über "Radio" Gruppen: Eine "Radio" Gruppe wird als eine Reihe von Radiomenüelementen definiert, die nebeneinander im Menü stehen. Das bedeutet, dass keine Elemente zusammengefasst werden müssen, da das automatisch gehandhabt wird. Das bedeutet aber auch, dass du nicht 2 "Radio" Gruppen nebeneinander haben kannst. Es muss ein Nicht-Radio-Element sein.
+
+### Callback
+
+Jeder Menüeintrag kann einen Callback haben, der ausgeführt wird, wenn das Element angeklickt wird:
+
+```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
+type Callback func(*CallbackData)
+
+type CallbackData struct {
+    MenuItem    *MenuItem
+}
+```
+
+Der Funktion wird ein `CallbackData` Struct gegeben, der anzeigt, welcher Menüpunkt den Rückruf ausgelöst hat. Das ist nützlich, wenn "Radio" Gruppen verwendet werden, die einen Callback teilen können.
+
+### Role
+
+:info Roles
+
+Roles werden derzeit nur auf Mac unterstützt.
+
+:::
+
+Ein Menüpunkt kann eine Role haben, was im Wesentlichen ein vordefinierter Menüeintrag ist. Zurzeit unterstützen wir die folgenden Roles:
+
+| Role         | Beschreibung                                                                  |
+| ------------ | ----------------------------------------------------------------------------- |
+| AppMenuRole  | Das Standard-Mac-Anwendungsmenü. Kann mit `menu.AppMenu()` erstellt werden    |
+| EditMenuRole | Das Standard-Mac-Bearbeitungsmenü. Kann mit `menu.EditMenu()` erstellt werden |

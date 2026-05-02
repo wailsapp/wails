@@ -174,7 +174,9 @@ func (a *linuxApp) run() error {
 	}
 
 	a.parent.Event.OnApplicationEvent(events.Linux.ApplicationStartup, func(evt *ApplicationEvent) {
-		// TODO: What should happen here?
+		if err := a.processAndCacheScreens(); err != nil {
+			a.parent.handleError(err)
+		}
 	})
 	a.setupCommonEvents()
 	a.monitorThemeChanges()

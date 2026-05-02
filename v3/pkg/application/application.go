@@ -116,6 +116,10 @@ func New(appOptions Options) *App {
 					if err != nil {
 						result.fatal("unable to serve transport.js: %w", err)
 					}
+				case "/wails/custom.js":
+					// custom.js is only served in server mode.
+					// Return 404 so the runtime's loadOptionalScript skips it.
+					http.NotFound(rw, req)
 				default:
 					next.ServeHTTP(rw, req)
 				}

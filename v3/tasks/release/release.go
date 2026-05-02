@@ -20,9 +20,9 @@ import (
 const (
 	versionFile          = "../../internal/version/version.txt"
 	changelogFile        = "../../../docs/src/content/docs/changelog.mdx"
-	defaultReleaseBranch = "v3-alpha"
+	defaultReleaseBranch = "master"
 	defaultReleaseTitle  = "Wails %s"
-	defaultReleaseTarget = "v3-alpha"
+	defaultReleaseTarget = "master"
 	githubDefaultAPI     = "https://api.github.com"
 	githubAPIVersion     = "2022-11-28"
 )
@@ -52,7 +52,7 @@ func getUnreleasedChangelogTemplate() string {
 	return `# Unreleased Changes
 
 <!-- 
-This file is used to collect changelog entries for the next v3-alpha release.
+This file is used to collect changelog entries for the next v3 alpha release.
 Add your changes under the appropriate sections below.
 
 Guidelines:
@@ -661,7 +661,7 @@ func buildReleaseBody(version, changelogContent string) string {
 		"",
 		"---",
 		"",
-		"🤖 This is an automated nightly release generated from the latest changes in the v3-alpha branch.",
+		"🤖 This is an automated nightly release generated from the latest changes on master.",
 		"",
 		"**Installation:**",
 		"```bash",

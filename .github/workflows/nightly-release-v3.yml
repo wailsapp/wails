@@ -2,7 +2,7 @@ name: Nightly Release v3-alpha
 
 on:
   schedule:
-    - cron: '0 2 * * *'  # 2 AM UTC daily
+    - cron: '0 15 * * *'  # 3 PM UTC daily
   workflow_dispatch:
     inputs:
       force_release:
@@ -29,14 +29,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        ref: v3-alpha
+        ref: master
         fetch-depth: 0
         token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
     
     - name: Setup Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.24'
+        go-version: '1.25'
         cache: true
         cache-dependency-path: 'v3/go.sum'
     
