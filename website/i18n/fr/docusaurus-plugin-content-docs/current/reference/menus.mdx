@@ -14,27 +14,27 @@ Un exemple de définition d'un menu :
 
     AppMenu := menu.NewMenu()
     if runtime.GOOS == "darwin" {
-        AppMenu.Append(menu.AppMenu()) // On macOS platform, this must be done right after `NewMenu()`
+        AppMenu.Append(menu.AppMenu()) // Sur macOS, doit être fait juste après `NewMenu()`
     }
     FileMenu := AppMenu.AddSubmenu("File")
     FileMenu.AddText("&Open", keys.CmdOrCtrl("o"), func(_ *menu.CallbackData) {
-        // do something
+        // faire quelque chose
     })
     FileMenu.AddSeparator()
     FileMenu.AddText("Quit", keys.CmdOrCtrl("q"), func(_ *menu.CallbackData) {
-        // `rt` is an alias of "github.com/wailsapp/wails/v2/pkg/runtime" to prevent collision with standard package
+        // `rt`est un alias de "github.com/wailsapp/wails/v2/pkg/runtime" pour éviter des collisions avec le packet standard
         rt.Quit(app.ctx)
     })
 
     if runtime.GOOS == "darwin" {
-    AppMenu.Append(menu.EditMenu())  // On macOS platform, EditMenu should be appended to enable Cmd+C, Cmd+V, Cmd+Z... shortcuts
+    AppMenu.Append(menu.EditMenu())  // Sur macOS, EditMenu doit être ajouté pour activer les raccourcis Cmd+C, Cmd+V, Cmd+Z...
     }
 
     err := wails.Run(&options.App{
         Title:             "Menus Demo",
         Width:             800,
         Height:            600,
-        Menu:              AppMenu, // reference the menu above
+        Menu:              AppMenu, // Référence du menu au dessus
         Bind: []interface{}{
             app,
         },

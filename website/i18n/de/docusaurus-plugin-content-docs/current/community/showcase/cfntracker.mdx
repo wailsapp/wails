@@ -7,33 +7,28 @@
 </p>
 ```
 
-[CFN Tracker](https://github.com/williamsjokvist/cfn-tracker) - Track any Street
-Fighter 6 or V CFN profile's live matches. Check
-[the website](https://cfn.williamsjokvist.se/) to get started.
+[CFN Tracker](https://github.com/williamsjokvist/cfn-tracker) - Verfolge die Matches von Street
+Fighter 6 oder V CFN Profilen live. Sieh dir [die Website](https://cfn.williamsjokvist.se/) an, um loszulegen.
 
-## Features
+## Funktionen
 
-- Real-time match tracking
-- Storing match logs and statistics
-- Support for displaying live stats to OBS via Browser Source
-- Support for both SF6 and SFV
-- Ability for users to create their own OBS Browser themes with CSS
+- Echtzeit-Match-Tracking
+- Speichere Spielprotokolle und Statistiken
+- Unterstützung für die Anzeige von Live-Statistiken zu OBS über Browser Source
+- Unterstützung für SF6 und SFV
+- Fähigkeit für Benutzer, eigene OBS Browser-Themes mit CSS zu erstellen
 
-### Major tech used alongside Wails
+### Haupttechnologien, die neben Wails verwendet werden
 
-- [Task](https://github.com/go-task/task) - wrapping the Wails CLI to make
-  common commands easy to use
-- [React](https://github.com/facebook/react) - chosen for its rich ecosystem
-  (radix, framer-motion)
-- [Bun](https://github.com/oven-sh/bun) - used for its fast dependency
-  resolution and build-time
-- [Rod](https://github.com/go-rod/rod) - headless browser automation for
-  authentication and polling changes
-- [SQLite](https://github.com/mattn/go-sqlite3) - used for storing matches,
-  sessions and profiles
-- [Server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) -
-  a http stream to send tracking updates to OBS browser sources
-- [i18next](https://github.com/i18next/) - with backend connector to serve
-  localization objects from the Go layer
-- [xstate](https://github.com/statelyai/xstate) - state machines for auth
-  process and tracking
+- [Task](https://github.com/go-task/task) - Wrapper für Wails, damit häufig verwendete Befehle einfach zu benutzen sind
+- [React](https://github.com/facebook/react) - ausgewählt für sein reiches Ökosystem
+  (Radix, Framer-Motion)
+- [Bun](https://github.com/oven-sh/bun) - verwendet für seine schnelle Abhängigkeits-Auflösung und build time
+- [Rod](https://github.com/go-rod/rod) - headless Browser-Automatisierung für Authentifizierung und das Abfragen von Änderungen
+- [SQLite](https://github.com/mattn/go-sqlite3) - zum Speichern von Matches,
+  Sitzungen und Profilen
+- [Server-sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) -
+  ein http-Stream, um Tracking-Updates an OBS Browser Quellen zu senden
+- [i18next](https://github.com/i18next/) - mit Backend-Connector zur Bereitstellung von Lokalisierungsobjekten aus der Go-Ebene
+- [xstate](https://github.com/statelyai/xstate) - State-Maschines für auth
+  Prozesse und Tracking

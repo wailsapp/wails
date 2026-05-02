@@ -1,0 +1,124 @@
+---
+title: Windows Packaging
+description: Package your Wails application for Windows distribution
+sidebar:
+  order: 3
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## NSIS Installer
+
+The default packaging format creates an NSIS installer:
+
+```bash
+wails3 package GOOS=windows
+```
+
+This runs `wails3 task windows:package` which:
+1. Builds the application
+2. Generates the WebView2 bootstrapper
+3. Creates an NSIS installer
+
+Output: `build/windows/nsis/<AppName>-installer.exe`
+
+### MSIX Package
+
+For Microsoft Store distribution or modern Windows deployment:
+
+```bash
+wails3 package GOOS=windows FORMAT=msix
+```
+
+Output: `bin/<AppName>-<arch>.msix`
+
+<Aside type="note">
+MSIX requires either `makeappx.exe` (Windows SDK) or the MSIX tool. Run `wails3 tool msix-install-tools` to set up.
+</Aside>
+
+## Customizing the Installer
+
+NSIS configuration is in `build/windows/nsis/project.nsi`. Edit this file to customize:
+
+- Installer UI and branding
+- Installation directory
+- Start menu and desktop shortcuts
+- File associations
+- License agreement
+
+Application metadata comes from `build/windows/info.json`:
+
+```json
+{
+  "fixed": {
+    "file_version": "1.0.0"
+  },
+  "info": {
+    "0000": {
+      "ProductVersion": "1.0.0",
+      "CompanyName": "My Company",
+      "FileDescription": "My Application",
+      "ProductName": "MyApp"
+    }
+  }
+}
+```
+
+## Code Signing
+
+Sign your executable and installer to avoid SmartScreen warnings:
+
+```bash
+# Using the wrapper (auto-detects platform)
+wails3 sign GOOS=windows
+
+# Or using tasks directly
+wails3 task windows:sign
+wails3 task windows:sign:installer
+```
+
+Configure signing in `build/windows/Taskfile.yml`:
+
+```yaml
+vars:
+  SIGN_CERTIFICATE: "path/to/certificate.pfx"
+  # Or use thumbprint for certificates in Windows store
+  SIGN_THUMBPRINT: "certificate-thumbprint"
+  TIMESTAMP_SERVER: "http://timestamp.digicert.com"
+```
+
+Store your certificate password securely:
+
+```bash
+wails3 setup signing
+```
+
+See [Signing Applications](/guides/build/signing) for details.
+
+## Building for ARM
+
+```bash
+wails3 build GOOS=windows GOARCH=arm64
+wails3 package GOOS=windows GOARCH=arm64
+```
+
+## Troubleshooting
+
+### makensis not found
+
+Install NSIS:
+
+```bash
+# Windows
+winget install NSIS.NSIS
+
+# Or download from https://nsis.sourceforge.io/
+```
+
+### SmartScreen warning
+
+Your executable isn't signed. See [Code Signing](#code-signing) above.
+
+### WebView2 missing
+
+The installer includes a WebView2 bootstrapper that downloads the runtime if needed. If you need offline installation, download the Evergreen Standalone Installer from Microsoft.

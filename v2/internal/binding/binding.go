@@ -59,7 +59,7 @@ func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exem
 	for _, ptr := range structPointersToBind {
 		err := result.Add(ptr)
 		if err != nil {
-			logger.Fatal("Error during binding: " + err.Error())
+			logger.Fatal("%s", "Error during binding: " + err.Error())
 		}
 	}
 

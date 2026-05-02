@@ -1,0 +1,175 @@
+---
+title: Testing
+description: Test your Wails application
+sidebar:
+  order: 5
+---
+
+## Overview
+
+Testing ensures your application works correctly and prevents regressions.
+
+## Unit Testing
+
+### Testing Services
+
+```go
+func TestUserService_Create(t *testing.T) {
+    service := &UserService{
+        users: make(map[string]*User),
+    }
+    
+    user, err := service.Create("john@example.com", "password123")
+    if err != nil {
+        t.Fatalf("unexpected error: %v", err)
+    }
+    
+    if user.Email != "john@example.com" {
+        t.Errorf("expected email john@example.com, got %s", user.Email)
+    }
+}
+```
+
+### Testing with Mocks
+
+```go
+type MockDB struct {
+    users map[string]*User
+}
+
+func (m *MockDB) Create(user *User) error {
+    m.users[user.ID] = user
+    return nil
+}
+
+func TestUserService_WithMock(t *testing.T) {
+    mockDB := &MockDB{users: make(map[string]*User)}
+    service := &UserService{db: mockDB}
+    
+    user, err := service.Create("test@example.com", "pass")
+    if err != nil {
+        t.Fatal(err)
+    }
+    
+    if len(mockDB.users) != 1 {
+        t.Error("expected 1 user in mock")
+    }
+}
+```
+
+## Integration Testing
+
+### Testing with Real Dependencies
+
+```go
+func TestIntegration(t *testing.T) {
+    // Setup test database
+    db, err := sql.Open("sqlite3", ":memory:")
+    if err != nil {
+        t.Fatal(err)
+    }
+    defer db.Close()
+    
+    // Create schema
+    _, err = db.Exec(`CREATE TABLE users (...)`)
+    if err != nil {
+        t.Fatal(err)
+    }
+    
+    // Test service
+    service := &UserService{db: db}
+    user, err := service.Create("test@example.com", "password")
+    if err != nil {
+        t.Fatal(err)
+    }
+    
+    // Verify in database
+    var count int
+    db.QueryRow("SELECT COUNT(*) FROM users").Scan(&count)
+    if count != 1 {
+        t.Errorf("expected 1 user, got %d", count)
+    }
+}
+```
+
+## Frontend Testing
+
+### JavaScript Unit Tests
+
+```javascript
+// Using Vitest
+import { describe, it, expect } from 'vitest'
+import { formatDate } from './utils'
+
+describe('formatDate', () => {
+    it('formats date correctly', () => {
+        const date = new Date('2024-01-01')
+        expect(formatDate(date)).toBe('2024-01-01')
+    })
+})
+```
+
+### Testing Bindings
+
+```javascript
+import { vi } from 'vitest'
+import { GetUser } from './bindings/myapp/userservice'
+
+// Mock the binding
+vi.mock('./bindings/myapp/userservice', () => ({
+    GetUser: vi.fn()
+}))
+
+describe('User Component', () => {
+    it('loads user data', async () => {
+        GetUser.mockResolvedValue({ name: 'John', email: 'john@example.com' })
+        
+        // Test your component
+        const user = await GetUser(1)
+        expect(user.name).toBe('John')
+    })
+})
+```
+
+## Best Practices
+
+### ✅ Do
+
+- Write tests before fixing bugs
+- Test edge cases
+- Use table-driven tests
+- Mock external dependencies
+- Test error handling
+- Keep tests fast
+
+### ❌ Don't
+
+- Don't skip error cases
+- Don't test implementation details
+- Don't write flaky tests
+- Don't ignore test failures
+- Don't skip integration tests
+
+## Running Tests
+
+```bash
+# Run Go tests
+go test ./...
+
+# Run with coverage
+go test -cover ./...
+
+# Run specific test
+go test -run TestUserService
+
+# Run frontend tests
+cd frontend && npm test
+
+# Run with watch mode
+cd frontend && npm test -- --watch
+```
+
+## Next Steps
+
+- [End-to-End Testing](/guides/e2e-testing) - Test complete user flows
+- [Best Practices](/features/bindings/best-practices) - Learn best practices

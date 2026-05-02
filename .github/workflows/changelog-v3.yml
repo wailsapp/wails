@@ -2,7 +2,7 @@ name: Changelog Validation (v3)
 
 on:
   pull_request:
-    branches: [ v3-alpha ]
+    branches: [ master ]
     paths:
       - 'docs/src/content/docs/changelog.mdx'
   workflow_dispatch:
@@ -31,8 +31,8 @@ jobs:
     - name: Get REAL validation script from v3-alpha
       run: |
         echo "Fetching the REAL validation script from v3-alpha branch..."
-        git fetch origin v3-alpha
-        git checkout origin/v3-alpha -- v3/scripts/validate-changelog.go
+        git fetch origin master
+        git checkout origin/master -- v3/scripts/validate-changelog.go
         
         echo "Validation script fetched successfully:"
         ls -la v3/scripts/
@@ -40,7 +40,7 @@ jobs:
     - name: Setup Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.23'
+        go-version: '1.25'
         
     - name: Get PR information
       id: pr_info
@@ -50,7 +50,7 @@ jobs:
           echo "base_ref=${{ github.event.pull_request.base.ref }}" >> $GITHUB_OUTPUT
         else
           echo "pr_number=${{ github.event.inputs.pr_number }}" >> $GITHUB_OUTPUT
-          echo "base_ref=v3-alpha" >> $GITHUB_OUTPUT
+          echo "base_ref=master" >> $GITHUB_OUTPUT
         fi
         
     - name: Check changelog modifications
@@ -120,7 +120,7 @@ jobs:
             echo "🔍 Head repository: $HEAD_REPO"
             
             # Don't push if this is from a fork or if branch is v3-alpha (main branch)
-            if [ "$HEAD_REPO" != "wails" ] || [ "$BRANCH_NAME" = "v3-alpha" ]; then
+            if [ "$HEAD_REPO" != "wails" ] || [ "$BRANCH_NAME" = "master" ]; then
               echo "⚠️ Cannot push - either fork or direct v3-alpha branch. Manual fix required."
               echo "committed=false" >> $GITHUB_OUTPUT
               exit 0
