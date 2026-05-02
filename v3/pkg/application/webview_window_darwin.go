@@ -461,6 +461,9 @@ void windowRestore(void* nsWindow) {
 	}
 }
 
+// forward declaration - defined later in this file
+static void setButtonState(void *button, int state);
+
 // disable window fullscreen button
 void setFullscreenButtonState(void* nsWindow, int state) {
 	NSButton *fullscreenButton = [(WebviewWindow*)nsWindow standardWindowButton:NSWindowZoomButton];
