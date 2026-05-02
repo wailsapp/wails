@@ -117,7 +117,7 @@ func GenerateBuildAssets(options *BuildAssetsOptions) error {
 	}
 
 	if options.ProcessorArchitecture == "" {
-		options.ProcessorArchitecture = "x64"
+		options.ProcessorArchitecture = archToMSIX(runtime.GOARCH)
 	}
 
 	if options.ExecutableName == "" {
@@ -313,6 +313,17 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 
 func normaliseName(name string) string {
 	return strings.ToLower(strings.ReplaceAll(name, " ", "-"))
+}
+
+func archToMSIX(goarch string) string {
+	switch goarch {
+	case "amd64":
+		return "x64"
+	case "386":
+		return "x86"
+	default:
+		return goarch
+	}
 }
 
 // mergeMaps recursively merges src into dst.
