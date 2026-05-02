@@ -618,10 +618,13 @@ void windowGetPosition(void* nsWindow, int* x, int* y) {
 	}
 	CGFloat scale = [screen backingScaleFactor];
 	NSRect frame = [window frame];
-	NSRect screenFrame = [screen frame];
-	// Convert to top-origin coordinates and apply scale (matching windowSetPosition)
+	// The primary screen (first in the screens array) is always at NSWindow
+	// origin (0,0). Use its height as the global Y reference so that
+	// coordinates are consistent across all monitors regardless of which
+	// screen the window currently lives on.
+	CGFloat primaryHeight = [[[NSScreen screens] firstObject] frame].size.height;
 	*x = frame.origin.x * scale;
-	*y = (screenFrame.size.height - frame.origin.y - frame.size.height) * scale;
+	*y = (primaryHeight - frame.origin.y - frame.size.height) * scale;
 }
 
 void windowSetPosition(void* nsWindow, int x, int y) {
@@ -630,13 +633,17 @@ void windowSetPosition(void* nsWindow, int x, int y) {
     if (screen == NULL) {
         screen = [NSScreen mainScreen];
     }
-	// Get the scale of the screen
 	CGFloat scale = [screen backingScaleFactor];
     NSRect frame = [window frame];
-	// Scale the position
+	// Use the primary screen's height as the global Y reference (the primary
+	// screen is always at NSWindow origin (0,0), so its height is the
+	// baseline for the top-origin coordinate system used by Position()).
+	// Previously this used the current screen's height, which placed windows
+	// at the wrong Y position when the target monitor is at a different
+	// vertical offset from the primary screen.
+	CGFloat primaryHeight = [[[NSScreen screens] firstObject] frame].size.height;
 	frame.origin.x = x / scale;
-	frame.origin.y = (screen.frame.size.height - frame.size.height) - (y / scale);
-	// Set the frame
+	frame.origin.y = primaryHeight - frame.size.height - (y / scale);
 	[window setFrame:frame display:YES];
 }
 
