@@ -1,0 +1,369 @@
+---
+title: Getting Started
+description: How to start contributing to Wails v3
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Welcome, Contributor!
+
+Thank you for your interest in contributing to Wails! This guide will help you make your first contribution.
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+- **Go 1.25+** installed ([download](https://go.dev/dl/))
+- **Node.js 20+** and **npm** ([download](https://nodejs.org/))
+- **Git** configured with your GitHub account
+- Basic familiarity with Go and JavaScript/TypeScript
+
+### Platform-Specific Requirements
+
+**macOS:**
+- Xcode Command Line Tools: `xcode-select --install`
+
+**Windows:**
+- MSYS2 or similar Unix-like environment recommended
+- WebView2 runtime (usually pre-installed on Windows 11)
+
+**Linux:**
+- `gcc`, `pkg-config`, `libgtk-3-dev`, `libwebkit2gtk-4.0-dev`
+- Install via: `sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev` (Debian/Ubuntu)
+
+## Contribution Process Overview
+
+The typical contribution workflow follows these steps:
+
+1. **Fork & Clone** - Create your own copy of the Wails repository
+2. **Setup** - Build the Wails CLI and verify your environment
+3. **Branch** - Create a feature branch for your changes
+4. **Develop** - Make your changes following our coding standards
+5. **Test** - Run tests to ensure everything works
+6. **Commit** - Commit with clear, conventional commit messages
+7. **Submit** - Open a pull request for review
+8. **Iterate** - Respond to feedback and make adjustments
+9. **Merge** - Once approved, your changes become part of Wails!
+
+## Step-by-Step Guide
+
+Choose your contribution type:
+
+<Tabs>
+<TabItem label="Bug Fix">
+
+<Steps>
+
+1. **Find or Report the Bug**
+
+   - Check if the bug is already reported in [GitHub Issues](https://github.com/wailsapp/wails/issues)
+   - If not, create a new issue with steps to reproduce
+   - Wait for confirmation before starting work
+
+2. **Fork and Clone**
+
+   Fork the repository at [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork)
+
+   Clone your fork:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/wails.git
+   cd wails
+   git remote add upstream https://github.com/wailsapp/wails.git
+   ```
+
+3. **Build and Verify**
+
+   Build Wails and verify you can reproduce the bug:
+   ```bash
+   cd v3
+   go build -o ../wails3 ./cmd/wails3
+
+   # Reproduce the bug to understand it
+   ```
+
+4. **Create a Bug Fix Branch**
+
+   Create a branch for your fix:
+   ```bash
+   git checkout -b fix/issue-123-window-crash
+   ```
+
+5. **Fix the Bug**
+
+   - Make the minimal changes needed to fix the bug
+   - Don't refactor unrelated code
+   - Add or update tests to prevent regression
+
+   ```bash
+   # Make your changes
+   # Add tests in *_test.go files
+   ```
+
+6. **Test Your Fix**
+
+   Run tests to ensure the fix works:
+   ```bash
+   go test ./...
+
+   # Test the specific package
+   go test ./pkg/application -v
+
+   # Run with race detector
+   go test ./... -race
+   ```
+
+7. **Commit Your Fix**
+
+   Commit with a clear message:
+   ```bash
+   git commit -m "fix: prevent window crash when closing during initialization
+
+   Fixes #123"
+   ```
+
+8. **Submit Pull Request**
+
+   Push and create PR:
+   ```bash
+   git push origin fix/issue-123-window-crash
+   ```
+
+   In your PR description:
+   - Explain the bug and root cause
+   - Describe your fix
+   - Reference the issue: "Fixes #123"
+   - Include before/after behavior
+
+9. **Respond to Feedback**
+
+   Address review comments and update your PR as needed.
+
+</Steps>
+
+</TabItem>
+<TabItem label="Enhancements">
+
+<Steps>
+
+1. **Discuss the Feature**
+
+   - Open a [GitHub Discussion](https://github.com/wailsapp/wails/discussions) or issue
+   - Describe what you want to add and why
+   - Wait for maintainer feedback before implementing
+   - Ensure it aligns with Wails' goals
+
+2. **Fork and Clone**
+
+   Fork the repository at [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork)
+
+   Clone your fork:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/wails.git
+   cd wails
+   git remote add upstream https://github.com/wailsapp/wails.git
+   ```
+
+3. **Setup Development Environment**
+
+   Build Wails and verify your environment:
+   ```bash
+   cd v3
+   go build -o ../wails3 ./cmd/wails3
+
+   # Run tests to ensure everything works
+   go test ./...
+   ```
+
+4. **Create a Feature Branch**
+
+   Create a descriptive branch:
+   ```bash
+   git checkout -b feat/window-transparency-support
+   ```
+
+5. **Implement the Feature**
+
+   - Follow our [Coding Standards](/contributing/standards)
+   - Keep changes focused on the feature
+   - Write clean, documented code
+   - Add comprehensive tests
+
+   ```bash
+   # Example: Adding a new window method
+   # 1. Add to window.go interface
+   # 2. Implement in platform files (darwin, windows, linux)
+   # 3. Add tests
+   # 4. Update documentation
+   ```
+
+6. **Test Thoroughly**
+
+   Test your feature:
+   ```bash
+   # Unit tests
+   go test ./pkg/application -v
+
+   # Integration test - create a test app
+   cd ..
+   ./wails3 init -n feature-test
+   cd feature-test
+   # Add code using your new feature
+   ../wails3 dev
+   ```
+
+7. **Document Your Feature**
+
+   - Add docstrings to all public APIs
+   - Update relevant documentation in `/docs`
+   - Add examples if applicable
+
+8. **Commit with Convention**
+
+   Use conventional commits:
+   ```bash
+   git commit -m "feat: add window transparency support
+
+   - Add SetTransparent() method to Window API
+   - Implement for macOS, Windows, and Linux
+   - Add tests and documentation
+
+   Closes #456"
+   ```
+
+9. **Submit Pull Request**
+
+   Push and create PR:
+   ```bash
+   git push origin feat/window-transparency-support
+   ```
+
+   In your PR:
+   - Describe the feature and use cases
+   - Show examples or screenshots
+   - List any breaking changes
+   - Reference the discussion/issue
+
+10. **Iterate Based on Review**
+
+    Maintainers may request changes. Be patient and collaborative.
+
+</Steps>
+
+</TabItem>
+<TabItem label="Documentation">
+
+<Steps>
+
+1. **Identify Documentation Needs**
+
+   - Found outdated docs while using Wails?
+   - Notice missing examples or explanations?
+   - Want to fix typos or improve clarity?
+   - Check [documentation issues](https://github.com/wailsapp/wails/labels/documentation)
+
+2. **Fork and Clone**
+
+   Fork the repository at [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork)
+
+   Clone your fork:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/wails.git
+   cd wails
+   git remote add upstream https://github.com/wailsapp/wails.git
+   ```
+
+3. **Setup Documentation Environment**
+
+   The docs are in `/docs` and built with Astro:
+   ```bash
+   cd docs
+   npm install
+   npm run dev
+   ```
+
+   Open http://localhost:4321/ to preview changes live.
+
+4. **Create a Documentation Branch**
+
+   Create a branch for your changes:
+   ```bash
+   git checkout -b docs/improve-window-api-examples
+   ```
+
+5. **Make Your Changes**
+
+   Documentation files are in `/docs/src/content/docs/`:
+   ```bash
+   # Edit MDX files
+   # Check the preview in your browser
+   # Ensure formatting is correct
+   ```
+
+   **Best Practices:**
+   - Use clear, concise language
+   - Include practical code examples
+   - Add links to related sections
+   - Check spelling and grammar
+   - Test all code examples
+
+6. **Verify Your Changes**
+
+   Check the live preview and ensure:
+   - Links work correctly
+   - Code examples are accurate
+   - Formatting renders properly
+   - No broken images or references
+
+7. **Commit Documentation Changes**
+
+   Commit with clear message:
+   ```bash
+   git commit -m "docs: add practical examples to Window API guide
+
+   - Add window positioning examples
+   - Include common patterns section
+   - Fix broken links to Event API"
+   ```
+
+8. **Submit Pull Request**
+
+   Push and create PR:
+   ```bash
+   git push origin docs/improve-window-api-examples
+   ```
+
+   In your PR:
+   - Describe what docs you improved
+   - Explain why the change helps users
+   - Include screenshots if visual changes
+
+9. **Address Review Feedback**
+
+   Documentation PRs are usually quick to review and merge!
+
+</Steps>
+
+</TabItem>
+</Tabs>
+
+## Finding Issues to Work On
+
+- Look for [`good first issue`](https://github.com/wailsapp/wails/labels/good%20first%20issue) labels
+- Check [`help wanted`](https://github.com/wailsapp/wails/labels/help%20wanted) issues
+- Browse [open issues](https://github.com/wailsapp/wails/issues) and ask to be assigned
+
+## Getting Help
+
+- **Discord:** Join [Wails Discord](https://discord.gg/JDdSxwjhGf)
+- **Discussions:** Post in [GitHub Discussions](https://github.com/wailsapp/wails/discussions)
+- **Issues:** Open an issue if you find a bug or have a question
+
+## Code of Conduct
+
+Be respectful, constructive, and welcoming. We're building a friendly community focused on creating great software together.
+
+## Next Steps
+
+- Set up your [Development Environment](/contributing/setup)
+- Review our [Coding Standards](/contributing/standards)
+- Explore the [Technical Documentation](/contributing)

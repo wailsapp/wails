@@ -1,0 +1,62 @@
+---
+---
+<script is:inline>
+  function initAnimation() {
+    console.log('Initializing animation');
+    
+    // Add Motion One from CDN
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/motion@10.16.2/dist/motion.min.js';
+    script.onload = () => {
+      const { animate, inView } = window.Motion;
+      
+      inView('.card', (info) => {
+        const card = info.target;
+        
+        // Set initial state
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(50px) scale(0.9) rotate(-2deg)';
+        
+        // Create animations
+        const fadeAnimation = animate(card, 
+          { opacity: [0, 1] }, 
+          { duration: 1, easing: 'ease-out' }
+        );
+        
+        const moveAnimation = animate(card,
+          { 
+            transform: [
+              'translateY(50px) scale(0.9) rotate(-2deg)',
+              'translateY(0) scale(1) rotate(0)'
+            ]
+          },
+          { 
+            duration: 0.8, 
+            easing: [0.34, 1.56, 0.64, 1],
+            delay: 0.1
+          }
+        );
+        
+        return () => {
+          fadeAnimation.stop();
+          moveAnimation.stop();
+        };
+      }, {
+        margin: '0px 0px 10% 0px',
+        borderRadius: 10,
+        amount: 0.3,
+      });
+    };
+    
+    document.head.appendChild(script);
+  }
+
+  // Try immediately
+  initAnimation();
+  
+  // Also try on load in case DOM isn't ready
+  window.addEventListener('load', initAnimation);
+  
+  // And on content loaded
+  document.addEventListener('DOMContentLoaded', initAnimation);
+</script>

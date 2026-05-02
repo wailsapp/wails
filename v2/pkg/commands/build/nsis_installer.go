@@ -108,8 +108,8 @@ func makeNSIS(options *Options, installerKind string, amd64Binary string, arm64B
 	installerDir := buildassets.GetLocalPath(options.ProjectData, nsisFolder)
 	stdOut, stdErr, err := shell.RunCommand(installerDir, "makensis", args...)
 	if err != nil || verbose {
-		outputLogger.Println(stdOut)
-		outputLogger.Println(stdErr)
+		outputLogger.Println("%s", stdOut)
+		outputLogger.Println("%s", stdErr)
 	}
 	if err != nil {
 		return fmt.Errorf("Error during creation of the installer: %w", err)

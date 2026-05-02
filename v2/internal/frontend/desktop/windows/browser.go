@@ -4,7 +4,6 @@
 package windows
 
 import (
-	"fmt"
 	"github.com/pkg/browser"
 	"github.com/wailsapp/wails/v2/internal/frontend/utils"
 	"golang.org/x/sys/windows"
@@ -21,7 +20,7 @@ var fallbackBrowserPaths = []string{
 func (f *Frontend) BrowserOpenURL(rawURL string) {
 	url, err := utils.ValidateAndSanitizeURL(rawURL)
 	if err != nil {
-		f.logger.Error(fmt.Sprintf("Invalid URL %s", err.Error()))
+		f.logger.Error("Invalid URL %s", err.Error())
 		return
 	}
 
