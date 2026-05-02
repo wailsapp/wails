@@ -138,23 +138,47 @@ If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/fir
      <TabItem label="Linux" icon="linux">
        **Build tools and WebKit**
 
+       :::caution[Minimum distro versions]
+       Wails v3 requires **WebKitGTK 4.1** (uses libsoup3). Older releases that only ship 4.0 — Ubuntu 20.04, Debian 11, RHEL 8/9 and their derivatives — are not supported.
+       :::
+
        <Tabs syncKey="distro">
          <TabItem label="Ubuntu/Debian">
+           Requires Ubuntu 22.04+ or Debian 12+.
            ```bash
            sudo apt update
-           sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev
+           sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev
            ```
          </TabItem>
 
          <TabItem label="Fedora">
            ```bash
-           sudo dnf install gcc pkg-config gtk3-devel webkit2gtk4.0-devel
+           sudo dnf install gcc pkg-config gtk3-devel webkit2gtk4.1-devel
            ```
          </TabItem>
 
          <TabItem label="Arch">
            ```bash
-           sudo pacman -S base-devel gtk3 webkit2gtk
+           sudo pacman -S base-devel gtk3 webkit2gtk-4.1
+           ```
+         </TabItem>
+
+         <TabItem label="openSUSE">
+           ```bash
+           sudo zypper install gcc pkg-config gtk3-devel webkit2gtk3-devel
+           ```
+         </TabItem>
+
+         <TabItem label="Gentoo">
+           ```bash
+           sudo emerge --ask net-libs/webkit-gtk:4.1
+           ```
+         </TabItem>
+
+         <TabItem label="NixOS">
+           Add to your `shell.nix` or `devShell`:
+           ```nix
+           buildInputs = with pkgs; [ webkitgtk_4_1 gtk3 pkg-config gcc ];
            ```
          </TabItem>
 
@@ -162,6 +186,10 @@ If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/fir
            Run `wails3 doctor` after installing Wails—it will show the exact packages needed for your distribution.
          </TabItem>
        </Tabs>
+
+       :::note[Optional: GTK4 Support]
+       Wails also has experimental GTK4 / WebKitGTK 6.0 support. If you want to build with GTK4, install the additional dependencies for your distribution and build with `wails3 build -tags gtk4`. See [Linux Packaging - GTK4](/guides/build/linux#gtk4-support-experimental) for details.
+       :::
      </TabItem>
    </Tabs>
 
@@ -331,7 +359,7 @@ If `wails3 doctor` passes, you're done. [Skip to First App →](/quick-start/fir
 **Linux:** The output tells you exactly which packages to install. Example:
 ```
 ❌ webkit2gtk not found
-   Install with: sudo apt install libwebkit2gtk-4.0-dev
+   Install with: sudo apt install libwebkit2gtk-4.1-dev
 ```
 
 **Windows:** If WebView2 is missing:

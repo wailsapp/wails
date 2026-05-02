@@ -65,6 +65,7 @@ func (b *BrowserWindow) ForceReload()                                 {}
 func (b *BrowserWindow) Fullscreen() Window                           { return b }
 func (b *BrowserWindow) GetBorderSizes() *LRTB                        { return nil }
 func (b *BrowserWindow) GetScreen() (*Screen, error)                  { return nil, nil }
+func (b *BrowserWindow) SetScreen(screen *Screen) Window              { return b }
 func (b *BrowserWindow) GetZoom() float64                             { return 1.0 }
 func (b *BrowserWindow) handleDragAndDropMessage(filenames []string, dropTarget *DropTargetDetails) {}
 func (b *BrowserWindow) InitiateFrontendDropProcessing(filenames []string, x int, y int) {}
@@ -129,6 +130,7 @@ func (b *BrowserWindow) ZoomOut()                                     {}
 func (b *BrowserWindow) ZoomReset() Window                            { return b }
 func (b *BrowserWindow) SetMenu(menu *Menu)                           {}
 func (b *BrowserWindow) SnapAssist()                                  {}
+func (b *BrowserWindow) AttachModal(modalWindow Window)               {}
 func (b *BrowserWindow) SetContentProtection(protection bool) Window  { return b }
 func (b *BrowserWindow) NativeWindow() unsafe.Pointer                 { return nil }
 func (b *BrowserWindow) SetEnabled(enabled bool)                      {}

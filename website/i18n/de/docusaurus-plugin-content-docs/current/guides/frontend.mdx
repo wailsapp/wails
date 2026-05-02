@@ -1,0 +1,72 @@
+# Frontend
+
+## Skript-Injektion
+
+Wenn Wails die `index.html` served, werden standardmäßig zwei Skript-Einträge in die `<body>` tags eingefügt, um `/wails/ipc.js` und `/wails/runtime.js` zu laden. Diese Dateien installieren die Verknüpfungen bzw. die Laufzeit.
+
+Der folgende Code zeigt an, wo diese standardmäßig injiziert werden:
+
+```html
+<html>
+  <head>
+    <title>injection example</title>
+    <link rel="stylesheet" href="/main.css" />
+    <!--     <script src="/wails/ipc.js"></script> -->
+    <!--     <script src="/wails/runtime.js"></script> -->
+  </head>
+
+  <body data-wails-drag>
+    <div class="logo"></div>
+    <div class="result" id="result">Please enter your name below 👇</div>
+    <div class="input-box" id="input" data-wails-no-drag>
+      <input class="input" id="name" type="text" autocomplete="off" />
+      <button class="btn" onclick="greet()">Greet</button>
+    </div>
+
+    <script src="/main.js"></script>
+  </body>
+</html>
+```
+
+### Standardskript-Injektion überschreiben
+
+Um den Entwicklern mehr Flexibilität zu bieten, gibt es einen Meta-Tag, der verwendet werden kann, um dieses Verhalten anzupassen:
+
+```html
+<meta name="wails-options" content="[options]" />
+```
+
+Die Optionen sind folgende:
+
+| Wert                | Beschreibung                                                       |
+| ------------------- | ------------------------------------------------------------------ |
+| noautoinjectruntime | Deaktiviert die automatische Injektion von der `/wails/runtime.js` |
+| noautoinjectipc     | Deaktiviert die automatische Injektion von der `/wails/ipc.js`     |
+| noautoinject        | Deaktiviert die automatische Injektion von allen Skripts           |
+
+Mehrere Optionen können verwendet werden, sofern sie durch Kommata getrennt werden.
+
+Dieser Code ist vollkommen gültig und funktioniert genauso wie die autoinjection Version:
+
+```html
+<html>
+  <head>
+    <title>injection example</title>
+    <meta name="wails-options" content="noautoinject" />
+    <link rel="stylesheet" href="/main.css" />
+  </head>
+
+  <body data-wails-drag>
+    <div class="logo"></div>
+    <div class="result" id="result">Please enter your name below 👇</div>
+    <div class="input-box" id="input" data-wails-no-drag>
+      <input class="input" id="name" type="text" autocomplete="off" />
+      <button class="btn" onclick="greet()">Greet</button>
+    </div>
+
+    <script src="/wails/ipc.js"></script>
+    <script src="/wails/runtime.js"></script>
+    <script src="/main.js"></script>
+  </body>
+</html>
+```
