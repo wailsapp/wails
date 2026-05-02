@@ -66,11 +66,13 @@ app.Run()
 - **More testable**: You can test application setup without running the event loop
 - **More flexible**: Windows can be created, destroyed, and recreated throughout the application lifecycle
 
-### Bindings
+→ [Application Lifecycle](/concepts/lifecycle)
 
-In v2, every bound struct required a context field and a `startup(ctx)` method to receive the runtime context. This created tight coupling between your business logic and the Wails runtime, making code harder to test and understand.
+### Bind → Services
 
-v3 introduces the service pattern, where your structs are completely standalone and don't need to store runtime context. If a service needs access to the application instance, it explicitly receives it through dependency injection rather than implicit context threading.
+In v2, the `Bind` field in `options.App` accepted a flat slice of `interface{}` values. Every bound struct required a context field and a `startup(ctx)` method to receive the runtime context. This created tight coupling between your business logic and the Wails runtime, making code harder to test and understand.
+
+v3 replaces `Bind` with `Services`. Services are registered via `application.NewService()` and are completely standalone structs that don't need to store runtime context. If a service needs access to the application instance, it explicitly receives it through dependency injection rather than implicit context threading.
 
 **v2:**
 
@@ -86,6 +88,13 @@ func (a *App) startup(ctx context.Context) {
 func (a *App) Greet(name string) string {
     return "Hello " + name
 }
+
+// Registered in options
+err := wails.Run(&options.App{
+    Bind: []interface{}{
+        &App{},
+    },
+})
 ```
 
 **v3:**
@@ -97,7 +106,7 @@ func (g *GreetService) Greet(name string) string {
     return "Hello " + name
 }
 
-// Register as service
+// Registered in options
 app := application.New(application.Options{
     Services: []application.Service{
         application.NewService(&GreetService{}),
@@ -112,6 +121,236 @@ app := application.New(application.Options{
 - **Clearer code**: Dependencies are explicit (passed as constructor arguments) rather than hidden in a context field
 - **Better organization**: Services can be grouped by domain rather than all living in a single `App` struct
 - **Proper initialization**: Use `ServiceStartup()` method when you need initialization, making it explicit
+
+→ [Services](/features/bindings/services)
+
+### Service Lifecycle (OnStartup / OnShutdown)
+
+In v2, application-level lifecycle hooks (`OnStartup`, `OnShutdown`, `OnDomReady`) were function fields set directly on `options.App`. These hooks received a `context.Context` and were typically used to initialize or tear down the single monolithic `App` struct.
+
+In v3, the preferred pattern is optional interface methods on individual services: `ServiceStartup` and `ServiceShutdown`. This allows each service to manage its own initialization and cleanup independently, and makes it clear which service owns which resources. For application-level shutdown logic (e.g. flushing logs), `application.Options.OnShutdown` is still available as a global hook.
+
+**v2:**
+
+```go
+type App struct {
+    ctx context.Context
+    db  *sql.DB
+}
+
+func (a *App) startup(ctx context.Context) {
+    a.ctx = ctx
+    a.db, _ = sql.Open("sqlite3", "app.db")
+}
+
+func (a *App) shutdown(ctx context.Context) {
+    a.db.Close()
+}
+
+// Hooks registered on options
+app := &App{}
+err := wails.Run(&options.App{
+    OnStartup:  app.startup,
+    OnShutdown: app.shutdown,
+})
+```
+
+**v3:**
+
+```go
+type MyService struct {
+    db *sql.DB
+}
+
+// ServiceStartup is called when the application starts.
+// Implement this method to initialize resources your service needs.
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    var err error
+    s.db, err = sql.Open("sqlite3", "app.db")
+    return err
+}
+
+// ServiceShutdown is called when the application shuts down.
+// Implement this method to clean up resources.
+func (s *MyService) ServiceShutdown() error {
+    return s.db.Close()
+}
+```
+
+Both methods are **optional** — implement only the ones you need. Services that do not need initialization or cleanup do not need to implement these methods at all.
+
+**Key differences:**
+
+| v2 | v3 |
+|---|---|
+| `OnStartup func(ctx context.Context)` on `options.App` | `ServiceStartup(ctx context.Context, options ServiceOptions) error` on service |
+| `OnShutdown func(ctx context.Context)` on `options.App` | `ServiceShutdown() error` on service |
+| Single global hook | Per-service lifecycle |
+| Context stored as field | Context is valid for the application lifetime; cancelled just before shutdown |
+
+→ [Application Lifecycle](/concepts/lifecycle)
+
+### OnDomReady
+
+In v2, `OnDomReady` was a hook on `options.App` called once the frontend DOM was fully loaded and ready to receive calls from Go. It was commonly used to kick off initial data loading or emit a "ready" event to the frontend.
+
+In v3 there is no direct equivalent hook. Instead, use the application event system to respond to the `events.Common.ApplicationStarted` application event, or emit a custom event from the frontend's own `DOMContentLoaded` handler.
+
+**v2:**
+
+```go
+err := wails.Run(&options.App{
+    OnDomReady: func(ctx context.Context) {
+        // DOM is ready — safe to emit events to frontend
+        runtime.EventsEmit(ctx, "app:ready", nil)
+    },
+})
+```
+
+**v3 — respond to application started (Go):**
+
+```go
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Event.Emit("app:ready", nil)
+})
+```
+
+**v3 — or trigger from the frontend (JavaScript):**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+document.addEventListener('DOMContentLoaded', () => {
+    Events.Emit('app:ready', null)
+})
+```
+
+→ [Event System](/features/events/system)
+
+### OnBeforeClose / Window Close Interception
+
+In v2, `OnBeforeClose` on `options.App` was a function that returned `true` to prevent the application from closing. It was commonly used to show a "save unsaved changes?" dialog.
+
+In v3, window-level close interception is done by registering a hook on the `events.Common.WindowClosing` event and calling `e.Cancel()` to prevent the close. For app-level quit prevention, use the `ShouldQuit` option.
+
+**v2:**
+
+```go
+err := wails.Run(&options.App{
+    OnBeforeClose: func(ctx context.Context) (prevent bool) {
+        // Return true to prevent close
+        return hasUnsavedChanges()
+    },
+})
+```
+
+**v3 — per-window close interception:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{ /* ... */ })
+
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    if hasUnsavedChanges() {
+        e.Cancel() // prevents the window from closing
+    }
+})
+```
+
+**v3 — app-level quit prevention:**
+
+```go
+app := application.New(application.Options{
+    ShouldQuit: func() bool {
+        // Return false to prevent quit
+        return !hasUnsavedChanges()
+    },
+})
+```
+
+→ [Window Events](/features/windows/events)
+
+### Logging
+
+In v2, logging was done through global runtime functions that required passing context:
+
+```go
+runtime.LogInfo(a.ctx, "Starting service")
+runtime.LogDebug(a.ctx, "Debug message")
+runtime.LogError(a.ctx, "Something went wrong")
+```
+
+In v3, the application exposes a `slog.Logger` directly via `app.Logger`:
+
+```go
+app.Logger.Info("Starting service")
+app.Logger.Debug("Debug message")
+app.Logger.Error("Something went wrong", "err", err)
+```
+
+Services that need to log should receive the app reference or use Go's standard `log/slog` package directly.
+
+### Events
+
+In v2, events used variadic `interface{}` parameters and required passing context to every event function. Event handlers received untyped data that needed manual type assertions, making the event system error-prone and hard to debug.
+
+v3 introduces typed event objects and removes the context requirement. Event handlers receive a proper event object with typed data, making the event system more reliable and easier to use.
+
+**Backend (Go) — v2:**
+
+```go
+runtime.EventsOn(ctx, "event-name", func(data ...interface{}) {
+    // data[0] is the first argument
+})
+
+runtime.EventsEmit(ctx, "event-name", data)
+```
+
+**Backend (Go) — v3:**
+
+```go
+app.Event.On("event-name", func(e *application.CustomEvent) {
+    // e.Data contains the payload
+    // e.Name contains the event name
+    // e.Sender identifies the source
+})
+
+app.Event.Emit("event-name", data)
+```
+
+**Frontend (JavaScript) — v2:**
+
+```javascript
+import { EventsOn, EventsEmit } from '../wailsjs/runtime/runtime'
+
+EventsOn("event-name", (data) => {
+    console.log(data)
+})
+
+EventsEmit("action", payload)
+```
+
+**Frontend (JavaScript) — v3:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.On("event-name", (event) => {
+    // event.data contains the payload
+    console.log(event.data)
+})
+
+Events.Emit("action", payload)
+```
+
+**Why this is better:**
+
+- **Type safety**: Events use proper event objects instead of `...interface{}`
+- **Better debugging**: Event objects contain metadata like event name and sender
+- **Clearer API**: `app.Event.On()` and `app.Event.Emit()` are more intuitive than runtime functions
+- **No context needed**: Events work directly on the app object without threading context
+- **Consistent frontend/backend API**: Both sides use the same `On`/`Emit` naming
+
+→ [Event System](/features/events/system)
 
 ### Runtime
 
@@ -154,11 +393,122 @@ func (s *MyService) EmitEvent() {
 - **Multi-window clarity**: With multiple windows, you explicitly choose which window to operate on
 - **No context threading**: You don't need to pass context through every function
 
-### Frontend Bindings
+→ [Window Basics](/features/windows/basics)
+
+### Menus
+
+In v2, the application menu was set as a field on `options.App` before startup. This meant menu construction had to happen before `wails.Run()` was called, and menus could not be easily updated at runtime.
+
+In v3, menus are created with `app.NewMenu()` and set on the application after construction using `app.Menu.Set(menu)`. This allows dynamic menu construction and runtime updates.
+
+**v2:**
+
+```go
+import (
+    "context"
+    "github.com/wailsapp/wails/v2/pkg/menu"
+    "github.com/wailsapp/wails/v2/pkg/menu/keys"
+    "github.com/wailsapp/wails/v2/pkg/runtime"
+)
+
+type App struct{ ctx context.Context }
+
+func (a *App) startup(ctx context.Context) { a.ctx = ctx }
+
+func buildMenu(a *App) *menu.Menu {
+    appMenu := menu.NewMenu()
+    fileMenu := appMenu.AddSubmenu("File")
+    fileMenu.AddText("Quit", keys.CmdOrCtrl("q"), func(_ *menu.CallbackData) {
+        runtime.Quit(a.ctx)
+    })
+    return appMenu
+}
+
+// The menu must be built before Run; ctx is not yet available here,
+// so a reference to the App struct is captured instead.
+a := &App{}
+err := wails.Run(&options.App{
+    OnStartup: a.startup,
+    Menu:      buildMenu(a),
+})
+```
+
+**v3:**
+
+```go
+// Create and set after app construction
+menu := app.NewMenu()
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("Quit").SetAccelerator("CmdOrCtrl+q").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+// Apply the menu at any time
+app.Menu.Set(menu)
+```
+
+**Why this is better:**
+
+- **Runtime updates**: Menus can be modified after startup (hide/show items, change labels, etc.)
+- **No context required**: Menu callbacks receive a `*application.Context` rather than requiring a stored runtime context
+- **Chainable API**: `menu.Add("Item").SetAccelerator("...").OnClick(...)` is more readable
+- **Roles built-in**: Use `menu.AddRole(application.AppMenu)` for standard platform menus
+
+→ [Application Menus](/features/menus/application)
+
+### Window Creation
+
+In v2, there was only a single window and it was configured entirely through `options.App`. All window properties (title, size, etc.) were part of the top-level options struct.
+
+In v3, windows are explicit objects created with `app.Window.NewWithOptions()`. You can create multiple windows at any point during the application lifecycle. Each window is an independent object with its own methods.
+
+**v2:**
+
+```go
+// Single window only, configured via options
+err := wails.Run(&options.App{
+    Title:  "My App",
+    Width:  1024,
+    Height: 768,
+    MinWidth:  800,
+    MinHeight: 600,
+})
+```
+
+**v3:**
+
+```go
+// Create as many windows as you need
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My App",
+    Width:  1024,
+    Height: 768,
+    MinWidth:  800,
+    MinHeight: 600,
+})
+
+// Windows are first-class objects
+window.SetTitle("Updated Title")
+window.SetSize(1280, 720)
+window.Show()
+window.Hide()
+```
+
+**Why this is better:**
+
+- **Multi-window applications**: Build apps with multiple independent windows (dashboards, preferences, tools, etc.)
+- **Explicit window references**: Each window is an object you can store and manipulate directly
+- **Dynamic window creation**: Create and destroy windows at any time during runtime
+- **Independent window state**: Each window has its own events, properties, and lifecycle
+- **Better architecture**: Window management is object-oriented rather than context-based
+
+→ [Window Basics](/features/windows/basics) · [Multiple Windows](/features/windows/multiple)
+
+### Generated Bindings Path
 
 In v2, bindings were organized by Go package and struct name, typically resulting in paths like `wailsjs/go/main/App`. This structure didn't reflect logical grouping and made it hard to find related functionality.
 
-v3 organizes bindings by service name and application module, creating a clearer logical structure. The bindings are generated into a `bindings` directory organized by your application name and service names, making it easier to understand what functionality is available.
+v3 organizes bindings by service name and application module, creating a clearer logical structure. The bindings are generated into a `bindings/` directory organized by your application name and service names, making it easier to understand what functionality is available.
 
 **v2:**
 
@@ -171,85 +521,148 @@ const result = await Greet("World")
 **v3:**
 
 ```javascript
-import { Greet } from './bindings/myapp/greetservice'
+import { GreetService } from './bindings/changeme'
 
-const result = await Greet("World")
+const result = await GreetService.Greet("World")
 ```
 
 **Why this is better:**
 
 - **Logical organization**: Bindings are grouped by service name rather than Go package structure
-- **Clearer imports**: The path reflects the domain logic (greetservice) not the file structure (main/App)
+- **Clearer imports**: The path reflects the domain logic (GreetService) not the file structure (main/App)
 - **Better discoverability**: You can navigate bindings by feature rather than by technical structure
 - **Consistent naming**: Service-based organization matches your backend architecture
-- **Simpler paths**: No more `../wailsjs/go` prefix - just `./bindings`
+- **Simpler paths**: No more `../wailsjs/go` prefix — just `./bindings`
 
-### Events
+→ [Method Bindings](/features/bindings/methods)
 
-In v2, events used variadic `interface{}` parameters and required passing context to every event function. Event handlers received untyped data that needed manual type assertions, making the event system error-prone and hard to debug.
+### Configuration File
 
-v3 introduces typed event objects and removes the context requirement. Event handlers receive a proper event object with typed data, making the event system more reliable and easier to use.
+In v2, project configuration lived in `wails.json`, which carried app metadata (name, version, author) and the frontend build commands (`frontend:install`, `frontend:build`, `frontend:dev:watcher`, etc.).
+
+In v3 these responsibilities are split across two files that are generated by `wails3 init`:
+
+| File | Purpose |
+|------|---------|
+| `build/config.yml` | App metadata, bundle ID, dev-mode settings — the spiritual equivalent of v2's `wails.json` |
+| `Taskfile.yml` | Build task definitions (replaces the `frontend:build`/`frontend:install` commands from `wails.json`) |
+
+**v2 (`wails.json`):**
+
+```json
+{
+  "name": "myapp",
+  "outputfilename": "myapp",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "My Name",
+    "email": "me@example.com"
+  }
+}
+```
+
+**v3 (`build/config.yml`) — app metadata and dev-mode settings:**
+
+```yaml
+version: '3'
+
+info:
+  companyName: "My Company"
+  productName: "myapp"              # was "name" in wails.json
+  productIdentifier: "com.mycompany.myapp"
+  version: "1.0.0"
+  copyright: "(c) 2025, My Company"
+
+dev_mode:
+  root_path: .
+  debounce: 1000
+  ignore:
+    dir: [.git, node_modules, frontend, bin]
+    watched_extension: ["*.go"]
+  executes:
+    - cmd: wails3 task build       # replaces frontend:build
+      type: blocking
+    - cmd: wails3 task run
+      type: primary
+```
+
+**v3 (`Taskfile.yml`) — build commands:**
+
+```yaml
+version: '3'
+
+includes:
+  common: ./build/Taskfile.yml
+  darwin: ./build/darwin/Taskfile.yml
+  windows: ./build/windows/Taskfile.yml
+  linux: ./build/linux/Taskfile.yml
+
+vars:
+  APP_NAME: "myapp"
+
+tasks:
+  build:
+    cmds:
+      - task: "{{OS}}:build"       # platform-specific build
+```
+
+The platform-specific included Taskfiles contain the frontend install and build steps that used to live in `wails.json`.
+
+**Migrating your configuration:**
+
+The recommended approach is to start fresh with `wails3 init` and copy your application code in — do not attempt to manually convert `wails.json`:
+
+```bash
+# Create a fresh v3 project skeleton
+wails3 init -n myapp -t svelte
+
+# Copy your Go service code and frontend into the new project
+# Then update build/config.yml with your app metadata
+```
+
+→ [Build System](/concepts/build-system)
+
+### Build Command
+
+In v2, applications were built with `wails build`. In v3, the build system is **task-based**. Always use `wails3 task build` (or `wails3 build`) to build your application — never use `go build` directly, as this skips the asset embedding and frontend compilation steps.
 
 **v2:**
 
-```go
-runtime.EventsOn(ctx, "event-name", func(data ...interface{}) {
-    // Handle event
-})
+```bash
+# Development
+wails dev
 
-runtime.EventsEmit(ctx, "event-name", data)
+# Production build
+wails build
 ```
 
 **v3:**
 
-```go
-app.Event.On("event-name", func(e *application.CustomEvent) {
-    data := e.Data
-    // Handle event
-})
+```bash
+# Development (hot-reload)
+wails3 dev
 
-app.Event.Emit("event-name", data)
+# Production build via task runner
+wails3 task build
+
+# Or shorthand
+wails3 build
+
+# Package with app icon and metadata
+wails3 task package
+
+# Regenerate frontend bindings
+wails3 generate bindings
 ```
 
-**Why this is better:**
+:::caution
+Never use `go build` or `go run .` for production builds. These skip the frontend compilation and asset embedding steps, producing a binary that cannot load your UI.
+:::
 
-- **Type safety**: Events use proper event objects instead of `...interface{}`
-- **Better debugging**: Event objects contain metadata like event name, making debugging easier
-- **Clearer API**: `app.Event.On()` and `app.Event.Emit()` are more intuitive than runtime functions
-- **No context needed**: Events work directly on the app object without threading context
-- **Simpler handlers**: Event handlers have a clear signature instead of variadic parameters
-
-### Windows
-
-v2 supported only a single window per application. The window was created at startup and all window operations were performed through runtime functions that implicitly targeted that single window.
-
-v3 introduces native multi-window support as a core feature. Each window is a first-class object with its own methods and lifecycle. You can create, manage, and destroy multiple windows dynamically throughout your application's lifetime.
-
-**v2:**
-
-```go
-// Single window only
-runtime.WindowSetSize(ctx, 800, 600)
-```
-
-**v3:**
-
-```go
-// Multiple windows supported
-window1 := app.Window.New()
-window1.SetSize(800, 600)
-
-window2 := app.Window.New()
-window2.SetSize(1024, 768)
-```
-
-**Why this is better:**
-
-- **Multi-window applications**: Build apps with multiple independent windows (dashboards, preferences, tools, etc.)
-- **Explicit window references**: Each window is an object you can store and manipulate directly
-- **Dynamic window creation**: Create and destroy windows at any time during runtime
-- **Independent window state**: Each window has its own events, properties, and lifecycle
-- **Better architecture**: Window management is object-oriented rather than context-based
+→ [Build System](/concepts/build-system)
 
 ## Migration Steps
 
@@ -304,6 +717,8 @@ func main() {
         Bind: []interface{}{
             app,
         },
+        OnStartup:  app.startup,
+        OnShutdown: app.shutdown,
         Windows: &windows.Options{
             WebviewIsTransparent: false,
         },
@@ -370,6 +785,10 @@ func (a *App) startup(ctx context.Context) {
     // Initialisation
 }
 
+func (a *App) shutdown(ctx context.Context) {
+    // Cleanup
+}
+
 func (a *App) Greet(name string) string {
     return "Hello " + name
 }
@@ -386,8 +805,15 @@ func NewMyService(app *application.Application) *MyService {
     return &MyService{app: app}
 }
 
+// ServiceStartup is called when the application starts (optional)
 func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
     // Initialisation
+    return nil
+}
+
+// ServiceShutdown is called when the application shuts down (optional)
+func (s *MyService) ServiceShutdown() error {
+    // Cleanup
     return nil
 }
 
@@ -440,7 +866,7 @@ wails3 generate bindings
 import { Greet } from '../wailsjs/go/main/App'
 
 // v3
-import { Greet } from './bindings/myapp/myservice'
+import { GreetService } from './bindings/myapp'
 ```
 
 **Update event handling:**
@@ -458,46 +884,42 @@ EventsEmit("action", data)
 // v3
 import { Events } from '@wailsio/runtime'
 
-Events.On("update", (data) => {
-    console.log(data)
+Events.On("update", (event) => {
+    console.log(event.data)
 })
 
 Events.Emit("action", data)
 ```
 
-### Step 6: Update Configuration
+### Step 6: Update Build Configuration
 
-**v2 (wails.json):**
+**The recommended migration approach is to start fresh:**
 
-```json
-{
-  "name": "myapp",
-  "outputfilename": "myapp",
-  "frontend:install": "npm install",
-  "frontend:build": "npm run build",
-  "frontend:dev:watcher": "npm run dev",
-  "frontend:dev:serverUrl": "auto"
-}
+```bash
+# Generate a new v3 project with the correct Taskfile.yml structure
+wails3 init -n myapp -t svelte   # or react, vue, vanilla, etc.
+
+# Then copy your Go service files and frontend code into the new project
 ```
 
-**v3 (wails.json):**
+This ensures your `Taskfile.yml` is correctly generated and includes all platform-specific build tasks.
 
-```json
-{
-  "name": "myapp",
-  "frontend": {
-    "dir": "./frontend",
-    "install": "npm install",
-    "build": "npm run build",
-    "dev": "npm run dev",
-    "devServerUrl": "http://localhost:5173"
-  }
-}
+**Build your app:**
+
+```bash
+# Development with hot-reload
+wails3 dev
+
+# Production build
+wails3 task build
+
+# Regenerate bindings after changing service methods
+wails3 generate bindings
 ```
 
 ## Feature Mapping
 
-### dialogs
+### Dialogs
 
 **v2:**
 
@@ -515,17 +937,30 @@ selection, err := app.Dialog.OpenFile(application.OpenFileDialogOptions{
 })
 ```
 
+→ [Dialogs Overview](/features/dialogs/overview)
+
 ### Menus
 
 **v2:**
 
 ```go
-menu := menu.NewMenu()
-menu.Append(menu.Text("File", nil, []*menu.MenuItem{
-    menu.Text("Quit", nil, func(_ *menu.CallbackData) {
-        runtime.Quit(ctx)
-    }),
-}))
+import (
+    "github.com/wailsapp/wails/v2/pkg/menu"
+    "github.com/wailsapp/wails/v2/pkg/menu/keys"
+    "github.com/wailsapp/wails/v2/pkg/runtime"
+)
+
+// ctx is stored on App.startup(ctx) and referenced here via closure
+appMenu := menu.NewMenu()
+fileMenu := appMenu.AddSubmenu("File")
+fileMenu.AddText("Quit", keys.CmdOrCtrl("q"), func(_ *menu.CallbackData) {
+    runtime.Quit(a.ctx)
+})
+
+// Set on options before Run
+err := wails.Run(&options.App{
+    Menu: appMenu,
+})
 ```
 
 **v3:**
@@ -533,10 +968,15 @@ menu.Append(menu.Text("File", nil, []*menu.MenuItem{
 ```go
 menu := app.NewMenu()
 fileMenu := menu.AddSubmenu("File")
-fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+fileMenu.Add("Quit").SetAccelerator("CmdOrCtrl+q").OnClick(func(ctx *application.Context) {
     app.Quit()
 })
+
+// Set after construction, at any time
+app.Menu.Set(menu)
 ```
+
+→ [Application Menus](/features/menus/application)
 
 ### System Tray
 
@@ -555,9 +995,11 @@ systray.SetLabel("My App")
 
 menu := app.NewMenu()
 menu.Add("Show").OnClick(showWindow)
-menu.Add("Quit").OnClick(app.Quit)
+menu.Add("Quit").OnClick(func(ctx *application.Context) { app.Quit() })
 systray.SetMenu(menu)
 ```
+
+→ [System Tray Menus](/features/menus/systray)
 
 ## Common Issues
 
@@ -577,7 +1019,7 @@ ls frontend/bindings
 
 ### Issue: Context errors
 
-**Problem:** `ctx` not available
+**Problem:** `ctx` not available in service methods
 
 **Solution:**
 
@@ -590,6 +1032,16 @@ type MyService struct {
 
 func NewMyService(app *application.Application) *MyService {
     return &MyService{app: app}
+}
+```
+
+For context that is only needed during initialization, use `ServiceStartup`:
+
+```go
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    // ctx is valid for the lifetime of the application
+    go s.backgroundTask(ctx)
+    return nil
 }
 ```
 
@@ -612,14 +1064,51 @@ window.SetTitle("New Title")
 
 **Solution:**
 
-Check event names match exactly:
+Check event names match exactly between Go and JavaScript:
 
 ```go
 // Go
 app.Event.Emit("my-event", data)
+```
 
-// JavaScript
-OnEvent("my-event", handler)  // Must match exactly
+```javascript
+// JavaScript — name must match exactly
+Events.On("my-event", (event) => { ... })
+```
+
+### Issue: Frontend bindings import path changed
+
+**Problem:** Old `wailsjs/go/main/App` import no longer works
+
+**Solution:**
+
+Regenerate bindings and update imports:
+
+```bash
+wails3 generate bindings
+```
+
+```javascript
+// Old v2 path
+import { Greet } from '../wailsjs/go/main/App'
+
+// New v3 path (module name comes from go.mod)
+import { GreetService } from './bindings/myapp'
+```
+
+### Issue: Build fails with raw go build
+
+**Problem:** `go build` produces a binary that can't load the UI
+
+**Solution:**
+
+Always use the task-based build commands:
+
+```bash
+# Never: go build ./...
+# Always:
+wails3 task build   # production build
+wails3 dev          # development with hot-reload
 ```
 
 ## Testing Migration
@@ -627,14 +1116,15 @@ OnEvent("my-event", handler)  // Must match exactly
 ### Checklist
 
 - [ ] Application starts without errors
-- [ ] All bindings work
-- [ ] Events are sent and received
+- [ ] All bindings work (`wails3 generate bindings` run after changes)
+- [ ] Events are sent and received (check Go and JS names match)
 - [ ] Windows open and close correctly
+- [ ] Service startup/shutdown hooks run (`ServiceStartup`/`ServiceShutdown`)
 - [ ] Menus work (if applicable)
-- [ ] dialogs work (if applicable)
+- [ ] Dialogs work (if applicable)
 - [ ] System tray works (if applicable)
-- [ ] Build process works
-- [ ] Production build works
+- [ ] Build succeeds with `wails3 task build`
+- [ ] Production binary loads the UI correctly
 
 ### Test Commands
 
@@ -643,7 +1133,7 @@ OnEvent("my-event", handler)  // Must match exactly
 wails3 dev
 
 # Build
-wails3 build
+wails3 task build
 
 # Generate bindings
 wails3 generate bindings
