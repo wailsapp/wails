@@ -1,0 +1,55 @@
+:root{
+  --p-color-card: #1a1a1a;
+  --p-bg-card: #fff;
+  --p-bd-card: #c5c5c55e;
+}
+.p-card {
+  background: var(--p-bg-card);
+  border: 1px solid var(--p-bd-card);
+  color: var(--p-color-card);
+  display: block;
+  margin: 15px;
+  margin-left:7.5px;
+  margin-right:7.5px;
+  text-decoration: none;
+  border-radius: 25px;
+  padding: 20px 0px;
+  transition: .3s ease;
+  box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.1);
+}
+.p-card-image > img {
+  border-bottom: 3px solid var(--accent-article);
+  display: block;
+  margin: auto;
+  width: 100%;
+}
+.p-card-tags {
+  display: flex;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+.p-card-tags::before {
+  background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0) 75%, white 100%);
+  content: "";
+  height: 100%;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 30%;
+}
+.p-card-title {
+  font-size: 2rem;
+  margin-bottom: 15px;
+  margin-top: 15px;
+}
+.p-card-content {
+  padding: 15px;
+  padding-top: 15px;
+}
+.p-card-text {
+  font-size: 17px;
+  margin-bottom: 10px;
+  margin-left: 10px;
+  margin-top: 0;
+}

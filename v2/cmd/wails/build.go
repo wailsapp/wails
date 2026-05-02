@@ -244,7 +244,7 @@ func buildApplication(f *flags.Build) error {
 			buildOptions.CleanBinDirectory = false
 
 			// Output stats
-			buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.\n", compiledBinary, time.Since(start).Round(time.Millisecond).String()))
+			buildOptions.Logger.Println("%s", fmt.Sprintf("Built '%s' in %s.\n", compiledBinary, time.Since(start).Round(time.Millisecond).String()))
 
 			outputBinaries[buildOptions.Platform+"/"+buildOptions.Arch] = compiledBinary
 		} else {

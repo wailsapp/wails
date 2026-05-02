@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cache API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9rem; }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 1rem;
+        }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.danger { background: #f87171; }
+        button.secondary { background: #60a5fa; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .cache-list { list-style: none; }
+        .cache-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            margin-bottom: 5px;
+            border-radius: 4px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .cache-list .url {
+            color: #4ade80;
+            font-family: monospace;
+            word-break: break-all;
+            flex: 1;
+            min-width: 200px;
+        }
+        .cache-list .actions {
+            display: flex;
+            gap: 5px;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .feature {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .feature .name { font-weight: 600; margin-bottom: 5px; }
+        .feature .supported { color: #4ade80; }
+        .feature .unsupported { color: #f87171; }
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        .tab {
+            padding: 8px 16px;
+            background: rgba(0,0,0,0.3);
+            border: none;
+            color: #aaa;
+            cursor: pointer;
+            border-radius: 6px 6px 0 0;
+        }
+        .tab.active {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+        .response-preview {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .response-preview h4 {
+            color: #4ade80;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cache API Demo</h1>
+        <p class="description">
+            The Cache API provides a mechanism for storing and retrieving network requests and responses.
+            It's commonly used with Service Workers for offline support and performance optimization.
+        </p>
+
+        <div id="status" class="status success">
+            Cache API: <span id="available">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Cache Management</h2>
+            <div class="form-group">
+                <label for="cacheName">Cache Name</label>
+                <input type="text" id="cacheName" value="demo-cache-v1" placeholder="Enter cache name">
+            </div>
+            <button onclick="createCache()">Create/Open Cache</button>
+            <button onclick="listCaches()">List All Caches</button>
+            <button class="danger" onclick="deleteCache()">Delete Cache</button>
+            <div class="output" id="cacheList" style="margin-top: 15px;">Cache list will appear here...</div>
+        </div>
+
+        <div class="card">
+            <h2>Add to Cache</h2>
+            <div class="form-group">
+                <label for="urlToCache">URL to Cache</label>
+                <input type="text" id="urlToCache" value="https://jsonplaceholder.typicode.com/posts/1" placeholder="Enter URL to cache">
+            </div>
+            <button onclick="addUrlToCache()">Fetch & Cache URL</button>
+            <button class="secondary" onclick="addCustomResponse()">Add Custom Response</button>
+            <button class="secondary" onclick="addMultiple()">Cache Multiple URLs</button>
+        </div>
+
+        <div class="card">
+            <h2>Retrieve from Cache</h2>
+            <div class="form-group">
+                <label for="urlToMatch">URL to Match</label>
+                <input type="text" id="urlToMatch" value="https://jsonplaceholder.typicode.com/posts/1" placeholder="Enter URL to match">
+            </div>
+            <button onclick="matchUrl()">Match URL</button>
+            <button class="secondary" onclick="matchAll()">Match All</button>
+            <div class="response-preview" id="responsePreview" style="display: none;">
+                <h4>Cached Response</h4>
+                <div class="output" id="responseContent"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Cached Entries (<span id="entryCount">0</span>)</h2>
+            <button onclick="refreshEntries()">Refresh</button>
+            <button class="danger" onclick="clearCache()">Clear All Entries</button>
+            <ul class="cache-list" id="entriesList"></ul>
+        </div>
+
+        <div class="card">
+            <h2>Cache-First Strategy Demo</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">
+                Demonstrates a common caching pattern: try cache first, fall back to network.
+            </p>
+            <div class="form-group">
+                <label for="strategyUrl">Test URL</label>
+                <input type="text" id="strategyUrl" value="https://jsonplaceholder.typicode.com/users/1" placeholder="URL for strategy test">
+            </div>
+            <button onclick="cacheFirstFetch()">Cache-First Fetch</button>
+            <button class="secondary" onclick="networkFirstFetch()">Network-First Fetch</button>
+            <div class="output" id="strategyOutput" style="margin-top: 15px;">Strategy results will appear here...</div>
+        </div>
+
+        <div class="card">
+            <h2>API Support</h2>
+            <div class="feature-grid" id="features"></div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <button onclick="clearLog()">Clear Log</button>
+            <div class="output" id="eventLog">Cache operations will be logged here...</div>
+        </div>
+    </div>
+
+    <script>
+        let currentCache = null;
+        let logEntries = [];
+
+        function checkSupport() {
+            const hasCache = 'caches' in window;
+            document.getElementById('available').textContent = hasCache ? 'Available' : 'Not available';
+            document.getElementById('status').className = hasCache ? 'status success' : 'status error';
+            return hasCache;
+        }
+
+        function checkFeatures() {
+            const features = document.getElementById('features');
+            const checks = [
+                { name: 'caches', supported: 'caches' in window },
+                { name: 'caches.open()', supported: 'caches' in window && typeof caches.open === 'function' },
+                { name: 'caches.match()', supported: 'caches' in window && typeof caches.match === 'function' },
+                { name: 'caches.has()', supported: 'caches' in window && typeof caches.has === 'function' },
+                { name: 'caches.delete()', supported: 'caches' in window && typeof caches.delete === 'function' },
+                { name: 'caches.keys()', supported: 'caches' in window && typeof caches.keys === 'function' },
+                { name: 'Cache.add()', supported: typeof Cache !== 'undefined' },
+                { name: 'Cache.addAll()', supported: typeof Cache !== 'undefined' },
+            ];
+
+            features.innerHTML = checks.map(c => `
+                <div class="feature">
+                    <div class="name">${c.name}</div>
+                    <div class="${c.supported ? 'supported' : 'unsupported'}">${c.supported ? 'Supported' : 'Not supported'}</div>
+                </div>
+            `).join('');
+        }
+
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            logEntries.unshift(`[${time}] ${message}`);
+            if (logEntries.length > 30) logEntries.pop();
+            document.getElementById('eventLog').textContent = logEntries.join('\n');
+        }
+
+        function clearLog() {
+            logEntries = [];
+            document.getElementById('eventLog').textContent = 'Log cleared.';
+        }
+
+        async function createCache() {
+            const name = document.getElementById('cacheName').value;
+            if (!name) {
+                alert('Please enter a cache name');
+                return;
+            }
+            try {
+                currentCache = await caches.open(name);
+                log(`Cache "${name}" opened/created`);
+                listCaches();
+                refreshEntries();
+            } catch (e) {
+                log(`Error opening cache: ${e.message}`);
+            }
+        }
+
+        async function listCaches() {
+            try {
+                const names = await caches.keys();
+                const cacheList = document.getElementById('cacheList');
+                if (names.length === 0) {
+                    cacheList.textContent = 'No caches found.';
+                } else {
+                    cacheList.textContent = `Found ${names.length} cache(s):\n\n${names.map((n, i) => `${i + 1}. ${n}`).join('\n')}`;
+                }
+                log(`Listed ${names.length} cache(s)`);
+            } catch (e) {
+                log(`Error listing caches: ${e.message}`);
+            }
+        }
+
+        async function deleteCache() {
+            const name = document.getElementById('cacheName').value;
+            if (!name) {
+                alert('Please enter a cache name');
+                return;
+            }
+            if (!confirm(`Delete cache "${name}"?`)) return;
+
+            try {
+                const deleted = await caches.delete(name);
+                if (deleted) {
+                    log(`Cache "${name}" deleted`);
+                    currentCache = null;
+                } else {
+                    log(`Cache "${name}" not found`);
+                }
+                listCaches();
+                refreshEntries();
+            } catch (e) {
+                log(`Error deleting cache: ${e.message}`);
+            }
+        }
+
+        async function ensureCache() {
+            if (!currentCache) {
+                const name = document.getElementById('cacheName').value || 'demo-cache-v1';
+                currentCache = await caches.open(name);
+            }
+            return currentCache;
+        }
+
+        async function addUrlToCache() {
+            const url = document.getElementById('urlToCache').value;
+            if (!url) {
+                alert('Please enter a URL');
+                return;
+            }
+
+            try {
+                const cache = await ensureCache();
+                log(`Fetching: ${url}`);
+                await cache.add(url);
+                log(`Cached: ${url}`);
+                refreshEntries();
+            } catch (e) {
+                log(`Error caching URL: ${e.message}`);
+            }
+        }
+
+        async function addCustomResponse() {
+            const url = document.getElementById('urlToCache').value || 'custom://my-data';
+
+            try {
+                const cache = await ensureCache();
+                const customData = {
+                    message: 'This is custom cached data',
+                    timestamp: new Date().toISOString(),
+                    data: { foo: 'bar', count: 42 }
+                };
+                const response = new Response(JSON.stringify(customData, null, 2), {
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                await cache.put(url, response);
+                log(`Added custom response to cache: ${url}`);
+                refreshEntries();
+            } catch (e) {
+                log(`Error adding custom response: ${e.message}`);
+            }
+        }
+
+        async function addMultiple() {
+            const urls = [
+                'https://jsonplaceholder.typicode.com/posts/1',
+                'https://jsonplaceholder.typicode.com/posts/2',
+                'https://jsonplaceholder.typicode.com/posts/3',
+            ];
+
+            try {
+                const cache = await ensureCache();
+                log(`Caching ${urls.length} URLs...`);
+                await cache.addAll(urls);
+                log(`Successfully cached ${urls.length} URLs`);
+                refreshEntries();
+            } catch (e) {
+                log(`Error caching multiple URLs: ${e.message}`);
+            }
+        }
+
+        async function matchUrl() {
+            const url = document.getElementById('urlToMatch').value;
+            if (!url) {
+                alert('Please enter a URL');
+                return;
+            }
+
+            try {
+                const cache = await ensureCache();
+                const response = await cache.match(url);
+
+                const preview = document.getElementById('responsePreview');
+                const content = document.getElementById('responseContent');
+
+                if (response) {
+                    const clone = response.clone();
+                    const text = await clone.text();
+                    const headers = [...response.headers.entries()]
+                        .map(([k, v]) => `${k}: ${v}`).join('\n');
+
+                    content.textContent = `Status: ${response.status} ${response.statusText}
+URL: ${response.url}
+Type: ${response.type}
+
+Headers:
+${headers}
+
+Body:
+${text.substring(0, 1000)}${text.length > 1000 ? '\n...(truncated)' : ''}`;
+                    preview.style.display = 'block';
+                    log(`Found cached response for: ${url}`);
+                } else {
+                    content.textContent = 'No cached response found for this URL.';
+                    preview.style.display = 'block';
+                    log(`No cache match for: ${url}`);
+                }
+            } catch (e) {
+                log(`Error matching URL: ${e.message}`);
+            }
+        }
+
+        async function matchAll() {
+            try {
+                const cache = await ensureCache();
+                const responses = await cache.matchAll();
+
+                const content = document.getElementById('responseContent');
+                const preview = document.getElementById('responsePreview');
+
+                if (responses.length > 0) {
+                    content.textContent = `Found ${responses.length} cached responses:\n\n${responses.map((r, i) =>
+                        `${i + 1}. ${r.url || '(no URL)'} - ${r.status}`
+                    ).join('\n')}`;
+                    preview.style.display = 'block';
+                    log(`Found ${responses.length} cached responses`);
+                } else {
+                    content.textContent = 'No cached responses found.';
+                    preview.style.display = 'block';
+                    log('No cached responses found');
+                }
+            } catch (e) {
+                log(`Error matching all: ${e.message}`);
+            }
+        }
+
+        async function refreshEntries() {
+            const list = document.getElementById('entriesList');
+            list.innerHTML = '';
+
+            try {
+                const cache = await ensureCache();
+                const requests = await cache.keys();
+                document.getElementById('entryCount').textContent = requests.length;
+
+                if (requests.length === 0) {
+                    list.innerHTML = '<li style="color: #aaa;">No entries in cache</li>';
+                    return;
+                }
+
+                for (const request of requests) {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <span class="url">${escapeHtml(request.url)}</span>
+                        <div class="actions">
+                            <button onclick="viewEntry('${escapeHtml(request.url)}')" class="secondary" style="padding: 5px 10px; font-size: 0.8rem;">View</button>
+                            <button onclick="deleteEntry('${escapeHtml(request.url)}')" class="danger" style="padding: 5px 10px; font-size: 0.8rem;">Delete</button>
+                        </div>
+                    `;
+                    list.appendChild(li);
+                }
+            } catch (e) {
+                log(`Error refreshing entries: ${e.message}`);
+            }
+        }
+
+        async function viewEntry(url) {
+            document.getElementById('urlToMatch').value = url;
+            await matchUrl();
+        }
+
+        async function deleteEntry(url) {
+            try {
+                const cache = await ensureCache();
+                const deleted = await cache.delete(url);
+                if (deleted) {
+                    log(`Deleted entry: ${url}`);
+                } else {
+                    log(`Entry not found: ${url}`);
+                }
+                refreshEntries();
+            } catch (e) {
+                log(`Error deleting entry: ${e.message}`);
+            }
+        }
+
+        async function clearCache() {
+            if (!confirm('Clear all entries from the current cache?')) return;
+
+            try {
+                const cache = await ensureCache();
+                const requests = await cache.keys();
+                for (const request of requests) {
+                    await cache.delete(request);
+                }
+                log(`Cleared ${requests.length} entries from cache`);
+                refreshEntries();
+            } catch (e) {
+                log(`Error clearing cache: ${e.message}`);
+            }
+        }
+
+        async function cacheFirstFetch() {
+            const url = document.getElementById('strategyUrl').value;
+            const output = document.getElementById('strategyOutput');
+
+            try {
+                const startTime = performance.now();
+
+                // Try cache first
+                const cachedResponse = await caches.match(url);
+                if (cachedResponse) {
+                    const data = await cachedResponse.text();
+                    const elapsed = (performance.now() - startTime).toFixed(2);
+                    output.textContent = `Source: CACHE (${elapsed}ms)\n\n${data.substring(0, 500)}`;
+                    log(`Cache-first: Served from cache (${elapsed}ms)`);
+                    return;
+                }
+
+                // Fall back to network
+                log('Cache-first: Cache miss, fetching from network...');
+                const response = await fetch(url);
+                const data = await response.text();
+                const elapsed = (performance.now() - startTime).toFixed(2);
+
+                // Cache for next time
+                const cache = await ensureCache();
+                await cache.put(url, new Response(data, {
+                    headers: response.headers
+                }));
+
+                output.textContent = `Source: NETWORK (${elapsed}ms) - Now cached\n\n${data.substring(0, 500)}`;
+                log(`Cache-first: Fetched from network (${elapsed}ms), now cached`);
+                refreshEntries();
+            } catch (e) {
+                output.textContent = `Error: ${e.message}`;
+                log(`Cache-first error: ${e.message}`);
+            }
+        }
+
+        async function networkFirstFetch() {
+            const url = document.getElementById('strategyUrl').value;
+            const output = document.getElementById('strategyOutput');
+
+            try {
+                const startTime = performance.now();
+
+                // Try network first
+                try {
+                    const response = await fetch(url);
+                    const data = await response.text();
+                    const elapsed = (performance.now() - startTime).toFixed(2);
+
+                    // Update cache
+                    const cache = await ensureCache();
+                    await cache.put(url, new Response(data, {
+                        headers: response.headers
+                    }));
+
+                    output.textContent = `Source: NETWORK (${elapsed}ms) - Cache updated\n\n${data.substring(0, 500)}`;
+                    log(`Network-first: Fetched from network (${elapsed}ms), cache updated`);
+                    refreshEntries();
+                    return;
+                } catch (networkError) {
+                    // Fall back to cache
+                    log('Network-first: Network failed, trying cache...');
+                    const cachedResponse = await caches.match(url);
+                    if (cachedResponse) {
+                        const data = await cachedResponse.text();
+                        const elapsed = (performance.now() - startTime).toFixed(2);
+                        output.textContent = `Source: CACHE (fallback, ${elapsed}ms)\nNetwork error: ${networkError.message}\n\n${data.substring(0, 500)}`;
+                        log(`Network-first: Served from cache fallback (${elapsed}ms)`);
+                        return;
+                    }
+                    throw networkError;
+                }
+            } catch (e) {
+                output.textContent = `Error: ${e.message}\nNo cached fallback available.`;
+                log(`Network-first error: ${e.message}`);
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize
+        if (checkSupport()) {
+            checkFeatures();
+            listCaches();
+        }
+    </script>
+</body>
+</html>
