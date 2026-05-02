@@ -1,0 +1,55 @@
+# Desenvolvimento Local
+
+## Visão geral
+
+Os dispositivos estão em constante desenvolvimento e novos lançamentos são regularmente "marcados". Isso geralmente acontece quando todo o código no `master` foi testado e confirmado funcionando. Se você precisar de uma correção de bug ou recurso que ainda não foi lançado, é possível usar a versão mais recente "bleeding edge" seguindo as seguintes etapas:
+
+- `git clone https://github.com/wailsapp/wails`
+- `cd wails/v2/cmd/wails`
+- `go install`
+
+NOTA: O diretório para o qual você clonou o projeto será agora chamado de "clonedir".
+
+A CLI do Wails estará na versão mais recente.
+
+### Atualizando seu projeto
+
+Para atualizar projetos para usar a versão mais recente da biblioteca Wails, atualize o `do projeto. od` e certifique-se que a seguinte linha está no final do arquivo:
+
+`replace github.com/wailsapp/wails/v2 => <clonedir>`
+
+Exemplo:
+
+Windows: `substitua github.com/wailsapp/wails/v2 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2`
+
+Em 'nix: `substitui github.com/wailsapp/wails/v2 => /home/me/projects/wails/v2`
+
+Para reverter para uma versão estável, execute:
+
+`go install github.com/wailsapp/wails/v2/cmd/wails@latest`
+
+## Testando uma Branch
+
+Se você deseja testar um branch, siga as instruções acima, mas certifique-se de alternar o branch que você deseja testar antes de instalar:
+
+- `git clone https://github.com/wailsapp/wails`
+- `cd wails`
+- `git checkout -b branch-to-test --track origin/branch-to-test`
+- `cd v2/cmd/wails`
+- `go install`
+
+Certifique-se de [atualizar seu projeto](#updating-your-project) conforme descrito acima.
+
+## Testando uma PR
+
+Se você deseja testar um branch, siga as instruções acima, mas certifique-se de alternar o branch que você deseja testar antes de instalar. Por favor, substitua `[IDofThePR]` pelo ID do PR mostrado no github.com:
+
+- `git clone https://github.com/wailsapp/wails`
+- `cd wails`
+- `git fetch -u origin pull/[IDofThePR]/head:test/pr-[IDofThePR]`
+- `git checkout test/pr-[IDofThePR]`
+- `git reset --hard HEAD`
+- `cd v2/cmd/wails`
+- `go install`
+
+Certifique-se de [atualizar seu projeto](#updating-your-project) conforme descrito acima.

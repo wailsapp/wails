@@ -1401,11 +1401,7 @@ func GetKeyState(nVirtKey int32) int16 {
 }
 
 func DestroyMenu(hMenu HMENU) bool {
-	ret, _, _ := procDestroyMenu.Call(1,
-		uintptr(hMenu),
-		0,
-		0)
-
+	ret, _, _ := procDestroyMenu.Call(uintptr(hMenu))
 	return ret != 0
 }
 
