@@ -463,6 +463,9 @@ func (w *windowsWebviewWindow) run() {
 	w.setMinimiseButtonState(options.MinimiseButtonState)
 	w.setMaximiseButtonState(options.MaximiseButtonState)
 	w.setCloseButtonState(options.CloseButtonState)
+	if options.FullscreenButtonState != ButtonEnabled {
+		w.setFullscreenButtonState(options.FullscreenButtonState)
+	}
 
 	// Register the window with the application
 	getNativeApplication().registerWindow(w)
@@ -2446,6 +2449,16 @@ func (w *windowsWebviewWindow) setCloseButtonState(state ButtonState) {
 		_ = w32.DisableCloseButton(w.hwnd)
 	case ButtonHidden:
 		w.setStyle(false, w32.WS_SYSMENU)
+	}
+}
+
+func (w *windowsWebviewWindow) setFullscreenButtonState(state ButtonState) {
+	switch state {
+	case ButtonDisabled, ButtonHidden:
+		w.setStyle(false, w32.WS_MAXIMIZEBOX)
+	case ButtonEnabled:
+		w.setStyle(true, w32.WS_SYSMENU)
+		w.setStyle(true, w32.WS_MAXIMIZEBOX)
 	}
 }
 
