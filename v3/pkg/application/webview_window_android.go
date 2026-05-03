@@ -134,7 +134,7 @@ func (w *androidWebviewWindow) setEnabled(_ bool) {}
 
 func (w *androidWebviewWindow) setFrameless(_ bool) {}
 
-func (w *androidWebviewWindow) setFullscreenButtonEnabled(_ bool) {}
+func (w *androidWebviewWindow) setFullscreenButtonState(_ ButtonState) {}
 
 func (w *androidWebviewWindow) setMaxSize(_ int, _ int) {}
 
@@ -352,6 +352,10 @@ func (w *androidWebviewWindow) setPhysicalBounds(_ Rect) {
 
 func (w *androidWebviewWindow) setPosition(_ int, _ int) {
 	// Android doesn't support window positioning - apps are fullscreen
+}
+
+func (w *androidWebviewWindow) centerOnScreen(_ *Screen) {
+	// Android doesn't support window positioning
 }
 
 func (w *androidWebviewWindow) setURL(url string) {

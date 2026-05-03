@@ -300,6 +300,18 @@ func (m *macosApp) run() error {
 			)
 			C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
 			C.activateIgnoringOtherApps()
+			if err := m.processAndCacheScreens(); err != nil {
+				m.parent.handleError(err)
+			}
+		},
+	)
+	// Refresh screen cache when display configuration changes
+	m.parent.Event.OnApplicationEvent(
+		events.Mac.ApplicationDidChangeScreenParameters,
+		func(*ApplicationEvent) {
+			if err := m.processAndCacheScreens(); err != nil {
+				m.parent.handleError(err)
+			}
 		},
 	)
 	m.setupCommonEvents()

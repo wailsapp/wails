@@ -20,7 +20,7 @@ Le CLI Wails a un certain nombre de commandes qui sont utilisées pour gérer vo
 | -l                        | Liste des modèles de projet disponibles                                                                                |               |
 | -q                        | Supprimer les logs dans la console                                                                                     |               |
 | -t "nom du modèle"        | Modèle de projet à utiliser. Cela peut être le nom d'un modèle par défaut ou d'une URL d'un projet hébergé sur github. |    vanilla    |
-| -ide                      | Generate IDE project files `vscode` or `goland`                                                                        |               |
+| -ide                      | Générer les fichiers du projet IDE `vscode` ou `goland`                                                                |               |
 | -f                        | Forcer la compilation de l'application                                                                                 |     false     |
 
 Exemple: `wails init -n test -d mytestproject -g -ide vscode -q`
@@ -97,6 +97,12 @@ Sur Mac, l'application sera livrée avec `Info.plist`, pas `Info.dev.plist`.
 :::info UPX sur Apple Silicon
 
 Il y a [problèmes](https://github.com/upx/upx/issues/446) avec l'utilisation de UPX avec Apple Silicon.
+
+:::
+
+:::info Définir une version minimale pour MacOS
+
+Vous pouvez remplacer la [version minimale](../gettingstarted/installation#supported-platforms) par défaut de macOS pour votre application en fournissant une version via les variables d'environnement `CGO_CFLAGS` et `CGO_LDFLAGS`. par exemple `CGO_CFLAGS=-mmacosx-version-min=10.15.0 CGO_LDFLAGS=-mmacosx-version-min=10.15.0 wails build`
 
 :::
 

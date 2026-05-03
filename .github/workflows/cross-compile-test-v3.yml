@@ -4,7 +4,10 @@ on:
   pull_request_review:
     types: [submitted]
     branches:
-      - v3-alpha
+      - master
+    paths:
+      - 'v3/**'
+      - '.github/workflows/cross-compile-test-v3.yml'
   workflow_dispatch:
     inputs:
       pr_number:

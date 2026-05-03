@@ -1,4 +1,4 @@
-//go:build darwin && !ios
+//go:build darwin && !ios && !server
 
 package application
 
@@ -461,10 +461,13 @@ void windowRestore(void* nsWindow) {
 	}
 }
 
-// disable window fullscreen button
-void setFullscreenButtonEnabled(void* nsWindow, bool enabled) {
+// forward declaration - defined later in this file
+static void setButtonState(void *button, int state);
+
+// setFullscreenButtonState sets the fullscreen button state
+static void setFullscreenButtonState(void* nsWindow, int state) {
 	NSButton *fullscreenButton = [(WebviewWindow*)nsWindow standardWindowButton:NSWindowZoomButton];
-	fullscreenButton.enabled = enabled;
+	setButtonState(fullscreenButton, state);
 }
 
 // Set the titlebar style
@@ -641,6 +644,58 @@ void windowSetPosition(void* nsWindow, int x, int y) {
 }
 
 
+// Center window on a specific screen identified by display ID
+void windowCenterOnScreen(void* nsWindow, const char* screenID) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSString* targetID = [NSString stringWithUTF8String:screenID];
+	NSScreen* targetScreen = nil;
+	for (NSScreen* s in [NSScreen screens]) {
+		NSDictionary* desc = [s deviceDescription];
+		NSNumber* num = [desc objectForKey:@"NSScreenNumber"];
+		CGDirectDisplayID displayID = [num unsignedIntValue];
+		NSString* sid = [NSString stringWithFormat:@"%d", displayID];
+		if ([sid isEqualToString:targetID]) {
+			targetScreen = s;
+			break;
+		}
+	}
+	if (targetScreen == nil) {
+		targetScreen = [NSScreen mainScreen];
+	}
+	NSRect visibleFrame = [targetScreen visibleFrame];
+	NSRect windowFrame = [window frame];
+	CGFloat x = visibleFrame.origin.x + (visibleFrame.size.width - windowFrame.size.width) / 2;
+	CGFloat y = visibleFrame.origin.y + (visibleFrame.size.height - windowFrame.size.height) / 2;
+	[window setFrameOrigin:NSMakePoint(x, y)];
+}
+
+// Position window relative to a specific screen's visible frame
+void windowSetPositionOnScreen(void* nsWindow, int x, int y, const char* screenID) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSString* targetID = [NSString stringWithUTF8String:screenID];
+	NSScreen* targetScreen = nil;
+	for (NSScreen* s in [NSScreen screens]) {
+		NSDictionary* desc = [s deviceDescription];
+		NSNumber* num = [desc objectForKey:@"NSScreenNumber"];
+		CGDirectDisplayID displayID = [num unsignedIntValue];
+		NSString* sid = [NSString stringWithFormat:@"%d", displayID];
+		if ([sid isEqualToString:targetID]) {
+			targetScreen = s;
+			break;
+		}
+	}
+	if (targetScreen == nil) {
+		targetScreen = [NSScreen mainScreen];
+	}
+	CGFloat scale = [targetScreen backingScaleFactor];
+	NSRect visibleFrame = [targetScreen visibleFrame];
+	NSRect windowFrame = [window frame];
+	// x,y are in DIP top-origin coords relative to the screen's work area
+	CGFloat newX = visibleFrame.origin.x + (x / scale);
+	CGFloat newY = visibleFrame.origin.y + visibleFrame.size.height - windowFrame.size.height - (y / scale);
+	[window setFrameOrigin:NSMakePoint(newX, newY)];
+}
+
 // Destroy window
 void windowDestroy(void* nsWindow) {
 	[(WebviewWindow*)nsWindow close];
@@ -649,6 +704,11 @@ void windowDestroy(void* nsWindow) {
 // Remove drop shadow from window
 void windowSetShadow(void* nsWindow, bool hasShadow) {
 	[(WebviewWindow*)nsWindow setHasShadow:hasShadow];
+}
+
+// Set whether the Escape key should be prevented from exiting fullscreen
+void windowSetDisableEscapeExitsFullscreen(void* nsWindow, bool disable) {
+	[(WebviewWindow*)nsWindow setDisableEscapeExitsFullscreen:disable];
 }
 
 
@@ -918,6 +978,12 @@ func (w *macosWebviewWindow) setPosition(x int, y int) {
 	C.windowSetPosition(w.nsWindow, C.int(x), C.int(y))
 }
 
+func (w *macosWebviewWindow) centerOnScreen(screen *Screen) {
+	cID := C.CString(screen.ID)
+	defer C.free(unsafe.Pointer(cID))
+	C.windowCenterOnScreen(w.nsWindow, cID)
+}
+
 func (w *macosWebviewWindow) print() error {
 	C.windowPrint(w.nsWindow)
 	return nil
@@ -982,8 +1048,8 @@ func (w *macosWebviewWindow) hide() {
 	C.windowHide(w.nsWindow)
 }
 
-func (w *macosWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
-	C.setFullscreenButtonEnabled(w.nsWindow, C.bool(enabled))
+func (w *macosWebviewWindow) setFullscreenButtonState(state ButtonState) {
+	C.setFullscreenButtonState(w.nsWindow, C.int(state))
 }
 
 func (w *macosWebviewWindow) disableSizeConstraints() {
@@ -1292,6 +1358,9 @@ func (w *macosWebviewWindow) run() {
 			C.bool(options.EnableFileDrop),
 			w.getWebviewPreferences(),
 		)
+		if macOptions.DisableEscapeExitsFullscreen {
+			C.windowSetDisableEscapeExitsFullscreen(w.nsWindow, C.bool(true))
+		}
 		w.setTitle(options.Title)
 		w.setResizable(!options.DisableResize)
 		if options.MinWidth != 0 || options.MinHeight != 0 {
@@ -1332,6 +1401,9 @@ func (w *macosWebviewWindow) run() {
 		w.setMinimiseButtonState(options.MinimiseButtonState)
 		w.setMaximiseButtonState(options.MaximiseButtonState)
 		w.setCloseButtonState(options.CloseButtonState)
+		if options.FullscreenButtonState != ButtonEnabled {
+			w.setFullscreenButtonState(options.FullscreenButtonState)
+		}
 
 		// Ignore mouse events if requested
 		w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
@@ -1368,7 +1440,15 @@ func (w *macosWebviewWindow) run() {
 			w.fullscreen()
 		case WindowStateNormal:
 		}
-		if w.parent.options.InitialPosition == WindowCentered {
+		if options.Screen != nil {
+			cID := C.CString(options.Screen.ID)
+			if w.parent.options.InitialPosition == WindowCentered {
+				C.windowCenterOnScreen(w.nsWindow, cID)
+			} else {
+				C.windowSetPositionOnScreen(w.nsWindow, C.int(options.X), C.int(options.Y), cID)
+			}
+			C.free(unsafe.Pointer(cID))
+		} else if w.parent.options.InitialPosition == WindowCentered {
 			C.windowCenter(w.nsWindow)
 		} else {
 			w.setPosition(options.X, options.Y)

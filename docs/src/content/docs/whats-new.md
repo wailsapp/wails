@@ -1,5 +1,6 @@
 ---
 title: What's New in Wails v3
+description: Discover the major improvements and new features in Wails v3
 ---
 
 Wails v3 introduces significant changes from v2. It replaces the
@@ -403,5 +404,5 @@ An experimental feature to call runtime methods using plain html, similar to
 ## Examples
 
 There are more examples available in the
-[examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples)
+[examples](https://github.com/wailsapp/wails/tree/master/v3/examples)
 directory. Check them out!
