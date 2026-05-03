@@ -14,7 +14,7 @@ import { Create as $Create } from "/wails/runtime.js";
 export class FileInfo {
     "Name": string;
     "Mode": number;
-    "ModTime": any;
+    "ModTime": string;
     "Size": number;
     "IsDir": boolean;
 
@@ -27,7 +27,7 @@ export class FileInfo {
             this["Mode"] = 0;
         }
         if (!("ModTime" in $$source)) {
-            this["ModTime"] = null;
+            this["ModTime"] = "";
         }
         if (!("Size" in $$source)) {
             this["Size"] = 0;

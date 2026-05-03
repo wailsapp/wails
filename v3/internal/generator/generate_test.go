@@ -32,11 +32,17 @@ func TestGenerator(t *testing.T) {
 		useNamesBit = 1 << iota
 		useInterfacesBit
 		tsBit
+		timeTypeDateBit
 	)
 
 	// Generate configuration matrix.
-	tests := make([]*testParams, 1<<3)
+	tests := make([]*testParams, 1<<4)
 	for i := range tests {
+		timeType := ""
+		if i&timeTypeDateBit != 0 {
+			timeType = "Date"
+		}
+
 		options := &flags.GenerateBindingsOptions{
 			ModelsFilename: "models",
 			IndexFilename:  "index",
@@ -46,6 +52,7 @@ func TestGenerator(t *testing.T) {
 			TS:            i&tsBit != 0,
 			UseInterfaces: i&useInterfacesBit != 0,
 			UseNames:      i&useNamesBit != 0,
+			TimeType:      timeType,
 		}
 
 		name := configString(options)
@@ -172,7 +179,13 @@ func configString(options *flags.GenerateBindingsOptions) string {
 	if options.TS {
 		lang = "TS"
 	}
-	return fmt.Sprintf("lang=%s/UseInterfaces=%v/UseNames=%v", lang, options.UseInterfaces, options.UseNames)
+	base := fmt.Sprintf("lang=%s/UseInterfaces=%v/UseNames=%v", lang, options.UseInterfaces, options.UseNames)
+	if options.TimeType == "Date" {
+		// TimeType prefix ensures Date configs have separate directories,
+		// not nested inside the default (string) config directories.
+		return "TimeType=Date/" + base
+	}
+	return base
 }
 
 // outputCreator returns a FileCreator that detects want/got pairs

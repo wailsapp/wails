@@ -539,6 +539,16 @@ func IsAny(typ types.Type) bool {
 	return true
 }
 
+// IsTimeTime returns true if the given type is time.Time from the standard library.
+func IsTimeTime(typ types.Type) bool {
+	named, ok := types.Unalias(typ).(*types.Named)
+	if !ok {
+		return false
+	}
+	obj := named.Obj()
+	return obj.Pkg() != nil && obj.Pkg().Path() == "time" && obj.Name() == "Time"
+}
+
 // IsParametric returns true if the given type
 // contains unresolved type parameters.
 func IsParametric(typ types.Type) bool {

@@ -35,9 +35,9 @@ export class FileInfo {
         if (!("ModTime" in $$source)) {
             /**
              * @member
-             * @type {any}
+             * @type {string}
              */
-            this["ModTime"] = null;
+            this["ModTime"] = "";
         }
         if (!("Size" in $$source)) {
             /**

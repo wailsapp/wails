@@ -106,6 +106,18 @@ export function Struct(createField: Record<string, (source: any) => any>):
 }
 
 /**
+ * DateTime parses an RFC3339 string returned by encoding/json into a Date object.
+ * Returns null for null inputs or strings that do not represent a valid date.
+ */
+export function DateTime(source: any): Date | null {
+    if (source == null) {
+        return null;
+    }
+    const date = new globalThis.Date(source);
+    return isNaN(date.getTime()) ? null : date;
+}
+
+/**
  * Maps known event names to creation functions for their data types.
  * Will be monkey-patched by the binding generator.
  */

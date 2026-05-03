@@ -106,6 +106,13 @@ func (m *module) renderNamedDefault(typ aliasOrNamed, quoted bool) (result strin
 	// library. No model is generated; apply the same marshaler analysis that
 	// model rendering uses to determine the zero value.
 	if pkg := m.collector.Package(typ.Obj().Pkg()); pkg == nil || pkg.IsStdlib {
+		// time.Time: zero is "" in string mode, null in Date mode.
+		if collect.IsTimeTime(typ) {
+			if m.TimeType == "Date" && !m.UseInterfaces {
+				return "null", true
+			}
+			return `""`, true
+		}
 		if collect.MaybeJSONMarshaler(typ) != collect.NonMarshaler {
 			return "null", true
 		}

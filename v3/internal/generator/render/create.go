@@ -55,6 +55,11 @@ func (m *module) needsCreateImpl(typ types.Type, visited map[*types.TypeName]boo
 			return false
 		}
 
+		// time.Time in Date mode requires creation code to parse the RFC3339 string.
+		if collect.IsTimeTime(typ) && m.TimeType == "Date" && !m.UseInterfaces {
+			return true
+		}
+
 		if collect.IsAny(typ) || collect.IsStringAlias(typ) {
 			break
 		} else if collect.IsClass(typ) {
@@ -150,6 +155,11 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 
 		if m.collector.IsVoidAlias(t.Obj()) {
 			return "$Create.Any"
+		}
+
+		// time.Time in Date mode: parse RFC3339 string to Date.
+		if collect.IsTimeTime(typ) && m.TimeType == "Date" && !m.UseInterfaces {
+			return "$Create.DateTime"
 		}
 
 		if !m.NeedsCreate(typ) {

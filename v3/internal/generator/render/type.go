@@ -185,6 +185,17 @@ func (m *module) renderNamedType(typ aliasOrNamed, quoted bool) (result string, 
 	// library. No model is generated; apply the same marshaler analysis that
 	// model rendering uses to determine the appropriate TypeScript type.
 	if pkg := m.collector.Package(typ.Obj().Pkg()); pkg == nil || pkg.IsStdlib {
+		// time.Time marshals to an RFC3339 string. Render as string (default)
+		// or Date (--time-type=Date). Interface mode always uses string.
+		if collect.IsTimeTime(typ) {
+			if m.TimeType == "Date" && !m.UseInterfaces {
+				return "Date", false
+			}
+			if quoted {
+				return "`\"${string}\"`", false
+			}
+			return "string", false
+		}
 		if collect.MaybeJSONMarshaler(typ) != collect.NonMarshaler {
 			return "any", false
 		}

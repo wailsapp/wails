@@ -10,7 +10,7 @@
 export interface FileInfo {
     "Name": string;
     "Mode": number;
-    "ModTime": any;
+    "ModTime": string;
     "Size": number;
     "IsDir": boolean;
 }

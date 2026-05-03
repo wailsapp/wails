@@ -10,7 +10,7 @@
  * @typedef {Object} FileInfo
  * @property {string} Name
  * @property {number} Mode
- * @property {any} ModTime
+ * @property {string} ModTime
  * @property {number} Size
  * @property {boolean} IsDir
  */
