@@ -703,6 +703,11 @@ void windowSetShadow(void* nsWindow, bool hasShadow) {
 	[(WebviewWindow*)nsWindow setHasShadow:hasShadow];
 }
 
+// Set whether the Escape key should be prevented from exiting fullscreen
+void windowSetDisableEscapeExitsFullscreen(void* nsWindow, bool disable) {
+	[(WebviewWindow*)nsWindow setDisableEscapeExitsFullscreen:disable];
+}
+
 
 
 // windowClose closes the current window
@@ -1350,6 +1355,9 @@ func (w *macosWebviewWindow) run() {
 			C.bool(options.EnableFileDrop),
 			w.getWebviewPreferences(),
 		)
+		if macOptions.DisableEscapeExitsFullscreen {
+			C.windowSetDisableEscapeExitsFullscreen(w.nsWindow, C.bool(true))
+		}
 		w.setTitle(options.Title)
 		w.setResizable(!options.DisableResize)
 		if options.MinWidth != 0 || options.MinHeight != 0 {
