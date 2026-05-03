@@ -2023,6 +2023,12 @@ func onKeyPressEvent(_ *C.GtkWidget, event *C.GdkEventKey, userData C.uintptr_t)
 			windowId:          windowID,
 			acceleratorString: accelerator,
 		}
+		// Consume undo/redo events so webkit2gtk's own (unreliable) native handling
+		// for <input> elements does not race with our explicit execCommand call.
+		// Wails handles these via handleKeyEvent → undo()/redo().
+		if accelerator == "Ctrl+Z" || accelerator == "Ctrl+Shift+Z" {
+			return C.gboolean(1)
+		}
 	}
 	return C.gboolean(0)
 }
@@ -2378,10 +2384,11 @@ func (w *linuxWebviewWindow) selectAll() {
 }
 
 func (w *linuxWebviewWindow) undo() {
-	//C.webkit_web_view_execute_editing_command(w.webview, C.WEBKIT_EDITING_COMMAND_UNDO)
+	w.execJS("document.execCommand('undo')")
 }
 
 func (w *linuxWebviewWindow) redo() {
+	w.execJS("document.execCommand('redo')")
 }
 
 func (w *linuxWebviewWindow) delete() {
