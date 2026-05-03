@@ -1388,8 +1388,14 @@ func (w *macosWebviewWindow) run() {
 
 		// Initialise the window buttons
 		w.setMinimiseButtonState(options.MinimiseButtonState)
-		w.setMaximiseButtonState(options.MaximiseButtonState)
 		w.setCloseButtonState(options.CloseButtonState)
+		// On macOS, MaximiseButtonState and FullscreenButtonState both control NSWindowZoomButton.
+		// Apply the more restrictive state to prevent one from silently overriding the other.
+		zoomState := options.MaximiseButtonState
+		if options.FullscreenButtonState > zoomState {
+			zoomState = options.FullscreenButtonState
+		}
+		w.setMaximiseButtonState(zoomState)
 
 		// Ignore mouse events if requested
 		w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
@@ -1621,6 +1627,13 @@ func (w *macosWebviewWindow) setMaximiseButtonState(state ButtonState) {
 
 func (w *macosWebviewWindow) setCloseButtonState(state ButtonState) {
 	C.setCloseButtonState(w.nsWindow, C.int(state))
+}
+
+func (w *macosWebviewWindow) setFullscreenButtonState(state ButtonState) {
+	// On macOS the fullscreen/zoom button is NSWindowZoomButton, the same physical control
+	// as the maximise button. Delegate to setMaximiseButtonState so callers can use either
+	// API name without hitting a separate code path.
+	C.setMaximiseButtonState(w.nsWindow, C.int(state))
 }
 
 func (w *macosWebviewWindow) isIgnoreMouseEvents() bool {

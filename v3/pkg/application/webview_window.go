@@ -99,6 +99,7 @@ type (
 		setMinimiseButtonState(state ButtonState)
 		setMaximiseButtonState(state ButtonState)
 		setCloseButtonState(state ButtonState)
+		setFullscreenButtonState(state ButtonState)
 		isIgnoreMouseEvents() bool
 		setIgnoreMouseEvents(ignore bool)
 		cut()

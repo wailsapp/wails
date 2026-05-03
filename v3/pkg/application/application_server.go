@@ -538,6 +538,7 @@ func (w *serverWebviewWindow) getBorderSizes() *LRTB                      { retu
 func (w *serverWebviewWindow) setMinimiseButtonState(state ButtonState)   {}
 func (w *serverWebviewWindow) setMaximiseButtonState(state ButtonState)   {}
 func (w *serverWebviewWindow) setCloseButtonState(state ButtonState)      {}
+func (w *serverWebviewWindow) setFullscreenButtonState(state ButtonState) {}
 func (w *serverWebviewWindow) isIgnoreMouseEvents() bool                  { return false }
 func (w *serverWebviewWindow) setIgnoreMouseEvents(ignore bool)           {}
 func (w *serverWebviewWindow) cut()                                       {}

@@ -131,6 +131,10 @@ type WebviewWindowOptions struct {
 	MinimiseButtonState ButtonState
 	MaximiseButtonState ButtonState
 	CloseButtonState    ButtonState
+	// FullscreenButtonState controls the fullscreen button state.
+	// On macOS this targets NSWindowZoomButton (the same green button as MaximiseButtonState);
+	// the more restrictive of the two states is applied. On other platforms this is a no-op.
+	FullscreenButtonState ButtonState
 
 	// If true, the window's devtools will be available (default true in builds without the `production` build tag)
 	DevToolsEnabled bool

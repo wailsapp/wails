@@ -2449,6 +2449,10 @@ func (w *windowsWebviewWindow) setCloseButtonState(state ButtonState) {
 	}
 }
 
+func (w *windowsWebviewWindow) setFullscreenButtonState(_ ButtonState) {
+	// Windows has no dedicated fullscreen button in the standard title bar; no-op.
+}
+
 func (w *windowsWebviewWindow) setGWLStyle(style int) {
 	w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, uint32(style))
 }

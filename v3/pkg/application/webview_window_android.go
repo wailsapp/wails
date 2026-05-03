@@ -333,6 +333,10 @@ func (w *androidWebviewWindow) setCloseButtonState(_ ButtonState) {
 	// Android doesn't have close buttons like desktop platforms
 }
 
+func (w *androidWebviewWindow) setFullscreenButtonState(_ ButtonState) {
+	// Android doesn't have a fullscreen button
+}
+
 func (w *androidWebviewWindow) setContentProtection(_ bool) {
 	// Android content protection - could be implemented with FLAG_SECURE
 }

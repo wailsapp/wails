@@ -367,6 +367,10 @@ func (w *iosWebviewWindow) setCloseButtonState(_ ButtonState) {
 	// iOS doesn't have close buttons like desktop platforms
 }
 
+func (w *iosWebviewWindow) setFullscreenButtonState(_ ButtonState) {
+	// iOS doesn't have a fullscreen button
+}
+
 func (w *iosWebviewWindow) setContentProtection(_ bool) {
 	// iOS content protection - could be implemented with UIScreen captured notifications
 }

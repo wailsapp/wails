@@ -449,6 +449,9 @@ func (w *linuxWebviewWindow) setMaximiseButtonState(state ButtonState) {}
 // SetCloseButtonState is unsupported on Linux
 func (w *linuxWebviewWindow) setCloseButtonState(state ButtonState) {}
 
+// SetFullscreenButtonState is unsupported on Linux
+func (w *linuxWebviewWindow) setFullscreenButtonState(state ButtonState) {}
+
 func (w *linuxWebviewWindow) isIgnoreMouseEvents() bool {
 	return w.ignoreMouseEvents
 }
