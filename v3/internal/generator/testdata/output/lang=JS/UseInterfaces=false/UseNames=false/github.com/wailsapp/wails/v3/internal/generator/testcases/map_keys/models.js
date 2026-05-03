@@ -7,16 +7,6 @@
 import { Create as $Create } from "/wails/runtime.js";
 
 /**
- * @template S
- * @typedef {S} BasicCstrAlias
- */
-
-/**
- * @template R
- * @typedef {R} ComparableCstrAlias
- */
-
-/**
  * @typedef {string} EmbeddedCustomInterface
  */
 
@@ -41,21 +31,11 @@ import { Create as $Create } from "/wails/runtime.js";
  */
 
 /**
- * @template U
- * @typedef {U} GoodTildeCstrAlias
- */
-
-/**
  * @typedef {number} IntAlias
  */
 
 /**
  * @typedef {number} IntType
- */
-
-/**
- * @template Y
- * @typedef {Y} InterfaceCstrAlias
  */
 
 /**
@@ -927,7 +907,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_ in ComparableCstrAlias<number>]?: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GACi"] = {};
         }
@@ -935,7 +915,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_ in ComparableCstrAlias<ValueTextMarshaler>]?: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GACV"] = {};
         }
@@ -975,7 +955,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_ in BasicCstrAlias<number>]?: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GABi"] = {};
         }
@@ -983,7 +963,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_ in BasicCstrAlias<string>]?: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GABs"] = {};
         }
@@ -1015,7 +995,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_ in GoodTildeCstrAlias<ValueTextMarshaler>]?: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAGT"] = {};
         }
@@ -1031,7 +1011,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_ in NonBasicCstrAlias<ValueTextMarshaler>]?: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GANBV"] = {};
         }
@@ -1063,7 +1043,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_ in PointableCstrAlias<ValueTextMarshaler>]?: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAPlV1"] = {};
         }
@@ -1071,7 +1051,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_ in PointableCstrAlias<ValueTextMarshaler>]?: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAPlV2"] = {};
         }
@@ -1087,7 +1067,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_ in PointableCstrAlias<PointerTextMarshaler>]?: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAPlP2"] = {};
         }
@@ -1111,7 +1091,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_ in MixedCstrAlias<number>]?: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAMi"] = {};
         }
@@ -1119,7 +1099,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_ in MixedCstrAlias<StringType>]?: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAMS"] = {};
         }
@@ -1127,7 +1107,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_ in MixedCstrAlias<ValueTextMarshaler>]?: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAMV"] = {};
         }
@@ -1159,7 +1139,7 @@ export class Maps {
             /**
              * Accept
              * @member
-             * @type {{ [_ in InterfaceCstrAlias<ValueTextMarshaler>]?: number }}
+             * @type {{ [_ in string]?: number }}
              */
             this["GAIV"] = {};
         }
@@ -1345,60 +1325,60 @@ export class Maps {
         const $$createField86_0 = $$createType74($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
         const $$createField87_0 = $$createType75($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
         const $$createField88_0 = $$createType76($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField89_0 = $$createType59($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField89_0 = $$createType77;
         const $$createField90_0 = $$createType60($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField91_0 = $$createType61($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField91_0 = $$createType77;
         const $$createField92_0 = $$createType62($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField93_0 = $$createType63($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField93_0 = $$createType77;
         const $$createField94_0 = $$createType64($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField95_0 = $$createType65($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField95_0 = $$createType77;
         const $$createField96_0 = $$createType66($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField97_0 = $$createType67($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField97_0 = $$createType77;
         const $$createField98_0 = $$createType68($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField99_0 = $$createType69($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField99_0 = $$createType77;
         const $$createField100_0 = $$createType70($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField101_0 = $$createType71($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField101_0 = $$createType77;
         const $$createField102_0 = $$createType72($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField103_0 = $$createType73($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField103_0 = $$createType77;
         const $$createField104_0 = $$createType74($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField105_0 = $$createType75($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField105_0 = $$createType77;
         const $$createField106_0 = $$createType76($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField107_0 = $$createType1;
-        const $$createField108_0 = $$createType15;
-        const $$createField109_0 = $$createType17;
+        const $$createField107_0 = $$createType77;
+        const $$createField108_0 = $$createType77;
+        const $$createField109_0 = $$createType77;
         const $$createField110_0 = $$createType8;
         const $$createField111_0 = $$createType16;
         const $$createField112_0 = $$createType18;
-        const $$createField113_0 = $$createType1;
-        const $$createField114_0 = $$createType7;
+        const $$createField113_0 = $$createType77;
+        const $$createField114_0 = $$createType77;
         const $$createField115_0 = $$createType8;
         const $$createField116_0 = $$createType77;
         const $$createField117_0 = $$createType78;
-        const $$createField118_0 = $$createType15;
+        const $$createField118_0 = $$createType77;
         const $$createField119_0 = $$createType16;
-        const $$createField120_0 = $$createType15;
-        const $$createField121_0 = $$createType18;
+        const $$createField120_0 = $$createType77;
+        const $$createField121_0 = $$createType77;
         const $$createField122_0 = $$createType16;
         const $$createField123_0 = $$createType53;
-        const $$createField124_0 = $$createType15;
-        const $$createField125_0 = $$createType16;
-        const $$createField126_0 = $$createType17;
-        const $$createField127_0 = $$createType18;
+        const $$createField124_0 = $$createType77;
+        const $$createField125_0 = $$createType77;
+        const $$createField126_0 = $$createType77;
+        const $$createField127_0 = $$createType77;
         const $$createField128_0 = $$createType16;
         const $$createField129_0 = $$createType18;
-        const $$createField130_0 = $$createType2;
-        const $$createField131_0 = $$createType42;
-        const $$createField132_0 = $$createType15;
+        const $$createField130_0 = $$createType77;
+        const $$createField131_0 = $$createType77;
+        const $$createField132_0 = $$createType77;
         const $$createField133_0 = $$createType79;
         const $$createField134_0 = $$createType16;
-        const $$createField135_0 = $$createType23;
-        const $$createField136_0 = $$createType15;
-        const $$createField137_0 = $$createType18;
+        const $$createField135_0 = $$createType77;
+        const $$createField136_0 = $$createType77;
+        const $$createField137_0 = $$createType77;
         const $$createField138_0 = $$createType24;
         const $$createField139_0 = $$createType16;
         const $$createField140_0 = $$createType53;
-        const $$createField141_0 = $$createType16;
-        const $$createField142_0 = $$createType18;
+        const $$createField141_0 = $$createType77;
+        const $$createField142_0 = $$createType77;
         const $$createField143_0 = $$createType48;
         const $$createField144_0 = $$createType53;
         return ($$source = {}) => {
@@ -1842,21 +1822,6 @@ export class Maps {
         };
     }
 }
-
-/**
- * @template X
- * @typedef {X} MixedCstrAlias
- */
-
-/**
- * @template V
- * @typedef {V} NonBasicCstrAlias
- */
-
-/**
- * @template W
- * @typedef {W} PointableCstrAlias
- */
 
 /**
  * @typedef {PointerTextMarshaler} PointerAlias

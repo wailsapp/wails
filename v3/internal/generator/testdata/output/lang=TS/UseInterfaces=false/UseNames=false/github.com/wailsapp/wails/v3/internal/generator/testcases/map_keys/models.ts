@@ -5,10 +5,6 @@
 // @ts-ignore: Unused imports
 import { Create as $Create } from "/wails/runtime.js";
 
-export type BasicCstrAlias<S> = S;
-
-export type ComparableCstrAlias<R> = R;
-
 export type EmbeddedCustomInterface = string;
 
 export type EmbeddedOriginalInterface = string;
@@ -21,13 +17,9 @@ export type EmbeddedValue = string;
 
 export type EmbeddedValuePtr = string;
 
-export type GoodTildeCstrAlias<U> = U;
-
 export type IntAlias = number;
 
 export type IntType = number;
-
-export type InterfaceCstrAlias<Y> = Y;
 
 export class Maps<R, S, T, U, V, W, X, Y, Z> {
     /**
@@ -568,12 +560,12 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
     /**
      * Accept
      */
-    "GACi": { [_ in ComparableCstrAlias<number>]?: number };
+    "GACi": { [_ in string]?: number };
 
     /**
      * Accept
      */
-    "GACV": { [_ in ComparableCstrAlias<ValueTextMarshaler>]?: number };
+    "GACV": { [_ in string]?: number };
 
     /**
      * Reject
@@ -598,12 +590,12 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
     /**
      * Accept
      */
-    "GABi": { [_ in BasicCstrAlias<number>]?: number };
+    "GABi": { [_ in string]?: number };
 
     /**
      * Accept
      */
-    "GABs": { [_ in BasicCstrAlias<string>]?: number };
+    "GABs": { [_ in string]?: number };
 
     /**
      * Reject
@@ -623,7 +615,7 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
     /**
      * Accept
      */
-    "GAGT": { [_ in GoodTildeCstrAlias<ValueTextMarshaler>]?: number };
+    "GAGT": { [_ in string]?: number };
 
     /**
      * Accept, hide
@@ -633,7 +625,7 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
     /**
      * Accept
      */
-    "GANBV": { [_ in NonBasicCstrAlias<ValueTextMarshaler>]?: number };
+    "GANBV": { [_ in string]?: number };
 
     /**
      * Accept, hide
@@ -653,12 +645,12 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
     /**
      * Accept
      */
-    "GAPlV1": { [_ in PointableCstrAlias<ValueTextMarshaler>]?: number };
+    "GAPlV1": { [_ in string]?: number };
 
     /**
      * Accept
      */
-    "GAPlV2": { [_ in PointableCstrAlias<ValueTextMarshaler>]?: number };
+    "GAPlV2": { [_ in string]?: number };
 
     /**
      * Reject
@@ -668,7 +660,7 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
     /**
      * Accept
      */
-    "GAPlP2": { [_ in PointableCstrAlias<PointerTextMarshaler>]?: number };
+    "GAPlP2": { [_ in string]?: number };
 
     /**
      * Accept, hide
@@ -683,17 +675,17 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
     /**
      * Accept
      */
-    "GAMi": { [_ in MixedCstrAlias<number>]?: number };
+    "GAMi": { [_ in string]?: number };
 
     /**
      * Accept
      */
-    "GAMS": { [_ in MixedCstrAlias<StringType>]?: number };
+    "GAMS": { [_ in string]?: number };
 
     /**
      * Accept
      */
-    "GAMV": { [_ in MixedCstrAlias<ValueTextMarshaler>]?: number };
+    "GAMV": { [_ in string]?: number };
 
     /**
      * Reject
@@ -713,7 +705,7 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
     /**
      * Accept
      */
-    "GAIV": { [_ in InterfaceCstrAlias<ValueTextMarshaler>]?: number };
+    "GAIV": { [_ in string]?: number };
 
     /**
      * Accept, hide
@@ -1291,60 +1283,60 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
         const $$createField86_0 = $$createType74($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
         const $$createField87_0 = $$createType75($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
         const $$createField88_0 = $$createType76($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField89_0 = $$createType59($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField89_0 = $$createType77;
         const $$createField90_0 = $$createType60($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField91_0 = $$createType61($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField91_0 = $$createType77;
         const $$createField92_0 = $$createType62($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField93_0 = $$createType63($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField93_0 = $$createType77;
         const $$createField94_0 = $$createType64($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField95_0 = $$createType65($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField95_0 = $$createType77;
         const $$createField96_0 = $$createType66($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField97_0 = $$createType67($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField97_0 = $$createType77;
         const $$createField98_0 = $$createType68($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField99_0 = $$createType69($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField99_0 = $$createType77;
         const $$createField100_0 = $$createType70($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField101_0 = $$createType71($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField101_0 = $$createType77;
         const $$createField102_0 = $$createType72($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField103_0 = $$createType73($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField103_0 = $$createType77;
         const $$createField104_0 = $$createType74($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField105_0 = $$createType75($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField105_0 = $$createType77;
         const $$createField106_0 = $$createType76($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField107_0 = $$createType1;
-        const $$createField108_0 = $$createType15;
-        const $$createField109_0 = $$createType17;
+        const $$createField107_0 = $$createType77;
+        const $$createField108_0 = $$createType77;
+        const $$createField109_0 = $$createType77;
         const $$createField110_0 = $$createType8;
         const $$createField111_0 = $$createType16;
         const $$createField112_0 = $$createType18;
-        const $$createField113_0 = $$createType1;
-        const $$createField114_0 = $$createType7;
+        const $$createField113_0 = $$createType77;
+        const $$createField114_0 = $$createType77;
         const $$createField115_0 = $$createType8;
         const $$createField116_0 = $$createType77;
         const $$createField117_0 = $$createType78;
-        const $$createField118_0 = $$createType15;
+        const $$createField118_0 = $$createType77;
         const $$createField119_0 = $$createType16;
-        const $$createField120_0 = $$createType15;
-        const $$createField121_0 = $$createType18;
+        const $$createField120_0 = $$createType77;
+        const $$createField121_0 = $$createType77;
         const $$createField122_0 = $$createType16;
         const $$createField123_0 = $$createType53;
-        const $$createField124_0 = $$createType15;
-        const $$createField125_0 = $$createType16;
-        const $$createField126_0 = $$createType17;
-        const $$createField127_0 = $$createType18;
+        const $$createField124_0 = $$createType77;
+        const $$createField125_0 = $$createType77;
+        const $$createField126_0 = $$createType77;
+        const $$createField127_0 = $$createType77;
         const $$createField128_0 = $$createType16;
         const $$createField129_0 = $$createType18;
-        const $$createField130_0 = $$createType2;
-        const $$createField131_0 = $$createType42;
-        const $$createField132_0 = $$createType15;
+        const $$createField130_0 = $$createType77;
+        const $$createField131_0 = $$createType77;
+        const $$createField132_0 = $$createType77;
         const $$createField133_0 = $$createType79;
         const $$createField134_0 = $$createType16;
-        const $$createField135_0 = $$createType23;
-        const $$createField136_0 = $$createType15;
-        const $$createField137_0 = $$createType18;
+        const $$createField135_0 = $$createType77;
+        const $$createField136_0 = $$createType77;
+        const $$createField137_0 = $$createType77;
         const $$createField138_0 = $$createType24;
         const $$createField139_0 = $$createType16;
         const $$createField140_0 = $$createType53;
-        const $$createField141_0 = $$createType16;
-        const $$createField142_0 = $$createType18;
+        const $$createField141_0 = $$createType77;
+        const $$createField142_0 = $$createType77;
         const $$createField143_0 = $$createType48;
         const $$createField144_0 = $$createType53;
         return ($$source: any = {}) => {
@@ -1788,12 +1780,6 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
         };
     }
 }
-
-export type MixedCstrAlias<X> = X;
-
-export type NonBasicCstrAlias<V> = V;
-
-export type PointableCstrAlias<W> = W;
 
 export type PointerAlias = PointerTextMarshaler;
 

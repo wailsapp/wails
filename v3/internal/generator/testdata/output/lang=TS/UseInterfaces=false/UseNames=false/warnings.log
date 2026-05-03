@@ -1,3 +1,11 @@
+[warn] /testcases/aliases/main.go:59:28: cannot use type parameter declared in alias declaration as RHS
+[warn] /testcases/aliases/main.go:62:32: cannot use generic type GenericAlias[T any] without instantiation
+[warn] /testcases/aliases/main.go:71:50: cannot use generic type GenericPtrAlias[T any] without instantiation
+[warn] /testcases/aliases/main.go:77:30: cannot use generic type GenericAlias[T any] without instantiation
+[warn] /testcases/aliases/main.go:84:8: cannot use generic type GenericAlias[T any] without instantiation
+[warn] /testcases/aliases/main.go:85:8: cannot use generic type GenericAlias[T any] without instantiation
+[warn] /testcases/aliases/main.go:86:8: cannot use generic type GenericPtrAlias[T any] without instantiation
+[warn] /testcases/aliases/main.go:87:8: cannot use generic type GenericPtrAlias[T any] without instantiation
 [warn] /testcases/complex_json/main.go:127:2: event 'collision' has one of multiple definitions here with data type map[string]int
 [warn] /testcases/events_only/events.go:20:2: event 'collision' has one of multiple definitions here with data type int
 [warn] /testcases/events_only/events.go:21:2: `application.RegisterEvent` called here with non-constant event name
@@ -5,12 +13,52 @@
 [warn] /testcases/events_only/other.go:13:2: `application.RegisterEvent` called here with non-constant event name
 [warn] /testcases/events_only/other.go:17:2: data type []T for event 'parametric' contains unresolved type parameters and will be ignored`
 [warn] /testcases/events_only/other.go:22:2: event 'common:ApplicationStarted' is a known system event and cannot be overridden; this call to `application.RegisterEvent` will panic
+[warn] /testcases/map_keys/main.go:109:42: cannot use type parameter declared in alias declaration as RHS
+[warn] /testcases/map_keys/main.go:111:42: cannot use type parameter declared in alias declaration as RHS
+[warn] /testcases/map_keys/main.go:113:48: cannot use type parameter declared in alias declaration as RHS
+[warn] /testcases/map_keys/main.go:115:50: cannot use type parameter declared in alias declaration as RHS
+[warn] /testcases/map_keys/main.go:117:48: cannot use type parameter declared in alias declaration as RHS
+[warn] /testcases/map_keys/main.go:119:50: cannot use type parameter declared in alias declaration as RHS
+[warn] /testcases/map_keys/main.go:121:42: cannot use type parameter declared in alias declaration as RHS
+[warn] /testcases/map_keys/main.go:123:50: cannot use type parameter declared in alias declaration as RHS
+[warn] /testcases/map_keys/main.go:125:63: cannot use type parameter declared in alias declaration as RHS
+[warn] /testcases/map_keys/main.go:229:13: cannot use generic type ComparableCstrAlias[R comparable] without instantiation
+[warn] /testcases/map_keys/main.go:231:13: cannot use generic type BasicCstrAlias[S BasicConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:233:13: cannot use generic type BadTildeCstrAlias[T BadTildeConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:235:13: cannot use generic type GoodTildeCstrAlias[U GoodTildeConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:237:13: cannot use generic type NonBasicCstrAlias[V NonBasicConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:239:13: cannot use generic type PointableCstrAlias[W PointableConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:241:13: cannot use generic type MixedCstrAlias[X MixedConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:243:13: cannot use generic type InterfaceCstrAlias[Y InterfaceConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:245:13: cannot use generic type PointerCstrAlias[R comparable, Z PointerConstraint[R]] without instantiation
+[warn] /testcases/map_keys/main.go:248:15: cannot use generic type ComparableCstrAlias[R comparable] without instantiation
+[warn] /testcases/map_keys/main.go:249:15: cannot use generic type ComparableCstrAlias[R comparable] without instantiation
+[warn] /testcases/map_keys/main.go:250:15: cannot use generic type ComparableCstrAlias[R comparable] without instantiation
+[warn] /testcases/map_keys/main.go:254:15: cannot use generic type BasicCstrAlias[S BasicConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:255:15: cannot use generic type BasicCstrAlias[S BasicConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:257:15: cannot use generic type BadTildeCstrAlias[T BadTildeConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:259:15: cannot use generic type GoodTildeCstrAlias[U GoodTildeConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:261:15: cannot use generic type NonBasicCstrAlias[V NonBasicConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:262:15: cannot use generic type NonBasicCstrAlias[V NonBasicConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:265:15: cannot use generic type PointableCstrAlias[W PointableConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:266:16: cannot use generic type PointableCstrAlias[W PointableConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:267:15: cannot use generic type PointableCstrAlias[W PointableConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:268:16: cannot use generic type PointableCstrAlias[W PointableConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:271:15: cannot use generic type MixedCstrAlias[X MixedConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:272:15: cannot use generic type MixedCstrAlias[X MixedConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:273:15: cannot use generic type MixedCstrAlias[X MixedConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:276:15: cannot use generic type InterfaceCstrAlias[Y InterfaceConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:277:15: cannot use generic type InterfaceCstrAlias[Y InterfaceConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:278:15: cannot use generic type InterfaceCstrAlias[Y InterfaceConstraint] without instantiation
+[warn] /testcases/map_keys/main.go:282:15: cannot use generic type PointerCstrAlias[R comparable, Z PointerConstraint[R]] without instantiation
+[warn] /testcases/map_keys/main.go:283:15: cannot use generic type PointerCstrAlias[R comparable, Z PointerConstraint[R]] without instantiation
 [warn] /testcases/marshalers/main.go:212:2: event 'collision' has one of multiple definitions here with data type *struct{Field []bool}
 [warn] /testcases/marshalers/main.go:214:2: data type encoding/json.Marshaler for event 'interface' is a non-empty interface: emitting events from the frontend with data other than `null` is not supported by encoding/json and will likely result in runtime errors
 [warn] dynamically registered event names are not discoverable by the binding generator: it is recommended to invoke `application.RegisterEvent` with constant arguments only
 [warn] event 'collision' has multiple conflicting definitions and will be ignored
 [warn] events registered through indirect calls are not discoverable by the binding generator: it is recommended to invoke `application.RegisterEvent` directly
 [warn] generic wrappers for calls to `application.RegisterEvent` are not analysable by the binding generator: it is recommended to call `application.RegisterEvent` with concrete types only
+[warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/aliases: unknown basic type invalid type: please report this to Wails maintainers
 [warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type *R is used as a map key, but some of its instantiations might not implement encoding.TextMarshaler: this might result in runtime errors
 [warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type *S is used as a map key, but some of its instantiations might not implement encoding.TextMarshaler: this might result in runtime errors
 [warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type *T is used as a map key, but some of its instantiations might not implement encoding.TextMarshaler: this might result in runtime errors
@@ -46,14 +94,10 @@
 [warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type bool is used as a map key, but does not implement encoding.TextMarshaler: this will likely result in runtime errors
 [warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type complex64 is used as a map key, but does not implement encoding.TextMarshaler: this will likely result in runtime errors
 [warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type float32 is used as a map key, but does not implement encoding.TextMarshaler: this will likely result in runtime errors
-[warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.BadTildeCstrAlias[T] is used as a map key, but some of its instantiations might not implement encoding.TextMarshaler: this might result in runtime errors
-[warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.BadTildeCstrAlias[struct{}] is used as a map key, but does not implement encoding.TextMarshaler: this will likely result in runtime errors
 [warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.BadTildeCstrPtrAlias[T] is used as a map key, but some of its instantiations might not implement encoding.TextMarshaler: this might result in runtime errors
 [warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.BadTildeCstrPtrAlias[struct{}] is used as a map key, but does not implement encoding.TextMarshaler: this will likely result in runtime errors
 [warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.BasicCstrPtrAlias[S] is used as a map key, but some of its instantiations might not implement encoding.TextMarshaler: this might result in runtime errors
 [warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.BasicCstrPtrAlias[int] is used as a map key, but does not implement encoding.TextMarshaler: this will likely result in runtime errors
-[warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.ComparableCstrAlias[R] is used as a map key, but some of its instantiations might not implement encoding.TextMarshaler: this might result in runtime errors
-[warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.ComparableCstrAlias[github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.PointerTextMarshaler] is used as a map key, but does not implement encoding.TextMarshaler: this will likely result in runtime errors
 [warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.ComparableCstrPtrAlias[R] is used as a map key, but some of its instantiations might not implement encoding.TextMarshaler: this might result in runtime errors
 [warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.ComparableCstrPtrAlias[int] is used as a map key, but does not implement encoding.TextMarshaler: this will likely result in runtime errors
 [warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.EmbeddedPointer is used as a map key, but does not implement encoding.TextMarshaler: this will likely result in runtime errors
@@ -68,8 +112,6 @@
 [warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.NonBasicCstrPtrAlias[*github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.PointerTextMarshaler] is used as a map key, but does not implement encoding.TextMarshaler: this will likely result in runtime errors
 [warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.NonBasicCstrPtrAlias[V] is used as a map key, but some of its instantiations might not implement encoding.TextMarshaler: this might result in runtime errors
 [warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.NonTextMarshaler is used as a map key, but does not implement encoding.TextMarshaler: this will likely result in runtime errors
-[warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.PointableCstrAlias[W] is used as a map key, but some of its instantiations might not implement encoding.TextMarshaler: this might result in runtime errors
-[warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.PointableCstrAlias[github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.PointerTextMarshaler] is used as a map key, but does not implement encoding.TextMarshaler: this will likely result in runtime errors
 [warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.PointerAlias is used as a map key, but does not implement encoding.TextMarshaler: this will likely result in runtime errors
 [warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.PointerCstrPtrAlias[R, Z] is used as a map key, but some of its instantiations might not implement encoding.TextMarshaler: this might result in runtime errors
 [warn] package github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys: type github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.PointerCstrPtrAlias[github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.PointerTextMarshaler, *github.com/wailsapp/wails/v3/internal/generator/testcases/map_keys.PointerTextMarshaler] is used as a map key, but does not implement encoding.TextMarshaler: this will likely result in runtime errors

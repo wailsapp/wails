@@ -6,13 +6,6 @@
 // @ts-ignore: Unused imports
 import { Create as $Create } from "/wails/runtime.js";
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore: Unused imports
-import * as encoding$0 from "../../../../../../../../encoding/models.js";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore: Unused imports
-import * as json$0 from "../../../../../../../../encoding/json/models.js";
-
 /**
  * any
  * @typedef {any} AliasJsonMarshaler
@@ -513,14 +506,14 @@ export class ImplicitNonMarshaler {
         if (!("Marshaler" in $$source)) {
             /**
              * @member
-             * @type {json$0.Marshaler}
+             * @type {any}
              */
             this["Marshaler"] = null;
         }
         if (!("TextMarshaler" in $$source)) {
             /**
              * @member
-             * @type {encoding$0.TextMarshaler}
+             * @type {string}
              */
             this["TextMarshaler"] = "";
         }

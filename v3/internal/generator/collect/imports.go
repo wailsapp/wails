@@ -151,6 +151,15 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 				return
 			}
 
+			pkg := collector.Package(obj.Pkg())
+			if pkg == nil || pkg.IsStdlib {
+				// Type belongs to a package outside the analyzed set or to the Go
+				// standard library. It cannot be registered as a model; process its
+				// underlying type directly.
+				typ = typ.Underlying()
+				break
+			}
+
 			if obj.Pkg().Path() == imports.Self {
 				imports.ImportModels = true
 			}
@@ -159,7 +168,7 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 			imports.collector.Model(obj)
 
 			// Import parent package.
-			imports.Add(collector.Package(obj.Pkg()))
+			imports.Add(pkg)
 
 			instance, _ := typ.(interface{ TypeArgs() *types.TypeList })
 			if instance != nil {

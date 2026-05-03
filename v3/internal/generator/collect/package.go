@@ -35,6 +35,11 @@ type PackageInfo struct {
 	// IsOrImportsApp is true if this package is, or depends upon, the Wails application package.
 	IsOrImportsApp bool
 
+	// IsStdlib is true if this package belongs to the Go standard library.
+	// Stdlib types are rendered as their underlying primitive types
+	// rather than being registered as models.
+	IsStdlib bool
+
 	// Types and TypesInfo hold type information for this package.
 	Types     *types.Package
 	TypesInfo *types.Info
@@ -83,6 +88,7 @@ func newPackageInfo(pkg *packages.Package, collector *Collector) *PackageInfo {
 		Name: pkg.Name,
 
 		IsOrImportsApp: importsApp || pkg.PkgPath == collector.systemPaths.ApplicationPackage,
+		IsStdlib:       isStdlibPath(pkg.PkgPath),
 
 		Types:     pkg.Types,
 		TypesInfo: pkg.TypesInfo,
@@ -297,4 +303,16 @@ func (info *PackageInfo) recordModel(obj *types.TypeName) (model *ModelInfo, pre
 // compareAstFiles compares two AST files by starting position.
 func compareAstFiles(f1 *ast.File, f2 *ast.File) int {
 	return cmp.Compare(f1.FileStart, f2.FileStart)
+}
+
+// isStdlibPath reports whether the given import path belongs to the Go standard
+// library. Stdlib paths never contain a dot in their first path element
+// (e.g. "os", "io/fs", "net/http"), whereas module-based packages always start
+// with a domain (e.g. "github.com/wailsapp/wails/v3").
+func isStdlibPath(path string) bool {
+	first := path
+	if i := strings.IndexByte(path, '/'); i >= 0 {
+		first = path[:i]
+	}
+	return !strings.ContainsRune(first, '.')
 }

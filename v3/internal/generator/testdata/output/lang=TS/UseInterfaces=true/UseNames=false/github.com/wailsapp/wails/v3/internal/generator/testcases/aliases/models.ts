@@ -14,10 +14,10 @@ export type Alias = number;
  * A class whose fields have various aliased types.
  */
 export interface AliasGroup {
-    "GAi": GenericAlias<number>;
-    "GAP": GenericAlias<GenericPerson<boolean>>;
-    "GPAs": GenericPtrAlias<string[] | null>;
-    "GPAP": GenericPtrAlias<GenericPerson<number[] | null>>;
+    "GAi": any;
+    "GAP": any;
+    "GPAs": any;
+    "GPAP": any;
     "GMA": GenericMapAlias<string, number>;
     "GPA": GenericPersonAlias<boolean>;
     "IPA": IndirectPersonAlias;
@@ -65,11 +65,6 @@ export interface EmptyStruct {
 }
 
 /**
- * A generic alias that forwards to a type parameter.
- */
-export type GenericAlias<T> = T;
-
-/**
  * A generic alias that wraps a map.
  */
 export type GenericMapAlias<T, U> = { [_ in string]?: U } | null;
@@ -85,12 +80,7 @@ export interface GenericPerson<T> {
 /**
  * A generic alias that wraps a generic struct.
  */
-export type GenericPersonAlias<T> = GenericPerson<GenericPtrAlias<T>[] | null>;
-
-/**
- * A generic alias that wraps a pointer type.
- */
-export type GenericPtrAlias<T> = GenericAlias<T> | null;
+export type GenericPersonAlias<T> = GenericPerson<any[] | null>;
 
 /**
  * An alias that wraps a class through a non-typeparam alias.
@@ -132,4 +122,4 @@ export type SubPackageAlias = subpkg$0.SubStruct;
 /**
  * An alias that wraps a class through a typeparam alias.
  */
-export type TPIndirectPersonAlias = GenericAlias<GenericPerson<boolean>>;
+export type TPIndirectPersonAlias = any;

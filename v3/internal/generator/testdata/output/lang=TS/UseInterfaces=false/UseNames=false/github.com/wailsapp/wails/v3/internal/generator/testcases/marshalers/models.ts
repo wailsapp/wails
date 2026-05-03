@@ -5,13 +5,6 @@
 // @ts-ignore: Unused imports
 import { Create as $Create } from "/wails/runtime.js";
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore: Unused imports
-import * as encoding$0 from "../../../../../../../../encoding/models.js";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore: Unused imports
-import * as json$0 from "../../../../../../../../encoding/json/models.js";
-
 /**
  * any
  */
@@ -434,8 +427,8 @@ export type ImplicitNonJson = string;
  * class{ Marshaler, TextMarshaler }
  */
 export class ImplicitNonMarshaler {
-    "Marshaler": json$0.Marshaler;
-    "TextMarshaler": encoding$0.TextMarshaler;
+    "Marshaler": any;
+    "TextMarshaler": string;
 
     /** Creates a new ImplicitNonMarshaler instance. */
     constructor($$source: Partial<ImplicitNonMarshaler> = {}) {

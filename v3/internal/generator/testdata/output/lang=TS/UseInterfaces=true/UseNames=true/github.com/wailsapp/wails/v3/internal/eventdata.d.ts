@@ -7,9 +7,6 @@ import type { Events } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import type * as json$0 from "../../../../../encoding/json/models.js";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore: Unused imports
 import type * as events_only$0 from "./generator/testcases/events_only/models.js";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -23,7 +20,7 @@ declare module "/wails/runtime.js" {
             "events_only:nodata": void;
             "events_only:other": more$0.StringPtr[] | null;
             "events_only:string": string;
-            "interface": json$0.Marshaler;
+            "interface": any;
             "overlap": {"Field": boolean[] | null} | null;
         }
     }

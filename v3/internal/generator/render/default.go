@@ -102,6 +102,19 @@ func (m *module) renderNamedDefault(typ aliasOrNamed, quoted bool) (result strin
 		return m.JSDefault(typ.Underlying(), quoted), true
 	}
 
+	// Type belongs to a package outside the analyzed set or to the Go standard
+	// library. No model is generated; apply the same marshaler analysis that
+	// model rendering uses to determine the zero value.
+	if pkg := m.collector.Package(typ.Obj().Pkg()); pkg == nil || pkg.IsStdlib {
+		if collect.MaybeJSONMarshaler(typ) != collect.NonMarshaler {
+			return "null", true
+		}
+		if collect.MaybeTextMarshaler(typ) != collect.NonMarshaler {
+			return `""`, true
+		}
+		return m.JSDefault(typ.Underlying(), quoted), true
+	}
+
 	if quoted {
 		// WARN: Do not test with IsAny/IsStringAlias here!! We only want to catch marshalers.
 		if collect.MaybeJSONMarshaler(typ) == collect.NonMarshaler && collect.MaybeTextMarshaler(typ) == collect.NonMarshaler {

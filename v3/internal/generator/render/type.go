@@ -181,6 +181,22 @@ func (m *module) renderNamedType(typ aliasOrNamed, quoted bool) (result string, 
 		return "void", false
 	}
 
+	// Type belongs to a package outside the analyzed set or to the Go standard
+	// library. No model is generated; apply the same marshaler analysis that
+	// model rendering uses to determine the appropriate TypeScript type.
+	if pkg := m.collector.Package(typ.Obj().Pkg()); pkg == nil || pkg.IsStdlib {
+		if collect.MaybeJSONMarshaler(typ) != collect.NonMarshaler {
+			return "any", false
+		}
+		if collect.MaybeTextMarshaler(typ) != collect.NonMarshaler {
+			if quoted {
+				return "`\"${string}\"`", false
+			}
+			return "string", false
+		}
+		return m.renderType(typ.Underlying(), quoted)
+	}
+
 	if quoted {
 		switch a := types.Unalias(typ).(type) {
 		case *types.Basic:

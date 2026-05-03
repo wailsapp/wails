@@ -16,8 +16,7 @@ export {
     IndirectPersonAlias,
     Person,
     StrangelyAliasedPerson,
-    SubPackageAlias,
-    TPIndirectPersonAlias
+    SubPackageAlias
 } from "./models.js";
 
 import * as $models from "./models.js";
@@ -39,24 +38,17 @@ import * as $models from "./models.js";
  */
 
 /**
- * A generic alias that forwards to a type parameter.
- * @template T
- * @typedef {$models.GenericAlias<T>} GenericAlias
- */
-
-/**
  * A generic alias that wraps a map.
  * @template T,U
  * @typedef {$models.GenericMapAlias<T, U>} GenericMapAlias
  */
 
 /**
- * A generic alias that wraps a pointer type.
- * @template T
- * @typedef {$models.GenericPtrAlias<T>} GenericPtrAlias
+ * Another struct alias.
+ * @typedef {$models.OtherAliasStruct} OtherAliasStruct
  */
 
 /**
- * Another struct alias.
- * @typedef {$models.OtherAliasStruct} OtherAliasStruct
+ * An alias that wraps a class through a typeparam alias.
+ * @typedef {$models.TPIndirectPersonAlias} TPIndirectPersonAlias
  */

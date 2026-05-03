@@ -41,12 +41,6 @@ import * as $models from "./models.js";
  */
 
 /**
- * A generic alias that forwards to a type parameter.
- * @template T
- * @typedef {$models.GenericAlias<T>} GenericAlias
- */
-
-/**
  * A generic alias that wraps a map.
  * @template T,U
  * @typedef {$models.GenericMapAlias<T, U>} GenericMapAlias
@@ -62,12 +56,6 @@ import * as $models from "./models.js";
  * A generic alias that wraps a generic struct.
  * @template T
  * @typedef {$models.GenericPersonAlias<T>} GenericPersonAlias
- */
-
-/**
- * A generic alias that wraps a pointer type.
- * @template T
- * @typedef {$models.GenericPtrAlias<T>} GenericPtrAlias
  */
 
 /**
