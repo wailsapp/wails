@@ -35,6 +35,14 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     [self setMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
 }
 
+- (void)cancelOperation:(id)sender {
+    if (self.disableEscapeExitsFullscreen &&
+        (self.styleMask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen) {
+        return;
+    }
+    [super cancelOperation:sender];
+}
+
 @end
 
 // Notifications
@@ -145,7 +153,7 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
     return NO;
 }
 
-- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)zoomable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString*)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight :(bool)fraudulentWebsiteWarningEnabled :(struct Preferences)preferences :(bool)enableDragAndDrop :(bool)disableWebViewDragAndDrop  {
+- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)zoomable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString*)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight :(bool)fraudulentWebsiteWarningEnabled :(struct Preferences)preferences :(bool)enableDragAndDrop :(bool)disableWebViewDragAndDrop :(bool)disableEscapeExitsFullscreen {
     NSWindowStyleMask styleMask = 0;
 
     if( !frameless ) {
@@ -167,6 +175,7 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
 
     self.mainWindow = [[WailsWindow alloc] initWithContentRect:NSMakeRect(0, 0, width, height)
                                                       styleMask:styleMask backing:NSBackingStoreBuffered defer:NO];
+    self.mainWindow.disableEscapeExitsFullscreen = disableEscapeExitsFullscreen;
     if (!frameless && useToolbar) {
         id toolbar = [[NSToolbar alloc] initWithIdentifier:@"wails.toolbar"];
         [toolbar autorelease];

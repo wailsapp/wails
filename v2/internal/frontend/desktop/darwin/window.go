@@ -64,6 +64,7 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 
 	var fullSizeContent, hideTitleBar, zoomable, hideTitle, useToolbar, webviewIsTransparent C.int
 	var titlebarAppearsTransparent, hideToolbarSeparator, windowIsTranslucent, contentProtection C.int
+	var disableEscapeExitsFullscreen C.int
 	var appearance, title *C.char
 	var preferences C.struct_Preferences
 
@@ -118,6 +119,7 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 		windowIsTranslucent = bool2Cint(mac.WindowIsTranslucent)
 		webviewIsTransparent = bool2Cint(mac.WebviewIsTransparent)
 		contentProtection = bool2Cint(mac.ContentProtection)
+		disableEscapeExitsFullscreen = bool2Cint(mac.DisableEscapeExitsFullscreen)
 
 		appearance = c.String(string(mac.Appearance))
 	}
@@ -126,6 +128,7 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, contentProtection, devtoolsEnabled, defaultContextMenuEnabled,
 		windowStartState, startsHidden, minWidth, minHeight, maxWidth, maxHeight, enableFraudulentWebsiteWarnings,
 		preferences, singleInstanceEnabled, singleInstanceUniqueId, enableDragAndDrop, disableWebViewDragAndDrop,
+		disableEscapeExitsFullscreen,
 	)
 
 	// Create menu

@@ -463,6 +463,9 @@ func (w *windowsWebviewWindow) run() {
 	w.setMinimiseButtonState(options.MinimiseButtonState)
 	w.setMaximiseButtonState(options.MaximiseButtonState)
 	w.setCloseButtonState(options.CloseButtonState)
+	if options.FullscreenButtonState != ButtonEnabled {
+		w.setFullscreenButtonState(options.FullscreenButtonState)
+	}
 
 	// Register the window with the application
 	getNativeApplication().registerWindow(w)
@@ -864,7 +867,9 @@ func (w *windowsWebviewWindow) unminimise() {
 
 func (w *windowsWebviewWindow) maximise() {
 	w32.ShowWindow(w.hwnd, w32.SW_MAXIMIZE)
-	w.chromium.Focus()
+	if w.chromium.GetController() != nil {
+		w.chromium.Focus()
+	}
 }
 
 func (w *windowsWebviewWindow) unmaximise() {
@@ -874,7 +879,9 @@ func (w *windowsWebviewWindow) unmaximise() {
 
 func (w *windowsWebviewWindow) restore() {
 	w32.ShowWindow(w.hwnd, w32.SW_RESTORE)
-	w.chromium.Focus()
+	if w.chromium.GetController() != nil {
+		w.chromium.Focus()
+	}
 }
 
 func (w *windowsWebviewWindow) fullscreen() {
@@ -921,7 +928,9 @@ func (w *windowsWebviewWindow) fullscreen() {
 	// Hide the menubar in fullscreen mode
 	w32.SetMenu(w.hwnd, 0)
 
-	w.chromium.Focus()
+	if w.chromium.GetController() != nil {
+		w.chromium.Focus()
+	}
 	w.parent.emit(events.Windows.WindowFullscreen)
 }
 
@@ -991,6 +1000,14 @@ func (w *windowsWebviewWindow) focus() {
 	}
 	if w.isMinimised() {
 		w.unminimise()
+	}
+
+	// Guard against calling Focus when the WebView2 controller is not yet
+	// initialized or has already been torn down (e.g. during dev hot-reload).
+	// go-webview2's Focus() calls os.Exit(1) on any MoveFocus error, so we
+	// must not call it when the controller is in a nil/invalid state.
+	if w.chromium.GetController() == nil {
+		return
 	}
 
 	w.focusingChromium = true
@@ -2446,6 +2463,16 @@ func (w *windowsWebviewWindow) setCloseButtonState(state ButtonState) {
 		_ = w32.DisableCloseButton(w.hwnd)
 	case ButtonHidden:
 		w.setStyle(false, w32.WS_SYSMENU)
+	}
+}
+
+func (w *windowsWebviewWindow) setFullscreenButtonState(state ButtonState) {
+	switch state {
+	case ButtonDisabled, ButtonHidden:
+		w.setStyle(false, w32.WS_MAXIMIZEBOX)
+	case ButtonEnabled:
+		w.setStyle(true, w32.WS_SYSMENU)
+		w.setStyle(true, w32.WS_MAXIMIZEBOX)
 	}
 }
 

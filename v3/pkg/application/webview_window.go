@@ -99,6 +99,7 @@ type (
 		setMinimiseButtonState(state ButtonState)
 		setMaximiseButtonState(state ButtonState)
 		setCloseButtonState(state ButtonState)
+		setFullscreenButtonState(state ButtonState)
 		isIgnoreMouseEvents() bool
 		setIgnoreMouseEvents(ignore bool)
 		cut()
@@ -649,6 +650,16 @@ func (w *WebviewWindow) SetCloseButtonState(state ButtonState) Window {
 	if w.impl != nil {
 		InvokeSync(func() {
 			w.impl.setCloseButtonState(state)
+		})
+	}
+	return w
+}
+
+func (w *WebviewWindow) SetFullscreenButtonState(state ButtonState) Window {
+	w.options.FullscreenButtonState = state
+	if w.impl != nil {
+		InvokeSync(func() {
+			w.impl.setFullscreenButtonState(state)
 		})
 	}
 	return w
@@ -1310,12 +1321,12 @@ func (w *WebviewWindow) AttachModal(modalWindow Window) {
 	if w.impl == nil || w.isDestroyed() {
 		return
 	}
-	
+
 	modalWebviewWindow, ok := modalWindow.(*WebviewWindow)
 	if !ok || modalWebviewWindow == nil {
 		return
 	}
-	
+
 	InvokeSync(func() {
 		w.impl.attachModal(modalWebviewWindow)
 	})
