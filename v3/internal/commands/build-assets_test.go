@@ -3,6 +3,7 @@ package commands
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"gopkg.in/yaml.v3"
@@ -632,6 +633,119 @@ func TestNestedPlistMerge(t *testing.T) {
 				t.Errorf("mergeMaps() got %v, expected %v", dst, tt.expected)
 			}
 		})
+	}
+}
+
+// TestOldFormatPlistMigration verifies that update-build-assets strips Go
+// template syntax (e.g. "{{.Ext}}") left behind when an older project's
+// darwin/Info.plist file is still in raw-template form.
+// See: https://github.com/wailsapp/wails/issues/5259
+func TestOldFormatPlistMigration(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "wails-old-plist-test-*")
+	if err != nil {
+		t.Fatalf("Failed to create temp directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	buildDir := filepath.Join(tempDir, "build")
+	darwinDir := filepath.Join(buildDir, "darwin")
+	if err := os.MkdirAll(darwinDir, 0755); err != nil {
+		t.Fatalf("Failed to create darwin directory: %v", err)
+	}
+
+	// Simulate an older-format Info.plist that still contains raw Go template
+	// directives (as produced by wails v2 / early v3 alpha scaffolding).
+	// The outer {{if}}…{{end}} blocks are ignored by the XML parser as text
+	// nodes, but the inner <string>{{.Ext}}</string> etc. are parsed as real
+	// string values — those are the stubs the fix must remove.
+	oldPlist := `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleName</key>
+	<string>OldApp</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera access needed</string>
+	{{if .Info.FileAssociations}}
+	<key>CFBundleDocumentTypes</key>
+	<array>
+	  {{range .Info.FileAssociations}}
+	  <dict>
+	    <key>CFBundleTypeExtensions</key>
+	    <array>
+	      <string>{{.Ext}}</string>
+	    </array>
+	    <key>CFBundleTypeName</key>
+	    <string>{{.Name}}</string>
+	    <key>CFBundleTypeRole</key>
+	    <string>{{.Role}}</string>
+	    <key>CFBundleTypeIconFile</key>
+	    <string>{{.IconName}}</string>
+	  </dict>
+	  {{end}}
+	</array>
+	{{end}}
+	{{if .Info.Protocols}}
+	<key>CFBundleURLTypes</key>
+	<array>
+	  {{range .Info.Protocols}}
+	  <dict>
+	    <key>CFBundleURLName</key>
+	    <string>com.wails.{{.Scheme}}</string>
+	    <key>CFBundleURLSchemes</key>
+	    <array>
+	      <string>{{.Scheme}}</string>
+	    </array>
+	    <key>CFBundleTypeRole</key>
+	    <string>{{.Role}}</string>
+	  </dict>
+	  {{end}}
+	</array>
+	{{end}}
+</dict>
+</plist>`
+
+	existingPlistPath := filepath.Join(darwinDir, "Info.plist")
+	if err := os.WriteFile(existingPlistPath, []byte(oldPlist), 0644); err != nil {
+		t.Fatalf("Failed to write old-format plist: %v", err)
+	}
+
+	options := &UpdateBuildAssetsOptions{
+		Dir:               buildDir,
+		Name:              "TestApp",
+		ProductName:       "TestApp",
+		ProductVersion:    "1.0.0",
+		ProductCompany:    "Wails",
+		ProductIdentifier: "com.wails.testapp",
+		Silent:            true,
+	}
+
+	if err := UpdateBuildAssets(options); err != nil {
+		t.Fatalf("UpdateBuildAssets failed: %v", err)
+	}
+
+	content, err := os.ReadFile(existingPlistPath)
+	if err != nil {
+		t.Fatalf("Failed to read merged plist: %v", err)
+	}
+
+	contentStr := string(content)
+
+	// No template stub should survive in the output.
+	stubs := []string{"{{.Ext}}", "{{.Name}}", "{{.Role}}", "{{.IconName}}", "{{.Scheme}}"}
+	for _, stub := range stubs {
+		if strings.Contains(contentStr, stub) {
+			t.Errorf("Output Info.plist still contains template stub %q — old-format template was not sanitized correctly", stub)
+		}
+	}
+
+	// User-added keys that are real values must be preserved.
+	var mergedDict map[string]any
+	if _, err := plist.Unmarshal(content, &mergedDict); err != nil {
+		t.Fatalf("Failed to parse merged plist: %v", err)
+	}
+	if mergedDict["NSCameraUsageDescription"] != "Camera access needed" {
+		t.Errorf("Custom key NSCameraUsageDescription was lost during migration; got %v", mergedDict["NSCameraUsageDescription"])
 	}
 }
 
