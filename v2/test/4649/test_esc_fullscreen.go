@@ -11,7 +11,7 @@ import (
 // This is a manual test program for issue #4649.
 // Run on macOS: go run v2/test/4649/test_esc_fullscreen.go
 //
-// Expected behavior when mac.DisableEscapeExitsFullscreen is true:
+// Expected behavior when mac.Options.DisableEscapeExitsFullscreen is true:
 // 1. Window opens in fullscreen mode
 // 2. Pressing Esc should NOT exit fullscreen
 // 3. Pressing Cmd+Ctrl+F should toggle fullscreen (exit)
