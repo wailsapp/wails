@@ -14,7 +14,12 @@ name: PR Checks (master)
 jobs:
   check_docs:
     name: Check Docs
-    if: ${{ github.repository == 'wailsapp/wails' && github.event.pull_request.base.ref == 'master' }}
+    if: >
+      github.repository == 'wailsapp/wails' &&
+      (
+        github.event_name == 'workflow_dispatch' ||
+        github.event.pull_request.base.ref == 'master'
+      )
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,11 +41,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     if: >
       github.repository == 'wailsapp/wails' &&
-      github.event.pull_request.base.ref == 'master' &&
       github.event.pull_request.head.ref != 'update-sponsors' &&
       (
-        github.event_name == 'pull_request' ||
-        (github.event_name == 'pull_request_review' && github.event.review.state == 'approved')
+        github.event_name == 'workflow_dispatch' ||
+        (
+          github.event.pull_request.base.ref == 'master' &&
+          (
+            github.event_name == 'pull_request' ||
+            (github.event_name == 'pull_request_review' && github.event.review.state == 'approved')
+          )
+        )
       )
     strategy:
       matrix:
