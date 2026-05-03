@@ -14,7 +14,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/wailsapp/go-webview2/webviewloader"
+	"github.com/wailsapp/wails/webview2/webviewloader"
 
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 
