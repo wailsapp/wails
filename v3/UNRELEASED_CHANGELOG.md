@@ -17,12 +17,14 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Adds Pausa community showcase documentation in [PR](https://github.com/wailsapp/wails/pull/5288) by @yuseferi
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
+- Prevent Menu.Update() segfault when app is not running in [PR](https://github.com/wailsapp/wails/pull/5291) by @wucm667
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
