@@ -20,6 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Add option to disable Escape key exiting fullscreen on macOS in [PR](https://github.com/wailsapp/wails/pull/5307) by @leaanthony
 - Add option to disable Escape key exiting fullscreen on macOS in [PR](https://github.com/wailsapp/wails/pull/5310) by @leaanthony
 - Adds Pausa community showcase documentation in [PR](https://github.com/wailsapp/wails/pull/5288) by @yuseferi
+- Add `mac:WebViewWebContentProcessDidTerminate` event, emitted when WebKit's WebContent (renderer) process terminates.
 
 ## Changed
 <!-- Changes in existing functionality -->
@@ -32,6 +33,8 @@ After processing, the content will be moved to the main changelog and this file 
 - Update GitHub Actions workflow to correctly reference PR base branch in [PR](https://github.com/wailsapp/wails/pull/5313) by @leaanthony
 - Ignore *_test.go files in dev mode to prevent unnecessary rebuilds in [PR](https://github.com/wailsapp/wails/pull/5203) by @leaanthony
 - Prevent Menu.Update() segfault when app is not running in [PR](https://github.com/wailsapp/wails/pull/5291) by @wucm667
+- Implement `WebviewWindow.Reload()` and `WebviewWindow.ForceReload()` on macOS — they were previously no-op TODOs.
+- Recover from WebContent process termination on macOS by handling `webViewWebContentProcessDidTerminate:` and automatically reloading the web view. Fixes the unresponsive blank window observed after long macOS sleeps.
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
