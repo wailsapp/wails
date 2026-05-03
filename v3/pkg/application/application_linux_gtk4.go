@@ -49,9 +49,12 @@ func init() {
 	fmt.Println("│  Please report issues: https://github.com/wailsapp/wails/issues/4957   │")
 	fmt.Println("└────────────────────────────────────────────────────────────────────────┘")
 
-	if os.Getenv("WEBKIT_DISABLE_DMABUF_RENDERER") == "" &&
-		os.Getenv("XDG_SESSION_TYPE") == "wayland" &&
-		isNVIDIAGPU() {
+	// Disable DMA-BUF renderer on any session type with NVIDIA to prevent blank windows and
+	// "Error 71 (Protocol error)" crashes. NVIDIA proprietary drivers fail gbm_bo_map() when
+	// importing DMA-BUF, causing blank/white screens on both X11 and Wayland.
+	// See: https://bugs.webkit.org/show_bug.cgi?id=262607
+	// See: https://github.com/wailsapp/wails/issues/4985
+	if os.Getenv("WEBKIT_DISABLE_DMABUF_RENDERER") == "" && isNVIDIAGPU() {
 		_ = os.Setenv("WEBKIT_DISABLE_DMABUF_RENDERER", "1")
 	}
 }

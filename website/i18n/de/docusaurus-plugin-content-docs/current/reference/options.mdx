@@ -1,0 +1,964 @@
+---
+sidebar_position: 3
+---
+
+# Options
+
+## Anwendungsoptionen
+
+Das `Options.App` Struct enthält die App-Konfiguration. Diese wird an die `wails.Run()` Methode übergeben:
+
+```go title="Example"
+import (
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+    "github.com/wailsapp/wails/v2/pkg/options/linux"
+    "github.com/wailsapp/wails/v2/pkg/options/mac"
+    "github.com/wailsapp/wails/v2/pkg/options/windows"
+)
+
+func main() {
+
+    err := wails.Run(&options.App{
+        Title:              "Menus Demo",
+        Width:              800,
+        Height:             600,
+        DisableResize:      false,
+        Fullscreen:         false,
+        WindowStartState:   options.Maximised,
+        Frameless:          true,
+        MinWidth:           400,
+        MinHeight:          400,
+        MaxWidth:           1280,
+        MaxHeight:          1024,
+        StartHidden:        false,
+        HideWindowOnClose:  false,
+        BackgroundColour:   &options.RGBA{R: 0, G: 0, B: 0, A: 255},
+        AlwaysOnTop:        false,
+        AssetServer: &assetserver.Options{
+            Assets:     assets,
+            Handler:    assetsHandler,
+            Middleware: assetsMidldeware,
+        },
+        Menu:               app.applicationMenu(),
+        Logger:             nil,
+        LogLevel:           logger.DEBUG,
+        LogLevelProduction: logger.ERROR,
+        OnStartup:          app.startup,
+        OnDomReady:         app.domready,
+        OnShutdown:         app.shutdown,
+        OnBeforeClose:      app.beforeClose,
+        CSSDragProperty:   "--wails-draggable",
+        CSSDragValue:      "drag",
+        EnableDefaultContextMenu: false,
+        EnableFraudulentWebsiteDetection: false,
+        Bind: []interface{}{
+            app,
+        },
+        EnumBind: []interface{}{
+            AllWeekdays,
+        },
+        ErrorFormatter: func(err error) any { return err.Error() },
+        SingleInstanceLock: &options.SingleInstanceLock{
+          UniqueId:               "c9c8fd93-6758-4144-87d1-34bdb0a8bd60",
+          OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
+        },
+        DragAndDrop: &options.DragAndDrop{
+          EnableFileDrop:       false,
+          DisableWebViewDrop:   false,
+          CSSDropProperty:      "--wails-drop-target",
+          CSSDropValue:         "drop",
+        },
+        Windows: &windows.Options{
+            WebviewIsTransparent:              false,
+            WindowIsTranslucent:               false,
+            BackdropType:                      windows.Mica,
+            DisablePinchZoom:               false,
+            DisableWindowIcon:                 false,
+            DisableFramelessWindowDecorations: false,
+            WebviewUserDataPath:               "",
+            WebviewBrowserPath:                "",
+            Theme:                             windows.SystemDefault,
+            CustomTheme: &windows.ThemeSettings{
+                DarkModeTitleBar:   windows.RGB(20, 20, 20),
+                DarkModeTitleText:  windows.RGB(200, 200, 200),
+                DarkModeBorder:     windows.RGB(20, 0, 20),
+                LightModeTitleBar:  windows.RGB(200, 200, 200),
+                LightModeTitleText: windows.RGB(20, 20, 20),
+                LightModeBorder:    windows.RGB(200, 200, 200),
+            },
+            // ZoomFactor is the zoom factor for the WebView2. Dies ist die Option, die mit dem aktivierten Zoom-Modus des Edge Benutzers übereinstimmt.
+            ZoomFactor:           float64,
+            // IsZoomControlEnabled enables the zoom factor to be changed by the user.
+            IsZoomControlEnabled: bool,
+            // User messages that can be customised
+            Messages: *windows.Messages
+            // OnSuspend is called when Windows enters low power mode
+            OnSuspend: func()
+            // OnResume is called when Windows resumes from low power mode
+            OnResume: func(),
+            // Disable GPU hardware acceleration for the webview
+                  WebviewGpuDisabled: false,
+                  // Class name for the window. If empty, 'wailsWindow' will be used.
+                  WindowClassName: "MyWindow",
+        },
+        Mac: &mac.Options{
+            TitleBar: &mac.TitleBar{
+                TitlebarAppearsTransparent: true,
+                HideTitle:                  false,
+                HideTitleBar:               false,
+                FullSizeContent:            false,
+                UseToolbar:                 false,
+                HideToolbarSeparator:       true,
+                OnFileOpen: app.onFileOpen,
+                      OnUrlOpen:  app.onUrlOpen,
+            },
+            Appearance:           mac.NSAppearanceNameDarkAqua,
+            WebviewIsTransparent: true,
+            WindowIsTranslucent:  false,
+            About: &mac.AboutInfo{
+                Title:   "My Application",
+                Message: "© 2021 Me",
+                Icon:    icon,
+            },
+        },
+        Linux: &linux.Options{
+            Icon: icon,
+            WindowIsTranslucent: false,
+            WebviewGpuPolicy: linux.WebviewGpuPolicyAlways,
+            ProgramName: "wails"
+        },
+        Debug: options.Debug{
+            OpenInspectorOnStartup: false,
+        },
+    })
+
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+
+```
+
+### Title
+
+Der Text, der in der Titelleiste des Fensters angezeigt wird.
+
+Name: Title<br/> Typ: `String`
+
+### Width
+
+Die anfängliche Breite des Fensters.
+
+Name: Width<br/> Typ: `int`<br/> Standard: 1024.
+
+### Height
+
+Die anfängliche Höhe des Fensters.
+
+Name: Height<br/> Typ: `int`<br/> Standard: 768
+
+### DisableResize
+
+Standardmäßig ist das Hauptfenster skalierbar. Setze dies auf `true` um eine feste Größe zu behalten.
+
+Name: DisableResize<br/> Typ: `bool`
+
+### Fullscreen
+
+Veraltet: Bitte verwende [WindowStartState](#windowstartstate).
+
+### WindowStartState
+
+Legt fest, wie sich das Fenster beim Start darstellen soll.
+
+| Wert       | Win | Mac | Lin |
+| ---------- | --- | --- | --- |
+| Fullscreen | ✅   | ✅   | ✅   |
+| Maximised  | ✅   | ✅   | ✅   |
+| Minimised  | ✅   | ❌   | ✅   |
+
+Name: WindowStartState<br/> Typ: `options.WindowStartState`
+
+### Frameless
+
+Wenn auf `true` gesetzt, wird das Fenster keine Ränder oder Titelleiste haben. Siehe auch [Frameless Windows](../guides/frameless.mdx).
+
+Name: Frameless<br/> Typ: `bool`
+
+### MinWidth
+
+Legt die Mindestbreite für das Fenster fest. Wenn der Wert in `Width` kleiner als dieser Wert ist, wird das Fenster standardmäßig auf `MinWidth` gesetzt.
+
+Name: MinWidth<br/> Typ: `int`
+
+### MinHeight
+
+Legt die minimale Höhe für das Fenster fest. Wenn der Wert in `Height` kleiner ist als dieser Wert, wird das Fenster standardmäßig auf `MinHeight` gesetzt.
+
+Name: MinHeight<br/> Typ: `int`
+
+### MaxWidth
+
+Legt die maximale Breite für das Fenster fest. Wenn der Wert in `Width` größer ist als dieser Wert, wird das Fenster standardmäßig auf `MaxWidth` gesetzt.
+
+Name: MaxWidth<br/> Typ: `int`
+
+### MaxHeight
+
+Legt die maximale Höhe für das Fenster fest. Wenn der Wert in `Height` größer als dieser Wert ist, wird das Fenster standardmäßig auf `MaxHeight` gesetzt.
+
+Name: MaxHeight<br/> Typ: `int`
+
+### StartHidden
+
+Wenn auf `true` gesetzt, wird die Anwendung ausgeblendet bis [WindowShow](../reference/runtime/window.mdx#windowshow) aufgerufen wird.
+
+Name: StartHidden<br/> Typ: `bool`
+
+### HideWindowOnClose
+
+Standardmäßig schließt das Schließen des Fensters die Anwendung. Das Setzen auf `true` bedeutet, dass das Fenster nicht geschlossen sondern
+
+versteckt wird.
+
+Name: HideWindowOnClose<br/> Typ: `bool`
+
+### Hintergrundfarbe
+
+Dieser Wert ist die Standard-Hintergrundfarbe des Fensters. Beispiel: options.NewRGBA(255,0,0,128) - Rot bei 50% Transparenz
+
+Name: BackgroundColour<br/> Typ: `*options.RGBA`<br/> Standard: white
+
+### AlwaysOnTop
+
+Zeigt an, dass das Fenster über anderen Fenstern bleiben soll, wenn der Fokus verloren geht.
+
+Name: AlwaysOnTop<br/> Typ: `bool`
+
+### Assets
+
+Veraltet: Bitte verwende Assets auf [AssetServer spezifische Optionen](#assetserver).
+
+### AssetsHandler
+
+Veraltet: Bitte verwende AssetsHandler auf [AssetServer spezifische Optionen](#assetserver).
+
+### AssetServer
+
+Dies definiert AssetServer spezifische Optionen. Es ermöglicht die Anpassung des AssetServers mit statischen Assets, das dynamische Bereitstellen von Assets mit einem `http.Handler` oder das Einbinden in die Anforderungskette mit einer `assetserver.Middleware`.
+
+Nicht alle Funktionen eines `http.Request` werden derzeit unterstützt, siehe folgende Featurematrix:
+
+| Feature                 | Win | Mac | Lin    |
+| ----------------------- | --- | --- | ------ |
+| GET                     | ✅   | ✅   | ✅      |
+| POST                    | ✅   | ✅   | ✅ [^1] |
+| PUT                     | ✅   | ✅   | ✅ [^1] |
+| PATCH                   | ✅   | ✅   | ✅ [^1] |
+| DELETE                  | ✅   | ✅   | ✅ [^1] |
+| Request Headers         | ✅   | ✅   | ✅ [^1] |
+| Request Body            | ✅   | ✅   | ✅ [^2] |
+| Request Body Streaming  | ✅   | ✅   | ✅ [^2] |
+| Response StatusCodes    | ✅   | ✅   | ✅ [^1] |
+| Response Headers        | ✅   | ✅   | ✅ [^1] |
+| Response Body           | ✅   | ✅   | ✅      |
+| Response Body Streaming | ❌   | ✅   | ✅      |
+| WebSockets              | ❌   | ❌   | ❌      |
+| HTTP Redirects 30x      | ✅   | ❌   | ❌      |
+
+Name: AssetServer<br/> Typ: `*assetserver.Options`
+
+#### Assets
+
+Die statischen Frontend-Assets für die Anwendung.
+
+Zunächst wird versucht, eine GET-Anfrage vom `fs.FS` zu bedienen. Gibt die `fs.FS` für diese Datei `os.ErrNotExist` zurück, so greift die Anforderungsbehandlung auf den [Handler](#handler) zurück und versucht, die GET-Anforderung darüber zu bedienen.
+
+Wenn auf Null gesetzt, werden alle GET-Anfragen an [Handler](#handler) weitergeleitet.
+
+Name: Assets<br/> Typ: `fs.FS`
+
+#### Handler
+
+Der Asset-Handler ist ein generischer `http.Handler` für den Fallback-Umgang mit Assets, die nicht gefunden werden können.
+
+Der Handler wird für jede GET-Anfrage aufgerufen, die nicht von [Assets](#assets)bedient werden kann, aufgrund von `os.ErrNotExist`. Des Weiteren werden alle Nicht-GET-Anfragen immer von diesem Handler bedient. Wenn nicht definiert, ist das Ergebnis in den Fällen, in denen der Handler aufgerufen worden wäre, folgende:
+
+- GET-Anfrage: `http.StatusNotFound`
+- Andere Anfrage: `http.StatusMethodNotAllowed`
+
+:::info
+
+Diese Funktion funktioniert nicht mit vite v5.0.0+ und wails v2 aufgrund von Veränderungen in vite. Änderungen sind in v3 geplant, um ähnliche Funktionen unter v5.0.0+ zu unterstützen. Wenn du diese Funktion benötigst, bleibe bei vite v4.0.0+. Siehe [Issue 3240](https://github.com/wailsapp/wails/issues/3240) für Details
+
+:::
+
+HINWEIS: Bei Verwendung in Kombination mit einem Frontend DevServer kann es zu Einschränkungen kommen wie z.B. Vite liefert index.html aus für jeden Pfad, der keine Dateiendung enthält.
+
+Name: AssetsHandler<br/> Typ: `http.Handler`
+
+#### Middleware
+
+Middleware ist eine HTTP Middleware, mit der du in die AssetServer Request-Kette eingreifen kannst. Es erlaubt den Standard- Anfragehandler dynamisch zu überspringen, um z.B. spezialisiertes Routing etc. zu implementieren. Die Middleware wird aufgerufen, um einen neuen `http.Handler` zu erstellen, der vom AssetServer verwendet wird, und erhält auch den vom AssetServer verwendeten Standardhandler als Argument.
+
+Wenn nicht definiert, wird die standardmäßige AssetServer Request-Kette ausgeführt.
+
+Name: Middleware<br/> Typ: `assetserver.Middleware`
+
+### Menu
+
+Das Menü das von der Anwendung verwendet werden soll. Weitere Details zu Menüs findest du in der [Menü-Referenz](../reference/runtime/menu.mdx).
+
+:::note
+
+Wenn auf Mac kein Menü angegeben ist, wird ein Standardmenü erstellt.
+
+:::
+
+Name: Menu<br/> Typ: `*menu.Menu`
+
+### Logger
+
+Der Logger, der von der Anwendung verwendet werden soll. Weitere Details zum Loggen in der [Log-Referenz](../reference/runtime/log.mdx).
+
+Name: Logger<br/> Type: `logger.Logger`<br/> Default: Logs to Stdout
+
+### LogLevel
+
+Der Standard-Log-Level. Weitere Details zum Loggen in der [Log-Referenz](../reference/runtime/log.mdx).
+
+Name: LogLevel<br/> Typ: `logger.LogLevel`<br/> Standard: `Info` im Dev-Modus, `Fehler` im Produktionsmodus
+
+### LogLevelProduction
+
+Der Standard-Log-Level für Produktions-Builds. Weitere Details zum Loggen in der [Log-Referenz](../reference/runtime/log.mdx).
+
+Name: LogLevelProduction<br/> Typ: `logger.LogLevel`<br/> Standard: `Error`
+
+### OnStartup
+
+Dieser Callback wird aufgerufen, nachdem das Frontend erstellt wurde und bevor `index.html` geladen wird. Der Kontext der Anwendung wird mit übergeben.
+
+Name: OnStartup<br/> Typ: `func(ctx context.Context)`
+
+### OnDomReady
+
+Dieser Callback wird aufgerufen, nachdem das Frontend `index.html` und seine Ressourcen geladen hat. Der Kontext der Anwendung wird mit übergeben.
+
+Name: OnDomReady<br/> Typ: `func(ctx context.Context)`
+
+### OnShutdown
+
+Dieser Callback wird aufgerufen, nachdem das Frontend geschlossen wurde und die Anwendung kurz davor ist beendet zu werden. Der Kontext der Anwendung wird mit übergeben.
+
+Name: OnShutdown<br/> Typ: `func(ctx context.Context)`
+
+### OnBeforeClose
+
+Wenn dieser Callback gesetzt ist, wird er aufgerufen, wenn die Anwendung beendet wird, entweder durch Klicken auf die Schließen-Taste oder durch den Aufruf der Funktion `runtime.Quit`. Das Zurückgeben von true führt dazu, dass die Anwendung bis zur manuellen Schließung weiter läuft, und false, wenn die Anwendung normal beendet werden soll. Das kann hilfreich werden, wenn man den Nutzer fragen will, ob er wirklich das Programm beenden will.
+
+Beispiel:
+
+```go title=windowsapp.go
+func (b *App) beforeClose(ctx context.Context) (prevent bool) {
+    dialog, err := runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
+        Type:          runtime.QuestionDialog,
+        Title:         "Quit?",
+        Message:       "Are you sure you want to quit?",
+    })
+
+    if err != nil {
+        return false
+    }
+    return dialog != "Yes"
+}
+```
+
+Name: OnBeforeClose<br/> Typ: `func(ctx context.Context) bool`
+
+### CSSDragProperty
+
+Gibt die CSS-Eigenschaft an, die verwendet werden soll, um zu ermitteln, welche Elemente verwendet werden können, um das Fenster zu ziehen. Standard: `--wails-draggable`.
+
+Name: CSSDragProperty<br/> Typ: `String`
+
+### CSSDragValue
+
+Gibt an, welchen Wert der Stil `CSSDragProperty` haben muss, um das Fenster zu ziehen. Standard: `drag`.
+
+Name: CSSDragValue<br/> Typ: `String`
+
+### EnableDefaultContextMenu
+
+EnableDefaultContextMenu aktiviert das Standard-Kontextmenü des Browsers im Produktionsmodus.
+
+Standardmäßig ist das Standardkontextmenü des Browsers nur in der Entwicklung und in einem `-debug` [build](../reference/cli.mdx#build) zusammen mit dem Devtools-Inspektor verfügbar. Mit dieser Option kann das Standardkontextmenü in `production` aktiviert werden, während der Devtools-Inspektor nicht verfügbar ist, es sei denn, die `-devtools` Build-Flag wird verwendet.
+
+Wenn diese Option aktiviert ist, wird das Kontextmenü standardmäßig nur für Textkontexte angezeigt (wo Cut/Copy/Paste benötigt wird), um dieses Verhalten zu überschreiben, kann die CSS-Eigenschaft `--default-contextmenu` für jedes HTML-Element verwenden (einschließlich `body`) mit den folgenden Werten:
+
+| CSS Style                      | Verhalten                                                                                                                                                                                            |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--default-contextmenu: auto;` | (**Standard**) Das Standardkontextmenü wird nur angezeigt, wenn: <br/> contentEditable auf true gesetzt ist ODER Text markiert wurde ODER das Element ein Eingabefeld oder eine Textfläche ist |
+| `--default-contextmenu: show;` | Das Standard-Kontextmenü wird, immer angezeigt                                                                                                                                                       |
+| `--default-contextmenu: hide;` | Das Standard-Kontextmenü wird immer ausgeblendet                                                                                                                                                     |
+
+Diese Regel wird wie jede normale CSS-Regel vererbt, so dass Nesting wie erwartet funktioniert.
+
+:::note
+Diese Filterfunktionalität ist nur im Produktions-Modus aktiviert, daher ist in der Entwicklung und im Debug-Build das komplette Kontextmenü immer verfügbar.
+:::
+
+:::warning
+Diese Filterfunktion ist KEINE Sicherheitsmaßnahme. Der Entwickler sollte damit rechnen, dass das vollständige Kontextmenü jederzeit offengelegt werden könnte und Befehle, wie (Bild herunterladen, neu laden, Webseite speichern), enthalten sein könnten. Wenn dies ein Problem darstellt, SOLLTE der Entwickler das Standardkontextmenü NICHT aktivieren.
+:::
+
+
+Name: EnableDefaultContextMenu<br/> Typ: `bool`
+
+### EnableFraudulentWebsiteDetection
+
+EnableFraudulentWebsiteDetection aktiviert Scan-Services für betrügerische Inhalte, wie z. B. Malware oder Phishing-Versuche. Diese Dienste senden möglicherweise Informationen aus der App, wie z. B. aufgerufene URLs und möglicherweise andere Inhalte, an Cloud-Dienste von Apple und Microsoft.
+
+Name: EnableFraudulentWebsiteDetection<br/> Typ: `bool`
+
+### Bind
+
+Ein slice von Struct-Instanzen, die Methoden definieren, die an das Frontend gebunden werden müssen.
+
+Name: Bind<br/> Typ: `[]interface{}`
+
+### EnumBind
+
+Ein slice von Enum-Arrays, die an das Frontend gebunden werden müssen.
+
+Name: EnumBind<br/> Type: `[]interface{}`
+
+### ErrorFormatter
+
+Eine Funktion, die bestimmt, wie Fehler formatiert werden, wenn sie von einem JS-to-Go-Methodenaufruf zurückgegeben werden. Der zurückgegebene Wert wird als JSON formatiert.
+
+Name: ErrorFormatter<br/> Typ: `func (error) any`
+
+### SingleInstanceLock
+
+Aktiviert die Limitierung von mehreren Instanzen. Das bedeutet, dass nur eine Instanz der Anwendung gleichzeitig laufen kann.
+
+Name: SingleInstanceLock<br/> Typ: `*options.SingleInstanceLock`
+
+#### UniqueId
+
+Diese Id wird verwendet, um den Mutex-Namen unter Windows und macOS und den dbus-Namen unter Linux zu erzeugen. Verwende eine UUID, um sicherzustellen, dass die Id einzigartig ist.
+
+Name: UniqueId<br/> Typ: `string`
+
+#### OnSecondInstanceLaunch
+
+Dieser Callback wird aufgerufen, wenn eine zweite Instanz der App gestartet wird.
+
+Name: OnSecondInstanceLaunch<br/> Typ: `func(secondInstanceData SecondInstanceData)`
+
+### Drag and Drop
+
+Definiert das Verhalten von Drag and Drop Ereignissen im Fenster.
+
+Name: DragAndDrop<br/> Typ: `options.DragAndDrop`
+
+#### EnableFileDrop
+
+EnableFileDrop aktiviert die Drag-and-Drop-Funktion von Wails, die die absoluten Pfade der abgelegten Dateien zurückgibt.
+
+Wenn auf `true` gesetzt, können die [Laufzeitmethoden](../reference/runtime/draganddrop.mdx) verwendet werden. <br/> Oder die Anwendung hört auf das `wails:file-drop` Event mit der [runtime EventsOn Methode](../reference/runtime/events.mdx#eventson) sowohl auf der JavaScript als auch auf GO Seite, um alle Funktionen zu implementieren, die du dir wünschst.
+
+Das Ereignis gibt die Koordinaten des Drop und ein Datei-Pfad-Slice zurück.
+
+Name: EnableFileDrop<br/> Typ: `bool`<br/> Standard: `false`
+
+#### DisableWebViewDrop
+
+Deaktiviert die Drag and Drop Funktion des Webviews.
+
+Es kann verwendet werden, um das versehentliche Öffnen von Dateien in der Webansicht zu verhindern, wenn kein Drag & Drop erforderlich ist.
+
+Name: DisableWebViewDrop<br/> Typ: `bool`<br/> Standard: `false`
+
+#### CSSDropProperty
+
+CSS-Eigenschaft, die auf Drag and Drop von Zielelementen getestet werden soll.
+
+Name: CSSDropProperty<br/> Typ: `string`<br/> Standard: `--wails-drop-target`
+
+#### CSSDropValue
+
+Der CSS-Wert, den die CSSDropProperty haben muss, um ein gültiges Drop-Ziel zu sein. Standard "drop"
+
+Name: CSSDropValue<br/> Typ: `string`<br/> Standard: `drop`
+
+### Windows
+
+Definiert [Windows spezifische Optionen](#windows).
+
+Name: Windows<br/> Typ: `*windows.Options`
+
+#### WebviewIsTransparent
+
+Wenn dies auf `true` gesetzt wird, wird der Hintergrund der Webansicht transparent, wenn ein Alphawert von `0` verwendet wird. Das bedeutet, dass, wenn `rgba(0,0,0,0)` als `background-color` CSS festgelegt wurde, das Host-Fenster durchsichtig ist. Oft kombiniert mit [WindowIsTranslucent](#WindowIsTranslucent) um einen frostigen Hintergrund für die Anwendungen zu erstellen.
+
+Name: WebviewIsTransparent<br/> Typ: `bool`
+
+#### WindowIsTranslucent
+
+Wenn auf `true` gesetzt, wird der Hintergrund des Fensters transparent gemacht. Oft kombiniert mit [WebviewIsTransparent](#WebviewIsTransparent).
+
+Bei Windows 11 Versionen vor dem Build 22621 wird die [BlurBehind](https://learn.microsoft.com/en-us/windows/win32/dwm/blur-ovw) Methode für Transluzenz verwendet, welche langsam sein kann. Für Windows 11 Versionen nach dem Build 22621 wird dies die neuere Transluzenz-Typen aktivieren, die wesentlich schneller sind. Standardmäßig wird der verwendete Transluzenz-Typ von Windows bestimmt. Verwenden dazu die [BackdropType](#BackdropType) Option.
+
+Name: WindowIsTranslucent<br/> Typ: `bool`
+
+#### BackdropType
+
+:::note
+
+Benötigt Windows 11 Build 22621 oder höher.
+
+:::
+
+Legt den Transparenztyp des Fensters fest. Dies gilt nur, wenn [WindowIsTranslucent](#WindowIsTranslucent) auf `true` gesetzt ist.
+
+Name: BackdropType<br/> Typ `windows.BackdropType`
+
+Der Wert kann einer der folgenden sein:
+
+| Wert    | Beschreibung                                                                                   |
+| ------- | ---------------------------------------------------------------------------------------------- |
+| Auto    | Lässt Windows entscheiden, welcher Hintergrund verwendet werden soll                           |
+| None    | Keine Transparenz verwenden                                                                    |
+| Acrylic | [Acryl-](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic) Effekt verwenden |
+| Mica    | [Mica](https://learn.microsoft.com/en-us/windows/apps/design/style/mica) Effekt verwenden      |
+| Tabbed  | Tabbed verwenden. Dies ist ein Hintergrund, der Mica ähnlich ist.                              |
+
+#### ZoomFactor
+
+Name: ZoomFactor<br/> Typ: `float64`
+
+Dies legt den Zoomfaktor für das WebView2 fest. Dies ist die Option, die mit dem aktivierten Zoom-Modus des Edge Benutzers übereinstimmt.
+
+#### IsZoomControl aktiviert
+
+Name: IsZoomControlEnabled<br/> Typ: `bool`
+
+Dadurch kann der Zoomfaktor vom Benutzer geändert werden. Bitte beachte, dass der Zoomfaktor in den Optionen gesetzt werden kann, während es dem Benutzer nicht erlaubt, ihn zur Laufzeit zu ändern (z. B. für eine Kiosk Applikation oder ähnliches).
+
+#### DisablePinchZoom
+
+Wenn dies auf `true` gesetzt wird, werden die Pinch-Zoom-Gesten deaktiviert.
+
+Name: DisablePinchZoom<br/> Typ: `bool`
+
+#### DisableWindowIcon
+
+Wird dies auf `true` gesetzt, wird das Symbol in der oberen linken Ecke der Titelleiste entfernt.
+
+Name: DisableWindowIcon<br/> Typ: `bool`
+
+#### DisableFramelessWindowDecorations
+
+Wird dies auf `true` gesetzt, werden die Fensterdekorationen im [Frameless](#Frameless) Modus entfernt. Dies bedeutet, dass kein 'Aero Schatten' und keine 'Abgerundeten Ecken' für das Fenster angezeigt werden. Bitte beachte, dass 'Abgerundete Ecken' nur unter Windows 11 unterstützt werden.
+
+Name: DisableFramelessWindowDecorations<br/> Typ: `bool`
+
+#### WebviewUserDataPath
+
+Dies legt den Pfad fest, in dem der WebView2 die Benutzerdaten speichert. Wenn leer wird `%APPDATA%\[BinaryName.exe]` verwendet.
+
+Name: WebviewUserDataPath<br/> Typ: `string`
+
+#### WebviewBrowserPath
+
+Definiert den Pfad zu einem Verzeichnis mit WebView2 ausführbaren Dateien und Bibliotheken. Falls leer, wird das Webview2 verwendet, welches bereits auf dem System installiert wurde.
+
+Wichtige Informationen zur Verteilung der Fixed-Version-Laufzeit:
+
+- [Wie man Laufzeit erhält und extrahiert](https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#details-about-the-fixed-version-runtime-distribution-mode)
+- [Bekannte Probleme für die fixed Version](https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#known-issues-for-fixed-version)
+- [Der Pfad der festen Version der WebView2-Laufzeitumgebung sollte nicht \Edge\Application\ enthalten.](https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl?view=webview2-1.0.1245.22#createcorewebview2environmentwithoptions)
+
+Name: WebviewBrowserPath<br/> Typ: `string`
+
+#### Theme
+
+Minimale Windows-Version: Windows 10 2004/20H1
+
+Dies definiert das Farbschema, das die Anwendung verwenden sollte:
+
+| Wert          | Beschreibung                                                                                                                                                                             |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SystemDefault | _Standard_. Das Farbschema wird auf der System-Standardeinstellung basieren. Wenn der Benutzer sein Design ändert, wird die Anwendung aktualisiert, um die neue Einstellung zu verwenden |
+| Dark          | Die Anwendung wird ausschließlich ein dunkles Farbschema verwenden                                                                                                                       |
+| Light         | Die Anwendung wird ausschließlich ein helles Farbschema verwenden                                                                                                                        |
+
+Name: Theme<br/> Typ: `windows.Theme`
+
+#### CustomTheme
+
+:::note
+
+Minimale Windows-Version: Windows 10/11 2009/21H2 Build 22000
+
+:::
+
+Ermöglicht die Angabe benutzerdefinierter Farben für TitleBar, TitleText und Rahmen sowohl für den hellen als auch für den dunklen Modus, sowie wenn das Fenster aktiv oder inaktiv ist.
+
+Name: CustomTheme<br/> Typ: `windows.CustomTheme`
+
+##### CustomTheme type
+
+Der CustomTheme Struct verwendet ein `int32`, um die Farbwerte festzulegen. Diese sind im Standard(!) Windows-Format von: `0x00BBGGAA`. Für RGB-Konvertierungen in dieses Format wird eine Hilfsfunktion bereitgestellt: `windows.RGB(r,g,b uint8)`.
+
+HINWEIS: Jeder nicht angegebene Wert ist standardmäßig schwarz.
+
+```go
+type ThemeSettings struct {
+    DarkModeTitleBar           int32
+    DarkModeTitleBarInactive   int32
+    DarkModeTitleText          int32
+    DarkModeTitleTextInactive  int32
+    DarkModeBorder             int32
+    DarkModeBorderInactive     int32
+    LightModeTitleBar          int32
+    LightModeTitleBarInactive  int32
+    LightModeTitleText         int32
+    LightModeTitleTextInactive int32
+    LightModeBorder            int32
+    LightModeBorderInactive    int32
+}
+```
+
+Beispiel:
+
+```go
+    CustomTheme: &windows.ThemeSettings{
+        // Theme to use when window is active
+        DarkModeTitleBar:   windows.RGB(255, 0, 0),   // Red
+        DarkModeTitleText:  windows.RGB(0, 255, 0),   // Green
+        DarkModeBorder:     windows.RGB(0, 0, 255),   // Blue
+        LightModeTitleBar:  windows.RGB(200, 200, 200),
+        LightModeTitleText: windows.RGB(20, 20, 20),
+        LightModeBorder:    windows.RGB(200, 200, 200),
+        // Theme to use when window is inactive
+        DarkModeTitleBarInactive:   windows.RGB(128, 0, 0),
+        DarkModeTitleTextInactive:  windows.RGB(0, 128, 0),
+        DarkModeBorderInactive:     windows.RGB(0, 0, 128),
+        LightModeTitleBarInactive:  windows.RGB(100, 100, 100),
+        LightModeTitleTextInactive: windows.RGB(10, 10, 10),
+        LightModeBorderInactive:    windows.RGB(100, 100, 100),
+    },
+```
+
+#### Messages
+
+Ein Strukt von Strings, die vom Webview2-Installer verwendet werden, falls keine gültige webview2-Laufzeit gefunden wird.
+
+Name: Messages<br/> Typ: `*windows.Messages`
+
+Passe das für jede Sprache an, die du unterstützen möchtest.
+
+#### ResizeDebounceMS
+
+ResizeDebounceMS ist die Zeitspanne zum debounce Neuzeichnungen von webview2 bei der Größenänderung des Fensters. Der Standardwert (0) führt Neuziehungen so schnell wie möglich durch.
+
+Name: ResizeDebounceMS<br/> Typ: `uint16`
+
+#### OnSuspend
+
+Wenn aktiviert, wird diese Funktion aufgerufen, wenn Windows in den Energiesparmodus wechselt (Standby/Ruhezustand)
+
+Name: OnSuspend<br/> Typ: `func()`
+
+#### OnResume
+
+Wenn aktiviert, wird diese Funktion aufgerufen, wenn Windows im Energiesparmodus fortfährt (Standby/Ruhezustand)
+
+Name: OnResume<br/> Typ: `func()`
+
+#### WebviewGpuIsDisabled
+
+Wenn dies auf `true` gesetzt wird, wird die GPU-Hardware-Beschleunigung für das WebView deaktiviert.
+
+Name: WebviewGpuIsDisabled<br/> Typ: `bool`
+
+#### EnableSwipeGestures
+
+Wenn dies auf `true` gesetzt wird, werden Wischgesten für das WebView aktiviert.
+
+Name: EnableSwipeGestures<br/> Typ: `bool`
+
+#### WindowClassName
+
+Klassenname für das Fenster. If empty, 'wailsWindow' will be used.
+
+Name: WindowClassName<br/> Typ: `string`
+
+### Mac
+
+Definiert [Mac-spezifische Optionen](#mac).
+
+Name: Mac<br/> Typ: `*mac.Options`
+
+#### TitleBar
+
+Der TitleBar Struct bietet die Möglichkeit, das Aussehen und das Gefühl der Titelleiste zu konfigurieren.
+
+Name: TitleBar<br/> Typ: [`*mac.TitleBar`](#titlebar-struct)
+
+##### Titlebar struct
+
+Die Titelleiste der Anwendung kann mit den TitleBar Optionen angepasst werden:
+
+```go
+type TitleBar struct {
+    TitlebarAppearsTransparent bool
+    HideTitle                  bool
+    HideTitleBar               bool
+    FullSizeContent            bool
+    UseToolbar                 bool
+    HideToolbarSeparator       bool
+}
+```
+
+| Name                       | Beschreibung                                                                                                                                                                                                                                                           |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TitlebarAppearsTransparent | Macht die Titelleiste transparent. Dies hat den Effekt, die Titelleiste zu verstecken und der Inhalt des Fensters füllt den freien Platz aus. [Apple Docs](https://developer.apple.com/documentation/appkit/nswindow/1419167-titlebarappearstransparent?language=objc) |
+| HideTitle                  | Versteckt den Titel des Fensters. [Apple Docs](https://developer.apple.com/documentation/appkit/nswindowtitlevisibility?language=objc)                                                                                                                                 |
+| HideTitleBar               | Entfernt [NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/) aus der Stilmaske                                                                                                                      |
+| FullSizeContent            | Lässt das WebView das gesamte Fenster ausfüllen. [Apple Docs](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemaskfullsizecontentview)                                                                                                 |
+| UseToolbar                 | Fügt dem Fenster eine Standard-Symbolleiste hinzu. [Apple Docs](https://developer.apple.com/documentation/appkit/nstoolbar?language=objc)                                                                                                                              |
+| HideToolbarSeparator       | Entfernt die Zeile unterhalb der Symbolleiste. [Apple Docs](https://developer.apple.com/documentation/appkit/nstoolbar/1516954-showsbaselineseparator?language=objc)                                                                                                   |
+
+Vorkonfigurierte Titelleisten Einstellungen sind verfügbar:
+
+| Einstellung                 | Beispiel                                       |
+| --------------------------- | ---------------------------------------------- |
+| `mac.TitleBarDefault()`     | ![](/img/reference/titlebar-default.webp)      |
+| `mac.TitleBarHidden()`      | ![](/img/reference/titlebar-hidden.webp)       |
+| `mac.TitleBarHiddenInset()` | ![](/img/reference/titlebar-hidden-inset.webp) |
+
+Beispiel:
+
+```go
+Mac: &mac.Options{
+    TitleBar:     mac.TitleBarHiddenInset(),
+}
+```
+
+Klicke [hier](https://github.com/lukakerr/NSWindowStyles) für eine Inspiration für das Anpassen der Titelleiste.
+
+#### Appearance
+
+Appearance wird verwendet, um den Stil der App in Übereinstimmung mit Apples [NSAussehen](https://developer.apple.com/documentation/appkit/nsappearancename?language=objc) Namen zu setzen.
+
+Name: Appearance<br/> Typ: [`mac.AppearanceType`](#appearance-type)
+
+##### Appearance type
+
+Du kannst das [Aussehen](https://developer.apple.com/documentation/appkit/nsappearance?language=objc) der Anwendung festlegen.
+
+| Wert                                                  | Beschreibung                                                                     |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------- |
+| DefaultAppearance                                     | DefaultAppearance verwendet den Standard-Systemwert                              |
+| NSAppearanceNameAqua                                  | Das Standardmäßige helle Erscheinungsbild des Systems                            |
+| NSAppearanceNameDarkAqua                              | Das Standardmäßige dunkle Erscheinungsbild des Systems                           |
+| NSAppearanceNameVibrantLight                          | Das helle lebhafte Erscheinungsbild                                              |
+| NSAppearanceNameAccessibilityHighContrastAqua         | Eine kontrastreiche Version des Standardmäßigen hellen Erscheinungsbild Systems  |
+| NSAppearanceNameAccessibilityHighContrastDarkAqua     | Eine kontrastreiche Version des Standardmäßigen dunkeln Erscheinungsbild Systems |
+| NSAppearanceNameAccessibilityHighContrastVibrantLight | Eine kontrastreiche Version des hellen, lebhaften Erscheinungsbilds              |
+| NSAppearanceNameAccessibilityHighContrastVibrantDark  | Eine kontrastreiche Version des dunklen lebendigen Erscheinungsbildes            |
+
+Beispiel:
+
+```go
+Mac: &mac.Options{
+    Appearance: mac.NSAppearanceNameDarkAqua,
+}
+```
+
+#### WebviewIsTransparent
+
+Wenn dies auf `true` gesetzt wird, wird der Hintergrund der Webansicht transparent, wenn ein Alphawert von `0` verwendet wird. Das bedeutet, dass, wenn `rgba(0,0,0,0)` als `background-color` CSS festgelegt wurde, das Host-Fenster durchsichtig ist. Oft kombiniert mit [WindowIsTranslucent](#WindowIsTranslucent) um einen frostigen Hintergrund für die Anwendungen zu erstellen.
+
+Name: WebviewIsTransparent<br/> Typ: `bool`
+
+#### WindowIsTranslucent
+
+Wenn auf `true` gesetzt, wird der Hintergrund des Fensters transparent gemacht. Oft mit [WebviewIsTransparent](#WebviewIsTransparent) kombiniert, um frostig aussehende Anwendungshintergründe zu erstellen.
+
+Name: WindowIsTranslucent<br/> Typ: `bool`
+
+#### OnFileOpen
+
+Dieser Callback wird aufgerufen, wenn eine Datei mit der Anwendung geöffnet wird.
+
+Name: OnFileOpen<br/> Typ: `func(filePath string)`
+
+#### OnUrlOpen
+
+Dieser Callback wird aufgerufen, wenn eine URL mit der Anwendung geöffnet wird.
+
+Name: OnUrlOpen<br/> Typ: `func(filePath string)`
+
+#### Preferences
+
+Das Preferences-Struct bietet die Möglichkeit, die Webview-Einstellungen zu konfigurieren.
+
+Name: Preferences<br/> Typ: [`*mac.Preferences`](#preferences-struct)
+
+##### Preferences struct
+
+Du kannst die Webview-Einstellungen festlegen.
+
+```go
+type Preferences struct {
+    TabFocusesLinks        u.Bool
+    TextInteractionEnabled u.Bool
+    FullscreenEnabled      u.Bool
+}
+```
+
+| Name                   | Beschreibung                                                                                                                                                                                                                               |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| TabFocusesLinks        | Ein Boolescher Wert, der angibt, ob durch Drücken der Tabulatortaste der Fokus auf Links und Formularelemente wechselt. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/2818595-tabfocuseslinks?language=objc) |
+| TextInteractionEnabled | Ein boolescher Wert, der angibt, ob Personen Text auswählen oder anderweitig mit Text interagieren sollen. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/3727362-textinteractionenabled?language=objc)       |
+| FullscreenEnabled      | Ein boolescher Wert, der angibt, ob eine Web-Ansicht Inhalte im Vollbild anzeigen kann. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/3917769-elementfullscreenenabled?language=objc)                        |
+
+Beispiel:
+
+```go
+Mac: &mac.Options{
+    Preferences: &mac.Preferences{
+        TabFocusesLinks:        mac.Enabled,
+        TextInteractionEnabled: mac.Disabled,
+        FullscreenEnabled:      mac.Enabled,
+    }
+}
+```
+
+#### About
+
+Diese Konfiguration ermöglicht es, den Titel, die Nachricht und das Symbol für den Menüpunkt "Über" im von der Rolle "AppMenu" erstellten App-Menü festzulegen.
+
+Name: About<br/> Typ: [`*mac.AboutInfo`](#about-struct)
+
+##### About struct
+
+```go
+
+type AboutInfo struct {
+    Title   string
+    Message string
+    Icon    []byte
+}
+```
+
+Wenn diese Einstellungen angegeben sind, erscheint im App-Menü ein "Info"-Menüeintrag (bei Verwendung der `AppMenu` Rolle). Ausgehend von dieser Konfiguration:
+
+```go
+//go:embed build/appicon.png
+var icon []byte
+
+func main() {
+    err := wails.Run(&options.App{
+        ...
+        Mac: &mac.Options{
+            About: &mac.AboutInfo{
+                Title:   "My Application",
+                Message: "© 2021 Me",
+                Icon:    icon,
+            },
+        },
+    })
+```
+
+Der "Info" Menüeintrag wird im App-Menü erscheinen:
+
+```mdx-code-block
+<div class="text--center">
+  <img
+    src={require("@site/static/img/reference/about-menu.webp").default}
+    class="screenshot"
+  />
+</div>
+<br />
+```
+
+Wenn angeklickt, öffnet sich eine "Info" Message-Box:
+
+```mdx-code-block
+<div class="text--center">
+  <img
+    src={require("@site/static/img/reference/about-dialog.webp").default}
+    width="40%"
+    class="screenshot"
+  />
+</div>
+<br />
+```
+
+### Linux
+
+Definiert [Linux-spezifische Optionen](#linux).
+
+Name: Linux<br/> Typ: `*linux.Options`
+
+#### Icon
+
+Legt das Icon fest, das das Fenster darstellt. Dieses Icon wird verwendet, wenn das Fenster minimiert wird (auch bekannt als iconified).
+
+Name: Icon<br/> Typ: `[]byte`
+
+Einige Fenstermanager oder Desktop-Umgebungen können diese auch im Fensterrahmen platzieren oder in anderen Kontexten anzeigen. Bei anderen wird das Icon überhaupt nicht verwendet, sodass Ergebnisse variieren können.
+
+HINWEIS: Wayland in Gnome zeigt dieses Icon nicht an. Um dort ein Anwendungsicon zu haben, muss eine `.desktop` Datei verwendet werden. Unter KDE sollte es funktionieren.
+
+Das Icon sollte in der Größe bereitgestellt werden, in der es ursprünglich gezeichnet wurde; das heißt, skaliere das Bild nicht, bevor es übergeben wird. Die Skalierung wird auf die letzte Minute verschoben, wenn die gewünschte Endgröße bekannt ist, um beste Qualität zu ermöglichen.
+
+#### WindowIsTranslucent
+
+Wenn auf `true` gesetzt, wird der Hintergrund des Fensters transparent gemacht. Einige Fenstermanager ignorieren es oder führen zu einem schwarzen Fenster.
+
+Name: WindowIsTranslucent<br/> Typ: `bool`
+
+#### WebviewGpuPolicy
+
+Diese Option wird verwendet, um die Hardwarebeschleunigungsrichtlinien des Webview zu bestimmen.
+
+Name: WebviewGpuPolicy<br/> Typ: [`options.WebviewGpuPolicy`](#webviewgpupolicy-type)<br/> Standard: `WebviewGpuPolicyAlways`
+
+##### WebviewGpuPolicy Typ
+
+| Wert                     | Beschreibung                                                                               |
+| ------------------------ | ------------------------------------------------------------------------------------------ |
+| WebviewGpuPolicyAlways   | Hardwarebeschleunigung ist immer aktiviert                                                 |
+| WebviewGpuPolicyOnDemand | Die Hardwarebeschleunigung wird je nach Anforderung durch Webinhalte aktiviert/deaktiviert |
+| WebviewGpuPolicyNever    | Hardwarebeschleunigung ist immer deaktiviert                                               |
+
+#### ProgramName
+
+Mit dieser Option wird der Name des Programms für den Fenstermanager über GTK's g_set_prgname() gesetzt. Dieser Name sollte nicht lokalisiert werden, siehe die [Dokumentation](https://docs.gtk.org/glib/func.set_prgname.html).
+
+Wenn eine .desktop-Datei erstellt wird, hilft dieser Wert bei der Fenstergruppierung und bei Desktopsymbolen, wenn die Eigenschaft `Name` der .desktop-Datei vom Dateinamen der ausführbaren Datei abweicht.
+
+Name: ProgramName<br/> Typ: String<br/>
+
+### Debug
+
+Dies definiert [Debug-spezifische Optionen](#Debug) , die für Debug-Builds gelten.
+
+Name: Debug<br/> Typ: `options.Debug`
+
+#### OpenInspectorOnStartup
+
+Wird dies auf `true` gesetzt, öffnet sich der Web-Inspektor beim Start der Anwendung.
+
+Name: OpenInspectorOnStartup<br/> Typ: `bool`
+
+[^1]: Dies erfordert WebKit2GTK 2.36+ Unterstützung und die App muss mit dem Build-Tag `webkit2_36` gebaut werden, um die Unterstützung für diese Funktion zu aktivieren. Dies erhöht auch die Mindestanforderungen von WebKit2GTK auf 2.36 für deine App.
+[^2]: Dies erfordert WebKit2GTK 2.40+ Unterstützung und deine App muss mit dem Build-Tag `webkit2_40` gebaut werden, um die Unterstützung für diese Funktion zu aktivieren. Dies erhöht auch die Mindestanforderung von WebKit2GTK auf 2.40 für deine App.

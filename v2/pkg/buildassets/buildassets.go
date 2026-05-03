@@ -102,8 +102,9 @@ func ReadOriginalFileWithProjectDataAndSave(projectData *project.Project, file s
 }
 
 type assetData struct {
-	Name string
-	Info project.Info
+	Name           string
+	Info           project.Info
+	OutputFilename string
 }
 
 func resolveProjectData(content []byte, projectData *project.Project) ([]byte, error) {
@@ -113,8 +114,9 @@ func resolveProjectData(content []byte, projectData *project.Project) ([]byte, e
 	}
 
 	data := &assetData{
-		Name: projectData.Name,
-		Info: projectData.Info,
+		Name:           projectData.Name,
+		Info:           projectData.Info,
+		OutputFilename: projectData.OutputFilename,
 	}
 
 	var out bytes.Buffer

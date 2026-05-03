@@ -42,6 +42,8 @@ tasks:
       - task: common:generate:icons
     cmds:
       - task: generate:syso
+        vars:
+          ARCH: '{{.ARCH}}'
       - go build {{.BUILD_FLAGS}} -o "{{.BIN_DIR}}/{{.APP_NAME}}.exe"
       - cmd: powershell Remove-item *.syso
         platforms: [windows]
@@ -69,6 +71,8 @@ tasks:
           Build it first: wails3 task setup:docker
     cmds:
       - task: generate:syso
+        vars:
+          ARCH: '{{.ARCH}}'
       - docker run --rm -v "{{.ROOT_DIR}}:/app" {{.GO_CACHE_MOUNT}} {{.REPLACE_MOUNTS}} -e APP_NAME="{{.APP_NAME}}" {{if .EXTRA_TAGS}}-e EXTRA_TAGS="{{.EXTRA_TAGS}}"{{end}} {{.CROSS_IMAGE}} windows {{.DOCKER_ARCH}}
       - docker run --rm -v "{{.ROOT_DIR}}:/app" alpine chown -R $(id -u):$(id -g) /app/bin
       - rm -f *.syso
