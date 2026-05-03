@@ -461,10 +461,13 @@ void windowRestore(void* nsWindow) {
 	}
 }
 
-// disable window fullscreen button
-void setFullscreenButtonEnabled(void* nsWindow, bool enabled) {
+// forward declaration - defined later in this file
+static void setButtonState(void *button, int state);
+
+// setFullscreenButtonState sets the fullscreen button state
+static void setFullscreenButtonState(void* nsWindow, int state) {
 	NSButton *fullscreenButton = [(WebviewWindow*)nsWindow standardWindowButton:NSWindowZoomButton];
-	fullscreenButton.enabled = enabled;
+	setButtonState(fullscreenButton, state);
 }
 
 // Set the titlebar style
@@ -1040,8 +1043,8 @@ func (w *macosWebviewWindow) hide() {
 	C.windowHide(w.nsWindow)
 }
 
-func (w *macosWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
-	C.setFullscreenButtonEnabled(w.nsWindow, C.bool(enabled))
+func (w *macosWebviewWindow) setFullscreenButtonState(state ButtonState) {
+	C.setFullscreenButtonState(w.nsWindow, C.int(state))
 }
 
 func (w *macosWebviewWindow) disableSizeConstraints() {
@@ -1390,6 +1393,9 @@ func (w *macosWebviewWindow) run() {
 		w.setMinimiseButtonState(options.MinimiseButtonState)
 		w.setMaximiseButtonState(options.MaximiseButtonState)
 		w.setCloseButtonState(options.CloseButtonState)
+		if options.FullscreenButtonState != ButtonEnabled {
+			w.setFullscreenButtonState(options.FullscreenButtonState)
+		}
 
 		// Ignore mouse events if requested
 		w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
