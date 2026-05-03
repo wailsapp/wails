@@ -181,6 +181,14 @@ func (m *module) renderNamedType(typ aliasOrNamed, quoted bool) (result string, 
 		return "void", false
 	}
 
+	// Special case: os.FileMode and io/fs.FileMode render as TS number
+	{
+		pkgPath := typ.Obj().Pkg().Path()
+		if (pkgPath == "os" || pkgPath == "io/fs") && typ.Obj().Name() == "FileMode" {
+			return "number", false
+		}
+	}
+
 	if quoted {
 		switch a := types.Unalias(typ).(type) {
 		case *types.Basic:

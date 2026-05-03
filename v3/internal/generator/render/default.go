@@ -102,6 +102,17 @@ func (m *module) renderNamedDefault(typ aliasOrNamed, quoted bool) (result strin
 		return m.JSDefault(typ.Underlying(), quoted), true
 	}
 
+	// Special case: os.FileMode and io/fs.FileMode render as TS number
+	{
+		pkgPath := typ.Obj().Pkg().Path()
+		if (pkgPath == "os" || pkgPath == "io/fs") && typ.Obj().Name() == "FileMode" {
+			if quoted {
+				return `"0"`, true
+			}
+			return "0", true
+		}
+	}
+
 	if quoted {
 		// WARN: Do not test with IsAny/IsStringAlias here!! We only want to catch marshalers.
 		if collect.MaybeJSONMarshaler(typ) == collect.NonMarshaler && collect.MaybeTextMarshaler(typ) == collect.NonMarshaler {

@@ -151,6 +151,14 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 				return
 			}
 
+			// Special case: os.FileMode and io/fs.FileMode render as TS number hence no dependencies and no model
+			{
+				pkgPath := obj.Pkg().Path()
+				if (pkgPath == "os" || pkgPath == "io/fs") && obj.Name() == "FileMode" {
+					return
+				}
+			}
+
 			if obj.Pkg().Path() == imports.Self {
 				imports.ImportModels = true
 			}
