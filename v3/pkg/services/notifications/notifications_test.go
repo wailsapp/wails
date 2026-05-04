@@ -138,4 +138,21 @@ func TestValidateNotificationOptions_Attachments(t *testing.T) {
 			t.Fatalf("got %v, want empty-path error", err)
 		}
 	})
+
+	// macOS UNNotificationAttachment accepts file:// URLs, and the package
+	// godoc on NotificationAttachment.Path documents them. The validator
+	// must not reject the URL form by trying to os.Stat it as a literal
+	// path.
+	t.Run("file:// URL passes", func(t *testing.T) {
+		opts := NotificationOptions{
+			ID:    "n",
+			Title: "t",
+			Attachments: []NotificationAttachment{
+				{Path: "file://" + good},
+			},
+		}
+		if err := validateNotificationOptions(opts); err != nil {
+			t.Fatalf("unexpected error for file:// URL: %v", err)
+		}
+	})
 }

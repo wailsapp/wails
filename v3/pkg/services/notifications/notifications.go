@@ -32,7 +32,9 @@ package notifications
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -363,7 +365,18 @@ func validateNotificationOptions(options NotificationOptions) error {
 		if a.Path == "" {
 			return fmt.Errorf("attachments[%d].path cannot be empty", i)
 		}
-		if _, err := os.Stat(a.Path); err != nil {
+		statPath := a.Path
+		if strings.HasPrefix(statPath, "file://") {
+			// macOS UNNotificationAttachment accepts file:// URLs as well
+			// as plain paths; map back to a local filesystem path here so
+			// os.Stat doesn't reject the URL form as a literal path.
+			u, err := url.Parse(statPath)
+			if err != nil {
+				return fmt.Errorf("attachments[%d].path %q: %w", i, a.Path, err)
+			}
+			statPath = u.Path
+		}
+		if _, err := os.Stat(statPath); err != nil {
 			return fmt.Errorf("attachments[%d].path %q: %w", i, a.Path, err)
 		}
 	}
