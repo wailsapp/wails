@@ -25,6 +25,7 @@ type Notif = {
 };
 
 const footer = document.querySelector("#response") as HTMLElement | null;
+const statusEl = document.querySelector("#status") as HTMLElement | null;
 
 const TEST_CATEGORY_ID = "demo-actions";
 let lastSentID: string | null = null;
@@ -70,7 +71,7 @@ async function update(notif: Notif): Promise<void> {
 }
 
 function status(message: string): void {
-    if (footer) footer.innerHTML = `<p>${message}</p>`;
+    if (statusEl) statusEl.innerHTML = `<p>${message}</p>`;
     console.info(message);
 }
 
@@ -235,7 +236,10 @@ async function buildFromForm(id?: string): Promise<Notif> {
 
     if (checked("b-attach")) {
         const path = await getSampleImagePath();
-        notif.attachments = [{ path, type: "hero" }];
+        // No `type` here so macOS auto-infers the UTI from the extension.
+        // Windows defaults to inline placement; pass type:"hero" or
+        // type:"appLogoOverride" if you want a different placement.
+        notif.attachments = [{ path }];
     }
 
     if (checked("b-actions")) {

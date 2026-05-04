@@ -140,6 +140,13 @@ h1, h3 {
     filter: drop-shadow(0 0 2em #f7df1eaa);
 }
 
+.status {
+    margin-top: 1rem;
+    text-align: center;
+    font-style: italic;
+    opacity: 0.85;
+}
+
 .footer {
     margin-top: 1rem;
     align-content: center;
