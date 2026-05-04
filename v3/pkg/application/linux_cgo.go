@@ -2008,6 +2008,13 @@ func onKeyPressEvent(_ *C.GtkWidget, event *C.GdkEventKey, userData C.uintptr_t)
 	// Keypress re-emits if the key is pressed over a certain threshold so we need a debounce
 	if isDebouncing {
 		debounceTimer.Reset(50 * time.Millisecond)
+		// Even while debouncing, consume undo/redo so repeated key events during
+		// auto-repeat don't fall through to webkit2gtk's native handler.
+		if accelerator, ok := getKeyboardState(event); ok {
+			if accelerator == "Ctrl+Z" || accelerator == "Ctrl+Shift+Z" {
+				return C.gboolean(1)
+			}
+		}
 		return C.gboolean(0)
 	}
 

@@ -1300,6 +1300,14 @@ func isOnMainThread() bool {
 	return mainThreadId == gThreadSelf()
 }
 
+func (w *linuxWebviewWindow) undo() {
+	windowExecJS(w.webview, "document.execCommand('undo')")
+}
+
+func (w *linuxWebviewWindow) redo() {
+	windowExecJS(w.webview, "document.execCommand('redo')")
+}
+
 // linuxWebviewWindow show/hide methods for purego implementation
 func (w *linuxWebviewWindow) windowShow() {
 	if w.window == 0 {

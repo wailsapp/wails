@@ -31,7 +31,10 @@ func TestLinuxCGOUndoIsImplemented(t *testing.T) {
 			if strings.HasPrefix(trimmed, "func ") {
 				break
 			}
-			// The body must contain the execCommand call, not be empty or commented
+			// Skip comment lines — we want live code, not dead comments
+			if strings.HasPrefix(trimmed, "//") {
+				continue
+			}
 			if strings.Contains(trimmed, "execJS") && strings.Contains(trimmed, "execCommand") && strings.Contains(trimmed, "undo") {
 				return // pass
 			}
@@ -61,6 +64,10 @@ func TestLinuxCGORedoIsImplemented(t *testing.T) {
 			if strings.HasPrefix(trimmed, "func ") {
 				break
 			}
+			// Skip comment lines — we want live code, not dead comments
+			if strings.HasPrefix(trimmed, "//") {
+				continue
+			}
 			if strings.Contains(trimmed, "execJS") && strings.Contains(trimmed, "execCommand") && strings.Contains(trimmed, "redo") {
 				return // pass
 			}
@@ -77,14 +84,34 @@ func TestLinuxOnKeyPressEventConsumesCtrlZ(t *testing.T) {
 	if err != nil {
 		t.Skip("linux_cgo.go not available")
 	}
-	content := string(data)
+	lines := strings.Split(string(data), "\n")
 
-	// Must contain a return-1 branch guarded by the Ctrl+Z accelerator string
-	hasCtrlZ := strings.Contains(content, `"Ctrl+Z"`)
-	hasReturn1 := strings.Contains(content, "return C.gboolean(1)")
-	if !hasCtrlZ || !hasReturn1 {
-		t.Error("onKeyPressEvent must return C.gboolean(1) for Ctrl+Z to prevent webkit2gtk's broken native undo from racing with document.execCommand")
+	// Scan inside onKeyPressEvent for a non-comment guard that checks both
+	// Ctrl+Z and Ctrl+Shift+Z and is followed by return C.gboolean(1).
+	inFn := false
+	foundGuard := false
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if strings.Contains(trimmed, "func onKeyPressEvent(") {
+			inFn = true
+			continue
+		}
+		if inFn {
+			if strings.HasPrefix(trimmed, "func ") {
+				break
+			}
+			if strings.HasPrefix(trimmed, "//") {
+				continue
+			}
+			if strings.Contains(trimmed, `"Ctrl+Z"`) && strings.Contains(trimmed, `"Ctrl+Shift+Z"`) {
+				foundGuard = true
+			}
+			if foundGuard && strings.Contains(trimmed, "return C.gboolean(1)") {
+				return // pass
+			}
+		}
 	}
+	t.Error("onKeyPressEvent must return C.gboolean(1) for Ctrl+Z/Ctrl+Shift+Z to prevent webkit2gtk's broken native undo from racing with document.execCommand")
 }
 
 // TestLinuxHandleKeyEventFallbackForCtrlZ verifies that handleKeyEvent in the
@@ -110,6 +137,9 @@ func TestLinuxHandleKeyEventFallbackForCtrlZ(t *testing.T) {
 		if inHandleKeyEvent {
 			if strings.HasPrefix(trimmed, "func ") {
 				break
+			}
+			if strings.HasPrefix(trimmed, "//") {
+				continue
 			}
 			if strings.Contains(trimmed, `"Ctrl+Z"`) {
 				hasCtrlZCase = true
