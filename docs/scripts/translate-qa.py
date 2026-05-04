@@ -48,10 +48,11 @@ LOCALE_CHAR_RANGES = {
     "de": (r'[a-zA-ZÄÖÜäöüß]', None),
 }
 
-# z.ai API (OpenAI-compatible)
-ZAI_BASE = os.environ.get("ZAI_BASE", "https://api.z.ai/v1")
+# z.ai API — correct base URL from https://docs.z.ai/
+# Endpoint: https://api.z.ai/api/paas/v4 (raw Bearer key, not JWT)
+ZAI_BASE = os.environ.get("ZAI_BASE", "https://api.z.ai/api/paas/v4")
 ZAI_API_KEY = os.environ.get("ZAI_API_KEY", "")
-ZAI_DEFAULT_MODEL = "z1-mini"
+ZAI_DEFAULT_MODEL = "GLM-5-Turbo"
 
 # Max characters of body text to send to AI verifier (keeps cost low)
 AI_VERIFY_MAX_CHARS = 3000
