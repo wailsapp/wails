@@ -180,29 +180,56 @@ func (wn *windowsNotifier) SendNotification(options NotificationOptions) error {
 
 // sendOrSchedule pushes the toast immediately, or parks it on a time.AfterFunc
 // timer if options.Schedule is set. The scheduled timer is tracked by ID so
-// RemovePendingNotification can cancel it.
+// RemovePendingNotification can cancel it. An immediate send invalidates any
+// previously parked timer for the same ID so it cannot fire afterwards and
+// spawn a duplicate notification.
 func (wn *windowsNotifier) sendOrSchedule(options NotificationOptions, category *NotificationCategory) error {
 	if delay, ok := scheduleDelay(options.Schedule); ok && delay > 0 {
-		wn.scheduledLock.Lock()
-		if existing, found := wn.scheduledTimers[options.ID]; found {
-			existing.Stop()
-		}
-		opts := options
-		opts.Schedule = nil
-		cat := category
-		timer := time.AfterFunc(delay, func() {
-			if err := wn.pushNow(opts, cat); err != nil {
-				fmt.Printf("scheduled notification %s push failed: %v\n", opts.ID, err)
-			}
-			wn.scheduledLock.Lock()
-			delete(wn.scheduledTimers, opts.ID)
-			wn.scheduledLock.Unlock()
-		})
-		wn.scheduledTimers[options.ID] = timer
-		wn.scheduledLock.Unlock()
+		wn.parkSchedule(options.ID, delay, options, category)
 		return nil
 	}
+	wn.cancelScheduled(options.ID)
 	return wn.pushNow(options, category)
+}
+
+// parkSchedule defers a delivery by `delay`. Any previously parked timer for
+// the same id is cancelled and removed eagerly; the parked callback only
+// removes its map entry if it is still the live owner so a just-fired-but-
+// not-yet-cleaned-up callback cannot delete the entry for a freshly-parked
+// successor.
+func (wn *windowsNotifier) parkSchedule(id string, delay time.Duration, options NotificationOptions, category *NotificationCategory) {
+	wn.scheduledLock.Lock()
+	if existing, ok := wn.scheduledTimers[id]; ok {
+		existing.Stop()
+		delete(wn.scheduledTimers, id)
+	}
+	opts := options
+	opts.Schedule = nil
+	cat := category
+	var timer *time.Timer
+	timer = time.AfterFunc(delay, func() {
+		if err := wn.pushNow(opts, cat); err != nil {
+			fmt.Printf("scheduled notification %s push failed: %v\n", opts.ID, err)
+		}
+		wn.scheduledLock.Lock()
+		defer wn.scheduledLock.Unlock()
+		if cur, ok := wn.scheduledTimers[id]; ok && cur == timer {
+			delete(wn.scheduledTimers, id)
+		}
+	})
+	wn.scheduledTimers[id] = timer
+	wn.scheduledLock.Unlock()
+}
+
+// cancelScheduled stops and removes any parked timer for id. Safe to call when
+// no timer is parked.
+func (wn *windowsNotifier) cancelScheduled(id string) {
+	wn.scheduledLock.Lock()
+	defer wn.scheduledLock.Unlock()
+	if t, ok := wn.scheduledTimers[id]; ok {
+		t.Stop()
+		delete(wn.scheduledTimers, id)
+	}
 }
 
 func (wn *windowsNotifier) pushNow(options NotificationOptions, category *NotificationCategory) error {

@@ -124,6 +124,10 @@ func (ln *linuxNotifier) SendNotification(options NotificationOptions) error {
 		return nil
 	}
 
+	// An immediate send must invalidate any previously parked timer for the
+	// same ID so it can't fire later and spawn a duplicate notification.
+	ln.cancelScheduled(options.ID)
+
 	defaultActionID := "default"
 	actions := []string{defaultActionID, "Default"}
 	actionMap := map[string]string{
@@ -152,6 +156,10 @@ func (ln *linuxNotifier) SendNotificationWithActions(options NotificationOptions
 		})
 		return nil
 	}
+
+	// Same rationale as in SendNotification: kill any parked timer so it
+	// cannot fire after we deliver immediately.
+	ln.cancelScheduled(options.ID)
 
 	var actions []string
 	actionMap := make(map[string]string)
@@ -283,23 +291,41 @@ func (ln *linuxNotifier) notify(options NotificationOptions, actions []string, a
 	return nil
 }
 
-// parkSchedule defers `fire` by `delay`. If a timer for the same id is already
-// parked, it is cancelled first.
+// parkSchedule defers `fire` by `delay`. Any previously parked timer for the
+// same id is cancelled and removed eagerly, and the parked callback only
+// removes its map entry if it is still the live owner — that guards against a
+// just-fired-but-not-yet-cleaned-up callback racing in to delete the entry
+// for a freshly-parked successor.
 func (ln *linuxNotifier) parkSchedule(id string, delay time.Duration, fire func() error) {
 	ln.scheduledLock.Lock()
-	defer ln.scheduledLock.Unlock()
 	if existing, ok := ln.scheduledTimers[id]; ok {
 		existing.Stop()
+		delete(ln.scheduledTimers, id)
 	}
-	timer := time.AfterFunc(delay, func() {
+	var timer *time.Timer
+	timer = time.AfterFunc(delay, func() {
 		if err := fire(); err != nil {
 			fmt.Printf("scheduled notification %s push failed: %v\n", id, err)
 		}
 		ln.scheduledLock.Lock()
-		delete(ln.scheduledTimers, id)
-		ln.scheduledLock.Unlock()
+		defer ln.scheduledLock.Unlock()
+		if cur, ok := ln.scheduledTimers[id]; ok && cur == timer {
+			delete(ln.scheduledTimers, id)
+		}
 	})
 	ln.scheduledTimers[id] = timer
+	ln.scheduledLock.Unlock()
+}
+
+// cancelScheduled stops and removes any parked timer for id. Safe to call when
+// no timer is parked.
+func (ln *linuxNotifier) cancelScheduled(id string) {
+	ln.scheduledLock.Lock()
+	defer ln.scheduledLock.Unlock()
+	if t, ok := ln.scheduledTimers[id]; ok {
+		t.Stop()
+		delete(ln.scheduledTimers, id)
+	}
 }
 
 // UpdateNotification re-posts a notification by ID. The Send path passes
