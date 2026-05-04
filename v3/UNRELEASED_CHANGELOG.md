@@ -17,9 +17,14 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add `Sound` (default/silent/named), `Attachments`, `ThreadID`, `InterruptionLevel`, and `Schedule` fields to `NotificationOptions` in the notifications service. Each gracefully degrades on platforms with limited support; see the package godoc for the per-platform support matrix.
+- Add `NotificationService.UpdateNotification(options)` to update an in-flight notification by ID. macOS auto-deduplicates by identifier; Linux uses the D-Bus replaces_id parameter; Windows currently redelivers as a new notification (true replace requires upstream wintoast tag/group support).
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Internal: rewrite the Windows notifications backend to build toast XML directly via the `wintoast` subpackage, dropping the high-level `git.sr.ht/~jackmordaunt/go-toast/v2` builder. Behaviour is preserved; this unlocks first-class custom sounds, hero/inline images, threading, scheduling, scenarios, and tag-based update on Windows.
+- Internal: macOS notifications C bridge now accepts a single JSON options blob instead of individual parameters, simplifying future field additions.
+- Documentation: clarify that the Windows notifications backend supports reply fields (only Linux does not).
 
 ## Fixed
 <!-- Bug fixes -->
