@@ -73,12 +73,8 @@ ManifestDPIAware true
 
 Name "${INFO_PRODUCTNAME}"
 OutFile "..\..\..\bin\${INFO_PROJECTNAME}-${ARCH}-installer.exe" # Name of the installer's file.
-!ifdef WAILS_INSTALL_SCOPE
-    !if "${WAILS_INSTALL_SCOPE}" == "user"
-        InstallDir "$LOCALAPPDATA\Programs\${INFO_PRODUCTNAME}"
-    !else
-        InstallDir "$PROGRAMFILES64\${INFO_COMPANYNAME}\${INFO_PRODUCTNAME}"
-    !endif
+!if "${WAILS_INSTALL_SCOPE}" == "user"
+    InstallDir "$LOCALAPPDATA\Programs\${INFO_PRODUCTNAME}"
 !else
     InstallDir "$PROGRAMFILES64\${INFO_COMPANYNAME}\${INFO_PRODUCTNAME}"
 !endif

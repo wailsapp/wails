@@ -32,7 +32,11 @@
 !endif
 
 !ifndef REQUEST_EXECUTION_LEVEL
-    !define REQUEST_EXECUTION_LEVEL "admin"
+    !if "${WAILS_INSTALL_SCOPE}" == "user"
+        !define REQUEST_EXECUTION_LEVEL "user"
+    !else
+        !define REQUEST_EXECUTION_LEVEL "admin"
+    !endif
 !endif
 
 RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
