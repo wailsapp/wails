@@ -143,61 +143,85 @@ void checkNotificationAuthorization(int channelID) {
     }];
 }
 
-// Helper function to create notification content
-UNMutableNotificationContent* createNotificationContent(const char *title, const char *subtitle, 
-                                                       const char *body, const char *data_json, NSError **contentError) {
-    NSString *nsTitle = [NSString stringWithUTF8String:title];
-    NSString *nsSubtitle = subtitle ? [NSString stringWithUTF8String:subtitle] : @"";
-    NSString *nsBody = [NSString stringWithUTF8String:body];
-    
-    UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
-    content.title = nsTitle;
-    if (![nsSubtitle isEqualToString:@""]) {
-        content.subtitle = nsSubtitle;
-    }
-    content.body = nsBody;
-    content.sound = [UNNotificationSound defaultSound];
-    
-    // Parse JSON data if provided
-    if (data_json) {
-        NSString *dataJsonStr = [NSString stringWithUTF8String:data_json];
-        NSData *jsonData = [dataJsonStr dataUsingEncoding:NSUTF8StringEncoding];
-        NSError *error = nil;
-        NSDictionary *parsedData = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
-        if (!error && parsedData) {
-            content.userInfo = parsedData;
-        } else if (error) {
-            *contentError = error;
+// parseOptions decodes the JSON-encoded NotificationOptions blob handed in
+// from Go. Returns nil and writes into *parseError on failure.
+static NSDictionary* parseOptions(const char *options_json, NSError **parseError) {
+    if (!options_json) {
+        if (parseError) {
+            *parseError = [NSError errorWithDomain:@"WailsNotifications"
+                                              code:1
+                                          userInfo:@{NSLocalizedDescriptionKey: @"options_json was NULL"}];
         }
+        return nil;
     }
-    
+    NSString *str = [NSString stringWithUTF8String:options_json];
+    NSData *data = [str dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:0 error:parseError];
+    if (![dict isKindOfClass:[NSDictionary class]]) {
+        if (parseError && !*parseError) {
+            *parseError = [NSError errorWithDomain:@"WailsNotifications"
+                                              code:2
+                                          userInfo:@{NSLocalizedDescriptionKey: @"options_json was not a JSON object"}];
+        }
+        return nil;
+    }
+    return dict;
+}
+
+// stringOrEmpty returns the value for `key` if it is a non-null NSString, else @"".
+static NSString* stringOrEmpty(NSDictionary *dict, NSString *key) {
+    id val = dict[key];
+    if ([val isKindOfClass:[NSString class]]) {
+        return (NSString *)val;
+    }
+    return @"";
+}
+
+// createNotificationContentFromOptions builds the UNMutableNotificationContent
+// from a parsed NotificationOptions dict. Future feature fields (sound,
+// attachments, threadId, interruptionLevel) read from the same dict in
+// subsequent commits without further C signature changes.
+static UNMutableNotificationContent* createNotificationContentFromOptions(NSDictionary *options) {
+    UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
+    content.title = stringOrEmpty(options, @"title");
+    NSString *subtitle = stringOrEmpty(options, @"subtitle");
+    if (subtitle.length > 0) {
+        content.subtitle = subtitle;
+    }
+    content.body = stringOrEmpty(options, @"body");
+    content.sound = [UNNotificationSound defaultSound];
+
+    id userInfo = options[@"data"];
+    if ([userInfo isKindOfClass:[NSDictionary class]]) {
+        content.userInfo = (NSDictionary *)userInfo;
+    }
+
     return content;
 }
 
-void sendNotification(int channelID, const char *identifier, const char *title, const char *subtitle, const char *body, const char *data_json) {
+void sendNotification(int channelID, const char *options_json) {
     if (!ensureDelegateInitialized()) {
         NSString *errorMsg = @"Notification delegate has been lost. Reinitialize the notification service.";
         captureResult(channelID, false, [errorMsg UTF8String]);
         return;
     }
-    
-    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
 
-    NSString *nsIdentifier = [NSString stringWithUTF8String:identifier];
-
-    NSError *contentError = nil;
-    UNMutableNotificationContent *content = createNotificationContent(title, subtitle, body, data_json, &contentError);
-    
-    if (contentError) {
-        NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [contentError localizedDescription]];
+    NSError *parseError = nil;
+    NSDictionary *options = parseOptions(options_json, &parseError);
+    if (parseError || !options) {
+        NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [parseError localizedDescription]];
         captureResult(channelID, false, [errorMsg UTF8String]);
         return;
     }
 
+    NSString *identifier = stringOrEmpty(options, @"id");
+    UNMutableNotificationContent *content = createNotificationContentFromOptions(options);
+
     UNTimeIntervalNotificationTrigger *trigger = nil;
-    
-    UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:nsIdentifier content:content trigger:trigger];
-    
+
+    UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:identifier content:content trigger:trigger];
+
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
         if (error) {
             NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
@@ -208,34 +232,34 @@ void sendNotification(int channelID, const char *identifier, const char *title, 
     }];
 }
 
-void sendNotificationWithActions(int channelID, const char *identifier, const char *title, const char *subtitle, 
-                             const char *body, const char *categoryId, const char *data_json) {
+void sendNotificationWithActions(int channelID, const char *options_json) {
     if (!ensureDelegateInitialized()) {
         NSString *errorMsg = @"Notification delegate has been lost. Reinitialize the notification service.";
         captureResult(channelID, false, [errorMsg UTF8String]);
         return;
     }
-    
-    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
 
-    NSString *nsIdentifier = [NSString stringWithUTF8String:identifier];
-    NSString *nsCategoryId = [NSString stringWithUTF8String:categoryId];
-    
-    NSError *contentError = nil;
-    UNMutableNotificationContent *content = createNotificationContent(title, subtitle, body, data_json, &contentError);
-    
-    if (contentError) {
-        NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [contentError localizedDescription]];
+    NSError *parseError = nil;
+    NSDictionary *options = parseOptions(options_json, &parseError);
+    if (parseError || !options) {
+        NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [parseError localizedDescription]];
         captureResult(channelID, false, [errorMsg UTF8String]);
         return;
     }
 
-    content.categoryIdentifier = nsCategoryId;
-    
+    NSString *identifier = stringOrEmpty(options, @"id");
+    NSString *categoryId = stringOrEmpty(options, @"categoryId");
+
+    UNMutableNotificationContent *content = createNotificationContentFromOptions(options);
+    if (categoryId.length > 0) {
+        content.categoryIdentifier = categoryId;
+    }
+
     UNTimeIntervalNotificationTrigger *trigger = nil;
-    
-    UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:nsIdentifier content:content trigger:trigger];
-    
+
+    UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:identifier content:content trigger:trigger];
+
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
         if (error) {
             NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
