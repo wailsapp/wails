@@ -225,9 +225,15 @@ static void applyAttachmentsToContent(UNMutableNotificationContent *content, NSD
             : [NSURL fileURLWithPath:path];
         if (!url) continue;
 
+        // The Type field is overloaded: on Windows it carries placement
+        // hints like "hero" / "appLogoOverride" / "inline"; on macOS it is
+        // an optional UTI hint such as "public.png" / "public.audio".
+        // Only forward the value as a UTI hint when it actually looks like
+        // one (UTI strings always contain a "."). Otherwise let the
+        // notification center auto-infer the type from the file extension.
         NSDictionary *attOptions = nil;
         NSString *uti = stringOrEmpty(att, @"type");
-        if (uti.length > 0) {
+        if (uti.length > 0 && [uti containsString:@"."]) {
             attOptions = @{UNNotificationAttachmentOptionsTypeHintKey: uti};
         }
 
