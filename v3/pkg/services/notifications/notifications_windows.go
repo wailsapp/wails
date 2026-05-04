@@ -5,15 +5,14 @@ package notifications
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
 	_ "unsafe"
 
-	"encoding/json"
-
-	"git.sr.ht/~jackmordaunt/go-toast/v2"
 	wintoast "git.sr.ht/~jackmordaunt/go-toast/v2/wintoast"
 	"github.com/google/uuid"
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -98,14 +97,16 @@ func (wn *windowsNotifier) Startup(ctx context.Context, options application.Serv
 	}
 	key.Close()
 
-	toast.SetAppData(toast.AppData{
+	if err := wintoast.SetAppData(wintoast.AppData{
 		AppID:         wn.appName,
 		GUID:          guid,
 		IconPath:      wn.iconPath,
 		ActivationExe: wn.exePath,
-	})
+	}); err != nil {
+		return fmt.Errorf("failed to set toast app data: %w", err)
+	}
 
-	toast.SetActivationCallback(func(args string, data []toast.UserData) {
+	wintoast.SetActivationCallback(func(_ string, args string, data []wintoast.UserData) {
 		result := NotificationResult{}
 
 		actionIdentifier, options, err := parseNotificationResponse(args)
@@ -136,7 +137,9 @@ func (wn *windowsNotifier) Startup(ctx context.Context, options application.Serv
 		}
 	})
 
-	// Register the class factory for the toast activator
+	// Register the class factory eagerly so activation callbacks fire even if
+	// the user clicks a toast that pre-dates the first call to wintoast.Push
+	// (e.g. a notification still pinned in Action Center from a previous run).
 	if err := registerFactoryInternal(wintoast.ClassFactory); err != nil {
 		return fmt.Errorf("CoRegisterClassObject failed: %w", err)
 	}
@@ -171,20 +174,17 @@ func (wn *windowsNotifier) SendNotification(options NotificationOptions) error {
 		fmt.Printf("Error saving icon: %v\n", err)
 	}
 
-	n := toast.Notification{
-		Title:               options.Title,
-		Body:                options.Body,
-		ActivationType:      toast.Foreground,
-		ActivationArguments: DefaultActionIdentifier,
-	}
-
-	encodedPayload, err := wn.encodePayload(DefaultActionIdentifier, options)
+	defaultArgs, err := wn.encodePayload(DefaultActionIdentifier, options)
 	if err != nil {
 		return fmt.Errorf("failed to encode notification payload: %w", err)
 	}
-	n.ActivationArguments = encodedPayload
 
-	return n.Push()
+	doc, err := wn.buildToastXML(options, nil, defaultArgs)
+	if err != nil {
+		return err
+	}
+
+	return wintoast.Push(wn.appName, doc, wintoast.PowershellFallback)
 }
 
 // SendNotificationWithActions sends a notification with additional actions and inputs.
@@ -202,50 +202,20 @@ func (wn *windowsNotifier) SendNotificationWithActions(options NotificationOptio
 
 	if options.CategoryID == "" || !categoryExists {
 		fmt.Printf("Category '%s' not found, sending basic notification without actions\n", options.CategoryID)
+		return wn.SendNotification(options)
 	}
 
-	n := toast.Notification{
-		Title:               options.Title,
-		Body:                options.Body,
-		ActivationType:      toast.Foreground,
-		ActivationArguments: DefaultActionIdentifier,
-	}
-
-	for _, action := range nCategory.Actions {
-		n.Actions = append(n.Actions, toast.Action{
-			Content:   action.Title,
-			Arguments: action.ID,
-		})
-	}
-
-	if nCategory.HasReplyField {
-		n.Inputs = append(n.Inputs, toast.Input{
-			ID:          "userText",
-			Placeholder: nCategory.ReplyPlaceholder,
-		})
-
-		n.Actions = append(n.Actions, toast.Action{
-			Content:   nCategory.ReplyButtonTitle,
-			Arguments: "TEXT_REPLY",
-			InputID:   "userText",
-		})
-	}
-
-	encodedPayload, err := wn.encodePayload(n.ActivationArguments, options)
+	defaultArgs, err := wn.encodePayload(DefaultActionIdentifier, options)
 	if err != nil {
 		return fmt.Errorf("failed to encode notification payload: %w", err)
 	}
-	n.ActivationArguments = encodedPayload
 
-	for index := range n.Actions {
-		encodedPayload, err := wn.encodePayload(n.Actions[index].Arguments, options)
-		if err != nil {
-			return fmt.Errorf("failed to encode notification payload: %w", err)
-		}
-		n.Actions[index].Arguments = encodedPayload
+	doc, err := wn.buildToastXML(options, &nCategory, defaultArgs)
+	if err != nil {
+		return err
 	}
 
-	return n.Push()
+	return wintoast.Push(wn.appName, doc, wintoast.PowershellFallback)
 }
 
 // RegisterNotificationCategory registers a new NotificationCategory to be used with SendNotificationWithActions.
@@ -303,6 +273,136 @@ func (wn *windowsNotifier) RemoveDeliveredNotification(_ string) error {
 // (Linux-specific)
 func (wn *windowsNotifier) RemoveNotification(identifier string) error {
 	return nil
+}
+
+// toastDoc is the root element of a Windows toast notification XML document.
+// Marshalling these structs with encoding/xml lets the Go stdlib handle attribute
+// escaping, which the previous text/template approach did not.
+// See https://learn.microsoft.com/en-us/uwp/schemas/tiles/toastschema/element-toast
+type toastDoc struct {
+	XMLName        xml.Name      `xml:"toast"`
+	ActivationType string        `xml:"activationType,attr,omitempty"`
+	Launch         string        `xml:"launch,attr,omitempty"`
+	Duration       string        `xml:"duration,attr,omitempty"`
+	Visual         toastVisual   `xml:"visual"`
+	Audio          *toastAudio   `xml:"audio,omitempty"`
+	Actions        *toastActions `xml:"actions,omitempty"`
+}
+
+type toastVisual struct {
+	Binding toastBinding `xml:"binding"`
+}
+
+type toastBinding struct {
+	Template string      `xml:"template,attr"`
+	Texts    []toastText `xml:"text"`
+}
+
+type toastText struct {
+	HintMaxLines string `xml:"hint-maxLines,attr,omitempty"`
+	Value        string `xml:",chardata"`
+}
+
+type toastAudio struct {
+	Src    string `xml:"src,attr,omitempty"`
+	Loop   string `xml:"loop,attr,omitempty"`
+	Silent string `xml:"silent,attr,omitempty"`
+}
+
+type toastActions struct {
+	Inputs  []toastInput  `xml:"input"`
+	Actions []toastAction `xml:"action"`
+}
+
+type toastInput struct {
+	ID                 string `xml:"id,attr"`
+	Type               string `xml:"type,attr"`
+	Title              string `xml:"title,attr,omitempty"`
+	PlaceHolderContent string `xml:"placeHolderContent,attr,omitempty"`
+}
+
+type toastAction struct {
+	Content        string `xml:"content,attr"`
+	Arguments      string `xml:"arguments,attr"`
+	ActivationType string `xml:"activationType,attr,omitempty"`
+	HintInputID    string `xml:"hint-inputId,attr,omitempty"`
+}
+
+// buildToastXML produces a Windows toast XML document for the given options
+// and optional category. The defaultArgs string is the activation argument
+// emitted when the user clicks the toast body itself (not a specific action).
+func (wn *windowsNotifier) buildToastXML(options NotificationOptions, category *NotificationCategory, defaultArgs string) (string, error) {
+	t := toastDoc{
+		ActivationType: "foreground",
+		Launch:         defaultArgs,
+		Duration:       "short",
+		Visual: toastVisual{
+			Binding: toastBinding{Template: "ToastGeneric"},
+		},
+		Audio: &toastAudio{
+			Src:  "ms-winsoundevent:Notification.Default",
+			Loop: "false",
+		},
+	}
+
+	if options.Title != "" {
+		t.Visual.Binding.Texts = append(t.Visual.Binding.Texts, toastText{
+			HintMaxLines: "1",
+			Value:        options.Title,
+		})
+	}
+	if options.Body != "" {
+		t.Visual.Binding.Texts = append(t.Visual.Binding.Texts, toastText{
+			Value: options.Body,
+		})
+	}
+
+	if category != nil {
+		actions := &toastActions{}
+
+		if category.HasReplyField {
+			actions.Inputs = append(actions.Inputs, toastInput{
+				ID:                 "userText",
+				Type:               "text",
+				PlaceHolderContent: category.ReplyPlaceholder,
+			})
+		}
+
+		for _, a := range category.Actions {
+			args, err := wn.encodePayload(a.ID, options)
+			if err != nil {
+				return "", fmt.Errorf("failed to encode action payload: %w", err)
+			}
+			actions.Actions = append(actions.Actions, toastAction{
+				Content:        a.Title,
+				Arguments:      args,
+				ActivationType: "foreground",
+			})
+		}
+
+		if category.HasReplyField {
+			args, err := wn.encodePayload("TEXT_REPLY", options)
+			if err != nil {
+				return "", fmt.Errorf("failed to encode reply payload: %w", err)
+			}
+			actions.Actions = append(actions.Actions, toastAction{
+				Content:        category.ReplyButtonTitle,
+				Arguments:      args,
+				ActivationType: "foreground",
+				HintInputID:    "userText",
+			})
+		}
+
+		if len(actions.Inputs) > 0 || len(actions.Actions) > 0 {
+			t.Actions = actions
+		}
+	}
+
+	body, err := xml.MarshalIndent(t, "", "  ")
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal toast xml: %w", err)
+	}
+	return xml.Header + string(body), nil
 }
 
 // encodePayload combines an action ID and user data into a single encoded string
@@ -418,7 +518,7 @@ func (wn *windowsNotifier) loadCategoriesFromRegistry() error {
 	return nil
 }
 
-func (wn *windowsNotifier) getUserText(data []toast.UserData) (string, bool) {
+func (wn *windowsNotifier) getUserText(data []wintoast.UserData) (string, bool) {
 	for _, d := range data {
 		if d.Key == "userText" {
 			return d.Value, true
