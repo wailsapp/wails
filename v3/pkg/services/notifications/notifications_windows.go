@@ -205,24 +205,6 @@ func (wn *windowsNotifier) sendOrSchedule(options NotificationOptions, category 
 	return wn.pushNow(options, category)
 }
 
-// scheduleDelay returns the time.Duration until delivery for a Schedule.
-// The bool is false if the schedule resolves to immediate delivery.
-func scheduleDelay(s *NotificationSchedule) (time.Duration, bool) {
-	if s == nil {
-		return 0, false
-	}
-	if s.DelaySeconds > 0 {
-		return time.Duration(s.DelaySeconds) * time.Second, true
-	}
-	if s.At > 0 {
-		until := time.Until(time.Unix(s.At, 0))
-		if until > 0 {
-			return until, true
-		}
-	}
-	return 0, false
-}
-
 func (wn *windowsNotifier) pushNow(options NotificationOptions, category *NotificationCategory) error {
 	if err := wn.saveIconToDir(); err != nil {
 		fmt.Printf("Error saving icon: %v\n", err)
