@@ -173,6 +173,14 @@ func (dn *darwinNotifier) dispatchNotification(options NotificationOptions, with
 	}
 }
 
+// UpdateNotification re-posts a notification with the same identifier.
+// UNUserNotificationCenter auto-replaces by identifier, so the existing
+// notification's content is updated in place (or freshly delivered if no
+// notification with that identifier is currently pending or delivered).
+func (dn *darwinNotifier) UpdateNotification(options NotificationOptions) error {
+	return dn.dispatchNotification(options, options.CategoryID != "")
+}
+
 // RegisterNotificationCategory registers a new NotificationCategory to be used with SendNotificationWithActions.
 // Registering a category with the same name as a previously registered NotificationCategory will override it.
 func (dn *darwinNotifier) RegisterNotificationCategory(category NotificationCategory) error {

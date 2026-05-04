@@ -175,10 +175,136 @@ static NSString* stringOrEmpty(NSDictionary *dict, NSString *key) {
     return @"";
 }
 
+// applySoundToContent honours the optional Sound field on NotificationOptions.
+//   nil  -> default sound (kept on content)
+//   {silent: true} -> no sound
+//   {name: "Ping"} -> [UNNotificationSound soundNamed:@"Ping"]
+static void applySoundToContent(UNMutableNotificationContent *content, NSDictionary *options) {
+    id raw = options[@"sound"];
+    if (![raw isKindOfClass:[NSDictionary class]]) {
+        return;
+    }
+    NSDictionary *sound = (NSDictionary *)raw;
+    id silent = sound[@"silent"];
+    if ([silent respondsToSelector:@selector(boolValue)] && [silent boolValue]) {
+        content.sound = nil;
+        return;
+    }
+    NSString *name = stringOrEmpty(sound, @"name");
+    if (name.length > 0) {
+        content.sound = [UNNotificationSound soundNamed:name];
+    }
+}
+
+// applyAttachmentsToContent translates each NotificationAttachment entry into
+// a UNNotificationAttachment. Failed attachments are skipped silently to avoid
+// breaking delivery for one bad entry; the failure is logged.
+static void applyAttachmentsToContent(UNMutableNotificationContent *content, NSDictionary *options) {
+    id raw = options[@"attachments"];
+    if (![raw isKindOfClass:[NSArray class]]) {
+        return;
+    }
+    NSMutableArray<UNNotificationAttachment *> *attachments = [NSMutableArray array];
+    for (id entry in (NSArray *)raw) {
+        if (![entry isKindOfClass:[NSDictionary class]]) {
+            continue;
+        }
+        NSDictionary *att = (NSDictionary *)entry;
+        NSString *path = stringOrEmpty(att, @"path");
+        if (path.length == 0) {
+            continue;
+        }
+        NSString *attID = stringOrEmpty(att, @"id");
+        if (attID.length == 0) {
+            attID = [[NSUUID UUID] UUIDString];
+        }
+        NSURL *url = [path hasPrefix:@"file://"]
+            ? [NSURL URLWithString:path]
+            : [NSURL fileURLWithPath:path];
+        if (!url) continue;
+
+        NSDictionary *attOptions = nil;
+        NSString *uti = stringOrEmpty(att, @"type");
+        if (uti.length > 0) {
+            attOptions = @{UNNotificationAttachmentOptionsTypeHintKey: uti};
+        }
+
+        NSError *err = nil;
+        UNNotificationAttachment *a = [UNNotificationAttachment
+            attachmentWithIdentifier:attID URL:url options:attOptions error:&err];
+        if (err || !a) {
+            NSLog(@"wails/notifications: failed to attach %@: %@", path, err);
+            continue;
+        }
+        [attachments addObject:a];
+    }
+    if (attachments.count > 0) {
+        content.attachments = attachments;
+    }
+}
+
+// applyInterruptionLevelToContent maps the InterruptionLevel string onto
+// UNNotificationInterruptionLevel (macOS 12+). On older macOS it is a no-op.
+static void applyInterruptionLevelToContent(UNMutableNotificationContent *content, NSDictionary *options) {
+    NSString *level = stringOrEmpty(options, @"interruptionLevel");
+    if (level.length == 0) {
+        return;
+    }
+    if (@available(macOS 12.0, *)) {
+        if ([level isEqualToString:@"passive"]) {
+            content.interruptionLevel = UNNotificationInterruptionLevelPassive;
+        } else if ([level isEqualToString:@"active"]) {
+            content.interruptionLevel = UNNotificationInterruptionLevelActive;
+        } else if ([level isEqualToString:@"timeSensitive"]) {
+            content.interruptionLevel = UNNotificationInterruptionLevelTimeSensitive;
+        } else if ([level isEqualToString:@"critical"]) {
+            // Requires the Critical Alert entitlement; without it macOS
+            // silently downgrades to active.
+            content.interruptionLevel = UNNotificationInterruptionLevelCritical;
+        }
+    }
+}
+
+// buildTriggerFromSchedule returns a UNCalendar/UNTimeInterval trigger built
+// from the optional Schedule field, or nil for immediate delivery.
+//   {delaySeconds: 30} -> UNTimeIntervalNotificationTrigger 30s
+//   {at: 1717181600}    -> UNCalendarNotificationTrigger at the corresponding date
+static UNNotificationTrigger* buildTriggerFromSchedule(NSDictionary *options) {
+    id raw = options[@"schedule"];
+    if (![raw isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+    NSDictionary *schedule = (NSDictionary *)raw;
+
+    id delayObj = schedule[@"delaySeconds"];
+    if ([delayObj respondsToSelector:@selector(doubleValue)]) {
+        double delay = [delayObj doubleValue];
+        if (delay > 0) {
+            return [UNTimeIntervalNotificationTrigger triggerWithTimeInterval:delay repeats:NO];
+        }
+    }
+
+    id atObj = schedule[@"at"];
+    if ([atObj respondsToSelector:@selector(doubleValue)]) {
+        double at = [atObj doubleValue];
+        if (at > 0) {
+            NSDate *date = [NSDate dateWithTimeIntervalSince1970:at];
+            NSCalendar *cal = [NSCalendar currentCalendar];
+            NSDateComponents *components = [cal components:
+                NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay |
+                NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond
+                fromDate:date];
+            return [UNCalendarNotificationTrigger triggerWithDateMatchingComponents:components repeats:NO];
+        }
+    }
+
+    return nil;
+}
+
 // createNotificationContentFromOptions builds the UNMutableNotificationContent
-// from a parsed NotificationOptions dict. Future feature fields (sound,
-// attachments, threadId, interruptionLevel) read from the same dict in
-// subsequent commits without further C signature changes.
+// from a parsed NotificationOptions dict. Reads title/subtitle/body/userInfo
+// plus the optional sound, attachments, threadId, and interruptionLevel
+// fields. Schedule is handled separately by buildTriggerFromSchedule.
 static UNMutableNotificationContent* createNotificationContentFromOptions(NSDictionary *options) {
     UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
     content.title = stringOrEmpty(options, @"title");
@@ -193,6 +319,15 @@ static UNMutableNotificationContent* createNotificationContentFromOptions(NSDict
     if ([userInfo isKindOfClass:[NSDictionary class]]) {
         content.userInfo = (NSDictionary *)userInfo;
     }
+
+    NSString *threadId = stringOrEmpty(options, @"threadId");
+    if (threadId.length > 0) {
+        content.threadIdentifier = threadId;
+    }
+
+    applySoundToContent(content, options);
+    applyAttachmentsToContent(content, options);
+    applyInterruptionLevelToContent(content, options);
 
     return content;
 }
@@ -215,7 +350,7 @@ void sendNotification(int channelID, const char *options_json) {
     NSString *identifier = stringOrEmpty(options, @"id");
     UNMutableNotificationContent *content = createNotificationContentFromOptions(options);
 
-    UNTimeIntervalNotificationTrigger *trigger = nil;
+    UNNotificationTrigger *trigger = buildTriggerFromSchedule(options);
 
     UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:identifier content:content trigger:trigger];
 
@@ -253,7 +388,7 @@ void sendNotificationWithActions(int channelID, const char *options_json) {
         content.categoryIdentifier = categoryId;
     }
 
-    UNTimeIntervalNotificationTrigger *trigger = nil;
+    UNNotificationTrigger *trigger = buildTriggerFromSchedule(options);
 
     UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:identifier content:content trigger:trigger];
 

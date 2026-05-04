@@ -4,17 +4,35 @@
 //   - Basic notifications with title, subtitle, and body
 //   - Interactive notifications with buttons and actions
 //   - Notification categories for reusing configurations
+//   - Custom sounds (default / silent / named)
+//   - Attached media (images on every platform; audio/video on macOS)
+//   - Threading / grouping by ThreadID
+//   - Priority via InterruptionLevel (passive/active/timeSensitive/critical)
+//   - Scheduled delivery (native on macOS; in-process timer on Windows + Linux)
+//   - Updating an in-flight notification by ID
 //   - User feedback handling with a unified callback system
 //
 // Platform-specific notes:
-//   - macOS: Requires a properly bundled and signed application
-//   - Windows: Uses Windows Toast notifications
-//   - Linux: Uses D-Bus and does not support text inputs
+//   - macOS: Requires a properly bundled and signed application. Critical
+//     interruption level requires the Critical Alert entitlement; without it
+//     the level silently degrades.
+//   - Windows: Uses Windows Toast notifications via the wintoast subpackage.
+//     Reply fields are supported. Scheduled notifications use an in-process
+//     timer and are lost if the app exits before delivery. Update-by-ID
+//     redelivers as a new notification (true replace requires upstream
+//     wintoast support for tag/group).
+//   - Linux: Uses D-Bus org.freedesktop.Notifications. Reply fields are NOT
+//     supported (not part of the spec). Subtitle is concatenated into the
+//     body. Scheduled notifications use an in-process timer.
+//
+// See the NotificationOptions godoc and the notifications example app for
+// the full per-feature support matrix.
 package notifications
 
 import (
 	"context"
 	"fmt"
+	"os"
 	"sync"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -30,6 +48,7 @@ type platformNotifier interface {
 	CheckNotificationAuthorization() (bool, error)
 	SendNotification(options NotificationOptions) error
 	SendNotificationWithActions(options NotificationOptions) error
+	UpdateNotification(options NotificationOptions) error
 
 	// Category management
 	RegisterNotificationCategory(category NotificationCategory) error
@@ -76,7 +95,11 @@ type NotificationCategory struct {
 	ReplyButtonTitle string               `json:"replyButtonTitle,omitempty"`
 }
 
-// NotificationOptions contains configuration for a notification
+// NotificationOptions contains configuration for a notification.
+//
+// New optional fields (Sound, Attachments, ThreadID, InterruptionLevel,
+// Schedule) gracefully degrade when a platform cannot honour them; see the
+// package-level godoc for the per-platform support matrix.
 type NotificationOptions struct {
 	ID         string                 `json:"id"`
 	Title      string                 `json:"title"`
@@ -84,7 +107,72 @@ type NotificationOptions struct {
 	Body       string                 `json:"body,omitempty"`
 	CategoryID string                 `json:"categoryId,omitempty"`
 	Data       map[string]interface{} `json:"data,omitempty"`
+
+	// Sound controls the sound played on delivery.
+	//   nil                                -> platform default sound
+	//   &NotificationSound{Silent: true}   -> no sound
+	//   &NotificationSound{Name: "Ping"}   -> named/bundled sound
+	// On macOS, Name is resolved by [UNNotificationSound soundNamed:] and
+	// requires the audio file to live under the bundle's Library/Sounds.
+	// On Windows, Name is used as-is if it begins with "ms-winsoundevent:" or
+	// "ms-appx:"; otherwise it is wrapped in "ms-winsoundevent:" for built-in
+	// event names. On Linux it is forwarded as the freedesktop "sound-name"
+	// hint (theme-dependent).
+	Sound *NotificationSound `json:"sound,omitempty"`
+
+	// Attachments are media files shown alongside the notification. macOS
+	// supports multiple attachments of any media type; Windows and Linux
+	// honour the first image-typed attachment (Linux limits to one per spec).
+	Attachments []NotificationAttachment `json:"attachments,omitempty"`
+
+	// ThreadID groups related notifications together in Notification Center
+	// (macOS) / Action Center (Windows) / the notification daemon (Linux).
+	ThreadID string `json:"threadId,omitempty"`
+
+	// InterruptionLevel controls notification priority. One of "passive",
+	// "active" (default), "timeSensitive", "critical". Critical requires
+	// macOS 12+ and the Critical Alert entitlement. Linux maps to the
+	// freedesktop urgency hint; Windows maps to <toast scenario="...">.
+	InterruptionLevel string `json:"interruptionLevel,omitempty"`
+
+	// Schedule defers delivery. macOS uses a native trigger and persists
+	// across app restarts. Windows and Linux fall back to an in-process
+	// time.AfterFunc timer that does NOT survive an app exit.
+	Schedule *NotificationSchedule `json:"schedule,omitempty"`
 }
+
+// NotificationSound configures audio playback for a notification.
+type NotificationSound struct {
+	Silent bool   `json:"silent,omitempty"`
+	Name   string `json:"name,omitempty"`
+}
+
+// NotificationAttachment is a media file shown with the notification.
+// Path is an absolute filesystem path (or "file://" URL on macOS).
+type NotificationAttachment struct {
+	ID   string `json:"id,omitempty"`
+	Path string `json:"path"`
+	// Type is an optional placement/UTI hint.
+	//   On macOS: a UTI like "public.png" / "public.audio" (often inferred).
+	//   On Windows: "hero" | "appLogoOverride" | "inline" (default "inline").
+	//   On Linux: ignored (always image-path hint).
+	Type string `json:"type,omitempty"`
+}
+
+// NotificationSchedule defers delivery. Exactly one of DelaySeconds or At
+// must be set. At is interpreted as Unix seconds (UTC).
+type NotificationSchedule struct {
+	DelaySeconds int   `json:"delaySeconds,omitempty"`
+	At           int64 `json:"at,omitempty"`
+}
+
+// Allowed values for NotificationOptions.InterruptionLevel.
+const (
+	InterruptionLevelPassive       = "passive"
+	InterruptionLevelActive        = "active"
+	InterruptionLevelTimeSensitive = "timeSensitive"
+	InterruptionLevelCritical      = "critical"
+)
 
 const DefaultActionIdentifier = "DEFAULT_ACTION"
 
@@ -168,6 +256,17 @@ func (ns *NotificationService) SendNotificationWithActions(options NotificationO
 	return ns.impl.SendNotificationWithActions(options)
 }
 
+// UpdateNotification updates an in-flight notification by ID. On macOS this
+// is auto-deduplicated by UNUserNotificationCenter; on Linux it uses the
+// D-Bus replaces_id parameter. On Windows it currently redelivers as a new
+// notification (true replace requires upstream wintoast support for tag/group).
+func (ns *NotificationService) UpdateNotification(options NotificationOptions) error {
+	if err := validateNotificationOptions(options); err != nil {
+		return err
+	}
+	return ns.impl.UpdateNotification(options)
+}
+
 func (ns *NotificationService) RegisterNotificationCategory(category NotificationCategory) error {
 	return ns.impl.RegisterNotificationCategory(category)
 }
@@ -202,7 +301,8 @@ func getNotificationService() *NotificationService {
 	return NotificationService_
 }
 
-// validateNotificationOptions validates an ID and Title are provided for notifications.
+// validateNotificationOptions validates required fields and the shape of the
+// new optional fields on NotificationOptions.
 func validateNotificationOptions(options NotificationOptions) error {
 	if options.ID == "" {
 		return fmt.Errorf("notification ID cannot be empty")
@@ -210,6 +310,39 @@ func validateNotificationOptions(options NotificationOptions) error {
 
 	if options.Title == "" {
 		return fmt.Errorf("notification title cannot be empty")
+	}
+
+	if options.InterruptionLevel != "" {
+		switch options.InterruptionLevel {
+		case InterruptionLevelPassive, InterruptionLevelActive,
+			InterruptionLevelTimeSensitive, InterruptionLevelCritical:
+		default:
+			return fmt.Errorf("invalid interruption level %q (want passive|active|timeSensitive|critical)", options.InterruptionLevel)
+		}
+	}
+
+	if options.Schedule != nil {
+		if options.Schedule.DelaySeconds < 0 {
+			return fmt.Errorf("schedule.delaySeconds cannot be negative")
+		}
+		if options.Schedule.At < 0 {
+			return fmt.Errorf("schedule.at cannot be negative")
+		}
+		if options.Schedule.DelaySeconds > 0 && options.Schedule.At > 0 {
+			return fmt.Errorf("schedule.delaySeconds and schedule.at are mutually exclusive")
+		}
+		if options.Schedule.DelaySeconds == 0 && options.Schedule.At == 0 {
+			return fmt.Errorf("schedule must set either delaySeconds or at")
+		}
+	}
+
+	for i, a := range options.Attachments {
+		if a.Path == "" {
+			return fmt.Errorf("attachments[%d].path cannot be empty", i)
+		}
+		if _, err := os.Stat(a.Path); err != nil {
+			return fmt.Errorf("attachments[%d].path %q: %w", i, a.Path, err)
+		}
 	}
 
 	return nil

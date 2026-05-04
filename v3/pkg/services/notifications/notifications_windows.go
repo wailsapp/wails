@@ -10,7 +10,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
+	"time"
 	_ "unsafe"
 
 	wintoast "git.sr.ht/~jackmordaunt/go-toast/v2/wintoast"
@@ -21,12 +23,14 @@ import (
 )
 
 type windowsNotifier struct {
-	categories     map[string]NotificationCategory
-	categoriesLock sync.RWMutex
-	appName        string
-	appGUID        string
-	iconPath       string
-	exePath        string
+	categories      map[string]NotificationCategory
+	categoriesLock  sync.RWMutex
+	appName         string
+	appGUID         string
+	iconPath        string
+	exePath         string
+	scheduledLock   sync.Mutex
+	scheduledTimers map[string]*time.Timer
 }
 
 const (
@@ -46,7 +50,8 @@ type NotificationPayload struct {
 func New() *NotificationService {
 	notificationServiceOnce.Do(func() {
 		impl := &windowsNotifier{
-			categories: make(map[string]NotificationCategory),
+			categories:      make(map[string]NotificationCategory),
+			scheduledTimers: make(map[string]*time.Timer),
 		}
 
 		NotificationService_ = &NotificationService{
@@ -170,6 +175,55 @@ func (wn *windowsNotifier) CheckNotificationAuthorization() (bool, error) {
 // SendNotification sends a basic notification with a name, title, and body. All other options are ignored on Windows.
 // (subtitle is only available on macOS and Linux)
 func (wn *windowsNotifier) SendNotification(options NotificationOptions) error {
+	return wn.sendOrSchedule(options, nil)
+}
+
+// sendOrSchedule pushes the toast immediately, or parks it on a time.AfterFunc
+// timer if options.Schedule is set. The scheduled timer is tracked by ID so
+// RemovePendingNotification can cancel it.
+func (wn *windowsNotifier) sendOrSchedule(options NotificationOptions, category *NotificationCategory) error {
+	if delay, ok := scheduleDelay(options.Schedule); ok && delay > 0 {
+		wn.scheduledLock.Lock()
+		if existing, found := wn.scheduledTimers[options.ID]; found {
+			existing.Stop()
+		}
+		opts := options
+		opts.Schedule = nil
+		cat := category
+		timer := time.AfterFunc(delay, func() {
+			if err := wn.pushNow(opts, cat); err != nil {
+				fmt.Printf("scheduled notification %s push failed: %v\n", opts.ID, err)
+			}
+			wn.scheduledLock.Lock()
+			delete(wn.scheduledTimers, opts.ID)
+			wn.scheduledLock.Unlock()
+		})
+		wn.scheduledTimers[options.ID] = timer
+		wn.scheduledLock.Unlock()
+		return nil
+	}
+	return wn.pushNow(options, category)
+}
+
+// scheduleDelay returns the time.Duration until delivery for a Schedule.
+// The bool is false if the schedule resolves to immediate delivery.
+func scheduleDelay(s *NotificationSchedule) (time.Duration, bool) {
+	if s == nil {
+		return 0, false
+	}
+	if s.DelaySeconds > 0 {
+		return time.Duration(s.DelaySeconds) * time.Second, true
+	}
+	if s.At > 0 {
+		until := time.Until(time.Unix(s.At, 0))
+		if until > 0 {
+			return until, true
+		}
+	}
+	return 0, false
+}
+
+func (wn *windowsNotifier) pushNow(options NotificationOptions, category *NotificationCategory) error {
 	if err := wn.saveIconToDir(); err != nil {
 		fmt.Printf("Error saving icon: %v\n", err)
 	}
@@ -179,7 +233,7 @@ func (wn *windowsNotifier) SendNotification(options NotificationOptions) error {
 		return fmt.Errorf("failed to encode notification payload: %w", err)
 	}
 
-	doc, err := wn.buildToastXML(options, nil, defaultArgs)
+	doc, err := wn.buildToastXML(options, category, defaultArgs)
 	if err != nil {
 		return err
 	}
@@ -192,10 +246,6 @@ func (wn *windowsNotifier) SendNotification(options NotificationOptions) error {
 // If a NotificationCategory is not registered a basic notification will be sent.
 // (subtitle is only available on macOS and Linux)
 func (wn *windowsNotifier) SendNotificationWithActions(options NotificationOptions) error {
-	if err := wn.saveIconToDir(); err != nil {
-		fmt.Printf("Error saving icon: %v\n", err)
-	}
-
 	wn.categoriesLock.RLock()
 	nCategory, categoryExists := wn.categories[options.CategoryID]
 	wn.categoriesLock.RUnlock()
@@ -205,17 +255,18 @@ func (wn *windowsNotifier) SendNotificationWithActions(options NotificationOptio
 		return wn.SendNotification(options)
 	}
 
-	defaultArgs, err := wn.encodePayload(DefaultActionIdentifier, options)
-	if err != nil {
-		return fmt.Errorf("failed to encode notification payload: %w", err)
-	}
+	return wn.sendOrSchedule(options, &nCategory)
+}
 
-	doc, err := wn.buildToastXML(options, &nCategory, defaultArgs)
-	if err != nil {
-		return err
+// UpdateNotification re-posts a toast with the same options. On Windows
+// (with the current wintoast surface) this delivers a fresh notification;
+// true replace-by-tag/group requires upstream support that isn't exposed yet.
+// Documented limitation in the package godoc.
+func (wn *windowsNotifier) UpdateNotification(options NotificationOptions) error {
+	if options.CategoryID != "" {
+		return wn.SendNotificationWithActions(options)
 	}
-
-	return wintoast.Push(wn.appName, doc, wintoast.PowershellFallback)
+	return wn.SendNotification(options)
 }
 
 // RegisterNotificationCategory registers a new NotificationCategory to be used with SendNotificationWithActions.
@@ -245,15 +296,28 @@ func (wn *windowsNotifier) RemoveNotificationCategory(categoryId string) error {
 	return wn.saveCategoriesToRegistry()
 }
 
-// RemoveAllPendingNotifications is a Windows stub that always returns nil.
-// (macOS and Linux only)
+// RemoveAllPendingNotifications cancels every notification scheduled via
+// time.AfterFunc that has not yet fired. Already-delivered toasts are not
+// affected on Windows (no API for retracting from Action Center via wintoast).
 func (wn *windowsNotifier) RemoveAllPendingNotifications() error {
+	wn.scheduledLock.Lock()
+	defer wn.scheduledLock.Unlock()
+	for id, t := range wn.scheduledTimers {
+		t.Stop()
+		delete(wn.scheduledTimers, id)
+	}
 	return nil
 }
 
-// RemovePendingNotification is a Windows stub that always returns nil.
-// (macOS and Linux only)
-func (wn *windowsNotifier) RemovePendingNotification(_ string) error {
+// RemovePendingNotification cancels a scheduled (not-yet-fired) notification
+// matching the given identifier. No-op if no such timer is parked.
+func (wn *windowsNotifier) RemovePendingNotification(identifier string) error {
+	wn.scheduledLock.Lock()
+	defer wn.scheduledLock.Unlock()
+	if t, ok := wn.scheduledTimers[identifier]; ok {
+		t.Stop()
+		delete(wn.scheduledTimers, identifier)
+	}
 	return nil
 }
 
@@ -284,9 +348,11 @@ type toastDoc struct {
 	ActivationType string        `xml:"activationType,attr,omitempty"`
 	Launch         string        `xml:"launch,attr,omitempty"`
 	Duration       string        `xml:"duration,attr,omitempty"`
+	Scenario       string        `xml:"scenario,attr,omitempty"`
 	Visual         toastVisual   `xml:"visual"`
 	Audio          *toastAudio   `xml:"audio,omitempty"`
 	Actions        *toastActions `xml:"actions,omitempty"`
+	Header         *toastHeader  `xml:"header,omitempty"`
 }
 
 type toastVisual struct {
@@ -294,13 +360,20 @@ type toastVisual struct {
 }
 
 type toastBinding struct {
-	Template string      `xml:"template,attr"`
-	Texts    []toastText `xml:"text"`
+	Template string       `xml:"template,attr"`
+	Texts    []toastText  `xml:"text"`
+	Images   []toastImage `xml:"image"`
 }
 
 type toastText struct {
 	HintMaxLines string `xml:"hint-maxLines,attr,omitempty"`
 	Value        string `xml:",chardata"`
+}
+
+type toastImage struct {
+	Src       string `xml:"src,attr"`
+	Placement string `xml:"placement,attr,omitempty"`
+	HintCrop  string `xml:"hint-crop,attr,omitempty"`
 }
 
 type toastAudio struct {
@@ -328,6 +401,35 @@ type toastAction struct {
 	HintInputID    string `xml:"hint-inputId,attr,omitempty"`
 }
 
+type toastHeader struct {
+	ID        string `xml:"id,attr"`
+	Title     string `xml:"title,attr"`
+	Arguments string `xml:"arguments,attr,omitempty"`
+}
+
+// resolveSoundSrc maps a Sound.Name onto a toast XML src URI.
+// Names that already use ms-winsoundevent:/ms-appx: are passed through.
+// Bare names are wrapped in the ms-winsoundevent: scheme for built-in events.
+func resolveSoundSrc(name string) string {
+	if strings.HasPrefix(name, "ms-winsoundevent:") || strings.HasPrefix(name, "ms-appx:") {
+		return name
+	}
+	return "ms-winsoundevent:Notification." + name
+}
+
+// scenarioForLevel maps NotificationOptions.InterruptionLevel onto the
+// <toast scenario="..."> attribute. Returns "" for default delivery.
+func scenarioForLevel(level string) string {
+	switch level {
+	case InterruptionLevelTimeSensitive:
+		return "reminder"
+	case InterruptionLevelCritical:
+		return "urgent"
+	default:
+		return ""
+	}
+}
+
 // buildToastXML produces a Windows toast XML document for the given options
 // and optional category. The defaultArgs string is the activation argument
 // emitted when the user clicks the toast body itself (not a specific action).
@@ -336,6 +438,7 @@ func (wn *windowsNotifier) buildToastXML(options NotificationOptions, category *
 		ActivationType: "foreground",
 		Launch:         defaultArgs,
 		Duration:       "short",
+		Scenario:       scenarioForLevel(options.InterruptionLevel),
 		Visual: toastVisual{
 			Binding: toastBinding{Template: "ToastGeneric"},
 		},
@@ -343,6 +446,17 @@ func (wn *windowsNotifier) buildToastXML(options NotificationOptions, category *
 			Src:  "ms-winsoundevent:Notification.Default",
 			Loop: "false",
 		},
+	}
+
+	if options.Sound != nil {
+		if options.Sound.Silent {
+			t.Audio = &toastAudio{Silent: "true"}
+		} else if options.Sound.Name != "" {
+			t.Audio = &toastAudio{
+				Src:  resolveSoundSrc(options.Sound.Name),
+				Loop: "false",
+			}
+		}
 	}
 
 	if options.Title != "" {
@@ -355,6 +469,32 @@ func (wn *windowsNotifier) buildToastXML(options NotificationOptions, category *
 		t.Visual.Binding.Texts = append(t.Visual.Binding.Texts, toastText{
 			Value: options.Body,
 		})
+	}
+
+	for _, a := range options.Attachments {
+		if a.Path == "" {
+			continue
+		}
+		img := toastImage{Src: a.Path}
+		switch a.Type {
+		case "hero":
+			img.Placement = "hero"
+		case "appLogoOverride":
+			img.Placement = "appLogoOverride"
+			img.HintCrop = "circle"
+		case "inline", "":
+			// no placement attribute = inline body image
+		default:
+			img.Placement = a.Type
+		}
+		t.Visual.Binding.Images = append(t.Visual.Binding.Images, img)
+	}
+
+	if options.ThreadID != "" {
+		t.Header = &toastHeader{
+			ID:    options.ThreadID,
+			Title: options.ThreadID,
+		}
 	}
 
 	if category != nil {
