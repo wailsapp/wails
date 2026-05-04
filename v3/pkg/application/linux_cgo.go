@@ -1767,6 +1767,39 @@ func (w *linuxWebviewWindow) startDrag() error {
 	return nil
 }
 
+// gdkEdgeForBorder maps the border strings sent by the Wails runtime
+// (as injected by drag.ts — "n-resize", "ne-resize", etc.) to the
+// corresponding GdkWindowEdge value expected by gtk_window_begin_resize_drag.
+var gdkEdgeForBorder = map[string]C.GdkWindowEdge{
+	"n-resize":  C.GDK_WINDOW_EDGE_NORTH,
+	"ne-resize": C.GDK_WINDOW_EDGE_NORTH_EAST,
+	"e-resize":  C.GDK_WINDOW_EDGE_EAST,
+	"se-resize": C.GDK_WINDOW_EDGE_SOUTH_EAST,
+	"s-resize":  C.GDK_WINDOW_EDGE_SOUTH,
+	"sw-resize": C.GDK_WINDOW_EDGE_SOUTH_WEST,
+	"w-resize":  C.GDK_WINDOW_EDGE_WEST,
+	"nw-resize": C.GDK_WINDOW_EDGE_NORTH_WEST,
+}
+
+func (w *linuxWebviewWindow) startResize(border string) error {
+	edge, ok := gdkEdgeForBorder[border]
+	if !ok {
+		return fmt.Errorf("unknown resize border: %q", border)
+	}
+	// The mouse button / root coords / timestamp were captured by the
+	// button-press-event handler (see onButtonEvent) and stored on
+	// w.drag — this is the same state startDrag uses, so a resize
+	// initiated from a user mousedown picks up the right values.
+	C.gtk_window_begin_resize_drag(
+		(*C.GtkWindow)(w.window),
+		edge,
+		C.int(w.drag.MouseButton),
+		C.int(w.drag.XRoot),
+		C.int(w.drag.YRoot),
+		C.uint32_t(w.drag.DragTime))
+	return nil
+}
+
 func enableDevTools(webview pointer) {
 	settings := C.webkit_web_view_get_settings((*C.WebKitWebView)(webview))
 	enabled := C.webkit_settings_get_enable_developer_extras(settings)

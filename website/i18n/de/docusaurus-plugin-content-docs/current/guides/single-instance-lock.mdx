@@ -1,0 +1,80 @@
+# Einzelinstanz-Sperre
+
+Die Einzelinstanz-Sperre ist ein Mechanismus, mit dem verhindert werden kann, dass mehrere Instanzen der App zur gleichen Zeit laufen.
+Es ist nützlich für Apps, die darauf ausgelegt sind, Dateien von der Kommandozeile oder vom OS-Datei-Explorer aus zu öffnen.
+
+## Wichtig
+
+Die Einzelinstanz-Sperre implementiert kein sicheres Kommunikationsprotokoll zwischen Instanzen. Wenn Einzelinstanz-Sperren verwendet werden, sollte die App alle Daten, die von einer zweiten Instanz über einen Callback geliefert werden, als nicht vertrauenswürdig behandeln.
+Es sollte sichergestellt, dass die empfangenen Args gültig sind und keine bösartigen Daten enthalten.
+
+## So funktioniert es
+
+Windows: Einzelinstanz-Sperre wird mit einem benannten Mutex implementiert. Der Mutex-Name wird aus einer angegebenen eindeutigen Id generiert. Daten werden in einem geteilten Fenster über [SendMessage](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage) an die erste Instanz gesendet.
+macOS: Die Einzelinstanz-Sperre wird mit einem benannten Mutex implementiert. Der Mutex-Name wird aus einer angegebenen eindeutigen Id generiert. Daten werden an die erste Instanz über [NSDistributedNotificationCenter](https://developer.apple.com/documentation/foundation/nsdistributednotificationcenter) übergeben.
+Linux: Eine Einzelinstanz-Sperre wird mittels [dbus](https://www.freedesktop.org/wiki/Software/dbus/) implementiert. Der Mutex-Name wird aus einer angegebenen eindeutigen Id generiert. Daten werden an die erste Instanz über [dbus](https://www.freedesktop.org/wiki/Software/dbus/) weitergegeben
+
+## Benutzung
+
+Beim Erstellen deiner App kannst du einzelne Instanzsperren aktivieren, indem du einen `SingleInstanceLock` struct an die `App` struct übergibst.
+Benutze das Feld `UniqueId` um eine eindeutige Id für deine App anzugeben.
+Diese Id wird verwendet, um den Mutex-Namen unter Windows und macOS und den dbus-Namen unter Linux zu erzeugen. Verwende eine UUID, um sicherzustellen, dass die Id einzigartig ist.
+Das Feld „OnSecondInstanceLaunch“ wird verwendet, um einen Callback anzugeben, der aufgerufen wird, wenn eine zweite Instanz deiner App gestartet wird.
+Der Callback erhält einen `SecondInstanceData` Struct der die an die zweite Instanz übergebenen Kommandozeilenargumente und das Arbeitsverzeichnis der zweiten Instanz enthält.
+
+Beachte, dass OnSecondInstanceLaunch keinen Fensterfokus auslöst.
+Du musst `runtime.WindowUnminimise` und `runtime.Show` aufrufen, um deine App nach vorne zu bringen.
+Beachte, dass Fenstermanager auf Linux-Systemen verhindern können, dass die App nach vorne gebracht wird, um den Fokus nicht zu stehlen.
+
+```go title="main.go"
+var wailsContext *context.Context
+
+// NewApp creates a new App application struct
+func NewApp() *App {
+	return &App{}
+}
+
+// startup is called when the app starts. The context is saved
+// so we can call the runtime methods
+func (a *App) startup(ctx context.Context) {
+	wailsContext = &ctx
+}
+
+func (a *App) onSecondInstanceLaunch(secondInstanceData options.SecondInstanceData) {
+	secondInstanceArgs = secondInstanceData.Args
+
+	println("user opened second instance", strings.Join(secondInstanceData.Args, ","))
+	println("user opened second from", secondInstanceData.WorkingDirectory)
+	runtime.WindowUnminimise(*wailsContext)
+	runtime.Show(*wailsContext)
+	go runtime.EventsEmit(*wailsContext, "launchArgs", secondInstanceArgs)
+}
+
+func main() {
+	// Create an instance of the app structure
+	app := NewApp()
+
+	// Create application with options
+	err := wails.Run(&options.App{
+		Title:  "wails-open-file",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		OnStartup:        app.startup,
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId:               "e3984e08-28dc-4e3d-b70a-45e961589cdc",
+			OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
+		},
+		Bind: []interface{}{
+			app,
+		},
+	})
+
+	if err != nil {
+		println("Error:", err.Error())
+	}
+}
+```

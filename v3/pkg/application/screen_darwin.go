@@ -126,35 +126,48 @@ import "C"
 import "unsafe"
 
 func cScreenToScreen(screen C.Screen) *Screen {
+	// NSScreen.frame and visibleFrame return values in points (already DIPs).
+	// applyDPIScaling in screenmanager.go expects Physical* fields to be in
+	// device pixels and produces Bounds/WorkArea in DIPs by dividing by
+	// ScaleFactor. Pre-multiply the point values by backingScaleFactor so the
+	// division lands back on the original point values. Without this, bounds
+	// on Retina displays are halved (e.g. 1496×967 becomes 748×484).
+	sf := float64(screen.scaleFactor)
+	toPhysical := func(points C.int) int { return int(float64(points) * sf) }
 
 	return &Screen{
+		// Screen.X/Y must mirror Bounds.X/Y: shared code in screenmanager.go
+		// (areScreensTouching, calculateScreenPlacement, move) reads the
+		// top-level fields alongside Bounds and assumes they agree.
+		X: toPhysical(screen.x),
+		Y: toPhysical(screen.y),
 		Size: Size{
 			Width:  int(screen.p_width),
 			Height: int(screen.p_height),
 		},
 		Bounds: Rect{
-			X:      int(screen.x),
-			Y:      int(screen.y),
-			Height: int(screen.height),
-			Width:  int(screen.width),
+			X:      toPhysical(screen.x),
+			Y:      toPhysical(screen.y),
+			Height: toPhysical(screen.height),
+			Width:  toPhysical(screen.width),
 		},
 		PhysicalBounds: Rect{
-			X:      int(screen.x),
-			Y:      int(screen.y),
-			Height: int(screen.height),
-			Width:  int(screen.width),
+			X:      toPhysical(screen.x),
+			Y:      toPhysical(screen.y),
+			Height: toPhysical(screen.height),
+			Width:  toPhysical(screen.width),
 		},
 		WorkArea: Rect{
-			X:      int(screen.w_x),
-			Y:      int(screen.w_y),
-			Height: int(screen.w_height),
-			Width:  int(screen.w_width),
+			X:      toPhysical(screen.w_x),
+			Y:      toPhysical(screen.w_y),
+			Height: toPhysical(screen.w_height),
+			Width:  toPhysical(screen.w_width),
 		},
 		PhysicalWorkArea: Rect{
-			X:      int(screen.w_x),
-			Y:      int(screen.w_y),
-			Height: int(screen.w_height),
-			Width:  int(screen.w_width),
+			X:      toPhysical(screen.w_x),
+			Y:      toPhysical(screen.w_y),
+			Height: toPhysical(screen.w_height),
+			Width:  toPhysical(screen.w_width),
 		},
 		ScaleFactor: float32(screen.scaleFactor),
 		ID:          C.GoString(screen.id),

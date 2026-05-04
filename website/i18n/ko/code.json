@@ -18,7 +18,7 @@
     "message": "Wails CLI를 사용하여 프로젝트를 빠르게 생성, 빌드 및 패키징할 수 있습니다."
   },
   "homepage.Tagline": {
-    "message": "Go에서 아름다운 크로스 플랫폼 애플리케이션 빌드"
+    "message": "Go로 아름다운 크로스 플랫폼 앱을 빌드하세요"
   },
   "homepage.ButtonText": {
     "message": "시작하기"
