@@ -30,13 +30,13 @@ const statusEl = document.querySelector("#status") as HTMLElement | null;
 const TEST_CATEGORY_ID = "demo-actions";
 let lastSentID: string | null = null;
 let lastScheduledID: string | null = null;
-let sampleImagePath: Promise<string> | null = null;
 
+// SampleImagePath rewrites the bundled sample image to its TempDir path on
+// every call — macOS UNNotificationAttachment moves the source file out
+// after each delivery, so caching the path between sends would leave a
+// stale reference that fails the os.Stat check on the Go side.
 function getSampleImagePath(): Promise<string> {
-    if (!sampleImagePath) {
-        sampleImagePath = DemoAssetsService.SampleImagePath();
-    }
-    return sampleImagePath;
+    return DemoAssetsService.SampleImagePath();
 }
 
 async function ensureCategory(): Promise<void> {
