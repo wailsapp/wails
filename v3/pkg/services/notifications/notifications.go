@@ -34,9 +34,32 @@ import (
 	"fmt"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
+
+// scheduleDelay returns the time.Duration until delivery for a Schedule.
+// The bool is false if the schedule resolves to immediate delivery (nil
+// schedule, zero values, or an At in the past). Used by Windows and Linux
+// backends, which fall back to in-process time.AfterFunc timers because
+// neither has a native deferred-delivery primitive exposed by the libraries
+// we currently depend on (wintoast on Windows, godbus on Linux).
+func scheduleDelay(s *NotificationSchedule) (time.Duration, bool) {
+	if s == nil {
+		return 0, false
+	}
+	if s.DelaySeconds > 0 {
+		return time.Duration(s.DelaySeconds) * time.Second, true
+	}
+	if s.At > 0 {
+		until := time.Until(time.Unix(s.At, 0))
+		if until > 0 {
+			return until, true
+		}
+	}
+	return 0, false
+}
 
 type platformNotifier interface {
 	// Lifecycle methods
