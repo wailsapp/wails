@@ -78,7 +78,12 @@ tasks:
     deps:
       - task: install:frontend:deps
     cmds:
-      - npm run dev
+      # --host 127.0.0.1 forces vite to bind IPv4. Recent Node resolves the
+      # localhost hostname to ::1 first, but the wails3 dev proxy dials
+      # tcp4 (to dodge IPv6 issues on Windows), so an IPv6-only vite causes
+      # "connection refused" in the WebView even after preRun's probe (which
+      # uses the default dual-stack dialer) reports the dev server is up.
+      - npm run dev -- --port {{.VITE_PORT}} --strictPort --host 127.0.0.1
 
   update:build-assets:
     summary: Updates the build assets
