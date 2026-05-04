@@ -1,129 +1,335 @@
 import { Events } from "@wailsio/runtime";
-import { NotificationService } from "../bindings/github.com/wailsapp/wails/v3/pkg/services/notifications";
+import {
+    NotificationService,
+} from "../bindings/github.com/wailsapp/wails/v3/pkg/services/notifications";
+import * as DemoAssetsService from "../bindings/notifications/demoassets";
 
-const footer = document.querySelector("#response");
+// Inline the option type so we don't have to fight tsconfig path resolution
+// for the generated d.ts files; the generated bindings already accept this
+// shape via $models.NotificationOptions.
+type Sound = { silent?: boolean; name?: string };
+type Attachment = { id?: string; path: string; type?: string };
+type Schedule = { delaySeconds?: number; at?: number };
+type Notif = {
+    id: string;
+    title: string;
+    subtitle?: string;
+    body?: string;
+    categoryId?: string;
+    data?: Record<string, unknown>;
+    sound?: Sound | null;
+    attachments?: Attachment[];
+    threadId?: string;
+    interruptionLevel?: string;
+    schedule?: Schedule | null;
+};
+
+const footer = document.querySelector("#response") as HTMLElement | null;
+
+const TEST_CATEGORY_ID = "demo-actions";
+let lastSentID: string | null = null;
+let lastScheduledID: string | null = null;
+let sampleImagePath: Promise<string> | null = null;
+
+function getSampleImagePath(): Promise<string> {
+    if (!sampleImagePath) {
+        sampleImagePath = DemoAssetsService.SampleImagePath();
+    }
+    return sampleImagePath;
+}
+
+async function ensureCategory(): Promise<void> {
+    await NotificationService.RegisterNotificationCategory({
+        id: TEST_CATEGORY_ID,
+        actions: [
+            { id: "VIEW", title: "View" },
+            { id: "MARK_READ", title: "Mark as read" },
+            { id: "DELETE", title: "Delete", destructive: true },
+        ],
+        hasReplyField: true,
+        replyPlaceholder: "Message...",
+        replyButtonTitle: "Reply",
+    });
+}
+
+async function send(notif: Notif): Promise<void> {
+    lastSentID = notif.id;
+    if (notif.schedule) {
+        lastScheduledID = notif.id;
+    }
+    if (notif.categoryId) {
+        await NotificationService.SendNotificationWithActions(notif as any);
+    } else {
+        await NotificationService.SendNotification(notif as any);
+    }
+}
+
+async function update(notif: Notif): Promise<void> {
+    lastSentID = notif.id;
+    await NotificationService.UpdateNotification(notif as any);
+}
+
+function status(message: string): void {
+    if (footer) footer.innerHTML = `<p>${message}</p>`;
+    console.info(message);
+}
+
+async function ensureAuthorized(): Promise<boolean> {
+    const authorized = await NotificationService.CheckNotificationAuthorization();
+    if (!authorized) {
+        status(
+            "Notifications are not authorized. Click <em>Request Authorization</em> first (macOS only — Windows and Linux always return true).",
+        );
+    }
+    return authorized;
+}
+
+// --- Authorization buttons ----------------------------------------------------
 
 document.querySelector("#request")?.addEventListener("click", async () => {
     try {
         const authorized = await NotificationService.RequestNotificationAuthorization();
-        if (authorized) {
-            if (footer) footer.innerHTML = "<p>Notifications are now authorized.</p>";
-            console.info("Notifications are now authorized.");
-        } else {
-            if (footer) footer.innerHTML = "<p>Notifications are not authorized. You can attempt to request again or let the user know in the UI.</p>";
-            console.warn("Notifications are not authorized.\n You can attempt to request again or let the user know in the UI.\n");
-        }
+        status(authorized ? "Notifications are now authorized." : "Authorization denied.");
     } catch (error) {
         console.error(error);
+        status(`Authorization request failed: ${error}`);
     }
 });
 
 document.querySelector("#check")?.addEventListener("click", async () => {
     try {
         const authorized = await NotificationService.CheckNotificationAuthorization();
-        if (authorized) {
-            if (footer) footer.innerHTML = "<p>Notifications are authorized.</p>";
-            console.info("Notifications are authorized.");
-        } else {
-            if (footer) footer.innerHTML = "<p>Notifications are not authorized. You can attempt to request again or let the user know in the UI.</p>";
-            console.warn("Notifications are not authorized.\n You can attempt to request again or let the user know in the UI.\n");
-        }
+        status(authorized ? "Notifications are authorized." : "Notifications are NOT authorized.");
     } catch (error) {
         console.error(error);
+        status(`Authorization check failed: ${error}`);
     }
 });
+
+// --- Quick test buttons -------------------------------------------------------
 
 document.querySelector("#basic")?.addEventListener("click", async () => {
-    try {
-        const authorized = await NotificationService.CheckNotificationAuthorization();
-        if (authorized) {
-            await NotificationService.SendNotification({
-                id: crypto.randomUUID(),
-                title: "Notification Title",
-                subtitle: "Subtitle on macOS and Linux",
-                body: "Body text of notification.",
-                data: {
-                    "user-id":    "user-123",
-					"message-id": "msg-123",
-					"timestamp":  Date.now(),
-                },
-            });
-        } else {
-            if (footer) footer.innerHTML = "<p>Notifications are not authorized. You can attempt to request again or let the user know in the UI.</p>";
-            console.warn("Notifications are not authorized.\n You can attempt to request again or let the user know in the UI.\n");
-        }
-    } catch (error) {
-        console.error(error);
-    }
+    if (!(await ensureAuthorized())) return;
+    await send({
+        id: crypto.randomUUID(),
+        title: "Basic notification",
+        subtitle: "Subtitle on macOS and Linux",
+        body: "Plain body text. No actions, default sound.",
+        data: { source: "basic" },
+    });
+    status("Basic notification sent.");
 });
+
 document.querySelector("#complex")?.addEventListener("click", async () => {
+    if (!(await ensureAuthorized())) return;
+    await ensureCategory();
+    await send({
+        id: crypto.randomUUID(),
+        title: "Complex notification",
+        subtitle: "With actions + reply",
+        body: "Click an action button or type a reply.",
+        categoryId: TEST_CATEGORY_ID,
+        data: { source: "complex" },
+    });
+    status("Complex notification sent. Try the action buttons or reply field.");
+});
+
+document.querySelector("#thread")?.addEventListener("click", async () => {
+    if (!(await ensureAuthorized())) return;
+    const threadId = "demo-thread-" + Math.floor(Math.random() * 1000);
+    await send({
+        id: crypto.randomUUID(),
+        title: "Threaded #1",
+        body: `First message in thread ${threadId}.`,
+        threadId,
+        data: { source: "thread", thread: threadId },
+    });
+    await new Promise((r) => setTimeout(r, 500));
+    await send({
+        id: crypto.randomUUID(),
+        title: "Threaded #2",
+        body: `Second message in thread ${threadId}. macOS groups these in Notification Center.`,
+        threadId,
+        data: { source: "thread", thread: threadId },
+    });
+    status(`Two notifications sent with threadId="${threadId}".`);
+});
+
+document.querySelector("#schedule")?.addEventListener("click", async () => {
+    if (!(await ensureAuthorized())) return;
+    const id = crypto.randomUUID();
+    await send({
+        id,
+        title: "Scheduled in 5s",
+        body: "If you see this, the schedule path works on this platform.",
+        schedule: { delaySeconds: 5 },
+        data: { source: "schedule" },
+    });
+    status(
+        `Scheduled notification id=${id}. macOS persists across app restart; Windows/Linux use an in-process timer.`,
+    );
+});
+
+document.querySelector("#update")?.addEventListener("click", async () => {
+    if (!(await ensureAuthorized())) return;
+    const id = crypto.randomUUID();
+    await send({
+        id,
+        title: "Original title",
+        body: "Will be updated in 2 seconds...",
+        data: { source: "update" },
+    });
+    status(`Sent id=${id}. Updating in 2s...`);
+    await new Promise((r) => setTimeout(r, 2000));
+    await update({
+        id,
+        title: "Updated title",
+        body: "macOS replaces in place; Linux uses replaces_id; Windows redelivers.",
+        data: { source: "update" },
+    });
+    status(`Updated id=${id}.`);
+});
+
+document.querySelector("#cancel")?.addEventListener("click", async () => {
+    if (!lastScheduledID) {
+        status("No scheduled notification to cancel.");
+        return;
+    }
+    await NotificationService.RemovePendingNotification(lastScheduledID);
+    status(`Cancelled scheduled id=${lastScheduledID}.`);
+    lastScheduledID = null;
+});
+
+// --- Builder form -------------------------------------------------------------
+
+function val(id: string): string {
+    return (document.querySelector("#" + id) as HTMLInputElement | HTMLSelectElement | null)?.value ?? "";
+}
+function checked(id: string): boolean {
+    return (document.querySelector("#" + id) as HTMLInputElement | null)?.checked ?? false;
+}
+
+async function buildFromForm(id?: string): Promise<Notif> {
+    const notif: Notif = {
+        id: id ?? crypto.randomUUID(),
+        title: val("b-title") || "(no title)",
+        body: val("b-body"),
+        subtitle: val("b-subtitle") || undefined,
+        threadId: val("b-thread") || undefined,
+        interruptionLevel: val("b-level") || undefined,
+        data: { source: "builder" },
+    };
+
+    const soundChoice = val("b-sound");
+    if (soundChoice === "silent") {
+        notif.sound = { silent: true };
+    } else if (soundChoice === "named") {
+        const name = val("b-sound-name").trim();
+        if (name) notif.sound = { name };
+    }
+
+    const delay = Number(val("b-delay"));
+    if (Number.isFinite(delay) && delay > 0) {
+        notif.schedule = { delaySeconds: Math.floor(delay) };
+    }
+
+    if (checked("b-attach")) {
+        const path = await getSampleImagePath();
+        notif.attachments = [{ path, type: "hero" }];
+    }
+
+    if (checked("b-actions")) {
+        await ensureCategory();
+        notif.categoryId = TEST_CATEGORY_ID;
+    }
+
+    return notif;
+}
+
+document.querySelector("#b-send")?.addEventListener("click", async () => {
+    if (!(await ensureAuthorized())) return;
     try {
-        const authorized = await NotificationService.CheckNotificationAuthorization();
-        if (authorized) {
-            const CategoryID = "frontend-notification-id";
-
-            await NotificationService.RegisterNotificationCategory({
-                id: CategoryID,
-                actions: [
-                    { id: "VIEW", title: "View" },
-                    { id: "MARK_READ", title: "Mark as read" },
-                    { id: "DELETE", title: "Delete", destructive: true },
-                ],
-				hasReplyField:    true,
-				replyPlaceholder: "Message...",
-				replyButtonTitle: "Reply",
-            });
-
-            await NotificationService.SendNotificationWithActions({
-                id: crypto.randomUUID(),
-                title: "Notification Title",
-                subtitle: "Subtitle on macOS and Linux",
-                body: "Body text of notification.",
-                categoryId: CategoryID,
-                data: {
-                    "user-id":    "user-123",
-					"message-id": "msg-123",
-					"timestamp":  Date.now(),
-                },
-            });
-        } else {
-            if (footer) footer.innerHTML = "<p>Notifications are not authorized. You can attempt to request again or let the user know in the UI.</p>";
-            console.warn("Notifications are not authorized.\n You can attempt to request again or let the user know in the UI.\n");
-        }
+        const notif = await buildFromForm();
+        await send(notif);
+        status(`Sent id=${notif.id}.`);
     } catch (error) {
         console.error(error);
+        status(`Send failed: ${error}`);
     }
 });
+
+document.querySelector("#b-update-by-id")?.addEventListener("click", async () => {
+    if (!lastSentID) {
+        status("No previous notification to update — send one first.");
+        return;
+    }
+    if (!(await ensureAuthorized())) return;
+    try {
+        const notif = await buildFromForm(lastSentID);
+        await update(notif);
+        status(`Updated id=${notif.id}.`);
+    } catch (error) {
+        console.error(error);
+        status(`Update failed: ${error}`);
+    }
+});
+
+document.querySelector("#b-remove")?.addEventListener("click", async () => {
+    if (!lastSentID) {
+        status("No previous notification to remove.");
+        return;
+    }
+    try {
+        await NotificationService.RemoveNotification(lastSentID);
+        await NotificationService.RemovePendingNotification(lastSentID);
+        await NotificationService.RemoveDeliveredNotification(lastSentID);
+        status(`Remove called for id=${lastSentID} (no-op on platforms that don't track delivered toasts).`);
+    } catch (error) {
+        console.error(error);
+        status(`Remove failed: ${error}`);
+    }
+});
+
+// --- Action / reply response handler -----------------------------------------
 
 const unlisten = Events.On("notification:action", (response) => {
-    console.info(`Recieved a ${response.name} event`);
-    const { userInfo, ...base } = response.data[0]; 
+    console.info(`Received a ${response.name} event`);
+    const { userInfo, ...base } = response.data[0];
     console.info("Notification Response:");
     console.table(base);
-    console.info("Notification Response Metadata:");
-    console.table(userInfo);
-    const table = `
-        <h5>Notification Response</h5>
-        <table>
-            <thead>
-                ${Object.keys(base).map(key => `<th>${key}</th>`).join("")}
-            </thead>
-            <tbody>
-                ${Object.values(base).map(value => `<td>${value}</td>`).join("")}
-            </tbody>
-        </table>
+    if (userInfo) {
+        console.info("Notification Response Metadata:");
+        console.table(userInfo);
+    }
+
+    const baseRows = `
+        <thead>
+            ${Object.keys(base).map((key) => `<th>${key}</th>`).join("")}
+        </thead>
+        <tbody>
+            ${Object.values(base).map((value) => `<td>${value}</td>`).join("")}
+        </tbody>
+    `;
+    const metaRows = userInfo
+        ? `
         <h5>Notification Metadata</h5>
         <table>
             <thead>
-                ${Object.keys(userInfo).map(key => `<th>${key}</th>`).join("")}
+                ${Object.keys(userInfo).map((key) => `<th>${key}</th>`).join("")}
             </thead>
             <tbody>
-                ${Object.values(userInfo).map(value => `<td>${value}</td>`).join("")}
+                ${Object.values(userInfo).map((value) => `<td>${value}</td>`).join("")}
             </tbody>
         </table>
+    `
+        : "";
+
+    const html = `
+        <h5>Notification Response</h5>
+        <table>${baseRows}</table>
+        ${metaRows}
     `;
-    const footer = document.querySelector("#response");
-    if (footer) footer.innerHTML = table;
+    if (footer) footer.innerHTML = html;
 });
 
 window.onbeforeunload = () => unlisten();

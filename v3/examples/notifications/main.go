@@ -5,6 +5,8 @@ import (
 	_ "embed"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/services/notifications"
@@ -18,12 +20,51 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+// sampleImage is bundled into the example binary so the demo can attach a
+// real file (UNNotificationAttachment / toast <image> / freedesktop image-path
+// hint all need an absolute filesystem path) without depending on the user
+// having any image files on disk in the test VMs.
+//
+//go:embed frontend/public/wails.png
+var sampleImage []byte
+
+// DemoAssets is a tiny helper service exposed to the frontend so the example
+// can attach a real image path in NotificationOptions.Attachments without
+// needing a file picker.
+type DemoAssets struct {
+	sampleImagePath string
+}
+
+func newDemoAssets() (*DemoAssets, error) {
+	path := filepath.Join(os.TempDir(), "wails-notifications-sample.png")
+	if err := os.WriteFile(path, sampleImage, 0o644); err != nil {
+		return nil, fmt.Errorf("write sample image: %w", err)
+	}
+	return &DemoAssets{sampleImagePath: path}, nil
+}
+
+func (d *DemoAssets) ServiceName() string {
+	return "DemoAssets"
+}
+
+// SampleImagePath returns the absolute path to a sample image written to the
+// OS temp directory at startup. The frontend uses this for testing the
+// Attachments field.
+func (d *DemoAssets) SampleImagePath() string {
+	return d.sampleImagePath
+}
+
 // main function serves as the application's entry point. It initializes the application, creates a window,
 // and starts a goroutine that emits a time-based event every second. It subsequently runs the application and
 // logs any error that might occur.
 func main() {
 	// Create a new Notification Service
 	ns := notifications.New()
+
+	demo, err := newDemoAssets()
+	if err != nil {
+		log.Fatalf("failed to prepare demo assets: %v", err)
+	}
 
 	// Create a new Wails application by providing the necessary options.
 	// Variables 'Name' and 'Description' are for application metadata.
@@ -35,6 +76,7 @@ func main() {
 		Description: "A demo of using desktop notifications with Wails",
 		Services: []application.Service{
 			application.NewService(ns),
+			application.NewService(demo),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -73,10 +115,7 @@ func main() {
 	})
 
 	// Run the application. This blocks until the application has been exited.
-	err := app.Run()
-
-	// If an error occurred while running the application, log it and exit.
-	if err != nil {
+	if err := app.Run(); err != nil {
 		log.Fatal(err)
 	}
 }
