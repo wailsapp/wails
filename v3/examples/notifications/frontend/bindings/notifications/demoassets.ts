@@ -13,9 +13,11 @@
 import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "@wailsio/runtime";
 
 /**
- * SampleImagePath returns the absolute path to a sample image written to the
- * OS temp directory at startup. The frontend uses this for testing the
- * Attachments field.
+ * SampleImagePath returns the absolute path to a sample image written fresh
+ * to the OS temp directory each call. macOS UNNotificationAttachment moves
+ * the source file into the system's notification database after delivery,
+ * so a one-shot write at startup leaves a stale path on the second send;
+ * rewriting on every request keeps the demo self-healing.
  */
 export function SampleImagePath(): $CancellablePromise<string> {
     return $Call.ByID(1803256742);

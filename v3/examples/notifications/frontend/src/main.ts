@@ -298,7 +298,19 @@ document.querySelector("#b-remove")?.addEventListener("click", async () => {
 
 const unlisten = Events.On("notification:action", (response) => {
     console.info(`Received a ${response.name} event`);
-    const { userInfo, ...base } = response.data[0];
+    // The current @wailsio/runtime passes the emitted payload directly as
+    // event.data; older versions wrapped it in [data]. Handle both shapes.
+    const payload =
+        response.data && typeof response.data === "object" && "id" in response.data
+            ? response.data
+            : Array.isArray(response.data)
+                ? response.data[0]
+                : null;
+    if (!payload) {
+        console.warn("notification:action received with empty payload", response);
+        return;
+    }
+    const { userInfo, ...base } = payload;
     console.info("Notification Response:");
     console.table(base);
     if (userInfo) {
