@@ -361,8 +361,18 @@ func setupDPIAwareness() error {
 	// Check if DPI awareness has already been set (e.g., via application manifest).
 	// Windows only allows setting DPI awareness once per process - either via manifest
 	// or API, not both. If already set, skip the API call to avoid "Access is denied" errors.
-	// See: https://github.com/wailsapp/wails/issues/4803
-	if w32.HasGetProcessDpiAwarenessFunc() {
+	// See: https://github.com/wailsapp/wails/issues/4803 and #4835
+
+	// Prefer the newer GetThreadDpiAwarenessContext (Windows 10 1607+) over the older
+	// GetProcessDpiAwareness (SHCORE) because a manifest entry with permonitorv2 sets the
+	// context via SetProcessDpiAwarenessContext, which GetProcessDpiAwareness may not reflect.
+	if w32.HasGetThreadDpiAwarenessContextFunc() && w32.HasAreDpiAwarenessContextsEqualFunc() {
+		ctx := w32.GetThreadDpiAwarenessContext()
+		if !w32.AreDpiAwarenessContextsEqual(ctx, w32.DPI_AWARENESS_CONTEXT_UNAWARE) {
+			// DPI awareness already set (likely via manifest), skip API call
+			return nil
+		}
+	} else if w32.HasGetProcessDpiAwarenessFunc() {
 		awareness, err := w32.GetProcessDpiAwareness()
 		if err == nil && awareness != w32.PROCESS_DPI_UNAWARE {
 			// DPI awareness already set (likely via manifest), skip API call
