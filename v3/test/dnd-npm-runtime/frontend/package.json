@@ -1,0 +1,17 @@
+{
+  "name": "dnd-npm-runtime-test",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@wailsio/runtime": "^3.0.0-alpha.79"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}

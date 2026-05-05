@@ -529,7 +529,7 @@ func (f *Frontend) setupChromium() {
 			if f.frontendOptions.Windows != nil && f.frontendOptions.Windows.Messages != nil {
 				messages = f.frontendOptions.Windows.Messages
 			}
-			winc.Errorf(f.mainWindow, messages.WebView2ProcessCrash)
+			winc.Errorf(f.mainWindow, "%s", messages.WebView2ProcessCrash)
 			os.Exit(-1)
 		case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_RENDER_PROCESS_EXITED,
 			edge.COREWEBVIEW2_PROCESS_FAILED_KIND_FRAME_RENDER_PROCESS_EXITED:
@@ -620,7 +620,7 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 	}
 	payload, err := json.Marshal(notification)
 	if err != nil {
-		f.logger.Error(err.Error())
+		f.logger.Error("%s", err.Error())
 		return
 	}
 	f.ExecJS(`window.wails.EventsNotify('` + template.JSEscapeString(string(payload)) + `');`)
@@ -698,13 +698,13 @@ var edgeMap = map[string]uintptr{
 func (f *Frontend) processMessage(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
 	topSource, err := sender.GetSource()
 	if err != nil {
-		f.logger.Error(fmt.Sprintf("Unable to get source from sender: %s", err.Error()))
+		f.logger.Error("Unable to get source from sender: %s", err.Error())
 		return
 	}
 
 	senderSource, err := args.GetSource()
 	if err != nil {
-		f.logger.Error(fmt.Sprintf("Unable to get source from args: %s", err.Error()))
+		f.logger.Error("Unable to get source from args: %s", err.Error())
 		return
 	}
 
@@ -717,7 +717,7 @@ func (f *Frontend) processMessage(message string, sender *edge.ICoreWebView2, ar
 		if !f.mainWindow.IsFullScreen() {
 			err := f.startDrag()
 			if err != nil {
-				f.logger.Error(err.Error())
+				f.logger.Error("%s", err.Error())
 			}
 		}
 		return
@@ -747,7 +747,7 @@ func (f *Frontend) processMessage(message string, sender *edge.ICoreWebView2, ar
 			edge := edgeMap[sl[1]]
 			err := f.startResize(edge)
 			if err != nil {
-				f.logger.Error(err.Error())
+				f.logger.Error("%s", err.Error())
 			}
 		}
 		return
@@ -759,13 +759,13 @@ func (f *Frontend) processMessage(message string, sender *edge.ICoreWebView2, ar
 func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
 	topSource, err := sender.GetSource()
 	if err != nil {
-		f.logger.Error(fmt.Sprintf("Unable to get source from sender: %s", err.Error()))
+		f.logger.Error("Unable to get source from sender: %s", err.Error())
 		return
 	}
 
 	senderSource, err := args.GetSource()
 	if err != nil {
-		f.logger.Error(fmt.Sprintf("Unable to get source from args: %s", err.Error()))
+		f.logger.Error("Unable to get source from args: %s", err.Error())
 		return
 	}
 
@@ -780,7 +780,7 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 		}
 		objs, err := args.GetAdditionalObjects()
 		if err != nil {
-			f.logger.Error(err.Error())
+			f.logger.Error("%s", err.Error())
 			return
 		}
 
@@ -788,7 +788,7 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 
 		count, err := objs.GetCount()
 		if err != nil {
-			f.logger.Error(err.Error())
+			f.logger.Error("%s", err.Error())
 			return
 		}
 
@@ -835,7 +835,7 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 func (f *Frontend) validBindingOrigin(source string) bool {
 	origin, err := f.originValidator.GetOriginFromURL(source)
 	if err != nil {
-		f.logger.Error(fmt.Sprintf("Error parsing source URL %s: %v", source, err.Error()))
+		f.logger.Error("Error parsing source URL %s: %v", source, err.Error())
 		return false
 	}
 	allowed := f.originValidator.IsOriginAllowed(origin)
@@ -849,7 +849,7 @@ func (f *Frontend) validBindingOrigin(source string) bool {
 func (f *Frontend) dispatchMessage(message string) {
 	result, err := f.dispatcher.ProcessMessage(message, f)
 	if err != nil {
-		f.logger.Error(err.Error())
+		f.logger.Error("%s", err.Error())
 		f.Callback(result)
 		return
 	}

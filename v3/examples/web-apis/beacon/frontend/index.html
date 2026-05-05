@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beacon API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            height: 100vh;
+            padding: 15px;
+            overflow: hidden;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        h1 { color: #4ade80; font-size: 1.4rem; }
+        h1 a { color: #4ade80; text-decoration: none; }
+        h1 a:hover { text-decoration: underline; }
+        .status { font-size: 0.85rem; color: #4ade80; }
+        .status.error { color: #f87171; }
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            flex: 1;
+            min-height: 0;
+        }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        h2 { font-size: 1rem; margin-bottom: 10px; color: #e94560; }
+        label { display: block; margin-bottom: 4px; color: #aaa; font-size: 0.8rem; }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        textarea { resize: none; font-family: monospace; font-size: 0.8rem; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: #60a5fa; }
+        button.small { padding: 5px 10px; font-size: 0.75rem; }
+        .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+        .data-types { display: flex; gap: 5px; margin-bottom: 10px; }
+        .data-type {
+            padding: 4px 10px;
+            background: transparent;
+            border: 1px solid #333;
+            color: #888;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        .data-type.active { background: #4ade80; color: #1a1a2e; border-color: #4ade80; }
+        .stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        .stat { text-align: center; }
+        .stat-value { font-size: 1.3rem; font-weight: bold; color: #4ade80; }
+        .stat-value.error { color: #f87171; }
+        .stat-label { font-size: 0.7rem; color: #666; }
+        .event-log {
+            flex: 1;
+            background: #0a0a1a;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            overflow-y: auto;
+            min-height: 0;
+        }
+        .log-entry {
+            padding: 4px 8px;
+            margin: 2px 0;
+            border-radius: 3px;
+            display: flex;
+            gap: 8px;
+        }
+        .log-entry.success { background: rgba(74, 222, 128, 0.1); border-left: 2px solid #4ade80; }
+        .log-entry.error { background: rgba(248, 113, 113, 0.1); border-left: 2px solid #f87171; }
+        .log-entry.info { background: rgba(96, 165, 250, 0.1); border-left: 2px solid #60a5fa; }
+        .log-time { color: #555; }
+        .log-type { width: 55px; font-weight: 600; }
+        .log-type.success { color: #4ade80; }
+        .log-type.error { color: #f87171; }
+        .log-type.info { color: #60a5fa; }
+        .log-msg { color: #aaa; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .note { background: rgba(251,191,36,0.1); border-radius: 5px; padding: 8px; color: #fbbf24; font-size: 0.75rem; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><a href="https://developer.mozilla.org/en-US/docs/Web/API/Beacon_API" target="_blank">Beacon API</a> Demo</h1>
+            <span id="status" class="status">Checking...</span>
+        </header>
+
+        <div class="main-grid">
+            <div class="card">
+                <h2>Send Beacon</h2>
+                <div class="note">Beacons are fire-and-forget. Returns true/false for queue status only.</div>
+
+                <label>Endpoint</label>
+                <input type="text" id="url" value="https://httpbin.org/post">
+
+                <label>Data Type</label>
+                <div class="data-types">
+                    <button class="data-type active" data-type="string">String</button>
+                    <button class="data-type" data-type="json">JSON</button>
+                    <button class="data-type" data-type="formdata">FormData</button>
+                    <button class="data-type" data-type="blob">Blob</button>
+                </div>
+
+                <label>Data</label>
+                <textarea id="data" rows="3">event=page_view&amp;time=1234567890</textarea>
+
+                <div class="btn-row">
+                    <button onclick="sendBeacon()">Send Beacon</button>
+                    <button class="secondary small" onclick="loadExample('analytics')">Analytics</button>
+                    <button class="secondary small" onclick="loadExample('error')">Error</button>
+                    <button class="secondary small" onclick="loadExample('timing')">Timing</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Statistics & Log</h2>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value" id="total">0</div>
+                        <div class="stat-label">Sent</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="queued">0</div>
+                        <div class="stat-label">Queued</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value error" id="failed">0</div>
+                        <div class="stat-label">Failed</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="bytes">0</div>
+                        <div class="stat-label">Bytes</div>
+                    </div>
+                </div>
+                <div class="btn-row">
+                    <button class="small" onclick="clearLog()">Clear</button>
+                    <label style="display:flex;align-items:center;gap:5px;font-size:0.75rem;color:#888;">
+                        <input type="checkbox" id="autoBeacon"> Auto-send on unload
+                    </label>
+                </div>
+                <div class="event-log" id="log">
+                    <div class="log-entry info">
+                        <span class="log-time">--:--</span>
+                        <span class="log-type info">READY</span>
+                        <span class="log-msg">Configure endpoint and send beacons</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let dataType = 'string';
+        let stats = { total: 0, queued: 0, failed: 0, bytes: 0 };
+
+        // Check support
+        const supported = 'sendBeacon' in navigator;
+        document.getElementById('status').textContent = supported ? 'Beacon API: Supported' : 'Beacon API: Not Supported';
+        document.getElementById('status').className = supported ? 'status' : 'status error';
+
+        // Data type selection
+        document.querySelectorAll('.data-type').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.data-type').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                dataType = btn.dataset.type;
+                updatePlaceholder();
+            };
+        });
+
+        function updatePlaceholder() {
+            const d = document.getElementById('data');
+            switch (dataType) {
+                case 'string': d.value = 'event=page_view&time=' + Date.now(); break;
+                case 'json': d.value = JSON.stringify({ event: 'custom', ts: Date.now() }, null, 2); break;
+                case 'formdata': d.value = 'key1=value1\nkey2=value2'; break;
+                case 'blob': d.value = 'Binary content here'; break;
+            }
+        }
+
+        function prepareData(raw) {
+            let data, size;
+            switch (dataType) {
+                case 'string':
+                    data = raw; size = new Blob([raw]).size; break;
+                case 'json':
+                    JSON.parse(raw); // validate
+                    data = new Blob([raw], { type: 'application/json' }); size = data.size; break;
+                case 'formdata':
+                    data = new FormData();
+                    raw.split('\n').forEach(line => {
+                        const [k, ...v] = line.split('=');
+                        if (k && v.length) data.append(k.trim(), v.join('=').trim());
+                    });
+                    size = raw.length; break;
+                case 'blob':
+                    data = new Blob([raw], { type: 'text/plain' }); size = data.size; break;
+            }
+            return { data, size };
+        }
+
+        function sendBeacon() {
+            const url = document.getElementById('url').value;
+            const raw = document.getElementById('data').value;
+            if (!url) { log('ERROR', 'Enter a URL', 'error'); return; }
+
+            try {
+                const { data, size } = prepareData(raw);
+                const result = navigator.sendBeacon(url, data);
+                stats.total++; stats.bytes += size;
+                result ? stats.queued++ : stats.failed++;
+                updateStats();
+                log(result ? 'QUEUED' : 'FAILED', `${dataType} ~${size}B → ${result}`, result ? 'success' : 'error');
+            } catch (e) {
+                stats.total++; stats.failed++; updateStats();
+                log('ERROR', e.message, 'error');
+            }
+        }
+
+        function loadExample(type) {
+            document.querySelectorAll('.data-type').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-type="json"]').classList.add('active');
+            dataType = 'json';
+
+            const d = document.getElementById('data');
+            switch (type) {
+                case 'analytics':
+                    d.value = JSON.stringify({ event: 'page_view', page: location.pathname, ts: Date.now() }, null, 2); break;
+                case 'error':
+                    d.value = JSON.stringify({ type: 'error', msg: 'Test error', line: 42, ts: Date.now() }, null, 2); break;
+                case 'timing':
+                    d.value = JSON.stringify({ type: 'perf', load: performance.now().toFixed(0), ts: Date.now() }, null, 2); break;
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('total').textContent = stats.total;
+            document.getElementById('queued').textContent = stats.queued;
+            document.getElementById('failed').textContent = stats.failed;
+            document.getElementById('bytes').textContent = stats.bytes < 1024 ? stats.bytes : (stats.bytes/1024).toFixed(1)+'K';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function log(type, msg, cls) {
+            const el = document.getElementById('log');
+            const t = new Date().toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' });
+            el.innerHTML += `<div class="log-entry ${escapeHtml(cls)}"><span class="log-time">${escapeHtml(t)}</span><span class="log-type ${escapeHtml(cls)}">${escapeHtml(type)}</span><span class="log-msg">${escapeHtml(msg)}</span></div>`;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            stats = { total: 0, queued: 0, failed: 0, bytes: 0 };
+            updateStats();
+        }
+
+        // Auto-beacon on unload
+        window.addEventListener('beforeunload', () => {
+            if (document.getElementById('autoBeacon').checked) {
+                const url = document.getElementById('url').value;
+                if (url) navigator.sendBeacon(url, JSON.stringify({ event: 'unload', ts: Date.now() }));
+            }
+        });
+    </script>
+</body>
+</html>

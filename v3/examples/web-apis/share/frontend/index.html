@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Share API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+        textarea { min-height: 80px; resize: vertical; }
+        label { display: block; color: #aaa; font-size: 0.9rem; margin-bottom: 5px; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: #60a5fa; }
+        button.danger { background: #f87171; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.warning { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .feature {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .feature .name { font-weight: 600; margin-bottom: 5px; }
+        .feature .supported { color: #4ade80; }
+        .feature .unsupported { color: #f87171; }
+        .row { display: flex; gap: 15px; flex-wrap: wrap; }
+        .row > div { flex: 1; min-width: 200px; }
+        .file-drop {
+            border: 2px dashed #333;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            color: #666;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+        .file-drop.dragover {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+            color: #4ade80;
+        }
+        .file-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+        .file-list li {
+            background: rgba(0,0,0,0.2);
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .file-list .file-info { color: #aaa; font-size: 0.85rem; }
+        .file-list .remove-btn {
+            background: transparent;
+            color: #f87171;
+            padding: 5px 10px;
+            margin: 0;
+        }
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            background: #4ade80;
+            color: #1a1a2e;
+            font-weight: 600;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .share-preview {
+            background: #2d2d3a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .share-preview .preview-title { font-weight: 600; margin-bottom: 5px; color: #4ade80; }
+        .share-preview .preview-text { color: #aaa; font-size: 0.9rem; margin-bottom: 5px; }
+        .share-preview .preview-url { color: #60a5fa; font-size: 0.85rem; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Web Share API Demo</h1>
+        <p class="description">
+            The Web Share API allows web applications to invoke the native sharing capabilities
+            of the device, enabling users to share text, URLs, and files to other apps.
+        </p>
+
+        <div id="status" class="status">
+            Web Share API: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Share Text and URL</h2>
+            <div class="row">
+                <div>
+                    <label for="shareTitle">Title</label>
+                    <input type="text" id="shareTitle" value="Check out Wails!" placeholder="Share title">
+                </div>
+            </div>
+            <label for="shareText">Text</label>
+            <textarea id="shareText" placeholder="Text to share...">Wails is a framework for building desktop apps using Go and web technologies.</textarea>
+            <label for="shareUrl">URL</label>
+            <input type="url" id="shareUrl" value="https://wails.io" placeholder="https://example.com">
+
+            <div class="share-preview" id="sharePreview">
+                <div class="preview-title" id="previewTitle">Check out Wails!</div>
+                <div class="preview-text" id="previewText">Wails is a framework for building desktop apps...</div>
+                <div class="preview-url" id="previewUrl">https://wails.io</div>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <button onclick="shareText()">Share Content</button>
+                <button class="secondary" onclick="shareUrlOnly()">Share URL Only</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Share Files</h2>
+            <div class="file-drop" id="fileDrop">
+                <p>Drag and drop files here or click to select</p>
+                <input type="file" id="fileInput" multiple style="display: none;">
+            </div>
+            <ul class="file-list" id="fileList"></ul>
+            <button onclick="shareFiles()" id="shareFilesBtn" disabled>Share Selected Files</button>
+            <button class="secondary" onclick="clearFiles()">Clear Files</button>
+            <p style="color: #666; font-size: 0.85rem; margin-top: 10px;">
+                Note: File sharing requires the canShare() API to verify file types are supported.
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>Quick Share Examples</h2>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="shareExample('link')">Share a Link</button>
+                <button onclick="shareExample('contact')">Share Contact</button>
+                <button onclick="shareExample('location')">Share Location</button>
+                <button onclick="shareExample('code')">Share Code Snippet</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>API Support</h2>
+            <div class="feature-grid" id="features"></div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <div class="output" id="eventLog">Share events will appear here...</div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        let selectedFiles = [];
+        let logEntries = [];
+
+        function log(message, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '[ERROR]' : type === 'success' ? '[SUCCESS]' : '[INFO]';
+            logEntries.unshift(`[${time}] ${prefix} ${message}`);
+            if (logEntries.length > 30) logEntries.pop();
+            document.getElementById('eventLog').textContent = logEntries.join('\n');
+        }
+
+        function showNotification(message, isError = false) {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.style.background = isError ? '#f87171' : '#4ade80';
+            notif.classList.add('show');
+            setTimeout(() => notif.classList.remove('show'), 3000);
+        }
+
+        function checkSupport() {
+            const hasShare = 'share' in navigator;
+            const hasCanShare = 'canShare' in navigator;
+
+            document.getElementById('supported').textContent = hasShare ? 'Available' : 'Not available';
+            document.getElementById('status').className = hasShare ? 'status success' : 'status error';
+
+            const features = document.getElementById('features');
+            const checks = [
+                { name: 'navigator.share()', supported: hasShare },
+                { name: 'navigator.canShare()', supported: hasCanShare },
+                { name: 'Share title/text/url', supported: hasShare },
+                { name: 'Share files', supported: hasCanShare && checkFileShareSupport() },
+            ];
+
+            features.innerHTML = checks.map(c => `
+                <div class="feature">
+                    <div class="name">${c.name}</div>
+                    <div class="${c.supported ? 'supported' : 'unsupported'}">${c.supported ? 'Supported' : 'Not supported'}</div>
+                </div>
+            `).join('');
+
+            log('API support check completed');
+            return hasShare;
+        }
+
+        function checkFileShareSupport() {
+            if (!navigator.canShare) return false;
+            try {
+                const testFile = new File(['test'], 'test.txt', { type: 'text/plain' });
+                return navigator.canShare({ files: [testFile] });
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function updatePreview() {
+            const title = document.getElementById('shareTitle').value;
+            const text = document.getElementById('shareText').value;
+            const url = document.getElementById('shareUrl').value;
+
+            document.getElementById('previewTitle').textContent = title || '(No title)';
+            document.getElementById('previewText').textContent = text ? (text.substring(0, 100) + (text.length > 100 ? '...' : '')) : '(No text)';
+            document.getElementById('previewUrl').textContent = url || '(No URL)';
+        }
+
+        async function shareText() {
+            const title = document.getElementById('shareTitle').value;
+            const text = document.getElementById('shareText').value;
+            const url = document.getElementById('shareUrl').value;
+
+            const shareData = {};
+            if (title) shareData.title = title;
+            if (text) shareData.text = text;
+            if (url) shareData.url = url;
+
+            if (Object.keys(shareData).length === 0) {
+                showNotification('Please enter some content to share', true);
+                log('Share aborted: no content provided', 'error');
+                return;
+            }
+
+            log(`Attempting to share: ${JSON.stringify(shareData)}`);
+
+            try {
+                if (navigator.canShare && !navigator.canShare(shareData)) {
+                    throw new Error('Content cannot be shared');
+                }
+
+                await navigator.share(shareData);
+                showNotification('Content shared successfully!');
+                log('Share completed successfully', 'success');
+            } catch (e) {
+                if (e.name === 'AbortError') {
+                    log('Share was cancelled by user');
+                    showNotification('Share cancelled', true);
+                } else {
+                    log(`Share failed: ${e.message}`, 'error');
+                    showNotification(`Share failed: ${e.message}`, true);
+                }
+            }
+        }
+
+        async function shareUrlOnly() {
+            const url = document.getElementById('shareUrl').value;
+
+            if (!url) {
+                showNotification('Please enter a URL', true);
+                return;
+            }
+
+            log(`Sharing URL: ${url}`);
+
+            try {
+                await navigator.share({ url });
+                showNotification('URL shared!');
+                log('URL share completed', 'success');
+            } catch (e) {
+                if (e.name !== 'AbortError') {
+                    log(`URL share failed: ${e.message}`, 'error');
+                    showNotification(`Failed: ${e.message}`, true);
+                } else {
+                    log('URL share cancelled');
+                }
+            }
+        }
+
+        async function shareFiles() {
+            if (selectedFiles.length === 0) {
+                showNotification('No files selected', true);
+                return;
+            }
+
+            const shareData = {
+                files: selectedFiles,
+                title: 'Shared Files',
+                text: `Sharing ${selectedFiles.length} file(s)`
+            };
+
+            log(`Attempting to share ${selectedFiles.length} file(s)`);
+
+            try {
+                if (navigator.canShare && !navigator.canShare(shareData)) {
+                    throw new Error('These files cannot be shared');
+                }
+
+                await navigator.share(shareData);
+                showNotification('Files shared successfully!');
+                log('File share completed', 'success');
+            } catch (e) {
+                if (e.name !== 'AbortError') {
+                    log(`File share failed: ${e.message}`, 'error');
+                    showNotification(`Failed: ${e.message}`, true);
+                } else {
+                    log('File share cancelled');
+                }
+            }
+        }
+
+        async function shareExample(type) {
+            const examples = {
+                link: {
+                    title: 'Interesting Article',
+                    text: 'I found this really interesting!',
+                    url: 'https://wails.io/docs'
+                },
+                contact: {
+                    title: 'Contact Info',
+                    text: 'John Doe\nEmail: john@example.com\nPhone: +1-555-0123'
+                },
+                location: {
+                    title: 'Meeting Location',
+                    text: 'Let\'s meet here!',
+                    url: 'https://maps.google.com/?q=51.5074,-0.1278'
+                },
+                code: {
+                    title: 'Code Snippet',
+                    text: 'func main() {\n    fmt.Println("Hello, Wails!")\n}'
+                }
+            };
+
+            const data = examples[type];
+            log(`Sharing ${type} example`);
+
+            try {
+                await navigator.share(data);
+                showNotification(`${type} shared!`);
+                log(`${type} share completed`, 'success');
+            } catch (e) {
+                if (e.name !== 'AbortError') {
+                    log(`${type} share failed: ${e.message}`, 'error');
+                    showNotification(`Failed: ${e.message}`, true);
+                }
+            }
+        }
+
+        function updateFileList() {
+            const list = document.getElementById('fileList');
+            const btn = document.getElementById('shareFilesBtn');
+
+            if (selectedFiles.length === 0) {
+                list.innerHTML = '<li style="color: #666; background: transparent; padding: 10px 0;">No files selected</li>';
+                btn.disabled = true;
+            } else {
+                list.innerHTML = selectedFiles.map((file, i) => `
+                    <li>
+                        <span>
+                            <strong>${escapeHtml(file.name)}</strong>
+                            <span class="file-info"> - ${escapeHtml(formatFileSize(file.size))} (${escapeHtml(file.type || 'unknown type')})</span>
+                        </span>
+                        <button class="remove-btn" onclick="removeFile(${i})">Remove</button>
+                    </li>
+                `).join('');
+                btn.disabled = false;
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateFileList();
+            log(`File removed, ${selectedFiles.length} file(s) remaining`);
+        }
+
+        function clearFiles() {
+            selectedFiles = [];
+            updateFileList();
+            log('All files cleared');
+        }
+
+        // File drop handling
+        const fileDrop = document.getElementById('fileDrop');
+        const fileInput = document.getElementById('fileInput');
+
+        fileDrop.addEventListener('click', () => fileInput.click());
+
+        fileDrop.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileDrop.classList.add('dragover');
+        });
+
+        fileDrop.addEventListener('dragleave', () => {
+            fileDrop.classList.remove('dragover');
+        });
+
+        fileDrop.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileDrop.classList.remove('dragover');
+
+            const files = Array.from(e.dataTransfer.files);
+            selectedFiles = selectedFiles.concat(files);
+            updateFileList();
+            log(`Added ${files.length} file(s) via drag & drop`);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            selectedFiles = selectedFiles.concat(files);
+            updateFileList();
+            log(`Added ${files.length} file(s) via file picker`);
+        });
+
+        // Preview updates
+        document.getElementById('shareTitle').addEventListener('input', updatePreview);
+        document.getElementById('shareText').addEventListener('input', updatePreview);
+        document.getElementById('shareUrl').addEventListener('input', updatePreview);
+
+        // Initialize
+        checkSupport();
+        updateFileList();
+        updatePreview();
+    </script>
+</body>
+</html>

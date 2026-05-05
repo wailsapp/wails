@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Screens Demo</title>
+    <style>
+        body {
+            padding-top: 75px;
+            margin: 0 auto;
+            background-color: white;
+            color: black;
+            text-align: -webkit-center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif
+        }
+
+        article {
+            padding: 1em;
+        }
+
+        ::-webkit-scrollbar-track {
+            background-color: #888;
+        }
+        .center {
+            text-align: -webkit-center;
+        }
+        th {
+            text-align: left;
+        }
+        tr {
+            border: 1px solid white;
+        }
+        th, td {
+            padding: 5px;
+
+        }
+    </style>
+</head>
+<body>
+
+<script type="module">
+    import * as wails from "/wails/runtime.js";
+
+    let environment = wails.System.Environment();
+    environment.then((result) => {
+        console.log({result})
+        let html = "";
+        html += "<h1 class='center'>Environment</h1><br><br>";
+        html += "<table>";
+        html += "<tr><td>Name</td><td>"+ result.OSInfo.Name +"</td></tr>";
+        html += "<tr><td>Branding</td><td>"+ result.OSInfo.Branding +"</td></tr>";
+        html += "<tr><td>Version</td><td>"+ result.OSInfo.Version +"</td></tr>";
+        html += "<tr><td>ID</td><td>"+ result.OSInfo.ID +"</td></tr>";
+        html += "<tr><td>GOOS</td><td>"+ result.OS +"</td></tr>";
+        html += "<tr><td>GOARCH</td><td>"+ result.Arch +"</td></tr>";
+        html += "<tr><td>Debug</td><td>"+ result.Debug +"</td></tr>";
+        if(result.PlatformInfo) {
+            for (let key in result.PlatformInfo) {
+                    html += "<tr><td>"+key+"</td><td>"+ result.PlatformInfo[key] +"</td></tr>";
+            }
+        }
+        html += "</table>";
+        document.body.innerHTML = html;
+    })
+</script>
+</body>
+</html>

@@ -194,7 +194,7 @@ func killProcessAndCleanupBinary(process *process.Process, binary string) error 
 }
 
 func runCommand(dir string, exitOnError bool, command string, args ...string) error {
-	logutils.LogGreen("Executing: " + command + " " + strings.Join(args, " "))
+	logutils.LogGreen("%s", "Executing: " + command + " " + strings.Join(args, " "))
 	cmd := exec.Command(command, args...)
 	cmd.Dir = dir
 	output, err := cmd.CombinedOutput()
@@ -280,13 +280,13 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 	appBinary, err := build.Build(buildOptions)
 	println()
 	if err != nil {
-		logutils.LogRed("Build error - " + err.Error())
+		logutils.LogRed("%s", "Build error - " + err.Error())
 
 		msg := "Continuing to run current version"
 		if debugBinaryProcess == nil {
 			msg = "No version running, build will be retriggered as soon as changes have been detected"
 		}
-		logutils.LogDarkYellow(msg)
+		logutils.LogDarkYellow("%s", msg)
 		return nil, "", nil
 	}
 
@@ -321,7 +321,7 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 		if fs.FileExists(appBinary) {
 			deleteError := fs.DeleteFile(appBinary)
 			if deleteError != nil {
-				buildOptions.Logger.Fatal("Unable to delete app binary: " + appBinary)
+				buildOptions.Logger.Fatal("%s", "Unable to delete app binary: " + appBinary)
 			}
 		}
 		buildOptions.Logger.Fatal("Unable to start application: %s", err.Error())
@@ -390,7 +390,7 @@ func doWatcherLoop(cwd string, reloadDirs string, buildOptions *build.Options, d
 				quit = true
 			}
 		case err := <-watcher.Errors:
-			logutils.LogDarkYellow(err.Error())
+			logutils.LogDarkYellow("%s", err.Error())
 		case item := <-watcher.Events:
 			isEligibleFile := func(fileName string) bool {
 				// Iterate all file patterns
