@@ -1,0 +1,85 @@
+---
+sidebar_position: 1
+---
+
+# Einführung
+
+Die Laufzeit ist eine Bibliothek, die Hilfsmethoden für deine Anwendung bereitstellt. Es gibt sowohl eine Go- als auch JavaScript-Laufzeit und das Ziel ist es, sie möglichst auf dem gleichen Stand zu halten.
+
+Es hat nützliche Methoden für:
+
+- [Fenster](window.mdx)
+- [Menüs](menu.mdx)
+- [Dialoge](dialog.mdx)
+- [Events](events.mdx)
+- [Browser](browser.mdx)
+- [Logs](log.mdx)
+- [Zwischenablagen](clipboard.mdx)
+
+Die Go Runtime ist verfügbar durch das Importieren von `github.com/wailsapp/wails/v2/pkg/runtime`. Alle Methoden in diesem Paket nehmen einen Kontext als ersten Parameter. Dieser Kontext sollte von den [OnStartup](../options.mdx#onstartup) oder [OnDomReady](../options.mdx#ondomready) Hooks abgerufen werden.
+
+:info Notiz
+
+Während der Kontext der [OnStartup](../options.mdx#onstartup) Methode zur Verfügung gestellt wird, gibt es keine Garantie dafür, dass die Laufzeit in dieser Methode funktioniert, da das Fenster in einem anderen Thread initialisiert wird. Wenn du beim Start Laufzeitmethoden aufrufen möchtest, verwende [OnDomReady](../options.mdx#ondomready).
+
+:::
+
+Die JavaScript-Bibliothek ist im Frontend über die `window.runtime` map verfügbar. Es wird ein Laufzeitpaket generiert, wenn der `dev` Modus verwendet wird, die TypeScript-Deklarationen für die Laufzeit werden ebenfalls bereitgestellt. Diese sollten sich im `wailsjs` Verzeichnis deines Frontend-Verzeichnisses befinden.
+
+### Hide
+
+Go: `Hide(ctx context.Context)`<br/> JS: `Hide()`
+
+Versteckt die Anwendung.
+
+:info Notiz
+
+Auf dem Mac wird die Anwendung auf die gleiche Weise versteckt wie im `Menüpunkt` in Standard-Mac-Anwendungen. Das ist anders als das Verstecken des Fensters, jedoch die Anwendung steht immer noch im Vordergrund. Für Windows und Linux ist dies derselbe wie `WindowHide`.
+
+:::
+
+### Show
+
+Zeigt die Anwendung.
+
+:info Notiz
+
+Auf dem Mac wird die Anwendung wieder in den Vordergrund gerückt. Für Windows und Linux ist dies derselbe wie `WindowShow`.
+
+:::
+
+Go: `Show(ctx context.Context)`<br/> JS: `Show()`
+
+### Quit
+
+Schließt die Anwendung.
+
+Go: `Quit(ctx context.Context)`<br/> JS: `Quit()`
+
+### Environment
+
+Gibt Details der aktuellen Umgebung zurück.
+
+Go: `Environment(ctx context.Context) EnvironmentInfo`<br/> JS: `Environment(): Promise<EnvironmentInfo>`
+
+#### EnvironmentInfo
+
+Go:
+
+```go
+type EnvironmentInfo struct {
+    BuildType string
+    Platform  string
+    Arch      string
+}
+```
+
+JS:
+
+```ts
+interface EnvironmentInfo {
+  buildType: string;
+  platform: string;
+  arch: string;
+}
+```

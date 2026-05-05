@@ -1,5 +1,6 @@
 ---
 title: Templates
+description: Project templates and starter kits for Wails
 ---
 
 :::caution

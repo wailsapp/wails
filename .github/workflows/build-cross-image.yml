@@ -6,7 +6,7 @@ on:
       branch:
         description: 'Branch containing Dockerfile'
         required: true
-        default: 'v3-alpha'
+        default: 'master'
       sdk_version:
         description: 'macOS SDK version'
         required: true
@@ -26,7 +26,7 @@ on:
         type: boolean
   push:
     branches:
-      - v3-alpha
+      - master
     paths:
       - 'v3/internal/commands/build_assets/docker/Dockerfile.cross'
 
@@ -142,7 +142,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25'
           cache: false
 
       - name: Set up Node.js
