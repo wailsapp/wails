@@ -126,6 +126,7 @@ export default defineConfig({
       defaultLocale: "root",
       locales: {
         root: { label: "English", lang: "en", dir: "ltr" },
+        de: { label: "Deutsch", lang: "de", dir: "ltr" },
       },
       plugins: [
         starlightImageZoom(),
