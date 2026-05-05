@@ -251,7 +251,9 @@ def check_file_pair(src_path: Path, tgt_path: Path, locale: str,
 
     # 12. Check relative asset paths are correct for locale depth
     #     Source uses ../../assets/; locale files should use ../../../assets/
-    if re.search(r'(?<!\.)\.\.\/\.\.\/assets\/', tgt):
+    #     Use string replacement to avoid false positive: ../../../assets/ contains ../../assets/ as substring
+    tgt_without_good_path = tgt.replace('../../../assets/', '')
+    if '../../assets/' in tgt_without_good_path:
         issues.append("Incorrect relative asset path ../../assets/ (should be ../../../assets/ for locale files)")
         score -= 0.2
 

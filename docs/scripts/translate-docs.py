@@ -110,6 +110,8 @@ STRICT RULES — violating any of these will cause the page to break or render i
    This rule has NO exceptions:
    - Shell commands, Go code, configuration files — do NOT translate
    - Code comments (// ..., # ..., /* ... */) — do NOT translate
+     WRONG: `# Wails installieren`  CORRECT: `# Install Wails`
+     Comments inside code blocks are part of the code — never translate them.
    - d2 diagram definitions — the ENTIRE block including quoted string labels like
      "Your UI\\n(React/Vue/etc)" must be copied exactly.
      WRONG: "Ihre UI\\n(React/Vue/etc)"  CORRECT: "Your UI\\n(React/Vue/etc)"
@@ -133,16 +135,99 @@ STRICT RULES — violating any of these will cause the page to break or render i
 7. Preserve all blank lines, heading levels (#, ##, ###), list structure (-, *), indentation,
    line breaks, and MDX component structure exactly as in the source."""
 
-TRANSLATE_PROMPT = """Translate this Wails v3 documentation page to {lang}.
-Apply all rules strictly. Return only the translated document.
+CHUNK_SIZE = 8000  # chars; files larger than this are translated in chunks
+
+SUMMARIZE_PROMPT = """The following is a translated excerpt from Wails v3 documentation.
+Write a 2-3 sentence context note for the translator handling the next excerpt:
+- What topics/sections were covered
+- Key terminology choices (how specific technical terms were rendered in {lang})
+Keep it concise — it will be injected into the next translation prompt.
 
 ---
-{content}
+{translated}
 ---"""
+
+CHUNK_TRANSLATE_PROMPT = """Translate the following {chunk_label} of a Wails v3 documentation page to {lang}.
+Apply all rules strictly. Return only the translated text.
+{context_block}
+{content}"""
 
 
 def file_hash(content: str) -> str:
     return hashlib.md5(content.encode()).hexdigest()[:12]
+
+
+def split_into_chunks(content: str, max_size: int = CHUNK_SIZE) -> list[str]:
+    """Split MDX content at paragraph/heading boundaries, never inside code blocks."""
+    if len(content) <= max_size:
+        return [content]
+
+    chunks = []
+    start = 0
+
+    while start < len(content):
+        if len(content) - start <= max_size:
+            chunks.append(content[start:])
+            break
+
+        lo = start + max_size // 2
+        hi = min(len(content), start + max_size)
+        window = content[lo:hi]
+
+        # Rough check: odd number of ``` lines before lo means we're inside a code block
+        pre = content[start:lo]
+        in_code = pre.count('\n```') % 2 == 1
+
+        split_pos = None
+        if not in_code:
+            # Prefer last heading boundary (\n\n## ...) in window
+            for m in reversed(list(re.finditer(r'\n\n(?=#+\s)', window))):
+                split_pos = lo + m.end()
+                break
+
+            if split_pos is None:
+                # Fall back to last paragraph break
+                last = window.rfind('\n\n')
+                if last >= 0:
+                    split_pos = lo + last + 2
+
+        if split_pos is None:
+            # Last resort: last newline before hi
+            last_nl = content.rfind('\n', start, hi)
+            split_pos = (last_nl + 1) if last_nl > start else hi
+
+        chunks.append(content[start:split_pos])
+        start = split_pos
+
+    return chunks
+
+
+def strip_frontmatter(content: str) -> str:
+    """Remove a leading frontmatter block if the model added one to a continuation chunk."""
+    content = content.lstrip("\n")
+    if content.startswith("---"):
+        end = content.find("\n---", 3)
+        if end >= 0:
+            return content[end + 4:].lstrip("\n")
+    return content
+
+
+def summarize_chunk(translated: str, lang: str) -> str:
+    """Ask the model for a brief context summary of a translated chunk."""
+    prompt = SUMMARIZE_PROMPT.format(translated=translated[:4000], lang=lang)
+    payload = {
+        "model": MODEL,
+        "messages": [{"role": "user", "content": prompt}],
+        "stream": False,
+        "think": False,
+        "options": {"temperature": 0.1, "num_predict": 300},
+    }
+    try:
+        resp = requests.post(f"{OLLAMA_BASE}/api/chat", json=payload, timeout=(10, 60))
+        resp.raise_for_status()
+        return resp.json().get("message", {}).get("content", "").strip()
+    except Exception:
+        return ""
 
 
 def load_cache(locale: str) -> dict:
@@ -270,10 +355,25 @@ def post_process(content: str, locale: str, rel_path: Path, translated_paths: se
     return content
 
 
-def translate_with_ollama(content: str, lang: str, file_path: str) -> str:
+def translate_with_ollama(content: str, lang: str, file_path: str,
+                          context_summary: str = "", is_continuation: bool = False) -> str:
     """Translate content using Ollama chat API (thinking disabled)."""
     system = SYSTEM_PROMPT.format(lang=lang)
-    user_msg = TRANSLATE_PROMPT.format(lang=lang, content=content)
+
+    context_block = ""
+    if context_summary:
+        context_block = (
+            "Previous document context (already translated — maintain consistent terminology):\n"
+            f"{context_summary}\n"
+        )
+
+    chunk_label = "continuation" if is_continuation else "page"
+    user_msg = CHUNK_TRANSLATE_PROMPT.format(
+        chunk_label=chunk_label,
+        lang=lang,
+        context_block=context_block,
+        content=content,
+    )
 
     payload = {
         "model": MODEL,
@@ -338,6 +438,43 @@ def translate_with_ollama(content: str, lang: str, file_path: str) -> str:
     return result if result else None
 
 
+def translate_doc(content: str, lang: str, file_path: str) -> str | None:
+    """Translate a document, splitting into chunks with context passing for large files."""
+    chunks = split_into_chunks(content)
+
+    if len(chunks) == 1:
+        return translate_with_ollama(content, lang, file_path)
+
+    print(f"    Splitting into {len(chunks)} chunks", flush=True)
+    parts = []
+    context = ""
+
+    for i, chunk in enumerate(chunks):
+        is_last = i == len(chunks) - 1
+        translated_chunk = translate_with_ollama(
+            chunk, lang, file_path,
+            context_summary=context,
+            is_continuation=(i > 0),
+        )
+        if translated_chunk is None:
+            return None
+
+        # Strip any spurious frontmatter the model adds to continuation chunks
+        if i > 0:
+            translated_chunk = strip_frontmatter(translated_chunk)
+
+        parts.append(translated_chunk)
+
+        if not is_last:
+            context = summarize_chunk(translated_chunk, lang)
+            preview = context[:80].replace('\n', ' ')
+            print(f"    Chunk {i+1}/{len(chunks)} done → context: {preview}...", flush=True)
+        else:
+            print(f"    Chunk {i+1}/{len(chunks)} done", flush=True)
+
+    return "".join(parts)
+
+
 def translate_file(
     src_path: Path,
     locale: str,
@@ -362,7 +499,7 @@ def translate_file(
 
     print(f"  Translating {src_path.relative_to(DOCS_ROOT)} → {locale}...", flush=True)
 
-    translated = translate_with_ollama(content, lang, str(src_path))
+    translated = translate_doc(content, lang, str(src_path))
     if not translated:
         return False, "failed"
 
