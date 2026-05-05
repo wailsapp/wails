@@ -48,9 +48,9 @@ LOCALE_CHAR_RANGES = {
     "de": (r'[a-zA-ZÄÖÜäöüß]', None),
 }
 
-# z.ai API — correct base URL from https://docs.z.ai/
-# Endpoint: https://api.z.ai/api/paas/v4 (raw Bearer key, not JWT)
-ZAI_BASE = os.environ.get("ZAI_BASE", "https://api.z.ai/api/paas/v4")
+# z.ai Coding Plan API — dedicated coding endpoint per https://docs.z.ai/devpack/overview
+# GLM Coding Plan requires https://api.z.ai/api/coding/paas/v4 (NOT the general paas/v4)
+ZAI_BASE = os.environ.get("ZAI_BASE", "https://api.z.ai/api/coding/paas/v4")
 ZAI_API_KEY = os.environ.get("ZAI_API_KEY", "")
 ZAI_DEFAULT_MODEL = "GLM-5-Turbo"
 
@@ -133,9 +133,9 @@ If the translation is good, return an empty issues list."""
                 "model": model,
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": 0.1,
-                "max_tokens": 512,
+                "max_tokens": 2000,  # GLM-5-Turbo uses ~300 reasoning tokens before output
             },
-            timeout=30,
+            timeout=45,
         )
         resp.raise_for_status()
 
