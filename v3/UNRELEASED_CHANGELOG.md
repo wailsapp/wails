@@ -19,6 +19,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- New features, capabilities, or enhancements -->
 - Add `Sound` (default/silent/named), `Attachments`, `ThreadID`, `InterruptionLevel`, and `Schedule` fields to `NotificationOptions` in the notifications service. Each gracefully degrades on platforms with limited support; see the package godoc for the per-platform support matrix.
 - Add `NotificationService.UpdateNotification(options)` to update an in-flight notification by ID. macOS auto-deduplicates by identifier; Linux uses the D-Bus replaces_id parameter; Windows currently redelivers as a new notification (true replace requires upstream wintoast tag/group support).
+- Add German documentation for Wails v3 in [PR](https://github.com/wailsapp/wails/pull/5330) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
