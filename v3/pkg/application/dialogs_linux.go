@@ -38,7 +38,7 @@ func (m *linuxDialog) show() {
 		}
 	}
 
-	go func() {
+	InvokeAsync(func() {
 		response := runQuestionDialog(pointer(parent), m.dialog)
 		if response >= 0 && response < len(m.dialog.Buttons) {
 			button := m.dialog.Buttons[response]
@@ -49,7 +49,7 @@ func (m *linuxDialog) show() {
 				}()
 			}
 		}
-	}()
+	})
 }
 
 func newDialogImpl(d *MessageDialog) *linuxDialog {

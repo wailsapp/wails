@@ -95,6 +95,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     if: github.base_ref == 'master'
     timeout-minutes: 25
+    env:
+      GOWORK: "off"
     strategy:
       fail-fast: false
       matrix:
@@ -198,6 +200,8 @@ jobs:
     needs: [test_js, test_go]
     runs-on: ${{ matrix.os }}
     if: github.base_ref == 'master'
+    env:
+      GOWORK: "off"
     strategy:
       fail-fast: false
       matrix:
