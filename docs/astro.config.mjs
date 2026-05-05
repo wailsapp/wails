@@ -35,7 +35,7 @@ export default defineConfig({
       lastUpdated: true,
       pagination: true,
       editLink: {
-        baseUrl: "https://github.com/wailsapp/wails/edit/v3-alpha/docs",
+        baseUrl: "https://github.com/wailsapp/wails/edit/master/docs",
       },
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/wailsapp/wails' },
@@ -312,6 +312,7 @@ export default defineConfig({
               label: "Integration Patterns",
               collapsed: true,
               items: [
+                { label: "Frontend Routing", link: "/guides/routing" },
                 { label: "Using Gin Router", link: "/guides/patterns/gin-routing" },
                 { label: "Gin Services", link: "/guides/patterns/gin-services" },
                 { label: "Database Integration", link: "/guides/patterns/database" },

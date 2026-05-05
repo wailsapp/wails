@@ -139,7 +139,9 @@ var (
 	procGetDpiForSystem               = moduser32.NewProc("GetDpiForSystem")
 	procGetDpiForWindow               = moduser32.NewProc("GetDpiForWindow")
 	procSetProcessDPIAware            = moduser32.NewProc("SetProcessDPIAware")
-	procSetProcessDpiAwarenessContext = moduser32.NewProc("SetProcessDpiAwarenessContext")
+	procSetProcessDpiAwarenessContext  = moduser32.NewProc("SetProcessDpiAwarenessContext")
+	procGetThreadDpiAwarenessContext   = moduser32.NewProc("GetThreadDpiAwarenessContext")
+	procAreDpiAwarenessContextsEqual   = moduser32.NewProc("AreDpiAwarenessContextsEqual")
 	procEnumDisplayMonitors           = moduser32.NewProc("EnumDisplayMonitors")
 	procEnumDisplayDevices            = moduser32.NewProc("EnumDisplayDevicesW")
 	procEnumDisplaySettings           = moduser32.NewProc("EnumDisplaySettingsW")
@@ -419,6 +421,27 @@ func SetProcessDpiAwarenessContext(ctx uintptr) error {
 		return fmt.Errorf("SetProcessDpiAwarenessContext failed %d: %v %v", status, r, err)
 	}
 	return nil
+}
+
+func HasGetThreadDpiAwarenessContextFunc() bool {
+	return procGetThreadDpiAwarenessContext.Find() == nil
+}
+
+// GetThreadDpiAwarenessContext returns the DPI awareness context for the current thread.
+// Available on Windows 10 version 1607 and later.
+func GetThreadDpiAwarenessContext() uintptr {
+	ctx, _, _ := procGetThreadDpiAwarenessContext.Call()
+	return ctx
+}
+
+func HasAreDpiAwarenessContextsEqualFunc() bool {
+	return procAreDpiAwarenessContextsEqual.Find() == nil
+}
+
+// AreDpiAwarenessContextsEqual compares two DPI awareness context values.
+func AreDpiAwarenessContextsEqual(ctx1, ctx2 uintptr) bool {
+	ret, _, _ := procAreDpiAwarenessContextsEqual.Call(ctx1, ctx2)
+	return ret != 0
 }
 
 func GetForegroundWindow() HWND {
@@ -1401,11 +1424,7 @@ func GetKeyState(nVirtKey int32) int16 {
 }
 
 func DestroyMenu(hMenu HMENU) bool {
-	ret, _, _ := procDestroyMenu.Call(1,
-		uintptr(hMenu),
-		0,
-		0)
-
+	ret, _, _ := procDestroyMenu.Call(uintptr(hMenu))
 	return ret != 0
 }
 

@@ -1,0 +1,114 @@
+---
+title: Installation
+description: Installiere Wails und richte deine Entwicklungsumgebung ein
+sidebar:
+  order: 10
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Unterstützte Plattformen
+
+- Windows 10/11 AMD64/ARM64
+- macOS 10.15+ AMD64 (Bereitstellung auf macOS 10.13+ möglich)
+- macOS 11.0+ ARM64
+- Ubuntu 24.04 AMD64/ARM64 (andere Linux-Distributionen funktionieren möglicherweise ebenfalls!)
+
+## Abhängigkeiten
+
+Wails benötigt eine Reihe gemeinsamer Abhängigkeiten, die vor der Installation installiert sein müssen:
+
+<Tabs>
+  <TabItem label="Go (mindestens 1.24)" icon="seti:go">
+
+    Lade Go von der [Go Downloads-Seite](https://go.dev/dl/) herunter.
+
+    Stelle sicher, dass du die offiziellen [Installationsanweisungen für Go](https://go.dev/doc/install) befolgst. Du musst außerdem sicherstellen, dass deine `PATH`-Umgebungsvariable auch den Pfad zu deinem `~/go/bin`-Verzeichnis enthält. Starte dein Terminal neu und führe die folgenden Überprüfungen durch:
+
+    - Überprüfe, ob Go korrekt installiert ist: `go version`
+    - Überprüfe, ob `~/go/bin` in deiner PATH-Variablen enthalten ist
+        - Mac / Linux: `echo $PATH | grep go/bin`
+        - Windows: `$env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }`
+
+  </TabItem>
+
+  <TabItem label="npm (Optional)" icon="seti:npm">
+
+    Obwohl Wails npm nicht zwingend erfordert, wird es von den meisten eingebundenen Vorlagen benötigt.
+
+    Lade den neuesten Node-Installer von der [Node Downloads-Seite](https://nodejs.org/en/download/) herunter. Es ist am besten, die neueste Version zu verwenden, da wir in der Regel damit testen.
+
+    Führe `npm --version` aus, um die Installation zu überprüfen.
+
+      :::note
+      Wenn du einen anderen Paketmanager bevorzugst, kannst du diesen gerne verwenden. Du musst dann die Taskfiles im Projekt entsprechend anpassen.
+      :::
+
+  </TabItem>
+
+</Tabs>
+
+## Plattformspezifische Abhängigkeiten
+
+Du musst außerdem plattformspezifische Abhängigkeiten installieren:
+
+<Tabs syncKey="platform">
+  <TabItem label="Mac" icon="apple">
+
+    Wails erfordert, dass die Xcode-Befehlszeilentools installiert sind. Dies kann durch Ausführen von:
+
+    ```sh
+    xcode-select --install
+    ```
+
+    erreicht werden.
+
+  </TabItem>
+  <TabItem label="Windows" icon="seti:windows">
+
+    Wails erfordert, dass die [WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) installiert ist. Bei fast allen Windows-Installationen ist dies bereits vorhanden. Du kannst dies mit dem Befehl `wails doctor` überprüfen.
+
+  </TabItem>
+  <TabItem label="Linux" icon="linux">
+
+    Linux benötigt die Standard-`gcc`-Build-Tools sowie `gtk3` und `webkit2gtk`. Führe nach der Installation <code>wails doctor</code> aus, um angezeigt zu bekommen, wie die Abhängigkeiten installiert werden können. Wenn deine Distribution oder dein Paketmanager nicht unterstützt wird, lass es uns bitte auf Discord wissen.
+
+  </TabItem>
+
+</Tabs>
+
+## Installation
+
+Um die Wails CLI über Go Modules zu installieren, führe die folgenden Befehle aus:
+
+```shell
+go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
+```
+
+Wenn du die neueste Entwicklungsversion installieren möchtest, führe die folgenden
+Befehle aus:
+
+```shell
+git clone https://github.com/wailsapp/wails.git
+cd wails
+cd v3/cmd/wails3
+go install
+```
+
+Bei Verwendung der Entwicklungsversion werden alle generierten Projekte Go's
+[replace](https://go.dev/ref/mod#go-mod-file-replace)-Direktive verwenden, um sicherzustellen,
+dass die Projekte die Entwicklungsversion von Wails nutzen.
+
+## Systemprüfung
+
+Das Ausführen von `wails3 doctor` überprüft, ob du die korrekten Abhängigkeiten
+installiert hast. Falls nicht, wird es dir mitteilen, was fehlt, und dir helfen,
+Probleme zu beheben.
+
+## Der Befehl `wails3` scheint zu fehlen?
+
+Wenn dein System meldet, dass der Befehl `wails3` fehlt, überprüfe Folgendes:
+
+- Stelle sicher, dass du die obige `Go-Installationsanleitung` korrekt befolgt hast und
+  dass das Verzeichnis `go/bin` in der `PATH`-Umgebungsvariable enthalten ist.
+- Schließe/öffne deine aktuellen Terminals neu, damit die neue `PATH`-Variable übernommen wird.

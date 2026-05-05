@@ -47,7 +47,7 @@ func TestExtractChangelogContent_EmptySections(t *testing.T) {
 	testContent := `# Unreleased Changes
 
 <!-- 
-This file is used to collect changelog entries for the next v3-alpha release.
+This file is used to collect changelog entries for the next v3 alpha release.
 -->
 
 ## Added

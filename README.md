@@ -25,7 +25,7 @@
     <img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome" />
   </a>
   <a href="https://discord.gg/BrRSWTaxVK">
-    <img alt="Discord" src="https://dcbadge.vercel.app/api/server/BrRSWTaxVK?style=flat"/>
+    <img alt="Discord" src="https://img.shields.io/discord/1042734330029547630?logo=discord"/>
   </a>
   <br/>
   <a href="https://github.com/wailsapp/wails/actions/workflows/build-and-test.yml" rel="nofollow">
@@ -91,16 +91,23 @@ it before creating an enhancement request.
 
 ## Getting Started
 
-The installation instructions are on the [official website](https://wails.io/docs/gettingstarted/installation).
+Wails has two active versions:
+
+| Version | Status | Install | Docs |
+|---|---|---|---|
+| v2 | Stable | `go install github.com/wailsapp/wails/v2/cmd/wails@latest` | [wails.io](https://wails.io/) |
+| v3 | Alpha | `go install github.com/wailsapp/wails/v3/cmd/wails3@latest` | [v3.wails.io](https://v3.wails.io/) |
+
+Full installation instructions are available for [v2](https://wails.io/docs/gettingstarted/installation) and [v3](https://v3.wails.io).
 
 ## Sponsors
 
 This project is supported by these kind people / companies:
 <img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
 
-<p align="center">
-<img src="https://wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
-</p>
+## Powered By
+
+[![JetBrains logo.](https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.svg)](https://jb.gg/OpenSource)
 
 ## FAQ
 

@@ -1,0 +1,71 @@
+# NSIS-Installer
+
+```mdx-code-block
+<p style={{ "text-align": "center" }}>
+  <img
+    src={require("@site/static/img/nsis.webp").default}
+    style={{ "max-width": "50%" }}
+  />
+  <br />
+</p>
+```
+
+Wails unterstützt die Generierung von Windows-Installern mit dem [NSIS Installer](https://nsis.sourceforge.io/).
+
+## NSIS installieren
+
+### Windows
+
+Der Installer ist auf der [NSIS Download](https://nsis.sourceforge.io/Download) Seite verfügbar.
+
+Du kannst diesen auch mit [Scoop](https://scoop.sh/) installieren (welcher diesen automatisch zu deinem PATH hinzufügt):
+
+```
+scoop bucket add extras
+scoop install nsis
+```
+
+Eine weitere Option wäre die Installation mit Winget (bei Version von Windows 10+):
+
+```
+winget install NSIS.NSIS --silent
+```
+
+Wenn du den chocolatey-Paketmanager verwendest, führe das folgende Skript aus:
+
+```
+choco install nsis
+```
+
+**HINWEIS:** Wenn NSIS manuell installiert wurde, muss der Ordner _Bin_, der `makensis.exe` enthält, aus dem NSIS-Installationsverzeichnis zu deinem PATH hinzugefügt werden. [Hier](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/) ist eine gute Anleitung, wie man dem Pfad unter Windows etwas hinzufügen kann.
+
+### Linux
+
+Das `nsis` Paket sollte über den Paketmanager deiner Distribution verfügbar sein.
+
+### MacOS
+
+NSIS kann über Homebrew installiert werden: `brew install nsis`.
+
+## Generieren des Installers
+
+Wenn ein neues Projekt erstellt wird, erzeugt Wails die NSIS-Konfigurationsdateien in `build/windows/installer`. Die Konfigurationsdaten werden von `installer/info.json` gelesen, welche so konfiguriert wurde, dass die Projektkonfiguration `wails.json` Info Sektion verwendet wird:
+
+```json
+// ...
+ "Info": {
+    "companyName": "My Company Name",
+    "productName": "Wails Vite",
+    "productVersion": "1.0.0",
+    "copyright": "Copyright.........",
+    "comments": "Built using Wails (https://wails.io)"
+  },
+```
+
+Um einen Installer für die Anwendung zu generieren, verwende die `-nsis` Flag mit `wails build`:
+
+```
+wails build -nsis
+```
+
+Der Installer wird nun im `build/bin` Verzeichnis verfügbar sein.
