@@ -25,6 +25,13 @@ except ImportError:
 OLLAMA_BASE = "http://ai-master.taileaa27f.ts.net:11434"
 MODEL = "qwen3.6:35b"
 
+ZAI_BASE = os.environ.get("ZAI_BASE", "https://api.z.ai/api/coding/paas/v4")
+ZAI_API_KEY = os.environ.get("ZAI_API_KEY", "")
+ZAI_MODEL = os.environ.get("ZAI_MODEL", "glm-5.1")
+
+# Active backend — overridden by --zai-model CLI flag
+TRANSLATE_BACKEND = "ollama"
+
 DOCS_ROOT = Path(__file__).parent.parent / "src" / "content" / "docs"
 CACHE_DIR = Path(__file__).parent.parent / ".translation-cache"
 
@@ -438,12 +445,90 @@ def translate_with_ollama(content: str, lang: str, file_path: str,
     return result if result else None
 
 
+def translate_with_zai(content: str, lang: str, file_path: str,
+                       context_summary: str = "", is_continuation: bool = False) -> str | None:
+    """Translate content using z.ai OpenAI-compatible API."""
+    if not ZAI_API_KEY:
+        print("  ERROR: ZAI_API_KEY not set", flush=True)
+        return None
+
+    system = SYSTEM_PROMPT.format(lang=lang)
+    context_block = ""
+    if context_summary:
+        context_block = (
+            "Previous document context (already translated — maintain consistent terminology):\n"
+            f"{context_summary}\n"
+        )
+    chunk_label = "continuation" if is_continuation else "page"
+    user_msg = CHUNK_TRANSLATE_PROMPT.format(
+        chunk_label=chunk_label,
+        lang=lang,
+        context_block=context_block,
+        content=content,
+    )
+
+    try:
+        resp = requests.post(
+            f"{ZAI_BASE}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {ZAI_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": ZAI_MODEL,
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user_msg},
+                ],
+                "temperature": 0.2,
+                "max_tokens": 8000,
+            },
+            timeout=180,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+    except requests.exceptions.Timeout:
+        print(f"  TIMEOUT (z.ai) translating {file_path}", flush=True)
+        return None
+    except Exception as e:
+        print(f"  ERROR (z.ai) translating {file_path}: {e}", flush=True)
+        return None
+
+    choice = data.get("choices", [{}])[0]
+    result = choice.get("message", {}).get("content", "").strip()
+
+    if not result:
+        usage = data.get("usage", {})
+        print(f"  WARNING: empty content from {ZAI_MODEL} (usage={usage}) for {file_path}", flush=True)
+        return None
+
+    # Strip any wrapping markdown fences
+    if result.startswith("```") and result.endswith("```"):
+        lines = result.split("\n")
+        result = "\n".join(lines[1:-1])
+
+    # Strip any preamble before frontmatter
+    if not result.startswith("---") and "---" in result:
+        idx = result.index("---")
+        result = result[idx:]
+
+    return result if result else None
+
+
+def _translate_chunk(content: str, lang: str, file_path: str,
+                     context_summary: str = "", is_continuation: bool = False) -> str | None:
+    """Dispatch to the active translation backend."""
+    if TRANSLATE_BACKEND == "zai":
+        return translate_with_zai(content, lang, file_path, context_summary, is_continuation)
+    return translate_with_ollama(content, lang, file_path, context_summary, is_continuation)
+
+
 def translate_doc(content: str, lang: str, file_path: str) -> str | None:
     """Translate a document, splitting into chunks with context passing for large files."""
     chunks = split_into_chunks(content)
 
     if len(chunks) == 1:
-        return translate_with_ollama(content, lang, file_path)
+        return _translate_chunk(content, lang, file_path)
 
     print(f"    Splitting into {len(chunks)} chunks", flush=True)
     parts = []
@@ -451,7 +536,7 @@ def translate_doc(content: str, lang: str, file_path: str) -> str | None:
 
     for i, chunk in enumerate(chunks):
         is_last = i == len(chunks) - 1
-        translated_chunk = translate_with_ollama(
+        translated_chunk = _translate_chunk(
             chunk, lang, file_path,
             context_summary=context,
             is_continuation=(i > 0),
@@ -585,10 +670,21 @@ def run_locale(locale: str, files: list[Path], max_files: int = None):
 
 
 def main():
+    global TRANSLATE_BACKEND, ZAI_MODEL
+
     parser = argparse.ArgumentParser(description="Translate Wails v3 docs")
     parser.add_argument("--locale", default="all", help="Locale(s) to translate (comma-separated or 'all')")
     parser.add_argument("--max-files", type=int, default=None, help="Max files per locale")
+    parser.add_argument("--zai-model", default=None,
+                        help="Use z.ai instead of Ollama; specify model name (e.g. glm-5.1, glm-4.7)")
     args = parser.parse_args()
+
+    if args.zai_model:
+        TRANSLATE_BACKEND = "zai"
+        ZAI_MODEL = args.zai_model
+        print(f"Backend: z.ai ({ZAI_MODEL})", flush=True)
+    else:
+        print(f"Backend: Ollama ({MODEL})", flush=True)
 
     if args.locale == "all":
         locales = ALL_LOCALES
