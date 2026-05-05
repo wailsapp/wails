@@ -19,6 +19,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- New features, capabilities, or enhancements -->
 - Add French documentation localization in [PR](https://github.com/wailsapp/wails/pull/5328) by @leaanthony
 - Add German locale to Astro documentation site in [PR](https://github.com/wailsapp/wails/pull/5343) by @leaanthony
+- Add Garble obfuscation support ([#4563](https://github.com/wailsapp/wails/issues/4563)): stable binding method IDs, build/Taskfile plumbing (`build --obfuscated --garbleargs`, `generate bindings -obfuscated`), and JSON struct tags on every runtime-facing payload (`EnvironmentInfo`, `OSInfo`, `Screen`, `Rect`, `Point`, `Size`, `Capabilities`) so the wire format survives Garble's exported-field renaming.
 
 ## Changed
 <!-- Changes in existing functionality -->
