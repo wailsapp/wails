@@ -10,6 +10,8 @@ import "C"
 import (
 	"fmt"
 	"os"
+	"sync"
+	"sync/atomic"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/godbus/dbus/v5/introspect"
@@ -40,9 +42,14 @@ type linuxSystemTray struct {
 	props     *prop.Properties
 	menuProps *prop.Properties
 
-	menuVersion uint32
+	menuVersion atomic.Uint32
+
+	// itemMapLock guards itemMap and the per-item dbusItem.V1 maps;
+	// the dbusmenu callbacks read these from the godbus worker goroutine.
+	itemMapLock sync.RWMutex
 	itemMap     map[int32]*systrayMenuItem
-	tooltip     string
+
+	tooltip string
 
 	lastClickX int
 	lastClickY int
@@ -69,25 +76,40 @@ type systrayMenuItem struct {
 }
 
 func (s *systrayMenuItem) setBitmap(data []byte) {
+	s.sysTray.itemMapLock.Lock()
 	s.dbusItem.V1["icon-data"] = dbus.MakeVariant(data)
-	s.sysTray.update(s)
+	s.sysTray.itemMap[int32(s.menuItem.id)] = s
+	s.sysTray.itemMapLock.Unlock()
+	s.sysTray.refresh()
 }
 
 func (s *systrayMenuItem) setTooltip(v string) {
+	s.sysTray.itemMapLock.Lock()
 	s.dbusItem.V1["tooltip"] = dbus.MakeVariant(v)
-	s.sysTray.update(s)
+	s.sysTray.itemMap[int32(s.menuItem.id)] = s
+	s.sysTray.itemMapLock.Unlock()
+	s.sysTray.refresh()
 }
 
 func (s *systrayMenuItem) setLabel(v string) {
+	s.sysTray.itemMapLock.Lock()
 	s.dbusItem.V1["label"] = dbus.MakeVariant(v)
-	s.sysTray.update(s)
+	s.sysTray.itemMap[int32(s.menuItem.id)] = s
+	s.sysTray.itemMapLock.Unlock()
+	s.sysTray.refresh()
 }
 
 func (s *systrayMenuItem) setDisabled(disabled bool) {
 	v := dbus.MakeVariant(!disabled)
-	if s.dbusItem.V1["toggle-state"] != v {
+	s.sysTray.itemMapLock.Lock()
+	changed := s.dbusItem.V1["toggle-state"] != v
+	if changed {
 		s.dbusItem.V1["enabled"] = v
-		s.sysTray.update(s)
+		s.sysTray.itemMap[int32(s.menuItem.id)] = s
+	}
+	s.sysTray.itemMapLock.Unlock()
+	if changed {
+		s.sysTray.refresh()
 	}
 }
 
@@ -98,16 +120,25 @@ func (s *systrayMenuItem) setChecked(checked bool) {
 	if checked {
 		v = dbus.MakeVariant(1)
 	}
-	if s.dbusItem.V1["toggle-state"] != v {
+	s.sysTray.itemMapLock.Lock()
+	changed := s.dbusItem.V1["toggle-state"] != v
+	if changed {
 		s.dbusItem.V1["toggle-state"] = v
-		s.sysTray.update(s)
+		s.sysTray.itemMap[int32(s.menuItem.id)] = s
+	}
+	s.sysTray.itemMapLock.Unlock()
+	if changed {
+		s.sysTray.refresh()
 	}
 }
 
 func (s *systrayMenuItem) setAccelerator(accelerator *accelerator) {}
 func (s *systrayMenuItem) setHidden(hidden bool) {
+	s.sysTray.itemMapLock.Lock()
 	s.dbusItem.V1["visible"] = dbus.MakeVariant(!hidden)
-	s.sysTray.update(s)
+	s.sysTray.itemMap[int32(s.menuItem.id)] = s
+	s.sysTray.itemMapLock.Unlock()
+	s.sysTray.refresh()
 }
 
 func (s *systrayMenuItem) dbus() *dbusMenu {
@@ -179,16 +210,19 @@ func (s *linuxSystemTray) processMenu(menu *Menu, parentId int32) {
 }
 
 func (s *linuxSystemTray) refresh() {
-	s.menuVersion++
+	v := s.menuVersion.Add(1)
+	if s.menuProps == nil || s.conn == nil {
+		return
+	}
 	if err := s.menuProps.Set("com.canonical.dbusmenu", "Version",
-		dbus.MakeVariant(s.menuVersion)); err != nil {
+		dbus.MakeVariant(v)); err != nil {
 		globalApplication.error("systray error: failed to update menu version: %w", err)
 		return
 	}
 	if err := menu.Emit(s.conn, &menu.Dbusmenu_LayoutUpdatedSignal{
 		Path: menuPath,
 		Body: &menu.Dbusmenu_LayoutUpdatedSignalBody{
-			Revision: s.menuVersion,
+			Revision: v,
 		},
 	}); err != nil {
 		globalApplication.error("systray error: failed to emit layout updated signal: %w", err)
@@ -196,6 +230,7 @@ func (s *linuxSystemTray) refresh() {
 }
 
 func (s *linuxSystemTray) setMenu(menu *Menu) {
+	s.itemMapLock.Lock()
 	s.itemMap = map[int32]*systrayMenuItem{}
 	s.itemMap[0] = &systrayMenuItem{
 		menuItem: nil,
@@ -210,6 +245,7 @@ func (s *linuxSystemTray) setMenu(menu *Menu) {
 		s.processMenu(menu, 0)
 	}
 	s.menu = menu
+	s.itemMapLock.Unlock()
 	s.refresh()
 }
 
@@ -439,7 +475,7 @@ func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
 		label = "Wails"
 	}
 
-	return &linuxSystemTray{
+	impl := &linuxSystemTray{
 		parent:         s,
 		id:             s.id,
 		label:          label,
@@ -448,8 +484,9 @@ func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
 		iconPosition:   s.iconPosition,
 		isTemplateIcon: s.isTemplateIcon,
 		quitChan:       make(chan struct{}),
-		menuVersion:    1,
 	}
+	impl.menuVersion.Store(1)
+	return impl
 }
 
 func (s *linuxSystemTray) openMenu() {
@@ -488,7 +525,7 @@ func (s *linuxSystemTray) createMenuPropSpec() map[string]map[string]*prop.Prop 
 		"com.canonical.dbusmenu": {
 			// update version each time we change something
 			"Version": {
-				Value:    s.menuVersion,
+				Value:    s.menuVersion.Load(),
 				Writable: true,
 				Emit:     prop.EmitTrue,
 				Callback: nil,
@@ -601,7 +638,9 @@ func (s *linuxSystemTray) createPropSpec() map[string]map[string]*prop.Prop {
 }
 
 func (s *linuxSystemTray) update(i *systrayMenuItem) {
+	s.itemMapLock.Lock()
 	s.itemMap[int32(i.menuItem.id)] = i
+	s.itemMapLock.Unlock()
 	s.refresh()
 }
 
@@ -646,6 +685,8 @@ func (s *linuxSystemTray) AboutToShowGroup(ids []int32) (updatesNeeded []int32, 
 
 // GetProperty is an implementation of the com.canonical.dbusmenu.GetProperty method.
 func (s *linuxSystemTray) GetProperty(id int32, name string) (value dbus.Variant, err *dbus.Error) {
+	s.itemMapLock.RLock()
+	defer s.itemMapLock.RUnlock()
 	if item, ok := s.itemMap[id]; ok {
 		if p, ok := item.dbusItem.V1[name]; ok {
 			return p, nil
@@ -658,7 +699,10 @@ func (s *linuxSystemTray) Event(id int32, eventID string, data dbus.Variant, tim
 	globalApplication.debug("systray Event called", "id", id, "eventID", eventID, "lastClick", fmt.Sprintf("(%d,%d)", s.lastClickX, s.lastClickY))
 	switch eventID {
 	case "clicked":
-		if item, ok := s.itemMap[id]; ok {
+		s.itemMapLock.RLock()
+		item, ok := s.itemMap[id]
+		s.itemMapLock.RUnlock()
+		if ok {
 			gtkDispatch(item.menuItem.handleClick)
 		}
 	case "opened":
@@ -686,7 +730,9 @@ func (s *linuxSystemTray) EventGroup(events []struct {
 	for _, event := range events {
 		fmt.Printf("EventGroup: %v, %v, %v, %v\n", event.V0, event.V1, event.V2, event.V3)
 		if event.V1 == "clicked" {
+			s.itemMapLock.RLock()
 			item, ok := s.itemMap[event.V0]
+			s.itemMapLock.RUnlock()
 			if ok {
 				gtkDispatch(item.menuItem.handleClick)
 			}
@@ -700,10 +746,8 @@ func (s *linuxSystemTray) GetGroupProperties(ids []int32, propertyNames []string
 	V0 int32
 	V1 map[string]dbus.Variant
 }, err *dbus.Error) {
-	// FIXME: RLock?
-	/*	instance.menuLock.Lock()
-		defer instance.menuLock.Unlock()
-	*/
+	s.itemMapLock.RLock()
+	defer s.itemMapLock.RUnlock()
 	for _, id := range ids {
 		if m, ok := s.itemMap[id]; ok {
 			p := struct {
@@ -724,9 +768,10 @@ func (s *linuxSystemTray) GetGroupProperties(ids []int32, propertyNames []string
 
 // GetLayout is an implementation of the com.canonical.dbusmenu.GetLayout method.
 func (s *linuxSystemTray) GetLayout(parentID int32, recursionDepth int32, propertyNames []string) (revision uint32, layout dbusMenu, err *dbus.Error) {
-	// FIXME: RLock?
+	s.itemMapLock.RLock()
+	defer s.itemMapLock.RUnlock()
 	if m, ok := s.itemMap[parentID]; ok {
-		return s.menuVersion, *m.dbusItem, nil
+		return s.menuVersion.Load(), *m.dbusItem, nil
 	}
 
 	return

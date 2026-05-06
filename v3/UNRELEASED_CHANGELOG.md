@@ -26,6 +26,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix `concurrent map read and map write` runtime fatal in `linuxSystemTray` when the tray menu is updated while the panel reads it.
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
