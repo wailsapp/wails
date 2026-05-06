@@ -2,7 +2,7 @@
 
 package application
 
-import "github.com/wailsapp/go-webview2/pkg/edge"
+import "github.com/wailsapp/wails/webview2/pkg/edge"
 
 func (w *windowsWebviewWindow) openDevTools() {
 	w.chromium.OpenDevToolsWindow()
