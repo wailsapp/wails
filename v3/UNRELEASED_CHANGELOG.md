@@ -20,6 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Register all 8 translated locales in Starlight config in [PR](https://github.com/wailsapp/wails/pull/5347) by @leaanthony
 - Update various Windows related files for WebView2 in [PR](https://github.com/wailsapp/wails/pull/5317) by @leaanthony
 
 ## Fixed
