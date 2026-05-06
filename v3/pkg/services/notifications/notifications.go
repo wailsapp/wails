@@ -370,11 +370,15 @@ func validateNotificationOptions(options NotificationOptions) error {
 			// macOS UNNotificationAttachment accepts file:// URLs as well
 			// as plain paths; map back to a local filesystem path here so
 			// os.Stat doesn't reject the URL form as a literal path.
+			// url.Parse fails on Windows drive-letter paths (file://C:\path)
+			// because the drive letter is mis-parsed as the URL host; fall
+			// back to stripping the scheme prefix in that case.
 			u, err := url.Parse(statPath)
-			if err != nil {
-				return fmt.Errorf("attachments[%d].path %q: %w", i, a.Path, err)
+			if err != nil || u.Path == "" {
+				statPath = statPath[len("file://"):]
+			} else {
+				statPath = u.Path
 			}
-			statPath = u.Path
 		}
 		if _, err := os.Stat(statPath); err != nil {
 			return fmt.Errorf("attachments[%d].path %q: %w", i, a.Path, err)
