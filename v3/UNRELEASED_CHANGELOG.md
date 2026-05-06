@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Split dialog dispatch between GTK3 and GTK4 for Linux in [PR](https://github.com/wailsapp/wails/pull/5340) by @leaanthony
 - Ensure dialog callbacks execute on the GTK thread, fixing segfaults in [PR](https://github.com/wailsapp/wails/pull/5339) by @leaanthony
 
 ## Deprecated
