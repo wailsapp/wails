@@ -37,6 +37,8 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      GOWORK: "off"
     permissions:
       contents: read
       packages: write
@@ -110,6 +112,8 @@ jobs:
     needs: build
     if: ${{ inputs.skip_tests != 'true' }}
     runs-on: ubuntu-latest
+    env:
+      GOWORK: "off"
     strategy:
       fail-fast: false
       matrix:
