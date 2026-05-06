@@ -102,7 +102,7 @@ func (s *systrayMenuItem) setLabel(v string) {
 func (s *systrayMenuItem) setDisabled(disabled bool) {
 	v := dbus.MakeVariant(!disabled)
 	s.sysTray.itemMapLock.Lock()
-	changed := s.dbusItem.V1["toggle-state"] != v
+	changed := s.dbusItem.V1["enabled"] != v
 	if changed {
 		s.dbusItem.V1["enabled"] = v
 		s.sysTray.itemMap[int32(s.menuItem.id)] = s
@@ -767,14 +767,44 @@ func (s *linuxSystemTray) GetGroupProperties(ids []int32, propertyNames []string
 }
 
 // GetLayout is an implementation of the com.canonical.dbusmenu.GetLayout method.
+//
+// The returned dbusMenu must not share its V1 map or V2 slice with the live
+// itemMap: godbus serialises the value through reflection on its own worker
+// goroutine after we have already released the lock, and a concurrent setter
+// would otherwise race that iteration. cloneDbusMenu walks the subtree under
+// the read lock and returns a fresh, self-contained copy.
 func (s *linuxSystemTray) GetLayout(parentID int32, recursionDepth int32, propertyNames []string) (revision uint32, layout dbusMenu, err *dbus.Error) {
 	s.itemMapLock.RLock()
 	defer s.itemMapLock.RUnlock()
 	if m, ok := s.itemMap[parentID]; ok {
-		return s.menuVersion.Load(), *m.dbusItem, nil
+		return s.menuVersion.Load(), cloneDbusMenu(m.dbusItem), nil
 	}
 
 	return
+}
+
+// cloneDbusMenu deep-copies a dbusMenu subtree so the returned value shares no
+// maps or slices with the live menu. V2 entries that wrap a *dbusMenu are
+// recursively cloned and re-wrapped; any other variants (none today, but let's
+// be defensive) are passed through.
+func cloneDbusMenu(src *dbusMenu) dbusMenu {
+	out := dbusMenu{
+		V0: src.V0,
+		V1: make(map[string]dbus.Variant, len(src.V1)),
+		V2: make([]dbus.Variant, 0, len(src.V2)),
+	}
+	for k, v := range src.V1 {
+		out.V1[k] = v
+	}
+	for _, child := range src.V2 {
+		if cm, ok := child.Value().(*dbusMenu); ok {
+			childCopy := cloneDbusMenu(cm)
+			out.V2 = append(out.V2, dbus.MakeVariant(&childCopy))
+		} else {
+			out.V2 = append(out.V2, child)
+		}
+	}
+	return out
 }
 
 func (s *linuxSystemTray) Activate(x int32, y int32) (err *dbus.Error) {

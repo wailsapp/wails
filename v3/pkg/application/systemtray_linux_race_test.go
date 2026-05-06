@@ -113,7 +113,21 @@ func TestLinuxSystemTrayConcurrentItemSetters(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		for time.Now().Before(deadline) {
-			_, _, _ = tray.GetLayout(0, -1, nil)
+			// Mimic godbus's post-return reflection-based serialisation:
+			// after GetLayout releases its read lock, the worker goroutine
+			// iterates V1 and the V2 children. If GetLayout aliases the
+			// live map, this iteration races setLabel / setChecked.
+			_, layout, _ := tray.GetLayout(0, -1, nil)
+			for k := range layout.V1 {
+				_ = k
+			}
+			for _, child := range layout.V2 {
+				if cm, ok := child.Value().(*dbusMenu); ok {
+					for k := range cm.V1 {
+						_ = k
+					}
+				}
+			}
 		}
 	}()
 	go func() {
