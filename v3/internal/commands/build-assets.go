@@ -450,6 +450,10 @@ func sanitizePlistDict(d map[string]any) map[string]any {
 	return result
 }
 
+// sanitizePlistValue recursively sanitizes a single plist value.
+// Returns the sanitized value and a boolean indicating whether the value
+// should be kept (true) or dropped (false). Values containing Go template
+// syntax are dropped; other types are passed through unchanged.
 func sanitizePlistValue(v any) (any, bool) {
 	switch val := v.(type) {
 	case string:
