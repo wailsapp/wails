@@ -106,6 +106,9 @@ STRICT RULES — violating any of these will cause the page to break or render i
      Discord, TypeScript, JavaScript — and any other brand names or tool names.
    - Keep technical loanwords in their original English form unless a well-established {lang}
      translation exists (e.g. "hot reload", "WebView", "binary" may stay as-is).
+   - Software release terms: "Ship" and "shipping" (in the context of releasing software)
+     should be translated as the equivalent of "release/publish" (e.g. German: "Veröffentlichen",
+     French: "Publier", Japanese: "リリース"), NOT as "deliver/send" (e.g. NOT "Liefern").
 
 2. PRESERVE frontmatter structure exactly:
    - Keep all YAML keys in English (title:, description:, link:, icon:, etc.)
@@ -481,9 +484,9 @@ def translate_with_zai(content: str, lang: str, file_path: str,
                     {"role": "user", "content": user_msg},
                 ],
                 "temperature": 0.2,
-                "max_tokens": 8000,
+                "max_tokens": 16000,
             },
-            timeout=180,
+            timeout=360,
         )
         resp.raise_for_status()
         data = resp.json()
@@ -566,6 +569,7 @@ def translate_file(
     lang: str,
     cache: dict,
     translated_paths: set,
+    force: bool = False,
 ) -> tuple[bool, str]:
     """
     Translate a single file and apply post-processing.
@@ -575,8 +579,8 @@ def translate_file(
     h = file_hash(content)
     cache_key = str(src_path.relative_to(DOCS_ROOT))
 
-    # Check cache
-    if cache_key in cache and cache[cache_key].get("hash") == h:
+    # Check cache (skipped when force=True)
+    if not force and cache_key in cache and cache[cache_key].get("hash") == h:
         rel = src_path.relative_to(DOCS_ROOT)
         out_path = DOCS_ROOT / locale / rel
         if out_path.exists():
@@ -628,7 +632,7 @@ def get_source_files() -> list[Path]:
     return files
 
 
-def run_locale(locale: str, files: list[Path], max_files: int = None):
+def run_locale(locale: str, files: list[Path], max_files: int = None, force: bool = False):
     lang = LOCALE_NAMES[locale]
     cache = load_cache(locale)
 
@@ -650,7 +654,7 @@ def run_locale(locale: str, files: list[Path], max_files: int = None):
             break
         count += 1
 
-        success, status = translate_file(src_path, locale, lang, cache, translated_paths)
+        success, status = translate_file(src_path, locale, lang, cache, translated_paths, force=force)
         if success:
             if status == "translated":
                 translated += 1
@@ -670,13 +674,17 @@ def run_locale(locale: str, files: list[Path], max_files: int = None):
 
 
 def main():
-    global TRANSLATE_BACKEND, ZAI_MODEL
+    global TRANSLATE_BACKEND, ZAI_MODEL, MODEL
 
     parser = argparse.ArgumentParser(description="Translate Wails v3 docs")
     parser.add_argument("--locale", default="all", help="Locale(s) to translate (comma-separated or 'all')")
     parser.add_argument("--max-files", type=int, default=None, help="Max files per locale")
     parser.add_argument("--zai-model", default=None,
                         help="Use z.ai instead of Ollama; specify model name (e.g. glm-5.1, glm-4.7)")
+    parser.add_argument("--ollama-model", default=None,
+                        help="Override Ollama model (e.g. hf.co/Jackrong/Qwen3.5-9B-GLM5.1-Distill-v1-GGUF:Q4_K_M)")
+    parser.add_argument("--force", action="store_true",
+                        help="Re-translate even if cached (for model comparison)")
     args = parser.parse_args()
 
     if args.zai_model:
@@ -684,6 +692,8 @@ def main():
         ZAI_MODEL = args.zai_model
         print(f"Backend: z.ai ({ZAI_MODEL})", flush=True)
     else:
+        if args.ollama_model:
+            MODEL = args.ollama_model
         print(f"Backend: Ollama ({MODEL})", flush=True)
 
     if args.locale == "all":
@@ -698,10 +708,12 @@ def main():
     files = get_source_files()
     print(f"Found {len(files)} source files to translate", flush=True)
     print(f"Locales: {', '.join(locales)}", flush=True)
+    if args.force:
+        print("Force mode: bypassing cache", flush=True)
 
     results = []
     for locale in locales:
-        result = run_locale(locale, files, args.max_files)
+        result = run_locale(locale, files, args.max_files, force=args.force)
         results.append(result)
 
     print("\n" + "="*60, flush=True)
@@ -713,6 +725,58 @@ def main():
 
     total_files = sum(r['translated'] + r['cached'] for r in results)
     print(f"\nTotal files processed: {total_files}", flush=True)
+
+    # Ensure all translated locales are registered in astro.config.mjs
+    print("\nUpdating astro.config.mjs locale registrations...", flush=True)
+    ensure_astro_locales(locales)
+
+
+ASTRO_CONFIG = Path(__file__).parent.parent / "astro.config.mjs"
+
+# Locale metadata for astro.config.mjs registration
+LOCALE_ASTRO = {
+    "zh-cn": ('"zh-cn"', "简体中文",          "zh-CN"),
+    "zh-tw": ('"zh-tw"', "繁體中文",          "zh-TW"),
+    "ja":    ("ja",      "日本語",             "ja"),
+    "ko":    ("ko",      "한국어",             "ko"),
+    "ru":    ("ru",      "Русский",           "ru"),
+    "fr":    ("fr",      "Français",          "fr"),
+    "pt":    ("pt",      "Português (Brasil)", "pt-BR"),
+    "de":    ("de",      "Deutsch",           "de"),
+}
+
+
+def ensure_astro_locales(locales: list[str]):
+    """Add any missing locales to the Starlight locales block in astro.config.mjs."""
+    if not ASTRO_CONFIG.exists():
+        return
+    config = ASTRO_CONFIG.read_text(encoding="utf-8")
+    changed = False
+    for locale in locales:
+        meta = LOCALE_ASTRO.get(locale)
+        if not meta:
+            continue
+        key, label, lang = meta
+        # Check if locale key is already present
+        if f"{key}:" in config or f"{key} :" in config:
+            continue
+        # Insert before the closing brace of the locales block
+        entry = f'        {key}: {{ label: "{label}", lang: "{lang}", dir: "ltr" }},\n'
+        config = config.replace(
+            '        root: { label: "English", lang: "en", dir: "ltr" },\n      },',
+            f'        root: {{ label: "English", lang: "en", dir: "ltr" }},\n{entry}      }},'
+        )
+        # If the above pattern already matched and was replaced in a previous iteration,
+        # look for the locale block closing differently
+        if entry not in config:
+            # Find the locales closing brace and insert before it
+            marker = "      },\n      plugins:"
+            if marker in config and entry not in config:
+                config = config.replace(marker, f"{entry}{marker}", 1)
+        changed = True
+        print(f"  Registered locale {locale} ({label}) in astro.config.mjs", flush=True)
+    if changed:
+        ASTRO_CONFIG.write_text(config, encoding="utf-8")
 
 
 if __name__ == "__main__":
