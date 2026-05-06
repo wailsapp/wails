@@ -26,6 +26,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix Linux systray crash when an unrelated dbus signal lands on its shared session-bus channel (#5344).
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

@@ -20,8 +20,10 @@ import (
 )
 
 const (
-	itemPath = "/StatusNotifierItem"
-	menuPath = "/StatusNotifierMenu"
+	itemPath                  = "/StatusNotifierItem"
+	menuPath                  = "/StatusNotifierMenu"
+	dbusNameOwnerChanged      = "org.freedesktop.DBus.NameOwnerChanged"
+	dbusStatusNotifierWatcher = "org.kde.StatusNotifierWatcher"
 )
 
 type linuxSystemTray struct {
@@ -283,6 +285,23 @@ func (s *linuxSystemTray) bounds() (*Rect, error) {
 
 }
 
+// shouldReregisterOnNameOwnerChanged reports whether sig is a NameOwnerChanged
+// signal whose new-owner field is set. Filters out other signals multiplexed
+// onto the shared SessionBus connection (see #5344).
+func shouldReregisterOnNameOwnerChanged(sig *dbus.Signal) bool {
+	if sig == nil || sig.Name != dbusNameOwnerChanged {
+		return false
+	}
+	if len(sig.Body) < 3 {
+		return false
+	}
+	if name, ok := sig.Body[0].(string); !ok || name != dbusStatusNotifierWatcher {
+		return false
+	}
+	newOwner, ok := sig.Body[2].(string)
+	return ok && newOwner != ""
+}
+
 func (s *linuxSystemTray) run() {
 	conn, err := dbus.SessionBus()
 	if err != nil {
@@ -358,7 +377,7 @@ func (s *linuxSystemTray) run() {
 			dbus.WithMatchInterface("org.freedesktop.DBus"),
 			dbus.WithMatchSender("org.freedesktop.DBus"),
 			dbus.WithMatchMember("NameOwnerChanged"),
-			dbus.WithMatchArg(0, "org.kde.StatusNotifierWatcher"),
+			dbus.WithMatchArg(0, dbusStatusNotifierWatcher),
 		); err != nil {
 			globalApplication.error("systray error: failed to register signal matching: %w", err)
 			return
@@ -373,8 +392,7 @@ func (s *linuxSystemTray) run() {
 				if sig == nil {
 					return // We get a nil signal when closing the window.
 				}
-				// sig.Body has the args, which are [name old_owner new_owner]
-				if sig.Body[2] != "" {
+				if shouldReregisterOnNameOwnerChanged(sig) {
 					s.register()
 				}
 
@@ -606,8 +624,8 @@ func (s *linuxSystemTray) update(i *systrayMenuItem) {
 }
 
 func (s *linuxSystemTray) register() bool {
-	obj := s.conn.Object("org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher")
-	call := obj.Call("org.kde.StatusNotifierWatcher.RegisterStatusNotifierItem", 0, itemPath)
+	obj := s.conn.Object(dbusStatusNotifierWatcher, "/StatusNotifierWatcher")
+	call := obj.Call(dbusStatusNotifierWatcher+".RegisterStatusNotifierItem", 0, itemPath)
 	if call.Err != nil {
 		globalApplication.error("systray error: failed to register: %w", call.Err)
 		return false
