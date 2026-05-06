@@ -353,9 +353,14 @@ func (s *linuxSystemTray) run() {
 		return
 	}
 
+	// Publish the dbus handles under the same lock that refreshLocked reads
+	// them under, so a setter racing with the run()-side wiring never
+	// observes a half-initialised pair.
+	s.itemMapLock.Lock()
 	s.conn = conn
 	s.props = props
 	s.menuProps = menuProps
+	s.itemMapLock.Unlock()
 
 	node := introspect.Node{
 		Name: itemPath,
