@@ -77,39 +77,36 @@ type systrayMenuItem struct {
 
 func (s *systrayMenuItem) setBitmap(data []byte) {
 	s.sysTray.itemMapLock.Lock()
+	defer s.sysTray.itemMapLock.Unlock()
 	s.dbusItem.V1["icon-data"] = dbus.MakeVariant(data)
 	s.sysTray.itemMap[int32(s.menuItem.id)] = s
-	s.sysTray.itemMapLock.Unlock()
-	s.sysTray.refresh()
+	s.sysTray.refreshLocked()
 }
 
 func (s *systrayMenuItem) setTooltip(v string) {
 	s.sysTray.itemMapLock.Lock()
+	defer s.sysTray.itemMapLock.Unlock()
 	s.dbusItem.V1["tooltip"] = dbus.MakeVariant(v)
 	s.sysTray.itemMap[int32(s.menuItem.id)] = s
-	s.sysTray.itemMapLock.Unlock()
-	s.sysTray.refresh()
+	s.sysTray.refreshLocked()
 }
 
 func (s *systrayMenuItem) setLabel(v string) {
 	s.sysTray.itemMapLock.Lock()
+	defer s.sysTray.itemMapLock.Unlock()
 	s.dbusItem.V1["label"] = dbus.MakeVariant(v)
 	s.sysTray.itemMap[int32(s.menuItem.id)] = s
-	s.sysTray.itemMapLock.Unlock()
-	s.sysTray.refresh()
+	s.sysTray.refreshLocked()
 }
 
 func (s *systrayMenuItem) setDisabled(disabled bool) {
 	v := dbus.MakeVariant(!disabled)
 	s.sysTray.itemMapLock.Lock()
-	changed := s.dbusItem.V1["enabled"] != v
-	if changed {
+	defer s.sysTray.itemMapLock.Unlock()
+	if s.dbusItem.V1["enabled"] != v {
 		s.dbusItem.V1["enabled"] = v
 		s.sysTray.itemMap[int32(s.menuItem.id)] = s
-	}
-	s.sysTray.itemMapLock.Unlock()
-	if changed {
-		s.sysTray.refresh()
+		s.sysTray.refreshLocked()
 	}
 }
 
@@ -121,24 +118,21 @@ func (s *systrayMenuItem) setChecked(checked bool) {
 		v = dbus.MakeVariant(1)
 	}
 	s.sysTray.itemMapLock.Lock()
-	changed := s.dbusItem.V1["toggle-state"] != v
-	if changed {
+	defer s.sysTray.itemMapLock.Unlock()
+	if s.dbusItem.V1["toggle-state"] != v {
 		s.dbusItem.V1["toggle-state"] = v
 		s.sysTray.itemMap[int32(s.menuItem.id)] = s
-	}
-	s.sysTray.itemMapLock.Unlock()
-	if changed {
-		s.sysTray.refresh()
+		s.sysTray.refreshLocked()
 	}
 }
 
 func (s *systrayMenuItem) setAccelerator(accelerator *accelerator) {}
 func (s *systrayMenuItem) setHidden(hidden bool) {
 	s.sysTray.itemMapLock.Lock()
+	defer s.sysTray.itemMapLock.Unlock()
 	s.dbusItem.V1["visible"] = dbus.MakeVariant(!hidden)
 	s.sysTray.itemMap[int32(s.menuItem.id)] = s
-	s.sysTray.itemMapLock.Unlock()
-	s.sysTray.refresh()
+	s.sysTray.refreshLocked()
 }
 
 func (s *systrayMenuItem) dbus() *dbusMenu {
@@ -209,7 +203,13 @@ func (s *linuxSystemTray) processMenu(menu *Menu, parentId int32) {
 	}
 }
 
-func (s *linuxSystemTray) refresh() {
+// refreshLocked bumps the menu revision and emits the dbusmenu LayoutUpdated
+// signal. The caller must hold itemMapLock for writing: this guarantees that
+// (a) the (layout, revision) pair observed by GetLayout under RLock is always
+// consistent — readers either see both old or both new, never mixed — and
+// (b) concurrent writers serialise their emits in revision order, so the
+// exported Version property never moves backwards.
+func (s *linuxSystemTray) refreshLocked() {
 	v := s.menuVersion.Add(1)
 	if s.menuProps == nil || s.conn == nil {
 		return
@@ -231,6 +231,7 @@ func (s *linuxSystemTray) refresh() {
 
 func (s *linuxSystemTray) setMenu(menu *Menu) {
 	s.itemMapLock.Lock()
+	defer s.itemMapLock.Unlock()
 	s.itemMap = map[int32]*systrayMenuItem{}
 	s.itemMap[0] = &systrayMenuItem{
 		menuItem: nil,
@@ -245,8 +246,7 @@ func (s *linuxSystemTray) setMenu(menu *Menu) {
 		s.processMenu(menu, 0)
 	}
 	s.menu = menu
-	s.itemMapLock.Unlock()
-	s.refresh()
+	s.refreshLocked()
 }
 
 func (s *linuxSystemTray) positionWindow(window Window, offset int) error {
@@ -637,13 +637,6 @@ func (s *linuxSystemTray) createPropSpec() map[string]map[string]*prop.Prop {
 	}
 }
 
-func (s *linuxSystemTray) update(i *systrayMenuItem) {
-	s.itemMapLock.Lock()
-	s.itemMap[int32(i.menuItem.id)] = i
-	s.itemMapLock.Unlock()
-	s.refresh()
-}
-
 func (s *linuxSystemTray) register() bool {
 	obj := s.conn.Object("org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher")
 	call := obj.Call("org.kde.StatusNotifierWatcher.RegisterStatusNotifierItem", 0, itemPath)
@@ -832,7 +825,12 @@ func (s *linuxSystemTray) SecondaryActivate(x int32, y int32) (err *dbus.Error) 
 	s.lastClickY = int(y)
 	if s.parent.rightClickHandler != nil {
 		s.parent.rightClickHandler()
-	} else if s.menu != nil {
+		return
+	}
+	s.itemMapLock.RLock()
+	hasMenu := s.menu != nil
+	s.itemMapLock.RUnlock()
+	if hasMenu {
 		s.parent.OpenMenu()
 	}
 	return
