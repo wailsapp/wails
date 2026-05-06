@@ -20,6 +20,8 @@ jobs:
   weekly-release:
     runs-on: ubuntu-latest
     if: github.repository == 'wailsapp/wails'
+    env:
+      GOWORK: "off"
 
     permissions:
       contents: write

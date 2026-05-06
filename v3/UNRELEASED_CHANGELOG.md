@@ -17,22 +17,18 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add option to disable Escape key exiting fullscreen on macOS in [PR](https://github.com/wailsapp/wails/pull/5307) by @leaanthony
-- Add option to disable Escape key exiting fullscreen on macOS in [PR](https://github.com/wailsapp/wails/pull/5310) by @leaanthony
-- Adds Pausa community showcase documentation in [PR](https://github.com/wailsapp/wails/pull/5288) by @yuseferi
+- Add French documentation localization in [PR](https://github.com/wailsapp/wails/pull/5328) by @leaanthony
+- Add German locale to Astro documentation site in [PR](https://github.com/wailsapp/wails/pull/5343) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5308) by @github-actions[bot]
-- Update icon generation command to handle unsupported platforms in [PR](https://github.com/wailsapp/wails/pull/5309) by @leaanthony
-- Replace boolean fullscreen API with tri-state ButtonState, implement platform bindings in [PR](https://github.com/wailsapp/wails/pull/5224) by @leaanthony
+- Register all 8 translated locales in Starlight config in [PR](https://github.com/wailsapp/wails/pull/5347) by @leaanthony
+- Update various Windows related files for WebView2 in [PR](https://github.com/wailsapp/wails/pull/5317) by @leaanthony
 
 ## Fixed
 <!-- Bug fixes -->
-- Guard WebView2 focus operations against nil controller state in [PR](https://github.com/wailsapp/wails/pull/5315) by @leaanthony
-- Update GitHub Actions workflow to correctly reference PR base branch in [PR](https://github.com/wailsapp/wails/pull/5313) by @leaanthony
-- Ignore *_test.go files in dev mode to prevent unnecessary rebuilds in [PR](https://github.com/wailsapp/wails/pull/5203) by @leaanthony
-- Prevent Menu.Update() segfault when app is not running in [PR](https://github.com/wailsapp/wails/pull/5291) by @wucm667
+- Split dialog dispatch between GTK3 and GTK4 for Linux in [PR](https://github.com/wailsapp/wails/pull/5340) by @leaanthony
+- Ensure dialog callbacks execute on the GTK thread, fixing segfaults in [PR](https://github.com/wailsapp/wails/pull/5339) by @leaanthony
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
