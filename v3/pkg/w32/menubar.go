@@ -561,8 +561,9 @@ func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *
 		// Repaint menubar after size change
 		paintDarkMenuBar(hwnd, theme)
 
-		// CRITICAL: Force complete menubar redraw when maximized
-		if msg == WM_SIZE && wParam == SIZE_MAXIMIZED {
+		// Snap-to-side produces SIZE_RESTORED, not SIZE_MAXIMIZED; include both so the
+		// dark menubar is repainted after every snap or maximize operation.
+		if msg == WM_SIZE && (wParam == SIZE_MAXIMIZED || wParam == SIZE_RESTORED) {
 			// Invalidate the entire menubar area to force redraw
 			var mbi MENUBARINFO
 			mbi.CbSize = uint32(unsafe.Sizeof(mbi))
