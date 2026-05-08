@@ -70,6 +70,11 @@ type Frontend struct {
 	// Windows build number
 	versionInfo     *operatingsystem.WindowsVersionInfo
 	resizeDebouncer func(f func())
+
+	// Pending JS callbacks are batched to avoid saturating WebView2's
+	// ExecuteScript queue under heavy concurrent Go→JS call load.
+	callbackMu      sync.Mutex
+	pendingCallbacks []string
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
@@ -871,9 +876,37 @@ func (f *Frontend) Callback(message string) {
 	if err != nil {
 		panic(err)
 	}
-	f.mainWindow.Invoke(func() {
-		f.chromium.Eval(`window.wails.Callback(` + string(escaped) + `);`)
-	})
+	script := `window.wails.Callback(` + string(escaped) + `);`
+
+	f.callbackMu.Lock()
+	wasEmpty := len(f.pendingCallbacks) == 0
+	f.pendingCallbacks = append(f.pendingCallbacks, script)
+	f.callbackMu.Unlock()
+
+	// Only the first waiter needs to queue a drain; subsequent callers piggyback on it.
+	if wasEmpty {
+		f.mainWindow.Invoke(f.drainCallbacks)
+	}
+}
+
+// drainCallbacks is called on the UI thread by the Invoke mechanism.
+// It flushes all accumulated callbacks in a single ExecuteScript call,
+// preventing WebView2 queue saturation under high concurrent load.
+func (f *Frontend) drainCallbacks() {
+	f.callbackMu.Lock()
+	scripts := f.pendingCallbacks
+	f.pendingCallbacks = nil
+	f.callbackMu.Unlock()
+
+	if len(scripts) == 0 {
+		return
+	}
+
+	var sb strings.Builder
+	for _, s := range scripts {
+		sb.WriteString(s)
+	}
+	f.chromium.Eval(sb.String())
 }
 
 func (f *Frontend) startDrag() error {
