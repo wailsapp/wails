@@ -8,7 +8,7 @@ The electron alternative for Go
 (c) Lea Anthony 2019-present
 */
 
-import { invoke, IsWindows } from "./system.js";
+import { invoke, IsWindows, IsLinux } from "./system.js";
 import { GetFlag } from "./flags.js";
 import { canTrackButtons, eventTarget } from "./utils.js";
 
@@ -221,7 +221,7 @@ function onMouseMove(event: MouseEvent): void {
         return;
     }
 
-    if (!resizable || !IsWindows()) {
+    if (!resizable || (!IsWindows() && !(IsLinux() && GetFlag("frameless")))) {
         if (resizeEdge) { setResize(); }
         return;
     }
@@ -232,16 +232,23 @@ function onMouseMove(event: MouseEvent): void {
     // Extra pixels for the corner areas.
     const cornerExtra = GetFlag("resizeCornerExtra") || 10;
 
-    const rightBorder = (window.outerWidth - event.clientX) < resizeHandleWidth;
+    // When a scrollbar is present at the window edge it consumes mouse events in that strip.
+    // Shift the effective content edge inward so the resize zone sits just before the scrollbar.
+    const scrollbarWidth = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+    const scrollbarHeight = Math.max(0, window.innerHeight - document.documentElement.clientHeight);
+    const rightContentEdge = window.outerWidth - scrollbarWidth;
+    const bottomContentEdge = window.outerHeight - scrollbarHeight;
+
+    const rightBorder = event.clientX < rightContentEdge && (rightContentEdge - event.clientX) < resizeHandleWidth;
     const leftBorder = event.clientX < resizeHandleWidth;
     const topBorder = event.clientY < resizeHandleHeight;
-    const bottomBorder = (window.outerHeight - event.clientY) < resizeHandleHeight;
+    const bottomBorder = event.clientY < bottomContentEdge && (bottomContentEdge - event.clientY) < resizeHandleHeight;
 
     // Adjust for corner areas.
-    const rightCorner = (window.outerWidth - event.clientX) < (resizeHandleWidth + cornerExtra);
+    const rightCorner = event.clientX < rightContentEdge && (rightContentEdge - event.clientX) < (resizeHandleWidth + cornerExtra);
     const leftCorner = event.clientX < (resizeHandleWidth + cornerExtra);
     const topCorner = event.clientY < (resizeHandleHeight + cornerExtra);
-    const bottomCorner = (window.outerHeight - event.clientY) < (resizeHandleHeight + cornerExtra);
+    const bottomCorner = event.clientY < bottomContentEdge && (bottomContentEdge - event.clientY) < (resizeHandleHeight + cornerExtra);
 
     if (!leftCorner && !topCorner && !bottomCorner && !rightCorner) {
         // Optimisation: out of all corner areas implies out of borders.
