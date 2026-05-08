@@ -8,4 +8,8 @@ export default defineConfig({
       '@wailsio/runtime': path.resolve(__dirname, '../../../internal/runtime/desktop/@wailsio/runtime/src/index.ts'),
     },
   },
+  server: {
+    port: parseInt(process.env.WAILS_VITE_PORT || "9245"),
+    strictPort: true,
+  },
 });
