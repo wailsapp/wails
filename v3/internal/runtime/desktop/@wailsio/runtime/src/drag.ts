@@ -8,7 +8,7 @@ The electron alternative for Go
 (c) Lea Anthony 2019-present
 */
 
-import { invoke, IsWindows } from "./system.js";
+import { invoke, IsLinux, IsWindows } from "./system.js";
 import { GetFlag } from "./flags.js";
 import { canTrackButtons, eventTarget } from "./utils.js";
 
@@ -221,7 +221,7 @@ function onMouseMove(event: MouseEvent): void {
         return;
     }
 
-    if (!resizable || !IsWindows()) {
+    if (!resizable || (!IsWindows() && !IsLinux())) {
         if (resizeEdge) { setResize(); }
         return;
     }
