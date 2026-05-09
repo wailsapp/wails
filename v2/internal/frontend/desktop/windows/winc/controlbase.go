@@ -420,20 +420,19 @@ func (cba *ControlBase) InvokeRequired() bool {
 	return windowThreadId != currentThreadId
 }
 
-func (cba *ControlBase) Invoke(f func()) {
+// Invoke schedules f to run on the window's UI thread. It returns true when
+// PostMessage succeeded (or f was executed synchronously on the current thread),
+// and false when PostMessage failed — the caller is responsible for logging and
+// retrying when a false return matters.
+func (cba *ControlBase) Invoke(f func()) bool {
 	if cba.tryInvokeOnCurrentGoRoutine(f) {
-		return
+		return true
 	}
 
 	cba.m.Lock()
 	cba.dispatchq = append(cba.dispatchq, f)
 	cba.m.Unlock()
-	if !w32.PostMessage(cba.hwnd, wmInvokeCallback, 0, 0) {
-		// PostMessage fails when the Windows message queue is full (>10 000 msgs) or the
-		// HWND is no longer valid. The function is already in dispatchq so it will run the
-		// next time any wmInvokeCallback is processed, but log so the failure is visible.
-		fmt.Printf("[wails] Invoke: PostMessage failed – callbacks may be delayed\n")
-	}
+	return w32.PostMessage(cba.hwnd, wmInvokeCallback, 0, 0)
 }
 
 func (cba *ControlBase) PreTranslateMessage(msg *w32.MSG) bool {

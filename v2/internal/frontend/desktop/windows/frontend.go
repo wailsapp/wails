@@ -75,6 +75,7 @@ type Frontend struct {
 	// ExecuteScript queue under heavy concurrent Go→JS call load.
 	callbackMu      sync.Mutex
 	pendingCallbacks []string
+	drainScheduled  bool
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
@@ -879,13 +880,22 @@ func (f *Frontend) Callback(message string) {
 	script := `window.wails.Callback(` + string(escaped) + `);`
 
 	f.callbackMu.Lock()
-	wasEmpty := len(f.pendingCallbacks) == 0
 	f.pendingCallbacks = append(f.pendingCallbacks, script)
+	shouldSchedule := !f.drainScheduled
+	if shouldSchedule {
+		f.drainScheduled = true
+	}
 	f.callbackMu.Unlock()
 
-	// Only the first waiter needs to queue a drain; subsequent callers piggyback on it.
-	if wasEmpty {
-		f.mainWindow.Invoke(f.drainCallbacks)
+	if shouldSchedule {
+		if !f.mainWindow.Invoke(f.drainCallbacks) {
+			// PostMessage failed (queue full or HWND invalid). Reset the flag so the
+			// next incoming callback can try to schedule a fresh drain.
+			f.callbackMu.Lock()
+			f.drainScheduled = false
+			f.callbackMu.Unlock()
+			f.logger.Warning("Invoke: PostMessage failed — pending WebView2 callbacks may be delayed")
+		}
 	}
 }
 
@@ -896,13 +906,19 @@ func (f *Frontend) drainCallbacks() {
 	f.callbackMu.Lock()
 	scripts := f.pendingCallbacks
 	f.pendingCallbacks = nil
+	f.drainScheduled = false // allow re-scheduling before we release the lock
 	f.callbackMu.Unlock()
 
 	if len(scripts) == 0 {
 		return
 	}
 
+	totalLen := 0
+	for _, s := range scripts {
+		totalLen += len(s)
+	}
 	var sb strings.Builder
+	sb.Grow(totalLen)
 	for _, s := range scripts {
 		sb.WriteString(s)
 	}
