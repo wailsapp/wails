@@ -459,15 +459,15 @@ func sanitizePlistValue(v any) (any, bool) {
 		return val, true
 	case map[string]any:
 		sanitized := sanitizePlistDict(val)
-		return sanitized, len(sanitized) > 0
+		return sanitized, true
 	case []any:
-		var result []any
+		result := make([]any, 0, len(val))
 		for _, item := range val {
 			if sanitized, keep := sanitizePlistValue(item); keep {
 				result = append(result, sanitized)
 			}
 		}
-		return result, len(result) > 0
+		return result, true
 	default:
 		return v, true
 	}

@@ -731,12 +731,9 @@ func TestOldFormatPlistMigration(t *testing.T) {
 
 	contentStr := string(content)
 
-	// No template stub should survive in the output.
-	stubs := []string{"{{.Ext}}", "{{.Name}}", "{{.Role}}", "{{.IconName}}", "{{.Scheme}}"}
-	for _, stub := range stubs {
-		if strings.Contains(contentStr, stub) {
-			t.Errorf("Output Info.plist still contains template stub %q — old-format template was not sanitized correctly", stub)
-		}
+	// No Go template syntax should survive in the output.
+	if strings.Contains(contentStr, "{{") {
+		t.Errorf("Output Info.plist still contains Go template syntax — old-format template was not sanitized correctly:\n%s", contentStr)
 	}
 
 	// User-added keys that are real values must be preserved.
