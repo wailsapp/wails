@@ -34,6 +34,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -367,14 +368,29 @@ func validateNotificationOptions(options NotificationOptions) error {
 		}
 		statPath := a.Path
 		if strings.HasPrefix(statPath, "file://") {
-			// macOS UNNotificationAttachment accepts file:// URLs as well
-			// as plain paths; map back to a local filesystem path here so
-			// os.Stat doesn't reject the URL form as a literal path.
+			// macOS UNNotificationAttachment accepts file:// URLs as well as
+			// plain paths. Map back to a local filesystem path so os.Stat
+			// doesn't reject the URL form as a literal path.
+			//
+			// url.Parse rejects Windows backslash paths ("file://C:\path")
+			// because it treats the drive letter as a hostname and the rest
+			// as an invalid port. Fall back to prefix-stripping in that case.
 			u, err := url.Parse(statPath)
 			if err != nil {
-				return fmt.Errorf("attachments[%d].path %q: %w", i, a.Path, err)
+				// Windows backslash fallback: strip prefix and let filepath
+				// normalise the remaining native path.
+				statPath = filepath.FromSlash(strings.TrimPrefix(statPath, "file://"))
+			} else {
+				// Standard three-slash form (file:///C:/path or file:///tmp/path).
+				// u.Path is already the URL-decoded path component. On Windows,
+				// file:///C:/path parses to path "/C:/path" — drop the leading
+				// separator before the drive letter.
+				p := filepath.FromSlash(u.Path)
+				if len(p) > 2 && p[0] == filepath.Separator && p[2] == ':' {
+					p = p[1:]
+				}
+				statPath = p
 			}
-			statPath = u.Path
 		}
 		if _, err := os.Stat(statPath); err != nil {
 			return fmt.Errorf("attachments[%d].path %q: %w", i, a.Path, err)

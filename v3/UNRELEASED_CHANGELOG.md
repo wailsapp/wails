@@ -22,9 +22,9 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Internal: rewrite the Windows notifications backend to build toast XML directly via the `wintoast` subpackage, dropping the high-level `git.sr.ht/~jackmordaunt/go-toast/v2` builder. Behaviour is preserved; this unlocks first-class custom sounds, hero/inline images, threading, scheduling, scenarios, and tag-based update on Windows.
+- Internal: rewrite the Windows notifications backend to build toast XML directly via the `wintoast` subpackage, dropping the high-level `git.sr.ht/~jackmordaunt/go-toast/v2` builder. Behaviour is preserved; this unlocks first-class custom sounds, hero/inline images, threading, scheduling, and scenarios on Windows.
 - Internal: macOS notifications C bridge now accepts a single JSON options blob instead of individual parameters, simplifying future field additions.
-- Documentation: clarify that the Windows notifications backend supports reply fields (only Linux does not).
+- Documentation: clarify that reply fields are supported on macOS and Windows; Linux does not support replies.
 
 ## Fixed
 <!-- Bug fixes -->

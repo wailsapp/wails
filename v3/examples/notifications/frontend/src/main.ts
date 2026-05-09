@@ -318,34 +318,37 @@ const unlisten = Events.On("notification:action", (response) => {
         console.table(userInfo);
     }
 
-    const baseRows = `
-        <thead>
-            ${Object.keys(base).map((key) => `<th>${key}</th>`).join("")}
-        </thead>
-        <tbody>
-            ${Object.values(base).map((value) => `<td>${value}</td>`).join("")}
-        </tbody>
-    `;
-    const metaRows = userInfo
-        ? `
-        <h5>Notification Metadata</h5>
-        <table>
-            <thead>
-                ${Object.keys(userInfo).map((key) => `<th>${key}</th>`).join("")}
-            </thead>
-            <tbody>
-                ${Object.values(userInfo).map((value) => `<td>${value}</td>`).join("")}
-            </tbody>
-        </table>
-    `
-        : "";
+    // Build tables via DOM API (not innerHTML) so notification payloads
+    // containing HTML/JS cannot execute in the demo page.
+    function buildTable(data: Record<string, unknown>): HTMLTableElement {
+        const table = document.createElement("table");
+        const thead = table.createTHead();
+        const tbody = table.createTBody();
+        const headerRow = thead.insertRow();
+        const dataRow = tbody.insertRow();
+        for (const [key, value] of Object.entries(data)) {
+            const th = document.createElement("th");
+            th.textContent = key;
+            headerRow.appendChild(th);
+            const td = dataRow.insertCell();
+            td.textContent = String(value);
+        }
+        return table;
+    }
 
-    const html = `
-        <h5>Notification Response</h5>
-        <table>${baseRows}</table>
-        ${metaRows}
-    `;
-    if (footer) footer.innerHTML = html;
+    if (footer) {
+        footer.textContent = "";
+        const h5 = document.createElement("h5");
+        h5.textContent = "Notification Response";
+        footer.appendChild(h5);
+        footer.appendChild(buildTable(base));
+        if (userInfo) {
+            const h5meta = document.createElement("h5");
+            h5meta.textContent = "Notification Metadata";
+            footer.appendChild(h5meta);
+            footer.appendChild(buildTable(userInfo as Record<string, unknown>));
+        }
+    }
 });
 
 window.onbeforeunload = () => unlisten();
