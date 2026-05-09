@@ -127,6 +127,72 @@ func TestLinuxOnKeyPressEventConsumesCtrlZ(t *testing.T) {
 	t.Error("onKeyPressEvent must return C.gboolean(1) immediately inside the Ctrl+Z||Ctrl+Shift+Z if-block to prevent webkit2gtk's broken native undo from racing with document.execCommand")
 }
 
+// TestLinuxPuregoKeyPressEventIsWired verifies that windowSetupSignalHandlers in
+// the purego path connects "key-press-event" on the webview, so that keyboard
+// shortcuts (including Ctrl+Z undo) are dispatched through windowKeyEvents →
+// handleKeyEvent, mirroring the CGO onKeyPressEvent handler.
+func TestLinuxPuregoKeyPressEventIsWired(t *testing.T) {
+	data, err := os.ReadFile("linux_purego.go")
+	if err != nil {
+		t.Skip("linux_purego.go not available")
+	}
+	content := string(data)
+
+	if !strings.Contains(content, `"key-press-event"`) {
+		t.Error("windowSetupSignalHandlers must connect \"key-press-event\" on the webview in the purego build path")
+	}
+	if !strings.Contains(content, "gSignalConnectData") || !strings.Contains(content, "keyPressCallback") {
+		t.Error("windowSetupSignalHandlers must register keyPressCallback via gSignalConnectData for key-press-event")
+	}
+}
+
+// TestLinuxPuregoKeyPressEventConsumesCtrlZ verifies that the purego key-press
+// callback returns 1 (consume) for Ctrl+Z / Ctrl+Shift+Z so webkit2gtk's
+// unreliable native undo handler does not race with Wails' execCommand call.
+func TestLinuxPuregoKeyPressEventConsumesCtrlZ(t *testing.T) {
+	data, err := os.ReadFile("linux_purego.go")
+	if err != nil {
+		t.Skip("linux_purego.go not available")
+	}
+	lines := strings.Split(string(data), "\n")
+
+	inCallback := false
+	guardLineIdx := -1
+
+	for i, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if strings.Contains(trimmed, "keyPressCallback") && strings.Contains(trimmed, "purego.NewCallback") {
+			inCallback = true
+			continue
+		}
+		if !inCallback {
+			continue
+		}
+		// End of the callback closure
+		if trimmed == "})" {
+			break
+		}
+		if strings.HasPrefix(trimmed, "//") {
+			continue
+		}
+		// Guard: if-condition that checks both undo/redo accelerators with ||
+		if strings.Contains(trimmed, `"Ctrl+Z"`) &&
+			strings.Contains(trimmed, `"Ctrl+Shift+Z"`) &&
+			strings.Contains(trimmed, "||") {
+			guardLineIdx = i
+			continue
+		}
+		if guardLineIdx >= 0 && i-guardLineIdx <= 3 {
+			if strings.Contains(trimmed, "return 1") {
+				return // pass
+			}
+		} else if guardLineIdx >= 0 && i-guardLineIdx > 3 {
+			guardLineIdx = -1
+		}
+	}
+	t.Error("purego keyPressCallback must return 1 immediately inside the Ctrl+Z||Ctrl+Shift+Z guard to consume the event")
+}
+
 // TestLinuxHandleKeyEventFallbackForCtrlZ verifies that handleKeyEvent in the
 // shared Linux file calls undo() when no binding is registered for Ctrl+Z.
 func TestLinuxHandleKeyEventFallbackForCtrlZ(t *testing.T) {
