@@ -1145,7 +1145,13 @@ func (w *Wizard) handleDefaults(rw http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(rw).Encode(defaults)
 
 	case http.MethodPost:
-		var defaults GlobalDefaults
+		// Load existing defaults first so that fields absent from the request body
+		// retain their saved values rather than being overwritten with zero values.
+		defaults, err := LoadGlobalDefaults()
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		if err := json.NewDecoder(r.Body).Decode(&defaults); err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return

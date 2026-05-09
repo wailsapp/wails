@@ -5,6 +5,7 @@ package setupwizard
 import (
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -150,23 +151,31 @@ func findToolchainGo() string {
 	}
 
 	// GOTOOLCHAIN=auto|path: scan the module cache for a downloaded toolchain.
-	gopath, err := execCommand("go", "env", "GOPATH")
-	if err != nil || gopath == "" {
+	// Use GOMODCACHE: it is the authoritative cache location and correctly handles
+	// GOPATH with multiple colon-separated entries or an explicit GOMODCACHE override.
+	gomodcache, err := execCommand("go", "env", "GOMODCACHE")
+	if err != nil || gomodcache == "" {
 		return ""
 	}
-	entries, err := os.ReadDir(gopath + "/pkg/mod/golang.org")
+	entries, err := os.ReadDir(filepath.Join(gomodcache, "golang.org"))
 	if err != nil {
 		return ""
 	}
 	for _, e := range entries {
-		// Directory names: "toolchain@v0.0.1-go1.25.0.linux-amd64"
+		// Module cache toolchain dirs: toolchain@v<semver>-go<goversion>.<goos>-<goarch>
+		// e.g. "toolchain@v0.0.1-go1.25.0.linux-amd64"
+		// Match on the stable "toolchain@v" prefix and "-go" separator without
+		// assuming a specific semver string (v0.0.1 could change in future releases).
 		name := e.Name()
-		if !strings.HasPrefix(name, "toolchain@v0.0.1-go") {
+		if !strings.HasPrefix(name, "toolchain@v") {
 			continue
 		}
-		ver := strings.TrimPrefix(name, "toolchain@v0.0.1-go")
-		// Strip OS/arch suffix: "1.25.0.linux-amd64" → check major.minor
-		parts := strings.SplitN(ver, ".", 3)
+		goIdx := strings.Index(name, "-go")
+		if goIdx < 0 {
+			continue
+		}
+		// rest is everything after "-go": e.g. "1.25.0.linux-amd64"
+		parts := strings.SplitN(name[goIdx+3:], ".", 3)
 		if len(parts) < 2 {
 			continue
 		}
