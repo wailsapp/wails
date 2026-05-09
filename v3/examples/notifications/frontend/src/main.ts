@@ -318,34 +318,37 @@ const unlisten = Events.On("notification:action", (response) => {
         console.table(userInfo);
     }
 
-    const baseRows = `
-        <thead>
-            ${Object.keys(base).map((key) => `<th>${key}</th>`).join("")}
-        </thead>
-        <tbody>
-            ${Object.values(base).map((value) => `<td>${value}</td>`).join("")}
-        </tbody>
-    `;
-    const metaRows = userInfo
-        ? `
-        <h5>Notification Metadata</h5>
-        <table>
-            <thead>
-                ${Object.keys(userInfo).map((key) => `<th>${key}</th>`).join("")}
-            </thead>
-            <tbody>
-                ${Object.values(userInfo).map((value) => `<td>${value}</td>`).join("")}
-            </tbody>
-        </table>
-    `
-        : "";
+    function makeTable(data: Record<string, unknown>): HTMLTableElement {
+        const table = document.createElement("table");
+        const thead = table.createTHead();
+        const headerRow = thead.insertRow();
+        Object.keys(data).forEach((key) => {
+            const th = document.createElement("th");
+            th.textContent = key;
+            headerRow.appendChild(th);
+        });
+        const tbody = table.createTBody();
+        const dataRow = tbody.insertRow();
+        Object.values(data).forEach((value) => {
+            const td = dataRow.insertCell();
+            td.textContent = String(value ?? "");
+        });
+        return table;
+    }
 
-    const html = `
-        <h5>Notification Response</h5>
-        <table>${baseRows}</table>
-        ${metaRows}
-    `;
-    if (footer) footer.innerHTML = html;
+    if (footer) {
+        footer.textContent = "";
+        const heading = document.createElement("h5");
+        heading.textContent = "Notification Response";
+        footer.appendChild(heading);
+        footer.appendChild(makeTable(base));
+        if (userInfo) {
+            const metaHeading = document.createElement("h5");
+            metaHeading.textContent = "Notification Metadata";
+            footer.appendChild(metaHeading);
+            footer.appendChild(makeTable(userInfo as Record<string, unknown>));
+        }
+    }
 });
 
 window.onbeforeunload = () => unlisten();
