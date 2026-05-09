@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [sveltekit(), wails("./bindings")],
   server: {
     host: "127.0.0.1",
-    port: parseInt(process.env.WAILS_VITE_PORT || "9245"),
+    port: Number(process.env.WAILS_VITE_PORT) || 9245,
     strictPort: true,
     fs: {
       allow: [

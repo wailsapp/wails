@@ -9,7 +9,7 @@ export default defineConfig({
   },
   plugins: [react(), wails("./bindings")],
   server: {
-    port: parseInt(process.env.WAILS_VITE_PORT || "9245"),
+    port: Number(process.env.WAILS_VITE_PORT) || 9245,
     strictPort: true,
   },
 });
