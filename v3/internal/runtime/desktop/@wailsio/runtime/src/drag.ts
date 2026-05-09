@@ -236,8 +236,8 @@ function onMouseMove(event: MouseEvent): void {
     // Shift the effective content edge inward so the resize zone sits just before the scrollbar.
     const scrollbarWidth = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
     const scrollbarHeight = Math.max(0, window.innerHeight - document.documentElement.clientHeight);
-    const rightContentEdge = window.outerWidth - scrollbarWidth;
-    const bottomContentEdge = window.outerHeight - scrollbarHeight;
+    const rightContentEdge = window.innerWidth - scrollbarWidth;
+    const bottomContentEdge = window.innerHeight - scrollbarHeight;
 
     const rightBorder = event.clientX < rightContentEdge && (rightContentEdge - event.clientX) < resizeHandleWidth;
     const leftBorder = event.clientX < resizeHandleWidth;
