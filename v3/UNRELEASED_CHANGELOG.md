@@ -25,12 +25,14 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Remove generic indirection aliases and consolidate map key types in [PR](https://github.com/wailsapp/wails/pull/5331) by @fbbdev
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
 ## Removed
 <!-- Features removed in this release -->
+- Delete PR-master workflow, removing documentation, Go tests, and skip tests in [PR](https://github.com/wailsapp/wails/pull/5377) by @leaanthony
 
 ## Security
 <!-- Security-related changes -->
