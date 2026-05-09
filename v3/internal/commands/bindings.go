@@ -119,13 +119,25 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 	}
 
 	// Atomically replace the output directory with the temp dir.
-	// RemoveAll on a non-existent path is a no-op, so this is safe for first runs.
+	// Move the old directory aside BEFORE installing the new one so that if the
+	// rename into place fails we can restore the original bindings. Deleting first
+	// would leave no bindings at all on a rename failure.
 	if generationDir != absPath {
-		if err := os.RemoveAll(absPath); err != nil {
-			return fmt.Errorf("failed to replace output directory: %w", err)
+		var oldDir string
+		if _, statErr := os.Stat(absPath); statErr == nil {
+			oldDir = absPath + ".old"
+			if err := os.Rename(absPath, oldDir); err != nil {
+				return fmt.Errorf("failed to move existing bindings aside: %w", err)
+			}
 		}
 		if err := os.Rename(generationDir, absPath); err != nil {
+			if oldDir != "" {
+				_ = os.Rename(oldDir, absPath) // best-effort restore
+			}
 			return fmt.Errorf("failed to install new bindings: %w", err)
+		}
+		if oldDir != "" {
+			_ = os.RemoveAll(oldDir)
 		}
 		// Signal the defer that cleanup is no longer needed.
 		generationDir = absPath
