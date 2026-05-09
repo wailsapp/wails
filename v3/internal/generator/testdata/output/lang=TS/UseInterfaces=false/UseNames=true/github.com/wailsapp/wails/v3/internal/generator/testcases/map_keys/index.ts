@@ -11,21 +11,14 @@ export {
 } from "./models.js";
 
 export type {
-    BasicCstrAlias,
-    ComparableCstrAlias,
     EmbeddedCustomInterface,
     EmbeddedOriginalInterface,
     EmbeddedPointer,
     EmbeddedPointerPtr,
     EmbeddedValue,
     EmbeddedValuePtr,
-    GoodTildeCstrAlias,
     IntAlias,
     IntType,
-    InterfaceCstrAlias,
-    MixedCstrAlias,
-    NonBasicCstrAlias,
-    PointableCstrAlias,
     PointerAlias,
     PointerTextMarshaler,
     StringAlias,

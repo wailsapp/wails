@@ -1,0 +1,255 @@
+---
+title: 初めてのアプリケーション
+description: ステップバイステップで最初の Wails デスクトップアプリケーションを作成する
+sidebar:
+  order: 20
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import { Badge } from '@astrojs/starlight/components';
+import { Steps } from "@astrojs/starlight/components";
+import { FileTree } from '@astrojs/starlight/components';
+
+import wails_init from '../../../../assets/wails_init.mp4';
+import wails_build from '../../../../assets/wails_build.mp4';
+import wails_dev from '../../../../assets/wails_dev.mp4';
+
+
+このガイドでは、最初の Wails v3 アプリケーションの作成方法について、プロジェクトのセットアップ、ビルド、開発ワークフローをカバーして解説します。
+
+<br/>
+<br/>
+
+<Steps>
+
+1.  ## 新しいプロジェクトの作成
+
+    ターミナルを開き、以下のコマンドを実行して新しい Wails プロジェクトを作成します：
+
+    ```bash
+    wails3 init -n myfirstapp
+    ```
+
+    このコマンドは、必要なファイルすべてを含む `myfirstapp` という新しいディレクトリを作成します。
+
+      <video src={wails_init} controls></video> 
+
+2.  ## プロジェクト構造の探索
+
+    `myfirstapp` ディレクトリに移動します。いくつかのファイルとフォルダが見つかります：
+
+    <FileTree>
+    - build/           ビルドプロセスで使用されるファイルが含まれます
+        - appicon.png  アプリケーションのアイコン
+        - config.yml   ビルド設定
+        - Taskfile.yml ビルドタスク
+        - darwin/      macOS 固有のビルドファイル
+            - Info.dev.plist 開発用設定
+            - Info.plist    本番用設定
+            - Taskfile.yml  macOS ビルドタスク
+            - icons.icns    macOS アプリケーションアイコン
+        - linux/       Linux 固有のビルドファイル
+            - Taskfile.yml  Linux ビルドタスク
+            - appimage/     AppImage パッケージング
+                - build.sh  AppImage ビルドスクリプト
+            - nfpm/        NFPM パッケージング
+                - nfpm.yaml パッケージ設定
+                - scripts/  ビルドスクリプト
+        - windows/     Windows 固有のビルドファイル
+            - Taskfile.yml        Windows ビルドタスク
+            - icon.ico           Windows アプリケーションアイコン
+            - info.json          アプリケーションのメタデータ
+            - wails.exe.manifest Windows マニフェストファイル
+            - nsis/              NSIS インストーラーファイル
+                - project.nsi                    NSIS プロジェクトファイル
+                - wails_tools.nsh               NSIS ヘルパースクリプト
+    - frontend/        フロントエンドアプリケーションファイル
+        - index.html   メイン HTML ファイル
+        - main.js      メイン JavaScript ファイル
+        - package.json NPM パッケージ設定
+        - public/      静的アセット
+        - Inter Font License.txt フォントライセンス
+    - .gitignore      Git の無視ファイル
+    - README.md       プロジェクトドキュメント
+    - Taskfile.yml    プロジェクトタスク
+    - go.mod          Go モジュールファイル
+    - go.sum          Go モジュールのチェックサム
+    - greetservice.go 挨拶サービス
+    - main.go         メインアプリケーションコード
+    </FileTree>
+
+    これらのファイルを少し見て、構造に慣れてください。
+
+    :::note
+    Wails v3 はデフォルトのビルドシステムとして [Task](https://taskfile.dev/) を使用していますが、`make` や他の代替ビルドシステムを使用することを妨げるものはありません。
+    :::
+
+3.  ## アプリケーションのビルド
+
+    アプリケーションをビルドするには、以下を実行します：
+
+    ```bash
+    wails3 build
+    ```
+
+    このコマンドは、アプリケーションのデバッグバージョンをコンパイルし、新しい `bin` ディレクトリに保存します。
+
+    :::note
+    `wails3 build` は `wails3 task build` の省略形であり、`Taskfile.yml` 内の `build` タスクを実行します。
+    :::
+
+        <video src={wails_build} controls></video> 
+
+
+    ビルドが完了したら、通常アプリケーションと同様に実行できます：
+
+
+    <Tabs syncKey="platform">
+
+      <TabItem label="Mac" icon="apple">
+
+        ```sh
+        ./bin/myfirstapp
+        ```
+
+          </TabItem>
+
+      <TabItem label="Windows" icon="seti:windows">
+
+        ```sh
+        bin\myfirstapp.exe
+        ```
+
+          </TabItem>
+
+      <TabItem label="Linux" icon="linux">
+
+        ```sh
+        ./bin/myfirstapp
+        ```
+
+          </TabItem>
+
+    </Tabs>
+
+    アプリケーションの起点となるシンプルな UI が表示されます。デバッグバージョンのため、コンソールウィンドウにもログが表示されます。これはデバッグ目的で便利です。
+
+4.  ## 開発モード
+
+    アプリケーションを開発モードで実行することもできます。このモードでは、フロントエンドコードを変更しても、アプリケーション全体を再ビルドすることなく、実行中のアプリケーションに変更が反映されます。
+
+    1. 新しいターミナルウィンドウを開きます。
+    2. `wails3 dev` を実行します。アプリケーションはデバッグモードでコンパイルされ、実行されます。
+    3. お好みのエディターで `frontend/index.html` を開きます。
+    4. コードを編集し、`Please enter your name below` を `Please enter your name below!!!` に変更します。
+    5. ファイルを保存します。
+
+    この変更はアプリケーションに即座に反映されます。
+
+    バックエンドコードへの変更は再ビルドをトリガーします：
+
+    1. `greetservice.go` を開きます。
+    2. `return "Hello " + name + "!"` が書かれている行を `return "Hello there " + name + "!"` に変更します。
+    3. ファイルを保存します。
+
+    アプリケーションは数秒以内に更新されます。
+
+        <video src={wails_dev} controls></video>
+
+5.  ## アプリケーションのパッケージング
+
+        アプリケーションが配布の準備ができたら、プラットフォーム固有のパッケージを作成できます：
+
+          <Tabs syncKey="platform">
+
+    <TabItem label="Mac" icon="apple">
+
+              `.app` バンドルを作成するには：
+
+              ```bash
+              wails3 package
+              ```
+
+              これにより、本番ビルドが作成され、`bin` ディレクトリ内の `.app` バンドルにパッケージ化されます。
+
+            </TabItem>
+            <TabItem label="Windows" icon="seti:windows">
+
+              NSIS インストーラーを作成するには：
+
+              ```bash
+              wails3 package
+              ```
+
+              これにより、本番ビルドが作成され、`bin` ディレクトリ内の NSIS インストーラーにパッケージ化されます。
+
+            </TabItem>
+            <TabItem label="Linux" icon="linux">
+
+              Wails は Linux 配布用に複数のパッケージ形式をサポートしています：
+
+              ```bash
+              # すべてのパッケージタイプ（AppImage、deb、rpm、Arch Linux）を作成
+              wails3 package
+
+              # または特定のパッケージタイプを作成
+              wails3 task linux:create:appimage  # AppImage 形式
+              wails3 task linux:create:deb       # Debian パッケージ
+              wails3 task linux:create:rpm       # Red Hat パッケージ
+              wails3 task linux:create:aur       # Arch Linux パッケージ
+              ```
+
+            </TabItem>
+
+          </Tabs>
+
+        パッケージングオプションと設定に関する詳細な情報は、[パッケージングガイド](/guides/packaging) をご覧ください。
+
+6.  ## バージョン管理とモジュール名の設定
+
+    プロジェクトはプレースホルダーモジュール名 `changeme` で作成されます。これはリポジトリの URL に一致するように更新することをお勧めします：
+
+    1. GitHub（またはお好みの Git ホスト）に新しいリポジトリを作成します
+    2. プロジェクトディレクトリで git を初期化します：
+       ```bash
+       git init
+       git add .
+       git commit -m "Initial commit"
+       ```
+    3. リモートリポジトリを設定します（リポジトリ URL に置き換えてください）：
+       ```bash
+       git remote add origin https://github.com/username/myfirstapp.git
+       ```
+    4. `go.mod` 内のモジュール名をリポジトリ URL に一致するように更新します：
+       ```bash
+       go mod edit -module github.com/username/myfirstapp
+       ```
+    5. コードをプッシュします：
+       ```bash
+       git push -u origin main
+       ```
+
+    これにより、Go モジュール名が Go のモジュール命名規則と一致し、コードを共有しやすくなります。:::tip[Pro Tip]
+プロジェクト作成時に `-git` フラグを使用することで、初期化の全ステップを自動化できます:
+```bash
+wails3 init -n myfirstapp -git github.com/username/myfirstapp
+```
+これは以下の各種 Git URL 形式に対応しています:
+- HTTPS: `https://github.com/username/project`
+- SSH: `git@github.com:username/project` または `ssh://git@github.com/username/project`
+- Git プロトコル: `git://github.com/username/project`
+- ファイルシステム: `file:///path/to/project.git`
+:::
+
+</Steps>
+
+## おめでとうございます！
+
+これで、初めての Wails アプリケーションの作成、開発、パッケージ化が完了しました。
+これは、Wails v3 で実現できることの始まりに過ぎません。
+
+## 次のステップ
+
+Wails に初めて触れる方は、Wails の各種機能を実践的にガイドする [チュートリアル](/tutorials) を読むことをお勧めします。最初のチュートリアルは [サービスを作成する](/tutorials/01-creating-a-service) です。
+
+より上級者の方は、Wails の使用方法に関する詳細な情報については [ガイド](/guides) をご覧ください。
