@@ -1526,6 +1526,7 @@ func (w *linuxWebviewWindow) setBorderless(borderless bool) {
 
 func (w *linuxWebviewWindow) setResizable(resizable bool) {
 	C.gtk_window_set_resizable(w.gtkWindow(), gtkBool(resizable))
+	w.execJS(fmt.Sprintf("window._wails.setResizable(%v);", resizable))
 }
 
 func (w *linuxWebviewWindow) setDefaultSize(width int, height int) {
