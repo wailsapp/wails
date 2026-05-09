@@ -25,10 +25,11 @@ After processing, the content will be moved to the main changelog and this file 
 - Internal: rewrite the Windows notifications backend to build toast XML directly via the `wintoast` subpackage, dropping the high-level `git.sr.ht/~jackmordaunt/go-toast/v2` builder. Behaviour is preserved; this unlocks first-class custom sounds, hero/inline images, threading, scheduling, and scenarios on Windows.
 - Internal: macOS notifications C bridge now accepts a single JSON options blob instead of individual parameters, simplifying future field additions.
 - Documentation: clarify that reply fields are supported on macOS and Windows; Linux does not support replies.
+- Reorder dependencies and remove webview2 replace directive in go.mod in [PR](https://github.com/wailsapp/wails/pull/5370) by @atterpac
+- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5358) by @github-actions[bot]
 
 ## Fixed
 <!-- Bug fixes -->
-- Ensure dialog callbacks execute on the GTK thread, fixing segfaults in [PR](https://github.com/wailsapp/wails/pull/5339) by @leaanthony
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

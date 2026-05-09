@@ -1,0 +1,156 @@
+---
+title: Bindungssystem
+description: Wie das Bindungssystem JavaScript/TypeScript-Code sammelt, verarbeitet und generiert
+sidebar:
+  order: 1
+---
+
+import { FileTree } from "@astrojs/starlight/components";
+
+Dieser Leitfaden erklärt, wie das Wails-Bindungssystem intern funktioniert und bietet Entwicklern Einblicke in die Mechanismen hinter der automatischen Codegenerierung.
+
+## Architekturübersicht
+
+Das Wails-Bindungssystem besteht aus drei Hauptkomponenten:
+
+1. **Sammlung**: Analysiert Go-Code, um Informationen über Dienste, Modelle und andere Deklarationen zu extrahieren
+2. **Konfiguration**: Verwaltet Einstellungen und Optionen für den Bindungsgenerierungsprozess
+3. **Rendern**: Generiert JavaScript/TypeScript-Code basierend auf den gesammelten Informationen
+
+<FileTree>
+- internal/generator/
+  - collect/     # Paketanalyse und Informationsextraktion
+  - config/      # Konfigurationsstrukturen und Schnittstellen
+  - render/      # Codegenerierung für JS/TS
+</FileTree>
+
+## Sammelprozess
+
+Der Sammelprozess ist dafür verantwortlich, Go-Pakete zu analysieren und Informationen über Dienste, Modelle und andere Deklarationen zu extrahieren. Dies wird vom Paket `collect` übernommen.
+
+### Wichtige Komponenten
+
+- **Collector**: Verwaltet Paketinformationen und zwischengespeicherte gesammelte Daten
+- **Package**: Repräsentiert ein zu analysierendes Go-Paket und speichert gesammelte Dienste, Modelle und Direktiven
+- **Service**: Sammelt Informationen über Diensttypen und deren Methoden
+- **Model**: Sammelt detaillierte Informationen über Modelltypen, einschließlich Feldern, Werten und Typparametern
+- **Directive**: Parst und interpretiert `//wails:`-Direktiven im Go-Quellcode
+
+### Sammelablauf
+
+1. Der Collector scannt die im Projekt angegebenen Go-Pakete
+2. Er identifiziert Diensttypen (Strukturen mit Methoden, die an das Frontend freigegeben werden)
+3. Für jeden Dienst sammelt er Informationen über dessen Methoden
+4. Er identifiziert Modelltypen (Strukturen, die als Parameter oder Rückgabewerte in Dienstmethoden verwendet werden)
+5. Für jedes Modell sammelt er Informationen über dessen Felder und Typparameter
+6. Er verarbeitet alle im Code gefundenen `//wails:`-Direktiven
+
+## Rendernsprozess
+
+Der Rendernsprozess ist dafür verantwortlich, JavaScript/TypeScript-Code basierend auf den gesammelten Informationen zu generieren. Dies wird vom Paket `render` übernommen.
+
+### Wichtige Komponenten
+
+- **Renderer**: Koordiniert das Rendern von Dienst-, Modell- und Indexdateien
+- **Module**: Repräsentiert ein einzelnes generiertes JavaScript/TypeScript-Modul
+- **Templates**: Textvorlagen, die für die Codegenerierung verwendet werden
+
+### Rendernsablauf
+
+1. Für jeden Dienst generiert der Renderer eine JavaScript/TypeScript-Datei mit Funktionen, die die Dienstmethoden widerspiegeln
+2. Für jedes Modell generiert der Renderer eine JavaScript/TypeScript-Klasse, die die Modellstruktur widerspiegelt
+3. Der Renderer generiert Indexdateien, die alle Dienste und Modelle neu exportieren
+4. Der Renderer wendet alle benutzerdefinierten Codeinjektionen an, die durch `//wails:inject`-Direktiven angegeben sind
+
+## Typzuordnung
+
+Ein wichtiger Aspekt des Bindungssystems ist die Abbildung von Go-Typen auf JavaScript/TypeScript-Typen. Hier ist eine Zusammenfassung der Zuordnung:
+
+| Go-Typ | JavaScript-Typ | TypeScript-Typ |
+|---------|----------------|----------------|
+| `bool` | `boolean` | `boolean` |
+| `int`, `int8`, `int16`, `int32`, `int64`, `uint`, `uint8`, `uint16`, `uint32`, `uint64`, `float32`, `float64` | `number` | `number` |
+| `string` | `string` | `string` |
+| `[]byte` | `Uint8Array` | `Uint8Array` |
+| `[]T` | `Array<T>` | `T[]` |
+| `map[K]V` | `Object` | `Record<K, V>` |
+| `struct` | `Object` | Benutzerdefinierte Klasse |
+| `interface{}` | `any` | `any` |
+| `*T` | `T \| null` | `T \| null` |
+| `func` | Nicht unterstützt | Nicht unterstützt |
+| `chan` | Nicht unterstützt | Nicht unterstützt |
+
+## Direktivensystem
+
+Das Bindungssystem unterstützt mehrere Direktiven, die zur Anpassung des generierten Codes verwendet werden können. Diese Direktiven werden als Kommentare in Ihrem Go-Code hinzugefügt.
+
+### Verfügbare Direktiven
+
+- `//wails:inject`: Injiziert benutzerdefinierten JavaScript/TypeScript-Code in die generierten Bindungen
+- `//wails:include`: Schließt zusätzliche Dateien in die generierten Bindungen ein
+- `//wails:internal`: Markiert einen Typ oder eine Methode als intern und verhindert dessen Export an das Frontend
+- `//wails:ignore`: Ignoriert eine Methode vollständig während der Bindungsgenerierung
+- `//wails:id`: Gibt eine benutzerdefinierte ID für eine Methode an und überschreibt die standardmäßige hashbasierte ID
+
+### Direktivenverarbeitung
+
+1. Während der Sammelphase identifiziert der Collector Direktiven im Go-Code und parst sie
+2. Die Direktiven werden mit den entsprechenden Deklarationen (Dienste, Methoden, Modelle usw.) gespeichert
+3. Während der Rendernsphase wendet der Renderer die Direktiven an, um den generierten Code anzupassen
+
+## Erweiterte Funktionen
+
+### Bedingte Codegenerierung
+
+Das Bindungssystem unterstützt die bedingte Codegenerierung unter Verwendung eines zweistelligen Bedingungspräfix für `include`- und `inject`-Direktiven:
+
+```
+<language><style>:<content>
+```
+
+Wobei:
+- `<language>` kann sein:
+  - `*` - Sowohl JavaScript als auch TypeScript
+  - `j` - Nur JavaScript
+  - `t` - Nur TypeScript
+
+- `<style>` kann sein:
+  - `*` - Sowohl Klassen als auch Schnittstellen
+  - `c` - Nur Klassen
+  - `i` - Nur Schnittstellen
+
+Zum Beispiel:
+```go
+//wails:inject j*:console.log("Nur JavaScript");
+//wails:inject t*:console.log("Nur TypeScript");
+```
+
+### Benutzerdefinierte Methoden-IDs
+
+Standardmäßig werden Methoden durch eine hashbasierte ID identifiziert. Sie können jedoch eine benutzerdefinierte ID mit der `//wails:id`-Direktive angeben:
+
+```go
+//wails:id 42
+func (s *Service) CustomIDMethod() {}
+```
+
+Dies kann nützlich sein, um die Kompatibilität beim Refaktorisieren des Codes aufrechtzuerhalten.
+
+## Leistungsbetrachtungen
+
+Der Bindungsgenerator ist darauf ausgelegt, effizient zu sein, aber es gibt einige Dinge, die man beachten sollte:
+
+1. Der erste Lauf ist langsamer, da er einen Cache von zu scannenden Paketen aufbaut
+2. Nachfolgende Läufe sind schneller, da sie die zwischengespeicherten Informationen verwenden
+3. Der Generator verarbeitet alle Pakete im Projekt, was für große Projekte zeitaufwändig sein kann
+4. Sie können die `-clean`-Flag verwenden, um das Ausgabeverzeichnis vor der Generierung zu bereinigen
+
+## Fehlerbehebung
+
+Wenn Sie Probleme mit der Bindungsgenerierung haben, können Sie die `-v`-Flag verwenden, um Debug-Ausgaben zu aktivieren:
+
+```bash
+wails3 generate bindings -v
+```
+
+Dies liefert detaillierte Informationen über den Sammel- und Rendernsprozess, die dabei helfen können, die Quelle des Problems zu identifizieren.

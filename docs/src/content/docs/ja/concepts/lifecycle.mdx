@@ -1,0 +1,368 @@
+---
+title: アプリケーションのライフサイクル
+description: 起動からシャットダウンまでの Wails アプリケーションのライフサイクルを理解する
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## アプリケーションのライフサイクルの理解
+
+デスクトップアプリケーションには、起動からシャットダウンまでのライフサイクルがあります。Wails v3 では、このライフサイクルを効果的に管理するために **サービス**、**イベント**、および **フック** を提供しています。
+
+## ライフサイクルの段階
+
+```d2
+direction: down
+
+Start: "Application Start" {
+  shape: oval
+  style.fill: "#10B981"
+}
+
+Init: "Initialisation" {
+  Parse: "Parse Options" {
+    shape: rectangle
+  }
+  Register: "Register Services" {
+    shape: rectangle
+  }
+  Setup: "Setup Runtime" {
+    shape: rectangle
+  }
+}
+
+AppRun: "app.Run()" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+}
+
+ServiceStartup: "Service Startup" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+EventLoop: "Event Loop" {
+  Process: "Process Events" {
+    shape: rectangle
+  }
+  Handle: "Handle Messages" {
+    shape: rectangle
+  }
+  Update: "Update UI" {
+    shape: rectangle
+  }
+}
+
+QuitSignal: "Quit Signal" {
+  shape: diamond
+  style.fill: "#F59E0B"
+}
+
+ShouldQuit: "ShouldQuit Check" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+}
+
+OnShutdown: "OnShutdown Callbacks" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+}
+
+ServiceShutdown: "Service Shutdown" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+Cleanup: "Cleanup" {
+  Close: "Close Windows" {
+    shape: rectangle
+  }
+  Release: "Release Resources" {
+    shape: rectangle
+  }
+}
+
+End: "Application End" {
+  shape: oval
+  style.fill: "#EF4444"
+}
+
+Start -> Init.Parse
+Init.Parse -> Init.Register
+Init.Register -> Init.Setup
+Init.Setup -> AppRun
+AppRun -> ServiceStartup
+ServiceStartup -> EventLoop.Process
+EventLoop.Process -> EventLoop.Handle
+EventLoop.Handle -> EventLoop.Update
+EventLoop.Update -> EventLoop.Process: "Loop"
+EventLoop.Process -> QuitSignal: "User quits"
+QuitSignal -> ShouldQuit: "Check allowed?"
+ShouldQuit -> EventLoop.Process: "Denied"
+ShouldQuit -> OnShutdown: "Allowed"
+OnShutdown -> ServiceShutdown
+ServiceShutdown -> Cleanup.Close
+Cleanup.Close -> Cleanup.Release
+Cleanup.Release -> End
+```
+
+### 1. アプリケーションの作成
+
+`application.New()` でアプリケーションを作成します:
+
+```go
+app := application.New(application.Options{
+    Name:        "My App",
+    Description: "An application built with Wails",
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+    },
+    Assets: application.AssetOptions{
+        Handler: application.BundledAssetFileServer(assets),
+    },
+})
+```
+
+**何が起こるか:**
+1. オプションが解析され、検証されます
+2. サービスが登録されます（ただし、まだ起動はしません）
+3. アセットサーバーが設定されます
+4. ランタイムがセットアップされます
+
+### 2. アプリケーションの実行
+
+`app.Run()` を呼び出してアプリケーションを開始します:
+
+```go
+err := app.Run()  // Blocks until quit
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+**何が起こるか:**
+1. サービスが登録順に起動します
+2. イベントリスナーが有効になります
+3. ウィンドウを作成できます
+4. イベントループが開始されます
+
+### 3. イベントループ
+
+アプリケーションは、その時間の大部分を費やすイベントループに入ります:
+
+- OS イベントの処理（マウス、キーボード、ウィンドウイベント）
+- Go から JS へのメッセージの処理
+- JS から Go への呼び出しの実行
+- UI 更新の描画
+
+### 4. シャットダウン
+
+アプリケーションが終了するとき:
+
+1. `ShouldQuit` コールバックがチェックされます（設定されている場合）
+2. `OnShutdown` コールバックが実行されます
+3. サービスが登録の逆順でシャットダウンされます
+4. ウィンドウが閉じられます
+5. リソースが解放されます
+
+## サービスのライフサイクル
+
+サービスは、Wails v3 でライフサイクルを管理するための主要な方法です。サービスは、インターフェースを通じて起動およびシャットダウンフックを提供します。サービスに関する完全なドキュメントについては、[サービスのガイド](/features/bindings/services) を参照してください。
+
+### サービスの作成
+
+```go
+type MyService struct {
+    db *sql.DB
+}
+
+// ServiceStartup is called when the application starts
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    var err error
+    s.db, err = sql.Open("sqlite3", "app.db")
+    if err != nil {
+        return err  // Startup aborts if error returned
+    }
+
+    // Run migrations
+    if err := s.runMigrations(); err != nil {
+        return err
+    }
+
+    return nil
+}
+
+// ServiceShutdown is called when the application shuts down
+func (s *MyService) ServiceShutdown() error {
+    if s.db != nil {
+        return s.db.Close()
+    }
+    return nil
+}
+```
+
+### サービスの登録
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+        application.NewService(&AnotherService{}),
+    },
+})
+```
+
+**重要なポイント:**
+- サービスは登録順に起動します
+- サービスは登録の**逆順**でシャットダウンします
+- サービスの `ServiceStartup` がエラーを返した場合、アプリケーションは中止されます
+- `ServiceStartup` に渡される `ctx` は、シャットダウンが開始されるとキャンセルされます
+
+### アプリケーションコンテキストの使用
+
+`ServiceStartup` に渡されるコンテキストは、アプリケーションの存続期間中有効です:
+
+```go
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    // Start a background task that respects shutdown
+    go func() {
+        ticker := time.NewTicker(5 * time.Minute)
+        defer ticker.Stop()
+
+        for {
+            select {
+            case <-ticker.C:
+                s.performBackgroundSync()
+            case <-ctx.Done():
+                // Application is shutting down
+                return
+            }
+        }
+    }()
+
+    return nil
+}
+```
+
+アプリケーションインスタンスからコンテキストにアクセスすることもできます:
+
+```go
+app := application.Get()
+ctx := app.Context()
+```
+
+## アプリケーションレベルのフック
+
+これらは `application.Options` 内の便利なコールバックで、完全なサービスを作成せずにアプリケーションのライフサイクルにフックすることができます。単純なクリーンアップタスク、終了の確認、またはシャットダウンシーケンスの特定のポイントでコードを実行する必要がある場合に便利です。
+
+起動ロジック、依存性注入、または状態保持リソースを含むより複雑なライフサイクル管理には、代わりに [サービス](#services-lifecycle) を使用してください。
+
+### ShouldQuit
+
+`ShouldQuit` コールバックは、ユーザーが最後のウィンドウを閉じたとき、Cmd+Q (macOS) / Alt+F4 (Windows) を押したとき、またはプログラムで `app.Quit()` を呼び出したときなど、終了が要求されるたびに呼び出されます。
+
+**戻り値:**
+- `true` を返して終了を許可します（アプリケーションがシャットダウンします）
+- `false` を返して終了をキャンセルします（アプリケーションは実行を続けます）
+
+これは、終了リクエストをインターセプトし、オプションでそれを防止する機会です。例えば、未保存の変更についてユーザーにプロンプトを表示する場合など:
+
+```go
+app := application.New(application.Options{
+    ShouldQuit: func() bool {
+        if !hasUnsavedChanges() {
+            return true  // No unsaved changes, allow quit
+        }
+
+        // Prompt the user
+        result, _ := application.QuestionDialog().
+            SetTitle("Unsaved Changes").
+            SetMessage("You have unsaved changes. Quit anyway?").
+            AddButton("Quit", "quit").
+            AddButton("Cancel", "cancel").
+            Show()
+
+        // Only quit if user clicked "Quit"
+        return result == "quit"
+    },
+})
+```
+
+`ShouldQuit` が設定されていない場合、アプリケーションは要求されたときに即座に終了します。
+
+**ShouldQuit が呼び出されるタイミング:**
+- ユーザーが最後のウィンドウを閉じる（`DisableQuitOnLastWindowClosed` が設定されていない場合）
+- ユーザーが macOS で Cmd+Q を押す
+- ユーザーが Windows で最後のウィンドウにフォーカスがあるときに Alt+F4 を押す
+- コードが `app.Quit()` を呼び出す
+
+**ShouldQuit が呼び出されないタイミング:**
+- プロセスが強制終了される（SIGKILL、タスクマネージャーによる強制終了）
+- `os.Exit()` が直接呼び出される
+
+### OnShutdown
+
+`OnShutdown` コールバックは、アプリケーションが終了することが確定されたとき（`ShouldQuit` が設定されている場合は `true` を返した後）に呼び出されます。状態の保存、データベース接続の閉鎖、リソースの解放などのクリーンアップタスクに使用します。
+
+```go
+app := application.New(application.Options{
+    OnShutdown: func() {
+        // Save application state
+        saveState()
+
+        // Close connections----------|--------------------------------|
+| macOS | アプリケーションは実行されたまま（メニューバーが残る） |
+| Windows | アプリケーションが終了する |
+| Linux | アプリケーションが終了する |
+
+macOS は、ウィンドウがなくてもアプリケーションがメニューバーでアクティブなままになるというネイティブなプラットフォームの規約に従います。Windows と Linux はデフォルトで終了します。
+
+**すべてのプラットフォームで、最後のウィンドウが閉じたときに終了するようにする：**
+
+```go
+app := application.New(application.Options{
+    Mac: application.MacOptions{
+        ApplicationShouldTerminateAfterLastWindowClosed: true,
+    },
+})
+```
+
+**すべてのプラットフォームで、最後のウィンドウが閉じた後も実行されたままにする：**
+
+これは、システムトレイアプリケーションや、バックグラウンドで実行されたままにする必要があるアプリケーションに有用です。
+
+```go
+app := application.New(application.Options{
+    Windows: application.WindowsOptions{
+        DisableQuitOnLastWindowClosed: true,
+    },
+    Linux: application.LinuxOptions{
+        DisableQuitOnLastWindowClosed: true,
+    },
+})
+```
+
+## 一般的なパターン
+
+### パターン 1: データベースサービス
+
+```go
+type DatabaseService struct {
+    db *sql.DB
+}
+
+func (s *DatabaseService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    var err error
+    s.db, err = sql.Open("sqlite3", "app.db")
+    if err != nil {
+        return fmt.Errorf("failed to open database: %w", err)
+    }
+
+    if err := s.db.PingContext(ctx); err != nil {
+        return fmt.Errorf("failed to connect to database: %w", err)
+    }
+
+    return nil
+}**ライフサイクルについて質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[例](https://github.com/wailsapp/wails/tree/master/v3/examples) を確認してください。

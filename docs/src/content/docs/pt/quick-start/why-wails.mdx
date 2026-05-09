@@ -1,0 +1,132 @@
+---
+title: Por que Wails?
+description: Entenda por que o Wails é a escolha certa para seu aplicativo de desktop
+sidebar:
+  order: 1
+---
+
+O Wails combina **a performance e simplicidade do Go** com **a flexibilidade de interfaces web modernas**, permitindo que você construa aplicativos de desktop nativos e bonitos com as ferramentas que você já conhece.
+
+## Performance que os Usuários Percebem
+
+**Aplicativos Wails:**
+- **Binários de ~15MB** (vs. 150MB do Electron)
+- **Memória base de ~10MB** (vs. 100MB+ do Electron)
+- **Tempo de inicialização &lt;0.5s** (vs. 2-3s do Electron)
+- **Renderização nativa** usando o WebView fornecido pelo SO
+
+Os usuários percebem seu aplicativo como rápido, leve e profissional.
+
+## Experiência do Desenvolvedor
+
+**Escreva uma vez, execute em qualquer lugar:**
+- Um único código-fonte em Go para Windows, macOS e Linux
+- Use qualquer framework web (React, Vue, Svelte, JS puro)
+- Hot reload durante o desenvolvimento
+- Bindings de TypeScript gerados automaticamente a partir do código Go
+
+Entregue produtos mais rápido com menos código para manter.
+
+## Recursos Prontos para Produção
+
+**Tudo o que você precisa:**
+- Múltiplas janelas com ciclos de vida independentes
+- Menus nativos (aplicação, contexto, bandeja do sistema)
+- Diálogos de arquivos com interface nativa da plataforma
+- Integração com o sistema (notificações, área de transferência, atalhos de teclado)
+- Assinatura de código e empacotamento para todas as plataformas
+
+Construa aplicativos profissionais, não protótipos.
+
+## Desenvolvimento Mais Rápido
+
+- **Um código-fonte, três plataformas** - Escreva uma vez, compile para Windows, macOS e Linux
+- **Use habilidades existentes** - Go para o backend, HTML/CSS/JS para a interface
+- **Feedback instantâneo** - Hot reload durante o desenvolvimento, tempos de compilação medidos em segundos
+- **Binários pequenos** - Aplicativos de 15MB significam builds mais rápidas, downloads mais rápidos e iterações mais ágeis
+
+## Quando Escolher o Wails
+
+**O Wails é Perfeito Para:**
+
+- **Aplicativos empresariais** (CRM, inventário, dashboards, ferramentas administrativas)
+- **Ferramentas para desenvolvedores** (clientes de banco de dados, testadores de API, ferramentas de deploy)
+- **Aplicativos de produtividade** (tomada de notas, gerenciadores de tarefas, rastreadores de tempo)
+- **Ferramentas criativas** (editores de imagem, processadores de vídeo, utilitários de design)
+- **Ferramentas internas** (aplicativos específicos da empresa, ferramentas de automação)
+
+## Casos de Sucesso no Mundo Real
+
+:::tip[Aplicativos em Produção]
+O Wails alimenta aplicativos reais usados por milhares de usuários:
+- **Ferramentas de gerenciamento de banco de dados** com interfaces complexas
+- **Dashboards financeiros** processando dados em tempo real
+- **Ferramentas de edição de vídeo** com performance nativa
+- **Utilitários de desenvolvimento** usados por equipes de engenharia
+
+[Veja o showcase →](/community/showcase)
+:::
+
+## Como o Wails Funciona
+
+Diferente do Electron, que empacota um navegador inteiro e o runtime do Node.js, o Wails adota uma abordagem fundamentalmente diferente: seu código Go é compilado em um binário nativo, e sua interface roda no WebView embutido do sistema operacional. Essa arquitetura entrega os binários pequenos, inicialização rápida e baixo uso de memória que fazem os aplicativos Wails parecerem nativos.
+
+### Arquitetura
+
+Os aplicativos Wails consistem em duas partes principais que se comunicam perfeitamente: um backend em Go lidando com a lógica de negócios e operações do sistema, e um frontend baseado na web para sua interface do usuário. O WebView fornecido pelo SO renderiza sua interface sem empacotar um navegador, enquanto a camada de bindings fornece comunicação segura entre Go e JavaScript.
+
+<div style="display: flex; justify-content: center; align-items: center; margin: 2rem 0;">
+<div style="max-width: 600px;">
+
+```d2
+direction: down
+
+Application: {
+Go: "Go Backend" {
+  shape: rectangle
+  style.fill: "#00ADD8"
+}
+WebView: "Native WebView" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+
+    Frontend: "Sua Interface\n(React/Vue/etc)" {
+      shape: rectangle
+      style.fill: "#8B5CF6"
+    }
+
+}
+Go <-> WebView: "Bindings & Eventos"
+}
+
+
+
+```
+
+</div>
+</div>
+
+Essa arquitetura simples permite que código JavaScript chame funções Go diretamente (através de bindings gerados automaticamente), enquanto o Go pode enviar eventos e dados de volta ao frontend. Ambas as camadas se comunicam através de uma ponte eficiente em memória com overhead de sub-milissegundo.
+
+**Como o Wails alcança a performance:**
+1. **Sem runtime empacotado** - Usa o binário compilado do Go
+2. **WebView nativo** - Motor de renderização fornecido pelo SO
+3. **Ponte direta Go ↔ JS** - Comunicação em memória, sem overhead de rede
+4. **Binário compilado** - Inicialização instantânea, sem compilação JIT
+
+## Próximos Passos
+
+Agora que você entende o que o Wails oferece, vamos configurá-lo:
+
+1. **Instale o Wails** - Configure seu ambiente de desenvolvimento em 5 minutos  
+   [Guia de Instalação →](/pt/getting-started/installation)
+
+2. **Crie seu Primeiro App** - Crie um aplicativo funcional e entenda os conceitos básicos  
+   [Tutorial do Primeiro App →](/quick-start/first-app)
+
+3. **Explore os Recursos** - Descubra o que o Wails pode fazer pelo seu aplicativo  
+   [Visão Geral dos Recursos →](/pt/quick-start/next-steps)
+
+---
+
+**Ainda tem dúvidas?** Junte-se à nossa [comunidade no Discord](https://discord.gg/JDdSxwjhGf) e pergunte à equipe diretamente.
