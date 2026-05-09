@@ -150,23 +150,33 @@ func findToolchainGo() string {
 	}
 
 	// GOTOOLCHAIN=auto|path: scan the module cache for a downloaded toolchain.
-	gopath, err := execCommand("go", "env", "GOPATH")
-	if err != nil || gopath == "" {
+	// Use GOMODCACHE rather than GOPATH so that a custom GOMODCACHE env var and
+	// multi-entry GOPATH values are handled correctly.
+	gomodcache, err := execCommand("go", "env", "GOMODCACHE")
+	if err != nil || gomodcache == "" {
 		return ""
 	}
-	entries, err := os.ReadDir(gopath + "/pkg/mod/golang.org")
+	entries, err := os.ReadDir(gomodcache + "/golang.org")
 	if err != nil {
 		return ""
 	}
 	for _, e := range entries {
-		// Directory names: "toolchain@v0.0.1-go1.25.0.linux-amd64"
+		// Directory names follow the pattern:
+		//   toolchain@v<modver>-go<goversion>.<goos>-<goarch>
+		// e.g. "toolchain@v0.0.1-go1.25.0.linux-amd64"
+		// Match any module version to stay forward-compatible with future
+		// changes to the golang.org/toolchain module versioning.
 		name := e.Name()
-		if !strings.HasPrefix(name, "toolchain@v0.0.1-go") {
+		if !strings.HasPrefix(name, "toolchain@v") {
 			continue
 		}
-		ver := strings.TrimPrefix(name, "toolchain@v0.0.1-go")
-		// Strip OS/arch suffix: "1.25.0.linux-amd64" → check major.minor
-		parts := strings.SplitN(ver, ".", 3)
+		goIdx := strings.Index(name, "-go")
+		if goIdx == -1 {
+			continue
+		}
+		// goVerAndPlatform is e.g. "1.25.0.linux-amd64"
+		goVerAndPlatform := name[goIdx+3:]
+		parts := strings.SplitN(goVerAndPlatform, ".", 3)
 		if len(parts) < 2 {
 			continue
 		}
@@ -178,8 +188,8 @@ func findToolchainGo() string {
 			}
 		}
 		if isGoMinVersion(parts[0]+"."+minorStr, 1, 25) {
-			// Build a clean version string
 			if len(parts) >= 3 {
+				// Third segment is "0.linux-amd64"; extract leading digits only.
 				patch := parts[2]
 				for i, c := range patch {
 					if c < '0' || c > '9' {
