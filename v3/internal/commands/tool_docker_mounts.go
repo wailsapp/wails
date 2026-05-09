@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -40,20 +41,16 @@ func ToolDockerMounts(_ *DockerMountsOptions) error {
 
 	var mounts []string
 
-	// Add Go module cache mount using GOPATH with fallback to ~/go
-	gopath := os.Getenv("GOPATH")
-	if gopath == "" {
-		home, err := os.UserHomeDir()
-		if err == nil {
-			gopath = filepath.Join(home, "go")
-		}
-	}
+	// Add Go module cache mount. GOPATH may contain multiple entries
+	// (os.PathListSeparator-separated); use only the first, falling back to ~/go.
+	gopath := firstGOPATHEntry()
 	if gopath != "" {
-		dockerPath := filepath.ToSlash(gopath)
-		mounts = append(mounts, fmt.Sprintf("-v %s/pkg/mod:/go/pkg/mod", dockerPath))
+		hostPath := filepath.ToSlash(gopath)
+		mounts = append(mounts, fmt.Sprintf("-v '%s/pkg/mod:/go/pkg/mod'", hostPath))
 	}
 
-	// Parse go.mod for local replace directives and add volume mounts
+	// Parse go.mod for local replace directives and add volume mounts.
+	// The container project root is /app; replace paths must be remapped accordingly.
 	data, err := os.ReadFile("go.mod")
 	if err == nil {
 		f, err := modfile.Parse("go.mod", data, nil)
@@ -63,22 +60,55 @@ func ToolDockerMounts(_ *DockerMountsOptions) error {
 				if r.New.Version != "" {
 					continue
 				}
-				path := r.New.Path
-				if !filepath.IsAbs(path) {
-					abs, err := filepath.Abs(path)
+				relPath := r.New.Path // forward-slash path as written in go.mod
+
+				// Resolve absolute host path from the (possibly relative) replace path.
+				hostAbsPath := relPath
+				if !filepath.IsAbs(relPath) {
+					abs, err := filepath.Abs(relPath)
 					if err != nil {
 						continue
 					}
-					path = abs
+					hostAbsPath = abs
 				}
-				if info, err := os.Stat(path); err == nil && info.IsDir() {
-					dockerPath := filepath.ToSlash(path)
-					mounts = append(mounts, fmt.Sprintf("-v %s:%s:ro", dockerPath, dockerPath))
+				if info, err := os.Stat(hostAbsPath); err != nil || !info.IsDir() {
+					continue
 				}
+				hostDockerPath := filepath.ToSlash(hostAbsPath)
+
+				// Compute the container-side destination.
+				// Relative replace paths in go.mod are relative to the project root,
+				// which maps to /app inside the container. path.Clean handles ".." correctly.
+				var containerPath string
+				if filepath.IsAbs(relPath) {
+					// Absolute host paths can't be reliably remapped; use as-is.
+					containerPath = filepath.ToSlash(relPath)
+				} else {
+					containerPath = path.Clean("/app/" + relPath)
+				}
+
+				mounts = append(mounts, fmt.Sprintf("-v '%s:%s:ro'", hostDockerPath, containerPath))
 			}
 		}
 	}
 
 	fmt.Print(strings.Join(mounts, " "))
 	return nil
+}
+
+// firstGOPATHEntry returns the first entry from GOPATH, or ~/go when unset.
+func firstGOPATHEntry() string {
+	gopath := os.Getenv("GOPATH")
+	if gopath == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return ""
+		}
+		return filepath.Join(home, "go")
+	}
+	entries := filepath.SplitList(gopath)
+	if len(entries) == 0 {
+		return ""
+	}
+	return entries[0]
 }
