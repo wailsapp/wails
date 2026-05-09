@@ -158,6 +158,7 @@ var (
 	procCallNextHookEx                = moduser32.NewProc("CallNextHookEx")
 	procGetForegroundWindow           = moduser32.NewProc("GetForegroundWindow")
 	procUpdateLayeredWindow           = moduser32.NewProc("UpdateLayeredWindow")
+	procSetLayeredWindowAttributes    = moduser32.NewProc("SetLayeredWindowAttributes")
 	getDisplayConfig                  = moduser32.NewProc("GetDisplayConfigBufferSizes")
 	queryDisplayConfig                = moduser32.NewProc("QueryDisplayConfig")
 
@@ -315,6 +316,16 @@ func UpdateLayeredWindow(hwnd HWND, hdcDst HDC, pptDst *POINT, psize *SIZE,
 		uintptr(unsafe.Pointer(pptSrc)),
 		uintptr(crKey),
 		uintptr(unsafe.Pointer(pblend)),
+		uintptr(dwFlags))
+	return ret != 0
+}
+
+// SetLayeredWindowAttributes sets the opacity and transparency color key of a layered window.
+func SetLayeredWindowAttributes(hwnd HWND, crKey COLORREF, bAlpha byte, dwFlags DWORD) bool {
+	ret, _, _ := procSetLayeredWindowAttributes.Call(
+		uintptr(hwnd),
+		uintptr(crKey),
+		uintptr(bAlpha),
 		uintptr(dwFlags))
 	return ret != 0
 }
