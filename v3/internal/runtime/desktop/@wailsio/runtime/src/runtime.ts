@@ -146,14 +146,17 @@ async function runtimeCallWithID(objectID: number, method: number, windowName: s
 }
 
 // sendChunked splits a large serialised request body into CHUNK_THRESHOLD-sized
-// pieces and sends them serially.  The Go transport assembles them before
-// processing.  Only the final chunk's response carries the RPC result.
+// byte chunks and sends them serially.  Encoding to UTF-8 bytes before slicing
+// prevents corruption of non-BMP characters (surrogate pairs) that would occur
+// when splitting at JavaScript string indices.  The Go transport assembles the
+// raw bytes before processing.  Only the final chunk's response carries the RPC result.
 async function sendChunked(url: URL, headers: Record<string, string>, bodyStr: string): Promise<Response> {
     const chunkId = nanoid();
-    const totalChunks = Math.ceil(bodyStr.length / CHUNK_THRESHOLD);
+    const bodyBytes = new TextEncoder().encode(bodyStr);
+    const totalChunks = Math.ceil(bodyBytes.length / CHUNK_THRESHOLD);
 
     for (let i = 0; i < totalChunks - 1; i++) {
-        const chunk = bodyStr.slice(i * CHUNK_THRESHOLD, (i + 1) * CHUNK_THRESHOLD);
+        const chunk = bodyBytes.subarray(i * CHUNK_THRESHOLD, (i + 1) * CHUNK_THRESHOLD);
         const resp = await fetch(url, {
             method: 'POST',
             headers: {
@@ -177,6 +180,6 @@ async function sendChunked(url: URL, headers: Record<string, string>, bodyStr: s
             'x-wails-chunk-index': String(totalChunks - 1),
             'x-wails-chunk-total': String(totalChunks),
         },
-        body: bodyStr.slice((totalChunks - 1) * CHUNK_THRESHOLD),
+        body: bodyBytes.subarray((totalChunks - 1) * CHUNK_THRESHOLD),
     });
 }
