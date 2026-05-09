@@ -454,6 +454,8 @@ func sanitizePlistDict(d map[string]any) map[string]any {
 // Returns the sanitized value and a boolean indicating whether the value
 // should be kept (true) or dropped (false). Values containing Go template
 // syntax are dropped; other types are passed through unchanged.
+// Originally empty containers (empty maps and arrays) are preserved,
+// while containers that become empty due to template removal are dropped.
 func sanitizePlistValue(v any) (any, bool) {
 	switch val := v.(type) {
 	case string:
@@ -462,9 +464,15 @@ func sanitizePlistValue(v any) (any, bool) {
 		}
 		return val, true
 	case map[string]any:
+		if len(val) == 0 {
+			return val, true
+		}
 		sanitized := sanitizePlistDict(val)
 		return sanitized, len(sanitized) > 0
 	case []any:
+		if len(val) == 0 {
+			return val, true
+		}
 		var result []any
 		for _, item := range val {
 			if sanitized, keep := sanitizePlistValue(item); keep {

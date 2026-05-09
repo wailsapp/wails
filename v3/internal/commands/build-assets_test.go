@@ -784,3 +784,133 @@ func mapsEqual(a, b map[string]any) bool {
 	}
 	return true
 }
+
+// TestPreserveOriginallyEmptyContainers verifies that originally empty
+// containers (maps and arrays) are preserved during sanitization, while
+// containers that become empty due to template removal are dropped.
+func TestPreserveOriginallyEmptyContainers(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    any
+		expected any
+	}{
+		{
+			name: "originally empty map is preserved",
+			input: map[string]any{
+				"EmptyMap": map[string]any{},
+			},
+			expected: map[string]any{
+				"EmptyMap": map[string]any{},
+			},
+		},
+		{
+			name: "originally empty array is preserved",
+			input: map[string]any{
+				"EmptyArray": []any{},
+			},
+			expected: map[string]any{
+				"EmptyArray": []any{},
+			},
+		},
+		{
+			name: "map with only template values becomes empty and is dropped",
+			input: map[string]any{
+				"TemplateMap": map[string]any{
+					"Key1": "{{.Ext}}",
+					"Key2": "{{.Name}}",
+				},
+			},
+			expected: map[string]any{},
+		},
+		{
+			name: "array with only template values becomes empty and is dropped",
+			input: map[string]any{
+				"TemplateArray": []any{
+					"{{.Ext}}",
+					"{{.Name}}",
+				},
+			},
+			expected: map[string]any{},
+		},
+		{
+			name: "map with mixed content keeps real values and drops templates",
+			input: map[string]any{
+				"MixedMap": map[string]any{
+					"RealKey":    "RealValue",
+					"TemplateKey": "{{.Ext}}",
+				},
+			},
+			expected: map[string]any{
+				"MixedMap": map[string]any{
+					"RealKey": "RealValue",
+				},
+			},
+		},
+		{
+			name: "array with mixed content keeps real values and drops templates",
+			input: map[string]any{
+				"MixedArray": []any{
+					"RealValue",
+					"{{.Ext}}",
+					"AnotherReal",
+					"{{.Name}}",
+				},
+			},
+			expected: map[string]any{
+				"MixedArray": []any{
+					"RealValue",
+					"AnotherReal",
+				},
+			},
+		},
+		{
+			name: "nested originally empty containers are preserved",
+			input: map[string]any{
+				"Outer": map[string]any{
+					"InnerMap":  map[string]any{},
+					"InnerArray": []any{},
+				},
+			},
+			expected: map[string]any{
+				"Outer": map[string]any{
+					"InnerMap":  map[string]any{},
+					"InnerArray": []any{},
+				},
+			},
+		},
+		{
+			name: "complex nested structure with empty and template values",
+			input: map[string]any{
+				"Complex": map[string]any{
+					"EmptySub": map[string]any{},
+					"MixedSub": []any{
+						"Real",
+						"{{.Template}}",
+					},
+					"TemplateOnlySub": []any{
+						"{{.Ext}}",
+						"{{.Name}}",
+					},
+				},
+			},
+			expected: map[string]any{
+				"Complex": map[string]any{
+					"EmptySub": map[string]any{},
+					"MixedSub": []any{
+						"Real",
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := sanitizePlistDict(tt.input.(map[string]any))
+
+			if !mapsEqual(result, tt.expected.(map[string]any)) {
+				t.Errorf("sanitizePlistDict() got\n%v\nexpected\n%v", result, tt.expected)
+			}
+		})
+	}
+}
