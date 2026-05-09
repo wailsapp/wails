@@ -76,6 +76,10 @@ type windowsWebviewWindow struct {
 	// Used to prevent unnecessary redraws during minimize/restore operations
 	isMinimizing bool
 
+	// inSizeMove is true between WM_ENTERSIZEMOVE and WM_EXITSIZEMOVE.
+	// Used to suppress menubar redraws during live-resize drag.
+	inSizeMove bool
+
 	// menubarTheme is the theme for the menubar
 	menubarTheme *w32.MenuBarTheme
 
@@ -1513,6 +1517,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 		w.parent.emit(events.Windows.WindowKillFocus)
 	case w32.WM_ENTERSIZEMOVE:
+		w.inSizeMove = true
 		// This is needed to close open dropdowns when moving the window https://github.com/MicrosoftEdge/WebView2Feedback/issues/2290
 		w32.SetFocus(w.hwnd)
 		if int(w32.GetKeyState(w32.VK_LBUTTON))&(0x8000) != 0 {
@@ -1523,6 +1528,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			w.parent.emit(events.Windows.WindowStartResize)
 		}
 	case w32.WM_EXITSIZEMOVE:
+		w.inSizeMove = false
 		if int(w32.GetKeyState(w32.VK_LBUTTON))&0x8000 != 0 {
 			w.parent.emit(events.Windows.WindowEndMove)
 		} else {
@@ -1606,10 +1612,10 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			}
 			w.isMinimizing = false
 			w.parent.emit(events.Windows.WindowRestore)
-			// Snap-to-side sends SIZE_RESTORED; repaint the frame so the dark menubar
-			// is not left invisible after a snap operation.
-			if w.menu != nil && w.menubarTheme != nil {
-				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE|w32.RDW_UPDATENOW)
+			// Snap-to-side sends SIZE_RESTORED; queue an async frame redraw so the dark
+			// menubar is not left invisible. Skip during live-resize drag to avoid flicker.
+			if !w.inSizeMove && w.menu != nil && w.menubarTheme != nil {
+				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE)
 			}
 		case w32.SIZE_MINIMIZED:
 			w.isMinimizing = true

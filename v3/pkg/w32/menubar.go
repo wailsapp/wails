@@ -4,8 +4,13 @@ package w32
 
 import (
 	"os"
+	"sync"
 	"unsafe"
 )
+
+// sizeMovingWindows tracks which HWNDs are currently inside a WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE session.
+// This prevents spurious DrawMenuBar calls during live-resize drag.
+var sizeMovingWindows sync.Map
 
 const (
 	OBJID_MENU = -3
@@ -268,6 +273,12 @@ func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *
 		return false, 0
 	}
 	switch msg {
+	case WM_ENTERSIZEMOVE:
+		sizeMovingWindows.Store(hwnd, struct{}{})
+		return false, 0
+	case WM_EXITSIZEMOVE:
+		sizeMovingWindows.Delete(hwnd)
+		return false, 0
 	case WM_UAHDRAWMENU:
 		udm := (*UAHMENU)(unsafe.Pointer(lParam))
 
@@ -563,7 +574,9 @@ func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *
 
 		// Snap-to-side produces SIZE_RESTORED, not SIZE_MAXIMIZED; include both so the
 		// dark menubar is repainted after every snap or maximize operation.
-		if msg == WM_SIZE && (wParam == SIZE_MAXIMIZED || wParam == SIZE_RESTORED) {
+		// Skip during live resize drag (WM_ENTERSIZEMOVE active) to avoid redundant redraws.
+		_, inSizeMove := sizeMovingWindows.Load(hwnd)
+		if msg == WM_SIZE && !inSizeMove && (wParam == SIZE_MAXIMIZED || wParam == SIZE_RESTORED) {
 			// Invalidate the entire menubar area to force redraw
 			var mbi MENUBARINFO
 			mbi.CbSize = uint32(unsafe.Sizeof(mbi))
