@@ -281,6 +281,26 @@ type WindowsOptions struct {
 	EnabledFeatures       []string
 	DisabledFeatures      []string
 	AdditionalBrowserArgs []string
+
+	// UseVisualHosting forces WebView2 to use IDCompositionVisual hosting
+	// instead of the default windowed (HWND-child) hosting. Set this to
+	// true if your app is used over RDP — particularly the Microsoft
+	// Remote Desktop iOS client, which provisions a Retina-optimised
+	// virtual monitor mid-session whose DPI context differs from the
+	// session's. With windowed hosting that DPI mismatch forces a
+	// synchronous DComp re-marshal on every WebView2 controller call
+	// (PutIsVisible, MoveFocus, first-paint, surface release), each
+	// blocking the UI thread for ~2 seconds and persisting until the
+	// server is rebooted. Visual hosting eliminates that re-marshal.
+	//
+	// Implementation: sets the COREWEBVIEW2_FORCED_HOSTING_MODE env var
+	// to COREWEBVIEW2_HOSTING_MODE_WINDOW_TO_VISUAL before WebView2 is
+	// initialised. Must be set before app.Run().
+	//
+	// See: https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/windowed-vs-visual-hosting
+	// See: https://github.com/MicrosoftEdge/WebView2Feedback/issues/5248
+	// See: https://github.com/MicrosoftEdge/WebView2Feedback/issues/4485
+	UseVisualHosting bool
 }
 
 /********* Linux Options *********/
