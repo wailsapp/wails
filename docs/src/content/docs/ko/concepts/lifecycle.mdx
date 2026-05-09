@@ -1,0 +1,368 @@
+---
+title: 애플리케이션 수명 주기
+description: 시작부터 종료까지 Wails 애플리케이션 수명 주기에 대한 이해
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 애플리케이션 수명 주기 이해하기
+
+데스크톱 애플리케이션은 시작부터 종료까지 수명 주기를 가집니다. Wails v3는 이 수명 주기를 효과적으로 관리하기 위해 **서비스(Services)**, **이벤트(Events)**, 그리고 **후크(Hooks)**를 제공합니다.
+
+## 수명 주기 단계
+
+```d2
+direction: down
+
+Start: "Application Start" {
+  shape: oval
+  style.fill: "#10B981"
+}
+
+Init: "Initialisation" {
+  Parse: "Parse Options" {
+    shape: rectangle
+  }
+  Register: "Register Services" {
+    shape: rectangle
+  }
+  Setup: "Setup Runtime" {
+    shape: rectangle
+  }
+}
+
+AppRun: "app.Run()" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+}
+
+ServiceStartup: "Service Startup" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+EventLoop: "Event Loop" {
+  Process: "Process Events" {
+    shape: rectangle
+  }
+  Handle: "Handle Messages" {
+    shape: rectangle
+  }
+  Update: "Update UI" {
+    shape: rectangle
+  }
+}
+
+QuitSignal: "Quit Signal" {
+  shape: diamond
+  style.fill: "#F59E0B"
+}
+
+ShouldQuit: "ShouldQuit Check" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+}
+
+OnShutdown: "OnShutdown Callbacks" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+}
+
+ServiceShutdown: "Service Shutdown" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+Cleanup: "Cleanup" {
+  Close: "Close Windows" {
+    shape: rectangle
+  }
+  Release: "Release Resources" {
+    shape: rectangle
+  }
+}
+
+End: "Application End" {
+  shape: oval
+  style.fill: "#EF4444"
+}
+
+Start -> Init.Parse
+Init.Parse -> Init.Register
+Init.Register -> Init.Setup
+Init.Setup -> AppRun
+AppRun -> ServiceStartup
+ServiceStartup -> EventLoop.Process
+EventLoop.Process -> EventLoop.Handle
+EventLoop.Handle -> EventLoop.Update
+EventLoop.Update -> EventLoop.Process: "Loop"
+EventLoop.Process -> QuitSignal: "User quits"
+QuitSignal -> ShouldQuit: "Check allowed?"
+ShouldQuit -> EventLoop.Process: "Denied"
+ShouldQuit -> OnShutdown: "Allowed"
+OnShutdown -> ServiceShutdown
+ServiceShutdown -> Cleanup.Close
+Cleanup.Close -> Cleanup.Release
+Cleanup.Release -> End
+```
+
+### 1. 애플리케이션 생성
+
+`application.New()`를 사용하여 애플리케이션을 생성합니다:
+
+```go
+app := application.New(application.Options{
+    Name:        "My App",
+    Description: "An application built with Wails",
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+    },
+    Assets: application.AssetOptions{
+        Handler: application.BundledAssetFileServer(assets),
+    },
+})
+```
+
+**발생하는 동작:**
+1. 옵션이 파싱되고 유효성 검사됨
+2. 서비스가 등록됨 (하지만 아직 시작되지 않음)
+3. 애셋 서버가 구성됨
+4. 런타임이 설정됨
+
+### 2. 애플리케이션 실행
+
+`app.Run()`을 호출하여 애플리케이션을 시작합니다:
+
+```go
+err := app.Run()  // 종료될 때까지 블록됨
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+**발생하는 동작:**
+1. 등록 순서대로 서비스가 시작됨
+2. 이벤트 리스너가 활성화됨
+3. 창을 생성할 수 있음
+4. 이벤트 루프가 시작됨
+
+### 3. 이벤트 루프
+
+애플리케이션은 대부분의 시간을 보내는 이벤트 루프에 진입합니다:
+
+- OS 이벤트 처리 (마우스, 키보드, 창 이벤트)
+- Go에서 JS로의 메시지 처리
+- JS에서 Go로의 호출 실행
+- UI 업데이트 렌더링
+
+### 4. 종료
+
+애플리케이션이 종료될 때:
+
+1. `ShouldQuit` 콜백이 확인됨 (설정된 경우)
+2. `OnShutdown` 콜백이 실행됨
+3. 서비스가 역순으로 종료됨
+4. 창이 닫힘
+5. 리소스가 해제됨
+
+## 서비스 수명 주기
+
+서비스는 Wails v3에서 수명 주기를 관리하는 주요 방법입니다. 인터페이스를 통해 시작 및 종료 후크를 제공합니다. 서비스에 대한 전체 문서는 [서비스 가이드](/features/bindings/services)를 참조하세요.
+
+### 서비스 생성
+
+```go
+type MyService struct {
+    db *sql.DB
+}
+
+// ServiceStartup는 애플리케이션이 시작될 때 호출됩니다
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    var err error
+    s.db, err = sql.Open("sqlite3", "app.db")
+    if err != nil {
+        return err  // 오류가 반환되면 시작이 중단됨
+    }
+
+    // 마이그레이션 실행
+    if err := s.runMigrations(); err != nil {
+        return err
+    }
+
+    return nil
+}
+
+// ServiceShutdown는 애플리케이션이 종료될 때 호출됩니다
+func (s *MyService) ServiceShutdown() error {
+    if s.db != nil {
+        return s.db.Close()
+    }
+    return nil
+}
+```
+
+### 서비스 등록
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+        application.NewService(&AnotherService{}),
+    },
+})
+```
+
+**핵심 포인트:**
+- 서비스는 등록 순서대로 시작됨
+- 서비스는 **역순** 등록 순서로 종료됨
+- 서비스의 `ServiceStartup`가 오류를 반환하면 애플리케이션이 중단됨
+- `ServiceStartup`에 전달된 `ctx`는 종료가 시작될 때 취소됨
+
+### 애플리케이션 컨텍스트 사용
+
+`ServiceStartup`에 전달된 컨텍스트는 애플리케이션의 수명 동안 유효합니다:
+
+```go
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    // 종료를 존중하는 백그라운드 작업 시작
+    go func() {
+        ticker := time.NewTicker(5 * time.Minute)
+        defer ticker.Stop()
+
+        for {
+            select {
+            case <-ticker.C:
+                s.performBackgroundSync()
+            case <-ctx.Done():
+                // 애플리케이션이 종료 중임
+                return
+            }
+        }
+    }()
+
+    return nil
+}
+```
+
+애플리케이션 인스턴스에서 컨텍스트에 접근할 수도 있습니다:
+
+```go
+app := application.Get()
+ctx := app.Context()
+```
+
+## 애플리케이션 레벨 후크
+
+이들은 `application.Options`에 있는 편의용 콜백으로, 전체 서비스를 생성하지 않고 애플리케이션 수명 주기에 연결할 수 있게 해줍니다. 간단한 정리 작업, 종료 확인, 또는 종료 시퀀스의 특정 지점에서 코드를 실행해야 할 때 유용합니다.
+
+시작 로직, 의존성 주입, 또는 상태 유지 리소스가 포함된 더 복잡한 수명 주기 관리를 위해서는 [서비스](#서비스-수명-주기)를 대신 사용하세요.
+
+### ShouldQuit
+
+`ShouldQuit` 콜백은 사용자가 마지막 창을 닫거나, Cmd+Q (macOS) / Alt+F4 (Windows)를 누르거나, 프로그래밍 방식으로 `app.Quit()`를 호출하는 등 종료가 요청될 때마다 호출됩니다.
+
+**반환 값:**
+- `true`를 반환하여 종료를 진행 허용 (애플리케이션이 종료됨)
+- `false`를 반환하여 종료 취소 (애플리케이션이 계속 실행됨)
+
+이는 종료 요청을 인터셉트하고 선택적으로 방지할 수 있는 기회입니다. 예를 들어 저장되지 않은 변경 사항에 대해 사용자에게 프롬프트를 표시할 수 있습니다:
+
+```go
+app := application.New(application.Options{
+    ShouldQuit: func() bool {
+        if !hasUnsavedChanges() {
+            return true  // 저장되지 않은 변경 사항 없음, 종료 허용
+        }
+
+        // 사용자에게 프롬프트 표시
+        result, _ := application.QuestionDialog().
+            SetTitle("Unsaved Changes").
+            SetMessage("You have unsaved changes. Quit anyway?").
+            AddButton("Quit", "quit").
+            AddButton("Cancel", "cancel").
+            Show()
+
+        // 사용자가 "Quit"을 클릭한 경우에만 종료
+        return result == "quit"
+    },
+})
+```
+
+`ShouldQuit`가 설정되지 않은 경우, 애플리케이션은 요청 시 즉시 종료됩니다.
+
+**ShouldQuit가 호출되는 경우:**
+- 사용자가 마지막 창을 닫음 (`DisableQuitOnLastWindowClosed`가 설정되지 않은 경우)
+- macOS에서 Cmd+Q를 누름
+- Windows에서 Alt+F4를 누름 (마지막 창에 포커스된 경우)
+- 코드에서 `app.Quit()`를 호출함
+
+**ShouldQuit가 호출되지 않는 경우:**
+- 프로세스가 강제 종료됨 (SIGKILL, 작업 관리자 강제 종료)
+- `os.Exit()`가 직접 호출됨
+
+### OnShutdown
+
+`OnShutdown` 콜백은 애플리케이션이 종료가 확정되었을 때 (`ShouldQuit`가 `true`를 반환한 후, 설정된 경우) 호출됩니다. 상태 저장, 데이터베이스 연결 닫기, 또는 리소스 해제와 같은 정리 작업에 사용하세요.
+
+```go
+app := application.New(application.Options{
+    OnShutdown: func() {
+        // 애플리케이션 상태 저장
+        saveState()
+
+        // 연결 닫기----------|--------------------------------|
+| macOS | 앱이 실행 상태 유지 (메뉴 바 유지) |
+| Windows | 앱 종료 |
+| Linux | 앱 종료 |
+
+macOS는 창이 없어도 메뉴 바에 애플리케이션이 활성화되어 있는 것을 일반적으로 허용하는 네이티브 플랫폼 관례를 따릅니다. Windows와 Linux는 기본적으로 종료됩니다.
+
+**모든 플랫폼에서 마지막 창이 닫힐 때 종료되도록 설정:**
+
+```go
+app := application.New(application.Options{
+    Mac: application.MacOptions{
+        ApplicationShouldTerminateAfterLastWindowClosed: true,
+    },
+})
+```
+
+**모든 플랫폼에서 마지막 창이 닫혀도 실행 상태 유지:**
+
+이것은 시스템 트레이 애플리케이션이나 백그라운드에서 실행 상태를 유지해야 하는 앱에 유용합니다.
+
+```go
+app := application.New(application.Options{
+    Windows: application.WindowsOptions{
+        DisableQuitOnLastWindowClosed: true,
+    },
+    Linux: application.LinuxOptions{
+        DisableQuitOnLastWindowClosed: true,
+    },
+})
+```
+
+## 일반적인 패턴
+
+### 패턴 1: 데이터베이스 서비스
+
+```go
+type DatabaseService struct {
+    db *sql.DB
+}
+
+func (s *DatabaseService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    var err error
+    s.db, err = sql.Open("sqlite3", "app.db")
+    if err != nil {
+        return fmt.Errorf("failed to open database: %w", err)
+    }
+
+    if err := s.db.PingContext(ctx); err != nil {
+        return fmt.Errorf("failed to connect to database: %w", err)
+    }
+
+    return nil
+}**수명 주기에 대해 질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 문의하거나 [예제](https://github.com/wailsapp/wails/tree/master/v3/examples)를 확인하세요.
