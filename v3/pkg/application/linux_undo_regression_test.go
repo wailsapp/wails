@@ -79,6 +79,10 @@ func TestLinuxCGORedoIsImplemented(t *testing.T) {
 // TestLinuxOnKeyPressEventConsumesCtrlZ verifies that onKeyPressEvent returns 1
 // (consumed) for Ctrl+Z so that webkit2gtk's unreliable native undo handling
 // for <input> elements does not race with Wails' explicit execCommand call.
+//
+// The test checks structural proximity: the return C.gboolean(1) must appear
+// within 3 lines of the guard condition (i.e. inside the same if-block, not
+// coincidentally later in the function).
 func TestLinuxOnKeyPressEventConsumesCtrlZ(t *testing.T) {
 	data, err := os.ReadFile("linux_cgo.go")
 	if err != nil {
@@ -86,32 +90,41 @@ func TestLinuxOnKeyPressEventConsumesCtrlZ(t *testing.T) {
 	}
 	lines := strings.Split(string(data), "\n")
 
-	// Scan inside onKeyPressEvent for a non-comment guard that checks both
-	// Ctrl+Z and Ctrl+Shift+Z and is followed by return C.gboolean(1).
 	inFn := false
-	foundGuard := false
-	for _, line := range lines {
+	guardLineIdx := -1
+
+	for i, line := range lines {
 		trimmed := strings.TrimSpace(line)
 		if strings.Contains(trimmed, "func onKeyPressEvent(") {
 			inFn = true
 			continue
 		}
-		if inFn {
-			if strings.HasPrefix(trimmed, "func ") {
-				break
-			}
-			if strings.HasPrefix(trimmed, "//") {
-				continue
-			}
-			if strings.Contains(trimmed, `"Ctrl+Z"`) && strings.Contains(trimmed, `"Ctrl+Shift+Z"`) {
-				foundGuard = true
-			}
-			if foundGuard && strings.Contains(trimmed, "return C.gboolean(1)") {
+		if !inFn {
+			continue
+		}
+		if strings.HasPrefix(trimmed, "func ") {
+			break
+		}
+		if strings.HasPrefix(trimmed, "//") {
+			continue
+		}
+		// Guard: a non-comment line that checks both accelerators with ||
+		if strings.Contains(trimmed, `"Ctrl+Z"`) &&
+			strings.Contains(trimmed, `"Ctrl+Shift+Z"`) &&
+			strings.Contains(trimmed, "||") {
+			guardLineIdx = i
+			continue
+		}
+		// Return must be within the same if-block (≤3 lines after the guard).
+		if guardLineIdx >= 0 && i-guardLineIdx <= 3 {
+			if strings.Contains(trimmed, "return C.gboolean(1)") {
 				return // pass
 			}
+		} else if guardLineIdx >= 0 && i-guardLineIdx > 3 {
+			guardLineIdx = -1 // guard too far away — reset
 		}
 	}
-	t.Error("onKeyPressEvent must return C.gboolean(1) for Ctrl+Z/Ctrl+Shift+Z to prevent webkit2gtk's broken native undo from racing with document.execCommand")
+	t.Error("onKeyPressEvent must return C.gboolean(1) immediately inside the Ctrl+Z||Ctrl+Shift+Z if-block to prevent webkit2gtk's broken native undo from racing with document.execCommand")
 }
 
 // TestLinuxHandleKeyEventFallbackForCtrlZ verifies that handleKeyEvent in the

@@ -1054,6 +1054,10 @@ func windowSetupSignalHandlers(windowId uint, window, webview pointer, emit func
 		defer C.free(unsafe.Pointer(event))
 		C.signal_connect((*C.GtkWidget)(unsafe.Pointer(webview)), event, onButtonEvent, unsafe.Pointer(&id))
 	*/
+
+	// TODO: Register "key-press-event" here so that undo()/redo() and other
+	// key bindings work in the purego build path (mirrors linux_cgo.go
+	// onKeyPressEvent → windowKeyEvents → handleKeyEvent).
 }
 
 func windowOpenDevTools(webview pointer) {
@@ -1300,6 +1304,8 @@ func isOnMainThread() bool {
 	return mainThreadId == gThreadSelf()
 }
 
+// undo and redo are reachable only once "key-press-event" is registered in
+// windowSetupSignalHandlers; currently a TODO in the purego path.
 func (w *linuxWebviewWindow) undo() {
 	windowExecJS(w.webview, "document.execCommand('undo')")
 }

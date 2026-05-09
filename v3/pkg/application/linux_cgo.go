@@ -2008,8 +2008,8 @@ func onKeyPressEvent(_ *C.GtkWidget, event *C.GdkEventKey, userData C.uintptr_t)
 	// Keypress re-emits if the key is pressed over a certain threshold so we need a debounce
 	if isDebouncing {
 		debounceTimer.Reset(50 * time.Millisecond)
-		// Even while debouncing, consume undo/redo so repeated key events during
-		// auto-repeat don't fall through to webkit2gtk's native handler.
+		// While debouncing, still consume undo/redo so auto-repeat key events
+		// don't reach webkit2gtk's native (unreliable) handler for <input>.
 		if accelerator, ok := getKeyboardState(event); ok {
 			if accelerator == "Ctrl+Z" || accelerator == "Ctrl+Shift+Z" {
 				return C.gboolean(1)
@@ -2030,9 +2030,15 @@ func onKeyPressEvent(_ *C.GtkWidget, event *C.GdkEventKey, userData C.uintptr_t)
 			windowId:          windowID,
 			acceleratorString: accelerator,
 		}
-		// Consume undo/redo events so webkit2gtk's own (unreliable) native handling
-		// for <input> elements does not race with our explicit execCommand call.
-		// Wails handles these via handleKeyEvent → undo()/redo().
+		// Consume undo/redo so that webkit2gtk's native handler does not also fire.
+		// webkit2gtk's built-in Ctrl+Z is unreliable for <input> elements
+		// (it silently discards the command), so Wails re-implements it via
+		// document.execCommand('undo') in handleKeyEvent → undo()/redo().
+		// document.execCommand also works correctly for <textarea> and
+		// contenteditable elements, so consuming unconditionally is safe.
+		// If a custom key/menu binding is registered, processKeyBinding handles
+		// it instead; undo() is only called as a fallback when no binding exists.
+		// TODO: scope to input-family elements once JS focus tracking is wired up.
 		if accelerator == "Ctrl+Z" || accelerator == "Ctrl+Shift+Z" {
 			return C.gboolean(1)
 		}
