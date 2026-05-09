@@ -19,8 +19,15 @@ var validPlatforms = map[string]bool{
 }
 
 func Build(buildFlags *flags.Build, otherArgs []string) error {
-	if buildFlags.Tags != "" {
-		otherArgs = append(otherArgs, "EXTRA_TAGS="+buildFlags.Tags)
+	tags := buildFlags.Tags
+	if buildFlags.RuntimeDevtools {
+		if tags != "" {
+			tags += ","
+		}
+		tags += "runtimedevtools"
+	}
+	if tags != "" {
+		otherArgs = append(otherArgs, "EXTRA_TAGS="+tags)
 	}
 	return wrapTask("build", otherArgs)
 }
