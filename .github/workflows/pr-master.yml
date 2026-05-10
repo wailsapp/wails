@@ -10,6 +10,8 @@ on:
   workflow_dispatch: {}
 
 name: PR Checks (master)
+permissions:
+  contents: read
 
 jobs:
   check_docs:
@@ -109,3 +111,35 @@ jobs:
           echo "Skipping tests for sponsor update branch"
           echo "This is an automated update of the sponsors image."
         continue-on-error: true
+
+  go_test_results:
+    name: Run Go Tests
+    permissions: {}
+    if: >
+      always() &&
+      github.repository == 'wailsapp/wails' &&
+      (
+        github.event_name == 'workflow_dispatch' ||
+        github.event.pull_request.base.ref == 'master'
+      )
+    needs: [test_go, skip_tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check matrix result
+        run: |
+          test_result="${{ needs.test_go.result }}"
+          skip_result="${{ needs.skip_tests.result }}"
+
+          if [[ "$test_result" == "success" || "$test_result" == "skipped" ]]; then
+            echo "Go tests result: $test_result — passed"
+            exit 0
+          fi
+
+          if [[ "$skip_result" == "success" ]]; then
+            echo "Tests skipped (sponsor update) — passed"
+            exit 0
+          fi
+
+          echo "Go tests result: $test_result"
+          echo "Skip tests result: $skip_result"
+          exit 1
