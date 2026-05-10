@@ -1,0 +1,121 @@
+---
+title: 애플리케이션 빌드
+description: Wails 애플리케이션 빌드 및 패키징
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Aside } from "@astrojs/starlight/components";
+
+Wails v3는 빌드 시스템으로 [Task](https://taskfile.dev)를 사용합니다. `wails3 build` 및 `wails3 package` 명령은 Task를 감싸는 편리한 래퍼입니다.
+
+## 빌드
+
+현재 플랫폼용 빌드:
+
+```bash
+wails3 build
+```
+
+특정 플랫폼용 빌드:
+
+```bash
+wails3 build GOOS=windows
+wails3 build GOOS=darwin
+wails3 build GOOS=linux
+
+# 아키텍처 지정
+wails3 build GOOS=darwin GOARCH=arm64
+
+# 환경 변수 스타일도 사용 가능
+GOOS=windows wails3 build
+```
+
+출력은 `bin/` 디렉토리에 생성됩니다.
+
+<Aside type="tip">
+다른 플랫폼에서 macOS 또는 Linux로 크로스 컴파일하려면 Docker가 필요합니다. 설정 방법은 [크로스 플랫폼 빌드](/ko/guides/build/cross-platform)를 참조하세요.
+</Aside>
+
+## 개발
+
+핫 리로드와 함께 애플리케이션 실행:
+
+```bash
+wails3 dev
+```
+
+이 명령은 파일 감시자를 시작하여 변경 사항이 있을 때 앱을 다시 빌드하고 재시작합니다. 프론트엔드 개발 서버는 기본적으로 포트 9245에서 실행됩니다.
+
+```bash
+# 사용자 지정 포트
+wails3 dev -port 3000
+
+# HTTPS 활성화
+wails3 dev -s
+```
+
+## 패키징
+
+배포용 앱 패키징:
+
+```bash
+wails3 package
+wails3 package GOOS=windows
+wails3 package GOOS=darwin
+wails3 package GOOS=linux
+```
+
+이 명령은 플랫폼별 패키지를 생성합니다:
+- **Windows**: NSIS 인스톨러 — [Windows 패키징](/ko/guides/build/windows) 참조
+- **macOS**: 애플리케이션 번들 (`.app`) — [macOS 패키징](/ko/guides/build/macos) 참조
+- **Linux**: AppImage, deb, rpm — [Linux 패키징](/ko/guides/build/linux) 참조
+
+## 사용자 지정 빌드 태그
+
+`-tags` 플래그를 사용하여 사용자 지정 Go 빌드 태그 전달:
+
+```bash
+# Linux에서 실험적 GTK4 지원으로 빌드
+wails3 build -tags gtk4
+
+# 서버 모드 빌드 (GUI 없음, CGO 비사용)
+wails3 build -tags server
+
+# 여러 태그 결합
+wails3 build -tags gtk4,customtag
+```
+
+태그는 하위 Taskfile로 `EXTRA_TAGS`로 전달됩니다. 자세한 내용은 [서버 빌드](/ko/guides/server-build) 및 [Linux 패키징 - GTK4](/guides/build/linux#gtk4-support-experimental)를 참조하세요.
+
+## Task 직접 사용
+
+더 많은 제어를 위해 Task를 직접 사용하세요:
+
+```bash
+# 사용 가능한 작업 목록 표시
+wails3 task --list
+
+# 상세 출력
+wails3 task build -v
+
+# dry run (시뮬레이션 실행)
+wails3 task --dry
+
+# 강제 재빌드
+wails3 task build -f
+
+# 변수 전달
+wails3 task darwin:build ARCH=amd64
+```
+
+`linux:create:deb` 또는 `darwin:build:universal`과 같은 플랫폼별 작업은 Task를 통해서만 사용할 수 있습니다.
+
+## 애셋 생성
+
+아이콘 재생성 또는 빌드 구성 업데이트:
+
+```bash
+wails3 generate icons -input build/appicon.png
+wails3 update build-assets -name "MyApp" -config build/config.yml -dir build
+```

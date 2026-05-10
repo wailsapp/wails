@@ -1,0 +1,437 @@
+---
+title: 키보드 단축키
+description: 기능에 빠르게 접근할 수 있도록 전역 키보드 단축키를 등록합니다
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails는 애플리케이션의 모든 창에서 작동하는 전역 키보드 단축키를 등록할 수 있는 강력한 키 바인딩 시스템을 제공합니다. 이를 통해 사용자는 메뉴를 탐색하지 않고도 기능에 빠르게 접근할 수 있습니다.
+
+## 키 바인딩 관리자 접근
+
+키 바인딩 관리자는 애플리케이션 인스턴스의 `KeyBindings` 속성을 통해 접근할 수 있습니다:
+
+```go
+app := application.New(application.Options{
+    Name: "Keyboard Shortcuts Demo",
+})
+
+// 키 바인딩 관리자 접근
+keyBindings := app.KeyBinding
+```
+
+## 키 바인딩 추가
+
+### 기본 키 바인딩
+
+간단한 키보드 단축키를 등록합니다:
+
+```go
+app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+    // 저장 작업 처리
+    app.Logger.Info("Save shortcut triggered")
+    // 저장 작업 수행...
+})
+```
+
+### 여러 키 바인딩
+
+일반적인 작업에 대한 여러 단축키를 등록합니다:
+
+```go
+// 파일 작업
+app.KeyBinding.Add("Ctrl+N", func(window application.Window) {
+    // 새 파일
+    window.EmitEvent("file:new", nil)
+})
+
+app.KeyBinding.Add("Ctrl+O", func(window application.Window) {
+    // 파일 열기
+    dialog := app.Dialog.OpenFile()
+    if file, err := dialog.PromptForSingleSelection(); err == nil {
+        window.EmitEvent("file:open", file)
+    }
+})
+
+app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+    // 파일 저장
+    window.EmitEvent("file:save", nil)
+})
+
+// 편집 작업
+app.KeyBinding.Add("Ctrl+Z", func(window application.Window) {
+    // 실행 취소
+    window.EmitEvent("edit:undo", nil)
+})
+
+app.KeyBinding.Add("Ctrl+Y", func(window application.Window) {
+    // 다시 실행 (Windows/Linux)
+    window.EmitEvent("edit:redo", nil)
+})
+
+app.KeyBinding.Add("Cmd+Shift+Z", func(window application.Window) {
+    // 다시 실행 (macOS)
+    window.EmitEvent("edit:redo", nil)
+})
+```
+
+## 키 바인딩 액셀러레이터
+
+### 액셀러레이터 형식
+
+키 바인딩은 수정 키와 키를 사용하는 표준 액셀러레이터 형식을 사용합니다:
+
+```go
+// 수정 키
+"Ctrl+S"        // Control + S
+"Cmd+S"         // Command + S (macOS)
+"Alt+F4"        // Alt + F4
+"Shift+Ctrl+Z"  // Shift + Control + Z
+
+// 기능 키
+"F1"            // F1 키
+"Ctrl+F5"       // Control + F5
+
+// 특수 키
+"Escape"        // Escape 키
+"Enter"         // Enter 키
+"Space"         // 스페이스바
+"Tab"           // Tab 키
+"Backspace"     // 백스페이스 키
+"Delete"        // Delete 키
+
+// 화살표 키
+"Up"            // 위쪽 화살표
+"Down"          // 아래쪽 화살표
+"Left"          // 왼쪽 화살표
+"Right"         // 오른쪽 화살표
+```
+
+### 플랫폼별 액셀러레이터
+
+일반적인 단축키에 대한 플랫폼 차이를 처리합니다:
+
+```go
+import "runtime"
+
+// 크로스플랫폼 저장 단축키
+if runtime.GOOS == "darwin" {
+    app.KeyBinding.Add("Cmd+S", saveHandler)
+} else {
+    app.KeyBinding.Add("Ctrl+S", saveHandler)
+}
+
+// 또는 둘 다 등록
+app.KeyBinding.Add("Ctrl+S", saveHandler)
+app.KeyBinding.Add("Cmd+S", saveHandler)
+```
+
+## 키 바인딩 관리
+
+### 키 바인딩 제거
+
+더 이상 필요하지 않을 때 키 바인딩을 제거합니다:
+
+```go
+// 특정 키 바인딩 제거
+app.KeyBinding.Remove("Ctrl+S")
+
+// 예: 모달에 대한 임시 키 바인딩
+app.KeyBinding.Add("Escape", func(window application.Window) {
+    // 모달 닫기
+    window.EmitEvent("modal:close", nil)
+    // 이 임시 바인딩 제거
+    app.KeyBinding.Remove("Escape")
+})
+```
+
+### 모든 키 바인딩 가져오기
+
+등록된 모든 키 바인딩을 검색합니다:
+
+```go
+allBindings := app.KeyBinding.GetAll()
+for _, binding := range allBindings {
+    app.Logger.Info("Key binding", "accelerator", binding.Accelerator)
+}
+```
+
+## 고급 사용법
+
+### 컨텍스트 인식 키 바인딩
+
+애플리케이션 상태를 확인하여 키 바인딩을 컨텍스트 인식으로 만듭니다:
+
+```go
+app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+    // 현재 애플리케이션 상태 확인
+    if isEditMode() {
+        // 문서 저장
+        saveDocument()
+    } else if isInSettings() {
+        // 설정 저장
+        saveSettings()
+    } else {
+        app.Logger.Info("Save not available in current context")
+    }
+})
+```
+
+### 창별 작업
+
+키 바인딩은 활성 창을 받으며, 이를 통해 창별 동작을 구현할 수 있습니다:
+
+```go
+app.KeyBinding.Add("F11", func(window application.Window) {
+    // 활성 창의 전체 화면 토글
+    if window.Fullscreen() {
+        window.SetFullscreen(false)
+    } else {
+        window.SetFullscreen(true)
+    }
+})
+
+app.KeyBinding.Add("Ctrl+W", func(window application.Window) {
+    // 활성 창 닫기
+    window.Close()
+})
+```
+
+### 동적 키 바인딩 관리
+
+애플리케이션 상태에 따라 키 바인딩을 동적으로 추가하고 제거합니다:
+
+```go
+func enableEditMode() {
+    // 편집 전용 키 바인딩 추가
+    app.KeyBinding.Add("Ctrl+B", func(window application.Window) {
+        window.EmitEvent("format:bold", nil)
+    })
+    
+    app.KeyBinding.Add("Ctrl+I", func(window application.Window) {
+        window.EmitEvent("format:italic", nil)
+    })
+    
+    app.KeyBinding.Add("Ctrl+U", func(window application.Window) {
+        window.EmitEvent("format:underline", nil)
+    })
+}
+
+func disableEditMode() {
+    // 편집 전용 키 바인딩 제거
+    app.KeyBinding.Remove("Ctrl+B")
+    app.KeyBinding.Remove("Ctrl+I")
+    app.KeyBinding.Remove("Ctrl+U")
+}
+```
+
+## 플랫폼 고려사항
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    macOS에서:
+    
+    - 표준 단축키에는 `Ctrl` 대신 `Cmd`를 사용하세요
+    - `Cmd+Q`는 일반적으로 애플리케이션 종료를 위해 예약되어 있습니다
+    - `Cmd+H`는 애플리케이션을 숨깁니다
+    - `Cmd+M`은 창을 최소화합니다
+    - 표준 macOS 키보드 단축키를 고려하세요
+    
+    일반적인 macOS 패턴:
+    ```go
+    app.KeyBinding.Add("Cmd+N", newFileHandler)      // 새 파일
+    app.KeyBinding.Add("Cmd+O", openFileHandler)     // 열기
+    app.KeyBinding.Add("Cmd+S", saveFileHandler)     // 저장
+    app.KeyBinding.Add("Cmd+Z", undoHandler)         // 실행 취소
+    app.KeyBinding.Add("Cmd+Shift+Z", redoHandler)   // 다시 실행
+    app.KeyBinding.Add("Cmd+C", copyHandler)         // 복사
+    app.KeyBinding.Add("Cmd+V", pasteHandler)        // 붙여넣기
+    ```
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    Windows에서:
+    
+    - 표준 단축키에는 `Ctrl`를 사용하세요
+    - `Alt+F4`는 애플리케이션을 닫습니다
+    - `F1`은 일반적으로 도움말을 엽니다
+    - Windows 키보드 관례를 고려하세요
+    
+    일반적인 Windows 패턴:
+    ```go
+    app.KeyBinding.Add("Ctrl+N", newFileHandler)     // 새 파일
+    app.KeyBinding.Add("Ctrl+O", openFileHandler)    // 열기
+    app.KeyBinding.Add("Ctrl+S", saveFileHandler)    // 저장
+    app.KeyBinding.Add("Ctrl+Z", undoHandler)        // 실행 취소
+    app.KeyBinding.Add("Ctrl+Y", redoHandler)        // 다시 실행
+    app.KeyBinding.Add("Ctrl+C", copyHandler)        // 복사
+    app.KeyBinding.Add("Ctrl+V", pasteHandler)       // 붙여넣기
+    app.KeyBinding.Add("F1", helpHandler)            // 도움말
+    ```
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    Linux에서:
+    
+    - 일반적으로 `Ctrl`를 사용하여 Windows 관례를 따릅니다
+    - 데스크톱 환경에 따라 다를 수 있습니다
+    - GNOME/KDE 표준 단축키를 고려하세요
+    - 일부 데스크톱 환경은 특정 단축키를 예약합니다
+    
+    일반적인 Linux 패턴:
+    ```go
+    app.KeyBinding.Add("Ctrl+N", newFileHandler)     // 새 파일
+    app.KeyBinding.Add("Ctrl+O", openFileHandler)    // 열기
+    app.KeyBinding.Add("Ctrl+S", saveFileHandler)    // 저장
+    app.KeyBinding.Add("Ctrl+Z", undoHandler)        // 실행 취소
+    app.KeyBinding.Add("Ctrl+Shift+Z", redoHandler)  // 다시 실행
+    app.KeyBinding.Add("Ctrl+C", copyHandler)        // 복사
+    app.KeyBinding.Add("Ctrl+V", pasteHandler)       // 붙여넣기
+    ```
+    
+  </TabItem>
+</Tabs>
+
+## 모범 사례
+
+1. **표준 단축키 사용**: 일반적인 작업에 대해 플랫폼 관례를 따르세요:
+   ```go
+   // 크로스플랫폼 저장
+   if runtime.GOOS == "darwin" {app.KeyBinding.Add("Cmd+S", saveHandler)
+   } else {
+       app.KeyBinding.Add("Ctrl+S", saveHandler)
+   }
+   ```
+
+2. **시각적 피드백 제공**: 단축키가 활성화되었음을 사용자에게 알려주세요:
+   ```go
+   app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+       saveDocument()
+       // 짧은 알림 표시
+       window.EmitEvent("notification:show", "Document saved")
+   })
+   ```
+
+3. **충돌 처리**: 중요한 시스템 단축키를 덮어쓰지 않도록 주의하세요:
+   ```go
+   // 다음과 같은 시스템 단축키를 덮어쓰지 마세요:
+   // Ctrl+Alt+Del (Windows)
+   // Cmd+Space (macOS Spotlight)
+   // Alt+Tab (창 전환)
+   ```
+
+4. **단축키 문서화**: 사용 가능한 단축키에 대한 도움말이나 문서를 제공하세요:
+   ```go
+   app.KeyBinding.Add("F1", func(window application.Window) {
+       // 사용 가능한 단축키가 포함된 도움말 대화상자 표시
+       showKeyboardShortcutsHelp()
+   })
+   ```
+
+5. **정리**: 더 이상 필요하지 않을 때 임시 키 바인딩을 제거하세요:
+   ```go
+   func enterEditMode() {
+       app.KeyBinding.Add("Escape", exitEditModeHandler)
+   }
+   
+   func exitEditModeHandler(window application.Window) {
+       exitEditMode()
+       app.KeyBinding.Remove("Escape") // 임시 바인딩 정리
+   }
+   ```
+
+## 전체 예제
+
+다음은 키 바인딩이 포함된 텍스트 편집기의 전체 예제입니다:
+
+```go
+package main
+
+import (
+    "runtime"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Text Editor with Shortcuts",
+    })
+
+    // 파일 작업
+    if runtime.GOOS == "darwin" {
+        app.KeyBinding.Add("Cmd+N", func(window application.Window) {
+            window.EmitEvent("file:new", nil)
+        })
+        app.KeyBinding.Add("Cmd+O", func(window application.Window) {
+            openFile(app, window)
+        })
+        app.KeyBinding.Add("Cmd+S", func(window application.Window) {
+            window.EmitEvent("file:save", nil)
+        })
+    } else {
+        app.KeyBinding.Add("Ctrl+N", func(window application.Window) {
+            window.EmitEvent("file:new", nil)
+        })
+        app.KeyBinding.Add("Ctrl+O", func(window application.Window) {
+            openFile(app, window)
+        })
+        app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+            window.EmitEvent("file:save", nil)
+        })
+    }
+
+    // 보기 작업
+    app.KeyBinding.Add("F11", func(window application.Window) {
+        window.SetFullscreen(!window.Fullscreen())
+    })
+
+    app.KeyBinding.Add("F1", func(window application.Window) {
+        showKeyboardShortcuts(window)
+    })
+
+    // 메인 창 생성
+    window := app.Window.New()
+    window.SetTitle("Text Editor")
+
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
+}
+
+func openFile(app *application.App, window application.Window) {
+    dialog := app.Dialog.OpenFile()
+    dialog.AddFilter("Text Files", "*.txt;*.md")
+    
+    if file, err := dialog.PromptForSingleSelection(); err == nil {
+        window.EmitEvent("file:open", file)
+    }
+}
+
+func showKeyboardShortcuts(window application.Window) {
+    shortcuts := `
+Keyboard Shortcuts:
+- Ctrl/Cmd+N: New file
+- Ctrl/Cmd+O: Open file
+- Ctrl/Cmd+S: Save file
+- F11: Toggle fullscreen
+- F1: Show this help
+`
+    window.EmitEvent("help:show", shortcuts)
+}
+```
+
+:::tip[프로 팁]
+모든 대상 플랫폼에서 키 바인딩을 테스트하여 올바르게 작동하고 시스템 단축키와 충돌하지 않는지 확인하세요.
+:::
+
+:::danger[경고]
+중요한 시스템 단축키를 덮어쓰지 않도록 주의하세요. 일부 키 조합은 운영 체제에서 예약되어 있으며 애플리케이션에서 캡처할 수 없습니다.
+:::

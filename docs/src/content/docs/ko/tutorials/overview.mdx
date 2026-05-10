@@ -1,0 +1,84 @@
+---
+title: 튜토리얼
+description: 애플리케이션을 빌드하며 Wails 배우기
+sidebar:
+  label: 개요
+  order: 0
+---
+
+import { LinkButton } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import qr1 from "../../../../assets/qr1.png";
+import todoApp from "../../../../assets/todo-app.png";
+import notesApp from "../../../../assets/notes-app.png";
+
+완전한 애플리케이션을 빌드하며 Wails 개념을 가르치는 단계별 튜토리얼입니다. 각 튜토리얼에는 작동하는 코드, 설명, 실용적인 패턴이 포함되어 있습니다.
+
+:::tip[Go를 처음 접하시나요?]
+튜토리얼을 시작하기 전에 [Go Tour](https://go.dev/tour/)를 완료하세요.
+:::
+
+### QR 코드 서비스
+
+<Image src={qr1} alt="QR Code Example" style="max-width: 400px; margin: 1rem auto; display: block;" />
+
+QR 코드 생성기를 빌드하며 Wails 서비스의 기본 사항을 배웁니다. 이 튜토리얼은 애플리케이션 로직을 재사용 가능한 서비스로 구성하는 핵심 개념을 소개합니다.
+
+**학습 내용:**
+- Wails 서비스 생성 및 구조화 방법
+- 외부 Go 의존성 관리
+- Go 메서드를 프론트엔드에 바인딩
+- Go와 JavaScript 간 데이터 전달
+- 유지보수를 위한 코드 조직화
+
+**추천 대상:** 서비스 아키텍처를 이해하고 싶은 Wails 초보자
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/ko/tutorials/01-creating-a-service" variant="secondary" icon="right-arrow">시작하기</LinkButton>
+</div>
+
+---
+
+### TODO 목록
+
+<Image src={todoApp} alt="TODO List Application" style="max-width: 400px; margin: 1rem auto; display: block;" />
+
+아름답고 현대적인 인터페이스를 갖춘 완전한 TODO 목록 애플리케이션을 빌드합니다. 이 실습 튜토리얼은 바닐라 JavaScript를 사용한 실용적인 실제 애플리케이션을 통해 핵심 Wails 패턴을 가르칩니다.
+
+**학습 내용:**
+- 스레드 안전한 상태 관리를 위한 서비스 기반 아키텍처
+- CRUD 작업 (생성, 읽기, 업데이트, 삭제)
+- Go와 JavaScript 간 타입 안전한 바인딩
+- 프레임워크 복잡성 없이 현대적인 UI 빌드
+- 적절한 오류 처리 및 검증 패턴
+
+**완료 시간:** 약 20분
+
+**추천 대상:** 첫 번째 완전한 Wails 애플리케이션 - 프레임워크 복잡성을 추가하기 전에 기본 사항을 이해하는 데 완벽합니다.
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/ko/tutorials/02-todo-vanilla" variant="secondary" icon="right-arrow">시작하기</LinkButton>
+</div>
+
+---
+
+### 메모장
+
+<Image src={notesApp} alt="Notes Application" style="max-width: 600px; margin: 1rem auto; display: block;" />
+
+네이티브 파일 대화상자 및 자동 저장 기능을 갖춘 Apple 메모장 스타일 애플리케이션을 빌드합니다. 이 튜토리얼은 파일 작업, 네이티브 대화상자, 전문적인 UI 패턴과 같은 데스크톱 전용 기능을 보여줍니다.
+
+**학습 내용:**
+- 네이티브 파일 대화상자 (저장, 열기, 정보)
+- JSON 기반 데이터 영속성
+- 디바운스된 자동 저장 패턴
+- 전문적인 두 열 데스크톱 레이아웃
+- Go에서 파일 시스템 작업 처리
+
+**완료 시간:** 약 30분
+
+**추천 대상:** 파일 작업 및 네이티브 OS 대화상자와 같은 데스크톱 전용 기능 학습
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/ko/tutorials/03-notes-vanilla" variant="secondary" icon="right-arrow">시작하기</LinkButton>
+</div>

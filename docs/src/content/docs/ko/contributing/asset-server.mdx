@@ -1,0 +1,180 @@
+---
+title: 애셋 서버
+description: Wails v3가 개발 및 프로덕션 환경에서 웹 애셋을 어떻게 제공하고 임베딩하는지
+sidebar:
+  order: 4
+---
+
+## 개요
+
+모든 Wails 애플리케이션은 다음을 결합한 **단일 네이티브 실행 파일**을 제공합니다:
+
+1. *Go* 백엔드  
+2. *Web* 프론트엔드 (HTML + JS + CSS)
+
+**애셋 서버(Asset Server)**는 이를 가능하게 하는 접착제 역할을 합니다.  
+애셋 서버는 Go 빌드 태그를 통해 컴파일 타임에 선택되는 **두 가지 운영 모드**를 가집니다:
+
+| 모드 | 태그 | 목적 |
+|------|-----|---------|
+| **개발(Development)** | `//go:build dev` | 핫 리로드를 통한 빠른 반복 개발 |
+| **프로덕션(Production)**  | `//go:build !dev` | 의존성 없는 임베디드 애셋 |
+
+구현체는  
+`v3/internal/assetserver/` 에 있으며, 명확한 파일 분리 구조를 가집니다:
+
+```
+assetserver_dev.go        # ⬅️ 런타임 개발 서버
+assetserver_production.go # ⬅️ 임베디드 서버
+assetserver_darwin.go     # OS별 헬퍼 (리눅스/윈도우도 동일)
+asset_fileserver.go       # 공유 정적 파일 로직
+content_type_sniffer.go   # MIME 타입 감지
+ringqueue.go              # MIME 캐시를 위한 작은 LRU
+```
+
+---
+
+## 개발 모드
+
+### 수명 주기
+
+1. `wails3 dev` 가 부트되며 `build/Taskfile.yml` 에 정의된 작업(보통 `npm run dev`)을 실행하여 **프론트엔드 개발 서버**를 시작합니다  
+   (Vite, SvelteKit, React-SWC 등).
+2. Wails는 `localhost:<random>` 에서 수신 대기하는 **개발 애셋 서버**를 시작하고, Go 런타임에게 창 URL로 `http://<host>:<VITE_PORT>` 를 로드하도록 지시합니다.
+3. 들어오는 요청은 `assetserver_dev.go` 에서 처리됩니다:
+
+   ```
+   ┌─────────┐  /runtime/...          ┌─────────────┐
+   │ Browser │ ── 네이티브 브리지  ───▶ │   Runtime   │
+   ├─────────┤                       └─────────────┘
+   │   JS    │  / (index.html)        proxy / -> Vite
+   └─────────┘ ◀─────────────┐
+                 AssetServer │
+                             ▼
+                      ┌────────────┐
+                      │  Vite Dev  │
+                      │   Server   │
+                      └────────────┘
+   ```
+
+4. 정적 파일(`/assets/logo.svg`)은 속도 향상을 위해 `asset_fileserver.go` 를 통해 **디스크에서 직접 제공**되며, 알려지지 않은 경로는 프레임워크 개발 서버로 **프록시** 처리됩니다. 이를 통해 *즉시* 핫 모듈 대체(HMR)가 가능합니다.
+
+### 기능
+
+* **라이브 리로드(Live Reload)** – Vite/Snowpack 등이 HMR WebSocket을 주입하며, Wails는 이를 프록시하기만 하면 됩니다.
+* **소스 맵 지원** – 애셋이 번들되지 않으므로 브라우저 개발자 도구는 오류를 원래 소스 파일로 매핑합니다.
+* **Go 재컴파일 불필요** – 프론트엔드만 재빌드되며, `.go` 파일을 변경할 때까지 Go 코드는 계속 실행됩니다.
+
+### 프레임워크 전환
+
+개발 프록시는 **프레임워크 비종속적(framework-agnostic)**입니다:
+
+* 루트 `Taskfile.yml` 작업 파일은 두 가지 환경 변수를 주입합니다:
+  `APP_NAME` 및 `WAILS_VITE_PORT`.
+* 각 템플릿별 Taskfile은 개발 서버를 실행하기 전에 이러한 변수를 내보냅니다.
+* `assetserver_dev.go` 는 단순히 해당 대상为目标으로 프록시합니다.
+
+새 템플릿 추가 → 개발 작업 정의 → 애셋 서버가 자동으로 작동합니다.
+
+---
+
+## 프로덕션 모드
+
+`wails3 build` 를 실행하면 파이프라인은 다음과 같이 동작합니다:
+
+1. 프론트엔드 **프로덕션 빌드**(`npm run build`) 를 실행하여 `/frontend/dist/**` 를 생성합니다.
+2. 해당 폴더를 컴파일 타임에 `go:embed` 파일 시스템에 **임베드**합니다 (생성된 파일 `bundled_assetserver.go` 참조).
+3. Go 바이너리를 `-tags production` (암시적) 옵션으로 컴파일합니다.
+
+### 요청 처리
+
+```go
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    // 1. 임베디드 정적 애셋 시도 (정확한 경로)
+    // 2. SPA 라우팅을 위해 index.html로 폴백
+    // 3. 확장자가 알려지지 않은 경우 콘텐츠 타입 감지
+    // 4. 강력한 캐시 헤더 설정
+}
+```
+
+* **MIME 감지** – 빌드 도구가 확장자 없는 파일(예: `/assets/manifest`)을 생성한 경우 `content_type_sniffer.go` 가 첫 512바이트를 검사하고 결과를 작은 잠금 없는 LRU 에 캐시합니다.
+* **링 큐 캐싱** – 자주 접근되는 애셋(로고, CSS 등)은 애플리케이션 수명 동안 메모리에 유지되어 디스크 또는 임베디드 FS 조회의 필요성을 제거합니다.
+* **보안 헤더** – `file://` 네비게이션을 차단하고 `nosniff` 를 활성화합니다.
+
+모든 것이 임베드되므로, 배포된 바이너리는 **외부 의존성이 없습니다**(윈도우에서도 마찬가지).
+
+---
+
+## 개발 ↔ 프로덕션 브리징
+
+두 모드 모두 **동일한 공개 인터페이스**를 노출합니다:
+
+```go
+type AssetServer interface {
+    URL()        string // dev: http://localhost:34115, prod: wails://app
+    Open() error // 수신 대기 시작
+    Close()      // 정상적인 종료
+}
+```
+
+`pkg/application` 은 컴파일된 구현체를 아무렇지 않게 사용하므로, **애플리케이션 코드는 `dev` 와 `build` 간에 변경되지 않습니다**.
+
+---
+
+## 프론트엔드 프레임워크 통합 방법
+
+### 템플릿
+
+각 공식 템플릿(React, Vue, Svelte, Solid 등)에는 다음이 포함되어 있습니다:
+
+* `build/Taskfile.yml`
+* `frontend/vite.config.ts` (또는 이에 상응하는 파일)
+
+이들은 다음과 같은 여러 작업을 내보냅니다:
+
+| 작업 | 목적 |
+|------|---------|
+| `dev:frontend`   | **랜덤 사용 가능한 포트**에서 프레임워크 개발 서버를 시작하고 stdout 에 출력합니다 (`PORT=5173`). |
+| `build:frontend` | 캐시 busting 을 위한 매니페스트와 함께 정적 애셋을 `dist/` 에 생성합니다. |
+
+`internal/commands/dev.go` 는 `host` 로 하드코딩된 `localhost` 와 출력된 `VITE_PORT` 환경 변수를 사용하여 `FRONTEND_DEVSERVER_URL` 환경 변수를 설정하고 **개발 애셋 서버**를 시작합니다.
+
+프레임워크는 Go 와 완전히 분리됩니다:
+
+* 빌드 타임에 Wails JS SDK 를 import 할 필요가 없습니다 – 런타임에서 창 생성 시 주입됩니다.
+* HTTP 개발 서버가 있는 모든 프레임워크를 플러그인할 수 있습니다.
+
+---
+
+## 확장 / 사용자 정의
+
+맞춤형 헤더, 인증, 또는 gzip 이 필요하신가요?
+
+1. `type Middleware func(http.Handler) http.Handler` 를 구현합니다.
+2. `internal/assetserver/options.go` 를 통해 등록합니다.
+3. 프로덕션의 경우, `assetserver_production.go` 에도 동일한 미들웨어를 추가하는 것을 잊지 마세요.
+
+---
+
+## 주요 소스 파일
+
+| 파일 | 역할 |
+|------|------|
+| `assetserver_dev.go` | 리버스 프록시 + 디스크 파일 서버 |
+| `assetserver_production.go` | 임베디드 FS 핸들러 |
+| `options.go` | `pkg/options/assetserver` 에서 파싱된 구성 구조체 |
+| `build_dev.go` / `build_production.go` | 올바른 구현체를 선택하는 빌드 태그 래퍼 |
+| `bundled_assetserver.go` | 생성된 임베드 데이터 (프로덕션 빌드에서만 존재) |
+
+---
+
+## 주의사항 및 디버깅
+
+* **프로덕션에서의 흰색 화면** – 보통 SPA 라우팅 문제입니다: 개발 모드에서 `History API Fallback` 이 활성화되어 있고 프로덕션에서 `index.html` 폴백이 작동하는지 확인하세요.
+* **개발 모드에서의 404** – `FRONTEND_DEV_PORT` 불일치; 모든 프록시된 요청을 출력하려면 `WAILSDEV_VERBOSE=1` 과 함께 실행하세요.
+* **대용량 애셋** – 애셋이 임베드됩니다; 디스크에서 로드하려면 [`assetserver.WithExternalDir("/path")`](https://pkg.go.dev) 를 고려하세요.
+
+---
+
+이제 Wails **애셋 서버**가 개발 및 **프로덕션** 환경에서 웹 코드를 네이티브 창에 어떻게 공급하는지 이해하셨습니다.  
+이 레이어를 마스터하면 로딩 문제 디버깅, 미들웨어 추가, 또는 완전히 다른 프론트엔드 도구 체인 교체도 자신 있게 수행할 수 있습니다.

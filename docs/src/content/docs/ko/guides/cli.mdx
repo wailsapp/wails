@@ -1,0 +1,549 @@
+---
+title: CLI 참조
+description: Wails CLI 명령어에 대한 완전한 참조 문서
+sidebar:
+  order: 1
+---
+
+Wails CLI는 Wails 애플리케이션을 개발, 빌드 및 유지 관리하는 데 도움이 되는 광범위한 명령어 세트를 제공합니다.
+
+## 핵심 명령어
+
+핵심 명령어는 프로젝트 생성, 개발 및 빌드에 주로 사용되는 명령어입니다.
+
+모든 CLI 명령어는 다음 형식을 따릅니다: `wails3 <command>`.
+
+### `init`
+새로운 Wails 프로젝트를 초기화합니다. 이 초기화 과정에서 `go mod tidy` 명령어가 실행되어 프로젝트 패키지를 최신 상태로 업데이트합니다. `init` 명령어에 `-skipgomodtidy` 플래그를 사용하여 이를 생략할 수 있습니다.
+
+```bash
+wails3 init [flags]
+```
+
+#### 플래그
+| 플래그                  | 설명          | 기본값                  |
+|-----------------------|----------------------|--------------------------|
+| `-p`                  | 패키지 이름         | `main`                   |
+| `-t`                  | 템플릿 이름 또는 URL | `vanilla`                |
+| `-n`                  | 프로젝트 이름         |                          |
+| `-d`                  | 프로젝트 디렉토리    | `.`                      |
+| `-q`                  | 출력 억제      | `false`                  |
+| `-l`                  | 템플릿 목록      | `false`                  |
+| `-git`                | Git 저장소 URL   |                          |
+| `-productname`        | 제품 이름         | `My Product`             |
+| `-productdescription` | 제품 설명  | `My Product Description` |
+| `-productversion`     | 제품 버전      | `0.1.0`                  |
+| `-productcompany`     | 회사 이름         | `My Company`             |
+| `-productcopyright`   | 저작권 고지     | ` now, My Company`       |
+| `-productcomments`    | 파일 주석        | `This is a comment`      |
+| `-productidentifier`  | 제품 식별자   |                          |
+| `-skipgomodtidy`      | go mod tidy 건너뛰기     | `false`                   |
+
+`-git` 플래그는 다양한 Git URL 형식을 허용합니다:
+- HTTPS: `https://github.com/username/project`
+- SSH: `git@github.com:username/project` 또는 `ssh://git@github.com/username/project`
+- Git 프로토콜: `git://github.com/username/project`
+- 파일 시스템: `file:///path/to/project.git`
+
+이 플래그가 제공되면 다음 작업을 수행합니다:
+1. 프로젝트 디렉토리에 git 저장소를 초기화합니다.
+2. 지정된 URL을 원격 origin으로 설정합니다.
+3. `go.mod`의 모듈 이름을 저장소 URL과 일치하도록 업데이트합니다.
+4. 모든 파일을 추가합니다.
+
+### `dev`
+개발 모드에서 애플리케이션을 실행합니다. 이를 통해 프론트엔드 코드의 실시간 뷰를 얻을 수 있으며, 전체 애플리케이션을 다시 빌드하지 않고도 변경 사항을 적용하고 실행 중인 애플리케이션에서 확인할 수 있습니다. Go 코드의 변경 사항도 감지되어 애플리케이션이 자동으로 다시 빌드되고 재시작됩니다.
+
+```bash
+wails3 dev [flags]
+```
+
+#### 플래그
+| 플래그      | 설명          | 기본값              |
+|-----------|----------------------|----------------------|
+| `-config` | 구성 파일 경로     | `./build/config.yml` |
+| `-port`   | Vite 개발 서버 포트 | `9245`               |
+| `-s`      | HTTPS 활성화         | `false`              |
+
+
+    :::note
+    이는 `wails3 task dev`를 실행하는 것과 동일하며 프로젝트의 주요 Taskfile에서 `dev` 작업을 실행합니다. `Taskfile.yml` 파일을 편집하여 이를 사용자 정의할 수 있습니다.
+    :::
+
+
+### `build`
+애플리케이션의 디버그 버전을 빌드합니다. 기본적으로 현재 플랫폼과 아키텍처를 대상으로 빌드됩니다.
+
+```bash
+wails3 build [flags] [CLI variables...]
+```
+
+#### 플래그
+| 플래그     | 설명                                              | 기본값 |
+|----------|----------------------------------------------------------|---------|
+| `-tags`  | 추가 Go 빌드 태그 (쉼표로 구분)               |         |
+
+빌드를 사용자 정의하기 위해 CLI 변수를 전달할 수 있습니다:
+```bash
+wails3 build PLATFORM=linux CONFIG=production
+```
+
+`-tags` 플래그를 사용하여 사용자 정의 Go 빌드 태그를 전달합니다:
+```bash
+# Linux에서 GTK4 지원으로 빌드
+wails3 build -tags gtk4
+
+# 서버 모드에서 빌드 (GUI 없음)
+wails3 build -tags server
+
+# 여러 태그
+wails3 build -tags gtk4,customtag
+```
+
+태그는 하위 Taskfile로 `EXTRA_TAGS`로 전달됩니다.
+
+    :::note
+    이는 프로젝트의 주요 Taskfile에서 `build` 작업을 실행하는 `wails3 task build`를 실행하는 것과 동일합니다. `build`에 전달된 모든 CLI 변수는 하위 작업으로 전달됩니다. `Taskfile.yml` 파일을 편집하여 빌드 프로세스를 사용자 정의할 수 있습니다.
+    :::
+
+### `package`
+
+배포를 위한 플랫폼별 패키지를 생성합니다.
+
+```bash
+wails3 package [CLI variables...]
+```
+
+패키징을 사용자 정의하기 위해 CLI 변수를 전달할 수 있습니다:
+```bash
+wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg
+```
+
+#### 패키지 유형
+
+다음 플랫폼에서 사용 가능한 패키지 유형은 다음과 같습니다:
+
+| 플랫폼 | 패키지 유형                              |
+|----------|-------------------------------------------|
+| Windows  | `.exe`                                    |
+| macOS    | `.app`,                                   |
+| Linux    | `.AppImage`, `.deb`, `.rpm`, `.archlinux` |
+
+    :::note
+     이는 프로젝트의 주요 Taskfile에서 `package` 작업을 실행하는 `wails3 task package`와 동일합니다. `package`에 전달된 모든 CLI 변수는 하위 작업으로 전달됩니다. `Taskfile.yml` 파일을 편집하여 패키징 프로세스를 사용자 정의할 수 있습니다.
+    :::
+
+
+### `task`
+프로젝트의 Taskfile.yml에 정의된 작업을 실행합니다. 이는 사용자 정의 빌드, 테스트 및 배포 작업을 정의하고 실행할 수 있는 [Taskfile](https://taskfile.dev)의 내장 버전입니다.
+
+```bash
+wails3 task [taskname] [CLI variables...] [flags]
+```
+
+#### CLI 변수
+`KEY=VALUE` 형식으로 작업에 변수를 전달할 수 있습니다:
+```bash
+wails3 task build PLATFORM=linux CONFIG=production
+wails3 task deploy ENV=staging VERSION=1.2.3
+```
+
+이 변수들은 Go 템플릿 구문을 사용하여 Taskfile.yml에서 접근할 수 있습니다:
+```yaml
+tasks:
+  build:
+    cmds:
+      - echo "Building for {{.PLATFORM | default "darwin"}}"
+      - echo "Config: {{.CONFIG | default "debug"}}"
+```
+
+#### 플래그
+| 플래그         | 설명                               | 기본값  |
+|--------------|-------------------------------------------|----------|
+| `-h`         | Task 사용법 표시                          | `false`  |
+| `-i`         | 새 Taskfile.yml 생성                | `false`  |
+| `-list`      | 설명과 함께 작업 목록 표시             | `false`  |
+| `-list-all`  | 모든 작업 목록 표시 (설명 유무와 무관) | `false`  |
+| `-json`      | 작업 목록을 JSON 형식으로 포맷                 | `false`  |
+| `-status`    | 작업이 최신이 아니면 비-zero로 종료 | `false`  |
+| `-f`         | 작업이 최신이어도 실행 강제         | `false`  |
+| `-w`         | 지정된 작업에 대한 감시 모드 활성화     | `false`  |
+| `-v`         | 상세 모드 활성화                      | `false`  |
+| `-version`   | Task 버전 출력                       | `false`  |
+| `-s`         | 출력 억제 (echo 비활성화)                          | `false`  |
+| `-p`         | 작업을 병렬로 실행                | `false`  |
+| `-dry`       | 실행 없이 작업 컴파일 및 출력 | `false`  |
+| `-summary`   | 작업에 대한 요약 표시                | `false`  |
+| `-x`         | 작업의 종료 코드를 전달    | `false`  |
+| `-dir`       | 실행 디렉토리 설정               |          |
+| `-taskfile`  | 실행할 Taskfile 선택              |          |
+| `-output`    | 출력 스타일 설정: [interleaved|group|prefixed] |          |
+| `-c`         | 색상 출력 (기본값 활성화)       | `true`   |
+| `-C`         | 병렬로 실행할 작업 수 제한 |          |
+| `-interval`  | 변경 감지 간격 (초 단위) |          |
+
+#### 예제
+```bash
+# 기본 작업 실행
+wails3 task
+
+# 특정 작업 실행
+wails3 task test
+
+# 변수와 함께 작업 실행
+wails3 task build PLATFORM=windows ARCH=amd64
+
+# 사용 가능한 모든 작업 목록 표시
+wails3 task --list
+
+# 여러 작업을 병렬로 실행------|-------|--------------|
+| `-f`        | 추가 Go 빌드 플래그 |                     |
+| `-d`        | 출력 디렉토리          | `frontend/bindings` |
+| `-models`   | 모델 파일 이름           | `models`            |
+| `-index`    | 인덱스 파일 이름            | `index`             |
+| `-ts`       | TypeScript 생성       | `false`             |
+| `-i`        | TS 인터페이스 사용         | `false`             |
+| `-b`        | 번들 런타임 사용       | `false`             |
+| `-names`    | ID 대신 이름 사용  | `false`             |
+| `-noindex`  | 인덱스 파일 건너뛰기          | `false`             |
+| `-dry`      | 시뮬레이션 실행                   | `false`             |
+| `-silent`   | 조용한 모드               | `false`             |
+| `-v`        | 디버그 출력              | `false`             |
+| `-clean`    | 출력 디렉토리 정리    | `false`             |
+
+### `generate build-assets`
+애플리케이션에 대한 빌드 애셋을 생성합니다.
+
+```bash
+wails3 generate build-assets [flags]
+```
+
+#### 플래그
+| 플래그           | 설명         | 기본값            |
+|------|----------|--------------|
+| `-name`        | 프로젝트 이름        |                    |
+| `-dir`         | 출력 디렉토리    | `build`            |
+| `-silent`      | 출력 억제     | `false`            |
+| `-company`     | 회사 이름        |                    |
+| `-productname` | 제품 이름        |                    |
+| `-description` | 제품 설명 |                    |
+| `-version`     | 제품 버전     |                    |
+| `-identifier`  | 제품 식별자  | `com.wails.[name]` |
+| `-copyright`   | 저작권 고지    |                    |
+| `-comments`    | 파일 주석       |                    |
+
+### `generate icons`
+애플리케이션 아이콘을 생성합니다.
+
+```bash
+wails3 generate icons [flags]
+```
+
+#### 플래그
+| 플래그                   | 설명                                          | 기본값               |
+|------|------------------|----------|
+| `-input`               | 입력 PNG 파일                                       | 필수              |
+| `-windowsfilename`     | Windows 출력 파일 이름                              |                       |
+| `-macfilename`         | macOS 출력 파일 이름                                |                       |
+| `-sizes`               | 아이콘 크기 (쉼표로 구분)                         | `256,128,64,48,32,16` |
+| `-example`             | 예제 아이콘 생성                                | `false`               |
+| `-iconcomposerinput`   | 입력 Icon Composer 파일 (`.icon`)                   |                       |
+| `-macassetdir`         | Mac 애셋 출력 디렉토리 (Assets.car + icns)  |                       |
+
+#### Icon Composer (macOS)
+
+macOS 26+에서는 Icon Composer `.icon` 파일을 사용하여 `Assets.car` 및 `icons.icns`를 생성할 수 있습니다:
+
+```bash
+wails3 generate icons -iconcomposerinput build/appicon.icon -macassetdir build
+```
+
+이것은 Apple의 `actool` 명령을 사용하여 `.icon` 파일을 컴파일합니다. `actool` 버전 26 이상이 포함된 Xcode가 필요합니다.
+
+Icon Composer를 사용할 때 `build/config.yml`의 `cfBundleIconName`을 `.icon` 파일 이름(확장자 제외)과 일치하도록 설정합니다:
+
+```yaml
+info:
+  cfBundleIconName: "appicon"
+```
+
+설정되지 않고 `Assets.car`가 존재하는 경우, 이는 기본적으로 `"appicon"`으로 설정됩니다.
+
+### `generate syso`
+Windows .syso 파일을 생성합니다.
+
+```bash
+wails3 generate syso [flags]
+```
+
+#### 플래그
+| 플래그        | 설명               | 기본값                    |
+|------|------------|----------------------|
+| `-manifest` | 매니페스트 파일 경로     | 필수                   |
+| `-icon`     | 아이콘 파일 경로         | 필수                   |
+| `-info`     | 버전 정보 파일 경로 |                            |
+| `-arch`     | 대상 아키텍처       | 현재 GOARCH             |
+| `-out`      | 출력 파일 이름           | `rsrc_windows_[arch].syso` |
+
+### `generate .desktop`
+Linux .desktop 파일을 생성합니다.
+
+```bash
+wails3 generate .desktop [flags]
+```
+
+#### 플래그
+| 플래그             | 설명               | 기본값          |
+|------|----|----|
+| `-name`          | 애플리케이션 이름          | 필수         |
+| `-exec`          | 실행 파일 경로           | 필수         |
+| `-icon`          | 아이콘 경로                 |                  |
+| `-categories`    | 애플리케이션 카테고리    | `Utility`        |
+| `-comment`       | 애플리케이션 주석       |                  |
+| `-terminal`      | 터미널에서 실행           | `false`          |
+| `-keywords`      | 검색 키워드           |                  |
+| `-version`       | 애플리케이션 버전       |                  |
+| `-genericname`   | 일반 이름              |                  |
+| `-startupnotify` | 시작 알림 표시 | `false`          |
+| `-mimetype`      | 지원 MIME 유형      |                  |
+| `-output`        | 출력 파일 이름           | `[name].desktop` |
+
+### `generate runtime`
+사전 빌드된 런타임의 버전을 생성합니다.
+
+```bash
+wails3 generate runtime
+```
+
+### `generate constants`
+Go 코드에서 JavaScript 상수를 생성합니다.
+
+```bash
+wails3 generate constants
+```
+
+### `generate appimage`
+Linux AppImage를 생성합니다.
+
+```bash
+wails3 generate appimage [flags]
+```
+
+#### 플래그
+| 플래그        | 설명           | 기본값        |
+|------|------|----------|
+| `-binary`   | 바이너리 경로        | 필수       |
+| `-icon`     | 아이콘 파일 경로     | 필수         |
+| `-desktop`  | .desktop 파일 경로 | 필수         |
+| `-builddir` | 빌드 디렉토리       | 임시 디렉토리 |
+| `-output`   | 출력 디렉토리      | `.`            |
+
+기본 명령: `wails3 service`
+
+## Service Commands
+
+서비스 명령은 Wails 서비스를 관리하는 데 도움이 됩니다. 모든 서비스 명령은 기본 명령 `wails3 service <command>`을 사용합니다.
+
+### `service init`
+새 서비스를 초기화합니다.
+
+```bash
+wails3 service init [flags]
+```
+
+#### 플래그
+| 플래그 | 설명         | 기본값           |
+|------|-------|---|
+| `-n` | 서비스 이름        | `example_service` |
+| `-d` | 서비스 설명 | `Example service` |
+| `-p` | 패키지 이름        |                   |
+| `-o` | 출력 디렉토리    | `.`               |
+| `-q` | 출력 억제     | `false`           |
+| `-a` | 작성자 이름         |                   |
+| `-v` | 버전             |                   |
+| `-w` | 웹사이트 URL         |                   |
+| `-r` | 저장소 URL      |                   |
+| `-l` | 라이선스             |                   |
+
+기본 명령: `wails3 tool`
+
+## Tool Commands
+
+도구 명령은 개발 및 디버깅을 위한 유틸리티를 제공합니다. 모든 도구 명령은 기본 명령 `wails3 tool <command>`을 사용합니다.
+
+### `tool checkport`
+포트가 열려 있는지 확인합니다. vite가 실행 중인지 테스트하는 데 유용합니다.
+
+```bash
+wails3 tool checkport [flags]
+```
+
+#### 플래그
+| 플래그    | 설명   | 기본값     |
+|--|-----|-----------|
+| `-port` | 확인할 포트 | `9245`      |
+| `-host` | 확인할 호스트 | `localhost` |
+
+### `tool watcher`
+파일을 감시하고 변경될 때 명령을 실행합니다.
+
+```bash
+wails3 tool watcher [flags]
+```
+
+#### 플래그
+| 플래그       | 설명         | 기본값              |------------|---------------------|----------------------|
+| `-config`  | 구성 파일 경로    | `./build/config.yml` |
+| `-ignore`  | 무시할 패턴      |                      |
+| `-include` | 포함할 패턴      |                      |
+
+### `tool cp`
+파일을 복사합니다.
+
+```bash
+wails3 tool cp
+```
+
+### `tool buildinfo`
+애플리케이션에 대한 빌드 정보를 표시합니다.
+
+```bash
+wails3 tool buildinfo
+```
+
+### `tool version`
+제공된 플래그에 따라 시맨틱 버전을 증분합니다.
+
+```bash
+wails3 tool version [flags]
+```
+
+#### 플래그
+| Flag          | Description                                      | Default |
+|---------------|--------------------------------------------------|---------|
+| `-v`          | 증분할 현재 버전                          |         |
+| `-major`      | 주요 버전 증분                               | `false` |
+| `-minor`      | 부 버전 증분                               | `false` |
+| `-patch`      | 패치 버전 증분                               | `false` |
+| `-prerelease` | 프리리리스 버전 증분 (예: alpha.5에서 alpha.6으로) | `false` |
+
+이 명령은 주요 > 부 > 패치 > 프리리리스 순서로 우선순위를 따릅니다. 입력 버전에 "v" 접두사가 있는 경우와 프리리리스 및 메타데이터 구성 요소를 모두 보존합니다.
+
+사용 예:
+```bash
+wails3 tool version -v 1.2.3 -major      # Output: 2.0.0
+wails3 tool version -v v1.2.3 -minor     # Output: v1.3.0
+wails3 tool version -v 1.2.3-alpha -patch # Output: 1.2.4-alpha
+wails3 tool version -v v3.0.0-alpha.5 -prerelease # Output: v3.0.0-alpha.6
+```
+
+### `tool package`
+리눅스 패키지(deb, rpm, archlinux)를 생성합니다.
+
+```bash
+wails3 tool package [flags]
+```
+
+#### 플래그
+| Flag      | Description                          | Default  |
+|-----------|--------------------------------------|----------|
+| `-format` | 패키지 형식 (deb, rpm, archlinux) | `deb`    |
+| `-name`   | 실행 파일 이름                      | Required |
+| `-config` | 구성 파일 경로                     | Required |
+| `-out`    | 출력 디렉토리                     | `.`      |
+
+#### 플래그
+| Flag      | Description                          | Default |
+|-----------|--------------------------------------|---------|
+| `-format` | 패키지 형식 (deb, rpm, archlinux) | `deb`   |
+| `-name`   | 실행 파일 이름                      | `myapp` |
+| `-config` | 구성 파일 경로                     |         |
+| `-out`    | 출력 디렉토리                     | `.`     |
+
+기본 명령: `wails3 update`
+
+## 업데이트 명령
+
+업데이트 명령은 프로젝트 애셋을 관리하고 업데이트하는 데 도움이 됩니다. 모든 업데이트 명령은 기본 명령 `wails3 update <command>`를 사용합니다.
+
+### `update cli`
+Wails CLI를 새 버전으로 업데이트합니다.
+
+```bash
+wails3 update cli [flags]
+```
+
+#### 플래그
+| Flag        | Description                     | Default |
+|-------------|---------------------------------|---------|
+| `-pre`      | 최신 프리리리스로 업데이트    | `false` |
+| `-version`  | 특정 버전으로 업데이트      |         |
+| `-nocolour` | 색상 출력 비활성화          | `false` |
+
+`update cli` 명령을 사용하여 Wails CLI 설치를 업데이트할 수 있습니다. 기본적으로 최신 안정 릴리스로 업데이트됩니다.
+`-pre` 플래그를 사용하여 최신 프리리리스 버전으로 업데이트하거나, `-version` 플래그를 사용하여 특정 버전을 지정할 수 있습니다.
+
+업데이트 후 프로젝트의 go.mod 파일을 업데이트하여 동일한 버전을 사용하도록 하십시오:
+```bash
+require github.com/wailsapp/wails/v3 v3.x.x
+```
+
+### `update build-assets`
+주어진 구성 파일을 사용하여 빌드 애셋을 업데이트합니다.
+
+```bash
+wails3 update build-assets [flags]
+```
+
+#### 플래그
+| Flag           | Description         | Default |
+|----------------|---------------------|---------|
+| `-config`      | 구성 파일 경로    |         |
+| `-dir`         | 출력 디렉토리    | `build` |
+| `-silent`      | 출력 억제     | `false` |
+| `-company`     | 회사 이름        |         |
+| `-productname` | 제품 이름        |         |
+| `-description` | 제품 설명 |         |
+| `-version`     | 제품 버전     |         |
+| `-identifier`  | 제품 식별자  |         |
+| `-copyright`   | 저작권 고지    |         |
+| `-comments`    | 파일 주석       |         |
+
+기본 명령: `wails3`
+
+## 유틸리티 명령
+
+유틸리티 명령은 일반적인 작업을 위한 유용한 단축키를 제공합니다. 기본 명령 `wails3 <command>`과 함께 이 명령들을 직접 사용하십시오.
+
+### `docs`
+기본 브라우저에서 Wails 문서를 엽니다.
+
+```bash
+wails3 docs
+```
+
+### `releasenotes`
+현재 버전 또는 지정된 버전의 릴리스 노트를 표시합니다.
+
+```bash
+wails3 releasenotes [flags]
+```
+
+#### 플래그
+| Flag | Description                       | Default |
+|------|-----------------------------------|---------|
+| `-v` | 릴리스 노트를 표시할 버전 |         |
+| `-n` | 색상 출력 비활성화             | `false` |
+
+### `version`
+현재 Wails 버전을 출력합니다.
+
+```bash
+wails3 version
+```
+
+### `sponsor`
+기본 브라우저에서 Wails 후원 페이지를 엽니다.
+
+```bash
+wails3 sponsor

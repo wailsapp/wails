@@ -1,0 +1,388 @@
+---
+title: 시스템 트레이 메뉴
+description: 애플리케이션에 시스템 트레이(알림 영역) 통합 기능 추가
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## 시스템 트레이 메뉴
+
+Wails는 모든 플랫폼에서 작동하는 **통합 시스템 트레이 API**를 제공합니다. 메뉴가 있는 트레이 아이콘을 생성하고, 창을 연결하며, 백그라운드 애플리케이션, 서비스, 빠른 접근 유틸리티를 위해 네이티브 플랫폼 동작으로 클릭을 처리할 수 있습니다.
+{/* VISUAL PLACEHOLDER: System Tray Comparison
+Description: Three screenshots showing the same Wails system tray icon on:
+1. Windows - Notification area (bottom-right)
+2. macOS - Menu bar (top-right) with label
+3. Linux (GNOME) - Top bar
+All showing the same icon and menu structure
+Style: Clean screenshots with arrows pointing to tray icon, menu expanded
+*/}
+
+## 빠른 시작
+
+```go
+package main
+
+import (
+    _ "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed assets/icon.png
+var icon []byte
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Tray App",
+    })
+
+    // Create system tray
+    systray := app.SystemTray.New()
+    systray.SetIcon(icon)
+    systray.SetLabel("My App")
+
+    // Add menu
+    menu := app.NewMenu()
+    menu.Add("Show").OnClick(func(ctx *application.Context) {
+        // Show main window
+    })
+    menu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+    systray.SetMenu(menu)
+
+    // Create hidden window
+    window := app.Window.New()
+    window.Hide()
+
+    app.Run()
+}
+```
+
+**결과:** 모든 플랫폼에서 메뉴가 있는 시스템 트레이 아이콘.
+
+## 시스템 트레이 생성하기
+
+### 기본 시스템 트레이
+
+```go
+// Create system tray
+systray := app.SystemTray.New()
+
+// Set icon
+systray.SetIcon(iconBytes)
+
+// Set label (macOS) / tooltip (Windows)
+systray.SetLabel("My Application")
+```
+
+### 아이콘 포함
+
+아이콘은 임베드해야 합니다:
+
+```go
+import _ "embed"
+
+//go:embed assets/icon.png
+var icon []byte
+
+//go:embed assets/icon-dark.png
+var iconDark []byte
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    systray := app.SystemTray.New()
+    systray.SetIcon(icon)
+    systray.SetDarkModeIcon(iconDark)  // macOS dark mode
+    
+    app.Run()
+}
+```
+
+**아이콘 요구사항:**
+
+| 플랫폼 | 크기 | 형식 | 참고 |
+|----------|------|--------|-------|
+| **Windows** | 16x16 또는 32x32 | PNG, ICO | 알림 영역 |
+| **macOS** | 18x18 ~ 22x22 | PNG | 메뉴 바, 템플릿 권장 |
+| **Linux** | 22x22 ~ 48x48 | PNG, SVG | DE에 따라 다름 |
+
+### 템플릿 아이콘 (macOS)
+
+템플릿 아이콘은 라이트/다크 모드에 자동으로 적응합니다:
+
+```go
+systray.SetTemplateIcon(iconBytes)
+```
+
+**템플릿 아이콘 가이드라인:**
+- 검정과 투명색만 사용
+- 다크 모드에서 검정은 흰색으로 표시됨
+- 파일 이름에 `Template` 접미사 추가: `iconTemplate.png`
+- [디자인 가이드](https://bjango.com/articles/designingmenubarextras/)
+
+## 메뉴 추가하기
+
+시스템 트레이 메뉴는 애플리케이션 메뉴와 유사하게 작동합니다:
+
+```go
+menu := app.NewMenu()
+
+// Add items
+menu.Add("Open").OnClick(func(ctx *application.Context) {
+    showMainWindow()
+})
+
+menu.AddSeparator()
+
+menu.AddCheckbox("Start at Login", false).OnClick(func(ctx *application.Context) {
+    enabled := ctx.ClickedMenuItem().Checked()
+    setStartAtLogin(enabled)
+})
+
+menu.AddSeparator()
+
+menu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+// Set menu
+systray.SetMenu(menu)
+```
+
+**모든 메뉴 항목 유형에 대해** [Menu Reference](/ko/features/menus/reference)를 참조하세요.
+
+## 창 연결하기
+
+자동 표시/숨김을 위해 트레이 아이콘에 창을 연결하세요:
+
+```go
+// Create window
+window := app.Window.New()
+
+// Attach to tray
+systray.AttachWindow(window)
+
+// Configure behaviour
+systray.SetWindowOffset(10)  // Pixels from tray icon
+systray.SetWindowDebounce(200 * time.Millisecond)  // Click debounce
+```
+
+**동작:**
+- 창은 기본적으로 숨겨짐
+- **트레이 아이콘 왼쪽 클릭** → 창 표시/숨김 토글
+- **트레이 아이콘 오른쪽 클릭** → 메뉴 표시 (설정된 경우)
+- 창은 트레이 아이콘 근처에 위치
+
+**예시: 팝업 창**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "Quick Access",
+    Width:  300,
+    Height: 400,
+    Frameless: true,  // No title bar
+    AlwaysOnTop: true,  // Stay on top
+})
+
+systray.AttachWindow(window)
+systray.SetWindowOffset(5)
+```
+
+## 클릭 핸들러
+
+트레이 아이콘 클릭을 처리하세요:
+
+```go
+systray := app.SystemTray.New()
+
+// Left click
+systray.OnClick(func() {
+    fmt.Println("Tray icon clicked")
+})
+
+// Right click
+systray.OnRightClick(func() {
+    fmt.Println("Tray icon right-clicked")
+})
+
+// Double click
+systray.OnDoubleClick(func() {
+    fmt.Println("Tray icon double-clicked")
+})
+
+// Mouse enter/leave
+systray.OnMouseEnter(func() {
+    fmt.Println("Mouse entered tray icon")
+})
+
+systray.OnMouseLeave(func() {
+    fmt.Println("Mouse left tray icon")
+})
+```
+
+**플랫폼 지원:**
+
+| 이벤트 | Windows | macOS | Linux |
+|-------|---------|-------|-------|
+| OnClick | ✅ | ✅ | ✅ |
+| OnRightClick | ✅ | ✅ | ✅ |
+| OnDoubleClick | ✅ | ✅ | ⚠️ DE에 따라 다름 |
+| OnMouseEnter | ✅ | ✅ | ⚠️ DE에 따라 다름 |
+| OnMouseLeave | ✅ | ✅ | ⚠️ DE에 따라 다름 |
+
+## 동적 업데이트
+
+트레이 아이콘과 메뉴를 동적으로 업데이트하세요:
+
+### 아이콘 변경
+
+```go
+var isActive bool
+
+func updateTrayIcon() {
+    if isActive {
+        systray.SetIcon(activeIcon)
+        systray.SetLabel("Active")
+    } else {
+        systray.SetIcon(inactiveIcon)
+        systray.SetLabel("Inactive")
+    }
+}
+```
+
+### 메뉴 업데이트
+
+```go
+var isPaused bool
+
+pauseMenuItem := menu.Add("Pause")
+
+pauseMenuItem.OnClick(func(ctx *application.Context) {
+    isPaused = !isPaused
+    
+    if isPaused {
+        pauseMenuItem.SetLabel("Resume")
+    } else {
+        pauseMenuItem.SetLabel("Pause")
+    }
+    
+    menu.Update()  // Important!
+})
+```
+
+:::caution[항상 Update() 호출하기]
+메뉴 상태를 변경한 후 **`menu.Update()`를 호출하세요**. [Menu Reference](/features/menus/reference#enabled-state)를 참조하세요.
+:::
+
+### 메뉴 재빌드
+
+주요 변경의 경우 전체 메뉴를 재빌드하세요:
+
+```go
+func rebuildTrayMenu(status string) {
+    menu := app.NewMenu()
+    
+    // Status-specific items
+    switch status {
+    case "syncing":
+        menu.Add("Syncing...").SetEnabled(false)
+        menu.Add("Pause Sync").OnClick(pauseSync)
+    case "synced":
+        menu.Add("Up to date ✓").SetEnabled(false)
+        menu.Add("Sync Now").OnClick(startSync)
+    case "error":
+        menu.Add("Sync Error").SetEnabled(false)
+        menu.Add("Retry").OnClick(retrySync)
+    }
+    
+    menu.AddSeparator()
+    menu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+    
+    systray.SetMenu(menu)
+}
+```----------|--------|--------|-------|
+| **Windows** | ✅ | ✅ | 완전히 작동 - 아이콘이 알림 영역에 나타나거나 사라짐 |
+| **macOS** | ✅ | ✅ | 메뉴 바 항목이 표시되거나 숨겨짐 |
+| **Linux** | ✅ | ✅ | 데스크톱 환경에 따라 다름 |
+
+**사용 사례:**
+- 사용자 선호도에 따라 트레이 아이콘을 임시로 숨기기
+- 트레이 아이콘이 필요할 때만 나타나는 헤드리스 모드
+- 애플리케이션 상태에 따라 가시성 토글
+
+**예제 - 조건부 트레이 가시성:**
+
+```go
+func (t *TrayApp) setTrayVisibility(visible bool) {
+    if visible {
+        t.systray.Show()
+    } else {
+        t.systray.Hide()
+    }
+}
+
+// 업데이트가 있을 때만 트레이 표시
+func (t *TrayApp) checkForUpdates() {
+    if hasUpdates {
+        t.systray.Show()
+        t.systray.SetLabel("Update Available")
+    } else {
+        t.systray.Hide()
+    }
+}
+```
+
+## 정리
+
+작업이 완료되면 트레이 아이콘을 삭제합니다:
+
+```go
+// OnShutdown 내에서
+app := application.New(application.Options{
+    OnShutdown: func() {
+        if systray != nil {
+            systray.Destroy()
+        }
+    },
+})
+```
+
+**중요:** 리소스를 해제하기 위해 종료 시 항상 시스템 트레이를 삭제하십시오.
+
+## 모범 사례
+
+### ✅ 권장 사항
+
+- **macOS에서는 템플릿 아이콘 사용** - 다크 모드에 적응
+- **레이블은 짧게 유지** - 최대 3-5자
+- **Windows에서는 툴팁 제공** - 사용자가 앱을 식별하는 데 도움
+- **모든 플랫폼에서 테스트** - 동작이 다를 수 있음
+- **클릭을 적절히 처리** - 메인 작업은 왼쪽 클릭, 메뉴는 오른쪽 클릭
+- **상태에 따라 아이콘 업데이트** - 시각적 피드백이 중요
+- **종료 시 삭제** - 리소스 해제
+
+### ❌ 금지 사항
+
+- **큰 아이콘 사용하지 않기** - 플랫폼 가이드라인 준수
+- **긴 레이블 사용하지 않기** - 잘릴 수 있음
+- **다크 모드 잊지 않기** - macOS 다크 모드에서 테스트
+- **클릭 핸들러 차단하지 않기** - 빠르게 유지
+- **메뉴 상태 변경 후 menu.Update() 잊지 않기**
+- **트레이 지원을 가정하지 않기** - 일부 Linux DE는 지원하지 않음
+
+## 문제 해결
+
+### 트레이 아이콘이 나타나지 않음
+
+**가능한 원인:**
+1. 아이콘 형식이 지원되지 않음
+2. 아이콘 크기가 너무 크거나 작음---
+
+**질문 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 문의하거나 [시스템 트레이 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic)를 확인하세요.

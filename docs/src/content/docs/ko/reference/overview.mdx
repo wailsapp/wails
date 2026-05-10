@@ -1,0 +1,282 @@
+---
+title: API 레퍼런스
+description: Wails v3의 전체 API 문서
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 이 레퍼런스에 대하여
+
+이 문서는 Wails v3의 전체 API 레퍼런스입니다. 프레임워크에서 사용할 수 있는 모든 공개 타입, 메서드, 옵션을 문서화합니다.
+
+**구성:**
+- [Application](/ko/reference/application) - 핵심 애플리케이션 API
+- [Window](/ko/reference/window) - 창 생성 및 관리
+- [Menu](/ko/reference/menu) - 애플리케이션, 컨텍스트, 시스템 트레이 메뉴
+- [Events](/ko/reference/events) - 이벤트 시스템 및 내장 이벤트
+- [Dialogs](/ko/reference/dialogs) - 파일 및 메시지 대화상자
+- [Frontend Runtime](/ko/reference/frontend-runtime) - 프론트엔드 런타임 API
+- [CLI](/ko/reference/cli) - 명령줄 인터페이스
+
+## API 관례
+
+<details>
+<summary><strong>Go API 관례</strong> - Go를 처음 접하는 개발자를 위한 가이드</summary>
+
+#### 네이밍
+
+- **타입**: PascalCase (예: `WebviewWindow`)
+- **메서드**: PascalCase (예: `SetTitle()`)
+- **옵션**: PascalCase 구조체 (예: `WindowOptions`)
+- **상수**: PascalCase (예: `WindowStartStateMaximised`)
+
+#### 에러 처리
+
+실패할 수 있는 대부분의 메서드는 마지막 반환 값으로 `error`를 반환합니다:
+
+```go
+window, err := app.Window.New()
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+#### 컨텍스트
+
+블로킹되거나 취소가 필요한 메서드는 `context.Context`를 인자로 받습니다:
+
+```go
+err := app.RunWithContext(ctx)
+```
+
+#### 옵션 패턴
+
+구성은 옵션 구조체를 사용합니다:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Description: "A demo application",
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+    },
+})
+```
+
+</details>
+
+### JavaScript API 관례
+
+#### 네이밍
+
+- **함수**: camelCase (예: `setTitle()`)
+- **상수**: SCREAMING_SNAKE_CASE (예: `WINDOW_EVENT_FOCUS`)
+
+#### 기본 비동기 처리
+
+모든 Go 메서드 호출은 Promise를 반환합니다:
+
+```javascript
+// Async/await (권장)
+const result = await MyService.DoSomething()
+
+// Promise 체이닝
+MyService.DoSomething()
+    .then(result => console.log(result))
+    .catch(error => console.error(error))
+```
+
+#### 에러 처리
+
+Go의 에러는 JavaScript 예외로 변환됩니다:
+
+```javascript
+try {
+    await MyService.MightFail()
+} catch (error) {
+    console.error('Go error:', error)
+}
+```
+
+#### 타입 안전성
+
+TypeScript 정의는 자동으로 생성됩니다:
+
+```typescript
+// 완전한 타입 지원
+import { Greet } from './bindings/GreetService'
+
+const message: string = await Greet("World")
+```
+
+## 패키지 구조
+
+```
+github.com/wailsapp/wails/v3/pkg/
+├── application/          # 핵심 애플리케이션 패키지
+│   ├── application.go    # Application 타입
+│   ├── webview_window.go # 창 관리
+│   ├── menu.go           # 메뉴 타입
+│   ├── events.go         # 이벤트 시스템
+│   └── dialogs.go        # 대화상자 API
+├── events/               # 이벤트 상수
+└── services/             # 내장 서비스
+    ├── badge/            # 뱃지 서비스
+    ├── notifications/    # 알림 서비스
+    └── sqlite/           # SQLite 서비스
+```
+
+## import 경로
+
+### Go
+
+```go
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+```
+
+### JavaScript
+
+```javascript
+// 자동 생성된 바인딩
+import { MyMethod } from './bindings/MyService'
+
+// 런타임 API
+import { Events, Window } from '@wailsio/runtime'
+```
+
+## 타입 레퍼런스
+
+### 공통 타입
+
+<Tabs syncKey="lang">
+  <TabItem label="Go" icon="seti:go">
+    ```go
+    // Application
+    type Application struct { /* ... */ }
+    type Options struct { /* ... */ }
+    
+    // Window
+    type WebviewWindow struct { /* ... */ }
+    type WebviewWindowOptions struct { /* ... */ }
+    
+    // Menu
+    type Menu struct { /* ... */ }
+    type MenuItem struct { /* ... */ }
+    
+    // Events
+    type Event struct { /* ... */ }
+    type EventListener func(*Event)
+    
+    // Dialogs
+    type OpenDialogOptions struct { /* ... */ }
+    type SaveDialogOptions struct { /* ... */ }
+    ```
+  </TabItem>
+
+  <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // Window 런타임
+    interface WindowOptions {
+        title?: string
+        width?: number
+        height?: number
+        // ...
+    }
+    
+    // Events
+    type EventCallback = (data: any) => void
+    
+    // 바인딩 (자동 생성)
+    export function MyMethod(arg: string): Promise<string>
+    ```
+  </TabItem>
+</Tabs>
+
+## 플랫폼 차이
+
+일부 API는 다른 플랫폼에서 다르게 동작합니다:
+
+| 기능 | Windows | macOS | Linux |
+|---------|---------|-------|-------|
+| **애플리케이션 메뉴** | 창 메뉴 바 | 전역 메뉴 바 | 창 메뉴 바 |
+| **시스템 트레이** | 알림 영역 | 메뉴 바 | 시스템 트레이 |
+| **Dock** | 해당 없음 | ✅ 사용 가능 | 해당 없음 |
+| **파일 대화상자** | 네이티브 | 네이티브 | 네이티브 (GTK) |
+| **투명도** | ✅ 전체 | ✅ 전체 | ⚠️ 제한적 |
+
+플랫폼별 동작은 각 API 섹션에서 문서화됩니다.
+
+## 버전 관리
+
+Wails v3는 시맨틱 버저닝(Semantic Versioning)을 따릅니다:
+
+- **메이저** (v3.x.x): 호환되지 않는 변경 사항
+- **마이너** (v3.x.x): 새로운 기능, 하위 호환
+- **패치** (v3.x.x): 버그 수정, 하위 호환
+
+**현재 상태:** Alpha (API 안정화 중, 세부 조정 진행 중)
+
+## 사용 중단 정책
+
+API가 사용 중단될 때:
+
+1. **문서에 표시** - 사용 중단 공지 포함
+2. **대안 제공** - 마이그레이션 가이드 포함
+3. **제거 전 1개 메이저 버전 유지**
+4. **컴파일러 경고** (가능한 경우)
+
+## API 안정성
+
+### 안정적인 API ✅
+
+이 API들은 안정적이며 프로덕션 환경에서 안전하게 사용할 수 있습니다:
+
+- 핵심 애플리케이션 API
+- 창 관리
+- 메뉴 시스템
+- 이벤트 시스템
+- 파일 대화상자
+- 서비스 바인딩
+
+### 불안정한 API ⚠️
+
+이 API들은 최종 릴리스 전에 변경될 수 있습니다:
+
+- 일부 고급 창 옵션
+- 플랫폼별 기능
+- 실험적 기능
+
+불안정한 API는 문서에 표시되어 있습니다.
+
+## 도움 받기
+
+### API 질문
+
+1. **이 레퍼런스 확인** - 전체 API 문서
+2. **예제 확인** - [GitHub 예제](https://github.com/wailsapp/wails/tree/master/v3/examples)
+3. **Discord 검색** - [Discord 서버](https://discord.gg/JDdSxwjhGf)
+4. **커뮤니티에 질문** - Discord #help 채널
+
+### API 이슈 보고
+
+버그나 불일치를 발견하셨나요?
+
+1. **기존 이슈 확인** - [GitHub 이슈](https://github.com/wailsapp/wails/issues)
+2. **상세한 보고서 작성** - 코드, 에러, 플랫폼 정보 포함
+3. **재현 환경 제공** - 이슈를 demonstrating하는 최소 예제
+
+## 관련 문서
+
+- [튜토리얼](/ko/tutorials/overview) - 실제 애플리케이션을 빌드하며 배우기
+- [가이드](/guides/dev/project-structure) - 일반적인 시나리오를 위한 작업 중심 가이드
+- [기능](/ko/features/windows/basics) - 기능별 문서
+- [예제](https://github.com/wailsapp/wails/tree/master/v3/examples) - GitHub의 작동하는 코드 예제
+
+---
+
+**API 탐색:** 왼쪽 탐색을 사용하여 특정 API를 탐색하세요.

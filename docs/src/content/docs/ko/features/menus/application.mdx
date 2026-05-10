@@ -1,0 +1,508 @@
+---
+title: 애플리케이션 메뉴
+description: 데스크톱 애플리케이션을 위한 네이티브 메뉴 바 생성
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 문제점
+
+전문적인 데스크톱 애플리케이션에는 파일, 편집, 보기, 도움말과 같은 메뉴 바가 필요합니다. 하지만 각 플랫폼에서 메뉴의 작동 방식은 다릅니다:
+- **macOS**: 화면 상단에 있는 전역 메뉴 바
+- **Windows**: 창 제목 표시줄에 있는 메뉴 바
+- **Linux**: 데스크톱 환경에 따라 다름
+
+플랫폼에 맞는 메뉴를 수동으로 구축하는 것은 번거롭고 오류가 발생하기 쉽습니다.
+
+## Wails의 해결책
+
+Wails는 플랫폼 네이티브 메뉴를 자동으로 생성하는 **통합 API**를 제공합니다. 한 번 작성하면 모든 플랫폼에서 네이티브 동작을 얻을 수 있습니다.
+
+{/* VISUAL PLACEHOLDER: Menu Bar Comparison
+Description: Three screenshots side-by-side showing the same Wails menu on:
+1. macOS - Global menu bar at top of screen with app name
+2. Windows - Menu bar in window title bar
+3. Linux (GNOME) - Menu bar in window
+All showing identical menu structure: File, Edit, View, Tools, Help
+Style: Clean screenshots with subtle borders, labels indicating platform
+*/}
+
+## 빠른 시작
+
+```go
+package main
+
+import (
+    "runtime"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    // Create menu
+    menu := app.NewMenu()
+
+    // Add standard menus (platform-appropriate)
+    if runtime.GOOS == "darwin" {
+        menu.AddRole(application.AppMenu)  // macOS only
+    }
+    menu.AddRole(application.FileMenu)
+    menu.AddRole(application.EditMenu)
+    menu.AddRole(application.WindowMenu)
+    menu.AddRole(application.HelpMenu)
+
+    // Set the application menu
+    app.Menu.Set(menu)
+
+    // Create window with UseApplicationMenu to inherit the menu on Windows/Linux
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        UseApplicationMenu: true,
+    })
+
+    app.Run()
+}
+```
+
+**이것으로 끝입니다!** 이제 표준 항목이 포함된 플랫폼 네이티브 메뉴가 생겼습니다. `UseApplicationMenu` 옵션은 추가 코드 없이 Windows 및 Linux 창에 메뉴가 표시되도록 보장합니다.
+
+## 메뉴 생성
+
+### 기본 메뉴 생성
+
+```go
+// Create a new menu
+menu := app.NewMenu()
+
+// Add a top-level menu
+fileMenu := menu.AddSubmenu("File")
+
+// Add menu items
+fileMenu.Add("New").OnClick(func(ctx *application.Context) {
+    // Handle New
+})
+
+fileMenu.Add("Open").OnClick(func(ctx *application.Context) {
+    // Handle Open
+})
+
+fileMenu.AddSeparator()
+
+fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+```
+
+### 메뉴 설정
+
+**권장 접근 방식** — 크로스 플랫폼 일관성을 위해 `UseApplicationMenu`를 사용하세요:
+
+```go
+// Set the application menu once
+app.Menu.Set(menu)
+
+// Create windows that inherit the menu on Windows/Linux
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    UseApplicationMenu: true,  // Window uses the app menu
+})
+```
+
+이 접근 방식은 다음과 같습니다:
+- **macOS**에서: 메뉴가 화면 상단에 나타납니다 (표준 동작)
+- **Windows/Linux**에서: `UseApplicationMenu: true`가 설정된 각 창이 앱 메뉴를 표시합니다
+
+**플랫폼별 세부 정보:**
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    **전역 메뉴 바** (애플리케이션당 하나):
+
+    ```go
+    app.Menu.Set(menu)
+    ```
+
+    메뉴는 화면 상단에 나타나며 모든 창이 닫혀 있어도 유지됩니다. 모든 앱이 전역 메뉴를 사용하므로 macOS에서 `UseApplicationMenu` 옵션은 효과가 없습니다.
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    **창별 메뉴 바**:
+
+    ```go
+    // Option 1: Use application menu (recommended)
+    app.Menu.Set(menu)
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        UseApplicationMenu: true,
+    })
+
+    // Option 2: Set menu directly on window
+    window.SetMenu(menu)
+    ```
+
+    각 창은 자체 메뉴를 가질 수 있거나 애플리케이션 메뉴를 상속받을 수 있습니다. 메뉴는 창의 제목 표시줄에 나타납니다.
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **창별 메뉴 바** (일반적으로):
+
+    ```go
+    // Option 1: Use application menu (recommended)
+    app.Menu.Set(menu)
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        UseApplicationMenu: true,
+    })
+
+    // Option 2: Set menu directly on window
+    window.SetMenu(menu)
+    ```
+
+    동작은 데스크톱 환경에 따라 다릅니다. 일부(예: Unity)는 전역 메뉴를 지원합니다.
+  </TabItem>
+</Tabs>
+
+:::tip[Simplify Cross-Platform Menus]
+`UseApplicationMenu: true`를 사용하면 다음과 같은 플랫폼별 코드가 필요하지 않습니다:
+```go
+// Old approach - no longer needed
+if runtime.GOOS == "darwin" {
+    app.Menu.Set(menu)
+} else {
+    window.SetMenu(menu)
+}
+```
+:::
+
+**창별 사용자 정의 메뉴:**
+
+창이 애플리케이션 메뉴와 다른 메뉴가 필요한 경우 직접 설정하세요:
+
+```go
+window.SetMenu(customMenu)  // Overrides UseApplicationMenu
+```
+
+## 메뉴 역할
+
+Wails는 플랫폼에 맞는 메뉴 구조를 자동으로 생성하는 **사전 정의된 메뉴 역할**을 제공합니다.
+
+### 사용 가능한 역할
+
+| 역할 | 설명 | 플랫폼 참고 사항 |
+|------|-------------|----------------|
+| `AppMenu` | 정보, 환경 설정, 종료 등이 포함된 애플리케이션 메뉴 | **macOS 전용** |
+| `FileMenu` | 파일 작업 (새로 만들기, 열기, 저장 등) | 모든 플랫폼 |
+| `EditMenu` | 텍스트 편집 (실행 취소, 다시 실행, 잘라내기, 복사, 붙여넣기) | 모든 플랫폼 |
+| `WindowMenu` | 창 관리 (최소화, 확대 등) | 모든 플랫폼 |
+| `HelpMenu` | 도움말 및 정보 | 모든 플랫폼 |
+
+### 역할 사용
+
+```go
+menu := app.NewMenu()
+
+// macOS: Add application menu
+if runtime.GOOS == "darwin" {
+    menu.AddRole(application.AppMenu)
+}
+
+// All platforms: Add standard menus
+menu.AddRole(application.FileMenu)
+menu.AddRole(application.EditMenu)
+menu.AddRole(application.WindowMenu)
+menu.AddRole(application.HelpMenu)
+```
+
+**얻을 수 있는 것:**
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    **AppMenu** (앱 이름 포함):
+    - [앱 이름] 정보
+    - 환경 설정... (⌘,)
+    - ---
+    - 서비스
+    - ---
+    - [앱 이름] 숨기기 (⌘H)
+    - 다른 앱 숨기기 (⌥⌘H)
+    - 모두 표시
+    - ---
+    - [앱 이름] 종료 (⌘Q)
+
+    **FileMenu**:
+    - 새로 만들기 (⌘N)
+    - 열기... (⌘O)
+    - ---
+    - 창 닫기 (⌘W)
+
+    **EditMenu**:
+    - 실행 취소 (⌘Z)
+    - 다시 실행 (⇧⌘Z)
+    - ---
+    - 잘라내기 (⌘X)
+    - 복사 (⌘C)
+    - 붙여넣기 (⌘V)
+    - 모두 선택 (⌘A)
+
+    **WindowMenu**:
+    - 최소화 (⌘M)
+    - 확대
+    - ---
+    - 모두 앞으로 가져오기
+
+    **HelpMenu**:
+    - [앱 이름] 도움말
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    **FileMenu**:
+    - 새로 만들기 (Ctrl+N)
+    - 열기... (Ctrl+O)
+    - ---
+    - 종료 (Alt+F4)
+
+    **EditMenu**:
+    - 실행 취소 (Ctrl+Z)
+    - 다시 실행 (Ctrl+Y)
+    - ---
+    - 잘라내기 (Ctrl+X)
+    - 복사 (Ctrl+C)
+    - 붙여넣기 (Ctrl+V)
+    - 모두 선택 (Ctrl+A)
+
+    **WindowMenu**:
+    - 최소화
+    - 최대화
+
+    **HelpMenu**:
+    - [앱 이름] 정보
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    Windows와 유사하지만, 키보드 단축키는 데스크톱 환경에 따라 다를 수 있습니다.
+  </TabItem>
+</Tabs>
+
+### 역할 메뉴 사용자 정의
+
+역할 메뉴에 항목 추가:
+
+```go
+fileMenu := menu.AddRole(application.FileMenu)
+
+// Add custom items
+fileMenu.Add("Import...").OnClick(handleImport)
+fileMenu.Add("Export...").OnClick(handleExport)
+```## 사용자 정의 메뉴
+
+애플리케이션 특정 기능을 위해 자체 메뉴를 만듭니다:
+
+```go
+// 사용자 정의 최상위 메뉴 추가
+toolsMenu := menu.AddSubmenu("Tools")
+
+// 항목 추가
+toolsMenu.Add("Settings").OnClick(func(ctx *application.Context) {
+    showSettingsWindow()
+})
+
+toolsMenu.AddSeparator()
+
+// 체크박스 추가
+toolsMenu.AddCheckbox("Dark Mode", false).OnClick(func(ctx *application.Context) {
+    isDark := ctx.ClickedMenuItem().Checked()
+    setTheme(isDark)
+})
+
+// 라디오 그룹 추가
+toolsMenu.AddRadio("Small", true).OnClick(handleFontSize)
+toolsMenu.AddRadio("Medium", false).OnClick(handleFontSize)
+toolsMenu.AddRadio("Large", false).OnClick(handleFontSize)
+
+// 하위 메뉴 추가
+advancedMenu := toolsMenu.AddSubmenu("Advanced")
+advancedMenu.Add("Configure...").OnClick(showAdvancedSettings)
+```
+
+**더 많은 메뉴 항목 유형**에 대해서는 [메뉴 참조](/ko/features/menus/reference)를 참조하세요.
+
+## 동적 메뉴
+
+애플리케이션 상태에 따라 메뉴를 업데이트합니다:
+
+### 항목 활성화/비활성화
+
+```go
+var saveMenuItem *application.MenuItem
+
+func createMenu() {
+    menu := app.NewMenu()
+    fileMenu := menu.AddSubmenu("File")
+    
+    saveMenuItem = fileMenu.Add("Save")
+    saveMenuItem.SetEnabled(false)  // 초기에는 비활성화됨
+    saveMenuItem.OnClick(handleSave)
+    
+    app.SetMenu(menu)
+}
+
+func onDocumentChanged() {
+    saveMenuItem.SetEnabled(hasUnsavedChanges())
+    menu.Update()  // 중요!
+}
+```
+
+:::caution[항상 `menu.Update()`를 호출하세요]
+메뉴 상태(활성화/비활성화, 레이블, 체크 표시)를 변경한 후 **항상 `menu.Update()`를 호출하세요**. 이는 메뉴가 다시 생성되는 Windows에서 특히 중요합니다.
+
+자세한 내용은 [메뉴 참조](/features/menus/reference#enabled-state)를 참조하세요.
+:::
+
+### 레이블 변경
+
+```go
+updateMenuItem := menu.Add("Check for Updates")
+
+updateMenuItem.OnClick(func(ctx *application.Context) {
+    updateMenuItem.SetLabel("Checking...")
+    menu.Update()
+    
+    checkForUpdates()
+    
+    updateMenuItem.SetLabel("Check for Updates")
+    menu.Update()
+})
+```
+
+### 메뉴 다시 빌드
+
+대규모 변경의 경우 전체 메뉴를 다시 빌드합니다:
+
+```go
+func rebuildFileMenu() {
+    menu := app.NewMenu()
+    fileMenu := menu.AddSubmenu("File")
+    
+    fileMenu.Add("New").OnClick(handleNew)
+    fileMenu.Add("Open").OnClick(handleOpen)
+    
+    // 최근 파일을 동적으로 추가
+    if hasRecentFiles() {
+        recentMenu := fileMenu.AddSubmenu("Open Recent")
+        for _, file := range getRecentFiles() {
+            filePath := file  // 클로저를 위해 캡처
+            recentMenu.Add(filepath.Base(file)).OnClick(func(ctx *application.Context) {
+                openFile(filePath)
+            })
+        }
+        recentMenu.AddSeparator()
+        recentMenu.Add("Clear Recent").OnClick(clearRecentFiles)
+    }
+    
+    fileMenu.AddSeparator()
+    fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+    
+    app.SetMenu(menu)
+}
+```
+
+## 메뉴에서 창 제어
+
+메뉴 항목은 창을 제어할 수 있습니다:
+
+```go
+viewMenu := menu.AddSubmenu("View")
+
+// 전체 화면 토글
+viewMenu.Add("Toggle Fullscreen").OnClick(func(ctx *application.Context) {
+    window := app.GetWindowByName("main")
+    window.SetFullscreen(!window.IsFullscreen())
+})
+
+// 확대/축소 제어
+viewMenu.Add("Zoom In").SetAccelerator("CmdOrCtrl++").OnClick(func(ctx *application.Context) {
+    // 확대
+})
+
+viewMenu.Add("Zoom Out").SetAccelerator("CmdOrCtrl+-").OnClick(func(ctx *application.Context) {
+    // 축소
+})
+
+viewMenu.Add("Reset Zoom").SetAccelerator("CmdOrCtrl+0").OnClick(func(ctx *application.Context) {
+    // 확대/축소 초기화
+})
+```
+
+**활성 창 가져오기:**
+
+```go
+menuItem.OnClick(func(ctx *application.Context) {
+    window := application.ContextWindow(ctx)
+    // 창 사용
+})
+```
+
+## 플랫폼별 고려 사항
+
+### macOS
+
+**메뉴 바 동작:**
+- **화면 상단**(전역)에 나타남
+- 모든 창이 닫혀도 유지됨
+- 첫 번째 메뉴는 **항상 애플리케이션 메뉴**임
+- 표준 항목에는 `menu.AddRole(application.AppMenu)` 사용
+
+**표준 위치:**
+- **정보**: 애플리케이션 메뉴
+- **환경 설정**: 애플리케이션 메뉴 (⌘,)
+- **종료**: 애플리케이션 메뉴 (⌘Q)
+- **도움말**: 도움말 메뉴
+
+**예제:**
+
+```go
+if runtime.GOOS == "darwin" {
+    menu.AddRole(application.AppMenu)  // 정보, 환경 설정, 종료 추가
+    
+    // macOS에서 파일 메뉴에 종료를 추가하지 마세요
+    // macOS에서 도움말 메뉴에 정보를 추가하지 마세요
+}
+```
+
+### Windows
+
+**메뉴 바 동작:**
+- **창 제목 표시줄**에 나타남
+- 각 창에 자체 메뉴가 있음
+- 애플리케이션 메뉴 없음
+
+**표준 위치:**
+- **종료**: 파일 메뉴 (Alt+F4)
+- **설정**: 도구 또는 편집 메뉴
+- **정보**: 도움말 메뉴
+
+**예제:**
+
+```go
+if runtime.GOOS == "windows" {
+    fileMenu := menu.AddRole(application.FileMenu)
+    // 종료가 자동으로 추가됨
+    
+    helpMenu := menu.AddRole(application.HelpMenu)
+    // 정보가 자동으로 추가됨
+}
+```
+
+### Linux
+
+**메뉴 바 동작:**
+- 일반적으로 창별(Windows와 유사)
+- 일부 DE는 전역 메뉴 지원(Unity, 확장 프로그램이 있는 GNOME)
+- 데스크톱 환경에 따라 외관이 다름
+
+**최선의 방법:** Windows 관례를 따르고 대상 DE에서 테스트하세요.---
+
+**질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하시거나 [메뉴 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/menu)를 확인하세요.

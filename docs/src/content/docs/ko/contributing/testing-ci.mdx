@@ -1,0 +1,215 @@
+---
+title: 테스트 및 지속적 통합
+description: Wails v3가 단위 테스트, 통합 스위트, 경동 감지 및 GitHub Actions CI를 통해 품질을 어떻게 보장하는지 설명합니다.
+sidebar:
+  order: 9
+---
+
+견고한 데스크톱 프레임워크는 튼튼한 테스트를 요구합니다.  
+Wails v3는 **다층 전략**을 사용합니다:
+
+| 레이어 | 목표 | 도구 |
+|-------|--|-|
+| 단위 테스트 | 고립된 함수에 대한 빠른 피드백 | `go test ./...` |
+| 통합 / 예제 테스트 | 패키지 전체의 기능 검증 | 예제 앱 + 헤드리스 확인 |
+| 경동 감지 | 런타임 및 브리지의 데이터 경동 포착 | `go test -race`, `wails3 dev -race` |
+| CI 매트릭스 | 모든 PR에 대한 크로스 OS 신뢰성 | GitHub Actions |
+
+이 문서는 **테스트가 어디에 있는지**, **어떻게 실행하는지**, 그리고 **CI에서 어떤 일이 일어나는지**를 설명합니다.
+
+---
+
+## 1. 디렉토리 관례
+
+```
+v3/
+├── internal/.../_test.go     # 내부 패키지의 단위 테스트
+├── pkg/.../_test.go          # 공개 API 테스트
+├── examples/...              # 예제 앱은 통합 테스트 역할도 함
+├── tasks/events/...          # 생성된 코드 테스트는 CI에서 실행됨
+└── pkg/application/RACE.md   # 경동 테스트 가이드 및 알려진 안전한 억제
+```
+
+가이드라인:
+
+* **단위 테스트를 코드 옆에 유지** (`foo.go` ↔ `foo_test.go`)
+* `pkg/` 패키지에 대해 **블랙박스 스타일** 사용 (`package application_test`)
+* 통합 도우미는 `internal/testutil/`에 배치 (공유 목킹, 피스처)
+
+---
+
+## 2. 단위 테스트
+
+### 테스트 작성
+
+```go
+func TestColourParseHex(t *testing.T) {
+    c, err := colour.Parse("#FF00FF")
+    require.NoError(t, err)
+    assert.Equal(t, 255, c.R)
+}
+```
+
+권장사항:
+
+* [`stretchr/testify`](https://github.com/stretchr/testify) 사용 – 이미 벤더 임포트됨.
+* 분기 처리에 대해 **테이블 기반** 스타일 따르기.
+* 필요한 경우 빌드 태그(`_test_windows.go` 등) 뒤에 플랫폼 특이사항을 스텁 처리.
+
+### 로컬에서 실행
+
+```bash
+cd v3
+go test ./... -cover
+```
+
+Taskfile 단축키:
+
+```
+task test          # 위와 동일 + vet + lint
+```
+
+---
+
+## 3. 통합 및 예제 테스트
+
+`v3/examples/` 아래의 모든 폴더는 **독립적인 앱**입니다.  
+이들을 테스트로 만드는 세 가지 기술:
+
+| 기술 | 파일 | 확인 항목 |
+|------|---|------|
+| 예제 내부 `go test ./...` | `*_test.go`가 헤드리스 모드로 `wails dev` 시작 | 빌드 및 시작 |
+| CLI 골든 테스트 | `internal/commands/appimage_test.go` | 생성된 아티팩트 해시 |
+| 스크립트화된 e2e | `tasks/events/generate.go` | 예제를 실행하는 Go 생성, 런타임 로그 확인 |
+
+모두 실행하려면:
+
+```
+task integration
+```
+
+> 헤드리스 모드는 Linux 러너에서 **Xvfb**를 사용합니다; macOS 및 Windows는 최소화 상태로 시작합니다.
+
+---
+
+## 4. 경동 감지
+
+GUI 런타임에서 데이터 경동은 치명적입니다.
+
+### 전용 문서
+
+다음에 대한 내용을 참조:
+
+* 알려진 무해한 경동 및 억제 근거
+* Cgo 경계를 넘는 스택 트레이스 해석 방법
+
+### 로컬 경동 스위트
+
+```
+go test -race ./...
+```
+
+또는
+
+```
+wails3 dev -race
+```
+
+*후자는 경동 플래그로 런타임을 다시 빌드하고 데모 창을 시작합니다.  
+창을 닫으면 종료 후 경동이 출력됩니다.*
+
+CI는 모든 PR에 대해 **linux/amd64**(가장 빠름)에서 경동 스위트를 실행합니다.
+
+---
+
+## 5. GitHub Actions 워크플로우
+
+### 5.1 `build-and-test-v3.yml`
+
+위치: `.github/workflows/build-and-test-v3.yml`
+
+주요 기능:
+
+* `os: [ubuntu-latest, windows-latest, macos-latest]`에 대한 **매트릭스**
+* 속도를 위한 Go 및 npm 의존성 캐싱
+* 단계:
+  1. `setup-go` @ 1.25
+  2. `go vet ./...`
+  3. `go test ./... -v -coverprofile=cover.out`
+  4. CLI + 샘플 앱 빌드 (`wails3 build -skip-package`)
+  5. Codecov에 커버리지 업로드
+* Ubuntu에서의 조건부 **경동** 작업:
+  ```yaml
+  - name: Race Detector
+    if: matrix.os == 'ubuntu-latest'
+    run: go test -race ./...
+  ```
+
+### 5.2 정적 분석
+
+* `semgrep.yml` – 보안/린트 스캔 (`.github/workflows/semgrep.yml`)
+* `qodana.yaml` – JetBrains Qodana 클라우드 검사 (PR에서 선택사항)
+
+### 5.3 릴리스 파이프라인
+
+`runtime.yml`은 태그 푸시 시 JS 런타임을 빌드하고 npm에 게시합니다; 테스트 범위는 아니지만 빌드 매트릭스에서 참조됨.
+
+---
+
+## 6. 로컬 CI 동등성
+
+Taskfile를 통해 **정확한** CI 작업 세트를 실행:
+
+```
+task ci
+```
+
+다음 실행:
+
+1. `lint` (golangci-lint, govet)
+2. `test` (단위 + 경동)
+3. `integration`
+4. `build` (호스트 플랫폼용)
+
+---
+
+## 7. 실패하는 테스트 문제 해결
+
+| 증상 | 원인 | 해결책 |
+|---------|-----|-|
+| **`runtime_darwin.go`의 경동** | `mainthread.Call` 잠금 누락 | `mainthread.Sync` 헬퍼 사용 |
+| **Windows 헤드리스 멈춤** | 콘솔 창이 입력 대기 중 | `-verbose` 전달 및 대화상자가 열리지 않도록 확인 |
+| **CI 예제 빌드 실패** | 템플릿 변경 시 예제 의존성 버전 업그레이드 누락 | `task update-examples`로 잠금 파일 재생성 |
+| **Coverpkg 오류** | 통합 테스트가 `main` 임포트 | 빌드 태그 `//go:build integration`로 전환 |
+
+---
+
+## 8. 새 테스트 추가
+
+1. **단위** – `*_test.go` 생성, `go test ./...` 실행
+2. **통합** – 예제 앱 및 테스트 하네스 업데이트 또는 추가
+3. **CI** – 커밋; 워크플로우가 테스트를 자동 발견  
+   OS별인 경우 스킵 태그 추가:
+
+```go
+//go:build !windows
+```
+
+---
+
+## 9. 주요 파일 맵
+
+| 항목 | 경로 |
+|------|------|
+| 단위 테스트 예제 | `internal/colour/colour_test.go` |
+| 통합 하네스 | `internal/commands/appimage_test.go` |
+| 경동 가이드 | `pkg/application/RACE.md` |
+| Taskfile 테스트 대상 | `v3/Taskfile.yaml` |
+| CI 워크플로우 | `.github/workflows/build-and-test-v3.yml` |
+
+---
+
+Wails v3에서 품질은 사후 고려사항이 아닙니다.  
+단위 테스트, 통합 스위트, 경동 감지 및 크로스 플랫폼 CI 매트릭스를 통해  
+지원하는 모든 OS에서 변경 사항이 성공적으로 실행됨을 알고 자신 있게 기여할 수 있습니다.  
+즐거운 테스트 되세요!

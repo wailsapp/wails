@@ -1,0 +1,463 @@
+---
+title: 코딩 표준
+description: Wails v3의 코드 스타일, 관례 및 모범 사례
+---
+
+## 코드 스타일 및 관례
+
+일관된 코딩 표준을 따르는 것은 코드베이스를 더 쉽게 읽고, 유지하고, 기여할 수 있도록 합니다.
+
+## Go 코드 표준
+
+### 코드 포맷팅
+
+표준 Go 포맷팅 도구를 사용하세요:
+
+```bash
+# 모든 코드 포맷팅
+gofmt -w .
+
+# import 정리를 위해 goimports 사용
+goimports -w .
+```
+
+**필수:** 모든 Go 코드는 커밋하기 전에 `gofmt` 및 `goimports`를 통과해야 합니다.
+
+### 네이밍 관례
+
+**패키지:**
+- 가능한 경우 소문자, 단일 단어
+- `package application`, `package events`
+- 언더스코어 또는 혼합 대소문자 피하기
+
+**내보낸 이름 (Exported Names):**
+- 타입, 함수, 상수에 PascalCase 사용
+- `type WebviewWindow struct`, `func NewApplication()`
+
+**내부 이름 (Unexported Names):**
+- 내부 타입, 함수, 변수에 camelCase 사용
+- `type windowImpl struct`, `func createWindow()`
+
+**인터페이스:**
+- 동작에 따라 이름 지정: `Reader`, `Writer`, `Handler`
+- 단일 메서드 인터페이스: `-er` 접미사 사용
+
+```go
+// 좋음
+type Closer interface {
+    Close() error
+}
+
+// 피하기
+type CloseInterface interface {
+    Close() error
+}
+```
+
+### 에러 처리
+
+**에러를 항상 확인하세요:**
+
+```go
+// 좋음
+result, err := doSomething()
+if err != nil {
+    return fmt.Errorf("failed to do something: %w", err)
+}
+
+// 나쁨 - 에러 무시
+result, _ := doSomething()
+```
+
+**에러 래핑 사용:**
+
+```go
+// 컨텍스트를 제공하기 위해 에러 래핑
+if err := validate(); err != nil {
+    return fmt.Errorf("validation failed: %w", err)
+}
+```
+
+**필요시 사용자 정의 에러 타입 생성:**
+
+```go
+type ValidationError struct {
+    Field string
+    Value string
+}
+
+func (e *ValidationError) Error() string {
+    return fmt.Sprintf("invalid value %q for field %q", e.Value, e.Field)
+}
+```
+
+### 주석 및 문서화
+
+**패키지 주석:**
+
+```go
+// Package application provides the core Wails application runtime.
+//
+// It handles window management, event dispatching, and service lifecycle.
+package application
+```
+
+**내보낸 선언:**
+
+```go
+// NewApplication creates a new Wails application with the given options.
+//
+// The application must be started with Run() or RunWithContext().
+func NewApplication(opts Options) *Application {
+    // ...
+}
+```
+
+**구현 주석:**
+
+```go
+// processEvent handles incoming events from the runtime.
+// It dispatches to registered handlers and manages event lifecycle.
+func (a *Application) processEvent(event *Event) {
+    // Validate event before processing
+    if event == nil {
+        return
+    }
+
+    // Find and invoke handlers
+    // ...
+}
+```
+
+### 함수 및 메서드 구조
+
+**함수를 집중적으로 유지하세요:**
+
+```go
+// 좋음 - 단일 책임
+func (w *Window) setTitle(title string) {
+    w.title = title
+    w.updateNativeTitle()
+}
+
+// 나쁨 - 너무 많은 작업 수행
+func (w *Window) updateEverything() {
+    w.setTitle(w.title)
+    w.setSize(w.width, w.height)
+    w.setPosition(w.x, w.y)
+    // ... 20 more operations
+}
+```
+
+**조기 반환 사용:**
+
+```go
+// 좋음
+func validate(input string) error {
+    if input == "" {
+        return errors.New("empty input")
+    }
+
+    if len(input) > 100 {
+        return errors.New("input too long")
+    }
+
+    return nil
+}
+
+// 깊은 중첩 피하기
+```
+
+### 동시성
+
+**취소 위해 context 사용:**
+
+```go
+func (a *Application) RunWithContext(ctx context.Context) error {
+    select {
+    case <-ctx.Done():
+        return ctx.Err()
+    case <-a.done:
+        return nil
+    }
+}
+```
+
+**뮤텍스로 공유 상태 보호:**
+
+```go
+type SafeCounter struct {
+    mu    sync.Mutex
+    count int
+}
+
+func (c *SafeCounter) Increment() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count++
+}
+```
+
+**고루틴 누수 피하기:**
+
+```go
+// 좋음 - 고루틴에 종료 조건 있음
+func (a *Application) startWorker(ctx context.Context) {
+    go func() {
+        for {
+            select {
+            case <-ctx.Done():
+                return  // Clean exit
+            case work := <-a.workChan:
+                a.process(work)
+            }
+        }
+    }()
+}
+```
+
+### 테스트
+
+**테스트 파일 네이밍:**
+
+```go
+// 구현: window.go
+// 테스트: window_test.go
+```
+
+**테이블 기반 테스트:**
+
+```go
+func TestValidate(t *testing.T) {
+    tests := []struct {
+        name    string
+        input   string
+        wantErr bool
+    }{
+        {"empty input", "", true},
+        {"valid input", "hello", false},
+        {"too long", strings.Repeat("a", 101), true},
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            err := validate(tt.input)
+            if (err != nil) != tt.wantErr {
+                t.Errorf("validate() error = %v, wantErr %v", err, tt.wantErr)
+            }
+        })
+    }
+}
+```
+
+## JavaScript/TypeScript 표준
+
+### 코드 포맷팅
+
+일관된 포맷팅을 위해 Prettier를 사용하세요:
+
+```json
+{
+  "semi": false,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "es5"
+}
+```
+
+### 네이밍 관례
+
+**변수 및 함수:**
+- camelCase: `const userName = "John"`
+
+**클래스 및 타입:**
+- PascalCase: `class WindowManager`
+
+**상수:**
+- UPPER_SNAKE_CASE: `const MAX_RETRIES = 3`
+
+### TypeScript
+
+**명확한 타입 사용:**
+
+```typescript
+// 좋음
+function greet(name: string): string {
+    return `Hello, ${name}`
+}
+
+// 암시적 any 피하기
+function process(data) {  // 나쁨
+    return data
+}
+```
+
+**인터페이스 정의:**
+
+```typescript
+interface WindowOptions {
+    title: string
+    width: number
+    height: number
+}
+
+function createWindow(options: WindowOptions): void {
+    // ...
+}
+```
+
+## 커밋 메시지 형식
+
+[Conventional Commits](https://www.conventionalcommits.org/)를 사용하세요:
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**타입:**
+- `feat`: 새 기능
+- `fix`: 버그 수정
+- `docs`: 문서 변경
+- `refactor`: 코드 리팩토링
+- `test`: 테스트 추가 또는 업데이트
+- `chore`: 유지보수 작업
+
+**예시:**
+
+```
+feat(window): add SetAlwaysOnTop method
+
+Implement SetAlwaysOnTop for keeping windows above others.
+Adds platform implementations for macOS, Windows, and Linux.
+
+Closes #123
+```
+
+```
+fix(events): prevent event handler memory leak
+
+Event listeners were not being properly cleaned up when
+windows were closed. This adds explicit cleanup in the
+window destructor.
+```
+
+## 풀 리퀘스트 가이드라인
+
+### 제출 전
+
+- [ ] 코드가 `gofmt` 및 `goimports`를 통과함
+- [ ] 모든 테스트 통과 (`go test ./...`)
+- [ ] 새 코드에 테스트 포함
+- [ ] 필요시 문서 업데이트
+- [ ] 커밋 메시지가 관례를 따름
+- [ ] `master`와의 병합 충돌 없음
+
+### PR 설명 템플릿
+
+```markdown
+## Description
+Brief description of what this PR does.
+
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Breaking change
+- [ ] Documentation update
+
+## Testing
+How was this tested?
+
+## Checklist
+- [ ] Tests pass
+- [ ] Documentation updated
+- [ ] No breaking changes (or documented)
+```
+
+## 코드 리뷰 프로세스
+
+### 리뷰어로서
+
+- 건설적이고 존중하는 태도 유지
+- 개인적 선호도보다 코드 품질에 집중
+- 변경을 제안하는 이유 설명
+- 만족하면 승인
+
+### 작성자로서
+
+- 모든 댓글에 응답
+- 필요시 명확한 설명 요청
+- 요청된 변경 사항 수행 또는 이유 설명
+- 피드백에 개방적 태도 유지
+
+## 모범 사례
+
+### 성능
+
+- 조급한 최적화 피하기
+- 최적화 전 프로파일링 수행
+- 성능이 중요한 코드에 벤치마크 사용
+
+```go
+func BenchmarkProcess(b *testing.B) {
+    for i := 0; i < b.N; i++ {
+        process(testData)
+    }
+}
+```
+
+### 보안
+
+- 모든 사용자 입력 검증
+- 표시 전 데이터 정화
+- 무작위 데이터에 `crypto/rand` 사용
+- 민감한 정보 절대 로깅하지 않기
+
+### 문서화
+
+- 내보낸 API 문서화
+- 문서에 예제 포함
+- API 변경 시 문서 업데이트
+- README 파일 최신 상태 유지
+
+## 플랫폼별 코드
+
+### 파일 네이밍
+
+```
+window.go           // 공통 인터페이스
+window_darwin.go    // macOS 구현
+window_windows.go   // Windows 구현
+window_linux.go     // Linux 구현
+```
+
+### 빌드 태그
+
+```go
+//go:build darwinpackage application
+
+// macOS-specific code
+```
+
+## 린팅 (Linting)
+
+커밋하기 전에 린터(linter)를 실행하세요:
+
+```bash
+# golangci-lint (권장)
+golangci-lint run
+
+# 개별 린터
+go vet ./...
+staticcheck ./...
+```
+
+## 질문이 있으신가요?
+
+어떤 표준에 대해 확신이 서지 않는 경우:
+- 기존 코드를 확인하여 예시를 찾아보세요
+- [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하세요
+- GitHub에서 토론을 시작하세요

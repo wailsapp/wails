@@ -1,0 +1,297 @@
+---
+title: 개발 환경 설정
+description: Wails v3 개발을 위한 개발 환경을 설정하세요
+---
+
+## 개발 환경 설정
+
+이 가이드는 Wails v3 작업을 위한 완전한 개발 환경을 설정하는 방법을 안내합니다.
+
+## 필수 도구
+
+### Go 개발
+
+1. **Go 1.25 이상 설치:**
+   ```bash
+   # https://go.dev/dl/에서 다운로드
+   go version  # 설치 확인
+   ```
+
+2. **Go 환경 구성:**
+   ```bash
+   # 셸 프로필(.bashrc, .zshrc 등)에 추가
+   export GOPATH=$HOME/go
+   export PATH=$PATH:$GOPATH/bin
+   ```
+
+3. **유용한 Go 도구 설치:**
+   ```bash
+   go install golang.org/x/tools/cmd/goimports@latest
+   go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+   ```
+
+### Node.js 및 npm
+
+문서 빌드 및 프론트엔드 통합 테스트에 필요합니다.
+
+```bash
+# Node.js 20+ 및 npm 설치
+node --version  # 20+이어야 함
+npm --version
+```
+
+### 플랫폼별 의존성
+
+**macOS:**
+
+```bash
+# Xcode Command Line Tools 설치
+xcode-select --install
+
+# 설치 확인
+xcode-select -p  # 경로가 출력되어야 함
+```
+
+**Windows:**
+
+1. 유닉스 같은 환경을 위해 [MSYS2](https://www.msys2.org/) 설치
+2. WebView2 런타임 (Windows 11에 사전 설치됨, Windows 10용 [다운로드](https://developer.microsoft.com/en-us/microsoft-edge/webview2/))
+3. 선택 사항: [Git for Windows](https://git-scm.com/download/win) 설치
+
+**Linux (Debian/Ubuntu):**
+
+```bash
+sudo apt update
+sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev
+```
+
+**Linux (Fedora/RHEL):**
+
+```bash
+sudo dnf install gcc pkg-config gtk3-devel webkit2gtk3-devel
+```
+
+**Linux (Arch):**
+
+```bash
+sudo pacman -S base-devel gtk3 webkit2gtk
+```
+
+## 저장소 설정
+
+### 복제 및 구성
+
+```bash
+# 포크 복제
+git clone https://github.com/YOUR_USERNAME/wails.git
+cd wails
+
+# upstream 원격 추가
+git remote add upstream https://github.com/wailsapp/wails.git
+
+# 원격 확인
+git remote -v
+```
+
+### Wails CLI 빌드
+
+```bash
+# v3 디렉토리로 이동
+cd v3
+
+# CLI 빌드
+go build -o ../wails3 ./cmd/wails3
+
+# 빌드 테스트
+cd ..
+./wails3 version
+```
+
+### PATH에 추가 (선택 사항)
+
+**Linux/macOS:**
+
+```bash
+# ~/.bashrc 또는 ~/.zshrc에 추가
+export PATH=$PATH:/path/to/wails
+```
+
+**Windows:**
+
+시스템 속성을 통해 Wails 디렉토리를 PATH 환경 변수에 추가합니다.
+
+## IDE 설정
+
+### VS Code (권장)
+
+1. **VS Code 설치:** [다운로드](https://code.visualstudio.com/)
+
+2. **확장 프로그램 설치:**
+   - Go (Google의 Go Team 제공)
+   - ESLint
+   - Prettier
+   - MDX (문서용)
+
+3. **작업 공간 설정 구성** (`.vscode/settings.json`):
+   ```json
+   {
+     "go.useLanguageServer": true,
+     "go.lintTool": "golangci-lint",
+     "go.lintOnSave": "workspace",
+     "editor.formatOnSave": true,
+     "go.formatTool": "goimports"
+   }
+   ```
+
+### GoLand
+
+1. **GoLand 설치:** [다운로드](https://www.jetbrains.com/go/)
+
+2. **구성:**
+   - Go 모듈 지원 활성화
+   - `goimports`에 대한 파일 감시자 설정
+   - 프로젝트 관례와 일치하도록 코드 스타일 구성
+
+## 설정 확인
+
+다음 명령을 실행하여 모든 것이 정상적으로 작동하는지 확인합니다:
+
+```bash
+# Go 버전 확인
+go version
+
+# Wails 빌드
+cd v3
+go build ./cmd/wails3
+
+# 테스트 실행
+go test ./pkg/...
+
+# 테스트 앱 생성
+cd ..
+./wails3 init -n mytest -t vanilla
+cd mytest
+../wails3 dev
+```
+
+테스트 앱이 빌드되고 실행되면 환경이 준비된 것입니다!
+
+## 테스트 실행
+
+### 단위 테스트
+
+```bash
+cd v3
+go test ./...
+```
+
+### 특정 패키지 테스트
+
+```bash
+go test ./pkg/application
+go test ./pkg/events -v  # 상세 출력
+```
+
+### 커버리지로 실행
+
+```bash
+go test ./... -coverprofile=coverage.out
+go tool cover -html=coverage.out
+```
+
+### Race Detector로 실행
+
+```bash
+go test ./... -race
+```
+
+## 문서 작업
+
+Wails 문서는 Astro와 Starlight로 빌드됩니다.
+
+```bash
+cd docs
+
+# 의존성 설치
+npm install
+
+# 개발 서버 시작
+npm run dev
+
+# 프로덕션을 위한 빌드
+npm run build
+```
+
+문서는 `http://localhost:4321/`에서 확인할 수 있습니다.
+
+## 디버깅
+
+### Go 코드 디버깅
+
+**VS Code:**
+
+`.vscode/launch.json` 생성:
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Wails CLI",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/v3/cmd/wails3",
+      "args": ["dev"]
+    }
+  ]
+}
+```
+
+**명령줄:**
+
+```bash
+# Delve 디버거 사용
+go install github.com/go-delve/delve/cmd/dlv@latest
+dlv debug ./cmd/wails3 -- dev
+```
+
+### 플랫폼 코드 디버깅
+
+플랫폼별 디버깅에는 플랫폼 도구가 필요합니다:
+
+- **macOS:** Xcode Instruments
+- **Windows:** Visual Studio Debugger
+- **Linux:** GDB
+
+## 일반적인 문제
+
+### "command not found: wails3"
+
+Wails 디렉토리를 PATH에 추가하거나 프로젝트 루트에서 `./wails3`를 사용하세요.
+
+### "webkit2gtk not found" (Linux)
+
+WebKit2GTK 개발 패키지를 설치하세요:
+
+```bash
+sudo apt install libwebkit2gtk-4.0-dev  # Debian/Ubuntu
+```
+
+### Go 모듈 오류로 빌드 실패
+
+```bash
+cd v3
+go mod tidy
+go mod download
+```
+
+### Windows에서의 "CGO_ENABLED" 오류
+
+PATH에 C 컴파일러(MSYS2를 통한 MinGW-w64)가 있는지 확인하세요.
+
+## 다음 단계
+
+- [코딩 표준](/ko/contributing/standards) 검토
+- [기술 문서](/ko/contributing) 탐색
+- 작업할 이슈 찾기: [Good First Issues](https://github.com/wailsapp/wails/labels/good%20first%20issue)

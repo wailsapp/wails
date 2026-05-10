@@ -1,0 +1,456 @@
+---
+title: 데이터 모델
+description: Go와 JavaScript 간에 복잡한 데이터 구조를 바인딩합니다
+sidebar:
+  order: 3
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 데이터 모델 바인딩
+
+Wails는 Go 구조체에서 **JavaScript/TypeScript 클래스를 자동으로 생성**하여 백엔드와 프론트엔드 간에 복잡한 데이터를 전달할 때 전체 타입 안전성을 제공합니다. Go 구조체를 작성하고 바인딩을 생성하면, 생성자, 타입 주석, JSDoc 주석이 포함된 완전히 타입이 지정된 프론트엔드 모델을 얻게 됩니다.
+
+## 빠른 시작
+
+**Go 구조체:**
+
+```go
+type User struct {
+    ID        int       `json:"id"`
+    Name      string    `json:"name"`
+    Email     string    `json:"email"`
+    CreatedAt time.Time `json:"createdAt"`
+}
+
+func (s *UserService) GetUser(id int) (*User, error) {
+    // Return user
+}
+```
+
+**생성:**
+
+```bash
+wails3 generate bindings
+```
+
+**JavaScript:**
+
+```javascript
+import { GetUser } from './bindings/myapp/userservice'
+import { User } from './bindings/myapp/models'
+
+const user = await GetUser(1)
+console.log(user.Name)  // Type-safe!
+```
+
+**이것으로 끝입니다!** 브릿지 전반에 걸친 전체 타입 안전성.
+
+## 모델 정의
+
+### 기본 구조체
+
+```go
+type Person struct {
+    Name string
+    Age  int
+}
+```
+
+**생성된 JavaScript:**
+
+```javascript
+export class Person {
+    /** @type {string} */
+    Name = ""
+    
+    /** @type {number} */
+    Age = 0
+    
+    constructor(source = {}) {
+        Object.assign(this, source)
+    }
+    
+    static createFrom(source = {}) {
+        return new Person(source)
+    }
+}
+```
+
+### JSON 태그 포함
+
+```go
+type User struct {
+    ID        int       `json:"id"`
+    Name      string    `json:"name"`
+    Email     string    `json:"email"`
+    CreatedAt time.Time `json:"createdAt"`
+}
+```
+
+**생성된 JavaScript:**
+
+```javascript
+export class User {
+    /** @type {number} */
+    id = 0
+    
+    /** @type {string} */
+    name = ""
+    
+    /** @type {string} */
+    email = ""
+    
+    /** @type {Date} */
+    createdAt = new Date()
+    
+    constructor(source = {}) {
+        Object.assign(this, source)
+    }
+}
+```
+
+**JSON 태그는 JavaScript의 필드 이름을 제어합니다.**
+
+### 주석 포함
+
+```go
+// User represents an application user
+type User struct {
+    // Unique identifier
+    ID int `json:"id"`
+    
+    // Full name of the user
+    Name string `json:"name"`
+    
+    // Email address (must be unique)
+    Email string `json:"email"`
+}
+```
+
+**생성된 JavaScript:**
+
+```javascript
+/**
+ * User represents an application user
+ */
+export class User {
+    /**
+     * Unique identifier
+     * @type {number}
+     */
+    id = 0
+    
+    /**
+     * Full name of the user
+     * @type {string}
+     */
+    name = ""
+    
+    /**
+     * Email address (must be unique)
+     * @type {string}
+     */
+    email = ""
+}
+```
+
+**주석이 JSDoc이 됩니다!** IDE에서 이를 표시합니다.
+
+### 중첩 구조체
+
+```go
+type Address struct {
+    Street  string `json:"street"`
+    City    string `json:"city"`
+    Country string `json:"country"`
+}
+
+type User struct {
+    ID      int     `json:"id"`
+    Name    string  `json:"name"`
+    Address Address `json:"address"`
+}
+```
+
+**생성된 JavaScript:**
+
+```javascript
+export class Address {
+    /** @type {string} */
+    street = ""
+    
+    /** @type {string} */
+    city = ""
+    
+    /** @type {string} */
+    country = ""
+}
+
+export class User {
+    /** @type {number} */
+    id = 0
+    
+    /** @type {string} */
+    name = ""
+    
+    /** @type {Address} */
+    address = new Address()
+}
+```
+
+**사용법:**
+
+```javascript
+const user = new User({
+    id: 1,
+    name: "Alice",
+    address: new Address({
+        street: "123 Main St",
+        city: "Springfield",
+        country: "USA"
+    })
+})
+```
+
+### 배열과 슬라이스
+
+```go
+type Team struct {
+    Name    string   `json:"name"`
+    Members []string `json:"members"`
+}
+```
+
+**생성된 JavaScript:**
+
+```javascript
+export class Team {
+    /** @type {string} */
+    name = ""
+    
+    /** @type {string[]} */
+    members = []
+}
+```
+
+**사용법:**
+
+```javascript
+const team = new Team({
+    name: "Engineering",
+    members: ["Alice", "Bob", "Charlie"]
+})
+```
+
+### 맵
+
+```go
+type Config struct {
+    Settings map[string]string `json:"settings"`
+}
+```
+
+**생성된 JavaScript:**
+
+```javascript
+export class Config {
+    /** @type {Record<string, string>} */
+    settings = {}
+}
+```
+
+**사용법:**
+
+```javascript
+const config = new Config({
+    settings: {
+        theme: "dark",
+        language: "en"
+    }
+})
+```
+
+## 타입 매핑
+
+### 기본 타입
+
+| Go 타입 | JavaScript 타입 |
+|---------|----------------|
+| `string` | `string` |
+| `bool` | `boolean` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `number` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `number` |
+| `float32`, `float64` | `number` |
+| `byte` | `number` |
+| `rune` | `number` |
+
+### 특수 타입
+
+| Go 타입 | JavaScript 타입 |
+|---------|----------------|
+| `time.Time` | `Date` |
+| `[]byte` | `Uint8Array` |
+| `*T` | `T` (포인터 투명 처리) |
+| `interface{}` | `any` |
+
+### 컬렉션
+
+| Go 타입 | JavaScript 타입 |
+|---------|----------------|
+| `[]T` | `T[]` |
+| `[N]T` | `T[]` |
+| `map[string]T` | `Record<string, T>` |
+| `map[K]V` | `Map<K, V>` |
+
+### 지원되지 않는 타입
+
+- `chan T` (채널)
+- `func()` (함수)
+- 복잡한 인터페이스 (`interface{}` 제외)
+- 내보내지 않은 필드 (소문자)
+
+## 모델 사용
+
+### 인스턴스 생성
+
+```javascript
+import { User } from './bindings/myapp/models'
+
+// 빈 인스턴스
+const user1 = new User()
+
+// 데이터 포함
+const user2 = new User({
+    id: 1,
+    name: "Alice",
+    email: "alice@example.com"
+})
+
+// JSON 문자열에서
+const user3 = User.createFrom('{"id":1,"name":"Alice"}')
+
+// 객체에서
+const user4 = User.createFrom({ id: 1, name: "Alice" })
+```
+
+### Go로 전달
+
+```javascript
+import { CreateUser } from './bindings/myapp/userservice'
+import { User } from './bindings/myapp/models'
+
+const user = new User({
+    name: "Bob",
+    email: "bob@example.com"
+})
+
+const created = await CreateUser(user)
+console.log("Created user:", created.id)
+```
+
+### Go에서 수신
+
+```javascript
+import { GetUser } from './bindings/myapp/userservice'
+
+const user = await GetUser(1)
+
+// user는 이미 User 인스턴스입니다
+console.log(user.name)
+console.log(user.email)
+console.log(user.createdAt.toISOString())
+```
+
+### 모델 업데이트
+
+```javascript
+import { GetUser, UpdateUser } from './bindings/myapp/userservice'
+
+// 사용자 조회
+const user = await GetUser(1)
+
+// 수정
+user.name = "Alice Smith"
+user.email = "alice.smith@example.com"
+
+// 저장
+await UpdateUser(user)
+```
+
+## TypeScript 지원
+
+### 생성된 TypeScript
+
+```bash
+wails3 generate bindings -ts
+```
+
+**생성됨:**
+
+```typescript
+/**
+ * User represents an application user
+ */
+export class User {
+    /**
+     * Unique identifier
+     */
+    id: number = 0
+    
+    /**
+     * Full name of the user
+     */
+    name: string = ""
+    
+    /**
+     * Email address (must be unique)
+     */
+    email: string = ""
+    
+    /**
+     * Account creation date
+     */
+    createdAt: Date = new Date()
+    
+    constructor(source: Partial<User> = {}) {
+        Object.assign(this, source)
+    }
+    
+    static createFrom(source: string | Partial<User> = {}): User {
+        const parsedSource = typeof source === 'string' 
+            ? JSON.parse(source) 
+            : source
+        return new User(parsedSource)
+    }
+}
+```
+
+### TypeScript에서의 사용
+
+```typescript
+import { GetUser, CreateUser } from './bindings/myapp/userservice'
+import { User } from './bindings/myapp/models'
+
+async function example() {
+    // 사용자 생성
+    const newUser = new User({
+        name: "Alice",
+        email: "alice@example.com"
+    })
+    
+    const created: User = await CreateUser(newUser)
+    
+    // 사용자 조회
+    const user: User = await GetUser(created.id)
+    
+    // 타입 안전 접근
+    console.log(user.name.toUpperCase())  // ✅ string method
+    console.log(user.id + 1)              // ✅ number operation
+    console.log(user.createdAt.getTime()) // ✅ Date method
+}
+```
+
+## 고급 패턴---
+
+**질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하시거나 [바인딩 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)를 확인하세요.

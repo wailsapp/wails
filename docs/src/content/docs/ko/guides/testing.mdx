@@ -1,0 +1,175 @@
+---
+title: 테스트
+description: Wails 애플리케이션 테스트하기
+sidebar:
+  order: 5
+---
+
+## 개요
+
+테스트는 애플리케이션이 올바르게 작동하는지 확인하고 회귀(regression)를 방지합니다.
+
+## 단위 테스트
+
+### 서비스 테스트
+
+```go
+func TestUserService_Create(t *testing.T) {
+    service := &UserService{
+        users: make(map[string]*User),
+    }
+    
+    user, err := service.Create("john@example.com", "password123")
+    if err != nil {
+        t.Fatalf("unexpected error: %v", err)
+    }
+    
+    if user.Email != "john@example.com" {
+        t.Errorf("expected email john@example.com, got %s", user.Email)
+    }
+}
+```
+
+### Mock을 사용한 테스트
+
+```go
+type MockDB struct {
+    users map[string]*User
+}
+
+func (m *MockDB) Create(user *User) error {
+    m.users[user.ID] = user
+    return nil
+}
+
+func TestUserService_WithMock(t *testing.T) {
+    mockDB := &MockDB{users: make(map[string]*User)}
+    service := &UserService{db: mockDB}
+    
+    user, err := service.Create("test@example.com", "pass")
+    if err != nil {
+        t.Fatal(err)
+    }
+    
+    if len(mockDB.users) != 1 {
+        t.Error("expected 1 user in mock")
+    }
+}
+```
+
+## 통합 테스트
+
+### 실제 의존성을 사용한 테스트
+
+```go
+func TestIntegration(t *testing.T) {
+    // 테스트 데이터베이스 설정
+    db, err := sql.Open("sqlite3", ":memory:")
+    if err != nil {
+        t.Fatal(err)
+    }
+    defer db.Close()
+    
+    // 스키마 생성
+    _, err = db.Exec(`CREATE TABLE users (...)`)
+    if err != nil {
+        t.Fatal(err)
+    }
+    
+    // 서비스 테스트
+    service := &UserService{db: db}
+    user, err := service.Create("test@example.com", "password")
+    if err != nil {
+        t.Fatal(err)
+    }
+    
+    // 데이터베이스에서 확인
+    var count int
+    db.QueryRow("SELECT COUNT(*) FROM users").Scan(&count)
+    if count != 1 {
+        t.Errorf("expected 1 user, got %d", count)
+    }
+}
+```
+
+## 프론트엔드 테스트
+
+### JavaScript 단위 테스트
+
+```javascript
+// Vitest 사용
+import { describe, it, expect } from 'vitest'
+import { formatDate } from './utils'
+
+describe('formatDate', () => {
+    it('formats date correctly', () => {
+        const date = new Date('2024-01-01')
+        expect(formatDate(date)).toBe('2024-01-01')
+    })
+})
+```
+
+### 바인딩 테스트
+
+```javascript
+import { vi } from 'vitest'
+import { GetUser } from './bindings/myapp/userservice'
+
+// 바인딩 Mock
+vi.mock('./bindings/myapp/userservice', () => ({
+    GetUser: vi.fn()
+}))
+
+describe('User Component', () => {
+    it('loads user data', async () => {
+        GetUser.mockResolvedValue({ name: 'John', email: 'john@example.com' })
+        
+        // 컴포넌트 테스트
+        const user = await GetUser(1)
+        expect(user.name).toBe('John')
+    })
+})
+```
+
+## 모범 사례
+
+### ✅ 권장 사항
+
+- 버그 수정 전에 테스트 작성
+- 경계 조건(edge cases) 테스트
+- 테이블 기반 테스트 사용
+- 외부 의존성 Mock
+- 에러 처리 테스트
+- 테스트 속도 유지
+
+### ❌ 비권장 사항
+
+- 에러 케이스 건너뛰지 않기
+- 구현 세부 사항 테스트하지 않기
+- 불안정한(flaky) 테스트 작성하지 않기
+- 테스트 실패 무시하지 않기
+- 통합 테스트 건너뛰지 않기
+
+## 테스트 실행
+
+```bash
+# Go 테스트 실행
+go test ./...
+
+# 커버리지와 함께 실행
+go test -cover ./...
+
+# 특정 테스트 실행
+go test -run TestUserService
+
+# 프론트엔드 테스트 실행
+cd frontend && npm test
+
+# 워치 모드로 실행
+cd frontend && npm test -- --watch
+```
+
+## 다음 단계
+
+- [엔드투엔드 테스트](/ko/guides/e2e-testing) - 전체 사용자 흐름 테스트
+- [모범 사례](/ko/features/bindings/best-practices) - 모범 사례 학습

@@ -1,0 +1,359 @@
+---
+title: 메뉴 참조
+description: 메뉴 항목 유형, 속성 및 동적 동작에 대한 완전한 참조
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 메뉴 참조
+
+메뉴 항목 유형, 속성 및 동적 동작에 대한 완전한 참조입니다. 체크박스, 라디오 그룹, 구분선 및 동적 업데이트를 사용하여 전문적이고 반응형인 메뉴를 구축하세요.
+
+## 메뉴 항목 유형
+
+### 일반 메뉴 항목
+
+가장 일반적인 유형으로, 텍스트를 표시하고 작업을 실행합니다:
+
+```go
+menuItem := menu.Add("Click Me")
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("Menu item clicked!")
+})
+```
+
+**사용 목적:** 명령, 작업, 창 열기
+
+### 체크박스
+
+체크/체크 해제 상태를 가진 토글 가능한 메뉴 항목:
+
+```go
+checkbox := menu.AddCheckbox("Enable Feature", true)  // true = 초기에 체크됨
+checkbox.OnClick(func(ctx *application.Context) {
+    isChecked := ctx.ClickedMenuItem().Checked()
+    fmt.Printf("Feature is now: %v\n", isChecked)
+})
+```
+
+**사용 목적:** 부울 설정, 기능 토글, 보기 옵션
+
+**중요:** 체크 상태는 클릭 시 자동으로 토글됩니다.
+
+### 라디오 그룹
+
+상호 배타적인 옵션—하나만 선택할 수 있습니다:
+
+```go
+menu.AddRadio("Small", true)   // true = 초기에 선택됨
+menu.AddRadio("Medium", false)
+menu.AddRadio("Large", false)
+```
+
+**사용 목적:** 상호 배타적인 선택 (크기, 테마, 모드)
+
+**그룹화 작동 방식:**
+- 인접한 라디오 항목은 자동으로 그룹을 형성합니다
+- 하나를 선택하면 그룹 내 다른 항목이 선택 해제됩니다
+- 구분선이나 일반 항목으로 별도 그룹을 분리하세요
+
+**여러 그룹 예시:**
+
+```go
+// 그룹 1: 크기
+menu.AddRadio("Small", true)
+menu.AddRadio("Medium", false)
+menu.AddRadio("Large", false)
+
+menu.AddSeparator()
+
+// 그룹 2: 테마
+menu.AddRadio("Light", true)
+menu.AddRadio("Dark", false)
+```
+
+### 하위 메뉴
+
+조직화를 위한 중첩 메뉴 구조:
+
+```go
+submenu := menu.AddSubmenu("More Options")
+submenu.Add("Submenu Item 1").OnClick(func(ctx *application.Context) {
+    // 클릭 처리
+})
+submenu.Add("Submenu Item 2")
+```
+
+**사용 목적:** 관련 항목 그룹화, 혼잡함 줄이기
+
+**중첩 한계:** 대부분의 플랫폼은 2~3단계의 중첩을 지원합니다. 더 깊은 중첩은 피하세요.
+
+### 구분선
+
+메뉴 항목 사이의 시각적 구분자:
+
+```go
+menu.Add("Item 1")
+menu.AddSeparator()
+menu.Add("Item 2")
+```
+
+**사용 목적:** 관련 항목을 시각적으로 그룹화
+
+**최선의 실천 방법:** 메뉴의 시작이나 끝에 구분선을 사용하지 마세요.
+
+## 메뉴 항목 속성
+
+### 레이블
+
+메뉴 항목에 표시되는 텍스트:
+
+```go
+menuItem := menu.Add("Initial Label")
+menuItem.SetLabel("New Label")
+
+// 현재 레이블 가져오기
+label := menuItem.Label()
+```
+
+**동적 레이블:**
+
+```go
+updateMenuItem := menu.Add("Check for Updates")
+updateMenuItem.OnClick(func(ctx *application.Context) {
+    updateMenuItem.SetLabel("Checking...")
+    menu.Update()  // Windows에서 중요!
+    
+    // 업데이트 확인 수행
+    checkForUpdates()
+    
+    updateMenuItem.SetLabel("Check for Updates")
+    menu.Update()
+})
+```
+
+### 활성화 상태
+
+메뉴 항목을 상호 작용할 수 있는지 제어합니다:
+
+```go
+menuItem := menu.Add("Save")
+menuItem.SetEnabled(false)  // 회색 처리됨, 클릭 불가
+
+// 나중에 활성화
+menuItem.SetEnabled(true)
+menu.Update()  // 중요: 활성화 상태 변경 후 이 호출을 하세요!
+
+// 현재 상태 확인
+isEnabled := menuItem.Enabled()
+```
+
+:::caution[Windows 메뉴 동작]
+Windows에서는 메뉴의 상태가 변경될 때 메뉴를 다시 구성해야 합니다. **항상 메뉴 항목을 활성화/비활성화한 후 `menu.Update()`를 호출하세요**, 특히 항목이 비활성화된 상태로 생성된 경우 더욱 중요합니다.
+
+**이유:** Windows 메뉴는 업데이트 시 처음부터 다시 빌드됩니다. `Update()`를 호출하지 않으면 클릭 핸들러가 제대로 작동하지 않습니다.
+:::
+
+**예시: 동적 활성화/비활성화**
+
+```go
+var hasSelection bool
+
+cutMenuItem := menu.Add("Cut")
+cutMenuItem.SetEnabled(false)  // 초기에 비활성화됨
+
+copyMenuItem := menu.Add("Copy")
+copyMenuItem.SetEnabled(false)
+
+// 선택이 변경될 때
+func onSelectionChanged(selected bool) {
+    hasSelection = selected
+    cutMenuItem.SetEnabled(hasSelection)
+    copyMenuItem.SetEnabled(hasSelection)
+    menu.Update()  // Windows에서 필수!
+}
+```
+
+**일반적인 패턴: 조건에 따라 활성화**
+
+```go
+saveMenuItem := menu.Add("Save")
+
+func updateSaveMenuItem() {
+    canSave := hasUnsavedChanges() && !isSaving()
+    saveMenuItem.SetEnabled(canSave)
+    menu.Update()
+}
+
+// 상태가 변경될 때마다 호출
+onDocumentChanged(func() {
+    updateSaveMenuItem()
+})
+```
+
+### 체크 상태
+
+체크박스 및 라디오 항목의 경우, 체크 상태를 제어하거나 쿼리합니다:
+
+```go
+checkbox := menu.AddCheckbox("Feature", false)
+checkbox.SetChecked(true)
+menu.Update()
+
+// 상태 쿼리
+isChecked := checkbox.Checked()
+```
+
+**자동 토글:** 체크박스는 클릭 시 자동으로 토글됩니다. 클릭 핸들러에서 `SetChecked()`를 호출할 필요가 없습니다.
+
+**수동 제어:**
+
+```go
+checkbox := menu.AddCheckbox("Auto-save", false)
+
+// 외부 상태와 동기화
+func syncAutoSave(enabled bool) {
+    checkbox.SetChecked(enabled)
+    menu.Update()
+}
+```
+
+### 가속기 (키보드 단축키)
+
+메뉴 항목에 키보드 단축키를 추가합니다:
+
+```go
+saveMenuItem := menu.Add("Save")
+saveMenuItem.SetAccelerator("CmdOrCtrl+S")
+
+quitMenuItem := menu.Add("Quit")
+quitMenuItem.SetAccelerator("CmdOrCtrl+Q")
+```
+
+**가속기 형식:**
+- `CmdOrCtrl` - macOS에서는 Cmd, Windows/Linux에서는 Ctrl
+- `Shift`, `Alt`, `Option` - 수정 키
+- `A-Z`, `0-9` - 문자/숫자 키
+- `F1-F12` - 기능 키
+- `Enter`, `Space`, `Backspace` 등 - 특수 키
+
+**예시:**
+
+```go
+"CmdOrCtrl+S"           // 저장
+"CmdOrCtrl+Shift+S"     // 다른 이름으로 저장
+"CmdOrCtrl+W"           // 창 닫기
+"CmdOrCtrl+Q"           // 종료
+"F5"                    // 새로 고침
+"CmdOrCtrl+,"           // 환경 설정 (macOS 관례)
+"Alt+F4"                // 닫기 (Windows 관례)
+```
+
+**플랫폼별 가속기:**
+
+```go
+if runtime.GOOS == "darwin" {
+    prefsMenuItem.SetAccelerator("Cmd+,")
+} else {
+    prefsMenuItem.SetAccelerator("Ctrl+P")
+}
+```
+
+### 도구 설명
+
+메뉴 항목에 호버 텍스트를 추가합니다 (플랫폼 지원은 다양함):
+
+```go
+menuItem := menu.Add("Advanced Options")
+menuItem.SetTooltip("Configure advanced settings")
+```
+
+**플랫폼 지원:**
+- **Windows:** ✅ 지원됨
+- **macOS:** ❌ 지원되지 않음 (메뉴에 도구 설명은 표준이 아님)
+- **Linux:** ⚠️ 데스크톱 환경에 따라 다름
+
+### 숨김 상태
+
+메뉴 항목을 제거하지 않고 숨깁니다:
+
+```go
+debugMenuItem := menu.Add("Debug Mode")
+debugMenuItem.SetHidden(true)  // 숨겨짐
+
+// 디버그 빌드에서 표시
+if isDebugBuild {
+    debugMenuItem.SetHidden(false)
+    menu.Update()
+}
+```
+
+**사용 목적:** 디버그 옵션, 기능 플래그, 조건부 기능
+
+## 이벤트 처리
+
+### OnClick 핸들러
+
+메뉴 항목이 클릭될 때 코드 실행:
+
+```go
+menuItem := menu.Add("Click Me")
+menuItem.OnClick(func(ctx *application.Context) {
+    // 클릭 처리
+    fmt.Println("Clicked!")
+})
+```
+
+**Context가 제공하는 것:**
+- `ctx.ClickedMenuItem()` - 클릭된 메뉴 항목
+- 창 컨텍스트 (창 메뉴에서 온 경우)
+- 애플리케이션 컨텍스트
+
+**예시: 핸들러에서 메뉴 항목 접근**
+
+```go
+checkbox := menu.AddCheckbox("Feature", false)
+checkbox.OnClick(func(ctx *application.Context) {
+    item := ctx.ClickedMenuItem()
+    isChecked := item.Checked()
+    fmt.Printf("Feature is now: %v\n", isChecked)
+})
+```
+
+### 여러 핸들러
+
+여러 핸들러를 설정할 수 있습니다 (마지막으로 설정된 것이 적용됨):
+
+```go
+menuItem := menu.Add("Action")
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("First handler")
+})
+
+// 이것이 첫 번째 핸들러를 대체합니다
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("Second handler - this one runs")
+})
+```
+
+**최선의 실천 방법:** 핸들러를 한 번 설정하고, 필요한 경우 내부에서 조건부 로직을 사용하세요.
+
+## 동적 메뉴
+
+### 메뉴 항목 업데이트
+
+**황금 규칙:** 메뉴 상태를 변경한 후 항상 `menu.Update()`를 호출하세요.
+
+```go
+// ✅ 올바름
+menuItem.SetEnabled(true)
+menu.Update()
+
+// ❌ 잘못됨 (특히 Windows에서)
+menuItem.SetEnabled(true)
+// Update() 호출을 잊음 - 클릭 핸들러가 작동하지 않을 수 있음!
+```
+
+**이것이 중요한 이유:****질문 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [메뉴 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/menu)를 확인하세요.

@@ -1,0 +1,397 @@
+---
+title: 열거형
+description: Go 상수로부터의 자동 열거형 생성
+sidebar:
+  order: 4
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 열거형 바인딩
+
+Wails v3 바인딩 생성기는 **Go 상수 타입을 자동으로 감지하여 TypeScript 열거형 또는 JavaScript const 객체를 생성합니다**. 등록이나 구성이 필요하지 않습니다. Go에서 타입과 상수를 정의하기만 하면 생성기가 나머지를 처리합니다.
+
+:::note
+Wails v2와 달리 `EnumBind`를 호출하거나 열거형을 수동으로 등록할 **필요가 없습니다**. 생성기가 소스 코드에서 자동으로 열거형을 찾아냅니다.
+:::
+
+## 빠른 시작
+
+**Go에서 상수가 있는 명명된 타입을 정의합니다:**
+
+```go
+type Status string
+
+const (
+    StatusActive  Status = "active"
+    StatusPending Status = "pending"
+    StatusClosed  Status = "closed"
+)
+```
+
+**구조체 또는 서비스 메서드에서 이 타입을 사용합니다:**
+
+```go
+type Ticket struct {
+    ID     int    `json:"id"`
+    Title  string `json:"title"`
+    Status Status `json:"status"`
+}
+```
+
+**바인딩을 생성합니다:**
+
+```bash
+wails3 generate bindings
+```
+
+생성기 출력은 모델과 함께 열거형 개수를 보고합니다:
+
+```
+3 Enums, 5 Models
+```
+
+**프론트엔드에서 사용합니다:**
+
+```javascript
+import { Ticket, Status } from './bindings/myapp/models'
+
+const ticket = new Ticket({
+    id: 1,
+    title: "Bug report",
+    status: Status.StatusActive
+})
+```
+
+**이것으로 끝입니다!** 열거형 타입은 Go와 JavaScript/TypeScript 모두에서 강제됩니다.
+
+## 열거형 정의
+
+Wails에서 열거형은 기본 타입을 가진 **명명된 타입**과 해당 타입의 **상수 선언**의 조합입니다.
+
+### 문자열 열거형
+
+```go
+// Title is a title
+type Title string
+
+const (
+    // Mister is a title
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+    Ms     Title = "Ms"
+    Mrs    Title = "Mrs"
+    Dr     Title = "Dr"
+)
+```
+
+**생성된 TypeScript:**
+
+```typescript
+/**
+ * Title is a title
+ */
+export enum Title {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = "",
+
+    /**
+     * Mister is a title
+     */
+    Mister = "Mr",
+    Miss = "Miss",
+    Ms = "Ms",
+    Mrs = "Mrs",
+    Dr = "Dr",
+}
+```
+
+**생성된 JavaScript:**
+
+```javascript
+/**
+ * Title is a title
+ * @readonly
+ * @enum {string}
+ */
+export const Title = {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero: "",
+
+    /**
+     * Mister is a title
+     */
+    Mister: "Mr",
+    Miss: "Miss",
+    Ms: "Ms",
+    Mrs: "Mrs",
+    Dr: "Dr",
+};
+```
+
+### 정수 열거형
+
+```go
+type Priority int
+
+const (
+    PriorityLow    Priority = 0
+    PriorityMedium Priority = 1
+    PriorityHigh   Priority = 2
+)
+```
+
+**생성된 TypeScript:**
+
+```typescript
+export enum Priority {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = 0,
+
+    PriorityLow = 0,
+    PriorityMedium = 1,
+    PriorityHigh = 2,
+}
+```
+
+### 타입 별칭 열거형
+
+Go 타입 별칭(`=`)도 작동하지만, 네이티브 TypeScript `enum`이 아닌 타입 정의와 const 객체를 생성하는 약간 다른 출력을 생성합니다:
+
+```go
+// Age is an integer with some predefined values
+type Age = int
+
+const (
+    NewBorn    Age = 0
+    Teenager   Age = 12
+    YoungAdult Age = 18
+
+    // Oh no, some grey hair!
+    MiddleAged Age = 50
+    Mathusalem Age = 1000 // Unbelievable!
+)
+```
+
+**생성된 TypeScript:**
+
+```typescript
+/**
+ * Age is an integer with some predefined values
+ */
+export type Age = number;
+
+/**
+ * Predefined constants for type Age.
+ * @namespace
+ */
+export const Age = {
+    NewBorn: 0,
+    Teenager: 12,
+    YoungAdult: 18,
+
+    /**
+     * Oh no, some grey hair!
+     */
+    MiddleAged: 50,
+
+    /**
+     * Unbelievable!
+     */
+    Mathusalem: 1000,
+};
+```
+
+**생성된 JavaScript:**
+
+```javascript
+/**
+ * Age is an integer with some predefined values
+ * @typedef {number} Age
+ */
+
+/**
+ * Predefined constants for type Age.
+ * @namespace
+ */
+export const Age = {
+    NewBorn: 0,
+    Teenager: 12,
+    YoungAdult: 18,
+
+    /**
+     * Oh no, some grey hair!
+     */
+    MiddleAged: 50,
+
+    /**
+     * Unbelievable!
+     */
+    Mathusalem: 1000,
+};
+```
+
+:::tip
+**명명된 타입**(`type Title string`)은 `$zero` 멤버가 있는 네이티브 TypeScript `enum` 선언을 생성합니다.
+**타입 별칭**(`type Age = int`)은 `$zero` 없이 `type` + `const` 네임스페이스 쌍을 생성합니다.
+:::
+
+## `$zero` 값
+
+모든 명명된 타입 열거형에는 기본 타입에 대한 **Go 영(zero) 값**을 나타내는 특별한 `$zero` 멤버가 포함됩니다:
+
+| 기본 타입 | `$zero` 값 |
+|----------------|---------------|
+| `string` | `""` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `0` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `0` |
+| `float32`, `float64` | `0` |
+| `bool` | `false` |
+
+구조체 필드가 열거형 타입을 사용하고 값이 제공되지 않으면, 생성자는 `$zero`로 기본값을 설정합니다:
+
+```typescript
+export class Person {
+    "Title": Title;
+
+    constructor($$source: Partial<Person> = {}) {
+        if (!("Title" in $$source)) {
+            this["Title"] = Title.$zero;  // defaults to ""
+        }
+        Object.assign(this, $$source);
+    }
+}
+```
+
+이는 클래스를 생성할 때 타입 안전한 초기화를 보장합니다 — 열거형 필드는 절대 `undefined`가 아닙니다. TypeScript 인터페이스를 생성할 때(`-i` 사용), 생성자가 없으며 필드는 평소처럼 누락될 수 있습니다.
+
+## 구조체에서 열거형 사용
+
+구조체 필드가 열거형 타입을 가질 때, 생성된 코드는 기본 타입으로 폴백하는 대신 **해당 타입을 유지**합니다:
+
+```go
+type Person struct {
+    Title Title
+    Name  string
+    Age   Age
+}
+```
+
+**생성된 TypeScript:**
+
+```typescript
+export class Person {
+    "Title": Title;
+    "Name": string;
+    "Age": Age;
+
+    constructor($$source: Partial<Person> = {}) {
+        if (!("Title" in $$source)) {
+            this["Title"] = Title.$zero;
+        }
+        if (!("Name" in $$source)) {
+            this["Name"] = "";
+        }
+        if (!("Age" in $$source)) {
+            this["Age"] = 0;
+        }
+
+        Object.assign(this, $$source);
+    }
+}
+```
+
+`Title` 필드는 `string`이 아닌 `Title`로 타입 지정됩니다. 이를 통해 IDE에서 열거형 값에 대한 전체 자동 완성 및 타입 검사를 제공합니다.
+
+## 가져온 패키지에서 열거형
+
+별도 패키지에서 정의된 열거형도 완전히 지원됩니다. 해당 패키지 디렉토리에 생성됩니다:
+
+```go
+// services/types.go
+package services
+
+type Title string
+
+const (
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+    Ms     Title = "Ms"
+)
+```
+
+```go
+// main.go
+package main
+
+import "myapp/services"
+
+func (*GreetService) Greet(name string, title services.Title) string {
+    return "Hello " + string(title) + " " + name
+}
+```
+
+`Title` 열거형은 `services` 모델 파일에 생성되며, 가져오기 경로가 자동으로 해결됩니다:
+
+```typescript
+// bindings/myapp/services/models.ts
+export enum Title {
+    $zero = "",
+    Mister = "Mr",
+    Miss = "Miss",
+    Ms = "Ms",
+}
+```
+
+## 열거형 메서드
+
+Go에서 열거형 타입에 메서드를 추가할 수 있습니다. 이는 바인딩 생성에 영향을 주지 않지만 유용한 서버 측 기능을 제공합니다:
+
+```go
+type Title string
+
+func (t Title) String() string {
+    return string(t)
+}
+
+const (
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+)
+```
+
+Go에 메서드가 있든 없든 생성된 열거형은 동일합니다.
+
+## 주석 및 문서
+
+생성기는 Go 주석을 생성된 출력에서 JSDoc으로 보존합니다:
+
+- **타입 주석**은 열거형의 문서 주석이 됩니다.
+- **상수 그룹 주석**은 섹션 구분자로 사용됩니다.
+- **개별 상수 주석**은 멤버 문서 주석이 됩니다.
+- **인라인 주석**은 가능한 경우 보존됩니다.
+
+이는 IDE에서 열거형 값에 대한 문서를 호버 시 표시한다는 것을 의미합니다.
+
+## 지원되는 기본 타입
+
+바인딩 생성기는 다음 Go 기본 타입을 가진 열거형을 지원합니다:
+
+| Go 타입 | 열거형으로 작동 |
+|---------|:---:|
+| `string` | 예 |
+| `int`, `int8`, `int16`, `int32`, `int64` | 예 |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | 예 |
+| `float32`, `float64` | 예 |
+| `byte` (`uint8`) | 예 |
+| `rune` (`int32`) | 예 |
+| `bool` | 예 |
+| `complex64`, `complex128` | 아니요 |---
+
+**질문 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 문의하거나 [바인딩 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)를 확인하세요.

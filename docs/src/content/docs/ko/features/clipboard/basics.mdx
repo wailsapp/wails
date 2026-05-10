@@ -1,0 +1,409 @@
+---
+title: 클립보드 작업
+description: 시스템 클립보드를 사용하여 텍스트 복사 및 붙여넣기
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 클립보드 작업
+
+Wails는 모든 플랫폼에서 작동하는 **통합 클립보드 API**를 제공합니다. Windows, macOS, Linux에서 간단하고 일관된 메서드로 텍스트를 복사하고 붙여넣으세요.
+
+## 빠른 시작
+
+```go
+// 클립보드에 텍스트 복사
+app.Clipboard.SetText("Hello, World!")
+
+// 클립보드에서 텍스트 가져오기
+text, ok := app.Clipboard.Text()
+if ok {
+    fmt.Println("Clipboard:", text)
+}
+```
+
+**이것으로 끝입니다!** 크로스플랫폼 클립보드 접근.
+
+## 텍스트 복사
+
+### 기본 복사
+
+```go
+success := app.Clipboard.SetText("Text to copy")
+if !success {
+    app.Logger.Error("Failed to copy to clipboard")
+}
+```
+
+**반환값:** `bool` - 성공 시 `true`, 실패 시 `false`
+
+### 서비스에서 복사
+
+```go
+type ClipboardService struct {
+    app *application.Application
+}
+
+func (c *ClipboardService) CopyToClipboard(text string) bool {
+    return c.app.Clipboard.SetText(text)
+}
+```
+
+**JavaScript에서 호출:**
+
+```javascript
+import { CopyToClipboard } from './bindings/myapp/clipboardservice'
+
+await CopyToClipboard("Text to copy")
+```
+
+### 피드백과 함께 복사
+
+```go
+func copyWithFeedback(text string) {
+    if app.Clipboard.SetText(text) {
+        app.Dialog.Info().
+            SetTitle("Copied").
+            SetMessage("Text copied to clipboard!").
+            Show()
+    } else {
+        app.Dialog.Error().
+            SetTitle("Copy Failed").
+            SetMessage("Failed to copy to clipboard.").
+            Show()
+    }
+}
+```
+
+## 텍스트 붙여넣기
+
+### 기본 붙여넣기
+
+```go
+text, ok := app.Clipboard.Text()
+if !ok {
+    app.Logger.Error("Failed to read clipboard")
+    return
+}
+
+fmt.Println("Clipboard text:", text)
+```
+
+**반환값:** `(string, bool)` - 텍스트와 성공 플래그
+
+### 서비스에서 붙여넣기
+
+```go
+func (c *ClipboardService) PasteFromClipboard() string {
+    text, ok := c.app.Clipboard.Text()
+    if !ok {
+        return ""
+    }
+    return text
+}
+```
+
+**JavaScript에서 호출:**
+
+```javascript
+import { PasteFromClipboard } from './bindings/myapp/clipboardservice'
+
+const text = await PasteFromClipboard()
+console.log("Pasted:", text)
+```
+
+### 유효성 검사와 함께 붙여넣기
+
+```go
+func pasteText() (string, error) {
+    text, ok := app.Clipboard.Text()
+    if !ok {
+        return "", errors.New("clipboard empty or unavailable")
+    }
+    
+    // 유효성 검사
+    if len(text) == 0 {
+        return "", errors.New("clipboard is empty")
+    }
+    
+    if len(text) > 10000 {
+        return "", errors.New("clipboard text too large")
+    }
+    
+    return text, nil
+}
+```
+
+## 전체 예제
+
+### 복사 버튼
+
+**Go:**
+
+```go
+type TextService struct {
+    app *application.Application
+}
+
+func (t *TextService) CopyText(text string) error {
+    if !t.app.Clipboard.SetText(text) {
+        return errors.New("failed to copy")
+    }
+    return nil
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { CopyText } from './bindings/myapp/textservice'
+
+async function copyToClipboard(text) {
+    try {
+        await CopyText(text)
+        showNotification("Copied to clipboard!")
+    } catch (error) {
+        showError("Failed to copy: " + error)
+    }
+}
+
+// 사용법
+document.getElementById('copy-btn').addEventListener('click', () => {
+    const text = document.getElementById('text').value
+    copyToClipboard(text)
+})
+```
+
+### 붙여넣기 및 처리
+
+**Go:**
+
+```go
+type DataService struct {
+    app *application.Application
+}
+
+func (d *DataService) PasteAndProcess() (string, error) {
+    // 클립보드 텍스트 가져오기
+    text, ok := d.app.Clipboard.Text()
+    if !ok {
+        return "", errors.New("clipboard unavailable")
+    }
+    
+    // 텍스트 처리
+    processed := strings.TrimSpace(text)
+    processed = strings.ToUpper(processed)
+    
+    return processed, nil
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { PasteAndProcess } from './bindings/myapp/dataservice'
+
+async function pasteAndProcess() {
+    try {
+        const result = await PasteAndProcess()
+        document.getElementById('output').value = result
+    } catch (error) {
+        showError("Failed to paste: " + error)
+    }
+}
+```
+
+### 여러 형식으로 복사
+
+```go
+type CopyService struct {
+    app *application.Application
+}
+
+func (c *CopyService) CopyAsPlainText(text string) bool {
+    return c.app.Clipboard.SetText(text)
+}
+
+func (c *CopyService) CopyAsJSON(data interface{}) bool {
+    jsonBytes, err := json.MarshalIndent(data, "", "  ")
+    if err != nil {
+        return false
+    }
+    return c.app.Clipboard.SetText(string(jsonBytes))
+}
+
+func (c *CopyService) CopyAsCSV(rows [][]string) bool {
+    var buf bytes.Buffer
+    writer := csv.NewWriter(&buf)
+    
+    for _, row := range rows {
+        if err := writer.Write(row); err != nil {
+            return false
+        }
+    }
+    
+    writer.Flush()
+    return c.app.Clipboard.SetText(buf.String())
+}
+```
+
+### 클립보드 모니터
+
+```go
+type ClipboardMonitor struct {
+    app          *application.Application
+    lastText     string
+    ticker       *time.Ticker
+    stopChan     chan bool
+}
+
+func NewClipboardMonitor(app *application.Application) *ClipboardMonitor {
+    return &ClipboardMonitor{
+        app:      app,
+        stopChan: make(chan bool),
+    }
+}
+
+func (cm *ClipboardMonitor) Start() {
+    cm.ticker = time.NewTicker(1 * time.Second)
+    
+    go func() {
+        for {
+            select {
+            case <-cm.ticker.C:
+                cm.checkClipboard()
+            case <-cm.stopChan:
+                return
+            }
+        }
+    }()
+}
+
+func (cm *ClipboardMonitor) Stop() {
+    if cm.ticker != nil {
+        cm.ticker.Stop()
+    }
+    cm.stopChan <- true
+}
+
+func (cm *ClipboardMonitor) checkClipboard() {
+    text, ok := cm.app.Clipboard.Text()
+    if !ok {
+        return
+    }
+    
+    if text != cm.lastText {
+        cm.lastText = text
+        cm.app.Event.Emit("clipboard-changed", text)
+    }
+}
+```
+
+### 이력 포함 복사
+
+```go
+type ClipboardHistory struct {
+    app     *application.Application
+    history []string
+    maxSize int
+}
+
+func NewClipboardHistory(app *application.Application) *ClipboardHistory {
+    return &ClipboardHistory{
+        app:     app,
+        history: make([]string, 0),
+        maxSize: 10,
+    }
+}
+
+func (ch *ClipboardHistory) Copy(text string) bool {
+    if !ch.app.Clipboard.SetText(text) {
+        return false
+    }
+    
+    // 이력에 추가
+    ch.history = append([]string{text}, ch.history...)
+    
+    // 크기 제한
+    if len(ch.history) > ch.maxSize {
+        ch.history = ch.history[:ch.maxSize]
+    }
+    
+    return true
+}
+
+func (ch *ClipboardHistory) GetHistory() []string {
+    return ch.history
+}
+
+func (ch *ClipboardHistory) RestoreFromHistory(index int) bool {
+    if index < 0 || index >= len(ch.history) {
+        return false
+    }
+    
+    return ch.app.Clipboard.SetText(ch.history[index])
+}
+```
+
+## 프론트엔드 통합
+
+### 브라우저 클립보드 API 사용
+
+간단한 텍스트의 경우 브라우저의 클립보드 API를 사용할 수 있습니다:
+
+```javascript
+// 복사
+async function copyText(text) {
+    try {
+        await navigator.clipboard.writeText(text)
+        console.log("Copied!")
+    } catch (error) {
+        console.error("Copy failed:", error)
+    }
+}
+
+// 붙여넣기
+async function pasteText() {
+    try {
+        const text = await navigator.clipboard.readText()
+        return text
+    } catch (error) {
+        console.error("Paste failed:", error)
+        return ""
+    }
+}
+```
+
+**참고:** 브라우저 클립보드 API는 HTTPS 또는 로컬 호스트, 그리고 사용자 권한이 필요합니다.
+
+### Wails 클립보드 사용
+
+시스템 전체 클립보드 접근의 경우:
+
+```javascript
+import { CopyToClipboard, PasteFromClipboard } from './bindings/myapp/clipboardservice'
+
+// 복사
+async function copy(text) {
+    const success = await CopyToClipboard(text)
+    if (success) {
+        console.log("Copied!")
+    }
+}
+
+// 붙여넣기
+async function paste() {
+    const text = await PasteFromClipboard()
+    return text
+}
+```
+
+## 모범 사례
+
+### ✅ 권장 사항
+
+- **반환값 확인** - 실패를 우아하게 처리하세요---
+
+**질문?** [Discord](https://discord.gg/JDdSxwjhGf)에서 문의하거나 [클립보드 예제](https://github.com/wailsapp/wails/tree/master/v3/examples)를 확인하세요.

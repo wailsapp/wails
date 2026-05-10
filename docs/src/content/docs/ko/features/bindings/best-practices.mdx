@@ -1,0 +1,365 @@
+---
+title: 바인딩 모범 사례
+description: Go-JavaScript 바인딩을 위한 디자인 패턴 및 모범 사례
+sidebar:
+  order: 4
+---
+
+## 바인딩 모범 사례
+
+**검증된 패턴**을 따르는 바인딩 디자인을 통해 깔끔하고 성능이 뛰어나며 안전한 바인딩을 만드세요. 이 가이드는 유지보수가 용이한 애플리케이션을 위한 API 디자인 원칙, 성능 최적화, 보안 패턴, 오류 처리 및 테스트 전략을 다룹니다.
+
+## API 디자인 원칙
+
+### 1. 단일 책임
+
+각 서비스는 명확한 목적을 하나만 가져야 합니다:
+
+```go
+// ❌ 나쁨: God 객체
+type AppService struct {
+    // 모든 것을 처리
+}
+
+func (a *AppService) SaveFile(path string, data []byte) error
+func (a *AppService) GetUser(id int) (*User, error)
+func (a *AppService) SendEmail(to, subject, body string) error
+func (a *AppService) ProcessPayment(amount float64) error
+
+// ✅ 좋음: 집중된 서비스
+type FileService struct{}
+func (f *FileService) Save(path string, data []byte) error
+
+type UserService struct{}
+func (u *UserService) GetByID(id int) (*User, error)
+
+type EmailService struct{}
+func (e *EmailService) Send(to, subject, body string) error
+
+type PaymentService struct{}
+func (p *PaymentService) Process(amount float64) error
+```
+
+### 2. 명확한 메서드 이름
+
+설명적이고 액션 지향적인 이름을 사용하세요:
+
+```go
+// ❌ 나쁨: 불분명한 이름
+func (s *Service) Do(x string) error
+func (s *Service) Handle(data interface{}) interface{}
+func (s *Service) Process(input map[string]interface{}) bool
+
+// ✅ 좋음: 명확한 이름
+func (s *FileService) SaveDocument(path string, content string) error
+func (s *UserService) AuthenticateUser(email, password string) (*User, error)
+func (s *OrderService) CreateOrder(items []Item) (*Order, error)
+```
+
+### 3. 일관된 반환 타입
+
+오류는 항상 명시적으로 반환하세요:
+
+```go
+// ❌ 나쁨: 일관되지 않은 오류 처리
+func (s *Service) GetData() interface{}  // 오류를 어떻게 처리합니까?
+func (s *Service) SaveData(data string)  // 침묵하는 실패?
+
+// ✅ 좋음: 명시적 오류
+func (s *Service) GetData() (Data, error)
+func (s *Service) SaveData(data string) error
+```
+
+### 4. 입력 검증
+
+Go 측에서 모든 입력을 검증하세요:
+
+```go
+// ❌ 나쁨: 검증 없음
+func (s *UserService) CreateUser(email, password string) (*User, error) {
+    user := &User{Email: email, Password: password}
+    return s.db.Create(user)
+}
+
+// ✅ 좋음: 먼저 검증
+func (s *UserService) CreateUser(email, password string) (*User, error) {
+    // 이메일 검증
+    if !isValidEmail(email) {
+        return nil, errors.New("invalid email address")
+    }
+    
+    // 비밀번호 검증
+    if len(password) < 8 {
+        return nil, errors.New("password must be at least 8 characters")
+    }
+    
+    // 비밀번호 해싱
+    hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+    if err != nil {
+        return nil, err
+    }
+    
+    user := &User{
+        Email:        email,
+        PasswordHash: string(hash),
+    }
+    
+    return s.db.Create(user)
+}
+```
+
+## 성능 패턴
+
+### 1. 배치 작업
+
+브릿지 호출을 배치하여 줄이세요:
+
+```go
+// ❌ 나쁨: N회 호출
+// JavaScript
+for (const item of items) {
+    await ProcessItem(item)  // N회 브릿지 호출
+}
+
+// ✅ 좋음: 1회 호출
+// Go
+func (s *Service) ProcessItems(items []Item) ([]Result, error) {
+    results := make([]Result, len(items))
+    for i, item := range items {
+        results[i] = s.processItem(item)
+    }
+    return results, nil
+}
+
+// JavaScript
+const results = await ProcessItems(items)  // 1회 브릿지 호출
+```
+
+### 2. 페이지네이션
+
+거대한 데이터셋을 한 번에 반환하지 마세요:
+
+```go
+// ❌ 나쁨: 모든 것을 반환
+func (s *Service) GetAllUsers() ([]User, error) {
+    return s.db.FindAll()  // 수백만 개일 수 있음
+}
+
+// ✅ 좋음: 페이지네이션 적용
+type PageRequest struct {
+    Page     int `json:"page"`
+    PageSize int `json:"pageSize"`
+}
+
+type PageResponse struct {
+    Items      []User `json:"items"`
+    TotalItems int    `json:"totalItems"`
+    TotalPages int    `json:"totalPages"`
+    Page       int    `json:"page"`
+}
+
+func (s *Service) GetUsers(req PageRequest) (*PageResponse, error) {
+    // 검증
+    if req.Page < 1 {
+        req.Page = 1
+    }
+    if req.PageSize < 1 || req.PageSize > 100 {
+        req.PageSize = 20
+    }
+    
+    // 전체 개수 가져오기
+    total, err := s.db.Count()
+    if err != nil {
+        return nil, err
+    }
+    
+    // 페이지 데이터 가져오기
+    offset := (req.Page - 1) * req.PageSize
+    users, err := s.db.Find(offset, req.PageSize)
+    if err != nil {
+        return nil, err
+    }
+    
+    return &PageResponse{
+        Items:      users,
+        TotalItems: total,
+        TotalPages: (total + req.PageSize - 1) / req.PageSize,
+        Page:       req.Page,
+    }, nil
+}
+```
+
+### 3. 캐싱
+
+고비용 연산을 캐싱하세요:
+
+```go
+type CachedService struct {
+    cache map[string]interface{}
+    mu    sync.RWMutex
+    ttl   time.Duration
+}
+
+func (s *CachedService) GetData(key string) (interface{}, error) {
+    // 캐시 확인
+    s.mu.RLock()
+    if data, ok := s.cache[key]; ok {
+        s.mu.RUnlock()
+        return data, nil
+    }
+    s.mu.RUnlock()
+    
+    // 데이터 가져오기
+    data, err := s.fetchData(key)
+    if err != nil {
+        return nil, err
+    }
+    
+    // 캐시에 저장
+    s.mu.Lock()
+    s.cache[key] = data
+    s.mu.Unlock()
+    
+    // 만료 스케줄링
+    go func() {
+        time.Sleep(s.ttl)
+        s.mu.Lock()
+        delete(s.cache, key)
+        s.mu.Unlock()
+    }()
+    
+    return data, nil
+}
+```
+
+### 4. 이벤트를 사용한 스트리밍
+
+스트리밍 데이터에는 이벤트를 사용하세요:
+
+```go
+// ❌ 나쁨: 폴링
+func (s *Service) GetProgress() int {
+    return s.progress
+}
+
+// JavaScript 폴링
+setInterval(async () => {
+    const progress = await GetProgress()
+    updateUI(progress)
+}, 100)
+
+// ✅ 좋음: 이벤트
+func (s *Service) ProcessLargeFile(path string) error {
+    file, err := os.Open(path)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+    
+    scanner := bufio.NewScanner(file)
+    total := 0
+    processed := 0
+    
+    // 라인 수 세기
+    for scanner.Scan() {
+        total++
+    }
+    
+    // 처리
+    file.Seek(0, 0)
+    scanner = bufio.NewScanner(file)
+    
+    for scanner.Scan() {
+        s.processLine(scanner.Text())
+        processed++
+        
+        // 진행률 이벤트 발생
+        s.app.Event.Emit("progress", map[string]interface{}{
+            "processed": processed,
+            "total":     total,
+            "percent":   int(float64(processed) / float64(total) * 100),
+        })
+    }
+    
+    return scanner.Err()
+}
+
+// JavaScript 리스닝
+OnEvent("progress", (data) => {
+    updateProgress(data.percent)
+})
+```
+
+## 보안 패턴
+
+### 1. 입력 sanitization
+
+사용자 입력은 항상 sanitization 하세요:
+
+```go
+import (
+    "html"
+    "strings"
+)
+
+func (s *Service) SaveComment(text string) error {
+    // sanitization
+    text = strings.TrimSpace(text)
+    text = html.EscapeString(text)
+    
+    // 길이 검증
+    if len(text) == 0 {
+        return errors.New("comment cannot be empty")
+    }
+    if len(text) > 1000 {
+        return errors.New("comment too long")
+    }
+    
+    return s.db.SaveComment(text)
+}
+```
+
+### 2. 인증
+
+민감한 작업을 보호하세요:
+
+```go
+type AuthService struct {
+    sessions map[string]*Session
+    mu       sync.RWMutex
+}
+
+func (a *AuthService) Login(email, password string) (string, error) {
+    user, err := a.db.FindByEmail(email)
+    if err != nil {
+        return "", errors.New("invalid credentials")
+    }
+    
+    if !a.verifyPassword(user.PasswordHash, password) {
+        return "", errors.New("invalid credentials")
+    }
+    
+    // 세션 생성
+    token := generateToken()
+    a.mu.Lock()
+    a.sessions[token] = &Session{
+        UserID:    user.ID,
+        ExpiresAt: time.Now().Add(24 * time.Hour),
+    }
+    a.mu.Unlock()
+    
+    return token, nil
+}
+
+func (a *AuthService) requireAuth(token string) (*Session, error) {
+    a.mu.RLock()
+    session, ok := a.sessions[token]
+    a.mu.RUnlock()
+    
+    if !ok {
+        return nil, errors.New("not authenticated")
+    }
+    
+    if time.Now().After(session.ExpiresAt) {---
+
+**질문 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 문의하거나 [바인딩 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)를 확인하세요.

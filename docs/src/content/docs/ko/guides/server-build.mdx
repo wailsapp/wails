@@ -1,0 +1,312 @@
+---
+title: 서버 빌드
+description: 네이티브 GUI 창 없이 HTTP 서버로 Wails 애플리케이션 실행
+sidebar:
+    order: 52
+    badge:
+        text: 실험적
+        variant: caution
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="실험적 기능">
+서버 모드는 실험적 기능이며 향후 릴리스에서 변경될 수 있습니다.
+</Aside>
+
+Wails v3는 네이티브 창을 생성하거나 GUI 종속성을 요구하지 않고 애플리케이션을 순수 HTTP 서버로 실행할 수 있는 서버 모드를 지원합니다. 이를 통해 동일한 Wails 애플리케이션을 서버, 컨테이너 및 웹 브라우저에 배포할 수 있습니다.
+
+## 개요
+
+서버 모드는 다음과 같은 경우에 유용합니다:
+
+- **Docker/컨테이너 배포** - X11/Wayland 종속성 없이 실행
+- **서버 사이드 애플리케이션** - 브라우저를 통해 접근 가능한 웹 서버로 배포
+- **웹 전용 접근** - 데스크톱과 웹 간에 동일한 코드베이스 공유
+- **CI/CD 테스트** - 디스플레이 서버 없이 통합 테스트 실행
+- **마이크로서비스** - 헤드리스 백엔드 서비스에서 Wails 바인딩 사용
+
+## 빠른 시작
+
+서버 모드는 `server` 빌드 태그를 통해 활성화됩니다. 애플리케이션 코드는 동일하게 유지되며, 태그와 함께 빌드하기만 하면 됩니다:
+
+```bash
+# Taskfile 사용 (권장)
+wails3 task build:server
+wails3 task run:server
+
+# 또는 Go로 직접 빌드
+go build -tags server -o myapp-server .
+```
+
+최소 예제는 다음과 같습니다:
+
+```go
+package main
+
+import (
+    "embed"
+    "log"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        // 서버 옵션은 -tags server로 빌드할 때 사용됩니다
+        Server: application.ServerOptions{
+            Host: "localhost",
+            Port: 8080,
+        },
+        Services: []application.Service{
+            application.NewService(&MyService{}),
+        },
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+
+    log.Println("Starting application...")
+    if err := app.Run(); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+동일한 코드는 데스크톱(태그 없이) 또는 서버 모드(`-tags server` 포함)용으로 빌드할 수 있습니다.
+
+## 구성
+
+### ServerOptions
+
+`ServerOptions`를 사용하여 HTTP 서버를 구성합니다:
+
+```go
+Server: application.ServerOptions{
+    // 바인딩할 호스트. 기본값: "localhost"
+    // 모든 인터페이스에서 수신하려면 "0.0.0.0"을 사용하세요
+    Host: "localhost",
+
+    // 수신할 포트. 기본값: 8080
+    Port: 8080,
+
+    // 요청 읽기 타임아웃. 기본값: 30s
+    ReadTimeout: 30 * time.Second,
+
+    // 응답 쓰기 타임아웃. 기본값: 30s
+    WriteTimeout: 30 * time.Second,
+
+    // 유휴 연결 타임아웃. 기본값: 120s
+    IdleTimeout: 120 * time.Second,
+
+    // 우아한 종료 타임아웃. 기본값: 30s
+    ShutdownTimeout: 30 * time.Second,
+
+    // TLS 구성 (선택사항)
+    TLS: &application.TLSOptions{
+        CertFile: "/path/to/cert.pem",
+        KeyFile:  "/path/to/key.pem",
+    },
+},
+```
+
+## 기능
+
+### 헬스 체크 엔드포인트
+
+헬스 체크 엔드포인트는 `/health`에서 자동으로 사용 가능합니다:
+
+```bash
+curl http://localhost:8080/health
+# {"status":"ok"}
+```
+
+이는 다음과 같은 경우에 유용합니다:
+- Kubernetes liveness/readiness probe
+- 로드 밸런서 헬스 체크
+- 모니터링 시스템
+
+### 서비스 바인딩
+
+모든 서비스 바인딩은 데스크톱 모드와 동일하게 작동합니다:
+
+```go
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+    return "Hello, " + name + "!"
+}
+
+// 옵션에서 등록
+Services: []application.Service{
+    application.NewService(&GreetService{}),
+},
+```
+
+프론트엔드는 표준 Wails 런타임을 사용하여 이러한 바인딩을 호출할 수 있습니다:
+
+```javascript
+const greeting = await wails.Call.ByName('main.GreetService.Greet', 'World');
+```
+
+### 이벤트
+
+서버 모드에서 이벤트는 양방향으로 작동합니다:
+
+- **프론트엔드에서 백엔드로**: 브라우저에서 방출된 이벤트는 HTTP를 통해 전송되어 Go 이벤트 핸들러에서 수신됩니다
+- **백엔드에서 프론트엔드로**: Go에서 방출된 이벤트는 WebSocket을 통해 연결된 모든 브라우저에 브로드캐스트됩니다
+
+각 브라우저 탭은 고유한 이름(`browser-1`, `browser-2` 등)을 가진 "창"으로 표현되며, `event.Sender`를 통해 접근할 수 있습니다:
+
+```go
+// 브라우저에서 이벤트 수신
+app.Event.On("user-action", func(event *application.CustomEvent) {
+    log.Printf("Event from %s: %v", event.Sender, event.Data)
+    // event.Sender는 "browser-1", "browser-2" 등이 됩니다
+})
+
+// 모든 연결된 브라우저에 이벤트 방출
+app.Event.Emit("server-update", data)
+```
+
+프론트엔드에서:
+
+```javascript
+// 서버(및 모든 다른 브라우저)에 이벤트 방출
+await wails.Events.Emit('user-action', { action: 'click' });
+
+// 서버에서 이벤트 수신
+wails.Events.On('server-update', (event) => {
+    console.log('Update from server:', event.data);
+});
+```
+
+### 우아한 종료(Graceful Shutdown)
+
+서버는 `SIGINT` 및 `SIGTERM` 신호를 우아하게 처리합니다:
+
+1. 새 연결 수락 중지
+2. 활성 요청이 완료될 때까지 대기 (`ShutdownTimeout`까지)
+3. `OnShutdown` 훅 실행
+4. 역순으로 서비스 종료
+
+## 데스크톱 모드와의 차이점
+
+| 기능 | 데스크톱 모드 | 서버 모드 |
+|---------|-----|-----------|
+| 네이티브 창 | 생성됨 | 브라우저 창 (`browser-N`) |
+| 시스템 트레이 | 사용 가능 | 사용 불가 |
+| 네이티브 대화상자 | 사용 가능 | 사용 불가 |
+| 애플리케이션 메뉴 | 사용 가능 | 사용 불가 |
+| 화면 정보 | 사용 가능 | 오류 반환 |
+| 서비스 바인딩 | 작동 | 작동 |
+| 이벤트 | 작동 | 작동 (WebSocket 통해) |
+| 애셋 | webview를 통해 | HTTP를 통해 |
+| CGO 필요 | 예 | 아니요 |
+
+### 창 API 동작
+
+서버 모드에서 창 관련 API는 안전하게 처리됩니다:
+
+- `app.Window.NewWithOptions()` - 경고 로그 출력, nil 반환
+- `app.Hide()` / `app.Show()` - 무작위 작업(No-op)
+- `app.Screen.GetPrimary()` - 오류 반환
+
+이로 인해 창을 참조하는 코드가 충돌 없이 실행될 수 있지만, 창 작업은 아무런 영향을 미치지 않습니다.
+
+## 프로덕션을 위한 빌드
+
+### Task 사용 (권장)
+
+`wails3 init`으로 생성된 프로젝트에는 `build:server` 작업이 포함되어 있습니다:
+
+```bash
+# 서버 모드용으로 빌드
+wails3 task build:server
+
+# 빌드 및 실행
+wails3 task run:server
+```
+
+### 수동 빌드
+
+```bash
+# 서버 모드로 빌드
+go build -tags server -o myapp-server .
+```
+
+### Docker
+
+Wails 프로젝트에는 바로 사용할 수 있는 Docker 설정이 포함되어 있습니다. 컨테이너에서 애플리케이션을 빌드하고 실행하려면:
+
+```bash
+# Docker 이미지 빌드
+wails3 task build:docker
+
+# 실행
+wails3 task run:docker
+```
+
+이것으로 끝입니다! 애플리케이션은 `http://localhost:8080`에서 사용 가능합니다.
+
+다음과 같은 몇 가지 옵션으로 빌드를 사용자 지정할 수 있습니다:
+
+```bash
+# 사용자 지정 이미지 태그 사용
+wails3 task build:docker TAG=myapp:v1.0.0
+
+# 다른 포트에서 실행
+wails3 task run:docker PORT=3000
+```
+
+생성된 `Dockerfile.server`는 distroless을 기반으로 하는 최소 이미지를 생성합니다. 네트워크 바인딩을 자동으로 처리하므로 애플리케이션은 컨테이너 외부에서도 접근할 수 있습니다.
+
+### Docker Compose
+
+더 복잡한 배포의 경우, 헬스 체크가 포함된 Docker Compose 구성은 다음과 같습니다:
+
+```yaml
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - WAILS_SERVER_HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+:::note
+헬스 체크 예제는 `wget`을 사용합니다. distroless 기반 이미지를 사용하는 경우, 이미지에 헬스 체크 바이너리를 포함하거나 외부 헬스 체크 메커니즘(예: Docker의 `curl` 옵션 또는 사이드카 컨테이너)을 사용해야 합니다.
+:::
+
+### 사용자 지정 Dockerfile
+
+더 많은 제어가 필요한 경우, 자신만의 Dockerfile을 생성할 수 있습니다. 기억해야 할 핵심 사항은 서버가 컨테이너 외부의 연결을 수락하도록 `WAILS_SERVER_HOST=0.0.0.0`을 설정하는 것입니다:
+
+```dockerfile
+# 빌드 단계
+FROM golang:alpine AS builder
+WORKDIR /app
+RUN apk add --no-cache git
+COPY . .
+RUN go mod tidy
+RUN go build -tags server -ldflags="-s -w" -o server .------|------|------|
+| `WAILS_SERVER_HOST` | 바인딩할 네트워크 인터페이스 | `localhost` |
+| `WAILS_SERVER_PORT` | 수신 대기할 포트 | `8080` |
+
+이 변수들은 코드 내의 `ServerOptions`보다 우선순위가 높습니다. 이것이 Docker 예제에서 `WAILS_SERVER_HOST=0.0.0.0`을 설정하는 이유입니다. 이를 통해 애플리케이션의 코드 변경 없이 컨테이너가 외부 연결을 수락할 수 있습니다.
+
+## 관련 문서
+
+- [Custom Transport](/docs/guides/custom-transport) - 고급 IPC 사용자 정의용
+- [Services](/docs/concepts/services) - 서비스 바인딩 문서
+- [Events](/docs/guides/events-reference) - 이벤트 시스템 문서

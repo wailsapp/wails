@@ -1,0 +1,261 @@
+---
+title: 보안 모범 사례
+description: Wails 애플리케이션을 안전하게 보호하세요
+sidebar:
+  order: 8
+---
+
+## 개요
+
+보안은 데스크톱 애플리케이션에서 매우 중요합니다. 애플리케이션의 보안을 유지하려면 다음 모범 사례를 따르세요.
+
+## 입력 검증
+
+### 항상 검증하세요
+
+```go
+func (s *UserService) CreateUser(email, password string) (*User, error) {
+    // Validate email
+    if !isValidEmail(email) {
+        return nil, errors.New("invalid email")
+    }
+    
+    // Validate password strength
+    if len(password) < 8 {
+        return nil, errors.New("password too short")
+    }
+    
+    // Sanitise input
+    email = strings.TrimSpace(email)
+    email = html.EscapeString(email)
+    
+    // Continue...
+}
+```
+
+### HTML 이스케이프 처리
+
+```go
+import "html"
+
+func (s *Service) SaveComment(text string) error {
+    // Escape HTML
+    text = html.EscapeString(text)
+    
+    // Validate length
+    if len(text) > 1000 {
+        return errors.New("comment too long")
+    }
+    
+    return s.db.Save(text)
+}
+```
+
+## 인증
+
+### 안전한 비밀번호 저장
+
+```go
+import "golang.org/x/crypto/bcrypt"
+
+func hashPassword(password string) (string, error) {
+    hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+    return string(hash), err
+}
+
+func verifyPassword(hash, password string) bool {
+    err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+    return err == nil
+}
+```
+
+### 세션 관리
+
+```go
+type Session struct {
+    UserID    int
+    Token     string
+    ExpiresAt time.Time
+}
+
+func (a *AuthService) CreateSession(userID int) (*Session, error) {
+    token := generateSecureToken()
+    
+    session := &Session{
+        UserID:    userID,
+        Token:     token,
+        ExpiresAt: time.Now().Add(24 * time.Hour),
+    }
+    
+    return session, a.saveSession(session)
+}
+```
+
+## 데이터 보호
+
+### 민감한 데이터 암호화
+
+```go
+import "crypto/aes"
+import "crypto/cipher"
+
+func encrypt(data []byte, key []byte) ([]byte, error) {
+    block, err := aes.NewCipher(key)
+    if err != nil {
+        return nil, err
+    }
+    
+    gcm, err := cipher.NewGCM(block)
+    if err != nil {
+        return nil, err
+    }
+    
+    nonce := make([]byte, gcm.NonceSize())
+    return gcm.Seal(nonce, nonce, data, nil), nil
+}
+```
+
+### 안전한 저장소
+
+```go
+// Use OS keychain for sensitive data
+import "github.com/zalando/go-keyring"
+
+func saveAPIKey(key string) error {
+    return keyring.Set("myapp", "api_key", key)
+}
+
+func getAPIKey() (string, error) {
+    return keyring.Get("myapp", "api_key")
+}
+```
+
+## 네트워크 보안
+
+### HTTPS 사용
+
+```go
+func makeAPICall(url string) (*Response, error) {
+    // Always use HTTPS
+    if !strings.HasPrefix(url, "https://") {
+        return nil, errors.New("only HTTPS allowed")
+    }
+    
+    return http.Get(url)
+}
+```
+
+### 인증서 검증
+
+```go
+import "crypto/tls"
+
+func secureClient() *http.Client {
+    return &http.Client{
+        Transport: &http.Transport{
+            TLSClientConfig: &tls.Config{
+                MinVersion: tls.VersionTLS12,
+            },
+        },
+    }
+}
+```
+
+## 파일 작업
+
+### 경로 검증
+
+```go
+func readFile(path string) ([]byte, error) {
+    // Prevent path traversal
+    if strings.Contains(path, "..") {
+        return nil, errors.New("invalid path")
+    }
+    
+    // Check file exists in allowed directory
+    absPath, err := filepath.Abs(path)
+    if err != nil {
+        return nil, err
+    }
+    
+    if !strings.HasPrefix(absPath, allowedDir) {
+        return nil, errors.New("access denied")
+    }
+    
+    return os.ReadFile(absPath)
+}
+```
+
+## 요청 속도 제한
+
+```go
+type RateLimiter struct {
+    requests map[string][]time.Time
+    mu       sync.Mutex
+    limit    int
+    window   time.Duration
+}
+
+func (r *RateLimiter) Allow(key string) bool {
+    r.mu.Lock()
+    defer r.mu.Unlock()
+    
+    now := time.Now()
+    
+    // Clean old requests
+    var recent []time.Time
+    for _, t := range r.requests[key] {
+        if now.Sub(t) < r.window {
+            recent = append(recent, t)
+        }
+    }
+    
+    if len(recent) >= r.limit {
+        return false
+    }
+    
+    r.requests[key] = append(recent, now)
+    return true
+}
+```
+
+## 모범 사례
+
+### ✅ 수행해야 할 사항
+
+- 모든 입력 검증
+- 네트워크 호출에 HTTPS 사용
+- 민감한 데이터 암호화
+- 안전한 비밀번호 해싱 사용
+- 요청 속도 제한 구현
+- 의존성 최신 상태 유지
+- 보안 이벤트 로깅
+- OS 키체인 사용
+
+### ❌ 수행하지 말아야 할 사항
+
+- 사용자 입력을 신뢰하지 마세요
+- 평문으로 비밀번호를 저장하지 마세요
+- 비밀 키를 하드코딩하지 마세요
+- 인증서 검증을 건너뛰지 마세요
+- 로그에 민감한 데이터를 노출하지 마세요
+- 약한 암호화를 사용하지 마세요
+- 보안 업데이트를 무시하지 마세요
+
+## 보안 체크리스트
+
+- [ ] 모든 사용자 입력 검증됨
+- [ ] 비밀번호가 bcrypt로 해싱됨
+- [ ] 민감한 데이터 암호화됨
+- [ ] 모든 네트워크 호출에 HTTPS 사용됨
+- [ ] 요청 속도 제한 구현됨
+- [ ] 파일 경로 검증됨
+- [ ] 의존성이 최신 상태임
+- [ ] 보안 로깅 활성화됨
+- [ ] 오류 메시지가 정보를 유출하지 않음
+- [ ] 취약점 코드 검토됨
+
+## 다음 단계
+
+- [Architecture](/ko/guides/architecture) - 애플리케이션 아키텍처 패턴
+- [Best Practices](/ko/features/bindings/best-practices) - 바인딩 모범 사례

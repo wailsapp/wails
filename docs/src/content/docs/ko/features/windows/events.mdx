@@ -1,0 +1,422 @@
+---
+title: 창 이벤트
+description: 창 수명 주기 및 상태 변경 이벤트 처리
+sidebar:
+  order: 5
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 창 이벤트
+
+Wails는 창 수명 주기 및 상태 변경에 대해 **포괄적인 이벤트 훅**을 제공합니다: 생성, 포커스/블러, 크기 조정/이동, 최소화/최대화, 그리고 닫기 이벤트입니다. 콜백을 등록하고 이벤트를 처리하며, 간단하고 일관된 API를 통해 창 간에 조정할 수 있습니다.
+
+## 수명 주기 이벤트
+
+### OnCreate
+
+창이 생성될 때 호출됩니다:
+
+```go
+app.OnWindowCreation(func(window *application.WebviewWindow) {
+    fmt.Printf("Window created: %s (ID: %d)\n", window.Name(), window.ID())
+    
+    // Configure all new windows
+    window.SetMinSize(400, 300)
+    
+    // Register window-specific handlers
+    window.OnClose(func() bool {
+        return confirmClose()
+    })
+})
+```
+
+**사용 사례:**
+- 모든 창을 일관되게 구성
+- 이벤트 핸들러 등록
+- 창 생성 추적
+- 창별 리소스 초기화
+
+### OnClose
+
+사용자가 창을 닫으려고 할 때 호출됩니다:
+
+```go
+window.OnClose(func() bool {
+    // Return false to cancel close
+    // Return true to allow close
+    
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        return result == "yes"
+    }
+    return true
+})
+```
+
+**중요:**
+- 사용자 작업(닫기 버튼 클릭)에 의해서만 트리거됨
+- `window.Destroy()` 에 의해 트리거되지 않음
+- `false`를 반환하여 닫기를 취소할 수 있음
+
+**사용 사례:**
+- 닫기 전 확인
+- 상태 저장
+- 실수 방지
+- 닫기 전 정리
+
+**대화상자 예제:**
+
+```go
+window.OnClose(func() bool {
+    if !hasUnsavedChanges() {
+        return true
+    }
+    
+    // Show confirmation dialog
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:       "Confirm Close",
+        Width:       400,
+        Height:      150,
+        Parent:      window,
+        AlwaysOnTop: true,
+    })
+    
+    // Wait for user response
+    result := waitFordialogResult(dialog)
+    
+    return result == "yes"
+})
+```
+
+### OnDestroy
+
+창이 파괴될 때 호출됩니다:
+
+```go
+window.OnDestroy(func() {
+    fmt.Printf("Window destroyed: %s\n", window.Name())
+    
+    // Cleanup resources
+    closeDatabase()
+    
+    // Remove from tracking
+    removeWindowFromRegistry(window.ID())
+    
+    // Update application state
+    updateWindowCount()
+})
+```
+
+**중요:**
+- 창이 파괴될 때 항상 호출됨
+- 취소할 수 없음
+- 정리를 위한 마지막 기회
+
+**사용 사례:**
+- 리소스 해제
+- 연결 종료
+- 애플리케이션 상태 업데이트
+- 추적에서 제거
+
+**리소스 정리 예제:**
+
+```go
+type ManagedWindow struct {
+    window    *application.WebviewWindow
+    db        *sql.DB
+    listeners []func()
+}
+
+func (mw *ManagedWindow) Setup() {
+    mw.window.OnDestroy(func() {
+        // Close database
+        if mw.db != nil {
+            mw.db.Close()
+        }
+        
+        // Remove event listeners
+        for _, listener := range mw.listeners {
+            listener()
+        }
+        
+        // Clear references
+        mw.db = nil
+        mw.listeners = nil
+    })
+}
+```
+
+## 포커스 이벤트
+
+### OnFocus
+
+창이 포커스를 받을 때 호출됩니다:
+
+```go
+window.OnFocus(func() {
+    fmt.Println("Window gained focus")
+    
+    // Update UI
+    updateTitleBar(true)
+    
+    // Refresh data
+    refreshContent()
+    
+    // Notify other windows
+    app.Event.Emit("window-focused", window.ID())
+})
+```
+
+**사용 사례:**
+- UI 외관 업데이트
+- 데이터 새로고침
+- 작업 재개
+- 다른 창과 조정
+
+### OnBlur
+
+창이 포커스를 잃을 때 호출됩니다:
+
+```go
+window.OnBlur(func() {
+    fmt.Println("Window lost focus")
+    
+    // Update UI
+    updateTitleBar(false)
+    
+    // Pause operations
+    pauseAnimations()
+    
+    // Save state
+    saveCurrentState()
+})
+```
+
+**사용 사례:**
+- UI 외관 업데이트
+- 작업 일시 중지
+- 상태 저장
+- 리소스 사용량 감소
+
+**예제: 포커스 인식 UI:**
+
+```go
+type FocusAwareWindow struct {
+    window  *application.WebviewWindow
+    focused bool
+}
+
+func (fw *FocusAwareWindow) Setup() {
+    fw.window.OnFocus(func() {
+        fw.focused = true
+        fw.updateAppearance()
+    })
+    
+    fw.window.OnBlur(func() {
+        fw.focused = false
+        fw.updateAppearance()
+    })
+}
+
+func (fw *FocusAwareWindow) updateAppearance() {
+    if fw.focused {
+        fw.window.EmitEvent("update-theme", "active")
+    } else {
+        fw.window.EmitEvent("update-theme", "inactive")
+    }
+}
+```
+
+## 상태 변경 이벤트
+
+### OnMinimise / OnUnMinimise
+
+창이 최소화되거나 복원될 때 호출됩니다:
+
+```go
+window.OnMinimise(func() {
+    fmt.Println("Window minimised")
+    
+    // Pause expensive operations
+    pauseRendering()
+    
+    // Save state
+    saveWindowState()
+})
+
+window.OnUnMinimise(func() {
+    fmt.Println("Window restored from minimised")
+    
+    // Resume operations
+    resumeRendering()
+    
+    // Refresh data
+    refreshContent()
+})
+```
+
+**사용 사례:**
+- 작업 일시 중지/재개
+- 상태 저장/복원
+- 리소스 사용량 감소
+- UI 업데이트
+
+### OnMaximise / OnUnMaximise
+
+창이 최대화되거나 복원될 때 호출됩니다:
+
+```go
+window.OnMaximise(func() {
+    fmt.Println("Window maximised")
+    
+    // Adjust layout
+    window.EmitEvent("layout-mode", "maximised")
+    
+    // Update button icon
+    updateMaximiseButton("restore")
+})
+
+window.OnUnMaximise(func() {
+    fmt.Println("Window restored from maximised")
+    
+    // Adjust layout
+    window.EmitEvent("layout-mode", "normal")
+    
+    // Update button icon
+    updateMaximiseButton("maximise")
+})
+```
+
+**사용 사례:**
+- 레이아웃 조정
+- UI 업데이트
+- 창 상태 저장
+- 다른 창과 조정
+
+### OnFullscreen / OnUnFullscreen
+
+창이 전체 화면 모드에 진입하거나 나갈 때 호출됩니다:
+
+```go
+window.OnFullscreen(func() {
+    fmt.Println("Window entered fullscreen")
+    
+    // Hide UI chrome
+    window.EmitEvent("chrome-visibility", false)
+    
+    // Adjust layout
+    window.EmitEvent("layout-mode", "fullscreen")
+})
+
+window.OnUnFullscreen(func() {
+    fmt.Println("Window exited fullscreen")
+    
+    // Show UI chrome
+    window.EmitEvent("chrome-visibility", true)
+    
+    // Restore layout
+    window.EmitEvent("layout-mode", "normal")
+})
+```
+
+**사용 사례:**
+- UI 요소 표시/숨기기
+- 레이아웃 조정
+- 컨트롤 업데이트
+- 환경 설정 저장
+
+## 위치 및 크기 이벤트
+
+### OnMove
+
+창이 이동될 때 호출됩니다:
+
+```go
+window.OnMove(func(x, y int) {
+    fmt.Printf("Window moved to: %d, %d\n", x, y)
+    
+    // Save position
+    saveWindowPosition(x, y)
+    
+    // Update related windows
+    updateRelatedWindowPositions(x, y)
+})
+```
+
+**사용 사례:**
+- 창 위치 저장
+- 관련 창 업데이트
+- 모서리에 스냅
+- 멀티 모니터 처리
+
+### OnResize
+
+창의 크기가 조정될 때 호출됩니다:
+
+```go
+window.OnResize(func(width, height int) {
+    fmt.Printf("Window resized to: %dx%d\n", width, height)
+    
+    // Save size
+    saveWindowSize(width, height)
+    
+    // Adjust layout
+    window.EmitEvent("window-size", map[string]int{
+        "width":  width,
+        "height": height,
+    })
+})
+```
+
+**사용 사례:**
+- 창 크기 저장
+- 레이아웃 조정
+- UI 업데이트
+- 반응형 디자인
+
+**예제: 반응형 레이아웃:**
+
+```go
+window.OnResize(func(width, height int) {
+    var layout string
+    
+    if width < 600 {
+        layout = "compact"
+    } else if width < 1200 {
+        layout = "normal"
+    } else {
+        layout = "wide"
+    }
+    
+    window.EmitEvent("layout-changed", layout)
+})
+```
+
+## 전체 예제
+
+다음은 전체 이벤트 처리가 포함된 프로덕션 준비된 창입니다:
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+    "os"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type WindowState struct {
+    X          int  `json:"x"`
+    Y          int  `json:"y"`
+    Width      int  `json:"width"`
+    Height     int  `json:"height"`
+    Maximised  bool `json:"maximised"`
+    Fullscreen bool `json:"fullscreen"`
+}
+
+type ManagedWindow struct {
+    app     *application.Application---
+
+**질문 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 문의하거나 [예제](https://github.com/wailsapp/wails/tree/master/v3/examples)를 확인하세요.

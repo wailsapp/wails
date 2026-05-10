@@ -1,0 +1,643 @@
+---
+title: 컨텍스트 메뉴
+description: 애플리케이션에 오른쪽 클릭 컨텍스트 메뉴를 생성하세요
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 문제점
+
+사용자는 컨텍스트에 맞는 액션이 포함된 오른쪽 클릭 메뉴를 기대합니다. 서로 다른 요소에는 서로 다른 메뉴가 필요합니다:
+- **텍스트**: 잘라내기, 복사, 붙여넣기
+- **이미지**: 저장, 복사, 열기
+- **사용자 지정 요소**: 애플리케이션별 고유한 액션
+
+컨텍스트 메뉴를 직접 구현하려면 마우스 이벤트 처리, 위치 지정 및 플랫폼 간 차이를 관리해야 합니다.
+
+## Wails의 해결책
+
+Wails는 CSS 속성을 사용하여 **선언적 컨텍스트 메뉴**를 제공합니다. 메뉴를 HTML 요소에 연결하고, 데이터를 전달하며, 클릭 이벤트를 처리할 수 있습니다. 모든 것이 네이티브 플랫폼 동작을 따릅니다.
+
+## 빠른 시작
+
+**Go 코드:**
+
+```go
+// 컨텍스트 메뉴 생성
+contextMenu := app.NewContextMenu()
+contextMenu.Add("Cut").OnClick(handleCut)
+contextMenu.Add("Copy").OnClick(handleCopy)
+contextMenu.Add("Paste").OnClick(handlePaste)
+
+// ID로 등록
+app.RegisterContextMenu("editor-menu", contextMenu)
+```
+
+**HTML:**
+
+```html
+<textarea style="--custom-contextmenu: editor-menu">
+    오른쪽 클릭하세요!
+</textarea>
+```
+
+**이것으로 끝입니다!** textarea에서 오른쪽 클릭하면 사용자 지정 메뉴가 표시됩니다.
+
+## 컨텍스트 메뉴 생성하기
+
+### 기본 컨텍스트 메뉴
+
+```go
+// 메뉴 생성
+contextMenu := app.NewContextMenu()
+
+// 항목 추가
+contextMenu.Add("Cut").SetAccelerator("CmdOrCtrl+X").OnClick(func(ctx *application.Context) {
+    // 잘라내기 처리
+})
+
+contextMenu.Add("Copy").SetAccelerator("CmdOrCtrl+C").OnClick(func(ctx *application.Context) {
+    // 복사 처리
+})
+
+contextMenu.Add("Paste").SetAccelerator("CmdOrCtrl+V").OnClick(func(ctx *application.Context) {
+    // 붙여넣기 처리
+})
+
+// 고유한 ID로 등록
+app.RegisterContextMenu("text-menu", contextMenu)
+```
+
+**메뉴 ID:** 고유해야 합니다. 메뉴를 HTML 요소와 연결하는 데 사용됩니다.
+
+### 서브메뉴 포함
+
+```go
+contextMenu := app.NewContextMenu()
+
+// 일반 항목 추가
+contextMenu.Add("Open").OnClick(handleOpen)
+contextMenu.Add("Delete").OnClick(handleDelete)
+
+contextMenu.AddSeparator()
+
+// 서브메뉴 추가
+exportMenu := contextMenu.AddSubmenu("Export As")
+exportMenu.Add("PNG").OnClick(exportPNG)
+exportMenu.Add("JPEG").OnClick(exportJPEG)
+exportMenu.Add("SVG").OnClick(exportSVG)
+
+app.RegisterContextMenu("image-menu", contextMenu)
+```
+
+### 체크박스 및 라디오 그룹 포함
+
+```go
+contextMenu := app.NewContextMenu()
+
+// 체크박스
+contextMenu.AddCheckbox("Show Grid", true).OnClick(func(ctx *application.Context) {
+    showGrid := ctx.ClickedMenuItem().Checked()
+    // 그리드 토글
+})
+
+contextMenu.AddSeparator()
+
+// 라디오 그룹
+contextMenu.AddRadio("Small", false).OnClick(handleSize)
+contextMenu.AddRadio("Medium", true).OnClick(handleSize)
+contextMenu.AddRadio("Large", false).OnClick(handleSize)
+
+app.RegisterContextMenu("view-menu", contextMenu)
+```
+
+**모든 메뉴 항목 유형에 대해** [메뉴 참조](/ko/features/menus/reference)를 참조하세요.
+
+## HTML 요소와 연결하기
+
+CSS 사용자 지정 속성을 사용하여 컨텍스트 메뉴를 연결합니다:
+
+### 기본 연결
+
+```html
+<div style="--custom-contextmenu: menu-id">
+    오른쪽 클릭하세요!
+</div>
+```
+
+**CSS 속성:** `--custom-contextmenu: <menu-id>`
+
+### 컨텍스트 데이터 포함
+
+HTML에서 Go로 데이터를 전달합니다:
+
+```html
+<div style="--custom-contextmenu: file-menu; --custom-contextmenu-data: file-123">
+    이 파일을 오른쪽 클릭하세요
+</div>
+```
+
+**Go 핸들러:**
+
+```go
+contextMenu := app.NewContextMenu()
+contextMenu.Add("Open").OnClick(func(ctx *application.Context) {
+    fileID := ctx.ContextMenuData()  // "file-123"
+    openFile(fileID)
+})
+
+app.RegisterContextMenu("file-menu", contextMenu)
+```
+
+**CSS 속성:**
+- `--custom-contextmenu: <menu-id>` - 표시할 메뉴
+- `--custom-contextmenu-data: <data>` - 핸들러에 전달할 데이터
+
+### 동적 데이터
+
+JavaScript에서 데이터를 동적으로 생성합니다:
+
+```html
+<div id="file-item" style="--custom-contextmenu: file-menu">
+    File.txt
+</div>
+
+<script>
+// 데이터를 동적으로 설정
+const fileItem = document.getElementById('file-item')
+fileItem.style.setProperty('--custom-contextmenu-data', 'file-' + fileId)
+</script>
+```
+
+### 여러 요소, 동일한 메뉴
+
+```html
+<div class="file-item" style="--custom-contextmenu: file-menu; --custom-contextmenu-data: file-1">
+    Document.pdf
+</div>
+
+<div class="file-item" style="--custom-contextmenu: file-menu; --custom-contextmenu-data: file-2">
+    Image.png
+</div>
+
+<div class="file-item" style="--custom-contextmenu: file-menu; --custom-contextmenu-data: file-3">
+    Video.mp4
+</div>
+```
+
+**하나의 메뉴, 각 요소마다 다른 데이터.**
+
+## 컨텍스트 데이터
+
+### 컨텍스트 데이터 접근
+
+```go
+contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
+    data := ctx.ContextMenuData()  // HTML에서 데이터 가져오기
+    
+    // 데이터 사용
+    processItem(data)
+})
+```
+
+**데이터 유형:** 항상 `string`입니다. 필요에 따라 파싱하세요.
+
+### 복잡한 데이터 전달
+
+복잡한 데이터에는 JSON을 사용하세요:
+
+```html
+<div style="--custom-contextmenu: item-menu; --custom-contextmenu-data: {&quot;id&quot;:123,&quot;type&quot;:&quot;image&quot;}">
+    Image.png
+</div>
+```
+
+**Go 핸들러:**
+
+```go
+import "encoding/json"
+
+type ItemData struct {
+    ID   int    `json:"id"`
+    Type string `json:"type"`
+}
+
+contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
+    dataStr := ctx.ContextMenuData()
+    
+    var data ItemData
+    if err := json.Unmarshal([]byte(dataStr), &data); err != nil {
+        log.Printf("Invalid data: %v", err)
+        return
+    }
+    
+    processItem(data.ID, data.Type)
+})
+```
+
+:::caution[보안]
+**프론트엔드에서 컨텍스트 데이터를 항상 검증하세요.** 사용자는 CSS 속성을 조작할 수 있으므로 데이터를 신뢰할 수 없는 입력으로 취급하세요.
+:::
+
+### 검증 예제
+
+```go
+contextMenu.Add("Delete").OnClick(func(ctx *application.Context) {
+    fileID := ctx.ContextMenuData()
+    
+    // 검증
+    if !isValidFileID(fileID) {
+        log.Printf("Invalid file ID: %s", fileID)
+        return
+    }
+    
+    // 권한 확인
+    if !canDeleteFile(fileID) {
+        showError("Permission denied")
+        return
+    }
+    
+    // 안전하게 진행
+    deleteFile(fileID)
+})
+```
+
+## 기본 컨텍스트 메뉴
+
+WebView는 표준 작업(복사, 붙여넣기, 검사)을 위해 내장 컨텍스트 메뉴를 제공합니다. `--default-contextmenu`로 제어할 수 있습니다:
+
+### 기본 메뉴 숨기기
+
+```html
+<div style="--default-contextmenu: hide">
+    여기에 기본 메뉴 없음
+</div>
+```
+
+**사용 사례:** 기본 메뉴가 적합하지 않은 사용자 지정 UI 요소.
+
+### 기본 메뉴 표시
+
+```html
+<div style="--default-contextmenu: show">
+    기본 메뉴 항상 표시
+</div>
+```
+
+**사용 사례:** 텍스트 영역, 입력 필드, 편집 가능한 콘텐츠.
+
+### 자동(스마트) 모드
+
+```html
+<div style="--default-contextmenu: auto">
+    스마트 컨텍스트 메뉴
+</div>
+```
+
+**기본 동작.** 다음 경우에 기본 메뉴를 표시합니다:
+- 텍스트가 선택된 경우
+- 텍스트 입력 필드 내부
+- 편집 가능한 콘텐츠(`contenteditable`) 내부
+
+그 외에는 기본 메뉴를 숨깁니다.
+
+### 사용자 지정 및 기본 메뉴 결합
+
+```html
+<!-- 사용자 지정 메뉴 + 기본 메뉴 -->
+<textarea style="--custom-contextmenu: editor-menu; --default-contextmenu: show">
+    두 메뉴 모두 사용 가능
+</textarea>
+```
+
+**동작:**
+1. 사용자 지정 메뉴가 먼저 표시됨
+2. 사용자 지정 메뉴가 비어 있거나 찾지 못한 경우, 기본 메뉴가 표시됨
+3. 두 메뉴가 공존할 수 있음(플랫폼에 따라 다름)
+
+## 동적 컨텍스트 메뉴
+
+애플리케이션 상태에 따라 메뉴를 업데이트합니다:
+
+### 항목 활성화/비활성화
+
+```go
+var cutMenuItem *application.MenuItem
+var copyMenuItem *application.MenuItem
+
+func createContextMenu() {
+    contextMenu := app.NewContextMenu()
+    
+    cutMenuItem = contextMenu.Add("Cut")
+    cutMenuItem.SetEnabled(false)  // 기본적으로 비활성화
+    cutMenuItem.OnClick(handleCut)
+    
+    copyMenuItem = contextMenu.Add("Copy")
+    cutMenuItem.SetEnabled(false)
+    copyMenuItem.OnClick(handleCopy)
+    
+    app.RegisterContextMenu("editor-menu", contextMenu)
+}
+
+func onSelectionChanged(hasSelection bool) {
+    cutMenuItem.SetEnabled(hasSelection)
+    copyMenuItem.SetEnabled(hasSelection)
+    contextMenu.Update()  // 중요!
+}
+```
+
+:::caution[항상 Update() 호출하기]메뉴 상태를 변경한 후 **`contextMenu.Update()`를 호출하세요**. 이는 Windows에서 매우 중요합니다.
+
+자세한 내용은 [메뉴 참조](/features/menus/reference#enabled-state)를 참조하세요.
+:::
+
+### 레이블 변경
+
+```go
+playMenuItem := contextMenu.Add("Play")
+
+playMenuItem.OnClick(func(ctx *application.Context) {
+    if isPlaying {
+        playMenuItem.SetLabel("Pause")
+    } else {
+        playMenuItem.SetLabel("Play")
+    }
+    contextMenu.Update()
+})
+```
+
+### 메뉴 재빌드
+
+대규모 변경의 경우 전체 메뉴를 다시 빌드하세요:
+
+```go
+func rebuildContextMenu(fileType string) {
+    contextMenu := app.NewContextMenu()
+    
+    // 공통 항목
+    contextMenu.Add("Open").OnClick(handleOpen)
+    contextMenu.Add("Delete").OnClick(handleDelete)
+    
+    contextMenu.AddSeparator()
+    
+    // 파일 유형별 항목
+    switch fileType {
+    case "image":
+        contextMenu.Add("Edit Image").OnClick(editImage)
+        contextMenu.Add("Set as Wallpaper").OnClick(setWallpaper)
+    case "video":
+        contextMenu.Add("Play").OnClick(playVideo)
+        contextMenu.Add("Extract Audio").OnClick(extractAudio)
+    case "document":
+        contextMenu.Add("Print").OnClick(printDocument)
+        contextMenu.Add("Export PDF").OnClick(exportPDF)
+    }
+    
+    app.RegisterContextMenu("file-menu", contextMenu)
+}
+```
+
+## 플랫폼 동작
+
+컨텍스트 메뉴는 **플랫폼 네이티브**입니다:
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    **네이티브 macOS 컨텍스트 메뉴:**
+    - 시스템 애니메이션 및 전환
+    - 오른쪽 클릭 = Control+클릭 (자동)
+    - 시스템 외관(라이트/다크)에 적응
+    - 기본 메뉴에 표준 텍스트 작업
+    - 긴 메뉴의 네이티브 스크롤
+    
+    **macOS 관례:**
+    - 메뉴 항목은 문장 대문자(Sentence case) 사용
+    - 대화 상자를 여는 항목에는 줄임표(...) 사용
+    - 일반 단축키: ⌘C (복사), ⌘V (붙여넣기)
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    **네이티브 Windows 컨텍스트 메뉴:**
+    - Windows 네이티브 스타일
+    - Windows 테마 따름
+    - 기본 메뉴에 표준 Windows 작업
+    - 터치 및 펜 입력 지원
+    
+    **Windows 관례:**
+    - 메뉴 항목은 제목 대문자(Title case) 사용
+    - 대화 상자를 여는 항목에는 줄임표(...) 사용
+    - 일반 단축키: Ctrl+C (복사), Ctrl+V (붙여넣기)
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **데스크톱 환경 통합:**
+    - 데스크톱 테마에 적응 (GTK, Qt 등)
+    - 오른쪽 클릭 동작은 시스템 설정 따름
+    - 기본 메뉴 내용은 환경에 따라 다름
+    - 배치는 DE 관례 따름
+    
+    **Linux 고려 사항:**
+    - 대상 데스크톱 환경에서 테스트
+    - GTK와 Qt는 다른 동작을 가짐
+    - 일부 DE는 컨텍스트 메뉴를 사용자 정의함
+  </TabItem>
+</Tabs>
+
+## 전체 예제
+
+**Go 코드:**
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "log"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type FileData struct {
+    ID   string `json:"id"`
+    Type string `json:"type"`
+    Name string `json:"name"`
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Context Menu Demo",
+    })
+
+    // 파일 컨텍스트 메뉴 생성
+    fileMenu := createFileMenu(app)
+    app.RegisterContextMenu("file-menu", fileMenu)
+
+    // 이미지 컨텍스트 메뉴 생성
+    imageMenu := createImageMenu(app)
+    app.RegisterContextMenu("image-menu", imageMenu)
+
+    // 텍스트 컨텍스트 메뉴 생성
+    textMenu := createTextMenu(app)
+    app.RegisterContextMenu("text-menu", textMenu)
+
+    app.Window.New()
+    app.Run()
+}
+
+func createFileMenu(app *application.Application) *application.ContextMenu {
+    menu := app.NewContextMenu()
+    
+    menu.Add("Open").OnClick(func(ctx *application.Context) {
+        data := parseFileData(ctx.ContextMenuData())
+        openFile(data.ID)
+    })
+    
+    menu.Add("Rename").OnClick(func(ctx *application.Context) {
+        data := parseFileData(ctx.ContextMenuData())
+        renameFile(data.ID)
+    })
+    
+    menu.AddSeparator()
+    
+    menu.Add("Delete").OnClick(func(ctx *application.Context) {
+        data := parseFileData(ctx.ContextMenuData())
+        deleteFile(data.ID)
+    })
+    
+    return menu
+}
+
+func createImageMenu(app *application.Application) *application.ContextMenu {
+    menu := app.NewContextMenu()
+    
+    menu.Add("View").OnClick(func(ctx *application.Context) {
+        data := parseFileData(ctx.ContextMenuData())
+        viewImage(data.ID)
+    })
+    
+    menu.Add("Edit").OnClick(func(ctx *application.Context) {
+        data := parseFileData(ctx.ContextMenuData())
+        editImage(data.ID)
+    })
+    
+    menu.AddSeparator()
+    
+    exportMenu := menu.AddSubmenu("Export As")
+    exportMenu.Add("PNG").OnClick(exportPNG)
+    exportMenu.Add("JPEG").OnClick(exportJPEG)
+    exportMenu.Add("WebP").OnClick(exportWebP)
+    
+    return menu
+}
+
+func createTextMenu(app *application.Application) *application.ContextMenu {
+    menu := app.NewContextMenu()
+    
+    menu.Add("Cut").SetAccelerator("CmdOrCtrl+X").OnClick(handleCut)
+    menu.Add("Copy").SetAccelerator("CmdOrCtrl+C").OnClick(handleCopy)
+    menu.Add("Paste").SetAccelerator("CmdOrCtrl+V").OnClick(handlePaste)
+    
+    return menu
+}
+
+func parseFileData(dataStr string) FileData {
+    var data FileData
+    if err := json.Unmarshal([]byte(dataStr), &data); err != nil {
+        log.Printf("Invalid file data: %v", err)
+    }
+    return data
+}
+
+// 핸들러 구현...
+func openFile(id string) { /* ... */ }
+func renameFile(id string) { /* ... */ }
+func deleteFile(id string) { /* ... */ }
+func viewImage(id string) { /* ... */ }
+func editImage(id string) { /* ... */ }
+func exportPNG(ctx *application.Context) { /* ... */ }
+func exportJPEG(ctx *application.Context) { /* ... */ }
+func exportWebP(ctx *application.Context) { /* ... */ }
+func handleCut(ctx *application.Context) { /* ... */ }
+func handleCopy(ctx *application.Context) { /* ... */ }
+func handlePaste(ctx *application.Context) { /* ... */ }
+```
+
+**HTML:**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .file-item {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        
+        .file-item:hover {
+            background: #f0f0f0;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Files</h2>
+    
+    <!-- Regular file -->
+    <div class="file-item" 
+         style="--custom-contextmenu: file-menu; 
+                --custom-contextmenu-data: {&quot;id&quot;:&quot;file-1&quot;,&quot;type&quot;:&quot;document&quot;,&quot;name&quot;:&quot;Report.pdf&quot;}">
+        📄 Report.pdf
+    </div>
+    
+    <!-- Image file -->
+    <div class="file-item" 
+         style="--custom-contextmenu: image-menu; 
+                --custom-contextmenu-data: {&quot;id&quot;:&quot;file-2&quot;,&quot;type&quot;:&quot;image&quot;,&quot;name&quot;:&quot;Photo.jpg&quot;}">
+        🖼️ Photo.jpg
+    </div>
+    
+    <h2>Text Editor</h2>
+    
+    <!-- Text area with custom menu + default menu -->
+    <textarea 
+        style="--custom-contextmenu: text-menu; --default-contextmenu: show"
+        placeholder="Type here, then right-click...">
+    </textarea>
+    
+    <h2>No Context Menu</h2>
+    
+    <!-- Disable default menu -->
+    <div style="--default-contextmenu: hide; padding: 20px; border: 1px solid #ccc;">
+        Right-click here - no menu appears
+    </div>
+</body>
+</html>
+```
+
+## 모범 사례
+
+### ✅ 권장 사항
+
+- **메뉴를 집중적으로 유지** - 요소와 관련된 작업만 포함
+- **컨텍스트 데이터 검증** - 신뢰할 수 없는 입력으로 취급
+- **명확한 레이블 사용** - "Delete" 대신 "Delete File"
+- **menu.Update() 호출** - 메뉴 상태 변경 후
+- **모든 플랫폼에서 테스트** - 동작이 다를 수 있음
+- **키보드 단축키 제공** - 일반적인 작업용
+- **관련 항목 그룹화** - 구분자 사용
+
+### ❌ 금지 사항
+
+- **컨텍스트 데이터를 신뢰하지 마세요** - 항상 검증
+- **메뉴를 너무 길게 만들지 마세요** - 최대 7-10개 항목
+- **menu.Update()를 잊지 마세요** - 메뉴가 제대로 작동하지 않음---
+
+**질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [컨텍스트 메뉴 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/contextmenus)를 확인하세요.

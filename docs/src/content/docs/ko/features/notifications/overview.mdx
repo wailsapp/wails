@@ -1,0 +1,304 @@
+---
+title: 알림
+description: 작업 버튼과 텍스트 입력이 포함된 네이티브 시스템 알림 표시
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 소개
+
+Wails는 데스크톱 애플리케이션을 위한 포괄적인 크로스플랫폼 알림 시스템을 제공합니다. 이 서비스를 통해 작업 버튼과 텍스트 입력 필드와 같은 상호작용 요소를 지원하는 네이티브 시스템 알림을 표시할 수 있습니다.
+
+## 기본 사용법
+
+### 서비스 초기화
+
+먼저 알림 서비스를 초기화합니다:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/notifications"
+
+// 새 알림 서비스 생성
+notifier := notifications.New()
+
+// 애플리케이션에 서비스 등록
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(notifier),
+    },
+})
+```
+
+## 알림 권한
+
+macOS에서는 사용자 권한 승인이 필요합니다. 권한을 요청하고 확인합니다:
+
+```go
+authorized, err := notifier.CheckNotificationAuthorization()
+if err != nil {
+    // 권한 오류 처리
+}
+if authorized {
+    // 알림 전송
+} else {
+    // 권한 요청
+    authorized, err = notifier.RequestNotificationAuthorization()
+}
+```
+Windows와 Linux에서는 항상 `true`를 반환합니다.
+
+## 알림 유형
+
+### 기본 알림
+
+고유 ID, 제목, 선택적 부제목(macOS 및 Linux), 본문 텍스트가 포함된 기본 알림을 사용자에게 전송합니다:
+
+```go
+notifier.SendNotification(notifications.NotificationOptions{
+    ID: "unique-id",
+    Title: "새 캘린더 초대",
+    Subtitle: "보낸 사람: Jane Doe", // 선택 사항
+    Body: "이벤트 보려면 탭하세요",
+})
+
+```
+
+### 상호작용 알림
+
+작업 버튼과 텍스트 입력이 포함된 알림을 전송합니다. 이러한 알림은 먼저 알림 카테고리를 등록해야 합니다:
+
+```go
+// 고유한 카테고리 ID 정의
+categoryID := "unique-category-id"
+
+// 작업이 포함된 카테고리 정의
+category := notifications.NotificationCategory{
+    ID: categoryID,
+    Actions: []notifications.NotificationAction{
+        {
+            ID:    "OPEN", 
+            Title: "열기",
+        },
+        {
+            ID:          "ARCHIVE", 
+            Title:       "보관", 
+            Destructive: true,  /* macOS 전용 */
+        },
+    },
+    HasReplyField:    true,
+    ReplyPlaceholder: "메시지...",
+    ReplyButtonTitle: "답장",
+}
+
+// 카테고리 등록
+notifier.RegisterNotificationCategory(category)
+
+// 등록된 작업이 포함된 상호작용 알림 전송
+notifier.SendNotificationWithActions(notifications.NotificationOptions{
+    ID:         "unique-id",
+    Title:      "새 메시지",
+    Subtitle:   "보낸 사람: Jane Doe",
+    Body:       "참석 가능하신가요?",
+    CategoryID: categoryID,
+})
+```
+
+## 알림 응답
+
+사용자의 알림 상호작용을 처리합니다:
+
+```go
+notifier.OnNotificationResponse(func(result notifications.NotificationResult) {
+    response := result.Response
+    fmt.Printf("알림 %s가 %s로 처리되었습니다\n", response.ID, response.ActionIdentifier)
+
+    if response.ActionIdentifier == "TEXT_REPLY" {
+        fmt.Printf("사용자 답장: %s\n", response.UserText)
+    }
+
+    if data, ok := response.UserInfo["sender"].(string); ok {
+        fmt.Printf("원본 보낸 사람: %s\n", data)
+    }
+
+    // 프론트엔드에 이벤트 발생
+    app.Event.Emit("notification", result.Response)
+})
+```
+
+## 알림 사용자화
+
+### 사용자 정의 메타데이터
+
+기본 알림과 상호작용 알림 모두 사용자 정의 데이터를 포함할 수 있습니다:
+
+```go
+notifier.SendNotification(notifications.NotificationOptions{
+    ID: "unique-id",
+    Title: "새 캘린더 초대",
+    Subtitle: "보낸 사람: Jane Doe", // 선택 사항
+    Body: "이벤트 보려면 탭하세요",
+    Data: map[string]interface{}{
+        "sender": "jane.doe@example.com",
+        "timestamp": "2025-03-10T15:30:00Z",
+    }
+})
+
+```
+
+## 플랫폼 고려 사항
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    macOS에서 알림은:
+    
+    - 사용자 권한 승인이 필요함
+    - 배포를 위해 애플리케이션의 코드 서명(노터라이징)이 필요함
+    - 시스템 표준 알림 외관을 사용함
+    - `subtitle` 지원
+    - 사용자 텍스트 입력 지원
+    - `Destructive` 작업 옵션 지원
+    - 다크/라이트 모드를 자동으로 처리함
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    Windows에서 알림은:
+    
+    - Windows 시스템 토스트 스타일을 사용함
+    - Windows 테마 설정에 적응함
+    - 사용자 텍스트 입력 지원
+    - 높은 DPI 디스플레이 지원
+    - `subtitle` 미지원
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    Linux에서 대화상자 동작은 데스크톱 환경에 따라 다릅니다:
+    
+    - 사용 가능한 경우 네이티브 알림 사용
+    - 데스크톱 환경 테마 따름
+    - 데스크톱 환경 규칙에 따라 위치 지정
+    - `subtitle` 지원
+    - 사용자 텍스트 입력 미지원
+    
+  </TabItem>
+</Tabs>
+
+## 모범 사례
+
+1. 권한 확인 및 요청:
+   - macOS에서는 사용자 권한 승인이 필요함
+
+2. 명확하고 간결한 알림 제공:
+   - 설명적인 제목, 부제목, 텍스트, 작업 제목 사용
+
+3. 대화상자 응답 적절히 처리:
+   - 알림 응답의 오류 확인
+   - 사용자 작업에 대한 피드백 제공
+
+4. 플랫폼 관습 고려:
+   - 플랫폼별 알림 패턴 따름
+   - 시스템 설정 존중
+
+## 예제
+
+다음 예제를 확인하세요:
+
+- [알림](/examples/notifications)
+
+## API 참조
+
+### 서비스 관리
+| 메서드                                     | 설명                                           |
+|------|------------------------------------------|
+| `New()`                                    | 새 알림 서비스 생성                   |
+
+### 알림 권한
+| 메서드                                       | 설명                                                |
+|------|--------------------------------------------|
+| `RequestNotificationAuthorization()`         | 알림 표시 권한 요청 (macOS)       |
+| `CheckNotificationAuthorization()`           | 현재 알림 권한 상태 확인 (macOS)   |
+
+### 알림 전송
+| 메서드                                                     | 설명                                       |
+|------|--------------------------------------------|
+| `SendNotification(options NotificationOptions)`            | 기본 알림 전송                        |
+| `SendNotificationWithActions(options NotificationOptions)` | 작업이 포함된 상호작용 알림 전송    |
+
+### 알림 카테고리
+| 메서드                                                        | 설명                                       |
+|------|--------------------------------------------|
+| `RegisterNotificationCategory(category NotificationCategory)` | 재사용 가능한 알림 카테고리 등록        |
+| `RemoveNotificationCategory(categoryID string)`               | 이전에 등록한 카테고리 제거          |-------------------------------------------------|--------------------------------------------------------------|
+| `RemoveAllPendingNotifications()`               | 모든 대기 중인 알림 제거 (macOS 및 Linux 전용)               |
+| `RemovePendingNotification(identifier string)`  | 특정 대기 중인 알림 제거 (macOS 및 Linux 전용)               |
+| `RemoveAllDeliveredNotifications()`             | 모든 전달된 알림 제거 (macOS 및 Linux 전용)                  |
+| `RemoveDeliveredNotification(identifier string)`| 특정 전달된 알림 제거 (macOS 및 Linux 전용)                  |
+| `RemoveNotification(identifier string)`         | 알림 제거 (Linux 전용)                                       |
+
+### 이벤트 처리
+| 메서드                                                             | 설명                                     |
+|--------------------------------------------------------------------|------------------------------------------|
+| `OnNotificationResponse(callback func(result NotificationResult))` | 알림 응답에 대한 콜백 등록               |
+
+### 구조체 및 타입
+
+#### NotificationOptions
+```go
+type NotificationOptions struct {
+    ID         string                 // 알림의 고유 식별자
+    Title      string                 // 알림의 주요 제목
+    Subtitle   string                 // 부제목 텍스트 (macOS 및 Linux 전용)
+    Body       string                 // 알림의 주요 내용
+    CategoryID string                 // 대화형 알림을 위한 카테고리 식별자
+    Data       map[string]interface{} // 알림과 연결할 사용자 정의 데이터
+}
+```
+
+#### NotificationCategory 
+```go
+type NotificationCategory struct {
+    ID               string                // 카테고리의 고유 식별자
+    Actions          []NotificationAction  // 알림의 버튼 작업
+    HasReplyField    bool                  // 텍스트 입력 필드 포함 여부
+    ReplyPlaceholder string                // 입력 필드의 플레이스홀더 텍스트
+    ReplyButtonTitle string                // 답장 버튼의 텍스트
+}
+```
+
+#### NotificationAction
+```go
+type NotificationAction struct {
+    ID          string  // 작업의 고유 식별자
+    Title       string  // 버튼 텍스트
+    Destructive bool    // 작업이 파괴적(위험)인지 여부 (macOS 전용)
+}
+```
+
+#### NotificationResponse 
+```go
+type NotificationResponse struct {
+    ID               string                  // 알림 식별자
+    ActionIdentifier string                  // 트리거된 작업
+    CategoryID       string                  // 알림의 카테고리
+    Title            string                  // 알림의 제목
+    Subtitle         string                  // 알림의 부제목
+    Body             string                  // 알림의 본문 텍스트
+    UserText         string                  // 사용자가 입력한 텍스트
+    UserInfo         map[string]interface{}  // 알림에서 가져온 사용자 정의 데이터
+}
+```
+
+#### NotificationResult
+```go
+type NotificationResult struct {
+    Response NotificationResponse  // 응답 데이터
+    Error    error                 // 발생한 오류
+}
+```

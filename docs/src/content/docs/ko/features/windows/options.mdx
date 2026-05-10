@@ -1,0 +1,1002 @@
+---
+title: 창 옵션
+description: WebviewWindowOptions의 완전한 참조
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 창 구성 옵션
+
+Wails는 크기, 위치, 외관 및 동작을 위한 수십 가지 옵션을 포함한 포괄적인 창 구성을 제공합니다. 이 참조는 Windows, macOS 및 Linux 전반의 모든 사용 가능한 옵션을 `WebviewWindowOptions`에 대한 **완전한 참조**로 다룹니다. 모든 옵션, 모든 플랫폼, 예제 및 제약 사항 포함.
+
+## WebviewWindowOptions 구조
+
+```go
+type WebviewWindowOptions struct {
+    // Identity
+    Name  string
+    Title string
+    
+    // Size and Position
+    Width     int
+    Height    int
+    X         int
+    Y         int
+    MinWidth  int
+    MinHeight int
+    MaxWidth  int
+    MaxHeight int
+    
+    // Initial State
+    Hidden          bool
+    Frameless       bool
+    Resizable       bool
+    AlwaysOnTop     bool
+    Fullscreen      bool
+    Minimised       bool
+    Maximised       bool
+    WindowState     WindowState
+    
+    // Appearance
+    BackgroundColour RGBA
+    BackgroundType   BackgroundType
+    
+    // Content
+    URL  string
+    HTML string
+    
+    // Assets
+    Assets application.AssetOptions
+    
+    // Security
+    ContentProtectionEnabled bool
+
+    // Menu
+    UseApplicationMenu bool
+
+    // Lifecycle
+    OnClose   func() bool
+    OnDestroy func()
+
+    // Platform-Specific
+    Mac     MacOptions
+    Windows WindowsOptions
+    Linux   LinuxOptions
+}
+```
+
+## 핵심 옵션
+
+### Name
+
+**유형:** `string`  
+**기본값:** 자동 생성 UUID  
+**플랫폼:** 전체
+
+```go
+Name: "main-window"
+```
+
+**목적:** 나중에 창을 찾기 위한 고유 식별자.
+
+**모범 사례:**
+- 설명적인 이름 사용: `"main"`, `"settings"`, `"about"`
+- 케밥 케이스 사용: `"file-browser"`, `"color-picker"`
+- 짧고 기억하기 쉽게 유지
+
+**예제:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name: "settings-window",
+})
+
+// 나중에...
+settings := app.GetWindowByName("settings-window")
+```
+
+### Title
+
+**유형:** `string`  
+**기본값:** 애플리케이션 이름  
+**플랫폼:** 전체
+
+```go
+Title: "My Application"
+```
+
+**목적:** 제목 표시줄과 작업 표시줄에 표시되는 텍스트.
+
+**동적 업데이트:**
+
+```go
+window.SetTitle("My Application - Document.txt")
+```
+
+### Width / Height
+
+**유형:** `int` (픽셀)  
+**기본값:** 800 x 600  
+**플랫폼:** 전체  
+**제약 사항:** 양수여야 함
+
+```go
+Width:  1200,
+Height: 800,
+```
+
+**목적:** 논리 픽셀 단위의 초기 창 크기.
+
+**참고:**
+- Wails는 DPI 스케일링을 자동으로 처리합니다.
+- 물리 픽셀이 아닌 논리 픽셀을 사용하세요.
+- 최소 화면 해상도(1024x768)를 고려하세요.
+
+**예제 크기:**
+
+| 사용 사례 | 너비 | 높이 |
+|----------|-------|--------|
+| 작은 유틸리티 | 400 | 300 |
+| 표준 앱 | 1024 | 768 |
+| 대형 앱 | 1440 | 900 |
+| 풀 HD | 1920 | 1080 |
+
+### X / Y
+
+**유형:** `int` (픽셀)  
+**기본값:** 화면 중앙  
+**플랫폼:** 전체
+
+```go
+X: 100,  // 왼쪽 가장자리에서 100px
+Y: 100,  // 위쪽 가장자리에서 100px
+```
+
+**목적:** 초기 창 위치.
+
+**좌표계:**
+- (0, 0)은 기본 화면의 왼쪽 위입니다.
+- 양수 X는 오른쪽으로 이동합니다.
+- 양수 Y는 아래로 이동합니다.
+
+**예제:**
+
+```go
+settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name: "coordinate-window",
+    InitialPosition: application.WindowXY, // 좌표계 사용
+    X:    100,
+    Y:    100,
+})
+
+**모범 사례:** `Center()`를 사용하여 창을 중앙에 배치하세요:
+
+```go
+window := app.Window.New()
+window.Center()
+```
+
+### MinWidth / MinHeight
+
+**유형:** `int` (픽셀)  
+**기본값:** 0 (최소 크기 없음)  
+**플랫폼:** 전체
+
+```go
+MinWidth:  400,
+MinHeight: 300,
+```
+
+**목적:** 창이 너무 작아지는 것을 방지합니다.
+
+**사용 사례:**
+- 깨진 레이아웃 방지
+- 사용성 보장
+- 종횡비 유지
+
+**예제:**
+
+```go
+// 400x300보다 작은 창 방지
+MinWidth:  400,
+MinHeight: 300,
+```
+
+### MaxWidth / MaxHeight
+
+**유형:** `int` (픽셀)  
+**기본값:** 0 (최대 크기 없음)  
+**플랫폼:** 전체
+
+```go
+MaxWidth:  1920,
+MaxHeight: 1080,
+```
+
+**목적:** 창이 너무 커지는 것을 방지합니다.
+
+**사용 사례:**
+- 고정 크기 애플리케이션
+ 과도한 리소스 사용 방지
+- 디자인 제약 유지
+
+## 상태 옵션
+
+### Hidden
+
+**유형:** `bool`
+**기본값:** `false`
+**플랫폼:** 전체
+
+```go
+Hidden: true,
+```
+
+**목적:** 창을 표시하지 않고 생성합니다.
+
+**사용 사례:**
+- 백그라운드 창
+- 필요할 때 표시되는 창
+- 스플래시 스크린(생성, 로드 후 표시)
+- 콘텐츠 로딩 중 흰색 깜빡임 방지
+
+**플랫폼 개선 사항:**
+- **Windows:** 흰색 창 깜빡임 수정 - `Show()`가 호출될 때까지 창이 보이지 않음
+- **macOS:** 전체 지원
+- **Linux:** 전체 지원
+
+**부드러운 로딩을 위한 권장 패턴:**
+
+```go
+// 숨겨진 창 생성
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "main-window",
+    Hidden: true,
+    BackgroundColour: application.RGBA{R: 30, G: 30, B: 30, A: 255}, // 테마와 일치
+})
+
+// 숨겨진 상태에서 콘텐츠 로드
+// ... 콘텐츠 로딩 ...
+
+// 준비되면 표시 (깜빡임 없음!)
+window.Show()
+```
+
+**예제:**
+
+```go
+settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "settings",
+    Hidden: true,
+})
+
+// 필요할 때 표시
+settings.Show()
+```
+
+### Frameless
+
+**유형:** `bool`  
+**기본값:** `false`  
+**플랫폼:** 전체
+
+```go
+Frameless: true,
+```
+
+**목적:** 제목 표시줄과 창 테두리를 제거합니다.
+
+**사용 사례:**
+- 사용자 정의 창 크롬
+- 스플래시 스크린
+- 키오스크 애플리케이션
+- 사용자 정의 디자인 창
+
+**중요:** 다음을 구현해야 합니다:
+- 창 드래그
+- 닫기/최소화/최대화 버튼
+- 크기 조절 핸들 (크기 조절 가능한 경우)
+
+**자세한 내용은 [Frameless Windows](/ko/features/windows/frameless)를 참조하세요.**
+
+### Resizable
+
+**유형:** `bool`  
+**기본값:** `true`  
+**플랫폼:** 전체
+
+```go
+Resizable: false,
+```
+
+**목적:** 창 크기 조절 허용/방지.
+
+**사용 사례:**
+- 고정 크기 애플리케이션
+- 스플래시 스크린
+- 대화상자
+
+**참고:** 사용자가 최대화/전체 화면을 사용할 수 있으므로 해당 기능도 방지해야 합니다.
+
+### AlwaysOnTop
+
+**유형:** `bool`  
+**기본값:** `false`  
+**플랫폼:** 전체
+
+```go
+AlwaysOnTop: true,
+```
+
+**목적:** 창을 다른 모든 창 위에 유지합니다.
+
+**사용 사례:**
+- 플로팅 도구 모음
+- 알림
+- 피처인피처
+- 타이머
+
+**플랫폼 참고:**
+- **macOS:** 전체 지원
+- **Windows:** 전체 지원
+- **Linux:** 창 관리자에 따라 다름
+
+### Fullscreen
+
+**유형:** `bool`  
+**기본값:** `false`  
+**플랫폼:** 전체
+
+```go
+Fullscreen: true,
+```
+
+**목적:** 전체 화면 모드로 시작합니다.
+
+**플랫폼 동작:**
+- **macOS:** 새 스페이스(가상 데스크톱) 생성
+- **Windows:** 작업 표시줄 덮어쓰기
+- **Linux:** 데스크톱 환경에 따라 다름
+
+**런타임 토글:**
+
+```go
+window.Fullscreen()
+window.UnFullscreen()
+```
+
+### Minimised / Maximised
+
+**유형:** `bool`  
+**기본값:** `false`  
+**플랫폼:** 전체
+
+```go
+Minimised: true,  // 최소화 상태로 시작
+Maximised: true,  // 최대화 상태로 시작
+```
+
+**목적:** 초기 창 상태 설정.
+
+**참고:** 둘 다 `true`로 설정하지 마세요 - 동작이 정의되지 않습니다.
+
+### WindowState
+
+**유형:** `WindowState` 열거형  
+**기본값:** `WindowStateNormal`  
+**플랫폼:** 전체
+
+```go
+WindowState: application.WindowStateMaximised,
+```
+
+**값:**
+- `WindowStateNormal` - 일반 창
+- `WindowStateMinimised` - 최소화됨
+- `WindowStateMaximised` - 최대화됨
+- `WindowStateFullscreen` - 전체 화면
+- `WindowStateHidden` - 숨겨짐
+
+**개별 플래그보다 선호됨:**
+
+```go
+// ✅ 선호됨
+WindowState: application.WindowStateMaximised,
+
+// ❌ 피해야 함
+Maximised: true,
+```
+
+## 외관 옵션
+
+### BackgroundColour
+
+**유형:** `RGBA` 구조체  
+**기본값:** 흰색 (255, 255, 255, 255)  
+**플랫폼:** 전체
+
+```go
+BackgroundColour: application.RGBA{R: 0, G: 0, H: 0, A: 255},
+```
+
+**목적:** 콘텐츠가 로드되기 전의 창 배경색.
+
+**사용 사례:**
+- 앱 테마와 일치
+- 다크 테마에서 흰색 깜빡임 방지
+- 부드러운 로딩 경험
+
+**예제:**
+
+```go
+// 다크 테마
+BackgroundColour: application.RGBA{R: 30, G: 30, B: 30, A: 255},
+
+// 라이트 테마```go
+BackgroundColour: application.RGBA{R: 255, G: 255, B: 255, A: 255},
+```
+
+**도움말 메서드:**
+
+```go
+window.SetBackgroundColour(30, 30, 30, 255)
+```
+
+### BackgroundType
+
+**유형:** `BackgroundType` 열거형  
+**기본값:** `BackgroundTypeSolid`  
+**플랫폼:** macOS, Windows (부분 지원)
+
+```go
+BackgroundType: application.BackgroundTypeTranslucent,
+```
+
+**값:**
+- `BackgroundTypeSolid` - 단색
+- `BackgroundTypeTransparent` - 완전 투명
+- `BackgroundTypeTranslucent` - 반투명 블러 효과
+
+**플랫폼 지원:**
+- **macOS:** 모든 유형 지원
+- **Windows:** 투명 및 반투명 (Windows 11 이상)
+- **Linux:** 단색만 지원
+
+**예시 (macOS):**
+
+```go
+BackgroundType: application.BackgroundTypeTranslucent,
+Mac: application.MacOptions{
+    Backdrop: application.MacBackdropTranslucent,
+},
+```
+
+## 콘텐츠 옵션
+
+### URL
+
+**유형:** `string`  
+**기본값:** 비어 있음 (Assets에서 로드)  
+**플랫폼:** 전체
+
+```go
+URL: "https://example.com",
+```
+
+**목적:** 내장된 애셋 대신 외부 URL을 로드합니다.
+
+**사용 사례:**
+- 개발 중 (개발 서버에서 로드)
+- 웹 기반 애플리케이션
+- 하이브리드 애플리케이션
+
+**예시:**
+
+```go
+// 개발 환경
+URL: "http://localhost:5173",
+
+// 프로덕션
+Assets: application.AssetOptions{
+    Handler: application.AssetFileServerFS(assets),
+},
+```
+
+### HTML
+
+**유형:** `string`  
+**기본값:** 비어 있음  
+**플랫폼:** 전체
+
+```go
+HTML: "<h1>Hello World</h1>",
+```
+
+**목적:** HTML 문자열을 직접 로드합니다.
+
+**사용 사례:**
+- 간단한 창
+- 생성된 콘텐츠
+- 테스트
+
+**예시:**
+
+```go
+HTML: `
+<!DOCTYPE html>
+<html>
+<head><title>Simple Window</title></head>
+<body><h1>Hello from Wails!</h1></body>
+</html>
+`,
+```
+
+### Assets
+
+**유형:** `AssetOptions`  
+**기본값:** 애플리케이션에서 상속  
+**플랫폼:** 전체
+
+```go
+Assets: application.AssetOptions{
+    Handler: application.AssetFileServerFS(assets),
+},
+```
+
+**목적:** 내장된 프론트엔드 애셋을 제공합니다.
+
+**자세한 내용은 [빌드 시스템](/ko/concepts/build-system)을 참조하세요.**
+
+### UseApplicationMenu
+
+**유형:** `bool`
+**기본값:** `false`
+**플랫폼:** Windows, Linux (macOS에서는 영향 없음)
+
+```go
+UseApplicationMenu: true,
+```
+
+**목적:** 이 창에서 애플리케이션 메뉴(`app.Menu.Set()`으로 설정됨)를 사용합니다.
+
+**macOS**에서는 이 옵션이 효과가 없습니다. macOS는 항상 화면 상단에 전역 애플리케이션 메뉴를 사용하기 때문입니다.
+
+**Windows**와 **Linux**에서는 창이 기본적으로 메뉴를 표시하지 않습니다. `UseApplicationMenu: true`를 설정하면 창이 애플리케이션 수준의 메뉴를 사용하도록 지시하여 간단한 크로스플랫폼 솔루션을 제공합니다.
+
+**예시:**
+
+```go
+// 애플리케이션 메뉴를 한 번 설정
+menu := app.NewMenu()
+menu.AddRole(application.FileMenu)
+menu.AddRole(application.EditMenu)
+app.Menu.Set(menu)
+
+// UseApplicationMenu가 설정된 모든 창에서 이 메뉴가 표시됩니다
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:              "Main Window",
+    UseApplicationMenu: true,
+})
+
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:              "Second Window",
+    UseApplicationMenu: true,  // 애플리케이션 메뉴도 가져옵니다
+})
+```
+
+**참고:**
+- `UseApplicationMenu`와 창별 메뉴가 모두 설정된 경우, 창별 메뉴가 우선합니다.
+- 런타임 OS 확인이 필요 없으므로 크로스플랫폼 코드를 단순화합니다.
+- 전체 메뉴 문서는 [애플리케이션 메뉴](/ko/features/menus/application)를 참조하세요.
+
+## 입력 옵션
+
+### EnableFileDrop
+
+**유형:** `bool`  
+**기본값:** `false`  
+**플랫폼:** 전체
+
+```go
+EnableFileDrop: true,
+```
+
+**목적:** 운영 체제에서 파일의 드래그 앤 드롭을 창으로 활성화합니다.
+
+활성화 시:
+- 파일 관리자에서 끌어서 가져온 파일을 애플리케이션에 놓을 수 있습니다.
+- 놓인 파일 경로와 함께 `WindowFilesDropped` 이벤트가 발생합니다.
+- `data-file-drop-target` 속성이 있는 요소는 자세한 드롭 정보를 제공합니다.
+
+**사용 사례:**
+- 파일 업로드 인터페이스
+- 문서 편집기
+- 미디어 가져오기
+- 파일을 받는 모든 앱
+
+**예시:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "File Uploader",
+    EnableFileDrop: true,
+})
+
+// 놓인 파일 처리
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    details := event.Context().DropTargetDetails()
+    
+    for _, file := range files {
+        fmt.Println("Dropped:", file)
+    }
+})
+```
+
+**HTML 드롭 영역:**
+
+```html
+<!-- 요소를 드롭 대상으로 표시 -->
+<div id="upload" data-file-drop-target>
+    여기에 파일을 놓으세요
+</div>
+```
+
+**자세한 문서는 [파일 드롭](/ko/features/drag-and-drop/files)을 참조하세요.**
+
+## 보안 옵션
+
+### ContentProtectionEnabled
+
+**유형:** `bool`  
+**기본값:** `false`  
+**플랫폼:** Windows (10+), macOS
+
+```go
+ContentProtectionEnabled: true,
+```
+
+**목적:** 창 콘텐츠의 화면 캡처를 방지합니다.
+
+**플랫폼 지원:**
+- **Windows:** Windows 10 빌드 19041 이상 (전체 지원), 이전 버전 (부분 지원)
+- **macOS:** 전체 지원
+- **Linux:** 지원되지 않음
+
+**사용 사례:**
+- 은행 애플리케이션
+- 비밀번호 관리자
+- 의료 기록
+- 기밀 문서
+
+**중요 참고 사항:**
+1. 물리적 사진을 방지하지 않습니다.
+2. 일부 도구는 보호를 우회할 수 있습니다.
+3. 포괄적인 보안의 일부이며 유일한 보호 수단이 아닙니다.
+4. DevTools 창은 자동으로 보호되지 않습니다.
+
+**예시:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "Secure Window",
+    ContentProtectionEnabled: true,
+})
+
+// 런타임에 토글
+window.SetContentProtection(true)
+```
+
+## 수명 주기 옵션
+
+### OnClose
+
+**유형:** `func() bool`  
+**기본값:** `nil` (항상 닫기 허용)  
+**플랫폼:** 전체
+
+```go
+OnClose: func() bool {
+    // false를 반환하여 닫기 취소
+    // true를 반환하여 닫기 허용
+    return true
+},
+```
+
+**목적:** 창 닫기 이벤트를 처리하고 선택적으로 닫기를 방지합니다.
+
+**사용 사례:**
+- 저장되지 않은 변경 사항이 있을 때 닫기 확인
+- 닫기 전에 상태 저장
+- 실수로 닫히는 것 방지
+
+**예시:**
+
+```go
+OnClose: func() bool {
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("저장되지 않은 변경 사항이 있습니다. 그래도 닫으시겠습니까?")
+        return result == "yes"
+    }
+    return true
+},
+```
+
+**중요:** 사용자 작업(X 버튼 클릭)으로만 트리거되며, `window.Destroy()`에서는 트리거되지 않습니다.
+
+### OnDestroy
+
+**유형:** `func()`  
+**기본값:** `nil`  
+**플랫폼:** 전체
+
+```go
+OnDestroy: func() {
+    // 정리 코드
+    fmt.Println("Window destroyed")
+},
+```
+
+**목적:** 창이 파괴될 때 정리 작업을 수행합니다.
+
+**사용 사례:**
+- 리소스 해제
+- 연결 종료
+- 애플리케이션 상태 업데이트
+
+**예시:**
+
+```go
+OnDestroy: func() {
+    // 데이터베이스 연결 닫기
+    if db != nil {
+        db.Close()
+    }
+    
+    // 창 목록에서 제거
+    removeWindow(window.ID())
+},
+```
+
+## 플랫폼별 옵션### Mac 옵션
+
+```go
+Mac: application.MacWindow{
+    TitleBar: application.MacTitleBar{
+        AppearsTransparent: true,
+        Hide:               false,
+        HideTitle:          true,
+        FullSizeContent:    true,
+    },
+    Backdrop:                application.MacBackdropTranslucent,
+    InvisibleTitleBarHeight: 50,
+    WindowLevel:             application.MacWindowLevelNormal,
+    CollectionBehavior:      application.MacWindowCollectionBehaviorDefault,
+},
+```
+
+**TitleBar** (`MacTitleBar`)
+- `AppearsTransparent` - 제목 표시줄을 투명하게 만들어 콘텐츠가 제목 표시줄 영역까지 확장되도록 합니다.
+- `Hide` - 제목 표시줄을 완전히 숨깁니다.
+- `HideTitle` - 제목 텍스트만 숨깁니다.
+- `FullSizeContent` - 콘텐츠를 전체 창 크기로 확장합니다.
+
+**Backdrop** (`MacBackdrop`)
+- `MacBackdropNormal` - 표준 불투명 배경
+- `MacBackdropTranslucent` - 블러 처리된 반투명 배경
+- `MacBackdropTransparent` - 완전 투명 배경
+
+**InvisibleTitleBarHeight** (`int`)
+- 보이지 않는 제목 표시줄 영역의 높이 (드래그용)
+- 네이티브 제목 표시줄 드래그 영역이 숨겨진 경우에만 적용됩니다. 즉, 창이 프레임리스(`Frameless: true`)이거나 투명 제목 표시줄(`AppearsTransparent: true`)을 사용하는 경우에만 적용됩니다.
+- 보이는 제목 표시줄이 있는 표준 창에는 영향을 미치지 않습니다.
+
+**WindowLevel** (`MacWindowLevel`)
+- `MacWindowLevelNormal` - 표준 창 레벨 (기본값)
+- `MacWindowLevelFloating` - 표준 창 위에 떠 있는 창
+- `MacWindowLevelTornOffMenu` - 분리된 메뉴 레벨
+- `MacWindowLevelModalPanel` - 모달 패널 레벨
+- `MacWindowLevelMainMenu` - 메인 메뉴 레벨
+- `MacWindowLevelStatus` - 상태 창 레벨
+- `MacWindowLevelPopUpMenu` - 팝업 메뉴 레벨
+- `MacWindowLevelScreenSaver` - 화면 보호기 레벨
+
+**CollectionBehavior** (`MacWindowCollectionBehavior`)
+
+macOS Spaces 및 전체 화면에서 창이 어떻게 동작하는지 제어합니다. 이 값들은 비트 마스크 값이며, 비트 OR 연산자(`|`)를 사용하여 결합할 수 있습니다.
+
+**Space 동작:**
+- `MacWindowCollectionBehaviorDefault` - FullScreenPrimary 사용 (기본값, 하위 호환성 유지)
+- `MacWindowCollectionBehaviorCanJoinAllSpaces` - 창이 모든 Space에 나타납니다.
+- `MacWindowCollectionBehaviorMoveToActiveSpace` - 창이 표시될 때 활성 Space로 이동합니다.
+- `MacWindowCollectionBehaviorManaged` - 기본 관리된 창 동작
+- `MacWindowCollectionBehaviorTransient` - 임시/일시적 창
+- `MacWindowCollectionBehaviorStationary` - Space 전환 시 창이 제자리에 고정됩니다.
+
+**창 순환:**
+- `MacWindowCollectionBehaviorParticipatesInCycle` - Cmd+` 순환에 포함됩니다.
+- `MacWindowCollectionBehaviorIgnoresCycle` - Cmd+` 순환에서 제외됩니다.
+
+**전체 화면 동작:**
+- `MacWindowCollectionBehaviorFullScreenPrimary` - 전체 화면 모드로 진입할 수 있습니다.
+- `MacWindowCollectionBehaviorFullScreenAuxiliary` - 전체 화면 앱 위에 겹칠 수 있습니다.
+- `MacWindowCollectionBehaviorFullScreenNone` - 전체 화면 기능 비활성화
+- `MacWindowCollectionBehaviorFullScreenAllowsTiling` - 나란히 타일링 허용 (macOS 10.11 이상)
+- `MacWindowCollectionBehaviorFullScreenDisallowsTiling` - 타일링 방지 (macOS 10.11 이상)
+
+**예시 - Spotlight 스타일 창:**
+
+```go
+// 모든 Space에 나타나고 전체 화면 앱 위에 겹칠 수 있는 창
+Mac: application.MacWindow{
+    CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces |
+                        application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+    WindowLevel:        application.MacWindowLevelFloating,
+},
+```
+
+**예시 - 단일 동작:**
+
+```go
+// 전체 화면 응용 프로그램 위에 나타날 수 있는 창
+Mac: application.MacWindow{
+    CollectionBehavior: application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+},
+```
+
+### Windows 옵션
+
+```go
+Windows: application.WindowsOptions{
+    DisableWindowIcon:      false,
+    WindowBackdropType:     application.WindowsBackdropTypeAuto,
+    CustomTheme:            nil,
+    DisableFramelessWindowDecorations: false,
+},
+```
+
+**DisableWindowIcon** (`bool`)
+- 제목 표시줄에서 아이콘 제거
+- 깔끔한 외관
+
+**WindowBackdropType** (`WindowsBackdropType`)
+- `WindowsBackdropTypeAuto` - 시스템 기본값
+- `WindowsBackdropTypeNone` - 배경 없음
+- `WindowsBackdropTypeMica` - Mica 재질 (Windows 11)
+- `WindowsBackdropTypeAcrylic` - Acrylic 재질 (Windows 11)
+- `WindowsBackdropTypeTabbed` - 탭 재질 (Windows 11)
+
+**CustomTheme** (`*WindowsTheme`)
+- 사용자 정의 색상 테마
+- 시스템 색상 재정의
+
+**DisableFramelessWindowDecorations** (`bool`)
+- 기본 프레임리스 장식 비활성화
+- 사용자 정의 창 크롬용
+
+**예시:**
+
+```go
+Windows: application.WindowsOptions{
+    WindowBackdropType: application.WindowsBackdropTypeMica,
+    DisableWindowIcon:  true,
+},
+```
+
+### Linux 옵션
+
+```go
+Linux: application.LinuxOptions{
+    Icon:                []byte{/* PNG 데이터 */},
+    WindowIsTranslucent: false,
+},
+```
+
+**Icon** (`[]byte`)
+- 창 아이콘 (PNG 형식)
+- 제목 표시줄 및 작업 표시줄에 표시됩니다.
+
+**WindowIsTranslucent** (`bool`)
+- 창 반투명 효과 활성화
+- 컴포저터 지원 필요
+
+**예시:**
+
+```go
+//go:embed icon.png
+var icon []byte
+
+Linux: application.LinuxOptions{
+    Icon: icon,
+},
+```
+
+## 애플리케이션 레벨 창 옵션
+
+일부 Windows 전용 옵션은 창별로 아닌 애플리케이션 레벨에서 구성해야 합니다. 이는 WebView2가 사용자 데이터 경로당 단일 브라우저 환경을 공유하기 때문입니다.
+
+### 브라우저 플래그
+
+WebView2 브라우저 플래그는 애플리케이션의 **모든 창**에 걸쳐 실험적 기능과 동작을 제어합니다. 이러한 플래그는 `application.Options.Windows`에서 설정해야 합니다.
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Windows: application.WindowsOptions{
+        // 실험적 WebView2 기능 활성화
+        EnabledFeatures: []string{
+            "msWebView2EnableDraggableRegions",
+        },
+
+        // 특정 기능 비활성화
+        DisabledFeatures: []string{
+            "msSmartScreenProtection",  // Wails에서 항상 비활성화됨
+        },
+
+        // 추가 Chromium 명령줄 인수
+        AdditionalBrowserArgs: []string{
+            "--disable-gpu",
+            "--remote-debugging-port=9222",
+        },
+    },
+})
+```
+
+**EnabledFeatures** (`[]string`)
+- 활성화할 WebView2 기능 플래그 목록
+- 사용 가능한 플래그는 [WebView2 브라우저 플래그](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags)를 참조하세요.
+- 예시: `"msWebView2EnableDraggableRegions"`
+
+**DisabledFeatures** (`[]string`)
+- 비활성화할 WebView2 기능 플래그 목록
+- Wails는 자동으로 `msSmartScreenProtection`를 비활성화합니다.
+- 예시: `"msExperimentalFeature"`
+
+**AdditionalBrowserArgs** (`[]string`)
+- 브라우저 프로세스에 전달되는 Chromium 명령줄 인수
+- `--` 접두사를 포함해야 합니다 (예: `"--remote-debugging-port=9222"`).
+- 사용 가능한 인수는 [Chromium 명령줄 스위치](https://peter.sh/experiments/chromium-command-line-switches/)를 참조하세요.
+
+:::caution[중요]
+이 플래그는 WebView2가 사용자 데이터 경로당 단일 브라우저 환경을 공유하기 때문에 모든 창에 전역적으로 적용됩니다. 서로 다른 창에 서로 다른 브라우저 플래그를 사용할 수 없습니다.
+:::
+
+**전체 예시:**
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        Windows: application.WindowsOptions{
+            // 드래그 가능한 영역 기능 활성화
+            EnabledFeatures: []string{
+                "msWebView2EnableDraggableRegions",
+            },
+            // 원격 디버깅 활성화
+            AdditionalBrowserArgs: []string{
+                "--remote-debugging-port=9222",
+            },
+        },
+    })
+
+    // 모든 창은 위에서 구성된 브라우저 플래그를 사용합니다.
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  "Main Window",
+        Width:  1024,
+        Height: 768,
+    })
+
+    window.Show()
+    app.Run()
+}
+```---
+
+**질문 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 문의하거나 [예제](https://github.com/wailsapp/wails/tree/master/v3/examples)를 확인하세요.

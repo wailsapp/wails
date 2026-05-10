@@ -1,0 +1,417 @@
+---
+title: 창 기본 사항
+description: Wails에서 애플리케이션 창 생성 및 관리
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## 창 관리
+
+Wails는 모든 플랫폼에서 작동하는 **통합 창 관리 API**를 제공합니다. 창을 생성하고, 동작을 제어하며, 여러 창을 생성, 외관, 동작 및 수명 주기 전반에 대한 완전한 제어와 함께 관리할 수 있습니다.
+
+## 빠른 시작
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    // Create a window
+    window := app.Window.New()
+    
+    // Configure it
+    window.SetTitle("Hello Wails")
+    window.SetSize(800, 600)
+    window.Center()
+    
+    // Show it
+    window.Show()
+
+    app.Run()
+}
+```
+
+**이것으로 끝입니다!** 크로스 플랫폼 창이 생성되었습니다.
+
+## 창 생성
+
+### 기본 창
+
+창을 생성하는 가장 간단한 방법:
+
+```go
+window := app.Window.New()
+```
+
+**제공되는 사항:**
+- 기본 크기 (800x600)
+- 기본 제목 (애플리케이션 이름)
+- 프론트엔드를 위한 WebView 준비 완료
+- 플랫폼 네이티브 외관
+
+### 옵션이 있는 창
+
+사용자 지정 구성으로 창을 생성합니다:
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My Application",
+    Width:  1200,
+    Height: 800,
+    X:      100,   // Position from left
+    Y:      100,   // Position from top
+    AlwaysOnTop: false,
+    Frameless: false,
+    Hidden: false,
+    MinWidth: 400,
+    MinHeight: 300,
+    MaxWidth: 1920,
+    MaxHeight: 1080,
+})
+```
+
+**일반적인 옵션:**
+
+| 옵션 | 유형 | 설명 |
+|--------|------|-------------|
+| `Title` | `string` | 창 제목 |
+| `Width` | `int` | 픽셀 단위의 창 너비 |
+| `Height` | `int` | 픽셀 단위의 창 높이 |
+| `X` | `int` | X 위치 (왼쪽 기준) |
+| `Y` | `int` | Y 위치 (위쪽 기준) |
+| `AlwaysOnTop` | `bool` | 창을 다른 창 위에 유지 |
+| `Frameless` | `bool` | 제목 표시줄과 테두리 제거 |
+| `Hidden` | `bool` | 숨김 상태로 시작 |
+| `MinWidth` | `int` | 최소 너비 |
+| `MinHeight` | `int` | 최소 높이 |
+| `MaxWidth` | `int` | 최대 너비 |
+| `MaxHeight` | `int` | 최대 높이 |
+
+**전체 목록은 [창 옵션](/ko/features/windows/options)을 참조하세요.**
+
+### 이름이 있는 창
+
+창에 이름을 지정하여 쉽게 검색할 수 있습니다:
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:  "main-window",
+    Title: "Main Application",
+})
+
+// Later, find it by name
+mainWindow := app.GetWindowByName("main-window")
+if mainWindow != nil {
+    mainWindow.Show()
+}
+```
+
+**사용 사례:**
+- 여러 창 (메인, 설정, 정보)
+- 코드 다른 부분에서 창 찾기
+- 창 간 통신
+
+## 창 제어
+
+### 표시 및 숨기기
+
+```go
+// Show window
+window.Show()
+
+// Hide window
+window.Hide()
+
+// Check if visible
+if window.IsVisible() {
+    fmt.Println("Window is visible")
+}
+```
+
+**사용 사례:**
+- 스플래시 화면 (표시 후 숨기기)
+- 설정 창 (필요하지 않을 때 숨기기)
+- 팝업 창 (요청 시 표시)
+
+### 위치 및 크기
+
+```go
+// Set size
+window.SetSize(1024, 768)
+
+// Set position
+window.SetPosition(100, 100)
+
+// Centre on screen
+window.Center()
+
+// Get current size
+width, height := window.Size()
+
+// Get current position
+x, y := window.Position()
+```
+
+**좌표계:**
+- (0, 0)은 기본 화면의 왼쪽 상단입니다.
+- 양수 X는 오른쪽으로 이동합니다.
+- 양수 Y는 아래로 이동합니다.
+
+### 창 상태
+
+```go
+// Minimise
+window.Minimise()
+
+// Maximise
+window.Maximise()
+
+// Fullscreen
+window.Fullscreen()
+
+// Restore to normal
+window.Restore()
+
+// Check state
+if window.IsMinimised() {
+    fmt.Println("Window is minimised")
+}
+
+if window.IsMaximised() {
+    fmt.Println("Window is maximised")
+}
+
+if window.IsFullscreen() {
+    fmt.Println("Window is fullscreen")
+}
+```
+
+**상태 전환:**
+
+```
+Normal ←→ Minimised
+Normal ←→ Maximised
+Normal ←→ Fullscreen
+```
+
+### 제목 및 외관
+
+```go
+// Set title
+window.SetTitle("My Application - Document.txt")
+
+// Set background colour
+window.SetBackgroundColour(0, 0, 0, 255) // RGBA
+
+// Set always on top
+window.SetAlwaysOnTop(true)
+
+// Set resizable
+window.SetResizable(false)
+```
+
+### 창 닫기
+
+```go
+// Close window
+window.Close()
+
+// Destroy window (force close)
+window.Destroy()
+```
+
+**차이점:**
+- `Close()` - 닫기 이벤트 트리거, 취소 가능
+- `Destroy()` - 즉시 파괴, 취소 불가
+
+## 창 찾기
+
+### 이름으로 찾기
+
+```go
+window := app.GetWindowByName("settings")
+if window != nil {
+    window.Show()
+}
+```
+
+### ID로 찾기
+
+모든 창에는 고유한 ID가 있습니다:
+
+```go
+id := window.ID()
+fmt.Printf("Window ID: %d\n", id)
+
+// Find by ID
+foundWindow := app.GetWindowByID(id)
+```
+
+### 현재 창
+
+현재 포커스가 있는 창을 가져옵니다:
+
+```go
+current := app.Window.Current()
+if current != nil {
+    current.SetTitle("Active Window")
+}
+```
+
+### 모든 창
+
+모든 창을 가져옵니다:
+
+```go
+windows := app.Window.GetAll()
+fmt.Printf("Total windows: %d\n", len(windows))
+
+for _, w := range windows {
+    fmt.Printf("Window: %s (ID: %d)\n", w.Name(), w.ID())
+}
+```
+
+## 창 수명 주기
+
+### 생성
+
+```go
+app.OnWindowCreation(func(window *application.WebviewWindow) {
+    fmt.Printf("Window created: %s\n", window.Name())
+    
+    // Configure new windows
+    window.SetMinSize(400, 300)
+})
+```
+
+### 닫기
+
+```go
+window.OnClose(func() bool {
+    // Return false to cancel close
+    // Return true to allow close
+    
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        return result == "yes"
+    }
+    return true
+})
+```
+
+**중요:** `OnClose`는 사용자 시작 닫기(X 버튼 클릭)에만 작동합니다. `window.Destroy()`를 방지하지는 않습니다.
+
+### 파괴
+
+```go
+window.OnDestroy(func() {
+    fmt.Println("Window destroyed")
+    // Cleanup resources
+})
+```
+
+## 여러 창
+
+### 여러 창 생성
+
+```go
+// Main window
+mainWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "main",
+    Title:  "Main Application",
+    Width:  1200,
+    Height: 800,
+})
+
+// Settings window
+settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "settings",
+    Title:  "Settings",
+    Width:  600,
+    Height: 400,
+    Hidden: true,  // Start hidden
+})
+
+// Show settings when needed
+settingsWindow.Show()
+```
+
+### 창 간 통신
+
+창은 이벤트를 통해 통신할 수 있습니다:
+
+```go
+// In main window
+app.Event.Emit("data-updated", map[string]interface{}{
+    "value": 42,
+})
+
+// In settings window
+app.Event.On("data-updated", func(event *application.WailsEvent) {
+    data := event.Data.(map[string]interface{})
+    value := data["value"].(int)
+    fmt.Printf("Received: %d\n", value)
+})
+```
+
+**자세한 내용은 [이벤트](/ko/features/events/system)를 참조하세요.**
+
+### 부모-자식 창
+
+```go
+// Create child window
+childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "Child Window",
+    Parent: mainWindow,  // Set parent
+})
+```
+
+**동작:**
+- 부모가 닫히면 자식도 닫힘
+- 일부 플랫폼에서 자식이 부모 위에 유지됨
+- 일부 플랫폼에서 자식이 부모와 함께 최소화됨
+
+**플랫폼 지원:**
+- **macOS:** 전체 지원
+- **Windows:** 부분 지원
+- **Linux:** 데스크톱 환경에 따라 다름
+
+## 플랫폼별 기능
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+    **Windows 전용 기능:**
+    
+    ```go
+    // Flash taskbar button
+    window.Flash(true)  // Start flashing
+    window.Flash(false) // Stop flashing
+    
+    // Trigger Windows 11 Snap Assist (Win+Z)
+    window.SnapAssist()
+    
+    // Set window icon
+    window.SetIcon(iconBytes)
+    ```
+    
+    **Snap Assist:**
+    창에 대한 Windows 11 스냅 레이아웃 옵션을 표시합니다.
+    
+    **작업 표시줄 깜빡임:**
+    창이 최소화되었을 때 알림에 유용합니다.
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **macOS 전용 기능:**
+
+    ```go
+    // Transparent title bar---
+
+**질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [창 예제](https://github.com/wailsapp/wails/tree/master/v3/examples)를 확인하세요.

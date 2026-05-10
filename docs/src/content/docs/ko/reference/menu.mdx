@@ -1,0 +1,722 @@
+---
+title: 메뉴 API
+description: 메뉴 API의 전체 참조 문서
+sidebar:
+  order: 3
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 개요
+
+메뉴 API는 애플리케이션 메뉴, 컨텍스트 메뉴, 시스템 트레이 메뉴를 생성하고 관리하기 위한 메서드를 제공합니다.
+
+**메뉴 유형:**
+- **애플리케이션 메뉴** - 상단 메뉴 바 (파일, 편집 등)
+- **컨텍스트 메뉴** - 마우스 오른쪽 클릭 메뉴
+- **시스템 트레이 메뉴** - 시스템 트레이(알림 영역)의 메뉴
+
+## 메뉴 생성
+
+### NewMenu()
+
+새로운 메뉴를 생성합니다.
+
+```go
+func (a *App) NewMenu() *Menu
+```
+
+**예제:**
+```go
+menu := app.NewMenu()
+```
+
+## 메뉴 메서드
+
+### Add()
+
+메뉴에 메뉴 항목을 추가합니다.
+
+```go
+func (m *Menu) Add(label string) *MenuItem
+```
+
+**매개변수:**
+- `label` - 메뉴 항목에 표시될 텍스트
+
+**반환값:** 생성된 메뉴 항목
+
+**예제:**
+```go
+item := menu.Add("파일 열기")
+item.OnClick(func(ctx *application.Context) {
+    // 클릭 처리
+})
+```
+
+### AddSubmenu()
+
+메뉴에 하위 메뉴를 추가합니다.
+
+```go
+func (m *Menu) AddSubmenu(label string) *Menu
+```
+
+**매개변수:**
+- `label` - 하위 메뉴의 레이블
+
+**반환값:** 생성된 하위 메뉴
+
+**예제:**
+```go
+fileMenu := menu.AddSubmenu("파일")
+fileMenu.Add("새로 만들기")
+fileMenu.Add("열기")
+fileMenu.Add("저장")
+```
+
+### AddSeparator()
+
+메뉴 항목 사이에 시각적 구분선을 추가합니다.
+
+```go
+func (m *Menu) AddSeparator()
+```
+
+**예제:**
+```go
+menu.Add("복사")
+menu.Add("붙여넣기")
+menu.AddSeparator()
+menu.Add("모두 선택")
+```
+
+**최선의 방법:** 관련 메뉴 항목들을 그룹화하기 위해 구분선을 사용하세요.
+
+### AddCheckbox()
+
+체크 가능한 메뉴 항목을 추가합니다.
+
+```go
+func (m *Menu) AddCheckbox(label string, checked bool) *MenuItem
+```
+
+**매개변수:**
+- `label` - 체크박스의 레이블
+- `checked` - 초기 체크 상태
+
+**예제:**
+```go
+darkMode := menu.AddCheckbox("다크 모드", false)
+darkMode.OnClick(func(ctx *application.Context) {
+    isChecked := darkMode.Checked()
+    // 다크 모드 토글
+})
+```
+
+### AddRadio()
+
+라디오 메뉴 항목(상호 배제 그룹)을 추가합니다.
+
+```go
+func (m *Menu) AddRadio(label string, checked bool) *MenuItem
+```
+
+**매개변수:**
+- `label` - 라디오 버튼의 레이블
+- `checked` - 초기 체크 상태
+
+**예제:**
+```go
+// 보기 모드용 라디오 그룹 생성
+viewMenu := menu.AddSubmenu("보기")
+listView := viewMenu.AddRadio("목록 보기", true)
+gridView := viewMenu.AddRadio("그리드 보기", false)
+treeView := viewMenu.AddRadio("트리 보기", false)
+
+listView.OnClick(func(ctx *application.Context) {
+    setViewMode("list")
+})
+gridView.OnClick(func(ctx *application.Context) {
+    setViewMode("grid")
+})
+```
+
+### Update()
+
+메뉴 항목에 변경된 사항을 반영하도록 메뉴를 업데이트합니다.
+
+```go
+func (m *Menu) Update()
+```
+
+**예제:**
+```go
+item.SetEnabled(false)
+menu.Update()  // 변경 사항을 적용하려면 반드시 호출해야 합니다.
+```
+
+**중요:** 메뉴 항목 속성을 수정한 후에는 항상 `Update()`를 호출하세요.
+
+## 메뉴 항목 메서드
+
+### OnClick()
+
+메뉴 항목의 클릭 핸들러를 등록합니다.
+
+```go
+func (mi *MenuItem) OnClick(callback func(ctx *application.Context)) *MenuItem
+```
+
+**매개변수:**
+- `callback` - 항목이 클릭될 때 호출되는 함수
+
+**반환값:** 메뉴 항목 (연결을 위해)
+
+**예제:**
+```go
+item.OnClick(func(ctx *application.Context) {
+    fmt.Println("메뉴 항목 클릭됨")
+    app.Logger.Info("사용자가 메뉴 항목을 클릭했습니다.")
+})
+```
+
+### SetLabel()
+
+메뉴 항목의 레이블을 변경합니다.
+
+```go
+func (mi *MenuItem) SetLabel(label string) *MenuItem
+```
+
+**예제:**
+```go
+item.SetLabel("다른 이름으로 저장...")
+menu.Update()
+```
+
+### SetEnabled()
+
+메뉴 항목을 활성화하거나 비활성화합니다.
+
+```go
+func (mi *MenuItem) SetEnabled(enabled bool) *MenuItem
+```
+
+**예제:**
+```go
+// 열린 문서가 없을 때 저장 항목 비활성화
+saveItem.SetEnabled(hasOpenDocument)
+menu.Update()
+```
+
+**일반적인 패턴:**
+```go
+// 애플리케이션 상태에 따라 메뉴 상태 업데이트
+func updateMenuState() {
+    saveItem.SetEnabled(hasUnsavedChanges)
+    undoItem.SetEnabled(canUndo)
+    redoItem.SetEnabled(canRedo)
+    menu.Update()
+}
+```
+
+### SetChecked()
+
+체크박스/라디오 메뉴 항목의 체크 상태를 설정합니다.
+
+```go
+func (mi *MenuItem) SetChecked(checked bool) *MenuItem
+```
+
+**예제:**
+```go
+darkModeItem.SetChecked(isDarkModeEnabled)
+menu.Update()
+```
+
+### Checked()
+
+현재 체크 상태를 반환합니다.
+
+```go
+func (mi *MenuItem) Checked() bool
+```
+
+**예제:**
+```go
+if darkModeItem.Checked() {
+    // 다크 모드가 활성화됨
+}
+```
+
+### SetAccelerator()
+
+메뉴 항목에 키보드 단축키를 설정합니다.
+
+```go
+func (mi *MenuItem) SetAccelerator(accelerator string) *MenuItem
+```
+
+**매개변수:**
+- `accelerator` - 키보드 단축키 (예: "Ctrl+S", "Cmd+Q")
+
+**단축키 형식:**
+- **수정자:** `Ctrl`, `Cmd`, `Alt`, `Shift`
+- **키:** `A-Z`, `0-9`, `F1-F12`, `Enter`, `Backspace` 등
+- **플랫폼:** macOS에서는 `Cmd`, Windows/Linux에서는 `Ctrl` 사용
+
+**예제:**
+```go
+saveItem.SetAccelerator("Ctrl+S")
+quitItem.SetAccelerator("Ctrl+Q")
+newItem.SetAccelerator("Ctrl+N")
+```
+
+**플랫폼 인식 예제:**
+```go
+import "runtime"
+
+var quitShortcut string
+if runtime.GOOS == "darwin" {
+    quitShortcut = "Cmd+Q"
+} else {
+    quitShortcut = "Ctrl+Q"
+}
+quitItem.SetAccelerator(quitShortcut)
+```
+
+### SetTooltip()
+
+메뉴 항목 위에 마우스를 올렸을 때 표시되는 툴팁을 설정합니다.
+
+```go
+func (mi *MenuItem) SetTooltip(tooltip string) *MenuItem
+```
+
+**예제:**
+```go
+item.SetTooltip("디스크에서 파일을 엽니다.")
+```
+
+### SetHidden()
+
+메뉴 항목을 표시하거나 숨깁니다.
+
+```go
+func (mi *MenuItem) SetHidden(hidden bool) *MenuItem
+```
+
+**예제:**
+```go
+// 프로덕션 환경에서 디버그 메뉴 숨기기
+debugItem.SetHidden(!isDevelopment)
+menu.Update()
+```
+
+## 애플리케이션 메뉴
+
+### app.Menu.Set()
+
+애플리케이션의 기본 메뉴 바를 설정합니다.
+
+```go
+func (mm *MenuManager) Set(menu *Menu)
+```
+
+**예제:**
+```go
+menu := app.NewMenu()
+
+// 파일 메뉴
+fileMenu := menu.AddSubmenu("파일")
+fileMenu.Add("새로 만들기").SetAccelerator("Ctrl+N").OnClick(newFile)
+fileMenu.Add("열기").SetAccelerator("Ctrl+O").OnClick(openFile)
+fileMenu.Add("저장").SetAccelerator("Ctrl+S").OnClick(saveFile)
+fileMenu.AddSeparator()
+fileMenu.Add("종료").SetAccelerator("Ctrl+Q").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+// 편집 메뉴
+editMenu := menu.AddSubmenu("편집")
+editMenu.Add("실행 취소").SetAccelerator("Ctrl+Z").OnClick(undo)
+editMenu.Add("다시 실행").SetAccelerator("Ctrl+Y").OnClick(redo)
+editMenu.AddSeparator()
+editMenu.Add("잘라내기").SetAccelerator("Ctrl+X").OnClick(cut)
+editMenu.Add("복사").SetAccelerator("Ctrl+C").OnClick(copy)
+editMenu.Add("붙여넣기").SetAccelerator("Ctrl+V").OnClick(paste)
+
+app.Menu.Set(menu)
+```
+
+**플랫폼 참고 사항:**
+- **macOS:** 메뉴가 상단 메뉴 바에 나타납니다.
+- **Windows/Linux:** 메뉴가 창 제목 표시줄에 나타납니다.
+- **macOS:** 애플리케이션 이름이 포함된 애플리케이션 메뉴가 자동으로 추가됩니다.
+
+## 컨텍스트 메뉴
+
+### app.ContextMenu.Add()
+
+특정 이름의 컨텍스트 메뉴(마우스 오른쪽 클릭 메뉴)를 등록합니다.
+
+```go
+func (cm *ContextMenuManager) Add(name string, menu *Menu)
+```
+
+**매개변수:**
+- `name` - 컨텍스트 메뉴의 고유 식별자
+- `menu` - 표시할 메뉴
+
+**Go:**
+
+```go
+// 컨텍스트 메뉴 생성
+contextMenu := app.NewMenu()
+contextMenu.Add("잘라내기").OnClick(cut)
+contextMenu.Add("복사").OnClick(copy)
+contextMenu.Add("붙여넣기").OnClick(paste)
+contextMenu.AddSeparator()
+contextMenu.Add("모두 선택").OnClick(selectAll)
+
+// 등록
+app.RegisterContextMenu("editor", contextMenu)
+```
+
+**HTML:**
+
+```html
+<!-- 오른쪽 클릭 시 컨텍스트 메뉴 트리거 -->
+<div data-wails-context-menu="editor">
+    컨텍스트 메뉴를 위해 오른쪽 클릭하세요
+</div>
+```
+
+**동적 컨텍스트 메뉴:**
+```go
+// 선택 사항에 따라 컨텍스트 메뉴 업데이트
+func updateContextMenu() {
+    contextMenu := app.NewMenu()
+
+    if hasSelection {
+        contextMenu.Add("잘라내기").OnClick(cut)
+        contextMenu.Add("복사").OnClick(copy)
+    }
+
+    contextMenu.Add("붙여넣기").SetEnabled(hasClipboardContent).OnClick(paste)
+
+    app.RegisterContextMenu("editor", contextMenu)
+}
+```
+
+## 시스템 트레이 메뉴
+
+### app.SystemTray.New()
+
+새로운 시스템 트레이 아이콘을 생성합니다.
+
+```go
+func (sm *SystemTrayManager) New() *SystemTray
+```
+
+**예제:**
+```go
+tray := app.SystemTray.New()
+```
+
+### SetIcon()시스템 트레이 아이콘을 설정합니다.
+
+```go
+func (st *SystemTray) SetIcon(icon []byte) *SystemTray
+```
+
+**예제:**
+```go
+iconData, _ := os.ReadFile("icon.png")
+tray.SetIcon(iconData)
+```
+
+### SetMenu()
+
+시스템 트레이의 메뉴를 설정합니다.
+
+```go
+func (st *SystemTray) SetMenu(menu *Menu) *SystemTray
+```
+
+**예제:**
+```go
+trayMenu := app.NewMenu()
+trayMenu.Add("Show Window").OnClick(func(ctx *application.Context) {
+    window.Show()
+    window.SetFocus()
+})
+trayMenu.Add("Settings").OnClick(openSettings)
+trayMenu.AddSeparator()
+trayMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+tray.SetMenu(trayMenu)
+```
+
+### SetTooltip()
+
+트레이 아이콘 위에 마우스를 올렸을 때 표시되는 툴팁을 설정합니다.
+
+```go
+func (st *SystemTray) SetTooltip(tooltip string) *SystemTray
+```
+
+**예제:**
+```go
+tray.SetTooltip("My Application - Running")
+```
+
+### OnClick()
+
+트레이 아이콘의 왼쪽 클릭을 처리합니다.
+
+```go
+func (st *SystemTray) OnClick(callback func()) *SystemTray
+```
+
+**예제:**
+```go
+tray.OnClick(func() {
+    if window.IsVisible() {
+        window.Hide()
+    } else {
+        window.Show()
+        window.SetFocus()
+    }
+})
+```
+
+## 전체 예제
+
+### 표준 애플리케이션 메뉴
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func createMenu(app *application.Application) *application.Menu {
+    menu := app.NewMenu()
+
+    // 파일 메뉴
+    fileMenu := menu.AddSubmenu("File")
+    fileMenu.Add("New").
+        SetAccelerator("Ctrl+N").
+        OnClick(func(ctx *application.Context) {
+            // 새 문서 생성
+        })
+    fileMenu.Add("Open").
+        SetAccelerator("Ctrl+O").
+        OnClick(func(ctx *application.Context) {
+            // 파일 열기 대화상자
+        })
+    fileMenu.Add("Save").
+        SetAccelerator("Ctrl+S").
+        OnClick(func(ctx *application.Context) {
+            // 문서 저장
+        })
+    fileMenu.AddSeparator()
+    fileMenu.Add("Exit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+
+    // 편집 메뉴
+    editMenu := menu.AddSubmenu("Edit")
+    editMenu.Add("Undo").SetAccelerator("Ctrl+Z")
+    editMenu.Add("Redo").SetAccelerator("Ctrl+Y")
+    editMenu.AddSeparator()
+    editMenu.Add("Cut").SetAccelerator("Ctrl+X")
+    editMenu.Add("Copy").SetAccelerator("Ctrl+C")
+    editMenu.Add("Paste").SetAccelerator("Ctrl+V")
+
+    // 보기 메뉴
+    viewMenu := menu.AddSubmenu("View")
+    darkMode := viewMenu.AddCheckbox("Dark Mode", false)
+    darkMode.OnClick(func(ctx *application.Context) {
+        // 다크 모드 토글
+        isChecked := darkMode.Checked()
+        app.Logger.Info("Dark mode", "enabled", isChecked)
+    })
+    viewMenu.AddSeparator()
+    viewMenu.AddRadio("List View", true)
+    viewMenu.AddRadio("Grid View", false)
+    viewMenu.AddRadio("Detail View", false)
+
+    // 도움말 메뉴
+    helpMenu := menu.AddSubmenu("Help")
+    helpMenu.Add("Documentation").OnClick(func(ctx *application.Context) {
+        // 문서 열기
+    })
+    helpMenu.Add("About").OnClick(func(ctx *application.Context) {
+        // 정보 대화상자 표시
+    })
+
+    return menu
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Menu Demo",
+    })
+
+    menu := createMenu(app)
+    app.Menu.Set(menu)
+
+    window := app.Window.New()
+    window.Show()
+
+    app.Run()
+}
+```
+
+### 시스템 트레이 애플리케이션
+
+```go
+func setupSystemTray(app *application.Application, window *application.Window) {
+    // 시스템 트레이 생성
+    tray := app.SystemTray.New()
+
+    // 아이콘 설정
+    iconData, _ := os.ReadFile("icon.png")
+    tray.SetIcon(iconData)
+    tray.SetTooltip("My App - Running")
+
+    // 트레이 아이콘 왼쪽 클릭 처리
+    tray.OnClick(func() {
+        if window.IsVisible() {
+            window.Hide()
+        } else {
+            window.Show()
+            window.SetFocus()
+        }
+    })
+
+    // 트레이 메뉴 생성
+    trayMenu := app.NewMenu()
+
+    showItem := trayMenu.Add("Show Window")
+    showItem.OnClick(func(ctx *application.Context) {
+        window.Show()
+        window.SetFocus()
+    })
+
+    trayMenu.AddSeparator()
+
+    trayMenu.Add("Settings").OnClick(func(ctx *application.Context) {
+        // 설정 창 열기
+    })
+
+    trayMenu.Add("About").OnClick(func(ctx *application.Context) {
+        // 정보 대화상자 표시
+    })
+
+    trayMenu.AddSeparator()
+
+    trayMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+
+    tray.SetMenu(trayMenu)
+}
+```
+
+### 동적 메뉴 업데이트
+
+```go
+type Editor struct {
+    app         *application.Application
+    menu        *application.Menu
+    undoItem    *application.MenuItem
+    redoItem    *application.MenuItem
+    saveItem    *application.MenuItem
+    undoStack   []string
+    redoStack   []string
+    hasChanges  bool
+}
+
+func (e *Editor) createMenu() {
+    e.menu = e.app.NewMenu()
+
+    fileMenu := e.menu.AddSubmenu("File")
+    e.saveItem = fileMenu.Add("Save").SetAccelerator("Ctrl+S")
+    e.saveItem.OnClick(func(ctx *application.Context) {
+        e.save()
+    })
+
+    editMenu := e.menu.AddSubmenu("Edit")
+    e.undoItem = editMenu.Add("Undo").SetAccelerator("Ctrl+Z")
+    e.undoItem.OnClick(func(ctx *application.Context) {
+        e.undo()
+    })
+
+    e.redoItem = editMenu.Add("Redo").SetAccelerator("Ctrl+Y")
+    e.redoItem.OnClick(func(ctx *application.Context) {
+        e.redo()
+    })
+
+    e.updateMenuState()
+    e.app.Menu.Set(e.menu)
+}
+
+func (e *Editor) updateMenuState() {
+    // 현재 상태에 따라 메뉴 항목 업데이트
+    e.saveItem.SetEnabled(e.hasChanges)
+    e.undoItem.SetEnabled(len(e.undoStack) > 0)
+    e.redoItem.SetEnabled(len(e.redoStack) > 0)
+    e.menu.Update()
+}
+
+func (e *Editor) onChange() {
+    e.hasChanges = true
+    e.updateMenuState()
+}
+
+func (e *Editor) save() {
+    // 저장 로직
+    e.hasChanges = false
+    e.updateMenuState()
+}
+```
+
+## 모범 사례
+
+### ✅ 권장 사항
+
+- **표준 단축키 사용** - 플랫폼 관례를 따르세요 (복사에는 Ctrl+C 등)
+- **변경 후 Update() 호출** - 그렇지 않으면 메뉴에 변경 사항이 반영되지 않습니다
+- **관련 항목 그룹화** - 구분선을 사용하여 메뉴 항목을 정리하세요
+- **사용 불가능한 작업 비활성화** - 숨기지 말고 SetEnabled(false)로 비활성화하세요
+- **명확한 레이블 사용** - 간결하고 설명적으로 작성하세요
+- **플랫폼 관례 따르기** - macOS와 Windows/Linux의 메뉴 패턴 차이 고려
+
+### ❌ 금지 사항
+
+- **Update() 잊지 않기** - 가장 흔한 실수입니다
+- **너무 깊이 중첩하지 않기** - 메뉴는 최대 2~3단계로 유지하세요
+- **모호한 레이블 사용 금지** - "Process" vs "Process Document"
+- **과도하게 복잡하게 만들지 않기** - 메뉴를 단순하고 집중되게 유지하세요
+- **비유 섞지 않기** - 일관된 네이밍과 조직 구조 유지
+
+## 플랫폼별 참고 사항
+
+### macOS
+
+- 애플리케이션 메뉴가 앱 이름과 함께 자동으로 추가됩니다
+- 단축키에 `Ctrl` 대신 `Cmd`를 사용하세요
+- 애플리케이션 메뉴에는 기본적으로 "About", "Preferences", "Quit"가 포함됩니다
+
+### Windows/Linux
+
+- 자동 애플리케이션 메뉴가 없습니다
+- 단축키에 `Ctrl`을 사용하세요
+- "Exit"는 일반적으로 파일 메뉴에 위치합니다

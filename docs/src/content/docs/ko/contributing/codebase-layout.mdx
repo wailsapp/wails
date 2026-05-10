@@ -1,0 +1,210 @@
+---
+title: 코드베이스 레이아웃
+description: Wails v3 저장소의 구조와 각 구성 요소가 어떻게 연결되는지
+sidebar:
+  order: 2
+---
+
+Wails v3는 프레임워크 런타임, CLI, 예제, 문서 및 빌드 도구 체인을 포함하는 **모노레포(monorepo)**에서 관리됩니다.  
+이 페이지는 내부 구조를 파악하는 데 중요한 *디렉토리 구조*를 단계별로 설명합니다.
+
+## 최상위 구조
+
+```
+wails/
+├── v3/               # ⬅️ Wails v3에 특화된 모든 코드가 여기에 위치합니다
+├── v2/               # 레거시 v2 구현 (v3 작업 시 무시해도 됩니다)
+├── docs/             # Astro 기반 v3 문서 사이트 (현재 페이지!)
+├── website/          # Docusaurus v2 사이트 및 마케팅 페이지 (메인 사이트)
+├── scripts/          # 기타 유틸리티 스크립트 (예: 스폰서 이미지 생성기)
+├── mkdocs-website/   # 사용 중단된 v3 문서 프로토타입
+└── *.md              # 프로젝트 전체 메타 파일 (CHANGELOG, LICENSE, …)
+```
+
+이제부터 **`v3/`** 트리를 자세히 살펴보겠습니다.
+
+## `v3/` 루트
+
+```
+v3/
+├── cmd/          # 컴파일 가능한 명령어 (현재는 wails3 CLI만 포함)
+├── examples/     # 모든 기능을 테스트하는 실습 샘플 앱
+├── internal/     # 프레임워크 구현부 (공개 API 아님)
+├── pkg/          # 공개 Go 패키지 ‑ API 표면
+├── tasks/        # Taskfile 기반 릴리즈 유틸리티
+├── templates/    # RFC 스타일 제안서(WEP) + 공통 자원
+├── go.mod
+└── go.sum
+```
+
+### 개념적 모델
+
+1. **`pkg/`**는 *애플리케이션 개발자가 임포트하는 부분*을 노출합니다.
+2. **`internal/`**는 *마법이 어떻게 구현되는지*를 담고 있습니다.
+3. **`cmd/wails3`**는 *프로젝트 수명 주기 및 빌드*를 담당합니다.
+4. **`examples/`**는 *살아있는 테스트*이자 *참조 코드* 역할을 합니다.
+
+나머지 모든 요소는 이 세 가지 기둥을 지원합니다.
+
+---
+
+## `cmd/` – 명령어
+
+| 경로 | 설명 |
+|------|-----|
+| `v3/cmd/wails3` | **CLI 진입점**. 작은 `main.go`가 모든 로직을 `internal/commands`의 패키지로 위임합니다. |
+| `internal/commands/*` | 하위 명령어(init, dev, build, doctor 등). 각 명령어는 개별 파일에 위치하여 쉽게 찾을 수 있습니다. |
+| `internal/commands/task_wrapper.go` | CLI 플래그와 Taskfile 빌드 파이프라인 간의 브릿지 역할을 합니다. |
+
+CLI는 다음을 담당합니다:
+
+* **프로젝트 초기화** (`init`, 템플릿 생성)  
+* **개발 서버 오케스트레이션** (`dev`, 실시간 새로고침)  
+* **프로덕션 빌드 및 패키징** (`build`, `package`, 플랫폼 래퍼)  
+* **진단** (`doctor`)  
+
+---
+
+## `internal/` – 엔진 룸
+
+```
+internal/
+├── assetserver/  # 웹 자원 서빙 및 임베딩
+├── buildinfo/    # 재현 가능한 빌드 메타데이터
+├── commands/     # CLI 메커니즘 (위 참조)
+├── runtime/      # 데스크톱 런타임 (플랫폼별)
+├── generator/    # 정적 분석 및 바인딩 생성기
+├── templates/    # 프로젝트 템플릿 (프론트엔드 스택)
+├── packager/     # Linux AppImage/deb/rpm, Windows MSI, macOS DMG
+├── capabilities/ # 호스트 OS 기능 탐지
+├── dbus/         # Linux 시스템 트레이 통합
+├── service/      # IPC 마이크로서비스 프레임워크
+└── ...           # [기타 보조 하위 패키지]
+```
+
+### 주요 하위 패키지
+
+| 패키지 | 책임 | 연결 위치 |
+|---------|-----|-----|
+| `runtime` | 창/이벤트 루프, 클립보드, 대화 상자, 시스템 트레이. OS별 파일 하나와 빌드 태그(`*_darwin.go`, `*_linux.go`, …)로 구성됩니다. | `pkg/application` 및 메시지 프로세서에서 호출됩니다. |
+| `assetserver` | 듀얼 모드 파일 서버:<br />• Dev: 디스크에서 서빙 및 Vite 프록시<br />• Prod: `go:embed`를 통해 자원 임베딩 | 시작 시 `pkg/application`에 의해 초기화됩니다. |
+| `generator` | Go 소스를 파싱하여 **바인딩 메타데이터**를 생성하고, 이후 TypeScript 스터브 파일과 Go marshal/unmarshal 코드를 생성합니다. | `wails3 init` / `wails3 generate`에 의해 트리거됩니다. |
+| `packager` | 플랫폼별 패키징 CLI(예: `electron-builder` equivalents)를 Go로 래핑하여 크로스 플랫폼 자동화를 가능하게 합니다. | `wails3 package`에 의해 호출됩니다. |
+
+지원 유틸리티(예: `s/`, `hash/`, `flags/`)는 내부 관심사를 분리된 상태로 유지합니다.
+
+---
+
+## `pkg/` – 공개 API
+
+```
+pkg/
+├── application/   # 핵심 API: 창, 메뉴, 대화 상자, 이벤트, …
+├── runtime/       # JS 측 헬퍼 (브리지, 이벤트, 화면, ...)
+├── options/       # 강력하게 타입 지정된 구성 구조체
+├── menu/          | 선언적 메뉴 DSL
+└── ...            # 플랫폼 헬퍼 (mac/, windows/, assetserver/, …)
+```
+
+`pkg/application`은 Wails 프로그램을 부트스트랩합니다:
+
+```go
+func main() {
+    app := application.New(application.Options{
+        Name: "MyApp",
+        Assets: application.NewAssetsFS(assetsFS),
+    })
+    window := app.Window.New(&application.WebviewWindowOptions{
+        Title:  "Hello",
+        Width:  1024,
+        Height: 768,
+    })
+    app.Run()
+}
+```
+
+내부적으로 다음과 같은 작업을 수행합니다:
+
+1. `internal.runtime.*` 시작
+2. `assetserver` 설정
+3. `internal.generator`에서 생성된 바인딩 등록
+4. OS 메인 스레드 진입
+
+---
+
+## `examples/` – 살아있는 명세
+
+각 하위 폴더는 하나의 기능을 구현하는 **독립적인 애플리케이션**입니다.  
+실제 코드에서 발견할 수 있는 패턴들:
+
+* 바인딩 서비스 (`examples/binding/`)  
+* 멀티 윈도우 (`examples/window/`)  
+* 시스템 트레이 (`examples/systray-*`)  
+* 패키징 (`examples/file-association/`)  
+
+궁금한 점이 있다면 여기서 시작하여 구현을 자세히 살펴보세요.
+
+---
+
+## `templates/` – 초기화 청사진
+
+`internal/templates`는 **기본 템플릿**(Go 레이아웃)과 **프론트엔드 스킨**(React, Svelte, Vue, …)을 제공합니다.  
+`wails3 init -t react` 실행 시 CLI는 다음을 수행합니다:
+
+1. `_common` Go 파일 복사
+2. 원하는 프론트엔드 팩 병합
+3. `npm install` + `task deps` 실행
+
+템플릿을 편집해도 기존 앱에는 영향을 주지 않으며, 향후 `init` 명령어에만 영향을 줍니다.
+
+---
+
+## `tasks/` – 릴리즈 자동화
+
+Taskfile은 복잡한 크로스 컴파일, 버전 증가 및 changelog 생성을 래핑합니다.  
+이들은 `internal/commands/task.go`에 의해 프로그래밍 방식으로 소비되므로, 동일한 로직이 **CLI**와 **CI** 모두에서 사용됩니다.
+
+---
+
+## 구성 요소 간 상호 작용
+
+```d2
+direction: down
+CLI: "wails3 CLI"
+Generator: "internal/generator"
+AssetDev: "assetserver (dev)"
+Packager: "internal/packager"
+AppRuntime: {
+  label: "App runtime"
+  ApplicationPkg: "pkg.application"
+  InternalRuntime: "internal.runtime"
+  OSAPIs: "OS APIs"
+}
+CLI -> Generator: "build / generate"
+CLI -> AssetDev: "dev"
+CLI -> Packager: "package"
+Generator -> ApplicationPkg: "bindings"
+ApplicationPkg -> InternalRuntime
+InternalRuntime -> OSAPIs
+ApplicationPkg -> AssetDev
+```
+
+*CLI → generator → runtime* 경로는 **소스**에서 **실행 중인 데스크톱 앱**으로 가는 핵심 경로입니다.
+
+---
+
+## 탐색 팁
+
+| 이해해야 할 사항 | 참조 위치 |
+|---------------------|--|
+| 플랫폼 shim | `internal/runtime/*_DARWIN.go`, `*_windows.go`, … |
+| 브리지 프로토콜 | `pkg/application/messageprocessor_*.go` |
+| 자원 워크플로우 | `internal/assetserver`, `v3/templates/base/assets` |
+| 패키징 흐름 | `internal/commands/appimage.go`, `internal/packager` |
+| 템플릿 엔진 | `internal/templates/templates.go` |
+| 정적 분석 | `internal/generator/*` |
+
+---
+
+이제 저장소의 **개념적 지도**를 갖추셨습니다.  
+`ripgrep`, IDE의 "파일/심볼로 이동" 기능 및 예제 앱과 함께 사용하여 각 기능의 내부로 더 깊이 탐색하세요. 즐거운 코딩 되세요!

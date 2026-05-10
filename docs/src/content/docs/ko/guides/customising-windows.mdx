@@ -1,0 +1,120 @@
+---
+title: Wails에서 창 사용자 지정
+description: Wails 애플리케이션에서 창 외관과 동작을 사용자 지정하는 방법
+sidebar:
+  order: 10
+---
+
+import {Badge} from '@astrojs/starlight/components';
+
+해당 플랫폼: <Badge text="Windows" variant="note" /> <Badge text="macOS" variant="success" />
+<br/>
+
+Wails는 창의 컨트롤 외관과 기능을 제어하기 위한 API를 제공합니다. 이 기능은 Windows와 macOS에서 사용할 수 있지만, Linux에서는 사용할 수 없습니다.
+
+## 창 버튼 상태 설정
+
+버튼 상태는 `ButtonState` 열거형으로 정의됩니다:
+
+```go
+type ButtonState int
+
+const (
+    ButtonEnabled   ButtonState = 0
+    ButtonDisabled  ButtonState = 1
+    ButtonHidden    ButtonState = 2
+)
+```
+
+- `ButtonEnabled`: 버튼이 활성화되어 표시됨.
+- `ButtonDisabled`: 버튼은 표시되지만 비활성화됨 (회색으로 표시).
+- `ButtonHidden`: 버튼이 제목 표시줄에서 숨겨짐.
+
+버튼 상태는 창 생성 시 또는 실행 중에 설정할 수 있습니다.
+
+### 창 생성 시 버튼 상태 설정
+
+새 창을 생성할 때 `WebviewWindowOptions` 구조체를 사용하여 버튼의 초기 상태를 설정할 수 있습니다:
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "My Application",
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        MinimiseButtonState: application.ButtonHidden,
+        MaximiseButtonState: application.ButtonDisabled,
+        CloseButtonState:    application.ButtonEnabled,
+    })
+
+    app.Run()
+}
+```
+
+위의 예시에서 최소화 버튼은 숨겨지고, 최대화 버튼은 비활성화(회색)되며, 닫기 버튼은 활성화됩니다.
+
+### 실행 중 버튼 상태 설정
+
+`Window` 인터페이스의 다음 메서드를 사용하여 실행 중에도 버튼 상태를 변경할 수 있습니다:
+
+```go
+window.SetMinimiseButtonState(wails.ButtonHidden)
+window.SetMaximiseButtonState(wails.ButtonEnabled)
+window.SetCloseButtonState(wails.ButtonDisabled)
+```
+
+### 플랫폼 간 차이점
+
+버튼 상태 기능은 Windows와 macOS에서 약간 다르게 동작합니다:
+
+|                       | Windows                | Mac                    |
+|-----------------------|------------------------|------------------------|
+| Min/Max/Close 비활성화 | Min/Max/Close 비활성화 | Min/Max/Close 비활성화 |
+| Min 숨기기            | Min 비활성화           | Min 버튼 숨기기        |
+| Max 숨기기            | Max 비활성화           | Max 버튼 숨기기        |
+| Close 숨기기          | 모든 컨트롤 숨기기     | Close 숨기기           |
+
+참고: Windows에서는 Min/Max 버튼을 개별적으로 숨길 수 없습니다. 하지만 두 버튼 모두 비활성화하면 해당 컨트롤이 숨겨지고 닫기 버튼만 표시됩니다.
+
+### 창 스타일 제어 (Windows)
+
+Windows에서 제목 표시줄의 스타일을 제어하려면 `WebviewWindowOptions` 구조체의 `ExStyle` 필드를 사용할 수 있습니다:
+
+예시:
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/w32"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My Application",
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Windows: application.WindowsWindow{
+            ExStyle: w32.WS_EX_TOOLWINDOW | w32.WS_EX_NOREDIRECTIONBITMAP | w32.WS_EX_TOPMOST,
+        },
+    })
+
+    app.Run()
+}
+```
+
+창의 확장 스타일에 영향을 미치는 다른 옵션들은 이 설정에 의해 재정의됩니다:
+
+- HiddenOnTaskbar
+- AlwaysOnTop
+- IgnoreMouseEvents
+- BackgroundType

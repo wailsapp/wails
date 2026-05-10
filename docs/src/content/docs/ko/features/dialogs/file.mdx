@@ -1,0 +1,330 @@
+---
+title: 파일 대화상자
+description: 파일 열기, 저장 및 폴더 선택 대화상자
+sidebar:
+  order: 3
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 파일 대화상자
+
+Wails는 파일을 열기, 파일 저장 및 폴더 선택을 위해 플랫폼에 맞는 외관의 **네이티브 파일 대화상자**를 제공합니다. 파일 유형 필터링, 여러 파일 선택 지원 및 기본 위치 설정이 가능한 간단한 API를 갖추고 있습니다.
+
+## 파일 대화상자 생성
+
+파일 대화상자는 `app.Dialog` 매니저를 통해 접근할 수 있습니다:
+
+```go
+app.Dialog.OpenFile()
+app.Dialog.SaveFile()
+```
+
+## 파일 열기 대화상자
+
+열 파일을 선택합니다:
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("이미지 선택").
+    AddFilter("이미지", "*.png;*.jpg;*.gif").
+    AddFilter("모든 파일", "*.*").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+openFile(path)
+```
+
+**사용 사례:**
+- 문서 열기
+- 파일 가져오기
+- 이미지 로드
+- 구성 파일 선택
+
+### 단일 파일 선택
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("문서 열기").
+    AddFilter("텍스트 파일", "*.txt").
+    AddFilter("모든 파일", "*.*").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    // 사용자가 취소했거나 오류가 발생함
+    return
+}
+
+// 선택한 파일 사용
+data, _ := os.ReadFile(path)
+```
+
+### 여러 파일 선택
+
+```go
+paths, err := app.Dialog.OpenFile().
+    SetTitle("이미지 선택").
+    AddFilter("이미지", "*.png;*.jpg;*.jpeg;*.gif").
+    PromptForMultipleSelection()
+
+if err != nil {
+    return
+}
+
+// 선택한 모든 파일 처리
+for _, path := range paths {
+    processFile(path)
+}
+```
+
+### 기본 디렉토리 포함
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("파일 열기").
+    SetDirectory("/Users/me/Documents").
+    PromptForSingleSelection()
+```
+
+## 파일 저장 대화상자
+
+저장할 위치를 선택합니다:
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("document.txt").
+    AddFilter("텍스트 파일", "*.txt").
+    AddFilter("모든 파일", "*.*").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+saveFile(path, data)
+```
+
+**사용 사례:**
+- 문서 저장
+- 데이터 내보내기
+- 새 파일 생성
+- 다른 이름으로 저장...
+
+### 기본 파일 이름 포함
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("export.csv").
+    AddFilter("CSV 파일", "*.csv").
+    PromptForSingleSelection()
+```
+
+### 기본 디렉토리 포함
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetDirectory("/Users/me/Documents").
+    SetFilename("untitled.txt").
+    PromptForSingleSelection()
+```
+
+### 덮어쓰기 확인
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("document.txt").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+// 파일 존재 여부 확인
+if _, err := os.Stat(path); err == nil {
+    dialog := app.Dialog.Question().
+        SetTitle("덮어쓰기 확인").
+        SetMessage("파일이 이미 존재합니다. 덮어쓰시겠습니까?")
+
+    overwriteBtn := dialog.AddButton("덮어쓰기")
+    overwriteBtn.OnClick(func() {
+        saveFile(path, data)
+    })
+
+    cancelBtn := dialog.AddButton("취소")
+    dialog.SetDefaultButton(cancelBtn)
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+    return
+}
+
+saveFile(path, data)
+```
+
+## 폴더 선택 대화상자
+
+디렉토리 선택이 활성화된 파일 열기 대화상자를 사용하여 디렉토리를 선택합니다:
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("출력 폴더 선택").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+exportToFolder(path)
+```
+
+**사용 사례:**
+- 출력 디렉토리 선택
+- 작업 공간 선택
+- 백업 위치 선택
+- 설치 디렉토리 선택
+
+### 기본 디렉토리 포함
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("폴더 선택").
+    SetDirectory("/Users/me/Documents").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+```
+
+## 파일 필터
+
+`AddFilter()` 메서드를 사용하여 대화상자에 파일 유형 필터를 추가합니다. 각 호출은 새로운 필터 옵션을 추가합니다.
+
+### 기본 필터
+
+```go
+path, _ := app.Dialog.OpenFile().
+    AddFilter("텍스트 파일", "*.txt").
+    AddFilter("모든 파일", "*.*").
+    PromptForSingleSelection()
+```
+
+### 여러 확장자
+
+세미콜론을 사용하여 단일 필터 내에서 여러 확장자를 지정합니다:
+
+```go
+dialog := app.Dialog.OpenFile().
+    AddFilter("이미지", "*.png;*.jpg;*.jpeg;*.gif;*.bmp").
+    AddFilter("문서", "*.txt;*.doc;*.docx;*.pdf").
+    AddFilter("모든 파일", "*.*")
+```
+
+### 패턴 형식
+
+단일 필터 내에서 여러 확장자를 구분하려면 **세미콜론**을 사용합니다:
+
+```go
+// 세미콜론으로 구분된 여러 확장자
+AddFilter("이미지", "*.png;*.jpg;*.gif")
+```
+
+## 전체 예제
+
+### 이미지 파일 열기
+
+```go
+func openImage(app *application.App) (image.Image, error) {
+    path, err := app.Dialog.OpenFile().
+        SetTitle("이미지 선택").
+        AddFilter("이미지", "*.png;*.jpg;*.jpeg;*.gif;*.bmp").
+        PromptForSingleSelection()
+
+    if err != nil {
+        return nil, err
+    }
+
+    if path == "" {
+        return nil, errors.New("선택된 파일이 없음")
+    }
+
+    // 이미지 열기 및 디코딩
+    file, err := os.Open(path)
+    if err != nil {
+        app.Dialog.Error().
+            SetTitle("열기 실패").
+            SetMessage(err.Error()).
+            Show()
+        return nil, err
+    }
+    defer file.Close()
+
+    img, _, err := image.Decode(file)
+    if err != nil {
+        app.Dialog.Error().
+            SetTitle("잘못된 이미지").
+            SetMessage("이미지 파일을 디코딩할 수 없습니다.").
+            Show()
+        return nil, err
+    }
+
+    return img, nil
+}
+```
+
+### 유효성 검사와 함께 문서 저장
+
+```go
+func saveDocument(app *application.App, content string) {
+    path, err := app.Dialog.SaveFile().
+        SetFilename("document.txt").
+        AddFilter("텍스트 파일", "*.txt").
+        AddFilter("마크다운 파일", "*.md").
+        AddFilter("모든 파일", "*.*").
+        PromptForSingleSelection()
+
+    if err != nil || path == "" {
+        return
+    }
+
+    // 확장자 유효성 검사
+    ext := filepath.Ext(path)
+    if ext != ".txt" && ext != ".md" {
+        dialog := app.Dialog.Question().
+            SetTitle("확장자 확인").
+            SetMessage(fmt.Sprintf("%s 파일로 저장하시겠습니까?", ext))
+
+        saveBtn := dialog.AddButton("저장")
+        saveBtn.OnClick(func() {
+            doSave(app, path, content)
+        })
+
+        cancelBtn := dialog.AddButton("취소")
+        dialog.SetDefaultButton(cancelBtn)
+        dialog.SetCancelButton(cancelBtn)
+        dialog.Show()
+        return
+    }
+
+    doSave(app, path, content)
+}
+
+func doSave(app *application.App, path, content string) {
+    if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+        app.Dialog.Error().
+            SetTitle("저장 실패").
+            SetMessage(err.Error()).
+            Show()
+        return
+    }
+
+    app.Dialog.Info().
+        SetTitle("저장됨").
+        SetMessage("문서가 성공적으로 저장되었습니다!").
+        Show()
+}
+```---
+
+**질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 문의하거나 [파일 대화상자 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs)를 확인하세요.

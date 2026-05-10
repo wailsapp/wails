@@ -1,0 +1,116 @@
+---
+title: 패닉 처리
+description: Wails 애플리케이션에서 패닉을 처리하는 방법
+---
+
+Go 애플리케이션에서 패닉은 예기치 않은 일이 발생했을 때 런타임 중에 발생할 수 있습니다. 이 가이드는 일반적인 Go 코드와 Wails 애플리케이션 모두에서 패닉을 처리하는 방법을 설명합니다.
+
+## Go에서의 패닉 이해
+
+Wails 특유의 패닉 처리로 들어가기 전에, Go에서 패닉이 어떻게 작동하는지 이해하는 것이 필수적입니다:
+
+1. 패닉은 정상적인 동작 중 발생해서는 안 되는 복구 불가능한 오류를 위해 사용됩니다.
+2. 고루틴에서 패닉이 발생하면 해당 고루틴만 영향을 받습니다.
+3. 패닉은 `defer`와 `recover()`를 사용하여 복구할 수 있습니다.
+
+Go에서 패닉 처리의 기본 예시는 다음과 같습니다:
+
+```go
+func doSomething() {
+    // defer된 함수는 패닉이 발생해도 실행됩니다
+    defer func() {
+        if r := recover(); r != nil {
+            fmt.Printf("Recovered from panic: %v\n", r)
+        }
+    }()
+    
+    // 패닉이 발생할 수 있는 코드
+    panic("something went wrong")
+}
+```
+
+Go의 panic과 recover에 대한 더 자세한 정보는 [Go Blog: Defer, Panic, and Recover](https://go.dev/blog/defer-panic-and-recover)를 참조하세요.
+
+## Wails에서의 패닉 처리
+
+Wails는 프론트엔드에서 호출될 때 서비스 메서드에서 발생하는 패닉을 자동으로 처리합니다. 이는 이러한 메서드에 패닉 복구를 추가할 필요가 없다는 것을 의미합니다. Wails가 패닉을 포착하고 구성된 패닉 처리기를 통해 처리합니다.
+
+패닉 처리기는 다음을 포착하도록 특별히 설계되었습니다:
+- 프론트엔드에서 호출된 바인딩된 서비스 메서드의 패닉
+- Wails 런타임의 내부 패닉
+
+배경 고루틴이나 독립 실행형 Go 코드와 같은 다른 시나리오의 경우, Go의 표준 패닉 복구 메커니즘을 사용하여 패닉을 직접 처리해야 합니다.
+
+## PanicDetails 구조체
+
+패닉이 발생하면 Wails는 패닉에 대한 중요한 정보를 `PanicDetails` 구조체에 캡처합니다:
+
+```go
+type PanicDetails struct {
+    StackTrace     string    // 패닉이 발생한 위치의 스택 트레이스. 더 많은 컨텍스트를 제공하기 위해 잘릴 수 있음
+    Error          error     // 패닉을 유발한 오류
+    Time           time.Time // 패닉이 발생한 시간
+    FullStackTrace string    // 런타임 프레임을 포함한 전체 스택 트레이스
+}
+```
+
+이 구조체는 패닉에 대한 포괄적인 정보를 제공합니다:
+- `StackTrace`: 패닉으로 이어진 호출 스택을 보여주는 포맷된 문자열
+- `Error`: 실제 오류 또는 패닉 메시지
+- `Time`: 패닉이 발생한 정확한 시간
+- `FullStackTrace`: 런타임 프레임을 포함한 전체 스택 트레이스
+
+:::note[서비스 코드에서의 패닉]
+
+프론트엔드에서 호출된 후 서비스 코드에서 패닉이 포착되면, 스택 트레이스는 코드 내에서 패닉이 정확히 어디서 발생했는지 집중하기 위해 잘립니다.
+전체 스택 트레이스를 보고 싶다면 `FullStackTrace` 필드를 사용할 수 있습니다.
+
+:::
+
+## 기본 패닉 처리기
+
+사용자 지정 패닉 처리기를 지정하지 않으면 Wails는 기본 처리기를 사용하여 포맷된 로그 메시지로 오류 정보를 출력한 후 종료합니다.
+예를 들어:
+
+```
+************************ FATAL ******************************
+* There has been a catastrophic failure in your application *
+********************* Error Details *************************
+panic error: oh no! something went wrong deep in my service! :(
+main.(*WindowService).call2
+	at E:/wails/v3/examples/panic-handling/main.go:23
+main.(*WindowService).call1
+	at E:/wails/v3/examples/panic-handling/main.go:19
+main.(*WindowService).GeneratePanic
+	at E:/wails/v3/examples/panic-handling/main.go:15
+*************************************************************
+```
+
+## 사용자 지정 패닉 처리기
+
+애플리케이션을 생성할 때 `PanicHandler` 옵션을 설정하여 자신만의 패닉 처리기를 구현할 수 있습니다. 다음은 예시입니다:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    PanicHandler: func(panicDetails *application.PanicDetails) {
+        fmt.Printf("*** Custom Panic Handler ***\n")
+        fmt.Printf("Time: %s\n", panicDetails.Time)
+        fmt.Printf("Error: %s\n", panicDetails.Error)
+        fmt.Printf("Stacktrace: %s\n", panicDetails.StackTrace)
+        fmt.Printf("Full Stacktrace: %s\n", panicDetails.FullStackTrace)
+        
+        // 또한 다음과 같은 것도 가능합니다:
+        // - 파일에 로그 기록
+        // - 충돌 보고 서비스로 전송
+        // - 사용자 친화적인 오류 대화 상자 표시
+        // - 애플리케이션 복구 또는 재시도 시도
+    },
+})
+```
+
+Wails 애플리케이션에서 패닉 처리의 완전한 작동 예시는 `v3/examples/panic-handling`의 panic-handling 예시를 참조하세요.
+
+## 마지막 참고 사항
+
+Wails 패닉 처리기는 바인딩된 메서드와 내부 런타임 오류의 패닉을 관리하기 위한 것임을 기억하세요. 애플리케이션의 다른 부분에서는 적절한 경우 Go의 표준 오류 처리 패턴과 패닉 복구 메커니즘을 사용해야 합니다. 모든 Go 애플리케이션과 마찬가지로, 가능한 경우 적절한 오류 처리를 통해 패닉을 예방하는 것이 좋습니다.

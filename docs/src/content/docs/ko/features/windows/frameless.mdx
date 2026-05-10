@@ -1,0 +1,789 @@
+---
+title: 프레임리스 윈도우
+description: 프레임리스 윈도우로 사용자 정의 윈도우 크롬 생성
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## 프레임리스 윈도우
+
+Wails는 CSS 기반 드래그 영역과 플랫폼 네이티브 동작을 지원하는 **프레임리스 윈도우** 기능을 제공합니다. 플랫폼 네이티브 제목 표시줄을 제거하여 윈도우 크롬, 사용자 정의 디자인, 그리고 고유한 사용자 경험을 완전히 제어할 수 있으며, 드래그, 크기 조정, 시스템 컨트롤 등 필수 기능은 유지됩니다.
+
+## 빠른 시작
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:     "Frameless App",
+    Width:     800,
+    Height:    600,
+    Frameless: true,
+})
+```
+
+**드래그 가능한 제목 표시줄용 CSS:**
+
+```css
+.titlebar {
+    --wails-draggable: drag;
+    height: 40px;
+    background: #333;
+}
+
+.titlebar button {
+    --wails-draggable: no-drag;
+}
+```
+
+**HTML:**
+
+```html
+<div class="titlebar">
+    <span>My Application</span>
+    <button onclick="window.close()">×</button>
+</div>
+```
+
+**이것으로 끝입니다!** 사용자 정의 제목 표시줄이 생성되었습니다.
+
+## 프레임리스 윈도우 생성하기
+
+### 기본 프레임리스 윈도우
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless: true,
+    Width:     800,
+    Height:    600,
+})
+```
+
+**제공되는 기능:**
+- 제목 표시줄 없음
+- 윈도우 테두리 없음
+- 시스템 버튼 없음
+- 투명 배경 (선택 사항)
+
+**구현해야 할 항목:**
+- 드래그 가능한 영역
+- 닫기/최소화/최대화 버튼
+- 크기 조정 핸들 (크기 조정이 가능한 경우)
+
+### 투명 배경 사용
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless:      true,
+    BackgroundType: application.BackgroundTypeTransparent,
+})
+```
+
+**사용 사례:**
+- 둥근 모서리
+- 사용자 정의 모양
+- 오버레이 윈도우
+- 스플래시 화면
+
+## 드래그 영역
+
+### CSS 기반 드래그
+
+`--wails-draggable` CSS 속성을 사용하세요:
+
+```css
+/* 드래그 가능한 영역 */
+.titlebar {
+    --wails-draggable: drag;
+}
+
+/* 드래그 가능한 영역 내 드래그 불가능 요소 */
+.titlebar button {
+    --wails-draggable: no-drag;
+}
+```
+
+**값:**
+- `drag` - 영역을 드래그할 수 있음
+- `no-drag` - 영역을 드래그할 수 없음 (부모가 드래그 가능하더라도)
+
+### 전체 제목 표시줄 예제
+
+```html
+<div class="titlebar">
+    <div class="title">My Application</div>
+    <div class="controls">
+        <button class="minimize">−</button>
+        <button class="maximize">□</button>
+        <button class="close">×</button>
+    </div>
+</div>
+```
+
+```css
+.titlebar {
+    --wails-draggable: drag;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 40px;
+    background: #2c2c2c;
+    color: white;
+    padding: 0 16px;
+}
+
+.title {
+    font-size: 14px;
+    user-select: none;
+}
+
+.controls {
+    display: flex;
+    gap: 8px;
+}
+
+.controls button {
+    --wails-draggable: no-drag;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.controls button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.controls .close:hover {
+    background: #e81123;
+}
+```
+
+**버튼용 JavaScript:**
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+document.querySelector('.minimize').addEventListener('click', () => Window.Minimise())
+document.querySelector('.maximize').addEventListener('click', () => Window.Maximise())
+document.querySelector('.close').addEventListener('click', () => Window.Close())
+```
+
+## 시스템 버튼
+
+### 닫기/최소화/최대화 구현하기
+
+**Go 측:**
+
+```go
+type WindowControls struct {
+    window *application.WebviewWindow
+}
+
+func (wc *WindowControls) Minimise() {
+    wc.window.Minimise()
+}
+
+func (wc *WindowControls) Maximise() {
+    if wc.window.IsMaximised() {
+        wc.window.UnMaximise()
+    } else {
+        wc.window.Maximise()
+    }
+}
+
+func (wc *WindowControls) Close() {
+    wc.window.Close()
+}
+```
+
+**JavaScript 측:**
+
+```javascript
+import { Minimise, Maximise, Close } from './bindings/WindowControls'
+
+document.querySelector('.minimize').addEventListener('click', Minimise)
+document.querySelector('.maximize').addEventListener('click', Maximise)
+document.querySelector('.close').addEventListener('click', Close)
+```
+
+**또는 런타임 메서드를 사용하세요:**
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+document.querySelector('.minimize').addEventListener('click', () => Window.Minimise())
+document.querySelector('.maximize').addEventListener('click', () => Window.Maximise())
+document.querySelector('.close').addEventListener('click', () => Window.Close())
+```
+
+### 최대화 상태 토글
+
+버튼 아이콘을 위해 최대화 상태를 추적하세요:
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+async function toggleMaximise() {
+    const isMaximised = await Window.IsMaximised()
+
+    if (isMaximised) {
+        await Window.Restore()
+    } else {
+        await Window.Maximise()
+    }
+
+    updateMaximiseButton()
+}
+
+async function updateMaximiseButton() {
+    const isMaximised = await Window.IsMaximised()
+    const button = document.querySelector('.maximize')
+    button.textContent = isMaximised ? '❐' : '□'
+}
+```
+
+## 크기 조정 핸들
+
+### CSS 기반 크기 조정
+
+Wails는 프레임리스 윈도우에 대해 자동 크기 조정 핸들을 제공합니다:
+
+```css
+/* 모든 모서리에서 크기 조정 활성화 */
+body {
+    --wails-resize: all;
+}
+
+/* 또는 특정 모서리 */
+.resize-top {
+    --wails-resize: top;
+}
+
+.resize-bottom {
+    --wails-resize: bottom;
+}
+
+.resize-left {
+    --wails-resize: left;
+}
+
+.resize-right {
+    --wails-resize: right;
+}
+
+/* 모서리 */
+.resize-top-left {
+    --wails-resize: top-left;
+}
+
+.resize-top-right {
+    --wails-resize: top-right;
+}
+
+.resize-bottom-left {
+    --wails-resize: bottom-left;
+}
+
+.resize-bottom-right {
+    --wails-resize: bottom-right;
+}
+```
+
+**값:**
+- `all` - 모든 모서리에서 크기 조정
+- `top`, `bottom`, `left`, `right` - 특정 모서리
+- `top-left`, `top-right`, `bottom-left`, `bottom-right` - 모서리
+- `none` - 크기 조정 없음
+
+### 크기 조정 핸들 예제
+
+```html
+<div class="window">
+    <div class="titlebar">...</div>
+    <div class="content">...</div>
+    <div class="resize-handle resize-bottom-right"></div>
+</div>
+```
+
+```css
+.resize-handle {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+}
+
+.resize-bottom-right {
+    --wails-resize: bottom-right;
+    bottom: 0;
+    right: 0;
+    cursor: nwse-resize;
+}
+```
+
+## 플랫폼별 동작
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+    **Windows 프레임리스 윈도우:**
+    
+    ```go
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Frameless: true,
+        Windows: application.WindowsOptions{
+            DisableFramelessWindowDecorations: false,
+        },
+    })
+    ```
+    
+    **기능:**
+    - 자동 드롭 섀도우
+    - 스냅 레이아웃 지원 (Windows 11)
+    - Aero Snap 지원
+    - DPI 스케일링
+    
+    **장식 비활성화:**
+    ```go
+    Windows: application.WindowsOptions{
+        DisableFramelessWindowDecorations: true,
+    },
+    ```
+    
+    **스냅 어시스트:**
+    ```go
+    // Windows 11 스냅 어시스트 트리거
+    window.SnapAssist()
+    ```
+    
+    **사용자 정의 제목 표시줄 높이:**
+    Windows는 CSS에서 드래그 영역을 자동으로 감지합니다.
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **macOS 프레임리스 윈도우:**
+    
+    ```go
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Frameless: true,
+        Mac: application.MacOptions{
+            TitleBarAppearsTransparent: true,
+            InvisibleTitleBarHeight:    40,
+        },
+    })
+    ```
+    
+    **기능:**
+    - 네이티브 전체 화면 지원
+    - 트래픽 라이트 버튼 (선택 사항)
+    - 비브레이션 효과
+    - 투명 제목 표시줄
+    
+    **트래픽 라이트 숨기기:**
+    ```go
+    Mac: application.MacOptions{
+        TitleBarStyle: application.MacTitleBarStyleHidden,
+    },
+    ```
+    
+    **투명 제목 표시줄:**타이틀 바를 숨기면서도 드래그할 수 있습니다. 이 설정은 윈도우가 프레임리스이거나 `AppearsTransparent`를 사용하는 경우에만 적용됩니다:
+    ```go
+    Mac: application.MacOptions{
+        InvisibleTitleBarHeight: 40,
+    },
+    ```
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **리눅스 프레임리스 윈도우:**
+    
+    ```go
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Frameless: true,
+    })
+    ```
+    
+    **기능:**
+    - 기본 프레임리스 지원
+    - CSS 드래그 영역
+    - 데스크톱 환경에 따라 다름
+    
+    **데스크톱 환경 참고 사항:**
+    - **GNOME:** 우수한 지원
+    - **KDE Plasma:** 우수한 지원
+    - **XFCE:** 기본 지원
+    - **타일링 WM:** 제한된 지원
+    
+    **컴포지터 필요:**
+    투명성은 컴포지터가 필요합니다 (대부분의 최신 DE에는 컴포지터가 있음).
+  </TabItem>
+</Tabs>
+
+## 일반적인 패턴
+
+### 패턴 1: 모던 타이틀 바
+
+```html
+<div class="modern-titlebar">
+    <div class="app-icon">
+        <img src="/icon.png" alt="App Icon">
+    </div>
+    <div class="title">My Application</div>
+    <div class="controls">
+        <button class="minimize">−</button>
+        <button class="maximize">□</button>
+        <button class="close">×</button>
+    </div>
+</div>
+```
+
+```css
+.modern-titlebar {
+    --wails-draggable: drag;
+    display: flex;
+    align-items: center;
+    height: 40px;
+    background: linear-gradient(to bottom, #3a3a3a, #2c2c2c);
+    border-bottom: 1px solid #1a1a1a;
+    padding: 0 16px;
+}
+
+.app-icon {
+    --wails-draggable: no-drag;
+    width: 24px;
+    height: 24px;
+    margin-right: 12px;
+}
+
+.title {
+    flex: 1;
+    font-size: 13px;
+    color: #e0e0e0;
+    user-select: none;
+}
+
+.controls {
+    display: flex;
+    gap: 1px;
+}
+
+.controls button {
+    --wails-draggable: no-drag;
+    width: 46px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: #e0e0e0;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.controls button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.controls .close:hover {
+    background: #e81123;
+    color: white;
+}
+```
+
+### 패턴 2: 스플래시 화면
+
+```go
+splash := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "Loading...",
+    Width:          400,
+    Height:         300,
+    Frameless:      true,
+    AlwaysOnTop:    true,
+    BackgroundType: application.BackgroundTypeTransparent,
+})
+```
+
+```css
+body {
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.splash {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    padding: 40px;
+    text-align: center;
+}
+```
+
+### 패턴 3: 둥근 모서리 윈도우
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless:      true,
+    BackgroundType: application.BackgroundTypeTransparent,
+})
+```
+
+```css
+body {
+    background: transparent;
+    margin: 8px;
+}
+
+.window {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    height: calc(100vh - 16px);
+}
+
+.titlebar {
+    --wails-draggable: drag;
+    background: #f5f5f5;
+    border-bottom: 1px solid #e0e0e0;
+}
+```
+
+### 패턴 4: 오버레이 윈도우
+
+```go
+overlay := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless:      true,
+    AlwaysOnTop:    true,
+    BackgroundType: application.BackgroundTypeTransparent,
+})
+```
+
+```css
+body {
+    background: transparent;
+}
+
+.overlay {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    padding: 20px;
+}
+```
+
+## 전체 예제
+
+다음은 프로덕션 준비가 된 프레임리스 윈도우 예제입니다:
+
+**Go:**
+
+```go
+package main
+
+import (
+    _ "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Frameless App",
+    })
+
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:     "Frameless Application",
+        Width:     1000,
+        Height:    700,
+        MinWidth:  800,
+        MinHeight: 600,
+        Frameless: true,
+        
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+        
+        Mac: application.MacOptions{
+            TitleBarAppearsTransparent: true,
+            InvisibleTitleBarHeight:    40,
+        },
+        
+        Windows: application.WindowsOptions{
+            DisableFramelessWindowDecorations: false,
+        },
+    })
+
+    window.Center()
+    window.Show()
+
+    app.Run()
+}
+```
+
+**HTML:**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="window">
+        <div class="titlebar">
+            <div class="title">Frameless Application</div>
+            <div class="controls">
+                <button class="minimize" title="Minimise">−</button>
+                <button class="maximize" title="Maximise">□</button>
+                <button class="close" title="Close">×</button>
+            </div>
+        </div>
+        <div class="content">
+            <h1>Hello from Frameless Window!</h1>
+        </div>
+    </div>
+    <script src="/main.js" type="module"></script>
+</body>
+</html>
+```
+
+**CSS:**
+
+```css
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f5f5;
+}
+
+.window {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.titlebar {
+    --wails-draggable: drag;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 40px;
+    background: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 0 16px;
+}
+
+.title {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    user-select: none;
+}
+
+.controls {
+    display: flex;
+    gap: 8px;
+}
+
+.controls button {
+    --wails-draggable: no-drag;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: #666;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.controls button:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.controls .close:hover {
+    background: #e81123;
+    color: white;
+}
+
+.content {
+    flex: 1;
+    padding: 40px;
+    overflow: auto;
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+// Minimise button
+document.querySelector('.minimize').addEventListener('click', () => {
+    Window.Minimise()
+})
+
+// Maximise/restore button
+const maximiseBtn = document.querySelector('.maximize')
+maximiseBtn.addEventListener('click', async () => {
+    const isMaximised = await Window.IsMaximised()
+
+    if (isMaximised) {
+        await Window.Restore()
+    } else {
+        await Window.Maximise()
+    }
+
+    updateMaximiseButton()
+})
+
+// Close button
+document.querySelector('.close').addEventListener('click', () => {
+    Window.Close()
+})
+
+// Update maximise button icon
+async function updateMaximiseButton() {
+    const isMaximised = await Window.IsMaximised()
+    maximiseBtn.textContent = isMaximised ? '❐' : '□'
+    maximiseBtn.title = isMaximised ? 'Restore' : 'Maximise'
+}
+
+// Initial state
+updateMaximiseButton()
+```
+
+## 모범 사례
+
+### ✅ 권장 사항
+
+- **드래그 영역 제공** - 사용자가 윈도우를 이동할 수 있어야 합니다
+- **시스템 버튼 구현** - 닫기, 최소화, 최대화
+- **최소 크기 설정** - 사용 불가 레이아웃 방지
+- **모든 플랫폼에서 테스트** - 동작이 플랫폼마다 다를 수 있음
+- **CSS를 사용하여 드래그 영역 설정** - 유연하고 유지보수하기 쉬움
+- **시각적 피드백 제공** - 버튼에 호버 상태 적용
+
+### ❌ 금지 사항
+
+- **리사이즈 핸들을 잊지 마세요** - 윈도우가 리사이즈 가능한 경우
+- **전체 윈도우를 드래그 가능하게 만들지 마세요** - 상호작용을 방해합니다
+- **버튼에 no-drag를 잊지 마세요** - 버튼이 작동하지 않습니다---
+
+**질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하시거나 [프레임리스 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/frameless)를 확인하세요.

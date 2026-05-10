@@ -1,0 +1,929 @@
+---
+title: 프론트엔드 런타임
+description: 프론트엔드 통합을 위한 Wails JavaScript 런타임 패키지
+sidebar:
+  order: 1
+---
+
+Wails 프론트엔드 런타임은 Wails 애플리케이션의 표준 라이브러리입니다. 이 런타임은 애플리케이션에서 사용할 수 있는 여러 기능을 제공하며, 그중 일부는 다음과 같습니다:
+
+- 창 관리
+- 대화상자
+- 브라우저 통합
+- 클립보드
+- 메뉴
+- 시스템 정보
+- 이벤트
+- 컨텍스트 메뉴
+- 화면
+- WML(Wails Markup Language)
+
+런타임은 Go와 프론트엔드 간의 통합에 필요합니다. 런타임을 통합하는 방법은 두 가지가 있습니다:
+
+- `@wailsio/runtime` 패키지 사용
+- 사전 빌드된 번들 사용
+
+## npm 패키지 사용
+
+`@wailsio/runtime` 패키지는 프론트엔드에서 Wails 런타임에 접근할 수 있게 해주는 JavaScript 패키지입니다. 이 패키지는 모든 표준 템플릿에서 사용되며, 애플리케이션에 런타임을 통합하는 권장 방법입니다. `@wailsio/runtime` 패키지를 사용하면 런타임 중 사용하는 부분만 포함됩니다.
+
+이 패키지는 npm에서 사용할 수 있으며, 다음 명령어로 설치할 수 있습니다:
+
+```shell
+npm install --save @wailsio/runtime
+```
+
+## 사전 빌드된 번들 사용
+
+일부 프로젝트는 JavaScript 번들러를 사용하지 않으며 런타임의 사전 빌드된 번들 버전을 선호할 수 있습니다. 이 버전은 다음 명령어를 사용하여 로컬에서 생성할 수 있습니다:
+
+```shell
+wails3 generate runtime
+```
+
+이 명령어는 현재 디렉토리에 `runtime.js`(및 `runtime.debug.js`) 파일을 출력합니다. 이 파일은 ES 모듈이며 애플리케이션 스크립트에서 npm 패키지처럼 가져올 수 있지만, API는 전역 window 객체로도 내보내지므로, 더 간단한 애플리케이션의 경우 다음과 같이 사용할 수 있습니다:
+
+```html
+<html>
+    <head>
+        <script type="module" src="./runtime.js"></script>
+        <script>
+            window.onload = function () {
+                wails.Window.SetTitle("A new window title");
+            }
+        </script>
+    </head>
+    <!--- ... -->
+</html>
+```
+
+:::caution
+런타임을 로드하는 `<script>` 태그에 `type="module"` 속성을 포함하고 API를 호출하기 전에 페이지가 완전히 로드되기를 기다리는 것이 중요합니다.
+`type="module"` 속성이 있는 스크립트는 비동적으로 실행되기 때문입니다.
+:::
+
+## 초기화
+
+API 함수 외에도 런타임은 컨텍스트 메뉴와 창 드래그를 지원합니다. 이러한 기능은 런타임이 초기화된 후에야 예상대로 작동합니다. API를 사용하지 않더라도 프론트엔드 코드 어딘가에 사이드 이펙트 import 문을 포함해야 합니다:
+
+```javascript
+import "@wailsio/runtime";
+```
+
+번들러는 사이드 이펙트의 존재를 감지하고 빌드에 필요한 모든 초기화 코드를 포함해야 합니다.
+
+:::note
+사전 빌드된 번들을 선호하는 경우, 위에서 보이는 것처럼 스크립트 태그를 추가하면 충분합니다.
+:::
+
+## 타입 이벤트용 Vite 플러그인
+
+런타임에는 개발 중 타입 이벤트에 대한 HMR(Hot Module Replacement) 지원을 가능하게 하는 Vite 플러그인이 포함되어 있습니다.
+
+### 설정
+
+플러그인을 `vite.config.ts`에 추가합니다:
+
+```typescript
+import { defineConfig } from 'vite'
+import wails from '@wailsio/runtime/plugins/vite'
+
+export default defineConfig({
+  plugins: [wails()],
+})
+```
+
+### 장점
+
+- **자동 새로고침**: `wails3 generate bindings`를 실행할 때 이벤트 바인딩이 자동으로 재생성되고 새로고침됩니다.
+- **개발 모드**: 즉시 업데이트를 위해 `wails3 dev`와 원활하게 작동합니다.
+- **타입 안전성**: 자동 완성 및 타입 체크를 포함한 전체 TypeScript 지원.
+
+### 이벤트 등록과 함께 사용
+
+Go에서 이벤트를 등록합니다:
+
+```go
+type UserData struct {
+    ID   string
+    Name string
+}
+
+func init() {
+    application.RegisterEvent[UserData]("user-updated")
+}
+```
+
+바인딩을 생성합니다:
+
+```bash
+wails3 generate bindings
+
+# 또는 TypeScript 정의를 포함하려면
+wails3 generate bindings -ts
+
+# 더 많은 옵션은 다음을 참조하세요:
+wails3 generate bindings -help
+```
+
+프론트엔드에서 타입 이벤트를 사용합니다:
+
+```typescript
+import { Events } from '@wailsio/runtime'
+import { UserUpdated } from './bindings/events'
+
+// 자동 완성을 지원하는 타입 안전 이벤트
+Events.Emit(UserUpdated({
+    ID: "123",
+    Name: "John Doe"
+}))
+```
+
+## API 참조
+
+런타임은 모듈로 구성되어 있으며, 각 모듈은 특정 기능을 제공합니다. 필요한 것만 가져옵니다:
+
+```javascript
+import { Events, Window, Clipboard } from '@wailsio/runtime'
+```
+
+### Events
+
+Go와 JavaScript 간 통신을 위한 이벤트 시스템입니다.
+
+#### On()
+
+이벤트에 대한 콜백을 등록합니다.
+
+```typescript
+function On(eventName: string, callback: (event: WailsEvent) => void): () => void
+function On<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
+```
+
+**반환값:** 구독 해제 함수
+
+**예제:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// 기본 이벤트 리스닝
+const unsubscribe = Events.On('user-logged-in', (event) => {
+    console.log('User:', event.data.username)
+})
+
+// 타입 이벤트 사용 (TypeScript)
+import { UserLogin } from './bindings/events'
+
+Events.On(UserLogin, (event) => {
+    // event.data는 UserLoginData로 타입 지정됨
+    console.log('User:', event.data.username)
+})
+
+// 나중에: unsubscribe()
+```
+
+#### Once()
+
+한 번만 실행되는 콜백을 등록합니다.
+
+```typescript
+function Once(eventName: string, callback: (event: WailsEvent) => void): () => void
+function Once<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
+```
+
+**예제:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.Once('app-ready', () => {
+    console.log('App initialized')
+})
+```
+
+#### Emit()
+
+Go 백엔드 또는 다른 창으로 이벤트를 방출합니다.
+
+```typescript
+function Emit(name: string, data?: any): Promise<boolean>
+function Emit<T>(event: Event<T>): Promise<boolean>
+```
+
+**반환값:** 이벤트가 취소되면 `true`, 그렇지 않으면 `false`로 해결되는 Promise
+
+**예제:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// 기본 이벤트 방출
+const wasCancelled = await Events.Emit('button-clicked', { buttonId: 'submit' })
+
+// 타입 이벤트 사용 (TypeScript)
+import { UserLogin } from './bindings/events'
+
+const cancelled = await Events.Emit(UserLogin({
+    UserID: "123",
+    Username: "john_doe",
+    LoginTime: new Date().toISOString()
+}))
+
+if (cancelled) {
+    console.log('Login was cancelled by a hook')
+}
+```
+
+:::note
+반환값은 이벤트가 후크에 의해 취소되었는지 여부를 나타냅니다. 대부분의 이벤트는 취소될 수 없으며 항상 `false`를 반환합니다.
+:::
+
+#### Off()
+
+이벤트 리스너를 제거합니다.
+
+```typescript
+function Off(...eventNames: string[]): void
+```
+
+**예제:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.Off('user-logged-in', 'user-logged-out')
+```
+
+#### OffAll()
+
+모든 이벤트 리스너를 제거합니다.
+
+```typescript
+function OffAll(): void
+```
+
+### Window
+
+창 관리 메서드입니다. 기본 내보내기는 현재 창입니다.
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+// 현재 창
+await Window.SetTitle('New Title')
+await Window.Center()
+
+// 다른 창 가져오기
+const otherWindow = Window.Get('secondary')
+await otherWindow.Show()
+```
+
+#### 가시성
+
+**Show()** - 창을 표시합니다.
+
+```typescript
+function Show(): Promise<void>
+```
+
+**Hide()** - 창을 숨깁니다.
+
+```typescript
+function Hide(): Promise<void>
+```
+
+**Close()** - 창을 닫습니다.
+
+```typescript
+function Close(): Promise<void>
+```
+
+#### 크기 및 위치
+
+**SetSize(width, height)** - 창 크기를 설정합니다.
+
+```typescript
+function SetSize(width: number, height: number): Promise<void>
+```
+
+**Size()** - 창 크기를 가져옵니다.
+
+```typescript
+function Size(): Promise<{ width: number, height: number }>
+```
+
+**SetPosition(x, y)** - 절대 위치를 설정합니다.
+
+```typescript
+function SetPosition(x: number, y: number): Promise<void>
+```
+
+**Position()** - 절대 위치를 가져옵니다.
+
+```typescript
+function Position(): Promise<{ x: number, y: number }>
+```
+
+**Center()** - 창을 중앙에 배치합니다.
+
+```typescript
+function Center(): Promise<void>
+```
+
+**예제:**
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+// 크기 조정 및 중앙 배치
+await Window.SetSize(800, 600)
+await Window.Center()```html
+<!-- Get current size -->
+const { width, height } = await Window.Size()
+```
+
+#### 창 상태
+
+**Minimise()** - 창을 최소화합니다
+
+```typescript
+function Minimise(): Promise<void>
+```
+
+**Maximise()** - 창을 최대화합니다
+
+```typescript
+function Maximise(): Promise<void>
+```
+
+**Fullscreen()** - 전체 화면 모드로 전환합니다
+
+```typescript
+function Fullscreen(): Promise<void>
+```
+
+**Restore()** - 최소화/최대화/전체 화면 상태에서 복원합니다
+
+```typescript
+function Restore(): Promise<void>
+```
+
+**IsMinimised()** - 최소화되었는지 확인합니다
+
+```typescript
+function IsMinimised(): Promise<boolean>
+```
+
+**IsMaximised()** - 최대화되었는지 확인합니다
+
+```typescript
+function IsMaximised(): Promise<boolean>
+```
+
+**IsFullscreen()** - 전체 화면 모드인지 확인합니다
+
+```typescript
+function IsFullscreen(): Promise<boolean>
+```
+
+#### 창 속성
+
+**SetTitle(title)** - 창 제목을 설정합니다
+
+```typescript
+function SetTitle(title: string): Promise<void>
+```
+
+**Name()** - 창 이름을 가져옵니다
+
+```typescript
+function Name(): Promise<string>
+```
+
+**SetBackgroundColour(r, g, b, a)** - 배경색을 설정합니다
+
+```typescript
+function SetBackgroundColour(r: number, g: number, b: number, a: number): Promise<void>
+```
+
+**SetAlwaysOnTop(alwaysOnTop)** - 창을 항상 최상단에 유지합니다
+
+```typescript
+function SetAlwaysOnTop(alwaysOnTop: boolean): Promise<void>
+```
+
+**SetResizable(resizable)** - 창 크기를 조절할 수 있도록 합니다
+
+```typescript
+function SetResizable(resizable: boolean): Promise<void>
+```
+
+#### 포커스 및 화면
+
+**Focus()** - 창에 포커스를 맞춥니다
+
+```typescript
+function Focus(): Promise<void>
+```
+
+**IsFocused()** - 포커스가 맞춰져 있는지 확인합니다
+
+```typescript
+function IsFocused(): Promise<boolean>
+```
+
+**GetScreen()** - 창이 있는 화면을 가져옵니다
+
+```typescript
+function GetScreen(): Promise<Screen>
+```
+
+#### 콘텐츠
+
+**Reload()** - 페이지를 새로 고침합니다
+
+```typescript
+function Reload(): Promise<void>
+```
+
+**ForceReload()** - 페이지를 강제 새로 고침합니다 (캐시 지움)
+
+```typescript
+function ForceReload(): Promise<void>
+```
+
+#### 확대/축소
+
+**SetZoom(level)** - 확대/축소 수준을 설정합니다
+
+```typescript
+function SetZoom(level: number): Promise<void>
+```
+
+**GetZoom()** - 확대/축소 수준을 가져옵니다
+
+```typescript
+function GetZoom(): Promise<number>
+```
+
+**ZoomIn()** - 확대합니다
+
+```typescript
+function ZoomIn(): Promise<void>
+```
+
+**ZoomOut()** - 축소합니다
+
+```typescript
+function ZoomOut(): Promise<void>
+```
+
+**ZoomReset()** - 확대/축소를 100%로 초기화합니다
+
+```typescript
+function ZoomReset(): Promise<void>
+```
+
+#### 인쇄
+
+**Print()** - 기본 인쇄 대화 상자를 엽니다
+
+```typescript
+function Print(): Promise<void>
+```
+
+**예제:**
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+// 현재 창의 인쇄 대화 상자를 엽니다
+await Window.Print()
+```
+
+**참고:** 이는 기본 OS 인쇄 대화 상자를 열어 사용자가 프린터 설정을 선택하고 현재 창 내용을 인쇄할 수 있게 합니다. 웹뷰에서 작동하지 않을 수 있는 `window.print()`와 달리, 이는 기본 플랫폼 인쇄 API를 사용합니다.
+
+### 클립보드
+
+클립보드 작업.
+
+#### SetText()
+
+클립보드 텍스트를 설정합니다.
+
+```typescript
+function SetText(text: string): Promise<void>
+```
+
+**예제:**
+
+```javascript
+import { Clipboard } from '@wailsio/runtime'
+
+await Clipboard.SetText('Wails에서 인사드립니다!')
+```
+
+#### Text()
+
+클립보드 텍스트를 가져옵니다.
+
+```typescript
+function Text(): Promise<string>
+```
+
+**예제:**
+
+```javascript
+import { Clipboard } from '@wailsio/runtime'
+
+const clipboardText = await Clipboard.Text()
+console.log('클립보드:', clipboardText)
+```
+
+### 시스템
+
+백엔드와 직접 통신하기 위한 저수준 시스템 메서드.
+
+#### invoke()
+
+백엔드에 원시 메시지를 직접 보냅니다. 이는 표준 바인딩 시스템을 우회하며 애플리케이션 옵션의 `RawMessageHandler`에서 처리됩니다.
+
+```typescript
+function invoke(message: any): void
+```
+
+**예제:**
+
+```javascript
+import { System } from '@wailsio/runtime'
+
+// 백엔드에 원시 메시지를 보냅니다
+System.invoke('my-custom-message')
+
+// JSON으로 구조화된 데이터를 보냅니다
+System.invoke(JSON.stringify({ action: 'update', value: 42 }))
+```
+
+:::caution
+이는 반환 값이 없는 fire-and-forget 함수입니다. 백엔드에서 응답을 받으려면 이벤트를 사용하세요.
+:::
+
+자세한 내용은 [원시 메시지 가이드](/ko/guides/raw-messages)를 참조하세요.
+
+### 애플리케이션
+
+애플리케이션 수준의 메서드.
+
+#### Show()
+
+모든 애플리케이션 창을 표시합니다.
+
+```typescript
+function Show(): Promise<void>
+```
+
+#### Hide()
+
+모든 애플리케이션 창을 숨깁니다.
+
+```typescript
+function Hide(): Promise<void>
+```
+
+#### Quit()
+
+애플리케이션을 종료합니다.
+
+```typescript
+function Quit(): Promise<void>
+```
+
+**예제:**
+
+```javascript
+import { Application } from '@wailsio/runtime'
+
+// 종료 버튼 추가
+document.getElementById('quit-btn').addEventListener('click', async () => {
+    await Application.Quit()
+})
+```
+
+### 브라우저
+
+기본 브라우저에서 URL을 엽니다.
+
+#### OpenURL()
+
+시스템 브라우저에서 URL을 엽니다.
+
+```typescript
+function OpenURL(url: string | URL): Promise<void>
+```
+
+**예제:**
+
+```javascript
+import { Browser } from '@wailsio/runtime'
+
+await Browser.OpenURL('https://wails.io')
+```
+
+### 화면
+
+화면 정보 및 관리.
+
+#### GetAll()
+
+모든 화면을 가져옵니다.
+
+```typescript
+function GetAll(): Promise<Screen[]>
+```
+
+#### GetPrimary()
+
+기본 화면을 가져옵니다.
+
+```typescript
+function GetPrimary(): Promise<Screen>
+```
+
+#### GetCurrent()
+
+현재 활성화된 화면을 가져옵니다.
+
+```typescript
+function GetCurrent(): Promise<Screen>
+```
+
+**Screen 인터페이스:**
+
+```typescript
+interface Screen {
+    ID: string
+    Name: string
+    ScaleFactor: number
+    X: number
+    Y: number
+    Size: { Width: number, Height: number }
+    Bounds: { X: number, Y: number, Width: number, Height: number }
+    WorkArea: { X: number, Y: number, Width: number, Height: number }
+    IsPrimary: boolean
+    Rotation: number
+}
+```
+
+**예제:**
+
+```javascript
+import { Screens } from '@wailsio/runtime'
+
+// 모든 화면 나열
+const screens = await Screens.GetAll()
+screens.forEach(screen => {
+    console.log(`${screen.Name}: ${screen.Size.Width}x${screen.Size.Height}`)
+})
+
+// 기본 화면 가져오기
+const primary = await Screens.GetPrimary()
+console.log('기본 화면:', primary.Name)
+```
+
+### 대화 상자
+
+JavaScript에서 제공하는 기본 OS 대화 상자.
+
+#### Info()
+
+정보 대화 상자를 표시합니다.
+
+```typescript
+function Info(options: MessageDialogOptions): Promise<string>
+```
+
+**예제:**
+
+```javascript
+import { Dialogs } from '@wailsio/runtime'
+
+await Dialogs.Info({
+    Title: '성공',
+    Message: '작업이 성공적으로 완료되었습니다!'
+})
+```
+
+#### Error()
+
+오류 대화 상자를 표시합니다.
+
+```typescript
+function Error(options: MessageDialogOptions): Promise<string>
+```
+
+#### Warning()
+
+경고 대화 상자를 표시합니다.
+
+```typescript
+function Warning(options: MessageDialogOptions): Promise<string>
+```
+
+#### Question()
+
+사용자 정의 버튼이 있는 질문 대화 상자를 표시합니다.
+
+```typescript
+function Question(options: QuestionDialogOptions): Promise<string>
+```
+
+**예제:**
+
+```javascript
+import { Dialogs } from '@wailsio/runtime'
+
+const result = await Dialogs.Question({
+    Title: '삭제 확인',
+    Message: '이 파일을 삭제하시겠습니까?',
+    Buttons: [
+        { Label: '삭제', IsDefault: false },
+        { Label: '취소', IsDefault: true }
+    ]
+})
+
+if (result === 'Delete') {
+    // 파일 삭제
+}
+```
+
+#### OpenFile()
+
+파일 열기 대화 상자를 표시합니다.
+
+```typescript
+function OpenFile(options: OpenFileDialogOptions): Promise<string | string[]>
+```
+
+**예제:**
+
+```javascript
+import { Dialogs } from '@wailsio/runtime'
+
+const file = await Dialogs.OpenFile({
+    Title: '이미지 선택',
+    Filters: [
+        { DisplayName: '이미지', Pattern: '*.png;*.jpg;*.jpeg' },
+        { DisplayName: '모든 파일', Pattern: '*.*' }
+    ]
+})
+
+if (file) {
+    console.log('선택됨:', file)
+}
+```
+
+#### SaveFile()
+
+파일 저장 대화 상자를 표시합니다.
+
+```typescript
+function SaveFile(options: SaveFileDialogOptions): Promise<string>
+```
+
+### WML (Wails Markup Language)
+
+WML은 일반적인 작업을 위한 선언적 속성을 제공합니다. HTML 요소에 속성을 추가하세요:
+
+#### 속성
+
+**wml-event** - 클릭 시 이벤트 발생
+
+```html<button wml-event="save-clicked">저장</button>
+```
+
+**wml-window** - 창 메서드 호출
+
+```html
+<button wml-window="Close">창 닫기</button>
+<button wml-window="Minimise">최소화</button>
+```
+
+**wml-target-window** - wml-window의 대상 창 지정
+
+```html
+<button wml-window="Show" wml-target-window="settings">
+    설정 표시
+</button>
+```
+
+**wml-openurl** - 브라우저에서 URL 열기
+
+```html
+<a href="#" wml-openurl="https://wails.io">Wails 방문</a>
+```
+
+**wml-confirm** - 작업 전에 확인 대화상자 표시
+
+```html
+<button wml-window="Close" wml-confirm="정말 닫으시겠습니까?">
+    닫기
+</button>
+```
+
+**예제:**
+
+```html
+<div>
+    <button wml-event="save-clicked">저장</button>
+    <button wml-window="Minimise">최소화</button>
+    <button wml-window="Close" wml-confirm="창을 닫으시겠습니까?">닫기</button>
+    <a href="#" wml-openurl="https://github.com/wailsapp/wails">GitHub</a>
+</div>
+```
+
+## 전체 예제
+
+```javascript
+import { Events, Window, Clipboard, Dialogs, Screens } from '@wailsio/runtime'
+
+// Go에서 이벤트 수신
+Events.On('data-updated', (event) => {
+    console.log('데이터:', event.data)
+    updateUI(event.data)
+})
+
+// 창 관리
+document.getElementById('center-btn').addEventListener('click', async () => {
+    await Window.Center()
+})
+
+document.getElementById('fullscreen-btn').addEventListener('click', async () => {
+    const isFullscreen = await Window.IsFullscreen()
+    if (isFullscreen) {
+        await Window.UnFullscreen()
+    } else {
+        await Window.Fullscreen()
+    }
+})
+
+// 클립보드 작업
+document.getElementById('copy-btn').addEventListener('click', async () => {
+    await Clipboard.SetText('Wails에서 복사됨!')
+})
+
+// 확인이 포함된 대화상자
+document.getElementById('delete-btn').addEventListener('click', async () => {
+    const result = await Dialogs.Question({
+        Title: '확인',
+        Message: '이 항목을 삭제하시겠습니까?',
+        Buttons: [
+            { Label: '삭제' },
+            { Label: '취소', IsDefault: true }
+        ]
+    })
+
+    if (result === 'Delete') {
+        await Events.Emit('delete-item', { id: currentItemId })
+    }
+})
+
+// 화면 정보
+const screens = await Screens.GetAll()
+console.log(`${screens.length}개의 화면 감지됨`)
+screens.forEach(screen => {
+    console.log(`- ${screen.Name}: ${screen.Size.Width}x${screen.Size.Height}`)
+})
+```
+
+## 모범 사례
+
+### ✅ 권장 사항
+
+- **선택적 임포트** - 필요한 것만 임포트하세요
+- **프로미스 처리** - 모든 메서드는 프로미스를 반환합니다
+- **간단한 작업에는 WML 사용** - JavaScript보다 깔끔합니다
+- **반환값 확인** - 특히 대화상자의 경우
+- **이벤트 구독 해제** - 완료 시 정리하세요
+
+### ❌ 금지 사항
+
+- **await 잊지 않기** - 대부분의 메서드는 비동기입니다
+- **UI 차단 금지** - async/await를 적절히 사용하세요
+- **에러 무시 금지** - 항상 reject를 처리하세요
+
+## TypeScript 지원
+
+런타임에는 전체 TypeScript 정의가 포함되어 있습니다:
+
+```typescript
+import { Events, Window } from '@wailsio/runtime'
+
+Events.On('custom-event', (event) => {
+    // TypeScript는 event.data, event.name, event.sender을 알고 있습니다
+    console.log(event.data)
+})
+
+// 모든 메서드는 완전히 타입 지정되어 있습니다
+const size: { width: number, height: number } = await Window.Size()
+```

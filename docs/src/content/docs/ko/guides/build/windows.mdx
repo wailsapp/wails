@@ -1,0 +1,124 @@
+---
+title: Windows 패키징
+description: Windows 배포를 위해 Wails 애플리케이션을 패키징하세요
+sidebar:
+  order: 3
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## NSIS 인스톨러
+
+기본 패키징 형식은 NSIS 인스톨러를 생성합니다:
+
+```bash
+wails3 package GOOS=windows
+```
+
+이는 다음 작업을 실행합니다 `wails3 task windows:package`:
+1. 애플리케이션 빌드
+2. WebView2 부트스트랩 생성
+3. NSIS 인스톨러 생성
+
+출력물: `build/windows/nsis/<AppName>-installer.exe`
+
+### MSIX 패키지
+
+Microsoft Store 배포 또는 최신 Windows 배포를 위해:
+
+```bash
+wails3 package GOOS=windows FORMAT=msix
+```
+
+출력물: `bin/<AppName>-<arch>.msix`
+
+<Aside type="note">
+MSIX에는 `makeappx.exe`(Windows SDK) 또는 MSIX 도구가 필요합니다. 설정하려면 `wails3 tool msix-install-tools`를 실행하세요.
+</Aside>
+
+## 인스톨러 사용자 정의
+
+NSIS 구성은 `build/windows/nsis/project.nsi`에 있습니다. 이 파일을 편집하여 사용자 정의할 수 있습니다:
+
+- 인스톨러 UI 및 브랜딩
+- 설치 디렉토리
+- 시작 메뉴 및 바탕화면 바로 가기
+- 파일 연결
+- 라이선스 계약
+
+애플리케이션 메타데이터는 `build/windows/info.json`에서 가져옵니다:
+
+```json
+{
+  "fixed": {
+    "file_version": "1.0.0"
+  },
+  "info": {
+    "0000": {
+      "ProductVersion": "1.0.0",
+      "CompanyName": "My Company",
+      "FileDescription": "My Application",
+      "ProductName": "MyApp"
+    }
+  }
+}
+```
+
+## 코드 서명
+
+SmartScreen 경고를 피하려면 실행 파일과 인스톨러에 서명하세요:
+
+```bash
+# 래퍼 사용 (플랫폼 자동 감지)
+wails3 sign GOOS=windows
+
+# 또는 작업 직접 사용
+wails3 task windows:sign
+wails3 task windows:sign:installer
+```
+
+`build/windows/Taskfile.yml`에서 서명을 구성하세요:
+
+```yaml
+vars:
+  SIGN_CERTIFICATE: "path/to/certificate.pfx"
+  # 또는 Windows 저장소의 인증서 지문 사용
+  SIGN_THUMBPRINT: "certificate-thumbprint"
+  TIMESTAMP_SERVER: "http://timestamp.digicert.com"
+```
+
+인증서 비밀번호를 안전하게 저장하세요:
+
+```bash
+wails3 setup signing
+```
+
+자세한 내용은 [애플리케이션 서명](/ko/guides/build/signing)을 참조하세요.
+
+## ARM용 빌드
+
+```bash
+wails3 build GOOS=windows GOARCH=arm64
+wails3 package GOOS=windows GOARCH=arm64
+```
+
+## 문제 해결
+
+### makensis not found
+
+NSIS를 설치하세요:
+
+```bash
+# Windows
+winget install NSIS.NSIS
+
+# 또는 https://nsis.sourceforge.io/에서 다운로드
+```
+
+### SmartScreen 경고
+
+실행 파일이 서명되지 않았습니다. 위의 [코드 서명](#code-signing) 섹션을 참조하세요.
+
+### WebView2 누락
+
+인스톨러에는 WebView2 부트스트랩이 포함되어 있어 필요시 런타임을 다운로드합니다. 오프라인 설치가 필요한 경우 Microsoft에서 제공하는 Evergreen Standalone Installer를 다운로드하세요.

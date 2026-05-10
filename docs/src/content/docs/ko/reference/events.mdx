@@ -1,0 +1,736 @@
+---
+title: 이벤트 API
+description: 이벤트 API의 전체 참조 문서
+sidebar:
+  order: 4
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 개요
+
+이벤트 API는 이벤트를 발생시키고 수신하는 메서드를 제공하여 애플리케이션의 서로 다른 부분 간에 통신을 가능하게 합니다.
+
+**이벤트 유형:**
+- **애플리케이션 이벤트** - 애플리케이션 수명 주기 이벤트 (시작, 종료)
+- **윈도우 이벤트** - 윈도우 상태 변경 (포커스, 블러, 크기 조정)
+- **사용자 정의 이벤트** - 앱별 통신을 위한 사용자 정의 이벤트
+
+**통신 패턴:**
+- **Go에서 프론트엔드로** - Go에서 이벤트 발생, JavaScript에서 수신
+- **프론트엔드에서 Go로** - 직접 불가능 (서비스 바인딩 사용)
+- **프론트엔드에서 프론트엔드로** - Go 또는 로컬 런타임 이벤트를 통해
+- **윈도우에서 윈도우로** - 특정 윈도우 대상 또는 전체 브로드캐스트
+
+## 이벤트 메서드 (Go)
+
+### app.Event.Emit()
+
+모든 윈도우에 사용자 정의 이벤트를 발생시킵니다.
+
+```go
+func (em *EventManager) Emit(name string, data ...interface{})
+```
+
+**매개변수:**
+- `name` - 이벤트 이름
+- `data` - 이벤트와 함께 보낼 선택적 데이터
+
+**예제:**
+```go
+// 간단한 이벤트 발생
+app.Event.Emit("user-logged-in")
+
+// 데이터와 함께 발생
+app.Event.Emit("data-updated", map[string]interface{}{
+    "count": 42,
+    "status": "success",
+})
+
+// 여러 값 발생
+app.Event.Emit("progress", 75, "Processing files...")
+```
+
+### app.Event.On()
+
+Go에서 사용자 정의 이벤트를 수신합니다.
+
+```go
+func (em *EventManager) On(name string, callback func(*CustomEvent)) func()
+```
+
+**매개변수:**
+- `name` - 수신할 이벤트 이름
+- `callback` - 이벤트 발생 시 호출되는 함수
+
+**반환값:** 이벤트 리스너를 제거하기 위한 정리 함수
+
+**예제:**
+```go
+// 이벤트 수신
+cleanup := app.Event.On("user-action", func(e *application.CustomEvent) {
+    data := e.Data.(map[string]interface{})
+    action := data["action"].(string)
+    app.Logger.Info("User action", "action", action)
+})
+
+// 나중에 리스너 제거
+cleanup()
+```
+
+### 윈도우별 이벤트
+
+특정 윈도우에 이벤트를 발생시킵니다:
+
+```go
+// 특정 윈도우에 발생
+window.EmitEvent("notification", "Hello from Go!")
+
+// 모든 윈도우에 발생
+app.Event.Emit("global-update", data)
+```
+
+## 이벤트 메서드 (프론트엔드)
+
+### On()
+
+Go에서 오는 이벤트를 수신합니다.
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.On(eventName, callback)
+```
+
+**매개변수:**
+- `eventName` - 수신할 이벤트 이름
+- `callback` - 이벤트 수신 시 호출되는 함수
+
+**반환값:** 정리 함수
+
+**예제:**
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// 이벤트 수신
+const cleanup = Events.On('data-updated', (data) => {
+    console.log('Count:', data.count)
+    console.log('Status:', data.status)
+    updateUI(data)
+})
+
+// 나중에 리스너 제거
+cleanup()
+```
+
+### Once()
+
+단일 이벤트 발생을 수신합니다.
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.Once(eventName, callback)
+```
+
+**예제:**
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// 첫 번째 발생만 수신
+Events.Once('initialization-complete', (data) => {
+    console.log('App initialized!', data)
+    // 이는 한 번만 발동합니다
+})
+```
+
+### Off()
+
+이벤트 리스너를 제거합니다.
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.Off(eventName, callback)
+```
+
+**예제:**
+```javascript
+import { Events } from '@wailsio/runtime'
+
+const handler = (data) => {
+    console.log('Event received:', data)
+}
+
+// 수신 시작
+Events.On('my-event', handler)
+
+// 수신 중지
+Events.Off('my-event', handler)
+```
+
+### OffAll()
+
+이벤트에 대한 모든 리스너를 제거합니다.
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.OffAll(eventName)
+```
+
+**예제:**
+```javascript
+// 이 이벤트에 대한 모든 리스너 제거
+OffAll('data-updated')
+```
+
+## 애플리케이션 이벤트
+
+### app.Event.OnApplicationEvent()
+
+애플리케이션 수명 주기 이벤트를 수신합니다.
+
+```go
+func (em *EventManager) OnApplicationEvent(eventType ApplicationEventType, callback func(*ApplicationEvent)) func()
+```
+
+**이벤트 유형:**
+- `EventApplicationStarted` - 애플리케이션이 시작됨
+- `EventApplicationShutdown` - 애플리케이션이 종료 중임
+- `EventApplicationDebug` - 디버그 이벤트 (개발 모드 전용)
+
+**예제:**
+```go
+// 애플리케이션 시작 처리
+app.Event.OnApplicationEvent(application.EventApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Application started")
+    // 리소스 초기화
+})
+
+// 애플리케이션 종료 처리
+app.Event.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Application shutting down")
+    // 리소스 정리, 상태 저장
+    database.Close()
+    saveSettings()
+})
+```
+
+## 윈도우 이벤트
+
+### OnWindowEvent()
+
+윈도우별 이벤트를 수신합니다.
+
+```go
+func (w *Window) OnWindowEvent(eventType WindowEventType, callback func(*WindowEvent)) func()
+```
+
+**이벤트 유형:**
+- `EventWindowFocus` - 윈도우가 포커스를 얻음
+- `EventWindowBlur` - 윈도우가 포커스를 잃음
+- `EventWindowClose` - 윈도우가 닫힘
+- `EventWindowResize` - 윈도우 크기가 조정됨
+- `EventWindowMove` - 윈도우가 이동됨
+
+**예제:**
+```go
+// 윈도우 포커스 처리
+window.OnWindowEvent(application.EventWindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window focused")
+})
+
+// 윈도우 크기 조정 처리
+window.OnWindowEvent(application.EventWindowResize, func(e *application.WindowEvent) {
+    width, height := window.Size()
+    app.Logger.Info("Window resized", "width", width, "height", height)
+})
+```
+
+## 일반적인 패턴
+
+이 패턴들은 실제 애플리케이션에서 이벤트를 사용하는 검증된 접근 방식을 보여줍니다. 각 패턴은 Go 백엔드와 프론트엔드 간의 특정 통신 문제를 해결하여 반응성이 좋고 구조가 잘 잡힌 애플리케이션을 구축하는 데 도움을 줍니다.
+
+### 요청/응답 패턴
+
+데이터 가져오기, 파일 처리 또는 백그라운드 작업 완료 후 프론트엔드에 알림을 보내고 싶을 때 이 패턴을 사용하십시오. 서비스 바인딩은 데이터를 직접 반환하는 반면, 이벤트는 토스트 메시지 표시나 목록 새로고침과 같은 UI 업데이트를 위한 추가 알림을 제공합니다.
+
+**Go:**
+
+```go
+// 서비스 메서드
+type DataService struct {
+    app *application.Application
+}
+
+func (s *DataService) FetchData(query string) ([]Item, error) {
+    items := fetchFromDatabase(query)
+
+    // 완료 시 이벤트 발생
+    s.app.Event.Emit("data-fetched", map[string]interface{}{
+        "query": query,
+        "count": len(items),
+    })
+
+    return items, nil
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { FetchData } from './bindings/DataService'
+import { Events } from '@wailsio/runtime'
+
+// 완료 이벤트 수신
+Events.On('data-fetched', (data) => {
+    console.log(`Fetched ${data.count} items for query: ${data.query}`)
+    showNotification(`Found ${data.count} results`)
+})
+
+// 서비스 메서드 호출
+const items = await FetchData("search term")
+displayItems(items)
+```### 진행률 업데이트
+
+파일 업로드, 배치 처리, 대량 데이터 가져오기 또는 비디오 인코딩과 같은 장기 실행 작업에 이상적입니다. 작업 중 진행률 이벤트를 발생시켜 UI의 진행률 표시줄, 상태 텍스트 또는 단계 표시기를 업데이트하고 사용자에게 실시간 피드백을 제공합니다.
+
+**Go:**
+
+```go
+func (s *Service) ProcessFiles(files []string) error {
+    total := len(files)
+
+    for i, file := range files {
+        // Process file
+        processFile(file)
+
+        // Emit progress event
+        s.app.Event.Emit("progress", map[string]interface{}{
+            "current": i + 1,
+            "total":   total,
+            "percent": float64(i+1) / float64(total) * 100,
+            "file":    file,
+        })
+    }
+
+    s.app.Event.Emit("processing-complete")
+    return nil
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Update progress bar
+Events.On('progress', (data) => {
+    progressBar.style.width = `${data.percent}%`
+    statusText.textContent = `Processing ${data.file}... (${data.current}/${data.total})`
+})
+
+// Handle completion
+Events.Once('processing-complete', () => {
+    progressBar.style.width = '100%'
+    statusText.textContent = 'Complete!'
+    setTimeout(() => hideProgressBar(), 2000)
+})
+```
+
+### 다중 창 간 통신
+
+설정 패널, 대시보드 또는 문서 뷰어 등 여러 창이 있는 애플리케이션에 적합합니다. 모든 창에 이벤트를 브로드캐스트하여 상태(테마 변경, 사용자 환경 설정 등)를 동기화하거나 창별 업데이트를 위해 특정 창으로 타겟팅된 이벤트를 보낼 수 있습니다.
+
+**Go:**
+
+```go
+// Broadcast to all windows
+app.Event.Emit("theme-changed", "dark")
+
+// Send to specific window
+preferencesWindow.EmitEvent("settings-updated", settings)
+
+// Window-specific listener
+window1.OnEvent("request-data", func(e *application.CustomEvent) {
+    // Only this window will receive this event
+    window1.EmitEvent("data-response", data)
+})
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Listen in any window
+Events.On('theme-changed', (theme) => {
+    document.body.className = theme
+})
+```
+
+### 상태 동기화
+
+사용자 세션, 애플리케이션 구성 또는 협업 기능과 같이 프론트엔드와 백엔드 상태를 동기화해야 할 때 사용하세요. 백엔드에서 상태가 변경되면 연결된 모든 프론트엔드에 이벤트를 발생시켜 애플리케이션 전반에 걸쳐 일관성을 유지합니다.
+
+**Go:**
+
+```go
+type StateService struct {
+    app   *application.Application
+    state map[string]interface{}
+    mu    sync.RWMutex
+}
+
+func (s *StateService) UpdateState(key string, value interface{}) {
+    s.mu.Lock()
+    s.state[key] = value
+    s.mu.Unlock()
+
+    // Notify all windows
+    s.app.Event.Emit("state-updated", map[string]interface{}{
+        "key":   key,
+        "value": value,
+    })
+}
+
+func (s *StateService) GetState(key string) interface{} {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+    return s.state[key]
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+import { GetState } from './bindings/StateService'
+
+// Keep local state in sync
+let localState = {}
+
+Events.On('state-updated', async (data) => {
+    localState[data.key] = data.value
+    updateUI(data.key, data.value)
+})
+
+// Initialize state
+const initialState = await GetState("all")
+localState = initialState
+```
+
+### 이벤트 기반 알림
+
+성공 확인, 오류 알림 또는 정보 메시지 등 사용자 피드백을 표시하는 데 가장 적합합니다. 서비스에서 UI 코드를 직접 호출하는 대신 알림 이벤트를 발생시켜 프론트엔드에서 일관되게 처리하게 하면 알림 스타일을 변경하거나 알림 기록과 같은 기능을 추가하기가 쉬워집니다.
+
+**Go:**
+
+```go
+type NotificationService struct {
+    app *application.Application
+}
+
+func (s *NotificationService) Success(message string) {
+    s.app.Event.Emit("notification", map[string]interface{}{
+        "type":    "success",
+        "message": message,
+    })
+}
+
+func (s *NotificationService) Error(message string) {
+    s.app.Event.Emit("notification", map[string]interface{}{
+        "type":    "error",
+        "message": message,
+    })
+}
+
+func (s *NotificationService) Info(message string) {
+    s.app.Event.Emit("notification", map[string]interface{}{
+        "type":    "info",
+        "message": message,
+    })
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Unified notification handler
+Events.On('notification', (data) => {
+    const toast = document.createElement('div')
+    toast.className = `toast toast-${data.type}`
+    toast.textContent = data.message
+
+    document.body.appendChild(toast)
+
+    setTimeout(() => {
+        toast.classList.add('fade-out')
+        setTimeout(() => toast.remove(), 300)
+    }, 3000)
+})
+```
+
+## 전체 예제
+
+**Go:**
+
+```go
+package main
+
+import (
+    "sync"
+    "time"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type EventDemoService struct {
+    app *application.Application
+    mu  sync.Mutex
+}
+
+func NewEventDemoService(app *application.Application) *EventDemoService {
+    service := &EventDemoService{app: app}
+
+    // Listen for custom events
+    app.Event.On("user-action", func(e *application.CustomEvent) {
+        data := e.Data.(map[string]interface{})
+        app.Logger.Info("User action received", "data", data)
+    })
+
+    return service
+}
+
+func (s *EventDemoService) StartLongTask() {
+    go func() {
+        s.app.Event.Emit("task-started")
+
+        for i := 1; i <= 10; i++ {
+            time.Sleep(500 * time.Millisecond)
+
+            s.app.Event.Emit("task-progress", map[string]interface{}{
+                "step":    i,
+                "total":   10,
+                "percent": i * 10,
+            })
+        }
+
+        s.app.Event.Emit("task-completed", map[string]interface{}{
+            "message": "Task finished successfully!",
+        })
+    }()
+}
+
+func (s *EventDemoService) BroadcastMessage(message string) {
+    s.app.Event.Emit("broadcast", message)
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Event Demo",
+    })
+
+    // Handle application lifecycle
+    app.Event.OnApplicationEvent(application.EventApplicationStarted, func(e *application.ApplicationEvent) {
+        app.Logger.Info("Application started!")
+    })
+
+    app.Event.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
+        app.Logger.Info("Application shutting down...")
+    })
+
+    // Register service
+    service := NewEventDemoService(app)
+    app.RegisterService(application.NewService(service))
+
+    // Create window
+    window := app.Window.New()
+
+    // Handle window events
+    window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+        window.EmitEvent("window-state", "focused")
+    })
+
+    window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+        window.EmitEvent("window-state", "blurred")
+    })
+
+    window.Show()
+    app.Run()
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+import { StartLongTask, BroadcastMessage } from './bindings/EventDemoService'
+
+// Task events
+Events.On('task-started', () => {
+    console.log('Task started...')
+    document.getElementById('status').textContent = 'Running...'
+})
+
+Events.On('task-progress', (data) => {
+    const progressBar = document.getElementById('progress')
+    progressBar.style.width = `${data.percent}%`
+    console.log(`Step ${data.step} of ${data.total}`)
+})
+
+Events.Once('task-completed', (data) => {
+    console.log('Task completed!', data.message)
+    document.getElementById('status').textContent = data.message
+})
+
+// Broadcast events
+Events.On('broadcast', (message) => {
+    console.log('Broadcast:', message)
+    alert(message)
+})
+
+// Window state events
+Events.On('window-state', (state) => {
+    console.log('Window is now:', state)
+    document.body.dataset.windowState = state
+})
+
+// Trigger long task-------|-------|------|---------|
+| `ApplicationOpenedWithFile` | 파일과 함께 애플리케이션 열림 | 파일과 함께 앱이 실행될 때 (예: 파일 연결에서) | 아니요 |
+| `ApplicationStarted` | 애플리케이션 시작 완료 | 앱 초기화가 완료되고 앱이 준비되었을 때 | 아니요 |
+| `ApplicationLaunchedWithUrl` | URL과 함께 애플리케이션 실행 | URL 스키마를 통해 앱이 실행될 때 | 아니요 |
+| `ThemeChanged` | 시스템 테마 변경 | OS 테마가 라이트/다크 모드 간에 전환될 때 | 아니요 |
+
+**사용법:**
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Application ready!")
+})
+
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    // 앱 테마 업데이트
+})
+```
+
+### 창 이벤트
+
+| 이벤트 | 설명 | 발생 시점 | 취소 가능 |
+|-------|-------|------|---------|
+| `WindowClosing` | 창이 닫히려는 중 | 창이 닫히기 전 (사용자가 X 클릭, Close() 호출) | 예 |
+| `WindowDidMove` | 창이 새 위치로 이동 | 창 위치 변경 후 (debounced) | 아니요 |
+| `WindowDidResize` | 창 크기 변경 | 창 크기 변경 후 | 아니요 |
+| `WindowDPIChanged` | 창 DPI 스케일링 변경 | 서로 다른 DPI를 가진 모니터 간 이동 시 (Windows) | 아니요 |
+| `WindowFilesDropped` | 네이티브 OS 드래그-드롭으로 파일 드롭 | 파일이 OS에서 창으로 드롭된 후 | 아니요 |
+| `WindowFocus` | 창이 포커스 획득 | 창이 활성화될 때 | 아니요 |
+| `WindowFullscreen` | 창이 전체 화면 진입 | Fullscreen() 호출 후 또는 사용자가 전체 화면 진입 시 | 아니요 |
+| `WindowHide` | 창이 숨겨짐 | Hide() 호출 후 또는 창이 가려질 때 | 아니요 |
+| `WindowLostFocus` | 창이 포커스 상실 | 창이 비활성화될 때 | 아니요 |
+| `WindowMaximise` | 창이 최대화됨 | Maximise() 호출 후 또는 사용자가 최대화할 때 | 예 (macOS) |
+| `WindowMinimise` | 창이 최소화됨 | Minimise() 호출 후 또는 사용자가 최소화할 때 | 예 (macOS) |
+| `WindowRestore` | 창이 최소/최대 상태에서 복원됨 | Restore() 호출 후 (주로 Windows) | 아니요 |
+| `WindowRuntimeReady` | Wails 런타임 로드 및 준비 완료 | JavaScript 런타임 초기화가 완료될 때 | 아니요 |
+| `WindowShow` | 창이 표시됨 | Show() 호출 후 또는 창이 표시될 때 | 아니요 |
+| `WindowUnFullscreen` | 창이 전체 화면 종료 | UnFullscreen() 호출 후 또는 사용자가 전체 화면 종료 시 | 아니요 |
+| `WindowUnMaximise` | 창이 최대화 상태 종료 | UnMaximise() 호출 후 또는 사용자가 최대화 해제할 때 | 예 (macOS) |
+| `WindowUnMinimise` | 창이 최소화 상태 종료 | UnMinimise()/Restore() 호출 후 또는 사용자가 복원할 때 | 예 (macOS) |
+| `WindowZoomIn` | 창 콘텐츠 확대 | ZoomIn() 호출 후 (주로 macOS) | 예 (macOS) |
+| `WindowZoomOut` | 창 콘텐츠 축소 | ZoomOut() 호출 후 (주로 macOS) | 예 (macOS) |
+| `WindowZoomReset` | 창 콘텐츠 확대율이 100%로 리셋 | ZoomReset() 호출 후 (주로 macOS) | 예 (macOS) |
+| `WindowDropZoneFilesDropped` | JS 정의 드롭 존에 파일 드롭 | 드롭 존이 있는 요소에 파일이 드롭될 때 | 아니요 |
+
+**사용법:**
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// 창 이벤트 리스닝
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window focused")
+})
+
+// 창 닫기 취소
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    result, _ := app.Dialog.Question().
+        SetMessage("창을 닫으시겠습니까?").
+        SetButtons("예", "아니요").
+        Show()
+
+    if result == "아니요" {
+        e.Cancel() // 닫기 방지
+    }
+})
+
+// 런타임 준비 대기
+window.OnWindowEvent(events.Common.WindowRuntimeReady, func(e *application.WindowEvent) {
+    app.Logger.Info("Runtime ready, safe to emit events to frontend")
+    window.EmitEvent("app-initialized", data)
+})
+```
+
+**중요 참고 사항:**
+
+- **WindowRuntimeReady**는 매우 중요합니다 - 프론트엔드에 이벤트를 발생시키기 전에 이 이벤트를 기다리십시오.
+- **WindowDidMove** 및 **WindowDidResize**는 이벤트 폭주를 방지하기 위해 debounced 처리됩니다 (기본값 50ms).
+- **취소 가능한 이벤트**는 `RegisterHook()` 핸들러에서 `event.Cancel()`을 호출하여 방지할 수 있습니다.
+- **WindowFilesDropped**는 네이티브 OS 파일 드롭용이며, **WindowDropZoneFilesDropped**는 웹 기반 드롭 존용입니다.
+- 일부 이벤트는 플랫폼별입니다 (예: Windows의 WindowDPIChanged, 주로 macOS의 확대/축소 이벤트).
+
+## 이벤트 명명 규칙
+
+```go
+// 좋음 - 기술적이고 구체적
+app.Event.Emit("user:logged-in", user)
+app.Event.Emit("data:fetch:complete", results)
+app.Event.Emit("ui:theme:changed", theme)
+
+// 나쁨 - 모호하고 불명확
+app.Event.Emit("event1", data)
+app.Event.Emit("update", stuff)
+app.Event.Emit("e", value)
+```
+
+## 성능 고려 사항
+
+### 고주파 이벤트 Debouncing
+
+```go
+type Service struct {
+    app            *application.Application
+    lastEmit       time.Time
+    debounceWindow time.Duration
+}
+
+func (s *Service) EmitWithDebounce(event string, data interface{}) {
+    now := time.Now()
+    if now.Sub(s.lastEmit) < s.debounceWindow {
+        return // 이 발생 건너뛰기
+    }
+
+    s.app.Event.Emit(event, data)
+    s.lastEmit = now
+}
+```
+
+### 이벤트 Throttling
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+let lastUpdate = 0
+const throttleMs = 100
+
+Events.On('high-frequency-event', (data) => {
+    const now = Date.now()
+    if (now - lastUpdate < throttleMs) {
+        return // 이 업데이트 건너뛰기
+    }
+
+    processUpdate(data)
+    lastUpdate = now
+})

@@ -1,0 +1,519 @@
+---
+title: 메뉴
+description: Wails v3에서 메뉴를 생성하고 사용자 지정하는 가이드
+---
+
+Wails v3는 애플리케이션 메뉴와 컨텍스트 메뉴를 모두 생성할 수 있는 강력한 메뉴 시스템을 제공합니다. 이 가이드에서는 메뉴 시스템의 다양한 기능과 능력을 살펴보겠습니다.
+
+### 메뉴 생성
+
+새 메뉴를 생성하려면 Menus 관리자에서 `New()` 메서드를 사용하세요:
+
+```go
+menu := app.Menu.New()
+```
+
+### 메뉴 항목 추가
+
+Wails는 특정 목적을 가진 여러 유형의 메뉴 항목을 지원합니다:
+
+#### 일반 메뉴 항목
+일반 메뉴 항목은 메뉴의 기본 구성 요소입니다. 텍스트를 표시하고 클릭 시 작업을 트리거할 수 있습니다:
+
+```go
+menuItem := menu.Add("Click Me")
+```
+
+#### 체크박스
+체크박스 메뉴 항목은 토글 가능한 상태를 제공하며, 기능이나 설정을 활성화/비활성화하는 데 유용합니다:
+
+```go
+checkbox := menu.AddCheckbox("My checkbox", true)  // true = 초기에 체크됨
+```
+
+#### 라디오 그룹
+라디오 그룹을 사용하면 사용자는 상호 배타적인 선택지 중 하나를 선택할 수 있습니다. 라디오 항목이 나란히 배치되면 자동으로 생성됩니다:
+
+```go
+menu.AddRadio("Option 1", true)   // true = 초기에 선택됨
+menu.AddRadio("Option 2", false)
+menu.AddRadio("Option 3", false)
+```
+
+#### 구분선
+구분선은 논리적 그룹으로 메뉴 항목을 정리하는 데 도움이 되는 수평선입니다:
+
+```go
+menu.AddSeparator()
+```
+
+#### 하위 메뉴
+하위 메뉴는 메뉴 항목 위에 마우스를 올리거나 클릭할 때 나타나는 중첩된 메뉴입니다. 복잡한 메뉴 구조를 정리하는 데 유용합니다:
+
+```go
+submenu := menu.AddSubmenu("File")
+submenu.Add("Open")
+submenu.Add("Save")
+```
+
+#### 메뉴 결합
+메뉴는 추가하거나 앞에 삽입하여 다른 메뉴에 포함할 수 있습니다.
+```go
+menu := app.Menu.New()
+menu.Add("First Menu")
+
+secondaryMenu := app.Menu.New()
+secondaryMenu.Add("Second Menu")
+
+// 'menu' 뒤에 'secondaryMenu' 삽입
+menu.Append(secondaryMenu)
+
+// 'menu' 앞에 'secondaryMenu' 삽입
+menu.Prepend(secondaryMenu)
+
+// 메뉴 업데이트
+menu.Update()
+```
+
+:::note
+기본적으로 `prepend`와 `append`는 원래 메뉴와 상태를 공유합니다. 자체 상태가 있는 새 메뉴를 생성하려면 메뉴에서 `.Clone()`을 호출할 수 있습니다.
+
+예: `menu.Append(secondaryMenu.Clone())`
+:::
+
+#### 메뉴 지우기
+일부 경우 변수 수의 메뉴 항목을 다룰 때 전체 새 메뉴를 구성하는 것이 더 나을 수 있습니다.
+
+이렇게 하면 기존 메뉴의 모든 항목이 지워지고 항목을 다시 추가할 수 있습니다.
+
+```go
+menu := app.Menu.New()
+menu.Add("Waiting for update...")
+
+// 특정 로직 후 메뉴를 업데이트해야 함
+menu.Clear()
+menu.Add("Update complete!")
+menu.Update()
+```
+
+:::note
+메뉴를 지우면 상위 수준의 메뉴 항목만 지워집니다. 하위 메뉴는 보이지 않지만 메모리를 계속 차지하므로 메뉴를 신중하게 관리해야 합니다.
+:::
+
+#### 메뉴 파괴
+
+메뉴를 지우고 해제하려면 `Destroy()` 메서드를 사용하세요:
+
+```go
+menu := app.Menu.New()
+menu.Add("Waiting for update...")
+
+// 특정 로직 후 메뉴를 파괴해야 함
+menu.Destroy()
+```
+
+
+### 메뉴 항목 속성
+
+메뉴 항목에는 구성할 수 있는 여러 속성이 있습니다:
+
+| 속성    | 메서드                   | 설명                                         |
+|------|------------------------|--------------------------------------------|
+| 레이블       | `SetLabel(string)`       | 표시 텍스트 설정                               |
+| 활성화     | `SetEnabled(bool)`       | 항목 활성화/비활성화                           |
+| 체크      | `SetChecked(bool)`       | 체크 상태 설정 (체크박스/라디오 항목용) |
+| 도구 설명     | `SetTooltip(string)`     | 도구 설명 텍스트 설정                               |
+| 숨김      | `SetHidden(bool)`        | 항목 표시/숨기기                                |
+| 단축키 | `SetAccelerator(string)` | 키보드 단축키 설정                          |
+
+### 메뉴 항목 상태
+
+메뉴 항목은 가시성과 상호 작용을 제어하는 다양한 상태에 있을 수 있습니다:
+
+#### 가시성
+
+메뉴 항목은 `SetHidden()` 메서드를 사용하여 동적으로 표시하거나 숨길 수 있습니다:
+
+```go
+menuItem := menu.Add("Dynamic Item")
+
+// 메뉴 항목 숨기기
+menuItem.SetHidden(true)
+
+// 메뉴 항목 표시
+menuItem.SetHidden(false)
+
+// 현재 가시성 확인
+isHidden := menuItem.Hidden()
+```
+
+숨겨진 메뉴 항목은 다시 표시될 때까지 메뉴에서 완전히 제거됩니다. 이는 특정 애플리케이션 상태에서만 나타나는 컨텍스트 메뉴 항목에 유용합니다.
+
+#### 활성화 상태
+
+메뉴 항목은 `SetEnabled()` 메서드를 사용하여 활성화하거나 비활성화할 수 있습니다:
+
+```go
+menuItem := menu.Add("Save")
+
+// 메뉴 항목 비활성화
+menuItem.SetEnabled(false)  // 항목이 회색으로 표시되고 클릭할 수 없음
+
+// 메뉴 항목 활성화
+menuItem.SetEnabled(true)   // 항목이 다시 클릭 가능해짐
+
+// 현재 활성화 상태 확인
+isEnabled := menuItem.Enabled()
+```
+
+비활성화된 메뉴 항목은 표시되지만 회색으로 표시되며 클릭할 수 없습니다. 이는 일반적으로 현재 사용할 수 없는 작업을 나타내는 데 사용됩니다. 예:
+- 저장할 변경 사항이 없을 때 "저장" 비활성화
+- 선택된 항목이 없을 때 "복사" 비활성화
+- 실행 취소할 작업이 없을 때 "실행 취소" 비활성화
+
+#### 동적 상태 관리
+
+이러한 상태를 이벤트 처리기와 결합하여 동적 메뉴를 생성할 수 있습니다:
+
+```go
+saveMenuItem := menu.Add("Save")
+
+// 초기에 저장 메뉴 항목 비활성화
+saveMenuItem.SetEnabled(false)
+
+// 저장되지 않은 변경 사항이 있을 때만 저장 활성화
+documentChanged := func() {
+    saveMenuItem.SetEnabled(true)
+    menu.Update()  // 상태를 변경한 후 메뉴를 업데이트하는 것을 잊지 마세요
+}
+
+// 저장 후 저장 비활성화
+documentSaved := func() {
+    saveMenuItem.SetEnabled(false)
+    menu.Update()
+}
+```
+
+### 이벤트 처리
+
+메뉴 항목은 `OnClick` 메서드를 사용하여 클릭 이벤트에 응답할 수 있습니다:
+
+```go
+menuItem.OnClick(func(ctx *application.Context) {
+    // 클릭 이벤트 처리
+    println("Menu item clicked!")
+})
+```
+
+컨텍스트는 클릭된 메뉴 항목에 대한 정보를 제공합니다:
+
+```go
+menuItem.OnClick(func(ctx *application.Context) {
+    // 클릭된 메뉴 항목 가져오기
+    clickedItem := ctx.ClickedMenuItem()
+    // 현재 상태 가져오기
+    isChecked := clickedItem.Checked()
+})
+```
+
+### 역할 기반 메뉴 항목
+
+Wails는 표준 기능을 갖춘 메뉴 항목을 자동으로 생성하는 미리 정의된 메뉴 역할 집합을 제공합니다. 지원되는 메뉴 역할은 다음과 같습니다:
+
+#### 전체 메뉴 구조
+이 역할은 일반적인 기능을 갖춘 전체 메뉴 구조를 생성합니다:
+
+| 역할 | 설명 | 플랫폼 참고 사항 |
+|------|-------------|------|
+| `AppMenu` | 정보, 서비스, 숨기기/표시, 종료와 함께 애플리케이션 메뉴 | macOS 전용 |
+| `EditMenu` | 실행 취소, 다시 실행, 자르기, 복사, 붙여넣기 등 표준 편집 메뉴 | 모든 플랫폼 |
+| `ViewMenu` | 새로 고침, 확대/축소, 전체 화면 제어와 함께 보기 메뉴 | 모든 플랫폼 |
+| `WindowMenu` | 창 제어 (최소화, 확대 등) | 모든 플랫폼 |
+| `HelpMenu` | Wails 웹사이트로 이어지는 "자세히 알아보기" 링크와 함께 도움말 메뉴 | 모든 플랫폼 |------|-------------|------|
+| `About` | 애플리케이션 정보 대화 상자 표시 | 모든 플랫폼 |
+| `Hide` | 애플리케이션 숨기기 | macOS 전용 |
+| `HideOthers` | 다른 애플리케이션 숨기기 | macOS 전용 |
+| `UnHide` | 숨겨진 애플리케이션 표시 | macOS 전용 |
+| `CloseWindow` | 현재 창 닫기 | 모든 플랫폼 |
+| `Minimise` | 창 최소화 | 모든 플랫폼 |
+| `Zoom` | 창 확대/축소 | macOS 전용 |
+| `Front` | 창을 최전면으로 가져오기 | macOS 전용 |
+| `Quit` | 애플리케이션 종료 | 모든 플랫폼 |
+| `Undo` | 마지막 작업 실행 취소 | 모든 플랫폼 |
+| `Redo` | 마지막 작업 다시 실행 | 모든 플랫폼 |
+| `Cut` | 선택 항목 잘라내기 | 모든 플랫폼 |
+| `Copy` | 선택 항목 복사 | 모든 플랫폼 |
+| `Paste` | 클립보드에서 붙여넣기 | 모든 플랫폼 |
+| `PasteAndMatchStyle` | 붙여넣고 스타일 일치 | macOS 전용 |
+| `SelectAll` | 모두 선택 | 모든 플랫폼 |
+| `Delete` | 선택 항목 삭제 | 모든 플랫폼 |
+| `Reload` | 현재 페이지 새로고침 | 모든 플랫폼 |
+| `ForceReload` | 현재 페이지 강제 새로고침 | 모든 플랫폼 |
+| `ToggleFullscreen` | 전체 화면 모드 전환 | 모든 플랫폼 |
+| `ResetZoom` | 확대/축소 수준 초기화 | 모든 플랫폼 |
+| `ZoomIn` | 확대 | 모든 플랫폼 |
+| `ZoomOut` | 축소 | 모든 플랫폼 |
+
+완전한 메뉴 구조와 개별 역할을 모두 사용하는 예시는 다음과 같습니다:
+
+```go
+menu := app.Menu.New()
+
+// 완전한 메뉴 구조 추가
+menu.AddRole(application.AppMenu)    // macOS 전용
+menu.AddRole(application.EditMenu)   // 공통 편집 작업
+menu.AddRole(application.ViewMenu)   // 보기 제어
+menu.AddRole(application.WindowMenu) // 창 제어
+
+// 사용자 정의 메뉴에 개별 역할 기반 항목 추가
+fileMenu := menu.AddSubmenu("File")
+fileMenu.AddRole(application.CloseWindow)
+fileMenu.AddSeparator()
+fileMenu.AddRole(application.Quit)
+```
+
+## 애플리케이션 메뉴
+
+애플리케이션 메뉴는 애플리케이션 창의 상단(Windows/Linux) 또는 화면 상단(macOS)에 나타나는 메뉴입니다.
+
+### 애플리케이션 메뉴 동작
+
+`app.Menu.Set()`을 사용하여 애플리케이션 메뉴를 설정하면, macOS에서 해당 메뉴가 기본 메뉴가 됩니다.
+Windows/Linux의 경우 메뉴는 창별로 설정됩니다.
+
+```go
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "Custom Menu Window",
+    Windows: application.WindowsWindow{
+        Menu: customMenu,  // 이 창의 애플리케이션 메뉴 재정의
+    },
+})
+```
+
+이러한 다양한 메뉴 동작을 보여주는 전체 예시는 다음과 같습니다:
+
+```go
+func main() {
+    app := application.New(application.Options{})
+
+    // 애플리케이션 메뉴 생성
+    appMenu := app.Menu.New()
+    fileMenu := appMenu.AddSubmenu("File")
+    fileMenu.Add("New").OnClick(func(ctx *application.Context) {
+        // 재정의하지 않는 한 모든 창에서 사용 가능
+        window := app.Windows.Current()
+        window.SetTitle("New Window")
+    })
+    
+    // 애플리케이션 메뉴로 설정 - 이는 macOS용입니다
+    app.Menu.Set(appMenu)
+
+    // Windows용 사용자 정의 메뉴가 있는 창
+    customMenu := app.Menu.New()
+    customMenu.Add("Custom Action")
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "Custom Menu",
+        Windows: application.WindowsWindow{
+            Menu: customMenu,
+        },
+    })
+
+    app.Run()
+}
+```
+
+## 컨텍스트 메뉴
+
+컨텍스트 메뉴는 애플리케이션의 요소를 마우스 오른쪽 버튼으로 클릭할 때 나타나는 팝업 메뉴입니다. 클릭된 요소와 관련된 작업에 빠르게 접근할 수 있게 해줍니다.
+
+### 기본 컨텍스트 메뉴
+
+기본 컨텍스트 메뉴는 시스템 수준의 작업(예: 복사, 잘라내기, 붙여넣기, 텍스트 선택, 맞춤법 검사 등)을 제공하는 webview의 내장 컨텍스트 메뉴입니다.
+
+#### 기본 컨텍스트 메뉴 제어
+
+`--default-contextmenu` CSS 속성을 사용하여 기본 컨텍스트 메뉴가 나타나는 시점을 제어할 수 있습니다:
+
+```html
+<!-- 항상 기본 컨텍스트 메뉴 표시 -->
+<div style="--default-contextmenu: show">
+    <input type="text" placeholder="Right-click for text operations"/>
+    <textarea>Standard text operations available here</textarea>
+</div>
+
+<!-- 기본 컨텍스트 메뉴 숨기기 -->
+<div style="--default-contextmenu: hide">
+    <div class="custom-component">Custom context menu only</div>
+</div>
+
+<!-- 스마트 컨텍스트 메뉴 동작 (기본값) -->
+<div style="--default-contextmenu: auto">
+    <!-- 텍스트가 선택되거나 입력 필드에 있을 때 기본 메뉴 표시 -->
+    <p>Select this text to see the default menu</p>
+    <input type="text" placeholder="Default menu for input operations"/>
+</div>
+```
+
+:::note
+이 기능은 런타임이 [초기화된 후](../../learn/runtime#initialisation)에만 예상대로 작동합니다.
+:::
+
+#### 중첩 컨텍스트 메뉴 동작
+
+중첩된 요소에 `--default-contextmenu` 속성을 사용할 때 다음 규칙이 적용됩니다:
+
+1. 자식 요소는 명시적으로 재정의하지 않는 한 부모의 컨텍스트 메뉴 설정을 상속받습니다.
+2. 가장 구체적(가장 가까운) 설정이 우선권을 가집니다.
+3. `auto` 값을 사용하여 기본 동작으로 재설정할 수 있습니다.
+
+중첩 컨텍스트 메뉴 동작의 예시:
+
+```html
+<!-- 부모가 hide 설정 -->
+<div style="--default-contextmenu: hide">
+    <!-- 이를 상속받음 -->
+    <p>No context menu here</p>
+    
+    <!-- 이를 show로 재정의 -->
+    <div style="--default-contextmenu: show">
+        <p>Context menu shown here</p>
+        
+        <!-- 이를 상속받음 -->
+        <span>Also has context menu</span>
+        
+        <!-- 자동 동작으로 재설정 -->
+        <div style="--default-contextmenu: auto">
+            <p>Shows menu only when text is selected</p>
+        </div>
+    </div>
+</div>
+```
+
+### 사용자 정의 컨텍스트 메뉴
+
+사용자 정의 컨텍스트 메뉴를 사용하면 클릭된 요소와 관련된 애플리케이션 고유의 작업을 제공할 수 있습니다. 이는 특히 다음과 같은 경우에 유용합니다:
+- 문서 관리자에서의 파일 작업
+- 이미지 조작 도구
+- 데이터 그리드에서의 사용자 정의 작업
+- 구성 요소별 작업
+
+#### 사용자 정의 컨텍스트 메뉴 생성
+
+사용자 정의 컨텍스트 메뉴를 생성할 때, 메뉴를 HTML 요소에 연결하는 고유한 식별자(이름)를 제공합니다:
+
+```go
+// "imageMenu" 식별자를 가진 컨텍스트 메뉴 생성
+contextMenu := application.NewContextMenu()
+app.ContextMenus.Add("imageMenu", contextMenu)
+```
+
+이름 매개변수("imageMenu")는 다음과 같이 사용되는 고유한 식별자 역할을 합니다:
+1. HTML 요소를 이 특정 컨텍스트 메뉴에 연결
+2. 마우스 오른쪽 버튼 클릭 시 표시될 메뉴 식별
+3. 메뉴 업데이트 및 정리 허용
+
+#### 컨텍스트 데이터
+
+컨텍스트 메뉴 이벤트를 처리할 때, 클릭된 메뉴 항목과 해당 컨텍스트 데이터에 모두 접근할 수 있습니다:
+
+```go
+contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
+    // 클릭된 메뉴 항목 가져오기
+    menuItem := ctx.ClickedMenuItem()
+    
+    // 컨텍스트 데이터를 문자열로 가져오기
+    contextData := ctx.ContextMenuData()
+    
+    // 메뉴 항목이 체크되어 있는지 확인 (체크박스/라디오 항목용)
+    isChecked := ctx.IsChecked()
+    
+    // 데이터 사용
+    if contextData != "" {
+        processItem(contextData)
+    }
+})
+```
+
+컨텍스트 데이터는 HTML 요소의 `--custom-contextmenu-data` 속성에서 전달되며, 클릭 핸들러를 통해 `ctx.ContextMenuData()`로 접근할 수 있습니다. 이는 특히 다음과 같은 경우에 유용합니다:
+
+- 각 항목이 고유한 식별이 필요한 목록이나 그리드 작업 시
+- 특정 구성 요소나 요소에 대한 작업 처리 시
+- 프론트엔드에서 백엔드로 상태 또는 메타데이터 전달 시
+
+#### 컨텍스트 메뉴 관리
+
+컨텍스트 메뉴에 변경 사항을 적용하려면 `Update()` 메서드를 호출해야 합니다:
+
+```go
+contextMenu.Update()
+```
+
+더 이상 컨텍스트 메뉴가 필요하지 않으면 이를 파괴할 수 있습니다:
+
+```go
+contextMenu.Destroy()
+```
+:::danger[경고] 
+`Destroy()` 호출 후 컨텍스트 메뉴 참조를 다시 사용하면 패닉이 발생합니다.
+:::
+
+### 실제 사례: 이미지 갤러리
+
+이미지 갤러리에 대한 사용자 정의 컨텍스트 메뉴 구현의 전체 예시는 다음과 같습니다:
+
+```go
+// 백엔드: 컨텍스트 메뉴 생성```go
+imageMenu := application.NewContextMenu()
+app.ContextMenus.Add("imageMenu", imageMenu)
+
+// Add relevant operations
+imageMenu.Add("View Full Size").OnClick(func(ctx *application.Context) {
+    // Get the image ID from context data
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        openFullSizeImage(imageID)
+    }
+})
+
+imageMenu.Add("Download").OnClick(func(ctx *application.Context) {
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        downloadImage(imageID)
+    }
+})
+
+imageMenu.Add("Share").OnClick(func(ctx *application.Context) {
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        showShareDialog(imageID)
+    }
+})
+```
+
+```html
+<!-- Frontend: Image gallery implementation -->
+<div class="gallery">
+    <!-- Each image container with context menu -->
+    <div class="image-container" 
+         style="--custom-contextmenu: imageMenu; --custom-contextmenu-data: img_123">
+        <img src="/images/img_123.jpg" alt="Gallery Image"/>
+        <span class="caption">Nature Photo</span>
+    </div>
+    
+    <div class="image-container"
+         style="--custom-contextmenu: imageMenu; --custom-contextmenu-data: img_124">
+        <img src="/images/img_124.jpg" alt="Gallery Image"/>
+        <span class="caption">City Photo</span>
+    </div>
+</div>
+```
+
+이 예시에서:
+1. 컨텍스트 메뉴는 "imageMenu"라는 식별자로 생성됩니다.
+2. 각 이미지 컨테이너는 `--custom-contextmenu: imageMenu`를 사용하여 해당 메뉴에 연결됩니다.
+3. 각 컨테이너는 `--custom-contextmenu-data`를 통해 컨텍스트 데이터로 이미지 ID를 제공합니다.
+4. 백엔드는 클릭 핸들러에서 이미지 ID를 받아 특정 작업을 수행할 수 있습니다.
+5. 동일한 메뉴가 모든 이미지에 재사용되지만, 컨텍스트 데이터는 어떤 이미지를 조작해야 하는지 알려줍니다.
+
+이 패턴은 특히 다음과 같은 경우에 강력합니다:
+- 행에 특정 작업이 필요한 데이터 그리드
+- 파일에 컨텍스트별 작업이 필요한 파일 관리자
+- 서로 다른 요소에 서로 다른 작업이 필요한 디자인 도구
+- 동일한 작업이 여러 인스턴스에 적용되는 모든 컴포넌트

@@ -1,0 +1,615 @@
+---
+title: 서비스
+description: 서비스를 사용하여 모듈화되고 재사용 가능한 애플리케이션 구성 요소를 빌드하세요
+sidebar:
+  order: 2
+---
+
+## 서비스 아키텍처
+
+Wails **서비스**는 모듈화되고 독립적인 구성 요소를 사용하여 애플리케이션 로직을 구성하는 구조화된 방법을 제공합니다. 서비스는 수명 주기(lifecycle)를 인식하며 시작 및 종료 후크(hook)를 가지고 있고, 프론트엔드에 자동으로 바인딩되며, 의존성 주입이 가능하고 고립된 상태에서 완전히 테스트할 수 있습니다.
+
+## 빠른 시작
+
+```go
+type GreetService struct {
+    prefix string
+}
+
+func NewGreetService(prefix string) *GreetService {
+    return &GreetService{prefix: prefix}
+}
+
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+
+// 등록
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(NewGreetService("Hello, ")),
+    },
+})
+```
+
+**이것으로 끝입니다!** 이제 `Greet`는 JavaScript에서 호출할 수 있습니다:
+
+```js
+import { Greet } from './bindings/main/GreetService';
+
+const message = await Greet("World");
+console.log(message);  // "Hello, World!"
+```
+
+## 서비스 생성
+
+### 기본 서비스
+
+```go
+type CalculatorService struct{}
+
+func (c *CalculatorService) Add(a, b int) int {
+    return a + b
+}
+
+func (c *CalculatorService) Subtract(a, b int) int {
+    return a - b
+}
+```
+
+**등록:**
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&CalculatorService{}),
+    },
+})
+```
+
+**핵심 포인트:**
+- **내보낸 메서드**(PascalCase)만 바인딩됩니다
+- 서비스는 **싱글톤**(인스턴스 하나)입니다
+- 메서드는 `(값, 오류)`를 반환할 수 있습니다
+
+### 상태가 있는 서비스
+
+```go
+type CounterService struct {
+    count int
+    mu    sync.RWMutex
+}
+
+func (c *CounterService) Increment() int {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count++
+    return c.count
+}
+
+func (c *CounterService) GetCount() int {
+    c.mu.RLock()
+    defer c.mu.RUnlock()
+    return c.count
+}
+
+func (c *CounterService) Reset() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count = 0
+}
+```
+
+**중요:** 서비스는 모든 창(window)에서 공유됩니다. 스레드 안전성을 위해 항상 뮤텍스(mutex)를 사용하세요.
+
+### 의존성이 있는 서비스
+
+```go
+type UserService struct {
+    db     *sql.DB
+    logger *slog.Logger
+}
+
+func NewUserService(db *sql.DB, logger *slog.Logger) *UserService {
+    return &UserService{
+        db:     db,
+        logger: logger,
+    }
+}
+
+func (u *UserService) GetUser(id int) (*User, error) {
+    u.logger.Info("Getting user", "id", id)
+    
+    var user User
+    err := u.db.QueryRow("SELECT * FROM users WHERE id = ?", id).Scan(&user)
+    if err != nil {
+        return nil, fmt.Errorf("failed to get user: %w", err)
+    }
+    
+    return &user, nil
+}
+```
+
+**의존성과 함께 등록:**
+
+```go
+db, _ := sql.Open("sqlite3", "app.db")
+logger := slog.Default()
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(NewUserService(db, logger)),
+    },
+})
+```
+
+## 서비스 수명 주기
+
+### ServiceStartup
+
+애플리케이션이 시작될 때 호출됩니다:
+
+```go
+func (u *UserService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    u.logger.Info("UserService starting up")
+    
+    // 리소스 초기화
+    if err := u.db.Ping(); err != nil {
+        return fmt.Errorf("database not available: %w", err)
+    }
+    
+    // 마이그레이션 실행
+    if err := u.runMigrations(); err != nil {
+        return fmt.Errorf("migrations failed: %w", err)
+    }
+    
+    // 백그라운드 작업 시작
+    go u.backgroundSync(ctx)
+    
+    return nil
+}
+```
+
+**사용 사례:**
+- 리소스 초기화
+- 구성 검증
+- 마이그레이션 실행
+- 백그라운드 작업 시작
+- 외부 서비스 연결
+
+**중요:**
+- 서비스는 **등록 순서**대로 시작됩니다
+- 오류를 반환하여 **애플리케이션 시작을 방지**할 수 있습니다
+- 취소에는 `ctx`를 사용하세요
+
+### ServiceShutdown
+
+애플리케이션이 종료될 때 호출됩니다:
+
+```go
+func (u *UserService) ServiceShutdown() error {
+    u.logger.Info("UserService shutting down")
+    
+    // 데이터베이스 닫기
+    if err := u.db.Close(); err != nil {
+        return fmt.Errorf("failed to close database: %w", err)
+    }
+    
+    // 리소스 정리
+    u.cleanup()
+    
+    return nil
+}
+```
+
+**사용 사례:**
+- 연결 닫기
+- 상태 저장
+- 리소스 정리
+- 버퍼 플러시
+- 백그라운드 작업 취소
+
+**중요:**
+- 서비스는 **역순**으로 종료됩니다
+- 애플리케이션 컨텍스트는 이미 취소되었습니다
+- 오류를 반환하면 **경고를 로깅**합니다 (종료를 방지하지는 않음)
+
+### 전체 수명 주기 예제
+
+```go
+type DatabaseService struct {
+    db     *sql.DB
+    logger *slog.Logger
+    cancel context.CancelFunc
+}
+
+func NewDatabaseService(logger *slog.Logger) *DatabaseService {
+    return &DatabaseService{logger: logger}
+}
+
+func (d *DatabaseService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    d.logger.Info("Starting database service")
+    
+    // 데이터베이스 열기
+    db, err := sql.Open("sqlite3", "app.db")
+    if err != nil {
+        return fmt.Errorf("failed to open database: %w", err)
+    }
+    d.db = db
+    
+    // 연결 테스트
+    if err := db.Ping(); err != nil {
+        return fmt.Errorf("database not available: %w", err)
+    }
+    
+    // 백그라운드 정리 시작
+    ctx, cancel := context.WithCancel(ctx)
+    d.cancel = cancel
+    go d.periodicCleanup(ctx)
+    
+    return nil
+}
+
+func (d *DatabaseService) ServiceShutdown() error {
+    d.logger.Info("Shutting down database service")
+    
+    // 백그라운드 작업 취소
+    if d.cancel != nil {
+        d.cancel()
+    }
+    
+    // 데이터베이스 닫기
+    if d.db != nil {
+        if err := d.db.Close(); err != nil {
+            return fmt.Errorf("failed to close database: %w", err)
+        }
+    }
+    
+    return nil
+}
+
+func (d *DatabaseService) periodicCleanup(ctx context.Context) {
+    ticker := time.NewTicker(1 * time.Hour)
+    defer ticker.Stop()
+    
+    for {
+        select {
+        case <-ctx.Done():
+            return
+        case <-ticker.C:
+            d.cleanup()
+        }
+    }
+}
+```
+
+## 서비스 옵션
+
+### 사용자 지정 이름
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceWithOptions(&MyService{}, application.ServiceOptions{
+            Name: "CustomServiceName",
+        }),
+    },
+})
+```
+
+**사용 사례:**
+- 동일한 서비스 유형의 여러 인스턴스
+- 더 명확한 로깅
+- 더 나은 디버깅
+
+### HTTP 라우트
+
+서비스는 HTTP 요청을 처리할 수 있습니다:
+
+```go
+type FileService struct {
+    root string
+}
+
+func (f *FileService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    // 루트 디렉토리에서 파일 제공
+    http.FileServer(http.Dir(f.root)).ServeHTTP(w, r)
+}
+
+// 라우트와 함께 등록
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceWithOptions(&FileService{root: "./files"}, application.ServiceOptions{
+            Route: "/files",
+        }),
+    },
+})
+```
+
+**접속:** `http://wails.localhost/files/...`
+
+**사용 사례:**
+- 파일 제공
+- 사용자 지정 API
+- WebSocket 엔드포인트
+- 미디어 스트리밍
+
+## 서비스 패턴
+
+### 리포지토리 패턴
+
+```go
+type UserRepository struct {
+    db *sql.DB
+}
+
+func (r *UserRepository) GetByID(id int) (*User, error) {
+    // 데이터베이스 쿼리
+}
+
+func (r *UserRepository) Create(user *User) error {
+    // 사용자 삽입
+}
+
+func (r *UserRepository) Update(user *User) error {
+    // 사용자 업데이트
+}
+
+func (r *UserRepository) Delete(id int) error {
+    // 사용자 삭제
+}
+```
+
+### 서비스 레이어 패턴
+
+```go
+type UserService struct {
+    repo   *UserRepository
+    logger *slog.Logger
+}
+
+func (s *UserService) RegisterUser(email, password string) (*User, error) {
+    // 유효성 검사
+    if !isValidEmail(email) {
+        return nil, errors.New("invalid email")
+    }
+    
+    // 비밀번호 해싱
+    hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+    if err != nil {
+        return nil, err
+    }
+    
+    // 사용자 생성
+    user := &User{
+        Email:        email,
+        PasswordHash: string(hash),CreatedAt:    time.Now(),
+    }
+    
+    if err := s.repo.Create(user); err != nil {
+        return nil, err
+    }
+    
+    s.logger.Info("User registered", "email", email)
+    return user, nil
+}
+```
+
+### 팩토리 패턴
+
+```go
+type ServiceFactory struct {
+    db     *sql.DB
+    logger *slog.Logger
+}
+
+func (f *ServiceFactory) CreateUserService() *UserService {
+    return &UserService{
+        repo:   &UserRepository{db: f.db},
+        logger: f.logger,
+    }
+}
+
+func (f *ServiceFactory) CreateOrderService() *OrderService {
+    return &OrderService{
+        repo:   &OrderRepository{db: f.db},
+        logger: f.logger,
+    }
+}
+```
+
+### 이벤트 기반 패턴
+
+```go
+type OrderService struct {
+    app *application.Application
+}
+
+func (o *OrderService) CreateOrder(items []Item) (*Order, error) {
+    order := &Order{
+        Items:     items,
+        CreatedAt: time.Now(),
+    }
+    
+    // 주문 저장
+    if err := o.saveOrder(order); err != nil {
+        return nil, err
+    }
+    
+    // 이벤트 발생
+    o.app.Event.Emit("order-created", order)
+    
+    return order, nil
+}
+```
+
+## 의존성 주입
+
+### 생성자 주입
+
+```go
+type EmailService struct {
+    smtp   *smtp.Client
+    logger *slog.Logger
+}
+
+func NewEmailService(smtp *smtp.Client, logger *slog.Logger) *EmailService {
+    return &EmailService{
+        smtp:   smtp,
+        logger: logger,
+    }
+}
+
+// 등록
+smtpClient := createSMTPClient()
+logger := slog.Default()
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(NewEmailService(smtpClient, logger)),
+    },
+})
+```
+
+### 애플리케이션 주입
+
+```go
+type NotificationService struct {
+    app *application.Application
+}
+
+func NewNotificationService(app *application.Application) *NotificationService {
+    return &NotificationService{app: app}
+}
+
+func (n *NotificationService) Notify(message string) {
+    // 애플리케이션을 사용하여 이벤트 발생
+    n.app.Event.Emit("notification", message)
+    
+    // 또는 시스템 알림 표시
+    n.app.ShowNotification(message)
+}
+
+// 애플리케이션 생성 후 등록
+app := application.New(application.Options{})
+app.RegisterService(application.NewService(NewNotificationService(app)))
+```
+
+### 서비스 간 의존성
+
+```go
+type OrderService struct {
+    userService  *UserService
+    emailService *EmailService
+}
+
+func NewOrderService(userService *UserService, emailService *EmailService) *OrderService {
+    return &OrderService{
+        userService:  userService,
+        emailService: emailService,
+    }
+}
+
+// 순서대로 등록
+userService := &UserService{}
+emailService := &EmailService{}
+orderService := NewOrderService(userService, emailService)
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(userService),
+        application.NewService(emailService),
+        application.NewService(orderService),
+    },
+})
+```
+
+## 서비스 테스트
+
+### 단위 테스트
+
+```go
+func TestCalculatorService_Add(t *testing.T) {
+    calc := &CalculatorService{}
+    
+    result := calc.Add(2, 3)
+    
+    if result != 5 {
+        t.Errorf("expected 5, got %d", result)
+    }
+}
+```
+
+### 의존성이 있는 테스트
+
+```go
+func TestUserService_GetUser(t *testing.T) {
+    // 모의 데이터베이스 생성
+    db, mock, _ := sqlmock.New()
+    defer db.Close()
+    
+    // 기대값 설정
+    rows := sqlmock.NewRows([]string{"id", "name"}).
+        AddRow(1, "Alice")
+    mock.ExpectQuery("SELECT").WillReturnRows(rows)
+    
+    // 서비스 생성
+    service := NewUserService(db, slog.Default())
+    
+    // 테스트
+    user, err := service.GetUser(1)
+    
+    if err != nil {
+        t.Fatalf("unexpected error: %v", err)
+    }
+    if user.Name != "Alice" {
+        t.Errorf("expected Alice, got %s", user.Name)
+    }
+}
+```
+
+### 수명 주기 테스트
+
+```go
+func TestDatabaseService_Lifecycle(t *testing.T) {
+    service := NewDatabaseService(slog.Default())
+    
+    // 시작 테스트
+    ctx := context.Background()
+    err := service.ServiceStartup(ctx, application.ServiceOptions{})
+    if err != nil {
+        t.Fatalf("startup failed: %v", err)
+    }
+    
+    // 기능 테스트
+    // ...
+    
+    // 종료 테스트
+    err = service.ServiceShutdown()
+    if err != nil {
+        t.Fatalf("shutdown failed: %v", err)
+    }
+}
+```
+
+## 모범 사례
+
+### ✅ 권장 사항
+
+- **단일 책임** - 하나의 서비스, 하나의 목적
+- **생성자 주입** - 의존성을 명시적으로 전달
+- **스레드 안전한 상태** - 뮤텍스 사용
+- **오류 반환** - 패닉 발생 금지
+- **중요 이벤트 로깅** - 구조화된 로깅 사용
+- **격리된 테스트** - 의존성 모의(Mock) 사용
+
+### ❌ 금지 사항
+
+- **전역 상태 사용 금지** - 의존성 전달
+- **시작 과정 차단 금지** - ServiceStartup은 빠르게 유지
+- **종료 무시 금지** - 항상 정리(Cleanup) 수행
+- **순환 의존성 생성 금지** - 신중하게 설계
+- **내부 메서드 노출 금지** - 비공개로 유지
+- **스레드 안전성 잊지 않기** - 서비스는 공유됨---
+
+**질문 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 문의하시거나 [서비스 예제](https://github.com/wailsapp/wails/tree/master/v3/examples)를 확인하세요.

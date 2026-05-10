@@ -1,0 +1,487 @@
+---
+title: 애플리케이션 API
+description: Application API의 전체 참조 문서
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 개요
+
+`Application`은 Wails 앱의 핵심입니다. 창, 서비스, 이벤트를 관리하며 모든 플랫폼 기능에 대한 접근을 제공합니다.
+
+## Application 생성하기
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+app := application.New(application.Options{
+    Name:        "My App",
+    Description: "My awesome application",
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+    },
+})
+```
+
+## 핵심 메서드
+
+### Run()
+
+애플리케이션 이벤트 루프를 시작합니다.
+
+```go
+func (a *App) Run() error
+```
+
+**예제:**
+
+```go
+err := app.Run()
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+**반환값:** 시작 실패 시 오류
+
+### Quit()
+
+애플리케이션을 정상적으로 종료합니다.
+
+```go
+func (a *App) Quit()
+```
+
+**예제:**
+
+```go
+// 메뉴 핸들러에서
+menu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+```
+
+### Config()
+
+애플리케이션 구성을 반환합니다.
+
+```go
+func (a *App) Config() Options
+```
+
+**예제:**
+
+```go
+config := app.Config()
+fmt.Println("App name:", config.Name)
+```
+
+## 창 관리
+
+### app.Window.New()
+
+기본 옵션으로 새 WebView 창을 생성합니다.
+
+```go
+func (wm *WindowManager) New() *WebviewWindow
+```
+
+**예제:**
+
+```go
+window := app.Window.New()
+window.Show()
+```
+
+### app.Window.NewWithOptions()
+
+사용자 지정 옵션으로 새 WebView 창을 생성합니다.
+
+```go
+func (wm *WindowManager) NewWithOptions(options WebviewWindowOptions) *WebviewWindow
+```
+
+**예제:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My Window",
+    Width:  800,
+    Height: 600,
+    BackgroundColour: application.NewRGB(255, 255, 255),
+})
+```
+
+### app.Window.GetByName()
+
+이름으로 창을 가져옵니다.
+
+```go
+func (wm *WindowManager) GetByName(name string) Window
+```
+
+**예제:**
+
+```go
+window := app.Window.GetByName("main")
+if window != nil {
+    window.Show()
+}
+```
+
+### app.Window.GetAll()
+
+모든 애플리케이션 창을 반환합니다.
+
+```go
+func (wm *WindowManager) GetAll() []Window
+```
+
+**예제:**
+
+```go
+windows := app.Window.GetAll()
+for _, window := range windows {
+    fmt.Println("Window:", window.Name())
+}
+```
+
+## 관리자(Managers)
+
+Application은 속성을 통해 다양한 관리자에 접근할 수 있습니다:
+
+```go
+app.Window      // 창 관리
+app.Menu        // 메뉴 관리
+app.Dialog      // 대화상자 관리
+app.Event       // 이벤트 관리
+app.Clipboard   // 클립보드 작업
+app.Screen      // 화면 정보
+app.SystemTray  // 시스템 트레이
+app.Browser     // 브라우저 작업
+app.Env         // 환경 변수
+```
+
+### 예제 사용법
+
+```go
+// 창 생성
+window := app.Window.New()
+
+// 대화상자 표시
+app.Dialog.Info().SetMessage("Hello!").Show()
+
+// 클립보드에 복사
+app.Clipboard.SetText("Copied text")
+
+// 화면 정보 가져오기
+screens := app.Screen.GetAll()
+```
+
+## 서비스 관리
+
+### RegisterService()
+
+서비스를 애플리케이션에 등록합니다.
+
+```go
+func (a *App) RegisterService(service Service) error
+```
+
+**예제:**
+
+```go
+type MyService struct {
+    app *application.Application
+}
+
+func NewMyService(app *application.Application) *MyService {
+    return &MyService{app: app}
+}
+
+// 앱 생성 후 등록
+app.RegisterService(application.NewService(NewMyService(app)))
+```
+
+## 이벤트 관리
+
+### app.Event.Emit()
+
+사용자 지정 이벤트를 방출(Emit)합니다.
+
+```go
+func (em *EventManager) Emit(name string, data ...interface{})
+```
+
+**예제:**
+
+```go
+// 데이터와 함께 이벤트 방출
+app.Event.Emit("user-logged-in", map[string]interface{}{
+    "username": "john",
+    "timestamp": time.Now(),
+})
+```
+
+### app.Event.On()
+
+사용자 지정 이벤트를 수신 대기합니다.
+
+```go
+func (em *EventManager) On(name string, callback func(*CustomEvent))
+```
+
+**예제:**
+
+```go
+app.Event.On("user-logged-in", func(e *application.CustomEvent) {
+    data := e.Data.(map[string]interface{})
+    username := data["username"].(string)
+    fmt.Println("User logged in:", username)
+})
+```
+
+### app.Event.OnApplicationEvent()
+
+애플리케이션 수명 주기 이벤트를 수신 대기합니다.
+
+```go
+func (em *EventManager) OnApplicationEvent(eventType ApplicationEventType, callback func(*ApplicationEvent)) func()
+```
+
+**예제:**
+
+```go
+// 종료 이벤트 수신
+app.Event.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
+    fmt.Println("Application shutting down")
+    // 정리 작업
+})
+```
+
+## 대화상자 메서드
+
+대화상자는 `app.Dialog` 관리자를 통해 접근합니다. 전체 참조는 [대화상자 API](/reference/dialogs/)를 참조하세요.
+
+### 메시지 대화상자
+
+```go
+// 정보 대화상자
+app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("Operation completed!").
+    Show()
+
+// 오류 대화상자
+app.Dialog.Error().
+    SetTitle("Error").
+    SetMessage("Something went wrong.").
+    Show()
+
+// 경고 대화상자
+app.Dialog.Warning().
+    SetTitle("Warning").
+    SetMessage("This action cannot be undone.").
+    Show()
+```
+
+### 질문 대화상자
+
+질문 대화상자는 버튼 콜백을 사용하여 사용자 응답을 처리합니다:
+
+```go
+dialog := app.Dialog.Question().
+    SetTitle("Confirm").
+    SetMessage("Continue?")
+
+yes := dialog.AddButton("Yes")
+yes.OnClick(func() {
+    // Yes 처리
+})
+
+no := dialog.AddButton("No")
+no.OnClick(func() {
+    // No 처리
+})
+
+dialog.SetDefaultButton(yes)
+dialog.SetCancelButton(no)
+dialog.Show()
+```
+
+### 파일 대화상자
+
+```go
+// 파일 열기 대화상자
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select File").
+    AddFilter("Images", "*.png;*.jpg").
+    PromptForSingleSelection()
+
+// 파일 저장 대화상자
+path, err := app.Dialog.SaveFile().
+    SetTitle("Save File").
+    SetFilename("document.pdf").
+    AddFilter("PDF", "*.pdf").
+    PromptForSingleSelection()
+
+// 폴더 선택 (디렉토리 옵션과 함께 OpenFile 사용)
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Folder").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+```
+
+## 로거
+
+애플리케이션은 구조화된 로거를 제공합니다:
+
+```go
+app.Logger.Info("Message", "key", "value")
+app.Logger.Error("Error occurred", "error", err)
+app.Logger.Debug("Debug info")
+app.Logger.Warn("Warning message")
+```
+
+**예제:**
+
+```go
+func (s *MyService) ProcessData(data string) error {
+    s.app.Logger.Info("Processing data", "length", len(data))
+    
+    if err := process(data); err != nil {
+        s.app.Logger.Error("Processing failed", "error", err)
+        return err
+    }
+    
+    s.app.Logger.Info("Processing complete")
+    return nil
+}
+```
+
+## 원시 메시지 처리
+
+프론트엔드에서 백엔드로의 통신에 대해 직접적이고 저수준의 제어가 필요한 애플리케이션의 경우, Wails는 `RawMessageHandler` 옵션을 제공합니다. 이는 표준 바인딩 시스템을 우회합니다.
+
+:::note
+원시 메시지는 최후의 수단으로만 사용해야 합니다. 표준 바인딩 시스템은 매우 최적화되어 있으며 거의 모든 애플리케이션에 충분합니다. 애플리케이션을 프로파일링하여 바인딩이 병목 현상임을 확인한 경우에만 원시 메시지를 사용하세요.
+:::
+
+### RawMessageHandler
+
+`RawMessageHandler` 콜백은 프론트엔드에서 `System.invoke()`를 사용하여 보내는 원시 메시지를 받습니다.
+
+```go
+func (a *App) RawMessageHandler(window Window, message string)
+```
+
+**예제:**
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    RawMessageHandler: func(window application.Window, message string) {
+        // 원시 메시지 처리
+        fmt.Printf("Received from %s: %s\n", window.Name(), message)
+
+        // 이벤트를 사용하여 응답할 수 있습니다
+        window.EmitEvent("response", processMessage(message))
+    },
+})
+```
+
+
+자세한 내용은 [원시 메시지 가이드](/ko/guides/raw-messages)를 참조하세요.
+
+## 플랫폼별 옵션
+
+### Windows 옵션
+
+애플리케이션 수준에서 Windows 특정 동작을 구성합니다:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Windows: application.WindowsOptions{
+        // WebView2 브라우저 플래그 (모든 창에 적용)EnabledFeatures:       []string{"msWebView2EnableDraggableRegions"},
+        DisabledFeatures:      []string{"msExperimentalFeature"},
+        AdditionalBrowserArgs: []string{"--remote-debugging-port=9222"},
+
+        // Other Windows options
+        WndClass:                      "MyAppClass",
+        WebviewUserDataPath:           "",  // Default: %APPDATA%\[BinaryName.exe]
+        WebviewBrowserPath:            "",  // Default: system WebView2
+        DisableQuitOnLastWindowClosed: false,
+    },
+})
+```
+
+**브라우저 플래그:**
+- `EnabledFeatures` - 활성화할 WebView2 기능 플래그
+- `DisabledFeatures` - 비활성화할 WebView2 기능 플래그
+- `AdditionalBrowserArgs` - Chromium 명령줄 인수
+
+자세한 문서화는 [Window Options - Application-Level Windows Options](/features/windows/options#application-level-windows-options)를 참조하세요.
+
+### Mac 옵션
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Mac: application.MacOptions{
+        ActivationPolicy: application.ActivationPolicyRegular,
+        ApplicationShouldTerminateAfterLastWindowClosed: true,
+    },
+})
+```
+
+### Linux 옵션
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Linux: application.LinuxOptions{
+        ProgramName:                   "my-app",
+        DisableQuitOnLastWindowClosed: false,
+    },
+})
+```
+
+## 전체 애플리케이션 예제
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "My Application",
+        Description: "A demo application",
+        Mac: application.MacOptions{
+            ApplicationShouldTerminateAfterLastWindowClosed: true,
+        },
+    })
+
+    // Create main window
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:            "My App",
+        Width:            1024,
+        Height:           768,
+        MinWidth:         800,
+        MinHeight:        600,
+        BackgroundColour: application.NewRGB(255, 255, 255),
+        URL:              "http://wails.localhost/",
+    })
+
+    window.Centre()
+    window.Show()
+
+    app.Run()
+}
+```

@@ -1,0 +1,203 @@
+---
+title: 런타임 내부 구조
+description: Wails v3가 부팅되고 실행되며 OS와 통신하는 방식을 심층 분석합니다
+sidebar:
+  order: 3
+---
+
+**런타임**은 일반적인 Go 함수를 크로스 플랫폼 데스크톱 애플리케이션으로 변환하는 계층입니다.  
+이 문서는 소스 코드를 추적할 때 마주치게 되는 주요 구성 요소들을 설명합니다.
+
+---
+
+## 1. 애플리케이션 수명 주기
+
+| 단계 | 코드 경로 | 발생 사항 |
+|-------|-----------|--------------|
+| **부트스트랩** | `pkg/application/application.go:init()` | 빌드 타임 데이터를 등록하고 전역 `application` 싱글톤을 생성합니다. |
+| **New()** | `application.New(...)` | `Options`를 검증하고, **AssetServer**를 시작하며, 로깅을 초기화합니다. |
+| **Run()** | `application.(*App).Run()` | 1. 플랫폼 `mainthread.X()`를 호출하여 OS UI 스레드에 진입합니다.<br />2. **런타임**(`internal/runtime`)을 부팅합니다.<br />3. 마지막 창이 닫히거나 `Quit()`가 호출될 때까지 차단됩니다. |
+| **종료** | `application.(*App).Quit()` | `application:shutdown` 이벤트를 브로드캐스트하고, 로그를 플러시하며, 창과 서비스를 정리합니다. |
+
+수명 주기는 엄격히 **단일 진입점**입니다. 여러 창을 생성할 수 있지만, 애플리케이션 객체 자체는 한 번만 초기화됩니다.
+
+---
+
+## 2. 창 관리
+
+### 공개 API
+
+```go
+win := app.Window.New(&application.WebviewWindowOptions{
+    Title:  "Dashboard",
+    Width:  1280,
+    Height: 720,
+})
+win.Show()
+```
+
+`app.Window.New()`은 플랫폼별 생성자가 위치한 `internal/runtime/webview_window_*.go`로 위임합니다:
+
+```
+internal/runtime/
+├── webview_window_darwin.go
+├── webview_window_linux.go
+└── webview_window_windows.go
+```
+
+각 파일은 다음을 수행합니다:
+
+1. 네이티브 웹뷰(WKWebView, WebKitGTK, WebView2)를 생성합니다.
+2. **메시지 프로세서** 콜백을 등록합니다.
+3. Wails 이벤트(`WindowResized`, `Focus`, `DropFile`, …)를 런타임 이벤트 ID에 매핑합니다.
+
+창은 `screenmanager.go`에 의해 추적되며, 이는 **쿼리 API**(모든 디스플레이, DPI, 활성 창)를 제공하고 리사이즈/이동 기록을 중앙에서 관리합니다.
+
+---
+
+## 3. 메시지 처리 파이프라인
+
+JavaScript와 Go 간의 브릿지는 `pkg/application/messageprocessor_*.go`의 **메시지 프로세서** 패밀리로 구현됩니다.
+
+흐름:
+
+1. **JavaScript**가 `window.runtime.Invoke("Greet", "Alice")`를 호출합니다.
+2. 런타임이 요청을 직렬화합니다:  
+   `{"t":"c","id":"123","m":"Greet","p":["Alice"]}`  
+   (`t` = 타입, `c` = 호출).
+3. **Go**는 웹뷰 콜백을 통해 이 JSON을 수신합니다.
+4. `messageprocessor_call.go`는 생성된 테이블(`application.bindings.go`)에서 바인딩된 메서드를 찾아 실행합니다.
+5. 결과 또는 오류가 JS로 역직렬화되어 `Promise`가 해결됩니다.
+
+전용 프로세서:
+
+| 파일 | 목적 |
+|------|---------|
+| `messageprocessor_window.go` | 창 작업 (숨기기, 최대화, …) |
+| `messageprocessor_dialog.go` | 네이티브 대화상자 (`OpenFile`, `MessageBox`, …) |
+| `messageprocessor_clipboard.go` | 클립보드 읽기/쓰기 |
+| `messageprocessor_events.go` | 이벤트 구독/발신 |
+| `messageprocessor_browser.go` | 브라우저 탐색, 개발자 도구 |
+
+프로세서는 **상태가 없음** – 각 메시지와 함께 전달된 `ApplicationContext`에서 필요한 모든 것을 가져옵니다.
+
+---
+
+## 4. 이벤트 시스템
+
+이벤트는 세 가지 계층 간에 분산되는 네임스페이스화된 문자열입니다:
+
+1. **애플리케이션 이벤트**: 전역 수명 주기 (`application:ready`,
+   `application:shutdown`).
+2. **창 이벤트**: 창별 (`window:focus`, `window:resize`).
+3. **사용자 정의 이벤트**: 사용자 정의 (`chat:new-message`).
+
+구현 세부 사항:
+
+* 상수는 `internal/events/defaults.go`에서 생성됩니다.
+* Go 측:  
+  `app.On("window:focus", func(e application.WindowEvent) {...})`
+* JS 측:  
+  `window.runtime.EventsOn("chat:new-message", cb)`
+
+내부적으로 둘 다 `pkg/application/events.go`의 동일한 **이벤트 버스(EventBus)**에 매핑됩니다.  
+구독자는 참조 카운팅됩니다. 창이 닫힐 때 콜백이 자동으로 등록 해제되어 메모리 누수를 방지합니다.
+
+---
+
+## 5. 플랫폼별 구현
+
+조건부 컴파일은 공개 API를 동일하게 유지하면서 OS의 세부 사항을 숨깁니다.
+
+| 관심사 | Darwin | Linux | Windows |
+|---------|--------|-------|---------|
+| 메인 스레드 | `mainthread_darwin.go` (Cgo to Foundation) | `mainthread_linux.go` (GTK) | `mainthread_windows.go` (Win32 `AttachThreadInput`) |
+| 대화상자 | `dialogs_darwin.*` (NSAlert) | `dialogs_linux.go` (GtkFileChooser) | `dialogs_windows.go` (IFileOpenDialog) |
+| 클립보드 | `clipboard_darwin.go` | `clipboard_linux.go` | `clipboard_windows.go` |
+| 트레이 아이콘 | `systemtray_darwin.*` | `systemtray_linux.go` (DBus) | `systemtray_windows.go` (Shell_NotifyIcon) |
+
+핵심 원칙:
+
+* **Windows/Linux에서 Cgo 사용 금지** (피할 수 없는 경우 제외) (성능, 이식성).
+* 파일의 가독성을 유지하기 위해 **빌드 태그**(`//go:build darwin && !production`)를 사용하세요.
+* `internal/capabilities`를 통해 **기능**을 노출하여 상위 계층이 우아하게 저하되도록 합니다.
+
+---
+
+## 6. 파일 가이드
+
+| 파일 | 수정이 필요한 경우 |
+|------|--------------------|
+| `internal/runtime/runtime_*.go` | 전역 시작 로직 변경, 디버그 훅 추가. |
+| `internal/runtime/webview_window_*.go` | 새 창 힌트 또는 동작 구현. |
+| `pkg/application/messageprocessor_*.go` | JS에서 호출할 수 있는 새 브릿지 명령 추가. |
+| `pkg/application/events_*.go` | 내장 이벤트 정의 확장. |
+| `internal/assetserver/*` | 개발/프로덕션 자산 처리 조정. |
+
+---
+
+## 7. 디버깅 팁
+
+* 브릿지를 통과하는 모든 메시지를 인쇄하려면 `WAILS_LOG_LEVEL=debug`로 시작하세요.
+* 라이브 리로드 및 자산 요청을 보려면 `wails3 dev -verbose`를 사용하세요.
+* macOS에서는 `lldb --` 아래에서 실행하여 Objective-C 예외를 조기에 포착하세요.
+* Windows Chromium 문제의 경우 WebView2 디버그 로그를 활성화하세요:  
+  `set WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222`
+
+---
+
+## 8. 런타임 확장
+
+1. `internal/capabilities`에 **기능 플래그**를 정의합니다.
+2. 빌드 태그를 사용하여 각 플랫폼 파일에 기능을 구현합니다.
+3. `pkg/application`에 공개 API를 추가합니다.
+4. JS에서 호출해야 하는 경우 새 메시지 타입 또는 이벤트를 등록합니다.
+5. 기능을 사용하는 `v3/examples/`의 예제를 최소한 하나 업데이트합니다.
+
+이 체크리스트를 따르면 크로스 플랫폼 계약을 유지할 수 있습니다.
+
+---
+
+## 9. 드래그 앤 드롭
+
+파일 드래그 앤 드롭은 모든 플랫폼에서 **JavaScript 우선 접근 방식**을 사용합니다. 네이티브 계층은 OS 드래그 이벤트를 가로채지만, 실제 드롭 처리 및 DOM 상호 작용은 JavaScript에서 발생합니다.
+
+### 흐름
+
+1. 사용자가 OS에서 Wails 창 위로 파일을 드래그합니다.
+2. 네이티브 계층이 드래그를 감지하고 호버 효과를 위해 JavaScript에 알림합니다.
+3. 사용자가 파일을 드롭합니다.
+4. 네이티브 계층이 파일 경로 및 좌표를 JavaScript에 보냅니다.
+5. JavaScript는 드롭 대상 요소(`data-file-drop-target`)를 찾습니다.
+6. JavaScript는 파일 경로 및 요소 세부 정보를 Go 백엔드로 보냅니다.
+7. Go는 전체 컨텍스트와 함께 `WindowFilesDropped` 이벤트를 발신합니다.
+
+### 플랫폼 구현
+
+| 플랫폼 | 네이티브 계층 | 주요 과제 |
+|----------|--------------|---------------|
+| **Windows** | WebView2의 내장 드래그 지원 | CSS 픽셀의 좌표, 변환 불필요 |
+| **macOS** | NSWindow 드래그 대리자 | 창 상대 좌표를 웹뷰 상대 좌표로 변환 |
+| **Linux** | GTK3 드래그 신호 | 파일 드래그와 내부 HTML5 드래그 구분 필요 |
+
+### Linux: 드래그 유형 구분
+
+GTK와 WebKit 모두 드래그 이벤트를 처리하려고 합니다. 핵심은 드래그 대상 유형을 확인하는 것입니다:
+
+```c
+static gboolean is_file_drag(GdkDragContext *context) {
+    GList *targets = gdk_drag_context_list_targets(context);
+    for (GList *l = targets; l != NULL; l = l->next) {
+        GdkAtom atom = GDK_POINTER_TO_ATOM(l->data);
+        gchar *name = gdk_atom_name(atom);
+        if (name && g_strcmp0(name, "text/uri-list") == 0) {
+            g_free(name);
+            return TRUE;  // 외부 파일 드래그
+        }
+        g_free(name);
+    }
+    return FALSE;  // 내부 HTML5 드래그
+}
+```
+
+신호 처리기는 내부 드래그에는 `FALSE`를, 파일 드래그에는 `TRUE`를 반환합니다 (WebKit이 내부 드래그를 처리하도록 하고, 파일 드래그는 자체적으로 처리).이제 런타임 내부 구조에 대한 안내된 투어를 마쳤습니다. 이 지식을 **코드베이스 레이아웃** 맵 및 **애셋 서버** 문서와 결합하여 자신감 있게 탐색하고 영향력 있는 기여를 하세요. 즐거운 코딩 되세요!

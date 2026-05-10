@@ -1,0 +1,119 @@
+---
+title: 단일 인스턴스
+description: 앱이 동시에 하나만 실행되도록 제한하기
+sidebar:
+   order: 40
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+단일 인스턴스 잠금(Single Instance Locking)은 앱의 여러 인스턴스가 동시에 실행되는 것을 방지하는 메커니즘입니다.
+이 기능은 명령줄이나 OS 파일 탐색기에서 파일을 열도록 설계된 앱에 유용합니다.
+
+
+## 사용법
+
+앱에서 단일 인스턴스 기능을 활성화하려면 애플리케이션을 생성할 때 `SingleInstanceOptions` 구조체를 제공하세요:
+
+```go
+app := application.New(application.Options{
+    // ... 기타 옵션 ...
+    SingleInstance: &application.SingleInstanceOptions{
+        UniqueID: "com.myapp.unique-id",
+        OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+            log.Printf("Second instance launched with args: %v", data.Args)
+            log.Printf("Working directory: %s", data.WorkingDir)
+            log.Printf("Additional data: %v", data.AdditionalData)
+        },
+        // 선택 사항: 두 번째 인스턴스에 추가 데이터 전달
+        AdditionalData: map[string]string{
+            "launchtime": time.Now().String(),
+        },
+    },
+})
+```
+
+`SingleInstanceOptions` 구조체는 다음 필드를 가집니다:
+
+- `UniqueID`: 애플리케이션의 고유 식별자입니다. 일반적으로 역 도메인 표기법(예: "com.company.appname")을 사용하는 고유한 문자열이어야 합니다.
+- `EncryptionKey`: AES-256-GCM을 사용하여 인스턴스 간에 전달되는 데이터를 암호화하기 위한 선택적 32바이트 배열입니다. 0이 아닌 배열로 제공되면 인스턴스 간 모든 통신이 암호화됩니다.
+- `OnSecondInstanceLaunch`: 앱의 두 번째 인스턴스가 실행될 때 호출되는 콜백 함수입니다. 이 콜백은 다음을 포함하는 `SecondInstanceData` 구조체를 받습니다:
+    - `Args`: 두 번째 인스턴스에 전달된 명령줄 인수
+    - `WorkingDir`: 두 번째 인스턴스의 작업 디렉토리
+    - `AdditionalData`: 두 번째 인스턴스에서 전달된 추가 데이터(제공된 경우)
+- `AdditionalData`: 후속 인스턴스가 실행될 때 첫 번째 인스턴스에 전달될 문자열 키-값 쌍의 선택적 맵입니다
+
+:::danger[경고]
+단일 인스턴스 기능은 AES-256-GCM을 사용하는 선택적 암호화 프로토콜을 구현합니다. 암호화가 활성화되지 않으면
+인스턴스 간에 전달되는 데이터가 안전하지 않습니다. 암호화 없이 단일 인스턴스 기능을 사용할 때,
+앱은 두 번째 인스턴스 콜백에서 전달된 모든 데이터를 신뢰할 수 없는 것으로 간주해야 합니다.
+수령한 인수가 유효하고 악성 데이터를 포함하지 않는지 확인해야 합니다.
+:::
+
+### 안전한 통신
+
+인스턴스 간에 안전한 통신을 활성화하려면 32바이트 암호화 키를 제공하세요. 이 키는 애플리케이션의 모든 인스턴스에서 동일해야 합니다:
+
+```go
+// 암호화 키 정의 (정확히 32바이트여야 함)
+var encryptionKey = [32]byte{
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+    0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+    0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+}
+
+// SingleInstanceOptions에서 키 사용
+SingleInstance: &application.SingleInstanceOptions{
+    UniqueID: "com.myapp.unique-id",
+    // 인스턴스 간 통신에 암호화 활성화
+    EncryptionKey: encryptionKey,
+    // ... 기타 옵션 ...
+}
+```
+
+:::tip[보안 모범 사례]
+- 애플리케이션에 고유한 키를 사용하세요
+- 구성에서 키를 로드하는 경우 안전하게 저장하세요
+- 위에 표시된 예제 키를 사용하지 마세요. 직접 생성하세요!
+:::
+
+### 창 관리
+
+두 번째 인스턴스 실행을 처리할 때 종종 애플리케이션 창을 최전면으로 가져오고 싶을 것입니다. 창의 `Focus()` 메서드를 사용하여 이를 수행할 수 있습니다. 창이 최소화되어 있으면 먼저 복원해야 할 수 있습니다:
+
+```go
+
+    var mainWindow *application.WebviewWindow
+
+    SingleInstance: &application.SingleInstanceOptions{
+        // 기타 옵션...
+        OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+            // 필요한 경우 창에 포커스
+            if mainWindow != nil {
+                mainWindow.Restore()
+                mainWindow.Focus()
+            }
+        },
+    }
+```
+
+## 작동 방식
+
+<Tabs syncKey="platform">
+    <TabItem label="Mac" icon="apple">
+
+        이름付き 뮤텍스를 사용한 단일 인스턴스 잠금. 뮤텍스 이름은 제공한 고유 ID에서 생성됩니다. 데이터는 [NSDistributedNotificationCenter](https://developer.apple.com/documentation/foundation/nsdistributednotificationcenter)를 통해 첫 번째 인스턴스에 전달됩니다.
+
+    </TabItem>
+    <TabItem label="Windows" icon="seti:windows">
+
+        이름付き 뮤텍스를 사용한 단일 인스턴스 잠금. 뮤텍스 이름은 제공한 고유 ID에서 생성됩니다. 데이터는 [SendMessage](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage)를 사용하는 공유 창을 통해 첫 번째 인스턴스에 전달됩니다.
+
+    </TabItem>
+    <TabItem label="Linux" icon="linux">
+
+        [dbus](https://www.freedesktop.org/wiki/Software/dbus/)를 사용한 단일 인스턴스 잠금. dbus 이름은 제공한 고유 ID에서 생성됩니다. 데이터는 [dbus](https://www.freedesktop.org/wiki/Software/dbus/)를 통해 첫 번째 인스턴스에 전달됩니다.
+
+    </TabItem>
+</Tabs>

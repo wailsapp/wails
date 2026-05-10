@@ -1,0 +1,215 @@
+---
+title: 템플릿 시스템
+description: Wails v3가 새 프로젝트를 어떻게 생성하는지, 템플릿이 어떻게 구성되어 있는지, 그리고 직접 템플릿을 만드는 방법에 대해 다룹니다.
+sidebar:
+  order: 7
+---
+
+Wails는 `wails3 init` 명령어를 통해 **모든** 현대적인 프론트엔드 스택(React, Svelte, Vue, Solid, Vanilla JS 등)에 대해 바로 실행 가능한 프로젝트를 생성할 수 있는 **템플릿 시스템**을 제공합니다.
+
+이 페이지에서는 다음 내용을 다룹니다:
+
+1. 템플릿 디렉토리 레이아웃
+2. CLI가 템플릿을 선택하고 렌더링하는 방법
+3. 새 템플릿을 단계별로 생성하는 방법
+4. 기존 템플릿 업데이트 또는 재정의
+5. 문제 해결 및 모범 사례
+
+---
+
+## 1. 템플릿의 위치
+
+```
+v3/
+└── internal/templates/
+    ├── _common/           # 모든 프로젝트에 복사되는 파일들 (main.go, .gitignore)
+    ├── base/              # 백엔드 전용 "plain Go" 템플릿
+    ├── react/             # React + Vite
+    ├── react-ts/
+    ├── svelte/
+    ├── vue/
+    ├── ... (기타 다른 템플릿들)
+    └── templates.go       # 레지스트리 및 헬퍼 함수
+```
+
+* **`_common/`** – 범용 보일러플레이트 (Go 모듈, Taskfile, README 스텁,  
+  VS Code 설정).  
+* **프레임워크 폴더들** – **frontend/** 및 스택별 구성 파일을 포함합니다.  
+* 폴더 이름은 CLI에 전달하는 **템플릿 ID**와 일치합니다  
+  (`wails3 init -t react-ts` 등).
+
+> 전체 디렉토리는 `go:embed`를 통해 CLI 바이너리에 컴파일되므로, 사용자는 오프라인 상태에서도 프로젝트를 생성할 수 있습니다.
+
+---
+
+## 2. `wails3 init`가 템플릿을 사용하는 방법
+
+호출 체인:
+
+```
+cmd/wails3/init.go
+       │
+       ▼
+internal/commands/init.go  ← 플래그 및 대상 디렉토리 파싱
+       │
+       ▼
+internal/templates.Load()  ← templates.go
+       │
+       ▼
+Template.CopyTo(dest)      ← 파일 시스템 복사 + 텍스트 치환
+```
+
+### 치환 (Substitutions)
+
+`{{ }}`로 감싸진 플레이스홀더는 복사 시점에 대체됩니다:
+
+| 플레이스홀더 | 예시 | 출처 |
+|-------------|---------|--------|
+| `{{ProjectName}}` | `myapp` | CLI 플래그/디렉토리 이름 |
+| `{{ModulePath}}`  | `github.com/me/myapp` | `--module` 플래그 제공 시 |
+| `{{WailsVersion}}`| `v3.0.0` | 컴파일된 상수 |
+
+**어떤** 플레이스홀더도 추가할 수 있습니다. 단, `internal/commands/init.go`에서 해당 값이 제공되도록 해야 합니다.
+
+### 복사 후 훅 (Post-Copy Hooks)
+
+각 템플릿은 `deps` 작업을 포함한 **Taskfile**을 포함할 수 있습니다.  
+복사 후, CLI는 다음을 실행합니다:
+
+```
+task --taskfile Taskfile.yml deps
+```
+
+일반적인 작업:
+
+* `go mod tidy`
+* `npm install`
+* git 초기화 및 첫 커밋 (선택 사항)
+
+훅 동작은 `_common/Taskfile.yml`에 정의되어 있지만, 템플릿별로 재정의할 수 있습니다.
+
+---
+
+## 3. 새 템플릿 생성
+
+> 예시: **Qwik-TS** 템플릿 추가
+
+### 3.1 폴더 및 ID
+
+```
+internal/templates/qwik-ts/
+```
+
+폴더 이름 = 템플릿 ID. **kebab-case** 형식을 유지하세요.
+
+### 3.2 최소 파일 세트
+
+```
+qwik-ts/
+├── README.md              # -list 플래그로 CLI에 표시됨
+├── frontend/              # 웹 프로젝트
+│   ├── src/
+│   ├── package.json
+│   └── vite.config.ts
+├── Taskfile.yml           # deps 및 개발 작업
+└── go/                    # 선택 사항: 추가 Go 파일들
+```
+
+`react-ts`를 복사하고 불필요한 파일들을 제거하는 것으로 시작하세요.
+
+### 3.3 플레이스홀더 업데이트
+
+검색/바꾸기:
+
+* `myapp` → `{{ProjectName}}`
+* `github.com/you/myapp` → `{{ModulePath}}`
+
+### 3.4 등록 (선택 사항)
+
+폴더가 존재하면 **templates.go가 `embed`를 통해 자동으로 감지**합니다.  
+**사용자 정의 유효성 검사**가 필요한 경우에만 명시적인 코드를 추가하세요:
+
+```go
+func (t *Template) Validate() error {
+    // 이 템플릿에 대해 Node ≥ 20 확인
+}
+```
+
+### 3.5 테스트
+
+```bash
+wails3 init -n demo -t qwik-ts
+cd demo
+wails3 dev
+```
+
+다음 사항을 확인하세요:
+
+* 개발 서버가 시작되는지
+* `wailsjs` 바인딩이 생성되는지
+* 핫 리로드가 작동하는지
+
+---
+
+## 4. 기존 템플릿 수정
+
+1. `internal/templates/<id>/` 아래의 파일들을 편집합니다.
+2. `go generate ./v3/...` **또는** 단순히 `go run ./v3/cmd/wails3 –help`를 실행합니다. embed 지시문이 자동으로 다시 컴파일됩니다.
+3. `frontend/package.json` 및 `Taskfile.yml`의 **의존성 버전**을 업데이트합니다.
+4. 템플릿 내부의 `README.md`를 업데이트합니다 — 사용자는  
+   `wails3 init -t react --help`를 통해 이를 확인합니다.
+
+### 일반적인 튜닝
+
+| 작업 | 위치 |
+|------|-------|
+* 개발 서버 포트 변경 | `frontend/Taskfile.yml` (`vite dev --port {{DevPort}}`) |
+* 환경 변수 추가 | 동일한 Taskfile 또는 `.env` |
+* JS 패키지 관리자 교체 | Taskfile에서 `npm` → `pnpm`으로 전환 |
+
+---
+
+## 5. 템플릿 작성 팁
+
+* **프론트엔드를 범용적으로 유지하세요** — Wails 특정 전역 변수를 참조하지 마세요. 런타임은 자동으로 주입됩니다.
+* **컴파일된 아티팩트 제외** — `.tmplignore`를 통해 `node_modules`, `dist`, `.DS_Store`를 제외하세요.
+* **필수 조건 문서화** — Node 버전, 추가 CLI 도구 등.
+* **브레이킹 체인지 피하기** — 대대적인 수정이 필요하면 *새로운* 템플릿 ID를 생성하세요.
+
+---
+
+## 6. 문제 해결
+
+| 증상 | 원인 | 해결책 |
+|---------|-------|-----|
+| `unknown template id` | 폴더 이름 불일치 | `wails3 init -list` 확인 |
+| 플레이스홀더가 대체되지 않음 | `Data` 맵에 누락된 항목 | `internal/commands/init.go` 편집 |
+* 개발 서버가 빈 페이지로 열림 | 잘못된 `DevPort` 환경 변수 | Taskfile이 포트를 stdout으로 출력하는지 확인 |
+* 프로덕션 환경에서 프론트엔드 빌드 실패 | 누락된 vite `base` 경로 | `vite.config.ts`에서 `base: "./"` 설정 |
+
+`wails3 init`에 `--verbose`를 추가하여 복사되는 모든 파일과 치환 내용을 출력하세요.
+
+---
+
+## 7. 주요 소스 파일 매핑
+
+| 파일 | 책임 |
+|------|----------------|
+| `internal/templates/templates.go` | 템플릿 FS 임베드, `[]Template` 반환 |
+| `internal/templates/<id>/**` | 실제 템플릿 콘텐츠 |
+| `internal/commands/init.go` | CLI 접착제: 템플릿 선택, 플레이스홀더 채우기 |
+| `internal/commands/generate_template.go` | 라이브 프로젝트를 템플릿으로 *내보내는* 유틸리티 (업데이트에 유용) |
+
+---
+
+## 8. 요약
+
+* 템플릿은 **`internal/templates/`**에 위치하며 CLI에 내장됩니다.
+* `wails3 init -t <id>`는 `_common` + 선택된 템플릿을 복사하고,  
+  치환을 수행한 후 **deps** Taskfile 훅을 실행합니다.
+* 템플릿 생성은 **폴더 만들기**, 파일 추가,  
+  플레이스홀더 사용과 같습니다.
+* 이 시스템은 **확장 가능**하고 **자기 완결적**입니다 — 팀이나 커뮤니티와  
+  사용자 정의 스택을 공유하기에 완벽합니다.
+
+행복한 템플릿 제작 되세요!

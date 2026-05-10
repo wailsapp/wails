@@ -1,0 +1,223 @@
+---
+title: Linux 패키징
+description: Linux 배포를 위해 Wails 애플리케이션을 패키징하세요
+sidebar:
+  order: 5
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## 패키지 형식
+
+Linux 배포를 위해 앱을 패키징하세요:
+
+```bash
+wails3 package GOOS=linux
+```
+
+이 명령은 `bin/` 디렉토리에 여러 형식의 패키지를 생성합니다:
+- **AppImage**: 휴대용이며 모든 Linux 배포판에서 실행됩니다.
+- **DEB**: Debian, Ubuntu 및 파생 배포판용
+- **RPM**: Fedora, RHEL 및 파생 배포판용
+- **Arch**: Arch Linux 및 파생 배포판용
+
+### 개별 형식
+
+특정 형식을 빌드하려면:
+
+```bash
+wails3 task linux:create:appimage
+wails3 task linux:create:deb
+wails3 task linux:create:rpm
+wails3 task linux:create:aur
+```
+
+## 패키지 사용자 정의
+
+### 데스크톱 엔트리
+
+`.desktop` 파일은 애플리케이션 메뉴에 앱이 어떻게 표시될지 제어합니다. 이 파일은 `build/linux/Taskfile.yml`의 값에서 생성됩니다:
+
+```yaml
+vars:
+  APP_NAME: 'MyApp'
+  EXEC: 'MyApp'
+  ICON: 'MyApp'
+  CATEGORIES: 'Development;'
+```
+
+### 패키지 메타데이터
+
+DEB 및 RPM 패키지를 사용자 정의하려면 `build/linux/nfpm/nfpm.yaml`을 편집하세요:
+
+```yaml
+name: myapp
+version: 1.0.0
+maintainer: Your Name <you@example.com>
+description: My awesome Wails application
+homepage: https://example.com
+license: MIT
+```
+
+### AppImage
+
+AppImage 구성은 `build/linux/appimage/`에 있습니다. 앱 아이콘은 `build/appicon.png`에서 가져옵니다.
+
+## 패키지 서명
+
+PGP 키를 사용하여 DEB 및 RPM 패키지에 서명하세요:
+
+```bash
+# 래퍼 사용 (플랫폼 자동 감지)
+wails3 sign GOOS=linux
+
+# 또는 작업 직접 사용
+wails3 task linux:sign:deb
+wails3 task linux:sign:rpm
+wails3 task linux:sign:packages  # 둘 다
+```
+
+`build/linux/Taskfile.yml`에서 서명을 구성하세요:
+
+```yaml
+vars:
+  PGP_KEY: "path/to/signing-key.asc"
+  SIGN_ROLE: "builder"  # origin, maint, archive, 또는 builder
+```
+
+키 비밀번호를 저장하세요:
+
+```bash
+wails3 setup signing
+```
+
+자세한 내용은 [애플리케이션 서명](/ko/guides/build/signing)을 참조하세요.
+
+## ARM 빌드
+
+```bash
+wails3 build GOOS=linux GOARCH=arm64
+wails3 package GOOS=linux GOARCH=arm64
+```
+
+<Aside type="note">
+x86_64 호스트에서 ARM64 빌드는 CGO 교차 컴파일을 위해 Docker를 사용합니다.
+</Aside>
+
+## GTK4 지원 (실험적)
+
+Wails v3는 WebKitGTK 6.0과 함께 GTK4에 대한 실험적 지원을 포함합니다. 기본적으로 Wails는 GTK3와 WebKit2GTK 4.1을 사용합니다. GTK4 지원은 빌드 태그를 통해 옵트인(opt-in)됩니다.
+
+<Aside type="caution" title="실험적">
+GTK4 지원은 실험적이며 문제가 있을 수 있습니다. 문제는 [GitHub 이슈 #4957](https://github.com/wailsapp/wails/issues/4957)에 보고해 주세요.
+</Aside>
+
+### 의존성
+
+GTK4 및 WebKitGTK 6.0 개발 라이브러리를 설치하세요:
+
+```bash
+# Ubuntu/Debian
+sudo apt install libgtk-4-dev libwebkitgtk-6.0-dev
+
+# Fedora
+sudo dnf install gtk4-devel webkitgtk6.0-devel
+
+# Arch
+sudo pacman -S gtk4 webkitgtk-6.0
+```
+
+필요한 pkg-config 패키지는 `gtk4` 및 `webkitgtk-6.0`입니다.
+
+### GTK4로 빌드
+
+`-tags gtk4` 플래그를 사용하세요:
+
+```bash
+wails3 build -tags gtk4
+```
+
+또는 Go로 직접 빌드하세요:
+
+```bash
+go build -tags gtk4 -o myapp .
+```
+
+### GTK3와의 알려진 차이점
+
+- **파일 대화상자**: GTK4는 파일 대화상자에 `xdg-desktop-portal`를 사용하므로 일부 대화상자 옵션(기본 디렉토리, 사용자 지정 필터 표시 등)이 다르게 동작합니다. 자세한 내용은 [대화상자 참조 - Linux GTK4 제한 사항](/reference/dialogs#linux-gtk4-limitations)을 참조하세요.
+- **메뉴 스타일**: GTK4는 햄버거 버튼(☰)을 헤더 바에 표시하는 GNOME HIG를 따르는 `LinuxMenuStylePrimaryMenu` 옵션을 지원합니다. 자세한 내용은 [Window API - Linux MenuStyle](/reference/window#linux)을 참조하세요.
+- **DPI 스케일링**: GTK4는 분수 스케일링 지원을 위해 `gdk_monitor_get_scale`(GTK 4.14+)를 사용합니다.
+
+### 빌드 확인
+
+`wails3 doctor`를 실행하여 설정을 확인하세요. GTK4 의존성은 선택적/실험적으로 표시됩니다.
+
+## 문제 해결
+
+### AppImage가 실행되지 않음
+
+실행 가능하게 만드세요:
+
+```bash
+chmod +x MyApp-x86_64.AppImage
+```
+
+### 누락된 의존성
+
+앱이 시작되지 않으면 누락된 WebKit 의존성을 확인하세요:
+
+```bash
+# Debian/Ubuntu
+sudo apt install libwebkit2gtk-4.1-0
+
+# Fedora
+sudo dnf install webkit2gtk4.1
+
+# Arch
+sudo pacman -S webkit2gtk-4.1
+```
+
+### C 컴파일러를 찾을 수 없음
+
+빌드 시스템은 CGO에 GCC 또는 Clang이 필요합니다:
+
+```bash
+# Debian/Ubuntu
+sudo apt install build-essential
+
+# Fedora
+sudo dnf install gcc
+
+# Arch
+sudo pacman -S base-devel
+```
+
+또는 `wails3 task setup:docker`를 실행하면 빌드 시스템이 Docker를 자동으로 사용합니다.
+
+### NVIDIA GPU에서 빈 화면 또는 흰색 화면
+
+NVIDIA 전용 드라이버가 있는 Linux에서 Wails 앱은 시작 시 빈 화면 또는 흰색 화면을 표시할 수 있습니다. 이는 NVIDIA 전용 드라이버에 대한 `gbm_bo_map()`에서 DMA-BUF 렌더러가 실패하는 WebKitGTK 버그로 인한 것입니다(X11 및 Wayland 모두 영향, 드라이버 버전 377–580+, 10 시리즈 및 이전 GT 710 GPU).
+
+**Wails는 NVIDIA 커널 모듈(`/sys/module/nvidia`)을 감지하면 `WEBKIT_DISABLE_DMABUF_RENDERER=1`을 자동으로 적용**하므로 대부분의 사용자는 별도로 작업할 필요가 없습니다.
+
+여전히 빈 화면이 표시되는 경우(예: 모듈 경로가 보이지 않는 컨테이너 내), 앱 실행 전에 환경 변수를 수동으로 설정하세요:
+
+```bash
+WEBKIT_DISABLE_DMABUF_RENDERER=1 ./myapp
+```
+
+관련 상위 버그: [WebKit #262607](https://bugs.webkit.org/show_bug.cgi?id=262607), [WebKit #180739](https://bugs.webkit.org/show_bug.cgi?id=180739).
+
+### AppImage strip 호환성
+
+최신 Linux 배포판(Arch Linux, Fedora 39+, Ubuntu 24.04+)에서는 시스템 라이브러리가 더 효율적인 리로케이션을 위해 `.relr.dyn` ELF 섹션으로 컴파일됩니다. AppImage를 생성하는 데 사용되는 `linuxdeploy` 도구는 이러한 최신 섹션을 처리할 수 없는 오래된 `strip` 바이너리를 번들로 제공합니다.
+
+Wails는 AppImage를 빌드하기 전에 시스템 GTK 라이브러리를 확인하여 이 상황을 자동으로 감지합니다. 감지되면 호환성을 위해 스트리핑이 비활성화됩니다(`NO_STRIP=1`).
+
+**이것이 의미하는 바:**
+- 영향받는 시스템에서 AppImage 크기가 약간 커집니다(~20-40%)
+- 애플리케이션 기능에는 영향이 없습니다
+- 이 과정은 자동으로 처리되므로 별도 작업이 필요하지 않습니다
+
+최신 시스템에서 더 작은 AppImage가 필요한 경우, 최신 `strip` 바이너리를 설치하고 `linuxdeploy`가 번들 버전 대신 이를 사용하도록 구성할 수 있습니다.

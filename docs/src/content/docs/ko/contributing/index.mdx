@@ -1,0 +1,92 @@
+---
+title: 기술 개요
+description: Wails v3 코드베이스의 상위 수준 아키텍처 및 로드맵
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Wails v3 기술 문서에 오신 것을 환영합니다
+
+이 섹션은 커뮤니티 가이드라인이나 풀 리퀘스트를 여는 방법에 관한 것이 **아닙니다**.
+대신, 코드베이스에서 빠르게 방향을 잡고 자신감 있게 개발을 시작할 수 있도록
+**Wails v3가 어떻게 구축되었는지** 깊이 있게 다룹니다.
+
+런타임 패치를 하거나 CLI를 확장하거나, 새로운 템플릿을 만들거나,
+단순히 내부 구조를 이해하려는 경우이든, 이어지는 페이지들은 필요한 기술적
+컨텍스트를 제공합니다.
+
+---
+
+## 상위 수준 아키텍처
+
+<CardGrid>
+  <Card title="Go Backend" icon="seti:go">
+    모든 Wails 앱의 핵심은 네이티브 실행 파일로 컴파일된 Go 코드입니다.
+    애플리케이션 로직, 시스템 통합 및 성능이 중요한 작업을 담당합니다.
+  </Card>
+
+  <Card title="Web Frontend" icon="seti:html">
+    UI는 경량 시스템 WebView(리눅스/macOS에서는 WebKit, Windows에서는 WebView2)로 렌더링되는
+    표준 웹 기술(React, Vue, Svelte, Vanilla 등)로 작성됩니다.
+  </Card>
+
+  <Card title="Bridging Layer" icon="puzzle">
+    제로 복사 메모리 내 브릿지는 자동 타입 변환, 이벤트 전파 및 오류 전달과 함께
+    **Go⇄JavaScript** 호출을 가능하게 합니다.
+  </Card>
+
+  <Card title="CLI & Tooling" icon="terminal">
+    `wails3`는 프로젝트 생성, 라이브 리로드 개발 서버, 애셋 번들링, 크로스 컴파일 및
+    패키징(deb, rpm, AppImage, msi, dmg 등)을 오케스트레이션합니다.
+  </Card>
+</CardGrid>
+
+---
+
+## 아키텍처 개요
+
+**Wails v3 – 엔드 투 엔드 흐름**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[엔드 투 엔드 흐름 다이어그램 플레이스홀더]**
+
+
+다이어그램은 **엔드 투 엔드 흐름**을 보여줍니다:
+
+1. **CLI**는 생성, 개발 서버, 컴파일 및 패키징을 주도합니다.
+2. **바인딩 시스템**은 **Web Frontend**가 **Go Backend**로 호출할 수 있게 하는 글루 코드를 생성합니다.
+3. 개발 중에는 **Asset Server**가 프레임워크 개발 서버로 프록시하며, 프로덕션에서는 임베디드 파일을 제공합니다.
+4. 런타임 시 **Desktop Runtime**은 창과 OS API를 관리하며, **Bridge**는 Go와 JavaScript 간에 메시지를 전달합니다.
+
+---
+
+## 이 문서에서 다루는 내용
+
+| 주제 | 중요성 |
+| ----- | -------------- |
+| **코드베이스 레이아웃** | `/v3` 디렉토리 맵 및 모듈 간 상호 작용 방식. |
+| **런타임 내부 구조** | 창 관리, 시스템 API, 메시지 프로세서 및 플랫폼 쉼. |
+| **애셋 및 개발 서버** | 개발 환경에서 웹 애셋을 제공하는 방법과 프로덕션에서 임베딩하는 방식. |
+| **빌드 및 패키징 파이프라인** | Taskfile 기반 워크플로우, 크로스 플랫폼 컴파일 및 인스톨러 생성. |
+| **바인딩 시스템** | 타입 안전한 Go⇄TS 바인딩을 생성하는 정적 분석 파이프라인. |
+| **템플릿 시스템** | `wails init -t <framework>`을 구동하는 생성기 아키텍처. |
+| **테스트 및 CI** | 단위/통합 테스트 허브, GitHub Actions, 레이시 디텍터 가이드라인. |
+| **Wails 확장** | 서비스, 템플릿 또는 CLI 서브 커맨드 추가. |
+
+각 후속 페이지는 구체적인 코드 샘플, 다이어그램 및 관련 소스 파일에 대한 참조를 통해
+이 영역들을 깊이 있게 다룹니다.
+
+---
+
+:::note
+전제 조건: **Go 1.25+**, 기본 TypeScript, 최신 프론트엔드 빌드 도구에 익숙해야 합니다.
+Go가 처음이라면 공식 튜토리얼을 먼저 훑어보는 것을 권장합니다.
+:::
+
+즐거운 탐험 되시길 바랍니다 — 그리고 Wails v3 내부 구조에 오신 것을 환영합니다!

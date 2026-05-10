@@ -1,0 +1,195 @@
+---
+title: 빌드 및 패키징 파이프라인
+description: `wails3 build` 실행 시 내부에서 어떤 일이 일어나는지, 크로스플랫폼 바이너리가 어떻게 생성되는지, 그리고 각 OS별 인스톨러가 어떻게 생성되는지에 대한 설명입니다.
+sidebar:
+  order: 6
+---
+
+`wails3 build`는 _다단계(multi-stage)_ 파이프라인을 구동하는 **단일 명령어**입니다:
+
+1. **프론트엔드 프로덕션 빌드** (Vite / React / …)  
+2. **Go 소스 내 애셋 임베딩**  
+3. **대상 OS/아키텍처에 대한 네이티브 컴파일**  
+4. **사후 처리** (아이콘 주입, 버전 정보, 코드 서명)  
+5. **배포 가능한 아티팩트로 패키징** (AppImage, DMG, MSI, …)
+
+이 문서는 각 단계를 따라가며 코드가 어디에 있는지 보여주고, 이를 사용자 정의하거나 디버깅하는 방법을 설명합니다.
+
+---
+
+## 1. 진입점: `internal/commands/build-assets.go`
+
+```
+wails3 build                 # cmd/wails3/main.go
+└─ internal/commands.Build() # build-assets.go
+```
+
+고수준 작업은 **Taskfile** 타겟으로 위임되므로 동일한 로직이 CI 또는 로컬 환경에서 실행됩니다.
+
+| 단계 | Taskfile 타겟 | Go 구현체 |
+|-------|---------|----|
+| 프론트엔드 빌드 | `frontend:build` | `internal/commands/task.go` |
+| 애셋 임베딩   | `embed:assets`  | 생성된 `bundled_assetserver.go` |
+| Go 컴파일     | `build:go`      | `tool_buildinfo.go`, `tool_package.go` |
+| 패키징        | `package:*`     | `internal/packager`, `internal/commands/*` |
+
+---
+
+## 2. 프론트엔드 프로덕션 빌드
+
+1. CLI는 `frontend/` 디렉토리로 이동하여 프로젝트의 `Taskfile.yml`에 있는 `build` 작업을 실행합니다 (기본적으로 `npm run build`).
+2. 출력물은 `frontend/dist/`에 작성됩니다.
+3. 캐시 busting이 기본적으로 작동하도록 **콘텐츠 해시** 매니페스트(`manifest.json`)가 생성됩니다.
+
+작업이 실패하면 파이프라인이 조기에 중단되며 빌드 도구의 종료 코드를 반환합니다.
+
+---
+
+## 3. 애셋 임베딩
+
+`internal/assetserver/build_production.go`에서 구현됩니다:
+
+* `frontend/dist`를 순회하여 `go:embed` 파일인 `bundled_assetserver.go`를 생성합니다 (git에서 무시됨).
+* `production` 빌드 태그를 추가합니다.
+
+결과: 최종 바이너리에는 모든 HTML/JS/CSS 바이트가 포함되어 있으므로 실행 파일이 자체 완결형(self-contained)이 됩니다.
+
+---
+
+## 4. 네이티브 컴파일
+
+### 빌드 플래그
+
+| 플래그 | 목적 |
+|------|-----|
+| `-tags production` | 프로덕션 애셋 서버 및 런타임 스텁 선택 |
+| `-ldflags "-s -w"` | 심볼 테이블 및 DWARF 제거 (바이너리 크기 축소) |
+| `-X internal/buildinfo.BuildTime=$(date)` | 재현 가능한 메타데이터 임베딩 |
+
+`internal/commands/tool_buildinfo.go`는 버전, git 커밋, 빌드 시간을 수집한 후 `go build -ldflags`를 사용하여 주입합니다.
+
+### 크로스 컴파일 매트릭스
+
+| OS | 아키텍처 | 빌드 태그 | CGO | 참고 |
+|----|-----|-----------|-----|-----|
+| Windows | amd64 / arm64 | `windows` | WebView2를 위해 cgo 활성화 | `internal/commands/syso.go`를 통해 `.syso` 생성 |
+| macOS   | amd64 / arm64 | `darwin`  | cgo 활성화 (Objective-C) | 코드 서명 및 노타리제이션 작업 사용 가능 |
+| Linux   | amd64 / arm64 | `linux`   | 순수 Go (webkit 옵션)   | CGO 빌드를 위해 GTK/WebKitGTK 헤더 필요 |
+
+`wails3 build -platform darwin/arm64`는 GOOS/GOARCH를 재정의합니다.  
+호스트에서 대상(예: Linux에서 Windows 빌드)을 컴파일할 수 없는 경우 CGO가 필요하면 CLI는 **Docker** 이미지(`ghcr.io/wailsapp/cross-compiler`)로 폴백합니다.
+
+---
+
+## 5. 사후 처리
+
+### 아이콘 및 리소스
+
+* **Windows** – `syso.go`는 PNG/ICO를 `.syso`로 병합하여 `go build`가 자동으로 링크합니다. 또한 High-DPI 지원을 위한 `manifest.xml`도 작성합니다.
+* **macOS** – `icons.go`는 `icon.png`를 `.icns`로 변환하여 `MyApp.app/Contents/Resources`에 주입합니다.
+* **Linux** – `.desktop` 파일은 각 패키저 백엔드에서 `/usr/share/applications`에 생성됩니다.
+
+### 코드 서명 (선택사항)
+
+* macOS: `codesign` + `xcrun altool --notarize-app`
+* Windows: `signtool.exe`
+* Linux: 일반적이지 않음 (리포지토리 GPG는 외부에서 처리)
+
+Task 타겟: `sign:mac`, `sign:windows`.
+
+---
+
+## 6. 패키징 백엔드
+
+### Linux
+
+| 아티팩트 | 코드 경로 | 도구 |
+|------|-----|---|
+| **AppImage** (기본) | `internal/commands/appimage.go` | `linuxdeploy` + `linuxdeploy-plugin-gtk` |
+| **deb / rpm / pacman** | `internal/packager` | `fpm` (Go를 통해 호출) |
+
+플래그:
+
+```
+wails3 build -package deb   # myapp_1.0.0_amd64.deb 생성
+wails3 build -package rpm
+```
+
+### macOS
+
+* **DMG** – `internal/commands/packager.go`는 `appdmg`를 호출하여 드래그-&-드롭 인스톨러를 생성합니다.
+* **ZIP** – `appdmg`가 누락된 경우 폴백.
+* CFBundle 식별자 및 버전 plist를 자동으로 설정합니다.
+
+### Windows
+
+* **MSI** – `internal/commands/packager.go`는 **WiX** candle 및 light 도구를 래핑합니다.  
+  Heat는 빌드된 `.exe`에서 컴포넌트 트리를 자동 생성합니다.
+
+추가 리소스:
+
+* `internal/commands/windows_resources/`에는 템플릿화된 **.wxs** 조각이 포함되어 있습니다.
+* 버전 정보는 `rsrc` 유틸리티를 통해 주입됩니다.
+
+---
+
+## 7. 빌드 아티팩트 레이아웃
+
+빌드가 성공하면 CLI는 다음과 같이 출력합니다:
+
+```
+build/bin/
+├── myapp-linux-amd64
+└── myapp-linux-amd64.AppImage
+
+build/package/
+└── myapp_1.0.0_amd64.deb
+```
+
+정확한 파일 목록은 `-platform` 및 `-package` 플래그에 따라 달라집니다.
+
+---
+
+## 8. 파이프라인 사용자 정의
+
+| 필요 사항 | 접근 방식 |
+|------|------|
+| 빌드 전에 린터 실행 | **Taskfile.yml**에 `lint` 작업을 추가하고 `build`가 이에 의존하도록 합니다. |
+| 추가 링커 플래그 | `wails3 build -ldflags "-H windowsgui"` |
+| 패키징 건너뛰기 | `wails3 build -skip-package` (원시 바이너리 유지). |
+| 자체 패키저 사용 | `internal/packager/<name>.go`를 구현하고 `packager.go`에 등록합니다. |
+
+모든 Taskfile 타겟은 CLI에서 내보낸 환경 변수를 사용하므로 사용자 정의 작업 내에서 `$WAILS_VERSION` 또는 `$WAILS_PLATFORM`과 같은 값을 참조할 수 있습니다.
+
+---
+
+## 9. 문제 해결
+
+| 증상 | 원인 | 해결책 |
+|---------|-----|-----|
+| **`ld: framework not found WebKit` (mac)** | Xcode CLI 도구 누락 | `xcode-select --install` |
+| **프로덕션 빌드에서 빈 창** | 프론트엔드 빌드 실패 또는 SPA 라우팅 | `frontend/dist/index.html`이 존재하고 `History API Fallback`가 설정되었는지 확인합니다. |
+| **`wixl` not found** (Linux MSI 크로스 빌드) | Docker 이미지에 WiX 도구셋 설치 안 됨 | `--docker` 빌드 사용 또는 WiX 수동 설치. |
+| **중복 심볼 `_WinMain`** | `windowsgui` 플래그와 syso 혼용 | 사용자 정의 `-ldflags` 제거 또는 Wails가 리소스를 관리하도록 방치. |
+
+자세한 모드: `wails3 build -verbose`는 실행된 모든 명령어를 덤프합니다.
+
+---
+
+## 10. 주요 소스 맵
+
+| 관심사 | 파일 |
+|---------|-----|
+| Task 러너 글루 | `internal/commands/task_wrapper.go` |
+| 빌드 디스패처 | `internal/commands/build-assets.go` |
+| AppImage 빌더 | `internal/commands/appimage.go` |
+| 일반 패키저 인터페이스 | `internal/packager/packager.go` |
+| Windows 리소스 생성기 | `internal/commands/syso.go` |
+| 빌드 정보 주입기 | `internal/commands/tool_buildinfo.go` |
+| 버전 상수 | `internal/version/version.go` |
+
+빌드 실패를 추적할 때 이 표를 handy하게 보관하세요.
+
+---
+
+이제 **소스 코드**부터 **인스톨러**까지 전체 그림을 보게 되었습니다. 이 지식을 바탕으로 파이프라인을 조정하거나, 새로운 패키징 타겟을 추가하거나, 크로스 컴파일 문제를 두려움 없이 디버깅할 수 있습니다. 즐거운 릴리즈 하세요!

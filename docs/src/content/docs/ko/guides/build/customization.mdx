@@ -1,0 +1,241 @@
+---
+title: 빌드 사용자 정의
+description: Task와 Taskfile.yml을 사용하여 빌드 프로세스를 사용자 정의하세요
+sidebar:
+  order: 7
+---
+
+import { FileTree } from "@astrojs/starlight/components";
+
+## 개요
+
+Wails 빌드 시스템은 Wails 애플리케이션의 빌드 프로세스를 간소화하도록 설계된 유연하고 강력한 도구입니다. 이 시스템은 작업을 쉽게 정의하고 실행할 수 있는 작업 러너인 [Task](https://taskfile.dev)를 활용합니다. v3 빌드 시스템이 기본값이지만, Wails는 개발자가 필요에 따라 빌드 프로세스를 사용자 정의할 수 있는 "own tooling 가져오기(bring your own tooling)" 접근 방식을 장려합니다.
+
+Task 사용 방법에 대한 자세한 내용은 [공식 문서](https://taskfile.dev/usage/)를 참조하세요.
+
+## 빌드 시스템의 핵심: Task
+
+[Task](https://taskfile.dev)는 Go로 작성된 Make의 현대적인 대안입니다. YAML 파일을 사용하여 작업과 해당 의존성을 정의합니다. Wails 빌드 시스템에서 [Task](https://taskfile.dev)는 빌드 프로세스를 조정하는 중심적인 역할을 합니다.
+
+주요 `Taskfile.yml`은 프로젝트 루트에 위치하며, 플랫폼별 작업은 `build/<platform>/Taskfile.yml` 파일에 정의됩니다. `build` 디렉토리의 공통 `Taskfile.yml` 파일에는 플랫폼 간에 공유되는 공통 작업이 포함되어 있습니다.
+
+<FileTree>
+
+- Project Root
+  - Taskfile.yml
+  - build
+    - windows/Taskfile.yml
+    - darwin/Taskfile.yml
+    - linux/Taskfile.yml
+    - Taskfile.yml
+
+</FileTree>
+
+## Taskfile.yml
+
+프로젝트 루트의 `Taskfile.yml` 파일은 빌드 시스템의 주요 진입점입니다. 이 파일은 작업과 해당 의존성을 정의합니다. 다음은 기본 `Taskfile.yml` 파일입니다:
+
+```yaml
+version: '3'
+
+includes:
+  common: ./build/Taskfile.yml
+  windows: ./build/windows/Taskfile.yml
+  darwin: ./build/darwin/Taskfile.yml
+  linux: ./build/linux/Taskfile.yml
+
+vars:
+  APP_NAME: "myproject"
+  BIN_DIR: "bin"
+  VITE_PORT: '{{.WAILS_VITE_PORT | default 9245}}'
+
+tasks:
+  build:
+    summary: Builds the application
+    cmds:
+      - task: "{{OS}}:build"
+
+  package:
+    summary: Packages a production build of the application
+    cmds:
+      - task: "{{OS}}:package"
+
+  run:
+    summary: Runs the application
+    cmds:
+      - task: "{{OS}}:run"
+
+  dev:
+    summary: Runs the application in development mode
+    cmds:
+      - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
+
+
+```
+
+## 플랫폼별 Taskfile
+
+각 플랫폼은 `build` 디렉토리 아래의 플랫폼 디렉토리에 자체 Taskfile을 가지고 있습니다. 이 파일들은 해당 플랫폼의 핵심 작업을 정의합니다. 각 Taskfile은 `build/Taskfile.yml` 파일의 공통 작업을 포함합니다.
+
+### Windows
+
+위치: `build/windows/Taskfile.yml`
+
+Windows 전용 Taskfile에는 Windows에서 애플리케이션을 빌드, 패키징 및 실행하기 위한 작업이 포함되어 있습니다. 주요 기능은 다음과 같습니다:
+
+- 선택적 프로덕션 플래그로 빌드
+- `.ico` 아이콘 파일 생성
+- Windows `.syso` 파일 생성
+- 패키징을 위한 NSIS 인스톨러 생성
+
+### Linux
+
+위치: `build/linux/Taskfile.yml`
+
+Linux 전용 Taskfile에는 Linux에서 애플리케이션을 빌드, 패키징 및 실행하기 위한 작업이 포함되어 있습니다. 주요 기능은 다음과 같습니다:
+
+- 선택적 프로덕션 플래그로 빌드
+- AppImage, deb, rpm 및 Arch Linux 패키지 생성
+- Linux 애플리케이션을 위한 `.desktop` 파일 생성
+
+### macOS
+
+위치: `build/darwin/Taskfile.yml`
+
+macOS 전용 Taskfile에는 macOS에서 애플리케이션을 빌드, 패키징 및 실행하기 위한 작업이 포함되어 있습니다. 주요 기능은 다음과 같습니다:
+
+- amd64, arm64 및 universal(양쪽) 아키텍처용 바이너리 빌드
+- `.icns` 아이콘 파일 생성
+- 배포를 위한 `.app` 번들 생성
+- `.app` 번들에 대한 ad-hoc 서명
+- macOS 전용 빌드 플래그 및 환경 변수 설정
+
+## 작업 실행 및 명령어 별칭
+
+`wails3 task` 명령어는 [Taskfile](https://taskfile.dev)의 내장 버전으로, `Taskfile.yml`에 정의된 작업을 실행합니다.
+
+`wails3 build` 및 `wails3 package` 명령어는 각각 `wails3 task build` 및 `wails3 task package`의 별칭입니다. 이 명령어를 실행하면 Wails는 내부적으로 이를 적절한 작업 실행으로 변환합니다:
+
+- `wails3 build` → `wails3 task build`
+- `wails3 package` → `wails3 task package`
+
+### 작업에 매개변수 전달
+
+`KEY=VALUE` 형식을 사용하여 작업에 CLI 변수를 전달할 수 있습니다. 이 변수들은 별칭 명령어를 통해 전달됩니다:
+
+```bash
+# These are equivalent:
+wails3 build PLATFORM=linux CONFIG=production
+wails3 task build PLATFORM=linux CONFIG=production
+
+# Package with custom version:
+wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg
+```
+
+`Taskfile.yml`에서는 Go 템플릿 구문을 사용하여 이러한 변수에 접근할 수 있습니다:
+
+```yaml
+tasks:
+  build:
+    cmds:
+      - echo "Building for {{.PLATFORM | default "darwin"}}"
+      - go build -tags {{.CONFIG | default "debug"}} -o myapp
+```
+
+## 공통 빌드 프로세스
+
+모든 플랫폼에서 빌드 프로세스는 일반적으로 다음 단계를 포함합니다:
+
+1. Go 모듈 정리
+2. 프론트엔드 빌드
+3. 아이콘 생성
+4. 플랫폼별 플래그로 Go 코드 컴파일
+5. 애플리케이션 패키징(플랫폼별)
+
+## 빌드 프로세스 사용자 정의
+
+v3 빌드 시스템은 견고한 기본 구성을 제공하지만, 프로젝트의 요구 사항에 맞게 쉽게 사용자 정의할 수 있습니다. `Taskfile.yml` 및 플랫폼별 Taskfile을 수정하여 다음을 수행할 수 있습니다:
+
+- 새 작업 추가
+- 기존 작업 수정
+- 작업 실행 순서 변경
+- 다른 도구 및 스크립트와 통합
+
+이러한 유연성을 통해 Wails 빌드 시스템이 제공하는 구조의 이점을 누리면서도 특정 요구 사항에 맞게 빌드 프로세스를 맞춤 설정할 수 있습니다.
+
+:::tip[Taskfile 학습]
+Taskfile을 효과적으로 사용하는 방법을 이해하려면 [Taskfile](https://taskfile.dev) 문서를 읽는 것을 강력히 권장합니다.
+Wails CLI에 내장된 Taskfile의 버전을 확인하려면 `wails3 task --version`을 실행하세요.
+:::
+
+## 개발 모드
+
+Wails 빌드 시스템은 라이브 리로딩과 핫 모듈 대체를 제공하여 개발자 경험을 향상시키는 강력한 개발 모드를 포함합니다. 이 모드는 `wails3 dev` 명령어를 사용하여 활성화됩니다.
+
+### 작동 방식
+
+`wails3 dev`를 실행하면 다음 프로세스가 발생합니다:
+
+1. 명령어 사용 가능한 포트를 확인하며, 지정되지 않은 경우 기본값으로 9245를 사용합니다.
+2. 프론트엔드 개발 서버(Vite)용 환경 변수를 설정합니다.
+3. [refresh](https://github.com/atterpac/refresh) 라이브러리를 사용하여 파일 감시자를 시작합니다.
+
+[refresh](https://github.com/atterpac/refresh) 라이브러리는 파일 변경을 모니터링하고 재빌드를 트리거하는 역할을 합니다. 이 라이브러리는 `./build/config.yaml` 파일의 `dev_mode` 키 아래에 정의된 구성을 사용합니다. 특정 디렉토리 및 파일을 무시하도록 구성하여 어떤 파일을 감시하고 변경이 감지되었을 때 어떤 작업을 수행할지 결정할 수 있습니다. 기본 구성은 잘 작동하지만 필요에 따라 사용자 정의할 수 있습니다.
+
+### 구성
+
+다음은 그 구조의 예시입니다:
+
+```yaml
+dev_mode:
+  root_path: .
+  log_level: warn
+  debounce: 1000
+  ignore:
+    dir:
+      - .git
+      - node_modules
+      - frontend
+      - bin
+    file:
+      - .DS_Store
+      - .gitignore
+      - .gitkeep
+    watched_extension:
+      - "*.go"
+    git_ignore: true
+  executes:
+    - cmd: wails3 task common:install:frontend:deps
+      type: once
+    - cmd: wails3 task common:dev:frontend
+      type: background
+    - cmd: go mod tidy
+      type: blocking
+    - cmd: wails3 task build
+      type: blocking
+    - cmd: wails3 task run
+      type: primary
+```
+
+이 구성 파일을 통해 다음을 수행할 수 있습니다:
+
+- 파일 감시를 위한 루트 경로 설정
+- 로깅 수준 구성
+- 파일 변경 이벤트에 대한 디바운스 시간 설정
+- 특정 디렉토리, 파일 또는 파일 확장자 무시
+- 파일 변경 시 실행할 명령어 정의### 개발 모드 사용자 정의
+
+`config.yaml` 파일에서 다음 값을 수정하여 개발 모드 환경을 사용자 정의할 수 있습니다.
+
+사용자 정의 방법의 일부는 다음과 같습니다:
+
+1. 감시할 디렉토리 또는 파일 변경
+2. 시스템이 변경 사항에 얼마나 빠르게 반응할지 제어하기 위해 디바운스 시간 조정
+3. 프로젝트의 요구 사항에 맞게 실행 명령어 추가 또는 수정
+
+### 개발용 브라우저 사용
+
+Wails v2는 개발 시 브라우저 사용을 완전히 지원했지만, 이는 많은 혼란을 야기했습니다. 브라우저에서 작동하는 애플리케이션이 데스크톱 애플리케이션에서 반드시 작동하는 것은 아니었습니다. 이는 모든 브라우저 API가 WebView에서 사용 가능한 것은 아니기 때문입니다.
+
+UI 중심의 개발 작업의 경우, 개발 모드에서 `http://localhost:9245`의 Vite URL에 접근하여 v3에서도 브라우저를 사용할 수 있는 유연성을 여전히 제공합니다. 이를 통해 스타일링 및 레이아웃 작업 중 강력한 브라우저 개발 도구에 접근할 수 있습니다. Go 바인딩은 이 모드에서 *작동하지 않음*을 유의하십시오.
+바인딩 및 이벤트와 같은 기능을 테스트할 준비가 되었다면, 프로덕션 환경에서 모든 것이 완벽하게 작동하는지 확인하기 위해 데스크톱 보기로 전환하십시오.

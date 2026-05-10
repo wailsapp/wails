@@ -1,0 +1,243 @@
+---
+title: Wails 확장하기
+description: Wails v3에 새로운 기능과 플랫폼을 추가하는 실용적인 가이드
+sidebar:
+  order: 8
+---
+
+> Wails는 **확장 가능(hackable)** 하도록 설계되었습니다.  
+> 주요 하위 시스템은 읽고, 수정하고, 릴리스할 수 있는 Go 코드로 구성되어 있습니다.  
+> 이 페이지는 다음을 수행할 때 _어디서_ 시작하고 _어떻게_ 크로스 플랫폼을 유지해야 하는지 보여줍니다:
+
+* **서비스**(파일 서버, KV 저장소, 사용자 지정 IPC 등) 추가
+* **새 CLI 명령어** 생성 (`wails3 <foo>`)
+* **런타임** 확장 (윈도우 API, 대화상자, 이벤트)
+* **플랫폼 기능** 도입 (Wayland, Apple Vision OS 등)
+* `//go:build` 태그에 잠기지 않고 **크로스 플랫폼 호환성** 유지
+
+---
+
+## 1. 서비스 추가
+
+서비스는 `application.Context`를 통해 앱에 노출되는 백그라운드 Go 컴포넌트입니다.
+
+```
+internal/service/
+├── template/            # 새 서비스용 보일러플레이트
+│   ├── template.go
+│   └── README.md
+└── service.go           # 등록 + 수명 주기 인터페이스
+```
+
+### 1.1 서비스 정의
+
+```go
+package chat
+
+type Service struct {
+    messages []string
+}
+
+func New() *Service { return &Service{} }
+
+func (s *Service) Send(msg string) string {
+    s.messages = append(s.messages, msg)
+    return "ok"
+}
+```
+
+### 1.2 `service.Service` 구현
+
+```go
+func (s *Service) Init(ctx *application.Context) error { return nil }
+func (s *Service) Shutdown() error                     { return nil }
+```
+
+### 1.3 제너레이터 등록
+
+*`internal/generator/collect/services.go`에 추가*
+
+```go
+services.Register("chat", chat.New)
+```
+
+> 이제 `wails3 generate`가 바인딩을 생성하여 JS가
+> `window.backend.chat.Send("hi")`를 호출할 수 있습니다.
+
+### 1.4 예제 릴리스
+
+`v3/examples/services/`를 복사하고 조정하세요.
+
+---
+
+## 2. 새 CLI 명령어 작성
+
+CLI 로직은 `internal/commands/` 아래에 위치합니다.  
+각 명령어는 `init()`에서 자신을 마운트하는 **하나의 파일**입니다.
+
+### 2.1 파일 생성
+
+`v3/internal/commands/hello.go`
+
+```go
+package commands
+
+import (
+    "github.com/spf13/cobra"
+)
+
+func init() {
+    Add(&cobra.Command{
+        Use:   "hello",
+        Short: "Prints Hello World",
+        RunE: func(cmd *cobra.Command, args []string) error {
+            cmd.Println("Hello Wails!")
+            return nil
+        },
+    })
+}
+```
+
+`Add()`는 `cmd/wails3/main.go`의 루트에 등록됩니다.
+
+### 2.2 CLI 다시 컴파일
+
+```
+go install ./v3/cmd/wails3
+wails3 hello
+```
+
+명령어가 **Taskfile** 통합이 필요한 경우 `internal/commands/task_wrapper.go`의 헬퍼를 재사용하세요.
+
+---
+
+## 3. 런타임 수정
+
+일반적인 이유:
+
+* 새 윈도우 기능 (`SetOpacity`, `Shake`, …)
+* 추가 대화상자 (`ColorPicker`)
+* 시스템 수준 API (화면 밝기)
+
+### 3.1 공개 API
+
+`pkg/application/window.go`에 추가:
+
+```go
+func (w *WebviewWindow) SetOpacity(o float32) {
+    w.ctx.Call("window:setOpacity", o)
+}
+```
+
+### 3.2 메시지 프로세서
+
+`messageprocessor_window_opacity.go` 생성:
+
+```go
+const MsgSetOpacity = "window:setOpacity"
+
+func init() { register(MsgSetOpacity, handleSetOpacity) }
+
+func handleSetOpacity(ctx *Context, params json.RawMessage) ([]byte, error) {
+    var req struct {
+        ID      uint64  `json:"id"`
+        Opacity float32 `json:"o"`
+    }
+    json.Unmarshal(params, &req)
+    return nil, runtime.SetOpacity(req.ID, req.Opacity)
+}
+```
+
+### 3.3 플랫폼 구현
+
+```
+internal/runtime/
+    webview_window_darwin.go
+    webview_window_linux.go
+    webview_window_windows.go
+```
+
+빌드 태그로 보호하면서 각 파일에 `SetOpacity()`를 추가하세요.  
+플랫폼에서 이를 지원하지 않는 경우 `ErrCapability`를 반환하세요.
+
+### 3.4 기능 플래그
+
+`internal/capabilities`를 통해 노출합니다.
+
+```go
+const CapOpacity = "window:opacity"
+```
+
+런타임 파일 `*_darwin.go` 등은 성공적으로 초기화될 때 `registerCapability(CapOpacity)`를 호출해야 합니다.
+
+앱에서 쿼리할 수 있습니다:
+
+```go
+if application.HasCapability(application.CapOpacity) { ... }
+```
+
+---
+
+## 4. 새 플랫폼 기능 추가
+
+예시: Linux의 **Wayland** 클립보드.
+
+1. `internal/runtime/clipboard_linux.go`를 포크합니다.
+2. 파일 분리:
+   * `clipboard_linux_x11.go` → `//go:build linux && !wayland`
+   * `clipboard_linux_wayland.go` → `//go:build linux && wayland`
+3. `internal/commands/dev.go`에 CLI 플래그 `--tags wayland` 추가
+   (`goEnv.BuildTags += ",wayland"`).
+4. **Asset Server** 및 README에 문서화합니다.
+
+> 기본 빌드 태그는 최소한으로 유지하고, 특화된 기능에 대해 선택적(tags) 기능을 예약하세요.
+
+---
+
+## 5. 크로스 플랫폼 호환성 체크리스트
+
+| ✅ 단계 | 이유 |
+|---------|-----|
+| 모든 플랫폼 파일에 **모든** 공개 메서드 제공 (스텁이라도) | 모든 OS/아키텍처에서 빌드 성공 유지 |
+| 플랫폼별 세부 사항은 **기능(capabilities)** 뒤에 게이트 처리 | 앱이 우아하게 저하되도록 함 |
+| 먼저 **순수 Go** 사용, 필요할 때만 CGO 사용 | 크로스 컴파일 단순화 |
+| `task matrix:test`로 테스트 | Docker에서 linux/mac/windows에 대해 `go test ./...` 실행 |
+| 새 빌드 태그를 `docs/getting-started/installation.mdx`에 문서화 | 사용자가 플래그를 알아야 함 |
+
+---
+
+## 6. 디버그 빌드 및 반복 속도
+
+* `wails3 dev -tags debug`은 추가 로그 훅(`logger_dev*.go`)을 추가합니다.
+* 전체 앱을 재시작하지 않고 런타임을 다시 빌드하려면 `task reload`를 사용하세요.
+* 레이싱 감지기: `wails3 dev -race` (`pkg/application/RACE.md` 참조).
+
+---
+
+## 7. 상위 프로젝트 기여
+
+1. 아이디어와 설계를 논의하기 위해 **이슈**를 엽니다.
+2. 위의 기법을 사용하여 구현합니다.
+3. 다음을 추가:
+   * 단위 테스트 (`*_test.go`)
+   * 예제 (`v3/examples/<feat>/`)
+   * 문서 (이 파일 또는 API 참조)
+4. `go vet`, `golangci-lint`, CI 매트릭스가 통과하는지 확인합니다.
+
+---
+
+### 빠른 링크
+
+| 영역 | 위치 |
+|------|----------|
+| 서비스 프레임워크 | `internal/service/` |
+| CLI 핵심부          | `internal/commands/` |
+| 플랫폼별 런타임    | `internal/runtime/` |
+| 기능 헬퍼          | `internal/capabilities/` |
+| Taskfile DSL      | `tasks/Taskfile.yml` |
+| 개발용 매트릭스 테스트  | `tasks/events/generate.go` |
+
+---
+
+이제 Wails를 당신의 의도대로 조정할 수 있는 **로드맵**을 갖게 되었습니다. 서비스를 추가하고, CLI 마법을 뿌리고, 런타임을 수정하거나, 완전히 새로운 OS 기능을 가져오세요.  
+확장하기 즐거운 시간 되세요!

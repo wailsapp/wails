@@ -1,0 +1,410 @@
+---
+title: 메서드 바인딩
+description: 타입 안전성 있는 JavaScript에서 Go 메서드 호출하기
+sidebar:
+  order: 1
+---
+
+import { FileTree, Card, CardGrid } from "@astrojs/starlight/components";
+
+## 타입 안전성 있는 Go-JavaScript 바인딩
+
+Wails는 Go 메서드에 대해 **자동으로 타입 안전성 있는 JavaScript/TypeScript 바인딩을 생성**합니다. Go 코드를 작성하고 명령어 하나를 실행하면 HTTP 오버헤드 없이, 수동 작업 없이, 보일러플레이트 코드 없이 완전히 타입이 지정된 프론트엔드 함수를 얻을 수 있습니다.
+
+## 빠른 시작
+
+**1. Go 서비스 작성:**
+
+```go
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+    return "Hello, " + name + "!"
+}
+```
+
+**2. 서비스 등록:**
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+})
+```
+
+**3. 바인딩 생성:**
+
+```bash
+wails3 generate bindings
+```
+
+**4. JavaScript에서 사용:**
+
+```javascript
+import { Greet } from './bindings/myapp/greetservice'
+
+const message = await Greet("World")
+console.log(message)  // "Hello, World!"
+```
+
+**이것으로 끝입니다!** 타입 안전성 있는 Go에서 JavaScript로의 호출.
+
+## 서비스 생성
+
+### 기본 서비스
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+type CalculatorService struct{}
+
+func (c *CalculatorService) Add(a, b int) int {
+    return a + b
+}
+
+func (c *CalculatorService) Subtract(a, b int) int {
+    return a - b
+}
+
+func (c *CalculatorService) Multiply(a, b int) int {
+    return a * b
+}
+
+func (c *CalculatorService) Divide(a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, errors.New("division by zero")
+    }
+    return a / b, nil
+}
+```
+
+**등록:**
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&CalculatorService{}),
+    },
+})
+```
+
+**핵심 포인트:**
+- **내보낸 메서드**(PascalCase)만 바인딩됩니다
+- 메서드는 값을 반환하거나 `(값, error)`를 반환할 수 있습니다
+- 서비스는 **싱글톤**입니다 (애플리케이션당 한 인스턴스)
+
+### 상태가 있는 서비스
+
+```go
+type CounterService struct {
+    count int
+    mu    sync.Mutex
+}
+
+func (c *CounterService) Increment() int {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count++
+    return c.count
+}
+
+func (c *CounterService) Decrement() int {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count--
+    return c.count
+}
+
+func (c *CounterService) GetCount() int {
+    c.mu.RLock()
+    defer c.mu.RUnlock()
+    return c.count
+}
+
+func (c *CounterService) Reset() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count = 0
+}
+```
+
+**중요:** 서비스는 모든 창에서 공유됩니다. 스레드 안전성을 위해 뮤텍스를 사용하세요.
+
+### 의존성이 있는 서비스
+
+```go
+type DatabaseService struct {
+    db *sql.DB
+}
+
+func NewDatabaseService(db *sql.DB) *DatabaseService {
+    return &DatabaseService{db: db}
+}
+
+func (d *DatabaseService) GetUser(id int) (*User, error) {
+    var user User
+    err := d.db.QueryRow("SELECT * FROM users WHERE id = ?", id).Scan(&user)
+    return &user, err
+}
+```
+
+**의존성과 함께 등록:**
+
+```go
+db, _ := sql.Open("sqlite3", "app.db")
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(NewDatabaseService(db)),
+    },
+})
+```
+
+## 바인딩 생성
+
+### 기본 생성
+
+```bash
+wails3 generate bindings
+```
+
+**출력:**
+
+```
+INFO  347 Packages, 3 Services, 12 Methods, 0 Enums, 0 Models in 1.98s
+INFO  Output directory: /myproject/frontend/bindings
+```
+
+**생성된 구조:**
+
+<FileTree>
+- frontend/bindings
+  - myapp
+    - calculatorservice.js
+    - counterservice.js
+    - databaseservice.js
+    - index.js
+</FileTree>
+
+### TypeScript 생성
+
+```bash
+wails3 generate bindings -ts
+```
+
+**완전한 TypeScript 타입과 함께 `.ts` 파일을 생성합니다.**
+
+### 사용자 정의 출력 디렉토리
+
+```bash
+wails3 generate bindings -d ./src/bindings
+```
+
+### 감시 모드 (개발용)
+
+```bash
+wails3 dev
+```
+
+**Go 코드가 변경될 때 바인딩을 자동으로 재생성합니다.**
+
+## 바인딩 사용
+
+### JavaScript
+
+**생성된 바인딩:**
+
+```javascript
+// frontend/bindings/myapp/calculatorservice.js
+
+/**
+ * @param {number} a
+ * @param {number} b
+ * @returns {Promise<number>}
+ */
+export function Add(a, b) {
+    return window.wails.Call('CalculatorService.Add', a, b)
+}
+```
+
+**사용법:**
+
+```javascript
+import { Add, Subtract, Multiply, Divide } from './bindings/myapp/calculatorservice'
+
+// 간단한 호출
+const sum = await Add(5, 3)        // 8
+const diff = await Subtract(10, 4)  // 6
+const product = await Multiply(7, 6) // 42
+
+// 오류 처리
+try {
+    const result = await Divide(10, 0)
+} catch (error) {
+    console.error("Error:", error)  // "division by zero"
+}
+```
+
+### TypeScript
+
+**생성된 바인딩:**
+
+```typescript
+// frontend/bindings/myapp/calculatorservice.ts
+
+export function Add(a: number, b: number): Promise<number>
+export function Subtract(a: number, b: number): Promise<number>
+export function Multiply(a: number, b: number): Promise<number>
+export function Divide(a: number, b: number): Promise<number>
+```
+
+**사용법:**
+
+```typescript
+import { Add, Divide } from './bindings/myapp/calculatorservice'
+
+const sum: number = await Add(5, 3)
+
+try {
+    const result = await Divide(10, 0)
+} catch (error: unknown) {
+    if (error instanceof Error) {
+        console.error(error.message)
+    }
+}
+```
+
+**장점:**
+- 완전한 타입 체크
+- IDE 자동 완성
+- 컴파일 타임 오류
+- 더 나은 리팩토링
+
+### 인덱스 파일
+
+**생성된 인덱스:**
+
+```javascript
+// frontend/bindings/myapp/index.js
+
+export * as CalculatorService from './calculatorservice.js'
+export * as CounterService from './counterservice.js'
+export * as DatabaseService from './databaseservice.js'
+```
+
+**단축된 import:**
+
+```javascript
+import { CalculatorService } from './bindings/myapp'
+
+const sum = await CalculatorService.Add(5, 3)
+```
+
+## 타입 매핑
+
+### 기본 타입
+
+| Go 타입 | JavaScript/TypeScript |
+|---------|----------------------|
+| `string` | `string` |
+| `bool` | `boolean` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `number` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `number` |
+| `float32`, `float64` | `number` |
+| `byte` | `number` |
+| `rune` | `number` |
+
+### 복잡한 타입
+
+| Go 타입 | JavaScript/TypeScript |
+|---------|----------------------|
+| `[]T` | `T[]` |
+| `[N]T` | `T[]` |
+| `map[string]T` | `Record<string, T>` |
+| `map[K]V` | `Map<K, V>` |
+| `struct` | `class` (필드 포함) |
+| `time.Time` | `Date` |
+| `*T` | `T` (포인터 투명 처리) |
+| `interface{}` | `any` |
+| `error` | 예외 (던져짐) |
+
+### 지원되지 않는 타입
+
+이 타입들은 브릿지를 통해 전달할 **수 없습니다**:
+- `chan T` (채널)
+- `func()` (함수)
+- 복잡한 인터페이스 (`interface{}` 제외)
+- 내보내지 않은 필드 (소문자)
+
+**우회 방법:** ID 또는 핸들을 사용하세요:
+
+```go
+// ❌ 파일 핸들을 반환할 수 없음
+func OpenFile(path string) (*os.File, error)
+
+// ✅ 대신 파일 ID를 반환
+var files = make(map[string]*os.File)
+
+func OpenFile(path string) (string, error) {
+    file, err := os.Open(path)
+    if err != nil {
+        return "", err
+    }
+    id := generateID()
+    files[id] = file
+    return id, nil
+}
+
+func ReadFile(id string) ([]byte, error) {
+    file := files[id]
+    return io.ReadAll(file)
+}
+
+func CloseFile(id string) error {
+    file := files[id]
+    delete(files, id)
+    return file.Close()
+}
+```
+
+## 오류 처리
+
+### Go 측
+
+```go
+func (d *DatabaseService) GetUser(id int) (*User, error) {
+    if id <= 0 {
+        return nil, errors.New("invalid user ID")
+    }
+    
+    var user User
+    err := d.db.QueryRow("SELECT * FROM users WHERE id = ?", id).Scan(&user)
+    if err == sql.ErrNoRows {
+        return nil, fmt.Errorf("user %d not found", id)
+    }
+    if err != nil {
+        return nil, fmt.Errorf("database error: %w", err)
+    }
+    
+    return &user, nil
+}
+```
+
+### JavaScript 측
+
+```javascript
+import { GetUser } from './bindings/myapp/databaseservice'
+
+try {
+    const user = await GetUser(123)
+    console.log("User:", user)
+} catch (error) {
+    console.error("Error:", error)
+    // Error: "user 123 not found"
+}
+```---
+
+**질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하시거나 [바인딩 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)를 확인하세요.

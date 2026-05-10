@@ -1,0 +1,367 @@
+---
+title: 시작하기
+description: Wails v3에 기여하는 방법
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+## 기여자 여러분, 환영합니다!
+
+Wails에 기여해 주셔서 감사합니다! 이 가이드는 여러분의 첫 기여를 돕기 위해 작성되었습니다.
+
+## 사전 준비 사항
+
+시작하기 전에 다음 사항들이 준비되어 있는지 확인하세요:
+
+- **Go 1.25+** 설치 ([다운로드](https://go.dev/dl/))
+- **Node.js 20+** 및 **npm** ([다운로드](https://nodejs.org/))
+- GitHub 계정에 연결된 **Git** 설정
+- Go 및 JavaScript/TypeScript에 대한 기본 지식
+
+### 플랫폼별 요구 사항
+
+**macOS:**
+- Xcode Command Line Tools: `xcode-select --install`
+
+**Windows:**
+- MSYS2 또는 유사한 유닉스 계열 환경 권장
+- WebView2 런타임 (Windows 11에는 일반적으로 사전 설치됨)
+
+**Linux:**
+- `gcc`, `pkg-config`, `libgtk-3-dev`, `libwebkit2gtk-4.0-dev`
+- 설치 명령어: `sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev` (Debian/Ubuntu 기준)
+
+## 기여 프로세스 개요
+
+일반적인 기여 워크플로우는 다음 단계를 따릅니다:
+
+1. **Fork & Clone** - Wails 저장소의 복사본을 생성합니다
+2. **Setup** - Wails CLI를 빌드하고 환경을 검증합니다
+3. **Branch** - 변경 사항을 위한 기능 브랜치를 생성합니다
+4. **Develop** - 코딩 표준을 따라 변경 사항을 적용합니다
+5. **Test** - 모든 것이 정상적으로 작동하는지 테스트를 실행합니다
+6. **Commit** - 명확하고 관례적인 커밋 메시지로 커밋합니다
+7. **Submit** - 검토를 위해 풀 리퀘스트(Pull Request)를 엽니다
+8. **Iterate** - 피드백에 대응하고 조정합니다
+9. **Merge** - 승인되면 여러분의 변경 사항이 Wails에 반영됩니다!
+
+## 단계별 가이드
+
+기여 유형을 선택하세요:
+
+<Tabs>
+<TabItem label="버그 수정">
+
+<Steps>
+
+1. **버그 찾기 또는 보고**
+
+   - [GitHub Issues](https://github.com/wailsapp/wails/issues)에 이미 보고된 버그인지 확인합니다
+   - 그렇지 않다면, 재현 방법을 포함한 새 이슈를 생성합니다
+   - 작업을 시작하기 전에 확인을 기다립니다
+
+2. **Fork 및 Clone**
+
+   [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork)에서 저장소를 포크합니다
+
+   포크한 저장소를 클론합니다:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/wails.git
+   cd wails
+   git remote add upstream https://github.com/wailsapp/wails.git
+   ```
+
+3. **빌드 및 검증**
+
+   Wails를 빌드하고 버그를 재현할 수 있는지 확인합니다:
+   ```bash
+   cd v3
+   go build -o ../wails3 ./cmd/wails3
+
+   # 버그를 재현하여 이해합니다
+   ```
+
+4. **버그 수정 브랜치 생성**
+
+   수정을 위한 브랜치를 생성합니다:
+   ```bash
+   git checkout -b fix/issue-123-window-crash
+   ```
+
+5. **버그 수정**
+
+   - 버그를 수정하는 데 필요한 최소한의 변경 사항만 적용합니다
+   - 관련 없는 코드는 리팩토링하지 않습니다
+   - 회귀(regression)를 방지하기 위해 테스트를 추가하거나 업데이트합니다
+
+   ```bash
+   # 변경 사항 적용
+   # *_test.go 파일에 테스트 추가
+   ```
+
+6. **수정 사항 테스트**
+
+   수정 사항이 제대로 작동하는지 확인하기 위해 테스트를 실행합니다:
+   ```bash
+   go test ./...
+
+   # 특정 패키지 테스트
+   go test ./pkg/application -v
+
+   # 레이스 디텍터(race detector)와 함께 실행
+   go test ./... -race
+   ```
+
+7. **수정 사항 커밋**
+
+   명확한 메시지로 커밋합니다:
+   ```bash
+   git commit -m "fix: 초기화 중 닫을 때 창 크래시 방지
+
+   Fixes #123"
+   ```
+
+8. **풀 리퀘스트 제출**
+
+   푸시하고 PR을 생성합니다:
+   ```bash
+   git push origin fix/issue-123-window-crash
+   ```
+
+   PR 설명에 다음 내용을 포함합니다:
+   - 버그와 근본 원인 설명
+   - 수정 방법 설명
+   - 이슈 참조: "Fixes #123"
+   - 수정 전/후 동작 포함
+
+9. **피드백 대응**
+
+   리뷰 코멘트를 처리하고 필요에 따라 PR을 업데이트합니다.
+
+</Steps>
+
+</TabItem>
+<TabItem label="기능 개선">
+
+<Steps>
+
+1. **기능 논의**
+
+   - [GitHub Discussion](https://github.com/wailsapp/wails/discussions) 또는 이슈를 엽니다
+   - 무엇을 추가하고 싶은지, 그리고 그 이유를 설명합니다
+   - 구현 전에 유지 관리자의 피드백을 기다립니다
+   - Wails의 목표와 부합하는지 확인합니다
+
+2. **Fork 및 Clone**
+
+   [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork)에서 저장소를 포크합니다
+
+   포크한 저장소를 클론합니다:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/wails.git
+   cd wails
+   git remote add upstream https://github.com/wailsapp/wails.git
+   ```
+
+3. **개발 환경 설정**
+
+   Wails를 빌드하고 환경을 검증합니다:
+   ```bash
+   cd v3
+   go build -o ../wails3 ./cmd/wails3
+
+   # 모든 것이 정상적으로 작동하는지 확인하기 위해 테스트 실행
+   go test ./...
+   ```
+
+4. **기능 브랜치 생성**
+
+   설명적인 브랜치를 생성합니다:
+   ```bash
+   git checkout -b feat/window-transparency-support
+   ```
+
+5. **기능 구현**
+
+   - [코딩 표준](/ko/contributing/standards)을 따릅니다
+   - 변경 사항을 기능에 집중시킵니다
+   - 깔끔하고 문서화된 코드를 작성합니다
+   - 포괄적인 테스트를 추가합니다
+
+   ```bash
+   # 예시: 새 창 메서드 추가
+   # 1. window.go 인터페이스에 추가
+   # 2. 플랫폼 파일(darwin, windows, linux)에 구현
+   # 3. 테스트 추가
+   # 4. 문서 업데이트
+   ```
+
+6. **철저한 테스트**
+
+   기능을 테스트합니다:
+   ```bash
+   # 단위 테스트
+   go test ./pkg/application -v
+
+   # 통합 테스트 - 테스트 앱 생성
+   cd ..
+   ./wails3 init -n feature-test
+   cd feature-test
+   # 새 기능을 사용한 코드 추가
+   ../wails3 dev
+   ```
+
+7. **기능 문서화**
+
+   - 모든 공개 API에 docstrings를 추가합니다
+   - `/docs`의 관련 문서를 업데이트합니다
+   - applicable한 경우 예제를 추가합니다
+
+8. **관례적 커밋으로 커밋**
+
+   관례적 커밋(conventional commits)을 사용합니다:
+   ```bash
+   git commit -m "feat: 창 투명도 지원 추가
+
+   - Window API에 SetTransparent() 메서드 추가
+   - macOS, Windows, Linux에 구현
+   - 테스트 및 문서 추가
+
+   Closes #456"
+   ```
+
+9. **풀 리퀘스트 제출**
+
+   푸시하고 PR을 생성합니다:
+   ```bash
+   git push origin feat/window-transparency-support
+   ```
+
+   PR에 다음 내용을 포함합니다:
+   - 기능 및 사용 사례 설명
+   - 예제 또는 스크린샷 표시
+   - 주요 변경 사항(breaking changes) 목록
+   - 논의/이슈 참조
+
+10. **리뷰 기반 반복**
+
+    유지 관리자가 변경을 요청할 수 있습니다. 인내심 있고 협력적으로 대응하세요.
+
+</Steps>
+
+</TabItem>
+<TabItem label="문서">
+
+<Steps>
+
+1. **문서 필요 사항 식별**
+
+   - Wails 사용 중 오래된 문서를 발견했나요?
+   - 누락된 예제나 설명이 눈에 띄나요?
+   - 오타를 수정하거나 명확성을 개선하고 싶나요?
+   - [문서 이슈](https://github.com/wailsapp/wails/labels/documentation)를 확인하세요
+
+2. **Fork 및 Clone**
+
+   [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork)에서 저장소를 포크합니다
+
+   포크한 저장소를 클론합니다:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/wails.git
+   cd wails
+   git remote add upstream https://github.com/wailsapp/wails.git
+   ```
+
+3. **문서 환경 설정**
+
+   문서는 `/docs`에 있으며 Astro로 빌드됩니다:
+   ```bash
+   cd docs
+   npm install
+   npm run dev
+   ```
+
+   http://localhost:4321/을 열어 변경 사항을 실시간으로 미리 봅니다.
+
+4. **문서 브랜치 생성**
+
+   변경 사항을 위한 브랜치를 생성합니다:
+   ```bash
+   git checkout -b docs/improve-window-api-examples
+   ```
+
+5. **변경 사항 적용**
+
+   문서 파일은 `/docs/src/content/docs/`에 있습니다:
+   ```bash
+   # MDX 파일 편집
+   # 브라우저에서 미리보기 확인
+   # 형식이 올바른지 확인
+   ```
+
+   **최선의 방법:**
+   - 명확하고 간결한 언어를 사용합니다
+   - 실용적인 코드 예제를 포함합니다
+   - 관련 섹션으로의 링크를 추가합니다
+   - 철자법과 문법을 확인합니다
+   - 모든 코드 예제를 테스트합니다
+
+6. **변경 사항 검증**
+
+   실시간 미리보기를 확인하고 다음 사항을 확인합니다:
+   - 링크가 올바르게 작동하는지
+   - 코드 예제가 정확한지
+   - 형식이 제대로 렌더링되는지
+   - 깨진 이미지나 참조가 없는지
+
+7. **문서 변경 사항 커밋**
+
+   명확한 메시지로 커밋합니다:
+   ```bash
+   git commit -m "docs: Window API 가이드에 실용적인 예제 추가
+
+   - 창 위치 예제 추가
+   - 일반 패턴 섹션 포함
+   - Event API로의 깨진 링크 수정"
+   ```
+
+8. **풀 리퀘스트 제출**
+
+   푸시하고 PR을 생성합니다:
+   ```bash
+   git push origin docs/improve-window-api-examples
+   ```PR에서 다음 내용을 명시하세요:
+- 어떤 문서를 개선했는지
+- 변경 사항이 사용자에게 어떻게 도움이 되는지
+- 시각적 변경 사항이 있는 경우 스크린샷 포함
+
+9. **리뷰 피드백 반영**
+
+문서 관련 풀 리퀘스트(PR)는 일반적으로 신속하게 검토되고 병합됩니다!
+
+</Steps>
+
+</TabItem>
+</Tabs>
+
+## 작업할 이슈 찾기
+
+- [`good first issue`](https://github.com/wailsapp/wails/labels/good%20first%20issue) 라벨 확인
+- [`help wanted`](https://github.com/wailsapp/wails/labels/help%20wanted) 이슈 확인
+- [열린 이슈](https://github.com/wailsapp/wails/issues)를 둘러보고 할당을 요청하세요
+
+## 도움 받기
+
+- **Discord:** [Wails Discord](https://discord.gg/JDdSxwjhGf)에 참여하세요
+- **Discussions:** [GitHub Discussions](https://github.com/wailsapp/wails/discussions)에 게시하세요
+- **Issues:** 버그를 발견했거나 질문이 있다면 이슈를 생성하세요
+
+## 행동 강령
+
+존중하고, 건설적이며, 환영하는 태도를 유지하세요. 우리는 훌륭한 소프트웨어를 함께 만들기 위해 모인 친절한 커뮤니티를 구축하고 있습니다.
+
+## 다음 단계
+
+- [개발 환경 설정](/ko/contributing/setup)
+- [코딩 표준](/ko/contributing/standards) 검토
+- [기술 문서](/ko/contributing) 탐색

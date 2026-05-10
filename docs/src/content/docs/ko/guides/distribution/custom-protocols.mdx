@@ -1,0 +1,614 @@
+---
+title: 사용자 정의 URL 프로토콜
+description: 링크에서 응용 프로그램을 실행할 수 있도록 사용자 정의 URL 스킴을 등록합니다.
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+사용자 정의 URL 프로토콜(URL 스킴이라고도 함)을 사용하면 사용자가 `myapp://action` 또는 `myapp://open/document`과 같은 사용자 정의 프로토콜이 포함된 링크를 클릭할 때 응용 프로그램을 실행할 수 있습니다.
+
+## 개요
+
+사용자 정의 프로토콜을 통해 다음을 수행할 수 있습니다:
+- **딥 링크링**: 특정 데이터와 함께 앱 실행
+- **브라우저 통합**: 웹 페이지의 링크 처리
+- **이메일 링크**: 이메일 클라이언트에서 앱 열기
+- **앱 간 통신**: 다른 응용 프로그램에서 앱 실행
+
+**예시**: `myapp://open/document?id=123`은 앱을 실행하고 문서 123을 엽니다.
+
+## 구성
+
+응용 프로그램 옵션에서 사용자 정의 프로토콜을 정의합니다:
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "My Application",
+        Description: "My awesome application",
+        Protocols: []application.Protocol{
+            {
+                Scheme:      "myapp",
+                Description: "My Application Protocol",
+                Role:        "Editor",  // macOS only
+            },
+        },
+    })
+
+    // Register handler for protocol events
+    app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+        url := event.Context().ClickedURL()
+        handleCustomURL(url)
+    })
+
+    app.Run()
+}
+
+func handleCustomURL(url string) {
+    // Parse and handle the custom URL
+    // Example: myapp://open/document?id=123
+    println("Received URL:", url)
+}
+```
+
+## 프로토콜 핸들러
+
+들어오는 URL을 처리하기 위해 프로토콜 이벤트를 수신 대기합니다:
+
+```go
+app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+    url := event.Context().ClickedURL()
+
+    // Parse the URL
+    parsedURL, err := parseCustomURL(url)
+    if err != nil {
+        app.Logger.Error("Failed to parse URL:", err)
+        return
+    }
+
+    // Handle different actions
+    switch parsedURL.Action {
+    case "open":
+        openDocument(parsedURL.DocumentID)
+    case "settings":
+        showSettings()
+    case "user":
+        showUser Profile(parsedURL.UserID)
+    default:
+        app.Logger.Warn("Unknown action:", parsedURL.Action)
+    }
+})
+```
+
+## URL 구조
+
+명확하고 계층적인 URL 구조를 설계합니다:
+
+```
+myapp://action/resource?param=value
+
+Examples:
+myapp://open/document?id=123
+myapp://settings/theme?mode=dark
+myapp://user/profile?username=john
+```
+
+**모범 사례:**
+- 소문자 스킴 이름 사용
+- 스킴을 짧고 기억하기 쉽게 유지
+- 리소스에 대해 계층적 경로 사용
+- 선택적 데이터에 쿼리 매개변수 포함
+- 특수 문자는 URL 인코딩
+
+## 플랫폼 등록
+
+사용자 정의 프로토콜은 각 플랫폼에서 다르게 등록됩니다.
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+
+### Windows NSIS 설치 프로그램
+
+**Wails v3는 NSIS 설치 프로그램을 사용할 때 사용자 정의 프로토콜을 자동으로 등록합니다.**
+
+#### 자동 등록
+
+`wails3 build`로 응용 프로그램을 빌드할 때 NSIS 설치 프로그램은 다음을 수행합니다:
+1. `application.Options.Protocols`에 정의된 모든 프로토콜을 자동으로 등록합니다.
+2. 프로토콜을 응용 프로그램 실행 파일과 연결합니다.
+3. 적절한 레지스트리 항목을 설정합니다.
+4. 제거 시 프로토콜 연결을 제거합니다.
+
+**추가 구성이 필요하지 않습니다!**
+
+#### 작동 방식
+
+NSIS 템플릿에는 내장된 매크로가 포함되어 있습니다:
+- `wails.associateCustomProtocols` - 설치 중 프로토콜 등록
+- `wails.unassociateCustomProtocols` - 제거 시 프로토콜 제거
+
+이 매크로는 `Protocols` 구성에 따라 자동으로 호출됩니다.
+
+#### 수동 레지스트리 (고급)
+
+수동 등록이 필요한 경우(NSIS 외부):
+
+```batch
+@echo off
+REM Register custom protocol
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp" /ve /d "URL:My Application Protocol" /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp" /v "URL Protocol" /t REG_SZ /d "" /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp\shell\open\command" /ve /d "\"%1\"" /f
+```
+
+#### 테스트
+
+프로토콜 등록을 테스트합니다:
+
+```powershell
+# Open protocol URL from PowerShell
+Start-Process "myapp://test/action"
+
+# Or from command prompt
+start myapp://test/action
+```
+
+### Windows MSIX 패키지
+
+MSIX 패키징을 사용할 때도 사용자 정의 프로토콜이 자동으로 등록됩니다.
+
+#### 자동 등록
+
+MSIX로 응용 프로그램을 빌드할 때 매니페스트에는 `build/config.yml` 프로토콜 구성에서 프로토콜 등록이 자동으로 포함됩니다.
+
+생성된 매니페스트에는 다음이 포함됩니다:
+
+```xml
+<uap:Extension Category="windows.protocol">
+  <uap:Protocol Name="myapp">
+    <uap:DisplayName>My Application Protocol</uap:DisplayName>
+  </uap:Protocol>
+</uap:Extension>
+```
+
+#### 유니버설 링크 (웹-앱 링크)
+
+Windows는 macOS의 유니버설 링크와 유사하게 작동하는 **웹-앱 링크**를 지원합니다. 응용 프로그램을 MSIX 패키지로 배포할 때 HTTPS 링크를 사용하여 앱을 직접 실행할 수 있습니다.
+
+<Aside type="note">
+웹-앱 링크는 수동 매니페스트 구성이 필요합니다. 사용자 정의 프로토콜 스킴은 `build/config.yml`에서 자동으로 구성되지만, 연결된 도메인은 MSIX 매니페스트에 수동으로 추가해야 합니다.
+</Aside>
+
+웹-앱 링크를 활성화하려면 [Microsoft의 웹-앱 링크 가이드](https://learn.microsoft.com/en-us/windows/apps/develop/launch/web-to-app-linking)를 따르세요. 다음을 수행해야 합니다:
+
+1. **MSIX 매니페스트에 앱 URI 핸들러 수동으로 추가** (`build/windows/msix/app_manifest.xml`):
+   ```xml
+   <uap3:Extension Category="windows.appUriHandler">
+     <uap3:AppUriHandler>
+       <uap3:Host Name="myawesomeapp.com"/>
+     </uap3:AppUriHandler>
+   </uap3:Extension>
+   ```
+
+2. **웹사이트에서 `windows-app-web-link` 구성:** `https://myawesomeapp.com/.well-known/windows-app-web-link`에 `windows-app-web-link` 파일을 호스팅합니다. 이 파일에는 앱의 패키지 정보와 처리하는 경로가 포함되어야 합니다.
+
+웹-앱 링크가 응용 프로그램을 실행하면 사용자 정의 프로토콜 스킴과 동일한 `ApplicationOpenedWithURL` 이벤트를 받게 됩니다.
+
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+
+### Info.plist 구성
+
+macOS에서는 프로토콜이 `Info.plist` 파일을 통해 등록됩니다.
+
+#### 자동 구성
+
+Wails는 `wails3 build`로 빌드할 때 프로토콜이 포함된 `Info.plist`를 자동으로 생성합니다.
+
+`application.Options.Protocols`의 프로토콜은 다음에 추가됩니다:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLName</key>
+        <string>My Application Protocol</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>myapp</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+    </dict>
+</array>
+```
+
+#### 테스트
+
+```bash
+# Open protocol URL from terminal
+open "myapp://test/action"
+
+# Check registered handlers
+/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -dump | grep myapp
+```
+
+#### 유니버설 링크
+
+사용자 정의 프로토콜 스킴 외에도 macOS는 **유니버설 링크**도 지원하여 일반 HTTPS 링크(예: `https://myawesomeapp.com/path`)로 앱을 실행할 수 있습니다. 유니버설 링크는 웹 앱과 데스크톱 앱 간에 원활한 사용자 경험을 제공합니다.
+
+<Aside type="caution">
+유니버설 링크를 사용하려면 macOS 앱이 유효한 Apple Developer 인증서와 프로비저닝 프로필로 **코드 서명**되어야 합니다. 서명되지 않거나 ad-hoc 서명된 빌드는 유니버설 링크를 열 수 없습니다. 테스트 전에 앱이 올바르게 서명되었는지 확인하세요.
+</Aside>
+
+유니버설 링크를 활성화하려면 [Apple의 앱에서 유니버설 링크 지원 가이드](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app)를 따르세요. 다음을 수행해야 합니다:
+
+1. **`entitlements.plist`에 엔터테인먼트 추가**:
+   ```xml```xml
+   <key>com.apple.developer.associated-domains</key>
+   <array>
+     <string>applinks:myawesomeapp.com</string>
+   </array>
+   ```
+
+2. **Info.plist에 `NSUserActivityTypes` 추가**:
+   ```xml
+   <key>NSUserActivityTypes</key>
+   <array>
+     <string>NSUserActivityTypeBrowsingWeb</string>
+   </array>
+   ```
+
+3. **웹사이트에서 `apple-app-site-association` 구성**: `https://myawesomeapp.com/.well-known/apple-app-site-association`에 `apple-app-site-association` 파일을 호스팅합니다.
+
+유니버설 링크가 앱을 트리거하면 동일한 `ApplicationOpenedWithURL` 이벤트를 받게 되므로, 처리 코드는 사용자 지정 프로토콜 스킴과 동일합니다.
+
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+
+### 데스크톱 진입(Desktop Entry)
+
+리눅스에서는 프로토콜이 `.desktop` 파일을 통해 등록됩니다.
+
+#### 자동 구성
+
+`wails3 build`로 빌드할 때 Wails는 프로토콜 핸들러가 포함된 데스크톱 진입 파일을 생성합니다.
+
+**v3에서 수정됨**: 리눅스 데스크톱 템플릿이 이제 프로토콜 처리를 올바르게 포함합니다.
+
+생성된 데스크톱 파일에는 다음이 포함됩니다:
+
+```ini
+[Desktop Entry]
+Type=Application
+Name=My Application
+Exec=/usr/bin/myapp %u
+MimeType=x-scheme-handler/myapp;
+```
+
+#### 수동 등록
+
+필요한 경우 데스크톱 파일을 수동으로 설치합니다:
+
+```bash
+# 데스크톱 파일 복사
+cp myapp.desktop ~/.local/share/applications/
+
+# 데스크톱 데이터베이스 업데이트
+update-desktop-database ~/.local/share/applications/
+
+# 프로토콜 핸들러 등록
+xdg-mime default myapp.desktop x-scheme-handler/myapp
+```
+
+#### 테스트
+
+```bash
+# 프로토콜 URL 열기
+xdg-open "myapp://test/action"
+
+# 등록된 핸들러 확인
+xdg-mime query default x-scheme-handler/myapp
+```
+
+  </TabItem>
+</Tabs>
+
+## 전체 예제
+
+여러 프로토콜 작업을 처리하는 전체 예제입니다:
+
+```go
+package main
+
+import (
+    "fmt"
+    "net/url"
+    "strings"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type App struct {
+    app    *application.Application
+    window *application.WebviewWindow
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "DeepLink Demo",
+        Description: "Custom protocol demonstration",
+        Protocols: []application.Protocol{
+            {
+                Scheme:      "deeplink",
+                Description: "DeepLink Demo Protocol",
+                Role:        "Editor",
+            },
+        },
+    })
+
+    myApp := &App{app: app}
+    myApp.setup()
+
+    app.Run()
+}
+
+func (a *App) setup() {
+    // 창 생성
+    a.window = a.app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  "DeepLink Demo",
+        Width:  800,
+        Height: 600,
+        URL:    "http://wails.localhost/",
+    })
+
+    // 사용자 지정 프로토콜 URL 처리
+    a.app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+        customURL := event.Context().ClickedURL()
+        a.handleDeepLink(customURL)
+    })
+}
+
+func (a *App) handleDeepLink(rawURL string) {
+    // URL 파싱
+    parsedURL, err := url.Parse(rawURL)
+    if err != nil {
+        a.app.Logger.Error("Failed to parse URL:", err)
+        return
+    }
+
+    // 창을 최상위로 가져오기
+    a.window.Show()
+    a.window.SetFocus()
+
+    // 경로와 쿼리 추출
+    path := strings.Trim(parsedURL.Path, "/")
+    query := parsedURL.Query()
+
+    // 다른 작업 처리
+    parts := strings.Split(path, "/")
+    if len(parts) == 0 {
+        return
+    }
+
+    action := parts[0]
+
+    switch action {
+    case "open":
+        if len(parts) >= 2 {
+            resource := parts[1]
+            id := query.Get("id")
+            a.openResource(resource, id)
+        }
+
+    case "settings":
+        section := ""
+        if len(parts) >= 2 {
+            section = parts[1]
+        }
+        a.openSettings(section)
+
+    case "user":
+        if len(parts) >= 2 {
+            username := parts[1]
+            a.openUserProfile(username)
+        }
+
+    default:
+        a.app.Logger.Warn("Unknown action:", action)
+    }
+}
+
+func (a *App) openResource(resourceType, id string) {
+    fmt.Printf("Opening %s with ID: %s\n", resourceType, id)
+    // 프론트엔드에 이벤트 발행
+    a.app.Event.Emit("navigate", map[string]string{
+        "type": resourceType,
+        "id":   id,
+    })
+}
+
+func (a *App) openSettings(section string) {
+    fmt.Printf("Opening settings section: %s\n", section)
+    a.app.Event.Emit("navigate", map[string]string{
+        "page":    "settings",
+        "section": section,
+    })
+}
+
+func (a *App) openUserProfile(username string) {
+    fmt.Printf("Opening user profile: %s\n", username)
+    a.app.Event.Emit("navigate", map[string]string{
+        "page": "user",
+        "user": username,
+    })
+}
+```
+
+## 프론트엔드 통합
+
+프론트엔드에서 탐색 이벤트를 처리합니다:
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// 프로토콜 핸들러에서 탐색 이벤트 수신
+Events.On('navigate', (event) => {
+    const { type, id, page, section, user } = event.data
+
+    if (type === 'document') {
+        // ID로 문서 열기
+        router.push(`/document/${id}`)
+    } else if (page === 'settings') {
+        // 설정 열기
+        router.push(`/settings/${section}`)
+    } else if (page === 'user') {
+        // 사용자 프로필 열기
+        router.push(`/user/${user}`)
+    }
+})
+```
+
+## 보안 고려사항
+
+### 모든 입력 검증
+
+외부 소스의 URL을 항상 검증하고 정리합니다:
+
+```go
+func (a *App) handleDeepLink(rawURL string) {
+    // URL 파싱
+    parsedURL, err := url.Parse(rawURL)
+    if err != nil {
+        a.app.Logger.Error("Invalid URL:", err)
+        return
+    }
+
+    // 스킴 검증
+    if parsedURL.Scheme != "myapp" {
+        a.app.Logger.Warn("Invalid scheme:", parsedURL.Scheme)
+        return
+    }
+
+    // 경로 검증
+    path := strings.Trim(parsedURL.Path, "/")
+    if !isValidPath(path) {
+        a.app.Logger.Warn("Invalid path:", path)
+        return
+    }
+
+    // 매개변수 정리
+    params := sanitizeQueryParams(parsedURL.Query())
+
+    // 검증된 URL 처리
+    a.processDeepLink(path, params)
+}
+
+func isValidPath(path string) bool {
+    // 영문자, 숫자 및 앞뒤 슬래시만 허용
+    validPath := regexp.MustCompile(`^[a-zA-Z0-9/]+$`)
+    return validPath.MatchString(path)
+}
+
+func sanitizeQueryParams(query url.Values) map[string]string {
+    sanitized := make(map[string]string)
+    for key, values := range query {
+        if len(values) > 0 {
+            // 첫 번째 값 가져오기 및 정리
+            sanitized[key] = sanitizeString(values[0])
+        }
+    }
+    return sanitized
+}
+```
+
+### 주입 공격 방지
+
+URL을 코드나 SQL로 직접 실행하지 마세요:
+
+```go
+// ❌ 하지 마세요: URL 내용 실행
+func badHandler(url string) {
+    exec.Command("sh", "-c", url).Run() // 위험함!
+}
+
+// ✅ 해야 할 일: 파싱 및 검증
+func goodHandler(url string) {
+    parsed, _ := url.Parse(url)
+    action := parsed.Query().Get("action")
+
+    // 허용된 작업 화이트리스트
+    allowed := map[string]bool{
+        "open":     true,
+        "settings": true,
+        "help":     true,
+    }
+
+    if allowed[action] {
+        handleAction(action)
+    }
+}
+```
+
+## 테스트
+
+### 수동 테스트
+
+개발 중 프로토콜 핸들러를 테스트합니다:
+
+**Windows:**
+```powershell
+Start-Process "myapp://test/action?id=123"
+```
+
+**macOS:**
+```bash
+open "myapp://test/action?id=123"
+```
+
+**Linux:**
+```bash
+xdg-open "myapp://test/action?id=123"
+```
+
+### HTML 테스트
+
+테스트용 HTML 페이지를 만듭니다:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Protocol Test</title>
+</head>
+<body>
+    <h1>Custom Protocol Test Links</h1>
+
+    <ul>
+        <li><a href="myapp://open/document?id=123">Open Document 123</a></li>
+        <li><a href="myapp://settings/theme?mode=dark">Dark Mode Settings</a></li>
+        <li><a href="myapp://user/profile?username=john">User Profile</a></li>
+    </ul>
+</body>
+</html>
+```
+
+## 문제 해결
+
+### 프로토콜이 등록되지 않음
+
+**Windows:**
+- 레지스트리 확인: `HKEY_CURRENT_USER\SOFTWARE\Classes\<scheme>`
+- NSIS 설치 프로그램으로 다시 설치
+- 설치 프로그램이 적절한 권한으로 실행되었는지 확인
+
+**macOS:**---
+
+**질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [예제](https://github.com/wailsapp/wails/tree/master/v3/examples)를 확인하세요.

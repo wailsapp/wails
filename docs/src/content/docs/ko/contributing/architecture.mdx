@@ -1,0 +1,91 @@
+---
+title: Wails v3 아키텍처
+description: Wails v3 내부의 모든 구성 요소에 대한 심층 다이어그램 및 설명
+sidebar:
+  order: 1
+---
+
+Wails v3는 Go 런타임, JavaScript 브리지, 작업 기반 도구 체인, 그리고 현대 웹 기술로 구동되는 네이티브 애플리케이션을 출시할 수 있는 템플릿 모음으로 구성된 **풀스택 데스크톱 프레임워크**입니다.
+
+이 페이지는 다음 네 가지 다이어그램을 통해 *전체적인 그림*을 제시합니다:
+
+1. **전체 아키텍처** – 모든 하위 시스템이 어떻게 연결되는지
+2. **런타임 흐름** – JS가 Go를 호출하고 그 반대의 경우 어떤 일이 발생하는지
+3. **개발 환경 vs 프로덕션** – 자산 서버의 두 가지 모드
+4. **플랫폼 구현** – OS별 코드가 어디에 위치하는지
+
+---
+
+## 1 · 전체 아키텍처
+
+**Wails v3 – 상위 레이어 스택**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[상위 레이어 스택 다이어그램 자리 표시자]**
+
+---
+
+## 2 · 런타임 호출 흐름
+
+**런타임 – JavaScript ⇄ Go 호출 경로**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[런타임 호출 흐름 다이어그램 자리 표시자]**
+
+핵심 포인트:
+
+* **HTTP / IPC 없음** – 브리지는 네이티브 WebView의 인메모리 채널을 사용합니다.
+* **메서드 ID** – 결정론적인 FNV 해시는 Go에서 O(1) 조회를 가능하게 합니다.
+* **Promises** – 오류는 스택 및 코드와 함께 거부(rejection)로 전파됩니다.
+
+---
+
+## 3 · 개발 환경 vs 프로덕션 자산 흐름
+
+**Dev ↔ Prod 자산 서버**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[자산 흐름 다이어그램 자리 표시자]**
+
+* **dev** 모드에서는 서버가 알려지지 않은 경로를 프레임워크의 라이브 리로드 서버로 프록시하고, 디스크에서 정적 자산을 제공합니다.
+* **prod** 모드에서는 동일한 API가 `go:embed`에 의해 지원되어 종속성 없는 바이너리를 생성합니다.
+
+---
+
+## 4 · 플랫폼별 런타임 분리
+
+**OS별 런타임 파일**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[플랫폼 분리 다이어그램 자리 표시자]**
+
+모든 기능은 다음 패턴을 따릅니다:
+
+1. `pkg/application` 내의 **공통 인터페이스**
+2. `pkg/application/messageprocessor_*.go` 내의 **메시지 프로세서** 진입점
+3. 빌드 태그로 보호된 `internal/runtime/*.go` 내의 **OS별 구현**
+
+어떤 OS에서든 누락된 기능은 `ErrCapability`를 반환하고 `internal/capabilities`를 통해 가용성을 등록해야 합니다.
+
+---
+
+## 요약
+
+이 다이어그램들은 **코드가 어디에 위치하는지**, **데이터가 어떻게 이동하는지**, 그리고 **각 레이어가 어떤 책임을 맡고 있는지**를 개요로 보여줍니다.
+나오는 상세 페이지들을 탐색할 때 이 다이어그램들을 가까이 두세요 – 이들은 Wails v3 소스 트리로 가는 당신의 지도입니다.

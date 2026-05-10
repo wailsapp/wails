@@ -1,0 +1,383 @@
+---
+title: 사용자 정의 대화 상자
+description: Wails 애플리케이션에서 사용자 정의 대화 상자를 생성합니다
+sidebar:
+  order: 4
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 사용자 정의 대화 상자
+
+일반 Wails 창을 사용하여 대화 상자 같은 동작을 하는 **사용자 정의 대화 상자 창**을 만드세요. 익숙한 대화 상자 패턴을 유지하면서 사용자 정의 양식, 복잡한 입력 유효성 검사, 브랜드화된 외관, 풍부한 콘텐츠(이미지, 동영상)를 구축할 수 있습니다.
+
+## 빠른 시작
+
+```go
+// 사용자 정의 대화 상자 창 생성
+dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:       "Custom dialog",
+    Width:       400,
+    Height:      300,
+    AlwaysOnTop: true,
+    Frameless:   true,
+    Hidden:      true,
+})
+
+// 사용자 정의 UI 로드
+dialog.SetURL("http://wails.localhost/dialog.html")
+
+// 모달로 표시
+dialog.Show()
+dialog.SetFocus()
+```
+
+**이것으로 끝입니다!** 대화 상자 동작을 갖춘 사용자 정의 UI입니다.
+
+## 사용자 정의 대화 상자 생성
+
+### 기본 사용자 정의 대화 상자
+
+```go
+type Customdialog struct {
+    window *application.WebviewWindow
+    result chan string
+}
+
+func NewCustomdialog(app *application.Application) *Customdialog {
+    dialog := &Customdialog{
+        result: make(chan string, 1),
+    }
+    
+    dialog.window = app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:       "Custom dialog",
+        Width:       400,
+        Height:      300,
+        AlwaysOnTop: true,
+        Resizable:   false,
+        Hidden:      true,
+    })
+    
+    return dialog
+}
+
+func (d *Customdialog) Show() string {
+    d.window.Show()
+    d.window.SetFocus()
+    
+    // 결과 대기
+    return <-d.result
+}
+
+func (d *Customdialog) Close(result string) {
+    d.result <- result
+    d.window.Close()
+}
+```
+
+### 모달 대화 상자
+
+```go
+func ShowModaldialog(parent *application.WebviewWindow, title string) string {
+    // 대화 상자 생성
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:       title,
+        Width:       400,
+        Height:      200,
+        Parent:      parent,
+        AlwaysOnTop: true,
+        Resizable:   false,
+    })
+    
+    // 부모 비활성화
+    parent.SetEnabled(false)
+    
+    // 닫힐 때 부모 다시 활성화
+    dialog.OnClose(func() bool {
+        parent.SetEnabled(true)
+        parent.SetFocus()
+        return true
+    })
+    
+    dialog.Show()
+    
+    return waitForResult(dialog)
+}
+```
+
+### 양식 대화 상자
+
+```go
+type Formdialog struct {
+    window *application.WebviewWindow
+    data   map[string]interface{}
+    done   chan bool
+}
+
+func NewFormdialog(app *application.Application) *Formdialog {
+    fd := &Formdialog{
+        data: make(map[string]interface{}),
+        done: make(chan bool, 1),
+    }
+    
+    fd.window = app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:     "Enter Information",
+        Width:     500,
+        Height:    400,
+        Frameless: true,
+        Hidden:    true,
+    })
+    
+    return fd
+}
+
+func (fd *Formdialog) Show() (map[string]interface{}, bool) {
+    fd.window.Show()
+    fd.window.SetFocus()
+    
+    ok := <-fd.done
+    return fd.data, ok
+}
+
+func (fd *Formdialog) Submit(data map[string]interface{}) {
+    fd.data = data
+    fd.done <- true
+    fd.window.Close()
+}
+
+func (fd *Formdialog) Cancel() {
+    fd.done <- false
+    fd.window.Close()
+}
+```
+
+## 대화 상자 패턴
+
+### 확인 대화 상자
+
+```go
+func ShowConfirmdialog(message string) bool {
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:       "Confirm",
+        Width:       400,
+        Height:      150,
+        AlwaysOnTop: true,
+        Frameless:   true,
+    })
+    
+    // 대화 상자에 메시지 전달
+    dialog.OnReady(func() {
+        dialog.EmitEvent("set-message", message)
+    })
+    
+    result := make(chan bool, 1)
+    
+    // 응답 처리
+    app.Event.On("confirm-yes", func(e *application.CustomEvent) {
+        result <- true
+        dialog.Close()
+    })
+    
+    app.Event.On("confirm-no", func(e *application.CustomEvent) {
+        result <- false
+        dialog.Close()
+    })
+    
+    dialog.Show()
+    return <-result
+}
+```
+
+**프론트엔드 (HTML/JS):**
+
+```html
+<div class="dialog">
+    <h2 id="message"></h2>
+    <div class="buttons">
+        <button onclick="confirm(true)">Yes</button>
+        <button onclick="confirm(false)">No</button>
+    </div>
+</div>
+
+<script>
+import { Events } from '@wailsio/runtime'
+
+Events.On("set-message", (message) => {
+    document.getElementById("message").textContent = message
+})
+
+function confirm(result) {
+    Events.Emit(result ? "confirm-yes" : "confirm-no")
+}
+</script>
+```
+
+### 입력 대화 상자
+
+```go
+func ShowInputdialog(prompt string, defaultValue string) (string, bool) {
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:     "Input",
+        Width:     400,
+        Height:    150,
+        Frameless: true,
+    })
+    
+    result := make(chan struct {
+        value string
+        ok    bool
+    }, 1)
+    
+    dialog.OnReady(func() {
+        dialog.EmitEvent("set-prompt", map[string]string{
+            "prompt":  prompt,
+            "default": defaultValue,
+        })
+    })
+    
+    app.Event.On("input-submit", func(e *application.CustomEvent) {
+        result <- struct {
+            value string
+            ok    bool
+        }{e.Data.(string), true}
+        dialog.Close()
+    })
+    
+    app.Event.On("input-cancel", func(e *application.CustomEvent) {
+        result <- struct {
+            value string
+            ok    bool
+        }{"", false}
+        dialog.Close()
+    })
+    
+    dialog.Show()
+    r := <-result
+    return r.value, r.ok
+}
+```
+
+### 진행 상황 대화 상자
+
+```go
+type Progressdialog struct {
+    window *application.WebviewWindow
+}
+
+func NewProgressdialog(title string) *Progressdialog {
+    pd := &Progressdialog{}
+    
+    pd.window = app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:     title,
+        Width:     400,
+        Height:    150,
+        Frameless: true,
+    })
+    
+    return pd
+}
+
+func (pd *Progressdialog) Show() {
+    pd.window.Show()
+}
+
+func (pd *Progressdialog) UpdateProgress(current, total int, message string) {
+    pd.window.EmitEvent("progress-update", map[string]interface{}{
+        "current": current,
+        "total":   total,
+        "message": message,
+    })
+}
+
+func (pd *Progressdialog) Close() {
+    pd.window.Close()
+}
+```
+
+**사용법:**
+
+```go
+func processFiles(files []string) {
+    progress := NewProgressdialog("Processing Files")
+    progress.Show()
+    
+    for i, file := range files {
+        progress.UpdateProgress(i+1, len(files), 
+            fmt.Sprintf("Processing %s...", filepath.Base(file)))
+        
+        processFile(file)
+    }
+    
+    progress.Close()
+}
+```
+
+## 전체 예제
+
+### 로그인 대화 상자
+
+**Go:**
+
+```go
+type Logindialog struct {
+    window *application.WebviewWindow
+    result chan struct {
+        username string
+        password string
+        ok       bool
+    }
+}
+
+func NewLogindialog(app *application.Application) *Logindialog {
+    ld := &Logindialog{
+        result: make(chan struct {
+            username string
+            password string
+            ok       bool
+        }, 1),
+    }
+    
+    ld.window = app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:     "Login",
+        Width:     400,
+        Height:    250,
+        Frameless: true,
+    })
+    
+    return ld
+}
+
+func (ld *Logindialog) Show() (string, string, bool) {
+    ld.window.Show()
+    ld.window.SetFocus()
+    
+    r := <-ld.result
+    return r.username, r.password, r.ok
+}
+
+func (ld *Logindialog) Submit(username, password string) {
+    ld.result <- struct {
+        username string
+        password string
+        ok       bool
+    }{username, password, true}
+    ld.window.Close()
+}
+
+func (ld *Logindialog) Cancel() {
+    ld.result <- struct {
+        username string
+        password string
+        ok       bool
+    }{"", "", false}
+    ld.window.Close()
+}
+```
+
+**프론트엔드:**
+
+```html
+<div class="login-dialog">
+    <h2>Login</h2>---
+
+**질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [사용자 정의 대화 상자 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs)를 확인하세요.

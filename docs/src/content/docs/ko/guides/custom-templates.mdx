@@ -1,0 +1,286 @@
+---
+title: 사용자 정의 템플릿 만들기
+description: 자신만의 Wails v3 템플릿을 만들고 사용자 정의하는 방법을 알아보세요
+sidebar:
+    order: 50
+---
+
+이 가이드에서는 Wails v3용 사용자 정의 템플릿을 만드는 과정을 단계별로 안내합니다.
+
+## 왜 사용자 정의 템플릿을 만들어야 할까요?
+
+Wails에는 애플리케이션을 빠르게 시작하고 실행할 수 있도록 사전 구성된 여러 템플릿이 제공됩니다. 하지만 더 맞춤형 설정이 필요하다면 필요에 맞게 자신만의 템플릿을 만들 수 있습니다. 이렇게 만든 템플릿은 다른 사람들이 사용할 수 있도록 Wails 커뮤니티에 공유할 수 있습니다.
+
+### 1. 템플릿 생성
+
+사용자 정의 템플릿을 만들려면 `wails generate template` 명령을 사용할 수 있습니다:
+
+```bash
+wails3 generate template -name mytemplate
+```
+
+이 명령은 현재 디렉토리에 "mytemplate"이라는 새 디렉토리를 생성합니다.
+
+`wails3 generate template` 명령은 다음 옵션을 지원합니다:
+
+| 옵션           | 설명                                       | 기본값            |
+|----------------|--------------------------------------------|-------------------|
+| `-name`        | 템플릿의 이름 (필수)                       | -                 |
+| `-frontend`    | 포함할 기존 프론트엔드 디렉토리 경로       | -                 |
+| `-author`      | 템플릿 작성자                              | -                 |
+| `-description` | 템플릿 설명                                | -                 |
+| `-helpurl`     | 템플릿 문서 URL                            | -                 |
+| `-dir`         | 템플릿을 생성할 디렉토리                   | 현재 디렉토리     |
+| `-version`     | 템플릿 버전                                | v0.0.1            |
+
+예를 들어, 모든 옵션을 사용하여 템플릿을 만들려면 다음과 같이 실행합니다:
+
+```bash
+wails3 generate template \
+  -name "My Custom Template" \
+  -frontend ./my-existing-frontend \
+  -author "Your Name" \
+  -description "A template with my preferred setup" \
+  -helpurl "https://github.com/yourusername/template-docs" \
+  -dir ./templates \
+  -version "v1.0.0"
+```
+
+  :::tip
+  `-frontend` 옵션을 사용하면 기존 웹 프론트엔드 프로젝트가 템플릿으로 복사됩니다.
+  :::
+
+### 2. 템플릿 메타데이터 구성
+
+템플릿 생성 시 템플릿 구성을 지정하지 않은 경우, 템플릿 디렉토리 내의 `template.json` 파일을 업데이트할 수 있습니다:
+
+```json5
+{
+  "name": "Your Template Name",          // 템플릿의 표시 이름
+  "shortname": "template-shortname",     // 템플릿 참조 시 사용됨
+  "author": "Your Name",                 // 템플릿 작성자
+  "description": "Template description", // 템플릿 설명
+  "helpurl": "https://your-docs.com",    // 문서 URL
+  "version": "v0.0.1",                   // 템플릿 버전
+  "schema": 3                            // Wails v3에 대해 3으로 유지해야 함
+}
+```
+:::caution
+호환성을 위해 `schema` 필드는 `3`으로 유지되어야 합니다.
+:::
+
+### 3. 빌드 작업 설정
+
+`build` 디렉토리에는 템플릿의 빌드 프로세스를 정의할 수 있는 `Taskfile.yml` 파일이 있습니다. 
+이 파일은 빌드 자동화를 위해 [Task](https://taskfile.dev)를 사용합니다. 주요 단계는 다음과 같습니다:
+
+```yaml
+tasks:
+  install:frontend:deps:
+    summary: Install frontend dependencies
+    dir: frontend
+    sources:
+      - package.json
+      - package-lock.json
+    generates:
+      - node_modules/*
+    preconditions:
+      - sh: npm version
+        msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
+    cmds:
+      - npm install
+
+  build:frontend:
+    summary: Build the frontend project
+    dir: frontend
+    sources:
+      - "**/*"
+    generates:
+      - dist/*
+    deps:
+      - task: install:frontend:deps
+      - task: generate:bindings
+    cmds:
+      - npm run build -q
+
+
+```
+
+### 4. 프론트엔드 설정
+
+템플릿 생성 시 `-frontend` 옵션을 사용하지 않은 경우, 템플릿에 프론트엔드 파일을 추가해야 합니다. 
+
+프론트엔드를 설정하는 방법은 여러 가지가 있습니다. 처음부터 시작하거나 기존 프레임워크를 사용할 수 있습니다.
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+<Tabs>
+  <TabItem label="Start from Scratch">
+    If you want to start from scratch, you can create your frontend project just like you would for any web application. 
+    The `frontend` directory in your template is just a regular directory where you can set up your preferred 
+    development environment. You might want to use build tools like Vite, webpack, or even just plain HTML, CSS, and 
+    JavaScript - it's entirely up to you!
+
+    For example, if you're using Vite, you could navigate to the `frontend` directory and run:
+
+    ```bash
+    npm create vite@latest .
+    ```
+
+    Then follow the prompts to set up your project exactly how you want it. The key thing to remember is that this is just a regular frontend project - you can use any tools, frameworks, or libraries you're familiar with.
+  </TabItem>
+  <TabItem label="Use Existing Framework">
+    For this example, we'll use [Vite](https://vitejs.dev/) to set up a React frontend project:
+
+       ```bash
+       npm create vite@latest frontend -- --template react
+       cd frontend
+       npm install
+       ```
+
+  </TabItem>
+</Tabs>
+
+
+이제 프론트엔드 파일이 준비되었으므로, 적절한 명령으로 `common/Taskfile.yml`을 업데이트합니다:
+   ```yaml
+   tasks:
+      install:frontend:deps:
+        summary: Install frontend dependencies
+        dir: frontend
+        sources:
+          - package.json
+          - package-lock.json
+        generates:
+          - node_modules/*
+        preconditions:
+          - sh: npm version
+            msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
+        cmds:
+          - npm install
+
+      build:frontend:
+        summary: Build the frontend project
+        dir: frontend
+        sources:
+          - "**/*"
+        generates:
+          - dist/*
+        deps:
+          - task: install:frontend:deps
+          - task: generate:bindings
+        cmds:
+          - npm run build -q
+   ```
+
+  :::note
+  이 예제에서는 기본 Tasks가 표준 `npm install` 및 `npm run build` 명령을 사용하므로 업데이트할 필요가 없습니다.
+  :::
+
+### 5. Go 애플리케이션 구성
+
+템플릿 디렉토리의 기본 파일들은 사용자가 시작하는 데 충분합니다. 하지만 템플릿의 기능을 시연하기 위해 몇 가지 추가 기능을 제공하고자 할 수 있습니다. 이를 위한 가장 좋은 방법은 `main.go.tmpl`을 `main.go`로 이름 변경하고 다른 Go 파일처럼 편집하는 것입니다. 작업이 완료되면 변경 사항을 커밋하기 전에 다시 `main.go.tmpl`으로 이름을 변경해야 합니다. 템플릿화된 `main.go` 파일이 필요하지 않은 경우(기본 템플릿은 프로젝트 이름을 애플리케이션의 `Name` 필드에 삽입합니다), 이 단계를 건너뛸 수 있습니다.----------------------|--------------------------------|-----------------------------------|
+| `Name`               | 프로젝트 이름                  | `"MyApp"`                         |
+| `BinaryName`         | 생성된 바이너리 이름           | `"myapp"`                         |
+| `ProductName`        | 제품 이름                      | `"My Application"`                |
+| `ProductDescription` | 제품 설명                      | `"An awesome application"`        |
+| `ProductVersion`     | 제품 버전                      | `"1.0.0"`                         |
+| `ProductCompany`     | 회사 이름                      | `"My Company Ltd"`                |
+| `ProductCopyright`   | 저작권 정보                    | `"Copyright 2024 My Company Ltd"` |
+| `ProductComments`    | 추가 제품 코멘트               | `"Built with Wails"`              |
+| `ProductIdentifier`  | 고유 제품 식별자               | `"com.mycompany.myapp"`           |
+| `Typescript`         | TypeScript 사용 여부           | `true` 또는 `false`               |
+| `WailsVersion`       | 사용 중인 Wails 버전           | `"3.0.0"`                         |
+
+이러한 변수는 Go의 템플릿 구문을 사용하여 템플릿 파일에서 사용할 수 있습니다:
+
+```go
+// main.go.tmpl
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "{{.ProductName}}",
+        Description: "{{.ProductDescription}}",
+    })
+    // ...
+}
+```
+
+    :::tip
+    템플릿은 파일 이름에 `.tmpl`이 포함되어 있는 한 템플릿의 모든 파일(HTML 파일 포함)에 적용할 수 있습니다.
+    :::
+
+### 6. 템플릿 테스트
+
+템플릿을 테스트하려면:
+
+1. 템플릿을 사용하여 프로젝트 생성: `wails3 init -n testproject -t path/to/your/template`
+2. `wails3 build`를 실행하여 프로덕션 빌드를 생성하고 `bin` 디렉토리의 바이너리가 올바르게 실행되는지 확인합니다.
+3. `wails3 dev`를 실행하여 개발 서버를 시작합니다.
+4. 프론트엔드 코드 변경 사항이 애플리케이션에 반영되는지 테스트합니다.
+5. Go 코드 변경 사항이 애플리케이션을 다시 빌드하고 재시작하는지 테스트합니다.
+
+### 7. 템플릿 공유
+
+템플릿이 준비되면 GitHub에 호스팅하여 커뮤니티와 공유할 수 있습니다. 방법은 다음과 같습니다:
+
+1. 템플릿용 새 GitHub 저장소를 만듭니다.
+2. 템플릿 코드를 저장소에 푸시합니다.
+3. 시맨틱 버저닝(예: v1.0.0)을 사용하여 릴리스에 태그를 지정합니다.
+
+사용자는 HTTPS URL을 사용하여 GitHub에서 템플릿을 직접 사용할 수 있습니다:
+
+```bash
+wails3 init -n myapp -t https://github.com/yourusername/your-template
+```
+
+URL 형식을 사용하여 특정 버전을 지정할 수도 있습니다:
+
+```bash
+# 특정 버전 태그 사용
+wails3 init -n myapp -t https://github.com/yourusername/your-template/releases/tag/v1.0.0
+
+# 특정 브랜치 사용
+wails3 init -n myapp -t https://github.com/yourusername/your-template/tree/main
+```
+
+템플릿을 공유하기 전에 테스트하려면:
+
+1. 변경 사항을 GitHub에 푸시합니다.
+2. HTTPS URL을 사용하여 새 테스트 프로젝트를 만듭니다:
+   ```bash
+   wails3 init -n testapp -t https://github.com/yourusername/your-template
+   ```
+3. 모든 파일이 올바르게 생성되었는지 확인합니다.
+4. 테스트 섹션에서 설명한 대로 빌드 및 개발 워크플로우를 테스트합니다.
+
+    :::note
+    다른 사용자가 템플릿을 사용하려면 저장소를 공개 상태로 유지해야 합니다.
+    :::
+
+더 많은 정보는 [Wails 문서](https://wails.io)를 방문하세요.
+
+
+## 모범 사례
+
+템플릿을 더 유용하고 유지 보수하기 쉽게 만드는 데 도움이 되는 몇 가지 주요 관행에 대해 이야기해 보겠습니다. 집중해야 할 주요 영역은 다음과 같습니다:
+
+1. **템플릿을 쉽게 이해할 수 있도록 만들기**
+   - 사용자가 빠르게 시작할 수 있는 명확하고 도움이 되는 README.md 작성
+   - 선택의 이유를 설명하기 위해 구성 파일에 주석 추가
+   - 일반적인 사용자 지정 예시 제공 - 사용자는 실제 사용 사례를 보는 것을 좋아합니다!
+
+2. **의존성 관리 잘하기**
+   - 프론트엔드 패키지 업데이트를 꾸준히 확인
+   - 예기치 않은 문제를 피하기 위해 package.json에서 특정 버전을 고정
+   - 사용자가 설치해야 할 항목을 사전에 알려주기
+
+3. **템플릿을 사랑하기**
+   - 정기적인 업데이트로 템플릿을 최신 상태로 유지
+   - 공유하기 전에 철저한 테스트 수행
+   - Wails 커뮤니티와 공유하기 - 당신이 만든 것을 보고 싶습니다!

@@ -1,0 +1,241 @@
+---
+title: Dock & Taskbar
+description: macOS 및 Windows에서 dock 아이콘 가시성 관리 및 배지 표시
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 소개
+
+Wails는 데스크톱 애플리케이션을 위한 크로스플랫폼 Dock 서비스를 제공합니다. 이 서비스를 통해 다음을 수행할 수 있습니다:
+
+- macOS Dock에서 애플리케이션 아이콘을 숨기고 표시
+- 애플리케이션 타일 또는 dock/작업 표시줄 아이콘에 배지 표시 (macOS 및 Windows)
+
+## 기본 사용법
+
+### 서비스 생성
+
+먼저 dock 서비스를 초기화합니다:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/dock"
+
+// 새 Dock 서비스 생성
+dockService := dock.New()
+
+// 애플리케이션에 서비스 등록
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(dockService),
+    },
+})
+```
+
+### 사용자 지정 배지 옵션으로 서비스 생성 (Windows 전용)
+
+Windows에서는 다양한 옵션을 사용하여 배지 외관을 사용자 지정할 수 있습니다:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/dock"
+import "image/color"
+
+// 사용자 지정 배지 옵션으로 dock 서비스 생성
+options := dock.BadgeOptions{
+    TextColour:       color.RGBA{255, 255, 255, 255}, // 흰색 텍스트
+    BackgroundColour: color.RGBA{0, 0, 255, 255},     // 파란색 배경
+    FontName:         "consolab.ttf",                 // 볼드 Consolas 폰트
+    FontSize:         20,                             // 단일 문자용 폰트 크기
+    SmallFontSize:    14,                             // 다중 문자용 폰트 크기
+}
+
+dockService := dock.NewWithOptions(options)
+
+// 애플리케이션에 서비스 등록
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(dockService),
+    },
+})
+```
+
+## Dock 작업
+
+### dock 앱 아이콘 숨기기
+
+macOS Dock에서 앱 아이콘을 숨깁니다:
+
+```go
+// 앱 아이콘 숨기기
+dockService.HideAppIcon()
+```
+
+### dock 앱 아이콘 표시
+
+macOS Dock에 앱 아이콘을 표시합니다:
+
+```go
+// 앱 아이콘 표시
+dockService.ShowAppIcon()
+```
+
+## 배지 작업
+
+### 배지 설정
+
+애플리케이션 타일/dock 아이콘에 배지를 설정합니다:
+
+```go
+// 기본 배지 설정
+dockService.SetBadge("")
+
+// 숫자 배지 설정
+dockService.SetBadge("3")
+
+// 텍스트 배지 설정
+dockService.SetBadge("New")
+```
+
+### 사용자 지정 배지 설정 (Windows 전용)
+
+일회성 옵션을 적용하여 배지를 설정합니다:
+
+```go
+options := dock.BadgeOptions{
+    BackgroundColour: color.RGBA{0, 255, 255, 255},
+    FontName:         "arialb.ttf", // 시스템 폰트
+    FontSize:         16,
+    SmallFontSize:    10,
+    TextColour:       color.RGBA{0, 0, 0, 255},
+}
+
+// 기본 배지 설정
+dockService.SetCustomBadge("", options)
+
+// 숫자 배지 설정
+dockService.SetCustomBadge("3", options)
+
+// 텍스트 배지 설정
+dockService.SetCustomBadge("New", options)
+```
+
+### 배지 제거
+
+애플리케이션 아이콘에서 배지를 제거합니다:
+
+```go
+dockService.RemoveBadge()
+```
+
+### 설정된 배지 가져오기
+```go
+dockService.GetBadge()
+``` 
+
+## 플랫폼 고려 사항
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    macOS에서:
+    
+    - dock 아이콘은 **숨기기** 및 **표시** 가능
+    - 배지는 dock 아이콘에 직접 표시됨
+    - 배지 옵션은 **사용자 지정 불가** (`NewWithOptions`/`SetCustomBadge`에 전달된 옵션은 무시됨)
+    - 표준 macOS dock 배지 스타일을 사용하며 외관에 자동으로 적응
+    - 레이블 오버플로 처리는 시스템에서 담당
+    - 빈 레이블을 제공하면 기본 배지 "●"가 표시됨
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    Windows에서:
+    
+    - 작업 표시줄 아이콘 숨기기/표시는 현재 이 서비스에서 지원되지 않음
+    - 배지는 작업 표시줄의 오버레이 아이콘으로 표시됨
+    - 배지는 텍스트 값을 지원
+    - 배지 외관은 `BadgeOptions`를 통해 사용자 지정 가능
+    - 배지가 표시되려면 애플리케이션에 창이 있어야 함
+    - 다중 문자 레이블에는 자동으로 작은 폰트 크기가 사용됨
+    - 레이블 오버플로는 처리되지 않음
+    - 사용자 지정 옵션:
+      - **TextColour**: 텍스트 색상 (기본값: 흰색)
+      - **BackgroundColour**: 배지 배경 색상 (기본값: 빨간색)
+      - **FontName**: 폰트 파일 이름 (기본값: "segoeuib.ttf")
+      - **FontSize**: 단일 문자용 폰트 크기 (기본값: 18)
+      - **SmallFontSize**: 다중 문자용 폰트 크기 (기본값: 14)
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    Linux에서:
+    
+    - dock 아이콘 가시성 및 배지 기능은 사용 불가
+    
+  </TabItem>
+</Tabs>
+
+## 모범 사례
+
+1. **dock 아이콘 숨기기 (macOS):**
+   - 사용자가 여전히 앱에 접근할 수 있는지 확인 (예: [시스템 트레이](https://v3.wails.io/learn/systray/)를 통해)
+   - 대체 UI에 "종료" 옵션 포함
+   - 앱은 Command+Tab 전환기에는 나타나지 않음
+   - 열린 창은 계속 표시되고 작동함
+   - 모든 창을 닫아도 앱이 종료되지 않을 수 있음 (macOS 동작은 다양함)
+   - 사용자는 dock 우클릭을 통한 표준 종료 방법을 상실함
+
+2. **배지를 신중하게 사용:**
+   - 너무 많은 배지 업데이트는 사용자를 산만하게 할 수 있음
+   - 중요한 알림에만 배지를 예약
+
+3. **배지 텍스트를 짧게 유지:**
+   - 숫자 배지가 가장 효과적
+   - macOS에서는 텍스트 배지가 간결해야 함
+
+4. **Windows 배지 사용자 지정:**
+   - 텍스트와 배경 색상 간 높은 대비 확인
+   - 길이에 따라 폰트 크기가 감소하므로 다양한 텍스트 길이로 테스트
+   - 가용성을 보장하기 위해 일반적인 시스템 폰트 사용
+
+
+## API 참조
+
+### 서비스 관리
+| 메서드                                     | 설명                                           |
+|------|------------------------------------------|
+| `New()`                                    | 새 dock 서비스 생성                            |
+| `NewWithOptions(options BadgeOptions)`     | 사용자 지정 배지 옵션으로 새 dock 서비스 생성 (Windows 전용; macOS 및 Linux에서는 옵션 무시) |
+
+### Dock 작업
+| 메서드                                       | 설명                                                |
+|------|--------------------------------------------|
+| `HideAppIcon()`                | macOS Dock에서 앱 아이콘 숨기기 (macOS 전용)         |
+| `ShowAppIcon()`                | macOS Dock에 앱 아이콘 표시 (macOS 전용)           |
+
+### 배지 작업
+| 메서드                                            | 설명                                                |
+|------|----------------------------------------------|
+| `SetBadge(label string) error`                    | 지정된 레이블로 배지 설정                      |
+| `SetCustomBadge(label string, options BadgeOptions) error` | 지정된 레이블 및 사용자 지정 스타일 옵션으로 배지 설정 (Windows 전용) |
+| `RemoveBadge() error`                             | 애플리케이션 아이콘에서 배지 제거                |
+| `GetBadge() *string`                             | 현재 배지 가져오기                |
+
+### 구조체 및 타입
+
+```go
+// 배지 외관 사용자 지정 옵션 (Windows 전용)
+type BadgeOptions struct {
+    TextColour       color.RGBA  // 배지 텍스트 색상
+    BackgroundColour color.RGBA  // 배지 배경 색상
+    FontName         string      // 폰트 파일 이름 (예: "segoeuib.ttf")
+    FontSize         int         // 단일 문자용 폰트 크기
+    SmallFontSize    int         // 다중 문자용 폰트 크기
+}
+```

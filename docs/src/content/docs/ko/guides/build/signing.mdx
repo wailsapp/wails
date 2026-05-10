@@ -1,0 +1,684 @@
+---
+title: 코드 서명
+description: 모든 플랫폼에서 Wails 애플리케이션에 서명하는 가이드
+sidebar:
+  order: 6
+---
+
+import { Tabs, TabItem, Steps, Aside } from '@astrojs/starlight/components';
+
+# 애플리케이션 코드 서명
+
+이 가이드는 macOS, Windows, Linux에서 Wails 애플리케이션에 서명하는 방법을 다룹니다. Wails v3는 코드 서명, 공증(notarization), PGP 키 관리를 위한 내장 CLI 도구를 제공합니다.
+
+- **macOS** - macOS 애플리케이션 서명 및 공증
+- **Windows** - Windows 실행 파일 및 패키지 서명
+- **Linux** - PGP 키를 사용하여 DEB 및 RPM 패키지 서명
+
+## 크로스 플랫폼 서명 매트릭스
+
+이 매트릭스는 각 소스 플랫폼에서 서명할 수 있는 대상을 보여줍니다:
+
+| 대상 형식 | Windows에서 | macOS에서 | Linux에서 |
+|---------------|:------------:|:----------:|:----------:|
+| Windows EXE/MSI | ✅ | ✅ | ✅ |
+| macOS .app 번들 | ❌ | ✅ | ❌ |
+| macOS 공증 | ❌ | ✅ | ❌ |
+| Linux DEB | ✅ | ✅ | ✅ |
+| Linux RPM | ✅ | ✅ | ✅ |
+
+<Aside type="tip">
+Windows 및 Linux 패키지는 **어떤 플랫폼에서도** 서명할 수 있습니다. macOS 서명은 Apple의 도구 요구 사항으로 인해 Mac이 필요합니다.
+</Aside>
+
+### 서명 백엔드
+
+Wails는 사용 가능한 가장 좋은 서명 백엔드를 자동으로 선택합니다:
+
+| 플랫폼 | 네이티브 백엔드 | 크로스 플랫폼 백엔드 |
+|----------|----------------|------------------------|
+| Windows | `signtool.exe` (Windows SDK) | 내장 |
+| macOS | `codesign` (Xcode) | 사용 불가 |
+| Linux | N/A | 내장 |
+
+네이티브 플랫폼에서 실행할 때 Wails는 최대 호환성을 위해 네이티브 도구를 사용합니다. 크로스 컴파일 시에는 내장 서명 지원을 사용합니다.
+
+## 빠른 시작
+
+서명을 구성하는 가장 쉬운 방법은 대화형 설정 마법사를 사용하는 것입니다:
+
+```bash
+wails3 setup signing
+```
+
+이 명령은 다음을 수행합니다:
+- 각 플랫폼에 대한 서명 자격 증명을 구성하는 과정을 안내합니다
+- macOS의 경우 키체인에서 사용 가능한 Developer ID 인증서를 나열합니다
+- Linux의 경우 없는 경우 새 PGP 키를 생성할 수 있습니다
+- **비밀번호를 시스템 키체인에 안전하게 저장합니다** (Taskfiles에는 저장되지 않음)
+- 각 플랫폼의 Taskfile에서 `vars` 섹션을 비민감 구성으로 업데이트합니다
+
+<Aside type="tip">
+비밀번호는 시스템의 네이티브 자격 증명 저장소(macOS Keychain, Windows Credential Manager 또는 Linux Secret Service)에 저장됩니다. 이는 서명 구성이 안전하며 모든 Wails 프로젝트에서 작동함을 의미합니다.
+</Aside>
+
+특정 플랫폼만 구성하려면:
+
+```bash
+wails3 setup signing --platform darwin
+wails3 setup signing --platform windows --platform linux
+```
+
+### 수동 구성
+
+또는 플랫폼별 Taskfile을 수동으로 편집할 수 있습니다. 각 파일 상단의 `vars` 섹션을 편집합니다:
+
+<Tabs>
+<TabItem label="macOS">
+`build/darwin/Taskfile.yml`을 편집합니다:
+
+```yaml
+vars:
+  SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
+  KEYCHAIN_PROFILE: "my-notarize-profile"
+  # ENTITLEMENTS: "build/darwin/entitlements.plist"
+```
+
+그런 다음 실행합니다:
+
+```bash
+wails3 task darwin:sign           # 서명만
+wails3 task darwin:sign:notarize  # 서명 및 공증
+```
+</TabItem>
+<TabItem label="Windows">
+`build/windows/Taskfile.yml`을 편집합니다:
+
+```yaml
+vars:
+  SIGN_CERTIFICATE: "path/to/certificate.pfx"
+  # 또는 대신 지문(thumbprint)을 사용:
+  # SIGN_THUMBPRINT: "certificate-thumbprint"
+  # TIMESTAMP_SERVER: "http://timestamp.digicert.com"
+```
+
+비밀번호는 시스템 키체인에서 검색됩니다 (구성하려면 `wails3 setup signing` 실행).
+
+그런 다음 실행합니다:
+
+```bash
+wails3 task windows:sign           # 실행 파일 서명
+wails3 task windows:sign:installer # NSIS 설치 프로그램 서명
+```
+</TabItem>
+<TabItem label="Linux">
+`build/linux/Taskfile.yml`을 편집합니다:
+
+```yaml
+vars:
+  PGP_KEY: "path/to/signing-key.asc"
+  # SIGN_ROLE: "builder"  # 옵션: origin, maint, archive, builder
+```
+
+비밀번호는 시스템 키체인에서 검색됩니다 (구성하려면 `wails3 setup signing` 실행).
+
+그런 다음 실행합니다:
+
+```bash
+wails3 task linux:sign:deb       # DEB 패키지 서명
+wails3 task linux:sign:rpm       # RPM 패키지 서명
+wails3 task linux:sign:packages  # 모든 패키지 서명
+```
+</TabItem>
+</Tabs>
+
+CLI를 직접 사용할 수도 있습니다:
+
+```bash
+# 시스템의 서명 기능 확인
+wails3 signing info
+
+# 사용 가능한 서명 ID 나열 (macOS/Windows)
+wails3 signing list
+```
+
+## macOS 코드 서명
+
+### 필수 조건
+
+- Apple Developer 계정 ($99/년)
+- Developer ID Application 인증서
+- Xcode Command Line Tools 설치됨
+
+### 서명 ID
+
+사용 가능한 서명 ID를 확인합니다:
+
+```bash
+wails3 signing list
+```
+
+출력:
+
+```
+Found 2 signing identities:
+
+  Developer ID Application: Your Company (ABCD1234) [valid]
+    Hash: ABC123DEF456...
+
+  Apple Development: your@email.com (XYZ789) [valid]
+    Hash: DEF789ABC123...
+```
+
+<Aside type="tip">
+App Store 외부로 배포하려면 **Developer ID Application** 인증서가 필요합니다.
+</Aside>
+
+### 구성
+
+`build/darwin/Taskfile.yml`을 편집하고 서명 변수를 설정합니다:
+
+```yaml
+vars:
+  SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
+  KEYCHAIN_PROFILE: "my-notarize-profile"
+  ENTITLEMENTS: "build/darwin/entitlements.plist"
+```
+
+| 변수 | 필요 여부 | 설명 |
+|----------|----------|-------------|
+| `SIGN_IDENTITY` | 예 | Developer ID (예: "Developer ID Application: Your Company (TEAMID)") |
+| `KEYCHAIN_PROFILE` | 공증용 | 저장된 자격 증명이 있는 키체인 프로필 이름 |
+| `ENTITLEMENTS` | 아니요 | 엔터테인먼트 파일 경로 |
+
+그런 다음 실행합니다:
+
+```bash
+wails3 task darwin:sign           # 빌드, 패키징 및 서명
+wails3 task darwin:sign:notarize  # 빌드, 패키징, 서명 및 공증
+```
+
+### 엔터테인먼트 (Entitlements)
+
+엔터테인먼트는 앱이 접근할 수 있는 기능을 제어합니다. Wails 앱은 일반적으로 개발과 프로덕션에 다른 엔터테인먼트가 필요합니다:
+
+- **개발**: JIT, 서명되지 않은 메모리 및 디버깅 엔터테인먼트 필요
+- **프로덕션**: 최소 엔터테인먼트 (네트워크 접근만)
+
+대화형 설정 마법사를 사용하여 두 파일을 생성합니다:
+
+```bash
+wails3 setup entitlements
+```
+
+이것은 다음을 생성합니다:
+- `build/darwin/entitlements.dev.plist` - 개발 빌드용
+- `build/darwin/entitlements.plist` - 프로덕션/서명된 빌드용
+
+**사용 가능한 프리셋:**
+| 프리셋 | 설명 |
+|--------|-------------|
+| Development | JIT, 서명되지 않은 메모리, 디버깅, 네트워크 |
+| Production | 네트워크만 (최소, 가장 안전함) |
+| Both | dev 및 production 파일 모두 생성 (권장) |
+| App Store | 샌드박스 활성화 및 네트워크 및 파일 접근 |
+| Custom | 개별 엔터테인먼트 선택 |
+
+<Aside type="note">
+darwin Taskfile의 `run` 작업은 자동으로 `entitlements.dev.plist`를 사용합니다. `sign` 작업은 프로덕션 빌드에 `entitlements.plist`를 사용합니다.
+</Aside>
+
+그런 다음 Taskfile vars에서 `ENTITLEMENTS`를 적절한 파일을 가리키도록 설정합니다.
+
+### 공증 (Notarization)
+
+Apple은 배포되는 모든 앱이 공증되도록 요구합니다.
+
+<Steps>
+1. **키체인에 자격 증명을 저장합니다** (일회성 설정):
+   ```bash
+   wails3 signing credentials \
+     --apple-id "your@email.com" \
+     --team-id "ABCD1234" \
+     --password "app-specific-password" \
+     --profile "my-notarize-profile"
+   ```
+
+2. **Taskfile에서 KEYCHAIN_PROFILE**를 위의 프로필 이름과 일치하도록 설정합니다.
+
+3. **앱 서명 및 공증**:
+   ```bash
+   wails3 task darwin:sign:notarize
+   ```
+
+4. **공증 확인**:
+   ```bash
+   spctl --assess --verbose=2 bin/MyApp.app
+   ```
+</Steps>
+
+<Aside type="note">
+공증은 일반적으로 1-2분이 소요됩니다. 티켓은 자동으로 앱에 스테이플됩니다.
+</Aside>
+
+## Windows 코드 서명
+
+### 필수 조건
+
+- 코드 서명 인증서 (DigiCert, Sectigo 등 제공)
+- 네이티브 서명용: Windows SDK 설치됨 (signtool.exe용)
+- 크로스 플랫폼용: 인증서 파일만 필요함----------|----------|-------------|
+| `SIGN_CERTIFICATE` | 이 중 하나 | .pfx/.p12 인증서 파일 경로 |
+| `SIGN_THUMBPRINT` | 이 중 하나 | Windows 인증 저장소의 인증서 지문 |
+| `TIMESTAMP_SERVER` | 아니요 | 타임스탬프 서버 URL (기본값: http://timestamp.digicert.com) |
+
+<Aside type="note">
+인증서 비밀번호는 Taskfile이 아닌 시스템 키체인에 저장됩니다. 구성하려면 `wails3 setup signing`을 실행하거나 CI에서 `WAILS_WINDOWS_CERT_PASSWORD` 환경 변수를 설정하세요.
+</Aside>
+
+그런 다음 다음을 실행합니다:
+
+```bash
+wails3 task windows:sign           # 실행 파일 빌드 및 서명
+wails3 task windows:sign:installer # NSIS 인스톨러 빌드 및 서명
+```
+
+### 크로스 플랫폼 서명
+
+Windows 실행 파일은 어떤 플랫폼에서도 서명할 수 있습니다. 동일한 Taskfile 구성과 명령어가 macOS 및 Linux에서도 작동합니다.
+
+### 지원되는 Windows 형식
+
+| 형식 | 확장자 | 참고 |
+|--------|-----------|-------|
+| 실행 파일 | .exe | 표준 PE 서명 |
+| 인스톨러 | .msi | Windows Installer 패키지 |
+| 앱 패키지 | .msix, .appx | 최신 Windows 앱 |
+
+## Linux 패키지 서명
+
+Linux 패키지(DEB 및 RPM)는 PGP/GPG 키를 사용하여 서명됩니다. Windows 및 macOS 코드 서명과 달리 Linux 패키지 서명은 코드가 OS에서 신뢰된다는 것이 아니라 패키지가 신뢰할 수 있는 출처에서 왔음을 증명합니다.
+
+### 사전 요구 사항
+
+- PGP 키 쌍 (Wails로 생성 가능)
+
+### PGP 키 생성
+
+PGP 키가 없는 경우 Wails에서 생성해 줄 수 있습니다:
+
+```bash
+wails3 signing generate-key \
+  --name "Your Name" \
+  --email "your@email.com" \
+  --comment "Package Signing Key" \
+  --output-private signing-key.asc \
+  --output-public signing-key.pub.asc
+```
+
+옵션:
+- `--bits`: 키 크기 (기본값: 4096)
+- `--expiry`: 키 만료 기간 (예: "1y", "6m", "0"은 만료 없음)
+- `--password`: 개인 키 보호용 비밀번호
+
+<Aside type="caution">
+개인 키를 안전하게 보관하세요! 암호화하여 저장하고 안전하게 백업하세요.
+</Aside>
+
+### 구성
+
+`build/linux/Taskfile.yml` 파일을 편집하고 서명 변수를 설정합니다:
+
+```yaml
+vars:
+  PGP_KEY: "path/to/signing-key.asc"
+  # SIGN_ROLE: "builder"  # 옵션: origin, maint, archive, builder
+```
+
+| 변수 | 필수 | 설명 |
+|----------|----------|-------------|
+| `PGP_KEY` | 예 | PGP 개인 키 파일 경로 |
+| `SIGN_ROLE` | 아니요 | DEB 서명 역할 (기본값: builder) |
+
+<Aside type="note">
+PGP 키 비밀번호는 Taskfile이 아닌 시스템 키체인에 저장됩니다. 구성하려면 `wails3 setup signing`을 실행하거나 CI에서 `WAILS_PGP_PASSWORD` 환경 변수를 설정하세요.
+</Aside>
+
+그런 다음 다음을 실행합니다:
+
+```bash
+wails3 task linux:sign:deb       # DEB 패키지 빌드 및 서명
+wails3 task linux:sign:rpm       # RPM 패키지 빌드 및 서명
+wails3 task linux:sign:packages  # 모든 패키지 빌드 및 서명
+```
+
+### DEB 서명 역할
+
+DEB 패키지의 경우 `SIGN_ROLE`을 통해 서명 역할을 지정할 수 있습니다:
+
+- `origin`: 패키지 출처에서의 서명
+- `maint`: 패키지 유지 관리자에서의 서명
+- `archive`: 아카이브 유지 관리자에서의 서명
+- `builder`: 패키지 빌더에서의 서명 (기본값)
+
+### 크로스 플랫폼 서명
+
+Linux 패키지는 어떤 플랫폼에서도 서명할 수 있습니다. 동일한 Taskfile 구성과 명령어가 Windows 및 macOS에서도 작동합니다.
+
+### 키 정보 보기
+
+```bash
+wails3 signing key-info --key signing-key.asc
+```
+
+출력:
+
+```
+PGP Key Information:
+  Key ID:       ABC123DEF456
+  Fingerprint:  1234 5678 90AB CDEF ...
+  User IDs:     Your Name <your@email.com>
+  Created:      2024-01-15
+  Expires:      2025-01-15
+  Has Private:  Yes
+  Encrypted:    Yes
+```
+
+### Linux 패키지 검증
+
+```bash
+# DEB 서명 검증
+dpkg-sig --verify myapp_1.0.0_amd64.deb
+
+# RPM 서명 검증
+rpm --checksig myapp-1.0.0.x86_64.rpm
+```
+
+### 공개 키 배포
+
+사용자가 패키지를 검증하려면 사용자의 공개 키가 필요합니다:
+
+```bash
+# 배포용 공개 키 내보내기
+wails3 signing key-info --key signing-key.asc --export-public > myapp-signing.pub.asc
+
+# 사용자가 가져올 수 있습니다:
+# DEB (apt)의 경우:
+sudo apt-key add myapp-signing.pub.asc
+# 또는 최신 apt의 경우:
+sudo cp myapp-signing.pub.asc /etc/apt/trusted.gpg.d/
+
+# RPM의 경우:
+sudo rpm --import myapp-signing.pub.asc
+```
+
+## GitHub Actions 통합
+
+CI 환경에서는 비밀번호가 시스템 키체인 대신 환경 변수를 통해 제공됩니다:
+
+| 환경 변수 | 설명 |
+|---------------------|-------------|
+| `WAILS_WINDOWS_CERT_PASSWORD` | Windows 인증서 비밀번호 |
+| `WAILS_PGP_PASSWORD` | Linux 패키지용 PGP 키 비밀번호 |
+
+Taskfile 변수를 직접 전달할 수도 있습니다:
+
+```bash
+wails3 task darwin:sign SIGN_IDENTITY="$SIGN_IDENTITY" KEYCHAIN_PROFILE="$KEYCHAIN_PROFILE"
+```
+
+### macOS 워크플로우
+
+```yaml
+name: Build and Sign macOS
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+      - name: Import Certificate
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.MACOS_CERTIFICATE }}
+          CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        run: |
+          echo $CERTIFICATE_BASE64 | base64 --decode > certificate.p12
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
+
+      - name: Store Notarization Credentials
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: |
+          wails3 signing credentials \
+            --apple-id "$APPLE_ID" \
+            --team-id "$APPLE_TEAM_ID" \
+            --password "$APPLE_APP_PASSWORD" \
+            --profile "notarize-profile"
+
+      - name: Build, Sign, and Notarize
+        env:
+          SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+        run: |
+          wails3 task darwin:sign:notarize \
+            SIGN_IDENTITY="$SIGN_IDENTITY" \
+            KEYCHAIN_PROFILE="notarize-profile"
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MyApp-macOS
+          path: bin/*.app
+```
+
+### Windows 워크플로우
+
+```yaml
+name: Build and Sign Windows
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+      - name: Import Certificate
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.WINDOWS_CERTIFICATE }}
+        run: |
+          $certBytes = [Convert]::FromBase64String($env:CERTIFICATE_BASE64)
+          [IO.File]::WriteAllBytes("certificate.pfx", $certBytes)
+
+      - name: Build and Sign
+        env:
+          WAILS_WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        run: |
+          wails3 task windows:sign SIGN_CERTIFICATE=certificate.pfx
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MyApp-Windows
+          path: bin/*.exe
+```
+
+### 크로스 플랫폼 워크플로우 (Linux 러너)
+
+단일 Linux 러너에서 Windows 및 Linux 패키지를 서명합니다:
+
+```yaml
+name: Build and Sign (Cross-Platform)
+
+on:
+  push:
+    tags: ['v*']------|------|
+| `--input` | 서명할 파일 경로 |
+| `--output` | 출력 경로 (선택 사항, 기본값은 제자리 수정) |
+| `--verbose` | 상세 출력 활성화 |
+
+**Windows/macOS 플래그:**
+| 플래그 | 설명 |
+|------|------|
+| `--certificate` | PKCS#12 (.pfx/.p12) 인증서 경로 |
+| `--password` | 인증서 비밀번호 |
+| `--timestamp` | 타임스탬프 서버 URL |
+
+**macOS 전용 플래그:**
+| 플래그 | 설명 |
+|------|------|
+| `--identity` | 서명 ID ('-'를 사용하여 ad-hoc 서명) |
+| `--entitlements` | 권한 plist 경로 |
+| `--hardened-runtime` | 하드닝된 런타임 활성화 (기본값: true) |
+| `--notarize` | 고도화 제출 |
+| `--keychain-profile` | 고도화를 위한 키체인 프로필 |
+
+**Windows 전용 플래그:**
+| 플래그 | 설명 |
+|------|------|
+| `--thumbprint` | Windows 저장소의 인증서 지문 |
+| `--description` | 애플리케이션 설명 |
+| `--url` | 애플리케이션 URL |
+
+**Linux 전용 플래그:**
+| 플래그 | 설명 |
+|------|------|
+| `--pgp-key` | PGP 개인 키 경로 |
+| `--pgp-password` | PGP 키 비밀번호 |
+| `--role` | DEB 서명 역할 (origin/maint/archive/builder) |
+
+### wails3 signing info
+
+현재 시스템의 서명 기능을 표시합니다.
+
+```bash
+wails3 signing info
+```
+
+### wails3 signing list
+
+사용 가능한 서명 ID를 나열합니다.
+
+```bash
+wails3 signing list
+```
+
+### wails3 signing credentials
+
+키체인에 고도화 자격 증명을 저장합니다 (macOS 전용).
+
+```bash
+wails3 signing credentials [flags]
+
+Flags:
+  --apple-id      Apple ID 이메일
+  --team-id       Apple Developer Team ID
+  --password      앱 전용 비밀번호
+  --profile       키체인 프로필 이름
+```
+
+### wails3 signing generate-key
+
+Linux 패키지 서명을 위한 PGP 키 쌍을 생성합니다.
+
+```bash
+wails3 signing generate-key [flags]
+
+Flags:
+  --name            키 이름 (필수)
+  --email           키 이메일 (필수)
+  --comment         키 주석
+  --bits            키 크기 (비트, 기본값: 4096)
+  --expiry          키 만료 (예: "1y", "6m", "0"은 만료 없음)
+  --password        개인 키 암호화용 비밀번호
+  --output-private  개인 키 출력 경로
+  --output-public   공개 키 출력 경로
+```
+
+### wails3 signing key-info
+
+PGP 키에 대한 정보를 표시합니다.
+
+```bash
+wails3 signing key-info --key <path-to-key>
+```
+
+## 문제 해결
+
+### macOS 문제
+
+**"No Developer ID certificate found"**
+- 인증서가 키체인에 설치되어 있는지 확인합니다.
+- `wails3 signing list`로 인증서가 만료되지 않았는지 확인합니다.
+- "Developer ID Application" 인증서가 있는지 확인합니다 ("Apple Development"만 있는 것이 아님).
+
+**"Notarization failed"**
+- 고도화 로그 확인: `xcrun notarytool log <submission-id> --keychain-profile <profile>`
+- 하드닝된 런타임이 활성화되어 있는지 확인합니다.
+- 앱에 서명되지 않은 바이너리가 포함되지 않았는지 확인합니다.
+
+**"Codesign failed"**
+- 키체인이 잠금 해제되어 있는지 확인합니다: `security unlock-keychain`
+- 앱 번들의 파일 권한을 확인합니다.
+
+### Windows 문제
+
+**"Certificate not found"**
+- 인증서 경로가 올바른지 확인합니다.
+- 인증서 비밀번호를 확인합니다.
+- 인증서가 유효한지 확인합니다 (만료되거나 취소되지 않음).
+
+**"Timestamp server error"**
+- 다른 타임스탬프 서버를 시도합니다:
+  - `http://timestamp.digicert.com`
+  - `http://timestamp.sectigo.com`
+  - `http://timestamp.comodoca.com`
+
+### Linux 문제
+
+**"Invalid PGP key"**
+- 키 파일이 ASCII-armored 형식인지 확인합니다.
+- `wails3 signing key-info`로 키가 만료되지 않았는지 확인합니다.
+- 비밀번호가 올바른지 확인합니다.
+
+**"Signature verification failed"**
+- 공개 키가 제대로 가져왔는지 확인합니다.
+- 패키지가 서명 후 수정되지 않았는지 확인합니다.
+
+## 추가 자료
+
+### 공식 문서
+- [Apple Code Signing Guide](https://developer.apple.com/support/code-signing/)
+- [Apple Notarization Documentation](https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution)
+- [Microsoft Code Signing](https://docs.microsoft.com/en-us/windows-hardware/drivers/dashboard/get-a-code-signing-certificate)
+- [Debian Package Signing](https://wiki.debian.org/SecureApt)
+- [RPM Package Signing](https://rpm-software-management.github.io/rpm/manual/signatures.html)

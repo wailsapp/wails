@@ -1,0 +1,152 @@
+---
+title: Windows UAC 구성
+description: Windows Wails 애플리케이션의 사용자 계정 컨트롤(UAC) 구성
+sidebar:
+  order: 11
+---
+
+import {Badge} from '@astrojs/starlight/components';
+
+해당 플랫폼: <Badge text="Windows" variant="note" />
+<br/>
+
+Windows 사용자 계정 컨트롤(UAC)은 Wails 애플리케이션의 실행 권한을 결정합니다. 기본적으로 Wails v3 애플리케이션은 Windows 매니페스트에 명시적인 UAC 구성을 포함하여 다양한 머신 간에 일관된 동작을 보장합니다.
+
+## UAC 실행 수준
+
+Windows 애플리케이션은 매니페스트 파일을 통해 다양한 실행 수준을 요청할 수 있습니다. Wails v3는 애플리케이션의 필요에 따라 사용자 지정할 수 있는 기본 실행 수준으로 UAC 구성을 자동으로 포함합니다.
+
+### 사용 가능한 실행 수준
+
+| 수준 | 설명 | 사용 사례 |
+|-------|-------|------|
+| `asInvoker` | 부모 프로세스와 동일한 권한으로 실행 | 대부분의 애플리케이션에 기본값 |
+| `highestAvailable` | 사용자에게 사용 가능한 가장 높은 권한으로 실행 | 추가 권한이 필요할 수 있는 애플리케이션 |
+| `requireAdministrator` | 항상 관리자 권한 필요 | 시스템 유틸리티, 설치 프로그램 |
+
+### 기본 구성
+
+Wails v3 애플리케이션은 Windows 매니페스트에 기본 UAC 구성을 포함합니다:
+
+```xml
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+        <requestedPrivileges>
+            <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+        </requestedPrivileges>
+    </security>
+</trustInfo>
+```
+
+이 구성은 애플리케이션이 다음을 보장합니다:
+- 실행 중인 프로세스와 동일한 권한으로 실행
+- 기본적으로 권한 상승이 필요 없음
+- 다양한 머신 간에 일관되게 작동
+- 일반 사용자에게 UAC 프롬프트를 트리거하지 않음
+
+## UAC 구성 사용자 지정
+
+Wails v3는 사용자가 빌드 자산을 사용자 지정하도록 권장하므로 Windows 매니페스트 템플릿을 직접 편집하여 UAC 구성을 수정할 수 있습니다.
+
+### 매니페스트 템플릿 찾기
+
+Windows 매니페스트 템플릿은 다음 위치에 있습니다:
+```
+build/windows/wails.exe.manifest
+```
+
+### 실행 수준 수정
+
+실행 수준을 변경하려면 `requestedExecutionLevel` 요소의 `level` 속성을 편집합니다:
+
+```xml title="build/windows/wails.exe.manifest"
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+        <requestedPrivileges>
+            <requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
+        </requestedPrivileges>
+    </security>
+</trustInfo>
+```
+
+### 예제
+
+#### 표준 애플리케이션 (기본값)
+대부분의 애플리케이션은 기본 `asInvoker` 수준을 사용해야 합니다:
+
+```xml
+<requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+```
+
+#### 시스템 유틸리티
+사용 가능한 경우 추가 권한이 필요한 애플리케이션:
+
+```xml
+<requestedExecutionLevel level="highestAvailable" uiAccess="false"/>
+```
+
+#### 관리 도구
+항상 관리자 권한이 필요한 애플리케이션:
+
+```xml
+<requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
+```
+
+## UI 접근
+
+`uiAccess` 속성은 애플리케이션이 더 높은 권한의 UI 요소와 상호작용할 수 있는지 여부를 제어합니다. 대부분의 경우 이는 `false`로 유지해야 합니다.
+
+애플리케이션이 다음을 필요로 하는 경우에만 `true`로 설정합니다:
+- 다른 애플리케이션에 입력 전송
+- 다른 애플리케이션의 UI 제어
+- 더 높은 권한 프로세스의 UI 요소 접근
+
+:::caution[UI 접근 요구 사항]
+`uiAccess="true"`로 설정하려면 애플리케이션이 다음을 충족해야 합니다:
+- 신뢰할 수 있는 인증 기관의 인증서로 디지털 서명됨
+- 보안 위치(Program Files 또는 Windows\System32)에 설치됨
+:::
+
+## 사용자 지정 UAC 설정으로 빌드
+
+매니페스트 템플릿을 수정한 후 일반적으로 애플리케이션을 빌드합니다:
+
+```bash
+wails3 build
+```
+
+빌드 프로세스는 사용자 지정 UAC 구성을 실행 파일에 자동으로 임베딩합니다.
+
+## UAC 구성 확인
+
+`go-winres` 도구를 사용하여 UAC 설정이 제대로 임베딩되었는지 확인할 수 있습니다:
+
+```bash
+go-winres extract --in your-app.exe --out extracted-resources/
+```
+
+그런 다음 추출된 매니페스트 파일을 확인하여 UAC 구성이 포함되어 있는지 확인합니다.
+
+:::tip[매니페스트 지속성]
+다른 일부 프레임워크와 달리 Wails v3의 UAC 구성은 컴파일 중에 실행 파일에 직접 임베딩되어 애플리케이션이 다른 머신으로 복사될 때 지속됩니다.
+:::
+
+## 문제 해결
+
+### UAC 프롬프트가 표시되지 않음
+`requireAdministrator`를 설정했지만 UAC 프롬프트가 표시되지 않는 경우:
+- 매니페스트가 실행 파일에 제대로 임베딩되었는지 확인
+- 이미 권한 상승된 프로세스에서 실행 중인지 확인
+- 매니페스트 구문이 유효한 XML인지 확인
+
+### 애플리케이션이 시작되지 않음
+UAC 변경 후 애플리케이션이 시작되지 않는 경우:
+- XML 오류에 대한 매니페스트 구문 확인
+- 실행 수준 값이 유효한지 확인
+- 문제를 분리하기 위해 `asInvoker`로 되돌려 시도
+
+### 머신 간 일관되지 않은 동작
+머신 간 UAC 동작이 다른 경우:
+- 매니페스트가 실행 파일에 임베딩되었는지 확인 (외부 아님)
+- 빌드 후 실행 파일이 수정되지 않았는지 확인
+- 대상 머신에서 Windows UAC 설정이 활성화되어 있는지 확인

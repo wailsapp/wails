@@ -1,0 +1,701 @@
+---
+title: 노트
+description: 파일 작업 및 네이티브 대화상자와 함께 노트 애플리케이션을 빌드합니다
+sidebar:
+  order: 3
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+이 튜토리얼에서는 Wails v3를 사용하여 파일 작업, 네이티브 대화상자, 그리고 현대적인 데스크톱 애플리케이션 패턴을 보여주는 노트 애플리케이션을 빌드합니다.
+
+![Notes App Screenshot](../../../../assets/notes-app.png)
+
+## 빌드할 내용
+
+- 생성, 수정, 삭제 기능이 포함된 완전한 노트 애플리케이션
+- 노트 가져오기 및 내보내기를 위한 네이티브 파일 저장/열기 대화상자
+- 불필요한 업데이트를 줄이기 위해 디바운스(debounce)가 적용된 입력 시 자동 저장
+- Apple Notes를 모방한 전문적인 두 열 레이아웃(사이드바 + 편집기)
+
+## 배울 내용
+
+- Wails에서 네이티브 파일 대화상자 사용하기 (`SaveFileDialog`, `OpenFileDialog`, `InfoDialog`)
+- 데이터 영구 저장을 위한 JSON 파일 작업
+- 디바운스된 자동 저장 패턴 구현
+- 현대적인 CSS를 사용한 전문적인 데스크톱 UI 빌드
+- 올바른 Go 구조체 JSON 직렬화
+
+## 프로젝트 설정
+
+<Steps>
+
+1. **새로운 Wails 프로젝트 생성**
+
+   ```bash
+   wails3 init -n notes-app -t vanilla
+   cd notes-app
+   ```
+
+2. **NotesService 생성**
+
+   프로젝트 루트에 새 파일 `notesservice.go`를 만듭니다:
+
+   ```go
+   package main
+
+   import (
+   	"encoding/json"
+   	"errors"
+   	"os"
+   	"time"
+
+   	"github.com/wailsapp/wails/v3/pkg/application"
+   )
+
+   type Note struct {
+   	ID        string    `json:"id"`
+   	Title     string    `json:"title"`
+   	Content   string    `json:"content"`
+   	CreatedAt time.Time `json:"createdAt"`
+   	UpdatedAt time.Time `json:"updatedAt"`
+   }
+
+   type NotesService struct {
+   	notes []Note
+   }
+
+   func NewNotesService() *NotesService {
+   	return &NotesService{
+   		notes: make([]Note, 0),
+   	}
+   }
+
+   // GetAll returns all notes
+   func (n *NotesService) GetAll() []Note {
+   	return n.notes
+   }
+
+   // Create creates a new note
+   func (n *NotesService) Create(title, content string) Note {
+   	note := Note{
+   		ID:        generateID(),
+   		Title:     title,
+   		Content:   content,
+   		CreatedAt: time.Now(),
+   		UpdatedAt: time.Now(),
+   	}
+   	n.notes = append(n.notes, note)
+   	return note
+   }
+
+   // Update updates an existing note
+   func (n *NotesService) Update(id, title, content string) error {
+   	for i := range n.notes {
+   		if n.notes[i].ID == id {
+   			n.notes[i].Title = title
+   			n.notes[i].Content = content
+   			n.notes[i].UpdatedAt = time.Now()
+   			return nil
+   		}
+   	}
+   	return errors.New("note not found")
+   }
+
+   // Delete deletes a note
+   func (n *NotesService) Delete(id string) error {
+   	for i := range n.notes {
+   		if n.notes[i].ID == id {
+   			n.notes = append(n.notes[:i], n.notes[i+1:]...)
+   			return nil
+   		}
+   	}
+   	return errors.New("note not found")
+   }
+
+   // SaveToFile saves notes to a file
+   func (n *NotesService) SaveToFile() error {
+   	path, err := application.Get().Dialog.SaveFile().
+   		SetFilename("notes.json").
+   		AddFilter("JSON Files", "*.json").
+   		PromptForSingleSelection()
+
+   	if err != nil {
+   		return err
+   	}
+
+   	data, err := json.MarshalIndent(n.notes, "", "  ")
+   	if err != nil {
+   		return err
+   	}
+
+   	if err := os.WriteFile(path, data, 0644); err != nil {
+   		return err
+   	}
+
+   	application.Get().Dialog.Info().
+   		SetTitle("Success").
+   		SetMessage("Notes saved successfully!").
+   		Show()
+
+   	return nil
+   }
+
+   // LoadFromFile loads notes from a file
+   func (n *NotesService) LoadFromFile() error {
+   	path, err := application.Get().Dialog.OpenFile().
+   		AddFilter("JSON Files", "*.json").
+   		PromptForSingleSelection()
+
+   	if err != nil {
+   		return err
+   	}
+
+   	data, err := os.ReadFile(path)
+   	if err != nil {
+   		return err
+   	}
+
+   	var notes []Note
+   	if err := json.Unmarshal(data, &notes); err != nil {
+   		return err
+   	}
+
+   	n.notes = notes
+
+   	application.Get().Dialog.Info().
+   		SetTitle("Success").
+   		SetMessage("Notes loaded successfully!").
+   		Show()
+
+   	return nil
+   }
+
+   func generateID() string {
+   	return time.Now().Format("20060102150405")
+   }
+   ```
+
+   **여기서 일어나는 일:**
+
+   - **Note 구조체**: 올바른 직렬화를 위해 JSON 태그(소문자)가 포함된 데이터 구조 정의
+   - **CRUD 작업**: 메모리 내 노트 관리를 위한 GetAll, Create, Update, Delete
+   - **파일 대화상자**: 네이티브 대화상자에 접근하기 위해 `application.Get().Dialog.SaveFile()` 및 `application.Get().Dialog.OpenFile()` 사용
+   - **정보 대화상자**: `application.Get().Dialog.Info()`를 사용하여 성공 메시지 표시
+   - **ID 생성**: 간단한 타임스탬프 기반 ID 생성기
+
+3. **main.go 업데이트**
+
+   `main.go`의 내용을 바꿉니다:
+
+   ```go
+   package main
+
+   import (
+   	"embed"
+   	_ "embed"
+   	"log"
+
+   	"github.com/wailsapp/wails/v3/pkg/application"
+   )
+
+   //go:embed all:frontend/dist
+   var assets embed.FS
+
+   func main() {
+   	app := application.New(application.Options{
+   		Name:        "Notes App",
+   		Description: "A simple notes application",
+   		Services: []application.Service{
+   			application.NewService(NewNotesService()),
+   		},
+   		Assets: application.AssetOptions{
+   			Handler: application.AssetFileServerFS(assets),
+   		},
+   		Mac: application.MacOptions{
+   			ApplicationShouldTerminateAfterLastWindowClosed: true,
+   		},
+   	})
+
+   	app.Window.NewWithOptions(application.WebviewWindowOptions{
+   		Title:            "Notes App",
+   		Width:            1000,
+   		Height:           700,
+   		BackgroundColour: application.NewRGB(255, 255, 255),
+   		URL:              "/",
+   	})
+
+   	err := app.Run()
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+   }
+   ```
+
+   **여기서 일어나는 일:**
+
+   - 애플리케이션에 `NotesService` 등록
+   - Apple Notes를 모방한 크기(1000x700)의 창 생성
+   - 마지막 창이 닫힐 때 종료되도록 올바른 macOS 동작 설정
+
+4. **HTML 구조 생성**
+
+   `frontend/index.html`을 바꿉니다:
+
+   ```html
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Notes App</title>
+       <link rel="stylesheet" href="./style.css">
+   </head>
+   <body>
+       <div class="app">
+           <!-- Sidebar -->
+           <div class="sidebar">
+               <div class="sidebar-header">
+                   <h1>Notes</h1>
+                   <button id="new-note-btn" class="btn-primary">+ New Note</button>
+               </div>
+               <div id="notes-list" class="notes-list"></div>
+               <div class="sidebar-footer">
+                   <button id="save-btn" class="btn-secondary">Save</button>
+                   <button id="load-btn" class="btn-secondary">Load</button>
+               </div>
+           </div>
+
+           <!-- Editor -->
+           <div class="editor">
+               <div id="empty-state" class="empty-state">
+                   <h2>No note selected</h2>
+                   <p>Select a note from the list or create a new one</p>
+               </div>
+               <div id="note-editor" class="note-editor" style="display: none;">
+                   <input type="text" id="note-title" placeholder="Note title" class="title-input">
+                   <textarea id="note-content" placeholder="Start typing..." class="content-input"></textarea>
+                   <div class="editor-footer">
+                       <button id="delete-btn" class="btn-danger">Delete</button>
+                       <span id="last-updated" class="last-updated"></span>
+                   </div>
+               </div>
+           </div>
+       </div>
+
+       <script src="/wails/runtime.js"></script>
+       <script type="module" src="./src/main.js"></script>
+   </body>
+   </html>
+   ```
+
+   **여기서 일어나는 일:**
+
+   - **두 열 레이아웃**: 노트 목록을 위한 사이드바, 메인 영역은 편집기용
+   - **빈 상태**: 선택된 노트가 없을 때 표시
+   - **Wails 런타임**: 모듈 스크립트 전에 로드해야 함
+
+5. **CSS 스타일링 추가**`frontend/public/style.css` 파일을 교체하세요:
+
+   ```css
+   * {
+       margin: 0;
+       padding: 0;
+       box-sizing: border-box;
+   }
+
+   body {
+       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       height: 100vh;
+       overflow: hidden;
+   }
+
+   .app {
+       display: flex;
+       height: 100vh;
+   }
+
+   /* 사이드바 */
+   .sidebar {
+       width: 300px;
+       background: #f5f5f5;
+       border-right: 1px solid #e0e0e0;
+       display: flex;
+       flex-direction: column;
+   }
+
+   .sidebar-header {
+       padding: 20px;
+       border-bottom: 1px solid #e0e0e0;
+   }
+
+   .sidebar-header h1 {
+       font-size: 24px;
+       margin-bottom: 16px;
+   }
+
+   .notes-list {
+       flex: 1;
+       overflow-y: auto;
+   }
+
+   .note-item {
+       padding: 16px 20px;
+       border-bottom: 1px solid #e0e0e0;
+       cursor: pointer;
+       transition: background 0.2s;
+   }
+
+   .note-item:hover {
+       background: #e8e8e8;
+   }
+
+   .note-item.active {
+       background: #007aff;
+       color: white;
+   }
+
+   .note-item h3 {
+       font-size: 16px;
+       margin-bottom: 4px;
+   }
+
+   .note-item p {
+       font-size: 14px;
+       opacity: 0.7;
+       white-space: nowrap;
+       overflow: hidden;
+       text-overflow: ellipsis;
+   }
+
+   .sidebar-footer {
+       padding: 16px 20px;
+       border-top: 1px solid #e0e0e0;
+       display: flex;
+       gap: 8px;
+   }
+
+   /* 에디터 */
+   .editor {
+       flex: 1;
+       display: flex;
+       flex-direction: column;
+   }
+
+   .empty-state {
+       flex: 1;
+       display: flex;
+       flex-direction: column;
+       align-items: center;
+       justify-content: center;
+       color: #999;
+   }
+
+   .note-editor {
+       flex: 1;
+       display: flex;
+       flex-direction: column;
+       padding: 20px;
+   }
+
+   .title-input {
+       font-size: 32px;
+       font-weight: bold;
+       border: none;
+       outline: none;
+       margin-bottom: 16px;
+       padding: 8px 0;
+   }
+
+   .content-input {
+       flex: 1;
+       font-size: 16px;
+       border: none;
+       outline: none;
+       resize: none;
+       font-family: inherit;
+       line-height: 1.6;
+   }
+
+   .editor-footer {
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       padding-top: 16px;
+       border-top: 1px solid #e0e0e0;
+   }
+
+   .last-updated {
+       font-size: 14px;
+       color: #999;
+   }
+
+   /* 버튼 */
+   .btn-primary {
+       background: #007aff;
+       color: white;
+       border: none;
+       padding: 10px 20px;
+       border-radius: 6px;
+       cursor: pointer;
+       font-size: 14px;
+       font-weight: 500;
+       width: 100%;
+   }
+
+   .btn-primary:hover {
+       background: #0056b3;
+   }
+
+   .btn-secondary {
+       background: white;
+       color: #333;
+       border: 1px solid #e0e0e0;
+       padding: 8px 16px;
+       border-radius: 6px;
+       cursor: pointer;
+       font-size: 14px;
+       flex: 1;
+   }
+
+   .btn-secondary:hover {
+       background: #f5f5f5;
+   }
+
+   .btn-danger {
+       background: #ff3b30;
+       color: white;
+       border: none;
+       padding: 8px 16px;
+       border-radius: 6px;
+       cursor: pointer;
+       font-size: 14px;
+   }
+
+   .btn-danger:hover {
+       background: #cc0000;
+   }
+   ```
+
+   **여기서 일어나는 일:**
+
+   - 깔끔한 타이포그래피와 색상을 갖춘 Apple 스타일 디자인
+   - 반응형 사이드바와 에디터를 위한 Flexbox 레이아웃
+   - 파란색 배경으로 활성화된 노트 강조
+   - 부드러운 호버 전환 효과
+
+6. **JavaScript 로직 구현**
+
+   `frontend/src/main.js` 파일을 교체하세요:
+
+   ```javascript
+   import { NotesService } from '../bindings/changeme'
+
+   let notes = []
+   let currentNote = null
+
+   // 시작 시 노트 로드
+   async function loadNotes() {
+       notes = await NotesService.GetAll()
+       renderNotesList()
+   }
+
+   // 노트 목록 렌더링
+   function renderNotesList() {
+       const notesList = document.getElementById('notes-list')
+
+       if (notes.length === 0) {
+           notesList.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">No notes yet</div>'
+           return
+       }
+
+       notesList.innerHTML = notes.map(note => `
+           <div class="note-item ${currentNote?.id === note.id ? 'active' : ''}" data-id="${note.id}">
+               <h3>${note.title || 'Untitled'}</h3>
+               <p>${note.content || 'No content'}</p>
+           </div>
+       `).join('')
+
+       // 클릭 핸들러 추가
+       document.querySelectorAll('.note-item').forEach(item => {
+           item.addEventListener('click', () => {
+               const id = item.dataset.id
+               selectNote(id)
+           })
+       })
+   }
+
+   // 노트 선택
+   function selectNote(id) {
+       currentNote = notes.find(n => n.id === id)
+       if (currentNote) {
+           document.getElementById('empty-state').style.display = 'none'
+           document.getElementById('note-editor').style.display = 'flex'
+           document.getElementById('note-title').value = currentNote.title
+           document.getElementById('note-content').value = currentNote.content
+           document.getElementById('last-updated').textContent =
+               `Last updated: ${new Date(currentNote.updatedAt).toLocaleString()}`
+           renderNotesList()
+       }
+   }
+
+   // 새 노트 생성
+   document.getElementById('new-note-btn').addEventListener('click', async () => {
+       const note = await NotesService.Create('Untitled', '')
+       notes.push(note)
+       selectNote(note.id)
+       // 제목 입력란에 포커스를 맞추고 모든 텍스트를 선택하여 사용자가 즉시 입력할 수 있도록 함
+       const titleInput = document.getElementById('note-title')
+       titleInput.focus()
+       titleInput.select()
+   })
+
+   // 입력 시 노트 업데이트
+   let updateTimeout
+   function scheduleUpdate() {
+       clearTimeout(updateTimeout)
+       updateTimeout = setTimeout(async () => {
+           if (currentNote) {
+               const title = document.getElementById('note-title').value
+               const content = document.getElementById('note-content').value
+
+               await NotesService.Update(currentNote.id, title, content)
+
+               // 로컬 복사본 업데이트
+               const note = notes.find(n => n.id === currentNote.id)
+               if (note) {
+                   note.title = title
+                   note.content = content
+                   note.updatedAt = new Date().toISOString()
+               }
+
+               renderNotesList()
+               document.getElementById('last-updated').textContent =
+                   `Last updated: ${new Date().toLocaleString()}`
+           }
+       }, 500)
+   }
+
+   document.getElementById('note-title').addEventListener('input', scheduleUpdate)
+   document.getElementById('note-content').addEventListener('input', scheduleUpdate)
+
+   // 노트 삭제
+   document.getElementById('delete-btn').addEventListener('click', async () => {
+       if (!currentNote) return
+
+       try {
+           await NotesService.Delete(currentNote.id)
+           notes = notes.filter(n => n.id !== currentNote.id)
+           currentNote = null
+           document.getElementById('empty-state').style.display = 'flex'
+           document.getElementById('note-editor').style.display = 'none'
+           renderNotesList()
+       } catch (error) {
+           console.error('Delete failed:', error)
+       }
+   })
+
+   // 파일로 저장
+   document.getElementById('save-btn').addEventListener('click', async () => {
+       try {
+           await NotesService.SaveToFile()
+       } catch (error) {
+           if (error) console.error('Save failed:', error)
+       }
+   })// 파일에서 로드
+   document.getElementById('load-btn').addEventListener('click', async () => {
+       try {
+           await NotesService.LoadFromFile()
+           notes = await NotesService.GetAll()
+           currentNote = null
+           document.getElementById('empty-state').style.display = 'flex'
+           document.getElementById('note-editor').style.display = 'none'
+           renderNotesList()
+       } catch (error) {
+           if (error) console.error('Load failed:', error)
+       }
+   })
+
+   // 초기화
+   loadNotes()
+   ```
+
+   **여기서 일어나는 일:**
+
+   - **자동 저장**: 타이핑 중 백엔드 호출을 줄이기 위해 500ms 디바운스(debounce) 적용
+   - **속성 접근**: Go JSON 태그와 일치하도록 소문자 속성 이름(`.id`, `.title`) 사용
+   - **포커스 관리**: 새 노트 생성 시 제목에 자동으로 포커스를 맞추고 선택
+   - **확인 없이 삭제**: 브라우저의 `confirm()`은 Wails WebView에서 작동하지 않음
+   - **파일 작업**: 네이티브 대화상자가 적절한 오류 처리와 함께 저장/로드를 처리
+
+7. **애플리케이션 실행**
+
+   ```bash
+   wails3 dev
+   ```
+
+   앱이 시작되며 다음 작업을 수행할 수 있습니다:
+   - "+ New Note"를 클릭하여 노트 생성
+   - 제목과 내용 편집 (500ms 후 자동 저장)
+   - 사이드바의 노트를 클릭하여 간에 전환
+   - "Delete"를 클릭하여 현재 노트 삭제
+   - "Save"를 클릭하여 노트를 JSON으로 내보내기
+   - "Load"를 클릭하여 이전에 저장된 노트 가져오기
+
+</Steps>
+
+## 핵심 개념
+
+### 패키지 레벨 대화상자 함수
+
+Wails v3에서 파일 및 메시지 대화상자는 앱 인스턴스의 메서드가 아닌 패키지 레벨 함수입니다:
+
+```go
+// 올바름 - 패키지 레벨 함수
+path, err := application.SaveFileDialog().
+    SetFilename("notes.json").
+    AddFilter("JSON Files", "*.json").
+    PromptForSingleSelection()
+
+// 잘못됨 - 사용 불가
+path, err := app.Dialog.SaveFile() // 이 메서드는 존재하지 않음
+```
+
+### JSON 태그 매핑
+
+Go 구조체의 JSON 태그는 JavaScript 속성 접근과 일치하도록 소문자여야 합니다:
+
+```go
+type Note struct {
+    ID string `json:"id"` // 소문자여야 함
+}
+```
+
+```javascript
+// JavaScript는 소문자로 접근
+const noteId = note.id // 올바름
+const noteId = note.ID // undefined가 됨
+```
+
+### 디바운스된 자동 저장
+
+500ms 디바운스는 불필요한 백엔드 호출을 줄입니다:
+
+```javascript
+let updateTimeout
+function scheduleUpdate() {
+    clearTimeout(updateTimeout) // 이전 타이머 취소
+    updateTimeout = setTimeout(async () => {
+        // 사용자가 500ms 동안 타이핑을 멈출 때만 저장
+        await NotesService.Update(currentNote.id, title, content)
+    }, 500)
+}
+```
+
+## 다음 단계
+
+- 노트를 정리하기 위해 카테고리 또는 태그 추가
+- 검색 및 필터링 구현
+- WYSIWYG 에디터로 리치 텍스트 편집 기능 추가
+- 클라우드 저장소로 노트 동기화
+- 일반적인 작업을 위한 키보드 단축키 추가

@@ -1,0 +1,384 @@
+---
+title: 메시지 대화상자
+description: 정보, 경고, 오류 및 질문 표시
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 메시지 대화상자
+
+Wails는 플랫폼에 맞는 외관을 가진 **네이티브 메시지 대화상자**를 제공합니다: 사용자 정의 가능한 제목, 메시지 및 버튼이 있는 정보, 경고, 오류 및 질문 대화상자입니다. 간단한 API, 네이티브 동작, 기본적으로 접근성 지원.
+
+## 대화상자 생성
+
+메시지 대화상자는 `app.Dialog` 관리자를 통해 접근합니다:
+
+```go
+app.Dialog.Info()
+app.Dialog.Question()
+app.Dialog.Warning()
+app.Dialog.Error()
+```
+
+모든 메서드는 메서드 체이닝을 사용하여 구성할 수 있는 `*MessageDialog`를 반환합니다.
+
+## 정보 대화상자
+
+정보 메시지를 표시합니다:
+
+```go
+app.Dialog.Info().
+    SetTitle("성공").
+    SetMessage("파일이 성공적으로 저장되었습니다!").
+    Show()
+```
+
+**사용 사례:**
+- 성공 확인
+- 완료 알림
+- 정보 메시지
+- 상태 업데이트
+
+**예시 - 저장 확인:**
+
+```go
+func saveFile(app *application.App, path string, data []byte) error {
+    if err := os.WriteFile(path, data, 0644); err != nil {
+        return err
+    }
+
+    app.Dialog.Info().
+        SetTitle("파일 저장됨").
+        SetMessage(fmt.Sprintf("%s에 저장됨", filepath.Base(path))).
+        Show()
+
+    return nil
+}
+```
+
+## 경고 대화상자
+
+경고를 표시합니다:
+
+```go
+app.Dialog.Warning().
+    SetTitle("경고").
+    SetMessage("이 작업은 되돌릴 수 없습니다.").
+    Show()
+```
+
+**사용 사례:**
+- 비중요 경고
+- 사용 중단 알림
+- 주의 메시지
+- 잠재적 문제
+
+**예시 - 디스크 공간 경고:**
+
+```go
+func checkDiskSpace(app *application.App) {
+    available := getDiskSpace()
+
+    if available < 100*1024*1024 { // 100MB 미만
+        app.Dialog.Warning().
+            SetTitle("디스크 공간 부족").
+            SetMessage(fmt.Sprintf("남은 공간: %d MB.", available/(1024*1024))).
+            Show()
+    }
+}
+```
+
+## 오류 대화상자
+
+오류를 표시합니다:
+
+```go
+app.Dialog.Error().
+    SetTitle("오류").
+    SetMessage("서버에 연결하지 못했습니다.").
+    Show()
+```
+
+**사용 사례:**
+- 오류 메시지
+- 실패 알림
+- 예외 처리
+- 중대한 문제
+
+**예시 - 네트워크 오류:**
+
+```go
+func fetchData(app *application.App, url string) ([]byte, error) {
+    resp, err := http.Get(url)
+    if err != nil {
+        app.Dialog.Error().
+            SetTitle("네트워크 오류").
+            SetMessage(fmt.Sprintf("연결 실패: %v", err)).
+            Show()
+        return nil, err
+    }
+    defer resp.Body.Close()
+
+    return io.ReadAll(resp.Body)
+}
+```
+
+## 질문 대화상자
+
+사용자에게 질문을 하고 버튼 콜백을 통해 응답을 처리합니다:
+
+```go
+dialog := app.Dialog.Question().
+    SetTitle("확인").
+    SetMessage("닫기 전에 변경 사항을 저장하시겠습니까?")
+
+save := dialog.AddButton("저장")
+save.OnClick(func() {
+    saveChanges()
+})
+
+dontSave := dialog.AddButton("저장 안 함")
+dontSave.OnClick(func() {
+    // 저장 없이 계속 진행
+})
+
+cancel := dialog.AddButton("취소")
+cancel.OnClick(func() {
+    // 닫지 않음
+})
+
+dialog.SetDefaultButton(save)
+dialog.SetCancelButton(cancel)
+dialog.Show()
+```
+
+**사용 사례:**
+- 작업 확인
+- 예/아니오 질문
+- 다중 선택
+- 사용자 결정
+
+**예시 - 저장되지 않은 변경 사항:**
+
+```go
+func closeDocument(app *application.App) {
+    if !hasUnsavedChanges() {
+        doClose()
+        return
+    }
+
+    dialog := app.Dialog.Question().
+        SetTitle("저장되지 않은 변경 사항").
+        SetMessage("변경 사항을 저장하시겠습니까?")
+
+    save := dialog.AddButton("저장")
+    save.OnClick(func() {
+        if saveDocument() {
+            doClose()
+        }
+    })
+
+    dontSave := dialog.AddButton("저장 안 함")
+    dontSave.OnClick(func() {
+        doClose()
+    })
+
+    cancel := dialog.AddButton("취소")
+    // 취소 버튼은 콜백이 없음 - 대화상자만 닫음
+
+    dialog.SetDefaultButton(save)
+    dialog.SetCancelButton(cancel)
+    dialog.Show()
+}
+```
+
+## 대화상자 옵션
+
+### 제목 및 메시지
+
+```go
+dialog := app.Dialog.Info().
+    SetTitle("작업 완료").
+    SetMessage("모든 파일이 성공적으로 처리되었습니다.")
+```
+
+**최선의 방법:**
+- **제목:** 짧고 설명적인 (2-5단어)
+- **메시지:** 명확하고 구체적이며 실행 가능해야 함
+- **전문 용어 피하기:** 평이한 언어 사용
+
+### 버튼
+
+**단일 버튼 (정보/경고/오류):**
+
+정보, 경고 및 오류 대화상자는 기본 "확인" 버튼을 표시합니다:
+
+```go
+app.Dialog.Info().
+    SetMessage("완료!").
+    Show()
+```
+
+사용자 정의 버튼을 추가할 수도 있습니다:
+
+```go
+dialog := app.Dialog.Info().
+    SetMessage("완료!")
+ok := dialog.AddButton("알겠습니다!")
+dialog.SetDefaultButton(ok)
+dialog.Show()
+```
+
+**다중 버튼 (질문):**
+
+`AddButton()`을 사용하여 버튼을 추가하면 구성할 수 있는 `*Button`이 반환됩니다:
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("작업 선택")
+
+option1 := dialog.AddButton("옵션 1")
+option1.OnClick(func() {
+    handleOption1()
+})
+
+option2 := dialog.AddButton("옵션 2")
+option2.OnClick(func() {
+    handleOption2()
+})
+
+option3 := dialog.AddButton("옵션 3")
+option3.OnClick(func() {
+    handleOption3()
+})
+
+dialog.Show()
+```
+
+**기본 및 취소 버튼:**
+
+`SetDefaultButton()`을 사용하여 강조 표시되고 Enter 키로 트리거되는 버튼을 지정합니다.
+`SetCancelButton()`을 사용하여 Escape 키로 트리거되는 버튼을 지정합니다.
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("파일을 삭제하시겠습니까?")
+
+deleteBtn := dialog.AddButton("삭제")
+deleteBtn.OnClick(func() {
+    performDelete()
+})
+
+cancelBtn := dialog.AddButton("취소")
+// 콜백 필요 없음 - 대화상자만 닫음
+
+dialog.SetDefaultButton(cancelBtn)  // 안전한 옵션을 기본값으로
+dialog.SetCancelButton(cancelBtn)   // Escape가 Cancel 트리거
+dialog.Show()
+```
+
+버튼에서 플루언트 `SetAsDefault()` 및 `SetAsCancel()` 메서드를 사용할 수도 있습니다:
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("파일을 삭제하시겠습니까?")
+
+dialog.AddButton("삭제").OnClick(func() {
+    performDelete()
+})
+
+dialog.AddButton("취소").SetAsDefault().SetAsCancel()
+
+dialog.Show()
+```
+
+**최선의 방법:**
+- **1-3개 버튼:** 사용자를 압도하지 마세요
+- **명확한 레이블:** "확인" 대신 "저장"
+- **안전한 기본값:** 파괴적이지 않은 작업
+- **순서 중요:** 가장 가능성이 높은 작업을 먼저 (취소 제외)
+
+### 사용자 정의 아이콘
+
+대화상자에 사용자 정의 아이콘을 설정합니다:
+
+```go
+app.Dialog.Info().
+    SetTitle("사용자 정의 아이콘 예시").
+    SetMessage("사용자 정의 아이콘 사용 중").
+    SetIcon(myIconBytes).
+    Show()
+```
+
+### 창 첨부
+
+특정 창에 첨부합니다:
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("창별 질문").
+    AttachToWindow(window)
+
+dialog.AddButton("확인")
+dialog.Show()
+```
+
+**장점:**
+- 대화상자가 올바른 창에 표시됨
+- 표시 중 부모 창 비활성화
+- 향상된 다중 창 UX
+
+## 전체 예시
+
+### 파괴적 작업 확인
+
+```go
+func deleteFiles(app *application.App, paths []string) {
+    // 삭제 확인
+    message := fmt.Sprintf("%d개의 파일(s)을 삭제하시겠습니까?", len(paths))
+    if len(paths) == 1 {
+        message = fmt.Sprintf("%s를 삭제하시겠습니까?", filepath.Base(paths[0]))
+    }
+
+    dialog := app.Dialog.Question().
+        SetTitle("삭제 확인").
+        SetMessage(message)
+
+    deleteBtn := dialog.AddButton("삭제")
+    deleteBtn.OnClick(func() {
+        // 삭제 수행
+        var errs []error
+        for _, path := range paths {
+            if err := os.Remove(path); err != nil {
+                errs = append(errs, err)
+            }
+        }
+
+        // 결과 표시
+        if len(errs) > 0 {
+            app.Dialog.Error().
+                SetTitle("삭제 실패").
+                SetMessage(fmt.Sprintf("%d개의 파일(s) 삭제 실패", len(errs))).
+                Show()
+        } else {
+            app.Dialog.Info().
+                SetTitle("삭제 완료").
+                SetMessage(fmt.Sprintf("%d개의 파일(s) 삭제됨", len(paths))).
+                Show()
+        }
+    })
+
+    cancelBtn := dialog.AddButton("취소")
+    dialog.SetDefaultButton(cancelBtn)
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+}
+```
+
+### 종료 확인
+
+```go---
+
+**질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [대화상자 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs)를 확인하세요.

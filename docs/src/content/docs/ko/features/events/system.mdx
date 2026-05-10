@@ -1,0 +1,363 @@
+---
+title: 이벤트 시스템
+description: 이벤트 시스템을 사용하여 구성 간에 통신합니다
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## 이벤트 시스템
+
+Wails는 pub/sub 통신을 위한 **통합 이벤트 시스템**을 제공합니다. 어디서든 이벤트를 발생시키고, 어디서든 수신할 수 있습니다—Go에서 JavaScript로, JavaScript에서 Go로, 창에서 창으로—타입이 지정된 이벤트와 수명 주기 훅을 통해 느슨한 결합 아키텍처를 가능하게 합니다.
+
+## 빠른 시작
+
+**Go (발생):**
+
+```go
+app.Event.Emit("user-logged-in", map[string]interface{}{
+    "userId": 123,
+    "name": "Alice",
+})
+```
+
+**JavaScript (수신):**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.On("user-logged-in", (event) => {
+    console.log(`User ${event.data.name} logged in`)
+})
+```
+
+**이것으로 끝입니다!** 크로스 언어 pub/sub.
+
+## 이벤트 유형
+
+### 사용자 정의 이벤트
+
+애플리케이션 특정 이벤트:
+
+```go
+// Go에서 발생
+app.Event.Emit("order-created", order)
+app.Event.Emit("payment-processed", payment)
+app.Event.Emit("notification", message)
+```
+
+```javascript
+// JavaScript에서 수신
+Events.On("order-created", handleOrder)
+Events.On("payment-processed", handlePayment)
+Events.On("notification", showNotification)
+```
+
+### 시스템 이벤트
+
+내장된 OS 및 애플리케이션 이벤트:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// 테마 변경
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    if e.Context().IsDarkMode() {
+        app.Logger.Info("Dark mode enabled")
+    }
+})
+
+// 애플리케이션 수명 주기
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Application started")
+})
+```
+
+### 창 이벤트
+
+창 특정 이벤트:
+
+```go
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window focused")
+})
+
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    app.Logger.Info("Window closing")
+})
+```
+
+## 이벤트 발생
+
+### Go에서
+
+**기본 발생:**
+
+```go
+app.Event.Emit("event-name", data)
+```
+
+**다른 데이터 유형과 함께:**
+
+```go
+// 문자열
+app.Event.Emit("message", "Hello")
+
+// 숫자
+app.Event.Emit("count", 42)
+
+// 구조체
+app.Event.Emit("user", User{ID: 1, Name: "Alice"})
+
+// 맵
+app.Event.Emit("config", map[string]interface{}{
+    "theme": "dark",
+    "fontSize": 14,
+})
+
+// 배열
+app.Event.Emit("items", []string{"a", "b", "c"})
+```
+
+**특정 창으로:**
+
+```go
+window.EmitEvent("window-specific-event", data)
+```
+
+### JavaScript에서
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Go로 발생
+Events.Emit("button-clicked", { buttonId: "submit" })
+
+// 모든 창으로 발생
+Events.Emit("broadcast-message", "Hello everyone")
+```
+
+## 이벤트 수신
+
+### Go에서
+
+**애플리케이션 이벤트:**
+
+```go
+app.Event.On("custom-event", func(e *application.CustomEvent) {
+    data := e.Data
+    // 이벤트 처리
+})
+```
+
+**형식 단언과 함께:**
+
+```go
+app.Event.On("user-updated", func(e *application.CustomEvent) {
+    user := e.Data.(User)
+    app.Logger.Info("User updated", "name", user.Name)
+})
+```
+
+**여러 핸들러:**
+
+```go
+// 모든 핸들러가 호출됩니다
+app.Event.On("order-created", logOrder)
+app.Event.On("order-created", sendEmail)
+app.Event.On("order-created", updateInventory)
+```
+
+### JavaScript에서
+
+**기본 리스너:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.On("event-name", (event) => {
+    console.log("Event received:", event.data)
+})
+```
+
+**정리와 함께:**
+
+```javascript
+const unsubscribe = Events.On("event-name", handleEvent)
+
+// 나중에, 수신 중지
+unsubscribe()
+```
+
+**여러 핸들러:**
+
+```javascript
+Events.On("data-updated", updateUI)
+Events.On("data-updated", saveToCache)
+Events.On("data-updated", logChange)
+```
+
+**한 번 실행 핸들러:**
+
+```javascript
+Events.Once("data-updated", updateVariable)
+```
+
+## 시스템 이벤트
+
+### 애플리케이션 이벤트
+
+**공통 이벤트 (크로스 플랫폼):**
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// 애플리케이션 시작
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Logger.Info("App started")
+})
+
+// 테마 변경
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    isDark := e.Context().IsDarkMode()
+    app.Event.Emit("theme-changed", isDark)
+})
+
+// 파일 열기
+app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *application.ApplicationEvent) {
+    filePath := e.Context().OpenedFile()
+    openFile(filePath)
+})
+```
+
+**플랫폼 특정 이벤트:**
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    ```go
+    // 애플리케이션이 활성화됨
+    app.Event.OnApplicationEvent(events.Mac.ApplicationDidBecomeActive, func(e *application.ApplicationEvent) {
+        app.Logger.Info("App became active")
+    })
+    
+    // 애플리케이션이 종료됨
+    app.Event.OnApplicationEvent(events.Mac.ApplicationWillTerminate, func(e *application.ApplicationEvent) {
+        cleanup()
+    })
+    ```
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    ```go
+    // 전원 상태 변경
+    app.Event.OnApplicationEvent(events.Windows.APMPowerStatusChange, func(e *application.ApplicationEvent) {
+        app.Logger.Info("Power status changed")
+    })
+    
+    // 시스템 일시 중지
+    app.Event.OnApplicationEvent(events.Windows.APMSuspend, func(e *application.ApplicationEvent) {
+        saveState()
+    })
+    ```
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    ```go
+    // 애플리케이션 시작
+    app.Event.OnApplicationEvent(events.Linux.ApplicationStartup, func(e *application.ApplicationEvent) {
+        app.Logger.Info("App starting")
+    })
+    
+    // 테마 변경
+    app.Event.OnApplicationEvent(events.Linux.SystemThemeChanged, func(e *application.ApplicationEvent) {
+        updateTheme()
+    })
+    ```
+  </TabItem>
+</Tabs>
+
+### 창 이벤트
+
+**공통 창 이벤트:**
+
+```go
+// 창 포커스
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window focused")
+})
+
+// 창 블러
+window.OnWindowEvent(events.Common.WindowBlur, func(e *application.WindowEvent) {
+    app.Logger.Info("Window blurred")
+})
+
+// 창 닫기
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    if hasUnsavedChanges() {
+        e.Cancel()  // 닫기 방지
+    }
+})
+
+// 창 닫힘
+window.OnWindowEvent(events.Common.WindowClosed, func(e *application.WindowEvent) {
+    cleanup()
+})
+```
+
+## 이벤트 훅
+
+훅은 표준 리스너 **이전에** 실행되며 이벤트를 **취소**할 수 있습니다:
+
+```go
+// 훅 - 먼저 실행, 취소 가능
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        if result != "yes" {
+            e.Cancel()  // 창 닫기 방지
+        }
+    }
+})
+
+// 표준 리스너 - 훅 이후 실행
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    app.Logger.Info("Window closing")
+})
+```
+
+**주요 차이점:**
+
+| 기능 | 훅 | 표준 리스너 |
+|---------|-------|-------------------|
+| 실행 순서 | 등록 순서대로 먼저 | 훅 이후, 보장된 순서 없음 |
+| 차단 | 동기식, 다음 훅 차단 | 비동기식, 비차단 |
+| 취소 가능 | 예 | 아니오 (이미 전파됨) |
+| 사용 사례 | 제어 흐름, 유효성 검사 | 로깅, 부수 효과 |
+
+## 이벤트 패턴
+
+### Pub/Sub 패턴
+
+```go
+// 발행자 (서비스)
+type OrderService struct {
+    app *application.Application
+}
+
+func (o *OrderService) CreateOrder(items []Item) (*Order, error) {
+    order := &Order{Items: items}
+    
+    if err := o.saveOrder(order); err != nil {
+        return nil, err
+    }
+    
+    // 이벤트 발행
+    o.app.Event.Emit("order-created", order)
+    
+    return order, nil
+}
+
+// 구독자---
+
+**질문 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하시거나 [이벤트 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/events)를 확인하세요.

@@ -1,0 +1,234 @@
+---
+title: 바인딩 시스템
+description: Wails v3가 보일러플레이트 없이 Go와 JavaScript가 서로를 호출하는 방법
+sidebar:
+  order: 5
+---
+
+> "바인딩(Bindings)"은 **타입 안전한 계약**으로, 다음을 작성할 수 있게 해줍니다:
+
+```go
+msg, err := chatService.Send("Hello")
+```
+
+Go에서 *그리고*
+
+```ts
+const msg = await window.backend.ChatService.Send("Hello")
+```
+
+TypeScript에서 **수동 글루 코드(glue code) 없이**.  
+이 문서는 빌드 시점의 **정적 분석(static analysis)**부터 **코드 생성(code generation)**, WebView를 통해 바이트를 이동시키는 **런타임 브리지(runtime bridge)**에 이르기까지 이 마법이 어떻게 일어나는지 자세히 설명합니다.
+
+---
+
+## 1. 30초 개요
+
+| 단계 | 구성 요소 | 출력물 |
+|-------|------------|--------|
+| **분석** | `internal/generator/analyse.go` | 내보낸 Go 구조체, 메서드, 매개변수, 반환 타입의 메모리 내 AST |
+| **생성** | `internal/generator/render/*.tmpl` | • `pkg/application/bindings.go` (Go)<br />• `frontend/src/wailsjs/**.ts` (TS 정의)<br />• `runtime/desktop/@wailsio/runtime/internal/bindings.json` |
+| **런타임** | `pkg/application/messageprocessor_call.go` + JS 런타임 (`invoke.ts`) | WebView 네이티브 브리지를 통한 JSON 메시지 |
+
+이 흐름은 `wails3` CLI에 의해 조정됩니다:
+
+```
+wails3 generate  ─┬─> generator.Collect()   // Go 패키지 구문 분석
+                  ├─> generator.Analyse()   // 시맨틱 모델 빌드
+                  └─> generator.Render()    // 파일 작성 + `go fmt`
+```
+
+---
+
+## 2. 정적 분석
+
+### 진입점
+
+```
+internal/generator/analyse.go
+```
+
+`Analyse(cfg generator.Config)`:
+
+1. `go/packages`를 사용하여 제공된 Go 패키지를 재귀적으로 로드합니다.
+2. 모든 AST 파일의 *타입* 및 *값* 사양을 순회합니다.
+3. `internal/` 패키지 외부의 **내보낸(exported)** 심볼(대문자로 시작)을 필터링합니다.
+4. 다음을 기록합니다:
+   * 수신자 타입 (`struct`, `interface`)
+   * 메서드 이름
+   * 매개변수 목록 (이름, 타입, 포인터, 가변 인자)
+   * 반환 튜플 (값 + error 존재 여부)
+5. 타입을 **직렬화 가능한 집합**으로 정규화합니다.  
+   (`int`, `float64`, `string`, `[]byte`, 슬라이스, 맵, 구조체, 포인터).
+
+지원되지 않는 타입은 **컴파일 타임 오류**를 발생시켜 실수를 조기에 잡습니다.
+
+### 모델
+
+```go
+type Method struct {
+    ID       uint32 // 런타임 조회를 위한 안정적인 해시
+    Name     string
+    Params   []Param
+    Results  []Result
+    Receiver *Struct // 패키지 함수의 경우 nil
+}
+```
+
+`<Receiver>.<Name>(<Signature>)`의 결정론적 **FNV-1a** 해시(`internal/hash/fnv.go`)가 런타임에 사용되는 *메서드 ID*가 됩니다.
+
+---
+
+## 3. 코드 생성
+
+### 템플릿
+
+`internal/generator/render/`에는 text/template 파일이 포함되어 있습니다:
+
+| 템플릿 | 대상 |
+|------|------|
+| `go_bindings.tmpl` | `pkg/application/bindings.go` |
+| `ts_bindings.tmpl` | `frontend/wailsjs/go/models.d.ts` |
+| `ts_index.tmpl`    | `frontend/wailsjs/index.ts` |
+
+여기서 템플릿을 추가하거나 조정하여 생성을 사용자 정의할 수 있습니다.
+
+### Go 출력물
+
+`bindings.go`는 조회 테이블을 등록합니다:
+
+```go
+var bindings = []application.BoundMethod{
+    {ID: 0x7A1201D3, Name: "ChatService.Send", Call: chatServiceSend},
+}
+
+func chatServiceSend(ctx context.Context, in []byte) ([]byte, error) {
+    var req struct{ Msg string }
+    if err := json.Unmarshal(in, &req); err != nil { return nil, err }
+    res, err := chatService.Send(req.Msg)
+    return json.Marshal(res), err
+}
+```
+
+핵심 포인트:
+
+* 런타임에서 **반사(reflection) 없음** → 성능.
+* Marshal/Unmarshal는 생성된 구조체 래퍼와 함께 **메서드별**로 수행됩니다.
+
+### TypeScript 출력물
+
+```ts
+export namespace backend {
+  export namespace ChatService {
+    function Send(msg: string): Promise<string>;
+  }
+}
+```
+
+* **ES 모듈**로 방출되므로 모든 번들러가 트리 쉐이킹(tree-shake)할 수 있습니다.
+* 메서드 ID는 JS 런타임용 자동 생성된 `bindings.json`에 임베딩됩니다.
+
+---
+
+## 4. 런타임 호출 프로토콜
+
+### JavaScript 측면
+
+```ts
+import { System } from "@wailsio/runtime";
+
+await System.invoke(0x7a1201d3 /* ChatService.Send */, ["Hello"]);
+```
+
+구현: `runtime/desktop/@wailsio/runtime/invoke.ts`
+
+1. `{t:"c", id:<methodID>, p:[...args]}`를 JSON으로 패킹합니다.
+2. `window.external.invoke(payload)` (WebView2) 또는 해당 기능을 호출합니다.
+3. 응답에 따라 해결(resolve) 또는 거부(reject)되는 `Promise`를 반환합니다.
+
+### Go 측면
+
+1. `messageprocessor_call.go`가 JSON을 수신합니다.
+2. `bindings` 슬라이스에서 `methodID`를 조회합니다.
+3. 생성된 스텁(`chatServiceSend`)을 실행합니다.
+4. `{result, error}`를 JS로 직렬화하여 반환합니다.
+
+### 오류 매핑
+
+| Go | JavaScript |
+|----|------|
+| `error == nil` | `Promise`가 결과와 함께 해결됨 |
+| `errors.New(...)` | `Promise`가 `{message, stack, code}`와 함께 거부됨 |
+
+매핑 코드는 `runtime/desktop/@wailsio/runtime/errors.ts`에 있습니다.
+
+---
+
+## 5. Go에서 JavaScript 호출하기
+
+*브라우저 → Go*는 위에서 다루었습니다.  
+*Go → 브라우저*는 **이벤트(Events)** 또는 **Eval**을 사용합니다:
+
+```go
+window.Eval(`alert("Hi")`)
+app.Publish("chat:new-message", msg)
+```
+
+바인딩 생성은 단방향입니다 (Go 메서드).  
+JS에 노출된 함수를 사용하려면 JS에서 `runtime.EventsOn`을, Go에서 `application.Publish`를 사용하십시오.
+
+---
+
+## 6. 확장 및 문제 해결
+
+### 사용자 정의 직렬화기 추가
+
+* `generator.TypeConverter` 인터페이스를 구현합니다.
+* `generator.Config.Converters`에 등록합니다.
+* 필요한 경우 JS 런타임 역직렬화를 업데이트합니다.
+
+### 지원되지 않는 타입 오류
+
+```
+error: field "Client" uses unsupported type: chan struct{}
+```
+
+→ 채널을 노출된 API를 가진 구조체로 감싸거나 재설계하십시오.
+
+### 버전 불일치
+
+바인딩은 **매번** `wails3 dev` / `wails3 build` 시 재생성됩니다.  
+IDE 인텔리센스가 오래된 스텁을 표시하는 경우, `frontend/wailsjs`를 삭제하고 다시 빌드하십시오.
+
+### 성능 팁
+
+* 작은 구조체의 경우 할당을 줄이기 위해 **값(value)** 수신자를 선호하십시오.
+* 브리지를 통해 큰 바이트 슬라이스를 보내지 마십시오. 대신 `application.FileServer`를 사용하십시오.
+* 여러 빠른 호출을 하나의 메서드로 배치하여 브리지 지연 시간을 최소화하십시오.
+
+---
+
+## 7. 주요 파일 맵
+
+| 관심사 | 파일 |
+|---------|------|
+| 정적 분석 진입점 | `internal/generator/analyse.go` |
+| 렌더 파이프라인 | `internal/generator/generate.go` |
+| 템플릿 자산 | `internal/generator/render/*.tmpl` |
+| Go 바인딩 테이블 | `pkg/application/bindings.go` (생성됨) |
+| 호출 프로세서 | `pkg/application/messageprocessor_call.go` |
+| JS 런타임 | `runtime/desktop/@wailsio/runtime/invoke.ts` |
+| 오류 매핑 | `runtime/desktop/@wailsio/runtime/errors.ts` |
+
+브리지 버그를 추적할 때 이 치트 시트를 가까이 두십시오.
+
+---
+
+## 8. 요약
+
+1. **생성기(Generator)**가 Go 코드를 스캔하여 시맨틱 모델을 만듭니다.  
+2. **템플릿**이 **Go 스텁**과 **TypeScript 정의**를 방출합니다.  
+3. **메시지 프로세서(Message Processor)**가 런타임에 스텁을 실행합니다.  
+4. **JS 런타임**이 이를 모두 관례적인 프라미스(idiomatic promises)로 감쌉니다.
+
+반사(reflection) 없이, IPC 서버 없이, 보일러플레이트 줄을 작성하지 않고도 가능합니다. 그것이 Wails v3 바인딩 시스템입니다. 나가서 바인딩하세요!

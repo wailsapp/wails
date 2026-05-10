@@ -1,0 +1,341 @@
+---
+title: 성능 최적화
+description: 최대 성능을 위해 Wails 애플리케이션을 최적화하세요
+sidebar:
+  order: 9
+---
+
+## 개요
+
+속도, 메모리 효율성 및 응답성을 위해 Wails 애플리케이션을 최적화하세요.
+
+## 프론트엔드 최적화
+
+### 번들 크기
+
+```javascript
+// vite.config.js
+export default {
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+        },
+      },
+    },
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+      },
+    },
+  },
+}
+```
+
+### 코드 분할
+
+```javascript
+// 지연 로딩 컴포넌트
+const Settings = lazy(() => import('./Settings'))
+
+function App() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <Settings />
+    </Suspense>
+  )
+}
+```
+
+### 애셋 최적화
+
+```javascript
+// 이미지 최적화
+import { defineConfig } from 'vite'
+import imagemin from 'vite-plugin-imagemin'
+
+export default defineConfig({
+  plugins: [
+    imagemin({
+      gifsicle: { optimizationLevel: 3 },
+      optipng: { optimizationLevel: 7 },
+      svgo: { plugins: [{ removeViewBox: false }] },
+    }),
+  ],
+})
+```
+
+## 백엔드 최적화
+
+### 효율적인 바인딩
+
+```go
+// ❌ 나쁨: 모든 데이터 반환
+func (s *Service) GetAllData() []Data {
+    return s.db.FindAll() // 매우 클 수 있음
+}
+
+// ✅ 좋음: 페이지네이션
+func (s *Service) GetData(page, size int) (*PagedData, error) {
+    return s.db.FindPaged(page, size)
+}
+```
+
+### 캐싱
+
+```go
+type CachedService struct {
+    cache *lru.Cache
+    ttl   time.Duration
+}
+
+func (s *CachedService) GetData(key string) (interface{}, error) {
+    // 캐시 확인
+    if val, ok := s.cache.Get(key); ok {
+        return val, nil
+    }
+    
+    // 데이터 가져오기 및 캐싱
+    data, err := s.fetchData(key)
+    if err != nil {
+        return nil, err
+    }
+    
+    s.cache.Add(key, data)
+    return data, nil
+}
+```
+
+### 긴 작업용 고루틴
+
+```go
+func (s *Service) ProcessLargeFile(path string) error {
+    // 백그라운드에서 처리
+    go func() {
+        result, err := s.process(path)
+        if err != nil {
+            s.app.Event.Emit("process-error", err.Error())
+            return
+        }
+        s.app.Event.Emit("process-complete", result)
+    }()
+    
+    return nil
+}
+```
+
+## 메모리 최적화
+
+### 메모리 누수 방지
+
+```go
+// ❌ 나쁨: 고루틴 누수
+func (s *Service) StartPolling() {
+    ticker := time.NewTicker(1 * time.Second)
+    go func() {
+        for range ticker.C {
+            s.poll()
+        }
+    }()
+    // ticker가 결코 중지되지 않음!
+}
+
+// ✅ 좋음: 적절한 정리
+func (s *Service) StartPolling() {
+    ticker := time.NewTicker(1 * time.Second)
+    s.stopChan = make(chan bool)
+    
+    go func() {
+        for {
+            select {
+            case <-ticker.C:
+                s.poll()
+            case <-s.stopChan:
+                ticker.Stop()
+                return
+            }
+        }
+    }()
+}
+
+func (s *Service) StopPolling() {
+    close(s.stopChan)
+}
+```
+
+### 리소스 풀
+
+```go
+var bufferPool = sync.Pool{
+    New: func() interface{} {
+        return new(bytes.Buffer)
+    },
+}
+
+func processData(data []byte) []byte {
+    buf := bufferPool.Get().(*bytes.Buffer)
+    defer bufferPool.Put(buf)
+    
+    buf.Reset()
+    buf.Write(data)
+    // 처리...
+    return buf.Bytes()
+}
+```
+
+## 이벤트 최적화
+
+### 디바운스 이벤트
+
+```javascript
+// 빈번한 이벤트 디바운스
+let debounceTimer
+function handleInput(value) {
+    clearTimeout(debounceTimer)
+    debounceTimer = setTimeout(() => {
+        UpdateData(value)
+    }, 300)
+}
+```
+
+### 배치 업데이트
+
+```go
+type BatchProcessor struct {
+    items []Item
+    mu    sync.Mutex
+    timer *time.Timer
+}
+
+func (b *BatchProcessor) Add(item Item) {
+    b.mu.Lock()
+    defer b.mu.Unlock()
+    
+    b.items = append(b.items, item)
+    
+    if b.timer == nil {
+        b.timer = time.AfterFunc(100*time.Millisecond, b.flush)
+    }
+}
+
+func (b *BatchProcessor) flush() {
+    b.mu.Lock()
+    items := b.items
+    b.items = nil
+    b.timer = nil
+    b.mu.Unlock()
+    
+    // 배치 처리
+    processBatch(items)
+}
+```
+
+## 빌드 최적화
+
+### 바이너리 크기
+
+```bash
+# 디버그 기호 제거
+wails3 build -ldflags "-s -w"
+
+# 바이너리 크기 더 줄이기
+go build -ldflags="-s -w" -trimpath
+```
+
+### 컴파일 속도
+
+```bash
+# 빌드 캐시 사용
+go build -buildmode=default
+
+# 병렬 컴파일
+go build -p 8
+```
+
+## 프로파일링
+
+### CPU 프로파일링
+
+```go
+import "runtime/pprof"
+
+func profileCPU() {
+    f, _ := os.Create("cpu.prof")
+    defer f.Close()
+    
+    pprof.StartCPUProfile(f)
+    defer pprof.StopCPUProfile()
+    
+    // 프로파일링할 코드
+}
+```
+
+### 메모리 프로파일링
+
+```go
+import "runtime/pprof"
+
+func profileMemory() {
+    f, _ := os.Create("mem.prof")
+    defer f.Close()
+    
+    runtime.GC()
+    pprof.WriteHeapProfile(f)
+}
+```
+
+### 프로파일 분석
+
+```bash
+# CPU 프로파일 보기
+go tool pprof cpu.prof
+
+# 메모리 프로파일 보기
+go tool pprof mem.prof
+
+# 웹 인터페이스
+go tool pprof -http=:8080 cpu.prof
+```
+
+## 모범 사례
+
+### ✅ 해야 할 것
+
+- 최적화 전에 프로파일링하기
+- 비용이 많이 드는 작업 캐싱하기
+- 대용량 데이터셋에 페이지네이션 사용하기
+- 빈번한 이벤트 디바운스하기
+- 리소스 풀 사용하기
+- 고루틴 정리하기
+- 번들 크기 최적화하기
+- 지연 로딩 사용하기
+
+### ❌ 하지 말 것
+
+- 조기에 최적화하지 않기
+- 메모리 누수 무시하지 않기
+- 메인 스레드 차단하지 않기
+- 거대한 데이터셋 반환하지 않기
+- 프로파일링 건너뛰지 않기
+- 정리 잊지 않기
+
+## 성능 체크리스트
+
+- [ ] 프론트엔드 번들 최적화됨
+- [ ] 이미지 압축됨
+- [ ] 코드 분할 구현됨
+- [ ] 백엔드 메서드 페이지네이션됨
+- [ ] 캐싱 구현됨
+- [ ] 고루틴 정리됨
+- [ ] 이벤트 디바운스됨
+- [ ] 바이너리 크기 최적화됨
+- [ ] 프로파일링 완료됨
+- [ ] 메모리 누수 수정됨
+
+## 다음 단계
+
+- [아키텍처](/ko/guides/architecture) - 애플리케이션 아키텍처 패턴
+- [테스트](/ko/guides/testing) - 애플리케이션 테스트
+- [빌드](/guides/building) - 최적화된 바이너리 빌드

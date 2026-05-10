@@ -1,0 +1,670 @@
+---
+title: v2에서 v3로 마이그레이션
+description: Wails v2 애플리케이션을 v3로 마이그레이션하는 완전한 가이드
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails v3는 아키텍처, 성능 및 개발자 경험에서 상당한 개선을 갖춘 **완전한 재작성**입니다. 이 가이드는 v2 애플리케이션을 v3로 마이그레이션하는 데 도움을 줍니다.
+
+**주요 변경 사항:**
+- 새로운 애플리케이션 구조
+- 개선된 바인딩 시스템
+- 강화된 창 관리
+- 향상된 이벤트 시스템
+- 단순화된 구성
+
+**마이그레이션 시간:** 일반적인 애플리케이션의 경우 1-4시간
+
+## 주요 변경 사항 (Breaking Changes)
+
+### 애플리케이션 초기화
+
+v2에서는 애플리케이션 설정, 창 구성 및 실행이 모두 단일 `wails.Run()` 호출로 결합되었습니다. 이러한 모놀리식 접근 방식은 여러 창을 생성하거나, 다른 단계에서 오류를 처리하거나, 애플리케이션의 개별 구성 요소를 테스트하는 것을 어렵게 만들었습니다.
+
+v3는 이러한 관심사를 애플리케이션 생성, 창 생성 및 실행이라는 별도의 단계로 분리합니다. 이러한 분리는 애플리케이션 수명 주기의 각 단계에 대한 명시적인 제어를 제공하며 코드를 더 모듈화 가능하고 테스트 가능하게 만듭니다.
+
+**v2:**
+
+```go
+err := wails.Run(&options.App{
+    Title:  "My App",
+    Width:  1024,
+    Height: 768,
+    Bind: []interface{}{
+        &GreetService{},
+    },
+})
+```
+
+**v3:**
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+})
+
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My App",
+    Width:  1024,
+    Height: 768,
+})
+
+app.Run()
+```
+
+**이것이 더 나은 이유:**
+
+- **다중 창 지원**: 시작 시뿐만 아니라 언제든지 동적으로 창을 생성할 수 있습니다.
+- **향상된 오류 처리**: 각 단계를 별도의 적절한 오류 처리로 검증할 수 있습니다.
+- **더 명확한 코드**: 분리로 인해 각 단계에서 무슨 일이 일어나고 있는지 명확해집니다.
+- **더 높은 테스트 가능성**: 이벤트 루프를 실행하지 않고 애플리케이션 설정을 테스트할 수 있습니다.
+- **더 높은 유연성**: 창은 애플리케이션 수명 주기 전반에 걸쳐 생성, 파괴 및 재생성할 수 있습니다.
+
+### 바인딩
+
+v2에서는 바인드된 모든 구조체에 컨텍스트 필드와 런타임 컨텍스트를 받기 위한 `startup(ctx)` 메서드가 필요했습니다. 이는 비즈니스 로직과 Wails 런타임 간의 긴 결합을 초래하여 코드를 테스트하고 이해하기 어렵게 만들었습니다.
+
+v3는 서비스 패턴을 도입하여 구조체가 완전히 독립적이고 런타임 컨텍스트를 저장할 필요가 없도록 합니다. 서비스에서 애플리케이션 인스턴스에 대한 액세스가 필요한 경우, 암시적인 컨텍스트 스레딩이 아닌 명시적인 의존성 주입을 통해 이를 받습니다.
+
+**v2:**
+
+```go
+type App struct {
+    ctx context.Context
+}
+
+func (a *App) startup(ctx context.Context) {
+    a.ctx = ctx
+}
+
+func (a *App) Greet(name string) string {
+    return "Hello " + name
+}
+```
+
+**v3:**
+
+```go
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+    return "Hello " + name
+}
+
+// 서비스로 등록
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+})
+```
+
+**이것이 더 나은 이유:**
+
+- **암시적 의존성 없음**: 서비스는 숨겨진 런타임 의존성 없이 평범한 Go 구조체입니다.
+- **쉬운 테스트**: Wails 컨텍스트를 모킹하지 않고 서비스 메서드를 테스트할 수 있습니다.
+- **더 명확한 코드**: 의존성은 컨텍스트 필드에 숨겨진 것이 아니라 명시적(생성자 인수로 전달)입니다.
+- **더 나은 조직화**: 서비스는 단일 `App` 구조체에 모두 있는 것이 아니라 도메인별로 그룹화할 수 있습니다.
+- **적절한 초기화**: 초기화가 필요한 경우 `ServiceStartup()` 메서드를 사용하여 명시적으로 처리합니다.
+
+### 런타임
+
+v2에서는 모든 런타임 작업에 `runtime` 패키지에서 컨텍스트를 전역 함수에 전달해야 했습니다. 이는 코드베이스 전반에 컨텍스트 객체에 대한 긴 결합을 초래하고 API가 절차적이지 않고 객체 지향적으로 느껴지게 만들었습니다.
+
+v3는 컨텍스트 기반 런타임을 애플리케이션 및 창 객체에서의 직접 메서드 호출로 대체합니다. 작업은 영향을 받는 객체에서 직접 호출되므로 코드가 더 직관적이고 객체 지향적이 됩니다.
+
+**v2:**
+
+```go
+import "github.com/wailsapp/wails/v2/pkg/runtime"
+
+runtime.WindowSetTitle(a.ctx, "New Title")
+runtime.EventsEmit(a.ctx, "event-name", data)
+```
+
+**v3:**
+
+```go
+// 앱 참조 저장
+type MyService struct {
+    app *application.Application
+}
+
+func (s *MyService) UpdateTitle() {
+    window := s.app.Window.Current()
+    window.SetTitle("New Title")
+}
+
+func (s *MyService) EmitEvent() {
+    s.app.Event.Emit("event-name", data)
+}
+```
+
+**이것이 더 나은 이유:**
+
+- **객체 지향 설계**: 메서드는 영향을 받는 객체(창, 앱, 메뉴 등)에서 호출됩니다.
+- **명확한 의도**: `window.SetTitle()`은 `runtime.WindowSetTitle(ctx, ...)`보다 더 명확합니다.
+- **향상된 IDE 지원**: 메서드가 객체에 있을 때 자동 완성 기능이 제대로 작동합니다.
+- **다중 창 명확성**: 여러 창이 있는 경우 작동할 창을 명시적으로 선택합니다.
+- **컨텍스트 스레딩 없음**: 모든 함수에 컨텍스트를 전달할 필요가 없습니다.
+
+### 프론트엔드 바인딩
+
+v2에서는 바인딩이 Go 패키지 및 구조체 이름별로 구성되었으며, 일반적으로 `wailsjs/go/main/App`와 같은 경로가 생성되었습니다. 이러한 구조는 논리적 그룹화를 반영하지 않아 관련 기능을 찾기 어려웠습니다.
+
+v3는 서비스 이름과 애플리케이션 모듈에 따라 바인딩을 구성하여 더 명확한 논리적 구조를 만듭니다. 바인딩은 애플리케이션 이름과 서비스 이름별로 구성된 `bindings` 디렉토리에 생성되어 사용 가능한 기능을 이해하기 쉬워집니다.
+
+**v2:**
+
+```javascript
+import { Greet } from '../wailsjs/go/main/App'
+
+const result = await Greet("World")
+```
+
+**v3:**
+
+```javascript
+import { Greet } from './bindings/myapp/greetservice'
+
+const result = await Greet("World")
+```
+
+**이것이 더 나은 이유:**
+
+- **논리적 조직화**: 바인딩이 Go 패키지 구조가 아닌 서비스 이름별로 그룹화됩니다.
+- **명확한 가져오기**: 경로는 파일 구조(main/App)가 아닌 도메인 로직(greetservice)을 반영합니다.
+- **향상된 발견 가능성**: 기술적 구조가 아닌 기능별로 바인딩을 탐색할 수 있습니다.
+- **일관된 네이밍**: 서비스 기반 조직화는 백엔드 아키텍처와 일치합니다.
+- **단순화된 경로**: 이제 `../wailsjs/go` 접두사가 필요 없으며, `./bindings`만 사용하면 됩니다.
+
+### 이벤트
+
+v2에서는 이벤트가 가변 `interface{}` 매개변수를 사용하며 모든 이벤트 함수에 컨텍스트를 전달해야 했습니다. 이벤트 핸들러는 수동 형식 단언이 필요한 비타입 데이터를 받았으며, 이로 인해 이벤트 시스템은 오류가 발생하기 쉽고 디버깅이 어려웠습니다.
+
+v3는 형식화된 이벤트 객체를 도입하고 컨텍스트 요구 사항을 제거합니다. 이벤트 핸들러는 형식화된 데이터를 갖춘 적절한 이벤트 객체를 받으며, 이로 인해 이벤트 시스템이 더 신뢰할 수 있고 사용하기 쉬워집니다.
+
+**v2:**
+
+```go
+runtime.EventsOn(ctx, "event-name", func(data ...interface{}) {
+    // 이벤트 처리
+})
+
+runtime.EventsEmit(ctx, "event-name", data)
+```
+
+**v3:**
+
+```go
+app.Event.On("event-name", func(e *application.CustomEvent) {
+    data := e.Data
+    // 이벤트 처리
+})
+
+app.Event.Emit("event-name", data)
+```
+
+**이것이 더 나은 이유:**
+
+- **형식 안전성**: 이벤트가 `...interface{}` 대신 적절한 이벤트 객체를 사용합니다.
+- **향상된 디버깅**: 이벤트 객체에는 이벤트 이름과 같은 메타데이터가 포함되어 있어 디버깅이 쉬워집니다.
+- **명확한 API**: `app.Event.On()` 및 `app.Event.Emit()`은 런타임 함수보다 더 직관적입니다.
+- **컨텍스트 불필요**: 이벤트는 컨텍스트를 스레딩하지 않고 앱 객체에서 직접 작동합니다.
+- **단순화된 핸들러**: 이벤트 핸들러는 가변 매개변수 대신 명확한 시그니처를 가집니다.### Windows
+
+v2는 애플리케이션당 단일 창만 지원했습니다. 창은 시작 시 생성되며 모든 창 작업은 해당 단일 창을 암시적으로 대상으로 하는 런타임 함수를 통해 수행되었습니다.
+
+v3는 핵심 기능으로 네이티브 멀티 윈도우 지원을 도입했습니다. 각 창은 자체 메서드와 수명 주기를 가진 일급 객체입니다. 애플리케이션의 수명 동안 동적으로 여러 창을 생성, 관리 및 삭제할 수 있습니다.
+
+**v2:**
+
+```go
+// Single window only
+runtime.WindowSetSize(ctx, 800, 600)
+```
+
+**v3:**
+
+```go
+// Multiple windows supported
+window1 := app.Window.New()
+window1.SetSize(800, 600)
+
+window2 := app.Window.New()
+window2.SetSize(1024, 768)
+```
+
+**이것이 더 나은 이유:**
+
+- **멀티 윈도우 애플리케이션**: 여러 독립적인 창(대시보드, 환경 설정, 도구 등)으로 애플리케이션을 구축하세요.
+- **명확한 창 참조**: 각 창은 직접 저장하고 조작할 수 있는 객체입니다.
+- **동적 창 생성**: 런타임 중 언제든지 창을 생성하고 삭제할 수 있습니다.
+- **독립적인 창 상태**: 각 창은 자체 이벤트, 속성 및 수명 주기를 가집니다.
+- **더 나은 아키텍처**: 창 관리는 컨텍스트 기반이 아닌 객체 지향적입니다.
+
+## 마이그레이션 단계
+
+### 단계 1: 종속성 업데이트
+
+**go.mod:**
+
+```go
+module myapp
+
+go 1.21
+
+require (
+    github.com/wailsapp/wails/v3 v3.0.0-alpha.1
+)
+```
+
+**업데이트:**
+
+```bash
+go get github.com/wailsapp/wails/v3@latest
+go mod tidy
+```
+
+### 단계 2: main.go 업데이트
+
+**v2:**
+
+```go
+package main
+
+import (
+    "embed"
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+    "github.com/wailsapp/wails/v2/pkg/options/windows"
+)
+
+//go:embed all:frontend/dist
+var assets embed.FS
+
+func main() {
+    app := NewApp()
+
+    err := wails.Run(&options.App{
+        Title:  "My App",
+        Width:  1024,
+        Height: 768,
+        AssetServer: &assetserver.Options{
+            Assets: assets,
+        },
+        Bind: []interface{}{
+            app,
+        },
+        Windows: &windows.Options{
+            WebviewIsTransparent: false,
+        },
+    })
+
+    if err != nil {
+        println("Error:", err.Error())
+    }
+}
+```
+
+**v3:**
+
+```go
+package main
+
+import (
+    "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        Services: []application.Service{
+            application.NewService(&MyService{}),
+        },
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  "My App",
+        Width:  1024,
+        Height: 768,
+    })
+
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
+}
+```
+
+### 단계 3: App 구조체를 서비스로 변환
+
+**v2:**
+
+```go
+type App struct {
+    ctx context.Context
+}
+
+func NewApp() *App {
+    return &App{}
+}
+
+func (a *App) startup(ctx context.Context) {
+    a.ctx = ctx
+    // Initialisation
+}
+
+func (a *App) Greet(name string) string {
+    return "Hello " + name
+}
+```
+
+**v3:**
+
+```go
+type MyService struct {
+    app *application.Application
+}
+
+func NewMyService(app *application.Application) *MyService {
+    return &MyService{app: app}
+}
+
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    // Initialisation
+    return nil
+}
+
+func (s *MyService) Greet(name string) string {
+    return "Hello " + name
+}
+
+// Register after app creation
+app := application.New(application.Options{})
+app.RegisterService(application.NewService(NewMyService(app)))
+```
+
+### 단계 4: 런타임 호출 업데이트
+
+**v2:**
+
+```go
+func (a *App) DoSomething() {
+    runtime.WindowSetTitle(a.ctx, "New Title")
+    runtime.EventsEmit(a.ctx, "update", data)
+    runtime.LogInfo(a.ctx, "Message")
+}
+```
+
+**v3:**
+
+```go
+func (s *MyService) DoSomething() {
+    window := s.app.Window.Current()
+    window.SetTitle("New Title")
+    
+    s.app.Event.Emit("update", data)
+    
+    s.app.Logger.Info("Message")
+}
+```
+
+### 단계 5: 프론트엔드 업데이트
+
+**새 바인딩 생성:**
+
+```bash
+wails3 generate bindings
+```
+
+**가져오기 업데이트:**
+
+```javascript
+// v2
+import { Greet } from '../wailsjs/go/main/App'
+
+// v3
+import { Greet } from './bindings/myapp/myservice'
+```
+
+**이벤트 처리 업데이트:**
+
+```javascript
+// v2
+import { EventsOn, EventsEmit } from '../wailsjs/runtime/runtime'
+
+EventsOn("update", (data) => {
+    console.log(data)
+})
+
+EventsEmit("action", data)
+
+// v3
+import { Events } from '@wailsio/runtime'
+
+Events.On("update", (data) => {
+    console.log(data)
+})
+
+Events.Emit("action", data)
+```
+
+### 단계 6: 구성 업데이트
+
+**v2 (wails.json):**
+
+```json
+{
+  "name": "myapp",
+  "outputfilename": "myapp",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto"
+}
+```
+
+**v3 (wails.json):**
+
+```json
+{
+  "name": "myapp",
+  "frontend": {
+    "dir": "./frontend",
+    "install": "npm install",
+    "build": "npm run build",
+    "dev": "npm run dev",
+    "devServerUrl": "http://localhost:5173"
+  }
+}
+```
+
+## 기능 매핑
+
+### dialogs
+
+**v2:**
+
+```go
+selection, err := runtime.OpenFileDialog(ctx, runtime.OpenDialogOptions{
+    Title: "Select File",
+})
+```
+
+**v3:**
+
+```go
+selection, err := app.Dialog.OpenFile(application.OpenFileDialogOptions{
+    Title: "Select File",
+})
+```
+
+### Menus
+
+**v2:**
+
+```go
+menu := menu.NewMenu()
+menu.Append(menu.Text("File", nil, []*menu.MenuItem{
+    menu.Text("Quit", nil, func(_ *menu.CallbackData) {
+        runtime.Quit(ctx)
+    }),
+}))
+```
+
+**v3:**
+
+```go
+menu := app.NewMenu()
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+```
+
+### System Tray
+
+**v2:**
+
+```go
+// Not available in v2
+```
+
+**v3:**
+
+```go
+systray := app.SystemTray.New()
+systray.SetIcon(iconBytes)
+systray.SetLabel("My App")
+
+menu := app.NewMenu()
+menu.Add("Show").OnClick(showWindow)
+menu.Add("Quit").OnClick(app.Quit)
+systray.SetMenu(menu)
+```
+
+## 일반적인 문제
+
+### 문제: 바인딩을 찾을 수 없음
+
+**문제:** 마이그레이션 후 가져오기 오류
+
+**해결책:**
+
+```bash
+# Regenerate bindings
+wails3 generate bindings
+
+# Check output directory
+ls frontend/bindings
+```
+
+### 문제: 컨텍스트 오류
+
+**문제:** `ctx` 사용 불가
+
+**해결책:**
+
+앱 참조를 대신 저장하세요:
+
+```go
+type MyService struct {
+    app *application.Application
+}
+
+func NewMyService(app *application.Application) *MyService {
+    return &MyService{app: app}
+}
+```
+
+### 문제: 창 메서드가 작동하지 않음
+
+**문제:** `runtime.WindowSetTitle()`이 존재하지 않음
+
+**해결책:**
+
+창 메서드를 직접 사용하세요:
+
+```go
+window := s.app.Window.Current()
+window.SetTitle("New Title")
+```
+
+### 문제: 이벤트가 발생하지 않음
+
+**문제:** 이벤트가 등록되었지만 수신되지 않음
+
+**해결책:**
+
+이벤트 이름이 정확히 일치하는지 확인하세요:
+
+```go
+// Go
+app.Event.Emit("my-event", data)
+
+// JavaScript
+OnEvent("my-event", handler)  // Must match exactly
+```
+
+## 마이그레이션 테스트
+
+### 체크리스트
+
+- [ ] 애플리케이션이 오류 없이 시작됨
+- [ ] 모든 바인딩이 작동함
+- [ ] 이벤트가 전송되고 수신됨
+- [ ] 창이 올바르게 열리고 닫힘
+- [ ] 메뉴가 작동함 (해당하는 경우)
+- [ ] dialogs가 작동함 (해당하는 경우)
+- [ ] 시스템 트레이가 작동함 (해당하는 경우)
+- [ ] 빌드 프로세스가 작동함
+- [ ] 프로덕션 빌드가 작동함
+
+### 테스트 명령어
+
+```bash
+# Development
+wails3 dev
+
+# Build
+wails3 build
+
+# Generate bindings
+wails3 generate bindings
+```
+
+## v3의 이점
+
+### 성능
+
+- **빠른 시작** - 최적화된 초기화
+- **낮은 메모리** - 효율적인 리소스 사용
+- **더 나은 브리지** - &lt;1ms 호출 오버헤드
+
+### 기능
+
+- **멀티 윈도우** - 네이티브 지원
+- **시스템 트레이** - 내장됨
+- **더 나은 이벤트** - 타입 지정됨, 단순화된 API
+- **서비스** - 더 나은 코드 조직화
+
+### 개발자 경험
+
+- **타입 안전성** - 전체 TypeScript 지원
+- **더 나은 오류** - 명확한 오류 메시지---
+
+**질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 물어보거나 [이슈를 열기](https://github.com/wailsapp/wails/issues)하세요.

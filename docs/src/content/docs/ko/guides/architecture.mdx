@@ -1,0 +1,199 @@
+---
+title: 아키텍처 패턴
+description: Wails 애플리케이션을 위한 디자인 패턴
+sidebar:
+  order: 7
+---
+
+## 개요
+
+Wails 애플리케이션을 구성하기 위한 검증된 패턴들입니다.
+
+## 서비스 레이어 패턴
+
+### 구조
+
+```
+app/
+├── main.go
+├── services/
+│   ├── user_service.go
+│   ├── data_service.go
+│   └── file_service.go
+└── models/
+    └── user.go
+```
+
+### 구현
+
+```go
+// 서비스 인터페이스
+type UserService interface {
+    Create(email, password string) (*User, error)
+    GetByID(id int) (*User, error)
+    Update(user *User) error
+    Delete(id int) error
+}
+
+// 구현체
+type userService struct {
+    app *application.Application
+    db  *sql.DB
+}
+
+func NewUserService(app *application.Application, db *sql.DB) UserService {
+    return &userService{app: app, db: db}
+}
+```
+
+## 리포지토리 패턴
+
+### 구조
+
+```go
+// 리포지토리 인터페이스
+type UserRepository interface {
+    Create(user *User) error
+    FindByID(id int) (*User, error)
+    Update(user *User) error
+    Delete(id int) error
+}
+
+// 서비스는 리포지토리를 사용
+type UserService struct {
+    repo UserRepository
+}
+
+func (s *UserService) Create(email, password string) (*User, error) {
+    user := &User{Email: email}
+    return user, s.repo.Create(user)
+}
+```
+
+## 이벤트 기반 아키텍처
+
+### 이벤트 버스
+
+```go
+type EventBus struct {
+    app       *application.Application
+    listeners map[string][]func(interface{})
+    mu        sync.RWMutex
+}
+
+func (eb *EventBus) Subscribe(event string, handler func(interface{})) {
+    eb.mu.Lock()
+    defer eb.mu.Unlock()
+    eb.listeners[event] = append(eb.listeners[event], handler)
+}
+
+func (eb *EventBus) Publish(event string, data interface{}) {
+    eb.mu.RLock()
+    handlers := eb.listeners[event]
+    eb.mu.RUnlock()
+    
+    for _, handler := range handlers {
+        go handler(data)
+    }
+}
+```
+
+### 사용법
+
+```go
+// 구독
+eventBus.Subscribe("user.created", func(data interface{}) {
+    user := data.(*User)
+    sendWelcomeEmail(user)
+})
+
+// 발행
+eventBus.Publish("user.created", user)
+```
+
+## 의존성 주입
+
+### 수동 DI
+
+```go
+type App struct {
+    userService *UserService
+    fileService *FileService
+    db          *sql.DB
+}
+
+func NewApp() *App {
+    db := openDatabase()
+    
+    return &App{
+        db:          db,
+        userService: NewUserService(db),
+        fileService: NewFileService(db),
+    }
+}
+```
+
+### Wire 사용
+
+```go
+// wire.go
+//go:build wireinject
+
+func InitializeApp() (*App, error) {
+    wire.Build(
+        openDatabase,
+        NewUserService,
+        NewFileService,
+        NewApp,
+    )
+    return nil, nil
+}
+```
+
+## 상태 관리
+
+### 중앙 집중식 상태
+
+```go
+type AppState struct {
+    currentUser *User
+    settings    *Settings
+    mu          sync.RWMutex
+}
+
+func (s *AppState) SetUser(user *User) {
+    s.mu.Lock()
+    defer s.mu.Unlock()
+    s.currentUser = user
+}
+
+func (s *AppState) GetUser() *User {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+    return s.currentUser
+}
+```
+
+## 모범 사례
+
+### ✅ 권장 사항
+
+- 관심사 분리
+- 인터페이스 사용
+- 의존성 주입
+- 적절한 오류 처리
+- 서비스의 집중 유지
+- 아키텍처 문서화
+
+### ❌ 비권장 사항
+
+- God 객체 생성 금지
+- 구성 요소 간의 긴밀한 결합 금지
+- 오류 처리 건너뛰기 금지
+- 동시성 무시 금지
+- 과잉 설계 금지
+
+## 다음 단계
+
+- [보안](/ko/guides/security) - 보안 모범 사례
+- [모범 사례](/ko/features/bindings/best-practices) - 바인딩 모범 사례

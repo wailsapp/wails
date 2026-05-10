@@ -1,0 +1,831 @@
+---
+title: 대화상자 API
+description: 네이티브 대화상자 API의 전체 참조 문서
+sidebar:
+  order: 5
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 개요
+
+Dialogs API는 네이티브 파일 대화상자와 메시지 대화상자를 표시하기 위한 메서드를 제공합니다. `app.Dialog` 관리자를 통해 대화상자에 접근할 수 있습니다.
+
+**대화상자 유형:**
+- **파일 대화상자** - 열기 및 저장 대화상자
+- **메시지 대화상자** - 정보, 오류, 경고 및 질문 대화상자
+
+모든 대화상자는 플랫폼의 외관과 느낌을 일치시키는 **네이티브 OS 대화상자**입니다.
+
+## 대화상자 접근
+
+대화상자는 `app.Dialog` 관리자를 통해 접근합니다:
+
+```go
+app.Dialog.OpenFile()
+app.Dialog.SaveFile()
+app.Dialog.Info()
+app.Dialog.Question()
+app.Dialog.Warning()
+app.Dialog.Error()
+```
+
+## 파일 대화상자
+
+### OpenFile()
+
+파일 열기 대화상자를 생성합니다.
+
+```go
+func (dm *DialogManager) OpenFile() *OpenFileDialogStruct
+```
+
+**예제:**
+```go
+dialog := app.Dialog.OpenFile()
+```
+
+### OpenFileDialogStruct 메서드
+
+#### SetTitle()
+
+대화상자 제목을 설정합니다.
+
+```go
+func (d *OpenFileDialogStruct) SetTitle(title string) *OpenFileDialogStruct
+```
+
+**예제:**
+```go
+dialog.SetTitle("이미지 선택")
+```
+
+#### AddFilter()
+
+파일 유형 필터를 추가합니다.
+
+```go
+func (d *OpenFileDialogStruct) AddFilter(displayName, pattern string) *OpenFileDialogStruct
+```
+
+**매개변수:**
+- `displayName` - 사용자에게 표시되는 필터 설명 (예: "이미지", "문서")
+- `pattern` - 세미콜론으로 구분된 확장자 목록 (예: "*.png;*.jpg")
+
+**예제:**
+```go
+dialog.AddFilter("이미지", "*.png;*.jpg;*.gif").
+    AddFilter("문서", "*.pdf;*.docx").
+    AddFilter("모든 파일", "*.*")
+```
+
+#### SetDirectory()
+
+초기 디렉토리를 설정합니다.
+
+```go
+func (d *OpenFileDialogStruct) SetDirectory(directory string) *OpenFileDialogStruct
+```
+
+**예제:**
+```go
+homeDir, _ := os.UserHomeDir()
+dialog.SetDirectory(homeDir)
+```
+
+#### CanChooseDirectories()
+
+디렉토리 선택을 활성화하거나 비활성화합니다.
+
+```go
+func (d *OpenFileDialogStruct) CanChooseDirectories(canChooseDirectories bool) *OpenFileDialogStruct
+```
+
+**예제 (폴더 선택):**
+```go
+// 파일 대신 폴더 선택
+path, err := app.Dialog.OpenFile().
+    SetTitle("폴더 선택").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+```
+
+#### CanChooseFiles()
+
+파일 선택을 활성화하거나 비활성화합니다.
+
+```go
+func (d *OpenFileDialogStruct) CanChooseFiles(canChooseFiles bool) *OpenFileDialogStruct
+```
+
+#### CanCreateDirectories()
+
+새 디렉토리 생성을 활성화하거나 비활성화합니다.
+
+```go
+func (d *OpenFileDialogStruct) CanCreateDirectories(canCreateDirectories bool) *OpenFileDialogStruct
+```
+
+#### ShowHiddenFiles()
+
+숨겨진 파일을 표시하거나 숨깁니다.
+
+```go
+func (d *OpenFileDialogStruct) ShowHiddenFiles(showHiddenFiles bool) *OpenFileDialogStruct
+```
+
+#### AttachToWindow()
+
+대화상자를 특정 창에 연결합니다.
+
+```go
+func (d *OpenFileDialogStruct) AttachToWindow(window Window) *OpenFileDialogStruct
+```
+
+#### PromptForSingleSelection()
+
+대화상자를 표시하고 선택된 파일을 반환합니다.
+
+```go
+func (d *OpenFileDialogStruct) PromptForSingleSelection() (string, error)
+```
+
+**반환값:**
+- `string` - 선택된 파일 경로 (취소된 경우 빈 문자열)
+- `error` - 대화상자 실패 시 오류
+
+**예제:**
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("이미지 선택").
+    AddFilter("이미지", "*.png;*.jpg;*.gif").
+    PromptForSingleSelection()
+
+if err != nil {
+    // 사용자가 취소했거나 오류가 발생함
+    return
+}
+
+// 선택된 파일 사용
+processFile(path)
+```
+
+#### PromptForMultipleSelection()
+
+대화상자를 표시하고 여러 선택된 파일을 반환합니다.
+
+```go
+func (d *OpenFileDialogStruct) PromptForMultipleSelection() ([]string, error)
+```
+
+**반환값:**
+- `[]string` - 선택된 파일 경로 배열
+- `error` - 대화상자 실패 시 오류
+
+**예제:**
+```go
+paths, err := app.Dialog.OpenFile().
+    SetTitle("이미지 선택").
+    AddFilter("이미지", "*.png;*.jpg").
+    PromptForMultipleSelection()
+
+if err != nil {
+    return
+}
+
+for _, path := range paths {
+    processFile(path)
+}
+```
+
+### SaveFile()
+
+파일 저장 대화상자를 생성합니다.
+
+```go
+func (dm *DialogManager) SaveFile() *SaveFileDialogStruct
+```
+
+**예제:**
+```go
+dialog := app.Dialog.SaveFile()
+```
+
+### SaveFileDialogStruct 메서드
+
+#### SetTitle()
+
+대화상자 제목을 설정합니다.
+
+```go
+func (d *SaveFileDialogStruct) SetTitle(title string) *SaveFileDialogStruct
+```
+
+#### SetFilename()
+
+기본 파일 이름을 설정합니다.
+
+```go
+func (d *SaveFileDialogStruct) SetFilename(filename string) *SaveFileDialogStruct
+```
+
+**예제:**
+```go
+dialog.SetFilename("document.pdf")
+```
+
+#### AddFilter()
+
+파일 유형 필터를 추가합니다.
+
+```go
+func (d *SaveFileDialogStruct) AddFilter(displayName, pattern string) *SaveFileDialogStruct
+```
+
+**예제:**
+```go
+dialog.AddFilter("PDF 문서", "*.pdf").
+    AddFilter("텍스트 문서", "*.txt")
+```
+
+#### SetDirectory()
+
+초기 디렉토리를 설정합니다.
+
+```go
+func (d *SaveFileDialogStruct) SetDirectory(directory string) *SaveFileDialogStruct
+```
+
+#### AttachToWindow()
+
+대화상자를 특정 창에 연결합니다.
+
+```go
+func (d *SaveFileDialogStruct) AttachToWindow(window Window) *SaveFileDialogStruct
+```
+
+#### PromptForSingleSelection()
+
+대화상자를 표시하고 저장 경로를 반환합니다.
+
+```go
+func (d *SaveFileDialogStruct) PromptForSingleSelection() (string, error)
+```
+
+**예제:**
+```go
+path, err := app.Dialog.SaveFile().
+    SetTitle("문서 저장").
+    SetFilename("untitled.pdf").
+    AddFilter("PDF 문서", "*.pdf").
+    PromptForSingleSelection()
+
+if err != nil {
+    // 사용자가 취소함
+    return
+}
+
+// 선택된 경로에 저장
+saveDocument(path)
+```
+
+### 폴더 선택
+
+별도의 `SelectFolderDialog`는 없습니다. 디렉토리 옵션과 함께 `OpenFile()`을 사용하세요:
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("출력 폴더 선택").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+
+if err != nil {
+    // 사용자가 취소함
+    return
+}
+
+// 선택된 폴더 사용
+outputDir = path
+```
+
+## 메시지 대화상자
+
+모든 메시지 대화상자는 `*MessageDialog`를 반환하며 동일한 메서드를 공유합니다.
+
+### Info()
+
+정보 대화상자를 생성합니다.
+
+```go
+func (dm *DialogManager) Info() *MessageDialog
+```
+
+**예제:**
+```go
+app.Dialog.Info().
+    SetTitle("성공").
+    SetMessage("파일이 성공적으로 저장되었습니다!").
+    Show()
+```
+
+### Error()
+
+오류 대화상자를 생성합니다.
+
+```go
+func (dm *DialogManager) Error() *MessageDialog
+```
+
+**예제:**
+```go
+app.Dialog.Error().
+    SetTitle("오류").
+    SetMessage("파일 저장 실패: " + err.Error()).
+    Show()
+```
+
+### Warning()
+
+경고 대화상자를 생성합니다.
+
+```go
+func (dm *DialogManager) Warning() *MessageDialog
+```
+
+**예제:**
+```go
+app.Dialog.Warning().
+    SetTitle("경고").
+    SetMessage("이 작업은 취소할 수 없습니다.").
+    Show()
+```
+
+### Question()
+
+사용자 정의 버튼이 있는 질문 대화상자를 생성합니다.
+
+```go
+func (dm *DialogManager) Question() *MessageDialog
+```
+
+**예제:**
+```go
+dialog := app.Dialog.Question().
+    SetTitle("확인").
+    SetMessage("변경 사항을 저장하시겠습니까?")
+
+save := dialog.AddButton("저장")
+save.OnClick(func() {
+    saveDocument()
+})
+
+dontSave := dialog.AddButton("저장 안 함")
+dontSave.OnClick(func() {
+    // 저장 없이 계속
+})
+
+cancel := dialog.AddButton("취소")
+cancel.OnClick(func() {
+    // 아무것도 하지 않음
+})
+
+dialog.SetDefaultButton(save)
+dialog.SetCancelButton(cancel)
+dialog.Show()
+```
+
+### MessageDialog 메서드
+
+#### SetTitle()
+
+대화상자 제목을 설정합니다.
+
+```go
+func (d *MessageDialog) SetTitle(title string) *MessageDialog
+```
+
+#### SetMessage()
+
+대화상자 메시지를 설정합니다.
+
+```go
+func (d *MessageDialog) SetMessage(message string) *MessageDialog
+```
+
+#### SetIcon()
+
+대화상자에 사용자 정의 아이콘을 설정합니다.
+
+```go
+func (d *MessageDialog) SetIcon(icon []byte) *MessageDialog
+```#### AddButton()
+
+대화상자에 버튼을 추가하고 구성을 위한 버튼 인스턴스를 반환합니다.
+
+```go
+func (d *MessageDialog) AddButton(label string) *Button
+```
+
+**반환:** `*Button` - 추가 구성을 위한 버튼 인스턴스
+
+**예제:**
+```go
+button := dialog.AddButton("OK")
+button.OnClick(func() {
+    // 클릭 처리
+})
+```
+
+#### SetDefaultButton()
+
+Enter 키를 눌러 활성화되는 기본 버튼을 설정합니다.
+
+```go
+func (d *MessageDialog) SetDefaultButton(button *Button) *MessageDialog
+```
+
+**예제:**
+```go
+yes := dialog.AddButton("Yes")
+no := dialog.AddButton("No")
+dialog.SetDefaultButton(yes)
+```
+
+#### SetCancelButton()
+
+Escape 키를 눌러 활성화되는 취소 버튼을 설정합니다.
+
+```go
+func (d *MessageDialog) SetCancelButton(button *Button) *MessageDialog
+```
+
+**예제:**
+```go
+ok := dialog.AddButton("OK")
+cancel := dialog.AddButton("Cancel")
+dialog.SetCancelButton(cancel)
+```
+
+#### AttachToWindow()
+
+대화상자를 특정 창에 연결합니다.
+
+```go
+func (d *MessageDialog) AttachToWindow(window Window) *MessageDialog
+```
+
+#### Show()
+
+대화상자를 표시합니다. 버튼 콜백이 사용자 응답을 처리합니다.
+
+```go
+func (d *MessageDialog) Show()
+```
+
+**참고:** `Show()`는 값을 반환하지 않습니다. 사용자 응답 처리에는 버튼 콜백을 사용하세요.
+
+### 버튼 메서드
+
+#### OnClick()
+
+버튼이 클릭될 때 호출될 콜백 함수를 설정합니다.
+
+```go
+func (b *Button) OnClick(callback func()) *Button
+```
+
+#### SetAsDefault()
+
+이 버튼을 기본 버튼으로 표시합니다.
+
+```go
+func (b *Button) SetAsDefault() *Button
+```
+
+#### SetAsCancel()
+
+이 버튼을 취소 버튼으로 표시합니다.
+
+```go
+func (b *Button) SetAsCancel() *Button
+```
+
+## 전체 예제
+
+### 파일 선택 예제
+
+```go
+type FileService struct {
+    app *application.App
+}
+
+func (s *FileService) OpenImage() (string, error) {
+    path, err := s.app.Dialog.OpenFile().
+        SetTitle("이미지 선택").
+        AddFilter("이미지", "*.png;*.jpg;*.jpeg;*.gif").
+        AddFilter("모든 파일", "*.*").
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    return path, nil
+}
+
+func (s *FileService) SaveDocument(defaultName string) (string, error) {
+    path, err := s.app.Dialog.SaveFile().
+        SetTitle("문서 저장").
+        SetFilename(defaultName).
+        AddFilter("PDF 문서", "*.pdf").
+        AddFilter("텍스트 문서", "*.txt").
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    return path, nil
+}
+
+func (s *FileService) SelectOutputFolder() (string, error) {
+    path, err := s.app.Dialog.OpenFile().
+        SetTitle("출력 폴더 선택").
+        CanChooseDirectories(true).
+        CanChooseFiles(false).
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    return path, nil
+}
+```
+
+### 확인 대화상자 예제
+
+```go
+func (s *Service) DeleteItem(app *application.App, id string) {
+    dialog := app.Dialog.Question().
+        SetTitle("삭제 확인").
+        SetMessage("이 항목을 삭제하시겠습니까?")
+
+    deleteBtn := dialog.AddButton("삭제")
+    deleteBtn.OnClick(func() {
+        deleteFromDatabase(id)
+    })
+
+    cancelBtn := dialog.AddButton("취소")
+    // 취소는 아무 작업도 수행하지 않음
+
+    dialog.SetDefaultButton(cancelBtn) // 안전을 위해 기본값을 취소로 설정
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+}
+```
+
+### 변경 사항 저장 대화상자
+
+```go
+func (s *Editor) PromptSaveChanges(app *application.App) {
+    dialog := app.Dialog.Question().
+        SetTitle("저장되지 않은 변경 사항").
+        SetMessage("닫기 전에 변경 사항을 저장하시겠습니까?")
+
+    save := dialog.AddButton("저장")
+    save.OnClick(func() {
+        s.Save()
+        s.Close()
+    })
+
+    dontSave := dialog.AddButton("저장 안 함")
+    dontSave.OnClick(func() {
+        s.Close()
+    })
+
+    cancel := dialog.AddButton("취소")
+    // 취소는 아무 작업도 수행하지 않으며 대화상자가 닫힘
+
+    dialog.SetDefaultButton(save)
+    dialog.SetCancelButton(cancel)
+    dialog.Show()
+}
+```
+
+### 다중 파일 처리
+
+```go
+func (s *Service) ProcessMultipleFiles(app *application.App) error {
+    // 여러 파일 선택
+    paths, err := app.Dialog.OpenFile().
+        SetTitle("처리할 파일 선택").
+        AddFilter("이미지", "*.png;*.jpg").
+        PromptForMultipleSelection()
+
+    if err != nil {
+        return err
+    }
+
+    if len(paths) == 0 {
+        app.Dialog.Info().
+            SetTitle("선택된 파일 없음").
+            SetMessage("최소 하나의 파일을 선택하세요.").
+            Show()
+        return nil
+    }
+
+    // 파일 처리
+    for _, path := range paths {
+        err := processFile(path)
+        if err != nil {
+            app.Dialog.Error().
+                SetTitle("처리 오류").
+                SetMessage(fmt.Sprintf("%s 처리 실패: %v", path, err)).
+                Show()
+            continue
+        }
+    }
+
+    // 완료 표시
+    app.Dialog.Info().
+        SetTitle("완료").
+        SetMessage(fmt.Sprintf("%d개의 파일을 성공적으로 처리했습니다", len(paths))).
+        Show()
+
+    return nil
+}
+```
+
+### 대화상자를 사용한 오류 처리
+
+```go
+func (s *Service) SaveFile(app *application.App, data []byte) error {
+    // 저장 위치 선택
+    path, err := app.Dialog.SaveFile().
+        SetTitle("파일 저장").
+        SetFilename("data.json").
+        AddFilter("JSON 파일", "*.json").
+        PromptForSingleSelection()
+
+    if err != nil {
+        // 사용자가 취소함 - 오류가 아님
+        return nil
+    }
+
+    // 저장 시도
+    err = os.WriteFile(path, data, 0644)
+    if err != nil {
+        // 오류 대화상자 표시
+        app.Dialog.Error().
+            SetTitle("저장 실패").
+            SetMessage(fmt.Sprintf("파일을 저장할 수 없습니다: %v", err)).
+            Show()
+        return err
+    }
+
+    // 성공 표시
+    app.Dialog.Info().
+        SetTitle("성공").
+        SetMessage("파일이 성공적으로 저장되었습니다!").
+        Show()
+
+    return nil
+}
+```
+
+### 플랫폼별 기본값
+
+```go
+import (
+    "os"
+    "path/filepath"
+    "runtime"
+)
+
+func (s *Service) GetDefaultDirectory() string {
+    homeDir, _ := os.UserHomeDir()
+
+    switch runtime.GOOS {
+    case "windows":
+        return filepath.Join(homeDir, "Documents")
+    case "darwin":
+        return filepath.Join(homeDir, "Documents")
+    case "linux":
+        return filepath.Join(homeDir, "Documents")
+    default:
+        return homeDir
+    }
+}
+
+func (s *Service) OpenWithDefaults(app *application.App) (string, error) {
+    return app.Dialog.OpenFile().
+        SetTitle("파일 열기").
+        SetDirectory(s.GetDefaultDirectory()).
+        AddFilter("모든 파일", "*.*").
+        PromptForSingleSelection()
+}
+```
+
+## 모범 사례
+
+### 권장 사항
+
+- **네이티브 대화상자 사용** - 플랫폼의 외관과 느낌을 일치시킵니다
+- **명확한 제목 제공** - 사용자에게 목적을 이해시키는 데 도움이 됩니다
+- **적절한 필터 설정** - 올바른 파일 유형으로 사용자를 안내합니다
+- **취소 처리** - 오류를 확인하세요 (사용자가 취소할 수 있음)
+- **파괴적 작업에 확인 대화상자 사용** - Question 대화상자를 사용하세요
+- **피드백 제공** - 성공 메시지에는 Info 대화상자를 사용하세요
+- **합리적인 기본값 설정** - 기본 디렉토리, 파일 이름 등
+- **버튼 작업에 콜백 사용** - 사용자 응답을 적절히 처리하세요
+
+### 금지 사항
+
+- **오류를 무시하지 마세요** - 사용자 취소는 오류를 반환합니다
+- **모호한 버튼 레이블을 사용하지 마세요** - 구체적으로 작성하세요: "저장"/"취소"
+- **대화상자를 남용하지 마세요** - 작업 흐름을 방해합니다
+- **취소에 대한 오류를 표시하지 마세요** - 이는 정상적인 동작입니다
+- **파일 필터를 잊지 마세요** - 사용자가 올바른 파일을 찾는 데 도움이 됩니다
+- **경로를 하드코딩하지 마세요** - os.UserHomeDir() 또는 유사한 함수를 사용하세요
+
+## 플랫폼별 대화상자 유형
+
+### macOS
+
+- 대화상자가 제목 표시줄에서 아래로 슬라이드됩니다
+- 부모 창에 연결된 "시트(Sheet)" 스타일
+- 네이티브 macOS 외관
+
+### Windows
+
+- 표준 Windows 대화상자
+- Windows 디자인 가이드라인을 따릅니다
+- 최신 Windows 10/11 외관
+
+### Linux
+
+- GTK 기반 시스템에서는 GTK 대화상자
+- Qt 기반 시스템에서는 Qt 대화상자
+- 데스크톱 환경과 일치합니다--------|------|------|---|
+| `ShowHiddenFiles()` | ✅ 작동 | ❌ 효과 없음 | 사용자는 대화상자의 UI 토글(Ctrl+H 또는 메뉴)로 제어 |
+| `CanCreateDirectories()` | ✅ 작동 | ❌ 효과 없음 | 포털에서 항상 활성화됨 |
+| `ResolvesAliases()` | ✅ 작동 | ❌ 효과 없음 | 포털이 심볼릭 링크 해결 처리 |
+| `SetButtonText()` | ✅ 작동 | ✅ 작동 | 사용자 지정 수락 버튼 텍스트 작동 |
+
+**이러한 제한 사항이 존재하는 이유:** GTK4의 포털 기반 대화상자는 UI 제어를 데스크톱 환경(GNOME, KDE 등)에 위임합니다. 이는 설계상 의도된 것으로, 포털은 애플리케이션 간 일관된 UX를 제공하며 사용자 선호도를 존중합니다.
+
+:::note
+위의 표는 `-tags gtk4`로 빌드할 때의 GTK4 동작을 보여줍니다. 기본적으로 Wails는 이러한 대화상자 옵션에 대한 완전한 제어를 제공하는 GTK3를 사용합니다.
+:::
+
+## 일반적인 패턴
+
+### "다른 이름으로 저장" 패턴
+
+```go
+func (s *Service) SaveAs(app *application.App, currentPath string) (string, error) {
+    // 현재 경로에서 파일 이름 추출
+    filename := filepath.Base(currentPath)
+
+    // 저장 대화상자 표시
+    path, err := app.Dialog.SaveFile().
+        SetTitle("다른 이름으로 저장").
+        SetFilename(filename).
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    return path, nil
+}
+```
+
+### "최근 파일 열기" 패턴
+
+```go
+func (s *Service) OpenRecent(app *application.App, recentPath string) error {
+    // 파일이 여전히 존재하는지 확인
+    if _, err := os.Stat(recentPath); os.IsNotExist(err) {
+        dialog := app.Dialog.Question().
+            SetTitle("파일을 찾을 수 없음").
+            SetMessage("파일이 더 이상 존재하지 않습니다. 최근 파일에서 제거하시겠습니까?")
+
+        remove := dialog.AddButton("제거")
+        remove.OnClick(func() {
+            s.removeFromRecent(recentPath)
+        })
+
+        cancel := dialog.AddButton("취소")
+        dialog.SetCancelButton(cancel)
+        dialog.Show()
+
+        return err
+    }
+
+    return s.openFile(recentPath)
+}
+```

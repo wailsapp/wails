@@ -1,0 +1,503 @@
+---
+title: Window API
+description: Window API의 전체 참조 문서
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 개요
+
+Window API는 창 외관, 동작 및 수명 주기를 제어하기 위한 메서드를 제공합니다. 창 인스턴스 또는 Window 관리자를 통해 접근할 수 있습니다.
+
+**일반적인 작업:**
+- 창 생성 및 표시
+- 크기, 위치 및 상태 제어
+- 창 이벤트 처리
+- 창 콘텐츠 관리
+- 외관 및 동작 구성
+
+## 가시성
+
+### Show()
+
+창을 표시합니다. 창이 숨겨져 있었다면 이제 표시됩니다.
+
+```go
+func (w *Window) Show()
+```
+
+**예제:**
+```go
+window := app.Window.New()
+window.Show()
+```
+
+### Hide()
+
+창을 닫지 않고 숨깁니다. 창은 메모리에 남아 있으며 다시 표시할 수 있습니다.
+
+```go
+func (w *Window) Hide()
+```
+
+**예제:**
+```go
+// 창을 일시적으로 숨김
+window.Hide()
+
+// 나중에 다시 표시
+window.Show()
+```
+
+**사용 사례:**
+- 트레이로 숨기는 시스템 트레이 애플리케이션
+- 창을 재사용하는 마법사 흐름
+- 작업 중 일시적으로 숨기기
+
+### Close()
+
+창을 닫습니다. 이 작업은 `WindowClosing` 이벤트를 트리거합니다.
+
+```go
+func (w *Window) Close()
+```
+
+**예제:**
+```go
+window.Close()
+```
+
+**참고:** 등록된 후크가 `event.Cancel()`을 호출하면 닫기가 방지됩니다.
+
+## 창 속성
+
+### SetTitle()
+
+창 제목 표시줄의 텍스트를 설정합니다.
+
+```go
+func (w *Window) SetTitle(title string)
+```
+
+**매개변수:**
+- `title` - 새 창 제목
+
+**예제:**
+```go
+window.SetTitle("내 애플리케이션 - 문서.txt")
+```
+
+### Name()
+
+창의 고유한 이름 식별자를 반환합니다.
+
+```go
+func (w *Window) Name() string
+```
+
+**예제:**
+```go
+name := window.Name()
+fmt.Println("창 이름:", name)
+
+// 나중에 이름으로 창 검색
+window := app.GetWindowByName(name)
+```
+
+## 크기 및 위치
+
+### SetSize()
+
+픽셀 단위의 창 차원을 설정합니다.
+
+```go
+func (w *Window) SetSize(width, height int)
+```
+
+**매개변수:**
+- `width` - 픽셀 단위의 창 너비
+- `height` - 픽셀 단위의 창 높이
+
+**예제:**
+```go
+window.SetSize(1024, 768)
+```
+
+### Size()
+
+현재 창 차원을 반환합니다.
+
+```go
+func (w *Window) Size() (width, height int)
+```
+
+**예제:**
+```go
+width, height := window.Size()
+fmt.Printf("창 크기: %dx%d\n", width, height)
+```
+
+### SetMinSize() / SetMaxSize()
+
+최소 및 최대 창 차원을 설정합니다.
+
+```go
+func (w *Window) SetMinSize(width, height int)
+func (w *Window) SetMaxSize(width, height int)
+```
+
+**예제:**
+```go
+// 창이 너무 작아지지 않도록 방지
+window.SetMinSize(800, 600)
+
+// 창이 너무 커지지 않도록 방지
+window.SetMaxSize(1920, 1080)
+```
+
+### SetPosition()
+
+화면의 왼쪽 상단 모서리를 기준으로 창 위치를 설정합니다.
+
+```go
+func (w *Window) SetPosition(x, y int)
+```
+
+**매개변수:**
+- `x` - 픽셀 단위의 가로 위치
+- `y` - 픽셀 단위의 세로 위치
+
+**예제:**
+```go
+// 창을 왼쪽 상단에 배치
+window.SetPosition(0, 0)
+
+// 창을 왼쪽 상단에서 100px 떨어진 곳에 배치
+window.SetPosition(100, 100)
+```
+
+### Position()
+
+현재 창 위치를 반환합니다.
+
+```go
+func (w *Window) Position() (x, y int)
+```
+
+**예제:**
+```go
+x, y := window.Position()
+fmt.Printf("창 위치: (%d, %d)\n", x, y)
+```
+
+### Centre()
+
+창을 화면 중앙에 배치합니다.
+
+```go
+func (w *Window) Centre()
+```
+
+**예제:**
+```go
+window := app.Window.New()
+window.Centre()
+window.Show()
+```
+
+**참고:** 기본 모니터에서 중앙에 배치됩니다. 멀티 모니터 환경의 경우 화면 API를 참조하세요.
+
+### SetFocus()
+
+창을 최상단으로 가져오고 키보드 포커스를 부여합니다.
+
+```go
+func (w *Window) SetFocus()
+```
+
+**예제:**
+```go
+// 창을 최상단으로 가져오기
+window.SetFocus()
+```
+
+## 창 상태
+
+### Minimise() / UnMinimise()
+
+창을 작업 표시줄/도크로 최소화하거나 복원합니다.
+
+```go
+func (w *Window) Minimise()
+func (w *Window) UnMinimise()
+```
+
+**예제:**
+```go
+// 창 최소화
+window.Minimise()
+
+// 최소화 상태에서 복원
+window.UnMinimise()
+```
+
+### Maximise() / UnMaximise()
+
+창을 화면 전체로 최대화하거나 이전 크기로 복원합니다.
+
+```go
+func (w *Window) Maximise()
+func (w *Window) UnMaximise()
+```
+
+**예제:**
+```go
+// 창 최대화
+window.Maximise()
+
+// 이전 크기로 복원
+window.UnMaximise()
+```
+
+### Fullscreen() / UnFullscreen()
+
+전체 화면 모드로 전환하거나 나갑니다.
+
+```go
+func (w *Window) Fullscreen()
+func (w *Window) UnFullscreen()
+```
+
+**예제:**
+```go
+// 전체 화면으로 전환
+window.Fullscreen()
+
+// 전체 화면 종료
+window.UnFullscreen()
+```
+
+### IsMinimised() / IsMaximised() / IsFullscreen()
+
+현재 창 상태를 확인합니다.
+
+```go
+func (w *Window) IsMinimised() bool
+func (w *Window) IsMaximised() bool
+func (w *Window) IsFullscreen() bool
+```
+
+**예제:**
+```go
+if window.IsMinimised() {
+    window.UnMinimise()
+}
+
+if window.IsMaximised() {
+    fmt.Println("창이 최대화되었습니다")
+}
+
+if window.IsFullscreen() {
+    window.UnFullscreen()
+}
+```
+
+## 창 콘텐츠
+
+### SetURL()
+
+창 내에서 특정 URL로 이동합니다.
+
+```go
+func (w *Window) SetURL(url string)
+```
+
+**매개변수:**
+- `url` - 이동할 URL (임베디드 자산의 경우 `http://wails.localhost/` 사용 가능)
+
+**예제:**
+```go
+// 임베디드 페이지로 이동
+window.SetURL("http://wails.localhost/settings.html")
+
+// 외부 URL로 이동 (허용된 경우)
+window.SetURL("https://wails.io")
+```
+
+### SetHTML()
+
+HTML 문자열에서 창 콘텐츠를 직접 설정합니다.
+
+```go
+func (w *Window) SetHTML(html string)
+```
+
+**매개변수:**
+- `html` - 표시할 HTML 콘텐츠
+
+**예제:**
+```go
+html := `
+<!DOCTYPE html>
+<html>
+<head><title>동적 콘텐츠</title></head>
+<body>
+    <h1>Go에서 인사드립니다!</h1>
+    <p>이 콘텐츠는 동적으로 생성되었습니다.</p>
+</body>
+</html>
+`
+window.SetHTML(html)
+```
+
+**사용 사례:**
+- 동적 콘텐츠 생성
+- 프론트엔드 빌드 프로세스가 없는 간단한 창
+- 오류 페이지 또는 스플래시 스크린
+
+### Reload()
+
+현재 창 콘텐츠를 다시 로드합니다.
+
+```go
+func (w *Window) Reload()
+```
+
+**예제:**
+```go
+// 현재 페이지 다시 로드
+window.Reload()
+```
+
+**참고:** 개발 중이거나 콘텐츠를 새로 고쳐야 할 때 유용합니다.
+
+## 창 이벤트
+
+Wails는 창 이벤트를 처리하기 위한 두 가지 방법을 제공합니다:
+
+- **OnWindowEvent()** - 창 이벤트 수신 (이벤트 방지 불가)
+- **RegisterHook()** - 창 이벤트 후킹 (`event.Cancel()` 호출로 방지 가능)
+
+### OnWindowEvent()
+
+창 이벤트에 대한 콜백을 등록합니다.
+
+```go
+func (w *Window) OnWindowEvent(
+    eventType events.WindowEventType,
+    callback func(event *WindowEvent),
+) func()
+```
+
+**반환값:** 이벤트 리스너를 제거하기 위한 정리 함수
+
+**예제:**
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// 창 포커스 수신
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("창에 포커스가 설정되었습니다")
+})
+
+// 창 포커스 손실 수신
+window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("창에서 포커스가 손실되었습니다")
+})
+
+// 창 크기 변경 수신
+window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
+    app.Logger.Info("창 크기가 변경되었습니다")
+})
+```
+
+**일반적인 창 이벤트:**
+- `events.Common.WindowClosing` - 창이 닫히려는 중
+- `events.Common.WindowFocus` - 창에 포커스가 설정됨
+- `events.Common.WindowLostFocus` - 창에서 포커스가 손실됨
+- `events.Common.WindowDidMove` - 창이 이동됨
+- `events.Common.WindowDidResize` - 창 크기가 변경됨
+- `events.Common.WindowMinimise` - 창이 최소화됨
+- `events.Common.WindowMaximise` - 창이 최대화됨
+- `events.Common.WindowFullscreen` - 창이 전체 화면으로 전환됨-------|-------------|
+| `LinuxMenuStyleMenuBar` | 제목 표시줄 아래의 전통적인 메뉴 막대 (기본값) |
+| `LinuxMenuStylePrimaryMenu` | 헤더 바의 기본 메뉴 버튼 (GNOME 스타일) |
+
+**예제:**
+```go
+window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Title: "내 애플리케이션",
+    Linux: application.LinuxWindow{
+        MenuStyle: application.LinuxMenuStylePrimaryMenu,
+    },
+})
+window.SetMenu(menu)
+```
+
+**참고:** 기본 메뉴 스타일은 GNOME 인간 인터페이스 가이드라인을 따라 헤더 바에 햄버거 버튼(☰)을 표시합니다. 이는 현대적인 GNOME 애플리케이션을 위한 권장 스타일입니다.
+
+## 전체 예제
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Window API Demo",
+    })
+
+    // 옵션과 함께 창 생성
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:            "내 애플리케이션",
+        Width:            1024,
+        Height:           768,
+        MinWidth:         800,
+        MinHeight:        600,
+        BackgroundColour: application.NewRGB(255, 255, 255),
+        URL:              "http://wails.localhost/",
+    })
+
+    // 창 동작 구성
+    window.SetResizable(true)
+    window.SetMinSize(800, 600)
+    window.SetMaxSize(1920, 1080)
+
+    // 이벤트 후크 설정
+    window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+        // 닫기 전에 확인
+        result, _ := app.Dialog.Question().
+            SetTitle("닫기 확인").
+            SetMessage("이 창을 닫으시겠습니까?").
+            SetButtons("예", "아니요").
+            Show()
+
+        if result == "아니요" {
+            e.Cancel()
+        }
+    })
+
+    // 창 이벤트 수신
+    window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+        window.SetTitle("내 애플리케이션 (활성)")
+        app.Logger.Info("창이 포커스를 받았습니다")
+    })
+
+    window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+        window.SetTitle("내 애플리케이션")
+        app.Logger.Info("창이 포커스를 잃었습니다")
+    })
+
+    // 창 위치 지정 및 표시
+    window.Centre()
+    window.Show()
+
+    app.Run()
+}
+```

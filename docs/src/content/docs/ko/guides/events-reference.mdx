@@ -1,0 +1,460 @@
+---
+title: 이벤트 가이드
+description: 애플리케이션 통신 및 수명 주기 관리를 위해 Wails v3에서 이벤트를 사용하는 실용적인 가이드
+---
+
+**참고: 이 가이드는 진행 중입니다.**
+
+# 이벤트 가이드
+
+이벤트는 Wails 애플리케이션에서 통신의 핵심입니다. 이벤트를 사용하면 애플리케이션의 서로 다른 부분이 긴밀하게 결합되지 않고도 서로 통신할 수 있습니다. 이 가이드에서는 Wails 애플리케이션에서 이벤트를 효과적으로 사용하는 데 필요한 모든 내용을 단계별로 설명합니다.
+
+## Wails 이벤트 이해하기
+
+이벤트를 애플리케이션 전체로 브로드캐스트되는 메시지로 생각하세요. 애플리케이션의 어떤 부분에서도 이러한 메시지를 수신하고 그에 따라 반응할 수 있습니다. 이는 특히 다음과 같은 경우에 유용합니다:
+
+- **창 변경 응답**: 창이 최소화, 최대화되거나 이동되었을 때 알림 받기
+- **시스템 이벤트 처리**: 테마 변경이나 전원 이벤트에 반응하기
+- **사용자 정의 애플리케이션 로직**: 데이터 업데이트나 사용자 작업과 같은 기능을 위한 자체 이벤트 생성
+- **컴포넌트 간 통신**: 직접적인 의존성 없이 애플리케이션의 서로 다른 부분이 통신하도록 하기
+
+## 이벤트 명명 규칙
+
+모든 Wails 이벤트는 출처를 명확히 나타내기 위해 네임스페이스 패턴을 따릅니다:
+
+- `common:` - Windows, macOS, Linux 모두에서 작동하는 크로스 플랫폼 이벤트
+- `windows:` - Windows 전용 이벤트
+- `mac:` - macOS 전용 이벤트
+- `linux:` - Linux 전용 이벤트
+
+예를 들어:
+- `common:WindowFocus` - 창이 포커스를 얻음 (모든 플랫폼에서 작동)
+- `windows:APMSuspend` - 시스템이 일시 중단됨 (Windows 전용)
+- `mac:ApplicationDidBecomeActive` - 앱이 활성화됨 (macOS 전용)
+
+## 이벤트 시작하기
+
+### 이벤트 수신 (프론트엔드)
+
+가장 일반적인 사용 사례는 프론트엔드 코드에서 이벤트를 수신하는 것입니다:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// 창이 포커스를 얻을 때 수신
+Events.On('common:WindowFocus', () => {
+    console.log('창이 이제 포커스되었습니다!');
+    // 아마도 데이터를 새로 고치거나 애니메이션을 재개할 것입니다
+});
+
+// 테마 변경 수신
+Events.On('common:ThemeChanged', (event) => {
+    console.log('테마 변경됨:', event.data);
+    // 앱의 테마를 그에 맞게 업데이트
+});
+
+// Go 백엔드에서 사용자 정의 이벤트 수신
+Events.On('my-app:data-updated', (event) => {
+    console.log('데이터 업데이트됨:', event.data);
+    // 새 데이터로 UI 업데이트
+});
+```
+
+### 이벤트 발생 (백엔드)
+
+Go 코드에서 프론트엔드가 수신할 수 있는 이벤트를 발생시킬 수 있습니다:
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "time"
+)
+
+func (s *Service) UpdateData() {
+    // 일부 데이터 처리 수행...
+
+    // 프론트엔드에 알림
+    app := application.Get()
+    app.Event.Emit("my-app:data-updated",
+        map[string]interface{}{
+            "timestamp": time.Now(),
+            "count": 42,
+        },
+	)
+}
+```
+
+### 이벤트 발생 (프론트엔드)
+
+그다지 일반적이지는 않지만, Go 코드가 수신할 수 있는 이벤트를 프론트엔드에서 발생시킬 수도 있습니다:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// 데이터 없는 이벤트
+Events.Emit('myapp:close-window')
+
+// 데이터 있는 이벤트
+Events.Emit('myapp:disconnect-requested', 'id-123')
+```
+
+프론트엔드에서 TypeScript를 사용하고 Go 코드에서 [타입이 지정된 이벤트를 등록](#typed-events-with-typecheck)했다면, 이벤트 이름 자동 완성/검사와 데이터 타입 검사를 받게 됩니다.
+
+### 이벤트 리스너 제거
+
+더 이상 필요하지 않을 때 항상 이벤트 리스너를 정리하세요:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// 핸들러 참조 저장
+const focusHandler = () => {
+    console.log('창 포커스됨');
+};
+
+// 리스너 추가
+Events.On('common:WindowFocus', focusHandler);
+
+// 나중에 더 이상 필요하지 않을 때 제거
+Events.Off('common:WindowFocus', focusHandler);
+
+// 또는 이벤트의 모든 리스너 제거
+Events.Off('common:WindowFocus');
+```
+
+## 일반적인 사용 사례
+
+### 1. 창 포커스 시 일시 중지/재개
+
+많은 애플리케이션에서 창이 포커스를 잃을 때 특정 활동을 일시 중지해야 합니다:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+let animationRunning = true;
+
+Events.On('common:WindowLostFocus', () => {
+    animationRunning = false;
+    pauseBackgroundTasks();
+});
+
+Events.On('common:WindowFocus', () => {
+    animationRunning = true;
+    resumeBackgroundTasks();
+});
+```
+
+### 2. 테마 변경 응답
+
+앱을 시스템 테마와 동기화 상태로 유지하세요:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+Events.On('common:ThemeChanged', (event) => {
+    const isDarkMode = event.data.isDark;
+
+    if (isDarkMode) {
+        document.body.classList.add('dark-theme');
+        document.body.classList.remove('light-theme');
+    } else {
+        document.body.classList.add('light-theme');
+        document.body.classList.remove('dark-theme');
+    }
+});
+```
+
+### 3. 파일 드롭 처리
+
+앱이 드래그된 파일을 받을 수 있도록 하세요:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+Events.On('common:WindowFilesDropped', (event) => {
+    const files = event.data.files;
+
+    files.forEach(file => {
+        console.log('드롭된 파일:', file);
+        // 드롭된 파일 처리
+        handleFileUpload(file);
+    });
+});
+```
+
+### 4. 창 수명 주기 관리
+
+창 상태 변경에 반응하세요:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+Events.On('common:WindowClosing', () => {
+    // 닫기 전에 사용자 데이터 저장
+    saveApplicationState();
+
+    // 등록된 창 닫기 핸들러에서 false를 반환하여
+    // 닫기를 방지할 수도 있습니다
+});
+
+Events.On('common:WindowMaximise', () => {
+    // 최대화된 뷰를 위해 UI 조정
+    adjustLayoutForMaximized();
+});
+
+Events.On('common:WindowRestore', () => {
+    // UI를 정상 상태로 복귀
+    adjustLayoutForNormal();
+});
+```
+
+### 5. 플랫폼별 기능
+
+필요할 때 플랫폼별 이벤트를 처리하세요:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Windows 전용 전원 관리
+Events.On('windows:APMSuspend', () => {
+    console.log('시스템이 절전 모드로 들어갑니다');
+    saveState();
+});
+
+Events.On('windows:APMResumeSuspend', () => {
+    console.log('시스템이 깨어났습니다');
+    refreshData();
+});
+
+// macOS 전용 앱 수명 주기
+Events.On('mac:ApplicationWillTerminate', () => {
+    console.log('앱이 종료됩니다');
+    performCleanup();
+});
+```
+
+## 사용자 정의 이벤트 생성
+
+애플리케이션별 필요에 맞게 자체 이벤트를 생성할 수 있습니다.
+
+### 백엔드 (Go)
+
+```go
+// 데이터가 변경될 때 사용자 정의 이벤트 발생
+
+func (s *Service) ProcessUserData(userData UserData) error {
+    // 데이터 처리...
+
+    app := application.Get()
+    // 모든 리스너에 알림
+    app.Event.Emit("user:data-processed",
+        map[string]interface{}{
+            "userId": userData.ID,
+            "status": "completed",
+            "timestamp": time.Now(),
+        },
+    )
+    return nil
+}
+
+// 주기적 업데이트 발생
+func (s *Service) StartMonitoring() {
+    app := application.Get()
+    ticker := time.NewTicker(5 * time.Second)
+    go func() {
+        for range ticker.C {
+            stats := s.collectStats()
+            app.Event.Emit("monitor:stats-updated", stats)
+        }
+    }()
+}
+```
+
+### 프론트엔드 (JavaScript)
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// 사용자 정의 이벤트 수신
+Events.On('user:data-processed', (event) => {
+    const { userId, status, timestamp } = event.data;
+
+    showNotification(`사용자 ${userId} 처리 상태: ${status}`);
+    updateUIWithNewData();
+});
+
+Events.On('monitor:stats-updated', (event) => {
+    updateDashboard(event.data);
+});
+```
+
+## 타입 안전성을 갖춘 타입 지정 이벤트
+
+Wails v3는 이벤트 등록 및 자동 바인딩 생성을 통해 완전한 TypeScript 타입 안전성을 갖춘 타입 지정 이벤트를 지원합니다.
+
+### 사용자 정의 이벤트 등록
+
+초기화 시 `application.RegisterEvent`를 호출하여 사용자 정의 이벤트 이름과 해당 데이터 타입을 등록하세요:
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+type UserLoginData struct {
+    UserID   string
+    Username string
+    LoginTime string
+}
+
+type MonitorStats struct {
+    CPUUsage    float64
+    MemoryUsage float64
+}
+```-------|-------|-------|
+| `common:ApplicationStarted` | 애플리케이션이 완전히 시작됨 | 앱 초기화, 저장된 상태 로드 |
+| `common:WindowRuntimeReady` | Wails 런타임이 준비됨 | Wails API 호출 시작 |
+| `common:ThemeChanged` | 시스템 테마 변경됨 | 앱 외관 업데이트 |
+| `common:WindowFocus` | 창이 포커스를 얻음 | 활동 재개, 데이터 새로고침 |
+| `common:WindowLostFocus` | 창이 포커스를 잃음 | 활동 일시정지, 상태 저장 |
+| `common:WindowMinimise` | 창이 최소화됨 | 렌더링 일시정지, 리소스 사용량 감소 |
+| `common:WindowMaximise` | 창이 최대화됨 | 전체 화면용 레이아웃 조정 |
+| `common:WindowRestore` | 창이 최소화/최대화 상태에서 복원됨 | 일반 레이아웃으로 복귀 |
+| `common:WindowClosing` | 창이 닫히려 함 | 데이터 저장, 자원 정리 |
+| `common:WindowFilesDropped` | 파일이 창에 드롭됨 | 파일 가져오기 처리 |
+| `common:WindowDidResize` | 창이 크기 조정됨 | 레이아웃 조정, 차트 다시 렌더링 |
+| `common:WindowDidMove` | 창이 이동됨 | 위치 기반 기능 업데이트 |
+
+### 플랫폼별 이벤트
+
+#### Windows 이벤트
+
+Windows 애플리케이션의 주요 이벤트:
+
+| 이벤트 | 설명 | 사용 사례 |
+|-------|-------|-------|
+| `windows:SystemThemeChanged` | Windows 테마 변경됨 | 앱 색상 업데이트 |
+| `windows:APMSuspend` | 시스템 일시 정지 중 | 상태 저장, 작업 일시정지 |
+| `windows:APMResumeSuspend` | 시스템 재개됨 | 상태 복원, 데이터 새로고침 |
+| `windows:APMPowerStatusChange` | 전원 상태 변경됨 | 성능 설정 조정 |
+
+#### macOS 이벤트
+
+중요한 macOS 애플리케이션 이벤트:
+
+| 이벤트 | 설명 | 사용 사례 |
+|-------|-------|-------|
+| `mac:ApplicationDidBecomeActive` | 앱이 활성화됨 | 작업 재개 |
+| `mac:ApplicationDidResignActive` | 앱이 비활성화됨 | 작업 일시정지 |
+| `mac:ApplicationWillTerminate` | 앱이 종료됨 | 최종 정리 |
+| `mac:WindowDidEnterFullScreen` | 전체 화면 진입 | 전체 화면용 UI 조정 |
+| `mac:WindowDidExitFullScreen` | 전체 화면 종료 | 일반 UI 복원 |
+
+#### Linux 이벤트
+
+핵심 Linux 창 이벤트:
+
+| 이벤트 | 설명 | 사용 사례 |
+|-------|-------|-------|
+| `linux:SystemThemeChanged` | 데스크톱 테마 변경됨 | 앱 테마 업데이트 |
+| `linux:WindowFocusIn` | 창이 포커스를 얻음 | 활동 재개 |
+| `linux:WindowFocusOut` | 창이 포커스를 잃음 | 활동 일시정지 |
+| `linux:WindowLoadStarted` | WebView 로딩 시작 | 로딩 표시기 표시 |
+| `linux:WindowLoadRedirected` | WebView 리다이렉션 발생 | 네비게이션 리다이렉션 추적 |
+| `linux:WindowLoadCommitted` | WebView 로딩 커밋됨 | 콘텐츠 수신 중 |
+| `linux:WindowLoadFinished` | WebView 로딩 완료 | 로딩 표시기 숨기기, JS/CSS 주입 |
+
+## 모범 사례
+
+### 1. 이벤트 네임스페이스 사용
+
+사용자 정의 이벤트를 생성할 때 충돌을 피하기 위해 네임스페이스를 사용하세요:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// 좋음 - 네임스페이스화된 이벤트
+Events.Emit('myapp:user:login');
+Events.Emit('myapp:data:updated');
+Events.Emit('myapp:network:connected');
+
+// 피하세요 - 충돌 가능성이 있는 일반적인 이름
+Events.Emit('login');
+Events.Emit('update');
+```
+
+### 2. 리스너 정리
+
+컴포넌트가 언마운트될 때 항상 이벤트 리스너를 제거하세요:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// React 예제
+useEffect(() => {
+    const handler = (event) => {
+        // 이벤트 처리
+    };
+
+    Events.On('common:WindowResize', handler);
+
+    // 정리
+    return () => {
+        Events.Off('common:WindowResize', handler);
+    };
+}, []);
+```
+
+### 3. 플랫폼 차이 처리
+
+플랫폼별 이벤트를 사용할 때 플랫폼 가용성을 확인하세요:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// 플랫폼별 이벤트는 조건 없이 등록할 수 있습니다;
+// 지원되지 않는 플랫폼에서는 단순히 발생하지 않을 뿐입니다.
+Events.On('windows:APMSuspend', handleSuspend);
+Events.On('mac:ApplicationWillTerminate', handleTerminate);
+```
+
+### 4. 이벤트 남용 피하기
+
+이벤트는 강력하지만 모든 것에 사용하지 마세요:
+
+- ✅ 이벤트 사용: 시스템 알림, 수명 주기 변경, 브로드캐스트 업데이트
+- ❌ 이벤트 사용 피하기: 직접 함수 반환, 단일 컴포넌트 업데이트, 동기식 작업
+
+## 이벤트 디버깅
+
+이벤트 문제를 디버깅하려면:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// 모든 이벤트 로깅 (개발 전용)
+if (isDevelopment) {
+    const originalOn = Events.On;
+    Events.On = function(eventName, handler) {
+        console.log(`[Event Registered] ${eventName}`);
+        return originalOn.call(this, eventName, function(event) {
+            console.log(`[Event Fired] ${eventName}`, event);
+            return handler(event);
+        });
+    };
+}
+```
+
+## 진실의 원천 (Source of Truth)
+
+사용 가능한 이벤트의 전체 목록은 Wails 소스 코드에서 확인할 수 있습니다:
+- 프론트엔드 이벤트: [`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/main/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
+- 백엔드 이벤트: [`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/main/v3/pkg/events/events.go)항상 최신 이벤트 이름 및 사용 가능 여부를 확인하려면 해당 파일들을 참조하십시오.
+
+## 요약
+
+Wails의 이벤트는 애플리케이션 내 통신을 처리하는 강력하고 느슨하게 결합된 방식을 제공합니다. 이 가이드의 패턴과 관행을 따름으로써 시스템 변경 및 사용자 상호작용에 매끄럽게 반응하는 반응형이고 플랫폼 인식형 애플리케이션을 구축할 수 있습니다.
+
+기억하세요: 교차 플랫폼 호환성을 위해 공통 이벤트로 시작하고, 필요할 때 플랫폼별 이벤트를 추가하며, 메모리 누수를 방지하기 위해 항상 이벤트 리스너를 정리하십시오.

@@ -1,0 +1,376 @@
+---
+title: 대화 상자 개요
+description: 애플리케이션에서 네이티브 시스템 대화 상자를 표시합니다
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## 네이티브 대화 상자
+
+Wails는 모든 플랫폼에서 작동하는 **네이티브 시스템 대화 상자**를 제공합니다: 메시지 대화 상자(정보, 경고, 오류, 질문), 파일 대화 상자(열기, 저장, 폴더), 그리고 플랫폼 네이티브 외관과 동작을 가진 사용자 정의 대화 상자 창.
+
+## 빠른 시작
+
+```go
+// 정보 대화 상자
+app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("File saved successfully!").
+    Show()
+
+// 버튼 콜백이 있는 질문 대화 상자
+dialog := app.Dialog.Question().
+    SetTitle("Confirm").
+    SetMessage("Delete this file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    deleteFile()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)
+dialog.SetCancelButton(cancelBtn)
+dialog.Show()
+
+// 파일 열기 대화 상자
+path, _ := app.Dialog.OpenFile().
+    SetTitle("Select Image").
+    AddFilter("Images", "*.png;*.jpg").
+    PromptForSingleSelection()
+```
+
+**이것으로 끝입니다!** 최소한의 코드로 네이티브 대화 상자.
+
+## 대화 상자에 접근하기
+
+대화 상자는 `app.Dialog` 매니저를 통해 접근합니다:
+
+```go
+app.Dialog.Info()
+app.Dialog.Question()
+app.Dialog.Warning()
+app.Dialog.Error()
+app.Dialog.OpenFile()
+app.Dialog.SaveFile()
+```
+
+## 대화 상자 유형
+
+### 정보 대화 상자
+
+간단한 메시지를 표시합니다:
+
+```go
+app.Dialog.Info().
+    SetTitle("Welcome").
+    SetMessage("Welcome to our application!").
+    Show()
+```
+
+**사용 사례:**
+- 성공 메시지
+- 정보성 공지
+- 완료 확인
+
+### 경고 대화 상자
+
+경고를 표시합니다:
+
+```go
+app.Dialog.Warning().
+    SetTitle("Warning").
+    SetMessage("This action cannot be undone.").
+    Show()
+```
+
+**사용 사례:**
+- 비중요 경고
+- 사용 중단 공지
+- 주의 메시지
+
+### 오류 대화 상자
+
+오류를 표시합니다:
+
+```go
+app.Dialog.Error().
+    SetTitle("Error").
+    SetMessage("Failed to save file: " + err.Error()).
+    Show()
+```
+
+**사용 사례:**
+- 오류 메시지
+- 실패 알림
+- 예외 처리
+
+### 질문 대화 상자
+
+사용자에게 질문을 하고 버튼 콜백을 통해 응답을 처리합니다:
+
+```go
+dialog := app.Dialog.Question().
+    SetTitle("Confirm Delete").
+    SetMessage("Are you sure you want to delete this file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    deleteFile()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)
+dialog.SetCancelButton(cancelBtn)
+dialog.Show()
+```
+
+**사용 사례:**
+- 작업 확인
+- 예/아니오 질문
+- 다중 선택
+
+## 파일 대화 상자
+
+### 파일 열기 대화 상자
+
+열 파일을 선택합니다:
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Image").
+    AddFilter("Images", "*.png;*.jpg;*.gif").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
+
+if err == nil && path != "" {
+    openFile(path)
+}
+```
+
+**다중 선택:**
+
+```go
+paths, err := app.Dialog.OpenFile().
+    SetTitle("Select Images").
+    AddFilter("Images", "*.png;*.jpg").
+    PromptForMultipleSelection()
+
+if err == nil {
+    for _, path := range paths {
+        processFile(path)
+    }
+}
+```
+
+### 파일 저장 대화 상자
+
+저장할 위치를 선택합니다:
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("document.txt").
+    AddFilter("Text Files", "*.txt").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
+
+if err == nil && path != "" {
+    saveFile(path)
+}
+```
+
+### 폴더 선택 대화 상자
+
+폴더 선택이 활성화된 파일 열기 대화 상자를 사용하여 디렉토리를 선택합니다:
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Output Folder").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+
+if err == nil && path != "" {
+    exportToFolder(path)
+}
+```
+
+## 대화 상자 옵션
+
+### 제목과 메시지
+
+```go
+dialog := app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("Operation completed successfully!")
+```
+
+### 버튼
+
+**간단한 대화 상자를 위한 기본 버튼:**
+
+정보, 경고, 오류 대화 상자는 기본 "확인" 버튼을 표시합니다:
+
+```go
+app.Dialog.Info().
+    SetMessage("Done!").
+    Show()
+```
+
+**질문 대화 상자를 위한 사용자 정의 버튼:**
+
+`AddButton()`을 사용하여 버튼을 추가합니다. 이 함수는 콜백으로 구성할 수 있는 `*Button`을 반환합니다:
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Choose action")
+
+save := dialog.AddButton("Save")
+save.OnClick(func() {
+    saveDocument()
+})
+
+dontSave := dialog.AddButton("Don't Save")
+dontSave.OnClick(func() {
+    discardChanges()
+})
+
+cancel := dialog.AddButton("Cancel")
+// 콜백이 필요하지 않음 - 대화 상자를 닫기만 함
+
+dialog.SetDefaultButton(save)
+dialog.SetCancelButton(cancel)
+dialog.Show()
+```
+
+**기본 버튼과 취소 버튼:**
+
+`SetDefaultButton()`을 사용하여 강조 표시되고 Enter 키로 트리거되는 버튼을 지정합니다.
+`SetCancelButton()`을 사용하여 Escape 키로 트리거되는 버튼을 지정합니다.
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Delete file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    performDelete()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)  // 기본적으로 안전한 옵션이 강조됨
+dialog.SetCancelButton(cancelBtn)   // Escape 키가 취소를 트리거함
+dialog.Show()
+```
+
+### 창 부착
+
+특정 창에 대화 상자를 부착합니다:
+
+```go
+dialog := app.Dialog.Info().
+    SetMessage("Window-specific message").
+    AttachToWindow(window)
+
+dialog.Show()
+```
+
+**동작:**
+- 대화 상자가 부모 창 중앙에 나타납니다
+- 대화 상자가 표시되는 동안 부모 창이 비활성화됩니다
+- 대화 상자가 부모 창과 함께 이동합니다 (macOS)
+
+## 플랫폼 동작
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    **macOS 대화 상자:**
+    
+    - 네이티브 NSAlert 외관
+    - 시스템 테마 따름 (라이트/다크)
+    - 키보드 탐색 지원
+    - 표준 단축키 (취소를 위해 ⌘.)
+    - 내장 접근성 기능
+    - 창에 부착 시 시트 스타일
+    
+    **예제:**
+    ```go
+    // macOS에서 시트로 나타남
+    dialog := app.Dialog.Question().
+        SetMessage("Save changes?").
+        AttachToWindow(window)
+    dialog.AddButton("Yes")
+    dialog.AddButton("No")
+    dialog.Show()
+    ```
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    **Windows 대화 상자:**
+    
+    - 네이티브 TaskDialog 외관
+    - 시스템 테마 따름
+    - 키보드 탐색 지원
+    - 표준 단축키 (취소를 위해 Esc)
+    - 내장 접근성 기능
+    - 부모 창에 모달
+    
+    **예제:**
+    ```go
+    // Windows에서 모달 대화 상자
+    app.Dialog.Error().
+        SetTitle("Error").
+        SetMessage("Operation failed").
+        Show()
+    ```
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **Linux 대화 상자:**
+    
+    - GTK 대화 상자 외관
+    - 데스크톱 테마 따름
+    - 키보드 탐색 지원
+    - 데스크톱 환경 통합
+    - DE에 따라 다름 (GNOME, KDE 등)
+    
+    **예제:**
+    ```go
+    // Linux에서 GTK 대화 상자
+    app.Dialog.Info().
+        SetMessage("Update complete").
+        Show()
+    ```
+  </TabItem>
+</Tabs>
+
+## 일반적인 패턴
+
+### 파괴적 작업 전 확인
+
+```go
+func deleteFile(app *application.App, path string) {
+    dialog := app.Dialog.Question().
+        SetTitle("Confirm Delete").
+        SetMessage(fmt.Sprintf("Delete %s?", filepath.Base(path)))
+
+    deleteBtn := dialog.AddButton("Delete")
+    deleteBtn.OnClick(func() {
+        if err := os.Remove(path); err != nil {
+            app.Dialog.Error().
+                SetTitle("Delete Failed").
+                SetMessage(err.Error()).
+                Show()
+        }
+    })
+
+    cancelBtn := dialog.AddButton("Cancel")
+    dialog.SetDefaultButton(cancelBtn)
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+}
+```---
+
+**질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [대화 상자 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs)를 확인하세요.

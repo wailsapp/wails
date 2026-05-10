@@ -1,0 +1,173 @@
+---
+title: 엔드투엔드 테스트
+description: 전체 사용자 워크플로우 테스트
+sidebar:
+  order: 6
+---
+
+## 개요
+
+엔드투엔드 테스트는 애플리케이션의 전체 사용자 워크플로우를 검증합니다.
+
+## Playwright 사용법
+
+### 설정
+
+```bash
+# Install Playwright
+npm install -D @playwright/test
+
+# Initialize
+npx playwright install
+```
+
+### 구성
+
+```javascript
+// playwright.config.js
+import { defineConfig } from '@playwright/test'
+
+export default defineConfig({
+  testDir: './e2e',
+  use: {
+    baseURL: 'http://localhost:34115', // Wails dev server
+  },
+})
+```
+
+### 테스트 작성
+
+```javascript
+// e2e/app.spec.js
+import { test, expect } from '@playwright/test'
+
+test('create note', async ({ page }) => {
+  await page.goto('/')
+  
+  // Click new note button
+  await page.click('#new-note-btn')
+  
+  // Fill in title
+  await page.fill('#note-title', 'Test Note')
+  
+  // Fill in content
+  await page.fill('#note-content', 'Test content')
+  
+  // Verify note appears in list
+  await expect(page.locator('.note-item')).toContainText('Test Note')
+})
+
+test('delete note', async ({ page }) => {
+  await page.goto('/')
+  
+  // Create a note first
+  await page.click('#new-note-btn')
+  await page.fill('#note-title', 'To Delete')
+  
+  // Delete it
+  await page.click('#delete-btn')
+  
+  // Confirm dialog
+  page.on('dialog', dialog => dialog.accept())
+  
+  // Verify it's gone
+  await expect(page.locator('.note-item')).not.toContainText('To Delete')
+})
+```
+
+## 대화상자 테스트
+
+```javascript
+test('file save dialog', async ({ page }) => {
+  await page.goto('/')
+  
+  // Intercept file dialog
+  page.on('filechooser', async (fileChooser) => {
+    await fileChooser.setFiles('/path/to/test/file.json')
+  })
+  
+  // Trigger save
+  await page.click('#save-btn')
+  
+  // Verify success message
+  await expect(page.locator('.success-message')).toBeVisible()
+})
+```
+
+## 창 동작 테스트
+
+```javascript
+test('window state', async ({ page }) => {
+  await page.goto('/')
+  
+  // Test window title
+  await expect(page).toHaveTitle('My App')
+  
+  // Test window size
+  const size = await page.viewportSize()
+  expect(size.width).toBe(800)
+  expect(size.height).toBe(600)
+})
+```
+
+## 모범 사례
+
+### ✅ 권장 사항
+
+- 핵심 사용자 흐름 테스트
+- data-testid 속성 사용
+- 테스트 데이터 정리
+- CI/CD에서 테스트 실행
+- 오류 시나리오 테스트
+- 테스트 간 독립성 유지
+
+### ❌ 금지 사항
+
+- 구현 세부사항 테스트 금지
+- 취약한 선택자 작성 금지
+- 정리 단계 건너뛰기 금지
+- 불안정한 테스트 무시 금지
+- 모든 것 테스트하지 않기
+
+## E2E 테스트 실행
+
+```bash
+# Run all tests
+npx playwright test
+
+# Run in headed mode
+npx playwright test --headed
+
+# Run specific test
+npx playwright test e2e/app.spec.js
+
+# Debug mode
+npx playwright test --debug
+```
+
+## CI/CD 통합
+
+```yaml
+# .github/workflows/e2e.yml
+name: E2E Tests
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+      - name: Run tests
+        run: npx playwright test
+```
+
+## 다음 단계
+
+- [Testing](/ko/guides/testing) - 단위 테스트 학습
+- [Building](/guides/building) - 애플리케이션 빌드
