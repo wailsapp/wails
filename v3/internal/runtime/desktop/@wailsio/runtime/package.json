@@ -48,7 +48,7 @@
     "prepack": "npm run build"
   },
   "devDependencies": {
-    "happy-dom": "^17.1.1",
+    "happy-dom": "^20.9.0",
     "promises-aplus-tests": "2.1.2",
     "rimraf": "^5.0.5",
     "typedoc": "^0.27.7",
@@ -56,7 +56,7 @@
     "typedoc-plugin-mdn-links": "^4.0.13",
     "typedoc-plugin-missing-exports": "^3.1.0",
     "typescript": "^5.7.3",
-    "vite": "^5.2.0",
+    "vite": "^8.0.11",
     "vitest": "^3.0.6"
   },
   "overrides": {
