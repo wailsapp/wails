@@ -1,0 +1,133 @@
+---
+title: 为什么选择 Wails？
+description: 了解为什么 Wails 是构建桌面应用的理想选择
+sidebar:
+  order: 1
+---
+
+
+Wails 将 **Go 语言的高性能与简洁性** 与 **现代 Web UI 的灵活性** 相结合，让你能够使用熟悉的工具构建美观的原生桌面应用。
+
+## 让用户感知的性能
+
+**Wails 应用：**
+- **~15MB 体积**（对比 Electron 的 150MB）
+- **~10MB 基础内存占用**（对比 Electron 的 100MB+）
+- **&lt;0.5s 启动时间**（对比 Electron 的 2-3s）
+- **原生渲染**（使用操作系统提供的 WebView）
+
+用户会直观地感受到你的应用快速、轻量且专业。
+
+## 开发者体验
+
+**一次编写，随处运行：**
+- 一套 Go 代码库支持 Windows、macOS 和 Linux
+- 支持任意 Web 框架（React、Vue、Svelte、原生 JS）
+- 开发时支持热重载
+- 从 Go 代码自动生成 TypeScript 绑定
+
+以更少的维护代码量，更快地交付产品。
+
+## 生产级特性
+
+**涵盖你所需的一切：**
+- 支持多窗口及独立生命周期
+- 原生菜单（应用菜单、右键菜单、系统托盘）
+- 平台原生风格的文件对话框
+- 系统级集成（通知、剪贴板、键盘快捷键）
+- 全平台代码签名与打包支持
+
+构建专业级应用，而非仅仅是原型。
+
+## 更快的开发效率
+
+- **一套代码，三端覆盖** - 一次编写，构建 Windows、macOS 和 Linux 应用
+- **复用现有技能** - Go 处理后端，HTML/CSS/JS 处理 UI
+- **即时反馈** - 开发时热重载，编译仅需数秒
+- **体积小巧** - 15MB 的应用体积意味着更快的构建、下载与迭代速度
+
+## 何时选择 Wails
+
+**Wails 非常适合：**
+
+- **企业级应用**（CRM、库存管理、数据看板、后台管理工具）
+- **开发者工具**（数据库客户端、API 测试工具、部署工具）
+- **效率工具**（笔记应用、任务管理器、时间追踪器）
+- **创意工具**（图像编辑器、视频处理工具、设计辅助软件）
+- **内部工具**（企业定制应用、自动化脚本工具）
+
+## 真实成功案例
+
+:::tip[生产级应用]
+Wails 驱动着成千上万用户使用的真实应用：
+- **数据库管理工具**（支持复杂 UI）
+- **金融数据看板**（处理实时数据）
+- **视频编辑工具**（具备原生性能）
+- **开发辅助工具**（被工程团队广泛使用）
+
+[查看案例展示 →](/community/showcase)
+:::
+
+## Wails 的工作原理
+
+与捆绑完整浏览器和 Node.js 运行时的 Electron 不同，Wails 采用了截然不同的架构：你的 Go 代码会被编译为原生二进制文件，而 UI 则运行在操作系统内置的 WebView 中。这种架构带来了小巧的体积、快速的启动速度和极低的内存占用，让 Wails 应用拥有原生般的体验。
+
+### 架构设计
+
+Wails 应用由两个无缝通信的核心部分组成：负责业务逻辑和系统操作的 Go 后端，以及用于用户界面的 Web 前端。操作系统提供的 WebView 负责渲染 UI，无需捆绑浏览器；绑定层则提供 Go 与 JavaScript 之间的类型安全通信。
+
+<div style="display: flex; justify-content: center; align-items: center; margin: 2rem 0;">
+<div style="max-width: 600px;">
+
+```d2
+direction: down
+
+Application: {
+Go: "Go Backend" {
+  shape: rectangle
+  style.fill: "#00ADD8"
+}
+WebView: "Native WebView" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+
+    Frontend: "Your UI\n(React/Vue/etc)" {
+      shape: rectangle
+      style.fill: "#8B5CF6"
+    }
+
+}
+Go <-> WebView: "Bindings & Events"
+}
+
+
+
+```
+
+</div>
+</div>
+
+这种简洁的架构使得 JavaScript 代码可以直接调用 Go 函数（通过自动生成的绑定），同时 Go 也能将事件和数据回传给前端。两层之间通过高效的内存桥接进行通信，延迟低于 1 毫秒。
+
+**Wails 如何实现高性能：**
+1. **无运行时捆绑** - 直接使用 Go 编译后的二进制文件
+2. **原生 WebView** - 采用操作系统提供的渲染引擎
+3. **Go ↔ JS 直接桥接** - 内存级通信，无网络开销
+4. **编译型二进制** - 瞬间启动，无需 JIT 编译
+
+## 下一步
+
+了解了 Wails 的核心优势后，让我们开始搭建你的开发环境：
+
+1. **安装 Wails** - 5 分钟快速搭建开发环境  
+   [安装指南 →](/zh-cn/getting-started/installation)
+
+2. **构建你的第一个应用** - 创建可运行的应用并掌握基础概念  
+   [入门教程 →](/quick-start/first-app)
+
+3. **探索更多特性** - 发现 Wails 能为你的应用带来什么  
+   [特性概览 →](/zh-cn/quick-start/next-steps)
+
+---
+
+**还有疑问？** 加入我们的 [Discord 社区](https://discord.gg/JDdSxwjhGf)，直接向团队提问。

@@ -6,6 +6,7 @@ import wails from "@wailsio/runtime/plugins/vite";
 export default defineConfig({
   plugins: [sveltekit(), wails("./bindings")],
   server: {
+    host: "127.0.0.1",
     fs: {
       allow: [
         // search up for workspace root

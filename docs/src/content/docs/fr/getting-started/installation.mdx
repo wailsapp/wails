@@ -1,0 +1,106 @@
+---
+title: Installation
+description: Installez Wails et configurez votre environnement de développement
+sidebar:
+  order: 10
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Plateformes prises en charge
+
+- Windows 10/11 AMD64/ARM64
+- macOS 10.15+ AMD64 (Déploiement possible vers macOS 10.13+)
+- macOS 11.0+ ARM64
+- Ubuntu 24.04 AMD64/ARM64 (d'autres distributions Linux peuvent également fonctionner !)
+
+## Dépendances
+
+Wails nécessite plusieurs dépendances communes avant l'installation :
+
+<Tabs>
+  <TabItem label="Go (au moins 1.24)" icon="seti:go">
+
+    Téléchargez Go depuis la [page de téléchargement de Go](https://go.dev/dl/).
+
+    Assurez-vous de suivre les [instructions d'installation officielles de Go](https://go.dev/doc/install). Vous devez également vous assurer que votre variable d'environnement `PATH` inclut le chemin vers votre répertoire `~/go/bin`. Redémarrez votre terminal et effectuez les vérifications suivantes :
+
+    - Vérifiez que Go est correctement installé : `go version`
+    - Vérifiez que `~/go/bin` est présent dans votre variable PATH
+        - Mac / Linux : `echo $PATH | grep go/bin`
+        - Windows : `$env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }`
+
+  </TabItem>
+
+  <TabItem label="npm (Optionnel)" icon="seti:npm">
+
+    Bien que Wails ne nécessite pas l'installation de npm, celui-ci est nécessaire pour la plupart des modèles intégrés.
+
+    Téléchargez le dernier installateur Node depuis la [page de téléchargement de Node](https://nodejs.org/en/download/). Il est préférable d'utiliser la dernière version, car c'est celle que nous testons généralement.
+
+    Exécutez `npm --version` pour vérifier.
+
+      :::note
+      Si vous préférez un autre gestionnaire de paquets à npm, n'hésitez pas à l'utiliser. Vous devrez alors mettre à jour les Taskfiles du projet pour l'utiliser.
+      :::
+
+  </TabItem>
+
+</Tabs>
+
+## Dépendances spécifiques à la plateforme
+
+Vous devez également installer les dépendances spécifiques à votre plateforme :
+
+<Tabs syncKey="platform">
+  <TabItem label="Mac" icon="apple">
+
+    Wails nécessite que les outils en ligne de commande Xcode soient installés. Cela peut être fait en exécutant :
+
+    ```sh
+    xcode-select --install
+    ```
+
+  </TabItem>
+  <TabItem label="Windows" icon="seti:windows">
+
+    Wails nécessite que le [WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) soit installé. La quasi-totalité des installations Windows ont déjà ce runtime installé. Vous pouvez vérifier cela avec la commande `wails doctor`.
+
+  </TabItem>
+  <TabItem label="Linux" icon="linux">
+
+    Linux nécessite les outils de compilation `gcc` standards ainsi que `gtk3` et `webkit2gtk`. Exécutez <code>wails doctor</code> après l'installation pour voir comment installer les dépendances. Si votre distribution ou gestionnaire de paquets n'est pas pris en charge, veuillez nous en informer sur Discord.
+
+  </TabItem>
+
+</Tabs>
+
+## Installation
+
+Pour installer l'interface de ligne de commande (CLI) de Wails via les modules Go, exécutez les commandes suivantes :
+
+```shell
+go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
+```
+
+Si vous souhaitez installer la dernière version de développement, exécutez les commandes suivantes :
+
+```shell
+git clone https://github.com/wailsapp/wails.git
+cd wails
+cd v3/cmd/wails3
+go install
+```
+
+Lors de l'utilisation de la version de développement, tous les projets générés utiliseront la directive [replace](https://go.dev/ref/mod#go-mod-file-replace) de Go pour s'assurer que les projets utilisent la version de développement de Wails.
+
+## Vérification du système
+
+L'exécution de `wails3 doctor` vérifiera si vous avez les bonnes dépendances installées. Si ce n'est pas le cas, elle vous indiquera ce qui manque et vous aidera à résoudre les problèmes.
+
+## La commande `wails3` semble manquante ?
+
+Si votre système indique que la commande `wails3` est manquante, vérifiez les points suivants :
+
+- Assurez-vous d'avoir correctement suivi le guide d'installation de `Go` ci-dessus et que le répertoire `go/bin` est bien présent dans la variable d'environnement `PATH`.
+- Fermez et rouvrez vos terminaux actuels pour prendre en compte la nouvelle variable `PATH`.
