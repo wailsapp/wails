@@ -18,7 +18,7 @@
  * @property {TimeAliasStruct} T4
  * @property {string} Q
  * @property {string} [O]
- * @property {string | null} [P]
+ * @property {string | null} P
  * @property {string[]} A
  * @property {string[] | null} S
  * @property {{ [_ in string]?: string } | null} M

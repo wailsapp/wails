@@ -16,10 +16,10 @@ export class TimeFieldStruct {
     "T4": TimeAliasStruct;
     "Q": Date;
     "O"?: Date;
-    "P"?: Date | null;
+    "P": Date | null;
     "A": Date[];
     "S": Date[];
-    "M": { [_ in string]?: string };
+    "M": { [_ in string]?: Date };
     "I": {"T": Date};
 
     /** Creates a new TimeFieldStruct instance. */
@@ -38,6 +38,9 @@ export class TimeFieldStruct {
         }
         if (!("Q" in $$source)) {
             this["Q"] = new Date("0001-01-01T00:00:00.000Z");
+        }
+        if (!("P" in $$source)) {
+            this["P"] = null;
         }
         if (!("A" in $$source)) {
             this["A"] = Array.from({ length: 3 }, () => new Date("0001-01-01T00:00:00.000Z"));
@@ -106,7 +109,7 @@ export type TimeStruct = any;
 const $$createType0 = $Create.Nullable($Create.DateFromTime);
 const $$createType1 = $Create.Array($Create.DateFromTime);
 const $$createType2 = $Create.Array($Create.DateFromTime);
-const $$createType3 = $Create.Map($Create.Any, $Create.Any);
+const $$createType3 = $Create.Map($Create.Any, $Create.DateFromTime);
 const $$createType4 = $Create.Struct({
     "T": $Create.DateFromTime,
 });

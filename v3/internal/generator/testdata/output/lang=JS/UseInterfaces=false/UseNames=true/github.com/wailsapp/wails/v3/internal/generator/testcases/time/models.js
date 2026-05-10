@@ -62,12 +62,12 @@ export class TimeFieldStruct {
              */
             this["O"] = undefined;
         }
-        if (/** @type {any} */(false)) {
+        if (!("P" in $$source)) {
             /**
              * @member
-             * @type {string | null | undefined}
+             * @type {string | null}
              */
-            this["P"] = undefined;
+            this["P"] = null;
         }
         if (!("A" in $$source)) {
             /**
