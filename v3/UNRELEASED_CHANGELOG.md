@@ -17,15 +17,14 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add Korean documentation for Wails v3 in [PR](https://github.com/wailsapp/wails/pull/5352) by @leaanthony
-- Add French documentation for installation and quick start in [PR](https://github.com/wailsapp/wails/pull/5354) by @leaanthony
-- Add Portuguese documentation for quick start, concepts, and community in [PR](https://github.com/wailsapp/wails/pull/5355) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5384) by @github-actions[bot]
 
 ## Fixed
 <!-- Bug fixes -->
+- Use lastSizeWParam to gate menubar redraws on Windows in [PR](https://github.com/wailsapp/wails/pull/5382) by @taliesin-ai
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
