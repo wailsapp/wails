@@ -1,0 +1,234 @@
+---
+title: 繫結系統
+description: Wails v3 如何讓 Go 和 JavaScript 以零样板程式碼互相呼叫
+sidebar:
+  order: 5
+---
+
+> 「繫結（Bindings）」是**型別安全的合約**，讓你可以撰寫：
+
+```go
+msg, err := chatService.Send("Hello")
+```
+
+在 Go 中 *以及*
+
+```ts
+const msg = await window.backend.ChatService.Send("Hello")
+```
+
+在 TypeScript 中，**無需手動編寫橋接程式碼**。  
+本文將拆解這項魔法是如何運作的，從建置時的**靜態分析**、**程式碼產生**，到透過 WebView 傳輸位元組的**執行時期橋接器**。
+
+---
+
+## 1. 30 秒概覽
+
+| 階段 | 元件 | 輸出 |
+|-------|-----------|--------|
+| **分析** | `internal/generator/analyse.go` | 匯出之 Go 結構體、方法、參數、回傳型別的記憶體中 AST |
+| **產生** | `internal/generator/render/*.tmpl` | • `pkg/application/bindings.go` (Go)<br />• `frontend/src/wailsjs/**.ts` (TS 定義)<br />• `runtime/desktop/@wailsio/runtime/internal/bindings.json` |
+| **執行時期** | `pkg/application/messageprocessor_call.go` + JS 執行時期 (`invoke.ts`) | 透過 WebView 原生橋接器傳輸的 JSON 訊息 |
+
+此流程由 `wails3` CLI 協調：
+
+```
+wails3 generate  ─┬─> generator.Collect()   // 解析 Go 套件
+                  ├─> generator.Analyse()   // 建立語意模型
+                  └─> generator.Render()    // 寫入檔案 + `go fmt`
+```
+
+---
+
+## 2. 靜態分析
+
+### 進入點
+
+```
+internal/generator/analyse.go
+```
+
+`Analyse(cfg generator.Config)`:
+
+1. 使用 `go/packages` 遞迴載入提供的 Go 套件。
+2. 遍歷每個 AST 檔案的 *型別* 和 *值* 規格。
+3. 過濾掉 `internal/` 套件之外的**匯出**符號（大寫開頭）。
+4. 記錄：
+   * 接收者型別 (`struct`, `interface`)
+   * 方法名稱
+   * 參數列表（名稱、型別、指標、可變參數）
+   * 回傳元組（值 + 是否有 error）
+5. 將型別正規化為**可序列化集合**  
+   (`int`, `float64`, `string`, `[]byte`, 切片、映射、結構體、指標)。
+
+不支援的型別會產生**編譯時期錯誤**，以便及早發現錯誤。
+
+### 模型
+
+```go
+type Method struct {
+    ID       uint32 // 用於執行時期查詢的穩定雜湊值
+    Name     string
+    Params   []Param
+    Results  []Result
+    Receiver *Struct // 套件函式為 nil
+}
+```
+
+`<Receiver>.<Name>(<Signature>)` 的確定性 **FNV-1a** 雜湊值（`internal/hash/fnv.go`）即為執行時期使用的*方法 ID*。
+
+---
+
+## 3. 程式碼產生
+
+### 範本
+
+`internal/generator/render/` 包含 text/template 檔案：
+
+| 範本 | 目標 |
+|----------|--------|
+| `go_bindings.tmpl` | `pkg/application/bindings.go` |
+| `ts_bindings.tmpl` | `frontend/wailsjs/go/models.d.ts` |
+| `ts_index.tmpl`    | `frontend/wailsjs/index.ts` |
+
+在此新增或調整範本以自訂產生過程。
+
+### Go 輸出
+
+`bindings.go` 註冊一個查找表：
+
+```go
+var bindings = []application.BoundMethod{
+    {ID: 0x7A1201D3, Name: "ChatService.Send", Call: chatServiceSend},
+}
+
+func chatServiceSend(ctx context.Context, in []byte) ([]byte, error) {
+    var req struct{ Msg string }
+    if err := json.Unmarshal(in, &req); err != nil { return nil, err }
+    res, err := chatService.Send(req.Msg)
+    return json.Marshal(res), err
+}
+```
+
+重點：
+
+* 執行時期**零反射** → 效能。
+* Marshal/Unmarshal 是**每個方法獨立**的，並使用產生的結構體包裝函式。
+
+### TypeScript 輸出
+
+```ts
+export namespace backend {
+  export namespace ChatService {
+    function Send(msg: string): Promise<string>;
+  }
+}
+```
+
+* 以 **ES 模組** 形式發出，因此任何打包工具都可以進行樹狀搖晃（tree-shake）。
+* 方法 ID 嵌入在 JS 執行時期自動產生的 `bindings.json` 中。
+
+---
+
+## 4. 執行時期呼叫協定
+
+### JavaScript 端
+
+```ts
+import { System } from "@wailsio/runtime";
+
+await System.invoke(0x7a1201d3 /* ChatService.Send */, ["Hello"]);
+```
+
+實作：`runtime/desktop/@wailsio/runtime/invoke.ts`
+
+1. 將 `{t:"c", id:<methodID>, p:[...args]}` 打包成 JSON。
+2. 呼叫 `window.external.invoke(payload)` (WebView2) 或等效方法。
+3. 回傳一個 `Promise`，根據回覆解析或拒絕。
+
+### Go 端
+
+1. `messageprocessor_call.go` 接收 JSON。
+2. 在 `bindings` 切片中查找 `methodID`。
+3. 執行產生的存根 (`chatServiceSend`)。
+4. 將 `{result, error}` 序列化回傳給 JS。
+
+### 錯誤對應
+
+| Go | JavaScript |
+|----|------------|
+| `error == nil` | `Promise` 解析並回傳結果 |
+| `errors.New(...)` | `Promise` 拒絕並回傳 `{message, stack, code}` |
+
+對應程式碼位於 `runtime/desktop/@wailsio/runtime/errors.ts`。
+
+---
+
+## 5. 從 Go 呼叫 JavaScript
+
+*瀏覽器 → Go* 已於上方涵蓋。  
+*Go → 瀏覽器* 使用**事件（Events）**或 **Eval**：
+
+```go
+window.Eval(`alert("Hi")`)
+app.Publish("chat:new-message", msg)
+```
+
+繫結產生是單向的（Go 方法）。  
+若要讓 JS 函式可被存取，請在 JS 中使用 `runtime.EventsOn`，並在 Go 中使用 `application.Publish`。
+
+---
+
+## 6. 擴充與疑難排解
+
+### 新增自訂序列化器
+
+* 實作 `generator.TypeConverter` 介面。
+* 在 `generator.Config.Converters` 中註冊。
+* 如有需要，更新 JS 執行時期的反序列化邏輯。
+
+### 不支援型別錯誤
+
+```
+error: field "Client" uses unsupported type: chan struct{}
+```
+
+→ 將通道包裝在具有公開 API 的結構體中，或重新設計。
+
+### 版本不一致
+
+繫結會在**每次** `wails3 dev` / `wails3 build` 時重新產生。  
+如果 IDE 的 IntelliSense 顯示過時的存根，請刪除 `frontend/wailsjs` 並重新建置。
+
+### 效能建議
+
+* 對於小型結構體，優先使用**值**接收者以減少配置。
+* 避免透過橋接器傳輸大型位元組切片；改用 `application.FileServer`。
+* 將多個快速呼叫批次化到單一方法中，以最小化橋接器延遲。
+
+---
+
+## 7. 關鍵檔案對照表
+
+| 關注點 | 檔案 |
+|---------|------|
+| 靜態分析進入點 | `internal/generator/analyse.go` |
+| 渲染管線 | `internal/generator/generate.go` |
+| 範本資源 | `internal/generator/render/*.tmpl` |
+| Go 繫結表 | `pkg/application/bindings.go` (產生) |
+| 呼叫處理器 | `pkg/application/messageprocessor_call.go` |
+| JS 執行時期 | `runtime/desktop/@wailsio/runtime/invoke.ts` |
+| 錯誤對應 | `runtime/desktop/@wailsio/runtime/errors.ts` |
+
+追蹤橋接器錯誤時，請隨時參考此速查表。
+
+---
+
+## 8. 回顧
+
+1. **產生器** 掃描你的 Go 程式碼 → 語意模型。  
+2. **範本** 發出 **Go 存根** + **TypeScript 定義**。  
+3. **訊息處理器** 在執行時期執行存根。  
+4. **JS 執行時期** 將所有內容包裝成慣用的 promises。
+
+所有這些都無需反射、無需 IPC 伺服器，也無需你編寫任何一行样板程式碼。這就是 Wails v3 的繫結系統。前進吧，開始繫結！

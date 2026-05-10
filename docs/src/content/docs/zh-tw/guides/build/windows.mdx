@@ -1,0 +1,124 @@
+---
+title: Windows 封裝
+description: 將您的 Wails 應用程式封裝以便在 Windows 上分發
+sidebar:
+  order: 3
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## NSIS 安裝程式
+
+預設的封裝格式會建立 NSIS 安裝程式：
+
+```bash
+wails3 package GOOS=windows
+```
+
+這會執行 `wails3 task windows:package`，其作用如下：
+1. 建置應用程式
+2. 產生 WebView2 引導程式 (bootstrapper)
+3. 建立 NSIS 安裝程式
+
+輸出位置：`build/windows/nsis/<AppName>-installer.exe`
+
+### MSIX 套件
+
+適用於 Microsoft Store 分發或現代化 Windows 部署：
+
+```bash
+wails3 package GOOS=windows FORMAT=msix
+```
+
+輸出位置：`bin/<AppName>-<arch>.msix`
+
+<Aside type="note">
+MSIX 需要 `makeappx.exe` (Windows SDK) 或 MSIX 工具。請執行 `wails3 tool msix-install-tools` 來進行設定。
+</Aside>
+
+## 自訂安裝程式
+
+NSIS 設定位於 `build/windows/nsis/project.nsi`。編輯此檔案以進行自訂：
+
+- 安裝程式介面與品牌識別
+- 安裝目錄
+- 開始功能表與桌面捷徑
+- 檔案關聯
+- 授權協議
+
+應用程式元資料來自 `build/windows/info.json`：
+
+```json
+{
+  "fixed": {
+    "file_version": "1.0.0"
+  },
+  "info": {
+    "0000": {
+      "ProductVersion": "1.0.0",
+      "CompanyName": "My Company",
+      "FileDescription": "My Application",
+      "ProductName": "MyApp"
+    }
+  }
+}
+```
+
+## 程式碼簽署
+
+對您的執行檔與安裝程式進行簽署，以避免 SmartScreen 警告：
+
+```bash
+# 使用包裝函式 (自動偵測平台)
+wails3 sign GOOS=windows
+
+# 或直接使用任務 (tasks)
+wails3 task windows:sign
+wails3 task windows:sign:installer
+```
+
+在 `build/windows/Taskfile.yml` 中設定簽署：
+
+```yaml
+vars:
+  SIGN_CERTIFICATE: "path/to/certificate.pfx"
+  # 或使用 Windows 憑證存放區中的憑證指紋 (thumbprint)
+  SIGN_THUMBPRINT: "certificate-thumbprint"
+  TIMESTAMP_SERVER: "http://timestamp.digicert.com"
+```
+
+安全地儲存您的憑證密碼：
+
+```bash
+wails3 setup signing
+```
+
+詳細資訊請參閱 [應用程式簽署](/zh-tw/guides/build/signing)。
+
+## 為 ARM 進行建置
+
+```bash
+wails3 build GOOS=windows GOARCH=arm64
+wails3 package GOOS=windows GOARCH=arm64
+```
+
+## 疑難排解
+
+### 找不到 makensis
+
+安裝 NSIS：
+
+```bash
+# Windows
+winget install NSIS.NSIS
+
+# 或從 https://nsis.sourceforge.io/ 下載
+```
+
+### SmartScreen 警告
+
+您的執行檔尚未簽署。請參閱上方的 [程式碼簽署](#code-signing)。
+
+### 缺少 WebView2
+
+安裝程式包含 WebView2 引導程式，會在需要時下載執行階段。如果您需要離線安裝，請從 Microsoft 下載 Evergreen 獨立安裝程式。

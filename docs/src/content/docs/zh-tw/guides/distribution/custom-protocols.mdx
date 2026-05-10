@@ -1,0 +1,614 @@
+---
+title: 自訂 URL 通訊協定
+description: 註冊自訂 URL 通訊協定，以便從連結啟動您的應用程式
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+自訂 URL 通訊協定（也稱為 URL 通訊協定方案）允許當使用者點擊使用您自訂通訊協定的連結時啟動您的應用程式，例如 `myapp://action` 或 `myapp://open/document`。
+
+## 概述
+
+自訂通訊協定可實現：
+- **深層連結**：使用特定資料啟動您的應用程式
+- **瀏覽器整合**：處理來自網頁的連結
+- **電子郵件連結**：從電子郵件客戶端開啟您的應用程式
+- **應用程式間通訊**：從其他應用程式啟動
+
+**範例**：`myapp://open/document?id=123` 會啟動您的應用程式並開啟文件 123。
+
+## 設定
+
+在您的應用程式選項中定義自訂通訊協定：
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "My Application",
+        Description: "My awesome application",
+        Protocols: []application.Protocol{
+            {
+                Scheme:      "myapp",
+                Description: "My Application Protocol",
+                Role:        "Editor",  // macOS only
+            },
+        },
+    })
+
+    // Register handler for protocol events
+    app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+        url := event.Context().ClickedURL()
+        handleCustomURL(url)
+    })
+
+    app.Run()
+}
+
+func handleCustomURL(url string) {
+    // Parse and handle the custom URL
+    // Example: myapp://open/document?id=123
+    println("Received URL:", url)
+}
+```
+
+## 通訊協定處理常式
+
+監聽通訊協定事件以處理傳入的 URL：
+
+```go
+app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+    url := event.Context().ClickedURL()
+
+    // Parse the URL
+    parsedURL, err := parseCustomURL(url)
+    if err != nil {
+        app.Logger.Error("Failed to parse URL:", err)
+        return
+    }
+
+    // Handle different actions
+    switch parsedURL.Action {
+    case "open":
+        openDocument(parsedURL.DocumentID)
+    case "settings":
+        showSettings()
+    case "user":
+        showUser Profile(parsedURL.UserID)
+    default:
+        app.Logger.Warn("Unknown action:", parsedURL.Action)
+    }
+})
+```
+
+## URL 結構
+
+設計清晰、階層化的 URL 結構：
+
+```
+myapp://action/resource?param=value
+
+Examples:
+myapp://open/document?id=123
+myapp://settings/theme?mode=dark
+myapp://user/profile?username=john
+```
+
+**最佳實踐：**
+- 使用小寫通訊協定方案名稱
+- 保持方案名稱簡短且易記
+- 使用階層化路徑表示資源
+- 包含查詢參數以提供可選資料
+- URL 編碼特殊字元
+
+## 平台註冊
+
+自訂通訊協定在各個平台上的註冊方式不同。
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+
+### Windows NSIS 安裝程式
+
+**Wails v3 在使用 NSIS 安裝程式時會自動註冊自訂通訊協定**。
+
+#### 自動註冊
+
+當您使用 `wails3 build` 建置應用程式時，NSIS 安裝程式會：
+1. 自動註冊 `application.Options.Protocols` 中定義的所有通訊協定
+2. 將通訊協定與您的應用程式可執行檔關聯
+3. 設定適當的登錄機碼
+4. 在解除安裝期間移除通訊協定關聯
+
+**無需額外設定！**
+
+#### 運作方式
+
+NSIS 範本包含內建巨集：
+- `wails.associateCustomProtocols` - 在安裝期間註冊通訊協定
+- `wails.unassociateCustomProtocols` - 在解除安裝期間移除通訊協定
+
+這些巨集會根據您的 `Protocols` 設定自動呼叫。
+
+#### 手動登錄（進階）
+
+如果您需要手動註冊（在 NSIS 之外）：
+
+```batch
+@echo off
+REM Register custom protocol
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp" /ve /d "URL:My Application Protocol" /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp" /v "URL Protocol" /t REG_SZ /d "" /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp\shell\open\command" /ve /d "\"%1\"" /f
+```
+
+#### 測試
+
+測試您的通訊協定註冊：
+
+```powershell
+# Open protocol URL from PowerShell
+Start-Process "myapp://test/action"
+
+# Or from command prompt
+start myapp://test/action
+```
+
+### Windows MSIX 套件
+
+在使用 MSIX 封裝時，自訂通訊協定也會自動註冊。
+
+#### 自動註冊
+
+當您使用 MSIX 建置應用程式時，描述檔會自動包含來自 `build/config.yml` 通訊協定設定的通訊協定註冊。
+
+產生的描述檔包含：
+
+```xml
+<uap:Extension Category="windows.protocol">
+  <uap:Protocol Name="myapp">
+    <uap:DisplayName>My Application Protocol</uap:DisplayName>
+  </uap:Protocol>
+</uap:Extension>
+```
+
+#### 通用連結（Web 到應用程式連結）
+
+Windows 支援 **Web 到應用程式連結**，其運作方式類似於 macOS 上的通用連結。當將您的應用程式部署為 MSIX 套件時，您可以啟用 HTTPS 連結以直接啟動您的應用程式。
+
+<Aside type="note">
+Web 到應用程式連結需要手動設定描述檔。自訂通訊協定方案會從 `build/config.yml` 自動設定，但相關網域必須手動新增到您的 MSIX 描述檔中。
+</Aside>
+
+要啟用 Web 到應用程式連結，請遵循 [Microsoft 關於 web-to-app 連結的指南](https://learn.microsoft.com/en-us/windows/apps/develop/launch/web-to-app-linking)。您需要：
+
+1. **手動將 App URI Handler 新增到您的 MSIX 描述檔** (`build/windows/msix/app_manifest.xml`)：
+   ```xml
+   <uap3:Extension Category="windows.appUriHandler">
+     <uap3:AppUriHandler>
+       <uap3:Host Name="myawesomeapp.com"/>
+     </uap3:AppUriHandler>
+   </uap3:Extension>
+   ```
+
+2. **在您的網站上設定 `windows-app-web-link`**：在 `https://myawesomeapp.com/.well-known/windows-app-web-link` 主機上放置一個 `windows-app-web-link` 檔案。此檔案應包含您應用程式的套件資訊及其處理的路徑。
+
+當 Web 到應用程式連結啟動您的應用程式時，您將收到與自訂通訊協定方案相同的 `ApplicationOpenedWithURL` 事件。
+
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+
+### Info.plist 設定
+
+在 macOS 上，通訊協定是透過您的 `Info.plist` 檔案註冊的。
+
+#### 自動設定
+
+當您使用 `wails3 build` 建置時，Wails 會自動在 `Info.plist` 中生成您的通訊協定。
+
+來自 `application.Options.Protocols` 的通訊協定會新增至：
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLName</key>
+        <string>My Application Protocol</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>myapp</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+    </dict>
+</array>
+```
+
+#### 測試
+
+```bash
+# Open protocol URL from terminal
+open "myapp://test/action"
+
+# Check registered handlers
+/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -dump | grep myapp
+```
+
+#### 通用連結
+
+除了自訂通訊協定方案之外，macOS 也支援 **通用連結**，允許您的應用程式透過一般的 HTTPS 連結（例如 `https://myawesomeapp.com/path`）啟動。通用連結提供您的網頁應用程式與桌面應用程式之間無縫的使用者體驗。
+
+<Aside type="caution">
+通用連結要求您的 macOS 應用程式必須使用有效的 Apple Developer 憑證和 provisioning profile **程式碼簽署**。未簽署或臨時簽署的建置將無法開啟通用連結。請確保您的應用程式已正確簽署後再進行測試。
+</Aside>
+
+要啟用通用連結，請遵循 [Apple 關於在您的應用程式中支援通用連結的指南](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app)。您需要：
+
+1. **在您的 `entitlements.plist` 中新增權限**：
+   ```xml```xml
+   <key>com.apple.developer.associated-domains</key>
+   <array>
+     <string>applinks:myawesomeapp.com</string>
+   </array>
+   ```
+
+2. **在 Info.plist 中新增 NSUserActivityTypes**：
+   ```xml
+   <key>NSUserActivityTypes</key>
+   <array>
+     <string>NSUserActivityTypeBrowsingWeb</string>
+   </array>
+   ```
+
+3. **在您的網站上配置 `apple-app-site-association`**：在 `https://myawesomeapp.com/.well-known/apple-app-site-association` 託管一個 `apple-app-site-association` 檔案。
+
+當 Universal Link 觸發您的應用程式時，您將收到相同的 `ApplicationOpenedWithURL` 事件，因此處理程式碼與自訂通訊協定方案完全相同。
+
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+
+### Desktop Entry
+
+在 Linux 上，通訊協定是透過 `.desktop` 檔案來註冊的。
+
+#### 自動配置
+
+當您使用 `wails3 build` 進行建置時，Wails 會產生包含通訊協定處理常式的 desktop entry 檔案。
+
+**v3 已修正**：Linux desktop 範本現在已正確包含通訊協定處理功能。
+
+產生的 desktop 檔案內容如下：
+
+```ini
+[Desktop Entry]
+Type=Application
+Name=My Application
+Exec=/usr/bin/myapp %u
+MimeType=x-scheme-handler/myapp;
+```
+
+#### 手動註冊
+
+如有需要，您可以手動安裝 desktop 檔案：
+
+```bash
+# 複製 desktop 檔案
+cp myapp.desktop ~/.local/share/applications/
+
+# 更新 desktop 資料庫
+update-desktop-database ~/.local/share/applications/
+
+# 註冊通訊協定處理常式
+xdg-mime default myapp.desktop x-scheme-handler/myapp
+```
+
+#### 測試
+
+```bash
+# 開啟通訊協定 URL
+xdg-open "myapp://test/action"
+
+# 檢查已註冊的處理常式
+xdg-mime query default x-scheme-handler/myapp
+```
+
+  </TabItem>
+</Tabs>
+
+## 完整範例
+
+以下是一個處理多種通訊協定動作的完整範例：
+
+```go
+package main
+
+import (
+    "fmt"
+    "net/url"
+    "strings"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type App struct {
+    app    *application.Application
+    window *application.WebviewWindow
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "DeepLink Demo",
+        Description: "Custom protocol demonstration",
+        Protocols: []application.Protocol{
+            {
+                Scheme:      "deeplink",
+                Description: "DeepLink Demo Protocol",
+                Role:        "Editor",
+            },
+        },
+    })
+
+    myApp := &App{app: app}
+    myApp.setup()
+
+    app.Run()
+}
+
+func (a *App) setup() {
+    // 建立視窗
+    a.window = a.app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  "DeepLink Demo",
+        Width:  800,
+        Height: 600,
+        URL:    "http://wails.localhost/",
+    })
+
+    // 處理自訂通訊協定 URL
+    a.app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+        customURL := event.Context().ClickedURL()
+        a.handleDeepLink(customURL)
+    })
+}
+
+func (a *App) handleDeepLink(rawURL string) {
+    // 解析 URL
+    parsedURL, err := url.Parse(rawURL)
+    if err != nil {
+        a.app.Logger.Error("Failed to parse URL:", err)
+        return
+    }
+
+    // 將視窗帶到前景
+    a.window.Show()
+    a.window.SetFocus()
+
+    // 提取路徑和查詢參數
+    path := strings.Trim(parsedURL.Path, "/")
+    query := parsedURL.Query()
+
+    // 處理不同的動作
+    parts := strings.Split(path, "/")
+    if len(parts) == 0 {
+        return
+    }
+
+    action := parts[0]
+
+    switch action {
+    case "open":
+        if len(parts) >= 2 {
+            resource := parts[1]
+            id := query.Get("id")
+            a.openResource(resource, id)
+        }
+
+    case "settings":
+        section := ""
+        if len(parts) >= 2 {
+            section = parts[1]
+        }
+        a.openSettings(section)
+
+    case "user":
+        if len(parts) >= 2 {
+            username := parts[1]
+            a.openUserProfile(username)
+        }
+
+    default:
+        a.app.Logger.Warn("Unknown action:", action)
+    }
+}
+
+func (a *App) openResource(resourceType, id string) {
+    fmt.Printf("Opening %s with ID: %s\n", resourceType, id)
+    // 向前端發送事件
+    a.app.Event.Emit("navigate", map[string]string{
+        "type": resourceType,
+        "id":   id,
+    })
+}
+
+func (a *App) openSettings(section string) {
+    fmt.Printf("Opening settings section: %s\n", section)
+    a.app.Event.Emit("navigate", map[string]string{
+        "page":    "settings",
+        "section": section,
+    })
+}
+
+func (a *App) openUserProfile(username string) {
+    fmt.Printf("Opening user profile: %s\n", username)
+    a.app.Event.Emit("navigate", map[string]string{
+        "page": "user",
+        "user": username,
+    })
+}
+```
+
+## 前端整合
+
+在前端處理導航事件：
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// 監聽來自通訊協定處理常式的導航事件
+Events.On('navigate', (event) => {
+    const { type, id, page, section, user } = event.data
+
+    if (type === 'document') {
+        // 開啟文件
+        router.push(`/document/${id}`)
+    } else if (page === 'settings') {
+        // 開啟設定
+        router.push(`/settings/${section}`)
+    } else if (page === 'user') {
+        // 開啟使用者個人資料
+        router.push(`/user/${user}`)
+    }
+})
+```
+
+## 安全考量
+
+### 驗證所有輸入
+
+始終驗證並清理來自外部來源的 URL：
+
+```go
+func (a *App) handleDeepLink(rawURL string) {
+    // 解析 URL
+    parsedURL, err := url.Parse(rawURL)
+    if err != nil {
+        a.app.Logger.Error("Invalid URL:", err)
+        return
+    }
+
+    // 驗證通訊協定方案
+    if parsedURL.Scheme != "myapp" {
+        a.app.Logger.Warn("Invalid scheme:", parsedURL.Scheme)
+        return
+    }
+
+    // 驗證路徑
+    path := strings.Trim(parsedURL.Path, "/")
+    if !isValidPath(path) {
+        a.app.Logger.Warn("Invalid path:", path)
+        return
+    }
+
+    // 清理參數
+    params := sanitizeQueryParams(parsedURL.Query())
+
+    // 處理已驗證的 URL
+    a.processDeepLink(path, params)
+}
+
+func isValidPath(path string) bool {
+    // 僅允許字母數字和斜線
+    validPath := regexp.MustCompile(`^[a-zA-Z0-9/]+$`)
+    return validPath.MatchString(path)
+}
+
+func sanitizeQueryParams(query url.Values) map[string]string {
+    sanitized := make(map[string]string)
+    for key, values := range query {
+        if len(values) > 0 {
+            // 取第一個值並進行清理
+            sanitized[key] = sanitizeString(values[0])
+        }
+    }
+    return sanitized
+}
+```
+
+### 防止注入攻擊
+
+絕對不要將 URL 直接作為程式碼或 SQL 執行：
+
+```go
+// ❌ 不要：執行 URL 內容
+func badHandler(url string) {
+    exec.Command("sh", "-c", url).Run() // 危險！
+}
+
+// ✅ 要：解析並驗證
+func goodHandler(url string) {
+    parsed, _ := url.Parse(url)
+    action := parsed.Query().Get("action")
+
+    // 白名單允許的動作
+    allowed := map[string]bool{
+        "open":     true,
+        "settings": true,
+        "help":     true,
+    }
+
+    if allowed[action] {
+        handleAction(action)
+    }
+}
+```
+
+## 測試
+
+### 手動測試
+
+在開發期間測試通訊協定處理常式：
+
+**Windows：**
+```powershell
+Start-Process "myapp://test/action?id=123"
+```
+
+**macOS：**
+```bash
+open "myapp://test/action?id=123"
+```
+
+**Linux：**
+```bash
+xdg-open "myapp://test/action?id=123"
+```
+
+### HTML 測試
+
+建立一個測試 HTML 頁面：
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Protocol Test</title>
+</head>
+<body>
+    <h1>Custom Protocol Test Links</h1>
+
+    <ul>
+        <li><a href="myapp://open/document?id=123">Open Document 123</a></li>
+        <li><a href="myapp://settings/theme?mode=dark">Dark Mode Settings</a></li>
+        <li><a href="myapp://user/profile?username=john">User Profile</a></li>
+    </ul>
+</body>
+</html>
+```
+
+## 疑難排解
+
+### 通訊協定未註冊
+
+**Windows：**
+- 檢查登錄檔：`HKEY_CURRENT_USER\SOFTWARE\Classes\<scheme>`
+- 使用 NSIS 安裝程式重新安裝
+- 驗證安裝程式是否以適當的權限執行
+
+**macOS：**---
+
+**有問題嗎？** 請在 [Discord](https://discord.gg/JDdSxwjhGf) 上提問，或查看 [範例](https://github.com/wailsapp/wails/tree/master/v3/examples)。

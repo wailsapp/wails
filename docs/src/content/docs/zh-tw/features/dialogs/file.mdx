@@ -1,0 +1,330 @@
+---
+title: 檔案對話方塊
+description: 開啟、儲存及資料夾選取的對話方塊
+sidebar:
+  order: 3
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 檔案對話方塊
+
+Wails 提供**原生的檔案對話方塊**，其外觀符合各平台的設計規範，可用於開啟檔案、儲存檔案以及選取資料夾。API 設計簡潔，支援檔案類型篩選、多選功能以及預設路徑設定。
+
+## 建立檔案對話方塊
+
+檔案對話方塊可透過 `app.Dialog` 管理器來存取：
+
+```go
+app.Dialog.OpenFile()
+app.Dialog.SaveFile()
+```
+
+## 開啟檔案對話方塊
+
+選取要開啟的檔案：
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("選取影像").
+    AddFilter("影像", "*.png;*.jpg;*.gif").
+    AddFilter("所有檔案", "*.*").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+openFile(path)
+```
+
+**使用情境：**
+- 開啟文件
+- 匯入檔案
+- 載入影像
+- 選取設定檔
+
+### 單一檔案選取
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("開啟文件").
+    AddFilter("文字檔案", "*.txt").
+    AddFilter("所有檔案", "*.*").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    // 使用者取消或發生錯誤
+    return
+}
+
+// 使用選取的檔案
+data, _ := os.ReadFile(path)
+```
+
+### 多檔案選取
+
+```go
+paths, err := app.Dialog.OpenFile().
+    SetTitle("選取影像").
+    AddFilter("影像", "*.png;*.jpg;*.jpeg;*.gif").
+    PromptForMultipleSelection()
+
+if err != nil {
+    return
+}
+
+// 處理所有選取的檔案
+for _, path := range paths {
+    processFile(path)
+}
+```
+
+### 搭配預設目錄
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("開啟檔案").
+    SetDirectory("/Users/me/Documents").
+    PromptForSingleSelection()
+```
+
+## 儲存檔案對話方塊
+
+選擇儲存位置：
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("document.txt").
+    AddFilter("文字檔案", "*.txt").
+    AddFilter("所有檔案", "*.*").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+saveFile(path, data)
+```
+
+**使用情境：**
+- 儲存文件
+- 匯出資料
+- 建立新檔案
+- 另存新檔...
+
+### 搭配預設檔名
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("export.csv").
+    AddFilter("CSV 檔案", "*.csv").
+    PromptForSingleSelection()
+```
+
+### 搭配預設目錄
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetDirectory("/Users/me/Documents").
+    SetFilename("untitled.txt").
+    PromptForSingleSelection()
+```
+
+### 覆寫確認
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("document.txt").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+// 檢查檔案是否存在
+if _, err := os.Stat(path); err == nil {
+    dialog := app.Dialog.Question().
+        SetTitle("確認覆寫").
+        SetMessage("檔案已存在。是否覆寫？")
+
+    overwriteBtn := dialog.AddButton("覆寫")
+    overwriteBtn.OnClick(func() {
+        saveFile(path, data)
+    })
+
+    cancelBtn := dialog.AddButton("取消")
+    dialog.SetDefaultButton(cancelBtn)
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+    return
+}
+
+saveFile(path, data)
+```
+
+## 選取資料夾對話方塊
+
+使用開啟檔案對話方塊並啟用資料夾選取功能來選擇目錄：
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("選取輸出資料夾").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+exportToFolder(path)
+```
+
+**使用情境：**
+- 選擇輸出目錄
+- 選取工作區
+- 選取備份位置
+- 選擇安裝目錄
+
+### 搭配預設目錄
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("選取資料夾").
+    SetDirectory("/Users/me/Documents").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+```
+
+## 檔案篩選器
+
+使用 `AddFilter()` 方法將檔案類型篩選器新增至對話方塊。每次呼叫都會新增一個新的篩選選項。
+
+### 基本篩選器
+
+```go
+path, _ := app.Dialog.OpenFile().
+    AddFilter("文字檔案", "*.txt").
+    AddFilter("所有檔案", "*.*").
+    PromptForSingleSelection()
+```
+
+### 多個副檔名
+
+使用分號在單一篩選器中指定多個副檔名：
+
+```go
+dialog := app.Dialog.OpenFile().
+    AddFilter("影像", "*.png;*.jpg;*.jpeg;*.gif;*.bmp").
+    AddFilter("文件", "*.txt;*.doc;*.docx;*.pdf").
+    AddFilter("所有檔案", "*.*")
+```
+
+### 模式格式
+
+使用**分號**分隔單一篩選器中的多個副檔名：
+
+```go
+// 使用分號分隔的多個副檔名
+AddFilter("影像", "*.png;*.jpg;*.gif")
+```
+
+## 完整範例
+
+### 開啟影像檔案
+
+```go
+func openImage(app *application.App) (image.Image, error) {
+    path, err := app.Dialog.OpenFile().
+        SetTitle("選取影像").
+        AddFilter("影像", "*.png;*.jpg;*.jpeg;*.gif;*.bmp").
+        PromptForSingleSelection()
+
+    if err != nil {
+        return nil, err
+    }
+
+    if path == "" {
+        return nil, errors.New("未選取檔案")
+    }
+
+    // 開啟並解碼影像
+    file, err := os.Open(path)
+    if err != nil {
+        app.Dialog.Error().
+            SetTitle("開啟失敗").
+            SetMessage(err.Error()).
+            Show()
+        return nil, err
+    }
+    defer file.Close()
+
+    img, _, err := image.Decode(file)
+    if err != nil {
+        app.Dialog.Error().
+            SetTitle("無效影像").
+            SetMessage("無法解碼影像檔案。").
+            Show()
+        return nil, err
+    }
+
+    return img, nil
+}
+```
+
+### 儲存文件並進行驗證
+
+```go
+func saveDocument(app *application.App, content string) {
+    path, err := app.Dialog.SaveFile().
+        SetFilename("document.txt").
+        AddFilter("文字檔案", "*.txt").
+        AddFilter("Markdown 檔案", "*.md").
+        AddFilter("所有檔案", "*.*").
+        PromptForSingleSelection()
+
+    if err != nil || path == "" {
+        return
+    }
+
+    // 驗證副檔名
+    ext := filepath.Ext(path)
+    if ext != ".txt" && ext != ".md" {
+        dialog := app.Dialog.Question().
+            SetTitle("確認副檔名").
+            SetMessage(fmt.Sprintf("儲存為 %s 檔案？", ext))
+
+        saveBtn := dialog.AddButton("儲存")
+        saveBtn.OnClick(func() {
+            doSave(app, path, content)
+        })
+
+        cancelBtn := dialog.AddButton("取消")
+        dialog.SetDefaultButton(cancelBtn)
+        dialog.SetCancelButton(cancelBtn)
+        dialog.Show()
+        return
+    }
+
+    doSave(app, path, content)
+}
+
+func doSave(app *application.App, path, content string) {
+    if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+        app.Dialog.Error().
+            SetTitle("儲存失敗").
+            SetMessage(err.Error()).
+            Show()
+        return
+    }
+
+    app.Dialog.Info().
+        SetTitle("已儲存").
+        SetMessage("文件已成功儲存！").
+        Show()
+}
+```---
+
+**有問題嗎？** 請在 [Discord](https://discord.gg/JDdSxwjhGf) 上提問，或查看 [檔案對話方塊範例](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs)。

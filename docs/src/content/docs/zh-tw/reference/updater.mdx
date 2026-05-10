@@ -1,0 +1,501 @@
+---
+title: Updater API
+description: Wails v3 Updater API 的參考文件
+sidebar:
+  order: 8
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+# Updater API 參考文件
+
+Updater API 為 Wails 應用程式提供自動更新功能，包含版本檢查、下載與安裝。
+
+## Go API
+
+### CreateUpdaterService
+
+建立新的 updater 服務。
+
+```go
+func CreateUpdaterService(currentVersion string, opts ...UpdaterOption) (*UpdaterService, error)
+```
+
+**參數：**
+- `currentVersion` - 您應用程式的目前版本（例如："1.0.0"）
+- `opts` - 設定選項
+
+**回傳值：**
+- `*UpdaterService` - updater 服務實例
+- `error` - 若建立失敗則回傳錯誤
+
+**範例：**
+```go
+updater, err := application.CreateUpdaterService(
+    "1.0.0",
+    application.WithUpdateURL("https://updates.example.com/myapp/"),
+)
+```
+
+### UpdaterOption 函式
+
+#### WithUpdateURL
+
+設定更新清單（manifest）的基本 URL。
+
+```go
+func WithUpdateURL(url string) UpdaterOption
+```
+
+**必要。** URL 應指向包含您 `update.json` 清單的目錄。
+
+#### WithCheckInterval
+
+設定自動背景更新檢查的間隔時間。
+
+```go
+func WithCheckInterval(interval time.Duration) UpdaterOption
+```
+
+設為 `0` 可停用自動檢查。預設值為 `0`（已停用）。
+
+#### WithAllowPrerelease
+
+允許將預發行版本視為更新。
+
+```go
+func WithAllowPrerelease(allow bool) UpdaterOption
+```
+
+預設值為 `false`。
+
+#### WithChannel
+
+設定更新頻道（例如："stable"、"beta"、"canary"）。
+
+```go
+func WithChannel(channel string) UpdaterOption
+```
+
+頻道會附加至更新 URL 路徑。
+
+#### WithPublicKey
+
+設定用於簽章驗證的公鑰。
+
+```go
+func WithPublicKey(key string) UpdaterOption
+```
+
+金鑰應為 base64 編碼的 Ed25519 公鑰。
+
+#### WithRequireSignature
+
+要求所有更新都必須經過簽章。
+
+```go
+func WithRequireSignature(require bool) UpdaterOption
+```
+
+預設值為 `false`。
+
+### UpdaterService 方法
+
+#### GetCurrentVersion
+
+回傳目前應用程式版本。
+
+```go
+func (u *UpdaterService) GetCurrentVersion() string
+```
+
+#### CheckForUpdate
+
+檢查是否有新版本可用。
+
+```go
+func (u *UpdaterService) CheckForUpdate() (*UpdateInfo, error)
+```
+
+**回傳值：**
+- `*UpdateInfo` - 更新資訊，若無可用更新則為 `nil`
+- `error` - 若檢查失敗則回傳錯誤
+
+#### DownloadUpdate
+
+下載可用的更新。
+
+```go
+func (u *UpdaterService) DownloadUpdate() error
+```
+
+下載期間會觸發 `updater:progress` 事件。
+
+#### ApplyUpdate
+
+套用已下載的更新。
+
+```go
+func (u *UpdaterService) ApplyUpdate() error
+```
+
+這將重新啟動應用程式。
+
+#### DownloadAndApply
+
+以單一呼叫下載並套用更新。
+
+```go
+func (u *UpdaterService) DownloadAndApply() error
+```
+
+#### GetState
+
+回傳目前 updater 狀態。
+
+```go
+func (u *UpdaterService) GetState() string
+```
+
+**可能的值：**
+- `"idle"` - 無更新進行中
+- `"checking"` - 正在檢查更新
+- `"available"` - 有可用更新
+- `"downloading"` - 正在下載更新
+- `"ready"` - 更新已下載，準備安裝
+- `"installing"` - 正在安裝更新
+- `"error"` - 發生錯誤
+
+#### GetUpdateInfo
+
+回傳可用更新的資訊。
+
+```go
+func (u *UpdaterService) GetUpdateInfo() *UpdateInfo
+```
+
+#### GetLastError
+
+回傳最後一個錯誤訊息。
+
+```go
+func (u *UpdaterService) GetLastError() string
+```
+
+#### Reset
+
+重設 updater 狀態。
+
+```go
+func (u *UpdaterService) Reset()
+```
+
+### UpdateInfo
+
+可用更新的資訊。
+
+```go
+type UpdateInfo struct {
+    Version      string    `json:"version"`
+    ReleaseDate  time.Time `json:"releaseDate"`
+    ReleaseNotes string    `json:"releaseNotes"`
+    Size         int64     `json:"size"`
+    PatchSize    int64     `json:"patchSize,omitempty"`
+    Mandatory    bool      `json:"mandatory"`
+    HasPatch     bool      `json:"hasPatch"`
+}
+```
+
+| 欄位 | 型別 | 描述 |
+|-------|------|-------------|
+| `Version` | `string` | 新版本號碼 |
+| `ReleaseDate` | `time.Time` | 此版本發布時間 |
+| `ReleaseNotes` | `string` | 更新說明（markdown） |
+| `Size` | `int64` | 完整下載大小（位元組） |
+| `PatchSize` | `int64` | 修補程式大小（位元組，若可用） |
+| `Mandatory` | `bool` | 此更新是否為必要 |
+| `HasPatch` | `bool` | 是否有可用修補程式 |
+
+### UpdaterConfig
+
+updater 的設定。
+
+```go
+type UpdaterConfig struct {
+    UpdateURL        string
+    CheckInterval    time.Duration
+    AllowPrerelease  bool
+    PublicKey        string
+    RequireSignature bool
+    Channel          string
+}
+```
+
+## JavaScript/TypeScript API
+
+當 updater 服務作為服務加入時，會自動繫結至前端。
+
+### 型別
+
+```typescript
+interface UpdateInfo {
+  version: string;
+  releaseDate: string;  // ISO 8601 日期字串
+  releaseNotes: string;
+  size: number;
+  patchSize?: number;
+  mandatory: boolean;
+  hasPatch: boolean;
+}
+
+interface DownloadProgress {
+  downloaded: number;
+  total: number;
+  percentage: number;
+  bytesPerSecond: number;
+}
+```
+
+### 方法
+
+#### GetCurrentVersion
+
+```typescript
+function GetCurrentVersion(): string
+```
+
+回傳目前應用程式版本。
+
+#### CheckForUpdate
+
+```typescript
+function CheckForUpdate(): Promise<UpdateInfo | null>
+```
+
+檢查可用更新。
+
+**回傳：** 若有可用更新則回傳 `UpdateInfo`，否則為 `null`。
+
+#### DownloadUpdate
+
+```typescript
+function DownloadUpdate(): Promise<void>
+```
+
+下載可用更新。會觸發 `updater:progress` 事件。
+
+#### ApplyUpdate
+
+```typescript
+function ApplyUpdate(): Promise<void>
+```
+
+套用已下載的更新。應用程式將重新啟動。
+
+#### DownloadAndApply
+
+```typescript
+function DownloadAndApply(): Promise<void>
+```
+
+以單一呼叫下載並套用更新。
+
+#### GetState
+
+```typescript
+function GetState(): string
+```
+
+回傳目前 updater 狀態。
+
+#### GetUpdateInfo
+
+```typescript
+function GetUpdateInfo(): UpdateInfo | null
+```
+
+回傳目前更新資訊。
+
+#### GetLastError
+
+```typescript
+function GetLastError(): string
+```
+
+回傳最後一個錯誤訊息。
+
+#### Reset
+
+```typescript
+function Reset(): void
+```
+
+重設 updater 狀態。
+
+### 事件
+
+#### updater:progress
+
+下載期間觸發，包含進度資訊。
+
+```typescript
+import { Events } from '@wailsio/runtime';
+
+Events.On('updater:progress', (data: DownloadProgress) => {
+  console.log(`${data.percentage}% downloaded`);
+});
+```
+
+## 更新清單格式
+
+更新清單（`update.json`）必須託管於您的更新 URL。
+
+### 結構定義
+
+```typescript
+interface Manifest {
+  version: string;
+  release_date: string;      // ISO 8601
+  release_notes?: string;
+  platforms: {
+    [platform: string]: PlatformUpdate;
+  };
+  minimum_version?: string;
+  mandatory?: boolean;
+}
+
+interface PlatformUpdate {
+  url: string;
+  size: number;
+  checksum: string;          // "sha256:..."
+  signature?: string;
+  patches?: PatchInfo[];
+}
+
+interface PatchInfo {
+  from: string;              // 此修補程式適用的起始版本
+  url: string;
+  size: number;
+  checksum: string;
+  signature?: string;
+}
+```
+
+### 平台鍵值
+
+| 平台 | 鍵值 |
+|----------|-----|
+| macOS (Apple Silicon) | `macos-arm64` |
+| macOS (Intel) | `macos-amd64` |
+| Windows (64 位元) | `windows-amd64` |
+| Linux (64 位元) | `linux-amd64` |
+| Linux (ARM64) | `linux-arm64` |
+
+### 範例清單
+
+```json
+{
+  "version": "1.2.0",
+  "release_date": "2025-01-15T00:00:00Z",
+  "release_notes": "## Changes\n\n- New feature\n- Bug fixes",
+  "platforms": {
+    "macos-arm64": {
+      "url": "https://example.com/app-1.2.0-macos-arm64.tar.gz",
+      "size": 12582912,
+      "checksum": "sha256:abc123def456...",
+      "patches": [
+        {
+          "from": "1.1.0",```json
+      "url": "https://example.com/patches/1.1.0-to-1.2.0.patch",
+      "size": 14336,
+      "checksum": "sha256:789xyz..."
+    }
+  ]
+},
+"windows-amd64": {
+  "url": "https://example.com/app-1.2.0-windows.zip",
+  "size": 14680064,
+  "checksum": "sha256:ghi789jkl012..."
+}
+},
+"minimum_version": "1.0.0",
+"mandatory": false
+}
+```
+
+## 服務整合
+
+### 註冊服務
+
+```go
+app := application.New(application.Options{
+    Name: "MyApp",
+    Services: []application.Service{
+        application.NewService(updater),
+    },
+})
+```
+
+### 服務生命週期
+
+更新器服務實作了 `Service` 介面：
+
+```go
+type Service interface {
+    ServiceName() string
+    ServiceStartup(ctx context.Context, options ServiceOptions) error
+    ServiceShutdown() error
+}
+```
+
+- **ServiceStartup**：若已配置，則啟動背景更新檢查
+- **ServiceShutdown**：停止背景檢查
+
+### 事件處理常式
+
+在 Go 中註冊處理常式：
+
+```go
+updater.OnUpdateAvailable(func(info *UpdateInfo) {
+    log.Printf("Update available: %s", info.Version)
+})
+
+updater.OnDownloadProgress(func(downloaded, total int64, percentage float64) {
+    log.Printf("Download: %.1f%%", percentage)
+})
+
+updater.OnError(func(err string) {
+    log.Printf("Update error: %s", err)
+})
+```
+
+## 安全考量
+
+### HTTPS
+
+請務必對更新 URL 使用 HTTPS，以防止中間人攻擊。
+
+### 總和檢查碼驗證
+
+所有下載檔案在安裝前都會透過 SHA256 總和檢查碼進行驗證。
+
+### 簽章驗證
+
+針對生產環境應用程式，請啟用簽章驗證：
+
+```go
+updater, _ := application.CreateUpdaterService(
+    "1.0.0",
+    application.WithUpdateURL("https://updates.example.com/myapp/"),
+    application.WithRequireSignature(true),
+    application.WithPublicKey("MCowBQYDK2VwAyEA..."),
+)
+```
+
+### 程式碼簽署
+
+請確保您的應用程式二進位檔已正確進行程式碼簽署：
+- macOS：開發者 ID 應用程式憑證
+- Windows：帶有時間戳記的程式碼簽署憑證
+
+詳細資訊請參閱 [程式碼簽署指南](/zh-tw/guides/build/signing)。

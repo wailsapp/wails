@@ -1,0 +1,438 @@
+---
+title: 鍵盤快捷鍵
+description: 註冊全域鍵盤快捷鍵，以便快速存取功能
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails 提供了一個強大的鍵綁定系統，允許您註冊全域鍵盤快捷鍵，這些快捷鍵可在應用程式中的所有視窗中運作。這使用戶能夠快速存取功能，而無需透過選單進行導航。
+
+## 存取鍵綁定管理器
+
+鍵綁定管理器可透過應用程式實例上的 `KeyBindings` 屬性來存取：
+
+```go
+app := application.New(application.Options{
+    Name: "Keyboard Shortcuts Demo",
+})
+
+// 存取鍵綁定管理器
+keyBindings := app.KeyBinding
+```
+
+## 新增鍵綁定
+
+### 基本鍵綁定
+
+註冊簡單的鍵盤快捷鍵：
+
+```go
+app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+    // 處理儲存動作
+    app.Logger.Info("Save shortcut triggered")
+    // 執行儲存操作...
+})
+```
+
+### 多個鍵綁定
+
+為常見操作註冊多個快捷鍵：
+
+```go
+// 檔案操作
+app.KeyBinding.Add("Ctrl+N", func(window application.Window) {
+    // 新檔案
+    window.EmitEvent("file:new", nil)
+})
+
+app.KeyBinding.Add("Ctrl+O", func(window application.Window) {
+    // 開啟檔案
+    dialog := app.Dialog.OpenFile()
+    if file, err := dialog.PromptForSingleSelection(); err == nil {
+        window.EmitEvent("file:open", file)
+    }
+})
+
+app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+    // 儲存檔案
+    window.EmitEvent("file:save", nil)
+})
+
+// 編輯操作
+app.KeyBinding.Add("Ctrl+Z", func(window application.Window) {
+    // 復原
+    window.EmitEvent("edit:undo", nil)
+})
+
+app.KeyBinding.Add("Ctrl+Y", func(window application.Window) {
+    // 重做 (Windows/Linux)
+    window.EmitEvent("edit:redo", nil)
+})
+
+app.KeyBinding.Add("Cmd+Shift+Z", func(window application.Window) {
+    // 重做 (macOS)
+    window.EmitEvent("edit:redo", nil)
+})
+```
+
+## 鍵綁定加速器
+
+### 加速器格式
+
+鍵綁定使用標準的加速器格式，包含修飾鍵和按鍵：
+
+```go
+// 修飾鍵
+"Ctrl+S"        // Control + S
+"Cmd+S"         // Command + S (macOS)
+"Alt+F4"        // Alt + F4
+"Shift+Ctrl+Z"  // Shift + Control + Z
+
+// 功能鍵
+"F1"            // F1 鍵
+"Ctrl+F5"       // Control + F5
+
+// 特殊鍵
+"Escape"        // Escape 鍵
+"Enter"         // Enter 鍵
+"Space"         // 空白鍵
+"Tab"           // Tab 鍵
+"Backspace"     // 刪除鍵
+"Delete"        // 刪除鍵
+
+// 方向鍵
+"Up"            // 上方向鍵
+"Down"          // 下方向鍵
+"Left"          // 左方向鍵
+"Right"         // 右方向鍵
+```
+
+### 平台特定的加速器
+
+處理常見快捷鍵的平台差異：
+
+```go
+import "runtime"
+
+// 跨平台儲存快捷鍵
+if runtime.GOOS == "darwin" {
+    app.KeyBinding.Add("Cmd+S", saveHandler)
+} else {
+    app.KeyBinding.Add("Ctrl+S", saveHandler)
+}
+
+// 或同時註冊兩者
+app.KeyBinding.Add("Ctrl+S", saveHandler)
+app.KeyBinding.Add("Cmd+S", saveHandler)
+```
+
+## 管理鍵綁定
+
+### 移除鍵綁定
+
+當不再需要鍵綁定時將其移除：
+
+```go
+// 移除特定的鍵綁定
+app.KeyBinding.Remove("Ctrl+S")
+
+// 範例：模態視窗的臨時鍵綁定
+app.KeyBinding.Add("Escape", func(window application.Window) {
+    // 關閉模態視窗
+    window.EmitEvent("modal:close", nil)
+    // 移除此臨時綁定
+    app.KeyBinding.Remove("Escape")
+})
+```
+
+### 取得所有鍵綁定
+
+擷取所有已註冊的鍵綁定：
+
+```go
+allBindings := app.KeyBinding.GetAll()
+for _, binding := range allBindings {
+    app.Logger.Info("Key binding", "accelerator", binding.Accelerator)
+}
+```
+
+## 進階用法
+
+### 情境感知的鍵綁定
+
+透過檢查應用程式狀態來使鍵綁定具有情境感知能力：
+
+```go
+app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+    // 檢查目前應用程式狀態
+    if isEditMode() {
+        // 儲存文件
+        saveDocument()
+    } else if isInSettings() {
+        // 儲存設定
+        saveSettings()
+    } else {
+        app.Logger.Info("Save not available in current context")
+    }
+})
+```
+
+### 視窗特定的動作
+
+鍵綁定會接收作用中的視窗，允許執行視窗特定的行為：
+
+```go
+app.KeyBinding.Add("F11", func(window application.Window) {
+    // 切換作用中視窗的全螢幕模式
+    if window.Fullscreen() {
+        window.SetFullscreen(false)
+    } else {
+        window.SetFullscreen(true)
+    }
+})
+
+app.KeyBinding.Add("Ctrl+W", func(window application.Window) {
+    // 關閉作用中的視窗
+    window.Close()
+})
+```
+
+### 動態鍵綁定管理
+
+根據應用程式狀態動態新增和移除鍵綁定：
+
+```go
+func enableEditMode() {
+    // 新增編輯特定的鍵綁定
+    app.KeyBinding.Add("Ctrl+B", func(window application.Window) {
+        window.EmitEvent("format:bold", nil)
+    })
+    
+    app.KeyBinding.Add("Ctrl+I", func(window application.Window) {
+        window.EmitEvent("format:italic", nil)
+    })
+    
+    app.KeyBinding.Add("Ctrl+U", func(window application.Window) {
+        window.EmitEvent("format:underline", nil)
+    })
+}
+
+func disableEditMode() {
+    // 移除編輯特定的鍵綁定
+    app.KeyBinding.Remove("Ctrl+B")
+    app.KeyBinding.Remove("Ctrl+I")
+    app.KeyBinding.Remove("Ctrl+U")
+}
+```
+
+## 平台考量
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    在 macOS 上：
+    
+    - 對於標準快捷鍵，請使用 `Cmd` 而非 `Ctrl`
+    - `Cmd+Q` 通常保留用於退出應用程式
+    - `Cmd+H` 會隱藏應用程式
+    - `Cmd+M` 會最小化視窗
+    - 請考慮標準的 macOS 鍵盤快捷鍵
+    
+    常見的 macOS 模式：
+    ```go
+    app.KeyBinding.Add("Cmd+N", newFileHandler)      // 新增
+    app.KeyBinding.Add("Cmd+O", openFileHandler)     // 開啟
+    app.KeyBinding.Add("Cmd+S", saveFileHandler)     // 儲存
+    app.KeyBinding.Add("Cmd+Z", undoHandler)         // 復原
+    app.KeyBinding.Add("Cmd+Shift+Z", redoHandler)   // 重做
+    app.KeyBinding.Add("Cmd+C", copyHandler)         // 複製
+    app.KeyBinding.Add("Cmd+V", pasteHandler)        // 貼上
+    ```
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    在 Windows 上：
+    
+    - 對於標準快捷鍵，請使用 `Ctrl`
+    - `Alt+F4` 會關閉應用程式
+    - `F1` 通常會開啟說明
+    - 請考慮 Windows 鍵盤慣例
+    
+    常見的 Windows 模式：
+    ```go
+    app.KeyBinding.Add("Ctrl+N", newFileHandler)     // 新增
+    app.KeyBinding.Add("Ctrl+O", openFileHandler)    // 開啟
+    app.KeyBinding.Add("Ctrl+S", saveFileHandler)    // 儲存
+    app.KeyBinding.Add("Ctrl+Z", undoHandler)        // 復原
+    app.KeyBinding.Add("Ctrl+Y", redoHandler)        // 重做
+    app.KeyBinding.Add("Ctrl+C", copyHandler)        // 複製
+    app.KeyBinding.Add("Ctrl+V", pasteHandler)       // 貼上
+    app.KeyBinding.Add("F1", helpHandler)            // 說明
+    ```
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    在 Linux 上：
+    
+    - 通常遵循使用 `Ctrl` 的 Windows 慣例
+    - 可能因桌面環境而異
+    - 請考慮 GNOME/KDE 標準快捷鍵
+    - 某些桌面環境會保留特定的快捷鍵
+    
+    常見的 Linux 模式：
+    ```go
+    app.KeyBinding.Add("Ctrl+N", newFileHandler)     // 新增
+    app.KeyBinding.Add("Ctrl+O", openFileHandler)    // 開啟
+    app.KeyBinding.Add("Ctrl+S", saveFileHandler)    // 儲存
+    app.KeyBinding.Add("Ctrl+Z", undoHandler)        // 復原
+    app.KeyBinding.Add("Ctrl+Shift+Z", redoHandler)  // 重做
+    app.KeyBinding.Add("Ctrl+C", copyHandler)        // 複製
+    app.KeyBinding.Add("Ctrl+V", pasteHandler)       // 貼上
+    ```
+    
+  </TabItem>
+</Tabs>
+
+## 最佳實踐
+
+1. **使用標準快捷鍵**：遵循常見操作的平台慣例：
+   ```go
+   // 跨平台儲存
+   if runtime.GOOS == "darwin" {```go
+   app.KeyBinding.Add("Cmd+S", saveHandler)
+   } else {
+       app.KeyBinding.Add("Ctrl+S", saveHandler)
+   }
+   ```
+
+2. **提供視覺回饋**：讓使用者知道快捷鍵已觸發：
+   ```go
+   app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+       saveDocument()
+       // 顯示短暫通知
+       window.EmitEvent("notification:show", "Document saved")
+   })
+   ```
+
+3. **處理衝突**：小心不要覆蓋重要的系統快捷鍵：
+   ```go
+   // 避免覆蓋系統快捷鍵，例如：
+   // Ctrl+Alt+Del (Windows)
+   // Cmd+Space (macOS Spotlight)
+   // Alt+Tab (切換視窗)
+   ```
+
+4. **記錄快捷鍵**：提供可用快捷鍵的說明或文件：
+   ```go
+   app.KeyBinding.Add("F1", func(window application.Window) {
+       // 顯示包含可用快捷鍵的說明對話框
+       showKeyboardShortcutsHelp()
+   })
+   ```
+
+5. **清理**：在不再需要時移除暫時的鍵綁定：
+   ```go
+   func enterEditMode() {
+       app.KeyBinding.Add("Escape", exitEditModeHandler)
+   }
+   
+   func exitEditModeHandler(window application.Window) {
+       exitEditMode()
+       app.KeyBinding.Remove("Escape") // 清理暫時的鍵綁定
+   }
+   ```
+
+## 完整範例
+
+以下是具有鍵盤快捷鍵的文字編輯器完整範例：
+
+```go
+package main
+
+import (
+    "runtime"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Text Editor with Shortcuts",
+    })
+
+    // 檔案操作
+    if runtime.GOOS == "darwin" {
+        app.KeyBinding.Add("Cmd+N", func(window application.Window) {
+            window.EmitEvent("file:new", nil)
+        })
+        app.KeyBinding.Add("Cmd+O", func(window application.Window) {
+            openFile(app, window)
+        })
+        app.KeyBinding.Add("Cmd+S", func(window application.Window) {
+            window.EmitEvent("file:save", nil)
+        })
+    } else {
+        app.KeyBinding.Add("Ctrl+N", func(window application.Window) {
+            window.EmitEvent("file:new", nil)
+        })
+        app.KeyBinding.Add("Ctrl+O", func(window application.Window) {
+            openFile(app, window)
+        })
+        app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+            window.EmitEvent("file:save", nil)
+        })
+    }
+
+    // 檢視操作
+    app.KeyBinding.Add("F11", func(window application.Window) {
+        window.SetFullscreen(!window.Fullscreen())
+    })
+
+    app.KeyBinding.Add("F1", func(window application.Window) {
+        showKeyboardShortcuts(window)
+    })
+
+    // 建立主視窗
+    window := app.Window.New()
+    window.SetTitle("Text Editor")
+
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
+}
+
+func openFile(app *application.App, window application.Window) {
+    dialog := app.Dialog.OpenFile()
+    dialog.AddFilter("Text Files", "*.txt;*.md")
+    
+    if file, err := dialog.PromptForSingleSelection(); err == nil {
+        window.EmitEvent("file:open", file)
+    }
+}
+
+func showKeyboardShortcuts(window application.Window) {
+    shortcuts := `
+Keyboard Shortcuts:
+- Ctrl/Cmd+N: New file
+- Ctrl/Cmd+O: Open file
+- Ctrl/Cmd+S: Save file
+- F11: Toggle fullscreen
+- F1: Show this help
+`
+    window.EmitEvent("help:show", shortcuts)
+}
+```
+
+:::tip[專業提示]
+在所有目標平台上測試您的鍵綁定，以確保它們運作正常且不會與系統快捷鍵衝突。
+:::
+
+:::danger[警告]
+小心不要覆蓋關鍵的系統快捷鍵。某些鍵組合由作業系統保留，應用程式無法捕獲。
+:::

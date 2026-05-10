@@ -1,0 +1,217 @@
+---
+title: 模板系統
+description: Wails v3 如何為新專案進行骨架化、模板的組織方式，以及如何建立您自己的模板。
+sidebar:
+  order: 7
+---
+
+Wails 內建了**模板系統**，讓 `wails3 init` 能夠為**任何**現代前端堆疊（React、Svelte、Vue、Solid、Vanilla JS …）產生可直接執行的專案。
+
+本頁涵蓋：
+
+1. 模板目錄結構
+2. CLI 如何選擇與渲染模板
+3. 逐步建立新模板
+4. 更新或覆蓋現有模板
+5. 疑難排解與最佳實踐
+
+---
+
+## 1. 模板存放位置
+
+```
+v3/
+└── internal/templates/
+    ├── _common/           # 複製到每個專案的檔案 (main.go, .gitignore)
+    ├── base/              # 僅後端的「純 Go」模板
+    ├── react/             # React + Vite
+    ├── react-ts/
+    ├── svelte/
+    ├── vue/
+    ├── ... (其他)
+    └── templates.go       # 註冊表 + 輔助函式
+```
+
+* **`_common/`** – 通用程式碼骨架（Go modules、Taskfile、README 存根、  
+  VS Code 設定）。  
+* **框架資料夾** – 包含 **frontend/** 以及任何堆疊特定的設定。  
+* 資料夾名稱與您傳遞給 CLI 的**模板 ID** 相符  
+  （`wails3 init -t react-ts`）。
+
+> 整個目錄會透過 `go:embed` 編譯進 CLI 二進位檔中，因此使用者可以離線進行專案骨架化。
+
+---
+
+## 2. `wails3 init` 如何使用模板
+
+呼叫鏈：
+
+```
+cmd/wails3/init.go
+       │
+       ▼
+internal/commands/init.go  ← 解析旗標、目標目錄
+       │
+       ▼
+internal/templates.Load()  ← templates.go
+       │
+       ▼
+Template.CopyTo(dest)      ← 檔案系統複製 + 文字替換
+```
+
+### 替換項目
+
+以 `{{ }}` 包圍的佔位符會在複製時被替換：
+
+| 佔位符 | 範例 | 來源 |
+|-------------|---------|--------|
+| `{{ProjectName}}` | `myapp` | CLI 旗標/目錄名稱 |
+| `{{ModulePath}}`  | `github.com/me/myapp` | 若提供 `--module` |
+| `{{WailsVersion}}`| `v3.0.0` | 編譯常數 |
+
+您可以新增**任何**佔位符；只需確保它在
+`internal/commands/init.go` 中有對應的值即可。
+
+### 複製後鉤子
+
+每個模板可附帶一個包含 `deps` 任務的 **Taskfile**。  
+複製完成後，CLI 會執行：
+
+```
+task --taskfile Taskfile.yml deps
+```
+
+常見工作：
+
+* `go mod tidy`
+* `npm install`
+* git init 與初始提交（選填）
+
+鉤子行為定義在 `_common/Taskfile.yml` 中，但可針對每個模板進行覆蓋。
+
+---
+
+## 3. 建立新模板
+
+> 範例：新增 **Qwik-TS** 模板
+
+### 3.1 資料夾與 ID
+
+```
+internal/templates/qwik-ts/
+```
+
+資料夾名稱即為模板 ID。請保持使用 **kebab-case**（連字號分隔的小寫字母）。
+
+### 3.2 最小檔案集
+
+```
+qwik-ts/
+├── README.md              # 在 CLI 中使用 -list 時顯示
+├── frontend/              # 您的網頁專案
+│   ├── src/
+│   ├── package.json
+│   └── vite.config.ts
+├── Taskfile.yml           # deps 與開發任務
+└── go/                    # 選填的額外 Go 檔案
+```
+
+建議從複製 `react-ts` 並刪除不需要的檔案開始。
+
+### 3.3 更新佔位符
+
+搜尋/取代：
+
+* `myapp` → `{{ProjectName}}`
+* `github.com/you/myapp` → `{{ModulePath}}`
+
+### 3.4 註冊（選填）
+
+如果資料夾存在，**templates.go 會透過 `embed` 自動偵測到它**。  
+僅在您需要**自訂驗證**時才新增明確的程式碼：
+
+```go
+func (t *Template) Validate() error {
+    // 檢查此模板的 Node ≥ 20
+}
+```
+
+### 3.5 測試
+
+```bash
+wails3 init -n demo -t qwik-ts
+cd demo
+wails3 dev
+```
+
+請確保：
+
+* 開發伺服器啟動
+* `wailsjs` 繫結已產生
+* 熱重載運作正常
+
+---
+
+## 4. 修改現有模板
+
+1. 編輯 `internal/templates/<id>/` 下的檔案。
+2. 執行 `go generate ./v3/...` **或** 僅執行 `go run ./v3/cmd/wails3 –help`；
+   embed 指示詞會自動重新編譯。
+3. 更新 `frontend/package.json` 與 `Taskfile.yml` 中的任何**相依套件版本**。
+4. 更新模板內的 `README.md` — 使用者可透過  
+   `wails3 init -t react --help` 查看。
+
+### 常見調整
+
+| 工作 | 位置 |
+|------|-------|
+| 變更開發伺服器連接埠 | `frontend/Taskfile.yml` (`vite dev --port {{DevPort}}`) |
+| 新增環境變數 | 相同的 Taskfile 或 `.env` |
+| 替換 JS 套件管理員 | 在 Taskfile 中將 `npm` 切換為 `pnpm` |
+
+---
+
+## 5. 模板撰寫技巧
+
+* **保持前端通用** — 避免引用 Wails 特定的全域變數；執行階段會自動注入。
+* **不包含編譯後的產物** — 透過 `.tmplignore` 排除 `node_modules`、`dist`、`.DS_Store`。
+* **記錄前置條件** — Node 版本、額外的 CLI 工具等。
+* **避免破壞性變更** — 若大幅改動，請建立一個*新的*模板 ID。
+
+---
+
+## 6. 疑難排解
+
+| 症狀 | 原因 | 解決方案 |
+|---------|-------|-----|
+| `unknown template id` | 資料夾名稱不符 | 檢查 `wails3 init -list` |
+| 佔位符未替換 | `Data` 映射中缺少項目 | 編輯 `internal/commands/init.go` |
+| 開發伺服器開啟空白頁面 | `DevPort` 環境變數錯誤 | 確保 Taskfile 將連接埠輸出至 stdout |
+| 前端在生產環境無法建置 | 遺漏 vite `base` 路徑 | 在 `vite.config.ts` 中設定 `base: "./"` |
+
+在 `wails3 init` 中加入 `--verbose` 可列印每個複製的檔案與替換內容。
+
+---
+
+## 7. 主要來源檔案對照
+
+| 檔案 | 職責 |
+|------|----------------|
+| `internal/templates/templates.go` | 嵌入模板檔案系統，回傳 `[]Template` |
+| `internal/templates/<id>/**` | 實際的模板內容 |
+| `internal/commands/init.go` | CLI 粘合層：選擇模板、填入佔位符 |
+| `internal/commands/generate_template.go` | 用於將實際專案*匯出*回模板的實用工具（對於更新很有用） |
+
+---
+
+## 8. 回顧
+
+* 模板位於 **`internal/templates/`** 並已內建於 CLI 中。
+* `wails3 init -t <id>` 會複製 `_common` + 選定的模板，執行
+  替換，然後執行 **deps** Taskfile 鉤子。
+* 建立模板就像**建立資料夾**、新增檔案以及
+  使用佔位符一樣簡單。
+* 此系統**可擴展**且**自包含** — 非常適合與團隊或社群分享
+  自訂堆疊。
+
+祝您模板撰寫愉快！

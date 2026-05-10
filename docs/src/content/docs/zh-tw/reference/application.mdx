@@ -1,0 +1,486 @@
+---
+title: 應用程式 API
+description: Application API 的完整參考文件
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 概述
+
+`Application` 是 Wails 應用程式的核心。它管理視窗、服務、事件，並提供對所有平台功能的存取。
+
+## 建立應用程式
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+app := application.New(application.Options{
+    Name:        "My App",
+    Description: "My awesome application",
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+    },
+})
+```
+
+## 核心方法
+
+### Run()
+
+啟動應用程式事件迴圈。
+
+```go
+func (a *App) Run() error
+```
+
+**範例：**
+
+```go
+err := app.Run()
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+**回傳：** 若啟動失敗則回傳錯誤
+
+### Quit()
+
+優雅地關閉應用程式。
+
+```go
+func (a *App) Quit()
+```
+
+**範例：**
+
+```go
+// 在選單處理常式中
+menu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+```
+
+### Config()
+
+回傳應用程式設定。
+
+```go
+func (a *App) Config() Options
+```
+
+**範例：**
+
+```go
+config := app.Config()
+fmt.Println("App name:", config.Name)
+```
+
+## 視窗管理
+
+### app.Window.New()
+
+使用預設選項建立新的 webview 視窗。
+
+```go
+func (wm *WindowManager) New() *WebviewWindow
+```
+
+**範例：**
+
+```go
+window := app.Window.New()
+window.Show()
+```
+
+### app.Window.NewWithOptions()
+
+使用自訂選項建立新的 webview 視窗。
+
+```go
+func (wm *WindowManager) NewWithOptions(options WebviewWindowOptions) *WebviewWindow
+```
+
+**範例：**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My Window",
+    Width:  800,
+    Height: 600,
+    BackgroundColour: application.NewRGB(255, 255, 255),
+})
+```
+
+### app.Window.GetByName()
+
+透過名稱取得視窗。
+
+```go
+func (wm *WindowManager) GetByName(name string) Window
+```
+
+**範例：**
+
+```go
+window := app.Window.GetByName("main")
+if window != nil {
+    window.Show()
+}
+```
+
+### app.Window.GetAll()
+
+回傳所有應用程式視窗。
+
+```go
+func (wm *WindowManager) GetAll() []Window
+```
+
+**範例：**
+
+```go
+windows := app.Window.GetAll()
+for _, window := range windows {
+    fmt.Println("Window:", window.Name())
+}
+```
+
+## 管理員
+
+應用程式透過屬性提供對各種管理員的存取：
+
+```go
+app.Window      // 視窗管理
+app.Menu        // 選單管理
+app.Dialog      // 對話框管理
+app.Event       // 事件管理
+app.Clipboard   // 剪貼簿操作
+app.Screen      // 螢幕資訊
+app.SystemTray  // 系統匣
+app.Browser     // 瀏覽器操作
+app.Env         // 環境變數
+```
+
+### 使用範例
+
+```go
+// 建立視窗
+window := app.Window.New()
+
+// 顯示對話框
+app.Dialog.Info().SetMessage("Hello!").Show()
+
+// 複製到剪貼簿
+app.Clipboard.SetText("Copied text")
+
+// 取得螢幕資訊
+screens := app.Screen.GetAll()
+```
+
+## 服務管理
+
+### RegisterService()
+
+將服務註冊至應用程式。
+
+```go
+func (a *App) RegisterService(service Service) error
+```
+
+**範例：**
+
+```go
+type MyService struct {
+    app *application.Application
+}
+
+func NewMyService(app *application.Application) *MyService {
+    return &MyService{app: app}
+}
+
+// 在建立應用程式後註冊
+app.RegisterService(application.NewService(NewMyService(app)))
+```
+
+## 事件管理
+
+### app.Event.Emit()
+
+發出自訂事件。
+
+```go
+func (em *EventManager) Emit(name string, data ...interface{})
+```
+
+**範例：**
+
+```go
+// 帶有資料的事件
+app.Event.Emit("user-logged-in", map[string]interface{}{
+    "username": "john",
+    "timestamp": time.Now(),
+})
+```
+
+### app.Event.On()
+
+監聽自訂事件。
+
+```go
+func (em *EventManager) On(name string, callback func(*CustomEvent))
+```
+
+**範例：**
+
+```go
+app.Event.On("user-logged-in", func(e *application.CustomEvent) {
+    data := e.Data.(map[string]interface{})
+    username := data["username"].(string)
+    fmt.Println("User logged in:", username)
+})
+```
+
+### app.Event.OnApplicationEvent()
+
+監聽應用程式生命週期事件。
+
+```go
+func (em *EventManager) OnApplicationEvent(eventType ApplicationEventType, callback func(*ApplicationEvent)) func()
+```
+
+**範例：**
+
+```go
+// 監聽關閉事件
+app.Event.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
+    fmt.Println("Application shutting down")
+    // 清理資源
+})
+```
+
+## 對話框方法
+
+對話框可透過 `app.Dialog` 管理員存取。請參閱 [Dialogs API](/reference/dialogs/) 以獲取完整參考文件。
+
+### 訊息對話框
+
+```go
+// 資訊對話框
+app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("Operation completed!").
+    Show()
+
+// 錯誤對話框
+app.Dialog.Error().
+    SetTitle("Error").
+    SetMessage("Something went wrong.").
+    Show()
+
+// 警告對話框
+app.Dialog.Warning().
+    SetTitle("Warning").
+    SetMessage("This action cannot be undone.").
+    Show()
+```
+
+### 問題對話框
+
+問題對話框使用按鈕回呼來處理使用者回應：
+
+```go
+dialog := app.Dialog.Question().
+    SetTitle("Confirm").
+    SetMessage("Continue?")
+
+yes := dialog.AddButton("Yes")
+yes.OnClick(func() {
+    // 處理是
+})
+
+no := dialog.AddButton("No")
+no.OnClick(func() {
+    // 處理否
+})
+
+dialog.SetDefaultButton(yes)
+dialog.SetCancelButton(no)
+dialog.Show()
+```
+
+### 檔案對話框
+
+```go
+// 開啟檔案對話框
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select File").
+    AddFilter("Images", "*.png;*.jpg").
+    PromptForSingleSelection()
+
+// 儲存檔案對話框
+path, err := app.Dialog.SaveFile().
+    SetTitle("Save File").
+    SetFilename("document.pdf").
+    AddFilter("PDF", "*.pdf").
+    PromptForSingleSelection()
+
+// 資料夾選擇（使用帶有目錄選項的 OpenFile）
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Folder").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+```
+
+## 記錄器
+
+應用程式提供結構化的記錄器：
+
+```go
+app.Logger.Info("Message", "key", "value")
+app.Logger.Error("Error occurred", "error", err)
+app.Logger.Debug("Debug info")
+app.Logger.Warn("Warning message")
+```
+
+**範例：**
+
+```go
+func (s *MyService) ProcessData(data string) error {
+    s.app.Logger.Info("Processing data", "length", len(data))
+    
+    if err := process(data); err != nil {
+        s.app.Logger.Error("Processing failed", "error", err)
+        return err
+    }
+    
+    s.app.Logger.Info("Processing complete")
+    return nil
+}
+```
+
+## 原始訊息處理
+
+對於需要直接、低層級控制前端到後端通訊的應用程式，Wails 提供了 `RawMessageHandler` 選項。這會繞過標準繫結系統。
+
+:::note
+原始訊息應僅作為最後手段使用。標準繫結系統經過高度最佳化，足以應付幾乎所有應用程式。僅在您已對應用程式進行效能分析並確認繫結是瓶頸時，才使用原始訊息。
+:::
+
+### RawMessageHandler
+
+`RawMessageHandler` 回呼會接收從前端使用 `System.invoke()` 發送的原始訊息。
+
+```go
+func (a *App) RawMessageHandler(window Window, message string)
+```
+
+**範例：**
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    RawMessageHandler: func(window application.Window, message string) {
+        // 處理原始訊息
+        fmt.Printf("Received from %s: %s\n", window.Name(), message)
+
+        // 您可以使用事件回應
+        window.EmitEvent("response", processMessage(message))
+    },
+})
+```
+
+
+更多詳細資訊，請參閱 [Raw Messages Guide](/zh-tw/guides/raw-messages)。
+
+## 平台特定選項
+
+### Windows 選項
+
+在應用程式層級設定 Windows 特定行為：
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Windows: application.WindowsOptions{
+        // WebView2 瀏覽器旗標（套用至所有視窗）        EnabledFeatures:       []string{"msWebView2EnableDraggableRegions"},
+        DisabledFeatures:      []string{"msExperimentalFeature"},
+        AdditionalBrowserArgs: []string{"--remote-debugging-port=9222"},
+
+        // Other Windows options
+        WndClass:                      "MyAppClass",
+        WebviewUserDataPath:           "",  // Default: %APPDATA%\[BinaryName.exe]
+        WebviewBrowserPath:            "",  // Default: system WebView2
+        DisableQuitOnLastWindowClosed: false,
+    },
+})
+```
+
+**Browser Flags:**
+- `EnabledFeatures` - WebView2 feature flags to enable
+- `DisabledFeatures` - WebView2 feature flags to disable
+- `AdditionalBrowserArgs` - Chromium command-line arguments
+
+See [Window Options - Application-Level Windows Options](/features/windows/options#application-level-windows-options) for detailed documentation.
+
+### Mac Options
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Mac: application.MacOptions{
+        ActivationPolicy: application.ActivationPolicyRegular,
+        ApplicationShouldTerminateAfterLastWindowClosed: true,
+    },
+})
+```
+
+### Linux Options
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Linux: application.LinuxOptions{
+        ProgramName:                   "my-app",
+        DisableQuitOnLastWindowClosed: false,
+    },
+})
+```
+
+## Complete Application Example
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "My Application",
+        Description: "A demo application",
+        Mac: application.MacOptions{
+            ApplicationShouldTerminateAfterLastWindowClosed: true,
+        },
+    })
+
+    // Create main window
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:            "My App",
+        Width:            1024,
+        Height:           768,
+        MinWidth:         800,
+        MinHeight:        600,
+        BackgroundColour: application.NewRGB(255, 255, 255),
+        URL:              "http://wails.localhost/",
+    })
+
+    window.Centre()
+    window.Show()
+
+    app.Run()
+}

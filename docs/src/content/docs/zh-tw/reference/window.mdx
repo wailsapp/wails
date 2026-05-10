@@ -1,0 +1,503 @@
+---
+title: 視窗 API
+description: Window API 的完整參考文件
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 概述
+
+Window API 提供了控制視窗外觀、行為和生命週期的方法。您可以透過視窗實例或 Window 管理器來存取這些功能。
+
+**常見操作：**
+- 建立並顯示視窗
+- 控制大小、位置和狀態
+- 處理視窗事件
+- 管理視窗內容
+- 配置外觀和行為
+
+## 可見性
+
+### Show()
+
+顯示視窗。如果視窗之前是隱藏的，它將變為可見。
+
+```go
+func (w *Window) Show()
+```
+
+**範例：**
+```go
+window := app.Window.New()
+window.Show()
+```
+
+### Hide()
+
+隱藏視窗但不關閉它。視窗仍保留在記憶體中，可以再次顯示。
+
+```go
+func (w *Window) Hide()
+```
+
+**範例：**
+```go
+// 暫時隱藏視窗
+window.Hide()
+
+// 稍後再次顯示
+window.Show()
+```
+
+**使用情境：**
+- 隱藏至系統列的應用程式
+- 重複使用視窗的嚮導流程
+- 操作期間的暫時隱藏
+
+### Close()
+
+關閉視窗。這會觸發 `WindowClosing` 事件。
+
+```go
+func (w *Window) Close()
+```
+
+**範例：**
+```go
+window.Close()
+```
+
+**注意：** 如果已註冊的鉤子（hook）呼叫了 `event.Cancel()`，則關閉操作將被阻止。
+
+## 視窗屬性
+
+### SetTitle()
+
+設定視窗標題列的文字。
+
+```go
+func (w *Window) SetTitle(title string)
+```
+
+**參數：**
+- `title` - 新的視窗標題
+
+**範例：**
+```go
+window.SetTitle("我的應用程式 - 文件.txt")
+```
+
+### Name()
+
+傳回視窗的唯一名稱識別符。
+
+```go
+func (w *Window) Name() string
+```
+
+**範例：**
+```go
+name := window.Name()
+fmt.Println("視窗名稱:", name)
+
+// 稍後透過名稱擷取視窗
+window := app.GetWindowByName(name)
+```
+
+## 大小與位置
+
+### SetSize()
+
+設定視窗的尺寸（以像素為單位）。
+
+```go
+func (w *Window) SetSize(width, height int)
+```
+
+**參數：**
+- `width` - 視窗寬度（像素）
+- `height` - 視窗高度（像素）
+
+**範例：**
+```go
+window.SetSize(1024, 768)
+```
+
+### Size()
+
+傳回目前的視窗尺寸。
+
+```go
+func (w *Window) Size() (width, height int)
+```
+
+**範例：**
+```go
+width, height := window.Size()
+fmt.Printf("視窗尺寸為 %dx%d\n", width, height)
+```
+
+### SetMinSize() / SetMaxSize()
+
+設定視窗的最小和最大尺寸。
+
+```go
+func (w *Window) SetMinSize(width, height int)
+func (w *Window) SetMaxSize(width, height int)
+```
+
+**範例：**
+```go
+// 防止視窗過小
+window.SetMinSize(800, 600)
+
+// 防止視窗過大
+window.SetMaxSize(1920, 1080)
+```
+
+### SetPosition()
+
+設定視窗相對於螢幕左上角的位置。
+
+```go
+func (w *Window) SetPosition(x, y int)
+```
+
+**參數：**
+- `x` - 水平位置（像素）
+- `y` - 垂直位置（像素）
+
+**範例：**
+```go
+// 將視窗定位在左上角
+window.SetPosition(0, 0)
+
+// 將視窗定位在距離左上角 100 像素處
+window.SetPosition(100, 100)
+```
+
+### Position()
+
+傳回目前的視窗位置。
+
+```go
+func (w *Window) Position() (x, y int)
+```
+
+**範例：**
+```go
+x, y := window.Position()
+fmt.Printf("視窗位於 (%d, %d)\n", x, y)
+```
+
+### Centre()
+
+將視窗置中於螢幕上。
+
+```go
+func (w *Window) Centre()
+```
+
+**範例：**
+```go
+window := app.Window.New()
+window.Centre()
+window.Show()
+```
+
+**注意：** 置中於主監視器。對於多監視器設定，請參閱螢幕 API。
+
+### SetFocus()
+
+將視窗帶到最前面並賦予其鍵盤焦點。
+
+```go
+func (w *Window) SetFocus()
+```
+
+**範例：**
+```go
+// 將視窗帶到最前面
+window.SetFocus()
+```
+
+## 視窗狀態
+
+### Minimise() / UnMinimise()
+
+將視窗最小化至工作列/停靠區，或還原它。
+
+```go
+func (w *Window) Minimise()
+func (w *Window) UnMinimise()
+```
+
+**範例：**
+```go
+// 最小化視窗
+window.Minimise()
+
+// 從最小化狀態還原
+window.UnMinimise()
+```
+
+### Maximise() / UnMaximise()
+
+將視窗最大化以填滿螢幕，或還原至其先前的大小。
+
+```go
+func (w *Window) Maximise()
+func (w *Window) UnMaximise()
+```
+
+**範例：**
+```go
+// 最大化視窗
+window.Maximise()
+
+// 還原至先前的大小
+window.UnMaximise()
+```
+
+### Fullscreen() / UnFullscreen()
+
+進入或退出全螢幕模式。
+
+```go
+func (w *Window) Fullscreen()
+func (w *Window) UnFullscreen()
+```
+
+**範例：**
+```go
+// 進入全螢幕
+window.Fullscreen()
+
+// 退出全螢幕
+window.UnFullscreen()
+```
+
+### IsMinimised() / IsMaximised() / IsFullscreen()
+
+檢查目前的視窗狀態。
+
+```go
+func (w *Window) IsMinimised() bool
+func (w *Window) IsMaximised() bool
+func (w *Window) IsFullscreen() bool
+```
+
+**範例：**
+```go
+if window.IsMinimised() {
+    window.UnMinimise()
+}
+
+if window.IsMaximised() {
+    fmt.Println("視窗已最大化")
+}
+
+if window.IsFullscreen() {
+    window.UnFullscreen()
+}
+```
+
+## 視窗內容
+
+### SetURL()
+
+在視窗內導航至特定的 URL。
+
+```go
+func (w *Window) SetURL(url string)
+```
+
+**參數：**
+- `url` - 要導航的 URL（可以是 `http://wails.localhost/` 用於嵌入的資源）
+
+**範例：**
+```go
+// 導航至嵌入的頁面
+window.SetURL("http://wails.localhost/settings.html")
+
+// 導航至外部 URL（如果允許）
+window.SetURL("https://wails.io")
+```
+
+### SetHTML()
+
+直接從 HTML 字串設定視窗內容。
+
+```go
+func (w *Window) SetHTML(html string)
+```
+
+**參數：**
+- `html` - 要顯示的 HTML 內容
+
+**範例：**
+```go
+html := `
+<!DOCTYPE html>
+<html>
+<head><title>動態內容</title></head>
+<body>
+    <h1>來自 Go 的問候！</h1>
+    <p>此內容是動態產生的。</p>
+</body>
+</html>
+`
+window.SetHTML(html)
+```
+
+**使用情境：**
+- 動態內容產生
+- 不需要前端建置流程的簡單視窗
+- 錯誤頁面或啟動畫面
+
+### Reload()
+
+重新載入目前的視窗內容。
+
+```go
+func (w *Window) Reload()
+```
+
+**範例：**
+```go
+// 重新載入目前頁面
+window.Reload()
+```
+
+**注意：** 在開發期間或需要刷新內容時非常有用。
+
+## 視窗事件
+
+Wails 提供了兩種處理視窗事件的方法：
+
+- **OnWindowEvent()** - 監聽視窗事件（無法阻止它們）
+- **RegisterHook()** - 鉤入視窗事件（可以透過呼叫 `event.Cancel()` 來阻止它們）
+
+### OnWindowEvent()
+
+註冊視窗事件的回呼函數。
+
+```go
+func (w *Window) OnWindowEvent(
+    eventType events.WindowEventType,
+    callback func(event *WindowEvent),
+) func()
+```
+
+**傳回：** 用於移除事件監聽器的清理函數
+
+**範例：**
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// 監聽視窗焦點
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("視窗獲得焦點")
+})
+
+// 監聽視窗失去焦點
+window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("視窗失去焦點")
+})
+
+// 監聽視窗調整大小
+window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
+    app.Logger.Info("視窗已調整大小")
+})
+```
+
+**常見視窗事件：**
+- `events.Common.WindowClosing` - 視窗即將關閉
+- `events.Common.WindowFocus` - 視窗獲得焦點
+- `events.Common.WindowLostFocus` - 視窗失去焦點
+- `events.Common.WindowDidMove` - 視窗已移動
+- `events.Common.WindowDidResize` - 視窗已調整大小
+- `events.Common.WindowMinimise` - 視窗已最小化
+- `events.Common.WindowMaximise` - 視窗已最大化
+- `events.Common.WindowFullscreen` - 視窗進入全螢幕-------|-------------|
+| `LinuxMenuStyleMenuBar` | 位於標題列下方的傳統選單列（預設） |
+| `LinuxMenuStylePrimaryMenu` | 標題列中的主要選單按鈕（GNOME 風格） |
+
+**範例：**
+```go
+window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Title: "My Application",
+    Linux: application.LinuxWindow{
+        MenuStyle: application.LinuxMenuStylePrimaryMenu,
+    },
+})
+window.SetMenu(menu)
+```
+
+**注意：** 主要選單樣式會在標題列中顯示漢堡按鈕（☰），遵循 GNOME 人機介面指南。這是現代 GNOME 應用程式的推薦樣式。
+
+## 完整範例
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Window API Demo",
+    })
+
+    // Create window with options
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:            "My Application",
+        Width:            1024,
+        Height:           768,
+        MinWidth:         800,
+        MinHeight:        600,
+        BackgroundColour: application.NewRGB(255, 255, 255),
+        URL:              "http://wails.localhost/",
+    })
+
+    // Configure window behavior
+    window.SetResizable(true)
+    window.SetMinSize(800, 600)
+    window.SetMaxSize(1920, 1080)
+
+    // Set up event hooks
+    window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+        // Confirm before closing
+        result, _ := app.Dialog.Question().
+            SetTitle("Confirm Close").
+            SetMessage("Are you sure you want to close this window?").
+            SetButtons("Yes", "No").
+            Show()
+
+        if result == "No" {
+            e.Cancel()
+        }
+    })
+
+    // Listen for window events
+    window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+        window.SetTitle("My Application (Active)")
+        app.Logger.Info("Window gained focus")
+    })
+
+    window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+        window.SetTitle("My Application")
+        app.Logger.Info("Window lost focus")
+    })
+
+    // Position and show window
+    window.Centre()
+    window.Show()
+
+    app.Run()
+}
+```

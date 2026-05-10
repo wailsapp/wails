@@ -1,0 +1,722 @@
+---
+title: 選單 API
+description: 選單 API 的完整參考文件
+sidebar:
+  order: 3
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 概述
+
+選單 API 提供了建立和管理應用程式選單、右鍵選單（內容選單）以及系統匣選單的方法。
+
+**選單類型：**
+- **應用程式選單** - 頂部選單列（檔案、編輯等）
+- **內容選單** - 右鍵選單
+- **系統匣選單** - 系統匣/通知區域中的選單
+
+## 建立選單
+
+### NewMenu()
+
+建立新的選單。
+
+```go
+func (a *App) NewMenu() *Menu
+```
+
+**範例：**
+```go
+menu := app.NewMenu()
+```
+
+## 選單方法
+
+### Add()
+
+將選單項目加入選單。
+
+```go
+func (m *Menu) Add(label string) *MenuItem
+```
+
+**參數：**
+- `label` - 選單項目顯示的文字
+
+**回傳：** 建立的選單項目
+
+**範例：**
+```go
+item := menu.Add("Open File")
+item.OnClick(func(ctx *application.Context) {
+    // 處理點擊事件
+})
+```
+
+### AddSubmenu()
+
+將子選單加入選單。
+
+```go
+func (m *Menu) AddSubmenu(label string) *Menu
+```
+
+**參數：**
+- `label` - 子選單標籤
+
+**回傳：** 建立的子選單
+
+**範例：**
+```go
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("New")
+fileMenu.Add("Open")
+fileMenu.Add("Save")
+```
+
+### AddSeparator()
+
+在選單項目之間加入視覺分隔線。
+
+```go
+func (m *Menu) AddSeparator()
+```
+
+**範例：**
+```go
+menu.Add("Copy")
+menu.Add("Paste")
+menu.AddSeparator()
+menu.Add("Select All")
+```
+
+**最佳實踐：** 使用分隔線來分組相關的選單項目。
+
+### AddCheckbox()
+
+加入可勾選的選單項目。
+
+```go
+func (m *Menu) AddCheckbox(label string, checked bool) *MenuItem
+```
+
+**參數：**
+- `label` - 核取方塊標籤
+- `checked` - 初始勾選狀態
+
+**範例：**
+```go
+darkMode := menu.AddCheckbox("Dark Mode", false)
+darkMode.OnClick(func(ctx *application.Context) {
+    isChecked := darkMode.Checked()
+    // 切換深色模式
+})
+```
+
+### AddRadio()
+
+加入單選按鈕選單項目（互斥群組）。
+
+```go
+func (m *Menu) AddRadio(label string, checked bool) *MenuItem
+```
+
+**參數：**
+- `label` - 單選按鈕標籤
+- `checked` - 初始勾選狀態
+
+**範例：**
+```go
+// 建立檢視模式的單選群組
+viewMenu := menu.AddSubmenu("View")
+listView := viewMenu.AddRadio("List View", true)
+gridView := viewMenu.AddRadio("Grid View", false)
+treeView := viewMenu.AddRadio("Tree View", false)
+
+listView.OnClick(func(ctx *application.Context) {
+    setViewMode("list")
+})
+gridView.OnClick(func(ctx *application.Context) {
+    setViewMode("grid")
+})
+```
+
+### Update()
+
+更新選單以反映選單項目所做的任何變更。
+
+```go
+func (m *Menu) Update()
+```
+
+**範例：**
+```go
+item.SetEnabled(false)
+menu.Update()  // 必須呼叫以套用變更
+```
+
+**重要：** 修改選單項目屬性後，請務必呼叫 `Update()`。
+
+## 選單項目方法
+
+### OnClick()
+
+為選單項目註冊點擊處理常式。
+
+```go
+func (mi *MenuItem) OnClick(callback func(ctx *application.Context)) *MenuItem
+```
+
+**參數：**
+- `callback` - 點擊項目時呼叫的函式
+
+**回傳：** 選單項目（用於鏈結呼叫）
+
+**範例：**
+```go
+item.OnClick(func(ctx *application.Context) {
+    fmt.Println("Menu item clicked")
+    app.Logger.Info("User clicked menu item")
+})
+```
+
+### SetLabel()
+
+變更選單項目的標籤。
+
+```go
+func (mi *MenuItem) SetLabel(label string) *MenuItem
+```
+
+**範例：**
+```go
+item.SetLabel("Save As...")
+menu.Update()
+```
+
+### SetEnabled()
+
+啟用或停用選單項目。
+
+```go
+func (mi *MenuItem) SetEnabled(enabled bool) *MenuItem
+```
+
+**範例：**
+```go
+// 當沒有開啟文件時停用儲存項目
+saveItem.SetEnabled(hasOpenDocument)
+menu.Update()
+```
+
+**常見模式：**
+```go
+// 根據應用程式狀態更新選單狀態
+func updateMenuState() {
+    saveItem.SetEnabled(hasUnsavedChanges)
+    undoItem.SetEnabled(canUndo)
+    redoItem.SetEnabled(canRedo)
+    menu.Update()
+}
+```
+
+### SetChecked()
+
+設定核取方塊/單選按鈕選單項目的勾選狀態。
+
+```go
+func (mi *MenuItem) SetChecked(checked bool) *MenuItem
+```
+
+**範例：**
+```go
+darkModeItem.SetChecked(isDarkModeEnabled)
+menu.Update()
+```
+
+### Checked()
+
+回傳目前的勾選狀態。
+
+```go
+func (mi *MenuItem) Checked() bool
+```
+
+**範例：**
+```go
+if darkModeItem.Checked() {
+    // 深色模式已啟用
+}
+```
+
+### SetAccelerator()
+
+為選單項目設定鍵盤快捷鍵。
+
+```go
+func (mi *MenuItem) SetAccelerator(accelerator string) *MenuItem
+```
+
+**參數：**
+- `accelerator` - 鍵盤快捷鍵（例如，"Ctrl+S"、"Cmd+Q"）
+
+**快捷鍵格式：**
+- **修飾鍵：** `Ctrl`、`Cmd`、`Alt`、`Shift`
+- **鍵：** `A-Z`、`0-9`、`F1-F12`、`Enter`、`Backspace` 等
+- **平台：** 在 macOS 上使用 `Cmd`，在 Windows/Linux 上使用 `Ctrl`
+
+**範例：**
+```go
+saveItem.SetAccelerator("Ctrl+S")
+quitItem.SetAccelerator("Ctrl+Q")
+newItem.SetAccelerator("Ctrl+N")
+```
+
+**跨平台範例：**
+```go
+import "runtime"
+
+var quitShortcut string
+if runtime.GOOS == "darwin" {
+    quitShortcut = "Cmd+Q"
+} else {
+    quitShortcut = "Ctrl+Q"
+}
+quitItem.SetAccelerator(quitShortcut)
+```
+
+### SetTooltip()
+
+設定滑鼠懸停在選單項目上方時顯示的工具提示。
+
+```go
+func (mi *MenuItem) SetTooltip(tooltip string) *MenuItem
+```
+
+**範例：**
+```go
+item.SetTooltip("Opens a file from disk")
+```
+
+### SetHidden()
+
+顯示或隱藏選單項目。
+
+```go
+func (mi *MenuItem) SetHidden(hidden bool) *MenuItem
+```
+
+**範例：**
+```go
+// 在生產環境中隱藏除錯選單
+debugItem.SetHidden(!isDevelopment)
+menu.Update()
+```
+
+## 應用程式選單
+
+### app.Menu.Set()
+
+設定應用程式的主選單列。
+
+```go
+func (mm *MenuManager) Set(menu *Menu)
+```
+
+**範例：**
+```go
+menu := app.NewMenu()
+
+// 檔案選單
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("New").SetAccelerator("Ctrl+N").OnClick(newFile)
+fileMenu.Add("Open").SetAccelerator("Ctrl+O").OnClick(openFile)
+fileMenu.Add("Save").SetAccelerator("Ctrl+S").OnClick(saveFile)
+fileMenu.AddSeparator()
+fileMenu.Add("Exit").SetAccelerator("Ctrl+Q").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+// 編輯選單
+editMenu := menu.AddSubmenu("Edit")
+editMenu.Add("Undo").SetAccelerator("Ctrl+Z").OnClick(undo)
+editMenu.Add("Redo").SetAccelerator("Ctrl+Y").OnClick(redo)
+editMenu.AddSeparator()
+editMenu.Add("Cut").SetAccelerator("Ctrl+X").OnClick(cut)
+editMenu.Add("Copy").SetAccelerator("Ctrl+C").OnClick(copy)
+editMenu.Add("Paste").SetAccelerator("Ctrl+V").OnClick(paste)
+
+app.Menu.Set(menu)
+```
+
+**平台注意事項：**
+- **macOS：** 選單出現在頂部選單列
+- **Windows/Linux：** 選單出現在視窗標題列
+- **macOS：** 自動加入包含應用程式名稱的應用程式選單
+
+## 內容選單
+
+### app.ContextMenu.Add()
+
+使用特定名稱註冊內容選單（右鍵選單）。
+
+```go
+func (cm *ContextMenuManager) Add(name string, menu *Menu)
+```
+
+**參數：**
+- `name` - 內容選單的唯一識別符
+- `menu` - 要顯示的選單
+
+**Go：**
+
+```go
+// 建立內容選單
+contextMenu := app.NewMenu()
+contextMenu.Add("Cut").OnClick(cut)
+contextMenu.Add("Copy").OnClick(copy)
+contextMenu.Add("Paste").OnClick(paste)
+contextMenu.AddSeparator()
+contextMenu.Add("Select All").OnClick(selectAll)
+
+// 註冊它
+app.RegisterContextMenu("editor", contextMenu)
+```
+
+**HTML：**
+
+```html
+<!-- 在右鍵點擊時觸發內容選單 -->
+<div data-wails-context-menu="editor">
+    在此處右鍵點擊以顯示內容選單
+</div>
+```
+
+**動態內容選單：**
+```go
+// 根據選取內容更新內容選單
+func updateContextMenu() {
+    contextMenu := app.NewMenu()
+
+    if hasSelection {
+        contextMenu.Add("Cut").OnClick(cut)
+        contextMenu.Add("Copy").OnClick(copy)
+    }
+
+    contextMenu.Add("Paste").SetEnabled(hasClipboardContent).OnClick(paste)
+
+    app.RegisterContextMenu("editor", contextMenu)
+}
+```
+
+## 系統匣選單
+
+### app.SystemTray.New()
+
+建立新的系統匣圖示。
+
+```go
+func (sm *SystemTrayManager) New() *SystemTray
+```
+
+**範例：**
+```go
+tray := app.SystemTray.New()
+```
+
+### SetIcon()設定系統匣圖示。
+
+```go
+func (st *SystemTray) SetIcon(icon []byte) *SystemTray
+```
+
+**範例：**
+```go
+iconData, _ := os.ReadFile("icon.png")
+tray.SetIcon(iconData)
+```
+
+### SetMenu()
+
+設定系統匣的選單。
+
+```go
+func (st *SystemTray) SetMenu(menu *Menu) *SystemTray
+```
+
+**範例：**
+```go
+trayMenu := app.NewMenu()
+trayMenu.Add("Show Window").OnClick(func(ctx *application.Context) {
+    window.Show()
+    window.SetFocus()
+})
+trayMenu.Add("Settings").OnClick(openSettings)
+trayMenu.AddSeparator()
+trayMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+tray.SetMenu(trayMenu)
+```
+
+### SetTooltip()
+
+設定滑鼠懸停在圖示上時顯示的工具提示。
+
+```go
+func (st *SystemTray) SetTooltip(tooltip string) *SystemTray
+```
+
+**範例：**
+```go
+tray.SetTooltip("My Application - Running")
+```
+
+### OnClick()
+
+處理圖示的左鍵點擊事件。
+
+```go
+func (st *SystemTray) OnClick(callback func()) *SystemTray
+```
+
+**範例：**
+```go
+tray.OnClick(func() {
+    if window.IsVisible() {
+        window.Hide()
+    } else {
+        window.Show()
+        window.SetFocus()
+    }
+})
+```
+
+## 完整範例
+
+### 標準應用程式選單
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func createMenu(app *application.Application) *application.Menu {
+    menu := app.NewMenu()
+
+    // File menu
+    fileMenu := menu.AddSubmenu("File")
+    fileMenu.Add("New").
+        SetAccelerator("Ctrl+N").
+        OnClick(func(ctx *application.Context) {
+            // Create new document
+        })
+    fileMenu.Add("Open").
+        SetAccelerator("Ctrl+O").
+        OnClick(func(ctx *application.Context) {
+            // Open file dialog
+        })
+    fileMenu.Add("Save").
+        SetAccelerator("Ctrl+S").
+        OnClick(func(ctx *application.Context) {
+            // Save document
+        })
+    fileMenu.AddSeparator()
+    fileMenu.Add("Exit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+
+    // Edit menu
+    editMenu := menu.AddSubmenu("Edit")
+    editMenu.Add("Undo").SetAccelerator("Ctrl+Z")
+    editMenu.Add("Redo").SetAccelerator("Ctrl+Y")
+    editMenu.AddSeparator()
+    editMenu.Add("Cut").SetAccelerator("Ctrl+X")
+    editMenu.Add("Copy").SetAccelerator("Ctrl+C")
+    editMenu.Add("Paste").SetAccelerator("Ctrl+V")
+
+    // View menu
+    viewMenu := menu.AddSubmenu("View")
+    darkMode := viewMenu.AddCheckbox("Dark Mode", false)
+    darkMode.OnClick(func(ctx *application.Context) {
+        // Toggle dark mode
+        isChecked := darkMode.Checked()
+        app.Logger.Info("Dark mode", "enabled", isChecked)
+    })
+    viewMenu.AddSeparator()
+    viewMenu.AddRadio("List View", true)
+    viewMenu.AddRadio("Grid View", false)
+    viewMenu.AddRadio("Detail View", false)
+
+    // Help menu
+    helpMenu := menu.AddSubmenu("Help")
+    helpMenu.Add("Documentation").OnClick(func(ctx *application.Context) {
+        // Open docs
+    })
+    helpMenu.Add("About").OnClick(func(ctx *application.Context) {
+        // Show about dialog
+    })
+
+    return menu
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Menu Demo",
+    })
+
+    menu := createMenu(app)
+    app.Menu.Set(menu)
+
+    window := app.Window.New()
+    window.Show()
+
+    app.Run()
+}
+```
+
+### 系統匣應用程式
+
+```go
+func setupSystemTray(app *application.Application, window *application.Window) {
+    // Create system tray
+    tray := app.SystemTray.New()
+
+    // Set icon
+    iconData, _ := os.ReadFile("icon.png")
+    tray.SetIcon(iconData)
+    tray.SetTooltip("My App - Running")
+
+    // Handle left-click on tray icon
+    tray.OnClick(func() {
+        if window.IsVisible() {
+            window.Hide()
+        } else {
+            window.Show()
+            window.SetFocus()
+        }
+    })
+
+    // Create tray menu
+    trayMenu := app.NewMenu()
+
+    showItem := trayMenu.Add("Show Window")
+    showItem.OnClick(func(ctx *application.Context) {
+        window.Show()
+        window.SetFocus()
+    })
+
+    trayMenu.AddSeparator()
+
+    trayMenu.Add("Settings").OnClick(func(ctx *application.Context) {
+        // Open settings window
+    })
+
+    trayMenu.Add("About").OnClick(func(ctx *application.Context) {
+        // Show about dialog
+    })
+
+    trayMenu.AddSeparator()
+
+    trayMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+
+    tray.SetMenu(trayMenu)
+}
+```
+
+### 動態選單更新
+
+```go
+type Editor struct {
+    app         *application.Application
+    menu        *application.Menu
+    undoItem    *application.MenuItem
+    redoItem    *application.MenuItem
+    saveItem    *application.MenuItem
+    undoStack   []string
+    redoStack   []string
+    hasChanges  bool
+}
+
+func (e *Editor) createMenu() {
+    e.menu = e.app.NewMenu()
+
+    fileMenu := e.menu.AddSubmenu("File")
+    e.saveItem = fileMenu.Add("Save").SetAccelerator("Ctrl+S")
+    e.saveItem.OnClick(func(ctx *application.Context) {
+        e.save()
+    })
+
+    editMenu := e.menu.AddSubmenu("Edit")
+    e.undoItem = editMenu.Add("Undo").SetAccelerator("Ctrl+Z")
+    e.undoItem.OnClick(func(ctx *application.Context) {
+        e.undo()
+    })
+
+    e.redoItem = editMenu.Add("Redo").SetAccelerator("Ctrl+Y")
+    e.redoItem.OnClick(func(ctx *application.Context) {
+        e.redo()
+    })
+
+    e.updateMenuState()
+    e.app.Menu.Set(e.menu)
+}
+
+func (e *Editor) updateMenuState() {
+    // Update menu items based on current state
+    e.saveItem.SetEnabled(e.hasChanges)
+    e.undoItem.SetEnabled(len(e.undoStack) > 0)
+    e.redoItem.SetEnabled(len(e.redoStack) > 0)
+    e.menu.Update()
+}
+
+func (e *Editor) onChange() {
+    e.hasChanges = true
+    e.updateMenuState()
+}
+
+func (e *Editor) save() {
+    // Save logic
+    e.hasChanges = false
+    e.updateMenuState()
+}
+```
+
+## 最佳實踐
+
+### ✅ 建議做法
+
+- **使用標準快捷鍵** - 遵循平台慣例（例如複製使用 Ctrl+C）
+- **在變更後呼叫 Update()** - 否則選單不會反映變更
+- **將相關項目分組** - 使用分隔線來組織選單項目
+- **停用不可用的操作** - 不要隱藏，而是使用 SetEnabled(false) 停用
+- **使用清晰的標籤** - 簡潔且具描述性
+- **遵循平台慣例** - macOS 與 Windows/Linux 的選單模式有所不同
+
+### ❌ 避免做法
+
+- **不要忘記呼叫 Update()** - 這是最常見的錯誤
+- **不要巢狀過深** - 選單層級最多保持 2-3 層
+- **不要使用含糊的標籤** - 例如「處理」與「處理文件」
+- **不要過度複雜化** - 保持選單簡單且專注
+- **不要混用隱喻** - 命名和組織方式需保持一致
+
+## 平台特定注意事項
+
+### macOS
+
+- 應用程式選單會自動新增，並包含應用程式名稱
+- 快捷鍵請使用 `Cmd` 而非 `Ctrl`
+- 應用程式選單預設包含「關於」、「偏好設定」和「結束」
+
+### Windows/Linux
+
+- 不會自動新增應用程式選單
+- 快捷鍵請使用 `Ctrl`
+- 「結束」通常位於「檔案」選單中

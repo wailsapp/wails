@@ -1,0 +1,109 @@
+---
+title: 前端路由
+description: 在您的 Wails 應用程式中使用前端路由
+sidebar:
+  order: 35
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+前端路由是在單頁應用程式（SPA）中切換視圖的常見方式。
+本指南涵蓋在使用 Wails 時，不同前端框架的推薦做法。
+
+
+<Tabs syncKey="framework">
+    <TabItem label="Vue" icon="seti:vue">
+
+Vue 中路由的推薦做法是使用 [Hash Mode](https://next.router.vuejs.org/guide/essentials/history-mode.html#hash-mode)：
+
+```javascript
+import { createRouter, createWebHashHistory } from "vue-router";
+
+const router = createRouter({
+  history: createWebHashHistory(),
+  routes: [
+    //...
+  ],
+});
+```
+
+Hash mode 使用 URL 的 hash 部分來渲染不同的視圖，透過使用基於 hash 的 URL 格式，避免 Wails 執行階段干擾路由。
+
+    </TabItem>
+    <TabItem label="Angular" icon="seti:angular">
+
+Angular 中路由的推薦做法是使用 [HashLocationStrategy](https://codecraft.tv/courses/angular/routing/routing-strategies#%5Fhashlocationstrategy)：
+
+```typescript
+RouterModule.forRoot(routes, { useHash: true });
+```
+
+使用基於 hash 的 URL 可確保在所有平台上，路由能與 Wails 的視窗處理機制正確配合運作。
+
+    </TabItem>
+    <TabItem label="React" icon="seti:react">
+
+React 中路由的推薦做法是使用 [HashRouter](https://reactrouter.com/en/main/router-components/hash-router)：
+
+```jsx
+import ReactDOM from "react-dom/client";
+import { HashRouter, Routes, Route } from "react-router-dom";
+
+ReactDOM.createRoot(root).render(
+  <HashRouter basename={"/"}>
+    {/* The rest of your app goes here */}
+    <Routes>
+      <Route path="/" element={<Page0 />} />
+      <Route path="/page1" element={<Page1 />} />
+      <Route path="/page2" element={<Page2 />} />
+      {/* more... */}
+    </Routes>
+  </HashRouter>
+);
+```
+
+HashRouter 使用 URL 的 hash 部分而非路徑，這在所有平台上都能與 Wails 可靠地配合運作。
+
+    </TabItem>
+    <TabItem label="Svelte" icon="seti:svelte">
+
+Svelte 中路由的推薦做法是使用 [svelte-spa-router](https://github.com/ItalyPaleAle/svelte-spa-router)：
+
+```svelte
+<script>
+    import Router from "svelte-spa-router";
+</script>
+
+<Router
+    routes={{
+        "/": Home,
+        "/products": wrap({
+            asyncComponent: () => import("./routes/Products.svelte"),
+        }),
+        "/settings": Settings,
+        "*": NotFound,
+    }}
+/>
+```
+
+svelte-spa-router 支援基於 hash 的路由，使其能與 Wails 應用程式相容。
+
+    </TabItem>
+</Tabs>
+
+## 為什麼使用 Hash 路由？
+
+Wails 將您的前端嵌入到原生的 webview 視窗中。使用基於 hash 的路由（`#/page` 而非 `/page`）
+可避免與以下項目產生衝突：
+
+- Wails 執行階段的內部路由
+- 不同平台上的原生視窗 URL 處理機制
+- 從非根路徑提供的生產環境靜態資源
+
+## 疑難排解
+
+如果您在生產環境建置中遇到前端路由的問題：
+
+- 確保您的前端建置工具已設定為輸出 **hash mode** 路由
+- 對於基於 Vite 的專案，請在您的 `vite.config.js` 中加入 `base: "./"`
+- 驗證您的 `index.html` 是否能正確處理 SPA 路由的 fallback

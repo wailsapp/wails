@@ -1,0 +1,616 @@
+---
+title: 服務
+description: 使用服務建構模組化、可重複使用的應用程式元件
+sidebar:
+  order: 2
+---
+
+## 服務架構
+
+Wails **服務**提供了一種結構化的方式，以模組化、封閉的元件來組織應用程式邏輯。服務具有生命週期感知能力，包含啟動和關閉鉤子，自動繫結至前端，支援依賴注入，並且可以完全獨立進行測試。
+
+## 快速開始
+
+```go
+type GreetService struct {
+    prefix string
+}
+
+func NewGreetService(prefix string) *GreetService {
+    return &GreetService{prefix: prefix}
+}
+
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+
+// Register
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(NewGreetService("Hello, ")),
+    },
+})
+```
+
+**就是這樣！** `Greet` 現在可以從 JavaScript 呼叫：
+
+```js
+import { Greet } from './bindings/main/GreetService';
+
+const message = await Greet("World");
+console.log(message);  // "Hello, World!"
+```
+
+## 建立服務
+
+### 基本服務
+
+```go
+type CalculatorService struct{}
+
+func (c *CalculatorService) Add(a, b int) int {
+    return a + b
+}
+
+func (c *CalculatorService) Subtract(a, b int) int {
+    return a - b
+}
+```
+
+**註冊：**
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&CalculatorService{}),
+    },
+})
+```
+
+**重點：**
+- 只有**公開方法**（PascalCase）會被繫結
+- 服務是**單例**（單一實例）
+- 方法可以傳回 `(值, 錯誤)`
+
+### 帶有狀態的服務
+
+```go
+type CounterService struct {
+    count int
+    mu    sync.RWMutex
+}
+
+func (c *CounterService) Increment() int {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count++
+    return c.count
+}
+
+func (c *CounterService) GetCount() int {
+    c.mu.RLock()
+    defer c.mu.RUnlock()
+    return c.count
+}
+
+func (c *CounterService) Reset() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count = 0
+}
+```
+
+**重要：** 服務在所有視窗之間共用。請務必使用互斥鎖來確保執行緒安全。
+
+### 帶有依賴項的服務
+
+```go
+type UserService struct {
+    db     *sql.DB
+    logger *slog.Logger
+}
+
+func NewUserService(db *sql.DB, logger *slog.Logger) *UserService {
+    return &UserService{
+        db:     db,
+        logger: logger,
+    }
+}
+
+func (u *UserService) GetUser(id int) (*User, error) {
+    u.logger.Info("Getting user", "id", id)
+    
+    var user User
+    err := u.db.QueryRow("SELECT * FROM users WHERE id = ?", id).Scan(&user)
+    if err != nil {
+        return nil, fmt.Errorf("failed to get user: %w", err)
+    }
+    
+    return &user, nil
+}
+```
+
+**帶有依賴項的註冊：**
+
+```go
+db, _ := sql.Open("sqlite3", "app.db")
+logger := slog.Default()
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(NewUserService(db, logger)),
+    },
+})
+```
+
+## 服務生命週期
+
+### ServiceStartup
+
+在應用程式啟動時呼叫：
+
+```go
+func (u *UserService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    u.logger.Info("UserService starting up")
+    
+    // Initialise resources
+    if err := u.db.Ping(); err != nil {
+        return fmt.Errorf("database not available: %w", err)
+    }
+    
+    // Run migrations
+    if err := u.runMigrations(); err != nil {
+        return fmt.Errorf("migrations failed: %w", err)
+    }
+    
+    // Start background tasks
+    go u.backgroundSync(ctx)
+    
+    return nil
+}
+```
+
+**使用案例：**
+- 初始化資源
+- 驗證配置
+- 執行遷移
+- 啟動背景任務
+- 連線至外部服務
+
+**重要：**
+- 服務會按照**註冊順序**啟動
+- 傳回錯誤以**阻止應用程式啟動**
+- 使用 `ctx` 進行取消
+
+### ServiceShutdown
+
+在應用程式關閉時呼叫：
+
+```go
+func (u *UserService) ServiceShutdown() error {
+    u.logger.Info("UserService shutting down")
+    
+    // Close database
+    if err := u.db.Close(); err != nil {
+        return fmt.Errorf("failed to close database: %w", err)
+    }
+    
+    // Cleanup resources
+    u.cleanup()
+    
+    return nil
+}
+```
+
+**使用案例：**
+- 關閉連線
+- 儲存狀態
+- 清理資源
+- 清除緩衝區
+- 取消背景任務
+
+**重要：**
+- 服務會以**逆序**關閉
+- 應用程式上下文已取消
+- 傳回錯誤以**記錄警告**（不會阻止關閉）
+
+### 完整生命週期範例
+
+```go
+type DatabaseService struct {
+    db     *sql.DB
+    logger *slog.Logger
+    cancel context.CancelFunc
+}
+
+func NewDatabaseService(logger *slog.Logger) *DatabaseService {
+    return &DatabaseService{logger: logger}
+}
+
+func (d *DatabaseService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    d.logger.Info("Starting database service")
+    
+    // Open database
+    db, err := sql.Open("sqlite3", "app.db")
+    if err != nil {
+        return fmt.Errorf("failed to open database: %w", err)
+    }
+    d.db = db
+    
+    // Test connection
+    if err := db.Ping(); err != nil {
+        return fmt.Errorf("database not available: %w", err)
+    }
+    
+    // Start background cleanup
+    ctx, cancel := context.WithCancel(ctx)
+    d.cancel = cancel
+    go d.periodicCleanup(ctx)
+    
+    return nil
+}
+
+func (d *DatabaseService) ServiceShutdown() error {
+    d.logger.Info("Shutting down database service")
+    
+    // Cancel background tasks
+    if d.cancel != nil {
+        d.cancel()
+    }
+    
+    // Close database
+    if d.db != nil {
+        if err := d.db.Close(); err != nil {
+            return fmt.Errorf("failed to close database: %w", err)
+        }
+    }
+    
+    return nil
+}
+
+func (d *DatabaseService) periodicCleanup(ctx context.Context) {
+    ticker := time.NewTicker(1 * time.Hour)
+    defer ticker.Stop()
+    
+    for {
+        select {
+        case <-ctx.Done():
+            return
+        case <-ticker.C:
+            d.cleanup()
+        }
+    }
+}
+```
+
+## 服務選項
+
+### 自訂名稱
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceWithOptions(&MyService{}, application.ServiceOptions{
+            Name: "CustomServiceName",
+        }),
+    },
+})
+```
+
+**使用案例：**
+- 同一服務類型的多個實例
+- 更清晰的日誌記錄
+- 更好的除錯能力
+
+### HTTP 路由
+
+服務可以處理 HTTP 請求：
+
+```go
+type FileService struct {
+    root string
+}
+
+func (f *FileService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    // Serve files from root directory
+    http.FileServer(http.Dir(f.root)).ServeHTTP(w, r)
+}
+
+// Register with route
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceWithOptions(&FileService{root: "./files"}, application.ServiceOptions{
+            Route: "/files",
+        }),
+    },
+})
+```
+
+**存取：** `http://wails.localhost/files/...`
+
+**使用案例：**
+- 檔案服務
+- 自訂 API
+- WebSocket 端點
+- 媒體串流
+
+## 服務模式
+
+### 儲存庫模式
+
+```go
+type UserRepository struct {
+    db *sql.DB
+}
+
+func (r *UserRepository) GetByID(id int) (*User, error) {
+    // Database query
+}
+
+func (r *UserRepository) Create(user *User) error {
+    // Insert user
+}
+
+func (r *UserRepository) Update(user *User) error {
+    // Update user
+}
+
+func (r *UserRepository) Delete(id int) error {
+    // Delete user
+}
+```
+
+### 服務層模式
+
+```go
+type UserService struct {
+    repo   *UserRepository
+    logger *slog.Logger
+}
+
+func (s *UserService) RegisterUser(email, password string) (*User, error) {
+    // Validate
+    if !isValidEmail(email) {
+        return nil, errors.New("invalid email")
+    }
+    
+    // Hash password
+    hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+    if err != nil {
+        return nil, err
+    }
+    
+    // Create user
+    user := &User{
+        Email:        email,
+        PasswordHash: string(hash),```go
+    CreatedAt:    time.Now(),
+}
+
+if err := s.repo.Create(user); err != nil {
+    return nil, err
+}
+
+s.logger.Info("User registered", "email", email)
+return user, nil
+}
+```
+
+### 工廠模式
+
+```go
+type ServiceFactory struct {
+    db     *sql.DB
+    logger *slog.Logger
+}
+
+func (f *ServiceFactory) CreateUserService() *UserService {
+    return &UserService{
+        repo:   &UserRepository{db: f.db},
+        logger: f.logger,
+    }
+}
+
+func (f *ServiceFactory) CreateOrderService() *OrderService {
+    return &OrderService{
+        repo:   &OrderRepository{db: f.db},
+        logger: f.logger,
+    }
+}
+```
+
+### 事件驅動模式
+
+```go
+type OrderService struct {
+    app *application.Application
+}
+
+func (o *OrderService) CreateOrder(items []Item) (*Order, error) {
+    order := &Order{
+        Items:     items,
+        CreatedAt: time.Now(),
+    }
+    
+    // 儲存訂單
+    if err := o.saveOrder(order); err != nil {
+        return nil, err
+    }
+    
+    // 觸發事件
+    o.app.Event.Emit("order-created", order)
+    
+    return order, nil
+}
+```
+
+## 依賴注入
+
+### 建構子注入
+
+```go
+type EmailService struct {
+    smtp   *smtp.Client
+    logger *slog.Logger
+}
+
+func NewEmailService(smtp *smtp.Client, logger *slog.Logger) *EmailService {
+    return &EmailService{
+        smtp:   smtp,
+        logger: logger,
+    }
+}
+
+// 註冊
+smtpClient := createSMTPClient()
+logger := slog.Default()
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(NewEmailService(smtpClient, logger)),
+    },
+})
+```
+
+### 應用程式注入
+
+```go
+type NotificationService struct {
+    app *application.Application
+}
+
+func NewNotificationService(app *application.Application) *NotificationService {
+    return &NotificationService{app: app}
+}
+
+func (n *NotificationService) Notify(message string) {
+    // 使用應用程式觸發事件
+    n.app.Event.Emit("notification", message)
+    
+    // 或顯示系統通知
+    n.app.ShowNotification(message)
+}
+
+// 在應用程式建立後註冊
+app := application.New(application.Options{})
+app.RegisterService(application.NewService(NewNotificationService(app)))
+```
+
+### 服務間依賴
+
+```go
+type OrderService struct {
+    userService  *UserService
+    emailService *EmailService
+}
+
+func NewOrderService(userService *UserService, emailService *EmailService) *OrderService {
+    return &OrderService{
+        userService:  userService,
+        emailService: emailService,
+    }
+}
+
+// 依順序註冊
+userService := &UserService{}
+emailService := &EmailService{}
+orderService := NewOrderService(userService, emailService)
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(userService),
+        application.NewService(emailService),
+        application.NewService(orderService),
+    },
+})
+```
+
+## 測試服務
+
+### 單元測試
+
+```go
+func TestCalculatorService_Add(t *testing.T) {
+    calc := &CalculatorService{}
+    
+    result := calc.Add(2, 3)
+    
+    if result != 5 {
+        t.Errorf("expected 5, got %d", result)
+    }
+}
+```
+
+### 帶有依賴的測試
+
+```go
+func TestUserService_GetUser(t *testing.T) {
+    // 建立模擬資料庫
+    db, mock, _ := sqlmock.New()
+    defer db.Close()
+    
+    // 設定預期
+    rows := sqlmock.NewRows([]string{"id", "name"}).
+        AddRow(1, "Alice")
+    mock.ExpectQuery("SELECT").WillReturnRows(rows)
+    
+    // 建立服務
+    service := NewUserService(db, slog.Default())
+    
+    // 測試
+    user, err := service.GetUser(1)
+    
+    if err != nil {
+        t.Fatalf("unexpected error: %v", err)
+    }
+    if user.Name != "Alice" {
+        t.Errorf("expected Alice, got %s", user.Name)
+    }
+}
+```
+
+### 測試生命週期
+
+```go
+func TestDatabaseService_Lifecycle(t *testing.T) {
+    service := NewDatabaseService(slog.Default())
+    
+    // 測試啟動
+    ctx := context.Background()
+    err := service.ServiceStartup(ctx, application.ServiceOptions{})
+    if err != nil {
+        t.Fatalf("startup failed: %v", err)
+    }
+    
+    // 測試功能
+    // ...
+    
+    // 測試關閉
+    err = service.ServiceShutdown()
+    if err != nil {
+        t.Fatalf("shutdown failed: %v", err)
+    }
+}
+```
+
+## 最佳實踐
+
+### ✅ 建議
+
+- **單一職責** - 一個服務，一個目的
+- **建構子注入** - 明確傳遞依賴
+- **執行緒安全的狀態** - 使用互斥鎖 (mutex)
+- **回傳錯誤** - 不要使用 panic
+- **記錄重要事件** - 使用結構化日誌
+- **隔離測試** - 模擬依賴
+
+### ❌ 避免
+
+- **不要使用全域狀態** - 請傳遞依賴
+- **不要阻塞啟動** - 保持 ServiceStartup 快速
+- **不要忽略關閉** - 務必進行清理
+- **不要建立循環依賴** - 謹慎設計
+- **不要暴露內部方法** - 保持私有
+- **不要忘記執行緒安全** - 服務是共享的---
+
+**有問題嗎？** 請在 [Discord](https://discord.gg/JDdSxwjhGf) 提問，或查看 [服務範例](https://github.com/wailsapp/wails/tree/master/v3/examples)。

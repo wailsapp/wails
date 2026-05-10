@@ -1,0 +1,297 @@
+---
+title: 開發環境設定
+description: 設定您的 Wails v3 開發環境
+---
+
+## 開發環境設定
+
+本指南將引導您完成 Wails v3 開發所需完整開發環境的設定。
+
+## 必要工具
+
+### Go 開發
+
+1. **安裝 Go 1.25 或更新版本：**
+   ```bash
+   # 從 https://go.dev/dl/ 下載
+   go version  # 驗證安裝
+   ```
+
+2. **設定 Go 環境：**
+   ```bash
+   # 新增到您的 shell 設定檔 (.bashrc, .zshrc 等)
+   export GOPATH=$HOME/go
+   export PATH=$PATH:$GOPATH/bin
+   ```
+
+3. **安裝實用的 Go 工具：**
+   ```bash
+   go install golang.org/x/tools/cmd/goimports@latest
+   go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+   ```
+
+### Node.js 和 npm
+
+用於建置文件與測試前端整合。
+
+```bash
+# 安裝 Node.js 20+ 和 npm
+node --version  # 應為 20+
+npm --version
+```
+
+### 平台特定相依性
+
+**macOS：**
+
+```bash
+# 安裝 Xcode Command Line Tools
+xcode-select --install
+
+# 驗證安裝
+xcode-select -p  # 應輸出一個路徑
+```
+
+**Windows：**
+
+1. 安裝 [MSYS2](https://www.msys2.org/) 以獲得類似 Unix 的環境
+2. WebView2 Runtime（Windows 11 已預先安裝，[下載](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) Windows 10 版本）
+3. 選配：安裝 [Git for Windows](https://git-scm.com/download/win)
+
+**Linux (Debian/Ubuntu)：**
+
+```bash
+sudo apt update
+sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev
+```
+
+**Linux (Fedora/RHEL)：**
+
+```bash
+sudo dnf install gcc pkg-config gtk3-devel webkit2gtk3-devel
+```
+
+**Linux (Arch)：**
+
+```bash
+sudo pacman -S base-devel gtk3 webkit2gtk
+```
+
+## 儲存庫設定
+
+### 複製與設定
+
+```bash
+# 複製您的 fork
+git clone https://github.com/YOUR_USERNAME/wails.git
+cd wails
+
+# 新增上游遠端
+git remote add upstream https://github.com/wailsapp/wails.git
+
+# 驗證遠端
+git remote -v
+```
+
+### 建置 Wails CLI
+
+```bash
+# 進入 v3 目錄
+cd v3
+
+# 建置 CLI
+go build -o ../wails3 ./cmd/wails3
+
+# 測試建置
+cd ..
+./wails3 version
+```
+
+### 新增至 PATH（選配）
+
+**Linux/macOS：**
+
+```bash
+# 新增至 ~/.bashrc 或 ~/.zshrc
+export PATH=$PATH:/path/to/wails
+```
+
+**Windows：**
+
+透過系統內容將 Wails 目錄新增到您的 PATH 環境變數中。
+
+## IDE 設定
+
+### VS Code（推薦）
+
+1. **安裝 VS Code：** [下載](https://code.visualstudio.com/)
+
+2. **安裝擴充功能：**
+   - Go（由 Google 的 Go Team 提供）
+   - ESLint
+   - Prettier
+   - MDX（用於文件）
+
+3. **設定工作區設定** (`.vscode/settings.json`)：
+   ```json
+   {
+     "go.useLanguageServer": true,
+     "go.lintTool": "golangci-lint",
+     "go.lintOnSave": "workspace",
+     "editor.formatOnSave": true,
+     "go.formatTool": "goimports"
+   }
+   ```
+
+### GoLand
+
+1. **安裝 GoLand：** [下載](https://www.jetbrains.com/go/)
+
+2. **設定：**
+   - 啟用 Go modules 支援
+   - 設定 `goimports` 的檔案監視器
+   - 設定程式碼風格以符合專案慣例
+
+## 驗證您的設定
+
+執行以下命令以驗證一切是否正常運作：
+
+```bash
+# Go 版本檢查
+go version
+
+# 建置 Wails
+cd v3
+go build ./cmd/wails3
+
+# 執行測試
+go test ./pkg/...
+
+# 建立測試應用程式
+cd ..
+./wails3 init -n mytest -t vanilla
+cd mytest
+../wails3 dev
+```
+
+如果測試應用程式能夠建置並執行，您的環境就準備好了！
+
+## 執行測試
+
+### 單元測試
+
+```bash
+cd v3
+go test ./...
+```
+
+### 特定套件測試
+
+```bash
+go test ./pkg/application
+go test ./pkg/events -v  # 詳細輸出
+```
+
+### 使用覆蓋率執行
+
+```bash
+go test ./... -coverprofile=coverage.out
+go tool cover -html=coverage.out
+```
+
+### 使用競態偵測器執行
+
+```bash
+go test ./... -race
+```
+
+## 處理文件
+
+Wails 文件使用 Astro 和 Starlight 建置。
+
+```bash
+cd docs
+
+# 安裝相依性
+npm install
+
+# 啟動開發伺服器
+npm run dev
+
+# 為生產環境建置
+npm run build
+```
+
+文件將可在 `http://localhost:4321/` 存取。
+
+## 除錯
+
+### 除錯 Go 程式碼
+
+**VS Code：**
+
+建立 `.vscode/launch.json`：
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Wails CLI",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/v3/cmd/wails3",
+      "args": ["dev"]
+    }
+  ]
+}
+```
+
+**命令列：**
+
+```bash
+# 使用 Delve 除錯器
+go install github.com/go-delve/delve/cmd/dlv@latest
+dlv debug ./cmd/wails3 -- dev
+```
+
+### 除錯平台程式碼
+
+平台特定的除錯需要平台工具：
+
+- **macOS：** Xcode Instruments
+- **Windows：** Visual Studio Debugger
+- **Linux：** GDB
+
+## 常見問題
+
+### 「command not found: wails3」
+
+將 Wails 目錄新增到您的 PATH，或從專案根目錄使用 `./wails3`。
+
+### 「webkit2gtk not found」（Linux）
+
+安裝 WebKit2GTK 開發套件：
+
+```bash
+sudo apt install libwebkit2gtk-4.0-dev  # Debian/Ubuntu
+```
+
+### 建置時出現 Go module 錯誤
+
+```bash
+cd v3
+go mod tidy
+go mod download
+```
+
+### Windows 上的「CGO_ENABLED」錯誤
+
+確保您的 PATH 中有 C 編譯器（透過 MSYS2 的 MinGW-w64）。
+
+## 下一步
+
+- 檢視 [程式碼規範](/zh-tw/contributing/standards)
+- 探索 [技術文件](/zh-tw/contributing)
+- 尋找要處理的問題：[適合新手的問題](https://github.com/wailsapp/wails/labels/good%20first%20issue)

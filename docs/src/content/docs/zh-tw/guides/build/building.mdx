@@ -1,0 +1,121 @@
+---
+title: 建置應用程式
+description: 建置並打包你的 Wails 應用程式
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Aside } from "@astrojs/starlight/components";
+
+Wails v3 使用 [Task](https://taskfile.dev) 作為其建置系統。`wails3 build` 和 `wails3 package` 指令是封裝 Task 的便捷包裝函式。
+
+## 建置
+
+為目前平台進行建置：
+
+```bash
+wails3 build
+```
+
+為特定平台進行建置：
+
+```bash
+wails3 build GOOS=windows
+wails3 build GOOS=darwin
+wails3 build GOOS=linux
+
+# 搭配架構使用
+wails3 build GOOS=darwin GOARCH=arm64
+
+# 環境變數風格也可以使用
+GOOS=windows wails3 build
+```
+
+輸出結果會存放在 `bin/` 目錄中。
+
+<Aside type="tip">
+從其他平台交叉編譯至 macOS 或 Linux 需要 Docker。請參閱 [跨平台建置](/zh-tw/guides/build/cross-platform) 以了解設定方式。
+</Aside>
+
+## 開發
+
+使用熱重載功能執行你的應用程式：
+
+```bash
+wails3 dev
+```
+
+這會啟動一個檔案監視器，在檔案變更時重新建置並重新啟動你的應用程式。前端開發伺服器預設運行在 9245 埠上。
+
+```bash
+# 自訂埠號
+wails3 dev -port 3000
+
+# 啟用 HTTPS
+wails3 dev -s
+```
+
+## 打包
+
+將你的應用程式打包以供分發：
+
+```bash
+wails3 package
+wails3 package GOOS=windows
+wails3 package GOOS=darwin
+wails3 package GOOS=linux
+```
+
+這會建立平台專屬的套件：
+- **Windows**：NSIS 安裝程式 — 請參閱 [Windows 打包](/zh-tw/guides/build/windows)
+- **macOS**：應用程式套件 (`.app`) — 請參閱 [macOS 打包](/zh-tw/guides/build/macos)
+- **Linux**：AppImage、deb 和 rpm — 請參閱 [Linux 打包](/zh-tw/guides/build/linux)
+
+## 自訂建置標籤
+
+使用 `-tags` 旗標傳遞自訂 Go 建置標籤：
+
+```bash
+# 在 Linux 上建置並包含實驗性的 GTK4 支援
+wails3 build -tags gtk4
+
+# 以伺服器模式建置（無 GUI，無 CGO）
+wails3 build -tags server
+
+# 組合多個標籤
+wails3 build -tags gtk4,customtag
+```
+
+標籤會作為 `EXTRA_TAGS` 轉發至底層的 Taskfile。詳細資訊請參閱 [伺服器建置](/zh-tw/guides/server-build) 和 [Linux 打包 - GTK4](/guides/build/linux#gtk4-support-experimental)。
+
+## 直接使用 Task
+
+若要獲得更多控制權，請直接使用 Task：
+
+```bash
+# 列出可用的任務
+wails3 task --list
+
+# 詳細輸出
+wails3 task build -v
+
+# 預演模式
+wails3 task --dry
+
+# 強制重新建置
+wails3 task build -f
+
+# 傳遞變數
+wails3 task darwin:build ARCH=amd64
+```
+
+平台專屬的任務（如 `linux:create:deb` 或 `darwin:build:universal`）僅能透過 Task 使用。
+
+## 產生資產
+
+重新產生圖示或更新建置組態：
+
+```bash
+wails3 generate icons -input build/appicon.png
+wails3 update build-assets -name "MyApp" -config build/config.yml -dir build
+```

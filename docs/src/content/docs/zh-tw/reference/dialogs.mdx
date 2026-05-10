@@ -1,0 +1,831 @@
+---
+title: 對話方塊 API
+description: 原生對話方塊 API 的完整參考
+sidebar:
+  order: 5
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 概述
+
+對話方塊 API 提供了顯示原生檔案對話方塊和訊息對話方塊的方法。透過 `app.Dialog` 管理器來存取對話方塊。
+
+**對話方塊類型：**
+- **檔案對話方塊** - 開啟和儲存對話方塊
+- **訊息對話方塊** - 資訊、錯誤、警告和詢問對話方塊
+
+所有對話方塊均為**原生作業系統對話方塊**，符合平台的視覺風格。
+
+## 存取對話方塊
+
+對話方塊透過 `app.Dialog` 管理器進行存取：
+
+```go
+app.Dialog.OpenFile()
+app.Dialog.SaveFile()
+app.Dialog.Info()
+app.Dialog.Question()
+app.Dialog.Warning()
+app.Dialog.Error()
+```
+
+## 檔案對話方塊
+
+### OpenFile()
+
+建立檔案開啟對話方塊。
+
+```go
+func (dm *DialogManager) OpenFile() *OpenFileDialogStruct
+```
+
+**範例：**
+```go
+dialog := app.Dialog.OpenFile()
+```
+
+### OpenFileDialogStruct 方法
+
+#### SetTitle()
+
+設定對話方塊標題。
+
+```go
+func (d *OpenFileDialogStruct) SetTitle(title string) *OpenFileDialogStruct
+```
+
+**範例：**
+```go
+dialog.SetTitle("Select Image")
+```
+
+#### AddFilter()
+
+新增檔案類型篩選器。
+
+```go
+func (d *OpenFileDialogStruct) AddFilter(displayName, pattern string) *OpenFileDialogStruct
+```
+
+**參數：**
+- `displayName` - 顯示給使用者的篩選器描述（例如，"Images"、"Documents"）
+- `pattern` - 以分號分隔的副檔名列表（例如，"*.png;*.jpg"）
+
+**範例：**
+```go
+dialog.AddFilter("Images", "*.png;*.jpg;*.gif").
+    AddFilter("Documents", "*.pdf;*.docx").
+    AddFilter("All Files", "*.*")
+```
+
+#### SetDirectory()
+
+設定初始目錄。
+
+```go
+func (d *OpenFileDialogStruct) SetDirectory(directory string) *OpenFileDialogStruct
+```
+
+**範例：**
+```go
+homeDir, _ := os.UserHomeDir()
+dialog.SetDirectory(homeDir)
+```
+
+#### CanChooseDirectories()
+
+啟用或停用目錄選擇。
+
+```go
+func (d *OpenFileDialogStruct) CanChooseDirectories(canChooseDirectories bool) *OpenFileDialogStruct
+```
+
+**範例（資料夾選擇）：**
+```go
+// 選擇資料夾而非檔案
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Folder").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+```
+
+#### CanChooseFiles()
+
+啟用或停用檔案選擇。
+
+```go
+func (d *OpenFileDialogStruct) CanChooseFiles(canChooseFiles bool) *OpenFileDialogStruct
+```
+
+#### CanCreateDirectories()
+
+啟用或停用建立新目錄。
+
+```go
+func (d *OpenFileDialogStruct) CanCreateDirectories(canCreateDirectories bool) *OpenFileDialogStruct
+```
+
+#### ShowHiddenFiles()
+
+顯示或隱藏隱藏檔案。
+
+```go
+func (d *OpenFileDialogStruct) ShowHiddenFiles(showHiddenFiles bool) *OpenFileDialogStruct
+```
+
+#### AttachToWindow()
+
+將對話方塊附加至特定視窗。
+
+```go
+func (d *OpenFileDialogStruct) AttachToWindow(window Window) *OpenFileDialogStruct
+```
+
+#### PromptForSingleSelection()
+
+顯示對話方塊並返回選取的檔案。
+
+```go
+func (d *OpenFileDialogStruct) PromptForSingleSelection() (string, error)
+```
+
+**返回：**
+- `string` - 選取的檔案路徑（若取消則為空）
+- `error` - 若對話方塊失敗則返回錯誤
+
+**範例：**
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Image").
+    AddFilter("Images", "*.png;*.jpg;*.gif").
+    PromptForSingleSelection()
+
+if err != nil {
+    // 使用者取消或發生錯誤
+    return
+}
+
+// 使用選取的檔案
+processFile(path)
+```
+
+#### PromptForMultipleSelection()
+
+顯示對話方塊並返回多個選取的檔案。
+
+```go
+func (d *OpenFileDialogStruct) PromptForMultipleSelection() ([]string, error)
+```
+
+**返回：**
+- `[]string` - 選取的檔案路徑陣列
+- `error` - 若對話方塊失敗則返回錯誤
+
+**範例：**
+```go
+paths, err := app.Dialog.OpenFile().
+    SetTitle("Select Images").
+    AddFilter("Images", "*.png;*.jpg").
+    PromptForMultipleSelection()
+
+if err != nil {
+    return
+}
+
+for _, path := range paths {
+    processFile(path)
+}
+```
+
+### SaveFile()
+
+建立檔案儲存對話方塊。
+
+```go
+func (dm *DialogManager) SaveFile() *SaveFileDialogStruct
+```
+
+**範例：**
+```go
+dialog := app.Dialog.SaveFile()
+```
+
+### SaveFileDialogStruct 方法
+
+#### SetTitle()
+
+設定對話方塊標題。
+
+```go
+func (d *SaveFileDialogStruct) SetTitle(title string) *SaveFileDialogStruct
+```
+
+#### SetFilename()
+
+設定預設檔案名稱。
+
+```go
+func (d *SaveFileDialogStruct) SetFilename(filename string) *SaveFileDialogStruct
+```
+
+**範例：**
+```go
+dialog.SetFilename("document.pdf")
+```
+
+#### AddFilter()
+
+新增檔案類型篩選器。
+
+```go
+func (d *SaveFileDialogStruct) AddFilter(displayName, pattern string) *SaveFileDialogStruct
+```
+
+**範例：**
+```go
+dialog.AddFilter("PDF Document", "*.pdf").
+    AddFilter("Text Document", "*.txt")
+```
+
+#### SetDirectory()
+
+設定初始目錄。
+
+```go
+func (d *SaveFileDialogStruct) SetDirectory(directory string) *SaveFileDialogStruct
+```
+
+#### AttachToWindow()
+
+將對話方塊附加至特定視窗。
+
+```go
+func (d *SaveFileDialogStruct) AttachToWindow(window Window) *SaveFileDialogStruct
+```
+
+#### PromptForSingleSelection()
+
+顯示對話方塊並返回儲存路徑。
+
+```go
+func (d *SaveFileDialogStruct) PromptForSingleSelection() (string, error)
+```
+
+**範例：**
+```go
+path, err := app.Dialog.SaveFile().
+    SetTitle("Save Document").
+    SetFilename("untitled.pdf").
+    AddFilter("PDF Document", "*.pdf").
+    PromptForSingleSelection()
+
+if err != nil {
+    // 使用者取消
+    return
+}
+
+// 儲存至選取的路徑
+saveDocument(path)
+```
+
+### 資料夾選擇
+
+沒有單獨的 `SelectFolderDialog`。請使用 `OpenFile()` 搭配目錄選項：
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Output Folder").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+
+if err != nil {
+    // 使用者取消
+    return
+}
+
+// 使用選取的資料夾
+outputDir = path
+```
+
+## 訊息對話方塊
+
+所有訊息對話方塊均返回 `*MessageDialog` 並共用相同的方法。
+
+### Info()
+
+建立資訊對話方塊。
+
+```go
+func (dm *DialogManager) Info() *MessageDialog
+```
+
+**範例：**
+```go
+app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("File saved successfully!").
+    Show()
+```
+
+### Error()
+
+建立錯誤對話方塊。
+
+```go
+func (dm *DialogManager) Error() *MessageDialog
+```
+
+**範例：**
+```go
+app.Dialog.Error().
+    SetTitle("Error").
+    SetMessage("Failed to save file: " + err.Error()).
+    Show()
+```
+
+### Warning()
+
+建立警告對話方塊。
+
+```go
+func (dm *DialogManager) Warning() *MessageDialog
+```
+
+**範例：**
+```go
+app.Dialog.Warning().
+    SetTitle("Warning").
+    SetMessage("This action cannot be undone.").
+    Show()
+```
+
+### Question()
+
+建立具有自訂按鈕的詢問對話方塊。
+
+```go
+func (dm *DialogManager) Question() *MessageDialog
+```
+
+**範例：**
+```go
+dialog := app.Dialog.Question().
+    SetTitle("Confirm").
+    SetMessage("Do you want to save changes?")
+
+save := dialog.AddButton("Save")
+save.OnClick(func() {
+    saveDocument()
+})
+
+dontSave := dialog.AddButton("Don't Save")
+dontSave.OnClick(func() {
+    // 繼續而不儲存
+})
+
+cancel := dialog.AddButton("Cancel")
+cancel.OnClick(func() {
+    // 不執行任何操作
+})
+
+dialog.SetDefaultButton(save)
+dialog.SetCancelButton(cancel)
+dialog.Show()
+```
+
+### MessageDialog 方法
+
+#### SetTitle()
+
+設定對話方塊標題。
+
+```go
+func (d *MessageDialog) SetTitle(title string) *MessageDialog
+```
+
+#### SetMessage()
+
+設定對話方塊訊息。
+
+```go
+func (d *MessageDialog) SetMessage(message string) *MessageDialog
+```
+
+#### SetIcon()
+
+設定對話方塊的自訂圖示。
+
+```go
+func (d *MessageDialog) SetIcon(icon []byte) *MessageDialog
+```#### AddButton()
+
+在對話方塊中加入按鈕，並回傳該按鈕以供設定。
+
+```go
+func (d *MessageDialog) AddButton(label string) *Button
+```
+
+**回傳：** `*Button` - 用於進一步設定的按鈕實例
+
+**範例：**
+```go
+button := dialog.AddButton("OK")
+button.OnClick(func() {
+    // 處理點擊事件
+})
+```
+
+#### SetDefaultButton()
+
+設定哪個按鈕為預設按鈕（按下 Enter 時觸發）。
+
+```go
+func (d *MessageDialog) SetDefaultButton(button *Button) *MessageDialog
+```
+
+**範例：**
+```go
+yes := dialog.AddButton("Yes")
+no := dialog.AddButton("No")
+dialog.SetDefaultButton(yes)
+```
+
+#### SetCancelButton()
+
+設定哪個按鈕為取消按鈕（按下 Escape 時觸發）。
+
+```go
+func (d *MessageDialog) SetCancelButton(button *Button) *MessageDialog
+```
+
+**範例：**
+```go
+ok := dialog.AddButton("OK")
+cancel := dialog.AddButton("Cancel")
+dialog.SetCancelButton(cancel)
+```
+
+#### AttachToWindow()
+
+將對話方塊附加到特定的視窗。
+
+```go
+func (d *MessageDialog) AttachToWindow(window Window) *MessageDialog
+```
+
+#### Show()
+
+顯示對話方塊。按鈕的回呼函數用於處理使用者的回應。
+
+```go
+func (d *MessageDialog) Show()
+```
+
+**注意：** `Show()` 不會回傳任何值。請使用按鈕的回呼函數來處理使用者的回應。
+
+### 按鈕方法
+
+#### OnClick()
+
+設定按鈕被點擊時執行的回呼函數。
+
+```go
+func (b *Button) OnClick(callback func()) *Button
+```
+
+#### SetAsDefault()
+
+將此按鈕標記為預設按鈕。
+
+```go
+func (b *Button) SetAsDefault() *Button
+```
+
+#### SetAsCancel()
+
+將此按鈕標記為取消按鈕。
+
+```go
+func (b *Button) SetAsCancel() *Button
+```
+
+## 完整範例
+
+### 檔案選擇範例
+
+```go
+type FileService struct {
+    app *application.App
+}
+
+func (s *FileService) OpenImage() (string, error) {
+    path, err := s.app.Dialog.OpenFile().
+        SetTitle("Select Image").
+        AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif").
+        AddFilter("All Files", "*.*").
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    return path, nil
+}
+
+func (s *FileService) SaveDocument(defaultName string) (string, error) {
+    path, err := s.app.Dialog.SaveFile().
+        SetTitle("Save Document").
+        SetFilename(defaultName).
+        AddFilter("PDF Document", "*.pdf").
+        AddFilter("Text Document", "*.txt").
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    return path, nil
+}
+
+func (s *FileService) SelectOutputFolder() (string, error) {
+    path, err := s.app.Dialog.OpenFile().
+        SetTitle("Select Output Folder").
+        CanChooseDirectories(true).
+        CanChooseFiles(false).
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    return path, nil
+}
+```
+
+### 確認對話方塊範例
+
+```go
+func (s *Service) DeleteItem(app *application.App, id string) {
+    dialog := app.Dialog.Question().
+        SetTitle("Confirm Delete").
+        SetMessage("Are you sure you want to delete this item?")
+
+    deleteBtn := dialog.AddButton("Delete")
+    deleteBtn.OnClick(func() {
+        deleteFromDatabase(id)
+    })
+
+    cancelBtn := dialog.AddButton("Cancel")
+    // 取消按鈕不執行任何動作
+
+    dialog.SetDefaultButton(cancelBtn) // 預設為取消以確保安全
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+}
+```
+
+### 儲存變更對話方塊
+
+```go
+func (s *Editor) PromptSaveChanges(app *application.App) {
+    dialog := app.Dialog.Question().
+        SetTitle("Unsaved Changes").
+        SetMessage("Do you want to save your changes before closing?")
+
+    save := dialog.AddButton("Save")
+    save.OnClick(func() {
+        s.Save()
+        s.Close()
+    })
+
+    dontSave := dialog.AddButton("Don't Save")
+    dontSave.OnClick(func() {
+        s.Close()
+    })
+
+    cancel := dialog.AddButton("Cancel")
+    // 取消按鈕不執行任何動作，對話方塊會關閉
+
+    dialog.SetDefaultButton(save)
+    dialog.SetCancelButton(cancel)
+    dialog.Show()
+}
+```
+
+### 多檔案處理
+
+```go
+func (s *Service) ProcessMultipleFiles(app *application.App) error {
+    // 選擇多個檔案
+    paths, err := app.Dialog.OpenFile().
+        SetTitle("Select Files to Process").
+        AddFilter("Images", "*.png;*.jpg").
+        PromptForMultipleSelection()
+
+    if err != nil {
+        return err
+    }
+
+    if len(paths) == 0 {
+        app.Dialog.Info().
+            SetTitle("No Files Selected").
+            SetMessage("Please select at least one file.").
+            Show()
+        return nil
+    }
+
+    // 處理檔案
+    for _, path := range paths {
+        err := processFile(path)
+        if err != nil {
+            app.Dialog.Error().
+                SetTitle("Processing Error").
+                SetMessage(fmt.Sprintf("Failed to process %s: %v", path, err)).
+                Show()
+            continue
+        }
+    }
+
+    // 顯示完成訊息
+    app.Dialog.Info().
+        SetTitle("Complete").
+        SetMessage(fmt.Sprintf("Successfully processed %d files", len(paths))).
+        Show()
+
+    return nil
+}
+```
+
+### 使用對話方塊進行錯誤處理
+
+```go
+func (s *Service) SaveFile(app *application.App, data []byte) error {
+    // 選擇儲存位置
+    path, err := app.Dialog.SaveFile().
+        SetTitle("Save File").
+        SetFilename("data.json").
+        AddFilter("JSON File", "*.json").
+        PromptForSingleSelection()
+
+    if err != nil {
+        // 使用者取消 - 這不是錯誤
+        return nil
+    }
+
+    // 嘗試儲存
+    err = os.WriteFile(path, data, 0644)
+    if err != nil {
+        // 顯示錯誤對話方塊
+        app.Dialog.Error().
+            SetTitle("Save Failed").
+            SetMessage(fmt.Sprintf("Could not save file: %v", err)).
+            Show()
+        return err
+    }
+
+    // 顯示成功訊息
+    app.Dialog.Info().
+        SetTitle("Success").
+        SetMessage("File saved successfully!").
+        Show()
+
+    return nil
+}
+```
+
+### 平台特定的預設值
+
+```go
+import (
+    "os"
+    "path/filepath"
+    "runtime"
+)
+
+func (s *Service) GetDefaultDirectory() string {
+    homeDir, _ := os.UserHomeDir()
+
+    switch runtime.GOOS {
+    case "windows":
+        return filepath.Join(homeDir, "Documents")
+    case "darwin":
+        return filepath.Join(homeDir, "Documents")
+    case "linux":
+        return filepath.Join(homeDir, "Documents")
+    default:
+        return homeDir
+    }
+}
+
+func (s *Service) OpenWithDefaults(app *application.App) (string, error) {
+    return app.Dialog.OpenFile().
+        SetTitle("Open File").
+        SetDirectory(s.GetDefaultDirectory()).
+        AddFilter("All Files", "*.*").
+        PromptForSingleSelection()
+}
+```
+
+## 最佳實踐
+
+### 建議 (Do)
+
+- **使用原生對話方塊** - 它們符合平台的視覺風格
+- **提供清晰的標題** - 幫助使用者了解目的
+- **設定適當的篩選器** - 引導使用者選擇正確的檔案類型
+- **處理取消操作** - 檢查錯誤（使用者可能會取消）
+- **對破壞性操作提供確認** - 使用 Question 對話方塊
+- **提供回饋** - 使用 Info 對話方塊顯示成功訊息
+- **設定合理的預設值** - 預設目錄、檔案名稱等
+- **使用回呼函數處理按鈕動作** - 正確處理使用者的回應
+
+### 不建議 (Don't)
+
+- **不要忽略錯誤** - 使用者取消操作會回傳錯誤
+- **不要使用含糊的按鈕標籤** - 應具體明確：例如 "Save"/"Cancel"
+- **不要過度使用對話方塊** - 它們會中斷工作流程
+- **不要將取消操作視為錯誤** - 這是正常的操作
+- **不要忘記檔案篩選器** - 幫助使用者找到正確的檔案
+- **不要硬編碼路徑** - 請使用 os.UserHomeDir() 或類似方法
+
+## 各平台的對話方塊類型
+
+### macOS
+
+- 對話方塊從標題列滑下
+- 採用附加至父視窗的 "Sheet" 樣式
+- 原生 macOS 外觀
+
+### Windows
+
+- 標準 Windows 對話方塊
+- 遵循 Windows 設計指南
+- 現代 Windows 10/11 外觀
+
+### Linux
+
+- GTK 系統上使用 GTK 對話方塊
+- Qt 系統上使用 Qt 對話方塊
+- 符合桌面環境風格--------|------|------|---|
+| `ShowHiddenFiles()` | ✅ 有效 | ❌ 無效 | 使用者可透過對話框的 UI 切換鍵（Ctrl+H 或選單）控制 |
+| `CanCreateDirectories()` | ✅ 有效 | ❌ 無效 | 在 portal 中始終啟用 |
+| `ResolvesAliases()` | ✅ 有效 | ❌ 無效 | Portal 負責處理符號連結解析 |
+| `SetButtonText()` | ✅ 有效 | ✅ 有效 | 自訂的「接受」按鈕文字可正常運作 |
+
+**這些限制存在的原因：** GTK4 基於 portal 的對話框將 UI 控制權委派給桌面環境（如 GNOME、KDE 等）。這是設計使然——portal 確保應用程式間一致的 UX，並尊重使用者偏好設定。
+
+:::note
+上表顯示使用 `-tags gtk4` 編譯時的 GTK4 行為。預設情況下，Wails 使用 GTK3，它提供對這些對話框選項的完整控制權。
+:::
+
+## 常見模式
+
+### 「另存新檔」模式
+
+```go
+func (s *Service) SaveAs(app *application.App, currentPath string) (string, error) {
+    // 從目前路徑提取檔案名稱
+    filename := filepath.Base(currentPath)
+
+    // 顯示另存對話框
+    path, err := app.Dialog.SaveFile().
+        SetTitle("另存新檔").
+        SetFilename(filename).
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    return path, nil
+}
+```
+
+### 「開啟最近檔案」模式
+
+```go
+func (s *Service) OpenRecent(app *application.App, recentPath string) error {
+    // 檢查檔案是否仍然存在
+    if _, err := os.Stat(recentPath); os.IsNotExist(err) {
+        dialog := app.Dialog.Question().
+            SetTitle("找不到檔案").
+            SetMessage("該檔案已不存在。是否從最近檔案中移除？")
+
+        remove := dialog.AddButton("移除")
+        remove.OnClick(func() {
+            s.removeFromRecent(recentPath)
+        })
+
+        cancel := dialog.AddButton("取消")
+        dialog.SetCancelButton(cancel)
+        dialog.Show()
+
+        return err
+    }
+
+    return s.openFile(recentPath)
+}
+```

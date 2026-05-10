@@ -1,0 +1,152 @@
+---
+title: Windows UAC 設定
+description: 為您的 Windows Wails 應用程式設定使用者帳戶控制 (UAC)
+sidebar:
+  order: 11
+---
+
+import {Badge} from '@astrojs/starlight/components';
+
+適用平台： <Badge text="Windows" variant="note" />
+<br/>
+
+Windows 使用者帳戶控制 (UAC) 決定了您的 Wails 應用程式的執行權限。預設情況下，Wails v3 應用程式在其 Windows 描述檔中包含了明確的 UAC 設定，確保在不同機器上具有一致的行為。
+
+## UAC 執行層級
+
+Windows 應用程式可以透過其描述檔請求不同的執行層級。Wails v3 會自動包含 UAC 設定，並使用預設的執行層級，您可以根據應用程式的需求進行自訂。
+
+### 可用的執行層級
+
+| 層級 | 說明 | 使用情境 |
+|-------|-------|------|
+| `asInvoker` | 以與父行程相同的權限執行 | 大多數應用程式的預設值 |
+| `highestAvailable` | 以使用者可用的最高權限執行 | 可能需要提升權限的應用程式 |
+| `requireAdministrator` | 始終需要管理員權限 | 系統工具程式、安裝程式 |
+
+### 預設設定
+
+Wails v3 應用程式在其 Windows 描述檔中包含預設的 UAC 設定：
+
+```xml
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+        <requestedPrivileges>
+            <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+        </requestedPrivileges>
+    </security>
+</trustInfo>
+```
+
+此設定確保您的應用程式：
+- 以與啟動行程相同的權限執行
+- 預設不需要提升權限
+- 在不同機器上具有一致的行為
+- 不會為一般使用者觸發 UAC 提示
+
+## 自訂 UAC 設定
+
+由於 Wails v3 鼓勵使用者自訂其建構資產，您可以透過直接編輯 Windows 描述檔範本來修改 UAC 設定。
+
+### 尋找描述檔範本
+
+Windows 描述檔範本位於：
+```
+build/windows/wails.exe.manifest
+```
+
+### 修改執行層級
+
+要變更執行層級，請編輯 `requestedExecutionLevel` 元素中的 `level` 屬性：
+
+```xml title="build/windows/wails.exe.manifest"
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+        <requestedPrivileges>
+            <requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
+        </requestedPrivileges>
+    </security>
+</trustInfo>
+```
+
+### 範例
+
+#### 一般應用程式（預設）
+大多數應用程式應使用預設的 `asInvoker` 層級：
+
+```xml
+<requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+```
+
+#### 系統工具程式
+需要在使用可用時提升權限的應用程式：
+
+```xml
+<requestedExecutionLevel level="highestAvailable" uiAccess="false"/>
+```
+
+#### 管理員工具
+始終需要管理員權限的應用程式：
+
+```xml
+<requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
+```
+
+## UI 存取
+
+`uiAccess` 屬性控制您的應用程式是否可以與較高權限的 UI 元素互動。在大多數情況下，應保持為 `false`。
+
+僅在您的應用程式需要以下功能時設為 `true`：
+- 向其他應用程式發送輸入
+- 驅動其他應用程式的 UI
+- 存取較高權限行程的 UI 元素
+
+:::caution[UI 存取需求]
+設定 `uiAccess="true"` 需要您的應用程式：
+- 使用來自受信任憑證授權單位的憑證進行數位簽署
+- 安裝在安全的位置（Program Files 或 Windows\System32）
+:::
+
+## 使用自訂 UAC 設定進行建構
+
+修改描述檔範本後，正常建構您的應用程式：
+
+```bash
+wails3 build
+```
+
+建構過程會自動將您的自訂 UAC 設定嵌入可執行檔中。
+
+## 驗證 UAC 設定
+
+您可以使用 `go-winres` 工具驗證您的 UAC 設定是否已正確嵌入：
+
+```bash
+go-winres extract --in your-app.exe --out extracted-resources/
+```
+
+然後檢查提取的描述檔檔案，以確認您的 UAC 設定存在。
+
+:::tip[描述檔持久性]
+與其他一些框架不同，Wails v3 的 UAC 設定是在編譯期間直接嵌入可執行檔中，確保在應用程式複製到其他機器時持續存在。
+:::
+
+## 疑難排解
+
+### UAC 提示未出現
+如果您設定了 `requireAdministrator` 但沒有看到 UAC 提示：
+- 驗證描述檔是否已正確嵌入可執行檔
+- 檢查您是否未從已提升權限的行程中執行
+- 確保描述檔語法是有效的 XML
+
+### 應用程式無法啟動
+如果在 UAC 變更後您的應用程式無法啟動：
+- 檢查描述檔語法是否有 XML 錯誤
+- 驗證執行層級值是否有效
+- 嘗試恢復為 `asInvoker` 以隔離問題
+
+### 在不同機器上行為不一致
+如果 UAC 行為在不同機器之間有所不同：
+- 確保描述檔已嵌入可執行檔中（而非外部）
+- 檢查可執行檔在建構後是否未被修改
+- 驗證目標機器上的 Windows UAC 設定已啟用

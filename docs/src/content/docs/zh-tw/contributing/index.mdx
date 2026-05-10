@@ -1,0 +1,95 @@
+---
+title: 技術概覽
+description: Wails v3 程式碼庫的高階架構與導覽
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 歡迎來到 Wails v3 技術文件
+
+本節**並非**關於社群指南或如何開啟 pull-request。
+相反地，它深入探討 **Wails v3 的建構方式**，讓你能夠快速熟悉
+程式碼庫並自信地開始開發。
+
+無論你計畫修補執行階段、擴充 CLI、打造新範本，或
+只是想了解內部運作，接下來的頁面將提供你所需的技術
+背景知識。
+
+---
+
+## 高階架構
+
+<CardGrid>
+  <Card title="Go 後端" icon="seti:go">
+    每個 Wails 應用程式的核心是編譯成原生可執行檔的 Go 程式碼。
+    它負責應用程式邏輯、系統整合以及效能關鍵的
+    操作。
+  </Card>
+
+  <Card title="Web 前端" icon="seti:html">
+    UI 使用標準網頁技術（React、Vue、Svelte、Vanilla 等）撰寫，
+    由輕量級的系統 WebView 渲染（Linux/macOS 上為 WebKit，
+    Windows 上為 WebView2）。
+  </Card>
+
+  <Card title="橋接層" icon="puzzle">
+    零拷貝的記憶體橋接器，實現 **Go⇄JavaScript** 呼叫，並具備自動
+    型別轉換、事件傳播和錯誤轉發功能。
+  </Card>
+
+  <Card title="CLI 與工具" icon="terminal">
+    `wails3` 協調專案建立、即時重新載入開發伺服器、資源
+    捆綁、跨平台編譯和封裝（deb、rpm、AppImage、msi、dmg…）。
+  </Card>
+</CardGrid>
+
+---
+
+## 架構概覽
+
+**Wails v3 – 端到端流程**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[端到端流程圖佔位符]**
+
+
+該圖表展示了 **端到端流程**：
+
+1. **CLI** 驅動生成、開發伺服器、編譯和封裝。  
+2. **繫結系統** 產生粘合程式碼，讓 **Web 前端** 能夠呼叫 **Go 後端**。  
+3. 在開發期間，**資源伺服器** 代理至框架開發伺服器；在生產環境中，它提供嵌入的檔案。  
+4. 在執行階段，**桌面執行階段** 管理視窗和 OS API，而 **橋接器** 則在 Go 和 JavaScript 之間傳遞訊息。
+
+---
+
+## 本文件涵蓋的內容
+
+| 主題 | 重要性 |
+| ----- | -------------- |
+| **程式碼庫結構** | `/v3` 目錄的配置以及模組間的互動方式。 |
+| **執行階段內部** | 視窗管理、系統 API、訊息處理器和平台相容層。 |
+| **資源與開發伺服器** | 如何在開發環境中提供網頁資源，以及在生產環境中嵌入。 |
+| **建構與封裝流程** | 基於 Taskfile 的工作流程、跨平台編譯和安裝程式生成。 |
+| **繫結系統** | 產生型別安全 Go⇄TS 繫結的靜態分析流程。 |
+| **範本系統** | 驅動 `wails init -t <framework>` 的生成器架構。 |
+| **測試與 CI** | 單元/整合測試框架、GitHub Actions、race detector 指南。 |
+| **擴充 Wails** | 新增服務、範本或 CLI 子命令。 |
+
+每個後續頁面將深入探討這些領域，提供具體的程式碼範例、
+圖表以及相關原始檔案的參考。
+
+---
+
+:::note
+前置條件：你應該熟悉 **Go 1.25+**、基礎 TypeScript，以及
+現代前端建構工具。如果你是 Go 新手，建議先快速瀏覽官方
+導覽。
+:::
+
+探索愉快 — 歡迎進入 Wails v3 的內部世界！

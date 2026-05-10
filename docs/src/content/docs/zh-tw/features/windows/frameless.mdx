@@ -1,0 +1,789 @@
+---
+title: 無框視窗
+description: 使用無框視窗建立自訂視窗外框
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## 無框視窗
+
+Wails 提供**無框視窗支援**，具備基於 CSS 的拖曳區域和平台原生的行為。移除平台原生的標題列，以完全掌控視窗外框、自訂設計和獨特的使用者體驗，同時保留拖曳、調整大小和系統控制等必要功能。
+
+## 快速開始
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:     "Frameless App",
+    Width:     800,
+    Height:    600,
+    Frameless: true,
+})
+```
+
+**用於可拖曳標題列的 CSS：**
+
+```css
+.titlebar {
+    --wails-draggable: drag;
+    height: 40px;
+    background: #333;
+}
+
+.titlebar button {
+    --wails-draggable: no-drag;
+}
+```
+
+**HTML：**
+
+```html
+<div class="titlebar">
+    <span>My Application</span>
+    <button onclick="window.close()">×</button>
+</div>
+```
+
+**就是這樣！** 您就擁有一個自訂標題列了。
+
+## 建立無框視窗
+
+### 基本無框視窗
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless: true,
+    Width:     800,
+    Height:    600,
+})
+```
+
+**您將獲得：**
+- 無標題列
+- 無視窗邊框
+- 無系統按鈕
+- 透明背景（可選）
+
+**您需要實作：**
+- 可拖曳區域
+- 關閉/最小化/最大化按鈕
+- 調整大小控制點（若可調整大小）
+
+### 帶有透明背景
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless:      true,
+    BackgroundType: application.BackgroundTypeTransparent,
+})
+```
+
+**使用情境：**
+- 圓角
+- 自訂形狀
+- 覆蓋視窗
+- 啟動畫面
+
+## 拖曳區域
+
+### 基於 CSS 的拖曳
+
+使用 `--wails-draggable` CSS 屬性：
+
+```css
+/* 可拖曳區域 */
+.titlebar {
+    --wails-draggable: drag;
+}
+
+/* 可拖曳區域內的不可拖曳元素 */
+.titlebar button {
+    --wails-draggable: no-drag;
+}
+```
+
+**值：**
+- `drag` - 區域可拖曳
+- `no-drag` - 區域不可拖曳（即使父元素可拖曳）
+
+### 完整的標題列範例
+
+```html
+<div class="titlebar">
+    <div class="title">My Application</div>
+    <div class="controls">
+        <button class="minimize">−</button>
+        <button class="maximize">□</button>
+        <button class="close">×</button>
+    </div>
+</div>
+```
+
+```css
+.titlebar {
+    --wails-draggable: drag;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 40px;
+    background: #2c2c2c;
+    color: white;
+    padding: 0 16px;
+}
+
+.title {
+    font-size: 14px;
+    user-select: none;
+}
+
+.controls {
+    display: flex;
+    gap: 8px;
+}
+
+.controls button {
+    --wails-draggable: no-drag;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.controls button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.controls .close:hover {
+    background: #e81123;
+}
+```
+
+**按鈕的 JavaScript：**
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+document.querySelector('.minimize').addEventListener('click', () => Window.Minimise())
+document.querySelector('.maximize').addEventListener('click', () => Window.Maximise())
+document.querySelector('.close').addEventListener('click', () => Window.Close())
+```
+
+## 系統按鈕
+
+### 實作關閉/最小化/最大化
+
+**Go 端：**
+
+```go
+type WindowControls struct {
+    window *application.WebviewWindow
+}
+
+func (wc *WindowControls) Minimise() {
+    wc.window.Minimise()
+}
+
+func (wc *WindowControls) Maximise() {
+    if wc.window.IsMaximised() {
+        wc.window.UnMaximise()
+    } else {
+        wc.window.Maximise()
+    }
+}
+
+func (wc *WindowControls) Close() {
+    wc.window.Close()
+}
+```
+
+**JavaScript 端：**
+
+```javascript
+import { Minimise, Maximise, Close } from './bindings/WindowControls'
+
+document.querySelector('.minimize').addEventListener('click', Minimise)
+document.querySelector('.maximize').addEventListener('click', Maximise)
+document.querySelector('.close').addEventListener('click', Close)
+```
+
+**或使用執行階段方法：**
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+document.querySelector('.minimize').addEventListener('click', () => Window.Minimise())
+document.querySelector('.maximize').addEventListener('click', () => Window.Maximise())
+document.querySelector('.close').addEventListener('click', () => Window.Close())
+```
+
+### 切換最大化狀態
+
+追蹤最大化狀態以顯示按鈕圖示：
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+async function toggleMaximise() {
+    const isMaximised = await Window.IsMaximised()
+
+    if (isMaximised) {
+        await Window.Restore()
+    } else {
+        await Window.Maximise()
+    }
+
+    updateMaximiseButton()
+}
+
+async function updateMaximiseButton() {
+    const isMaximised = await Window.IsMaximised()
+    const button = document.querySelector('.maximize')
+    button.textContent = isMaximised ? '❐' : '□'
+}
+```
+
+## 調整大小控制點
+
+### 基於 CSS 的調整大小
+
+Wails 為無框視窗提供自動調整大小控制點：
+
+```css
+/* 在所有邊緣啟用調整大小 */
+body {
+    --wails-resize: all;
+}
+
+/* 或特定邊緣 */
+.resize-top {
+    --wails-resize: top;
+}
+
+.resize-bottom {
+    --wails-resize: bottom;
+}
+
+.resize-left {
+    --wails-resize: left;
+}
+
+.resize-right {
+    --wails-resize: right;
+}
+
+/* 角落 */
+.resize-top-left {
+    --wails-resize: top-left;
+}
+
+.resize-top-right {
+    --wails-resize: top-right;
+}
+
+.resize-bottom-left {
+    --wails-resize: bottom-left;
+}
+
+.resize-bottom-right {
+    --wails-resize: bottom-right;
+}
+```
+
+**值：**
+- `all` - 從所有邊緣調整大小
+- `top`, `bottom`, `left`, `right` - 特定邊緣
+- `top-left`, `top-right`, `bottom-left`, `bottom-right` - 角落
+- `none` - 無調整大小
+
+### 調整大小控制點範例
+
+```html
+<div class="window">
+    <div class="titlebar">...</div>
+    <div class="content">...</div>
+    <div class="resize-handle resize-bottom-right"></div>
+</div>
+```
+
+```css
+.resize-handle {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+}
+
+.resize-bottom-right {
+    --wails-resize: bottom-right;
+    bottom: 0;
+    right: 0;
+    cursor: nwse-resize;
+}
+```
+
+## 平台特定行為
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+    **Windows 無框視窗：**
+    
+    ```go
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Frameless: true,
+        Windows: application.WindowsOptions{
+            DisableFramelessWindowDecorations: false,
+        },
+    })
+    ```
+    
+    **功能：**
+    - 自動陰影
+    - 支援置放配置（Windows 11）
+    - Aero Snap 支援
+    - DPI 縮放
+    
+    **停用裝飾：**
+    ```go
+    Windows: application.WindowsOptions{
+        DisableFramelessWindowDecorations: true,
+    },
+    ```
+    
+    **置放輔助：**
+    ```go
+    // 觸發 Windows 11 置放輔助
+    window.SnapAssist()
+    ```
+    
+    **自訂標題列高度：**
+    Windows 會自動從 CSS 偵測拖曳區域。
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **macOS 無框視窗：**
+    
+    ```go
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Frameless: true,
+        Mac: application.MacOptions{
+            TitleBarAppearsTransparent: true,
+            InvisibleTitleBarHeight:    40,
+        },
+    })
+    ```
+    
+    **功能：**
+    - 原生全螢幕支援
+    - 交通燈按鈕（可選）
+    - 透視效果
+    - 透明標題列
+    
+    **隱藏交通燈：**
+    ```go
+    Mac: application.MacOptions{
+        TitleBarStyle: application.MacTitleBarStyleHidden,
+    },
+    ```
+    
+    **隱形標題列：**允許在隱藏標題列時進行拖曳。這僅在視窗為無框或使用 `AppearsTransparent` 時生效：
+    ```go
+    Mac: application.MacOptions{
+        InvisibleTitleBarHeight: 40,
+    },
+    ```
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **Linux 無框視窗：**
+    
+    ```go
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Frameless: true,
+    })
+    ```
+    
+    **功能：**
+    - 基本無框支援
+    - CSS 拖曳區域
+    - 因桌面環境而異
+    
+    **桌面環境注意事項：**
+    - **GNOME：** 良好的支援
+    - **KDE Plasma：** 良好的支援
+    - **XFCE：** 基本支援
+    - **Tiling WMs：** 有限的支援
+    
+    **需要合成器：**
+    透明度需要合成器（大多數現代桌面環境都具備）。
+  </TabItem>
+</Tabs>
+
+## 常見模式
+
+### 模式 1：現代化標題列
+
+```html
+<div class="modern-titlebar">
+    <div class="app-icon">
+        <img src="/icon.png" alt="App Icon">
+    </div>
+    <div class="title">My Application</div>
+    <div class="controls">
+        <button class="minimize">−</button>
+        <button class="maximize">□</button>
+        <button class="close">×</button>
+    </div>
+</div>
+```
+
+```css
+.modern-titlebar {
+    --wails-draggable: drag;
+    display: flex;
+    align-items: center;
+    height: 40px;
+    background: linear-gradient(to bottom, #3a3a3a, #2c2c2c);
+    border-bottom: 1px solid #1a1a1a;
+    padding: 0 16px;
+}
+
+.app-icon {
+    --wails-draggable: no-drag;
+    width: 24px;
+    height: 24px;
+    margin-right: 12px;
+}
+
+.title {
+    flex: 1;
+    font-size: 13px;
+    color: #e0e0e0;
+    user-select: none;
+}
+
+.controls {
+    display: flex;
+    gap: 1px;
+}
+
+.controls button {
+    --wails-draggable: no-drag;
+    width: 46px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: #e0e0e0;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.controls button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.controls .close:hover {
+    background: #e81123;
+    color: white;
+}
+```
+
+### 模式 2：啟動畫面
+
+```go
+splash := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "Loading...",
+    Width:          400,
+    Height:         300,
+    Frameless:      true,
+    AlwaysOnTop:    true,
+    BackgroundType: application.BackgroundTypeTransparent,
+})
+```
+
+```css
+body {
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.splash {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    padding: 40px;
+    text-align: center;
+}
+```
+
+### 模式 3：圓角視窗
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless:      true,
+    BackgroundType: application.BackgroundTypeTransparent,
+})
+```
+
+```css
+body {
+    background: transparent;
+    margin: 8px;
+}
+
+.window {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    height: calc(100vh - 16px);
+}
+
+.titlebar {
+    --wails-draggable: drag;
+    background: #f5f5f5;
+    border-bottom: 1px solid #e0e0e0;
+}
+```
+
+### 模式 4：覆蓋層視窗
+
+```go
+overlay := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless:      true,
+    AlwaysOnTop:    true,
+    BackgroundType: application.BackgroundTypeTransparent,
+})
+```
+
+```css
+body {
+    background: transparent;
+}
+
+.overlay {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    padding: 20px;
+}
+```
+
+## 完整範例
+
+這是一個生產環境可用的無框視窗範例：
+
+**Go：**
+
+```go
+package main
+
+import (
+    _ "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Frameless App",
+    })
+
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:     "Frameless Application",
+        Width:     1000,
+        Height:    700,
+        MinWidth:  800,
+        MinHeight: 600,
+        Frameless: true,
+        
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+        
+        Mac: application.MacOptions{
+            TitleBarAppearsTransparent: true,
+            InvisibleTitleBarHeight:    40,
+        },
+        
+        Windows: application.WindowsOptions{
+            DisableFramelessWindowDecorations: false,
+        },
+    })
+
+    window.Center()
+    window.Show()
+
+    app.Run()
+}
+```
+
+**HTML：**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="window">
+        <div class="titlebar">
+            <div class="title">Frameless Application</div>
+            <div class="controls">
+                <button class="minimize" title="Minimise">−</button>
+                <button class="maximize" title="Maximise">□</button>
+                <button class="close" title="Close">×</button>
+            </div>
+        </div>
+        <div class="content">
+            <h1>Hello from Frameless Window!</h1>
+        </div>
+    </div>
+    <script src="/main.js" type="module"></script>
+</body>
+</html>
+```
+
+**CSS：**
+
+```css
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f5f5;
+}
+
+.window {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.titlebar {
+    --wails-draggable: drag;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 40px;
+    background: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 0 16px;
+}
+
+.title {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    user-select: none;
+}
+
+.controls {
+    display: flex;
+    gap: 8px;
+}
+
+.controls button {
+    --wails-draggable: no-drag;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: #666;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.controls button:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.controls .close:hover {
+    background: #e81123;
+    color: white;
+}
+
+.content {
+    flex: 1;
+    padding: 40px;
+    overflow: auto;
+}
+```
+
+**JavaScript：**
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+// Minimise button
+document.querySelector('.minimize').addEventListener('click', () => {
+    Window.Minimise()
+})
+
+// Maximise/restore button
+const maximiseBtn = document.querySelector('.maximize')
+maximiseBtn.addEventListener('click', async () => {
+    const isMaximised = await Window.IsMaximised()
+
+    if (isMaximised) {
+        await Window.Restore()
+    } else {
+        await Window.Maximise()
+    }
+
+    updateMaximiseButton()
+})
+
+// Close button
+document.querySelector('.close').addEventListener('click', () => {
+    Window.Close()
+})
+
+// Update maximise button icon
+async function updateMaximiseButton() {
+    const isMaximised = await Window.IsMaximised()
+    maximiseBtn.textContent = isMaximised ? '❐' : '□'
+    maximiseBtn.title = isMaximised ? 'Restore' : 'Maximise'
+}
+
+// Initial state
+updateMaximiseButton()
+```
+
+## 最佳實踐
+
+### ✅ 建議
+
+- **提供可拖曳區域** - 使用者需要能夠移動視窗
+- **實作系統按鈕** - 關閉、最小化、最大化
+- **設定最小尺寸** - 防止出現無法使用的版面配置
+- **在所有平台上測試** - 行為可能因平台而異
+- **使用 CSS 定義拖曳區域** - 靈活且易於維護
+- **提供視覺回饋** - 按鈕的懸停狀態
+
+### ❌ 避免
+
+- **不要忘記調整大小控制點** - 如果視窗可調整大小
+- **不要讓整個視窗都可拖曳** - 這會阻止使用者互動
+- **不要忘記在按鈕上設定 no-drag** - 它們將無法正常運作---
+
+**有問題嗎？** 請在 [Discord](https://discord.gg/JDdSxwjhGf) 上提問，或查看 [frameless 範例](https://github.com/wailsapp/wails/tree/master/v3/examples/frameless)。

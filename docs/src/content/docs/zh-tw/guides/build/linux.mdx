@@ -1,0 +1,223 @@
+---
+title: Linux 封裝
+description: 將您的 Wails 應用程式封裝以進行 Linux 發行
+sidebar:
+  order: 5
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## 封裝格式
+
+將您的應用程式封裝以進行 Linux 發行：
+
+```bash
+wails3 package GOOS=linux
+```
+
+這會在 `bin/` 目錄中建立多種格式：
+- **AppImage**：可攜式，可在任何 Linux 發行版上運行
+- **DEB**：適用於 Debian、Ubuntu 及其衍生版本
+- **RPM**：適用於 Fedora、RHEL 及其衍生版本
+- **Arch**：適用於 Arch Linux 及其衍生版本
+
+### 個別格式
+
+建立特定格式：
+
+```bash
+wails3 task linux:create:appimage
+wails3 task linux:create:deb
+wails3 task linux:create:rpm
+wails3 task linux:create:aur
+```
+
+## 自訂封裝
+
+### 桌面條目
+
+`.desktop` 檔案控制您的應用程式在應用程式選單中的顯示方式。它是從 `build/linux/Taskfile.yml` 中的值生成的：
+
+```yaml
+vars:
+  APP_NAME: 'MyApp'
+  EXEC: 'MyApp'
+  ICON: 'MyApp'
+  CATEGORIES: 'Development;'
+```
+
+### 封裝元數據
+
+編輯 `build/linux/nfpm/nfpm.yaml` 來自訂 DEB 和 RPM 封裝：
+
+```yaml
+name: myapp
+version: 1.0.0
+maintainer: Your Name <you@example.com>
+description: My awesome Wails application
+homepage: https://example.com
+license: MIT
+```
+
+### AppImage
+
+AppImage 配置位於 `build/linux/appimage/`。應用程式圖示來自 `build/appicon.png`。
+
+## 簽署封裝
+
+使用 PGP 金鑰簽署 DEB 和 RPM 封裝：
+
+```bash
+# 使用包裝函式（自動偵測平台）
+wails3 sign GOOS=linux
+
+# 或直接使用任務
+wails3 task linux:sign:deb
+wails3 task linux:sign:rpm
+wails3 task linux:sign:packages  # 兩者
+```
+
+在 `build/linux/Taskfile.yml` 中配置簽署：
+
+```yaml
+vars:
+  PGP_KEY: "path/to/signing-key.asc"
+  SIGN_ROLE: "builder"  # origin, maint, archive, 或 builder
+```
+
+儲存您的金鑰密碼：
+
+```bash
+wails3 setup signing
+```
+
+詳情請參閱 [簽署應用程式](/zh-tw/guides/build/signing)。
+
+## 為 ARM 構建
+
+```bash
+wails3 build GOOS=linux GOARCH=arm64
+wails3 package GOOS=linux GOARCH=arm64
+```
+
+<Aside type="note">
+從 x86_64 主機構建的 ARM64 構建使用 Docker 進行 CGO 交叉編譯。
+</Aside>
+
+## GTK4 支援（實驗性）
+
+Wails v3 包含對 GTK4 與 WebKitGTK 6.0 的實驗性支援。預設情況下，Wails 使用 GTK3 與 WebKit2GTK 4.1。GTK4 支援是透過編譯標籤選擇加入的。
+
+<Aside type="caution" title="實驗性">
+GTK4 支援是實驗性的，可能會出現問題。請將問題回報至 [GitHub issue #4957](https://github.com/wailsapp/wails/issues/4957)。
+</Aside>
+
+### 相依性
+
+安裝 GTK4 和 WebKitGTK 6.0 開發庫：
+
+```bash
+# Ubuntu/Debian
+sudo apt install libgtk-4-dev libwebkitgtk-6.0-dev
+
+# Fedora
+sudo dnf install gtk4-devel webkitgtk6.0-devel
+
+# Arch
+sudo pacman -S gtk4 webkitgtk-6.0
+```
+
+所需的 pkg-config 套件是 `gtk4` 和 `webkitgtk-6.0`。
+
+### 使用 GTK4 構建
+
+使用 `-tags gtk4` 旗標：
+
+```bash
+wails3 build -tags gtk4
+```
+
+或直接使用 Go：
+
+```bash
+go build -tags gtk4 -o myapp .
+```
+
+### 與 GTK3 的已知差異
+
+- **檔案對話框**：GTK4 使用 `xdg-desktop-portal` 進行檔案對話框，這意味著某些對話框選項（如預設目錄、自訂篩選器顯示）的行為不同。詳情請參閱 [對話框參考 - Linux GTK4 限制](/reference/dialogs#linux-gtk4-limitations)。
+- **選單樣式**：GTK4 支援 `LinuxMenuStylePrimaryMenu` 選項，該選項在標題列中顯示漢堡按鈕（☰），遵循 GNOME HIG。請參閱 [視窗 API - Linux MenuStyle](/reference/window#linux)。
+- **DPI 縮放**：GTK4 使用 `gdk_monitor_get_scale`（GTK 4.14+）進行分數縮放支援。
+
+### 檢查您的構建
+
+運行 `wails3 doctor` 以驗證您的設置。GTK4 相依性將顯示為可選/實驗性。
+
+## 疑難排解
+
+### AppImage 無法運行
+
+使其可執行：
+
+```bash
+chmod +x MyApp-x86_64.AppImage
+```
+
+### 缺少相依性
+
+如果應用程式無法啟動，請檢查缺少的 WebKit 相依性：
+
+```bash
+# Debian/Ubuntu
+sudo apt install libwebkit2gtk-4.1-0
+
+# Fedora
+sudo dnf install webkit2gtk4.1
+
+# Arch
+sudo pacman -S webkit2gtk-4.1
+```
+
+### 找不到 C 編譯器
+
+構建系統需要 GCC 或 Clang 進行 CGO：
+
+```bash
+# Debian/Ubuntu
+sudo apt install build-essential
+
+# Fedora
+sudo dnf install gcc
+
+# Arch
+sudo pacman -S base-devel
+```
+
+或者，運行 `wails3 task setup:docker`，構建系統將自動使用 Docker。
+
+### NVIDIA GPU 上的空白或白色視窗
+
+在具有 NVIDIA 專有驅動程式的 Linux 上，Wails 應用程式在啟動時可能會顯示空白或白色視窗。這是由 WebKitGTK 錯誤引起的，其中 DMA-BUF 渲染器在使用 NVIDIA 專有驅動程式時對 `gbm_bo_map()` 失敗（影響 X11 和 Wayland，驅動程式版本 377–580+，GPU 為 10 系列及更早的 GT 710）。
+
+**Wails 在偵測到 NVIDIA 核心模組（`/sys/module/nvidia`）時會自動套用 `WEBKIT_DISABLE_DMABUF_RENDERER=1`**，因此大多數用戶不需要做任何事情。
+
+如果您仍然看到空白視窗（例如在容器模組路徑不可見的情況下），請在啟動應用程式之前手動設定環境變數：
+
+```bash
+WEBKIT_DISABLE_DMABUF_RENDERER=1 ./myapp
+```
+
+相關上游錯誤：[WebKit #262607](https://bugs.webkit.org/show_bug.cgi?id=262607)，[WebKit #180739](https://bugs.webkit.org/show_bug.cgi?id=180739)。
+
+### AppImage strip 相容性
+
+在現代 Linux 發行版（Arch Linux、Fedora 39+、Ubuntu 24.04+）上，系統庫是使用 `.relr.dyn` ELF 區段編譯的，以便進行更有效的重新定位。用於建立 AppImages 的 `linuxdeploy` 工具捆綁了一個較舊的 `strip` 二進位檔，無法處理這些現代區段。
+
+Wails 在構建 AppImage 之前檢查系統 GTK 庫，自動偵測這種情況。當偵測到時，會停用剝離（`NO_STRIP=1`）以確保相容性。
+
+**這意味著：**
+- AppImages 在受影響的系統上會稍大（約 20-40%）
+- 應用程式功能不受影響
+- 這是自動處理的——不需要任何操作
+
+如果您需要在現代系統上使用更小的 AppImages，您可以安裝更新的 `strip` 二進位檔並配置 `linuxdeploy` 使用它而不是其捆綁的版本。

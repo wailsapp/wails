@@ -1,0 +1,120 @@
+---
+title: 自訂 Wails 中的視窗
+description: 自訂 Wails 應用程式中的視窗外觀與行為
+sidebar:
+  order: 10
+---
+
+import {Badge} from '@astrojs/starlight/components';
+
+適用平台： <Badge text="Windows" variant="note" /> <Badge text="macOS" variant="success" />
+<br/>
+
+Wails 提供了一個 API，用於控制視窗控制項的外觀與功能。此功能在 Windows 和 macOS 上可用，但在 Linux 上不可用。
+
+## 設定視窗按鈕狀態
+
+按鈕狀態由 `ButtonState` 列舉定義：
+
+```go
+type ButtonState int
+
+const (
+    ButtonEnabled   ButtonState = 0
+    ButtonDisabled  ButtonState = 1
+    ButtonHidden    ButtonState = 2
+)
+```
+
+- `ButtonEnabled`：按鈕已啟用且可見。
+- `ButtonDisabled`：按鈕可見但已停用（呈灰色）。
+- `ButtonHidden`：按鈕從標題列中隱藏。
+
+按鈕狀態可以在建立視窗時或執行階段設定。
+
+### 在建立視窗時設定按鈕狀態
+
+建立新視窗時，您可以使用 `WebviewWindowOptions` 結構體設定按鈕的初始狀態：
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "My Application",
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        MinimiseButtonState: application.ButtonHidden,
+        MaximiseButtonState: application.ButtonDisabled,
+        CloseButtonState:    application.ButtonEnabled,
+    })
+
+    app.Run()
+}
+```
+
+在上述範例中，最小化按鈕被隱藏，最大化按鈕處於非作用中狀態（呈灰色），而關閉按鈕處於作用中狀態。
+
+### 在執行階段設定按鈕狀態
+
+您也可以使用 `Window` 介面上的以下方法在執行階段變更按鈕狀態：
+
+```go
+window.SetMinimiseButtonState(wails.ButtonHidden)
+window.SetMaximiseButtonState(wails.ButtonEnabled)
+window.SetCloseButtonState(wails.ButtonDisabled)
+```
+
+### 平台差異
+
+按鈕狀態功能在 Windows 和 macOS 上的行為略有不同：
+
+|                       | Windows                | Mac                    |
+|-----------------------|------------------------|------------------------|
+| 停用最小化/最大化/關閉 | 停用最小化/最大化/關閉 | 停用最小化/最大化/關閉 |
+| 隱藏最小化            | 停用最小化             | 隱藏最小化按鈕         |
+| 隱藏最大化            | 停用最大化             | 隱藏最大化按鈕         |
+| 隱藏關閉              | 隱藏所有控制項         | 隱藏關閉按鈕           |
+
+注意：在 Windows 上，無法單獨隱藏最小化或最大化按鈕。不過，同時停用這兩個按鈕會隱藏這兩個控制項，僅顯示關閉按鈕。
+
+### 控制視窗樣式（Windows）
+
+若要控制 Windows 上標題列的樣式，您可以使用 `WebviewWindowOptions` 結構體中的 `ExStyle` 欄位：
+
+範例：
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/w32"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My Application",
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Windows: application.WindowsWindow{
+            ExStyle: w32.WS_EX_TOOLWINDOW | w32.WS_EX_NOREDIRECTIONBITMAP | w32.WS_EX_TOPMOST,
+        },
+    })
+
+    app.Run()
+}
+```
+
+其他會影響視窗擴充樣式的選項將被此設定覆蓋：
+
+- HiddenOnTaskbar
+- AlwaysOnTop
+- IgnoreMouseEvents
+- BackgroundType

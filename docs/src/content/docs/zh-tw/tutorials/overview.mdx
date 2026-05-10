@@ -1,0 +1,84 @@
+---
+title: 教學課程
+description: 透過建置應用程式來學習 Wails
+sidebar:
+  label: 概覽
+  order: 0
+---
+
+import { LinkButton } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import qr1 from "../../../../assets/qr1.png";
+import todoApp from "../../../../assets/todo-app.png";
+import notesApp from "../../../../assets/notes-app.png";
+
+逐步教學課程，透過建置完整的應用程式來教授 Wails 概念。每個教學課程都包含可運作的程式碼、說明以及實用模式。
+
+:::tip[剛接觸 Go？]
+在開始教學課程之前，請先完成 [Go Tour](https://go.dev/tour/)。
+:::
+
+### QR Code Service
+
+<Image src={qr1} alt="QR Code Example" style="max-width: 400px; margin: 1rem auto; display: block;" />
+
+透過建置 QR Code 產生器，學習 Wails 服務的基本概念。本教學課程將引導您了解將應用程式邏輯組織為可重複使用服務的核心概念。
+
+**您將學到：**
+- 如何建立和結構化 Wails 服務
+- 管理外部 Go 相依性
+- 將 Go 方法繫結至前端
+- 在 Go 和 JavaScript 之間傳遞資料
+- 組織程式碼以提高可維護性
+
+**最適合：** 想要了解服務架構的初學者
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/zh-tw/tutorials/01-creating-a-service" variant="secondary" icon="right-arrow">開始學習</LinkButton>
+</div>
+
+---
+
+### TODO List
+
+<Image src={todoApp} alt="TODO List Application" style="max-width: 400px; margin: 1rem auto; display: block;" />
+
+使用美觀、現代的介面建置完整的 TODO 清單應用程式。這個實作教學課程透過使用原生 JavaScript 的實用、真實世界應用程式，教導您核心的 Wails 模式。
+
+**您將學到：**
+- 具有執行緒安全狀態管理的服務架構
+- CRUD 操作（建立、讀取、更新、刪除）
+- Go 和 JavaScript 之間的類型安全繫結
+- 在不增加框架複雜性的情況下建置現代化 UI
+- 適當的錯誤處理和驗證模式
+
+**完成時間：** 約 20 分鐘
+
+**最適合：** 您的第一個完整 Wails 應用程式 — 非常適合在增加框架複雜性之前理解基本概念
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/zh-tw/tutorials/02-todo-vanilla" variant="secondary" icon="right-arrow">開始學習</LinkButton>
+</div>
+
+---
+
+### Notes
+
+<Image src={notesApp} alt="Notes Application" style="max-width: 600px; margin: 1rem auto; display: block;" />
+
+建置類似 Apple Notes 的應用程式，具備原生檔案對話方塊和自動儲存功能。本教學課程展示了桌面特有的功能，如檔案操作、原生對話方塊以及專業 UI 模式。
+
+**您將學到：**
+- 原生檔案對話方塊（儲存、開啟、資訊）
+- 基於 JSON 的資料持久化
+- 防抖動自動儲存模式
+- 專業的二欄式桌面版面配置
+- 在 Go 中處理檔案系統操作
+
+**完成時間：** 約 30 分鐘
+
+**最適合：** 學習桌面特有的功能，如檔案操作和原生作業系統對話方塊
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/zh-tw/tutorials/03-notes-vanilla" variant="secondary" icon="right-arrow">開始學習</LinkButton>
+</div>

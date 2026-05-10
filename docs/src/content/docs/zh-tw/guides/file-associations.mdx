@@ -1,0 +1,170 @@
+---
+title: 檔案關聯
+description: 為您的 Wails 應用程式設定檔案關聯
+sidebar:
+  order: 20
+---
+
+import { Steps } from "@astrojs/starlight/components";
+import {Badge} from '@astrojs/starlight/components';
+
+適用平台： <Badge text="Windows" variant="note" /> <Badge text="macOS" variant="success" />
+<br/>
+
+檔案關聯允許您的應用程式在用戶開啟特定檔案類型時進行處理。這對於文字編輯器、影像檢視器或任何處理特定檔案格式的應用程式特別有用。本指南說明如何在您的 Wails v3 應用程式中實作檔案關聯。
+
+## 概述
+
+Wails v3 目前支援以下平台的檔案關聯功能：
+
+- Windows (NSIS 安裝程式套件)
+- macOS (應用程式套件)
+
+## 設定
+
+檔案關聯在專案 `build` 目錄中的 `config.yml` 檔案內進行設定。
+
+### 基本設定
+
+要設定檔案關聯：
+
+1. 開啟 `build/config.yml`
+2. 在 `fileAssociations` 區段下新增您的檔案關聯
+3. 執行 `wails3 update build-assets` 以更新建置資產
+4. 在應用程式選項中設定 `FileAssociations` 欄位
+5. 使用 `wails3 package` 封裝您的應用程式
+
+以下是一個範例設定：
+
+```yaml
+fileAssociations:
+  - ext: myapp
+    name: MyApp Document
+    description: MyApp Document File
+    iconName: myappFileIcon
+    role: Editor
+  - ext: custom
+    name: Custom Format
+    description: Custom File Format
+    iconName: customFileIcon
+    role: Editor
+```
+
+### 設定屬性
+
+| 屬性        | 描述                                                         | 平台     |
+|------|----------------------------------------------------------|----------|
+| ext         | 不含前置句點的檔案副檔名 (例如，`txt`)                     | 所有平台  |
+| name        | 檔案類型的顯示名稱                                         | 所有平台  |
+| description | 在檔案屬性中顯示的描述                                     | Windows  |
+| iconName    | 建置資料夾中圖示檔案的名稱 (不含副檔名)                    | 所有平台  |
+| role        | 應用程式對此檔案類型的角色 (例如，`Editor`, `Viewer`)      | macOS    |
+| mimeType    | 檔案的 MIME 類型 (例如，`image/jpeg`)                      | macOS    |
+
+## 監聽檔案開啟事件
+
+要在您的應用程式中處理檔案開啟事件，您可以監聽 `events.Common.ApplicationOpenedWithFile` 事件：
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "MyApp",
+        FileAssociations: []string{".txt", ".md"}, // 指定支援的副檔名
+    })
+
+    // 監聽用於開啟應用程式的檔案
+    app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(event *application.ApplicationEvent) {
+        associatedFile := event.Context().Filename()
+        application.InfoDialog().SetMessage("Application opened with file: " + associatedFile).Show()
+    })
+
+    // 建立您的視窗並執行應用程式...
+}
+
+```
+
+## 逐步教學
+
+讓我們逐步設定簡單文字編輯器的檔案關聯：
+
+<Steps>
+
+1. ### 建立圖示
+
+    - 為您的檔案類型建立圖示 (建議尺寸：16x16, 32x32, 48x48,
+      256x256)
+    - 將圖示儲存到您的專案的 `build` 資料夾中
+    - 根據您的 `iconName` 設定命名它們 (例如，
+      `textFileIcon.png`)
+
+    :::tip
+    您可以使用 `wails3 generate icons` 為您產生所需的圖示。
+    執行 `wails3 generate icons --help` 以取得更多資訊。
+    :::
+
+    - 對於 macOS，請在 `create:app:bundle:` 工作項目中新增複製語法，例如 `cp build/darwin/documenticon.icns {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/Resources`。
+
+2. ### 設定檔案關聯
+
+    編輯 `build/config.yml` 檔案以新增您的檔案關聯：
+
+    ```yaml
+    # build/config.yml
+    fileAssociations:
+      - ext: txt
+        name: Text Document
+        description: Plain Text Document
+        iconName: textFileIcon
+        role: Editor
+    ```
+
+3. ### 更新建置資產
+
+    執行以下命令以更新建置資產：
+
+    ```bash
+    wails3 update build-assets
+    ```
+
+4. ### 在應用程式選項中設定檔案關聯
+
+    在您的 `main.go` 檔案中，在應用程式選項中設定 `FileAssociations` 欄位：
+
+    ```go
+    app := application.New(application.Options{
+      Name: "MyApp",
+      FileAssociations: []string{".txt", ".md"}, // 指定支援的副檔名
+    })
+    ```
+
+    :::tip[為什麼檔案副檔名需要同時出現在應用程式設定和 config.yml 中？]
+
+    在 Windows 上，當使用檔案關聯開啟檔案時，應用程式會以檔案名作為第一個引數啟動。
+    應用程式無法知道第一個引數是檔案還是命令列引數，因此它使用應用程式選項中的 `FileAssociations` 欄位
+    來判斷第一個引數是否為關聯的檔案。
+
+    :::
+
+5. ### 封裝您的應用程式
+
+    使用以下命令封裝您的應用程式：
+
+    ```bash
+    wails3 package
+    ```
+
+    封裝好的應用程式將建立在 `bin` 資料夾中。之後您可以安裝並測試該應用程式。
+
+    ## 其他注意事項
+
+    - 圖示應以 PNG 格式提供在 build 資料夾中
+    - 測試檔案關聯需要安裝封裝好的應用程式
+
+</Steps>

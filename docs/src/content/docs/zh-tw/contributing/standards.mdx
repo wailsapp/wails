@@ -1,0 +1,463 @@
+---
+title: 編碼規範
+description: Wails v3 的程式碼風格、慣例與最佳實踐
+---
+
+## 程式碼風格與慣例
+
+遵循一致的編碼規範能使程式碼庫更易於閱讀、維護與貢獻。
+
+## Go 程式碼規範
+
+### 程式碼格式化
+
+使用標準的 Go 格式化工具：
+
+```bash
+# 格式化所有程式碼
+gofmt -w .
+
+# 使用 goimports 進行匯入整理
+goimports -w .
+```
+
+**必要：** 所有 Go 程式碼在提交前必須通過 `gofmt` 和 `goimports` 檢查。
+
+### 命名慣例
+
+**套件：**
+- 小寫，盡量使用單字
+- `package application`, `package events`
+- 避免使用底線或混合大小寫
+
+**公開名稱：**
+- 類型、函式、常數使用 PascalCase
+- `type WebviewWindow struct`, `func NewApplication()`
+
+**非公開名稱：**
+- 內部類型、函式、變數使用 camelCase
+- `type windowImpl struct`, `func createWindow()`
+
+**介面：**
+- 以行為命名：`Reader`, `Writer`, `Handler`
+- 單一方法的介面：名稱加上 `-er` 後綴
+
+```go
+// Good
+type Closer interface {
+    Close() error
+}
+
+// Avoid
+type CloseInterface interface {
+    Close() error
+}
+```
+
+### 錯誤處理
+
+**務必檢查錯誤：**
+
+```go
+// Good
+result, err := doSomething()
+if err != nil {
+    return fmt.Errorf("failed to do something: %w", err)
+}
+
+// Bad - ignoring errors
+result, _ := doSomething()
+```
+
+**使用錯誤包裝：**
+
+```go
+// Wrap errors to provide context
+if err := validate(); err != nil {
+    return fmt.Errorf("validation failed: %w", err)
+}
+```
+
+**在需要時建立自訂錯誤類型：**
+
+```go
+type ValidationError struct {
+    Field string
+    Value string
+}
+
+func (e *ValidationError) Error() string {
+    return fmt.Sprintf("invalid value %q for field %q", e.Value, e.Field)
+}
+```
+
+### 註解與文件
+
+**套件註解：**
+
+```go
+// Package application provides the core Wails application runtime.
+//
+// It handles window management, event dispatching, and service lifecycle.
+package application
+```
+
+**公開宣告：**
+
+```go
+// NewApplication creates a new Wails application with the given options.
+//
+// The application must be started with Run() or RunWithContext().
+func NewApplication(opts Options) *Application {
+    // ...
+}
+```
+
+**實作註解：**
+
+```go
+// processEvent handles incoming events from the runtime.
+// It dispatches to registered handlers and manages event lifecycle.
+func (a *Application) processEvent(event *Event) {
+    // Validate event before processing
+    if event == nil {
+        return
+    }
+
+    // Find and invoke handlers
+    // ...
+}
+```
+
+### 函式與方法結構
+
+**保持函式專注：**
+
+```go
+// Good - single responsibility
+func (w *Window) setTitle(title string) {
+    w.title = title
+    w.updateNativeTitle()
+}
+
+// Bad - doing too much
+func (w *Window) updateEverything() {
+    w.setTitle(w.title)
+    w.setSize(w.width, w.height)
+    w.setPosition(w.x, w.y)
+    // ... 20 more operations
+}
+```
+
+**使用早期返回：**
+
+```go
+// Good
+func validate(input string) error {
+    if input == "" {
+        return errors.New("empty input")
+    }
+
+    if len(input) > 100 {
+        return errors.New("input too long")
+    }
+
+    return nil
+}
+
+// Avoid deep nesting
+```
+
+### 併發
+
+**使用 context 進行取消：**
+
+```go
+func (a *Application) RunWithContext(ctx context.Context) error {
+    select {
+    case <-ctx.Done():
+        return ctx.Err()
+    case <-a.done:
+        return nil
+    }
+}
+```
+
+**使用 mutex 保護共享狀態：**
+
+```go
+type SafeCounter struct {
+    mu    sync.Mutex
+    count int
+}
+
+func (c *SafeCounter) Increment() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count++
+}
+```
+
+**避免 goroutine 洩漏：**
+
+```go
+// Good - goroutine has exit condition
+func (a *Application) startWorker(ctx context.Context) {
+    go func() {
+        for {
+            select {
+            case <-ctx.Done():
+                return  // Clean exit
+            case work := <-a.workChan:
+                a.process(work)
+            }
+        }
+    }()
+}
+```
+
+### 測試
+
+**測試檔案命名：**
+
+```go
+// Implementation: window.go
+// Tests: window_test.go
+```
+
+**表格驅動測試：**
+
+```go
+func TestValidate(t *testing.T) {
+    tests := []struct {
+        name    string
+        input   string
+        wantErr bool
+    }{
+        {"empty input", "", true},
+        {"valid input", "hello", false},
+        {"too long", strings.Repeat("a", 101), true},
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            err := validate(tt.input)
+            if (err != nil) != tt.wantErr {
+                t.Errorf("validate() error = %v, wantErr %v", err, tt.wantErr)
+            }
+        })
+    }
+}
+```
+
+## JavaScript/TypeScript 規範
+
+### 程式碼格式化
+
+使用 Prettier 進行一致的格式化：
+
+```json
+{
+  "semi": false,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "es5"
+}
+```
+
+### 命名慣例
+
+**變數與函式：**
+- camelCase: `const userName = "John"`
+
+**類別與類型：**
+- PascalCase: `class WindowManager`
+
+**常數：**
+- UPPER_SNAKE_CASE: `const MAX_RETRIES = 3`
+
+### TypeScript
+
+**使用明確類型：**
+
+```typescript
+// Good
+function greet(name: string): string {
+    return `Hello, ${name}`
+}
+
+// Avoid implicit any
+function process(data) {  // Bad
+    return data
+}
+```
+
+**定義介面：**
+
+```typescript
+interface WindowOptions {
+    title: string
+    width: number
+    height: number
+}
+
+function createWindow(options: WindowOptions): void {
+    // ...
+}
+```
+
+## 提交訊息格式
+
+使用 [Conventional Commits](https://www.conventionalcommits.org/)：
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**類型：**
+- `feat`: 新功能
+- `fix`: 錯誤修復
+- `docs`: 文件變更
+- `refactor`: 程式碼重構
+- `test`: 新增或更新測試
+- `chore`: 維護任務
+
+**範例：**
+
+```
+feat(window): add SetAlwaysOnTop method
+
+Implement SetAlwaysOnTop for keeping windows above others.
+Adds platform implementations for macOS, Windows, and Linux.
+
+Closes #123
+```
+
+```
+fix(events): prevent event handler memory leak
+
+Event listeners were not being properly cleaned up when
+windows were closed. This adds explicit cleanup in the
+window destructor.
+```
+
+## 合併請求指南
+
+### 提交前
+
+- [ ] 程式碼通過 `gofmt` 和 `goimports`
+- [ ] 所有測試通過 (`go test ./...`)
+- [ ] 新程式碼有測試
+- [ ] 如有需要，更新文件
+- [ ] 提交訊息遵循慣例
+- [ ] 與 `master` 無合併衝突
+
+### PR 描述範本
+
+```markdown
+## Description
+Brief description of what this PR does.
+
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Breaking change
+- [ ] Documentation update
+
+## Testing
+How was this tested?
+
+## Checklist
+- [ ] Tests pass
+- [ ] Documentation updated
+- [ ] No breaking changes (or documented)
+```
+
+## 程式碼審查流程
+
+### 作為審查者
+
+- 建設性且尊重他人
+- 專注於程式碼品質，而非個人偏好
+- 解釋建議變更的原因
+- 滿意後批准
+
+### 作為作者
+
+- 回應所有評論
+- 如有需要，請求澄清
+- 進行要求的變更或解釋不這樣做的原因
+- 對反饋保持開放態度
+
+## 最佳實踐
+
+### 效能
+
+- 避免過度優化
+- 在優化前進行分析
+- 對效能關鍵程式碼使用基準測試
+
+```go
+func BenchmarkProcess(b *testing.B) {
+    for i := 0; i < b.N; i++ {
+        process(testData)
+    }
+}
+```
+
+### 安全性
+
+- 驗證所有使用者輸入
+- 在顯示前清理資料
+- 對隨機資料使用 `crypto/rand`
+- 永遠不要記錄敏感資訊
+
+### 文件
+
+- 記錄公開 API
+- 在文件中包含範例
+- 變更 API 時更新文件
+- 保持 README 檔案為最新狀態
+
+## 平台特定程式碼
+
+### 檔案命名
+
+```
+window.go           // Common interface
+window_darwin.go    // macOS implementation
+window_windows.go   // Windows implementation
+window_linux.go     // Linux implementation
+```
+
+### 編譯標籤
+
+```go
+//go:build darwin套件 application
+
+// macOS-specific code
+```
+
+## 程式碼檢查
+
+在提交前執行程式碼檢查工具：
+
+```bash
+# golangci-lint (推薦)
+golangci-lint run
+
+# 個別檢查工具
+go vet ./...
+staticcheck ./...
+```
+
+## 有問題嗎？
+
+如果您對任何規範不確定：
+- 查看現有程式碼以獲取範例
+- 在 [Discord](https://discord.gg/JDdSxwjhGf) 上提問
+- 在 GitHub 上開啟討論

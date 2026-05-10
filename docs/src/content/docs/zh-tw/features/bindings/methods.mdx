@@ -1,0 +1,410 @@
+---
+title: 方法綁定
+description: 以類型安全的方式從 JavaScript 呼叫 Go 方法
+sidebar:
+  order: 1
+---
+
+import { FileTree, Card, CardGrid } from "@astrojs/starlight/components";
+
+## 類型安全的 Go-JavaScript 綁定
+
+Wails **會自動為您的 Go 方法生成類型安全的 JavaScript/TypeScript 綁定**。只需編寫 Go 代碼、執行一個指令，即可獲得完全類型化的前端函數，無需 HTTP 開銷、無需手動操作，也無需任何样板代碼。
+
+## 快速開始
+
+**1. 編寫 Go 服務：**
+
+```go
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+    return "Hello, " + name + "!"
+}
+```
+
+**2. 註冊服務：**
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+})
+```
+
+**3. 生成綁定：**
+
+```bash
+wails3 generate bindings
+```
+
+**4. 在 JavaScript 中使用：**
+
+```javascript
+import { Greet } from './bindings/myapp/greetservice'
+
+const message = await Greet("World")
+console.log(message)  // "Hello, World!"
+```
+
+**就是這樣！** 類型安全的 Go 到 JavaScript 呼叫。
+
+## 創建服務
+
+### 基本服務
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+type CalculatorService struct{}
+
+func (c *CalculatorService) Add(a, b int) int {
+    return a + b
+}
+
+func (c *CalculatorService) Subtract(a, b int) int {
+    return a - b
+}
+
+func (c *CalculatorService) Multiply(a, b int) int {
+    return a * b
+}
+
+func (c *CalculatorService) Divide(a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, errors.New("division by zero")
+    }
+    return a / b, nil
+}
+```
+
+**註冊：**
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&CalculatorService{}),
+    },
+})
+```
+
+**要點：**
+- 僅有**導出的方法**（PascalCase）會被綁定
+- 方法可以返回值或 `(value, error)`
+- 服務是**單例**（每個應用程式一個實例）
+
+### 帶有狀態的服務
+
+```go
+type CounterService struct {
+    count int
+    mu    sync.Mutex
+}
+
+func (c *CounterService) Increment() int {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count++
+    return c.count
+}
+
+func (c *CounterService) Decrement() int {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count--
+    return c.count
+}
+
+func (c *CounterService) GetCount() int {
+    c.mu.RLock()
+    defer c.mu.RUnlock()
+    return c.count
+}
+
+func (c *CounterService) Reset() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count = 0
+}
+```
+
+**重要：** 服務在所有視窗之間共享。請使用互斥鎖來確保線程安全。
+
+### 帶有依賴項的服務
+
+```go
+type DatabaseService struct {
+    db *sql.DB
+}
+
+func NewDatabaseService(db *sql.DB) *DatabaseService {
+    return &DatabaseService{db: db}
+}
+
+func (d *DatabaseService) GetUser(id int) (*User, error) {
+    var user User
+    err := d.db.QueryRow("SELECT * FROM users WHERE id = ?", id).Scan(&user)
+    return &user, err
+}
+```
+
+**帶有依賴項註冊：**
+
+```go
+db, _ := sql.Open("sqlite3", "app.db")
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(NewDatabaseService(db)),
+    },
+})
+```
+
+## 生成綁定
+
+### 基本生成
+
+```bash
+wails3 generate bindings
+```
+
+**輸出：**
+
+```
+INFO  347 Packages, 3 Services, 12 Methods, 0 Enums, 0 Models in 1.98s
+INFO  Output directory: /myproject/frontend/bindings
+```
+
+**生成的結構：**
+
+<FileTree>
+- frontend/bindings
+  - myapp
+    - calculatorservice.js
+    - counterservice.js
+    - databaseservice.js
+    - index.js
+</FileTree>
+
+### TypeScript 生成
+
+```bash
+wails3 generate bindings -ts
+```
+
+**生成帶有完整 TypeScript 類型的 `.ts` 文件。**
+
+### 自定義輸出目錄
+
+```bash
+wails3 generate bindings -d ./src/bindings
+```
+
+### 監聽模式（開發）
+
+```bash
+wails3 dev
+```
+
+**當 Go 代碼發生更改時，自動重新生成綁定。**
+
+## 使用綁定
+
+### JavaScript
+
+**生成的綁定：**
+
+```javascript
+// frontend/bindings/myapp/calculatorservice.js
+
+/**
+ * @param {number} a
+ * @param {number} b
+ * @returns {Promise<number>}
+ */
+export function Add(a, b) {
+    return window.wails.Call('CalculatorService.Add', a, b)
+}
+```
+
+**用法：**
+
+```javascript
+import { Add, Subtract, Multiply, Divide } from './bindings/myapp/calculatorservice'
+
+// 簡單呼叫
+const sum = await Add(5, 3)        // 8
+const diff = await Subtract(10, 4)  // 6
+const product = await Multiply(7, 6) // 42
+
+// 錯誤處理
+try {
+    const result = await Divide(10, 0)
+} catch (error) {
+    console.error("Error:", error)  // "division by zero"
+}
+```
+
+### TypeScript
+
+**生成的綁定：**
+
+```typescript
+// frontend/bindings/myapp/calculatorservice.ts
+
+export function Add(a: number, b: number): Promise<number>
+export function Subtract(a: number, b: number): Promise<number>
+export function Multiply(a: number, b: number): Promise<number>
+export function Divide(a: number, b: number): Promise<number>
+```
+
+**用法：**
+
+```typescript
+import { Add, Divide } from './bindings/myapp/calculatorservice'
+
+const sum: number = await Add(5, 3)
+
+try {
+    const result = await Divide(10, 0)
+} catch (error: unknown) {
+    if (error instanceof Error) {
+        console.error(error.message)
+    }
+}
+```
+
+**優點：**
+- 完整的類型檢查
+- IDE 自動完成
+- 編譯時錯誤
+- 更好的重構
+
+### 索引文件
+
+**生成的索引：**
+
+```javascript
+// frontend/bindings/myapp/index.js
+
+export * as CalculatorService from './calculatorservice.js'
+export * as CounterService from './counterservice.js'
+export * as DatabaseService from './databaseservice.js'
+```
+
+**簡化導入：**
+
+```javascript
+import { CalculatorService } from './bindings/myapp'
+
+const sum = await CalculatorService.Add(5, 3)
+```
+
+## 類型映射
+
+### 基本類型
+
+| Go 類型 | JavaScript/TypeScript |
+|---------|----------------------|
+| `string` | `string` |
+| `bool` | `boolean` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `number` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `number` |
+| `float32`, `float64` | `number` |
+| `byte` | `number` |
+| `rune` | `number` |
+
+### 複雜類型
+
+| Go 類型 | JavaScript/TypeScript |
+|---------|----------------------|
+| `[]T` | `T[]` |
+| `[N]T` | `T[]` |
+| `map[string]T` | `Record<string, T>` |
+| `map[K]V` | `Map<K, V>` |
+| `struct` | `class` (帶有字段) |
+| `time.Time` | `Date` |
+| `*T` | `T` (指針透明) |
+| `interface{}` | `any` |
+| `error` | 異常 (拋出) |
+
+### 不支持的類型
+
+這些類型**不能**跨橋接傳遞：
+- `chan T` (通道)
+- `func()` (函數)
+- 複雜接口 (除了 `interface{}`)
+- 未導出的字段 (小寫)
+
+**變通方法：** 使用 ID 或句柄：
+
+```go
+// ❌ 無法返回文件句柄
+func OpenFile(path string) (*os.File, error)
+
+// ✅ 改為返回文件 ID
+var files = make(map[string]*os.File)
+
+func OpenFile(path string) (string, error) {
+    file, err := os.Open(path)
+    if err != nil {
+        return "", err
+    }
+    id := generateID()
+    files[id] = file
+    return id, nil
+}
+
+func ReadFile(id string) ([]byte, error) {
+    file := files[id]
+    return io.ReadAll(file)
+}
+
+func CloseFile(id string) error {
+    file := files[id]
+    delete(files, id)
+    return file.Close()
+}
+```
+
+## 錯誤處理
+
+### Go 端
+
+```go
+func (d *DatabaseService) GetUser(id int) (*User, error) {
+    if id <= 0 {
+        return nil, errors.New("invalid user ID")
+    }
+    
+    var user User
+    err := d.db.QueryRow("SELECT * FROM users WHERE id = ?", id).Scan(&user)
+    if err == sql.ErrNoRows {
+        return nil, fmt.Errorf("user %d not found", id)
+    }
+    if err != nil {
+        return nil, fmt.Errorf("database error: %w", err)
+    }
+    
+    return &user, nil
+}
+```
+
+### JavaScript 端
+
+```javascript
+import { GetUser } from './bindings/myapp/databaseservice'
+
+try {
+    const user = await GetUser(123)
+    console.log("User:", user)
+} catch (error) {
+    console.error("Error:", error)
+    // Error: "user 123 not found"
+}
+```---
+
+**有問題嗎？** 請在 [Discord](https://discord.gg/JDdSxwjhGf) 提問，或查看 [綁定範例](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)。

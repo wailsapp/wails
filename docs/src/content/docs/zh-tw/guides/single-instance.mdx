@@ -1,0 +1,119 @@
+---
+title: 單一實例
+description: 將您的應用程式限制為單一執行實例
+sidebar:
+   order: 40
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+單一實例鎖定（Single instance locking）是一種機制，可防止多個應用程式實例同時運行。
+對於設計為從命令列或作業系統檔案總管開啟檔案的應用程式來說，這非常有用。
+
+
+## 使用方法
+
+要在您的應用程式中啟用單一實例功能，請在建立應用程式時提供 `SingleInstanceOptions` 結構：
+
+```go
+app := application.New(application.Options{
+    // ... 其他選項 ...
+    SingleInstance: &application.SingleInstanceOptions{
+        UniqueID: "com.myapp.unique-id",
+        OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+            log.Printf("Second instance launched with args: %v", data.Args)
+            log.Printf("Working directory: %s", data.WorkingDir)
+            log.Printf("Additional data: %v", data.AdditionalData)
+        },
+        // 可選：傳遞額外資料給第二個實例
+        AdditionalData: map[string]string{
+            "launchtime": time.Now().String(),
+        },
+    },
+})
+```
+
+`SingleInstanceOptions` 結構包含以下欄位：
+
+- `UniqueID`: 應用程式的唯一識別碼。這應該是一個唯一的字串，通常採用反向網域表示法（例如，"com.company.appname"）。
+- `EncryptionKey`: 可選的 32 位元組陣列，用於使用 AES-256-GCM 加密實例之間傳遞的資料。如果提供非零陣列，則所有實例之間的通訊都將被加密。
+- `OnSecondInstanceLaunch`: 當啟動應用程式的第二個實例時呼叫的回呼函式。該回呼接收包含以下內容的 `SecondInstanceData` 結構：
+    - `Args`: 傳遞給第二個實例的命令列參數
+    - `WorkingDir`: 第二個實例的工作目錄
+    - `AdditionalData`: 從第二個實例傳遞的任何額外資料（如果提供）
+- `AdditionalData`: 可選的字串鍵值對映射，當啟動後續實例時將傳遞給第一個實例
+
+:::danger[警告]
+單一實例功能實作了一個使用 AES-256-GCM 的可選加密協議。未啟用加密時，
+實例之間傳遞的資料並不安全。在不使用加密的情況下使用單一實例功能時，
+您的應用程式應將從第二個實例回呼接收到的任何資料視為不可信。
+您應該驗證接收到的參數是否有效且不包含任何惡意資料。
+:::
+
+### 安全通訊
+
+要啟用實例之間的安全通訊，請提供一個 32 位元組的加密金鑰。此金鑰必須與應用程式的所有實例相同：
+
+```go
+// 定義您的加密金鑰（必須正好是 32 位元組）
+var encryptionKey = [32]byte{
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+    0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+    0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+}
+
+// 在 SingleInstanceOptions 中使用金鑰
+SingleInstance: &application.SingleInstanceOptions{
+    UniqueID: "com.myapp.unique-id",
+    // 啟用實例通訊的加密
+    EncryptionKey: encryptionKey,
+    // ... 其他選項 ...
+}
+```
+
+:::tip[安全最佳實踐]
+- 為您的應用程式使用唯一的金鑰
+- 如果從配置載入金鑰，請安全地儲存它
+- 不要使用上面顯示的範例金鑰 - 請自行建立！
+:::
+
+### 視窗管理
+
+處理第二個實例啟動時，您通常希望將應用程式視窗帶到前景。您可以使用視窗的 `Focus()` 方法來完成此操作。如果您的視窗已最小化，您可能需要先還原它：
+
+```go
+
+    var mainWindow *application.WebviewWindow
+
+    SingleInstance: &application.SingleInstanceOptions{
+        // 其他選項...
+        OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+            // 如果需要，聚焦視窗
+            if mainWindow != nil {
+                mainWindow.Restore()
+                mainWindow.Focus()
+            }
+        },
+    }
+```
+
+## 運作方式
+
+<Tabs syncKey="platform">
+    <TabItem label="Mac" icon="apple">
+
+        使用命名互斥鎖（named mutex）實現單一實例鎖定。互斥鎖名稱是根據您提供的唯一 ID 生成的。資料透過 [NSDistributedNotificationCenter](https://developer.apple.com/documentation/foundation/nsdistributednotificationcenter) 傳遞給第一個實例。
+
+    </TabItem>
+    <TabItem label="Windows" icon="seti:windows">
+
+        使用命名互斥鎖（named mutex）實現單一實例鎖定。互斥鎖名稱是根據您提供的唯一 ID 生成的。資料透過使用 [SendMessage](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage) 的共用視窗傳遞給第一個實例。
+
+    </TabItem>
+    <TabItem label="Linux" icon="linux">
+
+        使用 [dbus](https://www.freedesktop.org/wiki/Software/dbus/) 實現單一實例鎖定。dbus 名稱是根據您提供的唯一 ID 生成的。資料透過 [dbus](https://www.freedesktop.org/wiki/Software/dbus/) 傳遞給第一個實例。
+
+    </TabItem>
+</Tabs>

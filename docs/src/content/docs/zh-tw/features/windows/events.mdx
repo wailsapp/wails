@@ -1,0 +1,422 @@
+---
+title: 視窗事件
+description: 處理視窗生命週期與狀態變更事件
+sidebar:
+  order: 5
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 視窗事件
+
+Wails 提供了**全面的事件鉤子**，用於處理視窗生命週期與狀態變更：建立、聚焦/失焦、調整大小/移動、最小化/最大化，以及關閉事件。註冊回調函數、處理事件，並透過簡單且一致 API 在各視窗間進行協調。
+
+## 生命週期事件
+
+### OnCreate
+
+當視窗建立時呼叫：
+
+```go
+app.OnWindowCreation(func(window *application.WebviewWindow) {
+    fmt.Printf("Window created: %s (ID: %d)\n", window.Name(), window.ID())
+    
+    // Configure all new windows
+    window.SetMinSize(400, 300)
+    
+    // Register window-specific handlers
+    window.OnClose(func() bool {
+        return confirmClose()
+    })
+})
+```
+
+**使用情境：**
+- 一致地設定所有視窗
+- 註冊事件處理常式
+- 追蹤視窗建立
+- 初始化視窗專屬資源
+
+### OnClose
+
+當使用者嘗試關閉視窗時呼叫：
+
+```go
+window.OnClose(func() bool {
+    // Return false to cancel close
+    // Return true to allow close
+    
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        return result == "yes"
+    }
+    return true
+})
+```
+
+**重要：**
+- 僅由使用者動作觸發（點擊 X 按鈕）
+- 不會由 `window.Destroy()` 觸發
+- 可透過回傳 `false` 來取消關閉
+
+**使用情境：**
+- 關閉前確認
+- 儲存狀態
+- 防止意外關閉
+- 關閉前清理
+
+**對話框範例：**
+
+```go
+window.OnClose(func() bool {
+    if !hasUnsavedChanges() {
+        return true
+    }
+    
+    // Show confirmation dialog
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:       "Confirm Close",
+        Width:       400,
+        Height:      150,
+        Parent:      window,
+        AlwaysOnTop: true,
+    })
+    
+    // Wait for user response
+    result := waitFordialogResult(dialog)
+    
+    return result == "yes"
+})
+```
+
+### OnDestroy
+
+當視窗被銷毀時呼叫：
+
+```go
+window.OnDestroy(func() {
+    fmt.Printf("Window destroyed: %s\n", window.Name())
+    
+    // Cleanup resources
+    closeDatabase()
+    
+    // Remove from tracking
+    removeWindowFromRegistry(window.ID())
+    
+    // Update application state
+    updateWindowCount()
+})
+```
+
+**重要：**
+- 視窗銷毀時一定會呼叫
+- 無法取消
+- 最後一次清理資源的機會
+
+**使用情境：**
+- 釋放資源
+- 關閉連線
+- 更新應用程式狀態
+- 從追蹤列表中移除
+
+**資源清理範例：**
+
+```go
+type ManagedWindow struct {
+    window    *application.WebviewWindow
+    db        *sql.DB
+    listeners []func()
+}
+
+func (mw *ManagedWindow) Setup() {
+    mw.window.OnDestroy(func() {
+        // Close database
+        if mw.db != nil {
+            mw.db.Close()
+        }
+        
+        // Remove event listeners
+        for _, listener := range mw.listeners {
+            listener()
+        }
+        
+        // Clear references
+        mw.db = nil
+        mw.listeners = nil
+    })
+}
+```
+
+## 聚焦事件
+
+### OnFocus
+
+當視窗獲得焦點時呼叫：
+
+```go
+window.OnFocus(func() {
+    fmt.Println("Window gained focus")
+    
+    // Update UI
+    updateTitleBar(true)
+    
+    // Refresh data
+    refreshContent()
+    
+    // Notify other windows
+    app.Event.Emit("window-focused", window.ID())
+})
+```
+
+**使用情境：**
+- 更新 UI 外觀
+- 重新整理資料
+- 恢復操作
+- 與其他視窗協調
+
+### OnBlur
+
+當視窗失去焦點時呼叫：
+
+```go
+window.OnBlur(func() {
+    fmt.Println("Window lost focus")
+    
+    // Update UI
+    updateTitleBar(false)
+    
+    // Pause operations
+    pauseAnimations()
+    
+    // Save state
+    saveCurrentState()
+})
+```
+
+**使用情境：**
+- 更新 UI 外觀
+- 暫停操作
+- 儲存狀態
+- 降低資源使用量
+
+**範例：具備聚焦感知的 UI：**
+
+```go
+type FocusAwareWindow struct {
+    window  *application.WebviewWindow
+    focused bool
+}
+
+func (fw *FocusAwareWindow) Setup() {
+    fw.window.OnFocus(func() {
+        fw.focused = true
+        fw.updateAppearance()
+    })
+    
+    fw.window.OnBlur(func() {
+        fw.focused = false
+        fw.updateAppearance()
+    })
+}
+
+func (fw *FocusAwareWindow) updateAppearance() {
+    if fw.focused {
+        fw.window.EmitEvent("update-theme", "active")
+    } else {
+        fw.window.EmitEvent("update-theme", "inactive")
+    }
+}
+```
+
+## 狀態變更事件
+
+### OnMinimise / OnUnMinimise
+
+當視窗最小化或還原時呼叫：
+
+```go
+window.OnMinimise(func() {
+    fmt.Println("Window minimised")
+    
+    // Pause expensive operations
+    pauseRendering()
+    
+    // Save state
+    saveWindowState()
+})
+
+window.OnUnMinimise(func() {
+    fmt.Println("Window restored from minimised")
+    
+    // Resume operations
+    resumeRendering()
+    
+    // Refresh data
+    refreshContent()
+})
+```
+
+**使用情境：**
+- 暫停/恢復操作
+- 儲存/還原狀態
+- 降低資源使用量
+- 更新 UI
+
+### OnMaximise / OnUnMaximise
+
+當視窗最大化或還原時呼叫：
+
+```go
+window.OnMaximise(func() {
+    fmt.Println("Window maximised")
+    
+    // Adjust layout
+    window.EmitEvent("layout-mode", "maximised")
+    
+    // Update button icon
+    updateMaximiseButton("restore")
+})
+
+window.OnUnMaximise(func() {
+    fmt.Println("Window restored from maximised")
+    
+    // Adjust layout
+    window.EmitEvent("layout-mode", "normal")
+    
+    // Update button icon
+    updateMaximiseButton("maximise")
+})
+```
+
+**使用情境：**
+- 調整版面配置
+- 更新 UI
+- 儲存視窗狀態
+- 與其他視窗協調
+
+### OnFullscreen / OnUnFullscreen
+
+當視窗進入或退出全螢幕模式時呼叫：
+
+```go
+window.OnFullscreen(func() {
+    fmt.Println("Window entered fullscreen")
+    
+    // Hide UI chrome
+    window.EmitEvent("chrome-visibility", false)
+    
+    // Adjust layout
+    window.EmitEvent("layout-mode", "fullscreen")
+})
+
+window.OnUnFullscreen(func() {
+    fmt.Println("Window exited fullscreen")
+    
+    // Show UI chrome
+    window.EmitEvent("chrome-visibility", true)
+    
+    // Restore layout
+    window.EmitEvent("layout-mode", "normal")
+})
+```
+
+**使用情境：**
+- 顯示/隱藏 UI 元素
+- 調整版面配置
+- 更新控制項
+- 儲存偏好設定
+
+## 位置與大小事件
+
+### OnMove
+
+當視窗移動時呼叫：
+
+```go
+window.OnMove(func(x, y int) {
+    fmt.Printf("Window moved to: %d, %d\n", x, y)
+    
+    // Save position
+    saveWindowPosition(x, y)
+    
+    // Update related windows
+    updateRelatedWindowPositions(x, y)
+})
+```
+
+**使用情境：**
+- 儲存視窗位置
+- 更新相關視窗
+- 貼齊邊緣
+- 多螢幕處理
+
+### OnResize
+
+當視窗調整大小時呼叫：
+
+```go
+window.OnResize(func(width, height int) {
+    fmt.Printf("Window resized to: %dx%d\n", width, height)
+    
+    // Save size
+    saveWindowSize(width, height)
+    
+    // Adjust layout
+    window.EmitEvent("window-size", map[string]int{
+        "width":  width,
+        "height": height,
+    })
+})
+```
+
+**使用情境：**
+- 儲存視窗大小
+- 調整版面配置
+- 更新 UI
+- 響應式設計
+
+**範例：響應式版面配置：**
+
+```go
+window.OnResize(func(width, height int) {
+    var layout string
+    
+    if width < 600 {
+        layout = "compact"
+    } else if width < 1200 {
+        layout = "normal"
+    } else {
+        layout = "wide"
+    }
+    
+    window.EmitEvent("layout-changed", layout)
+})
+```
+
+## 完整範例
+
+以下是一個具備完整事件處理的生產環境級視窗範例：
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+    "os"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type WindowState struct {
+    X          int  `json:"x"`
+    Y          int  `json:"y"`
+    Width      int  `json:"width"`
+    Height     int  `json:"height"`
+    Maximised  bool `json:"maximised"`
+    Fullscreen bool `json:"fullscreen"`
+}
+
+type ManagedWindow struct {
+    app     *application.Application---
+
+**有問題嗎？** 請在 [Discord](https://discord.gg/JDdSxwjhGf) 上提問或查看 [範例](https://github.com/wailsapp/wails/tree/master/v3/examples)。

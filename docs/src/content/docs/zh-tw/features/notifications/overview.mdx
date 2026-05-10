@@ -1,0 +1,303 @@
+---
+title: 通知
+description: 顯示帶有動作按鈕和文字輸入的原生系統通知
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 簡介
+
+Wails 為桌面應用程式提供了一套全面的跨平台通知系統。此服務允許您顯示原生系統通知，並支援互動元素，例如動作按鈕和文字輸入欄位。
+
+## 基本用法
+
+### 建立服務
+
+首先，初始化通知服務：
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/notifications"
+
+// 建立新的通知服務
+notifier := notifications.New()
+
+//將服務註冊到應用程式
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(notifier),
+    },
+})
+```
+
+## 通知授權
+
+macOS 上的通知需要使用者授權。請請求並檢查授權狀態：
+
+```go
+authorized, err := notifier.CheckNotificationAuthorization()
+if err != nil {
+    // 處理授權錯誤
+}
+if authorized {
+    // 發送通知
+} else {
+    // 請求授權
+    authorized, err = notifier.RequestNotificationAuthorization()
+}
+```
+在 Windows 和 Linux 上，此方法始終返回 `true`。
+
+## 通知類型
+
+### 基本通知
+
+向使用者發送帶有唯一 ID、標題、可選副標題（macOS 和 Linux）以及主體文字的基本通知：
+
+```go
+notifier.SendNotification(notifications.NotificationOptions{
+    ID: "unique-id",
+    Title: "New Calendar Invite",
+    Subtitle: "From: Jane Doe", // 可選
+    Body: "Tap to view the event",
+})
+
+```
+
+### 互動式通知
+發送帶有動作按鈕和文字輸入的通知。這些通知需要先註冊一個通知類別：
+
+```go
+// 定義唯一的類別 ID
+categoryID := "unique-category-id"
+
+// 定義帶有動作的類別
+category := notifications.NotificationCategory{
+    ID: categoryID,
+    Actions: []notifications.NotificationAction{
+        {
+            ID:    "OPEN", 
+            Title: "Open",
+        },
+        {
+            ID:          "ARCHIVE", 
+            Title:       "Archive", 
+            Destructive: true,  /* macOS-specific */
+        },
+    },
+    HasReplyField:    true,
+    ReplyPlaceholder: "message...",
+    ReplyButtonTitle: "Reply",
+}
+
+// 註冊該類別
+notifier.RegisterNotificationCategory(category)
+
+// 發送帶有在所提供的類別中註冊之動作的互動式通知
+notifier.SendNotificationWithActions(notifications.NotificationOptions{
+    ID:         "unique-id",
+    Title:      "New Message",
+    Subtitle:   "From: Jane Doe",
+    Body:       "Are you able to make it?",
+    CategoryID: categoryID,
+})
+```
+
+## 通知回應
+
+處理使用者與通知的互動：
+
+```go
+notifier.OnNotificationResponse(func(result notifications.NotificationResult) {
+    response := result.Response
+    fmt.Printf("Notification %s was actioned with: %s\n", response.ID, response.ActionIdentifier)
+
+    if response.ActionIdentifier == "TEXT_REPLY" {
+        fmt.Printf("User replied: %s\n", response.UserText)
+    }
+
+    if data, ok := response.UserInfo["sender"].(string); ok {
+        fmt.Printf("Original sender: %s\n", data)
+    }
+
+    // 向前端發送事件
+    app.Event.Emit("notification", result.Response)
+})
+```
+
+## 通知自訂
+
+### 自訂中繼資料
+
+基本通知和互動式通知均可包含自訂數據：
+
+```go
+notifier.SendNotification(notifications.NotificationOptions{
+    ID: "unique-id",
+    Title: "New Calendar Invite",
+    Subtitle: "From: Jane Doe", // 可選
+    Body: "Tap to view the event",
+    Data: map[string]interface{}{
+        "sender": "jane.doe@example.com",
+        "timestamp": "2025-03-10T15:30:00Z",
+    }
+})
+
+```
+
+## 平台注意事項
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    在 macOS 上，通知：
+    
+    - 需要使用者授權
+    - 需要應用程式進行簽署以進行分發
+    - 使用系統標準的通知外觀
+    - 支援 `subtitle`
+    - 支援使用者文字輸入
+    - 支援 `Destructive` 動作選項
+    - 自動處理深色/淺色模式
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    在 Windows 上，通知：
+    
+    - 使用 Windows 系統快顯通知樣式
+    - 適應 Windows 主題設定
+    - 支援使用者文字輸入
+    - 支援高 DPI 顯示器
+    - 不支援 `subtitle`
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    在 Linux 上，對話框行為取決於桌面環境：
+    
+    - 在可用時使用原生通知
+    - 遵循桌面環境主題
+    - 根據桌面環境規則定位
+    - 支援 `subtitle`
+    - 不支援使用者文字輸入
+    
+  </TabItem>
+</Tabs>
+
+## 最佳實踐
+
+1. 檢查並請求授權：
+   - macOS 需要使用者授權
+
+2. 提供清晰簡潔的通知：
+   - 使用描述性的標題、副標題、文字和動作標題
+
+3. 適當處理對話框回應：
+   - 檢查通知回應中的錯誤
+   - 為使用者動作提供反饋
+
+4. 考慮平台慣例：
+   - 遵循特定平台的通知模式
+   - 尊重系統設定
+
+## 範例
+
+探索此範例：
+
+- [Notifications](/examples/notifications)
+
+## API 參考
+
+### 服務管理
+| 方法                                     | 描述                                           |
+|--------------------------------------------|-------------------------------------------------------|
+| `New()`                                    | 建立新的通知服務                   |
+
+### 通知授權
+| 方法                                       | 描述                                                |
+|----------------------------------------------|------------------------------------------------------------|
+| `RequestNotificationAuthorization()`         | 請求顯示通知的權限 (macOS)       |
+| `CheckNotificationAuthorization()`           | 檢查目前的通知授權狀態 (macOS)   |
+
+### 發送通知
+| 方法                                                     | 描述                                       |
+|------------------------------------------------------------|---------------------------------------------------|
+| `SendNotification(options NotificationOptions)`            | 發送基本通知                        |
+| `SendNotificationWithActions(options NotificationOptions)` | 發送帶有動作的互動式通知    |
+
+### 通知類別
+| 方法                                                        | 描述                                       |
+|---------------------------------------------------------------|---------------------------------------------------|
+| `RegisterNotificationCategory(category NotificationCategory)` | 註冊可重複使用的通知類別        |
+| `RemoveNotificationCategory(categoryID string)`               | 移除先前註冊的類別          |------|------------------------------------------------------------|
+| `RemoveAllPendingNotifications()`               | 移除所有待處理的通知（僅限 macOS 和 Linux）            |
+| `RemovePendingNotification(identifier string)`  | 移除特定的待處理通知（僅限 macOS 和 Linux）      |
+| `RemoveAllDeliveredNotifications()`             | 移除所有已送達的通知（僅限 macOS 和 Linux）          |
+| `RemoveDeliveredNotification(identifier string)`| 移除特定的已送達通知（僅限 macOS 和 Linux）    |
+| `RemoveNotification(identifier string)`         | 移除通知（僅限 Linux）                             |
+
+### 事件處理
+| 方法                                                             | 說明                                     |
+|------|------------------------------------------------------------|
+| `OnNotificationResponse(callback func(result NotificationResult))` | 註冊通知回應的回呼函式 |
+
+### 結構與型別
+
+#### NotificationOptions
+```go
+type NotificationOptions struct {
+    ID         string                 // 通知的唯一識別碼
+    Title      string                 // 通知的主要標題
+    Subtitle   string                 // 副標題文字（僅限 macOS 和 Linux）
+    Body       string                 // 通知的主要內容
+    CategoryID string                 // 互動式通知的類別識別碼
+    Data       map[string]interface{} // 與通知關聯的自訂資料
+}
+```
+
+#### NotificationCategory 
+```go
+type NotificationCategory struct {
+    ID               string                // 類別的唯一識別碼
+    Actions          []NotificationAction  // 通知的按鈕動作
+    HasReplyField    bool                  // 是否包含文字輸入欄位
+    ReplyPlaceholder string                // 輸入欄位的佔位符文字
+    ReplyButtonTitle string                // 回覆按鈕的文字
+}
+```
+
+#### NotificationAction
+```go
+type NotificationAction struct {
+    ID          string  // 動作的唯一識別碼
+    Title       string  // 按鈕文字
+    Destructive bool    // 該動作是否為破壞性（僅限 macOS）
+}
+```
+
+#### NotificationResponse 
+```go
+type NotificationResponse struct {
+    ID               string                  // 通知識別碼
+    ActionIdentifier string                  // 觸發的動作
+    CategoryID       string                  // 通知的類別
+    Title            string                  // 通知的標題
+    Subtitle         string                  // 通知的副標題
+    Body             string                  // 通知的主體文字
+    UserText         string                  // 使用者輸入的文字
+    UserInfo         map[string]interface{}  // 來自通知的自訂資料
+}
+```
+
+#### NotificationResult
+```go
+type NotificationResult struct {
+    Response NotificationResponse  // 回應資料
+    Error    error                 // 發生的任何錯誤
+}
+```

@@ -1,0 +1,510 @@
+---
+title: 瀏覽器整合
+description: 在使用者的預設網頁瀏覽器中開啟 URL 和檔案
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails 透過 `BrowserManager` API 提供簡易的瀏覽器整合功能，允許您的應用程式在使用者的預設網頁瀏覽器中開啟 URL 和檔案。這對於開啟外部連結、文件或需要由瀏覽器處理的檔案非常有用。
+
+## 存取瀏覽器管理器
+
+瀏覽器管理器可透過應用程式實例上的 `Browser` 屬性來存取：
+
+```go
+app := application.New(application.Options{
+    Name: "Browser Integration Demo",
+})
+
+// 存取瀏覽器管理器
+browser := app.Browser
+```
+
+## 開啟 URL
+
+### 開啟網頁 URL
+
+在使用者的預設網頁瀏覽器中開啟 URL：
+
+```go
+// 開啟網站
+err := app.Browser.OpenURL("https://wails.io")
+if err != nil {
+    app.Logger.Error("Failed to open URL", "error", err)
+}
+
+// 開啟特定頁面
+err = app.Browser.OpenURL("https://github.com/wailsapp/wails")
+if err != nil {
+    app.Logger.Error("Failed to open GitHub", "error", err)
+}
+```
+
+### 開啟本機 URL
+
+開啟本機開發伺服器或本機網路資源：
+
+```go
+// 開啟本機開發伺服器
+err := app.Browser.OpenURL("http://localhost:3000")
+if err != nil {
+    app.Logger.Error("Failed to open local server", "error", err)
+}
+
+// 開啟網路資源
+err = app.Browser.OpenURL("http://192.168.1.100:8080")
+if err != nil {
+    app.Logger.Error("Failed to open network resource", "error", err)
+}
+```
+
+## 開啟檔案
+
+### 開啟 HTML 檔案
+
+在瀏覽器中開啟本機 HTML 檔案：
+
+```go
+// 開啟 HTML 檔案
+err := app.Browser.OpenFile("/path/to/documentation.html")
+if err != nil {
+    app.Logger.Error("Failed to open HTML file", "error", err)
+}
+
+// 開啟產生的報告
+reportPath := "/tmp/report.html"
+err = app.Browser.OpenFile(reportPath)
+if err != nil {
+    app.Logger.Error("Failed to open report", "error", err)
+}
+```
+
+### 開啟其他檔案類型
+
+開啟瀏覽器可以處理的各種檔案類型：
+
+```go
+// 開啟 PDF 檔案
+err := app.Browser.OpenFile("/path/to/document.pdf")
+if err != nil {
+    app.Logger.Error("Failed to open PDF", "error", err)
+}
+
+// 開啟影像檔案
+err = app.Browser.OpenFile("/path/to/image.png")
+if err != nil {
+    app.Logger.Error("Failed to open image", "error", err)
+}
+
+// 開啟文字檔案
+err = app.Browser.OpenFile("/path/to/readme.txt")
+if err != nil {
+    app.Logger.Error("Failed to open text file", "error", err)
+}
+```
+
+## 常見使用情境
+
+### 說明與文件
+
+提供對說明資源的輕鬆存取：
+
+```go
+// 建立說明選單
+func setupHelpMenu(app *application.App) {
+    menu := app.Menu.New()
+    helpMenu := menu.AddSubmenu("Help")
+    
+    helpMenu.Add("Online Documentation").OnClick(func(ctx *application.Context) {
+        err := app.Browser.OpenURL("https://docs.yourapp.com")
+        if err != nil {
+            app.Dialog.Error().
+                SetTitle("Error").
+                SetMessage("Could not open documentation").
+                Show()
+        }
+    })
+    
+    helpMenu.Add("GitHub Repository").OnClick(func(ctx *application.Context) {
+        app.Browser.OpenURL("https://github.com/youruser/yourapp")
+    })
+    
+    helpMenu.Add("Report Issue").OnClick(func(ctx *application.Context) {
+        app.Browser.OpenURL("https://github.com/youruser/yourapp/issues/new")
+    })
+}
+```
+
+### 內容中的外部連結
+
+處理來自應用程式內容的外部連結：
+
+```go
+func handleExternalLink(app *application.App, url string) {
+    // 在開啟前驗證 URL
+    if !isValidURL(url) {
+        app.Logger.Warn("Invalid URL", "url", url)
+        return
+    }
+    
+    // 可選：向使用者確認
+    dialog := app.Dialog.Question()
+    dialog.SetTitle("Open External Link")
+    dialog.SetMessage(fmt.Sprintf("Open %s in your browser?", url))
+    
+    dialog.AddButton("Open").OnClick(func() {
+        err := app.Browser.OpenURL(url)
+        if err != nil {
+            app.Logger.Error("Failed to open URL", "url", url, "error", err)
+        }
+    })
+    
+    dialog.AddButton("Cancel")
+    dialog.Show()
+}
+
+func isValidURL(url string) bool {
+    parsed, err := url.Parse(url)
+    return err == nil && (parsed.Scheme == "http" || parsed.Scheme == "https")
+}
+```
+
+### 匯出與檢視報告
+
+在瀏覽器中產生並開啟報告：
+
+```go
+import (
+    "html/template"
+    "os"
+    "path/filepath"
+)
+
+func generateAndOpenReport(app *application.App, data interface{}) error {
+    // 為報告建立暫存檔案
+    tmpDir := os.TempDir()
+    reportPath := filepath.Join(tmpDir, "report.html")
+    
+    // 產生 HTML 報告
+    tmpl := `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Application Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .header { border-bottom: 2px solid #333; padding-bottom: 10px; }
+        .data { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Application Report</h1>
+        <p>Generated: {{.Timestamp}}</p>
+    </div>
+    <div class="data">
+        <!-- Report content here -->
+        {{range .Items}}
+        <p>{{.}}</p>
+        {{end}}
+    </div>
+</body>
+</html>`
+    
+    // 將報告寫入檔案
+    file, err := os.Create(reportPath)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+    
+    t, err := template.New("report").Parse(tmpl)
+    if err != nil {
+        return err
+    }
+    
+    err = t.Execute(file, data)
+    if err != nil {
+        return err
+    }
+    
+    // 在瀏覽器中開啟
+    return app.Browser.OpenFile(reportPath)
+}
+```
+
+### 開發工具
+
+在開發期間開啟開發資源：
+
+```go
+func setupDevelopmentMenu(app *application.App) {
+    if !app.Env.Info().Debug {
+        return // 僅在除錯模式下顯示
+    }
+    
+    menu := app.Menu.New()
+    devMenu := menu.AddSubmenu("Development")
+    
+    devMenu.Add("Open DevTools").OnClick(func(ctx *application.Context) {
+        // 這會開啟瀏覽器開發人員工具（如果可用）
+        window := app.Window.Current()
+        if window != nil {
+            window.OpenDevTools()
+        }
+    })
+    
+    devMenu.Add("View Source").OnClick(func(ctx *application.Context) {
+        // 開啟原始碼存放庫
+        app.Browser.OpenURL("https://github.com/youruser/yourapp")
+    })
+    
+    devMenu.Add("API Documentation").OnClick(func(ctx *application.Context) {
+        // 開啟本機 API 文件
+        app.Browser.OpenURL("http://localhost:8080/docs")
+    })
+}
+```
+
+## 錯誤處理
+
+### 優雅的錯誤處理
+
+在開啟 URL 或檔案時，務必處理潛在的錯誤：
+
+```go
+func openURLWithFallback(app *application.App, url string, fallbackMessage string) {
+    err := app.Browser.OpenURL(url)
+    if err != nil {
+        app.Logger.Error("Failed to open URL", "url", url, "error", err)
+        
+        // 顯示包含 URL 的備用對話框
+        dialog := app.Dialog.Info()
+        dialog.SetTitle("Unable to Open Link")
+        dialog.SetMessage(fmt.Sprintf("%s\n\nURL: %s", fallbackMessage, url))
+        dialog.Show()
+    }
+}
+
+// 用法
+openURLWithFallback(app, 
+    "https://docs.example.com", 
+    "Please open the following URL manually in your browser:")
+```
+
+### 使用者回饋
+
+在操作成功或失敗時提供回饋：
+
+```go
+func openURLWithFeedback(app *application.App, url string) {
+    err := app.Browser.OpenURL(url)
+    if err != nil {
+        // 顯示錯誤對話框
+        app.Dialog.Error().
+            SetTitle("Browser Error").
+            SetMessage(fmt.Sprintf("Could not open URL: %s", err.Error())).
+            Show()
+    } else {
+        // 可選：顯示成功通知
+        app.Logger.Info("URL opened successfully", "url", url)
+    }
+}
+```
+
+## 平台注意事項
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    在 macOS 上：
+    
+    - 使用 `open` 指令來啟動預設瀏覽器- 尊重系統偏好設定中的預設瀏覽器設定
+- 若應用程式處於沙盒模式，可能會提示請求權限
+- 正確處理用於本機檔案的 `file://` URL
+  
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    在 Windows 上：
+    
+    - 使用 Windows Shell API 開啟 URL
+    - 尊重 Windows 設定中的預設瀏覽器設定
+    - 正確處理 Windows 路徑格式
+    - 對於不受信任的 URL 可能會顯示安全警告
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    在 Linux 上：
+    
+    - 優先嘗試使用 `xdg-open`，若失敗則回退至其他方法
+    - 行為因桌面環境而異
+    - 若已設定 `BROWSER` 環境變數，則會尊重該變數
+    - 在最小化安裝中可能需要額外的套件
+    
+  </TabItem>
+</Tabs>
+
+## 最佳實踐
+
+1. **務必處理錯誤**：瀏覽器操作可能因各種原因失敗：
+   ```go
+   if err := app.Browser.OpenURL(url); err != nil {
+       app.Logger.Error("Failed to open browser", "error", err)
+       // 提供備援方案或使用者通知
+   }
+   ```
+
+2. **驗證 URL**：在開啟之前確保 URL 格式正確：
+   ```go
+   func isValidHTTPURL(str string) bool {
+       u, err := url.Parse(str)
+       return err == nil && (u.Scheme == "http" || u.Scheme == "https")
+   }
+   ```
+
+3. **使用者確認**：對於外部連結，建議詢問使用者權限：
+   ```go
+   // 在開啟外部連結前顯示確認對話框
+   confirmAndOpen(app, "https://external-site.com")
+   ```
+
+4. **安全的檔案路徑**：在開啟檔案時，確保路徑是安全的：
+   ```go
+   func openSafeFile(app *application.App, filename string) error {
+       // 確保檔案存在且可讀
+       if _, err := os.Stat(filename); err != nil {
+           return err
+       }
+       return app.Browser.OpenFile(filename)
+   }
+   ```
+
+## 完整範例
+
+以下是一個展示各種瀏覽器整合模式的完整範例：
+
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+    "path/filepath"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Browser Integration Demo",
+    })
+
+    // 設定包含瀏覽器操作的選單
+    setupMenu(app)
+
+    // 建立主視窗
+    window := app.Window.New()
+    window.SetTitle("Browser Integration")
+
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
+}
+
+func setupMenu(app *application.App) {
+    menu := app.Menu.New()
+    
+    // 檔案選單
+    fileMenu := menu.AddSubmenu("File")
+    fileMenu.Add("Generate Report").OnClick(func(ctx *application.Context) {
+        generateHTMLReport(app)
+    })
+    
+    // 說明選單
+    helpMenu := menu.AddSubmenu("Help")
+    helpMenu.Add("Documentation").OnClick(func(ctx *application.Context) {
+        openWithConfirmation(app, "https://docs.example.com")
+    })
+    helpMenu.Add("Support").OnClick(func(ctx *application.Context) {
+        openWithConfirmation(app, "https://support.example.com")
+    })
+    
+    app.Menu.Set(menu)
+}
+
+func openWithConfirmation(app *application.App, url string) {
+    dialog := app.Dialog.Question()
+    dialog.SetTitle("Open External Link")
+    dialog.SetMessage(fmt.Sprintf("Open %s in your browser?", url))
+    
+    dialog.AddButton("Open").OnClick(func() {
+        if err := app.Browser.OpenURL(url); err != nil {
+            showError(app, "Failed to open URL", err)
+        }
+    })
+    
+    dialog.AddButton("Cancel")
+    dialog.Show()
+}
+
+func generateHTMLReport(app *application.App) {
+    // 建立暫態 HTML 檔案
+    tmpDir := os.TempDir()
+    reportPath := filepath.Join(tmpDir, "demo_report.html")
+    
+    html := `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Demo Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .header { color: #333; border-bottom: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Application Report</h1>
+        <p>This is a sample report generated by the application.</p>
+    </div>
+    <div class="content">
+        <h2>Report Details</h2>
+        <p>This report was generated to demonstrate browser integration.</p>
+    </div>
+</body>
+</html>`
+    
+    err := os.WriteFile(reportPath, []byte(html), 0644)
+    if err != nil {
+        showError(app, "Failed to create report", err)
+        return
+    }
+    
+    // 在瀏覽器中開啟
+    err = app.Browser.OpenFile(reportPath)
+    if err != nil {
+        showError(app, "Failed to open report", err)
+    }
+}
+
+func showError(app *application.App, message string, err error) {
+    app.Dialog.Error().
+        SetTitle("Error").
+        SetMessage(fmt.Sprintf("%s: %v", message, err)).
+        Show()
+}
+```
+
+:::tip[專業提示]
+考慮提供備援機制，以防瀏覽器操作失敗，例如將 URL 複製到剪貼簿或在對話框中顯示以供手動開啟。
+:::
+
+:::danger[警告]
+在開啟 URL 和檔案路徑之前務必進行驗證，以預防安全問題。對於未經驗證的使用者提供的 URL，請謹慎處理。
+:::

@@ -1,0 +1,263 @@
+---
+title: 使用 Gin 進行路由
+description: 將 Gin Web 框架整合至 Wails v3 應用程式的完整指南
+---
+
+本指南示範如何將 [Gin Web 框架](https://github.com/gin-gonic/gin) 整合至 Wails v3。Gin 是一個以 Go 語言編寫的高效能 HTTP Web 框架，能讓您輕鬆建構 Web 應用程式與 API。
+
+## 簡介
+
+Wails v3 提供了一個靈活的資產系統，允許您使用任何 HTTP 處理器，包括像 Gin 這樣流行的 Web 框架。此整合使您能夠：
+
+- 使用 Gin 的路由和中間件來提供 Web 內容
+- 建立可從 Wails 應用程式存取的 RESTful API
+- 在保持 Wails 桌面整合的同時使用 Gin 的功能
+
+## 在 Wails 中設定 Gin
+
+要將 Gin 整合至 Wails，您需要建立一個 Gin 路由器，並將其設定為 Wails 應用程式中的資產處理器。以下是逐步指南：
+
+### 1. 安裝相依套件
+
+首先，確保您已安裝 Gin 套件：
+
+```bash
+go get -u github.com/gin-gonic/gin
+```
+
+### 2. 為 Gin 建立中間件
+
+建立一個將處理 Wails 與 Gin 之間整合的中間件函式：
+
+```go
+// GinMiddleware 建立一個將請求傳遞給 Gin 的中間件（如果該請求不由 Wails 處理）
+func GinMiddleware(ginEngine *gin.Engine) application.Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// 讓 Wails 處理 `/wails` 路由
+			if strings.HasPrefix(r.URL.Path, "/wails") {
+				next.ServeHTTP(w, r)
+				return
+			}
+			// 讓 Gin 處理其餘所有請求
+			ginEngine.ServeHTTP(w, r)
+		})
+	}
+}
+```
+
+此中間件會將所有 HTTP 請求傳遞給 Gin 路由器。
+
+### 3. 設定您的 Gin 路由器
+
+使用路由、中間件和處理器來設定您的 Gin 路由器：
+
+```go
+// 建立新的 Gin 路由器
+ginEngine := gin.New() // 使用 New() 而非 Default() 以加入自訂中間件
+
+// 加入中間件
+ginEngine.Use(gin.Recovery())
+ginEngine.Use(LoggingMiddleware()) // 您的自訂中間件
+
+// 定義路由
+ginEngine.GET("/", func(c *gin.Context) {
+    // 提供您的主頁面
+})
+
+ginEngine.GET("/api/hello", func(c *gin.Context) {
+    c.JSON(http.StatusOK, gin.H{
+        "message": "Hello from Gin API!",
+        "time":    time.Now().Format(time.RFC3339),
+    })
+})
+```
+
+### 4. 與 Wails 應用程式整合
+
+設定您的 Wails 應用程式以使用 Gin 路由器作為其資產處理器：
+
+```go
+// 建立新的 Wails 應用程式
+app := application.New(application.Options{
+    Name:        "Gin Example",
+    Description: "A demo of using Gin with Wails",
+    Mac: application.MacOptions{
+        ApplicationShouldTerminateAfterLastWindowClosed: true,
+    },
+    Assets: application.AssetOptions{
+        Handler:    ginEngine,
+        Middleware: GinMiddleware(ginEngine),
+    },
+})
+
+// 建立視窗
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:    "Wails + Gin Example",
+    Width:    900,
+    Height:   700,
+    URL:      "/", // 這將載入由 Gin 處理的路由
+})
+```
+
+## 提供靜態內容
+
+使用 Go 的 `embed` 套件將靜態檔案嵌入至您的二進位檔中：
+
+```go
+//go:embed static
+var staticFiles embed.FS
+
+ginEngine.StaticFS("/static", http.FS(staticFiles))
+ginEngine.GET("/", func(c *gin.Context) {
+    file, _ := staticFiles.ReadFile("static/index.html")
+    c.Data(http.StatusOK, "text/html; charset=utf-8", file)
+})
+```
+
+在開發階段，使用 `ginEngine.Static("/static", "./static")` 直接從磁碟提供檔案。
+
+## 自訂中間件
+
+Gin 允許您為各種目的建立自訂中間件。以下是記錄中間件的範例：
+
+```go
+// LoggingMiddleware 是一個記錄請求詳細資訊的 Gin 中間件
+func LoggingMiddleware() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        // 開始計時
+        startTime := time.Now()
+
+        // 處理請求
+        c.Next()
+
+        // 計算延遲時間
+        latency := time.Since(startTime)
+
+        // 記錄請求詳細資訊
+        log.Printf("[GIN] %s | %s | %s | %d | %s",
+            c.Request.Method,
+            c.Request.URL.Path,
+            c.ClientIP(),
+            c.Writer.Status(),
+            latency,
+        )
+    }
+}
+```
+
+## 處理 API 請求
+
+Gin 讓建立 RESTful API 變得非常容易。以下是如何定義 API 端點的方法：
+
+```go
+// GET 端點
+ginEngine.GET("/api/users", func(c *gin.Context) {
+    c.JSON(http.StatusOK, users)
+})
+
+// 帶有 JSON 繫結的 POST 端點
+ginEngine.POST("/api/users", func(c *gin.Context) {
+    var newUser User
+    if err := c.ShouldBindJSON(&newUser); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    // 處理新使用者...
+    c.JSON(http.StatusCreated, newUser)
+})
+
+// 路徑參數
+ginEngine.GET("/api/users/:id", func(c *gin.Context) {
+    id := c.Param("id")
+    // 依 ID 尋找使用者...
+    c.JSON(http.StatusOK, user)
+})
+
+// 查詢參數
+ginEngine.GET("/api/search", func(c *gin.Context) {
+    query := c.DefaultQuery("q", "")
+    limit := c.DefaultQuery("limit", "10")
+    // 執行搜尋...
+    c.JSON(http.StatusOK, results)
+})
+```
+
+## 使用 Wails 功能
+
+您的由 Gin 提供的 Web 內容可以使用 `@wailsio/runtime` 套件與 Wails 功能進行互動。
+
+### 事件處理
+
+在 Go 中註冊事件處理器：
+
+```go
+app.Event.On("my-event", func(event *application.CustomEvent) {
+    log.Printf("Received event: %v", event.Data)
+})
+```
+
+使用 runtime 從 JavaScript 呼叫：
+
+```html
+<script type="module">
+    import { Events } from '@wailsio/runtime';
+
+    Events.Emit("my-event", { message: "Hello from frontend" });
+    Events.On("response-event", (data) => console.log(data));
+</script>
+```
+
+## 進階設定
+
+### 自訂 Gin 的模式
+
+將 Gin 設定為生產環境的 release 模式：
+
+```go
+gin.SetMode(gin.ReleaseMode)  // 開發時使用 gin.DebugMode
+ginEngine := gin.New()
+```
+
+### 處理 WebSocket
+
+您可以使用像 Gorilla WebSocket 這樣的套件將 WebSocket 整合至 Gin：
+
+```go
+import "github.com/gorilla/websocket"
+
+var upgrader = websocket.Upgrader{
+    ReadBufferSize:  1024,
+    WriteBufferSize: 1024,
+    CheckOrigin: func(r *http.Request) bool {
+        return true // 允許所有連線
+    },
+}
+
+// 在您的路由處理器中：
+ginEngine.GET("/ws", func(c *gin.Context) {
+    conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+    if err != nil {
+        log.Println(err)
+        return
+    }
+    defer conn.Close()
+    
+    // 處理 WebSocket 連線...
+})
+```
+
+## 最佳實踐
+
+- **使用 Go 的 embed 套件：** 將靜態檔案嵌入至您的二進位檔中，以獲得更好的分發效果。
+- **關注點分離：** 將您的 API 邏輯與 UI 邏輯分開。
+- **錯誤處理：** 在 Gin 路由和前端程式碼中都實施適當的錯誤處理。
+- **安全性：** 留意安全性考量，特別是在處理使用者輸入時。
+- **效能：** 在生產環境中使用 Gin 的 release 模式以獲得更好的效能。
+- **測試：** 使用 Gin 的測試工具為您的 Gin 路由撰寫測試。
+
+## 結論
+
+將 Gin 整合至 Wails 為使用 Web 技術建構桌面應用程式提供了強大的組合。Gin 的效能和功能集補充了 Wails 的桌面整合能力，使您能夠建立結合兩者優點的高級應用程式。
+
+如需更多資訊，請參考 [Gin 文件](https://github.com/gin-gonic/gin) 和 [Wails 文件](https://wails.io)。

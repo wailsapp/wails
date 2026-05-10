@@ -1,0 +1,684 @@
+---
+title: 程式碼簽署
+description: 指南說明如何在所有平台上簽署您的 Wails 應用程式
+sidebar:
+  order: 6
+---
+
+import { Tabs, TabItem, Steps, Aside } from '@astrojs/starlight/components';
+
+# 簽署您的應用程式
+
+本指南涵蓋如何為 macOS、Windows 和 Linux 簽署您的 Wails 應用程式。Wails v3 提供了內建的 CLI 工具，用於程式碼簽署、程式碼驗證（notarization）以及 PGP 金鑰管理。
+
+- **macOS** - 簽署並驗證您的 macOS 應用程式
+- **Windows** - 簽署您的 Windows 執行檔和套件
+- **Linux** - 使用 PGP 金鑰簽署 DEB 和 RPM 套件
+
+## 跨平台簽署矩陣
+
+此矩陣顯示您可以從每個來源平台簽署的內容：
+
+| 目標格式 | 來自 Windows | 來自 macOS | 來自 Linux |
+|---------------|:------------:|:----------:|:----------:|
+| Windows EXE/MSI | ✅ | ✅ | ✅ |
+| macOS .app bundle | ❌ | ✅ | ❌ |
+| macOS 程式碼驗證 | ❌ | ✅ | ❌ |
+| Linux DEB | ✅ | ✅ | ✅ |
+| Linux RPM | ✅ | ✅ | ✅ |
+
+<Aside type="tip">
+Windows 和 Linux 套件可以從**任何平台**進行簽署。macOS 簽署需要 Mac，因為 Apple 的工具需求。
+</Aside>
+
+### 簽署後端
+
+Wails 會自動選擇最佳可用的簽署後端：
+
+| 平台 | 原生後端 | 跨平台後端 |
+|----------|----------------|------------------------|
+| Windows | `signtool.exe` (Windows SDK) | 內建 |
+| macOS | `codesign` (Xcode) | 不可用 |
+| Linux | N/A | 內建 |
+
+當在原生平台上執行時，Wails 使用原生工具以獲得最大相容性。當進行跨平台編譯時，它使用內建的簽署支援。
+
+## 快速開始
+
+設定簽署最簡單的方式是使用互動式設定精靈：
+
+```bash
+wails3 setup signing
+```
+
+此命令：
+- 引導您為每個平台設定簽署憑證
+- 在 macOS 上，列出您鑰匙圈中可用的開發者 ID 憑證
+- 對於 Linux，如果您沒有金鑰，可以產生新的 PGP 金鑰
+- **將密碼安全地儲存在您的系統鑰匙圈中**（不在 Taskfiles 中）
+- 更新每個平台 Taskfile 中 `vars` 區段的不敏感設定
+
+<Aside type="tip">
+密碼儲存在您系統的原生憑證儲存庫中（macOS Keychain、Windows Credential Manager 或 Linux Secret Service）。這意味著您的簽署設定是安全的，並且可以在所有您的 Wails 專案中使用。
+</Aside>
+
+若要僅設定特定平台：
+
+```bash
+wails3 setup signing --platform darwin
+wails3 setup signing --platform windows --platform linux
+```
+
+### 手動設定
+
+或者，您可以手動編輯平台特定的 Taskfiles。編輯每個檔案頂部的 `vars` 區段：
+
+<Tabs>
+<TabItem label="macOS">
+編輯 `build/darwin/Taskfile.yml`：
+
+```yaml
+vars:
+  SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
+  KEYCHAIN_PROFILE: "my-notarize-profile"
+  # ENTITLEMENTS: "build/darwin/entitlements.plist"
+```
+
+然後執行：
+
+```bash
+wails3 task darwin:sign           # 僅簽署
+wails3 task darwin:sign:notarize  # 簽署並驗證
+```
+</TabItem>
+<TabItem label="Windows">
+編輯 `build/windows/Taskfile.yml`：
+
+```yaml
+vars:
+  SIGN_CERTIFICATE: "path/to/certificate.pfx"
+  # 或使用指紋代替：
+  # SIGN_THUMBPRINT: "certificate-thumbprint"
+  # TIMESTAMP_SERVER: "http://timestamp.digicert.com"
+```
+
+密碼從系統鑰匙圈擷取（執行 `wails3 setup signing` 進行設定）。
+
+然後執行：
+
+```bash
+wails3 task windows:sign           # 簽署執行檔
+wails3 task windows:sign:installer # 簽署 NSIS 安裝程式
+```
+</TabItem>
+<TabItem label="Linux">
+編輯 `build/linux/Taskfile.yml`：
+
+```yaml
+vars:
+  PGP_KEY: "path/to/signing-key.asc"
+  # SIGN_ROLE: "builder"  # 選項：origin, maint, archive, builder
+```
+
+密碼從系統鑰匙圈擷取（執行 `wails3 setup signing` 進行設定）。
+
+然後執行：
+
+```bash
+wails3 task linux:sign:deb       # 簽署 DEB 套件
+wails3 task linux:sign:rpm       # 簽署 RPM 套件
+wails3 task linux:sign:packages  # 簽署所有套件
+```
+</TabItem>
+</Tabs>
+
+您也可以直接使用 CLI：
+
+```bash
+# 檢查您系統上的簽署功能
+wails3 signing info
+
+# 列出可用的簽署身分 (macOS/Windows)
+wails3 signing list
+```
+
+## macOS 程式碼簽署
+
+### 必要條件
+
+- Apple 開發者帳戶（每年 $99）
+- Developer ID Application 憑證
+- 已安裝 Xcode Command Line Tools
+
+### 簽署身分
+
+檢查可用的簽署身分：
+
+```bash
+wails3 signing list
+```
+
+輸出：
+
+```
+Found 2 signing identities:
+
+  Developer ID Application: Your Company (ABCD1234) [valid]
+    Hash: ABC123DEF456...
+
+  Apple Development: your@email.com (XYZ789) [valid]
+    Hash: DEF789ABC123...
+```
+
+<Aside type="tip">
+若要分發至 App Store 之外，您需要 **Developer ID Application** 憑證。
+</Aside>
+
+### 設定
+
+編輯 `build/darwin/Taskfile.yml` 並設定簽署變數：
+
+```yaml
+vars:
+  SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
+  KEYCHAIN_PROFILE: "my-notarize-profile"
+  ENTITLEMENTS: "build/darwin/entitlements.plist"
+```
+
+| 變數 | 必要 | 描述 |
+|----------|----------|-------------|
+| `SIGN_IDENTITY` | 是 | 您的 Developer ID（例如，"Developer ID Application: Your Company (TEAMID)"） |
+| `KEYCHAIN_PROFILE` | 用於驗證 | 儲存憑證的鑰匙圈設定檔名稱 |
+| `ENTITLEMENTS` | 否 | 權限檔案的路徑 |
+
+然後執行：
+
+```bash
+wails3 task darwin:sign           # 建置、封裝並簽署
+wails3 task darwin:sign:notarize  # 建置、封裝、簽署並驗證
+```
+
+### 權限 (Entitlements)
+
+權限控制您的應用程式可以存取哪些功能。Wails 應用程式在開發與生產環境中通常需要不同的權限：
+
+- **開發**：需要 JIT、未簽署記憶體和除錯權限
+- **生產**：最小權限（僅網路存取）
+
+使用互動式設定精靈產生兩個檔案：
+
+```bash
+wails3 setup entitlements
+```
+
+這會建立：
+- `build/darwin/entitlements.dev.plist` - 用於開發建置
+- `build/darwin/entitlements.plist` - 用於生產/簽署建置
+
+**可用的預設設定：**
+| 預設設定 | 描述 |
+|--------|-------------|
+| Development | JIT、未簽署記憶體、除錯、網路 |
+| Production | 僅網路（最小，最安全） |
+| Both | 建立開發和生產檔案（建議） |
+| App Store | 啟用沙盒，包含網路和檔案存取 |
+| Custom | 選擇個別權限 |
+
+<Aside type="note">
+darwin Taskfile 中的 `run` 任務會自動使用 `entitlements.dev.plist`。`sign` 任務則使用 `entitlements.plist` 進行生產建置。
+</Aside>
+
+然後在您的 Taskfile vars 中設定 `ENTITLEMENTS` 以指向適當的檔案。
+
+### 程式碼驗證 (Notarization)
+
+Apple 要求所有分發的應用程式都必須經過驗證。
+
+<Steps>
+1. **將您的憑證儲存在鑰匙圈中**（一次性設定）：
+   ```bash
+   wails3 signing credentials \
+     --apple-id "your@email.com" \
+     --team-id "ABCD1234" \
+     --password "app-specific-password" \
+     --profile "my-notarize-profile"
+   ```
+
+2. **在您的 Taskfile 中設定 KEYCHAIN_PROFILE** 以匹配上述設定檔名稱。
+
+3. **簽署並驗證您的應用程式**：
+   ```bash
+   wails3 task darwin:sign:notarize
+   ```
+
+4. **驗證程式碼驗證**：
+   ```bash
+   spctl --assess --verbose=2 bin/MyApp.app
+   ```
+</Steps>
+
+<Aside type="note">
+程式碼驗證通常需要 1-2 分鐘。憑證會自動釘選（stapled）到您的應用程式中。
+</Aside>
+
+## Windows 程式碼簽署
+
+### 必要條件
+
+- 程式碼簽署憑證（來自 DigiCert、Sectigo 等）
+- 對於原生簽署：已安裝 Windows SDK（用於 signtool.exe）
+- 對於跨平台：僅需憑證檔案------|------|------|
+| `SIGN_CERTIFICATE` | 二選一 | .pfx/.p12 憑證檔案的路徑 |
+| `SIGN_THUMBPRINT` | 二選一 | Windows 憑證存放區中的憑證指紋 |
+| `TIMESTAMP_SERVER` | 否 | 時間戳記伺服器 URL（預設：http://timestamp.digicert.com） |
+
+<Aside type="note">
+憑證密碼儲存在您系統的鑰匙圈（keychain）中，而非 Taskfile 裡。請執行 `wails3 setup signing` 進行設定，或在 CI 中設定 `WAILS_WINDOWS_CERT_PASSWORD` 環境變數。
+</Aside>
+
+然後執行：
+
+```bash
+wails3 task windows:sign           # 建置並簽署執行檔
+wails3 task windows:sign:installer # 建置並簽署 NSIS 安裝程式
+```
+
+### 跨平台簽署
+
+Windows 執行檔可以從任何平台進行簽署。相同的 Taskfile 設定與命令在 macOS 和 Linux 上同樣適用。
+
+### 支援的 Windows 格式
+
+| 格式 | 副檔名 | 備註 |
+|------|--------|------|
+| 執行檔 | .exe | 標準 PE 簽署 |
+| 安裝程式 | .msi | Windows Installer 套件 |
+| 應用程式套件 | .msix, .appx | 現代 Windows 應用程式 |
+
+## Linux 套件簽署
+
+Linux 套件（DEB 和 RPM）使用 PGP/GPG 金鑰進行簽署。與 Windows 和 macOS 的程式碼簽署不同，Linux 套件簽署旨在證明套件來自受信任的來源，而非證明程式碼為作業系統所信任。
+
+### 先決條件
+
+- PGP 金鑰對（可使用 Wails 產生）
+
+### 產生 PGP 金鑰
+
+如果您沒有 PGP 金鑰，Wails 可以為您產生：
+
+```bash
+wails3 signing generate-key \
+  --name "您的名字" \
+  --email "your@email.com" \
+  --comment "Package Signing Key" \
+  --output-private signing-key.asc \
+  --output-public signing-key.pub.asc
+```
+
+選項：
+- `--bits`：金鑰大小（預設：4096）
+- `--expiry`：金鑰過期時間（例如："1y"、"6m"、"0" 表示永不過期）
+- `--password`：用於保護私密金鑰的密碼
+
+<Aside type="caution">
+請妥善保管您的私密金鑰！將其加密儲存並安全備份。
+</Aside>
+
+### 設定
+
+編輯 `build/linux/Taskfile.yml` 並設定簽署變數：
+
+```yaml
+vars:
+  PGP_KEY: "path/to/signing-key.asc"
+  # SIGN_ROLE: "builder"  # 選項：origin, maint, archive, builder
+```
+
+| 變數 | 必要 | 說明 |
+|------|------|------|
+| `PGP_KEY` | 是 | PGP 私密金鑰檔案的路徑 |
+| `SIGN_ROLE` | 否 | DEB 簽署角色（預設：builder） |
+
+<Aside type="note">
+PGP 金鑰密碼儲存在您系統的鑰匙圈中，而非 Taskfile 裡。請執行 `wails3 setup signing` 進行設定，或在 CI 中設定 `WAILS_PGP_PASSWORD` 環境變數。
+</Aside>
+
+然後執行：
+
+```bash
+wails3 task linux:sign:deb       # 建置並簽署 DEB 套件
+wails3 task linux:sign:rpm       # 建置並簽署 RPM 套件
+wails3 task linux:sign:packages  # 建置並簽署所有套件
+```
+
+### DEB 簽署角色
+
+對於 DEB 套件，您可以透過 `SIGN_ROLE` 指定簽署角色：
+
+- `origin`：來自套件來源的簽章
+- `maint`：來自套件維護者的簽章
+- `archive`：來自封存維護者的簽章
+- `builder`：來自套件建置者的簽章（預設）
+
+### 跨平台簽署
+
+Linux 套件可以從任何平台進行簽署。相同的 Taskfile 設定與命令在 Windows 和 macOS 上同樣適用。
+
+### 檢視金鑰資訊
+
+```bash
+wails3 signing key-info --key signing-key.asc
+```
+
+輸出：
+
+```
+PGP Key Information:
+  Key ID:       ABC123DEF456
+  Fingerprint:  1234 5678 90AB CDEF ...
+  User IDs:     Your Name <your@email.com>
+  Created:      2024-01-15
+  Expires:      2025-01-15
+  Has Private:  Yes
+  Encrypted:    Yes
+```
+
+### 驗證 Linux 套件
+
+```bash
+# 驗證 DEB 簽章
+dpkg-sig --verify myapp_1.0.0_amd64.deb
+
+# 驗證 RPM 簽章
+rpm --checksig myapp-1.0.0.x86_64.rpm
+```
+
+### 分發您的公開金鑰
+
+使用者需要您的公開金鑰來驗證套件：
+
+```bash
+# 匯出公開金鑰以供分發
+wails3 signing key-info --key signing-key.asc --export-public > myapp-signing.pub.asc
+
+# 使用者可以匯入它：
+# 對於 DEB (apt)：
+sudo apt-key add myapp-signing.pub.asc
+# 或者對於現代 apt：
+sudo cp myapp-signing.pub.asc /etc/apt/trusted.gpg.d/
+
+# 對於 RPM：
+sudo rpm --import myapp-signing.pub.asc
+```
+
+## GitHub Actions 整合
+
+在 CI 環境中，密碼透過環境變數提供，而非系統鑰匙圈：
+
+| 環境變數 | 說明 |
+|----------|------|
+| `WAILS_WINDOWS_CERT_PASSWORD` | Windows 憑證密碼 |
+| `WAILS_PGP_PASSWORD` | Linux 套件的 PGP 金鑰密碼 |
+
+您也可以直接傳遞 Taskfile 變數：
+
+```bash
+wails3 task darwin:sign SIGN_IDENTITY="$SIGN_IDENTITY" KEYCHAIN_PROFILE="$KEYCHAIN_PROFILE"
+```
+
+### macOS 工作流程
+
+```yaml
+name: Build and Sign macOS
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+      - name: Import Certificate
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.MACOS_CERTIFICATE }}
+          CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        run: |
+          echo $CERTIFICATE_BASE64 | base64 --decode > certificate.p12
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
+
+      - name: Store Notarization Credentials
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: |
+          wails3 signing credentials \
+            --apple-id "$APPLE_ID" \
+            --team-id "$APPLE_TEAM_ID" \
+            --password "$APPLE_APP_PASSWORD" \
+            --profile "notarize-profile"
+
+      - name: Build, Sign, and Notarize
+        env:
+          SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+        run: |
+          wails3 task darwin:sign:notarize \
+            SIGN_IDENTITY="$SIGN_IDENTITY" \
+            KEYCHAIN_PROFILE="notarize-profile"
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MyApp-macOS
+          path: bin/*.app
+```
+
+### Windows 工作流程
+
+```yaml
+name: Build and Sign Windows
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+      - name: Import Certificate
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.WINDOWS_CERTIFICATE }}
+        run: |
+          $certBytes = [Convert]::FromBase64String($env:CERTIFICATE_BASE64)
+          [IO.File]::WriteAllBytes("certificate.pfx", $certBytes)
+
+      - name: Build and Sign
+        env:
+          WAILS_WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        run: |
+          wails3 task windows:sign SIGN_CERTIFICATE=certificate.pfx
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MyApp-Windows
+          path: bin/*.exe
+```
+
+### 跨平台工作流程（Linux Runner）
+
+從單一 Linux runner 簽署 Windows 和 Linux 套件：
+
+```yaml
+name: Build and Sign (Cross-Platform)
+
+on:
+  push:
+    tags: ['v*']------|------|
+| `--input` | 要簽署的檔案路徑 |
+| `--output` | 輸出路徑 (選填，預設為原地覆蓋) |
+| `--verbose` | 啟用詳細輸出 |
+
+**Windows/macOS Flags：**
+| Flag | 說明 |
+|------|------|
+| `--certificate` | PKCS#12 (.pfx/.p12) 憑證路徑 |
+| `--password` | 憑證密碼 |
+| `--timestamp` | 時間戳記伺服器 URL |
+
+**macOS 專屬 Flags：**
+| Flag | 說明 |
+|------|------|
+| `--identity` | 簽署身分 (使用 '-' 進行臨時簽署) |
+| `--entitlements` | 權限 plist 路徑 |
+| `--hardened-runtime` | 啟用強化執行階段 (預設：true) |
+| `--notarize` | 提交公關驗證 |
+| `--keychain-profile` | 用於公關驗證的鑰匙圈設定檔 |
+
+**Windows 專屬 Flags：**
+| Flag | 說明 |
+|------|------|
+| `--thumbprint` | Windows 憑證庫中的憑證指紋 |
+| `--description` | 應用程式描述 |
+| `--url` | 應用程式 URL |
+
+**Linux 專屬 Flags：**
+| Flag | 說明 |
+|------|------|
+| `--pgp-key` | PGP 私密金鑰路徑 |
+| `--pgp-password` | PGP 金鑰密碼 |
+| `--role` | DEB 簽署角色 (origin/maint/archive/builder) |
+
+### wails3 signing info
+
+顯示目前系統上的簽署功能。
+
+```bash
+wails3 signing info
+```
+
+### wails3 signing list
+
+列出可用的簽署身分。
+
+```bash
+wails3 signing list
+```
+
+### wails3 signing credentials
+
+在鑰匙圈中儲存公關驗證憑證 (僅 macOS)。
+
+```bash
+wails3 signing credentials [flags]
+
+Flags:
+  --apple-id      Apple ID 電子郵件
+  --team-id       Apple Developer Team ID
+  --password      應用程式專屬密碼
+  --profile       鑰匙圈設定檔名稱
+```
+
+### wails3 signing generate-key
+
+為 Linux 套件簽署產生 PGP 金鑰對。
+
+```bash
+wails3 signing generate-key [flags]
+
+Flags:
+  --name            金鑰名稱 (必要)
+  --email           金鑰電子郵件 (必要)
+  --comment         金鑰備註
+  --bits            金鑰大小 (位元) (預設：4096)
+  --expiry          金鑰過期時間 (例如，"1y", "6m", "0" 表示永不過期)
+  --password        用於加密私密金鑰的密碼
+  --output-private  私密金鑰輸出路徑
+  --output-public   公開金鑰輸出路徑
+```
+
+### wails3 signing key-info
+
+顯示 PGP 金鑰的資訊。
+
+```bash
+wails3 signing key-info --key <path-to-key>
+```
+
+## 疑難排解
+
+### macOS 問題
+
+**"No Developer ID certificate found"**
+- 確保您的憑證已安裝在鑰匙圈中
+- 使用 `wails3 signing list` 檢查是否已過期
+- 確保您擁有「Developer ID Application」憑證 (而不僅是「Apple Development」)
+
+**"Notarization failed"**
+- 檢查公關驗證記錄：`xcrun notarytool log <submission-id> --keychain-profile <profile>`
+- 確保已啟用強化執行階段
+- 驗證您的應用程式未包含未簽署的二進位檔
+
+**"Codesign failed"**
+- 確保鑰匙圈已解鎖：`security unlock-keychain`
+- 檢查應用程式套件的檔案權限
+
+### Windows 問題
+
+**"Certificate not found"**
+- 驗證憑證路徑是否正確
+- 檢查憑證密碼
+- 確保憑證有效 (未過期或撤銷)
+
+**"Timestamp server error"**
+- 嘗試不同的時間戳記伺服器：
+  - `http://timestamp.digicert.com`
+  - `http://timestamp.sectigo.com`
+  - `http://timestamp.comodoca.com`
+
+### Linux 問題
+
+**"Invalid PGP key"**
+- 確保金鑰檔案為 ASCII-armored 格式
+- 使用 `wails3 signing key-info` 檢查金鑰是否已過期
+- 驗證密碼是否正確
+
+**"Signature verification failed"**
+- 確保公開金鑰已正確匯入
+- 檢查套件在簽署後是否未被修改
+
+## 其他資源
+
+### 官方文件
+- [Apple Code Signing Guide](https://developer.apple.com/support/code-signing/)
+- [Apple Notarization Documentation](https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution)
+- [Microsoft Code Signing](https://docs.microsoft.com/en-us/windows-hardware/drivers/dashboard/get-a-code-signing-certificate)
+- [Debian Package Signing](https://wiki.debian.org/SecureApt)
+- [RPM Package Signing](https://rpm-software-management.github.io/rpm/manual/signatures.html)

@@ -1,0 +1,359 @@
+---
+title: 選單參考
+description: 選單項目類型、屬性與方法的完整參考
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 選單參考
+
+選單項目類型、屬性與動態行為的完整參考。建立專業且具響應式的選單，支援核取方塊、單選群組、分隔線與動態更新。
+
+## 選單項目類型
+
+### 一般選單項目
+
+最常見的類型——顯示文字並觸發動作：
+
+```go
+menuItem := menu.Add("Click Me")
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("Menu item clicked!")
+})
+```
+
+**適用情境：** 指令、動作、開啟視窗
+
+### 核取方塊
+
+可切換選單項目，具有已選取/未選取的狀態：
+
+```go
+checkbox := menu.AddCheckbox("Enable Feature", true)  // true = 初始為已選取
+checkbox.OnClick(func(ctx *application.Context) {
+    isChecked := ctx.ClickedMenuItem().Checked()
+    fmt.Printf("Feature is now: %v\n", isChecked)
+})
+```
+
+**適用情境：** 布林設定、功能開關、檢視選項
+
+**重要：** 選取狀態會在點擊時自動切換。
+
+### 單選群組
+
+互斥選項——只能選取其中一個：
+
+```go
+menu.AddRadio("Small", true)   // true = 初始為已選取
+menu.AddRadio("Medium", false)
+menu.AddRadio("Large", false)
+```
+
+**適用情境：** 互斥選擇（大小、主題、模式）
+
+**分組運作方式：**
+- 相鄰的單選項目會自動形成一個群組
+- 選取其中一個會取消選取群組中的其他項目
+- 使用分隔線或一般項目來分隔不同的群組
+
+**多個群組的範例：**
+
+```go
+// 群組 1：大小
+menu.AddRadio("Small", true)
+menu.AddRadio("Medium", false)
+menu.AddRadio("Large", false)
+
+menu.AddSeparator()
+
+// 群組 2：主題
+menu.AddRadio("Light", true)
+menu.AddRadio("Dark", false)
+```
+
+### 子選單
+
+用於組織的巢狀選單結構：
+
+```go
+submenu := menu.AddSubmenu("More Options")
+submenu.Add("Submenu Item 1").OnClick(func(ctx *application.Context) {
+    // 處理點擊
+})
+submenu.Add("Submenu Item 2")
+```
+
+**適用情境：** 將相關項目分組、減少雜亂
+
+**巢狀層級限制：** 大多數平台支援 2-3 層。避免更深的巢狀結構。
+
+### 分隔線
+
+選單項目之間的視覺分隔線：
+
+```go
+menu.Add("Item 1")
+menu.AddSeparator()
+menu.Add("Item 2")
+```
+
+**適用情境：** 視覺上將相關項目分組
+
+**最佳實踐：** 不要以分隔線開始或結束選單。
+
+## 選單項目屬性
+
+### 標籤
+
+選單項目顯示的文字：
+
+```go
+menuItem := menu.Add("Initial Label")
+menuItem.SetLabel("New Label")
+
+// 取得目前標籤
+label := menuItem.Label()
+```
+
+**動態標籤：**
+
+```go
+updateMenuItem := menu.Add("Check for Updates")
+updateMenuItem.OnClick(func(ctx *application.Context) {
+    updateMenuItem.SetLabel("Checking...")
+    menu.Update()  // 在 Windows 上很重要！
+    
+    // 執行更新檢查
+    checkForUpdates()
+    
+    updateMenuItem.SetLabel("Check for Updates")
+    menu.Update()
+})
+```
+
+### 啟用狀態
+
+控制選單項目是否可互動：
+
+```go
+menuItem := menu.Add("Save")
+menuItem.SetEnabled(false)  // 變灰，無法點擊
+
+// 稍後啟用
+menuItem.SetEnabled(true)
+menu.Update()  // 重要：在更改啟用狀態後呼叫此方法！
+
+// 檢查目前狀態
+isEnabled := menuItem.Enabled()
+```
+
+:::caution[Windows 選單行為]
+在 Windows 上，當選單狀態變更時需要重建選單。**在啟用/停用選單項目後，務必呼叫 `menu.Update()`**，特別是當項目是在停用狀態下建立時。
+
+**原因：** Windows 選單在更新時會完全重建。如果不呼叫 `Update()`，點擊事件處理器可能無法正常觸發。
+:::
+
+**範例：動態啟用/停用**
+
+```go
+var hasSelection bool
+
+cutMenuItem := menu.Add("Cut")
+cutMenuItem.SetEnabled(false)  // 初始為停用
+
+copyMenuItem := menu.Add("Copy")
+copyMenuItem.SetEnabled(false)
+
+// 當選取內容變更時
+func onSelectionChanged(selected bool) {
+    hasSelection = selected
+    cutMenuItem.SetEnabled(hasSelection)
+    copyMenuItem.SetEnabled(hasSelection)
+    menu.Update()  // 在 Windows 上至關重要！
+}
+```
+
+**常見模式：根據條件啟用**
+
+```go
+saveMenuItem := menu.Add("Save")
+
+func updateSaveMenuItem() {
+    canSave := hasUnsavedChanges() && !isSaving()
+    saveMenuItem.SetEnabled(canSave)
+    menu.Update()
+}
+
+// 在狀態變更時呼叫
+onDocumentChanged(func() {
+    updateSaveMenuItem()
+})
+```
+
+### 選取狀態
+
+對於核取方塊和單選項目，控制或查詢其選取狀態：
+
+```go
+checkbox := menu.AddCheckbox("Feature", false)
+checkbox.SetChecked(true)
+menu.Update()
+
+// 查詢狀態
+isChecked := checkbox.Checked()
+```
+
+**自動切換：** 核取方塊在點擊時會自動切換。你不需要在點擊事件處理器中呼叫 `SetChecked()`。
+
+**手動控制：**
+
+```go
+checkbox := menu.AddCheckbox("Auto-save", false)
+
+// 與外部狀態同步
+func syncAutoSave(enabled bool) {
+    checkbox.SetChecked(enabled)
+    menu.Update()
+}
+```
+
+### 快捷鍵
+
+為選單項目新增鍵盤快捷鍵：
+
+```go
+saveMenuItem := menu.Add("Save")
+saveMenuItem.SetAccelerator("CmdOrCtrl+S")
+
+quitMenuItem := menu.Add("Quit")
+quitMenuItem.SetAccelerator("CmdOrCtrl+Q")
+```
+
+**快捷鍵格式：**
+- `CmdOrCtrl` - 在 macOS 上為 Cmd，在 Windows/Linux 上為 Ctrl
+- `Shift`、`Alt`、`Option` - 修飾鍵
+- `A-Z`、`0-9` - 字母/數字鍵
+- `F1-F12` - 功能鍵
+- `Enter`、`Space`、`Backspace` 等 - 特殊鍵
+
+**範例：**
+
+```go
+"CmdOrCtrl+S"           // 儲存
+"CmdOrCtrl+Shift+S"     // 另存新檔
+"CmdOrCtrl+W"           // 關閉視窗
+"CmdOrCtrl+Q"           // 結束
+"F5"                    // 重新整理
+"CmdOrCtrl+,"           // 偏好設定 (macOS 慣例)
+"Alt+F4"                // 關閉 (Windows 慣例)
+```
+
+**平台特定的快捷鍵：**
+
+```go
+if runtime.GOOS == "darwin" {
+    prefsMenuItem.SetAccelerator("Cmd+,")
+} else {
+    prefsMenuItem.SetAccelerator("Ctrl+P")
+}
+```
+
+### 工具提示
+
+為選單項目新增懸停文字（平台支援度各異）：
+
+```go
+menuItem := menu.Add("Advanced Options")
+menuItem.SetTooltip("Configure advanced settings")
+```
+
+**平台支援：**
+- **Windows：** ✅ 支援
+- **macOS：** ❌ 不支援（選單不標準支援工具提示）
+- **Linux：** ⚠️ 取決於桌面環境
+
+### 隱藏狀態
+
+隱藏選單項目而不將其移除：
+
+```go
+debugMenuItem := menu.Add("Debug Mode")
+debugMenuItem.SetHidden(true)  // 隱藏
+
+// 在偵錯版本中顯示
+if isDebugBuild {
+    debugMenuItem.SetHidden(false)
+    menu.Update()
+}
+```
+
+**適用情境：** 偵錯選項、功能旗標、條件式功能
+
+## 事件處理
+
+### OnClick 事件處理器
+
+在選單項目被點擊時執行程式碼：
+
+```go
+menuItem := menu.Add("Click Me")
+menuItem.OnClick(func(ctx *application.Context) {
+    // 處理點擊
+    fmt.Println("Clicked!")
+})
+```
+
+**Context 提供：**
+- `ctx.ClickedMenuItem()` - 被點擊的選單項目
+- 視窗 context（如果來自視單選單）
+- 應用程式 context
+
+**範例：在處理器中存取選單項目**
+
+```go
+checkbox := menu.AddCheckbox("Feature", false)
+checkbox.OnClick(func(ctx *application.Context) {
+    item := ctx.ClickedMenuItem()
+    isChecked := item.Checked()
+    fmt.Printf("Feature is now: %v\n", isChecked)
+})
+```
+
+### 多個處理器
+
+你可以設定多個處理器（最後一個會覆蓋前面的）：
+
+```go
+menuItem := menu.Add("Action")
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("First handler")
+})
+
+// 這會取代第一個處理器
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("Second handler - this one runs")
+})
+```
+
+**最佳實踐：** 只設定一次處理器，如有需要則在內部使用條件邏輯。
+
+## 動態選單
+
+### 更新選單項目
+
+**黃金法則：** 在更改選單狀態後，務必呼叫 `menu.Update()`。
+
+```go
+// ✅ 正確
+menuItem.SetEnabled(true)
+menu.Update()
+
+// ❌ 錯誤（特別是在 Windows 上）
+menuItem.SetEnabled(true)
+// 忘記呼叫 Update() - 點擊事件處理器可能無法運作！
+```
+
+**為什麼這很重要：****有問題嗎？** 請在 [Discord](https://discord.gg/JDdSxwjhGf) 上提問，或查看 [選單範例](https://github.com/wailsapp/wails/tree/master/v3/examples/menu)。

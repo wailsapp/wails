@@ -1,0 +1,116 @@
+---
+title: 處理 Panics
+description: 如何在你的 Wails 應用程式中處理 panic
+---
+
+在 Go 應用程式中，當發生預期之外的狀況時，執行階段可能會出現 panic。本指南說明瞭如何處理一般 Go 程式碼以及 Wails 應用程式中的 panic。
+
+## 了解 Go 中的 Panics
+
+在深入探討 Wails 特定的 panic 處理之前，了解 Go 中 panic 的運作方式至關重要：
+
+1. Panic 用於不應在正常運作期間發生的不可恢復錯誤
+2. 當 goroutine 發生 panic 時，僅該 goroutine 會受到影響
+3. 可以使用 `defer` 和 `recover()` 來恢復 panic
+
+以下是 Go 中 panic 處理的基本範例：
+
+```go
+func doSomething() {
+    // 即使發生 panic，延遲函式仍會執行
+    defer func() {
+        if r := recover(); r != nil {
+            fmt.Printf("Recovered from panic: %v\n", r)
+        }
+    }()
+    
+    // 可能發生 panic 的程式碼
+    panic("something went wrong")
+}
+```
+
+有關 Go 中 panic 和 recover 的更多詳細資訊，請參閱 [Go Blog: Defer, Panic, and Recover](https://go.dev/blog/defer-panic-and-recover)。
+
+## Wails 中的 Panic 處理
+
+Wails 會自動處理從前端呼叫時在 Service 方法中發生的 panic。這表示你不需要在這些方法中添加 panic 恢復機制 — Wails 會攔截 panic 並透過你配置的 panic handler 進行處理。
+
+panic handler 專門用於攔截：
+- 從前端呼叫的繫結服務方法中的 panic
+- Wails 執行階段內部的 panic
+
+對於其他情境，例如背景 goroutine 或獨立的 Go 程式碼，你應該使用 Go 標準的 panic 恢復機制自行處理 panic。
+
+## PanicDetails 結構
+
+當發生 panic 時，Wails 會將有關 panic 的重要資訊擷取到 `PanicDetails` 結構中：
+
+```go
+type PanicDetails struct {
+    StackTrace     string    // 發生 panic 的位置的堆疊追蹤。可能會被截斷以提供更多上下文
+    Error          error     // 導致 panic 的錯誤
+    Time           time.Time // 發生 panic 的時間
+    FullStackTrace string    // 包含執行階段框架的完整堆疊追蹤
+}
+```
+
+此結構提供了關於 panic 的綜合資訊：
+- `StackTrace`: 顯示導致 panic 的呼叫堆疊的格式化字串
+- `Error`: 實際的錯誤或 panic 訊息
+- `Time`: 發生 panic 的確切時間
+- `FullStackTrace`: 包含執行階段框架的完整堆疊追蹤
+
+:::note[Service 程式碼中的 Panics]
+
+當從前端呼叫後在 Service 程式碼中攔截到 panic 時，堆疊追蹤會被截斷，以專注於程式碼中發生 panic 的確切位置。
+如果你想查看完整的堆疊追蹤，可以使用 `FullStackTrace` 欄位。
+
+:::
+
+## 預設 Panic Handler
+
+如果你未指定自訂的 panic handler，Wails 將使用其預設 handler，該 handler 會以格式化日誌訊息輸出錯誤資訊，然後退出。
+例如：
+
+```
+************************ FATAL ******************************
+* There has been a catastrophic failure in your application *
+********************* Error Details *************************
+panic error: oh no! something went wrong deep in my service! :(
+main.(*WindowService).call2
+	at E:/wails/v3/examples/panic-handling/main.go:23
+main.(*WindowService).call1
+	at E:/wails/v3/examples/panic-handling/main.go:19
+main.(*WindowService).GeneratePanic
+	at E:/wails/v3/examples/panic-handling/main.go:15
+*************************************************************
+```
+
+## 自訂 Panic Handler
+
+你可以透過在建立應用程式時設定 `PanicHandler` 選項來實作自己的 panic handler。以下是一個範例：
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    PanicHandler: func(panicDetails *application.PanicDetails) {
+        fmt.Printf("*** Custom Panic Handler ***\n")
+        fmt.Printf("Time: %s\n", panicDetails.Time)
+        fmt.Printf("Error: %s\n", panicDetails.Error)
+        fmt.Printf("Stacktrace: %s\n", panicDetails.StackTrace)
+        fmt.Printf("Full Stacktrace: %s\n", panicDetails.FullStackTrace)
+        
+        // 你也可以：
+        // - 記錄到檔案
+        // - 傳送至崩潰回報服務
+        // - 顯示對使用者友善的錯誤對話框
+        // - 嘗試恢復或重新啟動應用程式
+    },
+})
+```
+
+有關 Wails 應用程式中 panic 處理的完整運作範例，請參閱 `v3/examples/panic-handling` 中的 panic-handling 範例。
+
+## 最後備註
+
+請記住，Wails panic handler 專門用於管理繫結方法中的 panic 和內部執行階段錯誤。對於應用程式的其他部分，你應該在適當的情況下使用 Go 標準的錯誤處理模式和 panic 恢復機制。與所有 Go 應用程式一樣，盡可能透過適當的錯誤處理來防止 panic 是更好的做法。

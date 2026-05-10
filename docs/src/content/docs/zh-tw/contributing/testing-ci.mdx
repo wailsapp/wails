@@ -1,0 +1,216 @@
+---
+title: 測試與持續整合
+description: Wails v3 如何透過單元測試、整合測試套件、競態偵測以及 GitHub Actions CI 來確保品質。
+sidebar:
+  order: 9
+---
+
+強大的桌面框架需要堅如磐石的測試。  
+Wails v3 採用**分層策略**：
+
+| 層級 | 目標 | 工具 |
+|-------|--|-|
+| 單元測試 | 為獨立函式提供快速回饋 | `go test ./...` |
+| 整合／範例測試 | 驗證跨套件的整体功能 | 範例應用程式 + 無頭模式斷言 |
+| 競態偵測 | 捕捉執行階段與橋接層的資料競態 | `go test -race`, `wails3 dev -race` |
+| CI 矩陣 | 在每個 PR 上提供跨作業系統的信心 | GitHub Actions |
+
+本文檔將說明**測試位於何處**、**如何執行**，以及**CI 中會發生什麼**。
+
+---
+
+## 1. 目錄慣例
+
+```
+v3/
+├── internal/.../_test.go     # 內部套件的單元測試
+├── pkg/.../_test.go          # 公共 API 測試
+├── examples/...              # 範例應用程式同時作為整合測試
+├── tasks/events/...          # 在 CI 中執行的產生程式碼測試
+└── pkg/application/RACE.md   # 競態測試指南與已知安全的抑制
+```
+
+指導原則：
+
+* **將單元測試放在程式碼旁** (`foo.go` ↔ `foo_test.go`)
+* 對 `pkg/` 套件使用**黑盒風格** (`package application_test`)
+* 整合輔助工具放在 `internal/testutil/` (共用 mocks、fixtures)
+
+---
+
+## 2. 單元測試
+
+### 撰寫測試
+
+```go
+func TestColourParseHex(t *testing.T) {
+    c, err := colour.Parse("#FF00FF")
+    require.NoError(t, err)
+    assert.Equal(t, 255, c.R)
+}
+```
+
+建議：
+
+* 使用 [`stretchr/testify`](https://github.com/stretchr/testify) – 已隨附 vendor-import。
+* 針對分支遵循**表格驅動**風格。
+* 在需要時，透過建置標籤 (`_test_windows.go` 等) 模擬平台差異。
+
+### 在本機執行
+
+```bash
+cd v3
+go test ./... -cover
+```
+
+Taskfile 捷徑：
+
+```
+task test          # 與上述相同 + vet + lint
+```
+
+---
+
+## 3. 整合與範例測試
+
+`v3/examples/` 下的每個資料夾都是一個**獨立應用程式**。  
+有三種技術可將其轉化為測試：
+
+| 技術 | 檔案 | 檢查項目 |
+|------|---|------|
+| 在範例中執行 `go test ./...` | `*_test.go` 以無頭模式啟動 `wails dev` | 建置與啟動 |
+| CLI 黃金測試 | `internal/commands/appimage_test.go` | 產生的工件雜湊值 |
+| 腳本化 e2e | `tasks/events/generate.go` | 產生啟動範例的 Go 程式碼，並斷言執行階段日誌 |
+
+全部執行：
+
+```
+task integration
+```
+
+> 無頭模式在 Linux 執行器上使用 **Xvfb**；macOS 與 Windows 則以最小化視窗啟動。
+
+---
+
+## 4. 競態偵測
+
+資料競態在 GUI 執行階段中是致命的。
+
+### 專屬文件
+
+請參閱 `v3/pkg/application/RACE.md` 以獲取：
+
+* 已知無害的競態及其抑制理由
+* 如何解讀跨越 Cgo 邊界的堆疊追蹤
+
+### 本機競態測試套件
+
+```
+go test -race ./...
+```
+
+或
+
+```
+wails3 dev -race
+```
+
+*後者會以競態旗標重新編譯執行階段並啟動範例視窗。  
+關閉視窗；任何競態將在退出後列印輸出。*
+
+CI 會在每個 PR 上於 **linux/amd64** (最快) 執行競態測試套件。
+
+---
+
+## 5. GitHub Actions 工作流
+
+### 5.1 `build-and-test-v3.yml`
+
+位置：`.github/workflows/build-and-test-v3.yml`
+
+主要功能：
+
+* 針對 `os: [ubuntu-latest, windows-latest, macos-latest]` 的**矩陣**
+* 快取 Go 與 npm 依賴項以加速
+* 步驟：
+  1. `setup-go` @ 1.25
+  2. `go vet ./...`
+  3. `go test ./... -v -coverprofile=cover.out`
+  4. 建置 CLI 與範例應用程式 (`wails3 build -skip-package`)
+  5. 將覆蓋率上傳至 Codecov
+* 在 Ubuntu 上的條件式**競態**工作：
+  ```yaml
+  - name: Race Detector
+    if: matrix.os == 'ubuntu-latest'
+    run: go test -race ./...
+  ```
+
+### 5.2 靜態分析
+
+* `semgrep.yml` – 安全/lint 掃描 (`.github/workflows/semgrep.yml`)
+* `qodana.yaml` – JetBrains Qodana 雲端檢查 (PR 中為選填)
+
+### 5.3 發布管線
+
+`runtime.yml` 會在標籤推送時建置並將 JS 執行階段發布至 npm；雖不在測試範圍內，但被建置矩陣所引用。
+
+---
+
+## 6. 本機 CI 一致性
+
+透過 Taskfile 執行**完全相同**的 CI 任務集：
+
+```
+task ci
+```
+
+它會執行：
+
+1. `lint` (golangci-lint, govet)
+2. `test` (單元 + 競態)
+3. `integration`
+4. `build` (針對主機平台)
+
+---
+
+## 7. 測試失敗疑難排解
+
+| 症狀 | 可能原因 | 解決方案 |
+|---------|-----|-|
+| **`runtime_darwin.go` 中的競態** | 忘記鎖定 `mainthread.Call` | 使用 `mainthread.Sync` 輔助工具 |
+| **Windows 無頭模式當機** | 主控台視窗等待輸入 | 傳遞 `-verbose` 並確保沒有對話方塊開啟 |
+| **CI 範例建置失敗** | 範本變更但未更新範例依賴項 | `task update-examples` 會重新產生 lockfiles |
+| **Coverpkg 錯誤** | 整合測試匯入 `main` | 切換至建置標籤 `//go:build integration` |
+
+---
+
+## 8. 新增測試
+
+1. **單元** – 建立 `*_test.go`，執行 `go test ./...`
+2. **整合** – 更新或新增範例應用程式與測試框架
+3. **CI** – 提交；工作流會自動發現測試  
+   如果是特定作業系統，請新增跳過標籤：
+
+```go
+//go:build !windows
+```
+
+---
+
+## 9. 關鍵檔案對照表
+
+| 項目 | 路徑 |
+|------|------|
+| 單元測試範例 | `internal/colour/colour_test.go` |
+| 整合測試框架 | `internal/commands/appimage_test.go` |
+| 競態指南 | `pkg/application/RACE.md` |
+| Taskfile 測試目標 | `v3/Taskfile.yaml` |
+| CI 工作流 | `.github/workflows/build-and-test-v3.yml` |
+
+---
+
+品質在 Wails v3 中並非事後考慮。  
+透過單元測試、整合測試套件、競態偵測以及跨平台 CI
+矩陣，您可以自信地貢獻，知道您的變更在我們支援的每個
+作業系統上都能順利通過。  
+測試愉快！

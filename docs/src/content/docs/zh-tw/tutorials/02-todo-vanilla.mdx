@@ -1,0 +1,721 @@
+---
+title: TODO List
+description: 使用 CRUD 操作構建完整的 TODO 清單應用程式
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem, Steps } from "@astrojs/starlight/components";
+import { Image } from 'astro:assets';
+import todoApp from "../../../../assets/todo-app.png";
+
+在本教學中，您將構建一個功能完整的 TODO 清單應用程式。這比 QR Code Service 教學更進階——您將學習如何管理狀態、處理多個操作，以及建立精緻的使用者介面。
+
+**您將構建：**
+- 具備新增、標記完成和刪除功能的完整 TODO 應用程式
+- 執行緒安全的狀態管理（對於桌面應用程式至關重要）
+- 現代化的玻璃擬態（glassmorphic）UI 設計
+- 全部使用原生 JavaScript 實現——無需任何框架
+
+**您將學會：**
+- CRUD 操作（建立、讀取、更新、刪除）
+- 在 Go 中安全地管理可變狀態
+- 處理使用者輸入與驗證
+- 構建具有原生感的響應式 UI
+
+<Image src={todoApp} alt="TODO List Application" style="max-width: 600px; margin: 2rem auto; display: block; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);" />
+
+**完成時間：** 20 分鐘
+
+## 建立您的專案
+
+<Steps>
+
+1. **產生專案**
+
+   首先，建立一個新的 Wails 專案。我們將使用預設的原生模板，它為我們提供了一個乾淨的起點：
+
+   ```bash
+   wails3 init -n todo-app
+   cd todo-app
+   ```
+
+   這會建立一個具有基本結構的新專案：Go 後端位於根目錄，前端程式碼位於 `frontend/` 目錄中。
+
+2. **建立 TODO 服務**
+
+   TODO 服務將管理我們的應用程式狀態，並提供用於 CRUD 操作的方法。與每個請求都隔離的網頁伺服器不同，桌面應用程式可能同時進行多個操作，因此我們需要執行緒安全的狀態管理。
+
+   刪除 `greetservice.go` 並建立新檔案 `todoservice.go`：
+
+   ```go title="todoservice.go"
+   package main
+
+   import (
+       "errors"
+       "sync"
+   )
+
+   type Todo struct {
+       ID        int    `json:"id"`
+       Title     string `json:"title"`
+       Completed bool   `json:"completed"`
+   }
+
+   type TodoService struct {
+       todos  []Todo
+       nextID int
+       mu     sync.RWMutex
+   }
+
+   func NewTodoService() *TodoService {
+       return &TodoService{
+           todos:  []Todo{},
+           nextID: 1,
+       }
+   }
+
+   func (t *TodoService) GetAll() []Todo {
+       t.mu.RLock()
+       defer t.mu.RUnlock()
+       return t.todos
+   }
+
+   func (t *TodoService) Add(title string) (*Todo, error) {
+       if title == "" {
+           return nil, errors.New("title cannot be empty")
+       }
+
+       t.mu.Lock()
+       defer t.mu.Unlock()
+
+       todo := Todo{
+           ID:        t.nextID,
+           Title:     title,
+           Completed: false,
+       }
+       t.todos = append(t.todos, todo)
+       t.nextID++
+
+       return &todo, nil
+   }
+
+   func (t *TodoService) Toggle(id int) error {
+       t.mu.Lock()
+       defer t.mu.Unlock()
+
+       for i := range t.todos {
+           if t.todos[i].ID == id {
+               t.todos[i].Completed = !t.todos[i].Completed
+               return nil
+           }
+       }
+       return errors.New("todo not found")
+   }
+
+   func (t *TodoService) Delete(id int) error {
+       t.mu.Lock()
+       defer t.mu.Unlock()
+
+       for i, todo := range t.todos {
+           if todo.ID == id {
+               t.todos = append(t.todos[:i], t.todos[i+1:]...)
+               return nil
+           }
+       }
+       return errors.New("todo not found")
+   }
+   ```
+
+   **這裡發生了什麼：**
+
+   **`Todo` 結構體：**
+   - 定義了我們資料的結構，包含 ID、Title 和 Completed 欄位
+   - `json:` 標籤告訴 Go 如何將此結構體轉換為 JSON 以傳遞給前端
+   - 每個欄位都已匯出（大寫開頭），以便繫結生成器能夠識別
+
+   **`TodoService` 結構體：**
+   - `todos []Todo` - 儲存所有 TODO 項目的切片
+   - `nextID int` - 追蹤下一個要分配的 ID（模擬自動遞增）
+   - `mu sync.RWMutex` - 用於執行緒安全存取的讀寫互斥鎖
+
+   **使用 `sync.RWMutex` 實現執行緒安全：**
+   - 桌面應用程式可能從 UI 發起多個並行操作
+   - `RLock()` 允許同時進行多個讀取（例如，多次 `GetAll` 呼叫）
+   - `Lock()` 提供寫入的排他性存取（例如，`Add`、`Toggle`、`Delete`）
+   - `defer` 確保即使函數提前返回或發生恐慌，鎖也會被釋放
+
+   **這些方法：**
+   - `GetAll()` - 返回所有 TODO 項目（使用讀取鎖，因為我們不修改資料）
+   - `Add(title)` - 建立新的 TODO 項目，驗證輸入，遞增 ID
+   - `Toggle(id)` - 翻轉 TODO 項目的完成狀態
+   - `Delete(id)` - 從切片中移除一個 TODO 項目
+
+   **錯誤處理：**
+   - 我們遵循 Go 慣例，將 `error` 作為最後一個值返回
+   - 空的標題會被拒絕
+   - 對不存在的 TODO 項目的操作會返回錯誤
+   - 這些錯誤會在前端變成 JavaScript 異常
+
+3. **更新 main.go**
+
+   將 TODO 服務註冊到您的 Wails 應用程式中。在 `main.go` 中找到 `Services` 部分，並將 GreetService 替換為我們的 TodoService：
+
+   ```go title="main.go" {5}
+   Services: []application.Service{
+       application.NewService(NewTodoService()),
+   },
+   ```
+
+   **這裡發生了什麼：**
+   - 我們移除了預設的 GreetService 並添加了我們的 TodoService
+   - `application.NewService()` 包裝了我們的服務，以便 Wails 能夠管理它
+   - Wails 將自動為該服務上的所有公開方法生成 JavaScript 繫結
+
+4. **建立前端 UI**
+
+   現在讓我們構建前端。這裡我們將呼叫 Go 方法並顯示 UI。我們使用原生 JavaScript 以保持簡單，並向您展示繫結是如何直接工作的。
+
+   替換 `frontend/src/main.js`：
+
+   ```javascript title="frontend/src/main.js"
+   import {TodoService} from "../bindings/changeme";
+
+   async function loadTodos() {
+       const todos = await TodoService.GetAll();
+       const list = document.getElementById('todo-list');
+
+       list.innerHTML = todos.map(todo => `
+           <div class="todo ${todo.completed ? 'completed' : ''}">
+               <input type="checkbox"
+                      ${todo.completed ? 'checked' : ''}
+                      onchange="toggleTodo(${todo.id})">
+               <span>${todo.title}</span>
+               <button onclick="deleteTodo(${todo.id})">Delete</button>
+           </div>
+       `).join('');
+   }
+
+   window.addTodo = async () => {
+       const input = document.getElementById('todo-input');
+       const title = input.value.trim();
+
+       if (title) {
+           await TodoService.Add(title);
+           input.value = '';
+           await loadTodos();
+       }
+   }
+
+   window.toggleTodo = async (id) => {
+       await TodoService.Toggle(id);
+       await loadTodos();
+   }
+
+   window.deleteTodo = async (id) => {
+       await TodoService.Delete(id);
+       await loadTodos();
+   }
+
+   // Load todos on startup
+   loadTodos();
+   ```
+
+   **這裡發生了什麼：**
+
+   **匯入繫結：**
+   - `import {TodoService} from "../bindings/changeme"` - 引入自動生成的 Go 繫結
+   - 注意：`changeme` 將是您 `go.mod` 中的實際模組名稱
+
+   **`loadTodos()` 函數：**
+   - 呼叫 `TodoService.GetAll()` 以從 Go 獲取所有 TODO 項目
+   - 使用模板字面量為每個 TODO 項目構建 HTML
+   - 動態添加/移除 `completed` 類別以進行樣式設定
+   - 使用 `onclick` 屬性將按鈕連接到我們的函數
+   - 將所有 HTML 連接起來並注入 DOM
+
+   **CRUD 函數：**
+   - `addTodo()` - 驗證輸入，呼叫 Go 的 `Add` 方法，刷新列表
+   - `toggleTodo(id)` - 呼叫 Go 的 `Toggle` 方法，刷新列表
+   - `deleteTodo(id)` - 呼叫 Go 的 `Delete` 方法，刷新列表
+   - 所有函數都是異步的，因為 Go 呼叫返回 Promise**為什麼要繫結到視窗：**
+- `window.addTodo = ...` 讓函式可以從 HTML 的 `onclick` 屬性中存取
+- 這是一個針對原生 JavaScript 的簡單模式（框架會以不同方式處理此問題）
+- 在生產環境中，您可能應該使用正確的事件委派（event delegation）
+
+**重新載入模式：**
+- 在每次狀態變更（新增/切換/刪除）之後，我們會再次呼叫 `loadTodos()`
+- 這確保了 UI 與 Go 狀態保持同步
+- 替代方案：讓 Go 方法回傳新狀態，以避免第二次呼叫
+
+5. **更新 HTML**
+
+HTML 提供了我們 TODO 應用程式的結構。它簡潔且語意明確——魔法發生在 JavaScript 和 CSS 中。
+
+取代 `frontend/index.html`：
+
+```html title="frontend/index.html"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>TODO App</title>
+    <link rel="stylesheet" href="./style.css"/>
+</head>
+<body>
+    <div class="container">
+        <h1>My TODOs</h1>
+        <div class="card">
+            <div class="input-box">
+                <input type="text"
+                       id="todo-input"
+                       class="input"
+                       placeholder="Add a new todo..."
+                       onkeypress="if(event.key==='Enter') addTodo()">
+                <button class="btn" onclick="addTodo()">Add</button>
+            </div>
+            <div id="todo-list"></div>
+        </div>
+    </div>
+    <script type="module" src="./src/main.js"></script>
+</body>
+</html>
+```
+
+**這裡發生了什麼事：**
+
+**結構：**
+- `container` - 置中我們的應用程式並限制寬度
+- `card` - 承載所有內容的主要白色卡片
+- `input-box` - 用於輸入框和新增按鈕的 flex 容器
+- `todo-list` - JavaScript 將在此處注入個別的待辦事項
+
+**事件處理：**
+- `onkeypress="if(event.key==='Enter') addTodo()"` - 按下 Enter 時新增待辦事項
+- `onclick="addTodo()"` - 點擊按鈕時新增待辦事項
+- 內嵌事件處理器對於簡單的原生 JavaScript 應用程式非常有效
+
+**模組腳本：**
+- `<script type="module">` 讓我們可以使用 ES6 的 import
+- 我們的 `main.js` 檔案可以匯入繫結並使用現代 JavaScript
+
+6. **為應用程式設定樣式**
+
+CSS 創造了現代化的玻璃擬態設計，並帶有平滑的過渡效果。我們追求的是精緻的感覺，讓使用應用程式變得愉快。
+
+取代 `frontend/public/style.css`：
+
+```css title="frontend/public/style.css"
+:root {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+    font-size: 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: rgba(255, 255, 255, 0.87);
+}
+
+body {
+    margin: 0;
+    display: flex;
+    place-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    color: white;
+    font-size: 2.5em;
+    font-weight: 300;
+    margin: 0 0 30px 0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.input-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.input {
+    flex: 1;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    height: 50px;
+    padding: 0 20px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.input:focus {
+    border-color: #667eea;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.btn {
+    height: 50px;
+    padding: 0 30px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+#todo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.todo {
+    display: flex;
+    align-items: center;
+    padding: 18px 20px;
+    background: white;
+    border: 2px solid #f0f0f0;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    gap: 15px;
+}
+
+.todo:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    transform: translateX(4px);
+}
+
+.todo.completed {
+    opacity: 0.6;
+}
+
+.todo.completed span {
+    text-decoration: line-through;
+    color: #999;
+}
+
+.todo input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 2px solid #667eea;
+    border-radius: 6px;
+    position: relative;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.todo input[type="checkbox"]:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.todo input[type="checkbox"]:checked {
+    background: #667eea;
+    border-color: #667eea;
+}
+
+.todo input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.todo span {
+    flex: 1;
+    font-size: 16px;
+    color: #333;
+}
+
+.todo button {
+    padding: 8px 16px;
+    background: #ff4757;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0;
+    flex-shrink: 0;
+}
+
+.todo:hover button {
+    opacity: 1;
+}
+
+.todo button:hover {
+    background: #ee5a6f;
+    transform: scale(1.05);
+}
+
+#todo-list:empty::before {
+    content: "No todos yet. Add one above!";
+    display: block;
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+}
+```
+
+**這裡發生了什麼事：**
+
+**玻璃擬態設計：**
+- `background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)` - 紫色漸層背景
+- `backdrop-filter: blur(10px)` - 在卡片上創造磨砂玻璃效果
+- `rgba(255, 255, 255, 0.95)` - 用於玻璃效果的半透明白色
+
+**自訂核取方塊樣式：**
+- `appearance: none` 移除了預設的瀏覽器核取方塊
+- 我們使用 `::after` 創造了一個帶有勾號的自訂圓角方塊
+- 當 `checked` 時，勾號會使用 ✓ unicode 字元出現
+
+**懸停互動：**
+- 待辦事項在懸停時向右滑動（`transform: translateX(4px)`）
+- 刪除按鈕在懸停前隱藏（`opacity: 0` → `opacity: 1`）
+- 按鈕在懸停時稍微放大，提供觸覺回饋
+
+**空狀態：**
+- `#todo-list:empty::before` 在沒有待辦事項時顯示訊息
+- 純 CSS 解決方案 - 不需要 JavaScript
+
+7. **執行應用程式**
+
+讓我們看看它的實際運作！執行開發伺服器：
+
+```bash
+wails3 dev
+```
+
+應用程式將編譯並開啟。試試看：
+- 輸入待辦事項並按下 Enter 或點擊新增
+- 點擊核取方塊標記為已完成
+- 懸停在待辦事項上以查看刪除按鈕出現
+- 注意 UI 如何立即更新——這就是我們的重新載入模式在運作**正在發生的事情：**
+- Wails 已自動為您的 `TodoService` 方法產生繫結
+- 開發模式包含熱重載（hot reload）— 嘗試修改 CSS 並觀察即時更新
+- 您的 Go 程式碼正在原生執行 — 無需翻譯或解釋
+
+</Steps>
+
+## 運作原理
+
+### 執行緒安全的狀態管理
+
+`sync.RWMutex` 提供安全的並發存取：
+
+```go
+func (t *TodoService) GetAll() []Todo {
+    t.mu.RLock()  // 讀取鎖 — 允許多個讀取器
+    defer t.mu.RUnlock()
+    return t.todos
+}
+
+func (t *TodoService) Add(title string) (*Todo, error) {
+    t.mu.Lock()  // 寫入鎖 — 獨佔存取
+    defer t.mu.Unlock()
+    // ... 變更操作
+}
+```
+
+**為什麼這很重要：**
+- 多個前端呼叫可能同時發生
+- 讀取操作不會互相阻塞
+- 寫入操作獲得獨佔存取權
+- `defer` 確保鎖始終被釋放
+
+### 錯誤處理
+
+服務會針對無效操作回傳錯誤：
+
+```go
+func (t *TodoService) Add(title string) (*Todo, error) {
+    if title == "" {
+        return nil, errors.New("title cannot be empty")
+    }
+    // ...
+}
+```
+
+在前端，您可以捕獲這些錯誤：
+
+```javascript
+try {
+    await TodoService.Add(title);
+} catch (err) {
+    alert('Error: ' + err);
+}
+```
+
+### 狀態同步
+
+每次變更後，我們會重新載入完整列表：
+
+```javascript
+window.addTodo = async () => {
+    await TodoService.Add(title);  // 變更操作
+    await loadTodos();             // 重新整理
+}
+```
+
+**替代方法：** 從每個方法回傳更新後的列表，以避免第二次呼叫。
+
+## 增強功能
+
+### 新增統計資訊
+
+將以下程式碼加入 `todoservice.go`：
+
+```go
+type TodoStats struct {
+    Total     int `json:"total"`
+    Completed int `json:"completed"`
+    Active    int `json:"active"`
+}
+
+func (t *TodoService) GetStats() TodoStats {
+    t.mu.RLock()
+    defer t.mu.RUnlock()
+
+    stats := TodoStats{
+        Total: len(t.todos),
+    }
+
+    for _, todo := range t.todos {
+        if todo.Completed {
+            stats.Completed++
+        } else {
+            stats.Active++
+        }
+    }
+
+    return stats
+}
+```
+
+在前端顯示：
+
+```javascript
+async function loadTodos() {
+    const [todos, stats] = await Promise.all([
+        TodoService.GetAll(),
+        TodoService.GetStats()
+    ]);
+
+    // 顯示統計資訊
+    document.getElementById('stats').textContent =
+        `${stats.active} active, ${stats.completed} completed`;
+
+    // ... 渲染 todos
+}
+```
+
+### 新增「清除已完成」
+
+```go
+func (t *TodoService) ClearCompleted() int {
+    t.mu.Lock()
+    defer t.mu.Unlock()
+
+    removed := 0
+    newTodos := []Todo{}
+
+    for _, todo := range t.todos {
+        if !todo.Completed {
+            newTodos = append(newTodos, todo)
+        } else {
+            removed++
+        }
+    }
+
+    t.todos = newTodos
+    return removed
+}
+```
+
+### 新增持久化
+
+對於生產環境應用程式，您通常會新增資料庫持久化功能。請參閱 [Database Integration](/guides/patterns/database) 指南，查看 SQLite、PostgreSQL 等的範例。
+
+## 為生產環境建置
+
+當您準備好分發您的 TODO 應用程式時，請為生產環境進行建置：
+
+```bash
+wails3 build
+```
+
+這會在 `build/bin/` 中建立最佳化的原生可執行檔：
+- 使用最佳化編譯您的 Go 程式碼
+- 為生產環境建置您的前端
+- 將所有內容捆綁到單一可執行檔中
+- 產生的應用程式通常為 10-20MB（與 Electron 的 150MB+ 相比）
+
+您可以直接執行該可執行檔 — 無需執行階段環境，無需啟動伺服器。這才是真正的原生應用程式。
+
+## 您建構的內容
+
+您剛剛建構了一個完整的 TODO 應用程式，具備：
+
+**完整的 CRUD 實作：**
+- 建立了具備建立、讀取、更新和刪除操作的服務
+- 新增了輸入驗證和錯誤處理
+- 學習了 Go 錯誤如何轉換為 JavaScript 例外狀況
+
+**執行緒安全的狀態管理：**
+- 使用 `sync.RWMutex` 安全地處理並發存取
+- 理解了讀取鎖（RLock）和寫入鎖（Lock）之間的差異
+- 看到了 `defer` 如何透過確保清理操作來防止死鎖
+
+**現代化、精緻的 UI：**
+- 建構了帶有漸層和模糊效果的玻璃擬態介面
+- 建立了自訂樣式的核取方塊，無需任何框架
+- 新增了懸停互動和過渡效果，營造原生感
+- 使用純 CSS 實現了空狀態
+
+**Wails 基礎知識：**
+- 服務註冊和自動繫結產生
+- 使用 async/await 從 JavaScript 呼叫 Go 方法
+- Go 與前端之間的狀態同步
+- 建置和封裝原生桌面應用程式
+
+## 下一步
+
+現在您已經了解了 CRUD 操作和狀態管理，請嘗試：
+
+- **新增持久化：** 使用 [SQLite](/guides/patterns/database) 讓 todos 在應用程式重新啟動後仍然存在
+- **新增更多功能：** 篩選（全部/進行中/已完成）、編輯現有的 todos、批次操作
+- **探索 Notes 教學：** 查看 [Notes](/zh-tw/tutorials/03-notes-vanilla) 中檔案操作的運作方式
+- **建構實際應用：** 運用這些概念建構您自己的應用程式！

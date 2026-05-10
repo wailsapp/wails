@@ -1,0 +1,670 @@
+---
+title: 從 v2 遷移至 v3
+description: 將您的 Wails v2 應用程式遷移至 v3 的完整指南
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails v3 是一次**完全重寫**，在架構、效能和開發者體驗方面都有顯著改進。本指南將協助您將 v2 應用程式遷移至 v3。
+
+**主要變更：**
+- 新的應用程式結構
+- 改進的繫結系統
+- 增強的視窗管理
+- 更好的事件系統
+- 簡化的設定
+
+**遷移時間：** 一般應用程式約需 1-4 小時
+
+## 破壞性變更
+
+### 應用程式初始化
+
+在 v2 中，應用程式設定、視窗配置和執行都合併為單一 `wails.Run()` 呼叫。這種單片式方法使得建立多個視窗、在不同階段處理錯誤或測試應用程式的各個組件變得困難。
+
+v3 將這些關注點分離為不同的階段：應用程式建立、視窗建立和執行。這種分離讓您可以明確控制應用程式生命週期的每個階段，並使程式碼更具模組化和可測試性。
+
+**v2：**
+
+```go
+err := wails.Run(&options.App{
+    Title:  "My App",
+    Width:  1024,
+    Height: 768,
+    Bind: []interface{}{
+        &GreetService{},
+    },
+})
+```
+
+**v3：**
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+})
+
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My App",
+    Width:  1024,
+    Height: 768,
+})
+
+app.Run()
+```
+
+**為什麼這樣更好：**
+
+- **多視窗支援**：您可以在任何時候動態建立視窗，而不僅限於啟動時
+- **更好的錯誤處理**：每個階段都可以獨立驗證並進行適當的錯誤處理
+- **更清晰的程式碼**：分離使得每個階段正在發生的事情變得明顯
+- **更易測試**：您可以在不執行事件迴圈的情況下測試應用程式設定
+- **更靈活**：視窗可以在應用程式生命週期中建立、銷毀和重新建立
+
+### 繫結
+
+在 v2 中，每個繫結的結構都需要一個 context 欄位和一個 `startup(ctx)` 方法來接收執行階段 context。這在您的業務邏輯和 Wails 執行階段之間建立了緊密耦合，使得程式碼更難測試和理解。
+
+v3 引入了服務模式，其中您的結構是完全獨立的，不需要儲存執行階段 context。如果服務需要存取應用程式實例，它會透過依賴注入明確接收，而不是透過隱式的 context 傳遞。
+
+**v2：**
+
+```go
+type App struct {
+    ctx context.Context
+}
+
+func (a *App) startup(ctx context.Context) {
+    a.ctx = ctx
+}
+
+func (a *App) Greet(name string) string {
+    return "Hello " + name
+}
+```
+
+**v3：**
+
+```go
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+    return "Hello " + name
+}
+
+// 註冊為服務
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+})
+```
+
+**為什麼這樣更好：**
+
+- **無隱式依賴**：服務是普通的 Go 結構，沒有隱藏的執行階段依賴
+- **更容易測試**：您可以測試服務方法而無需模擬 Wails context
+- **更清晰的程式碼**：依賴是明確的（作為建構函數參數傳遞），而不是隱藏在 context 欄位中
+- **更好的組織**：服務可以按領域分組，而不是全部生活在單一 `App` 結構中
+- **適當的初始化**：當您需要初始化時使用 `ServiceStartup()` 方法，使其明確
+
+### 執行階段
+
+在 v2 中，所有執行階段操作都需要將 context 傳遞給 `runtime` 套件中的全域函式。這在整個程式碼庫中建立了與 context 物件的緊密耦合，並使 API 感覺像是程序式而非物件導向。
+
+v3 以應用程式和視窗物件上的直接方法呼叫取代基於 context 的執行階段。操作直接在它們影響的物件上呼叫，使程式碼更直觀且更符合物件導向。
+
+**v2：**
+
+```go
+import "github.com/wailsapp/wails/v2/pkg/runtime"
+
+runtime.WindowSetTitle(a.ctx, "New Title")
+runtime.EventsEmit(a.ctx, "event-name", data)
+```
+
+**v3：**
+
+```go
+// 儲存 app 參考
+type MyService struct {
+    app *application.Application
+}
+
+func (s *MyService) UpdateTitle() {
+    window := s.app.Window.Current()
+    window.SetTitle("New Title")
+}
+
+func (s *MyService) EmitEvent() {
+    s.app.Event.Emit("event-name", data)
+}
+```
+
+**為什麼這樣更好：**
+
+- **物件導向設計**：方法在它們影響的物件上呼叫（視窗、app、選單等）
+- **意圖更清晰**：`window.SetTitle()` 比 `runtime.WindowSetTitle(ctx, ...)` 更明顯
+- **更好的 IDE 支援**：當方法位於物件上時，自動完成功能正常運作
+- **多視窗清晰度**：使用多個視窗時，您可以明確選擇要操作的視窗
+- **無需 context 傳遞**：您不需要將 context 傳遞給每個函式
+
+### 前端繫結
+
+在 v2 中，繫結按 Go 套件和結構名稱組織，通常產生類似 `wailsjs/go/main/App` 的路徑。這種結構未能反映邏輯分組，使得尋找相關功能變得困難。
+
+v3 按服務名稱和應用程式模組組織繫結，建立更清晰的邏輯結構。繫結會產生到 `bindings` 目錄中，按您的應用程式名稱和服務名稱組織，使得更容易理解哪些功能可用。
+
+**v2：**
+
+```javascript
+import { Greet } from '../wailsjs/go/main/App'
+
+const result = await Greet("World")
+```
+
+**v3：**
+
+```javascript
+import { Greet } from './bindings/myapp/greetservice'
+
+const result = await Greet("World")
+```
+
+**為什麼這樣更好：**
+
+- **邏輯組織**：繫結按服務名稱分組，而不是 Go 套件結構
+- **更清晰的匯入**：路徑反映領域邏輯（greetservice）而非檔案結構（main/App）
+- **更好的可發現性**：您可以按功能而非技術結構導航繫結
+- **一致的命名**：基於服務的組織與您的後端架構匹配
+- **更簡單的路徑**：不再需要 `../wailsjs/go` 前綴 - 只需 `./bindings`
+
+### 事件
+
+在 v2 中，事件使用可變參數 `interface{}` 並需要將 context 傳遞給每個事件函式。事件處理程式接收未鍵入的資料，需要手動進行類型斷言，使得事件系統容易出錯且難以除錯。
+
+v3 引入了鍵入的事件物件並移除了 context 需求。事件處理程式接收具有鍵入資料的適當事件物件，使得事件系統更可靠且更易於使用。
+
+**v2：**
+
+```go
+runtime.EventsOn(ctx, "event-name", func(data ...interface{}) {
+    // 處理事件
+})
+
+runtime.EventsEmit(ctx, "event-name", data)
+```
+
+**v3：**
+
+```go
+app.Event.On("event-name", func(e *application.CustomEvent) {
+    data := e.Data
+    // 處理事件
+})
+
+app.Event.Emit("event-name", data)
+```
+
+**為什麼這樣更好：**
+
+- **類型安全**：事件使用適當的事件物件而不是 `...interface{}`
+- **更好的除錯**：事件物件包含中繼資料如事件名稱，使得除錯更容易
+- **更清晰的 API**：`app.Event.On()` 和 `app.Event.Emit()` 比 runtime 函式更直觀
+- **不需要 context**：事件直接在 app 物件上運作，無需傳遞 context
+- **更簡單的處理程式**：事件處理程式有清晰的簽章而不是可變參數### Windows
+
+v2 僅支援每個應用程式單一視窗。視窗在啟動時建立，所有視窗操作皆透過隱含針對該單一視窗的執行階段函式進行。
+
+v3 將原生多視窗支援作為核心功能引入。每個視窗都是一個一等公民物件，擁有自己的方法與生命週期。您可以在應用程式的整個生命週期中動態建立、管理與銷毀多個視窗。
+
+**v2：**
+
+```go
+// 僅支援單一視窗
+runtime.WindowSetSize(ctx, 800, 600)
+```
+
+**v3：**
+
+```go
+// 支援多視窗
+window1 := app.Window.New()
+window1.SetSize(800, 600)
+
+window2 := app.Window.New()
+window2.SetSize(1024, 768)
+```
+
+**為何這更好：**
+
+- **多視窗應用程式**：建構具有多個獨立視窗的應用程式（儀表板、偏好設定、工具等）
+- **明確的視窗參照**：每個視窗都是您可以儲存並直接操作的物件
+- **動態視窗建立**：在執行期間的任何時間點建立與銷毀視窗
+- **獨立的視窗狀態**：每個視窗擁有自己的事件、屬性與生命週期
+- **更佳的架構**：視窗管理採用物件導向而非基於內容（context-based）
+
+## 遷移步驟
+
+### 步驟 1：更新相依性
+
+**go.mod：**
+
+```go
+module myapp
+
+go 1.21
+
+require (
+    github.com/wailsapp/wails/v3 v3.0.0-alpha.1
+)
+```
+
+**更新：**
+
+```bash
+go get github.com/wailsapp/wails/v3@latest
+go mod tidy
+```
+
+### 步驟 2：更新 main.go
+
+**v2：**
+
+```go
+package main
+
+import (
+    "embed"
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+    "github.com/wailsapp/wails/v2/pkg/options/windows"
+)
+
+//go:embed all:frontend/dist
+var assets embed.FS
+
+func main() {
+    app := NewApp()
+
+    err := wails.Run(&options.App{
+        Title:  "My App",
+        Width:  1024,
+        Height: 768,
+        AssetServer: &assetserver.Options{
+            Assets: assets,
+        },
+        Bind: []interface{}{
+            app,
+        },
+        Windows: &windows.Options{
+            WebviewIsTransparent: false,
+        },
+    })
+
+    if err != nil {
+        println("Error:", err.Error())
+    }
+}
+```
+
+**v3：**
+
+```go
+package main
+
+import (
+    "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        Services: []application.Service{
+            application.NewService(&MyService{}),
+        },
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  "My App",
+        Width:  1024,
+        Height: 768,
+    })
+
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
+}
+```
+
+### 步驟 3：將 App 結構轉換為服務
+
+**v2：**
+
+```go
+type App struct {
+    ctx context.Context
+}
+
+func NewApp() *App {
+    return &App{}
+}
+
+func (a *App) startup(ctx context.Context) {
+    a.ctx = ctx
+    // 初始化
+}
+
+func (a *App) Greet(name string) string {
+    return "Hello " + name
+}
+```
+
+**v3：**
+
+```go
+type MyService struct {
+    app *application.Application
+}
+
+func NewMyService(app *application.Application) *MyService {
+    return &MyService{app: app}
+}
+
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    // 初始化
+    return nil
+}
+
+func (s *MyService) Greet(name string) string {
+    return "Hello " + name
+}
+
+// 在建立 app 後註冊
+app := application.New(application.Options{})
+app.RegisterService(application.NewService(NewMyService(app)))
+```
+
+### 步驟 4：更新執行階段呼叫
+
+**v2：**
+
+```go
+func (a *App) DoSomething() {
+    runtime.WindowSetTitle(a.ctx, "New Title")
+    runtime.EventsEmit(a.ctx, "update", data)
+    runtime.LogInfo(a.ctx, "Message")
+}
+```
+
+**v3：**
+
+```go
+func (s *MyService) DoSomething() {
+    window := s.app.Window.Current()
+    window.SetTitle("New Title")
+    
+    s.app.Event.Emit("update", data)
+    
+    s.app.Logger.Info("Message")
+}
+```
+
+### 步驟 5：更新前端
+
+**產生新的繫結：**
+
+```bash
+wails3 generate bindings
+```
+
+**更新匯入：**
+
+```javascript
+// v2
+import { Greet } from '../wailsjs/go/main/App'
+
+// v3
+import { Greet } from './bindings/myapp/myservice'
+```
+
+**更新事件處理：**
+
+```javascript
+// v2
+import { EventsOn, EventsEmit } from '../wailsjs/runtime/runtime'
+
+EventsOn("update", (data) => {
+    console.log(data)
+})
+
+EventsEmit("action", data)
+
+// v3
+import { Events } from '@wailsio/runtime'
+
+Events.On("update", (data) => {
+    console.log(data)
+})
+
+Events.Emit("action", data)
+```
+
+### 步驟 6：更新設定
+
+**v2 (wails.json)：**
+
+```json
+{
+  "name": "myapp",
+  "outputfilename": "myapp",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto"
+}
+```
+
+**v3 (wails.json)：**
+
+```json
+{
+  "name": "myapp",
+  "frontend": {
+    "dir": "./frontend",
+    "install": "npm install",
+    "build": "npm run build",
+    "dev": "npm run dev",
+    "devServerUrl": "http://localhost:5173"
+  }
+}
+```
+
+## 功能對應
+
+### 對話方塊 (dialogs)
+
+**v2：**
+
+```go
+selection, err := runtime.OpenFileDialog(ctx, runtime.OpenDialogOptions{
+    Title: "Select File",
+})
+```
+
+**v3：**
+
+```go
+selection, err := app.Dialog.OpenFile(application.OpenFileDialogOptions{
+    Title: "Select File",
+})
+```
+
+### 選單 (Menus)
+
+**v2：**
+
+```go
+menu := menu.NewMenu()
+menu.Append(menu.Text("File", nil, []*menu.MenuItem{
+    menu.Text("Quit", nil, func(_ *menu.CallbackData) {
+        runtime.Quit(ctx)
+    }),
+}))
+```
+
+**v3：**
+
+```go
+menu := app.NewMenu()
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+```
+
+### 系統匣 (System Tray)
+
+**v2：**
+
+```go
+// v2 中不可用
+```
+
+**v3：**
+
+```go
+systray := app.SystemTray.New()
+systray.SetIcon(iconBytes)
+systray.SetLabel("My App")
+
+menu := app.NewMenu()
+menu.Add("Show").OnClick(showWindow)
+menu.Add("Quit").OnClick(app.Quit)
+systray.SetMenu(menu)
+```
+
+## 常見問題
+
+### 問題：找不到繫結
+
+**問題：** 遷移後出現匯入錯誤
+
+**解決方案：**
+
+```bash
+# 重新產生繫結
+wails3 generate bindings
+
+# 檢查輸出目錄
+ls frontend/bindings
+```
+
+### 問題：內容 (Context) 錯誤
+
+**問題：** `ctx` 不可用
+
+**解決方案：**
+
+改為儲存 app 參照：
+
+```go
+type MyService struct {
+    app *application.Application
+}
+
+func NewMyService(app *application.Application) *MyService {
+    return &MyService{app: app}
+}
+```
+
+### 問題：視窗方法無法運作
+
+**問題：** `runtime.WindowSetTitle()` 不存在
+
+**解決方案：**
+
+直接使用視窗方法：
+
+```go
+window := s.app.Window.Current()
+window.SetTitle("New Title")
+```
+
+### 問題：事件未觸發
+
+**問題：** 已註冊事件但未收到
+
+**解決方案：**
+
+檢查事件名稱是否完全相符：
+
+```go
+// Go
+app.Event.Emit("my-event", data)
+
+// JavaScript
+OnEvent("my-event", handler)  // 必須完全相符
+```
+
+## 測試遷移
+
+### 檢查清單
+
+- [ ] 應用程式啟動時無錯誤
+- [ ] 所有繫結正常運作
+- [ ] 事件發送與接收正常
+- [ ] 視窗開啟與關閉正常
+- [ ] 選單正常運作（如適用）
+- [ ] 對話方塊正常運作（如適用）
+- [ ] 系統匣正常運作（如適用）
+- [ ] 建置程序正常運作
+- [ ] 生產環境建置正常運作
+
+### 測試指令
+
+```bash
+# 開發環境
+wails3 dev
+
+# 建置
+wails3 build
+
+# 產生繫結
+wails3 generate bindings
+```
+
+## v3 的好處
+
+### 效能
+
+- **更快的啟動速度** - 最佳化的初始化
+- **更低的記憶體佔用** - 高效的資源使用
+- **更佳的橋接器** - &lt;1ms 呼叫延遲
+
+### 功能
+
+- **多視窗** - 原生支援
+- **系統匣** - 內建支援
+- **更佳的事件處理** - 型別安全、更簡單的 API
+- **服務 (Services)** - 更佳的程式碼組織
+
+### 開發者體驗
+
+- **型別安全** - 完整的 TypeScript 支援
+- **更佳的錯誤訊息** - 清晰的錯誤提示---
+
+**有任何問題嗎？** 請在 [Discord](https://discord.gg/JDdSxwjhGf) 提問或[開啟一個 issue](https://github.com/wailsapp/wails/issues)。

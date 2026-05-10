@@ -1,0 +1,524 @@
+---
+title: 選單
+description: Wails v3 中建立與自訂選單的指南
+---
+
+Wails v3 提供了一個強大的選單系統，允許您建立應用程式選單和右鍵選單（上下文選單）。本指南將引導您了解選單系統的各種功能和能力。
+
+### 建立選單
+
+要建立新選單，請使用 Menus 管理員的 `New()` 方法：
+
+```go
+menu := app.Menu.New()
+```
+
+### 新增選單項目
+
+Wails 支援多種類型的選單項目，每種都有其特定用途：
+
+#### 一般選單項目
+一般選單項目是選單的基本組成單元。它們顯示文字，並在點擊時觸發動作：
+
+```go
+menuItem := menu.Add("Click Me")
+```
+
+#### 核取方塊
+核取方塊類型的選單項目提供可切換的狀態，適用於啟用/停用功能或設定：
+
+```go
+checkbox := menu.AddCheckbox("My checkbox", true)  // true = 初始狀態為勾選
+```
+
+#### 單選群組
+單選群組允許使用者從一組互斥的選項中選擇一個。當單選項目彼此相鄰放置時，它們會自動建立：
+
+```go
+menu.AddRadio("Option 1", true)   // true = 初始狀態為選中
+menu.AddRadio("Option 2", false)
+menu.AddRadio("Option 3", false)
+```
+
+#### 分隔線
+分隔線是水平線，有助於將選單項目組織成邏輯群組：
+
+```go
+menu.AddSeparator()
+```
+
+#### 子選單
+子選單是巢狀選單，當游標懸停或點擊選單項目時會出現。它們適用於組織複雜的選單結構：
+
+```go
+submenu := menu.AddSubmenu("File")
+submenu.Add("Open")
+submenu.Add("Save")
+```
+
+#### 合併選單
+選單可以透過追加（append）或前置（prepend）的方式加入另一個選單中。
+```go
+menu := app.Menu.New()
+menu.Add("First Menu")
+
+secondaryMenu := app.Menu.New()
+secondaryMenu.Add("Second Menu")
+
+// 將 'secondaryMenu' 插入到 'menu' 之後
+menu.Append(secondaryMenu)
+
+// 將 'secondaryMenu' 插入到 'menu' 之前
+menu.Prepend(secondaryMenu)
+
+// 更新選單
+menu.Update()
+```
+
+:::note
+預設情況下，`prepend` 和 `append` 會與原始選單共享狀態。如果您想建立具有自己狀態的新選單，
+您可以對選單呼叫 `.Clone()`。
+
+例如：`menu.Append(secondaryMenu.Clone())`
+:::
+
+#### 清除選單
+在某些情況下，如果您處理的選單項目數量是可變的，建構一個全新的選單可能會更好。
+
+這將清除現有選單上的所有項目，並允許您再次新增項目。
+
+```go
+menu := app.Menu.New()
+menu.Add("Waiting for update...")
+
+// 經過某些邏輯後，選單必須更新
+menu.Clear()
+menu.Add("Update complete!")
+menu.Update()
+```
+
+:::note
+清除選單僅會清除頂層階級的選單項目。雖然子選單將不可見，但它們仍會佔用記憶體，
+因此請務必仔細管理您的選單。
+:::
+
+#### 銷毀選單
+
+如果您想清除並釋放選單，請使用 `Destroy()` 方法：
+
+```go
+menu := app.Menu.New()
+menu.Add("Waiting for update...")
+
+// 經過某些邏輯後，選單必須被銷毀
+menu.Destroy()
+```
+
+
+### 選單項目屬性
+
+選單項目具有多個可配置的屬性：
+
+| 屬性        | 方法                       | 描述                                             |
+|------|--------------------------|------------------------------------------------|
+| Label       | `SetLabel(string)`       | 設定顯示文字                                     |
+| Enabled     | `SetEnabled(bool)`       | 啟用/停用該項目                                   |
+| Checked     | `SetChecked(bool)`       | 設定勾選狀態（適用於核取方塊/單選項目）             |
+| Tooltip     | `SetTooltip(string)`     | 設定提示文字                                     |
+| Hidden      | `SetHidden(bool)`        | 顯示/隱藏該項目                                   |
+| Accelerator | `SetAccelerator(string)` | 設定鍵盤快捷鍵                                   |
+
+### 選單項目狀態
+
+選單項目可以處於不同的狀態，以控制其可見性和互動性：
+
+#### 可見性
+
+選單項目可以使用 `SetHidden()` 方法動態顯示或隱藏：
+
+```go
+menuItem := menu.Add("Dynamic Item")
+
+// 隱藏選單項目
+menuItem.SetHidden(true)
+
+// 顯示選單項目
+menuItem.SetHidden(false)
+
+// 檢查目前可見性
+isHidden := menuItem.Hidden()
+```
+
+隱藏的選單項目會從選單中完全移除，直到再次顯示為止。這適用於僅在特定應用程式狀態下出現的上下文選單項目。
+
+#### 啟用狀態
+
+選單項目可以使用 `SetEnabled()` 方法啟用或停用：
+
+```go
+menuItem := menu.Add("Save")
+
+// 停用選單項目
+menuItem.SetEnabled(false)  // 項目顯示為灰色且無法點擊
+
+// 啟用選單項目
+menuItem.SetEnabled(true)   // 項目變為可點擊
+
+// 檢查目前啟用狀態
+isEnabled := menuItem.Enabled()
+```
+
+停用的選單項目仍會顯示，但會呈現灰色且無法點擊。這通常用於指示目前無法執行某項動作，例如：
+- 當沒有變更需要儲存時，停用「儲存」
+- 當沒有選取任何內容時，停用「複製」
+- 當沒有動作可以復原時，停用「復原」
+
+#### 動態狀態管理
+
+您可以將這些狀態與事件處理常式結合，以建立動態選單：
+
+```go
+saveMenuItem := menu.Add("Save")
+
+// 初始時停用「儲存」選單項目
+saveMenuItem.SetEnabled(false)
+
+// 僅在有未儲存的變更時啟用「儲存」
+documentChanged := func() {
+    saveMenuItem.SetEnabled(true)
+    menu.Update()  // 記得在更改狀態後更新選單
+}
+
+// 儲存後停用「儲存」
+documentSaved := func() {
+    saveMenuItem.SetEnabled(false)
+    menu.Update()
+}
+```
+
+### 事件處理
+
+選單項目可以使用 `OnClick` 方法回應點擊事件：
+
+```go
+menuItem.OnClick(func(ctx *application.Context) {
+    // 處理點擊事件
+    println("Menu item clicked!")
+})
+```
+
+上下文提供了關於被點擊選單項目的資訊：
+
+```go
+menuItem.OnClick(func(ctx *application.Context) {
+    // 取得被點擊的選單項目
+    clickedItem := ctx.ClickedMenuItem()
+    // 取得其目前狀態
+    isChecked := clickedItem.Checked()
+})
+```
+
+### 基於角色的選單項目
+
+Wails 提供了一組預先定義的選單角色，這些角色會自動建立具有標準功能的選單項目。以下是支援的選單角色：
+
+#### 完整的選單結構
+這些角色會建立具有常見功能的完整選單結構：
+
+| 角色 | 描述 | 平台注意事項 |
+|------|-------------|------|
+| `AppMenu` | 包含關於、服務、隱藏/顯示和結束應用程式的應用程式選單 | 僅 macOS |
+| `EditMenu` | 包含復原、重做、剪下、複製、貼上等標準編輯選單 | 所有平台 |
+| `ViewMenu` | 包含重新載入、縮放和全螢幕控制的檢視選單 | 所有平台 |
+| `WindowMenu` | 視窗控制（最小化、最大化等） | 所有平台 |
+| `HelpMenu` | 包含連結到 Wails 網站「了解更多」的說明選單 | 所有平台 |------|-------------|------|
+| `About` | 顯示應用程式「關於」對話框 | 所有平台 |
+| `Hide` | 隱藏應用程式 | 僅 macOS |
+| `HideOthers` | 隱藏其他應用程式 | 僅 macOS |
+| `UnHide` | 顯示已隱藏的應用程式 | 僅 macOS |
+| `CloseWindow` | 關閉目前視窗 | 所有平台 |
+| `Minimise` | 最小化視窗 | 所有平台 |
+| `Zoom` | 縮放視窗 | 僅 macOS |
+| `Front` | 將視窗帶至最前層 | 僅 macOS |
+| `Quit` | 結束應用程式 | 所有平台 |
+| `Undo` | 復原上一個動作 | 所有平台 |
+| `Redo` | 重做上一個動作 | 所有平台 |
+| `Cut` | 剪選取內容 | 所有平台 |
+| `Copy` | 複製選取內容 | 所有平台 |
+| `Paste` | 從剪貼簿貼上 | 所有平台 |
+| `PasteAndMatchStyle` | 貼上並匹配樣式 | 僅 macOS |
+| `SelectAll` | 全選 | 所有平台 |
+| `Delete` | 刪除選取內容 | 所有平台 |
+| `Reload` | 重新載入目前頁面 | 所有平台 |
+| `ForceReload` | 強制重新載入目前頁面 | 所有平台 |
+| `ToggleFullscreen` | 切換全螢幕模式 | 所有平台 |
+| `ResetZoom` | 重設縮放等級 | 所有平台 |
+| `ZoomIn` | 放大 | 所有平台 |
+| `ZoomOut` | 縮小 | 所有平台 |
+
+以下是一個展示如何使用完整選單結構與個別角色的範例：
+
+```go
+menu := app.Menu.New()
+
+// 新增完整的選單結構
+menu.AddRole(application.AppMenu)    // 僅 macOS
+menu.AddRole(application.EditMenu)   // 常見編輯操作
+menu.AddRole(application.ViewMenu)   // 檢視控制項
+menu.AddRole(application.WindowMenu) // 視窗控制項
+
+// 將個別基於角色的項目新增至自訂選單
+fileMenu := menu.AddSubmenu("File")
+fileMenu.AddRole(application.CloseWindow)
+fileMenu.AddSeparator()
+fileMenu.AddRole(application.Quit)
+```
+
+## 應用程式選單
+
+應用程式選單是出現在應用程式視窗頂部（Windows/Linux）或螢幕頂部（macOS）的選單。
+
+### 應用程式選單行為
+
+當您使用 `app.Menu.Set()` 設定應用程式選單時，它會成為 macOS 上的主選單。
+在 Windows/Linux 上，選單是針對每個視窗設定的。
+
+```go
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "Custom Menu Window",
+    Windows: application.WindowsWindow{
+        Menu: customMenu,  // 覆寫此視窗的應用程式選單
+    },
+})
+```
+
+以下是一個展示這些不同選單行為的完整範例：
+
+```go
+func main() {
+    app := application.New(application.Options{})
+
+    // 建立應用程式選單
+    appMenu := app.Menu.New()
+    fileMenu := appMenu.AddSubmenu("File")
+    fileMenu.Add("New").OnClick(func(ctx *application.Context) {
+        // 這將在所有視窗中可用，除非被覆寫
+        window := app.Windows.Current()
+        window.SetTitle("New Window")
+    })
+    
+    // 設定為應用程式選單 - 這是給 macOS 用的
+    app.Menu.Set(appMenu)
+
+    // Windows 上具有自訂選單的視窗
+    customMenu := app.Menu.New()
+    customMenu.Add("Custom Action")
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "Custom Menu",
+        Windows: application.WindowsWindow{
+            Menu: customMenu,
+        },
+    })
+
+    app.Run()
+}
+```
+
+## 右鍵選單
+
+右鍵選單（Context Menus）是在應用程式中右鍵點擊元素時出現的彈出式選單。它們提供對所點擊元素相關操作的快速存取。
+
+### 預設右鍵選單
+
+預設右鍵選單是 WebView 內建的選單，提供系統層級的操作，例如：
+- 文字的複製、剪下與貼上
+- 文字選取控制項
+- 拼字檢查選項
+
+#### 控制預設右鍵選單
+
+您可以使用 `--default-contextmenu` CSS 屬性來控制預設右鍵選單出現的時機：
+
+```html
+<!-- 始終顯示預設右鍵選單 -->
+<div style="--default-contextmenu: show">
+    <input type="text" placeholder="右鍵點擊以進行文字操作"/>
+    <textarea>此處提供標準文字操作</textarea>
+</div>
+
+<!-- 隱藏預設右鍵選單 -->
+<div style="--default-contextmenu: hide">
+    <div class="custom-component">僅顯示自訂右鍵選單</div>
+</div>
+
+<!-- 智慧右鍵選單行為（預設） -->
+<div style="--default-contextmenu: auto">
+    <!-- 當選取文字或在輸入欄位中時顯示預設選單 -->
+    <p>選取此文字以查看預設選單</p>
+    <input type="text" placeholder="輸入操作的預設選單"/>
+</div>
+```
+
+:::note
+此功能僅在執行階段 [已初始化](../../learn/runtime#initialisation) 後才能如預期運作。
+:::
+
+#### 巢狀右鍵選單行為
+
+當在巢狀元素上使用 `--default-contextmenu` 屬性時，適用以下規則：
+
+1. 子元素會繼承父元素的右鍵選單設定，除非明確覆寫
+2. 最特定（最接近）的設定具有優先權
+3. `auto` 值可用於重設為預設行為
+
+巢狀右鍵選單行為範例：
+
+```html
+<!-- 父元素設定為 hide -->
+<div style="--default-contextmenu: hide">
+    <!-- 此元素繼承 hide -->
+    <p>此處無右鍵選單</p>
+    
+    <!-- 此元素覆寫為 show -->
+    <div style="--default-contextmenu: show">
+        <p>此處顯示右鍵選單</p>
+        
+        <!-- 此元素繼承 show -->
+        <span>也具有右鍵選單</span>
+        
+        <!-- 此元素重設為自動行為 -->
+        <div style="--default-contextmenu: auto">
+            <p>僅在選取文字時顯示選單</p>
+        </div>
+    </div>
+</div>
+```
+
+### 自訂右鍵選單
+
+自訂右鍵選單允許您提供與所點擊元素相關的應用程式特定操作。它們特別適用於：
+- 文件管理器中的檔案操作
+- 影像處理工具
+- 資料格線中的自訂操作
+- 元件特定的操作
+
+#### 建立自訂右鍵選單
+
+建立自訂右鍵選單時，您需提供一個唯一識別碼（名稱），將選單與 HTML 元素連結：
+
+```go
+// 建立識別碼為 "imageMenu" 的右鍵選單
+contextMenu := application.NewContextMenu()
+app.ContextMenus.Add("imageMenu", contextMenu)
+```
+
+名稱參數（此範例中的 "imageMenu"）作為唯一識別碼，將用於：
+1. 將 HTML 元素連結至此特定的右鍵選單
+2. 識別右鍵點擊時應顯示哪個選單
+3. 允許更新選單與清理資源
+
+#### 選單資料
+
+處理右鍵選單事件時，您可以存取所點擊的選單項目及其關聯的選單資料：
+
+```go
+contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
+    // 取得所點擊的選單項目
+    menuItem := ctx.ClickedMenuItem()
+    
+    // 以字串形式取得選單資料
+    contextData := ctx.ContextMenuData()
+    
+    // 檢查選單項目是否被勾選（適用於核取方塊/單選項目）
+    isChecked := ctx.IsChecked()
+    
+    // 使用該資料
+    if contextData != "" {
+        processItem(contextData)
+    }
+})
+```
+
+選單資料是從 HTML 元素的 `--custom-contextmenu-data` 屬性傳遞而來，並可在點擊處理常式中透過 `ctx.ContextMenuData()` 存取。這在以下情況特別有用：
+
+- 處理列表或格線，其中每個項目需要唯一識別
+- 處理特定元件或元素的操作
+- 從前端傳遞狀態或中繼資料至後端
+
+#### 右鍵選單管理
+
+對右鍵選單進行變更後，請呼叫 `Update()` 方法以套用變更：
+
+```go
+contextMenu.Update()
+```
+
+當您不再需要某個右鍵選單時，可以銷毀它：
+
+```go
+contextMenu.Destroy()
+```
+:::danger[警告] 
+呼叫 `Destroy()` 後，再次使用該右鍵選單的參考會導致 panic。
+:::
+
+### 實際範例：影像相簿
+
+以下是為影像相簿實作自訂右鍵選單的完整範例：
+
+```go
+// 後端：建立右鍵選單```go
+imageMenu := application.NewContextMenu()
+app.ContextMenus.Add("imageMenu", imageMenu)
+
+// Add relevant operations
+imageMenu.Add("View Full Size").OnClick(func(ctx *application.Context) {
+    // Get the image ID from context data
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        openFullSizeImage(imageID)
+    }
+})
+
+imageMenu.Add("Download").OnClick(func(ctx *application.Context) {
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        downloadImage(imageID)
+    }
+})
+
+imageMenu.Add("Share").OnClick(func(ctx *application.Context) {
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        showShareDialog(imageID)
+    }
+})
+```
+
+```html
+<!-- Frontend: Image gallery implementation -->
+<div class="gallery">
+    <!-- Each image container with context menu -->
+    <div class="image-container" 
+         style="--custom-contextmenu: imageMenu; --custom-contextmenu-data: img_123">
+        <img src="/images/img_123.jpg" alt="Gallery Image"/>
+        <span class="caption">Nature Photo</span>
+    </div>
+    
+    <div class="image-container"
+         style="--custom-contextmenu: imageMenu; --custom-contextmenu-data: img_124">
+        <img src="/images/img_124.jpg" alt="Gallery Image"/>
+        <span class="caption">City Photo</span>
+    </div>
+</div>
+```
+
+在此範例中：
+1. 使用識別碼 "imageMenu" 建立右鍵選單
+2. 每個圖片容器使用 `--custom-contextmenu: imageMenu` 連結至該選單
+3. 每個容器使用 `--custom-contextmenu-data` 提供其圖片 ID 作為上下文資料
+4. 後端在點擊處理常式中接收圖片 ID，並可執行特定操作
+5. 相同的選單會重複用於所有圖片，但上下文資料會告訴我們要對哪張圖片進行操作
+
+此模式特別適用於：
+- 需要特定操作的資料表格
+- 需要上下文特定動作的檔案管理器
+- 需要不同操作的設計工具
+- 任何相同操作適用於多個實例的元件

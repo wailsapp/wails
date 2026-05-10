@@ -1,0 +1,197 @@
+---
+title: 建置與封裝管線
+description: 執行 `wails3 build` 時的幕後運作機制、跨平台二進位檔的產生方式，以及如何為各作業系統產生安裝程式。
+sidebar:
+  order: 6
+---
+
+`wails3 build` 是一個**單一指令**，驅動著一個_多階段_的管線流程：
+
+1. **前端生產環境建置** (Vite / React / …)  
+2. **資源嵌入**至 Go 原始碼中  
+3. **原生編譯**以對應目標作業系統/架構  
+4. **後處理** (圖示注入、版本資訊、程式碼簽署)  
+5. **封裝**成可分發的產物 (AppImage, DMG, MSI, …)
+
+本文檔將追蹤每個階段，展示程式碼所在位置，並說明如何自訂或除錯。
+
+---
+
+## 1. 進入點：`internal/commands/build-assets.go`
+
+```
+wails3 build                 # cmd/wails3/main.go
+└─ internal/commands.Build() # build-assets.go
+```
+
+高階任務會委派給 **Taskfile** 的目標 (target)，以便相同的邏輯能在 CI 或本機環境中執行。
+
+| 階段 | Taskfile 目標 | Go 實作 |
+|-------|---------|----|
+| 前端建置 | `frontend:build` | `internal/commands/task.go` |
+| 嵌入資源   | `embed:assets`  | 產生的 `bundled_assetserver.go` |
+| Go 編譯     | `build:go`      | `tool_buildinfo.go`, `tool_package.go` |
+| 封裝        | `package:*`     | `internal/packager`, `internal/commands/*` |
+
+---
+
+## 2. 前端生產環境建置
+
+1. CLI 會切換至 `frontend/` 目錄，並執行專案 `Taskfile.yml` 中找到的 `build` 任務（預設為 `npm run build`）。
+2. 輸出內容會寫入 `frontend/dist/`。
+3. 會產生一個**內容雜湊**清單 (`manifest.json`)，以便預設支援快取破壞 (cache-busting)。
+
+如果任務失敗，管線會提前中止，並返回您的建置工具的退出碼。
+
+---
+
+## 3. 資源嵌入
+
+實作於 `internal/assetserver/build_production.go`：
+
+* 遍歷 `frontend/dist` 並產生一個 `go:embed` 檔案
+  `bundled_assetserver.go`（已被 git 忽略）。
+* 加入 `production` 建置標籤 (build tag)。
+
+結果：最終的二進位檔包含所有 HTML/JS/CSS 位元組，因此可執行檔是獨立完整的。
+
+---
+
+## 4. 原生編譯
+
+### 建置旗標 (Build Flags)
+
+| 旗標 | 目的 |
+|------|--|
+| `-tags production` | 選擇生產環境資源伺服器與執行階段存根 (runtime stubs) |
+| `-ldflags "-s -w"` | 移除符號表與 DWARF 資訊（產生更小的二進位檔） |
+| `-X internal/buildinfo.BuildTime=$(date)` | 嵌入可重現的元數據 |
+
+`internal/commands/tool_buildinfo.go` 會收集版本、Git 提交紀錄和建置時間，然後使用 `go build -ldflags` 將其注入。
+
+### 跨平台編譯矩陣
+
+| 作業系統 | 架構 | 建置標籤 | CGO | 備註 |
+|----|--|-----------|-----|----|
+| Windows | amd64 / arm64 | `windows` | 啟用 CGO 以支援 WebView2 | 透過 `internal/commands/syso.go` 產生 `.syso` |
+| macOS   | amd64 / arm64 | `darwin`  | 啟用 CGO (Objective-C) | 提供程式碼簽署與公關 (notarisation) 任務 |
+| Linux   | amd64 / arm64 | `linux`   | 純 Go (webkit 選項)   | CGO 建置需要 GTK/WebKitGTK 標頭檔 |
+
+`wails3 build -platform darwin/arm64` 會覆蓋 GOOS/GOARCH。  
+如果主機無法編譯目標平台（例如在 Linux 上編譯 Windows），CLI 會回退使用 **Docker** 映像檔 (`ghcr.io/wailsapp/cross-compiler`)。
+
+---
+
+## 5. 後處理
+
+### 圖示與資源
+
+* **Windows** – `syso.go` 將您的 PNG/ICO 合併到一個 `.syso` 檔案中，`go build` 會自動連結它。同時也會寫入 `manifest.xml` 以啟用高 DPI 支援。
+* **macOS** – `icons.go` 將 `icon.png` 轉換為 `.icns`，並注入至
+  `MyApp.app/Contents/Resources`。
+* **Linux** – `.desktop` 檔案會由每個封裝後端在 `/usr/share/applications` 中產生。
+
+### 程式碼簽署 (選填)
+
+* macOS: `codesign` + `xcrun altool --notarize-app`
+* Windows: `signtool.exe`
+* Linux: 不常見（儲存庫 GPG 由外部處理）
+
+Task 目標：`sign:mac`, `sign:windows`。
+
+---
+
+## 6. 封裝後端
+
+### Linux
+
+| 產物 | 程式碼路徑 | 工具 |
+|------|--|---|
+| **AppImage** (預設) | `internal/commands/appimage.go` | `linuxdeploy` + `linuxdeploy-plugin-gtk` |
+| **deb / rpm / pacman** | `internal/packager` | `fpm` (透過 Go 呼叫) |
+
+旗標：
+
+```
+wails3 build -package deb   # 產生 myapp_1.0.0_amd64.deb
+wails3 build -package rpm
+```
+
+### macOS
+
+* **DMG** – `internal/commands/packager.go` 呼叫 `appdmg` 來產生拖放式安裝程式。
+* **ZIP** – 如果缺少 `appdmg` 時的備用方案。
+* 自動設定 CFBundle 識別符與版本 plist。
+
+### Windows
+
+* **MSI** – `internal/commands/packager.go` 包裝 **WiX** 的 candle 與 light 工具。  
+  Heat 會自動從已建置的 `.exe` 產生元件樹狀結構。
+
+額外資源：
+
+* `internal/commands/windows_resources/` 包含範本化的 **.wxs** 片段。
+* 版本資訊透過 `rsrc` 工具注入。
+
+---
+
+## 7. 建置產物配置
+
+建置成功後，CLI 會輸出：
+
+```
+build/bin/
+├── myapp-linux-amd64
+└── myapp-linux-amd64.AppImage
+
+build/package/
+└── myapp_1.0.0_amd64.deb
+```
+
+確切的檔案取決於 `-platform` 和 `-package` 旗標。
+
+---
+
+## 8. 自訂管線
+
+| 需求 | 方法 |
+|------|------|
+| 在建置前執行 linter | 在 **Taskfile.yml** 中新增一個 `lint` 任務，並讓 `build` 依賴於它。 |
+| 額外的連結器旗標 | `wails3 build -ldflags "-H windowsgui"` |
+| 跳過封裝 | `wails3 build -skip-package` (保留原始二進位檔)。 |
+| 使用自己的封裝器 | 實作 `internal/packager/<name>.go`，並在 `packager.go` 中註冊。 |
+
+所有 Taskfile 目標都使用由 CLI 匯出的環境變數，因此您可以在自訂任務中參考像 `$WAILS_VERSION` 或 `$WAILS_PLATFORM` 這樣的值。
+
+---
+
+## 9. 疑難排解
+
+| 症狀 | 可能原因 | 解決方法 |
+|---------|-----|----|
+| **`ld: framework not found WebKit` (mac)** | 缺少 Xcode CLI 工具 | `xcode-select --install` |
+| **生產環境建置中出現空白視窗** | 前端建置失敗或 SPA 路由問題 | 檢查 `frontend/dist/index.html` 是否存在，並確認已設定 `History API Fallback`。 |
+| **找不到 `wixl`** (Linux MSI 跨平台建置) | Docker 映像中未安裝 WiX 工具集 | 使用 `--docker` 建置或手動安裝 WiX。 |
+| **重複的符號 `_WinMain`** | 混用了 `windowsgui` 旗標與 syso | 移除自訂的 `-ldflags` 或讓 Wails 管理資源。 |
+
+詳細模式：`wails3 build -verbose` 會轉儲執行的每個指令。
+
+---
+
+## 10. 關鍵來源對照表
+
+| 關注點 | 檔案 |
+|---------|--|
+| Task 執行器粘合層 | `internal/commands/task_wrapper.go` |
+| 建置分派器 | `internal/commands/build-assets.go` |
+| AppImage 建置器 | `internal/commands/appimage.go` |
+| 通用封裝器介面 | `internal/packager/packager.go` |
+| Windows 資源產生器 | `internal/commands/syso.go` |
+| 建置資訊注入器 | `internal/commands/tool_buildinfo.go` |
+| 版本常數 | `internal/version/version.go` |
+
+當您追蹤建置失敗時，請保留此表格在旁。
+
+---
+
+現在您已經從**原始碼**到**安裝程式**有了完整的圖景。憑藉這些知識，您可以調整管線、新增新的封裝目標，或自信地除錯跨平台編譯問題。祝您發布順利！

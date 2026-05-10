@@ -1,0 +1,550 @@
+---
+title: CLI 參考文件
+description: Wails CLI 命令的完整參考
+sidebar:
+  order: 1
+---
+
+Wails CLI 提供了一組全面的命令，協助您開發、建置和維護 Wails 應用程式。
+
+## 核心命令
+
+核心命令是用於專案建立、開發和建置的主要命令。
+
+所有 CLI 命令的格式如下：`wails3 <command>`。
+
+### `init`
+初始化新的 Wails 專案。在此初始化過程中，會執行 `go mod tidy` 命令以更新專案套件。可以使用 `init` 命令搭配 `-skipgomodtidy` 旗標來跳過此步驟。
+
+```bash
+wails3 init [flags]
+```
+
+#### 旗標
+| Flag                  | Description          | Default                  |
+|-----------------------|----------------------|--------------------------|
+| `-p`                  | Package name         | `main`                   |
+| `-t`                  | Template name or URL | `vanilla`                |
+| `-n`                  | Project name         |                          |
+| `-d`                  | Project directory    | `.`                      |
+| `-q`                  | Suppress output      | `false`                  |
+| `-l`                  | List templates       | `false`                  |
+| `-git`                | Git repository URL   |                          |
+| `-productname`        | Product name         | `My Product`             |
+| `-productdescription` | Product description  | `My Product Description` |
+| `-productversion`     | Product version      | `0.1.0`                  |
+| `-productcompany`     | Company name         | `My Company`             |
+| `-productcopyright`   | Copyright notice     | ` now, My Company`       |
+| `-productcomments`    | File comments        | `This is a comment`      |
+| `-productidentifier`  | Product identifier   |                          |
+| `-skipgomodtidy`      | Skip go mod tidy     | `false`                   |
+
+`-git` 旗標接受各種 Git URL 格式：
+- HTTPS: `https://github.com/username/project`
+- SSH: `git@github.com:username/project` 或 `ssh://git@github.com/username/project`
+- Git 協定: `git://github.com/username/project`
+- 檔案系統: `file:///path/to/project.git`
+
+當提供此旗標時，將會：
+1. 在專案目錄中初始化 git 儲存庫
+2. 將指定的 URL 設定為遠端 origin
+3. 更新 `go.mod` 中的模組名稱以符合儲存庫 URL
+4. 新增所有檔案
+
+### `dev`
+以開發模式執行應用程式。這將為您提供前端程式碼的即時預覽，您可以進行更改並看到它們反映在正在執行的應用程式中，而無需重新建置整個應用程式。對 Go 程式碼的更改也會被偵測到，應用程式將自動重新建置並重新啟動。
+
+```bash
+wails3 dev [flags]
+```
+
+#### 旗標
+| Flag      | Description          | Default              |
+|-----------|----------------------|----------------------|
+| `-config` | Config file path     | `./build/config.yml` |
+| `-port`   | Vite dev server port | `9245`               |
+| `-s`      | Enable HTTPS         | `false`              |
+
+
+    :::note
+    這相當於執行 `wails3 task dev`，並執行專案主 Taskfile 中的 `dev` 任務。您可以透過編輯 `Taskfile.yml` 檔案來自訂此設定。
+    :::
+
+
+### `build`
+建置您應用程式的除錯版本。預設為為目前平台與架構進行建置。
+
+```bash
+wails3 build [flags] [CLI variables...]
+```
+
+#### 旗標
+| Flag     | Description                                              | Default |
+|----------|----------------------------------------------------------|---------|
+| `-tags`  | Additional Go build tags (comma-separated)               |         |
+
+您可以傳遞 CLI 變數來自訂建置：
+```bash
+wails3 build PLATFORM=linux CONFIG=production
+```
+
+使用 `-tags` 旗標來傳遞自訂 Go 建置標籤：
+```bash
+# Build with GTK4 support on Linux
+wails3 build -tags gtk4
+
+# Build in server mode (no GUI)
+wails3 build -tags server
+
+# Multiple tags
+wails3 build -tags gtk4,customtag
+```
+
+標籤會作為 `EXTRA_TAGS` 轉發至底層的 Taskfile。
+
+    :::note
+    這相當於執行 `wails3 task build`，它會執行專案主 Taskfile 中的 `build` 任務。傳遞給 `build` 的任何 CLI 變數都會轉發至底層任務。您可以透過編輯 `Taskfile.yml` 檔案來自訂建置流程。
+    :::
+
+### `package`
+
+建立平台特定的套件以供分發。
+
+```bash
+wails3 package [CLI variables...]
+```
+
+您可以傳遞 CLI 變數來自訂封裝：
+```bash
+wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg
+```
+
+#### 套件類型
+
+以下套件類型可用於每個平台：
+
+| Platform | Package Type                              |
+|----------|-------------------------------------------|
+| Windows  | `.exe`                                    |
+| macOS    | `.app`,                                   |
+| Linux    | `.AppImage`, `.deb`, `.rpm`, `.archlinux` |
+
+    :::note
+     這相當於 `wails3 task package`，它會執行專案主 Taskfile 中的 `package` 任務。傳遞給 `package` 的任何 CLI 變數都會轉發至底層任務。您可以透過編輯 `Taskfile.yml` 檔案來自訂封裝流程。
+    :::
+
+
+### `task`
+執行專案中 Taskfile.yml 定義的任務。這是 [Taskfile](https://taskfile.dev) 的內嵌版本，允許您定義和執行自訂建置、測試和部署任務。
+
+```bash
+wails3 task [taskname] [CLI variables...] [flags]
+```
+
+#### CLI 變數
+您可以以 `KEY=VALUE` 格式傳遞變數給任務：
+```bash
+wails3 task build PLATFORM=linux CONFIG=production
+wails3 task deploy ENV=staging VERSION=1.2.3
+```
+
+這些變數可以在您的 Taskfile.yml 中使用 Go 模板語法存取：
+```yaml
+tasks:
+  build:
+    cmds:
+      - echo "Building for {{.PLATFORM | default "darwin"}}"
+      - echo "Config: {{.CONFIG | default "debug"}}"
+```
+
+#### 旗標
+| Flag         | Description                               | Default  |
+|--------------|-------------------------------------------|----------|
+| `-h`         | Shows Task usage                          | `false`  |
+| `-i`         | Creates a new Taskfile.yml                | `false`  |
+| `-list`      | Lists tasks with descriptions             | `false`  |
+| `-list-all`  | Lists all tasks (with or without descriptions) | `false`  |
+| `-json`      | Formats task list as JSON                 | `false`  |
+| `-status`    | Exits with non-zero if task is not up-to-date | `false`  |
+| `-f`         | Forces execution even when task is up-to-date | `false`  |
+| `-w`         | Enables watch mode for the given task     | `false`  |
+| `-v`         | Enables verbose mode                      | `false`  |
+| `-version`   | Prints Task version                       | `false`  |
+| `-s`         | Disables echoing                          | `false`  |
+| `-p`         | Executes tasks in parallel                | `false`  |
+| `-dry`       | Compiles and prints tasks without executing | `false`  |
+| `-summary`   | Shows summary about a task                | `false`  |
+| `-x`         | Pass-through the exit code of the task    | `false`  |
+| `-dir`       | Sets directory of execution               |          |
+| `-taskfile`  | Choose which Taskfile to run              |          |
+| `-output`    | Sets output style: [interleaved|group|prefixed] |          |
+| `-c`         | Colored output (enabled by default)       | `true`   |
+| `-C`         | Limit number of tasks to run concurrently |          |
+| `-interval`  | Interval to watch for changes (in seconds) |          |
+
+#### 範例
+```bash
+# Run the default task
+wails3 task
+
+# Run a specific task
+wails3 task test
+
+# Run a task with variables
+wails3 task build PLATFORM=windows ARCH=amd64
+
+# List all available tasks
+wails3 task --list
+
+# Run multiple tasks in parallel-------------|-------------------|---------------|
+| `-f`        | 額外的 Go 建置旗標 |                     |
+| `-d`        | 輸出目錄          | `frontend/bindings` |
+| `-models`   | 模型檔案名稱           | `models`            |
+| `-index`    | 索引檔案名稱            | `index`             |
+| `-ts`       | 產生 TypeScript       | `false`             |
+| `-i`        | 使用 TS 介面         | `false`             |
+| `-b`        | 使用內建執行階段       | `false`             |
+| `-names`    | 使用名稱而非 ID  | `false`             |
+| `-noindex`  | 跳過索引檔案          | `false`             |
+| `-dry`      | 模擬執行                   | `false`             |
+| `-silent`   | 靜默模式               | `false`             |
+| `-v`        | 除錯輸出              | `false`             |
+| `-clean`    | 清理輸出目錄    | `false`             |
+
+### `generate build-assets`
+為您的應用程式產生建置資產。
+
+```bash
+wails3 generate build-assets [flags]
+```
+
+#### 旗標
+| 旗標           | 描述         | 預設值            |
+|----------------|------------|--------------|
+| `-name`        | 專案名稱        |                    |
+| `-dir`         | 輸出目錄    | `build`            |
+| `-silent`      | 抑制輸出     | `false`            |
+| `-company`     | 公司名稱        |                    |
+| `-productname` | 產品名稱        |                    |
+| `-description` | 產品描述 |                    |
+| `-version`     | 產品版本     |                    |
+| `-identifier`  | 產品識別符  | `com.wails.[name]` |
+| `-copyright`   | 版權聲明    |                    |
+| `-comments`    | 檔案註解       |                    |
+
+### `generate icons`
+產生應用程式圖示。
+
+```bash
+wails3 generate icons [flags]
+```
+
+#### 旗標
+| 旗標                   | 描述                                          | 預設值               |
+|------------------------|------------------------|----------|
+| `-input`               | 輸入 PNG 檔案                                       | 必要              |
+| `-windowsfilename`     | Windows 輸出檔案名稱                              |                       |
+| `-macfilename`         | macOS 輸出檔案名稱                                |                       |
+| `-sizes`               | 圖示尺寸（以逗號分隔）                         | `256,128,64,48,32,16` |
+| `-example`             | 產生範例圖示                                | `false`               |
+| `-iconcomposerinput`   | 輸入 Icon Composer 檔案 (`.icon`)                   |                       |
+| `-macassetdir`         | Mac 資產輸出目錄 (Assets.car + icns)  |                       |
+
+#### Icon Composer (macOS)
+
+在 macOS 26+ 上，您可以使用 Icon Composer `.icon` 檔案來產生 `Assets.car` 和 `icons.icns`：
+
+```bash
+wails3 generate icons -iconcomposerinput build/appicon.icon -macassetdir build
+```
+
+這會使用 Apple 的 `actool` 命令編譯 `.icon` 檔案。需要安裝 Xcode 且 `actool` 版本為 26 或更新版本。
+
+使用 Icon Composer 時，請在 `build/config.yml` 中設定 `cfBundleIconName` 以符合 `.icon` 的檔案名稱（不含副檔名）：
+
+```yaml
+info:
+  cfBundleIconName: "appicon"
+```
+
+若未設定且存在 `Assets.car`，則預設為 `"appicon"`。
+
+### `generate syso`
+產生 Windows .syso 檔案。
+
+```bash
+wails3 generate syso [flags]
+```
+
+#### 旗標
+| 旗標        | 描述               | 預設值                    |
+|-------------|-------------|----------------------|
+| `-manifest` | 描述檔路徑     | 必要                   |
+| `-icon`     | 圖示檔案路徑         | 必要                   |
+| `-info`     | 版本資訊檔案路徑 |                            |
+| `-arch`     | 目標架構       | 目前的 GOARCH             |
+| `-out`      | 輸出檔案名稱           | `rsrc_windows_[arch].syso` |
+
+### `generate .desktop`
+產生 Linux .desktop 檔案。
+
+```bash
+wails3 generate .desktop [flags]
+```
+
+#### 旗標
+| 旗標             | 描述               | 預設值          |
+|------------------|--|----|
+| `-name`          | 應用程式名稱          | 必要         |
+| `-exec`          | 可執行檔路徑           | 必要         |
+| `-icon`          | 圖示路徑                 |                  |
+| `-categories`    | 應用程式分類    | `Utility`        |
+| `-comment`       | 應用程式註解       |                  |
+| `-terminal`      | 在終端機中執行           | `false`          |
+| `-keywords`      | 搜尋關鍵字           |                  |
+| `-version`       | 應用程式版本       |                  |
+| `-genericname`   | 通用名稱              |                  |
+| `-startupnotify` | 顯示啟動通知 | `false`          |
+| `-mimetype`      | 支援的 MIME 類型      |                  |
+| `-output`        | 輸出檔案名稱           | `[name].desktop` |
+
+### `generate runtime`
+產生預先建置的執行階段版本。
+
+```bash
+wails3 generate runtime
+```
+
+### `generate constants`
+從 Go 程式碼產生 JavaScript 常數。
+
+```bash
+wails3 generate constants
+```
+
+### `generate appimage`
+產生 Linux AppImage。
+
+```bash
+wails3 generate appimage [flags]
+```
+
+#### 旗標
+| 旗標        | 描述           | 預設值        |
+|-------------|-|----------|
+| `-binary`   | 可執行檔路徑        | 必要       |
+| `-icon`     | 圖示檔案路徑     | 必要       |
+| `-desktop`  | .desktop 檔案路徑 | 必要       |
+| `-builddir` | 建置目錄       | 暫存目錄 |
+| `-output`   | 輸出目錄      | `.`            |
+
+基礎命令：`wails3 service`
+
+## 服務命令
+
+服務命令用於管理 Wails 服務。所有服務命令皆使用基礎命令：`wails3 service <command>`。
+
+### `service init`
+初始化新的服務。
+
+```bash
+wails3 service init [flags]
+```
+
+#### 旗標
+| 旗標 | 描述         | 預設值           |
+|------|--------------|---|
+| `-n` | 服務名稱        | `example_service` |
+| `-d` | 服務描述 | `Example service` |
+| `-p` | 套件名稱        |                   |
+| `-o` | 輸出目錄    | `.`               |
+| `-q` | 抑制輸出     | `false`           |
+| `-a` | 作者名稱         |                   |
+| `-v` | 版本             |                   |
+| `-w` | 網站 URL         |                   |
+| `-r` | 儲存庫 URL      |                   |
+| `-l` | 授權             |                   |
+
+基礎命令：`wails3 tool`
+
+## 工具命令
+
+工具命令提供開發與除錯用的實用程式。所有工具命令皆使用基礎命令：`wails3 tool <command>`。
+
+### `tool checkport`
+檢查連接埠是否開啟。可用於測試 vite 是否正在執行。
+
+```bash
+wails3 tool checkport [flags]
+```
+
+#### 旗標
+| 旗標    | 描述   | 預設值     |
+|--|-------|-----------|
+| `-port` | 要檢查的連接埠 | `9245`      |
+| `-host` | 要檢查的主機 | `localhost` |
+
+### `tool watcher`
+監聽檔案並在變更時執行命令。
+
+```bash
+wails3 tool watcher [flags]
+```
+
+#### 旗標
+| 旗標       | 描述         | 預設值              |------------|---------------------|----------------------|
+| `-config`  | 設定檔路徑          | `./build/config.yml` |
+| `-ignore`  | 要忽略的樣式        |                      |
+| `-include` | 要包含的樣式        |                      |
+
+### `tool cp`
+複製檔案。
+
+```bash
+wails3 tool cp
+```
+
+### `tool buildinfo`
+顯示應用程式的建置資訊。
+
+```bash
+wails3 tool buildinfo
+```
+
+### `tool version`
+根據提供的旗標來遞增語意化版本號。
+
+```bash
+wails3 tool version [flags]
+```
+
+#### 旗標
+| Flag          | Description                                      | Default |
+|---------------|--------------------------------------------------|---------|
+| `-v`          | 要遞增的目前版本                          |         |
+| `-major`      | 遞增主版本號                               | `false` |
+| `-minor`      | 遞增次版本號                               | `false` |
+| `-patch`      | 遞增修訂版本號                               | `false` |
+| `-prerelease` | 遞增預覽版版本號 (例如，alpha.5 到 alpha.6) | `false` |
+
+此命令遵循以下優先順序：major > minor > patch > prerelease。如果輸入的版本號包含 "v" 前綴，它會予以保留，同時也會保留任何預覽版和元資料元件。
+
+使用範例：
+```bash
+wails3 tool version -v 1.2.3 -major      # 輸出：2.0.0
+wails3 tool version -v v1.2.3 -minor     # 輸出：v1.3.0
+wails3 tool version -v 1.2.3-alpha -patch # 輸出：1.2.4-alpha
+wails3 tool version -v v3.0.0-alpha.5 -prerelease # 輸出：v3.0.0-alpha.6
+```
+
+### `tool package`
+產生 Linux 套件 (deb, rpm, archlinux)。
+
+```bash
+wails3 tool package [flags]
+```
+
+#### 旗標
+| Flag      | Description                          | Default  |
+|-----------|--------------------------------------|----------|
+| `-format` | 套件格式 (deb, rpm, archlinux) | `deb`    |
+| `-name`   | 執行檔名稱                      | 必要     |
+| `-config` | 設定檔路徑                     | 必要     |
+| `-out`    | 輸出目錄                     | `.`      |
+
+#### 旗標
+| Flag      | Description                          | Default |
+|-----------|--------------------------------------|---------|
+| `-format` | 套件格式 (deb, rpm, archlinux) | `deb`   |
+| `-name`   | 執行檔名稱                      | `myapp` |
+| `-config` | 設定檔路徑                     |         |
+| `-out`    | 輸出目錄                     | `.`     |
+
+基礎命令：`wails3 update`
+
+## 更新命令
+
+更新命令有助於管理和更新專案資產。所有更新命令皆使用基礎命令：`wails3 update <command>`。
+
+### `update cli`
+將 Wails CLI 更新至新版本。
+
+```bash
+wails3 update cli [flags]
+```
+
+#### 旗標
+| Flag        | Description                     | Default |
+|-------------|---------------------------------|---------|
+| `-pre`      | 更新至最新預覽版              | `false` |
+| `-version`  | 更新至特定版本                |         |
+| `-nocolour` | 停用彩色輸出                  | `false` |
+
+`update cli` 命令允許您更新 Wails CLI 安裝。預設情況下，它會更新至最新穩定版。
+您可以使用 `-pre` 旗標更新至最新預覽版，或使用 `-version` 旗標指定特定版本。
+
+更新後，請記得更新專案的 go.mod 檔案以使用相同版本：
+```bash
+require github.com/wailsapp/wails/v3 v3.x.x
+```
+
+### `update build-assets`
+使用給定的設定檔更新建置資產。
+
+```bash
+wails3 update build-assets [flags]
+```
+
+#### 旗標
+| Flag           | Description         | Default |
+|----------------|---------------------|---------|
+| `-config`      | 設定檔路徑    |         |
+| `-dir`         | 輸出目錄    | `build` |
+| `-silent`      | 抑制輸出     | `false` |
+| `-company`     | 公司名稱        |         |
+| `-productname` | 產品名稱        |         |
+| `-description` | 產品描述 |         |
+| `-version`     | 產品版本     |         |
+| `-identifier`  | 產品識別碼  |         |
+| `-copyright`   | 版權聲明    |         |
+| `-comments`    | 檔案註解       |         |
+
+基礎命令：`wails3`
+
+## 實用工具命令
+
+實用工具命令提供常見任務的便捷捷徑。直接與基礎命令搭配使用這些命令：`wails3 <command>`。
+
+### `docs`
+在預設瀏覽器中開啟 Wails 文件。
+
+```bash
+wails3 docs
+```
+
+### `releasenotes`
+顯示目前或指定版本的發行說明。
+
+```bash
+wails3 releasenotes [flags]
+```
+
+#### 旗標
+| Flag | Description                       | Default |
+|------|-----------------------------------|---------|
+| `-v` | 要顯示發行說明的版本 |         |
+| `-n` | 停用彩色輸出             | `false` |
+
+### `version`
+列印 Wails 的目前版本。
+
+```bash
+wails3 version
+```
+
+### `sponsor`
+在預設瀏覽器中開啟 Wails 贊助頁面。
+
+```bash
+wails3 sponsor
+```

@@ -1,0 +1,388 @@
+---
+title: 系統匣選單
+description: 為您的應用程式新增系統匣（通知區域）整合功能
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## 系統匣選單
+
+Wails 提供**統一的系統匣 API**，可在所有平台上運作。建立帶有選單的系統匣圖示、附加視窗，並處理點擊事件，為背景應用程式、服務和快速存取工具提供原生的平台行為。
+{/* VISUAL PLACEHOLDER: System Tray Comparison
+Description: Three screenshots showing the same Wails system tray icon on:
+1. Windows - Notification area (bottom-right)
+2. macOS - Menu bar (top-right) with label
+3. Linux (GNOME) - Top bar
+All showing the same icon and menu structure
+Style: Clean screenshots with arrows pointing to tray icon, menu expanded
+*/}
+
+## 快速開始
+
+```go
+package main
+
+import (
+    _ "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed assets/icon.png
+var icon []byte
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Tray App",
+    })
+
+    // Create system tray
+    systray := app.SystemTray.New()
+    systray.SetIcon(icon)
+    systray.SetLabel("My App")
+
+    // Add menu
+    menu := app.NewMenu()
+    menu.Add("Show").OnClick(func(ctx *application.Context) {
+        // Show main window
+    })
+    menu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+    systray.SetMenu(menu)
+
+    // Create hidden window
+    window := app.Window.New()
+    window.Hide()
+
+    app.Run()
+}
+```
+
+**結果：** 在所有平台上顯示帶有選單的系統匣圖示。
+
+## 建立系統匣
+
+### 基本系統匣
+
+```go
+// Create system tray
+systray := app.SystemTray.New()
+
+// Set icon
+systray.SetIcon(iconBytes)
+
+// Set label (macOS) / tooltip (Windows)
+systray.SetLabel("My Application")
+```
+
+### 使用圖示
+
+圖示應以嵌入方式載入：
+
+```go
+import _ "embed"
+
+//go:embed assets/icon.png
+var icon []byte
+
+//go:embed assets/icon-dark.png
+var iconDark []byte
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    systray := app.SystemTray.New()
+    systray.SetIcon(icon)
+    systray.SetDarkModeIcon(iconDark)  // macOS dark mode
+    
+    app.Run()
+}
+```
+
+**圖示需求：**
+
+| 平台 | 大小 | 格式 | 備註 |
+|----------|------|--------|-------|
+| **Windows** | 16x16 或 32x32 | PNG, ICO | 通知區域 |
+| **macOS** | 18x18 至 22x22 | PNG | 選單列，建議使用模板圖示 |
+| **Linux** | 22x22 至 48x48 | PNG, SVG | 依桌面環境 (DE) 而異 |
+
+### 模板圖示 (macOS)
+
+模板圖示會自動適應亮色/暗色模式：
+
+```go
+systray.SetTemplateIcon(iconBytes)
+```
+
+**模板圖示設計指南：**
+- 僅使用黑色和透明色
+- 在暗色模式下，黑色會變成白色
+- 檔案名稱加上 `Template` 後綴：`iconTemplate.png`
+- [設計指南](https://bjango.com/articles/designingmenubarextras/)
+
+## 新增選單
+
+系統匣選單的運作方式類似應用程式選單：
+
+```go
+menu := app.NewMenu()
+
+// Add items
+menu.Add("Open").OnClick(func(ctx *application.Context) {
+    showMainWindow()
+})
+
+menu.AddSeparator()
+
+menu.AddCheckbox("Start at Login", false).OnClick(func(ctx *application.Context) {
+    enabled := ctx.ClickedMenuItem().Checked()
+    setStartAtLogin(enabled)
+})
+
+menu.AddSeparator()
+
+menu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+// Set menu
+systray.SetMenu(menu)
+```
+
+**所有選單項目類型的詳細資訊**，請參閱 [選單參考資料](/zh-tw/features/menus/reference)。
+
+## 附加視窗
+
+將視窗附加至系統匣圖示，以自動顯示/隱藏：
+
+```go
+// Create window
+window := app.Window.New()
+
+// Attach to tray
+systray.AttachWindow(window)
+
+// Configure behaviour
+systray.SetWindowOffset(10)  // Pixels from tray icon
+systray.SetWindowDebounce(200 * time.Millisecond)  // Click debounce
+```
+
+**行為：**
+- 視窗預設為隱藏
+- **左鍵點擊系統匣圖示** → 切換視窗顯示/隱藏狀態
+- **右鍵點擊系統匣圖示** → 顯示選單（若有設定）
+- 視窗位置靠近系統匣圖示
+
+**範例：彈出式視窗**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "Quick Access",
+    Width:  300,
+    Height: 400,
+    Frameless: true,  // No title bar
+    AlwaysOnTop: true,  // Stay on top
+})
+
+systray.AttachWindow(window)
+systray.SetWindowOffset(5)
+```
+
+## 點擊事件處理
+
+處理系統匣圖示的點擊事件：
+
+```go
+systray := app.SystemTray.New()
+
+// Left click
+systray.OnClick(func() {
+    fmt.Println("Tray icon clicked")
+})
+
+// Right click
+systray.OnRightClick(func() {
+    fmt.Println("Tray icon right-clicked")
+})
+
+// Double click
+systray.OnDoubleClick(func() {
+    fmt.Println("Tray icon double-clicked")
+})
+
+// Mouse enter/leave
+systray.OnMouseEnter(func() {
+    fmt.Println("Mouse entered tray icon")
+})
+
+systray.OnMouseLeave(func() {
+    fmt.Println("Mouse left tray icon")
+})
+```
+
+**平台支援：**
+
+| 事件 | Windows | macOS | Linux |
+|-------|---------|-------|-------|
+| OnClick | ✅ | ✅ | ✅ |
+| OnRightClick | ✅ | ✅ | ✅ |
+| OnDoubleClick | ✅ | ✅ | ⚠️ 依環境而異 |
+| OnMouseEnter | ✅ | ✅ | ⚠️ 依環境而異 |
+| OnMouseLeave | ✅ | ✅ | ⚠️ 依環境而異 |
+
+## 動態更新
+
+動態更新系統匣圖示和選單：
+
+### 變更圖示
+
+```go
+var isActive bool
+
+func updateTrayIcon() {
+    if isActive {
+        systray.SetIcon(activeIcon)
+        systray.SetLabel("Active")
+    } else {
+        systray.SetIcon(inactiveIcon)
+        systray.SetLabel("Inactive")
+    }
+}
+```
+
+### 更新選單
+
+```go
+var isPaused bool
+
+pauseMenuItem := menu.Add("Pause")
+
+pauseMenuItem.OnClick(func(ctx *application.Context) {
+    isPaused = !isPaused
+    
+    if isPaused {
+        pauseMenuItem.SetLabel("Resume")
+    } else {
+        pauseMenuItem.SetLabel("Pause")
+    }
+    
+    menu.Update()  // Important!
+})
+```
+
+:::caution[務必呼叫 Update()]
+變更選單狀態後，**請呼叫 `menu.Update()`**。請參閱 [選單參考資料](/features/menus/reference#enabled-state)。
+:::
+
+### 重建選單
+
+對於重大變更，請重建整個選單：
+
+```go
+func rebuildTrayMenu(status string) {
+    menu := app.NewMenu()
+    
+    // Status-specific items
+    switch status {
+    case "syncing":
+        menu.Add("Syncing...").SetEnabled(false)
+        menu.Add("Pause Sync").OnClick(pauseSync)
+    case "synced":
+        menu.Add("Up to date ✓").SetEnabled(false)
+        menu.Add("Sync Now").OnClick(startSync)
+    case "error":
+        menu.Add("Sync Error").SetEnabled(false)
+        menu.Add("Retry").OnClick(retrySync)
+    }
+    
+    menu.AddSeparator()
+    menu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+    
+    systray.SetMenu(menu)
+}
+```----------|--------|--------|-------|
+| **Windows** | ✅ | ✅ | 完全可用 - 圖示會在通知區域出現/消失 |
+| **macOS** | ✅ | ✅ | 選單列項目會顯示/隱藏 |
+| **Linux** | ✅ | ✅ | 因桌面環境而異 |
+
+**使用情境：**
+- 根據使用者偏好暫時隱藏系統匣圖示
+- 無頭模式，僅在需要時顯示系統匣圖示
+- 根據應用程式狀態切換可見性
+
+**範例 - 條件式系統匣可見性：**
+
+```go
+func (t *TrayApp) setTrayVisibility(visible bool) {
+    if visible {
+        t.systray.Show()
+    } else {
+        t.systray.Hide()
+    }
+}
+
+// 僅在有更新時顯示系統匣
+func (t *TrayApp) checkForUpdates() {
+    if hasUpdates {
+        t.systray.Show()
+        t.systray.SetLabel("Update Available")
+    } else {
+        t.systray.Hide()
+    }
+}
+```
+
+## 清理
+
+完成後銷毀系統匣圖示：
+
+```go
+// 在 OnShutdown 中
+app := application.New(application.Options{
+    OnShutdown: func() {
+        if systray != nil {
+            systray.Destroy()
+        }
+    },
+})
+```
+
+**重要：** 關閉時務必銷毀系統匣以釋放資源。
+
+## 最佳實踐
+
+### ✅ 建議
+
+- **在 macOS 上使用範本圖示** - 會隨深色模式自動調整
+- **保持標籤簡短** - 最多 3-5 個字元
+- **在 Windows 上提供工具提示** - 有助於使用者識別您的應用程式
+- **在所有平台上進行測試** - 行為可能因平台而異
+- **適當處理點擊事件** - 左鍵用於主要操作，右鍵用於選單
+- **根據狀態更新圖示** - 視覺回饋很重要
+- **關閉時銷毀** - 釋放資源
+
+### ❌ 避免
+
+- **不要使用大型圖示** - 請遵循平台指南
+- **不要使用長標籤** - 會被截斷
+- **不要忘記深色模式** - 在 macOS 深色模式下進行測試
+- **不要阻塞點擊處理器** - 保持快速執行
+- **不要忘記呼叫 menu.Update()** - 在變更選單狀態後
+- **不要假設系統匣支援** - 某些 Linux 桌面環境不支援
+
+## 疑難排解
+
+### 系統匣圖示未出現
+
+**可能原因：**
+1. 圖示格式不支援
+2. 圖示尺寸過大或過小---
+
+**有問題嗎？** 請在 [Discord](https://discord.gg/JDdSxwjhGf) 上提問，或查看 [系統匣範例](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic)。

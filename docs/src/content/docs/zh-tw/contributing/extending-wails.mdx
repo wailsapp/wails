@@ -1,0 +1,244 @@
+---
+title: 擴展 Wails
+description: 為 Wails v3 新增功能與平台支援的實用指南
+sidebar:
+  order: 8
+---
+
+> Wails 的設計理念是**可被修改（hackable）**。  
+> 每個主要子系統都位於您可以閱讀、修改並釋出的 Go 程式碼中。  
+> 本頁將說明 _從何處開始_，以及 _如何_ 在您進行以下操作時保持跨平台相容性：
+
+* 新增 **Service**（檔案伺服器、KV 儲存、自訂 IPC…）
+* 建立**新的 CLI 指令**（`wails3 <foo>`）
+* 擴展 **Runtime**（視窗 API、對話框、事件）
+* 引入**平台功能**（Wayland、Apple Vision OS…）
+* 保持**跨平台相容性**，而不必被 `//go:build` 標籤淹沒
+
+---
+
+## 1. 新增 Service
+
+Service 是背景運作的 Go 元件，透過 `application.Context` 暴露給應用程式使用。
+
+```
+internal/service/
+├── template/            # 新 Service 的範本程式碼
+│   ├── template.go
+│   └── README.md
+└── service.go           # 註冊與生命週期介面
+```
+
+### 1.1 定義 Service
+
+```go
+package chat
+
+type Service struct {
+    messages []string
+}
+
+func New() *Service { return &Service{} }
+
+func (s *Service) Send(msg string) string {
+    s.messages = append(s.messages, msg)
+    return "ok"
+}
+```
+
+### 1.2 實作 `service.Service`
+
+```go
+func (s *Service) Init(ctx *application.Context) error { return nil }
+func (s *Service) Shutdown() error                     { return nil }
+```
+
+### 1.3 註冊 Generator
+
+*新增至* `internal/generator/collect/services.go`
+
+```go
+services.Register("chat", chat.New)
+```
+
+> 現在 `wails3 generate` 會產生綁定程式碼，讓 JS 可以呼叫
+> `window.backend.chat.Send("hi")`。
+
+### 1.4 釋出一個範例
+
+複製 `v3/examples/services/` 並進行調整。
+
+---
+
+## 2. 撰寫新的 CLI 指令
+
+CLI 邏輯位於 `internal/commands/` 下。  
+每個指令都是**單一檔案**，在 `init()` 中自行註冊。
+
+### 2.1 建立檔案
+
+`v3/internal/commands/hello.go`
+
+```go
+package commands
+
+import (
+    "github.com/spf13/cobra"
+)
+
+func init() {
+    Add(&cobra.Command{
+        Use:   "hello",
+        Short: "Prints Hello World",
+        RunE: func(cmd *cobra.Command, args []string) error {
+            cmd.Println("Hello Wails!")
+            return nil
+        },
+    })
+}
+```
+
+`Add()` 會將指令註冊到 `cmd/wails3/main.go` 中的根指令。
+
+### 2.2 重新編譯 CLI
+
+```
+go install ./v3/cmd/wails3
+wails3 hello
+```
+
+如果您的指令需要 **Taskfile** 整合，請重複使用
+`internal/commands/task_wrapper.go` 中的輔助函式。
+
+---
+
+## 3. 修改 Runtime
+
+常見原因包括：
+
+* 新增視窗功能（`SetOpacity`、`Shake`…）
+* 額外對話框（`ColorPicker`）
+* 系統層級 API（螢幕亮度）
+
+### 3.1 公開 API
+
+新增至 `pkg/application/window.go`：
+
+```go
+func (w *WebviewWindow) SetOpacity(o float32) {
+    w.ctx.Call("window:setOpacity", o)
+}
+```
+
+### 3.2 訊息處理器
+
+建立 `messageprocessor_window_opacity.go`：
+
+```go
+const MsgSetOpacity = "window:setOpacity"
+
+func init() { register(MsgSetOpacity, handleSetOpacity) }
+
+func handleSetOpacity(ctx *Context, params json.RawMessage) ([]byte, error) {
+    var req struct {
+        ID      uint64  `json:"id"`
+        Opacity float32 `json:"o"`
+    }
+    json.Unmarshal(params, &req)
+    return nil, runtime.SetOpacity(req.ID, req.Opacity)
+}
+```
+
+### 3.3 平台實作
+
+```
+internal/runtime/
+    webview_window_darwin.go
+    webview_window_linux.go
+    webview_window_windows.go
+```
+
+將 `SetOpacity()` 新增至每個檔案，並使用編譯標籤保護。  
+如果某個平台無法支援，請回傳 `ErrCapability`。
+
+### 3.4 功能旗標
+
+透過 `internal/capabilities` 暴露。
+
+```go
+const CapOpacity = "window:opacity"
+```
+
+Runtime 檔案 `*_darwin.go` 等應在成功初始化時呼叫 `registerCapability(CapOpacity)`。
+
+應用程式可以查詢：
+
+```go
+if application.HasCapability(application.CapOpacity) { ... }
+```
+
+---
+
+## 4. 新增新的平台功能
+
+範例：Linux 上的 **Wayland** 剪貼簿。
+
+1. Fork `internal/runtime/clipboard_linux.go`。
+2. 拆分檔案：
+   * `clipboard_linux_x11.go` → `//go:build linux && !wayland`
+   * `clipboard_linux_wayland.go` → `//go:build linux && wayland`
+3. 在 `internal/commands/dev.go` 中新增 CLI 旗標 `--tags wayland`
+   （`goEnv.BuildTags += ",wayland"`）。
+4. 在 **Asset Server** 與 README 中記錄。
+
+> 保持預設編譯標籤簡潔；將可選標籤保留給小眾功能。
+
+---
+
+## 5. 跨平台相容性檢查清單
+
+| ✅ 步驟 | 原因 |
+|---------|-----|
+| 在所有平台檔案中提供**每個**公開方法（即使是存根） | 確保在所有 OS/架構上編譯通過 |
+| 將平台特定功能封裝在**功能（capabilities）**之後 | 讓應用程式能優雅地降級 |
+| 優先使用**純 Go**，僅在必要時使用 CGO | 簡化跨平台編譯 |
+| 使用 `task matrix:test` 進行測試 | 在 Docker 中於 linux/mac/windows 執行 `go test ./...` |
+| 在 `docs/getting-started/installation.mdx` 中記錄新的編譯標籤 | 使用者必須知道這些旗標 |
+
+---
+
+## 6. 除錯建構與迭代速度
+
+* `wails3 dev -tags debug` 會新增額外的日誌鉤子（`logger_dev*.go`）。
+* 使用 `task reload` 重新編譯 Runtime，無需重新啟動整個應用程式。
+* 競態偵測器：`wails3 dev -race`（請參閱 `pkg/application/RACE.md`）。
+
+---
+
+## 7. 上游貢獻
+
+1. 開啟 **issue** 以討論想法與設計。
+2. 遵循上述技術進行實作。
+3. 新增：
+   * 單元測試（`*_test.go`）
+   * 範例（`v3/examples/<feat>/`）
+   * 文件（本檔案或 API 參考）
+4. 確保 `go vet`、`golangci-lint` 與 CI 矩陣測試通過。
+
+---
+
+### 快速連結
+
+| 區域 | 位置 |
+|------|----------|
+| Service 架構 | `internal/service/` |
+| CLI 核心          | `internal/commands/` |
+| 各平台 Runtime    | `internal/runtime/` |
+| 功能輔助函式      | `internal/capabilities/` |
+| Taskfile DSL      | `tasks/Taskfile.yml` |
+| 開發矩陣測試      | `tasks/events/generate.go` |
+
+---
+
+您現在擁有一條**路線圖**，可以將 Wails 塑造成您想要的樣子——新增 Service、加入 CLI 魔法、修改 Runtime，或引入全新的 OS 功能。  
+祝您擴展愉快！

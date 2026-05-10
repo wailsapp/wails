@@ -1,0 +1,343 @@
+---
+title: 進階繫結
+description: 包含指令、程式碼注入與自訂 ID 的進階繫結技術
+sidebar:
+  order: 3
+---
+
+import { FileTree } from "@astrojs/starlight/components";
+
+本指南涵蓋在 Wails v3 中自訂與最佳化繫結產生過程的進階技術。
+
+## 使用指令自訂產生的程式碼
+
+### 注入自訂程式碼
+
+`//wails:inject` 指令允許您將自訂的 JavaScript/TypeScript 程式碼注入到產生的繫結中：
+
+```go
+//wails:inject console.log("Hello from Wails!");
+type MyService struct {}
+
+func (s *MyService) Greet(name string) string {
+    return "Hello, " + name
+}
+```
+
+這會將指定的程式碼注入到 `MyService` 服務產生的 JavaScript/TypeScript 檔案中。
+
+您也可以使用條件式注入來針對特定的輸出格式：
+
+```go
+//wails:inject j*:console.log("Hello JS!");  // 僅 JavaScript
+//wails:inject t*:console.log("Hello TS!");  // 僅 TypeScript
+```
+
+### 包含額外檔案
+
+`//wails:include` 指令允許您將額外檔案包含在產生的繫結中：
+
+```go
+//wails:include js/*.js
+package mypackage
+```
+
+此指令通常用於套件文件註解中，以將額外的 JavaScript/TypeScript 檔案與產生的繫結一起包含。
+
+### 標記內部類型與方法
+
+`//wails:internal` 指令將類型或方法標記為內部，防止其匯出到前端：
+
+```go
+//wails:internal
+type InternalModel struct {
+    Field string
+}
+
+//wails:internal
+func (s *MyService) InternalMethod() {}
+```
+
+這對於僅由您的 Go 程式碼內部使用且不應暴露給前端的類型和方法很有用。
+
+### 忽略方法
+
+`//wails:ignore` 指令在繫結產生期間完全忽略某個方法：
+
+```go
+//wails:ignore
+func (s *MyService) IgnoredMethod() {}
+```
+
+這類似於 `//wails:internal`，但它完全忽略該方法，而不是將其標記為內部。
+
+### 自訂方法 ID
+
+`//wails:id` 指令為方法指定自訂 ID，覆蓋預設的基於雜湊的 ID：
+
+```go
+//wails:id 42
+func (s *MyService) CustomIDMethod() {}
+```
+
+這在重構程式碼時維持相容性可能很有用。
+
+## 處理複雜類型
+
+### 巢狀結構
+
+繫結產生器自動處理巢狀結構：
+
+```go
+type Address struct {
+    Street string
+    City   string
+    State  string
+    Zip    string
+}
+
+type Person struct {
+    Name    string
+    Address Address
+}
+
+func (s *MyService) GetPerson() Person {
+    return Person{
+        Name: "John Doe",
+        Address: Address{
+            Street: "123 Main St",
+            City:   "Anytown",
+            State:  "CA",
+            Zip:    "12345",
+        },
+    }
+}
+```
+
+產生的 JavaScript/TypeScript 程式碼將包含 `Person` 和 `Address` 的類別。
+
+### 地圖與切片
+
+地圖與切片也會自動處理：
+
+```go
+type Person struct {
+    Name       string
+    Attributes map[string]string
+    Friends    []string
+}
+
+func (s *MyService) GetPerson() Person {
+    return Person{
+        Name: "John Doe",
+        Attributes: map[string]string{
+            "hair": "brown",
+            "eyes": "blue",
+        },
+        Friends: []string{"Jane", "Bob", "Alice"},
+    }
+}
+```
+
+在 JavaScript 中，地圖表示為物件，切片表示為陣列。在 TypeScript 中，地圖表示為 `Record<K, V>`，切片表示為 `T[]`。
+
+### 泛型類型
+
+繫結產生器支援泛型類型：
+
+```go
+type Result[T any] struct {
+    Data  T
+    Error string
+}
+
+func (s *MyService) GetResult() Result[string] {
+    return Result[string]{
+        Data:  "Hello, World!",
+        Error: "",
+    }
+}
+```
+
+產生的 TypeScript 程式碼將包含 `Result` 的泛型類別：
+
+```typescript
+export class Result<T> {
+    "Data": T;
+    "Error": string;
+
+    constructor(source: Partial<Result<T>> = {}) {
+        if (!("Data" in source)) {
+            this["Data"] = null as any;
+        }
+        if (!("Error" in source)) {
+            this["Error"] = "";
+        }
+
+        Object.assign(this, source);
+    }
+
+    static createFrom<T>(source: string | object = {}): Result<T> {
+        let parsedSource = typeof source === "string" ? JSON.parse(source) : source;
+        return new Result<T>(parsedSource as Partial<Result<T>>);
+    }
+}
+```
+
+### 介面
+
+繫結產生器可以使用 `-i` 旗標產生 TypeScript 介面而非類別：
+
+```bash
+wails3 generate bindings -ts -i
+```
+
+這將為所有模型產生 TypeScript 介面：
+
+```typescript
+export interface Person {
+    Name: string;
+    Attributes: Record<string, string>;
+    Friends: string[];
+}
+```
+
+## 最佳化繫結產生
+
+### 使用名稱而非 ID
+
+預設情況下，繫結產生器使用基於雜湊的 ID 進行方法呼叫。您可以使用 `-names` 旗標來使用名稱：
+
+```bash
+wails3 generate bindings -names
+```
+
+這將產生使用方法名稱而非 ID 的程式碼：
+
+```javascript
+export function Greet(name) {
+    let $resultPromise = $Call.ByName("Greet", name);
+    return $resultPromise;
+}
+```
+
+這可以使產生的程式碼更易讀且更容易除錯，但可能會稍微降低效率。
+
+### 捆綁執行階段
+
+預設情況下，產生的程式碼從 `@wailsio/runtime` npm 套件匯入 Wails 執行階段。您可以使用 `-b` 旗標將執行階段與產生的程式碼捆綁：
+
+```bash
+wails3 generate bindings -b
+```
+
+這會將執行階段程式碼直接包含在產生的檔案中，消除對 npm 套件的需求。
+
+### 停用索引檔案
+
+如果您不需要索引檔案，可以使用 `-noindex` 旗標停用其產生：
+
+```bash
+wails3 generate bindings -noindex
+```
+
+如果您偏好直接從各自的檔案匯入服務和模型，這可能很有用。
+
+## 實際範例
+
+### 驗證服務
+
+以下是具有自訂指令的驗證服務範例：
+
+```go
+package auth
+
+//wails:inject console.log("Auth service initialized");
+type AuthService struct {
+    // Private fields
+    users map[string]User
+}
+
+type User struct {
+    Username string
+    Email    string
+    Role     string
+}
+
+type LoginRequest struct {
+    Username string
+    Password string
+}
+
+type LoginResponse struct {
+    Success bool
+    User    User
+    Token   string
+    Error   string
+}
+
+// Login authenticates a user
+func (s *AuthService) Login(req LoginRequest) LoginResponse {
+    // Implementation...
+}
+
+// GetCurrentUser returns the current user
+func (s *AuthService) GetCurrentUser() User {
+    // Implementation...
+}
+
+// Internal helper method
+//wails:internal
+func (s *AuthService) validateCredentials(username, password string) bool {
+    // Implementation...
+}
+```
+
+### 資料處理服務
+
+以下是具有泛型類型的資料處理服務範例：
+
+```go
+package data
+
+type ProcessingResult[T any] struct {
+    Data  T
+    Error string
+}
+
+type DataService struct {}
+
+// Process processes data and returns a result
+func (s *DataService) Process(data string) ProcessingResult[map[string]int] {
+    // Implementation...
+}
+
+// ProcessBatch processes multiple data items
+func (s *DataService) ProcessBatch(data []string) ProcessingResult[[]map[string]int] {
+    // Implementation...
+}
+
+// Internal helper method
+//wails:internal
+func (s *DataService) parseData(data string) (map[string]int, error) {
+    // Implementation...
+}
+```
+
+### 條件式程式碼注入
+
+以下是針對不同輸出格式的條件式程式碼注入範例：
+
+```go
+//wails:inject j*:/**
+//wails:inject j*: * @param {string} arg
+//wails:inject j*: * @returns {Promise<void>}
+//wails:inject j*: */
+//wails:inject j*:export async function CustomMethod(arg) {
+//wails:inject t*:export async function CustomMethod(arg: string): Promise<void> {
+//wails:inject     await InternalMethod("Hello " + arg + "!");`//wails:inject }`
+```go
+type Service struct{}
+```
+
+這會為 JavaScript 和 TypeScript 輸出注入不同的程式碼，並為各自語言提供適當的型別註解。

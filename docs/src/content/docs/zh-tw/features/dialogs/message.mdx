@@ -1,0 +1,384 @@
+---
+title: 訊息對話框
+description: 顯示資訊、警告、錯誤和問題
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 訊息對話框
+
+Wails 提供**原生訊息對話框**，並具備符合各平台的視覺風格：包含資訊、警告、錯誤和問題對話框，支援自訂標題、訊息和按鈕。API 簡潔、行為原生、預設即可用。
+
+## 建立對話框
+
+訊息對話框可透過 `app.Dialog` 管理器存取：
+
+```go
+app.Dialog.Info()
+app.Dialog.Question()
+app.Dialog.Warning()
+app.Dialog.Error()
+```
+
+所有方法都會回傳一個 `*MessageDialog`，可透過方法鏈結進行設定。
+
+## 資訊對話框
+
+顯示資訊性訊息：
+
+```go
+app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("File saved successfully!").
+    Show()
+```
+
+**使用情境：**
+- 成功確認
+- 完成通知
+- 資訊性訊息
+- 狀態更新
+
+**範例 - 儲存確認：**
+
+```go
+func saveFile(app *application.App, path string, data []byte) error {
+    if err := os.WriteFile(path, data, 0644); err != nil {
+        return err
+    }
+
+    app.Dialog.Info().
+        SetTitle("File Saved").
+        SetMessage(fmt.Sprintf("Saved to %s", filepath.Base(path))).
+        Show()
+
+    return nil
+}
+```
+
+## 警告對話框
+
+顯示警告：
+
+```go
+app.Dialog.Warning().
+    SetTitle("Warning").
+    SetMessage("This action cannot be undone.").
+    Show()
+```
+
+**使用情境：**
+- 非關鍵性警告
+- 棄用通知
+- 注意事項
+- 潛在問題
+
+**範例 - 磁碟空間警告：**
+
+```go
+func checkDiskSpace(app *application.App) {
+    available := getDiskSpace()
+
+    if available < 100*1024*1024 { // Less than 100MB
+        app.Dialog.Warning().
+            SetTitle("Low Disk Space").
+            SetMessage(fmt.Sprintf("Only %d MB available.", available/(1024*1024))).
+            Show()
+    }
+}
+```
+
+## 錯誤對話框
+
+顯示錯誤：
+
+```go
+app.Dialog.Error().
+    SetTitle("Error").
+    SetMessage("Failed to connect to server.").
+    Show()
+```
+
+**使用情境：**
+- 錯誤訊息
+- 失敗通知
+- 例外處理
+- 關鍵問題
+
+**範例 - 網路錯誤：**
+
+```go
+func fetchData(app *application.App, url string) ([]byte, error) {
+    resp, err := http.Get(url)
+    if err != nil {
+        app.Dialog.Error().
+            SetTitle("Network Error").
+            SetMessage(fmt.Sprintf("Failed to connect: %v", err)).
+            Show()
+        return nil, err
+    }
+    defer resp.Body.Close()
+
+    return io.ReadAll(resp.Body)
+}
+```
+
+## 問題對話框
+
+詢問使用者問題，並透過按鈕回呼處理回應：
+
+```go
+dialog := app.Dialog.Question().
+    SetTitle("Confirm").
+    SetMessage("Save changes before closing?")
+
+save := dialog.AddButton("Save")
+save.OnClick(func() {
+    saveChanges()
+})
+
+dontSave := dialog.AddButton("Don't Save")
+dontSave.OnClick(func() {
+    // Continue without saving
+})
+
+cancel := dialog.AddButton("Cancel")
+cancel.OnClick(func() {
+    // Don't close
+})
+
+dialog.SetDefaultButton(save)
+dialog.SetCancelButton(cancel)
+dialog.Show()
+```
+
+**使用情境：**
+- 確認動作
+- 是/否問題
+- 多選題
+- 使用者決策
+
+**範例 - 未儲存的變更：**
+
+```go
+func closeDocument(app *application.App) {
+    if !hasUnsavedChanges() {
+        doClose()
+        return
+    }
+
+    dialog := app.Dialog.Question().
+        SetTitle("Unsaved Changes").
+        SetMessage("Do you want to save your changes?")
+
+    save := dialog.AddButton("Save")
+    save.OnClick(func() {
+        if saveDocument() {
+            doClose()
+        }
+    })
+
+    dontSave := dialog.AddButton("Don't Save")
+    dontSave.OnClick(func() {
+        doClose()
+    })
+
+    cancel := dialog.AddButton("Cancel")
+    // Cancel button has no callback - just closes the dialog
+
+    dialog.SetDefaultButton(save)
+    dialog.SetCancelButton(cancel)
+    dialog.Show()
+}
+```
+
+## 對話框選項
+
+### 標題與訊息
+
+```go
+dialog := app.Dialog.Info().
+    SetTitle("Operation Complete").
+    SetMessage("All files have been processed successfully.")
+```
+
+**最佳實踐：**
+- **標題：** 簡短、具描述性（2-5 個字）
+- **訊息：** 清晰、具體、可操作
+- **避免術語：** 使用通俗語言
+
+### 按鈕
+
+**單一按鈕（資訊/警告/錯誤）：**
+
+資訊、警告和錯誤對話框會顯示預設的「確定」按鈕：
+
+```go
+app.Dialog.Info().
+    SetMessage("Done!").
+    Show()
+```
+
+您也可以新增自訂按鈕：
+
+```go
+dialog := app.Dialog.Info().
+    SetMessage("Done!")
+ok := dialog.AddButton("Got it!")
+dialog.SetDefaultButton(ok)
+dialog.Show()
+```
+
+**多個按鈕（問題）：**
+
+使用 `AddButton()` 新增按鈕，該方法會回傳一個 `*Button`，您可以對其進行設定：
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Choose an action")
+
+option1 := dialog.AddButton("Option 1")
+option1.OnClick(func() {
+    handleOption1()
+})
+
+option2 := dialog.AddButton("Option 2")
+option2.OnClick(func() {
+    handleOption2()
+})
+
+option3 := dialog.AddButton("Option 3")
+option3.OnClick(func() {
+    handleOption3()
+})
+
+dialog.Show()
+```
+
+**預設與取消按鈕：**
+
+使用 `SetDefaultButton()` 指定哪個按鈕會被高亮顯示並由 Enter 鍵觸發。
+使用 `SetCancelButton()` 指定哪個按鈕會由 Escape 鍵觸發。
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Delete file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    performDelete()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+// No callback needed - just dismisses dialog
+
+dialog.SetDefaultButton(cancelBtn)  // Safe option as default
+dialog.SetCancelButton(cancelBtn)   // Escape triggers Cancel
+dialog.Show()
+```
+
+您也可以對按鈕使用流暢的 `SetAsDefault()` 和 `SetAsCancel()` 方法：
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Delete file?")
+
+dialog.AddButton("Delete").OnClick(func() {
+    performDelete()
+})
+
+dialog.AddButton("Cancel").SetAsDefault().SetAsCancel()
+
+dialog.Show()
+```
+
+**最佳實踐：**
+- **1-3 個按鈕：** 不要讓使用者感到不知所措
+- **清晰的標籤：** 使用「儲存」而非「確定」
+- **安全的預設值：** 非破壞性動作
+- **順序很重要：** 最可能的動作排在前面（取消除外）
+
+### 自訂圖示
+
+為對話框設定自訂圖示：
+
+```go
+app.Dialog.Info().
+    SetTitle("Custom Icon Example").
+    SetMessage("Using a custom icon").
+    SetIcon(myIconBytes).
+    Show()
+```
+
+### 視窗附加
+
+附加至特定視窗：
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Window-specific question").
+    AttachToWindow(window)
+
+dialog.AddButton("OK")
+dialog.Show()
+```
+
+**優點：**
+- 對話框出現在正確的視窗上
+- 顯示期間父視窗被停用
+- 更好的多視窗使用者體驗
+
+## 完整範例
+
+### 確認破壞性動作
+
+```go
+func deleteFiles(app *application.App, paths []string) {
+    // Confirm deletion
+    message := fmt.Sprintf("Delete %d file(s)?", len(paths))
+    if len(paths) == 1 {
+        message = fmt.Sprintf("Delete %s?", filepath.Base(paths[0]))
+    }
+
+    dialog := app.Dialog.Question().
+        SetTitle("Confirm Delete").
+        SetMessage(message)
+
+    deleteBtn := dialog.AddButton("Delete")
+    deleteBtn.OnClick(func() {
+        // Perform deletion
+        var errs []error
+        for _, path := range paths {
+            if err := os.Remove(path); err != nil {
+                errs = append(errs, err)
+            }
+        }
+
+        // Show result
+        if len(errs) > 0 {
+            app.Dialog.Error().
+                SetTitle("Delete Failed").
+                SetMessage(fmt.Sprintf("Failed to delete %d file(s)", len(errs))).
+                Show()
+        } else {
+            app.Dialog.Info().
+                SetTitle("Delete Complete").
+                SetMessage(fmt.Sprintf("Deleted %d file(s)", len(paths))).
+                Show()
+        }
+    })
+
+    cancelBtn := dialog.AddButton("Cancel")
+    dialog.SetDefaultButton(cancelBtn)
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+}
+```
+
+### 退出確認
+
+```go---
+
+**有問題嗎？** 請在 [Discord](https://discord.gg/JDdSxwjhGf) 提問，或查看 [對話框範例](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs)。

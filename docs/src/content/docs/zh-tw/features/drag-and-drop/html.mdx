@@ -1,0 +1,232 @@
+---
+title: HTML 拖放功能
+description: 在應用程式中拖放元素
+sidebar:
+  order: 2
+---
+
+HTML5 拖放功能允許使用者在應用程式的 UI 中拖曳元素——例如重新排列清單順序，或在欄位之間移動項目。這是標準的網頁功能，在 Wails 中無需任何特殊設定即可運作。
+
+## 使元素可拖曳
+
+預設情況下，大多數元素無法被拖曳。要使元素可拖曳，請加上 `draggable="true"`：
+
+```html
+<div class="item" draggable="true">Drag me</div>
+```
+
+現在，當使用者點擊並拖曳該元素時，會顯示拖曳預覽。
+
+## 定義放置區域
+
+元素預設不接受放置。要使元素接受放置，你需要在 `dragover` 事件上取消預設行為：
+
+```html
+<div class="drop-zone" id="target">Drop here</div>
+
+<script>
+const target = document.getElementById('target');
+
+target.addEventListener('dragover', (e) => {
+    e.preventDefault(); // Allow the drop
+});
+
+target.addEventListener('drop', (e) => {
+    e.preventDefault();
+    // Handle the drop
+});
+</script>
+```
+
+在 `dragover` 上呼叫 `preventDefault()` 是必要的——這表示該元素接受放置。若未呼叫，則不會觸發 drop 事件。
+
+## 設定拖曳懸停樣式
+
+為了讓使用者知道可以放置的位置，請在拖曳進入放置區域時提供視覺回饋。當元素進入區域時會觸發 `dragenter` 事件，離開時則觸發 `dragleave`：
+
+```css
+.drop-zone {
+    border: 2px dashed #ccc;
+    padding: 40px;
+    transition: all 0.2s ease;
+}
+
+.drop-zone.drag-over {
+    border-color: #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+```
+
+```javascript
+const target = document.getElementById('target');
+
+target.addEventListener('dragenter', () => {
+    target.classList.add('drag-over');
+});
+
+target.addEventListener('dragleave', () => {
+    target.classList.remove('drag-over');
+});
+
+target.addEventListener('drop', (e) => {
+    e.preventDefault();
+    target.classList.remove('drag-over');
+    // Handle the drop
+});
+```
+
+注意：`dragleave` 也會在進入子元素時觸發，這可能會導致閃爍。下方的完整範例展示了如何處理此情況。
+
+## 完整範例
+
+一個任務清單，其中項目可以在優先順序欄位之間拖曳。此範例使用變數來追蹤被拖曳的元素，這是所有內容都在同一頁面上的最簡單做法：
+
+```html
+<div class="tasks">
+    <div class="item" draggable="true">Fix login bug</div>
+    <div class="item" draggable="true">Update docs</div>
+    <div class="item" draggable="true">Add dark mode</div>
+</div>
+
+<div class="columns">
+    <div class="drop-zone" data-priority="high">
+        <h3>High Priority</h3>
+        <ul></ul>
+    </div>
+    <div class="drop-zone" data-priority="low">
+        <h3>Low Priority</h3>
+        <ul></ul>
+    </div>
+</div>
+
+<script>
+let draggedItem = null;
+
+// Track which item is being dragged
+document.querySelectorAll('.item').forEach(item => {
+    item.addEventListener('dragstart', () => {
+        draggedItem = item;
+        item.classList.add('dragging');
+    });
+    
+    item.addEventListener('dragend', () => {
+        item.classList.remove('dragging');
+    });
+});
+
+// Handle drops on each zone
+document.querySelectorAll('.drop-zone').forEach(zone => {
+    zone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+    });
+    
+    zone.addEventListener('dragenter', () => {
+        zone.classList.add('drag-over');
+    });
+    
+    zone.addEventListener('dragleave', (e) => {
+        // Only remove the class if we're leaving the zone entirely,
+        // not just entering a child element
+        if (!zone.contains(e.relatedTarget)) {
+            zone.classList.remove('drag-over');
+        }
+    });
+    
+    zone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        
+        if (draggedItem) {
+            const li = document.createElement('li');
+            li.textContent = draggedItem.textContent;
+            zone.querySelector('ul').appendChild(li);
+            draggedItem.remove();
+        }
+    });
+});
+</script>
+
+<style>
+.item {
+    padding: 12px 16px;
+    background: #f0f0f0;
+    margin: 8px 0;
+    border-radius: 8px;
+    cursor: grab;
+}
+
+.item.dragging {
+    opacity: 0.5;
+}
+
+.drop-zone {
+    min-height: 150px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 15px;
+    transition: all 0.2s ease;
+}
+
+.drop-zone.drag-over {
+    border-color: #007bff;
+    background: rgba(0, 123, 255, 0.1);
+}
+</style>
+```
+
+## 與檔案拖放結合
+
+如果你的應用程式同時使用 HTML 拖放功能和 [檔案拖放](./files)，你的 HTML 放置區域也會在使用者從作業系統拖曳檔案時收到事件。為了避免混淆，請在你的處理常式中過濾掉檔案拖曳：
+
+```javascript
+zone.addEventListener('dragenter', (e) => {
+    // Ignore external file drags
+    if (e.dataTransfer?.types.includes('Files')) return;
+    
+    zone.classList.add('drag-over');
+});
+
+zone.addEventListener('dragover', (e) => {
+    // Ignore external file drags
+    if (e.dataTransfer?.types.includes('Files')) return;
+    
+    e.preventDefault();
+});
+
+zone.addEventListener('drop', (e) => {
+    // Ignore external file drags
+    if (e.dataTransfer?.types.includes('Files')) return;
+    
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    // Handle the internal drop
+});
+```
+
+`dataTransfer.types` 陣列在使用者從作業系統拖曳檔案時會包含 `'Files'`，但對於內部 HTML 拖曳則會包含如 `'text/plain'` 等類型。這讓你能夠區分兩者。
+
+## 使用 dataTransfer 傳遞資料
+
+上述範例使用 JavaScript 變數來追蹤被拖曳的元素。這在一切都在同一頁面上時運作良好。但如果你需要在 iframe 之間拖曳，或傳遞與 DOM 元素無關的資料，請使用 `dataTransfer` API：
+
+```javascript
+// When drag starts, store data
+item.addEventListener('dragstart', (e) => {
+    e.dataTransfer.setData('text/plain', item.id);
+});
+
+// When dropped, retrieve the data
+target.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const itemId = e.dataTransfer.getData('text/plain');
+    const item = document.getElementById(itemId);
+    // Move or copy the item
+});
+```
+
+資料以字串形式儲存，因此如有需要，你必須使用 `JSON.stringify()` 將物件序列化。
+
+## 下一步
+
+- [檔案拖放](./files) - 接受來自作業系統的檔案
+- [MDN Drag and Drop API](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API) - 完整的瀏覽器 API 參考

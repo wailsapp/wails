@@ -1,0 +1,1003 @@
+---
+title: 視窗選項
+description: WebviewWindowOptions 的完整參考
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 視窗配置選項
+
+Wails 提供了全面的視窗配置，包含數十種用於大小、位置、外觀和行為的選項。此參考文件涵蓋了 Windows、macOS 和 Linux 上所有可用的選項，作為 `WebviewWindowOptions` 的**完整參考**。每個選項、每個平台，均附有範例與限制說明。
+
+## WebviewWindowOptions 結構
+
+```go
+type WebviewWindowOptions struct {
+    // Identity
+    Name  string
+    Title string
+    
+    // Size and Position
+    Width     int
+    Height    int
+    X         int
+    Y         int
+    MinWidth  int
+    MinHeight int
+    MaxWidth  int
+    MaxHeight int
+    
+    // Initial State
+    Hidden          bool
+    Frameless       bool
+    Resizable       bool
+    AlwaysOnTop     bool
+    Fullscreen      bool
+    Minimised       bool
+    Maximised       bool
+    WindowState     WindowState
+    
+    // Appearance
+    BackgroundColour RGBA
+    BackgroundType   BackgroundType
+    
+    // Content
+    URL  string
+    HTML string
+    
+    // Assets
+    Assets application.AssetOptions
+    
+    // Security
+    ContentProtectionEnabled bool
+
+    // Menu
+    UseApplicationMenu bool
+
+    // Lifecycle
+    OnClose   func() bool
+    OnDestroy func()
+
+    // Platform-Specific
+    Mac     MacOptions
+    Windows WindowsOptions
+    Linux   LinuxOptions
+}
+```
+
+## 核心選項
+
+### Name
+
+**類型：** `string`  
+**預設值：** 自動生成的 UUID  
+**平台：** 所有平台
+
+```go
+Name: "main-window"
+```
+
+**用途：** 用於後續查找視窗的唯一識別碼。
+
+**最佳實踐：**
+- 使用具描述性的名稱：`"main"`、`"settings"`、`"about"`
+- 使用 kebab-case（連字號分隔）：`"file-browser"`、`"color-picker"`
+- 保持簡短且易記
+
+**範例：**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name: "settings-window",
+})
+
+// 稍後...
+settings := app.GetWindowByName("settings-window")
+```
+
+### Title
+
+**類型：** `string`  
+**預設值：** 應用程式名稱  
+**平台：** 所有平台
+
+```go
+Title: "My Application"
+```
+
+**用途：** 顯示在標題列和任務列中的文字。
+
+**動態更新：**
+
+```go
+window.SetTitle("My Application - Document.txt")
+```
+
+### Width / Height
+
+**類型：** `int`（像素）  
+**預設值：** 800 x 600  
+**平台：** 所有平台  
+**限制：** 必須為正數
+
+```go
+Width:  1200,
+Height: 800,
+```
+
+**用途：** 初始視窗大小（邏輯像素）。
+
+**注意事項：**
+- Wails 會自動處理 DPI 縮放
+- 使用邏輯像素，而非物理像素
+- 考慮最小螢幕解析度（1024x768）
+
+**常見尺寸：**
+
+| 使用情境 | 寬度 | 高度 |
+|----------|-------|--------|
+| 小型工具 | 400 | 300 |
+| 標準應用程式 | 1024 | 768 |
+| 大型應用程式 | 1440 | 900 |
+| Full HD | 1920 | 1080 |
+
+### X / Y
+
+**類型：** `int`（像素）  
+**預設值：** 螢幕置中  
+**平台：** 所有平台
+
+```go
+X: 100,  // 距離左邊緣 100px
+Y: 100,  // 距離頂部邊緣 100px
+```
+
+**用途：** 初始視窗位置。
+
+**座標系統：**
+- (0, 0) 是主螢幕的左上角
+- X 軸正向向右
+- Y 軸正向向下
+
+**範例：**
+
+```go
+settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name: "coordinate-window",
+    InitialPosition: application.WindowXY, // 使用座標系統
+    X:    100,
+    Y:    100,
+})
+```
+
+**最佳實踐：** 使用 `Center()` 將視窗置中：
+
+```go
+window := app.Window.New()
+window.Center()
+```
+
+### MinWidth / MinHeight
+
+**類型：** `int`（像素）  
+**預設值：** 0（無最小值限制）  
+**平台：** 所有平台
+
+```go
+MinWidth:  400,
+MinHeight: 300,
+```
+
+**用途：** 防止視窗過小。
+
+**使用情境：**
+- 防止版面佈局破損
+- 確保可用性
+- 維持長寬比
+
+**範例：**
+
+```go
+// 防止視窗小於 400x300
+MinWidth:  400,
+MinHeight: 300,
+```
+
+### MaxWidth / MaxHeight
+
+**類型：** `int`（像素）  
+**預設值：** 0（無最大值限制）  
+**平台：** 所有平台
+
+```go
+MaxWidth:  1920,
+MaxHeight: 1080,
+```
+
+**用途：** 防止視窗過大。
+
+**使用情境：**
+- 固定大小的應用程式
+- 防止過度消耗資源
+- 維持設計約束
+
+## 狀態選項
+
+### Hidden
+
+**類型：** `bool`
+**預設值：** `false`
+**平台：** 所有平台
+
+```go
+Hidden: true,
+```
+
+**用途：** 建立視窗但不顯示。
+
+**使用情境：**
+- 背景視窗
+- 按需顯示的視窗
+- 啟動畫面（建立、載入，然後顯示）
+- 防止載入內容時的白閃
+
+**平台改進：**
+- **Windows：** 修復視窗白閃問題 - 視窗保持隱藏，直到呼叫 `Show()`
+- **macOS：** 完整支援
+- **Linux：** 完整支援
+
+**推薦的平滑載入模式：**
+
+```go
+// 建立隱藏視窗
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "main-window",
+    Hidden: true,
+    BackgroundColour: application.RGBA{R: 30, G: 30, B: 30, A: 255}, // 與您的主題匹配
+})
+
+// 在隱藏狀態下載入內容
+// ... 內容載入中 ...
+
+// 準備好後顯示（無閃爍！）
+window.Show()
+```
+
+**範例：**
+
+```go
+settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "settings",
+    Hidden: true,
+})
+
+// 需要時顯示
+settings.Show()
+```
+
+### Frameless
+
+**類型：** `bool`  
+**預設值：** `false`  
+**平台：** 所有平台
+
+```go
+Frameless: true,
+```
+
+**用途：** 移除標題列和視窗邊框。
+
+**使用情境：**
+- 自訂視窗外觀
+- 啟動畫面
+- 資訊亭（kiosk）應用程式
+- 自訂設計的視窗
+
+**重要：** 您需要實作：
+- 視窗拖曳
+- 關閉/最小化/最大化按鈕
+- 調整大小控制點（如果可調整大小）
+
+**請參閱 [Frameless Windows](/zh-tw/features/windows/frameless) 以獲取詳細資訊。**
+
+### Resizable
+
+**類型：** `bool`  
+**預設值：** `true`  
+**平台：** 所有平台
+
+```go
+Resizable: false,
+```
+
+**用途：** 允許/禁止調整視窗大小。
+
+**使用情境：**
+- 固定大小的應用程式
+- 啟動畫面
+- 對話框
+
+**注意：** 除非您也禁止，否則使用者仍可最大化/進入全螢幕模式。
+
+### AlwaysOnTop
+
+**類型：** `bool`  
+**預設值：** `false`  
+**平台：** 所有平台
+
+```go
+AlwaysOnTop: true,
+```
+
+**用途：** 保持視窗位於所有其他視窗之上。
+
+**使用情境：**
+- 浮動工具列
+- 通知
+- 畫中畫
+- 計時器
+
+**平台注意事項：**
+- **macOS：** 完整支援
+- **Windows：** 完整支援
+- **Linux：** 取決於視窗管理器
+
+### Fullscreen
+
+**類型：** `bool`  
+**預設值：** `false`  
+**平台：** 所有平台
+
+```go
+Fullscreen: true,
+```
+
+**用途：** 以全螢幕模式啟動。
+
+**平台行為：**
+- **macOS：** 建立新的 Space（虛擬桌面）
+- **Windows：** 覆蓋任務列
+- **Linux：** 依桌面環境而異
+
+**在執行時切換：**
+
+```go
+window.Fullscreen()
+window.UnFullscreen()
+```
+
+### Minimised / Maximised
+
+**類型：** `bool`  
+**預設值：** `false`  
+**平台：** 所有平台
+
+```go
+Minimised: true,  // 以最小化狀態啟動
+Maximised: true,  // 以最大化狀態啟動
+```
+
+**用途：** 設定初始視窗狀態。
+
+**注意：** 不要同時將兩者設為 `true` - 行為未定義。
+
+### WindowState
+
+**類型：** `WindowState` 列舉  
+**預設值：** `WindowStateNormal`  
+**平台：** 所有平台
+
+```go
+WindowState: application.WindowStateMaximised,
+```
+
+**值：**
+- `WindowStateNormal` - 一般視窗
+- `WindowStateMinimised` - 最小化
+- `WindowStateMaximised` - 最大化
+- `WindowStateFullscreen` - 全螢幕
+- `WindowStateHidden` - 隱藏
+
+**優先於個別旗標使用：**
+
+```go
+// ✅ 推薦
+WindowState: application.WindowStateMaximised,
+
+// ❌ 避免
+Maximised: true,
+```
+
+## 外觀選項
+
+### BackgroundColour
+
+**類型：** `RGBA` 結構  
+**預設值：** 白色 (255, 255, 255, 255)  
+**平台：** 所有平台
+
+```go
+BackgroundColour: application.RGBA{R: 0, G: 0, H: 0, A: 255},
+```
+
+**用途：** 內容載入前的視窗背景顏色。
+
+**使用情境：**
+- 匹配應用程式的主題
+- 防止深色主題下的白閃
+- 提供平滑的載入體驗
+
+**範例：**
+
+```go
+// 深色主題
+BackgroundColour: application.RGBA{R: 30, G: 30, B: 30, A: 255},
+
+// 淺色主題```go
+BackgroundColour: application.RGBA{R: 255, G: 255, B: 255, A: 255},
+```
+
+**輔助方法：**
+
+```go
+window.SetBackgroundColour(30, 30, 30, 255)
+```
+
+### BackgroundType
+
+**類型：** `BackgroundType` 列舉  
+**預設值：** `BackgroundTypeSolid`  
+**平台：** macOS、Windows（部分支援）
+
+```go
+BackgroundType: application.BackgroundTypeTranslucent,
+```
+
+**值：**
+- `BackgroundTypeSolid` - 實心顏色
+- `BackgroundTypeTransparent` - 完全透明
+- `BackgroundTypeTranslucent` - 半透明模糊效果
+
+**平台支援：**
+- **macOS：** 支援所有類型
+- **Windows：** 透明與半透明（Windows 11 以上）
+- **Linux：** 僅實心顏色
+
+**範例（macOS）：**
+
+```go
+BackgroundType: application.BackgroundTypeTranslucent,
+Mac: application.MacOptions{
+    Backdrop: application.MacBackdropTranslucent,
+},
+```
+
+## 內容選項
+
+### URL
+
+**類型：** `string`  
+**預設值：** 空白（從資源載入）  
+**平台：** 所有平台
+
+```go
+URL: "https://example.com",
+```
+
+**用途：** 載入外部 URL 而非嵌入的資源。
+
+**使用情境：**
+- 開發階段（從開發伺服器載入）
+- Web 應用程式
+- 混合應用程式
+
+**範例：**
+
+```go
+// 開發階段
+URL: "http://localhost:5173",
+
+// 生產環境
+Assets: application.AssetOptions{
+    Handler: application.AssetFileServerFS(assets),
+},
+```
+
+### HTML
+
+**類型：** `string`  
+**預設值：** 空白  
+**平台：** 所有平台
+
+```go
+HTML: "<h1>Hello World</h1>",
+```
+
+**用途：** 直接載入 HTML 字串。
+
+**使用情境：**
+- 簡單視窗
+- 動態產生的內容
+- 測試
+
+**範例：**
+
+```go
+HTML: `
+<!DOCTYPE html>
+<html>
+<head><title>Simple Window</title></head>
+<body><h1>Hello from Wails!</h1></body>
+</html>
+`,
+```
+
+### Assets
+
+**類型：** `AssetOptions`  
+**預設值：** 繼承自 application  
+**平台：** 所有平台
+
+```go
+Assets: application.AssetOptions{
+    Handler: application.AssetFileServerFS(assets),
+},
+```
+
+**用途：** 提供嵌入的前端資源。
+
+**詳細資訊請參閱 [Build System](/zh-tw/concepts/build-system)。**
+
+### UseApplicationMenu
+
+**類型：** `bool`
+**預設值：** `false`
+**平台：** Windows、Linux（在 macOS 上無效）
+
+```go
+UseApplicationMenu: true,
+```
+
+**用途：** 為此視窗使用應用程式選單（透過 `app.Menu.Set()` 設定）。
+
+在 **macOS** 上，此選項無效，因為 macOS 總是使用螢幕頂端的全域應用程式選單。
+
+在 **Windows** 和 **Linux** 上，視窗預設不會顯示選單。設定 `UseApplicationMenu: true` 會告訴視窗使用應用程式層級的選單，提供簡單的跨平台解決方案。
+
+**範例：**
+
+```go
+// 設定一次應用程式選單
+menu := app.NewMenu()
+menu.AddRole(application.FileMenu)
+menu.AddRole(application.EditMenu)
+app.Menu.Set(menu)
+
+// 所有設定 UseApplicationMenu 的視窗都會顯示此選單
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:              "Main Window",
+    UseApplicationMenu: true,
+})
+
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:              "Second Window",
+    UseApplicationMenu: true,  // 也會取得應用程式選單
+})
+```
+
+**注意事項：**
+- 如果同時設定了 `UseApplicationMenu` 和視窗專屬選單，視窗專屬選單優先
+- 這簡化了跨平台程式碼，消除了執行階段作業系統檢查的需求
+- 完整選單文件請參閱 [Application Menus](/zh-tw/features/menus/application)
+
+## 輸入選項
+
+### EnableFileDrop
+
+**類型：** `bool`  
+**預設值：** `false`  
+**平台：** 所有平台
+
+```go
+EnableFileDrop: true,
+```
+
+**用途：** 啟用從作業系統拖放檔案到視窗的功能。
+
+啟用後：
+- 從檔案管理器拖曳的檔案可以拖放到您的應用程式中
+- 拖放的檔案路徑會觸發 `WindowFilesDropped` 事件
+- 具有 `data-file-drop-target` 屬性的元素會提供詳細的放置資訊
+
+**使用情境：**
+- 檔案上傳介面
+- 文件編輯器
+- 媒體匯入器
+- 任何接受檔案的應用程式
+
+**範例：**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "File Uploader",
+    EnableFileDrop: true,
+})
+
+// 處理拖放的檔案
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    details := event.Context().DropTargetDetails()
+    
+    for _, file := range files {
+        fmt.Println("Dropped:", file)
+    }
+})
+```
+
+**HTML 放置區域：**
+
+```html
+<!-- 將元素標記為放置目標 -->
+<div id="upload" data-file-drop-target>
+    將檔案拖放到此處
+</div>
+```
+
+**完整文件請參閱 [File Drop](/zh-tw/features/drag-and-drop/files)。**
+
+## 安全性選項
+
+### ContentProtectionEnabled
+
+**類型：** `bool`  
+**預設值：** `false`  
+**平台：** Windows（10 以上）、macOS
+
+```go
+ContentProtectionEnabled: true,
+```
+
+**用途：** 防止螢幕擷取視窗內容。
+
+**平台支援：**
+- **Windows：** Windows 10 版本 19041 以上（完整支援），較舊版本（部分支援）
+- **macOS：** 完整支援
+- **Linux：** 不支援
+
+**使用情境：**
+- 銀行應用程式
+- 密碼管理員
+- 醫療記錄
+- 機密文件
+
+**重要注意事項：**
+1. 無法防止實體攝影
+2. 某些工具可能會繞過保護
+3. 這是綜合安全性的一部分，並非唯一的保護措施
+4. DevTools 視窗不會自動受到保護
+
+**範例：**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "Secure Window",
+    ContentProtectionEnabled: true,
+})
+
+// 在執行階段切換
+window.SetContentProtection(true)
+```
+
+## 生命週期選項
+
+### OnClose
+
+**類型：** `func() bool`  
+**預設值：** `nil`（允許關閉）  
+**平台：** 所有平台
+
+```go
+OnClose: func() bool {
+    // 傳回 false 以取消關閉
+    // 傳回 true 以允許關閉
+    return true
+},
+```
+
+**用途：** 處理視窗關閉事件，可選擇性地阻止關閉。
+
+**使用情境：**
+- 在關閉前確認是否有未儲存的變更
+- 在關閉前儲存狀態
+- 防止意外關閉
+
+**範例：**
+
+```go
+OnClose: func() bool {
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        return result == "yes"
+    }
+    return true
+},
+```
+
+**重要：** 僅由使用者動作（點擊 X）觸發，而非 `window.Destroy()`。
+
+### OnDestroy
+
+**類型：** `func()`  
+**預設值：** `nil`  
+**平台：** 所有平台
+
+```go
+OnDestroy: func() {
+    // 清理程式碼
+    fmt.Println("Window destroyed")
+},
+```
+
+**用途：** 視窗銷毀時的清理工作。
+
+**使用情境：**
+- 釋放資源
+- 關閉連線
+- 更新應用程式狀態
+
+**範例：**
+
+```go
+OnDestroy: func() {
+    // 關閉資料庫連線
+    if db != nil {
+        db.Close()
+    }
+    
+    // 從視窗列表中移除
+    removeWindow(window.ID())
+},
+```
+
+## 平台特定選項### Mac 選項
+
+```go
+Mac: application.MacWindow{
+    TitleBar: application.MacTitleBar{
+        AppearsTransparent: true,
+        Hide:               false,
+        HideTitle:          true,
+        FullSizeContent:    true,
+    },
+    Backdrop:                application.MacBackdropTranslucent,
+    InvisibleTitleBarHeight: 50,
+    WindowLevel:             application.MacWindowLevelNormal,
+    CollectionBehavior:      application.MacWindowCollectionBehaviorDefault,
+},
+```
+
+**TitleBar** (`MacTitleBar`)
+- `AppearsTransparent` - 使標題列透明，內容延伸至標題列區域
+- `Hide` - 完全隱藏標題列
+- `HideTitle` - 僅隱藏標題文字
+- `FullSizeContent` - 將內容延伸至視窗全尺寸
+
+**Backdrop** (`MacBackdrop`)
+- `MacBackdropNormal` - 標準不透明背景
+- `MacBackdropTranslucent` - 模糊半透明背景
+- `MacBackdropTransparent` - 完全透明背景
+
+**InvisibleTitleBarHeight** (`int`)
+- 不可見標題列區域的高度（用於拖曳）
+- 僅在原生標題列拖曳區域被隱藏時生效 — 即視窗為無框 (`Frameless: true`) 或使用透明標題列 (`AppearsTransparent: true`) 時
+- 對具有可見標題列的標準視窗無效
+
+**WindowLevel** (`MacWindowLevel`)
+- `MacWindowLevelNormal` - 標準視窗層級（預設）
+- `MacWindowLevelFloating` - 浮動於一般視窗之上
+- `MacWindowLevelTornOffMenu` - 撕離式選單層級
+- `MacWindowLevelModalPanel` - 模式面板層級
+- `MacWindowLevelMainMenu` - 主選單層級
+- `MacWindowLevelStatus` - 狀態視窗層級
+- `MacWindowLevelPopUpMenu` - 彈出式選單層級
+- `MacWindowLevelScreenSaver` - 螢幕保護程式層級
+
+**CollectionBehavior** (`MacWindowCollectionBehavior`)
+
+控制視窗在 macOS Spaces 和全螢幕模式下的行為。這些是位元遮罩值，可以使用位元 OR (`|`) 進行組合。
+
+**Space 行為：**
+- `MacWindowCollectionBehaviorDefault` - 使用 FullScreenPrimary（預設，向後相容）
+- `MacWindowCollectionBehaviorCanJoinAllSpaces` - 視窗出現在所有 Spaces
+- `MacWindowCollectionBehaviorMoveToActiveSpace` - 顯示時移至活躍 Space
+- `MacWindowCollectionBehaviorManaged` - 預設受管理視窗行為
+- `MacWindowCollectionBehaviorTransient` - 臨時/瞬態視窗
+- `MacWindowCollectionBehaviorStationary` - 在 Space 切換時保持靜止
+
+**視窗循環：**
+- `MacWindowCollectionBehaviorParticipatesInCycle` - 包含在 Cmd+` 循環中
+- `MacWindowCollectionBehaviorIgnoresCycle` - 排除在 Cmd+` 循環之外
+
+**全螢幕行為：**
+- `MacWindowCollectionBehaviorFullScreenPrimary` - 可以進入全螢幕模式
+- `MacWindowCollectionBehaviorFullScreenAuxiliary` - 可以覆蓋全螢幕應用程式
+- `MacWindowCollectionBehaviorFullScreenNone` - 禁用全螢幕功能
+- `MacWindowCollectionBehaviorFullScreenAllowsTiling` - 允許並排平鋪 (macOS 10.11+)
+- `MacWindowCollectionBehaviorFullScreenDisallowsTiling` - 防止平鋪 (macOS 10.11+)
+
+**範例 - 類似 Spotlight 的視窗：**
+
+```go
+// 出現在所有 Spaces 且可以覆蓋全螢幕應用程式的視窗
+Mac: application.MacWindow{
+    CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces |
+                        application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+    WindowLevel:        application.MacWindowLevelFloating,
+},
+```
+
+**範例 - 單一行為：**
+
+```go
+// 可以出現在全螢幕應用程式之上的視窗
+Mac: application.MacWindow{
+    CollectionBehavior: application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+},
+```
+
+### Windows 選項
+
+```go
+Windows: application.WindowsOptions{
+    DisableWindowIcon:      false,
+    WindowBackdropType:     application.WindowsBackdropTypeAuto,
+    CustomTheme:            nil,
+    DisableFramelessWindowDecorations: false,
+},
+```
+
+**DisableWindowIcon** (`bool`)
+- 從標題列移除圖示
+- 更簡潔的外觀
+
+**WindowBackdropType** (`WindowsBackdropType`)
+- `WindowsBackdropTypeAuto` - 系統預設
+- `WindowsBackdropTypeNone` - 無背景
+- `WindowsBackdropTypeMica` - Mica 材質 (Windows 11)
+- `WindowsBackdropTypeAcrylic` - Acrylic 材質 (Windows 11)
+- `WindowsBackdropTypeTabbed` - Tabbed 材質 (Windows 11)
+
+**CustomTheme** (`*WindowsTheme`)
+- 自訂色彩主題
+- 覆蓋系統色彩
+
+**DisableFramelessWindowDecorations** (`bool`)
+- 禁用預設無框裝飾
+- 用於自訂視窗 chrome
+
+**範例：**
+
+```go
+Windows: application.WindowsOptions{
+    WindowBackdropType: application.WindowsBackdropTypeMica,
+    DisableWindowIcon:  true,
+},
+```
+
+### Linux 選項
+
+```go
+Linux: application.LinuxOptions{
+    Icon:                []byte{/* PNG data */},
+    WindowIsTranslucent: false,
+},
+```
+
+**Icon** (`[]byte`)
+- 視窗圖示 (PNG 格式)
+- 顯示在標題列和任務欄
+
+**WindowIsTranslucent** (`bool`)
+- 啟用視窗半透明
+- 需要合成器支援
+
+**範例：**
+
+```go
+//go:embed icon.png
+var icon []byte
+
+Linux: application.LinuxOptions{
+    Icon: icon,
+},
+```
+
+## 應用程式層級視窗選項
+
+某些特定於 Windows 的選項必須在應用程式層級進行配置，而不是針對每個視窗。這是因為 WebView2 每個使用者資料路徑共用單一瀏覽器環境。
+
+### 瀏覽器旗標
+
+WebView2 瀏覽器旗標控制應用程式中**所有視窗**的實驗性功能和行為。這些必須在 `application.Options.Windows` 中設定：
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Windows: application.WindowsOptions{
+        // 啟用實驗性 WebView2 功能
+        EnabledFeatures: []string{
+            "msWebView2EnableDraggableRegions",
+        },
+
+        // 停用特定功能
+        DisabledFeatures: []string{
+            "msSmartScreenProtection",  // 始終由 Wails 停用
+        },
+
+        // 其他 Chromium 命令列參數
+        AdditionalBrowserArgs: []string{
+            "--disable-gpu",
+            "--remote-debugging-port=9222",
+        },
+    },
+})
+```
+
+**EnabledFeatures** (`[]string`)
+- 要啟用的 WebView2 功能旗標列表
+- 請參閱 [WebView2 瀏覽器旗標](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags) 以取得可用旗標
+- 範例：`"msWebView2EnableDraggableRegions"`
+
+**DisabledFeatures** (`[]string`)
+- 要停用的 WebView2 功能旗標列表
+- Wails 會自動停用 `msSmartScreenProtection`
+- 範例：`"msExperimentalFeature"`
+
+**AdditionalBrowserArgs** (`[]string`)
+- 傳遞給瀏覽器處理程序的 Chromium 命令列參數
+- 必須包含 `--` 前綴（例如：`"--remote-debugging-port=9222"`）
+- 請參閱 [Chromium 命令列切換](https://peter.sh/experiments/chromium-command-line-switches/) 以取得可用參數
+
+:::caution[重要]
+這些旗標會套用到所有視窗，因為 WebView2 每個使用者資料路徑共用單一瀏覽器環境。您無法為不同的視窗設定不同的瀏覽器旗標。
+:::
+
+**完整範例：**
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        Windows: application.WindowsOptions{
+            // 啟用可拖曳區域功能
+            EnabledFeatures: []string{
+                "msWebView2EnableDraggableRegions",
+            },
+            // 啟用遠端偵錯
+            AdditionalBrowserArgs: []string{
+                "--remote-debugging-port=9222",
+            },
+        },
+    })
+
+    // 所有視窗將使用上述配置的瀏覽器旗標
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  "Main Window",
+        Width:  1024,
+        Height: 768,
+    })
+
+    window.Show()
+    app.Run()
+}
+```---
+
+**有問題嗎？** 請在 [Discord](https://discord.gg/JDdSxwjhGf) 提問，或查看 [範例](https://github.com/wailsapp/wails/tree/master/v3/examples)。

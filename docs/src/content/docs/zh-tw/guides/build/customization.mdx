@@ -1,0 +1,241 @@
+---
+title: 建置自訂
+description: 使用 Task 和 Taskfile.yml 自訂你的建置流程
+sidebar:
+  order: 7
+---
+
+import { FileTree } from "@astrojs/starlight/components";
+
+## 概述
+
+Wails 的建置系統是一個靈活且強大的工具，旨在簡化 Wails 應用程式的建置流程。它利用了 [Task](https://taskfile.dev)，這是一個任務執行器，讓你可以輕鬆地定義和執行任務。雖然 v3 建置系統是預設值，但 Wails 鼓勵採用「自帶工具」的方法，讓開發者能夠根據需求自訂其建置流程。
+
+了解更多關於如何使用 Task 的資訊，請參考 [官方文件](https://taskfile.dev/usage/)。
+
+## Task：建置系統的核心
+
+[Task](https://taskfile.dev) 是用 Go 編寫的現代化 Make 替代品。它使用 YAML 檔案來定義任務及其依賴關係。在 Wails 建置系統中，[Task](https://taskfile.dev) 在協調建置流程方面扮演著核心角色。
+
+主要的 `Taskfile.yml` 位於專案根目錄，而平台特定的任務則定義在 `build/<platform>/Taskfile.yml` 檔案中。`build` 目錄中有一個通用的 `Taskfile.yml` 檔案，包含跨平台共享的通用任務。
+
+<FileTree>
+
+- 專案根目錄
+  - Taskfile.yml
+  - build
+    - windows/Taskfile.yml
+    - darwin/Taskfile.yml
+    - linux/Taskfile.yml
+    - Taskfile.yml
+
+</FileTree>
+
+## Taskfile.yml
+
+專案根目錄中的 `Taskfile.yml` 檔案是建置系統的主要入口點。它定義了任務及其依賴關係。以下是預設的 `Taskfile.yml` 檔案：
+
+```yaml
+version: '3'
+
+includes:
+  common: ./build/Taskfile.yml
+  windows: ./build/windows/Taskfile.yml
+  darwin: ./build/darwin/Taskfile.yml
+  linux: ./build/linux/Taskfile.yml
+
+vars:
+  APP_NAME: "myproject"
+  BIN_DIR: "bin"
+  VITE_PORT: '{{.WAILS_VITE_PORT | default 9245}}'
+
+tasks:
+  build:
+    summary: Builds the application
+    cmds:
+      - task: "{{OS}}:build"
+
+  package:
+    summary: Packages a production build of the application
+    cmds:
+      - task: "{{OS}}:package"
+
+  run:
+    summary: Runs the application
+    cmds:
+      - task: "{{OS}}:run"
+
+  dev:
+    summary: Runs the application in development mode
+    cmds:
+      - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
+
+
+```
+
+## 平台特定 Taskfile
+
+每個平台都有自己專屬的 Taskfile，位於 `build` 目錄下的平台目錄中。這些檔案定義了該平台的核心任務。每個 Taskfile 都包含來自 `build/Taskfile.yml` 檔案的通用任務。
+
+### Windows
+
+位置：`build/windows/Taskfile.yml`
+
+Windows 特定的 Taskfile 包含在 Windows 上建置、封裝和執行應用程式的任務。主要功能包括：
+
+- 使用可選的生產旗標進行建置
+- 產生 `.ico` 圖示檔案
+- 產生 Windows `.syso` 檔案
+- 建立 NSIS 安裝程式以進行封裝
+
+### Linux
+
+位置：`build/linux/Taskfile.yml`
+
+Linux 特定的 Taskfile 包含在 Linux 上建置、封裝和執行應用程式的任務。主要功能包括：
+
+- 使用可選的生產旗標進行建置
+- 建立 AppImage、deb、rpm 和 Arch Linux 套件
+- 為 Linux 應用程式產生 `.desktop` 檔案
+
+### macOS
+
+位置：`build/darwin/Taskfile.yml`
+
+macOS 特定的 Taskfile 包含在 macOS 上建置、封裝和執行應用程式的任務。主要功能包括：
+
+- 為 amd64、arm64 和通用（兩者）架構建置二進位檔
+- 產生 `.icns` 圖示檔案
+- 建立 `.app` bundle 以供分發
+- 對 `.app` bundle 進行臨時簽名
+- 設定 macOS 特定的建置旗標和環境變數
+
+## 任務執行與命令別名
+
+`wails3 task` 命令是 [Taskfile](https://taskfile.dev) 的內嵌版本，用於執行你在 `Taskfile.yml` 中定義的任務。
+
+`wails3 build` 和 `wails3 package` 命令分別是 `wails3 task build` 和 `wails3 task package` 的別名。當你執行這些命令時，Wails 會在內部將其轉換為適當的任務執行：
+
+- `wails3 build` → `wails3 task build`
+- `wails3 package` → `wails3 task package`
+
+### 傳遞參數給任務
+
+你可以使用 `KEY=VALUE` 格式將 CLI 變數傳遞給任務。這些變數會通過別名命令轉發：
+
+```bash
+# These are equivalent:
+wails3 build PLATFORM=linux CONFIG=production
+wails3 task build PLATFORM=linux CONFIG=production
+
+# Package with custom version:
+wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg
+```
+
+在你的 `Taskfile.yml` 中，你可以使用 Go 模板語法存取這些變數：
+
+```yaml
+tasks:
+  build:
+    cmds:
+      - echo "Building for {{.PLATFORM | default "darwin"}}"
+      - go build -tags {{.CONFIG | default "debug"}} -o myapp
+```
+
+## 通用建置流程
+
+在所有平台上，建置流程通常包括以下步驟：
+
+1. 整理 Go 模組
+2. 建置前端
+3. 產生圖示
+4. 使用平台特定的旗標編譯 Go 程式碼
+5. 封裝應用程式（平台特定）
+
+## 自訂建置流程
+
+雖然 v3 建置系統提供了穩固的預設配置，但你可以輕鬆地自訂它以符合專案的需求。透過修改 `Taskfile.yml` 和平台特定的 Taskfiles，你可以：
+
+- 新增新任務
+- 修改現有任務
+- 更改任務執行的順序
+- 與其他工具和腳本整合
+
+這種靈活性允許你根據特定需求調整建置流程，同時仍能從 Wails 建置系統提供的結構中受益。
+
+:::tip[學習 Taskfile]
+我們強烈建議閱讀 [Taskfile](https://taskfile.dev) 的文件，以了解如何有效使用 Taskfile。
+你可以執行 `wails3 task --version` 來找出嵌入在 Wails CLI 中的 Taskfile 版本。
+:::
+
+## 開發模式
+
+Wails 建置系統包含一個強大的開發模式，透過提供即時重新載入和熱模組替換來增強開發者體驗。此模式使用 `wails3 dev` 命令啟動。
+
+### 運作方式
+
+當你執行 `wails3 dev` 時，會發生以下流程：
+
+1. 該命令會檢查可用的連接埠，如果未指定則預設為 9245。
+2. 它會設定前端開發伺服器（Vite）的環境變數。
+3. 它使用 [refresh](https://github.com/atterpac/refresh) 函式庫啟動檔案監視器。
+
+[refresh](https://github.com/atterpac/refresh) 函式庫負責監視檔案變更並觸發重新建置。它使用 `./build/config.yaml` 檔案中 `dev_mode` 鍵下定義的配置。它可以配置為忽略某些目錄和檔案，以決定要監視哪些檔案以及在偵測到變更時採取什麼動作。預設配置運作良好，但請隨意根據你的需求進行自訂。
+
+### 配置
+
+以下是其結構的範例：
+
+```yaml
+dev_mode:
+  root_path: .
+  log_level: warn
+  debounce: 1000
+  ignore:
+    dir:
+      - .git
+      - node_modules
+      - frontend
+      - bin
+    file:
+      - .DS_Store
+      - .gitignore
+      - .gitkeep
+    watched_extension:
+      - "*.go"
+    git_ignore: true
+  executes:
+    - cmd: wails3 task common:install:frontend:deps
+      type: once
+    - cmd: wails3 task common:dev:frontend
+      type: background
+    - cmd: go mod tidy
+      type: blocking
+    - cmd: wails3 task build
+      type: blocking
+    - cmd: wails3 task run
+      type: primary
+```
+
+此配置檔案允許你：
+
+- 設定檔案監視的根路徑
+- 配置記錄層級
+- 設定檔案變更事件的防抖時間
+- 忽略特定的目錄、檔案或檔案副檔名
+- 定義在檔案變更時執行的命令### 自訂開發模式
+
+您可以透過修改 `config.yaml` 檔案中的這些值，來自訂開發模式的體驗。
+
+自訂的方式包括：
+
+1. 變更被監聽的目錄或檔案
+2. 調整去抖動（debounce）時間，以控制系統對變更的回應速度
+3. 新增或修改執行命令，以符合專案的需求
+
+### 使用瀏覽器進行開發
+
+雖然 Wails v2 完全支援使用瀏覽器進行開發，但這造成了許多混淆。在瀏覽器中能正常運作的應用程式，不一定能在桌面應用程式中運作，因為並非所有瀏覽器 API 都能在 WebView 中使用。
+
+對於以 UI 為主的開發工作，您仍然可以在 v3 中靈活地使用瀏覽器，只需在開發模式下存取 `http://localhost:9245` 的 Vite URL 即可。這讓您在進行樣式和版面配置開發時，能夠使用強大的瀏覽器開發工具。請注意，在此模式下 Go 繫結 *將無法運作*。
+當您準備好測試繫結和事件等功能時，只需切換至桌面檢視，以確保一切在生產環境中都能完美運作。

@@ -1,0 +1,341 @@
+---
+title: 效能最佳化
+description: 最佳化您的 Wails 應用程式以達到最高效能
+sidebar:
+  order: 9
+---
+
+## 概述
+
+最佳化您的 Wails 應用程式的速度、記憶體效率和回應能力。
+
+## 前端最佳化
+
+### 套件大小
+
+```javascript
+// vite.config.js
+export default {
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+        },
+      },
+    },
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+      },
+    },
+  },
+}
+```
+
+### 程式碼分割
+
+```javascript
+// 延遲載入元件
+const Settings = lazy(() => import('./Settings'))
+
+function App() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <Settings />
+    </Suspense>
+  )
+}
+```
+
+### 資源最佳化
+
+```javascript
+// 最佳化圖片
+import { defineConfig } from 'vite'
+import imagemin from 'vite-plugin-imagemin'
+
+export default defineConfig({
+  plugins: [
+    imagemin({
+      gifsicle: { optimizationLevel: 3 },
+      optipng: { optimizationLevel: 7 },
+      svgo: { plugins: [{ removeViewBox: false }] },
+    }),
+  ],
+})
+```
+
+## 後端最佳化
+
+### 高效的繫結
+
+```go
+// ❌ 不好：回傳所有資料
+func (s *Service) GetAllData() []Data {
+    return s.db.FindAll() // 資料量可能非常大
+}
+
+// ✅ 好：分頁處理
+func (s *Service) GetData(page, size int) (*PagedData, error) {
+    return s.db.FindPaged(page, size)
+}
+```
+
+### 快取
+
+```go
+type CachedService struct {
+    cache *lru.Cache
+    ttl   time.Duration
+}
+
+func (s *CachedService) GetData(key string) (interface{}, error) {
+    // 檢查快取
+    if val, ok := s.cache.Get(key); ok {
+        return val, nil
+    }
+    
+    // 取得並快取
+    data, err := s.fetchData(key)
+    if err != nil {
+        return nil, err
+    }
+    
+    s.cache.Add(key, data)
+    return data, nil
+}
+```
+
+### 使用 Goroutines 處理長時間運算
+
+```go
+func (s *Service) ProcessLargeFile(path string) error {
+    // 在背景處理
+    go func() {
+        result, err := s.process(path)
+        if err != nil {
+            s.app.Event.Emit("process-error", err.Error())
+            return
+        }
+        s.app.Event.Emit("process-complete", result)
+    }()
+    
+    return nil
+}
+```
+
+## 記憶體最佳化
+
+### 避免記憶體洩漏
+
+```go
+// ❌ 不好：Goroutine 洩漏
+func (s *Service) StartPolling() {
+    ticker := time.NewTicker(1 * time.Second)
+    go func() {
+        for range ticker.C {
+            s.poll()
+        }
+    }()
+    // ticker 從未停止！
+}
+
+// ✅ 好：適當的清理
+func (s *Service) StartPolling() {
+    ticker := time.NewTicker(1 * time.Second)
+    s.stopChan = make(chan bool)
+    
+    go func() {
+        for {
+            select {
+            case <-ticker.C:
+                s.poll()
+            case <-s.stopChan:
+                ticker.Stop()
+                return
+            }
+        }
+    }()
+}
+
+func (s *Service) StopPolling() {
+    close(s.stopChan)
+}
+```
+
+### 資源池
+
+```go
+var bufferPool = sync.Pool{
+    New: func() interface{} {
+        return new(bytes.Buffer)
+    },
+}
+
+func processData(data []byte) []byte {
+    buf := bufferPool.Get().(*bytes.Buffer)
+    defer bufferPool.Put(buf)
+    
+    buf.Reset()
+    buf.Write(data)
+    // 處理...
+    return buf.Bytes()
+}
+```
+
+## 事件最佳化
+
+### 防抖動事件
+
+```javascript
+// 防抖動頻繁的事件
+let debounceTimer
+function handleInput(value) {
+    clearTimeout(debounceTimer)
+    debounceTimer = setTimeout(() => {
+        UpdateData(value)
+    }, 300)
+}
+```
+
+### 批次更新
+
+```go
+type BatchProcessor struct {
+    items []Item
+    mu    sync.Mutex
+    timer *time.Timer
+}
+
+func (b *BatchProcessor) Add(item Item) {
+    b.mu.Lock()
+    defer b.mu.Unlock()
+    
+    b.items = append(b.items, item)
+    
+    if b.timer == nil {
+        b.timer = time.AfterFunc(100*time.Millisecond, b.flush)
+    }
+}
+
+func (b *BatchProcessor) flush() {
+    b.mu.Lock()
+    items := b.items
+    b.items = nil
+    b.timer = nil
+    b.mu.Unlock()
+    
+    // 處理批次
+    processBatch(items)
+}
+```
+
+## 建置最佳化
+
+### 二進位檔大小
+
+```bash
+# 移除除錯符號
+wails3 build -ldflags "-s -w"
+
+# 進一步減少二進位檔大小
+go build -ldflags="-s -w" -trimpath
+```
+
+### 編譯速度
+
+```bash
+# 使用建置快取
+go build -buildmode=default
+
+# 平行編譯
+go build -p 8
+```
+
+## 效能分析
+
+### CPU 效能分析
+
+```go
+import "runtime/pprof"
+
+func profileCPU() {
+    f, _ := os.Create("cpu.prof")
+    defer f.Close()
+    
+    pprof.StartCPUProfile(f)
+    defer pprof.StopCPUProfile()
+    
+    // 要分析的程式碼
+}
+```
+
+### 記憶體效能分析
+
+```go
+import "runtime/pprof"
+
+func profileMemory() {
+    f, _ := os.Create("mem.prof")
+    defer f.Close()
+    
+    runtime.GC()
+    pprof.WriteHeapProfile(f)
+}
+```
+
+### 分析效能分析資料
+
+```bash
+# 查看 CPU 效能分析
+go tool pprof cpu.prof
+
+# 查看記憶體效能分析
+go tool pprof mem.prof
+
+# Web 介面
+go tool pprof -http=:8080 cpu.prof
+```
+
+## 最佳實踐
+
+### ✅ 應該做
+
+- 在最佳化之前進行效能分析
+- 快取昂貴的運算
+- 對大型資料集使用分頁
+- 對頻繁的事件使用防抖動
+- 使用資源池
+- 清理 Goroutines
+- 最佳化套件大小
+- 使用延遲載入
+
+### ❌ 不應該做
+
+- 不要過度最佳化
+- 不要忽略記憶體洩漏
+- 不要阻塞主執行緒
+- 不要回傳龐大的資料集
+- 不要跳過效能分析
+- 不要忘記清理資源
+
+## 效能檢查清單
+
+- [ ] 前端套件已最佳化
+- [ ] 圖片已壓縮
+- [ ] 已實作程式碼分割
+- [ ] 後端方法已分頁
+- [ ] 已實作快取
+- [ ] Goroutines 已清理
+- [ ] 事件已防抖動
+- [ ] 二進位檔大小已最佳化
+- [ ] 已完成效能分析
+- [ ] 已修復記憶體洩漏
+
+## 下一步
+
+- [架構](/zh-tw/guides/architecture) - 應用程式架構模式
+- [測試](/zh-tw/guides/testing) - 測試您的應用程式
+- [建置](/guides/building) - 建置最佳化的二進位檔

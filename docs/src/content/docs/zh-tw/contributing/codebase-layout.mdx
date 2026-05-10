@@ -1,0 +1,213 @@
+---
+title: 程式碼庫結構
+description: Wails v3 儲存庫的組織方式以及各組件如何協同運作
+sidebar:
+  order: 2
+---
+
+Wails v3 位於一個 **monorepo** 中，其中包含框架執行階段、CLI、
+範例、文件以及建置工具鏈。  
+本頁將帶您瀏覽對深入探究內部實作有興趣的人所關心的 *目錄結構*。
+
+## 頂層概覽
+
+```
+wails/
+├── v3/               # ⬅️ 所有與 Wails v3 相關的內容都在這裡
+├── v2/               # 舊版 v2 實作（進行 v3 開發時可忽略）
+├── docs/             # 由 Astro 驅動的 v3 文件網站（本頁！）
+├── website/          # Docusaurus v2 網站與行銷頁面（主站）
+├── scripts/          # 各種輔助腳本（例如：贊助者圖片產生器）
+├── mkdocs-website/   # 已棄用的 v3 文件原型
+└── *.md              # 專案層級的元資料檔案（CHANGELOG、LICENSE、…）
+```
+
+接下來，我們將焦點集中在 **`v3/`** 目錄樹。
+
+## `v3/` 根目錄
+
+```
+v3/
+├── cmd/          # 可編譯的指令（目前僅有 wails3 CLI）
+├── examples/     # 實作樣本應用程式，測試各項功能
+├── internal/     # 框架實作（非公開 API）
+├── pkg/          # 公開的 Go 套件 ‑ API 介面
+├── tasks/        # 基於 Taskfile 的發布工具
+├── templates/    # RFC 風格提案（WEP）+ 通用資源
+├── go.mod
+└── go.sum
+```
+
+### 心智模型
+
+1. **`pkg/`** 暴露 *應用程式開發者匯入的內容*  
+2. **`internal/`** 包含 *魔法是如何實作的*  
+3. **`cmd/wails3`** 驅動 *專案生命週期與建置*  
+4. **`examples/`** 同時作為 *活躍測試* 與 *參考程式碼*  
+
+其他所有內容皆支援這三大支柱。
+
+---
+
+## `cmd/` – 指令
+
+| 路徑 | 備註 |
+|------|-------|
+| `v3/cmd/wails3` | **CLI 進入點**。一個小型的 `main.go` 將所有邏輯委派給 `internal/commands` 中的套件。 |
+| `internal/commands/*` | 子指令（init、dev、build、doctor、…）。每個子指令各自位於獨立檔案中，便於搜尋。 |
+| `internal/commands/task_wrapper.go` | 橋接 CLI 旗標與 Taskfile 建置管線。 |
+
+CLI 負責：
+
+* **專案結構生成**（`init`、範本產生）  
+* **開發伺服器協調**（`dev`、即時重新載入）  
+* **生產環境建置與封裝**（`build`、`package`、平台封裝器）  
+* **診斷工具**（`doctor`）  
+
+---
+
+## `internal/` – 引擎室
+
+```
+internal/
+├── assetserver/  # 提供與嵌入 Web 資源
+├── buildinfo/    # 可重複建置的元資料
+├── commands/     # CLI 機制（見上文）
+├── runtime/      # 桌面執行階段（依平台區分）
+├── generator/    # 靜態分析與繫結產生器
+├── templates/    # 專案範本（前端堆疊）
+├── packager/     # Linux AppImage/deb/rpm、Windows MSI、macOS DMG
+├── capabilities/ # 主機作業系統功能偵測
+├── dbus/         # Linux 系統匣整合
+├── service/      # IPC 微服務框架
+└── ...           # [其他輔助子套件]
+```
+
+### 關鍵子套件
+
+| 套件 | 職責 | 連接位置 |
+|---------|----------------|-------------------|
+| `runtime` | 視窗/事件迴圈、剪貼簿、對話框、系統匣。每個 OS 一個檔案，使用建置標籤（`*_darwin.go`、`*_linux.go`、…）。 | 由 `pkg/application` 和訊息處理器呼叫。 |
+| `assetserver` | 雙模式檔案伺服器：<br />• 開發模式：從磁碟提供服務並代理 Vite<br />• 生產模式：透過 `go:embed` 嵌入資源 | 在啟動期間由 `pkg/application` 初始化。 |
+| `generator` | 剖析 Go 原始碼以建立 **繫結元資料**，後續用於產生 TypeScript 存根檔案與 Go marshal/unmarshal 程式碼。 | 由 `wails3 init` / `wails3 generate` 觸發。 |
+| `packager` | 將平台特定的封裝 CLI（例如 `electron-builder` 的對應工具）封裝為 Go 程式碼，以實現跨平台自動化。 | 由 `wails3 package` 呼叫。 |
+
+支援工具（例如 `s/`、`hash/`、`flags/`）確保內部關注點保持解耦。
+
+---
+
+## `pkg/` – 公開 API
+
+```
+pkg/
+├── application/   # 核心 API：視窗、選單、對話框、事件、…
+├── runtime/       # JS 端輔助工具（bridge、events、screen、...）
+├── options/       # 強型別配置結構體
+├── menu/          # 宣告式選單 DSL
+└── ...            # 平台輔助工具（mac/、windows/、assetserver/、…）
+```
+
+`pkg/application` 啟動 Wails 程式：
+
+```go
+func main() {
+    app := application.New(application.Options{
+        Name: "MyApp",
+        Assets: application.NewAssetsFS(assetsFS),
+    })
+    window := app.Window.New(&application.WebviewWindowOptions{
+        Title:  "Hello",
+        Width:  1024,
+        Height: 768,
+    })
+    app.Run()
+}
+```
+
+其內部運作如下：
+
+1. 啟動 `internal.runtime.*`
+2. 設定 `assetserver`
+3. 註冊由 `internal.generator` 產生的繫結
+4. 進入作業系統主執行緒
+
+---
+
+## `examples/` – 活躍規格
+
+每個子資料夾都是一個 **獨立應用程式**，用於展示單一功能。  
+您將看到這些模式在實際程式碼中被複製：
+
+* 繫結服務（`examples/binding/`）  
+* 多視窗（`examples/window/`）  
+* 系統匣（`examples/systray-*`）  
+* 封裝（`examples/file-association/`）  
+
+若有疑問，請從這裡開始並深入探究實作。
+
+---
+
+## `templates/` – 結構生成藍圖
+
+`internal/templates` 提供 **基礎範本**（Go 佈局）與 **前端外觀**
+（React、Svelte、Vue、…）。  
+在執行 `wails3 init -t react` 時，CLI 會：
+
+1. 複製 `_common` Go 檔案
+2. 合併所需的前端套件
+3. 執行 `npm install` + `task deps`
+
+編輯範本 **不會** 影響現有應用程式，僅影響未來的 `init` 操作。
+
+---
+
+## `tasks/` – 發布自動化
+
+Taskfile 封裝了複雜的跨平台編譯、版本遞增與日誌產生。它們由 `internal/commands/task.go` 以程式化方式呼叫，
+因此相同的邏輯同時驅動 **CLI** 與 **CI**。
+
+---
+
+## 各組件如何互動
+
+```d2
+direction: down
+CLI: "wails3 CLI"
+Generator: "internal/generator"
+AssetDev: "assetserver (dev)"
+Packager: "internal/packager"
+AppRuntime: {
+  label: "App runtime"
+  ApplicationPkg: "pkg.application"
+  InternalRuntime: "internal.runtime"
+  OSAPIs: "OS APIs"
+}
+CLI -> Generator: "build / generate"
+CLI -> AssetDev: "dev"
+CLI -> Packager: "package"
+Generator -> ApplicationPkg: "bindings"
+ApplicationPkg -> InternalRuntime
+InternalRuntime -> OSAPIs
+ApplicationPkg -> AssetDev
+```
+
+*CLI → generator → runtime* 構成從 **原始碼** 到 **執行中的桌面應用程式** 的核心路徑。
+
+---
+
+## 導航提示
+
+| 需要了解… | 查看… |
+|---------------------|----------|
+| 平台適配層 | `internal/runtime/*_DARWIN.go`、`*_windows.go`、… |
+| Bridge 通訊協定 | `pkg/application/messageprocessor_*.go` |
+| 資源工作流程 | `internal/assetserver`、`v3/templates/base/assets` |
+| 封裝流程 | `internal/commands/appimage.go`、`internal/packager` |
+| 範本引擎 | `internal/templates/templates.go` |
+| 靜態分析 | `internal/generator/*` |
+
+---
+
+您現在已經擁有儲存庫的 **心智地圖**。  
+搭配 `ripgrep`、IDE 的「前往檔案/符號」功能以及範例應用程式，
+深入探索任何功能。祝您編程愉快！

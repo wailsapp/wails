@@ -1,0 +1,173 @@
+---
+title: 端到端測試
+description: 測試完整的用戶工作流程
+sidebar:
+  order: 6
+---
+
+## 概述
+
+端到端測試（End-to-end testing）用於驗證應用程式中完整的用戶工作流程。
+
+## 使用 Playwright
+
+### 設定
+
+```bash
+# Install Playwright
+npm install -D @playwright/test
+
+# Initialize
+npx playwright install
+```
+
+### 配置
+
+```javascript
+// playwright.config.js
+import { defineConfig } from '@playwright/test'
+
+export default defineConfig({
+  testDir: './e2e',
+  use: {
+    baseURL: 'http://localhost:34115', // Wails dev server
+  },
+})
+```
+
+### 編寫測試
+
+```javascript
+// e2e/app.spec.js
+import { test, expect } from '@playwright/test'
+
+test('create note', async ({ page }) => {
+  await page.goto('/')
+  
+  // Click new note button
+  await page.click('#new-note-btn')
+  
+  // Fill in title
+  await page.fill('#note-title', 'Test Note')
+  
+  // Fill in content
+  await page.fill('#note-content', 'Test content')
+  
+  // Verify note appears in list
+  await expect(page.locator('.note-item')).toContainText('Test Note')
+})
+
+test('delete note', async ({ page }) => {
+  await page.goto('/')
+  
+  // Create a note first
+  await page.click('#new-note-btn')
+  await page.fill('#note-title', 'To Delete')
+  
+  // Delete it
+  await page.click('#delete-btn')
+  
+  // Confirm dialog
+  page.on('dialog', dialog => dialog.accept())
+  
+  // Verify it's gone
+  await expect(page.locator('.note-item')).not.toContainText('To Delete')
+})
+```
+
+## 測試對話框
+
+```javascript
+test('file save dialog', async ({ page }) => {
+  await page.goto('/')
+  
+  // Intercept file dialog
+  page.on('filechooser', async (fileChooser) => {
+    await fileChooser.setFiles('/path/to/test/file.json')
+  })
+  
+  // Trigger save
+  await page.click('#save-btn')
+  
+  // Verify success message
+  await expect(page.locator('.success-message')).toBeVisible()
+})
+```
+
+## 測試視窗行為
+
+```javascript
+test('window state', async ({ page }) => {
+  await page.goto('/')
+  
+  // Test window title
+  await expect(page).toHaveTitle('My App')
+  
+  // Test window size
+  const size = await page.viewportSize()
+  expect(size.width).toBe(800)
+  expect(size.height).toBe(600)
+})
+```
+
+## 最佳實踐
+
+### ✅ 建議
+
+- 測試關鍵的用戶流程
+- 使用 `data-testid` 屬性
+- 清理測試數據
+- 在 CI/CD 中運行測試
+- 測試錯誤情境
+- 保持測試的獨立性
+
+### ❌ 避免
+
+- 不要測試實作細節
+- 不要編寫脆弱的選擇器
+- 不要跳過清理步驟
+- 不要忽視不穩定的測試
+- 不要測試所有內容
+
+## 運行 E2E 測試
+
+```bash
+# Run all tests
+npx playwright test
+
+# Run in headed mode
+npx playwright test --headed
+
+# Run specific test
+npx playwright test e2e/app.spec.js
+
+# Debug mode
+npx playwright test --debug
+```
+
+## CI/CD 整合
+
+```yaml
+# .github/workflows/e2e.yml
+name: E2E Tests
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+      - name: Run tests
+        run: npx playwright test
+```
+
+## 下一步
+
+- [Testing](/zh-tw/guides/testing) - 學習單元測試
+- [Building](/guides/building) - 構建您的應用程式

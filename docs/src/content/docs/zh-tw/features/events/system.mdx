@@ -1,0 +1,363 @@
+---
+title: 事件系統
+description: 使用事件系統在元件之間進行通訊
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## 事件系統
+
+Wails 提供了一個**統一的事件系統**，用於發布/訂閱（pub/sub）通訊。您可以從任何地方觸發事件，從任何地方監聽事件——從 Go 到 JavaScript、從 JavaScript 到 Go、從視窗到視窗——從而實現具有類型化事件和生命週期鉤子（lifecycle hooks）的解耦架構。
+
+## 快速開始
+
+**Go（觸發）：**
+
+```go
+app.Event.Emit("user-logged-in", map[string]interface{}{
+    "userId": 123,
+    "name": "Alice",
+})
+```
+
+**JavaScript（監聽）：**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.On("user-logged-in", (event) => {
+    console.log(`User ${event.data.name} logged in`)
+})
+```
+
+**就是這樣！** 跨語言的 pub/sub 通訊。
+
+## 事件類型
+
+### 自訂事件
+
+您應用程式專屬的事件：
+
+```go
+// 從 Go 觸發
+app.Event.Emit("order-created", order)
+app.Event.Emit("payment-processed", payment)
+app.Event.Emit("notification", message)
+```
+
+```javascript
+// 在 JavaScript 中監聽
+Events.On("order-created", handleOrder)
+Events.On("payment-processed", handlePayment)
+Events.On("notification", showNotification)
+```
+
+### 系統事件
+
+內建的作業系統和應用程式事件：
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// 主題變更
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    if e.Context().IsDarkMode() {
+        app.Logger.Info("Dark mode enabled")
+    }
+})
+
+// 應用程式生命週期
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Application started")
+})
+```
+
+### 視窗事件
+
+視窗專屬的事件：
+
+```go
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window focused")
+})
+
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    app.Logger.Info("Window closing")
+})
+```
+
+## 觸發事件
+
+### 從 Go
+
+**基本觸發：**
+
+```go
+app.Event.Emit("event-name", data)
+```
+
+**使用不同的資料類型：**
+
+```go
+// 字串
+app.Event.Emit("message", "Hello")
+
+// 數字
+app.Event.Emit("count", 42)
+
+// 結構體
+app.Event.Emit("user", User{ID: 1, Name: "Alice"})
+
+// 地圖
+app.Event.Emit("config", map[string]interface{}{
+    "theme": "dark",
+    "fontSize": 14,
+})
+
+// 陣列
+app.Event.Emit("items", []string{"a", "b", "c"})
+```
+
+**發送到特定視窗：**
+
+```go
+window.EmitEvent("window-specific-event", data)
+```
+
+### 從 JavaScript
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// 發送到 Go
+Events.Emit("button-clicked", { buttonId: "submit" })
+
+// 發送到所有視窗
+Events.Emit("broadcast-message", "Hello everyone")
+```
+
+## 監聽事件
+
+### 在 Go 中
+
+**應用程式事件：**
+
+```go
+app.Event.On("custom-event", func(e *application.CustomEvent) {
+    data := e.Data
+    // 處理事件
+})
+```
+
+**使用類型斷言：**
+
+```go
+app.Event.On("user-updated", func(e *application.CustomEvent) {
+    user := e.Data.(User)
+    app.Logger.Info("User updated", "name", user.Name)
+})
+```
+
+**多個處理常式：**
+
+```go
+// 所有處理常式都會被呼叫
+app.Event.On("order-created", logOrder)
+app.Event.On("order-created", sendEmail)
+app.Event.On("order-created", updateInventory)
+```
+
+### 在 JavaScript 中
+
+**基本監聽器：**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.On("event-name", (event) => {
+    console.log("Event received:", event.data)
+})
+```
+
+**帶有清理機制：**
+
+```javascript
+const unsubscribe = Events.On("event-name", handleEvent)
+
+// 稍後，停止監聽
+unsubscribe()
+```
+
+**多個處理常式：**
+
+```javascript
+Events.On("data-updated", updateUI)
+Events.On("data-updated", saveToCache)
+Events.On("data-updated", logChange)
+```
+
+**一次性處理常式：**
+
+```javascript
+Events.Once("data-updated", updateVariable)
+```
+
+## 系統事件
+
+### 應用程式事件
+
+**通用事件（跨平台）：**
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// 應用程式啟動
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Logger.Info("App started")
+})
+
+// 主題變更
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    isDark := e.Context().IsDarkMode()
+    app.Event.Emit("theme-changed", isDark)
+})
+
+// 檔案開啟
+app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *application.ApplicationEvent) {
+    filePath := e.Context().OpenedFile()
+    openFile(filePath)
+})
+```
+
+**平台專屬事件：**
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    ```go
+    // 應用程式變為活躍狀態
+    app.Event.OnApplicationEvent(events.Mac.ApplicationDidBecomeActive, func(e *application.ApplicationEvent) {
+        app.Logger.Info("App became active")
+    })
+    
+    // 應用程式將終止
+    app.Event.OnApplicationEvent(events.Mac.ApplicationWillTerminate, func(e *application.ApplicationEvent) {
+        cleanup()
+    })
+    ```
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    ```go
+    // 電源狀態變更
+    app.Event.OnApplicationEvent(events.Windows.APMPowerStatusChange, func(e *application.ApplicationEvent) {
+        app.Logger.Info("Power status changed")
+    })
+    
+    // 系統暫停
+    app.Event.OnApplicationEvent(events.Windows.APMSuspend, func(e *application.ApplicationEvent) {
+        saveState()
+    })
+    ```
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    ```go
+    // 應用程式啟動
+    app.Event.OnApplicationEvent(events.Linux.ApplicationStartup, func(e *application.ApplicationEvent) {
+        app.Logger.Info("App starting")
+    })
+    
+    // 主題變更
+    app.Event.OnApplicationEvent(events.Linux.SystemThemeChanged, func(e *application.ApplicationEvent) {
+        updateTheme()
+    })
+    ```
+  </TabItem>
+</Tabs>
+
+### 視窗事件
+
+**通用視窗事件：**
+
+```go
+// 視窗焦點
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window focused")
+})
+
+// 視窗失去焦點
+window.OnWindowEvent(events.Common.WindowBlur, func(e *application.WindowEvent) {
+    app.Logger.Info("Window blurred")
+})
+
+// 視窗關閉
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    if hasUnsavedChanges() {
+        e.Cancel()  // 防止關閉
+    }
+})
+
+// 視窗已關閉
+window.OnWindowEvent(events.Common.WindowClosed, func(e *application.WindowEvent) {
+    cleanup()
+})
+```
+
+## 事件鉤子（Hooks）
+
+鉤子會在**標準監聽器之前**執行，並且可以**取消**事件：
+
+```go
+// 鉤子 - 最先執行，可以取消
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        if result != "yes" {
+            e.Cancel()  // 防止視窗關閉
+        }
+    }
+})
+
+// 標準監聽器 - 在鉤子之後執行
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    app.Logger.Info("Window closing")
+})
+```
+
+**主要差異：**
+
+| 功能 | 鉤子 (Hooks) | 標準監聽器 (Standard Listeners) |
+|---------|-------|-------------------|
+| 執行順序 | 最先，依註冊順序 | 在鉤子之後，無保證順序 |
+| 阻塞 | 同步，阻塞下一個鉤子 | 非同步，非阻塞 |
+| 可取消 | 是 | 否（已傳播） |
+| 使用情境 | 控制流程、驗證 | 日誌記錄、副作用 |
+
+## 事件模式
+
+### 發布/訂閱模式
+
+```go
+// 發布者 (服務)
+type OrderService struct {
+    app *application.Application
+}
+
+func (o *OrderService) CreateOrder(items []Item) (*Order, error) {
+    order := &Order{Items: items}
+    
+    if err := o.saveOrder(order); err != nil {
+        return nil, err
+    }
+    
+    // 發布事件
+    o.app.Event.Emit("order-created", order)
+    
+    return order, nil
+}
+
+// 訂閱者---
+
+**有問題嗎？** 請在 [Discord](https://discord.gg/JDdSxwjhGf) 提問，或查看 [事件範例](https://github.com/wailsapp/wails/tree/master/v3/examples/events)。

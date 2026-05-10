@@ -1,0 +1,397 @@
+---
+title: 列舉
+description: 從 Go 常數自動產生列舉
+sidebar:
+  order: 4
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 列舉繫結
+
+Wails v3 的繫結產生器會**自動偵測 Go 的常數類型，並產生 TypeScript 列舉或 JavaScript const 物件**。無需註冊，也無需設定——只需在 Go 中定義你的類型和常數，產生器就會處理其餘部分。
+
+:::note
+與 Wails v2 不同，**無需呼叫 `EnumBind`** 或手動註冊列舉。產生器會從你的原始碼中自動發現它們。
+:::
+
+## 快速開始
+
+**在 Go 中定義帶有常數的具名類型：**
+
+```go
+type Status string
+
+const (
+    StatusActive  Status = "active"
+    StatusPending Status = "pending"
+    StatusClosed  Status = "closed"
+)
+```
+
+**在結構體或服務方法中使用該類型：**
+
+```go
+type Ticket struct {
+    ID     int    `json:"id"`
+    Title  string `json:"title"`
+    Status Status `json:"status"`
+}
+```
+
+**產生繫結：**
+
+```bash
+wails3 generate bindings
+```
+
+產生器的輸出將與模型一起報告列舉數量：
+
+```
+3 Enums, 5 Models
+```
+
+**在前端中使用：**
+
+```javascript
+import { Ticket, Status } from './bindings/myapp/models'
+
+const ticket = new Ticket({
+    id: 1,
+    title: "Bug report",
+    status: Status.StatusActive
+})
+```
+
+**就是這樣！** 列舉類型在 Go 和 JavaScript/TypeScript 中都會受到強制執行。
+
+## 定義列舉
+
+Wails 中的列舉是一個**具名類型**，具有底層基本類型，並結合該類型的**常數宣告**。
+
+### 字串列舉
+
+```go
+// Title is a title
+type Title string
+
+const (
+    // Mister is a title
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+    Ms     Title = "Ms"
+    Mrs    Title = "Mrs"
+    Dr     Title = "Dr"
+)
+```
+
+**產生的 TypeScript：**
+
+```typescript
+/**
+ * Title is a title
+ */
+export enum Title {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = "",
+
+    /**
+     * Mister is a title
+     */
+    Mister = "Mr",
+    Miss = "Miss",
+    Ms = "Ms",
+    Mrs = "Mrs",
+    Dr = "Dr",
+}
+```
+
+**產生的 JavaScript：**
+
+```javascript
+/**
+ * Title is a title
+ * @readonly
+ * @enum {string}
+ */
+export const Title = {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero: "",
+
+    /**
+     * Mister is a title
+     */
+    Mister: "Mr",
+    Miss: "Miss",
+    Ms: "Ms",
+    Mrs: "Mrs",
+    Dr: "Dr",
+};
+```
+
+### 整數列舉
+
+```go
+type Priority int
+
+const (
+    PriorityLow    Priority = 0
+    PriorityMedium Priority = 1
+    PriorityHigh   Priority = 2
+)
+```
+
+**產生的 TypeScript：**
+
+```typescript
+export enum Priority {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = 0,
+
+    PriorityLow = 0,
+    PriorityMedium = 1,
+    PriorityHigh = 2,
+}
+```
+
+### 類型別名列舉
+
+Go 的類型別名（`=`）也可以使用，但會產生稍微不同的輸出——一個類型定義加上 const 物件，而不是原生的 TypeScript `enum`：
+
+```go
+// Age is an integer with some predefined values
+type Age = int
+
+const (
+    NewBorn    Age = 0
+    Teenager   Age = 12
+    YoungAdult Age = 18
+
+    // Oh no, some grey hair!
+    MiddleAged Age = 50
+    Mathusalem Age = 1000 // Unbelievable!
+)
+```
+
+**產生的 TypeScript：**
+
+```typescript
+/**
+ * Age is an integer with some predefined values
+ */
+export type Age = number;
+
+/**
+ * Predefined constants for type Age.
+ * @namespace
+ */
+export const Age = {
+    NewBorn: 0,
+    Teenager: 12,
+    YoungAdult: 18,
+
+    /**
+     * Oh no, some grey hair!
+     */
+    MiddleAged: 50,
+
+    /**
+     * Unbelievable!
+     */
+    Mathusalem: 1000,
+};
+```
+
+**產生的 JavaScript：**
+
+```javascript
+/**
+ * Age is an integer with some predefined values
+ * @typedef {number} Age
+ */
+
+/**
+ * Predefined constants for type Age.
+ * @namespace
+ */
+export const Age = {
+    NewBorn: 0,
+    Teenager: 12,
+    YoungAdult: 18,
+
+    /**
+     * Oh no, some grey hair!
+     */
+    MiddleAged: 50,
+
+    /**
+     * Unbelievable!
+     */
+    Mathusalem: 1000,
+};
+```
+
+:::tip
+**具名類型**（`type Title string`）會產生帶有 `$zero` 成員的原生 TypeScript `enum` 宣告。
+**類型別名**（`type Age = int`）會產生沒有 `$zero` 的 `type` + `const` 命名空間配對。
+:::
+
+## `$zero` 值
+
+每個具名類型列舉都包含一個特殊的 `$zero` 成員，代表底層類型的 **Go 零值**：
+
+| 底層類型 | `$zero` 值 |
+|----------------|---------------|
+| `string` | `""` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `0` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `0` |
+| `float32`, `float64` | `0` |
+| `bool` | `false` |
+
+當結構體欄位使用列舉類型且未提供值時，建構子會預設為 `$zero`：
+
+```typescript
+export class Person {
+    "Title": Title;
+
+    constructor($$source: Partial<Person> = {}) {
+        if (!("Title" in $$source)) {
+            this["Title"] = Title.$zero;  // defaults to ""
+        }
+        Object.assign(this, $$source);
+    }
+}
+```
+
+這確保了在產生類別時的類型安全初始化——列舉欄位永遠不會是 `undefined`。當產生 TypeScript 介面（使用 `-i`）時，沒有建構子，欄位可以像往常一樣缺席。
+
+## 在結構體中使用列舉
+
+當結構體欄位具有列舉類型時，產生的程式碼會**保留該類型**，而不是回退到基本類型：
+
+```go
+type Person struct {
+    Title Title
+    Name  string
+    Age   Age
+}
+```
+
+**產生的 TypeScript：**
+
+```typescript
+export class Person {
+    "Title": Title;
+    "Name": string;
+    "Age": Age;
+
+    constructor($$source: Partial<Person> = {}) {
+        if (!("Title" in $$source)) {
+            this["Title"] = Title.$zero;
+        }
+        if (!("Name" in $$source)) {
+            this["Name"] = "";
+        }
+        if (!("Age" in $$source)) {
+            this["Age"] = 0;
+        }
+
+        Object.assign(this, $$source);
+    }
+}
+```
+
+`Title` 欄位的類型為 `Title`，而不是 `string`。這讓你的 IDE 能夠對列舉值進行完整的自動完成和類型檢查。
+
+## 來自匯入套件的列舉
+
+在單獨套件中定義的列舉完全受支援。它們會產生到對應的套件目錄中：
+
+```go
+// services/types.go
+package services
+
+type Title string
+
+const (
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+    Ms     Title = "Ms"
+)
+```
+
+```go
+// main.go
+package main
+
+import "myapp/services"
+
+func (*GreetService) Greet(name string, title services.Title) string {
+    return "Hello " + string(title) + " " + name
+}
+```
+
+`Title` 列舉會產生在 `services` 模型檔案中，匯入路徑會自動解析：
+
+```typescript
+// bindings/myapp/services/models.ts
+export enum Title {
+    $zero = "",
+    Mister = "Mr",
+    Miss = "Miss",
+    Ms = "Ms",
+}
+```
+
+## 列舉方法
+
+你可以在 Go 中為你的列舉類型新增方法。這些不會影響繫結產生，但提供有用的伺服器端功能：
+
+```go
+type Title string
+
+func (t Title) String() string {
+    return string(t)
+}
+
+const (
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+)
+```
+
+無論類型上是否存在 Go 方法，產生的列舉都是相同的。
+
+## 註解和文件
+
+產生器會將 Go 註解保留為產生輸出中的 JSDoc：
+
+- **類型註解**成為列舉的文件註解
+- **常數群組註解**成為區段分隔符
+- **個別常數註解**成為成員文件註解
+- **行內註解**會在可能的情況下保留
+
+這意味著當你把滑鼠懸停在列舉值上時，你的 IDE 會顯示文件。
+
+## 支援的底層類型
+
+繫結產生器支援具有以下 Go 底層類型的列舉：
+
+| Go 類型 | 可作為列舉 |
+|---------|:---:|
+| `string` | 是 |
+| `int`, `int8`, `int16`, `int32`, `int64` | 是 |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | 是 |
+| `float32`, `float64` | 是 |
+| `byte` (`uint8`) | 是 |
+| `rune` (`int32`) | 是 |
+| `bool` | 是 |
+| `complex64`, `complex128` | 否 |---
+
+**有問題嗎？** 請在 [Discord](https://discord.gg/JDdSxwjhGf) 上提問，或查看 [繫結範例](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)。

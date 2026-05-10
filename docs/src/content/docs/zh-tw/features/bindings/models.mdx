@@ -1,0 +1,456 @@
+---
+title: 資料模型
+description: 在 Go 和 JavaScript 之間繫結複雜的資料結構
+sidebar:
+  order: 3
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 資料模型繫結
+
+Wails **會自動從 Go struct 產生 JavaScript/TypeScript 類別**，在後端與前端之間傳遞複雜資料時提供完整的型別安全。撰寫 Go struct、產生繫結，即可獲得具備建構子、型別註解和 JSDoc 註解的完整型別前端模型。
+
+## 快速開始
+
+**Go struct：**
+
+```go
+type User struct {
+    ID        int       `json:"id"`
+    Name      string    `json:"name"`
+    Email     string    `json:"email"`
+    CreatedAt time.Time `json:"createdAt"`
+}
+
+func (s *UserService) GetUser(id int) (*User, error) {
+    // Return user
+}
+```
+
+**產生：**
+
+```bash
+wails3 generate bindings
+```
+
+**JavaScript：**
+
+```javascript
+import { GetUser } from './bindings/myapp/userservice'
+import { User } from './bindings/myapp/models'
+
+const user = await GetUser(1)
+console.log(user.Name)  // Type-safe!
+```
+
+**就這些！** 跨橋接器（bridge）的完整型別安全。
+
+## 定義模型
+
+### 基本 Struct
+
+```go
+type Person struct {
+    Name string
+    Age  int
+}
+```
+
+**產生的 JavaScript：**
+
+```javascript
+export class Person {
+    /** @type {string} */
+    Name = ""
+    
+    /** @type {number} */
+    Age = 0
+    
+    constructor(source = {}) {
+        Object.assign(this, source)
+    }
+    
+    static createFrom(source = {}) {
+        return new Person(source)
+    }
+}
+```
+
+### 使用 JSON Tags
+
+```go
+type User struct {
+    ID        int       `json:"id"`
+    Name      string    `json:"name"`
+    Email     string    `json:"email"`
+    CreatedAt time.Time `json:"createdAt"`
+}
+```
+
+**產生的 JavaScript：**
+
+```javascript
+export class User {
+    /** @type {number} */
+    id = 0
+    
+    /** @type {string} */
+    name = ""
+    
+    /** @type {string} */
+    email = ""
+    
+    /** @type {Date} */
+    createdAt = new Date()
+    
+    constructor(source = {}) {
+        Object.assign(this, source)
+    }
+}
+```
+
+**JSON tags 控制 JavaScript 中的欄位名稱。**
+
+### 使用註解
+
+```go
+// User represents an application user
+type User struct {
+    // Unique identifier
+    ID int `json:"id"`
+    
+    // Full name of the user
+    Name string `json:"name"`
+    
+    // Email address (must be unique)
+    Email string `json:"email"`
+}
+```
+
+**產生的 JavaScript：**
+
+```javascript
+/**
+ * User represents an application user
+ */
+export class User {
+    /**
+     * Unique identifier
+     * @type {number}
+     */
+    id = 0
+    
+    /**
+     * Full name of the user
+     * @type {string}
+     */
+    name = ""
+    
+    /**
+     * Email address (must be unique)
+     * @type {string}
+     */
+    email = ""
+}
+```
+
+**註解會變成 JSDoc！** 你的 IDE 會顯示它們。
+
+### 巢狀 Struct
+
+```go
+type Address struct {
+    Street  string `json:"street"`
+    City    string `json:"city"`
+    Country string `json:"country"`
+}
+
+type User struct {
+    ID      int     `json:"id"`
+    Name    string  `json:"name"`
+    Address Address `json:"address"`
+}
+```
+
+**產生的 JavaScript：**
+
+```javascript
+export class Address {
+    /** @type {string} */
+    street = ""
+    
+    /** @type {string} */
+    city = ""
+    
+    /** @type {string} */
+    country = ""
+}
+
+export class User {
+    /** @type {number} */
+    id = 0
+    
+    /** @type {string} */
+    name = ""
+    
+    /** @type {Address} */
+    address = new Address()
+}
+```
+
+**用法：**
+
+```javascript
+const user = new User({
+    id: 1,
+    name: "Alice",
+    address: new Address({
+        street: "123 Main St",
+        city: "Springfield",
+        country: "USA"
+    })
+})
+```
+
+### 陣列與切片
+
+```go
+type Team struct {
+    Name    string   `json:"name"`
+    Members []string `json:"members"`
+}
+```
+
+**產生的 JavaScript：**
+
+```javascript
+export class Team {
+    /** @type {string} */
+    name = ""
+    
+    /** @type {string[]} */
+    members = []
+}
+```
+
+**用法：**
+
+```javascript
+const team = new Team({
+    name: "Engineering",
+    members: ["Alice", "Bob", "Charlie"]
+})
+```
+
+### 地圖（Maps）
+
+```go
+type Config struct {
+    Settings map[string]string `json:"settings"`
+}
+```
+
+**產生的 JavaScript：**
+
+```javascript
+export class Config {
+    /** @type {Record<string, string>} */
+    settings = {}
+}
+```
+
+**用法：**
+
+```javascript
+const config = new Config({
+    settings: {
+        theme: "dark",
+        language: "en"
+    }
+})
+```
+
+## 型別對應
+
+### 基本型別
+
+| Go 型別 | JavaScript 型別 |
+|---------|----------------|
+| `string` | `string` |
+| `bool` | `boolean` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `number` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `number` |
+| `float32`, `float64` | `number` |
+| `byte` | `number` |
+| `rune` | `number` |
+
+### 特殊型別
+
+| Go 型別 | JavaScript 型別 |
+|---------|----------------|
+| `time.Time` | `Date` |
+| `[]byte` | `Uint8Array` |
+| `*T` | `T` (指標透明處理) |
+| `interface{}` | `any` |
+
+### 集合
+
+| Go 型別 | JavaScript 型別 |
+|---------|----------------|
+| `[]T` | `T[]` |
+| `[N]T` | `T[]` |
+| `map[string]T` | `Record<string, T>` |
+| `map[K]V` | `Map<K, V>` |
+
+### 不支援的型別
+
+- `chan T` (通道)
+- `func()` (函式)
+- 複雜介面（除了 `interface{}`）
+- 未匯出的欄位（小寫開頭）
+
+## 使用模型
+
+### 建立實例
+
+```javascript
+import { User } from './bindings/myapp/models'
+
+// 空實例
+const user1 = new User()
+
+// 帶有資料
+const user2 = new User({
+    id: 1,
+    name: "Alice",
+    email: "alice@example.com"
+})
+
+// 從 JSON 字串
+const user3 = User.createFrom('{"id":1,"name":"Alice"}')
+
+// 從物件
+const user4 = User.createFrom({ id: 1, name: "Alice" })
+```
+
+### 傳遞給 Go
+
+```javascript
+import { CreateUser } from './bindings/myapp/userservice'
+import { User } from './bindings/myapp/models'
+
+const user = new User({
+    name: "Bob",
+    email: "bob@example.com"
+})
+
+const created = await CreateUser(user)
+console.log("Created user:", created.id)
+```
+
+### 從 Go 接收
+
+```javascript
+import { GetUser } from './bindings/myapp/userservice'
+
+const user = await GetUser(1)
+
+// user 已經是 User 實例
+console.log(user.name)
+console.log(user.email)
+console.log(user.createdAt.toISOString())
+```
+
+### 更新模型
+
+```javascript
+import { GetUser, UpdateUser } from './bindings/myapp/userservice'
+
+// 取得使用者
+const user = await GetUser(1)
+
+// 修改
+user.name = "Alice Smith"
+user.email = "alice.smith@example.com"
+
+// 儲存
+await UpdateUser(user)
+```
+
+## TypeScript 支援
+
+### 產生的 TypeScript
+
+```bash
+wails3 generate bindings -ts
+```
+
+**產生結果：**
+
+```typescript
+/**
+ * User represents an application user
+ */
+export class User {
+    /**
+     * Unique identifier
+     */
+    id: number = 0
+    
+    /**
+     * Full name of the user
+     */
+    name: string = ""
+    
+    /**
+     * Email address (must be unique)
+     */
+    email: string = ""
+    
+    /**
+     * Account creation date
+     */
+    createdAt: Date = new Date()
+    
+    constructor(source: Partial<User> = {}) {
+        Object.assign(this, source)
+    }
+    
+    static createFrom(source: string | Partial<User> = {}): User {
+        const parsedSource = typeof source === 'string' 
+            ? JSON.parse(source) 
+            : source
+        return new User(parsedSource)
+    }
+}
+```
+
+### TypeScript 中的用法
+
+```typescript
+import { GetUser, CreateUser } from './bindings/myapp/userservice'
+import { User } from './bindings/myapp/models'
+
+async function example() {
+    // 建立使用者
+    const newUser = new User({
+        name: "Alice",
+        email: "alice@example.com"
+    })
+    
+    const created: User = await CreateUser(newUser)
+    
+    // 取得使用者
+    const user: User = await GetUser(created.id)
+    
+    // 型別安全存取
+    console.log(user.name.toUpperCase())  // ✅ string 方法
+    console.log(user.id + 1)              // ✅ number 運算
+    console.log(user.createdAt.getTime()) // ✅ Date 方法
+}
+```
+
+## 進階模式---
+
+**有問題嗎？** 請在 [Discord](https://discord.gg/JDdSxwjhGf) 提問，或查看 [繫結範例](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)。

@@ -1,0 +1,417 @@
+---
+title: 視窗基礎
+description: 在 Wails 中建立和管理應用程式視窗
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## 視窗管理
+
+Wails 提供了一個**統一的視窗管理 API**，可在所有平台上運作。建立視窗、控制其行為，並管理多個視窗，完全掌控其建立、外觀、行為和生命週期。
+
+## 快速開始
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    // Create a window
+    window := app.Window.New()
+    
+    // Configure it
+    window.SetTitle("Hello Wails")
+    window.SetSize(800, 600)
+    window.Center()
+    
+    // Show it
+    window.Show()
+
+    app.Run()
+}
+```
+
+**就是這樣！** 你已經擁有一個跨平台的視窗。
+
+## 建立視窗
+
+### 基本視窗
+
+建立視窗最簡單的方式：
+
+```go
+window := app.Window.New()
+```
+
+**你將獲得：**
+- 預設大小 (800x600)
+- 預設標題 (應用程式名稱)
+- 已準備好供前端使用的 WebView
+- 平台原生的外觀
+
+### 帶有選項的視窗
+
+建立具有自訂配置的視窗：
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My Application",
+    Width:  1200,
+    Height: 800,
+    X:      100,   // Position from left
+    Y:      100,   // Position from top
+    AlwaysOnTop: false,
+    Frameless: false,
+    Hidden: false,
+    MinWidth: 400,
+    MinHeight: 300,
+    MaxWidth: 1920,
+    MaxHeight: 1080,
+})
+```
+
+**常見選項：**
+
+| 選項 | 類型 | 描述 |
+|--------|------|-------------|
+| `Title` | `string` | 視窗標題 |
+| `Width` | `int` | 視窗寬度（像素） |
+| `Height` | `int` | 視窗高度（像素） |
+| `X` | `int` | X 座標（從左側起算） |
+| `Y` | `int` | Y 座標（從頂部起算） |
+| `AlwaysOnTop` | `bool` | 保持視窗在最上層 |
+| `Frameless` | `bool` | 移除標題列和邊框 |
+| `Hidden` | `bool` | 啟動時隱藏 |
+| `MinWidth` | `int` | 最小寬度 |
+| `MinHeight` | `int` | 最小高度 |
+| `MaxWidth` | `int` | 最大寬度 |
+| `MaxHeight` | `int` | 最大高度 |
+
+**完整列表請見 [視窗選項](/zh-tw/features/windows/options)。**
+
+### 命名視窗
+
+為視窗命名以便輕鬆檢索：
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:  "main-window",
+    Title: "Main Application",
+})
+
+// Later, find it by name
+mainWindow := app.GetWindowByName("main-window")
+if mainWindow != nil {
+    mainWindow.Show()
+}
+```
+
+**使用情境：**
+- 多個視窗（主視窗、設定、關於）
+- 從程式碼的不同部分尋找視窗
+- 視窗間通訊
+
+## 控制視窗
+
+### 顯示與隱藏
+
+```go
+// Show window
+window.Show()
+
+// Hide window
+window.Hide()
+
+// Check if visible
+if window.IsVisible() {
+    fmt.Println("Window is visible")
+}
+```
+
+**使用情境：**
+- 啟動畫面（顯示後隱藏）
+- 設定視窗（不需要時隱藏）
+- 彈出式視窗（按需顯示）
+
+### 位置與大小
+
+```go
+// Set size
+window.SetSize(1024, 768)
+
+// Set position
+window.SetPosition(100, 100)
+
+// Centre on screen
+window.Center()
+
+// Get current size
+width, height := window.Size()
+
+// Get current position
+x, y := window.Position()
+```
+
+**座標系統：**
+- (0, 0) 是主螢幕的左上角
+- X 軸正向向右
+- Y 軸正向向下
+
+### 視窗狀態
+
+```go
+// Minimise
+window.Minimise()
+
+// Maximise
+window.Maximise()
+
+// Fullscreen
+window.Fullscreen()
+
+// Restore to normal
+window.Restore()
+
+// Check state
+if window.IsMinimised() {
+    fmt.Println("Window is minimised")
+}
+
+if window.IsMaximised() {
+    fmt.Println("Window is maximised")
+}
+
+if window.IsFullscreen() {
+    fmt.Println("Window is fullscreen")
+}
+```
+
+**狀態轉換：**
+
+```
+Normal ←→ Minimised
+Normal ←→ Maximised
+Normal ←→ Fullscreen
+```
+
+### 標題與外觀
+
+```go
+// Set title
+window.SetTitle("My Application - Document.txt")
+
+// Set background colour
+window.SetBackgroundColour(0, 0, 0, 255) // RGBA
+
+// Set always on top
+window.SetAlwaysOnTop(true)
+
+// Set resizable
+window.SetResizable(false)
+```
+
+### 關閉視窗
+
+```go
+// Close window
+window.Close()
+
+// Destroy window (force close)
+window.Destroy()
+```
+
+**差異：**
+- `Close()` - 觸發關閉事件，可被取消
+- `Destroy()` - 立即銷毀，無法被取消
+
+## 尋找視窗
+
+### 依名稱
+
+```go
+window := app.GetWindowByName("settings")
+if window != nil {
+    window.Show()
+}
+```
+
+### 依 ID
+
+每個視窗都有唯一的 ID：
+
+```go
+id := window.ID()
+fmt.Printf("Window ID: %d\n", id)
+
+// Find by ID
+foundWindow := app.GetWindowByID(id)
+```
+
+### 目前視窗
+
+取得目前焦點所在的視窗：
+
+```go
+current := app.Window.Current()
+if current != nil {
+    current.SetTitle("Active Window")
+}
+```
+
+### 所有視窗
+
+取得所有視窗：
+
+```go
+windows := app.Window.GetAll()
+fmt.Printf("Total windows: %d\n", len(windows))
+
+for _, w := range windows {
+    fmt.Printf("Window: %s (ID: %d)\n", w.Name(), w.ID())
+}
+```
+
+## 視窗生命週期
+
+### 建立
+
+```go
+app.OnWindowCreation(func(window *application.WebviewWindow) {
+    fmt.Printf("Window created: %s\n", window.Name())
+    
+    // Configure new windows
+    window.SetMinSize(400, 300)
+})
+```
+
+### 關閉
+
+```go
+window.OnClose(func() bool {
+    // Return false to cancel close
+    // Return true to allow close
+    
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        return result == "yes"
+    }
+    return true
+})
+```
+
+**重要：** `OnClose` 僅適用於使用者啟動的關閉動作（點擊 X 按鈕）。它無法阻止 `window.Destroy()`。
+
+### 銷毀
+
+```go
+window.OnDestroy(func() {
+    fmt.Println("Window destroyed")
+    // Cleanup resources
+})
+```
+
+## 多個視窗
+
+### 建立多個視窗
+
+```go
+// Main window
+mainWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "main",
+    Title:  "Main Application",
+    Width:  1200,
+    Height: 800,
+})
+
+// Settings window
+settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "settings",
+    Title:  "Settings",
+    Width:  600,
+    Height: 400,
+    Hidden: true,  // Start hidden
+})
+
+// Show settings when needed
+settingsWindow.Show()
+```
+
+### 視窗通訊
+
+視窗可透過事件進行通訊：
+
+```go
+// In main window
+app.Event.Emit("data-updated", map[string]interface{}{
+    "value": 42,
+})
+
+// In settings window
+app.Event.On("data-updated", func(event *application.WailsEvent) {
+    data := event.Data.(map[string]interface{})
+    value := data["value"].(int)
+    fmt.Printf("Received: %d\n", value)
+})
+```
+
+**更多資訊請見 [事件](/zh-tw/features/events/system)。**
+
+### 父子視窗
+
+```go
+// Create child window
+childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "Child Window",
+    Parent: mainWindow,  // Set parent
+})
+```
+
+**行為：**
+- 父視窗關閉時，子視窗也會關閉
+- 子視窗保持在父視窗上方（在某些平台上）
+- 子視窗會隨父視窗最小化（在某些平台上）
+
+**平台支援：**
+- **macOS：** 完整支援
+- **Windows：** 部分支援
+- **Linux：** 取決於桌面環境
+
+## 平台特定功能
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+    **Windows 特定功能：**
+    
+    ```go
+    // Flash taskbar button
+    window.Flash(true)  // Start flashing
+    window.Flash(false) // Stop flashing
+    
+    // Trigger Windows 11 Snap Assist (Win+Z)
+    window.SnapAssist()
+    
+    // Set window icon
+    window.SetIcon(iconBytes)
+    ```
+    
+    **Snap Assist：**
+    顯示視窗的 Windows 11 排列佈局選項。
+    
+    **工作列閃爍：**
+    當視窗最小化時，可用於通知。
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **macOS 特定功能：**
+
+    ```go
+    // Transparent title bar---
+
+**有問題嗎？** 請在 [Discord](https://discord.gg/JDdSxwjhGf) 上提問，或查看 [視窗範例](https://github.com/wailsapp/wails/tree/master/v3/examples)。

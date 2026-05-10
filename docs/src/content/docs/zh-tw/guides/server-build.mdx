@@ -1,0 +1,312 @@
+---
+title: 伺服器建置
+description: 將 Wails 應用程式作為 HTTP 伺服器執行，無需原生 GUI 視窗
+sidebar:
+    order: 52
+    badge:
+        text: 實驗性功能
+        variant: caution
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="實驗性功能">
+伺服器模式為實驗性功能，未來版本可能會有所變更。
+</Aside>
+
+Wails v3 支援伺服器模式，允許您將應用程式作為純 HTTP 伺服器執行，而無需建立原生視窗或依賴 GUI。這使得將相同的 Wails 應用程式部署到伺服器、容器和網頁瀏覽器成為可能。
+
+## 概述
+
+伺服器模式適用於以下情境：
+
+- **Docker/容器部署** - 無需 X11/Wayland 依賴即可執行
+- **伺服器端應用程式** - 部署為可透過瀏覽器存取的網頁伺服器
+- **僅限網頁存取** - 在桌面和網頁之間共用相同的程式碼庫
+- **CI/CD 測試** - 無需顯示伺服器即可執行整合測試
+- **微服務** - 在無頭後端服務中使用 Wails 綁定
+
+## 快速開始
+
+伺服器模式透過 `server` 建置標籤啟用。您的應用程式程式碼保持不變 - 只需使用該標籤進行建置：
+
+```bash
+# 使用 Taskfile（推薦）
+wails3 task build:server
+wails3 task run:server
+
+# 或直接使用 Go 進行建置
+go build -tags server -o myapp-server .
+```
+
+以下是一個最小化範例：
+
+```go
+package main
+
+import (
+    "embed"
+    "log"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        // 使用 -tags server 建置時會使用伺服器選項
+        Server: application.ServerOptions{
+            Host: "localhost",
+            Port: 8080,
+        },
+        Services: []application.Service{
+            application.NewService(&MyService{}),
+        },
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+
+    log.Println("Starting application...")
+    if err := app.Run(); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+相同的程式碼可以為桌面模式（不含標籤）或伺服器模式（使用 `-tags server`）進行建置。
+
+## 設定
+
+### ServerOptions
+
+使用 `ServerOptions` 設定 HTTP 伺服器：
+
+```go
+Server: application.ServerOptions{
+    // 要綁定的主機。預設值："localhost"
+    // 使用 "0.0.0.0" 監聽所有介面
+    Host: "localhost",
+
+    // 要監聽的連接埠。預設值：8080
+    Port: 8080,
+
+    // 請求讀取逾時。預設值：30s
+    ReadTimeout: 30 * time.Second,
+
+    // 回應寫入逾時。預設值：30s
+    WriteTimeout: 30 * time.Second,
+
+    // 閒置連線逾時。預設值：120s
+    IdleTimeout: 120 * time.Second,
+
+    // 優雅關閉逾時。預設值：30s
+    ShutdownTimeout: 30 * time.Second,
+
+    // TLS 設定（選填）
+    TLS: &application.TLSOptions{
+        CertFile: "/path/to/cert.pem",
+        KeyFile:  "/path/to/key.pem",
+    },
+},
+```
+
+## 功能
+
+### 健康檢查端點
+
+健康檢查端點自動在 `/health` 可用：
+
+```bash
+curl http://localhost:8080/health
+# {"status":"ok"}
+```
+
+這對於以下用途很有用：
+- Kubernetes 存活度/就緒度探針
+- 負載平衡器健康檢查
+- 監控系統
+
+### 服務綁定
+
+所有服務綁定在伺服器模式中與桌面模式完全相同：
+
+```go
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+    return "Hello, " + name + "!"
+}
+
+// 在選項中註冊
+Services: []application.Service{
+    application.NewService(&GreetService{}),
+},
+```
+
+前端可以使用標準 Wails 執行階段呼叫這些綁定：
+
+```javascript
+const greeting = await wails.Call.ByName('main.GreetService.Greet', 'World');
+```
+
+### 事件
+
+在伺服器模式中，事件雙向運作：
+
+- **前端到後端**：從瀏覽器發射的事件透過 HTTP 發送並由您的 Go 事件處理常式接收
+- **後端到前端**：從 Go 發射的事件透過 WebSocket 廣播給所有已連線的瀏覽器
+
+每個瀏覽器分頁都代表一個具有唯一名稱（`browser-1`、`browser-2` 等）的「視窗」，可透過 `event.Sender` 存取：
+
+```go
+// 監聽來自瀏覽器的事件
+app.Event.On("user-action", func(event *application.CustomEvent) {
+    log.Printf("Event from %s: %v", event.Sender, event.Data)
+    // event.Sender 將是 "browser-1"、"browser-2" 等
+})
+
+// 發射事件給所有已連線的瀏覽器
+app.Event.Emit("server-update", data)
+```
+
+從前端：
+
+```javascript
+// 發射事件給伺服器（及所有其他瀏覽器）
+await wails.Events.Emit('user-action', { action: 'click' });
+
+// 監聽來自伺服器的事件
+wails.Events.On('server-update', (event) => {
+    console.log('Update from server:', event.data);
+});
+```
+
+### 優雅關閉
+
+伺服器優雅地處理 `SIGINT` 和 `SIGTERM` 訊號：
+
+1. 停止接受新連線
+2. 等待活躍請求完成（最多 `ShutdownTimeout`）
+3. 執行 `OnShutdown` 鉤子
+4. 以反序關閉服務
+
+## 與桌面模式的差異
+
+| 功能 | 桌面模式 | 伺服器模式 |
+|---------|-------------|-------------|
+| 原生視窗 | 已建立 | 瀏覽器視窗（`browser-N`） |
+| 系統匣 | 可用 | 不可用 |
+| 原生對話框 | 可用 | 不可用 |
+| 應用程式選單 | 可用 | 不可用 |
+| 螢幕資訊 | 可用 | 返回錯誤 |
+| 服務綁定 | 運作正常 | 運作正常 |
+| 事件 | 運作正常 | 運作正常（透過 WebSocket） |
+| 資源 | 透過 webview | 透過 HTTP |
+| 需要 CGO | 是 | 否 |
+
+### 視窗 API 行為
+
+在伺服器模式中，與視窗相關的 API 會安全地處理：
+
+- `app.Window.NewWithOptions()` - 記錄警告，返回 nil
+- `app.Hide()` / `app.Show()` - 無操作
+- `app.Screen.GetPrimary()` - 返回錯誤
+
+這允許引用視窗的程式碼在不崩潰的情況下執行，儘管視窗操作沒有效果。
+
+## 生產環境建置
+
+### 使用 Task（推薦）
+
+使用 `wails3 init` 建立的專案包含 `build:server` 任務：
+
+```bash
+# 為伺服器模式建置
+wails3 task build:server
+
+# 建置並執行
+wails3 task run:server
+```
+
+### 手動建置
+
+```bash
+# 使用伺服器模式建置
+go build -tags server -o myapp-server .
+```
+
+### Docker
+
+Wails 專案包含現成的 Docker 設定。要在容器中建置並執行您的應用程式：
+
+```bash
+# 建置 Docker 映像
+wails3 task build:docker
+
+# 執行它
+wails3 task run:docker
+```
+
+就這樣！您的應用程式將可在 `http://localhost:8080` 存取。
+
+您可以使用一些選項自訂建置：
+
+```bash
+# 使用自訂映像標籤
+wails3 task build:docker TAG=myapp:v1.0.0
+
+# 在不同的連接埠上執行
+wails3 task run:docker PORT=3000
+```
+
+產生的 `Dockerfile.server` 會建立基於 distroless 的最小映像。它會自動處理網路綁定，因此您的應用程式將可從容器外部存取。
+
+### Docker Compose
+
+對於更複雜的部署，以下是具有健康檢查的 Docker Compose 設定：
+
+```yaml
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - WAILS_SERVER_HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+:::note
+健康檢查範例使用 `wget`。如果您使用 distroless 基礎映像，則需要在映像中包含健康檢查二進位檔或使用外部健康檢查機制（例如 Docker 的 `curl` 選項或 sidecar 容器）。
+:::
+
+### 自訂 Dockerfile
+
+如果您需要更多控制，可以建立自己的 Dockerfile。要記住的重點是設定 `WAILS_SERVER_HOST=0.0.0.0`，以便伺服器接受來自容器外部的連線：
+
+```dockerfile
+# 建置階段
+FROM golang:alpine AS builder
+WORKDIR /app
+RUN apk add --no-cache git
+COPY . .
+RUN go mod tidy
+RUN go build -tags server -ldflags="-s -w" -o server .------|----|---|
+| `WAILS_SERVER_HOST` | 要綁定的網路介面 | `localhost` |
+| `WAILS_SERVER_PORT` | 要監聽的連接埠 | `8080` |
+
+這些變數會優先於程式碼中的 `ServerOptions`，這就是為什麼 Docker 範例設定 `WAILS_SERVER_HOST=0.0.0.0` 的原因——它允許容器接受外部連線，而無需對應用程式進行任何更改。
+
+## 參見
+
+- [自訂傳輸層](/docs/guides/custom-transport) - 用於進階 IPC 自訂
+- [服務](/docs/concepts/services) - 服務綁定文件
+- [事件](/docs/guides/events-reference) - 事件系統文件

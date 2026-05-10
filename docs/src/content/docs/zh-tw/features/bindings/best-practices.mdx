@@ -1,0 +1,365 @@
+---
+title: Bindings 最佳實踐
+description: Go-JavaScript 綁定的設計模式與最佳實踐
+sidebar:
+  order: 4
+---
+
+## Bindings 最佳實踐
+
+遵循**經過驗證的模式**來設計綁定，以建立清晰、高效且安全的綁定。本指南涵蓋 API 設計原則、效能優化、安全模式、錯誤處理以及可維護應用程式的測試策略。
+
+## API 設計原則
+
+### 1. 單一職責
+
+每個服務應只有一個明確的目的：
+
+```go
+// ❌ 壞：上帝對象
+type AppService struct {
+    // 什麼都做
+}
+
+func (a *AppService) SaveFile(path string, data []byte) error
+func (a *AppService) GetUser(id int) (*User, error)
+func (a *AppService) SendEmail(to, subject, body string) error
+func (a *AppService) ProcessPayment(amount float64) error
+
+// ✅ 好：專注的服務
+type FileService struct{}
+func (f *FileService) Save(path string, data []byte) error
+
+type UserService struct{}
+func (u *UserService) GetByID(id int) (*User, error)
+
+type EmailService struct{}
+func (e *EmailService) Send(to, subject, body string) error
+
+type PaymentService struct{}
+func (p *PaymentService) Process(amount float64) error
+```
+
+### 2. 明確的方法名稱
+
+使用描述性、動作導向的名稱：
+
+```go
+// ❌ 壞：名稱不明確
+func (s *Service) Do(x string) error
+func (s *Service) Handle(data interface{}) interface{}
+func (s *Service) Process(input map[string]interface{}) bool
+
+// ✅ 好：名稱明確
+func (s *FileService) SaveDocument(path string, content string) error
+func (s *UserService) AuthenticateUser(email, password string) (*User, error)
+func (s *OrderService) CreateOrder(items []Item) (*Order, error)
+```
+
+### 3. 一致的返回類型
+
+始終明確返回錯誤：
+
+```go
+// ❌ 壞：不一致的錯誤處理
+func (s *Service) GetData() interface{}  // 如何處理錯誤？
+func (s *Service) SaveData(data string)  // 靜默失敗？
+
+// ✅ 好：明確的錯誤
+func (s *Service) GetData() (Data, error)
+func (s *Service) SaveData(data string) error
+```
+
+### 4. 輸入驗證
+
+在 Go 端驗證所有輸入：
+
+```go
+// ❌ 壞：無驗證
+func (s *UserService) CreateUser(email, password string) (*User, error) {
+    user := &User{Email: email, Password: password}
+    return s.db.Create(user)
+}
+
+// ✅ 好：先驗證
+func (s *UserService) CreateUser(email, password string) (*User, error) {
+    // 驗證電子郵件
+    if !isValidEmail(email) {
+        return nil, errors.New("invalid email address")
+    }
+    
+    // 驗證密碼
+    if len(password) < 8 {
+        return nil, errors.New("password must be at least 8 characters")
+    }
+    
+    // 雜湊密碼
+    hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+    if err != nil {
+        return nil, err
+    }
+    
+    user := &User{
+        Email:        email,
+        PasswordHash: string(hash),
+    }
+    
+    return s.db.Create(user)
+}
+```
+
+## 效能模式
+
+### 1. 批次操作
+
+透過批次處理減少橋接呼叫：
+
+```go
+// ❌ 壞：N 次呼叫
+// JavaScript
+for (const item of items) {
+    await ProcessItem(item)  // N 次橋接呼叫
+}
+
+// ✅ 好：1 次呼叫
+// Go
+func (s *Service) ProcessItems(items []Item) ([]Result, error) {
+    results := make([]Result, len(items))
+    for i, item := range items {
+        results[i] = s.processItem(item)
+    }
+    return results, nil
+}
+
+// JavaScript
+const results = await ProcessItems(items)  // 1 次橋接呼叫
+```
+
+### 2. 分頁
+
+不要返回巨大的數據集：
+
+```go
+// ❌ 壞：返回所有數據
+func (s *Service) GetAllUsers() ([]User, error) {
+    return s.db.FindAll()  // 可能有數百萬筆
+}
+
+// ✅ 好：分頁
+type PageRequest struct {
+    Page     int `json:"page"`
+    PageSize int `json:"pageSize"`
+}
+
+type PageResponse struct {
+    Items      []User `json:"items"`
+    TotalItems int    `json:"totalItems"`
+    TotalPages int    `json:"totalPages"`
+    Page       int    `json:"page"`
+}
+
+func (s *Service) GetUsers(req PageRequest) (*PageResponse, error) {
+    // 驗證
+    if req.Page < 1 {
+        req.Page = 1
+    }
+    if req.PageSize < 1 || req.PageSize > 100 {
+        req.PageSize = 20
+    }
+    
+    // 獲取總數
+    total, err := s.db.Count()
+    if err != nil {
+        return nil, err
+    }
+    
+    // 獲取分頁
+    offset := (req.Page - 1) * req.PageSize
+    users, err := s.db.Find(offset, req.PageSize)
+    if err != nil {
+        return nil, err
+    }
+    
+    return &PageResponse{
+        Items:      users,
+        TotalItems: total,
+        TotalPages: (total + req.PageSize - 1) / req.PageSize,
+        Page:       req.Page,
+    }, nil
+}
+```
+
+### 3. 快取
+
+快取昂貴的運算：
+
+```go
+type CachedService struct {
+    cache map[string]interface{}
+    mu    sync.RWMutex
+    ttl   time.Duration
+}
+
+func (s *CachedService) GetData(key string) (interface{}, error) {
+    // 檢查快取
+    s.mu.RLock()
+    if data, ok := s.cache[key]; ok {
+        s.mu.RUnlock()
+        return data, nil
+    }
+    s.mu.RUnlock()
+    
+    // 獲取數據
+    data, err := s.fetchData(key)
+    if err != nil {
+        return nil, err
+    }
+    
+    // 快取它
+    s.mu.Lock()
+    s.cache[key] = data
+    s.mu.Unlock()
+    
+    // 安排過期
+    go func() {
+        time.Sleep(s.ttl)
+        s.mu.Lock()
+        delete(s.cache, key)
+        s.mu.Unlock()
+    }()
+    
+    return data, nil
+}
+```
+
+### 4. 使用事件進行串流傳輸
+
+使用事件進行數據串流傳輸：
+
+```go
+// ❌ 壞：輪詢
+func (s *Service) GetProgress() int {
+    return s.progress
+}
+
+// JavaScript 輪詢
+setInterval(async () => {
+    const progress = await GetProgress()
+    updateUI(progress)
+}, 100)
+
+// ✅ 好：事件
+func (s *Service) ProcessLargeFile(path string) error {
+    file, err := os.Open(path)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+    
+    scanner := bufio.NewScanner(file)
+    total := 0
+    processed := 0
+    
+    // 計算行數
+    for scanner.Scan() {
+        total++
+    }
+    
+    // 處理
+    file.Seek(0, 0)
+    scanner = bufio.NewScanner(file)
+    
+    for scanner.Scan() {
+        s.processLine(scanner.Text())
+        processed++
+        
+        // 發出進度
+        s.app.Event.Emit("progress", map[string]interface{}{
+            "processed": processed,
+            "total":     total,
+            "percent":   int(float64(processed) / float64(total) * 100),
+        })
+    }
+    
+    return scanner.Err()
+}
+
+// JavaScript 監聽
+OnEvent("progress", (data) => {
+    updateProgress(data.percent)
+})
+```
+
+## 安全模式
+
+### 1. 輸入清理
+
+始終清理使用者輸入：
+
+```go
+import (
+    "html"
+    "strings"
+)
+
+func (s *Service) SaveComment(text string) error {
+    // 清理
+    text = strings.TrimSpace(text)
+    text = html.EscapeString(text)
+    
+    // 驗證長度
+    if len(text) == 0 {
+        return errors.New("comment cannot be empty")
+    }
+    if len(text) > 1000 {
+        return errors.New("comment too long")
+    }
+    
+    return s.db.SaveComment(text)
+}
+```
+
+### 2. 身份驗證
+
+保護敏感操作：
+
+```go
+type AuthService struct {
+    sessions map[string]*Session
+    mu       sync.RWMutex
+}
+
+func (a *AuthService) Login(email, password string) (string, error) {
+    user, err := a.db.FindByEmail(email)
+    if err != nil {
+        return "", errors.New("invalid credentials")
+    }
+    
+    if !a.verifyPassword(user.PasswordHash, password) {
+        return "", errors.New("invalid credentials")
+    }
+    
+    // 建立會話
+    token := generateToken()
+    a.mu.Lock()
+    a.sessions[token] = &Session{
+        UserID:    user.ID,
+        ExpiresAt: time.Now().Add(24 * time.Hour),
+    }
+    a.mu.Unlock()
+    
+    return token, nil
+}
+
+func (a *AuthService) requireAuth(token string) (*Session, error) {
+    a.mu.RLock()
+    session, ok := a.sessions[token]
+    a.mu.RUnlock()
+    
+    if !ok {
+        return nil, errors.New("not authenticated")
+    }
+    
+    if time.Now().After(session.ExpiresAt) {---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [binding examples](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).
