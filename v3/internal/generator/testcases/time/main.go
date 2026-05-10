@@ -26,12 +26,12 @@ type TimeFieldStruct struct {
 	T3 TimeStruct
 	T4 TimeAliasStruct
 
-	Q time.Time  `json:",string"`
-	O time.Time  `json:",omitempty"`
-	P *time.Time `json:",omitempty"`
+	Q time.Time `json:",string"`
+	O time.Time `json:",omitempty"`
+	P *time.Time
 	A [3]time.Time
 	S []time.Time
-	M map[time.Time]string
+	M map[time.Time]time.Time
 	I struct{ T time.Time }
 }
 

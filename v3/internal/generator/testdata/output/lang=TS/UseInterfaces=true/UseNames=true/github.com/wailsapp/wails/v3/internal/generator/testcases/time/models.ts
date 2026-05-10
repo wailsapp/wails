@@ -12,7 +12,7 @@ export interface TimeFieldStruct {
     "T4": TimeAliasStruct;
     "Q": string;
     "O"?: string;
-    "P"?: string | null;
+    "P": string | null;
     "A": string[];
     "S": string[] | null;
     "M": { [_ in string]?: string } | null;

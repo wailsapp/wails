@@ -16,7 +16,7 @@ export class TimeFieldStruct {
     "T4": TimeAliasStruct;
     "Q": string;
     "O"?: string;
-    "P"?: string | null;
+    "P": string | null;
     "A": string[];
     "S": string[];
     "M": { [_ in string]?: string };
@@ -38,6 +38,9 @@ export class TimeFieldStruct {
         }
         if (!("Q" in $$source)) {
             this["Q"] = "0001-01-01T00:00:00.000Z";
+        }
+        if (!("P" in $$source)) {
+            this["P"] = null;
         }
         if (!("A" in $$source)) {
             this["A"] = Array.from({ length: 3 }, () => "0001-01-01T00:00:00.000Z");

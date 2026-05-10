@@ -62,12 +62,12 @@ export class TimeFieldStruct {
              */
             this["O"] = undefined;
         }
-        if (/** @type {any} */(false)) {
+        if (!("P" in $$source)) {
             /**
              * @member
-             * @type {Date | null | undefined}
+             * @type {Date | null}
              */
-            this["P"] = undefined;
+            this["P"] = null;
         }
         if (!("A" in $$source)) {
             /**
@@ -86,7 +86,7 @@ export class TimeFieldStruct {
         if (!("M" in $$source)) {
             /**
              * @member
-             * @type {{ [_ in string]?: string }}
+             * @type {{ [_ in string]?: Date }}
              */
             this["M"] = {};
         }
@@ -156,7 +156,7 @@ export class TimeFieldStruct {
 const $$createType0 = $Create.Nullable($Create.DateFromTime);
 const $$createType1 = $Create.Array($Create.DateFromTime);
 const $$createType2 = $Create.Array($Create.DateFromTime);
-const $$createType3 = $Create.Map($Create.Any, $Create.Any);
+const $$createType3 = $Create.Map($Create.Any, $Create.DateFromTime);
 const $$createType4 = $Create.Struct({
     "T": $Create.DateFromTime,
 });
