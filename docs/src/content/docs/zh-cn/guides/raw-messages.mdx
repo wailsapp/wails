@@ -1,0 +1,390 @@
+---
+title: 原始消息
+description: 为性能关键型应用实现自定义的前端到后端通信
+sidebar:
+  order: 10
+---
+
+原始消息提供了前端与后端之间的低级通信通道，绕过了标准的绑定系统。这是以便利性换取速度。
+
+## 何时使用原始消息
+
+原始消息最适合极端边缘情况：
+
+- **超高频更新** - 每秒数千条消息，每一微秒都至关重要
+- **自定义消息协议** - 当您需要完全控制传输格式时
+
+:::tip
+对于几乎所有用例，都建议使用标准的 [服务绑定](/zh-cn/features/bindings/services)，因为它们提供类型安全、自动序列化以及几乎可以忽略的开销带来的更佳开发者体验。
+:::
+
+## 后端设置
+
+在应用选项中配置 `RawMessageHandler`：
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Raw Message Demo",
+        Assets: application.AssetOptions{
+            Handler: application.BundledAssetFileServer(assets),
+        },
+        RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+            fmt.Printf("Raw message from window '%s': %s (origin: %+v)\n", window.Name(), message, originInfo.Origin)
+
+            // Process the message and respond via events
+            response := processMessage(message)
+            window.EmitEvent("raw-response", response)
+        },
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "My App",
+        Name:  "main",
+    })
+
+    app.Run()
+}
+
+func processMessage(message string) map[string]any {
+    // Your custom message processing logic
+    return map[string]any{
+        "received": message,
+        "status":   "processed",
+    }
+}
+```
+
+### 处理程序签名
+
+```go
+RawMessageHandler func(window Window, message string, originInfo *application.OriginInfo)
+```
+
+| 参数 | 类型 | 描述 |
+|-----------|------|-------------|
+| `window` | `Window` | 发送消息的窗口 |
+| `message` | `string` | 原始消息内容 |
+| `originInfo` | `*application.OriginInfo` | 关于消息来源的起源信息 |
+
+#### OriginInfo 结构
+
+```go
+type OriginInfo struct {
+	Origin      string
+	TopOrigin   string
+	IsMainFrame bool
+}
+```
+
+| 字段 | 类型 | 描述 |
+|-------|------|-------------|
+| `Origin` | `string` | 发送消息的文档的起源 URL |
+| `TopOrigin` | `string` | 顶级起源 URL（在 iframe 中可能与 Origin 不同） |
+| `IsMainFrame` | `bool` | 消息是否源自主框架 |
+
+#### 平台特定可用性
+
+- **macOS**: 提供 `Origin` 和 `IsMainFrame`
+- **Windows**: 提供 `Origin` 和 `TopOrigin`
+- **Linux**: 仅提供 `Origin`
+
+### 起源验证
+
+:::caution
+切勿因为消息到达您的处理程序就假设它是安全的。在处理敏感操作或修改状态的操作之前，必须验证起源信息。
+:::
+
+**在处理传入消息之前，始终验证其来源。** `originInfo` 参数提供了关键的安全信息，必须对其进行验证以防止未经授权的访问。恶意内容、受损内容或意外脚本可能会发送原始消息。如果没有起源验证，您可能会处理来自不受信任来源的命令。使用 `originInfo` 确保消息来自预期的来源。
+
+### 关键验证点
+
+- **始终检查 `Origin`** - 验证起源是否与预期的可信来源匹配（通常是 `wails://wails` 或 `http://wails.localhost` 用于本地资产或您应用的特定起源）
+- **验证 `IsMainFrame`** (macOS) - 注意消息是否来自 iframe，因为这可能表明具有不同安全上下文的嵌入内容
+- **使用 `TopOrigin`** (Windows) - 在处理框架内容时验证顶级起源
+- **拒绝意外的起源** - 通过拒绝您未明确允许的起源的消息来安全地失败
+
+
+:::note
+以 `wails:` 为前缀的消息保留用于 Wails 内部通信，不会传递给您的处理程序。
+:::
+
+## 前端设置
+
+使用 `System.invoke()` 发送原始消息：
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="module">
+        import { System, Events } from '@wailsio/runtime'
+
+        // Send raw message
+        document.getElementById('send').addEventListener('click', () => {
+            const message = document.getElementById('input').value
+            System.invoke(message)
+        })
+
+        // Listen for response
+        Events.On('raw-response', (event) => {
+            console.log('Response:', event.data)
+        })
+    </script>
+</head>
+<body>
+    <input type="text" id="input" placeholder="Enter message" />
+    <button id="send">Send</button>
+</body>
+</html>
+```
+
+### 使用预构建的包
+
+如果您不使用 npm，可以通过全局 `wails` 对象访问 `invoke`：
+
+```html
+<script type="module" src="/wails/runtime.js"></script>
+<script>
+    window.onload = function() {
+        document.getElementById('send').onclick = function() {
+            wails.System.invoke('my-message')
+        }
+    }
+</script>
+```
+
+## 结构化消息
+
+对于复杂数据，序列化为 JSON：
+
+### 前端
+
+```javascript
+import { System } from '@wailsio/runtime'
+
+const command = {
+    action: 'update',
+    payload: {
+        id: 123,
+        value: 'new value'
+    }
+}
+
+System.invoke(JSON.stringify(command))
+```
+
+### 后端
+
+```go
+RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+    var cmd struct {
+        Action  string `json:"action"`
+        Payload struct {
+            ID    int    `json:"id"`
+            Value string `json:"value"`
+        } `json:"payload"`
+    }
+
+    if err := json.Unmarshal([]byte(message), &cmd); err != nil {
+        window.EmitEvent("error", err.Error())
+        return
+    }
+
+    switch cmd.Action {
+    case "update":
+        // Handle update
+        result := handleUpdate(cmd.Payload.ID, cmd.Payload.Value)
+        window.EmitEvent("update-complete", result)
+    default:
+        window.EmitEvent("error", "unknown action")
+    }
+}
+```
+
+## 性能比较
+
+| 方法 | 开销 | 类型安全 | 用例 |
+|----------|----------|-------------|----------|
+| 服务绑定 | 较高 | 完整 | 通用用途 |
+| 原始消息 | 最小 | 手动 | 高频、性能关键 |
+
+### 基准测试示例
+
+对于简单负载，原始消息每秒可以处理比服务绑定多得多的消息：
+
+```go
+// Raw message handler - minimal overhead
+RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+    // Direct string processing, no reflection or marshaling
+    counter++
+}
+```
+
+## 完整示例
+
+下面是一个实现简单命令协议的完整示例：### main.go
+
+```go
+package main
+
+import (
+    "embed"
+    "encoding/json"
+    "fmt"
+    "time"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed assets
+var assets embed.FS
+
+type Command struct {
+    Type string          `json:"type"`
+    Data json.RawMessage `json:"data"`
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Raw Message Demo",
+        Assets: application.AssetOptions{
+            Handler: application.BundledAssetFileServer(assets),
+        },
+        Mac: application.MacOptions{
+            ApplicationShouldTerminateAfterLastWindowClosed: true,
+        },
+        RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+            var cmd Command
+            if err := json.Unmarshal([]byte(message), &cmd); err != nil {
+                window.EmitEvent("error", map[string]string{"error": err.Error()})
+                return
+            }
+
+            switch cmd.Type {
+            case "ping":
+                window.EmitEvent("pong", map[string]any{
+                    "time":   time.Now().UnixMilli(),
+                    "window": window.Name(),
+                })
+            case "echo":
+                var text string
+                json.Unmarshal(cmd.Data, &text)
+                window.EmitEvent("echo", text)
+            default:
+                window.EmitEvent("error", map[string]string{
+                    "error": fmt.Sprintf("unknown command: %s", cmd.Type),
+                })
+            }
+        },
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "Raw Message Demo",
+        Name:  "main",
+        Width: 400,
+        Height: 300,
+    })
+
+    app.Run()
+}
+```
+
+### assets/index.html
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Raw Message Demo</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        button { margin: 5px; padding: 10px 20px; }
+        #output { margin-top: 20px; padding: 10px; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>Raw Message Demo</h1>
+
+    <button id="ping">Ping</button>
+    <button id="echo">Echo "Hello"</button>
+
+    <div id="output">Waiting for response...</div>
+
+    <script type="module">
+        import { System, Events } from '@wailsio/runtime'
+
+        const output = document.getElementById('output')
+
+        function send(type, data) {
+            System.invoke(JSON.stringify({ type, data }))
+        }
+
+        document.getElementById('ping').onclick = () => send('ping')
+        document.getElementById('echo').onclick = () => send('echo', 'Hello')
+
+        Events.On('pong', (e) => {
+            output.textContent = `Pong from ${e.data.window} at ${e.data.time}`
+        })
+
+        Events.On('echo', (e) => {
+            output.textContent = `Echo: ${e.data}`
+        })
+
+        Events.On('error', (e) => {
+            output.textContent = `Error: ${e.data.error}`
+        })
+    </script>
+</body>
+</html>
+```
+
+## 最佳实践
+
+### 推荐做法
+
+- 仅在真正对性能敏感的路径中使用原始消息
+- 在处理器中实现适当的错误处理
+- 使用事件将响应发送回前端
+- 考虑使用 JSON 处理结构化数据
+- 保持消息处理快速，避免阻塞
+
+### 避免做法
+
+- 当服务绑定足以满足需求时，不要使用原始消息
+- 不要忘记验证传入的消息
+- 不要在处理器中使用长时间运行的操作进行阻塞（请使用 goroutine）
+- 不要忽略 window 参数，当响应需要针对特定窗口时
+
+## 多窗口注意事项
+
+`window` 参数标识了发送消息的窗口，允许你：
+
+- 向正确的窗口发送响应
+- 实现窗口特定的行为
+- 跟踪消息来源以进行调试
+
+```go
+RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+    // 仅响应发送消息的窗口
+    window.EmitEvent("response", result)
+
+    // 或者广播到所有窗口
+    app.Event.Emit("broadcast", result)
+}
+```
+
+## 下一步
+
+- [服务绑定](/zh-cn/features/bindings/services) - 大多数应用程序的标准方法
+- [事件](/zh-cn/guides/events-reference) - 用于后端到前端通信的事件系统
+- [性能](/zh-cn/guides/performance) - 通用性能优化

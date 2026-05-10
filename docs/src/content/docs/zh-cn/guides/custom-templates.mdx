@@ -1,0 +1,286 @@
+---
+title: 创建自定义模板
+description: 了解如何创建和自定义您自己的 Wails v3 模板
+sidebar:
+    order: 50
+---
+
+本指南将引导您完成为 Wails v3 创建自定义模板的过程。
+
+## 我为什么要制作自定义模板？
+
+Wails 提供了一些预配置的模板，可让您快速启动并运行应用程序。但如果您需要更定制化的设置，可以创建自己的模板以满足您的需求。然后，您可以将其与 Wails 社区共享，供其他人使用。
+
+### 1. 生成模板
+
+要创建自定义模板，您可以使用 `wails generate template` 命令：
+
+```bash
+wails3 generate template -name mytemplate
+```
+
+这将在当前目录中创建一个名为 "mytemplate" 的新目录。
+
+`wails3 generate template` 命令支持以下选项：
+
+| Option         | Description                                       | Default           |
+|----------------|---------------------------------------------------|-------------------|
+| `-name`        | 模板的名称（必填）                              | -                 |
+| `-frontend`    | 要包含的现有前端目录的路径                      | -                 |
+| `-author`      | 模板的作者                                      | -                 |
+| `-description` | 模板的描述                                      | -                 |
+| `-helpurl`     | 模板文档的 URL                                  | -                 |
+| `-dir`         | 生成模板的目录                                  | 当前目录          |
+| `-version`     | 模板版本                                        | v0.0.1            |
+
+例如，要创建一个包含所有选项的模板：
+
+```bash
+wails3 generate template \
+  -name "My Custom Template" \
+  -frontend ./my-existing-frontend \
+  -author "Your Name" \
+  -description "A template with my preferred setup" \
+  -helpurl "https://github.com/yourusername/template-docs" \
+  -dir ./templates \
+  -version "v1.0.0"
+```
+
+  :::tip
+  使用 `-frontend` 选项会将现有的 Web 前端项目复制到模板中。
+  :::
+
+### 2. 配置模板元数据
+
+如果在生成模板时未指定模板配置，您可以更新模板目录中的 `template.json` 文件：
+
+```json5
+{
+  "name": "Your Template Name",          // 模板的显示名称
+  "shortname": "template-shortname",     // 引用模板时使用
+  "author": "Your Name",                 // 模板作者
+  "description": "Template description", // 模板描述
+  "helpurl": "https://your-docs.com",    // 文档 URL
+  "version": "v0.0.1",                   // 模板版本
+  "schema": 3                            // 必须保持为 3 以兼容 Wails v3
+}
+```
+:::caution
+为了与 Wails v3 兼容，`schema` 字段必须保持设置为 `3`。
+:::
+
+### 3. 设置构建任务
+
+在 `build` 目录中是 `Taskfile.yml`，您可以在其中定义模板的构建过程。
+此文件使用 [Task](https://taskfile.dev) 进行构建自动化。关键步骤如下：
+
+```yaml
+tasks:
+  install:frontend:deps:
+    summary: Install frontend dependencies
+    dir: frontend
+    sources:
+      - package.json
+      - package-lock.json
+    generates:
+      - node_modules/*
+    preconditions:
+      - sh: npm version
+        msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
+    cmds:
+      - npm install
+
+  build:frontend:
+    summary: Build the frontend project
+    dir: frontend
+    sources:
+      - "**/*"
+    generates:
+      - dist/*
+    deps:
+      - task: install:frontend:deps
+      - task: generate:bindings
+    cmds:
+      - npm run build -q
+
+
+```
+
+### 4. 前端设置
+
+如果在生成模板时未使用 `-frontend`，则需要将前端文件添加到您的模板中。
+
+有多种方法可以设置前端：从头开始或使用现有框架。
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+<Tabs>
+  <TabItem label="Start from Scratch">
+    If you want to start from scratch, you can create your frontend project just like you would for any web application. 
+    The `frontend` directory in your template is just a regular directory where you can set up your preferred 
+    development environment. You might want to use build tools like Vite, webpack, or even just plain HTML, CSS, and 
+    JavaScript - it's entirely up to you!
+
+    For example, if you're using Vite, you could navigate to the `frontend` directory and run:
+
+    ```bash
+    npm create vite@latest .
+    ```
+
+    Then follow the prompts to set up your project exactly how you want it. The key thing to remember is that this is just a regular frontend project - you can use any tools, frameworks, or libraries you're familiar with.
+  </TabItem>
+  <TabItem label="Use Existing Framework">
+    For this example, we'll use [Vite](https://vitejs.dev/) to set up a React frontend project:
+
+       ```bash
+       npm create vite@latest frontend -- --template react
+       cd frontend
+       npm install
+       ```
+
+  </TabItem>
+</Tabs>
+
+
+现在您已放置前端文件，请使用适当的命令更新 `common/Taskfile.yml`：
+   ```yaml
+   tasks:
+      install:frontend:deps:
+        summary: Install frontend dependencies
+        dir: frontend
+        sources:
+          - package.json
+          - package-lock.json
+        generates:
+          - node_modules/*
+        preconditions:
+          - sh: npm version
+            msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
+        cmds:
+          - npm install
+
+      build:frontend:
+        summary: Build the frontend project
+        dir: frontend
+        sources:
+          - "**/*"
+        generates:
+          - dist/*
+        deps:
+          - task: install:frontend:deps
+          - task: generate:bindings
+        cmds:
+          - npm run build -q
+   ```
+
+  :::note
+  对于此示例，默认任务无需更新，因为它们使用标准的 `npm install` 和 `npm run build` 命令。
+  :::
+
+### 5. 配置 Go 应用程序
+
+模板目录中的默认文件足以让用户开始使用。但是，您可能希望提供一些额外的功能来展示模板的能力。最好的方法是将 `main.go.tmpl` 重命名为 `main.go` 并像编辑其他 Go 文件一样编辑它。完成后，在提交更改之前，请确保将其重命名为 `main.go.tmpl`。如果您不关心拥有模板化的 `main.go` 文件（默认模板会将项目名称注入到应用程序的 `Name` 字段中），您可以跳过此步骤。----------------------|--------------------------------|-------------------------------------|
+| `Name`               | 项目名称                       | `"MyApp"`                           |
+| `BinaryName`         | 生成的二进制文件名称           | `"myapp"`                           |
+| `ProductName`        | 产品名称                       | `"My Application"`                  |
+| `ProductDescription` | 产品描述                       | `"An awesome application"`          |
+| `ProductVersion`     | 产品版本                       | `"1.0.0"`                           |
+| `ProductCompany`     | 公司名称                       | `"My Company Ltd"`                  |
+| `ProductCopyright`   | 版权信息                       | `"Copyright 2024 My Company Ltd"`   |
+| `ProductComments`    | 其他产品备注                   | `"Built with Wails"`                |
+| `ProductIdentifier`  | 唯一产品标识符                 | `"com.mycompany.myapp"`             |
+| `Typescript`         | 是否使用 TypeScript            | `true` 或 `false`                   |
+| `WailsVersion`       | 正在使用的 Wails 版本          | `"3.0.0"`                           |
+
+您可以在模板文件中使用 Go 的模板语法来使用这些变量：
+
+```go
+// main.go.tmpl
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "{{.ProductName}}",
+        Description: "{{.ProductDescription}}",
+    })
+    // ...
+}
+```
+
+    :::tip
+    模板化可以应用于模板中的任何文件，包括 html 文件，只要文件名中包含 `.tmpl` 即可。
+    :::
+
+### 6. 测试您的模板
+
+要测试您的模板：
+
+1. 使用您的模板生成项目：`wails3 init -n testproject -t path/to/your/template`
+2. 运行 `wails3 build` 以生成生产构建，并确保 `bin` 目录中的二进制文件能正确运行
+3. 运行 `wails3 dev` 启动开发服务器。
+4. 测试前端代码的更改是否反映在应用程序中。
+5. 测试 Go 代码的更改是否重新构建并重启应用程序
+
+### 7. 分享您的模板
+
+一旦您的模板准备就绪，您可以通过将其托管在 GitHub 上来与社区分享。具体步骤如下：
+
+1. 为您的模板创建一个新的 GitHub 仓库
+2. 将您的模板代码推送到该仓库
+3. 使用语义化版本标记您的发布版本（例如，v1.0.0）
+
+用户随后可以使用 HTTPS URL 直接从 GitHub 使用您的模板：
+
+```bash
+wails3 init -n myapp -t https://github.com/yourusername/your-template
+```
+
+您还可以使用 URL 格式指定特定版本：
+
+```bash
+# 使用特定的版本标签
+wails3 init -n myapp -t https://github.com/yourusername/your-template/releases/tag/v1.0.0
+
+# 使用特定的分支
+wails3 init -n myapp -t https://github.com/yourusername/your-template/tree/main
+```
+
+在分享之前测试您的模板：
+
+1. 将您的更改推送到 GitHub
+2. 使用 HTTPS URL 创建一个新的测试项目：
+   ```bash
+   wails3 init -n testapp -t https://github.com/yourusername/your-template
+   ```
+3. 验证所有文件是否正确生成
+4. 按照测试部分中描述的方式测试构建和开发工作流
+
+    :::note
+    如果您希望其他人使用您的模板，请确保您的仓库是公开的。
+    :::
+
+更多信息，请访问 [Wails 文档](https://wails.io)
+
+
+## 最佳实践
+
+让我们讨论一些关键实践，这些实践将有助于使您的模板更有用且易于维护。以下是需要关注的主要领域：
+
+1. **使您的模板易于理解**
+   - 编写清晰、有帮助的 README.md，让用户快速上手
+   - 在配置文件中添加注释，解释您选择背后的“原因”
+   - 展示常见自定义的示例——用户非常喜欢看到实际用例！
+
+2. **保持依赖项的良好状态**
+   - 密切关注前端包的更新
+   - 在 package.json 中锁定特定版本，以避免意外情况
+   - 提前告知用户他们需要安装什么
+
+3. **热爱您的模板**
+   - 通过定期更新保持其新鲜感
+   - 在分享之前对其进行彻底测试
+   - 与 Wails 社区分享——我们很乐意看到您创造的作品！

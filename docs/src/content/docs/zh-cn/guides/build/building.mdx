@@ -1,0 +1,121 @@
+---
+title: 构建应用程序
+description: 构建并打包你的 Wails 应用程序
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Aside } from "@astrojs/starlight/components";
+
+Wails v3 使用 [Task](https://taskfile.dev) 作为其构建系统。`wails3 build` 和 `wails3 package` 命令是围绕 Task 的便捷封装。
+
+## 构建
+
+为当前平台构建：
+
+```bash
+wails3 build
+```
+
+为特定平台构建：
+
+```bash
+wails3 build GOOS=windows
+wails3 build GOOS=darwin
+wails3 build GOOS=linux
+
+# 指定架构
+wails3 build GOOS=darwin GOARCH=arm64
+
+# 环境变量方式同样有效
+GOOS=windows wails3 build
+```
+
+输出文件将位于 `bin/` 目录中。
+
+<Aside type="tip">
+从其他平台交叉编译到 macOS 或 Linux 需要 Docker。请参阅 [跨平台构建](/zh-cn/guides/build/cross-platform) 以获取设置指南。
+</Aside>
+
+## 开发
+
+使用热重载运行你的应用程序：
+
+```bash
+wails3 dev
+```
+
+这将启动一个文件监听器，在文件更改时重新构建并重启你的应用。前端开发服务器默认运行在 9245 端口。
+
+```bash
+# 自定义端口
+wails3 dev -port 3000
+
+# 启用 HTTPS
+wails3 dev -s
+```
+
+## 打包
+
+为你的应用创建用于分发的包：
+
+```bash
+wails3 package
+wails3 package GOOS=windows
+wails3 package GOOS=darwin
+wails3 package GOOS=linux
+```
+
+这将创建平台特定的包：
+- **Windows**: NSIS 安装程序 — 参见 [Windows 打包](/zh-cn/guides/build/windows)
+- **macOS**: 应用程序包 (`.app`) — 参见 [macOS 打包](/zh-cn/guides/build/macos)
+- **Linux**: AppImage, deb 和 rpm — 参见 [Linux 打包](/zh-cn/guides/build/linux)
+
+## 自定义构建标签
+
+使用 `-tags` 标志传递自定义 Go 构建标签：
+
+```bash
+# 在 Linux 上构建带有实验性 GTK4 支持
+wails3 build -tags gtk4
+
+# 以服务器模式构建（无 GUI，无 CGO）
+wails3 build -tags server
+
+# 组合多个标签
+wails3 build -tags gtk4,customtag
+```
+
+标签会作为 `EXTRA_TAGS` 传递给底层的 Taskfile。详细信息请参阅 [服务器构建](/zh-cn/guides/server-build) 和 [Linux 打包 - GTK4](/guides/build/linux#gtk4-support-experimental)。
+
+## 直接使用 Task
+
+为了获得更精细的控制，可以直接使用 Task：
+
+```bash
+# 列出可用任务
+wails3 task --list
+
+# 详细输出
+wails3 task build -v
+
+# 试运行
+wails3 task --dry
+
+# 强制重新构建
+wails3 task build -f
+
+# 传递变量
+wails3 task darwin:build ARCH=amd64
+```
+
+平台特定的任务（如 `linux:create:deb` 或 `darwin:build:universal`）仅通过 Task 可用。
+
+## 生成资源
+
+重新生成图标或更新构建配置：
+
+```bash
+wails3 generate icons -input build/appicon.png
+wails3 update build-assets -name "MyApp" -config build/config.yml -dir build
+```

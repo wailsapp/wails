@@ -1,0 +1,168 @@
+---
+title: 文件关联
+description: 为您的 Wails 应用配置文件关联
+sidebar:
+  order: 20
+---
+
+import { Steps } from "@astrojs/starlight/components";
+import {Badge} from '@astrojs/starlight/components';
+
+适用平台: <Badge text="Windows" variant="note" /> <Badge text="macOS" variant="success" />
+<br/>
+
+文件关联允许您的应用程序在用户打开特定文件类型时进行处理。这对于文本编辑器、图像查看器或任何处理特定文件格式的应用程序特别有用。本指南解释了如何在您的 Wails v3 应用中实现文件关联。
+
+## 概述
+
+Wails v3 目前支持以下平台的文件关联功能：
+
+- Windows（NSIS 安装包）
+- macOS（应用程序包）
+
+## 配置
+
+文件关联在项目的 `build` 目录中的 `config.yml` 文件中进行配置。
+
+### 基本配置
+
+要设置文件关联：
+
+1. 打开 `build/config.yml`
+2. 在 `fileAssociations` 部分下添加您的文件关联
+3. 运行 `wails3 update build-assets` 以更新构建资源
+4. 在应用选项中设置 `FileAssociations` 字段
+5. 使用 `wails3 package` 打包您的应用程序
+
+以下是一个示例配置：
+
+```yaml
+fileAssociations:
+  - ext: myapp
+    name: MyApp Document
+    description: MyApp Document File
+    iconName: myappFileIcon
+    role: Editor
+  - ext: custom
+    name: Custom Format
+    description: Custom File Format
+    iconName: customFileIcon
+    role: Editor
+```
+
+### 配置属性
+
+| 属性         | 描述                                                         | 平台   |
+|--------------|--------------------------------------------------------------|--------|
+| ext          | 不带前导点的文件扩展名（例如 `txt`）                         | 全部   |
+| name         | 文件类型的显示名称                                           | 全部   |
+| description  | 在文件属性中显示的描述                                       | Windows|
+| iconName     | 构建文件夹中图标文件的名称（不含扩展名）                     | 全部   |
+| role         | 应用程序对此文件类型的角色（例如 `Editor`、`Viewer`）        | macOS  |
+| mimeType     | 文件的 MIME 类型（例如 `image/jpeg`）                        | macOS  |
+
+## 监听文件打开事件
+
+要在您的应用程序中处理文件打开事件，您可以监听 `events.Common.ApplicationOpenedWithFile` 事件：
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "MyApp",
+        FileAssociations: []string{".txt", ".md"}, // 指定支持的扩展名
+    })
+
+    // 监听用于打开应用程序的文件
+    app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(event *application.ApplicationEvent) {
+        associatedFile := event.Context().Filename()
+        application.InfoDialog().SetMessage("Application opened with file: " + associatedFile).Show()
+    })
+
+    // 创建您的窗口并运行应用...
+}
+
+```
+
+## 逐步教程
+
+让我们逐步设置简单文本编辑器的文件关联：
+
+<Steps>
+
+1. ### 创建图标
+
+    - 为您的文件类型创建图标（推荐尺寸：16x16、32x32、48x48、256x256）
+    - 将图标保存在项目的 `build` 文件夹中
+    - 根据您的 `iconName` 配置命名它们（例如，
+      `textFileIcon.png`）
+
+    :::tip
+    您可以使用 `wails3 generate icons` 为您生成所需的图标。
+    运行 `wails3 generate icons --help` 获取更多信息。
+    :::
+
+    - 对于 macOS，在 `create:app:bundle:` 任务中添加类似 `cp build/darwin/documenticon.icns {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/Resources` 的复制语句。
+
+2. ### 配置文件关联
+
+    编辑 `build/config.yml` 文件以添加您的文件关联：
+
+    ```yaml
+    # build/config.yml
+    fileAssociations:
+      - ext: txt
+        name: Text Document
+        description: Plain Text Document
+        iconName: textFileIcon
+        role: Editor
+    ```
+
+3. ### 更新构建资源
+
+    运行以下命令以更新构建资源：
+
+    ```bash
+    wails3 update build-assets
+    ```
+
+4. ### 在应用选项中设置文件关联
+
+    在您的 `main.go` 文件中，在应用选项中设置 `FileAssociations` 字段：
+
+    ```go
+    app := application.New(application.Options{
+      Name: "MyApp",
+      FileAssociations: []string{".txt", ".md"}, // 指定支持的扩展名
+    })
+    ```
+
+    :::tip[为什么文件扩展名需要同时出现在应用配置和 config.yml 中？]
+
+    在 Windows 上，当通过文件关联打开文件时，应用程序会启动并将文件名作为第一个参数传递给应用程序。
+    应用程序无法知道第一个参数是文件还是命令行参数，因此它使用应用选项中的 `FileAssociations` 字段来确定第一个参数是否是关联的文件。
+
+    :::
+
+5. ### 打包您的应用程序
+
+    使用以下命令打包您的应用程序：
+
+    ```bash
+    wails3 package
+    ```
+
+    打包后的应用程序将创建在 `bin` 目录中。然后您可以安装并测试该应用程序。
+
+    ## 其他说明
+
+    - 图标应以 PNG 格式提供在构建文件夹中
+    - 测试文件关联需要安装打包后的应用程序
+
+</Steps>

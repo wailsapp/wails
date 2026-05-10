@@ -1,0 +1,195 @@
+---
+title: 资源服务器
+description: Wails v3 如何在开发和生产环境中提供和嵌入你的 Web 资源
+sidebar:
+  order: 4
+---
+
+## 概述
+
+每个 Wails 应用程序都包含一个**单一的原生可执行文件**，它结合了：
+
+1. 你的 *Go* 后端  
+2. 一个 *Web* 前端（HTML + JS + CSS）
+
+**资源服务器（Asset Server）** 是实现这一功能的关键粘合剂。  
+它有**两种运行模式**，通过 Go 构建标签在编译时进行选择：
+
+| 模式 | 标签 | 用途 |
+|------|-----|---------|
+| **开发** | `//go:build dev` | 支持热重载的快速迭代 |
+| **生产**  | `//go:build !dev` | 零依赖，嵌入资源 |
+
+实现代码位于  
+`v3/internal/assetserver/`，文件结构清晰：
+
+```
+assetserver_dev.go        # ⬅️ 运行时开发服务器
+assetserver_production.go # ⬅️ 嵌入服务器
+assetserver_darwin.go     # 特定操作系统的辅助函数（linux/windows 相同）
+asset_fileserver.go       # 共享的静态文件逻辑
+content_type_sniffer.go   # MIME 类型检测
+ringqueue.go              # 用于 MIME 缓存的小型 LRU
+```
+
+---
+
+## 开发模式
+
+### 生命周期
+
+1. `wails3 dev` 启动并**启动你的前端开发服务器**  
+   （Vite, SvelteKit, React-SWC …），通过运行 `build/Taskfile.yml` 中定义的任务（通常是 `npm run dev`）。
+2. Wails 启动监听 `localhost:<随机端口>` 的**开发资源服务器**，
+   并指示 Go 运行时将 `http://<host>:<VITE_PORT>` 加载为窗口 URL。
+3. 传入的请求由 `assetserver_dev.go` 处理：
+
+   ```
+   ┌─────────┐  /runtime/...          ┌─────────────┐
+   │ Browser │ ── native bridge  ───▶ │   Runtime   │
+   ├─────────┤                       └─────────────┘
+   │   JS    │  / (index.html)        proxy / -> Vite
+   └─────────┘ ◀─────────────┐
+                 AssetServer │
+                             ▼
+                      ┌────────────┐
+                      │  Vite Dev  │
+                      │   Server   │
+                      └────────────┘
+   ```
+
+4. 静态文件（`/assets/logo.svg`）通过
+   `asset_fileserver.go` **直接从磁盘提供**（为了速度），而任何未知路径都**代理**到
+   框架开发服务器，为你提供*即时*热模块替换。
+
+### 功能
+
+* **实时重载（Live Reload）** – Vite/Snowpack/… 注入 HMR WebSocket；Wails 只需
+  代理它。
+* **Source Map 支持** – 因为资源未打包，你的浏览器开发者工具
+  可以将错误映射回原始源代码。
+* **无需重新编译 Go** – 只有前端重新构建；Go 代码保持运行，直到
+  你更改 `.go` 文件。
+
+### 切换框架
+
+开发代理是**与框架无关的**：
+
+* 根目录下的 `Taskfile.yml` 任务文件注入两个环境变量：
+  `APP_NAME` 和 `WAILS_VITE_PORT`。
+* 每个模板的 Taskfiles 在运行其开发服务器之前发出这些变量。
+* `assetserver_dev.go` 仅代理到该目标。
+
+添加新模板 → 定义其开发任务 → 资源服务器即可正常工作。
+
+---
+
+## 生产模式
+
+当你运行 `wails3 build` 时，管道流程：
+
+1. 运行前端**生产构建**（`npm run build`），生成
+   `/frontend/dist/**`。
+2. 在编译时将那个文件夹**嵌入**到 `go:embed` 文件系统中（参见
+   生成的文件 `bundled_assetserver.go`）。
+3. 使用 `-tags production`（隐式）编译 Go 二进制文件。
+
+### 请求处理
+
+```go
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    // 1. 尝试嵌入的静态资源（精确路径）
+    // 2. 回退到 index.html 以支持 SPA 路由
+    // 3. 如果扩展名未知，嗅探 content-type
+    // 4. 设置强缓存头
+}
+```
+
+* **MIME 检测** – 如果构建工具生成了无扩展名的文件（例如
+  `/assets/manifest`），`content_type_sniffer.go` 会检查前 512 字节并将
+  结果缓存到一个小型无锁 LRU 中。
+* **环形队列缓存** – 频繁访问的资源（logo, CSS）在应用生命周期内
+  保留在内存中，消除了对磁盘或嵌入文件系统查找的需求。
+* **安全头** – 禁止 `file://` 导航，启用 `nosniff`。
+
+因为所有内容都已嵌入，发布的二进制文件**没有外部
+依赖**（即使在 Windows 上也是如此）。
+
+---
+
+## 桥接开发 ↔ 生产
+
+两种模式都暴露**相同的公共接口**：
+
+```go
+type AssetServer interface {
+    URL()        string // dev: http://localhost:34115, prod: wails://app
+    Open() error // 开始监听
+    Close()      // 优雅关闭
+}
+```
+
+`pkg/application` 很高兴地使用编译进来的任何一种实现，这意味着
+**你的应用程序代码在 `dev` 和 `build` 之间不会改变**。
+
+---
+
+## 前端框架如何集成
+
+### 模板
+
+每个官方模板（React, Vue, Svelte, Solid...）包含：
+
+* `build/Taskfile.yml`
+* `frontend/vite.config.ts`（或等效文件）
+
+它们导出几个任务，包括：
+
+| 任务 | 用途 |
+|------|---------|
+| `dev:frontend`   | 在**随机空闲端口**上启动框架开发服务器，并将其打印到 stdout（`PORT=5173`）。 |
+| `build:frontend` | 将静态资源生成到 `dist/` + 用于缓存破坏的清单。 |
+
+`internal/commands/dev.go` 使用硬编码的 `localhost` 作为 `host` 和发出的 `VITE_PORT` 环境变量作为 `port` 来设置 `FRONTEND_DEVSERVER_URL` 环境变量，并启动**开发资源服务器**。
+
+框架与 Go 完全解耦：
+
+* 构建时无需导入 Wails JS SDK – 运行时在窗口创建时注入它。
+* 任何具有 HTTP 开发服务器的框架都可以接入。
+
+---
+
+## 扩展 / 自定义
+
+需要自定义头、身份验证或 gzip？
+
+1. 实现 `type Middleware func(http.Handler) http.Handler`
+2. 通过 `internal/assetserver/options.go` 注册
+3. 对于生产环境，记得在 `assetserver_production.go` 中添加相同的中件间。
+
+---
+
+## 关键源文件
+
+| 文件 | 角色 |
+|------|------|
+| `assetserver_dev.go` | 反向代理 + 磁盘文件服务器 |
+| `assetserver_production.go` | 嵌入文件系统处理器 |
+| `options.go` | 从 `pkg/options/assetserver` 解析的配置结构体 |
+| `build_dev.go` / `build_production.go` | 选择正确实现的构建标签包装器 |
+| `bundled_assetserver.go` | 生成的嵌入数据（仅存在于生产构建中） |
+
+---
+
+## 注意事项与调试
+
+* **生产环境白屏** – 通常是 SPA 路由问题：确保开发中启用了 `History API Fallback`，且生产环境中 `index.html` 回退正常工作。
+* **开发环境 404** – `FRONTEND_DEV_PORT` 不匹配；使用
+  `WAILSDEV_VERBOSE=1` 运行以打印每个代理请求。
+* **大资源** – 它们被嵌入；考虑使用
+  [`assetserver.WithExternalDir("/path")`](https://pkg.go.dev) 从磁盘加载。
+
+---
+
+你现在了解了 Wails **资源服务器**如何在**开发**和**生产**环境中将你的 Web 代码提供给原生窗口。  
+掌握这一层，你就可以自信地调试加载问题、添加中间件，甚至替换整个前端工具链。

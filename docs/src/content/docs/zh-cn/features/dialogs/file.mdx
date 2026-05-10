@@ -1,0 +1,330 @@
+---
+title: 文件对话框
+description: 打开、保存和文件夹选择对话框
+sidebar:
+  order: 3
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 文件对话框
+
+Wails 提供**原生文件对话框**，具有符合平台外观的样式，用于打开文件、保存文件和选择文件夹。API 简单，支持文件类型过滤、多选支持和默认位置。
+
+## 创建文件对话框
+
+文件对话框通过 `app.Dialog` 管理器访问：
+
+```go
+app.Dialog.OpenFile()
+app.Dialog.SaveFile()
+```
+
+## 打开文件对话框
+
+选择要打开的文件：
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Image").
+    AddFilter("Images", "*.png;*.jpg;*.gif").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+openFile(path)
+```
+
+**使用场景：**
+- 打开文档
+- 导入文件
+- 加载图像
+- 选择配置文件
+
+### 单个文件选择
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Open Document").
+    AddFilter("Text Files", "*.txt").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    // 用户取消或发生错误
+    return
+}
+
+// 使用选定的文件
+data, _ := os.ReadFile(path)
+```
+
+### 多个文件选择
+
+```go
+paths, err := app.Dialog.OpenFile().
+    SetTitle("Select Images").
+    AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif").
+    PromptForMultipleSelection()
+
+if err != nil {
+    return
+}
+
+// 处理所有选定的文件
+for _, path := range paths {
+    processFile(path)
+}
+```
+
+### 使用默认目录
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Open File").
+    SetDirectory("/Users/me/Documents").
+    PromptForSingleSelection()
+```
+
+## 保存文件对话框
+
+选择保存位置：
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("document.txt").
+    AddFilter("Text Files", "*.txt").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+saveFile(path, data)
+```
+
+**使用场景：**
+- 保存文档
+- 导出数据
+- 创建新文件
+- 另存为...
+
+### 使用默认文件名
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("export.csv").
+    AddFilter("CSV Files", "*.csv").
+    PromptForSingleSelection()
+```
+
+### 使用默认目录
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetDirectory("/Users/me/Documents").
+    SetFilename("untitled.txt").
+    PromptForSingleSelection()
+```
+
+### 覆盖确认
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("document.txt").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+// 检查文件是否存在
+if _, err := os.Stat(path); err == nil {
+    dialog := app.Dialog.Question().
+        SetTitle("Confirm Overwrite").
+        SetMessage("File already exists. Overwrite?")
+
+    overwriteBtn := dialog.AddButton("Overwrite")
+    overwriteBtn.OnClick(func() {
+        saveFile(path, data)
+    })
+
+    cancelBtn := dialog.AddButton("Cancel")
+    dialog.SetDefaultButton(cancelBtn)
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+    return
+}
+
+saveFile(path, data)
+```
+
+## 选择文件夹对话框
+
+使用启用目录选择的打开文件对话框来选择目录：
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Output Folder").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+exportToFolder(path)
+```
+
+**使用场景：**
+- 选择输出目录
+- 选择工作区
+- 选择备份位置
+- 选择安装目录
+
+### 使用默认目录
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Folder").
+    SetDirectory("/Users/me/Documents").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+```
+
+## 文件过滤器
+
+使用 `AddFilter()` 方法向对话框添加文件类型过滤器。每次调用都会添加一个新的过滤器选项。
+
+### 基本过滤器
+
+```go
+path, _ := app.Dialog.OpenFile().
+    AddFilter("Text Files", "*.txt").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
+```
+
+### 多个扩展名
+
+使用分号在单个过滤器中指定多个扩展名：
+
+```go
+dialog := app.Dialog.OpenFile().
+    AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif;*.bmp").
+    AddFilter("Documents", "*.txt;*.doc;*.docx;*.pdf").
+    AddFilter("All Files", "*.*")
+```
+
+### 模式格式
+
+使用**分号**分隔单个过滤器中的多个扩展名：
+
+```go
+// 用分号分隔的多个扩展名
+AddFilter("Images", "*.png;*.jpg;*.gif")
+```
+
+## 完整示例
+
+### 打开图像文件
+
+```go
+func openImage(app *application.App) (image.Image, error) {
+    path, err := app.Dialog.OpenFile().
+        SetTitle("Select Image").
+        AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif;*.bmp").
+        PromptForSingleSelection()
+
+    if err != nil {
+        return nil, err
+    }
+
+    if path == "" {
+        return nil, errors.New("no file selected")
+    }
+
+    // 打开并解码图像
+    file, err := os.Open(path)
+    if err != nil {
+        app.Dialog.Error().
+            SetTitle("Open Failed").
+            SetMessage(err.Error()).
+            Show()
+        return nil, err
+    }
+    defer file.Close()
+
+    img, _, err := image.Decode(file)
+    if err != nil {
+        app.Dialog.Error().
+            SetTitle("Invalid Image").
+            SetMessage("Could not decode image file.").
+            Show()
+        return nil, err
+    }
+
+    return img, nil
+}
+```
+
+### 带验证的保存文档
+
+```go
+func saveDocument(app *application.App, content string) {
+    path, err := app.Dialog.SaveFile().
+        SetFilename("document.txt").
+        AddFilter("Text Files", "*.txt").
+        AddFilter("Markdown Files", "*.md").
+        AddFilter("All Files", "*.*").
+        PromptForSingleSelection()
+
+    if err != nil || path == "" {
+        return
+    }
+
+    // 验证扩展名
+    ext := filepath.Ext(path)
+    if ext != ".txt" && ext != ".md" {
+        dialog := app.Dialog.Question().
+            SetTitle("Confirm Extension").
+            SetMessage(fmt.Sprintf("Save as %s file?", ext))
+
+        saveBtn := dialog.AddButton("Save")
+        saveBtn.OnClick(func() {
+            doSave(app, path, content)
+        })
+
+        cancelBtn := dialog.AddButton("Cancel")
+        dialog.SetDefaultButton(cancelBtn)
+        dialog.SetCancelButton(cancelBtn)
+        dialog.Show()
+        return
+    }
+
+    doSave(app, path, content)
+}
+
+func doSave(app *application.App, path, content string) {
+    if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+        app.Dialog.Error().
+            SetTitle("Save Failed").
+            SetMessage(err.Error()).
+            Show()
+        return
+    }
+
+    app.Dialog.Info().
+        SetTitle("Saved").
+        SetMessage("Document saved successfully!").
+        Show()
+}
+```---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [file dialog examples](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs).

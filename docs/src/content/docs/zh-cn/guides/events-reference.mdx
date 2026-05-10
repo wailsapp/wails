@@ -1,0 +1,459 @@
+---
+title: 事件指南
+description: 在 Wails v3 中使用事件进行应用通信和生命周期管理的实用指南
+---
+
+**注意：本指南仍在完善中**
+
+# 事件指南
+
+事件是 Wails 应用中通信的心跳。它允许应用的不同部分在不紧密耦合的情况下相互通信。本指南将引导你了解在 Wails 应用中有效使用事件所需的所有知识。
+
+## 理解 Wails 事件
+
+可以将事件视为在整个应用中广播的消息。应用的任何部分都可以监听这些消息并做出相应反应。这对于以下场景特别有用：
+
+- **响应窗口变化**：了解窗口何时最小化、最大化或移动
+- **处理系统事件**：响应主题更改或电源事件
+- **自定义应用逻辑**：为数据更新或用户操作等功能创建自己的事件
+- **跨组件通信**：让应用的不同部分在不直接依赖的情况下进行通信
+
+## 事件命名约定
+
+所有 Wails 事件都遵循命名空间模式，以清楚地指示其来源：
+
+- `common:` - 在 Windows、macOS 和 Linux 上均可用的跨平台事件
+- `windows:` - Windows 特定事件
+- `mac:` - macOS 特定事件  
+- `linux:` - Linux 特定事件
+
+例如：
+- `common:WindowFocus` - 窗口获得焦点（在所有平台上有效）
+- `windows:APMSuspend` - 系统正在挂起（仅限 Windows）
+- `mac:ApplicationDidBecomeActive` - 应用变为活动状态（仅限 macOS）
+
+## 开始使用事件
+
+### 监听事件（前端）
+
+最常见的用例是在前端代码中监听事件：
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// 监听窗口获得焦点时
+Events.On('common:WindowFocus', () => {
+    console.log('窗口现在获得焦点！');
+    // 也许刷新一些数据或恢复动画
+});
+
+// 监听主题更改
+Events.On('common:ThemeChanged', (event) => {
+    console.log('主题已更改：', event.data);
+    // 相应地更新应用的主题
+});
+
+// 监听来自 Go 后端的自定义事件
+Events.On('my-app:data-updated', (event) => {
+    console.log('数据已更新：', event.data);
+    // 使用新数据更新 UI
+});
+```
+
+### 发射事件（后端）
+
+从你的 Go 代码中，你可以发射前端可以监听的事件：
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "time"
+)
+
+func (s *Service) UpdateData() {
+    // 进行一些数据处理...
+
+    // 通知前端
+    app := application.Get()
+    app.Event.Emit("my-app:data-updated",
+        map[string]interface{}{
+            "timestamp": time.Now(),
+            "count": 42,
+        },
+	)
+}
+```
+
+### 发射事件（前端）
+
+虽然不常使用，但你也可以从前端发射 Go 代码可以监听的事件：
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// 不带数据的事件
+Events.Emit('myapp:close-window')
+
+// 带数据的事件
+Events.Emit('myapp:disconnect-requested', 'id-123')
+```
+
+如果你在前端使用 TypeScript 并在 Go 代码中[注册了类型化事件](#typed-events-with-typecheck)，你将获得事件名称自动补全/检查以及数据类型检查。
+
+### 移除事件监听器
+
+当不再需要事件监听器时，请始终清理它们：
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// 存储处理程序引用
+const focusHandler = () => {
+    console.log('窗口获得焦点');
+};
+
+// 添加监听器
+Events.On('common:WindowFocus', focusHandler);
+
+// 稍后，当不再需要时移除它
+Events.Off('common:WindowFocus', focusHandler);
+
+// 或者移除某个事件的所有监听器
+Events.Off('common:WindowFocus');
+```
+
+## 常见用例
+
+### 1. 窗口焦点上的暂停/恢复
+
+许多应用在窗口失去焦点时需要暂停某些活动：
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+let animationRunning = true;
+
+Events.On('common:WindowLostFocus', () => {
+    animationRunning = false;
+    pauseBackgroundTasks();
+});
+
+Events.On('common:WindowFocus', () => {
+    animationRunning = true;
+    resumeBackgroundTasks();
+});
+```
+
+### 2. 响应主题更改
+
+使你的应用与系统主题保持同步：
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+Events.On('common:ThemeChanged', (event) => {
+    const isDarkMode = event.data.isDark;
+
+    if (isDarkMode) {
+        document.body.classList.add('dark-theme');
+        document.body.classList.remove('light-theme');
+    } else {
+        document.body.classList.add('light-theme');
+        document.body.classList.remove('dark-theme');
+    }
+});
+```
+
+### 3. 处理文件拖放
+
+使你的应用接受拖放的文件：
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+Events.On('common:WindowFilesDropped', (event) => {
+    const files = event.data.files;
+
+    files.forEach(file => {
+        console.log('文件已拖放：', file);
+        // 处理拖放的文件
+        handleFileUpload(file);
+    });
+});
+```
+
+### 4. 窗口生命周期管理
+
+响应窗口状态变化：
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+Events.On('common:WindowClosing', () => {
+    // 在关闭前保存用户数据
+    saveApplicationState();
+
+    // 你也可以通过从注册的窗口关闭处理程序返回 false 来阻止关闭
+    // from a registered window close handler
+});
+
+Events.On('common:WindowMaximise', () => {
+    // 为最大化视图调整 UI
+    adjustLayoutForMaximized();
+});
+
+Events.On('common:WindowRestore', () => {
+    // 将 UI 返回正常状态
+    adjustLayoutForNormal();
+});
+```
+
+### 5. 平台特定功能
+
+在需要时处理平台特定事件：
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Windows 特定电源管理
+Events.On('windows:APMSuspend', () => {
+    console.log('系统即将休眠');
+    saveState();
+});
+
+Events.On('windows:APMResumeSuspend', () => {
+    console.log('系统已唤醒');
+    refreshData();
+});
+
+// macOS 特定应用生命周期
+Events.On('mac:ApplicationWillTerminate', () => {
+    console.log('应用即将退出');
+    performCleanup();
+});
+```
+
+## 创建自定义事件
+
+你可以为应用特定需求创建自己的事件。
+
+### 后端（Go）
+
+```go
+// 在数据更改时发射自定义事件
+
+func (s *Service) ProcessUserData(userData UserData) error {
+    // 处理数据...
+
+    app := application.Get()
+    // 通知所有监听者
+    app.Event.Emit("user:data-processed",
+        map[string]interface{}{
+            "userId": userData.ID,
+            "status": "completed",
+            "timestamp": time.Now(),
+        },
+    )
+    return nil
+}
+
+// 发射定期更新
+func (s *Service) StartMonitoring() {
+    app := application.Get()
+    ticker := time.NewTicker(5 * time.Second)
+    go func() {
+        for range ticker.C {
+            stats := s.collectStats()
+            app.Event.Emit("monitor:stats-updated", stats)
+        }
+    }()
+}
+```
+
+### 前端（JavaScript）
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// 监听你的自定义事件
+Events.On('user:data-processed', (event) => {
+    const { userId, status, timestamp } = event.data;
+
+    showNotification(`用户 ${userId} 处理 ${status}`);
+    updateUIWithNewData();
+});
+
+Events.On('monitor:stats-updated', (event) => {
+    updateDashboard(event.data);
+});
+```
+
+## 使用类型安全的事件
+
+Wails v3 支持通过事件注册和自动绑定生成具有完整 TypeScript 类型安全性的类型化事件。
+
+### 注册自定义事件
+
+在初始化时调用 `application.RegisterEvent` 以使用其数据类型注册自定义事件名称：
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+type UserLoginData struct {
+    UserID   string
+    Username string
+    LoginTime string
+}
+
+type MonitorStats struct {
+    CPUUsage    float64
+    MemoryUsage float64
+}-------|-------|------|
+| `common:ApplicationStarted` | 应用程序已完全启动 | 初始化应用，加载保存的状态 |
+| `common:WindowRuntimeReady` | Wails 运行时已就绪 | 开始进行 Wails API 调用 |
+| `common:ThemeChanged` | 系统主题已更改 | 更新应用外观 |
+| `common:WindowFocus` | 窗口获得焦点 | 恢复活动，刷新数据 |
+| `common:WindowLostFocus` | 窗口失去焦点 | 暂停活动，保存状态 |
+| `common:WindowMinimise` | 窗口已最小化 | 暂停渲染，减少资源使用 |
+| `common:WindowMaximise` | 窗口已最大化 | 调整全屏布局 |
+| `common:WindowRestore` | 窗口从最小/最大状态恢复 | 返回正常布局 |
+| `common:WindowClosing` | 窗口即将关闭 | 保存数据，清理资源 |
+| `common:WindowFilesDropped` | 文件拖放到窗口上 | 处理文件导入 |
+| `common:WindowDidResize` | 窗口已调整大小 | 调整布局，重新渲染图表 |
+| `common:WindowDidMove` | 窗口已移动 | 更新位置依赖功能 |
+
+### 平台特定事件
+
+#### Windows 事件
+
+Windows 应用程序的关键事件：
+
+| 事件 | 描述 | 使用场景 |
+|-------|------|------|
+| `windows:SystemThemeChanged` | Windows 主题已更改 | 更新应用颜色 |
+| `windows:APMSuspend` | 系统正在挂起 | 保存状态，暂停操作 |
+| `windows:APMResumeSuspend` | 系统已恢复 | 恢复状态，刷新数据 |
+| `windows:APMPowerStatusChange` | 电源状态已更改 | 调整性能设置 |
+
+#### macOS 事件
+
+重要的 macOS 应用程序事件：
+
+| 事件 | 描述 | 使用场景 |
+|-------|------|------|
+| `mac:ApplicationDidBecomeActive` | 应用变为活动状态 | 恢复操作 |
+| `mac:ApplicationDidResignActive` | 应用变为非活动状态 | 暂停操作 |
+| `mac:ApplicationWillTerminate` | 应用即将退出 | 最终清理 |
+| `mac:WindowDidEnterFullScreen` | 进入全屏 | 调整全屏 UI |
+| `mac:WindowDidExitFullScreen` | 退出全屏 | 恢复正常 UI |
+
+#### Linux 事件
+
+核心 Linux 窗口事件：
+
+| 事件 | 描述 | 使用场景 |
+|-------|------|------|
+| `linux:SystemThemeChanged` | 桌面主题已更改 | 更新应用主题 |
+| `linux:WindowFocusIn` | 窗口获得焦点 | 恢复活动 |
+| `linux:WindowFocusOut` | 窗口失去焦点 | 暂停活动 |
+| `linux:WindowLoadStarted` | WebView 开始加载 | 显示加载指示器 |
+| `linux:WindowLoadRedirected` | WebView 重定向 | 跟踪导航重定向 |
+| `linux:WindowLoadCommitted` | WebView 提交加载 | 正在接收内容 |
+| `linux:WindowLoadFinished` | WebView 完成加载 | 隐藏加载指示器，注入 JS/CSS |
+
+## 最佳实践
+
+### 1. 使用事件命名空间
+
+创建自定义事件时，使用命名空间以避免冲突：
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// 良好 - 命名空间事件
+Events.Emit('myapp:user:login');
+Events.Emit('myapp:data:updated');
+Events.Emit('myapp:network:connected');
+
+// 避免 - 可能冲突的通用名称
+Events.Emit('login');
+Events.Emit('update');
+```
+
+### 2. 清理监听器
+
+组件卸载时始终移除事件监听器：
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// React 示例
+useEffect(() => {
+    const handler = (event) => {
+        // 处理事件
+    };
+
+    Events.On('common:WindowResize', handler);
+
+    // 清理
+    return () => {
+        Events.Off('common:WindowResize', handler);
+    };
+}, []);
+```
+
+### 3. 处理平台差异
+
+使用平台特定事件时检查平台可用性：
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// 平台特定事件可以无条件注册；
+// 它们在不支持的平台上永远不会触发。
+Events.On('windows:APMSuspend', handleSuspend);
+Events.On('mac:ApplicationWillTerminate', handleTerminate);
+```
+
+### 4. 不要过度使用事件
+
+虽然事件功能强大，但不要对所有事情都使用它们：
+
+- ✅ 使用事件：系统通知、生命周期更改、广播更新
+- ❌ 避免使用事件：直接函数返回、单个组件更新、同步操作
+
+## 调试事件
+
+要调试事件问题：
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// 记录所有事件（仅限开发环境）
+if (isDevelopment) {
+    const originalOn = Events.On;
+    Events.On = function(eventName, handler) {
+        console.log(`[事件已注册] ${eventName}`);
+        return originalOn.call(this, eventName, function(event) {
+            console.log(`[事件已触发] ${eventName}`, event);
+            return handler(event);
+        });
+    };
+}
+```
+
+## 权威来源
+
+可用事件的完整列表可以在 Wails 源代码中找到：
+- 前端事件：[`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/main/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
+- 后端事件：[`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/main/v3/pkg/events/events.go)始终参考这些文件以获取最新的可用事件名称。
+
+## 总结
+
+Wails 中的事件提供了一种强大且解耦的方式来处理应用程序中的通信。通过遵循本指南中的模式和最佳实践，您可以构建响应迅速、感知平台的跨平台应用程序，使其能够平滑地响应系统变化和用户交互。
+
+请记住：首先使用通用事件以确保跨平台兼容性，在需要时添加平台特定事件，并始终清理事件监听器以防止内存泄漏。

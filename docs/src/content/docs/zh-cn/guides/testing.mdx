@@ -1,0 +1,175 @@
+---
+title: 测试
+description: 测试你的 Wails 应用
+sidebar:
+  order: 5
+---
+
+## 概述
+
+测试确保你的应用正常工作并防止回归。
+
+## 单元测试
+
+### 测试服务
+
+```go
+func TestUserService_Create(t *testing.T) {
+    service := &UserService{
+        users: make(map[string]*User),
+    }
+    
+    user, err := service.Create("john@example.com", "password123")
+    if err != nil {
+        t.Fatalf("unexpected error: %v", err)
+    }
+    
+    if user.Email != "john@example.com" {
+        t.Errorf("expected email john@example.com, got %s", user.Email)
+    }
+}
+```
+
+### 使用 Mock 进行测试
+
+```go
+type MockDB struct {
+    users map[string]*User
+}
+
+func (m *MockDB) Create(user *User) error {
+    m.users[user.ID] = user
+    return nil
+}
+
+func TestUserService_WithMock(t *testing.T) {
+    mockDB := &MockDB{users: make(map[string]*User)}
+    service := &UserService{db: mockDB}
+    
+    user, err := service.Create("test@example.com", "pass")
+    if err != nil {
+        t.Fatal(err)
+    }
+    
+    if len(mockDB.users) != 1 {
+        t.Error("expected 1 user in mock")
+    }
+}
+```
+
+## 集成测试
+
+### 使用真实依赖进行测试
+
+```go
+func TestIntegration(t *testing.T) {
+    // 设置测试数据库
+    db, err := sql.Open("sqlite3", ":memory:")
+    if err != nil {
+        t.Fatal(err)
+    }
+    defer db.Close()
+    
+    // 创建表结构
+    _, err = db.Exec(`CREATE TABLE users (...)`)
+    if err != nil {
+        t.Fatal(err)
+    }
+    
+    // 测试服务
+    service := &UserService{db: db}
+    user, err := service.Create("test@example.com", "password")
+    if err != nil {
+        t.Fatal(err)
+    }
+    
+    // 验证数据库中的数据
+    var count int
+    db.QueryRow("SELECT COUNT(*) FROM users").Scan(&count)
+    if count != 1 {
+        t.Errorf("expected 1 user, got %d", count)
+    }
+}
+```
+
+## 前端测试
+
+### JavaScript 单元测试
+
+```javascript
+// 使用 Vitest
+import { describe, it, expect } from 'vitest'
+import { formatDate } from './utils'
+
+describe('formatDate', () => {
+    it('formats date correctly', () => {
+        const date = new Date('2024-01-01')
+        expect(formatDate(date)).toBe('2024-01-01')
+    })
+})
+```
+
+### 测试绑定
+
+```javascript
+import { vi } from 'vitest'
+import { GetUser } from './bindings/myapp/userservice'
+
+// Mock 绑定
+vi.mock('./bindings/myapp/userservice', () => ({
+    GetUser: vi.fn()
+}))
+
+describe('User Component', () => {
+    it('loads user data', async () => {
+        GetUser.mockResolvedValue({ name: 'John', email: 'john@example.com' })
+        
+        // 测试你的组件
+        const user = await GetUser(1)
+        expect(user.name).toBe('John')
+    })
+})
+```
+
+## 最佳实践
+
+### ✅ 应该做
+
+- 在修复 bug 之前编写测试
+- 测试边界情况
+- 使用表格驱动测试
+- Mock 外部依赖
+- 测试错误处理
+- 保持测试快速
+
+### ❌ 不应该做
+
+- 不要跳过错误情况
+- 不要测试实现细节
+- 不要编写不稳定的测试
+- 不要忽略测试失败
+- 不要跳过集成测试
+
+## 运行测试
+
+```bash
+# 运行 Go 测试
+go test ./...
+
+# 运行并生成覆盖率报告
+go test -cover ./...
+
+# 运行特定测试
+go test -run TestUserService
+
+# 运行前端测试
+cd frontend && npm test
+
+# 使用监听模式运行
+cd frontend && npm test -- --watch
+```
+
+## 下一步
+
+- [端到端测试](/zh-cn/guides/e2e-testing) - 测试完整的用户流程
+- [最佳实践](/zh-cn/features/bindings/best-practices) - 学习最佳实践

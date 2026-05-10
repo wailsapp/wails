@@ -1,0 +1,417 @@
+---
+title: 窗口基础
+description: 在 Wails 中创建和管理应用程序窗口
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## 窗口管理
+
+Wails 提供了一个**统一的窗口管理 API**，适用于所有平台。创建窗口、控制其行为以及管理多个窗口，您可以完全掌控窗口的创建、外观、行为以及生命周期。
+
+## 快速入门
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    // Create a window
+    window := app.Window.New()
+    
+    // Configure it
+    window.SetTitle("Hello Wails")
+    window.SetSize(800, 600)
+    window.Center()
+    
+    // Show it
+    window.Show()
+
+    app.Run()
+}
+```
+
+**就是这样！** 您现在拥有了一个跨平台的窗口。
+
+## 创建窗口
+
+### 基本窗口
+
+创建窗口最简单的方式：
+
+```go
+window := app.Window.New()
+```
+
+**您将获得：**
+- 默认大小 (800x600)
+- 默认标题 (应用程序名称)
+- 已准备好加载前端代码的 WebView
+- 平台原生外观
+
+### 带选项的窗口
+
+使用自定义配置创建窗口：
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My Application",
+    Width:  1200,
+    Height: 800,
+    X:      100,   // Position from left
+    Y:      100,   // Position from top
+    AlwaysOnTop: false,
+    Frameless: false,
+    Hidden: false,
+    MinWidth: 400,
+    MinHeight: 300,
+    MaxWidth: 1920,
+    MaxHeight: 1080,
+})
+```
+
+**常用选项：**
+
+| 选项 | 类型 | 描述 |
+|--------|------|-------------|
+| `Title` | `string` | 窗口标题 |
+| `Width` | `int` | 窗口宽度（像素） |
+| `Height` | `int` | 窗口高度（像素） |
+| `X` | `int` | X 坐标（距左侧） |
+| `Y` | `int` | Y 坐标（距顶部） |
+| `AlwaysOnTop` | `bool` | 窗口始终置顶 |
+| `Frameless` | `bool` | 移除标题栏和边框 |
+| `Hidden` | `bool` | 启动时隐藏 |
+| `MinWidth` | `int` | 最小宽度 |
+| `MinHeight` | `int` | 最小高度 |
+| `MaxWidth` | `int` | 最大宽度 |
+| `MaxHeight` | `int` | 最大高度 |
+
+**完整列表请参阅 [窗口选项](/zh-cn/features/windows/options)。**
+
+### 命名窗口
+
+为窗口命名以便轻松检索：
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:  "main-window",
+    Title: "Main Application",
+})
+
+// Later, find it by name
+mainWindow := app.GetWindowByName("main-window")
+if mainWindow != nil {
+    mainWindow.Show()
+}
+```
+
+**使用场景：**
+- 多个窗口（主窗口、设置窗口、关于窗口）
+- 从代码的不同部分查找窗口
+- 窗口间通信
+
+## 控制窗口
+
+### 显示和隐藏
+
+```go
+// Show window
+window.Show()
+
+// Hide window
+window.Hide()
+
+// Check if visible
+if window.IsVisible() {
+    fmt.Println("Window is visible")
+}
+```
+
+**使用场景：**
+- 启动画面（显示，然后隐藏）
+- 设置窗口（不需要时隐藏）
+- 弹出窗口（按需显示）
+
+### 位置和大小
+
+```go
+// Set size
+window.SetSize(1024, 768)
+
+// Set position
+window.SetPosition(100, 100)
+
+// Centre on screen
+window.Center()
+
+// Get current size
+width, height := window.Size()
+
+// Get current position
+x, y := window.Position()
+```
+
+**坐标系：**
+- (0, 0) 是主屏幕的左上角
+- X 轴正方向向右
+- Y 轴正方向向下
+
+### 窗口状态
+
+```go
+// Minimise
+window.Minimise()
+
+// Maximise
+window.Maximise()
+
+// Fullscreen
+window.Fullscreen()
+
+// Restore to normal
+window.Restore()
+
+// Check state
+if window.IsMinimised() {
+    fmt.Println("Window is minimised")
+}
+
+if window.IsMaximised() {
+    fmt.Println("Window is maximised")
+}
+
+if window.IsFullscreen() {
+    fmt.Println("Window is fullscreen")
+}
+```
+
+**状态转换：**
+
+```
+Normal ←→ Minimised
+Normal ←→ Maximised
+Normal ←→ Fullscreen
+```
+
+### 标题和外观
+
+```go
+// Set title
+window.SetTitle("My Application - Document.txt")
+
+// Set background colour
+window.SetBackgroundColour(0, 0, 0, 255) // RGBA
+
+// Set always on top
+window.SetAlwaysOnTop(true)
+
+// Set resizable
+window.SetResizable(false)
+```
+
+### 关闭窗口
+
+```go
+// Close window
+window.Close()
+
+// Destroy window (force close)
+window.Destroy()
+```
+
+**区别：**
+- `Close()` - 触发关闭事件，可以取消
+- `Destroy()` - 立即销毁，无法取消
+
+## 查找窗口
+
+### 按名称查找
+
+```go
+window := app.GetWindowByName("settings")
+if window != nil {
+    window.Show()
+}
+```
+
+### 按 ID 查找
+
+每个窗口都有一个唯一的 ID：
+
+```go
+id := window.ID()
+fmt.Printf("Window ID: %d\n", id)
+
+// Find by ID
+foundWindow := app.GetWindowByID(id)
+```
+
+### 当前窗口
+
+获取当前聚焦的窗口：
+
+```go
+current := app.Window.Current()
+if current != nil {
+    current.SetTitle("Active Window")
+}
+```
+
+### 所有窗口
+
+获取所有窗口：
+
+```go
+windows := app.Window.GetAll()
+fmt.Printf("Total windows: %d\n", len(windows))
+
+for _, w := range windows {
+    fmt.Printf("Window: %s (ID: %d)\n", w.Name(), w.ID())
+}
+```
+
+## 窗口生命周期
+
+### 创建
+
+```go
+app.OnWindowCreation(func(window *application.WebviewWindow) {
+    fmt.Printf("Window created: %s\n", window.Name())
+    
+    // Configure new windows
+    window.SetMinSize(400, 300)
+})
+```
+
+### 关闭
+
+```go
+window.OnClose(func() bool {
+    // Return false to cancel close
+    // Return true to allow close
+    
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        return result == "yes"
+    }
+    return true
+})
+```
+
+**重要：** `OnClose` 仅适用于用户发起的关闭操作（点击 X 按钮）。它不能阻止 `window.Destroy()`。
+
+### 销毁
+
+```go
+window.OnDestroy(func() {
+    fmt.Println("Window destroyed")
+    // Cleanup resources
+})
+```
+
+## 多窗口
+
+### 创建多个窗口
+
+```go
+// Main window
+mainWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "main",
+    Title:  "Main Application",
+    Width:  1200,
+    Height: 800,
+})
+
+// Settings window
+settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "settings",
+    Title:  "Settings",
+    Width:  600,
+    Height: 400,
+    Hidden: true,  // Start hidden
+})
+
+// Show settings when needed
+settingsWindow.Show()
+```
+
+### 窗口通信
+
+窗口可以通过事件进行通信：
+
+```go
+// In main window
+app.Event.Emit("data-updated", map[string]interface{}{
+    "value": 42,
+})
+
+// In settings window
+app.Event.On("data-updated", func(event *application.WailsEvent) {
+    data := event.Data.(map[string]interface{})
+    value := data["value"].(int)
+    fmt.Printf("Received: %d\n", value)
+})
+```
+
+**更多信息请参阅 [事件](/zh-cn/features/events/system)。**
+
+### 父子窗口
+
+```go
+// Create child window
+childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "Child Window",
+    Parent: mainWindow,  // Set parent
+})
+```
+
+**行为：**
+- 父窗口关闭时子窗口也会关闭
+- 子窗口保持在父窗口上方（在某些平台上）
+- 子窗口随父窗口最小化（在某些平台上）
+
+**平台支持：**
+- **macOS：** 完全支持
+- **Windows：** 部分支持
+- **Linux：** 取决于桌面环境
+
+## 平台特定功能
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+    **Windows 特定功能：**
+    
+    ```go
+    // Flash taskbar button
+    window.Flash(true)  // Start flashing
+    window.Flash(false) // Stop flashing
+    
+    // Trigger Windows 11 Snap Assist (Win+Z)
+    window.SnapAssist()
+    
+    // Set window icon
+    window.SetIcon(iconBytes)
+    ```
+    
+    **Snap Assist：**
+    显示 Windows 11 的窗口贴靠布局选项。
+    
+    **任务栏闪烁：**
+    当窗口最小化时，可用于通知用户。
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **macOS 特定功能：**
+
+    ```go
+    // Transparent title bar---
+
+**有问题？** 请在 [Discord](https://discord.gg/JDdSxwjhGf) 提问或查看 [窗口示例](https://github.com/wailsapp/wails/tree/master/v3/examples)。

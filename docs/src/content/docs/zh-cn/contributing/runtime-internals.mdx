@@ -1,0 +1,206 @@
+---
+title: 运行时内部机制
+description: 深入探讨 Wails v3 如何启动、运行并与操作系统通信
+sidebar:
+  order: 3
+---
+
+**运行时**（runtime）是将普通 Go 函数转换为跨平台桌面应用程序的层。
+本文档解释了在追踪源代码时会遇到的各个组成部分。
+
+---
+
+## 1. 应用程序生命周期
+
+| 阶段 | 代码路径 | 发生的情况 |
+|-------|-----------|--------------|
+| **引导** | `pkg/application/application.go:init()` | 注册构建时数据，创建全局 `application` 单例。 |
+| **New()** | `application.New(...)` | 验证 `Options`，启动 **AssetServer**，初始化日志记录。 |
+| **Run()** | `application.(*App).Run()` | 1. 调用平台 `mainthread.X()` 进入操作系统 UI 线程。<br />2. 启动 **runtime** (`internal/runtime`)。<br />3. 阻塞直到最后一个窗口关闭或调用 `Quit()`。 |
+| **关闭** | `application.(*App).Quit()` | 广播 `application:shutdown` 事件，刷新日志，拆除窗口和服务。 |
+
+生命周期是严格的**单入口**：你可以创建多个窗口，但应用程序对象本身只初始化一次。
+
+---
+
+## 2. 窗口管理
+
+### 公共 API
+
+```go
+win := app.Window.New(&application.WebviewWindowOptions{
+    Title:  "Dashboard",
+    Width:  1280,
+    Height: 720,
+})
+win.Show()
+```
+
+`app.Window.New()` 委托给 `internal/runtime/webview_window_*.go`，其中包含
+特定于平台的构造函数：
+
+```
+internal/runtime/
+├── webview_window_darwin.go
+├── webview_window_linux.go
+└── webview_window_windows.go
+```
+
+每个文件：
+
+1. 创建原生 webview (WKWebView, WebKitGTK, WebView2)。
+2. 注册 **Message Processor** 回调。
+3. 将 Wails 事件 (`WindowResized`, `Focus`, `DropFile`, …) 映射到运行时
+   事件 ID。
+
+窗口由 `screenmanager.go` 跟踪，它提供 **查询 API**（所有显示器、DPI、活动窗口）并集中管理调整大小/移动的记录。
+
+---
+
+## 3. 消息处理管道
+
+JavaScript 和 Go 之间的桥接由 `pkg/application/messageprocessor_*.go` 中的 **Message
+Processor** 家族实现。
+
+流程：
+
+1. **JavaScript** 调用 `window.runtime.Invoke("Greet", "Alice")`。
+2. 运行时序列化请求：  
+   `{"t":"c","id":"123","m":"Greet","p":["Alice"]}`  
+   (`t` = 类型, `c` = 调用)。
+3. **Go** 通过 webview 回调接收此 JSON。
+4. `messageprocessor_call.go` 在生成的表 (`application.bindings.go`) 中查找绑定的方法并执行它。
+5. 结果或错误被序列化回 JS，其中 `Promise` 解析。
+
+专用处理器：
+
+| 文件 | 用途 |
+|------|---------|
+| `messageprocessor_window.go` | 窗口操作 (隐藏, 最大化, …) |
+| `messageprocessor_dialog.go` | 原生对话框 (`OpenFile`, `MessageBox`, …) |
+| `messageprocessor_clipboard.go` | 剪贴板读写 |
+| `messageprocessor_events.go` | 事件订阅/发射 |
+| `messageprocessor_browser.go` | 浏览器导航, 开发者工具 |
+
+处理器是**无状态**的——它们从随每条消息传递的 `ApplicationContext` 中获取所需的一切。
+
+---
+
+## 4. 事件系统
+
+事件是跨三层分发的命名空间字符串：
+
+1. **应用程序事件**：全局生命周期 (`application:ready`,
+   `application:shutdown`)。
+2. **窗口事件**：每个窗口 (`window:focus`, `window:resize`)。
+3. **自定义事件**：用户定义 (`chat:new-message`)。
+
+实现细节：
+
+* 常量是从 `internal/events/defaults.go` 生成的。
+* Go 端：  
+  `app.On("window:focus", func(e application.WindowEvent) {...})`
+* JS 端：  
+  `window.runtime.EventsOn("chat:new-message", cb)`
+
+底层两者都映射到 `pkg/application/events.go` 中的同一个 **EventBus**。
+订阅者引用计数；当窗口关闭时，其回调会自动注销以避免泄漏。
+
+---
+
+## 5. 特定于平台的实现
+
+条件编译保持公共 API 一致，同时隐藏操作系统的差异。
+
+| 关注点 | Darwin | Linux | Windows |
+|---------|--------|-------|---------|
+| 主线程 | `mainthread_darwin.go` (Cgo 到 Foundation) | `mainthread_linux.go` (GTK) | `mainthread_windows.go` (Win32 `AttachThreadInput`) |
+| 对话框 | `dialogs_darwin.*` (NSAlert) | `dialogs_linux.go` (GtkFileChooser) | `dialogs_windows.go` (IFileOpenDialog) |
+| 剪贴板 | `clipboard_darwin.go` | `clipboard_linux.go` | `clipboard_windows.go` |
+| 托盘图标 | `systemtray_darwin.*` | `systemtray_linux.go` (DBus) | `systemtray_windows.go` (Shell_NotifyIcon) |
+
+关键原则：
+
+* **除非不可避免，否则在 Windows/Linux 上不使用 Cgo**（性能、可移植性）。
+* 使用 **构建标签** (`//go:build darwin && !production`) 保持文件可读。
+* 通过 `internal/capabilities` 暴露 **功能**，以便更高层可以优雅地降级。
+
+---
+
+## 6. 文件指南
+
+| 文件 | 你为什么要修改它 |
+|------|--------------------|
+| `internal/runtime/runtime_*.go` | 更改全局启动逻辑，添加调试钩子。 |
+| `internal/runtime/webview_window_*.go` | 实现新的窗口提示或行为。 |
+| `pkg/application/messageprocessor_*.go` | 添加一个新的可从 JS 调用的桥接命令。 |
+| `pkg/application/events_*.go` | 扩展内置事件定义。 |
+| `internal/assetserver/*` | 调整开发/生产环境资产处理。 |
+
+---
+
+## 7. 调试技巧
+
+* 使用 `WAILS_LOG_LEVEL=debug` 启动以打印跨越桥接器的每条消息。
+* 使用 `wails3 dev -verbose` 查看实时重载和资产请求。
+* 在 macOS 上，在 `lldb --` 下运行以尽早捕获 Objective-C 异常。
+* 对于 Windows Chromium 问题，启用 WebView2 调试日志：  
+  `set WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222`
+
+---
+
+## 8. 扩展运行时
+
+1. 在 `internal/capabilities` 中定义 **功能标志**。
+2. 使用构建标签在每个平台文件中实现该功能。
+3. 在 `pkg/application` 中添加公共 API。
+4. 如果 JS 需要调用它，注册新的消息类型或事件。
+5. 更新 `v3/examples/` 中至少一个使用该功能的示例。
+
+遵循此检查清单，你将保持跨平台契约的完整性。
+
+---
+
+## 9. 拖放
+
+文件拖放使用所有平台上的 **JavaScript 优先方法**。原生层拦截操作系统拖放事件，但实际的放置处理和 DOM 交互发生在 JavaScript 中。
+
+### 流程
+
+1. 用户从操作系统将文件拖到 Wails 窗口上
+2. 原生层检测到拖放并通知 JavaScript 以显示悬停效果
+3. 用户放置文件
+4. 原生层将文件路径 + 坐标发送给 JavaScript
+5. JavaScript 找到放置目标元素 (`data-file-drop-target`)
+6. JavaScript 将文件路径 + 元素详细信息发送给 Go 后端
+7. Go 发出带有完整上下文的 `WindowFilesDropped` 事件
+
+### 平台实现
+
+| 平台 | 原生层 | 关键挑战 |
+|----------|--------------|---------------|
+| **Windows** | WebView2 的内置拖放支持 | 坐标为 CSS 像素，无需转换 |
+| **macOS** | NSWindow 拖放委托 | 将窗口相对坐标转换为 webview 相对坐标 |
+| **Linux** | GTK3 拖放信号 | 必须区分文件拖放和内部 HTML5 拖放 |
+
+### Linux：区分拖放类型
+
+GTK 和 WebKit 都想处理拖放事件。关键在于检查拖放目标类型：
+
+```c
+static gboolean is_file_drag(GdkDragContext *context) {
+    GList *targets = gdk_drag_context_list_targets(context);
+    for (GList *l = targets; l != NULL; l = l->next) {
+        GdkAtom atom = GDK_POINTER_TO_ATOM(l->data);
+        gchar *name = gdk_atom_name(atom);
+        if (name && g_strcmp0(name, "text/uri-list") == 0) {
+            g_free(name);
+            return TRUE;  // 外部文件拖放
+        }
+        g_free(name);
+    }
+    return FALSE;  // 内部 HTML5 拖放
+}
+```
+
+信号处理程序对内部拖放返回 `FALSE`（让 WebKit 处理它们），对文件拖放返回 `TRUE`（由我们自己处理）。你现在已经对运行时内部机制有了引导式了解。将这些知识与 **代码库布局** 图和 **资产服务器** 文档结合使用，即可自信地导航并进行有影响力的贡献。祝你编码愉快！

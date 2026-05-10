@@ -1,0 +1,160 @@
+---
+title: 创建安装程序
+description: 将您的应用程序打包以供分发
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 概述
+
+为您的 Wails 应用程序在所有平台上创建专业的安装程序。
+
+## 平台安装程序
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+    ### NSIS 安装程序
+    
+    ```bash
+    # Install NSIS
+    # Download from: https://nsis.sourceforge.io/
+    
+    # Create installer script (installer.nsi)
+    makensis installer.nsi
+    ```
+    
+    **installer.nsi:**
+    ```nsis
+    !define APPNAME "MyApp"
+    !define VERSION "1.0.0"
+    
+    Name "${APPNAME}"
+    OutFile "MyApp-Setup.exe"
+    InstallDir "$PROGRAMFILES\${APPNAME}"
+    
+    Section "Install"
+        SetOutPath "$INSTDIR"
+        File "build\bin\myapp.exe"
+        CreateShortcut "$DESKTOP\${APPNAME}.lnk" "$INSTDIR\myapp.exe"
+    SectionEnd
+    ```
+    
+    ### WiX Toolset
+    
+    MSI 安装程序的替代方案。
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    ### DMG 创建
+    
+    ```bash
+    # Create DMG
+    hdiutil create -volname "MyApp" -srcfolder build/bin/MyApp.app -ov -format UDZO MyApp.dmg
+    ```
+    
+    ### 代码签名
+    
+    ```bash
+    # Sign application
+    codesign --deep --force --verify --verbose --sign "Developer ID" MyApp.app
+    
+    # Notarize
+    xcrun notarytool submit MyApp.dmg --apple-id "email" --password "app-password"
+    ```
+    
+    ### App Store
+    
+    使用 Xcode 进行 App Store 分发。
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    ### DEB 包
+    
+    ```bash
+    # Create package structure
+    mkdir -p myapp_1.0.0/DEBIAN
+    mkdir -p myapp_1.0.0/usr/bin
+    
+    # Copy binary
+    cp build/bin/myapp myapp_1.0.0/usr/bin/
+    
+    # Create control file
+    cat > myapp_1.0.0/DEBIAN/control << EOF
+    Package: myapp
+    Version: 1.0.0
+    Architecture: amd64
+    Maintainer: Your Name
+    Description: My Application
+    EOF
+    
+    # Build package
+    dpkg-deb --build myapp_1.0.0
+    ```
+    
+    ### RPM 包
+    
+    对基于 RPM 的发行版使用 `rpmbuild`。
+    
+    ### AppImage
+    
+    ```bash
+    # Use appimagetool
+    appimagetool myapp.AppDir
+    ```
+  </TabItem>
+</Tabs>
+
+## 自动化打包
+
+### 使用 GoReleaser
+
+```yaml
+# .goreleaser.yml
+project_name: myapp
+
+builds:
+  - binary: myapp
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+nfpms:
+  - formats:
+      - deb
+      - rpm
+    vendor: Your Company
+    homepage: https://example.com
+    description: My Application
+```
+
+## 最佳实践
+
+### ✅ 建议
+
+- 在所有平台上进行代码签名
+- 包含版本信息
+- 创建卸载程序
+- 测试安装过程
+- 提供清晰的文档
+
+### ❌ 避免
+
+- 不要跳过代码签名
+- 不要忘记文件关联
+- 不要硬编码路径
+- 不要跳过测试
+
+## 后续步骤
+
+- [自动更新](/guides/auto-updates) - 实现自动更新
+- [跨平台构建](/guides/cross-platform) - 为多个平台构建

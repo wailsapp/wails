@@ -1,0 +1,524 @@
+---
+title: 菜单
+description: Wails v3 中创建和自定义菜单的指南
+---
+
+Wails v3 提供了一个强大的菜单系统，允许你创建应用程序菜单和上下文菜单。本指南将带你了解菜单系统的各种功能和特性。
+
+### 创建菜单
+
+要创建新菜单，请使用 Menus 管理器中的 `New()` 方法：
+
+```go
+menu := app.Menu.New()
+```
+
+### 添加菜单项
+
+Wails 支持多种类型的菜单项，每种都有其特定用途：
+
+#### 常规菜单项
+常规菜单项是菜单的基本构建块。它们显示文本，并在点击时触发操作：
+
+```go
+menuItem := menu.Add("Click Me")
+```
+
+#### 复选框
+复选框菜单项提供可切换的状态，适用于启用/禁用功能或设置：
+
+```go
+checkbox := menu.AddCheckbox("My checkbox", true)  // true = 初始选中
+```
+
+#### 单选组
+单选组允许用户从一组互斥选项中选择一个。当单选项彼此相邻放置时，它们会自动创建：
+
+```go
+menu.AddRadio("Option 1", true)   // true = 初始选中
+menu.AddRadio("Option 2", false)
+menu.AddRadio("Option 3", false)
+```
+
+#### 分隔符
+分隔符是水平线，有助于将菜单项组织成逻辑组：
+
+```go
+menu.AddSeparator()
+```
+
+#### 子菜单
+子菜单是嵌套菜单，当悬停或点击菜单项时出现。它们适用于组织复杂的菜单结构：
+
+```go
+submenu := menu.AddSubmenu("File")
+submenu.Add("Open")
+submenu.Add("Save")
+```
+
+#### 合并菜单
+可以通过追加或前置将菜单添加到另一个菜单中。
+```go
+menu := app.Menu.New()
+menu.Add("First Menu")
+
+secondaryMenu := app.Menu.New()
+secondaryMenu.Add("Second Menu")
+
+// 在 'menu' 之后插入 'secondaryMenu'
+menu.Append(secondaryMenu)
+
+// 在 'menu' 之前插入 'secondaryMenu'
+menu.Prepend(secondaryMenu)
+
+// 更新菜单
+menu.Update()
+```
+
+:::note
+默认情况下，`prepend` 和 `append` 会与原始菜单共享状态。如果你想创建一个具有自己状态的新菜单，
+你可以对菜单调用 `.Clone()`。
+
+例如：`menu.Append(secondaryMenu.Clone())`
+:::
+
+#### 清空菜单
+在某些情况下，如果你处理可变数量的菜单项，构建一个全新的菜单会更好。
+
+这将清除现有菜单上的所有项目，并允许你再次添加项目。
+
+```go
+menu := app.Menu.New()
+menu.Add("Waiting for update...")
+
+// 经过某些逻辑后，菜单需要更新
+menu.Clear()
+menu.Add("Update complete!")
+menu.Update()
+```
+
+:::note
+清空菜单仅清除顶层的菜单项。虽然子菜单将不可见，但它们仍会占用内存，
+因此请务必仔细管理你的菜单。
+:::
+
+#### 销毁菜单
+
+如果你想清除并释放菜单，请使用 `Destroy()` 方法：
+
+```go
+menu := app.Menu.New()
+menu.Add("Waiting for update...")
+
+// 经过某些逻辑后，菜单需要被销毁
+menu.Destroy()
+```
+
+
+### 菜单项属性
+
+菜单项具有几个可配置的属性：
+
+| 属性        | 方法                     | 描述                                         |
+|------|------------------------|------------------------------------------|
+| Label       | `SetLabel(string)`       | 设置显示文本                               |
+| Enabled     | `SetEnabled(bool)`       | 启用/禁用该项                              |
+| Checked     | `SetChecked(bool)`       | 设置选中状态（用于复选框/单选项）           |
+| Tooltip     | `SetTooltip(string)`     | 设置工具提示文本                           |
+| Hidden      | `SetHidden(bool)`        | 显示/隐藏该项                              |
+| Accelerator | `SetAccelerator(string)` | 设置键盘快捷键                             |
+
+### 菜单项状态
+
+菜单项可以处于不同的状态，以控制其可见性和交互性：
+
+#### 可见性
+
+可以使用 `SetHidden()` 方法动态显示或隐藏菜单项：
+
+```go
+menuItem := menu.Add("Dynamic Item")
+
+// 隐藏菜单项
+menuItem.SetHidden(true)
+
+// 显示菜单项
+menuItem.SetHidden(false)
+
+// 检查当前可见性
+isHidden := menuItem.Hidden()
+```
+
+隐藏的菜单项会从菜单中完全移除，直到再次显示。这对于仅在特定应用程序状态下出现的上下文菜单项非常有用。
+
+#### 启用状态
+
+可以使用 `SetEnabled()` 方法启用或禁用菜单项：
+
+```go
+menuItem := menu.Add("Save")
+
+// 禁用菜单项
+menuItem.SetEnabled(false)  // 该项显示为灰色且无法点击
+
+// 启用菜单项
+menuItem.SetEnabled(true)   // 该项再次可点击
+
+// 检查当前启用状态
+isEnabled := menuItem.Enabled()
+```
+
+禁用的菜单项保持可见，但显示为灰色且无法点击。这通常用于指示当前不可用的操作，例如：
+- 当没有要保存的更改时禁用“保存”
+- 当没有选中任何内容时禁用“复制”
+- 当没有可撤消的操作时禁用“撤消”
+
+#### 动态状态管理
+
+你可以将这些状态与事件处理程序结合使用来创建动态菜单：
+
+```go
+saveMenuItem := menu.Add("Save")
+
+// 初始禁用“保存”菜单项
+saveMenuItem.SetEnabled(false)
+
+// 仅当有未保存的更改时启用“保存”
+documentChanged := func() {
+    saveMenuItem.SetEnabled(true)
+    menu.Update()  // 更改状态后记得更新菜单
+}
+
+// 保存后禁用“保存”
+documentSaved := func() {
+    saveMenuItem.SetEnabled(false)
+    menu.Update()
+}
+```
+
+### 事件处理
+
+菜单项可以使用 `OnClick` 方法响应点击事件：
+
+```go
+menuItem.OnClick(func(ctx *application.Context) {
+    // 处理点击事件
+    println("Menu item clicked!")
+})
+```
+
+上下文提供有关被点击菜单项的信息：
+
+```go
+menuItem.OnClick(func(ctx *application.Context) {
+    // 获取被点击的菜单项
+    clickedItem := ctx.ClickedMenuItem()
+    // 获取其当前状态
+    isChecked := clickedItem.Checked()
+})
+```
+
+### 基于角色的菜单项
+
+Wails 提供了一组预定义的菜单角色，它们会自动创建具有标准功能的菜单项。以下是支持的菜单角色：
+
+#### 完整的菜单结构
+这些角色会创建具有常见功能的整个菜单结构：
+
+| 角色 | 描述 | 平台说明 |
+|------|-------------|------|
+| `AppMenu` | 包含关于、服务、隐藏/显示和退出的应用程序菜单 | 仅限 macOS |
+| `EditMenu` | 包含撤消、重做、剪切、复制、粘贴等的标准编辑菜单 | 所有平台 |
+| `ViewMenu` | 包含重新加载、缩放和全屏控制的视图菜单 | 所有平台 |
+| `WindowMenu` | 窗口控制（最小化、缩放等） | 所有平台 |
+| `HelpMenu` | 包含指向 Wails 网站的“了解更多”链接的帮助菜单 | 所有平台 |------|-------------|------|
+| `About` | 显示应用程序“关于”对话框 | 所有平台 |
+| `Hide` | 隐藏应用程序 | 仅限 macOS |
+| `HideOthers` | 隐藏其他应用程序 | 仅限 macOS |
+| `UnHide` | 显示被隐藏的应用程序 | 仅限 macOS |
+| `CloseWindow` | 关闭当前窗口 | 所有平台 |
+| `Minimise` | 最小化窗口 | 所有平台 |
+| `Zoom` | 缩放窗口 | 仅限 macOS |
+| `Front` | 将窗口置于最前 | 仅限 macOS |
+| `Quit` | 退出应用程序 | 所有平台 |
+| `Undo` | 撤销上一个操作 | 所有平台 |
+| `Redo` | 重做上一个操作 | 所有平台 |
+| `Cut` | 剪切选区 | 所有平台 |
+| `Copy` | 复制选区 | 所有平台 |
+| `Paste` | 从剪贴板粘贴 | 所有平台 |
+| `PasteAndMatchStyle` | 粘贴并匹配样式 | 仅限 macOS |
+| `SelectAll` | 全选 | 所有平台 |
+| `Delete` | 删除选区 | 所有平台 |
+| `Reload` | 重新加载当前页面 | 所有平台 |
+| `ForceReload` | 强制重新加载当前页面 | 所有平台 |
+| `ToggleFullscreen` | 切换全屏模式 | 所有平台 |
+| `ResetZoom` | 重置缩放级别 | 所有平台 |
+| `ZoomIn` | 放大 | 所有平台 |
+| `ZoomOut` | 缩小 | 所有平台 |
+
+以下示例展示了如何同时使用完整菜单结构和独立角色：
+
+```go
+menu := app.Menu.New()
+
+// 添加完整的菜单结构
+menu.AddRole(application.AppMenu)    // 仅限 macOS
+menu.AddRole(application.EditMenu)   // 通用编辑操作
+menu.AddRole(application.ViewMenu)   // 视图控制
+menu.AddRole(application.WindowMenu) // 窗口控制
+
+// 将基于角色的独立项添加到自定义菜单
+fileMenu := menu.AddSubmenu("File")
+fileMenu.AddRole(application.CloseWindow)
+fileMenu.AddSeparator()
+fileMenu.AddRole(application.Quit)
+```
+
+## 应用程序菜单
+
+应用程序菜单是出现在应用程序窗口顶部（Windows/Linux）或屏幕顶部（macOS）的菜单。
+
+### 应用程序菜单行为
+
+当你使用 `app.Menu.Set()` 设置应用程序菜单时，它将成为 macOS 上的主菜单。
+在 Windows/Linux 上，菜单是按窗口设置的。
+
+```go
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "Custom Menu Window",
+    Windows: application.WindowsWindow{
+        Menu: customMenu,  // 覆盖此窗口的应用程序菜单
+    },
+})
+```
+
+以下是一个展示这些不同菜单行为的完整示例：
+
+```go
+func main() {
+    app := application.New(application.Options{})
+
+    // 创建应用程序菜单
+    appMenu := app.Menu.New()
+    fileMenu := appMenu.AddSubmenu("File")
+    fileMenu.Add("New").OnClick(func(ctx *application.Context) {
+        // 这将适用于所有窗口，除非被覆盖
+        window := app.Windows.Current()
+        window.SetTitle("New Window")
+    })
+    
+    // 设置为应用程序菜单 - 这是针对 macOS 的
+    app.Menu.Set(appMenu)
+
+    // Windows 上带有自定义菜单的窗口
+    customMenu := app.Menu.New()
+    customMenu.Add("Custom Action")
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "Custom Menu",
+        Windows: application.WindowsWindow{
+            Menu: customMenu,
+        },
+    })
+
+    app.Run()
+}
+```
+
+## 上下文菜单
+
+上下文菜单是右键单击应用程序中的元素时弹出的菜单。它们提供对与所点击元素相关的操作的快速访问。
+
+### 默认上下文菜单
+
+默认上下文菜单是 WebView 内置的上下文菜单，提供系统级操作，例如：
+- 用于文本操作的复制、剪切和粘贴
+- 文本选择控件
+- 拼写检查选项
+
+#### 控制默认上下文菜单
+
+你可以使用 `--default-contextmenu` CSS 属性来控制默认上下文菜单的出现时机：
+
+```html
+<!-- 始终显示默认上下文菜单 -->
+<div style="--default-contextmenu: show">
+    <input type="text" placeholder="右键单击以进行文本操作"/>
+    <textarea>此处提供标准文本操作</textarea>
+</div>
+
+<!-- 隐藏默认上下文菜单 -->
+<div style="--default-contextmenu: hide">
+    <div class="custom-component">仅自定义上下文菜单</div>
+</div>
+
+<!-- 智能上下文菜单行为（默认） -->
+<div style="--default-contextmenu: auto">
+    <!-- 当选中文本或在输入字段中时显示默认菜单 -->
+    <p>选中此文本以查看默认菜单</p>
+    <input type="text" placeholder="输入操作的默认菜单"/>
+</div>
+```
+
+:::note
+此功能仅在运行时 [已初始化](../../learn/runtime#initialisation) 后才会按预期工作。
+:::
+
+#### 嵌套上下文菜单行为
+
+当在嵌套元素上使用 `--default-contextmenu` 属性时，适用以下规则：
+
+1. 子元素继承父元素的上下文菜单设置，除非被显式覆盖
+2. 最具体（最接近）的设置优先
+3. `auto` 值可用于重置为默认行为
+
+嵌套上下文菜单行为示例：
+
+```html
+<!-- 父级设置为 hide -->
+<div style="--default-contextmenu: hide">
+    <!-- 此元素继承 hide -->
+    <p>此处无上下文菜单</p>
+    
+    <!-- 此元素覆盖为 show -->
+    <div style="--default-contextmenu: show">
+        <p>此处显示上下文菜单</p>
+        
+        <!-- 此元素继承 show -->
+        <span>也具有上下文菜单</span>
+        
+        <!-- 此元素重置为自动行为 -->
+        <div style="--default-contextmenu: auto">
+            <p>仅当选中文本时显示菜单</p>
+        </div>
+    </div>
+</div>
+```
+
+### 自定义上下文菜单
+
+自定义上下文菜单允许你提供与所点击元素相关的特定于应用程序的操作。它们特别适用于：
+- 文档管理器中的文件操作
+- 图像操作工具
+- 数据网格中的自定义操作
+- 特定组件的操作
+
+#### 创建自定义上下文菜单
+
+在创建自定义上下文菜单时，你需要提供一个唯一标识符（名称），将该菜单与 HTML 元素关联起来：
+
+```go
+// 创建标识符为 "imageMenu" 的上下文菜单
+contextMenu := application.NewContextMenu()
+app.ContextMenus.Add("imageMenu", contextMenu)
+```
+
+名称参数（在此示例中为 "imageMenu"）作为唯一标识符，将用于：
+1. 将 HTML 元素链接到此特定的上下文菜单
+2. 标识右键单击时应显示哪个菜单
+3. 允许更新菜单和清理资源
+
+#### 上下文数据
+
+在处理上下文菜单事件时，你可以访问被点击的菜单项及其关联的上下文数据：
+
+```go
+contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
+    // 获取被点击的菜单项
+    menuItem := ctx.ClickedMenuItem()
+    
+    // 将上下文数据作为字符串获取
+    contextData := ctx.ContextMenuData()
+    
+    // 检查菜单项是否被选中（用于复选框/单选组项）
+    isChecked := ctx.IsChecked()
+    
+    // 使用数据
+    if contextData != "" {
+        processItem(contextData)
+    }
+})
+```
+
+上下文数据从 HTML 元素的 `--custom-contextmenu-data` 属性传递，并通过 `ctx.ContextMenuData()` 在点击处理程序中可用。这在以下情况下特别有用：
+
+- 处理列表或网格，其中每个项目需要唯一标识
+- 处理特定组件或元素的操作
+- 从前端向后端传递状态或元数据
+
+#### 上下文菜单管理
+
+在对上下文菜单进行更改后，调用 `Update()` 方法以应用更改：
+
+```go
+contextMenu.Update()
+```
+
+当你不再需要某个上下文菜单时，可以销毁它：
+
+```go
+contextMenu.Destroy()
+```
+:::danger[警告] 
+调用 `Destroy()` 后，再次使用该上下文菜单引用将导致 panic。
+:::
+
+### 实际示例：图像画廊
+
+以下是为图像画廊实现自定义上下文菜单的完整示例：
+
+```go
+// 后端：创建上下文菜单```go
+imageMenu := application.NewContextMenu()
+app.ContextMenus.Add("imageMenu", imageMenu)
+
+// Add relevant operations
+imageMenu.Add("View Full Size").OnClick(func(ctx *application.Context) {
+    // Get the image ID from context data
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        openFullSizeImage(imageID)
+    }
+})
+
+imageMenu.Add("Download").OnClick(func(ctx *application.Context) {
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        downloadImage(imageID)
+    }
+})
+
+imageMenu.Add("Share").OnClick(func(ctx *application.Context) {
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        showShareDialog(imageID)
+    }
+})
+```
+
+```html
+<!-- Frontend: Image gallery implementation -->
+<div class="gallery">
+    <!-- Each image container with context menu -->
+    <div class="image-container" 
+         style="--custom-contextmenu: imageMenu; --custom-contextmenu-data: img_123">
+        <img src="/images/img_123.jpg" alt="Gallery Image"/>
+        <span class="caption">Nature Photo</span>
+    </div>
+    
+    <div class="image-container"
+         style="--custom-contextmenu: imageMenu; --custom-contextmenu-data: img_124">
+        <img src="/images/img_124.jpg" alt="Gallery Image"/>
+        <span class="caption">City Photo</span>
+    </div>
+</div>
+```
+
+在此示例中：
+1. 上下文菜单使用标识符 "imageMenu" 创建
+2. 每个图像容器通过 `--custom-contextmenu: imageMenu` 链接到该菜单
+3. 每个容器使用 `--custom-contextmenu-data` 提供其图像 ID 作为上下文数据
+4. 后端在点击处理程序中接收图像 ID 并可以执行特定操作
+5. 相同的菜单被所有图像复用，但上下文数据告诉我们应对哪个图像进行操作
+
+此模式特别适用于：
+- 需要特定操作的行数据网格
+- 需要上下文特定操作的文件管理器
+- 不同元素需要不同操作的设计工具
+- 任何相同操作适用于多个实例的组件

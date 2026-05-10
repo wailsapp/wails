@@ -1,0 +1,246 @@
+---
+title: 扩展 Wails
+description: 向 Wails v3 添加新功能和平台的实用指南
+sidebar:
+  order: 8
+---
+
+> Wails 的设计初衷就是**可 hack 的**。  
+> 每个主要子系统都存在于你可以阅读、修改和发布的 Go 代码中。  
+> 本页展示了当你：
+
+* 添加**服务**（文件服务器、KV 存储、自定义 IPC…）
+* 创建**新的 CLI 命令**（`wails3 <foo>`）
+* 扩展**运行时**（窗口 API、对话框、事件）
+* 引入**平台功能**（Wayland、Apple Vision OS…）
+* 保持**跨平台兼容性**而不淹没在 `//go:build` 标签中
+
+时，从哪里开始以及如何保持跨平台。
+
+---
+
+## 1. 添加服务
+
+服务是暴露给应用程序的后台 Go 组件，通过 `application.Context` 访问。
+
+```
+internal/service/
+├── template/            # 新服务的样板代码
+│   ├── template.go
+│   └── README.md
+└── service.go           # 注册 + 生命周期接口
+```
+
+### 1.1 定义服务
+
+```go
+package chat
+
+type Service struct {
+    messages []string
+}
+
+func New() *Service { return &Service{} }
+
+func (s *Service) Send(msg string) string {
+    s.messages = append(s.messages, msg)
+    return "ok"
+}
+```
+
+### 1.2 实现 `service.Service`
+
+```go
+func (s *Service) Init(ctx *application.Context) error { return nil }
+func (s *Service) Shutdown() error                     { return nil }
+```
+
+### 1.3 注册生成器
+
+*添加到* `internal/generator/collect/services.go`
+
+```go
+services.Register("chat", chat.New)
+```
+
+> 现在 `wails3 generate` 会生成绑定，使 JS 可以调用
+> `window.backend.chat.Send("hi")`。
+
+### 1.4 发布示例
+
+复制 `v3/examples/services/` 并进行调整。
+
+---
+
+## 2. 编写新的 CLI 命令
+
+CLI 逻辑位于 `internal/commands/` 下。  
+每个命令都是**一个文件**，在 `init()` 中挂载自身。
+
+### 2.1 创建文件
+
+`v3/internal/commands/hello.go`
+
+```go
+package commands
+
+import (
+    "github.com/spf13/cobra"
+)
+
+func init() {
+    Add(&cobra.Command{
+        Use:   "hello",
+        Short: "Prints Hello World",
+        RunE: func(cmd *cobra.Command, args []string) error {
+            cmd.Println("Hello Wails!")
+            return nil
+        },
+    })
+}
+```
+
+`Add()` 在 `cmd/wails3/main.go` 中向根命令注册。
+
+### 2.2 重新编译 CLI
+
+```
+go install ./v3/cmd/wails3
+wails3 hello
+```
+
+如果你的命令需要 **Taskfile** 集成，请重用
+`internal/commands/task_wrapper.go` 中的辅助函数。
+
+---
+
+## 3. 修改运行时
+
+常见原因：
+
+* 新的窗口功能（`SetOpacity`、`Shake`…）
+* 额外的对话框（`ColorPicker`）
+* 系统级 API（屏幕亮度）
+
+### 3.1 公共 API
+
+添加到 `pkg/application/window.go`：
+
+```go
+func (w *WebviewWindow) SetOpacity(o float32) {
+    w.ctx.Call("window:setOpacity", o)
+}
+```
+
+### 3.2 消息处理器
+
+创建 `messageprocessor_window_opacity.go`：
+
+```go
+const MsgSetOpacity = "window:setOpacity"
+
+func init() { register(MsgSetOpacity, handleSetOpacity) }
+
+func handleSetOpacity(ctx *Context, params json.RawMessage) ([]byte, error) {
+    var req struct {
+        ID      uint64  `json:"id"`
+        Opacity float32 `json:"o"`
+    }
+    json.Unmarshal(params, &req)
+    return nil, runtime.SetOpacity(req.ID, req.Opacity)
+}
+```
+
+### 3.3 平台实现
+
+```
+internal/runtime/
+    webview_window_darwin.go
+    webview_window_linux.go
+    webview_window_windows.go
+```
+
+将 `SetOpacity()` 添加到每个文件，并通过构建标签进行保护。  
+如果某个平台无法支持，请返回 `ErrCapability`。
+
+### 3.4 功能标志
+
+通过 `internal/capabilities` 暴露。
+
+```go
+const CapOpacity = "window:opacity"
+```
+
+运行时文件 `*_darwin.go` 等应在成功初始化时 `registerCapability(CapOpacity)`。
+
+应用程序可以查询：
+
+```go
+if application.HasCapability(application.CapOpacity) { ... }
+```
+
+---
+
+## 4. 添加新的平台功能
+
+示例：**Wayland** 剪贴板（在 Linux 上）。
+
+1. 分叉 `internal/runtime/clipboard_linux.go`。
+2. 拆分文件：
+   * `clipboard_linux_x11.go` → `//go:build linux && !wayland`
+   * `clipboard_linux_wayland.go` → `//go:build linux && wayland`
+3. 在 `internal/commands/dev.go` 中添加 CLI 标志 `--tags wayland`
+   （`goEnv.BuildTags += ",wayland"`）。
+4. 在 **Asset Server** 和 README 中记录。
+
+> 保持默认构建标签最小化；将可选标签保留给小众功能。
+
+---
+
+## 5. 跨平台兼容性检查清单
+
+| ✅ 步骤 | 原因 |
+|---------|-----|
+| 在所有平台文件中提供**每个**公共方法（即使是存根） | 确保在所有 OS/架构上构建通过 |
+| 将平台特定内容隐藏在**功能**之后 | 让应用程序优雅降级 |
+| 优先使用**纯 Go**，仅在需要时使用 CGO | 简化交叉编译 |
+| 使用 `task matrix:test` 进行测试 | 在 Docker 中在 linux/mac/windows 上运行 `go test ./...` |
+| 在 `docs/getting-started/installation.mdx` 中记录新的构建标签 | 用户必须知道这些标志 |
+
+---
+
+## 6. 调试构建与迭代速度
+
+* `wails3 dev -tags debug` 添加额外的日志钩子（`logger_dev*.go`）。
+* 使用 `task reload` 在不重启整个应用程序的情况下重新编译运行时。
+* 竞态检测器：`wails3 dev -race`（参见 `pkg/application/RACE.md`）。
+
+---
+
+## 7. 上游贡献
+
+1. 打开一个**问题**来讨论想法和设计。
+2. 按照上述技术进行实现。
+3. 添加：
+   * 单元测试（`*_test.go`）
+   * 示例（`v3/examples/<feat>/`）
+   * 文档（此文件或 API 参考）
+4. 确保 `go vet`、`golangci-lint` 和 CI 矩阵通过。
+
+---
+
+### 快速链接
+
+| 区域 | 位置 |
+|------|----------|
+| 服务框架 | `internal/service/` |
+| CLI 核心 | `internal/commands/` |
+| 运行时（按 OS） | `internal/runtime/` |
+| 功能辅助函数 | `internal/capabilities/` |
+| Taskfile DSL | `tasks/Taskfile.yml` |
+| 开发矩阵测试 | `tasks/events/generate.go` |
+
+---
+
+你现在拥有了让 Wails 按你意愿工作的**路线图**——添加服务、注入 CLI 魔法、黑客式修改运行时，或引入全新的 OS 功能。  
+祝你扩展愉快！

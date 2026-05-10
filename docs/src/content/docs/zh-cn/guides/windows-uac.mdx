@@ -1,0 +1,152 @@
+---
+title: Windows UAC 配置
+description: 为您的 Windows Wails 应用配置用户账户控制 (UAC)
+sidebar:
+  order: 11
+---
+
+import {Badge} from '@astrojs/starlight/components';
+
+适用平台: <Badge text="Windows" variant="note" />
+<br/>
+
+Windows 用户账户控制 (UAC) 决定了您的 Wails 应用的执行权限。默认情况下，Wails v3 应用在其 Windows 清单文件中包含明确的 UAC 配置，确保在不同机器上具有一致的行为。
+
+## UAC 执行级别
+
+Windows 应用可以通过其清单文件请求不同的执行级别。Wails v3 会自动包含 UAC 配置，并提供一个默认执行级别，您可以根据应用的需求对其进行自定义。
+
+### 可用的执行级别
+
+| 级别 | 描述 | 使用场景 |
+|-------|-------|------|
+| `asInvoker` | 以与父进程相同的权限运行 | 大多数应用的默认设置 |
+| `highestAvailable` | 以用户可用的最高权限运行 | 可能需要提升权限的应用 |
+| `requireAdministrator` | 始终需要管理员权限 | 系统工具、安装程序 |
+
+### 默认配置
+
+Wails v3 应用在 Windows 清单文件中包含默认的 UAC 配置：
+
+```xml
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+        <requestedPrivileges>
+            <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+        </requestedPrivileges>
+    </security>
+</trustInfo>
+```
+
+此配置确保您的应用：
+- 以与启动进程相同的权限运行
+- 默认情况下不需要提升权限
+- 在不同机器上保持一致的行为
+- 不会为普通用户触发 UAC 提示
+
+## 自定义 UAC 配置
+
+由于 Wails v3 鼓励用户自定义其构建资产，您可以通过直接编辑 Windows 清单模板来修改 UAC 配置。
+
+### 定位清单模板
+
+Windows 清单模板位于：
+```
+build/windows/wails.exe.manifest
+```
+
+### 修改执行级别
+
+要更改执行级别，请编辑 `requestedExecutionLevel` 元素中的 `level` 属性：
+
+```xml title="build/windows/wails.exe.manifest"
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+        <requestedPrivileges>
+            <requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
+        </requestedPrivileges>
+    </security>
+</trustInfo>
+```
+
+### 示例
+
+#### 标准应用（默认）
+大多数应用应使用默认的 `asInvoker` 级别：
+
+```xml
+<requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+```
+
+#### 系统工具
+需要在可用时提升权限的应用：
+
+```xml
+<requestedExecutionLevel level="highestAvailable" uiAccess="false"/>
+```
+
+#### 管理工具
+始终需要管理员权限的应用：
+
+```xml
+<requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
+```
+
+## UI 访问
+
+`uiAccess` 属性控制您的应用是否可以与更高权限的 UI 元素进行交互。在大多数情况下，应保持为 `false`。
+
+仅当您的应用需要时设置为 `true`：
+- 向其他应用发送输入
+- 驱动其他应用的 UI
+- 访问更高权限进程的 UI 元素
+
+:::caution[UI 访问要求]
+设置 `uiAccess="true"` 要求您的应用：
+- 使用来自受信任证书颁发机构的证书进行数字签名
+- 安装在安全位置（Program Files 或 Windows\System32）
+:::
+
+## 使用自定义 UAC 设置构建
+
+修改清单模板后，正常构建您的应用：
+
+```bash
+wails3 build
+```
+
+构建过程会自动将您的自定义 UAC 配置嵌入到可执行文件中。
+
+## 验证 UAC 配置
+
+您可以使用 `go-winres` 工具验证 UAC 设置是否正确嵌入：
+
+```bash
+go-winres extract --in your-app.exe --out extracted-resources/
+```
+
+然后检查提取的清单文件以确认 UAC 配置存在。
+
+:::tip[清单持久性]
+与某些其他框架不同，Wails v3 的 UAC 配置在编译期间直接嵌入到可执行文件中，确保在将应用复制到其他机器时持久存在。
+:::
+
+## 故障排除
+
+### UAC 提示未出现
+如果您设置了 `requireAdministrator` 但未看到 UAC 提示：
+- 验证清单是否正确嵌入到可执行文件中
+- 检查是否未从已提升权限的进程中运行
+- 确保清单语法是有效的 XML
+
+### 应用无法启动
+如果在 UAC 更改后应用无法启动：
+- 检查清单语法是否存在 XML 错误
+- 验证执行级别值是否有效
+- 尝试恢复为 `asInvoker` 以隔离问题
+
+### 不同机器间行为不一致
+如果 UAC 行为在不同机器间存在差异：
+- 确保清单嵌入到可执行文件中（而非外部文件）
+- 检查可执行文件在构建后是否未被修改
+- 验证目标机器上是否启用了 Windows UAC 设置

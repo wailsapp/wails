@@ -1,0 +1,614 @@
+---
+title: 自定义 URL 协议
+description: 注册自定义 URL 方案，以便通过链接启动您的应用程序
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+自定义 URL 协议（也称为 URL 方案）允许当用户点击带有您自定义协议的链接（例如 `myapp://action` 或 `myapp://open/document`）时启动您的应用程序。
+
+## 概述
+
+自定义协议支持：
+- **深度链接**：使用特定数据启动您的应用
+- **浏览器集成**：处理来自网页的链接
+- **电子邮件链接**：从电子邮件客户端打开您的应用
+- **应用间通信**：从其他应用程序启动
+
+**示例**：`myapp://open/document?id=123` 启动您的应用并打开文档 123。
+
+## 配置
+
+在您的应用程序选项中定义自定义协议：
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "My Application",
+        Description: "My awesome application",
+        Protocols: []application.Protocol{
+            {
+                Scheme:      "myapp",
+                Description: "My Application Protocol",
+                Role:        "Editor",  // macOS only
+            },
+        },
+    })
+
+    // Register handler for protocol events
+    app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+        url := event.Context().ClickedURL()
+        handleCustomURL(url)
+    })
+
+    app.Run()
+}
+
+func handleCustomURL(url string) {
+    // Parse and handle the custom URL
+    // Example: myapp://open/document?id=123
+    println("Received URL:", url)
+}
+```
+
+## 协议处理器
+
+监听协议事件以处理传入的 URL：
+
+```go
+app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+    url := event.Context().ClickedURL()
+
+    // Parse the URL
+    parsedURL, err := parseCustomURL(url)
+    if err != nil {
+        app.Logger.Error("Failed to parse URL:", err)
+        return
+    }
+
+    // Handle different actions
+    switch parsedURL.Action {
+    case "open":
+        openDocument(parsedURL.DocumentID)
+    case "settings":
+        showSettings()
+    case "user":
+        showUser Profile(parsedURL.UserID)
+    default:
+        app.Logger.Warn("Unknown action:", parsedURL.Action)
+    }
+})
+```
+
+## URL 结构
+
+设计清晰、分层的 URL 结构：
+
+```
+myapp://action/resource?param=value
+
+Examples:
+myapp://open/document?id=123
+myapp://settings/theme?mode=dark
+myapp://user/profile?username=john
+```
+
+**最佳实践：**
+- 使用小写的方案名称
+- 保持方案简短且易记
+- 使用分层路径表示资源
+- 包含查询参数以传递可选数据
+- 对特殊字符进行 URL 编码
+
+## 平台注册
+
+自定义协议在每个平台上的注册方式不同。
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+
+### Windows NSIS 安装程序
+
+**使用 NSIS 安装程序时，Wails v3 会自动注册自定义协议。**
+
+#### 自动注册
+
+当您使用 `wails3 build` 构建应用程序时，NSIS 安装程序将：
+1. 自动注册 `application.Options.Protocols` 中定义的所有协议
+2. 将协议与您的应用程序可执行文件关联
+3. 设置正确的注册表项
+4. 在卸载期间移除协议关联
+
+**无需额外配置！**
+
+#### 工作原理
+
+NSIS 模板包含内置宏：
+- `wails.associateCustomProtocols` - 在安装期间注册协议
+- `wails.unassociateCustomProtocols` - 在卸载期间移除协议
+
+这些宏会根据您的 `Protocols` 配置自动调用。
+
+#### 手动注册表（高级）
+
+如果您需要手动注册（在 NSIS 之外）：
+
+```batch
+@echo off
+REM Register custom protocol
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp" /ve /d "URL:My Application Protocol" /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp" /v "URL Protocol" /t REG_SZ /d "" /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp\shell\open\command" /ve /d "\"%1\"" /f
+```
+
+#### 测试
+
+测试您的协议注册：
+
+```powershell
+# Open protocol URL from PowerShell
+Start-Process "myapp://test/action"
+
+# Or from command prompt
+start myapp://test/action
+```
+
+### Windows MSIX 包
+
+使用 MSIX 打包时，自定义协议也会自动注册。
+
+#### 自动注册
+
+当您使用 MSIX 构建应用程序时，清单会自动包含来自 `build/config.yml` 协议配置的协议注册。
+
+生成的清单包括：
+
+```xml
+<uap:Extension Category="windows.protocol">
+  <uap:Protocol Name="myapp">
+    <uap:DisplayName>My Application Protocol</uap:DisplayName>
+  </uap:Protocol>
+</uap:Extension>
+```
+
+#### 通用链接（Web 到应用链接）
+
+Windows 支持 **Web 到应用链接**，其工作原理类似于 macOS 上的通用链接。当将应用程序部署为 MSIX 包时，您可以启用 HTTPS 链接以直接启动您的应用。
+
+<Aside type="note">
+Web 到应用链接需要手动配置清单。自定义协议方案会从 `build/config.yml` 自动配置，但关联的域名必须手动添加到您的 MSIX 清单中。
+</Aside>
+
+要启用 Web 到应用链接，请遵循 [Microsoft 关于 Web 到应用链接的指南](https://learn.microsoft.com/en-us/windows/apps/develop/launch/web-to-app-linking)。您需要：
+
+1. **手动将 App URI Handler 添加到您的 MSIX 清单** (`build/windows/msix/app_manifest.xml`)：
+   ```xml
+   <uap3:Extension Category="windows.appUriHandler">
+     <uap3:AppUriHandler>
+       <uap3:Host Name="myawesomeapp.com"/>
+     </uap3:AppUriHandler>
+   </uap3:Extension>
+   ```
+
+2. **在您的网站上配置 `windows-app-web-link`**：在 `https://myawesomeapp.com/.well-known/windows-app-web-link` 托管一个 `windows-app-web-link` 文件。该文件应包含您的应用包信息和它处理的路径。
+
+当 Web 到应用链接启动您的应用程序时，您将收到与自定义协议方案相同的 `ApplicationOpenedWithURL` 事件。
+
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+
+### Info.plist 配置
+
+在 macOS 上，协议通过您的 `Info.plist` 文件注册。
+
+#### 自动配置
+
+当您使用 `wails3 build` 构建时，Wails 会自动在 `Info.plist` 中生成您的协议。
+
+来自 `application.Options.Protocols` 的协议将添加到：
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLName</key>
+        <string>My Application Protocol</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>myapp</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+    </dict>
+</array>
+```
+
+#### 测试
+
+```bash
+# Open protocol URL from terminal
+open "myapp://test/action"
+
+# Check registered handlers
+/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -dump | grep myapp
+```
+
+#### 通用链接
+
+除了自定义协议方案外，macOS 还支持 **通用链接**，允许您的应用通过常规 HTTPS 链接（例如 `https://myawesomeapp.com/path`）启动。通用链接为您的 Web 和桌面应用之间提供无缝的用户体验。
+
+<Aside type="caution">
+通用链接要求您的 macOS 应用使用有效的 Apple Developer 证书和描述文件进行**代码签名**。未签名或临时签名的构建将无法打开通用链接。在测试之前，请确保您的应用已正确签名。
+</Aside>
+
+要启用通用链接，请遵循 [Apple 关于在您的应用中支持通用链接的指南](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app)。您需要：
+
+1. **在您的 `entitlements.plist` 中添加权限**：
+   ```xml```xml
+   <key>com.apple.developer.associated-domains</key>
+   <array>
+     <string>applinks:myawesomeapp.com</string>
+   </array>
+   ```
+
+2. **在 Info.plist 中添加 NSUserActivityTypes**：
+   ```xml
+   <key>NSUserActivityTypes</key>
+   <array>
+     <string>NSUserActivityTypeBrowsingWeb</string>
+   </array>
+   ```
+
+3. **在您的网站上配置 `apple-app-site-association`**：在 `https://myawesomeapp.com/.well-known/apple-app-site-association` 托管一个 `apple-app-site-association` 文件。
+
+当通用链接触发您的应用时，您将收到相同的 `ApplicationOpenedWithURL` 事件，处理代码与自定义协议方案相同。
+
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+
+### Desktop Entry
+
+在 Linux 上，协议通过 `.desktop` 文件注册。
+
+#### 自动配置
+
+当您使用 `wails3 build` 构建时，Wails 会生成带有协议处理程序的桌面入口文件。
+
+**v3 中已修复**：Linux 桌面模板现在正确包含协议处理。
+
+生成的桌面文件包括：
+
+```ini
+[Desktop Entry]
+Type=Application
+Name=My Application
+Exec=/usr/bin/myapp %u
+MimeType=x-scheme-handler/myapp;
+```
+
+#### 手动注册
+
+如果需要，手动安装桌面文件：
+
+```bash
+# 复制桌面文件
+cp myapp.desktop ~/.local/share/applications/
+
+# 更新桌面数据库
+update-desktop-database ~/.local/share/applications/
+
+# 注册协议处理程序
+xdg-mime default myapp.desktop x-scheme-handler/myapp
+```
+
+#### 测试
+
+```bash
+# 打开协议 URL
+xdg-open "myapp://test/action"
+
+# 检查注册的处理器
+xdg-mime query default x-scheme-handler/myapp
+```
+
+  </TabItem>
+</Tabs>
+
+## 完整示例
+
+以下是一个处理多个协议操作的完整示例：
+
+```go
+package main
+
+import (
+    "fmt"
+    "net/url"
+    "strings"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type App struct {
+    app    *application.Application
+    window *application.WebviewWindow
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "DeepLink Demo",
+        Description: "Custom protocol demonstration",
+        Protocols: []application.Protocol{
+            {
+                Scheme:      "deeplink",
+                Description: "DeepLink Demo Protocol",
+                Role:        "Editor",
+            },
+        },
+    })
+
+    myApp := &App{app: app}
+    myApp.setup()
+
+    app.Run()
+}
+
+func (a *App) setup() {
+    // 创建窗口
+    a.window = a.app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  "DeepLink Demo",
+        Width:  800,
+        Height: 600,
+        URL:    "http://wails.localhost/",
+    })
+
+    // 处理自定义协议 URL
+    a.app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+        customURL := event.Context().ClickedURL()
+        a.handleDeepLink(customURL)
+    })
+}
+
+func (a *App) handleDeepLink(rawURL string) {
+    // 解析 URL
+    parsedURL, err := url.Parse(rawURL)
+    if err != nil {
+        a.app.Logger.Error("Failed to parse URL:", err)
+        return
+    }
+
+    // 将窗口带到前台
+    a.window.Show()
+    a.window.SetFocus()
+
+    // 提取路径和查询参数
+    path := strings.Trim(parsedURL.Path, "/")
+    query := parsedURL.Query()
+
+    // 处理不同的操作
+    parts := strings.Split(path, "/")
+    if len(parts) == 0 {
+        return
+    }
+
+    action := parts[0]
+
+    switch action {
+    case "open":
+        if len(parts) >= 2 {
+            resource := parts[1]
+            id := query.Get("id")
+            a.openResource(resource, id)
+        }
+
+    case "settings":
+        section := ""
+        if len(parts) >= 2 {
+            section = parts[1]
+        }
+        a.openSettings(section)
+
+    case "user":
+        if len(parts) >= 2 {
+            username := parts[1]
+            a.openUserProfile(username)
+        }
+
+    default:
+        a.app.Logger.Warn("Unknown action:", action)
+    }
+}
+
+func (a *App) openResource(resourceType, id string) {
+    fmt.Printf("Opening %s with ID: %s\n", resourceType, id)
+    // 向前端发送事件
+    a.app.Event.Emit("navigate", map[string]string{
+        "type": resourceType,
+        "id":   id,
+    })
+}
+
+func (a *App) openSettings(section string) {
+    fmt.Printf("Opening settings section: %s\n", section)
+    a.app.Event.Emit("navigate", map[string]string{
+        "page":    "settings",
+        "section": section,
+    })
+}
+
+func (a *App) openUserProfile(username string) {
+    fmt.Printf("Opening user profile: %s\n", username)
+    a.app.Event.Emit("navigate", map[string]string{
+        "page": "user",
+        "user": username,
+    })
+}
+```
+
+## 前端集成
+
+在前端处理导航事件：
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// 监听来自协议处理程序的导航事件
+Events.On('navigate', (event) => {
+    const { type, id, page, section, user } = event.data
+
+    if (type === 'document') {
+        // 打开 ID 对应的文档
+        router.push(`/document/${id}`)
+    } else if (page === 'settings') {
+        // 打开设置
+        router.push(`/settings/${section}`)
+    } else if (page === 'user') {
+        // 打开用户资料
+        router.push(`/user/${user}`)
+    }
+})
+```
+
+## 安全注意事项
+
+### 验证所有输入
+
+始终验证和清理来自外部源的 URL：
+
+```go
+func (a *App) handleDeepLink(rawURL string) {
+    // 解析 URL
+    parsedURL, err := url.Parse(rawURL)
+    if err != nil {
+        a.app.Logger.Error("Invalid URL:", err)
+        return
+    }
+
+    // 验证方案
+    if parsedURL.Scheme != "myapp" {
+        a.app.Logger.Warn("Invalid scheme:", parsedURL.Scheme)
+        return
+    }
+
+    // 验证路径
+    path := strings.Trim(parsedURL.Path, "/")
+    if !isValidPath(path) {
+        a.app.Logger.Warn("Invalid path:", path)
+        return
+    }
+
+    // 清理参数
+    params := sanitizeQueryParams(parsedURL.Query())
+
+    // 处理验证后的 URL
+    a.processDeepLink(path, params)
+}
+
+func isValidPath(path string) bool {
+    // 仅允许字母数字和斜杠
+    validPath := regexp.MustCompile(`^[a-zA-Z0-9/]+$`)
+    return validPath.MatchString(path)
+}
+
+func sanitizeQueryParams(query url.Values) map[string]string {
+    sanitized := make(map[string]string)
+    for key, values := range query {
+        if len(values) > 0 {
+            // 取第一个值并清理
+            sanitized[key] = sanitizeString(values[0])
+        }
+    }
+    return sanitized
+}
+```
+
+### 防止注入攻击
+
+切勿将 URL 直接作为代码或 SQL 执行：
+
+```go
+// ❌ 不要：执行 URL 内容
+func badHandler(url string) {
+    exec.Command("sh", "-c", url).Run() // 危险！
+}
+
+// ✅ 要：解析并验证
+func goodHandler(url string) {
+    parsed, _ := url.Parse(url)
+    action := parsed.Query().Get("action")
+
+    // 白名单允许的操作
+    allowed := map[string]bool{
+        "open":     true,
+        "settings": true,
+        "help":     true,
+    }
+
+    if allowed[action] {
+        handleAction(action)
+    }
+}
+```
+
+## 测试
+
+### 手动测试
+
+在开发期间测试协议处理程序：
+
+**Windows：**
+```powershell
+Start-Process "myapp://test/action?id=123"
+```
+
+**macOS：**
+```bash
+open "myapp://test/action?id=123"
+```
+
+**Linux：**
+```bash
+xdg-open "myapp://test/action?id=123"
+```
+
+### HTML 测试
+
+创建测试 HTML 页面：
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Protocol Test</title>
+</head>
+<body>
+    <h1>Custom Protocol Test Links</h1>
+
+    <ul>
+        <li><a href="myapp://open/document?id=123">Open Document 123</a></li>
+        <li><a href="myapp://settings/theme?mode=dark">Dark Mode Settings</a></li>
+        <li><a href="myapp://user/profile?username=john">User Profile</a></li>
+    </ul>
+</body>
+</html>
+```
+
+## 故障排除
+
+### 协议未注册
+
+**Windows：**
+- 检查注册表：`HKEY_CURRENT_USER\SOFTWARE\Classes\<scheme>`
+- 使用 NSIS 安装程序重新安装
+- 验证安装程序是否以适当权限运行
+
+**macOS：**---
+
+**有问题？** 在 [Discord](https://discord.gg/JDdSxwjhGf) 上提问或查看 [示例](https://github.com/wailsapp/wails/tree/master/v3/examples)。

@@ -1,0 +1,384 @@
+---
+title: 消息对话框
+description: 显示信息、警告、错误和询问
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 消息对话框
+
+Wails 提供**原生消息对话框**，具有符合平台的外观：信息、警告、错误和询问对话框，支持自定义标题、消息和按钮。API 简单，行为原生，默认可访问。
+
+## 创建对话框
+
+通过 `app.Dialog` 管理器访问消息对话框：
+
+```go
+app.Dialog.Info()
+app.Dialog.Question()
+app.Dialog.Warning()
+app.Dialog.Error()
+```
+
+所有方法都返回一个 `*MessageDialog`，可以通过方法链进行配置。
+
+## 信息对话框
+
+显示信息性消息：
+
+```go
+app.Dialog.Info().
+    SetTitle("成功").
+    SetMessage("文件保存成功！").
+    Show()
+```
+
+**使用场景：**
+- 成功确认
+- 完成通知
+- 信息性消息
+- 状态更新
+
+**示例 - 保存确认：**
+
+```go
+func saveFile(app *application.App, path string, data []byte) error {
+    if err := os.WriteFile(path, data, 0644); err != nil {
+        return err
+    }
+
+    app.Dialog.Info().
+        SetTitle("文件已保存").
+        SetMessage(fmt.Sprintf("已保存到 %s", filepath.Base(path))).
+        Show()
+
+    return nil
+}
+```
+
+## 警告对话框
+
+显示警告：
+
+```go
+app.Dialog.Warning().
+    SetTitle("警告").
+    SetMessage("此操作无法撤销。").
+    Show()
+```
+
+**使用场景：**
+- 非关键警告
+- 弃用通知
+- 谨慎提示
+- 潜在问题
+
+**示例 - 磁盘空间警告：**
+
+```go
+func checkDiskSpace(app *application.App) {
+    available := getDiskSpace()
+
+    if available < 100*1024*1024 { // 少于 100MB
+        app.Dialog.Warning().
+            SetTitle("磁盘空间不足").
+            SetMessage(fmt.Sprintf("仅剩 %d MB 可用。", available/(1024*1024))).
+            Show()
+    }
+}
+```
+
+## 错误对话框
+
+显示错误：
+
+```go
+app.Dialog.Error().
+    SetTitle("错误").
+    SetMessage("连接服务器失败。").
+    Show()
+```
+
+**使用场景：**
+- 错误消息
+- 失败通知
+- 异常处理
+- 关键问题
+
+**示例 - 网络错误：**
+
+```go
+func fetchData(app *application.App, url string) ([]byte, error) {
+    resp, err := http.Get(url)
+    if err != nil {
+        app.Dialog.Error().
+            SetTitle("网络错误").
+            SetMessage(fmt.Sprintf("连接失败: %v", err)).
+            Show()
+        return nil, err
+    }
+    defer resp.Body.Close()
+
+    return io.ReadAll(resp.Body)
+}
+```
+
+## 询问对话框
+
+向用户提问并通过按钮回调处理响应：
+
+```go
+dialog := app.Dialog.Question().
+    SetTitle("确认").
+    SetMessage("关闭前保存更改？")
+
+save := dialog.AddButton("保存")
+save.OnClick(func() {
+    saveChanges()
+})
+
+dontSave := dialog.AddButton("不保存")
+dontSave.OnClick(func() {
+    // 继续而不保存
+})
+
+cancel := dialog.AddButton("取消")
+cancel.OnClick(func() {
+    // 不关闭
+})
+
+dialog.SetDefaultButton(save)
+dialog.SetCancelButton(cancel)
+dialog.Show()
+```
+
+**使用场景：**
+- 确认操作
+- 是/否问题
+- 多项选择
+- 用户决策
+
+**示例 - 未保存的更改：**
+
+```go
+func closeDocument(app *application.App) {
+    if !hasUnsavedChanges() {
+        doClose()
+        return
+    }
+
+    dialog := app.Dialog.Question().
+        SetTitle("未保存的更改").
+        SetMessage("您要保存您的更改吗？")
+
+    save := dialog.AddButton("保存")
+    save.OnClick(func() {
+        if saveDocument() {
+            doClose()
+        }
+    })
+
+    dontSave := dialog.AddButton("不保存")
+    dontSave.OnClick(func() {
+        doClose()
+    })
+
+    cancel := dialog.AddButton("取消")
+    // 取消按钮没有回调 - 仅关闭对话框
+
+    dialog.SetDefaultButton(save)
+    dialog.SetCancelButton(cancel)
+    dialog.Show()
+}
+```
+
+## 对话框选项
+
+### 标题和消息
+
+```go
+dialog := app.Dialog.Info().
+    SetTitle("操作完成").
+    SetMessage("所有文件已成功处理。")
+```
+
+**最佳实践：**
+- **标题：** 简短、描述性（2-5 个词）
+- **消息：** 清晰、具体、可操作
+- **避免行话：** 使用通俗语言
+
+### 按钮
+
+**单个按钮（信息/警告/错误）：**
+
+信息、警告和错误对话框显示默认的“确定”按钮：
+
+```go
+app.Dialog.Info().
+    SetMessage("完成！").
+    Show()
+```
+
+您也可以添加自定义按钮：
+
+```go
+dialog := app.Dialog.Info().
+    SetMessage("完成！")
+ok := dialog.AddButton("知道了！")
+dialog.SetDefaultButton(ok)
+dialog.Show()
+```
+
+**多个按钮（询问）：**
+
+使用 `AddButton()` 添加按钮，该方法返回一个 `*Button`，您可以对其进行配置：
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("选择一个操作")
+
+option1 := dialog.AddButton("选项 1")
+option1.OnClick(func() {
+    handleOption1()
+})
+
+option2 := dialog.AddButton("选项 2")
+option2.OnClick(func() {
+    handleOption2()
+})
+
+option3 := dialog.AddButton("选项 3")
+option3.OnClick(func() {
+    handleOption3()
+})
+
+dialog.Show()
+```
+
+**默认和取消按钮：**
+
+使用 `SetDefaultButton()` 指定哪个按钮被高亮显示并通过 Enter 键触发。
+使用 `SetCancelButton()` 指定哪个按钮通过 Escape 键触发。
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("删除文件？")
+
+deleteBtn := dialog.AddButton("删除")
+deleteBtn.OnClick(func() {
+    performDelete()
+})
+
+cancelBtn := dialog.AddButton("取消")
+// 不需要回调 - 仅关闭对话框
+
+dialog.SetDefaultButton(cancelBtn)  // 将安全选项设为默认
+dialog.SetCancelButton(cancelBtn)   // Escape 触发取消
+dialog.Show()
+```
+
+您还可以在按钮上使用流畅的 `SetAsDefault()` 和 `SetAsCancel()` 方法：
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("删除文件？")
+
+dialog.AddButton("删除").OnClick(func() {
+    performDelete()
+})
+
+dialog.AddButton("取消").SetAsDefault().SetAsCancel()
+
+dialog.Show()
+```
+
+**最佳实践：**
+- **1-3 个按钮：** 不要使用户不知所措
+- **清晰的标签：** “保存”而非“确定”
+- **安全的默认值：** 非破坏性操作
+- **顺序很重要：** 最可能的操作排在前面（取消除外）
+
+### 自定义图标
+
+为对话框设置自定义图标：
+
+```go
+app.Dialog.Info().
+    SetTitle("自定义图标示例").
+    SetMessage("使用自定义图标").
+    SetIcon(myIconBytes).
+    Show()
+```
+
+### 窗口附加
+
+附加到特定窗口：
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("窗口特定问题").
+    AttachToWindow(window)
+
+dialog.AddButton("确定")
+dialog.Show()
+```
+
+**优势：**
+- 对话框出现在正确的窗口上
+- 显示时父窗口被禁用
+- 更好的多窗口用户体验
+
+## 完整示例
+
+### 确认破坏性操作
+
+```go
+func deleteFiles(app *application.App, paths []string) {
+    // 确认删除
+    message := fmt.Sprintf("删除 %d 个文件？", len(paths))
+    if len(paths) == 1 {
+        message = fmt.Sprintf("删除 %s？", filepath.Base(paths[0]))
+    }
+
+    dialog := app.Dialog.Question().
+        SetTitle("确认删除").
+        SetMessage(message)
+
+    deleteBtn := dialog.AddButton("删除")
+    deleteBtn.OnClick(func() {
+        // 执行删除
+        var errs []error
+        for _, path := range paths {
+            if err := os.Remove(path); err != nil {
+                errs = append(errs, err)
+            }
+        }
+
+        // 显示结果
+        if len(errs) > 0 {
+            app.Dialog.Error().
+                SetTitle("删除失败").
+                SetMessage(fmt.Sprintf("无法删除 %d 个文件", len(errs))).
+                Show()
+        } else {
+            app.Dialog.Info().
+                SetTitle("删除完成").
+                SetMessage(fmt.Sprintf("已删除 %d 个文件", len(paths))).
+                Show()
+        }
+    })
+
+    cancelBtn := dialog.AddButton("取消")
+    dialog.SetDefaultButton(cancelBtn)
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+}
+```
+
+### 退出确认
+
+```go---
+
+**有问题？** 请在 [Discord](https://discord.gg/JDdSxwjhGf) 提问，或查看 [对话框示例](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs)。

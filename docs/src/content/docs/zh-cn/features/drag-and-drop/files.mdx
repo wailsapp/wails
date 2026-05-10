@@ -1,0 +1,212 @@
+---
+title: 文件拖放
+description: 接受从操作系统拖入应用程序的文件
+sidebar:
+  order: 1
+---
+
+Wails 允许用户将文件从操作系统（文件管理器、桌面）拖放到你的应用程序中。与仅在浏览器内有效的 HTML5 拖放不同，这使你能够访问磁盘上的实际文件路径。
+
+## 启用文件拖放
+
+文件拖放默认处于禁用状态。要启用它，请在窗口选项中设置 `EnableFileDrop: true`：
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "My App",
+    Width:          800,
+    Height:         600,
+    EnableFileDrop: true,
+})
+```
+
+当 `EnableFileDrop` 为 `false`（默认值）时，从操作系统拖放的文件将被阻止——它们不会在 webview 中打开，也不会触发任何事件。这可以防止用户在将文件拖过你的应用时发生意外导航。
+
+## 定义放置区域
+
+放置区域告诉 Wails 哪些元素应该接受文件。放置在放置区域之外的文件将被忽略。
+
+向任何元素添加 `data-file-drop-target` 属性：
+
+```html
+<div id="upload" class="drop-zone" data-file-drop-target>
+    在此处放置文件
+</div>
+```
+
+你可以拥有多个放置区域。元素的 `id` 和 CSS 类将传递给你的 Go 代码，因此你可以根据文件放置的位置以不同方式处理放置。
+
+## 设置拖放悬停样式
+
+当文件被拖放到放置区域上方时，Wails 会添加 `file-drop-target-active` 类。这使你能够提供视觉反馈，让用户知道他们可以在哪里放置文件：
+
+```css
+.drop-zone {
+    border: 2px dashed #ccc;
+    padding: 40px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.drop-zone.file-drop-target-active {
+    border-color: #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+```
+
+当文件离开区域或被放置时，该类会自动移除。
+
+## 检测放置的文件
+
+当文件被放置到有效的放置区域时，Wails 会触发 `WindowFilesDropped` 事件。事件上下文包含所有放置文件的完整文件系统路径：
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    
+    for _, file := range files {
+        fmt.Println("Dropped:", file)
+    }
+})
+```
+
+路径是绝对路径，例如 `/home/user/documents/report.pdf` 或 `C:\Users\Name\Documents\report.pdf`。
+
+## 获取放置目标信息
+
+当你有多个放置区域时，你可以使用 `DropTargetDetails()` 找出哪个区域接收了文件：
+
+```go
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    details := event.Context().DropTargetDetails()
+    
+    fmt.Printf("Dropped on element: id=%s, classes=%v\n", 
+        details.ElementID, details.ClassList)
+    fmt.Printf("Position: x=%d, y=%d\n", details.X, details.Y)
+})
+```
+
+这使你能够将文件路由到不同的处理程序：
+
+```go
+switch details.ElementID {
+case "images":
+    handleImageUpload(files)
+case "documents":
+    handleDocumentUpload(files)
+}
+```
+
+## 完整示例
+
+**Go:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "File Uploader",
+    EnableFileDrop: true,
+})
+
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    details := event.Context().DropTargetDetails()
+    
+    // 发送到前端
+    app.Event.Emit("files-dropped", map[string]any{
+        "files":   files,
+        "target":  details.ElementID,
+    })
+})
+```
+
+**HTML:**
+
+```html
+<div id="images" class="drop-zone" data-file-drop-target>
+    在此处放置图片
+</div>
+
+<div id="documents" class="drop-zone" data-file-drop-target>
+    在此处放置文档
+</div>
+
+<style>
+    .drop-zone {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 40px;
+        text-align: center;
+        margin: 20px;
+        transition: all 0.2s ease;
+    }
+    
+    .drop-zone.file-drop-target-active {
+        border-color: #007bff;
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+</style>
+```
+
+## 整个窗口放置
+
+如果你希望文件可以放置在你应用程序的任何位置，请将属性添加到 body 元素：
+
+```html
+<body data-file-drop-target>
+    <!-- 你的应用内容 -->
+</body>
+```
+
+你可以使用 CSS 覆盖层来指示整个窗口都是放置目标：
+
+```css
+body.file-drop-target-active::after {
+    content: "Drop files anywhere";
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #007bff;
+    background: rgba(255, 255, 255, 0.9);
+    pointer-events: none;
+}
+```
+
+## 与 HTML 拖放结合使用
+
+你可以在同一个应用程序中同时使用外部文件拖放和内部 HTML 拖放。当 `EnableFileDrop` 为 `true` 时，Wails 会拦截外部文件拖放，但允许内部 HTML5 拖放正常通过。
+
+为了在你的 HTML 放置区域处理程序中区分它们，检查拖放是否包含文件：
+
+```javascript
+zone.addEventListener('dragenter', (e) => {
+    // 跳过外部文件拖放 - Wails 处理这些
+    if (e.dataTransfer?.types.includes('Files')) {
+        return;
+    }
+    // 处理内部 HTML5 拖放
+    zone.classList.add('drag-over');
+});
+
+zone.addEventListener('drop', (e) => {
+    // 跳过外部文件放置 - Wails 处理这些
+    if (e.dataTransfer?.types.includes('Files')) {
+        return;
+    }
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    // 处理内部放置
+});
+```
+
+这确保你的 HTML 放置处理程序仅响应内部拖放（例如移动列表项），而 Wails 通过 `WindowFilesDropped` 事件单独处理外部文件放置。
+
+## 下一步
+
+- [HTML 拖放](./html) - 在应用内拖放元素
+- [窗口选项](/zh-cn/features/windows/options) - 所有窗口配置选项

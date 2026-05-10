@@ -1,0 +1,119 @@
+---
+title: 单实例
+description: 限制您的应用仅运行一个实例
+sidebar:
+   order: 40
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+单实例锁定是一种防止您的应用同时运行多个实例的机制。
+它适用于那些设计为从命令行或操作系统文件资源管理器打开文件的应用程序。
+
+
+## 用法
+
+要在您的应用中启用单实例功能，请在创建应用程序时提供 `SingleInstanceOptions` 结构体：
+
+```go
+app := application.New(application.Options{
+    // ... 其他选项 ...
+    SingleInstance: &application.SingleInstanceOptions{
+        UniqueID: "com.myapp.unique-id",
+        OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+            log.Printf("Second instance launched with args: %v", data.Args)
+            log.Printf("Working directory: %s", data.WorkingDir)
+            log.Printf("Additional data: %v", data.AdditionalData)
+        },
+        // 可选：向第二个实例传递额外数据
+        AdditionalData: map[string]string{
+            "launchtime": time.Now().String(),
+        },
+    },
+})
+```
+
+`SingleInstanceOptions` 结构体包含以下字段：
+
+- `UniqueID`: 您应用程序的唯一标识符。这应该是一个唯一的字符串，通常采用反向域名表示法（例如，"com.company.appname"）。
+- `EncryptionKey`: 可选的 32 字节数组，用于使用 AES-256-GCM 加密实例间传递的数据。如果提供非零数组，则实例间的所有通信都将加密。
+- `OnSecondInstanceLaunch`: 当启动应用的第二个实例时调用的回调函数。该回调接收一个包含以下内容的 `SecondInstanceData` 结构体：
+    - `Args`: 传递给第二个实例的命令行参数
+    - `WorkingDir`: 第二个实例的工作目录
+    - `AdditionalData`: 从第二个实例传递的任何额外数据（如果提供）
+- `AdditionalData`: 可选的字符串键值对映射，将在后续实例启动时传递给第一个实例
+
+:::danger[警告]
+单实例功能实现了使用 AES-256-GCM 的可选加密协议。未启用加密时，
+实例间传递的数据是不安全的。在不使用加密的情况下使用单实例功能时，
+您的应用应将任何从第二个实例回调传递给它的数据视为不可信。
+您应该验证接收到的参数是否有效且不包含任何恶意数据。
+:::
+
+### 安全通信
+
+要启用实例间的安全通信，请提供一个 32 字节的加密密钥。此密钥必须与您的应用程序的所有实例相同：
+
+```go
+// 定义您的加密密钥（必须正好是 32 字节）
+var encryptionKey = [32]byte{
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+    0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+    0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+}
+
+// 在 SingleInstanceOptions 中使用该密钥
+SingleInstance: &application.SingleInstanceOptions{
+    UniqueID: "com.myapp.unique-id",
+    // 启用实例通信的加密
+    EncryptionKey: encryptionKey,
+    // ... 其他选项 ...
+}
+```
+
+:::tip[安全最佳实践]
+- 为您的应用程序使用唯一的密钥
+- 如果从配置加载密钥，请安全地存储该密钥
+- 不要使用上面显示的示例密钥 - 创建您自己的密钥！
+:::
+
+### 窗口管理
+
+在处理第二个实例启动时，您通常希望将应用程序窗口带到前台。您可以使用窗口的 `Focus()` 方法来实现这一点。如果您的窗口已最小化，您可能需要先恢复它：
+
+```go
+
+    var mainWindow *application.WebviewWindow
+
+    SingleInstance: &application.SingleInstanceOptions{
+        // 其他选项...
+        OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+            // 如果需要，聚焦窗口
+            if mainWindow != nil {
+                mainWindow.Restore()
+                mainWindow.Focus()
+            }
+        },
+    }
+```
+
+## 工作原理
+
+<Tabs syncKey="platform">
+    <TabItem label="Mac" icon="apple">
+
+        使用命名互斥锁实现单实例锁定。互斥锁名称由您提供的唯一 ID 生成。数据通过 [NSDistributedNotificationCenter](https://developer.apple.com/documentation/foundation/nsdistributednotificationcenter) 传递给第一个实例。
+
+    </TabItem>
+    <TabItem label="Windows" icon="seti:windows">
+
+        使用命名互斥锁实现单实例锁定。互斥锁名称由您提供的唯一 ID 生成。数据通过共享窗口使用 [SendMessage](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage) 传递给第一个实例。
+
+    </TabItem>
+    <TabItem label="Linux" icon="linux">
+
+        使用 [dbus](https://www.freedesktop.org/wiki/Software/dbus/) 实现单实例锁定。dbus 名称由您提供的唯一 ID 生成。数据通过 [dbus](https://www.freedesktop.org/wiki/Software/dbus/) 传递给第一个实例。
+
+    </TabItem>
+</Tabs>

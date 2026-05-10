@@ -1,0 +1,282 @@
+---
+title: API 参考
+description: Wails v3 的完整 API 文档
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 关于此参考文档
+
+这是 Wails v3 的完整 API 参考文档。它记录了框架中可用的每个公共类型、方法和选项。
+
+**组织：**
+- [Application](/zh-cn/reference/application) - 核心应用程序 API
+- [Window](/zh-cn/reference/window) - 窗口创建与管理
+- [Menu](/zh-cn/reference/menu) - 应用程序、上下文和系统托盘菜单
+- [Events](/zh-cn/reference/events) - 事件系统与内置事件
+- [Dialogs](/zh-cn/reference/dialogs) - 文件与消息对话框
+- [Frontend Runtime](/zh-cn/reference/frontend-runtime) - 前端运行时 API
+- [CLI](/zh-cn/reference/cli) - 命令行界面
+
+## API 约定
+
+<details>
+<summary><strong>Go API 约定</strong> - 适用于 Go 新手开发者</summary>
+
+#### 命名
+
+- **类型**: PascalCase（例如 `WebviewWindow`）
+- **方法**: PascalCase（例如 `SetTitle()`）
+- **选项**: PascalCase 结构体（例如 `WindowOptions`）
+- **常量**: PascalCase（例如 `WindowStartStateMaximised`）
+
+#### 错误处理
+
+大多数可能失败的方法将 `error` 作为最后一个返回值返回：
+
+```go
+window, err := app.Window.New()
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+#### 上下文 (Context)
+
+可能阻塞或需要取消的方法接受 `context.Context`：
+
+```go
+err := app.RunWithContext(ctx)
+```
+
+#### 选项模式
+
+配置使用选项结构体：
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Description: "A demo application",
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+    },
+})
+```
+
+</details>
+
+### JavaScript API 约定
+
+#### 命名
+
+- **函数**: camelCase（例如 `setTitle()`）
+- **常量**: SCREAMING_SNAKE_CASE（例如 `WINDOW_EVENT_FOCUS`）
+
+#### 默认异步
+
+所有 Go 方法调用均返回 Promises：
+
+```javascript
+// Async/await（推荐）
+const result = await MyService.DoSomething()
+
+// Promise 链
+MyService.DoSomething()
+    .then(result => console.log(result))
+    .catch(error => console.error(error))
+```
+
+#### 错误处理
+
+Go 错误会转换为 JavaScript 异常：
+
+```javascript
+try {
+    await MyService.MightFail()
+} catch (error) {
+    console.error('Go error:', error)
+}
+```
+
+#### 类型安全
+
+TypeScript 定义是自动生成的：
+
+```typescript
+// 完全类型化
+import { Greet } from './bindings/GreetService'
+
+const message: string = await Greet("World")
+```
+
+## 包结构
+
+```
+github.com/wailsapp/wails/v3/pkg/
+├── application/          # 核心应用程序包
+│   ├── application.go    # Application 类型
+│   ├── webview_window.go # 窗口管理
+│   ├── menu.go           # 菜单类型
+│   ├── events.go         # 事件系统
+│   └── dialogs.go        # 对话框 API
+├── events/               # 事件常量
+└── services/             # 内置服务
+    ├── badge/            # 徽标服务
+    ├── notifications/    # 通知服务
+    └── sqlite/           # SQLite 服务
+```
+
+## 导入路径
+
+### Go
+
+```go
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+```
+
+### JavaScript
+
+```javascript
+// 自动生成的绑定
+import { MyMethod } from './bindings/MyService'
+
+// 运行时 API
+import { Events, Window } from '@wailsio/runtime'
+```
+
+## 类型参考
+
+### 常用类型
+
+<Tabs syncKey="lang">
+  <TabItem label="Go" icon="seti:go">
+    ```go
+    // Application
+    type Application struct { /* ... */ }
+    type Options struct { /* ... */ }
+    
+    // Window
+    type WebviewWindow struct { /* ... */ }
+    type WebviewWindowOptions struct { /* ... */ }
+    
+    // Menu
+    type Menu struct { /* ... */ }
+    type MenuItem struct { /* ... */ }
+    
+    // Events
+    type Event struct { /* ... */ }
+    type EventListener func(*Event)
+    
+    // Dialogs
+    type OpenDialogOptions struct { /* ... */ }
+    type SaveDialogOptions struct { /* ... */ }
+    ```
+  </TabItem>
+
+  <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // Window runtime
+    interface WindowOptions {
+        title?: string
+        width?: number
+        height?: number
+        // ...
+    }
+    
+    // Events
+    type EventCallback = (data: any) => void
+    
+    // Bindings (auto-generated)
+    export function MyMethod(arg: string): Promise<string>
+    ```
+  </TabItem>
+</Tabs>
+
+## 平台差异
+
+某些 API 在不同平台上的行为有所不同：
+
+| 功能 | Windows | macOS | Linux |
+|---------|---------|-------|-------|
+| **应用程序菜单** | 窗口菜单栏 | 全局菜单栏 | 窗口菜单栏 |
+| **系统托盘** | 通知区域 | 菜单栏 | 系统托盘 |
+| **Dock** | 不适用 | ✅ 可用 | 不适用 |
+| **文件对话框** | 原生 | 原生 | 原生 (GTK) |
+| **透明度** | ✅ 完全支持 | ✅ 完全支持 | ⚠️ 有限支持 |
+
+特定于平台的行为在每个 API 部分中均有文档说明。
+
+## 版本控制
+
+Wails v3 遵循语义化版本控制：
+
+- **主版本** (v3.x.x): 破坏性变更
+- **次版本** (v3.x.x): 新功能，向后兼容
+- **补丁版本** (v3.x.x): 错误修复，向后兼容
+
+**当前状态：** Alpha（API 稳定，持续优化中）
+
+## 弃用策略
+
+当 API 被弃用时：
+
+1. **在文档中标记** 弃用通知
+2. **提供替代方案** 及迁移指南
+3. **在移除前维护 1 个主版本**
+4. **编译器警告**（如可能）
+
+## API 稳定性
+
+### 稳定 API ✅
+
+这些 API 是稳定的，可用于生产环境：
+
+- 核心应用程序 API
+- 窗口管理
+- 菜单系统
+- 事件系统
+- 文件对话框
+- 服务绑定
+
+### 不稳定 API ⚠️
+
+这些 API 在最终发布前可能会发生变化：
+
+- 某些高级窗口选项
+- 特定于平台的功能
+- 实验性功能
+
+不稳定 API 在文档中均有标记。
+
+## 获取帮助
+
+### API 相关问题
+
+1. **查阅此参考文档** - 完整的 API 文档
+2. **查看示例** - [GitHub 示例](https://github.com/wailsapp/wails/tree/master/v3/examples)
+3. **搜索 Discord** - [Discord 服务器](https://discord.gg/JDdSxwjhGf)
+4. **向社区提问** - Discord #help 频道
+
+### 报告 API 问题
+
+发现 bug 或不一致之处？
+
+1. **检查现有 issue** - [GitHub issues](https://github.com/wailsapp/wails/issues)
+2. **创建详细报告** - 包含代码、错误信息、平台
+3. **提供复现步骤** - 能演示问题的最小示例
+
+## 相关文档
+
+- [教程](/zh-cn/tutorials/overview) - 通过构建真实应用来学习
+- [指南](/guides/dev/project-structure) - 针对常见场景的任务导向指南
+- [功能](/zh-cn/features/windows/basics) - 按功能划分的文档
+- [示例](https://github.com/wailsapp/wails/tree/master/v3/examples) - GitHub 上的可运行代码示例
+
+---
+
+**浏览 API：** 使用左侧导航栏探索特定的 API。

@@ -1,0 +1,241 @@
+---
+title: Dock 和任务栏
+description: 管理 Dock 图标可见性并在 macOS 和 Windows 上显示徽标
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 简介
+
+Wails 为桌面应用程序提供了跨平台的 Dock 服务。此服务允许你：
+
+- 在 macOS Dock 中隐藏和显示应用程序图标
+- 在你的应用程序磁贴或 Dock/任务栏图标上显示徽标（macOS 和 Windows）
+
+## 基本用法
+
+### 创建服务
+
+首先，初始化 Dock 服务：
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/dock"
+
+// 创建一个新的 Dock 服务
+dockService := dock.New()
+
+// 将服务注册到应用程序
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(dockService),
+    },
+})
+```
+
+### 使用自定义徽标选项创建服务（仅限 Windows）
+
+在 Windows 上，你可以使用各种选项自定义徽标外观：
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/dock"
+import "image/color"
+
+// 使用自定义徽标选项创建 Dock 服务
+options := dock.BadgeOptions{
+    TextColour:       color.RGBA{255, 255, 255, 255}, // 白色文本
+    BackgroundColour: color.RGBA{0, 0, 255, 255},     // 蓝色背景
+    FontName:         "consolab.ttf",                 // 粗体 Consolas 字体
+    FontSize:         20,                             // 单个字符的字体大小
+    SmallFontSize:    14,                             // 多个字符的字体大小
+}
+
+dockService := dock.NewWithOptions(options)
+
+// 将服务注册到应用程序
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(dockService),
+    },
+})
+```
+
+## Dock 操作
+
+### 隐藏 Dock 应用图标
+
+从 macOS Dock 中隐藏应用图标：
+
+```go
+// 隐藏应用图标
+dockService.HideAppIcon()
+```
+
+### 显示 Dock 应用图标
+
+在 macOS Dock 中显示应用图标：
+
+```go
+// 显示应用图标
+dockService.ShowAppIcon()
+```
+
+## 徽标操作
+
+### 设置徽标
+
+在应用程序磁贴/Dock 图标上设置徽标：
+
+```go
+// 设置默认徽标
+dockService.SetBadge("")
+
+// 设置数字徽标
+dockService.SetBadge("3")
+
+// 设置文本徽标
+dockService.SetBadge("New")
+```
+
+### 设置自定义徽标（仅限 Windows）
+
+设置应用了一次性选项的徽标：
+
+```go
+options := dock.BadgeOptions{
+    BackgroundColour: color.RGBA{0, 255, 255, 255},
+    FontName:         "arialb.ttf", // 系统字体
+    FontSize:         16,
+    SmallFontSize:    10,
+    TextColour:       color.RGBA{0, 0, 0, 255},
+}
+
+// 设置默认徽标
+dockService.SetCustomBadge("", options)
+
+// 设置数字徽标
+dockService.SetCustomBadge("3", options)
+
+// 设置文本徽标
+dockService.SetCustomBadge("New", options)
+```
+
+### 移除徽标
+
+从应用程序图标中移除徽标：
+
+```go
+dockService.RemoveBadge()
+```
+
+### 获取已设置的徽标
+```go
+dockService.GetBadge()
+``` 
+
+## 平台注意事项
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    在 macOS 上：
+    
+    - Dock 图标可以**隐藏**和**显示**
+    - 徽标直接显示在 Dock 图标上
+    - 徽标选项**不可自定义**（传递给 `NewWithOptions`/`SetCustomBadge` 的任何选项都将被忽略）
+    - 使用标准 macOS Dock 徽标样式，并自动适应外观
+    - 标签溢出由系统处理
+    - 提供空标签将显示默认的 "●" 徽标
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    在 Windows 上：
+    
+    - 此服务目前不支持隐藏/显示任务栏图标
+    - 徽标作为任务栏中的叠加图标显示
+    - 徽标支持文本值
+    - 徽标外观可以通过 `BadgeOptions` 自定义
+    - 应用程序必须拥有窗口才能显示徽标
+    - 对于多字符标签，会自动使用较小的字体大小
+    - 不处理标签溢出
+    - 自定义选项：
+      - **TextColour**: 文本颜色（默认：白色）
+      - **BackgroundColour**: 徽标背景颜色（默认：红色）
+      - **FontName**: 字体文件名（默认： "segoeuib.ttf"）
+      - **FontSize**: 单个字符的字体大小（默认：18）
+      - **SmallFontSize**: 多个字符的字体大小（默认：14）
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    在 Linux 上：
+    
+    - 不可用 Dock 图标可见性和徽标功能
+    
+  </TabItem>
+</Tabs>
+
+## 最佳实践
+
+1. **隐藏 Dock 图标时（macOS）：**
+   - 确保用户仍然可以访问你的应用（例如，通过 [系统托盘](https://v3.wails.io/learn/systray/)）
+   - 在你的替代 UI 中包含“退出”选项
+   - 应用不会出现在 Command+Tab 切换器中
+   - 打开的窗口仍然可见且可用
+   - 关闭所有窗口可能不会退出应用（macOS 行为因版本而异）
+   - 用户失去了通过 Dock 右键菜单退出的标准方式
+
+2. **谨慎使用徽标：**
+   - 过多的徽标更新可能会分散用户注意力
+   - 将徽标保留用于重要通知
+
+3. **保持徽标文本简短：**
+   - 数字徽标最有效
+   - 在 macOS 上，文本徽标应简短
+
+4. **对于 Windows 徽标自定义：**
+   - 确保文本和背景颜色之间具有高对比度
+   - 随着字体大小随长度减小，测试不同的文本长度
+   - 使用常见的系统字体以确保可用性
+
+
+## API 参考
+
+### 服务管理
+| 方法                                     | 描述                                           |
+|------|--------------------------|----|------------------|---------------|------|
+| `New()`                                    | 创建一个新的 Dock 服务                            |
+| `NewWithOptions(options BadgeOptions)`     | 使用自定义徽标选项创建一个新的 Dock 服务（仅限 Windows；在 macOS 和 Linux 上选项将被忽略） |
+
+### Dock 操作
+| 方法                                       | 描述                                                |
+|------|--------------------------|------------------------------------|----------|------|
+| `HideAppIcon()`                | 从 macOS Dock 中隐藏应用图标（仅限 macOS）         |
+| `ShowAppIcon()`                | 在 macOS Dock 中显示应用图标（仅限 macOS）           |
+
+### 徽标操作
+| 方法                                            | 描述                                                |
+|------|------------|------------|---------|------|-----|----------|-----------------------------|----------|
+| `SetBadge(label string) error`                    | 设置带有指定标签的徽标                      |
+| `SetCustomBadge(label string, options BadgeOptions) error` | 设置带有指定标签和自定义样式选项的徽标（仅限 Windows） |
+| `RemoveBadge() error`                             | 从应用程序图标中移除徽标                |
+| `GetBadge() *string`                             | 获取当前徽标                |
+
+### 结构体和类型
+
+```go
+// 用于自定义徽标外观的选项（仅限 Windows）
+type BadgeOptions struct {
+    TextColour       color.RGBA  // 徽标文本的颜色
+    BackgroundColour color.RGBA  // 徽标背景的颜色
+    FontName         string      // 字体文件名（例如，"segoeuib.ttf"）
+    FontSize         int         // 单个字符的字体大小
+    SmallFontSize    int         // 多个字符的字体大小
+}
+```

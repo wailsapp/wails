@@ -1,0 +1,172 @@
+---
+title: 创建自定义传输层
+description: 了解如何创建和自定义您自己的 Wails v3 自定义 IPC 传输层
+sidebar:
+    order: 51
+---
+
+Wails v3 允许您提供自定义的 IPC 传输层，同时保留所有生成的绑定和事件通信。这使得您可以使用 WebSockets、自定义协议或任何其他传输机制来替换默认的基于 HTTP fetch 的传输层。
+
+## 概述
+
+默认情况下，Wails 使用来自前端的 HTTP fetch 请求通过 `/wails/runtime` 与后端进行通信。自定义传输层 API 允许您：
+
+- 将 HTTP 传输层替换为 WebSockets、gRPC 或任何自定义协议
+- 保持与 Wails 代码生成的完全兼容性
+- 保留所有现有的绑定、事件、对话框和其他 Wails 功能
+- 实现您自己的连接管理、身份验证和错误处理
+
+## 架构
+
+```text
+┌─────────────────────────────────────────────────┐
+│  前端 (TypeScript)                              │
+│  - 生成的绑定仍然有效                            │
+│  - 您的自定义客户端传输层                        │
+└──────────────────┬──────────────────────────────┘
+                   │
+                   │ 您的协议 (WebSocket 等)
+                   │
+┌──────────────────▼──────────────────────────────┐
+│  后端 (Go)                                     │
+│  - 您的传输层实现                              │
+│  - Wails MessageProcessor                      │
+│  - 所有现有的 Wails 基础设施                    │
+└─────────────────────────────────────────────────┘
+```
+
+## 用法
+
+### 1. 实现传输层接口
+
+通过实现 `Transport` 接口来创建自定义传输层：
+
+```go
+package main
+
+import (
+    "context"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type MyCustomTransport struct {
+    // 您的字段
+}
+
+func (t *MyCustomTransport) Start(ctx context.Context, processor *application.MessageProcessor) error {
+    // 初始化您的传输层 (WebSocket 服务器、gRPC 服务器等)
+    // 当接收到请求时，调用 processor.HandleRuntimeCallWithIDs()
+    return nil
+}
+
+func (t *MyCustomTransport) Stop() error {
+    // 清理您的传输层
+    return nil
+}
+```
+
+### 2. 配置您的应用程序
+
+将您的自定义传输层传递给应用程序选项：
+
+```go
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        Transport: &MyCustomTransport{},
+        // ... 其他选项
+    })
+
+    err := app.Run()
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+### 3. 修改前端运行时
+
+如果使用自定义传输层，则需要修改前端运行时以使用您的传输层而不是 HTTP fetch。实现 `RuntimeTransport` 接口，该接口将用于处理请求：
+
+```typescript
+const { setTransport } = await import('/wails/runtime.js');
+
+class MyRuntimeTransport {
+  call(objectID: number, method: number, windowName: string, args: any): Promise<any> {
+    // TODO: 使用您的传输层协议实现 IPC 调用
+
+    return resp;
+  }
+}
+
+const myTransport = new MyRuntimeTransport();
+setTransport(myTransport);
+```
+
+## 注意事项
+
+- 如果未指定自定义传输层，默认的 HTTP 传输层将继续工作
+- 生成的绑定保持不变 - 仅传输层发生变化
+- 事件、对话框、剪贴板和其他所有 Wails 功能透明地工作
+- 您需要负责自定义传输层中的错误处理、重连逻辑和安全性
+- 提供的 WebSocket 示例仅用于演示，在生产环境中可能需要加固
+
+## API 参考
+
+### 传输层接口
+
+```go
+type Transport interface {
+    Start(ctx context.Context, messageProcessor *application.MessageProcessor) error
+    Stop() error
+}
+```
+
+### AssetServerTransport 接口（可选）
+
+对于基于浏览器的部署，或者当您希望通过自定义传输层同时提供资产和 IPC 时，实现 `AssetServerTransport` 接口：
+
+```go
+type AssetServerTransport interface {
+    Transport
+
+    // ServeAssets 配置传输层以在 IPC 旁边提供资产。
+    // assetHandler 是 Wails 的内部资产服务器，处理所有资产、
+    // runtime.js、capabilities、flags 等。
+    ServeAssets(assetHandler http.Handler) error
+}
+```
+
+**何时实现此接口：**
+- 在浏览器中运行应用程序而不是 webview
+- 通过 HTTP 提供资产，同时使用自定义 IPC 传输层
+- 构建网络可访问的应用程序
+
+**示例实现：**
+
+```go
+func (t *MyTransport) ServeAssets(assetHandler http.Handler) error {
+    mux := http.NewServeMux()
+
+    // 挂载您的 IPC 端点
+    mux.HandleFunc("/my/ipc/endpoint", t.handleIPC)
+
+    // 挂载 Wails 资产服务器以处理其余所有内容
+    mux.Handle("/", assetHandler)
+
+    // 启动 HTTP 服务器
+    t.httpServer.Handler = mux
+    go t.httpServer.ListenAndServe()
+
+    return nil
+}
+```
+
+当调用 `ServeAssets()` 时，assetHandler 提供：
+- 所有静态资产 (HTML、CSS、JS、图像等)
+- `/wails/runtime.js` - Wails 运行时库
+
+## 参见
+
+- `transport.go` - 核心传输层接口和类型
+- `messageprocessor.go` - 处理所有 Wails IPC 的底层消息处理器
