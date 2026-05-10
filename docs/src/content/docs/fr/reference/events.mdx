@@ -1,0 +1,737 @@
+---
+title: API des événements
+description: Référence complète de l'API des événements
+sidebar:
+  order: 4
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Vue d'ensemble
+
+L'API des événements fournit des méthodes pour émettre et écouter des événements, permettant la communication entre différentes parties de votre application.
+
+**Types d'événements :**
+- **Événements de l'application** - Événements du cycle de vie de l'application (démarrage, arrêt)
+- **Événements de fenêtre** - Changements d'état de la fenêtre (focus, blur, redimensionnement)
+- **Événements personnalisés** - Événements définis par l'utilisateur pour la communication spécifique à l'application
+
+**Modèles de communication :**
+- **Go vers Frontend** - Émettre des événements depuis Go, écouter dans JavaScript
+- **Frontend vers Go** - Non directement (utilisez plutôt les liaisons de services)
+- **Frontend vers Frontend** - Via Go ou les événements du runtime local
+- **Fenêtre vers Fenêtre** - Cibler des fenêtres spécifiques ou diffuser à toutes
+
+## Méthodes d'événements (Go)
+
+### app.Event.Emit()
+
+Émet un événement personnalisé à toutes les fenêtres.
+
+```go
+func (em *EventManager) Emit(name string, data ...interface{})
+```
+
+**Paramètres :**
+- `name` - Nom de l'événement
+- `data` - Données optionnelles à envoyer avec l'événement
+
+**Exemple :**
+```go
+// Émettre un événement simple
+app.Event.Emit("user-logged-in")
+
+// Émettre avec des données
+app.Event.Emit("data-updated", map[string]interface{}{
+    "count": 42,
+    "status": "success",
+})
+
+// Émettre plusieurs valeurs
+app.Event.Emit("progress", 75, "Processing files...")
+```
+
+### app.Event.On()
+
+Écoute les événements personnalisés dans Go.
+
+```go
+func (em *EventManager) On(name string, callback func(*CustomEvent)) func()
+```
+
+**Paramètres :**
+- `name` - Nom de l'événement à écouter
+- `callback` - Fonction appelée lorsque l'événement est émis
+
+**Retour :** Fonction de nettoyage pour supprimer l'écouteur d'événement
+
+**Exemple :**
+```go
+// Écouter les événements
+cleanup := app.Event.On("user-action", func(e *application.CustomEvent) {
+    data := e.Data.(map[string]interface{})
+    action := data["action"].(string)
+    app.Logger.Info("User action", "action", action)
+})
+
+// Plus tard, supprimer l'écouteur
+cleanup()
+```
+
+### Événements spécifiques à la fenêtre
+
+Émettez des événements vers une fenêtre spécifique :
+
+```go
+// Émettre vers une fenêtre spécifique
+window.EmitEvent("notification", "Hello from Go!")
+
+// Émettre vers toutes les fenêtres
+app.Event.Emit("global-update", data)
+```
+
+## Méthodes d'événements (Frontend)
+
+### On()
+
+Écoute les événements provenant de Go.
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.On(eventName, callback)
+```
+
+**Paramètres :**
+- `eventName` - Nom de l'événement à écouter
+- `callback` - Fonction appelée lorsque l'événement est reçu
+
+**Retour :** Fonction de nettoyage
+
+**Exemple :**
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Écouter les événements
+const cleanup = Events.On('data-updated', (data) => {
+    console.log('Count:', data.count)
+    console.log('Status:', data.status)
+    updateUI(data)
+})
+
+// Plus tard, supprimer l'écouteur
+cleanup()
+```
+
+### Once()
+
+Écoute une seule occurrence d'événement.
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.Once(eventName, callback)
+```
+
+**Exemple :**
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Écouter uniquement la première occurrence
+Events.Once('initialization-complete', (data) => {
+    console.log('App initialized!', data)
+    // Cela ne se déclenchera qu'une seule fois
+})
+```
+
+### Off()
+
+Supprime un écouteur d'événement.
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.Off(eventName, callback)
+```
+
+**Exemple :**
+```javascript
+import { Events } from '@wailsio/runtime'
+
+const handler = (data) => {
+    console.log('Event received:', data)
+}
+
+// Commencer à écouter
+Events.On('my-event', handler)
+
+// Arrêter d'écouter
+Events.Off('my-event', handler)
+```
+
+### OffAll()
+
+Supprime tous les écouteurs pour un événement.
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.OffAll(eventName)
+```
+
+**Exemple :**
+```javascript
+// Supprimer tous les écouteurs pour cet événement
+OffAll('data-updated')
+```
+
+## Événements de l'application
+
+### app.Event.OnApplicationEvent()
+
+Écoute les événements du cycle de vie de l'application.
+
+```go
+func (em *EventManager) OnApplicationEvent(eventType ApplicationEventType, callback func(*ApplicationEvent)) func()
+```
+
+**Types d'événements :**
+- `EventApplicationStarted` - L'application a démarré
+- `EventApplicationShutdown` - L'application s'arrête
+- `EventApplicationDebug` - Événement de débogage (uniquement en mode développement)
+
+**Exemple :**
+```go
+// Gérer le démarrage de l'application
+app.Event.OnApplicationEvent(application.EventApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Application started")
+    // Initialiser les ressources
+})
+
+// Gérer l'arrêt de l'application
+app.Event.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Application shutting down")
+    // Nettoyer les ressources, sauvegarder l'état
+    database.Close()
+    saveSettings()
+})
+```
+
+## Événements de fenêtre
+
+### OnWindowEvent()
+
+Écoute les événements spécifiques à la fenêtre.
+
+```go
+func (w *Window) OnWindowEvent(eventType WindowEventType, callback func(*WindowEvent)) func()
+```
+
+**Types d'événements :**
+- `EventWindowFocus` - La fenêtre a gagné le focus
+- `EventWindowBlur` - La fenêtre a perdu le focus
+- `EventWindowClose` - La fenêtre se ferme
+- `EventWindowResize` - La fenêtre a été redimensionnée
+- `EventWindowMove` - La fenêtre a été déplacée
+
+**Exemple :**
+```go
+// Gérer le focus de la fenêtre
+window.OnWindowEvent(application.EventWindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window focused")
+})
+
+// Gérer le redimensionnement de la fenêtre
+window.OnWindowEvent(application.EventWindowResize, func(e *application.WindowEvent) {
+    width, height := window.Size()
+    app.Logger.Info("Window resized", "width", width, "height", height)
+})
+```
+
+## Modèles courants
+
+Ces modèles montrent des approances éprouvées pour l'utilisation des événements dans des applications réelles. Chaque modèle résout un défi de communication spécifique entre votre backend Go et le frontend, vous aidant à construire des applications réactives et bien structurées.
+
+### Modèle Requête/Réponse
+
+Utilisez ce modèle lorsque vous souhaitez notifier le frontend de l'achèvement des opérations backend, par exemple après la récupération de données, le traitement de fichiers ou les tâches en arrière-plan. La liaison de service retourne les données directement, tandis que les événements fournissent des notifications supplémentaires pour les mises à jour de l'interface utilisateur, comme afficher des messages toast ou actualiser des listes.
+
+**Go :**
+
+```go
+// Méthode de service
+type DataService struct {
+    app *application.Application
+}
+
+func (s *DataService) FetchData(query string) ([]Item, error) {
+    items := fetchFromDatabase(query)
+
+    // Émettre un événement lorsque c'est terminé
+    s.app.Event.Emit("data-fetched", map[string]interface{}{
+        "query": query,
+        "count": len(items),
+    })
+
+    return items, nil
+}
+```
+
+**JavaScript :**
+
+```javascript
+import { FetchData } from './bindings/DataService'
+import { Events } from '@wailsio/runtime'
+
+// Écouter l'événement de complétion
+Events.On('data-fetched', (data) => {
+    console.log(`Fetched ${data.count} items for query: ${data.query}`)
+    showNotification(`Found ${data.count} results`)
+})
+
+// Appeler la méthode de service
+const items = await FetchData("search term")
+displayItems(items)
+```### Mises à jour de progression
+
+Idéal pour les opérations de longue durée comme les téléchargements de fichiers, le traitement par lots, l'importation de grandes quantités de données ou l'encodage vidéo. Émettez des événements de progression pendant l'opération pour mettre à jour les barres de progression, le texte d'état ou les indicateurs d'étape dans l'interface utilisateur, fournissant ainsi un retour en temps réel aux utilisateurs.
+
+**Go :**
+
+```go
+func (s *Service) ProcessFiles(files []string) error {
+    total := len(files)
+
+    for i, file := range files {
+        // Process file
+        processFile(file)
+
+        // Emit progress event
+        s.app.Event.Emit("progress", map[string]interface{}{
+            "current": i + 1,
+            "total":   total,
+            "percent": float64(i+1) / float64(total) * 100,
+            "file":    file,
+        })
+    }
+
+    s.app.Event.Emit("processing-complete")
+    return nil
+}
+```
+
+**JavaScript :**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Update progress bar
+Events.On('progress', (data) => {
+    progressBar.style.width = `${data.percent}%`
+    statusText.textContent = `Processing ${data.file}... (${data.current}/${data.total})`
+})
+
+// Handle completion
+Events.Once('processing-complete', () => {
+    progressBar.style.width = '100%'
+    statusText.textContent = 'Complete!'
+    setTimeout(() => hideProgressBar(), 2000)
+})
+```
+
+### Communication multi-fenêtres
+
+Parfait pour les applications comportant plusieurs fenêtres, telles que des panneaux de paramètres, des tableaux de bord ou des visualiseurs de documents. Diffusez des événements pour synchroniser l'état entre toutes les fenêtres (changements de thème, préférences utilisateur) ou envoyez des événements ciblés à des fenêtres spécifiques pour des mises à jour propres à chaque fenêtre.
+
+**Go :**
+
+```go
+// Broadcast to all windows
+app.Event.Emit("theme-changed", "dark")
+
+// Send to specific window
+preferencesWindow.EmitEvent("settings-updated", settings)
+
+// Window-specific listener
+window1.OnEvent("request-data", func(e *application.CustomEvent) {
+    // Only this window will receive this event
+    window1.EmitEvent("data-response", data)
+})
+```
+
+**JavaScript :**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Listen in any window
+Events.On('theme-changed', (theme) => {
+    document.body.className = theme
+})
+```
+
+### Synchronisation de l'état
+
+Utilisez-le lorsque vous devez maintenir l'état de l'interface frontend et du backend synchronisés, comme les sessions utilisateur, la configuration de l'application ou les fonctionnalités collaboratives. Lorsque l'état change côté backend, émettez des événements pour mettre à jour tous les frontends connectés, garantissant ainsi la cohérence de votre application.
+
+**Go :**
+
+```go
+type StateService struct {
+    app   *application.Application
+    state map[string]interface{}
+    mu    sync.RWMutex
+}
+
+func (s *StateService) UpdateState(key string, value interface{}) {
+    s.mu.Lock()
+    s.state[key] = value
+    s.mu.Unlock()
+
+    // Notify all windows
+    s.app.Event.Emit("state-updated", map[string]interface{}{
+        "key":   key,
+        "value": value,
+    })
+}
+
+func (s *StateService) GetState(key string) interface{} {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+    return s.state[key]
+}
+```
+
+**JavaScript :**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+import { GetState } from './bindings/StateService'
+
+// Keep local state in sync
+let localState = {}
+
+Events.On('state-updated', async (data) => {
+    localState[data.key] = data.value
+    updateUI(data.key, data.value)
+})
+
+// Initialize state
+const initialState = await GetState("all")
+localState = initialState
+```
+
+### Notifications pilotées par les événements
+
+Idéal pour afficher des retours utilisateur tels que des confirmations de succès, des alertes d'erreur ou des messages informatifs. Au lieu d'appeler directement le code de l'interface utilisateur depuis les services, émettez des événements de notification que le frontend gère de manière cohérente, ce qui facilite le changement de style des notifications ou l'ajout de fonctionnalités comme l'historique des notifications.
+
+**Go :**
+
+```go
+type NotificationService struct {
+    app *application.Application
+}
+
+func (s *NotificationService) Success(message string) {
+    s.app.Event.Emit("notification", map[string]interface{}{
+        "type":    "success",
+        "message": message,
+    })
+}
+
+func (s *NotificationService) Error(message string) {
+    s.app.Event.Emit("notification", map[string]interface{}{
+        "type":    "error",
+        "message": message,
+    })
+}
+
+func (s *NotificationService) Info(message string) {
+    s.app.Event.Emit("notification", map[string]interface{}{
+        "type":    "info",
+        "message": message,
+    })
+}
+```
+
+**JavaScript :**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Unified notification handler
+Events.On('notification', (data) => {
+    const toast = document.createElement('div')
+    toast.className = `toast toast-${data.type}`
+    toast.textContent = data.message
+
+    document.body.appendChild(toast)
+
+    setTimeout(() => {
+        toast.classList.add('fade-out')
+        setTimeout(() => toast.remove(), 300)
+    }, 3000)
+})
+```
+
+## Exemple complet
+
+**Go :**
+
+```go
+package main
+
+import (
+    "sync"
+    "time"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type EventDemoService struct {
+    app *application.Application
+    mu  sync.Mutex
+}
+
+func NewEventDemoService(app *application.Application) *EventDemoService {
+    service := &EventDemoService{app: app}
+
+    // Listen for custom events
+    app.Event.On("user-action", func(e *application.CustomEvent) {
+        data := e.Data.(map[string]interface{})
+        app.Logger.Info("User action received", "data", data)
+    })
+
+    return service
+}
+
+func (s *EventDemoService) StartLongTask() {
+    go func() {
+        s.app.Event.Emit("task-started")
+
+        for i := 1; i <= 10; i++ {
+            time.Sleep(500 * time.Millisecond)
+
+            s.app.Event.Emit("task-progress", map[string]interface{}{
+                "step":    i,
+                "total":   10,
+                "percent": i * 10,
+            })
+        }
+
+        s.app.Event.Emit("task-completed", map[string]interface{}{
+            "message": "Task finished successfully!",
+        })
+    }()
+}
+
+func (s *EventDemoService) BroadcastMessage(message string) {
+    s.app.Event.Emit("broadcast", message)
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Event Demo",
+    })
+
+    // Handle application lifecycle
+    app.Event.OnApplicationEvent(application.EventApplicationStarted, func(e *application.ApplicationEvent) {
+        app.Logger.Info("Application started!")
+    })
+
+    app.Event.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
+        app.Logger.Info("Application shutting down...")
+    })
+
+    // Register service
+    service := NewEventDemoService(app)
+    app.RegisterService(application.NewService(service))
+
+    // Create window
+    window := app.Window.New()
+
+    // Handle window events
+    window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+        window.EmitEvent("window-state", "focused")
+    })
+
+    window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+        window.EmitEvent("window-state", "blurred")
+    })
+
+    window.Show()
+    app.Run()
+}
+```
+
+**JavaScript :**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+import { StartLongTask, BroadcastMessage } from './bindings/EventDemoService'
+
+// Task events
+Events.On('task-started', () => {
+    console.log('Task started...')
+    document.getElementById('status').textContent = 'Running...'
+})
+
+Events.On('task-progress', (data) => {
+    const progressBar = document.getElementById('progress')
+    progressBar.style.width = `${data.percent}%`
+    console.log(`Step ${data.step} of ${data.total}`)
+})
+
+Events.Once('task-completed', (data) => {
+    console.log('Task completed!', data.message)
+    document.getElementById('status').textContent = data.message
+})
+
+// Broadcast events
+Events.On('broadcast', (message) => {
+    console.log('Broadcast:', message)
+    alert(message)
+})
+
+// Window state events
+Events.On('window-state', (state) => {
+    console.log('Window is now:', state)
+    document.body.dataset.windowState = state
+})
+
+// Trigger long task-------|-------------|--------------|-------------|
+| `ApplicationOpenedWithFile` | Application ouverte avec un fichier | Lorsque l'application est lancée avec un fichier (par exemple, depuis une association de fichiers) | Non |
+| `ApplicationStarted` | L'application a terminé son lancement | Après l'initialisation de l'application et lorsque celle-ci est prête | Non |
+| `ApplicationLaunchedWithUrl` | Application lancée avec une URL | Lorsque l'application est lancée via un schéma d'URL | Non |
+| `ThemeChanged` | Thème du système modifié | Lorsque le thème du système passe du mode clair au mode sombre (ou inversement) | Non |
+
+**Utilisation :**
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Application prête !")
+})
+
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    // Mettre à jour le thème de l'application
+})
+```
+
+### Événements de fenêtre
+
+| Événement | Description | Émis quand | Annulable |
+|-------|-------------|--------------|-------------|
+| `WindowClosing` | La fenêtre est sur le point de se fermer | Avant la fermeture de la fenêtre (l'utilisateur a cliqué sur X, Close() appelé) | Oui |
+| `WindowDidMove` | La fenêtre a été déplacée vers une nouvelle position | Après le changement de position de la fenêtre (débitée) | Non |
+| `WindowDidResize` | La fenêtre a été redimensionnée | Après le changement de taille de la fenêtre | Non |
+| `WindowDPIChanged` | Le facteur de mise à l'échelle DPI de la fenêtre a changé | Lors du déplacement entre des moniteurs avec des DPI différents (Windows) | Non |
+| `WindowFilesDropped` | Fichiers déposés via le glisser-déposer natif du système d'exploitation | Après le dépôt de fichiers depuis le système d'exploitation sur la fenêtre | Non |
+| `WindowFocus` | La fenêtre a gagné le focus | Lorsque la fenêtre devient active | Non |
+| `WindowFullscreen` | La fenêtre est passée en plein écran | Après Fullscreen() ou lorsque l'utilisateur passe en plein écran | Non |
+| `WindowHide` | La fenêtre a été masquée | Après Hide() ou lorsque la fenêtre devient occultée | Non |
+| `WindowLostFocus` | La fenêtre a perdu le focus | Lorsque la fenêtre devient inactive | Non |
+| `WindowMaximise` | La fenêtre a été maximisée | Après Maximise() ou lorsque l'utilisateur maximise | Oui (macOS) |
+| `WindowMinimise` | La fenêtre a été minimisée | Après Minimise() ou lorsque l'utilisateur minimise | Oui (macOS) |
+| `WindowRestore` | La fenêtre a été restaurée depuis l'état min/max | Après Restore() (principalement Windows) | Non |
+| `WindowRuntimeReady` | Le runtime Wails est chargé et prêt | Lorsque l'initialisation du runtime JavaScript est terminée | Non |
+| `WindowShow` | La fenêtre est devenue visible | Après Show() ou lorsque la fenêtre devient visible | Non |
+| `WindowUnFullscreen` | La fenêtre est sortie du plein écran | Après UnFullscreen() ou lorsque l'utilisateur quitte le plein écran | Non |
+| `WindowUnMaximise` | La fenêtre est sortie de l'état maximisé | Après UnMaximise() ou lorsque l'utilisateur restaure | Oui (macOS) |
+| `WindowUnMinimise` | La fenêtre est sortie de l'état minimisé | Après UnMinimise()/Restore() ou lorsque l'utilisateur restaure | Oui (macOS) |
+| `WindowZoomIn` | Le zoom du contenu de la fenêtre a augmenté | Après l'appel de ZoomIn() (principalement macOS) | Oui (macOS) |
+| `WindowZoomOut` | Le zoom du contenu de la fenêtre a diminué | Après l'appel de ZoomOut() (principalement macOS) | Oui (macOS) |
+| `WindowZoomReset` | Le zoom du contenu de la fenêtre a été réinitialisé à 100 % | Après l'appel de ZoomReset() (principalement macOS) | Oui (macOS) |
+| `WindowDropZoneFilesDropped` | Fichiers déposés sur une zone de dépôt définie par JS | Lorsque des fichiers sont déposés sur un élément avec une zone de dépôt | Non |
+
+**Utilisation :**
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// Écouter les événements de fenêtre
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Fenêtre focalisée")
+})
+
+// Annuler la fermeture de la fenêtre
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    result, _ := app.Dialog.Question().
+        SetMessage("Fermer la fenêtre ?").
+        SetButtons("Oui", "Non").
+        Show()
+
+    if result == "Non" {
+        e.Cancel() // Empêcher la fermeture
+    }
+})
+
+// Attendre que le runtime soit prêt
+window.OnWindowEvent(events.Common.WindowRuntimeReady, func(e *application.WindowEvent) {
+    app.Logger.Info("Runtime prêt, émission d'événements au frontend possible")
+    window.EmitEvent("app-initialized", data)
+})
+```
+
+**Notes importantes :**
+
+- **WindowRuntimeReady** est critique - attendez cet événement avant d'émettre des événements vers le frontend
+- **WindowDidMove** et **WindowDidResize** sont débités (50 ms par défaut) pour empêcher la surcharge d'événements
+- **Les événements annulables** peuvent être empêchés en appelant `event.Cancel()` dans un gestionnaire `RegisterHook()`
+- **WindowFilesDropped** concerne les dépôts de fichiers natifs du système d'exploitation ; **WindowDropZoneFilesDropped** concerne les zones de dépôt basées sur le web
+- Certains événements sont spécifiques à la plateforme (par exemple, WindowDPIChanged sur Windows, les événements de zoom principalement sur macOS)
+
+## Conventions de nommage des événements
+
+```go
+// Bon - descriptif et spécifique
+app.Event.Emit("user:logged-in", user)
+app.Event.Emit("data:fetch:complete", results)
+app.Event.Emit("ui:theme:changed", theme)
+
+// Mauvais - vague et peu clair
+app.Event.Emit("event1", data)
+app.Event.Emit("update", stuff)
+app.Event.Emit("e", value)
+```
+
+## Considérations de performance
+
+### Débit des événements à haute fréquence
+
+```go
+type Service struct {
+    app            *application.Application
+    lastEmit       time.Time
+    debounceWindow time.Duration
+}
+
+func (s *Service) EmitWithDebounce(event string, data interface{}) {
+    now := time.Now()
+    if now.Sub(s.lastEmit) < s.debounceWindow {
+        return // Ignorer cette émission
+    }
+
+    s.app.Event.Emit(event, data)
+    s.lastEmit = now
+}
+```
+
+### Limitation du débit des événements (Throttling)
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+let lastUpdate = 0
+const throttleMs = 100
+
+Events.On('high-frequency-event', (data) => {
+    const now = Date.now()
+    if (now - lastUpdate < throttleMs) {
+        return // Ignorer cette mise à jour
+    }
+
+    processUpdate(data)
+    lastUpdate = now
+})
+```

@@ -1,0 +1,241 @@
+---
+title: Dock et barre des tâches
+description: Gérez la visibilité de l'icône du dock et affichez des badges sur macOS et Windows
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Introduction
+
+Wails fournit un service Dock multiplateforme pour les applications de bureau. Ce service vous permet de :
+
+- Masquer et afficher l'icône de l'application dans le Dock macOS
+- Afficher des badges sur la tuile de votre application ou l'icône du dock/barre des tâches (macOS et Windows)
+
+## Utilisation de base
+
+### Création du service
+
+Tout d'abord, initialisez le service dock :
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/dock"
+
+// Crée un nouveau service Dock
+dockService := dock.New()
+
+// Enregistre le service avec l'application
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(dockService),
+    },
+})
+```
+
+### Création du service avec des options de badge personnalisées (Windows uniquement)
+
+Sur Windows, vous pouvez personnaliser l'apparence du badge avec diverses options :
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/dock"
+import "image/color"
+
+// Crée un service dock avec des options de badge personnalisées
+options := dock.BadgeOptions{
+    TextColour:       color.RGBA{255, 255, 255, 255}, // Texte blanc
+    BackgroundColour: color.RGBA{0, 0, 255, 255},     // Arrière-plan bleu
+    FontName:         "consolab.ttf",                 // Police Consolas en gras
+    FontSize:         20,                             // Taille de police pour un seul caractère
+    SmallFontSize:    14,                             // Taille de police pour plusieurs caractères
+}
+
+dockService := dock.NewWithOptions(options)
+
+// Enregistre le service avec l'application
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(dockService),
+    },
+})
+```
+
+## Opérations du Dock
+
+### Masquer l'icône de l'application du dock
+
+Masquez l'icône de l'application du Dock macOS :
+
+```go
+// Masque l'icône de l'application
+dockService.HideAppIcon()
+```
+
+### Afficher l'icône de l'application du dock
+
+Affichez l'icône de l'application dans le Dock macOS :
+
+```go
+// Affiche l'icône de l'application
+dockService.ShowAppIcon()
+```
+
+## Opérations de Badge
+
+### Définir un Badge
+
+Définissez un badge sur la tuile/l'icône du dock de l'application :
+
+```go
+// Définir un badge par défaut
+dockService.SetBadge("")
+
+// Définir un badge numérique
+dockService.SetBadge("3")
+
+// Définir un badge textuel
+dockService.SetBadge("New")
+```
+
+### Définir un Badge personnalisé (Windows uniquement)
+
+Définissez un badge avec des options ponctuelles appliquées :
+
+```go
+options := dock.BadgeOptions{
+    BackgroundColour: color.RGBA{0, 255, 255, 255},
+    FontName:         "arialb.ttf", // Police système
+    FontSize:         16,
+    SmallFontSize:    10,
+    TextColour:       color.RGBA{0, 0, 0, 255},
+}
+
+// Définir un badge par défaut
+dockService.SetCustomBadge("", options)
+
+// Définir un badge numérique
+dockService.SetCustomBadge("3", options)
+
+// Définir un badge textuel
+dockService.SetCustomBadge("New", options)
+```
+
+### Supprimer un Badge
+
+Supprimez le badge de l'icône de l'application :
+
+```go
+dockService.RemoveBadge()
+```
+
+### Obtenir le badge défini
+```go
+dockService.GetBadge()
+``` 
+
+## Considérations relatives à la plateforme
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    Sur macOS :
+    
+    - L'icône du dock peut être **masquée** et **affichée**
+    - Les badges sont affichés directement sur l'icône du dock
+    - Les options de badge ne sont **pas personnalisables** (toutes les options passées à `NewWithOptions`/`SetCustomBadge` sont ignorées)
+    - Le style de badge standard du dock macOS est utilisé et s'adapte automatiquement à l'apparence
+    - Le débordement des étiquettes est géré par le système
+    - Fournir une étiquette vide affiche un badge par défaut de "●"
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    Sur Windows :
+    
+    - La masquage/affichage de l'icône de la barre des tâches n'est actuellement pas pris en charge par ce service
+    - Les badges sont affichés comme une icône de superposition dans la barre des tâches
+    - Les badges prennent en charge les valeurs textuelles
+    - L'apparence du badge peut être personnalisée via `BadgeOptions`
+    - L'application doit avoir une fenêtre pour que les badges s'affichent
+    - Une taille de police plus petite est automatiquement utilisée pour les étiquettes à plusieurs caractères
+    - Le débordement des étiquettes n'est pas géré
+    - Options de personnalisation :
+      - **TextColour** : Couleur du texte (par défaut : blanc)
+      - **BackgroundColour** : Couleur de l'arrière-plan du badge (par défaut : rouge)
+      - **FontName** : Nom du fichier de police (par défaut : "segoeuib.ttf")
+      - **FontSize** : Taille de police pour un seul caractère (par défaut : 18)
+      - **SmallFontSize** : Taille de police pour plusieurs caractères (par défaut : 14)
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    Sur Linux :
+    
+    - La visibilité de l'icône du dock et la fonctionnalité de badge ne sont pas disponibles
+    
+  </TabItem>
+</Tabs>
+
+## Bonnes pratiques
+
+1. **Lorsque vous masquez l'icône du dock (macOS) :**
+   - Assurez-vous que les utilisateurs peuvent toujours accéder à votre application (par exemple, via [la systray](https://v3.wails.io/learn/systray/))
+   - Incluez une option "Quitter" dans votre interface utilisateur alternative
+   - L'application n'apparaîtra pas dans le sélecteur Command+Tab
+   - Les fenêtres ouvertes restent visibles et fonctionnelles
+   - Fermer toutes les fenêtres ne quittera peut-être pas l'application (le comportement de macOS varie)
+   - Les utilisateurs perdent le moyen standard de quitter via le clic droit sur le Dock
+
+2. **Utilisez les badges avec parcimonie :**
+   - Trop de mises à jour de badges peuvent distraire les utilisateurs
+   - Réservez les badges pour les notifications importantes
+
+3. **Gardez le texte du badge court :**
+   - Les badges numériques sont les plus efficaces
+   - Sur macOS, les badges textuels doivent être brefs
+
+4. **Pour la personnalisation des badges sous Windows :**
+   - Assurez-vous d'un contraste élevé entre les couleurs du texte et de l'arrière-plan
+   - Testez avec différentes longueurs de texte car la taille de la police diminue avec la longueur
+   - Utilisez des polices système courantes pour garantir leur disponibilité
+
+
+## Référence de l'API
+
+### Gestion du service
+| Méthode                                     | Description                                           |
+|--------------------------------------------|-------------------------------------------------------|
+| `New()`                                    | Crée un nouveau service dock                            |
+| `NewWithOptions(options BadgeOptions)`     | Crée un nouveau service dock avec des options de badge personnalisées (Windows uniquement ; les options sont ignorées sur macOS et Linux) |
+
+### Opérations du Dock
+| Méthode                                       | Description                                                |
+|--------------------------------|-------------------------------------------------------------|
+| `HideAppIcon()`                | Masque l'icône de l'application du Dock macOS (macOS uniquement)         |
+| `ShowAppIcon()`                | Affiche l'icône de l'application dans le Dock macOS (macOS uniquement)           |
+
+### Opérations de Badge
+| Méthode                                            | Description                                                |
+|---------------------------------------------------|------------------------------------------------------------|
+| `SetBadge(label string) error`                    | Définit un badge avec l'étiquette spécifiée                      |
+| `SetCustomBadge(label string, options BadgeOptions) error` | Définit un badge avec l'étiquette spécifiée et des options de style personnalisées (Windows uniquement) |
+| `RemoveBadge() error`                             | Supprime le badge de l'icône de l'application                |
+| `GetBadge() *string`                             | Obtient le badge actuel                |
+
+### Structures et Types
+
+```go
+// Options pour personnaliser l'apparence du badge (Windows uniquement)
+type BadgeOptions struct {
+    TextColour       color.RGBA  // Couleur du texte du badge
+    BackgroundColour color.RGBA  // Couleur de l'arrière-plan du badge
+    FontName         string      // Nom du fichier de police (par exemple, "segoeuib.ttf")
+    FontSize         int         // Taille de police pour un seul caractère
+    SmallFontSize    int         // Taille de police pour plusieurs caractères
+}
+```

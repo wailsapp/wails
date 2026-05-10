@@ -1,0 +1,409 @@
+---
+title: Opérations de presse-papiers
+description: Copiez et collez du texte avec la presse-papiers du système
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Opérations de presse-papiers
+
+Wails fournit une **API de presse-papiers unifiée** qui fonctionne sur toutes les plateformes. Copiez et collez du texte avec des méthodes simples et cohérentes sur Windows, macOS et Linux.
+
+## Démarrage rapide
+
+```go
+// Copier du texte dans le presse-papiers
+app.Clipboard.SetText("Hello, World!")
+
+// Récupérer du texte depuis le presse-papiers
+text, ok := app.Clipboard.Text()
+if ok {
+    fmt.Println("Presse-papiers :", text)
+}
+```
+
+**C'est tout !** Accès au presse-papiers multiplateforme.
+
+## Copie de texte
+
+### Copie de base
+
+```go
+success := app.Clipboard.SetText("Texte à copier")
+if !success {
+    app.Logger.Error("Échec de la copie dans le presse-papiers")
+}
+```
+
+**Retourne :** `bool` - `true` si réussi, `false` sinon
+
+### Copie depuis un service
+
+```go
+type ClipboardService struct {
+    app *application.Application
+}
+
+func (c *ClipboardService) CopyToClipboard(text string) bool {
+    return c.app.Clipboard.SetText(text)
+}
+```
+
+**Appel depuis JavaScript :**
+
+```javascript
+import { CopyToClipboard } from './bindings/myapp/clipboardservice'
+
+await CopyToClipboard("Texte à copier")
+```
+
+### Copie avec retour visuel
+
+```go
+func copyWithFeedback(text string) {
+    if app.Clipboard.SetText(text) {
+        app.Dialog.Info().
+            SetTitle("Copié").
+            SetMessage("Texte copié dans le presse-papiers !").
+            Show()
+    } else {
+        app.Dialog.Error().
+            SetTitle("Échec de la copie").
+            SetMessage("Échec de la copie dans le presse-papiers.").
+            Show()
+    }
+}
+```
+
+## Collage de texte
+
+### Collage de base
+
+```go
+text, ok := app.Clipboard.Text()
+if !ok {
+    app.Logger.Error("Échec de la lecture du presse-papiers")
+    return
+}
+
+fmt.Println("Texte du presse-papiers :", text)
+```
+
+**Retourne :** `(string, bool)` - Texte et indicateur de succès
+
+### Collage depuis un service
+
+```go
+func (c *ClipboardService) PasteFromClipboard() string {
+    text, ok := c.app.Clipboard.Text()
+    if !ok {
+        return ""
+    }
+    return text
+}
+```
+
+**Appel depuis JavaScript :**
+
+```javascript
+import { PasteFromClipboard } from './bindings/myapp/clipboardservice'
+
+const text = await PasteFromClipboard()
+console.log("Collé :", text)
+```
+
+### Collage avec validation
+
+```go
+func pasteText() (string, error) {
+    text, ok := app.Clipboard.Text()
+    if !ok {
+        return "", errors.New("presse-papiers vide ou indisponible")
+    }
+    
+    // Valider
+    if len(text) == 0 {
+        return "", errors.New("le presse-papiers est vide")
+    }
+    
+    if len(text) > 10000 {
+        return "", errors.New("le texte du presse-papiers est trop volumineux")
+    }
+    
+    return text, nil
+}
+```
+
+## Exemples complets
+
+### Bouton de copie
+
+**Go :**
+
+```go
+type TextService struct {
+    app *application.Application
+}
+
+func (t *TextService) CopyText(text string) error {
+    if !t.app.Clipboard.SetText(text) {
+        return errors.New("échec de la copie")
+    }
+    return nil
+}
+```
+
+**JavaScript :**
+
+```javascript
+import { CopyText } from './bindings/myapp/textservice'
+
+async function copyToClipboard(text) {
+    try {
+        await CopyText(text)
+        showNotification("Copié dans le presse-papiers !")
+    } catch (error) {
+        showError("Échec de la copie : " + error)
+    }
+}
+
+// Utilisation
+document.getElementById('copy-btn').addEventListener('click', () => {
+    const text = document.getElementById('text').value
+    copyToClipboard(text)
+})
+```
+
+### Coller et traiter
+
+**Go :**
+
+```go
+type DataService struct {
+    app *application.Application
+}
+
+func (d *DataService) PasteAndProcess() (string, error) {
+    // Récupérer le texte du presse-papiers
+    text, ok := d.app.Clipboard.Text()
+    if !ok {
+        return "", errors.New("presse-papiers indisponible")
+    }
+    
+    // Traiter le texte
+    processed := strings.TrimSpace(text)
+    processed = strings.ToUpper(processed)
+    
+    return processed, nil
+}
+```
+
+**JavaScript :**
+
+```javascript
+import { PasteAndProcess } from './bindings/myapp/dataservice'
+
+async function pasteAndProcess() {
+    try {
+        const result = await PasteAndProcess()
+        document.getElementById('output').value = result
+    } catch (error) {
+        showError("Échec du collage : " + error)
+    }
+}
+```
+
+### Copier plusieurs formats
+
+```go
+type CopyService struct {
+    app *application.Application
+}
+
+func (c *CopyService) CopyAsPlainText(text string) bool {
+    return c.app.Clipboard.SetText(text)
+}
+
+func (c *CopyService) CopyAsJSON(data interface{}) bool {
+    jsonBytes, err := json.MarshalIndent(data, "", "  ")
+    if err != nil {
+        return false
+    }
+    return c.app.Clipboard.SetText(string(jsonBytes))
+}
+
+func (c *CopyService) CopyAsCSV(rows [][]string) bool {
+    var buf bytes.Buffer
+    writer := csv.NewWriter(&buf)
+    
+    for _, row := range rows {
+        if err := writer.Write(row); err != nil {
+            return false
+        }
+    }
+    
+    writer.Flush()
+    return c.app.Clipboard.SetText(buf.String())
+}
+```
+
+### Moniteur de presse-papiers
+
+```go
+type ClipboardMonitor struct {
+    app          *application.Application
+    lastText     string
+    ticker       *time.Ticker
+    stopChan     chan bool
+}
+
+func NewClipboardMonitor(app *application.Application) *ClipboardMonitor {
+    return &ClipboardMonitor{
+        app:      app,
+        stopChan: make(chan bool),
+    }
+}
+
+func (cm *ClipboardMonitor) Start() {
+    cm.ticker = time.NewTicker(1 * time.Second)
+    
+    go func() {
+        for {
+            select {
+            case <-cm.ticker.C:
+                cm.checkClipboard()
+            case <-cm.stopChan:
+                return
+            }
+        }
+    }()
+}
+
+func (cm *ClipboardMonitor) Stop() {
+    if cm.ticker != nil {
+        cm.ticker.Stop()
+    }
+    cm.stopChan <- true
+}
+
+func (cm *ClipboardMonitor) checkClipboard() {
+    text, ok := cm.app.Clipboard.Text()
+    if !ok {
+        return
+    }
+    
+    if text != cm.lastText {
+        cm.lastText = text
+        cm.app.Event.Emit("clipboard-changed", text)
+    }
+}
+```
+
+### Copie avec historique
+
+```go
+type ClipboardHistory struct {
+    app     *application.Application
+    history []string
+    maxSize int
+}
+
+func NewClipboardHistory(app *application.Application) *ClipboardHistory {
+    return &ClipboardHistory{
+        app:     app,
+        history: make([]string, 0),
+        maxSize: 10,
+    }
+}
+
+func (ch *ClipboardHistory) Copy(text string) bool {
+    if !ch.app.Clipboard.SetText(text) {
+        return false
+    }
+    
+    // Ajouter à l'historique
+    ch.history = append([]string{text}, ch.history...)
+    
+    // Limiter la taille
+    if len(ch.history) > ch.maxSize {
+        ch.history = ch.history[:ch.maxSize]
+    }
+    
+    return true
+}
+
+func (ch *ClipboardHistory) GetHistory() []string {
+    return ch.history
+}
+
+func (ch *ClipboardHistory) RestoreFromHistory(index int) bool {
+    if index < 0 || index >= len(ch.history) {
+        return false
+    }
+    
+    return ch.app.Clipboard.SetText(ch.history[index])
+}
+```
+
+## Intégration frontend
+
+### Utilisation de l'API presse-papiers du navigateur
+
+Pour du texte simple, vous pouvez utiliser l'API presse-papiers du navigateur :
+
+```javascript
+// Copier
+async function copyText(text) {
+    try {
+        await navigator.clipboard.writeText(text)
+        console.log("Copié !")
+    } catch (error) {
+        console.error("Échec de la copie :", error)
+    }
+}
+
+// Coller
+async function pasteText() {
+    try {
+        const text = await navigator.clipboard.readText()
+        return text
+    } catch (error) {
+        console.error("Échec du collage :", error)
+        return ""
+    }
+}
+```
+
+**Remarque :** L'API presse-papiers du navigateur nécessite HTTPS ou localhost, ainsi que la permission de l'utilisateur.
+
+### Utilisation de la presse-papiers Wails
+
+Pour un accès au presse-papiers système :
+
+```javascript
+import { CopyToClipboard, PasteFromClipboard } from './bindings/myapp/clipboardservice'
+
+// Copier
+async function copy(text) {
+    const success = await CopyToClipboard(text)
+    if (success) {
+        console.log("Copié !")
+    }
+}
+
+// Coller
+async function paste() {
+    const text = await PasteFromClipboard()
+    return text
+}
+```
+
+## Bonnes pratiques
+
+### ✅ À faire
+
+- **Vérifier les valeurs de retour** - Gérer les échecs de manière élégante---
+
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de presse-papiers](https://github.com/wailsapp/wails/tree/master/v3/examples).

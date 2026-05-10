@@ -1,0 +1,616 @@
+---
+title: Services
+description: Créez des composants d'application modulaires et réutilisables avec les services
+sidebar:
+  order: 2
+---
+
+## Architecture des Services
+
+Les **services** de Wails offrent une manière structurée d'organiser la logique de l'application avec des composants modulaires et autonomes. Les services sont conscients de leur cycle de vie, disposant de hooks de démarrage et d'arrêt, sont automatiquement liés au frontend, injectables par dépendance et entièrement testables de manière isolée.
+
+## Démarrage rapide
+
+```go
+type GreetService struct {
+    prefix string
+}
+
+func NewGreetService(prefix string) *GreetService {
+    return &GreetService{prefix: prefix}
+}
+
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+
+// Enregistrement
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(NewGreetService("Hello, ")),
+    },
+})
+```
+
+**C'est tout !** `Greet` est désormais appelable depuis JavaScript :
+
+```js
+import { Greet } from './bindings/main/GreetService';
+
+const message = await Greet("World");
+console.log(message);  // "Hello, World!"
+```
+
+## Création de Services
+
+### Service de base
+
+```go
+type CalculatorService struct{}
+
+func (c *CalculatorService) Add(a, b int) int {
+    return a + b
+}
+
+func (c *CalculatorService) Subtract(a, b int) int {
+    return a - b
+}
+```
+
+**Enregistrement :**
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&CalculatorService{}),
+    },
+})
+```
+
+**Points clés :**
+- Seules les **méthodes exportées** (PascalCase) sont liées
+- Les services sont des **singletons** (une seule instance)
+- Les méthodes peuvent retourner `(valeur, erreur)`
+
+### Service avec état
+
+```go
+type CounterService struct {
+    count int
+    mu    sync.RWMutex
+}
+
+func (c *CounterService) Increment() int {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count++
+    return c.count
+}
+
+func (c *CounterService) GetCount() int {
+    c.mu.RLock()
+    defer c.mu.RUnlock()
+    return c.count
+}
+
+func (c *CounterService) Reset() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count = 0
+}
+```
+
+**Important :** Les services sont partagés entre toutes les fenêtres. Utilisez toujours des mutex pour garantir la sécurité des threads.
+
+### Service avec dépendances
+
+```go
+type UserService struct {
+    db     *sql.DB
+    logger *slog.Logger
+}
+
+func NewUserService(db *sql.DB, logger *slog.Logger) *UserService {
+    return &UserService{
+        db:     db,
+        logger: logger,
+    }
+}
+
+func (u *UserService) GetUser(id int) (*User, error) {
+    u.logger.Info("Getting user", "id", id)
+    
+    var user User
+    err := u.db.QueryRow("SELECT * FROM users WHERE id = ?", id).Scan(&user)
+    if err != nil {
+        return nil, fmt.Errorf("failed to get user: %w", err)
+    }
+    
+    return &user, nil
+}
+```
+
+**Enregistrement avec dépendances :**
+
+```go
+db, _ := sql.Open("sqlite3", "app.db")
+logger := slog.Default()
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(NewUserService(db, logger)),
+    },
+})
+```
+
+## Cycle de vie des Services
+
+### ServiceStartup
+
+Appelé lorsque l'application démarre :
+
+```go
+func (u *UserService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    u.logger.Info("UserService starting up")
+    
+    // Initialiser les ressources
+    if err := u.db.Ping(); err != nil {
+        return fmt.Errorf("database not available: %w", err)
+    }
+    
+    // Exécuter les migrations
+    if err := u.runMigrations(); err != nil {
+        return fmt.Errorf("migrations failed: %w", err)
+    }
+    
+    // Démarrer les tâches en arrière-plan
+    go u.backgroundSync(ctx)
+    
+    return nil
+}
+```
+
+**Cas d'utilisation :**
+- Initialiser les ressources
+- Valider la configuration
+- Exécuter les migrations
+- Démarrer les tâches en arrière-plan
+- Se connecter à des services externes
+
+**Important :**
+- Les services démarrent dans **l'ordre d'enregistrement**
+- Retourner une erreur **empêche le démarrage de l'application**
+- Utilisez `ctx` pour l'annulation
+
+### ServiceShutdown
+
+Appelé lorsque l'application s'arrête :
+
+```go
+func (u *UserService) ServiceShutdown() error {
+    u.logger.Info("UserService shutting down")
+    
+    // Fermer la base de données
+    if err := u.db.Close(); err != nil {
+        return fmt.Errorf("failed to close database: %w", err)
+    }
+    
+    // Nettoyer les ressources
+    u.cleanup()
+    
+    return nil
+}
+```
+
+**Cas d'utilisation :**
+- Fermer les connexions
+- Sauvegarder l'état
+- Nettoyer les ressources
+- Vider les tampons
+- Annuler les tâches en arrière-plan
+
+**Important :**
+- Les services s'arrêtent dans **l'ordre inverse**
+- Le contexte de l'application est déjà annulé
+- Retourner une erreur **affiche un avertissement** (n'empêche pas l'arrêt)
+
+### Exemple complet du cycle de vie
+
+```go
+type DatabaseService struct {
+    db     *sql.DB
+    logger *slog.Logger
+    cancel context.CancelFunc
+}
+
+func NewDatabaseService(logger *slog.Logger) *DatabaseService {
+    return &DatabaseService{logger: logger}
+}
+
+func (d *DatabaseService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    d.logger.Info("Starting database service")
+    
+    // Ouvrir la base de données
+    db, err := sql.Open("sqlite3", "app.db")
+    if err != nil {
+        return fmt.Errorf("failed to open database: %w", err)
+    }
+    d.db = db
+    
+    // Tester la connexion
+    if err := db.Ping(); err != nil {
+        return fmt.Errorf("database not available: %w", err)
+    }
+    
+    // Démarrer le nettoyage en arrière-plan
+    ctx, cancel := context.WithCancel(ctx)
+    d.cancel = cancel
+    go d.periodicCleanup(ctx)
+    
+    return nil
+}
+
+func (d *DatabaseService) ServiceShutdown() error {
+    d.logger.Info("Shutting down database service")
+    
+    // Annuler les tâches en arrière-plan
+    if d.cancel != nil {
+        d.cancel()
+    }
+    
+    // Fermer la base de données
+    if d.db != nil {
+        if err := d.db.Close(); err != nil {
+            return fmt.Errorf("failed to close database: %w", err)
+        }
+    }
+    
+    return nil
+}
+
+func (d *DatabaseService) periodicCleanup(ctx context.Context) {
+    ticker := time.NewTicker(1 * time.Hour)
+    defer ticker.Stop()
+    
+    for {
+        select {
+        case <-ctx.Done():
+            return
+        case <-ticker.C:
+            d.cleanup()
+        }
+    }
+}
+```
+
+## Options de Service
+
+### Nom personnalisé
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceWithOptions(&MyService{}, application.ServiceOptions{
+            Name: "CustomServiceName",
+        }),
+    },
+})
+```
+
+**Cas d'utilisation :**
+- Plusieurs instances du même type de service
+- Journalisation plus claire
+- Débogage amélioré
+
+### Routes HTTP
+
+Les services peuvent gérer les requêtes HTTP :
+
+```go
+type FileService struct {
+    root string
+}
+
+func (f *FileService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    // Servir les fichiers depuis le répertoire racine
+    http.FileServer(http.Dir(f.root)).ServeHTTP(w, r)
+}
+
+// Enregistrement avec route
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceWithOptions(&FileService{root: "./files"}, application.ServiceOptions{
+            Route: "/files",
+        }),
+    },
+})
+```
+
+**Accès :** `http://wails.localhost/files/...`
+
+**Cas d'utilisation :**
+- Servir des fichiers
+- APIs personnalisées
+- Points de terminaison WebSocket
+- Streaming multimédia
+
+## Modèles de Service
+
+### Modèle Repository
+
+```go
+type UserRepository struct {
+    db *sql.DB
+}
+
+func (r *UserRepository) GetByID(id int) (*User, error) {
+    // Requête de base de données
+}
+
+func (r *UserRepository) Create(user *User) error {
+    // Insérer l'utilisateur
+}
+
+func (r *UserRepository) Update(user *User) error {
+    // Mettre à jour l'utilisateur
+}
+
+func (r *UserRepository) Delete(id int) error {
+    // Supprimer l'utilisateur
+}
+```
+
+### Modèle Couche de Service
+
+```go
+type UserService struct {
+    repo   *UserRepository
+    logger *slog.Logger
+}
+
+func (s *UserService) RegisterUser(email, password string) (*User, error) {
+    // Valider
+    if !isValidEmail(email) {
+        return nil, errors.New("invalid email")
+    }
+    
+    // Hacher le mot de passe
+    hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+    if err != nil {
+        return nil, err
+    }
+    
+    // Créer l'utilisateur
+    user := &User{
+        Email:        email,
+        PasswordHash: string(hash),```go
+    CreatedAt:    time.Now(),
+}
+
+if err := s.repo.Create(user); err != nil {
+    return nil, err
+}
+
+s.logger.Info("User registered", "email", email)
+return user, nil
+}
+```
+
+### Modèle de Fabrique (Factory Pattern)
+
+```go
+type ServiceFactory struct {
+    db     *sql.DB
+    logger *slog.Logger
+}
+
+func (f *ServiceFactory) CreateUserService() *UserService {
+    return &UserService{
+        repo:   &UserRepository{db: f.db},
+        logger: f.logger,
+    }
+}
+
+func (f *ServiceFactory) CreateOrderService() *OrderService {
+    return &OrderService{
+        repo:   &OrderRepository{db: f.db},
+        logger: f.logger,
+    }
+}
+```
+
+### Modèle Événementiel (Event-Driven Pattern)
+
+```go
+type OrderService struct {
+    app *application.Application
+}
+
+func (o *OrderService) CreateOrder(items []Item) (*Order, error) {
+    order := &Order{
+        Items:     items,
+        CreatedAt: time.Now(),
+    }
+    
+    // Enregistrer la commande
+    if err := o.saveOrder(order); err != nil {
+        return nil, err
+    }
+    
+    // Émettre l'événement
+    o.app.Event.Emit("order-created", order)
+    
+    return order, nil
+}
+```
+
+## Injection de Dépendances
+
+### Injection par Constructeur
+
+```go
+type EmailService struct {
+    smtp   *smtp.Client
+    logger *slog.Logger
+}
+
+func NewEmailService(smtp *smtp.Client, logger *slog.Logger) *EmailService {
+    return &EmailService{
+        smtp:   smtp,
+        logger: logger,
+    }
+}
+
+// Enregistrement
+smtpClient := createSMTPClient()
+logger := slog.Default()
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(NewEmailService(smtpClient, logger)),
+    },
+})
+```
+
+### Injection par Application
+
+```go
+type NotificationService struct {
+    app *application.Application
+}
+
+func NewNotificationService(app *application.Application) *NotificationService {
+    return &NotificationService{app: app}
+}
+
+func (n *NotificationService) Notify(message string) {
+    // Utiliser l'application pour émettre des événements
+    n.app.Event.Emit("notification", message)
+    
+    // Ou afficher une notification système
+    n.app.ShowNotification(message)
+}
+
+// Enregistrer après la création de l'application
+app := application.New(application.Options{})
+app.RegisterService(application.NewService(NewNotificationService(app)))
+```
+
+### Dépendances entre Services
+
+```go
+type OrderService struct {
+    userService  *UserService
+    emailService *EmailService
+}
+
+func NewOrderService(userService *UserService, emailService *EmailService) *OrderService {
+    return &OrderService{
+        userService:  userService,
+        emailService: emailService,
+    }
+}
+
+// Enregistrer dans l'ordre
+userService := &UserService{}
+emailService := &EmailService{}
+orderService := NewOrderService(userService, emailService)
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(userService),
+        application.NewService(emailService),
+        application.NewService(orderService),
+    },
+})
+```
+
+## Test des Services
+
+### Tests Unitaires
+
+```go
+func TestCalculatorService_Add(t *testing.T) {
+    calc := &CalculatorService{}
+    
+    result := calc.Add(2, 3)
+    
+    if result != 5 {
+        t.Errorf("expected 5, got %d", result)
+    }
+}
+```
+
+### Tests avec Dépendances
+
+```go
+func TestUserService_GetUser(t *testing.T) {
+    // Créer une base de données factice (mock)
+    db, mock, _ := sqlmock.New()
+    defer db.Close()
+    
+    // Définir les attentes
+    rows := sqlmock.NewRows([]string{"id", "name"}).
+        AddRow(1, "Alice")
+    mock.ExpectQuery("SELECT").WillReturnRows(rows)
+    
+    // Créer le service
+    service := NewUserService(db, slog.Default())
+    
+    // Tester
+    user, err := service.GetUser(1)
+    
+    if err != nil {
+        t.Fatalf("unexpected error: %v", err)
+    }
+    if user.Name != "Alice" {
+        t.Errorf("expected Alice, got %s", user.Name)
+    }
+}
+```
+
+### Test du Cycle de Vie
+
+```go
+func TestDatabaseService_Lifecycle(t *testing.T) {
+    service := NewDatabaseService(slog.Default())
+    
+    // Tester le démarrage
+    ctx := context.Background()
+    err := service.ServiceStartup(ctx, application.ServiceOptions{})
+    if err != nil {
+        t.Fatalf("startup failed: %v", err)
+    }
+    
+    // Tester la fonctionnalité
+    // ...
+    
+    // Tester l'arrêt
+    err = service.ServiceShutdown()
+    if err != nil {
+        t.Fatalf("shutdown failed: %v", err)
+    }
+}
+```
+
+## Bonnes Pratiques
+
+### ✅ À faire
+
+- **Responsabilité unique** - Un service, un objectif
+- **Injection par constructeur** - Passer les dépendances explicitement
+- **État thread-safe** - Utiliser des mutex
+- **Retourner les erreurs** - Éviter les panic
+- **Journaliser les événements importants** - Utiliser la journalisation structurée
+- **Tester en isolation** - Simuler (mock) les dépendances
+
+### ❌ À ne pas faire
+
+- **Ne pas utiliser d'état global** - Passer les dépendances
+- **Ne pas bloquer le démarrage** - Garder ServiceStartup rapide
+- **Ne pas ignorer l'arrêt** - Toujours nettoyer les ressources
+- **Ne pas créer de dépendances circulaires** - Concevoir avec soin
+- **Ne pas exposer les méthodes internes** - Les garder privées
+- **Ne pas oublier la sécurité des threads** - Les services sont partagés---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [service examples](https://github.com/wailsapp/wails/tree/master/v3/examples).

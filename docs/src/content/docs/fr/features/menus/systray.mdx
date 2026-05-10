@@ -1,0 +1,388 @@
+---
+title: Menus de la zone de notification
+description: Ajoutez l'intégration de la zone de notification (zone de notification système) à votre application
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## Menus de la zone de notification
+
+Wails fournit des **API unifiées pour la zone de notification** qui fonctionnent sur toutes les plateformes. Créez des icônes de zone de notification avec des menus, attachez des fenêtres et gérez les clics avec le comportement natif de la plateforme pour les applications en arrière-plan, les services et les utilitaires d'accès rapide.
+{/* VISUAL PLACEHOLDER: System Tray Comparison
+Description: Three screenshots showing the same Wails system tray icon on:
+1. Windows - Notification area (bottom-right)
+2. macOS - Menu bar (top-right) with label
+3. Linux (GNOME) - Top bar
+All showing the same icon and menu structure
+Style: Clean screenshots with arrows pointing to tray icon, menu expanded
+*/}
+
+## Démarrage rapide
+
+```go
+package main
+
+import (
+    _ "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed assets/icon.png
+var icon []byte
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Tray App",
+    })
+
+    // Create system tray
+    systray := app.SystemTray.New()
+    systray.SetIcon(icon)
+    systray.SetLabel("My App")
+
+    // Add menu
+    menu := app.NewMenu()
+    menu.Add("Show").OnClick(func(ctx *application.Context) {
+        // Show main window
+    })
+    menu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+    systray.SetMenu(menu)
+
+    // Create hidden window
+    window := app.Window.New()
+    window.Hide()
+
+    app.Run()
+}
+```
+
+**Résultat :** Icône de zone de notification avec menu sur toutes les plateformes.
+
+## Création d'une zone de notification
+
+### Zone de notification de base
+
+```go
+// Create system tray
+systray := app.SystemTray.New()
+
+// Set icon
+systray.SetIcon(iconBytes)
+
+// Set label (macOS) / tooltip (Windows)
+systray.SetLabel("My Application")
+```
+
+### Avec une icône
+
+Les icônes doivent être intégrées :
+
+```go
+import _ "embed"
+
+//go:embed assets/icon.png
+var icon []byte
+
+//go:embed assets/icon-dark.png
+var iconDark []byte
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    systray := app.SystemTray.New()
+    systray.SetIcon(icon)
+    systray.SetDarkModeIcon(iconDark)  // macOS dark mode
+    
+    app.Run()
+}
+```
+
+**Exigences pour les icônes :**
+
+| Plateforme | Taille | Format | Notes |
+|----------|------|--------|-------|
+| **Windows** | 16x16 ou 32x32 | PNG, ICO | Zone de notification |
+| **macOS** | 18x18 à 22x22 | PNG | Barre de menus, modèle recommandé |
+| **Linux** | 22x22 à 48x48 | PNG, SVG | Varie selon le bureau (DE) |
+
+### Icônes de modèle (macOS)
+
+Les icônes de modèle s'adaptent automatiquement au mode clair/sombre :
+
+```go
+systray.SetTemplateIcon(iconBytes)
+```
+
+**Directives pour les icônes de modèle :**
+- Utilisez uniquement des couleurs noires et claires (transparentes)
+- Le noir devient blanc en mode sombre
+- Nommez le fichier avec le suffixe `Template` : `iconTemplate.png`
+- [Guide de conception](https://bjango.com/articles/designingmenubarextras/)
+
+## Ajout de menus
+
+Les menus de la zone de notification fonctionnent comme les menus d'application :
+
+```go
+menu := app.NewMenu()
+
+// Add items
+menu.Add("Open").OnClick(func(ctx *application.Context) {
+    showMainWindow()
+})
+
+menu.AddSeparator()
+
+menu.AddCheckbox("Start at Login", false).OnClick(func(ctx *application.Context) {
+    enabled := ctx.ClickedMenuItem().Checked()
+    setStartAtLogin(enabled)
+})
+
+menu.AddSeparator()
+
+menu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+// Set menu
+systray.SetMenu(menu)
+```
+
+**Pour tous les types d'éléments de menu**, consultez la [Référence des menus](/fr/features/menus/reference).
+
+## Attacher des fenêtres
+
+Attachez une fenêtre à l'icône de la zone de notification pour une affichage/masquage automatique :
+
+```go
+// Create window
+window := app.Window.New()
+
+// Attach to tray
+systray.AttachWindow(window)
+
+// Configure behaviour
+systray.SetWindowOffset(10)  // Pixels from tray icon
+systray.SetWindowDebounce(200 * time.Millisecond)  // Click debounce
+```
+
+**Comportement :**
+- La fenêtre commence masquée
+- **Clic gauche sur l'icône de la zone de notification** → Bascule la visibilité de la fenêtre
+- **Clic droit sur l'icône de la zone de notification** → Affiche le menu (si défini)
+- La fenêtre est positionnée près de l'icône de la zone de notification
+
+**Exemple : Fenêtre contextuelle**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "Quick Access",
+    Width:  300,
+    Height: 400,
+    Frameless: true,  // No title bar
+    AlwaysOnTop: true,  // Stay on top
+})
+
+systray.AttachWindow(window)
+systray.SetWindowOffset(5)
+```
+
+## Gestionnaires de clics
+
+Gérez les clics sur l'icône de la zone de notification :
+
+```go
+systray := app.SystemTray.New()
+
+// Left click
+systray.OnClick(func() {
+    fmt.Println("Tray icon clicked")
+})
+
+// Right click
+systray.OnRightClick(func() {
+    fmt.Println("Tray icon right-clicked")
+})
+
+// Double click
+systray.OnDoubleClick(func() {
+    fmt.Println("Tray icon double-clicked")
+})
+
+// Mouse enter/leave
+systray.OnMouseEnter(func() {
+    fmt.Println("Mouse entered tray icon")
+})
+
+systray.OnMouseLeave(func() {
+    fmt.Println("Mouse left tray icon")
+})
+```
+
+**Prise en charge par plateforme :**
+
+| Événement | Windows | macOS | Linux |
+|-------|---------|-------|-------|
+| OnClick | ✅ | ✅ | ✅ |
+| OnRightClick | ✅ | ✅ | ✅ |
+| OnDoubleClick | ✅ | ✅ | ⚠️ Varie |
+| OnMouseEnter | ✅ | ✅ | ⚠️ Varie |
+| OnMouseLeave | ✅ | ✅ | ⚠️ Varie |
+
+## Mises à jour dynamiques
+
+Mettez à jour l'icône et le menu de la zone de notification dynamiquement :
+
+### Changer l'icône
+
+```go
+var isActive bool
+
+func updateTrayIcon() {
+    if isActive {
+        systray.SetIcon(activeIcon)
+        systray.SetLabel("Active")
+    } else {
+        systray.SetIcon(inactiveIcon)
+        systray.SetLabel("Inactive")
+    }
+}
+```
+
+### Mettre à jour le menu
+
+```go
+var isPaused bool
+
+pauseMenuItem := menu.Add("Pause")
+
+pauseMenuItem.OnClick(func(ctx *application.Context) {
+    isPaused = !isPaused
+    
+    if isPaused {
+        pauseMenuItem.SetLabel("Resume")
+    } else {
+        pauseMenuItem.SetLabel("Pause")
+    }
+    
+    menu.Update()  // Important!
+})
+```
+
+:::caution[Appelez toujours Update()]
+Après avoir modifié l'état du menu, **appelez `menu.Update()`**. Consultez la [Référence des menus](/features/menus/reference#enabled-state).
+:::
+
+### Reconstruire le menu
+
+Pour des modifications majeures, reconstruisez le menu entier :
+
+```go
+func rebuildTrayMenu(status string) {
+    menu := app.NewMenu()
+    
+    // Status-specific items
+    switch status {
+    case "syncing":
+        menu.Add("Syncing...").SetEnabled(false)
+        menu.Add("Pause Sync").OnClick(pauseSync)
+    case "synced":
+        menu.Add("Up to date ✓").SetEnabled(false)
+        menu.Add("Sync Now").OnClick(startSync)
+    case "error":
+        menu.Add("Sync Error").SetEnabled(false)
+        menu.Add("Retry").OnClick(retrySync)
+    }
+    
+    menu.AddSeparator()
+    menu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+    
+    systray.SetMenu(menu)
+}
+```----------|--------|--------|-------|
+| **Windows** | ✅ | ✅ | Pleinement fonctionnel - l'icône apparaît/disparaît de la zone de notification |
+| **macOS** | ✅ | ✅ | L'élément de la barre de menus s'affiche/masque |
+| **Linux** | ✅ | ✅ | Varie selon l'environnement de bureau |
+
+**Cas d'utilisation :**
+- Masquer temporairement l'icône de la zone de notification en fonction des préférences de l'utilisateur
+- Mode sans tête avec icône de zone de notification apparaissant uniquement lorsque nécessaire
+- Basculer la visibilité en fonction de l'état de l'application
+
+**Exemple - Visibilité conditionnelle de la zone de notification :**
+
+```go
+func (t *TrayApp) setTrayVisibility(visible bool) {
+    if visible {
+        t.systray.Show()
+    } else {
+        t.systray.Hide()
+    }
+}
+
+// Afficher la zone de notification uniquement lorsque des mises à jour sont disponibles
+func (t *TrayApp) checkForUpdates() {
+    if hasUpdates {
+        t.systray.Show()
+        t.systray.SetLabel("Update Available")
+    } else {
+        t.systray.Hide()
+    }
+}
+```
+
+## Nettoyage
+
+Détruire l'icône de la zone de notification une fois terminé :
+
+```go
+// Dans OnShutdown
+app := application.New(application.Options{
+    OnShutdown: func() {
+        if systray != nil {
+            systray.Destroy()
+        }
+    },
+})
+```
+
+**Important :** Toujours détruire la zone de notification système lors de l'arrêt pour libérer les ressources.
+
+## Bonnes pratiques
+
+### ✅ À faire
+
+- **Utiliser des icônes de modèle sur macOS** - S'adapte au mode sombre
+- **Garder les étiquettes courtes** - Maximum 3 à 5 caractères
+- **Fournir des infobulles sur Windows** - Aide les utilisateurs à identifier votre application
+- **Tester sur toutes les plateformes** - Le comportement varie
+- **Gérer les clics de manière appropriée** - Clic gauche pour l'action principale, clic droit pour le menu
+- **Mettre à jour l'icône pour l'état** - La rétroaction visuelle est importante
+- **Détruire lors de l'arrêt** - Libérer les ressources
+
+### ❌ À ne pas faire
+
+- **Ne pas utiliser de grandes icônes** - Suivre les directives de la plateforme
+- **Ne pas utiliser d'étiquettes longues** - Elles seront tronquées
+- **Ne pas oublier le mode sombre** - Tester sur le mode sombre de macOS
+- **Ne pas bloquer les gestionnaires de clics** - Les garder rapides
+- **Ne pas oublier menu.Update()** - Après avoir modifié l'état du menu
+- **Ne pas supposer le support de la zone de notification** - Certains environnements de bureau Linux ne le prennent pas en charge
+
+## Dépannage
+
+### L'icône de la zone de notification n'apparaît pas
+
+**Causes possibles :**
+1. Format d'icône non pris en charge
+2. Taille de l'icône trop grande/petite---
+
+**Questions ?** Posez vos questions sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de zone de notification](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic).

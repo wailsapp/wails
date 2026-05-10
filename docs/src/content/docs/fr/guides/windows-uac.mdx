@@ -1,0 +1,152 @@
+---
+title: Configuration de l'UAC sous Windows
+description: Configurez le Contrôle de compte d'utilisateur (UAC) pour votre application Wails sous Windows
+sidebar:
+  order: 11
+---
+
+import {Badge} from '@astrojs/starlight/components';
+
+Plateformes concernées : <Badge text="Windows" variant="note" />
+<br/>
+
+Le Contrôle de compte d'utilisateur (UAC) de Windows détermine les privilèges d'exécution de votre application Wails. Par défaut, les applications Wails v3 incluent une configuration UAC explicite dans leur manifeste Windows, garantissant un comportement cohérent sur différentes machines.
+
+## Niveaux d'exécution UAC
+
+Les applications Windows peuvent demander différents niveaux d'exécution via leur fichier manifeste. Wails v3 inclut automatiquement une configuration UAC avec un niveau d'exécution par défaut que vous pouvez personnaliser en fonction des besoins de votre application.
+
+### Niveaux d'exécution disponibles
+
+| Niveau | Description | Cas d'utilisation |
+|-------|-------------|----------|
+| `asInvoker` | S'exécute avec les mêmes privilèges que le processus parent | Défaut pour la plupart des applications |
+| `highestAvailable` | S'exécute avec les privilèges les plus élevés disponibles pour l'utilisateur | Applications pouvant avoir besoin d'un accès élevé |
+| `requireAdministrator` | Nécessite toujours des privilèges d'administrateur | Utilitaires système, installateurs |
+
+### Configuration par défaut
+
+Les applications Wails v3 incluent une configuration UAC par défaut dans leur manifeste Windows :
+
+```xml
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+        <requestedPrivileges>
+            <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+        </requestedPrivileges>
+    </security>
+</trustInfo>
+```
+
+Cette configuration garantit que votre application :
+- S'exécute avec les mêmes privilèges que le processus de lancement
+- Ne nécessite pas d'élévation par défaut
+- Fonctionne de manière cohérente sur différentes machines
+- Ne déclenche pas d'invitations UAC pour les utilisateurs normaux
+
+## Personnalisation de la configuration UAC
+
+Puisque Wails v3 encourage les utilisateurs à personnaliser leurs actifs de build, vous pouvez modifier la configuration UAC en éditant directement votre modèle de manifeste Windows.
+
+### Emplacement du modèle de manifeste
+
+Le modèle de manifeste Windows se trouve à :
+```
+build/windows/wails.exe.manifest
+```
+
+### Modification du niveau d'exécution
+
+Pour changer le niveau d'exécution, modifiez l'attribut `level` dans l'élément `requestedExecutionLevel` :
+
+```xml title="build/windows/wails.exe.manifest"
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+        <requestedPrivileges>
+            <requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
+        </requestedPrivileges>
+    </security>
+</trustInfo>
+```
+
+### Exemples
+
+#### Application standard (par défaut)
+La plupart des applications doivent utiliser le niveau par défaut `asInvoker` :
+
+```xml
+<requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+```
+
+#### Utilitaire système
+Applications ayant besoin d'un accès élevé lorsque disponible :
+
+```xml
+<requestedExecutionLevel level="highestAvailable" uiAccess="false"/>
+```
+
+#### Outil administratif
+Applications nécessitant toujours des privilèges d'administrateur :
+
+```xml
+<requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
+```
+
+## Accès à l'interface utilisateur (UI Access)
+
+L'attribut `uiAccess` contrôle si votre application peut interagir avec des éléments d'interface utilisateur de privilèges supérieurs. Dans la plupart des cas, cela doit rester `false`.
+
+Définissez-le à `true` uniquement si votre application doit :
+- Envoyer des entrées à d'autres applications
+- Piloter l'interface utilisateur d'autres applications
+- Accéder aux éléments d'interface utilisateur de processus de privilèges supérieurs
+
+:::caution[Exigences d'accès à l'interface utilisateur]
+La définition de `uiAccess="true"` nécessite que votre application soit :
+- Signée numériquement avec un certificat émis par une autorité de certification de confiance
+- Installée dans un emplacement sécurisé (Program Files ou Windows\System32)
+:::
+
+## Compilation avec des paramètres UAC personnalisés
+
+Après avoir modifié votre modèle de manifeste, compilez votre application normalement :
+
+```bash
+wails3 build
+```
+
+Le processus de build intégrera automatiquement votre configuration UAC personnalisée dans l'exécutable.
+
+## Vérification de la configuration UAC
+
+Vous pouvez vérifier que vos paramètres UAC sont correctement intégrés en utilisant l'outil `go-winres` :
+
+```bash
+go-winres extract --in your-app.exe --out extracted-resources/
+```
+
+Examinez ensuite le fichier manifeste extrait pour confirmer que votre configuration UAC est présente.
+
+:::tip[Persistance du manifeste]
+Contrairement à certains autres frameworks, la configuration UAC de Wails v3 est intégrée directement dans l'exécutable lors de la compilation, garantissant qu'elle persiste lorsque l'application est copiée sur d'autres machines.
+:::
+
+## Dépannage
+
+### Les invitations UAC n'apparaissent pas
+Si vous avez défini `requireAdministrator` mais que vous ne voyez pas d'invitations UAC :
+- Vérifiez que le manifeste est correctement intégré dans votre exécutable
+- Vérifiez que vous ne vous exécutez pas depuis un processus déjà élevé en privilèges
+- Assurez-vous que la syntaxe du manifeste est un XML valide
+
+### L'application ne démarre pas
+Si votre application échoue au démarrage après des modifications UAC :
+- Vérifiez la syntaxe du manifeste pour des erreurs XML
+- Vérifiez que la valeur du niveau d'exécution est valide
+- Essayez de revenir à `asInvoker` pour isoler le problème
+
+### Comportement incohérent entre les machines
+Si le comportement UAC diffère entre les machines :
+- Assurez-vous que le manifeste est intégré dans l'exécutable (et non externe)
+- Vérifiez que l'exécutable n'a pas été modifié après la compilation
+- Vérifiez que les paramètres UAC de Windows sont activés sur la machine cible

@@ -1,0 +1,391 @@
+---
+title: Messages bruts
+description: Implémentez une communication personnalisée du frontend vers le backend pour les applications critiques en matière de performance
+sidebar:
+  order: 10
+---
+
+Les messages bruts offrent un canal de communication de bas niveau entre votre frontend et votre backend, contournant le système de liaison standard. Ce mécanisme sacrifie la commodité au profit de la vitesse.
+
+## Quand utiliser les messages bruts
+
+Les messages bruts sont mieux adaptés à des cas d'extrême pointe :
+
+- **Mises à jour ultra-fréquentes** - Des milliers de messages par seconde où chaque microseconde compte
+- **Protocoles de messages personnalisés** - Lorsque vous avez un contrôle total sur le format des données transmises
+
+:::tip
+Pour la quasi-totalité des cas d'utilisation, des [liaisons de service](/fr/features/bindings/services) standard sont recommandées car elles offrent la sécurité des types, une sérialisation automatique et une meilleure expérience développeur avec une surcharge négligeable.
+:::
+
+## Configuration du backend
+
+Configurez le `RawMessageHandler` dans les options de votre application :
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Raw Message Demo",
+        Assets: application.AssetOptions{
+            Handler: application.BundledAssetFileServer(assets),
+        },
+        RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+            fmt.Printf("Raw message from window '%s': %s (origin: %+v)\n", window.Name(), message, originInfo.Origin)
+
+            // Process the message and respond via events
+            response := processMessage(message)
+            window.EmitEvent("raw-response", response)
+        },
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "My App",
+        Name:  "main",
+    })
+
+    app.Run()
+}
+
+func processMessage(message string) map[string]any {
+    // Your custom message processing logic
+    return map[string]any{
+        "received": message,
+        "status":   "processed",
+    }
+}
+```
+
+### Signature du gestionnaire
+
+```go
+RawMessageHandler func(window Window, message string, originInfo *application.OriginInfo)
+```
+
+| Paramètre | Type | Description |
+|-----------|------|-------------|
+| `window` | `Window` | La fenêtre qui a envoyé le message |
+| `message` | `string` | Le contenu brut du message |
+| `originInfo` | `*application.OriginInfo` | Informations d'origine concernant la source du message |
+
+#### Structure OriginInfo
+
+```go
+type OriginInfo struct {
+	Origin      string
+	TopOrigin   string
+	IsMainFrame bool
+}
+```
+
+| Champ | Type | Description |
+|-------|------|-------------|
+| `Origin` | `string` | L'URL d'origine du document qui a envoyé le message |
+| `TopOrigin` | `string` | L'URL d'origine de premier niveau (peut différer de Origin dans les iframes) |
+| `IsMainFrame` | `bool` | Indique si le message provient du cadre principal |
+
+#### Disponibilité spécifique à la plateforme
+
+- **macOS** : `Origin` et `IsMainFrame` sont fournis
+- **Windows** : `Origin` et `TopOrigin` sont fournis
+- **Linux** : Seul `Origin` est fourni
+
+### Validation de l'origine
+
+:::caution
+Ne supposez jamais qu'un message est sûr simplement parce qu'il arrive dans votre gestionnaire. Les informations d'origine doivent être validées avant de traiter des opérations sensibles ou des opérations qui modifient l'état.
+:::
+
+**Vérifiez toujours l'origine des messages entrants avant de les traiter.** Le paramètre `originInfo` fournit des informations de sécurité critiques qui doivent être validées pour empêcher l'accès non autorisé.
+Du contenu malveillant, compromis ou des scripts non intentionnels pourraient envoyer des messages bruts. Sans validation de l'origine, vous pourriez traiter des commandes provenant de sources non fiables. Utilisez `originInfo` pour vous assurer que les messages proviennent de sources attendues.
+
+### Points clés de validation
+
+- **Toujours vérifier `Origin`** - Vérifiez que l'origine correspond à vos sources de confiance attendues (généralement `wails://wails` ou `http://wails.localhost` pour les actifs locaux ou l'origine spécifique de votre application)
+- **Valider `IsMainFrame`** (macOS) - Soyez conscient si le message provient d'une iframe, car cela peut indiquer du contenu intégré avec des contextes de sécurité différents
+- **Utiliser `TopOrigin`** (Windows) - Vérifiez l'origine de premier niveau lors du traitement de contenu encadré
+- **Rejeter les origines inattendues** - Échouez de manière sécurisée en rejetant les messages provenant d'origines que vous n'autorisez pas explicitement
+
+
+:::note
+Les messages préfixés par `wails:` sont réservés à la communication interne de Wails et ne seront pas transmis à votre gestionnaire.
+:::
+
+## Configuration du frontend
+
+Envoyez des messages bruts en utilisant `System.invoke()` :
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="module">
+        import { System, Events } from '@wailsio/runtime'
+
+        // Send raw message
+        document.getElementById('send').addEventListener('click', () => {
+            const message = document.getElementById('input').value
+            System.invoke(message)
+        })
+
+        // Listen for response
+        Events.On('raw-response', (event) => {
+            console.log('Response:', event.data)
+        })
+    </script>
+</head>
+<body>
+    <input type="text" id="input" placeholder="Enter message" />
+    <button id="send">Send</button>
+</body>
+</html>
+```
+
+### Utilisation du bundle pré-construit
+
+Si vous n'utilisez pas npm, accédez à `invoke` via l'objet global `wails` :
+
+```html
+<script type="module" src="/wails/runtime.js"></script>
+<script>
+    window.onload = function() {
+        document.getElementById('send').onclick = function() {
+            wails.System.invoke('my-message')
+        }
+    }
+</script>
+```
+
+## Messages structurés
+
+Pour des données complexes, sérialisez en JSON :
+
+### Frontend
+
+```javascript
+import { System } from '@wailsio/runtime'
+
+const command = {
+    action: 'update',
+    payload: {
+        id: 123,
+        value: 'new value'
+    }
+}
+
+System.invoke(JSON.stringify(command))
+```
+
+### Backend
+
+```go
+RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+    var cmd struct {
+        Action  string `json:"action"`
+        Payload struct {
+            ID    int    `json:"id"`
+            Value string `json:"value"`
+        } `json:"payload"`
+    }
+
+    if err := json.Unmarshal([]byte(message), &cmd); err != nil {
+        window.EmitEvent("error", err.Error())
+        return
+    }
+
+    switch cmd.Action {
+    case "update":
+        // Handle update
+        result := handleUpdate(cmd.Payload.ID, cmd.Payload.Value)
+        window.EmitEvent("update-complete", result)
+    default:
+        window.EmitEvent("error", "unknown action")
+    }
+}
+```
+
+## Comparaison des performances
+
+| Approche | Surcharge | Sécurité des types | Cas d'utilisation |
+|----------|----------|-------------|----------|
+| Liaisons de service | Plus élevée | Complète | Usage général |
+| Messages bruts | Minimale | Manuelle | Fréquence élevée, critique pour la performance |
+
+### Exemple de benchmark
+
+Les messages bruts peuvent traiter significativement plus de messages par seconde par rapport aux liaisons de service pour des charges utiles simples :
+
+```go
+// Raw message handler - minimal overhead
+RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+    // Direct string processing, no reflection or marshaling
+    counter++
+}
+```
+
+## Exemple complet
+
+Voici un exemple complet implémentant un simple protocole de commande :### main.go
+
+```go
+package main
+
+import (
+    "embed"
+    "encoding/json"
+    "fmt"
+    "time"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed assets
+var assets embed.FS
+
+type Command struct {
+    Type string          `json:"type"`
+    Data json.RawMessage `json:"data"`
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Raw Message Demo",
+        Assets: application.AssetOptions{
+            Handler: application.BundledAssetFileServer(assets),
+        },
+        Mac: application.MacOptions{
+            ApplicationShouldTerminateAfterLastWindowClosed: true,
+        },
+        RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+            var cmd Command
+            if err := json.Unmarshal([]byte(message), &cmd); err != nil {
+                window.EmitEvent("error", map[string]string{"error": err.Error()})
+                return
+            }
+
+            switch cmd.Type {
+            case "ping":
+                window.EmitEvent("pong", map[string]any{
+                    "time":   time.Now().UnixMilli(),
+                    "window": window.Name(),
+                })
+            case "echo":
+                var text string
+                json.Unmarshal(cmd.Data, &text)
+                window.EmitEvent("echo", text)
+            default:
+                window.EmitEvent("error", map[string]string{
+                    "error": fmt.Sprintf("unknown command: %s", cmd.Type),
+                })
+            }
+        },
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "Raw Message Demo",
+        Name:  "main",
+        Width: 400,
+        Height: 300,
+    })
+
+    app.Run()
+}
+```
+
+### assets/index.html
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Raw Message Demo</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        button { margin: 5px; padding: 10px 20px; }
+        #output { margin-top: 20px; padding: 10px; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>Raw Message Demo</h1>
+
+    <button id="ping">Ping</button>
+    <button id="echo">Echo "Hello"</button>
+
+    <div id="output">Waiting for response...</div>
+
+    <script type="module">
+        import { System, Events } from '@wailsio/runtime'
+
+        const output = document.getElementById('output')
+
+        function send(type, data) {
+            System.invoke(JSON.stringify({ type, data }))
+        }
+
+        document.getElementById('ping').onclick = () => send('ping')
+        document.getElementById('echo').onclick = () => send('echo', 'Hello')
+
+        Events.On('pong', (e) => {
+            output.textContent = `Pong from ${e.data.window} at ${e.data.time}`
+        })
+
+        Events.On('echo', (e) => {
+            output.textContent = `Echo: ${e.data}`
+        })
+
+        Events.On('error', (e) => {
+            output.textContent = `Error: ${e.data.error}`
+        })
+    </script>
+</body>
+</html>
+```
+
+## Bonnes pratiques
+
+### À faire
+
+- Utilisez les messages bruts pour les chemins critiques en termes de performance
+- Implémentez une gestion d'erreurs appropriée dans votre gestionnaire
+- Utilisez les événements pour renvoyer les réponses au frontend
+- Envisagez d'utiliser JSON pour les données structurées
+- Garitez le traitement des messages rapide pour éviter les blocages
+
+### À ne pas faire
+
+- Utilisez les messages bruts lorsque les liaisons de service suffiraient
+- Oubliez de valider les messages entrants
+- Bloquez le gestionnaire avec des opérations de longue durée (utilisez des goroutines)
+- Ignorez le paramètre `window` lorsque les réponses doivent cibler des fenêtres spécifiques
+
+## Considérations relatives aux fenêtres multiples
+
+Le paramètre `window` identifie la fenêtre qui a envoyé le message, ce qui vous permet de :
+
+- Envoyer des réponses à la bonne fenêtre
+- Implémenter un comportement spécifique à la fenêtre
+- Suivre les sources des messages pour le débogage
+
+```go
+RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+    // Répondre uniquement à la fenêtre émettrice
+    window.EmitEvent("response", result)
+
+    // Ou diffuser à toutes les fenêtres
+    app.Event.Emit("broadcast", result)
+}
+```
+
+## Prochaines étapes
+
+- [Liaisons de service](/fr/features/bindings/services) - Approche standard pour la plupart des applications
+- [Événements](/fr/guides/events-reference) - Système d'événements pour la communication backend-to-frontend
+- [Performance](/fr/guides/performance) - Optimisation générale des performances

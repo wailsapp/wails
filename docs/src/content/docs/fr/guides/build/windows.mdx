@@ -1,0 +1,124 @@
+---
+title: Empaquetage sous Windows
+description: Packagez votre application Wails pour une distribution sous Windows
+sidebar:
+  order: 3
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Installateur NSIS
+
+Le format d'empaquetage par défaut crée un installateur NSIS :
+
+```bash
+wails3 package GOOS=windows
+```
+
+Cela exécute `wails3 task windows:package` qui :
+1. Compile l'application
+2. Génère le programme d'installation (bootstrapper) WebView2
+3. Crée un installateur NSIS
+
+Sortie : `build/windows/nsis/<AppName>-installer.exe`
+
+### Package MSIX
+
+Pour la distribution sur le Microsoft Store ou le déploiement Windows moderne :
+
+```bash
+wails3 package GOOS=windows FORMAT=msix
+```
+
+Sortie : `bin/<AppName>-<arch>.msix`
+
+<Aside type="note">
+MSIX nécessite soit `makeappx.exe` (Windows SDK) soit l'outil MSIX. Exécutez `wails3 tool msix-install-tools` pour configurer.
+</Aside>
+
+## Personnalisation de l'installateur
+
+La configuration NSIS se trouve dans `build/windows/nsis/project.nsi`. Modifiez ce fichier pour personnaliser :
+
+- L'interface utilisateur et l'image de marque de l'installateur
+- Le répertoire d'installation
+- Les raccourcis du menu Démarrer et du bureau
+- Les associations de fichiers
+- Le contrat de licence
+
+Les métadonnées de l'application proviennent de `build/windows/info.json` :
+
+```json
+{
+  "fixed": {
+    "file_version": "1.0.0"
+  },
+  "info": {
+    "0000": {
+      "ProductVersion": "1.0.0",
+      "CompanyName": "My Company",
+      "FileDescription": "My Application",
+      "ProductName": "MyApp"
+    }
+  }
+}
+```
+
+## Signature de code
+
+Signez votre exécutable et votre installateur pour éviter les avertissements SmartScreen :
+
+```bash
+# En utilisant le wrapper (détecte automatiquement la plateforme)
+wails3 sign GOOS=windows
+
+# Ou en utilisant les tâches directement
+wails3 task windows:sign
+wails3 task windows:sign:installer
+```
+
+Configurez la signature dans `build/windows/Taskfile.yml` :
+
+```yaml
+vars:
+  SIGN_CERTIFICATE: "path/to/certificate.pfx"
+  # Ou utilisez l'empreinte pour les certificats dans le magasin Windows
+  SIGN_THUMBPRINT: "certificate-thumbprint"
+  TIMESTAMP_SERVER: "http://timestamp.digicert.com"
+```
+
+Stockez le mot de passe de votre certificat en toute sécurité :
+
+```bash
+wails3 setup signing
+```
+
+Voir [Signature des applications](/fr/guides/build/signing) pour plus de détails.
+
+## Compilation pour ARM
+
+```bash
+wails3 build GOOS=windows GOARCH=arm64
+wails3 package GOOS=windows GOARCH=arm64
+```
+
+## Dépannage
+
+### makensis introuvable
+
+Installez NSIS :
+
+```bash
+# Windows
+winget install NSIS.NSIS
+
+# Ou téléchargez depuis https://nsis.sourceforge.io/
+```
+
+### Avertissement SmartScreen
+
+Votre exécutable n'est pas signé. Voir [Signature de code](#code-signing) ci-dessus.
+
+### WebView2 manquant
+
+L'installateur inclut un programme d'installation (bootstrapper) WebView2 qui télécharge le runtime si nécessaire. Si vous avez besoin d'une installation hors ligne, téléchargez l'installateur Evergreen Standalone depuis Microsoft.

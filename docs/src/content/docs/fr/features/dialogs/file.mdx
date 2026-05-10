@@ -1,0 +1,330 @@
+---
+title: Boîtes de dialogue de fichiers
+description: Boîtes de dialogue pour ouvrir, enregistrer et sélectionner des dossiers
+sidebar:
+  order: 3
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Boîtes de dialogue de fichiers
+
+Wails propose des **boîtes de dialogue de fichiers natives** avec un aspect adapté à la plateforme pour ouvrir des fichiers, enregistrer des fichiers et sélectionner des dossiers. Une API simple avec filtrage par type de fichier, prise en charge de la sélection multiple et emplacements par défaut.
+
+## Création de boîtes de dialogue de fichiers
+
+Les boîtes de dialogue de fichiers sont accessibles via le gestionnaire `app.Dialog` :
+
+```go
+app.Dialog.OpenFile()
+app.Dialog.SaveFile()
+```
+
+## Boîte de dialogue Ouvrir un fichier
+
+Sélectionnez les fichiers à ouvrir :
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Sélectionner une image").
+    AddFilter("Images", "*.png;*.jpg;*.gif").
+    AddFilter("Tous les fichiers", "*.*").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+openFile(path)
+```
+
+**Cas d'utilisation :**
+- Ouvrir des documents
+- Importer des fichiers
+- Charger des images
+- Sélectionner des fichiers de configuration
+
+### Sélection d'un seul fichier
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Ouvrir un document").
+    AddFilter("Fichiers texte", "*.txt").
+    AddFilter("Tous les fichiers", "*.*").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    // L'utilisateur a annulé ou une erreur s'est produite
+    return
+}
+
+// Utiliser le fichier sélectionné
+data, _ := os.ReadFile(path)
+```
+
+### Sélection de plusieurs fichiers
+
+```go
+paths, err := app.Dialog.OpenFile().
+    SetTitle("Sélectionner des images").
+    AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif").
+    PromptForMultipleSelection()
+
+if err != nil {
+    return
+}
+
+// Traiter tous les fichiers sélectionnés
+for _, path := range paths {
+    processFile(path)
+}
+```
+
+### Avec un répertoire par défaut
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Ouvrir un fichier").
+    SetDirectory("/Users/me/Documents").
+    PromptForSingleSelection()
+```
+
+## Boîte de dialogue Enregistrer un fichier
+
+Choisissez où enregistrer :
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("document.txt").
+    AddFilter("Fichiers texte", "*.txt").
+    AddFilter("Tous les fichiers", "*.*").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+saveFile(path, data)
+```
+
+**Cas d'utilisation :**
+- Enregistrer des documents
+- Exporter des données
+- Créer de nouveaux fichiers
+- Enregistrer sous...
+
+### Avec un nom de fichier par défaut
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("export.csv").
+    AddFilter("Fichiers CSV", "*.csv").
+    PromptForSingleSelection()
+```
+
+### Avec un répertoire par défaut
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetDirectory("/Users/me/Documents").
+    SetFilename("untitled.txt").
+    PromptForSingleSelection()
+```
+
+### Confirmation de remplacement
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("document.txt").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+// Vérifier si le fichier existe
+if _, err := os.Stat(path); err == nil {
+    dialog := app.Dialog.Question().
+        SetTitle("Confirmer le remplacement").
+        SetMessage("Le fichier existe déjà. Remplacer ?")
+
+    overwriteBtn := dialog.AddButton("Remplacer")
+    overwriteBtn.OnClick(func() {
+        saveFile(path, data)
+    })
+
+    cancelBtn := dialog.AddButton("Annuler")
+    dialog.SetDefaultButton(cancelBtn)
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+    return
+}
+
+saveFile(path, data)
+```
+
+## Boîte de dialogue Sélectionner un dossier
+
+Choisissez un répertoire en utilisant la boîte de dialogue Ouvrir un fichier avec la sélection de répertoire activée :
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Sélectionner le dossier de sortie").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+exportToFolder(path)
+```
+
+**Cas d'utilisation :**
+- Choisir le répertoire de sortie
+- Sélectionner un espace de travail
+- Choisir un emplacement de sauvegarde
+- Choisir le répertoire d'installation
+
+### Avec un répertoire par défaut
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Sélectionner un dossier").
+    SetDirectory("/Users/me/Documents").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+```
+
+## Filtres de fichiers
+
+Utilisez la méthode `AddFilter()` pour ajouter des filtres de type de fichier aux boîtes de dialogue. Chaque appel ajoute une nouvelle option de filtre.
+
+### Filtres de base
+
+```go
+path, _ := app.Dialog.OpenFile().
+    AddFilter("Fichiers texte", "*.txt").
+    AddFilter("Tous les fichiers", "*.*").
+    PromptForSingleSelection()
+```
+
+### Extensions multiples
+
+Utilisez des points-virgules pour spécifier plusieurs extensions dans un seul filtre :
+
+```go
+dialog := app.Dialog.OpenFile().
+    AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif;*.bmp").
+    AddFilter("Documents", "*.txt;*.doc;*.docx;*.pdf").
+    AddFilter("Tous les fichiers", "*.*")
+```
+
+### Format du motif
+
+Utilisez des **points-virgules** pour séparer plusieurs extensions dans un seul filtre :
+
+```go
+// Extensions multiples séparées par des points-virgules
+AddFilter("Images", "*.png;*.jpg;*.gif")
+```
+
+## Exemples complets
+
+### Ouvrir un fichier image
+
+```go
+func openImage(app *application.App) (image.Image, error) {
+    path, err := app.Dialog.OpenFile().
+        SetTitle("Sélectionner une image").
+        AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif;*.bmp").
+        PromptForSingleSelection()
+
+    if err != nil {
+        return nil, err
+    }
+
+    if path == "" {
+        return nil, errors.New("aucun fichier sélectionné")
+    }
+
+    // Ouvrir et décoder l'image
+    file, err := os.Open(path)
+    if err != nil {
+        app.Dialog.Error().
+            SetTitle("Échec de l'ouverture").
+            SetMessage(err.Error()).
+            Show()
+        return nil, err
+    }
+    defer file.Close()
+
+    img, _, err := image.Decode(file)
+    if err != nil {
+        app.Dialog.Error().
+            SetTitle("Image invalide").
+            SetMessage("Impossible de décoder le fichier image.").
+            Show()
+        return nil, err
+    }
+
+    return img, nil
+}
+```
+
+### Enregistrer un document avec validation
+
+```go
+func saveDocument(app *application.App, content string) {
+    path, err := app.Dialog.SaveFile().
+        SetFilename("document.txt").
+        AddFilter("Fichiers texte", "*.txt").
+        AddFilter("Fichiers Markdown", "*.md").
+        AddFilter("Tous les fichiers", "*.*").
+        PromptForSingleSelection()
+
+    if err != nil || path == "" {
+        return
+    }
+
+    // Valider l'extension
+    ext := filepath.Ext(path)
+    if ext != ".txt" && ext != ".md" {
+        dialog := app.Dialog.Question().
+            SetTitle("Confirmer l'extension").
+            SetMessage(fmt.Sprintf("Enregistrer en tant que fichier %s ?", ext))
+
+        saveBtn := dialog.AddButton("Enregistrer")
+        saveBtn.OnClick(func() {
+            doSave(app, path, content)
+        })
+
+        cancelBtn := dialog.AddButton("Annuler")
+        dialog.SetDefaultButton(cancelBtn)
+        dialog.SetCancelButton(cancelBtn)
+        dialog.Show()
+        return
+    }
+
+    doSave(app, path, content)
+}
+
+func doSave(app *application.App, path, content string) {
+    if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+        app.Dialog.Error().
+            SetTitle("Échec de l'enregistrement").
+            SetMessage(err.Error()).
+            Show()
+        return
+    }
+
+    app.Dialog.Info().
+        SetTitle("Enregistré").
+        SetMessage("Document enregistré avec succès !").
+        Show()
+}
+```---
+
+**Questions ?** Posez vos questions sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de boîtes de dialogue de fichiers](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs).

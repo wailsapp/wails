@@ -1,0 +1,239 @@
+---
+title: Système de liaison
+description: Comment Wails v3 permet à Go et JavaScript de s'appeler mutuellement sans code superflu
+sidebar:
+  order: 5
+---
+
+> Les « liaisons » (Bindings) constituent le **contrat typé** qui vous permet d'écrire :
+
+```go
+msg, err := chatService.Send("Hello")
+```
+
+en Go *et*
+
+```ts
+const msg = await window.backend.ChatService.Send("Hello")
+```
+
+en TypeScript **sans code intermédiaire manuel**.  
+Ce document détaille *comment* cette magie opère, de l'**analyse statique**
+au moment de la compilation, en passant par la **génération de code**, jusqu'au
+**pont d'exécution** qui transfère les octets via le WebView.
+
+---
+
+## 1. Vue d'ensemble en 30 secondes
+
+| Étape | Composant | Sortie |
+|-------|-----------|--------|
+| **Analyse** | `internal/generator/analyse.go` | AST en mémoire des structs exportées, méthodes, paramètres et types de retour de Go |
+| **Génération** | `internal/generator/render/*.tmpl` | • `pkg/application/bindings.go` (Go)<br />• `frontend/src/wailsjs/**.ts` (déf. TS)<br />• `runtime/desktop/@wailsio/runtime/internal/bindings.json` |
+| **Exécution** | `pkg/application/messageprocessor_call.go` + runtime JS (`invoke.ts`) | Messages JSON via le pont natif du WebView |
+
+Le flux est orchestré par l'interface de ligne de commande `wails3` :
+
+```
+wails3 generate  ─┬─> generator.Collect()   // analyser les packages Go
+                  ├─> generator.Analyse()   // construire le modèle sémantique
+                  └─> generator.Render()    // écrire les fichiers + `go fmt`
+```
+
+---
+
+## 2. Analyse statique
+
+### Point d'entrée
+
+```
+internal/generator/analyse.go
+```
+
+`Analyse(cfg generator.Config)` :
+
+1. Charge récursivement les packages Go fournis via `go/packages`.
+2. Parcourt les spécifications de *type* et de *valeur* de chaque fichier AST.
+3. Filtre les symboles **exportés** (en majuscule) situés en dehors des packages `internal/`.
+4. Enregistre :
+   * Le type de récepteur (`struct`, `interface`)
+   * Le nom de la méthode
+   * La liste des paramètres (nom, type, pointeur, variadic)
+   * Le tuple de retour (valeurs + présence d'erreur)
+5. Normalise les types vers un **ensemble sérialisable**  
+   (`int`, `float64`, `string`, `[]byte`, slices, maps, structs, pointeurs).
+
+Les types non pris en charge génèrent une **erreur de compilation** afin que les erreurs soient détectées tôt.
+
+### Modèle
+
+```go
+type Method struct {
+    ID       uint32 // hash stable pour la recherche au runtime
+    Name     string
+    Params   []Param
+    Results  []Result
+    Receiver *Struct // nil pour les fonctions de package
+}
+```
+
+Un hash **FNV-1a** déterministe (`internal/hash/fnv.go`) de
+`<Receiver>.<Name>(<Signature>)` devient l'*ID de méthode* utilisé au runtime.
+
+---
+
+## 3. Génération de code
+
+### Modèles
+
+`internal/generator/render/` contient des fichiers text/template :
+
+| Modèle | Cible |
+|----------|--------|
+| `go_bindings.tmpl` | `pkg/application/bindings.go` |
+| `ts_bindings.tmpl` | `frontend/wailsjs/go/models.d.ts` |
+| `ts_index.tmpl`    | `frontend/wailsjs/index.ts` |
+
+Ajoutez ou modifiez les modèles ici pour personnaliser la génération.
+
+### Sortie Go
+
+`bindings.go` enregistre une table de correspondance :
+
+```go
+var bindings = []application.BoundMethod{
+    {ID: 0x7A1201D3, Name: "ChatService.Send", Call: chatServiceSend},
+}
+
+func chatServiceSend(ctx context.Context, in []byte) ([]byte, error) {
+    var req struct{ Msg string }
+    if err := json.Unmarshal(in, &req); err != nil { return nil, err }
+    res, err := chatService.Send(req.Msg)
+    return json.Marshal(res), err
+}
+```
+
+Points clés :
+
+* **Zéro réflexion** (reflection) au runtime → performance.
+* Le marshalling/unmarshalling est **par méthode** avec des wrappers de structs générés.
+
+### Sortie TypeScript
+
+```ts
+export namespace backend {
+  export namespace ChatService {
+    function Send(msg: string): Promise<string>;
+  }
+}
+```
+
+* Émis sous forme de **modules ES** afin que n'importe quel bundler puisse effectuer le tree-shaking.
+* Les IDs de méthode sont intégrés dans un `bindings.json` auto-généré pour le runtime JS.
+
+---
+
+## 4. Protocole d'appel au runtime
+
+### Côté JavaScript
+
+```ts
+import { System } from "@wailsio/runtime";
+
+await System.invoke(0x7a1201d3 /* ChatService.Send */, ["Hello"]);
+```
+
+Implémentation : `runtime/desktop/@wailsio/runtime/invoke.ts`
+
+1. Emballe `{t:"c", id:<methodID>, p:[...args]}` dans du JSON.
+2. Appelle `window.external.invoke(payload)` (WebView2) ou l'équivalent.
+3. Retourne un `Promise` qui se résout ou se rejette en fonction de la réponse.
+
+### Côté Go
+
+1. `messageprocessor_call.go` reçoit le JSON.
+2. Recherche `methodID` dans le slice `bindings`.
+3. Exécute le stub généré (`chatServiceSend`).
+4. Sérialise `{result, error}` vers JS.
+
+### Mappage des erreurs
+
+| Go | JavaScript |
+|----|------------|
+| `error == nil` | `Promise` se résout avec le résultat |
+| `errors.New(...)` | `Promise` se rejette avec `{message, stack, code}` |
+
+Le code de mappage se trouve dans `runtime/desktop/@wailsio/runtime/errors.ts`.
+
+---
+
+## 5. Appel de JavaScript depuis Go
+
+*Browser → Go* est couvert ci-dessus.  
+*Go → Browser* utilise les **Événements** ou **Eval** :
+
+```go
+window.Eval(`alert("Hi")`)
+app.Publish("chat:new-message", msg)
+```
+
+La génération des liaisons est unidirectionnelle (méthodes Go).  
+Pour exposer des fonctions JS, utilisez `runtime.EventsOn` en JS et `application.Publish`
+depuis Go.
+
+---
+
+## 6. Extension et dépannage
+
+### Ajout de sérialiseurs personnalisés
+
+* Implémentez l'interface `generator.TypeConverter`.
+* Enregistrez-la dans `generator.Config.Converters`.
+* Mettez à jour la désérialisation du runtime JS si nécessaire.
+
+### Erreur de type non pris en charge
+
+```
+error: field "Client" uses unsupported type: chan struct{}
+```
+
+→ enveloppez le canal dans une struct avec une API exposée ou restructurez.
+
+### Décalage de version
+
+Les liaisons sont régénérées à **chaque** `wails3 dev` / `wails3 build`.  
+Si l'intellisense de votre IDE affiche des stubs obsolètes, supprimez `frontend/wailsjs` et reconstruisez.
+
+### Conseils de performance
+
+* Privilégiez les récepteurs par **valeur** pour les petites structs afin de réduire les allocations.
+* Évitez les grands slices d'octets via le pont ; utilisez plutôt `application.FileServer`.
+* Regroupez plusieurs appels rapides en une seule méthode pour minimiser la latence du pont.
+
+---
+
+## 7. Carte des fichiers clés
+
+| Préoccupation | Fichier |
+|---------|------|
+| Point d'entrée de l'analyse statique | `internal/generator/analyse.go` |
+| Pipeline de rendu | `internal/generator/generate.go` |
+| Actifs des modèles | `internal/generator/render/*.tmpl` |
+| Table de liaison Go | `pkg/application/bindings.go` (généré) |
+| Processeur d'appels | `pkg/application/messageprocessor_call.go` |
+| Runtime JS | `runtime/desktop/@wailsio/runtime/invoke.ts` |
+| Mappage des erreurs | `runtime/desktop/@wailsio/runtime/errors.ts` |
+
+Gardez cette fiche pratique à portée de main lorsque vous traquez un bug du pont.
+
+---
+
+## 8. Récapitulatif
+
+1. Le **Générateur** scanne votre code Go → modèle sémantique.  
+2. Les **Modèles** émettent des **stubs Go** + des **définitions TypeScript**.  
+3. Le **Processeur de messages** exécute les stubs au runtime.  
+4. Le **Runtime JS** enveloppe le tout dans des promesses idiomatiques.
+
+Le tout sans réflexion, sans serveurs IPC, et sans que vous ayez à écrire une seule
+ligne de code superflu. C'est le système de liaison de Wails v3. Allez lier !

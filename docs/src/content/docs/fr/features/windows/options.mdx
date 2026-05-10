@@ -1,0 +1,1003 @@
+---
+title: Options de fenêtre
+description: Référence complète pour WebviewWindowOptions
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Options de configuration de fenêtre
+
+Wails fournit une configuration complète des fenêtres avec des dizaines d'options pour la taille, la position, l'apparence et le comportement. Cette référence couvre toutes les options disponibles sur Windows, macOS et Linux en tant que **référence complète** pour `WebviewWindowOptions`. Chaque option, chaque plateforme, avec des exemples et des contraintes.
+
+## Structure de WebviewWindowOptions
+
+```go
+type WebviewWindowOptions struct {
+    // Identity
+    Name  string
+    Title string
+    
+    // Size and Position
+    Width     int
+    Height    int
+    X         int
+    Y         int
+    MinWidth  int
+    MinHeight int
+    MaxWidth  int
+    MaxHeight int
+    
+    // Initial State
+    Hidden          bool
+    Frameless       bool
+    Resizable       bool
+    AlwaysOnTop     bool
+    Fullscreen      bool
+    Minimised       bool
+    Maximised       bool
+    WindowState     WindowState
+    
+    // Appearance
+    BackgroundColour RGBA
+    BackgroundType   BackgroundType
+    
+    // Content
+    URL  string
+    HTML string
+    
+    // Assets
+    Assets application.AssetOptions
+    
+    // Security
+    ContentProtectionEnabled bool
+
+    // Menu
+    UseApplicationMenu bool
+
+    // Lifecycle
+    OnClose   func() bool
+    OnDestroy func()
+
+    // Platform-Specific
+    Mac     MacOptions
+    Windows WindowsOptions
+    Linux   LinuxOptions
+}
+```
+
+## Options principales
+
+### Name
+
+**Type :** `string`  
+**Par défaut :** UUID généré automatiquement  
+**Plateforme :** Toutes
+
+```go
+Name: "main-window"
+```
+
+**Objectif :** Identifiant unique pour retrouver les fenêtres plus tard.
+
+**Bonnes pratiques :**
+- Utilisez des noms descriptifs : `"main"`, `"settings"`, `"about"`
+- Utilisez le kebab-case : `"file-browser"`, `"color-picker"`
+- Gardez-le court et mémorable
+
+**Exemple :**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name: "settings-window",
+})
+
+// Plus tard...
+settings := app.GetWindowByName("settings-window")
+```
+
+### Title
+
+**Type :** `string`  
+**Par défaut :** Nom de l'application  
+**Plateforme :** Toutes
+
+```go
+Title: "My Application"
+```
+
+**Objectif :** Texte affiché dans la barre de titre et la barre des tâches.
+
+**Mises à jour dynamiques :**
+
+```go
+window.SetTitle("My Application - Document.txt")
+```
+
+### Width / Height
+
+**Type :** `int` (pixels)  
+**Par défaut :** 800 x 600  
+**Plateforme :** Toutes  
+**Contraintes :** Doit être positif
+
+```go
+Width:  1200,
+Height: 800,
+```
+
+**Objectif :** Taille initiale de la fenêtre en pixels logiques.
+
+**Notes :**
+- Wails gère automatiquement le mise à l'échelle DPI
+- Utilisez des pixels logiques, pas des pixels physiques
+- Considérez la résolution d'écran minimale (1024x768)
+
+**Exemples de tailles :**
+
+| Cas d'utilisation | Width | Height |
+|----------|-------|--------|
+| Petit utilitaire | 400 | 300 |
+| Application standard | 1024 | 768 |
+| Grande application | 1440 | 900 |
+| Full HD | 1920 | 1080 |
+
+### X / Y
+
+**Type :** `int` (pixels)  
+**Par défaut :** Centré sur l'écran  
+**Plateforme :** Toutes
+
+```go
+X: 100,  // 100px depuis le bord gauche
+Y: 100,  // 100px depuis le bord supérieur
+```
+
+**Objectif :** Position initiale de la fenêtre.
+
+**Système de coordonnées :**
+- (0, 0) est le coin supérieur gauche de l'écran principal
+- X positif va vers la droite
+- Y positif va vers le bas
+
+**Exemple :**
+
+```go
+settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name: "coordinate-window",
+    InitialPosition: application.WindowXY, // utilise le système de coordonnées
+    X:    100,
+    Y:    100,
+})
+```
+
+**Meilleure pratique :** Utilisez `Center()` pour centrer la fenêtre :
+
+```go
+window := app.Window.New()
+window.Center()
+```
+
+### MinWidth / MinHeight
+
+**Type :** `int` (pixels)  
+**Par défaut :** 0 (pas de minimum)  
+**Plateforme :** Toutes
+
+```go
+MinWidth:  400,
+MinHeight: 300,
+```
+
+**Objectif :** Empêcher la fenêtre d'être trop petite.
+
+**Cas d'utilisation :**
+- Empêcher les mises en page cassées
+- Assurer l'utilisabilité
+- Maintenir le ratio d'aspect
+
+**Exemple :**
+
+```go
+// Empêcher la fenêtre d'être plus petite que 400x300
+MinWidth:  400,
+MinHeight: 300,
+```
+
+### MaxWidth / MaxHeight
+
+**Type :** `int` (pixels)  
+**Par défaut :** 0 (pas de maximum)  
+**Plateforme :** Toutes
+
+```go
+MaxWidth:  1920,
+MaxHeight: 1080,
+```
+
+**Objectif :** Empêcher la fenêtre d'être trop grande.
+
+**Cas d'utilisation :**
+- Applications à taille fixe
+- Empêcher une utilisation excessive des ressources
+- Maintenir les contraintes de design
+
+## Options d'état
+
+### Hidden
+
+**Type :** `bool`
+**Par défaut :** `false`
+**Plateforme :** Toutes
+
+```go
+Hidden: true,
+```
+
+**Objectif :** Créer la fenêtre sans l'afficher.
+
+**Cas d'utilisation :**
+- Fenêtres en arrière-plan
+- Fenêtres affichées à la demande
+- Écrans de démarrage (créer, charger, puis afficher)
+- Éviter le flash blanc pendant le chargement du contenu
+
+**Améliorations spécifiques aux plateformes :**
+- **Windows :** Correction du flash blanc de la fenêtre - la fenêtre reste invisible jusqu'à ce que `Show()` soit appelée
+- **macOS :** Support complet
+- **Linux :** Support complet
+
+**Motif recommandé pour un chargement fluide :**
+
+```go
+// Créer une fenêtre cachée
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "main-window",
+    Hidden: true,
+    BackgroundColour: application.RGBA{R: 30, G: 30, B: 30, A: 255}, // Correspond à votre thème
+})
+
+// Charger le contenu pendant qu'elle est cachée
+// ... le contenu charge ...
+
+// Afficher quand prêt (pas de flash !)
+window.Show()
+```
+
+**Exemple :**
+
+```go
+settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "settings",
+    Hidden: true,
+})
+
+// Afficher quand nécessaire
+settings.Show()
+```
+
+### Frameless
+
+**Type :** `bool`  
+**Par défaut :** `false`  
+**Plateforme :** Toutes
+
+```go
+Frameless: true,
+```
+
+**Objectif :** Supprimer la barre de titre et les bordures de la fenêtre.
+
+**Cas d'utilisation :**
+- Chrome de fenêtre personnalisé
+- Écrans de démarrage
+- Applications en kiosque
+- Fenêtres conçues sur mesure
+
+**Important :** Vous devrez implémenter :
+- Le déplacement de la fenêtre
+- Les boutons fermer/minimiser/maximiser
+- Les poignées de redimensionnement (si redimensionnable)
+
+**Voir [Frameless Windows](/fr/features/windows/frameless) pour plus de détails.**
+
+### Resizable
+
+**Type :** `bool`  
+**Par défaut :** `true`  
+**Plateforme :** Toutes
+
+```go
+Resizable: false,
+```
+
+**Objectif :** Autoriser/empêcher le redimensionnement de la fenêtre.
+
+**Cas d'utilisation :**
+- Applications à taille fixe
+- Écrans de démarrage
+- Dialogues
+
+**Note :** Les utilisateurs peuvent toujours maximiser/plein écran sauf si vous empêchez également ces actions.
+
+### AlwaysOnTop
+
+**Type :** `bool`  
+**Par défaut :** `false`  
+**Plateforme :** Toutes
+
+```go
+AlwaysOnTop: true,
+```
+
+**Objectif :** Garder la fenêtre au-dessus de toutes les autres fenêtres.
+
+**Cas d'utilisation :**
+- Barres d'outils flottantes
+- Notifications
+- Picture-in-picture
+- Minuteurs
+
+**Notes spécifiques aux plateformes :**
+- **macOS :** Support complet
+- **Windows :** Support complet
+- **Linux :** Dépend du gestionnaire de fenêtres
+
+### Fullscreen
+
+**Type :** `bool`  
+**Par défaut :** `false`  
+**Plateforme :** Toutes
+
+```go
+Fullscreen: true,
+```
+
+**Objectif :** Démarrer en mode plein écran.
+
+**Comportement par plateforme :**
+- **macOS :** Crée un nouvel Espace (bureau virtuel)
+- **Windows :** Couvre la barre des tâches
+- **Linux :** Varie selon l'environnement de bureau
+
+**Basculer à l'exécution :**
+
+```go
+window.Fullscreen()
+window.UnFullscreen()
+```
+
+### Minimised / Maximised
+
+**Type :** `bool`  
+**Par défaut :** `false`  
+**Plateforme :** Toutes
+
+```go
+Minimised: true,  // Démarrer minimisé
+Maximised: true,  // Démarrer maximisé
+```
+
+**Objectif :** Définir l'état initial de la fenêtre.
+
+**Note :** Ne définissez pas les deux à `true` - le comportement est indéfini.
+
+### WindowState
+
+**Type :** Enum `WindowState`  
+**Par défaut :** `WindowStateNormal`  
+**Plateforme :** Toutes
+
+```go
+WindowState: application.WindowStateMaximised,
+```
+
+**Valeurs :**
+- `WindowStateNormal` - Fenêtre normale
+- `WindowStateMinimised` - Minimisé
+- `WindowStateMaximised` - Maximisé
+- `WindowStateFullscreen` - Plein écran
+- `WindowStateHidden` - Caché
+
+**Préféré par rapport aux drapeaux individuels :**
+
+```go
+// ✅ Préféré
+WindowState: application.WindowStateMaximised,
+
+// ❌ À éviter
+Maximised: true,
+```
+
+## Options d'apparence
+
+### BackgroundColour
+
+**Type :** Structure `RGBA`  
+**Par défaut :** Blanc (255, 255, 255, 255)  
+**Plateforme :** Toutes
+
+```go
+BackgroundColour: application.RGBA{R: 0, G: 0, H: 0, A: 255},
+```
+
+**Objectif :** Couleur de fond de la fenêtre avant le chargement du contenu.
+
+**Cas d'utilisation :**
+- Correspondre au thème de votre application
+- Éviter le flash blanc sur les thèmes sombres
+- Expérience de chargement fluide
+
+**Exemple :**
+
+```go
+// Thème sombre
+BackgroundColour: application.RGBA{R: 30, G: 30, B: 30, A: 255},
+
+// Thème clair```go
+BackgroundColour: application.RGBA{R: 255, G: 255, B: 255, A: 255},
+```
+
+**Méthode utilitaire :**
+
+```go
+window.SetBackgroundColour(30, 30, 30, 255)
+```
+
+### BackgroundType
+
+**Type :** `BackgroundType` enum  
+**Par défaut :** `BackgroundTypeSolid`  
+**Plateforme :** macOS, Windows (partiel)
+
+```go
+BackgroundType: application.BackgroundTypeTranslucent,
+```
+
+**Valeurs :**
+- `BackgroundTypeSolid` - Couleur unie
+- `BackgroundTypeTransparent` - Entièrement transparent
+- `BackgroundTypeTranslucent` - Flou semi-transparent
+
+**Prise en charge des plateformes :**
+- **macOS :** Tous les types pris en charge
+- **Windows :** Transparent et Translucent (Windows 11+)
+- **Linux :** Uniquement Solid
+
+**Exemple (macOS) :**
+
+```go
+BackgroundType: application.BackgroundTypeTranslucent,
+Mac: application.MacOptions{
+    Backdrop: application.MacBackdropTranslucent,
+},
+```
+
+## Options de contenu
+
+### URL
+
+**Type :** `string`  
+**Par défaut :** Vide (chargement depuis les Actifs)  
+**Plateforme :** Toutes
+
+```go
+URL: "https://example.com",
+```
+
+**Objectif :** Charger une URL externe au lieu des actifs intégrés.
+
+**Cas d'utilisation :**
+- Développement (chargement depuis le serveur de développement)
+- Applications web
+- Applications hybrides
+
+**Exemple :**
+
+```go
+// Développement
+URL: "http://localhost:5173",
+
+// Production
+Assets: application.AssetOptions{
+    Handler: application.AssetFileServerFS(assets),
+},
+```
+
+### HTML
+
+**Type :** `string`  
+**Par défaut :** Vide  
+**Plateforme :** Toutes
+
+```go
+HTML: "<h1>Hello World</h1>",
+```
+
+**Objectif :** Charger une chaîne HTML directement.
+
+**Cas d'utilisation :**
+- Fenêtres simples
+- Contenu généré
+- Tests
+
+**Exemple :**
+
+```go
+HTML: `
+<!DOCTYPE html>
+<html>
+<head><title>Simple Window</title></head>
+<body><h1>Hello from Wails!</h1></body>
+</html>
+`,
+```
+
+### Assets
+
+**Type :** `AssetOptions`  
+**Par défaut :** Hérité de l'application  
+**Plateforme :** Toutes
+
+```go
+Assets: application.AssetOptions{
+    Handler: application.AssetFileServerFS(assets),
+},
+```
+
+**Objectif :** Servir les actifs frontend intégrés.
+
+**Voir [Build System](/fr/concepts/build-system) pour plus de détails.**
+
+### UseApplicationMenu
+
+**Type :** `bool`
+**Par défaut :** `false`
+**Plateforme :** Windows, Linux (sans effet sur macOS)
+
+```go
+UseApplicationMenu: true,
+```
+
+**Objectif :** Utiliser le menu de l'application (défini via `app.Menu.Set()`) pour cette fenêtre.
+
+Sur **macOS**, cette option n'a aucun effet car macOS utilise toujours un menu d'application global en haut de l'écran.
+
+Sur **Windows** et **Linux**, les fenêtres n'affichent pas de menu par défaut. La définition de `UseApplicationMenu: true` indique à la fenêtre d'utiliser le menu au niveau de l'application, offrant ainsi une solution simple multiplateforme.
+
+**Exemple :**
+
+```go
+// Définir le menu de l'application une fois
+menu := app.NewMenu()
+menu.AddRole(application.FileMenu)
+menu.AddRole(application.EditMenu)
+app.Menu.Set(menu)
+
+// Toutes les fenêtres avec UseApplicationMenu afficheront ce menu
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:              "Main Window",
+    UseApplicationMenu: true,
+})
+
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:              "Second Window",
+    UseApplicationMenu: true,  // Obtient également le menu de l'application
+})
+```
+
+**Remarques :**
+- Si `UseApplicationMenu` et un menu spécifique à la fenêtre sont tous deux définis, le menu spécifique à la fenêtre a la priorité.
+- Cela simplifie le code multiplateforme en éliminant le besoin de vérifications du système d'exploitation au moment de l'exécution.
+- Voir [Application Menus](/fr/features/menus/application) pour la documentation complète sur les menus.
+
+## Options d'entrée
+
+### EnableFileDrop
+
+**Type :** `bool`  
+**Par défaut :** `false`  
+**Plateforme :** Toutes
+
+```go
+EnableFileDrop: true,
+```
+
+**Objectif :** Activer le glisser-déposer de fichiers depuis le système d'exploitation vers la fenêtre.
+
+Lorsqu'elle est activée :
+- Les fichiers glissés depuis les gestionnaires de fichiers peuvent être déposés dans votre application
+- L'événement `WindowFilesDropped` se déclenche avec les chemins des fichiers déposés
+- Les éléments avec l'attribut `data-file-drop-target` fournissent des informations détaillées sur le dépôt
+
+**Cas d'utilisation :**
+- Interfaces de téléchargement de fichiers
+- Éditeurs de documents
+- Importateurs de médias
+- Toute application acceptant des fichiers
+
+**Exemple :**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "File Uploader",
+    EnableFileDrop: true,
+})
+
+// Gérer les fichiers déposés
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    details := event.Context().DropTargetDetails()
+    
+    for _, file := range files {
+        fmt.Println("Dropped:", file)
+    }
+})
+```
+
+**Zones de dépôt HTML :**
+
+```html
+<!-- Marquer les éléments comme cibles de dépôt -->
+<div id="upload" data-file-drop-target>
+    Déposez des fichiers ici
+</div>
+```
+
+**Voir [File Drop](/fr/features/drag-and-drop/files) pour la documentation complète.**
+
+## Options de sécurité
+
+### ContentProtectionEnabled
+
+**Type :** `bool`  
+**Par défaut :** `false`  
+**Plateforme :** Windows (10+), macOS
+
+```go
+ContentProtectionEnabled: true,
+```
+
+**Objectif :** Empêcher la capture d'écran du contenu de la fenêtre.
+
+**Prise en charge des plateformes :**
+- **Windows :** Windows 10 build 19041+ (complet), versions antérieures (partiel)
+- **macOS :** Prise en charge complète
+- **Linux :** Non pris en charge
+
+**Cas d'utilisation :**
+- Applications bancaires
+- Gestionnaires de mots de passe
+- Dossiers médicaux
+- Documents confidentiels
+
+**Remarques importantes :**
+1. N'empêche pas la photographie physique
+2. Certains outils peuvent contourner la protection
+3. Fait partie d'une sécurité globale, pas une protection unique
+4. Les fenêtres DevTools ne sont pas protégées automatiquement
+
+**Exemple :**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "Secure Window",
+    ContentProtectionEnabled: true,
+})
+
+// Basculer au moment de l'exécution
+window.SetContentProtection(true)
+```
+
+## Options de cycle de vie
+
+### OnClose
+
+**Type :** `func() bool`  
+**Par défaut :** `nil` (toujours autoriser la fermeture)  
+**Plateforme :** Toutes
+
+```go
+OnClose: func() bool {
+    // Retourner false pour annuler la fermeture
+    // Retourner true pour autoriser la fermeture
+    return true
+},
+```
+
+**Objectif :** Gérer les événements de fermeture de fenêtre, éventuellement empêcher la fermeture.
+
+**Cas d'utilisation :**
+- Confirmer avant de fermer avec des modifications non enregistrées
+- Enregistrer l'état avant de fermer
+- Empêcher la fermeture accidentelle
+
+**Exemple :**
+
+```go
+OnClose: func() bool {
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        return result == "yes"
+    }
+    return true
+},
+```
+
+**Important :** Uniquement déclenché par les actions de l'utilisateur (clic sur X), pas par `window.Destroy()`.
+
+### OnDestroy
+
+**Type :** `func()`  
+**Par défaut :** `nil`  
+**Plateforme :** Toutes
+
+```go
+OnDestroy: func() {
+    // Code de nettoyage
+    fmt.Println("Window destroyed")
+},
+```
+
+**Objectif :** Nettoyage lorsque la fenêtre est détruite.
+
+**Cas d'utilisation :**
+- Libérer des ressources
+- Fermer des connexions
+- Mettre à jour l'état de l'application
+
+**Exemple :**
+
+```go
+OnDestroy: func() {
+    // Fermer la connexion à la base de données
+    if db != nil {
+        db.Close()
+    }
+    
+    // Supprimer de la liste des fenêtres
+    removeWindow(window.ID())
+},
+```
+
+## Options spécifiques à la plateforme### Options Mac
+
+```go
+Mac: application.MacWindow{
+    TitleBar: application.MacTitleBar{
+        AppearsTransparent: true,
+        Hide:               false,
+        HideTitle:          true,
+        FullSizeContent:    true,
+    },
+    Backdrop:                application.MacBackdropTranslucent,
+    InvisibleTitleBarHeight: 50,
+    WindowLevel:             application.MacWindowLevelNormal,
+    CollectionBehavior:      application.MacWindowCollectionBehaviorDefault,
+},
+```
+
+**TitleBar** (`MacTitleBar`)
+- `AppearsTransparent` - Rend la barre de titre transparente, le contenu s'étend dans la zone de la barre de titre
+- `Hide` - Masque complètement la barre de titre
+- `HideTitle` - Masque uniquement le texte du titre
+- `FullSizeContent` - Étend le contenu à la taille complète de la fenêtre
+
+**Backdrop** (`MacBackdrop`)
+- `MacBackdropNormal` - Arrière-plan opaque standard
+- `MacBackdropTranslucent` - Arrière-plan translucide flouté
+- `MacBackdropTransparent` - Arrière-plan entièrement transparent
+
+**InvisibleTitleBarHeight** (`int`)
+- Hauteur de la zone de barre de titre invisible (pour le glissement)
+- N'a d'effet que lorsque la zone de glissement de la barre de titre native est masquée, c'est-à-dire lorsque la fenêtre est sans bordure (`Frameless: true`) ou utilise une barre de titre transparente (`AppearsTransparent: true`)
+- N'a aucun effet sur les fenêtres standard avec une barre de titre visible
+
+**WindowLevel** (`MacWindowLevel`)
+- `MacWindowLevelNormal` - Niveau de fenêtre standard (par défaut)
+- `MacWindowLevelFloating` - Flotte au-dessus des fenêtres normales
+- `MacWindowLevelTornOffMenu` - Niveau de menu détaché
+- `MacWindowLevelModalPanel` - Niveau de panneau modal
+- `MacWindowLevelMainMenu` - Niveau du menu principal
+- `MacWindowLevelStatus` - Niveau de fenêtre d'état
+- `MacWindowLevelPopUpMenu` - Niveau de menu contextuel
+- `MacWindowLevelScreenSaver` - Niveau de économiseur d'écran
+
+**CollectionBehavior** (`MacWindowCollectionBehavior`)
+
+Contrôle le comportement de la fenêtre à travers les Espaces macOS et le mode plein écran. Ce sont des valeurs de masque de bits qui peuvent être combinées à l'aide de l'opérateur OU binaire (`|`).
+
+**Comportement de l'espace :**
+- `MacWindowCollectionBehaviorDefault` - Utilise FullScreenPrimary (par défaut, rétrocompatible)
+- `MacWindowCollectionBehaviorCanJoinAllSpaces` - La fenêtre apparaît sur tous les Espaces
+- `MacWindowCollectionBehaviorMoveToActiveSpace` - Passe à l'Espace actif lors de l'affichage
+- `MacWindowCollectionBehaviorManaged` - Comportement par défaut de la fenêtre gérée
+- `MacWindowCollectionBehaviorTransient` - Fenêtre temporaire/transitoire
+- `MacWindowCollectionBehaviorStationary` - Reste stationnaire lors des changements d'espace
+
+**Navigation entre les fenêtres :**
+- `MacWindowCollectionBehaviorParticipatesInCycle` - Inclus dans le cycle Cmd+`
+- `MacWindowCollectionBehaviorIgnoresCycle` - Exclu du cycle Cmd+`
+
+**Comportement en plein écran :**
+- `MacWindowCollectionBehaviorFullScreenPrimary` - Peut entrer en mode plein écran
+- `MacWindowCollectionBehaviorFullScreenAuxiliary` - Peut se superposer aux applications en plein écran
+- `MacWindowCollectionBehaviorFullScreenNone` - Désactive la capacité plein écran
+- `MacWindowCollectionBehaviorFullScreenAllowsTiling` - Autorise le carrelage côte à côte (macOS 10.11+)
+- `MacWindowCollectionBehaviorFullScreenDisallowsTiling` - Empêche le carrelage (macOS 10.11+)
+
+**Exemple - Fenêtre de type Spotlight :**
+
+```go
+// Fenêtre qui apparaît sur tous les Espaces ET peut se superposer aux applications en plein écran
+Mac: application.MacWindow{
+    CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces |
+                        application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+    WindowLevel:        application.MacWindowLevelFloating,
+},
+```
+
+**Exemple - Comportement unique :**
+
+```go
+// Fenêtre qui peut apparaître au-dessus des applications en plein écran
+Mac: application.MacWindow{
+    CollectionBehavior: application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+},
+```
+
+### Options Windows
+
+```go
+Windows: application.WindowsOptions{
+    DisableWindowIcon:      false,
+    WindowBackdropType:     application.WindowsBackdropTypeAuto,
+    CustomTheme:            nil,
+    DisableFramelessWindowDecorations: false,
+},
+```
+
+**DisableWindowIcon** (`bool`)
+- Supprimer l'icône de la barre de titre
+- Apparence plus épurée
+
+**WindowBackdropType** (`WindowsBackdropType`)
+- `WindowsBackdropTypeAuto` - Défaut du système
+- `WindowsBackdropTypeNone` - Pas de fond
+- `WindowsBackdropTypeMica` - Matériau Mica (Windows 11)
+- `WindowsBackdropTypeAcrylic` - Matériau Acrylic (Windows 11)
+- `WindowsBackdropTypeTabbed` - Matériau Tabbed (Windows 11)
+
+**CustomTheme** (`*WindowsTheme`)
+- Thème de couleur personnalisé
+- Remplace les couleurs du système
+
+**DisableFramelessWindowDecorations** (`bool`)
+- Désactiver les décorations par défaut des fenêtres sans bordure
+- Pour un chrome de fenêtre personnalisé
+
+**Exemple :**
+
+```go
+Windows: application.WindowsOptions{
+    WindowBackdropType: application.WindowsBackdropTypeMica,
+    DisableWindowIcon:  true,
+},
+```
+
+### Options Linux
+
+```go
+Linux: application.LinuxOptions{
+    Icon:                []byte{/* données PNG */},
+    WindowIsTranslucent: false,
+},
+```
+
+**Icon** (`[]byte`)
+- Icône de la fenêtre (format PNG)
+- Affichée dans la barre de titre et la barre des tâches
+
+**WindowIsTranslucent** (`bool`)
+- Activer la translucidité de la fenêtre
+- Nécessite la prise en charge du compositeur
+
+**Exemple :**
+
+```go
+//go:embed icon.png
+var icon []byte
+
+Linux: application.LinuxOptions{
+    Icon: icon,
+},
+```
+
+## Options de fenêtres au niveau de l'application
+
+Certaines options spécifiques à Windows doivent être configurées au niveau de l'application plutôt que par fenêtre. Cela est dû au fait que WebView2 partage un seul environnement de navigateur par chemin de données utilisateur.
+
+### Indicateurs du navigateur
+
+Les indicateurs du navigateur WebView2 contrôlent les fonctionnalités expérimentales et le comportement sur **toutes les fenêtres** de votre application. Ils doivent être définis dans `application.Options.Windows` :
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Windows: application.WindowsOptions{
+        // Activer les fonctionnalités expérimentales de WebView2
+        EnabledFeatures: []string{
+            "msWebView2EnableDraggableRegions",
+        },
+
+        // Désactiver des fonctionnalités spécifiques
+        DisabledFeatures: []string{
+            "msSmartScreenProtection",  // Toujours désactivé par Wails
+        },
+
+        // Arguments de ligne de commande supplémentaires pour Chromium
+        AdditionalBrowserArgs: []string{
+            "--disable-gpu",
+            "--remote-debugging-port=9222",
+        },
+    },
+})
+```
+
+**EnabledFeatures** (`[]string`)
+- Liste des indicateurs de fonctionnalité WebView2 à activer
+- Voir [Indicateurs de navigateur WebView2](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags) pour les indicateurs disponibles
+- Exemple : `"msWebView2EnableDraggableRegions"`
+
+**DisabledFeatures** (`[]string`)
+- Liste des indicateurs de fonctionnalité WebView2 à désactiver
+- Wails désactive automatiquement `msSmartScreenProtection`
+- Exemple : `"msExperimentalFeature"`
+
+**AdditionalBrowserArgs** (`[]string`)
+- Arguments de ligne de commande Chromium passés au processus du navigateur
+- Doit inclure le préfixe `--` (par exemple, `"--remote-debugging-port=9222"`)
+- Voir [Indicateurs de ligne de commande Chromium](https://peter.sh/experiments/chromium-command-line-switches/) pour les arguments disponibles
+
+:::caution[Important]
+Ces indicateurs s'appliquent globalement à TOUTES les fenêtres car WebView2 partage un seul environnement de navigateur par chemin de données utilisateur. Vous ne pouvez pas avoir différents indicateurs de navigateur pour différentes fenêtres.
+:::
+
+**Exemple complet :**
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        Windows: application.WindowsOptions{
+            // Activer la fonctionnalité de régions déplaçables
+            EnabledFeatures: []string{
+                "msWebView2EnableDraggableRegions",
+            },
+            // Activer le débogage à distance
+            AdditionalBrowserArgs: []string{
+                "--remote-debugging-port=9222",
+            },
+        },
+    })
+
+    // Toutes les fenêtres utiliseront les indicateurs de navigateur configurés ci-dessus
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  "Main Window",
+        Width:  1024,
+        Height: 768,
+    })
+
+    window.Show()
+    app.Run()
+}
+```---
+
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples](https://github.com/wailsapp/wails/tree/master/v3/examples).

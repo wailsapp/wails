@@ -1,0 +1,562 @@
+---
+title: Mises à jour automatiques
+description: Implémentez des mises à jour automatiques de l'application avec Wails v3
+sidebar:
+  order: 5
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Steps } from '@astrojs/starlight/components';
+import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Aside } from '@astrojs/starlight/components';
+
+# Mises à jour automatiques
+
+Wails v3 fournit un système de mise à jour intégré qui prend en charge la vérification automatique, le téléchargement et l'installation des mises à jour. Le module de mise à jour prend en charge les mises à jour par delta binaire (correctifs) pour des tailles de téléchargement minimales.
+
+<CardGrid>
+  <Card title="Vérification automatique" icon="rocket">
+    Configurez des vérifications périodiques des mises à jour en arrière-plan
+  </Card>
+  <Card title="Mises à jour par delta" icon="down-caret">
+    Téléchargez uniquement les modifications avec des correctifs bsdiff
+  </Card>
+  <Card title="Multiplateforme" icon="laptop">
+    Fonctionne sur macOS, Windows et Linux
+  </Card>
+  <Card title="Sécurisé" icon="approve-check">
+    Sommes de contrôle SHA256 et vérification facultative des signatures
+  </Card>
+</CardGrid>
+
+## Démarrage rapide
+
+Ajoutez le service de mise à jour à votre application :
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "time"
+)
+
+func main() {
+    // Create the updater service
+    updater, err := application.CreateUpdaterService(
+        "1.0.0", // Current version
+        application.WithUpdateURL("https://updates.example.com/myapp/"),
+        application.WithCheckInterval(24 * time.Hour),
+    )
+    if err != nil {
+        panic(err)
+    }
+
+    app := application.New(application.Options{
+        Name: "MyApp",
+        Services: []application.Service{
+            application.NewService(updater),
+        },
+    })
+
+    // ... rest of your app
+    app.Run()
+}
+```
+
+Ensuite, utilisez-le depuis votre interface frontend :
+
+```typescript title="App.tsx"
+import { updater } from './bindings/myapp';
+
+async function checkForUpdates() {
+  const update = await updater.CheckForUpdate();
+
+  if (update) {
+    console.log(`New version available: ${update.version}`);
+    console.log(`Release notes: ${update.releaseNotes}`);
+
+    // Download and install
+    await updater.DownloadAndApply();
+  }
+}
+```
+
+## Options de configuration
+
+Le module de mise à jour prend en charge diverses options de configuration :
+
+```go
+updater, err := application.CreateUpdaterService(
+    "1.0.0",
+    // Required: URL where update manifests are hosted
+    application.WithUpdateURL("https://updates.example.com/myapp/"),
+
+    // Optional: Check for updates automatically every 24 hours
+    application.WithCheckInterval(24 * time.Hour),
+
+    // Optional: Allow pre-release versions
+    application.WithAllowPrerelease(true),
+
+    // Optional: Update channel (stable, beta, canary)
+    application.WithChannel("stable"),
+
+    // Optional: Require signed updates
+    application.WithRequireSignature(true),
+    application.WithPublicKey("your-ed25519-public-key"),
+)
+```
+
+## Format du manifeste de mise à jour
+
+Hébergez un fichier `update.json` sur votre serveur :
+
+```json title="update.json"
+{
+  "version": "1.2.0",
+  "release_date": "2025-01-15T00:00:00Z",
+  "release_notes": "## What's New\n\n- Feature A\n- Bug fix B",
+  "platforms": {
+    "macos-arm64": {
+      "url": "https://updates.example.com/myapp/myapp-1.2.0-macos-arm64.tar.gz",
+      "size": 12582912,
+      "checksum": "sha256:abc123...",
+      "patches": [
+        {
+          "from": "1.1.0",
+          "url": "https://updates.example.com/myapp/patches/1.1.0-to-1.2.0-macos-arm64.patch",
+          "size": 14336,
+          "checksum": "sha256:def456..."
+        }
+      ]
+    },
+    "macos-amd64": {
+      "url": "https://updates.example.com/myapp/myapp-1.2.0-macos-amd64.tar.gz",
+      "size": 13107200,
+      "checksum": "sha256:789xyz..."
+    },
+    "windows-amd64": {
+      "url": "https://updates.example.com/myapp/myapp-1.2.0-windows-amd64.zip",
+      "size": 14680064,
+      "checksum": "sha256:ghi789..."
+    },
+    "linux-amd64": {
+      "url": "https://updates.example.com/myapp/myapp-1.2.0-linux-amd64.tar.gz",
+      "size": 11534336,
+      "checksum": "sha256:jkl012..."
+    }
+  },
+  "minimum_version": "1.0.0",
+  "mandatory": false
+}
+```
+
+### Clés de plateforme
+
+| Plateforme | Clé |
+|----------|-----|
+| macOS (Apple Silicon) | `macos-arm64` |
+| macOS (Intel) | `macos-amd64` |
+| Windows (64-bit) | `windows-amd64` |
+| Linux (64-bit) | `linux-amd64` |
+| Linux (ARM64) | `linux-arm64` |
+
+## API Frontend
+
+Le module de mise à jour expose des méthodes qui sont automatiquement liées à votre interface frontend :
+
+### Types TypeScript
+
+```typescript
+interface UpdateInfo {
+  version: string;
+  releaseDate: Date;
+  releaseNotes: string;
+  size: number;
+  patchSize?: number;
+  mandatory: boolean;
+  hasPatch: boolean;
+}
+
+interface Updater {
+  // Get the current application version
+  GetCurrentVersion(): string;
+
+  // Check if an update is available
+  CheckForUpdate(): Promise<UpdateInfo | null>;
+
+  // Download the update (emits progress events)
+  DownloadUpdate(): Promise<void>;
+
+  // Apply the downloaded update (restarts app)
+  ApplyUpdate(): Promise<void>;
+
+  // Download and apply in one call
+  DownloadAndApply(): Promise<void>;
+
+  // Get current state: idle, checking, available, downloading, ready, installing, error
+  GetState(): string;
+
+  // Get the available update info
+  GetUpdateInfo(): UpdateInfo | null;
+
+  // Get the last error message
+  GetLastError(): string;
+
+  // Reset the updater state
+  Reset(): void;
+}
+```
+
+### Événements de progression
+
+Écoutez les événements de progression du téléchargement :
+
+```typescript
+import { Events } from '@wailsio/runtime';
+
+Events.On('updater:progress', (data) => {
+  console.log(`Downloaded: ${data.downloaded} / ${data.total}`);
+  console.log(`Progress: ${data.percentage.toFixed(1)}%`);
+  console.log(`Speed: ${(data.bytesPerSecond / 1024 / 1024).toFixed(2)} MB/s`);
+});
+```
+
+## Exemple complet
+
+Voici un exemple complet avec un composant React :
+
+```tsx title="UpdateChecker.tsx"
+import { useState, useEffect } from 'react';
+import { updater } from './bindings/myapp';
+import { Events } from '@wailsio/runtime';
+
+interface Progress {
+  downloaded: number;
+  total: number;
+  percentage: number;
+  bytesPerSecond: number;
+}
+
+export function UpdateChecker() {
+  const [checking, setChecking] = useState(false);
+  const [updateInfo, setUpdateInfo] = useState<any>(null);
+  const [downloading, setDownloading] = useState(false);
+  const [progress, setProgress] = useState<Progress | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Listen for progress events
+    const cleanup = Events.On('updater:progress', (data: Progress) => {
+      setProgress(data);
+    });
+
+    // Check for updates on mount
+    checkForUpdates();
+
+    return () => cleanup();
+  }, []);
+
+  async function checkForUpdates() {
+    setChecking(true);
+    setError(null);
+
+    try {
+      const info = await updater.CheckForUpdate();
+      setUpdateInfo(info);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  async function downloadAndInstall() {
+    setDownloading(true);
+    setError(null);
+
+    try {
+      await updater.DownloadAndApply();
+      // App will restart automatically
+    } catch (err) {
+      setError(err.message);
+      setDownloading(false);
+    }
+  }
+
+  if (checking) {
+    return <div>Checking for updates...</div>;
+  }
+
+  if (error) {
+    return (
+      <div>
+        <p>Error: {error}</p>
+        <button onClick={checkForUpdates}>Retry</button>
+      </div>
+    );
+  }
+
+  if (!updateInfo) {
+    return (
+      <div>
+        <p>You're up to date! (v{updater.GetCurrentVersion()})</p>
+        <button onClick={checkForUpdates}>Check Again</button>
+      </div>
+    );
+  }
+
+  if (downloading) {
+    return (
+      <div>
+        <p>Downloading update...</p>
+        {progress && (
+          <div>
+            <progress value={progress.percentage} max={100} />
+            <p>{progress.percentage.toFixed(1)}%</p>
+            <p>{(progress.bytesPerSecond / 1024 / 1024).toFixed(2)} MB/s</p>
+          </div>
+        )}
+      </div>
+    );
+  }return (
+    <div>
+      <h3>Mise à jour disponible !</h3>
+      <p>La version {updateInfo.version} est disponible</p>
+      <p>Taille : {updateInfo.hasPatch
+        ? `${(updateInfo.patchSize / 1024).toFixed(0)} Ko (correctif)`
+        : `${(updateInfo.size / 1024 / 1024).toFixed(1)} Mo`}
+      </p>
+      <div dangerouslySetInnerHTML={{ __html: updateInfo.releaseNotes }} />
+      <button onClick={downloadAndInstall}>Télécharger & Installer</button>
+      <button onClick={() => setUpdateInfo(null)}>Ignorer</button>
+    </div>
+  );
+}
+```
+
+## Stratégies de mise à jour
+
+### Vérification au démarrage
+
+```go
+func (a *App) OnStartup(ctx context.Context) {
+    // Vérifier les mises à jour après un court délai
+    go func() {
+        time.Sleep(5 * time.Second)
+        info, err := a.updater.CheckForUpdate()
+        if err == nil && info != nil {
+            // Émettre un événement vers le frontend
+            application.Get().EmitEvent("update-available", info)
+        }
+    }()
+}
+```
+
+### Vérification en arrière-plan
+
+Configurez les vérifications automatiques en arrière-plan :
+
+```go
+updater, _ := application.CreateUpdaterService(
+    "1.0.0",
+    application.WithUpdateURL("https://updates.example.com/myapp/"),
+    application.WithCheckInterval(6 * time.Hour), // Vérifier toutes les 6 heures
+)
+```
+
+### Élément de menu de vérification manuelle
+
+```go
+menu := application.NewMenu()
+menu.Add("Vérifier les mises à jour...").OnClick(func(ctx *application.Context) {
+    info, err := updater.CheckForUpdate()
+    if err != nil {
+        application.InfoDialog().SetMessage("Erreur lors de la vérification des mises à jour").Show()
+        return
+    }
+    if info == nil {
+        application.InfoDialog().SetMessage("Vous êtes à jour !").Show()
+        return
+    }
+    // Afficher la boîte de dialogue de mise à jour...
+})
+```
+
+## Mises à jour par delta (correctifs)
+
+Les mises à jour par delta (correctifs) permettent aux utilisateurs de télécharger uniquement les modifications entre les versions, réduisant considérablement la taille des téléchargements.
+
+### Fonctionnement
+
+1. Lors de la construction d'une nouvelle version, générez des correctifs à partir des versions précédentes
+2. Hébergez les correctifs aux côtés des mises à jour complètes sur votre serveur
+3. Le programme de mise à jour télécharge automatiquement les correctifs lorsqu'ils sont disponibles
+4. Si l'application du correctif échoue, il revient au téléchargement complet
+
+### Génération de correctifs
+
+Les correctifs sont générés à l'aide de l'algorithme bsdiff. Vous aurez besoin de l'outil `bsdiff` :
+
+```bash
+# Installer bsdiff (macOS)
+brew install bsdiff
+
+# Installer bsdiff (Ubuntu/Debian)
+sudo apt-get install bsdiff
+
+# Générer un correctif
+bsdiff old-binary new-binary patch.bsdiff
+```
+
+### Nommage des fichiers de correctif
+
+Organisez vos correctifs dans votre répertoire de mise à jour :
+
+```
+updates/
+├── update.json
+├── myapp-1.2.0-macos-arm64.tar.gz
+├── myapp-1.2.0-windows-amd64.zip
+└── patches/
+    ├── 1.0.0-to-1.2.0-macos-arm64.patch
+    ├── 1.1.0-to-1.2.0-macos-arm64.patch
+    ├── 1.0.0-to-1.2.0-windows-amd64.patch
+    └── 1.1.0-to-1.2.0-windows-amd64.patch
+```
+
+<Aside type="tip">
+Conservez les correctifs des dernières versions. Les utilisateurs sur des versions très anciennes téléchargeront automatiquement la mise à jour complète.
+</Aside>
+
+## Hébergement des mises à jour
+
+### Hébergement de fichiers statiques
+
+Les mises à jour peuvent être hébergées sur n'importe quel serveur de fichiers statiques :
+
+- **Amazon S3** / **Cloudflare R2**
+- **Google Cloud Storage**
+- **GitHub Releases**
+- **Tout CDN ou serveur web**
+
+Exemple de structure de bucket S3 :
+
+```
+s3://my-updates-bucket/myapp/
+├── stable/
+│   ├── update.json
+│   ├── myapp-1.2.0-macos-arm64.tar.gz
+│   └── patches/
+│       └── 1.1.0-to-1.2.0-macos-arm64.patch
+└── beta/
+    └── update.json
+```
+
+### Configuration CORS
+
+Si vous hébergez sur un domaine différent, configurez CORS :
+
+```json
+{
+  "CORSRules": [
+    {
+      "AllowedOrigins": ["*"],
+      "AllowedMethods": ["GET"],
+      "AllowedHeaders": ["*"]
+    }
+  ]
+}
+```
+
+## Sécurité
+
+### Vérification des sommes de contrôle
+
+Tous les téléchargements sont vérifiés par rapport aux sommes de contrôle SHA256 dans le manifeste :
+
+```json
+{
+  "checksum": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
+```
+
+### Vérification des signatures
+
+Pour une sécurité supplémentaire, activez la vérification des signatures :
+
+<Steps>
+1. **Générer une paire de clés** :
+   ```bash
+   # Générer une paire de clés Ed25519
+   openssl genpkey -algorithm Ed25519 -out private.pem
+   openssl pkey -in private.pem -pubout -out public.pem
+   ```
+
+2. **Signer votre manifeste de mise à jour** :
+   ```bash
+   openssl pkeyutl -sign -inkey private.pem -in update.json -out update.json.sig
+   ```
+
+3. **Configurer le programme de mise à jour** :
+   ```go
+   updater, _ := application.CreateUpdaterService(
+       "1.0.0",
+       application.WithUpdateURL("https://updates.example.com/myapp/"),
+       application.WithRequireSignature(true),
+       application.WithPublicKey("MCowBQYDK2VwAyEA..."), // Clé publique encodée en Base64
+   )
+   ```
+</Steps>
+
+## Bonnes pratiques
+
+### À faire
+
+- Tester les mises à jour de manière approfondie avant le déploiement
+- Conserver les versions précédentes disponibles pour un retour en arrière
+- Afficher les notes de version aux utilisateurs
+- Permettre aux utilisateurs d'ignorer les mises à jour non obligatoires
+- Utiliser HTTPS pour tous les téléchargements
+- Vérifier les sommes de contrôle avant d'appliquer les mises à jour
+- Gérer les erreurs de manière élégante
+
+### À ne pas faire
+
+- Forcer les redémarrages immédiats sans avertissement
+- Ignorer la vérification des sommes de contrôle
+- Interrompre les utilisateurs pendant un travail important
+- Supprimer la version précédente immédiatement
+- Ignorer les échecs de mise à jour
+
+## Dépannage
+
+### Mise à jour introuvable
+
+- Vérifiez que l'URL du manifeste est correcte
+- Vérifiez que la clé de plateforme correspond (par ex. `macos-arm64`)
+- Assurez-vous que la version dans le manifeste est plus récente
+
+### Échec du téléchargement
+
+- Vérifiez la connectivité réseau
+- Vérifiez que l'URL de téléchargement est accessible
+- Vérifiez la configuration CORS si le téléchargement est inter-domaine
+
+### Échec du correctif
+
+- Le programme de mise à jour revient automatiquement au téléchargement complet
+- Assurez-vous que `bspatch` est disponible sur le système
+- Vérifiez que la somme de contrôle du correctif est correcte
+
+### L'application ne redémarre pas
+
+- Sur macOS, assurez-vous que l'application est correctement signée
+- Sur Windows, vérifiez les verrous de fichiers
+- Sur Linux, vérifiez les permissions de fichiers
+
+## Prochaines étapes
+
+- [Signature de code](/fr/guides/build/signing) - Signez vos mises à jour
+- [Création d'installateurs](/fr/guides/installers) - Packagez votre application
+- [Intégration CI/CD](/guides/ci-cd) - Automatisez votre processus de publication

@@ -1,0 +1,384 @@
+---
+title: Boîtes de dialogue de message
+description: Afficher des informations, des avertissements, des erreurs et des questions
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Boîtes de dialogue de message
+
+Wails fournit des **boîtes de dialogue de message natives** avec une apparence adaptée à la plateforme : des boîtes de dialogue d'information, d'avertissement, d'erreur et de question avec des titres, des messages et des boutons personnalisables. API simple, comportement natif, accessible par défaut.
+
+## Création de boîtes de dialogue
+
+Les boîtes de dialogue de message sont accessibles via le gestionnaire `app.Dialog` :
+
+```go
+app.Dialog.Info()
+app.Dialog.Question()
+app.Dialog.Warning()
+app.Dialog.Error()
+```
+
+Toutes ces méthodes retournent un `*MessageDialog` qui peut être configuré en utilisant le chaînage de méthodes.
+
+## Boîte de dialogue d'information
+
+Afficher des messages informatifs :
+
+```go
+app.Dialog.Info().
+    SetTitle("Succès").
+    SetMessage("Fichier enregistré avec succès !").
+    Show()
+```
+
+**Cas d'utilisation :**
+- Confirmations de succès
+- Notifications de complétion
+- Messages informatifs
+- Mises à jour de statut
+
+**Exemple - Confirmation d'enregistrement :**
+
+```go
+func saveFile(app *application.App, path string, data []byte) error {
+    if err := os.WriteFile(path, data, 0644); err != nil {
+        return err
+    }
+
+    app.Dialog.Info().
+        SetTitle("Fichier enregistré").
+        SetMessage(fmt.Sprintf("Enregistré dans %s", filepath.Base(path))).
+        Show()
+
+    return nil
+}
+```
+
+## Boîte de dialogue d'avertissement
+
+Afficher des avertissements :
+
+```go
+app.Dialog.Warning().
+    SetTitle("Avertissement").
+    SetMessage("Cette action ne peut pas être annulée.").
+    Show()
+```
+
+**Cas d'utilisation :**
+- Avertissements non critiques
+- Notifications de dépréciation
+- Messages de prudence
+- Problèmes potentiels
+
+**Exemple - Avertissement d'espace disque :**
+
+```go
+func checkDiskSpace(app *application.App) {
+    available := getDiskSpace()
+
+    if available < 100*1024*1024 { // Moins de 100 Mo
+        app.Dialog.Warning().
+            SetTitle("Espace disque faible").
+            SetMessage(fmt.Sprintf("Seulement %d Mo disponibles.", available/(1024*1024))).
+            Show()
+    }
+}
+```
+
+## Boîte de dialogue d'erreur
+
+Afficher des erreurs :
+
+```go
+app.Dialog.Error().
+    SetTitle("Erreur").
+    SetMessage("Échec de la connexion au serveur.").
+    Show()
+```
+
+**Cas d'utilisation :**
+- Messages d'erreur
+- Notifications d'échec
+- Gestion des exceptions
+- Problèmes critiques
+
+**Exemple - Erreur réseau :**
+
+```go
+func fetchData(app *application.App, url string) ([]byte, error) {
+    resp, err := http.Get(url)
+    if err != nil {
+        app.Dialog.Error().
+            SetTitle("Erreur réseau").
+            SetMessage(fmt.Sprintf("Échec de la connexion : %v", err)).
+            Show()
+        return nil, err
+    }
+    defer resp.Body.Close()
+
+    return io.ReadAll(resp.Body)
+}
+```
+
+## Boîte de dialogue de question
+
+Poser des questions aux utilisateurs et gérer les réponses via des rappels de boutons :
+
+```go
+dialog := app.Dialog.Question().
+    SetTitle("Confirmer").
+    SetMessage("Enregistrer les modifications avant de fermer ?")
+
+save := dialog.AddButton("Enregistrer")
+save.OnClick(func() {
+    saveChanges()
+})
+
+dontSave := dialog.AddButton("Ne pas enregistrer")
+dontSave.OnClick(func() {
+    // Continuer sans enregistrer
+})
+
+cancel := dialog.AddButton("Annuler")
+cancel.OnClick(func() {
+    // Ne pas fermer
+})
+
+dialog.SetDefaultButton(save)
+dialog.SetCancelButton(cancel)
+dialog.Show()
+```
+
+**Cas d'utilisation :**
+- Confirmation d'actions
+- Questions Oui/Non
+- Choix multiples
+- Décisions utilisateur
+
+**Exemple - Modifications non enregistrées :**
+
+```go
+func closeDocument(app *application.App) {
+    if !hasUnsavedChanges() {
+        doClose()
+        return
+    }
+
+    dialog := app.Dialog.Question().
+        SetTitle("Modifications non enregistrées").
+        SetMessage("Voulez-vous enregistrer vos modifications ?")
+
+    save := dialog.AddButton("Enregistrer")
+    save.OnClick(func() {
+        if saveDocument() {
+            doClose()
+        }
+    })
+
+    dontSave := dialog.AddButton("Ne pas enregistrer")
+    dontSave.OnClick(func() {
+        doClose()
+    })
+
+    cancel := dialog.AddButton("Annuler")
+    // Le bouton Annuler n'a pas de rappel - il ferme simplement la boîte de dialogue
+
+    dialog.SetDefaultButton(save)
+    dialog.SetCancelButton(cancel)
+    dialog.Show()
+}
+```
+
+## Options de la boîte de dialogue
+
+### Titre et message
+
+```go
+dialog := app.Dialog.Info().
+    SetTitle("Opération terminée").
+    SetMessage("Tous les fichiers ont été traités avec succès.")
+```
+
+**Bonnes pratiques :**
+- **Titre :** Court et descriptif (2-5 mots)
+- **Message :** Clair, spécifique et actionnable
+- **Éviter le jargon :** Utiliser un langage simple
+
+### Boutons
+
+**Bouton unique (Info/Avertissement/Erreur) :**
+
+Les boîtes de dialogue d'information, d'avertissement et d'erreur affichent un bouton "OK" par défaut :
+
+```go
+app.Dialog.Info().
+    SetMessage("Terminé !").
+    Show()
+```
+
+Vous pouvez également ajouter des boutons personnalisés :
+
+```go
+dialog := app.Dialog.Info().
+    SetMessage("Terminé !")
+ok := dialog.AddButton("Compris !")
+dialog.SetDefaultButton(ok)
+dialog.Show()
+```
+
+**Boutons multiples (Question) :**
+
+Utilisez `AddButton()` pour ajouter des boutons, ce qui retourne un `*Button` que vous pouvez configurer :
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Choisissez une action")
+
+option1 := dialog.AddButton("Option 1")
+option1.OnClick(func() {
+    handleOption1()
+})
+
+option2 := dialog.AddButton("Option 2")
+option2.OnClick(func() {
+    handleOption2()
+})
+
+option3 := dialog.AddButton("Option 3")
+option3.OnClick(func() {
+    handleOption3()
+})
+
+dialog.Show()
+```
+
+**Boutons par défaut et d'annulation :**
+
+Utilisez `SetDefaultButton()` pour spécifier quel bouton est mis en surbrillance et déclenché par la touche Entrée.
+Utilisez `SetCancelButton()` pour spécifier quel bouton est déclenché par la touche Échap.
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Supprimer le fichier ?")
+
+deleteBtn := dialog.AddButton("Supprimer")
+deleteBtn.OnClick(func() {
+    performDelete()
+})
+
+cancelBtn := dialog.AddButton("Annuler")
+// Aucun rappel nécessaire - il ferme simplement la boîte de dialogue
+
+dialog.SetDefaultButton(cancelBtn)  // Option sûre par défaut
+dialog.SetCancelButton(cancelBtn)   // Échap déclenche Annuler
+dialog.Show()
+```
+
+Vous pouvez également utiliser les méthodes fluides `SetAsDefault()` et `SetAsCancel()` sur les boutons :
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Supprimer le fichier ?")
+
+dialog.AddButton("Supprimer").OnClick(func() {
+    performDelete()
+})
+
+dialog.AddButton("Annuler").SetAsDefault().SetAsCancel()
+
+dialog.Show()
+```
+
+**Bonnes pratiques :**
+- **1 à 3 boutons :** Ne pas submerger les utilisateurs
+- **Étiquettes claires :** "Enregistrer" plutôt que "OK"
+- **Valeur par défaut sûre :** Action non destructive
+- **L'ordre compte :** Action la plus probable en premier (sauf Annuler)
+
+### Icône personnalisée
+
+Définir une icône personnalisée pour la boîte de dialogue :
+
+```go
+app.Dialog.Info().
+    SetTitle("Exemple d'icône personnalisée").
+    SetMessage("Utilisation d'une icône personnalisée").
+    SetIcon(myIconBytes).
+    Show()
+```
+
+### Attachement à la fenêtre
+
+Attacher à une fenêtre spécifique :
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Question spécifique à la fenêtre").
+    AttachToWindow(window)
+
+dialog.AddButton("OK")
+dialog.Show()
+```
+
+**Avantages :**
+- La boîte de dialogue apparaît sur la bonne fenêtre
+- La fenêtre parente est désactivée pendant l'affichage
+- Meilleure expérience utilisateur multi-fenêtres
+
+## Exemples complets
+
+### Confirmer une action destructive
+
+```go
+func deleteFiles(app *application.App, paths []string) {
+    // Confirmer la suppression
+    message := fmt.Sprintf("Supprimer %d fichier(s) ?", len(paths))
+    if len(paths) == 1 {
+        message = fmt.Sprintf("Supprimer %s ?", filepath.Base(paths[0]))
+    }
+
+    dialog := app.Dialog.Question().
+        SetTitle("Confirmer la suppression").
+        SetMessage(message)
+
+    deleteBtn := dialog.AddButton("Supprimer")
+    deleteBtn.OnClick(func() {
+        // Effectuer la suppression
+        var errs []error
+        for _, path := range paths {
+            if err := os.Remove(path); err != nil {
+                errs = append(errs, err)
+            }
+        }
+
+        // Afficher le résultat
+        if len(errs) > 0 {
+            app.Dialog.Error().
+                SetTitle("Échec de la suppression").
+                SetMessage(fmt.Sprintf("Échec de la suppression de %d fichier(s)", len(errs))).
+                Show()
+        } else {
+            app.Dialog.Info().
+                SetTitle("Suppression terminée").
+                SetMessage(fmt.Sprintf("%d fichier(s) supprimé(s)", len(paths))).
+                Show()
+        }
+    })
+
+    cancelBtn := dialog.AddButton("Annuler")
+    dialog.SetDefaultButton(cancelBtn)
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+}
+```
+
+### Confirmation de fermeture
+
+```go---
+
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de boîtes de dialogue](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs).

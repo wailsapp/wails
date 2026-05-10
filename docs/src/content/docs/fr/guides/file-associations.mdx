@@ -1,0 +1,177 @@
+---
+title: Associations de fichiers
+description: Configurez les associations de fichiers pour votre application Wails
+sidebar:
+  order: 20
+---
+
+import { Steps } from "@astrojs/starlight/components";
+import {Badge} from '@astrojs/starlight/components';
+
+Plateformes concernées : <Badge text="Windows" variant="note" /> <Badge text="macOS" variant="success" />
+<br/>
+
+Les associations de fichiers permettent à votre application de gérer des types de fichiers spécifiques lorsque
+les utilisateurs les ouvrent. Cela est particulièrement utile pour les éditeurs de texte, les visualiseurs d'images, ou
+toute application qui travaille avec des formats de fichiers spécifiques. Ce guide explique comment
+mettre en œuvre les associations de fichiers dans votre application Wails v3.
+
+## Vue d'ensemble
+
+Le support des associations de fichiers dans Wails v3 est actuellement disponible pour :
+
+- Windows (installateurs NSIS)
+- macOS (bundles d'application)
+
+## Configuration
+
+Les associations de fichiers sont configurées dans le fichier `config.yml` situé dans le
+répertoire `build` de votre projet.
+
+### Configuration de base
+
+Pour configurer les associations de fichiers :
+
+1. Ouvrez `build/config.yml`
+2. Ajoutez vos associations de fichiers sous la section `fileAssociations`
+3. Exécutez `wails3 update build-assets` pour mettre à jour les ressources de build
+4. Définissez le champ `FileAssociations` dans les options de l'application
+5. Emballez votre application avec `wails3 package`
+
+Voici un exemple de configuration :
+
+```yaml
+fileAssociations:
+  - ext: myapp
+    name: Document MyApp
+    description: Fichier Document MyApp
+    iconName: myappFileIcon
+    role: Editor
+  - ext: custom
+    name: Format personnalisé
+    description: Format de fichier personnalisé
+    iconName: customFileIcon
+    role: Editor
+```
+
+### Propriétés de configuration
+
+| Propriété   | Description                                                      | Plateforme |
+|-------------|------------------------------------------------------------------|------------|
+| ext         | Extension de fichier sans le point initial (ex. : `txt`)         | Toutes     |
+| name        | Nom d'affichage pour le type de fichier                          | Toutes     |
+| description | Description affichée dans les propriétés du fichier              | Windows    |
+| iconName    | Nom du fichier d'icône (sans extension) dans le dossier build    | Toutes     |
+| role        | Rôle de l'application pour ce type de fichier (ex. : `Editor`, `Viewer`) | macOS      |
+| mimeType    | Type MIME du fichier (ex. : `image/jpeg`)                        | macOS      |
+
+## Écoute des événements d'ouverture de fichier
+
+Pour gérer les événements d'ouverture de fichier dans votre application, vous pouvez écouter l'événement
+`events.Common.ApplicationOpenedWithFile` :
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "MyApp",
+        FileAssociations: []string{".txt", ".md"}, // Spécifiez les extensions prises en charge
+    })
+
+    // Écoutez les fichiers utilisés pour ouvrir l'application
+    app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(event *application.ApplicationEvent) {
+        associatedFile := event.Context().Filename()
+        application.InfoDialog().SetMessage("Application ouverte avec le fichier : " + associatedFile).Show()
+    })
+
+    // Créez votre fenêtre et lancez l'application...
+}
+
+```
+
+## Tutoriel étape par étape
+
+Parcourons ensemble la configuration des associations de fichiers pour un simple éditeur de texte :
+
+<Steps>
+
+1. ### Créez des icônes
+
+    - Créez des icônes pour votre type de fichier (tailles recommandées : 16x16, 32x32, 48x48,
+      256x256)
+    - Enregistrez les icônes dans le dossier `build` de votre projet
+    - Nommez-les conformément à votre configuration `iconName` (ex. :
+      `textFileIcon.png`)
+
+    :::tip
+    Vous pouvez utiliser `wails3 generate icons` pour générer les icônes requises.
+    Exécutez `wails3 generate icons --help` pour plus d'informations.
+    :::
+
+    - Pour macOS, ajoutez une instruction de copie telle que `cp build/darwin/documenticon.icns {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/Resources` dans la tâche `create:app:bundle:`.
+
+2. ### Configurez les associations de fichiers
+
+    Modifiez le fichier `build/config.yml` pour ajouter vos associations de fichiers :
+
+    ```yaml
+    # build/config.yml
+    fileAssociations:
+      - ext: txt
+        name: Document texte
+        description: Document texte brut
+        iconName: textFileIcon
+        role: Editor
+    ```
+
+3. ### Mettez à jour les ressources de build
+
+    Exécutez la commande suivante pour mettre à jour les ressources de build :
+
+    ```bash
+    wails3 update build-assets
+    ```
+
+4. ### Définissez les associations de fichiers dans les options de l'application
+
+    Dans votre fichier `main.go`, définissez le champ `FileAssociations` dans les options de l'application :
+
+    ```go
+    app := application.New(application.Options{
+      Name: "MyApp",
+      FileAssociations: []string{".txt", ".md"}, // Spécifiez les extensions prises en charge
+    })
+    ```
+
+    :::tip[Pourquoi les extensions de fichier sont-elles requises à la fois dans la configuration de l'application et dans config.yml ?]
+
+    Sous Windows, lorsqu'un fichier est ouvert avec une association de fichiers, l'application est
+    lancée avec le nom du fichier comme premier argument. L'application
+    ne sait pas si le premier argument est un fichier ou un argument de ligne de commande, elle utilise donc le champ `FileAssociations` dans les options de l'application
+    pour déterminer si le premier argument est un fichier associé ou non.
+
+    :::
+
+5. ### Emballez votre application
+
+    Emballez votre application à l'aide de la commande suivante :
+
+    ```bash
+    wails3 package
+    ```
+
+    L'application emballée sera créée dans le répertoire `bin`. Vous pouvez ensuite
+    installer et tester l'application.
+
+    ## Notes supplémentaires
+
+    - Les icônes doivent être fournies au format PNG dans le dossier build
+    - Tester les associations de fichiers nécessite d'installer l'application emballée
+
+</Steps>

@@ -1,0 +1,363 @@
+---
+title: Système d'événements
+description: Communiquez entre les composants grâce au système d'événements
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## Système d'événements
+
+Wails propose un **système d'événements unifié** pour la communication pub/sub. Émettez des événements depuis n'importe où, écoutez depuis n'importe où — de Go vers JavaScript, de JavaScript vers Go, d'une fenêtre vers une autre — permettant une architecture découplée avec des événements typés et des hooks de cycle de vie.
+
+## Démarrage rapide
+
+**Go (émission) :**
+
+```go
+app.Event.Emit("user-logged-in", map[string]interface{}{
+    "userId": 123,
+    "name": "Alice",
+})
+```
+
+**JavaScript (écoute) :**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.On("user-logged-in", (event) => {
+    console.log(`User ${event.data.name} logged in`)
+})
+```
+
+**C'est tout !** Pub/sub inter-langages.
+
+## Types d'événements
+
+### Événements personnalisés
+
+Vos événements spécifiques à l'application :
+
+```go
+// Émettre depuis Go
+app.Event.Emit("order-created", order)
+app.Event.Emit("payment-processed", payment)
+app.Event.Emit("notification", message)
+```
+
+```javascript
+// Écouter en JavaScript
+Events.On("order-created", handleOrder)
+Events.On("payment-processed", handlePayment)
+Events.On("notification", showNotification)
+```
+
+### Événements système
+
+Événements intégrés du système d'exploitation et de l'application :
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// Changements de thème
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    if e.Context().IsDarkMode() {
+        app.Logger.Info("Dark mode enabled")
+    }
+})
+
+// Cycle de vie de l'application
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Application started")
+})
+```
+
+### Événements de fenêtre
+
+Événements spécifiques à une fenêtre :
+
+```go
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window focused")
+})
+
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    app.Logger.Info("Window closing")
+})
+```
+
+## Émission d'événements
+
+### Depuis Go
+
+**Émission de base :**
+
+```go
+app.Event.Emit("event-name", data)
+```
+
+**Avec différents types de données :**
+
+```go
+// Chaîne de caractères
+app.Event.Emit("message", "Hello")
+
+// Nombre
+app.Event.Emit("count", 42)
+
+// Structure
+app.Event.Emit("user", User{ID: 1, Name: "Alice"})
+
+// Map
+app.Event.Emit("config", map[string]interface{}{
+    "theme": "dark",
+    "fontSize": 14,
+})
+
+// Tableau
+app.Event.Emit("items", []string{"a", "b", "c"})
+```
+
+**Vers une fenêtre spécifique :**
+
+```go
+window.EmitEvent("window-specific-event", data)
+```
+
+### Depuis JavaScript
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Émettre vers Go
+Events.Emit("button-clicked", { buttonId: "submit" })
+
+// Émettre vers toutes les fenêtres
+Events.Emit("broadcast-message", "Hello everyone")
+```
+
+## Écoute des événements
+
+### En Go
+
+**Événements d'application :**
+
+```go
+app.Event.On("custom-event", func(e *application.CustomEvent) {
+    data := e.Data
+    // Gérer l'événement
+})
+```
+
+**Avec assertion de type :**
+
+```go
+app.Event.On("user-updated", func(e *application.CustomEvent) {
+    user := e.Data.(User)
+    app.Logger.Info("User updated", "name", user.Name)
+})
+```
+
+**Multiples gestionnaires :**
+
+```go
+// Tous les gestionnaires seront appelés
+app.Event.On("order-created", logOrder)
+app.Event.On("order-created", sendEmail)
+app.Event.On("order-created", updateInventory)
+```
+
+### En JavaScript
+
+**Écouteur de base :**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.On("event-name", (event) => {
+    console.log("Event received:", event.data)
+})
+```
+
+**Avec nettoyage :**
+
+```javascript
+const unsubscribe = Events.On("event-name", handleEvent)
+
+// Plus tard, arrêter d'écouter
+unsubscribe()
+```
+
+**Multiples gestionnaires :**
+
+```javascript
+Events.On("data-updated", updateUI)
+Events.On("data-updated", saveToCache)
+Events.On("data-updated", logChange)
+```
+
+**Gestionnaires à usage unique :**
+
+```javascript
+Events.Once("data-updated", updateVariable)
+```
+
+## Événements système
+
+### Événements d'application
+
+**Événements courants (multi-plateforme) :**
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// Application démarrée
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Logger.Info("App started")
+})
+
+// Thème modifié
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    isDark := e.Context().IsDarkMode()
+    app.Event.Emit("theme-changed", isDark)
+})
+
+// Fichier ouvert
+app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *application.ApplicationEvent) {
+    filePath := e.Context().OpenedFile()
+    openFile(filePath)
+})
+```
+
+**Événements spécifiques à la plateforme :**
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    ```go
+    // L'application est devenue active
+    app.Event.OnApplicationEvent(events.Mac.ApplicationDidBecomeActive, func(e *application.ApplicationEvent) {
+        app.Logger.Info("App became active")
+    })
+    
+    // L'application va se terminer
+    app.Event.OnApplicationEvent(events.Mac.ApplicationWillTerminate, func(e *application.ApplicationEvent) {
+        cleanup()
+    })
+    ```
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    ```go
+    // État de l'alimentation modifié
+    app.Event.OnApplicationEvent(events.Windows.APMPowerStatusChange, func(e *application.ApplicationEvent) {
+        app.Logger.Info("Power status changed")
+    })
+    
+    // Suspension du système
+    app.Event.OnApplicationEvent(events.Windows.APMSuspend, func(e *application.ApplicationEvent) {
+        saveState()
+    })
+    ```
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    ```go
+    // Démarrage de l'application
+    app.Event.OnApplicationEvent(events.Linux.ApplicationStartup, func(e *application.ApplicationEvent) {
+        app.Logger.Info("App starting")
+    })
+    
+    // Thème système modifié
+    app.Event.OnApplicationEvent(events.Linux.SystemThemeChanged, func(e *application.ApplicationEvent) {
+        updateTheme()
+    })
+    ```
+  </TabItem>
+</Tabs>
+
+### Événements de fenêtre
+
+**Événements de fenêtre courants :**
+
+```go
+// Focus de la fenêtre
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window focused")
+})
+
+// Perte de focus de la fenêtre
+window.OnWindowEvent(events.Common.WindowBlur, func(e *application.WindowEvent) {
+    app.Logger.Info("Window blurred")
+})
+
+// Fermeture de la fenêtre
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    if hasUnsavedChanges() {
+        e.Cancel()  // Empêcher la fermeture
+    }
+})
+
+// Fenêtre fermée
+window.OnWindowEvent(events.Common.WindowClosed, func(e *application.WindowEvent) {
+    cleanup()
+})
+```
+
+## Hooks d'événements
+
+Les hooks s'exécutent **avant** les écouteurs standards et peuvent **annuler** les événements :
+
+```go
+// Hook - s'exécute en premier, peut annuler
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        if result != "yes" {
+            e.Cancel()  // Empêcher la fermeture de la fenêtre
+        }
+    }
+})
+
+// Écouteur standard - s'exécute après les hooks
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    app.Logger.Info("Window closing")
+})
+```
+
+**Différences clés :**
+
+| Fonctionnalité | Hooks | Écouteurs standards |
+|---------|-------|-------------------|
+| Ordre d'exécution | En premier, dans l'ordre d'enregistrement | Après les hooks, aucun ordre garanti |
+| Blocage | Synchrone, bloque le hook suivant | Asynchrone, non bloquant |
+| Peut annuler | Oui | Non (déjà propagé) |
+| Cas d'utilisation | Flux de contrôle, validation | Journalisation, effets secondaires |
+
+## Modèles d'événements
+
+### Modèle Pub/Sub
+
+```go
+// Éditeur (service)
+type OrderService struct {
+    app *application.Application
+}
+
+func (o *OrderService) CreateOrder(items []Item) (*Order, error) {
+    order := &Order{Items: items}
+    
+    if err := o.saveOrder(order); err != nil {
+        return nil, err
+    }
+    
+    // Publier l'événement
+    o.app.Event.Emit("order-created", order)
+    
+    return order, nil
+}
+
+// Abonnés---
+
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples d'événements](https://github.com/wailsapp/wails/tree/master/v3/examples/events).

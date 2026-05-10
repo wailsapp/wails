@@ -1,0 +1,297 @@
+---
+title: Configuration du développement
+description: Configurez votre environnement de développement pour le développement de Wails v3
+---
+
+## Configuration de l'environnement de développement
+
+Ce guide vous accompagne dans la configuration d'un environnement de développement complet pour travailler sur Wails v3.
+
+## Outils requis
+
+### Développement Go
+
+1. **Installez Go 1.25 ou une version ultérieure :**
+   ```bash
+   # Téléchargez depuis https://go.dev/dl/
+   go version  # Vérifiez l'installation
+   ```
+
+2. **Configurez l'environnement Go :**
+   ```bash
+   # Ajoutez à votre profil de shell (.bashrc, .zshrc, etc.)
+   export GOPATH=$HOME/go
+   export PATH=$PATH:$GOPATH/bin
+   ```
+
+3. **Installez des outils Go utiles :**
+   ```bash
+   go install golang.org/x/tools/cmd/goimports@latest
+   go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+   ```
+
+### Node.js et npm
+
+Requis pour la construction de la documentation et les tests des intégrations frontend.
+
+```bash
+# Installez Node.js 20+ et npm
+node --version  # Doit être 20+
+npm --version
+```
+
+### Dépendances spécifiques à la plateforme
+
+**macOS :**
+
+```bash
+# Installez les outils en ligne de commande Xcode
+xcode-select --install
+
+# Vérifiez l'installation
+xcode-select -p  # Doit afficher un chemin
+```
+
+**Windows :**
+
+1. Installez [MSYS2](https://www.msys2.org/) pour un environnement de type Unix
+2. WebView2 Runtime (préinstallé sur Windows 11, [téléchargez-le](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) pour Windows 10)
+3. Optionnel : Installez [Git for Windows](https://git-scm.com/download/win)
+
+**Linux (Debian/Ubuntu) :**
+
+```bash
+sudo apt update
+sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev
+```
+
+**Linux (Fedora/RHEL) :**
+
+```bash
+sudo dnf install gcc pkg-config gtk3-devel webkit2gtk3-devel
+```
+
+**Linux (Arch) :**
+
+```bash
+sudo pacman -S base-devel gtk3 webkit2gtk
+```
+
+## Configuration du dépôt
+
+### Clonage et configuration
+
+```bash
+# Clonez votre fork
+git clone https://github.com/YOUR_USERNAME/wails.git
+cd wails
+
+# Ajoutez le dépôt distant upstream
+git remote add upstream https://github.com/wailsapp/wails.git
+
+# Vérifiez les dépôts distants
+git remote -v
+```
+
+### Compilation de l'interface de ligne de commande Wails
+
+```bash
+# Accédez au répertoire v3
+cd v3
+
+# Compilez l'interface de ligne de commande
+go build -o ../wails3 ./cmd/wails3
+
+# Testez la compilation
+cd ..
+./wails3 version
+```
+
+### Ajout au PATH (Optionnel)
+
+**Linux/macOS :**
+
+```bash
+# Ajoutez à ~/.bashrc ou ~/.zshrc
+export PATH=$PATH:/path/to/wails
+```
+
+**Windows :**
+
+Ajoutez le répertoire Wails à votre variable d'environnement PATH via les Propriétés système.
+
+## Configuration de l'IDE
+
+### VS Code (Recommandé)
+
+1. **Installez VS Code :** [Téléchargez](https://code.visualstudio.com/)
+
+2. **Installez les extensions :**
+   - Go (par Go Team at Google)
+   - ESLint
+   - Prettier
+   - MDX (pour la documentation)
+
+3. **Configurez les paramètres de l'espace de travail** (`.vscode/settings.json`) :
+   ```json
+   {
+     "go.useLanguageServer": true,
+     "go.lintTool": "golangci-lint",
+     "go.lintOnSave": "workspace",
+     "editor.formatOnSave": true,
+     "go.formatTool": "goimports"
+   }
+   ```
+
+### GoLand
+
+1. **Installez GoLand :** [Téléchargez](https://www.jetbrains.com/go/)
+
+2. **Configurez :**
+   - Activez le support des modules Go
+   - Configurez les observateurs de fichiers pour `goimports`
+   - Configurez le style de code pour qu'il corresponde aux conventions du projet
+
+## Vérification de votre configuration
+
+Exécutez ces commandes pour vérifier que tout fonctionne correctement :
+
+```bash
+# Vérification de la version de Go
+go version
+
+# Compilation de Wails
+cd v3
+go build ./cmd/wails3
+
+# Exécution des tests
+go test ./pkg/...
+
+# Création d'une application de test
+cd ..
+./wails3 init -n mytest -t vanilla
+cd mytest
+../wails3 dev
+```
+
+Si l'application de test se compile et s'exécute, votre environnement est prêt !
+
+## Exécution des tests
+
+### Tests unitaires
+
+```bash
+cd v3
+go test ./...
+```
+
+### Tests de packages spécifiques
+
+```bash
+go test ./pkg/application
+go test ./pkg/events -v  # Sortie verbeuse
+```
+
+### Exécution avec couverture de code
+
+```bash
+go test ./... -coverprofile=coverage.out
+go tool cover -html=coverage.out
+```
+
+### Exécution avec le détecteur de conditions de course
+
+```bash
+go test ./... -race
+```
+
+## Travail avec la documentation
+
+La documentation Wails est construite avec Astro et Starlight.
+
+```bash
+cd docs
+
+# Installez les dépendances
+npm install
+
+# Démarrez le serveur de développement
+npm run dev
+
+# Compilez pour la production
+npm run build
+```
+
+La documentation sera disponible à l'adresse `http://localhost:4321/`
+
+## Débogage
+
+### Débogage du code Go
+
+**VS Code :**
+
+Créez `.vscode/launch.json` :
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Wails CLI",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/v3/cmd/wails3",
+      "args": ["dev"]
+    }
+  ]
+}
+```
+
+**Ligne de commande :**
+
+```bash
+# Utilisez le débogueur Delve
+go install github.com/go-delve/delve/cmd/dlv@latest
+dlv debug ./cmd/wails3 -- dev
+```
+
+### Débogage du code de la plateforme
+
+Le débogage spécifique à la plateforme nécessite des outils spécifiques à la plateforme :
+
+- **macOS :** Xcode Instruments
+- **Windows :** Débogueur Visual Studio
+- **Linux :** GDB
+
+## Problèmes courants
+
+### "command not found: wails3"
+
+Ajoutez le répertoire Wails à votre PATH ou utilisez `./wails3` depuis la racine du projet.
+
+### "webkit2gtk not found" (Linux)
+
+Installez les paquets de développement WebKit2GTK :
+
+```bash
+sudo apt install libwebkit2gtk-4.0-dev  # Debian/Ubuntu
+```
+
+### La compilation échoue avec des erreurs de modules Go
+
+```bash
+cd v3
+go mod tidy
+go mod download
+```
+
+### Erreurs "CGO_ENABLED" sur Windows
+
+Assurez-vous d'avoir un compilateur C (MinGW-w64 via MSYS2) dans votre PATH.
+
+## Prochaines étapes
+
+- Consultez les [Normes de codage](/fr/contributing/standards)
+- Explorez la [Documentation technique](/fr/contributing)
+- Trouvez un problème à traiter : [Good First Issues](https://github.com/wailsapp/wails/labels/good%20first%20issue)

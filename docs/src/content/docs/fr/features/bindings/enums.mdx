@@ -1,0 +1,397 @@
+---
+title: Enums
+description: Génération automatique d'enums à partir de constantes Go
+sidebar:
+  order: 4
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Liaisons Enum (Enum Bindings)
+
+Le générateur de liaisons de Wails v3 **détecte automatiquement les types de constantes Go et génère des énumérations TypeScript ou des objets const JavaScript**. Aucune inscription, aucune configuration — définissez simplement vos types et constantes en Go, et le générateur s'occupe du reste.
+
+:::note
+Contrairement à Wails v2, il n'est **pas nécessaire d'appeler `EnumBind`** ou d'inscrire les enums manuellement. Le générateur les découvre automatiquement à partir de votre code source.
+:::
+
+## Démarrage rapide
+
+**Définissez un type nommé avec des constantes en Go :**
+
+```go
+type Status string
+
+const (
+    StatusActive  Status = "active"
+    StatusPending Status = "pending"
+    StatusClosed  Status = "closed"
+)
+```
+
+**Utilisez le type dans une structure ou une méthode de service :**
+
+```go
+type Ticket struct {
+    ID     int    `json:"id"`
+    Title  string `json:"title"`
+    Status Status `json:"status"`
+}
+```
+
+**Générez les liaisons :**
+
+```bash
+wails3 generate bindings
+```
+
+La sortie du générateur indiquera les comptes d'enums aux côtés des modèles :
+
+```
+3 Enums, 5 Models
+```
+
+**Utilisez-les dans votre frontend :**
+
+```javascript
+import { Ticket, Status } from './bindings/myapp/models'
+
+const ticket = new Ticket({
+    id: 1,
+    title: "Bug report",
+    status: Status.StatusActive
+})
+```
+
+**C'est tout !** Le type enum est appliqué à la fois en Go et en JavaScript/TypeScript.
+
+## Définition des Enums
+
+Un enum dans Wails est un **type nommé** avec un type de base sous-jacent, combiné à des **déclarations de constantes** de ce type.
+
+### Enums de chaînes de caractères (String Enums)
+
+```go
+// Title is a title
+type Title string
+
+const (
+    // Mister is a title
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+    Ms     Title = "Ms"
+    Mrs    Title = "Mrs"
+    Dr     Title = "Dr"
+)
+```
+
+**TypeScript généré :**
+
+```typescript
+/**
+ * Title is a title
+ */
+export enum Title {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = "",
+
+    /**
+     * Mister is a title
+     */
+    Mister = "Mr",
+    Miss = "Miss",
+    Ms = "Ms",
+    Mrs = "Mrs",
+    Dr = "Dr",
+}
+```
+
+**JavaScript généré :**
+
+```javascript
+/**
+ * Title is a title
+ * @readonly
+ * @enum {string}
+ */
+export const Title = {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero: "",
+
+    /**
+     * Mister is a title
+     */
+    Mister: "Mr",
+    Miss: "Miss",
+    Ms: "Ms",
+    Mrs: "Mrs",
+    Dr: "Dr",
+};
+```
+
+### Enums entiers (Integer Enums)
+
+```go
+type Priority int
+
+const (
+    PriorityLow    Priority = 0
+    PriorityMedium Priority = 1
+    PriorityHigh   Priority = 2
+)
+```
+
+**TypeScript généré :**
+
+```typescript
+export enum Priority {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = 0,
+
+    PriorityLow = 0,
+    PriorityMedium = 1,
+    PriorityHigh = 2,
+}
+```
+
+### Enums par alias de type (Type Alias Enums)
+
+Les alias de type Go (`=`) fonctionnent également, mais génèrent une sortie légèrement différente — une définition de type plus un objet const, plutôt qu'un `enum` natif TypeScript :
+
+```go
+// Age is an integer with some predefined values
+type Age = int
+
+const (
+    NewBorn    Age = 0
+    Teenager   Age = 12
+    YoungAdult Age = 18
+
+    // Oh no, some grey hair!
+    MiddleAged Age = 50
+    Mathusalem Age = 1000 // Unbelievable!
+)
+```
+
+**TypeScript généré :**
+
+```typescript
+/**
+ * Age is an integer with some predefined values
+ */
+export type Age = number;
+
+/**
+ * Predefined constants for type Age.
+ * @namespace
+ */
+export const Age = {
+    NewBorn: 0,
+    Teenager: 12,
+    YoungAdult: 18,
+
+    /**
+     * Oh no, some grey hair!
+     */
+    MiddleAged: 50,
+
+    /**
+     * Unbelievable!
+     */
+    Mathusalem: 1000,
+};
+```
+
+**JavaScript généré :**
+
+```javascript
+/**
+ * Age is an integer with some predefined values
+ * @typedef {number} Age
+ */
+
+/**
+ * Predefined constants for type Age.
+ * @namespace
+ */
+export const Age = {
+    NewBorn: 0,
+    Teenager: 12,
+    YoungAdult: 18,
+
+    /**
+     * Oh no, some grey hair!
+     */
+    MiddleAged: 50,
+
+    /**
+     * Unbelievable!
+     */
+    Mathusalem: 1000,
+};
+```
+
+:::tip
+Les **types nommés** (`type Title string`) génèrent des déclarations `enum` TypeScript natives avec un membre `$zero`.
+Les **alias de type** (`type Age = int`) génèrent une paire `type` + `const` namespace sans `$zero`.
+:::
+
+## La valeur `$zero`
+
+Chaque enum de type nommé inclut un membre spécial `$zero` représentant la **valeur zéro Go** pour le type sous-jacent :
+
+| Type sous-jacent | Valeur `$zero` |
+|----------------|---------------|
+| `string` | `""` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `0` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `0` |
+| `float32`, `float64` | `0` |
+| `bool` | `false` |
+
+Lorsqu'un champ de structure utilise un type enum et qu'aucune valeur n'est fournie, le constructeur utilise par défaut `$zero` :
+
+```typescript
+export class Person {
+    "Title": Title;
+
+    constructor($$source: Partial<Person> = {}) {
+        if (!("Title" in $$source)) {
+            this["Title"] = Title.$zero;  // defaults to ""
+        }
+        Object.assign(this, $$source);
+    }
+}
+```
+
+Cela garantit une initialisation sûre lors de la génération de classes — les champs enum ne sont jamais `undefined`. Lors de la génération d'interfaces TypeScript (en utilisant `-i`), il n'y a pas de constructeur et les champs peuvent être absents comme d'habitude.
+
+## Utilisation des Enums dans les Structures
+
+Lorsqu'un champ de structure a un type enum, le code généré **conserve ce type** au lieu de revenir au type primitif :
+
+```go
+type Person struct {
+    Title Title
+    Name  string
+    Age   Age
+}
+```
+
+**TypeScript généré :**
+
+```typescript
+export class Person {
+    "Title": Title;
+    "Name": string;
+    "Age": Age;
+
+    constructor($$source: Partial<Person> = {}) {
+        if (!("Title" in $$source)) {
+            this["Title"] = Title.$zero;
+        }
+        if (!("Name" in $$source)) {
+            this["Name"] = "";
+        }
+        if (!("Age" in $$source)) {
+            this["Age"] = 0;
+        }
+
+        Object.assign(this, $$source);
+    }
+}
+```
+
+Le champ `Title` est typé comme `Title`, et non `string`. Cela donne à votre IDE une autocomplétion complète et une vérification de type sur les valeurs enum.
+
+## Enums depuis des paquets importés
+
+Les enums définis dans des paquets séparés sont entièrement pris en charge. Ils sont générés dans le répertoire de paquets correspondant :
+
+```go
+// services/types.go
+package services
+
+type Title string
+
+const (
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+    Ms     Title = "Ms"
+)
+```
+
+```go
+// main.go
+package main
+
+import "myapp/services"
+
+func (*GreetService) Greet(name string, title services.Title) string {
+    return "Hello " + string(title) + " " + name
+}
+```
+
+L'enum `Title` est généré dans le fichier de modèles `services`, et les chemins d'import sont résolus automatiquement :
+
+```typescript
+// bindings/myapp/services/models.ts
+export enum Title {
+    $zero = "",
+    Mister = "Mr",
+    Miss = "Miss",
+    Ms = "Ms",
+}
+```
+
+## Méthodes d'Enum
+
+Vous pouvez ajouter des méthodes à vos types enum en Go. Cela n'affecte pas la génération des liaisons mais fournit des fonctionnalités utiles côté serveur :
+
+```go
+type Title string
+
+func (t Title) String() string {
+    return string(t)
+}
+
+const (
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+)
+```
+
+L'enum généré est identique, qu'il existe ou non des méthodes Go sur le type.
+
+## Commentaires et Documentation
+
+Le générateur conserve les commentaires Go en JSDoc dans la sortie générée :
+
+- Les **commentaires de type** deviennent le commentaire de documentation de l'enum
+- Les **commentaires de groupe de constantes** deviennent des séparateurs de section
+- Les **commentaires de constante individuels** deviennent des commentaires de documentation des membres
+- Les **commentaires en ligne** sont conservés dans la mesure du possible
+
+Cela signifie que votre IDE affichera la documentation pour les valeurs enum au survol.
+
+## Types sous-jacents pris en charge
+
+Le générateur de liaisons prend en charge les enums avec les types sous-jacents Go suivants :
+
+| Type Go | Fonctionne comme Enum |
+|---------|:---:|
+| `string` | Oui |
+| `int`, `int8`, `int16`, `int32`, `int64` | Oui |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | Oui |
+| `float32`, `float64` | Oui |
+| `byte` (`uint8`) | Oui |
+| `rune` (`int32`) | Oui |
+| `bool` | Oui |
+| `complex64`, `complex128` | Non |---
+
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de liaison](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).

@@ -1,0 +1,95 @@
+---
+title: Aperçu technique
+description: Architecture de haut niveau et guide vers la base de code de Wails v3
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Bienvenue dans la documentation technique de Wails v3
+
+Cette section **ne traite pas** des directives communautaires ou de la manière d'ouvrir une pull-request.
+Elle plonge plutôt dans **la manière dont Wails v3 est construit** afin que vous puissiez vous orienter
+rapidement dans la base de code et commencer à coder en toute confiance.
+
+Que vous ayez l'intention de corriger le runtime, d'étendre la CLI, de créer de nouveaux templates, ou
+simplement de comprendre les mécanismes internes, les pages suivantes fournissent le contexte technique
+dont vous avez besoin.
+
+---
+
+## Architecture de haut niveau
+
+<CardGrid>
+  <Card title="Backend Go" icon="seti:go">
+    Le cœur de chaque application Wails est du code Go compilé en un exécutable natif.
+    Il gère la logique de l'application, l'intégration système et les opérations
+    critiques en termes de performance.
+  </Card>
+
+  <Card title="Frontend Web" icon="seti:html">
+    L'interface utilisateur est écrite avec des technologies web standard (React, Vue, Svelte, Vanilla, …)
+    rendue par un WebView système léger (WebKit sur Linux/macOS, WebView2 sur
+    Windows).
+  </Card>
+
+  <Card title="Couche de liaison" icon="puzzle">
+    Un pont en mémoire sans copie permet des appels **Go⇄JavaScript** avec conversion
+    automatique de types, propagation des événements et transmission des erreurs.
+  </Card>
+
+  <Card title="CLI & Outils" icon="terminal">
+    `wails3` orchestre la création de projets, le serveur de développement avec rechargement automatique,
+    le regroupement des ressources, la compilation croisée et l'emballage (deb, rpm, AppImage, msi, dmg…).
+  </Card>
+</CardGrid>
+
+---
+
+## Aperçu architectural
+
+**Wails v3 – Flux de bout en bout**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[Emplacement réservé pour le diagramme de flux de bout en bout]**
+
+
+Le diagramme montre le **flux de bout en bout** :
+
+1. La **CLI** pilote la génération, le serveur de développement, la compilation et l'emballage.  
+2. Le **Système de liaison** produit du code intermédiaire permettant au **Frontend Web** d'appeler le **Backend Go**.  
+3. Pendant le développement, le **Serveur de ressources** fait proxy vers le serveur de développement du framework ; en production, il sert les fichiers intégrés.  
+4. Au moment de l'exécution, le **Runtime Bureau** gère les fenêtres et les API OS, tandis que le **Pont** transporte les messages entre Go et JavaScript.
+
+---
+
+## Ce que couvre cette documentation
+
+| Sujet | Pourquoi c'est important |
+| ----- | -------------- |
+| **Structure de la base de code** | Carte des répertoires `/v3` et interaction des modules. |
+| **Mécanismes internes du runtime** | Gestion des fenêtres, API système, processeur de messages et adaptateurs de plateforme. |
+| **Ressources & Serveur de développement** | Comment les ressources web sont servies en développement et intégrées en production. |
+| **Pipeline de construction et d'emballage** | Workflow basé sur Taskfile, compilation multiplateforme et génération d'installateurs. |
+| **Système de liaison** | Pipeline d'analyse statique qui génère des liaisons Go⇄TS typées et sûres. |
+| **Système de templates** | Architecture du générateur qui alimente `wails init -t <framework>`. |
+| **Tests & CI** | Environnement de tests unitaires/intégration, GitHub Actions, conseils sur le détecteur de courses. |
+| **Extension de Wails** | Ajout de services, de templates ou de sous-commandes CLI. |
+
+Chaque page suivante approfondit ces domaines avec des exemples de code concrets,
+des diagrammes et des références aux fichiers source pertinents.
+
+---
+
+:::note
+Prérequis : Vous devez être à l'aise avec **Go 1.25+**, les bases de TypeScript,
+et les outils de construction frontend modernes. Si vous débutez avec Go, nous vous
+conseillons de survoler le tutoriel officiel en premier.
+:::
+
+Bonnes explorations — et bienvenue dans les mécanismes internes de Wails v3 !

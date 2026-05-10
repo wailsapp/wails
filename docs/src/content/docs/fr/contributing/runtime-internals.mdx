@@ -1,0 +1,204 @@
+---
+title: Internes du runtime
+description: Plongez en profondeur dans le démarrage, l'exécution et les interactions avec le système d'exploitation de Wails v3
+sidebar:
+  order: 3
+---
+
+Le **runtime** est la couche qui transforme des fonctions Go ordinaires en une application de bureau multiplateforme.  
+Ce document explique les composants clés que vous rencontrerez en parcourant le code source.
+
+---
+
+## 1. Cycle de vie de l'application
+
+| Phase | Chemin du code | Ce qui se passe |
+|-------|-----------|--------------|
+| **Bootstrap** | `pkg/application/application.go:init()` | Enregistre les données de compilation, crée un singleton global `application`. |
+| **New()** | `application.New(...)` | Valide les `Options`, démarre le **AssetServer**, initialise la journalisation. |
+| **Run()** | `application.(*App).Run()` | 1. Appelle `mainthread.X()` de la plateforme pour entrer dans le thread UI de l'OS.<br />2. Démarre le **runtime** (`internal/runtime`).<br />3. Bloque jusqu'à ce que la dernière fenêtre soit fermée ou que `Quit()` soit appelé. |
+| **Shutdown** | `application.(*App).Quit()` | Diffuse l'événement `application:shutdown`, vide le tampon de journalisation, détruit les fenêtres et les services. |
+
+Le cycle de vie est strictement **à entrée unique** : vous pouvez créer de nombreuses fenêtres, mais l'objet application lui-même n'est initialisé qu'une seule fois.
+
+---
+
+## 2. Gestion des fenêtres
+
+### API publique
+
+```go
+win := app.Window.New(&application.WebviewWindowOptions{
+    Title:  "Dashboard",
+    Width:  1280,
+    Height: 720,
+})
+win.Show()
+```
+
+`app.Window.New()` délègue à `internal/runtime/webview_window_*.go` où résident les constructeurs spécifiques à la plateforme :
+
+```
+internal/runtime/
+├── webview_window_darwin.go
+├── webview_window_linux.go
+└── webview_window_windows.go
+```
+
+Chaque fichier :
+
+1. Crée une webview native (WKWebView, WebKitGTK, WebView2).
+2. Enregistre un rappel du **Message Processor**.
+3. Mappe les événements Wails (`WindowResized`, `Focus`, `DropFile`, …) aux IDs d'événements du runtime.
+
+Les fenêtres sont suivies par `screenmanager.go` qui propose des **API de requête** (tous les écrans, DPI, fenêtre active) et centralise la gestion des redimensionnements et déplacements.
+
+---
+
+## 3. Pipeline de traitement des messages
+
+Le pont entre JavaScript et Go est implémenté par la famille des **Message Processors** dans `pkg/application/messageprocessor_*.go`.
+
+Flux :
+
+1. **JavaScript** appelle `window.runtime.Invoke("Greet", "Alice")`.
+2. Le runtime sérialise la requête :  
+   `{"t":"c","id":"123","m":"Greet","p":["Alice"]}`  
+   (`t` = type, `c` = appel).
+3. **Go** reçoit ce JSON via le rappel de la webview.
+4. `messageprocessor_call.go` recherche la méthode liée dans la table générée (`application.bindings.go`) et l'exécute.
+5. Le résultat ou l'erreur est sérialisé vers JS où un `Promise` se résout.
+
+Processors spécialisés :
+
+| Fichier | Objectif |
+|------|---------|
+| `messageprocessor_window.go` | Actions sur les fenêtres (masquer, maximiser, …) |
+| `messageprocessor_dialog.go` | Dialogues natifs (`OpenFile`, `MessageBox`, …) |
+| `messageprocessor_clipboard.go` | Lecture/écriture du presse-papiers |
+| `messageprocessor_events.go` | Souscription / émission d'événements |
+| `messageprocessor_browser.go` | Navigation du navigateur, devtools |
+
+Les processors sont **stateless** – ils récupèrent tout ce dont ils ont besoin de l'`ApplicationContext` passé avec chaque message.
+
+---
+
+## 4. Système d'événements
+
+Les événements sont des chaînes de caractères avec un espace de noms, dispatchées sur trois couches :
+
+1. **Événements de l'application** : cycle de vie global (`application:ready`,
+   `application:shutdown`).
+2. **Événements de fenêtre** : par fenêtre (`window:focus`, `window:resize`).
+3. **Événements personnalisés** : définis par l'utilisateur (`chat:new-message`).
+
+Détails d'implémentation :
+
+* Les constantes sont générées depuis `internal/events/defaults.go`.
+* Côté Go :  
+  `app.On("window:focus", func(e application.WindowEvent) {...})`
+* Côté JS :  
+  `window.runtime.EventsOn("chat:new-message", cb)`
+
+Sous le capot, les deux mappent vers le même **EventBus** dans
+`pkg/application/events.go`.  
+Les abonnés sont comptés par référence ; lorsqu'une fenêtre se ferme, ses rappels sont automatiquement désinscrits pour éviter les fuites de mémoire.
+
+---
+
+## 5. Implémentations spécifiques à la plateforme
+
+La compilation conditionnelle maintient l'API publique identique tout en masquant les particularités de chaque OS.
+
+| Préoccupation | Darwin | Linux | Windows |
+|---------|--------|-------|---------|
+| Thread principal | `mainthread_darwin.go` (Cgo vers Foundation) | `mainthread_linux.go` (GTK) | `mainthread_windows.go` (Win32 `AttachThreadInput`) |
+| Dialogues | `dialogs_darwin.*` (NSAlert) | `dialogs_linux.go` (GtkFileChooser) | `dialogs_windows.go` (IFileOpenDialog) |
+| Presse-papiers | `clipboard_darwin.go` | `clipboard_linux.go` | `clipboard_windows.go` |
+| Icônes de barre d'état | `systemtray_darwin.*` | `systemtray_linux.go` (DBus) | `systemtray_windows.go` (Shell_NotifyIcon) |
+
+Principes clés :
+
+* **Pas de Cgo sur Windows/Linux** sauf si inévitable (performance, portabilité).
+* Utilisez des **tags de build** (`//go:build darwin && !production`) pour garder les fichiers lisibles.
+* Exposez les **capacités** via `internal/capabilities` afin que les couches supérieures puissent se dégrader gracieusement.
+
+---
+
+## 6. Guide des fichiers
+
+| Fichier | Pourquoi vous y toucherez |
+|------|--------------------|
+| `internal/runtime/runtime_*.go` | Modifier la logique de démarrage global, ajouter des hooks de débogage. |
+| `internal/runtime/webview_window_*.go` | Implémenter une nouvelle indication de fenêtre ou un comportement. |
+| `pkg/application/messageprocessor_*.go` | Ajouter une nouvelle commande de pont appelable depuis JS. |
+| `pkg/application/events_*.go` | Étendre les définitions d'événements intégrées. |
+| `internal/assetserver/*` | Ajuster la gestion des actifs en développement/production. |
+
+---
+
+## 7. Conseils de débogage
+
+* Lancez avec `WAILS_LOG_LEVEL=debug` pour imprimer chaque message traversant le pont.
+* Utilisez `wails3 dev -verbose` pour voir le rechargement à chaud et les requêtes d'actifs.
+* Sur macOS, exécutez sous `lldb --` pour intercepter les exceptions Objective-C tôt.
+* Pour les problèmes Chromium sous Windows, activez les journaux de débogage de WebView2 :  
+  `set WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222`
+
+---
+
+## 8. Extension du runtime
+
+1. Définissez un **drapeau de capacité** dans `internal/capabilities`.
+2. Implémentez la fonctionnalité dans chaque fichier de plateforme en utilisant les tags de build.
+3. Ajoutez une API publique dans `pkg/application`.
+4. Enregistrez un nouveau type de message ou d'événement si JS doit l'appeler.
+5. Mettez à jour au moins un exemple dans `v3/examples/` exerçant la fonctionnalité.
+
+Suivez cette liste de contrôle et vous maintiendrez le contrat multiplateforme intact.
+
+---
+
+## 9. Glisser-déposer
+
+Le glisser-déposer de fichiers utilise une **approche JavaScript-first** sur toutes les plateformes. La couche native intercepte les événements de glissement de l'OS, mais la gestion effective du dépôt et l'interaction avec le DOM se produisent dans JavaScript.
+
+### Flux
+
+1. L'utilisateur fait glisser des fichiers depuis l'OS au-dessus de la fenêtre Wails
+2. La couche native détecte le glissement et notifie JavaScript pour les effets de survol
+3. L'utilisateur dépose les fichiers
+4. La couche native envoie les chemins de fichiers + les coordonnées à JavaScript
+5. JavaScript trouve l'élément cible du dépôt (`data-file-drop-target`)
+6. JavaScript envoie les chemins de fichiers + les détails de l'élément au backend Go
+7. Go émet l'événement `WindowFilesDropped` avec le contexte complet
+
+### Implémentations par plateforme
+
+| Plateforme | Couche native | Défi principal |
+|----------|--------------|---------------|
+| **Windows** | Support de glissement intégré de WebView2 | Coordonnées en pixels CSS, aucune conversion nécessaire |
+| **macOS** | Délégués de glissement NSWindow | Convertir les coordonnées relatives à la fenêtre en coordonnées relatives à la webview |
+| **Linux** | Signaux de glissement GTK3 | Doit distinguer les glissements de fichiers des glissements HTML5 internes |
+
+### Linux : Distinction des types de glissement
+
+GTK et WebKit veulent tous deux gérer les événements de glissement. La clé est de vérifier le type de cible du glissement :
+
+```c
+static gboolean is_file_drag(GdkDragContext *context) {
+    GList *targets = gdk_drag_context_list_targets(context);
+    for (GList *l = targets; l != NULL; l = l->next) {
+        GdkAtom atom = GDK_POINTER_TO_ATOM(l->data);
+        gchar *name = gdk_atom_name(atom);
+        if (name && g_strcmp0(name, "text/uri-list") == 0) {
+            g_free(name);
+            return TRUE;  // Glissement de fichier externe
+        }
+        g_free(name);
+    }
+    return FALSE;  // Glissement HTML5 interne
+}
+```
+
+Les gestionnaires de signaux retournent `FALSE` pour les glissements internes (laissant WebKit les gérer) et `TRUE` pour les glissements de fichiers (les gérant nous-mêmes).Vous avez maintenant effectué une visite guidée des internes du runtime. Combinez ces connaissances avec la carte de l'**Architecture du codebase** et la documentation du **Serveur d'actifs** pour naviguer en toute confiance et apporter des contributions impactantes. Bon codage !

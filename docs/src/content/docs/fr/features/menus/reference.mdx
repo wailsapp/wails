@@ -1,0 +1,359 @@
+---
+title: Référence des menus
+description: Référence complète des types d'éléments de menu, des propriétés et des méthodes
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Référence des menus
+
+Référence complète des types d'éléments de menu, des propriétés et du comportement dynamique. Créez des menus professionnels et réactifs avec des cases à cocher, des groupes d'options radio, des séparateurs et des mises à jour dynamiques.
+
+## Types d'éléments de menu
+
+### Éléments de menu classiques
+
+Le type le plus courant : affiche du texte et déclenche une action :
+
+```go
+menuItem := menu.Add("Click Me")
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("Menu item clicked!")
+})
+```
+
+**À utiliser pour :** Commandes, actions, ouverture de fenêtres
+
+### Cases à cocher
+
+Éléments de menu basculables avec un état coché/décoché :
+
+```go
+checkbox := menu.AddCheckbox("Enable Feature", true)  // true = coché par défaut
+checkbox.OnClick(func(ctx *application.Context) {
+    isChecked := ctx.ClickedMenuItem().Checked()
+    fmt.Printf("Feature is now: %v\n", isChecked)
+})
+```
+
+**À utiliser pour :** Paramètres booléens, activation/désactivation de fonctionnalités, options d'affichage
+
+**Important :** L'état de cochage bascule automatiquement lors du clic.
+
+### Groupes d'options radio
+
+Options mutuellement exclusives : une seule peut être sélectionnée :
+
+```go
+menu.AddRadio("Small", true)   // true = sélectionné par défaut
+menu.AddRadio("Medium", false)
+menu.AddRadio("Large", false)
+```
+
+**À utiliser pour :** Choix mutuellement exclusifs (taille, thème, mode)
+
+**Fonctionnement du regroupement :**
+- Les éléments radio adjacents forment automatiquement un groupe
+- La sélection d'un élément désélectionne les autres du même groupe
+- Séparez les groupes avec un séparateur ou un élément classique
+
+**Exemple avec plusieurs groupes :**
+
+```go
+// Groupe 1 : Taille
+menu.AddRadio("Small", true)
+menu.AddRadio("Medium", false)
+menu.AddRadio("Large", false)
+
+menu.AddSeparator()
+
+// Groupe 2 : Thème
+menu.AddRadio("Light", true)
+menu.AddRadio("Dark", false)
+```
+
+### Sous-menus
+
+Structures de menus imbriquées pour l'organisation :
+
+```go
+submenu := menu.AddSubmenu("More Options")
+submenu.Add("Submenu Item 1").OnClick(func(ctx *application.Context) {
+    // Gérer le clic
+})
+submenu.Add("Submenu Item 2")
+```
+
+**À utiliser pour :** Regrouper des éléments liés, réduire l'encombrement
+
+**Limite d'imbrication :** La plupart des plateformes supportent 2 à 3 niveaux. Évitez d'aller plus profond.
+
+### Séparateurs
+
+Diviseurs visuels entre les éléments de menu :
+
+```go
+menu.Add("Item 1")
+menu.AddSeparator()
+menu.Add("Item 2")
+```
+
+**À utiliser pour :** Regrouper visuellement des éléments liés
+
+**Bonne pratique :** Ne commencez ni ne terminez un menu par un séparateur.
+
+## Propriétés des éléments de menu
+
+### Libellé
+
+Le texte affiché pour l'élément de menu :
+
+```go
+menuItem := menu.Add("Initial Label")
+menuItem.SetLabel("New Label")
+
+// Obtenir le libellé actuel
+label := menuItem.Label()
+```
+
+**Libellés dynamiques :**
+
+```go
+updateMenuItem := menu.Add("Check for Updates")
+updateMenuItem.OnClick(func(ctx *application.Context) {
+    updateMenuItem.SetLabel("Checking...")
+    menu.Update()  // Important sur Windows !
+    
+    // Effectuer la vérification des mises à jour
+    checkForUpdates()
+    
+    updateMenuItem.SetLabel("Check for Updates")
+    menu.Update()
+})
+```
+
+### État activé/désactivé
+
+Contrôle si l'élément de menu peut être interactif :
+
+```go
+menuItem := menu.Add("Save")
+menuItem.SetEnabled(false)  // Grisé, non cliquable
+
+// Le réactiver plus tard
+menuItem.SetEnabled(true)
+menu.Update()  // Important : appelez ceci après avoir changé l'état activé !
+
+// Vérifier l'état actuel
+isEnabled := menuItem.Enabled()
+```
+
+:::caution[Comportement des menus sous Windows]
+Sous Windows, les menus doivent être reconstruits lorsque leur état change. **Appelez toujours `menu.Update()` après avoir activé/désactivé des éléments de menu**, surtout si l'élément a été créé alors qu'il était désactivé.
+
+**Pourquoi :** Les menus Windows sont reconstruits à partir de zéro lors de la mise à jour. Si vous n'appelez pas `Update()`, les gestionnaires de clic ne se déclencheront pas correctement.
+:::
+
+**Exemple : activation/désactivation dynamique**
+
+```go
+var hasSelection bool
+
+cutMenuItem := menu.Add("Cut")
+cutMenuItem.SetEnabled(false)  // Désactivé par défaut
+
+copyMenuItem := menu.Add("Copy")
+copyMenuItem.SetEnabled(false)
+
+// Lorsque la sélection change
+func onSelectionChanged(selected bool) {
+    hasSelection = selected
+    cutMenuItem.SetEnabled(hasSelection)
+    copyMenuItem.SetEnabled(hasSelection)
+    menu.Update()  // Critique sous Windows !
+}
+```
+
+**Motif courant : activation conditionnelle**
+
+```go
+saveMenuItem := menu.Add("Save")
+
+func updateSaveMenuItem() {
+    canSave := hasUnsavedChanges() && !isSaving()
+    saveMenuItem.SetEnabled(canSave)
+    menu.Update()
+}
+
+// Appelez à chaque changement d'état
+onDocumentChanged(func() {
+    updateSaveMenuItem()
+})
+```
+
+### État coché
+
+Pour les cases à cocher et les options radio, contrôlez ou interrogez leur état coché :
+
+```go
+checkbox := menu.AddCheckbox("Feature", false)
+checkbox.SetChecked(true)
+menu.Update()
+
+// Interroger l'état
+isChecked := checkbox.Checked()
+```
+
+**Basculer automatiquement :** Les cases à cocher basculent automatiquement lors du clic. Vous n'avez pas besoin d'appeler `SetChecked()` dans le gestionnaire de clic.
+
+**Contrôle manuel :**
+
+```go
+checkbox := menu.AddCheckbox("Auto-save", false)
+
+// Synchroniser avec un état externe
+func syncAutoSave(enabled bool) {
+    checkbox.SetChecked(enabled)
+    menu.Update()
+}
+```
+
+### Raccourcis clavier
+
+Ajoutez des raccourcis clavier aux éléments de menu :
+
+```go
+saveMenuItem := menu.Add("Save")
+saveMenuItem.SetAccelerator("CmdOrCtrl+S")
+
+quitMenuItem := menu.Add("Quit")
+quitMenuItem.SetAccelerator("CmdOrCtrl+Q")
+```
+
+**Format des raccourcis :**
+- `CmdOrCtrl` - Cmd sur macOS, Ctrl sur Windows/Linux
+- `Shift`, `Alt`, `Option` - Touches modificateurs
+- `A-Z`, `0-9` - Touches lettres/chiffres
+- `F1-F12` - Touches fonction
+- `Enter`, `Space`, `Backspace`, etc. - Touches spéciales
+
+**Exemples :**
+
+```go
+"CmdOrCtrl+S"           // Enregistrer
+"CmdOrCtrl+Shift+S"     // Enregistrer sous
+"CmdOrCtrl+W"           // Fermer la fenêtre
+"CmdOrCtrl+Q"           // Quitter
+"F5"                    // Actualiser
+"CmdOrCtrl+,"           // Préférences (convention macOS)
+"Alt+F4"                // Fermer (convention Windows)
+```
+
+**Raccourcis spécifiques à la plateforme :**
+
+```go
+if runtime.GOOS == "darwin" {
+    prefsMenuItem.SetAccelerator("Cmd+,")
+} else {
+    prefsMenuItem.SetAccelerator("Ctrl+P")
+}
+```
+
+### Infobulle
+
+Ajoutez du texte au survol des éléments de menu (la prise en charge varie selon la plateforme) :
+
+```go
+menuItem := menu.Add("Advanced Options")
+menuItem.SetTooltip("Configure advanced settings")
+```
+
+**Prise en charge par plateforme :**
+- **Windows :** ✅ Pris en charge
+- **macOS :** ❌ Non pris en charge (les infobulles ne sont pas standard pour les menus)
+- **Linux :** ⚠️ Varie selon l'environnement de bureau
+
+### État masqué
+
+Masquez les éléments de menu sans les supprimer :
+
+```go
+debugMenuItem := menu.Add("Debug Mode")
+debugMenuItem.SetHidden(true)  // Masqué
+
+// Afficher dans les builds de débogage
+if isDebugBuild {
+    debugMenuItem.SetHidden(false)
+    menu.Update()
+}
+```
+
+**À utiliser pour :** Options de débogage, indicateurs de fonctionnalité, fonctionnalités conditionnelles
+
+## Gestion des événements
+
+### Gestionnaire OnClick
+
+Exécutez du code lorsque l'élément de menu est cliqué :
+
+```go
+menuItem := menu.Add("Click Me")
+menuItem.OnClick(func(ctx *application.Context) {
+    // Gérer le clic
+    fmt.Println("Clicked!")
+})
+```
+
+**Le contexte fournit :**
+- `ctx.ClickedMenuItem()` - L'élément de menu qui a été cliqué
+- Contexte de la fenêtre (si issu du menu de la fenêtre)
+- Contexte de l'application
+
+**Exemple : accéder à l'élément de menu dans le gestionnaire**
+
+```go
+checkbox := menu.AddCheckbox("Feature", false)
+checkbox.OnClick(func(ctx *application.Context) {
+    item := ctx.ClickedMenuItem()
+    isChecked := item.Checked()
+    fmt.Printf("Feature is now: %v\n", isChecked)
+})
+```
+
+### Gestionnaires multiples
+
+Vous pouvez définir plusieurs gestionnaires (le dernier l'emporte) :
+
+```go
+menuItem := menu.Add("Action")
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("First handler")
+})
+
+// Cela remplace le premier gestionnaire
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("Second handler - this one runs")
+})
+```
+
+**Bonne pratique :** Définissez le gestionnaire une seule fois, utilisez une logique conditionnelle à l'intérieur si nécessaire.
+
+## Menus dynamiques
+
+### Mise à jour des éléments de menu
+
+**La règle d'or :** Appelez toujours `menu.Update()` après avoir modifié l'état du menu.
+
+```go
+// ✅ Correct
+menuItem.SetEnabled(true)
+menu.Update()
+
+// ❌ Incorrect (surtout sous Windows)
+menuItem.SetEnabled(true)
+// Oubli d'appeler Update() - les gestionnaires de clic peuvent ne pas fonctionner !
+```
+
+**Pourquoi c'est important :****Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de menus](https://github.com/wailsapp/wails/tree/master/v3/examples/menu).

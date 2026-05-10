@@ -1,0 +1,215 @@
+---
+title: Tests et Intégration Continue
+description: Comment Wails v3 garantit la qualité grâce aux tests unitaires, aux suites d'intégration, à la détection des conditions de course et à l'CI GitHub Actions.
+sidebar:
+  order: 9
+---
+
+Les frameworks de bureau robustes exigent des tests solides.  
+Wails v3 adopte une **stratégie en couches** :
+
+| Couche | Objectif | Outils |
+|-------|--|-|
+| Tests unitaires | Retour rapide pour les fonctions isolées | `go test ./...` |
+| Tests d'intégration / Exemples | Valider des fonctionnalités complètes à travers les packages | Applications d'exemple + assertions headless |
+| Détection des conditions de course | Détecter les conditions de course dans le runtime et le pont | `go test -race`, `wails3 dev -race` |
+| Matrice CI | Confiance multi-OS à chaque PR | GitHub Actions |
+
+Ce document explique **où se trouvent les tests**, **comment les exécuter** et **ce qui se passe dans l'CI**.
+
+---
+
+## 1. Conventions de répertoire
+
+```
+v3/
+├── internal/.../_test.go     # Tests unitaires pour les packages internes
+├── pkg/.../_test.go          # Tests de l'API publique
+├── examples/...              # Les applications d'exemple servent aussi de tests d'intégration
+├── tasks/events/...          # Tests du code généré exécutés dans l'CI
+└── pkg/application/RACE.md   # Guide pour les tests de race et suppressions connues comme sûres
+```
+
+Directives :
+
+* **Gardez les tests unitaires à côté du code** (`foo.go` ↔ `foo_test.go`)
+* Utilisez le **style boîte noire** pour les packages `pkg/` (`package application_test`)
+* Les utilitaires d'intégration vont dans `internal/testutil/` (mocks partagés, fixtures)
+
+---
+
+## 2. Tests unitaires
+
+### Écriture de tests
+
+```go
+func TestColourParseHex(t *testing.T) {
+    c, err := colour.Parse("#FF00FF")
+    require.NoError(t, err)
+    assert.Equal(t, 255, c.R)
+}
+```
+
+Recommandations :
+
+* Utilisez [`stretchr/testify`](https://github.com/stretchr/testify) – déjà importé dans le vendor.
+* Suivez le style **table-driven** pour les branches.
+* Simulez les particularités de la plateforme derrière des tags de build (`_test_windows.go`, etc.) si nécessaire.
+
+### Exécution locale
+
+```bash
+cd v3
+go test ./... -cover
+```
+
+Raccourci Taskfile :
+
+```
+task test          # identique à ci-dessus + vet + lint
+```
+
+---
+
+## 3. Tests d'intégration et exemples
+
+Chaque dossier sous `v3/examples/` est une **application autonome**.  
+Trois techniques les transforment en tests :
+
+| Technique | Fichier | Ce qu'il vérifie |
+|------|---|------|
+| `go test ./...` dans l'exemple | `*_test.go` lance `wails dev` en mode headless | Build et démarrage |
+| Tests golden CLI | `internal/commands/appimage_test.go` | Hachages des artefacts générés |
+| E2E scripté | `tasks/events/generate.go` | Génère du Go qui lance l'exemple et asserte les logs runtime |
+
+Exécutez tout avec :
+
+```
+task integration
+```
+
+> Le mode headless utilise **Xvfb** sur les runners Linux ; macOS et Windows démarrent minimisés.
+
+---
+
+## 4. Détection des conditions de course
+
+Les conditions de course sont fatales dans les runtimes GUI.
+
+### Documentation dédiée
+
+Voir `v3/pkg/application/RACE.md` pour :
+
+* Conditions de course bénignes connues et justification des suppressions
+* Comment interpréter les traces de pile traversant les limites Cgo
+
+### Suite de tests de race locale
+
+```
+go test -race ./...
+```
+
+ou
+
+```
+wails3 dev -race
+```
+
+*Cela reconstruit le runtime avec les drapeaux de race et lance une fenêtre de démonstration.  
+Fermez la fenêtre ; toute condition de course s'affichera après la fermeture.*
+
+L'CI exécute la suite de race sur **linux/amd64** (le plus rapide) pour chaque PR.
+
+---
+
+## 5. Workflows GitHub Actions
+
+### 5.1 `build-and-test-v3.yml`
+
+Emplacement : `.github/workflows/build-and-test-v3.yml`
+
+Fonctionnalités clés :
+
+* **Matrice** sur `os: [ubuntu-latest, windows-latest, macos-latest]`
+* Met en cache les dépendances Go et npm pour la vitesse
+* Étapes :
+  1. `setup-go` @ 1.25
+  2. `go vet ./...`
+  3. `go test ./... -v -coverprofile=cover.out`
+  4. Build CLI + app exemple (`wails3 build -skip-package`)
+  5. Téléversement de la couverture vers Codecov
+* Tâche **race** conditionnelle sur Ubuntu :
+  ```yaml
+  - name: Race Detector
+    if: matrix.os == 'ubuntu-latest'
+    run: go test -race ./...
+  ```
+
+### 5.2 Analyse statique
+
+* `semgrep.yml` – analyse de sécurité/lint (`.github/workflows/semgrep.yml`)
+* `qodana.yaml` – inspection cloud JetBrains Qodana (optionnel dans la PR)
+
+### 5.3 Pipeline de publication
+
+`runtime.yml` construit et publie le runtime JS sur npm lors de la poussée d'un tag ; hors du périmètre des tests mais référencé par la matrice de build.
+
+---
+
+## 6. Parité CI locale
+
+Exécutez l'ensemble exact des tâches CI via Taskfile :
+
+```
+task ci
+```
+
+Il exécute :
+
+1. `lint` (golangci-lint, govet)
+2. `test` (unitaire + race)
+3. `integration`
+4. `build` (pour la plateforme hôte)
+
+---
+
+## 7. Dépannage des tests échoués
+
+| Symptôme | Cause probable | Correction |
+|---------|-----|-|
+| **Race dans `runtime_darwin.go`** | Oubli de verrouiller `mainthread.Call` | Utiliser l'helper `mainthread.Sync` |
+| **Blocage headless Windows** | Fenêtre console attendant une entrée | Passer `-verbose` et s'assurer qu'aucune boîte de dialogue ne s'ouvre |
+| **Échec build exemple CI** | Template modifié sans incrémenter les dépendances exemple | `task update-examples` régénère les fichiers lock |
+| **Erreurs Coverpkg** | Test d'intégration important `main` | Basculer vers des tags de build `//go:build integration` |
+
+---
+
+## 8. Ajout de nouveaux tests
+
+1. **Unitaire** – créer `*_test.go`, exécuter `go test ./...`
+2. **Intégration** – mettre à jour ou ajouter une application exemple + harness de test
+3. **CI** – commit ; le workflow découvre automatiquement les tests  
+   Si spécifique à un OS, ajouter des tags skip :
+
+```go
+//go:build !windows
+```
+
+---
+
+## 9. Carte des fichiers clés
+
+| Quoi | Chemin |
+|------|------|
+| Exemple de test unitaire | `internal/colour/colour_test.go` |
+| Harness d'intégration | `internal/commands/appimage_test.go` |
+| Guide de race | `pkg/application/RACE.md` |
+| Cibles de test Taskfile | `v3/Taskfile.yaml` |
+| Workflow CI | `.github/workflows/build-and-test-v3.yml` |
+
+---
+
+La qualité n'est pas une pensée secondaire dans Wails v3.  
+Avec les tests unitaires, les suites d'intégration, la détection des conditions de course et une matrice CI multi-plateforme, vous pouvez contribuer en toute confiance, sachant que vos modifications passent avec succès sur chaque
+OS que nous supportons.  
+Bon testing !

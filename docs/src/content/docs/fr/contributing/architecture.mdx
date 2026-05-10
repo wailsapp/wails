@@ -1,0 +1,98 @@
+---
+title: Architecture de Wails v3
+description: Diagrammes détaillés et explications de chaque composant interne de Wails v3
+sidebar:
+  order: 1
+---
+
+Wails v3 est un **framework desktop full-stack** composé d'un runtime Go,
+d'un pont JavaScript, d'une chaîne d'outils orientée tâches et d'une collection de templates qui
+vous permettent de **publier** des applications natives propulsées par les technologies web modernes.
+
+Cette page présente la *vue d'ensemble* à travers quatre diagrammes :
+
+1. **Architecture globale** – comment chaque sous-système est connecté  
+2. **Flux d'exécution** – ce qui se passe lorsque JS appelle Go et vice-versa  
+3. **Développement vs Production** – deux modes du serveur d'actifs  
+4. **Implémentations par plateforme** – où se trouve le code spécifique à l'OS  
+
+---
+
+## 1 · Architecture globale
+
+**Wails v3 – Stack de haut niveau**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[Placeholder du diagramme de la stack de haut niveau]**
+
+---
+
+## 2 · Flux d'appels d'exécution
+
+**Runtime – Chemin d'appel JavaScript ⇄ Go**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[Placeholder du diagramme du flux d'appels d'exécution]**
+
+Points clés :
+
+* **Pas de HTTP / IPC** – le pont utilise le canal en mémoire du WebView natif  
+* **IDs de méthode** – le hachage FNV déterministe permet une recherche O(1) dans Go  
+* **Promesses** – les erreurs se propagent sous forme de rejets avec pile d'appels et code
+
+---
+
+## 3 · Flux des actifs : Développement vs Production
+
+**Serveur d'actifs Dev ↔ Prod**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[Placeholder du diagramme du flux des actifs]**
+
+* En **dev**, le serveur proxyie les chemins inconnus vers le serveur de rechargement automatique
+  du framework et sert les actifs statiques depuis le disque.  
+* En **prod**, la même API est soutenue par `go:embed`, produisant un
+  binaire sans dépendances.
+
+---
+
+## 4 · Séparation du runtime spécifique à la plateforme
+
+**Fichiers runtime par OS**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[Placeholder du diagramme de la séparation par plateforme]**
+
+Chaque fonctionnalité suit ce schéma :
+
+1. **Interface commune** dans `pkg/application`  
+2. **Entrée du processeur de messages** dans `pkg/application/messageprocessor_*.go`  
+3. **Implémentation** par OS sous `internal/runtime/*.go` protégée par des tags de compilation  
+
+Une fonctionnalité manquante sur un OS doit retourner `ErrCapability` et enregistrer
+la disponibilité via `internal/capabilities`.
+
+---
+
+## Résumé
+
+Ces diagrammes illustrent **où se trouve le code**, **comment les données circulent** et
+**quelles couches possèdent quelles responsabilités**.  
+Gardez-les à portée de main lors de l'exploration des pages détaillées qui suivent – elles sont votre
+carte vers l'arborescence source de Wails v3.

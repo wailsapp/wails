@@ -1,0 +1,670 @@
+---
+title: Migration de la v2 vers la v3
+description: Guide complet pour migrer votre application Wails v2 vers la v3
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails v3 est une **réécriture complète** avec des améliorations significatives de l'architecture, des performances et de l'expérience développeur. Ce guide vous aide à migrer votre application v2 vers la v3.
+
+**Changements majeurs :**
+- Nouvelle structure d'application
+- Système de liaisons amélioré
+- Gestion des fenêtres améliorée
+- Meilleur système d'événements
+- Configuration simplifiée
+
+**Temps de migration :** 1 à 4 heures pour des applications typiques
+
+## Changements cassants (Breaking Changes)
+
+### Initialisation de l'application
+
+En v2, la configuration de l'application, la configuration des fenêtres et l'exécution étaient toutes combinées en un seul appel `wails.Run()`. Cette approche monolithique rendait difficile la création de plusieurs fenêtres, la gestion des erreurs à différentes étapes ou le test de composants individuels de votre application.
+
+La v3 sépare ces préoccupations en phases distinctes : création de l'application, création des fenêtres et exécution. Cette séparation vous donne un contrôle explicite sur chaque étape du cycle de vie de votre application et rend le code plus modulaire et testable.
+
+**v2 :**
+
+```go
+err := wails.Run(&options.App{
+    Title:  "My App",
+    Width:  1024,
+    Height: 768,
+    Bind: []interface{}{
+        &GreetService{},
+    },
+})
+```
+
+**v3 :**
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+})
+
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My App",
+    Width:  1024,
+    Height: 768,
+})
+
+app.Run()
+```
+
+**Pourquoi c'est mieux :**
+
+- **Support multi-fenêtres** : Vous pouvez créer des fenêtres dynamiquement à tout moment, pas seulement au démarrage
+- **Meilleure gestion des erreurs** : Chaque phase peut être validée séparément avec une gestion des erreurs appropriée
+- **Code plus clair** : La séparation rend évident ce qui se passe à chaque étape
+- **Plus testable** : Vous pouvez tester la configuration de l'application sans exécuter la boucle d'événements
+- **Plus flexible** : Les fenêtres peuvent être créées, détruites et recréées tout au long du cycle de vie de l'application
+
+### Liaisons (Bindings)
+
+En v2, chaque struct lié nécessitait un champ de contexte et une méthode `startup(ctx)` pour recevoir le contexte d'exécution. Cela créait un couplage étroit entre votre logique métier et le runtime Wails, rendant le code plus difficile à tester et à comprendre.
+
+La v3 introduit le pattern de service, où vos structs sont complètement autonomes et n'ont pas besoin de stocker le contexte d'exécution. Si un service a besoin d'accéder à l'instance de l'application, il la reçoit explicitement via l'injection de dépendances plutôt que par un passage de contexte implicite.
+
+**v2 :**
+
+```go
+type App struct {
+    ctx context.Context
+}
+
+func (a *App) startup(ctx context.Context) {
+    a.ctx = ctx
+}
+
+func (a *App) Greet(name string) string {
+    return "Hello " + name
+}
+```
+
+**v3 :**
+
+```go
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+    return "Hello " + name
+}
+
+// Enregistrer en tant que service
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+})
+```
+
+**Pourquoi c'est mieux :**
+
+- **Pas de dépendances implicites** : Les services sont de simples structs Go sans dépendances runtime cachées
+- **Tests plus faciles** : Vous pouvez tester les méthodes de service sans simuler un contexte Wails
+- **Code plus clair** : Les dépendances sont explicites (passées en arguments du constructeur) plutôt que cachées dans un champ de contexte
+- **Meilleure organisation** : Les services peuvent être regroupés par domaine plutôt que de tous vivre dans une seule struct `App`
+- **Initialisation appropriée** : Utilisez la méthode `ServiceStartup()` lorsque vous avez besoin d'une initialisation, ce qui la rend explicite
+
+### Runtime
+
+En v2, toutes les opérations runtime nécessitaient de passer un contexte aux fonctions globales du package `runtime`. Cela créait un couplage étroit avec l'objet contexte tout au long de votre base de code et rendait l'API procédurale plutôt qu'orientée objet.
+
+La v3 remplace le runtime basé sur le contexte par des appels de méthodes directs sur les objets application et fenêtre. Les opérations sont appelées directement sur les objets qu'elles affectent, rendant le code plus intuitif et orienté objet.
+
+**v2 :**
+
+```go
+import "github.com/wailsapp/wails/v2/pkg/runtime"
+
+runtime.WindowSetTitle(a.ctx, "New Title")
+runtime.EventsEmit(a.ctx, "event-name", data)
+```
+
+**v3 :**
+
+```go
+// Stocker la référence de l'application
+type MyService struct {
+    app *application.Application
+}
+
+func (s *MyService) UpdateTitle() {
+    window := s.app.Window.Current()
+    window.SetTitle("New Title")
+}
+
+func (s *MyService) EmitEvent() {
+    s.app.Event.Emit("event-name", data)
+}
+```
+
+**Pourquoi c'est mieux :**
+
+- **Design orienté objet** : Les méthodes sont appelées sur les objets qu'elles affectent (fenêtre, app, menu, etc.)
+- **Intention plus claire** : `window.SetTitle()` est plus évident que `runtime.WindowSetTitle(ctx, ...)`
+- **Meilleur support IDE** : L'autocomplétion fonctionne correctement lorsque les méthodes sont sur des objets
+- **Clarté multi-fenêtres** : Avec plusieurs fenêtres, vous choisissez explicitement sur quelle fenêtre opérer
+- **Pas de passage de contexte** : Vous n'avez pas besoin de passer le contexte à travers chaque fonction
+
+### Liaisons Frontend
+
+En v2, les liaisons étaient organisées par package Go et nom de struct, résultant généralement en des chemins comme `wailsjs/go/main/App`. Cette structure ne reflétait pas le regroupement logique et rendait difficile la recherche de fonctionnalités liées.
+
+La v3 organise les liaisons par nom de service et module d'application, créant une structure logique plus claire. Les liaisons sont générées dans un répertoire `bindings` organisé par le nom de votre application et les noms des services, ce qui facilite la compréhension des fonctionnalités disponibles.
+
+**v2 :**
+
+```javascript
+import { Greet } from '../wailsjs/go/main/App'
+
+const result = await Greet("World")
+```
+
+**v3 :**
+
+```javascript
+import { Greet } from './bindings/myapp/greetservice'
+
+const result = await Greet("World")
+```
+
+**Pourquoi c'est mieux :**
+
+- **Organisation logique** : Les liaisons sont regroupées par nom de service plutôt que par structure de package Go
+- **Imports plus clairs** : Le chemin reflète la logique du domaine (greetservice) et non la structure des fichiers (main/App)
+- **Meilleure découvrabilité** : Vous pouvez naviguer dans les liaisons par fonctionnalité plutôt que par structure technique
+- **Nommage cohérent** : L'organisation basée sur les services correspond à votre architecture backend
+- **Chemins plus simples** : Plus de préfixe `../wailsjs/go` - juste `./bindings`
+
+### Événements
+
+En v2, les événements utilisaient des paramètres `interface{}` variadiques et nécessitaient de passer le contexte à chaque fonction d'événement. Les gestionnaires d'événements recevaient des données non typées qui nécessitaient des assertions de type manuelles, rendant le système d'événements sujet aux erreurs et difficile à déboguer.
+
+La v3 introduit des objets d'événements typés et supprime la nécessité du contexte. Les gestionnaires d'événements reçoivent un objet d'événement approprié avec des données typées, rendant le système d'événements plus fiable et plus facile à utiliser.
+
+**v2 :**
+
+```go
+runtime.EventsOn(ctx, "event-name", func(data ...interface{}) {
+    // Gérer l'événement
+})
+
+runtime.EventsEmit(ctx, "event-name", data)
+```
+
+**v3 :**
+
+```go
+app.Event.On("event-name", func(e *application.CustomEvent) {
+    data := e.Data
+    // Gérer l'événement
+})
+
+app.Event.Emit("event-name", data)
+```
+
+**Pourquoi c'est mieux :**
+
+- **Sécurité des types** : Les événements utilisent des objets d'événements appropriés au lieu de `...interface{}`
+- **Meilleur débogage** : Les objets d'événements contiennent des métadonnées comme le nom de l'événement, facilitant le débogage
+- **API plus claire** : `app.Event.On()` et `app.Event.Emit()` sont plus intuitifs que les fonctions runtime
+- **Pas de contexte nécessaire** : Les événements fonctionnent directement sur l'objet app sans passer de contexte
+- **Gestionnaires plus simples** : Les gestionnaires d'événements ont une signature claire au lieu de paramètres variadiques### Fenêtres
+
+v2 ne prenait en charge qu'une seule fenêtre par application. La fenêtre était créée au démarrage et toutes les opérations sur la fenêtre étaient effectuées via des fonctions d'exécution qui ciblaient implicitement cette unique fenêtre.
+
+v3 introduit le support natif des fenêtres multiples comme fonctionnalité principale. Chaque fenêtre est un objet de première classe avec ses propres méthodes et cycle de vie. Vous pouvez créer, gérer et détruire plusieurs fenêtres dynamiquement tout au long de la durée de vie de votre application.
+
+**v2 :**
+
+```go
+// Single window only
+runtime.WindowSetSize(ctx, 800, 600)
+```
+
+**v3 :**
+
+```go
+// Multiple windows supported
+window1 := app.Window.New()
+window1.SetSize(800, 600)
+
+window2 := app.Window.New()
+window2.SetSize(1024, 768)
+```
+
+**Pourquoi c'est mieux :**
+
+- **Applications multi-fenêtres** : Créez des applications avec plusieurs fenêtres indépendantes (tableaux de bord, préférences, outils, etc.)
+- **Références de fenêtre explicites** : Chaque fenêtre est un objet que vous pouvez stocker et manipuler directement
+- **Création dynamique de fenêtres** : Créez et détruisez des fenêtres à tout moment pendant l'exécution
+- **État de fenêtre indépendant** : Chaque fenêtre a ses propres événements, propriétés et cycle de vie
+- **Architecture améliorée** : La gestion des fenêtres est orientée objet plutôt que basée sur le contexte
+
+## Étapes de migration
+
+### Étape 1 : Mettre à jour les dépendances
+
+**go.mod :**
+
+```go
+module myapp
+
+go 1.21
+
+require (
+    github.com/wailsapp/wails/v3 v3.0.0-alpha.1
+)
+```
+
+**Mise à jour :**
+
+```bash
+go get github.com/wailsapp/wails/v3@latest
+go mod tidy
+```
+
+### Étape 2 : Mettre à jour main.go
+
+**v2 :**
+
+```go
+package main
+
+import (
+    "embed"
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+    "github.com/wailsapp/wails/v2/pkg/options/windows"
+)
+
+//go:embed all:frontend/dist
+var assets embed.FS
+
+func main() {
+    app := NewApp()
+
+    err := wails.Run(&options.App{
+        Title:  "My App",
+        Width:  1024,
+        Height: 768,
+        AssetServer: &assetserver.Options{
+            Assets: assets,
+        },
+        Bind: []interface{}{
+            app,
+        },
+        Windows: &windows.Options{
+            WebviewIsTransparent: false,
+        },
+    })
+
+    if err != nil {
+        println("Error:", err.Error())
+    }
+}
+```
+
+**v3 :**
+
+```go
+package main
+
+import (
+    "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        Services: []application.Service{
+            application.NewService(&MyService{}),
+        },
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  "My App",
+        Width:  1024,
+        Height: 768,
+    })
+
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
+}
+```
+
+### Étape 3 : Convertir la structure App en Service
+
+**v2 :**
+
+```go
+type App struct {
+    ctx context.Context
+}
+
+func NewApp() *App {
+    return &App{}
+}
+
+func (a *App) startup(ctx context.Context) {
+    a.ctx = ctx
+    // Initialisation
+}
+
+func (a *App) Greet(name string) string {
+    return "Hello " + name
+}
+```
+
+**v3 :**
+
+```go
+type MyService struct {
+    app *application.Application
+}
+
+func NewMyService(app *application.Application) *MyService {
+    return &MyService{app: app}
+}
+
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    // Initialisation
+    return nil
+}
+
+func (s *MyService) Greet(name string) string {
+    return "Hello " + name
+}
+
+// Register after app creation
+app := application.New(application.Options{})
+app.RegisterService(application.NewService(NewMyService(app)))
+```
+
+### Étape 4 : Mettre à jour les appels Runtime
+
+**v2 :**
+
+```go
+func (a *App) DoSomething() {
+    runtime.WindowSetTitle(a.ctx, "New Title")
+    runtime.EventsEmit(a.ctx, "update", data)
+    runtime.LogInfo(a.ctx, "Message")
+}
+```
+
+**v3 :**
+
+```go
+func (s *MyService) DoSomething() {
+    window := s.app.Window.Current()
+    window.SetTitle("New Title")
+    
+    s.app.Event.Emit("update", data)
+    
+    s.app.Logger.Info("Message")
+}
+```
+
+### Étape 5 : Mettre à jour le frontend
+
+**Générer les nouvelles liaisons :**
+
+```bash
+wails3 generate bindings
+```
+
+**Mettre à jour les imports :**
+
+```javascript
+// v2
+import { Greet } from '../wailsjs/go/main/App'
+
+// v3
+import { Greet } from './bindings/myapp/myservice'
+```
+
+**Mettre à jour la gestion des événements :**
+
+```javascript
+// v2
+import { EventsOn, EventsEmit } from '../wailsjs/runtime/runtime'
+
+EventsOn("update", (data) => {
+    console.log(data)
+})
+
+EventsEmit("action", data)
+
+// v3
+import { Events } from '@wailsio/runtime'
+
+Events.On("update", (data) => {
+    console.log(data)
+})
+
+Events.Emit("action", data)
+```
+
+### Étape 6 : Mettre à jour la configuration
+
+**v2 (wails.json) :**
+
+```json
+{
+  "name": "myapp",
+  "outputfilename": "myapp",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto"
+}
+```
+
+**v3 (wails.json) :**
+
+```json
+{
+  "name": "myapp",
+  "frontend": {
+    "dir": "./frontend",
+    "install": "npm install",
+    "build": "npm run build",
+    "dev": "npm run dev",
+    "devServerUrl": "http://localhost:5173"
+  }
+}
+```
+
+## Mappage des fonctionnalités
+
+### Dialogues
+
+**v2 :**
+
+```go
+selection, err := runtime.OpenFileDialog(ctx, runtime.OpenDialogOptions{
+    Title: "Select File",
+})
+```
+
+**v3 :**
+
+```go
+selection, err := app.Dialog.OpenFile(application.OpenFileDialogOptions{
+    Title: "Select File",
+})
+```
+
+### Menus
+
+**v2 :**
+
+```go
+menu := menu.NewMenu()
+menu.Append(menu.Text("File", nil, []*menu.MenuItem{
+    menu.Text("Quit", nil, func(_ *menu.CallbackData) {
+        runtime.Quit(ctx)
+    }),
+}))
+```
+
+**v3 :**
+
+```go
+menu := app.NewMenu()
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+```
+
+### Barre d'état système
+
+**v2 :**
+
+```go
+// Not available in v2
+```
+
+**v3 :**
+
+```go
+systray := app.SystemTray.New()
+systray.SetIcon(iconBytes)
+systray.SetLabel("My App")
+
+menu := app.NewMenu()
+menu.Add("Show").OnClick(showWindow)
+menu.Add("Quit").OnClick(app.Quit)
+systray.SetMenu(menu)
+```
+
+## Problèmes courants
+
+### Problème : Liaisons introuvables
+
+**Problème :** Erreurs d'import après la migration
+
+**Solution :**
+
+```bash
+# Regenerate bindings
+wails3 generate bindings
+
+# Check output directory
+ls frontend/bindings
+```
+
+### Problème : Erreurs de contexte
+
+**Problème :** `ctx` non disponible
+
+**Solution :**
+
+Stockez la référence de l'application à la place :
+
+```go
+type MyService struct {
+    app *application.Application
+}
+
+func NewMyService(app *application.Application) *MyService {
+    return &MyService{app: app}
+}
+```
+
+### Problème : Les méthodes de fenêtre ne fonctionnent pas
+
+**Problème :** `runtime.WindowSetTitle()` n'existe pas
+
+**Solution :**
+
+Utilisez les méthodes de fenêtre directement :
+
+```go
+window := s.app.Window.Current()
+window.SetTitle("New Title")
+```
+
+### Problème : Les événements ne se déclenchent pas
+
+**Problème :** Événements enregistrés mais non reçus
+
+**Solution :**
+
+Vérifiez que les noms d'événements correspondent exactement :
+
+```go
+// Go
+app.Event.Emit("my-event", data)
+
+// JavaScript
+OnEvent("my-event", handler)  // Must match exactly
+```
+
+## Test de la migration
+
+### Liste de contrôle
+
+- [ ] L'application démarre sans erreurs
+- [ ] Toutes les liaisons fonctionnent
+- [ ] Les événements sont envoyés et reçus
+- [ ] Les fenêtres s'ouvrent et se ferment correctement
+- [ ] Les menus fonctionnent (le cas échéant)
+- [ ] Les dialogues fonctionnent (le cas échéant)
+- [ ] La barre d'état système fonctionne (le cas échéant)
+- [ ] Le processus de build fonctionne
+- [ ] Le build de production fonctionne
+
+### Commandes de test
+
+```bash
+# Development
+wails3 dev
+
+# Build
+wails3 build
+
+# Generate bindings
+wails3 generate bindings
+```
+
+## Avantages de v3
+
+### Performance
+
+- **Démarrage plus rapide** - Initialisation optimisée
+- **Mémoire réduite** - Utilisation efficace des ressources
+- **Meilleur pont** - &lt;1ms de surcharge d'appel
+
+### Fonctionnalités
+
+- **Multi-fenêtres** - Support natif
+- **Barre d'état système** - Intégré
+- **Meilleurs événements** - Typés, API simplifiée
+- **Services** - Meilleure organisation du code
+
+### Expérience développeur
+
+- **Sécurité des types** - Support complet de TypeScript
+- **Meilleures erreurs** - Messages d'erreur clairs---
+
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou [ouvrez un problème](https://github.com/wailsapp/wails/issues).

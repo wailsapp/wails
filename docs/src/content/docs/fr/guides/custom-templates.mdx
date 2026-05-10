@@ -1,0 +1,286 @@
+---
+title: Création de modèles personnalisés
+description: Apprenez à créer et personnaliser vos propres modèles Wails v3
+sidebar:
+    order: 50
+---
+
+Ce guide vous accompagnera tout au long du processus de création d'un modèle personnalisé pour Wails v3.
+
+## Pourquoi créer un modèle personnalisé ?
+
+Wails est livré avec un certain nombre de modèles préconfigurés qui vous permettent de démarrer rapidement votre application. Mais si vous avez besoin d'une configuration plus personnalisée, vous pouvez créer votre propre modèle pour répondre à vos besoins. Vous pourrez ensuite le partager avec la communauté Wails pour qu'il soit utilisé par d'autres.
+
+### 1. Génération d'un modèle
+
+Pour créer un modèle personnalisé, vous pouvez utiliser la commande `wails generate template` :
+
+```bash
+wails3 generate template -name mytemplate
+```
+
+Cela créera un nouveau répertoire appelé "mytemplate" dans votre répertoire actuel.
+
+La commande `wails3 generate template` prend en charge les options suivantes :
+
+| Option         | Description                                       | Défaut           |
+|----------------|---------------------------------------------------|-------------------|
+| `-name`        | Le nom de votre modèle (obligatoire)              | -                 |
+| `-frontend`    | Chemin vers un répertoire frontend existant à inclure | -                 |
+| `-author`      | L'auteur du modèle                                | -                 |
+| `-description` | Une description du modèle                         | -                 |
+| `-helpurl`     | URL pour la documentation du modèle               | -                 |
+| `-dir`         | Répertoire dans lequel générer le modèle          | Répertoire actuel |
+| `-version`     | Version du modèle                                 | v0.0.1            |
+
+Par exemple, pour créer un modèle avec toutes les options :
+
+```bash
+wails3 generate template \
+  -name "My Custom Template" \
+  -frontend ./my-existing-frontend \
+  -author "Your Name" \
+  -description "A template with my preferred setup" \
+  -helpurl "https://github.com/yourusername/template-docs" \
+  -dir ./templates \
+  -version "v1.0.0"
+```
+
+  :::tip
+  L'utilisation de l'option `-frontend` copiera un projet frontend web existant dans le modèle.
+  :::
+
+### 2. Configuration des métadonnées du modèle
+
+Si vous n'avez pas spécifié la configuration du modèle lors de sa génération, vous pouvez mettre à jour le fichier `template.json` dans le répertoire du modèle :
+
+```json5
+{
+  "name": "Your Template Name",          // Nom affiché de votre modèle
+  "shortname": "template-shortname",     // Utilisé lors de la référence à votre modèle
+  "author": "Your Name",                 // Auteur du modèle
+  "description": "Template description", // Description du modèle
+  "helpurl": "https://your-docs.com",    // URL de la documentation
+  "version": "v0.0.1",                   // Version du modèle
+  "schema": 3                            // Doit être maintenu à 3 pour Wails v3
+}
+```
+:::caution
+Le champ `schema` doit rester défini sur `3` pour la compatibilité avec Wails v3.
+:::
+
+### 3. Configuration des tâches de construction
+
+Dans le répertoire `build`, se trouve `Taskfile.yml` où vous pouvez définir le processus de construction de votre modèle.
+Ce fichier utilise [Task](https://taskfile.dev) pour l'automatisation de la construction. Les étapes clés sont :
+
+```yaml
+tasks:
+  install:frontend:deps:
+    summary: Install frontend dependencies
+    dir: frontend
+    sources:
+      - package.json
+      - package-lock.json
+    generates:
+      - node_modules/*
+    preconditions:
+      - sh: npm version
+        msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
+    cmds:
+      - npm install
+
+  build:frontend:
+    summary: Build the frontend project
+    dir: frontend
+    sources:
+      - "**/*"
+    generates:
+      - dist/*
+    deps:
+      - task: install:frontend:deps
+      - task: generate:bindings
+    cmds:
+      - npm run build -q
+
+
+```
+
+### 4. Configuration du frontend
+
+Si vous n'avez pas utilisé `-frontend` lors de la génération du modèle, vous devez ajouter des fichiers frontend à votre modèle.
+
+Il existe plusieurs façons de configurer votre frontend : partir de zéro ou utiliser un framework existant.
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+<Tabs>
+  <TabItem label="Start from Scratch">
+    If you want to start from scratch, you can create your frontend project just like you would for any web application. 
+    The `frontend` directory in your template is just a regular directory where you can set up your preferred 
+    development environment. You might want to use build tools like Vite, webpack, or even just plain HTML, CSS, and 
+    JavaScript - it's entirely up to you!
+
+    For example, if you're using Vite, you could navigate to the `frontend` directory and run:
+
+    ```bash
+    npm create vite@latest .
+    ```
+
+    Then follow the prompts to set up your project exactly how you want it. The key thing to remember is that this is just a regular frontend project - you can use any tools, frameworks, or libraries you're familiar with.
+  </TabItem>
+  <TabItem label="Use Existing Framework">
+    For this example, we'll use [Vite](https://vitejs.dev/) to set up a React frontend project:
+
+       ```bash
+       npm create vite@latest frontend -- --template react
+       cd frontend
+       npm install
+       ```
+
+  </TabItem>
+</Tabs>
+
+
+Maintenant que les fichiers frontend sont en place, mettez à jour `common/Taskfile.yml` avec les commandes appropriées :
+   ```yaml
+   tasks:
+      install:frontend:deps:
+        summary: Install frontend dependencies
+        dir: frontend
+        sources:
+          - package.json
+          - package-lock.json
+        generates:
+          - node_modules/*
+        preconditions:
+          - sh: npm version
+            msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
+        cmds:
+          - npm install
+
+      build:frontend:
+        summary: Build the frontend project
+        dir: frontend
+        sources:
+          - "**/*"
+        generates:
+          - dist/*
+        deps:
+          - task: install:frontend:deps
+          - task: generate:bindings
+        cmds:
+          - npm run build -q
+   ```
+
+  :::note
+  Pour cet exemple, les tâches par défaut n'ont pas besoin d'être mises à jour car elles utilisent les commandes standard `npm install` et `npm run build`.
+  :::
+
+### 5. Configuration de l'application Go
+
+Les fichiers par défaut dans le répertoire du modèle sont suffisants pour permettre aux utilisateurs de démarrer. Cependant, vous souhaiterez peut-être fournir quelques fonctionnalités supplémentaires pour démontrer les capacités de votre modèle. La meilleure façon de faire cela est de renommer `main.go.tmpl` en `main.go` et de le modifier comme n'importe quel autre fichier Go. Une fois terminé, assurez-vous de le renommer à nouveau en `main.go.tmpl` avant de valider vos modifications. Si vous ne vous souciez pas d'avoir un fichier `main.go` templaté (le modèle par défaut injecte le nom du projet dans le champ `Name` de l'application), vous pouvez ignorer cette étape.----------------------|----------------------------------|-----------------------------------|
+| `Name`               | Le nom du projet          | `"MyApp"`                         |
+| `BinaryName`         | Le nom du binaire généré | `"myapp"`                         |
+| `ProductName`        | Le nom du produit                 | `"My Application"`                |
+| `ProductDescription` | Description du produit       | `"An awesome application"`        |
+| `ProductVersion`     | Version du produit           | `"1.0.0"`                         |
+| `ProductCompany`     | Nom de l'entreprise                     | `"My Company Ltd"`                |
+| `ProductCopyright`   | Informations de copyright            | `"Copyright 2024 My Company Ltd"` |
+| `ProductComments`    | Commentaires supplémentaires sur le produit      | `"Built with Wails"`              |
+| `ProductIdentifier`  | Identifiant unique du produit        | `"com.mycompany.myapp"`           |
+| `Typescript`         | Indique si TypeScript est utilisé | `true` ou `false`                 |
+| `WailsVersion`       | La version de Wails utilisée  | `"3.0.0"`                         |
+
+Vous pouvez utiliser ces variables dans vos fichiers de modèle en utilisant la syntaxe de template de Go :
+
+```go
+// main.go.tmpl
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "{{.ProductName}}",
+        Description: "{{.ProductDescription}}",
+    })
+    // ...
+}
+```
+
+    :::tip
+    Le templating peut être appliqué à n'importe quel fichier de votre modèle, y compris les fichiers html, tant que le nom du fichier contient `.tmpl`.
+    :::
+
+### 6. Tester votre modèle
+
+Pour tester votre modèle :
+
+1. Générez un projet en utilisant votre modèle : `wails3 init -n testproject -t path/to/your/template`
+2. Exécutez `wails3 build` pour générer la version de production et assurez-vous que le binaire dans `bin` s'exécute correctement
+3. Exécutez `wails3 dev` pour démarrer le serveur de développement. 
+4. Testez que les modifications du code frontend sont reflétées dans l'application.
+5. Testez que les modifications du code Go reconstruisent et relancent l'application
+
+### 7. Partager votre modèle
+
+Une fois votre modèle prêt, vous pouvez le partager avec la communauté en l'hébergeant sur GitHub. Voici comment :
+
+1. Créez un nouveau dépôt GitHub pour votre modèle
+2. Poussez votre code de modèle vers le dépôt
+3. Étiquetez vos versions en utilisant le versionnement sémantique (par exemple, v1.0.0)
+
+Les utilisateurs peuvent ensuite utiliser votre modèle directement depuis GitHub en utilisant l'URL HTTPS :
+
+```bash
+wails3 init -n myapp -t https://github.com/yourusername/your-template
+```
+
+Vous pouvez également spécifier une version particulière en utilisant le format d'URL :
+
+```bash
+# Utiliser une étiquette de version spécifique
+wails3 init -n myapp -t https://github.com/yourusername/your-template/releases/tag/v1.0.0
+
+# Utiliser une branche spécifique
+wails3 init -n myapp -t https://github.com/yourusername/your-template/tree/main
+```
+
+Pour tester votre modèle avant de le partager :
+
+1. Poussez vos modifications vers GitHub
+2. Créez un nouveau projet de test en utilisant l'URL HTTPS :
+   ```bash
+   wails3 init -n testapp -t https://github.com/yourusername/your-template
+   ```
+3. Vérifiez que tous les fichiers sont correctement générés
+4. Testez le workflow de build et de développement comme décrit dans la section de test
+
+    :::note
+    Assurez-vous que votre dépôt est public si vous voulez que d'autres utilisent votre modèle.
+    :::
+
+Pour plus d'informations, visitez la [documentation Wails](https://wails.io)
+
+
+## Bonnes pratiques
+
+Parlons de quelques pratiques clés qui aideront à rendre votre modèle plus utile et maintenable. Voici les principaux domaines sur lesquels vous devez vous concentrer :
+
+1. **Rendez votre modèle facile à comprendre**
+   - Rédigez un README.md clair et utile pour aider les utilisateurs à démarrer rapidement
+   - Ajoutez des commentaires dans vos fichiers de configuration pour expliquer le "pourquoi" derrière vos choix
+   - Montrez des exemples de personnalisations courantes - les utilisateurs adorent voir des cas d'utilisation réels !
+
+2. **Gardez les dépendances heureuses**
+   - Restez à jour avec les mises à jour de vos packages frontend
+   - Verrouillez des versions spécifiques dans package.json pour éviter les surprises
+   - Informez les utilisateurs à l'avance de ce qu'ils devront avoir installé
+
+3. **Aimez votre modèle**
+   - Gardez-le frais avec des mises à jour régulières
+   - Testez-le minutieusement avant de le partager
+   - Partagez-le avec la communauté Wails - nous serions ravis de voir ce que vous créez !

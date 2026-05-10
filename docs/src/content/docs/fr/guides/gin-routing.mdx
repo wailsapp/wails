@@ -1,0 +1,263 @@
+---
+title: Utilisation de Gin pour le routage
+description: Un guide complet pour intégrer le framework web Gin avec les applications Wails v3
+---
+
+Ce guide montre comment intégrer le [framework web Gin](https://github.com/gin-gonic/gin) avec Wails v3. Gin est un framework web HTTP haute performance écrit en Go qui facilite la création d'applications web et d'APIs.
+
+## Introduction
+
+Wails v3 fournit un système d'actifs flexible qui vous permet d'utiliser n'importe quel gestionnaire HTTP, y compris des frameworks web populaires comme Gin. Cette intégration vous permet de :
+
+- Servir du contenu web en utilisant le routage et les middlewares de Gin
+- Créer des APIs RESTful accessibles depuis votre application Wails
+- Utiliser les fonctionnalités de Gin tout en conservant l'intégration desktop de Wails
+
+## Configuration de Gin avec Wails
+
+Pour intégrer Gin avec Wails, vous devez créer un routeur Gin et le configurer comme gestionnaire d'actifs dans votre application Wails. Voici un guide étape par étape :
+
+### 1. Installer les dépendances
+
+Tout d'abord, assurez-vous que le package Gin est installé :
+
+```bash
+go get -u github.com/gin-gonic/gin
+```
+
+### 2. Créer un middleware pour Gin
+
+Créez une fonction middleware qui gérera l'intégration entre Wails et Gin :
+
+```go
+// GinMiddleware crée un middleware qui transmet les requêtes à Gin si elles ne sont pas gérées par Wails
+func GinMiddleware(ginEngine *gin.Engine) application.Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Laisser Wails gérer la route `/wails`
+			if strings.HasPrefix(r.URL.Path, "/wails") {
+				next.ServeHTTP(w, r)
+				return
+			}
+			// Laisser Gin gérer tout le reste
+			ginEngine.ServeHTTP(w, r)
+		})
+	}
+}
+```
+
+Ce middleware transmet toutes les requêtes HTTP au routeur Gin.
+
+### 3. Configurer votre routeur Gin
+
+Configurez votre routeur Gin avec des routes, des middlewares et des handlers :
+
+```go
+// Créer un nouveau routeur Gin
+ginEngine := gin.New() // Utilisation de New() au lieu de Default() pour ajouter des middlewares personnalisés
+
+// Ajouter des middlewares
+ginEngine.Use(gin.Recovery())
+ginEngine.Use(LoggingMiddleware()) // Votre middleware personnalisé
+
+// Définir des routes
+ginEngine.GET("/", func(c *gin.Context) {
+    // Servir votre page principale
+})
+
+ginEngine.GET("/api/hello", func(c *gin.Context) {
+    c.JSON(http.StatusOK, gin.H{
+        "message": "Hello from Gin API!",
+        "time":    time.Now().Format(time.RFC3339),
+    })
+})
+```
+
+### 4. Intégrer avec l'application Wails
+
+Configurez votre application Wails pour utiliser le routeur Gin comme gestionnaire d'actifs :
+
+```go
+// Créer une nouvelle application Wails
+app := application.New(application.Options{
+    Name:        "Gin Example",
+    Description: "A demo of using Gin with Wails",
+    Mac: application.MacOptions{
+        ApplicationShouldTerminateAfterLastWindowClosed: true,
+    },
+    Assets: application.AssetOptions{
+        Handler:    ginEngine,
+        Middleware: GinMiddleware(ginEngine),
+    },
+})
+
+// Créer la fenêtre
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:    "Wails + Gin Example",
+    Width:    900,
+    Height:   700,
+    URL:      "/", // Cela chargera la route gérée par Gin
+})
+```
+
+## Servir du contenu statique
+
+Utilisez le package `embed` de Go pour intégrer des fichiers statiques dans votre binaire :
+
+```go
+//go:embed static
+var staticFiles embed.FS
+
+ginEngine.StaticFS("/static", http.FS(staticFiles))
+ginEngine.GET("/", func(c *gin.Context) {
+    file, _ := staticFiles.ReadFile("static/index.html")
+    c.Data(http.StatusOK, "text/html; charset=utf-8", file)
+})
+```
+
+Pour le développement, servez les fichiers directement depuis le disque en utilisant `ginEngine.Static("/static", "./static")`.
+
+## Middleware personnalisé
+
+Gin vous permet de créer des middlewares personnalisés pour divers usages. Voici un exemple de middleware de journalisation :
+
+```go
+// LoggingMiddleware est un middleware Gin qui journalise les détails de la requête
+func LoggingMiddleware() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        // Démarrer le timer
+        startTime := time.Now()
+
+        // Traiter la requête
+        c.Next()
+
+        // Calculer la latence
+        latency := time.Since(startTime)
+
+        // Journaliser les détails de la requête
+        log.Printf("[GIN] %s | %s | %s | %d | %s",
+            c.Request.Method,
+            c.Request.URL.Path,
+            c.ClientIP(),
+            c.Writer.Status(),
+            latency,
+        )
+    }
+}
+```
+
+## Gestion des requêtes API
+
+Gin facilite la création d'APIs RESTful. Voici comment définir des points de terminaison API :
+
+```go
+// Point de terminaison GET
+ginEngine.GET("/api/users", func(c *gin.Context) {
+    c.JSON(http.StatusOK, users)
+})
+
+// Point de terminaison POST avec liaison JSON
+ginEngine.POST("/api/users", func(c *gin.Context) {
+    var newUser User
+    if err := c.ShouldBindJSON(&newUser); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    // Traiter le nouvel utilisateur...
+    c.JSON(http.StatusCreated, newUser)
+})
+
+// Paramètres de chemin
+ginEngine.GET("/api/users/:id", func(c *gin.Context) {
+    id := c.Param("id")
+    // Trouver l'utilisateur par ID...
+    c.JSON(http.StatusOK, user)
+})
+
+// Paramètres de requête
+ginEngine.GET("/api/search", func(c *gin.Context) {
+    query := c.DefaultQuery("q", "")
+    limit := c.DefaultQuery("limit", "10")
+    // Effectuer la recherche...
+    c.JSON(http.StatusOK, results)
+})
+```
+
+## Utilisation des fonctionnalités de Wails
+
+Votre contenu web servi par Gin peut interagir avec les fonctionnalités de Wails en utilisant le package `@wailsio/runtime`.
+
+### Gestion des événements
+
+Enregistrez des gestionnaires d'événements en Go :
+
+```go
+app.Event.On("my-event", func(event *application.CustomEvent) {
+    log.Printf("Received event: %v", event.Data)
+})
+```
+
+Appelez depuis JavaScript en utilisant le runtime :
+
+```html
+<script type="module">
+    import { Events } from '@wailsio/runtime';
+
+    Events.Emit("my-event", { message: "Hello from frontend" });
+    Events.On("response-event", (data) => console.log(data));
+</script>
+```
+
+## Configuration avancée
+
+### Personnalisation du mode de Gin
+
+Définissez Gin en mode release pour la production :
+
+```go
+gin.SetMode(gin.ReleaseMode)  // Utilisez gin.DebugMode pour le développement
+ginEngine := gin.New()
+```
+
+### Gestion des WebSockets
+
+Vous pouvez intégrer les WebSockets avec Gin en utilisant des bibliothèques comme Gorilla WebSocket :
+
+```go
+import "github.com/gorilla/websocket"
+
+var upgrader = websocket.Upgrader{
+    ReadBufferSize:  1024,
+    WriteBufferSize: 1024,
+    CheckOrigin: func(r *http.Request) bool {
+        return true // Autoriser toutes les connexions
+    },
+}
+
+// Dans votre gestionnaire de route :
+ginEngine.GET("/ws", func(c *gin.Context) {
+    conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+    if err != nil {
+        log.Println(err)
+        return
+    }
+    defer conn.Close()
+    
+    // Gérer la connexion WebSocket...
+})
+```
+
+## Bonnes pratiques
+
+- **Utilisez le package embed de Go :** Intégrez les fichiers statiques dans votre binaire pour une meilleure distribution.
+- **Séparez les responsabilités :** Gardez la logique de votre API séparée de la logique de votre interface utilisateur.
+- **Gestion des erreurs :** Implémentez une gestion des erreurs appropriée dans les routes Gin et le code frontend.
+- **Sécurité :** Soyez conscient des considérations de sécurité, surtout lors de la gestion des entrées utilisateur.
+- **Performance :** Utilisez le mode release de Gin en production pour de meilleures performances.
+- **Tests :** Écrivez des tests pour vos routes Gin en utilisant les utilitaires de test de Gin.
+
+## Conclusion
+
+L'intégration de Gin avec Wails offre une combinaison puissante pour construire des applications desktop avec des technologies web. Les performances et l'ensemble de fonctionnalités de Gin complètent les capacités d'intégration desktop de Wails, vous permettant de créer des applications sophistiquées qui utilisent le meilleur des deux mondes.
+
+Pour plus d'informations, consultez la [documentation de Gin](https://github.com/gin-gonic/gin) et la [documentation de Wails](https://wails.io).

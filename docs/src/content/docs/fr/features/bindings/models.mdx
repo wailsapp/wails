@@ -1,0 +1,456 @@
+---
+title: Modèles de données
+description: Liez des structures de données complexes entre Go et JavaScript
+sidebar:
+  order: 3
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Liaisons de modèles de données
+
+Wails **génère automatiquement des classes JavaScript/TypeScript** à partir de structs Go, offrant une sécurité de type complète lors du passage de données complexes entre le backend et le frontend. Écrivez des structs Go, générez les liaisons, et obtenez des modèles frontend entièrement typés avec des constructeurs, des annotations de type et des commentaires JSDoc.
+
+## Démarrage rapide
+
+**Struct Go :**
+
+```go
+type User struct {
+    ID        int       `json:"id"`
+    Name      string    `json:"name"`
+    Email     string    `json:"email"`
+    CreatedAt time.Time `json:"createdAt"`
+}
+
+func (s *UserService) GetUser(id int) (*User, error) {
+    // Return user
+}
+```
+
+**Générer :**
+
+```bash
+wails3 generate bindings
+```
+
+**JavaScript :**
+
+```javascript
+import { GetUser } from './bindings/myapp/userservice'
+import { User } from './bindings/myapp/models'
+
+const user = await GetUser(1)
+console.log(user.Name)  // Type-safe!
+```
+
+**C'est tout !** Sécurité de type complète à travers le pont.
+
+## Définition des modèles
+
+### Struct de base
+
+```go
+type Person struct {
+    Name string
+    Age  int
+}
+```
+
+**JavaScript généré :**
+
+```javascript
+export class Person {
+    /** @type {string} */
+    Name = ""
+    
+    /** @type {number} */
+    Age = 0
+    
+    constructor(source = {}) {
+        Object.assign(this, source)
+    }
+    
+    static createFrom(source = {}) {
+        return new Person(source)
+    }
+}
+```
+
+### Avec balises JSON
+
+```go
+type User struct {
+    ID        int       `json:"id"`
+    Name      string    `json:"name"`
+    Email     string    `json:"email"`
+    CreatedAt time.Time `json:"createdAt"`
+}
+```
+
+**JavaScript généré :**
+
+```javascript
+export class User {
+    /** @type {number} */
+    id = 0
+    
+    /** @type {string} */
+    name = ""
+    
+    /** @type {string} */
+    email = ""
+    
+    /** @type {Date} */
+    createdAt = new Date()
+    
+    constructor(source = {}) {
+        Object.assign(this, source)
+    }
+}
+```
+
+**Les balises JSON contrôlent les noms de champs** en JavaScript.
+
+### Avec des commentaires
+
+```go
+// User represents an application user
+type User struct {
+    // Unique identifier
+    ID int `json:"id"`
+    
+    // Full name of the user
+    Name string `json:"name"`
+    
+    // Email address (must be unique)
+    Email string `json:"email"`
+}
+```
+
+**JavaScript généré :**
+
+```javascript
+/**
+ * User represents an application user
+ */
+export class User {
+    /**
+     * Unique identifier
+     * @type {number}
+     */
+    id = 0
+    
+    /**
+     * Full name of the user
+     * @type {string}
+     */
+    name = ""
+    
+    /**
+     * Email address (must be unique)
+     * @type {string}
+     */
+    email = ""
+}
+```
+
+**Les commentaires deviennent du JSDoc !** Votre IDE les affiche.
+
+### Structs imbriquées
+
+```go
+type Address struct {
+    Street  string `json:"street"`
+    City    string `json:"city"`
+    Country string `json:"country"`
+}
+
+type User struct {
+    ID      int     `json:"id"`
+    Name    string  `json:"name"`
+    Address Address `json:"address"`
+}
+```
+
+**JavaScript généré :**
+
+```javascript
+export class Address {
+    /** @type {string} */
+    street = ""
+    
+    /** @type {string} */
+    city = ""
+    
+    /** @type {string} */
+    country = ""
+}
+
+export class User {
+    /** @type {number} */
+    id = 0
+    
+    /** @type {string} */
+    name = ""
+    
+    /** @type {Address} */
+    address = new Address()
+}
+```
+
+**Utilisation :**
+
+```javascript
+const user = new User({
+    id: 1,
+    name: "Alice",
+    address: new Address({
+        street: "123 Main St",
+        city: "Springfield",
+        country: "USA"
+    })
+})
+```
+
+### Tableaux et tranches
+
+```go
+type Team struct {
+    Name    string   `json:"name"`
+    Members []string `json:"members"`
+}
+```
+
+**JavaScript généré :**
+
+```javascript
+export class Team {
+    /** @type {string} */
+    name = ""
+    
+    /** @type {string[]} */
+    members = []
+}
+```
+
+**Utilisation :**
+
+```javascript
+const team = new Team({
+    name: "Engineering",
+    members: ["Alice", "Bob", "Charlie"]
+})
+```
+
+### Maps
+
+```go
+type Config struct {
+    Settings map[string]string `json:"settings"`
+}
+```
+
+**JavaScript généré :**
+
+```javascript
+export class Config {
+    /** @type {Record<string, string>} */
+    settings = {}
+}
+```
+
+**Utilisation :**
+
+```javascript
+const config = new Config({
+    settings: {
+        theme: "dark",
+        language: "en"
+    }
+})
+```
+
+## Mappage de types
+
+### Types primitifs
+
+| Type Go | Type JavaScript |
+|---------|----------------|
+| `string` | `string` |
+| `bool` | `boolean` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `number` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `number` |
+| `float32`, `float64` | `number` |
+| `byte` | `number` |
+| `rune` | `number` |
+
+### Types spéciaux
+
+| Type Go | Type JavaScript |
+|---------|----------------|
+| `time.Time` | `Date` |
+| `[]byte` | `Uint8Array` |
+| `*T` | `T` (pointeurs transparents) |
+| `interface{}` | `any` |
+
+### Collections
+
+| Type Go | Type JavaScript |
+|---------|----------------|
+| `[]T` | `T[]` |
+| `[N]T` | `T[]` |
+| `map[string]T` | `Record<string, T>` |
+| `map[K]V` | `Map<K, V>` |
+
+### Types non pris en charge
+
+- `chan T` (canaux)
+- `func()` (fonctions)
+- Interfaces complexes (sauf `interface{}`)
+- Champs non exportés (minuscules)
+
+## Utilisation des modèles
+
+### Création d'instances
+
+```javascript
+import { User } from './bindings/myapp/models'
+
+// Empty instance
+const user1 = new User()
+
+// With data
+const user2 = new User({
+    id: 1,
+    name: "Alice",
+    email: "alice@example.com"
+})
+
+// From JSON string
+const user3 = User.createFrom('{"id":1,"name":"Alice"}')
+
+// From object
+const user4 = User.createFrom({ id: 1, name: "Alice" })
+```
+
+### Passage à Go
+
+```javascript
+import { CreateUser } from './bindings/myapp/userservice'
+import { User } from './bindings/myapp/models'
+
+const user = new User({
+    name: "Bob",
+    email: "bob@example.com"
+})
+
+const created = await CreateUser(user)
+console.log("Created user:", created.id)
+```
+
+### Réception depuis Go
+
+```javascript
+import { GetUser } from './bindings/myapp/userservice'
+
+const user = await GetUser(1)
+
+// user is already a User instance
+console.log(user.name)
+console.log(user.email)
+console.log(user.createdAt.toISOString())
+```
+
+### Mise à jour des modèles
+
+```javascript
+import { GetUser, UpdateUser } from './bindings/myapp/userservice'
+
+// Get user
+const user = await GetUser(1)
+
+// Modify
+user.name = "Alice Smith"
+user.email = "alice.smith@example.com"
+
+// Save
+await UpdateUser(user)
+```
+
+## Prise en charge de TypeScript
+
+### TypeScript généré
+
+```bash
+wails3 generate bindings -ts
+```
+
+**Généré :**
+
+```typescript
+/**
+ * User represents an application user
+ */
+export class User {
+    /**
+     * Unique identifier
+     */
+    id: number = 0
+    
+    /**
+     * Full name of the user
+     */
+    name: string = ""
+    
+    /**
+     * Email address (must be unique)
+     */
+    email: string = ""
+    
+    /**
+     * Account creation date
+     */
+    createdAt: Date = new Date()
+    
+    constructor(source: Partial<User> = {}) {
+        Object.assign(this, source)
+    }
+    
+    static createFrom(source: string | Partial<User> = {}): User {
+        const parsedSource = typeof source === 'string' 
+            ? JSON.parse(source) 
+            : source
+        return new User(parsedSource)
+    }
+}
+```
+
+### Utilisation dans TypeScript
+
+```typescript
+import { GetUser, CreateUser } from './bindings/myapp/userservice'
+import { User } from './bindings/myapp/models'
+
+async function example() {
+    // Create user
+    const newUser = new User({
+        name: "Alice",
+        email: "alice@example.com"
+    })
+    
+    const created: User = await CreateUser(newUser)
+    
+    // Get user
+    const user: User = await GetUser(created.id)
+    
+    // Type-safe access
+    console.log(user.name.toUpperCase())  // ✅ string method
+    console.log(user.id + 1)              // ✅ number operation
+    console.log(user.createdAt.getTime()) // ✅ Date method
+}
+```
+
+## Modèles avancés---
+
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de liaisons](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).

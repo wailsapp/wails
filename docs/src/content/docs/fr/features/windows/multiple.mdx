@@ -1,0 +1,606 @@
+---
+title: Fenêtres multiples
+description: Modèles et bonnes pratiques pour les applications multi-fenêtres
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Applications multi-fenêtres
+
+Wails v3 propose un **support natif des fenêtres multiples** pour créer des fenêtres de paramètres, des fenêtres de document, des palettes d'outils et des fenêtres d'inspection. Suivez les fenêtres, activez la communication entre elles et gérez leur cycle de vie avec des API simples et cohérentes.
+
+### Fenêtre principale + Fenêtre de paramètres
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+type App struct {
+    app            *application.Application
+    mainWindow     *application.WebviewWindow
+    settingsWindow *application.WebviewWindow
+}
+
+func main() {
+    app := &App{}
+    
+    app.app = application.New(application.Options{
+        Name: "Multi-Window App",
+    })
+    
+    // Create main window
+    app.mainWindow = app.app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Name:   "main",
+        Title:  "Main Application",
+        Width:  1200,
+        Height: 800,
+    })
+    
+    // Create settings window (hidden initially)
+    app.settingsWindow = app.app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Name:   "settings",
+        Title:  "Settings",
+        Width:  600,
+        Height: 400,
+        Hidden: true,
+    })
+    
+    app.app.Run()
+}
+
+// Show settings from main window
+func (a *App) ShowSettings() {
+    if a.settingsWindow != nil {
+        a.settingsWindow.Show()
+        a.settingsWindow.SetFocus()
+    }
+}
+```
+
+**Points clés :**
+- La fenêtre principale est toujours visible
+- La fenêtre de paramètres est créée mais masquée
+- Affichez les paramètres à la demande
+- Réutilisez la même fenêtre (ne créez pas plusieurs instances)
+
+## Suivi des fenêtres
+
+### Obtenir toutes les fenêtres
+
+```go
+windows := app.Window.GetAll()
+fmt.Printf("Total windows: %d\n", len(windows))
+
+for _, window := range windows {
+    fmt.Printf("- %s (ID: %d)\n", window.Name(), window.ID())
+}
+```
+
+### Trouver une fenêtre spécifique
+
+```go
+// By name
+settings := app.GetWindowByName("settings")
+if settings != nil {
+    settings.Show()
+}
+
+// By ID
+window := app.GetWindowByID(123)
+
+// Current (focused) window
+current := app.Window.Current()
+```
+
+### Modèle de registre de fenêtres
+
+Suivez les fenêtres dans votre application :
+
+```go
+type WindowManager struct {
+    windows map[string]*application.WebviewWindow
+    mu      sync.RWMutex
+}
+
+func (wm *WindowManager) Register(name string, window *application.WebviewWindow) {
+    wm.mu.Lock()
+    defer wm.mu.Unlock()
+    wm.windows[name] = window
+}
+
+func (wm *WindowManager) Get(name string) *application.WebviewWindow {
+    wm.mu.RLock()
+    defer wm.mu.RUnlock()
+    return wm.windows[name]
+}
+
+func (wm *WindowManager) Remove(name string) {
+    wm.mu.Lock()
+    defer wm.mu.Unlock()
+    delete(wm.windows, name)
+}
+```
+
+## Communication entre fenêtres
+
+### Utilisation des événements
+
+Les fenêtres communiquent via le système d'événements :
+
+```go
+// In main window - emit event
+app.Event.Emit("settings-changed", map[string]interface{}{
+    "theme": "dark",
+    "fontSize": 14,
+})
+
+// In settings window - listen for event
+app.Event.On("settings-changed", func(event *application.WailsEvent) {
+    data := event.Data.(map[string]interface{})
+    theme := data["theme"].(string)
+    fontSize := data["fontSize"].(int)
+    
+    // Update UI
+    updateSettings(theme, fontSize)
+})
+```
+
+### Modèle d'état partagé
+
+Utilisez un gestionnaire d'état partagé :
+
+```go
+type AppState struct {
+    theme    string
+    fontSize int
+    mu       sync.RWMutex
+}
+
+var state = &AppState{
+    theme:    "light",
+    fontSize: 12,
+}
+
+func (s *AppState) SetTheme(theme string) {
+    s.mu.Lock()
+    s.theme = theme
+    s.mu.Unlock()
+    
+    // Notify all windows
+    app.Event.Emit("theme-changed", theme)
+}
+
+func (s *AppState) GetTheme() string {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+    return s.theme
+}
+```
+
+### Messages de fenêtre à fenêtre
+
+Envoyez des messages entre des fenêtres spécifiques :
+
+```go
+// Get target window
+targetWindow := app.GetWindowByName("preview")
+
+// Emit event to specific window
+targetWindow.EmitEvent("update-preview", previewData)
+```
+
+## Modèles courants
+
+### Modèle 1 : Fenêtres singleton
+
+Assurez-vous qu'une seule instance d'une fenêtre existe :
+
+```go
+var settingsWindow *application.WebviewWindow
+
+func ShowSettings(app *application.Application) {
+    // Create if doesn't exist
+    if settingsWindow == nil {
+        settingsWindow = app.Window.NewWithOptions(application.WebviewWindowOptions{
+            Name:   "settings",
+            Title:  "Settings",
+            Width:  600,
+            Height: 400,
+        })
+        
+        // Cleanup on close
+        settingsWindow.OnDestroy(func() {
+            settingsWindow = nil
+        })
+    }
+    
+    // Show and focus
+    settingsWindow.Show()
+    settingsWindow.SetFocus()
+}
+```
+
+### Modèle 2 : Fenêtres de document
+
+Plusieurs instances du même type de fenêtre :
+
+```go
+type DocumentWindow struct {
+    window   *application.WebviewWindow
+    filePath string
+    modified bool
+}
+
+var documents = make(map[string]*DocumentWindow)
+
+func OpenDocument(app *application.Application, filePath string) {
+    // Check if already open
+    if doc, exists := documents[filePath]; exists {
+        doc.window.Show()
+        doc.window.SetFocus()
+        return
+    }
+    
+    // Create new document window
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  filepath.Base(filePath),
+        Width:  800,
+        Height: 600,
+    })
+    
+    doc := &DocumentWindow{
+        window:   window,
+        filePath: filePath,
+        modified: false,
+    }
+    
+    documents[filePath] = doc
+    
+    // Cleanup on close
+    window.OnDestroy(func() {
+        delete(documents, filePath)
+    })
+    
+    // Load document
+    loadDocument(window, filePath)
+}
+```
+
+### Modèle 3 : Palettes d'outils
+
+Fenêtres flottantes qui restent au premier plan :
+
+```go
+func CreateToolPalette(app *application.Application) *application.WebviewWindow {
+    palette := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Name:        "tools",
+        Title:       "Tools",
+        Width:       200,
+        Height:      400,
+        AlwaysOnTop: true,
+        Resizable:   false,
+    })
+    
+    return palette
+}
+```
+
+### Modèle 4 : Dialogues modaux (macOS uniquement)
+
+Fenêtres enfants qui bloquent la fenêtre parente :
+
+```go
+func ShowModaldialog(parent *application.WebviewWindow, title string) {
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:       title,
+        Width:       400,
+        Height:      200,
+        Parent:      parent,
+        AlwaysOnTop: true,
+        Resizable:   false,
+    })
+    
+    parent.AttachModal(dialog)
+}
+```
+
+### Modèle 5 : Fenêtres d'inspection/prévisualisation
+
+Fenêtres liées qui se mettent à jour ensemble :
+
+```go
+type EditorApp struct {
+    editor  *application.WebviewWindow
+    preview *application.WebviewWindow
+}
+
+func (e *EditorApp) UpdatePreview(content string) {
+    if e.preview != nil && e.preview.IsVisible() {
+        e.preview.EmitEvent("content-changed", content)
+    }
+}
+
+func (e *EditorApp) TogglePreview() {
+    if e.preview == nil {
+        e.preview = app.Window.NewWithOptions(application.WebviewWindowOptions{
+            Name:   "preview",
+            Title:  "Preview",
+            Width:  600,
+            Height: 800,
+        })
+        
+        e.preview.OnDestroy(func() {
+            e.preview = nil
+        })
+    }
+    
+    if e.preview.IsVisible() {
+        e.preview.Hide()
+    } else {
+        e.preview.Show()
+    }
+}
+```
+
+## Relations parent-enfant
+
+### Création de fenêtres enfants
+
+```go
+childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "Child Window",
+})
+
+parentWindow.AttachModal(childWindow)
+```
+
+**Comportement :**
+- L'enfant reste au-dessus du parent
+- L'enfant se déplace avec le parent
+- L'enfant bloque l'interaction avec le parent
+
+**Support des plateformes :**
+
+| macOS | Windows | Linux |
+|-------|---------|-------|
+| ✅ | ❌ | ❌ |
+
+### Comportement modal
+
+Créez un comportement de type modal :
+
+```go
+func ShowModaldialog(parent *application.WebviewWindow, title string) {dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:       title,
+    Width:       400,
+    Height:      200,
+})
+
+parent.AttachModal(dialog)
+}
+```
+
+## Gestion du cycle de vie des fenêtres
+
+### Callbacks de création
+
+Soyez notifié lorsque des fenêtres sont créées :
+
+```go
+app.OnWindowCreation(func(window *application.WebviewWindow) {
+    fmt.Printf("Window created: %s\n", window.Name())
+    
+    // Configure all new windows
+    window.SetMinSize(400, 300)
+})
+```
+
+### Callbacks de destruction
+
+Nettoyez lors de la destruction des fenêtres :
+
+```go
+window.OnDestroy(func() {
+    fmt.Printf("Window %s destroyed\n", window.Name())
+    
+    // Cleanup resources
+    cleanup(window.ID())
+    
+    // Remove from tracking
+    removeFromRegistry(window.Name())
+})
+```
+
+### Comportement de fermeture de l'application
+
+Contrôlez quand l'application se ferme :
+
+```go
+app := application.New(application.Options{
+    Mac: application.MacOptions{
+        // Ne pas quitter lorsque la dernière fenêtre se ferme
+        ApplicationShouldTerminateAfterLastWindowClosed: false,
+    },
+})
+```
+
+**Cas d'utilisation :**
+- Applications de zone de notification (system tray)
+- Services en arrière-plan
+- Applications de barre de menus (macOS)
+
+## Gestion de la mémoire
+
+### Prévention des fuites
+
+Nettoyez toujours les références aux fenêtres :
+
+```go
+var windows = make(map[string]*application.WebviewWindow)
+
+func CreateWindow(name string) {
+    window := app.Window.New()
+    windows[name] = window
+    
+    // IMPORTANT : Nettoyer lors de la destruction
+    window.OnDestroy(func() {
+        delete(windows, name)
+    })
+}
+```
+
+### Fermer vs Détruire
+
+```go
+// Fermer - déclenche OnClose, peut être annulé
+window.Close()
+
+// Détruire - immédiat, ne peut pas être annulé
+window.Destroy()
+```
+
+**Meilleure pratique :** Utilisez `Close()` pour les fermetures initiées par l'utilisateur, `Destroy()` pour le nettoyage.
+
+### Nettoyage des ressources
+
+```go
+type ManagedWindow struct {
+    window     *application.WebviewWindow
+    resources  []io.Closer
+}
+
+func (mw *ManagedWindow) Destroy() {
+    // Fermer toutes les ressources
+    for _, resource := range mw.resources {
+        resource.Close()
+    }
+    
+    // Détruire la fenêtre
+    mw.window.Destroy()
+}
+```
+
+## Schémas avancés
+
+### Pool de fenêtres
+
+Réutilisez les fenêtres au lieu d'en créer de nouvelles :
+
+```go
+type WindowPool struct {
+    available []*application.WebviewWindow
+    inUse     map[uint]*application.WebviewWindow
+    mu        sync.Mutex
+}
+
+func (wp *WindowPool) Acquire() *application.WebviewWindow {
+    wp.mu.Lock()
+    defer wp.mu.Unlock()
+    
+    // Réutiliser une fenêtre disponible
+    if len(wp.available) > 0 {
+        window := wp.available[0]
+        wp.available = wp.available[1:]
+        wp.inUse[window.ID()] = window
+        return window
+    }
+    
+    // Créer une nouvelle fenêtre
+    window := app.Window.New()
+    wp.inUse[window.ID()] = window
+    return window
+}
+
+func (wp *WindowPool) Release(window *application.WebviewWindow) {
+    wp.mu.Lock()
+    defer wp.mu.Unlock()
+    
+    delete(wp.inUse, window.ID())
+    window.Hide()
+    wp.available = append(wp.available, window)
+}
+```
+
+### Groupes de fenêtres
+
+Gérez les fenêtres liées ensemble :
+
+```go
+type WindowGroup struct {
+    name    string
+    windows []*application.WebviewWindow
+}
+
+func (wg *WindowGroup) Add(window *application.WebviewWindow) {
+    wg.windows = append(wg.windows, window)
+}
+
+func (wg *WindowGroup) ShowAll() {
+    for _, window := range wg.windows {
+        window.Show()
+    }
+}
+
+func (wg *WindowGroup) HideAll() {
+    for _, window := range wg.windows {
+        window.Hide()
+    }
+}
+
+func (wg *WindowGroup) CloseAll() {
+    for _, window := range wg.windows {
+        window.Close()
+    }
+}
+```
+
+### Gestion de l'espace de travail
+
+Sauvegardez et restaurez les dispositions des fenêtres :
+
+```go
+type WindowLayout struct {
+    Windows []WindowState `json:"windows"`
+}
+
+type WindowState struct {
+    Name   string `json:"name"`
+    X      int    `json:"x"`
+    Y      int    `json:"y"`
+    Width  int    `json:"width"`
+    Height int    `json:"height"`
+}
+
+func SaveLayout() *WindowLayout {
+    layout := &WindowLayout{}
+    
+    for _, window := range app.Window.GetAll() {
+        x, y := window.Position()
+        width, height := window.Size()
+        
+        layout.Windows = append(layout.Windows, WindowState{
+            Name:   window.Name(),
+            X:      x,
+            Y:      y,
+            Width:  width,
+            Height: height,
+        })
+    }
+    
+    return layout
+}
+
+func RestoreLayout(layout *WindowLayout) {
+    for _, state := range layout.Windows {
+        window := app.GetWindowByName(state.Name)
+        if window != nil {
+            window.SetPosition(state.X, state.Y)
+            window.SetSize(state.Width, state.Height)
+        }
+    }
+}---
+
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez l'[exemple multi-fenêtres](https://github.com/wailsapp/wails/tree/master/v3/examples/multi-window).

@@ -1,0 +1,121 @@
+---
+title: Création d'applications
+description: Compilez et packagez votre application Wails
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Aside } from "@astrojs/starlight/components";
+
+Wails v3 utilise [Task](https://taskfile.dev) comme système de build. Les commandes `wails3 build` et `wails3 package` sont des wrappers pratiques autour de Task.
+
+## Compilation
+
+Compilez pour la plateforme actuelle :
+
+```bash
+wails3 build
+```
+
+Compilez pour une plateforme spécifique :
+
+```bash
+wails3 build GOOS=windows
+wails3 build GOOS=darwin
+wails3 build GOOS=linux
+
+# Avec l'architecture
+wails3 build GOOS=darwin GOARCH=arm64
+
+# Le style des variables d'environnement fonctionne aussi
+GOOS=windows wails3 build
+```
+
+La sortie est placée dans le répertoire `bin/`.
+
+<Aside type="tip">
+La compilation croisée vers macOS ou Linux depuis une autre plateforme nécessite Docker. Consultez [Builds Multi-plateformes](/fr/guides/build/cross-platform) pour la configuration.
+</Aside>
+
+## Développement
+
+Lancez votre application avec le rechargement à chaud (hot reload) :
+
+```bash
+wails3 dev
+```
+
+Cela démarre un observateur de fichiers qui recompilera et redémarrera votre application lors des modifications. Le serveur de développement frontend s'exécute par défaut sur le port 9245.
+
+```bash
+# Port personnalisé
+wails3 dev -port 3000
+
+# Activer HTTPS
+wails3 dev -s
+```
+
+## Packaging
+
+Packagez votre application pour la distribution :
+
+```bash
+wails3 package
+wails3 package GOOS=windows
+wails3 package GOOS=darwin
+wails3 package GOOS=linux
+```
+
+Cela crée des packages spécifiques à la plateforme :
+- **Windows** : Installateur NSIS — voir [Packaging Windows](/fr/guides/build/windows)
+- **macOS** : Bundle d'application (`.app`) — voir [Packaging macOS](/fr/guides/build/macos)
+- **Linux** : AppImage, deb et rpm — voir [Packaging Linux](/fr/guides/build/linux)
+
+## Tags de Build Personnalisés
+
+Transmettez des tags de build Go personnalisés avec le drapeau `-tags` :
+
+```bash
+# Compiler avec le support expérimental GTK4 sur Linux
+wails3 build -tags gtk4
+
+# Compiler en mode serveur (sans GUI, sans CGO)
+wails3 build -tags server
+
+# Combiner plusieurs tags
+wails3 build -tags gtk4,customtag
+```
+
+Les tags sont transmis en tant que `EXTRA_TAGS` au Taskfile sous-jacent. Consultez [Build Serveur](/fr/guides/server-build) et [Packaging Linux - GTK4](/guides/build/linux#gtk4-support-experimental) pour plus de détails.
+
+## Utilisation Directe de Task
+
+Pour plus de contrôle, utilisez Task directement :
+
+```bash
+# Lister les tâches disponibles
+wails3 task --list
+
+# Sortie verbeuse
+wails3 task build -v
+
+# Exécution à blanc (dry run)
+wails3 task --dry
+
+# Forcer la recompilation
+wails3 task build -f
+
+# Transmettre des variables
+wails3 task darwin:build ARCH=amd64
+```
+
+Les tâches spécifiques à la plateforme comme `linux:create:deb` ou `darwin:build:universal` sont uniquement disponibles via Task.
+
+## Génération d'Assets
+
+Régénérez les icônes ou mettez à jour la configuration de build :
+
+```bash
+wails3 generate icons -input build/appicon.png
+wails3 update build-assets -name "MyApp" -config build/config.yml -dir build
+```

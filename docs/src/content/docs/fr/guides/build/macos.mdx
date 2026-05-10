@@ -1,0 +1,145 @@
+---
+title: Conditionnement pour macOS
+description: Packagez votre application Wails pour une distribution sur macOS
+sidebar:
+  order: 4
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Bundle de l'application
+
+Packagez votre application en tant que bundle `.app` macOS standard :
+
+```bash
+wails3 package GOOS=darwin
+```
+
+Cela crée `bin/<AppName>.app` contenant :
+- Le binaire compilé dans `Contents/MacOS/`
+- L'icône de l'application dans `Contents/Resources/` (depuis `icons.icns` ou, lorsqu'elle est présente, depuis un catalogue d'actifs `Assets.car`)
+- `Info.plist` avec les métadonnées de l'application
+
+### Binaire universel
+
+Compilez pour les Mac à puce Apple Silicon et Intel :
+
+```bash
+wails3 task darwin:package:universal
+```
+
+Cela crée un seul `.app` qui s'exécute nativement sur les deux architectures. Les binaires universels peuvent être construits sur n'importe quelle plateforme — sur Linux et Windows, `wails3 tool lipo` est utilisé automatiquement.
+
+## Personnalisation du bundle
+
+Modifiez `build/darwin/Info.plist` pour personnaliser :
+
+- L'identifiant du bundle (`CFBundleIdentifier`)
+- Le nom et la version de l'application
+- La version minimale de macOS
+- Les associations de fichiers
+- Les schémas d'URL
+
+L'icône de l'application est générée à partir des actifs du répertoire `build/`. Utilisez la tâche `generate:icons` :
+
+```bash
+wails3 task generate:icons
+```
+
+Cela utilise `build/appicon.png` pour produire `darwin/icons.icns` et `windows/icon.ico`. Sur macOS, vous pouvez également fournir `build/appicon.icon` (format Icon Composer) : la tâche passe `-iconcomposerinput appicon.icon -macassetdir darwin`, ce qui produit `Assets.car` et `darwin/icons.icns` à partir du fichier `.icon` (ignoré sur les plateformes non-macOS). Lorsque `Assets.car` est présent, exécutez la tâche `update:build-assets` afin que `Info.plist` et `CFBundleIconName` soient mis à jour en conséquence :
+
+```bash
+wails3 task update:build-assets
+```
+
+Pour exécuter la commande d'icône manuellement depuis le répertoire `build/` :
+
+```bash
+cd build
+wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico -iconcomposerinput appicon.icon -macassetdir darwin
+```
+
+## Signature de code
+
+Signez votre application pour la distribution :
+
+```bash
+# En utilisant le wrapper (détecte automatiquement la plateforme)
+wails3 sign GOOS=darwin
+
+# Ou en utilisant la tâche directement
+wails3 task darwin:sign
+```
+
+Configurez la signature dans `build/darwin/Taskfile.yml` :
+
+```yaml
+vars:
+  SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
+  ENTITLEMENTS: "build/darwin/entitlements.plist"
+```
+
+### Notarisation
+
+Pour les applications distribuées en dehors du Mac App Store, Apple exige une notarisation :
+
+```bash
+wails3 task darwin:sign:notarize
+```
+
+D'abord, enregistrez vos identifiants :
+
+```bash
+wails3 signing credentials \
+  --apple-id "you@email.com" \
+  --team-id "TEAMID" \
+  --password "app-specific-password" \
+  --profile "my-notarize-profile"
+```
+
+Configurez dans `build/darwin/Taskfile.yml` :
+
+```yaml
+vars:
+  SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
+  KEYCHAIN_PROFILE: "my-notarize-profile"
+```
+
+Voir [Signing Applications](/fr/guides/build/signing) pour plus de détails.
+
+## Installateur DMG
+
+Créez une image disque DMG pour la distribution :
+
+```bash
+wails3 task darwin:create:dmg
+```
+
+<Aside type="tip">
+Personnalisez l'arrière-plan et la mise en page du DMG en modifiant les actifs de `build/darwin/dmg/`.
+</Aside>
+
+## Dépannage
+
+### "L'application est endommagée et ne peut pas être ouverte"
+
+L'application n'est pas signée. Soit signez-la avec un certificat Developer ID, soit les utilisateurs peuvent contourner Gatekeeper :
+
+```bash
+xattr -cr /path/to/YourApp.app
+```
+
+### La notarisation échoue
+
+Problèmes courants :
+- **Identifiants invalides** : Relancez `wails3 signing credentials`
+- **Runtime durci requis** : Assurez-vous que les entitlements incluent `com.apple.security.cs.allow-unsigned-executable-memory` si nécessaire
+- **Horodatage manquant** : Le processus de signature doit inclure un horodatage automatiquement
+
+### L'application compilée croisée ne s'exécute pas
+
+Les binaires macOS compilés croisés ne sont pas signés. Transférez-les sur un Mac et signe-les avant de tester :
+
+```bash
+codesign --force --deep --sign - YourApp.app
+```

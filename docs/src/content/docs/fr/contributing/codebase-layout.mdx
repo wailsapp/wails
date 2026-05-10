@@ -1,0 +1,215 @@
+---
+title: Structure du codebase
+description: Comment le dépôt Wails v3 est organisé et comment les pièces s'assemblent
+sidebar:
+  order: 2
+---
+
+Wails v3 vit dans un **monorepo** qui contient le runtime du framework, la CLI,
+les exemples, la documentation et la chaîne d'outils de build.  
+Cette page parcourt la *structure de répertoires* qui importe pour quiconque plonge
+dans les internes.
+
+## Vue de haut niveau
+
+```
+wails/
+├── v3/               # ⬅️ Tout ce qui est spécifique à Wails v3 vit ici
+├── v2/               # Implémentation legacy v2 (peut être ignorée pour le travail sur v3)
+├── docs/             # Site de docs v3 propulsé par Astro (cette page !)
+├── website/          # Site Docusaurus v2 et pages marketing (site principal)
+├── scripts/          # Scripts utilitaires divers (ex. générateur d'images de sponsors)
+├── mkdocs-website/   # Prototype de docs v3 déprécié
+└── *.md              # Fichiers méta à l'échelle du projet (CHANGELOG, LICENSE, …)
+```
+
+À partir de là, nous zoomons sur l'arbre **`v3/`**.
+
+## Racine de `v3/`
+
+```
+v3/
+├── cmd/          # Commandes compilables (actuellement uniquement la CLI wails3)
+├── examples/     # Applications d'exemple pratiques testant chaque fonctionnalité
+├── internal/     # Implémentation du framework (API non publique)
+├── pkg/          # Packages Go publics ‑ la surface de l'API
+├── tasks/        # Utilitaires de release basés sur Taskfile
+├── templates/    # Propositions de style RFC (WEP) + ressources communes
+├── go.mod
+└── go.sum
+```
+
+### Modèle mental
+
+1. **`pkg/`** expose *ce que les développeurs d'applications importent*  
+2. **`internal/`** contient *comment la magie est implémentée*  
+3. **`cmd/wails3`** pilote *le cycle de vie du projet et les builds*  
+4. **`examples/`** servent doublement de *tests vivants* et de *code de référence*  
+
+Tout le reste supporte ces trois piliers.
+
+---
+
+## `cmd/` – Commandes
+
+| Chemin | Notes |
+|------|-------|
+| `v3/cmd/wails3` | Le **point d'entrée CLI**. Un petit `main.go` délègue toute la logique aux packages dans `internal/commands`. |
+| `internal/commands/*` | Sous-commandes (init, dev, build, doctor, …). Chacune vit dans son propre fichier pour une découverte facile. |
+| `internal/commands/task_wrapper.go` | Fait le pont entre les flags CLI et le pipeline de build Taskfile. |
+
+La CLI possède :
+
+* **Le scaffolding de projet** (`init`, génération de templates)  
+* **L'orchestration du serveur de dev** (`dev`, live-reload)  
+* **Les builds et le packaging de production** (`build`, `package`, wrappers de plateforme)  
+* **Le diagnostic** (`doctor`)  
+
+---
+
+## `internal/` – La salle des machines
+
+```
+internal/
+├── assetserver/  # Servir et intégrer les assets web
+├── buildinfo/    # Métadonnées de build reproductibles
+├── commands/     # Mécaniques CLI (voir ci-dessus)
+├── runtime/      # Runtime desktop (par plateforme)
+├── generator/    # Analyse statique et générateur de bindings
+├── templates/    # Templates de projet (piles frontend)
+├── packager/     # Linux AppImage/deb/rpm, Windows MSI, macOS DMG
+├── capabilities/ # Sondage des capacités du système hôte
+├── dbus/         # Intégration de la zone de notification Linux
+├── service/      # Framework de micro-services IPC
+└── ...           # [autres sous-packages utilitaires]
+```
+
+### Sous-packages clés
+
+| Package | Responsabilité | Où il se connecte |
+|---------|----------------|-------------------|
+| `runtime` | Fenêtre/boucle d'événements, presse-papiers, dialogues, zone de notification. Un fichier par OS avec des build-tags (`*_darwin.go`, `*_linux.go`, …). | Appelé par `pkg/application` et le processeur de messages. |
+| `assetserver` | Serveur de fichiers en double mode :<br />• Dev : sert depuis le disque et proxy Vite<br />• Prod : intègre les assets via `go:embed` | Initialisé par `pkg/application` au démarrage. |
+| `generator` | Analyse le code Go pour construire des **métadonnées de binding** qui produisent plus tard des fichiers stub TypeScript et du code Go marshal/unmarshal. | Déclenché par `wails3 init` / `wails3 generate`. |
+| `packager` | Enveloppe les CLIs de packaging spécifiques à la plateforme (ex. équivalents `electron-builder`) en Go pour l'automatisation cross-plateforme. | Invoqué par `wails3 package`. |
+
+Les utilitaires de support (ex. `s/`, `hash/`, `flags/`) maintiennent les préoccupations internes découplées.
+
+---
+
+## `pkg/` – API Publique
+
+```
+pkg/
+├── application/   # API Core : fenêtres, menus, dialogues, événements, …
+├── runtime/       # Helpers côté JS (bridge, événements, écran, ...)
+├── options/       # Structures de configuration fortement typées
+├── menu/          # DSL de menu déclaratif
+└── ...            # Helpers de plateforme (mac/, windows/, assetserver/, …)
+```
+
+`pkg/application` initialise un programme Wails :
+
+```go
+func main() {
+    app := application.New(application.Options{
+        Name: "MyApp",
+        Assets: application.NewAssetsFS(assetsFS),
+    })
+    window := app.Window.New(&application.WebviewWindowOptions{
+        Title:  "Hello",
+        Width:  1024,
+        Height: 768,
+    })
+    app.Run()
+}
+```
+
+Sous le capot, il :
+
+1. Lance `internal.runtime.*`
+2. Configure un `assetserver`
+3. Enregistre les bindings générés par `internal.generator`
+4. Entre dans le thread principal de l'OS
+
+---
+
+## `examples/` – Spécifications vivantes
+
+Chaque sous-dossier est une **application autonome** exerçant une fonctionnalité.  
+Les patterns que vous verrez reproduits dans le code réel :
+
+* Bindings de services (`examples/binding/`)  
+* Multi-fenêtres (`examples/window/`)  
+* Zone de notification (`examples/systray-*`)  
+* Packaging (`examples/file-association/`)  
+
+En cas de doute, commencez ici et plongez dans l'implémentation.
+
+---
+
+## `templates/` – Plans de scaffolding
+
+`internal/templates` livre des **templates de base** (layout Go) et des **skins frontend**
+(React, Svelte, Vue, …).  
+À `wails3 init -t react`, la CLI :
+
+1. Copie les fichiers Go `_common`
+2. Fusionne le pack frontend souhaité
+3. Exécute `npm install` + `task deps`
+
+Modifier les templates **n'affecte pas** les applications existantes, seulement les futurs `init`.
+
+---
+
+## `tasks/` – Automatisation de release
+
+Les Taskfiles enveloppent la compilation croisée complexe, l'incrémentation de version et la
+génération de changelog. Ils sont consommés programmatiquement par `internal/commands/task.go`
+afin que la même logique alimente la **CLI** et la **CI**.
+
+---
+
+## Comment les pièces interagissent
+
+```d2
+direction: down
+CLI: "wails3 CLI"
+Generator: "internal/generator"
+AssetDev: "assetserver (dev)"
+Packager: "internal/packager"
+AppRuntime: {
+  label: "App runtime"
+  ApplicationPkg: "pkg.application"
+  InternalRuntime: "internal.runtime"
+  OSAPIs: "OS APIs"
+}
+CLI -> Generator: "build / generate"
+CLI -> AssetDev: "dev"
+CLI -> Packager: "package"
+Generator -> ApplicationPkg: "bindings"
+ApplicationPkg -> InternalRuntime
+InternalRuntime -> OSAPIs
+ApplicationPkg -> AssetDev
+```
+
+*CLI → generator → runtime* forme le chemin principal de la **source** à l'**application desktop en cours d'exécution**.
+
+---
+
+## Conseils d'orientation
+
+| Besoin de comprendre… | Regardez… |
+|---------------------|----------|
+| Shims de plateforme | `internal/runtime/*_DARWIN.go`, `*_windows.go`, … |
+| Protocole de bridge | `pkg/application/messageprocessor_*.go` |
+| Flux d'assets | `internal/assetserver`, `v3/templates/base/assets` |
+| Flux de packaging | `internal/commands/appimage.go`, `internal/packager` |
+| Moteur de template | `internal/templates/templates.go` |
+| Analyse statique | `internal/generator/*` |
+
+---
+
+Vous avez maintenant une **carte mentale** du dépôt.  
+Utilisez-la avec `ripgrep`, le « Aller au fichier/symbole » de votre IDE et les applications d'exemple pour
+naviguer plus profondément dans n'importe quelle fonctionnalité. Bon hacking !

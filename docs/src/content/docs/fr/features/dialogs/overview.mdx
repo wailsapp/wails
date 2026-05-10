@@ -1,0 +1,376 @@
+---
+title: Aperçu des boîtes de dialogue
+description: Afficher des boîtes de dialogue système natives dans votre application
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## Boîtes de dialogue natives
+
+Wails propose des **boîtes de dialogue système natives** qui fonctionnent sur toutes les plateformes : boîtes de message (info, avertissement, erreur, question), boîtes de fichiers (ouvrir, enregistrer, dossier), et fenêtres de dialogue personnalisées avec l'apparence et le comportement natifs de la plateforme.
+
+## Démarrage rapide
+
+```go
+// Boîte de dialogue d'information
+app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("File saved successfully!").
+    Show()
+
+// Boîte de dialogue de question avec rappels de boutons
+dialog := app.Dialog.Question().
+    SetTitle("Confirm").
+    SetMessage("Delete this file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    deleteFile()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)
+dialog.SetCancelButton(cancelBtn)
+dialog.Show()
+
+// Boîte de dialogue d'ouverture de fichier
+path, _ := app.Dialog.OpenFile().
+    SetTitle("Select Image").
+    AddFilter("Images", "*.png;*.jpg").
+    PromptForSingleSelection()
+```
+
+**C'est tout !** Des boîtes de dialogue natives avec un code minimal.
+
+## Accéder aux boîtes de dialogue
+
+Les boîtes de dialogue sont accessibles via le gestionnaire `app.Dialog` :
+
+```go
+app.Dialog.Info()
+app.Dialog.Question()
+app.Dialog.Warning()
+app.Dialog.Error()
+app.Dialog.OpenFile()
+app.Dialog.SaveFile()
+```
+
+## Types de boîtes de dialogue
+
+### Boîte de dialogue d'information
+
+Afficher des messages simples :
+
+```go
+app.Dialog.Info().
+    SetTitle("Welcome").
+    SetMessage("Welcome to our application!").
+    Show()
+```
+
+**Cas d'utilisation :**
+- Messages de succès
+- Avis informatifs
+- Confirmations de complétion
+
+### Boîte de dialogue d'avertissement
+
+Afficher des avertissements :
+
+```go
+app.Dialog.Warning().
+    SetTitle("Warning").
+    SetMessage("This action cannot be undone.").
+    Show()
+```
+
+**Cas d'utilisation :**
+- Avertissements non critiques
+- Avis de dépréciation
+- Messages de prudence
+
+### Boîte de dialogue d'erreur
+
+Afficher des erreurs :
+
+```go
+app.Dialog.Error().
+    SetTitle("Error").
+    SetMessage("Failed to save file: " + err.Error()).
+    Show()
+```
+
+**Cas d'utilisation :**
+- Messages d'erreur
+- Notifications d'échec
+- Gestion des exceptions
+
+### Boîte de dialogue de question
+
+Poser des questions aux utilisateurs et gérer les réponses via des rappels de boutons :
+
+```go
+dialog := app.Dialog.Question().
+    SetTitle("Confirm Delete").
+    SetMessage("Are you sure you want to delete this file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    deleteFile()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)
+dialog.SetCancelButton(cancelBtn)
+dialog.Show()
+```
+
+**Cas d'utilisation :**
+- Confirmer des actions
+- Questions Oui/Non
+- Choix multiples
+
+## Boîtes de dialogue de fichiers
+
+### Boîte de dialogue d'ouverture de fichier
+
+Sélectionner des fichiers à ouvrir :
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Image").
+    AddFilter("Images", "*.png;*.jpg;*.gif").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
+
+if err == nil && path != "" {
+    openFile(path)
+}
+```
+
+**Sélection multiple :**
+
+```go
+paths, err := app.Dialog.OpenFile().
+    SetTitle("Select Images").
+    AddFilter("Images", "*.png;*.jpg").
+    PromptForMultipleSelection()
+
+if err == nil {
+    for _, path := range paths {
+        processFile(path)
+    }
+}
+```
+
+### Boîte de dialogue d'enregistrement de fichier
+
+Choisir où enregistrer :
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("document.txt").
+    AddFilter("Text Files", "*.txt").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
+
+if err == nil && path != "" {
+    saveFile(path)
+}
+```
+
+### Boîte de dialogue de sélection de dossier
+
+Choisir un répertoire en utilisant la boîte de dialogue d'ouverture de fichier avec la sélection de répertoire activée :
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Output Folder").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+
+if err == nil && path != "" {
+    exportToFolder(path)
+}
+```
+
+## Options de la boîte de dialogue
+
+### Titre et message
+
+```go
+dialog := app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("Operation completed successfully!")
+```
+
+### Boutons
+
+**Bouton par défaut pour les boîtes de dialogue simples :**
+
+Les boîtes de dialogue Info, Warning et Error affichent un bouton "OK" par défaut :
+
+```go
+app.Dialog.Info().
+    SetMessage("Done!").
+    Show()
+```
+
+**Boutons personnalisés pour les boîtes de dialogue de question :**
+
+Utilisez `AddButton()` pour ajouter des boutons, qui retourne un `*Button` que vous pouvez configurer avec des rappels :
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Choose action")
+
+save := dialog.AddButton("Save")
+save.OnClick(func() {
+    saveDocument()
+})
+
+dontSave := dialog.AddButton("Don't Save")
+dontSave.OnClick(func() {
+    discardChanges()
+})
+
+cancel := dialog.AddButton("Cancel")
+// Pas de rappel nécessaire - ferme simplement la boîte de dialogue
+
+dialog.SetDefaultButton(save)
+dialog.SetCancelButton(cancel)
+dialog.Show()
+```
+
+**Boutons par défaut et Annuler :**
+
+Utilisez `SetDefaultButton()` pour spécifier quel bouton est mis en surbrillance et déclenché par Entrée.
+Utilisez `SetCancelButton()` pour spécifier quel bouton est déclenché par Échap.
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Delete file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    performDelete()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)  // Option sûre mise en surbrillance par défaut
+dialog.SetCancelButton(cancelBtn)   // Échap déclenche Annuler
+dialog.Show()
+```
+
+### Attache de fenêtre
+
+Attacher la boîte de dialogue à une fenêtre spécifique :
+
+```go
+dialog := app.Dialog.Info().
+    SetMessage("Window-specific message").
+    AttachToWindow(window)
+
+dialog.Show()
+```
+
+**Comportement :**
+- La boîte de dialogue apparaît centrée sur la fenêtre parente
+- La fenêtre parente est désactivée pendant l'affichage de la boîte de dialogue
+- La boîte de dialogue suit la fenêtre parente (macOS)
+
+## Comportement par plateforme
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    **Boîtes de dialogue macOS :**
+    
+    - Apparence native NSAlert
+    - Suit le thème du système (clair/sombre)
+    - Supporte la navigation au clavier
+    - Raccourcis standard (⌘. pour Annuler)
+    - Fonctionnalités d'accessibilité intégrées
+    - Style feuille lorsqu'attachée à une fenêtre
+    
+    **Exemple :**
+    ```go
+    // Apparaît comme une feuille sur macOS
+    dialog := app.Dialog.Question().
+        SetMessage("Save changes?").
+        AttachToWindow(window)
+    dialog.AddButton("Yes")
+    dialog.AddButton("No")
+    dialog.Show()
+    ```
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    **Boîtes de dialogue Windows :**
+    
+    - Apparence native TaskDialog
+    - Suit le thème du système
+    - Supporte la navigation au clavier
+    - Raccourcis standard (Esc pour Annuler)
+    - Fonctionnalités d'accessibilité intégrées
+    - Modale par rapport à la fenêtre parente
+    
+    **Exemple :**
+    ```go
+    // Boîte de dialogue modale sur Windows
+    app.Dialog.Error().
+        SetTitle("Error").
+        SetMessage("Operation failed").
+        Show()
+    ```
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **Boîtes de dialogue Linux :**
+    
+    - Apparence GTK dialog
+    - Suit le thème du bureau
+    - Supporte la navigation au clavier
+    - Intégration à l'environnement de bureau
+    - Varie selon l'ED (GNOME, KDE, etc.)
+    
+    **Exemple :**
+    ```go
+    // Boîte de dialogue GTK sur Linux
+    app.Dialog.Info().
+        SetMessage("Update complete").
+        Show()
+    ```
+  </TabItem>
+</Tabs>
+
+## Schémas courants
+
+### Confirmer avant une action destructive
+
+```go
+func deleteFile(app *application.App, path string) {
+    dialog := app.Dialog.Question().
+        SetTitle("Confirm Delete").
+        SetMessage(fmt.Sprintf("Delete %s?", filepath.Base(path)))
+
+    deleteBtn := dialog.AddButton("Delete")
+    deleteBtn.OnClick(func() {
+        if err := os.Remove(path); err != nil {
+            app.Dialog.Error().
+                SetTitle("Delete Failed").
+                SetMessage(err.Error()).
+                Show()
+        }
+    })
+
+    cancelBtn := dialog.AddButton("Cancel")
+    dialog.SetDefaultButton(cancelBtn)
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+}
+```---
+
+**Questions ?** Posez vos questions sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de boîtes de dialogue](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs).

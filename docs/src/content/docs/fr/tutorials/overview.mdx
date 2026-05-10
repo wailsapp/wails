@@ -1,0 +1,84 @@
+---
+title: Tutoriels
+description: Apprenez Wails en créant des applications
+sidebar:
+  label: Vue d'ensemble
+  order: 0
+---
+
+import { LinkButton } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import qr1 from "../../../../assets/qr1.png";
+import todoApp from "../../../../assets/todo-app.png";
+import notesApp from "../../../../assets/notes-app.png";
+
+Des tutoriels étape par étape qui enseignent les concepts de Wails en construisant des applications complètes. Chaque tutoriel comprend du code fonctionnel, des explications et des modèles pratiques.
+
+:::tip[Nouveau sur Go ?]
+Suivez le [Go Tour](https://go.dev/tour/) avant de commencer les tutoriels.
+:::
+
+### Service de code QR
+
+<Image src={qr1} alt="Exemple de code QR" style="max-width: 400px; margin: 1rem auto; display: block;" />
+
+Apprenez les fondamentaux des services Wails en créant un générateur de code QR. Ce tutoriel vous introduit aux concepts clés de l'organisation de la logique de votre application en services réutilisables.
+
+**Ce que vous apprendrez :**
+- Comment créer et structurer un service Wails
+- La gestion des dépendances Go externes
+- Le lien entre les méthodes Go et votre interface frontend
+- Le passage de données entre Go et JavaScript
+- L'organisation du code pour faciliter la maintenance
+
+**Idéal pour :** Les utilisateurs de Wails qui découvrent l'architecture des services
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/fr/tutorials/01-creating-a-service" variant="secondary" icon="right-arrow">Commencer</LinkButton>
+</div>
+
+---
+
+### Liste de tâches
+
+<Image src={todoApp} alt="Application de liste de tâches" style="max-width: 400px; margin: 1rem auto; display: block;" />
+
+Créez une application de liste de tâches complète avec une interface moderne et soignée. Ce tutoriel pratique vous enseigne les modèles de base de Wails à travers une application concrète utilisant du JavaScript vanilla.
+
+**Ce que vous apprendrez :**
+- Architecture basée sur les services avec gestion d'état thread-safe
+- Opérations CRUD (Create, Read, Update, Delete)
+- Liaisons typées entre Go et JavaScript
+- Création d'interfaces modernes sans la complexité des frameworks
+- Gestion des erreurs et modèles de validation appropriés
+
+**Durée estimée :** ~20 minutes
+
+**Idéal pour :** Votre première application Wails complète - parfait pour comprendre les fondamentaux avant d'ajouter la complexité d'un framework
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/fr/tutorials/02-todo-vanilla" variant="secondary" icon="right-arrow">Commencer</LinkButton>
+</div>
+
+---
+
+### Notes
+
+<Image src={notesApp} alt="Application de notes" style="max-width: 600px; margin: 1rem auto; display: block;" />
+
+Créez une application de style Apple Notes avec des boîtes de dialogue de fichiers natives et une fonctionnalité de sauvegarde automatique. Ce tutoriel démontre des fonctionnalités spécifiques au bureau comme les opérations sur les fichiers, les boîtes de dialogue natives et les modèles d'interface professionnelle.
+
+**Ce que vous apprendrez :**
+- Boîtes de dialogue de fichiers natives (Enregistrer, Ouvrir, Informations)
+- Persistance des données basée sur JSON
+- Modèles de sauvegarde automatique avec debounce
+- Mises en page professionnelles à deux colonnes pour le bureau
+- Utilisation des opérations sur le système de fichiers en Go
+
+**Durée estimée :** ~30 minutes
+
+**Idéal pour :** Apprendre les fonctionnalités spécifiques au bureau comme les opérations sur les fichiers et les boîtes de dialogue système natives
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/fr/tutorials/03-notes-vanilla" variant="secondary" icon="right-arrow">Commencer</LinkButton>
+</div>

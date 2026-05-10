@@ -1,0 +1,341 @@
+---
+title: Optimisation des performances
+description: Optimisez votre application Wails pour des performances maximales
+sidebar:
+  order: 9
+---
+
+## Vue d'ensemble
+
+Optimisez votre application Wails pour la vitesse, l'efficacité mémoire et la réactivité.
+
+## Optimisation du frontend
+
+### Taille du bundle
+
+```javascript
+// vite.config.js
+export default {
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+        },
+      },
+    },
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+      },
+    },
+  },
+}
+```
+
+### Découpage du code
+
+```javascript
+// Chargement différé des composants
+const Settings = lazy(() => import('./Settings'))
+
+function App() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <Settings />
+    </Suspense>
+  )
+}
+```
+
+### Optimisation des ressources
+
+```javascript
+// Optimisez les images
+import { defineConfig } from 'vite'
+import imagemin from 'vite-plugin-imagemin'
+
+export default defineConfig({
+  plugins: [
+    imagemin({
+      gifsicle: { optimizationLevel: 3 },
+      optipng: { optimizationLevel: 7 },
+      svgo: { plugins: [{ removeViewBox: false }] },
+    }),
+  ],
+})
+```
+
+## Optimisation du backend
+
+### Bindings efficaces
+
+```go
+// ❌ Mauvais : Tout renvoyer
+func (s *Service) GetAllData() []Data {
+    return s.db.FindAll() // Peut être énorme
+}
+
+// ✅ Bon : Pagination
+func (s *Service) GetData(page, size int) (*PagedData, error) {
+    return s.db.FindPaged(page, size)
+}
+```
+
+### Mise en cache
+
+```go
+type CachedService struct {
+    cache *lru.Cache
+    ttl   time.Duration
+}
+
+func (s *CachedService) GetData(key string) (interface{}, error) {
+    // Vérifier le cache
+    if val, ok := s.cache.Get(key); ok {
+        return val, nil
+    }
+    
+    // Récupérer et mettre en cache
+    data, err := s.fetchData(key)
+    if err != nil {
+        return nil, err
+    }
+    
+    s.cache.Add(key, data)
+    return data, nil
+}
+```
+
+### Goroutines pour les opérations longues
+
+```go
+func (s *Service) ProcessLargeFile(path string) error {
+    // Traiter en arrière-plan
+    go func() {
+        result, err := s.process(path)
+        if err != nil {
+            s.app.Event.Emit("process-error", err.Error())
+            return
+        }
+        s.app.Event.Emit("process-complete", result)
+    }()
+    
+    return nil
+}
+```
+
+## Optimisation de la mémoire
+
+### Éviter les fuites de mémoire
+
+```go
+// ❌ Mauvais : Fuite de goroutine
+func (s *Service) StartPolling() {
+    ticker := time.NewTicker(1 * time.Second)
+    go func() {
+        for range ticker.C {
+            s.poll()
+        }
+    }()
+    // ticker n'est jamais arrêté !
+}
+
+// ✅ Bon : Nettoyage approprié
+func (s *Service) StartPolling() {
+    ticker := time.NewTicker(1 * time.Second)
+    s.stopChan = make(chan bool)
+    
+    go func() {
+        for {
+            select {
+            case <-ticker.C:
+                s.poll()
+            case <-s.stopChan:
+                ticker.Stop()
+                return
+            }
+        }
+    }()
+}
+
+func (s *Service) StopPolling() {
+    close(s.stopChan)
+}
+```
+
+### Mise en pool des ressources
+
+```go
+var bufferPool = sync.Pool{
+    New: func() interface{} {
+        return new(bytes.Buffer)
+    },
+}
+
+func processData(data []byte) []byte {
+    buf := bufferPool.Get().(*bytes.Buffer)
+    defer bufferPool.Put(buf)
+    
+    buf.Reset()
+    buf.Write(data)
+    // Traiter...
+    return buf.Bytes()
+}
+```
+
+## Optimisation des événements
+
+### Débounce des événements
+
+```javascript
+// Débounce les événements fréquents
+let debounceTimer
+function handleInput(value) {
+    clearTimeout(debounceTimer)
+    debounceTimer = setTimeout(() => {
+        UpdateData(value)
+    }, 300)
+}
+```
+
+### Mises à jour par lots
+
+```go
+type BatchProcessor struct {
+    items []Item
+    mu    sync.Mutex
+    timer *time.Timer
+}
+
+func (b *BatchProcessor) Add(item Item) {
+    b.mu.Lock()
+    defer b.mu.Unlock()
+    
+    b.items = append(b.items, item)
+    
+    if b.timer == nil {
+        b.timer = time.AfterFunc(100*time.Millisecond, b.flush)
+    }
+}
+
+func (b *BatchProcessor) flush() {
+    b.mu.Lock()
+    items := b.items
+    b.items = nil
+    b.timer = nil
+    b.mu.Unlock()
+    
+    // Traiter le lot
+    processBatch(items)
+}
+```
+
+## Optimisation de la compilation
+
+### Taille du binaire
+
+```bash
+# Supprimer les symboles de débogage
+wails3 build -ldflags "-s -w"
+
+# Réduire davantage la taille du binaire
+go build -ldflags="-s -w" -trimpath
+```
+
+### Vitesse de compilation
+
+```bash
+# Utiliser le cache de compilation
+go build -buildmode=default
+
+# Compilation parallèle
+go build -p 8
+```
+
+## Profilage
+
+### Profilage CPU
+
+```go
+import "runtime/pprof"
+
+func profileCPU() {
+    f, _ := os.Create("cpu.prof")
+    defer f.Close()
+    
+    pprof.StartCPUProfile(f)
+    defer pprof.StopCPUProfile()
+    
+    // Code à profiler
+}
+```
+
+### Profilage mémoire
+
+```go
+import "runtime/pprof"
+
+func profileMemory() {
+    f, _ := os.Create("mem.prof")
+    defer f.Close()
+    
+    runtime.GC()
+    pprof.WriteHeapProfile(f)
+}
+```
+
+### Analyse des profils
+
+```bash
+# Voir le profil CPU
+go tool pprof cpu.prof
+
+# Voir le profil mémoire
+go tool pprof mem.prof
+
+# Interface web
+go tool pprof -http=:8080 cpu.prof
+```
+
+## Bonnes pratiques
+
+### ✅ À faire
+
+- Profiler avant d'optimiser
+- Mettre en cache les opérations coûteuses
+- Utiliser la pagination pour les grands ensembles de données
+- Débounce les événements fréquents
+- Mettre en pool les ressources
+- Nettoyer les goroutines
+- Optimiser la taille du bundle
+- Utiliser le chargement différé
+
+### ❌ À ne pas faire
+
+- Ne pas optimiser prématurément
+- Ne pas ignorer les fuites de mémoire
+- Ne pas bloquer le thread principal
+- Ne pas renvoyer de grands ensembles de données
+- Ne pas sauter le profilage
+- Ne pas oublier le nettoyage
+
+## Liste de contrôle des performances
+
+- [ ] Bundle frontend optimisé
+- [ ] Images compressées
+- [ ] Découpage du code implémenté
+- [ ] Méthodes backend paginées
+- [ ] Mise en cache implémentée
+- [ ] Goroutines nettoyées
+- [ ] Événements débounce
+- [ ] Taille du binaire optimisée
+- [ ] Profilage effectué
+- [ ] Fuites de mémoire corrigées
+
+## Prochaines étapes
+
+- [Architecture](/fr/guides/architecture) - Modèles d'architecture d'application
+- [Tests](/fr/guides/testing) - Testez votre application
+- [Compilation](/guides/building) - Compiler des binaires optimisés

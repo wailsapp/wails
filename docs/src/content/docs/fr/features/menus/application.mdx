@@ -1,0 +1,508 @@
+---
+title: Menus d'application
+description: Créer des barres de menus natives pour votre application de bureau
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Le problème
+
+Les applications de bureau professionnelles ont besoin de barres de menus — Fichier, Édition, Affichage, Aide. Mais les menus fonctionnent différemment sur chaque plateforme :
+- **macOS** : Barre de menus globale en haut de l'écran
+- **Windows** : Barre de menus dans la barre de titre de la fenêtre
+- **Linux** : Varie selon l'environnement de bureau
+
+Construire manuellement des menus adaptés à chaque plateforme est fastidieux et sujet aux erreurs.
+
+## La solution Wails
+
+Wails fournit une **API unifiée** qui crée automatiquement des menus natifs pour chaque plateforme. Écrivez une fois, obtenez un comportement natif sur toutes les plateformes.
+
+{/* VISUAL PLACEHOLDER: Menu Bar Comparison
+Description: Three screenshots side-by-side showing the same Wails menu on:
+1. macOS - Global menu bar at top of screen with app name
+2. Windows - Menu bar in window title bar
+3. Linux (GNOME) - Menu bar in window
+All showing identical menu structure: File, Edit, View, Tools, Help
+Style: Clean screenshots with subtle borders, labels indicating platform
+*/}
+
+## Démarrage rapide
+
+```go
+package main
+
+import (
+    "runtime"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    // Create menu
+    menu := app.NewMenu()
+
+    // Add standard menus (platform-appropriate)
+    if runtime.GOOS == "darwin" {
+        menu.AddRole(application.AppMenu)  // macOS only
+    }
+    menu.AddRole(application.FileMenu)
+    menu.AddRole(application.EditMenu)
+    menu.AddRole(application.WindowMenu)
+    menu.AddRole(application.HelpMenu)
+
+    // Set the application menu
+    app.Menu.Set(menu)
+
+    // Create window with UseApplicationMenu to inherit the menu on Windows/Linux
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        UseApplicationMenu: true,
+    })
+
+    app.Run()
+}
+```
+
+**C'est tout !** Vous disposez désormais de menus natifs pour chaque plateforme avec des éléments standards. L'option `UseApplicationMenu` garantit que les fenêtres Windows et Linux affichent le menu sans code supplémentaire.
+
+## Création de menus
+
+### Création de base d'un menu
+
+```go
+// Create a new menu
+menu := app.NewMenu()
+
+// Add a top-level menu
+fileMenu := menu.AddSubmenu("File")
+
+// Add menu items
+fileMenu.Add("New").OnClick(func(ctx *application.Context) {
+    // Handle New
+})
+
+fileMenu.Add("Open").OnClick(func(ctx *application.Context) {
+    // Handle Open
+})
+
+fileMenu.AddSeparator()
+
+fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+```
+
+### Définir le menu
+
+**Approche recommandée** — Utilisez `UseApplicationMenu` pour une cohérence multi-plateforme :
+
+```go
+// Set the application menu once
+app.Menu.Set(menu)
+
+// Create windows that inherit the menu on Windows/Linux
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    UseApplicationMenu: true,  // Window uses the app menu
+})
+```
+
+Cette approche :
+- Sur **macOS** : Le menu apparaît en haut de l'écran (comportement standard)
+- Sur **Windows/Linux** : Chaque fenêtre avec `UseApplicationMenu: true` affiche le menu de l'application
+
+**Détails spécifiques à la plateforme :**
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    **Barre de menus globale** (une par application) :
+
+    ```go
+    app.Menu.Set(menu)
+    ```
+
+    Le menu apparaît en haut de l'écran et persiste même lorsque toutes les fenêtres sont fermées. L'option `UseApplicationMenu` n'a aucun effet sur macOS car toutes les applications utilisent le menu global.
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    **Barre de menus par fenêtre** :
+
+    ```go
+    // Option 1: Use application menu (recommended)
+    app.Menu.Set(menu)
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        UseApplicationMenu: true,
+    })
+
+    // Option 2: Set menu directly on window
+    window.SetMenu(menu)
+    ```
+
+    Chaque fenêtre peut avoir son propre menu, ou hériter du menu de l'application. Le menu apparaît dans la barre de titre de la fenêtre.
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **Barre de menus par fenêtre** (généralement) :
+
+    ```go
+    // Option 1: Use application menu (recommended)
+    app.Menu.Set(menu)
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        UseApplicationMenu: true,
+    })
+
+    // Option 2: Set menu directly on window
+    window.SetMenu(menu)
+    ```
+
+    Le comportement varie selon l'environnement de bureau. Certains (comme Unity) prennent en charge les menus globaux.
+  </TabItem>
+</Tabs>
+
+:::tip[Simplifier les menus multi-plateformes]
+L'utilisation de `UseApplicationMenu: true` élimine le besoin de code spécifique à la plateforme tel que :
+```go
+// Old approach - no longer needed
+if runtime.GOOS == "darwin" {
+    app.Menu.Set(menu)
+} else {
+    window.SetMenu(menu)
+}
+```
+:::
+
+**Menus personnalisés par fenêtre :**
+
+Si une fenêtre nécessite un menu différent de celui de l'application, définissez-le directement :
+
+```go
+window.SetMenu(customMenu)  // Overrides UseApplicationMenu
+```
+
+## Rôles de menu
+
+Wails fournit des **rôles de menu prédéfinis** qui créent automatiquement des structures de menus adaptées à chaque plateforme.
+
+### Rôles disponibles
+
+| Rôle | Description | Notes par plateforme |
+|------|-------------|------|
+| `AppMenu` | Menu d'application avec À propos, Préférences, Quitter | **macOS uniquement** |
+| `FileMenu` | Opérations de fichier (Nouveau, Ouvrir, Enregistrer, etc.) | Toutes les plateformes |
+| `EditMenu` | Édition de texte (Annuler, Rétablir, Couper, Copier, Coller) | Toutes les plateformes |
+| `WindowMenu` | Gestion des fenêtres (Réduire, Agrandir, etc.) | Toutes les plateformes |
+| `HelpMenu` | Aide et informations | Toutes les plateformes |
+
+### Utilisation des rôles
+
+```go
+menu := app.NewMenu()
+
+// macOS: Add application menu
+if runtime.GOOS == "darwin" {
+    menu.AddRole(application.AppMenu)
+}
+
+// All platforms: Add standard menus
+menu.AddRole(application.FileMenu)
+menu.AddRole(application.EditMenu)
+menu.AddRole(application.WindowMenu)
+menu.AddRole(application.HelpMenu)
+```
+
+**Ce que vous obtenez :**
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    **AppMenu** (avec le nom de l'application) :
+    - À propos de [Nom de l'app]
+    - Préférences... (⌘,)
+    - ---
+    - Services
+    - ---
+    - Masquer [Nom de l'app] (⌘H)
+    - Masquer les autres (⌥⌘H)
+    - Tout afficher
+    - ---
+    - Quitter [Nom de l'app] (⌘Q)
+
+    **FileMenu** :
+    - Nouveau (⌘N)
+    - Ouvrir... (⌘O)
+    - ---
+    - Fermer la fenêtre (⌘W)
+
+    **EditMenu** :
+    - Annuler (⌘Z)
+    - Rétablir (⇧⌘Z)
+    - ---
+    - Couper (⌘X)
+    - Copier (⌘C)
+    - Coller (⌘V)
+    - Tout sélectionner (⌘A)
+
+    **WindowMenu** :
+    - Réduire (⌘M)
+    - Agrandir
+    - ---
+    - Tout amener au premier plan
+
+    **HelpMenu** :
+    - Aide [Nom de l'app]
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    **FileMenu** :
+    - Nouveau (Ctrl+N)
+    - Ouvrir... (Ctrl+O)
+    - ---
+    - Quitter (Alt+F4)
+
+    **EditMenu** :
+    - Annuler (Ctrl+Z)
+    - Rétablir (Ctrl+Y)
+    - ---
+    - Couper (Ctrl+X)
+    - Copier (Ctrl+C)
+    - Coller (Ctrl+V)
+    - Tout sélectionner (Ctrl+A)
+
+    **WindowMenu** :
+    - Réduire
+    - Agrandir
+
+    **HelpMenu** :
+    - À propos de [Nom de l'app]
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    Similaire à Windows, mais les raccourcis clavier peuvent varier selon l'environnement de bureau.
+  </TabItem>
+</Tabs>
+
+### Personnalisation des menus de rôle
+
+Ajoutez des éléments aux menus de rôle :
+
+```go
+fileMenu := menu.AddRole(application.FileMenu)
+
+// Add custom items
+fileMenu.Add("Import...").OnClick(handleImport)
+fileMenu.Add("Export...").OnClick(handleExport)
+```## Menus personnalisés
+
+Créez vos propres menus pour les fonctionnalités spécifiques à l'application :
+
+```go
+// Add a custom top-level menu
+toolsMenu := menu.AddSubmenu("Tools")
+
+// Add items
+toolsMenu.Add("Settings").OnClick(func(ctx *application.Context) {
+    showSettingsWindow()
+})
+
+toolsMenu.AddSeparator()
+
+// Add checkbox
+toolsMenu.AddCheckbox("Dark Mode", false).OnClick(func(ctx *application.Context) {
+    isDark := ctx.ClickedMenuItem().Checked()
+    setTheme(isDark)
+})
+
+// Add radio group
+toolsMenu.AddRadio("Small", true).OnClick(handleFontSize)
+toolsMenu.AddRadio("Medium", false).OnClick(handleFontSize)
+toolsMenu.AddRadio("Large", false).OnClick(handleFontSize)
+
+// Add submenu
+advancedMenu := toolsMenu.AddSubmenu("Advanced")
+advancedMenu.Add("Configure...").OnClick(showAdvancedSettings)
+```
+
+**Pour plus de types d'éléments de menu**, consultez la [Référence des menus](/fr/features/menus/reference).
+
+## Menus dynamiques
+
+Mettez à jour les menus en fonction de l'état de l'application :
+
+### Activer/Désactiver des éléments
+
+```go
+var saveMenuItem *application.MenuItem
+
+func createMenu() {
+    menu := app.NewMenu()
+    fileMenu := menu.AddSubmenu("File")
+    
+    saveMenuItem = fileMenu.Add("Save")
+    saveMenuItem.SetEnabled(false)  // Initially disabled
+    saveMenuItem.OnClick(handleSave)
+    
+    app.SetMenu(menu)
+}
+
+func onDocumentChanged() {
+    saveMenuItem.SetEnabled(hasUnsavedChanges())
+    menu.Update()  // Important!
+}
+```
+
+:::caution[Appelez toujours menu.Update()]
+Après avoir modifié l'état du menu (activer/désactiver, libellé, coché), **appelez toujours `menu.Update()`**. Cela est particulièrement critique sur Windows où les menus sont reconstruits.
+
+Voir la [Référence des menus](/features/menus/reference#enabled-state) pour plus de détails.
+:::
+
+### Modifier les libellés
+
+```go
+updateMenuItem := menu.Add("Check for Updates")
+
+updateMenuItem.OnClick(func(ctx *application.Context) {
+    updateMenuItem.SetLabel("Checking...")
+    menu.Update()
+    
+    checkForUpdates()
+    
+    updateMenuItem.SetLabel("Check for Updates")
+    menu.Update()
+})
+```
+
+### Reconstruire les menus
+
+Pour des modifications majeures, reconstruisez le menu entier :
+
+```go
+func rebuildFileMenu() {
+    menu := app.NewMenu()
+    fileMenu := menu.AddSubmenu("File")
+    
+    fileMenu.Add("New").OnClick(handleNew)
+    fileMenu.Add("Open").OnClick(handleOpen)
+    
+    // Add recent files dynamically
+    if hasRecentFiles() {
+        recentMenu := fileMenu.AddSubmenu("Open Recent")
+        for _, file := range getRecentFiles() {
+            filePath := file  // Capture for closure
+            recentMenu.Add(filepath.Base(file)).OnClick(func(ctx *application.Context) {
+                openFile(filePath)
+            })
+        }
+        recentMenu.AddSeparator()
+        recentMenu.Add("Clear Recent").OnClick(clearRecentFiles)
+    }
+    
+    fileMenu.AddSeparator()
+    fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+    
+    app.SetMenu(menu)
+}
+```
+
+## Contrôle des fenêtres depuis les menus
+
+Les éléments de menu peuvent contrôler les fenêtres :
+
+```go
+viewMenu := menu.AddSubmenu("View")
+
+// Toggle fullscreen
+viewMenu.Add("Toggle Fullscreen").OnClick(func(ctx *application.Context) {
+    window := app.GetWindowByName("main")
+    window.SetFullscreen(!window.IsFullscreen())
+})
+
+// Zoom controls
+viewMenu.Add("Zoom In").SetAccelerator("CmdOrCtrl++").OnClick(func(ctx *application.Context) {
+    // Increase zoom
+})
+
+viewMenu.Add("Zoom Out").SetAccelerator("CmdOrCtrl+-").OnClick(func(ctx *application.Context) {
+    // Decrease zoom
+})
+
+viewMenu.Add("Reset Zoom").SetAccelerator("CmdOrCtrl+0").OnClick(func(ctx *application.Context) {
+    // Reset zoom
+})
+```
+
+**Obtenir la fenêtre active :**
+
+```go
+menuItem.OnClick(func(ctx *application.Context) {
+    window := application.ContextWindow(ctx)
+    // Use window
+})
+```
+
+## Considérations spécifiques à la plateforme
+
+### macOS
+
+**Comportement de la barre de menus :**
+- Apparaît en **haut de l'écran** (global)
+- Persiste lorsque toutes les fenêtres sont fermées
+- Le premier menu est **toujours le menu de l'application**
+- Utilisez `menu.AddRole(application.AppMenu)` pour les éléments standard
+
+**Emplacements standard :**
+- **À propos** : Menu de l'application
+- **Préférences** : Menu de l'application (⌘,)
+- **Quitter** : Menu de l'application (⌘Q)
+- **Aide** : Menu Aide
+
+**Exemple :**
+
+```go
+if runtime.GOOS == "darwin" {
+    menu.AddRole(application.AppMenu)  // Adds About, Preferences, Quit
+    
+    // Don't add Quit to File menu on macOS
+    // Don't add About to Help menu on macOS
+}
+```
+
+### Windows
+
+**Comportement de la barre de menus :**
+- Apparaît dans la **barre de titre de la fenêtre**
+- Chaque fenêtre a son propre menu
+- Pas de menu de l'application
+
+**Emplacements standard :**
+- **Quitter** : Menu Fichier (Alt+F4)
+- **Paramètres** : Menu Outils ou Édition
+- **À propos** : Menu Aide
+
+**Exemple :**
+
+```go
+if runtime.GOOS == "windows" {
+    fileMenu := menu.AddRole(application.FileMenu)
+    // Exit is added automatically
+    
+    helpMenu := menu.AddRole(application.HelpMenu)
+    // About is added automatically
+}
+```
+
+### Linux
+
+**Comportement de la barre de menus :**
+- Généralement par fenêtre (comme Windows)
+- Certains environnements de bureau prennent en charge les menus globaux (Unity, GNOME avec extension)
+- L'apparence varie selon l'environnement de bureau
+
+**Meilleure pratique :** Suivez les conventions de Windows, testez sur les environnements de bureau cibles.---
+
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez [l'exemple de menu](https://github.com/wailsapp/wails/tree/master/v3/examples/menu).

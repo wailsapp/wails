@@ -1,0 +1,510 @@
+---
+title: Intégration du navigateur
+description: Ouvrir des URL et des fichiers dans le navigateur web par défaut de l'utilisateur
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails fournit une intégration simple du navigateur via l'API BrowserManager, permettant à votre application d'ouvrir des URL et des fichiers dans le navigateur web par défaut de l'utilisateur. Cela est utile pour ouvrir des liens externes, de la documentation ou des fichiers qui doivent être gérés par le navigateur.
+
+## Accéder au gestionnaire de navigateur
+
+Le gestionnaire de navigateur est accessible via la propriété `Browser` de votre instance d'application :
+
+```go
+app := application.New(application.Options{
+    Name: "Browser Integration Demo",
+})
+
+// Accéder au gestionnaire de navigateur
+browser := app.Browser
+```
+
+## Ouverture d'URL
+
+### Ouvrir des URL web
+
+Ouvrir des URL dans le navigateur web par défaut de l'utilisateur :
+
+```go
+// Ouvrir un site web
+err := app.Browser.OpenURL("https://wails.io")
+if err != nil {
+    app.Logger.Error("Failed to open URL", "error", err)
+}
+
+// Ouvrir des pages spécifiques
+err = app.Browser.OpenURL("https://github.com/wailsapp/wails")
+if err != nil {
+    app.Logger.Error("Failed to open GitHub", "error", err)
+}
+```
+
+### Ouvrir des URL locales
+
+Ouvrir des serveurs de développement locaux ou des ressources réseau locales :
+
+```go
+// Ouvrir un serveur de développement local
+err := app.Browser.OpenURL("http://localhost:3000")
+if err != nil {
+    app.Logger.Error("Failed to open local server", "error", err)
+}
+
+// Ouvrir une ressource réseau
+err = app.Browser.OpenURL("http://192.168.1.100:8080")
+if err != nil {
+    app.Logger.Error("Failed to open network resource", "error", err)
+}
+```
+
+## Ouverture de fichiers
+
+### Ouvrir des fichiers HTML
+
+Ouvrir des fichiers HTML locaux dans le navigateur :
+
+```go
+// Ouvrir un fichier HTML
+err := app.Browser.OpenFile("/path/to/documentation.html")
+if err != nil {
+    app.Logger.Error("Failed to open HTML file", "error", err)
+}
+
+// Ouvrir des rapports générés
+reportPath := "/tmp/report.html"
+err = app.Browser.OpenFile(reportPath)
+if err != nil {
+    app.Logger.Error("Failed to open report", "error", err)
+}
+```
+
+### Ouvrir d'autres types de fichiers
+
+Ouvrir divers types de fichiers que les navigateurs peuvent gérer :
+
+```go
+// Ouvrir des fichiers PDF
+err := app.Browser.OpenFile("/path/to/document.pdf")
+if err != nil {
+    app.Logger.Error("Failed to open PDF", "error", err)
+}
+
+// Ouvrir des fichiers image
+err = app.Browser.OpenFile("/path/to/image.png")
+if err != nil {
+    app.Logger.Error("Failed to open image", "error", err)
+}
+
+// Ouvrir des fichiers texte
+err = app.Browser.OpenFile("/path/to/readme.txt")
+if err != nil {
+    app.Logger.Error("Failed to open text file", "error", err)
+}
+```
+
+## Cas d'utilisation courants
+
+### Aide et documentation
+
+Fournir un accès facile aux ressources d'aide :
+
+```go
+// Créer un menu d'aide
+func setupHelpMenu(app *application.App) {
+    menu := app.Menu.New()
+    helpMenu := menu.AddSubmenu("Help")
+    
+    helpMenu.Add("Online Documentation").OnClick(func(ctx *application.Context) {
+        err := app.Browser.OpenURL("https://docs.yourapp.com")
+        if err != nil {
+            app.Dialog.Error().
+                SetTitle("Error").
+                SetMessage("Could not open documentation").
+                Show()
+        }
+    })
+    
+    helpMenu.Add("GitHub Repository").OnClick(func(ctx *application.Context) {
+        app.Browser.OpenURL("https://github.com/youruser/yourapp")
+    })
+    
+    helpMenu.Add("Report Issue").OnClick(func(ctx *application.Context) {
+        app.Browser.OpenURL("https://github.com/youruser/yourapp/issues/new")
+    })
+}
+```
+
+### Liens externes dans le contenu
+
+Gérer les liens externes provenant du contenu de votre application :
+
+```go
+func handleExternalLink(app *application.App, url string) {
+    // Valider l'URL avant de l'ouvrir
+    if !isValidURL(url) {
+        app.Logger.Warn("Invalid URL", "url", url)
+        return
+    }
+    
+    // Demander éventuellement une confirmation à l'utilisateur
+    dialog := app.Dialog.Question()
+    dialog.SetTitle("Open External Link")
+    dialog.SetMessage(fmt.Sprintf("Open %s in your browser?", url))
+    
+    dialog.AddButton("Open").OnClick(func() {
+        err := app.Browser.OpenURL(url)
+        if err != nil {
+            app.Logger.Error("Failed to open URL", "url", url, "error", err)
+        }
+    })
+    
+    dialog.AddButton("Cancel")
+    dialog.Show()
+}
+
+func isValidURL(url string) bool {
+    parsed, err := url.Parse(url)
+    return err == nil && (parsed.Scheme == "http" || parsed.Scheme == "https")
+}
+```
+
+### Exporter et afficher des rapports
+
+Générer et ouvrir des rapports dans le navigateur :
+
+```go
+import (
+    "html/template"
+    "os"
+    "path/filepath"
+)
+
+func generateAndOpenReport(app *application.App, data interface{}) error {
+    // Créer un fichier temporaire pour le rapport
+    tmpDir := os.TempDir()
+    reportPath := filepath.Join(tmpDir, "report.html")
+    
+    // Générer le rapport HTML
+    tmpl := `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Application Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .header { border-bottom: 2px solid #333; padding-bottom: 10px; }
+        .data { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Application Report</h1>
+        <p>Generated: {{.Timestamp}}</p>
+    </div>
+    <div class="data">
+        <!-- Report content here -->
+        {{range .Items}}
+        <p>{{.}}</p>
+        {{end}}
+    </div>
+</body>
+</html>`
+    
+    // Écrire le rapport dans le fichier
+    file, err := os.Create(reportPath)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+    
+    t, err := template.New("report").Parse(tmpl)
+    if err != nil {
+        return err
+    }
+    
+    err = t.Execute(file, data)
+    if err != nil {
+        return err
+    }
+    
+    // Ouvrir dans le navigateur
+    return app.Browser.OpenFile(reportPath)
+}
+```
+
+### Outils de développement
+
+Ouvrir des ressources de développement pendant le développement :
+
+```go
+func setupDevelopmentMenu(app *application.App) {
+    if !app.Env.Info().Debug {
+        return // Afficher uniquement en mode debug
+    }
+    
+    menu := app.Menu.New()
+    devMenu := menu.AddSubmenu("Development")
+    
+    devMenu.Add("Open DevTools").OnClick(func(ctx *application.Context) {
+        // Cela ouvrirait les outils de développement du navigateur si disponibles
+        window := app.Window.Current()
+        if window != nil {
+            window.OpenDevTools()
+        }
+    })
+    
+    devMenu.Add("View Source").OnClick(func(ctx *application.Context) {
+        // Ouvrir le dépôt de code source
+        app.Browser.OpenURL("https://github.com/youruser/yourapp")
+    })
+    
+    devMenu.Add("API Documentation").OnClick(func(ctx *application.Context) {
+        // Ouvrir la documentation API locale
+        app.Browser.OpenURL("http://localhost:8080/docs")
+    })
+}
+```
+
+## Gestion des erreurs
+
+### Gestion gracieuse des erreurs
+
+Toujours gérer les erreurs potentielles lors de l'ouverture d'URL ou de fichiers :
+
+```go
+func openURLWithFallback(app *application.App, url string, fallbackMessage string) {
+    err := app.Browser.OpenURL(url)
+    if err != nil {
+        app.Logger.Error("Failed to open URL", "url", url, "error", err)
+        
+        // Afficher un dialogue de secours avec l'URL
+        dialog := app.Dialog.Info()
+        dialog.SetTitle("Unable to Open Link")
+        dialog.SetMessage(fmt.Sprintf("%s\n\nURL: %s", fallbackMessage, url))
+        dialog.Show()
+    }
+}
+
+// Utilisation
+openURLWithFallback(app, 
+    "https://docs.example.com", 
+    "Please open the following URL manually in your browser:")
+```
+
+### Retour utilisateur
+
+Fournir un retour lorsque les opérations réussissent ou échouent :
+
+```go
+func openURLWithFeedback(app *application.App, url string) {
+    err := app.Browser.OpenURL(url)
+    if err != nil {
+        // Afficher un dialogue d'erreur
+        app.Dialog.Error().
+            SetTitle("Browser Error").
+            SetMessage(fmt.Sprintf("Could not open URL: %s", err.Error())).
+            Show()
+    } else {
+        // Afficher éventuellement une notification de succès
+        app.Logger.Info("URL opened successfully", "url", url)
+    }
+}
+```
+
+## Considérations spécifiques à la plateforme
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    Sur macOS :
+    
+    - Utilise la commande `open` pour lancer le navigateur par défaut- Respecte le navigateur par défaut défini dans les Préférences Système
+- Peut demander une autorisation si l'application est sandboxée
+- Gère correctement les URL `file://` pour les fichiers locaux
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    Sous Windows :
+    
+    - Utilise l'API Shell de Windows pour ouvrir les URL
+    - Respecte le navigateur par défaut défini dans les Paramètres Windows
+    - Gère correctement les formats de chemins Windows
+    - Peut afficher des avertissements de sécurité pour les URL non fiables
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    Sous Linux :
+    
+    - Tente d'utiliser `xdg-open` en premier, puis revient à d'autres méthodes
+    - Le comportement varie selon l'environnement de bureau
+    - Respecte la variable d'environnement `BROWSER` si elle est définie
+    - Peut nécessiter des paquets supplémentaires dans les installations minimales
+    
+  </TabItem>
+</Tabs>
+
+## Bonnes Pratiques
+
+1. **Gérez toujours les erreurs** : Les opérations de navigateur peuvent échouer pour diverses raisons :
+   ```go
+   if err := app.Browser.OpenURL(url); err != nil {
+       app.Logger.Error("Failed to open browser", "error", err)
+       // Prévoir un mécanisme de repli ou une notification utilisateur
+   }
+   ```
+
+2. **Validez les URL** : Assurez-vous que les URL sont bien formées avant de les ouvrir :
+   ```go
+   func isValidHTTPURL(str string) bool {
+       u, err := url.Parse(str)
+       return err == nil && (u.Scheme == "http" || u.Scheme == "https")
+   }
+   ```
+
+3. **Confirmation de l'utilisateur** : Pour les liens externes, envisagez de demander la permission à l'utilisateur :
+   ```go
+   // Afficher une boîte de dialogue de confirmation avant d'ouvrir des liens externes
+   confirmAndOpen(app, "https://external-site.com")
+   ```
+
+4. **Chemins de fichiers sécurisés** : Lors de l'ouverture de fichiers, assurez-vous que les chemins sont sûrs :
+   ```go
+   func openSafeFile(app *application.App, filename string) error {
+       // Vérifier que le fichier existe et est lisible
+       if _, err := os.Stat(filename); err != nil {
+           return err
+       }
+       return app.Browser.OpenFile(filename)
+   }
+   ```
+
+## Exemple Complet
+
+Voici un exemple complet montrant divers patterns d'intégration du navigateur :
+
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+    "path/filepath"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Browser Integration Demo",
+    })
+
+    // Configuration du menu avec des actions de navigateur
+    setupMenu(app)
+
+    // Création de la fenêtre principale
+    window := app.Window.New()
+    window.SetTitle("Browser Integration")
+
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
+}
+
+func setupMenu(app *application.App) {
+    menu := app.Menu.New()
+    
+    // Menu Fichier
+    fileMenu := menu.AddSubmenu("File")
+    fileMenu.Add("Generate Report").OnClick(func(ctx *application.Context) {
+        generateHTMLReport(app)
+    })
+    
+    // Menu Aide
+    helpMenu := menu.AddSubmenu("Help")
+    helpMenu.Add("Documentation").OnClick(func(ctx *application.Context) {
+        openWithConfirmation(app, "https://docs.example.com")
+    })
+    helpMenu.Add("Support").OnClick(func(ctx *application.Context) {
+        openWithConfirmation(app, "https://support.example.com")
+    })
+    
+    app.Menu.Set(menu)
+}
+
+func openWithConfirmation(app *application.App, url string) {
+    dialog := app.Dialog.Question()
+    dialog.SetTitle("Open External Link")
+    dialog.SetMessage(fmt.Sprintf("Open %s in your browser?", url))
+    
+    dialog.AddButton("Open").OnClick(func() {
+        if err := app.Browser.OpenURL(url); err != nil {
+            showError(app, "Failed to open URL", err)
+        }
+    })
+    
+    dialog.AddButton("Cancel")
+    dialog.Show()
+}
+
+func generateHTMLReport(app *application.App) {
+    // Création d'un fichier HTML temporaire
+    tmpDir := os.TempDir()
+    reportPath := filepath.Join(tmpDir, "demo_report.html")
+    
+    html := `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Demo Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .header { color: #333; border-bottom: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Application Report</h1>
+        <p>This is a sample report generated by the application.</p>
+    </div>
+    <div class="content">
+        <h2>Report Details</h2>
+        <p>This report was generated to demonstrate browser integration.</p>
+    </div>
+</body>
+</html>`
+    
+    err := os.WriteFile(reportPath, []byte(html), 0644)
+    if err != nil {
+        showError(app, "Failed to create report", err)
+        return
+    }
+    
+    // Ouverture dans le navigateur
+    err = app.Browser.OpenFile(reportPath)
+    if err != nil {
+        showError(app, "Failed to open report", err)
+    }
+}
+
+func showError(app *application.App, message string, err error) {
+    app.Dialog.Error().
+        SetTitle("Error").
+        SetMessage(fmt.Sprintf("%s: %v", message, err)).
+        Show()
+}
+```
+
+:::tip[Conseil Pro]
+Envisagez de fournir des mécanismes de repli lorsque les opérations de navigateur échouent, comme la copie des URL dans le presse-papiers ou leur affichage dans une boîte de dialogue pour une ouverture manuelle.
+:::
+
+:::danger[Avertissement]
+Validez toujours les URL et les chemins de fichiers avant de les ouvrir pour éviter les problèmes de sécurité. Soyez prudent lors de l'ouverture d'URL fournies par l'utilisateur sans validation.
+:::

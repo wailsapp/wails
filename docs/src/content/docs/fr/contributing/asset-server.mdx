@@ -1,0 +1,196 @@
+---
+title: Serveur d'actifs
+description: Comment Wails v3 sert et intègre vos actifs web en développement et en production
+sidebar:
+  order: 4
+---
+
+## Vue d'ensemble
+
+Chaque application Wails livre un **exécutable natif unique** qui combine :
+
+1. Votre backend *Go*  
+2. Un frontend *Web* (HTML + JS + CSS)
+
+Le **Serveur d'actifs** (Asset Server) est le lien qui rend cela possible.  
+Il dispose de **deux modes de fonctionnement** sélectionnés au moment de la compilation via des balises de build Go :
+
+| Mode | Balise | Objectif |
+|------|-----|---------|
+| **Développement** | `//go:build dev` | Itération rapide avec rechargement à chaud (hot-reload) |
+| **Production**  | `//go:build !dev` | Actifs intégrés, sans dépendances |
+
+L'implémentation se trouve dans  
+`v3/internal/assetserver/` avec une séparation claire des fichiers :
+
+```
+assetserver_dev.go        # ⬅️ serveur de développement à l'exécution
+assetserver_production.go # ⬅️ serveur intégré
+assetserver_darwin.go     # Utilitaires spécifiques à l'OS (identiques pour linux/windows)
+asset_fileserver.go       # Logique partagée pour les fichiers statiques
+content_type_sniffer.go   # Détection du type MIME
+ringqueue.go              # Petite LRU pour le cache mime
+```
+
+---
+
+## Mode Développement
+
+### Cycle de vie
+
+1. `wails3 dev` démarre et **lance votre serveur de développement frontend**  
+   (Vite, SvelteKit, React-SWC …) en exécutant la tâche définie dans
+   `build/Taskfile.yml` (généralement `npm run dev`).
+2. Wails démarre le **Serveur d'actifs de développement** qui écoute sur `localhost:<random>` et
+   indique au runtime Go de charger `http://<host>:<VITE_PORT>` comme URL de la fenêtre.
+3. Les requêtes entrantes sont gérées par `assetserver_dev.go` :
+
+   ```
+   ┌─────────┐  /runtime/...          ┌─────────────┐
+   │ Browser │ ── native bridge  ───▶ │   Runtime   │
+   ├─────────┤                       └─────────────┘
+   │   JS    │  / (index.html)        proxy / -> Vite
+   └─────────┘ ◀─────────────┐
+                 AssetServer │
+                             ▼
+                      ┌────────────┐
+                      │  Vite Dev  │
+                      │   Server   │
+                      └────────────┘
+   ```
+
+4. Les fichiers statiques (`/assets/logo.svg`) sont **servis directement depuis le disque** via
+   `asset_fileserver.go` (pour la vitesse) tandis que tout ce qui est inconnu est **proxié** vers
+   le serveur de développement du framework, vous offrant un remplacement de module à chaud (*hot-module replacement*) *instantané*.
+
+### Fonctionnalités
+
+* **Rechargement en direct** – Vite/Snowpack/… injecte un WebSocket HMR ; Wails n'a qu'à
+  le proxié.
+* **Support des cartes de source** – comme les actifs ne sont pas regroupés (bundled), les outils de développement de votre navigateur
+  mappent les erreurs vers le code source original.
+* **Pas de recompilation Go** – Seul le frontend est reconstruit ; le code Go reste en cours d'exécution jusqu'à
+  ce que vous modifiiez des fichiers `.go`.
+
+### Changement de framework
+
+Le proxy de développement est **indépendant du framework** :
+
+* Le fichier `Taskfile.yml` racine injecte deux variables d'environnement :
+  `APP_NAME` & `WAILS_VITE_PORT`.
+* Les Taskfiles pour chaque template émettent ces variables avant de lancer leurs serveurs de développement.
+* `assetserver_dev.go` proxié simplement vers cette cible.
+
+Ajoutez un nouveau template → définissez sa tâche de développement → le Serveur d'actifs fonctionne automatiquement.
+
+---
+
+## Mode Production
+
+Lorsque vous exécutez `wails3 build`, le pipeline :
+
+1. Exécute la **production build** du frontend (`npm run build`) produisant
+   `/frontend/dist/**`.
+2. **Intègre** ce dossier dans le système de fichiers `go:embed` au moment de la compilation (voir
+   le fichier généré `bundled_assetserver.go`).
+3. Compile le binaire Go avec `-tags production` (implicite).
+
+### Gestion des requêtes
+
+```go
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    // 1. Essayer les actifs statiques intégrés (chemin exact)
+    // 2. Retourner à index.html pour le routage SPA
+    // 3. Détecter le type de contenu si l'extension est inconnue
+    // 4. Définir des en-têtes de cache forts
+}
+```
+
+* **Détection MIME** – Si l'outil de build a produit des fichiers sans extension (par ex.
+  `/assets/manifest`), `content_type_sniffer.go` inspecte les 512 premiers octets et
+  met le résultat en cache dans une petite LRU sans verrou.
+* **Cache par Ring Queue** – Les actifs fréquemment accédés (logo, CSS) sont conservés
+  en mémoire pendant toute la durée de vie de l'application, supprimant le besoin de recherches sur disque ou dans le système de fichiers intégré.
+* **En-têtes de sécurité** – Interdit la navigation `file://`, active `nosniff`.
+
+Tout est intégré, le binaire livré n'a **aucune dépendance externe** (même sous Windows).
+
+---
+
+## Pont Dev ↔ Prod
+
+Les deux modes exposent la **même interface publique** :
+
+```go
+type AssetServer interface {
+    URL()        string // dev: http://localhost:34115, prod: wails://app
+    Open() error // démarrer l'écoute
+    Close()      // arrêt gracieux
+}
+```
+
+`pkg/application` utilise joyeusement l'implémentation qui a été compilée, ce qui signifie
+que **votre code d'application ne change pas** entre `dev` et `build`.
+
+---
+
+## Comment les frameworks frontend s'intègrent
+
+### Templates
+
+Chaque template officiel (React, Vue, Svelte, Solid…) contient :
+
+* `build/Taskfile.yml`
+* `frontend/vite.config.ts` (ou équivalent)
+
+Ils exportent plusieurs tâches dont :
+
+| Tâche | Objectif |
+|------|---------|
+| `dev:frontend`   | Démarre le serveur de développement du framework sur un **port libre aléatoire** et l'imprime dans stdout (`PORT=5173`). |
+| `build:frontend` | Produit les actifs statiques dans `dist/` + un manifest pour le cache-busting. |
+
+`internal/commands/dev.go` définit la variable d'environnement `FRONTEND_DEVSERVER_URL` en utilisant `localhost` codé en dur comme `host` et la variable d'environnement `VITE_PORT` émise comme `port`, puis lance le **Serveur d'actifs de développement**.
+
+Les frameworks restent entièrement découplés de Go :
+
+* Pas besoin d'importer le SDK JS Wails au moment du build – le runtime l'injecte lors de la création de la fenêtre.
+* Tout framework disposant d'un serveur de développement HTTP peut s'intégrer.
+
+---
+
+## Extension / Personnalisation
+
+Besoin d'en-têtes personnalisés, d'authentification ou de gzip ?
+
+1. Implémentez `type Middleware func(http.Handler) http.Handler`
+2. Enregistrez-le via `internal/assetserver/options.go`
+3. Pour la prod, n'oubliez pas d'ajouter le même middleware dans `assetserver_production.go`.
+
+---
+
+## Fichiers source clés
+
+| Fichier | Rôle |
+|------|------|
+| `assetserver_dev.go` | Proxy inverse + serveur de fichiers sur disque |
+| `assetserver_production.go` | Gestionnaire de système de fichiers intégré |
+| `options.go` | Structure de configuration analysée depuis `pkg/options/assetserver` |
+| `build_dev.go` / `build_production.go` | Enveloppes de balise de build sélectionnant l'implémentation correcte |
+| `bundled_assetserver.go` | Données d'intégration générées (présentes uniquement dans les builds de production) |
+
+---
+
+## Pièges & Débogage
+
+* **Écran blanc en Prod** – généralement un problème de routage SPA : assurez-vous que la `History API Fallback`
+  est activée en dev et que le fallback sur `index.html` fonctionne en prod.
+* **404 en Dev** – `FRONTEND_DEV_PORT` mal apparié ; exécutez avec
+  `WAILSDEV_VERBOSE=1` pour imprimer chaque requête proxiée.
+* **Grands actifs** – ils sont intégrés ; envisagez
+  [`assetserver.WithExternalDir("/path")`](https://pkg.go.dev) pour charger depuis le disque.
+
+---
+
+Vous savez maintenant comment le **Serveur d'actifs** de Wails alimente votre code web dans la fenêtre native, tant en **développement** qu'en **production**.  
+Maîtrisez cette couche et vous pourrez déboguer les problèmes de chargement, ajouter des middlewares, ou même remplacer entièrement votre chaîne d'outils frontend en toute confiance.

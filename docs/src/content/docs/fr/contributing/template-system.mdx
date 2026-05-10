@@ -1,0 +1,220 @@
+---
+title: Système de modèles
+description: Comment Wails v3 génère de nouveaux projets, comment les modèles sont organisés et comment créer le vôtre.
+sidebar:
+  order: 7
+---
+
+Wails intègre un **système de modèles** qui permet à `wails3 init` de générer un projet prêt à l'emploi pour **n'importe quelle** pile frontend moderne (React, Svelte, Vue, Solid, Vanilla
+JS …).
+
+Cette page couvre :
+
+1. Structure des répertoires de modèles  
+2. Comment la CLI choisit et rend les modèles  
+3. Création d'un nouveau modèle étape par étape  
+4. Mise à jour ou remplacement des modèles existants  
+5. Dépannage et bonnes pratiques  
+
+---
+
+## 1. Où sont stockés les modèles
+
+```
+v3/
+└── internal/templates/
+    ├── _common/           # Fichiers copiés dans TOUS les projets (main.go, .gitignore)
+    ├── base/              # Modèle "Go pur" uniquement backend
+    ├── react/             # React + Vite
+    ├── react-ts/
+    ├── svelte/
+    ├── vue/
+    ├── ... (autres)
+    └── templates.go       # Registre + fonctions utilitaires
+```
+
+* **`_common/`** – squelette universel (modules Go, Taskfile, ébauche de README,  
+  paramètres VS Code).  
+* **Dossiers des frameworks** – contiennent **frontend/** et toute configuration spécifique à la pile.  
+* Les noms de dossiers correspondent à l'**ID du modèle** que vous passez à la CLI  
+  (`wails3 init -t react-ts`).
+
+> L'ensemble du répertoire est compilé dans le binaire de la CLI via `go:embed`, permettant aux utilisateurs
+> de générer des projets hors ligne.
+
+---
+
+## 2. Comment `wails3 init` utilise les modèles
+
+Chaîne d'appels :
+
+```
+cmd/wails3/init.go
+       │
+       ▼
+internal/commands/init.go  ← analyse les drapeaux, répertoire cible
+       │
+       ▼
+internal/templates.Load()  ← templates.go
+       │
+       ▼
+Template.CopyTo(dest)      ← copie système de fichiers + substitutions de texte
+```
+
+### Substitutions
+
+Les espaces réservés enveloppés dans `{{ }}` sont remplacés lors de la copie :
+
+| Espace réservé | Exemple | Source |
+|-------------|---------|--------|
+| `{{ProjectName}}` | `myapp` | Drapeau CLI / nom du répertoire |
+| `{{ModulePath}}`  | `github.com/me/myapp` | si `--module` fourni |
+| `{{WailsVersion}}`| `v3.0.0` | constante compilée |
+
+Vous pouvez ajouter **n'importe quel** espace réservé ; assurez-vous simplement qu'il reçoit une valeur dans
+`internal/commands/init.go`.
+
+### Hooks post-copie
+
+Chaque modèle peut livrer un **Taskfile** avec une tâche `deps`.
+Après la copie, la CLI exécute :
+
+```
+task --taskfile Taskfile.yml deps
+```
+
+Tâches typiques :
+
+* `go mod tidy`
+* `npm install`
+* initialisation git et premier commit (optionnel)
+
+Le comportement des hooks est défini dans `_common/Taskfile.yml` mais peut être remplacé par modèle.
+
+---
+
+## 3. Création d'un nouveau modèle
+
+> Exemple : Ajouter le modèle **Qwik-TS**
+
+### 3.1 Répertoire et ID
+
+```
+internal/templates/qwik-ts/
+```
+
+Le nom du dossier = ID du modèle. Gardez-le en **kebab-case**.
+
+### 3.2 Ensemble minimal de fichiers
+
+```
+qwik-ts/
+├── README.md              # Affiché dans la CLI avec -list
+├── frontend/              # Votre projet web
+│   ├── src/
+│   ├── package.json
+│   └── vite.config.ts
+├── Taskfile.yml           # Tâches deps & dev
+└── go/                    # Fichiers Go supplémentaires optionnels
+```
+
+Commencez par copier `react-ts` et supprimez les fichiers inutiles.
+
+### 3.3 Mise à jour des espaces réservés
+
+Rechercher/remplacer :
+
+* `myapp` → `{{ProjectName}}`
+* `github.com/you/myapp` → `{{ModulePath}}`
+
+### 3.4 Enregistrement (optionnel)
+
+Si le dossier existe, **templates.go le détecte automatiquement** via `embed`.
+Ajoutez du code explicite uniquement si vous avez besoin d'une **validation personnalisée** :
+
+```go
+func (t *Template) Validate() error {
+    // vérifier Node ≥ 20 pour ce modèle
+}
+```
+
+### 3.5 Test
+
+```bash
+wails3 init -n demo -t qwik-ts
+cd demo
+wails3 dev
+```
+
+Vérifiez :
+
+* Le serveur de développement démarre  
+* Les liaisons `wailsjs` sont générées  
+* Le rechargement à chaud fonctionne  
+
+---
+
+## 4. Modification des modèles existants
+
+1. Modifiez les fichiers sous `internal/templates/<id>/`.
+2. Exécutez `go generate ./v3/...` **ou** simplement `go run ./v3/cmd/wails3 –help` ; la directive de recompilation automatique de l'embed se déclenche.
+3. Incrémentez les **versions des dépendances** dans `frontend/package.json` & `Taskfile.yml`.
+4. Mettez à jour le `README.md` à l'intérieur du modèle — les utilisateurs le voient via  
+   `wails3 init -t react --help`.
+
+### Modifications courantes
+
+| Tâche | Où |
+|------|-------|
+| Changer le port du serveur de développement | `frontend/Taskfile.yml` (`vite dev --port {{DevPort}}`) |
+| Ajouter des variables d'environnement | même Taskfile ou `.env` |
+| Remplacer le gestionnaire de paquets JS | Passer de `npm` à `pnpm` dans le Taskfile |
+
+---
+
+## 5. Conseils pour l'auteur de modèles
+
+* **Gardez le frontend générique** – évitez de faire référence aux globales spécifiques à Wails ; le runtime
+  est injecté automatiquement.
+* **Pas d'artefacts compilés** – excluez `node_modules`, `dist`, `.DS_Store` via
+  `.tmplignore`.
+* **Documentez les prérequis** – version de Node, outils CLI supplémentaires, etc.
+* **Évitez les changements incompatibles** – créez un *nouvel* ID de modèle si la refonte est importante.
+
+---
+
+## 6. Dépannage
+
+| Symptôme | Cause | Solution |
+|---------|-------|-----|
+| `unknown template id` | Incompatibilité de nom de dossier | Vérifiez `wails3 init -list` |
+| Espaces réservés non remplacés | Entrée manquante dans la map `Data` | Modifiez `internal/commands/init.go` |
+| Le serveur de développement ouvre une page blanche | Mauvaise variable d'environnement `DevPort` | Assurez-vous que le Taskfile affiche le port sur stdout |
+| Échec de compilation du frontend en prod | Chemin `base` de vite oublié | Définissez `base: "./"` dans `vite.config.ts` |
+
+Ajoutez `--verbose` à `wails3 init` pour imprimer chaque fichier copié et chaque substitution.
+
+---
+
+## 7. Carte des fichiers source clés
+
+| Fichier | Responsabilité |
+|------|----------------|
+| `internal/templates/templates.go` | Intègre le système de fichiers des modèles, retourne `[]Template` |
+| `internal/templates/<id>/**` | Contenu réel du modèle |
+| `internal/commands/init.go` | Colle CLI : choisit le modèle, remplit les espaces réservés |
+| `internal/commands/generate_template.go` | Utilitaire pour *exporter* un projet live back dans un modèle (utile pour les mises à jour) |
+
+---
+
+## 8. Résumé
+
+* Les modèles vivent dans **`internal/templates/`** et sont intégrés dans la CLI.
+* `wails3 init -t <id>` copie `_common` + le modèle sélectionné, effectue
+  les substitutions, puis exécute un hook Taskfile **deps**.
+* Créer un modèle est aussi simple que de **créer un dossier**, ajouter des fichiers, et
+  utiliser des espaces réservés.
+* Le système est **extensible** et **autonome** — parfait pour partager
+  des piles personnalisées avec votre équipe ou la communauté.
+
+Bonnes créations de modèles !

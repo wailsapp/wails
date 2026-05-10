@@ -1,0 +1,501 @@
+---
+title: API de mise à jour
+description: Documentation de référence pour l'API de mise à jour de Wails v3
+sidebar:
+  order: 8
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+# Référence de l'API de mise à jour
+
+L'API de mise à jour fournit des fonctionnalités de mise à jour automatique pour les applications Wails, y compris la vérification des mises à jour, le téléchargement et l'installation.
+
+## API Go
+
+### CreateUpdaterService
+
+Crée un nouveau service de mise à jour.
+
+```go
+func CreateUpdaterService(currentVersion string, opts ...UpdaterOption) (*UpdaterService, error)
+```
+
+**Paramètres :**
+- `currentVersion` - La version actuelle de votre application (par exemple, "1.0.0")
+- `opts` - Options de configuration
+
+**Retourne :**
+- `*UpdaterService` - L'instance du service de mise à jour
+- `error` - Erreur si la création échoue
+
+**Exemple :**
+```go
+updater, err := application.CreateUpdaterService(
+    "1.0.0",
+    application.WithUpdateURL("https://updates.example.com/myapp/"),
+)
+```
+
+### Fonctions UpdaterOption
+
+#### WithUpdateURL
+
+Définit l'URL de base pour les manifestes de mise à jour.
+
+```go
+func WithUpdateURL(url string) UpdaterOption
+```
+
+**Obligatoire.** L'URL doit pointer vers le répertoire contenant votre manifeste `update.json`.
+
+#### WithCheckInterval
+
+Définit l'intervalle pour les vérifications automatiques de mise à jour en arrière-plan.
+
+```go
+func WithCheckInterval(interval time.Duration) UpdaterOption
+```
+
+Définissez sur `0` pour désactiver la vérification automatique. La valeur par défaut est `0` (désactivé).
+
+#### WithAllowPrerelease
+
+Autorise les versions préliminaires à être considérées comme des mises à jour.
+
+```go
+func WithAllowPrerelease(allow bool) UpdaterOption
+```
+
+La valeur par défaut est `false`.
+
+#### WithChannel
+
+Définit le canal de mise à jour (par exemple, "stable", "beta", "canary").
+
+```go
+func WithChannel(channel string) UpdaterOption
+```
+
+Le canal est ajouté au chemin de l'URL de mise à jour.
+
+#### WithPublicKey
+
+Définit la clé publique pour la vérification de la signature.
+
+```go
+func WithPublicKey(key string) UpdaterOption
+```
+
+La clé doit être une clé publique Ed25519 encodée en base64.
+
+#### WithRequireSignature
+
+Exige que toutes les mises à jour soient signées.
+
+```go
+func WithRequireSignature(require bool) UpdaterOption
+```
+
+La valeur par défaut est `false`.
+
+### Méthodes de UpdaterService
+
+#### GetCurrentVersion
+
+Retourne la version actuelle de l'application.
+
+```go
+func (u *UpdaterService) GetCurrentVersion() string
+```
+
+#### CheckForUpdate
+
+Vérifie si une nouvelle version est disponible.
+
+```go
+func (u *UpdaterService) CheckForUpdate() (*UpdateInfo, error)
+```
+
+**Retourne :**
+- `*UpdateInfo` - Informations de mise à jour, ou `nil` si aucune mise à jour n'est disponible
+- `error` - Erreur si la vérification échoue
+
+#### DownloadUpdate
+
+Télécharge la mise à jour disponible.
+
+```go
+func (u *UpdaterService) DownloadUpdate() error
+```
+
+Émet des événements `updater:progress` pendant le téléchargement.
+
+#### ApplyUpdate
+
+Applique la mise à jour téléchargée.
+
+```go
+func (u *UpdaterService) ApplyUpdate() error
+```
+
+Cela redémarrera l'application.
+
+#### DownloadAndApply
+
+Télécharge et applique une mise à jour en un seul appel.
+
+```go
+func (u *UpdaterService) DownloadAndApply() error
+```
+
+#### GetState
+
+Retourne l'état actuel du service de mise à jour.
+
+```go
+func (u *UpdaterService) GetState() string
+```
+
+**Valeurs possibles :**
+- `"idle"` - Aucune mise à jour en cours
+- `"checking"` - Vérification des mises à jour en cours
+- `"available"` - Mise à jour disponible
+- `"downloading"` - Téléchargement de la mise à jour en cours
+- `"ready"` - Mise à jour téléchargée, prête à être installée
+- `"installing"` - Installation de la mise à jour en cours
+- `"error"` - Une erreur s'est produite
+
+#### GetUpdateInfo
+
+Retourne les informations sur la mise à jour disponible.
+
+```go
+func (u *UpdaterService) GetUpdateInfo() *UpdateInfo
+```
+
+#### GetLastError
+
+Retourne le dernier message d'erreur.
+
+```go
+func (u *UpdaterService) GetLastError() string
+```
+
+#### Reset
+
+Réinitialise l'état du service de mise à jour.
+
+```go
+func (u *UpdaterService) Reset()
+```
+
+### UpdateInfo
+
+Informations sur une mise à jour disponible.
+
+```go
+type UpdateInfo struct {
+    Version      string    `json:"version"`
+    ReleaseDate  time.Time `json:"releaseDate"`
+    ReleaseNotes string    `json:"releaseNotes"`
+    Size         int64     `json:"size"`
+    PatchSize    int64     `json:"patchSize,omitempty"`
+    Mandatory    bool      `json:"mandatory"`
+    HasPatch     bool      `json:"hasPatch"`
+}
+```
+
+| Champ | Type | Description |
+|-------|------|-------------|
+| `Version` | `string` | Le nouveau numéro de version |
+| `ReleaseDate` | `time.Time` | Date de publication de cette version |
+| `ReleaseNotes` | `string` | Notes de version (markdown) |
+| `Size` | `int64` | Taille totale du téléchargement en octets |
+| `PatchSize` | `int64` | Taille du correctif en octets (si disponible) |
+| `Mandatory` | `bool` | Indique si cette mise à jour est obligatoire |
+| `HasPatch` | `bool` | Indique si un correctif est disponible |
+
+### UpdaterConfig
+
+Configuration du service de mise à jour.
+
+```go
+type UpdaterConfig struct {
+    UpdateURL        string
+    CheckInterval    time.Duration
+    AllowPrerelease  bool
+    PublicKey        string
+    RequireSignature bool
+    Channel          string
+}
+```
+
+## API JavaScript/TypeScript
+
+Le service de mise à jour est automatiquement lié au frontend lorsqu'il est ajouté en tant que service.
+
+### Types
+
+```typescript
+interface UpdateInfo {
+  version: string;
+  releaseDate: string;  // Chaîne de date ISO 8601
+  releaseNotes: string;
+  size: number;
+  patchSize?: number;
+  mandatory: boolean;
+  hasPatch: boolean;
+}
+
+interface DownloadProgress {
+  downloaded: number;
+  total: number;
+  percentage: number;
+  bytesPerSecond: number;
+}
+```
+
+### Méthodes
+
+#### GetCurrentVersion
+
+```typescript
+function GetCurrentVersion(): string
+```
+
+Retourne la version actuelle de l'application.
+
+#### CheckForUpdate
+
+```typescript
+function CheckForUpdate(): Promise<UpdateInfo | null>
+```
+
+Vérifie les mises à jour disponibles.
+
+**Retourne :** `UpdateInfo` si une mise à jour est disponible, `null` sinon.
+
+#### DownloadUpdate
+
+```typescript
+function DownloadUpdate(): Promise<void>
+```
+
+Télécharge la mise à jour disponible. Émet des événements `updater:progress`.
+
+#### ApplyUpdate
+
+```typescript
+function ApplyUpdate(): Promise<void>
+```
+
+Applique la mise à jour téléchargée. L'application redémarrera.
+
+#### DownloadAndApply
+
+```typescript
+function DownloadAndApply(): Promise<void>
+```
+
+Télécharge et applique la mise à jour en un seul appel.
+
+#### GetState
+
+```typescript
+function GetState(): string
+```
+
+Retourne l'état actuel du service de mise à jour.
+
+#### GetUpdateInfo
+
+```typescript
+function GetUpdateInfo(): UpdateInfo | null
+```
+
+Retourne les informations de mise à jour actuelles.
+
+#### GetLastError
+
+```typescript
+function GetLastError(): string
+```
+
+Retourne le dernier message d'erreur.
+
+#### Reset
+
+```typescript
+function Reset(): void
+```
+
+Réinitialise l'état du service de mise à jour.
+
+### Événements
+
+#### updater:progress
+
+Émis pendant le téléchargement avec les informations de progression.
+
+```typescript
+import { Events } from '@wailsio/runtime';
+
+Events.On('updater:progress', (data: DownloadProgress) => {
+  console.log(`${data.percentage}% téléchargé`);
+});
+```
+
+## Format du manifeste de mise à jour
+
+Le manifeste de mise à jour (`update.json`) doit être hébergé à votre URL de mise à jour.
+
+### Schéma
+
+```typescript
+interface Manifest {
+  version: string;
+  release_date: string;      // ISO 8601
+  release_notes?: string;
+  platforms: {
+    [platform: string]: PlatformUpdate;
+  };
+  minimum_version?: string;
+  mandatory?: boolean;
+}
+
+interface PlatformUpdate {
+  url: string;
+  size: number;
+  checksum: string;          // "sha256:..."
+  signature?: string;
+  patches?: PatchInfo[];
+}
+
+interface PatchInfo {
+  from: string;              // Version à partir de laquelle ce correctif s'applique
+  url: string;
+  size: number;
+  checksum: string;
+  signature?: string;
+}
+```
+
+### Clés de plateforme
+
+| Plateforme | Clé |
+|----------|-----|
+| macOS (Apple Silicon) | `macos-arm64` |
+| macOS (Intel) | `macos-amd64` |
+| Windows (64-bit) | `windows-amd64` |
+| Linux (64-bit) | `linux-amd64` |
+| Linux (ARM64) | `linux-arm64` |
+
+### Exemple de manifeste
+
+```json
+{
+  "version": "1.2.0",
+  "release_date": "2025-01-15T00:00:00Z",
+  "release_notes": "## Modifications\n\n- Nouvelle fonctionnalité\n- Corrections de bugs",
+  "platforms": {
+    "macos-arm64": {
+      "url": "https://example.com/app-1.2.0-macos-arm64.tar.gz",
+      "size": 12582912,
+      "checksum": "sha256:abc123def456...",
+      "patches": [
+        {
+          "from": "1.1.0",```json
+        "url": "https://example.com/patches/1.1.0-to-1.2.0.patch",
+        "size": 14336,
+        "checksum": "sha256:789xyz..."
+      }
+    ]
+  },
+  "windows-amd64": {
+    "url": "https://example.com/app-1.2.0-windows.zip",
+    "size": 14680064,
+    "checksum": "sha256:ghi789jkl012..."
+  }
+},
+"minimum_version": "1.0.0",
+"mandatory": false
+}
+```
+
+## Intégration du service
+
+### Enregistrement du service
+
+```go
+app := application.New(application.Options{
+    Name: "MyApp",
+    Services: []application.Service{
+        application.NewService(updater),
+    },
+})
+```
+
+### Cycle de vie du service
+
+Le service de mise à jour implémente l'interface `Service` :
+
+```go
+type Service interface {
+    ServiceName() string
+    ServiceStartup(ctx context.Context, options ServiceOptions) error
+    ServiceShutdown() error
+}
+```
+
+- **ServiceStartup** : Démarre la vérification des mises à jour en arrière-plan si configuré
+- **ServiceShutdown** : Arrête la vérification en arrière-plan
+
+### Gestionnaires d'événements
+
+Enregistrez les gestionnaires en Go :
+
+```go
+updater.OnUpdateAvailable(func(info *UpdateInfo) {
+    log.Printf("Update available: %s", info.Version)
+})
+
+updater.OnDownloadProgress(func(downloaded, total int64, percentage float64) {
+    log.Printf("Download: %.1f%%", percentage)
+})
+
+updater.OnError(func(err string) {
+    log.Printf("Update error: %s", err)
+})
+```
+
+## Considérations de sécurité
+
+### HTTPS
+
+Toujours utiliser HTTPS pour les URL de mise à jour afin de prévenir les attaques de type "man-in-the-middle".
+
+### Vérification du checksum
+
+Tous les téléchargements sont vérifiés par rapport aux checksums SHA256 avant l'installation.
+
+### Vérification de la signature
+
+Activez la vérification de la signature pour les applications de production :
+
+```go
+updater, _ := application.CreateUpdaterService(
+    "1.0.0",
+    application.WithUpdateURL("https://updates.example.com/myapp/"),
+    application.WithRequireSignature(true),
+    application.WithPublicKey("MCowBQYDK2VwAyEA..."),
+)
+```
+
+### Signature du code
+
+Assurez-vous que les binaires de votre application sont correctement signés :
+- macOS : Certificat Developer ID Application
+- Windows : Certificat de signature de code avec horodatage
+
+Voir le [Guide de signature du code](/fr/guides/build/signing) pour plus de détails.

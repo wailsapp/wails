@@ -1,0 +1,119 @@
+---
+title: Instance unique
+description: Limiter votre application à une seule instance en cours d'exécution
+sidebar:
+   order: 40
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Le verrouillage d'instance unique est un mécanisme qui empêche plusieurs instances de votre application de s'exécuter simultanément.
+Il est utile pour les applications conçues pour ouvrir des fichiers depuis la ligne de commande ou depuis l'explorateur de fichiers du système d'exploitation.
+
+
+## Utilisation
+
+Pour activer la fonctionnalité d'instance unique dans votre application, fournissez une structure `SingleInstanceOptions` lors de la création de votre application :
+
+```go
+app := application.New(application.Options{
+    // ... autres options ...
+    SingleInstance: &application.SingleInstanceOptions{
+        UniqueID: "com.myapp.unique-id",
+        OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+            log.Printf("Deuxième instance lancée avec les arguments : %v", data.Args)
+            log.Printf("Répertoire de travail : %s", data.WorkingDir)
+            log.Printf("Données supplémentaires : %v", data.AdditionalData)
+        },
+        // Optionnel : Transmettre des données supplémentaires à la deuxième instance
+        AdditionalData: map[string]string{
+            "launchtime": time.Now().String(),
+        },
+    },
+})
+```
+
+La structure `SingleInstanceOptions` possède les champs suivants :
+
+- `UniqueID` : Un identifiant unique pour votre application. Il doit s'agir d'une chaîne de caractères unique, généralement notée en domaine inversé (par exemple, "com.entreprise.nomapp").
+- `EncryptionKey` : Tableau optionnel de 32 octets pour chiffrer les données transmises entre les instances en utilisant AES-256-GCM. S'il est fourni sous forme de tableau non nul, toutes les communications entre les instances seront chiffrées.
+- `OnSecondInstanceLaunch` : Une fonction de rappel appelée lorsqu'une deuxième instance de votre application est lancée. Le rappel reçoit une structure `SecondInstanceData` contenant :
+    - `Args` : Les arguments de la ligne de commande passés à la deuxième instance
+    - `WorkingDir` : Le répertoire de travail de la deuxième instance
+    - `AdditionalData` : Toutes les données supplémentaires transmises depuis la deuxième instance (si fournies)
+- `AdditionalData` : Carte optionnelle de paires clé-valeur de type chaîne qui sera transmise à la première instance lorsque des instances ultérieures seront lancées
+
+:::danger[Attention]
+La fonctionnalité d'instance unique implémente un protocole de chiffrement optionnel utilisant AES-256-GCM. Sans le chiffrement activé,
+les données transmises entre les instances ne sont pas sécurisées. Lors de l'utilisation de la fonctionnalité d'instance unique sans chiffrement,
+votre application doit considérer toute donnée reçue depuis le rappel de la deuxième instance comme non fiable.
+Vous devez vérifier que les arguments que vous recevez sont valides et ne contiennent aucune donnée malveillante.
+:::
+
+### Communication sécurisée
+
+Pour activer une communication sécurisée entre les instances, fournissez une clé de chiffrement de 32 octets. Cette clé doit être identique pour toutes les instances de votre application :
+
+```go
+// Définissez votre clé de chiffrement (doit faire exactement 32 octets)
+var encryptionKey = [32]byte{
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+    0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+    0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+}
+
+// Utilisez la clé dans SingleInstanceOptions
+SingleInstance: &application.SingleInstanceOptions{
+    UniqueID: "com.myapp.unique-id",
+    // Activez le chiffrement pour la communication entre instances
+    EncryptionKey: encryptionKey,
+    // ... autres options ...
+}
+```
+
+:::tip[Bonnes pratiques de sécurité]
+- Utilisez une clé unique pour votre application
+- Stockez la clé de manière sécurisée si vous la chargez depuis une configuration
+- N'utilisez pas la clé d'exemple montrée ci-dessus - créez la vôtre !
+:::
+
+### Gestion des fenêtres
+
+Lors de la gestion des lancements de deuxième instance, vous souhaiterez souvent ramener la fenêtre de votre application au premier plan. Vous pouvez le faire en utilisant la méthode `Focus()` de la fenêtre. Si votre fenêtre est minimisée, vous devrez peut-être la restaurer au préalable :
+
+```go
+
+    var mainWindow *application.WebviewWindow
+
+    SingleInstance: &application.SingleInstanceOptions{
+        // Autres options...
+        OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+            // Mettre la fenêtre au premier plan si nécessaire
+            if mainWindow != nil {
+                mainWindow.Restore()
+                mainWindow.Focus()
+            }
+        },
+    }
+```
+
+## Fonctionnement
+
+<Tabs syncKey="platform">
+    <TabItem label="Mac" icon="apple">
+
+        Verrouillage d'instance unique à l'aide d'un mutex nommé. Le nom du mutex est généré à partir de l'identifiant unique que vous fournissez. Les données sont transmises à la première instance via [NSDistributedNotificationCenter](https://developer.apple.com/documentation/foundation/nsdistributednotificationcenter)
+
+    </TabItem>
+    <TabItem label="Windows" icon="seti:windows">
+
+        Verrouillage d'instance unique à l'aide d'un mutex nommé. Le nom du mutex est généré à partir de l'identifiant unique que vous fournissez. Les données sont transmises à la première instance via une fenêtre partagée en utilisant [SendMessage](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage)
+
+    </TabItem>
+    <TabItem label="Linux" icon="linux">
+
+        Verrouillage d'instance unique à l'aide de [dbus](https://www.freedesktop.org/wiki/Software/dbus/). Le nom dbus est généré à partir de l'identifiant unique que vous fournissez. Les données sont transmises à la première instance via [dbus](https://www.freedesktop.org/wiki/Software/dbus/)
+
+    </TabItem>
+</Tabs>

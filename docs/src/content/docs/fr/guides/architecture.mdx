@@ -1,0 +1,199 @@
+---
+title: Patterns d'architecture
+description: Patterns de conception pour les applications Wails
+sidebar:
+  order: 7
+---
+
+## Vue d'ensemble
+
+Des patterns éprouvés pour organiser votre application Wails.
+
+## Pattern de la couche Service
+
+### Structure
+
+```
+app/
+├── main.go
+├── services/
+│   ├── user_service.go
+│   ├── data_service.go
+│   └── file_service.go
+└── models/
+    └── user.go
+```
+
+### Implémentation
+
+```go
+// Interface du service
+type UserService interface {
+    Create(email, password string) (*User, error)
+    GetByID(id int) (*User, error)
+    Update(user *User) error
+    Delete(id int) error
+}
+
+// Implémentation
+type userService struct {
+    app *application.Application
+    db  *sql.DB
+}
+
+func NewUserService(app *application.Application, db *sql.DB) UserService {
+    return &userService{app: app, db: db}
+}
+```
+
+## Pattern Repository
+
+### Structure
+
+```go
+// Interface du repository
+type UserRepository interface {
+    Create(user *User) error
+    FindByID(id int) (*User, error)
+    Update(user *User) error
+    Delete(id int) error
+}
+
+// Le service utilise le repository
+type UserService struct {
+    repo UserRepository
+}
+
+func (s *UserService) Create(email, password string) (*User, error) {
+    user := &User{Email: email}
+    return user, s.repo.Create(user)
+}
+```
+
+## Architecture événementielle
+
+### Bus d'événements
+
+```go
+type EventBus struct {
+    app       *application.Application
+    listeners map[string][]func(interface{})
+    mu        sync.RWMutex
+}
+
+func (eb *EventBus) Subscribe(event string, handler func(interface{})) {
+    eb.mu.Lock()
+    defer eb.mu.Unlock()
+    eb.listeners[event] = append(eb.listeners[event], handler)
+}
+
+func (eb *EventBus) Publish(event string, data interface{}) {
+    eb.mu.RLock()
+    handlers := eb.listeners[event]
+    eb.mu.RUnlock()
+    
+    for _, handler := range handlers {
+        go handler(data)
+    }
+}
+```
+
+### Utilisation
+
+```go
+// S'abonner
+eventBus.Subscribe("user.created", func(data interface{}) {
+    user := data.(*User)
+    sendWelcomeEmail(user)
+})
+
+// Publier
+eventBus.Publish("user.created", user)
+```
+
+## Injection de dépendances
+
+### Injection manuelle
+
+```go
+type App struct {
+    userService *UserService
+    fileService *FileService
+    db          *sql.DB
+}
+
+func NewApp() *App {
+    db := openDatabase()
+    
+    return &App{
+        db:          db,
+        userService: NewUserService(db),
+        fileService: NewFileService(db),
+    }
+}
+```
+
+### Utilisation de Wire
+
+```go
+// wire.go
+//go:build wireinject
+
+func InitializeApp() (*App, error) {
+    wire.Build(
+        openDatabase,
+        NewUserService,
+        NewFileService,
+        NewApp,
+    )
+    return nil, nil
+}
+```
+
+## Gestion de l'état
+
+### État centralisé
+
+```go
+type AppState struct {
+    currentUser *User
+    settings    *Settings
+    mu          sync.RWMutex
+}
+
+func (s *AppState) SetUser(user *User) {
+    s.mu.Lock()
+    defer s.mu.Unlock()
+    s.currentUser = user
+}
+
+func (s *AppState) GetUser() *User {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+    return s.currentUser
+}
+```
+
+## Bonnes pratiques
+
+### ✅ À faire
+
+- Séparer les responsabilités
+- Utiliser des interfaces
+- Injecter les dépendances
+- Gérer correctement les erreurs
+- Garder les services focalisés
+- Documenter l'architecture
+
+### ❌ À ne pas faire
+
+- Ne pas créer d'objets "god" (tout-en-un)
+- Ne pas coupler étroitement les composants
+- Ne pas ignorer la gestion des erreurs
+- Ne pas ignorer la concurrence
+- Ne pas sur-architecturer
+
+## Prochaines étapes
+
+- [Sécurité](/fr/guides/security) - Bonnes pratiques de sécurité
+- [Bonnes pratiques](/fr/features/bindings/best-practices) - Bonnes pratiques pour les liaisons

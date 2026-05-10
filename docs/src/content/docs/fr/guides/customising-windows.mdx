@@ -1,0 +1,131 @@
+---
+title: Personnalisation des fenêtres dans Wails
+description: Personnez l'apparence et le comportement des fenêtres dans vos applications Wails
+sidebar:
+  order: 10
+---
+
+import {Badge} from '@astrojs/starlight/components';
+
+Plateformes concernées : <Badge text="Windows" variant="note" /> <Badge text="macOS" variant="success" />
+<br/>
+
+Wails fournit une API pour contrôler l'apparence et les fonctionnalités des
+contrôles d'une fenêtre. Cette fonctionnalité est disponible sur Windows et macOS, mais
+pas sur Linux.
+
+## Définition des états des boutons de la fenêtre
+
+Les états des boutons sont définis par l'énumération `ButtonState` :
+
+```go
+type ButtonState int
+
+const (
+    ButtonEnabled   ButtonState = 0
+    ButtonDisabled  ButtonState = 1
+    ButtonHidden    ButtonState = 2
+)
+```
+
+- `ButtonEnabled` : Le bouton est activé et visible.
+- `ButtonDisabled` : Le bouton est visible mais désactivé (grisé).
+- `ButtonHidden` : Le bouton est masqué dans la barre de titre.
+
+Les états des boutons peuvent être définis lors de la création de la fenêtre ou
+à l'exécution.
+
+### Définition des états des boutons lors de la création de la fenêtre
+
+Lors de la création d'une nouvelle fenêtre, vous pouvez définir l'état initial
+des boutons en utilisant la structure `WebviewWindowOptions` :
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "My Application",
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        MinimiseButtonState: application.ButtonHidden,
+        MaximiseButtonState: application.ButtonDisabled,
+        CloseButtonState:    application.ButtonEnabled,
+    })
+
+    app.Run()
+}
+```
+
+Dans l'exemple ci-dessus, le bouton de réduction est masqué, le bouton d'agrandissement
+est inactif (grisé), et le bouton de fermeture est actif.
+
+### Définition des états des boutons à l'exécution
+
+Vous pouvez également modifier les états des boutons à l'exécution en utilisant les méthodes suivantes
+sur l'interface `Window` :
+
+```go
+window.SetMinimiseButtonState(wails.ButtonHidden)
+window.SetMaximiseButtonState(wails.ButtonEnabled)
+window.SetCloseButtonState(wails.ButtonDisabled)
+```
+
+### Différences entre plateformes
+
+Le comportement des états des boutons diffère légèrement sur Windows et
+macOS :
+
+|                       | Windows                | Mac                    |
+|-----------------------|------------------------|------------------------|
+| Désactiver Min/Max/Fermer | Désactive Min/Max/Fermer | Désactive Min/Max/Fermer |
+| Masquer Min             | Désactive Min          | Masque le bouton Min   |
+| Masquer Max             | Désactive Max          | Masque le bouton Max   |
+| Masquer Fermer          | Masque tous les contrôles | Masque Fermer        |
+
+Remarque : Sur Windows, il n'est pas possible de masquer les boutons Min/Max individuellement.
+Cependant, en désactivant les deux, vous masquerez les deux contrôles et n'afficherez
+que le bouton de fermeture.
+
+### Contrôle du style de la fenêtre (Windows)
+
+Pour contrôler le style de la barre de titre sur Windows, vous pouvez utiliser le champ `ExStyle`
+dans la structure `WebviewWindowOptions` :
+
+Exemple :
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/w32"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My Application",
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Windows: application.WindowsWindow{
+            ExStyle: w32.WS_EX_TOOLWINDOW | w32.WS_EX_NOREDIRECTIONBITMAP | w32.WS_EX_TOPMOST,
+        },
+    })
+
+    app.Run()
+}
+```
+
+Les autres options qui affectent le style étendu d'une fenêtre seront écrasées
+par ce paramètre :
+
+- HiddenOnTaskbar
+- AlwaysOnTop
+- IgnoreMouseEvents
+- BackgroundType

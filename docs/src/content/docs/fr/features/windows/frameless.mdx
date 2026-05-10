@@ -1,0 +1,789 @@
+---
+title: Fenêtres sans bordure
+description: Créez une interface de fenêtre personnalisée avec des fenêtres sans bordure
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## Fenêtres sans bordure
+
+Wails propose **la prise en charge des fenêtres sans bordure** avec des zones de glissement basées sur CSS et un comportement natif à la plateforme. Supprimez la barre de titre native de la plateforme pour avoir un contrôle total sur l'apparence de la fenêtre, des designs personnalisés et des expériences utilisateur uniques, tout en conservant les fonctionnalités essentielles telles que le déplacement, le redimensionnement et les contrôles système.
+
+## Démarrage rapide
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:     "Frameless App",
+    Width:     800,
+    Height:    600,
+    Frameless: true,
+})
+```
+
+**CSS pour la barre de titre déplaçable :**
+
+```css
+.titlebar {
+    --wails-draggable: drag;
+    height: 40px;
+    background: #333;
+}
+
+.titlebar button {
+    --wails-draggable: no-drag;
+}
+```
+
+**HTML :**
+
+```html
+<div class="titlebar">
+    <span>My Application</span>
+    <button onclick="window.close()">×</button>
+</div>
+```
+
+**C'est tout !** Vous avez une barre de titre personnalisée.
+
+## Création de fenêtres sans bordure
+
+### Fenêtre sans bordure de base
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless: true,
+    Width:     800,
+    Height:    600,
+})
+```
+
+**Ce que vous obtenez :**
+- Pas de barre de titre
+- Pas de bordures de fenêtre
+- Pas de boutons système
+- Arrière-plan transparent (optionnel)
+
+**Ce que vous devez implémenter :**
+- Zone déplaçable
+- Boutons Fermer/Réduire/Agrandir
+- Poignées de redimensionnement (si redimensionnable)
+
+### Avec arrière-plan transparent
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless:      true,
+    BackgroundType: application.BackgroundTypeTransparent,
+})
+```
+
+**Cas d'utilisation :**
+- Coins arrondis
+- Formes personnalisées
+- Fenêtres superposées
+- Écrans de démarrage
+
+## Zones de glissement
+
+### Glissement basé sur CSS
+
+Utilisez la propriété CSS `--wails-draggable` :
+
+```css
+/* Zone déplaçable */
+.titlebar {
+    --wails-draggable: drag;
+}
+
+/* Éléments non déplaçables dans la zone déplaçable */
+.titlebar button {
+    --wails-draggable: no-drag;
+}
+```
+
+**Valeurs :**
+- `drag` - La zone est déplaçable
+- `no-drag` - La zone n'est pas déplaçable (même si le parent l'est)
+
+### Exemple complet de barre de titre
+
+```html
+<div class="titlebar">
+    <div class="title">My Application</div>
+    <div class="controls">
+        <button class="minimize">−</button>
+        <button class="maximize">□</button>
+        <button class="close">×</button>
+    </div>
+</div>
+```
+
+```css
+.titlebar {
+    --wails-draggable: drag;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 40px;
+    background: #2c2c2c;
+    color: white;
+    padding: 0 16px;
+}
+
+.title {
+    font-size: 14px;
+    user-select: none;
+}
+
+.controls {
+    display: flex;
+    gap: 8px;
+}
+
+.controls button {
+    --wails-draggable: no-drag;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.controls button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.controls .close:hover {
+    background: #e81123;
+}
+```
+
+**JavaScript pour les boutons :**
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+document.querySelector('.minimize').addEventListener('click', () => Window.Minimise())
+document.querySelector('.maximize').addEventListener('click', () => Window.Maximise())
+document.querySelector('.close').addEventListener('click', () => Window.Close())
+```
+
+## Boutons système
+
+### Implémentation de Fermer/Réduire/Agrandir
+
+**Côté Go :**
+
+```go
+type WindowControls struct {
+    window *application.WebviewWindow
+}
+
+func (wc *WindowControls) Minimise() {
+    wc.window.Minimise()
+}
+
+func (wc *WindowControls) Maximise() {
+    if wc.window.IsMaximised() {
+        wc.window.UnMaximise()
+    } else {
+        wc.window.Maximise()
+    }
+}
+
+func (wc *WindowControls) Close() {
+    wc.window.Close()
+}
+```
+
+**Côté JavaScript :**
+
+```javascript
+import { Minimise, Maximise, Close } from './bindings/WindowControls'
+
+document.querySelector('.minimize').addEventListener('click', Minimise)
+document.querySelector('.maximize').addEventListener('click', Maximise)
+document.querySelector('.close').addEventListener('click', Close)
+```
+
+**Ou utilisez les méthodes du runtime :**
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+document.querySelector('.minimize').addEventListener('click', () => Window.Minimise())
+document.querySelector('.maximize').addEventListener('click', () => Window.Maximise())
+document.querySelector('.close').addEventListener('click', () => Window.Close())
+```
+
+### Basculer l'état Agrandir
+
+Suivez l'état d'agrandissement pour l'icône du bouton :
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+async function toggleMaximise() {
+    const isMaximised = await Window.IsMaximised()
+
+    if (isMaximised) {
+        await Window.Restore()
+    } else {
+        await Window.Maximise()
+    }
+
+    updateMaximiseButton()
+}
+
+async function updateMaximiseButton() {
+    const isMaximised = await Window.IsMaximised()
+    const button = document.querySelector('.maximize')
+    button.textContent = isMaximised ? '❐' : '□'
+}
+```
+
+## Poignées de redimensionnement
+
+### Redimensionnement basé sur CSS
+
+Wails fournit des poignées de redimensionnement automatiques pour les fenêtres sans bordure :
+
+```css
+/* Activer le redimensionnement sur tous les bords */
+body {
+    --wails-resize: all;
+}
+
+/* Ou sur des bords spécifiques */
+.resize-top {
+    --wails-resize: top;
+}
+
+.resize-bottom {
+    --wails-resize: bottom;
+}
+
+.resize-left {
+    --wails-resize: left;
+}
+
+.resize-right {
+    --wails-resize: right;
+}
+
+/* Coins */
+.resize-top-left {
+    --wails-resize: top-left;
+}
+
+.resize-top-right {
+    --wails-resize: top-right;
+}
+
+.resize-bottom-left {
+    --wails-resize: bottom-left;
+}
+
+.resize-bottom-right {
+    --wails-resize: bottom-right;
+}
+```
+
+**Valeurs :**
+- `all` - Redimensionnement depuis tous les bords
+- `top`, `bottom`, `left`, `right` - Bords spécifiques
+- `top-left`, `top-right`, `bottom-left`, `bottom-right` - Coins
+- `none` - Pas de redimensionnement
+
+### Exemple de poignée de redimensionnement
+
+```html
+<div class="window">
+    <div class="titlebar">...</div>
+    <div class="content">...</div>
+    <div class="resize-handle resize-bottom-right"></div>
+</div>
+```
+
+```css
+.resize-handle {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+}
+
+.resize-bottom-right {
+    --wails-resize: bottom-right;
+    bottom: 0;
+    right: 0;
+    cursor: nwse-resize;
+}
+```
+
+## Comportement spécifique à la plateforme
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+    **Fenêtres sans bordure Windows :**
+    
+    ```go
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Frameless: true,
+        Windows: application.WindowsOptions{
+            DisableFramelessWindowDecorations: false,
+        },
+    })
+    ```
+    
+    **Fonctionnalités :**
+    - Ombre portée automatique
+    - Prise en charge des mises en page d'ancrage (Windows 11)
+    - Prise en charge d'Aero Snap
+    - Mise à l'échelle DPI
+    
+    **Désactiver les décorations :**
+    ```go
+    Windows: application.WindowsOptions{
+        DisableFramelessWindowDecorations: true,
+    },
+    ```
+    
+    **Snap Assist :**
+    ```go
+    // Déclencher Snap Assist sous Windows 11
+    window.SnapAssist()
+    ```
+    
+    **Hauteur de barre de titre personnalisée :**
+    Windows détecte automatiquement les zones de glissement depuis le CSS.
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **Fenêtres sans bordure macOS :**
+    
+    ```go
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Frameless: true,
+        Mac: application.MacOptions{
+            TitleBarAppearsTransparent: true,
+            InvisibleTitleBarHeight:    40,
+        },
+    })
+    ```
+    
+    **Fonctionnalités :**
+    - Support natif du plein écran
+    - Boutons de trafic (optionnel)
+    - Effets de vivacité
+    - Barre de titre transparente
+    
+    **Masquer les boutons de trafic :**
+    ```go
+    Mac: application.MacOptions{
+        TitleBarStyle: application.MacTitleBarStyleHidden,
+    },
+    ```
+    
+    **Barre de titre invisible :**Permet de faire glisser la fenêtre tout en masquant la barre de titre. Cela ne prend effet que lorsque la fenêtre est sans bordure ou utilise `AppearsTransparent` :
+```go
+Mac: application.MacOptions{
+    InvisibleTitleBarHeight: 40,
+},
+```
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **Fenêtres sans bordure sous Linux :**
+    
+    ```go
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Frameless: true,
+    })
+    ```
+    
+    **Fonctionnalités :**
+    - Support de base des fenêtres sans bordure
+    - Zones de glissement CSS
+    - Varie selon l'environnement de bureau
+    
+    **Notes sur l'environnement de bureau :**
+    - **GNOME :** Bon support
+    - **KDE Plasma :** Bon support
+    - **XFCE :** Support de base
+    - **Gestionnaires de fenêtres en tuiles (Tiling WMs) :** Support limité
+    
+    **Compositaire requis :**
+    La transparence nécessite un compositaire (la plupart des environnements de bureau modernes en ont un).
+  </TabItem>
+</Tabs>
+
+## Modèles courants
+
+### Modèle 1 : Barre de titre moderne
+
+```html
+<div class="modern-titlebar">
+    <div class="app-icon">
+        <img src="/icon.png" alt="App Icon">
+    </div>
+    <div class="title">My Application</div>
+    <div class="controls">
+        <button class="minimize">−</button>
+        <button class="maximize">□</button>
+        <button class="close">×</button>
+    </div>
+</div>
+```
+
+```css
+.modern-titlebar {
+    --wails-draggable: drag;
+    display: flex;
+    align-items: center;
+    height: 40px;
+    background: linear-gradient(to bottom, #3a3a3a, #2c2c2c);
+    border-bottom: 1px solid #1a1a1a;
+    padding: 0 16px;
+}
+
+.app-icon {
+    --wails-draggable: no-drag;
+    width: 24px;
+    height: 24px;
+    margin-right: 12px;
+}
+
+.title {
+    flex: 1;
+    font-size: 13px;
+    color: #e0e0e0;
+    user-select: none;
+}
+
+.controls {
+    display: flex;
+    gap: 1px;
+}
+
+.controls button {
+    --wails-draggable: no-drag;
+    width: 46px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: #e0e0e0;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.controls button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.controls .close:hover {
+    background: #e81123;
+    color: white;
+}
+```
+
+### Modèle 2 : Écran de démarrage (Splash Screen)
+
+```go
+splash := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "Loading...",
+    Width:          400,
+    Height:         300,
+    Frameless:      true,
+    AlwaysOnTop:    true,
+    BackgroundType: application.BackgroundTypeTransparent,
+})
+```
+
+```css
+body {
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.splash {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    padding: 40px;
+    text-align: center;
+}
+```
+
+### Modèle 3 : Fenêtre arrondie
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless:      true,
+    BackgroundType: application.BackgroundTypeTransparent,
+})
+```
+
+```css
+body {
+    background: transparent;
+    margin: 8px;
+}
+
+.window {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    height: calc(100vh - 16px);
+}
+
+.titlebar {
+    --wails-draggable: drag;
+    background: #f5f5f5;
+    border-bottom: 1px solid #e0e0e0;
+}
+```
+
+### Modèle 4 : Fenêtre superposée (Overlay)
+
+```go
+overlay := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless:      true,
+    AlwaysOnTop:    true,
+    BackgroundType: application.BackgroundTypeTransparent,
+})
+```
+
+```css
+body {
+    background: transparent;
+}
+
+.overlay {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    padding: 20px;
+}
+```
+
+## Exemple complet
+
+Voici une fenêtre sans bordure prête pour la production :
+
+**Go :**
+
+```go
+package main
+
+import (
+    _ "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Frameless App",
+    })
+
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:     "Frameless Application",
+        Width:     1000,
+        Height:    700,
+        MinWidth:  800,
+        MinHeight: 600,
+        Frameless: true,
+        
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+        
+        Mac: application.MacOptions{
+            TitleBarAppearsTransparent: true,
+            InvisibleTitleBarHeight:    40,
+        },
+        
+        Windows: application.WindowsOptions{
+            DisableFramelessWindowDecorations: false,
+        },
+    })
+
+    window.Center()
+    window.Show()
+
+    app.Run()
+}
+```
+
+**HTML :**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="window">
+        <div class="titlebar">
+            <div class="title">Frameless Application</div>
+            <div class="controls">
+                <button class="minimize" title="Minimise">−</button>
+                <button class="maximize" title="Maximise">□</button>
+                <button class="close" title="Close">×</button>
+            </div>
+        </div>
+        <div class="content">
+            <h1>Hello from Frameless Window!</h1>
+        </div>
+    </div>
+    <script src="/main.js" type="module"></script>
+</body>
+</html>
+```
+
+**CSS :**
+
+```css
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f5f5;
+}
+
+.window {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.titlebar {
+    --wails-draggable: drag;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 40px;
+    background: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 0 16px;
+}
+
+.title {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    user-select: none;
+}
+
+.controls {
+    display: flex;
+    gap: 8px;
+}
+
+.controls button {
+    --wails-draggable: no-drag;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: #666;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.controls button:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.controls .close:hover {
+    background: #e81123;
+    color: white;
+}
+
+.content {
+    flex: 1;
+    padding: 40px;
+    overflow: auto;
+}
+```
+
+**JavaScript :**
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+// Minimise button
+document.querySelector('.minimize').addEventListener('click', () => {
+    Window.Minimise()
+})
+
+// Maximise/restore button
+const maximiseBtn = document.querySelector('.maximize')
+maximiseBtn.addEventListener('click', async () => {
+    const isMaximised = await Window.IsMaximised()
+
+    if (isMaximised) {
+        await Window.Restore()
+    } else {
+        await Window.Maximise()
+    }
+
+    updateMaximiseButton()
+})
+
+// Close button
+document.querySelector('.close').addEventListener('click', () => {
+    Window.Close()
+})
+
+// Update maximise button icon
+async function updateMaximiseButton() {
+    const isMaximised = await Window.IsMaximised()
+    maximiseBtn.textContent = isMaximised ? '❐' : '□'
+    maximiseBtn.title = isMaximised ? 'Restore' : 'Maximise'
+}
+
+// Initial state
+updateMaximiseButton()
+```
+
+## Bonnes pratiques
+
+### ✅ À faire
+
+- **Fournir une zone de glissement** - Les utilisateurs ont besoin de pouvoir déplacer la fenêtre
+- **Implémenter les boutons système** - Fermer, minimiser, maximiser
+- **Définir une taille minimale** - Éviter des mises en page inutilisables
+- **Tester sur toutes les plateformes** - Le comportement varie
+- **Utiliser CSS pour les zones de glissement** - Flexible et maintenable
+- **Fournir un retour visuel** - États au survol sur les boutons
+
+### ❌ À ne pas faire
+
+- **Ne pas oublier les poignées de redimensionnement** - Si la fenêtre est redimensionnable
+- **Ne pas rendre toute la fenêtre déplaçable** - Cela empêche l'interaction
+- **Ne pas oublier `no-drag` sur les boutons** - Ils ne fonctionneront pas---
+
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez [l'exemple frameless](https://github.com/wailsapp/wails/tree/master/v3/examples/frameless).

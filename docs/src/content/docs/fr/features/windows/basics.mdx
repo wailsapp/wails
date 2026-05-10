@@ -1,0 +1,417 @@
+---
+title: Les bases des fenêtres
+description: Création et gestion des fenêtres d'application dans Wails
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## Gestion des fenêtres
+
+Wails fournit une **API de gestion des fenêtres unifiée** qui fonctionne sur toutes les plateformes. Créez des fenêtres, contrôlez leur comportement et gérez plusieurs fenêtres avec un contrôle total sur la création, l'apparence, le comportement et le cycle de vie.
+
+## Démarrage rapide
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    // Create a window
+    window := app.Window.New()
+    
+    // Configure it
+    window.SetTitle("Hello Wails")
+    window.SetSize(800, 600)
+    window.Center()
+    
+    // Show it
+    window.Show()
+
+    app.Run()
+}
+```
+
+**C'est tout !** Vous disposez d'une fenêtre multiplateforme.
+
+## Création des fenêtres
+
+### Fenêtre de base
+
+La manière la plus simple de créer une fenêtre :
+
+```go
+window := app.Window.New()
+```
+
+**Ce que vous obtenez :**
+- Taille par défaut (800x600)
+- Titre par défaut (nom de l'application)
+- WebView prêt pour votre interface frontend
+- Apparence native à la plateforme
+
+### Fenêtre avec options
+
+Créez une fenêtre avec une configuration personnalisée :
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My Application",
+    Width:  1200,
+    Height: 800,
+    X:      100,   // Position from left
+    Y:      100,   // Position from top
+    AlwaysOnTop: false,
+    Frameless: false,
+    Hidden: false,
+    MinWidth: 400,
+    MinHeight: 300,
+    MaxWidth: 1920,
+    MaxHeight: 1080,
+})
+```
+
+**Options courantes :**
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `Title` | `string` | Titre de la fenêtre |
+| `Width` | `int` | Largeur de la fenêtre en pixels |
+| `Height` | `int` | Hauteur de la fenêtre en pixels |
+| `X` | `int` | Position X (à partir de la gauche) |
+| `Y` | `int` | Position Y (à partir du haut) |
+| `AlwaysOnTop` | `bool` | Garder la fenêtre au-dessus des autres |
+| `Frameless` | `bool` | Supprimer la barre de titre et les bordures |
+| `Hidden` | `bool` | Démarrer masqué |
+| `MinWidth` | `int` | Largeur minimale |
+| `MinHeight` | `int` | Hauteur minimale |
+| `MaxWidth` | `int` | Largeur maximale |
+| `MaxHeight` | `int` | Hauteur maximale |
+
+**Voir [Options de fenêtre](/fr/features/windows/options) pour la liste complète.**
+
+### Fenêtres nommées
+
+Attribuez des noms aux fenêtres pour une récupération facile :
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:  "main-window",
+    Title: "Main Application",
+})
+
+// Later, find it by name
+mainWindow := app.GetWindowByName("main-window")
+if mainWindow != nil {
+    mainWindow.Show()
+}
+```
+
+**Cas d'utilisation :**
+- Plusieurs fenêtres (principale, paramètres, à propos)
+- Recherche de fenêtres depuis différentes parties de votre code
+- Communication entre fenêtres
+
+## Contrôle des fenêtres
+
+### Afficher et masquer
+
+```go
+// Show window
+window.Show()
+
+// Hide window
+window.Hide()
+
+// Check if visible
+if window.IsVisible() {
+    fmt.Println("Window is visible")
+}
+```
+
+**Cas d'utilisation :**
+- Écrans de démarrage (afficher, puis masquer)
+- Fenêtres de paramètres (masquer lorsqu'elles ne sont pas nécessaires)
+- Fenêtres contextuelles (afficher à la demande)
+
+### Position et taille
+
+```go
+// Set size
+window.SetSize(1024, 768)
+
+// Set position
+window.SetPosition(100, 100)
+
+// Centre on screen
+window.Center()
+
+// Get current size
+width, height := window.Size()
+
+// Get current position
+x, y := window.Position()
+```
+
+**Système de coordonnées :**
+- (0, 0) est le coin supérieur gauche de l'écran principal
+- X positif va vers la droite
+- Y positif va vers le bas
+
+### État de la fenêtre
+
+```go
+// Minimise
+window.Minimise()
+
+// Maximise
+window.Maximise()
+
+// Fullscreen
+window.Fullscreen()
+
+// Restore to normal
+window.Restore()
+
+// Check state
+if window.IsMinimised() {
+    fmt.Println("Window is minimised")
+}
+
+if window.IsMaximised() {
+    fmt.Println("Window is maximised")
+}
+
+if window.IsFullscreen() {
+    fmt.Println("Window is fullscreen")
+}
+```
+
+**Transitions d'état :**
+
+```
+Normal ←→ Minimised
+Normal ←→ Maximised
+Normal ←→ Fullscreen
+```
+
+### Titre et apparence
+
+```go
+// Set title
+window.SetTitle("My Application - Document.txt")
+
+// Set background colour
+window.SetBackgroundColour(0, 0, 0, 255) // RGBA
+
+// Set always on top
+window.SetAlwaysOnTop(true)
+
+// Set resizable
+window.SetResizable(false)
+```
+
+### Fermeture des fenêtres
+
+```go
+// Close window
+window.Close()
+
+// Destroy window (force close)
+window.Destroy()
+```
+
+**Différence :**
+- `Close()` - Déclenche l'événement de fermeture, peut être annulé
+- `Destroy()` - Destruction immédiate, ne peut pas être annulé
+
+## Recherche des fenêtres
+
+### Par nom
+
+```go
+window := app.GetWindowByName("settings")
+if window != nil {
+    window.Show()
+}
+```
+
+### Par ID
+
+Chaque fenêtre possède un ID unique :
+
+```go
+id := window.ID()
+fmt.Printf("Window ID: %d\n", id)
+
+// Find by ID
+foundWindow := app.GetWindowByID(id)
+```
+
+### Fenêtre actuelle
+
+Obtenez la fenêtre actuellement focusnée :
+
+```go
+current := app.Window.Current()
+if current != nil {
+    current.SetTitle("Active Window")
+}
+```
+
+### Toutes les fenêtres
+
+Obtenez toutes les fenêtres :
+
+```go
+windows := app.Window.GetAll()
+fmt.Printf("Total windows: %d\n", len(windows))
+
+for _, w := range windows {
+    fmt.Printf("Window: %s (ID: %d)\n", w.Name(), w.ID())
+}
+```
+
+## Cycle de vie des fenêtres
+
+### Création
+
+```go
+app.OnWindowCreation(func(window *application.WebviewWindow) {
+    fmt.Printf("Window created: %s\n", window.Name())
+    
+    // Configure new windows
+    window.SetMinSize(400, 300)
+})
+```
+
+### Fermeture
+
+```go
+window.OnClose(func() bool {
+    // Return false to cancel close
+    // Return true to allow close
+    
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        return result == "yes"
+    }
+    return true
+})
+```
+
+**Important :** `OnClose` ne fonctionne que pour les fermetures initiées par l'utilisateur (clic sur le bouton X). Il n'empêche pas `window.Destroy()`.
+
+### Destruction
+
+```go
+window.OnDestroy(func() {
+    fmt.Println("Window destroyed")
+    // Cleanup resources
+})
+```
+
+## Plusieurs fenêtres
+
+### Création de plusieurs fenêtres
+
+```go
+// Main window
+mainWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "main",
+    Title:  "Main Application",
+    Width:  1200,
+    Height: 800,
+})
+
+// Settings window
+settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "settings",
+    Title:  "Settings",
+    Width:  600,
+    Height: 400,
+    Hidden: true,  // Start hidden
+})
+
+// Show settings when needed
+settingsWindow.Show()
+```
+
+### Communication entre fenêtres
+
+Les fenêtres peuvent communiquer via des événements :
+
+```go
+// In main window
+app.Event.Emit("data-updated", map[string]interface{}{
+    "value": 42,
+})
+
+// In settings window
+app.Event.On("data-updated", func(event *application.WailsEvent) {
+    data := event.Data.(map[string]interface{})
+    value := data["value"].(int)
+    fmt.Printf("Received: %d\n", value)
+})
+```
+
+**Voir [Événements](/fr/features/events/system) pour plus d'informations.**
+
+### Fenêtres parent-enfant
+
+```go
+// Create child window
+childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "Child Window",
+    Parent: mainWindow,  // Set parent
+})
+```
+
+**Comportement :**
+- L'enfant se ferme lorsque le parent se ferme
+- L'enfant reste au-dessus du parent (sur certaines plateformes)
+- L'enfant se minimise avec le parent (sur certaines plateformes)
+
+**Support des plateformes :**
+- **macOS :** Support complet
+- **Windows :** Support partiel
+- **Linux :** Varie selon l'environnement de bureau
+
+## Fonctionnalités spécifiques à la plateforme
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+    **Fonctionnalités spécifiques à Windows :**
+    
+    ```go
+    // Flash taskbar button
+    window.Flash(true)  // Start flashing
+    window.Flash(false) // Stop flashing
+    
+    // Trigger Windows 11 Snap Assist (Win+Z)
+    window.SnapAssist()
+    
+    // Set window icon
+    window.SetIcon(iconBytes)
+    ```
+    
+    **Snap Assist :**
+    Affiche les options de disposition de capture de Windows 11 pour la fenêtre.
+    
+    **Clignotement de la barre des tâches :**
+    Utile pour les notifications lorsque la fenêtre est minimisée.
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **Fonctionnalités spécifiques à macOS :**
+
+    ```go
+    // Transparent title bar---
+
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de fenêtres](https://github.com/wailsapp/wails/tree/master/v3/examples).

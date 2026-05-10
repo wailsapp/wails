@@ -1,0 +1,116 @@
+---
+title: Gestion des panics
+description: Comment gérer les panics dans votre application Wails
+---
+
+Dans les applications Go, des panics peuvent survenir lors de l'exécution lorsqu'un événement inattendre se produit. Ce guide explique comment gérer les panics, tant dans le code Go général que spécifiquement dans votre application Wails.
+
+## Comprendre les panics en Go
+
+Avant d'aborder la gestion des panics spécifique à Wails, il est essentiel de comprendre comment fonctionnent les panics en Go :
+
+1. Les panics sont destinées aux erreurs irrécupérables qui ne devraient pas se produire lors d'un fonctionnement normal.
+2. Lorsqu'une panic se produit dans un goroutine, seul ce goroutine est affecté.
+3. Les panics peuvent être récupérées en utilisant `defer` et `recover()`.
+
+Voici un exemple basique de gestion des panics en Go :
+
+```go
+func doSomething() {
+    // Les fonctions différées s'exécutent même lorsqu'une panic se produit
+    defer func() {
+        if r := recover(); r != nil {
+            fmt.Printf("Recovered from panic: %v\n", r)
+        }
+    }()
+    
+    // Votre code qui pourrait provoquer une panic
+    panic("something went wrong")
+}
+```
+
+Pour plus d'informations détaillées sur les panics et recover en Go, consultez le [Blog Go : Defer, Panic, and Recover](https://go.dev/blog/defer-panic-and-recover).
+
+## Gestion des panics dans Wails
+
+Wails gère automatiquement les panics qui se produisent dans vos méthodes de Service lorsqu'elles sont appelées depuis le frontend. Cela signifie que vous n'avez pas besoin d'ajouter de récupération de panic à ces méthodes ; Wails interceptera la panic et la traitera via votre gestionnaire de panics configuré.
+
+Le gestionnaire de panics est spécifiquement conçu pour intercepter :
+- Les panics dans les méthodes de service liées appelées depuis le frontend
+- Les panics internes du runtime Wails
+
+Pour d'autres scénarios, tels que les goroutines en arrière-plan ou le code Go autonome, vous devez gérer les panics vous-même en utilisant les mécanismes standard de récupération de panics de Go.
+
+## La structure PanicDetails
+
+Lorsqu'une panic se produit, Wails capture des informations importantes sur celle-ci dans une structure `PanicDetails` :
+
+```go
+type PanicDetails struct {
+    StackTrace     string    // La trace de la pile à l'endroit où la panic s'est produite. Potentiellement tronquée pour fournir plus de contexte
+    Error          error     // L'erreur qui a causé la panic
+    Time           time.Time // L'heure à laquelle la panic s'est produite
+    FullStackTrace string    // La trace de la pile complète incluant les frames du runtime
+}
+```
+
+Cette structure fournit des informations complètes sur la panic :
+- `StackTrace` : Une chaîne formatée montrant la pile d'appels ayant conduit à la panic
+- `Error` : L'erreur ou le message de panic réel
+- `Time` : L'heure exacte à laquelle la panic s'est produite
+- `FullStackTrace` : La trace de la pile complète incluant les frames du runtime
+
+:::note[Panics dans le code Service]
+
+Lorsque les panics sont interceptées dans votre code Service après avoir été appelées depuis le frontend, la trace de la pile est tronquée pour se concentrer exactement sur l'endroit dans votre code où la panic s'est produite.
+Si vous souhaitez voir la trace de la pile complète, vous pouvez utiliser le champ `FullStackTrace`.
+
+:::
+
+## Gestionnaire de panics par défaut
+
+Si vous ne spécifiez pas de gestionnaire de panics personnalisé, Wails utilisera son gestionnaire par défaut qui affiche les informations d'erreur dans un message de journal formaté, puis quitte.
+Par exemple :
+
+```
+************************ FATAL ******************************
+* There has been a catastrophic failure in your application *
+********************* Error Details *************************
+panic error: oh no! something went wrong deep in my service! :(
+main.(*WindowService).call2
+	at E:/wails/v3/examples/panic-handling/main.go:23
+main.(*WindowService).call1
+	at E:/wails/v3/examples/panic-handling/main.go:19
+main.(*WindowService).GeneratePanic
+	at E:/wails/v3/examples/panic-handling/main.go:15
+*************************************************************
+```
+
+## Gestionnaire de panics personnalisé
+
+Vous pouvez implémenter votre propre gestionnaire de panics en définissant l'option `PanicHandler` lors de la création de votre application. Voici un exemple :
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    PanicHandler: func(panicDetails *application.PanicDetails) {
+        fmt.Printf("*** Custom Panic Handler ***\n")
+        fmt.Printf("Time: %s\n", panicDetails.Time)
+        fmt.Printf("Error: %s\n", panicDetails.Error)
+        fmt.Printf("Stacktrace: %s\n", panicDetails.StackTrace)
+        fmt.Printf("Full Stacktrace: %s\n", panicDetails.FullStackTrace)
+        
+        // Vous pouvez également :
+        // - Journaliser dans un fichier
+        // - Envoyer à un service de rapport de plantage
+        // - Afficher une boîte de dialogue d'erreur conviviale pour l'utilisateur
+        // - Tenter de récupérer ou de redémarrer l'application
+    },
+})
+```
+
+Pour un exemple complet et fonctionnel de gestion des panics dans une application Wails, consultez l'exemple panic-handling dans `v3/examples/panic-handling`.
+
+## Notes finales
+
+N'oubliez pas que le gestionnaire de panics de Wails est spécifiquement destiné à gérer les panics dans les méthodes liées et les erreurs internes du runtime. Pour les autres parties de votre application, vous devez utiliser les modèles de gestion d'erreurs standard de Go et les mécanismes de récupération de panics là où cela est approprié. Comme pour toutes les applications Go, il est préférable de prévenir les panics par une gestion d'erreurs appropriée lorsque cela est possible.
