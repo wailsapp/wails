@@ -20,6 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Migrate Vite dev server port configuration to environment variables in [PR](https://github.com/wailsapp/wails/pull/5365) by @leaanthony
 - Configure Vite dev server to bind to 127.0.0.1 in all templates in [PR](https://github.com/wailsapp/wails/pull/5361) by @leaanthony
 - Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5384) by @github-actions[bot]
 
