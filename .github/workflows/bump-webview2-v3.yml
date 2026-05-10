@@ -1,0 +1,62 @@
+name: Bump webview2 in v3
+
+on:
+  repository_dispatch:
+    types: [bump-webview2-v3]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'webview2 version to bump to (e.g., v1.0.24)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    env:
+      GOWORK: "off"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache: true
+          cache-dependency-path: "v3/go.sum"
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            VERSION="${{ github.event.client_payload.version }}"
+          else
+            VERSION="${{ inputs.version }}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Bumping webview2 to version: $VERSION"
+
+      - name: Update v3 go.mod
+        working-directory: v3
+        run: |
+          go get github.com/wailsapp/wails/webview2@${{ steps.version.outputs.version }}
+          go mod tidy
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: bump/webview2-${{ steps.version.outputs.version }}
+          title: "chore(v3): bump webview2 to ${{ steps.version.outputs.version }}"
+          body: |
+            Bumps webview2 to version ${{ steps.version.outputs.version }}
+
+            Triggered by release-webview2 workflow.
+          commit-message: "chore(v3): bump webview2 to ${{ steps.version.outputs.version }}"
+          labels: dependencies, v3

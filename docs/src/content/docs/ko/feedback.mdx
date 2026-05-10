@@ -1,0 +1,84 @@
+---
+title: v3 Alpha 피드백
+description: Wails v3에 대한 피드백 제공 및 이슈 보고 방법
+sidebar:
+  order: 40
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+저희는 여러분의 피드백을 환영하며(그리고 권장합니다)! 새로운 티켓이나 게시물을 작성하기 전에 기존 티켓이나 게시물을 검색해 주세요. 피드백을 제공하는 다양한 방법은 다음과 같습니다:
+
+<Tabs>
+  <TabItem label="버그" icon="error">
+
+    버그를 발견하셨다면 Discord의 [v3 Alpha Feedback](https://discord.gg/bdj28QNHmT) 채널에 게시해 알려주세요.
+
+    - 게시물에는 버그가 무엇인지 명확히 명시하고, 단순하게 재현 가능한 예제를 포함해야 합니다. 문서에서 *무엇이* 발생해야 하는지 불분명한 경우, 그 부분을 게시물에 포함해 주세요.
+    - 게시물에는 `Bug` 태그를 붙여 주세요.
+    - 게시물에 `wails doctor`의 출력 결과를 포함해 주세요.
+    - 버그가 현재 문서와 일치하지 않는 동작(예: 창이 제대로 리사이즈되지 않음)인 경우, 다음을 수행해 주세요:
+      - `v3/example` 디렉토리의 기존 예제를 업데이트하거나 `v3/examples` 폴더에 이슈를 명확히 보여주는 새로운 예제를 생성하세요.
+      - 제목이 `[v3 alpha test] <버그 설명>`인 [PR](https://github.com/wailsapp/wails/pulls)을 열어 주세요.
+      - 게시물에 PR 링크를 포함해 주세요.
+
+    :::caution
+
+    _기억하세요_, 예상치 못한 동작이 반드시 버그인 것은 아닙니다. 단순히 기대한 대로 동작하지 않을 뿐일 수 있습니다. 이 경우 `Suggestions`를 사용해 주세요.
+
+    :::
+
+  </TabItem>
+
+  <TabItem label="수정" icon="approve-check">
+
+    버그 수정이나 문서 업데이트가 있는 경우, 다음을 수행해 주세요:
+
+    - [Wails 저장소](https://github.com/wailsapp/wails)에서 풀 리퀘스트를 열어 주세요. PR 제목은 `[v3 alpha]`로 시작해야 합니다.
+    - [v3 Alpha Feedback](https://discord.gg/bdj28QNHmT) 채널에 게시물을 생성하세요.
+    - 게시물에는 `PR` 태그를 붙여 주세요.
+    - 게시물에 PR 링크를 포함해 주세요.
+
+  </TabItem>
+
+  <TabItem label="제안" icon="puzzle" id="abc">
+
+    제안 사항이 있다면 Discord의 [v3 Alpha Feedback](https://discord.gg/bdj28QNHmT) 채널에 게시해 알려주세요:
+
+    - 게시물에는 `Suggestion` 태그를 붙여 주세요.
+
+    궁금한 점이 있으시면 [Discord](https://discord.gg/bdj28QNHmT)로 언제든지 연락해 주세요.
+
+  </TabItem>
+
+  <TabItem label="추천(Upvoting)" icon="star">
+
+    - 게시물은 :thumbsup: 이모지를 사용하여 "추천"할 수 있습니다. 귀하에게 우선순위가 있는 게시물에 추천을 부여해 주세요.
+    - "+1"이나 "나도요"와 같은 댓글만 추가하지 *마세요*.
+    - 게시물에 추가할 내용이 있는 경우(예: "이 버그는 ARM 빌드에도 영향을 미칩니다" 또는 "다른 옵션은 .....입니다") 댓글을 자유롭게 남겨 주세요.
+
+  </TabItem>
+
+</Tabs>
+
+알려진 이슈 목록과 진행 중인 작업은 [여기](https://github.com/orgs/wailsapp/projects/6)에서 확인할 수 있습니다.
+
+## 피드백을 원하는 항목
+
+- API
+  - 사용하기 쉬운가요?
+  - 기대한 대로 동작하나요?
+  - 누락된 부분이 있나요?
+  - 제거되어야 할 부분이 있나요?
+  - Go와 JS 간에 일관성이 있나요?
+- 빌드 시스템
+  - 사용하기 쉬운가요?
+  - 개선할 수 있을까요?
+- 예제
+  - 명확한가요?
+  - 기본 사항을 다루고 있나요?
+- 기능
+  - 어떤 기능이 누락되었나요?
+  - 어떤 기능이 필요 없나요?
+- 문서
+  - 무엇을 더 명확하게 할 수 있을까요?

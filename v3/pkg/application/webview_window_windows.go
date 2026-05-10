@@ -14,14 +14,14 @@ import (
 	"unsafe"
 
 	"github.com/bep/debounce"
-	"github.com/wailsapp/go-webview2/webviewloader"
+	"github.com/wailsapp/wails/webview2/webviewloader"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/internal/sliceutil"
 
-	"github.com/wailsapp/go-webview2/pkg/edge"
+	"github.com/wailsapp/wails/webview2/pkg/edge"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
 )
@@ -75,6 +75,12 @@ type windowsWebviewWindow struct {
 	// isMinimizing indicates whether the window is currently being minimized
 	// Used to prevent unnecessary redraws during minimize/restore operations
 	isMinimizing bool
+
+	// lastSizeWParam is the wParam from the most-recent WM_SIZE message.
+	// Gate the dark-menubar force-repaint on a state transition so it does not fire
+	// on every SIZE_RESTORED during live drag-resize. WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE
+	// cannot be used for this because keyboard snap (Win+Left) bypasses those messages.
+	lastSizeWParam uintptr
 
 	// menubarTheme is the theme for the menubar
 	menubarTheme *w32.MenuBarTheme
@@ -362,10 +368,11 @@ func (w *windowsWebviewWindow) run() {
 	if options.AlwaysOnTop {
 		exStyle |= w32.WS_EX_TOPMOST
 	}
-	// If we're frameless, we need to add the WS_EX_TOOLWINDOW style to hide the window from the taskbar
+	// WS_EX_TOOLWINDOW hides the window from the taskbar without blocking keyboard focus.
+	// WS_EX_NOACTIVATE (previously used here) prevents the window from being activated,
+	// which blocks keyboard focus and causes click-through issues after Win+D or Alt+Tab.
 	if options.Windows.HiddenOnTaskbar {
-		//exStyle |= w32.WS_EX_TOOLWINDOW
-		exStyle |= w32.WS_EX_NOACTIVATE
+		exStyle |= w32.WS_EX_TOOLWINDOW
 	} else {
 		exStyle |= w32.WS_EX_APPWINDOW
 	}
@@ -702,6 +709,13 @@ func (w *windowsWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
 		w32.SWP_NOZORDER|w32.SWP_NOACTIVATE,
 	)
 	w.ignoreDPIChangeResizing = previousFlag
+
+	// For WS_EX_LAYERED windows (frameless+transparent or IgnoreMouseEvents), the hit-test
+	// region is not updated by SetWindowPos alone. Calling SetLayeredWindowAttributes refreshes
+	// the layered region so that the full new window area responds to mouse events.
+	if exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE); exStyle&w32.WS_EX_LAYERED != 0 {
+		w32.SetLayeredWindowAttributes(w.hwnd, 0, 255, w32.LWA_ALPHA)
+	}
 }
 
 // Get window dip bounds
@@ -867,7 +881,9 @@ func (w *windowsWebviewWindow) unminimise() {
 
 func (w *windowsWebviewWindow) maximise() {
 	w32.ShowWindow(w.hwnd, w32.SW_MAXIMIZE)
-	w.chromium.Focus()
+	if w.chromium.GetController() != nil {
+		w.chromium.Focus()
+	}
 }
 
 func (w *windowsWebviewWindow) unmaximise() {
@@ -877,7 +893,9 @@ func (w *windowsWebviewWindow) unmaximise() {
 
 func (w *windowsWebviewWindow) restore() {
 	w32.ShowWindow(w.hwnd, w32.SW_RESTORE)
-	w.chromium.Focus()
+	if w.chromium.GetController() != nil {
+		w.chromium.Focus()
+	}
 }
 
 func (w *windowsWebviewWindow) fullscreen() {
@@ -924,7 +942,9 @@ func (w *windowsWebviewWindow) fullscreen() {
 	// Hide the menubar in fullscreen mode
 	w32.SetMenu(w.hwnd, 0)
 
-	w.chromium.Focus()
+	if w.chromium.GetController() != nil {
+		w.chromium.Focus()
+	}
 	w.parent.emit(events.Windows.WindowFullscreen)
 }
 
@@ -994,6 +1014,14 @@ func (w *windowsWebviewWindow) focus() {
 	}
 	if w.isMinimised() {
 		w.unminimise()
+	}
+
+	// Guard against calling Focus when the WebView2 controller is not yet
+	// initialized or has already been torn down (e.g. during dev hot-reload).
+	// go-webview2's Focus() calls os.Exit(1) on any MoveFocus error, so we
+	// must not call it when the controller is in a nil/invalid state.
+	if w.chromium.GetController() == nil {
+		return
 	}
 
 	w.focusingChromium = true
@@ -1581,10 +1609,8 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			}
 			w.isMinimizing = false
 			w.parent.emit(events.Windows.WindowMaximise)
-			// Force complete redraw when maximized
 			if w.menu != nil && w.menubarTheme != nil {
-				// Invalidate the entire window to force complete redraw
-				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE|w32.RDW_UPDATENOW)
+				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE)
 			}
 		case w32.SIZE_RESTORED:
 			if w.isMinimizing {
@@ -1592,10 +1618,19 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			}
 			w.isMinimizing = false
 			w.parent.emit(events.Windows.WindowRestore)
+			// Repaint the dark menubar only when leaving a maximized/snapped state.
+			// SIZE_RESTORED fires on every WM_SIZE during live drag-resize; gating on the
+			// previous state avoids per-frame invalidations and the associated flicker.
+			// WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE cannot guard this because keyboard snap
+			// (Win+Left) bypasses those messages entirely.
+			if w.lastSizeWParam == w32.SIZE_MAXIMIZED && w.menu != nil && w.menubarTheme != nil {
+				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE)
+			}
 		case w32.SIZE_MINIMIZED:
 			w.isMinimizing = true
 			w.parent.emit(events.Windows.WindowMinimise)
 		}
+		w.lastSizeWParam = wparam
 
 		doResize := func() {
 			// Get the new size from lparam
@@ -1674,6 +1709,10 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				int(newWindowRect.Right-newWindowRect.Left),
 				int(newWindowRect.Bottom-newWindowRect.Top),
 				w32.SWP_NOZORDER|w32.SWP_NOACTIVATE)
+			// Refresh the layered hit-test region after DPI resize, same as setPhysicalBounds.
+			if exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE); exStyle&w32.WS_EX_LAYERED != 0 {
+				w32.SetLayeredWindowAttributes(w.hwnd, 0, 255, w32.LWA_ALPHA)
+			}
 		}
 		w.parent.emit(events.Windows.WindowDPIChanged)
 	}
