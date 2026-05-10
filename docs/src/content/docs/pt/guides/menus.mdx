@@ -1,0 +1,524 @@
+---
+title: Menus
+description: Um guia para criar e personalizar menus no Wails v3
+---
+
+O Wails v3 oferece um poderoso sistema de menus que permite criar menus de aplicativo e menus de contexto. Este guia irá guiá-lo pelas várias funcionalidades e capacidades do sistema de menus.
+
+### Criando um Menu
+
+Para criar um novo menu, use o método `New()` do gerenciador de Menus:
+
+```go
+menu := app.Menu.New()
+```
+
+### Adicionando Itens de Menu
+
+O Wails suporta vários tipos de itens de menu, cada um com um propósito específico:
+
+#### Itens de Menu Regulares
+Itens de menu regulares são os blocos de construção básicos dos menus. Eles exibem texto e podem acionar ações ao serem clicados:
+
+```go
+menuItem := menu.Add("Clique em mim")
+```
+
+#### Caixas de Seleção (Checkboxes)
+Itens de menu com caixa de seleção fornecem um estado alternável, útil para habilitar/desabilitar recursos ou configurações:
+
+```go
+checkbox := menu.AddCheckbox("Minha caixa de seleção", true)  // true = inicialmente marcada
+```
+
+#### Grupos de Opções (Radio Groups)
+Grupos de opções permitem que o usuário selecione uma opção de um conjunto de escolhas mutuamente exclusivas. Eles são criados automaticamente quando itens de opção são colocados lado a lado:
+
+```go
+menu.AddRadio("Opção 1", true)   // true = inicialmente selecionada
+menu.AddRadio("Opção 2", false)
+menu.AddRadio("Opção 3", false)
+```
+
+#### Separadores
+Separadores são linhas horizontais que ajudam a organizar os itens de menu em grupos lógicos:
+
+```go
+menu.AddSeparator()
+```
+
+#### Submenus
+Submenus são menus aninhados que aparecem ao passar o mouse ou clicar em um item de menu. Eles são úteis para organizar estruturas de menu complexas:
+
+```go
+submenu := menu.AddSubmenu("Arquivo")
+submenu.Add("Abrir")
+submenu.Add("Salvar")
+```
+
+#### Combinando menus
+Um menu pode ser adicionado a outro menu anexando-o ou prependendo-o.
+```go
+menu := app.Menu.New()
+menu.Add("Primeiro Menu")
+
+secondaryMenu := app.Menu.New()
+secondaryMenu.Add("Segundo Menu")
+
+// insere 'secondaryMenu' após 'menu'
+menu.Append(secondaryMenu)
+
+// insere 'secondaryMenu' antes de 'menu'
+menu.Prepend(secondaryMenu)
+
+// atualiza o menu
+menu.Update()
+```
+
+:::note
+Por padrão, `prepend` e `append` compartilharão o estado com o menu original. Se você quiser criar um novo menu com seu próprio estado,
+você pode chamar `.Clone()` no menu.
+
+Ex.: `menu.Append(secondaryMenu.Clone())`
+:::
+
+#### Limpando um menu
+Em alguns casos, será melhor construir um menu completamente novo se você estiver trabalhando com uma quantidade variável de itens de menu.
+
+Isso limpará todos os itens de um menu existente e permitirá que você adicione itens novamente.
+
+```go
+menu := app.Menu.New()
+menu.Add("Aguardando atualização...")
+
+// após certa lógica, o menu precisa ser atualizado
+menu.Clear()
+menu.Add("Atualização concluída!")
+menu.Update()
+```
+
+:::note
+Limpar um menu simplesmente limpa os itens de menu no nível superior. Embora os Submenus não sejam visíveis, eles ainda ocuparão memória,
+portanto, certifique-se de gerenciar seus menus com cuidado.
+:::
+
+#### Destruindo um menu
+
+Se você quiser limpar e liberar um menu, use o método `Destroy()`:
+
+```go
+menu := app.Menu.New()
+menu.Add("Aguardando atualização...")
+
+// após certa lógica, o menu precisa ser destruído
+menu.Destroy()
+```
+
+
+### Propriedades do Item de Menu
+
+Os itens de menu possuem várias propriedades que podem ser configuradas:
+
+| Propriedade   | Método                   | Descrição                                         |
+|---------------|--------------------------|---------------------------------------------------|
+| Rótulo        | `SetLabel(string)`       | Define o texto de exibição                        |
+| Habilitado    | `SetEnabled(bool)`       | Habilita/desabilita o item                        |
+| Marcado       | `SetChecked(bool)`       | Define o estado de marcação (para checkboxes/opções) |
+| Dica de Ferramenta | `SetTooltip(string)` | Define o texto da dica de ferramenta              |
+| Oculto        | `SetHidden(bool)`        | Mostra/oculta o item                              |
+| Atalho de Teclado | `SetAccelerator(string)` | Define o atalho de teclado                      |
+
+### Estados do Item de Menu
+
+Os itens de menu podem estar em diferentes estados que controlam sua visibilidade e interatividade:
+
+#### Visibilidade
+
+Os itens de menu podem ser mostrados ou ocultos dinamicamente usando o método `SetHidden()`:
+
+```go
+menuItem := menu.Add("Item Dinâmico")
+
+// Oculta o item de menu
+menuItem.SetHidden(true)
+
+// Mostra o item de menu
+menuItem.SetHidden(false)
+
+// Verifica a visibilidade atual
+isHidden := menuItem.Hidden()
+```
+
+Itens de menu ocultos são completamente removidos do menu até que sejam mostrados novamente. Isso é útil para itens de menu contextuais que devem aparecer apenas em determinados estados do aplicativo.
+
+#### Estado de Habilitação
+
+Os itens de menu podem ser habilitados ou desabilitados usando o método `SetEnabled()`:
+
+```go
+menuItem := menu.Add("Salvar")
+
+// Desabilita o item de menu
+menuItem.SetEnabled(false)  // O item aparece cinza e não pode ser clicado
+
+// Habilita o item de menu
+menuItem.SetEnabled(true)   // O item torna-se clicável novamente
+
+// Verifica o estado de habilitação atual
+isEnabled := menuItem.Enabled()
+```
+
+Itens de menu desabilitados permanecem visíveis, mas aparecem cinza e não podem ser clicados. Isso é comumente usado para indicar que uma ação não está disponível no momento, como:
+- Desabilitar "Salvar" quando não há alterações para salvar
+- Desabilitar "Copiar" quando nada está selecionado
+- Desabilitar "Desfazer" quando não há ação para desfazer
+
+#### Gerenciamento de Estado Dinâmico
+
+Você pode combinar esses estados com manipuladores de eventos para criar menus dinâmicos:
+
+```go
+saveMenuItem := menu.Add("Salvar")
+
+// Inicialmente desabilita o item de menu Salvar
+saveMenuItem.SetEnabled(false)
+
+// Habilita Salvar apenas quando há alterações não salvas
+documentChanged := func() {
+    saveMenuItem.SetEnabled(true)
+    menu.Update()  // Lembre-se de atualizar o menu após alterar os estados
+}
+
+// Desabilita Salvar após salvar
+documentSaved := func() {
+    saveMenuItem.SetEnabled(false)
+    menu.Update()
+}
+```
+
+### Manipulação de Eventos
+
+Os itens de menu podem responder a eventos de clique usando o método `OnClick`:
+
+```go
+menuItem.OnClick(func(ctx *application.Context) {
+    // Manipula o evento de clique
+    println("Item de menu clicado!")
+})
+```
+
+O contexto fornece informações sobre o item de menu clicado:
+
+```go
+menuItem.OnClick(func(ctx *application.Context) {
+    // Obtém o item de menu clicado
+    clickedItem := ctx.ClickedMenuItem()
+    // Obtém seu estado atual
+    isChecked := clickedItem.Checked()
+})
+```
+
+### Itens de Menu Baseados em Funções (Roles)
+
+O Wails fornece um conjunto de funções de menu predefinidas que criam automaticamente itens de menu com funcionalidade padrão. Aqui estão as funções de menu suportadas:
+
+#### Estruturas de Menu Completas
+Essas funções criam estruturas de menu inteiras com funcionalidade comum:
+
+| Função (Role) | Descrição | Notas de Plataforma |
+|---------------|-----------|---------------------|
+| `AppMenu` | Menu do aplicativo com Sobre, Serviços, Ocultar/Mostrar e Sair | Apenas macOS |
+| `EditMenu` | Menu de Edição padrão com Desfazer, Refazer, Recortar, Copiar, Colar, etc. | Todas as plataformas |
+| `ViewMenu` | Menu de Exibição com Recarregar, Zoom e controles de Tela Cheia | Todas as plataformas |
+| `WindowMenu` | Controles de Janela (Minimizar, Maximizar, etc.) | Todas as plataformas |
+| `HelpMenu` | Menu de Ajuda com link "Saiba Mais" para o site do Wails | Todas as plataformas |------|-------------|------|
+| `About` | Exibir a caixa de diálogo Sobre do aplicativo | Todas as plataformas |
+| `Hide` | Ocultar o aplicativo | Apenas macOS |
+| `HideOthers` | Ocultar outros aplicativos | Apenas macOS |
+| `UnHide` | Exibir aplicativo oculto | Apenas macOS |
+| `CloseWindow` | Fechar a janela atual | Todas as plataformas |
+| `Minimise` | Minimizar a janela | Todas as plataformas |
+| `Zoom` | Ampliar a janela | Apenas macOS |
+| `Front` | Trazer a janela para frente | Apenas macOS |
+| `Quit` | Sair do aplicativo | Todas as plataformas |
+| `Undo` | Desfazer a última ação | Todas as plataformas |
+| `Redo` | Refazer a última ação | Todas as plataformas |
+| `Cut` | Recortar a seleção | Todas as plataformas |
+| `Copy` | Copiar a seleção | Todas as plataformas |
+| `Paste` | Colar da área de transferência | Todas as plataformas |
+| `PasteAndMatchStyle` | Colar e combinar estilo | Apenas macOS |
+| `SelectAll` | Selecionar tudo | Todas as plataformas |
+| `Delete` | Excluir a seleção | Todas as plataformas |
+| `Reload` | Recarregar a página atual | Todas as plataformas |
+| `ForceReload` | Forçar recarregamento da página atual | Todas as plataformas |
+| `ToggleFullscreen` | Alternar o modo de tela cheia | Todas as plataformas |
+| `ResetZoom` | Redefinir o nível de zoom | Todas as plataformas |
+| `ZoomIn` | Aumentar o zoom | Todas as plataformas |
+| `ZoomOut` | Diminuir o zoom | Todas as plataformas |
+
+Aqui está um exemplo mostrando como usar menus completos e papéis individuais:
+
+```go
+menu := app.Menu.New()
+
+// Adicionar estruturas de menu completas
+menu.AddRole(application.AppMenu)    // Apenas macOS
+menu.AddRole(application.EditMenu)   // Operações de edição comuns
+menu.AddRole(application.ViewMenu)   // Controles de visualização
+menu.AddRole(application.WindowMenu) // Controles de janela
+
+// Adicionar itens baseados em papéis individuais a um menu personalizado
+fileMenu := menu.AddSubmenu("File")
+fileMenu.AddRole(application.CloseWindow)
+fileMenu.AddSeparator()
+fileMenu.AddRole(application.Quit)
+```
+
+## Menus do Aplicativo
+
+Os menus do aplicativo são os menus que aparecem na parte superior da janela do seu aplicativo (Windows/Linux) ou na parte superior da tela (macOS).
+
+### Comportamento do Menu do Aplicativo
+
+Ao definir um menu do aplicativo usando `app.Menu.Set()`, ele se torna o menu principal no macOS.
+Os menus são definidos por janela para Windows/Linux.
+
+```go
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "Custom Menu Window",
+    Windows: application.WindowsWindow{
+        Menu: customMenu,  // Substituir o menu do aplicativo para esta janela
+    },
+})
+```
+
+Aqui está um exemplo completo mostrando esses diferentes comportamentos de menu:
+
+```go
+func main() {
+    app := application.New(application.Options{})
+
+    // Criar menu do aplicativo
+    appMenu := app.Menu.New()
+    fileMenu := appMenu.AddSubmenu("File")
+    fileMenu.Add("New").OnClick(func(ctx *application.Context) {
+        // Isso estará disponível em todas as janelas, a menos que seja substituído
+        window := app.Windows.Current()
+        window.SetTitle("New Window")
+    })
+    
+    // Definir como menu do aplicativo - isso é para macOS
+    app.Menu.Set(appMenu)
+
+    // Janela com menu personalizado no Windows
+    customMenu := app.Menu.New()
+    customMenu.Add("Custom Action")
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "Custom Menu",
+        Windows: application.WindowsWindow{
+            Menu: customMenu,
+        },
+    })
+
+    app.Run()
+}
+```
+
+## Menus de Contexto
+
+Os menus de contexto são menus pop-up que aparecem ao clicar com o botão direito em elementos do seu aplicativo. Eles fornecem acesso rápido a ações relevantes para o elemento clicado.
+
+### Menu de Contexto Padrão
+
+O menu de contexto padrão é o menu de contexto integrado do webview que fornece operações em nível do sistema, como:
+- Copiar, Recortar e Colar para manipulação de texto
+- Controles de seleção de texto
+- Opções de verificação ortográfica
+
+#### Controlando o Menu de Contexto Padrão
+
+Você pode controlar quando o menu de contexto padrão aparece usando a propriedade CSS `--default-contextmenu`:
+
+```html
+<!-- Sempre mostrar o menu de contexto padrão -->
+<div style="--default-contextmenu: show">
+    <input type="text" placeholder="Clique com o botão direito para operações de texto"/>
+    <textarea>Operações de texto padrão disponíveis aqui</textarea>
+</div>
+
+<!-- Ocultar o menu de contexto padrão -->
+<div style="--default-contextmenu: hide">
+    <div class="custom-component">Apenas menu de contexto personalizado</div>
+</div>
+
+<!-- Comportamento inteligente de menu de contexto (padrão) -->
+<div style="--default-contextmenu: auto">
+    <!-- Mostra o menu padrão quando o texto está selecionado ou em campos de entrada -->
+    <p>Selecione este texto para ver o menu padrão</p>
+    <input type="text" placeholder="Menu padrão para operações de entrada"/>
+</div>
+```
+
+:::note
+Este recurso só funcionará conforme o esperado após o runtime [ter sido inicializado](../../learn/runtime#initialisation).
+:::
+
+#### Comportamento de Menu de Contexto Aninhado
+
+Ao usar a propriedade `--default-contextmenu` em elementos aninhados, as seguintes regras se aplicam:
+
+1. Elementos filhos herdam a configuração de menu de contexto do pai, a menos que seja explicitamente substituído
+2. A configuração mais específica (mais próxima) tem precedência
+3. O valor `auto` pode ser usado para redefinir para o comportamento padrão
+
+Exemplo de comportamento de menu de contexto aninhado:
+
+```html
+<!-- Pai define hide -->
+<div style="--default-contextmenu: hide">
+    <!-- Isso herda hide -->
+    <p>Sem menu de contexto aqui</p>
+    
+    <!-- Isso substitui para show -->
+    <div style="--default-contextmenu: show">
+        <p>Menu de contexto mostrado aqui</p>
+        
+        <!-- Isso herda show -->
+        <span>Também tem menu de contexto</span>
+        
+        <!-- Isso redefine para comportamento automático -->
+        <div style="--default-contextmenu: auto">
+            <p>Mostra o menu apenas quando o texto está selecionado</p>
+        </div>
+    </div>
+</div>
+```
+
+### Menus de Contexto Personalizados
+
+Menus de contexto personalizados permitem que você forneça ações específicas do aplicativo que são relevantes para o elemento sendo clicado. Eles são particularmente úteis para:
+- Operações de arquivo em um gerenciador de documentos
+- Ferramentas de manipulação de imagem
+- Ações personalizadas em uma grade de dados
+- Operações específicas de componentes
+
+#### Criando um Menu de Contexto Personalizado
+
+Ao criar um menu de contexto personalizado, você fornece um identificador único (nome) que vincula o menu aos elementos HTML:
+
+```go
+// Criar um menu de contexto com identificador "imageMenu"
+contextMenu := application.NewContextMenu()
+app.ContextMenus.Add("imageMenu", contextMenu)
+```
+
+O parâmetro name ("imageMenu" neste exemplo) serve como um identificador único que será usado para:
+1. Vincular elementos HTML a este menu de contexto específico
+2. Identificar qual menu deve ser exibido ao clicar com o botão direito
+3. Permitir atualizações e limpeza do menu
+
+#### Dados de Contexto
+
+Ao lidar com eventos de menu de contexto, você pode acessar tanto o item de menu clicado quanto seus dados de contexto associados:
+
+```go
+contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
+    // Obter o item de menu clicado
+    menuItem := ctx.ClickedMenuItem()
+    
+    // Obter os dados de contexto como uma string
+    contextData := ctx.ContextMenuData()
+    
+    // Verificar se o item de menu está marcado (para itens de caixa de seleção/opção)
+    isChecked := ctx.IsChecked()
+    
+    // Usar os dados
+    if contextData != "" {
+        processItem(contextData)
+    }
+})
+```
+
+Os dados de contexto são passados a partir da propriedade `--custom-contextmenu-data` do elemento HTML e estão disponíveis no manipulador de cliques através de `ctx.ContextMenuData()`. Isso é particularmente útil quando:
+
+- Trabalhando com listas ou grades onde cada item precisa de identificação única
+- Lidando com operações em componentes ou elementos específicos
+- Passando estado ou metadados do frontend para o backend
+
+#### Gerenciamento de Menus de Contexto
+
+Após fazer alterações em um menu de contexto, chame o método `Update()` para aplicar as alterações:
+
+```go
+contextMenu.Update()
+```
+
+Quando você não precisar mais de um menu de contexto, pode destruí-lo:
+
+```go
+contextMenu.Destroy()
+```
+:::danger[Atenção] 
+Após chamar `Destroy()`, usar a referência do menu de contexto novamente resultará em um panic.
+:::
+
+### Exemplo do Mundo Real: Galeria de Imagens
+
+Aqui está um exemplo completo de implementação de um menu de contexto personalizado para uma galeria de imagens:
+
+```go
+// Backend: Criar o menu de contexto```go
+imageMenu := application.NewContextMenu()
+app.ContextMenus.Add("imageMenu", imageMenu)
+
+// Add relevant operations
+imageMenu.Add("View Full Size").OnClick(func(ctx *application.Context) {
+    // Get the image ID from context data
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        openFullSizeImage(imageID)
+    }
+})
+
+imageMenu.Add("Download").OnClick(func(ctx *application.Context) {
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        downloadImage(imageID)
+    }
+})
+
+imageMenu.Add("Share").OnClick(func(ctx *application.Context) {
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        showShareDialog(imageID)
+    }
+})
+```
+
+```html
+<!-- Frontend: Image gallery implementation -->
+<div class="gallery">
+    <!-- Each image container with context menu -->
+    <div class="image-container" 
+         style="--custom-contextmenu: imageMenu; --custom-contextmenu-data: img_123">
+        <img src="/images/img_123.jpg" alt="Gallery Image"/>
+        <span class="caption">Nature Photo</span>
+    </div>
+    
+    <div class="image-container"
+         style="--custom-contextmenu: imageMenu; --custom-contextmenu-data: img_124">
+        <img src="/images/img_124.jpg" alt="Gallery Image"/>
+        <span class="caption">City Photo</span>
+    </div>
+</div>
+```
+
+Neste exemplo:
+1. O menu de contexto é criado com o identificador "imageMenu"
+2. Cada container de imagem é vinculado ao menu usando `--custom-contextmenu: imageMenu`
+3. Cada container fornece seu ID de imagem como dados de contexto usando `--custom-contextmenu-data`
+4. O backend recebe o ID da imagem nos manipuladores de clique e pode realizar operações específicas
+5. O mesmo menu é reutilizado para todas as imagens, mas os dados de contexto indicam qual imagem deve ser manipulada
+
+Este padrão é particularmente poderoso para:
+- Grades de dados onde as linhas precisam de operações específicas
+- Gerenciadores de arquivos onde os arquivos precisam de ações específicas ao contexto
+- Ferramentas de design onde diferentes elementos precisam de operações diferentes
+- Qualquer componente onde as mesmas operações se aplicam a múltiplas instâncias

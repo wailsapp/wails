@@ -1,0 +1,223 @@
+---
+title: Empacotamento no Linux
+description: Empacote seu aplicativo Wails para distribuição no Linux
+sidebar:
+  order: 5
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Formatos de Pacote
+
+Empacote seu aplicativo para distribuição no Linux:
+
+```bash
+wails3 package GOOS=linux
+```
+
+Isso cria vários formatos no diretório `bin/`:
+- **AppImage**: Portátil, executa em qualquer distribuição Linux
+- **DEB**: Para Debian, Ubuntu e derivados
+- **RPM**: Para Fedora, RHEL e derivados
+- **Arch**: Para Arch Linux e derivados
+
+### Formatos Individuais
+
+Compile formatos específicos:
+
+```bash
+wails3 task linux:create:appimage
+wails3 task linux:create:deb
+wails3 task linux:create:rpm
+wails3 task linux:create:aur
+```
+
+## Personalizando Pacotes
+
+### Entrada de Área de Trabalho
+
+O arquivo `.desktop` controla como seu aplicativo aparece nos menus de aplicativos. Ele é gerado a partir dos valores em `build/linux/Taskfile.yml`:
+
+```yaml
+vars:
+  APP_NAME: 'MyApp'
+  EXEC: 'MyApp'
+  ICON: 'MyApp'
+  CATEGORIES: 'Development;'
+```
+
+### Metadados do Pacote
+
+Edite `build/linux/nfpm/nfpm.yaml` para personalizar os pacotes DEB e RPM:
+
+```yaml
+name: myapp
+version: 1.0.0
+maintainer: Your Name <you@example.com>
+description: My awesome Wails application
+homepage: https://example.com
+license: MIT
+```
+
+### AppImage
+
+A configuração do AppImage está em `build/linux/appimage/`. O ícone do aplicativo vem de `build/appicon.png`.
+
+## Assinando Pacotes
+
+Assine os pacotes DEB e RPM com uma chave PGP:
+
+```bash
+# Usando o wrapper (detecta automaticamente a plataforma)
+wails3 sign GOOS=linux
+
+# Ou usando as tarefas diretamente
+wails3 task linux:sign:deb
+wails3 task linux:sign:rpm
+wails3 task linux:sign:packages  # Ambos
+```
+
+Configure a assinatura em `build/linux/Taskfile.yml`:
+
+```yaml
+vars:
+  PGP_KEY: "path/to/signing-key.asc"
+  SIGN_ROLE: "builder"  # origin, maint, archive, ou builder
+```
+
+Armazene a senha da sua chave:
+
+```bash
+wails3 setup signing
+```
+
+Veja [Assinando Aplicações](/pt/guides/build/signing) para mais detalhes.
+
+## Compilando para ARM
+
+```bash
+wails3 build GOOS=linux GOARCH=arm64
+wails3 package GOOS=linux GOARCH=arm64
+```
+
+<Aside type="note">
+Compilações ARM64 a partir de hosts x86_64 usam Docker para cross-compilação CGO.
+</Aside>
+
+## Suporte ao GTK4 (Experimental)
+
+O Wails v3 inclui suporte experimental ao GTK4 com WebKitGTK 6.0. Por padrão, o Wails usa GTK3 com WebKit2GTK 4.1. O suporte ao GTK4 é opcional via uma tag de compilação.
+
+<Aside type="caution" title="Experimental">
+O suporte ao GTK4 é experimental e pode ter problemas. Por favor, relate problemas ao [GitHub issue #4957](https://github.com/wailsapp/wails/issues/4957).
+</Aside>
+
+### Dependências
+
+Instale as bibliotecas de desenvolvimento do GTK4 e WebKitGTK 6.0:
+
+```bash
+# Ubuntu/Debian
+sudo apt install libgtk-4-dev libwebkitgtk-6.0-dev
+
+# Fedora
+sudo dnf install gtk4-devel webkitgtk6.0-devel
+
+# Arch
+sudo pacman -S gtk4 webkitgtk-6.0
+```
+
+Os pacotes pkg-config necessários são `gtk4` e `webkitgtk-6.0`.
+
+### Compilando com GTK4
+
+Use a flag `-tags gtk4`:
+
+```bash
+wails3 build -tags gtk4
+```
+
+Ou diretamente com Go:
+
+```bash
+go build -tags gtk4 -o myapp .
+```
+
+### Diferenças Conhecidas em relação ao GTK3
+
+- **Diálogos de arquivos**: O GTK4 usa `xdg-desktop-portal` para diálogos de arquivos, o que significa que algumas opções de diálogo (como diretório padrão, exibição de filtros personalizados) se comportam de maneira diferente. Veja [Referência de Diálogos - Limitações do Linux GTK4](/reference/dialogs#linux-gtk4-limitations) para mais detalhes.
+- **Estilo do menu**: O GTK4 suporta a opção `LinuxMenuStylePrimaryMenu` que exibe um botão de hambúrguer (☰) na barra de cabeçalho, seguindo o GNOME HIG. Veja [API da Janela - Linux MenuStyle](/reference/window#linux).
+- **Escala de DPI**: O GTK4 usa `gdk_monitor_get_scale` (GTK 4.14+) para suporte a escala fracionária.
+
+### Verificando sua Compilação
+
+Execute `wails3 doctor` para verificar sua configuração. As dependências do GTK4 serão mostradas como opcionais/experimentais.
+
+## Solução de Problemas
+
+### AppImage não executa
+
+Torne-o executável:
+
+```bash
+chmod +x MyApp-x86_64.AppImage
+```
+
+### Dependências faltando
+
+Se o aplicativo falhar ao iniciar, verifique se há dependências do WebKit faltando:
+
+```bash
+# Debian/Ubuntu
+sudo apt install libwebkit2gtk-4.1-0
+
+# Fedora
+sudo dnf install webkit2gtk4.1
+
+# Arch
+sudo pacman -S webkit2gtk-4.1
+```
+
+### Nenhum compilador C encontrado
+
+O sistema de compilação precisa do GCC ou Clang para CGO:
+
+```bash
+# Debian/Ubuntu
+sudo apt install build-essential
+
+# Fedora
+sudo dnf install gcc
+
+# Arch
+sudo pacman -S base-devel
+```
+
+Alternativamente, execute `wails3 task setup:docker` e o sistema de compilação usará o Docker automaticamente.
+
+### Janela em branco ou branca na GPU NVIDIA
+
+No Linux com drivers proprietários da NVIDIA, aplicativos Wails podem mostrar uma janela em branco ou branca na inicialização. Isso é causado por um bug do WebKitGTK onde o renderizador DMA-BUF falha com `gbm_bo_map()` contra o driver proprietário da NVIDIA (afeta X11 e Wayland, versões do driver 377–580+, GPUs da série 10 e GT 710 mais antigo).
+
+**O Wails aplica `WEBKIT_DISABLE_DMABUF_RENDERER=1` automaticamente** quando detecta o módulo do kernel da NVIDIA (`/sys/module/nvidia`), então a maioria dos usuários não precisará fazer nada.
+
+Se você ainda vir uma janela em branco (por exemplo, em um contêiner onde o caminho do módulo não é visível), defina a variável de ambiente manualmente antes de iniciar seu aplicativo:
+
+```bash
+WEBKIT_DISABLE_DMABUF_RENDERER=1 ./myapp
+```
+
+Bugs upstream relacionados: [WebKit #262607](https://bugs.webkit.org/show_bug.cgi?id=262607), [WebKit #180739](https://bugs.webkit.org/show_bug.cgi?id=180739).
+
+### Compatibilidade de strip do AppImage
+
+Em distribuições Linux modernas (Arch Linux, Fedora 39+, Ubuntu 24.04+), as bibliotecas do sistema são compiladas com seções ELF `.relr.dyn` para relocamentos mais eficientes. A ferramenta `linuxdeploy` usada para criar AppImages empacota uma versão mais antiga do binário `strip` que não pode processar essas seções modernas.
+
+O Wails detecta automaticamente essa situação verificando as bibliotecas GTK do sistema antes de compilar o AppImage. Quando detectado, o stripping é desabilitado (`NO_STRIP=1`) para garantir a compatibilidade.
+
+**O que isso significa:**
+- As AppImages serão ligeiramente maiores (~20-40%) em sistemas afetados
+- A funcionalidade do aplicativo não é afetada
+- Isso é tratado automaticamente — nenhuma ação necessária
+
+Se você precisar de AppImages menores em sistemas modernos, pode instalar um binário `strip` mais recente e configurar o `linuxdeploy` para usá-lo em vez de sua versão empacotada.

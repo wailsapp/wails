@@ -1,0 +1,211 @@
+---
+title: Internals do Runtime
+description: Um mergulho profundo em como o Wails v3 inicializa, executa e se comunica com o sistema operacional
+sidebar:
+  order: 3
+---
+
+O **runtime** é a camada que transforma funções Go comuns em um aplicativo de desktop multiplataforma.  
+Este documento explica as partes móveis que você encontrará ao rastrear o código-fonte.
+
+---
+
+## 1. Ciclo de Vida da Aplicação
+
+| Fase | Caminho do Código | O que acontece |
+|-------|-----------|--------------|
+| **Bootstrap** | `pkg/application/application.go:init()` | Registra dados em tempo de compilação, cria um singleton global `application`. |
+| **New()** | `application.New(...)` | Valida `Options`, inicia o **AssetServer**, inicializa o logging. |
+| **Run()** | `application.(*App).Run()` | 1. Chama `mainthread.X()` da plataforma para entrar na thread de UI do SO.<br />2. Inicializa o **runtime** (`internal/runtime`).<br />3. Bloqueia até que a última janela seja fechada ou `Quit()` seja chamado. |
+| **Shutdown** | `application.(*App).Quit()` | Transmite o evento `application:shutdown`, grava o log, encerra janelas e serviços. |
+
+O ciclo de vida é estritamente **single-entry**: você pode criar muitas janelas, mas o objeto da aplicação é inicializado apenas uma vez.
+
+---
+
+## 2. Gerenciamento de Janelas
+
+### API Pública
+
+```go
+win := app.Window.New(&application.WebviewWindowOptions{
+    Title:  "Dashboard",
+    Width:  1280,
+    Height: 720,
+})
+win.Show()
+```
+
+`app.Window.New()` delega para `internal/runtime/webview_window_*.go`, onde
+estão os construtores específicos da plataforma:
+
+```
+internal/runtime/
+├── webview_window_darwin.go
+├── webview_window_linux.go
+└── webview_window_windows.go
+```
+
+Cada arquivo:
+
+1. Cria uma webview nativa (WKWebView, WebKitGTK, WebView2).
+2. Registra um callback do **Processador de Mensagens**.
+3. Mapeia eventos do Wails (`WindowResized`, `Focus`, `DropFile`, …) para
+   IDs de evento do runtime.
+
+As janelas são rastreadas por `screenmanager.go`, que oferece **APIs de consulta** (todos
+os displays, DPI, janela ativa) e centraliza o controle de redimensionamento e movimentação.
+
+---
+
+## 3. Pipeline de Processamento de Mensagens
+
+A ponte entre JavaScript e Go é implementada pela família de **Processadores de Mensagens** em `pkg/application/messageprocessor_*.go`.
+
+Fluxo:
+
+1. **JavaScript** chama `window.runtime.Invoke("Greet", "Alice")`.
+2. O runtime serializa a solicitação:  
+   `{"t":"c","id":"123","m":"Greet","p":["Alice"]}`  
+   (`t` = tipo, `c` = chamada).
+3. **Go** recebe este JSON via callback da webview.
+4. `messageprocessor_call.go` procura o método vinculado na
+   tabela gerada (`application.bindings.go`) e o executa.
+5. O resultado ou erro é serializado de volta para o JS, onde uma `Promise` é resolvida.
+
+Processadores especializados:
+
+| Arquivo | Propósito |
+|------|---------|
+| `messageprocessor_window.go` | Ações de janela (esconder, maximizar, …) |
+| `messageprocessor_dialog.go` | Diálogos nativos (`OpenFile`, `MessageBox`, …) |
+| `messageprocessor_clipboard.go` | Leitura/escrita da área de transferência |
+| `messageprocessor_events.go` | Inscrição/emissão de eventos |
+| `messageprocessor_browser.go` | Navegação do navegador, devtools |
+
+Os processadores são **stateless** – eles obtêm tudo o que precisam do
+`ApplicationContext` passado com cada mensagem.
+
+---
+
+## 4. Sistema de Eventos
+
+Os eventos são strings com namespace, distribuídas em três camadas:
+
+1. **Eventos da Aplicação**: ciclo de vida global (`application:ready`,
+   `application:shutdown`).
+2. **Eventos da Janela**: por janela (`window:focus`, `window:resize`).
+3. **Eventos Personalizados**: definidos pelo usuário (`chat:new-message`).
+
+Detalhes de implementação:
+
+* Constantes são geradas a partir de `internal/events/defaults.go`.
+* Lado Go:  
+  `app.On("window:focus", func(e application.WindowEvent) {...})`
+* Lado JS:  
+  `window.runtime.EventsOn("chat:new-message", cb)`
+
+Por baixo dos panos, ambos mapeiam para o mesmo **EventBus** em
+`pkg/application/events.go`.  
+Os assinantes são contados por referência; quando uma janela é fechada, seus callbacks são
+desregistrados automaticamente para evitar vazamentos de memória.
+
+---
+
+## 5. Implementações Específicas da Plataforma
+
+A compilação condicional mantém a API pública idêntica enquanto esconde as particularidades do SO.
+
+| Preocupação | Darwin | Linux | Windows |
+|---------|--------|-------|---------|
+| Thread Principal | `mainthread_darwin.go` (Cgo para Foundation) | `mainthread_linux.go` (GTK) | `mainthread_windows.go` (Win32 `AttachThreadInput`) |
+| Diálogos | `dialogs_darwin.*` (NSAlert) | `dialogs_linux.go` (GtkFileChooser) | `dialogs_windows.go` (IFileOpenDialog) |
+| Área de Transferência | `clipboard_darwin.go` | `clipboard_linux.go` | `clipboard_windows.go` |
+| Ícones de Bandeja | `systemtray_darwin.*` | `systemtray_linux.go` (DBus) | `systemtray_windows.go` (Shell_NotifyIcon) |
+
+Princípios-chave:
+
+* **Sem Cgo no Windows/Linux** a menos que seja inevitável (desempenho, portabilidade).
+* Use **tags de build** (`//go:build darwin && !production`) para manter os arquivos legíveis.
+* Exponha **capacidades** via `internal/capabilities` para que camadas superiores possam
+  degradar-se gracefulmente.
+
+---
+
+## 6. Guia de Arquivos
+
+| Arquivo | Por que você o tocaria |
+|------|--------------------|
+| `internal/runtime/runtime_*.go` | Alterar lógica global de inicialização, adicionar hooks de debug. |
+| `internal/runtime/webview_window_*.go` | Implementar uma nova dica ou comportamento de janela. |
+| `pkg/application/messageprocessor_*.go` | Adicionar um novo comando de ponte chamável do JS. |
+| `pkg/application/events_*.go` | Estender definições de eventos integradas. |
+| `internal/assetserver/*` | Ajustar o tratamento de assets em dev/produção. |
+
+---
+
+## 7. Dicas de Debug
+
+* Inicie com `WAILS_LOG_LEVEL=debug` para imprimir cada mensagem que cruza a ponte.
+* Use `wails3 dev -verbose` para ver hot reload e solicitações de assets em tempo real.
+* No macOS, execute sob `lldb --` para capturar exceções do Objective-C cedo.
+* Para problemas do Chromium no Windows, ative os logs de debug do WebView2:  
+  `set WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222`
+
+---
+
+## 8. Estendendo o Runtime
+
+1. Defina uma **flag de capacidade** em `internal/capabilities`.
+2. Implemente o recurso em cada arquivo de plataforma usando tags de build.
+3. Adicione a API pública em `pkg/application`.
+4. Registre um novo tipo de mensagem ou evento se o JS precisar chamá-lo.
+5. Atualize pelo menos um exemplo em `v3/examples/` exercitando o recurso.
+
+Siga esta lista de verificação e você manterá o contrato multiplataforma intacto.
+
+---
+
+## 9. Arrastar e Soltar
+
+O arrastar e soltar de arquivos usa uma **abordagem JavaScript-first** em todas as plataformas. A camada nativa intercepta eventos de arrasto do SO, mas o processamento real do drop e a interação com o DOM acontecem no JavaScript.
+
+### Fluxo
+
+1. O usuário arrasta arquivos do SO sobre a janela do Wails
+2. A camada nativa detecta o arrasto e notifica o JavaScript para efeitos de hover
+3. O usuário solta os arquivos
+4. A camada nativa envia os caminhos dos arquivos + coordenadas para o JavaScript
+5. O JavaScript encontra o elemento alvo do drop (`data-file-drop-target`)
+6. O JavaScript envia os caminhos dos arquivos + detalhes do elemento para o backend Go
+7. Go emite o evento `WindowFilesDropped` com o contexto completo
+
+### Implementações por Plataforma
+
+| Plataforma | Camada Nativa | Desafio Principal |
+|----------|--------------|---------------|
+| **Windows** | Suporte nativo de arrasto do WebView2 | Coordenadas em pixels CSS, sem conversão necessária |
+| **macOS** | Delegados de arrasto do NSWindow | Converter coordenadas relativas à janela para relativas à webview |
+| **Linux** | Sinais de arrasto do GTK3 | Distinguir arrastos de arquivos de arrastos HTML5 internos |
+
+### Linux: Distinguindo Tipos de Arrasto
+
+GTK e WebKit ambos querem lidar com eventos de arrasto. A chave é verificar o tipo de alvo do arrasto:
+
+```c
+static gboolean is_file_drag(GdkDragContext *context) {
+    GList *targets = gdk_drag_context_list_targets(context);
+    for (GList *l = targets; l != NULL; l = l->next) {
+        GdkAtom atom = GDK_POINTER_TO_ATOM(l->data);
+        gchar *name = gdk_atom_name(atom);
+        if (name && g_strcmp0(name, "text/uri-list") == 0) {
+            g_free(name);
+            return TRUE;  // Arrasto de arquivo externo
+        }
+        g_free(name);
+    }
+    return FALSE;  // Arrasto HTML5 interno
+}
+```
+
+Os manipuladores de sinal retornam `FALSE` para arrastos internos (deixando o WebKit tratá-los) e `TRUE` para arrastos de arquivos (tratando-os nós mesmos).Agora você tem um tour guiado pelos internals do runtime. Combine esse conhecimento com o mapa de **Codebase Layout** e a documentação do **Asset Server** para navegar com confiança e fazer contribuições impactantes. Feliz codificação!

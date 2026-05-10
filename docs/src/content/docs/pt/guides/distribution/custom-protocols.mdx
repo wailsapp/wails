@@ -1,0 +1,613 @@
+---
+title: Protocolos de URL Personalizados
+description: Registre esquemas de URL personalizados para iniciar seu aplicativo a partir de links
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+Protocolos de URL personalizados (também chamados de esquemas de URL) permitem que seu aplicativo seja iniciado quando os usuários clicam em links com seu protocolo personalizado, como `myapp://action` ou `myapp://open/document`.
+
+## Visão Geral
+
+Protocolos personalizados permitem:
+- **Deep linking**: Inicie seu app com dados específicos
+- **Integração com navegador**: Lidere links de páginas da web
+- **Links de e-mail**: Abra seu app a partir de clientes de e-mail
+- **Comunicação entre aplicativos**: Inicie a partir de outros aplicativos
+
+**Exemplo**: `myapp://open/document?id=123` inicia seu aplicativo e abre o documento 123.
+
+## Configuração
+
+Defina protocolos personalizados nas opções do seu aplicativo:
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "My Application",
+        Description: "My awesome application",
+        Protocols: []application.Protocol{
+            {
+                Scheme:      "myapp",
+                Description: "My Application Protocol",
+                Role:        "Editor",  // macOS only
+            },
+        },
+    })
+
+    // Register handler for protocol events
+    app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+        url := event.Context().ClickedURL()
+        handleCustomURL(url)
+    })
+
+    app.Run()
+}
+
+func handleCustomURL(url string) {
+    // Parse and handle the custom URL
+    // Example: myapp://open/document?id=123
+    println("Received URL:", url)
+}
+```
+
+## Manipulador de Protocolo
+
+Ouça eventos de protocolo para lidar com URLs recebidos:
+
+```go
+app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+    url := event.Context().ClickedURL()
+
+    // Parse the URL
+    parsedURL, err := parseCustomURL(url)
+    if err != nil {
+        app.Logger.Error("Failed to parse URL:", err)
+        return
+    }
+
+    // Handle different actions
+    switch parsedURL.Action {
+    case "open":
+        openDocument(parsedURL.DocumentID)
+    case "settings":
+        showSettings()
+    case "user":
+        showUser Profile(parsedURL.UserID)
+    default:
+        app.Logger.Warn("Unknown action:", parsedURL.Action)
+    }
+})
+```
+
+## Estrutura de URL
+
+Projete estruturas de URL claras e hierárquicas:
+
+```
+myapp://action/resource?param=value
+
+Examples:
+myapp://open/document?id=123
+myapp://settings/theme?mode=dark
+myapp://user/profile?username=john
+```
+
+**Melhores práticas:**
+- Use nomes de esquema em minúsculas
+- Mantenha os esquemas curtos e memoráveis
+- Use caminhos hierárquicos para recursos
+- Inclua parâmetros de consulta para dados opcionais
+- Codifique caracteres especiais em URL
+
+## Registro na Plataforma
+
+Protocolos personalizados são registrados de maneira diferente em cada plataforma.
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+
+### Instalador NSIS para Windows
+
+**O Wails v3 registra automaticamente protocolos personalizados** ao usar instaladores NSIS.
+
+#### Registro Automático
+
+Ao compilar seu aplicativo com `wails3 build`, o instalador NSIS:
+1. Registra automaticamente todos os protocolos definidos em `application.Options.Protocols`
+2. Associa os protocolos ao executável do seu aplicativo
+3. Configura as entradas de registro apropriadas
+4. Remove as associações de protocolo durante a desinstalação
+
+**Nenhuma configuração adicional necessária!**
+
+#### Como Funciona
+
+O modelo NSIS inclui macros integradas:
+- `wails.associateCustomProtocols` - Registra protocolos durante a instalação
+- `wails.unassociateCustomProtocols` - Remove protocolos durante a desinstalação
+
+Essas macros são chamadas automaticamente com base na sua configuração `Protocols`.
+
+#### Registro Manual (Avançado)
+
+Se você precisar de registro manual (fora do NSIS):
+
+```batch
+@echo off
+REM Register custom protocol
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp" /ve /d "URL:My Application Protocol" /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp" /v "URL Protocol" /t REG_SZ /d "" /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp\shell\open\command" /ve /d "\"%1\"" /f
+```
+
+#### Teste
+
+Teste o registro do seu protocolo:
+
+```powershell
+# Open protocol URL from PowerShell
+Start-Process "myapp://test/action"
+
+# Or from command prompt
+start myapp://test/action
+```
+
+### Pacote MSIX para Windows
+
+Protocolos personalizados também são registrados automaticamente ao usar o empacotamento MSIX.
+
+#### Registro Automático
+
+Ao compilar seu aplicativo com MSIX, o manifesto inclui automaticamente os registros de protocolo da sua configuração de protocolos em `build/config.yml`.
+
+O manifesto gerado inclui:
+
+```xml
+<uap:Extension Category="windows.protocol">
+  <uap:Protocol Name="myapp">
+    <uap:DisplayName>My Application Protocol</uap:DisplayName>
+  </uap:Protocol>
+</uap:Extension>
+```
+
+#### Links Universais (Linking de Web para App)
+
+O Windows oferece suporte ao **linking de Web para App**, que funciona de maneira semelhante aos Universal Links no macOS. Ao implantar seu aplicativo como um pacote MSIX, você pode habilitar links HTTPS para iniciar seu app diretamente.
+
+<Aside type="note">
+O linking de Web para App requer configuração manual do manifesto. Esquemas de protocolo personalizados são configurados automaticamente a partir de `build/config.yml`, mas os domínios associados devem ser adicionados manualmente ao seu manifesto MSIX.
+</Aside>
+
+Para habilitar o linking de Web para App, siga o [guia da Microsoft sobre linking de web para app](https://learn.microsoft.com/en-us/windows/apps/develop/launch/web-to-app-linking). Você precisará:
+
+1. **Adicionar manualmente o App URI Handler ao seu manifesto MSIX** (`build/windows/msix/app_manifest.xml`):
+   ```xml
+   <uap3:Extension Category="windows.appUriHandler">
+     <uap3:AppUriHandler>
+       <uap3:Host Name="myawesomeapp.com"/>
+     </uap3:AppUriHandler>
+   </uap3:Extension>
+   ```
+
+2. **Configurar `windows-app-web-link` no seu site:** Hospede um arquivo `windows-app-web-link` em `https://myawesomeapp.com/.well-known/windows-app-web-link`. Este arquivo deve conter as informações do pacote do seu aplicativo e os caminhos que ele manipula.
+
+Quando um link de Web para App inicia seu aplicativo, você receberá o mesmo evento `ApplicationOpenedWithURL` que com esquemas de protocolo personalizados.
+
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+
+### Configuração do Info.plist
+
+No macOS, os protocolos são registrados por meio do seu arquivo `Info.plist`.
+
+#### Configuração Automática
+
+O Wails gera automaticamente o `Info.plist` com seus protocolos quando você compila com `wails3 build`.
+
+Os protocolos de `application.Options.Protocols` são adicionados a:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLName</key>
+        <string>My Application Protocol</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>myapp</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+    </dict>
+</array>
+```
+
+#### Teste
+
+```bash
+# Open protocol URL from terminal
+open "myapp://test/action"
+
+# Check registered handlers
+/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -dump | grep myapp
+```
+
+#### Universal Links
+
+Além dos esquemas de protocolo personalizados, o macOS também oferece suporte aos **Universal Links**, que permitem que seu app seja iniciado por links HTTPS regulares (por exemplo, `https://myawesomeapp.com/path`). Os Universal Links proporcionam uma experiência de usuário perfeita entre seu aplicativo web e desktop.
+
+<Aside type="caution">
+Os Universal Links exigem que seu aplicativo macOS seja **assinado digitalmente** com um certificado válido de Desenvolvedor Apple e um provisioning profile. Builds não assinados ou assinados ad-hoc não conseguirão abrir Universal Links. Certifique-se de que seu app esteja devidamente assinado antes de testar.
+</Aside>
+
+Para habilitar os Universal Links, siga o [guia da Apple sobre suporte a Universal Links no seu app](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app). Você precisará:
+
+1. **Adicionar entitlements** no seu `entitlements.plist`:
+   ```xml<key>com.apple.developer.associated-domains</key>
+   <array>
+     <string>applinks:myawesomeapp.com</string>
+   </array>
+   ```
+
+2. **Adicione `NSUserActivityTypes` ao `Info.plist`**:
+   ```xml
+   <key>NSUserActivityTypes</key>
+   <array>
+     <string>NSUserActivityTypeBrowsingWeb</string>
+   </array>
+   ```
+
+3. **Configure `apple-app-site-association` no seu site**: Hospede um arquivo `apple-app-site-association` em `https://myawesomeapp.com/.well-known/apple-app-site-association`.
+
+Quando um Universal Link acionar seu aplicativo, você receberá o mesmo evento `ApplicationOpenedWithURL`, tornando o código de tratamento idêntico ao dos esquemas de protocolo personalizados.
+
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+
+### Entrada de Área de Trabalho
+
+No Linux, os protocolos são registrados por meio de arquivos `.desktop`.
+
+#### Configuração Automática
+
+O Wails gera um arquivo de entrada de área de trabalho com manipuladores de protocolo quando você compila com `wails3 build`.
+
+**Corrigido na v3**: O modelo de área de trabalho do Linux agora inclui corretamente o tratamento de protocolo.
+
+O arquivo desktop gerado inclui:
+
+```ini
+[Desktop Entry]
+Type=Application
+Name=My Application
+Exec=/usr/bin/myapp %u
+MimeType=x-scheme-handler/myapp;
+```
+
+#### Registro Manual
+
+Se necessário, instale manualmente o arquivo desktop:
+
+```bash
+# Copiar arquivo desktop
+cp myapp.desktop ~/.local/share/applications/
+
+# Atualizar banco de dados desktop
+update-desktop-database ~/.local/share/applications/
+
+# Registrar manipulador de protocolo
+xdg-mime default myapp.desktop x-scheme-handler/myapp
+```
+
+#### Testes
+
+```bash
+# Abrir URL do protocolo
+xdg-open "myapp://test/action"
+
+# Verificar manipulador registrado
+xdg-mime query default x-scheme-handler/myapp
+```
+
+  </TabItem>
+</Tabs>
+
+## Exemplo Completo
+
+Aqui está um exemplo completo lidando com múltiplas ações de protocolo:
+
+```go
+package main
+
+import (
+    "fmt"
+    "net/url"
+    "strings"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type App struct {
+    app    *application.Application
+    window *application.WebviewWindow
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "DeepLink Demo",
+        Description: "Custom protocol demonstration",
+        Protocols: []application.Protocol{
+            {
+                Scheme:      "deeplink",
+                Description: "DeepLink Demo Protocol",
+                Role:        "Editor",
+            },
+        },
+    })
+
+    myApp := &App{app: app}
+    myApp.setup()
+
+    app.Run()
+}
+
+func (a *App) setup() {
+    // Criar janela
+    a.window = a.app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  "DeepLink Demo",
+        Width:  800,
+        Height: 600,
+        URL:    "http://wails.localhost/",
+    })
+
+    // Manipular URLs de protocolo personalizado
+    a.app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+        customURL := event.Context().ClickedURL()
+        a.handleDeepLink(customURL)
+    })
+}
+
+func (a *App) handleDeepLink(rawURL string) {
+    // Analisar URL
+    parsedURL, err := url.Parse(rawURL)
+    if err != nil {
+        a.app.Logger.Error("Falha ao analisar URL:", err)
+        return
+    }
+
+    // Trazer janela para frente
+    a.window.Show()
+    a.window.SetFocus()
+
+    // Extrair caminho e query
+    path := strings.Trim(parsedURL.Path, "/")
+    query := parsedURL.Query()
+
+    // Lidar com diferentes ações
+    parts := strings.Split(path, "/")
+    if len(parts) == 0 {
+        return
+    }
+
+    action := parts[0]
+
+    switch action {
+    case "open":
+        if len(parts) >= 2 {
+            resource := parts[1]
+            id := query.Get("id")
+            a.openResource(resource, id)
+        }
+
+    case "settings":
+        section := ""
+        if len(parts) >= 2 {
+            section = parts[1]
+        }
+        a.openSettings(section)
+
+    case "user":
+        if len(parts) >= 2 {
+            username := parts[1]
+            a.openUserProfile(username)
+        }
+
+    default:
+        a.app.Logger.Warn("Ação desconhecida:", action)
+    }
+}
+
+func (a *App) openResource(resourceType, id string) {
+    fmt.Printf("Abrindo %s com ID: %s\n", resourceType, id)
+    // Emitir evento para o frontend
+    a.app.Event.Emit("navigate", map[string]string{
+        "type": resourceType,
+        "id":   id,
+    })
+}
+
+func (a *App) openSettings(section string) {
+    fmt.Printf("Abrindo seção de configurações: %s\n", section)
+    a.app.Event.Emit("navigate", map[string]string{
+        "page":    "settings",
+        "section": section,
+    })
+}
+
+func (a *App) openUserProfile(username string) {
+    fmt.Printf("Abrindo perfil do usuário: %s\n", username)
+    a.app.Event.Emit("navigate", map[string]string{
+        "page": "user",
+        "user": username,
+    })
+}
+```
+
+## Integração com o Frontend
+
+Manipule eventos de navegação no seu frontend:
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Ouvir eventos de navegação do manipulador de protocolo
+Events.On('navigate', (event) => {
+    const { type, id, page, section, user } = event.data
+
+    if (type === 'document') {
+        // Abrir documento com ID
+        router.push(`/document/${id}`)
+    } else if (page === 'settings') {
+        // Abrir configurações
+        router.push(`/settings/${section}`)
+    } else if (page === 'user') {
+        // Abrir perfil do usuário
+        router.push(`/user/${user}`)
+    }
+})
+```
+
+## Considerações de Segurança
+
+### Valide Todas as Entradas
+
+Sempre valide e sanitize URLs de fontes externas:
+
+```go
+func (a *App) handleDeepLink(rawURL string) {
+    // Analisar URL
+    parsedURL, err := url.Parse(rawURL)
+    if err != nil {
+        a.app.Logger.Error("URL inválida:", err)
+        return
+    }
+
+    // Validar esquema
+    if parsedURL.Scheme != "myapp" {
+        a.app.Logger.Warn("Esquema inválido:", parsedURL.Scheme)
+        return
+    }
+
+    // Validar caminho
+    path := strings.Trim(parsedURL.Path, "/")
+    if !isValidPath(path) {
+        a.app.Logger.Warn("Caminho inválido:", path)
+        return
+    }
+
+    // Sanitizar parâmetros
+    params := sanitizeQueryParams(parsedURL.Query())
+
+    // Processar URL validada
+    a.processDeepLink(path, params)
+}
+
+func isValidPath(path string) bool {
+    // Permitir apenas alfanuméricos e barras
+    validPath := regexp.MustCompile(`^[a-zA-Z0-9/]+$`)
+    return validPath.MatchString(path)
+}
+
+func sanitizeQueryParams(query url.Values) map[string]string {
+    sanitized := make(map[string]string)
+    for key, values := range query {
+        if len(values) > 0 {
+            // Pegar o primeiro valor e sanitizar
+            sanitized[key] = sanitizeString(values[0])
+        }
+    }
+    return sanitized
+}
+```
+
+### Previna Ataques de Injeção
+
+Nunca execute URLs diretamente como código ou SQL:
+
+```go
+// ❌ NÃO FAÇA: Execute conteúdo da URL
+func badHandler(url string) {
+    exec.Command("sh", "-c", url).Run() // PERIGOSO!
+}
+
+// ✅ FAÇA: Analise e valide
+func goodHandler(url string) {
+    parsed, _ := url.Parse(url)
+    action := parsed.Query().Get("action")
+
+    // Lista branca de ações permitidas
+    allowed := map[string]bool{
+        "open":     true,
+        "settings": true,
+        "help":     true,
+    }
+
+    if allowed[action] {
+        handleAction(action)
+    }
+}
+```
+
+## Testes
+
+### Testes Manuais
+
+Teste os manipuladores de protocolo durante o desenvolvimento:
+
+**Windows:**
+```powershell
+Start-Process "myapp://test/action?id=123"
+```
+
+**macOS:**
+```bash
+open "myapp://test/action?id=123"
+```
+
+**Linux:**
+```bash
+xdg-open "myapp://test/action?id=123"
+```
+
+### Testes com HTML
+
+Crie uma página HTML de teste:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Protocol Test</title>
+</head>
+<body>
+    <h1>Custom Protocol Test Links</h1>
+
+    <ul>
+        <li><a href="myapp://open/document?id=123">Open Document 123</a></li>
+        <li><a href="myapp://settings/theme?mode=dark">Dark Mode Settings</a></li>
+        <li><a href="myapp://user/profile?username=john">User Profile</a></li>
+    </ul>
+</body>
+</html>
+```
+
+## Solução de Problemas
+
+### Protocolo Não Registrado
+
+**Windows:**
+- Verifique o registro: `HKEY_CURRENT_USER\SOFTWARE\Classes\<scheme>`
+- Reinstale com o instalador NSIS
+- Verifique se o instalador foi executado com as permissões adequadas
+
+**macOS:**---
+
+**Perguntas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou confira os [exemplos](https://github.com/wailsapp/wails/tree/master/v3/examples).

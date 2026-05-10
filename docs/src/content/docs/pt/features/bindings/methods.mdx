@@ -1,0 +1,410 @@
+---
+title: Vinculação de Métodos
+description: Chame métodos Go do JavaScript com segurança de tipos
+sidebar:
+  order: 1
+---
+
+import { FileTree, Card, CardGrid } from "@astrojs/starlight/components";
+
+## Vinculações Go-JavaScript com Segurança de Tipos
+
+O Wails **gera automaticamente vinculações JavaScript/TypeScript com segurança de tipos** para os seus métodos Go. Escreva código Go, execute um comando e obtenha funções frontend totalmente tipadas, sem sobrecarga HTTP, sem trabalho manual e sem boilerplate.
+
+## Início Rápido
+
+**1. Escreva o serviço Go:**
+
+```go
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+    return "Hello, " + name + "!"
+}
+```
+
+**2. Registre o serviço:**
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+})
+```
+
+**3. Gere as vinculações:**
+
+```bash
+wails3 generate bindings
+```
+
+**4. Use no JavaScript:**
+
+```javascript
+import { Greet } from './bindings/myapp/greetservice'
+
+const message = await Greet("World")
+console.log(message)  // "Hello, World!"
+```
+
+**Pronto!** Chamadas Go-JavaScript com segurança de tipos.
+
+## Criando Serviços
+
+### Serviço Básico
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+type CalculatorService struct{}
+
+func (c *CalculatorService) Add(a, b int) int {
+    return a + b
+}
+
+func (c *CalculatorService) Subtract(a, b int) int {
+    return a - b
+}
+
+func (c *CalculatorService) Multiply(a, b int) int {
+    return a * b
+}
+
+func (c *CalculatorService) Divide(a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, errors.New("division by zero")
+    }
+    return a / b, nil
+}
+```
+
+**Registrar:**
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&CalculatorService{}),
+    },
+})
+```
+
+**Pontos-chave:**
+- Apenas **métodos exportados** (PascalCase) são vinculados
+- Métodos podem retornar valores ou `(valor, error)`
+- Serviços são **singletons** (uma instância por aplicativo)
+
+### Serviço com Estado
+
+```go
+type CounterService struct {
+    count int
+    mu    sync.Mutex
+}
+
+func (c *CounterService) Increment() int {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count++
+    return c.count
+}
+
+func (c *CounterService) Decrement() int {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count--
+    return c.count
+}
+
+func (c *CounterService) GetCount() int {
+    c.mu.RLock()
+    defer c.mu.RUnlock()
+    return c.count
+}
+
+func (c *CounterService) Reset() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count = 0
+}
+```
+
+**Importante:** Serviços são compartilhados entre todas as janelas. Use mutexes para segurança de threads.
+
+### Serviço com Dependências
+
+```go
+type DatabaseService struct {
+    db *sql.DB
+}
+
+func NewDatabaseService(db *sql.DB) *DatabaseService {
+    return &DatabaseService{db: db}
+}
+
+func (d *DatabaseService) GetUser(id int) (*User, error) {
+    var user User
+    err := d.db.QueryRow("SELECT * FROM users WHERE id = ?", id).Scan(&user)
+    return &user, err
+}
+```
+
+**Registrar com dependências:**
+
+```go
+db, _ := sql.Open("sqlite3", "app.db")
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(NewDatabaseService(db)),
+    },
+})
+```
+
+## Gerando Vinculações
+
+### Geração Básica
+
+```bash
+wails3 generate bindings
+```
+
+**Saída:**
+
+```
+INFO  347 Packages, 3 Services, 12 Methods, 0 Enums, 0 Models in 1.98s
+INFO  Output directory: /myproject/frontend/bindings
+```
+
+**Estrutura gerada:**
+
+<FileTree>
+- frontend/bindings
+  - myapp
+    - calculatorservice.js
+    - counterservice.js
+    - databaseservice.js
+    - index.js
+</FileTree>
+
+### Geração TypeScript
+
+```bash
+wails3 generate bindings -ts
+```
+
+**Gera arquivos `.ts`** com tipos TypeScript completos.
+
+### Diretório de Saída Personalizado
+
+```bash
+wails3 generate bindings -d ./src/bindings
+```
+
+### Modo Watch (Desenvolvimento)
+
+```bash
+wails3 dev
+```
+
+**Regenera automaticamente as vinculações** quando o código Go muda.
+
+## Usando Vinculações
+
+### JavaScript
+
+**Vinculação gerada:**
+
+```javascript
+// frontend/bindings/myapp/calculatorservice.js
+
+/**
+ * @param {number} a
+ * @param {number} b
+ * @returns {Promise<number>}
+ */
+export function Add(a, b) {
+    return window.wails.Call('CalculatorService.Add', a, b)
+}
+```
+
+**Uso:**
+
+```javascript
+import { Add, Subtract, Multiply, Divide } from './bindings/myapp/calculatorservice'
+
+// Chamadas simples
+const sum = await Add(5, 3)        // 8
+const diff = await Subtract(10, 4)  // 6
+const product = await Multiply(7, 6) // 42
+
+// Tratamento de erros
+try {
+    const result = await Divide(10, 0)
+} catch (error) {
+    console.error("Error:", error)  // "division by zero"
+}
+```
+
+### TypeScript
+
+**Vinculação gerada:**
+
+```typescript
+// frontend/bindings/myapp/calculatorservice.ts
+
+export function Add(a: number, b: number): Promise<number>
+export function Subtract(a: number, b: number): Promise<number>
+export function Multiply(a: number, b: number): Promise<number>
+export function Divide(a: number, b: number): Promise<number>
+```
+
+**Uso:**
+
+```typescript
+import { Add, Divide } from './bindings/myapp/calculatorservice'
+
+const sum: number = await Add(5, 3)
+
+try {
+    const result = await Divide(10, 0)
+} catch (error: unknown) {
+    if (error instanceof Error) {
+        console.error(error.message)
+    }
+}
+```
+
+**Benefícios:**
+- Verificação de tipos completa
+- Autocompletar na IDE
+- Erros em tempo de compilação
+- Melhor refatoração
+
+### Arquivos Index
+
+**Index gerado:**
+
+```javascript
+// frontend/bindings/myapp/index.js
+
+export * as CalculatorService from './calculatorservice.js'
+export * as CounterService from './counterservice.js'
+export * as DatabaseService from './databaseservice.js'
+```
+
+**Importações simplificadas:**
+
+```javascript
+import { CalculatorService } from './bindings/myapp'
+
+const sum = await CalculatorService.Add(5, 3)
+```
+
+## Mapeamento de Tipos
+
+### Tipos Primitivos
+
+| Tipo Go | JavaScript/TypeScript |
+|---------|----------------------|
+| `string` | `string` |
+| `bool` | `boolean` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `number` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `number` |
+| `float32`, `float64` | `number` |
+| `byte` | `number` |
+| `rune` | `number` |
+
+### Tipos Complexos
+
+| Tipo Go | JavaScript/TypeScript |
+|---------|----------------------|
+| `[]T` | `T[]` |
+| `[N]T` | `T[]` |
+| `map[string]T` | `Record<string, T>` |
+| `map[K]V` | `Map<K, V>` |
+| `struct` | `class` (com campos) |
+| `time.Time` | `Date` |
+| `*T` | `T` (ponteiros transparentes) |
+| `interface{}` | `any` |
+| `error` | Exceção (lançada) |
+
+### Tipos Não Suportados
+
+Estes tipos **não podem** ser passados através da ponte:
+- `chan T` (canais)
+- `func()` (funções)
+- Interfaces complexas (exceto `interface{}`)
+- Campos não exportados (minúsculas)
+
+**Solução alternativa:** Use IDs ou handles:
+
+```go
+// ❌ Não é possível retornar handle de arquivo
+func OpenFile(path string) (*os.File, error)
+
+// ✅ Retorne o ID do arquivo em vez disso
+var files = make(map[string]*os.File)
+
+func OpenFile(path string) (string, error) {
+    file, err := os.Open(path)
+    if err != nil {
+        return "", err
+    }
+    id := generateID()
+    files[id] = file
+    return id, nil
+}
+
+func ReadFile(id string) ([]byte, error) {
+    file := files[id]
+    return io.ReadAll(file)
+}
+
+func CloseFile(id string) error {
+    file := files[id]
+    delete(files, id)
+    return file.Close()
+}
+```
+
+## Tratamento de Erros
+
+### Lado Go
+
+```go
+func (d *DatabaseService) GetUser(id int) (*User, error) {
+    if id <= 0 {
+        return nil, errors.New("invalid user ID")
+    }
+    
+    var user User
+    err := d.db.QueryRow("SELECT * FROM users WHERE id = ?", id).Scan(&user)
+    if err == sql.ErrNoRows {
+        return nil, fmt.Errorf("user %d not found", id)
+    }
+    if err != nil {
+        return nil, fmt.Errorf("database error: %w", err)
+    }
+    
+    return &user, nil
+}
+```
+
+### Lado JavaScript
+
+```javascript
+import { GetUser } from './bindings/myapp/databaseservice'
+
+try {
+    const user = await GetUser(123)
+    console.log("User:", user)
+} catch (error) {
+    console.error("Error:", error)
+    // Error: "user 123 not found"
+}
+```---
+
+**Perguntas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou confira os [exemplos de binding](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).

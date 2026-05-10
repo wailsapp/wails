@@ -1,0 +1,145 @@
+---
+title: Empacotamento para macOS
+description: Empacote seu aplicativo Wails para distribuição no macOS
+sidebar:
+  order: 4
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Pacote do Aplicativo
+
+Empacote seu app como um pacote `.app` padrão do macOS:
+
+```bash
+wails3 package GOOS=darwin
+```
+
+Isso cria `bin/<AppName>.app` contendo:
+- O binário compilado em `Contents/MacOS/`
+- O ícone do app em `Contents/Resources/` (de `icons.icns` ou, quando presente, de um catálogo de ativos `Assets.car`)
+- `Info.plist` com os metadados do app
+
+### Binário Universal
+
+Compile para Macs com Apple Silicon e Intel:
+
+```bash
+wails3 task darwin:package:universal
+```
+
+Isso cria um único `.app` que roda nativamente em ambas as arquiteturas. Binários universais podem ser construídos em qualquer plataforma — no Linux e no Windows, `wails3 tool lipo` é usado automaticamente.
+
+## Personalizando o Pacote
+
+Edite `build/darwin/Info.plist` para personalizar:
+
+- Identificador do pacote (`CFBundleIdentifier`)
+- Nome e versão do app
+- Versão mínima do macOS
+- Associações de arquivos
+- Esquemas de URL
+
+O ícone do app é gerado a partir dos ativos no diretório `build/`. Use a tarefa `generate:icons`:
+
+```bash
+wails3 task generate:icons
+```
+
+Isso usa `build/appicon.png` para produzir `darwin/icons.icns` e `windows/icon.ico`. No macOS, você também pode fornecer `build/appicon.icon` (formato Icon Composer): a tarefa passa `-iconcomposerinput appicon.icon -macassetdir darwin`, o que produz `Assets.car` e `darwin/icons.icns` a partir do arquivo `.icon` (ignorado em plataformas não-macOS). Quando `Assets.car` está presente, execute a tarefa `update:build-assets` para que `Info.plist` e `CFBundleIconName` sejam atualizados conforme o necessário:
+
+```bash
+wails3 task update:build-assets
+```
+
+Para executar o comando de ícone manualmente a partir do diretório `build/`:
+
+```bash
+cd build
+wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico -iconcomposerinput appicon.icon -macassetdir darwin
+```
+
+## Assinatura de Código
+
+Assine seu app para distribuição:
+
+```bash
+# Usando o wrapper (detecta a plataforma automaticamente)
+wails3 sign GOOS=darwin
+
+# Ou usando a tarefa diretamente
+wails3 task darwin:sign
+```
+
+Configure a assinatura em `build/darwin/Taskfile.yml`:
+
+```yaml
+vars:
+  SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
+  ENTITLEMENTS: "build/darwin/entitlements.plist"
+```
+
+### Notarização
+
+Para apps distribuídos fora da Mac App Store, a Apple exige notarização:
+
+```bash
+wails3 task darwin:sign:notarize
+```
+
+Primeiro, armazene suas credenciais:
+
+```bash
+wails3 signing credentials \
+  --apple-id "you@email.com" \
+  --team-id "TEAMID" \
+  --password "app-specific-password" \
+  --profile "my-notarize-profile"
+```
+
+Configure em `build/darwin/Taskfile.yml`:
+
+```yaml
+vars:
+  SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
+  KEYCHAIN_PROFILE: "my-notarize-profile"
+```
+
+Veja [Assinando Aplicações](/pt/guides/build/signing) para mais detalhes.
+
+## Instalador DMG
+
+Crie uma imagem de disco DMG para distribuição:
+
+```bash
+wails3 task darwin:create:dmg
+```
+
+<Aside type="tip">
+Personalize o fundo e o layout do DMG editando os ativos em `build/darwin/dmg/`.
+</Aside>
+
+## Solução de Problemas
+
+### "O app está danificado e não pode ser aberto"
+
+O app não está assinado. Assine-o com um certificado de Developer ID ou os usuários podem contornar o Gatekeeper:
+
+```bash
+xattr -cr /path/to/YourApp.app
+```
+
+### Notarização falha
+
+Problemas comuns:
+- **Credenciais inválidas**: Execute novamente `wails3 signing credentials`
+- **Tempo de execução endurecido necessário**: Certifique-se de que as permissões incluem `com.apple.security.cs.allow-unsigned-executable-memory` se necessário
+- **Timestamp ausente**: O processo de assinatura deve incluir um timestamp automaticamente
+
+### App compilado cruzadamente não roda
+
+Binários do macOS compilados cruzadamente não são assinados. Transfira para um Mac e assine antes de testar:
+
+```bash
+codesign --force --deep --sign - YourApp.app
+```

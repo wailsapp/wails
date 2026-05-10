@@ -1,0 +1,551 @@
+---
+title: Referência da CLI
+description: Referência completa para os comandos da CLI do Wails
+sidebar:
+  order: 1
+---
+
+A CLI do Wails fornece um conjunto abrangente de comandos para ajudá-lo a desenvolver, compilar e manter suas aplicações Wails.
+
+## Comandos Principais
+
+Os comandos principais são os comandos primários usados para criação de projetos, desenvolvimento e compilação.
+
+Todos os comandos da CLI seguem o seguinte formato: `wails3 <comando>`.
+
+### `init`
+Inicializa um novo projeto Wails. Durante essa inicialização, o comando `go mod tidy` é executado para atualizar os pacotes do projeto. Isso pode ser ignorado usando a flag `-skipgomodtidy` com o comando `init`.
+
+```bash
+wails3 init [flags]
+```
+
+#### Flags
+| Flag                  | Descrição          | Padrão                  |
+|-----------------------|----------------------|--------------------------|
+| `-p`                  | Nome do pacote         | `main`                   |
+| `-t`                  | Nome ou URL do template | `vanilla`                |
+| `-n`                  | Nome do projeto         |                          |
+| `-d`                  | Diretório do projeto    | `.`                      |
+| `-q`                  | Suprimir saída      | `false`                  |
+| `-l`                  | Listar templates       | `false`                  |
+| `-git`                | URL do repositório Git   |                          |
+| `-productname`        | Nome do produto         | `My Product`             |
+| `-productdescription` | Descrição do produto  | `My Product Description` |
+| `-productversion`     | Versão do produto      | `0.1.0`                  |
+| `-productcompany`     | Nome da empresa         | `My Company`             |
+| `-productcopyright`   | Aviso de direitos autorais     | ` now, My Company`       |
+| `-productcomments`    | Comentários do arquivo        | `This is a comment`      |
+| `-productidentifier`  | Identificador do produto   |                          |
+| `-skipgomodtidy`      | Ignorar go mod tidy     | `false`                   |
+
+A flag `-git` aceita vários formatos de URL Git:
+- HTTPS: `https://github.com/username/project`
+- SSH: `git@github.com:username/project` ou `ssh://git@github.com/username/project`
+- Protocolo Git: `git://github.com/username/project`
+- Sistema de arquivos: `file:///path/to/project.git`
+
+Quando fornecida, esta flag irá:
+1. Inicializar um repositório git no diretório do projeto
+2. Definir a URL especificada como o remote origin
+3. Atualizar o nome do módulo em `go.mod` para corresponder à URL do repositório
+4. Adicionar todos os arquivos
+
+### `dev`
+Executa a aplicação em modo de desenvolvimento. Isso fornecerá uma visualização em tempo real do seu código frontend, e você pode fazer alterações e vê-las refletidas na aplicação em execução sem precisar recompilar toda a aplicação. Alterações no seu código Go também serão detectadas e a aplicação
+será automaticamente recompilada e reiniciada.
+
+```bash
+wails3 dev [flags]
+```
+
+#### Flags
+| Flag      | Descrição          | Padrão              |
+|-----------|----------------------|----------------------|
+| `-config` | Caminho do arquivo de configuração     | `./build/config.yml` |
+| `-port`   | Porta do servidor de desenvolvimento Vite | `9245`               |
+| `-s`      | Habilitar HTTPS         | `false`              |
+
+
+    :::note
+    Isso é equivalente a executar `wails3 task dev` e executa a tarefa `dev` no Taskfile principal do projeto. Você pode personalizar isso editando o arquivo `Taskfile.yml`.
+    :::
+
+
+### `build`
+Compila uma versão de depuração da sua aplicação. Por padrão, compila para a plataforma e arquitetura atuais.
+
+```bash
+wails3 build [flags] [variáveis da CLI...]
+```
+
+#### Flags
+| Flag     | Descrição                                              | Padrão |
+|----------|----------------------------------------------------------|---------|
+| `-tags`  | Tags de compilação Go adicionais (separadas por vírgula)               |         |
+
+Você pode passar variáveis da CLI para personalizar a compilação:
+```bash
+wails3 build PLATFORM=linux CONFIG=production
+```
+
+Use a flag `-tags` para passar tags de compilação Go personalizadas:
+```bash
+# Compilar com suporte a GTK4 no Linux
+wails3 build -tags gtk4
+
+# Compilar em modo servidor (sem GUI)
+wails3 build -tags server
+
+# Múltiplas tags
+wails3 build -tags gtk4,customtag
+```
+
+As tags são encaminhadas como `EXTRA_TAGS` para o Taskfile subjacente.
+
+    :::note
+    Isso é equivalente a executar `wails3 task build` que executa a tarefa `build` no Taskfile principal do projeto. Quaisquer variáveis da CLI passadas para `build` são encaminhadas para a tarefa subjacente. Você pode personalizar o processo de compilação editando o arquivo `Taskfile.yml`.
+    :::
+
+### `package`
+
+Cria pacotes específicos da plataforma para distribuição.
+
+```bash
+wails3 package [variáveis da CLI...]
+```
+
+Você pode passar variáveis da CLI para personalizar o empacotamento:
+```bash
+wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg
+```
+
+#### Tipos de Pacote
+
+Os seguintes tipos de pacote estão disponíveis para cada plataforma:
+
+| Plataforma | Tipo de Pacote                              |
+|----------|-------------------------------------------|
+| Windows  | `.exe`                                    |
+| macOS    | `.app`,                                   |
+| Linux    | `.AppImage`, `.deb`, `.rpm`, `.archlinux` |
+
+    :::note
+     Isso é equivalente a `wails3 task package` que executa a tarefa `package` no Taskfile principal do projeto. Quaisquer variáveis da CLI passadas para `package` são encaminhadas para a tarefa subjacente. Você pode personalizar o processo de empacotamento editando o arquivo `Taskfile.yml`.
+    :::
+
+
+### `task`
+Executa tarefas definidas no Taskfile.yml do seu projeto. Esta é uma versão embutida do [Taskfile](https://taskfile.dev) que permite definir e executar tarefas personalizadas de compilação, teste e implantação.
+
+```bash
+wails3 task [taskname] [variáveis da CLI...] [flags]
+```
+
+#### Variáveis da CLI
+Você pode passar variáveis para as tarefas no formato `KEY=VALUE`:
+```bash
+wails3 task build PLATFORM=linux CONFIG=production
+wails3 task deploy ENV=staging VERSION=1.2.3
+```
+
+Essas variáveis podem ser acessadas no seu Taskfile.yml usando a sintaxe de template Go:
+```yaml
+tasks:
+  build:
+    cmds:
+      - echo "Building for {{.PLATFORM | default "darwin"}}"
+      - echo "Config: {{.CONFIG | default "debug"}}"
+```
+
+#### Flags
+| Flag         | Descrição                               | Padrão  |
+|--------------|-------------------------------------------|----------|
+| `-h`         | Mostra o uso do Task                          | `false`  |
+| `-i`         | Cria um novo Taskfile.yml                | `false`  |
+| `-list`      | Lista tarefas com descrições             | `false`  |
+| `-list-all`  | Lista todas as tarefas (com ou sem descrições) | `false`  |
+| `-json`      | Formata a lista de tarefas como JSON                 | `false`  |
+| `-status`    | Sai com código não-zero se a tarefa não estiver atualizada | `false`  |
+| `-f`         | Força a execução mesmo quando a tarefa está atualizada | `false`  |
+| `-w`         | Habilita o modo de observação para a tarefa dada     | `false`  |
+| `-v`         | Habilita o modo verbose                      | `false`  |
+| `-version`   | Imprime a versão do Task                       | `false`  |
+| `-s`         | Desabilita a eco (echo)                          | `false`  |
+| `-p`         | Executa tarefas em paralelo                | `false`  |
+| `-dry`       | Compila e imprime tarefas sem executar | `false`  |
+| `-summary`   | Mostra um resumo sobre uma tarefa                | `false`  |
+| `-x`         | Passa o código de saída da tarefa    | `false`  |
+| `-dir`       | Define o diretório de execução               |          |
+| `-taskfile`  | Escolhe qual Taskfile executar              |          |
+| `-output`    | Define o estilo de saída: [interleaved|group|prefixed] |          |
+| `-c`         | Saída colorida (habilitada por padrão)       | `true`   |
+| `-C`         | Limita o número de tarefas executadas em paralelo |          |
+| `-interval`  | Intervalo para observar alterações (em segundos) |          |
+
+#### Exemplos
+```bash
+# Executar a tarefa padrão
+wails3 task
+
+# Executar uma tarefa específica
+wails3 task test
+
+# Executar uma tarefa com variáveis
+wails3 task build PLATFORM=windows ARCH=amd64
+
+# Listar todas as tarefas disponíveis
+wails3 task --list
+
+# Executar múltiplas tarefas em paralelo-------------|-------------------------------|---------------------|
+| `-f`        | Flags de build Go adicionais  |                     |
+| `-d`        | Diretório de saída            | `frontend/bindings` |
+| `-models`   | Nome do arquivo de modelos    | `models`            |
+| `-index`    | Nome do arquivo de índice     | `index`             |
+| `-ts`       | Gerar TypeScript              | `false`             |
+| `-i`        | Usar interfaces TS            | `false`             |
+| `-b`        | Usar runtime embutido         | `false`             |
+| `-names`    | Usar nomes em vez de IDs      | `false`             |
+| `-noindex`  | Pular arquivos de índice      | `false`             |
+| `-dry`      | Execução seca (dry run)       | `false`             |
+| `-silent`   | Modo silencioso               | `false`             |
+| `-v`        | Saída de depuração            | `false`             |
+| `-clean`    | Limpar diretório de saída     | `false`             |
+
+### `generate build-assets`
+Gera recursos de build para o seu aplicativo.
+
+```bash
+wails3 generate build-assets [flags]
+```
+
+#### Flags
+| Flag           | Descrição             | Padrão             |
+|----------------|-----------------------|--------------------|
+| `-name`        | Nome do projeto       |                    |
+| `-dir`         | Diretório de saída    | `build`            |
+| `-silent`      | Suprimir saída        | `false`            |
+| `-company`     | Nome da empresa       |                    |
+| `-productname` | Nome do produto       |                    |
+| `-description` | Descrição do produto  |                    |
+| `-version`     | Versão do produto     |                    |
+| `-identifier`  | Identificador do produto | `com.wails.[name]` |
+| `-copyright`   | Aviso de direitos autorais |                |
+| `-comments`    | Comentários do arquivo|                    |
+
+### `generate icons`
+Gera ícones do aplicativo.
+
+```bash
+wails3 generate icons [flags]
+```
+
+#### Flags
+| Flag                   | Descrição                                              | Padrão                    |
+|------------------------|--------------------------------------------------------|---------------------------|
+| `-input`               | Arquivo PNG de entrada                                 | Obrigatório               |
+| `-windowsfilename`     | Nome do arquivo de saída para Windows                  |                           |
+| `-macfilename`         | Nome do arquivo de saída para macOS                    |                           |
+| `-sizes`               | Tamanhos do ícone (separados por vírgula)              | `256,128,64,48,32,16`     |
+| `-example`             | Gerar ícone de exemplo                                 | `false`                   |
+| `-iconcomposerinput`   | Arquivo de entrada do Icon Composer (`.icon`)          |                           |
+| `-macassetdir`         | Diretório de saída para recursos do Mac (Assets.car + icns) |                        |
+
+#### Icon Composer (macOS)
+
+No macOS 26+, você pode usar arquivos `.icon` do Icon Composer para gerar `Assets.car` e `icons.icns`:
+
+```bash
+wails3 generate icons -iconcomposerinput build/appicon.icon -macassetdir build
+```
+
+Isso compila o arquivo `.icon` usando o comando `actool` da Apple. Requer o Xcode com a versão `actool` 26 ou posterior.
+
+Ao usar o Icon Composer, defina `cfBundleIconName` no seu `build/config.yml` para corresponder ao nome do arquivo `.icon` (sem a extensão):
+
+```yaml
+info:
+  cfBundleIconName: "appicon"
+```
+
+Se não estiver definido e `Assets.car` existir, o padrão será `"appicon"`.
+
+### `generate syso`
+Gera arquivo .syso para Windows.
+
+```bash
+wails3 generate syso [flags]
+```
+
+#### Flags
+| Flag        | Descrição                   | Padrão                         |
+|-------------|-----------------------------|--------------------------------|
+| `-manifest` | Caminho para o arquivo de manifesto | Obrigatório           |
+| `-icon`     | Caminho para o arquivo de ícone | Obrigatório              |
+| `-info`     | Caminho para o arquivo de informações de versão |                |
+| `-arch`     | Arquitetura de destino      | GOARCH atual                   |
+| `-out`      | Nome do arquivo de saída    | `rsrc_windows_[arch].syso`     |
+
+### `generate .desktop`
+Gera um arquivo .desktop para Linux.
+
+```bash
+wails3 generate .desktop [flags]
+```
+
+#### Flags
+| Flag             | Descrição                   | Padrão           |
+|------------------|-----------------------------|------------------|
+| `-name`          | Nome do aplicativo          | Obrigatório      |
+| `-exec`          | Caminho do executável       | Obrigatório      |
+| `-icon`          | Caminho do ícone            |                  |
+| `-categories`    | Categorias do aplicativo    | `Utility`        |
+| `-comment`       | Comentário do aplicativo    |                  |
+| `-terminal`      | Executar no terminal        | `false`          |
+| `-keywords`      | Palavras-chave de busca     |                  |
+| `-version`       | Versão do aplicativo        |                  |
+| `-genericname`   | Nome genérico               |                  |
+| `-startupnotify` | Exibir notificação de inicialização | `false`    |
+| `-mimetype`      | Tipos MIME suportados       |                  |
+| `-output`        | Nome do arquivo de saída    | `[name].desktop` |
+
+### `generate runtime`
+Gera a versão pré-compilada do runtime.
+
+```bash
+wails3 generate runtime
+```
+
+### `generate constants`
+Gera constantes JavaScript a partir do código Go.
+
+```bash
+wails3 generate constants
+```
+
+### `generate appimage`
+Gera um AppImage para Linux.
+
+```bash
+wails3 generate appimage [flags]
+```
+
+#### Flags
+| Flag        | Descrição               | Padrão           |
+|-------------|-------------------------|------------------|
+| `-binary`   | Caminho para o binário  | Obrigatório      |
+| `-icon`     | Caminho para o arquivo de ícone | Obrigatório |
+| `-desktop`  | Caminho para o arquivo .desktop | Obrigatório |
+| `-builddir` | Diretório de build      | Diretório temporário |
+| `-output`   | Diretório de saída      | `.`              |
+
+Comando base: `wails3 service`
+
+## Comandos de Serviço
+
+Os comandos de serviço ajudam a gerenciar serviços do Wails. Todos os comandos de serviço usam o comando base: `wails3 service <command>`.
+
+### `service init`
+Inicializa um novo serviço.
+
+```bash
+wails3 service init [flags]
+```
+
+#### Flags
+| Flag | Descrição             | Padrão              |
+|------|-----------------------|---------------------|
+| `-n` | Nome do serviço       | `example_service`   |
+| `-d` | Descrição do serviço  | `Example service`   |
+| `-p` | Nome do pacote        |                     |
+| `-o` | Diretório de saída    | `.`                 |
+| `-q` | Suprimir saída        | `false`             |
+| `-a` | Nome do autor         |                     |
+| `-v` | Versão                |                     |
+| `-w` | URL do site           |                     |
+| `-r` | URL do repositório    |                     |
+| `-l` | Licença               |                     |
+
+Comando base: `wails3 tool`
+
+## Comandos de Ferramenta
+
+Os comandos de ferramenta fornecem utilitários para desenvolvimento e depuração. Todos os comandos de ferramenta usam o comando base: `wails3 tool <command>`.
+
+### `tool checkport`
+Verifica se uma porta está aberta. Útil para testar se o vite está em execução.
+
+```bash
+wails3 tool checkport [flags]
+```
+
+#### Flags
+| Flag    | Descrição       | Padrão      |
+|---------|-----------------|-------------|
+| `-port` | Porta a verificar | `9245`    |
+| `-host` | Host a verificar  | `localhost` |
+
+### `tool watcher`
+Monitora arquivos e executa um comando quando eles são alterados.
+
+```bash
+wails3 tool watcher [flags]
+```
+
+#### Flags
+| Flag       | Descrição             | Padrão               |------------|---------------------|----------------------|
+| `-config`  | Caminho do arquivo de configuração    | `./build/config.yml` |
+| `-ignore`  | Padrões a ignorar  |                      |
+| `-include` | Padrões a incluir |                      |
+
+### `tool cp`
+Copia arquivos.
+
+```bash
+wails3 tool cp
+```
+
+### `tool buildinfo`
+Exibe informações de build sobre o aplicativo.
+
+```bash
+wails3 tool buildinfo
+```
+
+### `tool version`
+Incrementa uma versão semântica com base nas flags fornecidas.
+
+```bash
+wails3 tool version [flags]
+```
+
+#### Flags
+| Flag          | Descrição                                      | Padrão |
+|---------------|--------------------------------------------------|---------|
+| `-v`          | Versão atual para incrementar                          |         |
+| `-major`      | Incrementar a versão principal                               | `false` |
+| `-minor`      | Incrementar a versão secundária                               | `false` |
+| `-patch`      | Incrementar a versão de correção                               | `false` |
+| `-prerelease` | Incrementar a versão pré-lançamento (ex.: alpha.5 para alpha.6) | `false` |
+
+O comando segue a ordem de precedência: major > minor > patch > prerelease. Ele preserva o prefixo "v" se estiver presente na versão de entrada, bem como quaisquer componentes de pré-lançamento e metadados.
+
+Exemplo de uso:
+```bash
+wails3 tool version -v 1.2.3 -major      # Saída: 2.0.0
+wails3 tool version -v v1.2.3 -minor     # Saída: v1.3.0
+wails3 tool version -v 1.2.3-alpha -patch # Saída: 1.2.4-alpha
+wails3 tool version -v v3.0.0-alpha.5 -prerelease # Saída: v3.0.0-alpha.6
+```
+
+### `tool package`
+Gera pacotes Linux (deb, rpm, archlinux).
+
+```bash
+wails3 tool package [flags]
+```
+
+#### Flags
+| Flag      | Descrição                          | Padrão  |
+|-----------|--------------------------------------|----------|
+| `-format` | Formato do pacote (deb, rpm, archlinux) | `deb`    |
+| `-name`   | Nome do executável                      | Obrigatório |
+| `-config` | Caminho do arquivo de configuração                     | Obrigatório |
+| `-out`    | Diretório de saída                     | `.`      |
+
+#### Flags
+| Flag      | Descrição                          | Padrão |
+|-----------|--------------------------------------|---------|
+| `-format` | Formato do pacote (deb, rpm, archlinux) | `deb`   |
+| `-name`   | Nome do executável                      | `myapp` |
+| `-config` | Caminho do arquivo de configuração                     |         |
+| `-out`    | Diretório de saída                     | `.`     |
+
+Comando base: `wails3 update`
+
+## Comandos de Atualização
+
+Os comandos de atualização ajudam a gerenciar e atualizar os ativos do projeto. Todos os comandos de atualização usam o comando base: `wails3 update <command>`.
+
+### `update cli`
+Atualiza a CLI do Wails para uma nova versão.
+
+```bash
+wails3 update cli [flags]
+```
+
+#### Flags
+| Flag        | Descrição                     | Padrão |
+|-------------|---------------------------------|---------|
+| `-pre`      | Atualizar para a última versão pré-lançamento    | `false` |
+| `-version`  | Atualizar para uma versão específica      |         |
+| `-nocolour` | Desativar saída colorida          | `false` |
+
+O comando `update cli` permite atualizar sua instalação da CLI do Wails. Por padrão, ele atualiza para a versão estável mais recente.
+Você pode usar a flag `-pre` para atualizar para a versão pré-lançamento mais recente, ou especificar uma versão particular usando a flag `-version`.
+
+Após a atualização, lembre-se de atualizar o arquivo go.mod do seu projeto para usar a mesma versão:
+```bash
+require github.com/wailsapp/wails/v3 v3.x.x
+```
+
+### `update build-assets`
+Atualiza os ativos de build usando o arquivo de configuração fornecido.
+
+```bash
+wails3 update build-assets [flags]
+```
+
+#### Flags
+| Flag           | Descrição         | Padrão |
+|----------------|---------------------|---------|
+| `-config`      | Caminho do arquivo de configuração    |         |
+| `-dir`         | Diretório de saída    | `build` |
+| `-silent`      | Suprimir saída     | `false` |
+| `-company`     | Nome da empresa        |         |
+| `-productname` | Nome do produto        |         |
+| `-description` | Descrição do produto |         |
+| `-version`     | Versão do produto     |         |
+| `-identifier`  | Identificador do produto  |         |
+| `-copyright`   | Aviso de direitos autorais    |         |
+| `-comments`    | Comentários do arquivo       |         |
+
+Comando base: `wails3`
+
+## Comandos de Utilitário
+
+Os comandos de utilitário fornecem atalhos úteis para tarefas comuns. Use esses comandos diretamente com o comando base: `wails3 <command>`.
+
+### `docs`
+Abre a documentação do Wails no seu navegador padrão.
+
+```bash
+wails3 docs
+```
+
+### `releasenotes`
+Exibe as notas de lançamento da versão atual ou especificada.
+
+```bash
+wails3 releasenotes [flags]
+```
+
+#### Flags
+| Flag | Descrição                       | Padrão |
+|------|-----------------------------------|---------|
+| `-v` | Versão para exibir as notas de lançamento para |         |
+| `-n` | Desativar saída colorida             | `false` |
+
+### `version`
+Imprime a versão atual do Wails.
+
+```bash
+wails3 version
+```
+
+### `sponsor`
+Abre a página de patrocínio do Wails no seu navegador padrão.
+
+```bash
+wails3 sponsor
+```

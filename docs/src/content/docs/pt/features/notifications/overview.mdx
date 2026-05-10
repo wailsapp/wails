@@ -1,0 +1,303 @@
+---
+title: Notificações
+description: Exiba notificações nativas do sistema com botões de ação e campos de entrada de texto
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Introdução
+
+O Wails oferece um sistema abrangente de notificações multiplataforma para aplicativos de desktop. Este serviço permite exibir notificações nativas do sistema, com suporte para elementos interativos como botões de ação e campos de entrada de texto.
+
+## Uso Básico
+
+### Criando o Serviço
+
+Primeiro, inicialize o serviço de notificações:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/notifications"
+
+// Cria um novo serviço de notificações
+notifier := notifications.New()
+
+// Registra o serviço no aplicativo
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(notifier),
+    },
+})
+```
+
+## Autorização de Notificações
+
+As notificações no macOS exigem autorização do usuário. Solicite e verifique a autorização:
+
+```go
+authorized, err := notifier.CheckNotificationAuthorization()
+if err != nil {
+    // Lidar com erro de autorização
+}
+if authorized {
+    // Enviar notificações
+} else {
+    // Solicitar autorização
+    authorized, err = notifier.RequestNotificationAuthorization()
+}
+```
+No Windows e no Linux, isso sempre retorna `true`.
+
+## Tipos de Notificação
+
+### Notificações Básicas
+
+Envie uma notificação básica com um ID único, título, subtítulo opcional (macOS e Linux) e corpo de texto para os usuários:
+
+```go
+notifier.SendNotification(notifications.NotificationOptions{
+    ID: "unique-id",
+    Title: "New Calendar Invite",
+    Subtitle: "From: Jane Doe", // Opcional
+    Body: "Tap to view the event",
+})
+
+```
+
+### Notificações Interativas
+Envie uma notificação com botões de ação e campos de entrada de texto. Essas notificações exigem que uma categoria de notificação seja registrada primeiro:
+
+```go
+// Define um ID de categoria único
+categoryID := "unique-category-id"
+
+// Define uma categoria com ações
+category := notifications.NotificationCategory{
+    ID: categoryID,
+    Actions: []notifications.NotificationAction{
+        {
+            ID:    "OPEN", 
+            Title: "Open",
+        },
+        {
+            ID:          "ARCHIVE", 
+            Title:       "Archive", 
+            Destructive: true,  /* macOS-specific */
+        },
+    },
+    HasReplyField:    true,
+    ReplyPlaceholder: "message...",
+    ReplyButtonTitle: "Reply",
+}
+
+// Registra a categoria
+notifier.RegisterNotificationCategory(category)
+
+// Envia uma notificação interativa com as ações registradas na categoria fornecida
+notifier.SendNotificationWithActions(notifications.NotificationOptions{
+    ID:         "unique-id",
+    Title:      "New Message",
+    Subtitle:   "From: Jane Doe",
+    Body:       "Are you able to make it?",
+    CategoryID: categoryID,
+})
+```
+
+## Respostas de Notificação
+
+Processar interações do usuário com as notificações:
+
+```go
+notifier.OnNotificationResponse(func(result notifications.NotificationResult) {
+    response := result.Response
+    fmt.Printf("Notification %s was actioned with: %s\n", response.ID, response.ActionIdentifier)
+
+    if response.ActionIdentifier == "TEXT_REPLY" {
+        fmt.Printf("User replied: %s\n", response.UserText)
+    }
+
+    if data, ok := response.UserInfo["sender"].(string); ok {
+        fmt.Printf("Original sender: %s\n", data)
+    }
+
+    // Emite um evento para o frontend
+    app.Event.Emit("notification", result.Response)
+})
+```
+
+## Personalização de Notificação
+
+### Metadados Personalizados
+
+Notificações básicas e interativas podem incluir dados personalizados:
+
+```go
+notifier.SendNotification(notifications.NotificationOptions{
+    ID: "unique-id",
+    Title: "New Calendar Invite",
+    Subtitle: "From: Jane Doe", // Opcional
+    Body: "Tap to view the event",
+    Data: map[string]interface{}{
+        "sender": "jane.doe@example.com",
+        "timestamp": "2025-03-10T15:30:00Z",
+    }
+})
+
+```
+
+## Considerações de Plataforma
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    No macOS, as notificações:
+    
+    - Exigem autorização do usuário
+    - Exigem que o aplicativo seja notariado para distribuição
+    - Usam aparências de notificação padrão do sistema
+    - Suportam `subtitle`
+    - Suportam entrada de texto do usuário
+    - Suportam a opção de ação `Destructive`
+    - Gerenciam automaticamente os modos escuro/claro
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    No Windows, as notificações:
+    
+    - Usam estilos de toast do sistema Windows
+    - Adaptam-se às configurações de tema do Windows
+    - Suportam entrada de texto do usuário
+    - Suportam telas de alta densidade de pixels (DPI)
+    - Não suportam `subtitle`
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    No Linux, o comportamento da caixa de diálogo depende do ambiente de área de trabalho:
+    
+    - Usa notificações nativas quando disponíveis
+    - Segue o tema do ambiente de área de trabalho
+    - Posiciona-se de acordo com as regras do ambiente de área de trabalho
+    - Suporta `subtitle`
+    - Não suporta entrada de texto do usuário
+    
+  </TabItem>
+</Tabs>
+
+## Melhores Práticas
+
+1. Verifique e solicite autorização:
+   - O macOS requer autorização do usuário
+
+2. Forneça notificações claras e concisas:
+   - Use títulos, subtítulos, textos e títulos de ação descritivos
+
+3. Lidere adequadamente com as respostas das caixas de diálogo:
+   - Verifique erros nas respostas de notificação
+   - Forneça feedback para as ações do usuário
+
+4. Considere as convenções da plataforma:
+   - Siga os padrões de notificação específicos da plataforma
+   - Respeite as configurações do sistema
+
+## Exemplos
+
+Explore este exemplo:
+
+- [Notificações](/examples/notifications)
+
+## Referência da API
+
+### Gerenciamento de Serviço
+| Método                                     | Descrição                                           |
+|--------------------------------------------|-------------------------------------------------------|
+| `New()`                                    | Cria um novo serviço de notificações                   |
+
+### Autorização de Notificação
+| Método                                       | Descrição                                                |
+|----------------------------------------------|------------------------------------------------------------|
+| `RequestNotificationAuthorization()`         | Solicita permissão para exibir notificações (macOS)       |
+| `CheckNotificationAuthorization()`           | Verifica o status atual de autorização de notificação (macOS)   |
+
+### Enviando Notificações
+| Método                                                     | Description                                       |
+|------------------------------------------------------------|---------------------------------------------------|
+| `SendNotification(options NotificationOptions)`            | Envia uma notificação básica                        |
+| `SendNotificationWithActions(options NotificationOptions)` | Envia uma notificação interativa com ações    |
+
+### Categorias de Notificação
+| Method                                                        | Description                                       |
+|---------------------------------------------------------------|---------------------------------------------------|
+| `RegisterNotificationCategory(category NotificationCategory)` | Registra uma categoria de notificação reutilizável        |
+| `RemoveNotificationCategory(categoryID string)`               | Remove uma categoria registrada anteriormente          |-------------------------------------|-----------------------------|
+| `RemoveAllPendingNotifications()`               | Remove todas as notificações pendentes (apenas macOS e Linux)            |
+| `RemovePendingNotification(identifier string)`  | Remove uma notificação pendente específica (apenas macOS e Linux)      |
+| `RemoveAllDeliveredNotifications()`             | Remove todas as notificações entregues (apenas macOS e Linux)          |
+| `RemoveDeliveredNotification(identifier string)`| Remove uma notificação entregue específica (apenas macOS e Linux)    |
+| `RemoveNotification(identifier string)`         | Remove uma notificação (específico do Linux)                             |
+
+### Manipulação de Eventos
+| Método                                                             | Descrição                                     |
+|---------------------------------|---------------------|
+| `OnNotificationResponse(callback func(result NotificationResult))` | Registra um callback para respostas de notificação |
+
+### Estruturas e Tipos
+
+#### NotificationOptions
+```go
+type NotificationOptions struct {
+    ID         string                 // Identificador único para a notificação
+    Title      string                 // Título principal da notificação
+    Subtitle   string                 // Texto do subtítulo (apenas macOS e Linux)
+    Body       string                 // Conteúdo principal da notificação
+    CategoryID string                 // Identificador da categoria para notificações interativas
+    Data       map[string]interface{} // Dados personalizados para associar à notificação
+}
+```
+
+#### NotificationCategory 
+```go
+type NotificationCategory struct {
+    ID               string                // Identificador único para a categoria
+    Actions          []NotificationAction  // Ações de botão para a notificação
+    HasReplyField    bool                  // Se deve incluir um campo de entrada de texto
+    ReplyPlaceholder string                // Texto de espaço reservado para o campo de entrada
+    ReplyButtonTitle string                // Texto para o botão de resposta
+}
+```
+
+#### NotificationAction
+```go
+type NotificationAction struct {
+    ID          string  // Identificador único para a ação
+    Title       string  // Texto do botão
+    Destructive bool    // Se a ação é destrutiva (específico do macOS)
+}
+```
+
+#### NotificationResponse 
+```go
+type NotificationResponse struct {
+    ID               string                  // Identificador da notificação
+    ActionIdentifier string                  // Ação que foi acionada
+    CategoryID       string                  // Categoria da notificação
+    Title            string                  // Título da notificação
+    Subtitle         string                  // Subtítulo da notificação
+    Body             string                  // Texto do corpo da notificação
+    UserText         string                  // Texto inserido pelo usuário
+    UserInfo         map[string]interface{}  // Dados personalizados da notificação
+}
+```
+
+#### NotificationResult
+```go
+type NotificationResult struct {
+    Response NotificationResponse  // Dados da resposta
+    Error    error                 // Qualquer erro que ocorreu
+}
+```

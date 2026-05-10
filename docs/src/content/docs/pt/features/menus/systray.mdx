@@ -1,0 +1,388 @@
+---
+title: Menus da Bandeja do Sistema
+description: Adicione integração à bandeja do sistema (área de notificação) ao seu aplicativo
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## Menus da Bandeja do Sistema
+
+O Wails fornece **APIs unificadas para bandeja do sistema** que funcionam em todas as plataformas. Crie ícones da bandeja com menus, anexe janelas e manipule cliques com o comportamento nativo da plataforma para aplicativos em segundo plano, serviços e utilitários de acesso rápido.
+{/* VISUAL PLACEHOLDER: System Tray Comparison
+Description: Three screenshots showing the same Wails system tray icon on:
+1. Windows - Notification area (bottom-right)
+2. macOS - Menu bar (top-right) with label
+3. Linux (GNOME) - Top bar
+All showing the same icon and menu structure
+Style: Clean screenshots with arrows pointing to tray icon, menu expanded
+*/}
+
+## Início Rápido
+
+```go
+package main
+
+import (
+    _ "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed assets/icon.png
+var icon []byte
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Tray App",
+    })
+
+    // Create system tray
+    systray := app.SystemTray.New()
+    systray.SetIcon(icon)
+    systray.SetLabel("My App")
+
+    // Add menu
+    menu := app.NewMenu()
+    menu.Add("Show").OnClick(func(ctx *application.Context) {
+        // Show main window
+    })
+    menu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+    systray.SetMenu(menu)
+
+    // Create hidden window
+    window := app.Window.New()
+    window.Hide()
+
+    app.Run()
+}
+```
+
+**Resultado:** Ícone da bandeja do sistema com menu em todas as plataformas.
+
+## Criando uma Bandeja do Sistema
+
+### Bandeja Básica
+
+```go
+// Create system tray
+systray := app.SystemTray.New()
+
+// Set icon
+systray.SetIcon(iconBytes)
+
+// Set label (macOS) / tooltip (Windows)
+systray.SetLabel("My Application")
+```
+
+### Com Ícone
+
+Os ícones devem ser incorporados:
+
+```go
+import _ "embed"
+
+//go:embed assets/icon.png
+var icon []byte
+
+//go:embed assets/icon-dark.png
+var iconDark []byte
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    systray := app.SystemTray.New()
+    systray.SetIcon(icon)
+    systray.SetDarkModeIcon(iconDark)  // macOS dark mode
+    
+    app.Run()
+}
+```
+
+**Requisitos de ícone:**
+
+| Plataforma | Tamanho | Formato | Notas |
+|----------|------|--------|-------|
+| **Windows** | 16x16 ou 32x32 | PNG, ICO | Área de notificação |
+| **macOS** | 18x18 a 22x22 | PNG | Barra de menus, modelo recomendado |
+| **Linux** | 22x22 a 48x48 | PNG, SVG | Varia conforme o DE |
+
+### Ícones de Modelo (macOS)
+
+Ícones de modelo se adaptam automaticamente ao modo claro/escuro:
+
+```go
+systray.SetTemplateIcon(iconBytes)
+```
+
+**Diretrizes para ícones de modelo:**
+- Use apenas cores pretas e claras (transparentes)
+- O preto se torna branco no modo escuro
+- Nomeie o arquivo com o sufixo `Template`: `iconTemplate.png`
+- [Guia de design](https://bjango.com/articles/designingmenubarextras/)
+
+## Adicionando Menus
+
+Os menus da bandeja do sistema funcionam como os menus do aplicativo:
+
+```go
+menu := app.NewMenu()
+
+// Add items
+menu.Add("Open").OnClick(func(ctx *application.Context) {
+    showMainWindow()
+})
+
+menu.AddSeparator()
+
+menu.AddCheckbox("Start at Login", false).OnClick(func(ctx *application.Context) {
+    enabled := ctx.ClickedMenuItem().Checked()
+    setStartAtLogin(enabled)
+})
+
+menu.AddSeparator()
+
+menu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+// Set menu
+systray.SetMenu(menu)
+```
+
+**Para todos os tipos de itens de menu**, consulte a [Referência de Menus](/pt/features/menus/reference).
+
+## Anexando Janelas
+
+Anexe uma janela ao ícone da bandeja para mostrar/ocultar automaticamente:
+
+```go
+// Create window
+window := app.Window.New()
+
+// Attach to tray
+systray.AttachWindow(window)
+
+// Configure behaviour
+systray.SetWindowOffset(10)  // Pixels from tray icon
+systray.SetWindowDebounce(200 * time.Millisecond)  // Click debounce
+```
+
+**Comportamento:**
+- A janela começa oculta
+- **Clique esquerdo no ícone da bandeja** → Alterna a visibilidade da janela
+- **Clique direito no ícone da bandeja** → Mostra o menu (se definido)
+- A janela é posicionada perto do ícone da bandeja
+
+**Exemplo: Janela pop-up**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "Quick Access",
+    Width:  300,
+    Height: 400,
+    Frameless: true,  // No title bar
+    AlwaysOnTop: true,  // Stay on top
+})
+
+systray.AttachWindow(window)
+systray.SetWindowOffset(5)
+```
+
+## Manipuladores de Clique
+
+Manipule cliques no ícone da bandeja:
+
+```go
+systray := app.SystemTray.New()
+
+// Left click
+systray.OnClick(func() {
+    fmt.Println("Tray icon clicked")
+})
+
+// Right click
+systray.OnRightClick(func() {
+    fmt.Println("Tray icon right-clicked")
+})
+
+// Double click
+systray.OnDoubleClick(func() {
+    fmt.Println("Tray icon double-clicked")
+})
+
+// Mouse enter/leave
+systray.OnMouseEnter(func() {
+    fmt.Println("Mouse entered tray icon")
+})
+
+systray.OnMouseLeave(func() {
+    fmt.Println("Mouse left tray icon")
+})
+```
+
+**Suporte por plataforma:**
+
+| Evento | Windows | macOS | Linux |
+|-------|---------|-------|-------|
+| OnClick | ✅ | ✅ | ✅ |
+| OnRightClick | ✅ | ✅ | ✅ |
+| OnDoubleClick | ✅ | ✅ | ⚠️ Varia |
+| OnMouseEnter | ✅ | ✅ | ⚠️ Varia |
+| OnMouseLeave | ✅ | ✅ | ⚠️ Varia |
+
+## Atualizações Dinâmicas
+
+Atualize o ícone e o menu da bandeja dinamicamente:
+
+### Alterar Ícone
+
+```go
+var isActive bool
+
+func updateTrayIcon() {
+    if isActive {
+        systray.SetIcon(activeIcon)
+        systray.SetLabel("Active")
+    } else {
+        systray.SetIcon(inactiveIcon)
+        systray.SetLabel("Inactive")
+    }
+}
+```
+
+### Atualizar Menu
+
+```go
+var isPaused bool
+
+pauseMenuItem := menu.Add("Pause")
+
+pauseMenuItem.OnClick(func(ctx *application.Context) {
+    isPaused = !isPaused
+    
+    if isPaused {
+        pauseMenuItem.SetLabel("Resume")
+    } else {
+        pauseMenuItem.SetLabel("Pause")
+    }
+    
+    menu.Update()  // Important!
+})
+```
+
+:::caution[Sempre Chame Update()]
+Após alterar o estado do menu, **chame `menu.Update()`**. Consulte [Referência de Menus](/features/menus/reference#enabled-state).
+:::
+
+### Reconstruir Menu
+
+Para alterações maiores, reconstrua todo o menu:
+
+```go
+func rebuildTrayMenu(status string) {
+    menu := app.NewMenu()
+    
+    // Status-specific items
+    switch status {
+    case "syncing":
+        menu.Add("Syncing...").SetEnabled(false)
+        menu.Add("Pause Sync").OnClick(pauseSync)
+    case "synced":
+        menu.Add("Up to date ✓").SetEnabled(false)
+        menu.Add("Sync Now").OnClick(startSync)
+    case "error":
+        menu.Add("Sync Error").SetEnabled(false)
+        menu.Add("Retry").OnClick(retrySync)
+    }
+    
+    menu.AddSeparator()
+    menu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+    
+    systray.SetMenu(menu)
+}
+```----------|--------|--------|-------|
+| **Windows** | ✅ | ✅ | Totalmente funcional - o ícone aparece/desaparece da área de notificação |
+| **macOS** | ✅ | ✅ | O item da barra de menus é mostrado/ocultado |
+| **Linux** | ✅ | ✅ | Varia conforme o ambiente de desktop |
+
+**Casos de uso:**
+- Ocultar temporariamente o ícone da bandeia com base na preferência do usuário
+- Modo headless com ícone da bandeja aparecendo apenas quando necessário
+- Alternar a visibilidade com base no estado do aplicativo
+
+**Exemplo - Visibilidade Condicional da Bandeja:**
+
+```go
+func (t *TrayApp) setTrayVisibility(visible bool) {
+    if visible {
+        t.systray.Show()
+    } else {
+        t.systray.Hide()
+    }
+}
+
+// Exibe a bandeja apenas quando há atualizações disponíveis
+func (t *TrayApp) checkForUpdates() {
+    if hasUpdates {
+        t.systray.Show()
+        t.systray.SetLabel("Update Available")
+    } else {
+        t.systray.Hide()
+    }
+}
+```
+
+## Limpeza
+
+Destrua o ícone da bandeja quando terminar:
+
+```go
+// Em OnShutdown
+app := application.New(application.Options{
+    OnShutdown: func() {
+        if systray != nil {
+            systray.Destroy()
+        }
+    },
+})
+```
+
+**Importante:** Sempre destrua a bandeja do sistema ao desligar para liberar recursos.
+
+## Melhores Práticas
+
+### ✅ Faça
+
+- **Use ícones de modelo no macOS** - Adapta-se ao modo escuro
+- **Mantenha os rótulos curtos** - Máximo de 3-5 caracteres
+- **Forneça dicas de ferramenta no Windows** - Ajuda os usuários a identificar seu aplicativo
+- **Teste em todas as plataformas** - O comportamento varia
+- **Manipule os cliques adequadamente** - Clique esquerdo para a ação principal, clique direito para o menu
+- **Atualize o ícone para o status** - O feedback visual é importante
+- **Destrua ao desligar** - Libere recursos
+
+### ❌ Não faça
+
+- **Não use ícones grandes** - Siga as diretrizes da plataforma
+- **Não use rótulos longos** - Eles serão truncados
+- **Não esqueça o modo escuro** - Teste no modo escuro do macOS
+- **Não bloqueie os manipuladores de clique** - Mantenha-os rápidos
+- **Não esqueça o menu.Update()** - Após alterar o estado do menu
+- **Não assuma suporte à bandeja** - Alguns DEs do Linux não o suportam
+
+## Solução de Problemas
+
+### Ícone da Bandeja Não Aparece
+
+**Possíveis causas:**
+1. Formato do ícone não suportado
+2. Tamanho do ícone muito grande ou pequeno---
+
+**Perguntas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou confira os [exemplos de bandeja do sistema](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic).

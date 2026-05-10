@@ -1,0 +1,297 @@
+---
+title: Configuração do Ambiente de Desenvolvimento
+description: Configure seu ambiente de desenvolvimento para o desenvolvimento do Wails v3
+---
+
+## Configuração do Ambiente de Desenvolvimento
+
+Este guia orienta você na configuração de um ambiente de desenvolvimento completo para trabalhar com o Wails v3.
+
+## Ferramentas Necessárias
+
+### Desenvolvimento em Go
+
+1. **Instale o Go 1.25 ou posterior:**
+   ```bash
+   # Baixe em https://go.dev/dl/
+   go version  # Verifique a instalação
+   ```
+
+2. **Configure o ambiente Go:**
+   ```bash
+   # Adicione ao seu perfil de shell (.bashrc, .zshrc, etc.)
+   export GOPATH=$HOME/go
+   export PATH=$PATH:$GOPATH/bin
+   ```
+
+3. **Instale ferramentas úteis do Go:**
+   ```bash
+   go install golang.org/x/tools/cmd/goimports@latest
+   go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+   ```
+
+### Node.js e npm
+
+Necessários para construir a documentação e testar integrações com o frontend.
+
+```bash
+# Instale o Node.js 20+ e o npm
+node --version  # Deve ser 20+
+npm --version
+```
+
+### Dependências Específicas da Plataforma
+
+**macOS:**
+
+```bash
+# Instale as Ferramentas de Linha de Comando do Xcode
+xcode-select --install
+
+# Verifique a instalação
+xcode-select -p  # Deve exibir um caminho
+```
+
+**Windows:**
+
+1. Instale o [MSYS2](https://www.msys2.org/) para um ambiente semelhante ao Unix
+2. WebView2 Runtime (pré-instalado no Windows 11, [baixe](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) para o Windows 10)
+3. Opcional: Instale o [Git para Windows](https://git-scm.com/download/win)
+
+**Linux (Debian/Ubuntu):**
+
+```bash
+sudo apt update
+sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev
+```
+
+**Linux (Fedora/RHEL):**
+
+```bash
+sudo dnf install gcc pkg-config gtk3-devel webkit2gtk3-devel
+```
+
+**Linux (Arch):**
+
+```bash
+sudo pacman -S base-devel gtk3 webkit2gtk
+```
+
+## Configuração do Repositório
+
+### Clone e Configure
+
+```bash
+# Clone seu fork
+git clone https://github.com/YOUR_USERNAME/wails.git
+cd wails
+
+# Adicione o repositório remoto upstream
+git remote add upstream https://github.com/wailsapp/wails.git
+
+# Verifique os repositórios remotos
+git remote -v
+```
+
+### Compile a CLI do Wails
+
+```bash
+# Navegue até o diretório v3
+cd v3
+
+# Compile a CLI
+go build -o ../wails3 ./cmd/wails3
+
+# Teste a compilação
+cd ..
+./wails3 version
+```
+
+### Adicione ao PATH (Opcional)
+
+**Linux/macOS:**
+
+```bash
+# Adicione ao ~/.bashrc ou ~/.zshrc
+export PATH=$PATH:/path/to/wails
+```
+
+**Windows:**
+
+Adicione o diretório do Wails à sua variável de ambiente PATH através das Propriedades do Sistema.
+
+## Configuração do IDE
+
+### VS Code (Recomendado)
+
+1. **Instale o VS Code:** [Baixe](https://code.visualstudio.com/)
+
+2. **Instale as extensões:**
+   - Go (da Go Team do Google)
+   - ESLint
+   - Prettier
+   - MDX (para documentação)
+
+3. **Configure as configurações do espaço de trabalho** (`.vscode/settings.json`):
+   ```json
+   {
+     "go.useLanguageServer": true,
+     "go.lintTool": "golangci-lint",
+     "go.lintOnSave": "workspace",
+     "editor.formatOnSave": true,
+     "go.formatTool": "goimports"
+   }
+   ```
+
+### GoLand
+
+1. **Instale o GoLand:** [Baixe](https://www.jetbrains.com/go/)
+
+2. **Configure:**
+   - Ative o suporte a módulos Go
+   - Configure observadores de arquivos para `goimports`
+   - Configure o estilo de código para corresponder às convenções do projeto
+
+## Verifique sua Configuração
+
+Execute estes comandos para verificar se tudo está funcionando:
+
+```bash
+# Verifique a versão do Go
+go version
+
+# Compile o Wails
+cd v3
+go build ./cmd/wails3
+
+# Execute os testes
+go test ./pkg/...
+
+# Crie um aplicativo de teste
+cd ..
+./wails3 init -n mytest -t vanilla
+cd mytest
+../wails3 dev
+```
+
+Se o aplicativo de teste for compilado e executado, seu ambiente está pronto!
+
+## Executando Testes
+
+### Testes Unitários
+
+```bash
+cd v3
+go test ./...
+```
+
+### Testes de Pacotes Específicos
+
+```bash
+go test ./pkg/application
+go test ./pkg/events -v  # Saída detalhada
+```
+
+### Execute com Cobertura
+
+```bash
+go test ./... -coverprofile=coverage.out
+go tool cover -html=coverage.out
+```
+
+### Execute com o Detector de Condições de Corrida (Race Detector)
+
+```bash
+go test ./... -race
+```
+
+## Trabalhando com a Documentação
+
+A documentação do Wails é construída com Astro e Starlight.
+
+```bash
+cd docs
+
+# Instale as dependências
+npm install
+
+# Inicie o servidor de desenvolvimento
+npm run dev
+
+# Compile para produção
+npm run build
+```
+
+A documentação estará disponível em `http://localhost:4321/`
+
+## Depuração
+
+### Depurando Código Go
+
+**VS Code:**
+
+Crie `.vscode/launch.json`:
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Wails CLI",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/v3/cmd/wails3",
+      "args": ["dev"]
+    }
+  ]
+}
+```
+
+**Linha de Comando:**
+
+```bash
+# Use o depurador Delve
+go install github.com/go-delve/delve/cmd/dlv@latest
+dlv debug ./cmd/wails3 -- dev
+```
+
+### Depurando Código da Plataforma
+
+A depuração específica da plataforma requer ferramentas da plataforma:
+
+- **macOS:** Xcode Instruments
+- **Windows:** Depurador do Visual Studio
+- **Linux:** GDB
+
+## Problemas Comuns
+
+### "command not found: wails3"
+
+Adicione o diretório do Wails ao seu PATH ou use `./wails3` a partir da raiz do projeto.
+
+### "webkit2gtk not found" (Linux)
+
+Instale os pacotes de desenvolvimento do WebKit2GTK:
+
+```bash
+sudo apt install libwebkit2gtk-4.0-dev  # Debian/Ubuntu
+```
+
+### A compilação falha com erros de módulo Go
+
+```bash
+cd v3
+go mod tidy
+go mod download
+```
+
+### Erros de "CGO_ENABLED" no Windows
+
+Certifique-se de ter um compilador C (MinGW-w64 via MSYS2) no seu PATH.
+
+## Próximos Passos
+
+- Revise os [Padrões de Codificação](/pt/contributing/standards)
+- Explore a [Documentação Técnica](/pt/contributing)
+- Encontre um problema para trabalhar: [Boas Primeiras Questões](https://github.com/wailsapp/wails/labels/good%20first%20issue)

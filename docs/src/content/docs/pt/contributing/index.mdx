@@ -1,0 +1,94 @@
+---
+title: Visão Técnica
+description: Arquitetura de alto nível e roteiro para o código-fonte do Wails v3
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Bem-vindo à Documentação Técnica do Wails v3
+
+Esta seção **não** trata de diretrizes da comunidade ou de como abrir um pull request.
+Em vez disso, ela se aprofunda em **como o Wails v3 é construído** para que você possa se orientar
+rapidamente no código-fonte e começar a desenvolver com confiança.
+
+Se você planeja corrigir o runtime, estender a CLI, criar novos templates ou
+simplesmente entender os componentes internos, as páginas a seguir fornecem o contexto técnico
+que você precisa.
+
+---
+
+## Arquitetura de Alto Nível
+
+<CardGrid>
+  <Card title="Backend Go" icon="seti:go">
+    O coração de cada aplicativo Wails é o código Go compilado em um executável nativo.
+    Ele é responsável pela lógica da aplicação, integração com o sistema e operações
+    críticas de desempenho.
+  </Card>
+
+  <Card title="Frontend Web" icon="seti:html">
+    A interface do usuário é escrita com tecnologias web padrão (React, Vue, Svelte, Vanilla, …)
+    renderizada por um WebView do sistema leve (WebKit no Linux/macOS, WebView2 no
+    Windows).
+  </Card>
+
+  <Card title="Camada de Ponte" icon="puzzle">
+    Uma ponte em memória sem cópia permite chamadas **Go⇄JavaScript** com conversão
+    automática de tipos, propagação de eventos e encaminhamento de erros.
+  </Card>
+
+  <Card title="CLI e Ferramentas" icon="terminal">
+    `wails3` orquestra a criação de projetos, o servidor de desenvolvimento com recarregamento em tempo real, o empacotamento de ativos, a compilação cruzada e o empacotamento (deb, rpm, AppImage, msi, dmg…).
+  </Card>
+</CardGrid>
+
+---
+
+## Visão Geral da Arquitetura
+
+**Wails v3 – Fluxo de Ponta a Ponta**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[Placeholder do Diagrama de Fluxo de Ponta a Ponta]**
+
+
+O diagrama mostra o **fluxo de ponta a ponta**:
+
+1. A **CLI** direciona a geração, o servidor de desenvolvimento, a compilação e o empacotamento.  
+2. O **Sistema de Bindings** produz código de ligação que permite que o **Frontend Web** chame o **Backend Go**.  
+3. Durante o desenvolvimento, o **Servidor de Ativos** faz proxy para o servidor de desenvolvimento do framework; em produção, ele serve arquivos embutidos.  
+4. Em tempo de execução, o **Desktop Runtime** gerencia janelas e APIs do sistema operacional, enquanto a **Bridge** transporta mensagens entre Go e JavaScript.
+
+---
+
+## O Que Esta Documentação Cobre
+
+| Tópico | Por Que É Importante |
+| ----- | -------------- |
+| **Estrutura do Código-Fonte** | Mapa dos diretórios `/v3` e como os módulos interagem. |
+| **Componentes Internos do Runtime** | Gerenciamento de janelas, APIs do sistema, processador de mensagens e adaptadores de plataforma. |
+| **Ativos e Servidor de Desenvolvimento** | Como os ativos web são servidos em desenvolvimento e embutidos em produção. |
+| **Pipeline de Compilação e Empacotamento** | Fluxo de trabalho baseado em Taskfile, compilação multiplataforma e geração de instaladores. |
+| **Sistema de Bindings** | Pipeline de análise estática que gera bindings Go⇄TS seguros em termos de tipos. |
+| **Sistema de Templates** | Arquitetura do gerador que alimenta `wails init -t <framework>`. |
+| **Testes e CI** | Ambiente de testes unitários/integração, GitHub Actions e orientações sobre o detector de corridas (race detector). |
+| **Estendendo o Wails** | Adicionando serviços, templates ou subcomandos da CLI. |
+
+Cada página subsequente aprofunda-se nessas áreas com exemplos de código concretos,
+diagramas e referências aos arquivos de origem relevantes.
+
+---
+
+:::note
+Pré-requisitos: Você deve estar confortável com **Go 1.25+**, TypeScript básico
+e ferramentas modernas de build para frontend. Se você é novo no Go, considere ler rapidamente o
+tour oficial primeiro.
+:::
+
+Boa exploração — e bem-vindo aos componentes internos do Wails v3!

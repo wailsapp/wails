@@ -1,0 +1,160 @@
+---
+title: Criando Instaladores
+description: Empacote seu aplicativo para distribuição
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Visão Geral
+
+Crie instaladores profissionais para seu aplicativo Wails em todas as plataformas.
+
+## Instaladores por Plataforma
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+    ### Instalador NSIS
+    
+    ```bash
+    # Install NSIS
+    # Download from: https://nsis.sourceforge.io/
+    
+    # Create installer script (installer.nsi)
+    makensis installer.nsi
+    ```
+    
+    **installer.nsi:**
+    ```nsis
+    !define APPNAME "MyApp"
+    !define VERSION "1.0.0"
+    
+    Name "${APPNAME}"
+    OutFile "MyApp-Setup.exe"
+    InstallDir "$PROGRAMFILES\${APPNAME}"
+    
+    Section "Install"
+        SetOutPath "$INSTDIR"
+        File "build\bin\myapp.exe"
+        CreateShortcut "$DESKTOP\${APPNAME}.lnk" "$INSTDIR\myapp.exe"
+    SectionEnd
+    ```
+    
+    ### WiX Toolset
+    
+    Alternativa para instaladores MSI.
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    ### Criação de DMG
+    
+    ```bash
+    # Create DMG
+    hdiutil create -volname "MyApp" -srcfolder build/bin/MyApp.app -ov -format UDZO MyApp.dmg
+    ```
+    
+    ### Assinatura de Código
+    
+    ```bash
+    # Sign application
+    codesign --deep --force --verify --verbose --sign "Developer ID" MyApp.app
+    
+    # Notarize
+    xcrun notarytool submit MyApp.dmg --apple-id "email" --password "app-password"
+    ```
+    
+    ### App Store
+    
+    Use o Xcode para distribuição na App Store.
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    ### Pacote DEB
+    
+    ```bash
+    # Create package structure
+    mkdir -p myapp_1.0.0/DEBIAN
+    mkdir -p myapp_1.0.0/usr/bin
+    
+    # Copy binary
+    cp build/bin/myapp myapp_1.0.0/usr/bin/
+    
+    # Create control file
+    cat > myapp_1.0.0/DEBIAN/control << EOF
+    Package: myapp
+    Version: 1.0.0
+    Architecture: amd64
+    Maintainer: Your Name
+    Description: My Application
+    EOF
+    
+    # Build package
+    dpkg-deb --build myapp_1.0.0
+    ```
+    
+    ### Pacote RPM
+    
+    Use `rpmbuild` para distribuições baseadas em RPM.
+    
+    ### AppImage
+    
+    ```bash
+    # Use appimagetool
+    appimagetool myapp.AppDir
+    ```
+  </TabItem>
+</Tabs>
+
+## Empacotamento Automatizado
+
+### Usando GoReleaser
+
+```yaml
+# .goreleaser.yml
+project_name: myapp
+
+builds:
+  - binary: myapp
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+nfpms:
+  - formats:
+      - deb
+      - rpm
+    vendor: Your Company
+    homepage: https://example.com
+    description: My Application
+```
+
+## Melhores Práticas
+
+### ✅ Faça
+
+- Assine o código em todas as plataformas
+- Inclua informações de versão
+- Crie desinstaladores
+- Teste o processo de instalação
+- Forneça documentação clara
+
+### ❌ Não Faça
+
+- Não pule a assinatura de código
+- Não esqueça das associações de arquivos
+- Não use caminhos fixos (hardcoded)
+- Não pule os testes
+
+## Próximos Passos
+
+- [Auto-Updates](/guides/auto-updates) - Implemente atualizações automáticas
+- [Cross-Platform Building](/guides/cross-platform) - Compile para múltiplas plataformas

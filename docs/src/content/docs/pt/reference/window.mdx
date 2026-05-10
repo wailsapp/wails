@@ -1,0 +1,503 @@
+---
+title: API de Janela
+description: Referência completa para a API de Janela
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Visão Geral
+
+A API de Janela fornece métodos para controlar a aparência, o comportamento e o ciclo de vida da janela. O acesso é feito por meio de instâncias de janela ou do gerenciador de janelas.
+
+**Operações comuns:**
+- Criar e exibir janelas
+- Controlar tamanho, posição e estado
+- Manipular eventos de janela
+- Gerenciar o conteúdo da janela
+- Configurar aparência e comportamento
+
+## Visibilidade
+
+### Show()
+
+Exibe a janela. Se a janela estava oculta, ela se torna visível.
+
+```go
+func (w *Window) Show()
+```
+
+**Exemplo:**
+```go
+window := app.Window.New()
+window.Show()
+```
+
+### Hide()
+
+Oculta a janela sem fechá-la. A janela permanece na memória e pode ser exibida novamente.
+
+```go
+func (w *Window) Hide()
+```
+
+**Exemplo:**
+```go
+// Ocultar janela temporariamente
+window.Hide()
+
+// Exibi-la novamente mais tarde
+window.Show()
+```
+
+**Casos de uso:**
+- Aplicativos de bandeja do sistema que se ocultam para a bandeja
+- Fluxos de assistente onde as janelas são reutilizadas
+- Ocultação temporária durante operações
+
+### Close()
+
+Fecha a janela. Isso aciona o evento `WindowClosing`.
+
+```go
+func (w *Window) Close()
+```
+
+**Exemplo:**
+```go
+window.Close()
+```
+
+**Nota:** Se um hook registrado chamar `event.Cancel()`, o fechamento será impedido.
+
+## Propriedades da Janela
+
+### SetTitle()
+
+Define o texto da barra de título da janela.
+
+```go
+func (w *Window) SetTitle(title string)
+```
+
+**Parâmetros:**
+- `title` - O novo título da janela
+
+**Exemplo:**
+```go
+window.SetTitle("Meu Aplicativo - Documento.txt")
+```
+
+### Name()
+
+Retorna o identificador de nome exclusivo da janela.
+
+```go
+func (w *Window) Name() string
+```
+
+**Exemplo:**
+```go
+name := window.Name()
+fmt.Println("Nome da janela:", name)
+
+// Recuperar a janela pelo nome mais tarde
+window := app.GetWindowByName(name)
+```
+
+## Tamanho e Posição
+
+### SetSize()
+
+Define as dimensões da janela em pixels.
+
+```go
+func (w *Window) SetSize(width, height int)
+```
+
+**Parâmetros:**
+- `width` - Largura da janela em pixels
+- `height` - Altura da janela em pixels
+
+**Exemplo:**
+```go
+window.SetSize(1024, 768)
+```
+
+### Size()
+
+Retorna as dimensões atuais da janela.
+
+```go
+func (w *Window) Size() (width, height int)
+```
+
+**Exemplo:**
+```go
+width, height := window.Size()
+fmt.Printf("A janela é %dx%d\n", width, height)
+```
+
+### SetMinSize() / SetMaxSize()
+
+Define as dimensões mínima e máxima da janela.
+
+```go
+func (w *Window) SetMinSize(width, height int)
+func (w *Window) SetMaxSize(width, height int)
+```
+
+**Exemplo:**
+```go
+// Impedir que a janela fique muito pequena
+window.SetMinSize(800, 600)
+
+// Impedir que a janela fique muito grande
+window.SetMaxSize(1920, 1080)
+```
+
+### SetPosition()
+
+Define a posição da janela em relação ao canto superior esquerdo da tela.
+
+```go
+func (w *Window) SetPosition(x, y int)
+```
+
+**Parâmetros:**
+- `x` - Posição horizontal em pixels
+- `y` - Posição vertical em pixels
+
+**Exemplo:**
+```go
+// Posicionar a janela no canto superior esquerdo
+window.SetPosition(0, 0)
+
+// Posicionar a janela a 100px do canto superior esquerdo
+window.SetPosition(100, 100)
+```
+
+### Position()
+
+Retorna a posição atual da janela.
+
+```go
+func (w *Window) Position() (x, y int)
+```
+
+**Exemplo:**
+```go
+x, y := window.Position()
+fmt.Printf("A janela está em (%d, %d)\n", x, y)
+```
+
+### Centre()
+
+Centraliza a janela na tela.
+
+```go
+func (w *Window) Centre()
+```
+
+**Exemplo:**
+```go
+window := app.Window.New()
+window.Centre()
+window.Show()
+```
+
+**Nota:** Centraliza no monitor principal. Para configurações com vários monitores, consulte as APIs de tela.
+
+### SetFocus()
+
+Traz a janela para frente e dá a ela o foco do teclado.
+
+```go
+func (w *Window) SetFocus()
+```
+
+**Exemplo:**
+```go
+// Trazer a janela para frente
+window.SetFocus()
+```
+
+## Estado da Janela
+
+### Minimise() / UnMinimise()
+
+Minimiza a janela para a barra de tarefas/dock ou a restaura.
+
+```go
+func (w *Window) Minimise()
+func (w *Window) UnMinimise()
+```
+
+**Exemplo:**
+```go
+// Minimizar a janela
+window.Minimise()
+
+// Restaurar do estado minimizado
+window.UnMinimise()
+```
+
+### Maximise() / UnMaximise()
+
+Maximiza a janela para preencher a tela ou a restaura ao seu tamanho anterior.
+
+```go
+func (w *Window) Maximise()
+func (w *Window) UnMaximise()
+```
+
+**Exemplo:**
+```go
+// Maximizar a janela
+window.Maximise()
+
+// Restaurar ao tamanho anterior
+window.UnMaximise()
+```
+
+### Fullscreen() / UnFullscreen()
+
+Entrar ou sair do modo de tela cheia.
+
+```go
+func (w *Window) Fullscreen()
+func (w *Window) UnFullscreen()
+```
+
+**Exemplo:**
+```go
+// Entrar em tela cheia
+window.Fullscreen()
+
+// Sair da tela cheia
+window.UnFullscreen()
+```
+
+### IsMinimised() / IsMaximised() / IsFullscreen()
+
+Verifica o estado atual da janela.
+
+```go
+func (w *Window) IsMinimised() bool
+func (w *Window) IsMaximised() bool
+func (w *Window) IsFullscreen() bool
+```
+
+**Exemplo:**
+```go
+if window.IsMinimised() {
+    window.UnMinimise()
+}
+
+if window.IsMaximised() {
+    fmt.Println("A janela está maximizada")
+}
+
+if window.IsFullscreen() {
+    window.UnFullscreen()
+}
+```
+
+## Conteúdo da Janela
+
+### SetURL()
+
+Navega para uma URL específica dentro da janela.
+
+```go
+func (w *Window) SetURL(url string)
+```
+
+**Parâmetros:**
+- `url` - URL para navegar (pode ser `http://wails.localhost/` para recursos embutidos)
+
+**Exemplo:**
+```go
+// Navegar para a página embutida
+window.SetURL("http://wails.localhost/settings.html")
+
+// Navegar para uma URL externa (se permitido)
+window.SetURL("https://wails.io")
+```
+
+### SetHTML()
+
+Define o conteúdo da janela diretamente a partir de uma string HTML.
+
+```go
+func (w *Window) SetHTML(html string)
+```
+
+**Parâmetros:**
+- `html` - Conteúdo HTML a ser exibido
+
+**Exemplo:**
+```go
+html := `
+<!DOCTYPE html>
+<html>
+<head><title>Conteúdo Dinâmico</title></head>
+<body>
+    <h1>Olá do Go!</h1>
+    <p>Este conteúdo foi gerado dinamicamente.</p>
+</body>
+</html>
+`
+window.SetHTML(html)
+```
+
+**Casos de uso:**
+- Geração de conteúdo dinâmico
+- Janelas simples sem processo de build de frontend
+- Páginas de erro ou telas de carregamento
+
+### Reload()
+
+Recarrega o conteúdo atual da janela.
+
+```go
+func (w *Window) Reload()
+```
+
+**Exemplo:**
+```go
+// Recarregar a página atual
+window.Reload()
+```
+
+**Nota:** Útil durante o desenvolvimento ou quando o conteúdo precisa ser atualizado.
+
+## Eventos da Janela
+
+O Wails fornece dois métodos para manipular eventos de janela:
+
+- **OnWindowEvent()** - Ouvir eventos de janela (não pode impedi-los)
+- **RegisterHook()** - Conectar-se aos eventos de janela (pode impedi-los chamando `event.Cancel()`)
+
+### OnWindowEvent()
+
+Registra um callback para eventos de janela.
+
+```go
+func (w *Window) OnWindowEvent(
+    eventType events.WindowEventType,
+    callback func(event *WindowEvent),
+) func()
+```
+
+**Retorna:** Função de limpeza para remover o ouvinte de eventos
+
+**Exemplo:**
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// Ouvir foco da janela
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("A janela ganhou foco")
+})
+
+// Ouvir perda de foco da janela
+window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("A janela perdeu o foco")
+})
+
+// Ouvir redimensionamento da janela
+window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
+    app.Logger.Info("A janela foi redimensionada")
+})
+```
+
+**Eventos Comuns da Janela:**
+- `events.Common.WindowClosing` - A janela está prestes a fechar
+- `events.Common.WindowFocus` - A janela ganhou foco
+- `events.Common.WindowLostFocus` - A janela perdeu o foco
+- `events.Common.WindowDidMove` - A janela foi movida
+- `events.Common.WindowDidResize` - A janela foi redimensionada
+- `events.Common.WindowMinimise` - A janela foi minimizada
+- `events.Common.WindowMaximise` - A janela foi maximizada
+- `events.Common.WindowFullscreen` - A janela entrou em tela cheia-------|-------------|
+| `LinuxMenuStyleMenuBar` | Barra de menu tradicional abaixo da barra de título (padrão) |
+| `LinuxMenuStylePrimaryMenu` | Botão de menu principal na barra de cabeçalho (estilo GNOME) |
+
+**Exemplo:**
+```go
+window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Title: "My Application",
+    Linux: application.LinuxWindow{
+        MenuStyle: application.LinuxMenuStylePrimaryMenu,
+    },
+})
+window.SetMenu(menu)
+```
+
+**Nota:** O estilo de menu principal exibe um botão de hambúrguer (☰) na barra de cabeçalho, seguindo as Diretrizes de Interface Humana do GNOME. Este é o estilo recomendado para aplicativos GNOME modernos.
+
+## Exemplo Completo
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Window API Demo",
+    })
+
+    // Create window with options
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:            "My Application",
+        Width:            1024,
+        Height:           768,
+        MinWidth:         800,
+        MinHeight:        600,
+        BackgroundColour: application.NewRGB(255, 255, 255),
+        URL:              "http://wails.localhost/",
+    })
+
+    // Configure window behavior
+    window.SetResizable(true)
+    window.SetMinSize(800, 600)
+    window.SetMaxSize(1920, 1080)
+
+    // Set up event hooks
+    window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+        // Confirm before closing
+        result, _ := app.Dialog.Question().
+            SetTitle("Confirm Close").
+            SetMessage("Are you sure you want to close this window?").
+            SetButtons("Yes", "No").
+            Show()
+
+        if result == "No" {
+            e.Cancel()
+        }
+    })
+
+    // Listen for window events
+    window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+        window.SetTitle("My Application (Active)")
+        app.Logger.Info("Window gained focus")
+    })
+
+    window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+        window.SetTitle("My Application")
+        app.Logger.Info("Window lost focus")
+    })
+
+    // Position and show window
+    window.Centre()
+    window.Show()
+
+    app.Run()
+}
+```

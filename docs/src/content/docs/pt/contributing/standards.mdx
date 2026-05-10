@@ -1,0 +1,463 @@
+---
+title: Padrões de Codificação
+description: Estilo de código, convenções e melhores práticas para o Wails v3
+---
+
+## Estilo e Convenções de Código
+
+Seguir padrões de codificação consistentes torna a base de código mais fácil de ler, manter e contribuir.
+
+## Padrões de Código Go
+
+### Formatação de Código
+
+Use as ferramentas padrão de formatação do Go:
+
+```bash
+# Formatar todo o código
+gofmt -w .
+
+# Use goimports para organizar as importações
+goimports -w .
+```
+
+**Obrigatório:** Todo o código Go deve passar por `gofmt` e `goimports` antes do commit.
+
+### Convenções de Nomenclatura
+
+**Pacotes:**
+- Minúsculas, uma única palavra quando possível
+- `package application`, `package events`
+- Evite underscores ou letras maiúsculas/mínusculas misturadas
+
+**Nomes Exportados:**
+- PascalCase para tipos, funções e constantes
+- `type WebviewWindow struct`, `func NewApplication()`
+
+**Nomes Não Exportados:**
+- camelCase para tipos internos, funções e variáveis
+- `type windowImpl struct`, `func createWindow()`
+
+**Interfaces:**
+- Nomeie pelo comportamento: `Reader`, `Writer`, `Handler`
+- Interfaces de um único método: nomeie com sufixo `-er`
+
+```go
+// Bom
+type Closer interface {
+    Close() error
+}
+
+// Evitar
+type CloseInterface interface {
+    Close() error
+}
+```
+
+### Tratamento de Erros
+
+**Sempre verifique os erros:**
+
+```go
+// Bom
+result, err := doSomething()
+if err != nil {
+    return fmt.Errorf("failed to do something: %w", err)
+}
+
+// Ruim - ignorando erros
+result, _ := doSomething()
+```
+
+**Use wrapping de erros:**
+
+```go
+// Envolver erros para fornecer contexto
+if err := validate(); err != nil {
+    return fmt.Errorf("validation failed: %w", err)
+}
+```
+
+**Crie tipos de erro personalizados quando necessário:**
+
+```go
+type ValidationError struct {
+    Field string
+    Value string
+}
+
+func (e *ValidationError) Error() string {
+    return fmt.Sprintf("invalid value %q for field %q", e.Value, e.Field)
+}
+```
+
+### Comentários e Documentação
+
+**Comentários de pacote:**
+
+```go
+// Package application provides the core Wails application runtime.
+//
+// It handles window management, event dispatching, and service lifecycle.
+package application
+```
+
+**Declarações exportadas:**
+
+```go
+// NewApplication creates a new Wails application with the given options.
+//
+// The application must be started with Run() or RunWithContext().
+func NewApplication(opts Options) *Application {
+    // ...
+}
+```
+
+**Comentários de implementação:**
+
+```go
+// processEvent handles incoming events from the runtime.
+// It dispatches to registered handlers and manages event lifecycle.
+func (a *Application) processEvent(event *Event) {
+    // Validate event before processing
+    if event == nil {
+        return
+    }
+
+    // Find and invoke handlers
+    // ...
+}
+```
+
+### Estrutura de Funções e Métodos
+
+**Mantenha as funções focadas:**
+
+```go
+// Bom - responsabilidade única
+func (w *Window) setTitle(title string) {
+    w.title = title
+    w.updateNativeTitle()
+}
+
+// Ruim - fazendo demais
+func (w *Window) updateEverything() {
+    w.setTitle(w.title)
+    w.setSize(w.width, w.height)
+    w.setPosition(w.x, w.y)
+    // ... 20 more operations
+}
+```
+
+**Use retornos antecipados:**
+
+```go
+// Bom
+func validate(input string) error {
+    if input == "" {
+        return errors.New("empty input")
+    }
+
+    if len(input) > 100 {
+        return errors.New("input too long")
+    }
+
+    return nil
+}
+
+// Evitar aninhamento profundo
+```
+
+### Concorrência
+
+**Use context para cancelamento:**
+
+```go
+func (a *Application) RunWithContext(ctx context.Context) error {
+    select {
+    case <-ctx.Done():
+        return ctx.Err()
+    case <-a.done:
+        return nil
+    }
+}
+```
+
+**Proteja o estado compartilhado com mutexes:**
+
+```go
+type SafeCounter struct {
+    mu    sync.Mutex
+    count int
+}
+
+func (c *SafeCounter) Increment() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count++
+}
+```
+
+**Evite vazamentos de goroutines:**
+
+```go
+// Bom - a goroutine tem condição de saída
+func (a *Application) startWorker(ctx context.Context) {
+    go func() {
+        for {
+            select {
+            case <-ctx.Done():
+                return  // Clean exit
+            case work := <-a.workChan:
+                a.process(work)
+            }
+        }
+    }()
+}
+```
+
+### Testes
+
+**Nomenclatura de arquivos de teste:**
+
+```go
+// Implementação: window.go
+// Testes: window_test.go
+```
+
+**Testes baseados em tabelas:**
+
+```go
+func TestValidate(t *testing.T) {
+    tests := []struct {
+        name    string
+        input   string
+        wantErr bool
+    }{
+        {"empty input", "", true},
+        {"valid input", "hello", false},
+        {"too long", strings.Repeat("a", 101), true},
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            err := validate(tt.input)
+            if (err != nil) != tt.wantErr {
+                t.Errorf("validate() error = %v, wantErr %v", err, tt.wantErr)
+            }
+        })
+    }
+}
+```
+
+## Padrões de JavaScript/TypeScript
+
+### Formatação de Código
+
+Use o Prettier para formatação consistente:
+
+```json
+{
+  "semi": false,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "es5"
+}
+```
+
+### Convenções de Nomenclatura
+
+**Variáveis e funções:**
+- camelCase: `const userName = "John"`
+
+**Classes e tipos:**
+- PascalCase: `class WindowManager`
+
+**Constantes:**
+- UPPER_SNAKE_CASE: `const MAX_RETRIES = 3`
+
+### TypeScript
+
+**Use tipos explícitos:**
+
+```typescript
+// Bom
+function greet(name: string): string {
+    return `Hello, ${name}`
+}
+
+// Evitar any implícito
+function process(data) {  // Ruim
+    return data
+}
+```
+
+**Defina interfaces:**
+
+```typescript
+interface WindowOptions {
+    title: string
+    width: number
+    height: number
+}
+
+function createWindow(options: WindowOptions): void {
+    // ...
+}
+```
+
+## Formato de Mensagens de Commit
+
+Use [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**Tipos:**
+- `feat`: Nova funcionalidade
+- `fix`: Correção de bug
+- `docs`: Alterações na documentação
+- `refactor`: Refatoração de código
+- `test`: Adição ou atualização de testes
+- `chore`: Tarefas de manutenção
+
+**Exemplos:**
+
+```
+feat(window): add SetAlwaysOnTop method
+
+Implement SetAlwaysOnTop for keeping windows above others.
+Adds platform implementations for macOS, Windows, and Linux.
+
+Closes #123
+```
+
+```
+fix(events): prevent event handler memory leak
+
+Event listeners were not being properly cleaned up when
+windows were closed. This adds explicit cleanup in the
+window destructor.
+```
+
+## Diretrizes de Pull Request
+
+### Antes de Submeter
+
+- [ ] O código passa por `gofmt` e `goimports`
+- [ ] Todos os testes passam (`go test ./...`)
+- [ ] O novo código tem testes
+- [ ] Documentação atualizada, se necessário
+- [ ] Mensagens de commit seguem as convenções
+- [ ] Sem conflitos de merge com `master`
+
+### Modelo de Descrição do PR
+
+```markdown
+## Descrição
+Breve descrição do que este PR faz.
+
+## Tipo de Alteração
+- [ ] Correção de bug
+- [ ] Nova funcionalidade
+- [ ] Breaking change
+- [ ] Atualização de documentação
+
+## Testes
+Como isso foi testado?
+
+## Checklist
+- [ ] Testes passam
+- [ ] Documentação atualizada
+- [ ] Sem breaking changes (ou documentado)
+```
+
+## Processo de Revisão de Código
+
+### Como Revisor
+
+- Seja construtivo e respeitoso
+- Foque na qualidade do código, não nas preferências pessoais
+- Explique por que as alterações são sugeridas
+- Aprove quando estiver satisfeito
+
+### Como Autor
+
+- Responda a todos os comentários
+- Peça esclarecimentos se necessário
+- Faça as alterações solicitadas ou explique por que não fez
+- Esteja aberto a feedback
+
+## Melhores Práticas
+
+### Desempenho
+
+- Evite otimização prematura
+- Faça profiling antes de otimizar
+- Use benchmarks para código crítico de desempenho
+
+```go
+func BenchmarkProcess(b *testing.B) {
+    for i := 0; i < b.N; i++ {
+        process(testData)
+    }
+}
+```
+
+### Segurança
+
+- Valide todas as entradas do usuário
+- Sanitize os dados antes de exibir
+- Use `crypto/rand` para dados aleatórios
+- Nunca registre informações sensíveis
+
+### Documentação
+
+- Documente as APIs exportadas
+- Inclua exemplos na documentação
+- Atualize a documentação ao alterar APIs
+- Mantenha os arquivos README atualizados
+
+## Código Específico da Plataforma
+
+### Nomenclatura de Arquivos
+
+```
+window.go           // Interface comum
+window_darwin.go    // Implementação para macOS
+window_windows.go   // Implementação para Windows
+window_linux.go     // Implementação para Linux
+```
+
+### Build Tags
+
+```go
+//go:build darwinpackage application
+
+// Código específico para macOS
+```
+
+## Linting
+
+Execute os linters antes de confirmar as alterações:
+
+```bash
+# golangci-lint (recomendado)
+golangci-lint run
+
+# Linters individuais
+go vet ./...
+staticcheck ./...
+```
+
+## Perguntas?
+
+Se você tiver dúvidas sobre qualquer padrão:
+- Verifique o código existente para exemplos
+- Pergunte no [Discord](https://discord.gg/JDdSxwjhGf)
+- Abra uma discussão no GitHub

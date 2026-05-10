@@ -1,0 +1,422 @@
+---
+title: Eventos de Janela
+description: Gerencie eventos de ciclo de vida e mudança de estado da janela
+sidebar:
+  order: 5
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Eventos de Janela
+
+O Wails oferece **ganchos de evento abrangentes** para o ciclo de vida e mudanças de estado das janelas: criação, foco/desfoco, redimensionamento/movimento, minimização/maximização e fechamento. Registre callbacks, manipule eventos e coordene entre janelas com APIs simples e consistentes.
+
+## Eventos de Ciclo de Vida
+
+### OnCreate
+
+Chamado quando uma janela é criada:
+
+```go
+app.OnWindowCreation(func(window *application.WebviewWindow) {
+    fmt.Printf("Window created: %s (ID: %d)\n", window.Name(), window.ID())
+    
+    // Configure all new windows
+    window.SetMinSize(400, 300)
+    
+    // Register window-specific handlers
+    window.OnClose(func() bool {
+        return confirmClose()
+    })
+})
+```
+
+**Casos de uso:**
+- Configurar todas as janelas de forma consistente
+- Registrar manipuladores de eventos
+- Rastrear a criação de janelas
+- Inicializar recursos específicos da janela
+
+### OnClose
+
+Chamado quando o usuário tenta fechar a janela:
+
+```go
+window.OnClose(func() bool {
+    // Return false to cancel close
+    // Return true to allow close
+    
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        return result == "yes"
+    }
+    return true
+})
+```
+
+**Importante:**
+- Acionado apenas por ações do usuário (clicar no botão X)
+- NÃO acionado por `window.Destroy()`
+- Pode cancelar o fechamento retornando `false`
+
+**Casos de uso:**
+- Confirmar antes de fechar
+- Salvar o estado
+- Impedir fechamento acidental
+- Limpeza antes do fechamento
+
+**Exemplo com diálogo:**
+
+```go
+window.OnClose(func() bool {
+    if !hasUnsavedChanges() {
+        return true
+    }
+    
+    // Show confirmation dialog
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:       "Confirm Close",
+        Width:       400,
+        Height:      150,
+        Parent:      window,
+        AlwaysOnTop: true,
+    })
+    
+    // Wait for user response
+    result := waitFordialogResult(dialog)
+    
+    return result == "yes"
+})
+```
+
+### OnDestroy
+
+Chamado quando a janela é destruída:
+
+```go
+window.OnDestroy(func() {
+    fmt.Printf("Window destroyed: %s\n", window.Name())
+    
+    // Cleanup resources
+    closeDatabase()
+    
+    // Remove from tracking
+    removeWindowFromRegistry(window.ID())
+    
+    // Update application state
+    updateWindowCount()
+})
+```
+
+**Importante:**
+- Sempre chamado quando a janela é destruída
+- Não pode ser cancelado
+- Última chance para limpeza
+
+**Casos de uso:**
+- Liberar recursos
+- Fechar conexões
+- Atualizar o estado da aplicação
+- Remover do rastreamento
+
+**Exemplo com limpeza de recursos:**
+
+```go
+type ManagedWindow struct {
+    window    *application.WebviewWindow
+    db        *sql.DB
+    listeners []func()
+}
+
+func (mw *ManagedWindow) Setup() {
+    mw.window.OnDestroy(func() {
+        // Close database
+        if mw.db != nil {
+            mw.db.Close()
+        }
+        
+        // Remove event listeners
+        for _, listener := range mw.listeners {
+            listener()
+        }
+        
+        // Clear references
+        mw.db = nil
+        mw.listeners = nil
+    })
+}
+```
+
+## Eventos de Foco
+
+### OnFocus
+
+Chamado quando a janela ganha foco:
+
+```go
+window.OnFocus(func() {
+    fmt.Println("Window gained focus")
+    
+    // Update UI
+    updateTitleBar(true)
+    
+    // Refresh data
+    refreshContent()
+    
+    // Notify other windows
+    app.Event.Emit("window-focused", window.ID())
+})
+```
+
+**Casos de uso:**
+- Atualizar a aparência da interface
+- Atualizar dados
+- Retomar operações
+- Coordenar com outras janelas
+
+### OnBlur
+
+Chamado quando a janela perde o foco:
+
+```go
+window.OnBlur(func() {
+    fmt.Println("Window lost focus")
+    
+    // Update UI
+    updateTitleBar(false)
+    
+    // Pause operations
+    pauseAnimations()
+    
+    // Save state
+    saveCurrentState()
+})
+```
+
+**Casos de uso:**
+- Atualizar a aparência da interface
+- Pausar operações
+- Salvar o estado
+- Reduzir o uso de recursos
+
+**Exemplo: Interface sensível ao foco:**
+
+```go
+type FocusAwareWindow struct {
+    window  *application.WebviewWindow
+    focused bool
+}
+
+func (fw *FocusAwareWindow) Setup() {
+    fw.window.OnFocus(func() {
+        fw.focused = true
+        fw.updateAppearance()
+    })
+    
+    fw.window.OnBlur(func() {
+        fw.focused = false
+        fw.updateAppearance()
+    })
+}
+
+func (fw *FocusAwareWindow) updateAppearance() {
+    if fw.focused {
+        fw.window.EmitEvent("update-theme", "active")
+    } else {
+        fw.window.EmitEvent("update-theme", "inactive")
+    }
+}
+```
+
+## Eventos de Mudança de Estado
+
+### OnMinimise / OnUnMinimise
+
+Chamado quando a janela é minimizada ou restaurada:
+
+```go
+window.OnMinimise(func() {
+    fmt.Println("Window minimised")
+    
+    // Pause expensive operations
+    pauseRendering()
+    
+    // Save state
+    saveWindowState()
+})
+
+window.OnUnMinimise(func() {
+    fmt.Println("Window restored from minimised")
+    
+    // Resume operations
+    resumeRendering()
+    
+    // Refresh data
+    refreshContent()
+})
+```
+
+**Casos de uso:**
+- Pausar/retomar operações
+- Salvar/restaurar estado
+- Reduzir o uso de recursos
+- Atualizar a interface
+
+### OnMaximise / OnUnMaximise
+
+Chamado quando a janela é maximizada ou restaurada:
+
+```go
+window.OnMaximise(func() {
+    fmt.Println("Window maximised")
+    
+    // Adjust layout
+    window.EmitEvent("layout-mode", "maximised")
+    
+    // Update button icon
+    updateMaximiseButton("restore")
+})
+
+window.OnUnMaximise(func() {
+    fmt.Println("Window restored from maximised")
+    
+    // Adjust layout
+    window.EmitEvent("layout-mode", "normal")
+    
+    // Update button icon
+    updateMaximiseButton("maximise")
+})
+```
+
+**Casos de uso:**
+- Ajustar o layout
+- Atualizar a interface
+- Salvar o estado da janela
+- Coordenar com outras janelas
+
+### OnFullscreen / OnUnFullscreen
+
+Chamado quando a janela entra ou sai do modo de tela cheia:
+
+```go
+window.OnFullscreen(func() {
+    fmt.Println("Window entered fullscreen")
+    
+    // Hide UI chrome
+    window.EmitEvent("chrome-visibility", false)
+    
+    // Adjust layout
+    window.EmitEvent("layout-mode", "fullscreen")
+})
+
+window.OnUnFullscreen(func() {
+    fmt.Println("Window exited fullscreen")
+    
+    // Show UI chrome
+    window.EmitEvent("chrome-visibility", true)
+    
+    // Restore layout
+    window.EmitEvent("layout-mode", "normal")
+})
+```
+
+**Casos de uso:**
+- Mostrar/ocultar elementos da interface
+- Ajustar o layout
+- Atualizar controles
+- Salvar preferências
+
+## Eventos de Posição e Tamanho
+
+### OnMove
+
+Chamado quando a janela é movida:
+
+```go
+window.OnMove(func(x, y int) {
+    fmt.Printf("Window moved to: %d, %d\n", x, y)
+    
+    // Save position
+    saveWindowPosition(x, y)
+    
+    // Update related windows
+    updateRelatedWindowPositions(x, y)
+})
+```
+
+**Casos de uso:**
+- Salvar a posição da janela
+- Atualizar janelas relacionadas
+- Alinhar às bordas
+- Gerenciamento de múltiplos monitores
+
+### OnResize
+
+Chamado quando a janela é redimensionada:
+
+```go
+window.OnResize(func(width, height int) {
+    fmt.Printf("Window resized to: %dx%d\n", width, height)
+    
+    // Save size
+    saveWindowSize(width, height)
+    
+    // Adjust layout
+    window.EmitEvent("window-size", map[string]int{
+        "width":  width,
+        "height": height,
+    })
+})
+```
+
+**Casos de uso:**
+- Salvar o tamanho da janela
+- Ajustar o layout
+- Atualizar a interface
+- Design responsivo
+
+**Exemplo: Layout responsivo:**
+
+```go
+window.OnResize(func(width, height int) {
+    var layout string
+    
+    if width < 600 {
+        layout = "compact"
+    } else if width < 1200 {
+        layout = "normal"
+    } else {
+        layout = "wide"
+    }
+    
+    window.EmitEvent("layout-changed", layout)
+})
+```
+
+## Exemplo Completo
+
+Aqui está uma janela pronta para produção com tratamento completo de eventos:
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+    "os"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type WindowState struct {
+    X          int  `json:"x"`
+    Y          int  `json:"y"`
+    Width      int  `json:"width"`
+    Height     int  `json:"height"`
+    Maximised  bool `json:"maximised"`
+    Fullscreen bool `json:"fullscreen"`
+}
+
+type ManagedWindow struct {
+    app     *application.Application---
+
+**Perguntas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou confira os [exemplos](https://github.com/wailsapp/wails/tree/master/v3/examples).

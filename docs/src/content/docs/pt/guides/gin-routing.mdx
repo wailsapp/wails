@@ -1,0 +1,263 @@
+---
+title: Usando Gin para Roteamento
+description: Um guia abrangente para integrar o framework web Gin com aplicações Wails v3
+---
+
+Este guia demonstra como integrar o [framework web Gin](https://github.com/gin-gonic/gin) com o Wails v3. O Gin é um framework web HTTP de alto desempenho escrito em Go que facilita a criação de aplicações web e APIs.
+
+## Introdução
+
+O Wails v3 fornece um sistema de assets flexível que permite usar qualquer manipulador HTTP, incluindo frameworks web populares como o Gin. Esta integração permite que você:
+
+- Sirva conteúdo web usando o roteamento e middlewares do Gin
+- Crie APIs RESTful acessíveis a partir da sua aplicação Wails
+- Use os recursos do Gin mantendo a integração desktop do Wails
+
+## Configurando o Gin com o Wails
+
+Para integrar o Gin com o Wails, você precisa criar um roteador Gin e configurá-lo como o manipulador de assets na sua aplicação Wails. Aqui está um guia passo a passo:
+
+### 1. Instalar Dependências
+
+Primeiro, certifique-se de ter o pacote Gin instalado:
+
+```bash
+go get -u github.com/gin-gonic/gin
+```
+
+### 2. Criar um Middleware para o Gin
+
+Crie uma função de middleware que lidará com a integração entre o Wails e o Gin:
+
+```go
+// GinMiddleware cria um middleware que passa requisições para o Gin se não forem tratadas pelo Wails
+func GinMiddleware(ginEngine *gin.Engine) application.Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Deixa o Wails tratar a rota `/wails`
+			if strings.HasPrefix(r.URL.Path, "/wails") {
+				next.ServeHTTP(w, r)
+				return
+			}
+			// Deixa o Gin tratar tudo o resto
+			ginEngine.ServeHTTP(w, r)
+		})
+	}
+}
+```
+
+Este middleware passa todas as requisições HTTP para o roteador Gin.
+
+### 3. Configurar seu Roteador Gin
+
+Configure seu roteador Gin com rotas, middlewares e manipuladores:
+
+```go
+// Cria um novo roteador Gin
+ginEngine := gin.New() // Usando New() em vez de Default() para adicionar middleware personalizado
+
+// Adiciona middlewares
+ginEngine.Use(gin.Recovery())
+ginEngine.Use(LoggingMiddleware()) // Seu middleware personalizado
+
+// Define rotas
+ginEngine.GET("/", func(c *gin.Context) {
+    // Sirve sua página principal
+})
+
+ginEngine.GET("/api/hello", func(c *gin.Context) {
+    c.JSON(http.StatusOK, gin.H{
+        "message": "Olá da API Gin!",
+        "time":    time.Now().Format(time.RFC3339),
+    })
+})
+```
+
+### 4. Integrar com a Aplicação Wails
+
+Configure sua aplicação Wails para usar o roteador Gin como seu manipulador de assets:
+
+```go
+// Cria uma nova aplicação Wails
+app := application.New(application.Options{
+    Name:        "Exemplo Gin",
+    Description: "Uma demonstração de uso do Gin com Wails",
+    Mac: application.MacOptions{
+        ApplicationShouldTerminateAfterLastWindowClosed: true,
+    },
+    Assets: application.AssetOptions{
+        Handler:    ginEngine,
+        Middleware: GinMiddleware(ginEngine),
+    },
+})
+
+// Cria a janela
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:    "Exemplo Wails + Gin",
+    Width:    900,
+    Height:   700,
+    URL:      "/", // Isso carregará a rota tratada pelo Gin
+})
+```
+
+## Servindo Conteúdo Estático
+
+Use o pacote `embed` do Go para incorporar arquivos estáticos no seu binário:
+
+```go
+//go:embed static
+var staticFiles embed.FS
+
+ginEngine.StaticFS("/static", http.FS(staticFiles))
+ginEngine.GET("/", func(c *gin.Context) {
+    file, _ := staticFiles.ReadFile("static/index.html")
+    c.Data(http.StatusOK, "text/html; charset=utf-8", file)
+})
+```
+
+Para desenvolvimento, sirva arquivos diretamente do disco usando `ginEngine.Static("/static", "./static")`.
+
+## Middleware Personalizado
+
+O Gin permite que você crie middlewares personalizados para vários propósitos. Aqui está um exemplo de um middleware de log:
+
+```go
+// LoggingMiddleware é um middleware Gin que registra detalhes da requisição
+func LoggingMiddleware() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        // Inicia o cronômetro
+        startTime := time.Now()
+
+        // Processa a requisição
+        c.Next()
+
+        // Calcula a latência
+        latency := time.Since(startTime)
+
+        // Registra detalhes da requisição
+        log.Printf("[GIN] %s | %s | %s | %d | %s",
+            c.Request.Method,
+            c.Request.URL.Path,
+            c.ClientIP(),
+            c.Writer.Status(),
+            latency,
+        )
+    }
+}
+```
+
+## Lidando com Requisições de API
+
+O Gin facilita a criação de APIs RESTful. Veja como definir endpoints de API:
+
+```go
+// Endpoint GET
+ginEngine.GET("/api/users", func(c *gin.Context) {
+    c.JSON(http.StatusOK, users)
+})
+
+// Endpoint POST com vinculação JSON
+ginEngine.POST("/api/users", func(c *gin.Context) {
+    var newUser User
+    if err := c.ShouldBindJSON(&newUser); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    // Processa o novo usuário...
+    c.JSON(http.StatusCreated, newUser)
+})
+
+// Parâmetros de caminho
+ginEngine.GET("/api/users/:id", func(c *gin.Context) {
+    id := c.Param("id")
+    // Encontra usuário por ID...
+    c.JSON(http.StatusOK, user)
+})
+
+// Parâmetros de consulta
+ginEngine.GET("/api/search", func(c *gin.Context) {
+    query := c.DefaultQuery("q", "")
+    limit := c.DefaultQuery("limit", "10")
+    // Realiza a pesquisa...
+    c.JSON(http.StatusOK, results)
+})
+```
+
+## Usando Recursos do Wails
+
+Seu conteúdo web servido pelo Gin pode interagir com os recursos do Wails usando o pacote `@wailsio/runtime`.
+
+### Manipulação de Eventos
+
+Registre manipuladores de eventos em Go:
+
+```go
+app.Event.On("my-event", func(event *application.CustomEvent) {
+    log.Printf("Evento recebido: %v", event.Data)
+})
+```
+
+Chame a partir do JavaScript usando o runtime:
+
+```html
+<script type="module">
+    import { Events } from '@wailsio/runtime';
+
+    Events.Emit("my-event", { message: "Olá do frontend" });
+    Events.On("response-event", (data) => console.log(data));
+</script>
+```
+
+## Configuração Avançada
+
+### Personalizando o Modo do Gin
+
+Defina o Gin para o modo de lançamento em produção:
+
+```go
+gin.SetMode(gin.ReleaseMode)  // Use gin.DebugMode para desenvolvimento
+ginEngine := gin.New()
+```
+
+### Lidando com WebSockets
+
+Você pode integrar WebSockets com o Gin usando bibliotecas como o Gorilla WebSocket:
+
+```go
+import "github.com/gorilla/websocket"
+
+var upgrader = websocket.Upgrader{
+    ReadBufferSize:  1024,
+    WriteBufferSize: 1024,
+    CheckOrigin: func(r *http.Request) bool {
+        return true // Permite todas as conexões
+    },
+}
+
+// No manipulador da sua rota:
+ginEngine.GET("/ws", func(c *gin.Context) {
+    conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+    if err != nil {
+        log.Println(err)
+        return
+    }
+    defer conn.Close()
+    
+    // Lida com a conexão WebSocket...
+})
+```
+
+## Melhores Práticas
+
+- **Use o Pacote embed do Go:** Incorpore arquivos estáticos no seu binário para uma melhor distribuição.
+- **Separe as Responsabilidades:** Mantenha a lógica da sua API separada da lógica da sua interface do usuário.
+- **Tratamento de Erros:** Implemente um tratamento de erros adequado tanto nas rotas do Gin quanto no código do frontend.
+- **Segurança:** Esteja ciente das considerações de segurança, especialmente ao lidar com entrada do usuário.
+- **Desempenho:** Use o modo de lançamento do Gin em produção para melhor desempenho.
+- **Testes:** Escreva testes para suas rotas do Gin usando as utilidades de teste do Gin.
+
+## Conclusão
+
+Integrar o Gin com o Wails fornece uma combinação poderosa para construir aplicações desktop com tecnologias web. O desempenho e o conjunto de recursos do Gin complementam as capacidades de integração desktop do Wails, permitindo que você crie aplicações sofisticadas que usam o melhor dos dois mundos.
+
+Para mais informações, consulte a [documentação do Gin](https://github.com/gin-gonic/gin) e a [documentação do Wails](https://wails.io).

@@ -1,0 +1,606 @@
+---
+title: Janelas Múltiplas
+description: Padrões e melhores práticas para aplicativos com múltiplas janelas
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Aplicativos com Múltiplas Janelas
+
+O Wails v3 oferece **suporte nativo a múltiplas janelas** para criar janelas de configurações, janelas de documentos, paletas de ferramentas e janelas de inspeção. Acompanhe as janelas, habilite a comunicação entre elas e gerencie seu ciclo de vida com APIs simples e consistentes.
+
+### Janela Principal + Janela de Configurações
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+type App struct {
+    app            *application.Application
+    mainWindow     *application.WebviewWindow
+    settingsWindow *application.WebviewWindow
+}
+
+func main() {
+    app := &App{}
+    
+    app.app = application.New(application.Options{
+        Name: "Multi-Window App",
+    })
+    
+    // Create main window
+    app.mainWindow = app.app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Name:   "main",
+        Title:  "Main Application",
+        Width:  1200,
+        Height: 800,
+    })
+    
+    // Create settings window (hidden initially)
+    app.settingsWindow = app.app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Name:   "settings",
+        Title:  "Settings",
+        Width:  600,
+        Height: 400,
+        Hidden: true,
+    })
+    
+    app.app.Run()
+}
+
+// Show settings from main window
+func (a *App) ShowSettings() {
+    if a.settingsWindow != nil {
+        a.settingsWindow.Show()
+        a.settingsWindow.SetFocus()
+    }
+}
+```
+
+**Pontos principais:**
+- Janela principal sempre visível
+- Janela de configurações criada, mas oculta
+- Exibir configurações sob demanda
+- Reutilizar a mesma janela (não criar múltiplas)
+
+## Rastreamento de Janelas
+
+### Obter Todas as Janelas
+
+```go
+windows := app.Window.GetAll()
+fmt.Printf("Total windows: %d\n", len(windows))
+
+for _, window := range windows {
+    fmt.Printf("- %s (ID: %d)\n", window.Name(), window.ID())
+}
+```
+
+### Encontrar Janela Específica
+
+```go
+// By name
+settings := app.GetWindowByName("settings")
+if settings != nil {
+    settings.Show()
+}
+
+// By ID
+window := app.GetWindowByID(123)
+
+// Current (focused) window
+current := app.Window.Current()
+```
+
+### Padrão de Registro de Janelas
+
+Acompanhe as janelas em seu aplicativo:
+
+```go
+type WindowManager struct {
+    windows map[string]*application.WebviewWindow
+    mu      sync.RWMutex
+}
+
+func (wm *WindowManager) Register(name string, window *application.WebviewWindow) {
+    wm.mu.Lock()
+    defer wm.mu.Unlock()
+    wm.windows[name] = window
+}
+
+func (wm *WindowManager) Get(name string) *application.WebviewWindow {
+    wm.mu.RLock()
+    defer wm.mu.RUnlock()
+    return wm.windows[name]
+}
+
+func (wm *WindowManager) Remove(name string) {
+    wm.mu.Lock()
+    defer wm.mu.Unlock()
+    delete(wm.windows, name)
+}
+```
+
+## Comunicação entre Janelas
+
+### Usando Eventos
+
+As janelas se comunicam por meio do sistema de eventos:
+
+```go
+// In main window - emit event
+app.Event.Emit("settings-changed", map[string]interface{}{
+    "theme": "dark",
+    "fontSize": 14,
+})
+
+// In settings window - listen for event
+app.Event.On("settings-changed", func(event *application.WailsEvent) {
+    data := event.Data.(map[string]interface{})
+    theme := data["theme"].(string)
+    fontSize := data["fontSize"].(int)
+    
+    // Update UI
+    updateSettings(theme, fontSize)
+})
+```
+
+### Padrão de Estado Compartilhado
+
+Use um gerenciador de estado compartilhado:
+
+```go
+type AppState struct {
+    theme    string
+    fontSize int
+    mu       sync.RWMutex
+}
+
+var state = &AppState{
+    theme:    "light",
+    fontSize: 12,
+}
+
+func (s *AppState) SetTheme(theme string) {
+    s.mu.Lock()
+    s.theme = theme
+    s.mu.Unlock()
+    
+    // Notify all windows
+    app.Event.Emit("theme-changed", theme)
+}
+
+func (s *AppState) GetTheme() string {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+    return s.theme
+}
+```
+
+### Mensagens de Janela para Janela
+
+Envie mensagens entre janelas específicas:
+
+```go
+// Get target window
+targetWindow := app.GetWindowByName("preview")
+
+// Emit event to specific window
+targetWindow.EmitEvent("update-preview", previewData)
+```
+
+## Padrões Comuns
+
+### Padrão 1: Janelas Singleton
+
+Garanta que apenas uma instância de uma janela exista:
+
+```go
+var settingsWindow *application.WebviewWindow
+
+func ShowSettings(app *application.Application) {
+    // Create if doesn't exist
+    if settingsWindow == nil {
+        settingsWindow = app.Window.NewWithOptions(application.WebviewWindowOptions{
+            Name:   "settings",
+            Title:  "Settings",
+            Width:  600,
+            Height: 400,
+        })
+        
+        // Cleanup on close
+        settingsWindow.OnDestroy(func() {
+            settingsWindow = nil
+        })
+    }
+    
+    // Show and focus
+    settingsWindow.Show()
+    settingsWindow.SetFocus()
+}
+```
+
+### Padrão 2: Janelas de Documento
+
+Múltiplas instâncias do mesmo tipo de janela:
+
+```go
+type DocumentWindow struct {
+    window   *application.WebviewWindow
+    filePath string
+    modified bool
+}
+
+var documents = make(map[string]*DocumentWindow)
+
+func OpenDocument(app *application.Application, filePath string) {
+    // Check if already open
+    if doc, exists := documents[filePath]; exists {
+        doc.window.Show()
+        doc.window.SetFocus()
+        return
+    }
+    
+    // Create new document window
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  filepath.Base(filePath),
+        Width:  800,
+        Height: 600,
+    })
+    
+    doc := &DocumentWindow{
+        window:   window,
+        filePath: filePath,
+        modified: false,
+    }
+    
+    documents[filePath] = doc
+    
+    // Cleanup on close
+    window.OnDestroy(func() {
+        delete(documents, filePath)
+    })
+    
+    // Load document
+    loadDocument(window, filePath)
+}
+```
+
+### Padrão 3: Paletas de Ferramentas
+
+Janelas flutuantes que ficam sempre no topo:
+
+```go
+func CreateToolPalette(app *application.Application) *application.WebviewWindow {
+    palette := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Name:        "tools",
+        Title:       "Tools",
+        Width:       200,
+        Height:      400,
+        AlwaysOnTop: true,
+        Resizable:   false,
+    })
+    
+    return palette
+}
+```
+
+### Padrão 4: Diálogos Modais (somente macOS)
+
+Janelas filhas que bloqueiam a janela pai:
+
+```go
+func ShowModaldialog(parent *application.WebviewWindow, title string) {
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:       title,
+        Width:       400,
+        Height:      200,
+        Parent:      parent,
+        AlwaysOnTop: true,
+        Resizable:   false,
+    })
+    
+    parent.AttachModal(dialog)
+}
+```
+
+### Padrão 5: Janelas de Inspeção/Visualização
+
+Janelas vinculadas que atualizam juntas:
+
+```go
+type EditorApp struct {
+    editor  *application.WebviewWindow
+    preview *application.WebviewWindow
+}
+
+func (e *EditorApp) UpdatePreview(content string) {
+    if e.preview != nil && e.preview.IsVisible() {
+        e.preview.EmitEvent("content-changed", content)
+    }
+}
+
+func (e *EditorApp) TogglePreview() {
+    if e.preview == nil {
+        e.preview = app.Window.NewWithOptions(application.WebviewWindowOptions{
+            Name:   "preview",
+            Title:  "Preview",
+            Width:  600,
+            Height: 800,
+        })
+        
+        e.preview.OnDestroy(func() {
+            e.preview = nil
+        })
+    }
+    
+    if e.preview.IsVisible() {
+        e.preview.Hide()
+    } else {
+        e.preview.Show()
+    }
+}
+```
+
+## Relacionamentos Pai-Filho
+
+### Criando Janelas Filhas
+
+```go
+childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "Child Window",
+})
+
+parentWindow.AttachModal(childWindow)
+```
+
+**Comportamento:**
+- A janela filha fica acima da janela pai
+- A janela filha se move junto com a janela pai
+- A janela filha bloqueia a interação com a janela pai
+
+**Suporte por plataforma:**
+
+| macOS | Windows | Linux |
+|-------|---------|-------|
+| ✅ | ❌ | ❌ |
+
+### Comportamento Modal
+
+Crie um comportamento semelhante ao modal:
+
+```go
+func ShowModaldialog(parent *application.WebviewWindow, title string) {dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:       title,
+    Width:       400,
+    Height:      200,
+})
+
+parent.AttachModal(dialog)
+}
+```
+
+## Gerenciamento do Ciclo de Vida das Janelas
+
+### Callbacks de Criação
+
+Seja notificado quando as janelas forem criadas:
+
+```go
+app.OnWindowCreation(func(window *application.WebviewWindow) {
+    fmt.Printf("Window created: %s\n", window.Name())
+    
+    // Configure all new windows
+    window.SetMinSize(400, 300)
+})
+```
+
+### Callbacks de Destruição
+
+Limpeza quando as janelas são destruídas:
+
+```go
+window.OnDestroy(func() {
+    fmt.Printf("Window %s destroyed\n", window.Name())
+    
+    // Cleanup resources
+    cleanup(window.ID())
+    
+    // Remove from tracking
+    removeFromRegistry(window.Name())
+})
+```
+
+### Comportamento de Saída do Aplicativo
+
+Controle quando o aplicativo encerra:
+
+```go
+app := application.New(application.Options{
+    Mac: application.MacOptions{
+        // Don't quit when last window closes
+        ApplicationShouldTerminateAfterLastWindowClosed: false,
+    },
+})
+```
+
+**Casos de uso:**
+- Aplicativos na bandeja do sistema
+- Serviços em segundo plano
+- Aplicativos na barra de menus (macOS)
+
+## Gerenciamento de Memória
+
+### Prevenção de Vazamentos
+
+Sempre limpe as referências das janelas:
+
+```go
+var windows = make(map[string]*application.WebviewWindow)
+
+func CreateWindow(name string) {
+    window := app.Window.New()
+    windows[name] = window
+    
+    // IMPORTANT: Clean up on destroy
+    window.OnDestroy(func() {
+        delete(windows, name)
+    })
+}
+```
+
+### Fechar vs. Destruir
+
+```go
+// Close - triggers OnClose, can be cancelled
+window.Close()
+
+// Destroy - immediate, cannot be cancelled
+window.Destroy()
+```
+
+**Melhor prática:** Use `Close()` para fechamentos iniciados pelo usuário e `Destroy()` para limpeza.
+
+### Limpeza de Recursos
+
+```go
+type ManagedWindow struct {
+    window     *application.WebviewWindow
+    resources  []io.Closer
+}
+
+func (mw *ManagedWindow) Destroy() {
+    // Close all resources
+    for _, resource := range mw.resources {
+        resource.Close()
+    }
+    
+    // Destroy window
+    mw.window.Destroy()
+}
+```
+
+## Padrões Avançados
+
+### Pool de Janelas
+
+Reutilize janelas em vez de criar novas:
+
+```go
+type WindowPool struct {
+    available []*application.WebviewWindow
+    inUse     map[uint]*application.WebviewWindow
+    mu        sync.Mutex
+}
+
+func (wp *WindowPool) Acquire() *application.WebviewWindow {
+    wp.mu.Lock()
+    defer wp.mu.Unlock()
+    
+    // Reuse available window
+    if len(wp.available) > 0 {
+        window := wp.available[0]
+        wp.available = wp.available[1:]
+        wp.inUse[window.ID()] = window
+        return window
+    }
+    
+    // Create new window
+    window := app.Window.New()
+    wp.inUse[window.ID()] = window
+    return window
+}
+
+func (wp *WindowPool) Release(window *application.WebviewWindow) {
+    wp.mu.Lock()
+    defer wp.mu.Unlock()
+    
+    delete(wp.inUse, window.ID())
+    window.Hide()
+    wp.available = append(wp.available, window)
+}
+```
+
+### Grupos de Janelas
+
+Gerencie janelas relacionadas em conjunto:
+
+```go
+type WindowGroup struct {
+    name    string
+    windows []*application.WebviewWindow
+}
+
+func (wg *WindowGroup) Add(window *application.WebviewWindow) {
+    wg.windows = append(wg.windows, window)
+}
+
+func (wg *WindowGroup) ShowAll() {
+    for _, window := range wg.windows {
+        window.Show()
+    }
+}
+
+func (wg *WindowGroup) HideAll() {
+    for _, window := range wg.windows {
+        window.Hide()
+    }
+}
+
+func (wg *WindowGroup) CloseAll() {
+    for _, window := range wg.windows {
+        window.Close()
+    }
+}
+```
+
+### Gerenciamento de Espaços de Trabalho
+
+Salve e restaure os layouts das janelas:
+
+```go
+type WindowLayout struct {
+    Windows []WindowState `json:"windows"`
+}
+
+type WindowState struct {
+    Name   string `json:"name"`
+    X      int    `json:"x"`
+    Y      int    `json:"y"`
+    Width  int    `json:"width"`
+    Height int    `json:"height"`
+}
+
+func SaveLayout() *WindowLayout {
+    layout := &WindowLayout{}
+    
+    for _, window := range app.Window.GetAll() {
+        x, y := window.Position()
+        width, height := window.Size()
+        
+        layout.Windows = append(layout.Windows, WindowState{
+            Name:   window.Name(),
+            X:      x,
+            Y:      y,
+            Width:  width,
+            Height: height,
+        })
+    }
+    
+    return layout
+}
+
+func RestoreLayout(layout *WindowLayout) {
+    for _, state := range layout.Windows {
+        window := app.GetWindowByName(state.Name)
+        if window != nil {
+            window.SetPosition(state.X, state.Y)
+            window.SetSize(state.Width, state.Height)
+        }
+    }
+}---
+
+**Perguntas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou confira o [exemplo de multi-janelas](https://github.com/wailsapp/wails/tree/master/v3/examples/multi-window).

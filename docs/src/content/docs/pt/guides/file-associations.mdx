@@ -1,0 +1,178 @@
+---
+title: Associações de Arquivo
+description: Configure associações de arquivo para seu aplicativo Wails
+sidebar:
+  order: 20
+---
+
+import { Steps } from "@astrojs/starlight/components";
+import {Badge} from '@astrojs/starlight/components';
+
+Plataformas Relevantes: <Badge text="Windows" variant="note" /> <Badge text="macOS" variant="success" />
+<br/>
+
+As associações de arquivo permitem que seu aplicativo manipule tipos de arquivos específicos quando
+os usuários os abrem. Isso é particularmente útil para editores de texto, visualizadores de imagem ou
+qualquer aplicativo que funcione com formatos de arquivo específicos. Este guia explica como
+implementar associações de arquivo no seu aplicativo Wails v3.
+
+## Visão Geral
+
+O suporte a associações de arquivo no Wails v3 está atualmente disponível para:
+
+- Windows (pacotes de instalador NSIS)
+- macOS (pacotes de aplicativo)
+
+## Configuração
+
+As associações de arquivo são configuradas no arquivo `config.yml` localizado no diretório
+`build` do seu projeto.
+
+### Configuração Básica
+
+Para configurar associações de arquivo:
+
+1. Abra `build/config.yml`
+2. Adicione suas associações de arquivo na seção `fileAssociations`
+3. Execute `wails3 update build-assets` para atualizar os ativos de compilação
+4. Defina o campo `FileAssociations` nas opções do aplicativo
+5. Empacote seu aplicativo usando `wails3 package`
+
+Aqui está um exemplo de configuração:
+
+```yaml
+fileAssociations:
+  - ext: myapp
+    name: Documento MyApp
+    description: Arquivo de Documento MyApp
+    iconName: myappFileIcon
+    role: Editor
+  - ext: custom
+    name: Formato Personalizado
+    description: Formato de Arquivo Personalizado
+    iconName: customFileIcon
+    role: Editor
+```
+
+### Propriedades de Configuração
+
+| Propriedade    | Descrição                                                      | Plataforma |
+|-------------|------------------------------------------------------------------|----------|
+| ext         | Extensão do arquivo sem o ponto inicial (por exemplo, `txt`)          | Todas      |
+| name        | Nome de exibição para o tipo de arquivo                                   | Todas      |
+| description | Descrição exibida nas propriedades do arquivo                             | Windows  |
+| iconName    | Nome do arquivo de ícone (sem extensão) na pasta de build    | Todas      |
+| role        | Papel do aplicativo para este tipo de arquivo (por exemplo, `Editor`, `Viewer`) | macOS    |
+| mimeType    | Tipo MIME para o arquivo (por exemplo, `image/jpeg`)                      | macOS    |
+
+## Ouvindo Eventos de Abertura de Arquivo
+
+Para lidar com eventos de abertura de arquivo no seu aplicativo, você pode ouvir o evento
+`events.Common.ApplicationOpenedWithFile`:
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "MyApp",
+        FileAssociations: []string{".txt", ".md"}, // Especifique as extensões suportadas
+    })
+
+    // Ouça os arquivos sendo usados para abrir o aplicativo
+    app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(event *application.ApplicationEvent) {
+        associatedFile := event.Context().Filename()
+        application.InfoDialog().SetMessage("Aplicativo aberto com o arquivo: " + associatedFile).Show()
+    })
+
+    // Crie sua janela e execute o aplicativo...
+}
+
+```
+
+## Tutorial Passo a Passo
+
+Vamos percorrer a configuração de associações de arquivo para um simples editor de texto:
+
+<Steps>
+
+1. ### Crie Ícones
+
+    - Crie ícones para o seu tipo de arquivo (tamanhos recomendados: 16x16, 32x32, 48x48,
+      256x256)
+    - Salve os ícones na pasta `build` do seu projeto
+    - Nomeie-os de acordo com a configuração do seu `iconName` (por exemplo,
+      `textFileIcon.png`)
+
+    :::tip
+    Você pode usar `wails3 generate icons` para gerar os ícones necessários para você.
+    Execute `wails3 generate icons --help` para mais informações.
+    :::
+
+    - Para macOS, adicione uma instrução de cópia como `cp build/darwin/documenticon.icns {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/Resources` na tarefa `create:app:bundle:`.
+
+2. ### Configure Associações de Arquivo
+
+    Edite o arquivo `build/config.yml` para adicionar suas associações de arquivo:
+
+    ```yaml
+    # build/config.yml
+    fileAssociations:
+      - ext: txt
+        name: Documento de Texto
+        description: Documento de Texto Simples
+        iconName: textFileIcon
+        role: Editor
+    ```
+
+3. ### Atualize os Ativos de Build
+
+    Execute o seguinte comando para atualizar os ativos de build:
+
+    ```bash
+    wails3 update build-assets
+    ```
+
+4. ### Defina Associações de Arquivo nas Opções do Aplicativo
+
+    No seu arquivo `main.go`, defina o campo `FileAssociations` nas opções do aplicativo:
+
+    ```go
+    app := application.New(application.Options{
+      Name: "MyApp",
+      FileAssociations: []string{".txt", ".md"}, // Especifique as extensões suportadas
+    })
+    ```
+
+    :::tip[Por que as extensões de arquivo são necessárias tanto na configuração do aplicativo quanto no config.yml?]
+
+    No Windows, quando um arquivo é aberto com uma associação de arquivo, o aplicativo é
+    iniciado com o nome do arquivo como o primeiro argumento para o aplicativo. O
+    aplicativo não tem como saber se o primeiro argumento é um arquivo ou um argumento de
+    linha de comando, então ele usa o campo `FileAssociations` nas opções do aplicativo
+    para determinar se o primeiro argumento é um arquivo associado ou não.
+
+    :::
+
+5. ### Empacote Seu Aplicativo
+
+    Empacote seu aplicativo usando o seguinte comando:
+
+    ```bash
+    wails3 package
+    ```
+
+    O aplicativo empacotado será criado no diretório `bin`. Você pode então
+    instalar e testar o aplicativo.
+
+    ## Notas Adicionais
+
+    - Os ícones devem ser fornecidos no formato PNG na pasta de build
+    - Testar associações de arquivo requer a instalação do aplicativo empacotado
+
+</Steps>

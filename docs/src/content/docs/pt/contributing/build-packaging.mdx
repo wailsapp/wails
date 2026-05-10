@@ -1,0 +1,211 @@
+---
+title: Pipeline de Build e Empacotamento
+description: O que acontece nos bastidores ao executar `wails3 build`, como os binários multiplataforma são produzidos e como os instaladores são gerados para cada sistema operacional.
+sidebar:
+  order: 6
+---
+
+`wails3 build` é um **único comando** que orquestra um pipeline _multiestágio_:
+
+1. **Build de produção do frontend** (Vite / React / …)  
+2. **Incorporação de assets** nos fontes Go  
+3. **Compilação nativa** para o SO/arquitetura de destino  
+4. **Pós-processamento** (injeção de ícone, informações de versão, codesign)  
+5. **Empacotamento** em um artefato distribuível (AppImage, DMG, MSI, …)
+
+Este documento acompanha cada estágio, mostra onde o código está localizado e explica como
+personalizá-lo ou depurá-lo.
+
+---
+
+## 1. Ponto de Entrada: `internal/commands/build-assets.go`
+
+```
+wails3 build                 # cmd/wails3/main.go
+└─ internal/commands.Build() # build-assets.go
+```
+
+Tarefas de alto nível são delegadas a alvos do **Taskfile** para que a mesma lógica seja executada no
+CI ou localmente.
+
+| Estágio | Alvo do Taskfile | Implementação Go |
+|-------|-----------------|-------------------|
+| Build do frontend | `frontend:build` | `internal/commands/task.go` |
+| Incorporar assets   | `embed:assets`  | `bundled_assetserver.go` gerado |
+| Compilar Go     | `build:go`      | `tool_buildinfo.go`, `tool_package.go` |
+| Empacotar        | `package:*`     | `internal/packager`, `internal/commands/*` |
+
+---
+
+## 2. Build de Produção do Frontend
+
+1. A CLI muda para o diretório `frontend/` e executa a tarefa `build` encontrada no
+   `Taskfile.yml` do projeto (`npm run build` por padrão).
+2. A saída é escrita em `frontend/dist/`.
+3. Um manifesto de **hash de conteúdo** é gerado (`manifest.json`) para que o cache-busting
+   funcione automaticamente.
+
+Se a tarefa falhar, o pipeline é interrompido precocemente, retornando o código de saída da sua
+ferramenta de build.
+
+---
+
+## 3. Incorporação de Assets
+
+Implementado em `internal/assetserver/build_production.go`:
+
+* Percorre `frontend/dist` e gera um arquivo `go:embed`
+  `bundled_assetserver.go` (ignorado pelo git).
+* Adiciona a tag de build `production`.
+
+Resultado: o binário final contém cada byte de HTML/JS/CSS, tornando o executável
+autocontido.
+
+---
+
+## 4. Compilação Nativa
+
+### Flags de Build
+
+| Flag | Propósito |
+|------|---------|
+| `-tags production` | Seleciona o servidor de assets de produção e stubs do runtime |
+| `-ldflags "-s -w"` | Remove tabela de símbolos e DWARF (binários menores) |
+| `-X internal/buildinfo.BuildTime=$(date)` | Incorpora metadados reproduzíveis |
+
+`internal/commands/tool_buildinfo.go` coleta versão, commit do git e tempo de build
+e os injeta usando `go build -ldflags`.
+
+### Matriz de Compilação Cruzada
+
+| SO | Arquitetura | Tag de Build | CGO | Notas |
+|----|------|-----------|-----|-------|
+| Windows | amd64 / arm64 | `windows` | cgo habilitado para WebView2 | Gera `.syso` via `internal/commands/syso.go` |
+| macOS   | amd64 / arm64 | `darwin`  | cgo habilitado (Objective-C) | Tarefas de codesign e notarização disponíveis |
+| Linux   | amd64 / arm64 | `linux`   | Go puro (opção webkit)   | Cabeçalhos GTK/WebKitGTK necessários para build com CGO |
+
+`wails3 build -platform darwin/arm64` sobrescreve GOOS/GOARCH.  
+Se o CGO for necessário no host que não consegue compilar o destino (por exemplo, compilando
+Windows a partir do Linux), a CLI recorre a imagens do **Docker** (`ghcr.io/wailsapp/cross-compiler`).
+
+---
+
+## 5. Pós-processamento
+
+### Ícones e Recursos
+
+* **Windows** – `syso.go` mescla seu PNG/ICO em um `.syso` que o `go build`
+  vincula automaticamente. Também escreve `manifest.xml` habilitando suporte a High-DPI.
+* **macOS** – `icons.go` converte `icon.png` → `.icns`, injetando em
+  `MyApp.app/Contents/Resources`.
+* **Linux** – arquivos `.desktop` são gerados em `/usr/share/applications`
+  por cada backend de empacotador.
+
+### Assinatura de Código (Opcional)
+
+* macOS: `codesign` + `xcrun altool --notarize-app`
+* Windows: `signtool.exe`
+* Linux: Não é comum (GPG do repositório tratado externamente)
+
+Alvos do Taskfile: `sign:mac`, `sign:windows`.
+
+---
+
+## 6. Back-ends de Empacotamento
+
+### Linux
+
+| Artefato | Caminho do Código | Ferramentas |
+|----------|-----------|---------|
+| **AppImage** (padrão) | `internal/commands/appimage.go` | `linuxdeploy` + `linuxdeploy-plugin-gtk` |
+| **deb / rpm / pacman** | `internal/packager` | `fpm` (invocado via Go) |
+
+Flags:
+
+```
+wails3 build -package deb   # produz myapp_1.0.0_amd64.deb
+wails3 build -package rpm
+```
+
+### macOS
+
+* **DMG** – `internal/commands/packager.go` chama `appdmg` para gerar um
+  instalador drag-&-drop.
+* **ZIP** – fallback se `appdmg` estiver ausente.
+* Define identificadores CFBundle e versão do plist automaticamente.
+
+### Windows
+
+* **MSI** – `internal/commands/packager.go` envolve as ferramentas **WiX** candle & light.  
+  O Heat gera automaticamente a árvore de componentes a partir do `.exe` construído.
+
+Recursos extras:
+
+* `internal/commands/windows_resources/` contém fragmentos **.wxs** modelados.
+* Informações de versão injetadas via utilitário `rsrc`.
+
+---
+
+## 7. Estrutura do Artefato de Build
+
+Após uma build bem-sucedida, a CLI exibe:
+
+```
+build/bin/
+├── myapp-linux-amd64
+└── myapp-linux-amd64.AppImage
+
+build/package/
+└── myapp_1.0.0_amd64.deb
+```
+
+Os arquivos exatos dependem das flags `-platform` e `-package`.
+
+---
+
+## 8. Personalizando o Pipeline
+
+| Necessidade | Abordagem |
+|------|----------|
+| Executar um linter antes da build | Adicione uma tarefa `lint` no **Taskfile.yml** e faça `build` depender dela. |
+| Flags de linker extras | `wails3 build -ldflags "-H windowsgui"` |
+| Pular o empacotamento | `wails3 build -skip-package` (mantém o binário bruto). |
+| Usar seu próprio empacotador | Implemente `internal/packager/<name>.go`, registre em `packager.go`. |
+
+Todos os alvos do Taskfile usam variáveis de ambiente exportadas pela CLI, então você pode
+referenciar valores como `$WAILS_VERSION` ou `$WAILS_PLATFORM` dentro de tarefas personalizadas.
+
+---
+
+## 9. Solução de Problemas
+
+| Sintoma | Causa Provável | Solução |
+|---------|--------------|-----|
+| **`ld: framework not found WebKit` (mac)** | Ferramentas de linha de comando do Xcode ausentes | `xcode-select --install` |
+| **Janela em branco na build de produção** | Build do frontend falhou ou roteamento SPA | Verifique se `frontend/dist/index.html` existe e se o `History API Fallback` está configurado. |
+| **`wixl` não encontrado** (build cruzada MSI no Linux) | WiX toolset não instalado na imagem do Docker | Use a build `--docker` ou instale o WiX manualmente. |
+| **Símbolo duplicado `_WinMain`** | Flag `windowsgui` misturada com syso | Remova `-ldflags` personalizados ou deixe o Wails gerenciar os recursos. |
+
+Modo verbose: `wails3 build -verbose` despeja todos os comandos executados.
+
+---
+
+## 10. Mapa de Fontes Chave
+
+| Preocupação | Arquivo |
+|---------|------|
+| Cola do executor de tarefas | `internal/commands/task_wrapper.go` |
+| Despachante de build | `internal/commands/build-assets.go` |
+| Construtor de AppImage | `internal/commands/appimage.go` |
+| Interface genérica do empacotador | `internal/packager/packager.go` |
+| Gerador de recursos do Windows | `internal/commands/syso.go` |
+| Injetor de informações de build | `internal/commands/tool_buildinfo.go` |
+| Constantes de versão | `internal/version/version.go` |
+
+Mantenha esta tabela à mão ao rastrear uma falha de build.
+
+---
+
+Agora você tem a visão completa desde o **código-fonte** até o **instalador**. Armado com
+esse conhecimento, você pode ajustar o pipeline, adicionar novos alvos de empacotamento ou depurar
+problemas de compilação cruzada sem medo. Feliz release!

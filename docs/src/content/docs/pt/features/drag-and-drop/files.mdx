@@ -1,0 +1,212 @@
+---
+title: Solte Arquivos
+description: Aceite arquivos arrastados do sistema operacional para dentro do seu aplicativo
+sidebar:
+  order: 1
+---
+
+O Wails permite que os usuários arrastem arquivos do sistema operacional (gerenciador de arquivos, área de trabalho) para dentro do seu aplicativo. Diferente do arrastar e soltar do HTML5, que só funciona dentro do navegador, isso dá a você acesso aos caminhos reais dos arquivos no disco.
+
+## Habilitar Solte de Arquivos
+
+O solte de arquivos está desabilitado por padrão. Para habilitá-lo, defina `EnableFileDrop: true` nas opções da sua janela:
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "My App",
+    Width:          800,
+    Height:         600,
+    EnableFileDrop: true,
+})
+```
+
+Quando `EnableFileDrop` é `false` (o padrão), os arquivos arrastados do SO são bloqueados — eles não serão abertos na webview nem acionarão nenhum evento. Isso evita navegação acidental quando os usuários arrastam arquivos sobre o seu aplicativo.
+
+## Definir Zonas de Solte
+
+As zonas de solte indicam ao Wails quais elementos devem aceitar arquivos. Arquivos soltos fora de uma zona de solte são ignorados.
+
+Adicione o atributo `data-file-drop-target` a qualquer elemento:
+
+```html
+<div id="upload" class="drop-zone" data-file-drop-target>
+    Solte arquivos aqui
+</div>
+```
+
+Você pode ter várias zonas de solte. O `id` e as classes CSS do elemento são passados para o seu código Go, permitindo que você trate os soltes de maneira diferente dependendo de onde os arquivos caem.
+
+## Estilizar o Arraste sobre a Zona
+
+Quando arquivos são arrastados sobre uma zona de solte, o Wails adiciona a classe `file-drop-target-active`. Isso permite fornecer feedback visual para que os usuários saibam onde podem soltar os arquivos:
+
+```css
+.drop-zone {
+    border: 2px dashed #ccc;
+    padding: 40px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.drop-zone.file-drop-target-active {
+    border-color: #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+```
+
+A classe é removida automaticamente quando os arquivos saem da zona ou são soltos.
+
+## Detectar Arquivos Solos
+
+Quando arquivos são soltos em uma zona de solte válida, o Wails dispara um evento `WindowFilesDropped`. O contexto do evento contém os caminhos completos do sistema de arquivos de todos os arquivos soltos:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    
+    for _, file := range files {
+        fmt.Println("Dropped:", file)
+    }
+})
+```
+
+Os caminhos são absolutos, como `/home/user/documents/report.pdf` ou `C:\Users\Name\Documents\report.pdf`.
+
+## Obter Informações do Alvo do Solte
+
+Quando você tem várias zonas de solte, pode descobrir qual delas recebeu os arquivos usando `DropTargetDetails()`:
+
+```go
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    details := event.Context().DropTargetDetails()
+    
+    fmt.Printf("Dropped on element: id=%s, classes=%v\n", 
+        details.ElementID, details.ClassList)
+    fmt.Printf("Position: x=%d, y=%d\n", details.X, details.Y)
+})
+```
+
+Isso permite rotear os arquivos para diferentes manipuladores:
+
+```go
+switch details.ElementID {
+case "images":
+    handleImageUpload(files)
+case "documents":
+    handleDocumentUpload(files)
+}
+```
+
+## Exemplo Completo
+
+**Go:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "File Uploader",
+    EnableFileDrop: true,
+})
+
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    details := event.Context().DropTargetDetails()
+    
+    // Send to frontend
+    app.Event.Emit("files-dropped", map[string]any{
+        "files":   files,
+        "target":  details.ElementID,
+    })
+})
+```
+
+**HTML:**
+
+```html
+<div id="images" class="drop-zone" data-file-drop-target>
+    Solte imagens aqui
+</div>
+
+<div id="documents" class="drop-zone" data-file-drop-target>
+    Solte documentos aqui
+</div>
+
+<style>
+    .drop-zone {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 40px;
+        text-align: center;
+        margin: 20px;
+        transition: all 0.2s ease;
+    }
+    
+    .drop-zone.file-drop-target-active {
+        border-color: #007bff;
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+</style>
+```
+
+## Solte em Toda a Janela
+
+Se você quiser que os arquivos possam ser soltos em qualquer lugar do seu aplicativo, adicione o atributo ao elemento body:
+
+```html
+<body data-file-drop-target>
+    <!-- Your app content -->
+</body>
+```
+
+Você pode usar uma sobreposição CSS para indicar que toda a janela é um alvo de solte:
+
+```css
+body.file-drop-target-active::after {
+    content: "Drop files anywhere";
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #007bff;
+    background: rgba(255, 255, 255, 0.9);
+    pointer-events: none;
+}
+```
+
+## Combinando com Arrastar e Soltar do HTML
+
+Você pode usar tanto soltes de arquivos externos quanto arrastar e soltar do HTML interno no mesmo aplicativo. Quando `EnableFileDrop` é `true`, o Wails intercepta os arrastos externos de arquivos, mas permite que os arrastos HTML5 internos passem normalmente.
+
+Para distingui-los nos manipuladores de zonas de solte do seu HTML, verifique se o arraste contém arquivos:
+
+```javascript
+zone.addEventListener('dragenter', (e) => {
+    // Skip external file drags - Wails handles these
+    if (e.dataTransfer?.types.includes('Files')) {
+        return;
+    }
+    // Handle internal HTML5 drags
+    zone.classList.add('drag-over');
+});
+
+zone.addEventListener('drop', (e) => {
+    // Skip external file drops - Wails handles these
+    if (e.dataTransfer?.types.includes('Files')) {
+        return;
+    }
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    // Handle internal drop
+});
+```
+
+Isso garante que seus manipuladores de solte do HTML respondam apenas a arrastos internos (como mover itens de lista), enquanto o Wails trata os soltes de arquivos externos separadamente através do evento `WindowFilesDropped`.
+
+## Próximos Passos
+
+- [HTML Drag & Drop](./html) - Arraste elementos dentro do seu aplicativo
+- [Window Options](/pt/features/windows/options) - Todas as opções de configuração da janela

@@ -1,0 +1,342 @@
+---
+title: Vinculação Avançada
+description: Técnicas avançadas de vinculação, incluindo diretivas, injeção de código e IDs personalizados
+sidebar:
+  order: 3
+---
+
+import { FileTree } from "@astrojs/starlight/components";
+
+Este guia aborda técnicas avançadas para personalizar e otimizar o processo de geração de vinculação no Wails v3.
+
+## Personalizando o Código Gerado com Diretivas
+
+### Injetando Código Personalizado
+
+A diretiva `//wails:inject` permite injetar código JavaScript/TypeScript personalizado nas vinculações geradas:
+
+```go
+//wails:inject console.log("Hello from Wails!");
+type MyService struct {}
+
+func (s *MyService) Greet(name string) string {
+    return "Hello, " + name
+}
+```
+
+Isso injetará o código especificado no arquivo JavaScript/TypeScript gerado para o serviço `MyService`.
+
+Você também pode usar injeção condicional para direcionar formatos de saída específicos:
+
+```go
+//wails:inject j*:console.log("Hello JS!");  // Apenas JavaScript
+//wails:inject t*:console.log("Hello TS!");  // Apenas TypeScript
+```
+
+### Incluindo Arquivos Adicionais
+
+A diretiva `//wails:include` permite incluir arquivos adicionais junto com as vinculações geradas:
+
+```go
+//wails:include js/*.js
+package mypackage
+```
+
+Esta diretiva é normalmente usada em comentários de documentação de pacote para incluir arquivos JavaScript/TypeScript adicionais junto com as vinculações geradas.
+
+### Marcando Tipos e Métodos Internos
+
+A diretiva `//wails:internal` marca um tipo ou método como interno, impedindo que seja exportado para o frontend:
+
+```go
+//wails:internal
+type InternalModel struct {
+    Field string
+}
+
+//wails:internal
+func (s *MyService) InternalMethod() {}
+```
+
+Isso é útil para tipos e métodos que são usados apenas internamente pelo seu código Go e não devem ser expostos ao frontend.
+
+### Ignorando Métodos
+
+A diretiva `//wails:ignore` ignora completamente um método durante a geração de vinculação:
+
+```go
+//wails:ignore
+func (s *MyService) IgnoredMethod() {}
+```
+
+Isso é semelhante a `//wails:internal`, mas ignora completamente o método em vez de marcá-lo como interno.
+
+### IDs de Método Personalizados
+
+A diretiva `//wails:id` especifica um ID personalizado para um método, substituindo o ID padrão baseado em hash:
+
+```go
+//wails:id 42
+func (s *MyService) CustomIDMethod() {}
+```
+
+Isso pode ser útil para manter a compatibilidade ao refatorar o código.
+
+## Trabalhando com Tipos Complexos
+
+### Structs Aninhados
+
+O gerador de vinculação lida automaticamente com structs aninhados:
+
+```go
+type Address struct {
+    Street string
+    City   string
+    State  string
+    Zip    string
+}
+
+type Person struct {
+    Name    string
+    Address Address
+}
+
+func (s *MyService) GetPerson() Person {
+    return Person{
+        Name: "John Doe",
+        Address: Address{
+            Street: "123 Main St",
+            City:   "Anytown",
+            State:  "CA",
+            Zip:    "12345",
+        },
+    }
+}
+```
+
+O código JavaScript/TypeScript gerado incluirá classes para `Person` e `Address`.
+
+### Maps e Slices
+
+Maps e slices também são tratados automaticamente:
+
+```go
+type Person struct {
+    Name       string
+    Attributes map[string]string
+    Friends    []string
+}
+
+func (s *MyService) GetPerson() Person {
+    return Person{
+        Name: "John Doe",
+        Attributes: map[string]string{
+            "hair": "brown",
+            "eyes": "blue",
+        },
+        Friends: []string{"Jane", "Bob", "Alice"},
+    }
+}
+```
+
+Em JavaScript, maps são representados como objetos e slices como arrays. Em TypeScript, maps são representados como `Record<K, V>` e slices como `T[]`.
+
+### Tipos Genéricos
+
+O gerador de vinculação suporta tipos genéricos:
+
+```go
+type Result[T any] struct {
+    Data  T
+    Error string
+}
+
+func (s *MyService) GetResult() Result[string] {
+    return Result[string]{
+        Data:  "Hello, World!",
+        Error: "",
+    }
+}
+```
+
+O código TypeScript gerado incluirá uma classe genérica para `Result`:
+
+```typescript
+export class Result<T> {
+    "Data": T;
+    "Error": string;
+
+    constructor(source: Partial<Result<T>> = {}) {
+        if (!("Data" in source)) {
+            this["Data"] = null as any;
+        }
+        if (!("Error" in source)) {
+            this["Error"] = "";
+        }
+
+        Object.assign(this, source);
+    }
+
+    static createFrom<T>(source: string | object = {}): Result<T> {
+        let parsedSource = typeof source === "string" ? JSON.parse(source) : source;
+        return new Result<T>(parsedSource as Partial<Result<T>>);
+    }
+}
+```
+
+### Interfaces
+
+O gerador de vinculação pode gerar interfaces TypeScript em vez de classes usando a flag `-i`:
+
+```bash
+wails3 generate bindings -ts -i
+```
+
+Isso gerará interfaces TypeScript para todos os modelos:
+
+```typescript
+export interface Person {
+    Name: string;
+    Attributes: Record<string, string>;
+    Friends: string[];
+}
+```
+
+## Otimizando a Geração de Vinculação
+
+### Usando Nomes em vez de IDs
+
+Por padrão, o gerador de vinculação usa IDs baseados em hash para chamadas de método. Você pode usar a flag `-names` para usar nomes em vez disso:
+
+```bash
+wails3 generate bindings -names
+```
+
+Isso gerará código que usa nomes de método em vez de IDs:
+
+```javascript
+export function Greet(name) {
+    let $resultPromise = $Call.ByName("Greet", name);
+    return $resultPromise;
+}
+```
+
+Isso pode tornar o código gerado mais legível e mais fácil de depurar, mas pode ser ligeiramente menos eficiente.
+
+### Empacotando o Runtime
+
+Por padrão, o código gerado importa o runtime do Wails do pacote npm `@wailsio/runtime`. Você pode usar a flag `-b` para empacotar o runtime junto com o código gerado:
+
+```bash
+wails3 generate bindings -b
+```
+
+Isso incluirá o código do runtime diretamente nos arquivos gerados, eliminando a necessidade do pacote npm.
+
+### Desativando Arquivos Index
+
+Se você não precisar dos arquivos index, pode usar a flag `-noindex` para desativar sua geração:
+
+```bash
+wails3 generate bindings -noindex
+```
+
+Isso pode ser útil se você preferir importar serviços e modelos diretamente de seus respectivos arquivos.
+
+## Exemplos do Mundo Real
+
+### Serviço de Autenticação
+
+Aqui está um exemplo de um serviço de autenticação com diretivas personalizadas:
+
+```go
+package auth
+
+//wails:inject console.log("Auth service initialized");
+type AuthService struct {
+    // Campos privados
+    users map[string]User
+}
+
+type User struct {
+    Username string
+    Email    string
+    Role     string
+}
+
+type LoginRequest struct {
+    Username string
+    Password string
+}
+
+type LoginResponse struct {
+    Success bool
+    User    User
+    Token   string
+    Error   string
+}
+
+// Login autentica um usuário
+func (s *AuthService) Login(req LoginRequest) LoginResponse {
+    // Implementação...
+}
+
+// GetCurrentUser retorna o usuário atual
+func (s *AuthService) GetCurrentUser() User {
+    // Implementação...
+}
+
+// Método auxiliar interno
+//wails:internal
+func (s *AuthService) validateCredentials(username, password string) bool {
+    // Implementação...
+}
+```
+
+### Serviço de Processamento de Dados
+
+Aqui está um exemplo de um serviço de processamento de dados com tipos genéricos:
+
+```go
+package data
+
+type ProcessingResult[T any] struct {
+    Data  T
+    Error string
+}
+
+type DataService struct {}
+
+// Process processa dados e retorna um resultado
+func (s *DataService) Process(data string) ProcessingResult[map[string]int] {
+    // Implementação...
+}
+
+// ProcessBatch processa vários itens de dados
+func (s *DataService) ProcessBatch(data []string) ProcessingResult[[]map[string]int] {
+    // Implementação...
+}
+
+// Método auxiliar interno
+//wails:internal
+func (s *DataService) parseData(data string) (map[string]int, error) {
+    // Implementação...
+}
+```
+
+### Injeção de Código Condicional
+
+Aqui está um exemplo de injeção de código condicional para diferentes formatos de saída:
+
+```go
+//wails:inject j*:/**
+//wails:inject j*: * @param {string} arg
+//wails:inject j*: * @returns {Promise<void>}
+//wails:inject j*: */
+//wails:inject j*:export async function CustomMethod(arg) {
+//wails:inject t*:export async function CustomMethod(arg: string): Promise<void> {
+//wails:inject     await InternalMethod("Hello " + arg + "!");//wails:inject }
+type Service struct{}
+```
+
+Isso injeta código diferente para as saídas JavaScript e TypeScript, fornecendo anotações de tipo apropriadas para cada linguagem.

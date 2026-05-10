@@ -1,0 +1,241 @@
+---
+title: Dock e Barra de Tarefas
+description: Gerencie a visibilidade do ícone do Dock e exiba badges no macOS e Windows
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Introdução
+
+O Wails fornece um serviço de Dock multiplataforma para aplicativos de desktop. Este serviço permite que você:
+
+- Oculte e exiba o ícone do aplicativo no Dock do macOS
+- Exiba badges no ícone do seu aplicativo no Dock/Barra de Tarefas (macOS e Windows)
+
+## Uso Básico
+
+### Criando o Serviço
+
+Primeiro, inicialize o serviço de Dock:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/dock"
+
+// Cria um novo serviço de Dock
+dockService := dock.New()
+
+// Registra o serviço com o aplicativo
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(dockService),
+    },
+})
+```
+
+### Criando o Serviço com Opções de Badge Personalizadas (Apenas Windows)
+
+No Windows, você pode personalizar a aparência do badge com várias opções:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/dock"
+import "image/color"
+
+// Cria um serviço de Dock com opções de badge personalizadas
+options := dock.BadgeOptions{
+    TextColour:       color.RGBA{255, 255, 255, 255}, // Texto branco
+    BackgroundColour: color.RGBA{0, 0, 255, 255},     // Fundo azul
+    FontName:         "consolab.ttf",                 // Fonte Consolas em negrito
+    FontSize:         20,                             // Tamanho da fonte para um único caractere
+    SmallFontSize:    14,                             // Tamanho da fonte para múltiplos caracteres
+}
+
+dockService := dock.NewWithOptions(options)
+
+// Registra o serviço com o aplicativo
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(dockService),
+    },
+})
+```
+
+## Operações do Dock
+
+### Ocultando o ícone do app no Dock
+
+Oculte o ícone do app do Dock do macOS:
+
+```go
+// Oculta o ícone do app
+dockService.HideAppIcon()
+```
+
+### Exibindo o ícone do app no Dock
+
+Exiba o ícone do app no Dock do macOS:
+
+```go
+// Exibe o ícone do app
+dockService.ShowAppIcon()
+```
+
+## Operações de Badge
+
+### Definindo um Badge
+
+Defina um badge no ícone do tile/app do Dock:
+
+```go
+// Define um badge padrão
+dockService.SetBadge("")
+
+// Define um badge numérico
+dockService.SetBadge("3")
+
+// Define um badge de texto
+dockService.SetBadge("New")
+```
+
+### Definindo um Badge Personalizado (Apenas Windows)
+
+Defina um badge com opções aplicadas apenas para esta chamada:
+
+```go
+options := dock.BadgeOptions{
+    BackgroundColour: color.RGBA{0, 255, 255, 255},
+    FontName:         "arialb.ttf", // Fonte do sistema
+    FontSize:         16,
+    SmallFontSize:    10,
+    TextColour:       color.RGBA{0, 0, 0, 255},
+}
+
+// Define um badge padrão
+dockService.SetCustomBadge("", options)
+
+// Define um badge numérico
+dockService.SetCustomBadge("3", options)
+
+// Define um badge de texto
+dockService.SetCustomBadge("New", options)
+```
+
+### Removendo um Badge
+
+Remova o badge do ícone do aplicativo:
+
+```go
+dockService.RemoveBadge()
+```
+
+### Obtendo o badge definido
+```go
+dockService.GetBadge()
+``` 
+
+## Considerações de Plataforma
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    No macOS:
+    
+    - O ícone do Dock pode ser **ocultado** e **exibido**
+    - Os badges são exibidos diretamente no ícone do Dock
+    - As opções de badge **não são personalizáveis** (quaisquer opções passadas para `NewWithOptions`/`SetCustomBadge` são ignoradas)
+    - O estilo padrão de badge do Dock do macOS é usado e se adapta automaticamente à aparência do sistema
+    - O transbordamento de rótulo é tratado pelo sistema
+    - Fornecer um rótulo vazio exibe um badge padrão de "●"
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    No Windows:
+    
+    - Ocultar/exibir o ícone da barra de tarefas não é atualmente suportado por este serviço
+    - Os badges são exibidos como um ícone sobreposto na barra de tarefas
+    - Os badges suportam valores de texto
+    - A aparência do badge pode ser personalizada via `BadgeOptions`
+    - O aplicativo deve ter uma janela para que os badges sejam exibidos
+    - Um tamanho de fonte menor é usado automaticamente para rótulos com múltiplos caracteres
+    - O transbordamento de rótulo não é tratado
+    - Opções de personalização:
+      - **TextColour**: Cor do texto (padrão: branco)
+      - **BackgroundColour**: Cor de fundo do badge (padrão: vermelho)
+      - **FontName**: Nome do arquivo da fonte (padrão: "segoeuib.ttf")
+      - **FontSize**: Tamanho da fonte para um único caractere (padrão: 18)
+      - **SmallFontSize**: Tamanho da fonte para múltiplos caracteres (padrão: 14)
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    No Linux:
+    
+    - A visibilidade do ícone do Dock e a funcionalidade de badge não estão disponíveis
+    
+  </TabItem>
+</Tabs>
+
+## Melhores Práticas
+
+1. **Ao ocultar o ícone do Dock (macOS):**
+   - Certifique-se de que os usuários ainda possam acessar seu app (por exemplo, via [system tray](https://v3.wails.io/learn/systray/))
+   - Inclua uma opção "Sair" na sua interface alternativa
+   - O app não aparecerá no alternador Command+Tab
+   - As janelas abertas permanecem visíveis e funcionais
+   - Fechar todas as janelas pode não encerrar o app (o comportamento do macOS varia)
+   - Os usuários perdem a maneira padrão de sair clicando com o botão direito no Dock
+
+2. **Use badges com moderação:**
+   - Muitas atualizações de badge podem distrair os usuários
+   - Reserve badges para notificações importantes
+
+3. **Mantenha o texto do badge curto:**
+   - Badges numéricos são os mais eficazes
+   - No macOS, badges de texto devem ser breves
+
+4. **Para personalização de badges no Windows:**
+   - Certifique-se de alto contraste entre as cores do texto e do fundo
+   - Teste com diferentes comprimentos de texto, pois o tamanho da fonte diminui conforme o comprimento aumenta
+   - Use fontes comuns do sistema para garantir a disponibilidade
+
+
+## Referência da API
+
+### Gerenciamento de Serviço
+| Método                                     | Descrição                                           |
+|--------------------------------------------|-------------------------------------------------------|
+| `New()`                                    | Cria um novo serviço de Dock                            |
+| `NewWithOptions(options BadgeOptions)`     | Cria um novo serviço de Dock com opções de badge personalizadas (apenas Windows; opções são ignoradas no macOS e Linux) |
+
+### Operações do Dock
+| Método                                       | Descrição                                                |
+|--------------------------------|-------------------------------------------------------------|
+| `HideAppIcon()`                | Oculta o ícone do app do Dock do macOS (apenas macOS)         |
+| `ShowAppIcon()`                | Exibe o ícone do app no Dock do macOS (apenas macOS)           |
+
+### Operações de Badge
+| Método                                            | Descrição                                                |
+|---------------------------------------------------|------------------------------------------------------------|
+| `SetBadge(label string) error`                    | Define um badge com o rótulo especificado                      |
+| `SetCustomBadge(label string, options BadgeOptions) error` | Define um badge com o rótulo especificado e opções de estilo personalizadas (apenas Windows) |
+| `RemoveBadge() error`                             | Remove o badge do ícone do aplicativo                |
+| `GetBadge() *string`                             | Obtém o badge atual                |
+
+### Estruturas e Tipos
+
+```go
+// Opções para personalizar a aparência do badge (apenas Windows)
+type BadgeOptions struct {
+    TextColour       color.RGBA  // Cor do texto do badge
+    BackgroundColour color.RGBA  // Cor do fundo do badge
+    FontName         string      // Nome do arquivo da fonte (ex., "segoeuib.ttf")
+    FontSize         int         // Tamanho da fonte para um único caractere
+    SmallFontSize    int         // Tamanho da fonte para múltiplos caracteres
+}
+```

@@ -1,0 +1,286 @@
+---
+title: Criando Modelos Personalizados
+description: Aprenda a criar e personalizar seus próprios modelos do Wails v3
+sidebar:
+    order: 50
+---
+
+Este guia irá guiá-lo pelo processo de criação de um modelo personalizado para o Wails v3.
+
+## Por que eu criaria um modelo personalizado?
+
+O Wails vem com vários modelos pré-configurados que permitem que você coloque sua aplicação em funcionamento rapidamente. Mas se você precisar de uma configuração mais personalizada, pode criar seu próprio modelo para atender às suas necessidades. Isso pode então ser compartilhado com a comunidade do Wails para que outros o utilizem.
+
+### 1. Gerando um Modelo
+
+Para criar um modelo personalizado, você pode usar o comando `wails generate template`:
+
+```bash
+wails3 generate template -name mytemplate
+```
+
+Isso criará um novo diretório chamado "mytemplate" no seu diretório atual.
+
+O comando `wails3 generate template` suporta as seguintes opções:
+
+| Opção          | Descrição                                           | Padrão              |
+|----------------|-----------------------------------------------------|---------------------|
+| `-name`        | O nome do seu modelo (obrigatório)                  | -                   |
+| `-frontend`    | Caminho para um diretório frontend existente para incluir | -              |
+| `-author`      | O autor do modelo                                   | -                   |
+| `-description` | Uma descrição do modelo                             | -                   |
+| `-helpurl`     | URL para documentação do modelo                     | -                   |
+| `-dir`         | Diretório para gerar o modelo                       | Diretório atual     |
+| `-version`     | Versão do modelo                                    | v0.0.1              |
+
+Por exemplo, para criar um modelo com todas as opções:
+
+```bash
+wails3 generate template \
+  -name "My Custom Template" \
+  -frontend ./my-existing-frontend \
+  -author "Your Name" \
+  -description "A template with my preferred setup" \
+  -helpurl "https://github.com/yourusername/template-docs" \
+  -dir ./templates \
+  -version "v1.0.0"
+```
+
+  :::tip
+  Usar a opção `-frontend` copiará um projeto frontend web existente para dentro do modelo.
+  :::
+
+### 2. Configurar Metadados do Modelo
+
+Se você não especificou a configuração do modelo ao gerá-lo, pode atualizar o arquivo `template.json` no diretório do modelo:
+
+```json5
+{
+  "name": "Your Template Name",          // Nome de exibição do seu modelo
+  "shortname": "template-shortname",     // Usado ao referenciar seu modelo
+  "author": "Your Name",                 // Autor do modelo
+  "description": "Template description", // Descrição do modelo
+  "helpurl": "https://your-docs.com",    // URL da documentação
+  "version": "v0.0.1",                   // Versão do modelo
+  "schema": 3                            // Deve ser mantido como 3 para o Wails v3
+}
+```
+:::caution
+O campo `schema` deve permanecer definido como `3` para compatibilidade com o Wails v3.
+:::
+
+### 3. Configurar Tarefas de Compilação
+
+No diretório `build` está o `Taskfile.yml`, onde você pode definir o processo de compilação do seu modelo. 
+Este arquivo usa o [Task](https://taskfile.dev) para automação de build. As etapas principais são:
+
+```yaml
+tasks:
+  install:frontend:deps:
+    summary: Install frontend dependencies
+    dir: frontend
+    sources:
+      - package.json
+      - package-lock.json
+    generates:
+      - node_modules/*
+    preconditions:
+      - sh: npm version
+        msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
+    cmds:
+      - npm install
+
+  build:frontend:
+    summary: Build the frontend project
+    dir: frontend
+    sources:
+      - "**/*"
+    generates:
+      - dist/*
+    deps:
+      - task: install:frontend:deps
+      - task: generate:bindings
+    cmds:
+      - npm run build -q
+
+
+```
+
+### 4. Configuração do Frontend
+
+Se você não usou `-frontend` ao gerar o modelo, precisa adicionar arquivos frontend ao seu modelo. 
+
+Existem várias maneiras de configurar seu frontend: começar do zero ou usar um framework existente.
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+<Tabs>
+  <TabItem label="Start from Scratch">
+    If you want to start from scratch, you can create your frontend project just like you would for any web application. 
+    The `frontend` directory in your template is just a regular directory where you can set up your preferred 
+    development environment. You might want to use build tools like Vite, webpack, or even just plain HTML, CSS, and 
+    JavaScript - it's entirely up to you!
+
+    For example, if you're using Vite, you could navigate to the `frontend` directory and run:
+
+    ```bash
+    npm create vite@latest .
+    ```
+
+    Then follow the prompts to set up your project exactly how you want it. The key thing to remember is that this is just a regular frontend project - you can use any tools, frameworks, or libraries you're familiar with.
+  </TabItem>
+  <TabItem label="Use Existing Framework">
+    For this example, we'll use [Vite](https://vitejs.dev/) to set up a React frontend project:
+
+       ```bash
+       npm create vite@latest frontend -- --template react
+       cd frontend
+       npm install
+       ```
+
+  </TabItem>
+</Tabs>
+
+
+Agora que você tem os arquivos frontend no lugar, atualize o `common/Taskfile.yml` com os comandos apropriados:
+   ```yaml
+   tasks:
+      install:frontend:deps:
+        summary: Install frontend dependencies
+        dir: frontend
+        sources:
+          - package.json
+          - package-lock.json
+        generates:
+          - node_modules/*
+        preconditions:
+          - sh: npm version
+            msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
+        cmds:
+          - npm install
+
+      build:frontend:
+        summary: Build the frontend project
+        dir: frontend
+        sources:
+          - "**/*"
+        generates:
+          - dist/*
+        deps:
+          - task: install:frontend:deps
+          - task: generate:bindings
+        cmds:
+          - npm run build -q
+   ```
+
+  :::note
+  Para este exemplo, as Tarefas padrão não precisam ser atualizadas, pois usam os comandos padrão `npm install` e `npm run build`.
+  :::
+
+### 5. Configurar o Aplicativo Go
+
+Os arquivos padrão no diretório do modelo são suficientes para iniciar os usuários. No entanto, você pode querer fornecer alguma funcionalidade adicional para demonstrar as capacidades do seu modelo. A melhor maneira de fazer isso é renomear `main.go.tmpl` para `main.go` e editá-lo como qualquer outro arquivo Go. Uma vez concluído, certifique-se de renomeá-lo de volta para `main.go.tmpl` antes de confirmar suas alterações. Se você não se importa em ter um arquivo `main.go` modelado (o modelo padrão injeta o nome do projeto no campo `Name` da aplicação), você pode pular esta etapa.----------------------|----------------------------------|-----------------------------------|
+| `Name`               | O nome do projeto          | `"MyApp"`                         |
+| `BinaryName`         | O nome do binário gerado | `"myapp"`                         |
+| `ProductName`        | O nome do produto                 | `"My Application"`                |
+| `ProductDescription` | Descrição do produto       | `"An awesome application"`        |
+| `ProductVersion`     | Versão do produto           | `"1.0.0"`                         |
+| `ProductCompany`     | Nome da empresa                     | `"My Company Ltd"`                |
+| `ProductCopyright`   | Informações de direitos autorais            | `"Copyright 2024 My Company Ltd"` |
+| `ProductComments`    | Comentários adicionais do produto      | `"Built with Wails"`              |
+| `ProductIdentifier`  | Identificador único do produto        | `"com.mycompany.myapp"`           |
+| `Typescript`         | Se o TypeScript está sendo usado | `true` ou `false`                 |
+| `WailsVersion`       | A versão do Wails sendo usada  | `"3.0.0"`                         |
+
+Você pode usar essas variáveis em seus arquivos de modelo usando a sintaxe de modelagem do Go:
+
+```go
+// main.go.tmpl
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "{{.ProductName}}",
+        Description: "{{.ProductDescription}}",
+    })
+    // ...
+}
+```
+
+    :::tip
+    A modelagem pode ser aplicada a qualquer arquivo no seu modelo, mesmo arquivos html, desde que o nome do arquivo tenha `.tmpl` em seu nome.
+    :::
+
+### 6. Testando Seu Modelo
+
+Para testar seu modelo:
+
+1. Gere um projeto usando seu modelo: `wails3 init -n testproject -t path/to/your/template`
+2. Execute `wails3 build` para gerar a compilação de produção e garantir que o binário em `bin` seja executado corretamente
+3. Execute `wails3 dev` para iniciar o servidor de desenvolvimento. 
+4. Teste se as alterações no código do frontend são refletidas no aplicativo.
+5. Teste se as alterações no código Go reconstruem e reiniciam o aplicativo
+
+### 7. Compartilhando Seu Modelo
+
+Quando seu modelo estiver pronto, você pode compartilhá-lo com a comunidade hospedando-o no GitHub. Veja como:
+
+1. Crie um novo repositório no GitHub para seu modelo
+2. Envie o código do modelo para o repositório
+3. Marque seus lançamentos usando versionamento semântico (por exemplo, v1.0.0)
+
+Os usuários podem então usar seu modelo diretamente do GitHub usando a URL HTTPS:
+
+```bash
+wails3 init -n myapp -t https://github.com/yourusername/your-template
+```
+
+Você também pode especificar uma versão específica usando o formato de URL:
+
+```bash
+# Use uma tag de versão específica
+wails3 init -n myapp -t https://github.com/yourusername/your-template/releases/tag/v1.0.0
+
+# Use um branch específico
+wails3 init -n myapp -t https://github.com/yourusername/your-template/tree/main
+```
+
+Para testar seu modelo antes de compartilhá-lo:
+
+1. Envie suas alterações para o GitHub
+2. Crie um novo projeto de teste usando a URL HTTPS:
+   ```bash
+   wails3 init -n testapp -t https://github.com/yourusername/your-template
+   ```
+3. Verifique se todos os arquivos foram gerados corretamente
+4. Teste o fluxo de trabalho de compilação e desenvolvimento conforme descrito na seção de testes
+
+    :::note
+    Certifique-se de que seu repositório seja público se quiser que outros usem seu modelo.
+    :::
+
+Para mais informações, visite a [documentação do Wails](https://wails.io)
+
+
+## Melhores Práticas
+
+Vamos falar sobre algumas práticas-chave que ajudarão a tornar seu modelo mais útil e manutenível. Aqui estão as principais áreas para focar:
+
+1. **Torne Seu Modelo Fácil de Entender**
+   - Escreva um README.md claro e útil que ajude os usuários a começar rapidamente
+   - Adicione comentários nos seus arquivos de configuração para explicar o "porquê" por trás de suas escolhas
+   - Mostre exemplos de personalizações comuns - os usuários adoram ver casos de uso reais!
+
+2. **Mantenha as Dependências Felizes**
+   - Mantenha-se atualizado com as atualizações do pacote do frontend
+   - Bloqueie versões específicas no package.json para evitar surpresas
+   - Avise os usuários antecipadamente o que eles precisarão ter instalado
+
+3. **Ame Seu Modelo**
+   - Mantenha-o fresco com atualizações regulares
+   - Faça um teste completo antes de compartilhar
+   - Compartilhe-o com a comunidade Wails - adoraríamos ver o que você cria!

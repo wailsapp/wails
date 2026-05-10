@@ -1,0 +1,232 @@
+---
+title: Arrastar e Soltar HTML
+description: Arraste e solte elementos dentro do seu aplicativo
+sidebar:
+  order: 2
+---
+
+O recurso de arrastar e soltar do HTML5 permite que os usuários arrastem elementos dentro da interface do seu aplicativo - por exemplo, reordenando uma lista ou movendo itens entre colunas. Esta é uma funcionalidade padrão da web que funciona no Wails sem nenhuma configuração especial.
+
+## Tornar um Elemento Arrastável
+
+Por padrão, a maioria dos elementos não pode ser arrastada. Para tornar um elemento arrastável, adicione `draggable="true"`:
+
+```html
+<div class="item" draggable="true">Arraste-me</div>
+```
+
+O elemento agora mostrará uma prévia do arrasto quando o usuário clicar e arrastá-lo.
+
+## Definir uma Zona de Soltura
+
+Os elementos não aceitam solturas por padrão. Para fazer um elemento aceitar solturas, você precisa cancelar o comportamento padrão no evento `dragover`:
+
+```html
+<div class="drop-zone" id="target">Solte aqui</div>
+
+<script>
+const target = document.getElementById('target');
+
+target.addEventListener('dragover', (e) => {
+    e.preventDefault(); // Permite a soltura
+});
+
+target.addEventListener('drop', (e) => {
+    e.preventDefault();
+    // Lida com a soltura
+});
+</script>
+```
+
+Chamar `preventDefault()` no evento `dragover` é obrigatório - isso sinaliza que este elemento aceita solturas. Sem isso, o evento de soltura não será disparado.
+
+## Estilizar o Arrasto sobre a Zona
+
+Para mostrar aos usuários onde eles podem soltar, adicione feedback visual ao arrastar sobre uma zona de soltura. O evento `dragenter` é disparado quando algo entra na zona, e `dragleave` é disparado quando ela sai:
+
+```css
+.drop-zone {
+    border: 2px dashed #ccc;
+    padding: 40px;
+    transition: all 0.2s ease;
+}
+
+.drop-zone.drag-over {
+    border-color: #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+```
+
+```javascript
+const target = document.getElementById('target');
+
+target.addEventListener('dragenter', () => {
+    target.classList.add('drag-over');
+});
+
+target.addEventListener('dragleave', () => {
+    target.classList.remove('drag-over');
+});
+
+target.addEventListener('drop', (e) => {
+    e.preventDefault();
+    target.classList.remove('drag-over');
+    // Lida com a soltura
+});
+```
+
+Nota: `dragleave` também é disparado ao entrar em um elemento filho, o que pode causar cintilação. O exemplo completo abaixo mostra como lidar com isso.
+
+## Exemplo Completo
+
+Uma lista de tarefas onde os itens podem ser arrastados entre colunas de prioridade. Isso rastreia o elemento arrastado em uma variável, que é a abordagem mais simples quando tudo está na mesma página:
+
+```html
+<div class="tasks">
+    <div class="item" draggable="true">Corrigir bug de login</div>
+    <div class="item" draggable="true">Atualizar documentação</div>
+    <div class="item" draggable="true">Adicionar modo escuro</div>
+</div>
+
+<div class="columns">
+    <div class="drop-zone" data-priority="high">
+        <h3>Alta Prioridade</h3>
+        <ul></ul>
+    </div>
+    <div class="drop-zone" data-priority="low">
+        <h3>Baixa Prioridade</h3>
+        <ul></ul>
+    </div>
+</div>
+
+<script>
+let draggedItem = null;
+
+// Rastreia qual item está sendo arrastado
+document.querySelectorAll('.item').forEach(item => {
+    item.addEventListener('dragstart', () => {
+        draggedItem = item;
+        item.classList.add('dragging');
+    });
+    
+    item.addEventListener('dragend', () => {
+        item.classList.remove('dragging');
+    });
+});
+
+// Lida com solturas em cada zona
+document.querySelectorAll('.drop-zone').forEach(zone => {
+    zone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+    });
+    
+    zone.addEventListener('dragenter', () => {
+        zone.classList.add('drag-over');
+    });
+    
+    zone.addEventListener('dragleave', (e) => {
+        // Remove a classe apenas se estivermos saindo completamente da zona,
+        // e não apenas entrando em um elemento filho
+        if (!zone.contains(e.relatedTarget)) {
+            zone.classList.remove('drag-over');
+        }
+    });
+    
+    zone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        
+        if (draggedItem) {
+            const li = document.createElement('li');
+            li.textContent = draggedItem.textContent;
+            zone.querySelector('ul').appendChild(li);
+            draggedItem.remove();
+        }
+    });
+});
+</script>
+
+<style>
+.item {
+    padding: 12px 16px;
+    background: #f0f0f0;
+    margin: 8px 0;
+    border-radius: 8px;
+    cursor: grab;
+}
+
+.item.dragging {
+    opacity: 0.5;
+}
+
+.drop-zone {
+    min-height: 150px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 15px;
+    transition: all 0.2s ease;
+}
+
+.drop-zone.drag-over {
+    border-color: #007bff;
+    background: rgba(0, 123, 255, 0.1);
+}
+</style>
+```
+
+## Combinando com Soltura de Arquivos
+
+Se o seu aplicativo usa tanto arrastar e soltar HTML quanto [Soltura de Arquivos](./files), suas zonas de soltura HTML também receberão eventos quando os usuários arrastarem arquivos do sistema operacional. Para evitar confusão, filtre os arrastos de arquivos externos nos seus manipuladores:
+
+```javascript
+zone.addEventListener('dragenter', (e) => {
+    // Ignora arrastos de arquivos externos
+    if (e.dataTransfer?.types.includes('Files')) return;
+    
+    zone.classList.add('drag-over');
+});
+
+zone.addEventListener('dragover', (e) => {
+    // Ignora arrastos de arquivos externos
+    if (e.dataTransfer?.types.includes('Files')) return;
+    
+    e.preventDefault();
+});
+
+zone.addEventListener('drop', (e) => {
+    // Ignora arrastos de arquivos externos
+    if (e.dataTransfer?.types.includes('Files')) return;
+    
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    // Lida com a soltura interna
+});
+```
+
+O array `dataTransfer.types` contém `'Files'` quando o usuário está arrastando arquivos do sistema operacional, mas contém tipos como `'text/plain'` para arrastos HTML internos. Isso permite distinguir entre os dois.
+
+## Passando Dados com dataTransfer
+
+O exemplo acima rastreia o elemento arrastado em uma variável JavaScript. Isso funciona bem quando tudo está na mesma página. Mas se você precisar arrastar entre iframes ou passar dados que não estão vinculados a um elemento DOM, use a API `dataTransfer`:
+
+```javascript
+// Quando o arrasto começa, armazena os dados
+item.addEventListener('dragstart', (e) => {
+    e.dataTransfer.setData('text/plain', item.id);
+});
+
+// Quando solto, recupera os dados
+target.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const itemId = e.dataTransfer.getData('text/plain');
+    const item = document.getElementById(itemId);
+    // Move ou copia o item
+});
+```
+
+Os dados são armazenados como strings, então você precisará serializar objetos com `JSON.stringify()` se necessário.
+
+## Próximos Passos
+
+- [Soltura de Arquivos](./files) - Aceitar arquivos do sistema operacional
+- [API de Arrastar e Soltar HTML da MDN](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API) - Referência completa da API do navegador

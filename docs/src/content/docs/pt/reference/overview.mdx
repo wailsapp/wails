@@ -1,0 +1,282 @@
+---
+title: Referência da API
+description: Documentação completa da API para Wails v3
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Sobre Esta Referência
+
+Esta é a referência completa da API para o Wails v3. Ela documenta todos os tipos, métodos e opções públicos disponíveis no framework.
+
+**Organização:**
+- [Application](/pt/reference/application) - APIs principais da aplicação
+- [Window](/pt/reference/window) - Criação e gerenciamento de janelas
+- [Menu](/pt/reference/menu) - Menus da aplicação, contexto e bandeja do sistema
+- [Events](/pt/reference/events) - Sistema de eventos e eventos integrados
+- [Dialogs](/pt/reference/dialogs) - Diálogos de arquivos e mensagens
+- [Frontend Runtime](/pt/reference/frontend-runtime) - APIs do runtime do frontend
+- [CLI](/pt/reference/cli) - Interface de linha de comando
+
+## Convenções da API
+
+<details>
+<summary><strong>Convenções da API Go</strong> - Para desenvolvedores novos em Go</summary>
+
+#### Nomenclatura
+
+- **Tipos**: PascalCase (ex., `WebviewWindow`)
+- **Métodos**: PascalCase (ex., `SetTitle()`)
+- **Opções**: Structs em PascalCase (ex., `WindowOptions`)
+- **Constantes**: PascalCase (ex., `WindowStartStateMaximised`)
+
+#### Tratamento de Erros
+
+A maioria dos métodos que podem falhar retorna `error` como o último valor de retorno:
+
+```go
+window, err := app.Window.New()
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+#### Contexto
+
+Métodos que podem bloquear ou precisam de cancelamento aceitam `context.Context`:
+
+```go
+err := app.RunWithContext(ctx)
+```
+
+#### Padrão de Opções
+
+A configuração usa structs de opções:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Description: "A demo application",
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+    },
+})
+```
+
+</details>
+
+### Convenções da API JavaScript
+
+#### Nomenclatura
+
+- **Funções**: camelCase (ex., `setTitle()`)
+- **Constantes**: SCREAMING_SNAKE_CASE (ex., `WINDOW_EVENT_FOCUS`)
+
+#### Assíncrono por Padrão
+
+Todas as chamadas de métodos Go retornam Promises:
+
+```javascript
+// Async/await (recomendado)
+const result = await MyService.DoSomething()
+
+// Promise chain
+MyService.DoSomething()
+    .then(result => console.log(result))
+    .catch(error => console.error(error))
+```
+
+#### Tratamento de Erros
+
+Erros do Go se tornam exceções JavaScript:
+
+```javascript
+try {
+    await MyService.MightFail()
+} catch (error) {
+    console.error('Go error:', error)
+}
+```
+
+#### Tipagem Estática
+
+As definições de TypeScript são geradas automaticamente:
+
+```typescript
+// Completamente tipado
+import { Greet } from './bindings/GreetService'
+
+const message: string = await Greet("World")
+```
+
+## Estrutura de Pacotes
+
+```
+github.com/wailsapp/wails/v3/pkg/
+├── application/          # Pacote principal da aplicação
+│   ├── application.go    # Tipo Application
+│   ├── webview_window.go # Gerenciamento de janelas
+│   ├── menu.go           # Tipos de menu
+│   ├── events.go         # Sistema de eventos
+│   └── dialogs.go        # APIs de diálogo
+├── events/               # Constantes de eventos
+└── services/             # Serviços integrados
+    ├── badge/            # Serviço de badge
+    ├── notifications/    # Serviço de notificações
+    └── sqlite/           # Serviço SQLite
+```
+
+## Caminhos de Importação
+
+### Go
+
+```go
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+```
+
+### JavaScript
+
+```javascript
+// Bindings gerados automaticamente
+import { MyMethod } from './bindings/MyService'
+
+// APIs do runtime
+import { Events, Window } from '@wailsio/runtime'
+```
+
+## Referência de Tipos
+
+### Tipos Comuns
+
+<Tabs syncKey="lang">
+  <TabItem label="Go" icon="seti:go">
+    ```go
+    // Application
+    type Application struct { /* ... */ }
+    type Options struct { /* ... */ }
+    
+    // Window
+    type WebviewWindow struct { /* ... */ }
+    type WebviewWindowOptions struct { /* ... */ }
+    
+    // Menu
+    type Menu struct { /* ... */ }
+    type MenuItem struct { /* ... */ }
+    
+    // Events
+    type Event struct { /* ... */ }
+    type EventListener func(*Event)
+    
+    // Dialogs
+    type OpenDialogOptions struct { /* ... */ }
+    type SaveDialogOptions struct { /* ... */ }
+    ```
+  </TabItem>
+
+  <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // Window runtime
+    interface WindowOptions {
+        title?: string
+        width?: number
+        height?: number
+        // ...
+    }
+    
+    // Events
+    type EventCallback = (data: any) => void
+    
+    // Bindings (gerados automaticamente)
+    export function MyMethod(arg: string): Promise<string>
+    ```
+  </TabItem>
+</Tabs>
+
+## Diferenças entre Plataformas
+
+Algumas APIs se comportam de maneira diferente em diferentes plataformas:
+
+| Recurso | Windows | macOS | Linux |
+|---------|---------|-------|-------|
+| **Menu da Aplicação** | Barra de menus da janela | Barra de menus global | Barra de menus da janela |
+| **Bandeja do Sistema** | Área de notificação | Barra de menus | Bandeja do sistema |
+| **Dock** | N/A | ✅ Disponível | N/A |
+| **Diálogos de arquivos** | Nativo | Nativo | Nativo (GTK) |
+| **Transparência** | ✅ Completa | ✅ Completa | ⚠️ Limitada |
+
+O comportamento específico de cada plataforma é documentado em cada seção da API.
+
+## Versionamento
+
+O Wails v3 segue o versionamento semântico:
+
+- **Major** (v3.x.x): Mudanças incompatíveis (breaking changes)
+- **Minor** (v3.x.x): Novos recursos, compatível com versões anteriores
+- **Patch** (v3.x.x): Correções de bugs, compatível com versões anteriores
+
+**Status atual:** Alpha (API estável, refinamentos em andamento)
+
+## Política de Descontinuação
+
+Quando as APIs são descontinuadas:
+
+1. **Marcadas na documentação** com aviso de descontinuação
+2. **Alternativa fornecida** com guia de migração
+3. **Mantidas por 1 versão major** antes da remoção
+4. **Avisos do compilador** (onde possível)
+
+## Estabilidade da API
+
+### APIs Estáveis ✅
+
+Estas APIs são estáveis e seguras para uso em produção:
+
+- APIs principais da aplicação
+- Gerenciamento de janelas
+- Sistema de menus
+- Sistema de eventos
+- Diálogos de arquivos
+- Bindings de serviços
+
+### APIs Instáveis ⚠️
+
+Estas APIs podem mudar antes do lançamento final:
+
+- Algumas opções avançadas de janela
+- Recursos específicos de plataforma
+- Recursos experimentais
+
+As APIs instáveis são marcadas na documentação.
+
+## Obtendo Ajuda
+
+### Perguntas sobre a API
+
+1. **Verifique esta referência** - Documentação completa da API
+2. **Verifique os exemplos** - [Exemplos no GitHub](https://github.com/wailsapp/wails/tree/master/v3/examples)
+3. **Pesquise no Discord** - [Servidor do Discord](https://discord.gg/JDdSxwjhGf)
+4. **Pergunte à comunidade** - Canal #help no Discord
+
+### Reportando Problemas na API
+
+Encontrou um bug ou inconsistência?
+
+1. **Verifique problemas existentes** - [Issues no GitHub](https://github.com/wailsapp/wails/issues)
+2. **Crie um relatório detalhado** - Inclua código, erro e plataforma
+3. **Forneça uma reprodução** - Exemplo mínimo que demonstre o problema
+
+## Documentação Relacionada
+
+- [Tutoriais](/pt/tutorials/overview) - Aprenda construindo aplicações reais
+- [Guias](/guides/dev/project-structure) - Guias orientados a tarefas para cenários comuns
+- [Recursos](/pt/features/windows/basics) - Documentação detalhada por recurso
+- [Exemplos](https://github.com/wailsapp/wails/tree/master/v3/examples) - Exemplos de código funcionais no GitHub
+
+---
+
+**Navegue pela API:** Use a navegação à esquerda para explorar APIs específicas.

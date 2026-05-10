@@ -1,0 +1,409 @@
+---
+title: Operações de Área de Transferência
+description: Copie e cole texto com a área de transferência do sistema
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Operações de Área de Transferência
+
+O Wails fornece uma **API unificada de área de transferência** que funciona em todas as plataformas. Copie e cole texto com métodos simples e consistentes no Windows, macOS e Linux.
+
+## Início Rápido
+
+```go
+// Copia texto para a área de transferência
+app.Clipboard.SetText("Hello, World!")
+
+// Obtém texto da área de transferência
+text, ok := app.Clipboard.Text()
+if ok {
+    fmt.Println("Área de transferência:", text)
+}
+```
+
+**É isso!** Acesso à área de transferência multiplataforma.
+
+## Copiando Texto
+
+### Cópia Básica
+
+```go
+success := app.Clipboard.SetText("Texto para copiar")
+if !success {
+    app.Logger.Error("Falha ao copiar para a área de transferência")
+}
+```
+
+**Retorna:** `bool` - `true` se bem-sucedido, `false` caso contrário
+
+### Cópia a partir de Serviço
+
+```go
+type ClipboardService struct {
+    app *application.Application
+}
+
+func (c *ClipboardService) CopyToClipboard(text string) bool {
+    return c.app.Clipboard.SetText(text)
+}
+```
+
+**Chamar do JavaScript:**
+
+```javascript
+import { CopyToClipboard } from './bindings/myapp/clipboardservice'
+
+await CopyToClipboard("Texto para copiar")
+```
+
+### Cópia com Feedback
+
+```go
+func copyWithFeedback(text string) {
+    if app.Clipboard.SetText(text) {
+        app.Dialog.Info().
+            SetTitle("Copiado").
+            SetMessage("Texto copiado para a área de transferência!").
+            Show()
+    } else {
+        app.Dialog.Error().
+            SetTitle("Falha na Cópia").
+            SetMessage("Falha ao copiar para a área de transferência.").
+            Show()
+    }
+}
+```
+
+## Colando Texto
+
+### Colagem Básica
+
+```go
+text, ok := app.Clipboard.Text()
+if !ok {
+    app.Logger.Error("Falha ao ler a área de transferência")
+    return
+}
+
+fmt.Println("Texto da área de transferência:", text)
+```
+
+**Retorna:** `(string, bool)` - Texto e flag de sucesso
+
+### Colagem a partir de Serviço
+
+```go
+func (c *ClipboardService) PasteFromClipboard() string {
+    text, ok := c.app.Clipboard.Text()
+    if !ok {
+        return ""
+    }
+    return text
+}
+```
+
+**Chamar do JavaScript:**
+
+```javascript
+import { PasteFromClipboard } from './bindings/myapp/clipboardservice'
+
+const text = await PasteFromClipboard()
+console.log("Colado:", text)
+```
+
+### Colagem com Validação
+
+```go
+func pasteText() (string, error) {
+    text, ok := app.Clipboard.Text()
+    if !ok {
+        return "", errors.New("área de transferência vazia ou indisponível")
+    }
+    
+    // Valida
+    if len(text) == 0 {
+        return "", errors.New("a área de transferência está vazia")
+    }
+    
+    if len(text) > 10000 {
+        return "", errors.New("texto da área de transferência muito grande")
+    }
+    
+    return text, nil
+}
+```
+
+## Exemplos Completos
+
+### Botão de Cópia
+
+**Go:**
+
+```go
+type TextService struct {
+    app *application.Application
+}
+
+func (t *TextService) CopyText(text string) error {
+    if !t.app.Clipboard.SetText(text) {
+        return errors.New("falha ao copiar")
+    }
+    return nil
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { CopyText } from './bindings/myapp/textservice'
+
+async function copyToClipboard(text) {
+    try {
+        await CopyText(text)
+        showNotification("Copiado para a área de transferência!")
+    } catch (error) {
+        showError("Falha ao copiar: " + error)
+    }
+}
+
+// Uso
+document.getElementById('copy-btn').addEventListener('click', () => {
+    const text = document.getElementById('text').value
+    copyToClipboard(text)
+})
+```
+
+### Colar e Processar
+
+**Go:**
+
+```go
+type DataService struct {
+    app *application.Application
+}
+
+func (d *DataService) PasteAndProcess() (string, error) {
+    // Obtém texto da área de transferência
+    text, ok := d.app.Clipboard.Text()
+    if !ok {
+        return "", errors.New("área de transferência indisponível")
+    }
+    
+    // Processa o texto
+    processed := strings.TrimSpace(text)
+    processed = strings.ToUpper(processed)
+    
+    return processed, nil
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { PasteAndProcess } from './bindings/myapp/dataservice'
+
+async function pasteAndProcess() {
+    try {
+        const result = await PasteAndProcess()
+        document.getElementById('output').value = result
+    } catch (error) {
+        showError("Falha ao colar: " + error)
+    }
+}
+```
+
+### Copiar Múltiplos Formatos
+
+```go
+type CopyService struct {
+    app *application.Application
+}
+
+func (c *CopyService) CopyAsPlainText(text string) bool {
+    return c.app.Clipboard.SetText(text)
+}
+
+func (c *CopyService) CopyAsJSON(data interface{}) bool {
+    jsonBytes, err := json.MarshalIndent(data, "", "  ")
+    if err != nil {
+        return false
+    }
+    return c.app.Clipboard.SetText(string(jsonBytes))
+}
+
+func (c *CopyService) CopyAsCSV(rows [][]string) bool {
+    var buf bytes.Buffer
+    writer := csv.NewWriter(&buf)
+    
+    for _, row := range rows {
+        if err := writer.Write(row); err != nil {
+            return false
+        }
+    }
+    
+    writer.Flush()
+    return c.app.Clipboard.SetText(buf.String())
+}
+```
+
+### Monitor de Área de Transferência
+
+```go
+type ClipboardMonitor struct {
+    app          *application.Application
+    lastText     string
+    ticker       *time.Ticker
+    stopChan     chan bool
+}
+
+func NewClipboardMonitor(app *application.Application) *ClipboardMonitor {
+    return &ClipboardMonitor{
+        app:      app,
+        stopChan: make(chan bool),
+    }
+}
+
+func (cm *ClipboardMonitor) Start() {
+    cm.ticker = time.NewTicker(1 * time.Second)
+    
+    go func() {
+        for {
+            select {
+            case <-cm.ticker.C:
+                cm.checkClipboard()
+            case <-cm.stopChan:
+                return
+            }
+        }
+    }()
+}
+
+func (cm *ClipboardMonitor) Stop() {
+    if cm.ticker != nil {
+        cm.ticker.Stop()
+    }
+    cm.stopChan <- true
+}
+
+func (cm *ClipboardMonitor) checkClipboard() {
+    text, ok := cm.app.Clipboard.Text()
+    if !ok {
+        return
+    }
+    
+    if text != cm.lastText {
+        cm.lastText = text
+        cm.app.Event.Emit("clipboard-changed", text)
+    }
+}
+```
+
+### Cópia com Histórico
+
+```go
+type ClipboardHistory struct {
+    app     *application.Application
+    history []string
+    maxSize int
+}
+
+func NewClipboardHistory(app *application.Application) *ClipboardHistory {
+    return &ClipboardHistory{
+        app:     app,
+        history: make([]string, 0),
+        maxSize: 10,
+    }
+}
+
+func (ch *ClipboardHistory) Copy(text string) bool {
+    if !ch.app.Clipboard.SetText(text) {
+        return false
+    }
+    
+    // Adiciona ao histórico
+    ch.history = append([]string{text}, ch.history...)
+    
+    // Limita o tamanho
+    if len(ch.history) > ch.maxSize {
+        ch.history = ch.history[:ch.maxSize]
+    }
+    
+    return true
+}
+
+func (ch *ClipboardHistory) GetHistory() []string {
+    return ch.history
+}
+
+func (ch *ClipboardHistory) RestoreFromHistory(index int) bool {
+    if index < 0 || index >= len(ch.history) {
+        return false
+    }
+    
+    return ch.app.Clipboard.SetText(ch.history[index])
+}
+```
+
+## Integração com Frontend
+
+### Usando a API de Área de Transferência do Navegador
+
+Para texto simples, você pode usar a API de área de transferência do navegador:
+
+```javascript
+// Copia
+async function copyText(text) {
+    try {
+        await navigator.clipboard.writeText(text)
+        console.log("Copiado!")
+    } catch (error) {
+        console.error("Falha ao copiar:", error)
+    }
+}
+
+// Cola
+async function pasteText() {
+    try {
+        const text = await navigator.clipboard.readText()
+        return text
+    } catch (error) {
+        console.error("Falha ao colar:", error)
+        return ""
+    }
+}
+```
+
+**Nota:** A API de área de transferência do navegador requer HTTPS ou localhost, e permissão do usuário.
+
+### Usando a Área de Transferência do Wails
+
+Para acesso à área de transferência em todo o sistema:
+
+```javascript
+import { CopyToClipboard, PasteFromClipboard } from './bindings/myapp/clipboardservice'
+
+// Copia
+async function copy(text) {
+    const success = await CopyToClipboard(text)
+    if (success) {
+        console.log("Copiado!")
+    }
+}
+
+// Cola
+async function paste() {
+    const text = await PasteFromClipboard()
+    return text
+}
+```
+
+## Melhores Práticas
+
+### ✅ Faça
+
+- **Verifique os valores de retorno** - Lidere com falhas de forma graciosa---
+
+**Perguntas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou verifique os [exemplos de área de transferência](https://github.com/wailsapp/wails/tree/master/v3/examples).

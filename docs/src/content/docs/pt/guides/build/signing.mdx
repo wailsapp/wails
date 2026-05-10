@@ -1,0 +1,684 @@
+---
+title: Assinatura de Código
+description: Guia para assinar seus aplicativos Wails em todas as plataformas
+sidebar:
+  order: 6
+---
+
+import { Tabs, TabItem, Steps, Aside } from '@astrojs/starlight/components';
+
+# Assinando seu Aplicativo com Código
+
+Este guia cobre como assinar seus aplicativos Wails para macOS, Windows e Linux. O Wails v3 fornece ferramentas de CLI integradas para assinatura de código, notariação e gerenciamento de chaves PGP.
+
+- **macOS** - Assine e obtenha notariação para seus aplicativos macOS
+- **Windows** - Assine seus executáveis e pacotes do Windows
+- **Linux** - Assine pacotes DEB e RPM com chaves PGP
+
+## Matriz de Assinatura Multiplataforma
+
+Esta matriz mostra o que você pode assinar a partir de cada plataforma de origem:
+
+| Formato de Destino | De Windows | De macOS | De Linux |
+|------|:--:|:--:|:--:|
+| Windows EXE/MSI | ✅ | ✅ | ✅ |
+| Pacote .app do macOS | ❌ | ✅ | ❌ |
+| Notariação do macOS | ❌ | ✅ | ❌ |
+| DEB do Linux | ✅ | ✅ | ✅ |
+| RPM do Linux | ✅ | ✅ | ✅ |
+
+<Aside type="tip">
+Pacotes do Windows e Linux podem ser assinados a partir de **qualquer plataforma**. A assinatura do macOS requer um Mac devido aos requisitos de ferramentas da Apple.
+</Aside>
+
+### Backends de Assinatura
+
+O Wails seleciona automaticamente o melhor backend de assinatura disponível:
+
+| Plataforma | Backend Nativo | Backend Multiplataforma |
+|------|----------------|-------------------------|
+| Windows | `signtool.exe` (Windows SDK) | Integrado |
+| macOS | `codesign` (Xcode) | Não disponível |
+| Linux | N/A | Integrado |
+
+Ao executar na plataforma nativa, o Wails usa as ferramentas nativas para máxima compatibilidade. Ao compilar para outras plataformas (cross-compiling), ele usa o suporte de assinatura integrado.
+
+## Início Rápido
+
+A maneira mais fácil de configurar a assinatura é usar o assistente de configuração interativo:
+
+```bash
+wails3 setup signing
+```
+
+Este comando:
+- Guia você pela configuração das credenciais de assinatura para cada plataforma
+- No macOS, lista os certificados de ID de Desenvolvedor disponíveis no seu chaveiro
+- Para o Linux, pode gerar uma nova chave PGP se você não tiver uma
+- **Armazena senhas com segurança no chaveiro do seu sistema** (não nos Taskfiles)
+- Atualiza a seção `vars` no Taskfile de cada plataforma com a configuração não sensível
+
+<Aside type="tip">
+As senhas são armazenadas no armazenamento de credenciais nativo do seu sistema (Keychain do macOS, Gerenciador de Credenciais do Windows ou Serviço de Segredos do Linux). Isso significa que sua configuração de assinatura é segura e funciona em todos os seus projetos Wails.
+</Aside>
+
+Para configurar apenas plataformas específicas:
+
+```bash
+wails3 setup signing --platform darwin
+wails3 setup signing --platform windows --platform linux
+```
+
+### Configuração Manual
+
+Alternativamente, você pode editar manualmente os Taskfiles específicos da plataforma. Edite a seção `vars` no topo de cada arquivo:
+
+<Tabs>
+<TabItem label="macOS">
+Edite `build/darwin/Taskfile.yml`:
+
+```yaml
+vars:
+  SIGN_IDENTITY: "Developer ID Application: Sua Empresa (TEAMID)"
+  KEYCHAIN_PROFILE: "meu-perfil-de-notarizacao"
+  # ENTITLEMENTS: "build/darwin/entitlements.plist"
+```
+
+Em seguida, execute:
+
+```bash
+wails3 task darwin:sign           # Apenas assinar
+wails3 task darwin:sign:notarize  # Assinar e obter notariação
+```
+</TabItem>
+<TabItem label="Windows">
+Edite `build/windows/Taskfile.yml`:
+
+```yaml
+vars:
+  SIGN_CERTIFICATE: "caminho/para/certificado.pfx"
+  # Ou use a impressão digital (thumbprint) em vez disso:
+  # SIGN_THUMBPRINT: "impressao-digital-do-certificado"
+  # TIMESTAMP_SERVER: "http://timestamp.digicert.com"
+```
+
+A senha é recuperada do chaveiro do sistema (execute `wails3 setup signing` para configurar).
+
+Em seguida, execute:
+
+```bash
+wails3 task windows:sign           # Assinar executável
+wails3 task windows:sign:installer # Assinar instalador NSIS
+```
+</TabItem>
+<TabItem label="Linux">
+Edite `build/linux/Taskfile.yml`:
+
+```yaml
+vars:
+  PGP_KEY: "caminho/para/chave-de-assinatura.asc"
+  # SIGN_ROLE: "builder"  # Opções: origin, maint, archive, builder
+```
+
+A senha é recuperada do chaveiro do sistema (execute `wails3 setup signing` para configurar).
+
+Em seguida, execute:
+
+```bash
+wails3 task linux:sign:deb       # Assinar pacote DEB
+wails3 task linux:sign:rpm       # Assinar pacote RPM
+wails3 task linux:sign:packages  # Assinar todos os pacotes
+```
+</TabItem>
+</Tabs>
+
+Você também pode usar a CLI diretamente:
+
+```bash
+# Verificar capacidades de assinatura no seu sistema
+wails3 signing info
+
+# Listar identidades de assinatura disponíveis (macOS/Windows)
+wails3 signing list
+```
+
+## Assinatura de Código no macOS
+
+### Pré-requisitos
+
+- Conta de Desenvolvedor Apple ($99/ano)
+- Certificado de Aplicativo ID de Desenvolvedor (Developer ID Application)
+- Ferramentas de Linha de Comando do Xcode instaladas
+
+### Identidades de Assinatura
+
+Verifique as identidades de assinatura disponíveis:
+
+```bash
+wails3 signing list
+```
+
+Saída:
+
+```
+Found 2 signing identities:
+
+  Developer ID Application: Sua Empresa (ABCD1234) [valid]
+    Hash: ABC123DEF456...
+
+  Apple Development: seu@email.com (XYZ789) [valid]
+    Hash: DEF789ABC123...
+```
+
+<Aside type="tip">
+Para distribuição fora da App Store, você precisa de um certificado de **Aplicativo ID de Desenvolvedor** (Developer ID Application).
+</Aside>
+
+### Configuração
+
+Edite `build/darwin/Taskfile.yml` e defina as variáveis de assinatura:
+
+```yaml
+vars:
+  SIGN_IDENTITY: "Developer ID Application: Sua Empresa (TEAMID)"
+  KEYCHAIN_PROFILE: "meu-perfil-de-notarizacao"
+  ENTITLEMENTS: "build/darwin/entitlements.plist"
+```
+
+| Variável | Obrigatório | Descrição |
+|------|------|-------|
+| `SIGN_IDENTITY` | Sim | Seu ID de Desenvolvedor (ex., "Developer ID Application: Sua Empresa (TEAMID)") |
+| `KEYCHAIN_PROFILE` | Para notariação | Nome do perfil do Keychain com credenciais armazenadas |
+| `ENTITLEMENTS` | Não | Caminho para o arquivo de permissões (entitlements) |
+
+Em seguida, execute:
+
+```bash
+wails3 task darwin:sign           # Compilar, empacotar e assinar
+wails3 task darwin:sign:notarize  # Compilar, empacotar, assinar e obter notariação
+```
+
+### Permissões (Entitlements)
+
+As permissões (entitlements) controlam quais capacidades seu aplicativo tem acesso. Os aplicativos Wails geralmente precisam de permissões diferentes para desenvolvimento versus produção:
+
+- **Desenvolvimento**: Requer permissões para JIT, memória não assinada e depuração
+- **Produção**: Permissões mínimas (apenas acesso à rede)
+
+Use o assistente de configuração interativo para gerar ambos os arquivos:
+
+```bash
+wails3 setup entitlements
+```
+
+Isso cria:
+- `build/darwin/entitlements.dev.plist` - Para builds de desenvolvimento
+- `build/darwin/entitlements.plist` - Para builds de produção/assinados
+
+**Predefinições disponíveis:**
+| Predefinição | Descrição |
+|--------|-----------|
+| Development | JIT, memória não assinada, depuração, rede |
+| Production | Apenas rede (mínimo, mais seguro) |
+| Both | Cria arquivos de dev e produção (recomendado) |
+| App Store | Sandbox habilitado com acesso à rede e arquivos |
+| Custom | Escolha permissões individuais |
+
+<Aside type="note">
+A tarefa `run` no Taskfile do darwin usa `entitlements.dev.plist` automaticamente. As tarefas `sign` usam `entitlements.plist` para builds de produção.
+</Aside>
+
+Em seguida, defina `ENTITLEMENTS` nas variáveis do seu Taskfile para apontar para o arquivo apropriado.
+
+### Notariação
+
+A Apple exige que todos os aplicativos distribuídos sejam notariados.
+
+<Steps>
+1. **Armazene suas credenciais no chaveiro** (configuração única):
+   ```bash
+   wails3 signing credentials \
+     --apple-id "seu@email.com" \
+     --team-id "ABCD1234" \
+     --password "senha-especifica-do-app" \
+     --profile "meu-perfil-de-notarizacao"
+   ```
+
+2. **Defina KEYCHAIN_PROFILE no seu Taskfile** para corresponder ao nome do perfil acima.
+
+3. **Assine e obtenha notariação para seu aplicativo**:
+   ```bash
+   wails3 task darwin:sign:notarize
+   ```
+
+4. **Verifique a notariação**:
+   ```bash
+   spctl --assess --verbose=2 bin/MyApp.app
+   ```
+</Steps>
+
+<Aside type="note">
+A notariação geralmente leva de 1 a 2 minutos. O ticket é automaticamente fixado (stapled) ao seu aplicativo.
+</Aside>
+
+## Assinatura de Código no Windows
+
+### Pré-requisitos
+
+- Certificado de assinatura de código (da DigiCert, Sectigo, etc.)
+- Para assinatura nativa: Windows SDK instalado (para signtool.exe)
+- Para multiplataforma: Apenas o arquivo de certificado----------|----------|-------------|
+| `SIGN_CERTIFICATE` | Um destes | Caminho para o arquivo de certificado .pfx/.p12 |
+| `SIGN_THUMBPRINT` | Um destes | Impressão digital do certificado no repositório de certificados do Windows |
+| `TIMESTAMP_SERVER` | Não | URL do servidor de carimbo de tempo (padrão: http://timestamp.digicert.com) |
+
+<Aside type="note">
+A senha do certificado é armazenada no chaveiro do seu sistema, não no Taskfile. Execute `wails3 setup signing` para configurá-la, ou defina a variável de ambiente `WAILS_WINDOWS_CERT_PASSWORD` no CI.
+</Aside>
+
+Em seguida, execute:
+
+```bash
+wails3 task windows:sign           # Compila e assina o executável
+wails3 task windows:sign:installer # Compila e assina o instalador NSIS
+```
+
+### Assinatura Multiplataforma
+
+Executáveis do Windows podem ser assinados de qualquer plataforma. A mesma configuração do Taskfile e os mesmos comandos funcionam no macOS e no Linux.
+
+### Formatos do Windows Suportados
+
+| Formato | Extensão | Notas |
+|--------|-----------|-------|
+| Executáveis | .exe | Assinatura PE padrão |
+| Instaladores | .msi | Pacotes do Windows Installer |
+| Pacotes de Aplicativo | .msix, .appx | Aplicativos modernos do Windows |
+
+## Assinatura de Pacotes do Linux
+
+Os pacotes do Linux (DEB e RPM) são assinados usando chaves PGP/GPG. Diferente da assinatura de código do Windows e do macOS, a assinatura de pacotes do Linux prova que o pacote veio de uma fonte confiável, em vez de provar que o código é confiável pelo sistema operacional.
+
+### Pré-requisitos
+
+- Par de chaves PGP (pode ser gerado com o Wails)
+
+### Gerando uma Chave PGP
+
+Se você não tiver uma chave PGP, o Wails pode gerar uma para você:
+
+```bash
+wails3 signing generate-key \
+  --name "Seu Nome" \
+  --email "seu@email.com" \
+  --comment "Chave de Assinatura de Pacotes" \
+  --output-private signing-key.asc \
+  --output-public signing-key.pub.asc
+```
+
+Opções:
+- `--bits`: Tamanho da chave (padrão: 4096)
+- `--expiry`: Duração de expiração da chave (ex.: "1y", "6m", "0" para sem expiração)
+- `--password`: Senha para proteger a chave privada
+
+<Aside type="caution">
+Mantenha sua chave privada segura! Armazene-a criptografada e faça backups com segurança.
+</Aside>
+
+### Configuração
+
+Edite `build/linux/Taskfile.yml` e defina as variáveis de assinatura:
+
+```yaml
+vars:
+  PGP_KEY: "path/to/signing-key.asc"
+  # SIGN_ROLE: "builder"  # Opções: origin, maint, archive, builder
+```
+
+| Variável | Obrigatório | Descrição |
+|----------|----------|-------------|
+| `PGP_KEY` | Sim | Caminho para o arquivo de chave privada PGP |
+| `SIGN_ROLE` | Não | Função de assinatura DEB (padrão: builder) |
+
+<Aside type="note">
+A senha da chave PGP é armazenada no chaveiro do seu sistema, não no Taskfile. Execute `wails3 setup signing` para configurá-la, ou defina a variável de ambiente `WAILS_PGP_PASSWORD` no CI.
+</Aside>
+
+Em seguida, execute:
+
+```bash
+wails3 task linux:sign:deb       # Compila e assina o pacote DEB
+wails3 task linux:sign:rpm       # Compila e assina o pacote RPM
+wails3 task linux:sign:packages  # Compila e assina todos os pacotes
+```
+
+### Funções de Assinatura DEB
+
+Para pacotes DEB, você pode especificar a função de assinatura via `SIGN_ROLE`:
+
+- `origin`: Assinatura da origem do pacote
+- `maint`: Assinatura do mantenedor do pacote
+- `archive`: Assinatura do mantenedor do arquivo
+- `builder`: Assinatura do construtor do pacote (padrão)
+
+### Assinatura Multiplataforma
+
+Pacotes do Linux podem ser assinados de qualquer plataforma. A mesma configuração do Taskfile e os mesmos comandos funcionam no Windows e no macOS.
+
+### Visualizando Informações da Chave
+
+```bash
+wails3 signing key-info --key signing-key.asc
+```
+
+Saída:
+
+```
+Informações da Chave PGP:
+  ID da Chave:      ABC123DEF456
+  Impressão Digital: 1234 5678 90AB CDEF ...
+  IDs de Usuário:     Seu Nome <seu@email.com>
+  Criada em:        2024-01-15
+  Expira em:        2025-01-15
+  Possui Chave Privada: Sim
+  Criptografada:    Sim
+```
+
+### Verificando Pacotes do Linux
+
+```bash
+# Verifica a assinatura DEB
+dpkg-sig --verify myapp_1.0.0_amd64.deb
+
+# Verifica a assinatura RPM
+rpm --checksig myapp-1.0.0.x86_64.rpm
+```
+
+### Distribuíndo sua Chave Pública
+
+Os usuários precisam da sua chave pública para verificar os pacotes:
+
+```bash
+# Exporta a chave pública para distribuição
+wails3 signing key-info --key signing-key.asc --export-public > myapp-signing.pub.asc
+
+# Os usuários podem importá-la:
+# Para DEB (apt):
+sudo apt-key add myapp-signing.pub.asc
+# Ou para o apt moderno:
+sudo cp myapp-signing.pub.asc /etc/apt/trusted.gpg.d/
+
+# Para RPM:
+sudo rpm --import myapp-signing.pub.asc
+```
+
+## Integração com GitHub Actions
+
+Em ambientes de CI, as senhas são fornecidas por meio de variáveis de ambiente em vez do chaveiro do sistema:
+
+| Variável de Ambiente | Descrição |
+|---------------------|-------------|
+| `WAILS_WINDOWS_CERT_PASSWORD` | Senha do certificado do Windows |
+| `WAILS_PGP_PASSWORD` | Senha da chave PGP para pacotes do Linux |
+
+Você também pode passar variáveis do Taskfile diretamente:
+
+```bash
+wails3 task darwin:sign SIGN_IDENTITY="$SIGN_IDENTITY" KEYCHAIN_PROFILE="$KEYCHAIN_PROFILE"
+```
+
+### Fluxo de Trabalho do macOS
+
+```yaml
+name: Compila e Assina macOS
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Instalar Wails
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+      - name: Importar Certificado
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.MACOS_CERTIFICATE }}
+          CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        run: |
+          echo $CERTIFICATE_BASE64 | base64 --decode > certificate.p12
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
+
+      - name: Armazenar Credenciais de Notarização
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: |
+          wails3 signing credentials \
+            --apple-id "$APPLE_ID" \
+            --team-id "$APPLE_TEAM_ID" \
+            --password "$APPLE_APP_PASSWORD" \
+            --profile "notarize-profile"
+
+      - name: Compilar, Assinar e Notarizar
+        env:
+          SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+        run: |
+          wails3 task darwin:sign:notarize \
+            SIGN_IDENTITY="$SIGN_IDENTITY" \
+            KEYCHAIN_PROFILE="notarize-profile"
+
+      - name: Enviar Artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: MyApp-macOS
+          path: bin/*.app
+```
+
+### Fluxo de Trabalho do Windows
+
+```yaml
+name: Compila e Assina Windows
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Instalar Wails
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+      - name: Importar Certificado
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.WINDOWS_CERTIFICATE }}
+        run: |
+          $certBytes = [Convert]::FromBase64String($env:CERTIFICATE_BASE64)
+          [IO.File]::WriteAllBytes("certificate.pfx", $certBytes)
+
+      - name: Compilar e Assinar
+        env:
+          WAILS_WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        run: |
+          wails3 task windows:sign SIGN_CERTIFICATE=certificate.pfx
+
+      - name: Enviar Artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: MyApp-Windows
+          path: bin/*.exe
+```
+
+### Fluxo de Trabalho Multiplataforma (Executador Linux)
+
+Assine pacotes do Windows e do Linux a partir de um único executador Linux:
+
+```yaml
+name: Compila e Assina (Multiplataforma)
+
+on:
+  push:
+    tags: ['v*']------|------|
+| `--input` | Caminho do arquivo a ser assinado |
+| `--output` | Caminho de saída (opcional, padrão: substituição no local) |
+| `--verbose` | Habilitar saída detalhada |
+
+**Flags para Windows/macOS:**
+| Flag | Descrição |
+|------|------|
+| `--certificate` | Caminho para o certificado PKCS#12 (.pfx/.p12) |
+| `--password` | Senha do certificado |
+| `--timestamp` | URL do servidor de carimbo de tempo |
+
+**Flags Específicas do macOS:**
+| Flag | Descrição |
+|------|------|
+| `--identity` | Identidade de assinatura (use '-' para ad-hoc) |
+| `--entitlements` | Caminho para o plist de permissões |
+| `--hardened-runtime` | Habilitar runtime endurecido (padrão: true) |
+| `--notarize` | Enviar para notarização |
+| `--keychain-profile` | Perfil do chaveiro para notarização |
+
+**Flags Específicas do Windows:**
+| Flag | Descrição |
+|------|------|
+| `--thumbprint` | Impressão digital do certificado na loja do Windows |
+| `--description` | Descrição do aplicativo |
+| `--url` | URL do aplicativo |
+
+**Flags Específicas do Linux:**
+| Flag | Descrição |
+|------|------|
+| `--pgp-key` | Caminho para a chave privada PGP |
+| `--pgp-password` | Senha da chave PGP |
+| `--role` | Função de assinatura DEB (origin/maint/archive/builder) |
+
+### wails3 signing info
+
+Exibe as capacidades de assinatura no sistema atual.
+
+```bash
+wails3 signing info
+```
+
+### wails3 signing list
+
+Lista as identidades de assinatura disponíveis.
+
+```bash
+wails3 signing list
+```
+
+### wails3 signing credentials
+
+Armazena credenciais de notarização no chaveiro (somente macOS).
+
+```bash
+wails3 signing credentials [flags]
+
+Flags:
+  --apple-id      Email do Apple ID
+  --team-id       ID da Equipe de Desenvolvedores da Apple
+  --password      Senha específica para o aplicativo
+  --profile       Nome do perfil do chaveiro
+```
+
+### wails3 signing generate-key
+
+Gera um par de chaves PGP para a assinatura de pacotes do Linux.
+
+```bash
+wails3 signing generate-key [flags]
+
+Flags:
+  --name            Nome para a chave (obrigatório)
+  --email           Email para a chave (obrigatório)
+  --comment         Comentário para a chave
+  --bits            Tamanho da chave em bits (padrão: 4096)
+  --expiry          Validade da chave (ex., "1y", "6m", "0" para nunca)
+  --password        Senha para criptografar a chave privada
+  --output-private  Caminho para a saída da chave privada
+  --output-public   Caminho para a saída da chave pública
+```
+
+### wails3 signing key-info
+
+Exibe informações sobre uma chave PGP.
+
+```bash
+wails3 signing key-info --key <path-to-key>
+```
+
+## Solução de Problemas
+
+### Problemas no macOS
+
+**"No Developer ID certificate found"**
+- Certifique-se de que seu certificado está instalado no Chaveiro
+- Verifique se não expirou com `wails3 signing list`
+- Certifique-se de ter um certificado "Developer ID Application" (não apenas "Apple Development")
+
+**"Notarization failed"**
+- Verifique o log de notarização: `xcrun notarytool log <submission-id> --keychain-profile <profile>`
+- Certifique-se de que o runtime endurecido está habilitado
+- Verifique se seu aplicativo não inclui binários não assinados
+
+**"Codesign failed"**
+- Certifique-se de que o chaveiro está desbloqueado: `security unlock-keychain`
+- Verifique as permissões de arquivo no bundle do aplicativo
+
+### Problemas no Windows
+
+**"Certificate not found"**
+- Verifique se o caminho do certificado está correto
+- Verifique a senha do certificado
+- Certifique-se de que o certificado é válido (não expirado ou revogado)
+
+**"Timestamp server error"**
+- Tente um servidor de carimbo de tempo diferente:
+  - `http://timestamp.digicert.com`
+  - `http://timestamp.sectigo.com`
+  - `http://timestamp.comodoca.com`
+
+### Problemas no Linux
+
+**"Invalid PGP key"**
+- Certifique-se de que o arquivo de chave está no formato ASCII-armored
+- Verifique se a chave não expirou com `wails3 signing key-info`
+- Verifique se a senha está correta
+
+**"Signature verification failed"**
+- Certifique-se de que a chave pública foi importada corretamente
+- Verifique se o pacote não foi modificado após a assinatura
+
+## Recursos Adicionais
+
+### Documentação Oficial
+- [Apple Code Signing Guide](https://developer.apple.com/support/code-signing/)
+- [Apple Notarization Documentation](https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution)
+- [Microsoft Code Signing](https://docs.microsoft.com/en-us/windows-hardware/drivers/dashboard/get-a-code-signing-certificate)
+- [Debian Package Signing](https://wiki.debian.org/SecureApt)
+- [RPM Package Signing](https://rpm-software-management.github.io/rpm/manual/signatures.html)

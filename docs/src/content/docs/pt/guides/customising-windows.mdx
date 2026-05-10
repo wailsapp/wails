@@ -1,0 +1,129 @@
+---
+title: Personalizando Janelas no Wails
+description: Personalize a aparência e o comportamento das janelas em seus aplicativos Wails
+sidebar:
+  order: 10
+---
+
+import {Badge} from '@astrojs/starlight/components';
+
+Plataformas Relevantes: <Badge text="Windows" variant="note" /> <Badge text="macOS" variant="success" />
+<br/>
+
+O Wails fornece uma API para controlar a aparência e a funcionalidade dos
+controles de uma janela. Essa funcionalidade está disponível no Windows e no macOS, mas
+não no Linux.
+
+## Definindo os Estados dos Botões da Janela
+
+Os estados dos botões são definidos pelo enum `ButtonState`:
+
+```go
+type ButtonState int
+
+const (
+    ButtonEnabled   ButtonState = 0
+    ButtonDisabled  ButtonState = 1
+    ButtonHidden    ButtonState = 2
+)
+```
+
+- `ButtonEnabled`: O botão está habilitado e visível.
+- `ButtonDisabled`: O botão está visível, mas desabilitado (acizentado).
+- `ButtonHidden`: O botão está oculto na barra de título.
+
+Os estados dos botões podem ser definidos durante a criação da janela ou em tempo de execução.
+
+### Definindo os Estados dos Botões Durante a Criação da Janela
+
+Ao criar uma nova janela, você pode definir o estado inicial dos botões usando
+a estrutura `WebviewWindowOptions`:
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "My Application",
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        MinimiseButtonState: application.ButtonHidden,
+        MaximiseButtonState: application.ButtonDisabled,
+        CloseButtonState:    application.ButtonEnabled,
+    })
+
+    app.Run()
+}
+```
+
+No exemplo acima, o botão de minimizar está oculto, o botão de maximizar está
+inativo (acizentado) e o botão de fechar está ativo.
+
+### Definindo os Estados dos Botões em Tempo de Execução
+
+Você também pode alterar os estados dos botões em tempo de execução usando os seguintes métodos na
+interface `Window`:
+
+```go
+window.SetMinimiseButtonState(wails.ButtonHidden)
+window.SetMaximiseButtonState(wails.ButtonEnabled)
+window.SetCloseButtonState(wails.ButtonDisabled)
+```
+
+### Diferenças entre Plataformas
+
+A funcionalidade dos estados dos botões se comporta de maneira ligeiramente diferente no Windows e no
+macOS:
+
+|                       | Windows                | Mac                    |
+|-----------------------|------------------------|------------------------|
+| Desabilitar Min/Max/Fech | Desabilita Min/Max/Fech | Desabilita Min/Max/Fech |
+| Ocultar Min             | Desabilita Min           | Oculta o botão Min       |
+| Ocultar Max             | Desabilita Max           | Oculta o botão Max       |
+| Ocultar Fech            | Oculta todos os controles | Oculta o botão Fech      |
+
+Nota: No Windows, não é possível ocultar os botões Min/Max individualmente.
+No entanto, desabilitar ambos ocultará ambos os controles e mostrará apenas o botão de fechar.
+
+### Controlando o Estilo da Janela (Windows)
+
+Para controlar o estilo da barra de título no Windows, você pode usar o campo `ExStyle`
+na estrutura `WebviewWindowOptions`:
+
+Exemplo:
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/w32"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My Application",
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Windows: application.WindowsWindow{
+            ExStyle: w32.WS_EX_TOOLWINDOW | w32.WS_EX_NOREDIRECTIONBITMAP | w32.WS_EX_TOPMOST,
+        },
+    })
+
+    app.Run()
+}
+```
+
+Outras opções que afetam o Estilo Estendido de uma janela serão substituídas por
+esta configuração:
+
+- HiddenOnTaskbar
+- AlwaysOnTop
+- IgnoreMouseEvents
+- BackgroundType

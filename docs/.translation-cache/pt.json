@@ -1,22 +1,430 @@
 {
   "index.mdx": {
     "hash": "8db97751a16d",
-    "translated_at": "2026-05-04T00:17:06Z"
+    "translated_at": "2026-05-05T15:40:55Z"
   },
   "quick-start/why-wails.mdx": {
     "hash": "053b3578f336",
-    "translated_at": "2026-05-04T00:17:41Z"
+    "translated_at": "2026-05-05T15:41:51Z"
   },
   "quick-start/next-steps.mdx": {
     "hash": "9b4cb8954865",
-    "translated_at": "2026-05-04T00:17:52Z"
+    "translated_at": "2026-05-05T15:44:40Z"
   },
   "status.mdx": {
     "hash": "916ecd7da4d4",
-    "translated_at": "2026-05-04T00:18:01Z"
+    "translated_at": "2026-05-05T15:46:23Z"
   },
   "getting-started/installation.mdx": {
     "hash": "8d33a6a61b02",
-    "translated_at": "2026-05-04T00:18:29Z"
+    "translated_at": "2026-05-05T15:48:19Z"
+  },
+  "feedback.mdx": {
+    "hash": "a66bb5c84083",
+    "translated_at": "2026-05-07T10:14:29Z"
+  },
+  "credits.mdx": {
+    "hash": "23aa065f90ef",
+    "translated_at": "2026-05-07T10:14:48Z"
+  },
+  "community/links.md": {
+    "hash": "29ee416737c0",
+    "translated_at": "2026-05-07T10:14:54Z"
+  },
+  "community/templates.md": {
+    "hash": "ca58feff1eac",
+    "translated_at": "2026-05-07T10:15:36Z"
+  },
+  "faq.mdx": {
+    "hash": "eaa8fbfa4acf",
+    "translated_at": "2026-05-07T10:16:15Z"
+  },
+  "quick-start/first-app.mdx": {
+    "hash": "c93bc077121b",
+    "translated_at": "2026-05-07T10:17:10Z"
+  },
+  "getting-started/your-first-app.mdx": {
+    "hash": "396abb7e4fac",
+    "translated_at": "2026-05-07T10:18:14Z"
+  },
+  "quick-start/installation.mdx": {
+    "hash": "87359ef751c8",
+    "translated_at": "2026-05-07T10:19:53Z"
+  },
+  "concepts/architecture.mdx": {
+    "hash": "25b91fd732e4",
+    "translated_at": "2026-05-07T10:22:10Z"
+  },
+  "concepts/bridge.mdx": {
+    "hash": "a60fbffa68bd",
+    "translated_at": "2026-05-07T10:24:06Z"
+  },
+  "concepts/lifecycle.mdx": {
+    "hash": "b6f00029b744",
+    "translated_at": "2026-05-07T10:26:45Z"
+  },
+  "concepts/manager-api.mdx": {
+    "hash": "e341d18b7b82",
+    "translated_at": "2026-05-07T10:27:31Z"
+  },
+  "concepts/build-system.mdx": {
+    "hash": "fecbef0d115c",
+    "translated_at": "2026-05-07T10:29:30Z"
+  },
+  "contributing.mdx": {
+    "hash": "306f4c3d7ea3",
+    "translated_at": "2026-05-07T10:30:10Z"
+  },
+  "contributing/architecture/bindings.mdx": {
+    "hash": "1a645275cef3",
+    "translated_at": "2026-05-07T10:30:52Z"
+  },
+  "contributing/architecture.mdx": {
+    "hash": "0da96d95fc40",
+    "translated_at": "2026-05-07T10:31:13Z"
+  },
+  "contributing/asset-server.mdx": {
+    "hash": "bb202d50ab3d",
+    "translated_at": "2026-05-07T10:32:05Z"
+  },
+  "contributing/binding-system.mdx": {
+    "hash": "15a1847702e6",
+    "translated_at": "2026-05-07T10:32:56Z"
+  },
+  "contributing/build-packaging.mdx": {
+    "hash": "38819d5bdc3c",
+    "translated_at": "2026-05-07T10:33:55Z"
+  },
+  "contributing/codebase-layout.mdx": {
+    "hash": "7f458a077ad7",
+    "translated_at": "2026-05-07T10:34:50Z"
+  },
+  "contributing/extending-wails.mdx": {
+    "hash": "f3b3f52588fc",
+    "translated_at": "2026-05-07T10:35:37Z"
+  },
+  "contributing/getting-started.mdx": {
+    "hash": "b440f9d48686",
+    "translated_at": "2026-05-07T10:36:55Z"
+  },
+  "contributing/index.mdx": {
+    "hash": "6ec1a3542787",
+    "translated_at": "2026-05-07T10:37:22Z"
+  },
+  "contributing/runtime-internals.mdx": {
+    "hash": "76e0f9076c9f",
+    "translated_at": "2026-05-07T10:38:37Z"
+  },
+  "contributing/setup.mdx": {
+    "hash": "fa6ba1d71330",
+    "translated_at": "2026-05-07T10:39:22Z"
+  },
+  "contributing/standards.mdx": {
+    "hash": "dff5cfcb8913",
+    "translated_at": "2026-05-07T10:40:29Z"
+  },
+  "contributing/template-system.mdx": {
+    "hash": "694bc43c635b",
+    "translated_at": "2026-05-07T10:41:17Z"
+  },
+  "contributing/testing-ci.mdx": {
+    "hash": "dd3e51012196",
+    "translated_at": "2026-05-07T10:42:02Z"
+  },
+  "features/bindings/advanced.mdx": {
+    "hash": "dbe24ee2af58",
+    "translated_at": "2026-05-07T10:43:02Z"
+  },
+  "features/bindings/best-practices.mdx": {
+    "hash": "24dae313b7f3",
+    "translated_at": "2026-05-07T10:45:01Z"
+  },
+  "features/bindings/enums.mdx": {
+    "hash": "190ad53a8c23",
+    "translated_at": "2026-05-07T10:46:32Z"
+  },
+  "features/bindings/methods.mdx": {
+    "hash": "81d390a468d6",
+    "translated_at": "2026-05-07T10:48:16Z"
+  },
+  "features/bindings/models.mdx": {
+    "hash": "9f9ef8652dfb",
+    "translated_at": "2026-05-07T10:50:05Z"
+  },
+  "features/bindings/services.mdx": {
+    "hash": "ce894343645a",
+    "translated_at": "2026-05-07T10:52:17Z"
+  },
+  "features/browser/integration.mdx": {
+    "hash": "fdfdb4b62817",
+    "translated_at": "2026-05-07T10:53:51Z"
+  },
+  "features/clipboard/basics.mdx": {
+    "hash": "4518bfb618be",
+    "translated_at": "2026-05-07T10:55:11Z"
+  },
+  "features/dialogs/custom.mdx": {
+    "hash": "3c4459e7f9be",
+    "translated_at": "2026-05-07T10:56:52Z"
+  },
+  "features/dialogs/file.mdx": {
+    "hash": "56f503b264ff",
+    "translated_at": "2026-05-07T10:58:29Z"
+  },
+  "features/dialogs/message.mdx": {
+    "hash": "a0dbc0aa205c",
+    "translated_at": "2026-05-07T10:59:55Z"
+  },
+  "features/dialogs/overview.mdx": {
+    "hash": "a53f2f2dbf57",
+    "translated_at": "2026-05-07T11:01:22Z"
+  },
+  "features/drag-and-drop/files.mdx": {
+    "hash": "93cde3617c0a",
+    "translated_at": "2026-05-07T11:02:06Z"
+  },
+  "features/drag-and-drop/html.mdx": {
+    "hash": "29d1b815879f",
+    "translated_at": "2026-05-07T11:02:53Z"
+  },
+  "features/environment/info.mdx": {
+    "hash": "879b5e369c35",
+    "translated_at": "2026-05-07T11:04:48Z"
+  },
+  "features/events/system.mdx": {
+    "hash": "99933796a4cd",
+    "translated_at": "2026-05-07T11:06:27Z"
+  },
+  "features/keyboard/shortcuts.mdx": {
+    "hash": "0707801c419f",
+    "translated_at": "2026-05-07T11:07:54Z"
+  },
+  "features/menus/application.mdx": {
+    "hash": "f3012e184058",
+    "translated_at": "2026-05-07T11:10:06Z"
+  },
+  "features/menus/context.mdx": {
+    "hash": "0da9502ee8f9",
+    "translated_at": "2026-05-07T11:12:25Z"
+  },
+  "features/menus/reference.mdx": {
+    "hash": "50c7083c6804",
+    "translated_at": "2026-05-07T11:14:06Z"
+  },
+  "features/menus/systray.mdx": {
+    "hash": "35456a6a7c94",
+    "translated_at": "2026-05-07T11:16:22Z"
+  },
+  "features/notifications/overview.mdx": {
+    "hash": "fd054a949c5c",
+    "translated_at": "2026-05-07T11:17:28Z"
+  },
+  "features/platform/dock.mdx": {
+    "hash": "5508d0260390",
+    "translated_at": "2026-05-07T11:18:21Z"
+  },
+  "features/screens/info.mdx": {
+    "hash": "7c75b63845ac",
+    "translated_at": "2026-05-07T11:19:51Z"
+  },
+  "features/windows/basics.mdx": {
+    "hash": "22ab3ac2c722",
+    "translated_at": "2026-05-07T11:21:36Z"
+  },
+  "features/windows/events.mdx": {
+    "hash": "68ae278863a2",
+    "translated_at": "2026-05-07T11:23:21Z"
+  },
+  "features/windows/frameless.mdx": {
+    "hash": "8250472da67d",
+    "translated_at": "2026-05-07T11:25:51Z"
+  },
+  "features/windows/multiple.mdx": {
+    "hash": "67f02d26da23",
+    "translated_at": "2026-05-07T11:28:04Z"
+  },
+  "features/windows/options.mdx": {
+    "hash": "a56b6c508b23",
+    "translated_at": "2026-05-07T11:31:23Z"
+  },
+  "guides/architecture.mdx": {
+    "hash": "656401718a17",
+    "translated_at": "2026-05-07T11:31:48Z"
+  },
+  "guides/build/building.mdx": {
+    "hash": "b307db98ff3b",
+    "translated_at": "2026-05-07T11:32:10Z"
+  },
+  "guides/build/cross-platform.mdx": {
+    "hash": "fe856503784b",
+    "translated_at": "2026-05-07T11:33:23Z"
+  },
+  "guides/build/customization.mdx": {
+    "hash": "5fdb39dad876",
+    "translated_at": "2026-05-07T11:34:31Z"
+  },
+  "guides/build/linux.mdx": {
+    "hash": "afa4feb031ad",
+    "translated_at": "2026-05-07T11:35:19Z"
+  },
+  "guides/build/macos.mdx": {
+    "hash": "453cb1df5afe",
+    "translated_at": "2026-05-07T11:35:47Z"
+  },
+  "guides/build/signing.mdx": {
+    "hash": "adcc7414ca8e",
+    "translated_at": "2026-05-07T11:38:53Z"
+  },
+  "guides/build/windows.mdx": {
+    "hash": "34fb150bd1d1",
+    "translated_at": "2026-05-07T11:39:13Z"
+  },
+  "guides/cli.mdx": {
+    "hash": "734e59534ff1",
+    "translated_at": "2026-05-07T11:41:47Z"
+  },
+  "guides/custom-templates.mdx": {
+    "hash": "fd0479b54490",
+    "translated_at": "2026-05-07T11:43:04Z"
+  },
+  "guides/custom-transport.mdx": {
+    "hash": "1f60cc55f45f",
+    "translated_at": "2026-05-07T11:43:38Z"
+  },
+  "guides/customising-windows.mdx": {
+    "hash": "b2c0f84a76db",
+    "translated_at": "2026-05-07T11:44:02Z"
+  },
+  "guides/distribution/auto-updates.mdx": {
+    "hash": "e511338ccc89",
+    "translated_at": "2026-05-07T11:45:57Z"
+  },
+  "guides/distribution/custom-protocols.mdx": {
+    "hash": "d7e39edb8d62",
+    "translated_at": "2026-05-07T11:48:13Z"
+  },
+  "guides/e2e-testing.mdx": {
+    "hash": "409942e28dff",
+    "translated_at": "2026-05-07T11:48:37Z"
+  },
+  "guides/events-reference.mdx": {
+    "hash": "e1c103b7e422",
+    "translated_at": "2026-05-07T11:50:41Z"
+  },
+  "guides/file-associations.mdx": {
+    "hash": "5756c5fd62ec",
+    "translated_at": "2026-05-07T11:51:19Z"
+  },
+  "guides/gin-routing.mdx": {
+    "hash": "4b51d1052334",
+    "translated_at": "2026-05-07T11:52:11Z"
+  },
+  "guides/gin-services.mdx": {
+    "hash": "4336b2c6dd73",
+    "translated_at": "2026-05-07T11:54:19Z"
+  },
+  "guides/installers.mdx": {
+    "hash": "eb492627c525",
+    "translated_at": "2026-05-07T11:54:44Z"
+  },
+  "guides/menus.mdx": {
+    "hash": "c43696cd9e44",
+    "translated_at": "2026-05-07T11:56:48Z"
+  },
+  "guides/panic-handling.mdx": {
+    "hash": "cd4e3d40f28d",
+    "translated_at": "2026-05-07T11:57:19Z"
+  },
+  "guides/performance.mdx": {
+    "hash": "2cd3efcd296b",
+    "translated_at": "2026-05-07T11:58:04Z"
+  },
+  "guides/raw-messages.mdx": {
+    "hash": "974513802fdc",
+    "translated_at": "2026-05-07T11:59:24Z"
+  },
+  "guides/routing.mdx": {
+    "hash": "1a9624a10457",
+    "translated_at": "2026-05-07T11:59:48Z"
+  },
+  "guides/security.mdx": {
+    "hash": "4b98f155146f",
+    "translated_at": "2026-05-07T12:00:25Z"
+  },
+  "guides/server-build.mdx": {
+    "hash": "14b9185722c8",
+    "translated_at": "2026-05-07T12:01:42Z"
+  },
+  "guides/single-instance.mdx": {
+    "hash": "c9d6b1edf953",
+    "translated_at": "2026-05-07T12:02:20Z"
+  },
+  "guides/testing.mdx": {
+    "hash": "8073196a1496",
+    "translated_at": "2026-05-07T12:02:46Z"
+  },
+  "guides/windows-uac.mdx": {
+    "hash": "91140294509d",
+    "translated_at": "2026-05-07T12:03:20Z"
+  },
+  "migration/v2-to-v3.mdx": {
+    "hash": "ba7228eb5374",
+    "translated_at": "2026-05-07T12:05:37Z"
+  },
+  "reference/application.mdx": {
+    "hash": "6b97eb24f8db",
+    "translated_at": "2026-05-07T12:06:51Z"
+  },
+  "reference/cli.mdx": {
+    "hash": "da0cd943a3de",
+    "translated_at": "2026-05-07T12:06:58Z"
+  },
+  "reference/dialogs.mdx": {
+    "hash": "4a2534a0eb49",
+    "translated_at": "2026-05-07T12:09:17Z"
+  },
+  "reference/events.mdx": {
+    "hash": "34ff503157f7",
+    "translated_at": "2026-05-07T12:11:59Z"
+  },
+  "reference/frontend-runtime.mdx": {
+    "hash": "1040ebd9dffd",
+    "translated_at": "2026-05-07T12:14:22Z"
+  },
+  "reference/menu.mdx": {
+    "hash": "1ac85e9b0a6d",
+    "translated_at": "2026-05-07T12:16:21Z"
+  },
+  "reference/overview.mdx": {
+    "hash": "78b1b9e99288",
+    "translated_at": "2026-05-07T12:17:11Z"
+  },
+  "reference/updater.mdx": {
+    "hash": "841cdfe235d9",
+    "translated_at": "2026-05-07T12:18:30Z"
+  },
+  "reference/window.mdx": {
+    "hash": "c23046463063",
+    "translated_at": "2026-05-07T12:20:20Z"
+  },
+  "troubleshooting/mac-syso.mdx": {
+    "hash": "7aa5d722de2d",
+    "translated_at": "2026-05-07T12:20:30Z"
+  },
+  "tutorials/01-creating-a-service.mdx": {
+    "hash": "759d28b3e03b",
+    "translated_at": "2026-05-07T12:23:20Z"
+  },
+  "tutorials/02-todo-vanilla.mdx": {
+    "hash": "a50167163c77",
+    "translated_at": "2026-05-07T12:26:02Z"
+  },
+  "tutorials/03-notes-vanilla.mdx": {
+    "hash": "7da37d8fbf9c",
+    "translated_at": "2026-05-07T12:28:23Z"
+  },
+  "tutorials/overview.mdx": {
+    "hash": "24d96283170f",
+    "translated_at": "2026-05-07T12:28:45Z"
   }
 }

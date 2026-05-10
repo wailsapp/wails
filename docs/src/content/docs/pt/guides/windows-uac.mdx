@@ -1,0 +1,152 @@
+---
+title: Configuração do UAC no Windows
+description: Configure o Controle de Conta de Usuário (UAC) para seu aplicativo Wails no Windows
+sidebar:
+  order: 11
+---
+
+import {Badge} from '@astrojs/starlight/components';
+
+Plataformas Relevantes: <Badge text="Windows" variant="note" />
+<br/>
+
+O Controle de Conta de Usuário (UAC) do Windows determina os privilégios de execução do seu aplicativo Wails. Por padrão, os aplicativos Wails v3 incluem configuração explícita do UAC em seu manifesto do Windows, garantindo comportamento consistente em diferentes máquinas.
+
+## Níveis de Execução do UAC
+
+Os aplicativos do Windows podem solicitar diferentes níveis de execução por meio de seu arquivo de manifesto. O Wails v3 inclui automaticamente a configuração do UAC com um nível de execução padrão que você pode personalizar com base nas necessidades do seu aplicativo.
+
+### Níveis de Execução Disponíveis
+
+| Nível | Descrição | Caso de Uso |
+|-------|-------------|----------|
+| `asInvoker` | Executa com os mesmos privilégios do processo pai | Padrão para a maioria dos aplicativos |
+| `highestAvailable` | Executa com os privilégios mais altos disponíveis para o usuário | Aplicativos que podem precisar de acesso elevado |
+| `requireAdministrator` | Sempre requer privilégios de administrador | Utilitários do sistema, instaladores |
+
+### Configuração Padrão
+
+Os aplicativos Wails v3 incluem uma configuração padrão do UAC em seu manifesto do Windows:
+
+```xml
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+        <requestedPrivileges>
+            <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+        </requestedPrivileges>
+    </security>
+</trustInfo>
+```
+
+Esta configuração garante que seu aplicativo:
+- Execute com os mesmos privilégios do processo de lançamento
+- Não requeira elevação por padrão
+- Funcione de maneira consistente em diferentes máquinas
+- Não acione prompts do UAC para usuários normais
+
+## Personalizando a Configuração do UAC
+
+Como o Wails v3 incentiva os usuários a personalizarem seus ativos de build, você pode modificar a configuração do UAC editando diretamente o modelo do seu manifesto do Windows.
+
+### Localizando o Modelo do Manifesto
+
+O modelo do manifesto do Windows está localizado em:
+```
+build/windows/wails.exe.manifest
+```
+
+### Modificando o Nível de Execução
+
+Para alterar o nível de execução, edite o atributo `level` no elemento `requestedExecutionLevel`:
+
+```xml title="build/windows/wails.exe.manifest"
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+        <requestedPrivileges>
+            <requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
+        </requestedPrivileges>
+    </security>
+</trustInfo>
+```
+
+### Exemplos
+
+#### Aplicativo Padrão (Padrão)
+A maioria dos aplicativos deve usar o nível padrão `asInvoker`:
+
+```xml
+<requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+```
+
+#### Utilitário do Sistema
+Aplicativos que precisam de acesso elevado quando disponível:
+
+```xml
+<requestedExecutionLevel level="highestAvailable" uiAccess="false"/>
+```
+
+#### Ferramenta Administrativa
+Aplicativos que sempre requerem privilégios de administrador:
+
+```xml
+<requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
+```
+
+## Acesso à Interface do Usuário (UI Access)
+
+O atributo `uiAccess` controla se o seu aplicativo pode interagir com elementos de interface de usuário de privilégios mais altos. Na maioria dos casos, isso deve permanecer como `false`.
+
+Defina como `true` apenas se o seu aplicativo precisar:
+- Enviar entrada para outros aplicativos
+- Controlar a interface de usuário de outros aplicativos
+- Acessar elementos de interface de usuário de processos de privilégios mais altos
+
+:::caution[Requisitos de Acesso à Interface do Usuário]
+Definir `uiAccess="true"` requer que seu aplicativo seja:
+- Assinado digitalmente com um certificado de uma autoridade de certificação confiável
+- Instalado em um local seguro (Program Files ou Windows\System32)
+:::
+
+## Compilando com Configurações Personalizadas do UAC
+
+Após modificar o modelo do seu manifesto, compile seu aplicativo normalmente:
+
+```bash
+wails3 build
+```
+
+O processo de build incorporará automaticamente sua configuração personalizada do UAC no executável.
+
+## Verificando a Configuração do UAC
+
+Você pode verificar se suas configurações do UAC estão incorporadas corretamente usando a ferramenta `go-winres`:
+
+```bash
+go-winres extract --in your-app.exe --out extracted-resources/
+```
+
+Em seguida, examine o arquivo de manifesto extraído para confirmar que sua configuração do UAC está presente.
+
+:::tip[Persistência do Manifesto]
+Ao contrário de alguns outros frameworks, a configuração do UAC do Wails v3 é incorporada diretamente no executável durante a compilação, garantindo que ela persista quando o aplicativo é copiado para outras máquinas.
+:::
+
+## Solução de Problemas
+
+### Prompts do UAC Não Aparecem
+Se você definiu `requireAdministrator`, mas não vê os prompts do UAC:
+- Verifique se o manifesto está corretamente incorporado no seu executável
+- Verifique se você não está executando a partir de um processo já elevado
+- Certifique-se de que a sintaxe do manifesto é XML válido
+
+### Aplicativo Não Inicia
+Se o seu aplicativo falhar ao iniciar após as alterações do UAC:
+- Verifique a sintaxe do manifesto em busca de erros de XML
+- Verifique se o valor do nível de execução é válido
+- Tente reverter para `asInvoker` para isolar o problema
+
+### Comportamento Inconsistente Entre Máquinas
+Se o comportamento do UAC diferir entre máquinas:
+- Certifique-se de que o manifesto está incorporado no executável (não externo)
+- Verifique se o executável não foi modificado após a compilação
+- Verifique se as configurações do UAC do Windows estão habilitadas na máquina de destino

@@ -1,0 +1,270 @@
+---
+title: Personalização da Compilação
+description: Personalize seu processo de compilação usando Task e Taskfile.yml
+sidebar:
+  order: 7
+---
+
+import { FileTree } from "@astrojs/starlight/components";
+
+## Visão Geral
+
+O sistema de compilação do Wails é uma ferramenta flexível e poderosa, projetada para simplificar
+o processo de compilação de suas aplicações Wails. Ele utiliza
+[Task](https://taskfile.dev), um executor de tarefas que permite definir e executar
+tarefas facilmente. Embora o sistema de compilação v3 seja o padrão, o Wails incentiva uma
+abordagem de "traga suas próprias ferramentas", permitindo que os desenvolvedores personalizem seu processo de
+compilação conforme necessário.
+
+Saiba mais sobre como usar o Task na
+[documentação oficial](https://taskfile.dev/usage/).
+
+## Task: O Coração do Sistema de Compilação
+
+[Task](https://taskfile.dev) é uma alternativa moderna ao Make, escrita em Go. Ele
+usa um arquivo YAML para definir tarefas e suas dependências. No sistema de compilação do Wails, [Task](https://taskfile.dev) desempenha um papel central na orquestração do
+processo de compilação.
+
+O arquivo `Taskfile.yml` principal está localizado na raiz do projeto, enquanto as tarefas específicas de plataforma
+são definidas nos arquivos `build/<platform>/Taskfile.yml`. Um arquivo `Taskfile.yml` comum
+no diretório `build` contém tarefas comuns que são compartilhadas entre
+plataformas.
+
+<FileTree>
+
+- Raiz do Projeto
+  - Taskfile.yml
+  - build
+    - windows/Taskfile.yml
+    - darwin/Taskfile.yml
+    - linux/Taskfile.yml
+    - Taskfile.yml
+
+</FileTree>
+
+## Taskfile.yml
+
+O arquivo `Taskfile.yml` na raiz do projeto é o ponto de entrada principal do sistema de compilação. Ele define
+as tarefas e suas dependências. Aqui está o arquivo `Taskfile.yml` padrão:
+
+```yaml
+version: '3'
+
+includes:
+  common: ./build/Taskfile.yml
+  windows: ./build/windows/Taskfile.yml
+  darwin: ./build/darwin/Taskfile.yml
+  linux: ./build/linux/Taskfile.yml
+
+vars:
+  APP_NAME: "myproject"
+  BIN_DIR: "bin"
+  VITE_PORT: '{{.WAILS_VITE_PORT | default 9245}}'
+
+tasks:
+  build:
+    summary: Builds the application
+    cmds:
+      - task: "{{OS}}:build"
+
+  package:
+    summary: Packages a production build of the application
+    cmds:
+      - task: "{{OS}}:package"
+
+  run:
+    summary: Runs the application
+    cmds:
+      - task: "{{OS}}:run"
+
+  dev:
+    summary: Runs the application in development mode
+    cmds:
+      - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
+
+
+```
+
+## Taskfiles Específicos de Plataforma
+
+Cada plataforma tem seu próprio Taskfile, localizado nos diretórios de plataforma sob o diretório `build`. Esses
+arquivos definem as tarefas principais para aquela plataforma. Cada taskfile inclui tarefas comuns do arquivo `build/Taskfile.yml`.
+
+### Windows
+
+Localização: `build/windows/Taskfile.yml`
+
+O Taskfile específico para Windows inclui tarefas para compilar, empacotar e
+executar a aplicação no Windows. Principais recursos incluem:
+
+- Compilação com flags opcionais de produção
+- Geração de arquivo de ícone `.ico`
+- Geração de arquivo `.syso` do Windows
+- Criação de um instalador NSIS para empacotamento
+
+### Linux
+
+Localização: `build/linux/Taskfile.yml`
+
+O Taskfile específico para Linux inclui tarefas para compilar, empacotar e executar
+a aplicação no Linux. Principais recursos incluem:
+
+- Compilação com flags opcionais de produção
+- Criação de pacotes AppImage, deb, rpm e Arch Linux
+- Geração de arquivo `.desktop` para aplicações Linux
+
+### macOS
+
+Localização: `build/darwin/Taskfile.yml`
+
+O Taskfile específico para macOS inclui tarefas para compilar, empacotar e executar
+a aplicação no macOS. Principais recursos incluem:
+
+- Compilação de binários para arquiteturas amd64, arm64 e universal (ambas)
+- Geração de arquivo de ícone `.icns`
+- Criação de um bundle `.app` para distribuição
+- Assinatura ad-hoc dos bundles `.app`
+- Definição de flags de compilação e variáveis de ambiente específicas do macOS
+
+## Execução de Tarefas e Aliases de Comando
+
+O comando `wails3 task` é uma versão embutida do [Taskfile](https://taskfile.dev), que executa
+as tarefas definidas no seu `Taskfile.yml`.
+
+Os comandos `wails3 build` e `wails3 package` são aliases para
+`wails3 task build` e `wails3 task package`, respectivamente. Quando você executa esses
+comandos, o Wails os traduz internamente para a execução da tarefa apropriada:
+
+- `wails3 build` → `wails3 task build`
+- `wails3 package` → `wails3 task package`
+
+### Passando Parâmetros para Tarefas
+
+Você pode passar variáveis de CLI para tarefas usando o formato `KEY=VALUE`. Essas variáveis são encaminhadas através dos comandos alias:
+
+```bash
+# These are equivalent:
+wails3 build PLATFORM=linux CONFIG=production
+wails3 task build PLATFORM=linux CONFIG=production
+
+# Package with custom version:
+wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg
+```
+
+No seu `Taskfile.yml`, você pode acessar essas variáveis usando a sintaxe de template Go:
+
+```yaml
+tasks:
+  build:
+    cmds:
+      - echo "Building for {{.PLATFORM | default "darwin"}}"
+      - go build -tags {{.CONFIG | default "debug"}} -o myapp
+```
+
+## Processo de Compilação Comum
+
+Em todas as plataformas, o processo de compilação tipicamente inclui as seguintes etapas:
+
+1. Atualização dos módulos Go (tidying Go modules)
+2. Compilação do frontend
+3. Geração de ícones
+4. Compilação do código Go com flags específicas da plataforma
+5. Empacotamento da aplicação (específico da plataforma)
+
+## Personalizando o Processo de Compilação
+
+Embora o sistema de compilação v3 forneça uma configuração padrão sólida, você pode facilmente
+personalizá-la para atender às necessidades do seu projeto. Ao modificar o `Taskfile.yml` e
+os Taskfiles específicos de plataforma, você pode:
+
+- Adicionar novas tarefas
+- Modificar tarefas existentes
+- Alterar a ordem de execução das tarefas
+- Integrar com outras ferramentas e scripts
+
+Essa flexibilidade permite que você adapte o processo de compilação aos seus requisitos específicos,
+ainda beneficiando-se da estrutura fornecida pelo sistema de compilação do Wails.
+
+:::tip[Aprendendo Taskfile]
+Recomendamos fortemente a leitura da documentação do [Taskfile](https://taskfile.dev) para
+entender como usar o Taskfile de forma eficaz.
+Você pode descobrir qual versão do Taskfile está embutida na CLI do Wails executando `wails3 task --version`.
+:::
+
+## Modo de Desenvolvimento
+
+O sistema de compilação do Wails inclui um poderoso modo de desenvolvimento que aprimora a
+experiência do desenvolvedor fornecendo recarregamento em tempo real e substituição de módulos em quente (hot module replacement).
+Este modo é ativado usando o comando `wails3 dev`.
+
+### Como Funciona
+
+Quando você executa `wails3 dev`, o seguinte processo ocorre:
+
+1. O comando verifica se há uma porta disponível, usando 9245 como padrão se não
+   especificado.
+2. Ele configura as variáveis de ambiente para o servidor de desenvolvimento do frontend (Vite).
+3. Ele inicia o observador de arquivos usando a biblioteca [refresh](https://github.com/atterpac/refresh).
+
+A biblioteca [refresh](https://github.com/atterpac/refresh) é responsável por
+monitorar as alterações de arquivos e acionar recompilações. Ela usa a configuração definida sob a chave `dev_mode` no arquivo `./build/config.yaml`.
+Pode ser configurada para ignorar determinados diretórios e arquivos, para determinar quais arquivos observar e quais ações tomar quando alterações são detectadas.
+A configuração padrão funciona muito bem, mas sinta-se à vontade para personalizá-la de acordo com suas necessidades.
+
+### Configuração
+
+Aqui está um exemplo de sua estrutura:
+
+```yaml
+dev_mode:
+  root_path: .
+  log_level: warn
+  debounce: 1000
+  ignore:
+    dir:
+      - .git
+      - node_modules
+      - frontend
+      - bin
+    file:
+      - .DS_Store
+      - .gitignore
+      - .gitkeep
+    watched_extension:
+      - "*.go"
+    git_ignore: true
+  executes:
+    - cmd: wails3 task common:install:frontend:deps
+      type: once
+    - cmd: wails3 task common:dev:frontend
+      type: background
+    - cmd: go mod tidy
+      type: blocking
+    - cmd: wails3 task build
+      type: blocking
+    - cmd: wails3 task run
+      type: primary
+```
+
+Este arquivo de configuração permite que você:
+
+- Definir o caminho raiz para a observação de arquivos
+- Configurar o nível de log
+- Definir um tempo de debounce para eventos de alteração de arquivos
+- Ignorar diretórios, arquivos ou extensões de arquivos específicos
+- Definir comandos a serem executados em alterações de arquivos### Personalizando o modo de desenvolvimento
+
+Você pode personalizar a experiência do modo de desenvolvimento modificando esses valores no arquivo `config.yaml`.
+
+Algumas maneiras de personalizar incluem:
+
+1. Alterar os diretórios ou arquivos monitorados
+2. Ajustar o tempo de debounce para controlar a rapidez com que o sistema responde às alterações
+3. Adicionar ou modificar os comandos de execução para atender às necessidades do seu projeto
+
+### Usando um navegador para desenvolvimento
+
+Embora o Wails v2 suportasse totalmente o uso de um navegador para desenvolvimento, isso causava muita confusão. Aplicações que funcionavam no navegador não necessariamente funcionariam no aplicativo desktop, pois nem todas as APIs do navegador estão disponíveis nas webviews.
+
+Para trabalhos de desenvolvimento focados na interface do usuário, você ainda tem a flexibilidade de usar um navegador no v3, acessando a URL do Vite em `http://localhost:9245` no modo de desenvolvimento. Isso lhe dá acesso a poderosas ferramentas de desenvolvimento do navegador enquanto trabalha com estilização e layout. Esteja ciente de que as ligações do Go *não funcionarão* neste modo.
+Quando estiver pronto para testar funcionalidades como ligações e eventos, basta alternar para a visualização desktop para garantir que tudo funcione perfeitamente no ambiente de produção.

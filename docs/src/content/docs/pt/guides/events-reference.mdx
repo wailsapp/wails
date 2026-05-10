@@ -1,0 +1,459 @@
+---
+title: Guia de Eventos
+description: Um guia prático sobre o uso de eventos no Wails v3 para comunicação entre componentes e gerenciamento do ciclo de vida da aplicação
+---
+
+**NOTA: Este guia está em desenvolvimento**
+
+# Guia de Eventos
+
+Os eventos são o coração da comunicação nas aplicações Wails. Eles permitem que diferentes partes da sua aplicação se comuniquem sem estarem fortemente acopladas. Este guia irá guiá-lo por tudo o que você precisa saber para usar eventos de forma eficaz na sua aplicação Wails.
+
+## Entendendo os Eventos do Wails
+
+Pense nos eventos como mensagens que são transmitidas por toda a sua aplicação. Qualquer parte da sua aplicação pode ouvir essas mensagens e reagir de acordo. Isso é particularmente útil para:
+
+- **Responder a mudanças na janela**: Saiba quando sua janela é minimizada, maximizada ou movida
+- **Tratar eventos do sistema**: Reaja a mudanças de tema ou eventos de energia
+- **Lógica de aplicação personalizada**: Crie seus próprios eventos para recursos como atualizações de dados ou ações do usuário
+- **Comunicação entre componentes**: Permita que diferentes partes do seu app se comuniquem sem dependências diretas
+
+## Convenção de Nomes de Eventos
+
+Todos os eventos do Wails seguem um padrão de namespace para indicar claramente sua origem:
+
+- `common:` - Eventos multiplataforma que funcionam no Windows, macOS e Linux
+- `windows:` - Eventos específicos do Windows
+- `mac:` - Eventos específicos do macOS  
+- `linux:` - Eventos específicos do Linux
+
+Por exemplo:
+- `common:WindowFocus` - Janela ganhou foco (funciona em todas as plataformas)
+- `windows:APMSuspend` - O sistema está suspendo (apenas Windows)
+- `mac:ApplicationDidBecomeActive` - O app ficou ativo (apenas macOS)
+
+## Começando com Eventos
+
+### Ouvindo Eventos (Frontend)
+
+O caso de uso mais comum é ouvir eventos no seu código frontend:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Ouça quando a janela ganha foco
+Events.On('common:WindowFocus', () => {
+    console.log('Janela agora está em foco!');
+    // Talvez atualize alguns dados ou retome animações
+});
+
+// Ouça mudanças de tema
+Events.On('common:ThemeChanged', (event) => {
+    console.log('Tema alterado:', event.data);
+    // Atualize o tema do seu app de acordo
+});
+
+// Ouça eventos personalizados do seu backend em Go
+Events.On('my-app:data-updated', (event) => {
+    console.log('Dados atualizados:', event.data);
+    // Atualize sua interface com os novos dados
+});
+```
+
+### Emitindo Eventos (Backend)
+
+A partir do seu código Go, você pode emitir eventos que seu frontend pode ouvir:
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "time"
+)
+
+func (s *Service) UpdateData() {
+    // Faça algum processamento de dados...
+
+    // Notifique o frontend
+    app := application.Get()
+    app.Event.Emit("my-app:data-updated",
+        map[string]interface{}{
+            "timestamp": time.Now(),
+            "count": 42,
+        },
+	)
+}
+```
+
+### Emitindo Eventos (Frontend)
+
+Embora não seja tão comum, você também pode emitir eventos a partir do seu frontend que seu código Go pode ouvir:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Evento sem dados
+Events.Emit('myapp:close-window')
+
+// Evento com dados
+Events.Emit('myapp:disconnect-requested', 'id-123')
+```
+
+Se você estiver usando TypeScript no seu frontend e [registrando eventos tipados](#typed-events-with-typecheck) no seu código Go, você terá autocompletar/verificação de nomes de eventos e verificação de tipos de dados.
+
+### Removendo Listeners de Eventos
+
+Sempre limpe seus listeners de eventos quando eles não forem mais necessários:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Armazene a referência do handler
+const focusHandler = () => {
+    console.log('Janela em foco');
+};
+
+// Adicione o listener
+Events.On('common:WindowFocus', focusHandler);
+
+// Mais tarde, remova-o quando não for mais necessário
+Events.Off('common:WindowFocus', focusHandler);
+
+// Ou remova todos os listeners para um evento
+Events.Off('common:WindowFocus');
+```
+
+## Casos de Uso Comuns
+
+### 1. Pausar/Retomar no Foco da Janela
+
+Muitas aplicações precisam pausar certas atividades quando a janela perde o foco:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+let animationRunning = true;
+
+Events.On('common:WindowLostFocus', () => {
+    animationRunning = false;
+    pauseBackgroundTasks();
+});
+
+Events.On('common:WindowFocus', () => {
+    animationRunning = true;
+    resumeBackgroundTasks();
+});
+```
+
+### 2. Respondendo a Mudanças de Tema
+
+Mantenha seu app sincronizado com o tema do sistema:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+Events.On('common:ThemeChanged', (event) => {
+    const isDarkMode = event.data.isDark;
+
+    if (isDarkMode) {
+        document.body.classList.add('dark-theme');
+        document.body.classList.remove('light-theme');
+    } else {
+        document.body.classList.add('light-theme');
+        document.body.classList.remove('dark-theme');
+    }
+});
+```
+
+### 3. Tratando Arquivos Arrastados
+
+Faça seu app aceitar arquivos arrastados:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+Events.On('common:WindowFilesDropped', (event) => {
+    const files = event.data.files;
+
+    files.forEach(file => {
+        console.log('Arquivo solto:', file);
+        // Processe os arquivos soltos
+        handleFileUpload(file);
+    });
+});
+```
+
+### 4. Gerenciamento do Ciclo de Vida da Janela
+
+Responda a mudanças no estado da janela:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+Events.On('common:WindowClosing', () => {
+    // Salve os dados do usuário antes de fechar
+    saveApplicationState();
+
+    // Você também poderia impedir o fechamento retornando false
+    // de um handler de fechamento de janela registrado
+});
+
+Events.On('common:WindowMaximise', () => {
+    // Ajuste a UI para a visualização maximizada
+    adjustLayoutForMaximized();
+});
+
+Events.On('common:WindowRestore', () => {
+    // Retorne a UI ao estado normal
+    adjustLayoutForNormal();
+});
+```
+
+### 5. Recursos Específicos da Plataforma
+
+Trate eventos específicos da plataforma quando necessário:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Gerenciamento de energia específico do Windows
+Events.On('windows:APMSuspend', () => {
+    console.log('O sistema está indo para o modo de suspensão');
+    saveState();
+});
+
+Events.On('windows:APMResumeSuspend', () => {
+    console.log('O sistema acordou');
+    refreshData();
+});
+
+// Ciclo de vida do app específico do macOS
+Events.On('mac:ApplicationWillTerminate', () => {
+    console.log('O app está prestes a sair');
+    performCleanup();
+});
+```
+
+## Criando Eventos Personalizados
+
+Você pode criar seus próprios eventos para necessidades específicas da aplicação.
+
+### Backend (Go)
+
+```go
+// Emita um evento personalizado quando os dados mudam
+
+func (s *Service) ProcessUserData(userData UserData) error {
+    // Processe os dados...
+
+    app := application.Get()
+    // Notifique todos os ouvintes
+    app.Event.Emit("user:data-processed",
+        map[string]interface{}{
+            "userId": userData.ID,
+            "status": "completed",
+            "timestamp": time.Now(),
+        },
+    )
+    return nil
+}
+
+// Emita atualizações periódicas
+func (s *Service) StartMonitoring() {
+    app := application.Get()
+    ticker := time.NewTicker(5 * time.Second)
+    go func() {
+        for range ticker.C {
+            stats := s.collectStats()
+            app.Event.Emit("monitor:stats-updated", stats)
+        }
+    }()
+}
+```
+
+### Frontend (JavaScript)
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Ouça seus eventos personalizados
+Events.On('user:data-processed', (event) => {
+    const { userId, status, timestamp } = event.data;
+
+    showNotification(`Processamento do usuário ${userId} ${status}`);
+    updateUIWithNewData();
+});
+
+Events.On('monitor:stats-updated', (event) => {
+    updateDashboard(event.data);
+});
+```
+
+## Eventos Tipados com Segurança de Tipos
+
+O Wails v3 suporta eventos tipados com total segurança de tipos TypeScript através do registro de eventos e geração automática de bindings.
+
+### Registrando Eventos Personalizados
+
+Chame `application.RegisterEvent` no momento da inicialização para registrar nomes de eventos personalizados com seus tipos de dados:
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+type UserLoginData struct {
+    UserID   string
+    Username string
+    LoginTime string
+}
+
+type MonitorStats struct {
+    CPUUsage    float64
+    MemoryUsage float64
+}-------|-------------|-------------|
+| `common:ApplicationStarted` | O aplicativo foi totalmente iniciado | Inicialize seu app, carregue o estado salvo |
+| `common:WindowRuntimeReady` | O runtime do Wails está pronto | Comece a fazer chamadas à API do Wails |
+| `common:ThemeChanged` | O tema do sistema mudou | Atualize a aparência do app |
+| `common:WindowFocus` | A janela ganhou foco | Retome atividades, atualize dados |
+| `common:WindowLostFocus` | A janela perdeu o foco | Pause atividades, salve o estado |
+| `common:WindowMinimise` | A janela foi minimizada | Pause a renderização, reduza o uso de recursos |
+| `common:WindowMaximise` | A janela foi maximizada | Ajuste o layout para tela cheia |
+| `common:WindowRestore` | A janela foi restaurada de min/max | Retorne ao layout normal |
+| `common:WindowClosing` | A janela está prestes a fechar | Salve dados, limpe recursos |
+| `common:WindowFilesDropped` | Arquivos foram soltos na janela | Lidar com importação de arquivos |
+| `common:WindowDidResize` | A janela foi redimensionada | Ajuste o layout, renderize gráficos novamente |
+| `common:WindowDidMove` | A janela foi movida | Atualize recursos dependentes da posição |
+
+### Eventos Específicos de Plataforma
+
+#### Eventos do Windows
+
+Eventos principais para aplicativos do Windows:
+
+| Evento | Descrição | Caso de Uso |
+|-------|-------------|----------|
+| `windows:SystemThemeChanged` | O tema do Windows mudou | Atualize as cores do app |
+| `windows:APMSuspend` | O sistema está suspendo | Salve o estado, pause operações |
+| `windows:APMResumeSuspend` | O sistema foi retomado | Restaure o estado, atualize dados |
+| `windows:APMPowerStatusChange` | O status da energia mudou | Ajuste as configurações de desempenho |
+
+#### Eventos do macOS
+
+Eventos importantes para aplicativos do macOS:
+
+| Evento | Descrição | Caso de Uso |
+|-------|-------------|----------|
+| `mac:ApplicationDidBecomeActive` | O app se tornou ativo | Retome operações |
+| `mac:ApplicationDidResignActive` | O app se tornou inativo | Pause operações |
+| `mac:ApplicationWillTerminate` | O app será encerrado | Limpeza final |
+| `mac:WindowDidEnterFullScreen` | Entrou em tela cheia | Ajuste a UI para tela cheia |
+| `mac:WindowDidExitFullScreen` | Saiu da tela cheia | Restaure a UI normal |
+
+#### Eventos do Linux
+
+Eventos principais de janela do Linux:
+
+| Evento | Descrição | Caso de Uso |
+|-------|-------------|----------|
+| `linux:SystemThemeChanged` | O tema do desktop mudou | Atualize o tema do app |
+| `linux:WindowFocusIn` | A janela ganhou foco | Retome atividades |
+| `linux:WindowFocusOut` | A janela perdeu o foco | Pause atividades |
+| `linux:WindowLoadStarted` | O WebView começou a carregar | Mostre o indicador de carregamento |
+| `linux:WindowLoadRedirected` | O WebView foi redirecionado | Rastreie redirecionamentos de navegação |
+| `linux:WindowLoadCommitted` | O WebView confirmou o carregamento | O conteúdo está sendo recebido |
+| `linux:WindowLoadFinished` | O WebView terminou de carregar | Oculte o indicador de carregamento, injete JS/CSS |
+
+## Melhores Práticas
+
+### 1. Use Namespaces de Eventos
+
+Ao criar eventos personalizados, use namespaces para evitar conflitos:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Bom - eventos com namespace
+Events.Emit('myapp:user:login');
+Events.Emit('myapp:data:updated');
+Events.Emit('myapp:network:connected');
+
+// Evite - nomes genéricos que podem conflitar
+Events.Emit('login');
+Events.Emit('update');
+```
+
+### 2. Limpe os Listeners
+
+Sempre remova os listeners de eventos quando os componentes forem desmontados:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Exemplo em React
+useEffect(() => {
+    const handler = (event) => {
+        // Lidar com o evento
+    };
+
+    Events.On('common:WindowResize', handler);
+
+    // Limpeza
+    return () => {
+        Events.Off('common:WindowResize', handler);
+    };
+}, []);
+```
+
+### 3. Lidar com Diferenças de Plataforma
+
+Verifique a disponibilidade da plataforma ao usar eventos específicos de plataforma:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Eventos específicos de plataforma podem ser registrados incondicionalmente;
+// eles simplesmente nunca serão disparados em plataformas não suportadas.
+Events.On('windows:APMSuspend', handleSuspend);
+Events.On('mac:ApplicationWillTerminate', handleTerminate);
+```
+
+### 4. Não Exagere no Uso de Eventos
+
+Embora os eventos sejam poderosos, não os use para tudo:
+
+- ✅ Use eventos para: Notificações do sistema, mudanças de ciclo de vida, atualizações de broadcast
+- ❌ Evite eventos para: Retornos diretos de funções, atualizações de componente único, operações síncronas
+
+## Depuração de Eventos
+
+Para depurar problemas com eventos:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Registre todos os eventos (apenas para desenvolvimento)
+if (isDevelopment) {
+    const originalOn = Events.On;
+    Events.On = function(eventName, handler) {
+        console.log(`[Event Registered] ${eventName}`);
+        return originalOn.call(this, eventName, function(event) {
+            console.log(`[Event Fired] ${eventName}`, event);
+            return handler(event);
+        });
+    };
+}
+```
+
+## Fonte da Verdade
+
+A lista completa de eventos disponíveis pode ser encontrada no código-fonte do Wails:
+- Eventos do frontend: [`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/main/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
+- Eventos do backend: [`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/main/v3/pkg/events/events.go)Sempre consulte estes arquivos para obter os nomes de eventos mais atualizados e sua disponibilidade.
+
+## Resumo
+
+Os eventos no Wails fornecem uma maneira poderosa e desacoplada de lidar com a comunicação em seu aplicativo. Ao seguir os padrões e práticas apresentados neste guia, você pode construir aplicativos responsivos e conscientes da plataforma que reagem suavemente a alterações do sistema e interações do usuário.
+
+Lembre-se: comece com eventos comuns para compatibilidade entre plataformas, adicione eventos específicos da plataforma quando necessário e sempre limpe seus ouvintes de eventos para evitar vazamentos de memória.

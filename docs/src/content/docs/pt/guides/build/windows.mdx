@@ -1,0 +1,124 @@
+---
+title: Empacotamento no Windows
+description: Empacote seu aplicativo Wails para distribuição no Windows
+sidebar:
+  order: 3
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Instalador NSIS
+
+O formato de empacotamento padrão cria um instalador NSIS:
+
+```bash
+wails3 package GOOS=windows
+```
+
+Isso executa `wails3 task windows:package`, que:
+1. Compila o aplicativo
+2. Gera o bootstrapper do WebView2
+3. Cria um instalador NSIS
+
+Saída: `build/windows/nsis/<AppName>-installer.exe`
+
+### Pacote MSIX
+
+Para distribuição na Microsoft Store ou implantação moderna no Windows:
+
+```bash
+wails3 package GOOS=windows FORMAT=msix
+```
+
+Saída: `bin/<AppName>-<arch>.msix`
+
+<Aside type="note">
+O MSIX requer `makeappx.exe` (Windows SDK) ou a ferramenta MSIX. Execute `wails3 tool msix-install-tools` para configurar.
+</Aside>
+
+## Personalizando o Instalador
+
+A configuração do NSIS está em `build/windows/nsis/project.nsi`. Edite este arquivo para personalizar:
+
+- Interface do instalador e marca
+- Diretório de instalação
+- Atalhos do menu Iniciar e da área de trabalho
+- Associações de arquivos
+- Contrato de licença
+
+Os metadados do aplicativo vêm de `build/windows/info.json`:
+
+```json
+{
+  "fixed": {
+    "file_version": "1.0.0"
+  },
+  "info": {
+    "0000": {
+      "ProductVersion": "1.0.0",
+      "CompanyName": "Minha Empresa",
+      "FileDescription": "Meu Aplicativo",
+      "ProductName": "MeuApp"
+    }
+  }
+}
+```
+
+## Assinatura de Código
+
+Assine seu executável e instalador para evitar avisos do SmartScreen:
+
+```bash
+# Usando o wrapper (detecta automaticamente a plataforma)
+wails3 sign GOOS=windows
+
+# Ou usando as tarefas diretamente
+wails3 task windows:sign
+wails3 task windows:sign:installer
+```
+
+Configure a assinatura em `build/windows/Taskfile.yml`:
+
+```yaml
+vars:
+  SIGN_CERTIFICATE: "caminho/para/certificado.pfx"
+  # Ou use o thumbprint para certificados na loja do Windows
+  SIGN_THUMBPRINT: "thumbprint-do-certificado"
+  TIMESTAMP_SERVER: "http://timestamp.digicert.com"
+```
+
+Armazene a senha do seu certificado de forma segura:
+
+```bash
+wails3 setup signing
+```
+
+Veja [Assinatura de Aplicativos](/pt/guides/build/signing) para mais detalhes.
+
+## Compilando para ARM
+
+```bash
+wails3 build GOOS=windows GOARCH=arm64
+wails3 package GOOS=windows GOARCH=arm64
+```
+
+## Solução de Problemas
+
+### makensis não encontrado
+
+Instale o NSIS:
+
+```bash
+# Windows
+winget install NSIS.NSIS
+
+# Ou baixe em https://nsis.sourceforge.io/
+```
+
+### Aviso do SmartScreen
+
+Seu executável não está assinado. Veja [Assinatura de Código](#code-signing) acima.
+
+### WebView2 ausente
+
+O instalador inclui um bootstrapper do WebView2 que baixa o runtime se necessário. Se você precisar de instalação offline, baixe o Instalador Autônomo Evergreen da Microsoft.

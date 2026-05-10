@@ -1,0 +1,119 @@
+---
+title: Instância Única
+description: Limitando seu aplicativo a uma única instância em execução
+sidebar:
+   order: 40
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+O bloqueio de instância única é um mecanismo que impede que múltiplas instâncias do seu aplicativo sejam executadas simultaneamente.
+É útil para aplicativos projetados para abrir arquivos a partir da linha de comando ou do explorador de arquivos do sistema operacional.
+
+
+## Uso
+
+Para habilitar a funcionalidade de instância única no seu aplicativo, forneça uma estrutura `SingleInstanceOptions` ao criar sua aplicação:
+
+```go
+app := application.New(application.Options{
+    // ... outras opções ...
+    SingleInstance: &application.SingleInstanceOptions{
+        UniqueID: "com.myapp.unique-id",
+        OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+            log.Printf("Segunda instância iniciada com argumentos: %v", data.Args)
+            log.Printf("Diretório de trabalho: %s", data.WorkingDir)
+            log.Printf("Dados adicionais: %v", data.AdditionalData)
+        },
+        // Opcional: Passar dados adicionais para a segunda instância
+        AdditionalData: map[string]string{
+            "launchtime": time.Now().String(),
+        },
+    },
+})
+```
+
+A estrutura `SingleInstanceOptions` possui os seguintes campos:
+
+- `UniqueID`: Um identificador único para o seu aplicativo. Deve ser uma string única, tipicamente na notação de domínio reverso (por exemplo, "com.empresa.nomeapp").
+- `EncryptionKey`: Matriz opcional de 32 bytes para criptografar os dados passados entre as instâncias usando AES-256-GCM. Se fornecida como uma matriz não nula, toda a comunicação entre as instâncias será criptografada.
+- `OnSecondInstanceLaunch`: Uma função de callback que é chamada quando uma segunda instância do seu aplicativo é iniciada. O callback recebe uma estrutura `SecondInstanceData` contendo:
+    - `Args`: Os argumentos de linha de comando passados para a segunda instância
+    - `WorkingDir`: O diretório de trabalho da segunda instância
+    - `AdditionalData`: Quaisquer dados adicionais passados da segunda instância (se fornecidos)
+- `AdditionalData`: Mapa opcional de pares chave-valor do tipo string que será passado para a primeira instância quando as instâncias subsequentes forem iniciadas
+
+:::danger[Atenção]
+O recurso de Instância Única implementa um protocolo de criptografia opcional usando AES-256-GCM. Sem a criptografia habilitada,
+os dados passados entre as instâncias não são seguros. Ao usar o recurso de instância única sem criptografia,
+seu aplicativo deve tratar quaisquer dados passados a ele pelo callback da segunda instância como não confiáveis.
+Você deve verificar se os argumentos recebidos são válidos e não contêm dados maliciosos.
+:::
+
+### Comunicação Segura
+
+Para habilitar a comunicação segura entre as instâncias, forneça uma chave de criptografia de 32 bytes. Esta chave deve ser a mesma para todas as instâncias do seu aplicativo:
+
+```go
+// Defina sua chave de criptografia (deve ter exatamente 32 bytes)
+var encryptionKey = [32]byte{
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+    0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+    0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+}
+
+// Use a chave em SingleInstanceOptions
+SingleInstance: &application.SingleInstanceOptions{
+    UniqueID: "com.myapp.unique-id",
+    // Habilitar criptografia para comunicação entre instâncias
+    EncryptionKey: encryptionKey,
+    // ... outras opções ...
+}
+```
+
+:::tip[Boas Práticas de Segurança]
+- Use uma chave única para o seu aplicativo
+- Armazene a chave de forma segura se estiver carregando-a a partir de configuração
+- Não use a chave de exemplo mostrada acima - crie a sua própria!
+:::
+
+### Gerenciamento de Janelas
+
+Ao lidar com o lançamento de uma segunda instância, você geralmente desejará trazer a janela do seu aplicativo para o primeiro plano. Você pode fazer isso usando o método `Focus()` da janela. Se sua janela estiver minimizada, talvez seja necessário restaurá-la primeiro:
+
+```go
+
+    var mainWindow *application.WebviewWindow
+
+    SingleInstance: &application.SingleInstanceOptions{
+        // Outras opções...
+        OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+            // Foca a janela se necessário
+            if mainWindow != nil {
+                mainWindow.Restore()
+                mainWindow.Focus()
+            }
+        },
+    }
+```
+
+## Como funciona
+
+<Tabs syncKey="platform">
+    <TabItem label="Mac" icon="apple">
+
+        Bloqueio de instância única usando um mutex nomeado. O nome do mutex é gerado a partir do ID único que você fornece. Os dados são passados para a primeira instância via [NSDistributedNotificationCenter](https://developer.apple.com/documentation/foundation/nsdistributednotificationcenter)
+
+    </TabItem>
+    <TabItem label="Windows" icon="seti:windows">
+
+        Bloqueio de instância única usando um mutex nomeado. O nome do mutex é gerado a partir do ID único que você fornece. Os dados são passados para a primeira instância via uma janela compartilhada usando [SendMessage](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage)
+
+    </TabItem>
+    <TabItem label="Linux" icon="linux">
+
+        Bloqueio de instância única usando [dbus](https://www.freedesktop.org/wiki/Software/dbus/). O nome dbus é gerado a partir do ID único que você fornece. Os dados são passados para a primeira instância via [dbus](https://www.freedesktop.org/wiki/Software/dbus/)
+
+    </TabItem>
+</Tabs>

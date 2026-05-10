@@ -1,0 +1,365 @@
+---
+title: Melhores Práticas para Bindings
+description: Padrões de design e melhores práticas para bindings Go-JavaScript
+sidebar:
+  order: 4
+---
+
+## Melhores Práticas para Bindings
+
+Siga **padrões comprovados** para o design de bindings para criar bindings limpos, performáticos e seguros. Este guia cobre princípios de design de API, optimização de performance, padrões de segurança, tratamento de erros e estratégias de teste para aplicações mantíveis.
+
+## Princípios de Design de API
+
+### 1. Responsabilidade Única
+
+Cada serviço deve ter um propósito claro:
+
+```go
+// ❌ Ruim: Objeto Deus
+type AppService struct {
+    // Faz tudo
+}
+
+func (a *AppService) SaveFile(path string, data []byte) error
+func (a *AppService) GetUser(id int) (*User, error)
+func (a *AppService) SendEmail(to, subject, body string) error
+func (a *AppService) ProcessPayment(amount float64) error
+
+// ✅ Bom: Serviços focados
+type FileService struct{}
+func (f *FileService) Save(path string, data []byte) error
+
+type UserService struct{}
+func (u *UserService) GetByID(id int) (*User, error)
+
+type EmailService struct{}
+func (e *EmailService) Send(to, subject, body string) error
+
+type PaymentService struct{}
+func (p *PaymentService) Process(amount float64) error
+```
+
+### 2. Nomes de Métodos Claros
+
+Use nomes descritivos e orientados a acções:
+
+```go
+// ❌ Ruim: Nomes pouco claros
+func (s *Service) Do(x string) error
+func (s *Service) Handle(data interface{}) interface{}
+func (s *Service) Process(input map[string]interface{}) bool
+
+// ✅ Bom: Nomes claros
+func (s *FileService) SaveDocument(path string, content string) error
+func (s *UserService) AuthenticateUser(email, password string) (*User, error)
+func (s *OrderService) CreateOrder(items []Item) (*Order, error)
+```
+
+### 3. Tipos de Retorno Consistentes
+
+Retorne erros explicitamente sempre:
+
+```go
+// ❌ Ruim: Tratamento de erros inconsistente
+func (s *Service) GetData() interface{}  // Como lidar com erros?
+func (s *Service) SaveData(data string)  // Falhas silenciosas?
+
+// ✅ Bom: Erros explícitos
+func (s *Service) GetData() (Data, error)
+func (s *Service) SaveData(data string) error
+```
+
+### 4. Validação de Entrada
+
+Valide toda a entrada no lado do Go:
+
+```go
+// ❌ Ruim: Sem validação
+func (s *UserService) CreateUser(email, password string) (*User, error) {
+    user := &User{Email: email, Password: password}
+    return s.db.Create(user)
+}
+
+// ✅ Bom: Valide primeiro
+func (s *UserService) CreateUser(email, password string) (*User, error) {
+    // Validar email
+    if !isValidEmail(email) {
+        return nil, errors.New("endereço de email inválido")
+    }
+    
+    // Validar palavra-passe
+    if len(password) < 8 {
+        return nil, errors.New("a palavra-passe deve ter pelo menos 8 caracteres")
+    }
+    
+    // Hash da palavra-passe
+    hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+    if err != nil {
+        return nil, err
+    }
+    
+    user := &User{
+        Email:        email,
+        PasswordHash: string(hash),
+    }
+    
+    return s.db.Create(user)
+}
+```
+
+## Padrões de Performance
+
+### 1. Operações em Lote
+
+Reduza as chamadas à ponte (bridge) agrupando-as:
+
+```go
+// ❌ Ruim: N chamadas
+// JavaScript
+for (const item of items) {
+    await ProcessItem(item)  // N chamadas à ponte
+}
+
+// ✅ Bom: 1 chamada
+// Go
+func (s *Service) ProcessItems(items []Item) ([]Result, error) {
+    results := make([]Result, len(items))
+    for i, item := range items {
+        results[i] = s.processItem(item)
+    }
+    return results, nil
+}
+
+// JavaScript
+const results = await ProcessItems(items)  // 1 chamada à ponte
+```
+
+### 2. Paginação
+
+Não devolva conjuntos de dados enormes:
+
+```go
+// ❌ Ruim: Devolve tudo
+func (s *Service) GetAllUsers() ([]User, error) {
+    return s.db.FindAll()  // Podem ser milhões
+}
+
+// ✅ Bom: Paginado
+type PageRequest struct {
+    Page     int `json:"page"`
+    PageSize int `json:"pageSize"`
+}
+
+type PageResponse struct {
+    Items      []User `json:"items"`
+    TotalItems int    `json:"totalItems"`
+    TotalPages int    `json:"totalPages"`
+    Page       int    `json:"page"`
+}
+
+func (s *Service) GetUsers(req PageRequest) (*PageResponse, error) {
+    // Validar
+    if req.Page < 1 {
+        req.Page = 1
+    }
+    if req.PageSize < 1 || req.PageSize > 100 {
+        req.PageSize = 20
+    }
+    
+    // Obter total
+    total, err := s.db.Count()
+    if err != nil {
+        return nil, err
+    }
+    
+    // Obter página
+    offset := (req.Page - 1) * req.PageSize
+    users, err := s.db.Find(offset, req.PageSize)
+    if err != nil {
+        return nil, err
+    }
+    
+    return &PageResponse{
+        Items:      users,
+        TotalItems: total,
+        TotalPages: (total + req.PageSize - 1) / req.PageSize,
+        Page:       req.Page,
+    }, nil
+}
+```
+
+### 3. Cache
+
+Faça cache de operações dispendiosas:
+
+```go
+type CachedService struct {
+    cache map[string]interface{}
+    mu    sync.RWMutex
+    ttl   time.Duration
+}
+
+func (s *CachedService) GetData(key string) (interface{}, error) {
+    // Verificar cache
+    s.mu.RLock()
+    if data, ok := s.cache[key]; ok {
+        s.mu.RUnlock()
+        return data, nil
+    }
+    s.mu.RUnlock()
+    
+    // Obter dados
+    data, err := s.fetchData(key)
+    if err != nil {
+        return nil, err
+    }
+    
+    // Guardar no cache
+    s.mu.Lock()
+    s.cache[key] = data
+    s.mu.Unlock()
+    
+    // Agendar expiração
+    go func() {
+        time.Sleep(s.ttl)
+        s.mu.Lock()
+        delete(s.cache, key)
+        s.mu.Unlock()
+    }()
+    
+    return data, nil
+}
+```
+
+### 4. Streaming com Eventos
+
+Use eventos para streaming de dados:
+
+```go
+// ❌ Ruim: Polling
+func (s *Service) GetProgress() int {
+    return s.progress
+}
+
+// JavaScript faz polling
+setInterval(async () => {
+    const progress = await GetProgress()
+    updateUI(progress)
+}, 100)
+
+// ✅ Bom: Eventos
+func (s *Service) ProcessLargeFile(path string) error {
+    file, err := os.Open(path)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+    
+    scanner := bufio.NewScanner(file)
+    total := 0
+    processed := 0
+    
+    // Contar linhas
+    for scanner.Scan() {
+        total++
+    }
+    
+    // Processar
+    file.Seek(0, 0)
+    scanner = bufio.NewScanner(file)
+    
+    for scanner.Scan() {
+        s.processLine(scanner.Text())
+        processed++
+        
+        // Emitir progresso
+        s.app.Event.Emit("progress", map[string]interface{}{
+            "processed": processed,
+            "total":     total,
+            "percent":   int(float64(processed) / float64(total) * 100),
+        })
+    }
+    
+    return scanner.Err()
+}
+
+// JavaScript ouve
+OnEvent("progress", (data) => {
+    updateProgress(data.percent)
+})
+```
+
+## Padrões de Segurança
+
+### 1. Sanitização de Entrada
+
+Sempre sanitize a entrada do utilizador:
+
+```go
+import (
+    "html"
+    "strings"
+)
+
+func (s *Service) SaveComment(text string) error {
+    // Sanitizar
+    text = strings.TrimSpace(text)
+    text = html.EscapeString(text)
+    
+    // Validar comprimento
+    if len(text) == 0 {
+        return errors.New("o comentário não pode estar vazio")
+    }
+    if len(text) > 1000 {
+        return errors.New("comentário demasiado longo")
+    }
+    
+    return s.db.SaveComment(text)
+}
+```
+
+### 2. Autenticação
+
+Proteja operações sensíveis:
+
+```go
+type AuthService struct {
+    sessions map[string]*Session
+    mu       sync.RWMutex
+}
+
+func (a *AuthService) Login(email, password string) (string, error) {
+    user, err := a.db.FindByEmail(email)
+    if err != nil {
+        return "", errors.New("credenciais inválidas")
+    }
+    
+    if !a.verifyPassword(user.PasswordHash, password) {
+        return "", errors.New("credenciais inválidas")
+    }
+    
+    // Criar sessão
+    token := generateToken()
+    a.mu.Lock()
+    a.sessions[token] = &Session{
+        UserID:    user.ID,
+        ExpiresAt: time.Now().Add(24 * time.Hour),
+    }
+    a.mu.Unlock()
+    
+    return token, nil
+}
+
+func (a *AuthService) requireAuth(token string) (*Session, error) {
+    a.mu.RLock()
+    session, ok := a.sessions[token]
+    a.mu.RUnlock()
+    
+    if !ok {
+        return nil, errors.New("não autenticado")
+    }
+    
+    if time.Now().After(session.ExpiresAt) {---
+
+**Perguntas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou confira os [exemplos de binding](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).

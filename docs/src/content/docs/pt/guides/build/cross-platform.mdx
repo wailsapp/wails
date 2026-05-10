@@ -1,0 +1,296 @@
+---
+title: Compilação Multiplataforma
+description: Compile para múltiplas plataformas a partir de uma única máquina
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem, Aside } from "@astrojs/starlight/components";
+
+## Início Rápido
+
+O Wails v3 suporta a compilação para Windows, macOS e Linux a partir de qualquer sistema operacional host. O sistema de build detecta automaticamente seu ambiente e escolhe o método de compilação correto.
+
+**Quer compilar para macOS e Linux?** Execute este comando uma vez para configurar as imagens do Docker (~800MB de download):
+
+```bash
+wails3 task setup:docker
+```
+
+Em seguida, compile para qualquer plataforma:
+
+```bash
+# Compilar para a plataforma atual (produção por padrão)
+wails3 build
+
+# Compilar para plataformas específicas
+wails3 build GOOS=windows
+wails3 build GOOS=darwin
+wails3 build GOOS=linux
+
+# Compilar para a arquitetura ARM64
+wails3 build GOOS=windows GOARCH=arm64
+wails3 build GOOS=darwin GOARCH=arm64
+wails3 build GOOS=linux GOARCH=arm64
+
+# O estilo de variável de ambiente também funciona
+GOOS=darwin GOARCH=arm64 wails3 build
+```
+
+### Windows
+
+O Windows é o alvo de compilação cruzada mais simples porque não requer CGO por padrão.
+
+```bash
+wails3 build GOOS=windows
+```
+
+Isso funciona em qualquer sistema operacional host sem configuração adicional. A compilação cruzada nativa do Go cuida de tudo.
+
+**Se o seu aplicativo requer CGO** (por exemplo, você está usando uma biblioteca C ou um pacote dependente de CGO), você precisará do Docker ao compilar a partir do macOS ou Linux:
+
+```bash
+# Configuração única
+wails3 task setup:docker
+
+# Compilar com CGO habilitado
+wails3 task windows:build CGO_ENABLED=1
+```
+
+O Taskfile detecta `CGO_ENABLED=1` em hosts que não são Windows e usa automaticamente a imagem do Docker.
+
+### macOS
+
+As compilações para macOS requerem CGO para a integração do WebView, o que significa que a compilação cruzada precisa de ferramentas especiais.
+
+```bash
+# Compilar para Apple Silicon (arm64) - padrão
+wails3 build GOOS=darwin
+
+# Compilar para Intel (amd64)
+wails3 build GOOS=darwin GOARCH=amd64
+
+# Compilar binário universal (ambas as arquiteturas)
+wails3 task darwin:build:universal
+```
+
+**A partir do Linux ou Windows**, você precisará configurar o Docker primeiro:
+
+```bash
+wails3 task setup:docker
+```
+
+Depois que as imagens forem construídas, o sistema de build detecta que você não está no macOS e usa o Docker automaticamente. Você não precisa alterar seus comandos de build.
+
+Observe que os binários do macOS compilados cruzadamente não são assinados digitalmente. Você precisará assiná-los no macOS ou no CI antes da distribuição.
+
+### Linux
+
+As compilações para Linux requerem CGO para a integração do WebView.
+
+```bash
+wails3 build GOOS=linux
+
+# Compilar para arquitetura específica
+wails3 build GOOS=linux GOARCH=amd64
+wails3 build GOOS=linux GOARCH=arm64
+```
+
+**A partir do macOS ou Windows**, você precisará configurar o Docker primeiro:
+
+```bash
+wails3 task setup:docker
+```
+
+O sistema de build detecta que você não está no Linux e usa o Docker automaticamente.
+
+**No Linux sem um compilador C**, o sistema de build verifica `gcc` ou `clang`. Se nenhum deles for encontrado, ele recorre ao Docker. Isso é útil para contêineres mínimos ou sistemas sem ferramentas de build instaladas. Você pode:
+
+1. Instalar um compilador C: `sudo apt install build-essential` (Debian/Ubuntu) ou `sudo pacman -S base-devel` (Arch)
+2. Construir a imagem do Docker e deixá-la ser usada automaticamente
+
+### Arquitetura ARM
+
+Todas as plataformas suportam compilação cruzada ARM64 usando `GOARCH`:
+
+```bash
+# Windows ARM64 (Surface Pro X, Windows on ARM)
+wails3 build GOOS=windows GOARCH=arm64
+
+# Linux ARM64 (Raspberry Pi 4/5, AWS Graviton)
+wails3 build GOOS=linux GOARCH=arm64
+
+# macOS ARM64 (Apple Silicon - este é o padrão no macOS)
+wails3 build GOOS=darwin GOARCH=arm64
+
+# macOS Intel (amd64)
+wails3 build GOOS=darwin GOARCH=amd64
+```
+
+A imagem do Docker inclui alvos do compilador cruzado Zig para amd64 e arm64 em todas as plataformas, então as compilações para ARM funcionam a partir de qualquer host:
+
+| Compilar ARM64 para | A partir do Windows | A partir do macOS | A partir do Linux |
+|-----------------|--------------|------------|------------|
+| **Windows ARM64** | Go Nativo | Go Nativo | Go Nativo |
+| **macOS ARM64** | Docker | Nativo | Docker |
+| **Linux ARM64** | Docker | Docker | Docker* |
+
+*Linux ARM64 a partir do Linux x86_64 usa Docker porque a compilação cruzada CGO requer uma toolchain diferente.
+
+## Como Funciona
+
+### Matriz de Compilação Cruzada
+
+| Host → Target | Windows | macOS | Linux |
+|---------------|---------|-------|-------|
+| **Windows**   | Nativo | Docker | Docker |
+| **macOS**     | Go Nativo | Nativo | Docker |
+| **Linux**     | Go Nativo | Docker | Nativo |
+
+- **Nativo** = Toolchain nativa da plataforma, sem configuração adicional
+- **Go Nativo** = Compilação cruzada integrada do Go (`CGO_ENABLED=0`)
+- **Docker** = Imagem do Docker com compilador cruzado Zig
+
+### Requisitos do CGO
+
+| Target | CGO Requerido | Método de Compilação Cruzada |
+|--------|--------------|--------------------------|
+| Windows | Não (padrão) | Go Nativo. Docker apenas se `CGO_ENABLED=1` |
+| macOS | Sim | Docker com macOS SDK |
+| Linux | Sim | Docker, ou nativo se compilador C disponível |
+
+### Detecção Automática
+
+Os Taskfiles escolhem automaticamente o método de build correto com base no seu ambiente:
+
+- **Target Windows:** Usa compilação cruzada nativa do Go por padrão. Se você definir explicitamente `CGO_ENABLED=1` em um host que não é Windows, ele muda para o Docker.
+- **Target macOS:** Usa Docker automaticamente quando não está no macOS. Nenhuma intervenção manual é necessária.
+- **Target Linux:** Verifica `gcc` ou `clang`. Usa compilação nativa se encontrado, caso contrário, recorre ao Docker.
+
+### Imagem do Docker
+
+O Wails usa uma única imagem do Docker (`wails-cross`) que pode compilar para todas as plataformas. Ela usa [Zig](https://ziglang.org/) como o compilador cruzado, que pode direcionar qualquer plataforma a partir de qualquer host. O macOS SDK está incluído para alvos darwin.
+
+```bash
+wails3 task setup:docker
+```
+
+Você pode verificar se a imagem está pronta executando `wails3 doctor`.
+
+### macOS SDK
+
+A imagem do Docker baixa o macOS SDK de [joseluisq/macosx-sdks](https://github.com/joseluisq/macosx-sdks) durante o processo de construção da imagem. Isso é necessário porque os cabeçalhos do macOS são necessários para a compilação CGO.
+
+Por padrão, a imagem usa **macOS SDK 14.5** (Sonoma). Para usar uma versão diferente, reconstrua com:
+
+```bash
+docker build -t wails-cross \
+  --build-arg MACOS_SDK_VERSION=15.0 \
+  -f build/docker/Dockerfile.cross build/docker/
+```
+
+Veja as [versões de SDK disponíveis](https://github.com/joseluisq/macosx-sdks/releases) para opções.
+
+**Importante:** O Wails não distribui o macOS SDK. Os usuários são responsáveis por revisar os termos de licença do SDK da Apple antes de usar este recurso.
+
+## Integração com CI/CD
+
+Para lançamentos de produção, recomendamos usar CI/CD com runners nativos para cada plataforma. Isso evita a compilação cruzada e garante que você obtenha binários corretamente assinados.
+
+```yaml
+name: Build
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            goos: linux
+          - os: macos-latest
+            goos: darwin
+          - os: windows-latest
+            goos: windows
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Wails CLI
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+
+      - name: Build
+        run: wails3 build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ matrix.goos }}
+          path: bin/
+```
+
+## Solução de Problemas
+
+### Imagem do Docker não encontrada
+
+```
+Docker image 'wails-cross' not found.
+```
+
+Execute `wails3 task setup:docker` para construir a imagem do Docker. Você só precisa fazer isso uma vez.
+
+### Daemon do Docker não está em execução
+
+```
+Docker is required for cross-compilation. Please install Docker.
+```
+
+Inicie o Docker Desktop ou o daemon do Docker. No Linux, você pode precisar executar `sudo systemctl start docker`.### Sem compilador C no Linux
+
+Se você vir erros relacionados ao CGO ao compilar no Linux, você tem duas opções:
+
+1. **Instale um compilador C:**
+   - Debian/Ubuntu: `sudo apt install build-essential`
+   - Arch Linux: `sudo pacman -S base-devel`
+   - Fedora: `sudo dnf install gcc`
+
+2. **Use o Docker em vez disso:** Execute `wails3 task setup:docker` e o Taskfile o usará automaticamente quando nenhum compilador for detectado.
+
+### Binários do macOS não assinados
+
+Os binários do macOS compilados de forma cruzada não são assinados digitalmente. A Apple exige assinatura de código para distribuição, então você precisará:
+
+1. Assinar o binário em uma máquina macOS, ou
+2. Assinar no CI usando um runner do macOS
+
+Veja [Assinando Aplicações](/pt/guides/build/signing) para mais detalhes.
+
+### Criação de binário universal
+
+Binários universais (arm64 + amd64 combinados) podem ser construídos em qualquer plataforma:
+
+```bash
+wails3 task darwin:build:universal
+```
+
+No Linux e no Windows, o Wails usa seu comando integrado `wails3 tool lipo` (alimentado por [konoui/lipo](https://github.com/konoui/lipo)) para combinar os binários. Isso cria um único binário que executa nativamente tanto em Macs com Apple Silicon quanto em Macs com Intel.
+
+## Próximos Passos
+
+- [Compilando Aplicações](/pt/guides/build/building) - Comandos e opções básicas de compilação
+- [Assinando Aplicações](/pt/guides/build/signing) - Assinatura de código para distribuição
