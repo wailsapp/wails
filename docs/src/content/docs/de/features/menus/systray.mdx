@@ -1,0 +1,388 @@
+---
+title: Systemtray-Menüs
+description: Fügen Sie Ihrer Anwendung eine Integration in den Systemtray (Benachrichtigungsbereich) hinzu
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## Systemtray-Menüs
+
+Wails bietet **einheitliche Systemtray-APIs**, die plattformübergreifend auf allen Plattformen funktionieren. Erstellen Sie Tray-Symbole mit Menüs, hängen Sie Fenster an und verarbeiten Sie Klicks mit nativen Plattformverhalten für Hintergrundanwendungen, Dienste und Quick-Access-Utilities.
+{/* VISUAL PLACEHOLDER: System Tray Comparison
+Description: Three screenshots showing the same Wails system tray icon on:
+1. Windows - Notification area (bottom-right)
+2. macOS - Menu bar (top-right) with label
+3. Linux (GNOME) - Top bar
+All showing the same icon and menu structure
+Style: Clean screenshots with arrows pointing to tray icon, menu expanded
+*/}
+
+## Schnellstart
+
+```go
+package main
+
+import (
+    _ "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed assets/icon.png
+var icon []byte
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Tray App",
+    })
+
+    // Create system tray
+    systray := app.SystemTray.New()
+    systray.SetIcon(icon)
+    systray.SetLabel("My App")
+
+    // Add menu
+    menu := app.NewMenu()
+    menu.Add("Show").OnClick(func(ctx *application.Context) {
+        // Show main window
+    })
+    menu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+    systray.SetMenu(menu)
+
+    // Create hidden window
+    window := app.Window.New()
+    window.Hide()
+
+    app.Run()
+}
+```
+
+**Ergebnis:** Systemtray-Symbol mit Menü auf allen Plattformen.
+
+## Erstellen eines Systemtrays
+
+### Basis-Systemtray
+
+```go
+// Create system tray
+systray := app.SystemTray.New()
+
+// Set icon
+systray.SetIcon(iconBytes)
+
+// Set label (macOS) / tooltip (Windows)
+systray.SetLabel("My Application")
+```
+
+### Mit Symbol
+
+Symbole sollten eingebettet werden:
+
+```go
+import _ "embed"
+
+//go:embed assets/icon.png
+var icon []byte
+
+//go:embed assets/icon-dark.png
+var iconDark []byte
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    systray := app.SystemTray.New()
+    systray.SetIcon(icon)
+    systray.SetDarkModeIcon(iconDark)  // macOS dark mode
+    
+    app.Run()
+}
+```
+
+**Anforderungen an das Symbol:**
+
+| Plattform | Größe | Format | Hinweise |
+|----------|------|--------|-------|
+| **Windows** | 16x16 oder 32x32 | PNG, ICO | Benachrichtigungsbereich |
+| **macOS** | 18x18 bis 22x22 | PNG | Menüleiste, Vorlage empfohlen |
+| **Linux** | 22x22 bis 48x48 | PNG, SVG | Variiert je nach DE |
+
+### Vorlagen-Symbole (macOS)
+
+Vorlagen-Symbole passen sich automatisch an den hellen/dunklen Modus an:
+
+```go
+systray.SetTemplateIcon(iconBytes)
+```
+
+**Richtlinien für Vorlagen-Symbole:**
+- Verwenden Sie nur schwarze und klare (transparente) Farben
+- Schwarz wird im dunklen Modus weiß
+- Benennen Sie die Datei mit dem Suffix `Template`: `iconTemplate.png`
+- [Design-Leitfaden](https://bjango.com/articles/designingmenubarextras/)
+
+## Hinzufügen von Menüs
+
+Systemtray-Menüs funktionieren wie Anwendungsmenüs:
+
+```go
+menu := app.NewMenu()
+
+// Add items
+menu.Add("Open").OnClick(func(ctx *application.Context) {
+    showMainWindow()
+})
+
+menu.AddSeparator()
+
+menu.AddCheckbox("Start at Login", false).OnClick(func(ctx *application.Context) {
+    enabled := ctx.ClickedMenuItem().Checked()
+    setStartAtLogin(enabled)
+})
+
+menu.AddSeparator()
+
+menu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+// Set menu
+systray.SetMenu(menu)
+```
+
+**Für alle Menüelementtypen** siehe [Menü-Referenz](/de/features/menus/reference).
+
+## Fenster anhängen
+
+Hängen Sie ein Fenster an das Tray-Symbol für automatisches Ein-/Ausblenden:
+
+```go
+// Create window
+window := app.Window.New()
+
+// Attach to tray
+systray.AttachWindow(window)
+
+// Configure behaviour
+systray.SetWindowOffset(10)  // Pixels from tray icon
+systray.SetWindowDebounce(200 * time.Millisecond)  // Click debounce
+```
+
+**Verhalten:**
+- Fenster beginnt ausgeblendet
+- **Linksklick auf Tray-Symbol** → Fenster-Sichtbarkeit umschalten
+- **Rechtsklick auf Tray-Symbol** → Menü anzeigen (falls festgelegt)
+- Fenster positioniert in der Nähe des Tray-Symbols
+
+**Beispiel: Popup-Fenster**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "Quick Access",
+    Width:  300,
+    Height: 400,
+    Frameless: true,  // No title bar
+    AlwaysOnTop: true,  // Stay on top
+})
+
+systray.AttachWindow(window)
+systray.SetWindowOffset(5)
+```
+
+## Klick-Handler
+
+Verarbeiten Sie Klicks auf das Tray-Symbol:
+
+```go
+systray := app.SystemTray.New()
+
+// Left click
+systray.OnClick(func() {
+    fmt.Println("Tray icon clicked")
+})
+
+// Right click
+systray.OnRightClick(func() {
+    fmt.Println("Tray icon right-clicked")
+})
+
+// Double click
+systray.OnDoubleClick(func() {
+    fmt.Println("Tray icon double-clicked")
+})
+
+// Mouse enter/leave
+systray.OnMouseEnter(func() {
+    fmt.Println("Mouse entered tray icon")
+})
+
+systray.OnMouseLeave(func() {
+    fmt.Println("Mouse left tray icon")
+})
+```
+
+**Plattformunterstützung:**
+
+| Ereignis | Windows | macOS | Linux |
+|-------|---------|-------|-------|
+| OnClick | ✅ | ✅ | ✅ |
+| OnRightClick | ✅ | ✅ | ✅ |
+| OnDoubleClick | ✅ | ✅ | ⚠️ Variiert |
+| OnMouseEnter | ✅ | ✅ | ⚠️ Variiert |
+| OnMouseLeave | ✅ | ✅ | ⚠️ Variiert |
+
+## Dynamische Updates
+
+Aktualisieren Sie das Tray-Symbol und das Menü dynamisch:
+
+### Symbol ändern
+
+```go
+var isActive bool
+
+func updateTrayIcon() {
+    if isActive {
+        systray.SetIcon(activeIcon)
+        systray.SetLabel("Active")
+    } else {
+        systray.SetIcon(inactiveIcon)
+        systray.SetLabel("Inactive")
+    }
+}
+```
+
+### Menü aktualisieren
+
+```go
+var isPaused bool
+
+pauseMenuItem := menu.Add("Pause")
+
+pauseMenuItem.OnClick(func(ctx *application.Context) {
+    isPaused = !isPaused
+    
+    if isPaused {
+        pauseMenuItem.SetLabel("Resume")
+    } else {
+        pauseMenuItem.SetLabel("Pause")
+    }
+    
+    menu.Update()  // Important!
+})
+```
+
+:::caution[Update() immer aufrufen]
+Nach dem Ändern des Menüstatus **rufen Sie `menu.Update()` auf**. Siehe [Menü-Referenz](/features/menus/reference#enabled-state).
+:::
+
+### Menü neu aufbauen
+
+Für größere Änderungen bauen Sie das gesamte Menü neu auf:
+
+```go
+func rebuildTrayMenu(status string) {
+    menu := app.NewMenu()
+    
+    // Status-specific items
+    switch status {
+    case "syncing":
+        menu.Add("Syncing...").SetEnabled(false)
+        menu.Add("Pause Sync").OnClick(pauseSync)
+    case "synced":
+        menu.Add("Up to date ✓").SetEnabled(false)
+        menu.Add("Sync Now").OnClick(startSync)
+    case "error":
+        menu.Add("Sync Error").SetEnabled(false)
+        menu.Add("Retry").OnClick(retrySync)
+    }
+    
+    menu.AddSeparator()
+    menu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+    
+    systray.SetMenu(menu)
+}
+```----------|--------|--------|-------|
+| **Windows** | ✅ | ✅ | Voll funktionsfähig - Symbol erscheint/verschwindet im Benachrichtigungsbereich |
+| **macOS** | ✅ | ✅ | Menüleisteintrag wird ein-/ausgeblendet |
+| **Linux** | ✅ | ✅ | Variiert je nach Desktop-Umgebung |
+
+**Anwendungsfälle:**
+- Tray-Symbol vorübergehend basierend auf der Benutzereinstellung ausblenden
+- Headless-Modus, bei dem das Tray-Symbol nur bei Bedarf erscheint
+- Sichtbarkeit basierend auf dem Anwendungsstatus umschalten
+
+**Beispiel - Bedingte Tray-Sichtbarkeit:**
+
+```go
+func (t *TrayApp) setTrayVisibility(visible bool) {
+    if visible {
+        t.systray.Show()
+    } else {
+        t.systray.Hide()
+    }
+}
+
+// Nur Tray anzeigen, wenn Updates verfügbar sind
+func (t *TrayApp) checkForUpdates() {
+    if hasUpdates {
+        t.systray.Show()
+        t.systray.SetLabel("Update Available")
+    } else {
+        t.systray.Hide()
+    }
+}
+```
+
+## Bereinigung
+
+Das Tray-Symbol zerstören, wenn es nicht mehr benötigt wird:
+
+```go
+// In OnShutdown
+app := application.New(application.Options{
+    OnShutdown: func() {
+        if systray != nil {
+            systray.Destroy()
+        }
+    },
+})
+```
+
+**Wichtig:** Zerstören Sie den Systemtray beim Herunterfahren immer, um Ressourcen freizugeben.
+
+## Best Practices
+
+### ✅ Tun
+
+- **Vorlagen-Symbole auf macOS verwenden** - Passt sich dem dunklen Modus an
+- **Beschriftungen kurz halten** - Maximal 3-5 Zeichen
+- **Tooltips auf Windows bereitstellen** - Hilft Benutzern, Ihre App zu identifizieren
+- **Auf allen Plattformen testen** - Das Verhalten variiert
+- **Klicks angemessen verarbeiten** - Linksklick für Hauptaktion, Rechtsklick für Menü
+- **Symbol für Status aktualisieren** - Visuelles Feedback ist wichtig
+- **Beim Herunterfahren zerstören** - Ressourcen freigeben
+
+### ❌ Nicht tun
+
+- **Keine großen Symbole verwenden** - Halten Sie sich an die Plattformrichtlinien
+- **Keine langen Beschriftungen verwenden** - Werden abgeschnitten
+- **Dunklen Modus nicht vergessen** - Auf macOS im dunklen Modus testen
+- **Klick-Handler nicht blockieren** - Halten Sie sie schnell
+- **menu.Update() nicht vergessen** - Nach Änderung des Menüstatus
+- **Tray-Unterstützung nicht voraussetzen** - Einige Linux-DEs unterstützen dies nicht
+
+## Fehlerbehebung
+
+### Tray-Symbol erscheint nicht
+
+**Mögliche Ursachen:**
+1. Symbolformat wird nicht unterstützt
+2. Symbolgröße zu groß/klein---
+
+**Fragen?** Stellen Sie diese im [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [System-Tray-Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic) an.

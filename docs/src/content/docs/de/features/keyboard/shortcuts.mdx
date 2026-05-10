@@ -1,0 +1,438 @@
+---
+title: Tastenkombinationen
+description: Registrieren Sie globale Tastenkombinationen für den schnellen Zugriff auf Funktionen
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails bietet ein leistungsstarkes Tastenkombinations-System, das es Ihnen ermöglicht, globale Tastenkombinationen zu registrieren, die in allen Fenstern Ihrer Anwendung funktionieren. Dies ermöglicht es Benutzern, schnell auf Funktionen zuzugreifen, ohne durch Menüs navigieren zu müssen.
+
+## Zugriff auf den Tastenkombinations-Manager
+
+Der Tastenkombinations-Manager wird über die Eigenschaft `KeyBindings` Ihrer Anwendungsinstanz erreicht:
+
+```go
+app := application.New(application.Options{
+    Name: "Keyboard Shortcuts Demo",
+})
+
+// Zugriff auf den Tastenkombinations-Manager
+keyBindings := app.KeyBinding
+```
+
+## Hinzufügen von Tastenkombinationen
+
+### Einfache Tastenkombination
+
+Registrieren Sie eine einfache Tastenkombination:
+
+```go
+app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+    // Speichern-Aktion verarbeiten
+    app.Logger.Info("Save shortcut triggered")
+    // Speichern-Vorgang durchführen...
+})
+```
+
+### Mehrere Tastenkombinationen
+
+Registrieren Sie mehrere Tastenkombinationen für häufige Operationen:
+
+```go
+// Dateioperationen
+app.KeyBinding.Add("Ctrl+N", func(window application.Window) {
+    // Neue Datei
+    window.EmitEvent("file:new", nil)
+})
+
+app.KeyBinding.Add("Ctrl+O", func(window application.Window) {
+    // Datei öffnen
+    dialog := app.Dialog.OpenFile()
+    if file, err := dialog.PromptForSingleSelection(); err == nil {
+        window.EmitEvent("file:open", file)
+    }
+})
+
+app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+    // Datei speichern
+    window.EmitEvent("file:save", nil)
+})
+
+// Bearbeitungsvorgänge
+app.KeyBinding.Add("Ctrl+Z", func(window application.Window) {
+    // Rückgängig
+    window.EmitEvent("edit:undo", nil)
+})
+
+app.KeyBinding.Add("Ctrl+Y", func(window application.Window) {
+    // Wiederholen (Windows/Linux)
+    window.EmitEvent("edit:redo", nil)
+})
+
+app.KeyBinding.Add("Cmd+Shift+Z", func(window application.Window) {
+    // Wiederholen (macOS)
+    window.EmitEvent("edit:redo", nil)
+})
+```
+
+## Tastenkombinations-Beschleuniger
+
+### Beschleuniger-Format
+
+Tastenkombinationen verwenden ein standardmäßiges Beschleuniger-Format mit Modifikatoren und Tasten:
+
+```go
+// Modifikator-Tasten
+"Ctrl+S"        // Control + S
+"Cmd+S"         // Command + S (macOS)
+"Alt+F4"        // Alt + F4
+"Shift+Ctrl+Z"  // Shift + Control + Z
+
+// Funktionstasten
+"F1"            // F1-Taste
+"Ctrl+F5"       // Control + F5
+
+// Spezielle Tasten
+"Escape"        // Escape-Taste
+"Enter"         // Eingabetaste
+"Space"         // Leertaste
+"Tab"           // Tabulator-Taste
+"Backspace"     // Rückschritt-Taste
+"Delete"        // Löschen-Taste
+
+// Pfeiltasten
+"Up"            // Pfeil nach oben
+"Down"          // Pfeil nach unten
+"Left"          // Pfeil nach links
+"Right"         // Pfeil nach rechts
+```
+
+### Plattform-spezifische Beschleuniger
+
+Behandeln Sie Plattformunterschiede für gängige Tastenkombinationen:
+
+```go
+import "runtime"
+
+// Plattformübergreifende Speichern-Tastenkombination
+if runtime.GOOS == "darwin" {
+    app.KeyBinding.Add("Cmd+S", saveHandler)
+} else {
+    app.KeyBinding.Add("Ctrl+S", saveHandler)
+}
+
+// Oder beide registrieren
+app.KeyBinding.Add("Ctrl+S", saveHandler)
+app.KeyBinding.Add("Cmd+S", saveHandler)
+```
+
+## Verwalten von Tastenkombinationen
+
+### Entfernen von Tastenkombinationen
+
+Entfernen Sie Tastenkombinationen, wenn sie nicht mehr benötigt werden:
+
+```go
+// Eine bestimmte Tastenkombination entfernen
+app.KeyBinding.Remove("Ctrl+S")
+
+// Beispiel: Temporäre Tastenkombination für ein Modal
+app.KeyBinding.Add("Escape", func(window application.Window) {
+    // Modal schließen
+    window.EmitEvent("modal:close", nil)
+    // Diese temporäre Bindung entfernen
+    app.KeyBinding.Remove("Escape")
+})
+```
+
+### Alle Tastenkombinationen abrufen
+
+Rufen Sie alle registrierten Tastenkombinationen ab:
+
+```go
+allBindings := app.KeyBinding.GetAll()
+for _, binding := range allBindings {
+    app.Logger.Info("Key binding", "accelerator", binding.Accelerator)
+}
+```
+
+## Erweiterte Verwendung
+
+### Kontextsensitive Tastenkombinationen
+
+Machen Sie Tastenkombinationen kontextsensitiv, indem Sie den Anwendungsstatus prüfen:
+
+```go
+app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+    // aktuellen Anwendungsstatus prüfen
+    if isEditMode() {
+        // Dokument speichern
+        saveDocument()
+    } else if isInSettings() {
+        // Einstellungen speichern
+        saveSettings()
+    } else {
+        app.Logger.Info("Save not available in current context")
+    }
+})
+```
+
+### Fensterspezifische Aktionen
+
+Tastenkombinationen erhalten das aktive Fenster, was fensterspezifisches Verhalten ermöglicht:
+
+```go
+app.KeyBinding.Add("F11", func(window application.Window) {
+    // Vollbild für das aktive Fenster umschalten
+    if window.Fullscreen() {
+        window.SetFullscreen(false)
+    } else {
+        window.SetFullscreen(true)
+    }
+})
+
+app.KeyBinding.Add("Ctrl+W", func(window application.Window) {
+    // Das aktive Fenster schließen
+    window.Close()
+})
+```
+
+### Dynamisches Verwalten von Tastenkombinationen
+
+Fügen Sie Tastenkombinationen dynamisch hinzu und entfernen Sie sie basierend auf dem Anwendungsstatus:
+
+```go
+func enableEditMode() {
+    // Bearbeitungsspezifische Tastenkombinationen hinzufügen
+    app.KeyBinding.Add("Ctrl+B", func(window application.Window) {
+        window.EmitEvent("format:bold", nil)
+    })
+    
+    app.KeyBinding.Add("Ctrl+I", func(window application.Window) {
+        window.EmitEvent("format:italic", nil)
+    })
+    
+    app.KeyBinding.Add("Ctrl+U", func(window application.Window) {
+        window.EmitEvent("format:underline", nil)
+    })
+}
+
+func disableEditMode() {
+    // Bearbeitungsspezifische Tastenkombinationen entfernen
+    app.KeyBinding.Remove("Ctrl+B")
+    app.KeyBinding.Remove("Ctrl+I")
+    app.KeyBinding.Remove("Ctrl+U")
+}
+```
+
+## Plattform-Betrachtungen
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    Unter macOS:
+    
+    - Verwenden Sie `Cmd` anstelle von `Ctrl` für Standard-Tastenkombinationen
+    - `Cmd+Q` ist typischerweise zum Beenden der Anwendung reserviert
+    - `Cmd+H` blendet die Anwendung aus
+    - `Cmd+M` minimiert Fenster
+    - Berücksichtigen Sie Standard-Tastenkombinationen von macOS
+    
+    Häufige macOS-Muster:
+    ```go
+    app.KeyBinding.Add("Cmd+N", newFileHandler)      // Neu
+    app.KeyBinding.Add("Cmd+O", openFileHandler)     // Öffnen
+    app.KeyBinding.Add("Cmd+S", saveFileHandler)     // Speichern
+    app.KeyBinding.Add("Cmd+Z", undoHandler)         // Rückgängig
+    app.KeyBinding.Add("Cmd+Shift+Z", redoHandler)   // Wiederholen
+    app.KeyBinding.Add("Cmd+C", copyHandler)         // Kopieren
+    app.KeyBinding.Add("Cmd+V", pasteHandler)        // Einfügen
+    ```
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    Unter Windows:
+    
+    - Verwenden Sie `Ctrl` für Standard-Tastenkombinationen
+    - `Alt+F4` schließt Anwendungen
+    - `F1` öffnet typischerweise die Hilfe
+    - Berücksichtigen Sie Windows-Tastaturkonventionen
+    
+    Häufige Windows-Muster:
+    ```go
+    app.KeyBinding.Add("Ctrl+N", newFileHandler)     // Neu
+    app.KeyBinding.Add("Ctrl+O", openFileHandler)    // Öffnen
+    app.KeyBinding.Add("Ctrl+S", saveFileHandler)    // Speichern
+    app.KeyBinding.Add("Ctrl+Z", undoHandler)        // Rückgängig
+    app.KeyBinding.Add("Ctrl+Y", redoHandler)        // Wiederholen
+    app.KeyBinding.Add("Ctrl+C", copyHandler)        // Kopieren
+    app.KeyBinding.Add("Ctrl+V", pasteHandler)       // Einfügen
+    app.KeyBinding.Add("F1", helpHandler)            // Hilfe
+    ```
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    Unter Linux:
+    
+    - Folgt im Allgemeinen den Windows-Konventionen mit `Ctrl`
+    - Kann je nach Desktop-Umgebung variieren
+    - Berücksichtigen Sie GNOME/KDE-Standard-Tastenkombinationen
+    - Einige Desktop-Umgebungen reservieren bestimmte Tastenkombinationen
+    
+    Häufige Linux-Muster:
+    ```go
+    app.KeyBinding.Add("Ctrl+N", newFileHandler)     // Neu
+    app.KeyBinding.Add("Ctrl+O", openFileHandler)    // Öffnen
+    app.KeyBinding.Add("Ctrl+S", saveFileHandler)    // Speichern
+    app.KeyBinding.Add("Ctrl+Z", undoHandler)        // Rückgängig
+    app.KeyBinding.Add("Ctrl+Shift+Z", redoHandler)  // Wiederholen
+    app.KeyBinding.Add("Ctrl+C", copyHandler)        // Kopieren
+    app.KeyBinding.Add("Ctrl+V", pasteHandler)       // Einfügen
+    ```
+    
+  </TabItem>
+</Tabs>
+
+## Best Practices
+
+1. **Verwenden Sie Standard-Tastenkombinationen**: Befolgen Sie Plattformkonventionen für häufige Operationen:
+   ```go
+   // Plattformübergreifendes Speichern
+   if runtime.GOOS == "darwin" {```go
+   app.KeyBinding.Add("Cmd+S", saveHandler)
+   } else {
+       app.KeyBinding.Add("Ctrl+S", saveHandler)
+   }
+   ```
+
+2. **Bieten Sie visuelles Feedback**: Lassen Sie die Nutzer wissen, wenn Shortcuts ausgelöst werden:
+   ```go
+   app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+       saveDocument()
+       // Kurze Benachrichtigung anzeigen
+       window.EmitEvent("notification:show", "Dokument gespeichert")
+   })
+   ```
+
+3. **Behandeln Sie Konflikte**: Achten Sie darauf, keine wichtigen System-Shortcuts zu überschreiben:
+   ```go
+   // Vermeiden Sie das Überschreiben von System-Shortcuts wie:
+   // Ctrl+Alt+Del (Windows)
+   // Cmd+Space (macOS Spotlight)
+   // Alt+Tab (Fensterwechsel)
+   ```
+
+4. **Dokumentieren Sie Shortcuts**: Bieten Sie Hilfe oder Dokumentation für verfügbare Shortcuts an:
+   ```go
+   app.KeyBinding.Add("F1", func(window application.Window) {
+       // Hilfe-Dialog mit verfügbaren Shortcuts anzeigen
+       showKeyboardShortcutsHelp()
+   })
+   ```
+
+5. **Aufräumen**: Entfernen Sie temporäre Tastenkombinationen, wenn sie nicht mehr benötigt werden:
+   ```go
+   func enterEditMode() {
+       app.KeyBinding.Add("Escape", exitEditModeHandler)
+   }
+   
+   func exitEditModeHandler(window application.Window) {
+       exitEditMode()
+       app.KeyBinding.Remove("Escape") // Temporäre Bindung aufräumen
+   }
+   ```
+
+## Vollständiges Beispiel
+
+Hier ist ein vollständiges Beispiel für einen Texteditor mit Tastenkombinationen:
+
+```go
+package main
+
+import (
+    "runtime"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Text Editor with Shortcuts",
+    })
+
+    // Dateioperationen
+    if runtime.GOOS == "darwin" {
+        app.KeyBinding.Add("Cmd+N", func(window application.Window) {
+            window.EmitEvent("file:new", nil)
+        })
+        app.KeyBinding.Add("Cmd+O", func(window application.Window) {
+            openFile(app, window)
+        })
+        app.KeyBinding.Add("Cmd+S", func(window application.Window) {
+            window.EmitEvent("file:save", nil)
+        })
+    } else {
+        app.KeyBinding.Add("Ctrl+N", func(window application.Window) {
+            window.EmitEvent("file:new", nil)
+        })
+        app.KeyBinding.Add("Ctrl+O", func(window application.Window) {
+            openFile(app, window)
+        })
+        app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+            window.EmitEvent("file:save", nil)
+        })
+    }
+
+    // Ansichtoperationen
+    app.KeyBinding.Add("F11", func(window application.Window) {
+        window.SetFullscreen(!window.Fullscreen())
+    })
+
+    app.KeyBinding.Add("F1", func(window application.Window) {
+        showKeyboardShortcuts(window)
+    })
+
+    // Hauptfenster erstellen
+    window := app.Window.New()
+    window.SetTitle("Text Editor")
+
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
+}
+
+func openFile(app *application.App, window application.Window) {
+    dialog := app.Dialog.OpenFile()
+    dialog.AddFilter("Text Files", "*.txt;*.md")
+    
+    if file, err := dialog.PromptForSingleSelection(); err == nil {
+        window.EmitEvent("file:open", file)
+    }
+}
+
+func showKeyboardShortcuts(window application.Window) {
+    shortcuts := `
+Keyboard Shortcuts:
+- Ctrl/Cmd+N: New file
+- Ctrl/Cmd+O: Open file
+- Ctrl/Cmd+S: Save file
+- F11: Toggle fullscreen
+- F1: Show this help
+`
+    window.EmitEvent("help:show", shortcuts)
+}
+```
+
+:::tip[Profi-Tipp]
+Testen Sie Ihre Tastenkombinationen auf allen Zielplattformen, um sicherzustellen, dass sie korrekt funktionieren und nicht mit System-Shortcuts kollidieren.
+:::
+
+:::danger[Achtung]
+Achten Sie darauf, keine kritischen System-Shortcuts zu überschreiben. Einige Tastenkombinationen sind vom Betriebssystem reserviert und können von Anwendungen nicht abgefangen werden.
+:::
