@@ -1,0 +1,328 @@
+---
+title: Wails의 작동 원리
+description: Wails 아키텍처 이해 및 네이티브 성능 달성 방식
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails는 **백엔드에 Go**와 **프론트엔드에 웹 기술**을 사용하여 데스크톱 애플리케이션을 구축하기 위한 프레임워크입니다. 하지만 Electron과 달리 Wails는 브라우저를 번들링하지 않으며, **운영 체제의 네이티브 WebView**를 사용합니다.
+
+```d2
+direction: right
+
+User: "User" {
+  shape: person
+  style.fill: "#3B82F6"
+}
+
+Application: "Your Wails Application" {
+  Frontend: "Frontend\n(HTML/CSS/JS)" {
+    shape: rectangle
+    style.fill: "#8B5CF6"
+  }
+  
+  Runtime: "Wails Runtime" {
+    Bridge: "Message Bridge" {
+      shape: diamond
+      style.fill: "#10B981"
+    }
+    
+    Bindings: "Type-Safe Bindings" {
+      shape: rectangle
+      style.fill: "#10B981"
+    }
+  }
+  
+  Backend: "Go Backend" {
+    Services: "Your Services" {
+      shape: rectangle
+      style.fill: "#00ADD8"
+    }
+    
+    NativeAPIs: "OS APIs" {
+      shape: rectangle
+      style.fill: "#00ADD8"
+    }
+  }
+}
+
+OS: "Operating System" {
+  WebView: "Native WebView\n(WebKit/WebView2/WebKitGTK)" {
+    shape: rectangle
+    style.fill: "#6B7280"
+  }
+  
+  SystemAPIs: "System APIs\n(Windows/macOS/Linux)" {
+    shape: rectangle
+    style.fill: "#6B7280"
+  }
+}
+
+User -> Application.Frontend: "Interacts with UI"
+Application.Frontend <-> Application.Runtime.Bridge: "JSON messages"
+Application.Runtime.Bridge <-> Application.Backend.Services: "Direct function calls"
+Application.Runtime.Bindings -> Application.Frontend: "TypeScript definitions"
+Application.Frontend -> OS.WebView: "Renders in"
+Application.Backend.NativeAPIs -> OS.SystemAPIs: "Native calls"
+```
+
+**Electron과의 주요 차이점:**
+
+| 측면 | Wails | Electron |
+|--------|-------|----------|
+| **브라우저** | OS 제공 WebView | 번들링된 Chromium (~100MB) |
+| **백엔드** | Go (컴파일됨) | Node.js (인터프리터) |
+| **통신** | 인메모리 브리지 | IPC (프로세스 간 통신) |
+| **번들 크기** | ~15MB | ~150MB |
+| **메모리** | ~10MB | ~100MB+ |
+| **시작 시간** | &lt;0.5s | 2-3s |
+
+## 핵심 구성 요소
+
+### 1. 네이티브 WebView
+
+Wails는 운영 체제의 내장 웹 렌더링 엔진을 사용합니다.
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+    **WebView2** (Microsoft Edge WebView2)
+    - Chromium 기반 (Edge 브라우저와 동일)
+    - Windows 10/11에 사전 설치됨
+    - Windows Update를 통한 자동 업데이트
+    - 최신 웹 표준 전체 지원
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **WebKit** (Safari의 렌더링 엔진)
+    - macOS에 내장됨
+    - Safari 브라우저와 동일한 엔진
+    - 우수한 성능과 배터리 수명
+    - 최신 웹 표준 전체 지원
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **WebKitGTK** (WebKit의 GTK 포트)
+    - 패키지 관리자를 통해 설치
+    - GNOME Web(Epiphany)와 동일한 엔진
+    - 우수한 표준 지원
+    - 경량이고 성능이 우수함
+  </TabItem>
+</Tabs>
+
+**이것이 중요한 이유:**
+- **번들링된 브라우저 없음** → 더 작은 애플리케이션 크기
+- **OS 네이티브** → 더 나은 통합 및 성능
+- **자동 업데이트** → OS 업데이트를 통한 보안 패치
+- **익숙한 렌더링** → 시스템 브라우저와 동일
+
+### 2. Wails 브리지
+
+브리지는 Wails의 핵심으로, Go와 JavaScript 간의 **직접 통신**을 가능하게 합니다.
+
+```d2
+direction: down
+
+Frontend: "Frontend (JavaScript)" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+Bridge: "Wails Bridge" {
+  Encoder: "JSON Encoder" {
+    shape: rectangle
+  }
+  
+  Router: "Method Router" {
+    shape: diamond
+    style.fill: "#10B981"
+  }
+  
+  Decoder: "JSON Decoder" {
+    shape: rectangle
+  }
+}
+
+Backend: "Backend (Go)" {
+  Services: "Registered Services" {
+    shape: rectangle
+    style.fill: "#00ADD8"
+  }
+}
+
+Frontend -> Bridge.Encoder: "1. Call Go method\nGreet('Alice')"
+Bridge.Encoder -> Bridge.Router: "2. Encode to JSON\n{method: 'Greet', args: ['Alice']}"
+Bridge.Router -> Backend.Services: "3. Route to service\nGreetService.Greet('Alice')"
+Backend.Services -> Bridge.Decoder: "4. Return result\n'Hello, Alice!'"
+Bridge.Decoder -> Frontend: "5. Decode to JS\nPromise resolves"
+```
+
+**작동 방식:**
+
+1. **프론트엔드가 Go 메서드 호출** (자동 생성 바인딩을 통해)
+2. **브리지가 호출을 JSON으로 인코딩** (메서드 이름 + 인수)
+3. **라우터가 등록된 서비스에서 Go 메서드 찾기**
+4. **Go 메서드 실행** 및 값 반환
+5. **브리지가 결과를 디코딩**하여 프론트엔드로 전송
+6. **JavaScript에서 Promise가 해결**되며 결과 반환
+
+**성능 특성:**
+- **인메모리**: 네트워크 오버헤드 없음, HTTP 없음
+- **가능한 경우 제로 복사** (대용량 데이터용)
+- **기본 비동기**: 양쪽 모두 차단되지 않음
+- **타입 안전**: TypeScript 정의 자동 생성
+
+### 3. 서비스 시스템
+
+서비스는 Go 기능을 프론트엔드에 노출하는 권장 방법입니다.
+
+```go
+// Define a service (just a regular Go struct)
+type GreetService struct {
+    prefix string
+}
+
+// Methods with exported names are automatically available
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+
+func (g *GreetService) GetTime() time.Time {
+    return time.Now()
+}
+
+// Register the service
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&GreetService{prefix: "Hello, "}),
+    },
+})
+```
+
+**서비스 발견:**
+- Wails는 시작 시 **구조체를 스캔**합니다.
+- **내보낸 메서드**가 프론트엔드에서 호출 가능해집니다.
+- **타입 정보**가 TypeScript 바인딩을 위해 추출됩니다.
+- **오류 처리**가 자동화됩니다 (Go 오류 → JS 예외).
+
+**생성된 TypeScript 바인딩:**
+```typescript
+// Auto-generated in frontend/bindings/GreetService.ts
+export function Greet(name: string): Promise<string>
+export function GetTime(): Promise<Date>
+```
+
+**서비스를 사용하는 이유:**
+- **타입 안전**: 전체 TypeScript 지원
+- **자동 발견**: 메서드 수동 등록 불필요
+- **구성**: 관련 기능 그룹화
+- **테스트 가능**: 서비스는 단순 Go 구조체
+
+[서비스에 대해 더 알아보기 →](/features/bindings/services)
+
+### 4. 이벤트 시스템
+
+이벤트는 구성 요소 간 **pub/sub 통신**을 가능하게 합니다.
+
+```d2
+direction: right
+
+GoService: "Go Service" {
+  shape: rectangle
+  style.fill: "#00ADD8"
+}
+
+EventBus: "Event Bus" {
+  shape: cylinder
+  style.fill: "#10B981"
+}
+
+Frontend1: "Window 1" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+Frontend2: "Window 2" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+GoService -> EventBus: "Emit('data-updated', data)"
+EventBus -> Frontend1: "Notify subscribers"
+EventBus -> Frontend2: "Notify subscribers"
+Frontend1 -> EventBus: "On('data-updated', handler)"
+Frontend2 -> EventBus: "On('data-updated', handler)"
+```
+
+**사용 사례:**
+- **창 간 통신**: 한 창이 다른 창에 알림
+- **백그라운드 작업**: Go 서비스가 UI에 진행 상황 알림
+- **상태 동기화**: 여러 창을 동기화 상태로 유지
+- **느슨한 결합**: 구성 요소가 직접 참조할 필요 없음
+
+**예제:**
+```go
+// Go: Emit an event
+app.Event.Emit("user-logged-in", user)
+```
+
+```javascript
+// JavaScript: Listen for event
+import { Events } from '@wailsio/runtime'
+
+Events.On('user-logged-in', (user) => {
+    console.log('User logged in:', user)
+})
+```
+
+[이벤트에 대해 더 알아보기 →](/features/events/system)
+
+## 애플리케이션 수명 주기
+
+수명 주기를 이해하면 리소스를 초기화하고 정리해야 할 시기를 알 수 있습니다.
+
+```d2
+direction: down
+
+Start: "Application Start" {
+  shape: oval
+  style.fill: "#10B981"
+}
+
+Init: "Initialisation" {
+  Create: "Create Application" {
+    shape: rectangle
+  }
+  
+  Register: "Register Services" {
+    shape: rectangle
+  }
+  
+  Setup: "Setup Windows/Menus" {
+    shape: rectangle
+  }
+}
+
+Run: "Event Loop" {
+  Events: "Process Events" {
+    shape: rectangle
+  }
+  
+  Messages: "Handle Messages" {
+    shape: rectangle
+  }
+  
+  Render: "Update UI" {
+    shape: rectangle
+  }
+}
+
+Shutdown: "Shutdown" {
+  Cleanup: "Cleanup Resources" {
+    shape: rectangle
+  }
+  
+  Save: "Save State" {---
+
+**아키텍처에 대해 질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 문의하거나 [API 레퍼런스](/reference/overview)를 확인하세요.

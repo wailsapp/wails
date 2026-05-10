@@ -1,0 +1,266 @@
+---
+title: API do Gerenciador
+description: Estrutura de API organizada com interfaces de gerenciador focadas
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+A API do Gerenciador do Wails v3 oferece uma maneira organizada e descoberta de acessar a funcionalidade do aplicativo por meio de estruturas de gerenciador focadas. Esta nova estrutura de API agrupa métodos relacionados, mantendo total compatibilidade com a API tradicional do App.
+
+## Visão Geral
+
+A API do Gerenciador organiza a funcionalidade do aplicativo em onze áreas focadas:
+
+- **`app.Window`** - Criação, gerenciamento e callbacks de janelas
+- **`app.ContextMenu`** - Registro e gerenciamento de menus de contexto
+- **`app.KeyBinding`** - Gerenciamento de associações de teclas globais
+- **`app.Browser`** - Integração com navegador (abertura de URLs e arquivos)
+- **`app.Env`** - Informações de ambiente e estado do sistema
+- **`app.Dialog`** - Operações de diálogo de arquivos e mensagens
+- **`app.Event`** - Manipulação de eventos personalizados e eventos do aplicativo
+- **`app.Menu`** - Gerenciamento do menu do aplicativo
+- **`app.Screen`** - Gerenciamento de telas e transformações de coordenadas
+- **`app.Clipboard`** - Operações de texto da área de transferência
+- **`app.SystemTray`** - Criação e gerenciamento de ícones na bandeja do sistema
+
+## Benefícios
+
+- **Melhor descoberta** - O preenchimento automático do IDE mostra a superfície da API organizada
+- **Organização de código aprimorada** - Métodos relacionados agrupados
+- **Manutenibilidade aprimorada** - Separação de responsabilidades entre gerenciadores
+- **Extensibilidade futura** - Mais fácil adicionar novos recursos a áreas específicas
+
+## Uso
+
+A API do Gerenciador fornece acesso organizado a toda a funcionalidade do aplicativo:
+
+```go
+// Eventos e manipulação de eventos personalizados
+app.Event.Emit("custom", data)
+app.Event.On("custom", func(e *CustomEvent) { ... })
+
+// Gerenciamento de janelas
+window, _ := app.Window.GetByName("main")
+app.Window.OnCreate(func(window Window) { ... })
+
+// Integração com navegador
+app.Browser.OpenURL("https://wails.io")
+
+// Gerenciamento de menus
+menu := app.Menu.New()
+app.Menu.Set(menu)
+
+// Bandeja do sistema
+systray := app.SystemTray.New()
+```
+
+## Referência do Gerenciador
+
+### Gerenciador de Janelas
+
+Gerencia a criação, recuperação e callbacks de ciclo de vida de janelas.
+
+```go
+// Criar janelas
+window := app.Window.New()
+window := app.Window.NewWithOptions(options)
+current := app.Window.Current()
+
+// Encontrar janelas
+window, exists := app.Window.GetByName("main")
+windows := app.Window.GetAll()
+
+// Callbacks de janela
+app.Window.OnCreate(func(window Window) {
+    // Lidar com a criação da janela
+})
+```
+
+### Gerenciador de Eventos
+
+Lida com eventos personalizados e escuta de eventos do aplicativo.
+
+```go
+// Eventos personalizados
+app.Event.Emit("userAction", data)
+cancelFunc := app.Event.On("userAction", func(e *CustomEvent) {
+    // Lidar com o evento
+})
+app.Event.Off("userAction")
+app.Event.Reset() // Remover todos os ouvintes
+
+// Eventos do aplicativo
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *ApplicationEvent) {
+    // Lidar com a mudança de tema do sistema
+})
+```
+
+### Gerenciador de Navegador
+
+Fornece integração com navegador para abrir URLs e arquivos.
+
+```go
+// Abrir URLs e arquivos no navegador padrão
+err := app.Browser.OpenURL("https://wails.io")
+err := app.Browser.OpenFile("/path/to/document.pdf")
+```
+
+### Gerenciador de Ambiente
+
+Acesso a informações do ambiente do sistema.
+
+```go
+// Obter informações do ambiente
+env := app.Env.Info()
+fmt.Printf("OS: %s, Arch: %s\n", env.OS, env.Arch)
+
+// Verificar o tema do sistema
+if app.Env.IsDarkMode() {
+    // O modo escuro está ativo
+}
+
+// Abrir o gerenciador de arquivos
+err := app.Env.OpenFileManager("/path/to/folder", false)
+```
+
+### Gerenciador de Diálogos
+
+Acesso organizado a diálogos de arquivos e mensagens.
+
+```go
+// Diálogos de arquivos
+result, err := app.Dialog.OpenFile().
+    AddFilter("Text Files", "*.txt").
+    PromptForSingleSelection()
+
+result, err = app.Dialog.SaveFile().
+    SetDefaultFilename("document.txt").
+    PromptForSingleSelection()
+
+// Diálogos de mensagens
+app.Dialog.Info().
+    SetTitle("Information").
+    SetMessage("Operation completed successfully").
+    Show()
+
+app.Dialog.Error().
+    SetTitle("Error").  
+    SetMessage("An error occurred").
+    Show()
+```
+
+### Gerenciador de Menus
+
+Criação e gerenciamento de menus do aplicativo.
+
+```go
+// Criar e definir o menu do aplicativo
+menu := app.Menu.New()
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("New").OnClick(func(ctx *Context) {
+    // Lidar com o clique no menu
+})
+
+app.Menu.Set(menu)
+
+// Exibir diálogo Sobre
+app.Menu.ShowAbout()
+```
+
+### Gerenciador de Associações de Teclas
+
+Gerenciamento dinâmico de associações de teclas globais.
+
+```go
+// Adicionar associações de teclas
+app.KeyBinding.Add("ctrl+n", func(window *WebviewWindow) {
+    // Lidar com Ctrl+N
+})
+
+app.KeyBinding.Add("ctrl+q", func(window *WebviewWindow) {
+    app.Quit()
+})
+
+// Remover associações de teclas
+app.KeyBinding.Remove("ctrl+n")
+
+// Obter todas as associações
+bindings := app.KeyBinding.GetAll()
+```
+
+### Gerenciador de Menus de Contexto
+
+Gerenciamento avançado de menus de contexto (para autores de bibliotecas).
+
+```go
+// Criar e registrar menu de contexto
+menu := app.ContextMenu.New()
+app.ContextMenu.Add("myMenu", menu)
+
+// Recuperar menu de contexto
+menu, exists := app.ContextMenu.Get("myMenu")
+
+// Remover menu de contexto
+app.ContextMenu.Remove("myMenu")
+```
+
+### Gerenciador de Telas
+
+Gerenciamento de telas e transformações de coordenadas para configurações de múltiplos monitores.
+
+```go
+// Obter informações da tela
+screens := app.Screen.GetAll()
+primary := app.Screen.GetPrimary()
+
+// Transformações de coordenadas
+physicalPoint := app.Screen.DipToPhysicalPoint(logicalPoint)
+logicalPoint := app.Screen.PhysicalToDipPoint(physicalPoint)
+
+// Detecção de tela
+screen := app.Screen.ScreenNearestDipPoint(point)
+screen = app.Screen.ScreenNearestDipRect(rect)
+```
+
+### Gerenciador da Área de Transferência
+
+Operações da área de transferência para leitura e gravação de texto.
+
+```go
+// Definir texto na área de transferência
+success := app.Clipboard.SetText("Hello World")
+if !success {
+    // Lidar com o erro
+}
+
+// Obter texto da área de transferência
+text, ok := app.Clipboard.Text()
+if !ok {
+    // Lidar com o erro
+} else {
+    // Usar o texto
+}
+```
+
+### Gerenciador da Bandeja do Sistema
+
+Criação e gerenciamento de ícones na bandeja do sistema.
+
+```go
+// Criar bandeja do sistema
+systray := app.SystemTray.New()
+systray.SetLabel("My App")
+systray.SetIcon(iconBytes)
+
+// Adicionar menu à bandeja do sistema
+menu := app.Menu.New()
+menu.Add("Open").OnClick(func(ctx *Context) {
+    // Lidar com o clique
+})
+systray.SetMenu(menu)
+
+// Destruir a bandeja do sistema quando terminar
+systray.Destroy()
+```

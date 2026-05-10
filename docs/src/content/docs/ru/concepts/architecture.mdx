@@ -1,0 +1,328 @@
+---
+title: Как работает Wails
+description: Понимание архитектуры Wails и того, как достигается нативная производительность
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails — это фреймворк для создания десктопных приложений, использующий **Go для бэкенда** и **веб-технологии для фронтенда**. Но в отличие от Electron, Wails не включает в себя браузер, а использует **нативный WebView операционной системы**.
+
+```d2
+direction: right
+
+User: "User" {
+  shape: person
+  style.fill: "#3B82F6"
+}
+
+Application: "Your Wails Application" {
+  Frontend: "Frontend\n(HTML/CSS/JS)" {
+    shape: rectangle
+    style.fill: "#8B5CF6"
+  }
+  
+  Runtime: "Wails Runtime" {
+    Bridge: "Message Bridge" {
+      shape: diamond
+      style.fill: "#10B981"
+    }
+    
+    Bindings: "Type-Safe Bindings" {
+      shape: rectangle
+      style.fill: "#10B981"
+    }
+  }
+  
+  Backend: "Go Backend" {
+    Services: "Your Services" {
+      shape: rectangle
+      style.fill: "#00ADD8"
+    }
+    
+    NativeAPIs: "OS APIs" {
+      shape: rectangle
+      style.fill: "#00ADD8"
+    }
+  }
+}
+
+OS: "Operating System" {
+  WebView: "Native WebView\n(WebKit/WebView2/WebKitGTK)" {
+    shape: rectangle
+    style.fill: "#6B7280"
+  }
+  
+  SystemAPIs: "System APIs\n(Windows/macOS/Linux)" {
+    shape: rectangle
+    style.fill: "#6B7280"
+  }
+}
+
+User -> Application.Frontend: "Interacts with UI"
+Application.Frontend <-> Application.Runtime.Bridge: "JSON messages"
+Application.Runtime.Bridge <-> Application.Backend.Services: "Direct function calls"
+Application.Runtime.Bindings -> Application.Frontend: "TypeScript definitions"
+Application.Frontend -> OS.WebView: "Renders in"
+Application.Backend.NativeAPIs -> OS.SystemAPIs: "Native calls"
+```
+
+**Ключевые отличия от Electron:**
+
+| Аспект | Wails | Electron |
+|--------|-------|----------|
+| **Браузер** | WebView от ОС | Встроенный Chromium (~100 МБ) |
+| **Бэкенд** | Go (скомпилированный) | Node.js (интерпретируемый) |
+| **Коммуникация** | Мост в памяти | IPC (межпроцессное взаимодействие) |
+| **Размер бандла** | ~15 МБ | ~150 МБ |
+| **Память** | ~10 МБ | ~100 МБ+ |
+| **Запуск** | &lt;0.5 с | 2–3 с |
+
+## Основные компоненты
+
+### 1. Нативный WebView
+
+Wails использует встроенный движок рендеринга веб-страниц операционной системы:
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+    **WebView2** (Microsoft Edge WebView2)
+    - Основан на Chromium (тот же, что и в браузере Edge)
+    - Предустановлен в Windows 10/11
+    - Автоматические обновления через Windows Update
+    - Полная поддержка современных веб-стандартов
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **WebKit** (движок рендеринга Safari)
+    - Встроен в macOS
+    - Тот же движок, что и в браузере Safari
+    - Отличная производительность и энергоэффективность
+    - Полная поддержка современных веб-стандартов
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **WebKitGTK** (GTK-порт WebKit)
+    - Устанавливается через менеджер пакетов
+    - Тот же движок, что и в GNOME Web (Epiphany)
+    - Хорошая поддержка стандартов
+    - Легковесный и производительный
+  </TabItem>
+</Tabs>
+
+**Почему это важно:**
+- **Нет встроенного браузера** → Меньший размер приложения
+- **Нативный для ОС** → Лучшая интеграция и производительность
+- **Автообновления** → Патчи безопасности из обновлений ОС
+- **Привычный рендеринг** → Тот же, что и в системном браузере
+
+### 2. Мост Wails (Wails Bridge)
+
+Мост — это сердце Wails, обеспечивающее **прямую коммуникацию** между Go и JavaScript.
+
+```d2
+direction: down
+
+Frontend: "Frontend (JavaScript)" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+Bridge: "Wails Bridge" {
+  Encoder: "JSON Encoder" {
+    shape: rectangle
+  }
+  
+  Router: "Method Router" {
+    shape: diamond
+    style.fill: "#10B981"
+  }
+  
+  Decoder: "JSON Decoder" {
+    shape: rectangle
+  }
+}
+
+Backend: "Backend (Go)" {
+  Services: "Registered Services" {
+    shape: rectangle
+    style.fill: "#00ADD8"
+  }
+}
+
+Frontend -> Bridge.Encoder: "1. Call Go method\nGreet('Alice')"
+Bridge.Encoder -> Bridge.Router: "2. Encode to JSON\n{method: 'Greet', args: ['Alice']}"
+Bridge.Router -> Backend.Services: "3. Route to service\nGreetService.Greet('Alice')"
+Backend.Services -> Bridge.Decoder: "4. Return result\n'Hello, Alice!'"
+Bridge.Decoder -> Frontend: "5. Decode to JS\nPromise resolves"
+```
+
+**Как это работает:**
+
+1. **Фронтенд вызывает метод Go** (через автоматически сгенерированное связывание)
+2. **Мост кодирует вызов** в JSON (имя метода + аргументы)
+3. **Маршрутизатор находит метод Go** в зарегистрированных сервисах
+4. **Метод Go выполняется** и возвращает значение
+5. **Мост декодирует результат** и отправляет его обратно на фронтенд
+6. **Promise разрешается** в JavaScript с результатом
+
+**Характеристики производительности:**
+- **В памяти**: Нет накладных расходов сети, нет HTTP
+- **Zero-copy** там, где это возможно (для больших данных)
+- **Асинхронно по умолчанию**: Неблокирующе с обеих сторон
+- **Типобезопасно**: Автоматически генерируются определения TypeScript
+
+### 3. Система сервисов
+
+Сервисы — это рекомендуемый способ экспорта функциональности Go на фронтенд.
+
+```go
+// Define a service (just a regular Go struct)
+type GreetService struct {
+    prefix string
+}
+
+// Methods with exported names are automatically available
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+
+func (g *GreetService) GetTime() time.Time {
+    return time.Now()
+}
+
+// Register the service
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&GreetService{prefix: "Hello, "}),
+    },
+})
+```
+
+**Обнаружение сервисов:**
+- Wails **сканирует вашу структуру** при запуске
+- **Экспортируемые методы** становятся доступными для вызова из фронтенда
+- **Информация о типах** извлекается для связываний TypeScript
+- **Обработка ошибок** автоматическая (ошибки Go → исключения JS)
+
+**Сгенерированное связывание TypeScript:**
+```typescript
+// Auto-generated in frontend/bindings/GreetService.ts
+export function Greet(name: string): Promise<string>
+export function GetTime(): Promise<Date>
+```
+
+**Почему сервисы?**
+- **Типобезопасность**: Полная поддержка TypeScript
+- **Автообнаружение**: Не требуется ручная регистрация методов
+- **Организованность**: Группировка связанной функциональности
+- **Тестируемость**: Сервисы — это обычные структуры Go
+
+[Подробнее о сервисах →](/features/bindings/services)
+
+### 4. Система событий
+
+События обеспечивают **pub/sub коммуникацию** между компонентами.
+
+```d2
+direction: right
+
+GoService: "Go Service" {
+  shape: rectangle
+  style.fill: "#00ADD8"
+}
+
+EventBus: "Event Bus" {
+  shape: cylinder
+  style.fill: "#10B981"
+}
+
+Frontend1: "Window 1" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+Frontend2: "Window 2" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+GoService -> EventBus: "Emit('data-updated', data)"
+EventBus -> Frontend1: "Notify subscribers"
+EventBus -> Frontend2: "Notify subscribers"
+Frontend1 -> EventBus: "On('data-updated', handler)"
+Frontend2 -> EventBus: "On('data-updated', handler)"
+```
+
+**Сценарии использования:**
+- **Коммуникация между окнами**: Одно окно уведомляет другие
+- **Фоновые задачи**: Сервис Go уведомляет UI о прогрессе
+- **Синхронизация состояния**: Поддержание синхронности нескольких окон
+- **Слабая связанность**: Компонентам не нужны прямые ссылки друг на друга
+
+**Пример:**
+```go
+// Go: Emit an event
+app.Event.Emit("user-logged-in", user)
+```
+
+```javascript
+// JavaScript: Listen for event
+import { Events } from '@wailsio/runtime'
+
+Events.On('user-logged-in', (user) => {
+    console.log('User logged in:', user)
+})
+```
+
+[Подробнее о событиях →](/features/events/system)
+
+## Жизненный цикл приложения
+
+Понимание жизненного цикла помогает знать, когда инициализировать ресурсы и очищать их.
+
+```d2
+direction: down
+
+Start: "Application Start" {
+  shape: oval
+  style.fill: "#10B981"
+}
+
+Init: "Initialisation" {
+  Create: "Create Application" {
+    shape: rectangle
+  }
+  
+  Register: "Register Services" {
+    shape: rectangle
+  }
+  
+  Setup: "Setup Windows/Menus" {
+    shape: rectangle
+  }
+}
+
+Run: "Event Loop" {
+  Events: "Process Events" {
+    shape: rectangle
+  }
+  
+  Messages: "Handle Messages" {
+    shape: rectangle
+  }
+  
+  Render: "Update UI" {
+    shape: rectangle
+  }
+}
+
+Shutdown: "Shutdown" {
+  Cleanup: "Cleanup Resources" {
+    shape: rectangle
+  }
+  
+  Save: "Save State" {---
+
+**Вопросы об архитектуре?** Задавайте их в [Discord](https://discord.gg/JDdSxwjhGf) или смотрите [справочник API](/reference/overview).

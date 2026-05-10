@@ -93,10 +93,6 @@ func (w *linuxWebviewWindow) setCloseButtonEnabled(enabled bool) {
 	//	C.enableCloseButton(w.nsWindow, C.bool(enabled))
 }
 
-func (w *linuxWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
-	// Not implemented
-}
-
 func (w *linuxWebviewWindow) setMinimiseButtonEnabled(enabled bool) {
 	//C.enableMinimiseButton(w.nsWindow, C.bool(enabled))
 }
@@ -385,7 +381,7 @@ func (w *linuxWebviewWindow) run() {
 
 	w.setURL(startURL)
 	w.parent.OnWindowEvent(events.Linux.WindowLoadFinished, func(_ *WindowEvent) {
-		InvokeAsync(func() {
+		gtkDispatch(func() {
 			if w.parent.options.JS != "" {
 				w.execJS(w.parent.options.JS)
 			}
@@ -415,11 +411,6 @@ func (w *linuxWebviewWindow) run() {
 			w.openDevTools()
 		}
 	}
-}
-
-func (w *linuxWebviewWindow) startResize(border string) error {
-	// FIXME: what do we need to do here?
-	return nil
 }
 
 func (w *linuxWebviewWindow) nativeWindow() unsafe.Pointer {
@@ -453,6 +444,9 @@ func (w *linuxWebviewWindow) setMaximiseButtonState(state ButtonState) {}
 
 // SetCloseButtonState is unsupported on Linux
 func (w *linuxWebviewWindow) setCloseButtonState(state ButtonState) {}
+
+// SetFullscreenButtonState is unsupported on Linux
+func (w *linuxWebviewWindow) setFullscreenButtonState(state ButtonState) {}
 
 func (w *linuxWebviewWindow) isIgnoreMouseEvents() bool {
 	return w.ignoreMouseEvents

@@ -1,0 +1,258 @@
+---
+title: Ваше первое приложение
+description: Пошаговое создание вашего первого десктопного приложения на Wails
+sidebar:
+  order: 20
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import { Badge } from '@astrojs/starlight/components';
+import { Steps } from "@astrojs/starlight/components";
+import { FileTree } from '@astrojs/starlight/components';
+
+import wails_init from '../../../../assets/wails_init.mp4';
+import wails_build from '../../../../assets/wails_build.mp4';
+import wails_dev from '../../../../assets/wails_dev.mp4';
+
+
+Это руководство показывает, как создать ваше первое приложение на Wails v3, охватывая настройку проекта, сборку и рабочий процесс разработки.
+
+<br/>
+<br/>
+
+<Steps>
+
+1.  ## Создание нового проекта
+
+    Откройте терминал и выполните следующую команду для создания нового проекта Wails:
+
+    ```bash
+    wails3 init -n myfirstapp
+    ```
+
+    Эта команда создаст новую директорию с именем `myfirstapp` со всеми необходимыми файлами.
+
+      <video src={wails_init} controls></video> 
+
+2.  ## Изучение структуры проекта
+
+    Перейдите в директорию `myfirstapp`. Вы найдете несколько файлов и папок:
+
+    <FileTree>
+    - build/           Содержит файлы, используемые процессом сборки
+        - appicon.png  Иконка приложения
+        - config.yml   Конфигурация сборки
+        - Taskfile.yml Задачи сборки
+        - darwin/      Файлы сборки, специфичные для macOS
+            - Info.dev.plist Конфигурация для разработки
+            - Info.plist    Конфигурация для продакшена
+            - Taskfile.yml  Задачи сборки для macOS
+            - icons.icns    Иконка приложения для macOS
+        - linux/       Файлы сборки, специфичные для Linux
+            - Taskfile.yml  Задачи сборки для Linux
+            - appimage/     Упаковка AppImage
+                - build.sh  Скрипт сборки AppImage
+            - nfpm/        Упаковка NFPM
+                - nfpm.yaml Конфигурация пакета
+                - scripts/  Скрипты сборки
+        - windows/     Файлы сборки, специфичные для Windows
+            - Taskfile.yml        Задачи сборки для Windows
+            - icon.ico           Иконка приложения для Windows
+            - info.json          Метаданные приложения
+            - wails.exe.manifest Файл манифеста Windows
+            - nsis/              Файлы установщика NSIS
+                - project.nsi                    Файл проекта NSIS
+                - wails_tools.nsh               Вспомогательные скрипты NSIS
+    - frontend/        Файлы фронтенд-приложения
+        - index.html   Основной HTML-файл
+        - main.js      Основной JavaScript-файл
+        - package.json Конфигурация пакета NPM
+        - public/      Статические ресурсы
+        - Inter Font License.txt Лицензия на шрифт
+    - .gitignore      Файл игнорирования Git
+    - README.md       Документация проекта
+    - Taskfile.yml    Задачи проекта
+    - go.mod          Файл модуля Go
+    - go.sum          Контрольные суммы модуля Go
+    - greetservice.go Сервис приветствия
+    - main.go         Основной код приложения
+    </FileTree>
+
+    Уделите немного времени изучению этих файлов и ознакомьтесь со структурой.
+
+    :::note
+    Хотя Wails v3 использует [Task](https://taskfile.dev/) в качестве системы сборки по умолчанию, ничто не мешает вам использовать `make` или любую другую альтернативную систему сборки.
+    :::
+
+3.  ## Сборка вашего приложения
+
+    Чтобы собрать ваше приложение, выполните:
+
+    ```bash
+    wails3 build
+    ```
+
+    Эта команда компилирует отладочную версию вашего приложения и сохраняет её в новой директории `bin`.
+
+    :::note
+    `wails3 build` — это сокращение для `wails3 task build` и выполнит задачу `build` в `Taskfile.yml`.
+    :::
+
+        <video src={wails_build} controls></video> 
+
+
+    После сборки вы можете запустить её так же, как любое обычное приложение:
+
+
+    <Tabs syncKey="platform">
+
+      <TabItem label="Mac" icon="apple">
+
+        ```sh
+        ./bin/myfirstapp
+        ```
+
+          </TabItem>
+
+      <TabItem label="Windows" icon="seti:windows">
+
+        ```sh
+        bin\myfirstapp.exe
+        ```
+
+          </TabItem>
+
+      <TabItem label="Linux" icon="linux">
+
+        ```sh
+        ./bin/myfirstapp
+        ```
+
+          </TabItem>
+
+    </Tabs>
+
+    Вы увидите простой интерфейс, который является отправной точкой для вашего приложения. Поскольку это отладочная версия, вы также увидите логи в окне консоли. Это полезно для целей отладки.
+
+4.  ## Режим разработки
+
+    Мы также можем запустить приложение в режиме разработки. Этот режим позволяет вносить изменения в код фронтенда и видеть эти изменения в работающем приложении без необходимости пересобирать всё приложение заново.
+
+    1. Откройте новое окно терминала.
+    2. Запустите `wails3 dev`. Приложение скомпилируется и запустится в режиме отладки.
+    3. Откройте `frontend/index.html` в вашем любимом редакторе.
+    4. Измените код и замените `Please enter your name below` на
+       `Please enter your name below!!!`.
+    5. Сохраните файл.
+
+    Это изменение отобразится в вашем приложении немедленно.
+
+    Любые изменения в коде бэкенда вызовут пересборку:
+
+    1. Откройте `greetservice.go`.
+    2. Измените строку `return "Hello " + name + "!"` на
+       `return "Hello there " + name + "!"`.
+    3. Сохраните файл.
+
+    Приложение обновится в течение нескольких секунд.
+
+        <video src={wails_dev} controls></video>
+
+5.  ## Упаковка вашего приложения
+
+        Когда ваше приложение готово к распространению, вы можете создать пакеты, специфичные для платформы:
+
+          <Tabs syncKey="platform">
+
+    <TabItem label="Mac" icon="apple">
+
+              Чтобы создать бандл `.app`:
+
+              ```bash
+              wails3 package
+              ```
+
+              Это создаст сборку для продакшена и упакует её в бандл `.app` в директории `bin`.
+
+            </TabItem>
+            <TabItem label="Windows" icon="seti:windows">
+
+              Чтобы создать установщик NSIS:
+
+              ```bash
+              wails3 package
+              ```
+
+              Это создаст сборку для продакшена и упакует её в установщик NSIS в директории `bin`.
+
+            </TabItem>
+            <TabItem label="Linux" icon="linux">
+
+              Wails поддерживает несколько форматов пакетов для распространения в Linux:
+
+              ```bash
+              # Создать все типы пакетов (AppImage, deb, rpm и Arch Linux)
+              wails3 package
+
+              # Или создать конкретные типы пакетов
+              wails3 task linux:create:appimage  # Формат AppImage
+              wails3 task linux:create:deb       # Пакет Debian
+              wails3 task linux:create:rpm       # Пакет Red Hat
+              wails3 task linux:create:aur       # Пакет Arch Linux
+              ```
+
+            </TabItem>
+
+          </Tabs>
+
+        Для получения более подробной информации о вариантах упаковки и конфигурации,
+        ознакомьтесь с нашим [Руководством по упаковке](/guides/packaging).
+
+6.  ## Настройка системы контроля версий и имени модуля
+
+    Ваш проект создается с именем модуля-заполнителя `changeme`. Рекомендуется обновить его, чтобы оно соответствовало URL вашего репозитория:
+
+    1. Создайте новый репозиторий на GitHub (или на предпочитаемой вами платформе Git)
+    2. Инициализируйте git в директории вашего проекта:
+       ```bash
+       git init
+       git add .
+       git commit -m "Initial commit"
+       ```
+    3. Укажите удаленный репозиторий (замените на URL вашего репозитория):
+       ```bash
+       git remote add origin https://github.com/username/myfirstapp.git
+       ```
+    4. Обновите имя модуля в `go.mod`, чтобы оно соответствовало URL вашего репозитория:
+       ```bash
+       go mod edit -module github.com/username/myfirstapp
+       ```
+    5. Отправьте ваш код:
+       ```bash
+       git push -u origin main
+       ```
+
+    Это гарантирует, что имя вашего Go-модуля соответствует соглашениям об именовании модулей Go и облегчает обмен вашим кодом.:::tip[Совет]
+Вы можете автоматизировать все шаги инициализации, используя флаг `-git` при создании проекта:
+```bash
+wails3 init -n myfirstapp -git github.com/username/myfirstapp
+```
+Эта команда поддерживает различные форматы URL Git:
+- HTTPS: `https://github.com/username/project`
+- SSH: `git@github.com:username/project` или `ssh://git@github.com/username/project`
+- Протокол Git: `git://github.com/username/project`
+- Файловая система: `file:///path/to/project.git`
+:::
+
+</Steps>
+
+## Поздравляем!
+
+Вы только что создали, разработали и упаковали своё первое приложение на Wails.
+Это лишь начало того, чего вы можете достичь с помощью Wails v3.
+
+## Следующие шаги
+
+Если вы новичок в Wails, мы рекомендуем прочитать наши Уроки, которые станут практическим руководством по различным функциям Wails. Первый урок — [Создание сервиса](/tutorials/01-creating-a-service).
+
+Если вы более продвинутый пользователь, ознакомьтесь с нашими [Руководствами](/guides) для получения более подробной информации о том, как использовать Wails.

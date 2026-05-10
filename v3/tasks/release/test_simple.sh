@@ -14,7 +14,7 @@ cat > UNRELEASED_CHANGELOG.md << 'EOF'
 # Unreleased Changes
 
 <!-- 
-This file is used to collect changelog entries for the next v3-alpha release.
+This file is used to collect changelog entries for the next v3 alpha release.
 -->
 
 ## Added

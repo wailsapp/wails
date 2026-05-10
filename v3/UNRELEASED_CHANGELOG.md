@@ -1,7 +1,7 @@
 # Unreleased Changes
 
 <!-- 
-This file is used to collect changelog entries for the next v3-alpha release.
+This file is used to collect changelog entries for the next v3 alpha release.
 Add your changes under the appropriate sections below.
 
 Guidelines:
@@ -20,10 +20,11 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5384) by @github-actions[bot]
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix data race in ScreenManager that causes WebKit DisplayLink deadlock on display configuration change (e.g. external monitor hot-plug during sleep/wake)
+- Use lastSizeWParam to gate menubar redraws on Windows in [PR](https://github.com/wailsapp/wails/pull/5382) by @taliesin-ai
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
