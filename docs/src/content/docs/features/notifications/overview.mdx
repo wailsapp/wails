@@ -9,7 +9,19 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 ## Introduction
 
-Wails provides a comprehensive cross-platform notification system for desktop applications. This service allows you to display native system notifications, with support for interactive elements like action buttons and text input fields.
+Wails provides a comprehensive cross-platform notification system for desktop applications. This service allows you to display native system notifications, with support for:
+
+- Basic notifications with title, subtitle, and body
+- Interactive notifications with action buttons and text replies
+- Reusable [notification categories](#interactive-notifications) for actions
+- Custom [sounds](#custom-sound) (default, silent, or named)
+- [Attachments](#attachments) (images on every platform; audio/video on macOS)
+- [Grouping related notifications](#threading-and-grouping) by `ThreadID`
+- [Priority](#interruption-level) via `InterruptionLevel` (`passive` / `active` / `timeSensitive` / `critical`)
+- [Scheduled delivery](#scheduled-delivery) (native on macOS; in-process timer on Windows + Linux)
+- [Updating an in-flight notification](#updating-notifications) by ID
+
+Each new optional field gracefully degrades when a platform cannot honour it; see [Platform Considerations](#platform-considerations) for the per-feature support matrix.
 
 ## Basic Usage
 
@@ -144,48 +156,196 @@ notifier.SendNotification(notifications.NotificationOptions{
         "timestamp": "2025-03-10T15:30:00Z",
     }
 })
-
 ```
+
+### Custom Sound
+
+Use `Sound` to control the audio played when a notification is delivered. Leaving it `nil` plays the platform default; set `Silent: true` to suppress sound; set `Name` to play a named/bundled sound.
+
+```go
+// Silent
+notifier.SendNotification(notifications.NotificationOptions{
+    ID:    "silent-id",
+    Title: "Background sync complete",
+    Sound: &notifications.NotificationSound{Silent: true},
+})
+
+// Named sound
+notifier.SendNotification(notifications.NotificationOptions{
+    ID:    "named-id",
+    Title: "New message",
+    Body:  "Tap to read",
+    Sound: &notifications.NotificationSound{Name: "Ping"},
+})
+```
+
+How `Name` is resolved per platform:
+
+- **macOS** — `Name` is passed to `[UNNotificationSound soundNamed:]`; the audio file must live under your app bundle's `Library/Sounds`.
+- **Windows** — if `Name` already begins with `ms-winsoundevent:` or `ms-appx:`, it is used as-is; otherwise it is wrapped in `ms-winsoundevent:` for use as a built-in toast event name (see Microsoft's toast `<audio>` schema documentation).
+- **Linux** — forwarded as the freedesktop `sound-name` hint; whether it plays depends on the active notification daemon and sound theme.
+
+### Attachments
+
+`Attachments` adds media files alongside a notification. macOS supports multiple attachments of any media type; Windows and Linux honour the first image-typed attachment.
+
+```go
+notifier.SendNotification(notifications.NotificationOptions{
+    ID:    "image-id",
+    Title: "Photo uploaded",
+    Body:  "Tap to view",
+    Attachments: []notifications.NotificationAttachment{
+        {
+            ID:   "preview",
+            Path: "/absolute/path/to/image.png",
+            // Type hint:
+            //   macOS:   UTI like "public.png" / "public.audio" (often inferred)
+            //   Windows: "hero" | "appLogoOverride" | "inline" (default "inline")
+            //   Linux:   ignored
+            Type: "inline",
+        },
+    },
+})
+```
+
+`Path` must be an absolute filesystem path. macOS additionally accepts `file://` URLs.
+
+### Threading and Grouping
+
+`ThreadID` groups related notifications together so the OS can collapse them in Notification Center / Action Center.
+
+```go
+notifier.SendNotification(notifications.NotificationOptions{
+    ID:       "msg-42",
+    Title:    "Jane Doe",
+    Body:     "Are you free for lunch?",
+    ThreadID: "chat:jane.doe",
+})
+```
+
+### Interruption Level
+
+`InterruptionLevel` controls notification priority. Use one of the exported constants:
+
+```go
+notifier.SendNotification(notifications.NotificationOptions{
+    ID:                "alert-id",
+    Title:             "Server down",
+    Body:              "Investigate immediately",
+    InterruptionLevel: notifications.InterruptionLevelTimeSensitive,
+})
+```
+
+| Constant                                     | Value             | Meaning                                                              |
+|----------------------------------------------|-------------------|----------------------------------------------------------------------|
+| `InterruptionLevelPassive`                   | `"passive"`       | Quiet delivery; will not light up the screen or play a default sound |
+| `InterruptionLevelActive`                    | `"active"`        | Default level                                                        |
+| `InterruptionLevelTimeSensitive`             | `"timeSensitive"` | Breaks through Focus / Do Not Disturb where allowed                  |
+| `InterruptionLevelCritical`                  | `"critical"`      | Bypasses Focus and ringer; macOS requires the Critical Alert entitlement (silently degrades without it) |
+
+Per-platform mapping:
+
+- **macOS** — sets `UNNotificationContent.interruptionLevel`. `critical` requires macOS 12+ and the Critical Alert entitlement.
+- **Windows** — maps to the toast `<toast scenario="...">` attribute.
+- **Linux** — maps to the freedesktop `urgency` hint.
+
+### Scheduled Delivery
+
+`Schedule` defers delivery. Set exactly one of `DelaySeconds` (seconds from now) or `At` (Unix seconds, UTC).
+
+```go
+// Deliver in 60 seconds
+notifier.SendNotification(notifications.NotificationOptions{
+    ID:       "reminder-id",
+    Title:    "Stand up and stretch",
+    Schedule: &notifications.NotificationSchedule{DelaySeconds: 60},
+})
+
+// Deliver at an absolute time
+notifier.SendNotification(notifications.NotificationOptions{
+    ID:       "alarm-id",
+    Title:    "Meeting in 5 minutes",
+    Schedule: &notifications.NotificationSchedule{At: time.Now().Add(time.Hour).Unix()},
+})
+```
+
+:::caution[Persistence]
+On **macOS**, scheduled notifications use a native trigger and survive app restarts. On **Windows** and **Linux**, scheduling falls back to an in-process `time.AfterFunc` timer and is **lost if the app exits before delivery** — neither `wintoast` nor the freedesktop spec exposes a deferred-delivery primitive.
+:::
+
+### Updating Notifications
+
+`UpdateNotification` replaces an in-flight notification with the same `ID`:
+
+```go
+notifier.UpdateNotification(notifications.NotificationOptions{
+    ID:    "download-id",
+    Title: "Download complete",
+    Body:  "report.pdf is ready",
+})
+```
+
+Per-platform behaviour:
+
+- **macOS** — `UNUserNotificationCenter` auto-deduplicates by identifier, so the existing notification is updated in place.
+- **Linux** — uses the D-Bus `replaces_id` parameter to replace the previous notification.
+- **Windows** — currently redelivers as a new notification. True in-place replace requires upstream `wintoast` support for `tag` / `group`.
 
 ## Platform Considerations
 
 <Tabs>
   <TabItem label="macOS" icon="fa-brands:apple">
-    
+
     On macOS, notifications:
-    
+
     - Require user authorization
-    - Require the app to be notorized for distribution
+    - Require the app to be packaged and signed (notarized for distribution)
     - Use system-standard notification appearances
-    - Support `subtitle`
-    - Support user text input
+    - Support `Subtitle`
+    - Support user text input (replies)
     - Support the `Destructive` action option
+    - Support multiple `Attachments` of any media type (images, audio, video)
+    - Support `ThreadID` for grouping in Notification Center
+    - Support all `InterruptionLevel` values (`critical` requires the Critical Alert entitlement)
+    - Support native scheduled delivery that survives app restarts
+    - Auto-deduplicate `UpdateNotification` calls by `ID`
     - Automatically handle dark/light mode
-    
+
   </TabItem>
-  
+
   <TabItem label="Windows" icon="fa-brands:windows">
-    
+
     On Windows, notifications:
-    
-    - Use Windows system toast styles
+
+    - Use Windows system toast styles via the `wintoast` backend
     - Adapt to Windows theme settings
-    - Support user text input
+    - Support user text input (replies)
     - Support high DPI displays
-    - Do not support `subtitle`
-    
+    - Do not support `Subtitle`
+    - Support a single image `Attachment` with placement hint `hero`, `appLogoOverride`, or `inline` (default `inline`)
+    - Support `ThreadID` for grouping in Action Center
+    - Support `InterruptionLevel` via the toast `scenario` attribute
+    - Support scheduled delivery via an in-process timer — **scheduled notifications are lost if the app exits before delivery**
+    - `UpdateNotification` currently redelivers as a new notification (true in-place replace pending upstream `wintoast` `tag`/`group` support)
+
   </TabItem>
-  
+
   <TabItem label="Linux" icon="fa-brands:linux">
-    
-    On Linux, dialog behaviour depends on the desktop environment:
-    
-    - Use native notifications when available
+
+    On Linux, notification behaviour depends on the desktop environment:
+
+    - Use native notifications via D-Bus `org.freedesktop.Notifications` when available
     - Follow desktop environment theme
     - Position according to desktop environment rules
-    - Support `subtitle`
-    - Do not support user text input
-    
+    - Support `Subtitle` (concatenated into the body for daemons that don't render it separately)
+    - Do not support user text input (not part of the freedesktop spec)
+    - Support a single image `Attachment` via the `image-path` hint
+    - Support `ThreadID` (handled by the daemon where supported)
+    - `Sound.Name` is forwarded as the `sound-name` hint; whether it plays depends on the active daemon and sound theme
+    - Map `InterruptionLevel` to the freedesktop `urgency` hint
+    - Support scheduled delivery via an in-process timer — **scheduled notifications are lost if the app exits before delivery**
+    - `UpdateNotification` uses the D-Bus `replaces_id` parameter to replace the previous notification in place
+
   </TabItem>
 </Tabs>
 
@@ -197,7 +357,7 @@ notifier.SendNotification(notifications.NotificationOptions{
 2. Provide clear and concise notifications:
    - Use descriptive titles, subtitles, text, and action titles
 
-3. Handle dialog responses appropriately:
+3. Handle notification responses appropriately:
    - Check for errors in notification responses
    - Provide feedback for user actions
 
@@ -225,10 +385,11 @@ Explore this example:
 | `CheckNotificationAuthorization()`           | Checks current notification authorization status (macOS)   |
 
 ### Sending Notifications
-| Method                                                     | Description                                       |
-|------------------------------------------------------------|---------------------------------------------------|
-| `SendNotification(options NotificationOptions)`            | Sends a basic notification                        |
-| `SendNotificationWithActions(options NotificationOptions)` | Sends an interactive notification with actions    |
+| Method                                                     | Description                                                                 |
+|------------------------------------------------------------|-----------------------------------------------------------------------------|
+| `SendNotification(options NotificationOptions)`            | Sends a basic notification                                                  |
+| `SendNotificationWithActions(options NotificationOptions)` | Sends an interactive notification with actions                              |
+| `UpdateNotification(options NotificationOptions)`          | Updates an in-flight notification by `ID` (see [Updating Notifications](#updating-notifications)) |
 
 ### Notification Categories
 | Method                                                        | Description                                       |
@@ -255,13 +416,73 @@ Explore this example:
 #### NotificationOptions
 ```go
 type NotificationOptions struct {
-    ID         string                 // Unique identifier for the notification
-    Title      string                 // Main notification title
+    ID         string                 // Unique identifier for the notification (required)
+    Title      string                 // Main notification title (required)
     Subtitle   string                 // Subtitle text (macOS and Linux only)
     Body       string                 // Main notification content
     CategoryID string                 // Category identifier for interactive notifications
     Data       map[string]interface{} // Custom data to associate with the notification
+
+    // Sound controls the sound played on delivery. nil = platform default.
+    Sound *NotificationSound
+
+    // Attachments are media files shown alongside the notification.
+    // macOS supports multiple attachments of any media type;
+    // Windows and Linux honour the first image-typed attachment.
+    Attachments []NotificationAttachment
+
+    // ThreadID groups related notifications together in
+    // Notification Center / Action Center / the Linux notification daemon.
+    ThreadID string
+
+    // InterruptionLevel controls priority. One of "passive",
+    // "active" (default), "timeSensitive", "critical".
+    InterruptionLevel string
+
+    // Schedule defers delivery. macOS uses a native trigger that survives
+    // restarts; Windows and Linux use an in-process timer that does NOT.
+    Schedule *NotificationSchedule
 }
+```
+
+#### NotificationSound
+```go
+type NotificationSound struct {
+    Silent bool   // If true, no sound is played
+    Name   string // Named/bundled sound (see "Custom Sound" above)
+}
+```
+
+#### NotificationAttachment
+```go
+type NotificationAttachment struct {
+    ID   string // Optional identifier
+    Path string // Absolute filesystem path (macOS also accepts file:// URLs)
+    // Type is an optional placement/UTI hint:
+    //   macOS:   UTI like "public.png" / "public.audio" (often inferred)
+    //   Windows: "hero" | "appLogoOverride" | "inline" (default "inline")
+    //   Linux:   ignored (always image-path hint)
+    Type string
+}
+```
+
+#### NotificationSchedule
+```go
+// Exactly one of DelaySeconds or At must be set. At is Unix seconds (UTC).
+type NotificationSchedule struct {
+    DelaySeconds int   // Seconds from now until delivery
+    At           int64 // Absolute Unix timestamp (seconds, UTC)
+}
+```
+
+#### InterruptionLevel constants
+```go
+const (
+    InterruptionLevelPassive       = "passive"
+    InterruptionLevelActive        = "active" // default
+    InterruptionLevelTimeSensitive = "timeSensitive"
+    InterruptionLevelCritical      = "critical"
+)
 ```
 
 #### NotificationCategory 
