@@ -1,0 +1,303 @@
+---
+title: 通知
+description: アクションボタンとテキスト入力付きのネイティブシステム通知を表示する
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## はじめに
+
+Wails は、デスクトップアプリケーション向けの包括的なクロスプラットフォーム通知システムを提供します。このサービスを使用すると、アクションボタンやテキスト入力フィールドなどのインタラクティブ要素をサポートしたネイティブシステム通知を表示できます。
+
+## 基本的な使用方法
+
+### サービスの初期化
+
+まず、通知サービスを初期化します:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/notifications"
+
+// 新しい通知サービスを作成
+notifier := notifications.New()
+
+// アプリケーションにサービスを登録
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(notifier),
+    },
+})
+```
+
+## 通知の承認
+
+macOS では、通知にはユーザーの承認が必要です。承認をリクエストし、確認します:
+
+```go
+authorized, err := notifier.CheckNotificationAuthorization()
+if err != nil {
+    // 承認エラーの処理
+}
+if authorized {
+    // 通知を送信
+} else {
+    // 承認をリクエスト
+    authorized, err = notifier.RequestNotificationAuthorization()
+}
+```
+Windows および Linux では、常に `true` が返されます。
+
+## 通知の種類
+
+### 基本的な通知
+
+一意の ID、タイトル、オプションのサブタイトル（macOS および Linux）、本文テキストを含む基本的な通知をユーザーに送信します:
+
+```go
+notifier.SendNotification(notifications.NotificationOptions{
+    ID: "unique-id",
+    Title: "新しいカレンダー招待",
+    Subtitle: "差出人: Jane Doe", // オプション
+    Body: "タップしてイベントを表示",
+})
+
+```
+
+### インタラクティブな通知
+アクションボタンとテキスト入力を含む通知を送信します。これらの通知には、まず通知カテゴリを登録する必要があります:
+
+```go
+// 一意のカテゴリ ID を定義
+categoryID := "unique-category-id"
+
+// アクション付きのカテゴリを定義
+category := notifications.NotificationCategory{
+    ID: categoryID,
+    Actions: []notifications.NotificationAction{
+        {
+            ID:    "OPEN", 
+            Title: "開く",
+        },
+        {
+            ID:          "ARCHIVE", 
+            Title:       "アーカイブ", 
+            Destructive: true,  /* macOS固有 */
+        },
+    },
+    HasReplyField:    true,
+    ReplyPlaceholder: "メッセージ...",
+    ReplyButtonTitle: "返信",
+}
+
+// カテゴリを登録
+notifier.RegisterNotificationCategory(category)
+
+// 登録されたカテゴリのアクションを含むインタラクティブな通知を送信
+notifier.SendNotificationWithActions(notifications.NotificationOptions{
+    ID:         "unique-id",
+    Title:      "新しいメッセージ",
+    Subtitle:   "差出人: Jane Doe",
+    Body:       "出席可能ですか？",
+    CategoryID: categoryID,
+})
+```
+
+## 通知の応答
+
+ユーザーの通知とのインタラクションを処理します:
+
+```go
+notifier.OnNotificationResponse(func(result notifications.NotificationResult) {
+    response := result.Response
+    fmt.Printf("通知 %s が %s でアクションされました\n", response.ID, response.ActionIdentifier)
+
+    if response.ActionIdentifier == "TEXT_REPLY" {
+        fmt.Printf("ユーザーの返信: %s\n", response.UserText)
+    }
+
+    if data, ok := response.UserInfo["sender"].(string); ok {
+        fmt.Printf("元の差出人: %s\n", data)
+    }
+
+    // フロントエンドにイベントを発行
+    app.Event.Emit("notification", result.Response)
+})
+```
+
+## 通知のカスタマイズ
+
+### カスタムメタデータ
+
+基本的な通知およびインタラクティブな通知には、カスタムデータを含めることができます:
+
+```go
+notifier.SendNotification(notifications.NotificationOptions{
+    ID: "unique-id",
+    Title: "新しいカレンダー招待",
+    Subtitle: "差出人: Jane Doe", // オプション
+    Body: "タップしてイベントを表示",
+    Data: map[string]interface{}{
+        "sender": "jane.doe@example.com",
+        "timestamp": "2025-03-10T15:30:00Z",
+    }
+})
+
+```
+
+## プラットフォームに関する考慮事項
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    macOS では、通知は以下の通りです:
+    
+    - ユーザーの承認が必要
+    - 配布にはアプリのノータライズが必要
+    - システム標準の通知表示を使用
+    - `subtitle` をサポート
+    - ユーザーテキスト入力をサポート
+    - `Destructive` アクションオプションをサポート
+    - ダークモード/ライトモードを自動処理
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    Windows では、通知は以下の通りです:
+    
+    - Windows システムのトーストスタイルを使用
+    - Windows のテーマ設定に適応
+    - ユーザーテキスト入力をサポート
+    - 高 DPI ディスプレイをサポート
+    - `subtitle` はサポートしない
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    Linux では、ダイアログの動作はデスクトップ環境に依存します:
+    
+    - 利用可能な場合はネイティブ通知を使用
+    - デスクトップ環境のテーマに従う
+    - デスクトップ環境のルールに従って配置
+    - `subtitle` をサポート
+    - ユーザーテキスト入力はサポートしない
+    
+  </TabItem>
+</Tabs>
+
+## ベストプラクティス
+
+1. 承認を確認し、リクエストする:
+   - macOS ではユーザーの承認が必要
+
+2. 明確で簡潔な通知を提供する:
+   - 説明的なタイトル、サブタイトル、テキスト、アクションタイトルを使用する
+
+3. ダイアログの応答を適切に処理する:
+   - 通知応答のエラーを確認する
+   - ユーザーのアクションに対してフィードバックを提供する
+
+4. プラットフォームの慣習を考慮する:
+   - プラットフォーム固有の通知パターンに従う
+   - システム設定を尊重する
+
+## 例
+
+この例を探索してください:
+
+- [Notifications](/examples/notifications)
+
+## API リファレンス
+
+### サービス管理
+| メソッド                                     | 説明                                           |
+|--------------------------------------------|-------------------------------------------------------|
+| `New()`                                    | 新しい通知サービスを作成する                   |
+
+### 通知の承認
+| メソッド                                       | 説明                                                |
+|----------------------------------------------|------------------------------------------------------------|
+| `RequestNotificationAuthorization()`         | 通知の表示を許可するリクエスト (macOS)               |
+| `CheckNotificationAuthorization()`           | 現在の通知承認ステータスを確認 (macOS)               |
+
+### 通知の送信
+| メソッド                                                     | 説明                                       |
+|------------------------------------------------------------|---------------------------------------------------|
+| `SendNotification(options NotificationOptions)`            | 基本的な通知を送信する                      |
+| `SendNotificationWithActions(options NotificationOptions)` | アクション付きのインタラクティブな通知を送信する |
+
+### 通知カテゴリ
+| メソッド                                                        | 説明                                       |
+|---------------------------------------------------------------|---------------------------------------------------|
+| `RegisterNotificationCategory(category NotificationCategory)` | 再利用可能な通知カテゴリを登録する            |
+| `RemoveNotificationCategory(categoryID string)`               | 以前に登録されたカテゴリを削除する            |---------------------------------------------------|--------------------------------------------------------------|
+| `RemoveAllPendingNotifications()`                 | 保留中のすべての通知を削除します（macOS および Linux のみ）  |
+| `RemovePendingNotification(identifier string)`    | 特定の保留中の通知を削除します（macOS および Linux のみ）    |
+| `RemoveAllDeliveredNotifications()`               | 配信済みのすべての通知を削除します（macOS および Linux のみ）|
+| `RemoveDeliveredNotification(identifier string)`  | 特定の配信済み通知を削除します（macOS および Linux のみ）    |
+| `RemoveNotification(identifier string)`           | 通知を削除します（Linux 固有）                               |
+
+### イベント処理
+| メソッド                                                             | 説明                                     |
+|----------------------------------------------------------------------|------------------------------------------|
+| `OnNotificationResponse(callback func(result NotificationResult))`   | 通知応答のコールバックを登録します       |
+
+### 構造体と型
+
+#### NotificationOptions
+```go
+type NotificationOptions struct {
+    ID         string                 // 通知の一意の識別子
+    Title      string                 // メインの通知タイトル
+    Subtitle   string                 // サブタイトルテキスト（macOS および Linux のみ）
+    Body       string                 // メインの通知内容
+    CategoryID string                 // インタラクティブ通知のカテゴリ識別子
+    Data       map[string]interface{} // 通知に関連付けるカスタムデータ
+}
+```
+
+#### NotificationCategory 
+```go
+type NotificationCategory struct {
+    ID               string                // カテゴリの一意の識別子
+    Actions          []NotificationAction  // 通知のボタンアクション
+    HasReplyField    bool                  // テキスト入力フィールドを含めるかどうか
+    ReplyPlaceholder string                // 入力フィールドのプレースホルダーテキスト
+    ReplyButtonTitle string                // 返信ボタンのテキスト
+}
+```
+
+#### NotificationAction
+```go
+type NotificationAction struct {
+    ID          string  // アクションの一意の識別子
+    Title       string  // ボタンのテキスト
+    Destructive bool    // アクションが破壊的かどうか（macOS 固有）
+}
+```
+
+#### NotificationResponse 
+```go
+type NotificationResponse struct {
+    ID               string                  // 通知の識別子
+    ActionIdentifier string                  // トリガーされたアクション
+    CategoryID       string                  // 通知のカテゴリ
+    Title            string                  // 通知のタイトル
+    Subtitle         string                  // 通知のサブタイトル
+    Body             string                  // 通知の本文テキスト
+    UserText         string                  // ユーザーが入力したテキスト
+    UserInfo         map[string]interface{}  // 通知からのカスタムデータ
+}
+```
+
+#### NotificationResult
+```go
+type NotificationResult struct {
+    Response NotificationResponse  // 応答データ
+    Error    error                 // 発生したエラー
+}
+```

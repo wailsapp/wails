@@ -1,0 +1,91 @@
+---
+title: Wails v3 のアーキテクチャ
+description: Wails v3 の内部にあるすべての構成要素の詳細な図解と解説
+sidebar:
+  order: 1
+---
+
+Wails v3 は、Go ランタイム、JavaScript ブリッジ、タスク駆動型ツールチェーン、およびモダンな Web 技術を活用したネイティブアプリケーションをリリースするためのテンプレート群で構成される**フルスタックのデスクトップフレームワーク**です。
+
+このページでは、以下の 4 つの図解を通じて全体像を示します：
+
+1. **全体アーキテクチャ** – 各サブシステムがどのように接続されているか
+2. **ランタイムフロー** – JS が Go を呼び出し、その逆の場合に何が起こるか
+3. **開発環境と本番環境** – アセットサーバーの 2 つのモード
+4. **プラットフォーム実装** – OS 固有のコードがどこに存在するか
+
+---
+
+## 1 · 全体アーキテクチャ
+
+**Wails v3 – 高レベルスタック**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[高レベルスタック図のプレースホルダー]**
+
+---
+
+## 2 · ランタイム呼び出しフロー
+
+**ランタイム – JavaScript ⇄ Go 呼び出しパス**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[ランタイム呼び出しフロー図のプレースホルダー]**
+
+重要なポイント：
+
+* **HTTP / IPC なし** – ブリッジはネイティブ WebView のメモリ内チャネルを使用します
+* **メソッド ID** – 決定論的な FNV ハッシュにより、Go 側で O(1) のルックアップが可能になります
+* **Promises** – エラーはスタック情報とコードを含む拒否として伝播します
+
+---
+
+## 3 · 開発環境と本番環境のアセットフロー
+
+**Dev ↔ Prod アセットサーバー**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[アセットフロー図のプレースホルダー]**
+
+* **dev** モードでは、サーバーは不明なパスをフレームワークのライブリロードサーバーにプロキシし、ディスクから静的アセットを提供します。
+* **prod** モードでは、同じ API が `go:embed` によって支えられ、依存関係のないバイナリを生成します。
+
+---
+
+## 4 · OS 固有のランタイム分割
+
+**OS 別のランタイムファイル**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[プラットフォーム分割図のプレースホルダー]**
+
+すべての機能は以下のパターンに従います：
+
+1. `pkg/application` 内の**共通インターフェース**
+2. `pkg/application/messageprocessor_*.go` 内の**メッセージプロセッサ**のエントリ
+3. ビルドタグで保護された `internal/runtime/*.go` 配下の **OS 別実装**
+
+ある OS で機能が不足している場合は、`ErrCapability` を返し、`internal/capabilities` 経由で利用可能性を登録する必要があります。
+
+---
+
+## まとめ
+
+これらの図解は、**コードがどこに存在するか**、**データがどのように移動するか**、**どのレイヤーがどの責任を負うか**を示しています。
+続く詳細なページを探索する際に、これらを参照してください – これらは Wails v3 ソースツリーへの地図となります。

@@ -1,0 +1,376 @@
+---
+title: ダイアログの概要
+description: アプリケーションでネイティブのシステムダイアログを表示する
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## ネイティブダイアログ
+
+Wails は、すべてのプラットフォームで動作する**ネイティブシステムダイアログ**を提供します。これには、メッセージダイアログ（情報、警告、エラー、質問）、ファイルダイアログ（開く、保存、フォルダ）、およびプラットフォーム固有の外観と動作を持つカスタムダイアログウィンドウが含まれます。
+
+## クイックスタート
+
+```go
+// 情報ダイアログ
+app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("File saved successfully!").
+    Show()
+
+// ボタンコールバック付きの質問ダイアログ
+dialog := app.Dialog.Question().
+    SetTitle("Confirm").
+    SetMessage("Delete this file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    deleteFile()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)
+dialog.SetCancelButton(cancelBtn)
+dialog.Show()
+
+// ファイル開くダイアログ
+path, _ := app.Dialog.OpenFile().
+    SetTitle("Select Image").
+    AddFilter("Images", "*.png;*.jpg").
+    PromptForSingleSelection()
+```
+
+**これだけです！** 最小限のコードでネイティブダイアログが利用できます。
+
+## ダイアログへのアクセス
+
+ダイアログは `app.Dialog` マネージャーを通じてアクセスします。
+
+```go
+app.Dialog.Info()
+app.Dialog.Question()
+app.Dialog.Warning()
+app.Dialog.Error()
+app.Dialog.OpenFile()
+app.Dialog.SaveFile()
+```
+
+## ダイアログのタイプ
+
+### 情報ダイアログ
+
+単純なメッセージを表示します：
+
+```go
+app.Dialog.Info().
+    SetTitle("Welcome").
+    SetMessage("Welcome to our application!").
+    Show()
+```
+
+**使用例：**
+- 成功メッセージ
+- 情報通知
+- 完了確認
+
+### 警告ダイアログ
+
+警告を表示します：
+
+```go
+app.Dialog.Warning().
+    SetTitle("Warning").
+    SetMessage("This action cannot be undone.").
+    Show()
+```
+
+**使用例：**
+- 重要でない警告
+- 非推奨通知
+- 注意メッセージ
+
+### エラーダイアログ
+
+エラーを表示します：
+
+```go
+app.Dialog.Error().
+    SetTitle("Error").
+    SetMessage("Failed to save file: " + err.Error()).
+    Show()
+```
+
+**使用例：**
+- エラーメッセージ
+- 失敗通知
+- 例外処理
+
+### 質問ダイアログ
+
+ユーザーに質問をし、ボタンコールバックを通じて応答を処理します：
+
+```go
+dialog := app.Dialog.Question().
+    SetTitle("Confirm Delete").
+    SetMessage("Are you sure you want to delete this file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    deleteFile()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)
+dialog.SetCancelButton(cancelBtn)
+dialog.Show()
+```
+
+**使用例：**
+- アクションの確認
+- はい/いいえの質問
+- 複数選択
+
+## ファイルダイアログ
+
+### ファイルを開くダイアログ
+
+開くファイルを選択します：
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Image").
+    AddFilter("Images", "*.png;*.jpg;*.gif").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
+
+if err == nil && path != "" {
+    openFile(path)
+}
+```
+
+**複数選択：**
+
+```go
+paths, err := app.Dialog.OpenFile().
+    SetTitle("Select Images").
+    AddFilter("Images", "*.png;*.jpg").
+    PromptForMultipleSelection()
+
+if err == nil {
+    for _, path := range paths {
+        processFile(path)
+    }
+}
+```
+
+### ファイルを保存するダイアログ
+
+保存先を選択します：
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("document.txt").
+    AddFilter("Text Files", "*.txt").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
+
+if err == nil && path != "" {
+    saveFile(path)
+}
+```
+
+### フォルダを選択するダイアログ
+
+ディレクトリ選択を有効にしたファイル開くダイアログを使用してディレクトリを選択します：
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Output Folder").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+
+if err == nil && path != "" {
+    exportToFolder(path)
+}
+```
+
+## ダイアログのオプション
+
+### タイトルとメッセージ
+
+```go
+dialog := app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("Operation completed successfully!")
+```
+
+### ボタン
+
+**単純なダイアログのデフォルトボタン：**
+
+情報、警告、エラーダイアログにはデフォルトの「OK」ボタンが表示されます：
+
+```go
+app.Dialog.Info().
+    SetMessage("Done!").
+    Show()
+```
+
+**質問ダイアログのカスタムボタン：**
+
+`AddButton()` を使用してボタンを追加し、返される `*Button` をコールバックで設定できます：
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Choose action")
+
+save := dialog.AddButton("Save")
+save.OnClick(func() {
+    saveDocument()
+})
+
+dontSave := dialog.AddButton("Don't Save")
+dontSave.OnClick(func() {
+    discardChanges()
+})
+
+cancel := dialog.AddButton("Cancel")
+// コールバックは不要 - ダイアログを閉じるだけ
+
+dialog.SetDefaultButton(save)
+dialog.SetCancelButton(cancel)
+dialog.Show()
+```
+
+**デフォルトボタンとキャンセルボタン：**
+
+`SetDefaultButton()` を使用して、強調表示され Enter キーでトリガーされるボタンを指定します。
+`SetCancelButton()` を使用して、Escape キーでトリガーされるボタンを指定します。
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Delete file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    performDelete()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)  // デフォルトで安全なオプションが強調表示
+dialog.SetCancelButton(cancelBtn)   // Escape でキャンセルがトリガー
+dialog.Show()
+```
+
+### ウィンドウへのアタッチ
+
+ダイアログを特定のウィンドウにアタッチします：
+
+```go
+dialog := app.Dialog.Info().
+    SetMessage("Window-specific message").
+    AttachToWindow(window)
+
+dialog.Show()
+```
+
+**動作：**
+- ダイアログは親ウィンドウの中央に表示されます
+- ダイアログ表示中は親ウィンドウが無効になります
+- ダイアログは親ウィンドウと一緒に移動します（macOS）
+
+## プラットフォームごとの動作
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    **macOS ダイアログ：**
+    
+    - ネイティブな NSAlert の外観
+    - システムのテーマ（ライト/ダーク）に従う
+    - キーボードナビゲーションをサポート
+    - 標準的なショートカット（⌘. でキャンセル）
+    - アクセシビリティ機能を内蔵
+    - ウィンドウにアタッチされた場合はシートスタイル
+    
+    **例：**
+    ```go
+    // macOS でシートとして表示
+    dialog := app.Dialog.Question().
+        SetMessage("Save changes?").
+        AttachToWindow(window)
+    dialog.AddButton("Yes")
+    dialog.AddButton("No")
+    dialog.Show()
+    ```
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    **Windows ダイアログ：**
+    
+    - ネイティブな TaskDialog の外観
+    - システムのテーマに従う
+    - キーボードナビゲーションをサポート
+    - 標準的なショートカット（Esc でキャンセル）
+    - アクセシビリティ機能を内蔵
+    - 親ウィンドウに対してモーダル
+    
+    **例：**
+    ```go
+    // Windows でモーダルダイアログ
+    app.Dialog.Error().
+        SetTitle("Error").
+        SetMessage("Operation failed").
+        Show()
+    ```
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **Linux ダイアログ：**
+    
+    - GTK ダイアログの外観
+    - デスクトップのテーマに従う
+    - キーボードナビゲーションをサポート
+    - デスクトップ環境との統合
+    - DE（GNOME、KDE など）によって異なる
+    
+    **例：**
+    ```go
+    // Linux で GTK ダイアログ
+    app.Dialog.Info().
+        SetMessage("Update complete").
+        Show()
+    ```
+  </TabItem>
+</Tabs>
+
+## 一般的なパターン
+
+### 破壊的なアクション前の確認
+
+```go
+func deleteFile(app *application.App, path string) {
+    dialog := app.Dialog.Question().
+        SetTitle("Confirm Delete").
+        SetMessage(fmt.Sprintf("Delete %s?", filepath.Base(path)))
+
+    deleteBtn := dialog.AddButton("Delete")
+    deleteBtn.OnClick(func() {
+        if err := os.Remove(path); err != nil {
+            app.Dialog.Error().
+                SetTitle("Delete Failed").
+                SetMessage(err.Error()).
+                Show()
+        }
+    })
+
+    cancelBtn := dialog.AddButton("Cancel")
+    dialog.SetDefaultButton(cancelBtn)
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+}
+```---
+
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[ダイアログの例](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs) をご確認ください。

@@ -1,0 +1,212 @@
+---
+title: ファイルドロップ
+description: オペレーティングシステムからアプリケーションにドラッグされたファイルを受け取る
+sidebar:
+  order: 1
+---
+
+Wailsを使用すると、ユーザーはオペレーティングシステム（ファイルマネージャー、デスクトップ）からファイルをお使いのアプリケーションにドラッグドロップできます。ブラウザ内でのみ機能するHTML5のドラッグ＆ドロップとは異なり、これによりディスク上の実際のファイルパスにアクセスできます。
+
+## ファイルドロップを有効にする
+
+ファイルドロップはデフォルトで無効になっています。有効にするには、ウィンドウオプションで `EnableFileDrop: true` を設定します。
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "My App",
+    Width:          800,
+    Height:         600,
+    EnableFileDrop: true,
+})
+```
+
+`EnableFileDrop` が `false` （デフォルト）の場合、OSからドラッグされたファイルはブロックされます。これらはWebViewで開かず、イベントもトリガーされません。これにより、ユーザーがファイルをアプリ上にドラッグした際に意図しないナビゲーションが発生するのを防ぎます。
+
+## ドロップゾーンを定義する
+
+ドロップゾーンは、Wailsに対してどの要素がファイルを受け付けるべきかを伝えます。ドロップゾーンの外にドロップされたファイルは無視されます。
+
+任意の要素に `data-file-drop-target` 属性を追加します。
+
+```html
+<div id="upload" class="drop-zone" data-file-drop-target>
+    Drop files here
+</div>
+```
+
+複数のドロップゾーンを持つことができます。要素の `id` とCSSクラスはGoコードに渡されるため、ファイルがどこにドロップされたかによって異なる処理を行うことができます。
+
+## ドラッグホバーのスタイル設定
+
+ファイルがドロップゾーン上にドラッグされると、Wailsは `file-drop-target-active` クラスを追加します。これにより、ユーザーがどこにファイルをドロップできるかを示す視覚的なフィードバックを提供できます。
+
+```css
+.drop-zone {
+    border: 2px dashed #ccc;
+    padding: 40px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.drop-zone.file-drop-target-active {
+    border-color: #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+```
+
+ファイルがゾーンから離れるかドロップされると、このクラスは自動的に削除されます。
+
+## ドロップされたファイルの検出
+
+ファイルが有効なドロップゾーンにドロップされると、Wailsは `WindowFilesDropped` イベントを発生させます。イベントコンテキストには、ドロップされたすべてのファイルの完全なファイルシステムパスが含まれています。
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    
+    for _, file := range files {
+        fmt.Println("Dropped:", file)
+    }
+})
+```
+
+パスは絶対パスです。例: `/home/user/documents/report.pdf` や `C:\Users\Name\Documents\report.pdf`。
+
+## ドロップターゲット情報の取得
+
+複数のドロップゾーンがある場合、`DropTargetDetails()` を使用して、どのゾーンがファイルを受け取ったかを確認できます。
+
+```go
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    details := event.Context().DropTargetDetails()
+    
+    fmt.Printf("Dropped on element: id=%s, classes=%v\n", 
+        details.ElementID, details.ClassList)
+    fmt.Printf("Position: x=%d, y=%d\n", details.X, details.Y)
+})
+```
+
+これにより、ファイルを異なるハンドラーにルーティングできます。
+
+```go
+switch details.ElementID {
+case "images":
+    handleImageUpload(files)
+case "documents":
+    handleDocumentUpload(files)
+}
+```
+
+## 完全な例
+
+**Go:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "File Uploader",
+    EnableFileDrop: true,
+})
+
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    details := event.Context().DropTargetDetails()
+    
+    // Send to frontend
+    app.Event.Emit("files-dropped", map[string]any{
+        "files":   files,
+        "target":  details.ElementID,
+    })
+})
+```
+
+**HTML:**
+
+```html
+<div id="images" class="drop-zone" data-file-drop-target>
+    Drop images here
+</div>
+
+<div id="documents" class="drop-zone" data-file-drop-target>
+    Drop documents here
+</div>
+
+<style>
+    .drop-zone {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 40px;
+        text-align: center;
+        margin: 20px;
+        transition: all 0.2s ease;
+    }
+    
+    .drop-zone.file-drop-target-active {
+        border-color: #007bff;
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+</style>
+```
+
+## ウィンドウ全体のドロップ
+
+アプリのどこでもファイルをドロップできるようにしたい場合は、body要素に属性を追加します。
+
+```html
+<body data-file-drop-target>
+    <!-- Your app content -->
+</body>
+```
+
+CSSオーバーレイを使用して、ウィンドウ全体がドロップターゲットであることを示すことができます。
+
+```css
+body.file-drop-target-active::after {
+    content: "Drop files anywhere";
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #007bff;
+    background: rgba(255, 255, 255, 0.9);
+    pointer-events: none;
+}
+```
+
+## HTMLドラッグ＆ドロップとの組み合わせ
+
+外部ファイルドロップと内部HTMLドラッグ＆ドロップの両方を同じアプリケーションで使用できます。`EnableFileDrop` が `true` の場合、Wailsは外部ファイルのドラッグをインターセプトしますが、内部のHTML5ドラッグは通常どおり通過させます。
+
+HTMLドロップゾーンハンドラー間でこれらを区別するには、ドラッグにファイルが含まれているかを確認します。
+
+```javascript
+zone.addEventListener('dragenter', (e) => {
+    // Skip external file drags - Wails handles these
+    if (e.dataTransfer?.types.includes('Files')) {
+        return;
+    }
+    // Handle internal HTML5 drags
+    zone.classList.add('drag-over');
+});
+
+zone.addEventListener('drop', (e) => {
+    // Skip external file drops - Wails handles these
+    if (e.dataTransfer?.types.includes('Files')) {
+        return;
+    }
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    // Handle internal drop
+});
+```
+
+これにより、HTMLドロップハンドラーは内部ドラッグ（リストアイテムの移動など）にのみ応答し、Wailsは外部ファイルドロップを `WindowFilesDropped` イベント経由で個別に処理することが保証されます。
+
+## 次のステップ
+
+- [HTMLドラッグ＆ドロップ](./html) - アプリ内での要素のドラッグ
+- [ウィンドウオプション](/ja/features/windows/options) - すべてのウィンドウ設定オプション

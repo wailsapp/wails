@@ -1,0 +1,297 @@
+---
+title: 開発環境のセットアップ
+description: Wails v3 開発のための開発環境をセットアップします
+---
+
+## 開発環境のセットアップ
+
+このガイドでは、Wails v3 の開発に取り組むための完全な開発環境をセットアップする方法を順を追って説明します。
+
+## 必要なツール
+
+### Go 開発
+
+1. **Go 1.25 以降をインストール:**
+   ```bash
+   # https://go.dev/dl/ からダウンロード
+   go version  # インストールを確認
+   ```
+
+2. **Go 環境を設定:**
+   ```bash
+   # シェルのプロファイル (.bashrc, .zshrc など) に追加
+   export GOPATH=$HOME/go
+   export PATH=$PATH:$GOPATH/bin
+   ```
+
+3. **便利な Go ツールをインストール:**
+   ```bash
+   go install golang.org/x/tools/cmd/goimports@latest
+   go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+   ```
+
+### Node.js と npm
+
+ドキュメントのビルドやフロントエンドの統合テストに必要です。
+
+```bash
+# Node.js 20+ と npm をインストール
+node --version  # 20+ であるべき
+npm --version
+```
+
+### プラットフォーム固有の依存関係
+
+**macOS:**
+
+```bash
+# Xcode Command Line Tools をインストール
+xcode-select --install
+
+# インストールを確認
+xcode-select -p  # パスが出力されるべき
+```
+
+**Windows:**
+
+1. Unix ライクな環境のために [MSYS2](https://www.msys2.org/) をインストール
+2. WebView2 Runtime (Windows 11 にプリインストール済み、Windows 10 の場合は [ダウンロード](https://developer.microsoft.com/en-us/microsoft-edge/webview2/))
+3. オプション: [Git for Windows](https://git-scm.com/download/win) をインストール
+
+**Linux (Debian/Ubuntu):**
+
+```bash
+sudo apt update
+sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev
+```
+
+**Linux (Fedora/RHEL):**
+
+```bash
+sudo dnf install gcc pkg-config gtk3-devel webkit2gtk3-devel
+```
+
+**Linux (Arch):**
+
+```bash
+sudo pacman -S base-devel gtk3 webkit2gtk
+```
+
+## リポジトリのセットアップ
+
+### クローンと設定
+
+```bash
+# フォークをクローン
+git clone https://github.com/YOUR_USERNAME/wails.git
+cd wails
+
+# upstream リモートを追加
+git remote add upstream https://github.com/wailsapp/wails.git
+
+# リモートを確認
+git remote -v
+```
+
+### Wails CLI のビルド
+
+```bash
+# v3 ディレクトリに移動
+cd v3
+
+# CLI をビルド
+go build -o ../wails3 ./cmd/wails3
+
+# ビルドをテスト
+cd ..
+./wails3 version
+```
+
+### PATH に追加 (オプション)
+
+**Linux/macOS:**
+
+```bash
+# ~/.bashrc または ~/.zshrc に追加
+export PATH=$PATH:/path/to/wails
+```
+
+**Windows:**
+
+システムのプロパティを通じて、Wails ディレクトリを PATH 環境変数に追加します。
+
+## IDE のセットアップ
+
+### VS Code (推奨)
+
+1. **VS Code をインストール:** [ダウンロード](https://code.visualstudio.com/)
+
+2. **拡張機能をインストール:**
+   - Go (by Go Team at Google)
+   - ESLint
+   - Prettier
+   - MDX (ドキュメント用)
+
+3. **ワークスペース設定を設定** (`.vscode/settings.json`):
+   ```json
+   {
+     "go.useLanguageServer": true,
+     "go.lintTool": "golangci-lint",
+     "go.lintOnSave": "workspace",
+     "editor.formatOnSave": true,
+     "go.formatTool": "goimports"
+   }
+   ```
+
+### GoLand
+
+1. **GoLand をインストール:** [ダウンロード](https://www.jetbrains.com/go/)
+
+2. **設定:**
+   - Go モジュールのサポートを有効化
+   - `goimports` のファイルウォッチャを設定
+   - プロジェクトの規約に合わせてコードスタイルを設定
+
+## セットアップの確認
+
+以下のコマンドを実行して、すべてが正常に動作していることを確認します。
+
+```bash
+# Go バージョンの確認
+go version
+
+# Wails のビルド
+cd v3
+go build ./cmd/wails3
+
+# テストの実行
+go test ./pkg/...
+
+# テストアプリの作成
+cd ..
+./wails3 init -n mytest -t vanilla
+cd mytest
+../wails3 dev
+```
+
+テストアプリがビルドされ、実行されれば、環境の準備は完了です！
+
+## テストの実行
+
+### ユニットテスト
+
+```bash
+cd v3
+go test ./...
+```
+
+### 特定のパッケージのテスト
+
+```bash
+go test ./pkg/application
+go test ./pkg/events -v  # 詳細出力
+```
+
+### カバレッジ付きで実行
+
+```bash
+go test ./... -coverprofile=coverage.out
+go tool cover -html=coverage.out
+```
+
+### レースデテクター付きで実行
+
+```bash
+go test ./... -race
+```
+
+## ドキュメントの作業
+
+Wails のドキュメントは Astro と Starlight でビルドされています。
+
+```bash
+cd docs
+
+# 依存関係をインストール
+npm install
+
+# 開発サーバーを起動
+npm run dev
+
+# 本番用にビルド
+npm run build
+```
+
+ドキュメントは `http://localhost:4321/` で利用可能になります。
+
+## デバッグ
+
+### Go コードのデバッグ
+
+**VS Code:**
+
+`.vscode/launch.json` を作成:
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Wails CLI",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/v3/cmd/wails3",
+      "args": ["dev"]
+    }
+  ]
+}
+```
+
+**コマンドライン:**
+
+```bash
+# Delve デバッガーを使用
+go install github.com/go-delve/delve/cmd/dlv@latest
+dlv debug ./cmd/wails3 -- dev
+```
+
+### プラットフォームコードのデバッグ
+
+プラットフォーム固有のデバッグにはプラットフォームのツールが必要です:
+
+- **macOS:** Xcode Instruments
+- **Windows:** Visual Studio Debugger
+- **Linux:** GDB
+
+## よくある問題
+
+### "command not found: wails3"
+
+Wails ディレクトリを PATH に追加するか、プロジェクトルートから `./wails3` を使用してください。
+
+### "webkit2gtk not found" (Linux)
+
+WebKit2GTK の開発パッケージをインストールします:
+
+```bash
+sudo apt install libwebkit2gtk-4.0-dev  # Debian/Ubuntu
+```
+
+### Go モジュールエラーでビルドが失敗する
+
+```bash
+cd v3
+go mod tidy
+go mod download
+```
+
+### Windows での "CGO_ENABLED" エラー
+
+PATH に C コンパイラ (MSYS2 経由の MinGW-w64) があることを確認してください。
+
+## 次のステップ
+
+- [コーディング規約](/ja/contributing/standards) を確認
+- [技術ドキュメント](/ja/contributing) を探索
+- 取り組むべき課題を探す: [Good First Issues](https://github.com/wailsapp/wails/labels/good%20first%20issue)

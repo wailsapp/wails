@@ -1,0 +1,196 @@
+---
+title: ビルド＆パッケージングパイプライン
+description: `wails3 build` を実行したときに内部で何が起こり、クロスプラットフォームのバイナリがどのように生成され、各OS用のインストーラーがどのように作成されるかを解説します。
+sidebar:
+  order: 6
+---
+
+`wails3 build` は、_多段階_ パイプラインを駆動する**単一のコマンド**です：
+
+1. **フロントエンドのプロダクションビルド** (Vite / React / …)  
+2. **アセットの埋め込み** (Go ソースコードへ)  
+3. **ターゲットOS/アーキテクチャ向けのネイティブコンパイル**  
+4. **後処理** (アイコンの注入、バージョン情報、コード署名)  
+5. **配布可能なアーティファクトへのパッケージング** (AppImage, DMG, MSI, …)
+
+このドキュメントでは各ステージを追跡し、コードの場所を示し、カスタマイズやデバッグの方法を説明します。
+
+---
+
+## 1. エントリポイント: `internal/commands/build-assets.go`
+
+```
+wails3 build                 # cmd/wails3/main.go
+└─ internal/commands.Build() # build-assets.go
+```
+
+高レベルのタスクは **Taskfile** のターゲットに委譲されるため、同じロジックが CI 上でもローカルでも実行されます。
+
+| ステージ | Taskfile ターゲット | Go 実装 |
+|-------|---------|----|
+| フロントエンドビルド | `frontend:build` | `internal/commands/task.go` |
+| アセットの埋め込み | `embed:assets`  | 生成された `bundled_assetserver.go` |
+| Go コンパイル | `build:go`      | `tool_buildinfo.go`, `tool_package.go` |
+| パッケージング | `package:*`     | `internal/packager`, `internal/commands/*` |
+
+---
+
+## 2. フロントエンドのプロダクションビルド
+
+1. CLI は `frontend/` ディレクトリに移動し、プロジェクトの `Taskfile.yml` に見つかる `build` タスクを実行します（デフォルトでは `npm run build`）。
+2. 出力は `frontend/dist/` に書き込まれます。
+3. キャッシュ busting がデフォルトで機能するように、**コンテンツハッシュ** マニフェスト (`manifest.json`) が生成されます。
+
+タスクに失敗した場合、パイプラインは早期に中止され、ビルドツールの終了コードが返されます。
+
+---
+
+## 3. アセットの埋め込み
+
+`internal/assetserver/build_production.go` で実装されています：
+
+* `frontend/dist` を再帰的に走査し、`go:embed` ファイル
+  `bundled_assetserver.go` (git で無視される) を生成します。
+* `production` ビルドタグを追加します。
+
+結果：最終的なバイナリにはすべての HTML/JS/CSS のバイトが含まれるため、実行ファイルは自己完結型になります。
+
+---
+
+## 4. ネイティブコンパイル
+
+### ビルドフラグ
+
+| フラグ | 目的 |
+|------|--|
+| `-tags production` | プロダクション用アセットサーバーおよびランタイムスタブを選択 |
+| `-ldflags "-s -w"` | シンボルテーブルおよび DWARF をストリップ (バイナリを小さくする) |
+| `-X internal/buildinfo.BuildTime=$(date)` | 再現可能なメタデータを埋め込み |
+
+`internal/commands/tool_buildinfo.go` はバージョン、git コミット、ビルド時刻を収集し、`go build -ldflags` を使用してそれらを注入します。
+
+### クロスコンパイルマトリックス
+
+| OS | アーキ | ビルドタグ | CGO | 備考 |
+|----|--|-----------|-----|----|
+| Windows | amd64 / arm64 | `windows` | WebView2 用に cgo 有効 | `internal/commands/syso.go` 経由で `.syso` を生成 |
+| macOS   | amd64 / arm64 | `darwin`  | cgo 有効 (Objective-C) | コード署名およびノタリゼーションのタスクが利用可能 |
+| Linux   | amd64 / arm64 | `linux`   | pure Go (webkit オプション)   | CGO ビルドには GTK/WebKitGTK のヘッダーが必要 |
+
+`wails3 build -platform darwin/arm64` は GOOS/GOARCH を上書きします。  
+ホストでターゲットをコンパイルできない場合 (例: Linux から Windows をビルドする場合) に CGO が必要な場合、CLI は **Docker** イメージ (`ghcr.io/wailsapp/cross-compiler`) にフォールバックします。
+
+---
+
+## 5. 後処理
+
+### アイコンとリソース
+
+* **Windows** – `syso.go` が PNG/ICO を `.syso` にマージし、`go build` が自動的にリンクします。また、High-DPI サポートを有効にする `manifest.xml` も書き出します。
+* **macOS** – `icons.go` が `icon.png` を `.icns` に変換し、`MyApp.app/Contents/Resources` に注入します。
+* **Linux** – `.desktop` ファイルは、各パッケージバックエンドによって `/usr/share/applications` に生成されます。
+
+### コード署名 (オプション)
+
+* macOS: `codesign` + `xcrun altool --notarize-app`
+* Windows: `signtool.exe`
+* Linux: 一般的ではありません (リポジトリの GPG は外部で管理)
+
+タスクターゲット: `sign:mac`, `sign:windows`.
+
+---
+
+## 6. パッケージングバックエンド
+
+### Linux
+
+| アーティファクト | コードパス | ツール |
+|------|---------|---|
+| **AppImage** (デフォルト) | `internal/commands/appimage.go` | `linuxdeploy` + `linuxdeploy-plugin-gtk` |
+| **deb / rpm / pacman** | `internal/packager` | `fpm` (Go 経由で呼び出し) |
+
+フラグ：
+
+```
+wails3 build -package deb   # myapp_1.0.0_amd64.deb を生成
+wails3 build -package rpm
+```
+
+### macOS
+
+* **DMG** – `internal/commands/packager.go` が `appdmg` を呼び出してドラッグ＆ドロップインストーラーを生成します。
+* **ZIP** – `appdmg` が存在しない場合のフォールバック。
+* CFBundle 識別子とバージョン plist を自動的に設定します。
+
+### Windows
+
+* **MSI** – `internal/commands/packager.go` が **WiX** の candle および light ツールをラップします。  
+  Heat がビルドされた `.exe` からコンポーネントツリーを自動生成します。
+
+追加リソース：
+
+* `internal/commands/windows_resources/` にはテンプレート化された **.wxs** フラグメントが含まれています。
+* バージョン情報は `rsrc` ユーティリティを介して注入されます。
+
+---
+
+## 7. ビルドアーティファクトのレイアウト
+
+ビルドが成功すると、CLI は以下を出力します：
+
+```
+build/bin/
+├── myapp-linux-amd64
+└── myapp-linux-amd64.AppImage
+
+build/package/
+└── myapp_1.0.0_amd64.deb
+```
+
+正確なファイルは `-platform` および `-package` フラグによって異なります。
+
+---
+
+## 8. パイプラインのカスタマイズ
+
+| 要件 | アプローチ |
+|------|------|
+| ビルド前にリンターを実行 | **Taskfile.yml** に `lint` タスクを追加し、`build` がそれに依存するようにする。 |
+| 追加のリンカーフラグ | `wails3 build -ldflags "-H windowsgui"` |
+| パッケージングをスキップ | `wails3 build -skip-package` (生バイナリを保持)。 |
+| 独自のパッケージャを使用 | `internal/packager/<name>.go` を実装し、`packager.go` に登録する。 |
+
+すべての Taskfile ターゲットは CLI によってエクスポートされる環境変数を使用するため、カスタムタスク内で `$WAILS_VERSION` や `$WAILS_PLATFORM` などの値を参照できます。
+
+---
+
+## 9. トラブルシューティング
+
+| 症状 | 考えられる原因 | 解決策 |
+|---------|-----|----|
+| **`ld: framework not found WebKit` (mac)** | Xcode CLI ツールが不足 | `xcode-select --install` |
+| **プロダクションビルドで空白のウィンドウ** | フロントエンドビルドの失敗または SPA ルーティング | `frontend/dist/index.html` が存在し、`History API Fallback` が設定されていることを確認。 |
+| **`wixl` が見つからない** (Linux MSI クロスビルド) | Docker イメージに WiX ツールセットがインストールされていない | `--docker` ビルドを使用するか、WiX を手動でインストール。 |
+| **重複したシンボル `_WinMain`** | `windowsgui` フラグと syso の混在 | カスタム `-ldflags` を削除するか、Wails にリソース管理を任せる。 |
+
+詳細モード: `wails3 build -verbose` は実行されたすべてのコマンドをダンプします。
+
+---
+
+## 10. 主要なソースマップ
+
+| 関心事項 | ファイル |
+|---------|----|
+| タスクランナーの接着剤 | `internal/commands/task_wrapper.go` |
+| ビルドディスパッチャ | `internal/commands/build-assets.go` |
+| AppImage ビルダー | `internal/commands/appimage.go` |
+| 汎用パッケージャインターフェース | `internal/packager/packager.go` |
+| Windows リソースジェネレーター | `internal/commands/syso.go` |
+| ビルド情報インジェクター | `internal/commands/tool_buildinfo.go` |
+| バージョン定数 | `internal/version/version.go` |
+
+ビルド失敗を追跡する際は、この表を handy に置いてください。
+
+---
+
+これで、**ソースコード**から**インストーラー**までの全体像が把握できました。この知識を基に、パイプラインを微調整したり、新しいパッケージングターゲットを追加したり、クロスコンパイルの問題を恐れずにデバッグしたりすることができます。Happy shipping!

@@ -1,0 +1,120 @@
+---
+title: Wailsでのウィンドウのカスタマイズ
+description: Wailsアプリケーションでウィンドウの外観と動作をカスタマイズする方法
+sidebar:
+  order: 10
+---
+
+import {Badge} from '@astrojs/starlight/components';
+
+対象プラットフォーム: <Badge text="Windows" variant="note" /> <Badge text="macOS" variant="success" />
+<br/>
+
+Wailsは、ウィンドウのコントロールの外観と機能性を制御するためのAPIを提供しています。この機能はWindowsとmacOSで利用可能ですが、Linuxでは利用できません。
+
+## ウィンドウボタンの状態の設定
+
+ボタンの状態は `ButtonState` 列挙型で定義されます:
+
+```go
+type ButtonState int
+
+const (
+    ButtonEnabled   ButtonState = 0
+    ButtonDisabled  ButtonState = 1
+    ButtonHidden    ButtonState = 2
+)
+```
+
+- `ButtonEnabled`: ボタンが有効で表示されています。
+- `ButtonDisabled`: ボタンは表示されていますが無効化されています（灰色）。
+- `ButtonHidden`: ボタンはタイトルバーから非表示になっています。
+
+ボタン状態は、ウィンドウ作成時または実行時に設定できます。
+
+### ウィンドウ作成時のボタン状態の設定
+
+新しいウィンドウを作成する際、`WebviewWindowOptions` 構造体を使用してボタンの初期状態を設定できます:
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "My Application",
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        MinimiseButtonState: application.ButtonHidden,
+        MaximiseButtonState: application.ButtonDisabled,
+        CloseButtonState:    application.ButtonEnabled,
+    })
+
+    app.Run()
+}
+```
+
+上記の例では、最小化ボタンは非表示、最大化ボタンは無効（灰色）、閉じるボタンは有効になっています。
+
+### 実行時のボタン状態の設定
+
+`Window` インターフェースの以下のメソッドを使用して、実行中にボタン状態を変更することもできます:
+
+```go
+window.SetMinimiseButtonState(wails.ButtonHidden)
+window.SetMaximiseButtonState(wails.ButtonEnabled)
+window.SetCloseButtonState(wails.ButtonDisabled)
+```
+
+### プラットフォーム間の違い
+
+ボタン状態の機能は、WindowsとmacOSでわずかに異なる動作をします:
+
+|                       | Windows                | Mac                    |
+|-----------------------|------------------------|------------------------|
+| Min/Max/Closeを無効化 | Min/Max/Closeを無効化 | Min/Max/Closeを無効化 |
+| Minを非表示           | Minを無効化           | Minボタンを非表示      |
+| Maxを非表示           | Maxを無効化           | Maxボタンを非表示      |
+| Closeを非表示         | すべてのコントロールを非表示 | Closeを非表示      |
+
+注意: Windowsでは、Min/Maxボタンを個別に非表示にすることはできません。ただし、両方を無効にすると、そのコントロールが非表示になり、閉じるボタンだけが表示されます。
+
+### ウィンドウスタイルの制御（Windows）
+
+Windowsでのタイトルバーのスタイルを制御するには、`WebviewWindowOptions` 構造体の `ExStyle` フィールドを使用できます:
+
+例:
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/w32"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My Application",
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Windows: application.WindowsWindow{
+            ExStyle: w32.WS_EX_TOOLWINDOW | w32.WS_EX_NOREDIRECTIONBITMAP | w32.WS_EX_TOPMOST,
+        },
+    })
+
+    app.Run()
+}
+```
+
+ウィンドウの拡張スタイルに影響を与える他のオプションは、この設定によって上書きされます:
+
+- HiddenOnTaskbar
+- AlwaysOnTop
+- IgnoreMouseEvents
+- BackgroundType

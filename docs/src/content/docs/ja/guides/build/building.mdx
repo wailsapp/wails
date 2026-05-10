@@ -1,0 +1,121 @@
+---
+title: アプリケーションのビルド
+description: Wails アプリケーションをビルドしてパッケージ化する
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Aside } from "@astrojs/starlight/components";
+
+Wails v3 はビルドシステムとして [Task](https://taskfile.dev) を使用しています。`wails3 build` および `wails3 package` コマンドは、Task の便利なラッパーです。
+
+## ビルド
+
+現在のプラットフォーム向けにビルドします:
+
+```bash
+wails3 build
+```
+
+特定のプラットフォーム向けにビルドします:
+
+```bash
+wails3 build GOOS=windows
+wails3 build GOOS=darwin
+wails3 build GOOS=linux
+
+# アーキテクチャを指定
+wails3 build GOOS=darwin GOARCH=arm64
+
+# 環境変数の形式でも動作します
+GOOS=windows wails3 build
+```
+
+出力は `bin/` ディレクトリに格納されます。
+
+<Aside type="tip">
+他のプラットフォームから macOS または Linux へクロスコンパイルするには Docker が必要です。セットアップについては [クロスプラットフォームビルド](/ja/guides/build/cross-platform) を参照してください。
+</Aside>
+
+## 開発
+
+ホットリロード付きでアプリケーションを実行します:
+
+```bash
+wails3 dev
+```
+
+これによりファイルウォッチャーが起動し、変更時にアプリを再ビルドして再起動します。フロントエンドのデバッグサーバーはデフォルトでポート 9245 で実行されます。
+
+```bash
+# カスタムポート
+wails3 dev -port 3000
+
+# HTTPS を有効化
+wails3 dev -s
+```
+
+## パッケージ化
+
+配布用にアプリをパッケージ化します:
+
+```bash
+wails3 package
+wails3 package GOOS=windows
+wails3 package GOOS=darwin
+wails3 package GOOS=linux
+```
+
+これによりプラットフォーム固有のパッケージが作成されます:
+- **Windows**: NSIS インストーラー — [Windows パッケージ化](/ja/guides/build/windows) を参照
+- **macOS**: アプリケーションバンドル (`.app`) — [macOS パッケージ化](/ja/guides/build/macos) を参照
+- **Linux**: AppImage、deb、rpm — [Linux パッケージ化](/ja/guides/build/linux) を参照
+
+## カスタムビルドタグ
+
+`-tags` フラグを使用してカスタムの Go ビルドタグを渡します:
+
+```bash
+# Linux で実験的な GTK4 サポート付きでビルド
+wails3 build -tags gtk4
+
+# サーバーモードでビルド（GUI なし、CGO なし）
+wails3 build -tags server
+
+# 複数のタグを組み合わせる
+wails3 build -tags gtk4,customtag
+```
+
+タグは基盤となる Taskfile へ `EXTRA_TAGS` として渡されます。詳細については [サーバービルド](/ja/guides/server-build) および [Linux パッケージ化 - GTK4](/guides/build/linux#gtk4-support-experimental) を参照してください。
+
+## Task の直接利用
+
+より詳細な制御が必要な場合は、Task を直接使用します:
+
+```bash
+# 利用可能なタスクの一覧を表示
+wails3 task --list
+
+# 詳細な出力
+wails3 task build -v
+
+# ドライラン（実行しない）
+wails3 task --dry
+
+# 強制再ビルド
+wails3 task build -f
+
+# 変数を渡す
+wails3 task darwin:build ARCH=amd64
+```
+
+`linux:create:deb` や `darwin:build:universal` のようなプラットフォーム固有のタスクは、Task を通じてのみ利用可能です。
+
+## アセットの生成
+
+アイコンを再生成するか、ビルド構成を更新します:
+
+```bash
+wails3 generate icons -input build/appicon.png
+wails3 update build-assets -name "MyApp" -config build/config.yml -dir build
+```

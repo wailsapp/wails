@@ -1,0 +1,365 @@
+---
+title: バインディングのベストプラクティス
+description: Go-JavaScript バインディングのためのデザインパターンとベストプラクティス
+sidebar:
+  order: 4
+---
+
+## バインディングのベストプラクティス
+
+**実証されたパターン**に従ってバインディングを設計し、クリーンでパフォーマンスが高く、安全なバインディングを作成してください。このガイドでは、API デザインの原則、パフォーマンスの最適化、セキュリティパターン、エラー処理、および保守性の高いアプリケーションのためのテスト戦略について解説します。
+
+## API デザインの原則
+
+### 1. 単一責任の原則
+
+各サービスには明確な目的を一つだけ持たせてください：
+
+```go
+// ❌ 悪い例: God object
+type AppService struct {
+    // すべてを行う
+}
+
+func (a *AppService) SaveFile(path string, data []byte) error
+func (a *AppService) GetUser(id int) (*User, error)
+func (a *AppService) SendEmail(to, subject, body string) error
+func (a *AppService) ProcessPayment(amount float64) error
+
+// ✅ 良い例: 焦点を絞ったサービス
+type FileService struct{}
+func (f *FileService) Save(path string, data []byte) error
+
+type UserService struct{}
+func (u *UserService) GetByID(id int) (*User, error)
+
+type EmailService struct{}
+func (e *EmailService) Send(to, subject, body string) error
+
+type PaymentService struct{}
+func (p *PaymentService) Process(amount float64) error
+```
+
+### 2. 明確なメソッド名
+
+説明的でアクション指向の名前を使用してください：
+
+```go
+// ❌ 悪い例: 不明確な名前
+func (s *Service) Do(x string) error
+func (s *Service) Handle(data interface{}) interface{}
+func (s *Service) Process(input map[string]interface{}) bool
+
+// ✅ 良い例: 明確な名前
+func (s *FileService) SaveDocument(path string, content string) error
+func (s *UserService) AuthenticateUser(email, password string) (*User, error)
+func (s *OrderService) CreateOrder(items []Item) (*Order, error)
+```
+
+### 3. 一貫した戻り値の型
+
+エラーは常に明示的に返してください：
+
+```go
+// ❌ 悪い例: 一貫性のないエラー処理
+func (s *Service) GetData() interface{}  // エラーをどう扱う？
+func (s *Service) SaveData(data string)  // 静かな失敗？
+
+// ✅ 良い例: 明示的なエラー
+func (s *Service) GetData() (Data, error)
+func (s *Service) SaveData(data string) error
+```
+
+### 4. 入力検証
+
+Go 側で全ての入力を検証してください：
+
+```go
+// ❌ 悪い例: 検証なし
+func (s *UserService) CreateUser(email, password string) (*User, error) {
+    user := &User{Email: email, Password: password}
+    return s.db.Create(user)
+}
+
+// ✅ 良い例: まず検証する
+func (s *UserService) CreateUser(email, password string) (*User, error) {
+    // メールアドレスを検証
+    if !isValidEmail(email) {
+        return nil, errors.New("invalid email address")
+    }
+    
+    // パスワードを検証
+    if len(password) < 8 {
+        return nil, errors.New("password must be at least 8 characters")
+    }
+    
+    // パスワードをハッシュ化
+    hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+    if err != nil {
+        return nil, err
+    }
+    
+    user := &User{
+        Email:        email,
+        PasswordHash: string(hash),
+    }
+    
+    return s.db.Create(user)
+}
+```
+
+## パフォーマンスパターン
+
+### 1. バッチ処理
+
+ブリッジ呼び出しをバッチ処理して削減してください：
+
+```go
+// ❌ 悪い例: N 回の呼び出し
+// JavaScript
+for (const item of items) {
+    await ProcessItem(item)  // N 回のブリッジ呼び出し
+}
+
+// ✅ 良い例: 1 回の呼び出し
+// Go
+func (s *Service) ProcessItems(items []Item) ([]Result, error) {
+    results := make([]Result, len(items))
+    for i, item := range items {
+        results[i] = s.processItem(item)
+    }
+    return results, nil
+}
+
+// JavaScript
+const results = await ProcessItems(items)  // 1 回のブリッジ呼び出し
+```
+
+### 2. ページネーション
+
+巨大なデータセットをそのまま返さないでください：
+
+```go
+// ❌ 悪い例: すべてを返す
+func (s *Service) GetAllUsers() ([]User, error) {
+    return s.db.FindAll()  // 数百万件になる可能性
+}
+
+// ✅ 良い例: ページネーション対応
+type PageRequest struct {
+    Page     int `json:"page"`
+    PageSize int `json:"pageSize"`
+}
+
+type PageResponse struct {
+    Items      []User `json:"items"`
+    TotalItems int    `json:"totalItems"`
+    TotalPages int    `json:"totalPages"`
+    Page       int    `json:"page"`
+}
+
+func (s *Service) GetUsers(req PageRequest) (*PageResponse, error) {
+    // 検証
+    if req.Page < 1 {
+        req.Page = 1
+    }
+    if req.PageSize < 1 || req.PageSize > 100 {
+        req.PageSize = 20
+    }
+    
+    // 総数を取得
+    total, err := s.db.Count()
+    if err != nil {
+        return nil, err
+    }
+    
+    // ページを取得
+    offset := (req.Page - 1) * req.PageSize
+    users, err := s.db.Find(offset, req.PageSize)
+    if err != nil {
+        return nil, err
+    }
+    
+    return &PageResponse{
+        Items:      users,
+        TotalItems: total,
+        TotalPages: (total + req.PageSize - 1) / req.PageSize,
+        Page:       req.Page,
+    }, nil
+}
+```
+
+### 3. キャッシング
+
+高コストな操作をキャッシュしてください：
+
+```go
+type CachedService struct {
+    cache map[string]interface{}
+    mu    sync.RWMutex
+    ttl   time.Duration
+}
+
+func (s *CachedService) GetData(key string) (interface{}, error) {
+    // キャッシュを確認
+    s.mu.RLock()
+    if data, ok := s.cache[key]; ok {
+        s.mu.RUnlock()
+        return data, nil
+    }
+    s.mu.RUnlock()
+    
+    // データを取得
+    data, err := s.fetchData(key)
+    if err != nil {
+        return nil, err
+    }
+    
+    // キャッシュに格納
+    s.mu.Lock()
+    s.cache[key] = data
+    s.mu.Unlock()
+    
+    // 有効期限を設定
+    go func() {
+        time.Sleep(s.ttl)
+        s.mu.Lock()
+        delete(s.cache, key)
+        s.mu.Unlock()
+    }()
+    
+    return data, nil
+}
+```
+
+### 4. イベントによるストリーミング
+
+ストリーミングデータにはイベントを使用してください：
+
+```go
+// ❌ 悪い例: ポーリング
+func (s *Service) GetProgress() int {
+    return s.progress
+}
+
+// JavaScript がポーリング
+setInterval(async () => {
+    const progress = await GetProgress()
+    updateUI(progress)
+}, 100)
+
+// ✅ 良い例: イベント
+func (s *Service) ProcessLargeFile(path string) error {
+    file, err := os.Open(path)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+    
+    scanner := bufio.NewScanner(file)
+    total := 0
+    processed := 0
+    
+    // 行数をカウント
+    for scanner.Scan() {
+        total++
+    }
+    
+    // 処理
+    file.Seek(0, 0)
+    scanner = bufio.NewScanner(file)
+    
+    for scanner.Scan() {
+        s.processLine(scanner.Text())
+        processed++
+        
+        // 進捗をemit
+        s.app.Event.Emit("progress", map[string]interface{}{
+            "processed": processed,
+            "total":     total,
+            "percent":   int(float64(processed) / float64(total) * 100),
+        })
+    }
+    
+    return scanner.Err()
+}
+
+// JavaScript がリスン
+OnEvent("progress", (data) => {
+    updateProgress(data.percent)
+})
+```
+
+## セキュリティパターン
+
+### 1. 入力のサニタイズ
+
+常にユーザー入力をサニタイズしてください：
+
+```go
+import (
+    "html"
+    "strings"
+)
+
+func (s *Service) SaveComment(text string) error {
+    // サニタイズ
+    text = strings.TrimSpace(text)
+    text = html.EscapeString(text)
+    
+    // 長さを検証
+    if len(text) == 0 {
+        return errors.New("comment cannot be empty")
+    }
+    if len(text) > 1000 {
+        return errors.New("comment too long")
+    }
+    
+    return s.db.SaveComment(text)
+}
+```
+
+### 2. 認証
+
+機密性の高い操作を保護してください：
+
+```go
+type AuthService struct {
+    sessions map[string]*Session
+    mu       sync.RWMutex
+}
+
+func (a *AuthService) Login(email, password string) (string, error) {
+    user, err := a.db.FindByEmail(email)
+    if err != nil {
+        return "", errors.New("invalid credentials")
+    }
+    
+    if !a.verifyPassword(user.PasswordHash, password) {
+        return "", errors.New("invalid credentials")
+    }
+    
+    // セッションを作成
+    token := generateToken()
+    a.mu.Lock()
+    a.sessions[token] = &Session{
+        UserID:    user.ID,
+        ExpiresAt: time.Now().Add(24 * time.Hour),
+    }
+    a.mu.Unlock()
+    
+    return token, nil
+}
+
+func (a *AuthService) requireAuth(token string) (*Session, error) {
+    a.mu.RLock()
+    session, ok := a.sessions[token]
+    a.mu.RUnlock()
+    
+    if !ok {
+        return nil, errors.New("not authenticated")
+    }
+    
+    if time.Now().After(session.ExpiresAt) {---
+
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[binding examples](https://github.com/wailsapp/wails/tree/master/v3/examples/binding) をご確認ください。

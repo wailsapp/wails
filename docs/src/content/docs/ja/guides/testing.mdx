@@ -1,0 +1,175 @@
+---
+title: テスト
+description: Wails アプリケーションをテストする
+sidebar:
+  order: 5
+---
+
+## 概要
+
+テストは、アプリケーションが正しく動作することを確認し、回帰（既存の機能が壊れること）を防ぐために重要です。
+
+## ユニットテスト
+
+### サービスのテスト
+
+```go
+func TestUserService_Create(t *testing.T) {
+    service := &UserService{
+        users: make(map[string]*User),
+    }
+    
+    user, err := service.Create("john@example.com", "password123")
+    if err != nil {
+        t.Fatalf("unexpected error: %v", err)
+    }
+    
+    if user.Email != "john@example.com" {
+        t.Errorf("expected email john@example.com, got %s", user.Email)
+    }
+}
+```
+
+### モックを使用したテスト
+
+```go
+type MockDB struct {
+    users map[string]*User
+}
+
+func (m *MockDB) Create(user *User) error {
+    m.users[user.ID] = user
+    return nil
+}
+
+func TestUserService_WithMock(t *testing.T) {
+    mockDB := &MockDB{users: make(map[string]*User)}
+    service := &UserService{db: mockDB}
+    
+    user, err := service.Create("test@example.com", "pass")
+    if err != nil {
+        t.Fatal(err)
+    }
+    
+    if len(mockDB.users) != 1 {
+        t.Error("expected 1 user in mock")
+    }
+}
+```
+
+## インテグレーションテスト
+
+### 実際の依存関係を使用したテスト
+
+```go
+func TestIntegration(t *testing.T) {
+    // テストデータベースのセットアップ
+    db, err := sql.Open("sqlite3", ":memory:")
+    if err != nil {
+        t.Fatal(err)
+    }
+    defer db.Close()
+    
+    // スキーマの作成
+    _, err = db.Exec(`CREATE TABLE users (...)`)
+    if err != nil {
+        t.Fatal(err)
+    }
+    
+    // サービスのテスト
+    service := &UserService{db: db}
+    user, err := service.Create("test@example.com", "password")
+    if err != nil {
+        t.Fatal(err)
+    }
+    
+    // データベース内の確認
+    var count int
+    db.QueryRow("SELECT COUNT(*) FROM users").Scan(&count)
+    if count != 1 {
+        t.Errorf("expected 1 user, got %d", count)
+    }
+}
+```
+
+## フロントエンドテスト
+
+### JavaScript ユニットテスト
+
+```javascript
+// Vitest を使用
+import { describe, it, expect } from 'vitest'
+import { formatDate } from './utils'
+
+describe('formatDate', () => {
+    it('formats date correctly', () => {
+        const date = new Date('2024-01-01')
+        expect(formatDate(date)).toBe('2024-01-01')
+    })
+})
+```
+
+### バインディングのテスト
+
+```javascript
+import { vi } from 'vitest'
+import { GetUser } from './bindings/myapp/userservice'
+
+// バインディングをモックする
+vi.mock('./bindings/myapp/userservice', () => ({
+    GetUser: vi.fn()
+}))
+
+describe('User Component', () => {
+    it('loads user data', async () => {
+        GetUser.mockResolvedValue({ name: 'John', email: 'john@example.com' })
+        
+        // コンポーネントのテスト
+        const user = await GetUser(1)
+        expect(user.name).toBe('John')
+    })
+})
+```
+
+## ベストプラクティス
+
+### ✅ 推奨事項
+
+- バグ修正前にテストを書く
+- エッジケースをテストする
+- テーブル駆動テストを使用する
+- 外部依存関係をモックする
+- エラーハンドリングをテストする
+- テストを高速に保つ
+
+### ❌ 非推奨事項
+
+- エラーケースをスキップしない
+- 実装の詳細をテストしない
+- 不安定なテストを書かない
+- テストの失敗を無視しない
+- インテグレーションテストをスキップしない
+
+## テストの実行
+
+```bash
+# Go テストの実行
+go test ./...
+
+# カバレッジ付きで実行
+go test -cover ./...
+
+# 特定のテストの実行
+go test -run TestUserService
+
+# フロントエンドテストの実行
+cd frontend && npm test
+
+# ウォッチモードで実行
+cd frontend && npm test -- --watch
+```
+
+## 次のステップ
+
+- [エンドツーエンドテスト](/ja/guides/e2e-testing) - 完全なユーザーフローをテストする
+- [ベストプラクティス](/ja/features/bindings/best-practices) - ベストプラクティスを学ぶ

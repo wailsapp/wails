@@ -1,0 +1,606 @@
+---
+title: 複数ウィンドウ
+description: マルチウィンドウアプリケーションのパターンとベストプラクティス
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## マルチウィンドウアプリケーション
+
+Wails v3 は、設定ウィンドウ、ドキュメントウィンドウ、ツールパレット、インスペクターウィンドウを作成するための**ネイティブなマルチウィンドウサポート**を提供します。ウィンドウを追跡し、ウィンドウ間の通信を有効にし、シンプルで一貫した API でライフサイクルを管理します。
+
+### メインウィンドウと設定ウィンドウ
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+type App struct {
+    app            *application.Application
+    mainWindow     *application.WebviewWindow
+    settingsWindow *application.WebviewWindow
+}
+
+func main() {
+    app := &App{}
+    
+    app.app = application.New(application.Options{
+        Name: "Multi-Window App",
+    })
+    
+    // Create main window
+    app.mainWindow = app.app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Name:   "main",
+        Title:  "Main Application",
+        Width:  1200,
+        Height: 800,
+    })
+    
+    // Create settings window (hidden initially)
+    app.settingsWindow = app.app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Name:   "settings",
+        Title:  "Settings",
+        Width:  600,
+        Height: 400,
+        Hidden: true,
+    })
+    
+    app.app.Run()
+}
+
+// Show settings from main window
+func (a *App) ShowSettings() {
+    if a.settingsWindow != nil {
+        a.settingsWindow.Show()
+        a.settingsWindow.SetFocus()
+    }
+}
+```
+
+**重要なポイント:**
+- メインウィンドウは常に表示される
+- 設定ウィンドウは作成されるが、最初は非表示
+- 必要に応じて設定を表示
+- 同じウィンドウを再利用する（複数作成しない）
+
+## ウィンドウの追跡
+
+### すべてのウィンドウの取得
+
+```go
+windows := app.Window.GetAll()
+fmt.Printf("Total windows: %d\n", len(windows))
+
+for _, window := range windows {
+    fmt.Printf("- %s (ID: %d)\n", window.Name(), window.ID())
+}
+```
+
+### 特定のウィンドウの検索
+
+```go
+// 名前による検索
+settings := app.GetWindowByName("settings")
+if settings != nil {
+    settings.Show()
+}
+
+// ID による検索
+window := app.GetWindowByID(123)
+
+// 現在（フォーカスされている）ウィンドウ
+current := app.Window.Current()
+```
+
+### ウィンドウレジストリパターン
+
+アプリケーション内でウィンドウを追跡します：
+
+```go
+type WindowManager struct {
+    windows map[string]*application.WebviewWindow
+    mu      sync.RWMutex
+}
+
+func (wm *WindowManager) Register(name string, window *application.WebviewWindow) {
+    wm.mu.Lock()
+    defer wm.mu.Unlock()
+    wm.windows[name] = window
+}
+
+func (wm *WindowManager) Get(name string) *application.WebviewWindow {
+    wm.mu.RLock()
+    defer wm.mu.RUnlock()
+    return wm.windows[name]
+}
+
+func (wm *WindowManager) Remove(name string) {
+    wm.mu.Lock()
+    defer wm.mu.Unlock()
+    delete(wm.windows, name)
+}
+```
+
+## ウィンドウ間の通信
+
+### イベントの使用
+
+ウィンドウはイベントシステムを通じて通信します：
+
+```go
+// メインウィンドウ内 - イベントの送信
+app.Event.Emit("settings-changed", map[string]interface{}{
+    "theme": "dark",
+    "fontSize": 14,
+})
+
+// 設定ウィンドウ内 - イベントの受信
+app.Event.On("settings-changed", func(event *application.WailsEvent) {
+    data := event.Data.(map[string]interface{})
+    theme := data["theme"].(string)
+    fontSize := data["fontSize"].(int)
+    
+    // UI の更新
+    updateSettings(theme, fontSize)
+})
+```
+
+### 共有状態パターン
+
+共有状態マネージャーを使用します：
+
+```go
+type AppState struct {
+    theme    string
+    fontSize int
+    mu       sync.RWMutex
+}
+
+var state = &AppState{
+    theme:    "light",
+    fontSize: 12,
+}
+
+func (s *AppState) SetTheme(theme string) {
+    s.mu.Lock()
+    s.theme = theme
+    s.mu.Unlock()
+    
+    // すべてのウィンドウに通知
+    app.Event.Emit("theme-changed", theme)
+}
+
+func (s *AppState) GetTheme() string {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+    return s.theme
+}
+```
+
+### ウィンドウ間メッセージ
+
+特定のウィンドウ間でメッセージを送信します：
+
+```go
+// 宛先ウィンドウの取得
+targetWindow := app.GetWindowByName("preview")
+
+// 特定のウィンドウへのイベント送信
+targetWindow.EmitEvent("update-preview", previewData)
+```
+
+## 一般的なパターン
+
+### パターン 1: シングルトンウィンドウ
+
+ウィンドウのインスタンスが 1 つだけ存在することを保証します：
+
+```go
+var settingsWindow *application.WebviewWindow
+
+func ShowSettings(app *application.Application) {
+    // 存在しない場合は作成
+    if settingsWindow == nil {
+        settingsWindow = app.Window.NewWithOptions(application.WebviewWindowOptions{
+            Name:   "settings",
+            Title:  "Settings",
+            Width:  600,
+            Height: 400,
+        })
+        
+        // 閉じた際のクリーンアップ
+        settingsWindow.OnDestroy(func() {
+            settingsWindow = nil
+        })
+    }
+    
+    // 表示とフォーカス
+    settingsWindow.Show()
+    settingsWindow.SetFocus()
+}
+```
+
+### パターン 2: ドキュメントウィンドウ
+
+同じウィンドウタイプの複数のインスタンス：
+
+```go
+type DocumentWindow struct {
+    window   *application.WebviewWindow
+    filePath string
+    modified bool
+}
+
+var documents = make(map[string]*DocumentWindow)
+
+func OpenDocument(app *application.Application, filePath string) {
+    // すでに開かれているか確認
+    if doc, exists := documents[filePath]; exists {
+        doc.window.Show()
+        doc.window.SetFocus()
+        return
+    }
+    
+    // 新しいドキュメントウィンドウの作成
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  filepath.Base(filePath),
+        Width:  800,
+        Height: 600,
+    })
+    
+    doc := &DocumentWindow{
+        window:   window,
+        filePath: filePath,
+        modified: false,
+    }
+    
+    documents[filePath] = doc
+    
+    // 閉じた際のクリーンアップ
+    window.OnDestroy(func() {
+        delete(documents, filePath)
+    })
+    
+    // ドキュメントの読み込み
+    loadDocument(window, filePath)
+}
+```
+
+### パターン 3: ツールパレット
+
+常に最前面に表示されるフローティングウィンドウ：
+
+```go
+func CreateToolPalette(app *application.Application) *application.WebviewWindow {
+    palette := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Name:        "tools",
+        Title:       "Tools",
+        Width:       200,
+        Height:      400,
+        AlwaysOnTop: true,
+        Resizable:   false,
+    })
+    
+    return palette
+}
+```
+
+### パターン 4: モーダルダイアログ（macOS のみ）
+
+親ウィンドウをブロックする子ウィンドウ：
+
+```go
+func ShowModaldialog(parent *application.WebviewWindow, title string) {
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:       title,
+        Width:       400,
+        Height:      200,
+        Parent:      parent,
+        AlwaysOnTop: true,
+        Resizable:   false,
+    })
+    
+    parent.AttachModal(dialog)
+}
+```
+
+### パターン 5: インスペクター/プレビューウィンドウ
+
+連携して更新されるウィンドウ：
+
+```go
+type EditorApp struct {
+    editor  *application.WebviewWindow
+    preview *application.WebviewWindow
+}
+
+func (e *EditorApp) UpdatePreview(content string) {
+    if e.preview != nil && e.preview.IsVisible() {
+        e.preview.EmitEvent("content-changed", content)
+    }
+}
+
+func (e *EditorApp) TogglePreview() {
+    if e.preview == nil {
+        e.preview = app.Window.NewWithOptions(application.WebviewWindowOptions{
+            Name:   "preview",
+            Title:  "Preview",
+            Width:  600,
+            Height: 800,
+        })
+        
+        e.preview.OnDestroy(func() {
+            e.preview = nil
+        })
+    }
+    
+    if e.preview.IsVisible() {
+        e.preview.Hide()
+    } else {
+        e.preview.Show()
+    }
+}
+```
+
+## 親ウィンドウと子ウィンドウの関係
+
+### 子ウィンドウの作成
+
+```go
+childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "Child Window",
+})
+
+parentWindow.AttachModal(childWindow)
+```
+
+**動作:**
+- 子ウィンドウは親ウィンドウの前面に表示される
+- 子ウィンドウは親ウィンドウと一緒に移動する
+- 子ウィンドウは親ウィンドウへの操作をブロックする
+
+**プラットフォームサポート:**
+
+| macOS | Windows | Linux |
+|-------|---------|-------|
+| ✅ | ❌ | ❌ |
+
+### モーダル動作
+
+モーダル風の動作を作成します：
+
+```go
+func ShowModaldialog(parent *application.WebviewWindow, title string) {dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:       title,
+    Width:       400,
+    Height:      200,
+})
+
+parent.AttachModal(dialog)
+}
+```
+
+## ウィンドウのライフサイクル管理
+
+### 作成コールバック
+
+ウィンドウが作成されたことを通知されます:
+
+```go
+app.OnWindowCreation(func(window *application.WebviewWindow) {
+    fmt.Printf("Window created: %s\n", window.Name())
+    
+    // Configure all new windows
+    window.SetMinSize(400, 300)
+})
+```
+
+### 破棄コールバック
+
+ウィンドウが破棄されたときにクリーンアップします:
+
+```go
+window.OnDestroy(func() {
+    fmt.Printf("Window %s destroyed\n", window.Name())
+    
+    // Cleanup resources
+    cleanup(window.ID())
+    
+    // Remove from tracking
+    removeFromRegistry(window.Name())
+})
+```
+
+### アプリケーション終了の動作
+
+アプリケーションの終了タイミングを制御します:
+
+```go
+app := application.New(application.Options{
+    Mac: application.MacOptions{
+        // Don't quit when last window closes
+        ApplicationShouldTerminateAfterLastWindowClosed: false,
+    },
+})
+```
+
+**ユースケース:**
+- システムトレイアプリケーション
+- バックグラウンドサービス
+- メニューバーアプリケーション (macOS)
+
+## メモリ管理
+
+### リークの防止
+
+ウィンドウ参照は常にクリーンアップしてください:
+
+```go
+var windows = make(map[string]*application.WebviewWindow)
+
+func CreateWindow(name string) {
+    window := app.Window.New()
+    windows[name] = window
+    
+    // IMPORTANT: Clean up on destroy
+    window.OnDestroy(func() {
+        delete(windows, name)
+    })
+}
+```
+
+### 閉じる vs 破棄する
+
+```go
+// Close - triggers OnClose, can be cancelled
+window.Close()
+
+// Destroy - immediate, cannot be cancelled
+window.Destroy()
+```
+
+**ベストプラクティス:** ユーザーによる閉じる操作には `Close()` を、クリーンアップには `Destroy()` を使用します。
+
+### リソースのクリーンアップ
+
+```go
+type ManagedWindow struct {
+    window     *application.WebviewWindow
+    resources  []io.Closer
+}
+
+func (mw *ManagedWindow) Destroy() {
+    // Close all resources
+    for _, resource := range mw.resources {
+        resource.Close()
+    }
+    
+    // Destroy window
+    mw.window.Destroy()
+}
+```
+
+## 高度なパターン
+
+### ウィンドウプール
+
+新しいウィンドウを作成するのではなく、ウィンドウを再利用します:
+
+```go
+type WindowPool struct {
+    available []*application.WebviewWindow
+    inUse     map[uint]*application.WebviewWindow
+    mu        sync.Mutex
+}
+
+func (wp *WindowPool) Acquire() *application.WebviewWindow {
+    wp.mu.Lock()
+    defer wp.mu.Unlock()
+    
+    // Reuse available window
+    if len(wp.available) > 0 {
+        window := wp.available[0]
+        wp.available = wp.available[1:]
+        wp.inUse[window.ID()] = window
+        return window
+    }
+    
+    // Create new window
+    window := app.Window.New()
+    wp.inUse[window.ID()] = window
+    return window
+}
+
+func (wp *WindowPool) Release(window *application.WebviewWindow) {
+    wp.mu.Lock()
+    defer wp.mu.Unlock()
+    
+    delete(wp.inUse, window.ID())
+    window.Hide()
+    wp.available = append(wp.available, window)
+}
+```
+
+### ウィンドウグループ
+
+関連するウィンドウをまとめて管理します:
+
+```go
+type WindowGroup struct {
+    name    string
+    windows []*application.WebviewWindow
+}
+
+func (wg *WindowGroup) Add(window *application.WebviewWindow) {
+    wg.windows = append(wg.windows, window)
+}
+
+func (wg *WindowGroup) ShowAll() {
+    for _, window := range wg.windows {
+        window.Show()
+    }
+}
+
+func (wg *WindowGroup) HideAll() {
+    for _, window := range wg.windows {
+        window.Hide()
+    }
+}
+
+func (wg *WindowGroup) CloseAll() {
+    for _, window := range wg.windows {
+        window.Close()
+    }
+}
+```
+
+### ワークスペース管理
+
+ウィンドウのレイアウトを保存および復元します:
+
+```go
+type WindowLayout struct {
+    Windows []WindowState `json:"windows"`
+}
+
+type WindowState struct {
+    Name   string `json:"name"`
+    X      int    `json:"x"`
+    Y      int    `json:"y"`
+    Width  int    `json:"width"`
+    Height int    `json:"height"`
+}
+
+func SaveLayout() *WindowLayout {
+    layout := &WindowLayout{}
+    
+    for _, window := range app.Window.GetAll() {
+        x, y := window.Position()
+        width, height := window.Size()
+        
+        layout.Windows = append(layout.Windows, WindowState{
+            Name:   window.Name(),
+            X:      x,
+            Y:      y,
+            Width:  width,
+            Height: height,
+        })
+    }
+    
+    return layout
+}
+
+func RestoreLayout(layout *WindowLayout) {
+    for _, state := range layout.Windows {
+        window := app.GetWindowByName(state.Name)
+        if window != nil {
+            window.SetPosition(state.X, state.Y)
+            window.SetSize(state.Width, state.Height)
+        }
+    }
+}---
+
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[マルチウィンドウの例](https://github.com/wailsapp/wails/tree/master/v3/examples/multi-window) を確認してください。

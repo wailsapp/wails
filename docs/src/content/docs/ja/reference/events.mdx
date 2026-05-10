@@ -1,0 +1,736 @@
+---
+title: Events API
+description: Events API の完全なリファレンス
+sidebar:
+  order: 4
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 概要
+
+Events API は、イベントの発行と購読を行うためのメソッドを提供し、アプリケーションの異なる部分間の通信を可能にします。
+
+**イベントの種類:**
+- **アプリケーションイベント** - アプリケーションのライフサイクルイベント（起動、シャットダウン）
+- **ウィンドウイベント** - ウィンドウの状態変化（フォーカス、ブラー、リサイズ）
+- **カスタムイベント** - アプリ固有の通信のためのユーザー定義イベント
+
+**通信パターン:**
+- **Go からフロントエンドへ** - Go でイベントを発行し、JavaScript で購読
+- **フロントエンドから Go へ** - 直接は不可（サービスバインディングを使用）
+- **フロントエンドからフロントエンドへ** - Go またはローカルランタイムイベント経由
+- **ウィンドウからウィンドウへ** - 特定のウィンドウを対象とするか、すべてのウィンドウにブロードキャスト
+
+## イベントメソッド (Go)
+
+### app.Event.Emit()
+
+すべてのウィンドウにカスタムイベントを発行します。
+
+```go
+func (em *EventManager) Emit(name string, data ...interface{})
+```
+
+**パラメータ:**
+- `name` - イベント名
+- `data` - イベントと共に送信するオプションのデータ
+
+**例:**
+```go
+// シンプルなイベントを発行
+app.Event.Emit("user-logged-in")
+
+// データ付きで発行
+app.Event.Emit("data-updated", map[string]interface{}{
+    "count": 42,
+    "status": "success",
+})
+
+// 複数の値を発行
+app.Event.Emit("progress", 75, "Processing files...")
+```
+
+### app.Event.On()
+
+Go でカスタムイベントを購読します。
+
+```go
+func (em *EventManager) On(name string, callback func(*CustomEvent)) func()
+```
+
+**パラメータ:**
+- `name` - 購読するイベント名
+- `callback` - イベントが発行されたときに呼び出される関数
+
+**戻り値:** イベントリスナーを削除するためのクリーンアップ関数
+
+**例:**
+```go
+// イベントを購読
+cleanup := app.Event.On("user-action", func(e *application.CustomEvent) {
+    data := e.Data.(map[string]interface{})
+    action := data["action"].(string)
+    app.Logger.Info("User action", "action", action)
+})
+
+// その後、リスナーを削除
+cleanup()
+```
+
+### ウィンドウ固有のイベント
+
+特定のウィンドウにイベントを発行します：
+
+```go
+// 特定のウィンドウに発行
+window.EmitEvent("notification", "Hello from Go!")
+
+// すべてのウィンドウに発行
+app.Event.Emit("global-update", data)
+```
+
+## イベントメソッド (フロントエンド)
+
+### On()
+
+Go からのイベントを購読します。
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.On(eventName, callback)
+```
+
+**パラメータ:**
+- `eventName` - 購読するイベント名
+- `callback` - イベントが受信されたときに呼び出される関数
+
+**戻り値:** クリーンアップ関数
+
+**例:**
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// イベントを購読
+const cleanup = Events.On('data-updated', (data) => {
+    console.log('Count:', data.count)
+    console.log('Status:', data.status)
+    updateUI(data)
+})
+
+// その後、リスナーを削除
+cleanup()
+```
+
+### Once()
+
+単一のイベント発生を購読します。
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.Once(eventName, callback)
+```
+
+**例:**
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// 最初の発生のみを購読
+Events.Once('initialization-complete', (data) => {
+    console.log('App initialized!', data)
+    // これは一度だけ発火します
+})
+```
+
+### Off()
+
+イベントリスナーを削除します。
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.Off(eventName, callback)
+```
+
+**例:**
+```javascript
+import { Events } from '@wailsio/runtime'
+
+const handler = (data) => {
+    console.log('Event received:', data)
+}
+
+// 購読開始
+Events.On('my-event', handler)
+
+// 購読停止
+Events.Off('my-event', handler)
+```
+
+### OffAll()
+
+イベントのすべてのリスナーを削除します。
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.OffAll(eventName)
+```
+
+**例:**
+```javascript
+// このイベントのすべてのリスナーを削除
+OffAll('data-updated')
+```
+
+## アプリケーションイベント
+
+### app.Event.OnApplicationEvent()
+
+アプリケーションのライフサイクルイベントを購読します。
+
+```go
+func (em *EventManager) OnApplicationEvent(eventType ApplicationEventType, callback func(*ApplicationEvent)) func()
+```
+
+**イベントの種類:**
+- `EventApplicationStarted` - アプリケーションが起動しました
+- `EventApplicationShutdown` - アプリケーションがシャットダウンしています
+- `EventApplicationDebug` - デバッグイベント（開発モードのみ）
+
+**例:**
+```go
+// アプリケーションの起動を処理
+app.Event.OnApplicationEvent(application.EventApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Application started")
+    // リソースを初期化
+})
+
+// アプリケーションのシャットダウンを処理
+app.Event.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Application shutting down")
+    // リソースのクリーンアップ、状態の保存
+    database.Close()
+    saveSettings()
+})
+```
+
+## ウィンドウイベント
+
+### OnWindowEvent()
+
+ウィンドウ固有のイベントを購読します。
+
+```go
+func (w *Window) OnWindowEvent(eventType WindowEventType, callback func(*WindowEvent)) func()
+```
+
+**イベントの種類:**
+- `EventWindowFocus` - ウィンドウがフォーカスを受け取りました
+- `EventWindowBlur` - ウィンドウがフォーカスを失いました
+- `EventWindowClose` - ウィンドウが閉じています
+- `EventWindowResize` - ウィンドウがリサイズされました
+- `EventWindowMove` - ウィンドウが移動しました
+
+**例:**
+```go
+// ウィンドウのフォーカスを処理
+window.OnWindowEvent(application.EventWindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window focused")
+})
+
+// ウィンドウのリサイズを処理
+window.OnWindowEvent(application.EventWindowResize, func(e *application.WindowEvent) {
+    width, height := window.Size()
+    app.Logger.Info("Window resized", "width", width, "height", height)
+})
+```
+
+## 一般的なパターン
+
+これらのパターンは、実際のアプリケーションでイベントを使用するための実証されたアプローチを示しています。各パターンは、Go バックエンドとフロントエンド間の特定の通信課題を解決し、応答性が高く、構造化されたアプリケーションの構築を支援します。
+
+### リクエスト/レスポンスパターン
+
+データフェッチ、ファイル処理、またはバックグラウンドタスクの完了後など、バックエンド操作の完了をフロントエンドに通知したい場合に使用します。サービスバインディングはデータを直接返しますが、イベントはトーストメッセージの表示やリストの更新など、UI 更新のための追加の通知を提供します。
+
+**Go:**
+
+```go
+// サービスメソッド
+type DataService struct {
+    app *application.Application
+}
+
+func (s *DataService) FetchData(query string) ([]Item, error) {
+    items := fetchFromDatabase(query)
+
+    // 完了時にイベントを発行
+    s.app.Event.Emit("data-fetched", map[string]interface{}{
+        "query": query,
+        "count": len(items),
+    })
+
+    return items, nil
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { FetchData } from './bindings/DataService'
+import { Events } from '@wailsio/runtime'
+
+// 完了イベントを購読
+Events.On('data-fetched', (data) => {
+    console.log(`Fetched ${data.count} items for query: ${data.query}`)
+    showNotification(`Found ${data.count} results`)
+})
+
+// サービスメソッドを呼び出し
+const items = await FetchData("search term")
+displayItems(items)
+```### 進行状況の更新
+
+ファイルアップロード、バッチ処理、大量のデータインポート、動画エンコードなどの長時間実行される操作に最適です。操作中に進行状況イベントを発信（Emit）して、UI のプログレスバー、ステータステキスト、またはステップインジケーターを更新し、ユーザーにリアルタイムのフィードバックを提供します。
+
+**Go:**
+
+```go
+func (s *Service) ProcessFiles(files []string) error {
+    total := len(files)
+
+    for i, file := range files {
+        // Process file
+        processFile(file)
+
+        // Emit progress event
+        s.app.Event.Emit("progress", map[string]interface{}{
+            "current": i + 1,
+            "total":   total,
+            "percent": float64(i+1) / float64(total) * 100,
+            "file":    file,
+        })
+    }
+
+    s.app.Event.Emit("processing-complete")
+    return nil
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Update progress bar
+Events.On('progress', (data) => {
+    progressBar.style.width = `${data.percent}%`
+    statusText.textContent = `Processing ${data.file}... (${data.current}/${data.total})`
+})
+
+// Handle completion
+Events.Once('processing-complete', () => {
+    progressBar.style.width = '100%'
+    statusText.textContent = 'Complete!'
+    setTimeout(() => hideProgressBar(), 2000)
+})
+```
+
+### マルチウィンドウ間の通信
+
+設定パネル、ダッシュボード、またはドキュメントビューアーなど、複数のウィンドウを持つアプリケーションに最適です。すべてのウィンドウ間で状態を同期するためにイベントをブロードキャスト（テーマ変更、ユーザー設定など）するか、ウィンドウ固有の更新のために特定のウィンドウ宛てにターゲット指定されたイベントを送信します。
+
+**Go:**
+
+```go
+// Broadcast to all windows
+app.Event.Emit("theme-changed", "dark")
+
+// Send to specific window
+preferencesWindow.EmitEvent("settings-updated", settings)
+
+// Window-specific listener
+window1.OnEvent("request-data", func(e *application.CustomEvent) {
+    // Only this window will receive this event
+    window1.EmitEvent("data-response", data)
+})
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Listen in any window
+Events.On('theme-changed', (theme) => {
+    document.body.className = theme
+})
+```
+
+### 状態の同期
+
+ユーザーセッション、アプリケーション設定、または共同作業機能など、フロントエンドとバックエンドの状態を同期する必要がある場合に使用します。バックエンドで状態が変更された場合、接続されているすべてのフロントエンドを更新するためにイベントを発信し、アプリケーション全体で一貫性を確保します。
+
+**Go:**
+
+```go
+type StateService struct {
+    app   *application.Application
+    state map[string]interface{}
+    mu    sync.RWMutex
+}
+
+func (s *StateService) UpdateState(key string, value interface{}) {
+    s.mu.Lock()
+    s.state[key] = value
+    s.mu.Unlock()
+
+    // Notify all windows
+    s.app.Event.Emit("state-updated", map[string]interface{}{
+        "key":   key,
+        "value": value,
+    })
+}
+
+func (s *StateService) GetState(key string) interface{} {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+    return s.state[key]
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+import { GetState } from './bindings/StateService'
+
+// Keep local state in sync
+let localState = {}
+
+Events.On('state-updated', async (data) => {
+    localState[data.key] = data.value
+    updateUI(data.key, data.value)
+})
+
+// Initialize state
+const initialState = await GetState("all")
+localState = initialState
+```
+
+### イベント駆動型の通知
+
+成功の確認、エラーアラート、または情報メッセージなど、ユーザーフィードバックを表示する場合に最適です。サービスから直接 UI コードを呼び出す代わりに、通知イベントを発信してフロントエンドが一貫して処理できるようにします。これにより、通知のスタイルを変更したり、通知履歴などの機能を追加したりすることが容易になります。
+
+**Go:**
+
+```go
+type NotificationService struct {
+    app *application.Application
+}
+
+func (s *NotificationService) Success(message string) {
+    s.app.Event.Emit("notification", map[string]interface{}{
+        "type":    "success",
+        "message": message,
+    })
+}
+
+func (s *NotificationService) Error(message string) {
+    s.app.Event.Emit("notification", map[string]interface{}{
+        "type":    "error",
+        "message": message,
+    })
+}
+
+func (s *NotificationService) Info(message string) {
+    s.app.Event.Emit("notification", map[string]interface{}{
+        "type":    "info",
+        "message": message,
+    })
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Unified notification handler
+Events.On('notification', (data) => {
+    const toast = document.createElement('div')
+    toast.className = `toast toast-${data.type}`
+    toast.textContent = data.message
+
+    document.body.appendChild(toast)
+
+    setTimeout(() => {
+        toast.classList.add('fade-out')
+        setTimeout(() => toast.remove(), 300)
+    }, 3000)
+})
+```
+
+## 完全な例
+
+**Go:**
+
+```go
+package main
+
+import (
+    "sync"
+    "time"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type EventDemoService struct {
+    app *application.Application
+    mu  sync.Mutex
+}
+
+func NewEventDemoService(app *application.Application) *EventDemoService {
+    service := &EventDemoService{app: app}
+
+    // Listen for custom events
+    app.Event.On("user-action", func(e *application.CustomEvent) {
+        data := e.Data.(map[string]interface{})
+        app.Logger.Info("User action received", "data", data)
+    })
+
+    return service
+}
+
+func (s *EventDemoService) StartLongTask() {
+    go func() {
+        s.app.Event.Emit("task-started")
+
+        for i := 1; i <= 10; i++ {
+            time.Sleep(500 * time.Millisecond)
+
+            s.app.Event.Emit("task-progress", map[string]interface{}{
+                "step":    i,
+                "total":   10,
+                "percent": i * 10,
+            })
+        }
+
+        s.app.Event.Emit("task-completed", map[string]interface{}{
+            "message": "Task finished successfully!",
+        })
+    }()
+}
+
+func (s *EventDemoService) BroadcastMessage(message string) {
+    s.app.Event.Emit("broadcast", message)
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Event Demo",
+    })
+
+    // Handle application lifecycle
+    app.Event.OnApplicationEvent(application.EventApplicationStarted, func(e *application.ApplicationEvent) {
+        app.Logger.Info("Application started!")
+    })
+
+    app.Event.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
+        app.Logger.Info("Application shutting down...")
+    })
+
+    // Register service
+    service := NewEventDemoService(app)
+    app.RegisterService(application.NewService(service))
+
+    // Create window
+    window := app.Window.New()
+
+    // Handle window events
+    window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+        window.EmitEvent("window-state", "focused")
+    })
+
+    window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+        window.EmitEvent("window-state", "blurred")
+    })
+
+    window.Show()
+    app.Run()
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+import { StartLongTask, BroadcastMessage } from './bindings/EventDemoService'
+
+// Task events
+Events.On('task-started', () => {
+    console.log('Task started...')
+    document.getElementById('status').textContent = 'Running...'
+})
+
+Events.On('task-progress', (data) => {
+    const progressBar = document.getElementById('progress')
+    progressBar.style.width = `${data.percent}%`
+    console.log(`Step ${data.step} of ${data.total}`)
+})
+
+Events.Once('task-completed', (data) => {
+    console.log('Task completed!', data.message)
+    document.getElementById('status').textContent = data.message
+})
+
+// Broadcast events
+Events.On('broadcast', (message) => {
+    console.log('Broadcast:', message)
+    alert(message)
+})
+
+// Window state events
+Events.On('window-state', (state) => {
+    console.log('Window is now:', state)
+    document.body.dataset.windowState = state
+})
+
+// Trigger long task-------|-------|------|---------|
+| `ApplicationOpenedWithFile` | ファイル付きでアプリケーションが開かれた | アプリがファイル付きで起動されたとき（例：ファイル関連付けから） | いいえ |
+| `ApplicationStarted` | アプリケーションの起動が完了した | アプリの初期化が完了し、アプリが準備できた後 | いいえ |
+| `ApplicationLaunchedWithUrl` | URL でアプリケーションが起動された | アプリが URL スキーム経由で起動されたとき | いいえ |
+| `ThemeChanged` | システムのテーマが変更された | OS のテーマがライトモードとダークモードの間で切り替わったとき | いいえ |
+
+**使用方法:**
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Application ready!")
+})
+
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    // アプリのテーマを更新
+})
+```
+
+### ウィンドウイベント
+
+| イベント | 説明 | 発信されるタイミング | キャンセル可能 |
+|-------|-------|------|---------|
+| `WindowClosing` | ウィンドウが閉じようとしている | ウィンドウが閉じる前（ユーザーが X をクリック、Close() が呼び出された） | はい |
+| `WindowDidMove` | ウィンドウが新しい位置に移動した | ウィンドウの位置が変化した後（デバウンス済み） | いいえ |
+| `WindowDidResize` | ウィンドウのリサイズが行われた | ウィンドウのサイズが変化した後 | いいえ |
+| `WindowDPIChanged` | ウィンドウの DPI スケーリングが変更された | 異なる DPI のモニター間で移動したとき（Windows） | いいえ |
+| `WindowFilesDropped` | ネイティブ OS のドラッグ＆ドロップでファイルがドロップされた | OS からウィンドウ上にファイルがドロップされた後 | いいえ |
+| `WindowFocus` | ウィンドウがフォーカスを得た | ウィンドウがアクティブになったとき | いいえ |
+| `WindowFullscreen` | ウィンドウが全画面モードに入った | Fullscreen() の後、またはユーザーが全画面モードに入った後 | いいえ |
+| `WindowHide` | ウィンドウが非表示になった | Hide() の後、またはウィンドウが隠蔽された後 | いいえ |
+| `WindowLostFocus` | ウィンドウがフォーカスを失った | ウィンドウが非アクティブになったとき | いいえ |
+| `WindowMaximise` | ウィンドウが最大化された | Maximise() の後、またはユーザーが最大化したとき | はい（macOS） |
+| `WindowMinimise` | ウィンドウが最小化された | Minimise() の後、またはユーザーが最小化したとき | はい（macOS） |
+| `WindowRestore` | ウィンドウが最小化/最大化の状態から復元された | Restore() の後（主に Windows） | いいえ |
+| `WindowRuntimeReady` | Wails ランタイムが読み込まれ、準備完了 | JavaScript ランタイムの初期化が完了したとき | いいえ |
+| `WindowShow` | ウィンドウが表示された | Show() の後、またはウィンドウが表示されたとき | いいえ |
+| `WindowUnFullscreen` | ウィンドウが全画面モードを終了した | UnFullscreen() の後、またはユーザーが全画面モードを終了したとき | いいえ |
+| `WindowUnMaximise` | ウィンドウが最大化状態を終了した | UnMaximise() の後、またはユーザーが最大化解除したとき | はい（macOS） |
+| `WindowUnMinimise` | ウィンドウが最小化状態を終了した | UnMinimise()/Restore() の後、またはユーザーが復元したとき | はい（macOS） |
+| `WindowZoomIn` | ウィンドウの内容のズームが増加した | ZoomIn() が呼び出された後（主に macOS） | はい（macOS） |
+| `WindowZoomOut` | ウィンドウの内容のズームが減少した | ZoomOut() が呼び出された後（主に macOS） | はい（macOS） |
+| `WindowZoomReset` | ウィンドウの内容のズームが 100% にリセットされた | ZoomReset() が呼び出された後（主に macOS） | はい（macOS） |
+| `WindowDropZoneFilesDropped` | JS で定義されたドロップゾーンにファイルがドロップされた | ドロップゾーンを持つ要素上にファイルがドロップされたとき | いいえ |
+
+**使用方法:**
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// ウィンドウイベントをリッスン
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window focused")
+})
+
+// ウィンドウの閉じるをキャンセル
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    result, _ := app.Dialog.Question().
+        SetMessage("ウィンドウを閉じますか？").
+        SetButtons("はい", "いいえ").
+        Show()
+
+    if result == "いいえ" {
+        e.Cancel() // 閉じるを防止
+    }
+})
+
+// ランタイムの準備完了を待機
+window.OnWindowEvent(events.Common.WindowRuntimeReady, func(e *application.WindowEvent) {
+    app.Logger.Info("Runtime ready, safe to emit events to frontend")
+    window.EmitEvent("app-initialized", data)
+})
+```
+
+**重要な注意点:**
+
+- **WindowRuntimeReady** は重要である - フロントエンドにイベントを発信する前に、このイベントを待機してください。
+- **WindowDidMove** と **WindowDidResize** は、イベントの洪水を防ぐためにデバウンスされています（デフォルト 50ms）。
+- **キャンセル可能なイベント** は、`RegisterHook()` ハンドラー内で `event.Cancel()` を呼び出すことで防止できます。
+- **WindowFilesDropped** はネイティブ OS のファイルドロップ用であり、**WindowDropZoneFilesDropped** は Web ベースのドロップゾーン用です。
+- 一部のイベントはプラットフォーム固有です（例：Windows の WindowDPIChanged、macOS でのズームイベント）。
+
+## イベント命名規則
+
+```go
+// 良い - 説明的で具体的
+app.Event.Emit("user:logged-in", user)
+app.Event.Emit("data:fetch:complete", results)
+app.Event.Emit("ui:theme:changed", theme)
+
+// 悪い - 曖昧で不明確
+app.Event.Emit("event1", data)
+app.Event.Emit("update", stuff)
+app.Event.Emit("e", value)
+```
+
+## パフォーマンスに関する考慮事項
+
+### 高頻度イベントのデバウンス
+
+```go
+type Service struct {
+    app            *application.Application
+    lastEmit       time.Time
+    debounceWindow time.Duration
+}
+
+func (s *Service) EmitWithDebounce(event string, data interface{}) {
+    now := time.Now()
+    if now.Sub(s.lastEmit) < s.debounceWindow {
+        return // この発信をスキップ
+    }
+
+    s.app.Event.Emit(event, data)
+    s.lastEmit = now
+}
+```
+
+### イベントのスロットリング
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+let lastUpdate = 0
+const throttleMs = 100
+
+Events.On('high-frequency-event', (data) => {
+    const now = Date.now()
+    if (now - lastUpdate < throttleMs) {
+        return // この更新をスキップ
+    }
+
+    processUpdate(data)
+    lastUpdate = now
+})

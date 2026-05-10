@@ -1,0 +1,463 @@
+---
+title: コーディング基準
+description: Wails v3 のコードスタイル、規約、ベストプラクティス
+---
+
+## コードスタイルと規約
+
+一貫したコーディング基準に従うことで、コードベースの可読性、保守性、貢献しやすさが向上します。
+
+## Go コードの基準
+
+### コードフォーマット
+
+標準的な Go フォーマティングツールを使用してください：
+
+```bash
+# すべてのコードをフォーマット
+gofmt -w .
+
+# インポートの整理には goimports を使用
+goimports -w .
+```
+
+**必須:** すべての Go コードはコミットする前に `gofmt` と `goimports` を通過している必要があります。
+
+### 命名規約
+
+**パッケージ:**
+- 可能であれば小文字の単一単語
+- `package application`, `package events`
+- アンダースコアや大文字混在を避ける
+
+**エクスポートされた名前:**
+- 型、関数、定数には PascalCase を使用
+- `type WebviewWindow struct`, `func NewApplication()`
+
+**エクスポートされていない名前:**
+- 内部の型、関数、変数には camelCase を使用
+- `type windowImpl struct`, `func createWindow()`
+
+**インターフェース:**
+- 振る舞いで命名: `Reader`, `Writer`, `Handler`
+- 単一メソッドのインターフェース: `-er` サフィックス付きで命名
+
+```go
+// 良い例
+type Closer interface {
+    Close() error
+}
+
+// 避けるべき例
+type CloseInterface interface {
+    Close() error
+}
+```
+
+### エラー処理
+
+**常にエラーを確認する:**
+
+```go
+// 良い例
+result, err := doSomething()
+if err != nil {
+    return fmt.Errorf("failed to do something: %w", err)
+}
+
+// 悪い例 - エラーを無視
+result, _ := doSomething()
+```
+
+**エラーラッピングを使用する:**
+
+```go
+// コンテキストを提供するためにエラーをラップ
+if err := validate(); err != nil {
+    return fmt.Errorf("validation failed: %w", err)
+}
+```
+
+**必要に応じてカスタムエラー型を作成する:**
+
+```go
+type ValidationError struct {
+    Field string
+    Value string
+}
+
+func (e *ValidationError) Error() string {
+    return fmt.Sprintf("invalid value %q for field %q", e.Value, e.Field)
+}
+```
+
+### コメントとドキュメント
+
+**パッケージコメント:**
+
+```go
+// Package application provides the core Wails application runtime.
+//
+// It handles window management, event dispatching, and service lifecycle.
+package application
+```
+
+**エクスポートされた宣言:**
+
+```go
+// NewApplication creates a new Wails application with the given options.
+//
+// The application must be started with Run() or RunWithContext().
+func NewApplication(opts Options) *Application {
+    // ...
+}
+```
+
+**実装コメント:**
+
+```go
+// processEvent handles incoming events from the runtime.
+// It dispatches to registered handlers and manages event lifecycle.
+func (a *Application) processEvent(event *Event) {
+    // Validate event before processing
+    if event == nil {
+        return
+    }
+
+    // Find and invoke handlers
+    // ...
+}
+```
+
+### 関数とメソッドの構造
+
+**関数を焦点に保つ:**
+
+```go
+// 良い例 - 単一責任
+func (w *Window) setTitle(title string) {
+    w.title = title
+    w.updateNativeTitle()
+}
+
+// 悪い例 - 多すぎることをしている
+func (w *Window) updateEverything() {
+    w.setTitle(w.title)
+    w.setSize(w.width, w.height)
+    w.setPosition(w.x, w.y)
+    // ... 20 more operations
+}
+```
+
+**早期リターンを使用する:**
+
+```go
+// 良い例
+func validate(input string) error {
+    if input == "" {
+        return errors.New("empty input")
+    }
+
+    if len(input) > 100 {
+        return errors.New("input too long")
+    }
+
+    return nil
+}
+
+// 深いネストを避ける
+```
+
+### 並行処理
+
+**キャンセルには context を使用する:**
+
+```go
+func (a *Application) RunWithContext(ctx context.Context) error {
+    select {
+    case <-ctx.Done():
+        return ctx.Err()
+    case <-a.done:
+        return nil
+    }
+}
+```
+
+**ミューテックスで共有状態を保護する:**
+
+```go
+type SafeCounter struct {
+    mu    sync.Mutex
+    count int
+}
+
+func (c *SafeCounter) Increment() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count++
+}
+```
+
+**goroutine のリークを避ける:**
+
+```go
+// 良い例 - goroutine に終了条件がある
+func (a *Application) startWorker(ctx context.Context) {
+    go func() {
+        for {
+            select {
+            case <-ctx.Done():
+                return  // Clean exit
+            case work := <-a.workChan:
+                a.process(work)
+            }
+        }
+    }()
+}
+```
+
+### テスト
+
+**テストファイルの命名:**
+
+```go
+// 実装: window.go
+// テスト: window_test.go
+```
+
+**テーブル駆動テスト:**
+
+```go
+func TestValidate(t *testing.T) {
+    tests := []struct {
+        name    string
+        input   string
+        wantErr bool
+    }{
+        {"empty input", "", true},
+        {"valid input", "hello", false},
+        {"too long", strings.Repeat("a", 101), true},
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            err := validate(tt.input)
+            if (err != nil) != tt.wantErr {
+                t.Errorf("validate() error = %v, wantErr %v", err, tt.wantErr)
+            }
+        })
+    }
+}
+```
+
+## JavaScript/TypeScript の基準
+
+### コードフォーマット
+
+一貫したフォーマットに Prettier を使用してください：
+
+```json
+{
+  "semi": false,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "es5"
+}
+```
+
+### 命名規約
+
+**変数と関数:**
+- camelCase: `const userName = "John"`
+
+**クラスと型:**
+- PascalCase: `class WindowManager`
+
+**定数:**
+- UPPER_SNAKE_CASE: `const MAX_RETRIES = 3`
+
+### TypeScript
+
+**明示的な型を使用する:**
+
+```typescript
+// 良い例
+function greet(name: string): string {
+    return `Hello, ${name}`
+}
+
+// 暗黙の any を避ける
+function process(data) {  // 悪い例
+    return data
+}
+```
+
+**インターフェースを定義する:**
+
+```typescript
+interface WindowOptions {
+    title: string
+    width: number
+    height: number
+}
+
+function createWindow(options: WindowOptions): void {
+    // ...
+}
+```
+
+## コミットメッセージの形式
+
+[Conventional Commits](https://www.conventionalcommits.org/) を使用してください：
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**タイプ:**
+- `feat`: 新機能
+- `fix`: バグ修正
+- `docs`: ドキュメントの変更
+- `refactor`: コードのリファクタリング
+- `test`: テストの追加または更新
+- `chore`: メンテナンスタスク
+
+**例:**
+
+```
+feat(window): add SetAlwaysOnTop method
+
+Implement SetAlwaysOnTop for keeping windows above others.
+Adds platform implementations for macOS, Windows, and Linux.
+
+Closes #123
+```
+
+```
+fix(events): prevent event handler memory leak
+
+Event listeners were not being properly cleaned up when
+windows were closed. This adds explicit cleanup in the
+window destructor.
+```
+
+## プルリクエストのガイドライン
+
+### 提出前に
+
+- [ ] コードが `gofmt` と `goimports` を通過している
+- [ ] すべてのテストがパスする (`go test ./...`)
+- [ ] 新コードにテストがある
+- [ ] 必要に応じてドキュメントが更新されている
+- [ ] コミットメッセージが規約に従っている
+- [ ] `master` とのマージコンフリクトがない
+
+### PR 説明テンプレート
+
+```markdown
+## Description
+Brief description of what this PR does.
+
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Breaking change
+- [ ] Documentation update
+
+## Testing
+How was this tested?
+
+## Checklist
+- [ ] Tests pass
+- [ ] Documentation updated
+- [ ] No breaking changes (or documented)
+```
+
+## コードレビュープロセス
+
+### レビュアーとして
+
+- 建設的かつ尊重した態度で臨む
+- コードの品質に焦点を当て、個人の好みにはこだわらない
+- 変更を提案する理由を説明する
+- 満足したら承認する
+
+### 著者として
+
+- すべてのコメントに応答する
+- 必要なら明確化を求める
+- 求められた変更を行うか、その理由を説明する
+- フィードバックにオープンである
+
+## ベストプラクティス
+
+### パフォーマンス
+
+- 早期の最適化を避ける
+- 最適化する前にプロファイルする
+- パフォーマンスが重要なコードにはベンチマークを使用する
+
+```go
+func BenchmarkProcess(b *testing.B) {
+    for i := 0; i < b.N; i++ {
+        process(testData)
+    }
+}
+```
+
+### セキュリティ
+
+- すべてのユーザー入力を検証する
+- 表示前にデータをサニタイズする
+- ランダムデータには `crypto/rand` を使用する
+- 機密情報を決してログに記録しない
+
+### ドキュメント
+
+- エクスポートされた API を文書化する
+- ドキュメントに例を含める
+- API を変更する際にドキュメントを更新する
+- README ファイルを最新に保つ
+
+## プラットフォーム固有のコード
+
+### ファイル命名
+
+```
+window.go           // 共通インターフェース
+window_darwin.go    // macOS 実装
+window_windows.go   // Windows 実装
+window_linux.go     // Linux 実装
+```
+
+### ビルドタグ
+
+```go
+//go:build darwinpackage application
+
+// macOS固有のコード
+```
+
+## Linting
+
+コミットする前にリンターを実行してください:
+
+```bash
+# golangci-lint (推奨)
+golangci-lint run
+
+# 個別のリンター
+go vet ./...
+staticcheck ./...
+```
+
+## ご質問は？
+
+どの基準について不明な点がある場合:
+- 既存のコードで例を確認する
+- [Discord](https://discord.gg/JDdSxwjhGf) で質問する
+- GitHub でディスカッションを開く

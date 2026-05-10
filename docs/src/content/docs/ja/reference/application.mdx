@@ -1,0 +1,485 @@
+---
+title: アプリケーションAPI
+description: アプリケーションAPIの完全なリファレンス
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 概要
+
+`Application` は Wails アプリの核心部分です。ウィンドウ、サービス、イベントを管理し、すべてのプラットフォーム機能へのアクセスを提供します。
+
+## アプリケーションの作成
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+app := application.New(application.Options{
+    Name:        "My App",
+    Description: "My awesome application",
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+    },
+})
+```
+
+## コアメソッド
+
+### Run()
+
+アプリケーションのイベントループを開始します。
+
+```go
+func (a *App) Run() error
+```
+
+**例:**
+
+```go
+err := app.Run()
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+**戻り値:** 起動に失敗した場合はエラー
+
+### Quit()
+
+アプリケーションを正常にシャットダウンします。
+
+```go
+func (a *App) Quit()
+```
+
+**例:**
+
+```go
+// メニューハンドラー内
+menu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+```
+
+### Config()
+
+アプリケーションの設定を返します。
+
+```go
+func (a *App) Config() Options
+```
+
+**例:**
+
+```go
+config := app.Config()
+fmt.Println("App name:", config.Name)
+```
+
+## ウィンドウ管理
+
+### app.Window.New()
+
+デフォルトオプションで新しい WebView ウィンドウを作成します。
+
+```go
+func (wm *WindowManager) New() *WebviewWindow
+```
+
+**例:**
+
+```go
+window := app.Window.New()
+window.Show()
+```
+
+### app.Window.NewWithOptions()
+
+カスタムオプションで新しい WebView ウィンドウを作成します。
+
+```go
+func (wm *WindowManager) NewWithOptions(options WebviewWindowOptions) *WebviewWindow
+```
+
+**例:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My Window",
+    Width:  800,
+    Height: 600,
+    BackgroundColour: application.NewRGB(255, 255, 255),
+})
+```
+
+### app.Window.GetByName()
+
+名前によってウィンドウを取得します。
+
+```go
+func (wm *WindowManager) GetByName(name string) Window
+```
+
+**例:**
+
+```go
+window := app.Window.GetByName("main")
+if window != nil {
+    window.Show()
+}
+```
+
+### app.Window.GetAll()
+
+すべてのアプリケーションウィンドウを返します。
+
+```go
+func (wm *WindowManager) GetAll() []Window
+```
+
+**例:**
+
+```go
+windows := app.Window.GetAll()
+for _, window := range windows {
+    fmt.Println("Window:", window.Name())
+}
+```
+
+## マネージャー
+
+Application は、プロパティを通じてさまざまなマネージャーへのアクセスを提供します。
+
+```go
+app.Window      // ウィンドウ管理
+app.Menu        // メニュー管理
+app.Dialog      // ダイアログ管理
+app.Event       // イベント管理
+app.Clipboard   // クリップボード操作
+app.Screen      // スクリーン情報
+app.SystemTray  // システムトレイ
+app.Browser     // ブラウザー操作
+app.Env         // 環境変数
+```
+
+### 使用例
+
+```go
+// ウィンドウの作成
+window := app.Window.New()
+
+// ダイアログの表示
+app.Dialog.Info().SetMessage("Hello!").Show()
+
+// クリップボードへのコピー
+app.Clipboard.SetText("Copied text")
+
+// スクリーンの取得
+screens := app.Screen.GetAll()
+```
+
+## サービス管理
+
+### RegisterService()
+
+アプリケーションにサービスを登録します。
+
+```go
+func (a *App) RegisterService(service Service) error
+```
+
+**例:**
+
+```go
+type MyService struct {
+    app *application.Application
+}
+
+func NewMyService(app *application.Application) *MyService {
+    return &MyService{app: app}
+}
+
+// アプリケーション作成後に登録
+app.RegisterService(application.NewService(NewMyService(app)))
+```
+
+## イベント管理
+
+### app.Event.Emit()
+
+カスタムイベントを発行します。
+
+```go
+func (em *EventManager) Emit(name string, data ...interface{})
+```
+
+**例:**
+
+```go
+// データ付きでイベントを発行
+app.Event.Emit("user-logged-in", map[string]interface{}{
+    "username": "john",
+    "timestamp": time.Now(),
+})
+```
+
+### app.Event.On()
+
+カスタムイベントを監視します。
+
+```go
+func (em *EventManager) On(name string, callback func(*CustomEvent))
+```
+
+**例:**
+
+```go
+app.Event.On("user-logged-in", func(e *application.CustomEvent) {
+    data := e.Data.(map[string]interface{})
+    username := data["username"].(string)
+    fmt.Println("User logged in:", username)
+})
+```
+
+### app.Event.OnApplicationEvent()
+
+アプリケーションのライフサイクルイベントを監視します。
+
+```go
+func (em *EventManager) OnApplicationEvent(eventType ApplicationEventType, callback func(*ApplicationEvent)) func()
+```
+
+**例:**
+
+```go
+// シャットダウンを監視
+app.Event.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
+    fmt.Println("Application shutting down")
+    // クリーンアップ
+})
+```
+
+## ダイアログメソッド
+
+ダイアログは `app.Dialog` マネージャーを通じてアクセスします。完全なリファレンスについては [ダイアログ API](/reference/dialogs/) を参照してください。
+
+### メッセージダイアログ
+
+```go
+// 情報ダイアログ
+app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("Operation completed!").
+    Show()
+
+// エラーダイアログ
+app.Dialog.Error().
+    SetTitle("Error").
+    SetMessage("Something went wrong.").
+    Show()
+
+// 警告ダイアログ
+app.Dialog.Warning().
+    SetTitle("Warning").
+    SetMessage("This action cannot be undone.").
+    Show()
+```
+
+### 質問ダイアログ
+
+質問ダイアログは、ユーザーの応答を処理するためにボタンコールバックを使用します。
+
+```go
+dialog := app.Dialog.Question().
+    SetTitle("Confirm").
+    SetMessage("Continue?")
+
+yes := dialog.AddButton("Yes")
+yes.OnClick(func() {
+    // はいの処理
+})
+
+no := dialog.AddButton("No")
+no.OnClick(func() {
+    // いいえの処理
+})
+
+dialog.SetDefaultButton(yes)
+dialog.SetCancelButton(no)
+dialog.Show()
+```
+
+### ファイルダイアログ
+
+```go
+// ファイルを開くダイアログ
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select File").
+    AddFilter("Images", "*.png;*.jpg").
+    PromptForSingleSelection()
+
+// ファイルを保存するダイアログ
+path, err := app.Dialog.SaveFile().
+    SetTitle("Save File").
+    SetFilename("document.pdf").
+    AddFilter("PDF", "*.pdf").
+    PromptForSingleSelection()
+
+// フォルダーの選択 (OpenFile にディレクトリオプションを使用)
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Folder").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+```
+
+## ロガー
+
+アプリケーションは構造化ロガーを提供します。
+
+```go
+app.Logger.Info("Message", "key", "value")
+app.Logger.Error("Error occurred", "error", err)
+app.Logger.Debug("Debug info")
+app.Logger.Warn("Warning message")
+```
+
+**例:**
+
+```go
+func (s *MyService) ProcessData(data string) error {
+    s.app.Logger.Info("Processing data", "length", len(data))
+    
+    if err := process(data); err != nil {
+        s.app.Logger.Error("Processing failed", "error", err)
+        return err
+    }
+    
+    s.app.Logger.Info("Processing complete")
+    return nil
+}
+```
+
+## 生メッセージ処理
+
+フロントエンドからバックエンドへの通信を直接、低レベルで制御する必要があるアプリケーションの場合、Wails は `RawMessageHandler` オプションを提供します。これは標準のバインディングシステムをバイパスします。
+
+:::note
+生メッセージは最後の手段としてのみ使用してください。標準のバインディングシステムは高度に最適化されており、ほぼすべてのアプリケーションに十分です。生メッセージを使用するのは、アプリケーションのプロファイリングを行い、バインディングがボトルネックであることを確認した場合のみ行ってください。
+:::
+
+### RawMessageHandler
+
+`RawMessageHandler` コールバックは、フロントエンドから `System.invoke()` を使用して送信された生メッセージを受け取ります。
+
+```go
+func (a *App) RawMessageHandler(window Window, message string)
+```
+
+**例:**
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    RawMessageHandler: func(window application.Window, message string) {
+        // 生メッセージの処理
+        fmt.Printf("Received from %s: %s\n", window.Name(), message)
+
+        // イベントを使用して応答できます
+        window.EmitEvent("response", processMessage(message))
+    },
+})
+```
+
+詳細については、[生メッセージガイド](/ja/guides/raw-messages) を参照してください。
+
+## プラットフォーム固有のオプション
+
+### Windows オプション
+
+アプリケーションレベルで Windows 固有の動作を設定します。
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Windows: application.WindowsOptions{
+        // WebView2 ブラウザーフラグ (すべてのウィンドウに適用)        EnabledFeatures:       []string{"msWebView2EnableDraggableRegions"},
+        DisabledFeatures:      []string{"msExperimentalFeature"},
+        AdditionalBrowserArgs: []string{"--remote-debugging-port=9222"},
+
+        // Other Windows options
+        WndClass:                      "MyAppClass",
+        WebviewUserDataPath:           "",  // Default: %APPDATA%\[BinaryName.exe]
+        WebviewBrowserPath:            "",  // Default: system WebView2
+        DisableQuitOnLastWindowClosed: false,
+    },
+})
+```
+
+**ブラウザフラグ:**
+- `EnabledFeatures` - 有効にする WebView2 の機能フラグ
+- `DisabledFeatures` - 無効にする WebView2 の機能フラグ
+- `AdditionalBrowserArgs` - Chromium のコマンドライン引数
+
+詳細なドキュメントについては、[Window Options - Application-Level Windows Options](/features/windows/options#application-level-windows-options) を参照してください。
+
+### Mac オプション
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Mac: application.MacOptions{
+        ActivationPolicy: application.ActivationPolicyRegular,
+        ApplicationShouldTerminateAfterLastWindowClosed: true,
+    },
+})
+```
+
+### Linux オプション
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Linux: application.LinuxOptions{
+        ProgramName:                   "my-app",
+        DisableQuitOnLastWindowClosed: false,
+    },
+})
+```
+
+## 完全な Application の例
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "My Application",
+        Description: "A demo application",
+        Mac: application.MacOptions{
+            ApplicationShouldTerminateAfterLastWindowClosed: true,
+        },
+    })
+
+    // Create main window
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:            "My App",
+        Width:            1024,
+        Height:           768,
+        MinWidth:         800,
+        MinHeight:        600,
+        BackgroundColour: application.NewRGB(255, 255, 255),
+        URL:              "http://wails.localhost/",
+    })
+
+    window.Centre()
+    window.Show()
+
+    app.Run()
+}

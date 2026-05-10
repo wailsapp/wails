@@ -1,0 +1,456 @@
+---
+title: データモデル
+description: GoとJavaScriptの間で複雑なデータ構造をバインドする
+sidebar:
+  order: 3
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## データモデルバインディング
+
+WailsはGoの構造体から**JavaScript/TypeScriptのクラスを自動的に生成**し、バックエンドとフロントエンド間で複雑なデータを渡す際に完全な型安全性を提供します。Goの構造体を書いてバインディングを生成するだけで、コンストラクタ、型注釈、JSDocコメントを備えた完全に型付けされたフロントエンドモデルが得られます。
+
+## クイックスタート
+
+**Goの構造体:**
+
+```go
+type User struct {
+    ID        int       `json:"id"`
+    Name      string    `json:"name"`
+    Email     string    `json:"email"`
+    CreatedAt time.Time `json:"createdAt"`
+}
+
+func (s *UserService) GetUser(id int) (*User, error) {
+    // ユーザーを返す
+}
+```
+
+**生成:**
+
+```bash
+wails3 generate bindings
+```
+
+**JavaScript:**
+
+```javascript
+import { GetUser } from './bindings/myapp/userservice'
+import { User } from './bindings/myapp/models'
+
+const user = await GetUser(1)
+console.log(user.Name)  // 型安全！
+```
+
+**これだけです！** ブリッジ全体で完全な型安全性が実現します。
+
+## モデルの定義
+
+### 基本的な構造体
+
+```go
+type Person struct {
+    Name string
+    Age  int
+}
+```
+
+**生成されるJavaScript:**
+
+```javascript
+export class Person {
+    /** @type {string} */
+    Name = ""
+    
+    /** @type {number} */
+    Age = 0
+    
+    constructor(source = {}) {
+        Object.assign(this, source)
+    }
+    
+    static createFrom(source = {}) {
+        return new Person(source)
+    }
+}
+```
+
+### JSONタグ付き
+
+```go
+type User struct {
+    ID        int       `json:"id"`
+    Name      string    `json:"name"`
+    Email     string    `json:"email"`
+    CreatedAt time.Time `json:"createdAt"`
+}
+```
+
+**生成されるJavaScript:**
+
+```javascript
+export class User {
+    /** @type {number} */
+    id = 0
+    
+    /** @type {string} */
+    name = ""
+    
+    /** @type {string} */
+    email = ""
+    
+    /** @type {Date} */
+    createdAt = new Date()
+    
+    constructor(source = {}) {
+        Object.assign(this, source)
+    }
+}
+```
+
+**JSONタグはJavaScript内のフィールド名を制御します。**
+
+### コメント付き
+
+```go
+// User はアプリケーションのユーザーを表します
+type User struct {
+    // 一意の識別子
+    ID int `json:"id"`
+    
+    // ユーザーの氏名
+    Name string `json:"name"`
+    
+    // メールアドレス（一意である必要があります）
+    Email string `json:"email"`
+}
+```
+
+**生成されるJavaScript:**
+
+```javascript
+/**
+ * User はアプリケーションのユーザーを表します
+ */
+export class User {
+    /**
+     * 一意の識別子
+     * @type {number}
+     */
+    id = 0
+    
+    /**
+     * ユーザーの氏名
+     * @type {string}
+     */
+    name = ""
+    
+    /**
+     * メールアドレス（一意である必要があります）
+     * @type {string}
+     */
+    email = ""
+}
+```
+
+**コメントはJSDocになります！** IDEで表示されます。
+
+### ネストされた構造体
+
+```go
+type Address struct {
+    Street  string `json:"street"`
+    City    string `json:"city"`
+    Country string `json:"country"`
+}
+
+type User struct {
+    ID      int     `json:"id"`
+    Name    string  `json:"name"`
+    Address Address `json:"address"`
+}
+```
+
+**生成されるJavaScript:**
+
+```javascript
+export class Address {
+    /** @type {string} */
+    street = ""
+    
+    /** @type {string} */
+    city = ""
+    
+    /** @type {string} */
+    country = ""
+}
+
+export class User {
+    /** @type {number} */
+    id = 0
+    
+    /** @type {string} */
+    name = ""
+    
+    /** @type {Address} */
+    address = new Address()
+}
+```
+
+**使用方法:**
+
+```javascript
+const user = new User({
+    id: 1,
+    name: "Alice",
+    address: new Address({
+        street: "123 Main St",
+        city: "Springfield",
+        country: "USA"
+    })
+})
+```
+
+### 配列とスライス
+
+```go
+type Team struct {
+    Name    string   `json:"name"`
+    Members []string `json:"members"`
+}
+```
+
+**生成されるJavaScript:**
+
+```javascript
+export class Team {
+    /** @type {string} */
+    name = ""
+    
+    /** @type {string[]} */
+    members = []
+}
+```
+
+**使用方法:**
+
+```javascript
+const team = new Team({
+    name: "Engineering",
+    members: ["Alice", "Bob", "Charlie"]
+})
+```
+
+### マップ
+
+```go
+type Config struct {
+    Settings map[string]string `json:"settings"`
+}
+```
+
+**生成されるJavaScript:**
+
+```javascript
+export class Config {
+    /** @type {Record<string, string>} */
+    settings = {}
+}
+```
+
+**使用方法:**
+
+```javascript
+const config = new Config({
+    settings: {
+        theme: "dark",
+        language: "en"
+    }
+})
+```
+
+## 型のマッピング
+
+### プリミティブ型
+
+| Goの型 | JavaScriptの型 |
+|---------|----------------|
+| `string` | `string` |
+| `bool` | `boolean` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `number` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `number` |
+| `float32`, `float64` | `number` |
+| `byte` | `number` |
+| `rune` | `number` |
+
+### 特殊な型
+
+| Goの型 | JavaScriptの型 |
+|---------|----------------|
+| `time.Time` | `Date` |
+| `[]byte` | `Uint8Array` |
+| `*T` | `T` (ポインタは透過的) |
+| `interface{}` | `any` |
+
+### コレクション
+
+| Goの型 | JavaScriptの型 |
+|---------|----------------|
+| `[]T` | `T[]` |
+| `[N]T` | `T[]` |
+| `map[string]T` | `Record<string, T>` |
+| `map[K]V` | `Map<K, V>` |
+
+### サポートされていない型
+
+- `chan T` (チャネル)
+- `func()` (関数)
+- 複雑なインターフェース (`interface{}` を除く)
+- エクスポートされていないフィールド (小文字で始まるもの)
+
+## モデルの使用
+
+### インスタンスの作成
+
+```javascript
+import { User } from './bindings/myapp/models'
+
+// 空のインスタンス
+const user1 = new User()
+
+// データ付き
+const user2 = new User({
+    id: 1,
+    name: "Alice",
+    email: "alice@example.com"
+})
+
+// JSON文字列から
+const user3 = User.createFrom('{"id":1,"name":"Alice"}')
+
+// オブジェクトから
+const user4 = User.createFrom({ id: 1, name: "Alice" })
+```
+
+### Goへの渡す
+
+```javascript
+import { CreateUser } from './bindings/myapp/userservice'
+import { User } from './bindings/myapp/models'
+
+const user = new User({
+    name: "Bob",
+    email: "bob@example.com"
+})
+
+const created = await CreateUser(user)
+console.log("作成されたユーザー:", created.id)
+```
+
+### Goからの受信
+
+```javascript
+import { GetUser } from './bindings/myapp/userservice'
+
+const user = await GetUser(1)
+
+// user はすでに User インスタンスです
+console.log(user.name)
+console.log(user.email)
+console.log(user.createdAt.toISOString())
+```
+
+### モデルの更新
+
+```javascript
+import { GetUser, UpdateUser } from './bindings/myapp/userservice'
+
+// ユーザーを取得
+const user = await GetUser(1)
+
+// 変更
+user.name = "Alice Smith"
+user.email = "alice.smith@example.com"
+
+// 保存
+await UpdateUser(user)
+```
+
+## TypeScript サポート
+
+### 生成されるTypeScript
+
+```bash
+wails3 generate bindings -ts
+```
+
+**生成されるもの:**
+
+```typescript
+/**
+ * User はアプリケーションのユーザーを表します
+ */
+export class User {
+    /**
+     * 一意の識別子
+     */
+    id: number = 0
+    
+    /**
+     * ユーザーの氏名
+     */
+    name: string = ""
+    
+    /**
+     * メールアドレス（一意である必要があります）
+     */
+    email: string = ""
+    
+    /**
+     * アカウント作成日
+     */
+    createdAt: Date = new Date()
+    
+    constructor(source: Partial<User> = {}) {
+        Object.assign(this, source)
+    }
+    
+    static createFrom(source: string | Partial<User> = {}): User {
+        const parsedSource = typeof source === 'string' 
+            ? JSON.parse(source) 
+            : source
+        return new User(parsedSource)
+    }
+}
+```
+
+### TypeScriptでの使用
+
+```typescript
+import { GetUser, CreateUser } from './bindings/myapp/userservice'
+import { User } from './bindings/myapp/models'
+
+async function example() {
+    // ユーザーの作成
+    const newUser = new User({
+        name: "Alice",
+        email: "alice@example.com"
+    })
+    
+    const created: User = await CreateUser(newUser)
+    
+    // ユーザーの取得
+    const user: User = await GetUser(created.id)
+    
+    // 型安全なアクセス
+    console.log(user.name.toUpperCase())  // ✅ string メソッド
+    console.log(user.id + 1)              // ✅ number 演算
+    console.log(user.createdAt.getTime()) // ✅ Date メソッド
+}
+```
+
+## 高度なパターン---
+
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[バインディングの例](https://github.com/wailsapp/wails/tree/master/v3/examples/binding) を確認してください。

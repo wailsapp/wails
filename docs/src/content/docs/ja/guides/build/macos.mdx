@@ -1,0 +1,145 @@
+---
+title: macOSのパッケージング
+description: WailsアプリケーションをmacOS向けにパッケージ化して配布する
+sidebar:
+  order: 4
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## アプリケーションバンドル
+
+アプリを標準のmacOS `.app` バンドルとしてパッケージ化します:
+
+```bash
+wails3 package GOOS=darwin
+```
+
+これにより、以下を含む `bin/<AppName>.app` が作成されます:
+- `Contents/MacOS/` 内のコンパイル済みバイナリ
+- `Contents/Resources/` 内のアプリアイコン (`icons.icns` から、または存在する場合はアセットカタログ `Assets.car` から)
+- アプリのメタデータを含む `Info.plist`
+
+### ユニバーサルバイナリ
+
+Apple Silicon と Intel Mac の両方でビルドします:
+
+```bash
+wails3 task darwin:package:universal
+```
+
+これにより、両方のアーキテクチャでネイティブに実行される単一の `.app` が作成されます。ユニバーサルバイナリはどのプラットフォームでもビルドできます — Linux や Windows では、`wails3 tool lipo` が自動的に使用されます。
+
+## バンドルのカスタマイズ
+
+`build/darwin/Info.plist` を編集してカスタマイズします:
+
+- バンドル識別子 (`CFBundleIdentifier`)
+- アプリ名とバージョン
+- 最小 macOS バージョン
+- ファイル関連付け
+- URL スキーム
+
+アプリアイコンは `build/` ディレクトリ内のアセットから生成されます。`generate:icons` タスクを使用します:
+
+```bash
+wails3 task generate:icons
+```
+
+これにより `build/appicon.png` が使用され、`darwin/icons.icns` と `windows/icon.ico` が生成されます。macOS では `build/appicon.icon` (Icon Composer フォーマット) も提供できます: タスクは `-iconcomposerinput appicon.icon -macassetdir darwin` を渡すため、`.icon` ファイルから `Assets.car` と `darwin/icons.icns` が生成されます (macOS 以外のプラットフォームではスキップされます)。`Assets.car` が存在する場合は、`update:build-assets` タスクを実行して `Info.plist` と `CFBundleIconName` を適切に更新します:
+
+```bash
+wails3 task update:build-assets
+```
+
+`build/` ディレクトリからアイコンコマンドを手動で実行するには:
+
+```bash
+cd build
+wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico -iconcomposerinput appicon.icon -macassetdir darwin
+```
+
+## コード署名
+
+配布用にアプリに署名します:
+
+```bash
+# ラッパーを使用する (プラットフォームを自動検出)
+wails3 sign GOOS=darwin
+
+# またはタスクを直接使用
+wails3 task darwin:sign
+```
+
+`build/darwin/Taskfile.yml` で署名を設定します:
+
+```yaml
+vars:
+  SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
+  ENTITLEMENTS: "build/darwin/entitlements.plist"
+```
+
+### ノタリゼーション
+
+Mac App Store 外で配布されるアプリの場合、Apple はノタリゼーションを要求します:
+
+```bash
+wails3 task darwin:sign:notarize
+```
+
+まず、認証情報を保存します:
+
+```bash
+wails3 signing credentials \
+  --apple-id "you@email.com" \
+  --team-id "TEAMID" \
+  --password "app-specific-password" \
+  --profile "my-notarize-profile"
+```
+
+`build/darwin/Taskfile.yml` で設定します:
+
+```yaml
+vars:
+  SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
+  KEYCHAIN_PROFILE: "my-notarize-profile"
+```
+
+詳細については、[アプリケーションの署名](/ja/guides/build/signing) を参照してください。
+
+## DMG インストーラー
+
+配布用の DMG ディスクイメージを作成します:
+
+```bash
+wails3 task darwin:create:dmg
+```
+
+<Aside type="tip">
+`build/darwin/dmg/` のアセットを編集して、DMG の背景とレイアウトをカスタマイズします。
+</Aside>
+
+## トラブルシューティング
+
+### 「アプリが破損しており、開けません」
+
+アプリに署名されていません。Developer ID 証明書で署名するか、ユーザーが Gatekeeper をバイパスできます:
+
+```bash
+xattr -cr /path/to/YourApp.app
+```
+
+### ノタリゼーションが失敗する
+
+一般的な問題:
+- **無効な認証情報**: `wails3 signing credentials` を再実行する
+- **ハードened ランタイムが必要**: 必要に応じて、エンタイトルメントに `com.apple.security.cs.allow-unsigned-executable-memory` が含まれていることを確認する
+- **タイムスタンプの欠如**: 署名プロセスにはタイムスタンプが自動的に含まれるはずです
+
+### クロスコンパイルしたアプリが実行されない
+
+クロスコンパイルされた macOS バイナリには署名されていません。Mac に転送してテスト前に署名してください:
+
+```bash
+codesign --force --deep --sign - YourApp.app
+```

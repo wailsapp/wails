@@ -1,0 +1,216 @@
+---
+title: テストと継続的インテグレーション
+description: ユニットテスト、統合スイート、レース検出、GitHub Actions CIにより、Wails v3が品質をどのように保証するか。
+sidebar:
+  order: 9
+---
+
+堅牢なデスクトップフレームワークには、揺るぎないテストが求められます。  
+Wails v3は**階層型戦略**を採用しています：
+
+| レイヤー | 目標 | ツール |
+|-------|------|---------|
+| ユニットテスト | 孤立した関数に対する迅速なフィードバック | `go test ./...` |
+| 統合 / 例題テスト | パッケージ全体にわたる機能の検証 | 例題アプリ + ヘッドレスアサーション |
+| レース検出 | ランタイムとブリッジ内のデータレースの検出 | `go test -race`, `wails3 dev -race` |
+| CIマトリックス | 全PRにおけるクロスOSでの信頼性 | GitHub Actions |
+
+このドキュメントでは、**テストがどこに存在するか**、**どのように実行するか**、**CI内で何が行われるか**を説明します。
+
+---
+
+## 1. ディレクトリ規約
+
+```
+v3/
+├── internal/.../_test.go     # 内部パッケージのユニットテスト
+├── pkg/.../_test.go          # パブリックAPIのテスト
+├── examples/...              # 例題アプリは統合テストとしても機能
+├── tasks/events/...          # CIで実行される生成コードのテスト
+└── pkg/application/RACE.md   # レーステストのガイドラインと既知の安全な抑制
+```
+
+ガイドライン：
+
+* **ユニットテストはコードの隣に配置する** (`foo.go` ↔ `foo_test.go`)
+* `pkg/` パッケージには**ブラックボックススタイル**を使用する (`package application_test`)
+* 統合ヘルパーは `internal/testutil/` に配置する（共有モック、フィクスチャ）
+
+---
+
+## 2. ユニットテスト
+
+### テストの記述
+
+```go
+func TestColourParseHex(t *testing.T) {
+    c, err := colour.Parse("#FF00FF")
+    require.NoError(t, err)
+    assert.Equal(t, 255, c.R)
+}
+```
+
+推奨事項：
+
+* [`stretchr/testify`](https://github.com/stretchr/testify) を使用する – すでにベンダーインポート済み。
+* ブランチに対して**テーブル駆動**スタイルに従う。
+* 必要に応じて、ビルドタグ (`_test_windows.go` など) の背後でプラットフォームの癖をスタブする。
+
+### ローカルでの実行
+
+```bash
+cd v3
+go test ./... -cover
+```
+
+Taskfile ショートカット：
+
+```
+task test          # 上記と同じ + vet + lint
+```
+
+---
+
+## 3. 統合テストと例題テスト
+
+`v3/examples/` 以下のすべてのフォルダは**自己完結型のアプリ**です。  
+これらをテストに変えるための3つの手法があります：
+
+| 手法 | ファイル | 検証内容 |
+|-----------|------|----------------|
+| 例題内の `go test ./...` | `*_test.go` がヘッドレスモードで `wails dev` を起動 | ビルドと起動 |
+| CLIゴールドテスト | `internal/commands/appimage_test.go` | 生成されたアーティファクトのハッシュ |
+| スクリプト化されたe2e | `tasks/events/generate.go` | 例題を起動し、ランタイムログを検証するGoを出力 |
+
+すべてを実行するには：
+
+```
+task integration
+```
+
+> ヘッドレスモードはLinuxランナーで **Xvfb** を使用します；macOSとWindowsでは最小化して起動します。
+
+---
+
+## 4. レース検出
+
+GUIランタイムにおいてデータレースは致命的です。
+
+### 専用ドキュメント
+
+以下を参照してください：`v3/pkg/application/RACE.md`
+
+* 既知の無害なレースと抑制の理由
+* Cgo境界をまたぐスタックトレースの解釈方法
+
+### ローカルのレーススイート
+
+```
+go test -race ./...
+```
+
+または
+
+```
+wails3 dev -race
+```
+
+*後者はランタイムをレースフラグ付きで再ビルドし、デモウィンドウを起動します。  
+ウィンドウを閉じると、終了後にレースが出力されます。*
+
+CIでは、全PRに対して **linux/amd64** (最速) でレーススイートを実行します。
+
+---
+
+## 5. GitHub Actions ワークフロー
+
+### 5.1 `build-and-test-v3.yml`
+
+場所: `.github/workflows/build-and-test-v3.yml`
+
+主な機能：
+
+* `os: [ubuntu-latest, windows-latest, macos-latest]` に対する**マトリックス**
+* Goとnpm依存関係のキャッシュによる高速化
+* ステップ：
+  1. `setup-go` @ 1.25
+  2. `go vet ./...`
+  3. `go test ./... -v -coverprofile=cover.out`
+  4. CLIとサンプルアプリのビルド (`wails3 build -skip-package`)
+  5. Codecovへのカバレッジアップロード
+* Ubuntu上の条件付き**レース**ジョブ：
+  ```yaml
+  - name: Race Detector
+    if: matrix.os == 'ubuntu-latest'
+    run: go test -race ./...
+  ```
+
+### 5.2 静的解析
+
+* `semgrep.yml` – セキュリティ/リンティングスキャン (`.github/workflows/semgrep.yml`)
+* `qodana.yaml` – JetBrains Qodana クラウド検査 (PRではオプション)
+
+### 5.3 リリースパイプライン
+
+`runtime.yml` はタグプッシュ時にJSランタイムをビルドしてnpmに公開します；テスト範囲外ですが、ビルドマトリックスから参照されています。
+
+---
+
+## 6. ローカルCIとの整合性
+
+Taskfile経由で**正確な**CIタスクセットを実行します：
+
+```
+task ci
+```
+
+これにより以下が実行されます：
+
+1. `lint` (golangci-lint, govet)
+2. `test` (ユニット + レース)
+3. `integration`
+4. `build` (ホストプラットフォーム用)
+
+---
+
+## 7. テスト失敗のトラブルシューティング
+
+| 症状 | 考えられる原因 | 解決策 |
+|---------|--------------|-----|
+| **`runtime_darwin.go` でのレース** | `mainthread.Call` のロックを忘れた | `mainthread.Sync` ヘルパーを使用 |
+| **Windowsのヘッドレスハング** | コンソールウィンドウが入力を待機中 | `-verbose` を渡し、ダイアログが開かないことを確認 |
+| **CIでの例題ビルド失敗** | テンプレートが変更されたが例題依存関係が更新されていない | `task update-examples` でロックファイルを再生成 |
+| **Coverpkgエラー** | 統合テストが `main` をインポート | ビルドタグ `//go:build integration` に切り替え |
+
+---
+
+## 8. 新しいテストの追加
+
+1. **ユニット** – `*_test.go` を作成し、`go test ./...` を実行
+2. **統合** – 例題アプリとテストハーネスを更新または追加
+3. **CI** – コミット；ワークフローがテストを自動検出  
+   OS固有の場合は、スキップタグを追加：
+
+```go
+//go:build !windows
+```
+
+---
+
+## 9. 主要ファイルマップ
+
+| 内容 | パス |
+|------|------|
+| ユニットテストの例 | `internal/colour/colour_test.go` |
+| 統合ハーネス | `internal/commands/appimage_test.go` |
+| レースガイド | `pkg/application/RACE.md` |
+| Taskfile テストターゲット | `v3/Taskfile.yaml` |
+| CIワークフロー | `.github/workflows/build-and-test-v3.yml` |
+
+---
+
+品質はWails v3において後回しにされるものではありません。  
+ユニットテスト、統合スイート、レース検出、そしてクロスプラットフォームのCI
+マトリックスにより、あなたがサポートするすべてのOSで変更が正常に実行されることを
+知り、自信を持って貢献できます。  
+楽しいテストライフを！

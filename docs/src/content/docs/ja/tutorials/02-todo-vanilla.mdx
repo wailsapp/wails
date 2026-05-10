@@ -1,0 +1,721 @@
+---
+title: TODO リスト
+description: CRUD 操作を含む完全な TODO リストアプリケーションの構築
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem, Steps } from "@astrojs/starlight/components";
+import { Image } from 'astro:assets';
+import todoApp from "../../../../assets/todo-app.png";
+
+このチュートリアルでは、完全に機能する TODO リストアプリケーションを構築します。これは QR コードサービスチュートリアルの次のステップです。状態の管理、複数の操作の処理、洗練されたユーザーインターフェースの作成方法を学びます。
+
+**構築するもの:**
+- 追加、完了、削除機能を持つ完全な TODO アプリ
+- スレッドセーフな状態管理（デスクトップアプリにとって重要）
+- モダンなグラスモーフィック UI デザイン
+- フレームワーク不要のバニラ JavaScript での実装
+
+**学習内容:**
+- CRUD 操作（作成、読み取り、更新、削除）
+- Go におけるミュータブルな状態の安全な管理
+- ユーザー入力の処理と検証
+- ネイティブな感覚を与えるレスポンシブ UI の構築
+
+<Image src={todoApp} alt="TODO リストアプリケーション" style="max-width: 600px; margin: 2rem auto; display: block; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);" />
+
+**所要時間:** 20 分
+
+## プロジェクトの作成
+
+<Steps>
+
+1. **プロジェクトの生成**
+
+   まず、新しい Wails プロジェクトを作成します。クリーンなスタート地点を提供するデフォルトのバニラテンプレートを使用します。
+
+   ```bash
+   wails3 init -n todo-app
+   cd todo-app
+   ```
+
+   これにより、基本的な構造を持つ新しいプロジェクトが作成されます。Go バックエンドはルートに、フロントエンドコードは `frontend/` ディレクトリに配置されます。
+
+2. **TODO サービスの作成**
+
+   TODO サービスはアプリケーションの状態を管理し、CRUD 操作用のメソッドを提供します。各リクエストが独立している Web サーバーとは異なり、デスクトップアプリでは複数の並行操作が発生する可能性があるため、スレッドセーフな状態管理が必要です。
+
+   `greetservice.go` を削除し、新しいファイル `todoservice.go` を作成します。
+
+   ```go title="todoservice.go"
+   package main
+
+   import (
+       "errors"
+       "sync"
+   )
+
+   type Todo struct {
+       ID        int    `json:"id"`
+       Title     string `json:"title"`
+       Completed bool   `json:"completed"`
+   }
+
+   type TodoService struct {
+       todos  []Todo
+       nextID int
+       mu     sync.RWMutex
+   }
+
+   func NewTodoService() *TodoService {
+       return &TodoService{
+           todos:  []Todo{},
+           nextID: 1,
+       }
+   }
+
+   func (t *TodoService) GetAll() []Todo {
+       t.mu.RLock()
+       defer t.mu.RUnlock()
+       return t.todos
+   }
+
+   func (t *TodoService) Add(title string) (*Todo, error) {
+       if title == "" {
+           return nil, errors.New("title cannot be empty")
+       }
+
+       t.mu.Lock()
+       defer t.mu.Unlock()
+
+       todo := Todo{
+           ID:        t.nextID,
+           Title:     title,
+           Completed: false,
+       }
+       t.todos = append(t.todos, todo)
+       t.nextID++
+
+       return &todo, nil
+   }
+
+   func (t *TodoService) Toggle(id int) error {
+       t.mu.Lock()
+       defer t.mu.Unlock()
+
+       for i := range t.todos {
+           if t.todos[i].ID == id {
+               t.todos[i].Completed = !t.todos[i].Completed
+               return nil
+           }
+       }
+       return errors.New("todo not found")
+   }
+
+   func (t *TodoService) Delete(id int) error {
+       t.mu.Lock()
+       defer t.mu.Unlock()
+
+       for i, todo := range t.todos {
+           if todo.ID == id {
+               t.todos = append(t.todos[:i], t.todos[i+1:]...)
+               return nil
+           }
+       }
+       return errors.New("todo not found")
+   }
+   ```
+
+   **ここで何が起こっているか:**
+
+   **`Todo` 構造体:**
+   - ID、Title、Completed フィールドを持つデータの形状を定義します
+   - `json:` タグは、Go がこの構造体をフロントエンド向けに JSON に変換する方法を指示します
+   - 各フィールドはエクスポート済み（大文字始まり）であるため、バインディングジェネレーターが参照できます
+
+   **`TodoService` 構造体:**
+   - `todos []Todo` - すべての TODO アイテムを保持するスライス
+   - `nextID int` - 次に割り当てる ID を追跡します（自動インクリメントをシミュレート）
+   - `mu sync.RWMutex` - スレッドセーフなアクセス用の読み書きミューテックス
+
+   **`sync.RWMutex` によるスレッドセーフ:**
+   - デスクトップアプリでは、UI から複数の並行操作が発生する可能性があります
+   - `RLock()` は複数のリーダーを同時に許可します（例：複数の `GetAll` 呼び出し）
+   - `Lock()` は書き込みに対して排他的なアクセスを提供します（例：`Add`、`Toggle`、`Delete`）
+   - `defer` は、関数が早期に終了したりパニックしたりした場合でもロックが解放されることを保証します
+
+   **メソッド:**
+   - `GetAll()` - すべての TODO を返します（データを変更しないため読み取りロックを使用）
+   - `Add(title)` - 新しい TODO を作成し、入力を検証し、ID をインクリメントします
+   - `Toggle(id)` - TODO の完了ステータスを反転します
+   - `Delete(id)` - スライスから TODO を削除します
+
+   **エラー処理:**
+   - Go の慣習に従って、最後の値として `error` を返します
+   - 空のタイトルは拒否されます
+   - 存在しない TODO に対する操作はエラーを返します
+   - これらのエラーはフロントエンドで JavaScript 例外になります
+
+3. **main.go の更新**
+
+   TODO サービスを Wails アプリケーションに登録します。`main.go` の `Services` セクションを見つけて、GreetService を TodoService に置き換えます。
+
+   ```go title="main.go" {5}
+   Services: []application.Service{
+       application.NewService(NewTodoService()),
+   },
+   ```
+
+   **ここで何が起こっているか:**
+   - デフォルトの GreetService を削除し、代わりに TodoService を追加しています
+   - `application.NewService()` は Wails がサービスを管理できるようにサービスをラップします
+   - Wails はこのサービス上のすべての公開メソッドに対して JavaScript バインディングを自動的に生成します
+
+4. **フロントエンド UI の作成**
+
+   次にフロントエンドを構築します。ここで Go メソッドを呼び出し、UI を表示します。バインディングがどのように直接機能するかを示し、シンプルに保つためにバニラ JavaScript を使用しています。
+
+   `frontend/src/main.js` を置き換えます。
+
+   ```javascript title="frontend/src/main.js"
+   import {TodoService} from "../bindings/changeme";
+
+   async function loadTodos() {
+       const todos = await TodoService.GetAll();
+       const list = document.getElementById('todo-list');
+
+       list.innerHTML = todos.map(todo => `
+           <div class="todo ${todo.completed ? 'completed' : ''}">
+               <input type="checkbox"
+                      ${todo.completed ? 'checked' : ''}
+                      onchange="toggleTodo(${todo.id})">
+               <span>${todo.title}</span>
+               <button onclick="deleteTodo(${todo.id})">Delete</button>
+           </div>
+       `).join('');
+   }
+
+   window.addTodo = async () => {
+       const input = document.getElementById('todo-input');
+       const title = input.value.trim();
+
+       if (title) {
+           await TodoService.Add(title);
+           input.value = '';
+           await loadTodos();
+       }
+   }
+
+   window.toggleTodo = async (id) => {
+       await TodoService.Toggle(id);
+       await loadTodos();
+   }
+
+   window.deleteTodo = async (id) => {
+       await TodoService.Delete(id);
+       await loadTodos();
+   }
+
+   // Load todos on startup
+   loadTodos();
+   ```
+
+   **ここで何が起こっているか:**
+
+   **バインディングのインポート:**
+   - `import {TodoService} from "../bindings/changeme"` - 自動生成された Go バインディングを取り込みます
+   - 注: `changeme` は `go.mod` からの実際のモジュール名になります
+
+   **`loadTodos()` 関数:**
+   - `TodoService.GetAll()` を呼び出して Go からすべての TODO をフェッチします
+   - テンプレートリテラルを使用して各 TODO の HTML を構築します
+   - スタイリングのために `completed` クラスを動的に追加/削除します
+   - `onclick` 属性を使用してボタンを関数に接続します
+   - すべての HTML を結合して DOM に注入します
+
+   **CRUD 関数:**
+   - `addTodo()` - 入力を検証し、Go の `Add` メソッドを呼び出し、リストを更新します
+   - `toggleTodo(id)` - Go の `Toggle` メソッドを呼び出し、リストを更新します
+   - `deleteTodo(id)` - Go の `Delete` メソッドを呼び出し、リストを更新します
+   - すべての関数は非同期です。Go の呼び出しは Promise を返すためです**ウィンドウにアタッチする理由:**
+- `window.addTodo = ...` により、HTML の `onclick` 属性から関数にアクセス可能になります
+- これはバニラ JS におけるシンプルなパターンです（フレームワークはこれを異なる方法で処理します）
+- 本番環境では、適切なイベント委譲を使用することが推奨されます
+
+**リフレッシュパターン:**
+- 各ミューテーション（追加/切り替え/削除）の後に、再度 `loadTodos()` を呼び出します
+- これにより、UI が Go の状態と同期したまま保たれます
+- 代替案: Go のメソッドが新しい状態を返すようにし、2 回目の呼び出しを回避する
+
+5. **HTML を更新する**
+
+HTML は TODO アプリの構造を提供します。これは最小限でセマンティックなものであり、魔法のような動作は JavaScript と CSS で実現されます。
+
+`frontend/index.html` を置き換えます:
+
+```html title="frontend/index.html"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>TODO App</title>
+    <link rel="stylesheet" href="./style.css"/>
+</head>
+<body>
+    <div class="container">
+        <h1>My TODOs</h1>
+        <div class="card">
+            <div class="input-box">
+                <input type="text"
+                       id="todo-input"
+                       class="input"
+                       placeholder="Add a new todo..."
+                       onkeypress="if(event.key==='Enter') addTodo()">
+                <button class="btn" onclick="addTodo()">Add</button>
+            </div>
+            <div id="todo-list"></div>
+        </div>
+    </div>
+    <script type="module" src="./src/main.js"></script>
+</body>
+</html>
+```
+
+**ここで何が起こっているか:**
+
+**構造:**
+- `container` - アプリを中央に配置し、幅を制限します
+- `card` - すべての要素を含むメインの白いカード
+- `input-box` - 入力フィールドと追加ボタン用の flex コンテナ
+- `todo-list` - JavaScript によって個々の TODO が注入される場所
+
+**イベント処理:**
+- `onkeypress="if(event.key==='Enter') addTodo()"` - Enter キーが押されたときに TODO を追加
+- `onclick="addTodo()"` - ボタンがクリックされたときに TODO を追加
+- インラインイベントハンドラは、シンプルなバニラ JS アプリに適しています
+
+**モジュールスクリプト:**
+- `<script type="module">` により ES6 のインポートが使用可能になります
+- `main.js` ファイルはバインディングをインポートし、最新の JavaScript を使用できます
+
+6. **アプリをスタイリングする**
+
+CSS は、滑らかなトランジションを備えたモダンなグラスモーフィックデザインを作成します。アプリの使用感を快適にするための洗練された印象を目指しています。
+
+`frontend/public/style.css` を置き換えます:
+
+```css title="frontend/public/style.css"
+:root {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+    font-size: 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: rgba(255, 255, 255, 0.87);
+}
+
+body {
+    margin: 0;
+    display: flex;
+    place-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    color: white;
+    font-size: 2.5em;
+    font-weight: 300;
+    margin: 0 0 30px 0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.input-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.input {
+    flex: 1;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    height: 50px;
+    padding: 0 20px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.input:focus {
+    border-color: #667eea;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.btn {
+    height: 50px;
+    padding: 0 30px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+#todo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.todo {
+    display: flex;
+    align-items: center;
+    padding: 18px 20px;
+    background: white;
+    border: 2px solid #f0f0f0;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    gap: 15px;
+}
+
+.todo:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    transform: translateX(4px);
+}
+
+.todo.completed {
+    opacity: 0.6;
+}
+
+.todo.completed span {
+    text-decoration: line-through;
+    color: #999;
+}
+
+.todo input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 2px solid #667eea;
+    border-radius: 6px;
+    position: relative;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.todo input[type="checkbox"]:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.todo input[type="checkbox"]:checked {
+    background: #667eea;
+    border-color: #667eea;
+}
+
+.todo input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.todo span {
+    flex: 1;
+    font-size: 16px;
+    color: #333;
+}
+
+.todo button {
+    padding: 8px 16px;
+    background: #ff4757;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0;
+    flex-shrink: 0;
+}
+
+.todo:hover button {
+    opacity: 1;
+}
+
+.todo button:hover {
+    background: #ee5a6f;
+    transform: scale(1.05);
+}
+
+#todo-list:empty::before {
+    content: "No todos yet. Add one above!";
+    display: block;
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+}
+```
+
+**ここで何が起こっているか:**
+
+**グラスモーフィックデザイン:**
+- `background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)` - 紫色のグラデーション背景
+- `backdrop-filter: blur(10px)` - カードにすりガラス効果を生成
+- `rgba(255, 255, 255, 0.95)` - ガラス効果のための半透明の白
+
+**カスタムチェックボックスのスタイリング:**
+- `appearance: none` はデフォルトのブラウザチェックボックスを削除します
+- `::after` を使用して、チェックマーク付きのカスタム角丸四角形を作成します
+- チェックマークは `checked` のときに ✓ ユニコード文字を使用して表示されます
+
+**ホバーインタラクション:**
+- ホバー時に TODO が右にスライドします (`transform: translateX(4px)`)
+- 削除ボタンはホバーまで非表示になります (`opacity: 0` → `opacity: 1`)
+- ボタンはホバー時にわずかに拡大し、触覚フィードバックを提供します
+
+**空の状態:**
+- `#todo-list:empty::before` は TODO が存在しないときにメッセージを表示します
+- CSS のみのソリューションであり、JavaScript は不要です
+
+7. **アプリを実行する**
+
+実際に動作させてみましょう！開発サーバーを実行します:
+
+```bash
+wails3 dev
+```
+
+アプリがコンパイルされて開きます。試してみてください:
+- TODO を入力して Enter キーを押すか、[Add] をクリック
+- チェックボックスをクリックして完了としてマーク
+- TODO にカーソルを合わせて削除ボタンを表示
+- UI が即座に更新されることに注目してください - これがリフレッシュパターンの動作です**何が起きているか:**
+- Wails は TodoService のメソッドに対してバインディングを自動的に生成しました
+- 開発モードにはホットリロードが含まれています - CSS を変更して更新されるのを見てみましょう
+- Go コードはネイティブで実行されています - 翻訳や解釈は不要です
+
+</Steps>
+
+## 仕組み
+
+### スレッドセーフな状態管理
+
+`sync.RWMutex` は安全な同時アクセスを提供します:
+
+```go
+func (t *TodoService) GetAll() []Todo {
+    t.mu.RLock()  // 読み取りロック - 複数の読み取りを許可
+    defer t.mu.RUnlock()
+    return t.todos
+}
+
+func (t *TodoService) Add(title string) (*Todo, error) {
+    t.mu.Lock()  // 書き込みロック - 排他アクセス
+    defer t.mu.Unlock()
+    // ... ミューテーション
+}
+```
+
+**これが重要な理由:**
+- 複数のフロントエンド呼び出しが同時に発生する可能性があります
+- 読み取り操作は互いをブロックしません
+- 書き込み操作は排他アクセスを取得します
+- `defer` はロックが常に解放されることを保証します
+
+### エラー処理
+
+サービスは無効な操作に対してエラーを返します:
+
+```go
+func (t *TodoService) Add(title string) (*Todo, error) {
+    if title == "" {
+        return nil, errors.New("title cannot be empty")
+    }
+    // ...
+}
+```
+
+フロントエンドでは、これらをキャッチできます:
+
+```javascript
+try {
+    await TodoService.Add(title);
+} catch (err) {
+    alert('Error: ' + err);
+}
+```
+
+### 状態の同期
+
+各ミューテーションの後、完全なリストを再読み込みします:
+
+```javascript
+window.addTodo = async () => {
+    await TodoService.Add(title);  // ミューテーション
+    await loadTodos();             // 更新
+}
+```
+
+**代替アプローチ:** 2 回目の呼び出しを避けるために、各メソッドから更新されたリストを返します。
+
+## 拡張機能
+
+### 統計情報の追加
+
+`todoservice.go` にこれを追加します:
+
+```go
+type TodoStats struct {
+    Total     int `json:"total"`
+    Completed int `json:"completed"`
+    Active    int `json:"active"`
+}
+
+func (t *TodoService) GetStats() TodoStats {
+    t.mu.RLock()
+    defer t.mu.RUnlock()
+
+    stats := TodoStats{
+        Total: len(t.todos),
+    }
+
+    for _, todo := range t.todos {
+        if todo.Completed {
+            stats.Completed++
+        } else {
+            stats.Active++
+        }
+    }
+
+    return stats
+}
+```
+
+フロントエンドに表示します:
+
+```javascript
+async function loadTodos() {
+    const [todos, stats] = await Promise.all([
+        TodoService.GetAll(),
+        TodoService.GetStats()
+    ]);
+
+    // 統計情報を表示
+    document.getElementById('stats').textContent =
+        `${stats.active} active, ${stats.completed} completed`;
+
+    // ... todos をレンダリング
+}
+```
+
+### 「完了したものをクリア」の追加
+
+```go
+func (t *TodoService) ClearCompleted() int {
+    t.mu.Lock()
+    defer t.mu.Unlock()
+
+    removed := 0
+    newTodos := []Todo{}
+
+    for _, todo := range t.todos {
+        if !todo.Completed {
+            newTodos = append(newTodos, todo)
+        } else {
+            removed++
+        }
+    }
+
+    t.todos = newTodos
+    return removed
+}
+```
+
+### 永続性の追加
+
+本番環境のアプリでは、通常データベースの永続性を追加します。SQLite、PostgreSQL などの例については、[データベース統合](/guides/patterns/database)ガイドを参照してください。
+
+## 本番環境向けビルド
+
+TODO アプリを配布する準備ができたら、本番環境向けにビルドします:
+
+```bash
+wails3 build
+```
+
+これにより、`build/bin/` に最適化されたネイティブ実行ファイルが作成されます:
+- Go コードを最適化してコンパイル
+- フロントエンドを本番環境向けにビルド
+- すべてを単一の実行ファイルにバンドル
+- 結果として得られるアプリは通常 10〜20MB です（Electron の 150MB 以上と比較）
+
+実行ファイルを直接実行できます - ランタイムは不要で、起動するサーバーもありません。真のネイティブアプリケーションです。
+
+## 作成したもの
+
+あなたは以下を含む完全な TODO アプリケーションを構築しました:
+
+**完全な CRUD 実装:**
+- Create、Read、Update、Delete 操作を持つサービスを作成
+- 入力検証とエラー処理を追加
+- Go のエラーが JavaScript の例外になる方法を学習
+
+**スレッドセーフな状態管理:**
+- 同時アクセスを安全に処理するために `sync.RWMutex` を使用
+- 読み取りロック（RLock）と書き込みロック（Lock）の違いを理解
+- `defer` がクリーンアップを保証することでデッドロックを防ぐ方法を確認
+
+**モダンで洗練された UI:**
+- グラデーションとぼかし効果を持つグラスモーフィックインターフェースを構築
+- どのフレームワークも使用せずにカスタムスタイルのチェックボックスを作成
+- ネイティブな感覚を与えるためにホバーインタラクションとトランジションを追加
+- 純粋な CSS で空の状態を実装
+
+**Wails の基本:**
+- サービス登録と自動バインディング生成
+- async/await を使用して JavaScript から Go メソッドを呼び出す
+- Go とフロントエンド間の状態同期
+- ネイティブデスクトップアプリのビルドとパッケージ化
+
+## 次のステップ
+
+CRUD 操作と状態管理を理解したので、以下を試してみてください:
+
+- **永続性の追加:** [SQLite](/guides/patterns/database) を使用してアプリの再起動後も todos を維持
+- **機能の追加:** フィルタリング（すべて/アクティブ/完了）、既存の todos の編集、一括操作
+- **Notes チュートリアルを探索:** [Notes](/ja/tutorials/03-notes-vanilla) でファイル操作の仕組みを確認
+- **実際に何かを構築:** これらの概念を活用して、自分自身のアプリを構築しましょう！

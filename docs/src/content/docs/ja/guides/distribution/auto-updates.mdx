@@ -1,0 +1,563 @@
+---
+title: 自動更新
+description: Wails v3 でアプリケーションの自動更新を実装する
+sidebar:
+  order: 5
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Steps } from '@astrojs/starlight/components';
+import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Aside } from '@astrojs/starlight/components';
+
+# 自動更新
+
+Wails v3 には、自動更新のチェック、ダウンロード、インストールをサポートするビルトインのアップデーターシステムが用意されています。このアップデーターには、最小限のダウンロードサイズを実現するためのバイナリデルタ更新（パッチ）のサポートが含まれています。
+
+<CardGrid>
+  <Card title="自動チェック" icon="rocket">
+    バックグラウンドで定期的な更新チェックを設定
+  </Card>
+  <Card title="デルタ更新" icon="down-caret">
+    bsdiff パッチを使用して変更された部分のみをダウンロード
+  </Card>
+  <Card title="クロスプラットフォーム" icon="laptop">
+    macOS、Windows、Linux で動作
+  </Card>
+  <Card title="セキュリティ" icon="approve-check">
+    SHA256 チェックサムとオプションの署名検証
+  </Card>
+</CardGrid>
+
+## クイックスタート
+
+アプリケーションにアップデーターサービスを追加します：
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "time"
+)
+
+func main() {
+    // アップデーターサービスを作成
+    updater, err := application.CreateUpdaterService(
+        "1.0.0", // 現在のバージョン
+        application.WithUpdateURL("https://updates.example.com/myapp/"),
+        application.WithCheckInterval(24 * time.Hour),
+    )
+    if err != nil {
+        panic(err)
+    }
+
+    app := application.New(application.Options{
+        Name: "MyApp",
+        Services: []application.Service{
+            application.NewService(updater),
+        },
+    })
+
+    // ... アプリケーションの残りの部分
+    app.Run()
+}
+```
+
+その後、フロントエンドから使用します：
+
+```typescript title="App.tsx"
+import { updater } from './bindings/myapp';
+
+async function checkForUpdates() {
+  const update = await updater.CheckForUpdate();
+
+  if (update) {
+    console.log(`新しいバージョンが利用可能です: ${update.version}`);
+    console.log(`リリースノート: ${update.releaseNotes}`);
+
+    // ダウンロードして適用
+    await updater.DownloadAndApply();
+  }
+}
+```
+
+## 設定オプション
+
+アップデーターはさまざまな設定オプションをサポートしています：
+
+```go
+updater, err := application.CreateUpdaterService(
+    "1.0.0",
+    // 必須: アップデートマニフェストがホストされている URL
+    application.WithUpdateURL("https://updates.example.com/myapp/"),
+
+    // オプション: 24 時間ごとに自動的に更新をチェック
+    application.WithCheckInterval(24 * time.Hour),
+
+    // オプション: プレリリース版を許可
+    application.WithAllowPrerelease(true),
+
+    // オプション: アップデートチャンネル (stable, beta, canary)
+    application.WithChannel("stable"),
+
+    // オプション: 署名付きの更新を必須にする
+    application.WithRequireSignature(true),
+    application.WithPublicKey("your-ed25519-public-key"),
+)
+```
+
+## アップデートマニフェスト形式
+
+サーバーで `update.json` ファイルをホストします：
+
+```json title="update.json"
+{
+  "version": "1.2.0",
+  "release_date": "2025-01-15T00:00:00Z",
+  "release_notes": "## 新機能\n\n- 機能 A\n- バグ修正 B",
+  "platforms": {
+    "macos-arm64": {
+      "url": "https://updates.example.com/myapp/myapp-1.2.0-macos-arm64.tar.gz",
+      "size": 12582912,
+      "checksum": "sha256:abc123...",
+      "patches": [
+        {
+          "from": "1.1.0",
+          "url": "https://updates.example.com/myapp/patches/1.1.0-to-1.2.0-macos-arm64.patch",
+          "size": 14336,
+          "checksum": "sha256:def456..."
+        }
+      ]
+    },
+    "macos-amd64": {
+      "url": "https://updates.example.com/myapp/myapp-1.2.0-macos-amd64.tar.gz",
+      "size": 13107200,
+      "checksum": "sha256:789xyz..."
+    },
+    "windows-amd64": {
+      "url": "https://updates.example.com/myapp/myapp-1.2.0-windows-amd64.zip",
+      "size": 14680064,
+      "checksum": "sha256:ghi789..."
+    },
+    "linux-amd64": {
+      "url": "https://updates.example.com/myapp/myapp-1.2.0-linux-amd64.tar.gz",
+      "size": 11534336,
+      "checksum": "sha256:jkl012..."
+    }
+  },
+  "minimum_version": "1.0.0",
+  "mandatory": false
+}
+```
+
+### プラットフォームキー
+
+| プラットフォーム | キー |
+|----------|-----|
+| macOS (Apple Silicon) | `macos-arm64` |
+| macOS (Intel) | `macos-amd64` |
+| Windows (64-bit) | `windows-amd64` |
+| Linux (64-bit) | `linux-amd64` |
+| Linux (ARM64) | `linux-arm64` |
+
+## フロントエンド API
+
+アップデーターは、フロントエンドに自動的にバインドされるメソッドを公開します：
+
+### TypeScript タイプ
+
+```typescript
+interface UpdateInfo {
+  version: string;
+  releaseDate: Date;
+  releaseNotes: string;
+  size: number;
+  patchSize?: number;
+  mandatory: boolean;
+  hasPatch: boolean;
+}
+
+interface Updater {
+  // 現在のアプリケーションバージョンを取得
+  GetCurrentVersion(): string;
+
+  // 更新が利用可能かどうかを確認
+  CheckForUpdate(): Promise<UpdateInfo | null>;
+
+  // アップデートをダウンロード（進行状況イベントを発行）
+  DownloadUpdate(): Promise<void>;
+
+  // ダウンロードしたアップデートを適用（アプリを再起動）
+  ApplyUpdate(): Promise<void>;
+
+  // 1つの呼び出しでダウンロードして適用
+  DownloadAndApply(): Promise<void>;
+
+  // 現在の状態を取得: idle, checking, available, downloading, ready, installing, error
+  GetState(): string;
+
+  // 利用可能なアップデート情報を取得
+  GetUpdateInfo(): UpdateInfo | null;
+
+  // 最後のエラーメッセージを取得
+  GetLastError(): string;
+
+  // アップデーターの状態をリセット
+  Reset(): void;
+}
+```
+
+### 進行状況イベント
+
+ダウンロードの進行状況イベントをリッスンします：
+
+```typescript
+import { Events } from '@wailsio/runtime';
+
+Events.On('updater:progress', (data) => {
+  console.log(`ダウンロード済み: ${data.downloaded} / ${data.total}`);
+  console.log(`進行状況: ${data.percentage.toFixed(1)}%`);
+  console.log(`速度: ${(data.bytesPerSecond / 1024 / 1024).toFixed(2)} MB/s`);
+});
+```
+
+## 完全な例
+
+React コンポーネントを使用した完全な例を以下に示します：
+
+```tsx title="UpdateChecker.tsx"
+import { useState, useEffect } from 'react';
+import { updater } from './bindings/myapp';
+import { Events } from '@wailsio/runtime';
+
+interface Progress {
+  downloaded: number;
+  total: number;
+  percentage: number;
+  bytesPerSecond: number;
+}
+
+export function UpdateChecker() {
+  const [checking, setChecking] = useState(false);
+  const [updateInfo, setUpdateInfo] = useState<any>(null);
+  const [downloading, setDownloading] = useState(false);
+  const [progress, setProgress] = useState<Progress | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // 進行状況イベントをリッスン
+    const cleanup = Events.On('updater:progress', (data: Progress) => {
+      setProgress(data);
+    });
+
+    // マウント時に更新をチェック
+    checkForUpdates();
+
+    return () => cleanup();
+  }, []);
+
+  async function checkForUpdates() {
+    setChecking(true);
+    setError(null);
+
+    try {
+      const info = await updater.CheckForUpdate();
+      setUpdateInfo(info);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  async function downloadAndInstall() {
+    setDownloading(true);
+    setError(null);
+
+    try {
+      await updater.DownloadAndApply();
+      // アプリは自動的に再起動します
+    } catch (err) {
+      setError(err.message);
+      setDownloading(false);
+    }
+  }
+
+  if (checking) {
+    return <div>更新をチェックしています...</div>;
+  }
+
+  if (error) {
+    return (
+      <div>
+        <p>エラー: {error}</p>
+        <button onClick={checkForUpdates}>再試行</button>
+      </div>
+    );
+  }
+
+  if (!updateInfo) {
+    return (
+      <div>
+        <p>最新版です！ (v{updater.GetCurrentVersion()})</p>
+        <button onClick={checkForUpdates}>再チェック</button>
+      </div>
+    );
+  }
+
+  if (downloading) {
+    return (
+      <div>
+        <p>アップデートをダウンロード中...</p>
+        {progress && (
+          <div>
+            <progress value={progress.percentage} max={100} />
+            <p>{progress.percentage.toFixed(1)}%</p>
+            <p>{(progress.bytesPerSecond / 1024 / 1024).toFixed(2)} MB/s</p>
+          </div>
+        )}
+      </div>
+    );
+  }return (
+    <div>
+      <h3>アップデート利用可能！</h3>
+      <p>バージョン {updateInfo.version} が利用可能です</p>
+      <p>サイズ: {updateInfo.hasPatch
+        ? `${(updateInfo.patchSize / 1024).toFixed(0)} KB (パッチ)`
+        : `${(updateInfo.size / 1024 / 1024).toFixed(1)} MB`}
+      </p>
+      <div dangerouslySetInnerHTML={{ __html: updateInfo.releaseNotes }} />
+      <button onClick={downloadAndInstall}>ダウンロード & インストール</button>
+      <button onClick={() => setUpdateInfo(null)}>スキップ</button>
+    </div>
+  );
+}
+```
+
+## アップデート戦略
+
+### 起動時に確認
+
+```go
+func (a *App) OnStartup(ctx context.Context) {
+    // 短い遅延後にアップデートを確認
+    go func() {
+        time.Sleep(5 * time.Second)
+        info, err := a.updater.CheckForUpdate()
+        if err == nil && info != nil {
+            // フロントエンドにイベントを発行
+            application.Get().EmitEvent("update-available", info)
+        }
+    }()
+}
+```
+
+### バックグラウンドでの確認
+
+自動バックグラウンド確認を構成します:
+
+```go
+updater, _ := application.CreateUpdaterService(
+    "1.0.0",
+    application.WithUpdateURL("https://updates.example.com/myapp/"),
+    application.WithCheckInterval(6 * time.Hour), // 6時間ごとに確認
+)
+```
+
+### 手動確認メニュー項目
+
+```go
+menu := application.NewMenu()
+menu.Add("アップデートを確認...").OnClick(func(ctx *application.Context) {
+    info, err := updater.CheckForUpdate()
+    if err != nil {
+        application.InfoDialog().SetMessage("アップデートの確認中にエラーが発生しました").Show()
+        return
+    }
+    if info == nil {
+        application.InfoDialog().SetMessage("最新バージョンです！").Show()
+        return
+    }
+    // アップデートダイアログを表示...
+})
+```
+
+## デルタ更新（パッチ）
+
+デルタ更新（パッチ）により、ユーザーはバージョン間の差分のみをダウンロードでき、ダウンロードサイズを大幅に削減できます。
+
+### 仕組み
+
+1. 新しいバージョンをビルドする際、以前のバージョンからパッチを生成します
+2. サーバー上で完全なアップデートと並行してパッチをホストします
+3. アプデーターは利用可能な場合、自動的にパッチをダウンロードします
+4. パッチ適用に失敗した場合、完全なダウンロードにフォールバックします
+
+### パッチの生成
+
+パッチは `bsdiff` アルゴリズムを使用して生成されます。`bsdiff` ツールが必要です:
+
+```bash
+# bsdiff をインストール (macOS)
+brew install bsdiff
+
+# bsdiff をインストール (Ubuntu/Debian)
+sudo apt-get install bsdiff
+
+# パッチを生成
+bsdiff old-binary new-binary patch.bsdiff
+```
+
+### パッチファイルの名前付け
+
+アップデートディレクトリにパッチを整理します:
+
+```
+updates/
+├── update.json
+├── myapp-1.2.0-macos-arm64.tar.gz
+├── myapp-1.2.0-windows-amd64.zip
+└── patches/
+    ├── 1.0.0-to-1.2.0-macos-arm64.patch
+    ├── 1.1.0-to-1.2.0-macos-arm64.patch
+    ├── 1.0.0-to-1.2.0-windows-amd64.patch
+    └── 1.1.0-to-1.2.0-windows-amd64.patch
+```
+
+<Aside type="tip">
+直近のいくつかのバージョンのパッチを保持してください。非常に古いバージョンのユーザーは、自動的に完全なアップデートをダウンロードします。
+</Aside>
+
+## アップデートのホスティング
+
+### 静的ファイルホスティング
+
+アップデートは任意の静的ファイルサーバーでホストできます:
+
+- **Amazon S3** / **Cloudflare R2**
+- **Google Cloud Storage**
+- **GitHub Releases**
+- **任意の CDN または Web サーバー**
+
+S3 バケットの構造例:
+
+```
+s3://my-updates-bucket/myapp/
+├── stable/
+│   ├── update.json
+│   ├── myapp-1.2.0-macos-arm64.tar.gz
+│   └── patches/
+│       └── 1.1.0-to-1.2.0-macos-arm64.patch
+└── beta/
+    └── update.json
+```
+
+### CORS 構成
+
+異なるドメインでホストする場合、CORS を構成します:
+
+```json
+{
+  "CORSRules": [
+    {
+      "AllowedOrigins": ["*"],
+      "AllowedMethods": ["GET"],
+      "AllowedHeaders": ["*"]
+    }
+  ]
+}
+```
+
+## セキュリティ
+
+### チェックサム検証
+
+すべてのダウンロードは、マニフェスト内の SHA256 チェックサムに対して検証されます:
+
+```json
+{
+  "checksum": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
+```
+
+### 署名検証
+
+追加のセキュリティのために、署名検証を有効にします:
+
+<Steps>
+1. **キーペアを生成**:
+   ```bash
+   # Ed25519 キーペアを生成
+   openssl genpkey -algorithm Ed25519 -out private.pem
+   openssl pkey -in private.pem -pubout -out public.pem
+   ```
+
+2. **アップデートマニフェストに署名**:
+   ```bash
+   openssl pkeyutl -sign -inkey private.pem -in update.json -out update.json.sig
+   ```
+
+3. **アプデーターを構成**:
+   ```go
+   updater, _ := application.CreateUpdaterService(
+       "1.0.0",
+       application.WithUpdateURL("https://updates.example.com/myapp/"),
+       application.WithRequireSignature(true),
+       application.WithPublicKey("MCowBQYDK2VwAyEA..."), // Base64エンコードされた公開鍵
+   )
+   ```
+</Steps>
+
+## ベストプラクティス
+
+### 推奨事項
+
+- デプロイする前にアップデートを徹底的にテストする
+- ロールバック用に以前のバージョンを保持する
+- リリースノートをユーザーに表示する
+- 必須でないアップデートをユーザーがスキップできるようにする
+- すべてのダウンロードに HTTPS を使用する
+- アップデートを適用する前にチェックサムを検証する
+- エラーを適切に処理する
+
+### 避けるべきこと
+
+- 警告なしで即時再起動を強制する
+- チェックサム検証をスキップする
+
+- ユーザーが重要な作業をしている際に中断する
+- 以前のバージョンをすぐに削除する
+- アップデートの失敗を無視する
+
+## トラブルシューティング
+
+### アップデートが見つからない
+
+- マニフェスト URL が正しいか確認する
+- プラットフォームキーが一致しているか確認する（例: `macos-arm64`）
+- マニフェスト内のバージョンが新しいものであることを確認する
+
+### ダウンロードが失敗する
+
+- ネットワーク接続を確認する
+- ダウンロード URL にアクセスできるか確認する
+- クロスオリジンの場合は CORS 構成を確認する
+
+### パッチが失敗する
+
+- アプデーターは自動的に完全なダウンロードにフォールバックします
+- システムに `bspatch` が利用可能であることを確認する
+- パッチのチェックサムが正しいことを確認する
+
+### アプリケーションが再起動しない
+
+- macOS では、アプリが適切にコード署名されていることを確認する
+- Windows では、ファイルロックを確認する
+- Linux では、ファイル権限を確認する
+
+## 次のステップ
+
+- [コード署名](/ja/guides/build/signing) - アップデートに署名する
+- [インストーラーの作成](/ja/guides/installers) - アプリケーションをパッケージ化する
+- [CI/CD 統合](/guides/ci-cd) - リリースプロセスを自動化する

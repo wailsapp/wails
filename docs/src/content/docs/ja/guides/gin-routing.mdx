@@ -1,0 +1,263 @@
+---
+title: ルーティングにGinを使用する
+description: Gin WebフレームワークをWails v3アプリケーションに統合するための包括的なガイド
+---
+
+このガイドでは、[Gin Webフレームワーク](https://github.com/gin-gonic/gin)をWails v3と統合する方法を示します。GinはGoで書かれた高性能なHTTP Webフレームワークであり、WebアプリケーションやAPIの構築を容易にします。
+
+## はじめに
+
+Wails v3は、Ginのような人気のWebフレームワークを含む任意のHTTPハンドラを使用できる柔軟なアセットシステムを提供しています。この統合により、以下が可能になります：
+
+- Ginのルーティングとミドルウェアを使用してWebコンテンツを提供する
+- Wailsアプリケーションからアクセス可能なRESTful APIを作成する
+- Wailsのデスクトップ統合を維持しながらGinの機能を使用する
+
+## WailsとのGinの設定
+
+GinをWailsと統合するには、Ginルーターを作成し、Wailsアプリケーションでアセットハンドラとして構成する必要があります。以下に手順を示します：
+
+### 1. 依存関係のインストール
+
+まず、Ginパッケージがインストールされていることを確認してください：
+
+```bash
+go get -u github.com/gin-gonic/gin
+```
+
+### 2. Gin用のミドルウェアの作成
+
+WailsとGin間の統合を処理するミドルウェア関数を作成します：
+
+```go
+// GinMiddlewareは、Wailsで処理されないリクエストをGinに渡すミドルウェアを作成します
+func GinMiddleware(ginEngine *gin.Engine) application.Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Wailsが `/wails` ルートを処理するようにします
+			if strings.HasPrefix(r.URL.Path, "/wails") {
+				next.ServeHTTP(w, r)
+				return
+			}
+			// それ以外はすべてGinが処理します
+			ginEngine.ServeHTTP(w, r)
+		})
+	}
+}
+```
+
+このミドルウェアは、すべてのHTTPリクエストをGinルーターに渡します。
+
+### 3. Ginルーターの設定
+
+ルート、ミドルウェア、ハンドラを使用してGinルーターを設定します：
+
+```go
+// 新しいGinルーターを作成
+ginEngine := gin.New() // カスタムミドルウェアを追加するため、Default()の代わりにNew()を使用
+
+// ミドルウェアを追加
+ginEngine.Use(gin.Recovery())
+ginEngine.Use(LoggingMiddleware()) // カスタムミドルウェア
+
+// ルートを定義
+ginEngine.GET("/", func(c *gin.Context) {
+    // メインページを提供
+})
+
+ginEngine.GET("/api/hello", func(c *gin.Context) {
+    c.JSON(http.StatusOK, gin.H{
+        "message": "Hello from Gin API!",
+        "time":    time.Now().Format(time.RFC3339),
+    })
+})
+```
+
+### 4. Wailsアプリケーションとの統合
+
+Wailsアプリケーションを構成して、Ginルーターをアセットハンドラとして使用します：
+
+```go
+// 新しいWailsアプリケーションを作成
+app := application.New(application.Options{
+    Name:        "Gin Example",
+    Description: "A demo of using Gin with Wails",
+    Mac: application.MacOptions{
+        ApplicationShouldTerminateAfterLastWindowClosed: true,
+    },
+    Assets: application.AssetOptions{
+        Handler:    ginEngine,
+        Middleware: GinMiddleware(ginEngine),
+    },
+})
+
+// ウィンドウを作成
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:    "Wails + Gin Example",
+    Width:    900,
+    Height:   700,
+    URL:      "/", // これはGinが処理するルートをロードします
+})
+```
+
+## スティックコンテンツの提供
+
+Goの`embed`パッケージを使用して、静的ファイルをバイナリに埋め込みます：
+
+```go
+//go:embed static
+var staticFiles embed.FS
+
+ginEngine.StaticFS("/static", http.FS(staticFiles))
+ginEngine.GET("/", func(c *gin.Context) {
+    file, _ := staticFiles.ReadFile("static/index.html")
+    c.Data(http.StatusOK, "text/html; charset=utf-8", file)
+})
+```
+
+開発中は、`ginEngine.Static("/static", "./static")`を使用してディスクから直接ファイルを提供します。
+
+## カスタムミドルウェア
+
+Ginを使用すると、さまざまな目的のためにカスタムミドルウェアを作成できます。以下はログ記録ミドルウェアの例です：
+
+```go
+// LoggingMiddlewareはリクエストの詳細をログに記録するGinミドルウェアです
+func LoggingMiddleware() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        // タイマーを開始
+        startTime := time.Now()
+
+        // リクエストを処理
+        c.Next()
+
+        // レイテンシーを計算
+        latency := time.Since(startTime)
+
+        // リクエストの詳細をログに記録
+        log.Printf("[GIN] %s | %s | %s | %d | %s",
+            c.Request.Method,
+            c.Request.URL.Path,
+            c.ClientIP(),
+            c.Writer.Status(),
+            latency,
+        )
+    }
+}
+```
+
+## APIリクエストの処理
+
+Ginを使用すると、RESTful APIの作成が容易になります。以下はAPIエンドポイントを定義する方法です：
+
+```go
+// GETエンドポイント
+ginEngine.GET("/api/users", func(c *gin.Context) {
+    c.JSON(http.StatusOK, users)
+})
+
+// JSONバインディング付きPOSTエンドポイント
+ginEngine.POST("/api/users", func(c *gin.Context) {
+    var newUser User
+    if err := c.ShouldBindJSON(&newUser); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    // 新しいユーザーを処理...
+    c.JSON(http.StatusCreated, newUser)
+})
+
+// パスパラメータ
+ginEngine.GET("/api/users/:id", func(c *gin.Context) {
+    id := c.Param("id")
+    // IDでユーザーを検索...
+    c.JSON(http.StatusOK, user)
+})
+
+// クエリパラメータ
+ginEngine.GET("/api/search", func(c *gin.Context) {
+    query := c.DefaultQuery("q", "")
+    limit := c.DefaultQuery("limit", "10")
+    // 検索を実行...
+    c.JSON(http.StatusOK, results)
+})
+```
+
+## Wails機能の使用
+
+Ginが提供するWebコンテンツは、`@wailsio/runtime`パッケージを使用してWailsの機能と対話できます。
+
+### イベント処理
+
+Goでイベントハンドラを登録します：
+
+```go
+app.Event.On("my-event", func(event *application.CustomEvent) {
+    log.Printf("Received event: %v", event.Data)
+})
+```
+
+ランタイムを使用してJavaScriptから呼び出します：
+
+```html
+<script type="module">
+    import { Events } from '@wailsio/runtime';
+
+    Events.Emit("my-event", { message: "Hello from frontend" });
+    Events.On("response-event", (data) => console.log(data));
+</script>
+```
+
+## 高度な設定
+
+### Ginのモードのカスタマイズ
+
+本番環境用にGinをリリースモードに設定します：
+
+```go
+gin.SetMode(gin.ReleaseMode)  // 開発には gin.DebugMode を使用
+ginEngine := gin.New()
+```
+
+### WebSocketの処理
+
+Gorilla WebSocketなどのライブラリを使用して、GinとWebSocketを統合できます：
+
+```go
+import "github.com/gorilla/websocket"
+
+var upgrader = websocket.Upgrader{
+    ReadBufferSize:  1024,
+    WriteBufferSize: 1024,
+    CheckOrigin: func(r *http.Request) bool {
+        return true // すべての接続を許可
+    },
+}
+
+// ルートハンドラ内：
+ginEngine.GET("/ws", func(c *gin.Context) {
+    conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+    if err != nil {
+        log.Println(err)
+        return
+    }
+    defer conn.Close()
+    
+    // WebSocket接続を処理...
+})
+```
+
+## ベストプラクティス
+
+- **Goのembedパッケージを使用する：** より良い配布のために、静的ファイルをバイナリに埋め込みます。
+- **関心を分離する：** APIロジックとUIロジックを分離します。
+- **エラー処理：** Ginルートとフロントエンドコードの両方で適切なエラー処理を実装します。
+- **セキュリティ：** ユーザー入力を処理する際に、セキュリティの考慮事項に注意してください。
+- **パフォーマンス：** より良いパフォーマンスのために、本番環境ではGinのリリースモードを使用します。
+- **テスト：** Ginのテストユーティリティを使用して、Ginルートのテストを作成します。
+
+## 結論
+
+GinをWailsと統合すると、Webテクノロジーを使用してデスクトップアプリケーションを構築するための強力な組み合わせが提供されます。Ginのパフォーマンスと機能セットは、Wailsのデスクトップ統合機能を補完し、両方の世界の良いところを活用した洗練されたアプリケーションの作成を可能にします。
+
+詳細については、[Ginドキュメント](https://github.com/gin-gonic/gin)および[Wailsドキュメント](https://wails.io)を参照してください。

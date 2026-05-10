@@ -1,0 +1,359 @@
+---
+title: メニューリファレンス
+description: メニュー項目のタイプ、プロパティ、メソッドの完全なリファレンス
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## メニューリファレンス
+
+メニュー項目のタイプ、プロパティ、動的な動作に関する完全なリファレンス。チェックボックス、ラジオグループ、セパレーター、動的な更新を使用して、プロフェッショナルでレスポンシブなメニューを構築します。
+
+## メニュー項目のタイプ
+
+### 通常のメニュー項目
+
+最も一般的なタイプで、テキストを表示してアクションを実行します：
+
+```go
+menuItem := menu.Add("Click Me")
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("Menu item clicked!")
+})
+```
+
+**用途:** コマンド、アクション、ウィンドウのオープン
+
+### チェックボックス
+
+オン/オフの切り替えが可能なチェック状態を持つメニュー項目：
+
+```go
+checkbox := menu.AddCheckbox("Enable Feature", true)  // true = 初期状態でチェック済み
+checkbox.OnClick(func(ctx *application.Context) {
+    isChecked := ctx.ClickedMenuItem().Checked()
+    fmt.Printf("Feature is now: %v\n", isChecked)
+})
+```
+
+**用途:** ブール値の設定、機能の切り替え、表示オプション
+
+**重要:** チェック状態はクリック時に自動的に切り替わります。
+
+### ラジオグループ
+
+排他的なオプション—1つだけを選択できます：
+
+```go
+menu.AddRadio("Small", true)   // true = 初期状態で選択済み
+menu.AddRadio("Medium", false)
+menu.AddRadio("Large", false)
+```
+
+**用途:** 排他的な選択（サイズ、テーマ、モードなど）
+
+**グループ化の仕組み:**
+- 隣接するラジオ項目は自動的にグループ化されます
+- 1つを選択すると、グループ内の他の項目が選択解除されます
+- セパレーターまたは通常の項目で別のグループを区切ります
+
+**複数のグループの例：**
+
+```go
+// グループ1: サイズ
+menu.AddRadio("Small", true)
+menu.AddRadio("Medium", false)
+menu.AddRadio("Large", false)
+
+menu.AddSeparator()
+
+// グループ2: テーマ
+menu.AddRadio("Light", true)
+menu.AddRadio("Dark", false)
+```
+
+### サブメニュー
+
+整理のためのネストされたメニュー構造：
+
+```go
+submenu := menu.AddSubmenu("More Options")
+submenu.Add("Submenu Item 1").OnClick(func(ctx *application.Context) {
+    // クリックの処理
+})
+submenu.Add("Submenu Item 2")
+```
+
+**用途:** 関連する項目のグループ化、ごちゃつきを減らす
+
+**ネストの制限:** ほとんどのプラットフォームでは2〜3レベルのネストがサポートされています。それ以上深くしないようにしてください。
+
+### セパレーター
+
+メニュー項目間の視覚的な区切り線：
+
+```go
+menu.Add("Item 1")
+menu.AddSeparator()
+menu.Add("Item 2")
+```
+
+**用途:** 関連する項目を視覚的にグループ化
+
+**ベストプラクティス:** メニューの先頭または末尾にセパレーターを配置しないでください。
+
+## メニュー項目のプロパティ
+
+### ラベル
+
+メニュー項目に表示されるテキスト：
+
+```go
+menuItem := menu.Add("Initial Label")
+menuItem.SetLabel("New Label")
+
+// 現在のラベルを取得
+label := menuItem.Label()
+```
+
+**動的なラベル：**
+
+```go
+updateMenuItem := menu.Add("Check for Updates")
+updateMenuItem.OnClick(func(ctx *application.Context) {
+    updateMenuItem.SetLabel("Checking...")
+    menu.Update()  // Windowsで重要！
+    
+    // アップデートの確認を実行
+    checkForUpdates()
+    
+    updateMenuItem.SetLabel("Check for Updates")
+    menu.Update()
+})
+```
+
+### 有効状態
+
+メニュー項目を操作できるかどうかを制御します：
+
+```go
+menuItem := menu.Add("Save")
+menuItem.SetEnabled(false)  // 灰色になり、クリック不可
+
+// 後で有効化
+menuItem.SetEnabled(true)
+menu.Update()  // 重要: 有効状態を変更した後にこれを呼び出してください！
+
+// 現在の状態を確認
+isEnabled := menuItem.Enabled()
+```
+
+:::caution[Windowsのメニュー動作]
+Windowsでは、メニューの状態が変更されたときにメニューを再構築する必要があります。**メニュー項目の有効化/無効化の後に常に `menu.Update()` を呼び出してください**、特に無効な状態で作成された項目の場合。
+
+**理由:** Windowsのメニューは更新時に最初から再構築されます。`Update()` を呼び出さない場合、クリックハンドラーが正常に動作しません。
+:::
+
+**例: 動的な有効化/無効化**
+
+```go
+var hasSelection bool
+
+cutMenuItem := menu.Add("Cut")
+cutMenuItem.SetEnabled(false)  // 初期状態は無効
+
+copyMenuItem := menu.Add("Copy")
+copyMenuItem.SetEnabled(false)
+
+// 選択状態が変更されたとき
+func onSelectionChanged(selected bool) {
+    hasSelection = selected
+    cutMenuItem.SetEnabled(hasSelection)
+    copyMenuItem.SetEnabled(hasSelection)
+    menu.Update()  // Windowsで重要！
+}
+```
+
+**一般的なパターン: 条件付きで有効化**
+
+```go
+saveMenuItem := menu.Add("Save")
+
+func updateSaveMenuItem() {
+    canSave := hasUnsavedChanges() && !isSaving()
+    saveMenuItem.SetEnabled(canSave)
+    menu.Update()
+}
+
+// 状態が変更されるたびに呼び出す
+onDocumentChanged(func() {
+    updateSaveMenuItem()
+})
+```
+
+### チェック状態
+
+チェックボックスおよびラジオ項目について、チェック状態を制御または照会します：
+
+```go
+checkbox := menu.AddCheckbox("Feature", false)
+checkbox.SetChecked(true)
+menu.Update()
+
+// 状態を照会
+isChecked := checkbox.Checked()
+```
+
+**自動切り替え:** チェックボックスはクリック時に自動的に切り替わります。クリックハンドラー内で `SetChecked()` を呼び出す必要はありません。
+
+**手動制御：**
+
+```go
+checkbox := menu.AddCheckbox("Auto-save", false)
+
+// 外部の状態と同期
+func syncAutoSave(enabled bool) {
+    checkbox.SetChecked(enabled)
+    menu.Update()
+}
+```
+
+### アクセラレータ（キーボードショートカット）
+
+メニュー項目にキーボードショートカットを追加します：
+
+```go
+saveMenuItem := menu.Add("Save")
+saveMenuItem.SetAccelerator("CmdOrCtrl+S")
+
+quitMenuItem := menu.Add("Quit")
+quitMenuItem.SetAccelerator("CmdOrCtrl+Q")
+```
+
+**アクセラレータの形式:**
+- `CmdOrCtrl` - macOSではCmd、Windows/LinuxではCtrl
+- `Shift`、`Alt`、`Option` - 修飾キー
+- `A-Z`、`0-9` - 文字/数字キー
+- `F1-F12` - ファンクションキー
+- `Enter`、`Space`、`Backspace` など - 特殊キー
+
+**例：**
+
+```go
+"CmdOrCtrl+S"           // 保存
+"CmdOrCtrl+Shift+S"     // 名前を付けて保存
+"CmdOrCtrl+W"           // ウィンドウを閉じる
+"CmdOrCtrl+Q"           // 終了
+"F5"                    // 更新
+"CmdOrCtrl+,"           // 設定 (macOSの規約)
+"Alt+F4"                // 閉じる (Windowsの規約)
+```
+
+**プラットフォーム固有のアクセラレータ：**
+
+```go
+if runtime.GOOS == "darwin" {
+    prefsMenuItem.SetAccelerator("Cmd+,")
+} else {
+    prefsMenuItem.SetAccelerator("Ctrl+P")
+}
+```
+
+### ツールチップ
+
+メニュー項目にホバーテキストを追加します（プラットフォームのサポートは異なります）：
+
+```go
+menuItem := menu.Add("Advanced Options")
+menuItem.SetTooltip("Configure advanced settings")
+```
+
+**プラットフォームのサポート:**
+- **Windows:** ✅ サポート済み
+- **macOS:** ❌ サポートされていない（メニューのツールチップは標準ではない）
+- **Linux:** ⚠️ デスクトップ環境によって異なる
+
+### 非表示状態
+
+メニュー項目を削除せずに非表示にします：
+
+```go
+debugMenuItem := menu.Add("Debug Mode")
+debugMenuItem.SetHidden(true)  // 非表示
+
+// デバッグビルドで表示
+if isDebugBuild {
+    debugMenuItem.SetHidden(false)
+    menu.Update()
+}
+```
+
+**用途:** デバッグオプション、機能フラグ、条件付き機能
+
+## イベント処理
+
+### OnClick ハンドラー
+
+メニュー項目がクリックされたときにコードを実行します：
+
+```go
+menuItem := menu.Add("Click Me")
+menuItem.OnClick(func(ctx *application.Context) {
+    // クリックの処理
+    fmt.Println("Clicked!")
+})
+```
+
+**Context が提供するもの:**
+- `ctx.ClickedMenuItem()` - クリックされたメニュー項目
+- ウィンドコンテキスト（ウィンドウメニューから来的場合）
+- アプリケーションコンテキスト
+
+**例: ハンドラー内でメニュー項目にアクセス**
+
+```go
+checkbox := menu.AddCheckbox("Feature", false)
+checkbox.OnClick(func(ctx *application.Context) {
+    item := ctx.ClickedMenuItem()
+    isChecked := item.Checked()
+    fmt.Printf("Feature is now: %v\n", isChecked)
+})
+```
+
+### 複数のハンドラー
+
+複数のハンドラーを設定できます（最後に設定したものが有効になります）：
+
+```go
+menuItem := menu.Add("Action")
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("First handler")
+})
+
+// これが最初のハンドラーを置き換えます
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("Second handler - this one runs")
+})
+```
+
+**ベストプラクティス:** ハンドラーは1回だけ設定し、必要に応じて内部で条件分岐を使用してください。
+
+## 動的メニュー
+
+### メニュー項目の更新
+
+**黄金律:** メニューの状態を変更した後は、常に `menu.Update()` を呼び出してください。
+
+```go
+// ✅ 正しい
+menuItem.SetEnabled(true)
+menu.Update()
+
+// ❌ 間違い（特にWindowsで）
+menuItem.SetEnabled(true)
+// Update() の呼び出しを忘れた - クリックハンドラーが機能しない可能性があります！
+```
+
+**これが重要な理由：****ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[メニューの例](https://github.com/wailsapp/wails/tree/master/v3/examples/menu) をご覧ください。

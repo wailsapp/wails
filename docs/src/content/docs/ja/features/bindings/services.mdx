@@ -1,0 +1,615 @@
+---
+title: サービス
+description: サービスを使ってモジュール化された再利用可能なアプリケーションコンポーネントを構築する
+sidebar:
+  order: 2
+---
+
+## サービスのアーキテクチャ
+
+Wails の**サービス**は、モジュール化された自己完結型のコンポーネントでアプリケーションロジックを整理するための構造化された方法を提供します。サービスはライフサイクルに対応しており、起動時とシャットダウン時のフックを持ち、フロントエンドに自動的にバインドされ、依存性の注入が可能で、独立して完全にテストできます。
+
+## クイックスタート
+
+```go
+type GreetService struct {
+    prefix string
+}
+
+func NewGreetService(prefix string) *GreetService {
+    return &GreetService{prefix: prefix}
+}
+
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+
+// Register
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(NewGreetService("Hello, ")),
+    },
+})
+```
+
+**これだけです！** `Greet` は JavaScript から呼び出すことができます：
+
+```js
+import { Greet } from './bindings/main/GreetService';
+
+const message = await Greet("World");
+console.log(message);  // "Hello, World!"
+```
+
+## サービスの作成
+
+### 基本的なサービス
+
+```go
+type CalculatorService struct{}
+
+func (c *CalculatorService) Add(a, b int) int {
+    return a + b
+}
+
+func (c *CalculatorService) Subtract(a, b int) int {
+    return a - b
+}
+```
+
+**登録:**
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&CalculatorService{}),
+    },
+})
+```
+
+**重要なポイント:**
+- **エクスポートされたメソッド**（PascalCase）のみがバインドされます
+- サービスは**シングルトン**（1つのインスタンス）です
+- メソッドは `(値, エラー)` を返すことができます
+
+### 状態を持つサービス
+
+```go
+type CounterService struct {
+    count int
+    mu    sync.RWMutex
+}
+
+func (c *CounterService) Increment() int {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count++
+    return c.count
+}
+
+func (c *CounterService) GetCount() int {
+    c.mu.RLock()
+    defer c.mu.RUnlock()
+    return c.count
+}
+
+func (c *CounterService) Reset() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count = 0
+}
+```
+
+**重要:** サービスはすべてのウィンドウ間で共有されます。スレッドセーフのために常にミューテックスを使用してください。
+
+### 依存性を持つサービス
+
+```go
+type UserService struct {
+    db     *sql.DB
+    logger *slog.Logger
+}
+
+func NewUserService(db *sql.DB, logger *slog.Logger) *UserService {
+    return &UserService{
+        db:     db,
+        logger: logger,
+    }
+}
+
+func (u *UserService) GetUser(id int) (*User, error) {
+    u.logger.Info("Getting user", "id", id)
+    
+    var user User
+    err := u.db.QueryRow("SELECT * FROM users WHERE id = ?", id).Scan(&user)
+    if err != nil {
+        return nil, fmt.Errorf("failed to get user: %w", err)
+    }
+    
+    return &user, nil
+}
+```
+
+**依存性とともに登録:**
+
+```go
+db, _ := sql.Open("sqlite3", "app.db")
+logger := slog.Default()
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(NewUserService(db, logger)),
+    },
+})
+```
+
+## サービスのライフサイクル
+
+### ServiceStartup
+
+アプリケーションの起動時に呼び出されます：
+
+```go
+func (u *UserService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    u.logger.Info("UserService starting up")
+    
+    // リソースの初期化
+    if err := u.db.Ping(); err != nil {
+        return fmt.Errorf("database not available: %w", err)
+    }
+    
+    // マイグレーションの実行
+    if err := u.runMigrations(); err != nil {
+        return fmt.Errorf("migrations failed: %w", err)
+    }
+    
+    // バックグラウンドタスクの開始
+    go u.backgroundSync(ctx)
+    
+    return nil
+}
+```
+
+**ユースケース:**
+- リソースの初期化
+- 設定の検証
+- マイグレーションの実行
+- バックグラウンドタスクの開始
+- 外部サービスへの接続
+
+**重要:**
+- サービスは**登録順**に起動します
+- エラーを返すと**アプリの起動が防止**されます
+- キャンセルには `ctx` を使用してください
+
+### ServiceShutdown
+
+アプリケーションのシャットダウン時に呼び出されます：
+
+```go
+func (u *UserService) ServiceShutdown() error {
+    u.logger.Info("UserService shutting down")
+    
+    // データベースを閉じる
+    if err := u.db.Close(); err != nil {
+        return fmt.Errorf("failed to close database: %w", err)
+    }
+    
+    // リソースのクリーンアップ
+    u.cleanup()
+    
+    return nil
+}
+```
+
+**ユースケース:**
+- 接続のクローズ
+- 状態の保存
+- リソースのクリーンアップ
+- バッファのフラッシュ
+- バックグラウンドタスクのキャンセル
+
+**重要:**
+- サービスは**逆順**にシャットダウンします
+- アプリケーションのコンテキストはすでにキャンセルされています
+- エラーを返すと**警告がログに記録**されます（シャットダウンは防止されません）
+
+### 完全なライフサイクルの例
+
+```go
+type DatabaseService struct {
+    db     *sql.DB
+    logger *slog.Logger
+    cancel context.CancelFunc
+}
+
+func NewDatabaseService(logger *slog.Logger) *DatabaseService {
+    return &DatabaseService{logger: logger}
+}
+
+func (d *DatabaseService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    d.logger.Info("Starting database service")
+    
+    // データベースを開く
+    db, err := sql.Open("sqlite3", "app.db")
+    if err != nil {
+        return fmt.Errorf("failed to open database: %w", err)
+    }
+    d.db = db
+    
+    // 接続をテスト
+    if err := db.Ping(); err != nil {
+        return fmt.Errorf("database not available: %w", err)
+    }
+    
+    // バックグラウンドクリーンアップの開始
+    ctx, cancel := context.WithCancel(ctx)
+    d.cancel = cancel
+    go d.periodicCleanup(ctx)
+    
+    return nil
+}
+
+func (d *DatabaseService) ServiceShutdown() error {
+    d.logger.Info("Shutting down database service")
+    
+    // バックグラウンドタスクをキャンセル
+    if d.cancel != nil {
+        d.cancel()
+    }
+    
+    // データベースを閉じる
+    if d.db != nil {
+        if err := d.db.Close(); err != nil {
+            return fmt.Errorf("failed to close database: %w", err)
+        }
+    }
+    
+    return nil
+}
+
+func (d *DatabaseService) periodicCleanup(ctx context.Context) {
+    ticker := time.NewTicker(1 * time.Hour)
+    defer ticker.Stop()
+    
+    for {
+        select {
+        case <-ctx.Done():
+            return
+        case <-ticker.C:
+            d.cleanup()
+        }
+    }
+}
+```
+
+## サービスオプション
+
+### カスタム名
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceWithOptions(&MyService{}, application.ServiceOptions{
+            Name: "CustomServiceName",
+        }),
+    },
+})
+```
+
+**ユースケース:**
+- 同じサービスタイプの複数のインスタンス
+- より明確なログ
+- より良いデバッグ
+
+### HTTP ルート
+
+サービスは HTTP リクエストを処理できます：
+
+```go
+type FileService struct {
+    root string
+}
+
+func (f *FileService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    // ルートディレクトリからファイルを配信
+    http.FileServer(http.Dir(f.root)).ServeHTTP(w, r)
+}
+
+// ルートとともに登録
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceWithOptions(&FileService{root: "./files"}, application.ServiceOptions{
+            Route: "/files",
+        }),
+    },
+})
+```
+
+**アクセス:** `http://wails.localhost/files/...`
+
+**ユースケース:**
+- ファイル配信
+- カスタム API
+- WebSocket エンドポイント
+- メディアストリーミング
+
+## サービスパターン
+
+### リポジトリパターン
+
+```go
+type UserRepository struct {
+    db *sql.DB
+}
+
+func (r *UserRepository) GetByID(id int) (*User, error) {
+    // データベースクエリ
+}
+
+func (r *UserRepository) Create(user *User) error {
+    // ユーザーの挿入
+}
+
+func (r *UserRepository) Update(user *User) error {
+    // ユーザーの更新
+}
+
+func (r *UserRepository) Delete(id int) error {
+    // ユーザーの削除
+}
+```
+
+### サービスレイヤーパターン
+
+```go
+type UserService struct {
+    repo   *UserRepository
+    logger *slog.Logger
+}
+
+func (s *UserService) RegisterUser(email, password string) (*User, error) {
+    // 検証
+    if !isValidEmail(email) {
+        return nil, errors.New("invalid email")
+    }
+    
+    // パスワードのハッシュ化
+    hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+    if err != nil {
+        return nil, err
+    }
+    
+    // ユーザーの作成
+    user := &User{
+        Email:        email,
+        PasswordHash: string(hash),CreatedAt:    time.Now(),
+    }
+    
+    if err := s.repo.Create(user); err != nil {
+        return nil, err
+    }
+    
+    s.logger.Info("User registered", "email", email)
+    return user, nil
+}
+```
+
+### ファクトリパターン
+
+```go
+type ServiceFactory struct {
+    db     *sql.DB
+    logger *slog.Logger
+}
+
+func (f *ServiceFactory) CreateUserService() *UserService {
+    return &UserService{
+        repo:   &UserRepository{db: f.db},
+        logger: f.logger,
+    }
+}
+
+func (f *ServiceFactory) CreateOrderService() *OrderService {
+    return &OrderService{
+        repo:   &OrderRepository{db: f.db},
+        logger: f.logger,
+    }
+}
+```
+
+### イベント駆動パターン
+
+```go
+type OrderService struct {
+    app *application.Application
+}
+
+func (o *OrderService) CreateOrder(items []Item) (*Order, error) {
+    order := &Order{
+        Items:     items,
+        CreatedAt: time.Now(),
+    }
+    
+    // Save order
+    if err := o.saveOrder(order); err != nil {
+        return nil, err
+    }
+    
+    // Emit event
+    o.app.Event.Emit("order-created", order)
+    
+    return order, nil
+}
+```
+
+## 依存性の注入
+
+### コンストラクタインジェクション
+
+```go
+type EmailService struct {
+    smtp   *smtp.Client
+    logger *slog.Logger
+}
+
+func NewEmailService(smtp *smtp.Client, logger *slog.Logger) *EmailService {
+    return &EmailService{
+        smtp:   smtp,
+        logger: logger,
+    }
+}
+
+// Register
+smtpClient := createSMTPClient()
+logger := slog.Default()
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(NewEmailService(smtpClient, logger)),
+    },
+})
+```
+
+### アプリケーションインジェクション
+
+```go
+type NotificationService struct {
+    app *application.Application
+}
+
+func NewNotificationService(app *application.Application) *NotificationService {
+    return &NotificationService{app: app}
+}
+
+func (n *NotificationService) Notify(message string) {
+    // Use application to emit events
+    n.app.Event.Emit("notification", message)
+    
+    // Or show system notification
+    n.app.ShowNotification(message)
+}
+
+// Register after app creation
+app := application.New(application.Options{})
+app.RegisterService(application.NewService(NewNotificationService(app)))
+```
+
+### サービス間依存関係
+
+```go
+type OrderService struct {
+    userService  *UserService
+    emailService *EmailService
+}
+
+func NewOrderService(userService *UserService, emailService *EmailService) *OrderService {
+    return &OrderService{
+        userService:  userService,
+        emailService: emailService,
+    }
+}
+
+// Register in order
+userService := &UserService{}
+emailService := &EmailService{}
+orderService := NewOrderService(userService, emailService)
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(userService),
+        application.NewService(emailService),
+        application.NewService(orderService),
+    },
+})
+```
+
+## サービスのテスト
+
+### ユニットテスト
+
+```go
+func TestCalculatorService_Add(t *testing.T) {
+    calc := &CalculatorService{}
+    
+    result := calc.Add(2, 3)
+    
+    if result != 5 {
+        t.Errorf("expected 5, got %d", result)
+    }
+}
+```
+
+### 依存関係を含むテスト
+
+```go
+func TestUserService_GetUser(t *testing.T) {
+    // Create mock database
+    db, mock, _ := sqlmock.New()
+    defer db.Close()
+    
+    // Set expectations
+    rows := sqlmock.NewRows([]string{"id", "name"}).
+        AddRow(1, "Alice")
+    mock.ExpectQuery("SELECT").WillReturnRows(rows)
+    
+    // Create service
+    service := NewUserService(db, slog.Default())
+    
+    // Test
+    user, err := service.GetUser(1)
+    
+    if err != nil {
+        t.Fatalf("unexpected error: %v", err)
+    }
+    if user.Name != "Alice" {
+        t.Errorf("expected Alice, got %s", user.Name)
+    }
+}
+```
+
+### ライフサイクルのテスト
+
+```go
+func TestDatabaseService_Lifecycle(t *testing.T) {
+    service := NewDatabaseService(slog.Default())
+    
+    // Test startup
+    ctx := context.Background()
+    err := service.ServiceStartup(ctx, application.ServiceOptions{})
+    if err != nil {
+        t.Fatalf("startup failed: %v", err)
+    }
+    
+    // Test functionality
+    // ...
+    
+    // Test shutdown
+    err = service.ServiceShutdown()
+    if err != nil {
+        t.Fatalf("shutdown failed: %v", err)
+    }
+}
+```
+
+## ベストプラクティス
+
+### ✅ 推奨
+
+- **単一責任** - 1つのサービス、1つの目的
+- **コンストラクタインジェクション** - 依存関係を明示的に渡す
+- **スレッドセーフな状態** - ミューテックスを使用する
+- **エラーを返す** - パニックを起こさない
+- **重要なイベントをログに記録する** - 構造化ロギングを使用する
+- **隔離してテストする** - 依存関係をモックする
+
+### ❌ 非推奨
+
+- **グローバル状態を使用しない** - 依存関係を渡す
+- **起動をブロックしない** - ServiceStartup を高速に保つ
+- **シャットダウンを無視しない** - 常にクリーンアップする
+- **循環依存を作成しない** - 慎重に設計する
+- **内部メソッドを公開しない** - プライベートに保つ
+- **スレッドセーフを忘れない** - サービスは共有される---
+
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[サービスの例](https://github.com/wailsapp/wails/tree/master/v3/examples) をご確認ください。

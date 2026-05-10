@@ -1,0 +1,168 @@
+---
+title: ファイル関連付け
+description: Wailsアプリケーションのファイル関連付けを設定する
+sidebar:
+  order: 20
+---
+
+import { Steps } from "@astrojs/starlight/components";
+import {Badge} from '@astrojs/starlight/components';
+
+対象プラットフォーム: <Badge text="Windows" variant="note" /> <Badge text="macOS" variant="success" />
+<br/>
+
+ファイル関連付けを使用すると、ユーザーがファイルを開いた際にアプリケーションが特定のファイルタイプを処理できます。これはテキストエディタ、画像ビューア、または特定のファイル形式を扱うアプリケーションにとって特に有用です。このガイドでは、Wails v3アプリケーションでファイル関連付けを実装する方法について説明します。
+
+## 概要
+
+Wails v3におけるファイル関連付けのサポートは、現在以下のプラットフォームで利用可能です：
+
+- Windows (NSISインストーラーパッケージ)
+- macOS (アプリケーションバンドル)
+
+## 設定
+
+ファイル関連付けは、プロジェクトの`build`ディレクトリにある`config.yml`ファイルで設定されます。
+
+### 基本設定
+
+ファイル関連付けを設定するには：
+
+1. `build/config.yml`を開く
+2. `fileAssociations`セクションの下にファイル関連付けを追加する
+3. `wails3 update build-assets`を実行してビルドアセットを更新する
+4. アプリケーションオプションの`FileAssociations`フィールドを設定する
+5. `wails3 package`を使用してアプリケーションをパッケージ化する
+
+以下に設定例を示します：
+
+```yaml
+fileAssociations:
+  - ext: myapp
+    name: MyApp Document
+    description: MyApp Document File
+    iconName: myappFileIcon
+    role: Editor
+  - ext: custom
+    name: Custom Format
+    description: Custom File Format
+    iconName: customFileIcon
+    role: Editor
+```
+
+### 設定プロパティ
+
+| プロパティ   | 説明                                                         | プラットフォーム |
+|------|----------------------------------------------------------|----------|
+| ext      | 先頭のピリオドを除くファイル拡張子（例：`txt`）                | 全プラットフォーム |
+| name     | ファイルタイプの表示名                                       | 全プラットフォーム |
+| description | ファイルのプロパティに表示される説明                           | Windows  |
+| iconName | ビルドフォルダ内のアイコンファイルの名前（拡張子を除く）           | 全プラットフォーム |
+| role     | このファイルタイプに対するアプリケーションの役割（例：`Editor`, `Viewer`） | macOS    |
+| mimeType | ファイルのMIMEタイプ（例：`image/jpeg`）                     | macOS    |
+
+## ファイル開封イベントの受信
+
+アプリケーションでファイル開封イベントを処理するには、`events.Common.ApplicationOpenedWithFile`イベントを監視できます：
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "MyApp",
+        FileAssociations: []string{".txt", ".md"}, // 対応する拡張子を指定
+    })
+
+    // アプリケーションが開かれたファイルのイベントを監視
+    app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(event *application.ApplicationEvent) {
+        associatedFile := event.Context().Filename()
+        application.InfoDialog().SetMessage("Application opened with file: " + associatedFile).Show()
+    })
+
+    // ウィンドウを作成してアプリを実行...
+}
+
+```
+
+## ステップバイステップチュートリアル
+
+シンプルなテキストエディタのファイル関連付け設定手順を解説します：
+
+<Steps>
+
+1. ### アイコンの作成
+
+    - ファイルタイプのアイコンを作成します（推奨サイズ：16x16, 32x32, 48x48,
+      256x256）
+    - アイコンをプロジェクトの`build`フォルダに保存します
+    - `iconName`の設定に従って名前を付けます（例：
+      `textFileIcon.png`）
+
+    :::tip
+    `wails3 generate icons`を使用して必要なアイコンを生成できます。
+    詳細は`wails3 generate icons --help`を実行してください。
+    :::
+
+    - macOSの場合、`create:app:bundle:`タスクに`cp build/darwin/documenticon.icns {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/Resources`のようなコピーコマンドを追加します。
+
+2. ### ファイル関連付けの設定
+
+    `build/config.yml`ファイルを編集してファイル関連付けを追加します：
+
+    ```yaml
+    # build/config.yml
+    fileAssociations:
+      - ext: txt
+        name: Text Document
+        description: Plain Text Document
+        iconName: textFileIcon
+        role: Editor
+    ```
+
+3. ### ビルドアセットの更新
+
+    次のコマンドを実行してビルドアセットを更新します：
+
+    ```bash
+    wails3 update build-assets
+    ```
+
+4. ### アプリケーションオプションでのファイル関連付けの設定
+
+    `main.go`ファイルで、アプリケーションオプションの`FileAssociations`フィールドを設定します：
+
+    ```go
+    app := application.New(application.Options{
+      Name: "MyApp",
+      FileAssociations: []string{".txt", ".md"}, // 対応する拡張子を指定
+    })
+    ```
+
+    :::tip[なぜファイル拡張子アプリケーション設定とconfig.ymlの両方に必要なのか？]
+
+    Windowsでは、ファイル関連付けでファイルが開かれると、アプリケーションはファイル名を最初の引数として受け取って起動されます。アプリケーションは最初の引数がファイルなのかコマンドライン引数なのかを区別する方法がないため、アプリケーションオプションの`FileAssociations`フィールドを使用して、最初の引数が関連付けられたファイルかどうかを判断します。
+
+    :::
+
+5. ### アプリケーションのパッケージ化
+
+    次のコマンドを使用してアプリケーションをパッケージ化します：
+
+    ```bash
+    wails3 package
+    ```
+
+    パッケージ化されたアプリケーションは`bin`ディレクトリに作成されます。その後、アプリケーションをインストールしてテストできます。
+
+    ## 追加の注意事項
+
+    - アイコンはビルドフォルダにPNG形式で提供する必要があります
+    - ファイル関連付けのテストには、パッケージ化されたアプリケーションのインストールが必要です
+
+</Steps>

@@ -1,0 +1,210 @@
+---
+title: テンプレートシステム
+description: Wails v3 が新しいプロジェクトをどのように生成するか、テンプレートの構成方法、および独自のテンプレートを作成する方法。
+sidebar:
+  order: 7
+---
+
+Wails には**テンプレートシステム**が搭載されており、`wails3 init` を使用して**あらゆる**モダンなフロントエンドスタック（React、Svelte、Vue、Solid、Vanilla JS など）に対応した実行可能なプロジェクトを生成できます。
+
+このページでは以下の内容を扱います：
+
+1. テンプレートディレクトリの構成
+2. CLI によるテンプレートの選択とレンダリング方法
+3. 新しいテンプレールのステップバイステップの作成方法
+4. 既存のテンプレートの更新または上書き
+5. トラブルシューティングとベストプラクティス
+
+---
+
+## 1. テンプレートの場所
+
+```
+v3/
+└── internal/templates/
+    ├── _common/           # すべてのプロジェクトにコピーされるファイル (main.go, .gitignore)
+    ├── base/              # バックエンド専用の「プレーン Go」テンプレート
+    ├── react/             # React + Vite
+    ├── react-ts/
+    ├── svelte/
+    ├── vue/
+    ├── ... (その他)
+    └── templates.go       # レジストリとヘルパー関数
+```
+
+* **`_common/`** – ユニバーサルなボイラープレート（Go モジュール、Taskfile、README スタブ、VS Code 設定）。
+* **フレームワークフォルダ** – `frontend/` とスタック固有の設定を含みます。
+* フォルダ名は CLI に渡す**テンプレート ID** と一致します
+  （`wails3 init -t react-ts` の場合）。
+
+> 全体のディレクトリは `go:embed` を介して CLI バイナリにコンパイルされるため、ユーザーはオフラインでプロジェクトを生成できます。
+
+---
+
+## 2. `wails3 init` によるテンプレートの使用
+
+呼び出しチェーン：
+
+```
+cmd/wails3/init.go
+       │
+       ▼
+internal/commands/init.go  ← フラグとターゲットディレクトリを解析
+       │
+       ▼
+internal/templates.Load()  ← templates.go
+       │
+       ▼
+Template.CopyTo(dest)      ← ファイルシステムのコピーとテキスト置換
+```
+
+### 置換
+
+`{{ }}` で囲まれたプレースホルダーは、コピー時に置換されます：
+
+| プレースホルダー | 例 | 出典 |
+|-------------|---------|--------|
+| `{{ProjectName}}` | `myapp` | CLI フラグ / ディレクトリ名 |
+| `{{ModulePath}}`  | `github.com/me/myapp` | `--module` が指定された場合 |
+| `{{WailsVersion}}`| `v3.0.0` | コンパイル済み定数 |
+
+**任意の**プレースホルダーを追加できます。`internal/commands/init.go` で値が設定されることを確認してください。
+
+### コピー後フック
+
+各テンプレートには `deps` タスクを含む **Taskfile** が同梱されている場合があります。
+コピー後、CLI は以下を実行します：
+
+```
+task --taskfile Taskfile.yml deps
+```
+
+一般的な作業：
+
+* `go mod tidy`
+* `npm install`
+* git init と初期コミット（オプション）
+
+フックの動作は `_common/Taskfile.yml` で定義されますが、テンプレートごとに上書き可能です。
+
+---
+
+## 3. 新しいテンプレートの作成
+
+> 例： **Qwik-TS** テンプレートの追加
+
+### 3.1 フォルダと ID
+
+```
+internal/templates/qwik-ts/
+```
+
+フォルダ名 = テンプレート ID。**kebab-case** を維持してください。
+
+### 3.2 最小限のファイルセット
+
+```
+qwik-ts/
+├── README.md              # CLI で -list 時に表示
+├── frontend/              # ウェブプロジェクト
+│   ├── src/
+│   ├── package.json
+│   └── vite.config.ts
+├── Taskfile.yml           # deps および dev タスク
+└── go/                    # オプションの追加 Go ファイル
+```
+
+`react-ts` をコピーしてファイルを削除することから始めます。
+
+### 3.3 プレースホルダーの更新
+
+検索と置換：
+
+* `myapp` → `{{ProjectName}}`
+* `github.com/you/myapp` → `{{ModulePath}}`
+
+### 3.4 登録（オプション）
+
+フォルダが存在する場合、**templates.go は `embed` を介して自動的に検出します**。
+**カスタム検証**が必要な場合のみ、明示的なコードを追加してください：
+
+```go
+func (t *Template) Validate() error {
+    // このテンプレート用に Node ≥ 20 をチェック
+}
+```
+
+### 3.5 テスト
+
+```bash
+wails3 init -n demo -t qwik-ts
+cd demo
+wails3 dev
+```
+
+以下を確認してください：
+
+* 開発サーバーが起動すること
+* `wailsjs` バインディングが生成されること
+* ホットリロードが機能すること
+
+---
+
+## 4. 既存のテンプレートの修正
+
+1. `internal/templates/<id>/` 下のファイルを編集します。
+2. `go generate ./v3/...` **または** `go run ./v3/cmd/wails3 –help` を実行します。embed ディレクティブにより自動的に再コンパイルされます。
+3. `frontend/package.json` と `Taskfile.yml` 内の**依存関係のバージョン**を更新します。
+4. テンプレート内の `README.md` を更新します。ユーザーは `wails3 init -t react --help` を介してこれを確認できます。
+
+### 一般的な調整
+
+| 作業 | 場所 |
+|------|-------|
+| 開発サーバーのポートを変更 | `frontend/Taskfile.yml` (`vite dev --port {{DevPort}}`) |
+| 環境変数の追加 | 同じ Taskfile または `.env` |
+| JS パッケージマネージャーの置換 | Taskfile 内で `npm` を `pnpm` に切り替え |
+
+---
+
+## 5. テンプレート作成のヒント
+
+* **フロントエンドを汎用的に保つ** – Wails 固有のグローバル変数を参照しないでください。ランタイムは自動的に注入されます。
+* **コンパイル済みアーティファクトを含めない** – `.tmplignore` を介して `node_modules`、`dist`、`.DS_Store` を除外します。
+* **前提条件を文書化する** – Node のバージョン、追加の CLI ツールなど。
+* **破壊的変更を避ける** – 大規模な改訂が必要な場合は、*新しい*テンプレート ID を作成してください。
+
+---
+
+## 6. トラブルシューティング
+
+| 症状 | 原因 | 解決策 |
+|---------|-------|-----|
+| `unknown template id` | フォルダ名の不一致 | `wails3 init -list` を確認 |
+| プレースホルダーが置換されない | `Data` マップのエントリ不足 | `internal/commands/init.go` を編集 |
+| 開発サーバーが空白ページを開く | 誤った `DevPort` 環境変数 | Taskfile がポートを stdout にエコーすることを確認 |
+| プロダクション環境でフロントエンドのビルドに失敗 | vite の `base` パスを見落とした | `vite.config.ts` で `base: "./"` を設定 |
+
+`wails3 init` に `--verbose` を追加すると、コピーされるすべてのファイルと置換内容が出力されます。
+
+---
+
+## 7. 主要なソースファイルマップ
+
+| ファイル | 責任 |
+|------|----------------|
+| `internal/templates/templates.go` | テンプレート FS を埋め込み、`[]Template` を返す |
+| `internal/templates/<id>/**` | 実際のテンプレートコンテンツ |
+| `internal/commands/init.go` | CLI の接着剤：テンプレートを選択し、プレースホルダーを埋める |
+| `internal/commands/generate_template.go` | ライブプロジェクトをテンプレートに*エクスポート*するためのユーティリティ（更新時に便利） |
+
+---
+
+## 8. まとめ
+
+* テンプレートは **`internal/templates/`** にあり、CLI に組み込まれています。
+* `wails3 init -t <id>` は `_common` と選択されたテンプレートをコピーし、置換を実行してから **deps** Taskfile フックを実行します。
+* テンプレートの作成は、**フォルダの作成**、ファイルの追加、プレースホルダーの使用と同じくらい簡単です。
+* このシステムは**拡張可能**で**自己完結型**です。チームやコミュニティとカスタムスタックを共有するのに最適です。
+
+テンプレート作成を楽しんでください！

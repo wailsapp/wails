@@ -1,0 +1,338 @@
+---
+title: 高度なバインディング
+description: ディレクティブ、コードインジェクション、カスタムIDを含む高度なバインディング技術
+sidebar:
+  order: 3
+---
+
+import { FileTree } from "@astrojs/starlight/components";
+
+このガイドでは、Wails v3 におけるバインディング生成プロセスのカスタマイズと最適化に関する高度な技術について解説します。
+
+## ディレクティブによる生成コードのカスタマイズ
+
+### カスタムコードのインジェクト
+
+`//wails:inject` ディレクティブを使用すると、生成されたバインディングにカスタムの JavaScript/TypeScript コードをインジェクトできます。
+
+```go
+//wails:inject console.log("Hello from Wails!");
+type MyService struct {}
+
+func (s *MyService) Greet(name string) string {
+    return "Hello, " + name
+}
+```
+
+これにより、`MyService` サービス用の生成された JavaScript/TypeScript ファイルに指定されたコードがインジェクトされます。
+
+特定の出力形式を対象とした条件付きインジェクトも可能です。
+
+```go
+//wails:inject j*:console.log("Hello JS!");  // JavaScript のみ
+//wails:inject t*:console.log("Hello TS!");  // TypeScript のみ
+```
+
+### 追加ファイルの含める
+
+`//wails:include` ディレクティブを使用すると、生成されたバインディングに追加のファイルを含めることができます。
+
+```go
+//wails:include js/*.js
+package mypackage
+```
+
+このディレクティブは、通常、パッケージのドキュメントコメント内で、生成されたバインディングに追加の JavaScript/TypeScript ファイルを含めるために使用されます。
+
+### 内部型とメソッドのマーク
+
+`//wails:internal` ディレクティブは、型またはメソッドを内部用としてマークし、フロントエンドへのエクスポートを防ぎます。
+
+```go
+//wails:internal
+type InternalModel struct {
+    Field string
+}
+
+//wails:internal
+func (s *MyService) InternalMethod() {}
+```
+
+これは、Go コード内部でのみ使用され、フロントエンドに公開すべきではない型やメソッドに有用です。
+
+### メソッドの無視
+
+`//wails:ignore` ディレクティブは、バインディング生成中にメソッドを完全に無視します。
+
+```go
+//wails:ignore
+func (s *MyService) IgnoredMethod() {}
+```
+
+これは `//wails:internal` に似ていますが、内部としてマークするのではなく、メソッドを完全に無視します。
+
+### カスタムメソッドID
+
+`//wails:id` ディレクティブは、メソッドのカスタムIDを指定し、デフォルトのハッシュベースのIDを上書きします。
+
+```go
+//wails:id 42
+func (s *MyService) CustomIDMethod() {}
+```
+
+これは、コードのリファクタリング時に互換性を維持する場合に有用です。
+
+## 複雑な型との連携
+
+### ネストされた構造体
+
+バインディングジェネレーターは、ネストされた構造体を自動的に処理します。
+
+```go
+type Address struct {
+    Street string
+    City   string
+    State  string
+    Zip    string
+}
+
+type Person struct {
+    Name    string
+    Address Address
+}
+
+func (s *MyService) GetPerson() Person {
+    return Person{
+        Name: "John Doe",
+        Address: Address{
+            Street: "123 Main St",
+            City:   "Anytown",
+            State:  "CA",
+            Zip:    "12345",
+        },
+    }
+}
+```
+
+生成された JavaScript/TypeScript コードには、`Person` と `Address` の両方のクラスが含まれます。
+
+### マップとスライス
+
+マップとスライスも自動的に処理されます。
+
+```go
+type Person struct {
+    Name       string
+    Attributes map[string]string
+    Friends    []string
+}
+
+func (s *MyService) GetPerson() Person {
+    return Person{
+        Name: "John Doe",
+        Attributes: map[string]string{
+            "hair": "brown",
+            "eyes": "blue",
+        },
+        Friends: []string{"Jane", "Bob", "Alice"},
+    }
+}
+```
+
+JavaScript では、マップはオブジェクトとして、スライスは配列として表現されます。TypeScript では、マップは `Record<K, V>` として、スライスは `T[]` として表現されます。
+
+### ジェネリック型
+
+バインディングジェネレーターはジェネリック型をサポートしています。
+
+```go
+type Result[T any] struct {
+    Data  T
+    Error string
+}
+
+func (s *MyService) GetResult() Result[string] {
+    return Result[string]{
+        Data:  "Hello, World!",
+        Error: "",
+    }
+}
+```
+
+生成された TypeScript コードには、`Result` 用のジェネリッククラスが含まれます。
+
+```typescript
+export class Result<T> {
+    "Data": T;
+    "Error": string;
+
+    constructor(source: Partial<Result<T>> = {}) {
+        if (!("Data" in source)) {
+            this["Data"] = null as any;
+        }
+        if (!("Error" in source)) {
+            this["Error"] = "";
+        }
+
+        Object.assign(this, source);
+    }
+
+    static createFrom<T>(source: string | object = {}): Result<T> {
+        let parsedSource = typeof source === "string" ? JSON.parse(source) : source;
+        return new Result<T>(parsedSource as Partial<Result<T>>);
+    }
+}
+```
+
+### インターフェース
+
+バインディングジェネレーターは、`-i` フラグを使用してクラスではなく TypeScript インターフェースを生成できます。
+
+```bash
+wails3 generate bindings -ts -i
+```
+
+これにより、すべてのモデルに対して TypeScript インターフェースが生成されます。
+
+```typescript
+export interface Person {
+    Name: string;
+    Attributes: Record<string, string>;
+    Friends: string[];
+}
+```
+
+## バインディング生成の最適化
+
+### ID ではなく名前を使用する
+
+デフォルトでは、バインディングジェネレーターはメソッド呼び出しにハッシュベースのIDを使用します。`-names` フラグを使用して、代わりに名前を使用することができます。
+
+```bash
+wails3 generate bindings -names
+```
+
+これにより、ID の代わりにメソッド名を使用するコードが生成されます。
+
+```javascript
+export function Greet(name) {
+    let $resultPromise = $Call.ByName("Greet", name);
+    return $resultPromise;
+}
+```
+
+これにより、生成されたコードがより読みやすくなり、デバッグが容易になりますが、若干効率が低下する可能性があります。
+
+### ランタイムのバンドル
+
+デフォルトでは、生成されたコードは `@wailsio/runtime` npm パッケージから Wails ランタイムをインポートします。`-b` フラグを使用して、ランタイムを生成されたコードとバンドルすることができます。
+
+```bash
+wails3 generate bindings -b
+```
+
+これにより、ランタイムコードが生成されたファイルに直接含まれ、npm パッケージの必要性がなくなります。
+
+### インデックスファイルの無効化
+
+インデックスファイルが必要ない場合は、`-noindex` フラグを使用してその生成を無効にすることができます。
+
+```bash
+wails3 generate bindings -noindex
+```
+
+これは、サービスやモデルをそれぞれのファイルから直接インポートしたい場合に有用です。
+
+## 実世界の例
+
+### 認証サービス
+
+以下は、カスタムディレクティブを使用した認証サービスの例です。
+
+```go
+package auth
+
+//wails:inject console.log("Auth service initialized");
+type AuthService struct {
+    // Private fields
+    users map[string]User
+}
+
+type User struct {
+    Username string
+    Email    string
+    Role     string
+}
+
+type LoginRequest struct {
+    Username string
+    Password string
+}
+
+type LoginResponse struct {
+    Success bool
+    User    User
+    Token   string
+    Error   string
+}
+
+// Login authenticates a user
+func (s *AuthService) Login(req LoginRequest) LoginResponse {
+    // Implementation...
+}
+
+// GetCurrentUser returns the current user
+func (s *AuthService) GetCurrentUser() User {
+    // Implementation...
+}
+
+// Internal helper method
+//wails:internal
+func (s *AuthService) validateCredentials(username, password string) bool {
+    // Implementation...
+}
+```
+
+### データ処理サービス
+
+以下は、ジェネリック型を使用したデータ処理サービスの例です。
+
+```go
+package data
+
+type ProcessingResult[T any] struct {
+    Data  T
+    Error string
+}
+
+type DataService struct {}
+
+// Process processes data and returns a result
+func (s *DataService) Process(data string) ProcessingResult[map[string]int] {
+    // Implementation...
+}
+
+// ProcessBatch processes multiple data items
+func (s *DataService) ProcessBatch(data []string) ProcessingResult[[]map[string]int] {
+    // Implementation...
+}
+
+// Internal helper method
+//wails:internal
+func (s *DataService) parseData(data string) (map[string]int, error) {
+    // Implementation...
+}
+```
+
+### 条件付きコードインジェクト
+
+以下は、異なる出力形式に対する条件付きコードインジェクトの例です。
+
+```go
+//wails:inject j*:/**
+//wails:inject j*: * @param {string} arg
+//wails:inject j*: * @returns {Promise<void>}
+//wails:inject j*: */
+//wails:inject j*:export async function CustomMethod(arg) {
+//wails:inject t*:export async function CustomMethod(arg: string): Promise<void> {
+//wails:inject     await InternalMethod("Hello " + arg + "!");`//wails:inject`

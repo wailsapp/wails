@@ -1,0 +1,330 @@
+---
+title: ファイルダイアログ
+description: ファイルの選択、保存、フォルダの選択ダイアログ
+sidebar:
+  order: 3
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## ファイルダイアログ
+
+Wails は、ファイルのオープン、保存、フォルダの選択のために、プラットフォームに適切な外観を持つ**ネイティブファイルダイアログ**を提供します。ファイルタイプのフィルタリング、複数選択のサポート、デフォルトの場所を指定できるシンプルな API です。
+
+## ファイルダイアログの作成
+
+ファイルダイアログは `app.Dialog` マネージャーを通じてアクセスします。
+
+```go
+app.Dialog.OpenFile()
+app.Dialog.SaveFile()
+```
+
+## ファイルを開くダイアログ
+
+開くファイルを選択します。
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("画像を選択").
+    AddFilter("画像", "*.png;*.jpg;*.gif").
+    AddFilter("すべてのファイル", "*.*").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+openFile(path)
+```
+
+**ユースケース:**
+- ドキュメントを開く
+- ファイルをインポートする
+- 画像を読み込む
+- 設定ファイルを選択する
+
+### 単一ファイルの選択
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("ドキュメントを開く").
+    AddFilter("テキストファイル", "*.txt").
+    AddFilter("すべてのファイル", "*.*").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    // ユーザーがキャンセルしたか、エラーが発生した
+    return
+}
+
+// 選択されたファイルを使用する
+data, _ := os.ReadFile(path)
+```
+
+### 複数ファイルの選択
+
+```go
+paths, err := app.Dialog.OpenFile().
+    SetTitle("画像を選択").
+    AddFilter("画像", "*.png;*.jpg;*.jpeg;*.gif").
+    PromptForMultipleSelection()
+
+if err != nil {
+    return
+}
+
+// 選択されたすべてのファイルを処理する
+for _, path := range paths {
+    processFile(path)
+}
+```
+
+### デフォルトディレクトリ付き
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("ファイルを開く").
+    SetDirectory("/Users/me/Documents").
+    PromptForSingleSelection()
+```
+
+## ファイルを保存するダイアログ
+
+保存先を選択します。
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("document.txt").
+    AddFilter("テキストファイル", "*.txt").
+    AddFilter("すべてのファイル", "*.*").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+saveFile(path, data)
+```
+
+**ユースケース:**
+- ドキュメントを保存する
+- データをエクスポートする
+- 新しいファイルを作成する
+- 名前を付けて保存...
+
+### デフォルトのファイル名付き
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("export.csv").
+    AddFilter("CSVファイル", "*.csv").
+    PromptForSingleSelection()
+```
+
+### デフォルトのディレクトリ付き
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetDirectory("/Users/me/Documents").
+    SetFilename("untitled.txt").
+    PromptForSingleSelection()
+```
+
+### 上書き確認
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("document.txt").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+// ファイルが存在するか確認する
+if _, err := os.Stat(path); err == nil {
+    dialog := app.Dialog.Question().
+        SetTitle("上書きの確認").
+        SetMessage("ファイルは既に存在します。上書きしますか？")
+
+    overwriteBtn := dialog.AddButton("上書き")
+    overwriteBtn.OnClick(func() {
+        saveFile(path, data)
+    })
+
+    cancelBtn := dialog.AddButton("キャンセル")
+    dialog.SetDefaultButton(cancelBtn)
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+    return
+}
+
+saveFile(path, data)
+```
+
+## フォルダを選択するダイアログ
+
+ディレクトリ選択を有効にしたファイルを開くダイアログを使用して、ディレクトリを選択します。
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("出力フォルダを選択").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+exportToFolder(path)
+```
+
+**ユースケース:**
+- 出力ディレクトリを選択する
+- ワークスペースを選択する
+- バックアップの場所を選ぶ
+- インストールディレクトリを選択する
+
+### デフォルトのディレクトリ付き
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("フォルダを選択").
+    SetDirectory("/Users/me/Documents").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+```
+
+## ファイルフィルター
+
+`AddFilter()` メソッドを使用して、ダイアログにファイルタイプのフィルターを追加します。各呼び出しで新しいフィルターオプションが追加されます。
+
+### 基本的なフィルター
+
+```go
+path, _ := app.Dialog.OpenFile().
+    AddFilter("テキストファイル", "*.txt").
+    AddFilter("すべてのファイル", "*.*").
+    PromptForSingleSelection()
+```
+
+### 複数の拡張子
+
+セミコロンを使用して、1つのフィルターで複数の拡張子を指定します。
+
+```go
+dialog := app.Dialog.OpenFile().
+    AddFilter("画像", "*.png;*.jpg;*.jpeg;*.gif;*.bmp").
+    AddFilter("ドキュメント", "*.txt;*.doc;*.docx;*.pdf").
+    AddFilter("すべてのファイル", "*.*")
+```
+
+### パターン形式
+
+1つのフィルター内で複数の拡張子を区切るには**セミコロン**を使用します。
+
+```go
+// セミコロンで区切られた複数の拡張子
+AddFilter("画像", "*.png;*.jpg;*.gif")
+```
+
+## 完全な例
+
+### 画像ファイルを開く
+
+```go
+func openImage(app *application.App) (image.Image, error) {
+    path, err := app.Dialog.OpenFile().
+        SetTitle("画像を選択").
+        AddFilter("画像", "*.png;*.jpg;*.jpeg;*.gif;*.bmp").
+        PromptForSingleSelection()
+
+    if err != nil {
+        return nil, err
+    }
+
+    if path == "" {
+        return nil, errors.New("ファイルが選択されていません")
+    }
+
+    // 画像を開いてデコードする
+    file, err := os.Open(path)
+    if err != nil {
+        app.Dialog.Error().
+            SetTitle("開けませんでした").
+            SetMessage(err.Error()).
+            Show()
+        return nil, err
+    }
+    defer file.Close()
+
+    img, _, err := image.Decode(file)
+    if err != nil {
+        app.Dialog.Error().
+            SetTitle("無効な画像").
+            SetMessage("画像ファイルのデコードに失敗しました。").
+            Show()
+        return nil, err
+    }
+
+    return img, nil
+}
+```
+
+### 検証付きでドキュメントを保存
+
+```go
+func saveDocument(app *application.App, content string) {
+    path, err := app.Dialog.SaveFile().
+        SetFilename("document.txt").
+        AddFilter("テキストファイル", "*.txt").
+        AddFilter("Markdownファイル", "*.md").
+        AddFilter("すべてのファイル", "*.*").
+        PromptForSingleSelection()
+
+    if err != nil || path == "" {
+        return
+    }
+
+    // 拡張子を検証する
+    ext := filepath.Ext(path)
+    if ext != ".txt" && ext != ".md" {
+        dialog := app.Dialog.Question().
+            SetTitle("拡張子の確認").
+            SetMessage(fmt.Sprintf("%s として保存しますか？", ext))
+
+        saveBtn := dialog.AddButton("保存")
+        saveBtn.OnClick(func() {
+            doSave(app, path, content)
+        })
+
+        cancelBtn := dialog.AddButton("キャンセル")
+        dialog.SetDefaultButton(cancelBtn)
+        dialog.SetCancelButton(cancelBtn)
+        dialog.Show()
+        return
+    }
+
+    doSave(app, path, content)
+}
+
+func doSave(app *application.App, path, content string) {
+    if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+        app.Dialog.Error().
+            SetTitle("保存に失敗しました").
+            SetMessage(err.Error()).
+            Show()
+        return
+    }
+
+    app.Dialog.Info().
+        SetTitle("保存完了").
+        SetMessage("ドキュメントが正常に保存されました！").
+        Show()
+}
+```---
+
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[ファイルダイアログの例](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs) をご確認ください。

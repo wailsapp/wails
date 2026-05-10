@@ -1,0 +1,397 @@
+---
+title: 列挙型
+description: Goの定数からの自動列挙型生成
+sidebar:
+  order: 4
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 列挙型バインディング
+
+Wails v3 のバインディングジェネレーターは、**Go の定数型を自動的に検出し、TypeScript の列挙型または JavaScript の定数オブジェクトを生成します**。登録も設定も不要です。Go で型と定数を定義するだけで、ジェネレーターが残りすべてを処理します。
+
+:::note
+Wails v2 とは異なり、`EnumBind` を呼び出したり列挙型を手動で登録したりする必要は**ありません**。ジェネレーターはソースコードから列挙型を自動的に検出します。
+:::
+
+## クイックスタート
+
+**Go で定数付きの名前付き型を定義します:**
+
+```go
+type Status string
+
+const (
+    StatusActive  Status = "active"
+    StatusPending Status = "pending"
+    StatusClosed  Status = "closed"
+)
+```
+
+**構造体またはサービスメソッドでこの型を使用します:**
+
+```go
+type Ticket struct {
+    ID     int    `json:"id"`
+    Title  string `json:"title"`
+    Status Status `json:"status"`
+}
+```
+
+**バインディングを生成します:**
+
+```bash
+wails3 generate bindings
+```
+
+ジェネレーターの出力には、モデルとともに列挙型の数が報告されます:
+
+```
+3 Enums, 5 Models
+```
+
+**フロントエンドで使用します:**
+
+```javascript
+import { Ticket, Status } from './bindings/myapp/models'
+
+const ticket = new Ticket({
+    id: 1,
+    title: "Bug report",
+    status: Status.StatusActive
+})
+```
+
+**これだけです！** 列挙型型は Go と JavaScript/TypeScript の両方で強制されます。
+
+## 列挙型の定義
+
+Wails における列挙型は、基本型を持つ**名前付き型**と、その型の**定数宣言**の組み合わせです。
+
+### 文字列列挙型
+
+```go
+// Title is a title
+type Title string
+
+const (
+    // Mister is a title
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+    Ms     Title = "Ms"
+    Mrs    Title = "Mrs"
+    Dr     Title = "Dr"
+)
+```
+
+**生成される TypeScript:**
+
+```typescript
+/**
+ * Title is a title
+ */
+export enum Title {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = "",
+
+    /**
+     * Mister is a title
+     */
+    Mister = "Mr",
+    Miss = "Miss",
+    Ms = "Ms",
+    Mrs = "Mrs",
+    Dr = "Dr",
+}
+```
+
+**生成される JavaScript:**
+
+```javascript
+/**
+ * Title is a title
+ * @readonly
+ * @enum {string}
+ */
+export const Title = {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero: "",
+
+    /**
+     * Mister is a title
+     */
+    Mister: "Mr",
+    Miss: "Miss",
+    Ms: "Ms",
+    Mrs: "Mrs",
+    Dr: "Dr",
+};
+```
+
+### 整数列挙型
+
+```go
+type Priority int
+
+const (
+    PriorityLow    Priority = 0
+    PriorityMedium Priority = 1
+    PriorityHigh   Priority = 2
+)
+```
+
+**生成される TypeScript:**
+
+```typescript
+export enum Priority {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = 0,
+
+    PriorityLow = 0,
+    PriorityMedium = 1,
+    PriorityHigh = 2,
+}
+```
+
+### 型エイリアス列挙型
+
+Go の型エイリアス (`=`) も機能しますが、ネイティブな TypeScript `enum` ではなく、型定義と定数オブジェクトの組み合わせという、わずかに異なる出力を生成します:
+
+```go
+// Age is an integer with some predefined values
+type Age = int
+
+const (
+    NewBorn    Age = 0
+    Teenager   Age = 12
+    YoungAdult Age = 18
+
+    // Oh no, some grey hair!
+    MiddleAged Age = 50
+    Mathusalem Age = 1000 // Unbelievable!
+)
+```
+
+**生成される TypeScript:**
+
+```typescript
+/**
+ * Age is an integer with some predefined values
+ */
+export type Age = number;
+
+/**
+ * Predefined constants for type Age.
+ * @namespace
+ */
+export const Age = {
+    NewBorn: 0,
+    Teenager: 12,
+    YoungAdult: 18,
+
+    /**
+     * Oh no, some grey hair!
+     */
+    MiddleAged: 50,
+
+    /**
+     * Unbelievable!
+     */
+    Mathusalem: 1000,
+};
+```
+
+**生成される JavaScript:**
+
+```javascript
+/**
+ * Age is an integer with some predefined values
+ * @typedef {number} Age
+ */
+
+/**
+ * Predefined constants for type Age.
+ * @namespace
+ */
+export const Age = {
+    NewBorn: 0,
+    Teenager: 12,
+    YoungAdult: 18,
+
+    /**
+     * Oh no, some grey hair!
+     */
+    MiddleAged: 50,
+
+    /**
+     * Unbelievable!
+     */
+    Mathusalem: 1000,
+};
+```
+
+:::tip
+**名前付き型** (`type Title string`) は、`$zero` メンバーを持つネイティブな TypeScript `enum` 宣言を生成します。
+**型エイリアス** (`type Age = int`) は、`$zero` を持たない `type` + `const` ネームスペースのペアを生成します。
+:::
+
+## `$zero` 値
+
+すべての名前付き型列挙型には、基本型に対する**Go のゼロ値**を表す特別な `$zero` メンバーが含まれます:
+
+| 基本型 | `$zero` 値 |
+|------|---------|
+| `string` | `""` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `0` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `0` |
+| `float32`, `float64` | `0` |
+| `bool` | `false` |
+
+構造体のフィールドが列挙型型を使用しており、値が提供されない場合、コンストラクターは `$zero` にデフォルト設定されます:
+
+```typescript
+export class Person {
+    "Title": Title;
+
+    constructor($$source: Partial<Person> = {}) {
+        if (!("Title" in $$source)) {
+            this["Title"] = Title.$zero;  // defaults to ""
+        }
+        Object.assign(this, $$source);
+    }
+}
+```
+
+これにより、クラスを生成する際に型安全な初期化が保証されます — 列挙型フィールドが `undefined` になることはありません。TypeScript インターフェースを生成する場合 (`-i` オプション使用)、コンストラクターは存在せず、フィールドは通常通り省略可能です。
+
+## 構造体での列挙型の使用
+
+構造体のフィールドが列挙型型を持っている場合、生成されたコードはプリミティブにフォールバックするのではなく、**その型を保持します**:
+
+```go
+type Person struct {
+    Title Title
+    Name  string
+    Age   Age
+}
+```
+
+**生成される TypeScript:**
+
+```typescript
+export class Person {
+    "Title": Title;
+    "Name": string;
+    "Age": Age;
+
+    constructor($$source: Partial<Person> = {}) {
+        if (!("Title" in $$source)) {
+            this["Title"] = Title.$zero;
+        }
+        if (!("Name" in $$source)) {
+            this["Name"] = "";
+        }
+        if (!("Age" in $$source)) {
+            this["Age"] = 0;
+        }
+
+        Object.assign(this, $$source);
+    }
+}
+```
+
+`Title` フィールドは `string` ではなく `Title` として型付けされます。これにより、IDE で列挙型値に対する完全なオートコンプリートと型チェックが可能になります。
+
+## インポートされたパッケージからの列挙型
+
+別パッケージで定義された列挙型も完全にサポートされています。それらは対応するパッケージディレクトリに生成されます:
+
+```go
+// services/types.go
+package services
+
+type Title string
+
+const (
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+    Ms     Title = "Ms"
+)
+```
+
+```go
+// main.go
+package main
+
+import "myapp/services"
+
+func (*GreetService) Greet(name string, title services.Title) string {
+    return "Hello " + string(title) + " " + name
+}
+```
+
+`Title` 列挙型は `services` モデルファイルに生成され、インポートパスは自動的に解決されます:
+
+```typescript
+// bindings/myapp/services/models.ts
+export enum Title {
+    $zero = "",
+    Mister = "Mr",
+    Miss = "Miss",
+    Ms = "Ms",
+}
+```
+
+## 列挙型のメソッド
+
+Go で列挙型型にメソッドを追加できます。これらはバインディング生成には影響しませんが、サーバーサイドで有用な機能を提供します:
+
+```go
+type Title string
+
+func (t Title) String() string {
+    return string(t)
+}
+
+const (
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+)
+```
+
+Go にメソッドが存在するかどうにかかわらず、生成される列挙型は同一です。
+
+## コメントとドキュメント
+
+ジェネレーターは Go のコメントを生成された出力の JSDoc として保持します:
+
+- **型コメント** は列挙型のドキュメントコメントになります
+- **定数グループコメント** はセクション区切りになります
+- **個々の定数コメント** はメンバードキュメントコメントになります
+- **インラインコメント** は可能な限り保持されます
+
+これにより、IDE で列挙型値にカーソルを合わせた際にドキュメントが表示されます。
+
+## サポートされている基本型
+
+バインディングジェネレーターは、以下の Go 基本型を持つ列挙型をサポートしています:
+
+| Go 型 | 列挙型として機能 |
+|---------|:-:|
+| `string` | はい |
+| `int`, `int8`, `int16`, `int32`, `int64` | はい |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | はい |
+| `float32`, `float64` | はい |
+| `byte` (`uint8`) | はい |
+| `rune` (`int32`) | はい |
+| `bool` | はい |
+| `complex64`, `complex128` | いいえ |---
+
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[バインディングの例](https://github.com/wailsapp/wails/tree/master/v3/examples/binding) をご確認ください。

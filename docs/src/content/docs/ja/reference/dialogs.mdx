@@ -1,0 +1,831 @@
+---
+title: ダイアログ API
+description: ネイティブダイアログ API の完全なリファレンス
+sidebar:
+  order: 5
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 概要
+
+ダイアログ API は、ネイティブのファイルダイアログとメッセージダイアログを表示するためのメソッドを提供します。ダイアログは `app.Dialog` マネージャーを通じてアクセスします。
+
+**ダイアログの種類:**
+- **ファイルダイアログ** - 開くダイアログと保存ダイアログ
+- **メッセージダイアログ** - 情報、エラー、警告、および質問ダイアログ
+
+すべてのダイアログは、プラットフォームのルックアンドフィールに一致する**ネイティブ OS ダイアログ**です。
+
+## ダイアログへのアクセス
+
+ダイアログは `app.Dialog` マネージャーを通じてアクセスします:
+
+```go
+app.Dialog.OpenFile()
+app.Dialog.SaveFile()
+app.Dialog.Info()
+app.Dialog.Question()
+app.Dialog.Warning()
+app.Dialog.Error()
+```
+
+## ファイルダイアログ
+
+### OpenFile()
+
+ファイルを開くダイアログを作成します。
+
+```go
+func (dm *DialogManager) OpenFile() *OpenFileDialogStruct
+```
+
+**例:**
+```go
+dialog := app.Dialog.OpenFile()
+```
+
+### OpenFileDialogStruct のメソッド
+
+#### SetTitle()
+
+ダイアログのタイトルを設定します。
+
+```go
+func (d *OpenFileDialogStruct) SetTitle(title string) *OpenFileDialogStruct
+```
+
+**例:**
+```go
+dialog.SetTitle("画像を選択")
+```
+
+#### AddFilter()
+
+ファイルタイプのフィルターを追加します。
+
+```go
+func (d *OpenFileDialogStruct) AddFilter(displayName, pattern string) *OpenFileDialogStruct
+```
+
+**パラメータ:**
+- `displayName` - ユーザーに表示されるフィルター説明 (例: "画像", "ドキュメント")
+- `pattern` - セミコロン区切りの拡張子リスト (例: "*.png;*.jpg")
+
+**例:**
+```go
+dialog.AddFilter("画像", "*.png;*.jpg;*.gif").
+    AddFilter("ドキュメント", "*.pdf;*.docx").
+    AddFilter("すべてのファイル", "*.*")
+```
+
+#### SetDirectory()
+
+初期ディレクトリを設定します。
+
+```go
+func (d *OpenFileDialogStruct) SetDirectory(directory string) *OpenFileDialogStruct
+```
+
+**例:**
+```go
+homeDir, _ := os.UserHomeDir()
+dialog.SetDirectory(homeDir)
+```
+
+#### CanChooseDirectories()
+
+ディレクトリの選択を有効または無効にします。
+
+```go
+func (d *OpenFileDialogStruct) CanChooseDirectories(canChooseDirectories bool) *OpenFileDialogStruct
+```
+
+**例 (フォルダ選択):**
+```go
+// ファイルの代わりにフォルダを選択
+path, err := app.Dialog.OpenFile().
+    SetTitle("フォルダを選択").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+```
+
+#### CanChooseFiles()
+
+ファイルの選択を有効または無効にします。
+
+```go
+func (d *OpenFileDialogStruct) CanChooseFiles(canChooseFiles bool) *OpenFileDialogStruct
+```
+
+#### CanCreateDirectories()
+
+新しいディレクトリの作成を有効または無効にします。
+
+```go
+func (d *OpenFileDialogStruct) CanCreateDirectories(canCreateDirectories bool) *OpenFileDialogStruct
+```
+
+#### ShowHiddenFiles()
+
+隠しファイルを表示または非表示にします。
+
+```go
+func (d *OpenFileDialogStruct) ShowHiddenFiles(showHiddenFiles bool) *OpenFileDialogStruct
+```
+
+#### AttachToWindow()
+
+ダイアログを特定のウィンドウにアタッチします。
+
+```go
+func (d *OpenFileDialogStruct) AttachToWindow(window Window) *OpenFileDialogStruct
+```
+
+#### PromptForSingleSelection()
+
+ダイアログを表示し、選択されたファイルを返します。
+
+```go
+func (d *OpenFileDialogStruct) PromptForSingleSelection() (string, error)
+```
+
+**戻り値:**
+- `string` - 選択されたファイルパス (キャンセルされた場合は空文字列)
+- `error` - ダイアログが失敗した場合のエラー
+
+**例:**
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("画像を選択").
+    AddFilter("画像", "*.png;*.jpg;*.gif").
+    PromptForSingleSelection()
+
+if err != nil {
+    // ユーザーがキャンセルしたか、エラーが発生しました
+    return
+}
+
+// 選択されたファイルを使用
+processFile(path)
+```
+
+#### PromptForMultipleSelection()
+
+ダイアログを表示し、複数選択されたファイルを返します。
+
+```go
+func (d *OpenFileDialogStruct) PromptForMultipleSelection() ([]string, error)
+```
+
+**戻り値:**
+- `[]string` - 選択されたファイルパスの配列
+- `error` - ダイアログが失敗した場合のエラー
+
+**例:**
+```go
+paths, err := app.Dialog.OpenFile().
+    SetTitle("画像を選択").
+    AddFilter("画像", "*.png;*.jpg").
+    PromptForMultipleSelection()
+
+if err != nil {
+    return
+}
+
+for _, path := range paths {
+    processFile(path)
+}
+```
+
+### SaveFile()
+
+ファイルを保存するダイアログを作成します。
+
+```go
+func (dm *DialogManager) SaveFile() *SaveFileDialogStruct
+```
+
+**例:**
+```go
+dialog := app.Dialog.SaveFile()
+```
+
+### SaveFileDialogStruct のメソッド
+
+#### SetTitle()
+
+ダイアログのタイトルを設定します。
+
+```go
+func (d *SaveFileDialogStruct) SetTitle(title string) *SaveFileDialogStruct
+```
+
+#### SetFilename()
+
+デフォルトのファイル名を設定します。
+
+```go
+func (d *SaveFileDialogStruct) SetFilename(filename string) *SaveFileDialogStruct
+```
+
+**例:**
+```go
+dialog.SetFilename("document.pdf")
+```
+
+#### AddFilter()
+
+ファイルタイプのフィルターを追加します。
+
+```go
+func (d *SaveFileDialogStruct) AddFilter(displayName, pattern string) *SaveFileDialogStruct
+```
+
+**例:**
+```go
+dialog.AddFilter("PDF ドキュメント", "*.pdf").
+    AddFilter("テキストドキュメント", "*.txt")
+```
+
+#### SetDirectory()
+
+初期ディレクトリを設定します。
+
+```go
+func (d *SaveFileDialogStruct) SetDirectory(directory string) *SaveFileDialogStruct
+```
+
+#### AttachToWindow()
+
+ダイアログを特定のウィンドウにアタッチします。
+
+```go
+func (d *SaveFileDialogStruct) AttachToWindow(window Window) *SaveFileDialogStruct
+```
+
+#### PromptForSingleSelection()
+
+ダイアログを表示し、保存先パスを返します。
+
+```go
+func (d *SaveFileDialogStruct) PromptForSingleSelection() (string, error)
+```
+
+**例:**
+```go
+path, err := app.Dialog.SaveFile().
+    SetTitle("ドキュメントを保存").
+    SetFilename("untitled.pdf").
+    AddFilter("PDF ドキュメント", "*.pdf").
+    PromptForSingleSelection()
+
+if err != nil {
+    // ユーザーがキャンセルしました
+    return
+}
+
+// 選択されたパスに保存
+saveDocument(path)
+```
+
+### フォルダの選択
+
+個別の `SelectFolderDialog` はありません。ディレクトリオプションを使用して `OpenFile()` を使用します:
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("出力フォルダを選択").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+
+if err != nil {
+    // ユーザーがキャンセルしました
+    return
+}
+
+// 選択されたフォルダを使用
+outputDir = path
+```
+
+## メッセージダイアログ
+
+すべてのメッセージダイアログは `*MessageDialog` を返し、同じメソッドを共有します。
+
+### Info()
+
+情報ダイアログを作成します。
+
+```go
+func (dm *DialogManager) Info() *MessageDialog
+```
+
+**例:**
+```go
+app.Dialog.Info().
+    SetTitle("成功").
+    SetMessage("ファイルが正常に保存されました!").
+    Show()
+```
+
+### Error()
+
+エラーダイアログを作成します。
+
+```go
+func (dm *DialogManager) Error() *MessageDialog
+```
+
+**例:**
+```go
+app.Dialog.Error().
+    SetTitle("エラー").
+    SetMessage("ファイルの保存に失敗しました: " + err.Error()).
+    Show()
+```
+
+### Warning()
+
+警告ダイアログを作成します。
+
+```go
+func (dm *DialogManager) Warning() *MessageDialog
+```
+
+**例:**
+```go
+app.Dialog.Warning().
+    SetTitle("警告").
+    SetMessage("この操作は元に戻せません。").
+    Show()
+```
+
+### Question()
+
+カスタムボタン付きの質問ダイアログを作成します。
+
+```go
+func (dm *DialogManager) Question() *MessageDialog
+```
+
+**例:**
+```go
+dialog := app.Dialog.Question().
+    SetTitle("確認").
+    SetMessage("変更を保存しますか?")
+
+save := dialog.AddButton("保存")
+save.OnClick(func() {
+    saveDocument()
+})
+
+dontSave := dialog.AddButton("保存しない")
+dontSave.OnClick(func() {
+    // 保存せずに続行
+})
+
+cancel := dialog.AddButton("キャンセル")
+cancel.OnClick(func() {
+    // 何もしない
+})
+
+dialog.SetDefaultButton(save)
+dialog.SetCancelButton(cancel)
+dialog.Show()
+```
+
+### MessageDialog のメソッド
+
+#### SetTitle()
+
+ダイアログのタイトルを設定します。
+
+```go
+func (d *MessageDialog) SetTitle(title string) *MessageDialog
+```
+
+#### SetMessage()
+
+ダイアログのメッセージを設定します。
+
+```go
+func (d *MessageDialog) SetMessage(message string) *MessageDialog
+```
+
+#### SetIcon()
+
+ダイアログのカスタムアイコンを設定します。
+
+```go
+func (d *MessageDialog) SetIcon(icon []byte) *MessageDialog
+```#### AddButton()
+
+ダイアログにボタンを追加し、設定用のボタンインスタンスを返します。
+
+```go
+func (d *MessageDialog) AddButton(label string) *Button
+```
+
+**戻り値:** `*Button` - 追加の設定を行うためのボタンインスタンス
+
+**例:**
+```go
+button := dialog.AddButton("OK")
+button.OnClick(func() {
+    // クリック時の処理
+})
+```
+
+#### SetDefaultButton()
+
+デフォルトのボタン（Enter キーでアクティブ化されるボタン）を設定します。
+
+```go
+func (d *MessageDialog) SetDefaultButton(button *Button) *MessageDialog
+```
+
+**例:**
+```go
+yes := dialog.AddButton("Yes")
+no := dialog.AddButton("No")
+dialog.SetDefaultButton(yes)
+```
+
+#### SetCancelButton()
+
+キャンセルボタン（Escape キーでアクティブ化されるボタン）を設定します。
+
+```go
+func (d *MessageDialog) SetCancelButton(button *Button) *MessageDialog
+```
+
+**例:**
+```go
+ok := dialog.AddButton("OK")
+cancel := dialog.AddButton("Cancel")
+dialog.SetCancelButton(cancel)
+```
+
+#### AttachToWindow()
+
+ダイアログを特定のウィンドウにアタッチします。
+
+```go
+func (d *MessageDialog) AttachToWindow(window Window) *MessageDialog
+```
+
+#### Show()
+
+ダイアログを表示します。ボタンのコールバックでユーザーの応答を処理します。
+
+```go
+func (d *MessageDialog) Show()
+```
+
+**注意:** `Show()` は値を返しません。ユーザーの応答を処理するにはボタンのコールバックを使用してください。
+
+### ボタンのメソッド
+
+#### OnClick()
+
+ボタンがクリックされたときのコールバック関数を設定します。
+
+```go
+func (b *Button) OnClick(callback func()) *Button
+```
+
+#### SetAsDefault()
+
+このボタンをデフォルトのボタンとしてマークします。
+
+```go
+func (b *Button) SetAsDefault() *Button
+```
+
+#### SetAsCancel()
+
+このボタンをキャンセルボタンとしてマークします。
+
+```go
+func (b *Button) SetAsCancel() *Button
+```
+
+## 完全な例
+
+### ファイル選択の例
+
+```go
+type FileService struct {
+    app *application.App
+}
+
+func (s *FileService) OpenImage() (string, error) {
+    path, err := s.app.Dialog.OpenFile().
+        SetTitle("Select Image").
+        AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif").
+        AddFilter("All Files", "*.*").
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    return path, nil
+}
+
+func (s *FileService) SaveDocument(defaultName string) (string, error) {
+    path, err := s.app.Dialog.SaveFile().
+        SetTitle("Save Document").
+        SetFilename(defaultName).
+        AddFilter("PDF Document", "*.pdf").
+        AddFilter("Text Document", "*.txt").
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    return path, nil
+}
+
+func (s *FileService) SelectOutputFolder() (string, error) {
+    path, err := s.app.Dialog.OpenFile().
+        SetTitle("Select Output Folder").
+        CanChooseDirectories(true).
+        CanChooseFiles(false).
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    return path, nil
+}
+```
+
+### 確認ダイアログの例
+
+```go
+func (s *Service) DeleteItem(app *application.App, id string) {
+    dialog := app.Dialog.Question().
+        SetTitle("Confirm Delete").
+        SetMessage("Are you sure you want to delete this item?")
+
+    deleteBtn := dialog.AddButton("Delete")
+    deleteBtn.OnClick(func() {
+        deleteFromDatabase(id)
+    })
+
+    cancelBtn := dialog.AddButton("Cancel")
+    // キャンセルは何もしない
+
+    dialog.SetDefaultButton(cancelBtn) // 安全のためデフォルトをキャンセルにする
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+}
+```
+
+### 変更の保存ダイアログ
+
+```go
+func (s *Editor) PromptSaveChanges(app *application.App) {
+    dialog := app.Dialog.Question().
+        SetTitle("Unsaved Changes").
+        SetMessage("Do you want to save your changes before closing?")
+
+    save := dialog.AddButton("Save")
+    save.OnClick(func() {
+        s.Save()
+        s.Close()
+    })
+
+    dontSave := dialog.AddButton("Don't Save")
+    dontSave.OnClick(func() {
+        s.Close()
+    })
+
+    cancel := dialog.AddButton("Cancel")
+    // キャンセルは何もしない、ダイアログが閉じる
+
+    dialog.SetDefaultButton(save)
+    dialog.SetCancelButton(cancel)
+    dialog.Show()
+}
+```
+
+### 複数ファイルの処理
+
+```go
+func (s *Service) ProcessMultipleFiles(app *application.App) error {
+    // 複数のファイルを選択
+    paths, err := app.Dialog.OpenFile().
+        SetTitle("Select Files to Process").
+        AddFilter("Images", "*.png;*.jpg").
+        PromptForMultipleSelection()
+
+    if err != nil {
+        return err
+    }
+
+    if len(paths) == 0 {
+        app.Dialog.Info().
+            SetTitle("No Files Selected").
+            SetMessage("Please select at least one file.").
+            Show()
+        return nil
+    }
+
+    // ファイルを処理
+    for _, path := range paths {
+        err := processFile(path)
+        if err != nil {
+            app.Dialog.Error().
+                SetTitle("Processing Error").
+                SetMessage(fmt.Sprintf("Failed to process %s: %v", path, err)).
+                Show()
+            continue
+        }
+    }
+
+    // 完了を表示
+    app.Dialog.Info().
+        SetTitle("Complete").
+        SetMessage(fmt.Sprintf("Successfully processed %d files", len(paths))).
+        Show()
+
+    return nil
+}
+```
+
+### ダイアログを使用したエラー処理
+
+```go
+func (s *Service) SaveFile(app *application.App, data []byte) error {
+    // 保存先を選択
+    path, err := app.Dialog.SaveFile().
+        SetTitle("Save File").
+        SetFilename("data.json").
+        AddFilter("JSON File", "*.json").
+        PromptForSingleSelection()
+
+    if err != nil {
+        // ユーザーがキャンセルした - エラーではない
+        return nil
+    }
+
+    // 保存を試みる
+    err = os.WriteFile(path, data, 0644)
+    if err != nil {
+        // エラーダイアログを表示
+        app.Dialog.Error().
+            SetTitle("Save Failed").
+            SetMessage(fmt.Sprintf("Could not save file: %v", err)).
+            Show()
+        return err
+    }
+
+    // 成功を表示
+    app.Dialog.Info().
+        SetTitle("Success").
+        SetMessage("File saved successfully!").
+        Show()
+
+    return nil
+}
+```
+
+### プラットフォーム固有のデフォルト
+
+```go
+import (
+    "os"
+    "path/filepath"
+    "runtime"
+)
+
+func (s *Service) GetDefaultDirectory() string {
+    homeDir, _ := os.UserHomeDir()
+
+    switch runtime.GOOS {
+    case "windows":
+        return filepath.Join(homeDir, "Documents")
+    case "darwin":
+        return filepath.Join(homeDir, "Documents")
+    case "linux":
+        return filepath.Join(homeDir, "Documents")
+    default:
+        return homeDir
+    }
+}
+
+func (s *Service) OpenWithDefaults(app *application.App) (string, error) {
+    return app.Dialog.OpenFile().
+        SetTitle("Open File").
+        SetDirectory(s.GetDefaultDirectory()).
+        AddFilter("All Files", "*.*").
+        PromptForSingleSelection()
+}
+```
+
+## ベストプラクティス
+
+### 推奨事項
+
+- **ネイティブダイアログを使用する** - プラットフォームのルックアンドフィールに一致します
+- **明確なタイトルを提供する** - ユーザーが目的を理解するのに役立ちます
+- **適切なフィルターを設定する** - ユーザーを正しいファイルタイプに誘導します
+- **キャンセルを処理する** - エラーを確認する（ユーザーがキャンセルする可能性があります）
+- **破壊的な操作には確認ダイアログを表示する** - Question ダイアログを使用する
+- **フィードバックを提供する** - 成功メッセージには Info ダイアログを使用する
+- **適切なデフォルト値を設定する** - デフォルトのディレクトリ、ファイル名など
+- **ボタンのアクションにはコールバックを使用する** - ユーザーの応答を適切に処理する
+
+### 避けるべきこと
+
+- **エラーを無視しない** - ユーザーのキャンセルはエラーを返します
+- **曖昧なボタンラベルを使用しない** - 具体的にする: "Save"/"Cancel"
+- **ダイアログの使いすぎを避ける** - ワークフローを中断します
+- **キャンセルに対してエラーを表示しない** - これは通常のアクションです
+- **ファイルフィルターを忘れない** - ユーザーが適切なファイルを見つけるのを助けます
+- **パスをハードコードしない** - `os.UserHomeDir()` などを使用する
+
+## プラットフォーム別のダイアログタイプ
+
+### macOS
+
+- ダイアログはタイトルバーからスライドダウンします
+- 親ウィンドウにアタッチされた「シート」スタイル
+- ネイティブな macOS の外観
+
+### Windows
+
+- 標準的な Windows ダイアログ
+- Windows のデザインガイドラインに従う
+- 最新の Windows 10/11 の外観
+
+### Linux
+
+- GTK ベースのシステムでは GTK ダイアログ
+- Qt ベースのシステムでは Qt ダイアログ
+- デスクトップ環境に一致する--------|------|------|-------|
+| `ShowHiddenFiles()` | ✅ 動作 | ❌ 効果なし | ユーザーはダイアログの UI トグル（Ctrl+H またはメニュー）で制御 |
+| `CanCreateDirectories()` | ✅ 動作 | ❌ 効果なし | ポータルでは常に有効 |
+| `ResolvesAliases()` | ✅ 動作 | ❌ 効果なし | ポータルがシンボリックリンクの解決を処理 |
+| `SetButtonText()` | ✅ 動作 | ✅ 動作 | カスタムの受け入れボタンテキストが機能 |
+
+**これらの制限が存在する理由:** GTK4 のポータルベースのダイアログは、UI 制御をデスクトップ環境（GNOME、KDE など）に委譲します。これは設計上の意図であり、ポータルはアプリケーション間で一貫した UX を提供し、ユーザーの環境設定を尊重します。
+
+:::note
+上記の表は、`-tags gtk4` でビルドした場合の GTK4 の動作を示しています。デフォルトでは、Wails はこれらのダイアログオプションを完全に制御できる GTK3 を使用します。
+:::
+
+## 一般的なパターン
+
+### 「名前を付けて保存」パターン
+
+```go
+func (s *Service) SaveAs(app *application.App, currentPath string) (string, error) {
+    // 現在のパスからファイル名を抽出
+    filename := filepath.Base(currentPath)
+
+    // 保存ダイアログを表示
+    path, err := app.Dialog.SaveFile().
+        SetTitle("名前を付けて保存").
+        SetFilename(filename).
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    return path, nil
+}
+```
+
+### 「最近開いたファイル」パターン
+
+```go
+func (s *Service) OpenRecent(app *application.App, recentPath string) error {
+    // ファイルがまだ存在するか確認
+    if _, err := os.Stat(recentPath); os.IsNotExist(err) {
+        dialog := app.Dialog.Question().
+            SetTitle("ファイルが見つかりません").
+            SetMessage("ファイルは存在しなくなりました。最近開いたファイルから削除しますか？")
+
+        remove := dialog.AddButton("削除")
+        remove.OnClick(func() {
+            s.removeFromRecent(recentPath)
+        })
+
+        cancel := dialog.AddButton("キャンセル")
+        dialog.SetCancelButton(cancel)
+        dialog.Show()
+
+        return err
+    }
+
+    return s.openFile(recentPath)
+}
+```

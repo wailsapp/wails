@@ -1,0 +1,242 @@
+---
+title: ビルドのカスタマイズ
+description: Task と Taskfile.yml を使用してビルドプロセスをカスタマイズします
+sidebar:
+  order: 7
+---
+
+import { FileTree } from "@astrojs/starlight/components";
+
+## 概要
+
+Wails のビルドシステムは、Wails アプリケーションのビルドプロセスを効率化するために設計された、柔軟で強力なツールです。これは、タスクを定義して実行できるようにするタスクランナーである [Task](https://taskfile.dev) を活用しています。v3 ビルドシステムがデフォルトですが、Wails は「Bring Your Own Tooling（各自のツールを使用）」のアプローチを推奨しており、開発者が必要に応じてビルドプロセスをカスタマイズできるようにしています。
+
+Task の使用方法については、[公式ドキュメント](https://taskfile.dev/usage/) を参照してください。
+
+## Task: ビルドシステムの心臓部
+
+[Task](https://taskfile.dev) は、Go で書かれた Make の現代的な代替ツールです。YAML ファイルを使用してタスクとその依存関係を定義します。Wails のビルドシステムでは、[Task](https://taskfile.dev) がビルドプロセスの調整において中心的な役割を果たします。
+
+メインの `Taskfile.yml` はプロジェクトのルートにあり、プラットフォーム固有のタスクは `build/<platform>/Taskfile.yml` ファイルに定義されています。`build` ディレクトリ内の共通の `Taskfile.yml` ファイルには、プラットフォーム間で共有される共通タスクが含まれています。
+
+<FileTree>
+
+- プロジェクトルート
+  - Taskfile.yml
+  - build
+    - windows/Taskfile.yml
+    - darwin/Taskfile.yml
+    - linux/Taskfile.yml
+    - Taskfile.yml
+
+</FileTree>
+
+## Taskfile.yml
+
+プロジェクトルートの `Taskfile.yml` ファイルは、ビルドシステムのメインエントリポイントです。これはタスクとその依存関係を定義します。以下はデフォルトの `Taskfile.yml` ファイルです：
+
+```yaml
+version: '3'
+
+includes:
+  common: ./build/Taskfile.yml
+  windows: ./build/windows/Taskfile.yml
+  darwin: ./build/darwin/Taskfile.yml
+  linux: ./build/linux/Taskfile.yml
+
+vars:
+  APP_NAME: "myproject"
+  BIN_DIR: "bin"
+  VITE_PORT: '{{.WAILS_VITE_PORT | default 9245}}'
+
+tasks:
+  build:
+    summary: Builds the application
+    cmds:
+      - task: "{{OS}}:build"
+
+  package:
+    summary: Packages a production build of the application
+    cmds:
+      - task: "{{OS}}:package"
+
+  run:
+    summary: Runs the application
+    cmds:
+      - task: "{{OS}}:run"
+
+  dev:
+    summary: Runs the application in development mode
+    cmds:
+      - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
+
+
+```
+
+## プラットフォーム固有の Taskfile
+
+各プラットフォームには、`build` ディレクトリ下のプラットフォームディレクトリに独自の Taskfile があります。これらのファイルは、そのプラットフォームのコアタスクを定義します。各タスクファイルは、`build/Taskfile.yml` ファイルから共通タスクをインクルードします。
+
+### Windows
+
+場所: `build/windows/Taskfile.yml`
+
+Windows 固有の Taskfile には、Windows 上でアプリケーションをビルド、パッケージ化、実行するためのタスクが含まれています。主な機能は以下の通りです：
+
+- オプションのプロダクションフラグを使用してビルド
+- `.ico` アイコンファイルの生成
+- Windows 用の `.syso` ファイルの生成
+- パッケージング用の NSIS インストーラーの作成
+
+### Linux
+
+場所: `build/linux/Taskfile.yml`
+
+Linux 固有の Taskfile には、Linux 上でアプリケーションをビルド、パッケージ化、実行するためのタスクが含まれています。主な機能は以下の通りです：
+
+- オプションのプロダクションフラグを使用してビルド
+- AppImage、deb、rpm、Arch Linux パッケージの作成
+- Linux アプリケーション用の `.desktop` ファイルの生成
+
+### macOS
+
+場所: `build/darwin/Taskfile.yml`
+
+macOS 固有の Taskfile には、macOS 上でアプリケーションをビルド、パッケージ化、実行するためのタスクが含まれています。主な機能は以下の通りです：
+
+- amd64、arm64、およびユニバーサル（両方）のアーキテクチャ用のバイナリのビルド
+- `.icns` アイコンファイルの生成
+- 配布用の `.app` バンドルの作成
+- `.app` バンドルのアドホック署名
+- macOS 固有のビルドフラグと環境変数の設定
+
+## タスクの実行とコマンドエイリアス
+
+`wails3 task` コマンドは、[Taskfile](https://taskfile.dev) の埋め込みバージョンであり、`Taskfile.yml` に定義されたタスクを実行します。
+
+`wails3 build` と `wails3 package` コマンドは、それぞれ `wails3 task build` と `wails3 task package` のエイリアスです。これらのコマンドを実行すると、Wails は内部的にそれらを適切なタスク実行に変換します：
+
+- `wails3 build` → `wails3 task build`
+- `wails3 package` → `wails3 task package`
+
+### タスクへのパラメータの渡しかた
+
+`KEY=VALUE` 形式を使用して、CLI 変数をタスクに渡すことができます。これらの変数はエイリアスコマンドを通じて転送されます：
+
+```bash
+# これらは同等です：
+wails3 build PLATFORM=linux CONFIG=production
+wails3 task build PLATFORM=linux CONFIG=production
+
+# カスタムバージョンでパッケージ化：
+wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg
+```
+
+`Taskfile.yml` では、Go テンプレート構文を使用してこれらの変数にアクセスできます：
+
+```yaml
+tasks:
+  build:
+    cmds:
+      - echo "Building for {{.PLATFORM | default "darwin"}}"
+      - go build -tags {{.CONFIG | default "debug"}} -o myapp
+```
+
+## 共通のビルドプロセス
+
+すべてのプラットフォームにおいて、ビルドプロセスは通常以下のステップを含みます：
+
+1. Go モジュールの tidy
+2. フロントエンドのビルド
+3. アイコンの生成
+4. プラットフォーム固有のフラグを使用して Go コードをコンパイル
+5. アプリケーションのパッケージ化（プラットフォーム固有）
+
+## ビルドプロセスのカスタマイズ
+
+v3 ビルドシステムは堅牢なデフォルト構成を提供しますが、プロジェクトのニーズに合わせて簡単にカスタマイズできます。`Taskfile.yml` とプラットフォーム固有の Taskfile を修正することで、以下を行うことができます：
+
+- 新しいタスクの追加
+- 既存のタスクの変更
+- タスク実行の順序の変更
+- 他のツールやスクリプトとの統合
+
+この柔軟性により、Wails ビルドシステムが提供する構造の利点を享受しながら、特定の要件に合わせてビルドプロセスを調整することができます。
+
+:::tip[Taskfile の学習]
+Taskfile を効果的に使用する方法を理解するために、[Taskfile](https://taskfile.dev) のドキュメントを読むことを強く推奨します。
+Wails CLI に埋め込まれている Taskfile のバージョンを確認するには、`wails3 task --version` を実行してください。
+:::
+
+## 開発モード
+
+Wails ビルドシステムには、ライブリロードとホットモジュールリプレイスメントを提供することで、開発者体験を強化する強力な開発モードが含まれています。このモードは `wails3 dev` コマンドを使用してアクティブ化されます。
+
+### 仕組み
+
+`wails3 dev` を実行すると、以下のプロセスが発生します：
+
+1. コマンドは利用可能なポートをチェックし、指定されていない場合はデフォルトで 9245 を使用します。
+2. フロントエンドの dev サーバー（Vite）用の環境変数を設定します。
+3. [refresh](https://github.com/atterpac/refresh) ライブラリを使用してファイルウォッチャーを開始します。
+
+[refresh](https://github.com/atterpac/refresh) ライブラリは、ファイルの変更を監視し、再ビルドをトリガーする役割を果たします。これは `./build/config.yaml` ファイルの `dev_mode` キーの下に定義された構成を使用します。
+特定のディレクトリやファイルを無視するように構成でき、どのファイルを監視し、変更が検出されたときにどのようなアクションを取るかを決定できます。デフォルトの構成は非常に良く機能しますが、必要に応じてカスタマイズしてください。
+
+### 構成
+
+以下はその構造の例です：
+
+```yaml
+dev_mode:
+  root_path: .
+  log_level: warn
+  debounce: 1000
+  ignore:
+    dir:
+      - .git
+      - node_modules
+      - frontend
+      - bin
+    file:
+      - .DS_Store
+      - .gitignore
+      - .gitkeep
+    watched_extension:
+      - "*.go"
+    git_ignore: true
+  executes:
+    - cmd: wails3 task common:install:frontend:deps
+      type: once
+    - cmd: wails3 task common:dev:frontend
+      type: background
+    - cmd: go mod tidy
+      type: blocking
+    - cmd: wails3 task build
+      type: blocking
+    - cmd: wails3 task run
+      type: primary
+```
+
+この構成ファイルを使用することで、以下を行うことができます：
+
+- ファイルウォッチングのルートパスを設定
+- ログレベルを構成
+- ファイル変更イベントのディバウンス時間を設定
+- 特定のディレクトリ、ファイル、またはファイル拡張子を無視
+- ファイル変更時に実行するコマンドを定義### 開発モードのカスタマイズ
+
+`config.yaml` ファイルのこれらの値を変更することで、開発モードの体験をカスタマイズできます。
+
+カスタマイズの方法としては以下のようなものがあります：
+
+1. 監視対象のディレクトリやファイルの変更
+2. システムが変更に応答する速度を制御するためのデバウンス時間の調整
+3. プロジェクトのニーズに合わせて実行コマンドの追加または変更
+
+### 開発にブラウザを使用する
+
+Wails v2 では開発にブラウザを使用することが完全にサポートされていましたが、それは多くの混乱を招きました。ブラウザで動作するアプリケーションが、必ずしもデスクトップアプリケーションで動作するとは限らないからです。これは、すべてのブラウザ API が WebView で利用可能ではないためです。
+
+UI 中心の開発作業では、v3 でも `http://localhost:9245` の Vite URL にアクセスすることで、ブラウザを使用する柔軟性を維持できます。これにより、スタイルやレイアウトの作業中に強力なブラウザの開発ツールを利用できます。ただし、このモードでは Go のバインディングは *動作しません*。
+バインディングやイベントなどの機能性をテストする準備ができたら、プロダクション環境ですべてが正しく動作することを確認するために、デスクトップビューに切り替えてください。

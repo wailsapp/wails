@@ -1,0 +1,383 @@
+---
+title: カスタムダイアログ
+description: Wailsアプリケーションでカスタムダイアログを作成する
+sidebar:
+  order: 4
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## カスタムダイアログ
+
+通常のWailsウィンドウを使用して、ダイアログのような動作をする**カスタムダイアログウィンドウ**を作成します。カスタムフォーム、複雑な入力検証、ブランドに合わせた外観、リッチコンテンツ（画像、動画）を実装しながら、親しみやすいダイアログのパターンを維持します。
+
+## クイックスタート
+
+```go
+// Create custom dialog window
+dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:       "Custom dialog",
+    Width:       400,
+    Height:      300,
+    AlwaysOnTop: true,
+    Frameless:   true,
+    Hidden:      true,
+})
+
+// Load custom UI
+dialog.SetURL("http://wails.localhost/dialog.html")
+
+// Show as modal
+dialog.Show()
+dialog.SetFocus()
+```
+
+**これだけです！** ダイアログの動作を持つカスタムUI。
+
+## カスタムダイアログの作成
+
+### 基本的なカスタムダイアログ
+
+```go
+type Customdialog struct {
+    window *application.WebviewWindow
+    result chan string
+}
+
+func NewCustomdialog(app *application.Application) *Customdialog {
+    dialog := &Customdialog{
+        result: make(chan string, 1),
+    }
+    
+    dialog.window = app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:       "Custom dialog",
+        Width:       400,
+        Height:      300,
+        AlwaysOnTop: true,
+        Resizable:   false,
+        Hidden:      true,
+    })
+    
+    return dialog
+}
+
+func (d *Customdialog) Show() string {
+    d.window.Show()
+    d.window.SetFocus()
+    
+    // Wait for result
+    return <-d.result
+}
+
+func (d *Customdialog) Close(result string) {
+    d.result <- result
+    d.window.Close()
+}
+```
+
+### モーダルダイアログ
+
+```go
+func ShowModaldialog(parent *application.WebviewWindow, title string) string {
+    // Create dialog
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:       title,
+        Width:       400,
+        Height:      200,
+        Parent:      parent,
+        AlwaysOnTop: true,
+        Resizable:   false,
+    })
+    
+    // Disable parent
+    parent.SetEnabled(false)
+    
+    // Re-enable parent on close
+    dialog.OnClose(func() bool {
+        parent.SetEnabled(true)
+        parent.SetFocus()
+        return true
+    })
+    
+    dialog.Show()
+    
+    return waitForResult(dialog)
+}
+```
+
+### フォームダイアログ
+
+```go
+type Formdialog struct {
+    window *application.WebviewWindow
+    data   map[string]interface{}
+    done   chan bool
+}
+
+func NewFormdialog(app *application.Application) *Formdialog {
+    fd := &Formdialog{
+        data: make(map[string]interface{}),
+        done: make(chan bool, 1),
+    }
+    
+    fd.window = app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:     "Enter Information",
+        Width:     500,
+        Height:    400,
+        Frameless: true,
+        Hidden:    true,
+    })
+    
+    return fd
+}
+
+func (fd *Formdialog) Show() (map[string]interface{}, bool) {
+    fd.window.Show()
+    fd.window.SetFocus()
+    
+    ok := <-fd.done
+    return fd.data, ok
+}
+
+func (fd *Formdialog) Submit(data map[string]interface{}) {
+    fd.data = data
+    fd.done <- true
+    fd.window.Close()
+}
+
+func (fd *Formdialog) Cancel() {
+    fd.done <- false
+    fd.window.Close()
+}
+```
+
+## ダイアログパターン
+
+### 確認ダイアログ
+
+```go
+func ShowConfirmdialog(message string) bool {
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:       "Confirm",
+        Width:       400,
+        Height:      150,
+        AlwaysOnTop: true,
+        Frameless:   true,
+    })
+    
+    // Pass message to dialog
+    dialog.OnReady(func() {
+        dialog.EmitEvent("set-message", message)
+    })
+    
+    result := make(chan bool, 1)
+    
+    // Handle responses
+    app.Event.On("confirm-yes", func(e *application.CustomEvent) {
+        result <- true
+        dialog.Close()
+    })
+    
+    app.Event.On("confirm-no", func(e *application.CustomEvent) {
+        result <- false
+        dialog.Close()
+    })
+    
+    dialog.Show()
+    return <-result
+}
+```
+
+**フロントエンド (HTML/JS):**
+
+```html
+<div class="dialog">
+    <h2 id="message"></h2>
+    <div class="buttons">
+        <button onclick="confirm(true)">Yes</button>
+        <button onclick="confirm(false)">No</button>
+    </div>
+</div>
+
+<script>
+import { Events } from '@wailsio/runtime'
+
+Events.On("set-message", (message) => {
+    document.getElementById("message").textContent = message
+})
+
+function confirm(result) {
+    Events.Emit(result ? "confirm-yes" : "confirm-no")
+}
+</script>
+```
+
+### 入力ダイアログ
+
+```go
+func ShowInputdialog(prompt string, defaultValue string) (string, bool) {
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:     "Input",
+        Width:     400,
+        Height:    150,
+        Frameless: true,
+    })
+    
+    result := make(chan struct {
+        value string
+        ok    bool
+    }, 1)
+    
+    dialog.OnReady(func() {
+        dialog.EmitEvent("set-prompt", map[string]string{
+            "prompt":  prompt,
+            "default": defaultValue,
+        })
+    })
+    
+    app.Event.On("input-submit", func(e *application.CustomEvent) {
+        result <- struct {
+            value string
+            ok    bool
+        }{e.Data.(string), true}
+        dialog.Close()
+    })
+    
+    app.Event.On("input-cancel", func(e *application.CustomEvent) {
+        result <- struct {
+            value string
+            ok    bool
+        }{"", false}
+        dialog.Close()
+    })
+    
+    dialog.Show()
+    r := <-result
+    return r.value, r.ok
+}
+```
+
+### プログレスダイアログ
+
+```go
+type Progressdialog struct {
+    window *application.WebviewWindow
+}
+
+func NewProgressdialog(title string) *Progressdialog {
+    pd := &Progressdialog{}
+    
+    pd.window = app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:     title,
+        Width:     400,
+        Height:    150,
+        Frameless: true,
+    })
+    
+    return pd
+}
+
+func (pd *Progressdialog) Show() {
+    pd.window.Show()
+}
+
+func (pd *Progressdialog) UpdateProgress(current, total int, message string) {
+    pd.window.EmitEvent("progress-update", map[string]interface{}{
+        "current": current,
+        "total":   total,
+        "message": message,
+    })
+}
+
+func (pd *Progressdialog) Close() {
+    pd.window.Close()
+}
+```
+
+**使用方法:**
+
+```go
+func processFiles(files []string) {
+    progress := NewProgressdialog("Processing Files")
+    progress.Show()
+    
+    for i, file := range files {
+        progress.UpdateProgress(i+1, len(files), 
+            fmt.Sprintf("Processing %s...", filepath.Base(file)))
+        
+        processFile(file)
+    }
+    
+    progress.Close()
+}
+```
+
+## 完全な例
+
+### ログインダイアログ
+
+**Go:**
+
+```go
+type Logindialog struct {
+    window *application.WebviewWindow
+    result chan struct {
+        username string
+        password string
+        ok       bool
+    }
+}
+
+func NewLogindialog(app *application.Application) *Logindialog {
+    ld := &Logindialog{
+        result: make(chan struct {
+            username string
+            password string
+            ok       bool
+        }, 1),
+    }
+    
+    ld.window = app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:     "Login",
+        Width:     400,
+        Height:    250,
+        Frameless: true,
+    })
+    
+    return ld
+}
+
+func (ld *Logindialog) Show() (string, string, bool) {
+    ld.window.Show()
+    ld.window.SetFocus()
+    
+    r := <-ld.result
+    return r.username, r.password, r.ok
+}
+
+func (ld *Logindialog) Submit(username, password string) {
+    ld.result <- struct {
+        username string
+        password string
+        ok       bool
+    }{username, password, true}
+    ld.window.Close()
+}
+
+func (ld *Logindialog) Cancel() {
+    ld.result <- struct {
+        username string
+        password string
+        ok       bool
+    }{"", "", false}
+    ld.window.Close()
+}
+```
+
+**フロントエンド:**
+
+```html
+<div class="login-dialog">
+    <h2>Login</h2>---
+
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[カスタムダイアログの例](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs) をご確認ください。

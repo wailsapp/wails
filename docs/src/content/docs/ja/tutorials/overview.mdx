@@ -1,0 +1,84 @@
+---
+title: チュートリアル
+description: アプリケーションの構築を通じて Wails を学ぶ
+sidebar:
+  label: 概要
+  order: 0
+---
+
+import { LinkButton } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import qr1 from "../../../../assets/qr1.png";
+import todoApp from "../../../../assets/todo-app.png";
+import notesApp from "../../../../assets/notes-app.png";
+
+完全なアプリケーションを構築しながら Wails の概念を学ぶ、ステップバイステップのチュートリアルです。各チュートリアルには、動作するコード、解説、実践的なパターンが含まれています。
+
+:::tip[Go 言語初心者の方へ]
+チュートリアルを開始する前に、[Go Tour](https://go.dev/tour/) を完了してください。
+:::
+
+### QR コードサービス
+
+<Image src={qr1} alt="QR Code Example" style="max-width: 400px; margin: 1rem auto; display: block;" />
+
+QR コードジェネレーターを構築して、Wails サービスの基礎を学びます。このチュートリアルでは、アプリケーションロジックを再利用可能なサービスに整理するコアな概念を紹介します。
+
+**学習内容:**
+- Wails サービスの作成と構造
+- 外部の Go 依存関係の管理
+- Go メソッドをフロントエンドにバインドする方法
+- Go と JavaScript の間のデータ受け渡し
+- 保守性を高めるためのコード構成
+
+**対象者:** サービスアーキテクチャを理解したい Wails 初心者
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/ja/tutorials/01-creating-a-service" variant="secondary" icon="right-arrow">始める</LinkButton>
+</div>
+
+---
+
+### TODO リスト
+
+<Image src={todoApp} alt="TODO List Application" style="max-width: 400px; margin: 1rem auto; display: block;" />
+
+美しくモダンなインターフェースを持つ完全な TODO リストアプリケーションを構築します。このハンズオンチュートリアルでは、バニラ JavaScript を使用した実践的なリアルワールドアプリケーションを通じて、コアな Wails パターンを学びます。
+
+**学習内容:**
+- スレッドセーフな状態管理によるサービスベースのアーキテクチャ
+- CRUD 操作（作成、読み込み、更新、削除）
+- Go と JavaScript の間の型安全なバインディング
+- フレームワークの複雑さなしでモダンな UI を構築する方法
+- 適切なエラーハンドリングとバリデーションパターン
+
+**所要時間:** 約 20 分
+
+**対象者:** 最初の完全な Wails アプリケーションの構築。フレームワークの複雑さを追加する前に基礎を理解するのに最適です。
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/ja/tutorials/02-todo-vanilla" variant="secondary" icon="right-arrow">始める</LinkButton>
+</div>
+
+---
+
+### メモ
+
+<Image src={notesApp} alt="Notes Application" style="max-width: 600px; margin: 1rem auto; display: block;" />
+
+ネイティブファイルダイアログと自動保存機能を備えた Apple メモスタイルのアプリケーションを構築します。このチュートリアルでは、ファイル操作、ネイティブダイアログ、プロフェッショナルな UI パターンなど、デスクトップ固有の機能を示します。
+
+**学習内容:**
+- ネイティブファイルダイアログ（保存、開く、情報）
+- JSON ベースのデータ永続化
+- ディバウンスされた自動保存パターン
+- プロフェッショナルな2列構成のデスクトップレイアウト
+- Go でのファイルシステム操作
+
+**所要時間:** 約 30 分
+
+**対象者:** ファイル操作やネイティブ OS ダイアログなど、デスクトップ固有の機能を学ぶ方
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/ja/tutorials/03-notes-vanilla" variant="secondary" icon="right-arrow">始める</LinkButton>
+</div>

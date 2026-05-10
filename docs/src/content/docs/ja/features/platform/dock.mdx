@@ -1,0 +1,241 @@
+---
+title: ドックとタスクバー
+description: macOSおよびWindowsでドックアイコンの表示/非表示を管理し、バッジを表示する方法
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## はじめに
+
+Wailsは、デスクトップアプリケーション向けのクロスプラットフォームなドックサービスを提供しています。このサービスを使用すると、以下のことが可能です：
+
+- macOSのドックにアプリケーションアイコンを表示・非表示にする
+- アプリケーションのタイルまたはドック/タスクバーのアイコンにバッジを表示する（macOSおよびWindows）
+
+## 基本的な使い方
+
+### サービスの作成
+
+まず、ドックサービスを初期化します：
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/dock"
+
+// 新しいドックサービスを作成
+dockService := dock.New()
+
+// アプリケーションにサービスを登録
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(dockService),
+    },
+})
+```
+
+### カスタムバッジオプション付きでサービスを作成する（Windowsのみ）
+
+Windowsでは、さまざまなオプションを使用してバッジの外観をカスタマイズできます：
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/dock"
+import "image/color"
+
+// カスタムバッジオプション付きでドックサービスを作成
+options := dock.BadgeOptions{
+    TextColour:       color.RGBA{255, 255, 255, 255}, // 白文字
+    BackgroundColour: color.RGBA{0, 0, 255, 255},     // 青背景
+    FontName:         "consolab.ttf",                 // ボールドのConsolasフォント
+    FontSize:         20,                             // 1文字の場合のフォントサイズ
+    SmallFontSize:    14,                             // 複数文字の場合のフォントサイズ
+}
+
+dockService := dock.NewWithOptions(options)
+
+// アプリケーションにサービスを登録
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(dockService),
+    },
+})
+```
+
+## ドック操作
+
+### ドックアプリアイコンを非表示にする
+
+macOSのドックからアプリアイコンを非表示にします：
+
+```go
+// アプリアイコンを非表示
+dockService.HideAppIcon()
+```
+
+### ドックアプリアイコンを表示する
+
+macOSのドックにアプリアイコンを表示します：
+
+```go
+// アプリアイコンを表示
+dockService.ShowAppIcon()
+```
+
+## バッジ操作
+
+### バッジの設定
+
+アプリケーションのタイル/ドックアイコンにバッジを設定します：
+
+```go
+// デフォルトのバッジを設定
+dockService.SetBadge("")
+
+// 数値バッジを設定
+dockService.SetBadge("3")
+
+// テキストバッジを設定
+dockService.SetBadge("New")
+```
+
+### カスタムバッジの設定（Windowsのみ）
+
+一時的なオプションを適用してバッジを設定します：
+
+```go
+options := dock.BadgeOptions{
+    BackgroundColour: color.RGBA{0, 255, 255, 255},
+    FontName:         "arialb.ttf", // システムフォント
+    FontSize:         16,
+    SmallFontSize:    10,
+    TextColour:       color.RGBA{0, 0, 0, 255},
+}
+
+// デフォルトのバッジを設定
+dockService.SetCustomBadge("", options)
+
+// 数値バッジを設定
+dockService.SetCustomBadge("3", options)
+
+// テキストバッジを設定
+dockService.SetCustomBadge("New", options)
+```
+
+### バッジの削除
+
+アプリケーションアイコンからバッジを削除します：
+
+```go
+dockService.RemoveBadge()
+```
+
+### 設定されたバッジの取得
+```go
+dockService.GetBadge()
+``` 
+
+## プラットフォームに関する考慮事項
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    macOSでは：
+    
+    - ドックアイコンは**非表示**および**表示**が可能です
+    - バッジはドックアイコンに直接表示されます
+    - バッジオプションは**カスタマイズできません**（`NewWithOptions`/`SetCustomBadge`に渡されたオプションは無視されます）
+    - 標準のmacOSドックバッジスタイルが使用され、外観に自動的に適応します
+    - ラベルのオーバーフローはシステムによって処理されます
+    - 空のラベルを指定すると、デフォルトのバッジ "●" が表示されます
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    Windowsでは：
+    
+    - タスクバーアイコンの表示/非表示は、このサービスでは現在サポートされていません
+    - バッジはタスクバーのオーバーレイアイコンとして表示されます
+    - バッジはテキスト値をサポートします
+    - バッジの外観は `BadgeOptions` を介してカスタマイズできます
+    - バッジを表示するには、アプリケーションにウィンドウが必要です
+    - 複数文字のラベルには自動的に小さなフォントサイズが使用されます
+    - ラベルのオーバーフローは処理されません
+    - カスタマイズオプション：
+      - **TextColour**: テキストの色（デフォルト：白）
+      - **BackgroundColour**: バッジの背景色（デフォルト：赤）
+      - **FontName**: フォントファイル名（デフォルト： "segoeuib.ttf"）
+      - **FontSize**: 1文字の場合のフォントサイズ（デフォルト：18）
+      - **SmallFontSize**: 複数文字の場合のフォントサイズ（デフォルト：14）
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    Linuxでは：
+    
+    - ドックアイコンの表示/非表示およびバッジ機能は利用できません
+    
+  </TabItem>
+</Tabs>
+
+## ベストプラクティス
+
+1. **ドックアイコンを非表示にする場合（macOS）：**
+   - ユーザーがアプリにアクセスできることを確認してください（例：[システムトレイ](https://v3.wails.io/learn/systray/)経由）
+   - 代替UIに「終了」オプションを含めてください
+   - アプリはCommand+Tabのスイッチャーに表示されません
+   - 開いているウィンドウは表示され、機能し続けます
+   - すべてのウィンドウを閉じてもアプリが終了しない場合があります（macOSの動作は環境によって異なります）
+   - ユーザーはドックの右クリックから標準的な終了方法を使えなくなります
+
+2. **バッジは控えめに使用してください：**
+   - バッジの更新が多すぎると、ユーザーの注意を散漫にさせる可能性があります
+   - バッジは重要な通知に限定してください
+
+3. **バッジのテキストは短く保ってください：**
+   - 数値バッジが最も効果的です
+   - macOSでは、テキストバッジは簡潔にしてください
+
+4. **Windowsのバッジカスタマイズの場合：**
+   - テキストと背景色の間に高いコントラストを確保してください
+   - テキストの長さに応じてフォントサイズが小さくなるため、異なるテキスト長でテストしてください
+   - 利用可能性を確保するために、一般的なシステムフォントを使用してください
+
+
+## APIリファレンス
+
+### サービス管理
+| メソッド                                     | 説明                                           |
+|--------------------------------------------|-------------------------------------------------------|
+| `New()`                                    | 新しいドックサービスを作成します                            |
+| `NewWithOptions(options BadgeOptions)`     | カスタムバッジオプション付きで新しいドックサービスを作成します（Windowsのみ；macOSおよびLinuxではオプションは無視されます） |
+
+### ドック操作
+| メソッド                                       | 説明                                                |
+|--------------------------------|-------------------------------------------------------------|
+| `HideAppIcon()`                | macOSのドックからアプリアイコンを非表示にします（macOSのみ）         |
+| `ShowAppIcon()`                | macOSのドックにアプリアイコンを表示します（macOSのみ）           |
+
+### バッジ操作
+| メソッド                                            | 説明                                                |
+|---------------------------------------------------|------------------------------------------------------------|
+| `SetBadge(label string) error`                    | 指定されたラベルでバッジを設定します                      |
+| `SetCustomBadge(label string, options BadgeOptions) error` | 指定されたラベルとカスタムスタイルオプションでバッジを設定します（Windowsのみ） |
+| `RemoveBadge() error`                             | アプリケーションアイコンからバッジを削除します                |
+| `GetBadge() *string`                             | 現在のバッジを取得します                |
+
+### 構造体と型
+
+```go
+// バッジの外観をカスタマイズするためのオプション（Windowsのみ）
+type BadgeOptions struct {
+    TextColour       color.RGBA  // バッジテキストの色
+    BackgroundColour color.RGBA  // バッジ背景の色
+    FontName         string      // フォントファイル名（例： "segoeuib.ttf"）
+    FontSize         int         // 1文字の場合のフォントサイズ
+    SmallFontSize    int         // 複数文字の場合のフォントサイズ
+}
+```

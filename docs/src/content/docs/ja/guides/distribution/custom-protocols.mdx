@@ -1,0 +1,614 @@
+---
+title: カスタム URL プロトコル
+description: リンクからアプリケーションを起動するためのカスタム URL スキームを登録する
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+カスタム URL プロトコル（URL スキームとも呼ばれます）により、ユーザーが `myapp://action` や `myapp://open/document` などのカスタムプロトコルを含むリンクをクリックしたときにアプリケーションを起動することができます。
+
+## 概要
+
+カスタムプロトコルにより以下が可能になります：
+- **ディープリンク**: 特定のデータ付きでアプリを起動
+- **ブラウザ統合**: ウェブページからのリンクを処理
+- **メールリンク**: メールクライアントからアプリを開く
+- **アプリ間通信**: 他のアプリケーションから起動
+
+**例**: `myapp://open/document?id=123` はアプリを起動し、ドキュメント 123 を開きます。
+
+## 設定
+
+アプリケーションオプションでカスタムプロトコルを定義します：
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "My Application",
+        Description: "My awesome application",
+        Protocols: []application.Protocol{
+            {
+                Scheme:      "myapp",
+                Description: "My Application Protocol",
+                Role:        "Editor",  // macOS only
+            },
+        },
+    })
+
+    // Register handler for protocol events
+    app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+        url := event.Context().ClickedURL()
+        handleCustomURL(url)
+    })
+
+    app.Run()
+}
+
+func handleCustomURL(url string) {
+    // Parse and handle the custom URL
+    // Example: myapp://open/document?id=123
+    println("Received URL:", url)
+}
+```
+
+## プロトコルハンドラー
+
+プロトコルイベントをリッスンして、受信した URL を処理します：
+
+```go
+app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+    url := event.Context().ClickedURL()
+
+    // Parse the URL
+    parsedURL, err := parseCustomURL(url)
+    if err != nil {
+        app.Logger.Error("Failed to parse URL:", err)
+        return
+    }
+
+    // Handle different actions
+    switch parsedURL.Action {
+    case "open":
+        openDocument(parsedURL.DocumentID)
+    case "settings":
+        showSettings()
+    case "user":
+        showUser Profile(parsedURL.UserID)
+    default:
+        app.Logger.Warn("Unknown action:", parsedURL.Action)
+    }
+})
+```
+
+## URL の構造
+
+明確で階層的な URL 構造を設計します：
+
+```
+myapp://action/resource?param=value
+
+Examples:
+myapp://open/document?id=123
+myapp://settings/theme?mode=dark
+myapp://user/profile?username=john
+```
+
+**ベストプラクティス：**
+- スキーム名は小文字を使用
+- スキームは短く覚えやすく
+- リソースには階層的なパスを使用
+- オプションのデータにはクエリパラメータを含める
+- 特殊文字は URL エンコード
+
+## プラットフォームでの登録
+
+カスタムプロトコルはプラットフォームごとに異なる方法で登録されます。
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+
+### Windows NSIS インストーラー
+
+**Wails v3 は NSIS インストーラーを使用する場合、カスタムプロトコルを自動的に登録します。**
+
+#### 自動登録
+
+`wails3 build` でアプリケーションをビルドすると、NSIS インストーラーは以下の処理を行います：
+1. `application.Options.Protocols` で定義されたすべてのプロトコルを自動的に登録
+2. プロトコルをアプリケーションの実行ファイルに関連付け
+3. 適切なレジストリエントリを設定
+4. アンインストール時にプロトコル関連付けを削除
+
+**追加の設定は不要です！**
+
+#### 仕組み
+
+NSIS テンプレートには組み込みのマクロが含まれています：
+- `wails.associateCustomProtocols` - インストール時にプロトコルを登録
+- `wails.unassociateCustomProtocols` - アンインストール時にプロトコルを削除
+
+これらのマクロは `Protocols` 設定に基づいて自動的に呼び出されます。
+
+#### 手動レジストリ（上級者向け）
+
+手動登録が必要な場合（NSIS 以外）：
+
+```batch
+@echo off
+REM Register custom protocol
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp" /ve /d "URL:My Application Protocol" /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp" /v "URL Protocol" /t REG_SZ /d "" /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp\shell\open\command" /ve /d "\"%1\"" /f
+```
+
+#### テスト
+
+プロトコル登録をテストします：
+
+```powershell
+# Open protocol URL from PowerShell
+Start-Process "myapp://test/action"
+
+# Or from command prompt
+start myapp://test/action
+```
+
+### Windows MSIX パッケージ
+
+カスタムプロトコルは MSIX パッケージングを使用する場合にも自動的に登録されます。
+
+#### 自動登録
+
+MSIX でアプリケーションをビルドすると、マニフェストには `build/config.yml` のプロトコル設定からプロトコル登録が自動的に含まれます。
+
+生成されるマニフェストには以下が含まれます：
+
+```xml
+<uap:Extension Category="windows.protocol">
+  <uap:Protocol Name="myapp">
+    <uap:DisplayName>My Application Protocol</uap:DisplayName>
+  </uap:Protocol>
+</uap:Extension>
+```
+
+#### ユニバーサルリンク（Web からアプリへのリンク）
+
+Windows は **Web-to-App リンキング** をサポートしており、macOS のユニバーサルリンクと同様に動作します。アプリケーションを MSIX パッケージとしてデプロイする際、HTTPS リンクを使用してアプリを直接起動できるようにすることができます。
+
+<Aside type="note">
+Web-to-App リンキングには手動のマニフェスト設定が必要です。カスタムプロトコルスキームは `build/config.yml` から自動的に設定されますが、関連ドメインは MSIX マニフェストに手動で追加する必要があります。
+</Aside>
+
+Web-to-App リンキングを有効にするには、[Microsoft の web-to-app リンキングに関するガイド](https://learn.microsoft.com/en-us/windows/apps/develop/launch/web-to-app-linking) に従ってください。以下の手順が必要です：
+
+1. **MSIX マニフェストに App URI Handler を手動で追加する**（`build/windows/msix/app_manifest.xml`）：
+   ```xml
+   <uap3:Extension Category="windows.appUriHandler">
+     <uap3:AppUriHandler>
+       <uap3:Host Name="myawesomeapp.com"/>
+     </uap3:AppUriHandler>
+   </uap3:Extension>
+   ```
+
+2. **ウェブサイトで `windows-app-web-link` を設定する**: `https://myawesomeapp.com/.well-known/windows-app-web-link` に `windows-app-web-link` ファイルをホストします。このファイルにはアプリのパッケージ情報と、アプリが処理するパスが含まれている必要があります。
+
+Web-to-App リンクでアプリケーションが起動されると、カスタムプロトコルスキームと同様に `ApplicationOpenedWithURL` イベントが送信されます。
+
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+
+### Info.plist 設定
+
+macOS では、プロトコルは `Info.plist` ファイル経由で登録されます。
+
+#### 自動設定
+
+Wails は `wails3 build` でビルドする際に、プロトコルを含む `Info.plist` を自動的に生成します。
+
+`application.Options.Protocols` のプロトコルは以下に追加されます：
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLName</key>
+        <string>My Application Protocol</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>myapp</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+    </dict>
+</array>
+```
+
+#### テスト
+
+```bash
+# Open protocol URL from terminal
+open "myapp://test/action"
+
+# Check registered handlers
+/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -dump | grep myapp
+```
+
+#### ユニバーサルリンク
+
+カスタムプロトコルスキームに加えて、macOS は **ユニバーサルリンク** もサポートしており、通常の HTTPS リンク（例：`https://myawesomeapp.com/path`）でアプリを起動することができます。ユニバーサルリンクにより、ウェブアプリとデスクトップアプリの間でシームレスなユーザー体験が提供されます。
+
+<Aside type="caution">
+ユニバーサルリンクを使用するには、macOS アプリが有効な Apple Developer 証明書とプロビジョニングプロファイルで**コード署名**されている必要があります。署名されていないまたはアドホック署名されたビルドではユニバーサルリンクを開くことができません。テストする前にアプリが適切に署名されていることを確認してください。
+</Aside>
+
+ユニバーサルリンクを有効にするには、[Apple のアプリでユニバーサルリンクをサポートするためのガイド](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app) に従ってください。以下の手順が必要です：
+
+1. **`entitlements.plist` にエンタイトルメントを追加する**：
+   ```xml```xml
+   <key>com.apple.developer.associated-domains</key>
+   <array>
+     <string>applinks:myawesomeapp.com</string>
+   </array>
+   ```
+
+2. **Info.plist に `NSUserActivityTypes` を追加する**:
+   ```xml
+   <key>NSUserActivityTypes</key>
+   <array>
+     <string>NSUserActivityTypeBrowsingWeb</string>
+   </array>
+   ```
+
+3. **Webサイトで `apple-app-site-association` を設定する**: `https://myawesomeapp.com/.well-known/apple-app-site-association` に `apple-app-site-association` ファイルをホストします。
+
+ユニバーサルリンクがアプリをトリガーすると、同じ `ApplicationOpenedWithURL` イベントを受け取り、処理コードはカスタムプロトコルスキームの場合と同じになります。
+
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+
+### デスクトップエントリー
+
+Linux では、プロトコルは `.desktop` ファイルを介して登録されます。
+
+#### 自動設定
+
+`wails3 build` でビルドすると、Wails はプロトコルハンドラーを含むデスクトップエントリーファイルを生成します。
+
+**v3 で修正済み**: Linux デスクトップテンプレートは現在、プロトコル処理を適切に含んでいます。
+
+生成されたデスクトップファイルには以下が含まれます:
+
+```ini
+[Desktop Entry]
+Type=Application
+Name=My Application
+Exec=/usr/bin/myapp %u
+MimeType=x-scheme-handler/myapp;
+```
+
+#### 手動登録
+
+必要に応じて、デスクトップファイルを手動でインストールします:
+
+```bash
+# デスクトップファイルをコピー
+cp myapp.desktop ~/.local/share/applications/
+
+# デスクトップデータベースを更新
+update-desktop-database ~/.local/share/applications/
+
+# プロトコルハンドラーを登録
+xdg-mime default myapp.desktop x-scheme-handler/myapp
+```
+
+#### テスト
+
+```bash
+# プロトコルURLを開く
+xdg-open "myapp://test/action"
+
+# 登録されたハンドラーを確認
+xdg-mime query default x-scheme-handler/myapp
+```
+
+  </TabItem>
+</Tabs>
+
+## 完全な例
+
+複数のプロトコルアクションを処理する完全な例を以下に示します:
+
+```go
+package main
+
+import (
+    "fmt"
+    "net/url"
+    "strings"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type App struct {
+    app    *application.Application
+    window *application.WebviewWindow
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "DeepLink Demo",
+        Description: "Custom protocol demonstration",
+        Protocols: []application.Protocol{
+            {
+                Scheme:      "deeplink",
+                Description: "DeepLink Demo Protocol",
+                Role:        "Editor",
+            },
+        },
+    })
+
+    myApp := &App{app: app}
+    myApp.setup()
+
+    app.Run()
+}
+
+func (a *App) setup() {
+    // ウィンドウを作成
+    a.window = a.app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  "DeepLink Demo",
+        Width:  800,
+        Height: 600,
+        URL:    "http://wails.localhost/",
+    })
+
+    // カスタムプロトコルURLを処理
+    a.app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+        customURL := event.Context().ClickedURL()
+        a.handleDeepLink(customURL)
+    })
+}
+
+func (a *App) handleDeepLink(rawURL string) {
+    // URLを解析
+    parsedURL, err := url.Parse(rawURL)
+    if err != nil {
+        a.app.Logger.Error("Failed to parse URL:", err)
+        return
+    }
+
+    // ウィンドウを前面に表示
+    a.window.Show()
+    a.window.SetFocus()
+
+    // パスとクエリを抽出
+    path := strings.Trim(parsedURL.Path, "/")
+    query := parsedURL.Query()
+
+    // 異なるアクションを処理
+    parts := strings.Split(path, "/")
+    if len(parts) == 0 {
+        return
+    }
+
+    action := parts[0]
+
+    switch action {
+    case "open":
+        if len(parts) >= 2 {
+            resource := parts[1]
+            id := query.Get("id")
+            a.openResource(resource, id)
+        }
+
+    case "settings":
+        section := ""
+        if len(parts) >= 2 {
+            section = parts[1]
+        }
+        a.openSettings(section)
+
+    case "user":
+        if len(parts) >= 2 {
+            username := parts[1]
+            a.openUserProfile(username)
+        }
+
+    default:
+        a.app.Logger.Warn("Unknown action:", action)
+    }
+}
+
+func (a *App) openResource(resourceType, id string) {
+    fmt.Printf("Opening %s with ID: %s\n", resourceType, id)
+    // フロントエンドにイベントを発行
+    a.app.Event.Emit("navigate", map[string]string{
+        "type": resourceType,
+        "id":   id,
+    })
+}
+
+func (a *App) openSettings(section string) {
+    fmt.Printf("Opening settings section: %s\n", section)
+    a.app.Event.Emit("navigate", map[string]string{
+        "page":    "settings",
+        "section": section,
+    })
+}
+
+func (a *App) openUserProfile(username string) {
+    fmt.Printf("Opening user profile: %s\n", username)
+    a.app.Event.Emit("navigate", map[string]string{
+        "page": "user",
+        "user": username,
+    })
+}
+```
+
+## フロントエンド統合
+
+フロントエンドでナビゲーションイベントを処理します:
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// プロトコルハンドラーからのナビゲーションイベントをリッスン
+Events.On('navigate', (event) => {
+    const { type, id, page, section, user } = event.data
+
+    if (type === 'document') {
+        // ID付きドキュメントを開く
+        router.push(`/document/${id}`)
+    } else if (page === 'settings') {
+        // 設定を開く
+        router.push(`/settings/${section}`)
+    } else if (page === 'user') {
+        // ユーザープロフィールを開く
+        router.push(`/user/${user}`)
+    }
+})
+```
+
+## セキュリティに関する考慮事項
+
+### 入力の検証
+
+外部からのURLは常に検証およびサニタイズしてください:
+
+```go
+func (a *App) handleDeepLink(rawURL string) {
+    // URLを解析
+    parsedURL, err := url.Parse(rawURL)
+    if err != nil {
+        a.app.Logger.Error("Invalid URL:", err)
+        return
+    }
+
+    // スキームを検証
+    if parsedURL.Scheme != "myapp" {
+        a.app.Logger.Warn("Invalid scheme:", parsedURL.Scheme)
+        return
+    }
+
+    // パスを検証
+    path := strings.Trim(parsedURL.Path, "/")
+    if !isValidPath(path) {
+        a.app.Logger.Warn("Invalid path:", path)
+        return
+    }
+
+    // パラメータをサニタイズ
+    params := sanitizeQueryParams(parsedURL.Query())
+
+    // 検証されたURLを処理
+    a.processDeepLink(path, params)
+}
+
+func isValidPath(path string) bool {
+    // 英数字とフォワードスラッシュのみを許可
+    validPath := regexp.MustCompile(`^[a-zA-Z0-9/]+$`)
+    return validPath.MatchString(path)
+}
+
+func sanitizeQueryParams(query url.Values) map[string]string {
+    sanitized := make(map[string]string)
+    for key, values := range query {
+        if len(values) > 0 {
+            // 最初の値を取得してサニタイズ
+            sanitized[key] = sanitizeString(values[0])
+        }
+    }
+    return sanitized
+}
+```
+
+### インジェクション攻撃の防止
+
+URLをコードやSQLとして直接実行しないでください:
+
+```go
+// ❌ 実行しない: URLコンテンツを実行
+func badHandler(url string) {
+    exec.Command("sh", "-c", url).Run() // 危険!
+}
+
+// ✅ 実行する: 解析して検証
+func goodHandler(url string) {
+    parsed, _ := url.Parse(url)
+    action := parsed.Query().Get("action")
+
+    // 許可されたアクションのホワイトリスト
+    allowed := map[string]bool{
+        "open":     true,
+        "settings": true,
+        "help":     true,
+    }
+
+    if allowed[action] {
+        handleAction(action)
+    }
+}
+```
+
+## テスト
+
+### 手動テスト
+
+開発中にプロトコルハンドラーをテストします:
+
+**Windows:**
+```powershell
+Start-Process "myapp://test/action?id=123"
+```
+
+**macOS:**
+```bash
+open "myapp://test/action?id=123"
+```
+
+**Linux:**
+```bash
+xdg-open "myapp://test/action?id=123"
+```
+
+### HTML テスト
+
+テスト用のHTMLページを作成します:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Protocol Test</title>
+</head>
+<body>
+    <h1>Custom Protocol Test Links</h1>
+
+    <ul>
+        <li><a href="myapp://open/document?id=123">Open Document 123</a></li>
+        <li><a href="myapp://settings/theme?mode=dark">Dark Mode Settings</a></li>
+        <li><a href="myapp://user/profile?username=john">User Profile</a></li>
+    </ul>
+</body>
+</html>
+```
+
+## トラブルシューティング
+
+### プロトコルが登録されていない
+
+**Windows:**
+- レジストリを確認: `HKEY_CURRENT_USER\SOFTWARE\Classes\<scheme>`
+- NSISインストーラーで再インストール
+- インストーラーが適切な権限で実行されたことを確認
+
+**macOS:**---
+
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[例](https://github.com/wailsapp/wails/tree/master/v3/examples) を参照してください。

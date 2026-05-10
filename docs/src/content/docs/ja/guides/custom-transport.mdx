@@ -1,0 +1,172 @@
+---
+title: カスタムトランスポート層の作成
+description: Wails v3のカスタムIPCトランスポート層を作成およびカスタマイズする方法を学びます
+sidebar:
+    order: 51
+---
+
+Wails v3では、生成されたバインディングやイベント通信を保持したまま、カスタムIPCトランスポート層を提供することができます。これにより、デフォルトのHTTP fetchベースのトランスポートをWebSocket、カスタムプロトコル、またはその他のトランスポートメカニズムに置き換えることができます。
+
+## 概要
+
+デフォルトでは、Wailsはフロントエンドからバックエンドへの通信に `/wails/runtime` を介したHTTP fetchリクエストを使用します。カスタムトランスポートAPIを使用すると、以下が可能になります：
+
+- HTTPトランスポートをWebSocket、gRPC、または任意のカスタムプロトコルに置き換える
+- Wailsのコード生成と完全に互換性を維持する
+- 既存のすべてのバインディング、イベント、ダイアログ、およびその他のWails機能を維持する
+- 独自の接続管理、認証、エラー処理を実装する
+
+## アーキテクチャ
+
+```text
+┌─────────────────────────────────────────────────┐
+│  Frontend (TypeScript)                          │
+│  - Generated bindings still work                │
+│  - Your custom client transport                 │
+└──────────────────┬──────────────────────────────┘
+                   │
+                   │ Your Protocol (WebSocket/etc)
+                   │
+┌──────────────────▼──────────────────────────────┐
+│  Backend (Go)                                   │
+│  - Your Transport implementation                │
+│  - Wails MessageProcessor                       │
+│  - All existing Wails infrastructure            │
+└─────────────────────────────────────────────────┘
+```
+
+## 使用方法
+
+### 1. Transportインターフェースの実装
+
+`Transport`インターフェースを実装して、カスタムトランスポートを作成します：
+
+```go
+package main
+
+import (
+    "context"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type MyCustomTransport struct {
+    // Your fields
+}
+
+func (t *MyCustomTransport) Start(ctx context.Context, processor *application.MessageProcessor) error {
+    // Initialize your transport (WebSocket server, gRPC server, etc.)
+    // When you receive requests, call processor.HandleRuntimeCallWithIDs()
+    return nil
+}
+
+func (t *MyCustomTransport) Stop() error {
+    // Clean up your transport
+    return nil
+}
+```
+
+### 2. アプリケーションの設定
+
+カスタムトランスポートをアプリケーションオプションに渡します：
+
+```go
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        Transport: &MyCustomTransport{},
+        // ... other options
+    })
+
+    err := app.Run()
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+### 3. フロントエンドランタイムの変更
+
+カスタムトランスポートを使用する場合、HTTP fetchの代わりにトランスポートを使用するようにフロントエンドランタイムを変更する必要があります。リクエストを処理するために使用される `RuntimeTransport` インターフェースを実装します：
+
+```typescript
+const { setTransport } = await import('/wails/runtime.js');
+
+class MyRuntimeTransport {
+  call(objectID: number, method: number, windowName: string, args: any): Promise<any> {
+    // TODO: implement IPC call with your transport protocol
+
+    return resp;
+  }
+}
+
+const myTransport = new MyRuntimeTransport();
+setTransport(myTransport);
+```
+
+## 注意事項
+
+- カスタムトランスポートが指定されていない場合、デフォルトのHTTPトランスポートは引き続き機能します
+- 生成されたバインディングは変更されません - 変更されるのはトランスポート層のみです
+- イベント、ダイアログ、クリップボード、およびその他のすべてのWails機能は透過的に動作します
+- カスタムトランスポートにおけるエラー処理、再接続ロジック、およびセキュリティはユーザーの責任です
+- 提供されているWebSocketの例はデモンストレーション用であり、本番環境での使用には強化が必要かもしれません
+
+## APIリファレンス
+
+### Transportインターフェース
+
+```go
+type Transport interface {
+    Start(ctx context.Context, messageProcessor *application.MessageProcessor) error
+    Stop() error
+}
+```
+
+### AssetServerTransportインターフェース（オプション）
+
+ブラウザベースのデプロイメント、またはカスタムトランスポートを通じてアセットとIPCの両方を提供したい場合は、`AssetServerTransport` インターフェースを実装します：
+
+```go
+type AssetServerTransport interface {
+    Transport
+
+    // ServeAssets configures the transport to serve assets alongside IPC.
+    // The assetHandler is Wails' internal asset server that handles all assets,
+    // runtime.js, capabilities, flags, etc.
+    ServeAssets(assetHandler http.Handler) error
+}
+```
+
+**このインターフェースを実装すべき場合：**
+- ウェブビューの代わりにブラウザでアプリを実行する場合
+- カスタムIPCトランスポートとともにHTTP経由でアセットを提供する場合
+- ネットワークアクセス可能なアプリケーションを構築する場合
+
+**実装例：**
+
+```go
+func (t *MyTransport) ServeAssets(assetHandler http.Handler) error {
+    mux := http.NewServeMux()
+
+    // Mount your IPC endpoint
+    mux.HandleFunc("/my/ipc/endpoint", t.handleIPC)
+
+    // Mount Wails asset server for everything else
+    mux.Handle("/", assetHandler)
+
+    // Start HTTP server
+    t.httpServer.Handler = mux
+    go t.httpServer.ListenAndServe()
+
+    return nil
+}
+```
+
+`ServeAssets()` が呼び出されると、assetHandlerは以下のものを提供します：
+- すべての静的アセット（HTML、CSS、JS、画像など）
+- `/wails/runtime.js` - Wailsランタイムライブラリ
+
+## 関連項目
+
+- `transport.go` - コアトランスポートインターフェースと型
+- `messageprocessor.go` - すべてのWails IPCを処理する基盤となるメッセージプロセッサ

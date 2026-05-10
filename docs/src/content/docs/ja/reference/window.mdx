@@ -1,0 +1,503 @@
+---
+title: ウィンドウ API
+description: Window API の完全なリファレンス
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 概要
+
+Window API は、ウィンドウの外観、動作、ライフサイクルを制御するためのメソッドを提供します。ウィンドウインスタンスまたは Window マネージャーを通じてアクセスできます。
+
+**一般的な操作:**
+- ウィンドウの作成と表示
+- サイズ、位置、状態の制御
+- ウィンドウイベントの処理
+- ウィンドウコンテンツの管理
+- 外観と動作の設定
+
+## 表示状態
+
+### Show()
+
+ウィンドウを表示します。ウィンドウが非表示だった場合、表示されます。
+
+```go
+func (w *Window) Show()
+```
+
+**例:**
+```go
+window := app.Window.New()
+window.Show()
+```
+
+### Hide()
+
+ウィンドウを閉じずに非表示にします。ウィンドウはメモリ上に残り、再度表示できます。
+
+```go
+func (w *Window) Hide()
+```
+
+**例:**
+```go
+// ウィンドウを一時的に非表示にする
+window.Hide()
+
+// 後で再度表示する
+window.Show()
+```
+
+**使用例:**
+- トレイに隠れるシステムトレイアプリケーション
+- ウィンドウを再利用するウィザードフロー
+- 操作中の一時的な非表示
+
+### Close()
+
+ウィンドウを閉じます。これにより `WindowClosing` イベントが発生します。
+
+```go
+func (w *Window) Close()
+```
+
+**例:**
+```go
+window.Close()
+```
+
+**注意:** 登録されたフックが `event.Cancel()` を呼び出す場合、閉じる操作はキャンセルされます。
+
+## ウィンドウのプロパティ
+
+### SetTitle()
+
+ウィンドウのタイトルバーのテキストを設定します。
+
+```go
+func (w *Window) SetTitle(title string)
+```
+
+**パラメータ:**
+- `title` - 新しいウィンドウのタイトル
+
+**例:**
+```go
+window.SetTitle("My Application - Document.txt")
+```
+
+### Name()
+
+ウィンドウの一意の名前識別子を返します。
+
+```go
+func (w *Window) Name() string
+```
+
+**例:**
+```go
+name := window.Name()
+fmt.Println("Window name:", name)
+
+// 後で名前でウィンドウを取得する
+window := app.GetWindowByName(name)
+```
+
+## サイズと位置
+
+### SetSize()
+
+ウィンドウの寸法（ピクセル単位）を設定します。
+
+```go
+func (w *Window) SetSize(width, height int)
+```
+
+**パラメータ:**
+- `width` - ウィンドウの幅（ピクセル単位）
+- `height` - ウィンドウの高さ（ピクセル単位）
+
+**例:**
+```go
+window.SetSize(1024, 768)
+```
+
+### Size()
+
+現在のウィンドウの寸法を返します。
+
+```go
+func (w *Window) Size() (width, height int)
+```
+
+**例:**
+```go
+width, height := window.Size()
+fmt.Printf("Window is %dx%d\n", width, height)
+```
+
+### SetMinSize() / SetMaxSize()
+
+ウィンドウの最小および最大寸法を設定します。
+
+```go
+func (w *Window) SetMinSize(width, height int)
+func (w *Window) SetMaxSize(width, height int)
+```
+
+**例:**
+```go
+// ウィンドウが小さくなりすぎないようにする
+window.SetMinSize(800, 600)
+
+// ウィンドウが大きくなりすぎないようにする
+window.SetMaxSize(1920, 1080)
+```
+
+### SetPosition()
+
+ウィンドウの位置を画面の左上隅を基準として設定します。
+
+```go
+func (w *Window) SetPosition(x, y int)
+```
+
+**パラメータ:**
+- `x` - 水平位置（ピクセル単位）
+- `y` - 垂直位置（ピクセル単位）
+
+**例:**
+```go
+// ウィンドウを左上に配置する
+window.SetPosition(0, 0)
+
+// ウィンドウを左上から 100px の位置に配置する
+window.SetPosition(100, 100)
+```
+
+### Position()
+
+現在のウィンドウの位置を返します。
+
+```go
+func (w *Window) Position() (x, y int)
+```
+
+**例:**
+```go
+x, y := window.Position()
+fmt.Printf("Window is at (%d, %d)\n", x, y)
+```
+
+### Centre()
+
+ウィンドウを画面の中央に配置します。
+
+```go
+func (w *Window) Centre()
+```
+
+**例:**
+```go
+window := app.Window.New()
+window.Centre()
+window.Show()
+```
+
+**注意:** 主モニターに対して中央に配置されます。マルチモニター環境については、screen API を参照してください。
+
+### SetFocus()
+
+ウィンドウを前面に持ち出し、キーボードフォーカスを付与します。
+
+```go
+func (w *Window) SetFocus()
+```
+
+**例:**
+```go
+// ウィンドウを前面に持ち出す
+window.SetFocus()
+```
+
+## ウィンドウの状態
+
+### Minimise() / UnMinimise()
+
+ウィンドウをタスクバー/ドックに最小化するか、復元します。
+
+```go
+func (w *Window) Minimise()
+func (w *Window) UnMinimise()
+```
+
+**例:**
+```go
+// ウィンドウを最小化する
+window.Minimise()
+
+// 最小化状態から復元する
+window.UnMinimise()
+```
+
+### Maximise() / UnMaximise()
+
+ウィンドウを画面いっぱいに最大化するか、以前のサイズに復元します。
+
+```go
+func (w *Window) Maximise()
+func (w *Window) UnMaximise()
+```
+
+**例:**
+```go
+// ウィンドウを最大化する
+window.Maximise()
+
+// 以前のサイズに復元する
+window.UnMaximise()
+```
+
+### Fullscreen() / UnFullscreen()
+
+全画面モードに入ったり、終了したりします。
+
+```go
+func (w *Window) Fullscreen()
+func (w *Window) UnFullscreen()
+```
+
+**例:**
+```go
+// 全画面に入る
+window.Fullscreen()
+
+// 全画面を終了する
+window.UnFullscreen()
+```
+
+### IsMinimised() / IsMaximised() / IsFullscreen()
+
+現在のウィンドウの状態を確認します。
+
+```go
+func (w *Window) IsMinimised() bool
+func (w *Window) IsMaximised() bool
+func (w *Window) IsFullscreen() bool
+```
+
+**例:**
+```go
+if window.IsMinimised() {
+    window.UnMinimise()
+}
+
+if window.IsMaximised() {
+    fmt.Println("Window is maximized")
+}
+
+if window.IsFullscreen() {
+    window.UnFullscreen()
+}
+```
+
+## ウィンドウのコンテンツ
+
+### SetURL()
+
+ウィンドウ内で特定の URL に移動します。
+
+```go
+func (w *Window) SetURL(url string)
+```
+
+**パラメータ:**
+- `url` - 移動先の URL（埋め込みアセットの場合は `http://wails.localhost/` など）
+
+**例:**
+```go
+// 埋め込みページに移動する
+window.SetURL("http://wails.localhost/settings.html")
+
+// 外部 URL に移動する（許可されている場合）
+window.SetURL("https://wails.io")
+```
+
+### SetHTML()
+
+ウィンドウのコンテンツを HTML 文字列から直接設定します。
+
+```go
+func (w *Window) SetHTML(html string)
+```
+
+**パラメータ:**
+- `html` - 表示する HTML コンテンツ
+
+**例:**
+```go
+html := `
+<!DOCTYPE html>
+<html>
+<head><title>Dynamic Content</title></head>
+<body>
+    <h1>Hello from Go!</h1>
+    <p>This content was generated dynamically.</p>
+</body>
+</html>
+`
+window.SetHTML(html)
+```
+
+**使用例:**
+- ダイナミックコンテンツの生成
+- フロントエンドビルドプロセスが不要なシンプルなウィンドウ
+- エラーページやスプラッシュスクリーン
+
+### Reload()
+
+現在のウィンドウのコンテンツを再読み込みします。
+
+```go
+func (w *Window) Reload()
+```
+
+**例:**
+```go
+// 現在のページを再読み込みする
+window.Reload()
+```
+
+**注意:** 開発中やコンテンツを更新する必要がある場合に便利です。
+
+## ウィンドウイベント
+
+Wails には、ウィンドウイベントを処理するための 2 つの方法があります。
+
+- **OnWindowEvent()** - ウィンドウイベントをリッスンします（イベントをキャンセルできません）
+- **RegisterHook()** - ウィンドウイベントにフックします（`event.Cancel()` を呼び出すことでイベントをキャンセルできます）
+
+### OnWindowEvent()
+
+ウィンドウイベントのコールバックを登録します。
+
+```go
+func (w *Window) OnWindowEvent(
+    eventType events.WindowEventType,
+    callback func(event *WindowEvent),
+) func()
+```
+
+**戻り値:** イベントリスナーを削除するためのクリーンアップ関数
+
+**例:**
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// ウィンドウのフォーカスを受け取る
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window gained focus")
+})
+
+// ウィンドウのフォーカスが外れることを受け取る
+window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window lost focus")
+})
+
+// ウィンドウのリサイズを受け取る
+window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
+    app.Logger.Info("Window resized")
+})
+```
+
+**一般的なウィンドウイベント:**
+- `events.Common.WindowClosing` - ウィンドウが閉じようとしている
+- `events.Common.WindowFocus` - ウィンドウがフォーカスを受けた
+- `events.Common.WindowLostFocus` - ウィンドウがフォーカスを失った
+- `events.Common.WindowDidMove` - ウィンドウが移動した
+- `events.Common.WindowDidResize` - ウィンドウのリサイズが行われた
+- `events.Common.WindowMinimise` - ウィンドウが最小化された
+- `events.Common.WindowMaximise` - ウィンドウが最大化された
+- `events.Common.WindowFullscreen` - ウィンドウが全画面モードに入った-------|-------------|
+| `LinuxMenuStyleMenuBar` | タイトルバーの下の従来のメニューバー（デフォルト） |
+| `LinuxMenuStylePrimaryMenu` | ヘッダーバー内のプライマリーメニューボタン（GNOME スタイル） |
+
+**例:**
+```go
+window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Title: "My Application",
+    Linux: application.LinuxWindow{
+        MenuStyle: application.LinuxMenuStylePrimaryMenu,
+    },
+})
+window.SetMenu(menu)
+```
+
+**注意:** プライマリーメニュースタイルは、GNOME ヒューマンインターフェースガイドラインに従い、ヘッダーバーにハンバーガーボタン（☰）を表示します。これは最新の GNOME アプリケーションに推奨されるスタイルです。
+
+## 完全な例
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Window API Demo",
+    })
+
+    // オプション付きでウィンドウを作成
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:            "My Application",
+        Width:            1024,
+        Height:           768,
+        MinWidth:         800,
+        MinHeight:        600,
+        BackgroundColour: application.NewRGB(255, 255, 255),
+        URL:              "http://wails.localhost/",
+    })
+
+    // ウィンドウの動作を設定
+    window.SetResizable(true)
+    window.SetMinSize(800, 600)
+    window.SetMaxSize(1920, 1080)
+
+    // イベントフックを設定
+    window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+        // 閉じる前に確認
+        result, _ := app.Dialog.Question().
+            SetTitle("閉じるの確認").
+            SetMessage("このウィンドウを閉じてもよろしいですか？").
+            SetButtons("はい", "いいえ").
+            Show()
+
+        if result == "いいえ" {
+            e.Cancel()
+        }
+    })
+
+    // ウィンドウイベントを監視
+    window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+        window.SetTitle("My Application (Active)")
+        app.Logger.Info("ウィンドウがフォーカスを受け取りました")
+    })
+
+    window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+        window.SetTitle("My Application")
+        app.Logger.Info("ウィンドウがフォーカスを失いました")
+    })
+
+    // ウィンドウの位置を指定して表示
+    window.Centre()
+    window.Show()
+
+    app.Run()
+}
+```

@@ -1,0 +1,173 @@
+---
+title: エンドツーエンドテスト
+description: 完全なユーザーワークフローをテストする
+sidebar:
+  order: 6
+---
+
+## 概要
+
+エンドツーエンドテストは、アプリケーション内の完全なユーザーワークフローを検証します。
+
+## Playwright の使用
+
+### セットアップ
+
+```bash
+# Install Playwright
+npm install -D @playwright/test
+
+# Initialize
+npx playwright install
+```
+
+### 設定
+
+```javascript
+// playwright.config.js
+import { defineConfig } from '@playwright/test'
+
+export default defineConfig({
+  testDir: './e2e',
+  use: {
+    baseURL: 'http://localhost:34115', // Wails dev server
+  },
+})
+```
+
+### テストの記述
+
+```javascript
+// e2e/app.spec.js
+import { test, expect } from '@playwright/test'
+
+test('create note', async ({ page }) => {
+  await page.goto('/')
+  
+  // Click new note button
+  await page.click('#new-note-btn')
+  
+  // Fill in title
+  await page.fill('#note-title', 'Test Note')
+  
+  // Fill in content
+  await page.fill('#note-content', 'Test content')
+  
+  // Verify note appears in list
+  await expect(page.locator('.note-item')).toContainText('Test Note')
+})
+
+test('delete note', async ({ page }) => {
+  await page.goto('/')
+  
+  // Create a note first
+  await page.click('#new-note-btn')
+  await page.fill('#note-title', 'To Delete')
+  
+  // Delete it
+  await page.click('#delete-btn')
+  
+  // Confirm dialog
+  page.on('dialog', dialog => dialog.accept())
+  
+  // Verify it's gone
+  await expect(page.locator('.note-item')).not.toContainText('To Delete')
+})
+```
+
+## ダイアログのテスト
+
+```javascript
+test('file save dialog', async ({ page }) => {
+  await page.goto('/')
+  
+  // Intercept file dialog
+  page.on('filechooser', async (fileChooser) => {
+    await fileChooser.setFiles('/path/to/test/file.json')
+  })
+  
+  // Trigger save
+  await page.click('#save-btn')
+  
+  // Verify success message
+  await expect(page.locator('.success-message')).toBeVisible()
+})
+```
+
+## ウィンドウ動作のテスト
+
+```javascript
+test('window state', async ({ page }) => {
+  await page.goto('/')
+  
+  // Test window title
+  await expect(page).toHaveTitle('My App')
+  
+  // Test window size
+  const size = await page.viewportSize()
+  expect(size.width).toBe(800)
+  expect(size.height).toBe(600)
+})
+```
+
+## ベストプラクティス
+
+### ✅ 推奨
+
+- 重要なユーザーフローをテストする
+- data-testid 属性を使用する
+- テストデータをクリーンアップする
+- CI/CD でテストを実行する
+- エラーシナリオをテストする
+- テストを独立して保つ
+
+### ❌ 非推奨
+
+- 実装の詳細をテストしない
+- 脆いセレクターを書かない
+- クリーンアップをスキップしない
+- 不安定なテストを無視しない
+- すべてをテストしない
+
+## E2E テストの実行
+
+```bash
+# Run all tests
+npx playwright test
+
+# Run in headed mode
+npx playwright test --headed
+
+# Run specific test
+npx playwright test e2e/app.spec.js
+
+# Debug mode
+npx playwright test --debug
+```
+
+## CI/CD 統合
+
+```yaml
+# .github/workflows/e2e.yml
+name: E2E Tests
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+      - name: Run tests
+        run: npx playwright test
+```
+
+## 次のステップ
+
+- [Testing](/ja/guides/testing) - ユニットテストを学ぶ
+- [Building](/guides/building) - アプリケーションをビルドする

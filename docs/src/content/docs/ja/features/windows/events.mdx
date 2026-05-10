@@ -1,0 +1,422 @@
+---
+title: ウィンドウイベント
+description: ウィンドウのライフサイクルと状態変更イベントを処理する
+sidebar:
+  order: 5
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## ウィンドウイベント
+
+Wails は、ウィンドウのライフサイクルと状態変更（作成、フォーカス/フォーカス解除、リサイズ/移動、最小化/最大化、閉じる）に対して**包括的なイベントフック**を提供します。単純で一貫性のある API を使用して、コールバックを登録し、イベントを処理し、ウィンドウ間で連携します。
+
+## ライフサイクルイベント
+
+### OnCreate
+
+ウィンドウが作成されたときに呼び出されます：
+
+```go
+app.OnWindowCreation(func(window *application.WebviewWindow) {
+    fmt.Printf("Window created: %s (ID: %d)\n", window.Name(), window.ID())
+    
+    // Configure all new windows
+    window.SetMinSize(400, 300)
+    
+    // Register window-specific handlers
+    window.OnClose(func() bool {
+        return confirmClose()
+    })
+})
+```
+
+**使用例:**
+- すべてのウィンドウを一貫して設定する
+- イベントハンドラーを登録する
+- ウィンドウの作成を追跡する
+- ウィンドウ固有のリソースを初期化する
+
+### OnClose
+
+ユーザーがウィンドウを閉じようとしたときに呼び出されます：
+
+```go
+window.OnClose(func() bool {
+    // Return false to cancel close
+    // Return true to allow close
+    
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        return result == "yes"
+    }
+    return true
+})
+```
+
+**重要:**
+- ユーザーの操作（X ボタンのクリック）によってのみトリガーされる
+- `window.Destroy()` からはトリガーされない
+- `false` を返すことで閉じる操作をキャンセルできる
+
+**使用例:**
+- 閉じる前に確認する
+- 状態を保存する
+- 誤った閉じる操作を防ぐ
+- 閉じる前にクリーンアップする
+
+**ダイアログ付きの例:**
+
+```go
+window.OnClose(func() bool {
+    if !hasUnsavedChanges() {
+        return true
+    }
+    
+    // Show confirmation dialog
+    dialog := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:       "Confirm Close",
+        Width:       400,
+        Height:      150,
+        Parent:      window,
+        AlwaysOnTop: true,
+    })
+    
+    // Wait for user response
+    result := waitFordialogResult(dialog)
+    
+    return result == "yes"
+})
+```
+
+### OnDestroy
+
+ウィンドウが破棄されたときに呼び出されます：
+
+```go
+window.OnDestroy(func() {
+    fmt.Printf("Window destroyed: %s\n", window.Name())
+    
+    // Cleanup resources
+    closeDatabase()
+    
+    // Remove from tracking
+    removeWindowFromRegistry(window.ID())
+    
+    // Update application state
+    updateWindowCount()
+})
+```
+
+**重要:**
+- ウィンドウが破棄される際に必ず呼び出される
+- キャンセルできない
+- クリーンアップの最後の機会
+
+**使用例:**
+- リソースを解放する
+- 接続を閉じる
+- アプリケーションの状態を更新する
+- 追跡リストから削除する
+
+**リソースクリーンアップの例:**
+
+```go
+type ManagedWindow struct {
+    window    *application.WebviewWindow
+    db        *sql.DB
+    listeners []func()
+}
+
+func (mw *ManagedWindow) Setup() {
+    mw.window.OnDestroy(func() {
+        // Close database
+        if mw.db != nil {
+            mw.db.Close()
+        }
+        
+        // Remove event listeners
+        for _, listener := range mw.listeners {
+            listener()
+        }
+        
+        // Clear references
+        mw.db = nil
+        mw.listeners = nil
+    })
+}
+```
+
+## フォーカスイベント
+
+### OnFocus
+
+ウィンドウがフォーカスを得たときに呼び出されます：
+
+```go
+window.OnFocus(func() {
+    fmt.Println("Window gained focus")
+    
+    // Update UI
+    updateTitleBar(true)
+    
+    // Refresh data
+    refreshContent()
+    
+    // Notify other windows
+    app.Event.Emit("window-focused", window.ID())
+})
+```
+
+**使用例:**
+- UI の外観を更新する
+- データを更新する
+- 処理を再開する
+- 他のウィンドウと連携する
+
+### OnBlur
+
+ウィンドウがフォーカスを失ったときに呼び出されます：
+
+```go
+window.OnBlur(func() {
+    fmt.Println("Window lost focus")
+    
+    // Update UI
+    updateTitleBar(false)
+    
+    // Pause operations
+    pauseAnimations()
+    
+    // Save state
+    saveCurrentState()
+})
+```
+
+**使用例:**
+- UI の外観を更新する
+- 処理を一時停止する
+- 状態を保存する
+- リソースの使用を減らす
+
+**例: フォーカス対応の UI:**
+
+```go
+type FocusAwareWindow struct {
+    window  *application.WebviewWindow
+    focused bool
+}
+
+func (fw *FocusAwareWindow) Setup() {
+    fw.window.OnFocus(func() {
+        fw.focused = true
+        fw.updateAppearance()
+    })
+    
+    fw.window.OnBlur(func() {
+        fw.focused = false
+        fw.updateAppearance()
+    })
+}
+
+func (fw *FocusAwareWindow) updateAppearance() {
+    if fw.focused {
+        fw.window.EmitEvent("update-theme", "active")
+    } else {
+        fw.window.EmitEvent("update-theme", "inactive")
+    }
+}
+```
+
+## 状態変更イベント
+
+### OnMinimise / OnUnMinimise
+
+ウィンドウが最小化された、または復元されたときに呼び出されます：
+
+```go
+window.OnMinimise(func() {
+    fmt.Println("Window minimised")
+    
+    // Pause expensive operations
+    pauseRendering()
+    
+    // Save state
+    saveWindowState()
+})
+
+window.OnUnMinimise(func() {
+    fmt.Println("Window restored from minimised")
+    
+    // Resume operations
+    resumeRendering()
+    
+    // Refresh data
+    refreshContent()
+})
+```
+
+**使用例:**
+- 処理の一時停止/再開
+- 状態の保存/復元
+- リソースの使用を減らす
+- UI の更新
+
+### OnMaximise / OnUnMaximise
+
+ウィンドウが最大化された、または復元されたときに呼び出されます：
+
+```go
+window.OnMaximise(func() {
+    fmt.Println("Window maximised")
+    
+    // Adjust layout
+    window.EmitEvent("layout-mode", "maximised")
+    
+    // Update button icon
+    updateMaximiseButton("restore")
+})
+
+window.OnUnMaximise(func() {
+    fmt.Println("Window restored from maximised")
+    
+    // Adjust layout
+    window.EmitEvent("layout-mode", "normal")
+    
+    // Update button icon
+    updateMaximiseButton("maximise")
+})
+```
+
+**使用例:**
+- レイアウトを調整する
+- UI を更新する
+- ウィンドウの状態を保存する
+- 他のウィンドウと連携する
+
+### OnFullscreen / OnUnFullscreen
+
+ウィンドウが全画面モードに入った、または退出したときに呼び出されます：
+
+```go
+window.OnFullscreen(func() {
+    fmt.Println("Window entered fullscreen")
+    
+    // Hide UI chrome
+    window.EmitEvent("chrome-visibility", false)
+    
+    // Adjust layout
+    window.EmitEvent("layout-mode", "fullscreen")
+})
+
+window.OnUnFullscreen(func() {
+    fmt.Println("Window exited fullscreen")
+    
+    // Show UI chrome
+    window.EmitEvent("chrome-visibility", true)
+    
+    // Restore layout
+    window.EmitEvent("layout-mode", "normal")
+})
+```
+
+**使用例:**
+- UI 要素の表示/非表示
+- レイアウトの調整
+- コントロールの更新
+- 設定の保存
+
+## 位置とサイズイベント
+
+### OnMove
+
+ウィンドウが移動されたときに呼び出されます：
+
+```go
+window.OnMove(func(x, y int) {
+    fmt.Printf("Window moved to: %d, %d\n", x, y)
+    
+    // Save position
+    saveWindowPosition(x, y)
+    
+    // Update related windows
+    updateRelatedWindowPositions(x, y)
+})
+```
+
+**使用例:**
+- ウィンドウの位置を保存する
+- 関連するウィンドウを更新する
+- エッジにスナップさせる
+- マルチモニター対応
+
+### OnResize
+
+ウィンドウのリサイズが行われたときに呼び出されます：
+
+```go
+window.OnResize(func(width, height int) {
+    fmt.Printf("Window resized to: %dx%d\n", width, height)
+    
+    // Save size
+    saveWindowSize(width, height)
+    
+    // Adjust layout
+    window.EmitEvent("window-size", map[string]int{
+        "width":  width,
+        "height": height,
+    })
+})
+```
+
+**使用例:**
+- ウィンドウのサイズを保存する
+- レイアウトを調整する
+- UI を更新する
+- レスポンシブデザイン
+
+**例: レスポンシブレイアウト:**
+
+```go
+window.OnResize(func(width, height int) {
+    var layout string
+    
+    if width < 600 {
+        layout = "compact"
+    } else if width < 1200 {
+        layout = "normal"
+    } else {
+        layout = "wide"
+    }
+    
+    window.EmitEvent("layout-changed", layout)
+})
+```
+
+## 完全な例
+
+以下は、完全なイベント処理を備えた本番環境対応のウィンドウの例です：
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+    "os"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type WindowState struct {
+    X          int  `json:"x"`
+    Y          int  `json:"y"`
+    Width      int  `json:"width"`
+    Height     int  `json:"height"`
+    Maximised  bool `json:"maximised"`
+    Fullscreen bool `json:"fullscreen"`
+}
+
+type ManagedWindow struct {
+    app     *application.Application---
+
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[例](https://github.com/wailsapp/wails/tree/master/v3/examples) を確認してください。

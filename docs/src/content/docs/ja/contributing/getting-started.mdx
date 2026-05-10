@@ -1,0 +1,367 @@
+---
+title: はじめに
+description: Wails v3 へのコントリビューションの始め方
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+## コントリビューターの方へようこそ！
+
+Wails へのコントリビューションにご関心を持っていただき、ありがとうございます！このガイドは、初めてのコントリビューションを行う際に役立ちます。
+
+## 前提条件
+
+始める前に、以下が準備できていることを確認してください：
+
+- **Go 1.25+** のインストール ([ダウンロード](https://go.dev/dl/))
+- **Node.js 20+** と **npm** ([ダウンロード](https://nodejs.org/))
+- GitHub アカウントに設定された **Git**
+- Go および JavaScript/TypeScript に関する基本的な知識
+
+### プラットフォーム固有の要件
+
+**macOS:**
+- Xcode Command Line Tools: `xcode-select --install`
+
+**Windows:**
+- MSYS2 または同様の Unix ライクな環境を推奨
+- WebView2 ランタイム（Windows 11 では通常プリインストール済み）
+
+**Linux:**
+- `gcc`, `pkg-config`, `libgtk-3-dev`, `libwebkit2gtk-4.0-dev`
+- インストール方法: `sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev` (Debian/Ubuntu)
+
+## コントリビューションプロセスの概要
+
+一般的なコントリビューションのワークフローは以下の手順に従います：
+
+1. **フォーク＆クローン** - Wails リポジトリの自分のコピーを作成する
+2. **セットアップ** - Wails CLI をビルドし、環境を確認する
+3. **ブランチ作成** - 変更用のフィーチャーブランチを作成する
+4. **開発** - コーディング基準に従って変更を行う
+5. **テスト** - すべてが正しく動作することを確認するためにテストを実行する
+6. **コミット** - 明確で慣例に従ったコミットメッセージでコミットする
+7. **提出** - 審査のためにプルリクエストを開く
+8. **反復** - フィードバックに対応し、調整を行う
+9. **マージ** - 承認されると、変更が Wails に反映されます！
+
+## ステップバイステップガイド
+
+コントリビューションの種類を選択してください：
+
+<Tabs>
+<TabItem label="バグ修正">
+
+<Steps>
+
+1. **バグの特定または報告**
+
+   - [GitHub Issues](https://github.com/wailsapp/wails/issues) に既にバグが報告されていないか確認する
+   - 報告されていない場合は、再現手順を含む新しいイシューを作成する
+   - 作業を開始する前に確認を待つ
+
+2. **フォークとクローン**
+
+   [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork) でリポジトリをフォークする
+
+   フォークをクローンする：
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/wails.git
+   cd wails
+   git remote add upstream https://github.com/wailsapp/wails.git
+   ```
+
+3. **ビルドと検証**
+
+   Wails をビルドし、バグを再現できることを確認する：
+   ```bash
+   cd v3
+   go build -o ../wails3 ./cmd/wails3
+
+   # バグを再現して理解を深める
+   ```
+
+4. **バグ修正ブランチの作成**
+
+   修正用のブランチを作成する：
+   ```bash
+   git checkout -b fix/issue-123-window-crash
+   ```
+
+5. **バグの修正**
+
+   - バグを修正するために必要な最小限の変更を行う
+   - 無関係なコードのリファクタリングは行わない
+   - 回帰を防ぐためにテストを追加または更新する
+
+   ```bash
+   # 変更を行う
+   # *_test.go ファイルにテストを追加する
+   ```
+
+6. **修正のテスト**
+
+   修正が機能することを確認するためにテストを実行する：
+   ```bash
+   go test ./...
+
+   # 特定のパッケージをテストする
+   go test ./pkg/application -v
+
+   # レースデテクター付きで実行する
+   go test ./... -race
+   ```
+
+7. **修正のコミット**
+
+   明確なメッセージでコミットする：
+   ```bash
+   git commit -m "fix: prevent window crash when closing during initialization
+
+   Fixes #123"
+   ```
+
+8. **プルリクエストの提出**
+
+   プッシュして PR を作成する：
+   ```bash
+   git push origin fix/issue-123-window-crash
+   ```
+
+   PR の説明文には以下を含める：
+   - バグとその根本原因の説明
+   - 修正内容の説明
+   - イシューへの参照: "Fixes #123"
+   - 修正前後の動作の記載
+
+9. **フィードバックへの対応**
+
+   レビューのコメントに対応し、必要に応じて PR を更新する。
+
+</Steps>
+
+</TabItem>
+<TabItem label="機能強化">
+
+<Steps>
+
+1. **機能の議論**
+
+   - [GitHub Discussion](https://github.com/wailsapp/wails/discussions) またはイシューを開く
+   - 追加したい機能とその理由を説明する
+   - 実装に入る前にメンテナーのフィードバックを待つ
+   - Wails の目標と一致していることを確認する
+
+2. **フォークとクローン**
+
+   [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork) でリポジトリをフォークする
+
+   フォークをクローンする：
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/wails.git
+   cd wails
+   git remote add upstream https://github.com/wailsapp/wails.git
+   ```
+
+3. **開発環境のセットアップ**
+
+   Wails をビルドし、環境を確認する：
+   ```bash
+   cd v3
+   go build -o ../wails3 ./cmd/wails3
+
+   # すべてが正しく動作することを確認するためにテストを実行する
+   go test ./...
+   ```
+
+4. **フィーチャーブランチの作成**
+
+   説明的なブランチを作成する：
+   ```bash
+   git checkout -b feat/window-transparency-support
+   ```
+
+5. **機能の実装**
+
+   - [コーディング基準](/ja/contributing/standards) に従う
+   - 変更を機能に集中させる
+   - 明確で文書化されたコードを書く
+   - 包括的なテストを追加する
+
+   ```bash
+   # 例: 新しいウィンドウメソッドの追加
+   # 1. window.go インターフェースに追加
+   # 2. プラットフォームファイル (darwin, windows, linux) で実装
+   # 3. テストを追加
+   # 4. ドキュメントを更新
+   ```
+
+6. **徹底的なテスト**
+
+   機能をテストする：
+   ```bash
+   # ユニットテスト
+   go test ./pkg/application -v
+
+   # 統合テスト - テストアプリを作成する
+   cd ..
+   ./wails3 init -n feature-test
+   cd feature-test
+   # 新しい機能を使用したコードを追加
+   ../wails3 dev
+   ```
+
+7. **機能のドキュメント化**
+
+   - すべての公開 API にドキュメントコメントを追加する
+   - `/docs` 内の関連ドキュメントを更新する
+   - 該当する場合は例を追加する
+
+8. **慣例に従ったコミット**
+
+   慣例に従ったコミット形式を使用する：
+   ```bash
+   git commit -m "feat: add window transparency support
+
+   - Add SetTransparent() method to Window API
+   - Implement for macOS, Windows, and Linux
+   - Add tests and documentation
+
+   Closes #456"
+   ```
+
+9. **プルリクエストの提出**
+
+   プッシュして PR を作成する：
+   ```bash
+   git push origin feat/window-transparency-support
+   ```
+
+   PR には以下を含める：
+   - 機能とユースケースの説明
+   - 例やスクリーンショットの提示
+   - 破壊的変更のリスト
+   - 議論/イシューへの参照
+
+10. **レビューに基づく反復**
+
+    メンテナーから変更を求められる場合があります。忍耐強く、協調的に対応してください。
+
+</Steps>
+
+</TabItem>
+<TabItem label="ドキュメント">
+
+<Steps>
+
+1. **ドキュメントのニーズの特定**
+
+   - Wails を使用中に古いドキュメントを見つけましたか？
+   - 欠落している例や説明に気づきましたか？
+   - 誤字を修正したり、明確さを向上させたりしたいですか？
+   - [ドキュメントのイシュー](https://github.com/wailsapp/wails/labels/documentation) を確認する
+
+2. **フォークとクローン**
+
+   [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork) でリポジトリをフォークする
+
+   フォークをクローンする：
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/wails.git
+   cd wails
+   git remote add upstream https://github.com/wailsapp/wails.git
+   ```
+
+3. **ドキュメント環境のセットアップ**
+
+   ドキュメントは `/docs` にあり、Astro でビルドされます：
+   ```bash
+   cd docs
+   npm install
+   npm run dev
+   ```
+
+   http://localhost:4321/ を開いて変更をライブプレビューします。
+
+4. **ドキュメントブランチの作成**
+
+   変更用のブランチを作成する：
+   ```bash
+   git checkout -b docs/improve-window-api-examples
+   ```
+
+5. **変更の作成**
+
+   ドキュメントファイルは `/docs/src/content/docs/` にあります：
+   ```bash
+   # MDX ファイルを編集する
+   # ブラウザでプレビューを確認する
+   # フォーマットが正しいことを確認する
+   ```
+
+   **ベストプラクティス：**
+   - 明確で簡潔な言語を使用する
+   - 実践的なコード例を含める
+   - 関連セクションへのリンクを追加する
+   - 綴りと文法を確認する
+   - すべてのコード例をテストする
+
+6. **変更の検証**
+
+   ライブプレビューを確認し、以下が正しいことを確認する：
+   - リンクが正しく機能している
+   - コード例が正確である
+   - フォーマットが正しくレンダリングされている
+   - 壊れた画像や参照がない
+
+7. **ドキュメント変更のコミット**
+
+   明確なメッセージでコミットする：
+   ```bash
+   git commit -m "docs: add practical examples to Window API guide
+
+   - Add window positioning examples
+   - Include common patterns section
+   - Fix broken links to Event API"
+   ```
+
+8. **プルリクエストの提出**
+
+   プッシュして PR を作成する：
+   ```bash
+   git push origin docs/improve-window-api-examples
+   ```PR内では:
+- 文書をどのように改善したかを記述してください
+- その変更がユーザーにとってなぜ役立つかを説明してください
+- 視覚的な変更がある場合はスクリーンショットを含めてください
+
+9. **レビューのフィードバックに対応する**
+
+ドキュメントのプルリクエストは通常、レビューやマージが迅速に行われます！
+
+</Steps>
+
+</TabItem>
+</Tabs>
+
+## 取り組むべき課題の探し方
+
+- [`good first issue`](https://github.com/wailsapp/wails/labels/good%20first%20issue) ラベルを探してください
+- [`help wanted`](https://github.com/wailsapp/wails/labels/help%20wanted) の課題を確認してください
+- [オープンな課題](https://github.com/wailsapp/wails/issues) を閲覧し、担当を引き受けるよう申し出る
+
+## サポートの受け方
+
+- **Discord:** [Wails Discord](https://discord.gg/JDdSxwjhGf) に参加してください
+- **Discussions:** [GitHub Discussions](https://github.com/wailsapp/wails/discussions) に投稿してください
+- **Issues:** バグを見つけた場合や質問がある場合は、課題をオープンしてください
+
+## 行動規範
+
+敬意を持ち、建設的かつ歓迎的な態度で接してください。私たちは、素晴らしいソフトウェアを共に作り上げることに焦点を当てたフレンドリーなコミュニティを構築しています。
+
+## 次のステップ
+
+- [開発環境](/ja/contributing/setup) をセットアップしてください
+- [コーディング基準](/ja/contributing/standards) を確認してください
+- [技術ドキュメント](/ja/contributing) を探索してください

@@ -1,0 +1,286 @@
+---
+title: カスタムテンプレートの作成
+description: 独自の Wails v3 テンプレートを作成・カスタマイズする方法を学びます
+sidebar:
+    order: 50
+---
+
+このガイドでは、Wails v3 用のカスタムテンプレートを作成する手順を解説します。
+
+## なぜカスタムテンプレートを作成するのか？
+
+Wails には、アプリケーションを素早く立ち上げて実行するための事前設定済みテンプレートがいくつか用意されています。しかし、よりカスタマイズされたセットアップが必要な場合、独自のテンプレートを作成してニーズに合わせて調整することができます。その後、そのテンプレートを Wails コミュニティと共有し、他の人が利用できるようにすることも可能です。
+
+### 1. テンプレートの生成
+
+カスタムテンプレートを作成するには、`wails generate template` コマンドを使用できます：
+
+```bash
+wails3 generate template -name mytemplate
+```
+
+これにより、現在のディレクトリに "mytemplate" という名前の新しいディレクトリが作成されます。
+
+`wails3 generate template` コマンドは以下のオプションをサポートしています：
+
+| オプション         | 説明                                       | デフォルト           |
+|----------------|---------------------------------------------------|-------------------|
+| `-name`        | テンプレートの名前（必須）              | -                 |
+| `-frontend`    | 含める既存のフロントエンドディレクトリのパス | -                 |
+| `-author`      | テンプレートの著者                        | -                 |
+| `-description` | テンプレートの説明                     | -                 |
+| `-helpurl`     | テンプレートドキュメントの URL                    | -                 |
+| `-dir`         | テンプレートを生成するディレクトリ             | 現在のディレクトリ |
+| `-version`     | テンプレートのバージョン                                  | v0.0.1            |
+
+例えば、すべてのオプションを指定してテンプレートを作成する場合：
+
+```bash
+wails3 generate template \
+  -name "My Custom Template" \
+  -frontend ./my-existing-frontend \
+  -author "Your Name" \
+  -description "A template with my preferred setup" \
+  -helpurl "https://github.com/yourusername/template-docs" \
+  -dir ./templates \
+  -version "v1.0.0"
+```
+
+  :::tip
+  `-frontend` オプションを使用すると、既存の Web フロントエンドプロジェクトがテンプレートにコピーされます。
+  :::
+
+### 2. テンプレートメタデータの構成
+
+テンプレートの生成時にテンプレート構成を指定しなかった場合、テンプレートディレクトリ内の `template.json` ファイルを更新することで設定できます：
+
+```json5
+{
+  "name": "Your Template Name",          // テンプレートの表示名
+  "shortname": "template-shortname",     // テンプレートを参照する際に使用
+  "author": "Your Name",                 // テンプレートの著者
+  "description": "Template description", // テンプレートの説明
+  "helpurl": "https://your-docs.com",    // ドキュメント URL
+  "version": "v0.0.1",                   // テンプレートのバージョン
+  "schema": 3                            // Wails v3 に対して 3 のままにする必要があります
+}
+```
+:::caution
+互換性のために、`schema` フィールドは `3` のままにしておく必要があります。
+:::
+
+### 3. ビルドタスクの設定
+
+`build` ディレクトリ内には `Taskfile.yml` があり、ここでテンプレートのビルドプロセスを定義できます。
+このファイルはビルド自動化に [Task](https://taskfile.dev) を使用しています。主な手順は以下の通りです：
+
+```yaml
+tasks:
+  install:frontend:deps:
+    summary: Install frontend dependencies
+    dir: frontend
+    sources:
+      - package.json
+      - package-lock.json
+    generates:
+      - node_modules/*
+    preconditions:
+      - sh: npm version
+        msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
+    cmds:
+      - npm install
+
+  build:frontend:
+    summary: Build the frontend project
+    dir: frontend
+    sources:
+      - "**/*"
+    generates:
+      - dist/*
+    deps:
+      - task: install:frontend:deps
+      - task: generate:bindings
+    cmds:
+      - npm run build -q
+
+
+```
+
+### 4. フロントエンドのセットアップ
+
+テンプレートの生成時に `-frontend` を使用しなかった場合、テンプレートにフロントエンドファイルを追加する必要があります。
+
+フロントエンドのセットアップにはいくつかの方法があります。最初から作成するか、既存のフレームワークを使用するかです。
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+<Tabs>
+  <TabItem label="Start from Scratch">
+    If you want to start from scratch, you can create your frontend project just like you would for any web application. 
+    The `frontend` directory in your template is just a regular directory where you can set up your preferred 
+    development environment. You might want to use build tools like Vite, webpack, or even just plain HTML, CSS, and 
+    JavaScript - it's entirely up to you!
+
+    For example, if you're using Vite, you could navigate to the `frontend` directory and run:
+
+    ```bash
+    npm create vite@latest .
+    ```
+
+    Then follow the prompts to set up your project exactly how you want it. The key thing to remember is that this is just a regular frontend project - you can use any tools, frameworks, or libraries you're familiar with.
+  </TabItem>
+  <TabItem label="Use Existing Framework">
+    For this example, we'll use [Vite](https://vitejs.dev/) to set up a React frontend project:
+
+       ```bash
+       npm create vite@latest frontend -- --template react
+       cd frontend
+       npm install
+       ```
+
+  </TabItem>
+</Tabs>
+
+
+これでフロントエンドファイルが配置されましたので、適切なコマンドで `common/Taskfile.yml` を更新します：
+   ```yaml
+   tasks:
+      install:frontend:deps:
+        summary: Install frontend dependencies
+        dir: frontend
+        sources:
+          - package.json
+          - package-lock.json
+        generates:
+          - node_modules/*
+        preconditions:
+          - sh: npm version
+            msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
+        cmds:
+          - npm install
+
+      build:frontend:
+        summary: Build the frontend project
+        dir: frontend
+        sources:
+          - "**/*"
+        generates:
+          - dist/*
+        deps:
+          - task: install:frontend:deps
+          - task: generate:bindings
+        cmds:
+          - npm run build -q
+   ```
+
+  :::note
+  この例では、デフォルトのタスクは標準の `npm install` および `npm run build` コマンドを使用しているため、更新する必要はありません。
+  :::
+
+### 5. Go アプリケーションの構成
+
+テンプレートディレクトリ内のデフォルトファイルは、ユーザーが開始するのに十分です。ただし、テンプレートの機能を示すためにいくつかの追加機能を提供したい場合もあるかもしれません。そのための最善の方法は、`main.go.tmpl` を `main.go` にリネームし、他の Go ファイルと同様に編集することです。完了したら、変更をコミットする前に、必ず `main.go.tmpl` に名前を戻してください。テンプレート化された `main.go` ファイル（デフォルトのテンプレートはプロジェクト名をアプリケーションの `Name` フィールドに注入します）を気にしない場合は、このステップをスキップできます。----------------------|--------------------------------|-------------------------------------|
+| `Name`               | プロジェクト名                 | `"MyApp"`                           |
+| `BinaryName`         | 生成されるバイナリ名           | `"myapp"`                           |
+| `ProductName`        | プロダクト名                   | `"My Application"`                  |
+| `ProductDescription` | プロダクトの説明               | `"An awesome application"`          |
+| `ProductVersion`     | プロダクトのバージョン         | `"1.0.0"`                           |
+| `ProductCompany`     | 会社名                         | `"My Company Ltd"`                  |
+| `ProductCopyright`   | 著作権情報                     | `"Copyright 2024 My Company Ltd"`   |
+| `ProductComments`    | プロダクトの追加コメント       | `"Built with Wails"`                |
+| `ProductIdentifier`  | 固有のプロダクト識別子         | `"com.mycompany.myapp"`             |
+| `Typescript`         | TypeScript が使用されているか | `true` または `false`               |
+| `WailsVersion`       | 使用されている Wails のバージョン | `"3.0.0"`                       |
+
+これらの変数は、Go のテンプレート構文を使用してテンプレートファイル内で使用できます：
+
+```go
+// main.go.tmpl
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "{{.ProductName}}",
+        Description: "{{.ProductDescription}}",
+    })
+    // ...
+}
+```
+
+    :::tip
+    テンプレート処理は、ファイル名に `.tmpl` が含まれていれば、テンプレート内の任意のファイル（HTML ファイルを含む）に適用できます。
+    :::
+
+### 6. テンプレートのテスト
+
+テンプレートをテストするには：
+
+1. テンプレートを使用してプロジェクトを生成します：`wails3 init -n testproject -t path/to/your/template`
+2. `wails3 build` を実行して本番ビルドを生成し、`bin` ディレクトリ内のバイナリが正しく動作することを確認します
+3. `wails3 dev` を実行して開発サーバーを起動します
+4. フロントエンドコードへの変更がアプリケーションに反映されることをテストします
+5. Go コードへの変更がビルドされ、アプリケーションが再起動されることをテストします
+
+### 7. テンプレートの共有
+
+テンプレートが準備できたら、GitHub でホストすることでコミュニティと共有できます。手順は以下の通りです：
+
+1. テンプレート用の新しい GitHub リポジトリを作成します
+2. テンプレートコードをリポジトリにプッシュします
+3. リリースにセマンティックバージョニング（例：v1.0.0）でタグを付けます
+
+ユーザーはその後、HTTPS URL を使用して GitHub から直接テンプレートを使用できます：
+
+```bash
+wails3 init -n myapp -t https://github.com/yourusername/your-template
+```
+
+URL 形式を使用して特定のバージョンを指定することもできます：
+
+```bash
+# 特定のバージョンタグを使用
+wails3 init -n myapp -t https://github.com/yourusername/your-template/releases/tag/v1.0.0
+
+# 特定のブランチを使用
+wails3 init -n myapp -t https://github.com/yourusername/your-template/tree/main
+```
+
+共有前にテンプレートをテストするには：
+
+1. 変更を GitHub にプッシュします
+2. HTTPS URL を使用して新しいテストプロジェクトを作成します：
+   ```bash
+   wails3 init -n testapp -t https://github.com/yourusername/your-template
+   ```
+3. すべてのファイルが正しく生成されていることを確認します
+4. テストセクションで説明されているビルドと開発ワークフローをテストします
+
+    :::note
+    他のユーザーがテンプレートを使用できるようにするには、リポジトリを公開してください。
+    :::
+
+詳細については、[Wails ドキュメント](https://wails.io) をご覧ください。
+
+
+## ベストプラクティス
+
+テンプレートをより有用で保守しやすくするための重要なプラクティスについて話し合いましょう。主な焦点を当てるべき領域は以下の通りです：
+
+1. **テンプレートを分かりやすくする**
+   - ユーザーがすぐに始められるよう、明確で役立つ README.md を書く
+   - 選択の理由を説明するために、設定ファイルにコメントを追加する
+   - 一般的なカスタマイズの例を示す - ユーザーは実際のユースケースを見るのが大好きです！
+
+2. **依存関係を快適に保つ**
+   - フロントエンドパッケージの更新を追跡する
+   - 予期せぬ事態を避けるために、package.json で特定のバージョンを固定する
+   - ユーザーに事前にインストールが必要なものをお知らせする
+
+3. **テンプレートを愛する**
+   - 定期的なアップデートで新鮮さを保つ
+   - 共有する前に徹底的にテストする
+   - Wails コミュニティと共有する - 何が作られるか見るのが楽しみです！

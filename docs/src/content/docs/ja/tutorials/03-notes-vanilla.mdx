@@ -1,0 +1,702 @@
+---
+title: ノート
+description: ファイル操作とネイティブダイアログを使用してノートアプリケーションを構築する
+sidebar:
+  order: 3
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+このチュートリアルでは、Wails v3 を使用して、ファイル操作、ネイティブダイアログ、およびモダンなデスクトップアプリのパターンを示すノートアプリケーションを構築します。
+
+![ノートアプリのスクリーンショット](../../../../assets/notes-app.png)
+
+## 構築するもの
+
+- 作成、編集、削除機能を持つ完全なノートアプリ
+- ノートのインポートとエクスポート用のネイティブファイル保存/開くダイアログ
+- 不要な更新を減らすためのディバウンス付きタイピング時の自動保存
+- Apple Notes に似たプロフェッショナルな2列レイアウト（サイドバー + エディタ）
+
+## 学ぶこと
+
+- Wails でのネイティブファイルダイアログの使用（`SaveFileDialog`、`OpenFileDialog`、`InfoDialog`）
+- データ永続化のための JSON ファイルの操作
+- ディバウンスされた自動保存パターンの実装
+- モダンな CSS を使用したプロフェッショナルなデスクトップ UI の構築
+- 適切な Go 構造体の JSON シリアライズ
+
+## プロジェクトのセットアップ
+
+<Steps>
+
+1. **新しい Wails プロジェクトの作成**
+
+   ```bash
+   wails3 init -n notes-app -t vanilla
+   cd notes-app
+   ```
+
+2. **NotesService の作成**
+
+   プロジェクトのルートに新しいファイル `notesservice.go` を作成します:
+
+   ```go
+   package main
+
+   import (
+   	"encoding/json"
+   	"errors"
+   	"os"
+   	"time"
+
+   	"github.com/wailsapp/wails/v3/pkg/application"
+   )
+
+   type Note struct {
+   	ID        string    `json:"id"`
+   	Title     string    `json:"title"`
+   	Content   string    `json:"content"`
+   	CreatedAt time.Time `json:"createdAt"`
+   	UpdatedAt time.Time `json:"updatedAt"`
+   }
+
+   type NotesService struct {
+   	notes []Note
+   }
+
+   func NewNotesService() *NotesService {
+   	return &NotesService{
+   		notes: make([]Note, 0),
+   	}
+   }
+
+   // GetAll はすべてのノートを返します
+   func (n *NotesService) GetAll() []Note {
+   	return n.notes
+   }
+
+   // Create は新しいノートを作成します
+   func (n *NotesService) Create(title, content string) Note {
+   	note := Note{
+   		ID:        generateID(),
+   		Title:     title,
+   		Content:   content,
+   		CreatedAt: time.Now(),
+   		UpdatedAt: time.Now(),
+   	}
+   	n.notes = append(n.notes, note)
+   	return note
+   }
+
+   // Update は既存のノートを更新します
+   func (n *NotesService) Update(id, title, content string) error {
+   	for i := range n.notes {
+   		if n.notes[i].ID == id {
+   			n.notes[i].Title = title
+   			n.notes[i].Content = content
+   			n.notes[i].UpdatedAt = time.Now()
+   			return nil
+   		}
+   	}
+   	return errors.New("note not found")
+   }
+
+   // Delete はノートを削除します
+   func (n *NotesService) Delete(id string) error {
+   	for i := range n.notes {
+   		if n.notes[i].ID == id {
+   			n.notes = append(n.notes[:i], n.notes[i+1:]...)
+   			return nil
+   		}
+   	}
+   	return errors.New("note not found")
+   }
+
+   // SaveToFile はノートをファイルに保存します
+   func (n *NotesService) SaveToFile() error {
+   	path, err := application.Get().Dialog.SaveFile().
+   		SetFilename("notes.json").
+   		AddFilter("JSON Files", "*.json").
+   		PromptForSingleSelection()
+
+   	if err != nil {
+   		return err
+   	}
+
+   	data, err := json.MarshalIndent(n.notes, "", "  ")
+   	if err != nil {
+   		return err
+   	}
+
+   	if err := os.WriteFile(path, data, 0644); err != nil {
+   		return err
+   	}
+
+   	application.Get().Dialog.Info().
+   		SetTitle("Success").
+   		SetMessage("Notes saved successfully!").
+   		Show()
+
+   	return nil
+   }
+
+   // LoadFromFile はファイルからノートを読み込みます
+   func (n *NotesService) LoadFromFile() error {
+   	path, err := application.Get().Dialog.OpenFile().
+   		AddFilter("JSON Files", "*.json").
+   		PromptForSingleSelection()
+
+   	if err != nil {
+   		return err
+   	}
+
+   	data, err := os.ReadFile(path)
+   	if err != nil {
+   		return err
+   	}
+
+   	var notes []Note
+   	if err := json.Unmarshal(data, &notes); err != nil {
+   		return err
+   	}
+
+   	n.notes = notes
+
+   	application.Get().Dialog.Info().
+   		SetTitle("Success").
+   		SetMessage("Notes loaded successfully!").
+   		Show()
+
+   	return nil
+   }
+
+   func generateID() string {
+   	return time.Now().Format("20060102150405")
+   }
+   ```
+
+   **ここで何が起こっているか:**
+
+   - **Note 構造体**: 適切なシリアライズのために JSON タグ（小文字）付きでデータ構造を定義します
+   - **CRUD 操作**: メモリ内のノートを管理するための GetAll、Create、Update、Delete
+   - **ファイルダイアログ**: ネイティブダイアログにアクセスするために `application.Get().Dialog.SaveFile()` と `application.Get().Dialog.OpenFile()` を使用します
+   - **情報ダイアログ**: `application.Get().Dialog.Info()` を使用して成功メッセージを表示します
+   - **ID 生成**: シンプルなタイムスタンプベースの ID 生成器
+
+3. **main.go の更新**
+
+   `main.go` の内容を置き換えます:
+
+   ```go
+   package main
+
+   import (
+   	"embed"
+   	_ "embed"
+   	"log"
+
+   	"github.com/wailsapp/wails/v3/pkg/application"
+   )
+
+   //go:embed all:frontend/dist
+   var assets embed.FS
+
+   func main() {
+   	app := application.New(application.Options{
+   		Name:        "Notes App",
+   		Description: "A simple notes application",
+   		Services: []application.Service{
+   			application.NewService(NewNotesService()),
+   		},
+   		Assets: application.AssetOptions{
+   			Handler: application.AssetFileServerFS(assets),
+   		},
+   		Mac: application.MacOptions{
+   			ApplicationShouldTerminateAfterLastWindowClosed: true,
+   		},
+   	})
+
+   	app.Window.NewWithOptions(application.WebviewWindowOptions{
+   		Title:            "Notes App",
+   		Width:            1000,
+   		Height:           700,
+   		BackgroundColour: application.NewRGB(255, 255, 255),
+   		URL:              "/",
+   	})
+
+   	err := app.Run()
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+   }
+   ```
+
+   **ここで何が起こっているか:**
+
+   - アプリケーションに `NotesService` を登録します
+   - Apple Notes に似た寸法（1000x700）のウィンドウを作成します
+   - 最後のウィンドウが閉じたときに終了する適切な macOS の動作を設定します
+
+4. **HTML 構造の作成**
+
+   `frontend/index.html` を置き換えます:
+
+   ```html
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Notes App</title>
+       <link rel="stylesheet" href="./style.css">
+   </head>
+   <body>
+       <div class="app">
+           <!-- サイドバー -->
+           <div class="sidebar">
+               <div class="sidebar-header">
+                   <h1>Notes</h1>
+                   <button id="new-note-btn" class="btn-primary">+ New Note</button>
+               </div>
+               <div id="notes-list" class="notes-list"></div>
+               <div class="sidebar-footer">
+                   <button id="save-btn" class="btn-secondary">Save</button>
+                   <button id="load-btn" class="btn-secondary">Load</button>
+               </div>
+           </div>
+
+           <!-- エディタ -->
+           <div class="editor">
+               <div id="empty-state" class="empty-state">
+                   <h2>No note selected</h2>
+                   <p>Select a note from the list or create a new one</p>
+               </div>
+               <div id="note-editor" class="note-editor" style="display: none;">
+                   <input type="text" id="note-title" placeholder="Note title" class="title-input">
+                   <textarea id="note-content" placeholder="Start typing..." class="content-input"></textarea>
+                   <div class="editor-footer">
+                       <button id="delete-btn" class="btn-danger">Delete</button>
+                       <span id="last-updated" class="last-updated"></span>
+                   </div>
+               </div>
+           </div>
+       </div>
+
+       <script src="/wails/runtime.js"></script>
+       <script type="module" src="./src/main.js"></script>
+   </body>
+   </html>
+   ```
+
+   **ここで何が起こっているか:**
+
+   - **2列レイアウト**: ノートリスト用のサイドバー、メインエリア用のエディタ
+   - **空の状態**: ノートが選択されていないときに表示されます
+   - **Wails ランタイム**: モジュールスクリプトの前に読み込む必要があります
+
+5. **CSS スタイルの追加**`frontend/public/style.css` を置き換えます:
+
+   ```css
+   * {
+       margin: 0;
+       padding: 0;
+       box-sizing: border-box;
+   }
+
+   body {
+       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       height: 100vh;
+       overflow: hidden;
+   }
+
+   .app {
+       display: flex;
+       height: 100vh;
+   }
+
+   /* サイドバー */
+   .sidebar {
+       width: 300px;
+       background: #f5f5f5;
+       border-right: 1px solid #e0e0e0;
+       display: flex;
+       flex-direction: column;
+   }
+
+   .sidebar-header {
+       padding: 20px;
+       border-bottom: 1px solid #e0e0e0;
+   }
+
+   .sidebar-header h1 {
+       font-size: 24px;
+       margin-bottom: 16px;
+   }
+
+   .notes-list {
+       flex: 1;
+       overflow-y: auto;
+   }
+
+   .note-item {
+       padding: 16px 20px;
+       border-bottom: 1px solid #e0e0e0;
+       cursor: pointer;
+       transition: background 0.2s;
+   }
+
+   .note-item:hover {
+       background: #e8e8e8;
+   }
+
+   .note-item.active {
+       background: #007aff;
+       color: white;
+   }
+
+   .note-item h3 {
+       font-size: 16px;
+       margin-bottom: 4px;
+   }
+
+   .note-item p {
+       font-size: 14px;
+       opacity: 0.7;
+       white-space: nowrap;
+       overflow: hidden;
+       text-overflow: ellipsis;
+   }
+
+   .sidebar-footer {
+       padding: 16px 20px;
+       border-top: 1px solid #e0e0e0;
+       display: flex;
+       gap: 8px;
+   }
+
+   /* エディター */
+   .editor {
+       flex: 1;
+       display: flex;
+       flex-direction: column;
+   }
+
+   .empty-state {
+       flex: 1;
+       display: flex;
+       flex-direction: column;
+       align-items: center;
+       justify-content: center;
+       color: #999;
+   }
+
+   .note-editor {
+       flex: 1;
+       display: flex;
+       flex-direction: column;
+       padding: 20px;
+   }
+
+   .title-input {
+       font-size: 32px;
+       font-weight: bold;
+       border: none;
+       outline: none;
+       margin-bottom: 16px;
+       padding: 8px 0;
+   }
+
+   .content-input {
+       flex: 1;
+       font-size: 16px;
+       border: none;
+       outline: none;
+       resize: none;
+       font-family: inherit;
+       line-height: 1.6;
+   }
+
+   .editor-footer {
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       padding-top: 16px;
+       border-top: 1px solid #e0e0e0;
+   }
+
+   .last-updated {
+       font-size: 14px;
+       color: #999;
+   }
+
+   /* ボタン */
+   .btn-primary {
+       background: #007aff;
+       color: white;
+       border: none;
+       padding: 10px 20px;
+       border-radius: 6px;
+       cursor: pointer;
+       font-size: 14px;
+       font-weight: 500;
+       width: 100%;
+   }
+
+   .btn-primary:hover {
+       background: #0056b3;
+   }
+
+   .btn-secondary {
+       background: white;
+       color: #333;
+       border: 1px solid #e0e0e0;
+       padding: 8px 16px;
+       border-radius: 6px;
+       cursor: pointer;
+       font-size: 14px;
+       flex: 1;
+   }
+
+   .btn-secondary:hover {
+       background: #f5f5f5;
+   }
+
+   .btn-danger {
+       background: #ff3b30;
+       color: white;
+       border: none;
+       padding: 8px 16px;
+       border-radius: 6px;
+       cursor: pointer;
+       font-size: 14px;
+   }
+
+   .btn-danger:hover {
+       background: #cc0000;
+   }
+   ```
+
+   **ここで何が起こっているか:**
+
+   - クリーンなタイポグラフィとカラーを使用した Apple スタイルのデザイン
+   - レスポンシブなサイドバーとエディターのための Flexbox レイアウト
+   - アクティブなノートに青い背景でハイライト表示
+   - スムーズなホバー遷移
+
+6. **JavaScript ロジックを実装する**
+
+   `frontend/src/main.js` を置き換えます:
+
+   ```javascript
+   import { NotesService } from '../bindings/changeme'
+
+   let notes = []
+   let currentNote = null
+
+   // 起動時にノートを読み込む
+   async function loadNotes() {
+       notes = await NotesService.GetAll()
+       renderNotesList()
+   }
+
+   // ノート一覧をレンダリング
+   function renderNotesList() {
+       const notesList = document.getElementById('notes-list')
+
+       if (notes.length === 0) {
+           notesList.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">No notes yet</div>'
+           return
+       }
+
+       notesList.innerHTML = notes.map(note => `
+           <div class="note-item ${currentNote?.id === note.id ? 'active' : ''}" data-id="${note.id}">
+               <h3>${note.title || 'Untitled'}</h3>
+               <p>${note.content || 'No content'}</p>
+           </div>
+       `).join('')
+
+       // クリックハンドラーを追加
+       document.querySelectorAll('.note-item').forEach(item => {
+           item.addEventListener('click', () => {
+               const id = item.dataset.id
+               selectNote(id)
+           })
+       })
+   }
+
+   // ノートを選択
+   function selectNote(id) {
+       currentNote = notes.find(n => n.id === id)
+       if (currentNote) {
+           document.getElementById('empty-state').style.display = 'none'
+           document.getElementById('note-editor').style.display = 'flex'
+           document.getElementById('note-title').value = currentNote.title
+           document.getElementById('note-content').value = currentNote.content
+           document.getElementById('last-updated').textContent =
+               `Last updated: ${new Date(currentNote.updatedAt).toLocaleString()}`
+           renderNotesList()
+       }
+   }
+
+   // 新しいノートを作成
+   document.getElementById('new-note-btn').addEventListener('click', async () => {
+       const note = await NotesService.Create('Untitled', '')
+       notes.push(note)
+       selectNote(note.id)
+       // タイトル入力にフォーカスを当て、すべてのテキストを選択してユーザーがすぐにタイプできるようにする
+       const titleInput = document.getElementById('note-title')
+       titleInput.focus()
+       titleInput.select()
+   })
+
+   // 入力時にノートを更新
+   let updateTimeout
+   function scheduleUpdate() {
+       clearTimeout(updateTimeout)
+       updateTimeout = setTimeout(async () => {
+           if (currentNote) {
+               const title = document.getElementById('note-title').value
+               const content = document.getElementById('note-content').value
+
+               await NotesService.Update(currentNote.id, title, content)
+
+               // ローカルコピーを更新
+               const note = notes.find(n => n.id === currentNote.id)
+               if (note) {
+                   note.title = title
+                   note.content = content
+                   note.updatedAt = new Date().toISOString()
+               }
+
+               renderNotesList()
+               document.getElementById('last-updated').textContent =
+                   `Last updated: ${new Date().toLocaleString()}`
+           }
+       }, 500)
+   }
+
+   document.getElementById('note-title').addEventListener('input', scheduleUpdate)
+   document.getElementById('note-content').addEventListener('input', scheduleUpdate)
+
+   // ノートを削除
+   document.getElementById('delete-btn').addEventListener('click', async () => {
+       if (!currentNote) return
+
+       try {
+           await NotesService.Delete(currentNote.id)
+           notes = notes.filter(n => n.id !== currentNote.id)
+           currentNote = null
+           document.getElementById('empty-state').style.display = 'flex'
+           document.getElementById('note-editor').style.display = 'none'
+           renderNotesList()
+       } catch (error) {
+           console.error('Delete failed:', error)
+       }
+   })
+
+   // ファイルに保存
+   document.getElementById('save-btn').addEventListener('click', async () => {
+       try {
+           await NotesService.SaveToFile()
+       } catch (error) {
+           if (error) console.error('Save failed:', error)
+       }
+   })```go
+   // ファイルから読み込む
+   document.getElementById('load-btn').addEventListener('click', async () => {
+       try {
+           await NotesService.LoadFromFile()
+           notes = await NotesService.GetAll()
+           currentNote = null
+           document.getElementById('empty-state').style.display = 'flex'
+           document.getElementById('note-editor').style.display = 'none'
+           renderNotesList()
+       } catch (error) {
+           if (error) console.error('Load failed:', error)
+       }
+   })
+
+   // 初期化
+   loadNotes()
+   ```
+
+   **ここで何が起こっているか:**
+
+   - **自動保存**: 500ms のディバウンスにより、入力中にバックエンドへの呼び出しが頻発するのを防ぎます
+   - **プロパティアクセス**: Go の JSON タグと一致する小文字のプロパティ名 (`.id`, `.title`) を使用します
+   - **フォーカス管理**: 新しいノートを作成する際に、タイトルを自動的にフォーカスして選択します
+   - **確認なしで削除**: ブラウザの `confirm()` は Wails の WebView では機能しません
+   - **ファイル操作**: ネイティブ ダイアログが適切なエラー処理とともに保存/読み込みを処理します
+
+7. **アプリケーションを実行する**
+
+   ```bash
+   wails3 dev
+   ```
+
+   アプリが起動し、次の操作が可能になります:
+   - 「+ New Note」をクリックしてノートを作成する
+   - タイトルとコンテンツを編集する（500ms 後に自動保存される）
+   - サイドバーのノートをクリックして切り替える
+   - 「Delete」をクリックして現在のノートを削除する
+   - 「Save」をクリックしてノートを JSON としてエクスポートする
+   - 「Load」をクリックして以前に保存したノートをインポートする
+
+</Steps>
+
+## 主要な概念
+
+### パッケージレベルのダイアログ関数
+
+Wails v3 では、ファイル ダイアログとメッセージ ダイアログはアプリ インスタンスのメソッドではなく、パッケージレベルの関数です:
+
+```go
+// 正しい - パッケージレベルの関数
+path, err := application.SaveFileDialog().
+    SetFilename("notes.json").
+    AddFilter("JSON Files", "*.json").
+    PromptForSingleSelection()
+
+// 間違い - 利用不可
+path, err := app.Dialog.SaveFile() // これは存在しません
+```
+
+### JSON タグのマッピング
+
+Go 構造体の JSON タグは、JavaScript のプロパティアクセスと一致させるために小文字にする必要があります:
+
+```go
+type Note struct {
+    ID string `json:"id"` // 小文字にする必要があります
+}
+```
+
+```javascript
+// JavaScript は小文字でアクセスします
+const noteId = note.id // 正しい
+const noteId = note.ID // undefined になります
+```
+
+### ディバウンスされた自動保存
+
+500ms のディバウンスにより、不要なバックエンド呼び出しを減らします:
+
+```javascript
+let updateTimeout
+function scheduleUpdate() {
+    clearTimeout(updateTimeout) // 前のタイマーをキャンセル
+    updateTimeout = setTimeout(async () => {
+        // ユーザーが 500ms 入力停止した場合のみ保存されます
+        await NotesService.Update(currentNote.id, title, content)
+    }, 500)
+}
+```
+
+## 次のステップ
+
+- ノートを整理するためにカテゴリやタグを追加する
+- 検索とフィルタリングを実装する
+- WYSIWYG エディターでリッチ テキスト編集を追加する
+- ノートをクラウド ストレージに同期する
+- 一般的な操作のためのキーボード ショートカットを追加する

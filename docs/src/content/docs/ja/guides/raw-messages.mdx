@@ -1,0 +1,390 @@
+---
+title: 生メッセージ
+description: パフォーマンスが重要なアプリケーション向けのフロントエンドからバックエンドへのカスタム通信を実装する
+sidebar:
+  order: 10
+---
+
+生メッセージ（Raw Messages）は、標準のバインディングシステムをバイパスして、フロントエンドとバックエンドの間に低レベルの通信チャネルを提供します。これにより、利便性と引き換えに速度が向上します。
+
+## 生メッセージの使用場面
+
+生メッセージは、極端なエッジケースに最も適しています。
+
+- **超高頻度の更新** - 毎秒数千件のメッセージを送受信し、マイクロ秒単位の遅延が問題となる場合
+- **カスタムメッセージプロトコル** - ワイヤーフォーマットを完全に制御する必要がある場合
+
+:::tip
+ほぼすべてのユースケースにおいて、標準の[サービスバインディング](/ja/features/bindings/services)を使用することを推奨します。これらは型安全性、自動シリアライズ、無視できるオーバーヘッドによる優れた開発者体験を提供します。
+:::
+
+## バックエンドの設定
+
+アプリケーションオプションで `RawMessageHandler` を設定します。
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Raw Message Demo",
+        Assets: application.AssetOptions{
+            Handler: application.BundledAssetFileServer(assets),
+        },
+        RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+            fmt.Printf("Raw message from window '%s': %s (origin: %+v)\n", window.Name(), message, originInfo.Origin)
+
+            // Process the message and respond via events
+            response := processMessage(message)
+            window.EmitEvent("raw-response", response)
+        },
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "My App",
+        Name:  "main",
+    })
+
+    app.Run()
+}
+
+func processMessage(message string) map[string]any {
+    // Your custom message processing logic
+    return map[string]any{
+        "received": message,
+        "status":   "processed",
+    }
+}
+```
+
+### ハンドラのシグネチャ
+
+```go
+RawMessageHandler func(window Window, message string, originInfo *application.OriginInfo)
+```
+
+| パラメータ | 型 | 説明 |
+|-----------|------|-------------|
+| `window` | `Window` | メッセージを送信したウィンドウ |
+| `message` | `string` | 生メッセージの内容 |
+| `originInfo` | `*application.OriginInfo` | メッセージの送信元に関するオリジン情報 |
+
+#### OriginInfo 構造体
+
+```go
+type OriginInfo struct {
+	Origin      string
+	TopOrigin   string
+	IsMainFrame bool
+}
+```
+
+| フィールド | 型 | 説明 |
+|-------|------|-------------|
+| `Origin` | `string` | メッセージを送信したドキュメントのオリジンURL |
+| `TopOrigin` | `string` | トップレベルのオリジンURL（iframe の場合、Origin と異なる可能性があります） |
+| `IsMainFrame` | `bool` | メッセージがメインフレームから発信されたかどうか |
+
+#### プラットフォーム固有の利用可否
+
+- **macOS**: `Origin` と `IsMainFrame` が提供されます
+- **Windows**: `Origin` と `TopOrigin` が提供されます
+- **Linux**: `Origin` のみが提供されます
+
+### オリジン検証
+
+:::caution
+ハンドラにメッセージが届いたからといって、安全であると想定しないでください。機密性の高い操作や状態を変更する操作を実行する前に、オリジン情報を検証する必要があります。
+:::
+
+**受信したメッセージを処理する前に、常にそのオリジンを確認してください。** `originInfo` パラメータは、不正アクセスを防ぐために検証しなければならない重要なセキュリティ情報を含んでいます。悪意のあるコンテンツ、侵害されたコンテンツ、または意図しないスクリプトが生メッセージを送信する可能性があります。オリジン検証を行わないと、信頼できないソースからのコマンドを処理してしまう可能性があります。`originInfo` を使用して、メッセージが予期されたソースから発信されたことを確認してください。
+
+### 検証の重要なポイント
+
+- **常に `Origin` を確認する** - オリジンが予期された信頼できるソース（通常はローカルアセットの場合は `wails://wails` または `http://wails.localhost`、またはアプリ固有のオリジン）と一致していることを確認します
+- **`IsMainFrame` を検証する**（macOS） - メッセージが iframe から発信された場合、異なるセキュリティコンテキストを持つ埋め込みコンテンツを示している可能性があるため注意してください
+- **`TopOrigin` を使用する**（Windows） - フレーム付きコンテンツを扱う際は、トップレベルのオリジンを検証します
+- **予期しないオリジンを拒否する** - 明示的に許可していないオリジンからのメッセージを拒否することで、安全に失敗します
+
+
+:::note
+`wails:` で始まるメッセージは Wails の内部通信用に予約されており、ハンドラには渡されません。
+:::
+
+## フロントエンドの設定
+
+`System.invoke()` を使用して生メッセージを送信します。
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="module">
+        import { System, Events } from '@wailsio/runtime'
+
+        // Send raw message
+        document.getElementById('send').addEventListener('click', () => {
+            const message = document.getElementById('input').value
+            System.invoke(message)
+        })
+
+        // Listen for response
+        Events.On('raw-response', (event) => {
+            console.log('Response:', event.data)
+        })
+    </script>
+</head>
+<body>
+    <input type="text" id="input" placeholder="Enter message" />
+    <button id="send">Send</button>
+</body>
+</html>
+```
+
+### 事前ビルドされたバンドルの使用
+
+npm を使用していない場合、グローバルな `wails` オブジェクト経由で `invoke` にアクセスします。
+
+```html
+<script type="module" src="/wails/runtime.js"></script>
+<script>
+    window.onload = function() {
+        document.getElementById('send').onclick = function() {
+            wails.System.invoke('my-message')
+        }
+    }
+</script>
+```
+
+## 構造化メッセージ
+
+複雑なデータの場合、JSON にシリアライズします。
+
+### フロントエンド
+
+```javascript
+import { System } from '@wailsio/runtime'
+
+const command = {
+    action: 'update',
+    payload: {
+        id: 123,
+        value: 'new value'
+    }
+}
+
+System.invoke(JSON.stringify(command))
+```
+
+### バックエンド
+
+```go
+RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+    var cmd struct {
+        Action  string `json:"action"`
+        Payload struct {
+            ID    int    `json:"id"`
+            Value string `json:"value"`
+        } `json:"payload"`
+    }
+
+    if err := json.Unmarshal([]byte(message), &cmd); err != nil {
+        window.EmitEvent("error", err.Error())
+        return
+    }
+
+    switch cmd.Action {
+    case "update":
+        // Handle update
+        result := handleUpdate(cmd.Payload.ID, cmd.Payload.Value)
+        window.EmitEvent("update-complete", result)
+    default:
+        window.EmitEvent("error", "unknown action")
+    }
+}
+```
+
+## パフォーマンス比較
+
+| アプローチ | オーバーヘッド | 型安全性 | ユースケース |
+|----------|----------|-------------|----------|
+| サービスバインディング | 高い | 完全 | 汎用 |
+| 生メッセージ | 最小限 | 手動 | 高頻度、パフォーマンスが重要なケース |
+
+### ベンチマーク例
+
+生メッセージは、単純なペイロードの場合、サービスバインディングと比較して大幅に多くのメッセージを毎秒処理できます。
+
+```go
+// Raw message handler - minimal overhead
+RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+    // Direct string processing, no reflection or marshaling
+    counter++
+}
+```
+
+## 完全な例
+
+以下は、単純なコマンドプロトコルを実装する完全な例です。### main.go
+
+```go
+package main
+
+import (
+    "embed"
+    "encoding/json"
+    "fmt"
+    "time"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed assets
+var assets embed.FS
+
+type Command struct {
+    Type string          `json:"type"`
+    Data json.RawMessage `json:"data"`
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Raw Message Demo",
+        Assets: application.AssetOptions{
+            Handler: application.BundledAssetFileServer(assets),
+        },
+        Mac: application.MacOptions{
+            ApplicationShouldTerminateAfterLastWindowClosed: true,
+        },
+        RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+            var cmd Command
+            if err := json.Unmarshal([]byte(message), &cmd); err != nil {
+                window.EmitEvent("error", map[string]string{"error": err.Error()})
+                return
+            }
+
+            switch cmd.Type {
+            case "ping":
+                window.EmitEvent("pong", map[string]any{
+                    "time":   time.Now().UnixMilli(),
+                    "window": window.Name(),
+                })
+            case "echo":
+                var text string
+                json.Unmarshal(cmd.Data, &text)
+                window.EmitEvent("echo", text)
+            default:
+                window.EmitEvent("error", map[string]string{
+                    "error": fmt.Sprintf("unknown command: %s", cmd.Type),
+                })
+            }
+        },
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "Raw Message Demo",
+        Name:  "main",
+        Width: 400,
+        Height: 300,
+    })
+
+    app.Run()
+}
+```
+
+### assets/index.html
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Raw Message Demo</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        button { margin: 5px; padding: 10px 20px; }
+        #output { margin-top: 20px; padding: 10px; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>Raw Message Demo</h1>
+
+    <button id="ping">Ping</button>
+    <button id="echo">Echo "Hello"</button>
+
+    <div id="output">Waiting for response...</div>
+
+    <script type="module">
+        import { System, Events } from '@wailsio/runtime'
+
+        const output = document.getElementById('output')
+
+        function send(type, data) {
+            System.invoke(JSON.stringify({ type, data }))
+        }
+
+        document.getElementById('ping').onclick = () => send('ping')
+        document.getElementById('echo').onclick = () => send('echo', 'Hello')
+
+        Events.On('pong', (e) => {
+            output.textContent = `Pong from ${e.data.window} at ${e.data.time}`
+        })
+
+        Events.On('echo', (e) => {
+            output.textContent = `Echo: ${e.data}`
+        })
+
+        Events.On('error', (e) => {
+            output.textContent = `Error: ${e.data.error}`
+        })
+    </script>
+</body>
+</html>
+```
+
+## ベストプラクティス
+
+### 推奨事項 (Do)
+
+- パフォーマンスが極めて重要なパスに対してのみ生メッセージを使用する
+- ハンドラー内で適切なエラー処理を実装する
+- フロントエンドへの応答を送信するためにイベントを使用する
+- 構造化データには JSON を検討する
+- メッセージ処理を高速に保ち、ブロックを避ける
+
+### 避けるべきこと (Don't)
+
+- サービスバインディングで十分である場合に生メッセージを使用する
+- 受信メッセージの検証を忘れないようにする
+- ハンドラー内で長時間実行される操作によってブロックしない (goroutine を使用する)
+- 特定のウィンドウに応答をターゲットにする必要がある場合に `window` パラメータを無視しない
+
+## マルチウィンドウに関する考慮事項
+
+`window` パラメータは、どのウィンドウからメッセージが送信されたかを識別し、以下が可能になります：
+
+- 正しいウィンドウに応答を送信する
+- ウィンドウ固有の動作を実装する
+- デバッグ用にメッセージの送信元を追跡する
+
+```go
+RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+    // 送信元のウィンドウにのみ応答する
+    window.EmitEvent("response", result)
+
+    // または、すべてのウィンドウにブロードキャストする
+    app.Event.Emit("broadcast", result)
+}
+```
+
+## 次のステップ
+
+- [サービスバインディング](/ja/features/bindings/services) - ほとんどのアプリケーション向けの標準的なアプローチ
+- [イベント](/ja/guides/events-reference) - バックエンドからフロントエンドへの通信のためのイベントシステム
+- [パフォーマンス](/ja/guides/performance) - 一般的なパフォーマンスの最適化

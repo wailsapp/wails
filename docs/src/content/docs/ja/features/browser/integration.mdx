@@ -1,0 +1,510 @@
+---
+title: ブラウザ統合
+description: ユーザーのデフォルトのウェブブラウザで URL やファイルを開く
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails は BrowserManager API を介してシンプルなブラウザ統合を提供し、アプリケーションがユーザーのデフォルトのウェブブラウザで URL やファイルを開くことを可能にします。これは、外部リンク、ドキュメント、またはブラウザで処理すべきファイルを開く際に便利です。
+
+## ブラウザマネージャーへのアクセス
+
+ブラウザマネージャーは、アプリケーションインスタンス上の `Browser` プロパティを通じてアクセスします:
+
+```go
+app := application.New(application.Options{
+    Name: "Browser Integration Demo",
+})
+
+// ブラウザマネージャーにアクセス
+browser := app.Browser
+```
+
+## URL の開き方
+
+### ウェブ URL を開く
+
+ユーザーのデフォルトのウェブブラウザで URL を開きます:
+
+```go
+// ウェブサイトを開く
+err := app.Browser.OpenURL("https://wails.io")
+if err != nil {
+    app.Logger.Error("Failed to open URL", "error", err)
+}
+
+// 特定のページを開く
+err = app.Browser.OpenURL("https://github.com/wailsapp/wails")
+if err != nil {
+    app.Logger.Error("Failed to open GitHub", "error", err)
+}
+```
+
+### ローカル URL を開く
+
+ローカルの開発サーバーやローカルネットワークのリソースを開きます:
+
+```go
+// ローカルの開発サーバーを開く
+err := app.Browser.OpenURL("http://localhost:3000")
+if err != nil {
+    app.Logger.Error("Failed to open local server", "error", err)
+}
+
+// ネットワークリソースを開く
+err = app.Browser.OpenURL("http://192.168.1.100:8080")
+if err != nil {
+    app.Logger.Error("Failed to open network resource", "error", err)
+}
+```
+
+## ファイルの開き方
+
+### HTML ファイルを開く
+
+ブラウザでローカルの HTML ファイルを開きます:
+
+```go
+// HTML ファイルを開く
+err := app.Browser.OpenFile("/path/to/documentation.html")
+if err != nil {
+    app.Logger.Error("Failed to open HTML file", "error", err)
+}
+
+// 生成されたレポートを開く
+reportPath := "/tmp/report.html"
+err = app.Browser.OpenFile(reportPath)
+if err != nil {
+    app.Logger.Error("Failed to open report", "error", err)
+}
+```
+
+### その他のファイルタイプを開く
+
+ブラウザが処理できる様々なファイルタイプを開きます:
+
+```go
+// PDF ファイルを開く
+err := app.Browser.OpenFile("/path/to/document.pdf")
+if err != nil {
+    app.Logger.Error("Failed to open PDF", "error", err)
+}
+
+// 画像ファイルを開く
+err = app.Browser.OpenFile("/path/to/image.png")
+if err != nil {
+    app.Logger.Error("Failed to open image", "error", err)
+}
+
+// テキストファイルを開く
+err = app.Browser.OpenFile("/path/to/readme.txt")
+if err != nil {
+    app.Logger.Error("Failed to open text file", "error", err)
+}
+```
+
+## 一般的なユースケース
+
+### ヘルプとドキュメント
+
+ヘルプリソースへの簡単なアクセスを提供します:
+
+```go
+// ヘルプメニューを作成
+func setupHelpMenu(app *application.App) {
+    menu := app.Menu.New()
+    helpMenu := menu.AddSubmenu("Help")
+    
+    helpMenu.Add("Online Documentation").OnClick(func(ctx *application.Context) {
+        err := app.Browser.OpenURL("https://docs.yourapp.com")
+        if err != nil {
+            app.Dialog.Error().
+                SetTitle("Error").
+                SetMessage("Could not open documentation").
+                Show()
+        }
+    })
+    
+    helpMenu.Add("GitHub Repository").OnClick(func(ctx *application.Context) {
+        app.Browser.OpenURL("https://github.com/youruser/yourapp")
+    })
+    
+    helpMenu.Add("Report Issue").OnClick(func(ctx *application.Context) {
+        app.Browser.OpenURL("https://github.com/youruser/yourapp/issues/new")
+    })
+}
+```
+
+### コンテンツ内の外部リンク
+
+アプリケーションのコンテンツからの外部リンクを処理します:
+
+```go
+func handleExternalLink(app *application.App, url string) {
+    // 開く前に URL を検証
+    if !isValidURL(url) {
+        app.Logger.Warn("Invalid URL", "url", url)
+        return
+    }
+    
+    // 必要に応じてユーザーに確認
+    dialog := app.Dialog.Question()
+    dialog.SetTitle("Open External Link")
+    dialog.SetMessage(fmt.Sprintf("Open %s in your browser?", url))
+    
+    dialog.AddButton("Open").OnClick(func() {
+        err := app.Browser.OpenURL(url)
+        if err != nil {
+            app.Logger.Error("Failed to open URL", "url", url, "error", err)
+        }
+    })
+    
+    dialog.AddButton("Cancel")
+    dialog.Show()
+}
+
+func isValidURL(url string) bool {
+    parsed, err := url.Parse(url)
+    return err == nil && (parsed.Scheme == "http" || parsed.Scheme == "https")
+}
+```
+
+### レポートのエクスポートと表示
+
+レポートを生成し、ブラウザで開きます:
+
+```go
+import (
+    "html/template"
+    "os"
+    "path/filepath"
+)
+
+func generateAndOpenReport(app *application.App, data interface{}) error {
+    // レポート用の一時ファイルを作成
+    tmpDir := os.TempDir()
+    reportPath := filepath.Join(tmpDir, "report.html")
+    
+    // HTML レポートを生成
+    tmpl := `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Application Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .header { border-bottom: 2px solid #333; padding-bottom: 10px; }
+        .data { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Application Report</h1>
+        <p>Generated: {{.Timestamp}}</p>
+    </div>
+    <div class="data">
+        <!-- Report content here -->
+        {{range .Items}}
+        <p>{{.}}</p>
+        {{end}}
+    </div>
+</body>
+</html>`
+    
+    // ファイルにレポートを書き込む
+    file, err := os.Create(reportPath)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+    
+    t, err := template.New("report").Parse(tmpl)
+    if err != nil {
+        return err
+    }
+    
+    err = t.Execute(file, data)
+    if err != nil {
+        return err
+    }
+    
+    // ブラウザで開く
+    return app.Browser.OpenFile(reportPath)
+}
+```
+
+### 開発ツール
+
+開発中に開発リソースを開きます:
+
+```go
+func setupDevelopmentMenu(app *application.App) {
+    if !app.Env.Info().Debug {
+        return // デバッグモードでのみ表示
+    }
+    
+    menu := app.Menu.New()
+    devMenu := menu.AddSubmenu("Development")
+    
+    devMenu.Add("Open DevTools").OnClick(func(ctx *application.Context) {
+        // これにより、利用可能な場合ブラウザのデベロッパーツールが開きます
+        window := app.Window.Current()
+        if window != nil {
+            window.OpenDevTools()
+        }
+    })
+    
+    devMenu.Add("View Source").OnClick(func(ctx *application.Context) {
+        // ソースコードリポジトリを開く
+        app.Browser.OpenURL("https://github.com/youruser/yourapp")
+    })
+    
+    devMenu.Add("API Documentation").OnClick(func(ctx *application.Context) {
+        // ローカルの API ドキュメントを開く
+        app.Browser.OpenURL("http://localhost:8080/docs")
+    })
+}
+```
+
+## エラー処理
+
+### 健全なエラー処理
+
+URL やファイルを開く際には、常に潜在的なエラーを処理してください:
+
+```go
+func openURLWithFallback(app *application.App, url string, fallbackMessage string) {
+    err := app.Browser.OpenURL(url)
+    if err != nil {
+        app.Logger.Error("Failed to open URL", "url", url, "error", err)
+        
+        // URL を含むフォールバックダイアログを表示
+        dialog := app.Dialog.Info()
+        dialog.SetTitle("Unable to Open Link")
+        dialog.SetMessage(fmt.Sprintf("%s\n\nURL: %s", fallbackMessage, url))
+        dialog.Show()
+    }
+}
+
+// 使用例
+openURLWithFallback(app, 
+    "https://docs.example.com", 
+    "Please open the following URL manually in your browser:")
+```
+
+### ユーザーフィードバック
+
+操作が成功したとき、または失敗したときにフィードバックを提供します:
+
+```go
+func openURLWithFeedback(app *application.App, url string) {
+    err := app.Browser.OpenURL(url)
+    if err != nil {
+        // エラーダイアログを表示
+        app.Dialog.Error().
+            SetTitle("Browser Error").
+            SetMessage(fmt.Sprintf("Could not open URL: %s", err.Error())).
+            Show()
+    } else {
+        // 必要に応じて成功通知を表示
+        app.Logger.Info("URL opened successfully", "url", url)
+    }
+}
+```
+
+## プラットフォームに関する考慮事項
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    macOS では:
+    
+    - デフォルトのブラウザを起動するために `open` コマンドを使用します- システム環境設定のユーザーのデフォルトブラウザ設定を尊重します
+- アプリケーションがサンドボックス化されている場合は、権限を要求する場合があります
+- ローカルファイルに対して `file://` URL を正しく処理します
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    Windows では:
+    
+    - URL を開くために Windows Shell API を使用します
+    - Windows の設定のデフォルトブラウザ設定を尊重します
+    - Windows のパス形式を正しく処理します
+    - 信頼できない URL に対してセキュリティ警告を表示する場合があります
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    Linux では:
+    
+    - まず `xdg-open` の使用を試み、他の方法にフォールバックします
+    - デスクトップ環境によって動作が異なります
+    - `BROWSER` 環境変数が設定されている場合はそれを尊重します
+    - 最小限のインストールでは追加パッケージが必要になる場合があります
+    
+  </TabItem>
+</Tabs>
+
+## ベストプラクティス
+
+1. **常にエラーを処理する**: ブラウザー操作はさまざまな理由で失敗する可能性があります:
+   ```go
+   if err := app.Browser.OpenURL(url); err != nil {
+       app.Logger.Error("Failed to open browser", "error", err)
+       // フォールバックまたはユーザーへの通知を提供
+   }
+   ```
+
+2. **URL を検証する**: 開く前に URL が適切に形成されていることを確認します:
+   ```go
+   func isValidHTTPURL(str string) bool {
+       u, err := url.Parse(str)
+       return err == nil && (u.Scheme == "http" || u.Scheme == "https")
+   }
+   ```
+
+3. **ユーザーの確認**: 外部リンクについては、ユーザーの許可を求めることを検討してください:
+   ```go
+   // 外部リンクを開く前に確認ダイアログを表示
+   confirmAndOpen(app, "https://external-site.com")
+   ```
+
+4. **安全なファイルパス**: ファイルを開く際は、パスが安全であることを確認します:
+   ```go
+   func openSafeFile(app *application.App, filename string) error {
+       // ファイルが存在し、読み取り可能であることを確認
+       if _, err := os.Stat(filename); err != nil {
+           return err
+       }
+       return app.Browser.OpenFile(filename)
+   }
+   ```
+
+## 完全な例
+
+以下は、さまざまなブラウザ統合パターンを示す完全な例です:
+
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+    "path/filepath"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Browser Integration Demo",
+    })
+
+    // ブラウザーアクション付きメニューを設定
+    setupMenu(app)
+
+    // メインウィンドウを作成
+    window := app.Window.New()
+    window.SetTitle("Browser Integration")
+
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
+}
+
+func setupMenu(app *application.App) {
+    menu := app.Menu.New()
+    
+    // ファイルメニュー
+    fileMenu := menu.AddSubmenu("File")
+    fileMenu.Add("Generate Report").OnClick(func(ctx *application.Context) {
+        generateHTMLReport(app)
+    })
+    
+    // ヘルプメニュー
+    helpMenu := menu.AddSubmenu("Help")
+    helpMenu.Add("Documentation").OnClick(func(ctx *application.Context) {
+        openWithConfirmation(app, "https://docs.example.com")
+    })
+    helpMenu.Add("Support").OnClick(func(ctx *application.Context) {
+        openWithConfirmation(app, "https://support.example.com")
+    })
+    
+    app.Menu.Set(menu)
+}
+
+func openWithConfirmation(app *application.App, url string) {
+    dialog := app.Dialog.Question()
+    dialog.SetTitle("Open External Link")
+    dialog.SetMessage(fmt.Sprintf("Open %s in your browser?", url))
+    
+    dialog.AddButton("Open").OnClick(func() {
+        if err := app.Browser.OpenURL(url); err != nil {
+            showError(app, "Failed to open URL", err)
+        }
+    })
+    
+    dialog.AddButton("Cancel")
+    dialog.Show()
+}
+
+func generateHTMLReport(app *application.App) {
+    // 一時 HTML ファイルを作成
+    tmpDir := os.TempDir()
+    reportPath := filepath.Join(tmpDir, "demo_report.html")
+    
+    html := `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Demo Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .header { color: #333; border-bottom: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Application Report</h1>
+        <p>This is a sample report generated by the application.</p>
+    </div>
+    <div class="content">
+        <h2>Report Details</h2>
+        <p>This report was generated to demonstrate browser integration.</p>
+    </div>
+</body>
+</html>`
+    
+    err := os.WriteFile(reportPath, []byte(html), 0644)
+    if err != nil {
+        showError(app, "Failed to create report", err)
+        return
+    }
+    
+    // ブラウザーで開く
+    err = app.Browser.OpenFile(reportPath)
+    if err != nil {
+        showError(app, "Failed to open report", err)
+    }
+}
+
+func showError(app *application.App, message string, err error) {
+    app.Dialog.Error().
+        SetTitle("Error").
+        SetMessage(fmt.Sprintf("%s: %v", message, err)).
+        Show()
+}
+```
+
+:::tip[プロのヒント]
+ブラウザー操作が失敗した場合に備えて、URL をクリップボードにコピーしたり、ダイアログに表示して手動で開いたりするなどのフォールバックメカニズムを提供することを検討してください。
+:::
+
+:::danger[警告]
+セキュリティ上の問題を回避するために、URL やファイルパスを開く前に常に検証してください。検証なしでユーザーが提供した URL を開く際は注意してください。
+:::

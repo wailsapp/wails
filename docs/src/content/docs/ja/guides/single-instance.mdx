@@ -1,0 +1,119 @@
+---
+title: 単一インスタンス
+description: アプリケーションの同時実行インスタンスを1つに制限する
+sidebar:
+   order: 40
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+単一インスタンスのロックは、アプリケーションの複数のインスタンスが同時に実行されるのを防ぐ仕組みです。
+これは、コマンドラインやOSのファイルエクスプローラからファイルを開くことを目的としたアプリケーションに有用です。
+
+
+## 使用方法
+
+アプリケーションで単一インスタンス機能を有効にするには、アプリケーションの作成時に `SingleInstanceOptions` 構造体を指定します:
+
+```go
+app := application.New(application.Options{
+    // ... 他のオプション ...
+    SingleInstance: &application.SingleInstanceOptions{
+        UniqueID: "com.myapp.unique-id",
+        OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+            log.Printf("Second instance launched with args: %v", data.Args)
+            log.Printf("Working directory: %s", data.WorkingDir)
+            log.Printf("Additional data: %v", data.AdditionalData)
+        },
+        // オプション: 2番目のインスタンスに追加データを渡す
+        AdditionalData: map[string]string{
+            "launchtime": time.Now().String(),
+        },
+    },
+})
+```
+
+`SingleInstanceOptions` 構造体には以下のフィールドがあります:
+
+- `UniqueID`: アプリケーションの一意の識別子。通常、逆ドメイン表記（例: "com.company.appname"）の一意の文字列である必要があります。
+- `EncryptionKey`: オプションの32バイト配列。AES-256-GCMを使用してインスタンス間で渡されるデータを暗号化するために使用されます。ゼロ以外の配列として提供された場合、インスタンス間のすべての通信が暗号化されます。
+- `OnSecondInstanceLaunch`: アプリケーションの2番目のインスタンスが起動されたときに呼び出されるコールバック関数。このコールバックは、以下の情報を含む `SecondInstanceData` 構造体を受け取ります:
+    - `Args`: 2番目のインスタンスに渡されたコマンドライン引数
+    - `WorkingDir`: 2番目のインスタンスの作業ディレクトリ
+    - `AdditionalData`: 2番目のインスタンスから渡された追加データ（提供された場合）
+- `AdditionalData`: オプションの文字列キーと値のペアのマップ。後続のインスタンスが起動されたときに最初のインスタンスに渡されます
+
+:::danger[警告]
+単一インスタンス機能は、AES-256-GCMを使用したオプションの暗号化プロトコルを実装しています。暗号化が有効になっていない場合、
+インスタンス間で渡されるデータは安全ではありません。暗号化なしで単一インスタンス機能を使用する場合、
+アプリケーションは2番目のインスタンスのコールバックから渡されるデータを信頼できないものとして扱う必要があります。
+受信した引数が有効であり、悪意のあるデータを含んでいないことを確認する必要があります。
+:::
+
+### 安全な通信
+
+インスタンス間で安全な通信を有効にするには、32バイトの暗号化キーを提供します。このキーはアプリケーションのすべてのインスタンスで同じである必要があります:
+
+```go
+// 暗号化キーを定義する（正確に32バイトである必要があります）
+var encryptionKey = [32]byte{
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+    0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+    0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+}
+
+// SingleInstanceOptionsでキーを使用する
+SingleInstance: &application.SingleInstanceOptions{
+    UniqueID: "com.myapp.unique-id",
+    // インスタンス間の通信の暗号化を有効にする
+    EncryptionKey: encryptionKey,
+    // ... 他のオプション ...
+}
+```
+
+:::tip[セキュリティのベストプラクティス]
+- アプリケーション用に一意のキーを使用する
+- 設定からキーを読み込む場合は、安全に保管する
+- 上記の例のキーを使用しないでください。独自のキーを作成してください！
+:::
+
+### ウィンドウ管理
+
+2番目のインスタンスの起動を処理する際、アプリケーションのウィンドウを前面に表示したい場合がよくあります。ウィンドウの `Focus()` メソッドを使用してこれを行うことができます。ウィンドウが最小化されている場合は、まず復元する必要がある場合があります:
+
+```go
+
+    var mainWindow *application.WebviewWindow
+
+    SingleInstance: &application.SingleInstanceOptions{
+        // 他のオプション...
+        OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+            // 必要に応じてウィンドウをフォーカスする
+            if mainWindow != nil {
+                mainWindow.Restore()
+                mainWindow.Focus()
+            }
+        },
+    }
+```
+
+## 動作原理
+
+<Tabs syncKey="platform">
+    <TabItem label="Mac" icon="apple">
+
+        名前付きミューテックスを使用した単一インスタンスロック。ミューテックスの名前は、あなたが提供する一意のIDから生成されます。データは [NSDistributedNotificationCenter](https://developer.apple.com/documentation/foundation/nsdistributednotificationcenter) を介して最初のインスタンスに渡されます。
+
+    </TabItem>
+    <TabItem label="Windows" icon="seti:windows">
+
+        名前付きミューテックスを使用した単一インスタンスロック。ミューテックスの名前は、あなたが提供する一意のIDから生成されます。データは [SendMessage](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage) を使用した共有ウィンドウを介して最初のインスタンスに渡されます。
+
+    </TabItem>
+    <TabItem label="Linux" icon="linux">
+
+        [dbus](https://www.freedesktop.org/wiki/Software/dbus/) を使用した単一インスタンスロック。dbusの名前は、あなたが提供する一意のIDから生成されます。データは [dbus](https://www.freedesktop.org/wiki/Software/dbus/) を介して最初のインスタンスに渡されます。
+
+    </TabItem>
+</Tabs>

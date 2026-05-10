@@ -1,0 +1,232 @@
+---
+title: HTML ドラッグ＆ドロップ
+description: アプリケーション内で要素をドラッグアンドドロップする
+sidebar:
+  order: 2
+---
+
+HTML5 のドラッグアンドドロップを使用すると、ユーザーはアプリの UI 内で要素をドラッグできます。例えば、リストの順序を変更したり、項目を列間で移動したりすることができます。これは Wails で特別な設定なしに動作する標準的な Web 機能です。
+
+## 要素をドラッグ可能にする
+
+デフォルトでは、ほとんどの要素はドラッグできません。要素をドラッグ可能にするには、`draggable="true"` を追加します。
+
+```html
+<div class="item" draggable="true">ドラッグしてください</div>
+```
+
+これで、ユーザーが要素をクリックしてドラッグすると、ドラッグプレビューが表示されます。
+
+## ドロップゾーンを定義する
+
+要素はデフォルトではドロップを受け付けません。要素がドロップを受け付けるようにするには、`dragover` イベントのデフォルト動作をキャンセルする必要があります。
+
+```html
+<div class="drop-zone" id="target">ここにドロップ</div>
+
+<script>
+const target = document.getElementById('target');
+
+target.addEventListener('dragover', (e) => {
+    e.preventDefault(); // ドロップを許可する
+});
+
+target.addEventListener('drop', (e) => {
+    e.preventDefault();
+    // ドロップの処理
+});
+</script>
+```
+
+`dragover` で `preventDefault()` を呼び出す必要があります。これは、この要素がドロップを受け付けることを示すシグナルです。これを指定しないと、drop イベントは発生しません。
+
+## ドラッグホバーのスタイル設定
+
+ユーザーがどこにドロップできるかを示すために、ドロップゾーン上にドラッグしたときに視覚的なフィードバックを追加します。`dragenter` イベントは要素がゾーンに入ったときに発生し、`dragleave` イベントはゾーンから離れたときに発生します。
+
+```css
+.drop-zone {
+    border: 2px dashed #ccc;
+    padding: 40px;
+    transition: all 0.2s ease;
+}
+
+.drop-zone.drag-over {
+    border-color: #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+```
+
+```javascript
+const target = document.getElementById('target');
+
+target.addEventListener('dragenter', () => {
+    target.classList.add('drag-over');
+});
+
+target.addEventListener('dragleave', () => {
+    target.classList.remove('drag-over');
+});
+
+target.addEventListener('drop', (e) => {
+    e.preventDefault();
+    target.classList.remove('drag-over');
+    // ドロップの処理
+});
+```
+
+注意: `dragleave` は子要素に入った際にも発生するため、ちらつきの原因になることがあります。完全な例では、これを処理する方法を示します。
+
+## 完全な例
+
+優先度別の列間で項目をドラッグできるタスクリストです。すべてが同じページ上にある場合、ドラッグされた要素を変数で追跡するのが最も簡単なアプローチです。
+
+```html
+<div class="tasks">
+    <div class="item" draggable="true">ログインバグを修正</div>
+    <div class="item" draggable="true">ドキュメントを更新</div>
+    <div class="item" draggable="true">ダークモードを追加</div>
+</div>
+
+<div class="columns">
+    <div class="drop-zone" data-priority="high">
+        <h3>高優先度</h3>
+        <ul></ul>
+    </div>
+    <div class="drop-zone" data-priority="low">
+        <h3>低優先度</h3>
+        <ul></ul>
+    </div>
+</div>
+
+<script>
+let draggedItem = null;
+
+// どの項目がドラッグされているかを追跡
+document.querySelectorAll('.item').forEach(item => {
+    item.addEventListener('dragstart', () => {
+        draggedItem = item;
+        item.classList.add('dragging');
+    });
+    
+    item.addEventListener('dragend', () => {
+        item.classList.remove('dragging');
+    });
+});
+
+// 各ゾーンでのドロップを処理
+document.querySelectorAll('.drop-zone').forEach(zone => {
+    zone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+    });
+    
+    zone.addEventListener('dragenter', () => {
+        zone.classList.add('drag-over');
+    });
+    
+    zone.addEventListener('dragleave', (e) => {
+        // ゾーン全体から離れた場合のみクラスを削除する
+        // 子要素に入った場合は削除しない
+        if (!zone.contains(e.relatedTarget)) {
+            zone.classList.remove('drag-over');
+        }
+    });
+    
+    zone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        
+        if (draggedItem) {
+            const li = document.createElement('li');
+            li.textContent = draggedItem.textContent;
+            zone.querySelector('ul').appendChild(li);
+            draggedItem.remove();
+        }
+    });
+});
+</script>
+
+<style>
+.item {
+    padding: 12px 16px;
+    background: #f0f0f0;
+    margin: 8px 0;
+    border-radius: 8px;
+    cursor: grab;
+}
+
+.item.dragging {
+    opacity: 0.5;
+}
+
+.drop-zone {
+    min-height: 150px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 15px;
+    transition: all 0.2s ease;
+}
+
+.drop-zone.drag-over {
+    border-color: #007bff;
+    background: rgba(0, 123, 255, 0.1);
+}
+</style>
+```
+
+## ファイルドロップとの組み合わせ
+
+アプリで HTML ドラッグアンドドロップと [ファイルドロップ](./files) の両方を使用している場合、OS からファイルをドラッグしたときにも HTML のドロップゾーンがイベントを受け取ります。混乱を防ぐために、ハンドラーでファイルのドラッグをフィルタリングしてください。
+
+```javascript
+zone.addEventListener('dragenter', (e) => {
+    // 外部からのファイルドラッグを無視
+    if (e.dataTransfer?.types.includes('Files')) return;
+    
+    zone.classList.add('drag-over');
+});
+
+zone.addEventListener('dragover', (e) => {
+    // 外部からのファイルドラッグを無視
+    if (e.dataTransfer?.types.includes('Files')) return;
+    
+    e.preventDefault();
+});
+
+zone.addEventListener('drop', (e) => {
+    // 外部からのファイルドラッグを無視
+    if (e.dataTransfer?.types.includes('Files')) return;
+    
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    // 内部のドロップを処理
+});
+```
+
+`dataTransfer.types` 配列には、ユーザーが OS からファイルをドラッグしている場合に `'Files'` が含まれますが、内部の HTML ドラッグの場合には `'text/plain'` などの型が含まれます。これにより、両者を区別できます。
+
+## dataTransfer でデータを渡す
+
+上記の例では、ドラッグされた要素を JavaScript の変数で追跡しています。これはすべてが同じページ上にある場合に適しています。ただし、iframe 間でドラッグしたり、DOM 要素に紐付かないデータを渡したりする必要がある場合は、`dataTransfer` API を使用します。
+
+```javascript
+// ドラッグ開始時にデータを保存
+item.addEventListener('dragstart', (e) => {
+    e.dataTransfer.setData('text/plain', item.id);
+});
+
+// ドロップ時にデータを取得
+target.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const itemId = e.dataTransfer.getData('text/plain');
+    const item = document.getElementById(itemId);
+    // 要素を移動またはコピー
+});
+```
+
+データは文字列として保存されるため、必要に応じて `JSON.stringify()` を使用してオブジェクトをシリアライズする必要があります。
+
+## 次のステップ
+
+- [ファイルドロップ](./files) - OS からファイルを受け取る
+- [MDN ドラッグアンドドロップ API](https://developer.mozilla.org/ja/docs/Web/API/HTML_Drag_and_Drop_API) - ブラウザ API の完全なリファレンス

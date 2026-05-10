@@ -1,0 +1,559 @@
+---
+title: イベントシステム
+description: イベントシステムを使ってコンポーネント間で通信する
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## イベントシステム
+
+Wails は、pub/sub 通信のための**統一されたイベントシステム**を提供します。どこからでもイベントを発行し、どこからでもリッスンできます。Go から JavaScript へ、JavaScript から Go へ、ウィンドウからウィンドウへ。型付きイベントとライフサイクルフックにより、疎結合なアーキテクチャを実現します。
+
+## クイックスタート
+
+**Go (発行):**
+
+```go
+app.Event.Emit("user-logged-in", map[string]interface{}{
+    "userId": 123,
+    "name": "Alice",
+})
+```
+
+**JavaScript (受信):**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.On("user-logged-in", (event) => {
+    console.log(`User ${event.data.name} logged in`)
+})
+```
+
+**これだけです！** 言語をまたいだ pub/sub 通信が可能です。
+
+## イベントの種類
+
+### カスタムイベント
+
+アプリケーション固有のイベントです:
+
+```go
+// Go から発行
+app.Event.Emit("order-created", order)
+app.Event.Emit("payment-processed", payment)
+app.Event.Emit("notification", message)
+```
+
+```javascript
+// JavaScript で受信
+Events.On("order-created", handleOrder)
+Events.On("payment-processed", handlePayment)
+Events.On("notification", showNotification)
+```
+
+### システムイベント
+
+組み込みの OS およびアプリケーションイベント:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// テーマの変更
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    if e.Context().IsDarkMode() {
+        app.Logger.Info("Dark mode enabled")
+    }
+})
+
+// アプリケーションのライフサイクル
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Application started")
+})
+```
+
+### ウィンドウイベント
+
+ウィンドウ固有のイベント:
+
+```go
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window focused")
+})
+
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    app.Logger.Info("Window closing")
+})
+```
+
+## イベントの発行
+
+### Go から
+
+**基本的な発行:**
+
+```go
+app.Event.Emit("event-name", data)
+```
+
+**異なるデータ型を使用する場合:**
+
+```go
+// 文字列
+app.Event.Emit("message", "Hello")
+
+// 数値
+app.Event.Emit("count", 42)
+
+// 構造体
+app.Event.Emit("user", User{ID: 1, Name: "Alice"})
+
+// マップ
+app.Event.Emit("config", map[string]interface{}{
+    "theme": "dark",
+    "fontSize": 14,
+})
+
+// 配列
+app.Event.Emit("items", []string{"a", "b", "c"})
+```
+
+**特定のウィンドウ宛て:**
+
+```go
+window.EmitEvent("window-specific-event", data)
+```
+
+### JavaScript から
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Go 宛てに発行
+Events.Emit("button-clicked", { buttonId: "submit" })
+
+// すべてのウィンドウ宛てに発行
+Events.Emit("broadcast-message", "Hello everyone")
+```
+
+## イベントの受信
+
+### Go 内
+
+**アプリケーションイベント:**
+
+```go
+app.Event.On("custom-event", func(e *application.CustomEvent) {
+    data := e.Data
+    // イベントの処理
+})
+```
+
+**型アサーションを使用する場合:**
+
+```go
+app.Event.On("user-updated", func(e *application.CustomEvent) {
+    user := e.Data.(User)
+    app.Logger.Info("User updated", "name", user.Name)
+})
+```
+
+**複数のハンドラー:**
+
+```go
+// すべてのハンドラーが呼び出されます
+app.Event.On("order-created", logOrder)
+app.Event.On("order-created", sendEmail)
+app.Event.On("order-created", updateInventory)
+```
+
+### JavaScript 内
+
+**基本的なリスナー:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.On("event-name", (event) => {
+    console.log("Event received:", event.data)
+})
+```
+
+**クリーンアップ付き:**
+
+```javascript
+const unsubscribe = Events.On("event-name", handleEvent)
+
+// その後、受信を停止
+unsubscribe()
+```
+
+**複数のハンドラー:**
+
+```javascript
+Events.On("data-updated", updateUI)
+Events.On("data-updated", saveToCache)
+Events.On("data-updated", logChange)
+```
+
+**ワンタイムハンドラー:**
+
+```javascript
+Events.Once("data-updated", updateVariable)
+```
+
+## システムイベント
+
+### アプリケーションイベント
+
+**一般的なイベント (クロスプラットフォーム):**
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// アプリケーションの開始
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Logger.Info("App started")
+})
+
+// テーマの変更
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    isDark := e.Context().IsDarkMode()
+    app.Event.Emit("theme-changed", isDark)
+})
+
+// ファイルのオープン
+app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *application.ApplicationEvent) {
+    filePath := e.Context().OpenedFile()
+    openFile(filePath)
+})
+```
+
+**プラットフォーム固有のイベント:**
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    ```go
+    // アプリケーションがアクティブになった
+    app.Event.OnApplicationEvent(events.Mac.ApplicationDidBecomeActive, func(e *application.ApplicationEvent) {
+        app.Logger.Info("App became active")
+    })
+    
+    // アプリケーションが終了する
+    app.Event.OnApplicationEvent(events.Mac.ApplicationWillTerminate, func(e *application.ApplicationEvent) {
+        cleanup()
+    })
+    ```
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    ```go
+    // 電源状態が変更された
+    app.Event.OnApplicationEvent(events.Windows.APMPowerStatusChange, func(e *application.ApplicationEvent) {
+        app.Logger.Info("Power status changed")
+    })
+    
+    // システムがサスペンドする
+    app.Event.OnApplicationEvent(events.Windows.APMSuspend, func(e *application.ApplicationEvent) {
+        saveState()
+    })
+    ```
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    ```go
+    // アプリケーションの起動
+    app.Event.OnApplicationEvent(events.Linux.ApplicationStartup, func(e *application.ApplicationEvent) {
+        app.Logger.Info("App starting")
+    })
+    
+    // テーマの変更
+    app.Event.OnApplicationEvent(events.Linux.SystemThemeChanged, func(e *application.ApplicationEvent) {
+        updateTheme()
+    })
+    ```
+  </TabItem>
+</Tabs>
+
+### ウィンドウイベント
+
+**一般的なウィンドウイベント:**
+
+```go
+// ウィンドウのフォーカス
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window focused")
+})
+
+// ウィンドウのブラー
+window.OnWindowEvent(events.Common.WindowBlur, func(e *application.WindowEvent) {
+    app.Logger.Info("Window blurred")
+})
+
+// ウィンドウの閉じる
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    if hasUnsavedChanges() {
+        e.Cancel()  // 閉じるのを防止
+    }
+})
+
+// ウィンドウが閉じた
+window.OnWindowEvent(events.Common.WindowClosed, func(e *application.WindowEvent) {
+    cleanup()
+})
+```
+
+## イベントフック
+
+フックは標準のリスナーより**前に**実行され、イベントを**キャンセル**できます:
+
+```go
+// フック - 最初に実行され、キャンセル可能
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        if result != "yes" {
+            e.Cancel()  // ウィンドウの閉じるを防止
+        }
+    }
+})
+
+// 標準のリスナー - フックの後に実行
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    app.Logger.Info("Window closing")
+})
+```
+
+**主な違い:**
+
+| 機能 | フック | 標準リスナー |
+|---------|-------|-------------------|
+| 実行順序 | 最初に、登録順 | フックの後、順序は保証されない |
+| ブロッキング | 同期、次のフックをブロック | 非同期、ノンブロッキング |
+| キャンセル可否 | はい | いいえ (すでに伝播済み) |
+| 使用例 | コントロールフロー、検証 | ログ出力、副作用 |
+
+## イベントパターン
+
+### Pub/Sub パターン
+
+```go
+// パブリッシャー (サービス)
+type OrderService struct {
+    app *application.Application
+}
+
+func (o *OrderService) CreateOrder(items []Item) (*Order, error) {
+    order := &Order{Items: items}
+    
+    if err := o.saveOrder(order); err != nil {
+        return nil, err
+    }
+    
+    // イベントを発行
+    o.app.Event.Emit("order-created", order)
+    
+    return order, nil
+}
+
+// サブスクライバー```go
+app.Event.On("order-created", func(e *application.CustomEvent) {
+    order := e.Data.(*Order)
+    sendConfirmationEmail(order)
+})
+
+app.Event.On("order-created", func(e *application.CustomEvent) {
+    order := e.Data.(*Order)
+    updateInventory(order)
+})
+
+app.Event.On("order-created", func(e *application.CustomEvent) {
+    order := e.Data.(*Order)
+    logOrder(order)
+})
+```
+
+### リクエスト/レスポンスパターン
+
+```go
+// フロントエンドがデータをリクエスト
+Emit("get-user-data", { userId: 123 })
+
+// バックエンドがレスポンス
+app.Event.On("get-user-data", func(e *application.CustomEvent) {
+    data := e.Data.(map[string]interface{})
+    userId := int(data["userId"].(float64))
+    
+    user := getUserFromDB(userId)
+    
+    // レスポンスを送信
+    app.Event.Emit("user-data-response", user)
+})
+```
+
+```javascript
+// フロントエンドがレスポンスを受信
+Events.On("user-data-response", (event) => {
+    const user = event.data
+    displayUser(user)
+})
+```
+
+**注意:** リクエスト/レスポンスには **バインディング** が適しています。イベントは通知に使用してください。
+
+### ブロードキャストパターン
+
+```go
+// すべてのウィンドウにブロードキャスト
+app.Event.Emit("global-notification", "System update available")
+
+// 各ウィンドウが処理
+Events.On("global-notification", (event) => {
+    const message = event.data
+    showNotification(message)
+})
+```
+
+### イベント集約
+
+```go
+type EventAggregator struct {
+    events []Event
+    mu     sync.Mutex
+}
+
+func (ea *EventAggregator) Add(event Event) {
+    ea.mu.Lock()
+    defer ea.mu.Unlock()
+    
+    ea.events = append(ea.events, event)
+    
+    // 100イベントごとにバッチをEmit
+    if len(ea.events) >= 100 {
+        app.Event.Emit("event-batch", ea.events)
+        ea.events = nil
+    }
+}
+```
+
+## 完全な例
+
+**Go:**
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+
+type NotificationService struct {
+    app *application.Application
+}
+
+func (n *NotificationService) Notify(message string) {
+    // すべてのウィンドウにEmit
+    n.app.Event.Emit("notification", map[string]interface{}{
+        "message":   message,
+        "timestamp": time.Now(),
+    })
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Event Demo",
+    })
+    
+    notifService := &NotificationService{app: app}
+    
+    // システムイベント
+    app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+        isDark := e.Context().IsDarkMode()
+        app.Event.Emit("theme-changed", isDark)
+    })
+    
+    // フロントエンドからのカスタムイベント
+    app.Event.On("user-action", func(e *application.CustomEvent) {
+        data := e.Data.(map[string]interface{})
+        action := data["action"].(string)
+        
+        app.Logger.Info("User action", "action", action)
+        
+        // レスポンス
+        notifService.Notify("Action completed: " + action)
+    })
+    
+    // ウィンドウイベント
+    window := app.Window.New()
+    
+    window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+        app.Event.Emit("window-focused", window.Name())
+    })
+    
+    window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+        // 閉じる前に確認
+        app.Event.Emit("confirm-close", nil)
+        e.Cancel()  // 確認を待つ
+    })
+    
+    app.Run()
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// 通知をリッスン
+Events.On("notification", (event) => {
+    showNotification(event.data.message)
+})
+
+// テーマ変更をリッスン
+Events.On("theme-changed", (event) => {
+    const isDark = event.data
+    document.body.classList.toggle('dark', isDark)
+})
+
+// ウィンドウフォーカスをリッスン
+Events.On("window-focused", (event) => {
+    const windowName = event.data
+    console.log(`Window ${windowName} focused`)
+})
+
+// 閉じる確認を処理
+Events.On("confirm-close", (event) => {
+    if (confirm("Close window?")) {
+        Emit("close-confirmed", true)
+    }
+})
+
+// ユーザーアクションをEmit
+document.getElementById('button').addEventListener('click', () => {
+    Emit("user-action", { action: "button-clicked" })
+})
+```
+
+## ベストプラクティス
+
+### ✅ 推奨
+
+- **通知にはイベントを使用** - 一方向通信
+- **リクエストにはバインディングを使用** - 双方向通信
+- **イベント名の一貫性を保つ** - kebab-case を使用
+- **イベントデータを文書化** - どのフィールドが含まれるか？
+- **完了時に購読解除** - メモリリークを防ぐ
+- **検証にはフックを使用** - イベントフローを制御
+
+### ❌ 非推奨
+
+- **RPC にイベントを使用しない** - バインディングを使用
+- **頻繁なEmitを避ける** - 必要に応じてバッチ処理
+- **ハンドラーでブロックしない** - 高速に保つ
+- **購読解除を忘れない** - メモリリークの原因に
+- **大量データにイベントを使用しない** - バインディングを使用
+- **イベントループを作成しない** - A が B を Emit、B が A を Emit しないように

@@ -1,0 +1,549 @@
+---
+title: CLIリファレンス
+description: Wails CLIコマンドの完全なリファレンス
+sidebar:
+  order: 1
+---
+
+Wails CLIは、Wailsアプリケーションの開発、ビルド、保守を支援するための包括的なコマンドセットを提供します。
+
+## コアコマンド
+
+コアコマンドは、プロジェクトの作成、開発、ビルドに主に使用されるコマンドです。
+
+すべてのCLIコマンドは以下の形式です: `wails3 <command>`。
+
+### `init`
+新しいWailsプロジェクトを初期化します。この初期化中に、`go mod tidy`コマンドが実行され、プロジェクトのパッケージが最新の状態に更新されます。`init`コマンドに`-skipgomodtidy`フラグを使用することで、これを回避できます。
+
+```bash
+wails3 init [flags]
+```
+
+#### フラグ
+| フラグ                  | 説明          | デフォルト                  |
+|-----------------------|----------------------|--------------------------|
+| `-p`                  | パッケージ名         | `main`                   |
+| `-t`                  | テンプレート名またはURL | `vanilla`                |
+| `-n`                  | プロジェクト名         |                          |
+| `-d`                  | プロジェクトディレクトリ    | `.`                      |
+| `-q`                  | 出力を抑制する      | `false`                  |
+| `-l`                  | テンプレートをリストする       | `false`                  |
+| `-git`                | GitリポジトリURL   |                          |
+| `-productname`        | 製品名         | `My Product`             |
+| `-productdescription` | 製品説明  | `My Product Description` |
+| `-productversion`     | 製品バージョン      | `0.1.0`                  |
+| `-productcompany`     | 会社名         | `My Company`             |
+| `-productcopyright`   | 著作権表示     | ` now, My Company`       |
+| `-productcomments`    | ファイルコメント        | `This is a comment`      |
+| `-productidentifier`  | 製品識別子   |                          |
+| `-skipgomodtidy`      | go mod tidyをスキップ     | `false`                   |
+
+`-git`フラグは、さまざまなGit URL形式を受け付けます:
+- HTTPS: `https://github.com/username/project`
+- SSH: `git@github.com:username/project` または `ssh://git@github.com/username/project`
+- Gitプロトコル: `git://github.com/username/project`
+- ファイルシステム: `file:///path/to/project.git`
+
+このフラグが指定されると、以下のことが行われます:
+1. プロジェクトディレクトリにgitリポジトリを初期化する
+2. 指定されたURLをリモートoriginとして設定する
+3. `go.mod`内のモジュール名をリポジトリURLに一致させるように更新する
+4. すべてのファイルを追加する
+
+### `dev`
+アプリケーションを開発モードで実行します。これにより、フロントエンドコードのライブビューが得られ、アプリケーションを再ビルドすることなく、変更を加えて実行中のアプリケーションに反映させることができます。Goコードへの変更も検出され、アプリケーションは自動的に再ビルドされ、再起動します。
+
+```bash
+wails3 dev [flags]
+```
+
+#### フラグ
+| フラグ      | 説明          | デフォルト              |
+|-----------|----------------------|----------------------|
+| `-config` | 設定ファイルパス     | `./build/config.yml` |
+| `-port`   | Vite開発サーバーポート | `9245`               |
+| `-s`      | HTTPSを有効にする         | `false`              |
+
+
+    :::note
+    これは `wails3 task dev` を実行することと同等で、プロジェクトのメインTaskfile内の `dev` タスクを実行します。`Taskfile.yml` ファイルを編集することでこれをカスタマイズできます。
+    :::
+
+
+### `build`
+アプリケーションのデバッグバージョンをビルドします。デフォルトでは、現在のプラットフォームとアーキテクチャ向けにビルドされます。
+
+```bash
+wails3 build [flags] [CLI variables...]
+```
+
+#### フラグ
+| フラグ     | 説明                                              | デフォルト |
+|----------|----------------------------------------------------------|---------|
+| `-tags`  | 追加のGoビルドタグ（カンマ区切り）               |         |
+
+ビルドをカスタマイズするためにCLI変数を渡すことができます:
+```bash
+wails3 build PLATFORM=linux CONFIG=production
+```
+
+`-tags` フラグを使用して、カスタムGoビルドタグを渡します:
+```bash
+# LinuxでGTK4サポート付きでビルド
+wails3 build -tags gtk4
+
+# サーバーモードでビルド（GUIなし）
+wails3 build -tags server
+
+# 複数のタグ
+wails3 build -tags gtk4,customtag
+```
+
+タグは `EXTRA_TAGS` として基盤となるTaskfileに渡されます。
+
+    :::note
+    これは `wails3 task build` を実行することと同等で、プロジェクトのメインTaskfile内の `build` タスクを実行します。`build` に渡されたCLI変数はすべて、基盤となるタスクに渡されます。`Taskfile.yml` ファイルを編集することでビルドプロセスをカスタマイズできます。
+    :::
+
+### `package`
+
+配布用のプラットフォーム固有のパッケージを作成します。
+
+```bash
+wails3 package [CLI variables...]
+```
+
+パッケージングをカスタマイズするためにCLI変数を渡すことができます:
+```bash
+wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg
+```
+
+#### パッケージタイプ
+
+以下のパッケージタイプが各プラットフォームで利用可能です:
+
+| プラットフォーム | パッケージタイプ                              |
+|----------|-------------------------------------------|
+| Windows  | `.exe`                                    |
+| macOS    | `.app`,                                   |
+| Linux    | `.AppImage`, `.deb`, `.rpm`, `.archlinux` |
+
+    :::note
+     これは `wails3 task package` と同等で、プロジェクトのメインTaskfile内の `package` タスクを実行します。`package` に渡されたCLI変数はすべて、基盤となるタスクに渡されます。`Taskfile.yml` ファイルを編集することでパッケージングプロセスをカスタマイズできます。
+    :::
+
+
+### `task`
+プロジェクトのTaskfile.ymlに定義されたタスクを実行します。これは [Taskfile](https://taskfile.dev) の埋め込みバージョンで、カスタムビルド、テスト、デプロイメントタスクを定義して実行できます。
+
+```bash
+wails3 task [taskname] [CLI variables...] [flags]
+```
+
+#### CLI変数
+`KEY=VALUE` の形式でタスクに変数を渡すことができます:
+```bash
+wails3 task build PLATFORM=linux CONFIG=production
+wails3 task deploy ENV=staging VERSION=1.2.3
+```
+
+これらの変数は、Goテンプレート構文を使用してTaskfile.ymlでアクセスできます:
+```yaml
+tasks:
+  build:
+    cmds:
+      - echo "Building for {{.PLATFORM | default "darwin"}}"
+      - echo "Config: {{.CONFIG | default "debug"}}"
+```
+
+#### フラグ
+| フラグ         | 説明                               | デフォルト  |
+|--------------|-------------------------------------------|----------|
+| `-h`         | Taskの使用法を表示する                          | `false`  |
+| `-i`         | 新しいTaskfile.ymlを作成する                | `false`  |
+| `-list`      | 説明付きでタスクをリストする             | `false`  |
+| `-list-all`  | すべてのタスクをリストする（説明付きまたはなし） | `false`  |
+| `-json`      | タスクリストをJSON形式でフォーマットする                 | `false`  |
+| `-status`    | タスクが最新でない場合、ゼロ以外のコードで終了する | `false`  |
+| `-f`         | タスクが最新の場合でも実行を強制する | `false`  |
+| `-w`         | 指定されたタスクのウォッチモードを有効にする     | `false`  |
+| `-v`         | 詳細モードを有効にする                      | `false`  |
+| `-version`   | Taskのバージョンを表示する                       | `false`  |
+| `-s`         | エコーを無効にする                          | `false`  |
+| `-p`         | タスクを並列で実行する                | `false`  |
+| `-dry`       | 実行せずにタスクをコンパイルして表示する | `false`  |
+| `-summary`   | タスクの概要を表示する                | `false`  |
+| `-x`         | タスクの終了コードを渡す    | `false`  |
+| `-dir`       | 実行ディレクトリを設定する               |          |
+| `-taskfile`  | 実行するTaskfileを選択する              |          |
+| `-output`    | 出力スタイルを設定する: [interleaved|group|prefixed] |          |
+| `-c`         | カラースタイルの出力（デフォルトで有効）       | `true`   |
+| `-C`         | 並列実行するタスクの数を制限する |          |
+| `-interval`  | 変更を監視する間隔（秒単位） |          |
+
+#### 例
+```bash
+# デフォルトタスクを実行する
+wails3 task
+
+# 特定のタスクを実行する
+wails3 task test
+
+# 変数付きでタスクを実行する
+wails3 task build PLATFORM=windows ARCH=amd64
+
+# 利用可能なすべてのタスクをリストする
+wails3 task --list
+
+# 複数のタスクを並列で実行する------|----------------------|----------------------|
+| `-f`       | 追加の Go ビルドフラグ |                      |
+| `-d`       | 出力ディレクトリ       | `frontend/bindings` |
+| `-models`  | モデルファイル名       | `models`            |
+| `-index`   | インデックスファイル名 | `index`             |
+| `-ts`      | TypeScript を生成      | `false`             |
+| `-i`       | TS インターフェースを使用 | `false`             |
+| `-b`       | 組み込みランタイムを使用 | `false`             |
+| `-names`   | ID の代わりに名前を使用 | `false`             |
+| `-noindex` | インデックスファイルをスキップ | `false`             |
+| `-dry`     | ドライラン             | `false`             |
+| `-silent`  | サイレントモード       | `false`             |
+| `-v`       | デバッグ出力           | `false`             |
+| `-clean`   | 出力ディレクトリをクリーン | `false`             |
+
+### `generate build-assets`
+アプリケーションのビルドアセットを生成します。
+
+```bash
+wails3 generate build-assets [flags]
+```
+
+#### フラグ
+| フラグ           | 説明               | デフォルト            |
+|------|------------------|---------------------|
+| `-name`          | プロジェクト名     |                     |
+| `-dir`           | 出力ディレクトリ   | `build`            |
+| `-silent`        | 出力を抑制         | `false`            |
+| `-company`       | 会社名             |                     |
+| `-productname`   | 製品名             |                     |
+| `-description`   | 製品の説明         |                     |
+| `-version`       | 製品のバージョン   |                     |
+| `-identifier`    | 製品の識別子       | `com.wails.[name]` |
+| `-copyright`     | 著作権表示         |                     |
+| `-comments`      | ファイルのコメント |                     |
+
+### `generate icons`
+アプリケーションのアイコンを生成します。
+
+```bash
+wails3 generate icons [flags]
+```
+
+#### フラグ
+| フラグ                   | 説明                                              | デフォルト               |
+|------|------------------------------------------------|------------------------|
+| `-input`               | 入力 PNG ファイル                                | 必須                    |
+| `-windowsfilename`     | Windows 出力ファイル名                           |                        |
+| `-macfilename`         | macOS 出力ファイル名                             |                        |
+| `-sizes`               | アイコンのサイズ（カンマ区切り）                 | `256,128,64,48,32,16` |
+| `-example`             | サンプルアイコンを生成                           | `false`               |
+| `-iconcomposerinput`   | 入力 Icon Composer ファイル (`.icon`)           |                        |
+| `-macassetdir`         | Mac アセットの出力ディレクトリ (Assets.car + icns) |                        |
+
+#### Icon Composer (macOS)
+
+macOS 26 以降では、Icon Composer の `.icon` ファイルを使用して `Assets.car` と `icons.icns` を生成できます：
+
+```bash
+wails3 generate icons -iconcomposerinput build/appicon.icon -macassetdir build
+```
+
+これにより、Apple の `actool` コマンドを使用して `.icon` ファイルがコンパイルされます。`actool` バージョン 26 以降を搭載した Xcode が必要です。
+
+Icon Composer を使用する場合は、`build/config.yml` 内の `cfBundleIconName` を `.icon` ファイル名（拡張子なし）に一致するように設定してください：
+
+```yaml
+info:
+  cfBundleIconName: "appicon"
+```
+
+設定されていない場合、かつ `Assets.car` が存在する場合は、デフォルトで `"appicon"` になります。
+
+### `generate syso`
+Windows の .syso ファイルを生成します。
+
+```bash
+wails3 generate syso [flags]
+```
+
+#### フラグ
+| フラグ       | 説明                   | デフォルト                    |
+|------|----------------------|-----------------------------|
+| `-manifest` | マニフェストファイルのパス | 必須                         |
+| `-icon`     | アイコンファイルのパス   | 必須                         |
+| `-info`     | バージョン情報ファイルのパス |                             |
+| `-arch`     | ターゲットアーキテクチャ | 現在の GOARCH                |
+| `-out`      | 出力ファイル名         | `rsrc_windows_[arch].syso` |
+
+### `generate .desktop`
+Linux の .desktop ファイルを生成します。
+
+```bash
+wails3 generate .desktop [flags]
+```
+
+#### フラグ
+| フラグ             | 説明                   | デフォルト          |
+|------|----------------------|-------------------|
+| `-name`          | アプリケーション名     | 必須                |
+| `-exec`          | 実行ファイルのパス     | 必須                |
+| `-icon`          | アイコンのパス         |                   |
+| `-categories`    | アプリケーションのカテゴリ | `Utility`        |
+| `-comment`       | アプリケーションのコメント |                   |
+| `-terminal`      | ターミナルで実行       | `false`          |
+| `-keywords`      | 検索キーワード         |                   |
+| `-version`       | アプリケーションのバージョン |                   |
+| `-genericname`   | 一般的な名前           |                   |
+| `-startupnotify` | スタートアップ通知を表示 | `false`          |
+| `-mimetype`      | サポートされている MIME タイプ |                   |
+| `-output`        | 出力ファイル名         | `[name].desktop` |
+
+### `generate runtime`
+ビルド済みランタイムのバージョンを生成します。
+
+```bash
+wails3 generate runtime
+```
+
+### `generate constants`
+Go コードから JavaScript の定数を生成します。
+
+```bash
+wails3 generate constants
+```
+
+### `generate appimage`
+Linux の AppImage を生成します。
+
+```bash
+wails3 generate appimage [flags]
+```
+
+#### フラグ
+| フラグ       | 説明               | デフォルト        |
+|------|------------------|-----------------|
+| `-binary`   | バイナリのパス     | 必須              |
+| `-icon`     | アイコンファイルのパス | 必須              |
+| `-desktop`  | .desktop ファイルのパス | 必須              |
+| `-builddir` | ビルドディレクトリ | 一時ディレクトリ  |
+| `-output`   | 出力ディレクトリ   | `.`            |
+
+基本コマンド: `wails3 service`
+
+## Service コマンド
+
+Service コマンドは Wails サービスの管理を支援します。すべての service コマンドは基本コマンド `wails3 service <command>` を使用します。
+
+### `service init`
+新しいサービスを初期化します。
+
+```bash
+wails3 service init [flags]
+```
+
+#### フラグ
+| フラグ | 説明               | デフォルト           |
+|------|------------------|---------------------|
+| `-n` | サービス名         | `example_service` |
+| `-d` | サービスの説明     | `Example service` |
+| `-p` | パッケージ名       |                     |
+| `-o` | 出力ディレクトリ   | `.`               |
+| `-q` | 出力を抑制         | `false`           |
+| `-a` | 著者名             |                     |
+| `-v` | バージョン         |                     |
+| `-w` | ウェブサイト URL   |                     |
+| `-r` | リポジトリ URL     |                     |
+| `-l` | ライセンス         |                     |
+
+基本コマンド: `wails3 tool`
+
+## Tool コマンド
+
+Tool コマンドは、開発とデバッグ用のユーティリティを提供します。すべての tool コマンドは基本コマンド `wails3 tool <command>` を使用します。
+
+### `tool checkport`
+ポートが開いているかどうかを確認します。vite が実行中かどうかをテストするのに便利です。
+
+```bash
+wails3 tool checkport [flags]
+```
+
+#### フラグ
+| フラグ    | 説明           | デフォルト     |
+|--|--------------|--------------|
+| `-port` | 確認するポート | `9245`      |
+| `-host` | 確認するホスト | `localhost` |
+
+### `tool watcher`
+ファイルを監視し、変更されたときにコマンドを実行します。
+
+```bash
+wails3 tool watcher [flags]
+```
+
+#### フラグ
+| フラグ       | 説明               | デフォルト              |------------|---------------------|----------------------|
+| `-config`  | 設定ファイルのパス    | `./build/config.yml` |
+| `-ignore`  | 無視するパターン  |                      |
+| `-include` | 対象とするパターン |                      |
+
+### `tool cp`
+ファイルをコピーします。
+
+```bash
+wails3 tool cp
+```
+
+### `tool buildinfo`
+アプリケーションのビルド情報を表示します。
+
+```bash
+wails3 tool buildinfo
+```
+
+### `tool version`
+指定されたフラグに基づいてセマンティックバージョニングを更新します。
+
+```bash
+wails3 tool version [flags]
+```
+
+#### フラグ
+| Flag          | Description                                      | Default |
+|---------------|--------------------------------------------------|---------|
+| `-v`          | 更新対象の現在のバージョン                          |         |
+| `-major`      | メジャーバージョンを更新                               | `false` |
+| `-minor`      | マイナーバージョンを更新                               | `false` |
+| `-patch`      | パッチバージョンを更新                               | `false` |
+| `-prerelease` | プレリリースバージョンを更新 (例: alpha.5 から alpha.6) | `false` |
+
+このコマンドは、メジャー > マイナー > パッチ > プレリリースの優先順位に従います。入力されたバージョンに "v" プレフィックスが含まれている場合はそれを保持し、プレリリースおよびメタデータコンポーネントも保持されます。
+
+使用例:
+```bash
+wails3 tool version -v 1.2.3 -major      # 出力: 2.0.0
+wails3 tool version -v v1.2.3 -minor     # 出力: v1.3.0
+wails3 tool version -v 1.2.3-alpha -patch # 出力: 1.2.4-alpha
+wails3 tool version -v v3.0.0-alpha.5 -prerelease # 出力: v3.0.0-alpha.6
+```
+
+### `tool package`
+Linux パッケージ (deb, rpm, archlinux) を生成します。
+
+```bash
+wails3 tool package [flags]
+```
+
+#### フラグ
+| Flag      | Description                          | Default  |
+|-----------|--------------------------------------|----------|
+| `-format` | パッケージフォーマット (deb, rpm, archlinux) | `deb`    |
+| `-name`   | 実行ファイル名                      | 必須 |
+| `-config` | 設定ファイルのパス                     | 必須 |
+| `-out`    | 出力ディレクトリ                     | `.`      |
+
+#### フラグ
+| Flag      | Description                          | Default |
+|-----------|--------------------------------------|---------|
+| `-format` | パッケージフォーマット (deb, rpm, archlinux) | `deb`   |
+| `-name`   | 実行ファイル名                      | `myapp` |
+| `-config` | 設定ファイルのパス                     |         |
+| `-out`    | 出力ディレクトリ                     | `.`     |
+
+基本コマンド: `wails3 update`
+
+## アップデートコマンド
+
+アップデートコマンドは、プロジェクトのアセットの管理と更新に役立ちます。すべてのアップデートコマンドは基本コマンド `wails3 update <command>` を使用します。
+
+### `update cli`
+Wails CLI を新しいバージョンに更新します。
+
+```bash
+wails3 update cli [flags]
+```
+
+#### フラグ
+| Flag        | Description                     | Default |
+|-------------|---------------------------------|---------|
+| `-pre`      | 最新のプレリリース版に更新    | `false` |
+| `-version`  | 特定のバージョンに更新      |         |
+| `-nocolour` | カラー出力を無効にする          | `false` |
+
+`update cli` コマンドを使用すると、Wails CLI のインストールを更新できます。デフォルトでは、最新の安定版リリースに更新されます。
+`-pre` フラグを使用して最新のプレリリース版に更新するか、`-version` フラグを使用して特定のバージョンを指定できます。
+
+更新後、プロジェクトの `go.mod` ファイルを更新して同じバージョンを使用することを忘れないでください:
+```bash
+require github.com/wailsapp/wails/v3 v3.x.x
+```
+
+### `update build-assets`
+指定された設定ファイルを使用してビルドアセットを更新します。
+
+```bash
+wails3 update build-assets [flags]
+```
+
+#### フラグ
+| Flag           | Description         | Default |
+|----------------|---------------------|---------|
+| `-config`      | 設定ファイルのパス    |         |
+| `-dir`         | 出力ディレクトリ    | `build` |
+| `-silent`      | 出力を抑制する     | `false` |
+| `-company`     | 会社名        |         |
+| `-productname` | プロダクト名        |         |
+| `-description` | プロダクトの説明 |         |
+| `-version`     | プロダクトのバージョン     |         |
+| `-identifier`  | プロダクトの識別子  |         |
+| `-copyright`   | 著作権表示    |         |
+| `-comments`    | ファイルのコメント       |         |
+
+基本コマンド: `wails3`
+
+## ユーティリティコマンド
+
+ユーティリティコマンドは、一般的なタスクのための便利なショートカットを提供します。基本コマンド `wails3 <command>` に直接これらのコマンドを使用します。
+
+### `docs`
+デフォルトのブラウザで Wails のドキュメントを開きます。
+
+```bash
+wails3 docs
+```
+
+### `releasenotes`
+現在のバージョン、または指定されたバージョンのリリースノートを表示します。
+
+```bash
+wails3 releasenotes [flags]
+```
+
+#### フラグ
+| Flag | Description                       | Default |
+|------|-----------------------------------|---------|
+| `-v` | リリースノートを表示するバージョン |         |
+| `-n` | カラー出力を無効にする             | `false` |
+
+### `version`
+現在の Wails のバージョンを出力します。
+
+```bash
+wails3 version
+```
+
+### `sponsor`
+デフォルトのブラウザで Wails のスポンサーシップページを開きます。
+
+```bash
+wails3 sponsor

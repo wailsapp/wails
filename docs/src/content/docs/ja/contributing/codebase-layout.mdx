@@ -1,0 +1,210 @@
+---
+title: コードベースの構成
+description: Wails v3 リポジトリの構成と、各要素がどのように連携しているか
+sidebar:
+  order: 2
+---
+
+Wails v3 は、フレームワークランタイム、CLI、例題、ドキュメント、ビルドツールチェーンを含む **モノレポ** で構成されています。  
+このページでは、内部構造を理解する際に重要な *ディレクトリ構造* を順を追って解説します。
+
+## 全体像
+
+```
+wails/
+├── v3/               # ⬅️ Wails v3 に固有のすべてのコードはここにあります
+├── v2/               # 既存の v2 実装（v3 の作業では無視して構いません）
+├── docs/             # Astro 製の v3 ドキュメントサイト（このページ！）
+├── website/          # Docusaurus v2 サイトおよびマーケティングページ（メインサイト）
+├── scripts/          # 各種ヘルパースクリプト（例：スポンサー画像生成ツール）
+├── mkdocs-website/   # 廃止された v3 ドキュメントのプロトタイプ
+└── *.md              # プロジェクト全体のメタファイル（CHANGELOG、LICENSE、…）
+```
+
+以降は、**`v3/`** ツリーに焦点を当てて解説します。
+
+## `v3/` ルート
+
+```
+v3/
+├── cmd/          # コンパイル可能なコマンド（現在は wails3 CLI のみ）
+├── examples/     # 各機能をテストする実用的なサンプルアプリ
+├── internal/     # フレームワークの実装（公開 API ではありません）
+├── pkg/          # 公開 Go パッケージ ‑ API の表面
+├── tasks/        # Taskfile ベースのリリースユーティリティ
+├── templates/    # RFC 形式の提案（WEP）＋ 共通アセット
+├── go.mod
+└── go.sum
+```
+
+### 概念的なモデル
+
+1. **`pkg/`** は *アプリケーション開発者がインポートするもの* を公開します
+2. **`internal/`** は *魔法がどのように実装されているか* を含みます
+3. **`cmd/wails3`** は *プロジェクトのライフサイクルとビルド* を制御します
+4. **`examples/`** は *生きたテスト* と *参照コード* の両方の役割を果たします
+
+それ以外のすべての要素は、これら 3 つの柱をサポートするものです。
+
+---
+
+## `cmd/` – コマンド
+
+| パス | 備考 |
+|------|-------|
+| `v3/cmd/wails3` | **CLI のエントリーポイント**。小さな `main.go` が、`internal/commands` 内のパッケージにすべてのロジックを委譲します。 |
+| `internal/commands/*` | サブコマンド（init、dev、build、doctor、…）。それぞれが個別のファイルに格納されており、発見しやすいようになっています。 |
+| `internal/commands/task_wrapper.go` | CLI フラグと Taskfile ビルドパイプラインの橋渡しを行います。 |
+
+CLI が担当する機能：
+
+* **プロジェクトのスケルトン生成**（`init`、テンプレート生成）  
+* **開発サーバーのオーケストレーション**（`dev`、ライブリロード）  
+* **本番ビルドとパッケージング**（`build`、`package`、プラットフォーム固有のラッパー）  
+* **診断**（`doctor`）  
+
+---
+
+## `internal/` – エンジンルーム
+
+```
+internal/
+├── assetserver/  # ウェブアセットの提供と埋め込み
+├── buildinfo/    # 再現可能なビルドメタデータ
+├── commands/     # CLI の仕組み（上記参照）
+├── runtime/      # デスクトップランタイム（プラットフォーム固有）
+├── generator/    # 静的解析とバインディング生成
+├── templates/    # プロジェクトテンプレート（フロントエンドスタック）
+├── packager/     # Linux AppImage/deb/rpm、Windows MSI、macOS DMG
+├── capabilities/ # ホスト OS の機能プロbing
+├── dbus/         # Linux システムトレイ統合
+├── service/      # IPC マイクロサービスフレームワーク
+└── ...           # [その他のヘルパーサブパッケージ]
+```
+
+### 主要なサブパッケージ
+
+| パッケージ | 責任範囲 | 接続先 |
+|---------|----------------|-------------------|
+| `runtime` | ウィンドウ/イベントループ、クリップボード、ダイアログ、システムトレイ。OS ごとに 1 ファイル（`*_darwin.go`、`*_linux.go`、…）でビルドタグを使用。 | `pkg/application` およびメッセージプロセッサから呼び出されます。 |
+| `assetserver` | デュアルモードファイルサーバー：<br />• 開発中：ディスクから提供し Vite をプロキシ<br />• 本番：`go:embed` を通じてアセットを埋め込み | `pkg/application` の起動時に初期化されます。 |
+| `generator` | Go ソースを解析して **バインディングメタデータ** を構築し、後で TypeScript スタブファイルと Go のマーシャル/アンマーシャルコードを生成します。 | `wails3 init` / `wails3 generate` によってトリガーされます。 |
+| `packager` | プラットフォーム固有のパッケージング CLI（例：`electron-builder` 相当）を Go にラップし、クロスプラットフォームの自動化を実現します。 | `wails3 package` によって呼び出されます。 |
+
+サポートユーティリティ（例：`s/`、`hash/`、`flags/`）は、内部の関心事を分離するために使用されます。
+
+---
+
+## `pkg/` – 公開 API
+
+```
+pkg/
+├── application/   # コア API：ウィンドウ、メニュー、ダイアログ、イベント、…
+├── runtime/       # JS 側のヘルパー（ブリッジ、イベント、画面、…）
+├── options/       # 型安全な設定構造体
+├── menu/          # 宣言型メニュー DSL
+└── ...            # プラットフォーム固有のヘルパー（mac/、windows/、assetserver/、…）
+```
+
+`pkg/application` は Wails プログラムのブートストラップを行います：
+
+```go
+func main() {
+    app := application.New(application.Options{
+        Name: "MyApp",
+        Assets: application.NewAssetsFS(assetsFS),
+    })
+    window := app.Window.New(&application.WebviewWindowOptions{
+        Title:  "Hello",
+        Width:  1024,
+        Height: 768,
+    })
+    app.Run()
+}
+```
+
+内部では以下のことを行っています：
+
+1. `internal.runtime.*` を起動
+2. `assetserver` をセットアップ
+3. `internal.generator` によって生成されたバインディングを登録
+4. OS のメインスレッドに入る
+
+---
+
+## `examples/` – 生きた仕様書
+
+各サブフォルダは、1 つの機能を演習する **自己完結型のアプリケーション** です。  
+実際のコードでも見られるパターン：
+
+* バインディングサービス（`examples/binding/`）  
+* マルチウィンドウ（`examples/window/`）  
+* システムトレイ（`examples/systray-*`）  
+* パッケージング（`examples/file-association/`）  
+
+迷ったときはここから始め、実装の詳細を掘り下げていきましょう。
+
+---
+
+## `templates/` – スケルトン設計図
+
+`internal/templates` は **ベーステンプレート**（Go レイアウト）と **フロントエンドスキン**
+（React、Svelte、Vue、…）を提供します。  
+`wails3 init -t react` を実行すると、CLI は：
+
+1. `_common` の Go ファイルをコピー
+2. 希望するフロントエンドパックをマージ
+3. `npm install` と `task deps` を実行
+
+テンプレートを編集しても **既存のアプリには影響せず**、新しい `init` のみに影響します。
+
+---
+
+## `tasks/` – リリース自動化
+
+Taskfile は、複雑なクロスコンパイル、バージョンアップ、CHANGELOG 生成をラップしています。これらは `internal/commands/task.go` によってプログラム的に消費されるため、同じロジックが **CLI** と **CI** の両方で機能します。
+
+---
+
+## 各要素の連携
+
+```d2
+direction: down
+CLI: "wails3 CLI"
+Generator: "internal/generator"
+AssetDev: "assetserver (dev)"
+Packager: "internal/packager"
+AppRuntime: {
+  label: "App runtime"
+  ApplicationPkg: "pkg.application"
+  InternalRuntime: "internal.runtime"
+  OSAPIs: "OS APIs"
+}
+CLI -> Generator: "build / generate"
+CLI -> AssetDev: "dev"
+CLI -> Packager: "package"
+Generator -> ApplicationPkg: "bindings"
+ApplicationPkg -> InternalRuntime
+InternalRuntime -> OSAPIs
+ApplicationPkg -> AssetDev
+```
+
+*CLI → generator → runtime* は、**ソース** から **実行中のデスクトップアプリ** へのコアパスを形成します。
+
+---
+
+## 方向性のヒント
+
+| 知りたいこと | 参照先 |
+|---------------------|----------|
+| プラットフォーム固有の shim | `internal/runtime/*_DARWIN.go`、`*_windows.go`、… |
+| ブリッジプロトコル | `pkg/application/messageprocessor_*.go` |
+| アセットワークフロー | `internal/assetserver`、`v3/templates/base/assets` |
+| パッケージングフロー | `internal/commands/appimage.go`、`internal/packager` |
+| テンプレートエンジン | `internal/templates/templates.go` |
+| 静的解析 | `internal/generator/*` |
+
+---
+
+これでリポジトリの **概念的な地図** が完成しました。  
+`ripgrep`、IDE の「ファイル/シンボルへ移動」、および例題アプリを使用して、任意の機能により深くナビゲートしてください。ハッピーハッキング！

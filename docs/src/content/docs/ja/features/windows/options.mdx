@@ -1,0 +1,1003 @@
+---
+title: ウィンドウオプション
+description: WebviewWindowOptionsの完全なリファレンス
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## ウィンドウ設定オプション
+
+Wailsは、サイズ、位置、外観、動作に関する数十種類のオプションを備えた包括的なウィンドウ設定を提供します。このリファレンスでは、Windows、macOS、Linux全体で利用可能なすべてのオプションを網羅し、`WebviewWindowOptions`の**完全なリファレンス**としています。すべてのオプション、すべてのプラットフォーム、例と制約を含みます。
+
+## WebviewWindowOptions の構造
+
+```go
+type WebviewWindowOptions struct {
+    // Identity
+    Name  string
+    Title string
+    
+    // Size and Position
+    Width     int
+    Height    int
+    X         int
+    Y         int
+    MinWidth  int
+    MinHeight int
+    MaxWidth  int
+    MaxHeight int
+    
+    // Initial State
+    Hidden          bool
+    Frameless       bool
+    Resizable       bool
+    AlwaysOnTop     bool
+    Fullscreen      bool
+    Minimised       bool
+    Maximised       bool
+    WindowState     WindowState
+    
+    // Appearance
+    BackgroundColour RGBA
+    BackgroundType   BackgroundType
+    
+    // Content
+    URL  string
+    HTML string
+    
+    // Assets
+    Assets application.AssetOptions
+    
+    // Security
+    ContentProtectionEnabled bool
+
+    // Menu
+    UseApplicationMenu bool
+
+    // Lifecycle
+    OnClose   func() bool
+    OnDestroy func()
+
+    // Platform-Specific
+    Mac     MacOptions
+    Windows WindowsOptions
+    Linux   LinuxOptions
+}
+```
+
+## コアオプション
+
+### Name
+
+**型:** `string`  
+**デフォルト:** 自動生成されたUUID  
+**プラットフォーム:** すべて
+
+```go
+Name: "main-window"
+```
+
+**目的:** 後でウィンドウを検索するための一意の識別子。
+
+**ベストプラクティス:**
+- 説明的な名前を使用する: `"main"`, `"settings"`, `"about"`
+- ケバブケースを使用する: `"file-browser"`, `"color-picker"`
+- 短くて覚えやすい名前にする
+
+**例:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name: "settings-window",
+})
+
+// その後...
+settings := app.GetWindowByName("settings-window")
+```
+
+### Title
+
+**型:** `string`  
+**デフォルト:** アプリケーション名  
+**プラットフォーム:** すべて
+
+```go
+Title: "My Application"
+```
+
+**目的:** タイトルバーとタスクバーに表示されるテキスト。
+
+**動的な更新:**
+
+```go
+window.SetTitle("My Application - Document.txt")
+```
+
+### Width / Height
+
+**型:** `int` (ピクセル)  
+**デフォルト:** 800 x 600  
+**プラットフォーム:** すべて  
+**制約:** 正の値でなければならない
+
+```go
+Width:  1200,
+Height: 800,
+```
+
+**目的:** 論理ピクセルでの初期ウィンドウサイズ。
+
+**注記:**
+- WailsはDPIスケーリングを自動的に処理します
+- 物理ピクセルではなく論理ピクセルを使用してください
+- 最小画面解像度 (1024x768) を考慮してください
+
+**例のサイズ:**
+
+| 使用例 | 幅 | 高さ |
+|----------|-------|--------|
+| 小型ユーティリティ | 400 | 300 |
+| 標準アプリ | 1024 | 768 |
+| 大型アプリ | 1440 | 900 |
+| フルHD | 1920 | 1080 |
+
+### X / Y
+
+**型:** `int` (ピクセル)  
+**デフォルト:** 画面の中央  
+**プラットフォーム:** すべて
+
+```go
+X: 100,  // 左端から100px
+Y: 100,  // 上端から100px
+```
+
+**目的:** 初期ウィンドウの位置。
+
+**座標系:**
+- (0, 0) はプライマリ画面の左上
+- 正のXは右方向
+- 正のYは下方向
+
+**例:**
+
+```go
+settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name: "coordinate-window",
+    InitialPosition: application.WindowXY, // 座標系を使用
+    X:    100,
+    Y:    100,
+})
+```
+
+**ベストプラクティス:** `Center()` を使用してウィンドウを中央に配置してください:
+
+```go
+window := app.Window.New()
+window.Center()
+```
+
+### MinWidth / MinHeight
+
+**型:** `int` (ピクセル)  
+**デフォルト:** 0 (最小値なし)  
+**プラットフォーム:** すべて
+
+```go
+MinWidth:  400,
+MinHeight: 300,
+```
+
+**目的:** ウィンドウが小さくなりすぎないようにする。
+
+**使用例:**
+- 壊れたレイアウトの防止
+- 使いやすさの確保
+- アスペクト比の維持
+
+**例:**
+
+```go
+// ウィンドウが400x300より小さくならないようにする
+MinWidth:  400,
+MinHeight: 300,
+```
+
+### MaxWidth / MaxHeight
+
+**型:** `int` (ピクセル)  
+**デフォルト:** 0 (最大値なし)  
+**プラットフォーム:** すべて
+
+```go
+MaxWidth:  1920,
+MaxHeight: 1080,
+```
+
+**目的:** ウィンドウが大きくなりすぎないようにする。
+
+**使用例:**
+- 固定サイズアプリケーション
+- リソースの過剰使用の防止
+- デザイン制約の維持
+
+## 状態オプション
+
+### Hidden
+
+**型:** `bool`
+**デフォルト:** `false`
+**プラットフォーム:** すべて
+
+```go
+Hidden: true,
+```
+
+**目的:** 表示せずにウィンドウを作成する。
+
+**使用例:**
+- バックグラウンドウィンドウ
+- 必要に応じて表示されるウィンドウ
+- スプラッシュスクリーン (作成、読み込み、その後表示)
+- コンテンツの読み込み中の白いフラッシュの防止
+
+**プラットフォームの改善:**
+- **Windows:** 白いウィンドウのフラッシュが修正 - `Show()` が呼び出されるまでウィンドウは非表示のまま
+- **macOS:** 完全サポート
+- **Linux:** 完全サポート
+
+**スムーズな読み込みのための推奨パターン:**
+
+```go
+// 非表示のウィンドウを作成
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "main-window",
+    Hidden: true,
+    BackgroundColour: application.RGBA{R: 30, G: 30, B: 30, A: 255}, // テーマに合わせる
+})
+
+// 非表示の間にコンテンツを読み込む
+// ... コンテンツが読み込まれる ...
+
+// 準備ができたら表示 (フラッシュなし!)
+window.Show()
+```
+
+**例:**
+
+```go
+settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "settings",
+    Hidden: true,
+})
+
+// 必要に応じて表示
+settings.Show()
+```
+
+### Frameless
+
+**型:** `bool`  
+**デフォルト:** `false`  
+**プラットフォーム:** すべて
+
+```go
+Frameless: true,
+```
+
+**目的:** タイトルバーとウィンドウの境界線を削除する。
+
+**使用例:**
+- カスタムウィンドウクローム
+- スプラッシュスクリーン
+- キオスクアプリケーション
+- カスタムデザインのウィンドウ
+
+**重要:** 以下を実装する必要があります:
+- ウィンドウのドラッグ
+- 閉じる/最小化/最大化ボタン
+- リサイズハンドル (リサイズ可能な場合)
+
+**詳細は [Frameless Windows](/ja/features/windows/frameless) を参照してください。**
+
+### Resizable
+
+**型:** `bool`  
+**デフォルト:** `true`  
+**プラットフォーム:** すべて
+
+```go
+Resizable: false,
+```
+
+**目的:** ウィンドウのリサイズを許可/禁止する。
+
+**使用例:**
+- 固定サイズアプリケーション
+- スプラッシュスクリーン
+- ダイアログ
+
+**注記:** ユーザーは、それらも防止しない限り、最大化/全画面表示 still にできます。
+
+### AlwaysOnTop
+
+**型:** `bool`  
+**デフォルト:** `false`  
+**プラットフォーム:** すべて
+
+```go
+AlwaysOnTop: true,
+```
+
+**目的:** ウィンドウを他のすべてのウィンドウの上に保持する。
+
+**使用例:**
+- フローティングツールバー
+- 通知
+- ピクチャーインピクチャー
+- タイマー
+
+**プラットフォームの注記:**
+- **macOS:** 完全サポート
+- **Windows:** 完全サポート
+- **Linux:** ウィンドウマネージャーに依存
+
+### Fullscreen
+
+**型:** `bool`  
+**デフォルト:** `false`  
+**プラットフォーム:** すべて
+
+```go
+Fullscreen: true,
+```
+
+**目的:** 全画面モードで開始する。
+
+**プラットフォームの動作:**
+- **macOS:** 新しいスペース (仮想デスクトップ) を作成
+- **Windows:** タスクバーを覆う
+- **Linux:** デスクトップ環境によって異なる
+
+**ランタイムでの切り替え:**
+
+```go
+window.Fullscreen()
+window.UnFullscreen()
+```
+
+### Minimised / Maximised
+
+**型:** `bool`  
+**デフォルト:** `false`  
+**プラットフォーム:** すべて
+
+```go
+Minimised: true,  // 最小化して開始
+Maximised: true,  // 最大化して開始
+```
+
+**目的:** 初期ウィンドウ状態を設定する。
+
+**注記:** 両方を `true` に設定しないでください - 動作は未定義です。
+
+### WindowState
+
+**型:** `WindowState` 列挙型  
+**デフォルト:** `WindowStateNormal`  
+**プラットフォーム:** すべて
+
+```go
+WindowState: application.WindowStateMaximised,
+```
+
+**値:**
+- `WindowStateNormal` - 通常のウィンドウ
+- `WindowStateMinimised` - 最小化
+- `WindowStateMaximised` - 最大化
+- `WindowStateFullscreen` - 全画面
+- `WindowStateHidden` - 非表示
+
+**個々のフラグよりも推奨:**
+
+```go
+// ✅ 推奨
+WindowState: application.WindowStateMaximised,
+
+// ❌ 避ける
+Maximised: true,
+```
+
+## 外観オプション
+
+### BackgroundColour
+
+**型:** `RGBA` 構造体  
+**デフォルト:** 白 (255, 255, 255, 255)  
+**プラットフォーム:** すべて
+
+```go
+BackgroundColour: application.RGBA{R: 0, G: 0, H: 0, A: 255},
+```
+
+**目的:** コンテンツが読み込まれる前のウィンドウの背景色。
+
+**使用例:**
+- アプリのテーマに合わせる
+- ダークテーマでの白いフラッシュの防止
+- スムーズな読み込み体験
+
+**例:**
+
+```go
+// ダークテーマ
+BackgroundColour: application.RGBA{R: 30, G: 30, B: 30, A: 255},
+
+// ライトテーマ```go
+BackgroundColour: application.RGBA{R: 255, G: 255, B: 255, A: 255},
+```
+
+**ヘルパーメソッド:**
+
+```go
+window.SetBackgroundColour(30, 30, 30, 255)
+```
+
+### BackgroundType
+
+**型:** `BackgroundType` 列挙型  
+**デフォルト:** `BackgroundTypeSolid`  
+**プラットフォーム:** macOS, Windows (部分的)
+
+```go
+BackgroundType: application.BackgroundTypeTranslucent,
+```
+
+**値:**
+- `BackgroundTypeSolid` - 単色
+- `BackgroundTypeTransparent` - 完全な透明
+- `BackgroundTypeTranslucent` - 半透明のぼかし
+
+**プラットフォームのサポート:**
+- **macOS:** すべてのタイプをサポート
+- **Windows:** 透明および半透明 (Windows 11 以降)
+- **Linux:** 単色のみ
+
+**例 (macOS):**
+
+```go
+BackgroundType: application.BackgroundTypeTranslucent,
+Mac: application.MacOptions{
+    Backdrop: application.MacBackdropTranslucent,
+},
+```
+
+## コンテンツオプション
+
+### URL
+
+**型:** `string`  
+**デフォルト:** 空 (アセットから読み込み)  
+**プラットフォーム:** すべて
+
+```go
+URL: "https://example.com",
+```
+
+**目的:** 埋め込みアセットの代わりに外部 URL を読み込みます。
+
+**使用例:**
+- 開発中 (開発サーバーから読み込み)
+- ウェブベースのアプリケーション
+- ハイブリッドアプリケーション
+
+**例:**
+
+```go
+// 開発中
+URL: "http://localhost:5173",
+
+// 本番環境
+Assets: application.AssetOptions{
+    Handler: application.AssetFileServerFS(assets),
+},
+```
+
+### HTML
+
+**型:** `string`  
+**デフォルト:** 空  
+**プラットフォーム:** すべて
+
+```go
+HTML: "<h1>Hello World</h1>",
+```
+
+**目的:** HTML 文字列を直接読み込みます。
+
+**使用例:**
+- シンプルなウィンドウ
+- 生成されたコンテンツ
+- テスト
+
+**例:**
+
+```go
+HTML: `
+<!DOCTYPE html>
+<html>
+<head><title>Simple Window</title></head>
+<body><h1>Hello from Wails!</h1></body>
+</html>
+`,
+```
+
+### Assets
+
+**型:** `AssetOptions`  
+**デフォルト:** アプリケーションから継承  
+**プラットフォーム:** すべて
+
+```go
+Assets: application.AssetOptions{
+    Handler: application.AssetFileServerFS(assets),
+},
+```
+
+**目的:** 埋め込みフロントエンドアセットを提供します。
+
+**詳細については [ビルドシステム](/ja/concepts/build-system) を参照してください。**
+
+### UseApplicationMenu
+
+**型:** `bool`
+**デフォルト:** `false`
+**プラットフォーム:** Windows, Linux (macOS では効果なし)
+
+```go
+UseApplicationMenu: true,
+```
+
+**目的:** このウィンドウでアプリケーションメニュー (`app.Menu.Set()` で設定) を使用します。
+
+**macOS** では、このオプションは効果を持ちません。macOS では常に画面の上部にグローバルなアプリケーションメニューが使用されるためです。
+
+**Windows** および **Linux** では、ウィンドウはデフォルトでメニューを表示しません。`UseApplicationMenu: true` を設定すると、ウィンドウはアプリケーションレベルのメニューを使用するようになり、シンプルなクロスプラットフォームソリューションが提供されます。
+
+**例:**
+
+```go
+// アプリケーションメニューを一度設定
+menu := app.NewMenu()
+menu.AddRole(application.FileMenu)
+menu.AddRole(application.EditMenu)
+app.Menu.Set(menu)
+
+// UseApplicationMenu を持つすべてのウィンドウがこのメニューを表示します
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:              "Main Window",
+    UseApplicationMenu: true,
+})
+
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:              "Second Window",
+    UseApplicationMenu: true,  // アプリケーションメニューも取得
+})
+```
+
+**注記:**
+- `UseApplicationMenu` とウィンドウ固有のメニューの両方が設定されている場合、ウィンドウ固有のメニューが優先されます
+- これにより、ランタイムでの OS チェックの必要性がなくなり、クロスプラットフォームのコードが簡素化されます
+- 完全なメニューのドキュメントについては [アプリケーションメニュー](/ja/features/menus/application) を参照してください
+
+## 入力オプション
+
+### EnableFileDrop
+
+**型:** `bool`  
+**デフォルト:** `false`  
+**プラットフォーム:** すべて
+
+```go
+EnableFileDrop: true,
+```
+
+**目的:** ファイルのドラッグアンドドロップを、オペレーティングシステムからウィンドウ内へ有効にします。
+
+有効化すると:
+- ファイルマネージャーからドラッグされたファイルをアプリケーションにドロップできます
+- ドロップされたファイルのパスとともに `WindowFilesDropped` イベントが発火します
+- `data-file-drop-target` 属性を持つ要素は、詳細なドロップ情報を提供します
+
+**使用例:**
+- ファイルアップロードインターフェース
+- ドキュメントエディター
+- メディアインポーター
+- ファイルを受け付けるあらゆるアプリケーション
+
+**例:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "File Uploader",
+    EnableFileDrop: true,
+})
+
+// ドロップされたファイルを処理
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    details := event.Context().DropTargetDetails()
+    
+    for _, file := range files {
+        fmt.Println("Dropped:", file)
+    }
+})
+```
+
+**HTML ドロップゾーン:**
+
+```html
+<!-- 要素をドロップターゲットとしてマーク -->
+<div id="upload" data-file-drop-target>
+    ここにファイルをドロップ
+</div>
+```
+
+**完全なドキュメントについては [ファイルドロップ](/ja/features/drag-and-drop/files) を参照してください。**
+
+## セキュリティオプション
+
+### ContentProtectionEnabled
+
+**型:** `bool`  
+**デフォルト:** `false`  
+**プラットフォーム:** Windows (10 以降), macOS
+
+```go
+ContentProtectionEnabled: true,
+```
+
+**目的:** ウィンドウコンテンツのスクリーンキャプチャを防止します。
+
+**プラットフォームのサポート:**
+- **Windows:** Windows 10 ビルド 19041 以降 (完全)、それ以前のバージョン (部分的)
+- **macOS:** 完全なサポート
+- **Linux:** サポートなし
+
+**使用例:**
+- 銀行アプリケーション
+- パスワードマネージャー
+- 医療記録
+- 機密文書
+
+**重要な注記:**
+1. 物理的な写真撮影は防止できません
+2. 一部のツールは保護を回避する可能性があります
+3. 包括的なセキュリティの一部であり、単独の保護手段ではありません
+4. DevTools ウィンドウは自動的に保護されません
+
+**例:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "Secure Window",
+    ContentProtectionEnabled: true,
+})
+
+// ランタイムで切り替え
+window.SetContentProtection(true)
+```
+
+## ライフサイクルオプション
+
+### OnClose
+
+**型:** `func() bool`  
+**デフォルト:** `nil` (常に閉じることを許可)  
+**プラットフォーム:** すべて
+
+```go
+OnClose: func() bool {
+    // false を返して閉じることをキャンセル
+    // true を返して閉じることを許可
+    return true,
+},
+```
+
+**目的:** ウィンドウの閉じるイベントを処理し、必要に応じて閉じることを防止します。
+
+**使用例:**
+- 未保存の変更がある場合に閉じる前に確認
+- 閉じる前に状態を保存
+- 誤った閉じる操作の防止
+
+**例:**
+
+```go
+OnClose: func() bool {
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("未保存の変更があります。閉じますか？")
+        return result == "yes"
+    }
+    return true,
+},
+```
+
+**重要:** ユーザーの操作 (X ボタンのクリック) によってのみトリガーされ、`window.Destroy()` からはトリガーされません。
+
+### OnDestroy
+
+**型:** `func()`  
+**デフォルト:** `nil`  
+**プラットフォーム:** すべて
+
+```go
+OnDestroy: func() {
+    // クリーンアップコード
+    fmt.Println("Window destroyed")
+},
+```
+
+**目的:** ウィンドウが破棄されたときのクリーンアップを行います。
+
+**使用例:**
+- リソースの解放
+- 接続の閉じる
+- アプリケーション状態の更新
+
+**例:**
+
+```go
+OnDestroy: func() {
+    // データベース接続を閉じる
+    if db != nil {
+        db.Close()
+    }
+    
+    // ウィンドウリストから削除
+    removeWindow(window.ID())
+},
+```
+
+## プラットフォーム固有のオプション### Mac オプション
+
+```go
+Mac: application.MacWindow{
+    TitleBar: application.MacTitleBar{
+        AppearsTransparent: true,
+        Hide:               false,
+        HideTitle:          true,
+        FullSizeContent:    true,
+    },
+    Backdrop:                application.MacBackdropTranslucent,
+    InvisibleTitleBarHeight: 50,
+    WindowLevel:             application.MacWindowLevelNormal,
+    CollectionBehavior:      application.MacWindowCollectionBehaviorDefault,
+},
+```
+
+**TitleBar** (`MacTitleBar`)
+- `AppearsTransparent` - タイトルバーを透明にし、コンテンツがタイトルバー領域に拡張されます
+- `Hide` - タイトルバーを完全に非表示にします
+- `HideTitle` - タイトルテキストのみを非表示にします
+- `FullSizeContent` - コンテンツをウィンドウの全サイズに拡張します
+
+**Backdrop** (`MacBackdrop`)
+- `MacBackdropNormal` - 標準の不透明な背景
+- `MacBackdropTranslucent` - ぼかされた半透明の背景
+- `MacBackdropTransparent` - 完全な透明な背景
+
+**InvisibleTitleBarHeight** (`int`)
+- 非表示のタイトルバー領域の高さ（ドラッグ用）
+- ネイティブのタイトルバードラッグ領域が非表示になっている場合にのみ有効になります。つまり、ウィンドウがフレームレス（`Frameless: true`）または透明なタイトルバー（`AppearsTransparent: true`）を使用している場合です
+- 表示されたタイトルバーを持つ標準的なウィンドウには影響しません
+
+**WindowLevel** (`MacWindowLevel`)
+- `MacWindowLevelNormal` - 標準的なウィンドウレベル（デフォルト）
+- `MacWindowLevelFloating` - 標準的なウィンドウの上に浮きます
+- `MacWindowLevelTornOffMenu` - 切り離されたメニューレベル
+- `MacWindowLevelModalPanel` - モーダルパネルレベル
+- `MacWindowLevelMainMenu` - メインメニューレベル
+- `MacWindowLevelStatus` - ステータスウィンドウレベル
+- `MacWindowLevelPopUpMenu` - ポップアップメニューレベル
+- `MacWindowLevelScreenSaver` - スクリーンセーバーレベル
+
+**CollectionBehavior** (`MacWindowCollectionBehavior`)
+
+macOS Spaces および全画面表示にわたるウィンドウの動作を制御します。これらはビットマスク値であり、ビットごとの OR（`|`）を使用して組み合わせることができます。
+
+**Space の動作:**
+- `MacWindowCollectionBehaviorDefault` - FullScreenPrimary を使用します（デフォルト、後方互換）
+- `MacWindowCollectionBehaviorCanJoinAllSpaces` - ウィンドウはすべての Space に表示されます
+- `MacWindowCollectionBehaviorMoveToActiveSpace` - 表示されたときにアクティブな Space に移動します
+- `MacWindowCollectionBehaviorManaged` - デフォルトの管理されたウィンドウの動作
+- `MacWindowCollectionBehaviorTransient` - 一時的なウィンドウ
+- `MacWindowCollectionBehaviorStationary` - Space の切り替え中に静止したままになります
+
+**ウィンドウの切り替え:**
+- `MacWindowCollectionBehaviorParticipatesInCycle` - Cmd+` の切り替えに含まれます
+- `MacWindowCollectionBehaviorIgnoresCycle` - Cmd+` の切り替えから除外されます
+
+**全画面表示の動作:**
+- `MacWindowCollectionBehaviorFullScreenPrimary` - 全画面モードに入ることができます
+- `MacWindowCollectionBehaviorFullScreenAuxiliary` - 全画面表示のアプリに重ねて表示できます
+- `MacWindowCollectionBehaviorFullScreenNone` - 全画面表示の機能を無効にします
+- `MacWindowCollectionBehaviorFullScreenAllowsTiling` - 並べてタイル表示を許可します（macOS 10.11 以降）
+- `MacWindowCollectionBehaviorFullScreenDisallowsTiling` - タイル表示を防止します（macOS 10.11 以降）
+
+**例 - Spotlight 風のウィンドウ:**
+
+```go
+// すべての Space に表示され、かつ全画面表示のアプリに重ねて表示できるウィンドウ
+Mac: application.MacWindow{
+    CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces |
+                        application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+    WindowLevel:        application.MacWindowLevelFloating,
+},
+```
+
+**例 - 単一の動作:**
+
+```go
+// 全画面表示のアプリケーションの上に重ねて表示できるウィンドウ
+Mac: application.MacWindow{
+    CollectionBehavior: application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+},
+```
+
+### Windows オプション
+
+```go
+Windows: application.WindowsOptions{
+    DisableWindowIcon:      false,
+    WindowBackdropType:     application.WindowsBackdropTypeAuto,
+    CustomTheme:            nil,
+    DisableFramelessWindowDecorations: false,
+},
+```
+
+**DisableWindowIcon** (`bool`)
+- タイトルバーからアイコンを削除します
+- よりクリーンな外観になります
+
+**WindowBackdropType** (`WindowsBackdropType`)
+- `WindowsBackdropTypeAuto` - システムのデフォルト
+- `WindowsBackdropTypeNone` - バックドロップなし
+- `WindowsBackdropTypeMica` - Mica マテリアル（Windows 11）
+- `WindowsBackdropTypeAcrylic` - アクリルマテリアル（Windows 11）
+- `WindowsBackdropTypeTabbed` - タブマテリアル（Windows 11）
+
+**CustomTheme** (`*WindowsTheme`)
+- カスタムカラーテーマ
+- システムの色を上書きします
+
+**DisableFramelessWindowDecorations** (`bool`)
+- デフォルトのフレームレス装飾を無効にします
+- カスタムウィンドウクローム用
+
+**例:**
+
+```go
+Windows: application.WindowsOptions{
+    WindowBackdropType: application.WindowsBackdropTypeMica,
+    DisableWindowIcon:  true,
+},
+```
+
+### Linux オプション
+
+```go
+Linux: application.LinuxOptions{
+    Icon:                []byte{/* PNG data */},
+    WindowIsTranslucent: false,
+},
+```
+
+**Icon** (`[]byte`)
+- ウィンドウアイコン（PNG 形式）
+- タイトルバーとタスクバーに表示されます
+
+**WindowIsTranslucent** (`bool`)
+- ウィンドウの半透明を有効にします
+- コンポジットマネージャーのサポートが必要です
+
+**例:**
+
+```go
+//go:embed icon.png
+var icon []byte
+
+Linux: application.LinuxOptions{
+    Icon: icon,
+},
+```
+
+## アプリケーションレベルのウィンドウオプション
+
+一部の Windows 固有のオプションは、ウィンドウごとにではなく、アプリケーションレベルで構成する必要があります。これは、WebView2 がユーザーデータパスごとに単一のブラウザ環境を共有するためです。
+
+### ブラウザフラグ
+
+WebView2 のブラウザフラグは、アプリケーション内の**すべてのウィンドウ**にわたる実験的な機能と動作を制御します。これらは `application.Options.Windows` で設定する必要があります。
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Windows: application.WindowsOptions{
+        // 実験的な WebView2 の機能を有効にする
+        EnabledFeatures: []string{
+            "msWebView2EnableDraggableRegions",
+        },
+
+        // 特定の機能を無効にする
+        DisabledFeatures: []string{
+            "msSmartScreenProtection",  // Wails によって常に無効化されます
+        },
+
+        // 追加の Chromium コマンドライン引数
+        AdditionalBrowserArgs: []string{
+            "--disable-gpu",
+            "--remote-debugging-port=9222",
+        },
+    },
+})
+```
+
+**EnabledFeatures** (`[]string`)
+- 有効にする WebView2 の機能フラグのリスト
+- 利用可能なフラグについては [WebView2 browser flags](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags) を参照してください
+- 例: `"msWebView2EnableDraggableRegions"`
+
+**DisabledFeatures** (`[]string`)
+- 無効にする WebView2 の機能フラグのリスト
+- Wails は自動的に `msSmartScreenProtection` を無効にします
+- 例: `"msExperimentalFeature"`
+
+**AdditionalBrowserArgs** (`[]string`)
+- ブラウザプロセスに渡される Chromium のコマンドライン引数
+- `--` プレフィックスを含める必要があります（例: `"--remote-debugging-port=9222"`）
+- 利用可能な引数については [Chromium command line switches](https://peter.sh/experiments/chromium-command-line-switches/) を参照してください
+
+:::caution[重要]
+これらのフラグは、WebView2 がユーザーデータパスごとに単一のブラウザ環境を共有するため、すべてのウィンドウにグローバルに適用されます。異なるウィンドウに対して異なるブラウザフラグを持つことはできません。
+:::
+
+**完全な例:**
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        Windows: application.WindowsOptions{
+            // ドラッグ可能な領域の機能を有効にする
+            EnabledFeatures: []string{
+                "msWebView2EnableDraggableRegions",
+            },
+            // リモートデバッグを有効にする
+            AdditionalBrowserArgs: []string{
+                "--remote-debugging-port=9222",
+            },
+        },
+    })
+
+    // すべてのウィンドウは上記で構成されたブラウザフラグを使用します
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  "Main Window",
+        Width:  1024,
+        Height: 768,
+    })
+
+    window.Show()
+    app.Run()
+}
+```---
+
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[例](https://github.com/wailsapp/wails/tree/master/v3/examples) をご確認ください。

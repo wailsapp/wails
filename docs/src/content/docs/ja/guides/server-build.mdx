@@ -1,0 +1,312 @@
+---
+title: サーバービルド
+description: ネイティブGUIウィンドウなしでHTTPサーバーとしてWailsアプリケーションを実行する
+sidebar:
+    order: 52
+    badge:
+        text: 実験的
+        variant: caution
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="実験的機能">
+サーバーモードは実験的な機能であり、将来のリリースで変更される可能性があります。
+</Aside>
+
+Wails v3はサーバーモードをサポートしており、ネイティブウィンドウを作成したりGUI依存関係を必要としたりすることなく、アプリケーションを純粋なHTTPサーバーとして実行できます。これにより、同じWailsアプリケーションをサーバー、コンテナ、およびWebブラウザにデプロイすることが可能になります。
+
+## 概要
+
+サーバーモードは以下に有用です：
+
+- **Docker/コンテナデプロイメント** - X11/Waylandの依存関係なしで実行
+- **サーバーサイドアプリケーション** - ブラウザからアクセス可能なWebサーバーとしてデプロイ
+- **Web専用アクセス** - デスクトップとWebの間で同じコードベースを共有
+- **CI/CDテスト** - ディスプレイサーバーなしで統合テストを実行
+- **マイクロサービス** - ヘッドレスバックエンドサービスでWailsバインディングを使用
+
+## クイックスタート
+
+サーバーモードは `server` ビルドタグを介して有効になります。アプリケーションコードはそのまま維持され、タグ付きでビルドするだけです：
+
+```bash
+# Taskfileを使用（推奨）
+wails3 task build:server
+wails3 task run:server
+
+# またはGoで直接ビルド
+go build -tags server -o myapp-server .
+```
+
+以下に最小限の例を示します：
+
+```go
+package main
+
+import (
+    "embed"
+    "log"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        // サーバーオプションは -tags server でビルドされた場合に使用されます
+        Server: application.ServerOptions{
+            Host: "localhost",
+            Port: 8080,
+        },
+        Services: []application.Service{
+            application.NewService(&MyService{}),
+        },
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+
+    log.Println("Starting application...")
+    if err := app.Run(); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+同じコードを、デスクトップ（タグなし）またはサーバーモード（`-tags server` 付き）の両方でビルドできます。
+
+## 設定
+
+### ServerOptions
+
+`ServerOptions` でHTTPサーバーを設定します：
+
+```go
+Server: application.ServerOptions{
+    // バインドするホスト。デフォルト: "localhost"
+    // "0.0.0.0" を使用してすべてのインターフェースでリスニング
+    Host: "localhost",
+
+    // リスニングするポート。デフォルト: 8080
+    Port: 8080,
+
+    // リクエスト読み込みタイムアウト。デフォルト: 30s
+    ReadTimeout: 30 * time.Second,
+
+    // レスポンス書き込みタイムアウト。デフォルト: 30s
+    WriteTimeout: 30 * time.Second,
+
+    // アイドル接続タイムアウト。デフォルト: 120s
+    IdleTimeout: 120 * time.Second,
+
+    // グracefulシャットダウンタイムアウト。デフォルト: 30s
+    ShutdownTimeout: 30 * time.Second,
+
+    // TLS設定（オプション）
+    TLS: &application.TLSOptions{
+        CertFile: "/path/to/cert.pem",
+        KeyFile:  "/path/to/key.pem",
+    },
+},
+```
+
+## 機能
+
+### ヘルスチェックエンドポイント
+
+ヘルスチェックエンドポイントが `/health` で自動的に利用可能です：
+
+```bash
+curl http://localhost:8080/health
+# {"status":"ok"}
+```
+
+これは以下に有用です：
+- Kubernetesのliveness/readinessプローブ
+- ロードバランサーのヘルスチェック
+- モニタリングシステム
+
+### サービスバインディング
+
+すべてのサービスバインディングはデスクトップモードと同じように動作します：
+
+```go
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+    return "Hello, " + name + "!"
+}
+
+// オプションで登録
+Services: []application.Service{
+    application.NewService(&GreetService{}),
+},
+```
+
+フロントエンドは標準のWailsランタイムを使用してこれらのバインディングを呼び出すことができます：
+
+```javascript
+const greeting = await wails.Call.ByName('main.GreetService.Greet', 'World');
+```
+
+### イベント
+
+サーバーモードでは、イベントは双方向に動作します：
+
+- **フロントエンドからバックエンドへ**：ブラウザから送信されたイベントはHTTPを介して送信され、Goのイベントハンドラーによって受信されます
+- **バックエンドからフロントエンドへ**：Goから送信されたイベントは、WebSocketを介して接続されているすべてのブラウザにブロードキャストされます
+
+各ブラウザタブは一意の名前（`browser-1`、`browser-2` など）を持つ「ウィンドウ」として表現され、`event.Sender` を介してアクセス可能です：
+
+```go
+// ブラウザからのイベントをリッスン
+app.Event.On("user-action", func(event *application.CustomEvent) {
+    log.Printf("Event from %s: %v", event.Sender, event.Data)
+    // event.Sender は "browser-1"、"browser-2" などになります
+})
+
+// 接続されているすべてのブラウザにイベントを送信
+app.Event.Emit("server-update", data)
+```
+
+フロントエンドから：
+
+```javascript
+// サーバー（および他のすべてのブラウザ）にイベントを送信
+await wails.Events.Emit('user-action', { action: 'click' });
+
+// サーバーからのイベントをリッスン
+wails.Events.On('server-update', (event) => {
+    console.log('Update from server:', event.data);
+});
+```
+
+### グracefulシャットダウン
+
+サーバーは `SIGINT` および `SIGTERM` シグナルをグracefulに処理します：
+
+1. 新しい接続の受信を停止
+2. アクティブなリクエストの完了を待機（最大 `ShutdownTimeout` まで）
+3. `OnShutdown` フックを実行
+4. 逆順でサービスをシャットダウン
+
+## デスクトップモードとの違い
+
+| 機能 | デスクトップモード | サーバーモード |
+|---------|-----|-----------|
+| ネイティブウィンドウ | 作成される | ブラウザウィンドウ（`browser-N`） |
+| システムトレイ | 利用可能 | 利用不可 |
+| ネイティブダイアログ | 利用可能 | 利用不可 |
+| アプリケーションメニュー | 利用可能 | 利用不可 |
+| スクリーン情報 | 利用可能 | エラーを返す |
+| サービスバインディング | 動作 | 動作 |
+| イベント | 動作 | 動作（WebSocket経由） |
+| アセット | webview経由 | HTTP経由 |
+| CGOの必要 | はい | いいえ |
+
+### ウィンドウAPIの動作
+
+サーバーモードでは、ウィンドウ関連のAPIは安全に処理されます：
+
+- `app.Window.NewWithOptions()` - 警告をログに出力し、nilを返す
+- `app.Hide()` / `app.Show()` - 何もしない（no-op）
+- `app.Screen.GetPrimary()` - エラーを返す
+
+これにより、ウィンドウを参照するコードがクラッシュせずに実行されますが、ウィンドウ操作には効果はありません。
+
+## 本番環境向けビルド
+
+### Taskの使用（推奨）
+
+`wails3 init` で作成されたプロジェクトには `build:server` タスクが含まれています：
+
+```bash
+# サーバーモード用にビルド
+wails3 task build:server
+
+# ビルドして実行
+wails3 task run:server
+```
+
+### 手動ビルド
+
+```bash
+# サーバーモードでビルド
+go build -tags server -o myapp-server .
+```
+
+### Docker
+
+Wailsプロジェクトには、すぐに使えるDockerセットアップが含まれています。コンテナ内でアプリケーションをビルドして実行するには：
+
+```bash
+# Dockerイメージをビルド
+wails3 task build:docker
+
+# 実行
+wails3 task run:docker
+```
+
+それだけです！アプリケーションは `http://localhost:8080` で利用可能になります。
+
+いくつかのオプションを使用してビルドをカスタマイズできます：
+
+```bash
+# カスタムイメージタグを使用
+wails3 task build:docker TAG=myapp:v1.0.0
+
+# 異なるポートで実行
+wails3 task run:docker PORT=3000
+```
+
+生成された `Dockerfile.server` は、distrolessを基盤とした最小限のイメージを作成します。ネットワークバインディングを自動的に処理するため、アプリケーションはコンテナの外からアクセス可能になります。
+
+### Docker Compose
+
+より複雑なデプロイメントの場合、ヘルスチェック付きのDocker Compose設定を以下に示します：
+
+```yaml
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - WAILS_SERVER_HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+:::note
+ヘルスチェックの例では `wget` を使用しています。distrolessベースイメージを使用している場合は、イメージにヘルスチェックバイナリを含めるか、外部のヘルスチェックメカニズム（例：Dockerの `curl` オプションまたはサイドカーコンテナ）を使用する必要があります。
+:::
+
+### カスタムDockerfile
+
+より多くの制御が必要な場合は、独自のDockerfileを作成できます。覚えておくべき重要な点は、`WAILS_SERVER_HOST=0.0.0.0` を設定して、サーバーがコンテナ外の接続を受け入れるようにすることです：
+
+```dockerfile
+# ビルドステージ
+FROM golang:alpine AS builder
+WORKDIR /app
+RUN apk add --no-cache git
+COPY . .
+RUN go mod tidy
+RUN go build -tags server -ldflags="-s -w" -o server .------|------|------|
+| `WAILS_SERVER_HOST` | バインドするネットワークインターフェース | `localhost` |
+| `WAILS_SERVER_PORT` | リッスンするポート | `8080` |
+
+これらはコード内の `ServerOptions` よりも優先されます。そのため、Docker の例では `WAILS_SERVER_HOST=0.0.0.0` を設定しています。これにより、アプリケーションに変更を加えることなく、コンテナが外部からの接続を受け付けるようになります。
+
+## 関連項目
+
+- [カスタムトランスポート](/docs/guides/custom-transport) - 高度な IPC カスタマイズ用
+- [サービス](/docs/concepts/services) - サービスバインディングのドキュメント
+- [イベント](/docs/guides/events-reference) - イベントシステムのドキュメント

@@ -1,0 +1,616 @@
+---
+title: 環境
+description: Wails アプリケーションでシステム環境情報にアクセスする
+sidebar:
+  order: 59
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails は EnvironmentManager API を通じて包括的な環境情報を提供します。これにより、アプリケーションはシステムのプロパティやテーマの偏好を検出し、オペレーティングシステムのファイルマネージャーと統合できます。
+
+## 環境マネージャーへのアクセス
+
+環境マネージャーは、アプリケーションインスタンス上の `Env` プロパティを通じてアクセスします:
+
+```go
+app := application.New(application.Options{
+    Name: "Environment Demo",
+})
+
+// 環境マネージャーにアクセス
+env := app.Env
+```
+
+## システム情報
+
+### 環境情報の取得
+
+ランタイム環境に関する包括的な情報を取得します:
+
+```go
+envInfo := app.Env.Info()
+
+app.Logger.Info("Environment information",
+    "os", envInfo.OS,           // "windows", "darwin", "linux"
+    "arch", envInfo.Arch,       // "amd64", "arm64", etc.
+    "debug", envInfo.Debug,     // Debug mode flag
+)
+
+// オペレーティングシステムの詳細
+if envInfo.OSInfo != nil {
+    app.Logger.Info("OS details",
+        "name", envInfo.OSInfo.Name,
+        "version", envInfo.OSInfo.Version,
+    )
+}
+
+// プラットフォーム固有の情報
+for key, value := range envInfo.PlatformInfo {
+    app.Logger.Info("Platform info", "key", key, "value", value)
+}
+```
+
+### 環境構造
+
+環境情報には、いくつかの重要なフィールドが含まれています:
+
+```go
+type EnvironmentInfo struct {
+    OS           string                 // オペレーティングシステム: "windows", "darwin", "linux"
+    Arch         string                 // アーキテクチャ: "amd64", "arm64", "386", etc.
+    Debug        bool                   // デバッグモードで実行中かどうか
+    OSInfo       *operatingsystem.OS    // 詳細なOS情報
+    PlatformInfo map[string]any         // プラットフォーム固有の詳細
+}
+```
+
+## テーマの検出
+
+### ダークモードの検出
+
+システムがダークモードを使用しているかどうかを検出します:
+
+```go
+if app.Env.IsDarkMode() {
+    app.Logger.Info("System is in dark mode")
+    // アプリケーションにダークテーマを適用
+    applyDarkTheme()
+} else {
+    app.Logger.Info("System is in light mode")
+    // アプリケーションにライトテーマを適用
+    applyLightTheme()
+}
+```
+
+### テーマ変更の監視
+
+テーマの変更をリッスンして、アプリケーションを動的に更新します:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// テーマ変更をリッスン
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
+    if app.Env.IsDarkMode() {
+        app.Logger.Info("Switched to dark mode")
+        updateApplicationTheme("dark")
+    } else {
+        app.Logger.Info("Switched to light mode")
+        updateApplicationTheme("light")
+    }
+})
+
+func updateApplicationTheme(theme string) {
+    // アプリケーションのテーマを更新
+    // これはフロントエンドにイベントを発行する可能性があります
+    app.Event.Emit("theme:changed", theme)
+}
+```
+
+## ファイルマネージャーとの統合
+
+### ファイルマネージャーを開く
+
+特定の場所でシステムのファイルマネージャーを開きます:
+
+```go
+// ディレクトリでファイルマネージャーを開く
+err := app.Env.OpenFileManager("/Users/username/Documents", false)
+if err != nil {
+    app.Logger.Error("Failed to open file manager", "error", err)
+}
+
+// ファイルマネージャーを開き、特定のファイルを選択
+err = app.Env.OpenFileManager("/Users/username/Documents/report.pdf", true)
+if err != nil {
+    app.Logger.Error("Failed to open file manager with selection", "error", err)
+}
+```
+
+### 一般的なユースケース
+
+アプリケーションからファイルマネージャーにファイルやフォルダーを表示します:
+
+```go
+func showInFileManager(app *application.App, path string) {
+    err := app.Env.OpenFileManager(path, true)
+    if err != nil {
+        // フォールバック: ディレクトリのみを開こうとする
+        dir := filepath.Dir(path)
+        err = app.Env.OpenFileManager(dir, false)
+        if err != nil {
+            app.Logger.Error("Could not open file manager", "path", path, "error", err)
+            
+            // ユーザーにエラーを表示
+            app.Dialog.Error().
+                SetTitle("File Manager Error").
+                SetMessage("Could not open file manager").
+                Show()
+        }
+    }
+}
+
+// 使用例
+func setupFileMenu(app *application.App) {
+    menu := app.Menu.New()
+    fileMenu := menu.AddSubmenu("File")
+    
+    fileMenu.Add("Show Downloads Folder").OnClick(func(ctx *application.Context) {
+        homeDir, _ := os.UserHomeDir()
+        downloadsDir := filepath.Join(homeDir, "Downloads")
+        showInFileManager(app, downloadsDir)
+    })
+    
+    fileMenu.Add("Show Application Data").OnClick(func(ctx *application.Context) {
+        configDir, _ := os.UserConfigDir()
+        appDir := filepath.Join(configDir, "MyApp")
+        showInFileManager(app, appDir)
+    })
+}
+```
+
+## プラットフォーム固有の動作
+
+### 適応的なアプリケーションの動作
+
+環境情報を使用して、アプリケーションの動作を適応させます:
+
+```go
+func configureForPlatform(app *application.App) {
+    envInfo := app.Env.Info()
+    
+    switch envInfo.OS {
+    case "darwin":
+        configureMacOS(app)
+    case "windows":
+        configureWindows(app)
+    case "linux":
+        configureLinux(app)
+    }
+    
+    // アーキテクチャに適応
+    if envInfo.Arch == "arm64" {
+        app.Logger.Info("Running on ARM architecture")
+        // 潜在的に ARM 用に最適化
+    }
+}
+
+func configureMacOS(app *application.App) {
+    app.Logger.Info("Configuring for macOS")
+    
+    // macOS 固有の設定
+    menu := app.Menu.New()
+    menu.AddRole(application.AppMenu) // 標準の macOS アプリメニューを追加
+    
+    // ダークモードの処理
+    if app.Env.IsDarkMode() {
+        setMacOSDarkTheme()
+    }
+}
+
+func configureWindows(app *application.App) {
+    app.Logger.Info("Configuring for Windows")
+    
+    // Windows 固有の設定
+    // Windows スタイルのメニュー、キーバインドなどを設定
+}
+
+func configureLinux(app *application.App) {
+    app.Logger.Info("Configuring for Linux")
+    
+    // Linux 固有の設定
+    // 異なるデスクトップ環境に適応
+}
+```
+
+## デバッグモードの処理
+
+### 開発と本番
+
+デバッグモードの情報を使用して、開発用機能を有効にします:
+
+```go
+func setupApplicationMode(app *application.App) {
+    envInfo := app.Env.Info()
+    
+    if envInfo.Debug {
+        app.Logger.Info("Running in debug mode")
+        setupDevelopmentFeatures(app)
+    } else {
+        app.Logger.Info("Running in production mode")
+        setupProductionFeatures(app)
+    }
+}
+
+func setupDevelopmentFeatures(app *application.App) {
+    // 開発専用の機能を有効化
+    menu := app.Menu.New()
+    
+    // 開発用メニューを追加
+    devMenu := menu.AddSubmenu("Development")
+    devMenu.Add("Reload Application").OnClick(func(ctx *application.Context) {
+        // アプリケーションをリロード
+        window := app.Window.Current()
+        if window != nil {
+            window.Reload()
+        }
+    })
+    
+    devMenu.Add("Open DevTools").OnClick(func(ctx *application.Context) {
+        window := app.Window.Current()
+        if window != nil {
+            window.OpenDevTools()
+        }
+    })
+    
+    devMenu.Add("Show Environment").OnClick(func(ctx *application.Context) {
+        showEnvironmentDialog(app)
+    })
+}
+
+func setupProductionFeatures(app *application.App) {
+    // 本番環境専用の機能
+    // デバッグログを無効化、分析を有効化など
+}
+```
+
+## 環境情報ダイアログ
+
+### システム情報の表示
+
+環境情報を表示するダイアログを作成します:
+
+```go
+func showEnvironmentDialog(app *application.App) {
+    envInfo := app.Env.Info()
+    
+    details := fmt.Sprintf(`Environment Information:
+
+Operating System: %s
+Architecture: %s
+Debug Mode: %t
+
+Dark Mode: %t
+
+Platform Information:`, 
+        envInfo.OS, 
+        envInfo.Arch, 
+        envInfo.Debug,
+        app.Env.IsDarkMode())
+    
+    // プラットフォーム固有の詳細を追加
+    for key, value := range envInfo.PlatformInfo {
+        details += fmt.Sprintf("\n%s: %v", key, value)
+    }    if envInfo.OSInfo != nil {
+        details += fmt.Sprintf("\n\nOS Details:\nName: %s\nVersion: %s", 
+            envInfo.OSInfo.Name, 
+            envInfo.OSInfo.Version)
+    }
+    
+    dialog := app.Dialog.Info()
+    dialog.SetTitle("Environment Information")
+    dialog.SetMessage(details)
+    dialog.Show()
+}
+```
+
+## プラットフォームの考慮事項
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    macOSでは:
+    
+    - ダークモードの検出はシステムの外観設定を使用します
+    - ファイルマネージャーの操作はFinderを使用します
+    - プラットフォーム情報にはmacOSのバージョン詳細が含まれます
+    - Apple Silicon Macではアーキテクチャが "arm64" になる場合があります
+    
+    ```go
+    if envInfo.OS == "darwin" {
+        // macOS固有の処理
+        if envInfo.Arch == "arm64" {
+            app.Logger.Info("Apple Silicon上で実行中")
+        }
+    }
+    ```
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    Windowsでは:
+    
+    - ダークモードの検出はWindowsのテーマ設定を使用します
+    - ファイルマネージャーの操作はWindowsエクスプローラーを使用します
+    - プラットフォーム情報にはWindowsのバージョン詳細が含まれます
+    - Windows固有の追加情報が含まれる場合があります
+    
+    ```go
+    if envInfo.OS == "windows" {
+        // Windows固有の処理
+        for key, value := range envInfo.PlatformInfo {
+            if key == "windows_version" {
+                app.Logger.Info("Windowsのバージョン", "version", value)
+            }
+        }
+    }
+    ```
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    Linuxでは:
+    
+    - ダークモードの検出はデスクトップ環境によって異なります
+    - ファイルマネージャーの操作はシステムのデフォルトのファイルマネージャーを使用します
+    - プラットフォーム情報にはディストリビューションの詳細が含まれます
+    - 異なるLinuxディストリビューション間で動作が異なる場合があります
+    
+    ```go
+    if envInfo.OS == "linux" {
+        // Linux固有の処理
+        if distro, ok := envInfo.PlatformInfo["distribution"]; ok {
+            app.Logger.Info("Linuxディストリビューション", "distro", distro)
+        }
+    }
+    ```
+    
+  </TabItem>
+</Tabs>
+
+## ベストプラクティス
+
+1. **環境情報をキャッシュする**: 環境情報はランタイム中にほとんど変更されません:
+   ```go
+   type App struct {
+       envInfo *application.EnvironmentInfo
+   }
+   
+   func (a *App) getEnvInfo() application.EnvironmentInfo {
+       if a.envInfo == nil {
+           info := a.app.Env.Info()
+           a.envInfo = &info
+       }
+       return *a.envInfo
+   }
+   ```
+
+2. **テーマ変更を処理する**: システムのテーマ変更をリッスンします:
+   ```go
+   app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
+       updateTheme(app.Env.IsDarkMode())
+   })
+   ```
+
+3. **ファイルマネージャーの障害を適切に処理する**: ファイルマネージャーのエラーを常に処理します:
+   ```go
+   func openFileManagerSafely(app *application.App, path string) {
+       err := app.Env.OpenFileManager(path, false)
+       if err != nil {
+           // フォールバックまたはユーザー通知を提供
+           app.Logger.Warn("ファイルマネージャーを開けませんでした", "path", path)
+       }
+   }
+   ```
+
+4. **プラットフォーム固有の機能を使用する**: 環境情報を使用してプラットフォーム固有の機能を有効にします:
+   ```go
+   envInfo := app.Env.Info()
+   if envInfo.OS == "darwin" {
+       // macOS固有の機能を有効にする
+   }
+   ```
+
+## 完全な例
+
+環境管理を示す完全な例を以下に示します:
+
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+    "path/filepath"
+    "runtime"
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Environment Demo",
+    })
+
+    // 環境に基づいてアプリケーションを設定
+    setupForEnvironment(app)
+
+    // テーマ変更を監視
+    monitorThemeChanges(app)
+
+    // 環境機能を持つメニューを作成
+    setupEnvironmentMenu(app)
+
+    // メインウィンドウを作成
+    window := app.Window.New()
+    window.SetTitle("Environment Demo")
+
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
+}
+
+func setupForEnvironment(app *application.App) {
+    envInfo := app.Env.Info()
+    
+    app.Logger.Info("アプリケーションの環境",
+        "os", envInfo.OS,
+        "arch", envInfo.Arch,
+        "debug", envInfo.Debug,
+        "darkMode", app.Env.IsDarkMode(),
+    )
+
+    // プラットフォーム用に構成
+    switch envInfo.OS {
+    case "darwin":
+        app.Logger.Info("macOS用に構成中")
+        // macOS固有の設定
+    case "windows":
+        app.Logger.Info("Windows用に構成中")
+        // Windows固有の設定
+    case "linux":
+        app.Logger.Info("Linux用に構成中")
+        // Linux固有の設定
+    }
+
+    // 初期テーマを適用
+    if app.Env.IsDarkMode() {
+        applyDarkTheme(app)
+    } else {
+        applyLightTheme(app)
+    }
+}
+
+func monitorThemeChanges(app *application.App) {
+    app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
+        if app.Env.IsDarkMode() {
+            app.Logger.Info("システムがダークモードに切り替わりました")
+            applyDarkTheme(app)
+        } else {
+            app.Logger.Info("システムがライトモードに切り替わりました")
+            applyLightTheme(app)
+        }
+    })
+}
+
+func setupEnvironmentMenu(app *application.App) {
+    menu := app.Menu.New()
+    
+    // プラットフォーム固有のアプリメニューを追加
+    if runtime.GOOS == "darwin" {
+        menu.AddRole(application.AppMenu)
+    }
+    
+    // ツールメニュー
+    toolsMenu := menu.AddSubmenu("ツール")
+    
+    toolsMenu.Add("環境情報を表示").OnClick(func(ctx *application.Context) {
+        showEnvironmentInfo(app)
+    })
+    
+    toolsMenu.Add("ダウンロードフォルダーを開く").OnClick(func(ctx *application.Context) {
+        openDownloadsFolder(app)
+    })
+    
+    toolsMenu.Add("テーマを切り替え").OnClick(func(ctx *application.Context) {
+        // これは通常システムによって処理されます
+        // ここではデモンストレーションのために示しています
+        toggleTheme(app)
+    })
+    
+    app.Menu.Set(menu)
+}
+
+func showEnvironmentInfo(app *application.App) {
+    envInfo := app.Env.Info()
+    
+    message := fmt.Sprintf(`環境情報:
+
+オペレーティングシステム: %s
+アーキテクチャ: %s
+デバッグモード: %t
+ダークモード: %t
+
+プラットフォームの詳細:`,
+        envInfo.OS,
+        envInfo.Arch,
+        envInfo.Debug,
+        app.Env.IsDarkMode())
+    
+    for key, value := range envInfo.PlatformInfo {
+        message += fmt.Sprintf("\n%s: %v", key, value)
+    }
+    
+    if envInfo.OSInfo != nil {
+        message += fmt.Sprintf("\n\nOS情報:\n名前: %s\nバージョン: %s",
+            envInfo.OSInfo.Name,
+            envInfo.OSInfo.Version)
+    }
+    
+    dialog := app.Dialog.Info()
+    dialog.SetTitle("環境情報")
+    dialog.SetMessage(message)
+    dialog.Show()
+}
+
+func openDownloadsFolder(app *application.App) {
+    homeDir, err := os.UserHomeDir()
+    if err != nil {
+        app.Logger.Error("ホームディレクトリを取得できませんでした", "error", err)
+        return
+    }
+    
+    downloadsDir := filepath.Join(homeDir, "Downloads")
+    err = app.Env.OpenFileManager(downloadsDir, false)
+    if err != nil {
+        app.Logger.Error("ダウンロードフォルダーを開けませんでした", "error", err)
+        
+        app.Dialog.Error().
+            SetTitle("ファイルマネージャーエラー").
+            SetMessage("ダウンロードフォルダーを開けませんでした").
+            Show()
+    }
+}
+
+func applyDarkTheme(app *application.App) {
+    app.Logger.Info("ダークテーマを適用中")
+    // フロントエンドにテーマ変更をemit
+    app.Event.Emit("theme:apply", "dark")
+}
+
+func applyLightTheme(app *application.App) {
+    app.Logger.Info("ライトテーマを適用中")
+    // フロントエンドにテーマ変更をemit
+    app.Event.Emit("theme:apply", "light")
+}
+
+func toggleTheme(app *application.App) {
+    // これはデモンストレーション用です
+    // 実際のテーマ変更はシステムから来るべきです
+    currentlyDark := app.Env.IsDarkMode()
+    if currentlyDark {
+        applyLightTheme(app)
+    } else {
+        applyDarkTheme(app)
+    }
+}:::tip[プロヒント]
+環境情報を使用して、プラットフォームに適したユーザーエクスペリエンスを提供してください。例えば、macOS では Command キーのショートカットを、Windows/Linux では Control キーのショートカットを使用します。
+:::
+
+:::danger[警告]
+環境情報はアプリケーションの実行中は一般的に安定していますが、テーマの設定は変更される可能性があります。UI を同期させたままにするために、テーマ変更イベントを常に監視してください。
+:::

@@ -1,0 +1,234 @@
+---
+title: バインディングシステム
+description: Wails v3がゼロボイラープレートでGoとJavaScriptが互いを呼び出す方法
+sidebar:
+  order: 5
+---
+
+> 「バインディング」とは、あなたが以下のように書けるようにする**型安全な契約**です。
+
+```go
+msg, err := chatService.Send("Hello")
+```
+
+Goで *そして*
+
+```ts
+const msg = await window.backend.ChatService.Send("Hello")
+```
+
+TypeScriptで **手動の接着コードなしで**。  
+このドキュメントでは、ビルド時の**静的解析**から**コード生成**、WebViewを介してバイトを移動させる**ランタイムブリッジ**に至るまで、その魔法がどのように起こるかを分解して説明します。
+
+---
+
+## 1. 30秒の概要
+
+| 段階 | コンポーネント | 出力 |
+|-------|-----------|--------|
+| **解析** | `internal/generator/analyse.go` | エクスポートされたGo構造体、メソッド、パラメータ、戻り値のメモリ内AST |
+| **生成** | `internal/generator/render/*.tmpl` | • `pkg/application/bindings.go` (Go)<br />• `frontend/src/wailsjs/**.ts` (TS定義)<br />• `runtime/desktop/@wailsio/runtime/internal/bindings.json` |
+| **ランタイム** | `pkg/application/messageprocessor_call.go` + JSランタイム (`invoke.ts`) | WebViewネイティブブリッジを介したJSONメッセージ |
+
+このフローは `wails3` CLIによってオーケストレーションされます：
+
+```
+wails3 generate  ─┬─> generator.Collect()   // Goパッケージの解析
+                  ├─> generator.Analyse()   // セマンティックモデルの構築
+                  └─> generator.Render()    // ファイルの書き出し + `go fmt`
+```
+
+---
+
+## 2. 静的解析
+
+### エントリポイント
+
+```
+internal/generator/analyse.go
+```
+
+`Analyse(cfg generator.Config)`:
+
+1. `go/packages`を使用して指定されたGoパッケージを再帰的に読み込みます。
+2. 各ASTファイルの*型*と*値*仕様をウォークします。
+3. `internal/` パッケージ外の**エクスポートされた**シンボル（大文字始まり）をフィルタリングします。
+4. 記録：
+   * レシーバ型（`struct`、`interface`）
+   * メソッド名
+   * パラメータリスト（名前、型、ポインタ、可変長引数）
+   * 戻り値タプル（値 + エラーの有無）
+5. 型を**シリアライズ可能なセット**に正規化します  
+   （`int`、`float64`、`string`、`[]byte`、スライス、マップ、構造体、ポインタ）。
+
+サポートされていない型は**コンパイル時のエラー**を生成するため、ミステイクを早期に検出できます。
+
+### モデル
+
+```go
+type Method struct {
+    ID       uint32 // ランタイムでのルックアップ用の安定したハッシュ
+    Name     string
+    Params   []Param
+    Results  []Result
+    Receiver *Struct // パッケージ関数の場合はnil
+}
+```
+
+`<Receiver>.<Name>(<Signature>)` の決定論的な **FNV-1a** ハッシュ（`internal/hash/fnv.go`）が、ランタイムで使用される*メソッドID*になります。
+
+---
+
+## 3. コード生成
+
+### テンプレート
+
+`internal/generator/render/` には text/template ファイルが含まれています：
+
+| テンプレート | ターゲット |
+|----------|--------|
+| `go_bindings.tmpl` | `pkg/application/bindings.go` |
+| `ts_bindings.tmpl` | `frontend/wailsjs/go/models.d.ts` |
+| `ts_index.tmpl`    | `frontend/wailsjs/index.ts` |
+
+ここにあるテンプレートを追加または調整して、生成をカスタマイズできます。
+
+### Go出力
+
+`bindings.go` はルックアップテーブルを登録します：
+
+```go
+var bindings = []application.BoundMethod{
+    {ID: 0x7A1201D3, Name: "ChatService.Send", Call: chatServiceSend},
+}
+
+func chatServiceSend(ctx context.Context, in []byte) ([]byte, error) {
+    var req struct{ Msg string }
+    if err := json.Unmarshal(in, &req); err != nil { return nil, err }
+    res, err := chatService.Send(req.Msg)
+    return json.Marshal(res), err
+}
+```
+
+重要なポイント：
+
+* ランタイムでの**リフレクションゼロ** → パフォーマンス。
+* Marshal/Unmarshal は**メソッドごと**に生成された構造体ラッパーで実行されます。
+
+### TypeScript出力
+
+```ts
+export namespace backend {
+  export namespace ChatService {
+    function Send(msg: string): Promise<string>;
+  }
+}
+```
+
+* **ESモジュール**として出力されるため、任意のバンドラーでツリーシェイク可能です。
+* メソッドIDは、JSランタイム用の自動生成された `bindings.json` に埋め込まれます。
+
+---
+
+## 4. ランタイム呼び出しプロトコル
+
+### JavaScript側
+
+```ts
+import { System } from "@wailsio/runtime";
+
+await System.invoke(0x7a1201d3 /* ChatService.Send */, ["Hello"]);
+```
+
+実装：`runtime/desktop/@wailsio/runtime/invoke.ts`
+
+1. `{t:"c", id:<methodID>, p:[...args]}` をJSONにパックします。
+2. `window.external.invoke(payload)` (WebView2) または同等のものを呼び出します。
+3. 返信に基づいて解決/拒否する `Promise` を返します。
+
+### Go側
+
+1. `messageprocessor_call.go` がJSONを受信します。
+2. `bindings` スライスで `methodID` をルックアップします。
+3. 生成されたスタブ（`chatServiceSend`）を実行します。
+4. `{result, error}` をJSにシリアライズして返します。
+
+### エラーマッピング
+
+| Go | JavaScript |
+|----|------------|
+| `error == nil` | 結果と共に `Promise` が解決 |
+| `errors.New(...)` | `{message, stack, code}` と共に `Promise` が拒否 |
+
+マッピングコードは `runtime/desktop/@wailsio/runtime/errors.ts` にあります。
+
+---
+
+## 5. GoからJavaScriptを呼び出す
+
+*ブラウザ → Go* は上記でカバーされています。  
+*Go → ブラウザ* は**イベント**または**Eval**を使用します：
+
+```go
+window.Eval(`alert("Hi")`)
+app.Publish("chat:new-message", msg)
+```
+
+バインディング生成は一方通行（Goメソッド）です。  
+JSで公開された関数を使用するには、JSで `runtime.EventsOn` を、Goから `application.Publish` を使用します。
+
+---
+
+## 6. 拡張とトラブルシューティング
+
+### カスタムシリアライザーの追加
+
+* `generator.TypeConverter` インターフェースを実装します。
+* `generator.Config.Converters` に登録します。
+* 必要に応じてJSランタイムのデシリアライズを更新します。
+
+### サポートされていない型のエラー
+
+```
+error: field "Client" uses unsupported type: chan struct{}
+```
+
+→ チャネルを公開されたAPIを持つ構造体にラップするか、再設計します。
+
+### バージョンのずれ
+
+バインディングは **毎回の** `wails3 dev` / `wails3 build` 時に再生成されます。  
+IDEのインテリセンスが古いスタブを表示している場合は、`frontend/wailsjs` を削除して再ビルドしてください。
+
+### パフォーマンスのヒント
+
+* 小さな構造体には**値**レシーバーを優先し、割り当てを減らします。
+* ブリッジを介して大きなバイトスライスを使用しないでください。代わりに `application.FileServer` を使用します。
+* 複数のクイック呼び出しを1つのメソッドにバッチ処理して、ブリッジのレイテンシを最小限に抑えます。
+
+---
+
+## 7. 主要ファイルマップ
+
+| 関心事項 | ファイル |
+|---------|------|
+| 静的解析エントリ | `internal/generator/analyse.go` |
+| レンダリングパイプライン | `internal/generator/generate.go` |
+| テンプレートアセット | `internal/generator/render/*.tmpl` |
+| Goバインディングテーブル | `pkg/application/bindings.go` (生成済み) |
+| コールプロセッサ | `pkg/application/messageprocessor_call.go` |
+| JSランタイム | `runtime/desktop/@wailsio/runtime/invoke.ts` |
+| エラーマッピング | `runtime/desktop/@wailsio/runtime/errors.ts` |
+
+ブリッジのバグを追跡する際に、このチートシートを handy に持っておいてください。
+
+---
+
+## 8. まとめ
+
+1. **ジェネレーター** がGoコードをスキャン → セマンティックモデルを構築。  
+2. **テンプレート** が**Goスタブ** + **TypeScript定義** を出力。  
+3. **メッセージプロセッサ** がランタイムでスタブを実行。  
+4. **JSランタイム** がそれをすべて IdiomaticなPromiseでラップ。
+
+リフレクションなし、IPCサーバーなし、ボイラープレートコードを1行も書かずに。これが Wails v3 のバインディングシステムです。行って、バインドしましょう！

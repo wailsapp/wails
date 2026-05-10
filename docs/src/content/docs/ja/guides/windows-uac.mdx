@@ -1,0 +1,152 @@
+---
+title: Windows UAC 設定
+description: Windows 上の Wails アプリケーションのユーザー アカウント制御 (UAC) を設定します
+sidebar:
+  order: 11
+---
+
+import {Badge} from '@astrojs/starlight/components';
+
+対象プラットフォーム: <Badge text="Windows" variant="note" />
+<br/>
+
+Windows のユーザー アカウント制御 (UAC) は、Wails アプリケーションの実行権限を決定します。デフォルトでは、Wails v3 アプリケーションには Windows マニフェスト内に明示的な UAC 設定が含まれており、異なるマシン間での一貫した動作が保証されます。
+
+## UAC 実行レベル
+
+Windows アプリケーションは、マニフェスト ファイルを通じて異なる実行レベルを要求できます。Wails v3 は、アプリケーションの要件に基づいてカスタマイズできるデフォルトの実行レベルで UAC 設定を自動的に含みます。
+
+### 利用可能な実行レベル
+
+| レベル | 説明 | 使用例 |
+|-------|-------|------|
+| `asInvoker` | 親プロセスと同じ権限で実行 | ほとんどのアプリケーションのデフォルト |
+| `highestAvailable` | ユーザーに利用可能な最高権限で実行 | 昇格されたアクセスが必要になる可能性があるアプリケーション |
+| `requireAdministrator` | 常に管理者権限を必要とする | システム ユーティリティ、インストーラー |
+
+### デフォルト設定
+
+Wails v3 アプリケーションには、Windows マニフェスト内にデフォルトの UAC 設定が含まれています。
+
+```xml
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+        <requestedPrivileges>
+            <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+        </requestedPrivileges>
+    </security>
+</trustInfo>
+```
+
+この設定により、アプリケーションは以下のようになります：
+- 起動プロセスと同じ権限で実行される
+- デフォルトでは昇格を必要としない
+- 異なるマシン間で一貫して動作する
+- 通常のユーザーに対して UAC プロンプトを表示しない
+
+## UAC 設定のカスタマイズ
+
+Wails v3 はビルド アセットのカスタマイズを推奨しているため、Windows マニフェスト テンプレートを直接編集して UAC 設定を変更できます。
+
+### マニフェスト テンプレートの場所
+
+Windows マニフェスト テンプレートは以下の場所にあります：
+```
+build/windows/wails.exe.manifest
+```
+
+### 実行レベルの変更
+
+実行レベルを変更するには、`requestedExecutionLevel` 要素の `level` 属性を編集します。
+
+```xml title="build/windows/wails.exe.manifest"
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+        <requestedPrivileges>
+            <requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
+        </requestedPrivileges>
+    </security>
+</trustInfo>
+```
+
+### 例
+
+#### 標準アプリケーション (デフォルト)
+ほとんどのアプリケーションは、デフォルトの `asInvoker` レベルを使用すべきです。
+
+```xml
+<requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+```
+
+#### システム ユーティリティ
+利用可能な場合に昇格されたアクセスを必要とするアプリケーション：
+
+```xml
+<requestedExecutionLevel level="highestAvailable" uiAccess="false"/>
+```
+
+#### 管理ツール
+常に管理者権限を必要とするアプリケーション：
+
+```xml
+<requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
+```
+
+## UI アクセス
+
+`uiAccess` 属性は、アプリケーションがより高い権限の UI 要素と対話できるかどうかを制御します。ほとんどの場合、これは `false` のままにする必要があります。
+
+アプリケーションが以下のことを必要とする場合にのみ `true` に設定します：
+- 他のアプリケーションに入力を送信する
+- 他のアプリケーションの UI を操作する
+- より高い権限のプロセスの UI 要素にアクセスする
+
+:::caution[UI アクセスの要件]
+`uiAccess="true"` を設定するには、アプリケーションが以下の条件を満たしている必要があります：
+- 信頼された認証局からの証明書でデジタル署名されている
+- セキュアな場所 (Program Files または Windows\System32) にインストールされている
+:::
+
+## カスタム UAC 設定でのビルド
+
+マニフェスト テンプレートを修正した後、通常どおりアプリケーションをビルドします：
+
+```bash
+wails3 build
+```
+
+ビルド プロセスは、カスタム UAC 設定を自動的に実行ファイルに埋め込みます。
+
+## UAC 設定の確認
+
+`go-winres` ツールを使用して、UAC 設定が正しく埋め込まれていることを確認できます：
+
+```bash
+go-winres extract --in your-app.exe --out extracted-resources/
+```
+
+その後、抽出されたマニフェスト ファイルを確認して、UAC 設定が存在することを確認します。
+
+:::tip[マニフェストの永続性]
+他のいくつかのフレームワークとは異なり、Wails v3 の UAC 設定はコンパイル時に実行ファイルに直接埋め込まれるため、アプリケーションを他のマシンにコピーしても設定が保持されます。
+:::
+
+## トラブルシューティング
+
+### UAC プロンプトが表示されない
+`requireAdministrator` を設定したが UAC プロンプトが表示されない場合：
+- マニフェストが実行ファイルに正しく埋め込まれていることを確認する
+- すでに昇格されたプロセスから実行していないことを確認する
+- マニフェストの構文が有効な XML であることを確認する
+
+### アプリケーションが起動しない
+UAC 変更後にアプリケーションの起動に失敗した場合：
+- XML エラーがないかマニフェストの構文を確認する
+- 実行レベルの値が有効であることを確認する
+- 問題を切り分けるために `asInvoker` に戻してみる
+
+### マシン間で動作が不一致の場合
+マシン間で UAC の動作が異なる場合：
+- マニフェストが実行ファイルに埋め込まれていることを確認する (外部ファイルではない)
+- ビルド後に実行ファイルが変更されていないことを確認する
+- 対象のマシンで Windows UAC 設定が有効になっていることを確認する

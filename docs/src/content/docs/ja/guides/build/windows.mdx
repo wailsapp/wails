@@ -1,0 +1,124 @@
+---
+title: Windowsのパッケージング
+description: WailsアプリケーションをWindows向けにパッケージ化して配布する
+sidebar:
+  order: 3
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## NSISインストーラー
+
+デフォルトのパッケージング形式はNSISインストーラーを作成します:
+
+```bash
+wails3 package GOOS=windows
+```
+
+これにより `wails3 task windows:package` が実行され、以下の処理が行われます:
+1. アプリケーションのビルド
+2. WebView2ブートストラッパーの生成
+3. NSISインストーラーの作成
+
+出力先: `build/windows/nsis/<AppName>-installer.exe`
+
+### MSIXパッケージ
+
+Microsoft Storeへの配布や、最新のWindowsデプロイメント向け:
+
+```bash
+wails3 package GOOS=windows FORMAT=msix
+```
+
+出力先: `bin/<AppName>-<arch>.msix`
+
+<Aside type="note">
+MSIXには `makeappx.exe` (Windows SDK) または MSIXツールが必要です。セットアップするには `wails3 tool msix-install-tools` を実行してください。
+</Aside>
+
+## インストーラーのカスタマイズ
+
+NSISの設定は `build/windows/nsis/project.nsi` にあります。このファイルを編集してカスタマイズできます:
+
+- インストーラーのUIとブランディング
+- インストールディレクトリ
+- スタートメニューとデスクトップのショートカット
+- ファイル関連付け
+- ライセンス契約
+
+アプリケーションのメタデータは `build/windows/info.json` から取得されます:
+
+```json
+{
+  "fixed": {
+    "file_version": "1.0.0"
+  },
+  "info": {
+    "0000": {
+      "ProductVersion": "1.0.0",
+      "CompanyName": "My Company",
+      "FileDescription": "My Application",
+      "ProductName": "MyApp"
+    }
+  }
+}
+```
+
+## コード署名
+
+SmartScreenの警告を避けるために、実行ファイルとインストーラーに署名してください:
+
+```bash
+# ラッパーを使用する（プラットフォームを自動検出）
+wails3 sign GOOS=windows
+
+# またはタスクを直接使用
+wails3 task windows:sign
+wails3 task windows:sign:installer
+```
+
+`build/windows/Taskfile.yml` で署名を設定します:
+
+```yaml
+vars:
+  SIGN_CERTIFICATE: "path/to/certificate.pfx"
+  # または、Windowsストアの証明書にはサムプリントを使用
+  SIGN_THUMBPRINT: "certificate-thumbprint"
+  TIMESTAMP_SERVER: "http://timestamp.digicert.com"
+```
+
+証明書パスワードは安全に保管してください:
+
+```bash
+wails3 setup signing
+```
+
+詳細については、[アプリケーションの署名](/ja/guides/build/signing) を参照してください。
+
+## ARM向けビルド
+
+```bash
+wails3 build GOOS=windows GOARCH=arm64
+wails3 package GOOS=windows GOARCH=arm64
+```
+
+## トラブルシューティング
+
+### makensis が見つからない
+
+NSISをインストールしてください:
+
+```bash
+# Windows
+winget install NSIS.NSIS
+
+# または https://nsis.sourceforge.io/ からダウンロード
+```
+
+### SmartScreenの警告
+
+実行ファイルに署名されていません。上記の[コード署名](#code-signing)を参照してください。
+
+### WebView2が見つからない
+
+インストーラーにはWebView2ブートストラッパーが含まれており、必要に応じてランタイムをダウンロードします。オフラインインストールが必要な場合は、MicrosoftからEvergreenスタンドアロンインストーラーをダウンロードしてください。

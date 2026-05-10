@@ -1,0 +1,501 @@
+---
+title: アップデーターAPI
+description: Wails v3 アップデーターAPIのリファレンスドキュメント
+sidebar:
+  order: 8
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+# アップデーターAPIリファレンス
+
+アップデーターAPIは、Wailsアプリケーションの自動更新機能を提供します。これには、更新のチェック、ダウンロード、およびインストールが含まれます。
+
+## Go API
+
+### CreateUpdaterService
+
+新しいアップデーターサービスを作成します。
+
+```go
+func CreateUpdaterService(currentVersion string, opts ...UpdaterOption) (*UpdaterService, error)
+```
+
+**パラメータ:**
+- `currentVersion` - アプリケーションの現在のバージョン（例: "1.0.0"）
+- `opts` - 設定オプション
+
+**戻り値:**
+- `*UpdaterService` - アップデーターサービスのインスタンス
+- `error` - 作成に失敗した場合のエラー
+
+**例:**
+```go
+updater, err := application.CreateUpdaterService(
+    "1.0.0",
+    application.WithUpdateURL("https://updates.example.com/myapp/"),
+)
+```
+
+### UpdaterOption 関数
+
+#### WithUpdateURL
+
+更新マニフェストのベースURLを設定します。
+
+```go
+func WithUpdateURL(url string) UpdaterOption
+```
+
+**必須。** URLは `update.json` マニフェストを含むディレクトリを指している必要があります。
+
+#### WithCheckInterval
+
+自動バックグラウンド更新チェックの間隔を設定します。
+
+```go
+func WithCheckInterval(interval time.Duration) UpdaterOption
+```
+
+自動チェックを無効にするには `0` に設定します。デフォルトは `0`（無効）です。
+
+#### WithAllowPrerelease
+
+プレリリースバージョンを更新として考慮できるようにします。
+
+```go
+func WithAllowPrerelease(allow bool) UpdaterOption
+```
+
+デフォルトは `false` です。
+
+#### WithChannel
+
+更新チャネル（例: "stable", "beta", "canary"）を設定します。
+
+```go
+func WithChannel(channel string) UpdaterOption
+```
+
+チャネルは更新URLパスに追加されます。
+
+#### WithPublicKey
+
+署名検証用の公開鍵を設定します。
+
+```go
+func WithPublicKey(key string) UpdaterOption
+```
+
+鍵はbase64エンコードされたEd25519公開鍵である必要があります。
+
+#### WithRequireSignature
+
+すべての更新に署名を要求します。
+
+```go
+func WithRequireSignature(require bool) UpdaterOption
+```
+
+デフォルトは `false` です。
+
+### UpdaterService メソッド
+
+#### GetCurrentVersion
+
+現在のアプリケーションバージョンを返します。
+
+```go
+func (u *UpdaterService) GetCurrentVersion() string
+```
+
+#### CheckForUpdate
+
+新しいバージョンが利用可能かどうかをチェックします。
+
+```go
+func (u *UpdaterService) CheckForUpdate() (*UpdateInfo, error)
+```
+
+**戻り値:**
+- `*UpdateInfo` - 更新情報。更新がない場合は `nil`
+- `error` - チェックに失敗した場合のエラー
+
+#### DownloadUpdate
+
+利用可能な更新をダウンロードします。
+
+```go
+func (u *UpdaterService) DownloadUpdate() error
+```
+
+ダウンロード中に `updater:progress` イベントを発行します。
+
+#### ApplyUpdate
+
+ダウンロードした更新を適用します。
+
+```go
+func (u *UpdaterService) ApplyUpdate() error
+```
+
+これによりアプリケーションが再起動します。
+
+#### DownloadAndApply
+
+1つの呼び出しで更新をダウンロードして適用します。
+
+```go
+func (u *UpdaterService) DownloadAndApply() error
+```
+
+#### GetState
+
+現在のアップデーター状態を返します。
+
+```go
+func (u *UpdaterService) GetState() string
+```
+
+**可能な値:**
+- `"idle"` - 更新進行中なし
+- `"checking"` - 更新をチェック中
+- `"available"` - 更新可能
+- `"downloading"` - 更新をダウンロード中
+- `"ready"` - 更新をダウンロード済み、インストール準備完了
+- `"installing"` - 更新をインストール中
+- `"error"` - エラー発生
+
+#### GetUpdateInfo
+
+利用可能な更新に関する情報を返します。
+
+```go
+func (u *UpdaterService) GetUpdateInfo() *UpdateInfo
+```
+
+#### GetLastError
+
+最後のエラーメッセージを返します。
+
+```go
+func (u *UpdaterService) GetLastError() string
+```
+
+#### Reset
+
+アップデーター状態をリセットします。
+
+```go
+func (u *UpdaterService) Reset()
+```
+
+### UpdateInfo
+
+利用可能な更新に関する情報。
+
+```go
+type UpdateInfo struct {
+    Version      string    `json:"version"`
+    ReleaseDate  time.Time `json:"releaseDate"`
+    ReleaseNotes string    `json:"releaseNotes"`
+    Size         int64     `json:"size"`
+    PatchSize    int64     `json:"patchSize,omitempty"`
+    Mandatory    bool      `json:"mandatory"`
+    HasPatch     bool      `json:"hasPatch"`
+}
+```
+
+| フィールド | 型 | 説明 |
+|-------|------|-------------|
+| `Version` | `string` | 新しいバージョン番号 |
+| `ReleaseDate` | `time.Time` | このバージョンがリリースされた日時 |
+| `ReleaseNotes` | `string` | リリースノート（マークダウン） |
+| `Size` | `int64` | 完全なダウンロードサイズ（バイト） |
+| `PatchSize` | `int64` | パッチサイズ（バイト、利用可能な場合） |
+| `Mandatory` | `bool` | この更新が必須かどうか |
+| `HasPatch` | `bool` | パッチが利用可能かどうか |
+
+### UpdaterConfig
+
+アップデーターの設定。
+
+```go
+type UpdaterConfig struct {
+    UpdateURL        string
+    CheckInterval    time.Duration
+    AllowPrerelease  bool
+    PublicKey        string
+    RequireSignature bool
+    Channel          string
+}
+```
+
+## JavaScript/TypeScript API
+
+アップデーターサービスは、サービスとして追加されるとフロントエンドに自動的にバインドされます。
+
+### 型
+
+```typescript
+interface UpdateInfo {
+  version: string;
+  releaseDate: string;  // ISO 8601 日付文字列
+  releaseNotes: string;
+  size: number;
+  patchSize?: number;
+  mandatory: boolean;
+  hasPatch: boolean;
+}
+
+interface DownloadProgress {
+  downloaded: number;
+  total: number;
+  percentage: number;
+  bytesPerSecond: number;
+}
+```
+
+### メソッド
+
+#### GetCurrentVersion
+
+```typescript
+function GetCurrentVersion(): string
+```
+
+現在のアプリケーションバージョンを返します。
+
+#### CheckForUpdate
+
+```typescript
+function CheckForUpdate(): Promise<UpdateInfo | null>
+```
+
+利用可能な更新をチェックします。
+
+**戻り値:** 更新が利用可能な場合は `UpdateInfo`、それ以外は `null`。
+
+#### DownloadUpdate
+
+```typescript
+function DownloadUpdate(): Promise<void>
+```
+
+利用可能な更新をダウンロードします。`updater:progress` イベントを発行します。
+
+#### ApplyUpdate
+
+```typescript
+function ApplyUpdate(): Promise<void>
+```
+
+ダウンロードした更新を適用します。アプリケーションが再起動します。
+
+#### DownloadAndApply
+
+```typescript
+function DownloadAndApply(): Promise<void>
+```
+
+1つの呼び出しで更新をダウンロードして適用します。
+
+#### GetState
+
+```typescript
+function GetState(): string
+```
+
+現在のアップデーター状態を返します。
+
+#### GetUpdateInfo
+
+```typescript
+function GetUpdateInfo(): UpdateInfo | null
+```
+
+現在の更新情報を返します。
+
+#### GetLastError
+
+```typescript
+function GetLastError(): string
+```
+
+最後のエラーメッセージを返します。
+
+#### Reset
+
+```typescript
+function Reset(): void
+```
+
+アップデーター状態をリセットします。
+
+### イベント
+
+#### updater:progress
+
+ダウンロード中に進行状況情報とともに発行されます。
+
+```typescript
+import { Events } from '@wailsio/runtime';
+
+Events.On('updater:progress', (data: DownloadProgress) => {
+  console.log(`${data.percentage}% ダウンロード済み`);
+});
+```
+
+## 更新マニフェスト形式
+
+更新マニフェスト（`update.json`）は、あなたの更新URLにホストされている必要があります。
+
+### スキーマ
+
+```typescript
+interface Manifest {
+  version: string;
+  release_date: string;      // ISO 8601
+  release_notes?: string;
+  platforms: {
+    [platform: string]: PlatformUpdate;
+  };
+  minimum_version?: string;
+  mandatory?: boolean;
+}
+
+interface PlatformUpdate {
+  url: string;
+  size: number;
+  checksum: string;          // "sha256:..."
+  signature?: string;
+  patches?: PatchInfo[];
+}
+
+interface PatchInfo {
+  from: string;              // このパッチが適用されるバージョン
+  url: string;
+  size: number;
+  checksum: string;
+  signature?: string;
+}
+```
+
+### プラットフォームキー
+
+| プラットフォーム | キー |
+|----------|-----|
+| macOS (Apple Silicon) | `macos-arm64` |
+| macOS (Intel) | `macos-amd64` |
+| Windows (64-bit) | `windows-amd64` |
+| Linux (64-bit) | `linux-amd64` |
+| Linux (ARM64) | `linux-arm64` |
+
+### 例：マニフェスト
+
+```json
+{
+  "version": "1.2.0",
+  "release_date": "2025-01-15T00:00:00Z",
+  "release_notes": "## 変更点\n\n- 新機能\n- バグ修正",
+  "platforms": {
+    "macos-arm64": {
+      "url": "https://example.com/app-1.2.0-macos-arm64.tar.gz",
+      "size": 12582912,
+      "checksum": "sha256:abc123def456...",
+      "patches": [
+        {
+          "from": "1.1.0",```json
+        "url": "https://example.com/patches/1.1.0-to-1.2.0.patch",
+        "size": 14336,
+        "checksum": "sha256:789xyz..."
+      }
+    ]
+  },
+  "windows-amd64": {
+    "url": "https://example.com/app-1.2.0-windows.zip",
+    "size": 14680064,
+    "checksum": "sha256:ghi789jkl012..."
+  }
+},
+"minimum_version": "1.0.0",
+"mandatory": false
+}
+```
+
+## サービスの統合
+
+### サービスの登録
+
+```go
+app := application.New(application.Options{
+    Name: "MyApp",
+    Services: []application.Service{
+        application.NewService(updater),
+    },
+})
+```
+
+### サービスのライフサイクル
+
+アップデーターサービスは `Service` インターフェースを実装しています:
+
+```go
+type Service interface {
+    ServiceName() string
+    ServiceStartup(ctx context.Context, options ServiceOptions) error
+    ServiceShutdown() error
+}
+```
+
+- **ServiceStartup**: 設定されている場合、バックグラウンドでの更新チェックを開始します
+- **ServiceShutdown**: バックグラウンドでのチェックを停止します
+
+### イベントハンドラー
+
+Go でハンドラーを登録します:
+
+```go
+updater.OnUpdateAvailable(func(info *UpdateInfo) {
+    log.Printf("Update available: %s", info.Version)
+})
+
+updater.OnDownloadProgress(func(downloaded, total int64, percentage float64) {
+    log.Printf("Download: %.1f%%", percentage)
+})
+
+updater.OnError(func(err string) {
+    log.Printf("Update error: %s", err)
+})
+```
+
+## セキュリティに関する考慮事項
+
+### HTTPS
+
+中間者攻撃を防ぐために、更新 URL には常に HTTPS を使用してください。
+
+### チェックサム検証
+
+すべてのダウンロードは、インストール前に SHA256 チェックサムに対して検証されます。
+
+### 署名検証
+
+本番環境のアプリケーションでは署名検証を有効にしてください:
+
+```go
+updater, _ := application.CreateUpdaterService(
+    "1.0.0",
+    application.WithUpdateURL("https://updates.example.com/myapp/"),
+    application.WithRequireSignature(true),
+    application.WithPublicKey("MCowBQYDK2VwAyEA..."),
+)
+```
+
+### コード署名
+
+アプリケーションのバイナリが適切にコード署名されていることを確認してください:
+- macOS: Developer ID Application 証明書
+- Windows: タイムスタンプ付きのコード署名証明書
+
+詳細については、[コード署名ガイド](/ja/guides/build/signing) を参照してください。

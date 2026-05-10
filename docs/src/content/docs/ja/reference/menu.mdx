@@ -1,0 +1,722 @@
+---
+title: メニューAPI
+description: Menu APIの完全なリファレンス
+sidebar:
+  order: 3
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 概要
+
+Menu APIは、アプリケーションメニュー、コンテキストメニュー、システムトレイメニューを作成・管理するためのメソッドを提供します。
+
+**メニューの種類:**
+- **アプリケーションメニュー** - 上部のメニューバー（ファイル、編集など）
+- **コンテキストメニュー** - 右クリックメニュー
+- **システムトレイメニュー** - システムトレイ/通知領域のメニュー
+
+## メニューの作成
+
+### NewMenu()
+
+新しいメニューを作成します。
+
+```go
+func (a *App) NewMenu() *Menu
+```
+
+**例:**
+```go
+menu := app.NewMenu()
+```
+
+## メニューのメソッド
+
+### Add()
+
+メニューにメニュー項目を追加します。
+
+```go
+func (m *Menu) Add(label string) *MenuItem
+```
+
+**パラメータ:**
+- `label` - メニュー項目に表示されるテキスト
+
+**戻り値:** 作成されたメニュー項目
+
+**例:**
+```go
+item := menu.Add("ファイルを開く")
+item.OnClick(func(ctx *application.Context) {
+    // クリック処理
+})
+```
+
+### AddSubmenu()
+
+メニューにサブメニューを追加します。
+
+```go
+func (m *Menu) AddSubmenu(label string) *Menu
+```
+
+**パラメータ:**
+- `label` - サブメニューのラベル
+
+**戻り値:** 作成されたサブメニュー
+
+**例:**
+```go
+fileMenu := menu.AddSubmenu("ファイル")
+fileMenu.Add("新規作成")
+fileMenu.Add("開く")
+fileMenu.Add("保存")
+```
+
+### AddSeparator()
+
+メニュー項目の間に視覚的な区切り線を追加します。
+
+```go
+func (m *Menu) AddSeparator()
+```
+
+**例:**
+```go
+menu.Add("コピー")
+menu.Add("貼り付け")
+menu.AddSeparator()
+menu.Add("すべて選択")
+```
+
+**ベストプラクティス:** 関連するメニュー項目をグループ化するために区切り線を使用してください。
+
+### AddCheckbox()
+
+チェック可能なメニュー項目を追加します。
+
+```go
+func (m *Menu) AddCheckbox(label string, checked bool) *MenuItem
+```
+
+**パラメータ:**
+- `label` - チェックボックスのラベル
+- `checked` - 初期のチェック状態
+
+**例:**
+```go
+darkMode := menu.AddCheckbox("ダークモード", false)
+darkMode.OnClick(func(ctx *application.Context) {
+    isChecked := darkMode.Checked()
+    // ダークモードの切り替え
+})
+```
+
+### AddRadio()
+
+ラジオメニュー項目（排他的なグループ）を追加します。
+
+```go
+func (m *Menu) AddRadio(label string, checked bool) *MenuItem
+```
+
+**パラメータ:**
+- `label` - ラジオボタンのラベル
+- `checked` - 初期のチェック状態
+
+**例:**
+```go
+// ビューモードのラジオグループを作成
+viewMenu := menu.AddSubmenu("表示")
+listView := viewMenu.AddRadio("リスト表示", true)
+gridView := viewMenu.AddRadio("グリッド表示", false)
+treeView := viewMenu.AddRadio("ツリー表示", false)
+
+listView.OnClick(func(ctx *application.Context) {
+    setViewMode("list")
+})
+gridView.OnClick(func(ctx *application.Context) {
+    setViewMode("grid")
+})
+```
+
+### Update()
+
+メニュー項目に加えられた変更を反映するためにメニューを更新します。
+
+```go
+func (m *Menu) Update()
+```
+
+**例:**
+```go
+item.SetEnabled(false)
+menu.Update()  // 変更を適用するには呼び出しが必要
+```
+
+**重要:** メニュー項目のプロパティを変更した後は、常に `Update()` を呼び出してください。
+
+## メニュー項目のメソッド
+
+### OnClick()
+
+メニュー項目のクリックハンドラを登録します。
+
+```go
+func (mi *MenuItem) OnClick(callback func(ctx *application.Context)) *MenuItem
+```
+
+**パラメータ:**
+- `callback` - 項目がクリックされたときに呼び出される関数
+
+**戻り値:** メニュー項目（チェーン用）
+
+**例:**
+```go
+item.OnClick(func(ctx *application.Context) {
+    fmt.Println("メニュー項目がクリックされました")
+    app.Logger.Info("ユーザーがメニュー項目をクリックしました")
+})
+```
+
+### SetLabel()
+
+メニュー項目のラベルを変更します。
+
+```go
+func (mi *MenuItem) SetLabel(label string) *MenuItem
+```
+
+**例:**
+```go
+item.SetLabel("名前を付けて保存...")
+menu.Update()
+```
+
+### SetEnabled()
+
+メニュー項目を有効または無効にします。
+
+```go
+func (mi *MenuItem) SetEnabled(enabled bool) *MenuItem
+```
+
+**例:**
+```go
+// ドキュメントが開いていない場合は保存を無効化
+saveItem.SetEnabled(hasOpenDocument)
+menu.Update()
+```
+
+**一般的なパターン:**
+```go
+// アプリケーションの状態に基づいてメニューの状態を更新
+func updateMenuState() {
+    saveItem.SetEnabled(hasUnsavedChanges)
+    undoItem.SetEnabled(canUndo)
+    redoItem.SetEnabled(canRedo)
+    menu.Update()
+}
+```
+
+### SetChecked()
+
+チェックボックス/ラジオメニュー項目のチェック状態を設定します。
+
+```go
+func (mi *MenuItem) SetChecked(checked bool) *MenuItem
+```
+
+**例:**
+```go
+darkModeItem.SetChecked(isDarkModeEnabled)
+menu.Update()
+```
+
+### Checked()
+
+現在のチェック状態を返します。
+
+```go
+func (mi *MenuItem) Checked() bool
+```
+
+**例:**
+```go
+if darkModeItem.Checked() {
+    // ダークモードが有効
+}
+```
+
+### SetAccelerator()
+
+メニュー項目にキーボードショートカットを設定します。
+
+```go
+func (mi *MenuItem) SetAccelerator(accelerator string) *MenuItem
+```
+
+**パラメータ:**
+- `accelerator` - キーボードショートカット（例: "Ctrl+S", "Cmd+Q"）
+
+**アクセラレータの形式:**
+- **修飾子:** `Ctrl`, `Cmd`, `Alt`, `Shift`
+- **キー:** `A-Z`, `0-9`, `F1-F12`, `Enter`, `Backspace` など
+- **プラットフォーム:** macOSでは `Cmd`、Windows/Linuxでは `Ctrl` を使用
+
+**例:**
+```go
+saveItem.SetAccelerator("Ctrl+S")
+quitItem.SetAccelerator("Ctrl+Q")
+newItem.SetAccelerator("Ctrl+N")
+```
+
+**プラットフォーム対応の例:**
+```go
+import "runtime"
+
+var quitShortcut string
+if runtime.GOOS == "darwin" {
+    quitShortcut = "Cmd+Q"
+} else {
+    quitShortcut = "Ctrl+Q"
+}
+quitItem.SetAccelerator(quitShortcut)
+```
+
+### SetTooltip()
+
+メニュー項目にカーソルを合わせたときに表示されるツールチップを設定します。
+
+```go
+func (mi *MenuItem) SetTooltip(tooltip string) *MenuItem
+```
+
+**例:**
+```go
+item.SetTooltip("ディスクからファイルを開きます")
+```
+
+### SetHidden()
+
+メニュー項目を表示または非表示にします。
+
+```go
+func (mi *MenuItem) SetHidden(hidden bool) *MenuItem
+```
+
+**例:**
+```go
+// 本番環境ではデバッグメニューを非表示
+debugItem.SetHidden(!isDevelopment)
+menu.Update()
+```
+
+## アプリケーションメニュー
+
+### app.Menu.Set()
+
+アプリケーションのメインメニューバーを設定します。
+
+```go
+func (mm *MenuManager) Set(menu *Menu)
+```
+
+**例:**
+```go
+menu := app.NewMenu()
+
+// ファイルメニュー
+fileMenu := menu.AddSubmenu("ファイル")
+fileMenu.Add("新規作成").SetAccelerator("Ctrl+N").OnClick(newFile)
+fileMenu.Add("開く").SetAccelerator("Ctrl+O").OnClick(openFile)
+fileMenu.Add("保存").SetAccelerator("Ctrl+S").OnClick(saveFile)
+fileMenu.AddSeparator()
+fileMenu.Add("終了").SetAccelerator("Ctrl+Q").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+// 編集メニュー
+editMenu := menu.AddSubmenu("編集")
+editMenu.Add("元に戻す").SetAccelerator("Ctrl+Z").OnClick(undo)
+editMenu.Add("やり直し").SetAccelerator("Ctrl+Y").OnClick(redo)
+editMenu.AddSeparator()
+editMenu.Add("切り取り").SetAccelerator("Ctrl+X").OnClick(cut)
+editMenu.Add("コピー").SetAccelerator("Ctrl+C").OnClick(copy)
+editMenu.Add("貼り付け").SetAccelerator("Ctrl+V").OnClick(paste)
+
+app.Menu.Set(menu)
+```
+
+**プラットフォームの注意点:**
+- **macOS:** メニューは上部のメニューバーに表示されます
+- **Windows/Linux:** メニューはウィンドウのタイトルバーに表示されます
+- **macOS:** アプリケーション名を含むアプリケーションメニューが自動的に追加されます
+
+## コンテキストメニュー
+
+### app.ContextMenu.Add()
+
+特定の名前を持つコンテキストメニュー（右クリックメニュー）を登録します。
+
+```go
+func (cm *ContextMenuManager) Add(name string, menu *Menu)
+```
+
+**パラメータ:**
+- `name` - コンテキストメニューの一意の識別子
+- `menu` - 表示するメニュー
+
+**Go:**
+
+```go
+// コンテキストメニューの作成
+contextMenu := app.NewMenu()
+contextMenu.Add("切り取り").OnClick(cut)
+contextMenu.Add("コピー").OnClick(copy)
+contextMenu.Add("貼り付け").OnClick(paste)
+contextMenu.AddSeparator()
+contextMenu.Add("すべて選択").OnClick(selectAll)
+
+// 登録
+app.RegisterContextMenu("editor", contextMenu)
+```
+
+**HTML:**
+
+```html
+<!-- 右クリックでコンテキストメニューをトリガー -->
+<div data-wails-context-menu="editor">
+    ここを右クリックしてコンテキストメニューを表示
+</div>
+```
+
+**動的コンテキストメニュー:**
+```go
+// 選択内容に基づいてコンテキストメニューを更新
+func updateContextMenu() {
+    contextMenu := app.NewMenu()
+
+    if hasSelection {
+        contextMenu.Add("切り取り").OnClick(cut)
+        contextMenu.Add("コピー").OnClick(copy)
+    }
+
+    contextMenu.Add("貼り付け").SetEnabled(hasClipboardContent).OnClick(paste)
+
+    app.RegisterContextMenu("editor", contextMenu)
+}
+```
+
+## システムトレイメニュー
+
+### app.SystemTray.New()
+
+新しいシステムトレイアイコンを作成します。
+
+```go
+func (sm *SystemTrayManager) New() *SystemTray
+```
+
+**例:**
+```go
+tray := app.SystemTray.New()
+```
+
+### SetIcon()システムトレイアイコンを設定します。
+
+```go
+func (st *SystemTray) SetIcon(icon []byte) *SystemTray
+```
+
+**例:**
+```go
+iconData, _ := os.ReadFile("icon.png")
+tray.SetIcon(iconData)
+```
+
+### SetMenu()
+
+システムトレイのメニューを設定します。
+
+```go
+func (st *SystemTray) SetMenu(menu *Menu) *SystemTray
+```
+
+**例:**
+```go
+trayMenu := app.NewMenu()
+trayMenu.Add("Show Window").OnClick(func(ctx *application.Context) {
+    window.Show()
+    window.SetFocus()
+})
+trayMenu.Add("Settings").OnClick(openSettings)
+trayMenu.AddSeparator()
+trayMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+tray.SetMenu(trayMenu)
+```
+
+### SetTooltip()
+
+トレイアイコンにマウスを合わせたときに表示されるツールチップを設定します。
+
+```go
+func (st *SystemTray) SetTooltip(tooltip string) *SystemTray
+```
+
+**例:**
+```go
+tray.SetTooltip("My Application - Running")
+```
+
+### OnClick()
+
+トレイアイコンの左クリックを処理します。
+
+```go
+func (st *SystemTray) OnClick(callback func()) *SystemTray
+```
+
+**例:**
+```go
+tray.OnClick(func() {
+    if window.IsVisible() {
+        window.Hide()
+    } else {
+        window.Show()
+        window.SetFocus()
+    }
+})
+```
+
+## 完全な例
+
+### 標準的なアプリケーションメニュー
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func createMenu(app *application.Application) *application.Menu {
+    menu := app.NewMenu()
+
+    // ファイルメニュー
+    fileMenu := menu.AddSubmenu("File")
+    fileMenu.Add("New").
+        SetAccelerator("Ctrl+N").
+        OnClick(func(ctx *application.Context) {
+            // 新規ドキュメントを作成
+        })
+    fileMenu.Add("Open").
+        SetAccelerator("Ctrl+O").
+        OnClick(func(ctx *application.Context) {
+            // ファイルダイアログを開く
+        })
+    fileMenu.Add("Save").
+        SetAccelerator("Ctrl+S").
+        OnClick(func(ctx *application.Context) {
+            // ドキュメントを保存
+        })
+    fileMenu.AddSeparator()
+    fileMenu.Add("Exit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+
+    // 編集メニュー
+    editMenu := menu.AddSubmenu("Edit")
+    editMenu.Add("Undo").SetAccelerator("Ctrl+Z")
+    editMenu.Add("Redo").SetAccelerator("Ctrl+Y")
+    editMenu.AddSeparator()
+    editMenu.Add("Cut").SetAccelerator("Ctrl+X")
+    editMenu.Add("Copy").SetAccelerator("Ctrl+C")
+    editMenu.Add("Paste").SetAccelerator("Ctrl+V")
+
+    // 表示メニュー
+    viewMenu := menu.AddSubmenu("View")
+    darkMode := viewMenu.AddCheckbox("Dark Mode", false)
+    darkMode.OnClick(func(ctx *application.Context) {
+        // ダークモードを切り替え
+        isChecked := darkMode.Checked()
+        app.Logger.Info("Dark mode", "enabled", isChecked)
+    })
+    viewMenu.AddSeparator()
+    viewMenu.AddRadio("List View", true)
+    viewMenu.AddRadio("Grid View", false)
+    viewMenu.AddRadio("Detail View", false)
+
+    // ヘルプメニュー
+    helpMenu := menu.AddSubmenu("Help")
+    helpMenu.Add("Documentation").OnClick(func(ctx *application.Context) {
+        // ドキュメントを開く
+    })
+    helpMenu.Add("About").OnClick(func(ctx *application.Context) {
+        // アバウトダイアログを表示
+    })
+
+    return menu
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Menu Demo",
+    })
+
+    menu := createMenu(app)
+    app.Menu.Set(menu)
+
+    window := app.Window.New()
+    window.Show()
+
+    app.Run()
+}
+```
+
+### システムトレイアプリケーション
+
+```go
+func setupSystemTray(app *application.Application, window *application.Window) {
+    // システムトレイを作成
+    tray := app.SystemTray.New()
+
+    // アイコンを設定
+    iconData, _ := os.ReadFile("icon.png")
+    tray.SetIcon(iconData)
+    tray.SetTooltip("My App - Running")
+
+    // トレイアイコンの左クリックを処理
+    tray.OnClick(func() {
+        if window.IsVisible() {
+            window.Hide()
+        } else {
+            window.Show()
+            window.SetFocus()
+        }
+    })
+
+    // トレイメニューを作成
+    trayMenu := app.NewMenu()
+
+    showItem := trayMenu.Add("Show Window")
+    showItem.OnClick(func(ctx *application.Context) {
+        window.Show()
+        window.SetFocus()
+    })
+
+    trayMenu.AddSeparator()
+
+    trayMenu.Add("Settings").OnClick(func(ctx *application.Context) {
+        // 設定ウィンドウを開く
+    })
+
+    trayMenu.Add("About").OnClick(func(ctx *application.Context) {
+        // アバウトダイアログを表示
+    })
+
+    trayMenu.AddSeparator()
+
+    trayMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+
+    tray.SetMenu(trayMenu)
+}
+```
+
+### ダイナミックなメニューの更新
+
+```go
+type Editor struct {
+    app         *application.Application
+    menu        *application.Menu
+    undoItem    *application.MenuItem
+    redoItem    *application.MenuItem
+    saveItem    *application.MenuItem
+    undoStack   []string
+    redoStack   []string
+    hasChanges  bool
+}
+
+func (e *Editor) createMenu() {
+    e.menu = e.app.NewMenu()
+
+    fileMenu := e.menu.AddSubmenu("File")
+    e.saveItem = fileMenu.Add("Save").SetAccelerator("Ctrl+S")
+    e.saveItem.OnClick(func(ctx *application.Context) {
+        e.save()
+    })
+
+    editMenu := e.menu.AddSubmenu("Edit")
+    e.undoItem = editMenu.Add("Undo").SetAccelerator("Ctrl+Z")
+    e.undoItem.OnClick(func(ctx *application.Context) {
+        e.undo()
+    })
+
+    e.redoItem = editMenu.Add("Redo").SetAccelerator("Ctrl+Y")
+    e.redoItem.OnClick(func(ctx *application.Context) {
+        e.redo()
+    })
+
+    e.updateMenuState()
+    e.app.Menu.Set(e.menu)
+}
+
+func (e *Editor) updateMenuState() {
+    // 現在の状態に基づいてメニュー項目を更新
+    e.saveItem.SetEnabled(e.hasChanges)
+    e.undoItem.SetEnabled(len(e.undoStack) > 0)
+    e.redoItem.SetEnabled(len(e.redoStack) > 0)
+    e.menu.Update()
+}
+
+func (e *Editor) onChange() {
+    e.hasChanges = true
+    e.updateMenuState()
+}
+
+func (e *Editor) save() {
+    // 保存ロジック
+    e.hasChanges = false
+    e.updateMenuState()
+}
+```
+
+## ベストプラクティス
+
+### ✅ 推奨事項
+
+- **標準的なアクセラレータを使用する** - プラットフォームの規約に従う（コピーには Ctrl+C など）
+- **変更後に Update() を呼び出す** - そうしないと、メニューに変更が反映されません
+- **関連する項目をグループ化する** - セパレーターを使用してメニュー項目を整理する
+- **利用できないアクションを無効にする** - 非表示にするのではなく、SetEnabled(false) で無効化する
+- **明確なラベルを使用する** - 簡潔で説明的にする
+- **プラットフォームの規約に従う** - macOS と Windows/Linux のメニューパターンに従う
+
+### ❌ 避けるべきこと
+
+- **Update() を忘れないようにする** - 最も一般的なミスです
+- **深くネストしすぎない** - メニューは最大 2〜3 レベルに保つ
+- **曖昧なラベルを使用しない** - 「処理」vs「文書を処理」など
+- **複雑にしすぎない** - メニューをシンプルかつ焦点を絞った状態に保つ
+- **比喩を混ぜない** - 命名と構成の一貫性を保つ
+
+## プラットフォーム固有の注意事項
+
+### macOS
+
+- アプリケーションメニューはアプリ名とともに自動的に追加されます
+- アクセラレータには `Ctrl` の代わりに `Cmd` を使用します
+- アプリケーションメニューにはデフォルトで「アプリについて」、「環境設定」、「終了」が含まれます
+
+### Windows/Linux
+
+- アプリケーションメニューは自動的に追加されません
+- アクセラレータには `Ctrl` を使用します
+- 「終了」は通常、ファイルメニューに含まれます

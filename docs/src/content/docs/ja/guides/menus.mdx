@@ -1,0 +1,522 @@
+---
+title: メニュー
+description: Wails v3 でメニューを作成およびカスタマイズするためのガイド
+---
+
+Wails v3 は、アプリケーションメニューとコンテキストメニューの両方を作成できる強力なメニューシステムを提供します。このガイドでは、メニューシステムのさまざまな機能と能力について解説します。
+
+### メニューの作成
+
+新しいメニューを作成するには、Menus マネージャーの `New()` メソッドを使用します。
+
+```go
+menu := app.Menu.New()
+```
+
+### メニュー項目の追加
+
+Wails は、特定の目的を果たすさまざまな種類のメニュー項目をサポートしています。
+
+#### 通常のメニュー項目
+通常のメニュー項目はメニューの基本的な構成要素です。テキストを表示し、クリックされたときにアクションをトリガーできます。
+
+```go
+menuItem := menu.Add("Click Me")
+```
+
+#### チェックボックス
+チェックボックスのメニュー項目は、切り替え可能な状態を提供し、機能や設定の有効化/無効化に役立ちます。
+
+```go
+checkbox := menu.AddCheckbox("My checkbox", true)  // true = 初期状態でチェック済み
+```
+
+#### ラジオグループ
+ラジオグループを使用すると、ユーザーは排他的な選択肢のセットから 1 つのオプションを選択できます。ラジオ項目が隣り合って配置されると、自動的に作成されます。
+
+```go
+menu.AddRadio("Option 1", true)   // true = 初期状態で選択済み
+menu.AddRadio("Option 2", false)
+menu.AddRadio("Option 3", false)
+```
+
+#### セパレーター
+セパレーターは、メニュー項目を論理的なグループに整理するのに役立つ水平線です。
+
+```go
+menu.AddSeparator()
+```
+
+#### サブメニュー
+サブメニューは、メニュー項目にカーソルを合わせたりクリックしたりしたときに表示されるネストされたメニューです。複雑なメニュー構造を整理するのに役立ちます。
+
+```go
+submenu := menu.AddSubmenu("File")
+submenu.Add("Open")
+submenu.Add("Save")
+```
+
+#### メニューの結合
+メニューは、追加または先頭に挿入することで、別のメニューに含めることができます。
+```go
+menu := app.Menu.New()
+menu.Add("First Menu")
+
+secondaryMenu := app.Menu.New()
+secondaryMenu.Add("Second Menu")
+
+// 'menu' の後に 'secondaryMenu' を挿入
+menu.Append(secondaryMenu)
+
+// 'menu' の前に 'secondaryMenu' を挿入
+menu.Prepend(secondaryMenu)
+
+// メニューを更新
+menu.Update()
+```
+
+:::note
+デフォルトでは、`prepend` と `append` は元のメニューと状態を共有します。独自の状態を持つ新しいメニューを作成したい場合は、メニューで `.Clone()` を呼び出すことができます。
+
+例: `menu.Append(secondaryMenu.Clone())`
+:::
+
+#### メニューのクリア
+場合によっては、メニュー項目の数が可変の場合、完全に新しいメニューを構築する方がよいことがあります。
+
+これにより、既存のメニューのすべての項目がクリアされ、再度項目を追加できるようになります。
+
+```go
+menu := app.Menu.New()
+menu.Add("Waiting for update...")
+
+// 特定のロジックの後、メニューを更新する必要があります
+menu.Clear()
+menu.Add("Update complete!")
+menu.Update()
+```
+
+:::note
+メニューをクリアすると、トップレベルのメニュー項目のみがクリアされます。サブメニューは表示されませんが、メモリを占有し続けるため、メニューを慎重に管理してください。
+:::
+
+#### メニューの破棄
+
+メニューをクリアして解放したい場合は、`Destroy()` メソッドを使用します。
+
+```go
+menu := app.Menu.New()
+menu.Add("Waiting for update...")
+
+// 特定のロジックの後、メニューを破棄する必要があります
+menu.Destroy()
+```
+
+
+### メニュー項目のプロパティ
+
+メニュー項目には、設定できる複数のプロパティがあります。
+
+| プロパティ    | メソッド                   | 説明                                         |
+|-------------|--------------------------|-----------------------------------------------------|
+| ラベル (Label)       | `SetLabel(string)`       | 表示テキストを設定                               |
+| 有効化 (Enabled)     | `SetEnabled(bool)`       | 項目の有効化/無効化                           |
+| チェック済み (Checked)     | `SetChecked(bool)`       | チェック状態を設定（チェックボックス/ラジオ項目用） |
+| ツールチップ (Tooltip)     | `SetTooltip(string)`     | ツールチップテキストを設定                               |
+| 非表示 (Hidden)      | `SetHidden(bool)`        | 項目の表示/非表示                                |
+| アクセラレータ (Accelerator) | `SetAccelerator(string)` | キーボードショートカットを設定                          |
+
+### メニュー項目の状態
+
+メニュー項目は、表示と対話性を制御するさまざまな状態になることができます。
+
+#### 表示状態
+
+メニュー項目は、`SetHidden()` メソッドを使用して動的に表示または非表示にできます。
+
+```go
+menuItem := menu.Add("Dynamic Item")
+
+// メニュー項目を非表示にする
+menuItem.SetHidden(true)
+
+// メニュー項目を表示する
+menuItem.SetHidden(false)
+
+// 現在の表示状態を確認
+isHidden := menuItem.Hidden()
+```
+
+非表示のメニュー項目は、再度表示されるまでメニューから完全に削除されます。これは、特定のアプリケーション状態でのみ表示されるべきコンテキストメニュー項目に役立ちます。
+
+#### 有効化状態
+
+メニュー項目は、`SetEnabled()` メソッドを使用して有効化または無効化できます。
+
+```go
+menuItem := menu.Add("Save")
+
+// メニュー項目を無効にする
+menuItem.SetEnabled(false)  // 項目はグレー表示され、クリックできません
+
+// メニュー項目を有効にする
+menuItem.SetEnabled(true)   // 項目が再びクリック可能になります
+
+// 現在の有効化状態を確認
+isEnabled := menuItem.Enabled()
+```
+
+無効化されたメニュー項目は表示されたままですが、グレー表示され、クリックできません。これは、アクションが現在利用できないことを示すために一般的に使用されます。例：
+- 保存する変更がない場合に「保存」を無効にする
+- 何も選択されていない場合に「コピー」を無効にする
+- 元に戻すアクションがない場合に「元に戻す」を無効にする
+
+#### 動的な状態管理
+
+これらの状態をイベントハンドラーと組み合わせて、動的なメニューを作成できます。
+
+```go
+saveMenuItem := menu.Add("Save")
+
+// 初期状態で「保存」メニュー項目を無効にする
+saveMenuItem.SetEnabled(false)
+
+// 未保存の変更がある場合にのみ「保存」を有効にする
+documentChanged := func() {
+    saveMenuItem.SetEnabled(true)
+    menu.Update()  // 状態を変更した後はメニューを更新することを忘れないでください
+}
+
+// 保存後に「保存」を無効にする
+documentSaved := func() {
+    saveMenuItem.SetEnabled(false)
+    menu.Update()
+}
+```
+
+### イベント処理
+
+メニュー項目は、`OnClick` メソッドを使用してクリックイベントに応答できます。
+
+```go
+menuItem.OnClick(func(ctx *application.Context) {
+    // クリックイベントを処理
+    println("Menu item clicked!")
+})
+```
+
+コンテキストには、クリックされたメニュー項目に関する情報が含まれます。
+
+```go
+menuItem.OnClick(func(ctx *application.Context) {
+    // クリックされたメニュー項目を取得
+    clickedItem := ctx.ClickedMenuItem()
+    // その現在の状態を取得
+    isChecked := clickedItem.Checked()
+})
+```
+
+### ロールベースのメニュー項目
+
+Wails は、標準的な機能を持つメニュー項目を自動的に作成する一連の定義済みメニューロールを提供しています。サポートされているメニューロールは次のとおりです。
+
+#### 完全なメニュー構造
+これらのロールは、一般的な機能を持つ完全なメニュー構造を作成します。
+
+| ロール | 説明 | プラットフォームの注意書き |
+|------|-------------|----------------|
+| `AppMenu` | 「アプリについて」、「サービス」、「表示/非表示」、「終了」を含むアプリケーションメニュー | macOS のみ |
+| `EditMenu` | 「元に戻す」、「やり直し」、「切り取り」、「コピー」、「貼り付け」などの標準的な編集メニュー | 全プラットフォーム |
+| `ViewMenu` | 「再読み込み」、「ズーム」、「全画面」コントロールを含む表示メニュー | 全プラットフォーム |
+| `WindowMenu` | ウィンドウコントロール（最小化、最大化など） | 全プラットフォーム |
+| `HelpMenu` | Wails ウェブサイトへの「詳細を見る」リンクを含むヘルプメニュー | 全プラットフォーム |------|-------------|------|
+| `About` | アプリケーションの「バージョン情報」ダイアログを表示 | 全プラットフォーム |
+| `Hide` | アプリケーションを隠す | macOS のみ |
+| `HideOthers` | 他のアプリケーションを隠す | macOS のみ |
+| `UnHide` | 隠されたアプリケーションを表示 | macOS のみ |
+| `CloseWindow` | 現在のウィンドウを閉じる | 全プラットフォーム |
+| `Minimise` | ウィンドウを最小化する | 全プラットフォーム |
+| `Zoom` | ウィンドウをズーム | macOS のみ |
+| `Front` | ウィンドウを最前面に持ってくる | macOS のみ |
+| `Quit` | アプリケーションを終了する | 全プラットフォーム |
+| `Undo` | 最後の操作を元に戻す | 全プラットフォーム |
+| `Redo` | 最後の操作をやり直す | 全プラットフォーム |
+| `Cut` | 選択範囲を切り取る | 全プラットフォーム |
+| `Copy` | 選択範囲をコピー | 全プラットフォーム |
+| `Paste` | クリップボードから貼り付ける | 全プラットフォーム |
+| `PasteAndMatchStyle` | 貼り付けてスタイルを一致させる | macOS のみ |
+| `SelectAll` | すべてを選択 | 全プラットフォーム |
+| `Delete` | 選択範囲を削除 | 全プラットフォーム |
+| `Reload` | 現在のページを再読み込み | 全プラットフォーム |
+| `ForceReload` | 現在のページを強制再読み込み | 全プラットフォーム |
+| `ToggleFullscreen` | フルスクリーンモードを切り替える | 全プラットフォーム |
+| `ResetZoom` | ズームレベルをリセット | 全プラットフォーム |
+| `ZoomIn` | ズームイン | 全プラットフォーム |
+| `ZoomOut` | ズームアウト | 全プラットフォーム |
+
+完全なメニュー構造と個別のロールの両方を使用する方法を示す例を以下に示します：
+
+```go
+menu := app.Menu.New()
+
+// 完全なメニュー構造を追加
+menu.AddRole(application.AppMenu)    // macOS のみ
+menu.AddRole(application.EditMenu)   // 一般的な編集操作
+menu.AddRole(application.ViewMenu)   // 表示コントロール
+menu.AddRole(application.WindowMenu) // ウィンドウコントロール
+
+// カスタムメニューに個別のロールベースの項目を追加
+fileMenu := menu.AddSubmenu("File")
+fileMenu.AddRole(application.CloseWindow)
+fileMenu.AddSeparator()
+fileMenu.AddRole(application.Quit)
+```
+
+## アプリケーションメニュー
+
+アプリケーションメニューは、アプリケーションウィンドウの上部（Windows/Linux）または画面の上部（macOS）に表示されるメニューです。
+
+### アプリケーションメニューの動作
+
+`app.Menu.Set()` を使用してアプリケーションメニューを設定すると、それが macOS 上のメインメニューになります。
+Windows/Linux では、メニューはウィンドウごとに設定されます。
+
+```go
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "Custom Menu Window",
+    Windows: application.WindowsWindow{
+        Menu: customMenu,  // このウィンドウのアプリケーションメニューを上書き
+    },
+})
+```
+
+これらの異なるメニューの動作を示す完全な例を以下に示します：
+
+```go
+func main() {
+    app := application.New(application.Options{})
+
+    // アプリケーションメニューの作成
+    appMenu := app.Menu.New()
+    fileMenu := appMenu.AddSubmenu("File")
+    fileMenu.Add("New").OnClick(func(ctx *application.Context) {
+        // これは上書きされない限り、すべてのウィンドウで利用可能
+        window := app.Windows.Current()
+        window.SetTitle("New Window")
+    })
+    
+    // アプリケーションメニューとして設定 - これは macOS 用です
+    app.Menu.Set(appMenu)
+
+    // Windows 上のカスタムメニューを持つウィンドウ
+    customMenu := app.Menu.New()
+    customMenu.Add("Custom Action")
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "Custom Menu",
+        Windows: application.WindowsWindow{
+            Menu: customMenu,
+        },
+    })
+
+    app.Run()
+}
+```
+
+## コンテキストメニュー
+
+コンテキストメニューは、アプリケーション内の要素を右クリックしたときに表示されるポップアップメニューです。クリックされた要素に関連するアクションへの迅速なアクセスを提供します。
+
+### デフォルトのコンテキストメニュー
+
+デフォルトのコンテキストメニューは、Webview に組み込まれたシステムレベルの操作（以下など）を提供するコンテキストメニューです：
+- テキスト操作のためのコピー、切り取り、貼り付け
+- テキスト選択コントロール
+- スペルチェックオプション
+
+#### デフォルトのコンテキストメニューの制御
+
+`--default-contextmenu` CSS プロパティを使用して、デフォルトのコンテキストメニューが表示されるタイミングを制御できます：
+
+```html
+<!-- デフォルトのコンテキストメニューを常に表示 -->
+<div style="--default-contextmenu: show">
+    <input type="text" placeholder="右クリックでテキスト操作"/>
+    <textarea>ここで標準的なテキスト操作が可能です</textarea>
+</div>
+
+<!-- デフォルトのコンテキストメニューを非表示 -->
+<div style="--default-contextmenu: hide">
+    <div class="custom-component">カスタムコンテキストメニューのみ</div>
+</div>
+
+<!-- スマートなコンテキストメニューの動作（デフォルト） -->
+<div style="--default-contextmenu: auto">
+    <!-- テキストが選択されている場合または入力フィールドの場合にデフォルトメニューを表示 -->
+    <p>このテキストを選択してデフォルトメニューを表示</p>
+    <input type="text" placeholder="入力操作用のデフォルトメニュー"/>
+</div>
+```
+
+:::note
+この機能は、ランタイムが [初期化された後](../../learn/runtime#initialisation) にのみ期待通りに動作します。
+:::
+
+#### ネストされたコンテキストメニューの動作
+
+ネストされた要素に `--default-contextmenu` プロパティを使用する場合、以下のルールが適用されます：
+
+1. 子要素は、明示的に上書きされない限り、親のコンテキストメニュー設定を継承します
+2. 最も特定の（最も近い）設定が優先されます
+3. `auto` 値を使用してデフォルトの動作にリセットできます
+
+ネストされたコンテキストメニューの動作の例：
+
+```html
+<!-- 親が hide を設定 -->
+<div style="--default-contextmenu: hide">
+    <!-- これは hide を継承 -->
+    <p>ここにはコンテキストメニューはありません</p>
+    
+    <!-- これは show に上書き -->
+    <div style="--default-contextmenu: show">
+        <p>ここでコンテキストメニューが表示されます</p>
+        
+        <!-- これは show を継承 -->
+        <span>これもコンテキストメニューを持っています</span>
+        
+        <!-- これは自動動作にリセット -->
+        <div style="--default-contextmenu: auto">
+            <p>テキストが選択されている場合のみメニューを表示</p>
+        </div>
+    </div>
+</div>
+```
+
+### カスタムコンテキストメニュー
+
+カスタムコンテキストメニューを使用すると、クリックされた要素に関連するアプリケーション固有のアクションを提供できます。特に以下に有用です：
+- ドキュメントマネージャーでのファイル操作
+- 画像操作ツール
+- データグリッド内でのカスタムアクション
+- コンポーネント固有の操作
+
+#### カスタムコンテキストメニューの作成
+
+カスタムコンテキストメニューを作成する際、メニューを HTML 要素にリンクする一意の識別子（名前）を提供します：
+
+```go
+// 識別子 "imageMenu" を持つコンテキストメニューを作成
+contextMenu := application.NewContextMenu()
+app.ContextMenus.Add("imageMenu", contextMenu)
+```
+
+名前パラメータ（この例では "imageMenu"）は、以下の目的で使われる一意の識別子として機能します：
+1. HTML 要素をこの特定のコンテキストメニューにリンクする
+2. 右クリックしたときに表示されるメニューを識別する
+3. メニューの更新とクリーンアップを可能にする
+
+#### コンテキストデータ
+
+コンテキストメニューイベントを処理する際、クリックされたメニュー項目とその関連するコンテキストデータにアクセスできます：
+
+```go
+contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
+    // クリックされたメニュー項目を取得
+    menuItem := ctx.ClickedMenuItem()
+    
+    // コンテキストデータを文字列として取得
+    contextData := ctx.ContextMenuData()
+    
+    // メニュー項目がチェックされているか確認（チェックボックス/ラジオ項目用）
+    isChecked := ctx.IsChecked()
+    
+    // データを使用
+    if contextData != "" {
+        processItem(contextData)
+    }
+})
+```
+
+コンテキストデータは HTML 要素の `--custom-contextmenu-data` プロパティから渡され、クリックハンドラ内で `ctx.ContextMenuData()` を介して利用可能です。これは特に以下の場合に有用です：
+
+- 各項目が固有の識別を必要とするリストやグリッドを扱う場合
+- 特定のコンポーネントや要素に対する操作を処理する場合
+- フロントエンドからバックエンドへ状態やメタデータを渡す場合
+
+#### コンテキストメニューの管理
+
+コンテキストメニューに変更を加えた後、`Update()` メソッドを呼び出して変更を適用します：
+
+```go
+contextMenu.Update()
+```
+
+コンテキストメニューが不要になった場合、それを破棄できます：
+
+```go
+contextMenu.Destroy()
+```
+:::danger[警告] 
+`Destroy()` を呼び出した後、そのコンテキストメニュー参照を再度使用するとパニックが発生します。
+:::
+
+### 実世界の例：画像ギャラリー
+
+画像ギャラリーのカスタムコンテキストメニューを実装する完全な例を以下に示します：
+
+```go
+// バックエンド：コンテキストメニューの作成```go
+imageMenu := application.NewContextMenu()
+app.ContextMenus.Add("imageMenu", imageMenu)
+
+// Add relevant operations
+imageMenu.Add("View Full Size").OnClick(func(ctx *application.Context) {
+    // Get the image ID from context data
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        openFullSizeImage(imageID)
+    }
+})
+
+imageMenu.Add("Download").OnClick(func(ctx *application.Context) {
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        downloadImage(imageID)
+    }
+})
+
+imageMenu.Add("Share").OnClick(func(ctx *application.Context) {
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        showShareDialog(imageID)
+    }
+})
+```
+
+```html
+<!-- Frontend: Image gallery implementation -->
+<div class="gallery">
+    <!-- Each image container with context menu -->
+    <div class="image-container" 
+         style="--custom-contextmenu: imageMenu; --custom-contextmenu-data: img_123">
+        <img src="/images/img_123.jpg" alt="Gallery Image"/>
+        <span class="caption">Nature Photo</span>
+    </div>
+    
+    <div class="image-container"
+         style="--custom-contextmenu: imageMenu; --custom-contextmenu-data: img_124">
+        <img src="/images/img_124.jpg" alt="Gallery Image"/>
+        <span class="caption">City Photo</span>
+    </div>
+</div>
+```
+
+この例では:
+1. コンテキストメニューは識別子 "imageMenu" で作成されます
+2. 各画像コンテナは `--custom-contextmenu: imageMenu` を使用してメニューにリンクされます
+3. 各コンテナは `--custom-contextmenu-data` を使用して画像IDをコンテキストデータとして提供します
+4. バックエンドはクリックハンドラで画像IDを受け取り、特定の操作を実行できます
+5. 同じメニューがすべての画像で再利用されますが、コンテキストデータによってどの画像を操作するかがわかります
+
+このパターンは特に強力です:
+- 行ごとに特定の操作が必要なデータグリッド
+- ファイルごとにコンテキスト固有のアクションが必要なファイルマネージャー
+- 異なる要素に異なる操作が必要なデザインツール
+- 同じ操作が複数のインスタンスに適用されるあらゆるコンポーネント

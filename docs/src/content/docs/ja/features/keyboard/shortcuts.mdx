@@ -1,0 +1,437 @@
+---
+title: キーボードショートカット
+description: アプリケーションの機能への素早いアクセスのためにグローバルなキーボードショートカットを登録する
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails は強力なキーバインディングシステムを提供しており、アプリケーション内のすべてのウィンドウで動作するグローバルなキーボードショートカットを登録することができます。これにより、ユーザーはメニューをナビゲートすることなく機能に素早くアクセスできます。
+
+## キーバインディングマネージャーへのアクセス
+
+キーバインディングマネージャーは、アプリケーションインスタンス上の `KeyBindings` プロパティを通じてアクセスします：
+
+```go
+app := application.New(application.Options{
+    Name: "Keyboard Shortcuts Demo",
+})
+
+// キーバインディングマネージャーにアクセス
+keyBindings := app.KeyBinding
+```
+
+## キーバインディングの追加
+
+### 基本的なキーバインディング
+
+シンプルなキーボードショートカットを登録します：
+
+```go
+app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+    // 保存アクションの処理
+    app.Logger.Info("Save shortcut triggered")
+    // 保存処理を実行...
+})
+```
+
+### 複数のキーバインディング
+
+一般的な操作に対して複数のショートカットを登録します：
+
+```go
+// ファイル操作
+app.KeyBinding.Add("Ctrl+N", func(window application.Window) {
+    // 新しいファイル
+    window.EmitEvent("file:new", nil)
+})
+
+app.KeyBinding.Add("Ctrl+O", func(window application.Window) {
+    // ファイルを開く
+    dialog := app.Dialog.OpenFile()
+    if file, err := dialog.PromptForSingleSelection(); err == nil {
+        window.EmitEvent("file:open", file)
+    }
+})
+
+app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+    // ファイルを保存
+    window.EmitEvent("file:save", nil)
+})
+
+// 編集操作
+app.KeyBinding.Add("Ctrl+Z", func(window application.Window) {
+    // 元に戻す
+    window.EmitEvent("edit:undo", nil)
+})
+
+app.KeyBinding.Add("Ctrl+Y", func(window application.Window) {
+    // やり直し (Windows/Linux)
+    window.EmitEvent("edit:redo", nil)
+})
+
+app.KeyBinding.Add("Cmd+Shift+Z", func(window application.Window) {
+    // やり直し (macOS)
+    window.EmitEvent("edit:redo", nil)
+})
+```
+
+## キーバインディングアクセラレーター
+
+### アクセラレーターの形式
+
+キーバインディングは、修飾キーとキーを使用した標準的なアクセラレーター形式を使用します：
+
+```go
+// 修飾キー
+"Ctrl+S"        // Control + S
+"Cmd+S"         // Command + S (macOS)
+"Alt+F4"        // Alt + F4
+"Shift+Ctrl+Z"  // Shift + Control + Z
+
+// ファンクションキー
+"F1"            // F1 キー
+"Ctrl+F5"       // Control + F5
+
+// 特殊キー
+"Escape"        // Escape キー
+"Enter"         // Enter キー
+"Space"         // スペースバー
+"Tab"           // Tab キー
+"Backspace"     // Backspace キー
+"Delete"        // Delete キー
+
+// 矢印キー
+"Up"            // 上矢印
+"Down"          // 下矢印
+"Left"          // 左矢印
+"Right"         // 右矢印
+```
+
+### プラットフォーム固有のアクセラレーター
+
+一般的なショートカットのプラットフォーム間の差異を処理します：
+
+```go
+import "runtime"
+
+// クロスプラットフォームの保存ショートカット
+if runtime.GOOS == "darwin" {
+    app.KeyBinding.Add("Cmd+S", saveHandler)
+} else {
+    app.KeyBinding.Add("Ctrl+S", saveHandler)
+}
+
+// または両方を登録
+app.KeyBinding.Add("Ctrl+S", saveHandler)
+app.KeyBinding.Add("Cmd+S", saveHandler)
+```
+
+## キーバインディングの管理
+
+### キーバインディングの削除
+
+必要がなくなったときにキーバインディングを削除します：
+
+```go
+// 特定のキーバインディングを削除
+app.KeyBinding.Remove("Ctrl+S")
+
+// 例：モーダル用の一時的なキーバインディング
+app.KeyBinding.Add("Escape", func(window application.Window) {
+    // モーダルを閉じる
+    window.EmitEvent("modal:close", nil)
+    // この一時的なバインディングを削除
+    app.KeyBinding.Remove("Escape")
+})
+```
+
+### すべてのキーバインディングの取得
+
+登録されているすべてのキーバインディングを取得します：
+
+```go
+allBindings := app.KeyBinding.GetAll()
+for _, binding := range allBindings {
+    app.Logger.Info("Key binding", "accelerator", binding.Accelerator)
+}
+```
+
+## 高度な使用法
+
+### コンテキスト対応のキーバインディング
+
+アプリケーションの状態を確認して、キーバインディングをコンテキスト対応にします：
+
+```go
+app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+    // 現在のアプリケーション状態を確認
+    if isEditMode() {
+        // ドキュメントを保存
+        saveDocument()
+    } else if isInSettings() {
+        // 設定を保存
+        saveSettings()
+    } else {
+        app.Logger.Info("Save not available in current context")
+    }
+})
+```
+
+### ウィンドウ固有のアクション
+
+キーバインディングはアクティブなウィンドウを受け取るため、ウィンドウ固有の動作が可能になります：
+
+```go
+app.KeyBinding.Add("F11", func(window application.Window) {
+    // アクティブなウィンドウのフルスクリーンを切り替え
+    if window.Fullscreen() {
+        window.SetFullscreen(false)
+    } else {
+        window.SetFullscreen(true)
+    }
+})
+
+app.KeyBinding.Add("Ctrl+W", func(window application.Window) {
+    // アクティブなウィンドウを閉じる
+    window.Close()
+})
+```
+
+### ダイナミックなキーバインディング管理
+
+アプリケーションの状態に基づいてキーバインディングを動的に追加および削除します：
+
+```go
+func enableEditMode() {
+    // 編集専用のキーバインディングを追加
+    app.KeyBinding.Add("Ctrl+B", func(window application.Window) {
+        window.EmitEvent("format:bold", nil)
+    })
+    
+    app.KeyBinding.Add("Ctrl+I", func(window application.Window) {
+        window.EmitEvent("format:italic", nil)
+    })
+    
+    app.KeyBinding.Add("Ctrl+U", func(window application.Window) {
+        window.EmitEvent("format:underline", nil)
+    })
+}
+
+func disableEditMode() {
+    // 編集専用のキーバインディングを削除
+    app.KeyBinding.Remove("Ctrl+B")
+    app.KeyBinding.Remove("Ctrl+I")
+    app.KeyBinding.Remove("Ctrl+U")
+}
+```
+
+## プラットフォームに関する考慮事項
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    macOS では：
+    
+    - 標準的なショートカットには `Ctrl` の代わりに `Cmd` を使用します
+    - `Cmd+Q` は通常、アプリケーションを終了するために予約されています
+    - `Cmd+H` はアプリケーションを隠します
+    - `Cmd+M` はウィンドウを最小化します
+    - 標準的な macOS のキーボードショートカットを考慮してください
+    
+    一般的な macOS のパターン：
+    ```go
+    app.KeyBinding.Add("Cmd+N", newFileHandler)      // 新規作成
+    app.KeyBinding.Add("Cmd+O", openFileHandler)     // 開く
+    app.KeyBinding.Add("Cmd+S", saveFileHandler)     // 保存
+    app.KeyBinding.Add("Cmd+Z", undoHandler)         // 元に戻す
+    app.KeyBinding.Add("Cmd+Shift+Z", redoHandler)   // やり直し
+    app.KeyBinding.Add("Cmd+C", copyHandler)         // コピー
+    app.KeyBinding.Add("Cmd+V", pasteHandler)        // 貼り付け
+    ```
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    Windows では：
+    
+    - 標準的なショートカットには `Ctrl` を使用します
+    - `Alt+F4` はアプリケーションを閉じます
+    - `F1` は通常、ヘルプを開きます
+    - Windows のキーボードの慣習を考慮してください
+    
+    一般的な Windows のパターン：
+    ```go
+    app.KeyBinding.Add("Ctrl+N", newFileHandler)     // 新規作成
+    app.KeyBinding.Add("Ctrl+O", openFileHandler)    // 開く
+    app.KeyBinding.Add("Ctrl+S", saveFileHandler)    // 保存
+    app.KeyBinding.Add("Ctrl+Z", undoHandler)        // 元に戻す
+    app.KeyBinding.Add("Ctrl+Y", redoHandler)        // やり直し
+    app.KeyBinding.Add("Ctrl+C", copyHandler)        // コピー
+    app.KeyBinding.Add("Ctrl+V", pasteHandler)       // 貼り付け
+    app.KeyBinding.Add("F1", helpHandler)            // ヘルプ
+    ```
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    Linux では：
+    
+    - 一般的に `Ctrl` を使用して Windows の慣習に従います
+    - デスクトップ環境によって異なる場合があります
+    - GNOME/KDE の標準ショートカットを考慮してください
+    - 一部のデスクトップ環境は特定のショートカットを予約しています
+    
+    一般的な Linux のパターン：
+    ```go
+    app.KeyBinding.Add("Ctrl+N", newFileHandler)     // 新規作成
+    app.KeyBinding.Add("Ctrl+O", openFileHandler)    // 開く
+    app.KeyBinding.Add("Ctrl+S", saveFileHandler)    // 保存
+    app.KeyBinding.Add("Ctrl+Z", undoHandler)        // 元に戻す
+    app.KeyBinding.Add("Ctrl+Shift+Z", redoHandler)  // やり直し
+    app.KeyBinding.Add("Ctrl+C", copyHandler)        // コピー
+    app.KeyBinding.Add("Ctrl+V", pasteHandler)       // 貼り付け
+    ```
+    
+  </TabItem>
+</Tabs>
+
+## ベストプラクティス
+
+1. **標準的なショートカットを使用する**: 一般的な操作にはプラットフォームの慣習に従います：
+   ```go
+   // クロスプラットフォームの保存
+   if runtime.GOOS == "darwin" {app.KeyBinding.Add("Cmd+S", saveHandler)
+   } else {
+       app.KeyBinding.Add("Ctrl+S", saveHandler)
+   }
+   ```
+
+2. **ビジュアルフィードバックを提供する**: ショートカットがトリガーされたことをユーザーに知らせる:
+   ```go
+   app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+       saveDocument()
+       // 短い通知を表示
+       window.EmitEvent("notification:show", "Document saved")
+   })
+   ```
+
+3. **競合を処理する**: 重要なシステムショートカットを上書きしないように注意する:
+   ```go
+   // システムショートカットを上書きしないようにする:
+   // Ctrl+Alt+Del (Windows)
+   // Cmd+Space (macOS Spotlight)
+   // Alt+Tab (ウィンドウの切り替え)
+   ```
+
+4. **ショートカットを文書化する**: 利用可能なショートカットのヘルプやドキュメントを提供する:
+   ```go
+   app.KeyBinding.Add("F1", func(window application.Window) {
+       // 利用可能なショートカットを含むヘルプダイアログを表示
+       showKeyboardShortcutsHelp()
+   })
+   ```
+
+5. **クリーンアップ**: 不要になったときに一時的なキーバインディングを削除する:
+   ```go
+   func enterEditMode() {
+       app.KeyBinding.Add("Escape", exitEditModeHandler)
+   }
+   
+   func exitEditModeHandler(window application.Window) {
+       exitEditMode()
+       app.KeyBinding.Remove("Escape") // 一時的なバインディングをクリーンアップ
+   }
+   ```
+
+## 完全な例
+
+キーボードショートカット付きテキストエディターの完全な例を以下に示します:
+
+```go
+package main
+
+import (
+    "runtime"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Text Editor with Shortcuts",
+    })
+
+    // ファイル操作
+    if runtime.GOOS == "darwin" {
+        app.KeyBinding.Add("Cmd+N", func(window application.Window) {
+            window.EmitEvent("file:new", nil)
+        })
+        app.KeyBinding.Add("Cmd+O", func(window application.Window) {
+            openFile(app, window)
+        })
+        app.KeyBinding.Add("Cmd+S", func(window application.Window) {
+            window.EmitEvent("file:save", nil)
+        })
+    } else {
+        app.KeyBinding.Add("Ctrl+N", func(window application.Window) {
+            window.EmitEvent("file:new", nil)
+        })
+        app.KeyBinding.Add("Ctrl+O", func(window application.Window) {
+            openFile(app, window)
+        })
+        app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+            window.EmitEvent("file:save", nil)
+        })
+    }
+
+    // ビュー操作
+    app.KeyBinding.Add("F11", func(window application.Window) {
+        window.SetFullscreen(!window.Fullscreen())
+    })
+
+    app.KeyBinding.Add("F1", func(window application.Window) {
+        showKeyboardShortcuts(window)
+    })
+
+    // メインウィンドウを作成
+    window := app.Window.New()
+    window.SetTitle("Text Editor")
+
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
+}
+
+func openFile(app *application.App, window application.Window) {
+    dialog := app.Dialog.OpenFile()
+    dialog.AddFilter("Text Files", "*.txt;*.md")
+    
+    if file, err := dialog.PromptForSingleSelection(); err == nil {
+        window.EmitEvent("file:open", file)
+    }
+}
+
+func showKeyboardShortcuts(window application.Window) {
+    shortcuts := `
+Keyboard Shortcuts:
+- Ctrl/Cmd+N: New file
+- Ctrl/Cmd+O: Open file
+- Ctrl/Cmd+S: Save file
+- F11: Toggle fullscreen
+- F1: Show this help
+`
+    window.EmitEvent("help:show", shortcuts)
+}
+```
+
+:::tip[プロのヒント]
+すべてのターゲットプラットフォームでキーバインディングをテストし、正しく動作し、システムショートカットと競合しないことを確認してください。
+:::
+
+:::danger[警告]
+重要なシステムショートカットを上書きしないように注意してください。一部のキー組み合わせはオペレーティングシステムによって予約されており、アプリケーションでキャプチャすることはできません。
+:::

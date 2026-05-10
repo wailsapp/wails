@@ -1,0 +1,282 @@
+---
+title: APIリファレンス
+description: Wails v3の完全なAPIドキュメント
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
+
+## このリファレンスについて
+
+これはWails v3の完全なAPIリファレンスです。フレームワークで利用可能なすべての公開型、メソッド、オプションを文書化しています。
+
+**構成:**
+- [Application](/ja/reference/application) - コアアプリケーションAPI
+- [Window](/ja/reference/window) - ウィンドウの作成と管理
+- [Menu](/ja/reference/menu) - アプリケーション、コンテキスト、システムトレイメニュー
+- [Events](/ja/reference/events) - イベントシステムと組み込みイベント
+- [Dialogs](/ja/reference/dialogs) - ファイルおよびメッセージダイアログ
+- [Frontend Runtime](/ja/reference/frontend-runtime) - フロントエンドランタイムAPI
+- [CLI](/ja/reference/cli) - コマンドラインインターフェース
+
+## APIの規約
+
+<details>
+<summary><strong>Go APIの規約</strong> - Go初心者向け</summary>
+
+#### 命名規則
+
+- **型**: PascalCase (例: `WebviewWindow`)
+- **メソッド**: PascalCase (例: `SetTitle()`)
+- **オプション**: PascalCaseの構造体 (例: `WindowOptions`)
+- **定数**: PascalCase (例: `WindowStartStateMaximised`)
+
+#### エラー処理
+
+失敗する可能性のあるほとんどのメソッドは、最後の戻り値として `error` を返します:
+
+```go
+window, err := app.Window.New()
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+#### コンテキスト
+
+ブロックする可能性がある、またはキャンセルが必要なメソッドは `context.Context` を受け取ります:
+
+```go
+err := app.RunWithContext(ctx)
+```
+
+#### オプションパターン
+
+設定はオプション構造体を使用します:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Description: "A demo application",
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+    },
+})
+```
+
+</details>
+
+### JavaScript APIの規約
+
+#### 命名規則
+
+- **関数**: camelCase (例: `setTitle()`)
+- **定数**: SCREAMING_SNAKE_CASE (例: `WINDOW_EVENT_FOCUS`)
+
+#### デフォルトで非同期
+
+すべてのGoメソッド呼び出しはPromiseを返します:
+
+```javascript
+// Async/await (推奨)
+const result = await MyService.DoSomething()
+
+// Promiseチェーン
+MyService.DoSomething()
+    .then(result => console.log(result))
+    .catch(error => console.error(error))
+```
+
+#### エラー処理
+
+GoのエラーはJavaScriptの例外になります:
+
+```javascript
+try {
+    await MyService.MightFail()
+} catch (error) {
+    console.error('Go error:', error)
+}
+```
+
+#### 型安全性
+
+TypeScript定義は自動生成されます:
+
+```typescript
+// 完全に型付けされた
+import { Greet } from './bindings/GreetService'
+
+const message: string = await Greet("World")
+```
+
+## パッケージ構造
+
+```
+github.com/wailsapp/wails/v3/pkg/
+├── application/          # コアアプリケーションパッケージ
+│   ├── application.go    # Application型
+│   ├── webview_window.go # ウィンドウ管理
+│   ├── menu.go           # メニュー型
+│   ├── events.go         # イベントシステム
+│   └── dialogs.go        # ダイアログAPI
+├── events/               # イベント定数
+└── services/             # 組み込みサービス
+    ├── badge/            # バッジサービス
+    ├── notifications/    # 通知サービス
+    └── sqlite/           # SQLiteサービス
+```
+
+## インポートパス
+
+### Go
+
+```go
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+```
+
+### JavaScript
+
+```javascript
+// 自動生成されたバインディング
+import { MyMethod } from './bindings/MyService'
+
+// ランタイムAPI
+import { Events, Window } from '@wailsio/runtime'
+```
+
+## 型のリファレンス
+
+### 共通型
+
+<Tabs syncKey="lang">
+  <TabItem label="Go" icon="seti:go">
+    ```go
+    // Application
+    type Application struct { /* ... */ }
+    type Options struct { /* ... */ }
+    
+    // Window
+    type WebviewWindow struct { /* ... */ }
+    type WebviewWindowOptions struct { /* ... */ }
+    
+    // Menu
+    type Menu struct { /* ... */ }
+    type MenuItem struct { /* ... */ }
+    
+    // Events
+    type Event struct { /* ... */ }
+    type EventListener func(*Event)
+    
+    // Dialogs
+    type OpenDialogOptions struct { /* ... */ }
+    type SaveDialogOptions struct { /* ... */ }
+    ```
+  </TabItem>
+
+  <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // ウィンドウランタイム
+    interface WindowOptions {
+        title?: string
+        width?: number
+        height?: number
+        // ...
+    }
+    
+    // イベント
+    type EventCallback = (data: any) => void
+    
+    // バインディング (自動生成)
+    export function MyMethod(arg: string): Promise<string>
+    ```
+  </TabItem>
+</Tabs>
+
+## プラットフォームの違い
+
+一部のAPIはプラットフォームによって動作が異なります:
+
+| 機能 | Windows | macOS | Linux |
+|---------|---------|-------|-------|
+| **アプリケーションメニュー** | ウィンドウメニューバー | グローバルメニューバー | ウィンドウメニューバー |
+| **システムトレイ** | 通知領域 | メニューバー | システムトレイ |
+| **ドック** | N/A | ✅ 利用可能 | N/A |
+| **ファイルダイアログ** | ネイティブ | ネイティブ | ネイティブ (GTK) |
+| **透明度** | ✅ 完全 | ✅ 完全 | ⚠️ 限定的 |
+
+プラットフォーム固有の動作は、各APIセクションで文書化されています。
+
+## バージョニング
+
+Wails v3はセマンティックバージョニングに従います:
+
+- **メジャー** (v3.x.x): 破壊的変更
+- **マイナー** (v3.x.x): 新機能、後方互換性あり
+- **パッチ** (v3.x.x): バグ修正、後方互換性あり
+
+**現在のステータス:** Alpha (APIは安定、改善継続中)
+
+## 非推奨ポリシー
+
+APIが非推奨になった場合:
+
+1. **ドキュメントにマーク** 非推奨通知付き
+2. **代替手段の提供** 移行ガイド付き
+3. **1メジャーバージョン維持** 削除前
+4. **コンパイラ警告** (可能な場合)
+
+## APIの安定性
+
+### 安定したAPI ✅
+
+これらのAPIは安定しており、本番環境での使用に安全です:
+
+- コアアプリケーションAPI
+- ウィンドウ管理
+- メニューシステム
+- イベントシステム
+- ファイルダイアログ
+- サービスバインディング
+
+### 不安定なAPI ⚠️
+
+これらのAPIは最終リリース前に変更される可能性があります:
+
+- 一部の高度なウィンドウオプション
+- プラットフォーム固有の機能
+- 実験的な機能
+
+不安定なAPIはドキュメントにマークされています。
+
+## サポートの取得
+
+### APIに関する質問
+
+1. **このリファレンスを確認** - 完全なAPIドキュメント
+2. **例を確認** - [GitHubの例](https://github.com/wailsapp/wails/tree/master/v3/examples)
+3. **Discordで検索** - [Discordサーバー](https://discord.gg/JDdSxwjhGf)
+4. **コミュニティに質問** - Discord #help チャンネル
+
+### APIの問題の報告
+
+バグや不整合を見つけましたか？
+
+1. **既存のIssueを確認** - [GitHub issues](https://github.com/wailsapp/wails/issues)
+2. **詳細なレポートを作成** - コード、エラー、プラットフォームを含める
+3. **再現手順の提供** - 問題を証明する最小限の例
+
+## 関連ドキュメント
+
+- [チュートリアル](/ja/tutorials/overview) - 実際のアプリケーションを構築して学ぶ
+- [ガイド](/guides/dev/project-structure) - 一般的なシナリオ向けのタスク指向ガイド
+- [機能](/ja/features/windows/basics) - 機能ごとのドキュメント
+- [例](https://github.com/wailsapp/wails/tree/master/v3/examples) - GitHub上の動作するコード例
+
+---
+
+**APIを閲覧:** 左側のナビゲーションを使用して、特定のAPIを探索してください。

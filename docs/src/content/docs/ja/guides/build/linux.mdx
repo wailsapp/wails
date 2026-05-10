@@ -1,0 +1,223 @@
+---
+title: Linuxのパッケージ化
+description: Linux向けにWailsアプリケーションをパッケージ化する
+sidebar:
+  order: 5
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## パッケージ形式
+
+Linux向けにアプリをパッケージ化します:
+
+```bash
+wails3 package GOOS=linux
+```
+
+これにより、`bin/` ディレクトリ内に複数の形式が作成されます:
+- **AppImage**: ポータブル形式で、あらゆるLinuxディストリビューションで動作します
+- **DEB**: Debian、Ubuntu、および派生ディストリビューション向け
+- **RPM**: Fedora、RHEL、および派生ディストリビューション向け
+- **Arch**: Arch Linux、および派生ディストリビューション向け
+
+### 個別の形式
+
+特定の形式をビルドします:
+
+```bash
+wails3 task linux:create:appimage
+wails3 task linux:create:deb
+wails3 task linux:create:rpm
+wails3 task linux:create:aur
+```
+
+## パッケージのカスタマイズ
+
+### デスクトップエントリ
+
+`.desktop` ファイルは、アプリがアプリケーションメニューに表示される方法を制御します。これは `build/linux/Taskfile.yml` の値から生成されます:
+
+```yaml
+vars:
+  APP_NAME: 'MyApp'
+  EXEC: 'MyApp'
+  ICON: 'MyApp'
+  CATEGORIES: 'Development;'
+```
+
+### パッケージのメタデータ
+
+DEBおよびRPMパッケージをカスタマイズするには、`build/linux/nfpm/nfpm.yaml` を編集します:
+
+```yaml
+name: myapp
+version: 1.0.0
+maintainer: Your Name <you@example.com>
+description: My awesome Wails application
+homepage: https://example.com
+license: MIT
+```
+
+### AppImage
+
+AppImageの設定は `build/linux/appimage/` にあります。アプリのアイコンは `build/appicon.png` から取得されます。
+
+## パッケージの署名
+
+PGPキーを使用してDEBおよびRPMパッケージに署名します:
+
+```bash
+# ラッパーを使用する（プラットフォームを自動検出）
+wails3 sign GOOS=linux
+
+# またはタスクを直接使用
+wails3 task linux:sign:deb
+wails3 task linux:sign:rpm
+wails3 task linux:sign:packages  # 両方
+```
+
+`build/linux/Taskfile.yml` で署名を設定します:
+
+```yaml
+vars:
+  PGP_KEY: "path/to/signing-key.asc"
+  SIGN_ROLE: "builder"  # origin, maint, archive, または builder
+```
+
+キーのパスワードを保存します:
+
+```bash
+wails3 setup signing
+```
+
+詳細については、[アプリケーションの署名](/ja/guides/build/signing) を参照してください。
+
+## ARM向けビルド
+
+```bash
+wails3 build GOOS=linux GOARCH=arm64
+wails3 package GOOS=linux GOARCH=arm64
+```
+
+<Aside type="note">
+x86_64ホストからのARM64ビルドには、CGOのクロスコンパイルにDockerが使用されます。
+</Aside>
+
+## GTK4サポート（実験的）
+
+Wails v3には、WebKitGTK 6.0を備えたGTK4の実験的サポートが含まれています。デフォルトでは、WailsはWebKit2GTK 4.1を備えたGTK3を使用します。GTK4サポートはビルドタグを介してオプトインされます。
+
+<Aside type="caution" title="実験的">
+GTK4サポートは実験的であり、問題が発生する可能性があります。問題は [GitHub issue #4957](https://github.com/wailsapp/wails/issues/4957) まで報告してください。
+</Aside>
+
+### 依存関係
+
+GTK4およびWebKitGTK 6.0の開発ライブラリをインストールします:
+
+```bash
+# Ubuntu/Debian
+sudo apt install libgtk-4-dev libwebkitgtk-6.0-dev
+
+# Fedora
+sudo dnf install gtk4-devel webkitgtk6.0-devel
+
+# Arch
+sudo pacman -S gtk4 webkitgtk-6.0
+```
+
+必要なpkg-configパッケージは `gtk4` と `webkitgtk-6.0` です。
+
+### GTK4でのビルド
+
+`-tags gtk4` フラグを使用します:
+
+```bash
+wails3 build -tags gtk4
+```
+
+またはGoで直接実行します:
+
+```bash
+go build -tags gtk4 -o myapp .
+```
+
+### GTK3との既知の違い
+
+- **ファイルダイアログ**: GTK4はファイルダイアログに `xdg-desktop-portal` を使用するため、一部のダイアログオプション（デフォルトディレクトリ、カスタムフィルターの表示など）の動作が異なります。詳細については、[ダイアログリファレンス - Linux GTK4の制限](/reference/dialogs#linux-gtk4-limitations) を参照してください。
+- **メニューのスタイル**: GTK4は、GNOME HIGに従ってヘッダーバーにハンバーガーボタン（☰）を表示する `LinuxMenuStylePrimaryMenu` オプションをサポートしています。詳細については、[Window API - Linux MenuStyle](/reference/window#linux) を参照してください。
+- **DPIスケーリング**: GTK4は、分数スケーリングサポートに `gdk_monitor_get_scale` (GTK 4.14以降) を使用します。
+
+### ビルドの確認
+
+`wails3 doctor` を実行してセットアップを確認します。GTK4の依存関係はオプション/実験的として表示されます。
+
+## トラブルシューティング
+
+### AppImageが実行されない
+
+実行可能にします:
+
+```bash
+chmod +x MyApp-x86_64.AppImage
+```
+
+### 依存関係の欠如
+
+アプリの起動に失敗した場合は、欠落しているWebKitの依存関係を確認します:
+
+```bash
+# Debian/Ubuntu
+sudo apt install libwebkit2gtk-4.1-0
+
+# Fedora
+sudo dnf install webkit2gtk4.1
+
+# Arch
+sudo pacman -S webkit2gtk-4.1
+```
+
+### Cコンパイラが見つからない
+
+ビルドシステムには、CGO用にGCCまたはClangが必要です:
+
+```bash
+# Debian/Ubuntu
+sudo apt install build-essential
+
+# Fedora
+sudo dnf install gcc
+
+# Arch
+sudo pacman -S base-devel
+```
+
+または、`wails3 task setup:docker` を実行すると、ビルドシステムが自動的にDockerを使用します。
+
+### NVIDIA GPUで空白または白い画面が表示される
+
+NVIDIAの専用ドライバーを使用するLinuxでは、Wailsアプリは起動時に空白または白い画面を表示する場合があります。これは、DMA-BUFレンダラーがNVIDIAの専用ドライバーに対して `gbm_bo_map()` で失敗するWebKitGTKのバグが原因です（X11とWaylandに影響し、ドライバーバージョン377–580+、10シリーズ以前のGPUおよびGT 710に影響）。
+
+**WailsはNVIDIAのカーネルモジュール（`/sys/module/nvidia`）を検出すると、`WEBKIT_DISABLE_DMABUF_RENDERER=1` を自動的に適用します** ので、ほとんどのユーザーは何も行う必要はありません。
+
+それでも空白の画面が表示される場合（例えば、モジュールパスが見えないコンテナ内など）、アプリを起動する前に環境変数を手動で設定します:
+
+```bash
+WEBKIT_DISABLE_DMABUF_RENDERER=1 ./myapp
+```
+
+関連するアップストリームのバグ: [WebKit #262607](https://bugs.webkit.org/show_bug.cgi?id=262607)、[WebKit #180739](https://bugs.webkit.org/show_bug.cgi?id=180739)。
+
+### AppImageのstrip互換性
+
+最新のLinuxディストリビューション（Arch Linux、Fedora 39以降、Ubuntu 24.04以降）では、より効icientなリロケーションのためにシステムライブラリが `.relr.dyn` ELFセクションでコンパイルされています。AppImageを作成するために使用される `linuxdeploy` ツールは、これらの最新のセクションを処理できない古い `strip` バイナリをバンドルしています。
+
+Wailsは、AppImageをビルドする前にシステムGTKライブラリをチェックすることで、この状況を自動的に検出します。検出されると、互換性を確保するためにストリッピングが無効になります（`NO_STRIP=1`）。
+
+**これが意味すること:**
+- 影響を受けるシステムではAppImageがわずかに大きくなります（約20-40%）
+- アプリケーションの機能には影響しません
+- これは自動的に処理されるため、アクションは不要です
+
+最新のシステムでより小さなAppImageが必要な場合は、新しい `strip` バイナリをインストールし、`linuxdeploy` がバンドルされたバージョンの代わりにそれを使用するように構成できます。

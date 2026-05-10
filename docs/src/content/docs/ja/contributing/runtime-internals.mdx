@@ -1,0 +1,203 @@
+---
+title: ランタイム内部構造
+description: Wails v3 の起動、実行、OS との通信の仕組みを深く掘り下げる
+sidebar:
+  order: 3
+---
+
+**ランタイム**は、通常の Go 関数をクロスプラットフォームのデスクトップアプリケーションに変換するレイヤーです。
+このドキュメントでは、ソースコードを追跡する際に遭遇する主要な構成要素について説明します。
+
+---
+
+## 1. アプリケーションのライフサイクル
+
+| フェーズ | コードパス | 発生すること |
+|-------|-----------|--------------|
+| **ブートストラップ** | `pkg/application/application.go:init()` | ビルド時のデータを登録し、グローバルな `application` シングルトンを作成します。 |
+| **New()** | `application.New(...)` | `Options` を検証し、**AssetServer** を起動し、ログを初期化します。 |
+| **Run()** | `application.(*App).Run()` | 1. プラットフォーム固有の `mainthread.X()` を呼び出して OS の UI スレッドに入ります。<br />2. **ランタイム** (`internal/runtime`) を起動します。<br />3. 最後のウィンドウが閉じるか `Quit()` が呼び出されるまでブロックします。 |
+| **シャットダウン** | `application.(*App).Quit()` | `application:shutdown` イベントをブロードキャストし、ログをフラッシュし、ウィンドウとサービスを終了します。 |
+
+ライフサイクルは厳密に**単一エントリー**です。複数のウィンドウを作成できますが、アプリケーションオブジェクト自体は一度だけ初期化されます。
+
+---
+
+## 2. ウィンドウ管理
+
+### パブリック API
+
+```go
+win := app.Window.New(&application.WebviewWindowOptions{
+    Title:  "Dashboard",
+    Width:  1280,
+    Height: 720,
+})
+win.Show()
+```
+
+`app.Window.New()` はプラットフォーム固有のコンストラクタが存在する `internal/runtime/webview_window_*.go` に委譲されます。
+
+```
+internal/runtime/
+├── webview_window_darwin.go
+├── webview_window_linux.go
+└── webview_window_windows.go
+```
+
+各ファイルは以下の処理を行います。
+
+1. ネイティブな webview (WKWebView, WebKitGTK, WebView2) を作成します。
+2. **メッセージプロセッサ**のコールバックを登録します。
+3. Wails イベント (`WindowResized`, `Focus`, `DropFile` など) をランタイムのイベント ID にマッピングします。
+
+ウィンドウは `screenmanager.go` によって管理され、**クエリ API** (すべてのディスプレイ、DPI、アクティブなウィンドウ) を提供し、リサイズや移動の管理を一元化します。
+
+---
+
+## 3. メッセージ処理パイプライン
+
+JavaScript と Go のブリッジは、`pkg/application/messageprocessor_*.go` 内の**メッセージプロセッサ**ファミリーによって実装されています。
+
+フロー:
+
+1. **JavaScript** が `window.runtime.Invoke("Greet", "Alice")` を呼び出します。
+2. ランタイムがリクエストをシリアライズします:  
+   `{"t":"c","id":"123","m":"Greet","p":["Alice"]}`  
+   (`t` = タイプ、`c` = コール)。
+3. **Go** は webview コールバック経由でこの JSON を受信します。
+4. `messageprocessor_call.go` が生成されたテーブル (`application.bindings.go`) 内でバインドされたメソッドを検索し、実行します。
+5. 結果またはエラーが JS にマーシャリングされ、`Promise` が解決されます。
+
+特殊なプロセッサ:
+
+| ファイル | 目的 |
+|------|---------|
+| `messageprocessor_window.go` | ウィンドウアクション (非表示、最大化、…) |
+| `messageprocessor_dialog.go` | ネイティブダイアログ (`OpenFile`, `MessageBox`、…) |
+| `messageprocessor_clipboard.go` | クリップボードの読み書き |
+| `messageprocessor_events.go` | イベントの購読 / 発行 |
+| `messageprocessor_browser.go` | ブラウザナビゲーション、devtools |
+
+プロセッサは**ステートレス**です。各メッセージと共に渡される `ApplicationContext` から必要な情報をすべて取得します。
+
+---
+
+## 4. イベントシステム
+
+イベントは名前空間付きの文字列として、3つのレイヤー間でディスパッチされます。
+
+1. **アプリケーションイベント**: グローバルなライフサイクル (`application:ready`,
+   `application:shutdown`)。
+2. **ウィンドウイベント**: ウィンドウごとのイベント (`window:focus`, `window:resize`)。
+3. **カスタムイベント**: ユーザー定義 (`chat:new-message`)。
+
+実装の詳細:
+
+* 定数は `internal/events/defaults.go` から生成されます。
+* Go 側:  
+  `app.On("window:focus", func(e application.WindowEvent) {...})`
+* JS 側:  
+  `window.runtime.EventsOn("chat:new-message", cb)`
+
+内部では、両方とも `pkg/application/events.go` 内の同じ**イベントバス**にマッピングされます。
+購読者は参照カウントで管理されており、ウィンドウが閉じると、リークを防ぐためにそのコールバックは自動的に登録解除されます。
+
+---
+
+## 5. プラットフォーム固有の実装
+
+条件付きコンパイルにより、パブリック API は同一のまま、OS の違いを隠蔽しています。
+
+| 関心事項 | Darwin | Linux | Windows |
+|---------|--------|-------|---------|
+| メインスレッド | `mainthread_darwin.go` (Cgo to Foundation) | `mainthread_linux.go` (GTK) | `mainthread_windows.go` (Win32 `AttachThreadInput`) |
+| ダイアログ | `dialogs_darwin.*` (NSAlert) | `dialogs_linux.go` (GtkFileChooser) | `dialogs_windows.go` (IFileOpenDialog) |
+| クリップボード | `clipboard_darwin.go` | `clipboard_linux.go` | `clipboard_windows.go` |
+| トレイアイコン | `systemtray_darwin.*` | `systemtray_linux.go` (DBus) | `systemtray_windows.go` (Shell_NotifyIcon) |
+
+主要な原則:
+
+* **Windows/Linux では、やむを得ない場合を除き Cgo を使用しない** (パフォーマンス、移植性のため)。
+* ファイルを読みやすく保つために**ビルドタグ** (`//go:build darwin && !production`) を使用する。
+* 上位レイヤーが適切にフォールバックできるように、`internal/capabilities` 経由で**機能**を公開する。
+
+---
+
+## 6. ファイルガイド
+
+| ファイル | 触れる理由 |
+|------|--------------------|
+| `internal/runtime/runtime_*.go` | グローバルな起動ロジックの変更、デバッグフックの追加。 |
+| `internal/runtime/webview_window_*.go` | 新しいウィンドウヒントや動作の実装。 |
+| `pkg/application/messageprocessor_*.go` | JS から呼び出せる新しいブリッジコマンドの追加。 |
+| `pkg/application/events_*.go` | 組み込みイベント定義の拡張。 |
+| `internal/assetserver/*` | 開発/本番環境のアセット処理の調整。 |
+
+---
+
+## 7. デバッグのヒント
+
+* `WAILS_LOG_LEVEL=debug` を付けて起動すると、ブリッジを横断するすべてのメッセージが出力されます。
+* `wails3 dev -verbose` を使用して、ホットリロードとアセットリクエストをリアルタイムで確認できます。
+* macOS では `lldb --` 下で実行すると、Objective-C の例外を早期にキャッチできます。
+* Windows の Chromium に関する問題については、WebView2 のデバッグログを有効にします:  
+  `set WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222`
+
+---
+
+## 8. ランタイムの拡張
+
+1. `internal/capabilities` に**機能フラグ**を定義します。
+2. ビルドタグを使用して、各プラットフォームファイルで機能を実装します。
+3. `pkg/application` にパブリック API を追加します。
+4. JS から呼び出す必要がある場合は、新しいメッセージタイプまたはイベントを登録します。
+5. 少なくとも `v3/examples/` 内の例を 1 つ更新し、その機能をテストします。
+
+このチェックリストに従うことで、クロスプラットフォームの契約を維持できます。
+
+---
+
+## 9. ドラッグ＆ドロップ
+
+ファイルのドラッグ＆ドロップは、すべてのプラットフォームで**JavaScript ファーストのアプローチ**を使用します。ネイティブレイヤーは OS のドラッグイベントをインターセプトしますが、実際のドロップ処理と DOM 操作は JavaScript で行われます。
+
+### フロー
+
+1. ユーザーが OS から Wails ウィンドウ上にファイルをドラッグします。
+2. ネイティブレイヤーがドラッグを検出し、ホバーエフェクトのために JavaScript に通知します。
+3. ユーザーがファイルをドロップします。
+4. ネイティブレイヤーがファイルパスと座標を JavaScript に送信します。
+5. JavaScript がドロップターゲット要素 (`data-file-drop-target`) を特定します。
+6. JavaScript がファイルパスと要素の詳細を Go バックエンドに送信します。
+7. Go は完全なコンテキスト付きで `WindowFilesDropped` イベントを発行します。
+
+### プラットフォーム実装
+
+| プラットフォーム | ネイティブレイヤー | 主な課題 |
+|----------|--------------|---------------|
+| **Windows** | WebView2 の組み込みドラッグサポート | 座標は CSS ピクセル単位で、変換は不要 |
+| **macOS** | NSWindow ドラッグデリゲート | ウィンドウ相対座標を webview 相対座標に変換する |
+| **Linux** | GTK3 ドラッグシグナル | ファイルドラッグと内部 HTML5 ドラッグを区別する必要がある |
+
+### Linux: ドラッグタイプの区別
+
+GTK と WebKit の両方がドラッグイベントを処理しようとするため、キーとなるのはドラッグターゲットのタイプをチェックすることです。
+
+```c
+static gboolean is_file_drag(GdkDragContext *context) {
+    GList *targets = gdk_drag_context_list_targets(context);
+    for (GList *l = targets; l != NULL; l = l->next) {
+        GdkAtom atom = GDK_POINTER_TO_ATOM(l->data);
+        gchar *name = gdk_atom_name(atom);
+        if (name && g_strcmp0(name, "text/uri-list") == 0) {
+            g_free(name);
+            return TRUE;  // 外部ファイルドラッグ
+        }
+        g_free(name);
+    }
+    return FALSE;  // 内部 HTML5 ドラッグ
+}
+```
+
+シグナルハンドラは、内部ドラッグに対して `FALSE` を返し (WebKit に処理を委ね)、ファイルドラッグに対して `TRUE` を返します (自身で処理)。これでランタイム内部のガイド付きツアーは完了です。この知識を**コードベースのレイアウト**マップと**アセットサーバー**のドキュメントと組み合わせて、自信を持ってナビゲートし、有意義なコントリビューションを行いましょう。ハッピーコーディング！

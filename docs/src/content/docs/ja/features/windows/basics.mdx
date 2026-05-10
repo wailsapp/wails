@@ -1,0 +1,417 @@
+---
+title: ウィンドウの基本
+description: Wails におけるアプリケーションウィンドウの作成と管理
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## ウィンドウ管理
+
+Wails は、すべてのプラットフォームで動作する**統一されたウィンドウ管理 API** を提供します。ウィンドウの作成、動作の制御、複数のウィンドウの管理を行い、作成、外観、動作、ライフサイクルを完全に制御できます。
+
+## クイックスタート
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    // Create a window
+    window := app.Window.New()
+    
+    // Configure it
+    window.SetTitle("Hello Wails")
+    window.SetSize(800, 600)
+    window.Center()
+    
+    // Show it
+    window.Show()
+
+    app.Run()
+}
+```
+
+**これだけです！** クロスプラットフォーム対応のウィンドウが完成しました。
+
+## ウィンドウの作成
+
+### 基本的なウィンドウ
+
+ウィンドウを作成する最も簡単な方法:
+
+```go
+window := app.Window.New()
+```
+
+**得られるもの:**
+- デフォルトのサイズ (800x600)
+- デフォルトのタイトル (アプリケーション名)
+- フロントエンド用の WebView
+- プラットフォームネイティブな外観
+
+### オプション付きウィンドウ
+
+カスタム設定でウィンドウを作成します:
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My Application",
+    Width:  1200,
+    Height: 800,
+    X:      100,   // Position from left
+    Y:      100,   // Position from top
+    AlwaysOnTop: false,
+    Frameless: false,
+    Hidden: false,
+    MinWidth: 400,
+    MinHeight: 300,
+    MaxWidth: 1920,
+    MaxHeight: 1080,
+})
+```
+
+**一般的なオプション:**
+
+| オプション | 型 | 説明 |
+|--------|------|-------------|
+| `Title` | `string` | ウィンドウのタイトル |
+| `Width` | `int` | ピクセル単位のウィンドウ幅 |
+| `Height` | `int` | ピクセル単位のウィンドウ高さ |
+| `X` | `int` | X 座標 (左端からの距離) |
+| `Y` | `int` | Y 座標 (上端からの距離) |
+| `AlwaysOnTop` | `bool` | 他のウィンドウの上に固定 |
+| `Frameless` | `bool` | タイトルバーと境界線を削除 |
+| `Hidden` | `bool` | 非表示で開始 |
+| `MinWidth` | `int` | 最小幅 |
+| `MinHeight` | `int` | 最小高さ |
+| `MaxWidth` | `int` | 最大幅 |
+| `MaxHeight` | `int` | 最大高さ |
+
+**完全なリストは [Window Options](/ja/features/windows/options) を参照してください。**
+
+### 名前付きウィンドウ
+
+ウィンドウに名前を付けて、簡単に取得できるようにします:
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:  "main-window",
+    Title: "Main Application",
+})
+
+// Later, find it by name
+mainWindow := app.GetWindowByName("main-window")
+if mainWindow != nil {
+    mainWindow.Show()
+}
+```
+
+**使用例:**
+- 複数のウィンドウ (メイン、設定、情報など)
+- コードの異なる箇所からウィンドウを検索
+- ウィンドウ間の通信
+
+## ウィンドウの制御
+
+### 表示と非表示
+
+```go
+// Show window
+window.Show()
+
+// Hide window
+window.Hide()
+
+// Check if visible
+if window.IsVisible() {
+    fmt.Println("Window is visible")
+}
+```
+
+**使用例:**
+- スプラッシュスクリーン (表示後、非表示に)
+- 設定ウィンドウ (不要なときに非表示に)
+- ポップアップウィンドウ (必要に応じて表示)
+
+### 位置とサイズ
+
+```go
+// Set size
+window.SetSize(1024, 768)
+
+// Set position
+window.SetPosition(100, 100)
+
+// Centre on screen
+window.Center()
+
+// Get current size
+width, height := window.Size()
+
+// Get current position
+x, y := window.Position()
+```
+
+**座標系:**
+- (0, 0) はプライマリ画面の左上
+- 正の X は右方向
+- 正の Y は下方向
+
+### ウィンドウの状態
+
+```go
+// Minimise
+window.Minimise()
+
+// Maximise
+window.Maximise()
+
+// Fullscreen
+window.Fullscreen()
+
+// Restore to normal
+window.Restore()
+
+// Check state
+if window.IsMinimised() {
+    fmt.Println("Window is minimised")
+}
+
+if window.IsMaximised() {
+    fmt.Println("Window is maximised")
+}
+
+if window.IsFullscreen() {
+    fmt.Println("Window is fullscreen")
+}
+```
+
+**状態遷移:**
+
+```
+Normal ←→ Minimised
+Normal ←→ Maximised
+Normal ←→ Fullscreen
+```
+
+### タイトルと外観
+
+```go
+// Set title
+window.SetTitle("My Application - Document.txt")
+
+// Set background colour
+window.SetBackgroundColour(0, 0, 0, 255) // RGBA
+
+// Set always on top
+window.SetAlwaysOnTop(true)
+
+// Set resizable
+window.SetResizable(false)
+```
+
+### ウィンドウの閉じる
+
+```go
+// Close window
+window.Close()
+
+// Destroy window (force close)
+window.Destroy()
+```
+
+**違い:**
+- `Close()` - クローズイベントをトリガーし、キャンセル可能
+- `Destroy()` - 即時破棄、キャンセル不可
+
+## ウィンドウの検索
+
+### 名前による検索
+
+```go
+window := app.GetWindowByName("settings")
+if window != nil {
+    window.Show()
+}
+```
+
+### ID による検索
+
+すべてのウィンドウには一意の ID があります:
+
+```go
+id := window.ID()
+fmt.Printf("Window ID: %d\n", id)
+
+// Find by ID
+foundWindow := app.GetWindowByID(id)
+```
+
+### 現在のウィンドウ
+
+現在フォーカスされているウィンドウを取得します:
+
+```go
+current := app.Window.Current()
+if current != nil {
+    current.SetTitle("Active Window")
+}
+```
+
+### すべてのウィンドウ
+
+すべてのウィンドウを取得します:
+
+```go
+windows := app.Window.GetAll()
+fmt.Printf("Total windows: %d\n", len(windows))
+
+for _, w := range windows {
+    fmt.Printf("Window: %s (ID: %d)\n", w.Name(), w.ID())
+}
+```
+
+## ウィンドウのライフサイクル
+
+### 作成
+
+```go
+app.OnWindowCreation(func(window *application.WebviewWindow) {
+    fmt.Printf("Window created: %s\n", window.Name())
+    
+    // Configure new windows
+    window.SetMinSize(400, 300)
+})
+```
+
+### 閉じる
+
+```go
+window.OnClose(func() bool {
+    // Return false to cancel close
+    // Return true to allow close
+    
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        return result == "yes"
+    }
+    return true
+})
+```
+
+**重要:** `OnClose` はユーザーが-initiated な閉じる操作 (X ボタンのクリック) の場合にのみ機能します。`window.Destroy()` を防ぐことはできません。
+
+### 破棄
+
+```go
+window.OnDestroy(func() {
+    fmt.Println("Window destroyed")
+    // Cleanup resources
+})
+```
+
+## 複数のウィンドウ
+
+### 複数のウィンドウの作成
+
+```go
+// Main window
+mainWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "main",
+    Title:  "Main Application",
+    Width:  1200,
+    Height: 800,
+})
+
+// Settings window
+settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "settings",
+    Title:  "Settings",
+    Width:  600,
+    Height: 400,
+    Hidden: true,  // Start hidden
+})
+
+// Show settings when needed
+settingsWindow.Show()
+```
+
+### ウィンドウ間の通信
+
+ウィンドウはイベントを介して通信できます:
+
+```go
+// In main window
+app.Event.Emit("data-updated", map[string]interface{}{
+    "value": 42,
+})
+
+// In settings window
+app.Event.On("data-updated", func(event *application.WailsEvent) {
+    data := event.Data.(map[string]interface{})
+    value := data["value"].(int)
+    fmt.Printf("Received: %d\n", value)
+})
+```
+
+**詳細は [Events](/ja/features/events/system) を参照してください。**
+
+### 親ウィンドウと子ウィンドウ
+
+```go
+// Create child window
+childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "Child Window",
+    Parent: mainWindow,  // Set parent
+})
+```
+
+**動作:**
+- 親ウィンドウが閉じると子ウィンドウも閉じます
+- 子ウィンドウは親ウィンドウの上に留まります (プラットフォームによる)
+- 子ウィンドウは親ウィンドウと共に最小化されます (プラットフォームによる)
+
+**プラットフォームのサポート:**
+- **macOS:** 完全サポート
+- **Windows:** 部分的なサポート
+- **Linux:** デスクトップ環境によって異なる
+
+## プラットフォーム固有の機能
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+    **Windows 固有の機能:**
+    
+    ```go
+    // Flash taskbar button
+    window.Flash(true)  // Start flashing
+    window.Flash(false) // Stop flashing
+    
+    // Trigger Windows 11 Snap Assist (Win+Z)
+    window.SnapAssist()
+    
+    // Set window icon
+    window.SetIcon(iconBytes)
+    ```
+    
+    **Snap Assist:**
+    ウィンドウの Windows 11 スナップレイアウトオプションを表示します。
+    
+    **タスクバーの点滅:**
+    ウィンドウが最小化されているときに通知に便利です。
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **macOS 固有の機能:**
+
+    ```go
+    // Transparent title bar---
+
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[ウィンドウの例](https://github.com/wailsapp/wails/tree/master/v3/examples) をご確認ください。
