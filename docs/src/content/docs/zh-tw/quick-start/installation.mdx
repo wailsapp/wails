@@ -1,0 +1,327 @@
+---
+title: 安裝
+description: 安裝 Wails 並準備好來建置應用程式
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid, Tabs, TabItem, Steps } from "@astrojs/starlight/components";
+
+## 快速安裝（5 分鐘）
+
+:::tip[TL;DR - 有經驗的開發者]
+```bash
+# 安裝 Go 1.25+，然後：
+go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+wails3 doctor  # 驗證安裝
+```
+
+如果 `wails3 doctor` 通過，你就完成了。[跳至第一個應用程式 →](/zh-tw/quick-start/first-app)
+:::
+
+## 逐步安裝
+
+<Steps>
+
+1. **安裝 Go（必要）**
+
+   Wails 需要 Go 1.25 或更高版本。
+
+   <Tabs syncKey="os">
+     <TabItem label="Windows" icon="seti:windows">
+       從 **[go.dev/dl](https://go.dev/dl/)** 下載 Windows 安裝程式並執行。
+
+       **驗證安裝：**
+       ```powershell
+       go version  # 應顯示 1.25 或更高版本
+       ```
+
+       **檢查 PATH：**
+       ```powershell
+       $env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }
+       ```
+
+       如果為空，請將 `C:\Users\YourName\go\bin` 加入你的 PATH。
+     </TabItem>
+
+     <TabItem label="macOS" icon="apple">
+       **選項 1：官方安裝程式**
+
+       從 **[go.dev/dl](https://go.dev/dl/)** 下載 macOS 安裝程式（.pkg 檔案）並執行。
+
+       **選項 2：Homebrew**
+       ```bash
+       brew install go
+       ```
+
+       **驗證安裝：**
+       ```bash
+       go version  # 應顯示 1.25 或更高版本
+       echo $PATH | grep go/bin  # 應顯示 ~/go/bin
+       ```
+
+       如果 `~/go/bin` 不在 PATH 中，請將其加入 `~/.zshrc` 或 `~/.bash_profile`：
+       ```bash
+       export PATH=$PATH:~/go/bin
+       ```
+     </TabItem>
+
+     <TabItem label="Linux" icon="linux">
+       **選項 1：官方壓縮檔**
+
+       從 **[go.dev/dl](https://go.dev/dl/)** 下載 Linux 壓縮檔，然後：
+       ```bash
+       sudo rm -rf /usr/local/go
+       sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
+       ```
+
+       **選項 2：套件管理器**
+       ```bash
+       # Ubuntu/Debian
+       sudo apt install golang-go
+
+       # Fedora
+       sudo dnf install golang
+
+       # Arch
+       sudo pacman -S go
+       ```
+
+       **加入 PATH**（加入 `~/.bashrc` 或 `~/.zshrc`）：
+       ```bash
+       export PATH=$PATH:/usr/local/go/bin:~/go/bin
+       source ~/.bashrc  # 重新載入
+       ```
+
+       **驗證：**
+       ```bash
+       go version
+       echo $PATH | grep go/bin
+       ```
+     </TabItem>
+   </Tabs>
+
+2. **安裝平台相依套件**
+
+   <Tabs syncKey="os">
+     <TabItem label="Windows" icon="seti:windows">
+       **WebView2 Runtime**（通常已預先安裝）
+
+       Windows 10/11 預設包含 WebView2。如果遺漏：
+       - 從 [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/) 下載
+       - 或稍後執行 `wails3 doctor`——它會引導你完成
+
+       **就這些！** 不需要其他相依套件。
+
+       :::tip[Windows 11 效能提示]
+       考慮使用 [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) 來儲存你的專案。Dev Drives 針對開發者工作負載進行了最佳化，可以顯著提升建置時間和磁碟存取速度，最高可提升 30%。
+       :::
+     </TabItem>
+
+     <TabItem label="macOS" icon="apple">
+       **Xcode Command Line Tools**（必要）
+
+       ```bash
+       xcode-select --install
+       ```
+
+       在出現的對話框中點擊「Install」。
+
+       **驗證：**
+       ```bash
+       xcode-select -p  # 應顯示 /Library/Developer/CommandLineTools
+       ```
+
+       **就這些！** macOS 預設包含 WebKit。
+     </TabItem>
+
+     <TabItem label="Linux" icon="linux">
+       **建置工具和 WebKit**
+
+       :::caution[最低發行版版本]
+       Wails v3 需要 **WebKitGTK 4.1**（使用 libsoup3）。僅提供 4.0 的較舊發行版——Ubuntu 20.04、Debian 11、RHEL 8/9 及其衍生版本——不支援。
+       :::
+
+       <Tabs syncKey="distro">
+         <TabItem label="Ubuntu/Debian">
+           需要 Ubuntu 22.04+ 或 Debian 12+。
+           ```bash
+           sudo apt update
+           sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev
+           ```
+         </TabItem>
+
+         <TabItem label="Fedora">
+           ```bash
+           sudo dnf install gcc pkg-config gtk3-devel webkit2gtk4.1-devel
+           ```
+         </TabItem>
+
+         <TabItem label="Arch">
+           ```bash
+           sudo pacman -S base-devel gtk3 webkit2gtk-4.1
+           ```
+         </TabItem>
+
+         <TabItem label="openSUSE">
+           ```bash
+           sudo zypper install gcc pkg-config gtk3-devel webkit2gtk3-devel
+           ```
+         </TabItem>
+
+         <TabItem label="Gentoo">
+           ```bash
+           sudo emerge --ask net-libs/webkit-gtk:4.1
+           ```
+         </TabItem>
+
+         <TabItem label="NixOS">
+           將其加入你的 `shell.nix` 或 `devShell`：
+           ```nix
+           buildInputs = with pkgs; [ webkitgtk_4_1 gtk3 pkg-config gcc ];
+           ```
+         </TabItem>
+
+         <TabItem label="Other">
+           安裝 Wails 後執行 `wails3 doctor`——它會顯示你的發行版所需的精確套件。
+         </TabItem>
+       </Tabs>
+
+       :::note[選用：GTK4 支援]
+       Wails 也有實驗性的 GTK4 / WebKitGTK 6.0 支援。如果你想使用 GTK4 建置，請安裝你發行版的額外相依套件，並使用 `wails3 build -tags gtk4` 進行建置。詳情請見 [Linux Packaging - GTK4](/guides/build/linux#gtk4-support-experimental)。
+       :::
+     </TabItem>
+   </Tabs>
+
+3. **安裝 Wails CLI**
+
+   ```bash
+   go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+   ```
+
+   這會將 `wails3` 指令安裝到 `~/go/bin`（或在 Windows 上為 `%USERPROFILE%\go\bin`）。
+
+4. **驗證安裝**
+
+   ```bash
+   wails3 doctor
+   ```
+
+   **預期輸出（或類似）：**
+   ```
+   Wails (v3.0.0-dev)  Wails Doctor
+
+   # System
+
+   ┌──────────────────────────────────────────────────┐
+   | Name          | MacOS                            |
+   | Version       | 26.0                             |
+   | ID            | 25A354                           |
+   | Branding      | MacOS 26.0                       |
+   | Platform      | darwin                           |
+   | Architecture  | arm64                            |
+   | Apple Silicon | true                             |
+   | CPU           | Apple M2 Pro                     |
+   | CPU 1         | Apple M2 Pro                     |
+   | CPU 2         | Apple M2 Pro                     |
+   | GPU           | 16 cores, Metal Support: Metal 4 |
+   | Memory        | 16 GB                            |
+   └──────────────────────────────────────────────────┘
+
+   # Build Environment
+
+   ┌─────────────┬─────────────────┐
+   | Wails CLI   | v3.0.0-alpha.40 |
+   | Go Version  | go1.24.6        |
+   └─────────────┴─────────────────┘
+
+   # Dependencies
+
+   ┌─────────────────┬─────────────────────────────────────────────────┐
+   | npm             | 11.6.2                                          |
+   | *NSIS           | Not Installed. Install with `brew install...`.  |
+   | Xcode cli tools | 2412                                            |
+   └─────────────────┴─────────────────────────────────────────────────┘
+
+   # Checking for issues
+
+   SUCCESS No issues found
+
+   # Diagnosis
+
+   SUCCESS Your system is ready for Wails development!
+   ```
+
+   :::note[如果找不到 `wails3` 指令]
+   你的 `~/go/bin` 不在 PATH 中。請參閱上面的步驟 1 來修復此問題，然後重新啟動你的終端機。
+   :::
+
+5. **安裝 npm（選用但建議）**
+
+   大多數 Wails 範本使用 npm 作為前端工具。
+
+   <Tabs syncKey="os">
+     <TabItem label="Windows" icon="seti:windows">
+       從 [nodejs.org](https://nodejs.org/) 下載並執行安裝程式。
+
+       **驗證：**
+       ```powershell
+       npm --version
+       ```
+     </TabItem>#### Go 版本過舊
+
+Wails v3 需要 Go 1.25+。如果您使用的是較舊版本：
+
+<Tabs syncKey="os">
+  <TabItem label="Windows/macOS" icon="seti:windows">
+    從 [go.dev/dl](https://go.dev/dl/) 下載最新版本並重新安裝。
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    從 [go.dev/dl](https://go.dev/dl/) 下載最新的 tarball，然後執行：
+    ```bash
+    sudo rm -rf /usr/local/go
+    sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
+    ```
+  </TabItem>
+</Tabs>
+
+## 開發版本（Bleeding Edge）
+
+想要使用來自主要開發分支的最新程式碼嗎？這讓您可以提前體驗新功能與修復，但也伴隨著錯誤與破壞性變更的風險。僅建議貢獻者或需要測試即將推出功能的人使用。
+
+```bash
+git clone https://github.com/wailsapp/wails.git
+cd wails
+git checkout v3
+cd v3/cmd/wails3
+go install
+```
+
+:::caution[開發版本]
+- 可能包含錯誤或破壞性變更
+- 建立的專案將使用 `replace` 指令指向本機 Wails
+- 僅建議貢獻者或測試新功能者使用
+:::
+
+## 下一步
+
+**安裝完成！** 您的系統已準備好進行 Wails 開發。
+
+<Card title="建立您的第一個應用程式" icon="rocket">
+  在 10 分鐘內建立一個可運作的應用程式。
+
+  [第一個應用程式教學 →](/zh-tw/quick-start/first-app)
+</Card>
+
+<Card title="探索範本" icon="open-book">
+  查看預設提供的內容。
+
+  ```bash
+  wails3 init -l  # 列出範本
+  ```
+</Card>
+
+---
+
+**遇到問題嗎？** 請在 [Discord](https://discord.gg/JDdSxwjhGf) 提問或[開啟一個 issue](https://github.com/wailsapp/wails/issues)。

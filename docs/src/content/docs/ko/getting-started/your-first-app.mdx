@@ -1,0 +1,255 @@
+---
+title: 첫 번째 애플리케이션 만들기
+description: 단계별로 첫 번째 Wails 데스크톱 애플리케이션을 생성하세요
+sidebar:
+  order: 20
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import { Badge } from '@astrojs/starlight/components';
+import { Steps } from "@astrojs/starlight/components";
+import { FileTree } from '@astrojs/starlight/components';
+
+import wails_init from '../../../../assets/wails_init.mp4';
+import wails_build from '../../../../assets/wails_build.mp4';
+import wails_dev from '../../../../assets/wails_dev.mp4';
+
+
+이 가이드에서는 첫 번째 Wails v3 애플리케이션을 생성하는 방법을 보여줍니다. 프로젝트 설정, 빌드 및 개발 워크플로우를 다룹니다.
+
+<br/>
+<br/>
+
+<Steps>
+
+1.  ## 새 프로젝트 생성
+
+    터미널을 열고 다음 명령을 실행하여 새 Wails 프로젝트를 생성합니다:
+
+    ```bash
+    wails3 init -n myfirstapp
+    ```
+
+    이 명령은 필요한 모든 파일이 포함된 `myfirstapp`이라는 새 디렉토리를 생성합니다.
+
+      <video src={wails_init} controls></video> 
+
+2.  ## 프로젝트 구조 탐색
+
+    `myfirstapp` 디렉토리로 이동합니다. 여러 파일과 폴더가 있습니다:
+
+    <FileTree>
+    - build/           빌드 프로세스에서 사용되는 파일 포함
+        - appicon.png  애플리케이션 아이콘
+        - config.yml   빌드 구성
+        - Taskfile.yml 빌드 작업
+        - darwin/      macOS 전용 빌드 파일
+            - Info.dev.plist 개발 구성
+            - Info.plist    프로덕션 구성
+            - Taskfile.yml  macOS 빌드 작업
+            - icons.icns    macOS 애플리케이션 아이콘
+        - linux/       Linux 전용 빌드 파일
+            - Taskfile.yml  Linux 빌드 작업
+            - appimage/     AppImage 패키징
+                - build.sh  AppImage 빌드 스크립트
+            - nfpm/        NFPM 패키징
+                - nfpm.yaml 패키지 구성
+                - scripts/  빌드 스크립트
+        - windows/     Windows 전용 빌드 파일
+            - Taskfile.yml        Windows 빌드 작업
+            - icon.ico           Windows 애플리케이션 아이콘
+            - info.json          애플리케이션 메타데이터
+            - wails.exe.manifest Windows 매니페스트 파일
+            - nsis/              NSIS 설치 파일
+                - project.nsi                    NSIS 프로젝트 파일
+                - wails_tools.nsh               NSIS 보조 스크립트
+    - frontend/        프론트엔드 애플리케이션 파일
+        - index.html   메인 HTML 파일
+        - main.js      메인 JavaScript 파일
+        - package.json NPM 패키지 구성
+        - public/      정적 자산
+        - Inter Font License.txt 폰트 라이선스
+    - .gitignore      Git 무시 파일
+    - README.md       프로젝트 문서
+    - Taskfile.yml    프로젝트 작업
+    - go.mod          Go 모듈 파일
+    - go.sum          Go 모듈 체크섬
+    - greetservice.go 인사 서비스
+    - main.go         메인 애플리케이션 코드
+    </FileTree>
+
+    잠시 시간을 내어 이러한 파일을 탐색하고 구조에 익숙해지세요.
+
+    :::note
+    Wails v3는 기본 빌드 시스템으로 [Task](https://taskfile.dev/)를 사용하지만, `make` 또는 다른 대안 빌드 시스템을 사용하는 것을 막는 것은 없습니다.
+    :::
+
+3.  ## 애플리케이션 빌드
+
+    애플리케이션을 빌드하려면 다음을 실행합니다:
+
+    ```bash
+    wails3 build
+    ```
+
+    이 명령은 애플리케이션의 디버그 버전을 컴파일하여 새 `bin` 디렉토리에 저장합니다.
+
+    :::note
+    `wails3 build`는 `wails3 task build`의 약어이며 `Taskfile.yml`의 `build` 작업을 실행합니다.
+    :::
+
+        <video src={wails_build} controls></video> 
+
+
+    빌드가 완료되면 일반 애플리케이션처럼 실행할 수 있습니다:
+
+
+    <Tabs syncKey="platform">
+
+      <TabItem label="Mac" icon="apple">
+
+        ```sh
+        ./bin/myfirstapp
+        ```
+
+          </TabItem>
+
+      <TabItem label="Windows" icon="seti:windows">
+
+        ```sh
+        bin\myfirstapp.exe
+        ```
+
+          </TabItem>
+
+      <TabItem label="Linux" icon="linux">
+
+        ```sh
+        ./bin/myfirstapp
+        ```
+
+          </TabItem>
+
+    </Tabs>
+
+    애플리케이션의 시작점이 되는 간단한 UI가 표시됩니다. 디버그 버전이므로 콘솔 창에도 로그가 표시됩니다. 이는 디버깅 목적으로 유용합니다.
+
+4.  ## 개발 모드
+
+    애플리케이션을 개발 모드에서도 실행할 수 있습니다. 이 모드를 사용하면 프론트엔드 코드를 변경하고 전체 애플리케이션을 다시 빌드하지 않고도 실행 중인 애플리케이션에서 변경 사항을 확인할 수 있습니다.
+
+    1. 새 터미널 창을 엽니다.
+    2. `wails3 dev`를 실행합니다. 애플리케이션이 디버그 모드로 컴파일되고 실행됩니다.
+    3. 선호하는 편집기에서 `frontend/index.html`을 엽니다.
+    4. 코드를 편집하여 `Please enter your name below`를 `Please enter your name below!!!`로 변경합니다.
+    5. 파일을 저장합니다.
+
+    이 변경 사항은 애플리케이션에 즉시 반영됩니다.
+
+    백엔드 코드의 변경은 다시 빌드를 트리거합니다:
+
+    1. `greetservice.go`를 엽니다.
+    2. `return "Hello " + name + "!"`가 있는 줄을 `return "Hello there " + name + "!"`로 변경합니다.
+    3. 파일을 저장합니다.
+
+    애플리케이션은 몇 초 이내에 업데이트됩니다.
+
+        <video src={wails_dev} controls></video>
+
+5.  ## 애플리케이션 패키징
+
+        애플리케이션이 배포 준비가 되면 플랫폼별 패키지를 생성할 수 있습니다:
+
+          <Tabs syncKey="platform">
+
+    <TabItem label="Mac" icon="apple">
+
+              `.app` 번들을 생성하려면:
+
+              ```bash
+              wails3 package
+              ```
+
+              이는 프로덕션 빌드를 생성하고 `bin` 디렉토리에 `.app` 번들로 패키징합니다.
+
+            </TabItem>
+            <TabItem label="Windows" icon="seti:windows">
+
+              NSIS 설치 프로그램을 생성하려면:
+
+              ```bash
+              wails3 package
+              ```
+
+              이는 프로덕션 빌드를 생성하고 `bin` 디렉토리에 NSIS 설치 프로그램으로 패키징합니다.
+
+            </TabItem>
+            <TabItem label="Linux" icon="linux">
+
+              Wails는 Linux 배포를 위해 여러 패키지 형식을 지원합니다:
+
+              ```bash
+              # 모든 패키지 유형 생성 (AppImage, deb, rpm, Arch Linux)
+              wails3 package
+
+              # 또는 특정 패키지 유형 생성
+              wails3 task linux:create:appimage  # AppImage 형식
+              wails3 task linux:create:deb       # Debian 패키지
+              wails3 task linux:create:rpm       # Red Hat 패키지
+              wails3 task linux:create:aur       # Arch Linux 패키지
+              ```
+
+            </TabItem>
+
+          </Tabs>
+
+    패키징 옵션 및 구성에 대한 자세한 정보는 [패키징 가이드](/guides/packaging)를 참조하세요.
+
+6.  ## 버전 제어 및 모듈 이름 설정
+
+    프로젝트는 자리 표시자 모듈 이름 `changeme`으로 생성됩니다. 저장소 URL과 일치하도록 업데이트하는 것이 좋습니다:
+
+    1. GitHub(또는 선호하는 Git 호스트)에 새 저장소를 생성합니다.
+    2. 프로젝트 디렉토리에서 git을 초기화합니다:
+       ```bash
+       git init
+       git add .
+       git commit -m "Initial commit"
+       ```
+    3. 원격 저장소를 설정합니다 (저장소 URL로 대체):
+       ```bash
+       git remote add origin https://github.com/username/myfirstapp.git
+       ```
+    4. `go.mod`의 모듈 이름을 저장소 URL과 일치하도록 업데이트합니다:
+       ```bash
+       go mod edit -module github.com/username/myfirstapp
+       ```
+    5. 코드를 푸시합니다:
+       ```bash
+       git push -u origin main
+       ```
+
+    이렇게 하면 Go 모듈 이름이 Go의 모듈 이름 규칙과 일치하게 되어 코드를 공유하기 쉬워집니다.:::tip[Pro Tip]
+프로젝트 생성 시 `-git` 플래그를 사용하면 초기화 단계를 모두 자동화할 수 있습니다:
+```bash
+wails3 init -n myfirstapp -git github.com/username/myfirstapp
+```
+이 명령어는 다양한 Git URL 형식을 지원합니다:
+- HTTPS: `https://github.com/username/project`
+- SSH: `git@github.com:username/project` 또는 `ssh://git@github.com/username/project`
+- Git 프로토콜: `git://github.com/username/project`
+- 파일 시스템: `file:///path/to/project.git`
+:::
+
+</Steps>
+
+## 축하합니다!
+
+이제 첫 번째 Wails 애플리케이션을 생성, 개발 및 패키징했습니다.
+이것은 Wails v3로 달성할 수 있는 것의 시작일 뿐입니다.
+
+## 다음 단계
+
+Wails가 처음이라면, Wails의 다양한 기능을 실습할 수 있는 튜토리얼을 읽어보시길 권장합니다. 첫 번째 튜토리얼은 [서비스 생성](/tutorials/01-creating-a-service)입니다.
+
+더 고급 사용자인 경우, Wails 사용 방법에 대한 자세한 정보는 [가이드](/guides)를 확인하세요.
