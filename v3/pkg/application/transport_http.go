@@ -32,6 +32,10 @@ const (
 	chunkIndexHeader = "x-wails-chunk-index"
 	chunkTotalHeader = "x-wails-chunk-total"
 	chunkTTL         = 30 * time.Second
+
+	maxChunkTotal     = 1024
+	maxChunkBodyBytes = 1024 * 1024
+	maxAssembledBytes = 64 * 1024 * 1024
 )
 
 // pendingChunks accumulates request body chunks sent by the JS runtime
@@ -41,6 +45,7 @@ type pendingChunks struct {
 	mu        sync.Mutex
 	chunks    map[int][]byte
 	total     int
+	size      int
 	createdAt time.Time
 }
 
@@ -166,16 +171,19 @@ func (t *HTTPTransport) handleChunkedRequest(rw http.ResponseWriter, r *http.Req
 	indexStr := r.Header.Get(chunkIndexHeader)
 	totalStr := r.Header.Get(chunkTotalHeader)
 
-	index, err := strconv.Atoi(indexStr)
-	if err != nil || index < 0 {
-		t.httpError(rw, errs.NewInvalidRuntimeCallErrorf("invalid chunk index: %s", indexStr))
-		return
-	}
 	total, err := strconv.Atoi(totalStr)
-	if err != nil || total <= 0 {
+	if err != nil || total <= 0 || total > maxChunkTotal {
 		t.httpError(rw, errs.NewInvalidRuntimeCallErrorf("invalid chunk total: %s", totalStr))
 		return
 	}
+
+	index, err := strconv.Atoi(indexStr)
+	if err != nil || index < 0 || index >= total {
+		t.httpError(rw, errs.NewInvalidRuntimeCallErrorf("invalid chunk index: %s", indexStr))
+		return
+	}
+
+	r.Body = http.MaxBytesReader(rw, r.Body, int64(maxChunkBodyBytes))
 
 	buf := bufferPool.Get().(*bytes.Buffer)
 	buf.Reset()
@@ -201,7 +209,20 @@ func (t *HTTPTransport) handleChunkedRequest(rw http.ResponseWriter, r *http.Req
 	pc := actual.(*pendingChunks)
 
 	pc.mu.Lock()
+	if pc.total != total {
+		pc.mu.Unlock()
+		t.chunkStore.Delete(chunkID)
+		t.httpError(rw, errs.NewInvalidRuntimeCallErrorf("inconsistent chunk total"))
+		return
+	}
 	pc.chunks[index] = chunk
+	pc.size += len(chunk)
+	if pc.size > maxAssembledBytes {
+		pc.mu.Unlock()
+		t.chunkStore.Delete(chunkID)
+		t.httpError(rw, errs.NewInvalidRuntimeCallErrorf("assembled body too large"))
+		return
+	}
 	received := len(pc.chunks)
 	pc.mu.Unlock()
 
