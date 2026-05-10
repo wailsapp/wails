@@ -26,6 +26,9 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix stale state in macOS menus by applying the menu item mutators (`setMenuItemChecked()`, `setMenuItemLabel()`, `setMenuItemDisabled()`, `setMenuItemHidden()`, `setMenuItemTooltip()`) synchronously on the main thread, eliminating the `dispatch_async` race that left menus rendering the previous state when reopened quickly (#5002)
+- Ignore *_test.go files in dev mode to prevent unnecessary rebuilds in [PR](https://github.com/wailsapp/wails/pull/5203) by @leaanthony
+- Prevent Menu.Update() segfault when app is not running in [PR](https://github.com/wailsapp/wails/pull/5291) by @wucm667
 - Use lastSizeWParam to gate menubar redraws on Windows in [PR](https://github.com/wailsapp/wails/pull/5382) by @taliesin-ai
 
 ## Deprecated
